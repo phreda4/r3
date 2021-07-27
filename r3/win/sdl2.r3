@@ -18,6 +18,7 @@
 #sys-SDL_UpdateTexture 
 #sys-SDL_RenderClear
 #sys-SDL_RenderCopy 
+#sys-SDL_RenderCopyEx
 #sys-SDL_RenderPresent 
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
@@ -26,6 +27,10 @@
 #sys-SDL_UnlockTexture
 #sys-SDL_RenderSetLogicalSize
 #sys-SDL_SetRenderDrawBlendMode
+#sys-SDL_RenderDrawPoint
+#sys-SDL_RenderDrawLine
+#sys-SDL_RenderDrawRect
+#sys-SDL_RenderFillRect
 
 #sys-SDL_Delay
 #sys-SDL_PollEvent	
@@ -56,6 +61,7 @@
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
 ::SDL_RenderClear sys-SDL_RenderClear sys1 drop ;
 ::SDL_RenderCopy sys-SDL_RenderCopy sys4 drop ;
+::SDL_RenderCopyEx sys-SDL_RenderCopyEx sys7 drop ;
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
@@ -64,6 +70,11 @@
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
 ::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_SetRenderDrawBlendMode sys-SDL_SetRenderDrawBlendMode sys2 drop ;
+
+::SDL_RenderDrawPoint sys-SDL_RenderDrawPoint sys3 drop ;
+::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys4 drop ;
+::SDL_RenderDrawRect sys-SDL_RenderDrawRect sys2 drop ;
+::SDL_RenderFillRect sys-SDL_RenderFillRect sys2 drop ;
 
 ::SDL_Delay sys-SDL_Delay sys1 drop ;
 ::SDL_PollEvent sys-SDL_PollEvent sys1 ; | &evt -- ok
@@ -96,6 +107,7 @@
 	dup "SDL_UpdateTexture" getproc 'sys-SDL_UpdateTexture !
 	dup "SDL_RenderClear" getproc 'sys-SDL_RenderClear !
 	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
+	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
 	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
 	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
@@ -104,7 +116,11 @@
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
 	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
 	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
-	
+	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
+	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
+	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !
+	dup "SDL_RenderFillRect" getproc 'sys-SDL_RenderFillRect !
+
 	dup "SDL_Delay" getproc 'sys-SDL_Delay !
 	dup "SDL_PollEvent" getproc 'sys-SDL_PollEvent !
 	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !

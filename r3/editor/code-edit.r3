@@ -11,7 +11,7 @@
 
 | ventana de texto
 #xcode 5
-#ycode 1
+#ycode 2
 #wcode 40
 #hcode 20
 #xseli	| x ini win
@@ -213,7 +213,7 @@
 
 :mode!edit
 	0 'emode !
-	rows 1 - 'hcode !
+	rows 2 - 'hcode !
 	cols 7 - 'wcode !
 	calcselect ;
 :mode!find
@@ -466,11 +466,13 @@
 		drop swap ) drop ;
 
 :emitl
-	9 =? ( drop gtab ; )
-	emit ccx xsele <? ( drop ; ) drop
+|	9 =? ( drop gtab ; )
+	emit ;
+:a	
+	|ccx xsele <? ( drop ; ) drop
 	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
-	wcode xcode + gotox
-	$ffffff 'ink ! "." print
+|	wcode xcode + gotox
+	"." .
 	;
 
 :drawline
@@ -485,75 +487,24 @@
 
 |..............................
 :linenro | lin -- lin
-	$aaaaaa 'ink !
-	dup ylinea + 1 + .d 4 .r. emits ;
+	.white
+	dup ylinea + 1 + .d 4 .r. . "  " . ;
 
 |..............................
-:emitsel
-	13 =? ( drop cr xcode xlinea - gotox ; )
-	9 =? ( drop gtab ; )
-	noemit ;
-
-:drawselect
-	inisel 0? ( drop ; )
-	pantafin> >? ( drop ; )
-	xcode xlinea - ycode gotoxy
-	pantaini> ( over <? c@+ emitsel ) nip
-	xseli ccy cch + dup >r op
-	ccx ccy cch + pline
-	ccx ccy pline xsele ccy pline
-	( pantafin> <? finsel <? c@+ emitsel ) drop
-	xsele ccy pline ccx ccy pline
-	ccx ccy cch + pline
-	xseli ccy cch + pline
-	xseli r> pline
-	col_select poli
-	;
-
-|..............................
-:emitcur
-	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 4 'xcursor +! ; )
-	1 'xcursor +!
-	noemit ;
-
-:drawcursor
-	ylinea 'ycursor ! 0 'xcursor !
-	pantaini> ( fuente> <? c@+ emitcur ) drop
-
-	| hscroll
-	xcursor
-	xlinea <? ( dup 'xlinea ! )
-	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
-	drop
-
-	blink 1? ( drop ; ) drop
-
-	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + gotoxy
-	ccx ccy xy>v >a
-	cch ( 1? 1 -
-		ccw ( 1? 1 -
-			a@ not a!+
-			) drop
-		sw ccw - 2 << a+
-		) drop ;
-
-
 :drawcode
-	drawselect
 	pantaini>
 	0 ( hcode <?
-		0 ycode pick2 + gotoxy
+		0 ycode pick2 + .at
 		linenro
-		xcode gotox
+|		xcode gotox
 		swap drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop ;
+|	fuente>
+|	( pantafin> >? scrolldw )
+|	( pantaini> <? scrollup )
+|	drop 
+	;
 
 |-------------- panel control
 #panelcontrol
@@ -561,71 +512,38 @@
 :controlon	1 'panelcontrol ! ;
 :controloff 0 'panelcontrol ! ;
 
-|--- sobre pantalla
-:mmemit | adr x xa -- adr x xa
-	rot c@+
-	13 =? ( 0 nip )
-	0? ( drop 1 - rot rot sw + ; )
-	9 =? ( drop swap ccw 2 << + rot swap ; ) | 4*ccw is tab
-	drop swap ccw + rot swap ;
-
-:cursormouse
-	xypen
-	pantaini>
-	swap cch 1 <<			| x adr y ya
-	( over <?
-		cch + rot >>13 2 + rot rot ) 2drop
-	swap ccw 1 << dup 1 << + | adr x xa
-	( over <? mmemit ) 2drop
-	'fuente> ! ;
-
-:dns
-	cursormouse
-	fuente> '1sel ! ;
-
-:mos
-	cursormouse
-	fuente> 1sel over <? ( swap )
-	'finsel ! 'inisel ! ;
-
-:ups
-	cursormouse
-	fuente> 1sel over <? ( swap )
-	'finsel ! 'inisel ! ;
-
 |---------- manejo de teclado
 :buscapad
 	fuente 'findpad findstri
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	drawcursor
-	0 hcode 1 + gotoxy
-	$0000AE 'ink !
-	rows hcode - 1 - backlines
+	0 hcode 1 + .at 
 
-	$ffffff 'ink !
-	" > " emits
-	'buscapad 'findpad 31 inputex
+|	rows hcode - 1 - backlines
 
-	key
-    <ret> =? ( mode!edit )
-	>esc< =? ( mode!edit )
-	>ctrl< =? ( controloff )
+
+	" > " .
+	|'buscapad 'findpad .
+	.input
+
+	codekey 32 >>
+    $d001c =? ( mode!edit )
+	|>esc< =? ( mode!edit )
+	|>ctrl< =? ( controloff )
     drop
 	;
 
 :controlkey
-	drawcursor
-	key
-	>ctrl< =? ( controloff )
-	<f> =? ( mode!find )
-	<x> =? ( controlx )
-	<c> =? ( controlc )
-	<v> =? ( controlv )
+	codekey 32 >>
+	|>ctrl< =? ( controloff )
+	|<f> =? ( mode!find )
+	|<x> =? ( controlx )
+	|<c> =? ( controlc )
+	|<v> =? ( controlv )
 
-	<up> =? ( controla )
-	<dn> =? ( controls )
+|	<up> =? ( controla )
+|	<dn> =? ( controls )
 
 |	'controle 18 ?key " E-Edit" emits | ctrl-E dit
 ||	'controlh 35 ?key " H-Help" emits  | ctrl-H elp
@@ -641,55 +559,46 @@
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	drawcursor
-	'dns 'mos 'ups guiMap |------ mouse
-
-	char
+	codekey 48 >>
 	1? ( modo ex ; )
 	drop
 
-	key
-	<back> =? ( kback )
-	<del> =? ( kdel )
-	<up> =? ( karriba ) <dn> =? ( kabajo )
-	<ri> =? ( kder ) <le> =? ( kizq )
-	<home> =? ( khome ) <end> =? ( kend )
-	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
-	<ins> =? (  modo
-				'lins =? ( drop 'lover 'modo ! ; )
-				drop 'lins 'modo ! )
-	<ret> =? (  13 modo ex )
-	<tab> =? (  9 modo ex )
-	>esc< =? ( exit )
+	codekey 32 >>
+|	<back> =? ( kback )
+	|<del> =? ( kdel )
+	$48 =? ( karriba ) 
+	$50 =? ( kabajo )
+	|<ri> =? ( kder ) <le> =? ( kizq )
+	$47 =? ( khome ) 
+	$4f =? ( kend )
+	|<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
+	|<ins> =? (  modo
+				|'lins =? ( drop 'lover 'modo ! ; )
+				|drop 'lins 'modo ! )
+	$d001c =? (  13 modo ex )
+	|<tab> =? (  9 modo ex )
+	|>esc< =? ( exit )
 
-	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+	|<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
+	|<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 
-	<f1> =? ( runfile )
-	<f2> =? ( debugfile )
-|	<f3> =? ( profiler )
-	<f4> =? ( mkplain )
-	<f5> =? ( compile )
+	$3b =? ( runfile )
+	$3c =? ( debugfile )
+|	$3d =? ( profiler )
+	$3e =? ( mkplain )
+	$3f =? ( compile )
 	drop
 	;
 
 :errmodekey
-	0 hcode 1 + gotoxy
-	$AE0000 'ink !
-	rows hcode - 1 - backlines
-
-	$ffffff 'ink !
-	'outpad text
+	0 hcode 1 + .at
+|	rows hcode - 1 - backlines
+	'outpad .
 	editmodekey
 	;
 
 :btnf | "" "fx" --
-	sp
-	$ff0000 'ink ! backprint
-	$ffffff 'ink ! emits
-	0 'ink ! emits
-	;
-
+	sp .bred .white . .bwhitel .black . ;
 
 :barraf | F+
 	"Run" "F1" btnf
@@ -705,8 +614,8 @@
 	"ind" "F" btnf
 	'findpad
 	dup c@ 0? ( 2drop ; ) drop
-	$ffffff 'ink !
-	" [%s]" print ;
+
+	" [%s]" .print ;
 
 :printpanel
 	panelcontrol
@@ -714,37 +623,42 @@
 	barrac ;
 
 :barratop
-	home
-	$B2B0B2 'ink ! backline
-	$0 'ink ! sp 'name emits sp
-	$af0000 'ink !
+	.bwhitel .black
+	sp 'name . sp
 	printpanel
-
-	cols 8 - gotox
-	$0 'ink ! sp
-	xcursor 1 + .d emits sp
-	ycursor 1 + .d emits sp
+	sp
+	.cyan
+	xcursor 1 + .d . sp
+	ycursor 1 + .d . sp
+	.reset
 	;
 
 |-------------------------------------
-:editando
-	cls gui
-	barratop
+:pantalla	
+	.reset
+	.reset .home .cls 
+	0 0 .at barratop
 	drawcode
-	emode
-	0? ( editmodekey )
-|	1 =? ( immmodekey )
-	2 =? ( findmodekey )
-	3 =? ( errmodekey )
-	drop
-	acursor
+	.bwhitel .black
+	0 rows .at xcode ycode " %d:%d " .print
+	
+	xcode xlinea - xcursor +
+	ycode ylinea - ycursor + .at 
+	
 	;
 
 :editor
-	0 'paper !
 	0 'xlinea !
 	mode!edit
-	'editando onshow
+	pantalla
+	( getch 27 <>? drop
+		emode
+		0? ( editmodekey )
+|	1 =? ( immmodekey )
+		2 =? ( findmodekey )
+		3 =? ( errmodekey )
+		drop
+ 		) drop
 	;
 
 :redim
@@ -752,6 +666,7 @@
 	consoleinfo $ffff and 'cols ! 
 	'consoleinfo 16 + w@ 'rows ! 
 	;
+	
 |---- Mantiene estado del editor
 :ram
 	here	| --- RAM
@@ -780,7 +695,7 @@
 	ram
 	loadtxt
 	editor
-	savetxt
+|	savetxt
 	;
 
 : windows mark 4 main ;

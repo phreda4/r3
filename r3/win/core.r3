@@ -16,23 +16,28 @@
 ::resize |( a n -- a ior ) 
 	process-heap rot rot 0 rot HeapReAlloc ;
 
+::msec | -- msec
+	GetTickCount ;
+	
 |----------
 #sistime 0 0 | 16 bytes
 
-::time | -- h m s
+::time | -- hms
 	'sistime GetLocalTime
 	'sistime 8 + @
-	dup $ffff and 
-	swap 16 >> dup $ffff and 
-	swap 16 >> $ffff and
+	dup 32 >> $ffff and 
+	over 16 >> $ffff and 
+	rot $ffff and
+	8 << or 8 << or 
 	;
 	
-::date | -- y m d
+::date | -- ymd
 	'sistime GetLocalTime
 	'sistime @
-	dup $ffff and 
-	swap 16 >> dup $ffff and
-	swap 24 >> $ffff and
+	dup 48 >> $ffff and 
+	over 16 >> $ffff and
+	rot $ffff and
+	8 << or 8 << or
 	;
 	
 #fdd * 260

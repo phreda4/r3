@@ -11,6 +11,12 @@
 |-----------------
 :ihelp
 	"r3 console help." . cr
+	"help - Show available commands" . cr
+	"ram - Show RAM layout" . cr
+	"new - Create new cartridge" . cr
+	"load <file> - Load file.r3 from the local filesystem" . cr
+	"save <file> - Save file.r3 to the local filesystem" . cr
+	"run - Run current project" . cr
 	"cat <file> - show file" . cr
 	"cls - clear screen" . cr	
 	"dir - list archives in folder" . cr
@@ -45,9 +51,16 @@
 	( getch 27 <>? 
 		codekey "$%h $%h " .print cr ) drop ;
 	
+:iram 
+:inew 
+:iload 
+:isave 
+:irun	
+	;
 |-----------------	
-#inst "key" "cat" "dir" "cls" "help" "bye" 0
-#insc 'ikey 'icat 'idir 'icls 'ihelp 'ibye 0
+
+#inst "ram" "new" "load" "save" "run" "key" "cat" "dir" "cls" "help" "bye" 0
+#insc 'iram 'inew 'iload 'isave 'irun 'ikey 'icat 'idir 'icls 'ihelp 'ibye 0
 
 :interp | adr -- ex/0
 	'insc >a
