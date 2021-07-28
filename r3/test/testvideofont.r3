@@ -71,7 +71,7 @@
 	drop ;
 		
 :draw
-	'drawl onshow ;
+	'drawl SDLshow ;
 
 :inicio
 	windows

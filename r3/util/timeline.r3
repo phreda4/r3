@@ -34,17 +34,17 @@
 	;
 
 :searchless | time adr --time adr
-	( 16 - timeline >=?
+	( 32 - timeline >=?
 		dup @	| time adr time
-		pick2 <=? ( drop 16 + ; )
-		drop ) 16 + ;
+		pick2 <=? ( drop 32 + ; )
+		drop ) 32 + ;
 
 :+tline	| 'fx 'scr event time --
 	1000 *.
 	timeline> searchless | adr
-	dup dup 16 + swap timeline> over - 2 >> move>
+	dup dup 32 + swap timeline> over - 2 >> move>
 	>a a!+ a!+ a!+ a!
-	16 'timeline> +! ;
+	32 'timeline> +! ;
 
 :tictline
 	timeline< timenow
@@ -52,8 +52,8 @@
 		timeline> =? ( 3drop ; )
 		@ >?
 		swap
-		dup 4 + @ ex
-		16 + swap ) drop
+		dup 8 + @ ex
+		32 + swap ) drop
 	'timeline< ! ;
 
 |-------------------- LOOP
@@ -74,9 +74,10 @@
 
 |-------------------- FILLBOX
 :drawbox | adr --
-	>b b@+ 1 and? ( drop ; ) 8 >> 'ink !
-	b@+ xy2 b@+ xy2
-	fillbox ;
+	drop
+|	>b b@+ 1 and? ( drop ; ) 8 >> 'ink !
+|	b@+ xy2 b@+ xy2 fillbox 
+	;
 
 ::+box | x1 y1 x2 y2 color --
 	'drawbox 'screen p!+ >a
@@ -91,7 +92,7 @@
 	>b b@+ 1 and? ( drop ; ) drop
 	b@+ dup 48 << 48 >> swap 16 >>
 	b@+ dup 48 << 48 >> pick3 - swap 16 >> pick2 -
-	b@+ spritesize
+	b@+ drop |spritesize
 	;
 
 ::+sprite | spr x1 y1 x2 y2 --
@@ -108,7 +109,7 @@
 	>b b@+ 1 and? ( drop ; ) drop
 	b@+ dup 48 << 48 >> swap 16 >>
 	b@+ drop 
-	b@+ sprite
+	b@+ drop | sprite
 	;
 
 ::+spriteo | spr x1 y1 x2 y2 --
@@ -122,15 +123,16 @@
 
 |-------------------- TEXTBOX
 :drawtbox | adr --
-	@+ 1 and? ( 2drop ; ) 8 >> 'ink !
-	@+ dup 48 << 48 >> 'tx1 ! 16 >> 'ty1 !
-	@+ dup 48 << 48 >> 'tx2 ! 16 >> 'ty2 !
-	@+ int2pad
-	@+
-	dup 24 >> $44000000 fxfont! 	| fx --
-	dup 16 >> $ff and swap $ffff and
-	nfont! 		| nro size --
-	@+ swap @ textbox ;
+drop ;
+|	@+ 1 and? ( 2drop ; ) drop |8 >> 'ink !
+|	@+ dup 48 << 48 >> 'tx1 ! 16 >> 'ty1 !
+|	@+ dup 48 << 48 >> 'tx2 ! 16 >> 'ty2 !
+|	@+ int2pad
+|	@+
+|	dup 24 >> $44000000 fxfont! 	| fx --
+|	dup 16 >> $ff and swap $ffff and
+|	nfont! 		| nro size --
+|	@+ swap @ textbox ;
 
 | pad=llllyyxx l=interlineado pady padx 16-8-8
 | font=fxfosize 8-8-16
@@ -148,7 +150,8 @@
 
 |-------------------- SONIDO
 :evt.play
-	dup 8 + @ SPLAY ;
+|	dup 8 + @ SPLAY 
+	;
 
 ::+sound | sonido inicio --
 	0 'evt.play 2swap >r swap r> +tline ;
@@ -512,26 +515,26 @@
 
 |*********DEBUG
 :dumptline
-	timeline< timeline - 4 >> "%d" print cr
+	timeline< timeline - 4 >> "%d" .print cr
 	timeline
 	( timeline> <?
-		timeline< =? ( "> " print )
-		@+ "%d " print
-		@+ "%d " print
-		@+ "%d " print
-		@+ "%d " print cr
+		timeline< =? ( "> " .print )
+		@+ "%d " .print
+		@+ "%d " .print
+		@+ "%d " .print
+		@+ "%d " .print cr
 		) drop ;
 
-:debugtimeline
-	t0 "%f" print cr
+::debugtimeline
+	t0 "%f" .print cr
 	dumptline
-	[ dup @+ "%h " print @ "%d" print  cr ; ] 'screen p.mapv cr
-	[ dup @+ "%f " print
-		@+ "%f " print
-		@+ xy2 "%d,%d " print
-		@+ xy2 "%d,%d " print
-		@+ xy2 "%d,%d " print
-		@ xy2 "%d,%d " print
+	[ dup @+ "%h " .print @ "%d" .print  cr ; ] 'screen p.mapv cr
+	[ dup @+ "%f " .print
+		@+ "%f " .print
+		@+ xy2 "%d,%d " .print
+		@+ xy2 "%d,%d " .print
+		@+ xy2 "%d,%d " .print
+		@ xy2 "%d,%d " .print
 		cr ; ] 'fxp p.mapv cr
 	;
 |*********DEBUG

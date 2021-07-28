@@ -8,8 +8,6 @@
 #path * 1024
 #name * 1024
 
-#conw #conh
-
 #nfiles
 #files * 8192
 #files> 'files
@@ -214,27 +212,21 @@
 |--------------------------------
 :runfile
 	actual -? ( drop ; )
-	getinfo $7 and
-	2 <? ( drop ; )
-	drop
-	
-	.reset .home .cls 
+	getinfo $7 and 2 <? ( drop ; ) drop
+	.reset
 	'path
 |WIN| "r3 ""%s/%s"""
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
 	sprint sys
-	
-	cr
-	"Press <enter> to continue..." .
-	.input
 	;
 
 |--------------------------------
 :editfile
 	actual -? ( drop ; )
 	getinfo $3 and 2 <>? ( drop ; ) drop
+	.reset
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
 |WIN| "r3 r3/editor/code-edit.r3"
@@ -347,8 +339,6 @@
 |	'name 32 .input 
 	;
 
-:filline
-	conw ( 1? 1 - " " . ) drop ;
 
 |--------------------------------
 :printfn | n
@@ -358,17 +348,14 @@
 	sp getname . sp
 	;
 
-#filecolor 31 32 33 34 
+#filecolor 1 2 3 4 
 
 :colorfile | n -- n
-    dup getinfo $3 and 3 << 'filecolor + @ .color ;
+	actual =? ( .bwhite .black ; )
+    dup getinfo $3 and 3 << 'filecolor + @ .fc ;
 
 :drawl | n --
-	colorfile
-	actual =? ( .bwhite .black )
-	printfn 
-	.reset
-	;
+	sp colorfile printfn .reset ;
 	
 :drawtree
 	0 2 .at
@@ -381,19 +368,19 @@
 :screen
 	.reset .home .cls 
 	.bblue .white
-	0 0 .at filline
+	0 0 .at .eline
 	0 0 .at " r3 " . cr
 	
 	.reset
 	drawtree
 
 	.bblue .white	
-	0 linesv 2 + .at filline
+	0 linesv 2 + .at .eline
 	0 linesv 2 + .at 
-	conh conw " w:%d h:%d " .print	
+	rows cols " w:%d h:%d " .print	
 	pfilename 
 	
-	codekey 32 >> " %h " .print
+	codekey 32 >> " $%h " .print
 
 |	"Run " "F1" btnf
 |	"Edit " "F2" btnf
@@ -416,21 +403,15 @@
 	$3c =? ( editfile screen )
 	$3d =? ( newfile screen )
 	drop 
+	screen
 	;
 
 
-:redim
-	.getconsoleinfo
-	consoleinfo $ffff and 'conw ! 
-	'consoleinfo 16 + w@ 'conh ! 
-	conh 3 - 'linesv !
-	;
-	
 |---------------------------------
 :main
 	rebuild
-	redim
-	
+	.getconsoleinfo
+	rows 3 - 'linesv !
 	loadm
 
 	screen

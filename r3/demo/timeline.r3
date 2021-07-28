@@ -1,11 +1,13 @@
-| About timeline
+ | About timeline
 | framerate independient event animation system
 | PHREDA 2020
 |------------------
 |MEM $fff
 ^r3/win/console.r3
-^r3/win/SDL2.r3
-^r3/win/SDL2ttf.r3
+^r3/win/sdl2.r3
+^r3/win/sdl2ttf.r3
+^r3/win/sdl2image.r3	
+
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
 ^r3/util/timeline.r3
@@ -34,7 +36,7 @@
 	100 100 2xy 300 300 2xy 200 200 2xy 500 500 2xy 3.0 2.0 +fx.QuaOut
 	9.0 +fx.off
 
-	son 4.0 +sound
+	|son 4.0 +sound
 
 	9.5 +restart
 
@@ -80,8 +82,8 @@
 	'listPenner
 	19 ( 1? makelist
 		stepy 'nowy +! 1 - ) 3drop
-	son 6.0 +sound
-	son 12.0 +sound
+|	son 6.0 +sound
+|	son 12.0 +sound
 	12.1 +restart
 
 |	'exit 12.1 +event
@@ -89,30 +91,95 @@
 	;
 
 |-----------------------------
-:main
-	cls
+:loadtexture | render "" -- text
+	IMG_Load | ren surf
+	swap over SDL_CreateTextureFromSurface
+	swap SDL_FreeSurface ;
+	
+|-----------------------------
+#pfont 
+#wp #hp
+#op 0 0
+#dp 0 0
+
+:bmfont | w h "" --
+	SDLrenderer swap loadtexture 'pfont !
+	2dup 32 << or dup
+	'dp 8 + ! 'op 8 + !
+	'hp ! 'wp ! 
+	;
+	
+:bcolor	| rrggbb --
+	pfont swap
+	dup 16 >> $ff and over 8 >> $ff and rot $ff and
+	SDL_SetTextureColorMod
+	;
+	
+:bemit | ascii --
+	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
+	SDLrenderer pfont 'op 'dp SDL_RenderCopy
+	wp 'dp d+!
+	;
+	
+:bmprint | "" --
+	( c@+ 1? bemit ) 2drop ;
+	
+:bmat | x y --
+	32 << or 'dp ! ;
+	
+|-----------------------------
+#imagen
+
+:sdlcolor | col --
+	SDLrenderer swap
+	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+	$ff SDL_SetRenderDrawColor ;
+
+:demo
+	0 sdlcolor
+	SDLrenderer SDL_RenderClear
+	
 	timeline.draw
+	
+	SDLrenderer imagen 0 0 SDL_RenderCopy
+	
+	$ffffff bcolor 
+	0 0 bmat "<f1> example 1" bmprint
+	0 16 bmat "<f2> example 2" bmprint
 
-	home fonti
-	$ffffff 'ink !
-	"timenow:" print timenow "%d" print cr
-	"<f1> example 1" print cr
-	"<f2> Penner animations" print cr
-
-	key
+	SDLrenderer SDL_RenderPresent
+	SDLkey
 	<f1> =? ( example1 )
 	<f2> =? ( example2 )
 	>esc< =? ( exit )
 	drop
+	|debugtimeline
+	;
+	
+:main
+	"r3sdl" 640 480 SDLinit
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
+	$3 IMG_Init
+
+	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
+	
+	|16 24 "media/img/font16x24.png" bmfont
+	8 16 "media/img/VGA8x16.png" bmfont
+	
+	'demo SDLshow
+	
+	SDLquit
 	;
 
 :memory
+	windows
+	sdl2
+	sdl2image
 	mark
 	timeline.inimem
-
-	"media/img/lolomario.png" loadimg 'mario !
 	;
 
-: memory 'main onShow ;
+: memory main  ;
 
 

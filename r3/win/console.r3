@@ -45,12 +45,11 @@
 
 ::.home	"H" .[ ; | home
 ::.cls "J" .[ ; | cls 
+::.at "%d;%df" sprint .[ ; | x y -- 
+::.eline "K" .[ ; | erase line from cursor
 
-::.at | x y -- ;|ESC[{line};{column}H  moves cursor to line #, column #
-	"%d;%df" sprint .[ ;
-
-::.color | color -- ;|ESC[38;5;{ID}m	Set foreground color.
-	"%dm" sprint .[ ;
+::.fc "38;5;%dm" sprint .[ ; | Set foreground color.
+::.bc  "48;5;%dm" sprint .[ ; 
 
 ::.Black "30m" .[ ;
 ::.Red "31m" .[ ;
@@ -86,12 +85,18 @@
 ::.BCyanl "46;1m" .[ ;
 ::.BWhitel "47;1m" .[ ;
 
-
 ::.Bold "1m" .[ ;
-::.Underline "4m" .[ ;
-::.Reversed "7m" .[ ;
+::.Under "4m" .[ ;
+::.Rever "7m" .[ ;
 ::.Reset "0m" .[ ;
 
+::.alsb	"?1049h" .[ ; | alternate screen buffer
+::.masb "?1049l" .[ ; | main screen buffer
+
+::.showc "?25h" .[ ;
+::.hidec "?25l" .[ ;
+::.ovec "0 q" .[ ;
+::.insc "5 q" .[ ;
 
 |  COORD      dwSize; (16.16)
 |  COORD      dwCursorPosition;(16.16)
@@ -100,9 +105,15 @@
 |  COORD      dwMaximumWindowSize;16.16
 
 ##consoleinfo 0 0 0
+##rows 
+##cols
 
 ::.getconsoleinfo 
-	stdout 'consoleinfo GetConsoleScreenBufferInfo drop ;
+	stdout 'consoleinfo GetConsoleScreenBufferInfo drop 
+	'consoleinfo 10 + @
+	dup 32 >> $ffff and over $ffff and - 'cols !
+	dup 48 >> $ffff and swap 16 >> $ffff and - 'rows !
+	;
 
 ##pad * 256
 

@@ -79,7 +79,7 @@ font vo TTF_SetFontOutline
 	drop ;
 		
 :draw
-	'drawl onshow ;
+	'drawl SDLshow ;
 
 :inicio
 	windows

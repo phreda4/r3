@@ -22,6 +22,14 @@
 ::rerand | --
   time msec + 'seed ! ;
 
+|---- SplitMix64
+
+##seed64 3141592621
+::rand64
+	seed64 $9E3779B97F4A7C15 + dup 'seeg64 !
+	dup 30 >> xor $BF58476D1CE4E5B9 *
+	dup 27 >> xor $94D049BB133111EB *
+	dup 31 >> xor ;
   
 |--- Multiply-with-carry random
 

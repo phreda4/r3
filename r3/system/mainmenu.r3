@@ -8,8 +8,6 @@
 #path * 1024
 #name * 1024
 
-#conw #conh
-
 #nfiles
 #files * 8192
 #files> 'files
@@ -342,8 +340,6 @@
 |	'name 32 .input 
 	;
 
-:filline
-	conw ( 1? 1 - " " . ) drop ;
 
 |--------------------------------
 :printfn | n
@@ -353,17 +349,14 @@
 	sp getname . sp
 	;
 
-#filecolor 31 32 33 34 
+#filecolor 1 2 3 4 
 
 :colorfile | n -- n
-    dup getinfo $3 and 3 << 'filecolor + @ .color ;
+	actual =? ( .bwhite .black ; )
+    dup getinfo $3 and 3 << 'filecolor + @ .fc ;
 
 :drawl | n --
-	actual =? ( .bwhite  )
-	colorfile
-	printfn 
-	.reset
-	;
+	colorfile printfn  .reset ;
 	
 :drawtree
 	0 2 .at
@@ -376,19 +369,19 @@
 :screen
 	.reset .home .cls 
 	.bblue .white
-	0 0 .at filline
+	0 0 .at .eline
 	0 0 .at " r3 " . cr
 	
 	.reset
 	drawtree
 
 	.bblue .white	
-	0 linesv 2 + .at filline
+	0 linesv 2 + .at .eline
 	0 linesv 2 + .at 
-	conh conw " w:%d h:%d " .print	
+	rows cols " w:%d h:%d " .print	
 	pfilename 
 	
-	codekey 32 >> " %h " .print
+	codekey 32 >> " $%h " .print
 
 |	"Run " "F1" btnf
 |	"Edit " "F2" btnf
@@ -414,18 +407,11 @@
 	;
 
 
-:redim
-	.getconsoleinfo
-	consoleinfo $ffff and 'conw ! 
-	'consoleinfo 16 + w@ 'conh ! 
-	conh 3 - 'linesv !
-	;
-	
 |---------------------------------
 :main
 	rebuild
-	redim
-	
+	.getconsoleinfo
+	rows 3 - 'linesv !
 	loadm
 
 	screen

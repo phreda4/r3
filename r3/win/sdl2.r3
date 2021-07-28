@@ -22,6 +22,7 @@
 #sys-SDL_RenderPresent 
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
+#sys-SDL_QueryTexture
 #sys-SDL_FreeSurface
 #sys-SDL_LockTexture
 #sys-SDL_UnlockTexture
@@ -45,6 +46,7 @@
 #sys-SDL_GL_DeleteContext
 #sys-SDL_GL_SetSwapInterval
 #sys-SDL_GL_SwapWindow
+#sys-SDL_SetTextureColorMod
 
 ::SDL_Init sys-SDL_Init sys1 drop ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
@@ -56,6 +58,8 @@
 ::SDL_DestroyWindow sys-SDL_DestroyWindow sys1 drop ;
 ::SDL_CreateRenderer sys-SDL_CreateRenderer sys3 ;
 ::SDL_CreateTexture sys-SDL_CreateTexture sys5 ;
+::SDL_QueryTexture sys-SDL_QueryTexture sys5 drop ;
+::SDL_SetTextureColorMod sys-SDL_SetTextureColorMod sys4 drop ;
 ::SDL_DestroyTexture sys-SDL_DestroyTexture sys1 drop ;
 ::SDL_DestroyRenderer sys-SDL_DestroyRenderer sys1 ;
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
@@ -110,6 +114,8 @@
 	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
 	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
+	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
+	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
 	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
 	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
@@ -155,7 +161,7 @@
 	24 + d@+ 'pitch !
 	4 + @ 'vframe ! 
 
-	0 SDL_ShowCursor | disable cursor
+	|0 SDL_ShowCursor | disable cursor
 	;
 
 ::SDLinitGL | "titulo" w h --
@@ -170,7 +176,7 @@
 	SDL_Quit ;
 	
 ::SDLredraw
-	|SDL_windows SDL_UpdateWindowSurface 
+	SDL_windows SDL_UpdateWindowSurface 
 	;
 
 ##SDLevent * 56 
@@ -201,4 +207,17 @@
 		$402 =? ( 'SDLevent 16 + c@ not SDLb and 'SDLb ! )
 		drop
 		) drop ;	
+		
+		
+##.exit 0
+
+::SDLshow | 'word --
+	0 '.exit !
+	( .exit 0? drop
+		SDLupdate
+		dup ex ) 2drop
+	0 '.exit ! ;
+
+::exit
+	1 '.exit ! ;
 		

@@ -64,7 +64,7 @@
 	drop ;
 		
 :draw
-	'drawl onshow ;
+	'drawl SDLshow ;
 
 #surface
 

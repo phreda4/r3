@@ -6,16 +6,13 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
-#rows
-#cols
+^r3/lib/trace.r3
 
 | ventana de texto
-#xcode 5
+#xcode 6
 #ycode 2
 #wcode 40
 #hcode 20
-#xseli	| x ini win
-#xsele	| x end win
 
 #xlinea 0
 #ylinea 0	| primera linea visible
@@ -83,13 +80,12 @@
 
 :<<13 | a -- a
 	( fuente >=?
-		 dup c@
-		13 =? ( drop ; )
+		dup c@ 13 =? ( drop ; )
 		drop 1 - ) ;
 
 :>>13 | a -- a
 	( $fuente <?
-		 dup c@
+		dup c@
 		13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;
@@ -146,8 +142,7 @@
 	over swap - swap | cnt cursor
 	>>13 1 +    | cnt cura
 	dup 1 + >>13 1 + 	| cnt cura curb
-	over -
-	rot min +
+	over - rot min +
 	'fuente> !
 	selecc ;
 
@@ -206,37 +201,36 @@
 	empty ;
 
 |----------------------------------
-:calcselect
-|	xcode wcode + gotox ccx 'xsele !
-|	xcode gotox ccx 'xseli !
-	;
 
 :mode!edit
 	0 'emode !
 	rows 2 - 'hcode !
 	cols 7 - 'wcode !
-	calcselect ;
+	;
 :mode!find
 	2 'emode !
 	rows 3 - 'hcode !
 	cols 7 - 'wcode !
-	calcselect ;
+	;
 :mode!error
 	3 'emode !
 	rows 4 - 'hcode !
 	cols 7 - 'wcode !
-	calcselect ;
-
+	;
 
 |----------------------------------
 :runfile
 	savetxt
+	.masb .reset
 	mark
 |WIN|	"r3 "
 |LIN|	"./r3lin "
 |RPI|	"./r3rpi "
 	,s 'name ,s ,eol
 	empty here sys
+	cr .reset
+	"press <enter> to continue" . .input
+	.alsb
 	;
 
 :linetocursor | -- ines
@@ -416,14 +410,14 @@
 	;
 
 |------ Color line
-:col_inc .yellow ;
+:col_inc .yellowl ;
 :col_com .blackl ;
-:col_cod .green ;
-:col_dat .Magenta ;
-:col_str .white ;
-:col_adr .cyan ;
-:col_nor .green ;
-:col_nro .yellow ;
+:col_cod .greenl ;
+:col_dat .Magental ;
+:col_str .whitel ;
+:col_adr .cyanl ;
+:col_nor .greenl ;
+:col_nro .yellowl ;
 :col_select .whitel ;
 
 #mcolor
@@ -438,8 +432,7 @@
 	$27 =? ( drop col_adr ; )				| $27 ' Direccion
     drop
 	over isNro 1? ( drop col_nro ; ) drop
-	col_nor
-	;
+	col_nor ;
 
 | "" logic
 :strcol
@@ -466,7 +459,7 @@
 		drop swap ) drop ;
 
 :emitl
-|	9 =? ( drop gtab ; )
+	9 =? ( drop "    " . ; )
 	emit ;
 :a	
 	|ccx xsele <? ( drop ; ) drop
@@ -486,26 +479,50 @@
 		) drop 1 - ;
 
 |..............................
+:linenow
+	ycursor =? ( ">" . ; )
+	sp ;
+	
 :linenro | lin -- lin
-	.white
-	dup ylinea + 1 + .d 4 .r. . "  " . ;
+	.reset .white
+	dup ylinea + 
+	linenow
+	1 + .d 3 .r. . sp
+	; 
 
 |..............................
 :drawcode
+	.reset
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + .at
-		linenro
-|		xcode gotox
-		swap drawline
+		linenro 
+		swap drawline .eline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
-|	fuente>
-|	( pantafin> >? scrolldw )
-|	( pantaini> <? scrollup )
-|	drop 
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	drop 
 	;
 
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 4 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+:cursorpos
+	ylinea 'ycursor ! 0 'xcursor !
+	pantaini> ( fuente> <? c@+ emitcur ) drop
+	| hscroll
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	drop 
+	xcode xlinea - xcursor +
+	ycode ylinea - ycursor + .at 
+	;
+	
 |-------------- panel control
 #panelcontrol
 
@@ -559,25 +576,24 @@
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	codekey 48 >>
-	1? ( modo ex ; )
+	codekey 48 >> $ff and 
+	8 >? ( modo ex ; )
 	drop
 
 	codekey 32 >>
-|	<back> =? ( kback )
-	|<del> =? ( kdel )
+	$8000e =? ( kback )
+	$53 =? ( kdel )
 	$48 =? ( karriba ) 
 	$50 =? ( kabajo )
-	|<ri> =? ( kder ) <le> =? ( kizq )
+	$4d =? ( kder ) 
+	$4b =? ( kizq )
 	$47 =? ( khome ) 
 	$4f =? ( kend )
-	|<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
-	|<ins> =? (  modo
-				|'lins =? ( drop 'lover 'modo ! ; )
-				|drop 'lins 'modo ! )
-	$d001c =? (  13 modo ex )
-	|<tab> =? (  9 modo ex )
-	|>esc< =? ( exit )
+	$49 =? ( kpgup ) 
+	$51 =? ( kpgdn )
+	$52 =? (  modo | ins
+			'lins =? ( drop 'lover 'modo ! .ovec ; )
+			drop 'lins 'modo ! .insc )
 
 	|<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
 	|<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
@@ -622,35 +638,37 @@
 	0? ( drop barraf ; ) drop
 	barrac ;
 
-:barratop
-	.bwhitel .black
-	sp 'name . sp
+:top
+	0 0 .at 
+	.bwhitel .black .eline
 	printpanel
 	sp
-	.cyan
-	xcursor 1 + .d . sp
-	ycursor 1 + .d . sp
-	.reset
 	;
 
+:bottom
+	0 hcode 2 + .at 
+	.bwhitel .black .eline
+	sp 'name . sp
+	.cyan
+	ycursor xcursor " %d:%d " .print
+	;
+	
 |-------------------------------------
 :pantalla	
 	.reset
-	.reset .home .cls 
-	0 0 .at barratop
+	.hidec
+	top
 	drawcode
-	.bwhitel .black
-	0 rows .at xcode ycode " %d:%d " .print
-	
-	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + .at 
-	
+	bottom
+	cursorpos
+	.showc
 	;
 
 :editor
+	.reset .home .cls
 	0 'xlinea !
 	mode!edit
-	pantalla
+	pantalla .insc
 	( getch 27 <>? drop
 		emode
 		0? ( editmodekey )
@@ -658,14 +676,10 @@
 		2 =? ( findmodekey )
 		3 =? ( errmodekey )
 		drop
+		pantalla
  		) drop
 	;
 
-:redim
-	.getconsoleinfo
-	consoleinfo $ffff and 'cols ! 
-	'consoleinfo 16 + w@ 'rows ! 
-	;
 	
 |---- Mantiene estado del editor
 :ram
@@ -685,8 +699,7 @@
 	$3fff +				| 4096 linecomm
 	'here  ! | -- FREE
 	0 here !
-	mark
-	redim
+	mark 
 	;
 
 |----------- principal
@@ -694,8 +707,9 @@
 	'name "mem/main.mem" load drop
 	ram
 	loadtxt
-	editor
-|	savetxt
+	.getconsoleinfo
+	.alsb editor .masb
+	savetxt
 	;
 
 : windows mark 4 main ;
