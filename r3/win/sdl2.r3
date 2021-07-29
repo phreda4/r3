@@ -145,6 +145,7 @@
 	
 ##SDL_windows
 ##SDL_screen
+##SDLrenderer
 
 ##sw
 ##sh
@@ -161,6 +162,7 @@
 	24 + d@+ 'pitch !
 	4 + @ 'vframe ! 
 
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	|0 SDL_ShowCursor | disable cursor
 	;
 
@@ -169,9 +171,11 @@
 	$3231 SDL_init 
 	$1FFF0000 $1FFF0000 sw sh 6 SDL_CreateWindow dup 'SDL_windows ! 
 	SDL_GetWindowSurface dup 'SDL_screen !
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	;
 	
 ::SDLquit
+	
 	SDL_windows SDL_DestroyWindow 
 	SDL_Quit ;
 	
