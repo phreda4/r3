@@ -6,8 +6,6 @@
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
 
-#SDLrenderer
-
 |---- datetime
 :,2d
 	10 <? ( "0" ,s ) ,d ;
@@ -91,7 +89,6 @@
 	sdl2ttf
 	mark
 	"r3sdl" 640 480 SDLinitgl
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	initfont
 
 	main

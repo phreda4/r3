@@ -8,7 +8,6 @@
 ^r3/lib/sys.r3
 ^r3/lib/gr.r3
 
-#SDLrenderer
 #texture
 #snd_shoot	
 #textbit
@@ -95,7 +94,6 @@
 	 "media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !
 	 
 	"r3sdl" 640 480 SDLinit
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
 	$3 IMG_Init
 
