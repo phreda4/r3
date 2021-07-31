@@ -117,39 +117,21 @@
 	'drawbox 'screen p!+ >a
 	8 << 1 or a!+ a!+ ;
 
-|-------------------- SPRITE
-:drawsprite | adr --
-	>b b@+ 1 and? ( drop ; ) drop
-	b@+ dup 48 << 48 >> swap 16 >>
-	b@+ dup 48 << 48 >> pick3 - swap 16 >> pick2 -
-	b@+ drop |spritesize
+|-------------------- IMAGEN
+:drawimg | adr --
+	>b b@+ 1 and? ( drop ; ) 
+|	8 >> 1? ( SDLrenderer over 
+|		dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+|		SDL_SetTextureColorMod
+|		)
+	drop
+	b@+ 64sdl
+	SDLrenderer b@ 0 'sdlbox SDL_RenderCopy
 	;
 
-::+sprite | spr x1 y1 x2 y2 --
-	'drawsprite 'screen p!+ >a
-	1 a!+
-	2swap
-	16 << swap $ffff and or a!+
-	16 << swap $ffff and or a!+
-	a!+
-	;
-
-|-------------------- SPRITE NO SCALE
-:drawspriteo | adr --
-	>b b@+ 1 and? ( drop ; ) drop
-	b@+ dup 48 << 48 >> swap 16 >>
-	b@+ drop 
-	b@+ drop | sprite
-	;
-
-::+spriteo | spr x1 y1 x2 y2 --
-	'drawspriteo 'screen p!+ >a
-	1 a!+
-	2swap
-	16 << swap $ffff and or a!+
-	16 << swap $ffff and or a!+
-	a!+
-	;
+::+img  | img box --
+	'drawimg 'screen p!+ >a
+	0 a!+ a!+ a! ;
 
 |-------------------- TEXTBOX
 :drawtbox | adr --
@@ -212,8 +194,6 @@ drop ;
 :getfx | -- adrlast
 	'fxp p.last ;
 
-#t0
-
 |-----------------------------
 :evt.on | adr -- adr
 	dup 16 + @ 8 + dup @ 1 not and swap ! ;
@@ -227,9 +207,10 @@ drop ;
 
 ::+fx.off | sec --
 	>r 0 getscr 'evt.off r> +tline ;
-
 	
 |-----------------------------
+#t0
+
 :setlastcoor
 	8 a+ a@+ 8 + a@ swap ! ;
 
@@ -242,7 +223,7 @@ drop ;
 	dup 16 << 48 >> t0 *. pick2 16 << 48 >> + $ffff and 32 << r> or >r 
 	dup 32 << 48 >> t0 *. pick2 32 << 48 >> + $ffff and 16 << r> or >r 
 	48 << 48 >> t0 *. swap 48 << 48 >> + $ffff and r> or 	
-	swap !
+	swap ! 
 	;
 
 ::evt.box
@@ -352,7 +333,7 @@ drop ;
 
 ::timeline.inimem
 	here 'timeline !
-	$ffff 'here +!
+	$fff 'here +!
 	1024 'screen p.ini
 	1024 'fx p.ini
 	1024 'fxp p.ini

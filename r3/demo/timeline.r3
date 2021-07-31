@@ -12,7 +12,8 @@
 ^r3/lib/key.r3
 ^r3/util/timeline.r3
 
-#mario	| a sprite
+#imagen | an imge
+
 
 |-------------------- asorted animations
 :example1 | --
@@ -43,16 +44,32 @@
 	$ff +box
 	
 	0.0 +fx.on
+	
 	0.2 0.2 0.3 0.4 xywh%64
 	1.2 0.4 0.3 0.4 xywh%64	
 	'Quad_In 4.0
 	1.0 +fx.box
 	
 	|........................
-|	mario 50 50 60 60 +sprite
-|	0.0 +fx.on
-|	10 10 2xy 60 60 2xy 100 200 2xy 290 590 2xy 4.0 0.0 +fx.QuaIO
-|	9.0 +fx.off
+	|imagen
+	0.1 0.3 0.5 0.5 xywh%64
+	|+img
+	$ff +box
+	
+	0.0 +fx.on
+	
+	0.1 0.3 0.1 0.1 xywh%64
+	1.1 1.8 0.3 0.3 xywh%64
+	'Quad_In 1.0
+	1.0 +fx.box
+
+	1.1 1.8 0.3 0.3 xywh%64
+	0.1 0.3 0.1 0.1 xywh%64	
+	'Quad_In 2.0
+	3.0 +fx.box
+	
+	10.0 +fx.off
+
 
 	|........................
 |	$00 "Hola_a todos" $10d003f $0 100 100 300 300 $ff00ff +textbox
@@ -107,7 +124,6 @@
 	32 << or 'dp ! ;
 	
 |-----------------------------
-#imagen
 
 :sdlcolor | col --
 	SDLrenderer swap
@@ -120,19 +136,17 @@
 	
 	timeline.draw
 	
-|	SDLrenderer imagen 0 0 SDL_RenderCopy
-	
 	$ffffff bcolor 
 	0 0 bmat "<f1> example 1" bmprint
-|	0 16 bmat "<f2> example 2" bmprint
-
+	|0 16 bmat  "<f2> example 2" bmprint
+	
 	SDLrenderer SDL_RenderPresent
 	SDLkey
 	<f1> =? ( example1 )
 	
 	>esc< =? ( exit )
 	drop
-	|debugtimeline
+	debugtimeline
 	;
 	
 :main
