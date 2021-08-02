@@ -3,6 +3,7 @@
 | PHREDA 2020
 |------------------
 ^r3/win/sdl2.r3
+^r3/win/sdl2mixer.r3
 
 ^r3/util/arr8.r3
 ^r3/util/penner.r3
@@ -83,6 +84,11 @@
 	h% $ffff and 32 << or swap
 	w% $ffff and 48 << or ;
 
+::xy%64 | x y -- 64b
+	h% $ffff and 32 << or swap
+	w% $ffff and 48 << or 
+	$ffffffff or ;
+
 ::64xy | b -- x y 
 	dup 48 >> swap 16 << 48 >> ;
 	
@@ -121,8 +127,7 @@
 	>b b@+ 1 and? ( drop ; ) 
 |	8 >> 1? ( SDLrenderer over 
 |		dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
-|		SDL_SetTextureColorMod
-|		)
+|		SDL_SetTextureColorMod )
 	drop
 	b@+ 64sdl
 	SDLrenderer b@ 0 'sdlbox SDL_RenderCopy
@@ -133,35 +138,45 @@
 	0 a!+ a!+ a! ;
 
 |-------------------- TEXTBOX
-:drawtbox | adr --
-drop ;
-|	@+ 1 and? ( 2drop ; ) drop |8 >> 'ink !
-|	@+ dup 48 << 48 >> 'tx1 ! 16 >> 'ty1 !
-|	@+ dup 48 << 48 >> 'tx2 ! 16 >> 'ty2 !
-|	@+ int2pad
-|	@+
-|	dup 24 >> $44000000 fxfont! 	| fx --
-|	dup 16 >> $ff and swap $ffff and
-|	nfont! 		| nro size --
-|	@+ swap @ textbox ;
 
-| pad=llllyyxx l=interlineado pady padx 16-8-8
-| font=fxfosize 8-8-16
-::+textbox | "" fx/font/size pad x1 y1 x2 y2 col --
-	'drawtbox 'screen p!+ >a
-	8 << 1 or a!+
-	2swap
-	16 << swap $ffff and or a!+
-	16 << swap $ffff and or a!+
-	a!+	| pad
-	a!+	| font
-	a!+	| str
-	a!+ | centrado
+#textbox [ 0 0 0 0 ]
+
+:RenderText | SDLrender color font "texto" x y --
+	swap 'textbox d!+ d!
+	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	rot 
+	|TTF_RenderText_Solid ***
+	|TTF_RenderText_Blended ***
+	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
+	2dup SDL_CreateTextureFromSurface | sd surface texture
+	rot over 0 'textbox SDL_RenderCopy	
+	SDL_DestroyTexture
+	SDL_FreeSurface ;
+
+
+#font
+:drawtext | adr --
+	drop ;
+
+:a
+	>b b@+ 1 and? ( drop ; ) 
+	SDLrenderer swap 8 >>
+	b@+
+	b@+ b@+ 'font ! 
+	rot 
+	4drop 
+	|64xy RenderText 
+	
+	|SDLrenderer $ffffff font "hola" 40 40 RenderText
 	;
 
+::+text | ""  font x1y1x2y2 col --
+	'drawtext 'screen p!+ >a
+	8 << 1 or a!+ a!+ a!+ a!+ ;
+
 |-------------------- SONIDO
-:evt.play
-|	dup 8 + @ SPLAY 
+:evt.play | adr --
+	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed
 	;
 
 ::+sound | sonido inicio --

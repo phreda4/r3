@@ -7,13 +7,15 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2ttf.r3
 ^r3/win/sdl2image.r3	
+^r3/win/sdl2mixer.r3
 
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
 ^r3/util/timeline.r3
 
 #imagen | an imge
-
+#font
+#snd_shoot
 
 |-------------------- asorted animations
 :example1 | --
@@ -51,9 +53,7 @@
 	1.0 +fx.box
 	
 	|........................
-	imagen
-	0.1 0.3 0.5 0.5 xywh%64
-	+img
+	imagen 0 +img
 	
 	0.0 +fx.on
 
@@ -69,15 +69,19 @@
 	
 	10.0 +fx.off
 
-
 	|........................
-|	$00 "Hola_a todos" $10d003f $0 100 100 300 300 $ff00ff +textbox
+|	"Hola_a todos" font 0.2 0.2 xy%64 $ff00ff  +text
+
 |	0.0 +fx.on
-|	100 100 2xy 300 300 2xy 200 200 2xy 500 500 2xy 3.0 2.0 +fx.QuaOut
+|	0.2 0.2 xy%64
+|	0.8 0.2 xy%64
+|	'Quad_out 3.0
+|	2.0 +fx.box
+	
 |	9.0 +fx.off
 
 	|........................
-	|son 4.0 +sound
+	snd_shoot 4.0 +sound
 
 	|........................
 	10.0 +restart
@@ -123,7 +127,22 @@
 	32 << or 'dp ! ;
 	
 |-----------------------------
+#textbox [ 0 0 0 0 ]
 
+:RenderText | SDLrender color font "texto" x y --
+	swap 'textbox d!+ d!
+	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	rot 
+	|TTF_RenderText_Solid ***
+	|TTF_RenderText_Blended ***
+	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
+	2dup SDL_CreateTextureFromSurface | sd surface texture
+	rot over 0 'textbox SDL_RenderCopy	
+	SDL_DestroyTexture
+	SDL_FreeSurface ;
+
+|-----------------------------	
+	
 :sdlcolor | col --
 	SDLrenderer swap
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
@@ -152,15 +171,22 @@
 	"r3sdl" 640 480 SDLinit
 
 	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
+	
+	44100 $08010 2 4096 Mix_OpenAudio 
+	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !	
+	
 	$3 IMG_Init
-
 	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
 	
 	16 24 "media/img/font16x24.png" bmfont
 	|8 16 "media/img/VGA8x16.png" bmfont
 	
+	ttf_init
+	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !	
+	
 	'demo SDLshow
 	
+	Mix_CloseAudio
 	SDLquit
 	;
 
@@ -168,6 +194,8 @@
 	windows
 	sdl2
 	sdl2image
+	sdl2mixer
+	sdl2ttf
 	mark
 	timeline.inimem
 	;
