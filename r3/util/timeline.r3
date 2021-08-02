@@ -105,9 +105,8 @@
 |-------------------- FILLBOX
 :drawbox | adr --
 	>b b@+ 1 and? ( drop ; ) 
-	8 >> 
 	SDLrenderer swap
-	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+	dup 26 >> $ff and swap dup 16 >> $ff and swap 8 >> $ff and 
 	$ff SDL_SetRenderDrawColor 
 	b@ 64sdl
 	SDLrenderer 'sdlbox SDL_RenderFillRect
@@ -212,13 +211,19 @@ drop ;
 #t0
 
 :setlastcoor
-	8 a+ a@+ 8 + a@ swap ! ;
+	8 a+ a@+ a@+ a@
+	dup 48 >> pick2 48 >> + $ffff and 48 << >r
+	dup 16 << 48 >> pick2 16 << 48 >> + $ffff and 32 << r> or >r 
+	dup 32 << 48 >> pick2 32 << 48 >> + $ffff and 16 << r> or >r 
+	48 << 48 >> swap 48 << 48 >> + $ffff and r> or 	
+	swap ! 
+	;
 
 :boxanim | screena --
 	>a timenow a@+ - a@+ *.
 	1.0 >=? ( drop setlastcoor 0 ; )
 	a@+ ex 't0 ! 
-	a@+ a@+ a@+ | scrobj ini delta
+	a@+ a@+ a@ | scrobj ini delta
 	dup 48 >> t0 *. pick2 48 >> + $ffff and 48 << >r
 	dup 16 << 48 >> t0 *. pick2 16 << 48 >> + $ffff and 32 << r> or >r 
 	dup 32 << 48 >> t0 *. pick2 32 << 48 >> + $ffff and 16 << r> or >r 
@@ -246,7 +251,10 @@ drop ;
 	
 |-------------------- ANIMADOR color
 :setlastcol
-	8 a+ a@+ 8 + a@ 
+	8 a+ a@+ a@+ a@
+	dup 38 << 55 >> pick2 16 >> $ff and + $ff and 16 << >r
+	dup 47 << 55 >> pick2 8 >> $ff and + $ff and 8 << r> or >r	
+	55 << 55 >> swap $ff and + $ff and r> or 
 	8 << over @ $ff and or | preserve low8bit
 	swap ! ;
 	
@@ -258,10 +266,9 @@ drop ;
 	1.0 >=? ( drop setlastcol 0 ; )
 	a@+ ex 't0 ! 
 	a@+ a@+ a@+ | scrobj ini delta
-
-	dup 40 << 56 >> scale8 pick2 40 << 56 >> + $ff and 16 << >r
-	dup 48 << 56 >> scale8 pick2 48 << 56 >> + $ff and 8 << r> or >r	
-	56 << 56 >> scale8 swap 56 << 56 >> + $ff and r> or 
+	dup 38 << 55 >> scale8 pick2 16 >> $ff and + $ff and 16 << >r
+	dup 47 << 55 >> scale8 pick2 8 >> $ff and + $ff and 8 << r> or >r	
+	55 << 55 >> scale8 swap $ff and + $ff and r> or 
 	8 << over @ $ff and or | preserve low8bit
 	swap !
 	;
@@ -276,9 +283,9 @@ drop ;
     dup 16 + @ 8 + a!+ | scr+8=color
 	
    	b@+ b@+ dup a!+ |  end ini 
-	over 40 << 56 >> over 40 << 56 >> - $ff and 16 << >r
-	over 48 << 56 >> over 46 << 56 >> - $ff and 8 << r> or >r
-	swap 56 << 56 >> swap 56 << 56 >> - $ff and r> or
+	over 40 << 56 >> over 40 << 56 >> - $1ff and 18 << >r
+	over 48 << 56 >> over 48 << 56 >> - $1ff and 9 << r> or >r
+	swap 56 << 56 >> swap 56 << 56 >> - $1ff and r> or
 	a!
 	;
 
@@ -305,7 +312,8 @@ drop ;
 	dumptline
 	[ dup @+ "%h " .print 
 		@+ "%d " .print  
-		@ 64xywh "%d,%d:%d,%d " .print cr ; ] 'screen p.mapv cr
+		@+ 64xywh "%d,%d:%d,%d " .print 
+		@ "%h " .print cr ; ] 'screen p.mapv cr
 	cr
 	[ dup @+ "%f " .print
 		@+ "%f " .print
@@ -316,10 +324,6 @@ drop ;
 		@ "%d " .print
 		cr ; ] 'fxp p.mapv cr
 	cr
-		'sdlbox d@+ "%d " .print
-	d@+ "%d " .print
-	d@+ "%d " .print
-	d@ "%d " .print cr
 
 	;
 |*********DEBUG

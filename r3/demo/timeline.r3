@@ -35,7 +35,7 @@
 	'Ela_InOut 3.0
 	6.0 +fx.box
 	
-|	$ff00 $0000ff 'Ela_InOut 7.0 2.0 +fx.color
+	$ff00 $0000ff 'Ela_InOut 7.0 2.0 +fx.color
 	
 	9.5 +fx.off
 	
@@ -51,19 +51,18 @@
 	1.0 +fx.box
 	
 	|........................
-	|imagen
+	imagen
 	0.1 0.3 0.5 0.5 xywh%64
-	|+img
-	$ff +box
+	+img
 	
 	0.0 +fx.on
-	
+
 	0.1 0.3 0.1 0.1 xywh%64
-	1.1 1.8 0.3 0.3 xywh%64
+	1.1 0.8 0.3 0.3 xywh%64
 	'Quad_In 1.0
 	1.0 +fx.box
 
-	1.1 1.8 0.3 0.3 xywh%64
+	1.1 0.8 0.3 0.3 xywh%64
 	0.1 0.3 0.1 0.1 xywh%64	
 	'Quad_In 2.0
 	3.0 +fx.box
@@ -157,8 +156,8 @@
 
 	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
 	
-	|16 24 "media/img/font16x24.png" bmfont
-	8 16 "media/img/VGA8x16.png" bmfont
+	16 24 "media/img/font16x24.png" bmfont
+	|8 16 "media/img/VGA8x16.png" bmfont
 	
 	'demo SDLshow
 	
