@@ -1,4 +1,4 @@
- | About timeline
+| About timeline
 | framerate independient event animation system
 | PHREDA 2020
 |------------------
@@ -14,6 +14,7 @@
 ^r3/util/timeline.r3
 
 #imagen | an imge
+#letras
 #font
 #snd_shoot
 
@@ -69,17 +70,19 @@
 	
 	10.0 +fx.off
 
-	|........................
-|	"Hola_a todos" font 0.2 0.2 xy%64 $ff00ff  +text
-
-|	0.0 +fx.on
-|	0.2 0.2 xy%64
-|	0.8 0.2 xy%64
-|	'Quad_out 3.0
-|	2.0 +fx.box
+|........................
+	letras 
+	0 0 0.2 0.2 xywh%64	
+	0.1 0.8 0.2 0.2 xywh%64	
+	+txt
 	
-|	9.0 +fx.off
-
+	0 +fx.on 
+	
+	0.2 0.2 0.4 0.2 xywh%64
+	0.8 0.2 0.1 0.1 xywh%64
+	'Quad_In 1.0
+	1.0 +fx.box
+	
 	|........................
 	snd_shoot 4.0 +sound
 
@@ -141,6 +144,13 @@
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
 
+:RenderTexture | SDLrender font "text" color -- texture
+	|TTF_RenderText_Solid ***
+	|TTF_RenderText_Blended ***
+	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
+	dup rot swap SDL_CreateTextureFromSurface | sd surface texture
+	swap SDL_FreeSurface ;
+
 |-----------------------------	
 	
 :sdlcolor | col --
@@ -164,25 +174,32 @@
 	
 	>esc< =? ( exit )
 	drop
-	debugtimeline
+|	debugtimeline
+	;
+	
+:loadres
+
+	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !	
+
+	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
+
+	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !	
+
+	SDLrenderer font 
+	"Hola a todos los que vinieron por los pochoclos que se regalan en la puerta"
+	$ffffff0000ff00 RenderTexture 'letras !
+
 	;
 	
 :main
 	"r3sdl" 640 480 SDLinit
-
-	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
-	
 	44100 $08010 2 4096 Mix_OpenAudio 
-	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !	
-	
 	$3 IMG_Init
-	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
-	
-	16 24 "media/img/font16x24.png" bmfont
-	|8 16 "media/img/VGA8x16.png" bmfont
-	
+	|16 24 "media/img/font16x24.png" bmfont
+	8 16 "media/img/VGA8x16.png" bmfont
 	ttf_init
-	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !	
+	
+	loadres
 	
 	'demo SDLshow
 	

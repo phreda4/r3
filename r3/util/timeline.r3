@@ -99,10 +99,11 @@
 	dup 48 >> swap dup 16 << 48 >> swap
 	dup 32 << 48 >> swap 48 << 48 >> ;
 	
-#sdlbox 0 0
+#sdlbin [ 0 0 0 0 ]
+#sdlbox [ 0 0 0 0 ]
 
-::64sdl | b --
-	'sdlbox swap
+::64box | b adr --
+	swap
 	dup 48 >> rot d!+
 	swap dup 16 << 48 >> rot d!+
 	swap dup 32 << 48 >> rot d!+
@@ -114,7 +115,7 @@
 	SDLrenderer swap
 	dup 26 >> $ff and swap dup 16 >> $ff and swap 8 >> $ff and 
 	$ff SDL_SetRenderDrawColor 
-	b@ 64sdl
+	b@ 'sdlbox 64box
 	SDLrenderer 'sdlbox SDL_RenderFillRect
 	;
 
@@ -129,7 +130,7 @@
 |		dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
 |		SDL_SetTextureColorMod )
 	drop
-	b@+ 64sdl
+	b@+ 'sdlbox 64box
 	SDLrenderer b@ 0 'sdlbox SDL_RenderCopy
 	;
 
@@ -137,52 +138,30 @@
 	'drawimg 'screen p!+ >a
 	0 a!+ a!+ a! ;
 
-|-------------------- TEXTBOX
-
-#textbox [ 0 0 0 0 ]
-
-:RenderText | SDLrender color font "texto" x y --
-	swap 'textbox d!+ d!
-	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
-	rot 
-	|TTF_RenderText_Solid ***
-	|TTF_RenderText_Blended ***
-	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
-	2dup SDL_CreateTextureFromSurface | sd surface texture
-	rot over 0 'textbox SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-
-
-#font
-:drawtext | adr --
-	drop ;
-
-:a
+|-------------------- TEXTO
+:drawtxt | adr --
 	>b b@+ 1 and? ( drop ; ) 
-	SDLrenderer swap 8 >>
-	b@+
-	b@+ b@+ 'font ! 
-	rot 
-	4drop 
-	|64xy RenderText 
-	
-	|SDLrenderer $ffffff font "hola" 40 40 RenderText
+|	8 >> 1? ( SDLrenderer over 
+|		dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+|		SDL_SetTextureColorMod )
+	drop
+	b@+ 'sdlbox 64box
+	b@+ 'sdlbin 64box
+	SDLrenderer b@ 'sdlbin 'sdlbox SDL_RenderCopy
 	;
 
-::+text | ""  font x1y1x2y2 col --
-	'drawtext 'screen p!+ >a
-	8 << 1 or a!+ a!+ a!+ a!+ ;
-
+::+txt  | img boxi boxo --
+	'drawtxt 'screen p!+ >a
+	0 a!+ a!+ a!+ a! ;
+	
 |-------------------- SONIDO
 :evt.play | adr --
-	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed
-	;
+	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed ;
 
 ::+sound | sonido inicio --
 	0 'evt.play 2swap >r swap r> +tline ;
 
-|-------------------- VIDEO
+|-------------------- VIDEO ***********
 :drawvideo
 	@+ 1 and? ( 2drop ; ) drop
 	>a
