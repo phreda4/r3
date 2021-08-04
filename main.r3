@@ -330,16 +330,6 @@
 	setactual ;
 
 
-|---------------------------------
-
-:pfilename
-	" [" . 'path . "/" . 'name . "] " .
-|	nfile 0? ( drop ; ) drop
-|	" " . 'path . "/" . 
-|	'name 32 .input 
-	;
-
-
 |--------------------------------
 :printfn | n
 	sp
@@ -369,7 +359,8 @@
 	.reset .home .cls 
 	.bblue .white
 	0 0 .at .eline
-	0 0 .at " r3 " . cr
+	0 0 .at " r3 " .
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New "  .printe
 	
 	.reset
 	drawtree
@@ -377,15 +368,12 @@
 	.bblue .white	
 	0 linesv 2 + .at .eline
 	0 linesv 2 + .at 
-	rows cols " w:%d h:%d " .print	
-	pfilename 
 	
+	'name 'path " %s/%s  " .print
+
 	codekey 32 >> " $%h " .print
-
-|	"Run " "F1" btnf
-|	"Edit " "F2" btnf
-|	"New " "F3" btnf
-
+	
+	0 actual pagina - 2 + .at
 	;
 
 :teclado
@@ -394,8 +382,8 @@
 	
 	$48 =? ( fup screen ) | up
 	$50 =? ( fdn screen ) | dn
-|	<pgup> =? ( fpgup screen )
-|	<pgdn> =? ( fpgdn screen )
+	$49 =? ( fpgup screen )
+	$51 =? ( fpgdn screen )
 	$47 =? ( fhome screen )
 	$4f =? ( fend screen )
 	
@@ -403,7 +391,7 @@
 	$3c =? ( editfile screen )
 	$3d =? ( newfile screen )
 	drop 
-	screen
+|	screen
 	;
 
 

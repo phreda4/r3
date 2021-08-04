@@ -410,7 +410,7 @@
 	;
 
 |------ Color line
-:col_inc .yellowl ;
+:col_inc .yellow ;
 :col_com .blackl ;
 :col_cod .greenl ;
 :col_dat .Magental ;
@@ -480,14 +480,12 @@
 
 |..............................
 :linenow
-	ycursor =? ( ">" . ; )
-	sp ;
+	ycursor =? ( ">" . ; ) sp ;
 	
 :linenro | lin -- lin
 	.reset .white
 	dup ylinea + 
-	linenow
-	1 + .d 3 .r. . sp
+	linenow 1 + .d 3 .r. . sp
 	; 
 
 |..............................
@@ -503,8 +501,7 @@
 	fuente>
 	( pantafin> >? scrolldw )
 	( pantaini> <? scrollup )
-	drop 
-	;
+	drop ;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
@@ -536,9 +533,7 @@
 
 :findmodekey
 	0 hcode 1 + .at 
-
 |	rows hcode - 1 - backlines
-
 
 	" > " .
 	|'buscapad 'findpad .
@@ -613,24 +608,13 @@
 	editmodekey
 	;
 
-:btnf | "" "fx" --
-	sp .bred .white . .bwhitel .black . ;
-
 :barraf | F+
-	"Run" "F1" btnf
-	"Debug" "F2" btnf
-|	"Profile" "F3" btnf
-	"Plain" "F4" btnf
-	"Compile" "F5" btnf ;
+	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" .printe ;
 
 :barrac | control+
-	"Cut" "X" btnf
-	"opy" "C" btnf
-	"Paste" "V" btnf
-	"ind" "F" btnf
+	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " .printe
 	'findpad
 	dup c@ 0? ( 2drop ; ) drop
-
 	" [%s]" .print ;
 
 :printpanel
@@ -640,18 +624,13 @@
 
 :top
 	0 0 .at 
-	.bwhitel .black .eline
-	printpanel
-	sp
-	;
+	.bblue .white .eline
+	printpanel sp ;
 
 :bottom
 	0 hcode 2 + .at 
-	.bwhitel .black .eline
-	sp 'name . sp
-	.cyan
-	ycursor xcursor " %d:%d " .print
-	;
+	.bblue .white .eline
+	sp 'name . sp ycursor xcursor " %d:%d " .print ;
 	
 |-------------------------------------
 :pantalla	

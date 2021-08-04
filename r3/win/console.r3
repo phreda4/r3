@@ -121,3 +121,12 @@
 	'pad
 	( key 13 <>? swap c!+ ) drop
 	0 swap c! ;
+
+
+:emite | char --
+	$5e =? ( drop 27 emit ; ) | ^=escape
+	emit ;
+	
+::.printe | "" --
+	sprint
+	( c@+ 1? emite ) 2drop ;
