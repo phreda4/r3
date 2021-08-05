@@ -183,7 +183,7 @@
 |	incmap
 	$ff0000 'ink !
 	mark actword ,wordinfo empty
-	here emits
+	here .print
 	wordmap
 
 	0 hcode 1 + gotoxy
@@ -320,7 +320,7 @@
 	dup ylinea +
 	ycursor =? ( $222222 'ink ! backline )
 	$aaaaaa 'ink !
-	 1 + .d 3 .r. emits sp ;
+	 1 + .d 3 .r. .print sp ;
 
 :<<13 | a -- a
 	( fuente >=?
@@ -563,10 +563,9 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 |---------------------------------
 :barratop
-	home
-	$B2B0B2 'ink ! backline
-	$0 'ink !
-	" D3bug " emits
+	.home
+
+	" D3bug " .print
 
 |	"INSPECT" "F2" btnf
 |	"MEMORY" "F3" btnf
@@ -620,7 +619,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	dup "%h" print cr
 
 	$ffffff 'ink !
-	" > " emits
+	" > " .print
 	'inpad 1024 input cr
 	$ffff00 'ink !
 	stackprintvm cr
@@ -680,15 +679,13 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$0000AE 'ink !
 	rows hcode - 1 - backlines
 
-	$ff00 'ink !
     showip
 	'outpad sp text cr
-	$ffffff 'ink !
-	" > " emits
+
+	" > " .print
 	'inpad 1024 input cr
-	$ffff00 'ink !
 	stackprintvm cr
-	regb rega " RA:%h RB:%h " print
+	regb rega " RA:%h RB:%h " .print
 	;
 
 |------ search code in includes

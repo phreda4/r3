@@ -19,12 +19,12 @@
 ##ctecode> 'ctecode
 
 ::codeini
-	'bcode 'bcode> !
-	'ctecode 'ctecode> !
+	'bcode 'bcode> d!
+	'ctecode 'ctecode> d!
 	;
 
 ::code!+ | tok --
-	bcode> !+ 'bcode> ! ;
+	bcode> d!+ 'bcode> d! ;
 
 ::2code!+ | adr -- adr
 	dup 4 - @ code!+ ;
@@ -39,7 +39,7 @@
 	ctecode>
 	dup 'ctecode - 8 << 8 or | token hex are generated
 	code!+
-	q!+ 'ctecode> ! ;
+	!+ 'ctecode> ! ;
 
 |--- Pilas
 ##TOS 0
@@ -75,10 +75,10 @@
 ::PUSH.NRO | nro --
 	.DUP
 	newval dup 8 << 'TOS !
-	3 << 'stkvalue + q! ;
+	3 << 'stkvalue + ! ;
 
 ::TOS.NRO! | nro --
-	TOS	8 >> 3 << 'stkvalue + q! ;
+	TOS	8 >> 3 << 'stkvalue + ! ;
 
 ::PUSH.CTE	| ncte --
 	.DUP 8 << 1 or 'TOS ! ;
@@ -100,7 +100,7 @@
 ::.POP | -- nro
 	TOS NOS @ 'TOS ! -4 'NOS +! ;
 
-:STKval	8 >> 3 << 'stkvalue + q@ ;
+:STKval	8 >> 3 << 'stkvalue + @ ;
 
 :aTOS	TOS 8 >> 3 << 'stkvalue + ;
 :aNOS	NOS @ 8 >> 3 << 'stkvalue + ;

@@ -239,7 +239,7 @@
 
 :debugfile
 	savetxt
-|WIN|	"r3 r3/sys/r3debug.r3"
+|WIN|	"r3 r3/system/r3debug.r3"
 |LIN|	"./r3lin r3/sys/r3debug.r3"
 |RPI|	"./r3rpi r3/sys/r3debug.r3"
 	sys
@@ -261,7 +261,7 @@
 
 :mkplain
 	savetxt
-|WIN| "r3 r3/sys/r3plain.r3"
+|WIN| "r3 r3/system/r3plain.r3"
 |LIN| "./r3lin r3/sys/r3plain.r3"
 |RPI| "./r3rpi r3/sys/r3plain.r3"
 	sys
@@ -269,7 +269,7 @@
 
 :compile
 	savetxt
-|WIN| "r3 r3/sys/r3compiler.r3"
+|WIN| "r3 r3/system/r3compiler.r3"
 |LIN| "./r3lin r3/sys/r3compiler.r3"
 |RPI| "./r3rpi r3/sys/r3compiler.r3"
 	sys
@@ -412,7 +412,7 @@
 |------ Color line
 :col_inc .yellow ;
 :col_com .blackl ;
-:col_cod .greenl ;
+:col_cod .redl ;
 :col_dat .Magental ;
 :col_str .whitel ;
 :col_adr .cyanl ;

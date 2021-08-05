@@ -15,7 +15,7 @@
 	'r3filename
 
 	2dup load | "fn" mem
-	here =? ( "no src" slog ; )
+	here =? ( "no src" .print ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
@@ -24,9 +24,9 @@
 
 	swap
 	r3-stage-1
-	error 1? ( "ERROR %s" slog ; ) drop
+	error 1? ( "ERROR %s" .print ; ) drop
 	r3-stage-2
-	1? ( "ERROR %s" slog ; ) drop
+	1? ( "ERROR %s" .print ; ) drop
 	r3-stage-3
 	r3-stage-4
 	;
@@ -44,28 +44,24 @@
 #cntlines
 
 :header
-	$555555 'ink ! backline
-    $ff00 'ink !
-	"r3Code " emits
-    $ffffff 'ink !
+	"r3Code " .print
 	filenow 3 << 'inc + @
-	" %l " emits
+	" %l " .print
     mark
     defnow ,wordinfo ,eol
     empty
-    here emits
+    here .print
 	cr
 	;
 
 :wcursor
-	defnow =? ( $ffffff 'ink ! ">" emits ; )
-	" " emits ;
+	defnow =? ( ">" .print ; )
+	" " .print ;
 
 :wordline | nro --
 	wcursor
-	$ff00 'ink !
 	4 << dicc +
-	@+ "%w " print
+	@+ "%w " .print
 	drop
 	cr
 	;
@@ -89,7 +85,6 @@
 :insline | nro --
 	cntword >=? ( drop ; )
 	wcursor
-	$ff00 'ink !
 	2 << iniword + @
 	tokenprint
 	;
@@ -97,7 +92,7 @@
 :infoline | nro --
 	cntword >=? ( drop ; )
 	drop
-	"|" emits
+	"|" .print
 	;
 
 :paglin

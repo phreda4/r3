@@ -2,7 +2,7 @@
 | PHREDA 2019
 |------------------
 |MEM $ffff
-
+^r3/win/console.r3
 ^./r3base.r3
 ^./r3pass1.r3
 ^./r3pass2.r3
@@ -16,13 +16,8 @@
 :r3-genset
 	mark
 	";---r3 setings" ,ln
-	switchresx "XRES equ %d" ,print ,cr
-	switchresy "YRES equ %d" ,print ,cr
-	switchfull "FULL equ %d" ,print ,cr
 	switchmem 10 << "MEMSIZE equ 0x%h" ,print ,cr
-
 	"VEROPT equ 1" ,print ,cr | version OPT
-
 	0 ,c
 	"asm/set.asm"
 	savemem
@@ -31,11 +26,8 @@
 ::r3c | str --
 	r3name
 	here 'src !
-	"^r3/sys/asmbase.r3" ,ln | include asmbase
-	here
 	'r3filename
 	dup "load %s" slog
-
 	2dup load | "fn" mem
 	here =? ( "no src" slog ; )
 	0 swap c!+ 'here !
@@ -43,23 +35,23 @@
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	" pass1" slog
+	" pass1" .print
 	nip src |...
 	r3-stage-1
 
-	error 1? ( "ERROR %s" slog lerror "%l" slog ; ) drop
-	cntdef cnttokens "toks:%d def:%d" slog
+	error 1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
+	cntdef cnttokens "toks:%d def:%d" .print
 
-	" pass2" slog r3-stage-2
+	" pass2" .print r3-stage-2
 
-	1? ( "ERROR %s" slog lerror "%l" slog ; ) drop
-	code> code - 2 >> "..code:%d" slog
+	1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
+	code> code - 2 >> "..code:%d" .print
 
-	" pass3" slog r3-stage-3
-	" pass4" slog r3-stage-4
-	" gencode" slog r3-gencode
-	" genset" slog r3-genset
-	" gendata" slog r3-gendata
+	" pass3" .print r3-stage-3
+	" pass4" .print r3-stage-4
+	" gencode" .print r3-gencode
+	" genset" .print r3-genset
+	" gendata" .print r3-gendata
 	;
 
 :no10place | adr
@@ -79,11 +71,9 @@
 : mark
 	'name "mem/main.mem" load drop
 
-	cls
-	$ff00 'ink ! " PHREDA - 2019" print cr
-	$ff0000 'ink ! " r3 compiler" print cr
-	$ffffff 'ink !
-	redraw
+	cr
+	" PHREDA - 2019" .print cr
+	" r3 compiler" .print cr
 
 	'name r3c
 
@@ -100,8 +90,7 @@
 |	waitesc
 
 	"asm\r3fasm.exe" sys
-	$ffffff 'ink !
-	"press >esc< to continue..." print
-	waitesc
+	"press >esc< to continue..." .print
+	|waitesc
 	;
 

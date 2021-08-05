@@ -2,7 +2,6 @@
 | PHREDA 1018
 |-------------
 ^r3/lib/mem.r3
-^r3/lib/print.r3
 ^r3/lib/parse.r3
 
 ^./r3parse.r3
@@ -337,10 +336,10 @@
 	2 << 'ltok + @ ex ;
 
 |--------------------
-:col_str $ffffff 'ink ! ;
-:col_adr $ffff 'ink ! ;
-:col_nor $ff00 'ink ! ;
-:col_nro $ffff00 'ink ! ;
+:col_str .white ;
+:col_adr .cyan ;
+:col_nor .green ;
+:col_nro .yellow ;
 
 :val 8 >>> ;
 
@@ -351,55 +350,55 @@
 		emit )
 	2drop ;
 
-:tn col_nro val src + "%w" print ;
-:ts col_str """" emits valstr """" emits ;
-:tw col_nor val dic>adr @ "%w" print ;
-:taw col_adr val dic>adr @ "'%w" print ;
+:tn col_nro val src + "%w" .print ;
+:ts col_str """" .print valstr """" .print ;
+:tw col_nor val dic>adr @ "%w" .print ;
+:taw col_adr val dic>adr @ "'%w" .print ;
 
-:tnx col_nro 8 >> "%d" print ;
+:tnx col_nro 8 >> "%d" .print ;
 
 #ltok 0 0 0 0 0 0 0 tn tn tn tnx ts tw tw taw taw
 
 ::tokenprint | nro --
 	dup $ff and
-	15 >? ( 16 - r3basename col_nor emits drop ; )
+	15 >? ( 16 - r3basename col_nor .print drop ; )
 	2 << 'ltok + @ ex
 	;
 
 |--------------------
-:td col_nro 8 >> "%d" print ;
-:tb col_nro 8 >> "%%%b" print ;
-:th col_nro 8 >> "$%h" print ;
-:tf col_nro 8 >> "%f" print ;
+:td col_nro 8 >> "%d" .print ;
+:tb col_nro 8 >> "%%%b" .print ;
+:th col_nro 8 >> "$%h" .print ;
+:tf col_nro 8 >> "%f" .print ;
 
 |*** big version, not done
-:tdb col_nro 8 >> "%d" print ;
-:tbb col_nro 8 >> "%%%b" print ;
-:thb col_nro 8 >> "$%h" print ;
-:tfb col_nro 8 >> "%f" print ;
+:tdb col_nro 8 >> "%d" .print ;
+:tbb col_nro 8 >> "%%%b" .print ;
+:thb col_nro 8 >> "$%h" .print ;
+:tfb col_nro 8 >> "%f" .print ;
 
-:ts col_str 8 >> blok + 34 emit emits 34 emit ;
+:ts col_str 8 >> blok + 34 emit .print 34 emit ;
 
-:nil drop "nil" emits ;
+:nil drop "nil" .print ;
 
 #ltok nil tdb tbb thb tfb 0 tw td tb th tf ts tw tw taw taw
 
 ::tokenprintc
 	dup $ff and
-	15 >? ( 16 - r3basename col_nor emits drop ; )
+	15 >? ( 16 - r3basename col_nor .print drop ; )
 	2 << 'ltok + @ ex ;
 
 |------------- DEBUG
 ::debuginc
 	'inc ( inc> <?
 		@+ swap @+
-		rot "%l %h" slog
+		rot "%l %h" .print
 		) drop ;
 
 ::debugdicc
 	dicc ( dicc> <? dup >a
 		a@+ a@+ a@+ a@+ 2swap swap
-		"%w %h %h %h" slog
+		"%w %h %h %h" .print
 		16 +
 		) drop ;
 
