@@ -19,6 +19,7 @@
 #ycursor
 #xcursor
 
+#hashfile 
 #name * 1024
 
 #pantaini>	| comienzo de pantalla
@@ -184,17 +185,23 @@
 		) drop
 	0 swap 1 + c! ;
 
-:loadtxt | -- cargar texto
+:simplehash | adr -- hash
+	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
+	
+:loadtxt | -- ; cargar texto
 	fuente 'name getpath
 	load 0 swap c!
 
 	fuente only13 	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> !
 	count + '$fuente !
+	
+	fuente simplehash 'hashfile !
 	;
 
-:savetxt
-	mark	| guarda texto
+:savetxt | -- ; guarda texto
+	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
+	mark	
 	fuente ( c@+ 1?
 		13 =? ( ,c 10 ) ,c ) 2drop
 	'name savemem
@@ -221,7 +228,7 @@
 |----------------------------------
 :runfile
 	savetxt
-	.masb .reset
+	.masb .reset .home .cls
 	mark
 |WIN|	"r3 "
 |LIN|	"./r3lin "
@@ -260,19 +267,23 @@
 	;
 
 :mkplain
+	.masb .reset .home .cls
 	savetxt
 |WIN| "r3 r3/system/r3plain.r3"
 |LIN| "./r3lin r3/sys/r3plain.r3"
 |RPI| "./r3rpi r3/sys/r3plain.r3"
 	sys
+	.alsb
 	;
 
 :compile
+	.masb .reset .home .cls
 	savetxt
 |WIN| "r3 r3/system/r3compiler.r3"
 |LIN| "./r3lin r3/sys/r3compiler.r3"
 |RPI| "./r3rpi r3/sys/r3compiler.r3"
 	sys
+	.alsb
 	;
 
 |-------------------------------------------
@@ -630,7 +641,11 @@
 :bottom
 	0 hcode 2 + .at 
 	.bblue .white .eline
-	sp 'name . sp ycursor xcursor " %d:%d " .print ;
+	sp 'name . sp ycursor xcursor " %d:%d " .print 
+	hashfile " %h " .print 
+	fuente simplehash " %h " .print 
+|	fuente count  " %d" .print
+	;
 	
 |-------------------------------------
 :pantalla	

@@ -36,7 +36,7 @@
  $B3667A2E  $C4614AB8  $5D681B02  $2A6F2B94  $B40BBE37  $C30C8EA1  $5A05DF1B  $2D02EF8D
 
 :(CRC32) | u c - u'
-    over xor $FF and 2 << 'CRCtable + @ swap 8 >>> xor ;
+    over xor $FF and 2 << 'CRCtable + d@ $ffffffff and swap 8 >>> xor ;
 
 ::crc32 | a n - u
 	-1 rot rot

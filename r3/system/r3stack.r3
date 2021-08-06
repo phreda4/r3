@@ -169,7 +169,7 @@
 |---- imprime celda
 :value 8 >> ;
 
-:mt0 value 3 << 'stkvalue + q@ ,d ;	|--	0 nro 	33
+:mt0 value 3 << 'stkvalue + @ ,d ;	|--	0 nro 	33
 
 :mt1 value 'syscons list2str ,s ;	|--	1 cte	XRES
 :mt2 value "str" ,s ,h ;			|--	2 str   "hola"
@@ -726,7 +726,7 @@
 :bignumber | 'cell --
 	dup @ $ff and
 	1? ( 2drop ; ) drop
-	dup @ 8 >> 3 << 'stkvalue + q@
+	dup @ 8 >> 3 << 'stkvalue + @
 	dup 32 << 32 >>
 	=? ( 2drop ; )
 	cell.fillreg | search unused reg
