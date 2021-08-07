@@ -2,6 +2,7 @@
 | r3 plain
 | PHREDA 2020
 |------------------
+^r3/win/console.r3
 ^./r3base.r3
 ^./r3pass1.r3
 ^./r3pass2.r3
@@ -26,8 +27,6 @@
 
 :r3-genplain
 	mark
-	switchresy switchresx "|SCR %d %d" ,print ,cr
-	switchfull 1? ( "|FULL" ,print ,cr ) drop
 	switchmem "|MEM %d" ,print ,cr
 
 	dicc ( dicc> <?
@@ -43,21 +42,20 @@
 	here dup 'src !
 	'r3filename
 
-	dup "load %s" .print
+	dup "load %s" .print cr
 
 	2dup load | "fn" mem
-	here =? ( "no src" .print ; )
+	here =? ( "no source code." .print cr ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	" pass1" .print
-	r3fullmode
+	" pass1" .print cr
 	swap r3-stage-1
 	error 1? ( "ERROR %s" .print ; ) drop
 	cntdef cnttokens "toks:%d def:%d" .print
-	" pass2" .print
+	" pass2" .print cr
 	r3-stage-2
 	1? ( "ERROR %s" .print ; ) drop
 	code> code - 2 >> "..code:%d" .print
@@ -69,15 +67,13 @@
 	r3-genplain
 	;
 
-: mark
-	cls
-	$ff00 'ink ! " PHREDA - 2020" print cr
-	$ff0000 'ink ! " r3 plain generator" print cr
-	$ffffff 'ink !
+:  windows mark
+	" PHREDA - 2020" .print cr
+	" r3 plain generator" .print cr
 	'name "mem/main.mem" load drop
-	redraw
 
 	'name r3plain
-	waitesc
+	"press <enter> to continue..." .print	
+	.input
 	;
 

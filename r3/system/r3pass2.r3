@@ -20,10 +20,10 @@
 #codeini
 
 |-----
-#sst * 1024 	| stack of blocks
+#sst * 256 	| stack of blocks
 #sst> 'sst
-:sst!	sst> !+ 'sst> ! ;
-:sst@   -4 'sst> +! sst> @ ;
+:sst!	sst> w!+ 'sst> ! ;
+:sst@   -2 'sst> +! sst> w@ ;
 :nivel 	sst> 'sst xor ;
 
 :callen
@@ -193,7 +193,7 @@
 	0 'nbloques !
 	0 'codeini !
 	'inc ( inc> <?
-|		dup @ "%w" slog
+		dup @ "%w" .print cr
 		4 + @+
 		str2token
 		error 1? ( nip ; ) drop

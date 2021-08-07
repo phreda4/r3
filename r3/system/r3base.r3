@@ -134,12 +134,12 @@
 	dic>adr 12 + ;
 
 ::dic>du | nro -- delta uso
-	dic>adr 12 + @
+	dic>adr 12 + d@
 	dup	55 << 59 >>	| delta
 	swap $f and ;	| uso
 
 ::dic>len@
-	dic>adr 12 + @ 12 >>> ;
+	dic>adr 12 + d@ 12 >>> ;
 
 ::adr>dicname | adr -- nadr
 	adr>dic "w%h" sprint ;
@@ -148,11 +148,11 @@
 	8 >>> "w%h" sprint ;
 
 ::adr>toklen | adr -- adr len
-	4 + @+ swap 4 + @ 12 >>> ;
+	4 + d@+ swap 4 + d@ 12 >>> ;
 
 ::adr>toklenreal | adr -- adr len | don't traverse many times the same code
-	dup 8 + @ $80 and? ( drop adr>toklen ; ) drop | $80	1 termina sin ;
-	dup 28 + @ 12 >>> swap
+	dup 8 + d@ $80 and? ( drop adr>toklen ; ) drop | $80	1 termina sin ;
+	dup 28 + d@ 12 >>> swap
 	adr>toklen rot - ;
 
 ::dic>toklen | nro -- adr len
@@ -162,7 +162,7 @@
 	dic>adr adr>toklenreal ;
 
 ::dic>call@ | nr -- calls
-	dic>inf @ 12 >>> $fff and ;
+	dic>inf d@ 12 >>> $fff and ;
 
 #flagword %10
 
@@ -174,9 +174,9 @@
 ::?word | str -- str dir / str 0
 	dicc> 16 -	|---largo
 	( dicc >=?
-		dup @ pick2			| str ind pal str
+		dup d@ pick2			| str ind pal str
 		=s 1? ( drop
-			dup 8 + @
+			dup 8 + d@
 			flagword and? ( drop ; )
 			drop dicc< >=? ( ; ) dup
 			) drop
@@ -185,7 +185,7 @@
 
 ::word!+ | info info mem name --
 	dicc> >a
-	a!+ a!+ a!+ a!+
+	da!+ da!+ da!+ da!+
 	a> 'dicc> ! ;
 
 ::wordnow | -- now
@@ -231,9 +231,9 @@
 
 ::,codeinfo | nro --
 	dic>adr
-	@+ ":%w  |" ,print
-	@+ drop |code - 2 >> "(%h) " ,print
-	@+
+	d@+ ":%w  |" ,print
+	d@+ drop |code - 2 >> "(%h) " ,print
+	d@+
 	dup "%h|" ,print
 	dup 1 >> $1 and "le" + c@ ,c	| export/local
 	dup 2 >> $1 and " '" + c@ ,c	| /adress used
@@ -249,7 +249,7 @@
 
 	dup 12 >> $fff and "| calls:%d " ,print
 	24 >> $ff and "niv:%d " ,print
-	@ dup 12 >>> "len:%d " ,print
+	d@ dup 12 >>> "len:%d " ,print
 	,mov
 |	$fff and " %h " ,print
 	;
@@ -261,9 +261,9 @@
 
 ::,datainfo | nro --
 	dic>adr
-	@+ "#%w " ,print
-	@+ drop |code - 2 >> "(%h) " ,print
-	@+
+	d@+ "#%w " ,print
+	d@+ drop |code - 2 >> "(%h) " ,print
+	d@+
 	dup 1 >> $1 and "le" + c@ ,c	| export/local
 	dup 2 >> $1 and " '" + c@ ,c	| /adress used
 	dup 3 >> $1 and " c" + c@ ,c	| cte
@@ -272,12 +272,12 @@
 	" type:" ,s
 	24 >> $f and datatype ,s
 
-	@ dup 12 >>> " len:%d " ,print
+	d@ dup 12 >>> " len:%d " ,print
 	$fff and " %h " ,print
 	;
 
 ::,wordinfo
-	dup dic>adr 8 + @
+	dup dic>adr 8 + d@
 	$1 nand? ( drop ,codeinfo ; )
 	drop ,datainfo ;
 
@@ -293,15 +293,15 @@
 
 :tn val src + ,w ;
 :ts """" ,s valstr """" ,s ;
-:tw val dic>adr @ ,w ;
-:taw val dic>adr @ "'" ,s ,w ;
+:tw val dic>adr d@ ,w ;
+:taw val dic>adr d@ "'" ,s ,w ;
 
 #ltok 0 0 0 0 0 0 0 tn tn tn tn ts tw tw taw taw
 
 ::,tokenprint | nro --
 	dup $ff and
 	15 >? ( 16 - r3basename ,s drop ; )
-	2 << 'ltok + @ ex ;
+	3 << 'ltok + @ ex ;
 
 |-------------------- print code converted for run
 :nil drop 0 ,d ;
@@ -321,7 +321,7 @@
 ::,tokenprintc
 	dup $ff and
 	15 >? ( 16 - r3basename ,s drop ; )
-	2 << 'ltok + @ ex ;
+	3 << 'ltok + @ ex ;
 
 |--------------------
 :tn val src + ,w ;
@@ -333,7 +333,7 @@
 ::,tokenprintn | nro --
 	dup $ff and
 	15 >? ( 16 - r3basename ,s drop ; )
-	2 << 'ltok + @ ex ;
+	3 << 'ltok + @ ex ;
 
 |--------------------
 :col_str .white ;
@@ -352,8 +352,8 @@
 
 :tn col_nro val src + "%w" .print ;
 :ts col_str """" .print valstr """" .print ;
-:tw col_nor val dic>adr @ "%w" .print ;
-:taw col_adr val dic>adr @ "'%w" .print ;
+:tw col_nor val dic>adr d@ "%w" .print ;
+:taw col_adr val dic>adr d@ "'%w" .print ;
 
 :tnx col_nro 8 >> "%d" .print ;
 
@@ -362,7 +362,7 @@
 ::tokenprint | nro --
 	dup $ff and
 	15 >? ( 16 - r3basename col_nor .print drop ; )
-	2 << 'ltok + @ ex
+	3 << 'ltok + @ ex
 	;
 
 |--------------------
@@ -386,18 +386,18 @@
 ::tokenprintc
 	dup $ff and
 	15 >? ( 16 - r3basename col_nor .print drop ; )
-	2 << 'ltok + @ ex ;
+	3 << 'ltok + @ ex ;
 
 |------------- DEBUG
 ::debuginc
 	'inc ( inc> <?
-		@+ swap @+
+		d@+ swap d@+
 		rot "%l %h" .print
 		) drop ;
 
 ::debugdicc
 	dicc ( dicc> <? dup >a
-		a@+ a@+ a@+ a@+ 2swap swap
+		da@+ da@+ da@+ da@+ 2swap swap
 		"%w %h %h %h" .print
 		16 +
 		) drop ;
@@ -407,7 +407,7 @@
 	mark
 	dicc> dicc - 3 >> ,d
 	dicc ( dicc> <?
-		@+ , @+ , @+ , @+ ,
+		d@+ , d@+ , d@+ , d@+ ,
 		) drop
 	"mem/dicc.db" savemem
 	empty

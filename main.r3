@@ -202,7 +202,6 @@
 	actual getname 'name strcat
 	'name 1024 "mem/menu.mem" save ;
 
-
 |--------------------------
 :remlastpath
 	'path ( c@+ 1? drop ) drop 1 -

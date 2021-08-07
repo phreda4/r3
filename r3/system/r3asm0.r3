@@ -13,10 +13,10 @@
 :pushbl | -- block
 	nblock
 	dup 1 + 'nblock !
-	dup stbl> !+ 'stbl> ! ;
+	dup stbl> d!+ 'stbl> ! ;
 
 :popbl | -- block
-	-4 'stbl> +! stbl> @ ;
+	-4 'stbl> +! stbl> d@ ;
 
 |--- @@
 ::getval | a -- a v
@@ -26,7 +26,7 @@
 	dup 4 - @ 8 >>> src + str>anro nip ;
 
 ::getcte2 | a -- a v
-	dup 4 - @ 8 >>> 'ctecode + q@ ;
+	dup 4 - @ 8 >>> 'ctecode + @ ;
 
 |--------------------------
 :,DUP
@@ -1012,7 +1012,7 @@ gMLOAD gMFREE gMPLAY
 
 |----------------
 :ctetoken
-	8 >>> 'ctecode + q@ "$%h ; calc" sprint ,s ,cr
+	8 >>> 'ctecode + @ "$%h ; calc" sprint ,s ,cr
 	;
 
 ::,tokenprinto

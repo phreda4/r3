@@ -16,14 +16,6 @@
 |LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
 |MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
 |RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
-	"FULL" =pre 1? ( drop				| FULL
-		1 'switchfull !
-		>>cr ; ) drop
-	"SCR" =pre 1? ( drop				| SCR 640 480
-		4 +
-		trim str>nro 'switchresx !
-		trim str>nro 'switchresy !
-		>>cr ; ) drop
 	"MEM" =pre 1? ( drop				| MEM 640
 		4 +
 		trim str>nro 'switchmem !
@@ -45,7 +37,7 @@
 :ininc? | str -- str adr/0
 	'inc ( inc> <?
 		@+ pick2 =s 1? ( drop ; ) drop
-		4 + ) drop 0 ;
+		8 + ) drop 0 ;
 
 :realfilename | str -- str
 	"." =pre 0? ( drop "%l" sprint ; ) drop
@@ -81,9 +73,6 @@
 	add.inc ;
 
 ::r3-stage-1 | filename str -- err/0
-	0 'switchfull !
-	800 'switchresx	!
-	600 'switchresy !
 	$fff 'switchmem !
 	includes
 	inc> 'inc - 3 >> 'cntinc !
