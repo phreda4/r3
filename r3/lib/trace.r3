@@ -1,7 +1,7 @@
 ^r3/win/console.r3
 
 ::trace | --
-	">> trace <<" . 
+	">> trace <<" .print
 	.input
 	;
 

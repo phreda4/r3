@@ -391,14 +391,14 @@
 |------------- DEBUG
 ::debuginc
 	'inc ( inc> <?
-		d@+ swap d@+
-		rot "%l %h" .print
+		@+ swap @+
+		rot "%l %h" .print cr
 		) drop ;
 
 ::debugdicc
 	dicc ( dicc> <? dup >a
 		da@+ da@+ da@+ da@+ 2swap swap
-		"%w %h %h %h" .print
+		"%w %h %h %h" .print cr
 		16 +
 		) drop ;
 

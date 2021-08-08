@@ -40,10 +40,10 @@
 ::r3plain | str --
 	r3name
 	here dup 'src !
+	
+
 	'r3filename
-
-	dup "load %s" .print cr
-
+	dup "load %s." .print cr
 	2dup load | "fn" mem
 	here =? ( "no source code." .print cr ; )
 	0 swap c!+ 'here !
@@ -51,11 +51,11 @@
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	" pass1" .print cr
+	"pass1.." .print cr
 	swap r3-stage-1
-	error 1? ( "ERROR %s" .print ; ) drop
-	cntdef cnttokens "toks:%d def:%d" .print
-	" pass2" .print cr
+	error 1? ( "ERROR %s" .print cr ; ) drop
+	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .print cr
+	"pass2.." .print cr
 	r3-stage-2
 	1? ( "ERROR %s" .print ; ) drop
 	code> code - 2 >> "..code:%d" .print
@@ -71,9 +71,8 @@
 	" PHREDA - 2020" .print cr
 	" r3 plain generator" .print cr
 	'name "mem/main.mem" load drop
-
 	'name r3plain
-	"press <enter> to continue..." .print	
+	cr "press <enter> to continue..." .print	
 	.input
 	;
 

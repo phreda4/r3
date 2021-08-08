@@ -151,7 +151,7 @@
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1 + )	| trim0
-|	over "%w" slog | debug
+	over "%w" .print cr |** debug
 	$5e =? ( drop >>cr ; )	| $5e ^  Include
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
@@ -194,7 +194,7 @@
 	0 'codeini !
 	'inc ( inc> <?
 		dup @ "%w" .print cr
-		4 + @+
+		8 + @+
 		str2token
 		error 1? ( nip ; ) drop
 		inc> <? ( dicc> 'dicc< ! ) | main source code mark

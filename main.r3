@@ -334,7 +334,7 @@
 	sp
 	dup getlvl 1 << nsp
 	dup getinfo $3 and "+- ." + c@ emit
-	sp getname . sp
+	sp getname .print sp
 	;
 
 #filecolor 1 2 3 4 
@@ -358,7 +358,7 @@
 	.reset .home .cls 
 	.bblue .white
 	0 0 .at .eline
-	0 0 .at " r3 " .
+	0 0 .at " r3 " .print
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New "  .printe
 	
 	.reset

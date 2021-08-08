@@ -41,7 +41,7 @@
 	
 ::.print sprint count type ;
 
-::. count type ;
+|::. count type ;
 
 ::.home	"H" .[ ; | home
 ::.cls "J" .[ ; | cls 

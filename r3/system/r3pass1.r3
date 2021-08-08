@@ -4,7 +4,6 @@
 |----------------
 ^r3/lib/str.r3
 ^r3/lib/parse.r3
-^r3/lib/trace.r3
 
 ^./r3base.r3
 
@@ -36,20 +35,22 @@
 |----------- includes
 :ininc? | str -- str adr/0
 	'inc ( inc> <?
-		@+ pick2 =s 1? ( drop ; ) drop
+		@+ pick2 
+		|2dup "%l %l" .print cr
+		=s 1? ( drop ; ) drop
 		8 + ) drop 0 ;
+
+#incfn * 2048
 
 :realfilename | str -- str
 	"." =pre 0? ( drop "%l" sprint ; ) drop
 	2 + 'r3path "%s/%l" sprint ;
 
 :load.inc | str -- str new ; incluye codigo
-    here over		| str here str
-	realfilename
-	load here =? ( drop
+	here over realfilename load here =? ( drop
 		over 'lerror !
-		"Include not found" 'error !
-		"- includes -" ,s
+		"Include not found" dup .print cr
+		'error !
 		0 ; ) | no existe
 	here
 	dup only13 			| for see in debug
@@ -57,24 +58,27 @@
 	;
 
 :add.inc | src here -- src
-	over inc> !+ !+ 'inc> ! ;
+	over inc> !+ !+ 'inc> ! 
+	;
 
 :includes | src --
 	dup ( trimcar 1?
-		( $5e =? drop | $5e ^  Include
+			( $5e =? drop | $5e ^  Include
 			ininc? 0? ( drop
 				load.inc 0? ( drop ; ) |no existe
 				includes
 				error 1? ( drop ; ) drop
 				dup ) drop
 			>>cr trimcar )
-		includepal
-		) 2drop
+		includepal ) 2drop
 	add.inc ;
 
 ::r3-stage-1 | filename str -- err/0
 	$fff 'switchmem !
+	"includes.." .print
 	includes
-	inc> 'inc - 3 >> 'cntinc !
+|debuginc
+	"endinc.." .print 
+	inc> 'inc - 4 >> 'cntinc !
 	8 'cntblk +! | 8 blocks more for immediate!
 	;

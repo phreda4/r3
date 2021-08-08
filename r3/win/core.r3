@@ -66,8 +66,6 @@
 	hfind FindClose ;
 
 #cntf
-:type | str cnt --
-	stdout rot rot 0 0 WriteFile drop ;
 	
 ::load | 'from "filename" -- 'to
 	$80000000 1 0 3 $8000000 0 CreateFile
