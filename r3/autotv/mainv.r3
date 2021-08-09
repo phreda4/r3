@@ -39,20 +39,19 @@
 
 #rf [ 0 0 0 0 ]
 
-:1to4color | rrggbb -- rr gg bb aa
-	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and $ff ;
+:rgbcolor | rrggbb --
+	SDLrenderer swap dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and $ff
+	SDL_SetRenderDrawColor	
+	;
 	
 :sajuste
-	|SDLrenderer 0 SDL_SetRenderDrawBlendMode
 	'col sw 7 /mod 1 >> | 'col w x
 	( sw 8 - <?
-		rot @+ 
-		SDLrenderer swap 1to4color SDL_SetRenderDrawColor 
+		rot @+ rgbcolor
 		rot rot sh pick2 0 pick3 
 		'rf d!+ d!+ d!+ d!
 		SDLrenderer 'rf SDL_RenderFillRect
 		over + ) 3drop
-
 	SDLrenderer $ffffff font
 	mark ,sp ,date ,sp ,eol empty here 
 	40 40 RenderTextB
@@ -61,7 +60,6 @@
 	mark ,sp ,time ,sp ,eol empty here 
 	40 sh 80 - RenderTextB	
 
-	SDLrenderer $ff00 font sh sw "%d %d" sprint 200 100 RenderTextB
 	;
 
 |---------------------------------------------------
@@ -90,7 +88,7 @@
 
 
 :main
-	"r3sdl" 640 480 SDLinit
+	"r3sdl" 800 600 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
 	$3 IMG_Init
 |	8 16 "media/img/VGA8x16.png" bmfont

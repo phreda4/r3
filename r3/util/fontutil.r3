@@ -24,7 +24,7 @@
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
 
-:RenderTextS | SDLrender color font "texto" x y --
+::RenderTextS | SDLrender color font "texto" x y --
 	swap 'textbox d!+ d!
 	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
 	rot TTF_RenderText_Solid 
