@@ -8,6 +8,8 @@
 ^r3/util/arr8.r3
 ^r3/util/penner.r3
 
+##endtimeline 
+
 ##screen 0 0
 ##fx 0 0
 ##fxp 0 0
@@ -34,6 +36,7 @@
 	timeline
 	dup 'timeline> !
 	'timeline< !
+	0 'endtimeline !
 	;
 
 :searchless | time adr --time adr
@@ -68,6 +71,17 @@
 ::+restart | tiempo --
 	>r 0 0 'evt.restart r> +tline ;
 
+|-------------------- LOOP
+
+
+:evt.restart
+	'fx p.clear
+	1 'endtimeline !
+	;
+
+::+stop | tiempo --
+	>r 0 0 'evt.stop r> +tline ;
+	
 |-----------------------------
 ::xywh64 | x y w h -- 64b
 	$ffff and swap

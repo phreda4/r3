@@ -55,11 +55,59 @@
 	SDLrenderer $ffffff font
 	mark ,sp ,date ,sp ,eol empty here 
 	40 40 RenderTextB
-
 	SDLrenderer $ffffff font
 	mark ,sp ,time ,sp ,eol empty here 
 	40 sh 80 - RenderTextB	
+	;
 
+|---- cartel simple
+#foto1
+#titulo
+#descripcion
+#direccion
+#telefono
+
+:cartelini
+	SDLrenderer "medio/img/lolomario.png" loadtexture 'foto1 ! | render "" -- text
+
+	"Arelaira" $ffffff0000ff00 RenderTexture 'titulo !
+	"Rireccion" $ffffff0000ff00 RenderTexture 'direccion !
+	"Telefono" $ffffff0000ff00 RenderTexture 'telefono !
+	"Descripcion" $ffffff0000ff00 RenderTexture 'Descripcion !
+
+	timeline.clear
+
+	foto1 0 0 sw sh xywh64 +img
+	0.0 +fx.on
+
+	titulo 10 10 -1 -1 xywh64 +img
+	0.0 +fx.on
+
+	direccion 10 30 -1 -1 xywh64 +img
+	0.0 +fx.on
+	
+	telefono 10 50 -1 -1 xywh64 +img
+	0.0 +fx.on
+
+	Descripcion 200 40 -1 -1 xywh64 +img
+	0.0 +fx.on
+	
+	
+
+	timeline.start
+	;
+	
+:carte1
+	$0 rgbcolor
+	
+	timeline.draw
+	:
+	
+:cartenfin
+	foto1 SDL_DestroyTexture
+	titulo SDL_DestroyTexture
+	direccion SDL_DestroyTexture
+	telefono SDL_DestroyTexture
 	;
 
 |---------------------------------------------------
@@ -81,6 +129,8 @@
 	programa ex
 	
 	SDLrenderer SDL_RenderPresent
+	
+	endtimeline 1? ( exit ) drop
 	
 	SDLkey
 	>esc< =? ( exit )
