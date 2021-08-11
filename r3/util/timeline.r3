@@ -71,10 +71,8 @@
 ::+restart | tiempo --
 	>r 0 0 'evt.restart r> +tline ;
 
-|-------------------- LOOP
-
-
-:evt.restart
+|-------------------- END
+:evt.stop
 	'fx p.clear
 	1 'endtimeline !
 	;
@@ -303,25 +301,25 @@
 
 |*********DEBUG
 :dumptline
-	timeline< timeline - 4 >> "%d" .print cr
+	timeline< timeline - 4 >> "%d" .println
 	timeline
 	( timeline> <?
 		timeline< =? ( "> " .print )
 		@+ "%d " .print
 		@+ "%d " .print
 		@+ "%d " .print
-		@+ "%d " .print cr
+		@+ "%d " .println
 		) drop ;
 
 ::debugtimeline
 	.home .cls
 	timenow "%d " .print
-	t0 "%f" .print cr
+	t0 "%f" .println
 	dumptline
 	[ dup @+ "%h " .print 
 		@+ "%d " .print  
 		@+ 64xywh "%d,%d:%d,%d " .print 
-		@ "%h " .print cr ; ] 'screen p.mapv cr
+		@ "%h " .println ; ] 'screen p.mapv cr
 	cr
 	[ dup @+ "%f " .print
 		@+ "%f " .print

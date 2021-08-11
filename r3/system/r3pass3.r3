@@ -18,7 +18,7 @@
 
 |--------- caso !+ w!+ c!+
 :nextis!+ | stack adr v -- stack adr v v
-	over @ $ff and
+	over d@ $ff and
 	$52 <? ( ; ) $54 >? ( ; )  | !+ c!+ w!+
 	drop over 4 - @ 8 >> 1 + nip dup
 	dic>inf dup
@@ -38,7 +38,7 @@
 :rcode | stack nro -- stack
 	dic>toklen
 	( 1? 1 - >r
-		@+ dup $ff and
+		d@+ dup $ff and
 		$c =? ( overcode ) | call word
 		$d =? ( overcode ) | var
 		$e =? ( overdire ) | dir word
@@ -48,7 +48,7 @@
 :rdata | stack nro -- stack
 	dic>toklen
 	( 1? 1 - >r
-		@+ dup $ff and
+		d@+ dup $ff and
 		$c >=? ( $f <=? ( overdire ) )
 		2drop r> ) 2drop ;
 
@@ -63,8 +63,8 @@
 	dup dic>inf dup @ $1000 + swap ! | marca ultima palabra
 	here !+
 	( here >?
-		4 - dup @
-|        dup dic>adr @ "%w*" slog
+		8 - dup @
+        dup dic>adr @ "%w* " .print 
         datacode
 		) drop ;
 

@@ -153,8 +153,8 @@
 
 
 ::inputdump
-	cmax "cmax:%d" print cr
-	padi> pad> padf> "%h %h %h" print cr
+	cmax "cmax:%d" .println
+	padi> pad> padf> "%h %h %h" .println
 	;
 
 |----- ENTERO

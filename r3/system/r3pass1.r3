@@ -36,7 +36,7 @@
 :ininc? | str -- str adr/0
 	'inc ( inc> <?
 		@+ pick2 
-		|2dup "%l %l" .print cr
+		|2dup "%l %l" .println
 		=s 1? ( drop ; ) drop
 		8 + ) drop 0 ;
 
@@ -49,7 +49,7 @@
 :load.inc | str -- str new ; incluye codigo
 	here over realfilename load here =? ( drop
 		over 'lerror !
-		"Include not found" dup .print cr
+		"Include not found" dup .println
 		'error !
 		0 ; ) | no existe
 	here

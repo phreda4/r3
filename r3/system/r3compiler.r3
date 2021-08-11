@@ -71,8 +71,8 @@
 : windows 
 	mark
 	'name "mem/main.mem" load drop
-	" PHREDA - 2019" .print cr
-	" r3 compiler" .print cr
+	" PHREDA - 2019" .println
+	" r3 compiler" .println
 
 	'name r3c
 
@@ -85,7 +85,7 @@
 |	here "asm\log.txt" load 0 swap !
 |
 |	here print
-|	"press >esc< to run..." print cr
+|	"press >esc< to run..." println
 |	waitesc
 
 	"asm\r3fasm.exe" sys

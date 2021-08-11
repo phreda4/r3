@@ -216,8 +216,8 @@
 
 
 ::infodic
-	code> code - "$%h code " print cr
-	data> data - "$%h data " print cr
+	code> code - "$%h code " .println
+	data> data - "$%h data " .println
 	;
 	
 #errormsgl

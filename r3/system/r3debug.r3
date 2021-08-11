@@ -616,7 +616,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 	$ff00 'ink !
 |	'outpad sp text cr
-	dup "%h" print cr
+	dup "%h" .println
 
 	$ffffff 'ink !
 	" > " .print

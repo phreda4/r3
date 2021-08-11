@@ -54,10 +54,10 @@
 	;
 
 ::guidump
-	"idl:" print idl .d print cr
-	"hotnow:" print hotnow .d print cr
-	"foco:" print foco .d print cr
-	"foconow:" print foconow .d print cr
+	"idl:" print idl .d .println
+	"hotnow:" print hotnow .d .println
+	"foco:" print foco .d .println
+	"foconow:" print foconow .d .println
 	;
 
 |-- boton

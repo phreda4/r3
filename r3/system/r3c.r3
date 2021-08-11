@@ -54,8 +54,8 @@
 
 : mark
 	.home .cls
-	" PHREDA - 2019" .print cr
-	" r3 compiler" .print cr
+	" PHREDA - 2019" .println
+	" r3 compiler" .println
 
 	"r3/test/test.r3"
 |	"r3/test/testgui.r3"

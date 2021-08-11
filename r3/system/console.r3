@@ -49,7 +49,7 @@
 |-----------------	
 :ikey
 	( getch 27 <>? 
-		codekey "$%h $%h " .print cr ) drop ;
+		codekey "$%h $%h " .println ) drop ;
 	
 :iram 
 :inew 

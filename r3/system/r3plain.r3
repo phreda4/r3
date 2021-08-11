@@ -43,33 +43,33 @@
 	
 
 	'r3filename
-	dup "load %s." .print cr
+	dup "load %s." .println
 	2dup load | "fn" mem
-	here =? ( "no source code." .print cr ; )
+	here =? ( "no source code." .println ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	"pass1.." .print cr
+	"pass1.." .println
 	swap r3-stage-1
-	error 1? ( "ERROR %s" .print cr ; ) drop
-	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .print cr
-	"pass2.." .print cr
+	error 1? ( "ERROR %s" .println ; ) drop
+	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+	"pass2.." .println
 	r3-stage-2
-	1? ( "ERROR %s" .print ; ) drop
+	1? ( "ERROR %s" .println ; ) drop
 	code> code - 2 >> "..code:%d" .print
-	" pass3" .print
+	" pass3" .println
 	r3-stage-3
-	" pass4" .print
+	" pass4" .println
 	r3-stage-4
-	" genplain" .print
+	" genplain" .println
 	r3-genplain
 	;
 
 :  windows mark
-	" PHREDA - 2020" .print cr
-	" r3 plain generator" .print cr
+	" PHREDA - 2020" .println
+	" r3 plain generator" .println
 	'name "mem/main.mem" load drop
 	'name r3plain
 	cr "press <enter> to continue..." .print	
