@@ -1,5 +1,7 @@
 | r3 compiler
-| pass 2 - tokenizer
+| pass 2 
+| traverse all files
+| fill the diccionary and tokenize.
 | PHREDA 2018
 |----------------
 ^r3/lib/parse.r3
@@ -9,13 +11,14 @@
 #flag
 
 ::,, | n --
-	code> !+ 'code> ! ;
+	code> d!+ 'code> ! ; | token in 32bits
 
 :.com
 |WIN|	"|WIN|" =pre 1? ( drop 5 + ; ) drop | Compila para WINDOWS
 |LIN|	"|LIN|" =pre 1? ( drop 5 + ; ) drop | Compila para LINUX
-	>>cr
-	;
+|MAC|	"|MAC|" =pre 1? ( drop 5 + ; ) drop | Compila para MAC
+|RPI|	"|RPI|" =pre 1? ( drop 5 + ; ) drop | Compila para RPI
+	>>cr ;
 
 #codeini
 
@@ -29,9 +32,9 @@
 :callen
 	code> codeini - 2 >> | code_length
 	$fffff and 12 <<
-	dicc> 4 - ! | info in wordnow
-	code> 4 - @ $10 <>? ( drop ; ) drop
-	$80 dicc> 8 - +!
+	dicc> 8 - ! | info in wordnow
+	code> 8 - @ $10 <>? ( drop ; ) drop
+	$80 dicc> 16 - +!
 	;
 
 :inidef
@@ -87,7 +90,7 @@
 	$16 <? ( 2drop ; )
 	$22 >? ( 2drop ; )
 	swap 8 >> 1? ( 2drop ; ) drop
-	pick4 8 << or over 4 - ! | ?? set block
+	pick4 8 << or over 8 - ! | ?? set block
 	1 'iswhile !
 	;
 
@@ -98,10 +101,10 @@
 	2 << code +		| 2code
 	code> | bl from to
 	dup code - 2 >> pick3 3 << blok + 4 + !
-	over ( over <? @+ cond ) 2drop | bl from
+	over ( over <? d@+ cond ) 2drop | bl from
 	swap         | tok from bl
 	iswhile 0? ( drop
-				8 << swap 4 - +! | ?? set block
+				8 << swap 8 - +! | ?? set block
 				8 << + ; ) drop nip
 	3 << blok +
 	$10000000 swap +!	| marca while
@@ -120,7 +123,7 @@
 	3 << blok + @
 	2 << code +		| 2code
 	code> | bl from to
-	dup code - 2 >> pick3 3 << blok + 4 + !
+	dup code - 2 >> pick3 3 << blok + 8 + !
 	3drop
 	8 << +				| #block in ]
 	;
@@ -202,10 +205,7 @@
 		error 1? ( nip ; ) drop
 		inc> <? ( dicc> 'dicc< ! ) | main source code mark
 		) drop
-	"a" .print
 	callen
-	"b" .print
 	| real length
-	dicc> 16 - ( dicc >? 16 - contword ) drop
-	"c" .print
+	dicc> 32 - ( dicc >? 32 - contword ) drop
 	0 ;

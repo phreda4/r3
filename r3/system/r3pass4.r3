@@ -188,11 +188,11 @@
 
 :pushvar
 	deltaD deltaR
-	pilaint> !+ !+ 'pilaint> ! ;
+	pilaint> d!+ d!+ 'pilaint> ! ;
 
 :popvar
 	pilaint> 8 - dup 'pilaint> !
-	@+ 'deltaR ! @ 'deltaD ! ;
+	d@+ 'deltaR ! d@ 'deltaD ! ;
 
 :dropvar
 	-8 'pilaint> +! ;
@@ -213,8 +213,8 @@
 	popvar ;
 
 :es??
-	dup 4 - @
-	8 >> 3 << blok + @
+	dup 4 - d@
+	8 >> 3 << blok + d@
 	$10000000 nand? ( drop ; ) drop
 	dropvar
 	pushvar
@@ -232,7 +232,7 @@
 
 | adr adrt t tabla
 :esPal | palabra
-	dup 4 - @ 8 >>>	| obtener palabra
+	dup 4 - d@ 8 >>>	| obtener palabra
 	pick3 =? ( drop flags $20 or 'flags ! ; ) | es recursiva?
     dup dic>inf @
 
@@ -246,7 +246,7 @@
 	;
 
 :esStr | calcula deltaD de string
-	dup 4 - @ 8 >>> src + | string
+	dup 4 - d@ 8 >>> src + | string
 	strusestack neg 'deltaD +! ;
 
 #lastdircode
@@ -262,7 +262,7 @@
 	;
 
 :esWordV | guarda ultima referencia para exec,
-	dup 4 - @ 8 >> 'lastdircode ! ;
+	dup 4 - d@ 8 >> 'lastdircode ! ;
 
 :V0 ;
 
@@ -274,7 +274,7 @@
 	c@+ 'deltaD +!
 	deltaD maxdepth max 'maxdepth !
 	c@+ 'deltaR +!
-	c@ 2 << 'acct + @ ex
+	c@ 3 << 'acct + @ ex
 	;
 
 ::getuso | nro -- uso delta
@@ -328,7 +328,7 @@
 	resetvars
 	dup dic>toklen
 	( 1? 1 - swap
-		@+ $ff and
+		d@+ $ff and
 		prosstoken
 		swap ) 2drop
 	setvars
@@ -344,7 +344,7 @@
 #deltaS
 
 :copydeltaS | ar v -- ar v
-	over 4 - @ 8 >> dic>mov @ $1ff and 'deltaS ! ;
+	over 4 - d@ 8 >> dic>mov @ $1ff and 'deltaS ! ;
 
 :sumavars | adr c -- adr
 	$6 >? ( $b <? ( 1 'cntn0 +! ) )  	| NRO
@@ -408,7 +408,7 @@
 :everyword | n -- n
 	dup dic>call@ 0? ( drop ; ) drop
 
-|	dup dic>adr @ "::%w" slog
+|	dup dic>adr @ "::%w" .println
 
 	dup dic>inf @ 1 and? ( drop analisisvar ; ) drop
 	analisiscode

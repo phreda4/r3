@@ -1,5 +1,7 @@
 | r3 compiler
-| pass 1 - load all includes and define order of compiler
+| pass 1 
+| load all includes and define order of compiler
+| count the tokens, definitions and blocks 
 | PHREDA 2018
 |----------------
 ^r3/lib/str.r3
@@ -21,7 +23,6 @@
 		>>cr ; ) drop
     >>cr ;
 
-
 :includepal | str car -- str'
 	$7c =? ( drop escom ; )		| $7c |	 Comentario
 	1 'cnttokens +!
@@ -35,12 +36,8 @@
 |----------- includes
 :ininc? | str -- str adr/0
 	'inc ( inc> <?
-		@+ pick2 
-		|2dup "%l %l" .println
-		=s 1? ( drop ; ) drop
+		@+ pick2 =s 1? ( drop ; ) drop
 		8 + ) drop 0 ;
-
-#incfn * 2048
 
 :realfilename | str -- str
 	"." =pre 0? ( drop "%l" sprint ; ) drop
@@ -58,8 +55,7 @@
 	;
 
 :add.inc | src here -- src
-	over inc> !+ !+ 'inc> ! 
-	;
+	over inc> !+ !+ 'inc> ! ;
 
 :includes | src --
 	dup ( trimcar 1?
@@ -75,10 +71,8 @@
 
 ::r3-stage-1 | filename str -- err/0
 	$fff 'switchmem !
-	"includes.." .print
 	includes
 |debuginc
-	"endinc.." .print 
 	inc> 'inc - 4 >> 'cntinc !
-	8 'cntblk +! | 8 blocks more for immediate!
+|8 'cntblk +! | 8 blocks more for immediate!
 	;

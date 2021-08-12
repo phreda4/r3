@@ -1,5 +1,8 @@
 | r3 compiler
-| pass 3 - calculate static flow of ejecution
+| pass 3 
+| traverse code from :
+| calculate static flow of ejecution
+|
 | PHREDA 2018
 |----------------
 ^./r3base.r3
@@ -64,7 +67,7 @@
 	here !+
 	( here >?
 		8 - dup @
-        dup dic>adr @ "%w* " .print 
+        dup dic>adr @ "%w " .print 
         datacode
 		) drop ;
 
