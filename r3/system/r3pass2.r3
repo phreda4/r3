@@ -33,14 +33,15 @@
 	code> codeini - 2 >> | code_length
 	$fffff and 12 <<
 	dicc> 8 - ! | info in wordnow
-	code> 8 - @ $10 <>? ( drop ; ) drop
+	code> 4 - d@ $10 <>? ( drop ; ) drop
 	$80 dicc> 16 - +!
 	;
 
 :inidef
 	nivel 1? ( drop
 		'lerror !
-		"missing )" 'error !
+		"missing )" dup 'error !
+		.println
 		0 ; ) drop
 	codeini 1? ( callen ) drop
 	code> 'codeini !
@@ -142,12 +143,12 @@
 	>>sp ;
 
 :.word | adrwor --
-	dup 8 + @ 1 and 12 + | 12 call 13 var
+	dup 16 + @ 1 and 12 + | 12 call 13 var
 	swap adr>dic 8 << or ,,
 	>>sp ;
 
 :.adr | adrwor --
-	dup 8 + @ 1 and 14 + | 14 dcode 15 ddata
+	dup 16 + @ 1 and 14 + | 14 dcode 15 ddata
 	swap adr>dic 8 << or ,,
 	>>sp ;
 
@@ -183,11 +184,11 @@
 	;
 
 :contword | dicc -- dicc
-	dup 8 + @
+	dup 16 + @
 	$81 and? ( drop ; ) | code sin ;
 	drop
-	dup 28 + @ $fffff000 and
-	over 12 + +!
+	dup 56 + @ $fffff000 and
+	over 24 + +!
 	;
 
 ::r3-stage-2 | -- err/0

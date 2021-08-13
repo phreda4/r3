@@ -41,9 +41,8 @@
 ##nbloques 0
 
 |---- dicc
-| str|token|info|mov  	16 bytes/word
-|--- 0   4     8    12
-| 0   8     16    24	32b/w
+| str|token|info|mov  	32B /word
+| 0   8     16    24	
 
 | info
 | $1 - code/data
@@ -135,12 +134,12 @@
 	dic>adr 24 + ;
 
 ::dic>du | nro -- delta uso
-	dic>adr 24 + d@
+	dic>adr 24 + @
 	dup	55 << 59 >>	| delta
 	swap $f and ;	| uso
 
 ::dic>len@
-	dic>adr 24 + d@ 12 >>> ;
+	dic>adr 24 + @ 12 >>> ;
 
 ::adr>dicname | adr -- nadr
 	adr>dic "w%h" sprint ;
@@ -149,11 +148,11 @@
 	8 >>> "w%h" sprint ;
 
 ::adr>toklen | adr -- adr len
-	8 + d@+ swap 8 + d@ 12 >>> ;
+	8 + @+ swap 8 + @ 12 >>> ;
 
 ::adr>toklenreal | adr -- adr len | don't traverse many times the same code
-	dup 16 + d@ $80 and? ( drop adr>toklen ; ) drop | $80	1 termina sin ;
-	dup 56 + d@ 12 >>> swap
+	dup 16 + @ $80 and? ( drop adr>toklen ; ) drop | $80	1 termina sin ;
+	dup 56 + @ 12 >>> swap
 	adr>toklen rot - ;
 
 ::dic>toklen | nro -- adr len
@@ -163,7 +162,7 @@
 	dic>adr adr>toklenreal ;
 
 ::dic>call@ | nr -- calls
-	dic>inf d@ 12 >>> $fff and ;
+	dic>inf @ 12 >>> $fff and ;
 
 #flagword %10
 
@@ -175,9 +174,9 @@
 ::?word | str -- str dir / str 0
 	dicc> 32 -	|---largo
 	( dicc >=?
-		dup d@ pick2			| str ind pal str
+		dup @ pick2			| str ind pal str
 		=s 1? ( drop
-			dup 16 + d@
+			dup 16 + @
 			flagword and? ( drop ; )
 			drop dicc< >=? ( ; ) dup
 			) drop
@@ -277,7 +276,7 @@
 	;
 
 ::,wordinfo
-	dup dic>adr 16 + d@
+	dup dic>adr 16 + @
 	$1 nand? ( drop ,codeinfo ; )
 	drop ,datainfo ;
 
@@ -293,8 +292,8 @@
 
 :tn val src + ,w ;
 :ts """" ,s valstr """" ,s ;
-:tw val dic>adr d@ ,w ;
-:taw val dic>adr d@ "'" ,s ,w ;
+:tw val dic>adr @ ,w ;
+:taw val dic>adr @ "'" ,s ,w ;
 
 #ltok 0 0 0 0 0 0 0 tn tn tn tn ts tw tw taw taw
 
@@ -405,7 +404,7 @@
 |------------- FILE
 ::savedicc
 	mark
-	dicc> dicc - 4 >> ,d
+	dicc> dicc - 5 >> ,d
 	dicc ( dicc> <?
 		@+ , @+ , @+ , @+ ,
 		) drop

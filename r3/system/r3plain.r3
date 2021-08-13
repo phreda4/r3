@@ -12,11 +12,12 @@
 #name * 1024
 
 :genword | adr --
-	dup 8 + @
+	dup 16 + @
 |	$8 and? ( 2drop ; ) 		| cte!!
+	dup " %h " ,print
 	$fff000 nand? ( 2drop ; )	| no calls
 	1 and ":#" + c@ ,c
-	dicc> 16 - <? ( dup adr>dicname ,s )
+	dicc> 32 - <? ( dup adr>dicname ,s )
 |	dup @ " | %w" ,print ,cr | debug plain
 	adr>toklen
 	( 1? 1 - swap
@@ -31,7 +32,7 @@
 
 	dicc ( dicc> <?
 		dup genword
-		16 + ) drop
+		32 + ) drop
 
 	"r3/plain.r3"
 	savemem
@@ -72,6 +73,9 @@
 	" r3 plain generator" .println
 	'name "mem/main.mem" load drop
 	'name r3plain
+	
+	debugdicc	
+	
 	cr "press <enter> to continue..." .print	
 	.input
 	;
