@@ -59,7 +59,7 @@
 	"pass2.." .println
 	r3-stage-2
 	1? ( "ERROR %s" .println ; ) drop
-	code> code - 2 >> "..code:%d" .print
+	code> code - 2 >> "tokens:%d" .println
 	" pass3" .println
 	r3-stage-3
 	" pass4" .println

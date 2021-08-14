@@ -98,89 +98,100 @@
 1 0 0 0		|ABS    a -- b
 1 0 0 0		|SQRT	a -- b
 1 0 0 0		|CLZ	a -- b
+
 1 0 0 0		|@      a -- b
 1 0 0 0		|C@     a -- b
-1 0 0 0		|Q@     a -- b
+1 0 0 0		|W@     a -- b
+1 0 0 0		|D@     a -- b
+
 1 1 0 0		|@+     a -- bc
 1 1 0 0		|C@+    a -- bc
-1 1 0 0		|Q@+    a -- bc
+1 1 0 0		|W@+    a -- bc
+1 1 0 0		|D@+    a -- bc
+
 2 -2 0 0	|!     ab --
 2 -2 0 0	|C!    ab --
-2 -2 0 0	|Q!    ab --
+2 -2 0 0	|W!    ab --
+2 -2 0 0	|D!    ab --
+
 2 -1 0 0	|!+    ab -- c
 2 -1 0 0	|C!+   ab -- c
-2 -1 0 0	|Q!+   ab -- c
+2 -1 0 0	|W!+   ab -- c
+2 -1 0 0	|D!+   ab -- c
+
 2 -2 0 0	|+!    ab --
 2 -2 0 0	|C+!   ab --
 2 -2 0 0	|W+!   ab --
+2 -2 0 0	|D+!   ab --
 
 1 -1 0 0	|>A
 0 1 0 0		|A>
+1 -1 0 0	|A+
+
 0 1 0 0		|A@
 1 -1 0 0 	|A!
-1 -1 0 0	|A+
 0 1 0 0		|A@+
 1 -1 0 0	|A!+
 
+0 1 0 0		|cA@
+1 -1 0 0 	|cA!
+0 1 0 0		|cA@+
+1 -1 0 0	|cA!+
+
+0 1 0 0		|dA@
+1 -1 0 0 	|dA!
+0 1 0 0		|dA@+
+1 -1 0 0	|dA!+
+
 1 -1 0 0	|>B
 0 1 0 0		|B>
+1 -1 0 0	|B+
+
 0 1 0 0		|B@
 1 -1 0 0 	|B!
-1 -1 0 0	|B+
 0 1 0 0		|B@+
 1 -1 0 0	|B!+
+
+0 1 0 0		|cB@
+1 -1 0 0 	|cB!
+0 1 0 0		|cB@+
+1 -1 0 0	|cB!+
+
+0 1 0 0		|dB@
+1 -1 0 0 	|dB!
+0 1 0 0		|dB@+
+1 -1 0 0	|dB!+
 
 3 -3 0 0	|MOVE  abc --
 3 -3 0 0	|MOVE> abc --
 3 -3 0 0	|FILL abc --
+
 3 -3 0 0	|CMOVE abc --
 3 -3 0 0	|CMOVE> abc --
 3 -3 0 0	|CFILL abc --
-3 -3 0 0	|QMOVE abc --
-3 -3 0 0	|QMOVE> abc --
-3 -3 0 0	|QFILL abc --
 
-1 0 0 0		|UPDATE a -- a
-0 0 0 0		|REDRAW --
+3 -3 0 0	|DMOVE abc --
+3 -3 0 0	|DMOVE> abc --
+3 -3 0 0	|DFILL abc --
+
 0 1 0 0		|MEM	-- a
-0 1 0 0		|SW     -- a
-0 1 0 0		|SH     -- a
-0 1 0 0		|VFRAME -- a
-0 1 0 0		|XYPEN	-- a
-0 1 0 0		|BPEN	-- a
-0 1 0 0		|KEY    -- a
-0 1 0 0		|CHAR   -- a
-0 1 0 0		|MSEC   -- a
-0 1 0 0		|TIME   -- a
-0 1 0 0		|DATE   -- a
-2 -1 0 0	|LOAD   ab -- c
-3 -3 0 0	|SAVE   abc --
-3 -3 0 0	|APPEND	abc --
-1 0 1 0		|FFIRST	a -- b
-0 1 0 0		|FNEXT	-- a
-1 -1 0 0	|SYS 	a --
-1 0 0 0		|SLOAD	a -- b
-1 -1 0 0	|SFREE	a --
-1 -1 0 0	|SPLAY	a --
-1 0 0 0		|MLOAD	a -- b
-1 -1 0 0	|MFREE	a --
-1 -1 0 0	|MPLAY	a --
 
-0 1 0 0		|INK
-0 1 0 0		|'INK
-1 -1 0 0	|ALPHA
-0 1 0 0		|OPX
-0 1 0 0		|OPY
-2 -2 0 0	|OP
-2 -2 0 0	|LINE
-4 -4 0 0	|CURVE
-6 -6 0 0	|CURVE3
-2 -2 0 0	|PLINE
-4 -4 0 0	|PCURVE
-6 -6 0 0	|PCURVE3
-0 0 0 0		|POLI
+
+1 0 0 0		|LOADLIB a -- a
+2 -1 0 0	|GETPROC ab -- a
+1 0 0 0		|SYS0 a -- a 
+2 -1 0 0	|SYS1 ab -- a
+3 -2 0 0	|SYS2 abc -- a
+4 -3 0 0	|SYS3 abcd -- a
+5 -4 0 0	|SYS4 abcde -- a
+6 -5 0 0	|SYS5 abcdef -- a
+7 -6 0 0	|SYS6 abcdefg -- a 
+8 -7 0 0	|SYS7 abcdefgh -- a
+9 -8 0 0	|SYS8 abcdefghi -- a
+10 -9 0 0	|SYS9 abcdefghij -- a
+11 -10 0 0	|SYS10 abcdefghijk -- a
+
 )
-
 
 |------------- recorre cada palabra
 #pilaint * 1024
@@ -188,14 +199,14 @@
 
 :pushvar
 	deltaD deltaR
-	pilaint> d!+ d!+ 'pilaint> ! ;
+	pilaint> w!+ w!+ 'pilaint> ! ;
 
 :popvar
-	pilaint> 8 - dup 'pilaint> !
-	d@+ 'deltaR ! d@ 'deltaD ! ;
+	pilaint> 4 - dup 'pilaint> !
+	w@+ 'deltaR ! w@ 'deltaD ! ;
 
 :dropvar
-	-8 'pilaint> +! ;
+	-4 'pilaint> +! ;
 
 |---- Anonimas
 :es[

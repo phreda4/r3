@@ -52,6 +52,7 @@
 	dic>toklen
 	( 1? 1 - >r
 		d@+ dup $ff and
+		dup "%h " .print
 		$c >=? ( $f <=? ( overdire ) )
 		2drop r> ) 2drop ;
 
@@ -69,5 +70,7 @@
 		8 - dup @
         dup dic>adr @ "%w " .print 
         datacode
-		) drop ;
+		) drop 
+	"fin" .println 
+	;
 
