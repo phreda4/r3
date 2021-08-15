@@ -82,7 +82,7 @@
 	1 'nbloques +!
 	code> code - 2 >>
 	nbloques dup sst!
-	3 << blok + !
+	3 << blok + d!
 	nbloques 8 << +  | #block in (
 	;
 
@@ -91,24 +91,24 @@
 	$16 <? ( 2drop ; )
 	$22 >? ( 2drop ; )
 	swap 8 >> 1? ( 2drop ; ) drop
-	pick4 8 << or over 8 - ! | ?? set block
+	pick4 8 << or over 4 - d! | ?? set block
 	1 'iswhile !
 	;
 
 :blockOut | tok -- tok
 	0 'iswhile !
 	sst@ dup dup
-	3 << blok + @
+	3 << blok + d@
 	2 << code +		| 2code
 	code> | bl from to
-	dup code - 2 >> pick3 3 << blok + 4 + !
+	dup code - 2 >> pick3 3 << blok + 4 + d!
 	over ( over <? d@+ cond ) 2drop | bl from
 	swap         | tok from bl
 	iswhile 0? ( drop
-				8 << swap 8 - +! | ?? set block
+				8 << swap 4 - d+! | ?? set block
 				8 << + ; ) drop nip
 	3 << blok +
-	$10000000 swap +!	| marca while
+	$10000000 swap d+!	| marca while
 	8 << +				| #block in )
 	;
 
@@ -116,15 +116,15 @@
 	1 'nbloques +!
 	code> code - 2 >>
 	nbloques dup sst!
-	3 << blok + !
+	3 << blok + d!
 	nbloques 8 << +  | #block in [
 	;
 :anonOut
 	sst@ dup dup
-	3 << blok + @
+	3 << blok + d@
 	2 << code +		| 2code
 	code> | bl from to
-	dup code - 2 >> pick3 3 << blok + 8 + !
+	dup code - 2 >> pick3 3 << blok + 4 + d!
 	3drop
 	8 << +				| #block in ]
 	;

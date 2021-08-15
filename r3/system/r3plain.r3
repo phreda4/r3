@@ -14,14 +14,13 @@
 :genword | adr --
 	dup 16 + @
 |	$8 and? ( 2drop ; ) 		| cte!!
-	dup " %h " ,print
 	$fff000 nand? ( 2drop ; )	| no calls
 	1 and ":#" + c@ ,c
 	dicc> 32 - <? ( dup adr>dicname ,s )
 |	dup @ " | %w" ,print ,cr | debug plain
 	adr>toklen
 	( 1? 1 - swap
-		@+ ,sp ,tokenprintn
+		d@+ ,sp ,tokenprintn
 |		$7c nand? ( ,cr )
 		swap ) 2drop
 	,cr ;
@@ -73,8 +72,6 @@
 	" r3 plain generator" .println
 	'name "mem/main.mem" load drop
 	'name r3plain
-	
-	debugdicc	
 	
 	cr "press <enter> to continue..." .print	
 	.input

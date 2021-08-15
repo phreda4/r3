@@ -75,7 +75,7 @@
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
 "ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
 ">R" "R>" "R@"
-"AND" "OR" "XOR"
+"AND" "OR" "XOR" 
 "+" "-" "*" "/"
 "<<" ">>" ">>>"
 "MOD" "/MOD" "*/" "*>>" "<</"
@@ -83,10 +83,10 @@
 "@" "C@" "W@" "D@"
 "@+" "C@+" "W@+" "D@+"
 "!" "C!" "W!" "D!"
-"!+" "C!+" "W!+" "D!+" 
+"!+" "C!+" "W!+" "D!+" |85 88
 "+!" "C+!" "W+!" "D+!" 
 ">A" "A>" "A+" 
-"A@" "A!" "A@+" "A!+",
+"A@" "A!" "A@+" "A!+"
 "CA@" "CA!" "CA@+" "CA!+"
 "DA@" "DA!" "DA@+" "DA!+"
 ">B" "B>" "B+"
@@ -330,9 +330,10 @@
 #ltok 0 0 0 0 0 0 0 tn tn tn tn ts tw tw taw taw
 
 ::,tokenprintn | nro --
-	dup $ff and
+	dup $ff and 
 	15 >? ( 16 - r3basename ,s drop ; )
-	3 << 'ltok + @ ex ;
+	3 << 'ltok + @ 0? ( 2drop ; )
+	ex ;
 
 |--------------------
 :col_str .white ;
@@ -351,8 +352,8 @@
 
 :tn col_nro val src + "%w" .print ;
 :ts col_str """" .print valstr """" .print ;
-:tw col_nor val dic>adr d@ "%w" .print ;
-:taw col_adr val dic>adr d@ "'%w" .print ;
+:tw col_nor val dic>adr @ "%w" .print ;
+:taw col_adr val dic>adr @ "'%w" .print ;
 
 :tnx col_nro 8 >> "%d" .print ;
 
@@ -361,7 +362,8 @@
 ::tokenprint | nro --
 	dup $ff and
 	15 >? ( 16 - r3basename col_nor .print drop ; )
-	3 << 'ltok + @ ex
+	3 << 'ltok + @ 0? ( 2drop ; )
+	ex
 	;
 
 |--------------------
@@ -401,6 +403,13 @@
 		32 +
 		) drop ;
 
+::debugcode
+	code ( code> <?
+		dup "%h:" .print 
+		d@+ dup "%h " .print
+		tokenprint 
+		cr ) drop ;
+		
 |------------- FILE
 ::savedicc
 	mark

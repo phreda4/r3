@@ -25,6 +25,9 @@
 	drop 
 	0 dup 'codekey ! ;
 	
+::waitesc
+	( getch 27 <>? drop ) drop ;
+	
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
 

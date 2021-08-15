@@ -4,7 +4,7 @@
 ^./r3base.r3
 
 :tok>dicn | nro -- adr
-	8 >>> 4 << dicc + @ "%w" sprint ;
+	8 >>> 5 << dicc + @ "%w" sprint ;
 
 :tok>cte | tok -- nro
 	8 >>> src +
@@ -91,13 +91,13 @@
 |----- data
 :datastep
 	dup $ff and
-	21 <? ( 2 << 'coded + @ ex ; )
+	21 <? ( 3 << 'coded + @ ex ; )
 	58 =? ( ,d* ) | token *
 	2drop  | vacio
 	;
 
 :gendata | adr --
-	dup 8 + @ 1 nand? ( 2drop ; )	| data
+	dup 16 + @ 1 nand? ( 2drop ; )	| data
 	$8 and? ( 2drop ; ) 			| cte!!
 	12 >> $fff and 0? ( 2drop ; )	| no calls
 	drop
@@ -109,12 +109,12 @@
 
     ";--------------------------" ,s ,cr
     "; " ,s
-	dup dicc - 4 >> ,datainfo ,cr
+	dup dicc - 5 >> ,datainfo ,cr
 
 	dup adr>dicname ,s ,sp
 	adr>toklen
 	( 1? 1 - >r
-		@+ datastep
+		d@+ datastep
 		r> ) 2drop
 	dini 0? ( drop ,cr ; ) drop
 	dcnt 1? ( drop ,cr ; ) drop
@@ -130,13 +130,13 @@
 	,cr ;
 
 :gendatastr | adr --
-	dup 8 + @ 1 and? ( 2drop ; )	 | code
+	dup 16 + @ 1 and? ( 2drop ; )	 | code
 	12 >> $fff and 0? ( 2drop ; )	 | no calls
 	drop
 
 	adr>toklen
 	( 1? 1 - swap
-		@+ dup $ff and
+		d@+ dup $ff and
 		11 =? ( otrostr ) 2drop
 		swap ) 2drop ;
 
@@ -147,13 +147,13 @@
 
 	dicc ( dicc> <?
 		dup gendatastr
-		16 + ) drop
+		32 + ) drop
 
 	"; *** VARS ***" ,s ,cr
 	"align 16 " ,s ,cr
 	dicc ( dicc> <?
 		dup gendata
-		16 + ) drop
+		32 + ) drop
 
 	0 ,c
 	"asm/data.asm"

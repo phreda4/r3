@@ -20,13 +20,13 @@
 
 |--- @@
 ::getval | a -- a v
-	dup 4 - @ 8 >>> ;
+	dup 4 - d@ 8 >>> ;
 
 ::getcte | a -- a v
-	dup 4 - @ 8 >>> src + str>anro nip ;
+	dup 4 - d@ 8 >>> src + str>anro nip ;
 
 ::getcte2 | a -- a v
-	dup 4 - @ 8 >>> 'ctecode + @ ;
+	dup 4 - d@ 8 >>> 'ctecode + @ ;
 
 |--------------------------
 :,DUP
@@ -749,14 +749,14 @@
 	"mov dword[r9],ebx" ,ln
 	"add r9,4" ,ln ;
 
-:gMOVE
+:gDMOVE
 	"mov rcx,rax" ,ln
 	"movsxd rsi,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
 	"rep movsd" ,ln
 	,3DROP ;
 
-:gMOVE>
+:gDMOVE>
 	"mov rcx,rax" ,ln
 	"movsxd rsi,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
@@ -767,7 +767,7 @@
 	"cld" ,ln
 	,3DROP ;
 
-:gFILL
+:gDFILL
 	"mov rcx,rax" ,ln
 	"movsxd rax,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
@@ -799,14 +799,14 @@
 	"rep stosb" ,ln
 	,3DROP ;
 
-:gQMOVE
+:gMOVE
 	"mov rcx,rax" ,ln
 	"movsxd rsi,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
 	"rep movsq" ,ln
 	,3DROP ;
 
-:gQMOVE>
+:gMOVE>
 	"mov rcx,rax" ,ln
 	"movsxd rsi,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
@@ -817,7 +817,7 @@
 	"cld" ,ln
 	,3DROP ;
 
-:gQFILL
+:gFILL
 	"mov rcx,rax" ,ln
 	"movsxd rax,dword[rbp]" ,ln
 	"movsxd rdi,dword[rbp-8]" ,ln
@@ -826,55 +826,6 @@
 
 :gMEM
 	,dup "mov rax,[FREE_MEM]" ,ln ;
-:gSW
-	,dup "mov rax,XRES" ,ln ;
-:gSH
-	,dup "mov rax,YRES" ,ln ;
-:gFRAMEV
-	,dup "mov rax,[SYSFRAME]" ,ln ;
-:gXYPEN
-	,dup "mov eax,dword[SYSXM]" ,ln
-	,dup "mov eax,dword[SYSYM]" ,ln ;
-:gBPEN
-	,dup "mov eax,dword[SYSBM]" ,ln ;
-:gKEY
-	,dup "mov eax,dword[SYSKEY]" ,ln ;
-:gCHAR
-	,dup "mov eax,dword[SYSCHAR]" ,ln ;
-:gUPDATE
-	"call SYSREDRAW" ,ln ;
-:gREDRAW
-	"call SYSUPDATE" ,ln ;
-:gMSEC
-	"call SYSMSEC" ,ln ;
-:gTIME
-	"call SYSTIME" ,ln ;
-:gDATE
-	"call SYSDATE" ,ln ;
-:gLOAD
-	"call SYSLOAD" ,ln ;
-:gSAVE
-	"call SYSSAVE" ,ln ;
-:gAPPEND
-	"call SYSAPPEND" ,ln ;
-:gFFIRST
-	"call SYSFFIRST" ,ln ;
-:gFNEXT
-	"call SYSFNEXT" ,ln ;
-:gSYS
-	"call SYSYSTEM" ,ln ;
-:gSLOAD
-	"call SYSSLOAD" ,ln ;
-:gSFREE
-	"call SYSSFREE" ,ln ;
-:gSPLAY
-	"call SYSSPLAY" ,ln ;
-:gMLOAD
-	"call SYSMLOAD" ,ln ;
-:gMFREE
-	"call SYSMFREE" ,ln ;
-:gMPLAY
-	"call SYSMPLAY" ,ln ;
 
 
 |---------------------------------
@@ -899,22 +850,22 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 	"ebx" >TOSE ;
 
 :decopt
-	"; OPTN " ,s over @ ,tokenprint ,cr
+	"; OPTN " ,s over d@ ,tokenprint ,cr
 	swap getcte number
 	4 + swap ex ;
 
 :val'var! | especial case "nro 'var !"
 	getcte number
-	"mov dword[w" ,s dup @ 8 >>> ,h "]," ,s ,TOSE ,cr
+	"mov dword[w" ,s dup d@ 8 >>> ,h "]," ,s ,TOSE ,cr
 	8 + ;
 
 ::getval | a -- a v
-	dup 4 - @ 8 >>> ;
+	dup 4 - d@ 8 >>> ;
 
 :gdec
-	dup @ $ff and 2 << 'vmc1 + @ 1? ( decopt ; ) drop
-	dup @ $ff and 15 =? ( drop 			| nro 'var
-		dup 4 + @ $ff and 79 =? ( drop  | nro 'var !
+	dup d@ $ff and 3 << 'vmc1 + @ 1? ( decopt ; ) drop
+	dup d@ $ff and 15 =? ( drop 			| nro 'var
+		dup 4 + d@ $ff and 79 =? ( drop  | nro 'var !
 			val'var! ; )
 		) drop
 	,DUP
@@ -923,21 +874,21 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 
 |----------- Calculate Number
 :hexopt
-	"; OPTC " ,s over @ ,tokenprint ,cr
+	"; OPTC " ,s over d@ ,tokenprint ,cr
 	swap getcte2 number
 	4 + swap ex ;
 
 :cal'var! | especial case "nro 'var !"
 	"mov dword[w" ,s
-	dup @ 8 >>> ,h
+	dup d@ 8 >>> ,h
 	"]," ,s
 	getcte2 number ,TOS ,cr
 	8 + ;
 
 :ghex  | really constant folding number
-	dup @ $ff and 2 << 'vmc1 + @ 1? ( hexopt ; ) drop
-	dup @ $ff and 15 =? ( drop 			| nro 'var
-		dup 4 + @ $ff and 79 =? ( drop  | nro 'var !
+	dup d@ $ff and 3 << 'vmc1 + @ 1? ( hexopt ; ) drop
+	dup d@ $ff and 15 =? ( drop 			| nro 'var
+		dup 4 + d@ $ff and 79 =? ( drop  | nro 'var !
 			cal'var! ; )
 		) drop
 	,DUP "mov rax," ,s getcte2 ,d ,cr ;
@@ -945,7 +896,7 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 |----------- adress string
 :gstr
 	,DUP "mov rax,str" ,s
-	dup 4 - @ 8 >>> ,h ,cr
+	dup 4 - d@ 8 >>> ,h ,cr
 	;
 
 |----------- adress word
@@ -955,7 +906,7 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 	4 + swap ex ;
 
 :gdwor
-	dup @ $ff and 2 << 'vmc1 + @ 1? ( sworopt ; ) drop
+	dup d@ $ff and 3 << 'vmc1 + @ 1? ( sworopt ; ) drop
 	,DUP "mov rax,w" ,s getval ,h ,cr ;		|--	'word
 
 |----------- adress var
@@ -965,7 +916,7 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 	4 + swap ex ;
 
 :gdvar
-	dup @ $ff and 2 << 'vmc1 + @ 1? ( dvaropt ; ) drop
+	dup d@ $ff and 3 << 'vmc1 + @ 1? ( dvaropt ; ) drop
 	,DUP "mov rax,w" ,s getval ,h ,cr ;		|--	'var
 
 |----------- var
@@ -986,29 +937,47 @@ oC!v oQ!v o!+v oC!+v oQ!+v o+!v oC+!v oQ+!v o>Av 0 0 oA!v oA+v 0 oA!+v o>Bv
 	4 + swap ex ;
 
 :gvar
-	dup @ $ff and 2 << 'vmc2 + @ 1? ( varopt ; ) drop
+	dup d@ $ff and 3 << 'vmc2 + @ 1? ( varopt ; ) drop
 	,DUP "movsxd rax,dword[w" ,s getval ,h "]" ,ln ;	|--	[var]
 
 
 |----------- call word
 :gwor
-	dup @ $ff and
+	dup d@ $ff and
 	16 =? ( drop getval "jmp w%h" ,print ,cr ; ) drop | ret?
 	getval "call w%h" ,print ,cr ;
 
 |-----------------------------------------
 #vmc
 0 0 0 0 0 0 0 gdec ghex gdec gdec gstr gwor gvar gdwor gdvar
-g; g( g) g[ g] gEX g0? g1? g+? g-? g<? g>? g=? g>=? g<=? g<>?
-gA? gN? gB? ,DUP ,DROP ,OVER ,PICK2 ,PICK3 ,PICK4 ,SWAP ,NIP ,ROT ,2DUP ,2DROP ,3DROP ,4DROP
-,2OVER ,2SWAP g>R gR> gR@ gAND gOR gXOR g+ g- g* g/ g<< g>> g>>> gMOD
-g/MOD g*/ g*>> g<</ gNOT gNEG gABS gSQRT gCLZ g@ gC@ gQ@ g@+ gC@+ gQ@+ g!
-gC! gQ! g!+ gC!+ gQ!+ g+! gC+! gQ+! g>A gA> gA@ gA! gA+ gA@+ gA!+ g>B
-gB> gB@ gB! gB+ gB@+ gB!+ gMOVE gMOVE> gFILL gCMOVE gCMOVE> gCFILL gQMOVE gQMOVE> gQFILL gUPDATE
-gREDRAW gMEM gSW gSH gFRAMEV gXYPEN gBPEN gKEY gCHAR gMSEC gTIME gDATE gLOAD gSAVE gAPPEND
-gFFIRST gFNEXT gSYS
-gSLOAD gSFREE gSPLAY
-gMLOAD gMFREE gMPLAY
+g; g( g) g[ g] gEX g0? g1? g+? g-?
+g<? g>? g=? g>=? g<=? g<>? gand? gnand? gBT?
+gDUP gDROP gOVER gPICK2 gPICK3 gPICK4 gSWAP gNIP
+gROT g2DUP g2DROP g3DROP g4DROP g2OVER g2SWAP
+g>R gR> gR@
+gAND gOR gXOR g+ g- g* g/
+g<< g>> g>>> gMOD g/MOD g*/ g*>> g<</
+gNOT gNEG gABS gSQRT gCLZ
+g@ gC@ gW@ gD@
+g@+ gC@+ gW@+ gD@+
+g! gC! gW! gD!
+g!+ gC!+ gW!+ gD!+ |85 88
+g+! gC+! gW+! gD+!
+g>A gA> gA+
+gA@ gA! gA@+ gA!+
+gCA@ gCA! gCA@+ gCA!+
+gDA@ gDA! gDA@+ gDA!+
+g>B gB> gB+
+gB@ gB! gB@+ gB!+
+gCB@ gCB! gCB@+ gCB!+
+gDB@ gDB! gDB@+ gDB!+
+gMOVE gMOVE> gFgLL
+gCMOVE gCMOVE> gCFgLL
+gDMOVE gDMOVE> gDFgLL
+gMEM
+gLOADLIB gGETPROC
+gSYS0 gSYS1 gSYS2 gSYS3 gSYS4 gSYS5
+gSYS6 gSYS7 gSYS8 gSYS9 gSYS10
 
 |----------------
 :ctetoken
@@ -1023,12 +992,12 @@ gMLOAD gMFREE gMPLAY
 |----------------
 
 :codestep | token --
-	$ff and 2 << 'vmc + @ ex ;
+	$ff and 3 << 'vmc + @ ex ;
 
 ::genasmcode | duse --
 	drop
 	'bcode ( bcode> <?
-		@+
+		d@+
         ,tokenprinto
 |		"asm/code.asm" savemem
 		codestep

@@ -104,7 +104,7 @@
 |	"; INLINE CTE" ,ln
 	dic>tok @
 	@ dup dup $ff and 7 -
-	0 8 bt? ( 2 << 'tcte + @ ex code!+ ; )
+	0 8 bt? ( 3 << 'tcte + @ ex code!+ ; )
 
 |*************   #v1 #v2 ..if v1 is cte then crash!!
 |	"inline 0" slog
@@ -457,36 +457,11 @@
 
 :iMOVE :iMOVE> :iFILL
 :iCMOVE :iCMOVE> :iCFILL
-:iQMOVE :iQMOVE> :iQFILL
+:iDMOVE :iDMOVE> :iDFILL
 	2code!+ .3drop ;
-:iUPDATE :iREDRAW
-	2code!+ ;
 
-:iMEM :iSW :iSH :iFRAMEV
-:iXYPEN :iBPEN :iKEY :iCHAR
-	0 push.cte 2code!+ ;
+:iMEM 0 push.cte 2code!+ ;
 
-:iMSEC :iTIME :iDATE
-	.dup 2code!+ ;
-:iLOAD		| ab -- c
-	.drop 2code!+ ;
-:iSAVE		| abc --
-:iAPPEND	| abc --
-	.3drop 2code!+ ;
-
-:iFFIRST	| a -- b
-	2code!+ ;
-:iFNEXT		| -- a
-	.dup 2code!+ ;
-:iSYS		| "" --
-	.drop 2code!+ ;
-
-:iSLOAD 2code!+ ;
-:iSFREE 2code!+ .drop ;
-:iSPLAY 2code!+ .drop ;
-:iMLOAD 2code!+ ;
-:iMFREE 2code!+ .drop ;
-:iMPLAY 2code!+ .drop ;
 
 |----------- inline word
 #tocodeex 0
@@ -496,7 +471,7 @@
 
 	dic>toklen 1 - | cut ;
 	( 1? 1 - swap
-		@+ tocodeex ex |code!+
+		d@+ tocodeex ex |code!+
 		swap ) 2drop ;
 
 :iwor
@@ -510,27 +485,43 @@
 
 #vmc
 0 0 0 0 0 0 0 idec ihex idec idec istr iwor ivar idwor idvar
-i; i( i) i[ i] iEX i0? i1? i+? i-? i<? i>? i=? i>=? i<=? i<>?
-iA? iN? iB? iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP iROT i2DUP i2DROP i3DROP i4DROP
-i2OVER i2SWAP i>R iR> iR@ iAND iOR iXOR i+ i- i* i/ i<< i>> i>>> iMOD
-i/MOD i*/ i*>> i<</ iNOT iNEG iABS iSQRT iCLZ i@ iC@ iQ@ i@+ iC@+ iQ@+ i!
-iC! iQ! i!+ iC!+ iQ!+ i+! iC+! iQ+! i>A iA> iA@ iA! iA+ iA@+ iA!+ i>B
-iB> iB@ iB! iB+ iB@+ iB!+ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL iQMOVE iQMOVE> iQFILL iUPDATE
-iREDRAW iMEM iSW iSH iFRAMEV iXYPEN iBPEN iKEY iCHAR iMSEC iTIME iDATE iLOAD iSAVE iAPPEND 
-iFFIRST iFNEXT
-iSYS
-iSLOAD iSFREE iSPLAY
-iMLOAD iMFREE iMPLAY
-|iINK i'INK iALPHA iOPX iOPY
-|iOP iLINE iCURVE iCURVE3
-|iPLINE iPCURVE iPCURVE3 iPOLI
+i; i( i) i[ i] iEX i0? i1? i+? i-?
+i<? i>? i=? i>=? i<=? i<>? iand? inand? iBT?
+iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP
+iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP
+i>R iR> iR@
+iAND iOR iXOR
+i+ i- i* i/
+i<< i>> i>>>
+iMOD i/MOD i*/ i*>> i<</
+iNOT iNEG iABS iSQRT iCLZ
+i@ iC@ iW@ iD@
+i@+ iC@+ iW@+ iD@+
+i! iC! iW! iD!
+i!+ iC!+ iW!+ iD!+ |85 88
+i+! iC+! iW+! iD+!
+i>A iA> iA+
+iA@ iA! iA@+ iA!+
+iCA@ iCA! iCA@+ iCA!+
+iDA@ iDA! iDA@+ iDA!+
+i>B iB> iB+
+iB@ iB! iB@+ iB!+
+iCB@ iCB! iCB@+ iCB!+
+iDB@ iDB! iDB@+ iDB!+
+iMOVE iMOVE> iFILL
+iCMOVE iCMOVE> iCFILL
+iDMOVE iDMOVE> iDFILL
+iMEM
+iLOADLIB iGETPROC
+iSYS0 iSYS1 iSYS2 iSYS3 iSYS4 iSYS5
+iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 0
 
 |------------------------------------------
 :tocode | adr token -- adr
 |	"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
 |	"asm/code.asm" savememinc | debug
-	$ff and 2 << 'vmc + @ ex ;
+	$ff and 3 << 'vmc + @ ex ;
 
 :,header | adr -- adr
     ";--------------------------" ,s ,cr
@@ -551,17 +542,19 @@ iMLOAD iMFREE iMPLAY
 	pick2 4 + @ | codeant
 	- 2 >> 		| real length
 	;
+|-----------------------------............
+
 
 |-----------------------------
 :gencode | adr --
-	dup 8 + @
+	dup 16 + @
 	1 and? ( 2drop ; )	| code
-	$100 and? ( over 16 + dicc> <? ( 3drop ; ) drop ) | inline
+	$100 and? ( over 32 + dicc> <? ( 3drop ; ) drop ) | inline
 	12 >> $fff and 0? ( 2drop ; )	| no calls
 	drop
 	codeini
 	,header
-	dup 12 + @ $f and
+	dup 24 + @ $f and
 	DeepStack
 |    ";---------OPT" ,ln |----- generate buffer
 |		"asm/code.asm" savememinc | debug
@@ -569,7 +562,7 @@ iMLOAD iMFREE iMPLAY
 	dup adr>toklen | w adr len
 	multientry
 	( 1? 1 - swap
-		@+ tocode
+		d@+ tocode
 		swap ) 2drop
 
 ||    ";---------ANA" ,ln |----- cell analisys
@@ -590,7 +583,7 @@ iMLOAD iMFREE iMPLAY
 |	cellinfo
 
     ";---------GEN" ,ln |----- generate code
-	12 + @ $f and	| use
+	24 + @ $f and	| use
 	genasmcode
 
 	;
@@ -602,9 +595,9 @@ iMLOAD iMFREE iMPLAY
 	,cr
 	nbloques ( 1? 1 -
 		nbloques over - "; %h. " ,print
-		a@+ dup 28 >>>
+		da@+ dup 28 >>>
 		swap $ffffff and
-		a@+
+		da@+
 		"%d %d %d" ,print ,cr
 		) drop ;
 
@@ -622,7 +615,7 @@ iMLOAD iMFREE iMPLAY
 		dup gencode
 |		sizemem 10 >> "; %d kb" ,print ,cr
 |		"asm/code.asm" savememinc
-		16 + ) drop
+		32 + ) drop
 
 	0 ,c
 	"asm/code.asm" savemem
