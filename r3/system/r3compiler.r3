@@ -5,11 +5,11 @@
 ^r3/win/console.r3
 ^./r3base.r3
 ^./r3pass1.r3
-|^./r3pass2.r3
-|^./r3pass3.r3
-|^./r3pass4.r3
-|^./r3gencod.r3
-|^./r3gendat.r3
+^./r3pass2.r3
+^./r3pass3.r3
+^./r3pass4.r3
+^./r3gencod.r3
+^./r3gendat.r3
 
 #name * 1024
 
@@ -42,16 +42,16 @@
 	error 1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
 	cntdef cnttokens "toks:%d def:%d" .print
 
-|	" pass2" .print r3-stage-2
+	" pass2" .print r3-stage-2
 
 	1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
 	code> code - 2 >> "..code:%d" .print
 
-|	" pass3" .print r3-stage-3
-|	" pass4" .print r3-stage-4
-|	" gencode" .print r3-gencode
-|	" genset" .print r3-genset
-|	" gendata" .print r3-gendata
+	" pass3" .print r3-stage-3
+	" pass4" .print r3-stage-4
+	" gencode" .print r3-gencode
+	" genset" .print r3-genset
+	" gendata" .print r3-gendata
 	;
 
 :no10place | adr
@@ -88,7 +88,7 @@
 |	"press >esc< to run..." println
 |	waitesc
 
-	"asm\r3fasm.exe" sys
+|	"asm\r3fasm.exe" sys
 
 	"press <enter> to continue..." .print
 	.input

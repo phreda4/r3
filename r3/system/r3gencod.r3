@@ -144,11 +144,11 @@
 	2code!+
 	gwhilejmp ;
 
-:i<? :i>? :i=? :i>=? :i<=? :i<>? :iA? :iN?
+:i<? :i>? :i=? :i>=? :i<=? :i<>? :iAND? :iNAND?
 	2code!+ .drop
 	gwhilejmp ;
 
-:iB?
+:iBT?
 	2code!+ .2drop
 	gwhilejmp ;
 
@@ -433,27 +433,43 @@
 	3stk 0? ( drop .<</ code<<<cte  ; ) drop
 	2code!+ .2drop ;
 
-:i@ :iC@ :iQ@		2code!+ ;
-:i@+ :iC@+ :iQ@+	2code!+ .dup ;
-:i! :iC! :iQ!       2code!+ .2drop ;
-:i!+ :iC!+ :iQ!+    2code!+ .drop ;
-:i+! :iC+! :iQ+!    2code!+ .2drop ;
+:i@ :iC@ :iW@ :iD@		2code!+ ;
+:i@+ :iC@+ :iW@+ :iD@+	2code!+ .dup ;
+:i! :iC! :iW! :iD!		2code!+ .2drop ;
+:i!+ :iC!+ :iW!+ :iD!+	2code!+ .drop ;
+:i+! :iC+! :iW+! :iD+!	2code!+ .2drop ;
 
 :i>A	2code!+ .drop ;
 :iA>	2code!+ .dup ;
+:iA+    2code!+ .drop ;
 :iA@	2code!+ .dup ;
 :iA!	2code!+ .drop ;
-:iA+    2code!+ .drop ;
 :iA@+   2code!+ .dup ;
 :iA!+   2code!+ .drop ;
+:iCA@	2code!+ .dup ;
+:iCA!	2code!+ .drop ;
+:iCA@+   2code!+ .dup ;
+:iCA!+   2code!+ .drop ;
+:iDA@	2code!+ .dup ;
+:iDA!	2code!+ .drop ;
+:iDA@+   2code!+ .dup ;
+:iDA!+   2code!+ .drop ;
 
 :i>B    2code!+ .drop ;
 :iB>    2code!+ .dup ;
+:iB+    2code!+ .drop ;
 :iB@    2code!+ .dup ;
 :iB!    2code!+ .drop ;
-:iB+    2code!+ .drop ;
 :iB@+   2code!+ .dup ;
 :iB!+   2code!+ .drop ;
+:iCB@    2code!+ .dup ;
+:iCB!    2code!+ .drop ;
+:iCB@+   2code!+ .dup ;
+:iCB!+   2code!+ .drop ;
+:iDB@    2code!+ .dup ;
+:iDB!    2code!+ .drop ;
+:iDB@+   2code!+ .dup ;
+:iDB!+   2code!+ .drop ;
 
 :iMOVE :iMOVE> :iFILL
 :iCMOVE :iCMOVE> :iCFILL
@@ -462,6 +478,19 @@
 
 :iMEM 0 push.cte 2code!+ ;
 
+:iLOADLIB 2code!+ ;
+:iGETPROC 2code!+ .drop ;
+:iSYS0 2code!+ ;
+:iSYS1 2code!+ .drop ;
+:iSYS2 2code!+ .2drop ;
+:iSYS3 2code!+ .3drop ;
+:iSYS4 2code!+ .4drop ;
+:iSYS5 2code!+ .4drop .drop ;
+:iSYS6 2code!+ .4drop .2drop ;
+:iSYS7 2code!+ .4drop .3drop ;
+:iSYS8 2code!+ .4drop .4drop ;
+:iSYS9 2code!+ .4drop .4drop .drop ;
+:iSYS10 2code!+ .4drop .4drop .2drop ;
 
 |----------- inline word
 #tocodeex 0

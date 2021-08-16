@@ -109,17 +109,22 @@
 |---- Optimization WORDS
 #preval * 32
 #prevale * 32
+#prevalb * 32
 #prevalv 0
 
 :,TOS	'preval ,s ;
 :,TOSE	'prevale ,s ;
-:>TOS   dup 'preval strcpy 'prevale strcpy ;
+:,TOSB	'prevalb ,s ;
+:>TOS   dup 'preval strcpy dup 'prevale strcpy 'prevalb strcpy ;
 :>TOSE  'prevale strcpy ;
+:>TOSB  'prevalb strcpy ;
 
 :varget
 	"movsxd rbx," ,s ,TOS ,cr
 	"rbx" >TOS
-	"ebx" >TOSE ;
+	"ebx" >TOSE 
+	"bl" >TOSB 
+	;
 
 |-------------------------------------
 :g[
@@ -239,31 +244,31 @@
 	"cmp eax," ,s ,TOS ,cr
 	?? "je _o%h" ,print ,cr ;
 
-:gA?
+:gAND?
 	"mov rbx,rax" ,ln
 	,drop
 	"test rax,rbx" ,ln
 	?? "jz _o%h" ,print ,cr ;
-:oA?
+:oAND?
 	"test rax," ,s ,TOS ,cr
 	?? "jz _o%h" ,print ,cr ;
-:oA?v
+:oAND?v
 	"test eax," ,s ,TOS ,cr
 	?? "jz _o%h" ,print ,cr ;
 
-:gN?
+:gNAND?
 	"mov rbx,rax" ,ln
 	,drop
 	"test rax,rbx" ,ln
 	?? "jnz _o%h" ,print ,cr ;
-:oN?
+:oNAND?
 	"test rax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
-:oN?v
+:oNAND?v
 	"test eax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
 
-:gB?
+:gBT?
 	"sub rbp,8*2" ,ln
 	"mov rbx,[rbp+8]" ,ln
 	"xchg rax,rbx" ,ln
@@ -482,13 +487,14 @@
 	"shl rax,cl" ,ln
 	"idiv rbx" ,ln ;
 
+
 :g@
-	"movsxd rax,dword [rax]" ,ln ;
+	"mov rax,qword[rax]" ,ln ;
 :o@
-	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
+	,dup "mov rax,qword[" ,s ,TOS "]" ,ln ;
 :o@v
 	varget
-	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
+	,dup "mov rax,qword[" ,s ,TOS "]" ,ln ;
 
 :gC@
 	"movsx rax,byte [rax]" ,ln ;
@@ -498,31 +504,39 @@
 	varget
 	,dup "movsx rax,byte [" ,s ,TOS "]" ,ln ;
 
-:gQ@
-	"mov rax,qword[rax]" ,ln ;
-:oQ@
-	,dup "mov rax,qword[" ,s ,TOS "]" ,ln ;
-:oQ@v
+:gW@
+	"movsxd rax,word [rax]" ,ln ;
+:oW@
+	,dup "movsxd rax,word [" ,s ,TOS "]" ,ln ;
+:oW@v
 	varget
-	,dup "mov rax,qword[" ,s ,TOS "]" ,ln ;
+	,dup "movsxd rax,word [" ,s ,TOS "]" ,ln ;
+
+:gD@
+	"movsxd rax,dword [rax]" ,ln ;
+:oD@
+	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
+:oD@v
+	varget
+	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
 
 :g@+
-	"movsxd rbx,dword [rax]" ,ln
-	"add rax,4" ,ln
+	"mov rbx,[rax]" ,ln
+	"add rax,8" ,ln
 	,dup
 	"mov rax,rbx" ,ln ;
 :o@+
 	,dup
 	"mov rbx," ,s ,TOS ,cr
-	"movsxd rax,dword [rbx]" ,ln
-	"add rbx,4" ,ln
+	"mov rax,[rbx]" ,ln
+	"add rbx,8" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
 :o@+v
 	,dup
 	"movsxd rbx," ,s ,TOS ,cr
-	"movsxd rax,dword [rbx]" ,ln
-	"add rbx,4" ,ln
+	"mov rax,[rbx]" ,ln
+	"add rbx,8" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
 
@@ -546,34 +560,56 @@
 	,dup
 	"mov [rbp],rbx" ,ln ;
 
-:gQ@+
-	"mov rbx,[rax]" ,ln
-	"add rax,8" ,ln
+
+:gD@+
+	"movsxd rbx,dword [rax]" ,ln
+	"add rax,4" ,ln
 	,dup
 	"mov rax,rbx" ,ln ;
-:oQ@+
+:oD@+
 	,dup
 	"mov rbx," ,s ,TOS ,cr
-	"mov rax,[rbx]" ,ln
-	"add rbx,8" ,ln
+	"movsxd rax,dword [rbx]" ,ln
+	"add rbx,4" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
-:oQ@+v
+:oD@+v
 	,dup
 	"movsxd rbx," ,s ,TOS ,cr
-	"mov rax,[rbx]" ,ln
-	"add rbx,8" ,ln
+	"movsxd rax,dword [rbx]" ,ln
+	"add rbx,4" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
 
+:gW@+
+	"movsxd rbx,word [rax]" ,ln
+	"add rax,2" ,ln
+	,dup
+	"mov rax,rbx" ,ln ;
+:oW@+
+	,dup
+	"mov rbx," ,s ,TOS ,cr
+	"movsxd rax,word [rbx]" ,ln
+	"add rbx,2" ,ln
+	,dup
+	"mov [rbp],rbx" ,ln ;
+:oW@+v
+	,dup
+	"movsxd rbx," ,s ,TOS ,cr
+	"movsxd rax,word [rbx]" ,ln
+	"add rbx,2" ,ln
+	,dup
+	"mov [rbp],rbx" ,ln ;
+
+
 :g!
 	"mov rcx,[rbp]" ,ln
-	"mov dword[rax],ecx" ,ln ,2DROP ;
+	"mov qword[rax],rcx" ,ln ,2DROP ;
 :o!
-	"mov dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+	"mov qword[" ,s ,TOS "],rax" ,ln ,DROP ;
 :o!v
 	varget
-	"mov dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+	"mov qword[" ,s ,TOS "],rax" ,ln ,DROP ;
 
 :gC!
 	"mov rcx,[rbp]" ,ln
@@ -584,29 +620,39 @@
 	varget
 	"mov byte[" ,s ,TOS "],al" ,ln ,DROP ;
 
-:gQ!
+:gW!
 	"mov rcx,[rbp]" ,ln
-	"mov qword[rax],rcx" ,ln ,2DROP ;
-:oQ!
-	"mov qword[" ,s ,TOS "],rax" ,ln ,DROP ;
-:oQ!v
+	"mov word[rax],ecx" ,ln ,2DROP ;
+:oW!
+	"mov word[" ,s ,TOS "],ax" ,ln ,DROP ;
+:oW!v
 	varget
-	"mov qword[" ,s ,TOS "],rax" ,ln ,DROP ;
+	"mov word[" ,s ,TOS "],ax" ,ln ,DROP ;
+
+:gD!
+	"mov rcx,[rbp]" ,ln
+	"mov dword[rax],ecx" ,ln ,2DROP ;
+:oD!
+	"mov dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+:oD!v
+	varget
+	"mov dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+
 
 :g!+
 	"mov rcx,[rbp]" ,ln
-	"mov dword[rax],ecx" ,ln
-	"add rax,4" ,ln ,NIP ;
+	"mov [rax],rcx" ,ln
+	"add rax,8" ,ln ,NIP ;
 :o!+
 	"mov rcx," ,s ,TOS ,cr
-	"mov dword[rcx],eax" ,ln
-	"add rcx,4" ,ln
+	"mov [rcx],rax" ,ln
+	"add rcx,8" ,ln
 	"mov rax,rcx" ,ln ;
 :o!+v
 	varget
-	"mov dword[rbx],eax" ,ln
-	"add rbx,4" ,ln
-	"mov rax,rbx" ,ln ;
+	"mov [rcx],rax" ,ln
+	"add rcx,8" ,ln
+	"mov rax,rcx" ,ln ;
 
 :gC!+
 	"mov rcx,[rbp]" ,ln
@@ -623,29 +669,45 @@
 	"add rbx,1" ,ln
 	"mov rax,rbx" ,ln ;
 
-:gQ!+
+:gW!+
 	"mov rcx,[rbp]" ,ln
-	"mov [rax],rcx" ,ln
-	"add rax,8" ,ln ,NIP ;
-:oQ!+
+	"mov word[rax],cx" ,ln
+	"add rax,2" ,ln ,NIP ;
+:oW!+
 	"mov rcx," ,s ,TOS ,cr
-	"mov [rcx],rax" ,ln
-	"add rcx,8" ,ln
+	"mov word[rcx],ax" ,ln
+	"add rcx,2" ,ln
 	"mov rax,rcx" ,ln ;
-:oQ!+v
+:oW!+v
 	varget
-	"mov [rcx],rax" ,ln
-	"add rcx,8" ,ln
+	"mov word[rbx],ax" ,ln
+	"add rbx,4" ,ln
+	"mov rax,rbx" ,ln ;
+
+:gD!+
+	"mov rcx,[rbp]" ,ln
+	"mov dword[rax],ecx" ,ln
+	"add rax,4" ,ln ,NIP ;
+:oD!+
+	"mov rcx," ,s ,TOS ,cr
+	"mov dword[rcx],eax" ,ln
+	"add rcx,4" ,ln
 	"mov rax,rcx" ,ln ;
+:oD!+v
+	varget
+	"mov dword[rbx],eax" ,ln
+	"add rbx,4" ,ln
+	"mov rax,rbx" ,ln ;
+
 
 :g+!
 	"mov rcx,[rbp]" ,ln
-	"add dword[rax],ecx" ,ln ,2DROP ;
+	"add [rax],rcx" ,ln ,2DROP ;
 :o+!
-	"add dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+	"add [" ,s ,TOS "],rax" ,ln ,DROP ;
 :o+!v
 	varget
-	"add dword[rbx],eax" ,ln ,DROP ;
+	"add [rbx],eax" ,ln ,DROP ;
 
 :gC+!
 	"mov rcx,[rbp]" ,ln
@@ -656,98 +718,114 @@
 	varget
 	"add byte[rbx],eax" ,ln ,DROP ;
 
-:gQ+!
+:gW+!
 	"mov rcx,[rbp]" ,ln
-	"add [rax],rcx" ,ln ,2DROP ;
-:oQ+!
-	"add [" ,s ,TOS "],rax" ,ln ,DROP ;
-:oQ+!v
+	"add word[rax],cx" ,ln ,2DROP ;
+:oW+!
+	"add word[" ,s ,TOS "],ax" ,ln ,DROP ;
+:oW+!v
 	varget
-	"add [rbx],eax" ,ln ,DROP ;
+	"add word[rbx],ax" ,ln ,DROP ;
 
-:g>A
-	"mov r8,rax" ,ln ,drop ;
-:o>A
-	"mov r8," ,s ,TOS ,cr ;
-:o>Av
-	varget "mov r8," ,s ,TOS ,cr ;
-
-:gA>
-	,dup "mov rax,r8" ,ln ;
-
-:gA@
-	,dup "movsxd rax,dword[r8]" ,ln ;
-
-:gA!
-	"mov dword[r8],eax" ,ln ,drop ;
-:oA!
-	"mov dword[r8]," ,s ,TOSE ,cr ;
-:oA!v
-	varget "mov dword[r8],ebx" ,ln ;
-
-:gA+
-	"add r8,rax" ,ln ,drop ;
-:oA+
-	"add r8," ,s ,TOS ,cr ;
-:oA+v
-	varget "add r8," ,s ,TOS ,cr ;
-
-:gA@+
-	,dup "movsxd rax,dword[r8]" ,ln
-	"add r8,4" ,ln ;
-
-:gA!+
-	"mov dword[r8],eax" ,ln
-	"add r8,4" ,ln ,drop ;
-:oA!+
-	"mov dword[r8]," ,s ,TOSE ,cr
-	"add r8,4" ,ln ;
-:oA!+v
+:gD+!
+	"mov rcx,[rbp]" ,ln
+	"add dword[rax],ecx" ,ln ,2DROP ;
+:oD+!
+	"add dword[" ,s ,TOS "],eax" ,ln ,DROP ;
+:oD+!v
 	varget
-	"mov dword[r8],ebx" ,ln
-	"add r8,4" ,ln ;
+	"add dword[rbx],eax" ,ln ,DROP ;
 
-:g>B
-	"mov r9,rax" ,ln ,drop ;
-:o>B
-	"mov r9," ,s ,TOS ,cr ;
-:o>Bv
-	varget "mov r9," ,s ,TOS ,cr ;
 
-:gB>
-	,dup "mov rax,r9" ,ln ;
+:g>A	"mov r8,rax" ,ln ,drop ;
+:o>A	"mov r8," ,s ,TOS ,cr ;
+:o>Av	varget "mov r8," ,s ,TOS ,cr ;
 
-:gB@
-	,dup "movsxd rax,dword[r9]" ,ln ;
+:gA>	,dup "mov rax,r8" ,ln ;
 
-:gB!
-	"mov dword[r9],eax" ,ln ,drop ;
-:oB!
-	"mov dword[r9]," ,s ,TOSE ,cr ;
-:oB!v
-	varget "mov dword[r9],ebx" ,ln ;
+:gA+	"add r8,rax" ,ln ,drop ;
+:oA+	"add r8," ,s ,TOS ,cr ;
+:oA+v	varget "add r8," ,s ,TOS ,cr ;
 
-:gB+
-	"add r9,rax" ,ln ,drop ;
-:oB+
-	"add r9," ,s ,TOS ,cr ;
-:oB+v
-	varget "add r9," ,s ,TOS ,cr ;
+:gA@	,dup "movs rax,qword[r8]" ,ln ;
 
-:gB@+
-	,dup "movsxd rax,dword[r9]" ,ln
-	"add r9,4" ,ln ;
+:gA!	"mov qword[r8],rax" ,ln ,drop ;
+:oA!	"mov qword[r8]," ,s ,TOS ,cr ;
+:oA!v	varget "mov qword[r8],rbx" ,ln ;
 
-:gB!+
-	"mov dword[r9],eax" ,ln
-	"add r9,4" ,ln ,drop ;
-:oB!+
-	"mov dword[r9]," ,s ,TOSE ,cr
-	"add r9,4" ,ln ;
-:oB!+v
-	varget
-	"mov dword[r9],ebx" ,ln
-	"add r9,4" ,ln ;
+:gA@+	,dup "movs rax,qword[r8]" ,ln "add r8,8" ,ln ;
+:gA!+	"mov qword[r8],rax" ,ln "add r8,8" ,ln ,drop ;
+:oA!+	"mov qword[r8]," ,s ,TOS ,cr "add r8,8" ,ln ;
+:oA!+v	varget "mov qword[r8],rbx" ,ln "add r8,8" ,ln ;
+
+:gCA@	,dup "movsxd rax,byte[r8]" ,ln ;
+
+:gCA!	"mov byte[r8],al" ,ln ,drop ;
+:oCA!	"mov byte[r8]," ,s ,TOSB ,cr ;
+:oCA!v	varget "mov byte[r8],bl" ,ln ;
+
+:gCA@+	,dup "movsxd rax,byte[r8]" ,ln "add r8,1" ,ln ;
+:gCA!+	"mov byte[r8],al" ,ln "add r8,1" ,ln ,drop ;
+:oCA!+	"mov byte[r8]," ,s ,TOSB ,cr "add r8,1" ,ln ;
+:oCA!+v	varget "mov byte[r8],bl" ,ln "add r8,1" ,ln ;
+
+:gDA@	,dup "movsxd rax,dword[r8]" ,ln ;
+
+:gDA!	"mov dword[r8],eax" ,ln ,drop ;
+:oDA!	"mov dword[r8]," ,s ,TOSE ,cr ;
+:oDA!v	varget "mov dword[r8],ebx" ,ln ;
+
+:gDA@+	,dup "movsxd rax,dword[r8]" ,ln "add r8,4" ,ln ;
+:gDA!+	"mov dword[r8],eax" ,ln "add r8,4" ,ln ,drop ;
+:oDA!+	"mov dword[r8]," ,s ,TOSE ,cr "add r8,4" ,ln ;
+:oDA!+v	varget "mov dword[r8],ebx" ,ln "add r8,4" ,ln ;
+
+:g>B	"mov r9,rax" ,ln ,drop ;
+:o>B	"mov r9," ,s ,TOS ,cr ;
+:o>Bv	varget "mov r9," ,s ,TOS ,cr ;
+
+:gB>	,dup "mov rax,r9" ,ln ;
+
+:gB+	"add r9,rax" ,ln ,drop ;
+:oB+	"add r9," ,s ,TOS ,cr ;
+:oB+v	varget "add r9," ,s ,TOS ,cr ;
+
+:gB@	,dup "movsxd rax,qword[r9]" ,ln ;
+
+:gB!	"mov qword[r9],rax" ,ln ,drop ;
+:oB!	"mov qword[r9]," ,s ,TOS ,cr ;
+:oB!v	varget "mov qword[r9],rbx" ,ln ;
+
+:gB@+	,dup "movs rax,qword[r9]" ,ln "add r9,8" ,ln ;
+
+:gB!+	"mov qword[r9],rax" ,ln "add r9,8" ,ln ,drop ;
+:oB!+	"mov qword[r9]," ,s ,TOS ,cr "add r9,8" ,ln ;
+:oB!+v	varget "mov qword[r9],rbx" ,ln "add r9,8" ,ln ;
+
+:gDB@	,dup "movsxd rax,dword[r9]" ,ln ;
+
+:gDB!	"mov dword[r9],eax" ,ln ,drop ;
+:oDB!	"mov dword[r9]," ,s ,TOSE ,cr ;
+:oDB!v	varget "mov dword[r9],ebx" ,ln ;
+
+:gDB@+	,dup "movsxd rax,dword[r9]" ,ln "add r9,4" ,ln ;
+
+:gDB!+	"mov dword[r9],eax" ,ln "add r9,4" ,ln ,drop ;
+:oDB!+	"mov dword[r9]," ,s ,TOSE ,cr "add r9,4" ,ln ;
+:oDB!+v	varget "mov dword[r9],ebx" ,ln "add r9,4" ,ln ;
+
+:gCB@	,dup "movsxd rax,byte[r9]" ,ln ;
+
+:gCB!	"mov byte[r9],al" ,ln ,drop ;
+:oCB!	"mov byte[r9]," ,s ,TOSB ,cr ;
+:oCB!v	varget "mov byte[r9],bl" ,ln ;
+
+:gCB@+	,dup "movsxd rax,byte[r9]" ,ln "add r9,1" ,ln ;
+
+:gCB!+	"mov byte[r9],al" ,ln "add r9,1" ,ln ,drop ;
+:oCB!+	"mov byte[r9]," ,s ,TOSB ,cr "add r9,1" ,ln ;
+:oCB!+v	varget "mov byte[r9],bl" ,ln "add r9,1" ,ln ;
+
 
 :gDMOVE
 	"mov rcx,rax" ,ln
@@ -827,18 +905,48 @@
 :gMEM
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
-
+:gLOADLIB 
+:gGETPROC
+:gSYS0 
+:gSYS1 
+:gSYS2 
+:gSYS3 
+:gSYS4 
+:gSYS5
+:gSYS6 
+:gSYS7 
+:gSYS8 
+:gSYS9 
+:gSYS10
+	;
+	
 |---------------------------------
 #vmc1
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oEX 0 0 0 0 o<? o>? o=? o>=? o<=? o<>?
-oA? oN? 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+oAND? oNAND? 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oAND oOR oXOR o+ o- o* o/ o<< o>> o>>> oMOD
-o/MOD o*/ o*>> o<</ 0 0 0 0 0 o@ oC@ oQ@ o@+ oC@+ oQ@+ o!
-oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
-0 0 oB! oB+ 0 oB!+ 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
+o/MOD o*/ o*>> o<</ 0 0 0 0 0 
+o@ oC@ oW@ oD@ 
+o@+ oC@+ oW@+ oD@+ 
+o! oC! oW! oD! 
+o!+ oC!+ oW!+ oD!+ 
+o+! oC+! oW+! oD+! 
+o>A 0 oA+ 
+0 oA! 0 oA!+ 
+0 oCA! 0 oCA!+ 
+0 oDA! 0 oDA!+ 
+o>B 0 oB+ 
+0 oB! 0 oB!+ 
+0 oCB! 0 oCB!+ 
+0 oDB! 0 oDB!+ 
+0 0 0 
+0 0 0 
+0 0 0 
+0
+0 0 
+0 0 0 0 0 0 0 0 0 0 0 
+
 
 |----------- Number
 :number | value --
@@ -847,7 +955,9 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 	=? ( "%d" sprint >TOS ; )
 	"mov rbx,%d" sprint ,s ,cr
 	"rbx" >TOS
-	"ebx" >TOSE ;
+	"ebx" >TOSE 
+	"bl" >TOSB 
+	;
 
 :decopt
 	"; OPTN " ,s over d@ ,tokenprint ,cr
@@ -923,13 +1033,28 @@ oC! oQ! o!+ oC!+ oQ!+ o+! oC+! oQ+! o>A 0 0 oA! oA+ 0 oA!+ o>B
 #vmc2
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oEXv 0 0 0 0 o<?v o>?v o=?v o>=?v o<=?v o<>?v
-oA?v oN?v 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+oAND?v oNAND?v 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oANDv oORv oXORv o+v o-v o*v o/v o<<v o>>v o>>>v oMODv
-o/MODv o*/v o*>>v o<</v 0 0 0 0 0 o@v oC@v oQ@v o@+v oC@+v oQ@+v o!v
-oC!v oQ!v o!+v oC!+v oQ!+v o+!v oC+!v oQ+!v o>Av 0 0 oA!v oA+v 0 oA!+v o>Bv
-0 0 oB!v oB+v 0 oB!+v 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
+o/MODv o*/v o*>>v o<</v 0 0 0 0 0 
+o@v oC@v oW@v oD@v 
+o@+v oC@+v oW@+v oD@+v 
+o!v oC!v oW!v oD!v 
+o!+v oC!+v oW!+v oD!+v 
+o+!v oC+!v oW+!v oD+!v 
+o>Av 0 oA+v 
+0 oA!v 0 oA!+v 
+0 oCA!v 0 oCA!+v 
+0 oDA!v 0 oDA!+v 
+o>Bv 0 oB+v 
+0 oB!v 0 oB!+v 
+0 oCB!v 0 oCB!+v 
+0 oDB!v 0 oDB!+v 
+0 0 0 
+0 0 0 
+0 0 0 
+0
+0 0 
+0 0 0 0 0 0 0 0 0 0 0 
 
 :varopt
 	"; OPTV " ,s over @ ,tokenprint ,cr
@@ -952,8 +1077,8 @@ oC!v oQ!v o!+v oC!+v oQ!+v o+!v oC+!v oQ+!v o>Av 0 0 oA!v oA+v 0 oA!+v o>Bv
 0 0 0 0 0 0 0 gdec ghex gdec gdec gstr gwor gvar gdwor gdvar
 g; g( g) g[ g] gEX g0? g1? g+? g-?
 g<? g>? g=? g>=? g<=? g<>? gand? gnand? gBT?
-gDUP gDROP gOVER gPICK2 gPICK3 gPICK4 gSWAP gNIP
-gROT g2DUP g2DROP g3DROP g4DROP g2OVER g2SWAP
+,DUP ,DROP ,OVER ,PICK2 ,PICK3 ,PICK4 ,SWAP ,NIP
+,ROT ,2DUP ,2DROP ,3DROP ,4DROP ,2OVER ,2SWAP
 g>R gR> gR@
 gAND gOR gXOR g+ g- g* g/
 g<< g>> g>>> gMOD g/MOD g*/ g*>> g<</
@@ -971,9 +1096,9 @@ g>B gB> gB+
 gB@ gB! gB@+ gB!+
 gCB@ gCB! gCB@+ gCB!+
 gDB@ gDB! gDB@+ gDB!+
-gMOVE gMOVE> gFgLL
-gCMOVE gCMOVE> gCFgLL
-gDMOVE gDMOVE> gDFgLL
+gMOVE gMOVE> gFILL
+gCMOVE gCMOVE> gCFILL
+gDMOVE gDMOVE> gDFILL
 gMEM
 gLOADLIB gGETPROC
 gSYS0 gSYS1 gSYS2 gSYS3 gSYS4 gSYS5
