@@ -969,8 +969,6 @@ o>B 0 oB+
 	"mov dword[w" ,s dup d@ 8 >>> ,h "]," ,s ,TOSE ,cr
 	8 + ;
 
-::getval | a -- a v
-	dup 4 - d@ 8 >>> ;
 
 :gdec
 	dup d@ $ff and 3 << 'vmc1 + @ 1? ( decopt ; ) drop

@@ -25,33 +25,38 @@
 
 ::r3c | str --
 	r3name
-	here 'src !
+	here dup 'src !
 	'r3filename
-	dup "load %s" .print
+	dup "load %s" .println
 	2dup load | "fn" mem
-	here =? ( "no src" .print ; )
+	here =? ( "no source code." .println ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	" pass1" .print
-	nip src |...
-	r3-stage-1
+	" pass1" .println
+	swap r3-stage-1
 
-	error 1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
-	cntdef cnttokens "toks:%d def:%d" .print
+	error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop
+	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 
-	" pass2" .print r3-stage-2
+	" pass2" .println 
+	r3-stage-2
+	1? ( "ERROR %s" .println lerror "%l" .println ; ) drop
+	code> code - 2 >> "tokens:%d" .println
 
-	1? ( "ERROR %s" .print lerror "%l" .print ; ) drop
-	code> code - 2 >> "..code:%d" .print
-
-	" pass3" .print r3-stage-3
-	" pass4" .print r3-stage-4
-	" gencode" .print r3-gencode
-	" genset" .print r3-genset
-	" gendata" .print r3-gendata
+	" pass3" .println
+	r3-stage-3
+	" pass4" .println 
+	r3-stage-4
+	|-----------------
+	" genset" .println
+	r3-genset
+	" gencode" .println 
+	r3-gencode
+	" gendata" .println
+	r3-gendata
 	;
 
 :no10place | adr

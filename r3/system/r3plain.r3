@@ -40,10 +40,8 @@
 ::r3plain | str --
 	r3name
 	here dup 'src !
-	
-
 	'r3filename
-	dup "load %s." .println
+	dup "load %s" .println
 	2dup load | "fn" mem
 	here =? ( "no source code." .println ; )
 	0 swap c!+ 'here !
@@ -51,11 +49,13 @@
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	"pass1.." .println
+	"pass1" .println
 	swap r3-stage-1
+
 	error 1? ( "ERROR %s" .println ; ) drop
 	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
-	"pass2.." .println
+
+	"pass2" .println
 	r3-stage-2
 	1? ( "ERROR %s" .println ; ) drop
 	code> code - 2 >> "tokens:%d" .println

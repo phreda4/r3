@@ -265,14 +265,14 @@
 |-------------------------------------------
 ##stacknow
 
-#stks * 256 		| stack of stack 64 levels
+#stks * 512 		| stack of stack 64 levels
 #stks> 'stks
 
 #memstk * $fff	| stack memory
 #memstk> 'memstk
 
 ::stack.cnt | -- cnt
-	NOS 'PSP - 2 >> ;
+	NOS 'PSP - 3 >> ;
 
 |--------- DEBUG
 ::,printstk
@@ -310,7 +310,7 @@
 	>a
 	stacknow a!+
 	NOS 'PSP - a!+
-	'PSP 8 + ( NOS <=? @+ a!+ ) drop
+	'PSP 16 + ( NOS <=? @+ a!+ ) drop
 	'PSP NOS <? ( TOS a!+ ) drop
 	a> 'memstk> !
 
@@ -318,19 +318,19 @@
 	;
 
 ::stk.pop
-	-4 'stks> +!
+	-8 'stks> +!
 	stks> @ dup 'memstk> !
 	>a
 	a@+ 'stacknow !
 	a@+ 'PSP + 'NOS !
-	'PSP 8 + ( NOS <=? a@+ swap !+ ) drop
+	'PSP 16 + ( NOS <=? a@+ swap !+ ) drop
 	'PSP NOS <? ( a@+ 'TOS ! ) drop
 
 |	"; POPSTK " ,s stk.printstk |,printstk ,cr
 	;
 
 ::stk.drop
-	stks> 4 - 'stks <? (
+	stks> 8 - 'stks <? (
 		dup "ERROR stk.drop %h" ,print
 		"asm/code.asm" savemem
 		)
@@ -343,36 +343,36 @@
 
 |---------- map cells in stack
 ::stackmap | xx vector -- xx  ; LAST...TOS
-	>a 'PSP 8 +
+	>a 'PSP 16 +
 	( NOS <=? dup >r	| xx 'cell
 		a> ex
-		r> 4 + ) drop
+		r> 8 + ) drop
 	'PSP NOS >=? ( drop ; ) drop
 	'TOS a> ex ;
 
 ::stackmap-1 | xx vector -- xx ; LAST..NOS
-	>a 'PSP 8 +
+	>a 'PSP 16 +
 	( NOS <=? dup >r	| xx 'cell
 		a> ex
-		r> 4 + ) drop ;
+		r> 8 + ) drop ;
 
 ::stackmap-2 | xx vector -- xx ; LAST..NOS-1
-	>a 'PSP 8 +
-	( NOS 4 - <=? dup >r	| xx 'cell
-		a> ex
-		r> 4 + ) drop ;
-
-::stackmap-3 | xx vector -- xx ; LAST..NOS-2
-	>a 'PSP 8 +
+	>a 'PSP 16 +
 	( NOS 8 - <=? dup >r	| xx 'cell
 		a> ex
-		r> 4 + ) drop ;
+		r> 8 + ) drop ;
+
+::stackmap-3 | xx vector -- xx ; LAST..NOS-2
+	>a 'PSP 16 +
+	( NOS 8 - <=? dup >r	| xx 'cell
+		a> ex
+		r> 8 + ) drop ;
 
 ::stackmap-4 | xx vector -- xx ; LAST..NOS-2
-	>a 'PSP 8 +
-	( NOS 12 - <=? dup >r	| xx 'cell
+	>a 'PSP 16 +
+	( NOS 24 - <=? dup >r	| xx 'cell
 		a> ex
-		r> 4 + ) drop ;
+		r> 8 + ) drop ;
 
 |-------- registers used
 ##maskreg 0
@@ -531,6 +531,7 @@
 ::DeepStack | deep --
 	IniStack
 	( 1? 1 -
+		dup "%h " .println
 		dup PUSH.REG
 		) drop ;
 

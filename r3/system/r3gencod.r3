@@ -548,31 +548,29 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 |------------------------------------------
 :tocode | adr token -- adr
-|	"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
-|	"asm/code.asm" savememinc | debug
+"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
+|"asm/code.asm" savemem | debug
 	$ff and 3 << 'vmc + @ ex ;
 
 :,header | adr -- adr
     ";--------------------------" ,s ,cr
     "; " ,s
-	dup dicc - 4 >> ,codeinfo
+	dup dicc - 5 >> ,codeinfo
 	,cr
-	dicc> 16 - =? ( "INICIO:" ,s ,cr ; )
+	dicc> 32 - =? ( "INICIO:" ,s ,cr ; )
 	dup adr>dicname ,s
 	":" ,s ,cr ;
 
 :multientry | w adr len -- w adr len
-	pick2 8 + @ | now word
+	pick2 16 + @ | now word
 	$81 and? ( drop ; ) drop | no multientry
-	pick2 16 + | next word
-	dup 8 + @ 12 >> $fff and 0? ( 2drop ; ) drop | no calls
+	pick2 32 + | next word
+	dup 16 + @ 12 >> $fff and 0? ( 2drop ; ) drop | no calls
 	nip
-	4 + @ 		| code
-	pick2 4 + @ | codeant
+	8 + @ 		| code
+	pick2 8 + @ | codeant
 	- 2 >> 		| real length
 	;
-|-----------------------------............
-
 
 |-----------------------------
 :gencode | adr --
@@ -585,8 +583,9 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	,header
 	dup 24 + @ $f and
 	DeepStack
-|    ";---------OPT" ,ln |----- generate buffer
-|		"asm/code.asm" savememinc | debug
+
+";---------OPT" ,ln |----- generate buffer
+|"asm/code.asm" savemem | debug
 
 	dup adr>toklen | w adr len
 	multientry
@@ -594,8 +593,8 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 		d@+ tocode
 		swap ) 2drop
 
-||    ";---------ANA" ,ln |----- cell analisys
-||		"asm/code.asm" savememinc | debug
+";---------ANA" ,ln |----- cell analisys
+|"asm/code.asm" savemem | debug
 
 |	dup 12 + @ $f and
 |	anaDeepStack
