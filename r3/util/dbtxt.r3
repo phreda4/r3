@@ -7,11 +7,12 @@
 |
 |
 
-#row
+##rowdb
 #flds * 512
 #flds> 'flds
 #memflds * 8192
 #memflds> 'memflds
+
 
 |------------------------------------------
 :FNAME | adr -- adrname
@@ -23,40 +24,20 @@
 	FNAME ;
 
 :loadrow | "" -- ""
-	'row over "%s.now" sprint load
-	'row =? ( 0 'row ! ) drop ;
+	'rowdb over "%s.now" sprint load
+	'rowdb =? ( 0 'rowdb ! ) drop ;
 
 :saverow | "" --
-	1 'row +!
-	'row 8 rot "%s.now" sprint save ;
+	1 'rowdb +!
+	'rowdb 8 rot "%s.now" sprint save ;
 
 ::loadnfile | "" -- filename
 	loadrow
-	row over getnfilename
-	0? ( over getnfilename 0 'row ! )
+	rowdb over getnfilename
+	0? ( over getnfilename 0 'rowdb ! )
 	swap
 	saverow ;
-
-#filename * 1024
-#filecut>
-
-:listimg | 'list img -- 'list img
-	filecut> @ rot !+ over swap !+ swap ;
-
-::getfolderimg | 'list  "path" --
-	dup 'filename strcpyl 1 - 'filecut> !
-	ffirst drop fnext drop
-	( fnext 1? FNAME
-		filecut> strcpy
-		'filename
-		loadimg 1? ( listimg ) drop
-		) swap ! ;
-
-::listimg | hash 'list -- img
-	( @+ 1?
-		pick2 =? ( drop @ nip ; )
-		drop 8 + ) nip nip ;
-
+	
 |--------------------------------------
 :,fld
 	memflds> flds> !+ 'flds> ! ;
@@ -69,12 +50,12 @@
 	,mf ;
 
 :loadrow | "" -- ""
-	'row over "%s.now" sprint load
-	'row =? ( 0 'row ! ) drop ;
+	'rowdb over "%s.now" sprint load
+	'rowdb =? ( 0 'rowdb ! ) drop ;
 
 :saverow | "" --
-	1 'row +!
-	'row 8 rot "%s.now" sprint save ;
+	1 'rowdb +!
+	'rowdb 8 rot "%s.now" sprint save ;
 
 :>>line | adr -- adr'
 	( c@+ 1?
@@ -82,12 +63,12 @@
 		drop ) drop 1 - ;
 
 :parsedb | lastmem -- lastmem
-	here row ( 1? swap
+	here rowdb ( 1? swap
 		>>line trim
 		swap 1 - ) drop
-	over >=? ( drop here 0 'row ! ) | se paso
+	over >=? ( drop here 0 'rowdb ! ) | se paso
 	,fld
-	( c@+ $5e <>? ,mem ) 2drop
+	( c@+ 1? $5e <>? ,mem ) 2drop
 	0 memflds> c! ;
 
 | load one row db , incremental position
