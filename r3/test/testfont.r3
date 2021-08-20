@@ -15,9 +15,7 @@ Tartas ñ¿⌐óúº╕
 Hamburguesas proteicas
 "
 
-#t2 "ahor aque pasa he
-y
-ahora"
+#t2 "esto es un texto demasiado largo para que entre en la caja"
 
 #bbtext [ 0 0 0 0 ]
 
@@ -103,9 +101,20 @@ ahora"
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 
+#lastsp
+
+:inwbox | c -- c
+	0 ca!
+	font b> 8 - @ 'x 'y TTF_SizeUTF8 drop
+	x 'boxt 8 + d@ | wsize wbox
+	<=? ( drop a> 'lastsp ! ; ) drop
+	0 lastsp c!+ b!+
+	;
+	
 :emit
 	13 =? ( 0 ca!+ a> b!+ drop ; )
 	10 =? ( drop ; )
+	32 =? ( inwbox )
 	ca!+ ;
 		
 :splitlines | "" --
@@ -118,6 +127,9 @@ ahora"
 :textbox | $vh str box color --
 	'color !
 	'boxt 64box
+	
+	SDLrenderer 0 55 0 255 SDL_SetRenderDrawColor bbfill
+	
 	splitlines	
 	
 	0 'htotal !
@@ -166,7 +178,7 @@ ahora"
 :main
 	"r3sdl" 640 480 SDLinitgl
 	ttf_init
-	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !
+	"media/ttf/roboto-bold.ttf" 24 TTF_OpenFont 'font !
 
 	draw
 
