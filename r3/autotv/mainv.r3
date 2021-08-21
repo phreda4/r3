@@ -10,6 +10,7 @@
 
 ^r3/util/timeline.r3
 ^r3/util/fontutil.r3
+|^r3/util/boxtext.r3
 
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
@@ -68,39 +69,55 @@
 #telefono
 
 :cartelini
-	SDLrenderer "medio/img/lolomario.png" loadtexture 'foto1 ! | render "" -- text
+	SDLrenderer "media/img/lolomario.png" loadtexture 'foto1 ! | render "" -- text
 
-	"Arelaira" $ffffff0000ff00 RenderTexture 'titulo !
-	"Rireccion" $ffffff0000ff00 RenderTexture 'direccion !
-	"Telefono" $ffffff0000ff00 RenderTexture 'telefono !
-	"Descripcion" $ffffff0000ff00 RenderTexture 'Descripcion !
+	foto1 "%h" .println
+|	"Arelaira" $ffffff0000ff00 RenderTexture 'titulo !
+|	"Rireccion" $ffffff0000ff00 RenderTexture 'direccion !
+|	"Telefono" $ffffff0000ff00 RenderTexture 'telefono !
+|	"Descripcion" $ffffff0000ff00 RenderTexture 'Descripcion !
 
 	timeline.clear
 
-	foto1 0 0 sw sh xywh64 +img
+	foto1 0	+img
 	0.0 +fx.on
 
-	titulo 10 10 -1 -1 xywh64 +img
-	0.0 +fx.on
+	0.1 0.3 0.1 0.1 xywh%64
+	1.1 0.8 0.3 0.3 xywh%64
+	'Quad_In 1.0
+	1.0 +fx.box
 
-	direccion 10 30 -1 -1 xywh64 +img
-	0.0 +fx.on
+	1.1 0.8 0.3 0.3 xywh%64
+	0.1 0.3 0.1 0.1 xywh%64	
+	'Quad_In 2.0
+	3.0 +fx.box
 	
-	telefono 10 50 -1 -1 xywh64 +img
-	0.0 +fx.on
+|	titulo 10 10 -1 -1 xywh64 +img
+|	0.0 +fx.on
 
-	Descripcion 200 40 -1 -1 xywh64 +img
-	0.0 +fx.on
+|	direccion 10 30 -1 -1 xywh64 +img
+|	0.0 +fx.on
 	
+|	telefono 10 50 -1 -1 xywh64 +img
+|	0.0 +fx.on
+
+|	Descripcion 200 40 -1 -1 xywh64 +img
+|	0.0 +fx.on
 	
 
 	timeline.start
+	"start" .println
 	;
 	
-:carte1
+:cartel
 	$0 rgbcolor
+	SDLrenderer SDL_RenderClear
 	
 	timeline.draw
+
+	$ffffff bcolor 
+	0 0 bmat "<f1> example 1" bmprint	
+	"." .print
 	:
 	
 :cartenfin
@@ -123,17 +140,14 @@
 |---------------------------------------------------
 	
 :mainloop
-	SDLrenderer 0 0 msec $ff SDL_SetRenderDrawColor
-	SDLrenderer SDL_RenderClear
-	
 	programa ex
-	
 	SDLrenderer SDL_RenderPresent
 	
 	endtimeline 1? ( exit ) drop
 	
 	SDLkey
 	>esc< =? ( exit )
+	<f1> =? ( cartelini 'cartel 'programa ! ) 
 	drop ;		
 
 
@@ -141,7 +155,7 @@
 	"r3sdl" 800 600 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
 	$3 IMG_Init
-|	8 16 "media/img/VGA8x16.png" bmfont
+	8 16 "media/img/VGA8x16.png" bmfont
 
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !

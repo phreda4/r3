@@ -128,7 +128,7 @@ Hamburguesas proteicas
 	'color !
 	'boxt 64box
 	
-	SDLrenderer 0 55 0 255 SDL_SetRenderDrawColor bbfill
+|	SDLrenderer 0 55 0 255 SDL_SetRenderDrawColor bbfill
 	
 	splitlines	
 	
