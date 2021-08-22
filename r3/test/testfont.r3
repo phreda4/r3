@@ -65,7 +65,7 @@ Hamburguesas proteicas
 	h% $ffff and 32 << or swap
 	w% $ffff and 48 << or ;
 
- ::64box | b adr --
+::64box | b adr --
 	swap
 	dup 48 >> rot d!+
 	swap dup 16 << 48 >> rot d!+
@@ -142,8 +142,8 @@ Hamburguesas proteicas
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
-	%01000 and? ( drop textc ; )
-	%10000 and? ( drop textr ; )
+	%010000 and? ( drop textc ; )
+	%100000 and? ( drop textr ; )
 	drop textl ;
 
 	

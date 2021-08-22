@@ -10,7 +10,7 @@
 
 ^r3/util/timeline.r3
 ^r3/util/fontutil.r3
-|^r3/util/boxtext.r3
+^r3/util/boxtext.r3
 
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
@@ -62,6 +62,9 @@
 	;
 
 |---- cartel simple
+#imgglass
+#imgball
+
 #foto1
 #titulo
 #descripcion
@@ -69,9 +72,9 @@
 #telefono
 
 :cartelini
-	SDLrenderer "media/img/lolomario.png" loadtexture 'foto1 ! | render "" -- text
+	SDLrenderer "media/img/ball.png" loadtexture 'imgball !
+	SDLrenderer "media/img/glass.png" loadtexture 'imgglass !	
 
-	foto1 "%h" .println
 |	"Arelaira" $ffffff0000ff00 RenderTexture 'titulo !
 |	"Rireccion" $ffffff0000ff00 RenderTexture 'direccion !
 |	"Telefono" $ffffff0000ff00 RenderTexture 'telefono !
@@ -79,18 +82,24 @@
 
 	timeline.clear
 
-	foto1 0	+img
+	
+|	0.5 0.3 0.4 0.4 xywh%64 $ff00ff +box
+|	0.0 +fx.on
+	
+	imgball 0.4 0.3 0.08 0.08 xywh%64 +img
 	0.0 +fx.on
 
-	0.1 0.3 0.1 0.1 xywh%64
-	1.1 0.8 0.3 0.3 xywh%64
-	'Quad_In 1.0
-	1.0 +fx.box
+	imgglass 0.6 0.3 0.1 0.1 xywh%64 +img
+	0.0 +fx.on
+	
+	font "hola" 0.5 0.3 0.4 0.4 xywh%64 $00ff00ff +tbox | font "" boz color -- ; HVRRGGBB00
+	0.0 +fx.on
 
-	1.1 0.8 0.3 0.3 xywh%64
-	0.1 0.3 0.1 0.1 xywh%64	
-	'Quad_In 2.0
-	3.0 +fx.box
+	font "que" 0.5 0.3 0.4 0.4 xywh%64 $11ff0000 +tbox | font "" boz color -- ; HVRRGGBB00
+	0.0 +fx.on
+
+	font "tal" 0.5 0.3 0.4 0.4 xywh%64 $220000ff +tbox | font "" boz color -- ; HVRRGGBB00
+	0.0 +fx.on
 	
 |	titulo 10 10 -1 -1 xywh64 +img
 |	0.0 +fx.on
@@ -109,15 +118,16 @@
 	"start" .println
 	;
 	
+#desrec2 [ 10 100 100 100 ]
+	
 :cartel
 	$0 rgbcolor
 	SDLrenderer SDL_RenderClear
-	
+
 	timeline.draw
 
-	$ffffff bcolor 
-	0 0 bmat "<f1> example 1" bmprint	
-	"." .print
+|	debugtimeline
+
 	:
 	
 :cartenfin
@@ -143,7 +153,7 @@
 	programa ex
 	SDLrenderer SDL_RenderPresent
 	
-	endtimeline 1? ( exit ) drop
+	|endtimeline 1? ( exit ) drop
 	
 	SDLkey
 	>esc< =? ( exit )

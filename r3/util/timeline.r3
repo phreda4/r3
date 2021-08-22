@@ -7,6 +7,7 @@
 
 ^r3/util/arr8.r3
 ^r3/util/penner.r3
+^r3/util/boxtext.r3
 
 ##endtimeline 
 
@@ -165,6 +166,20 @@
 ::+txt  | img boxi boxo --
 	'drawtxt 'screen p!+ >a
 	0 a!+ a!+ a!+ a! ;
+	
+|-------------------- TEXT BOX
+:drawtbox
+	>b b@+ 1 and? ( drop ; )
+	8 >> dup >r 24 >>
+	b@+ b@+ swap | box in 2do for animation
+	r> $ffffff and | color
+	b@+ | font
+	textbox | $vh str box color font --
+	;
+	
+::+tbox | font "" boz color -- ; HVRRGGBB00
+	'drawtbox 'screen p!+ >a
+	8 << 1 or a!+ a!+ a!+ a! ;
 	
 |-------------------- SONIDO
 :evt.play | adr --

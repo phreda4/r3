@@ -7,6 +7,13 @@
 
 #boxt 0 0 
 
+::64box | b adr --
+	swap
+	dup 48 >> rot d!+
+	swap dup 16 << 48 >> rot d!+
+	swap dup 32 << 48 >> rot d!+
+	swap 48 << 48 >> swap d! ;	
+	
 #buffer * 8192
 #lines * 512
 #lines>
@@ -96,6 +103,6 @@
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
-	%01000 and? ( drop textc ; )
-	%10000 and? ( drop textr ; )
+	%010000 and? ( drop textc ; )
+	%100000 and? ( drop textr ; )
 	drop textl ;
