@@ -11,6 +11,7 @@
 ^r3/util/timeline.r3
 ^r3/util/fontutil.r3
 ^r3/util/boxtext.r3
+^r3/util/dbtxt.r3
 
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
@@ -61,6 +62,8 @@
 	40 sh 80 - RenderTextB	
 	;
 
+#prgajuste 0 'sajuste 0
+
 |---- cartel simple
 #imgglass
 #imgball
@@ -72,17 +75,18 @@
 #telefono
 
 :cartelini
+	"autotv/cliente.db" loaddb-i
+	
 	SDLrenderer "media/img/ball.png" loadtexture 'imgball !
 	SDLrenderer "media/img/glass.png" loadtexture 'imgglass !	
 
-|	"Arelaira" $ffffff0000ff00 RenderTexture 'titulo !
-|	"Rireccion" $ffffff0000ff00 RenderTexture 'direccion !
-|	"Telefono" $ffffff0000ff00 RenderTexture 'telefono !
-|	"Descripcion" $ffffff0000ff00 RenderTexture 'Descripcion !
+	1 dbfld 'titulo !
+	2 dbfld 'direccion !
+	3 dbfld 'telefono !
+	4 dbfld 'descripcion !	
 
 	timeline.clear
 
-	
 |	0.5 0.3 0.4 0.4 xywh%64 $ff00ff +box
 |	0.0 +fx.on
 	
@@ -92,50 +96,34 @@
 	imgglass 0.6 0.3 0.1 0.1 xywh%64 +img
 	0.0 +fx.on
 	
-	font "hola" 0.5 0.3 0.4 0.4 xywh%64 $00ff00ff +tbox | font "" boz color -- ; HVRRGGBB00
+	font titulo 0.5 0.3 0.4 0.4 xywh%64 $00ff00ff +tbox | font "" boz color -- ; HVRRGGBB00
 	0.0 +fx.on
 
-	font "que" 0.5 0.3 0.4 0.4 xywh%64 $11ff0000 +tbox | font "" boz color -- ; HVRRGGBB00
+	font telefono 0.5 0.3 0.4 0.4 xywh%64 $11ff0000 +tbox 
 	0.0 +fx.on
 
-	font "tal" 0.5 0.3 0.4 0.4 xywh%64 $220000ff +tbox | font "" boz color -- ; HVRRGGBB00
+	font descripcion 0.1 0.1 0.8 0.8 xywh%64 $220000ff +tbox 
 	0.0 +fx.on
 	
-|	titulo 10 10 -1 -1 xywh64 +img
-|	0.0 +fx.on
-
-|	direccion 10 30 -1 -1 xywh64 +img
-|	0.0 +fx.on
-	
-|	telefono 10 50 -1 -1 xywh64 +img
-|	0.0 +fx.on
-
-|	Descripcion 200 40 -1 -1 xywh64 +img
-|	0.0 +fx.on
-	
-
 	timeline.start
-	"start" .println
 	;
 	
-#desrec2 [ 10 100 100 100 ]
-	
+
 :cartel
 	$0 rgbcolor
 	SDLrenderer SDL_RenderClear
-
 	timeline.draw
-
 |	debugtimeline
-
 	:
 	
-:cartenfin
+:cartelfin
 	foto1 SDL_DestroyTexture
 	titulo SDL_DestroyTexture
 	direccion SDL_DestroyTexture
 	telefono SDL_DestroyTexture
 	;
+
+#prgcartel 'cartelini 'cartel 'cartelfin
 
 |---------------------------------------------------
 #programa 'sajuste
@@ -148,7 +136,21 @@
 
 
 |---------------------------------------------------
+#prgnow 0
+
+:endlast
+	prgnow 0? ( drop ; ) 
+	16 + @ 0? ( drop ; )
+	ex ;
 	
+:changeprg | adr --
+	endlast
+	dup 'prgnow !
+	dup 8 + @ 'programa ! 
+	@ 0? ( drop ; )
+	ex ;
+		
+|---------------------------------------------------	
 :mainloop
 	programa ex
 	SDLrenderer SDL_RenderPresent
@@ -157,7 +159,8 @@
 	
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( cartelini 'cartel 'programa ! ) 
+	<f2> =? ( 'prgajuste changeprg )
+	<f1> =? ( 'prgcartel changeprg ) 
 	drop ;		
 
 
