@@ -18,6 +18,30 @@
 ^r3/lib/sys.r3
 ^r3/lib/gr.r3
 
+
+|--------------------------------
+#programa 'sajuste
+#prgnow 0
+#prgexit 
+
+:pexit 1 'prgexit ! ;
+	
+
+:endlast
+	prgnow 0? ( drop ; ) 
+	16 + @ 0? ( drop ; )
+	ex ;
+	
+:changeprg | adr --
+	endlast
+	0 'prgexit !
+	dup 'prgnow !
+	dup 8 + @ 'programa ! 
+	@ 0? ( drop ; )
+	ex ;
+
+
+|--------------------------------
 #font
 
 |---- colorbars
@@ -117,40 +141,16 @@
 	:
 	
 :cartelfin
-	foto1 SDL_DestroyTexture
-	titulo SDL_DestroyTexture
-	direccion SDL_DestroyTexture
-	telefono SDL_DestroyTexture
+	imgglass SDL_DestroyTexture
+	imgball SDL_DestroyTexture
+	|direccion SDL_DestroyTexture
+	|telefono SDL_DestroyTexture
 	;
 
 #prgcartel 'cartelini 'cartel 'cartelfin
 
-|---------------------------------------------------
-#programa 'sajuste
-
-:loadprog
-	;
-	
-:freeprog
-	;
-
-
-|---------------------------------------------------
-#prgnow 0
-
-:endlast
-	prgnow 0? ( drop ; ) 
-	16 + @ 0? ( drop ; )
-	ex ;
-	
-:changeprg | adr --
-	endlast
-	dup 'prgnow !
-	dup 8 + @ 'programa ! 
-	@ 0? ( drop ; )
-	ex ;
 		
-|---------------------------------------------------	
+|---------------------------------
 :mainloop
 	programa ex
 	SDLrenderer SDL_RenderPresent
@@ -173,8 +173,7 @@
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	
-|	loadres
-	
+
 	'mainloop SDLshow
 	
 	Mix_CloseAudio
