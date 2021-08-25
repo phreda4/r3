@@ -19,8 +19,12 @@
 ^r3/lib/gr.r3
 
 
+#font
+#font1
+#font2
+
 |--------------------------------
-#programa 'sajuste
+#programa 0
 #prgnow 0
 #prgexit 
 
@@ -42,7 +46,7 @@
 
 
 |--------------------------------
-#font
+
 
 |---- colorbars
 :,2d
@@ -92,23 +96,50 @@
 #imgglass
 #imgball
 
-#foto1
+#id
+#fotos
 #titulo
 #descripcion
 #direccion
 #telefono
+#tfoto
+	
+|function photoname(path,nom,id){
+|let pp=parseInt(id).toString(16);
+|while (pp.length<6){pp="0"+pp;}
+|return path+"/"+pp.substring(0,2)+"/"+pp.substring(2,4)+"/"+nom+id+".png";
 
+#bpath * 64
+
+:,h2
+	$ff and 16 <? ( "0" ,s ) ,h ;
+	
+:photoname	
+	mark
+	"autotv/" ,s
+	id 
+	dup 24 >> ,h2 "/" ,s
+	dup 16 >> ,h2 "/" ,s
+	dup 8 >> ,h2 "/" ,s
+	"fotos%d.png" ,print 
+	empty 
+	here ;
+	
 :cartelini
 	"autotv/cliente.db" loaddb-i
 	
-	SDLrenderer "media/img/ball.png" loadtexture 'imgball !
-	SDLrenderer "media/img/glass.png" loadtexture 'imgglass !	
-
+	0 dbfld 'id !
 	1 dbfld 'titulo !
 	2 dbfld 'direccion !
 	3 dbfld 'telefono !
 	4 dbfld 'descripcion !	
+	6 dbfld 'fotos !
 
+	SDLrenderer "media/img/ball.png" loadtexture 'imgball !
+	SDLrenderer "media/img/glass.png" loadtexture 'imgglass !	
+
+	SDLrenderer photoname  loadtexture 'tfoto !		
+	
 	timeline.clear
 
 |	0.5 0.3 0.4 0.4 xywh%64 $ff00ff +box
@@ -117,16 +148,19 @@
 	imgball 0.4 0.3 0.08 0.08 xywh%64 +img
 	0.0 +fx.on
 
-	imgglass 0.6 0.3 0.1 0.1 xywh%64 +img
+	imgglass 0.0 0.0 0.1 0.1 xywh%64 +img
+	0.0 +fx.on
+
+	tfoto 0.05 0.05 0.9 0.9 xywh%64 +img
 	0.0 +fx.on
 	
-	font titulo 0.5 0.3 0.4 0.4 xywh%64 $00ff00ff +tbox | font "" boz color -- ; HVRRGGBB00
+	font titulo 0.1 0.1 0.4 0.4 xywh%64 $00ff00ff +tbox |  HVRRGGBB00
 	0.0 +fx.on
 
 	font telefono 0.5 0.3 0.4 0.4 xywh%64 $11ff0000 +tbox 
 	0.0 +fx.on
 
-	font descripcion 0.1 0.1 0.8 0.8 xywh%64 $220000ff +tbox 
+	font1 descripcion 0.1 0.1 0.8 0.8 xywh%64 $000000ff +tbox 
 	0.0 +fx.on
 	
 	timeline.start
@@ -137,14 +171,15 @@
 	$0 rgbcolor
 	SDLrenderer SDL_RenderClear
 	timeline.draw
-|	debugtimeline
-	:
+	
+	debugtimeline
+	;
 	
 :cartelfin
+	"fintt" .println
 	imgglass SDL_DestroyTexture
 	imgball SDL_DestroyTexture
-	|direccion SDL_DestroyTexture
-	|telefono SDL_DestroyTexture
+	tfoto SDL_DestroyTexture
 	;
 
 #prgcartel 'cartelini 'cartel 'cartelfin
@@ -172,8 +207,9 @@
 
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
+	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font1 !
 	
-
+	'prgajuste changeprg
 	'mainloop SDLshow
 	
 	Mix_CloseAudio

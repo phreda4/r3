@@ -77,17 +77,21 @@
 	;
 	
 :emit
-	13 =? ( 0 ca!+ a> b!+ drop ; )
-	10 =? ( drop ; )
+	13 =? ( over c@ 10 =? ( 2drop ; ) 0 ca!+ a> b!+ 2drop ; )
+	10 =? ( 0 ca!+ a> b!+ drop ; )
 	32 =? ( inwbox )
 	ca!+ ;
-		
+	
+:lastline
+	a> 2 - c@ 0? ( drop b> 16 - ; ) drop
+	b> 8 - ;
+	
 :splitlines | "" --
 	'lines >b
-	'buffer dup b!+ >a
+	'buffer dup >a b!+ 
 	( c@+ 1? emit ) ca!+ a> b!+
 	drop 
-	b> 8 - 'lines> ! ;
+	lastline 'lines> ! ;
 		
 ::textbox | $vh str box color font --
 	'font ! 'color !
