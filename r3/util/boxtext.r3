@@ -32,6 +32,7 @@
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
+
 	
 :bbrect
 	SDLrenderer 'boxt SDL_RenderDrawRect ;
@@ -39,32 +40,6 @@
 :bbfill
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
-:textl
-	'boxt d@+ 'x ! d@+ 'y +! drop 
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x 'bbtext d!+ d!+ !
-		@+ bbtextb
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
-		
-:textc
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 1 >> 'x +! drop | x=center
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
-		@+ bbtextb
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
-		
-:textr
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 'x +! drop | x=last
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
-		@+ bbtextb
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
 
 #lastsp
 
@@ -92,6 +67,34 @@
 	( c@+ 1? emit ) ca!+ a> b!+
 	drop 
 	lastline 'lines> ! ;
+
+|----------------------------------------------
+:textl
+	'boxt d@+ 'x ! d@+ 'y +! drop 
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x 'bbtext d!+ d!+ !
+		@+ bbtextb
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
+		
+:textc
+	'boxt d@+ 'x ! d@+ 'y +! d@+ 1 >> 'x +! drop | x=center
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
+		@+ bbtextb
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
+		
+:textr
+	'boxt d@+ 'x ! d@+ 'y +! d@+ 'x +! drop | x=last
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
+		@+ bbtextb
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
 		
 ::textbox | $vh str box color font --
 	'font ! 'color !
@@ -110,3 +113,57 @@
 	%010000 and? ( drop textc ; )
 	%100000 and? ( drop textr ; )
 	drop textl ;
+	
+|------------------------------------------------
+:bbtexts | "text" ---
+	font swap color dup $ffffffff and swap 32 >> TTF_RenderUTF8_shaded | surface
+	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
+	SDLrenderer over 0 'bbtext SDL_RenderCopy	
+	SDL_DestroyTexture
+	SDL_FreeSurface ;
+
+
+:textls
+	'boxt d@+ 'x ! d@+ 'y +! drop 
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x 'bbtext d!+ d!+ !
+		@+ bbtexts
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
+		
+:textcs
+	'boxt d@+ 'x ! d@+ 'y +! d@+ 1 >> 'x +! drop | x=center
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
+		@+ bbtexts
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
+		
+:textrs
+	'boxt d@+ 'x ! d@+ 'y +! d@+ 'x +! drop | x=last
+	'boxlines >a	
+	'lines ( lines> <?
+		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
+		@+ bbtexts
+		a> 8 - @ 32 >> 'y +!
+		) drop ;
+
+::textboxs | $vh str box color font --
+	'font ! 'color !
+	'boxt 64box
+	splitlines	
+	0 'htotal !
+	'boxlines >a
+	'lines ( lines> <?
+		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
+		a> 4 + d@ 'htotal +!
+		8 a+ ) drop
+	
+	0 'y !
+	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
+	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
+	%010000 and? ( drop textcs ; )
+	%100000 and? ( drop textrs ; )
+	drop textls ;

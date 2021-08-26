@@ -121,7 +121,30 @@
 	swap dup 16 << 48 >> rot d!+
 	swap dup 32 << 48 >> rot d!+
 	swap 48 << 48 >> swap d! ;
+
+|--- ratio adjust
+:setbox | hn wn --
+	a> 8 + d@ over - 1 >> a> d+! | padx
+	a> 12 + d@ pick2 - 1 >> a> 4 + d+! | pady
+	8 a+
+	da!+ da!+ ;
 	
+:ratio2 | w h hx --
+	drop
+	a> 12 + d@ swap rot */ 	| WN
+	a> 12 + d@ swap
+	setbox ;
+	
+::64boxratio | 64wh 'box -- ; adjust box by ratio and pad!
+	>a
+	dup 32 >> swap 32 << 32 >>	| h w | texture
+	a> 8 + d@ pick2 pick2 */	| h w HN
+	a> 12 + d@ 
+	>? ( ratio2 ; ) 
+	nip nip a> 8 + d@ 	| HN WN
+	setbox	
+	
+
 |-------------------- FILLBOX
 :drawbox | adr --
 	>b b@+ 1 and? ( drop ; ) 
@@ -144,12 +167,19 @@
 |		SDL_SetTextureColorMod )
 	drop
 	b@+ 'sdlbox 64box
-	SDLrenderer b@ 0 'sdlbox SDL_RenderCopy
+	SDLrenderer b@+ 
+	|b@ 'sdlbox 64boxratio
+	0 'sdlbox SDL_RenderCopy
 	;
+
+#imgwh 0
 
 ::+img  | img box --
 	'drawimg 'screen p!+ >a
-	0 a!+ a!+ a! ;
+	0 a!+ a!+ 
+	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
+	a!+ | texture
+	imgwh a! ; 
 
 |-------------------- TEXTO
 :drawtxt | adr --
@@ -180,6 +210,22 @@
 ::+tbox | font "" boz color -- ; HVRRGGBB00
 	'drawtbox 'screen p!+ >a
 	8 << 1 or a!+ a!+ a!+ a! ;
+
+|-------------------- TEXT BOX
+:drawtboxb
+	>b b@+ 1 and? ( drop ; )
+	8 >> dup >r 24 >>
+	b@+ b@+ swap | box in 2do for animation
+	r> $ffffff and | color
+	b@+ >r | font
+	b@+ 32 << or 
+	r>
+	textboxs | $vh str box colorfb font --
+	;
+	
+::+tboxb | colorb font "" boz color -- ; HVRRGGBB00
+	'drawtboxb 'screen p!+ >a
+	8 << 1 or a!+ a!+ a!+ a!+ a! ;
 	
 |-------------------- SONIDO
 :evt.play | adr --

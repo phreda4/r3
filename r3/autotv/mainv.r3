@@ -13,6 +13,7 @@
 ^r3/util/boxtext.r3
 ^r3/util/dbtxt.r3
 
+^r3/lib/parse.r3
 ^r3/lib/mem.r3
 ^r3/lib/key.r3
 ^r3/lib/sys.r3
@@ -46,7 +47,6 @@
 
 
 |--------------------------------
-
 
 |---- colorbars
 :,2d
@@ -92,10 +92,8 @@
 
 #prgajuste 0 'sajuste 0
 
-|---- cartel simple
-#imgglass
-#imgball
 
+|---- cartel simple
 #id
 #fotos
 #titulo
@@ -103,66 +101,62 @@
 #direccion
 #telefono
 #tfoto
-	
-|function photoname(path,nom,id){
-|let pp=parseInt(id).toString(16);
-|while (pp.length<6){pp="0"+pp;}
-|return path+"/"+pp.substring(0,2)+"/"+pp.substring(2,4)+"/"+nom+id+".png";
-
-#bpath * 64
 
 :,h2
 	$ff and 16 <? ( "0" ,s ) ,h ;
 	
 :photoname	
 	mark
-	"autotv/" ,s
+	"autotv/file-com/" ,s
 	id 
 	dup 24 >> ,h2 "/" ,s
 	dup 16 >> ,h2 "/" ,s
-	dup 8 >> ,h2 "/" ,s
-	"fotos%d.png" ,print 
+	"fotos%d.png" ,print
+	0 ,c
 	empty 
 	here ;
 	
+:easeline ;
+
 :cartelini
 	"autotv/cliente.db" loaddb-i
 	
-	0 dbfld 'id !
+	0 dbfld str>nro 'id ! drop
 	1 dbfld 'titulo !
 	2 dbfld 'direccion !
 	3 dbfld 'telefono !
 	4 dbfld 'descripcion !	
 	6 dbfld 'fotos !
 
-	SDLrenderer "media/img/ball.png" loadtexture 'imgball !
-	SDLrenderer "media/img/glass.png" loadtexture 'imgglass !	
-
-	SDLrenderer photoname  loadtexture 'tfoto !		
+	SDLrenderer photoname loadtexture 'tfoto !		
 	
 	timeline.clear
 
-|	0.5 0.3 0.4 0.4 xywh%64 $ff00ff +box
+|	0.1 0.1 0.8 0.8 xywh%64 $ff +box
 |	0.0 +fx.on
 	
-	imgball 0.4 0.3 0.08 0.08 xywh%64 +img
+	tfoto 0.02 0.02 0.96 0.9 xywh%64 +img
 	0.0 +fx.on
 
-	imgglass 0.0 0.0 0.1 0.1 xywh%64 +img
+|	-0.01 0.0 1.1 0.9 xywh%64 0.01 0.0 1.1 0.9 xywh%64 'easeline 5.0 
+|	0.0 +fx.box	
+	
+	$0 font titulo " %s " sprint 0.05 0.74 0.9 0.2 xywh%64 $02ffffff +tboxb |  HVRRGGBB00
 	0.0 +fx.on
 
-	tfoto 0.05 0.05 0.9 0.9 xywh%64 +img
+	$0 font1 telefono 0.05 0.78 0.9 0.2 xywh%64 $22ffff00 +tboxb 
+	0.0 +fx.on
+
+	font1 descripcion 0.05 0.05 0.9 0.8 xywh%64 $00ff0000 +tbox
 	0.0 +fx.on
 	
-	font titulo 0.1 0.1 0.4 0.4 xywh%64 $00ff00ff +tbox |  HVRRGGBB00
-	0.0 +fx.on
-
-	font telefono 0.5 0.3 0.4 0.4 xywh%64 $11ff0000 +tbox 
-	0.0 +fx.on
-
-	font1 descripcion 0.1 0.1 0.8 0.8 xywh%64 $000000ff +tbox 
-	0.0 +fx.on
+	0.05 0.05 0.9 0.8 xywh%64
+	0.05 0.05 0.9 0.8 xywh%64
+	'Ela_InOut 5.0
+	0.0 +fx.box
 	
+	
+	'pexit 5.0 +event
 	timeline.start
 	;
 	
@@ -171,26 +165,21 @@
 	$0 rgbcolor
 	SDLrenderer SDL_RenderClear
 	timeline.draw
-	
-	debugtimeline
 	;
 	
 :cartelfin
-	"fintt" .println
-	imgglass SDL_DestroyTexture
-	imgball SDL_DestroyTexture
 	tfoto SDL_DestroyTexture
 	;
 
-#prgcartel 'cartelini 'cartel 'cartelfin
-
+##prgcartel 'cartelini 'cartel 'cartelfin
 		
+|---------------------------------
 |---------------------------------
 :mainloop
 	programa ex
 	SDLrenderer SDL_RenderPresent
 	
-	|endtimeline 1? ( exit ) drop
+	prgexit 1? ( 'prgcartel changeprg ) drop
 	
 	SDLkey
 	>esc< =? ( exit )
