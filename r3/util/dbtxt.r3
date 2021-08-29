@@ -13,12 +13,12 @@
 #memflds * 8192
 #memflds> 'memflds
 
-
 |------------------------------------------
 :FNAME | adr -- adrname
 	44 + ;
 
 :getnfilename | n "path" -- filename/0
+	"%s/*" sprint
 	ffirst drop fnext drop
 	( fnext 0? ( nip ; ) swap 1? 1 - nip ) drop
 	FNAME ;

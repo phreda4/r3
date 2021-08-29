@@ -19,7 +19,8 @@
 ^r3/lib/sys.r3
 ^r3/lib/gr.r3
 
-
+	
+|--------------------------------	
 #font
 #font1
 #font2
@@ -107,12 +108,10 @@
 	
 :photoname	
 	mark
-	"autotv/file-com/" ,s
+	"autotv/file-com/" ,s 
 	id 
-	dup 24 >> ,h2 "/" ,s
-	dup 16 >> ,h2 "/" ,s
-	"fotos%d.png" ,print
-	0 ,c
+	dup 24 >> ,h2 "/" ,s dup 16 >> ,h2 "/" ,s
+	"fotos%d.png" ,print 0 ,c
 	empty 
 	here ;
 	
@@ -138,7 +137,7 @@
 	tfoto 0.02 0.02 0.96 0.9 xywh%64 +img
 	0.0 +fx.on
 
-|	-0.01 0.0 1.1 0.9 xywh%64 0.01 0.0 1.1 0.9 xywh%64 'easeline 5.0 
+|	-0.1 0.0 1.1 0.9 xywh%64 0.1 0.0 1.1 0.9 xywh%64 'easeline 5.0 
 |	0.0 +fx.box	
 	
 	$0 font titulo " %s " sprint 0.05 0.74 0.9 0.2 xywh%64 $02ffffff +tboxb |  HVRRGGBB00
@@ -174,17 +173,45 @@
 ##prgcartel 'cartelini 'cartel 'cartelfin
 		
 |---------------------------------
+#vfilenow * 1024
+
+:cvideoini 
+
+	"autotv/videos" loadnfile 'vfilenow strcpy
+	
+	timeline.clear
+	
+	$0 font 'vfilenow 0.05 0.5 0.9 0.2 xywh%64 $22ffff00 +tboxb 
+	0.0 +fx.on
+	
+	'pexit 5.0 +event
+	timeline.start
+	;
+	
+:cvideo 
+	$0 rgbcolor
+	SDLrenderer SDL_RenderClear
+	timeline.draw
+
+	;
+	
+:cvideofin
+	;
+	
+#prgcvideo 'cvideoini 'cvideo 'cvideofin
 |---------------------------------
 :mainloop
 	programa ex
 	SDLrenderer SDL_RenderPresent
 	
 	prgexit 1? ( 'prgcartel changeprg ) drop
-	
+
+
 	SDLkey
 	>esc< =? ( exit )
+	<f1> =? ( 'prgcartel changeprg ) 	
 	<f2> =? ( 'prgajuste changeprg )
-	<f1> =? ( 'prgcartel changeprg ) 
+	<f3> =? ( 'prgcvideo changeprg )
 	drop ;		
 
 
