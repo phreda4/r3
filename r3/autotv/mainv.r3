@@ -177,12 +177,18 @@
 
 :cvideoini 
 
+	SDLrenderer $16362004 1 
+	427 240 
+	SDL_CreateTexture 'videoframe !
+	
 	"autotv/videos" loadnfile 'vfilenow strcpy
 	
 	timeline.clear
+
+	'vfilenow 0.05 0.5 0.9 0.2 xywh%64 +video
 	
-	$0 font 'vfilenow 0.05 0.5 0.9 0.2 xywh%64 $22ffff00 +tboxb 
-	0.0 +fx.on
+|	$0 font 'vfilenow 0.05 0.5 0.9 0.2 xywh%64 $22ffff00 +tboxb 
+|	0.0 +fx.on
 	
 	'pexit 5.0 +event
 	timeline.start
@@ -191,11 +197,18 @@
 :cvideo 
 	$0 rgbcolor
 	SDLrenderer SDL_RenderClear
+	videoframe 'srct 'mpixel 'mpitch SDL_LockTexture
+	mpixel FFM_redraw drop
+	videoframe SDL_UnlockTexture
+	
+	SDLrenderer videoframe 0 'desrec3 SDL_RenderCopy		
+	
 	timeline.draw
 
 	;
 	
 :cvideofin
+	videoframe SDL_DestroyTexture
 	;
 	
 #prgcvideo 'cvideoini 'cvideo 'cvideofin
