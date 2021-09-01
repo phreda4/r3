@@ -174,41 +174,64 @@
 		
 |---------------------------------
 #vfilenow * 1024
+#videoframe
+#srct [ 0 0 427 240 ]
+#mpixel 
+#mpitch
+
+#sonido
 
 :cvideoini 
-
-	SDLrenderer $16362004 1 
-	427 240 
-	SDL_CreateTexture 'videoframe !
-	
 	"autotv/videos" loadnfile 'vfilenow strcpy
+	SDLrenderer $16362004 1 427 240 SDL_CreateTexture 'videoframe !
 	
+	 "media/snd/shoot.mp3" Mix_LoadWAV 'sonido !
+	 
 	timeline.clear
 
-	'vfilenow 0.05 0.5 0.9 0.2 xywh%64 +video
+	videoframe 0.0 0.0 1.0 1.0 xywh%64 +img
+	0.0 +fx.on	
 	
-|	$0 font 'vfilenow 0.05 0.5 0.9 0.2 xywh%64 $22ffff00 +tboxb 
-|	0.0 +fx.on
+	0.0 0.9 1.0 0.1 xywh%64 $ff0000 +box 	
+	0.0 +fx.on
+	1.0 0.9 1.0 0.1 xywh%64
+	0.0 0.9 1.0 0.1 xywh%64
+	'Cub_In 1.0
+	0.1 +fx.box	
+
+
+	$ff0000
+	font 'vfilenow 0.05 0.9 0.9 0.1 xywh%64 $0000ff +tboxb
+	1.1 +fx.on
+	1.0 0.9 1.0 0.1 xywh%64
+	0.05 0.9 0.9 0.1 xywh%64
+	'Cub_In 1.0
+	1.1 +fx.box	
+	
+	sonido 2.1 +sound
 	
 	'pexit 5.0 +event
 	timeline.start
+
+	'vfilenow "autotv/videos/%s" sprint 427 240 FFM_open	
 	;
 	
 :cvideo 
-	$0 rgbcolor
-	SDLrenderer SDL_RenderClear
 	videoframe 'srct 'mpixel 'mpitch SDL_LockTexture
 	mpixel FFM_redraw drop
 	videoframe SDL_UnlockTexture
-	
-	SDLrenderer videoframe 0 'desrec3 SDL_RenderCopy		
-	
+
+	$0 rgbcolor
+	SDLrenderer SDL_RenderClear
+
 	timeline.draw
 
 	;
 	
 :cvideofin
+	FFM_close
 	videoframe SDL_DestroyTexture
+	sonido Mix_FreeChunk	
 	;
 	
 #prgcvideo 'cvideoini 'cvideo 'cvideofin
@@ -232,8 +255,11 @@
 	"r3sdl" 800 600 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
 	$3 IMG_Init
+	
 	8 16 "media/img/VGA8x16.png" bmfont
 
+	FFM_init
+	
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font1 !
@@ -249,6 +275,7 @@
 :ini
 	windows
 	sdl2 sdl2image sdl2mixer sdl2ttf
+	ffm
 	mark
 	timeline.inimem
 	;

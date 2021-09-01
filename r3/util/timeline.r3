@@ -144,12 +144,17 @@
 	nip nip a> 8 + d@ 	| HN WN
 	setbox	
 	
-
+|--------------	
+:swapcolor | color -- swapcolor
+	dup 16 >> $ff and 
+	over 16 << $ff0000 and or
+	swap $ff00 and or ;
+	
 |-------------------- FILLBOX
 :drawbox | adr --
 	>b b@+ 1 and? ( drop ; ) 
 	SDLrenderer swap
-	dup 26 >> $ff and swap dup 16 >> $ff and swap 8 >> $ff and 
+	dup 24 >> $ff and swap dup 16 >> $ff and swap 8 >> $ff and 
 	$ff SDL_SetRenderDrawColor 
 	b@ 'sdlbox 64box
 	SDLrenderer 'sdlbox SDL_RenderFillRect
@@ -209,6 +214,7 @@
 	
 ::+tbox | font "" boz color -- ; HVRRGGBB00
 	'drawtbox 'screen p!+ >a
+	swapcolor
 	8 << 1 or a!+ a!+ a!+ a! ;
 
 |-------------------- TEXT BOX
@@ -225,29 +231,24 @@
 	
 ::+tboxb | colorb font "" boz color -- ; HVRRGGBB00
 	'drawtboxb 'screen p!+ >a
-	8 << 1 or a!+ a!+ a!+ a!+ a! ;
+	swapcolor
+	8 << 1 or a!+ a!+ a!+ a!+ 
+	swapcolor a! ;
 	
-|-------------------- SONIDO
+|-------------------- SOUND
 :evt.play | adr --
 	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed ;
 
 ::+sound | sonido inicio --
 	0 'evt.play 2swap >r swap r> +tline ;
 
-|-------------------- VIDEO ***********
-:drawvideo
-	@+ 1 and? ( 2drop ; ) drop
-	>a
-|	a@+ a@+ videoshow a!
-	;
+|-------------------- MUSIC
+:evt.playm | adr --
+	-1 over 16 + @ 1 Mix_PlayMusic ;
 
+::+music | sonido inicio --
+	0 'evt.playm 2swap >r swap r> +tline ;
 
-:+video | x y --
-	'drawvideo 'screen p!+ >a
-	1 a!+
-	swap a!+ a!+ | x1 y1
-	0 a!+	| estado
-	;
 
 |-------------------- EXEC
 ::+event | exec inicio --
