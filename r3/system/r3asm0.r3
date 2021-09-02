@@ -905,9 +905,17 @@
 :gMEM
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
-:gLOADLIB 
-:gGETPROC
+:gLOADLIB | "" -- aa
+	"cinvoke LoadLibraryA," ,s ,TOS ,cr
+	;
+	
+:gGETPROC | aa "" -- dd
+	"cinvoke GetProcAddress," ,s ,NOS "," ,s ,TOS ,cr
+	;
+	
 :gSYS0 
+	"call [" ,s ,TOS "]" ,ln ;
+	
 :gSYS1 
 :gSYS2 
 :gSYS3 

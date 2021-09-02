@@ -175,22 +175,26 @@
 |---------------------------------
 #vfilenow * 1024
 #videoframe
-#srct [ 0 0 427 240 ]
+#srct [ 0 0 800 600 ]
 #mpixel 
 #mpitch
 
 #sonido
+#musica
 
 :cvideoini 
 	"autotv/videos" loadnfile 'vfilenow strcpy
-	SDLrenderer $16362004 1 427 240 SDL_CreateTexture 'videoframe !
+	SDLrenderer $16362004 1 800 600 SDL_CreateTexture 'videoframe !
 	
 	 "media/snd/shoot.mp3" Mix_LoadWAV 'sonido !
+	 "autotv/musica/cronica-tv-musica.mp3" Mix_LoadMUS 'musica !
 	 
 	timeline.clear
-
+	
 	videoframe 0.0 0.0 1.0 1.0 xywh%64 +img
 	0.0 +fx.on	
+	
+	|musica 0.0 +music
 	
 	0.0 0.9 1.0 0.1 xywh%64 $ff0000 +box 	
 	0.0 +fx.on
@@ -213,7 +217,7 @@
 	'pexit 5.0 +event
 	timeline.start
 
-	'vfilenow "autotv/videos/%s" sprint 427 240 FFM_open	
+	'vfilenow "autotv/videos/%s" sprint 800 600 FFM_open	
 	;
 	
 :cvideo 
@@ -232,6 +236,7 @@
 	FFM_close
 	videoframe SDL_DestroyTexture
 	sonido Mix_FreeChunk	
+	musica Mix_FreeMusic
 	;
 	
 #prgcvideo 'cvideoini 'cvideo 'cvideofin
@@ -253,7 +258,7 @@
 
 :main
 	"r3sdl" 800 600 SDLinit
-	44100 $08010 2 4096 Mix_OpenAudio 
+	48000 $08010 2 4096 Mix_OpenAudio 
 	$3 IMG_Init
 	
 	8 16 "media/img/VGA8x16.png" bmfont
