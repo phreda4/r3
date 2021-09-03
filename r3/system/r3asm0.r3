@@ -906,27 +906,33 @@
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
 :gLOADLIB | "" -- aa
-	"cinvoke LoadLibraryA," ,s ,TOS ,cr
-	;
+	"cinvoke LoadLibraryA," ,s ,TOS ,cr	;
 	
 :gGETPROC | aa "" -- dd
-	"cinvoke GetProcAddress," ,s ,NOS "," ,s ,TOS ,cr
-	;
+	"cinvoke GetProcAddress," ,s ,NOS "," ,s ,TOS ,cr ;
 	
-:gSYS0 
-	"call [" ,s ,TOS "]" ,ln ;
-	
+:gSYS0  | a -- b
+	"cinvoke " ,s ,TOS ,cr ;
 :gSYS1 
+	"cinvoke " ,s ,TOS "," ,NOS ,cr ;
 :gSYS2 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 ,cr ;
 :gSYS3 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 ,cr ;
 :gSYS4 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 ,cr ;
 :gSYS5
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 ,cr ;
 :gSYS6 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 ,cr ;
 :gSYS7 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 ,cr ;
 :gSYS8 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 ,cr ;
 :gSYS9 
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 "," ,NOS9 ,cr ;
 :gSYS10
-	;
+	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 "," ,NOS9 "," ,NOS10 ,cr ;
 	
 |---------------------------------
 #vmc1
