@@ -119,6 +119,7 @@
 :>TOSE  'prevale strcpy ;
 :>TOSB  'prevalb strcpy ;
 
+
 :varget
 	"movsxd rbx," ,s ,TOS ,cr
 	"rbx" >TOS
@@ -906,33 +907,53 @@
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
 :gLOADLIB | "" -- aa
-	"cinvoke LoadLibraryA," ,s ,TOS ,cr	;
+	"invoke LoadLibraryA,rax" ,ln	;
 	
 :gGETPROC | aa "" -- dd
-	"cinvoke GetProcAddress," ,s ,NOS "," ,s ,TOS ,cr ;
+	"invoke GetProcAddress,rax,qword[rbp]" ,ln 
+	"sub ebp,8" ,ln ;
 	
 :gSYS0  | a -- b
-	"cinvoke " ,s ,TOS ,cr ;
+	"call rax" ,ln ;
+	
 :gSYS1 
-	"cinvoke " ,s ,TOS "," ,NOS ,cr ;
+	"invoke rax,qword[rbp]" ,ln
+	"sub ebp,8" ,ln ;	
+	
 :gSYS2 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8]" ,ln
+	"sub ebp,8*2" ,ln ;	
+	
 :gSYS3 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8]" ,ln
+	"sub ebp,8*3" ,ln ;	
+	
 :gSYS4 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8]" ,ln
+	"sub ebp,8*4" ,ln ;	
+
 :gSYS5
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8]" ,ln
+	"sub ebp,8*5" ,ln ;	
+
 :gSYS6 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8]" ,ln
+	"sub ebp,8*6" ,ln ;	
+
 :gSYS7 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8]" ,ln
+	"sub ebp,8*7" ,ln ;	
+
 :gSYS8 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8]" ,ln
+	"sub ebp,8*8" ,ln ;	
+
 :gSYS9 
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 "," ,NOS9 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8]" ,ln
+	"sub ebp,8*9" ,ln ;	
 :gSYS10
-	"cinvoke " ,s ,TOS "," ,NOS "," ,NOS2 "," ,NOS3 "," ,NOS4 "," ,NOS5 "," ,NOS6 "," ,NOS7 "," ,NOS8 "," ,NOS9 "," ,NOS10 ,cr ;
+	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8],qword[rbp-9*8]" ,ln
+	"sub ebp,8*10" ,ln ;	
 	
 |---------------------------------
 #vmc1
@@ -980,7 +1001,7 @@ o>B 0 oB+
 
 :val'var! | especial case "nro 'var !"
 	getcte number
-	"mov dword[w" ,s dup d@ 8 >>> ,h "]," ,s ,TOSE ,cr
+	"mov qword[w" ,s dup d@ 8 >>> ,h "]," ,s ,TOSE ,cr
 	8 + ;
 
 
@@ -1001,7 +1022,7 @@ o>B 0 oB+
 	4 + swap ex ;
 
 :cal'var! | especial case "nro 'var !"
-	"mov dword[w" ,s
+	"mov qword[w" ,s
 	dup d@ 8 >>> ,h
 	"]," ,s
 	getcte2 number ,TOS ,cr
@@ -1070,12 +1091,12 @@ o>Bv 0 oB+v
 
 :varopt
 	"; OPTV " ,s over @ ,tokenprint ,cr
-	swap getval "dword[w%h]" sprint >TOS
+	swap getval "qword[w%h]" sprint >TOS
 	4 + swap ex ;
 
 :gvar
 	dup d@ $ff and 3 << 'vmc2 + @ 1? ( varopt ; ) drop
-	,DUP "movsxd rax,dword[w" ,s getval ,h "]" ,ln ;	|--	[var]
+	,DUP "mov rax,qword[w" ,s getval ,h "]" ,ln ;	|--	[var]
 
 
 |----------- call word
