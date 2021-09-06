@@ -51,6 +51,20 @@ call    r11
 mov     r11, rax
 jmp     loc_402859      ; jumptable 0000000000402846 case 130
 
+var_B8= qword ptr -0B8h
+var_B0= qword ptr -0B0h
+var_A8= qword ptr -0A8h
+var_A0= qword ptr -0A0h
+var_98= qword ptr -98h
+var_90= qword ptr -90h
+var_88= qword ptr -88h
+var_80= qword ptr -80h
+var_78= xmmword ptr -78h
+var_68= qword ptr -68h
+var_60= qword ptr -60h
+var_58= qword ptr -58h
+var_50= qword ptr -50h
+
 loc_4032DE:             ; jumptable 0000000000402846 case 124
 mov     rax, [r13+0]
 mov     rdx, [r13-18h]

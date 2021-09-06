@@ -104,7 +104,7 @@
 
 :?? | -- nblock
 	getval getiw
-	0? ( drop nblock ; ) drop stbl> 4 - @ ;
+	0? ( drop nblock ; ) drop stbl> 4 - d@ ;
 
 |---- Optimization WORDS
 #preval * 32
@@ -121,7 +121,7 @@
 
 
 :varget
-	"movsxd rbx," ,s ,TOS ,cr
+	"mov rbx," ,s ,TOS ,cr
 	"rbx" >TOS
 	"ebx" >TOSE 
 	"bl" >TOSB 
@@ -162,7 +162,7 @@
 
 :g1?
 	"or rax,rax" ,ln
-	?? "jz _o%h" ,print ,cr ;
+	?? "jz _o%h;" ,print ,cr ;
 
 :g+?
 	"or rax,rax" ,ln
@@ -362,14 +362,14 @@
 	"mov rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"idiv rbx" ,ln
-	"add ebp,8" ,ln
+	"add rbp,8" ,ln
 	"mov [rbp],rax" ,ln
 	"mov rax,rdx" ,ln ;
 :o/MODv
 	"movsxd rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"idiv rbx" ,ln
-	"add ebp,8" ,ln
+	"add rbp,8" ,ln
 	"mov [rbp],rax" ,ln
 	"mov rax,rdx" ,ln ;
 
@@ -830,15 +830,15 @@
 
 :gDMOVE
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep movsd" ,ln
 	,3DROP ;
 
 :gDMOVE>
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"lea rsi,[rsi+rcx*4-4]" ,ln
 	"lea rdi,[rdi+rcx*4-4]" ,ln
 	"std" ,ln
@@ -848,22 +848,22 @@
 
 :gDFILL
 	"mov rcx,rax" ,ln
-	"movsxd rax,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rax,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep stosd" ,ln
 	,3DROP ;
 
 :gCMOVE
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep movsb" ,ln
 	,3DROP ;
 
 :gCMOVE>
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"lea rsi,[rsi+rcx-1]" ,ln
 	"lea rdi,[rdi+rcx-1]" ,ln
 	"std" ,ln
@@ -873,22 +873,22 @@
 
 :gCFILL
 	"mov rcx,rax" ,ln
-	"movsxd rax,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rax,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep stosb" ,ln
 	,3DROP ;
 
 :gMOVE
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep movsq" ,ln
 	,3DROP ;
 
 :gMOVE>
 	"mov rcx,rax" ,ln
-	"movsxd rsi,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rsi,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"lea rsi,[rsi+rcx*8-8]" ,ln
 	"lea rdi,[rdi+rcx*8-8]" ,ln
 	"std" ,ln
@@ -898,8 +898,8 @@
 
 :gFILL
 	"mov rcx,rax" ,ln
-	"movsxd rax,dword[rbp]" ,ln
-	"movsxd rdi,dword[rbp-8]" ,ln
+	"mov rax,qword[rbp]" ,ln
+	"mov rdi,qword[rbp-8]" ,ln
 	"rep stosq" ,ln
 	,3DROP ;
 
@@ -911,49 +911,59 @@
 	
 :gGETPROC | aa "" -- dd
 	"invoke GetProcAddress,rax,qword[rbp]" ,ln 
-	"sub ebp,8" ,ln ;
+	"sub rbp,8" ,ln ;
 	
 :gSYS0  | a -- b
 	"call rax" ,ln ;
 	
 :gSYS1 
-	"invoke rax,qword[rbp]" ,ln
-	"sub ebp,8" ,ln ;	
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8" ,ln 
+	"call rax" ,ln ;	
 	
 :gSYS2 
-	"invoke rax,qword[rbp],qword[rbp-1*8]" ,ln
-	"sub ebp,8*2" ,ln ;	
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*2" ,ln 
+	"call rax" ,ln ;
 	
 :gSYS3 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8]" ,ln
-	"sub ebp,8*3" ,ln ;	
-	
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*3" ,ln 
+	"call rax" ,ln ;
+
 :gSYS4 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8]" ,ln
-	"sub ebp,8*4" ,ln ;	
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*4" ,ln 
+	"call rax" ,ln ;
 
 :gSYS5
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8]" ,ln
-	"sub ebp,8*5" ,ln ;	
+	"sub rbp,8*5" ,ln ;	
 
 :gSYS6 
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8]" ,ln
-	"sub ebp,8*6" ,ln ;	
+	"sub rbp,8*6" ,ln ;	
 
 :gSYS7 
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8]" ,ln
-	"sub ebp,8*7" ,ln ;	
+	"sub rbp,8*7" ,ln ;	
 
 :gSYS8 
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8]" ,ln
-	"sub ebp,8*8" ,ln ;	
+	"sub rbp,8*8" ,ln ;	
 
 :gSYS9 
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8]" ,ln
-	"sub ebp,8*9" ,ln ;	
+	"sub rbp,8*9" ,ln ;	
 :gSYS10
 	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8],qword[rbp-9*8]" ,ln
-	"sub ebp,8*10" ,ln ;	
+	"sub rbp,8*10" ,ln ;	
 	
 |---------------------------------
 #vmc1
