@@ -531,7 +531,7 @@
 ::DeepStack | deep --
 	IniStack
 	( 1? 1 -
-		dup "%h " .println
+|		dup "%h " .println
 		dup PUSH.REG
 		) drop ;
 

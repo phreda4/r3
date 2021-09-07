@@ -22,8 +22,8 @@
 ::Mix_LoadWAV "rb" SDL_RWFromFile sys-Mix_LoadWAV_RW sys1 ;
 ::Mix_LoadMUS sys-Mix_LoadMUS sys1 ;
 ::Mix_PlayChannelTimed sys-Mix_PlayChannelTimed sys4 drop ;
-::Mix_HaltChannel sys-Mix_HaltChannel
-::Mix_PlayMusic sys-Mix_PlayMusic sys2 ;
+::Mix_HaltChannel sys-Mix_HaltChannel sys4 drop ;
+::Mix_PlayMusic sys-Mix_PlayMusic sys2 drop ;
 ::Mix_HaltMusic sys-Mix_HaltMusic sys1 drop ;
 ::Mix_FreeChunk sys-Mix_FreeChunk sys1 drop ;
 ::Mix_FreeMusic sys-Mix_FreeMusic sys1 drop ;

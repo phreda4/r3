@@ -173,6 +173,7 @@
 ##prgcartel 'cartelini 'cartel 'cartelfin
 		
 |---------------------------------
+
 #vfilenow * 1024
 #videoframe
 #srct [ 0 0 800 600 ]
@@ -194,7 +195,7 @@
 	videoframe 0.0 0.0 1.0 1.0 xywh%64 +img
 	0.0 +fx.on	
 	
-	|musica 0.0 +music
+	musica 1.0 +music
 	
 	0.0 0.9 1.0 0.1 xywh%64 $ff0000 +box 	
 	0.0 +fx.on
@@ -214,22 +215,20 @@
 	
 	sonido 2.1 +sound
 	
-	'pexit 5.0 +event
+	'pexit 8.0 +event
 	timeline.start
 
 	'vfilenow "autotv/videos/%s" sprint 800 600 FFM_open	
 	;
 	
 :cvideo 
+|	$0 rgbcolor SDLrenderer SDL_RenderClear
+
 	videoframe 'srct 'mpixel 'mpitch SDL_LockTexture
 	mpixel FFM_redraw drop
 	videoframe SDL_UnlockTexture
 
-	$0 rgbcolor
-	SDLrenderer SDL_RenderClear
-
 	timeline.draw
-
 	;
 	
 :cvideofin
@@ -240,7 +239,20 @@
 	;
 	
 #prgcvideo 'cvideoini 'cvideo 'cvideofin
+
 |---------------------------------
+#mus_fondo
+
+:mfinicio
+	"autotv/musica/cronica-tv-musica.mp3" Mix_LoadMUS 'mus_fondo !
+	mus_fondo 1 Mix_PlayMusic
+	;
+	
+:mffin
+	mus_fondo Mix_FreeMusic ;
+	
+|---------------------------------
+
 :mainloop
 	programa ex
 	SDLrenderer SDL_RenderPresent
@@ -253,6 +265,8 @@
 	<f1> =? ( 'prgcartel changeprg ) 	
 	<f2> =? ( 'prgajuste changeprg )
 	<f3> =? ( 'prgcvideo changeprg )
+	
+	<f4> =? ( mus_fondo 0 Mix_PlayMusic )
 	drop ;		
 
 
@@ -269,7 +283,15 @@
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font1 !
 	
+	"autotv/musica/musica-fondo.mp3" Mix_LoadMUS 
+	dup "%h" .println
+	'mus_fondo !
+	
+	
 	'prgajuste changeprg
+	
+|mfinicio
+
 	'mainloop SDLshow
 	
 	Mix_CloseAudio

@@ -52,7 +52,7 @@
 	dic>toklen
 	( 1? 1 - >r
 		d@+ dup $ff and
-		dup "%h " .print
+|		dup "%h " .print
 		$c >=? ( $f <=? ( overdire ) )
 		2drop r> ) 2drop ;
 

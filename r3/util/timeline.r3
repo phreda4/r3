@@ -217,7 +217,7 @@
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a! ;
 
-|-------------------- TEXT BOX
+|-------------------- TEXT BOX FILL BACK
 :drawtboxb
 	>b b@+ 1 and? ( drop ; )
 	8 >> dup >r 24 >>
@@ -244,7 +244,9 @@
 
 |-------------------- MUSIC
 :evt.playm | adr --
-	-1 over 16 + @ 1 Mix_PlayMusic ;
+	dup 16 + @ dup "%h" .println
+	1 Mix_PlayMusic 
+	;
 
 ::+music | sonido inicio --
 	0 'evt.playm 2swap >r swap r> +tline ;
@@ -407,7 +409,7 @@
 ::timeline.inimem
 	here 'timeline !
 	$fff 'here +!
-	1024 'screen p.ini
-	1024 'fx p.ini
-	1024 'fxp p.ini
+	512 'screen p.ini
+	512 'fx p.ini
+	512 'fxp p.ini
 	;

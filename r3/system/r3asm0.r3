@@ -906,64 +906,170 @@
 :gMEM
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
+|The x64 ABI considers the registers RAX, RCX, RDX, R8, R9, R10, R11, and XMM0-XMM5 |volatile. When present, the upper portions of YMM0-YMM15 and ZMM0-ZMM15 are also |volatile. On AVX512VL, the ZMM, YMM, and XMM registers 16-31 are also volatile. |Consider volatile registers destroyed on function calls unless otherwise |safety-provable by analysis such as whole program optimization.
+
+|The x64 ABI considers registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, and |XMM6-XMM15 nonvolatile. They must be saved and restored by a function that uses them.
+
+|:vLOADLIB | "" -- aa
+|	"invoke LoadLibraryA,rax" ,ln	;
+
 :gLOADLIB | "" -- aa
 	"invoke LoadLibraryA,rax" ,ln	;
 	
+	
 :gGETPROC | aa "" -- dd
-	"invoke GetProcAddress,rax,qword[rbp]" ,ln 
+	"invoke GetProcAddress,qword[rbp],rax" ,ln 
 	"sub rbp,8" ,ln ;
 	
+:oGETPROC | aa "" -- dd
+	"invoke GetProcAddress,rax," ,s ,TOS ,cr 
+	"sub rbp,8" ,ln ;
+
+:vGETPROC | aa "" -- dd
+	varget 
+	"invoke GetProcAddress,rax,rbx" ,ln 
+	"sub rbp,8" ,ln ;
+
 :gSYS0  | a -- b
-	"call rax" ,ln ;
+	"sub rsp,$28" ,ln
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;
 	
 :gSYS1 
+	"sub rsp,$28" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8" ,ln 
-	"call rax" ,ln ;	
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 	
 :gSYS2 
+	"sub rsp,$28" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*2" ,ln 
-	"call rax" ,ln ;
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 	
 :gSYS3 
+	"sub rsp,$28" ,ln
 	"mov r8,[rbp-2*8]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*3" ,ln 
-	"call rax" ,ln ;
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS4 
+	"sub rsp,$28" ,ln
 	"mov r9,[rbp-3*8]" ,ln
 	"mov r8,[rbp-2*8]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*4" ,ln 
-	"call rax" ,ln ;
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS5
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8]" ,ln
-	"sub rbp,8*5" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*5" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS6 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8]" ,ln
-	"sub rbp,8*6" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*6" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS7 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8]" ,ln
-	"sub rbp,8*7" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp-8*2]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*7" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS8 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8]" ,ln
-	"sub rbp,8*8" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp-8*3]" ,ln
+	"mov [rsp+8*4],rcx" ,ln
+	"mov rcx,[rbp-8*2]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*8" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 
 :gSYS9 
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8]" ,ln
-	"sub rbp,8*9" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp-8*4]" ,ln
+	"mov [rsp+8*5],rcx" ,ln
+	"mov rcx,[rbp-8*3]" ,ln
+	"mov [rsp+8*4],rcx" ,ln
+	"mov rcx,[rbp-8*2]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*9" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
+
 :gSYS10
-	"invoke rax,qword[rbp],qword[rbp-1*8],qword[rbp-2*8],qword[rbp-3*8],qword[rbp-4*8],qword[rbp-5*8],qword[rbp-6*8],qword[rbp-7*8],qword[rbp-8*8],qword[rbp-9*8]" ,ln
-	"sub rbp,8*10" ,ln ;	
+	"sub rsp,$28" ,ln
+	"mov rcx,[rbp-8*5]" ,ln
+	"mov [rsp+8*6],rcx" ,ln
+	"mov rcx,[rbp-8*4]" ,ln
+	"mov [rsp+8*5],rcx" ,ln
+	"mov rcx,[rbp-8*3]" ,ln
+	"mov [rsp+8*4],rcx" ,ln
+	"mov rcx,[rbp-8*2]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-2*8]" ,ln
+	"mov rdx,[rbp-1*8]" ,ln
+	"mov rcx,[rbp]" ,ln
+	"sub rbp,8*10" ,ln 
+	"call rax" ,ln 
+	"add rsp,$28" ,ln ;	
 	
 |---------------------------------
 #vmc1
@@ -989,7 +1095,7 @@ o>B 0 oB+
 0 0 0 
 0 0 0 
 0
-0 0 
+0 oGETPROC 
 0 0 0 0 0 0 0 0 0 0 0 
 
 
@@ -1096,7 +1202,7 @@ o>Bv 0 oB+v
 0 0 0 
 0 0 0 
 0
-0 0 
+0 vGETPROC 
 0 0 0 0 0 0 0 0 0 0 0 
 
 :varopt
