@@ -126,7 +126,7 @@
 	"ebx" >TOSE 
 	"bl" >TOSB 
 	;
-
+	
 |-------------------------------------
 :g[
 	pushbl
@@ -910,11 +910,12 @@
 
 |The x64 ABI considers registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, and |XMM6-XMM15 nonvolatile. They must be saved and restored by a function that uses them.
 
-|:vLOADLIB | "" -- aa
-|	"invoke LoadLibraryA,rax" ,ln	;
 
 :gLOADLIB | "" -- aa
 	"invoke LoadLibraryA,rax" ,ln	;
+
+:oLOADLIB | "" -- aa
+	"invoke LoadLibraryA," ,s ,TOS ,cr ;
 	
 	
 :gGETPROC | aa "" -- dd
@@ -1095,7 +1096,7 @@ o>B 0 oB+
 0 0 0 
 0 0 0 
 0
-0 oGETPROC 
+oLOADLIB oGETPROC 
 0 0 0 0 0 0 0 0 0 0 0 
 
 
@@ -1153,7 +1154,13 @@ o>B 0 oB+
 	,DUP "mov rax," ,s getcte2 ,d ,cr ;
 
 |----------- adress string
+:stropt
+	"; OPTS " ,s over d@ ,tokenprint ,cr
+	swap dup 4 - d@ 8 >>> "str%h" sprint >TOS
+	4 + swap ex ;
+	
 :gstr
+	dup d@ $ff and 3 << 'vmc1 + @ 1? ( stropt ; ) drop
 	,DUP "mov rax,str" ,s
 	dup 4 - d@ 8 >>> ,h ,cr
 	;

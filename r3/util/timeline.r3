@@ -56,7 +56,7 @@
 :tictline
 	timeline< timenow
 	( over
-		timeline> =? ( 3drop ; )
+		timeline> =? ( 'timeline< ! 2drop ; )
 		@ >?
 		swap
 		dup 8 + @ ex
@@ -244,13 +244,10 @@
 
 |-------------------- MUSIC
 :evt.playm | adr --
-	dup 16 + @ dup "%h" .println
-	1 Mix_PlayMusic 
-	;
+	dup 16 + @ 0 Mix_PlayMusic ;
 
 ::+music | sonido inicio --
 	0 'evt.playm 2swap >r swap r> +tline ;
-
 
 |-------------------- EXEC
 ::+event | exec inicio --
@@ -374,7 +371,7 @@
 		@+ "%d " .print
 		@+ "%d " .print
 		@+ "%d " .println
-		) drop ;
+		) drop cr ;
 
 ::debugtimeline
 	.home .cls

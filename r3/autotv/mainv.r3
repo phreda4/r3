@@ -173,7 +173,6 @@
 ##prgcartel 'cartelini 'cartel 'cartelfin
 		
 |---------------------------------
-
 #vfilenow * 1024
 #videoframe
 #srct [ 0 0 800 600 ]
@@ -213,9 +212,9 @@
 	'Cub_In 1.0
 	1.1 +fx.box	
 	
-	sonido 2.1 +sound
+	|sonido 2.1 +sound
 	
-	'pexit 8.0 +event
+	|'pexit 8.0 +event
 	timeline.start
 
 	'vfilenow "autotv/videos/%s" sprint 800 600 FFM_open	
@@ -225,10 +224,13 @@
 |	$0 rgbcolor SDLrenderer SDL_RenderClear
 
 	videoframe 'srct 'mpixel 'mpitch SDL_LockTexture
-	mpixel FFM_redraw drop
+	
+	mpixel FFM_redraw 1? ( pexit ) drop 
+	
 	videoframe SDL_UnlockTexture
 
 	timeline.draw
+	
 	;
 	
 :cvideofin
@@ -283,9 +285,7 @@
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font1 !
 	
-	"autotv/musica/musica-fondo.mp3" Mix_LoadMUS 
-	dup "%h" .println
-	'mus_fondo !
+	"autotv/musica/musica-fondo.mp3" Mix_LoadMUS 'mus_fondo !
 	
 	
 	'prgajuste changeprg
