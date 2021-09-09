@@ -10,6 +10,17 @@ include 'set.asm'
 
 include 'include/win64w.inc'
 
+; from LocoDelAssembly in fasm forum
+macro cinvoke64 name, [args]{
+common
+   PUSH RSP             ;save current RSP position on the stack
+   PUSH qword [RSP]     ;keep another copy of that on the stack
+   ADD RSP,8
+   AND SPL,0F0h         ;adjust RSP to align the stack if not already there
+   cinvoke name, args
+   POP RSP              ;restore RSP to its original value
+}
+
 section '' code readable executable
 
 ;===============================================
@@ -30,16 +41,7 @@ include 'code.asm'
 ;----- CODE -----
   ret
 
-; from LocoDelAssembly in fasm forum
-macro cinvoke64 name, [args]{
-common
-   PUSH RSP             ;save current RSP position on the stack
-   PUSH qword [RSP]     ;keep another copy of that on the stack
-   ADD RSP,8
-   AND SPL,0F0h         ;adjust RSP to align the stack if not already there
-   cinvoke name, args
-   POP RSP              ;restore RSP to its original value
-}
+
 ;===============================================
 SYSMSEC: ;  ( -- msec )
   add rbp,8

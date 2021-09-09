@@ -12,4 +12,5 @@
 			"^[%dm %d ^[m" .printe
 			1 + ) drop
 		cr
-		1 + ) drop ;
+		1 + ) drop 
+		;

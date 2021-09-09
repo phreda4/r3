@@ -919,22 +919,22 @@
 	
 	
 :gGETPROC | aa "" -- dd
-	"invoke GetProcAddress,qword[rbp],rax" ,ln 
+	"cinvoke64 GetProcAddress,qword[rbp],rax" ,ln 
 	"sub rbp,8" ,ln ;
 	
 :oGETPROC | aa "" -- dd
-	"invoke GetProcAddress,rax," ,s ,TOS ,cr 
-	"sub rbp,8" ,ln ;
+	"cinvoke64 GetProcAddress,rax," ,s ,TOS ,cr ;
+
 
 :vGETPROC | aa "" -- dd
 	varget 
-	"invoke GetProcAddress,rax,rbx" ,ln 
-	"sub rbp,8" ,ln ;
+	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
 :gSYS0  | a -- b
-	"sub rsp,$28" ,ln
-	"call rax" ,ln 
-	"add rsp,$28" ,ln ;
+	"cinvoke64 rax," ,ln ;
+|	"sub rsp,$28" ,ln
+|	"call rax" ,ln 
+|	"add rsp,$28" ,ln ;
 	
 :gSYS1 
 	"sub rsp,$28" ,ln

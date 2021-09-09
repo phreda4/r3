@@ -15,10 +15,10 @@
 	8 >>> src + ;
 
 |------------ compila DATO
-#d1 "dd "
-#d2 "dw "
+#d1 "dq "
+#d2 "dd "
 #d3	"db "
-#d4 "rb "
+#d4 "rq "
 #dtipo 'd1
 #dini 0
 #dcnt 0

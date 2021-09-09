@@ -94,6 +94,35 @@
 #prgajuste 0 'sajuste 0
 
 
+|---- Hora y temperatura
+#buffhora * 128
+#bufftemp * 128
+
+:updatehora
+	mark ,sp ,date ,sp ,eol empty here 'buffhora strcpy
+	;
+	
+:inihora	
+	timeline.clear
+	$0 font2 'buffhora 0.05 0.78 0.9 0.2 xywh%64 $22ffff00 +tboxb 
+	0.0 +fx.on	
+	
+	'pexit 20.0 +event
+	timeline.start
+	;
+	
+:shora
+	$0 rgbcolor
+	SDLrenderer SDL_RenderClear
+	timeline.draw
+	;
+	
+:finhora	
+
+	;
+	
+#prghora 'inihora 'shora 'finhora
+
 |---- cartel simple
 #id
 #fotos
@@ -284,6 +313,7 @@
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font1 !
+	"media/ttf/roboto-bold.ttf" 80 TTF_OpenFont 'font2 !
 	
 	"autotv/musica/musica-fondo.mp3" Mix_LoadMUS 'mus_fondo !
 	
