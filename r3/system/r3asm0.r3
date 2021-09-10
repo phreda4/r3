@@ -912,10 +912,10 @@
 
 
 :gLOADLIB | "" -- aa
-	"invoke LoadLibraryA,rax" ,ln	;
+	"cinvoke64 LoadLibraryA,rax" ,ln	;
 
 :oLOADLIB | "" -- aa
-	"invoke LoadLibraryA," ,s ,TOS ,cr ;
+	"cinvoke64 LoadLibraryA," ,s ,TOS ,cr ;
 	
 	
 :gGETPROC | aa "" -- dd
@@ -931,47 +931,75 @@
 	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
 :gSYS0  | a -- b
-	"cinvoke64 rax," ,ln ;
-|	"sub rsp,$28" ,ln
-|	"call rax" ,ln 
-|	"add rsp,$28" ,ln ;
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 
+	"CALL rax" ,ln 
+	"sub RSP,$20" ,ln 
+	"POP RSP" ,ln ;
 	
 :gSYS1 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8" ,ln 
+	"add RSP,$20" ,ln 	
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
 	
 :gSYS2 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*2" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 
+	"POP RSP" ,ln ;
 	
 :gSYS3 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 
 	"mov r8,[rbp-2*8]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*3" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
 
 :gSYS4 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 
 	"mov r9,[rbp-3*8]" ,ln
 	"mov r8,[rbp-2*8]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*4" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 
+	"POP RSP" ,ln ;
 
 :gSYS5
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8],rcx" ,ln
 	"mov r9,[rbp-3*8]" ,ln
@@ -980,10 +1008,15 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*5" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 
+	"POP RSP" ,ln ;
 
 :gSYS6 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp-8]" ,ln
 	"mov [rsp+8*2],rcx" ,ln
 	"mov rcx,[rbp]" ,ln
@@ -994,10 +1027,15 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*6" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
 
 :gSYS7 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp-8*2]" ,ln
 	"mov [rsp+8*3],rcx" ,ln
 	"mov rcx,[rbp-8]" ,ln
@@ -1010,10 +1048,15 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*7" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
 
 :gSYS8 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp-8*3]" ,ln
 	"mov [rsp+8*4],rcx" ,ln
 	"mov rcx,[rbp-8*2]" ,ln
@@ -1028,10 +1071,15 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*8" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
-
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
+	
 :gSYS9 
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp-8*4]" ,ln
 	"mov [rsp+8*5],rcx" ,ln
 	"mov rcx,[rbp-8*3]" ,ln
@@ -1048,10 +1096,15 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*9" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
-
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
+	
 :gSYS10
-	"sub rsp,$28" ,ln
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln 
+	"add RSP,$20" ,ln 	
 	"mov rcx,[rbp-8*5]" ,ln
 	"mov [rsp+8*6],rcx" ,ln
 	"mov rcx,[rbp-8*4]" ,ln
@@ -1070,7 +1123,8 @@
 	"mov rcx,[rbp]" ,ln
 	"sub rbp,8*10" ,ln 
 	"call rax" ,ln 
-	"add rsp,$28" ,ln ;	
+	"sub RSP,$20" ,ln 	
+	"POP RSP" ,ln ;
 	
 |---------------------------------
 #vmc1

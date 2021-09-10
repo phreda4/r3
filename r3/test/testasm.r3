@@ -126,4 +126,10 @@
 	GetProcessHeap 'process-heap !
 	;
 	
-: windows ;
+::type | str cnt --
+	stdout rot rot 0 0 WriteFile drop ;
+	
+: 
+windows 
+"hola" 4 type 
+;
