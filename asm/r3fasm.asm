@@ -25,31 +25,16 @@ section '' code readable executable
 
 ;===============================================
 start:
-  sub rsp,40
   invoke VirtualAlloc,0,MEMSIZE,MEM_COMMIT+MEM_RESERVE,PAGE_READWRITE
   mov [FREE_MEM],rax
   mov rbp,DATASTK
   xor rax,rax
-  call INICIO
-
-SYSEND:
-  add rsp,40
-  ret
+  jmp INICIO
 
 ;----- CODE -----
 include 'code.asm'
 ;----- CODE -----
   ret
-
-
-;===============================================
-SYSMSEC: ;  ( -- msec )
-  add rbp,8
-  mov [rbp],rax
-  cinvoke64 GetTickCount
-;  cinvoke64 SDL_GetTicks
-  ret
-
 
 ;-----------------------------------------------
 ;-----------------------------------------------

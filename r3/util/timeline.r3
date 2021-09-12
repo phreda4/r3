@@ -148,7 +148,7 @@
 :swapcolor | color -- swapcolor
 	dup 16 >> $ff and 
 	over 16 << $ff0000 and or
-	swap $ff00 and or ;
+	swap $ff00ff00 and or ;
 	
 |-------------------- FILLBOX
 :drawbox | adr --

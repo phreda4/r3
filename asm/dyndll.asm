@@ -72,7 +72,7 @@ sub     r13, 28h ; '('
 mov     rcx, [r13+8]
 mov     r9, [r13+20h]
 mov     r8, [r13+18h]
-mov     [rsp+0D8h+var_B8], rax
+mov     [rsp+0D8h-0B8h], rax
 call    r11
 mov     r11, rax
 jmp     loc_402859      ; jumptable 0000000000402846 case 130

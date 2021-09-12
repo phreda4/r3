@@ -651,9 +651,9 @@
 	"mov rax,rcx" ,ln ;
 :o!+v
 	varget
-	"mov [rcx],rax" ,ln
-	"add rcx,8" ,ln
-	"mov rax,rcx" ,ln ;
+	"mov [" ,s ,TOS "],rax" ,ln
+	"add " ,s ,TOS ",8" ,ln
+	"mov rax," ,s ,TOS ,cr ;
 
 :gC!+
 	"mov rcx,[rbp]" ,ln
@@ -666,9 +666,9 @@
 	"mov rax,rcx" ,ln ;
 :oC!+v
 	varget
-	"mov byte[rbx],al" ,ln
-	"add rbx,1" ,ln
-	"mov rax,rbx" ,ln ;
+	"mov byte[" ,s ,TOS "],al" ,ln
+	"add " ,s ,TOS ",1" ,ln
+	"mov rax," ,s ,TOS ,cr ;
 
 :gW!+
 	"mov rcx,[rbp]" ,ln
@@ -681,9 +681,9 @@
 	"mov rax,rcx" ,ln ;
 :oW!+v
 	varget
-	"mov word[rbx],ax" ,ln
-	"add rbx,4" ,ln
-	"mov rax,rbx" ,ln ;
+	"mov word[" ,s ,TOS "],ax" ,ln
+	"add " ,s ,TOS ",4" ,ln
+	"mov rax," ,s ,TOS ,cr ;
 
 :gD!+
 	"mov rcx,[rbp]" ,ln
@@ -696,9 +696,9 @@
 	"mov rax,rcx" ,ln ;
 :oD!+v
 	varget
-	"mov dword[rbx],eax" ,ln
-	"add rbx,4" ,ln
-	"mov rax,rbx" ,ln ;
+	"mov dword[" ,s ,TOS "],eax" ,ln
+	"add " ,s ,TOS ",4" ,ln
+	"mov rax," ,s ,TOS ,cr ;
 
 
 :g+!
@@ -708,7 +708,7 @@
 	"add [" ,s ,TOS "],rax" ,ln ,DROP ;
 :o+!v
 	varget
-	"add [rbx],eax" ,ln ,DROP ;
+	"add [" ,s ,TOS "],eax" ,ln ,DROP ;
 
 :gC+!
 	"mov rcx,[rbp]" ,ln
@@ -717,7 +717,7 @@
 	"add byte[" ,s ,TOS "],al" ,ln ,DROP ;
 :oC+!v
 	varget
-	"add byte[rbx],eax" ,ln ,DROP ;
+	"add byte[" ,s ,TOS "],eax" ,ln ,DROP ;
 
 :gW+!
 	"mov rcx,[rbp]" ,ln
@@ -726,7 +726,7 @@
 	"add word[" ,s ,TOS "],ax" ,ln ,DROP ;
 :oW+!v
 	varget
-	"add word[rbx],ax" ,ln ,DROP ;
+	"add word[" ,s ,TOS "],ax" ,ln ,DROP ;
 
 :gD+!
 	"mov rcx,[rbp]" ,ln
@@ -735,97 +735,97 @@
 	"add dword[" ,s ,TOS "],eax" ,ln ,DROP ;
 :oD+!v
 	varget
-	"add dword[rbx],eax" ,ln ,DROP ;
+	"add dword[" ,s ,TOS "],eax" ,ln ,DROP ;
 
 
-:g>A	"mov r8,rax" ,ln ,drop ;
-:o>A	"mov r8," ,s ,TOS ,cr ;
-:o>Av	varget "mov r8," ,s ,TOS ,cr ;
+:g>A	"mov r14,rax" ,ln ,drop ;
+:o>A	"mov r14," ,s ,TOS ,cr ;
+:o>Av	varget "mov r14," ,s ,TOS ,cr ;
 
-:gA>	,dup "mov rax,r8" ,ln ;
+:gA>	,dup "mov rax,r14" ,ln ;
 
-:gA+	"add r8,rax" ,ln ,drop ;
-:oA+	"add r8," ,s ,TOS ,cr ;
-:oA+v	varget "add r8," ,s ,TOS ,cr ;
+:gA+	"add r14,rax" ,ln ,drop ;
+:oA+	"add r14," ,s ,TOS ,cr ;
+:oA+v	varget "add r14," ,s ,TOS ,cr ;
 
-:gA@	,dup "movs rax,qword[r8]" ,ln ;
+:gA@	,dup "movs rax,qword[r14]" ,ln ;
 
-:gA!	"mov qword[r8],rax" ,ln ,drop ;
-:oA!	"mov qword[r8]," ,s ,TOS ,cr ;
-:oA!v	varget "mov qword[r8],rbx" ,ln ;
+:gA!	"mov qword[r14],rax" ,ln ,drop ;
+:oA!	"mov qword[r14]," ,s ,TOS ,cr ;
+:oA!v	varget "mov qword[r14]," ,s ,TOS ,cr ;
 
-:gA@+	,dup "movs rax,qword[r8]" ,ln "add r8,8" ,ln ;
-:gA!+	"mov qword[r8],rax" ,ln "add r8,8" ,ln ,drop ;
-:oA!+	"mov qword[r8]," ,s ,TOS ,cr "add r8,8" ,ln ;
-:oA!+v	varget "mov qword[r8],rbx" ,ln "add r8,8" ,ln ;
+:gA@+	,dup "movs rax,qword[r14]" ,ln "add r14,8" ,ln ;
+:gA!+	"mov qword[r14],rax" ,ln "add r14,8" ,ln ,drop ;
+:oA!+	"mov qword[r14]," ,s ,TOS ,cr "add r14,8" ,ln ;
+:oA!+v	varget "mov qword[r14]," ,s ,TOS ,cr  "add r14,8" ,ln ;
 
-:gCA@	,dup "movsxd rax,byte[r8]" ,ln ;
+:gCA@	,dup "movsxd rax,byte[r14]" ,ln ;
 
-:gCA!	"mov byte[r8],al" ,ln ,drop ;
-:oCA!	"mov byte[r8]," ,s ,TOSB ,cr ;
-:oCA!v	varget "mov byte[r8],bl" ,ln ;
+:gCA!	"mov byte[r14],al" ,ln ,drop ;
+:oCA!	"mov byte[r14]," ,s ,TOSB ,cr ;
+:oCA!v	varget "mov byte[r14],bl" ,ln ;
 
-:gCA@+	,dup "movsxd rax,byte[r8]" ,ln "add r8,1" ,ln ;
-:gCA!+	"mov byte[r8],al" ,ln "add r8,1" ,ln ,drop ;
-:oCA!+	"mov byte[r8]," ,s ,TOSB ,cr "add r8,1" ,ln ;
-:oCA!+v	varget "mov byte[r8],bl" ,ln "add r8,1" ,ln ;
+:gCA@+	,dup "movsxd rax,byte[r14]" ,ln "add r14,1" ,ln ;
+:gCA!+	"mov byte[r14],al" ,ln "add r14,1" ,ln ,drop ;
+:oCA!+	"mov byte[r14]," ,s ,TOSB ,cr "add r14,1" ,ln ;
+:oCA!+v	varget "mov byte[r14],bl" ,ln "add r14,1" ,ln ;
 
-:gDA@	,dup "movsxd rax,dword[r8]" ,ln ;
+:gDA@	,dup "movsxd rax,dword[r14]" ,ln ;
 
-:gDA!	"mov dword[r8],eax" ,ln ,drop ;
-:oDA!	"mov dword[r8]," ,s ,TOSE ,cr ;
-:oDA!v	varget "mov dword[r8],ebx" ,ln ;
+:gDA!	"mov dword[r14],eax" ,ln ,drop ;
+:oDA!	"mov dword[r14]," ,s ,TOSE ,cr ;
+:oDA!v	varget "mov dword[r14],ebx" ,ln ;
 
-:gDA@+	,dup "movsxd rax,dword[r8]" ,ln "add r8,4" ,ln ;
-:gDA!+	"mov dword[r8],eax" ,ln "add r8,4" ,ln ,drop ;
-:oDA!+	"mov dword[r8]," ,s ,TOSE ,cr "add r8,4" ,ln ;
-:oDA!+v	varget "mov dword[r8],ebx" ,ln "add r8,4" ,ln ;
+:gDA@+	,dup "movsxd rax,dword[r14]" ,ln "add r14,4" ,ln ;
+:gDA!+	"mov dword[r14],eax" ,ln "add r14,4" ,ln ,drop ;
+:oDA!+	"mov dword[r14]," ,s ,TOSE ,cr "add r14,4" ,ln ;
+:oDA!+v	varget "mov dword[r14],ebx" ,ln "add r14,4" ,ln ;
 
-:g>B	"mov r9,rax" ,ln ,drop ;
-:o>B	"mov r9," ,s ,TOS ,cr ;
-:o>Bv	varget "mov r9," ,s ,TOS ,cr ;
+:g>B	"mov r15,rax" ,ln ,drop ;
+:o>B	"mov r15," ,s ,TOS ,cr ;
+:o>Bv	varget "mov r15," ,s ,TOS ,cr ;
 
-:gB>	,dup "mov rax,r9" ,ln ;
+:gB>	,dup "mov rax,r15" ,ln ;
 
-:gB+	"add r9,rax" ,ln ,drop ;
-:oB+	"add r9," ,s ,TOS ,cr ;
-:oB+v	varget "add r9," ,s ,TOS ,cr ;
+:gB+	"add r15,rax" ,ln ,drop ;
+:oB+	"add r15," ,s ,TOS ,cr ;
+:oB+v	varget "add r15," ,s ,TOS ,cr ;
 
-:gB@	,dup "movsxd rax,qword[r9]" ,ln ;
+:gB@	,dup "movsxd rax,qword[r15]" ,ln ;
 
-:gB!	"mov qword[r9],rax" ,ln ,drop ;
-:oB!	"mov qword[r9]," ,s ,TOS ,cr ;
-:oB!v	varget "mov qword[r9],rbx" ,ln ;
+:gB!	"mov qword[r15],rax" ,ln ,drop ;
+:oB!	"mov qword[r15]," ,s ,TOS ,cr ;
+:oB!v	varget "mov qword[r15],rbx" ,ln ;
 
-:gB@+	,dup "movs rax,qword[r9]" ,ln "add r9,8" ,ln ;
+:gB@+	,dup "movs rax,qword[r15]" ,ln "add r15,8" ,ln ;
 
-:gB!+	"mov qword[r9],rax" ,ln "add r9,8" ,ln ,drop ;
-:oB!+	"mov qword[r9]," ,s ,TOS ,cr "add r9,8" ,ln ;
-:oB!+v	varget "mov qword[r9],rbx" ,ln "add r9,8" ,ln ;
+:gB!+	"mov qword[r15],rax" ,ln "add r15,8" ,ln ,drop ;
+:oB!+	"mov qword[r15]," ,s ,TOS ,cr "add r15,8" ,ln ;
+:oB!+v	varget "mov qword[r15],rbx" ,ln "add r15,8" ,ln ;
 
-:gDB@	,dup "movsxd rax,dword[r9]" ,ln ;
+:gDB@	,dup "movsxd rax,dword[r15]" ,ln ;
 
-:gDB!	"mov dword[r9],eax" ,ln ,drop ;
-:oDB!	"mov dword[r9]," ,s ,TOSE ,cr ;
-:oDB!v	varget "mov dword[r9],ebx" ,ln ;
+:gDB!	"mov dword[r15],eax" ,ln ,drop ;
+:oDB!	"mov dword[r15]," ,s ,TOSE ,cr ;
+:oDB!v	varget "mov dword[r15],ebx" ,ln ;
 
-:gDB@+	,dup "movsxd rax,dword[r9]" ,ln "add r9,4" ,ln ;
+:gDB@+	,dup "movsxd rax,dword[r15]" ,ln "add r15,4" ,ln ;
 
-:gDB!+	"mov dword[r9],eax" ,ln "add r9,4" ,ln ,drop ;
-:oDB!+	"mov dword[r9]," ,s ,TOSE ,cr "add r9,4" ,ln ;
-:oDB!+v	varget "mov dword[r9],ebx" ,ln "add r9,4" ,ln ;
+:gDB!+	"mov dword[r15],eax" ,ln "add r15,4" ,ln ,drop ;
+:oDB!+	"mov dword[r15]," ,s ,TOSE ,cr "add r15,4" ,ln ;
+:oDB!+v	varget "mov dword[r15],ebx" ,ln "add r15,4" ,ln ;
 
-:gCB@	,dup "movsxd rax,byte[r9]" ,ln ;
+:gCB@	,dup "movsxd rax,byte[r15]" ,ln ;
 
-:gCB!	"mov byte[r9],al" ,ln ,drop ;
-:oCB!	"mov byte[r9]," ,s ,TOSB ,cr ;
-:oCB!v	varget "mov byte[r9],bl" ,ln ;
+:gCB!	"mov byte[r15],al" ,ln ,drop ;
+:oCB!	"mov byte[r15]," ,s ,TOSB ,cr ;
+:oCB!v	varget "mov byte[r15],bl" ,ln ;
 
-:gCB@+	,dup "movsxd rax,byte[r9]" ,ln "add r9,1" ,ln ;
+:gCB@+	,dup "movsxd rax,byte[r15]" ,ln "add r15,1" ,ln ;
 
-:gCB!+	"mov byte[r9],al" ,ln "add r9,1" ,ln ,drop ;
-:oCB!+	"mov byte[r9]," ,s ,TOSB ,cr "add r9,1" ,ln ;
-:oCB!+v	varget "mov byte[r9],bl" ,ln "add r9,1" ,ln ;
+:gCB!+	"mov byte[r15],al" ,ln "add r15,1" ,ln ,drop ;
+:oCB!+	"mov byte[r15]," ,s ,TOSB ,cr "add r15,1" ,ln ;
+:oCB!+v	varget "mov byte[r15],bl" ,ln "add r15,1" ,ln ;
 
 
 :gDMOVE
@@ -931,52 +931,55 @@
 	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
 :gSYS0  | a -- b
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 
-	"CALL rax" ,ln 
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
 	"sub RSP,$20" ,ln 
-	"POP RSP" ,ln ;
+	"CALL rax" ,ln 
+	"add RSP,$20" ,ln 
+|	"POP RSP" ,ln 
+	;
 	
 :gSYS1 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$20" ,ln 		
 	"mov rcx,[rbp]" ,ln
-	"sub rbp,8" ,ln 
-	"add RSP,$20" ,ln 	
 	"call rax" ,ln 
-	"sub RSP,$20" ,ln 	
-	"POP RSP" ,ln ;
+	"add RSP,$20" ,ln 	
+	"sub rbp,8" ,ln 	
+|	"POP RSP" ,ln 
+	;
 	
 :gSYS2 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$20" ,ln 	
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*2" ,ln 
 	"call rax" ,ln 
-	"sub RSP,$20" ,ln 
-	"POP RSP" ,ln ;
+	"add RSP,$20" ,ln 
+	"sub rbp,8*2" ,ln 	
+|	"POP RSP" ,ln 
+	;
 	
 :gSYS3 
 	"PUSH RSP" ,ln 
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 
-	"mov r8,[rbp-2*8]" ,ln
+	"sub RSP,$20" ,ln 
+	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*3" ,ln 
+	"mov rcx,[rbp-2*8]" ,ln
 	"call rax" ,ln 
-	"sub RSP,$20" ,ln 	
+	"add RSP,$20" ,ln 	
+	"sub rbp,8*3" ,ln 	
 	"POP RSP" ,ln ;
 
 :gSYS4 
@@ -984,50 +987,51 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*4" ,ln 
-	"call rax" ,ln 
 	"sub RSP,$20" ,ln 
+	"mov r9,[rbp]" ,ln
+	"mov r8,[rbp-1*8]" ,ln
+	"mov rdx,[rbp-2*8]" ,ln
+	"mov rcx,[rbp-3*8]" ,ln
+	"call rax" ,ln 
+	"add RSP,$20" ,ln 
+	"sub rbp,8*4" ,ln 	
 	"POP RSP" ,ln ;
 
 :gSYS5
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$28" ,ln 	
 	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
+	"mov [rsp+$20],rcx" ,ln
+	"mov r9,[rbp-1*8]" ,ln
 	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*5" ,ln 
+	"mov rdx,[rbp-3*8]" ,ln
+	"mov rcx,[rbp-4*8]" ,ln
 	"call rax" ,ln 
-	"sub RSP,$20" ,ln 
-	"POP RSP" ,ln ;
+	"add RSP,$28" ,ln 
+	"sub rbp,8*5" ,ln 	
+|	"POP RSP" ,ln 
+	;
 
 :gSYS6 
 	"PUSH RSP" ,ln 
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
-	"mov rcx,[rbp-8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
-	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*6" ,ln 
+	"sub RSP,$30" ,ln 	
+	"mov rdx,[rbp]" ,ln
+	"mov [rsp+$28],rdx" ,ln	
+	"mov rcx,[rbp-1*8]" ,ln	
+	"mov [rsp+$20],rcx" ,ln
+	"mov r9,[rbp-2*8]" ,ln
+	"mov r8,[rbp-3*8]" ,ln
+	"mov rdx,[rbp-4*8]" ,ln
+	"mov rcx,[rbp-5*8]" ,ln
 	"call rax" ,ln 
-	"sub RSP,$20" ,ln 	
+	"add RSP,$30" ,ln 	
+	"sub rbp,8*6" ,ln 	
 	"POP RSP" ,ln ;
 
 :gSYS7 
@@ -1035,20 +1039,20 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
-	"mov rcx,[rbp-8*2]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
-	"mov rcx,[rbp-8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
-	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*7" ,ln 
-	"call rax" ,ln 
 	"sub RSP,$20" ,ln 	
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp-1*8]" ,ln
+	"mov [rsp+8*1],rcx" ,ln
+	"mov rcx,[rbp-2*8]" ,ln
+	"mov [rsp],rcx" ,ln
+	"mov r9,[rbp-3*8]" ,ln
+	"mov r8,[rbp-4*8]" ,ln
+	"mov rdx,[rbp-5*8]" ,ln
+	"mov rcx,[rbp-6*8]" ,ln
+	"call rax" ,ln 
+	"add RSP,$20" ,ln 	
+	"sub rbp,8*7" ,ln 	
 	"POP RSP" ,ln ;
 
 :gSYS8 
@@ -1056,22 +1060,22 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
-	"mov rcx,[rbp-8*3]" ,ln
-	"mov [rsp+8*4],rcx" ,ln
-	"mov rcx,[rbp-8*2]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
-	"mov rcx,[rbp-8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
-	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*8" ,ln 
-	"call rax" ,ln 
 	"sub RSP,$20" ,ln 	
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-1*8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp-2*8]" ,ln
+	"mov [rsp+8*1],rcx" ,ln
+	"mov rcx,[rbp-3*8]" ,ln
+	"mov [rsp],rcx" ,ln
+	"mov r9,[rbp-4*8]" ,ln
+	"mov r8,[rbp-5*8]" ,ln
+	"mov rdx,[rbp-6*8]" ,ln
+	"mov rcx,[rbp-7*8]" ,ln
+	"call rax" ,ln 
+	"add RSP,$20" ,ln 	
+	"sub rbp,8*8" ,ln 
 	"POP RSP" ,ln ;
 	
 :gSYS9 
@@ -1079,24 +1083,24 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
-	"mov rcx,[rbp-8*4]" ,ln
-	"mov [rsp+8*5],rcx" ,ln
-	"mov rcx,[rbp-8*3]" ,ln
-	"mov [rsp+8*4],rcx" ,ln
-	"mov rcx,[rbp-8*2]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
-	"mov rcx,[rbp-8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
-	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*9" ,ln 
-	"call rax" ,ln 
 	"sub RSP,$20" ,ln 	
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8*4],rcx" ,ln
+	"mov rcx,[rbp-1*8]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-2*8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp-3*8]" ,ln
+	"mov [rsp+8*1],rcx" ,ln
+	"mov rcx,[rbp-4*8]" ,ln
+	"mov [rsp],rcx" ,ln
+	"mov r9,[rbp-5*8]" ,ln
+	"mov r8,[rbp-6*8]" ,ln
+	"mov rdx,[rbp-7*8]" ,ln
+	"mov rcx,[rbp-8*8]" ,ln
+	"call rax" ,ln 
+	"add RSP,$20" ,ln 	
+	"sub rbp,8*9" ,ln 
 	"POP RSP" ,ln ;
 	
 :gSYS10
@@ -1104,26 +1108,26 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln 
-	"add RSP,$20" ,ln 	
-	"mov rcx,[rbp-8*5]" ,ln
-	"mov [rsp+8*6],rcx" ,ln
-	"mov rcx,[rbp-8*4]" ,ln
-	"mov [rsp+8*5],rcx" ,ln
-	"mov rcx,[rbp-8*3]" ,ln
-	"mov [rsp+8*4],rcx" ,ln
-	"mov rcx,[rbp-8*2]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
-	"mov rcx,[rbp-8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
-	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8],rcx" ,ln
-	"mov r9,[rbp-3*8]" ,ln
-	"mov r8,[rbp-2*8]" ,ln
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
-	"sub rbp,8*10" ,ln 
-	"call rax" ,ln 
 	"sub RSP,$20" ,ln 	
+	"mov rcx,[rbp]" ,ln
+	"mov [rsp+8*5],rcx" ,ln
+	"mov rcx,[rbp-1*8]" ,ln
+	"mov [rsp+8*4],rcx" ,ln
+	"mov rcx,[rbp-2*8]" ,ln
+	"mov [rsp+8*3],rcx" ,ln
+	"mov rcx,[rbp-3*8]" ,ln
+	"mov [rsp+8*2],rcx" ,ln
+	"mov rcx,[rbp-4*8]" ,ln
+	"mov [rsp+8*1],rcx" ,ln
+	"mov rcx,[rbp-5*8]" ,ln
+	"mov [rsp],rcx" ,ln
+	"mov r9,[rbp-6*8]" ,ln
+	"mov r8,[rbp-7*8]" ,ln
+	"mov rdx,[rbp-8*8]" ,ln
+	"mov rcx,[rbp-9*8]" ,ln
+	"call rax" ,ln 
+	"add RSP,$20" ,ln 	
+	"sub rbp,8*10" ,ln 
 	"POP RSP" ,ln ;
 	
 |---------------------------------

@@ -135,10 +135,9 @@
 :,h2
 	$ff and 16 <? ( "0" ,s ) ,h ;
 	
-:photoname	
+:photoname | id --
 	mark
 	"autotv/file-com/" ,s 
-	id 
 	dup 24 >> ,h2 "/" ,s dup 16 >> ,h2 "/" ,s
 	"fotos%d.png" ,print 0 ,c
 	empty 
@@ -149,14 +148,12 @@
 :cartelini
 	"autotv/cliente.db" loaddb-i
 	
-	0 dbfld str>nro 'id ! drop
 	1 dbfld 'titulo !
 	2 dbfld 'direccion !
 	3 dbfld 'telefono !
 	4 dbfld 'descripcion !	
-	6 dbfld 'fotos !
 
-	SDLrenderer photoname loadtexture 'tfoto !		
+	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto !		
 	
 	timeline.clear
 
@@ -200,6 +197,90 @@
 	;
 
 ##prgcartel 'cartelini 'cartel 'cartelfin
+
+|---- cartel simple
+#n1 * 256
+#d1 * 256
+#t1 * 256
+
+#n2 * 256
+#d2 * 256
+#t2 * 256
+
+#n3 * 256
+#d3 * 256
+#t3 * 256
+
+#tfoto2 #tfoto3
+
+:cartelini2
+	"autotv/cliente.db" loaddb-i
+	1 dbfld 'n1 strcpy
+	2 dbfld 'd1 strcpy
+	3 dbfld 't1 strcpy
+	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto !		
+
+	"autotv/cliente.db" loaddb-i
+	1 dbfld 'n2 strcpy
+	2 dbfld 'd2 strcpy
+	3 dbfld 't2 strcpy
+	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto2 !		
+
+	"autotv/cliente.db" loaddb-i
+	1 dbfld 'n3 strcpy
+	2 dbfld 'd3 strcpy
+	3 dbfld 't3 strcpy
+	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto3 !		
+	
+
+	timeline.clear
+
+	tfoto 0.1 0.1 0.2 0.2 xywh%64 +img
+	0.0 +fx.on
+
+	$0 font1 'n1 sprint 0.3 0.1 0.6 0.2 xywh%64 $00ffffff +tboxb |  HVRRGGBB00
+	0.0 +fx.on
+
+	$0 font1 't1 0.3 0.1 0.6 0.2 xywh%64 $22ffff00 +tboxb
+	0.0 +fx.on
+
+	tfoto2 0.1 0.4 0.2 0.2 xywh%64 +img
+	0.0 +fx.on
+
+	$0 font1 'n2 0.3 0.4 0.6 0.2 xywh%64 $00ffffff +tboxb |  HVRRGGBB00
+	0.0 +fx.on
+
+	$0 font1 't2 0.3 0.4 0.6 0.2 xywh%64 $22ffff00 +tboxb
+	0.0 +fx.on
+
+	tfoto3 0.1 0.7 0.2 0.2 xywh%64 +img
+	0.0 +fx.on
+
+	$0 font1 'n3 0.3 0.7 0.6 0.2 xywh%64 $00ffffff +tboxb |  HVRRGGBB00
+	0.0 +fx.on
+
+	$0 font1 't3 0.3 0.7 0.6 0.2 xywh%64 $22ffff00 +tboxb
+	0.0 +fx.on
+
+
+	'pexit 5.0 +event
+	timeline.start
+	;
+	
+
+:cartel2
+	$0 rgbcolor
+	SDLrenderer SDL_RenderClear
+	timeline.draw
+	;
+	
+:cartelfin2
+	tfoto SDL_DestroyTexture
+	tfoto2 SDL_DestroyTexture
+	tfoto3 SDL_DestroyTexture
+	;
+
+##prgcartel2 'cartelini2 'cartel2 'cartelfin2
 		
 |---------------------------------
 #vfilenow * 1024
@@ -288,7 +369,7 @@
 	programa ex
 	SDLrenderer SDL_RenderPresent
 	
-	prgexit 1? ( 'prgcartel changeprg ) drop
+	prgexit 1? ( 'prgcartel2 changeprg ) drop
 
 
 	SDLkey
@@ -296,8 +377,9 @@
 	<f1> =? ( 'prgcartel changeprg ) 	
 	<f2> =? ( 'prgajuste changeprg )
 	<f3> =? ( 'prgcvideo changeprg )
+	<f4> =? ( 'prgcartel2 changeprg )
 	
-	<f4> =? ( mus_fondo 0 Mix_PlayMusic )
+	|<f4> =? ( mus_fondo 0 Mix_PlayMusic )
 	drop ;		
 
 
