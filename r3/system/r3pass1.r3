@@ -43,8 +43,14 @@
 	"." =pre 0? ( drop "%l" sprint ; ) drop
 	2 + 'r3path "%s/%l" sprint ;
 
+:rtrim | str -- str
+	dup ( c@+ 1? drop ) drop 2 -
+	( dup c@ $ff and 33 <? drop 1 - ) drop
+	0 swap 1 + c! ;
+	
 :load.inc | str -- str new ; incluye codigo
-	here over realfilename load here =? ( drop
+	here over realfilename rtrim
+	load here =? ( drop
 		over 'lerror !
 		"Include not found" dup .println
 		'error !

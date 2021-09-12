@@ -102,9 +102,9 @@
 	c@+ $f and 3 << 'control + @ ex ;
 
 ::,print | p p .. "" --
-	( c@+ 1? ,emit ) 2drop ;
+	( c@+ 1? ,emit ) ,c drop ;
 
 #buff * 4096
 
 ::sprint | p p .. "" -- adr
-	mark 'buff 'here ! ,print ,eol empty 'buff ;
+	mark 'buff 'here ! ,print empty 'buff ;
