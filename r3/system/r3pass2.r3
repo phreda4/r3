@@ -200,7 +200,7 @@
 	0 'nbloques !
 	0 'codeini !
 	'inc ( inc> <?
-		dup @ "%w" .println
+|		dup @ "%w" .println
 		8 + @+
 		str2token
 		error 1? ( nip ; ) drop

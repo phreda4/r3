@@ -23,7 +23,7 @@
 :nextis!+ | stack adr v -- stack adr v v
 	over d@ $ff and
 	$55 <? ( ; ) $58 >? ( ; ) | "!+" "C!+" "W!+" "D!+" 
-	drop over 4 - @ 8 >> 1 + nip dup
+	drop over 4 - d@ 8 >> 1 + nip dup
 	dic>inf dup
 	@ dup $1000 + $4 or rot !	| set adr!
 	$3ff000 and 1? ( ; )
@@ -68,6 +68,6 @@
 	here !+
 	( here >?
 		8 - dup @
-        |dup dic>adr @ "%w " .print 
+|        dup dic>adr @ "%w " .print 
         datacode
 		) drop 	;

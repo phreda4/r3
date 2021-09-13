@@ -906,9 +906,13 @@
 :gMEM
 	,dup "mov rax,[FREE_MEM]" ,ln ;
 
-|The x64 ABI considers the registers RAX, RCX, RDX, R8, R9, R10, R11, and XMM0-XMM5 |volatile. When present, the upper portions of YMM0-YMM15 and ZMM0-ZMM15 are also |volatile. On AVX512VL, the ZMM, YMM, and XMM registers 16-31 are also volatile. |Consider volatile registers destroyed on function calls unless otherwise |safety-provable by analysis such as whole program optimization.
+|The x64 ABI considers the registers RAX, RCX, RDX, R8, R9, R10, R11, and XMM0-XMM5 
+|volatile. When present, the upper portions of YMM0-YMM15 and ZMM0-ZMM15 are also |volatile. On AVX512VL, the ZMM, YMM, and XMM registers 16-31 are also volatile. 
+|Consider volatile registers destroyed on function calls unless otherwise 
+|safety-provable by analysis such as whole program optimization.
 
-|The x64 ABI considers registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, and |XMM6-XMM15 nonvolatile. They must be saved and restored by a function that uses them.
+|The x64 ABI considers registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, and 
+|XMM6-XMM15 nonvolatile. They must be saved and restored by a function that uses them.
 
 
 :gLOADLIB | "" -- aa
@@ -960,8 +964,8 @@
 |	"ADD RSP,8" ,ln 
 |	"AND SPL,0F0h" ,ln 
 	"sub RSP,$20" ,ln 	
-	"mov rdx,[rbp-1*8]" ,ln
-	"mov rcx,[rbp]" ,ln
+	"mov rdx,[rbp]" ,ln
+	"mov rcx,[rbp-1*8]" ,ln
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 
 	"sub rbp,8*2" ,ln 	
@@ -969,10 +973,10 @@
 	;
 	
 :gSYS3 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
 	"sub RSP,$20" ,ln 
 	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
@@ -980,13 +984,14 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 	
 	"sub rbp,8*3" ,ln 	
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 
 :gSYS4 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
 	"sub RSP,$20" ,ln 
 	"mov r9,[rbp]" ,ln
 	"mov r8,[rbp-1*8]" ,ln
@@ -995,7 +1000,8 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 
 	"sub rbp,8*4" ,ln 	
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 
 :gSYS5
 |	"PUSH RSP" ,ln 
@@ -1016,10 +1022,10 @@
 	;
 
 :gSYS6 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
 	"sub RSP,$30" ,ln 	
 	"mov rdx,[rbp]" ,ln
 	"mov [rsp+$28],rdx" ,ln	
@@ -1032,14 +1038,15 @@
 	"call rax" ,ln 
 	"add RSP,$30" ,ln 	
 	"sub rbp,8*6" ,ln 	
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 
 :gSYS7 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"sub RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$38" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*2],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1051,16 +1058,17 @@
 	"mov rdx,[rbp-5*8]" ,ln
 	"mov rcx,[rbp-6*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
+	"add RSP,$38" ,ln 	
 	"sub rbp,8*7" ,ln 	
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 
 :gSYS8 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"sub RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$40" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*3],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1076,14 +1084,15 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 	
 	"sub rbp,8*8" ,ln 
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 	
 :gSYS9 
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"sub RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$48" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*4],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1099,16 +1108,17 @@
 	"mov rdx,[rbp-7*8]" ,ln
 	"mov rcx,[rbp-8*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
+	"add RSP,$48" ,ln 	
 	"sub rbp,8*9" ,ln 
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 	
 :gSYS10
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln 
-	"sub RSP,$20" ,ln 	
+|	"PUSH RSP" ,ln 
+|	"PUSH qword [RSP]" ,ln 
+|	"ADD RSP,8" ,ln 
+|	"AND SPL,0F0h" ,ln 
+	"sub RSP,$50" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*5],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1126,9 +1136,10 @@
 	"mov rdx,[rbp-8*8]" ,ln
 	"mov rcx,[rbp-9*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
+	"add RSP,$50" ,ln 	
 	"sub rbp,8*10" ,ln 
-	"POP RSP" ,ln ;
+|	"POP RSP" ,ln 
+	;
 	
 |---------------------------------
 #vmc1

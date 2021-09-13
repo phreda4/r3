@@ -558,6 +558,9 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	dup dicc - 5 >> ,codeinfo
 	,cr
 	dicc> 32 - =? ( "INICIO:" ,s ,cr ; )
+	
+ dup @ "%w " .print
+	
 	dup adr>dicname ,s
 	":" ,s ,cr ;
 
@@ -587,6 +590,8 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 ";---------OPT" ,ln |----- generate buffer
 |"asm/code.asm" savemem | debug
 
+"opt." .print 
+
 	dup adr>toklen | w adr len
 	multientry
 	( 1? 1 - swap
@@ -610,9 +615,12 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 |	cellinfo
 
+"gen." .print 
     ";---------GEN" ,ln |----- generate code
 	24 + @ $f and	| use
 	genasmcode
+	
+"end." .print 	
 
 	;
 

@@ -236,7 +236,7 @@
 	,s 'name ,s ,eol
 	empty here sys
 	cr .reset
-	"press <enter> to continue" .print .input
+	"press <enter> to continue" .write .input
 	.alsb
 	;
 
@@ -470,13 +470,13 @@
 		drop swap ) drop ;
 
 :emitl
-	9 =? ( drop "    " .print ; )
+	9 =? ( drop "    " .write ; )
 	emit ;
 :a	
 	|ccx xsele <? ( drop ; ) drop
 	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
 |	wcode xcode + gotox
-	"." .print
+	"." .write
 	;
 
 :drawline
@@ -491,12 +491,12 @@
 
 |..............................
 :linenow
-	ycursor =? ( ">" .print ; ) sp ;
+	ycursor =? ( ">" .write ; ) sp ;
 	
 :linenro | lin -- lin
 	.reset .white
 	dup ylinea + 
-	linenow 1 + .d 3 .r. .print sp
+	linenow 1 + .d 3 .r. .write sp
 	; 
 
 |..............................
@@ -546,7 +546,7 @@
 	0 hcode 1 + .at 
 |	rows hcode - 1 - backlines
 
-	" > " .print
+	" > " .write
 	|'buscapad 'findpad .print
 	.input
 
@@ -615,7 +615,7 @@
 :errmodekey
 	0 hcode 1 + .at
 |	rows hcode - 1 - backlines
-	'outpad .print
+	'outpad .write
 	editmodekey
 	;
 
@@ -641,7 +641,7 @@
 :bottom
 	0 hcode 2 + .at 
 	.bblue .white .eline
-	sp 'name .print sp ycursor xcursor " %d:%d " .print 
+	sp 'name .write sp ycursor xcursor " %d:%d " .print 
 	hashfile " %h " .print 
 	fuente simplehash " %h " .print 
 |	fuente count  " %d" .print

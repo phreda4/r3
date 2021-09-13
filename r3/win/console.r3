@@ -41,12 +41,12 @@
 ::.[ 'esc[ 2 + swap
 	( c@+ 1? rot c!+ swap ) 2drop
 	'esc[ swap over - type ;
+
+::.write count type ;
 	
 ::.print sprint count type ;
 
 ::.println sprint count type cr ;
-
-|::. count type ;
 
 ::.home	"H" .[ ; | home
 ::.cls "J" .[ ; | cls 
