@@ -6,21 +6,21 @@
 #.bye 0
 
 |-----------------
-:ibye 1 '.bye ! "bye!" . cr ;
+:ibye 1 '.bye ! "bye!" .write cr ;
 
 |-----------------
 :ihelp
-	"r3 console help." . cr
-	"help - Show available commands" . cr
-	"ram - Show RAM layout" . cr
-	"new - Create new cartridge" . cr
-	"load <file> - Load file.r3 from the local filesystem" . cr
-	"save <file> - Save file.r3 to the local filesystem" . cr
-	"run - Run current project" . cr
-	"cat <file> - show file" . cr
-	"cls - clear screen" . cr	
-	"dir - list archives in folder" . cr
-	"bye - exit console" . cr
+	"r3 console help." .write cr
+	"help - Show available commands" .write cr
+	"ram - Show RAM layout" .write cr
+	"new - Create new cartridge" .write cr
+	"load <file> - Load file.r3 from the local filesystem" .write cr
+	"save <file> - Save file.r3 to the local filesystem" .write cr
+	"run - Run current project" .write cr
+	"cat <file> - show file" .write cr
+	"cls - clear screen" .write cr	
+	"dir - list archives in folder" .write cr
+	"bye - exit console" .write cr
 	;
 
 |-----------------
@@ -29,7 +29,7 @@
 
 |-----------------	
 :linedir | adr --
-	44 + . cr ;
+	44 + .write cr ;
 	
 :idir
 	"r3//*" ffirst 
@@ -42,9 +42,9 @@
 :icat
 	'pad trim >>sp trim
 	here swap "r3/%s" sprint load 
-	here =? ( drop "File not found." . cr ; )
+	here =? ( drop "File not found." .write cr ; )
 	0 swap c!
-	here . cr ;
+	here .write cr ;
 	
 |-----------------	
 :ikey
@@ -71,15 +71,15 @@
 :interprete
 	'pad trim
 	dup c@ 0? ( drop ; ) drop
-	interp 0? ( " ???" . cr drop ; )
+	interp 0? ( " ???" .write cr drop ; )
 	@ ex ;
 	
 :main
-	"r3 console - PHREDA 2021" . cr
-	"help for help" . cr cr
+	"r3 console - PHREDA 2021" .write cr
+	"help for help" .write cr cr
 	|'itest ex
 	( .bye 0? drop
-		"> " . .input cr
+		"> " .write .input cr
 		interprete
 		) drop ;
 
