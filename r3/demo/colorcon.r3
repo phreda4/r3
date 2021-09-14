@@ -13,4 +13,7 @@
 			1 + ) drop
 		cr
 		1 + ) drop 
-		;
+		
+	.input
+	;
+	

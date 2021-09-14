@@ -10,4 +10,5 @@
 	;
 	
 : windows
-	0 ( 500000 <? printcapi 1 + ) drop ;
+	0 ( 500000 <? printcapi 1 + ) drop .input ;
+

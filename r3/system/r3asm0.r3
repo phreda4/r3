@@ -934,49 +934,41 @@
 	varget 
 	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
+:preA16
+	"PUSH RSP" ,ln 
+	"PUSH qword [RSP]" ,ln 
+	"ADD RSP,8" ,ln 
+	"AND SPL,0F0h" ,ln ;
+:posA16
+	"POP RSP" ,ln  ;
+	
 :gSYS0  | a -- b
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$20" ,ln 
 	"CALL rax" ,ln 
 	"add RSP,$20" ,ln 
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 :gSYS1 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$20" ,ln 		
 	"mov rcx,[rbp]" ,ln
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 	
 	"sub rbp,8" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 :gSYS2 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$20" ,ln 	
 	"mov rdx,[rbp]" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 
-	"sub rbp,8*2" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 :gSYS3 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$20" ,ln 
 	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
@@ -984,14 +976,10 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 	
 	"sub rbp,8*3" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 
 :gSYS4 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$20" ,ln 
 	"mov r9,[rbp]" ,ln
 	"mov r8,[rbp-1*8]" ,ln
@@ -1000,14 +988,10 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 
 	"sub rbp,8*4" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 
 :gSYS5
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$28" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$20],rcx" ,ln
@@ -1018,14 +1002,10 @@
 	"call rax" ,ln 
 	"add RSP,$28" ,ln 
 	"sub rbp,8*5" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 
 :gSYS6 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$30" ,ln 	
 	"mov rdx,[rbp]" ,ln
 	"mov [rsp+$28],rdx" ,ln	
@@ -1038,14 +1018,10 @@
 	"call rax" ,ln 
 	"add RSP,$30" ,ln 	
 	"sub rbp,8*6" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 
 :gSYS7 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$38" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*2],rcx" ,ln
@@ -1060,14 +1036,10 @@
 	"call rax" ,ln 
 	"add RSP,$38" ,ln 	
 	"sub rbp,8*7" ,ln 	
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 
 :gSYS8 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$40" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*3],rcx" ,ln
@@ -1084,14 +1056,10 @@
 	"call rax" ,ln 
 	"add RSP,$20" ,ln 	
 	"sub rbp,8*8" ,ln 
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 :gSYS9 
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$48" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*4],rcx" ,ln
@@ -1110,14 +1078,10 @@
 	"call rax" ,ln 
 	"add RSP,$48" ,ln 	
 	"sub rbp,8*9" ,ln 
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 :gSYS10
-|	"PUSH RSP" ,ln 
-|	"PUSH qword [RSP]" ,ln 
-|	"ADD RSP,8" ,ln 
-|	"AND SPL,0F0h" ,ln 
+	preA16
 	"sub RSP,$50" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+8*5],rcx" ,ln
@@ -1138,8 +1102,7 @@
 	"call rax" ,ln 
 	"add RSP,$50" ,ln 	
 	"sub rbp,8*10" ,ln 
-|	"POP RSP" ,ln 
-	;
+	posA16 ;
 	
 |---------------------------------
 #vmc1
