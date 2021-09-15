@@ -49,7 +49,7 @@
 ::.println sprint count type cr ;
 
 ::.home	"H" .[ ; | home
-::.cls "J" .[ ; | cls 
+::.cls "H" .[ "J" .[ ; | cls 
 ::.at "%d;%df" sprint .[ ; | x y -- 
 ::.eline "K" .[ ; | erase line from cursor
 

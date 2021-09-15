@@ -334,7 +334,7 @@
 |---------------------------------
 
 :pfilename
-	" [" . 'path . "/" . 'name . "] " .
+	" [" .write 'path .write "/" .write 'name .write "] " .
 |	nfile 0? ( drop ; ) drop
 |	" " . 'path . "/" . 
 |	'name 32 .input 
@@ -346,7 +346,7 @@
 	sp
 	dup getlvl 1 << nsp
 	dup getinfo $3 and "+- ." + c@ emit
-	sp getname . sp
+	sp getname .write sp
 	;
 
 #filecolor 1 2 3 4 
@@ -370,7 +370,7 @@
 	.reset .home .cls 
 	.bblue .white
 	0 0 .at .eline
-	0 0 .at " r3 " . cr
+	0 0 .at " r3 " .write cr
 	
 	.reset
 	drawtree

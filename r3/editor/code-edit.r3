@@ -228,7 +228,7 @@
 |----------------------------------
 :runfile
 	savetxt
-	.masb .reset .home .cls
+	.masb .reset .cls
 	mark
 |WIN|	"r3 "
 |LIN|	"./r3lin "
@@ -267,7 +267,7 @@
 	;
 
 :mkplain
-	.masb .reset .home .cls
+	.masb .reset .cls
 	savetxt
 |WIN| "r3 r3/system/r3plain.r3"
 |LIN| "./r3lin r3/sys/r3plain.r3"
@@ -277,7 +277,7 @@
 	;
 
 :compile
-	.masb .reset .home .cls
+	.masb .reset .cls
 	savetxt
 |WIN| "r3 r3/system/r3compiler.r3"
 |LIN| "./r3lin r3/sys/r3compiler.r3"
@@ -659,7 +659,7 @@
 	;
 
 :editor
-	.reset .home .cls
+	.reset .cls
 	0 'xlinea !
 	mode!edit
 	pantalla .insc

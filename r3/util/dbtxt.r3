@@ -57,7 +57,7 @@
 	1 'rowdb +!
 	'rowdb 8 rot "%s.now" sprint save ;
 
-:>>line | adr -- adr'
+::>>line | adr -- adr'/0
 	( c@+ 1?
 	 	$5e =? ( drop ; ) | ^
 		drop ) drop 1 - ;
@@ -93,7 +93,7 @@
 |
 ::loaddb | "filename" -- 'db
 	here swap load here =? ( drop 0 ; )
-	0 swap !+
+	0 swap c!+
 	here swap 'here !
 	;
 
@@ -106,7 +106,7 @@
 	( dup @ 1? pick2 =? ( drop nip ; ) drop
 		>>line trim ) nip nip ;
 
-:>>fld | adr -- adr'
+::>>fld | adr -- adr'
 	( c@+ 1?
 		$7c =? ( drop ; )
 	 	$5e =? ( drop 1 - ; ) | ^

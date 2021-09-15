@@ -355,11 +355,11 @@
 		cr 1 + ) drop ;
 	
 :screen
-	.reset .home .cls 
+	.reset .cls 
 	.bblue .white
 	0 0 .at .eline
 	0 0 .at " r3 " .print
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New "  .printe
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " .printe
 	
 	.reset
 	drawtree
