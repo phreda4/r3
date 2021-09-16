@@ -132,28 +132,27 @@
 #telefono
 #tfoto
 
-:,h2
-	$ff and 16 <? ( "0" ,s ) ,h ;
-	
-:photoname | id --
+:photoname | id name dir --
 	mark
-	"autotv/file-com/" ,s 
-	dup 24 >> ,h2 "/" ,s dup 16 >> ,h2 "/" ,s
-	"fotos%d.png" ,print 0 ,c
-	empty 
-	here ;
+	 ,s "%s%d.png" ,print 0 ,c
+	empty here ;
 	
 :easeline ;
 
+|$reg['id'].'|'.$reg['idc'].'|'.$reg['nombre'].'|'.$reg['descr'].'|'.$reg['tags'].'|'.$reg['foto'].'^';
 :cartelini
-	"autotv/cliente.db" loaddb-i
+	"autotv/pro.db" loaddb-i
 	
-	1 dbfld 'titulo !
-	2 dbfld 'direccion !
-	3 dbfld 'telefono !
-	4 dbfld 'descripcion !	
-
-	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto !		
+	2 dbfld 'titulo !
+	1 dbfld 'direccion !
+	4 dbfld 'telefono !
+	3 dbfld 'descripcion !	
+	
+	SDLrenderer 
+	0 dbfld str>nro nip 
+	5 dbfld 
+	"autotv/file-pro/"
+	photoname loadtexture 'tfoto !		
 	
 	timeline.clear
 
@@ -214,23 +213,32 @@
 #tfoto2 #tfoto3
 
 :cartelini2
-	"autotv/cliente.db" loaddb-i
+	"autotv/cli.db" loaddb-i
 	1 dbfld 'n1 strcpy
 	2 dbfld 'd1 strcpy
 	3 dbfld 't1 strcpy
-	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto !		
+	SDLrenderer 0 dbfld str>nro nip 
+	6 dbfld
+	"autotv/file-com/"
+	photoname loadtexture 'tfoto !		
 
-	"autotv/cliente.db" loaddb-i
+	"autotv/cli.db" loaddb-i
 	1 dbfld 'n2 strcpy
 	2 dbfld 'd2 strcpy
 	3 dbfld 't2 strcpy
-	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto2 !		
+	SDLrenderer 0 dbfld str>nro nip 
+	6 dbfld
+	"autotv/file-com/"
+	photoname loadtexture 'tfoto2 !		
 
-	"autotv/cliente.db" loaddb-i
+	"autotv/cli.db" loaddb-i
 	1 dbfld 'n3 strcpy
 	2 dbfld 'd3 strcpy
 	3 dbfld 't3 strcpy
-	SDLrenderer 0 dbfld str>nro nip photoname loadtexture 'tfoto3 !		
+	SDLrenderer 0 dbfld str>nro nip 
+	6 dbfld
+	"autotv/file-com/"
+	photoname loadtexture 'tfoto3 !		
 	
 
 	timeline.clear
