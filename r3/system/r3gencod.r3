@@ -101,9 +101,9 @@
 #tcte d1 d1 d1 d1 d2 d3 d3 d3 d3
 
 :icte | adr word -- adr
-|	"; INLINE CTE" ,ln
+	"; INLINE CTE" ,ln
 	dic>tok @
-	@ dup dup $ff and 7 -
+	d@ dup dup $ff and 7 -
 	0 8 bt? ( 3 << 'tcte + @ ex code!+ ; )
 
 |*************   #v1 #v2 ..if v1 is cte then crash!!
@@ -548,7 +548,8 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 |------------------------------------------
 :tocode | adr token -- adr
-"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
+	
+|"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
 |"asm/code.asm" savemem | debug
 	$ff and 3 << 'vmc + @ ex ;
 
@@ -590,8 +591,6 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 ";---------OPT" ,ln |----- generate buffer
 |"asm/code.asm" savemem | debug
 
-"opt." .print 
-
 	dup adr>toklen | w adr len
 	multientry
 	( 1? 1 - swap
@@ -615,7 +614,6 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 |	cellinfo
 
-"gen." .print 
     ";---------GEN" ,ln |----- generate code
 	24 + @ $f and	| use
 	genasmcode
