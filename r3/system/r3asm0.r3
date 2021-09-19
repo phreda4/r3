@@ -151,7 +151,7 @@
 	16 <>? ( drop "call " ,s ,TOS ,cr ; ) drop
 	"jmp " ,s ,TOS ,cr ;
 :oEXv
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	dup @ $ff and
 	16 <>? ( drop "call rcx" ,ln ; ) drop
 	"jmp rcx" ,ln ;
@@ -181,7 +181,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "jge _o%h" ,print ,cr ;
 :o<?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "jge _o%h" ,print ,cr ;
 
 
@@ -194,7 +194,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "jle _o%h" ,print ,cr ;
 :o>?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "jle _o%h" ,print ,cr ;
 
 :g=?
@@ -206,7 +206,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "jne _o%h" ,print ,cr ;
 :o=?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "jne _o%h" ,print ,cr ;
 
 :g>=?
@@ -218,7 +218,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "jl _o%h" ,print ,cr ;
 :o>=?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "jl _o%h" ,print ,cr ;
 
 :g<=?
@@ -230,7 +230,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "jg _o%h" ,print ,cr ;
 :o<=?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "jg _o%h" ,print ,cr ;
 
 :g<>?
@@ -242,7 +242,7 @@
 	"cmp rax," ,s ,TOS ,cr
 	?? "je _o%h" ,print ,cr ;
 :o<>?v
-	"cmp eax," ,s ,TOS ,cr
+	"cmp rax," ,s ,TOS ,cr
 	?? "je _o%h" ,print ,cr ;
 
 :gAND?
@@ -254,7 +254,7 @@
 	"test rax," ,s ,TOS ,cr
 	?? "jz _o%h" ,print ,cr ;
 :oAND?v
-	"test eax," ,s ,TOS ,cr
+	"test rax," ,s ,TOS ,cr
 	?? "jz _o%h" ,print ,cr ;
 
 :gNAND?
@@ -266,7 +266,7 @@
 	"test rax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
 :oNAND?v
-	"test eax," ,s ,TOS ,cr
+	"test rax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
 
 :gBT?
@@ -410,7 +410,7 @@
 :o<<
 	"shl rax," ,s ,TOS ,cr ;
 :o<<v
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	"shl rax,cl" ,ln ;
 
 :g>>
@@ -419,7 +419,7 @@
 :o>>
 	"sar rax," ,s ,TOS ,cr ;
 :o>>v
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	"sar rax,cl" ,ln ;
 
 :g>>>
@@ -429,7 +429,7 @@
 :o>>>
 	"shr rax," ,s ,TOS ,cr ;
 :o>>>v
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	"shr rax,cl" ,ln ;
 
 :g*>>
@@ -439,7 +439,7 @@
 	"imul qword[rbp]" ,ln
 	"shrd rax,rdx,cl" ,ln
 	"sar rdx,cl" ,ln
-	"and ecx,64" ,ln
+	"and rcx,64" ,ln
 	"cmovne	rax,rdx" ,ln
 	,NIP ;
 
@@ -454,13 +454,13 @@
 	"mov rax,rdx" ,ln ;
 
 :o*>>v
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"imul qword[rbp]" ,ln
 	,NIP
 	"shrd rax,rdx,cl" ,ln
 	"sar rdx,cl" ,ln
-	"and ecx,64" ,ln
+	"and rcx,64" ,ln
 	"cmovne rax,rdx" ,ln
 	;
 
@@ -480,7 +480,7 @@
 	"shl rax," ,s prevalv ,d ,cr
 	"idiv rbx" ,ln ;
 :o<</v
-	"mov ecx," ,s ,TOS ,cr
+	"mov rcx," ,s ,TOS ,cr
 	"mov rbx,rax" ,ln
 	,DROP
 	"cqo" ,ln
@@ -623,7 +623,7 @@
 
 :gW!
 	"mov rcx,[rbp]" ,ln
-	"mov word[rax],ecx" ,ln ,2DROP ;
+	"mov word[rax],cx" ,ln ,2DROP ;
 :oW!
 	"mov word[" ,s ,TOS "],ax" ,ln ,DROP ;
 :oW!v
@@ -708,7 +708,7 @@
 	"add [" ,s ,TOS "],rax" ,ln ,DROP ;
 :o+!v
 	varget
-	"add [" ,s ,TOS "],eax" ,ln ,DROP ;
+	"add [" ,s ,TOS "],rax" ,ln ,DROP ;
 
 :gC+!
 	"mov rcx,[rbp]" ,ln
@@ -717,7 +717,7 @@
 	"add byte[" ,s ,TOS "],al" ,ln ,DROP ;
 :oC+!v
 	varget
-	"add byte[" ,s ,TOS "],eax" ,ln ,DROP ;
+	"add byte[" ,s ,TOS "],rax" ,ln ,DROP ;
 
 :gW+!
 	"mov rcx,[rbp]" ,ln

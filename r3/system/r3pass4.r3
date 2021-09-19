@@ -4,7 +4,7 @@
 |---------------------------------
 ^./r3base.r3
 
-#MAXINLINE 12
+#MAXINLINE 8
 
 #nivel	0
 
