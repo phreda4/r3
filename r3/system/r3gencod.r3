@@ -560,7 +560,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	,cr
 	dicc> 32 - =? ( "INICIO:" ,s ,cr ; )
 	
- dup @ "%w " .print
+| dup @ "%w " .print
 	
 	dup adr>dicname ,s
 	":" ,s ,cr ;
@@ -618,8 +618,6 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	24 + @ $f and	| use
 	genasmcode
 	
-"end." .print 	
-
 	;
 
 |----------------------------
