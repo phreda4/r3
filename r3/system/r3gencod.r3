@@ -549,7 +549,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 |------------------------------------------
 :tocode | adr token -- adr
 	
-|"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
+"; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
 |"asm/code.asm" savemem | debug
 	$ff and 3 << 'vmc + @ ex ;
 
