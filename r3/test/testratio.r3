@@ -36,7 +36,7 @@
 	"r1" .println ;
 	
 	
-: windows
+:
 	.cls
 	.printbox
 	|640 410 32 << or 

@@ -13,7 +13,8 @@
 ::FFM_resize sys-FFM_resize sys2 ;
 ::FFM_close sys-FFM_close sys0 drop ;
 
-::ffm
+|----- BOOT
+:
 	"ffdll.DLL" loadlib
 	dup "FFM_init" getproc 'sys-FFM_init !
 	dup "FFM_open" getproc 'sys-FFM_open ! 

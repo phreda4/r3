@@ -57,8 +57,8 @@
 |void TTF_Quit(void);
 ::TTF_Quit sys-TTF_Quit sys0 drop ;
  
- 
-::sdl2ttf
+|----- BOOT 
+:
 	"SDL2_ttf.DLL" loadlib
 	dup "TTF_Init" getproc 'sys-TTF_Init !
 	dup "TTF_OpenFont" getproc 'sys-TTF_OpenFont !

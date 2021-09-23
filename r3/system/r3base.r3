@@ -17,7 +17,7 @@
 ##lerror
 ##modo
 
-##switchmem	1 | MEM 640 		set data memory size (in kb) min 1kb
+##switchmem	10 | MEM 640 		set data memory size (in kb) min 1kb
 
 |---- includes
 | 'string|'mem
@@ -35,7 +35,7 @@
 ##src
 ##code
 ##code>
-##<<boot
+##<<boot -1
 ##blok
 ##cntblk 0
 ##nbloques 0

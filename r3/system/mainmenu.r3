@@ -367,7 +367,7 @@
 		cr 1 + ) drop ;
 	
 :screen
-	.reset .home .cls 
+	.reset .cls 
 	.bblue .white
 	0 0 .at .eline
 	0 0 .at " r3 " .write cr
@@ -422,4 +422,4 @@
 	;
 
 	
-: windows main ;
+: main ;

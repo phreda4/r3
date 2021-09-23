@@ -2,7 +2,6 @@
 | framerate independient event animation system
 | PHREDA 2020
 |------------------
-|MEM $fff
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2ttf.r3
@@ -131,7 +130,7 @@
 :main
 	"r3sdl" 640 480 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
-	$3 IMG_Init
+	
 	|16 24 "media/img/font16x24.png" bmfont
 	8 16 "media/img/VGA8x16.png" bmfont
 	ttf_init
@@ -145,11 +144,6 @@
 	;
 
 :memory
-	windows
-	sdl2
-	sdl2image
-	sdl2mixer
-	sdl2ttf
 	mark
 	timeline.inimem
 	;

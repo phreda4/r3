@@ -87,7 +87,8 @@
 ::glDeleteBuffers sys-glDeleteBuffers sys2 drop ;
 ::glDeleteVertexArrays sys-glDeleteVertexArrays sys2 drop ;
 
-::glew
+|----- BOOT
+:
 	"GLEW32.DLL" loadlib
 	dup "glewInit" getproc 'sys-glewInit ! 
 	dup "__glewCreateProgram" getproc 'sys-glCreateProgram !

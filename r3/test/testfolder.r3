@@ -41,4 +41,4 @@
 	"autotv/videos/*" dir
 	;
 	
-: windows main ;
+: main ;

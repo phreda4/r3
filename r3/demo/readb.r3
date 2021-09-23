@@ -18,7 +18,4 @@
 	;
 
 	
-: windows
-	mark
-	main
-	;
+: mark main ;

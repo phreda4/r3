@@ -84,9 +84,6 @@
 		SDLupdate ) drop ;	
 
 : 
-	windows
-	sdl2
-	sdl2ttf
 	mark
 	"r3sdl" 640 480 SDLinitgl
 	initfont

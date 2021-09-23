@@ -706,4 +706,4 @@
 	savetxt
 	;
 
-: windows mark 4 main ;
+: mark 4 main ;

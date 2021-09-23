@@ -76,7 +76,7 @@
 	add.inc ;
 
 ::r3-stage-1 | filename str -- err/0
-	$fff 'switchmem !
+	10 'switchmem !
 	includes
 |debuginc
 	inc> 'inc - 4 >> 'cntinc !

@@ -77,7 +77,8 @@
 ##stdout
 ##stderr
 
-::windows
+|------- BOOT
+:
 	"KERNEL32.DLL" loadlib 
 	dup "AllocConsole" getproc 'sys-AllocConsole !
 	dup "ExitProcess" getproc 'sys-ExitProcess ! 

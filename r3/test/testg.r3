@@ -20,8 +20,6 @@
 	'drawl SDLshow ;
 
 :main
-	windows
-	sdl2
 	"r3sdl" 640 480 SDLinit
 	draw
 	SDLquit

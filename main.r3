@@ -409,4 +409,4 @@
 	;
 
 	
-: windows main ;
+: main ;

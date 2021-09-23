@@ -1,7 +1,6 @@
 | r3 compiler
 | PHREDA 2019
 |------------------
-|MEM $ffff
 ^r3/win/console.r3
 ^./r3base.r3
 ^./r3pass1.r3
@@ -16,7 +15,7 @@
 :r3-genset
 	mark
 	";---r3 setings" ,ln
-	switchmem 10 << "MEMSIZE equ 0x%h" ,print ,cr
+	switchmem 20 << "MEMSIZE equ 0x%h" ,print ,cr
 	"VEROPT equ 1" ,print ,cr | version OPT
 	0 ,c
 	"asm/set.asm"
@@ -73,8 +72,7 @@
 	empty
 	;
 
-: windows 
-	mark
+: 	mark
 	'name "mem/main.mem" load drop
 	" PHREDA - 2019" .println
 	" r3 compiler" .println

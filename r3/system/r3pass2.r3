@@ -47,15 +47,25 @@
 	code> 'codeini !
 	;
 
+:boot?
+	<<boot -? ( drop ; ) 
+	8 << 12 or ,, ; | call prev
+	
+#nboot 0
+	
 :.def
 	inidef 0? ( ; )
 	0 'flag !
+	0 'nboot !
 	1 + dup c@
-	33 <? ( code> '<<boot ! )
+	33 <? ( dicc> dicc - 5 >> 'nboot ! ) 
 	$3A =? ( swap 1 + swap 2 'flag ! ) |::
 	drop
 	0 flag code> pick3 word!+
-    >>sp ;
+	>>sp 
+	nboot 0? ( drop ; )
+	boot? '<<boot ! 
+    ;
 
 :.var
 	inidef 0? ( ; )

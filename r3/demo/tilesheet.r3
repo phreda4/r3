@@ -1,7 +1,6 @@
 | tilesheet sprite
 | PHREDA 2021
 |------------------
-|MEM $fff
 
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
@@ -72,8 +71,8 @@
 	;
 
 :main
+	mark
 	"r3sdl" 800 600 SDLinit
-	$3 IMG_Init
 
 	40 30 "media/img/alien_40x30.png" loadts 'ts_alien !
 	64 29 "media/img/ship_64x29.png" loadts 'ts_ship !
@@ -84,11 +83,4 @@
 	SDLquit
 	;
 	
-:ini
-	windows
-	sdl2
-	sdl2image
-	mark	
-	;
-
-: ini main ;
+: main ;

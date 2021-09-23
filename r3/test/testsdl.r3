@@ -38,12 +38,6 @@
 
 #surface
 
-:inicio
-	windows
-	sdl2
-	sdl2image
-	sdl2mixer
-	mark ;
 	
 :main
 	44100 $08010 2 4096 Mix_OpenAudio 
@@ -63,4 +57,4 @@
 	Mix_CloseAudio
 	;
 
-: inicio main ;
+: mark main ;

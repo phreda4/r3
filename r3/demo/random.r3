@@ -6,9 +6,8 @@
 
 #array * 160 | 20 * 8bytes
 
-: windows
-	mark
-	.home .cls
+: mark
+	.cls
 	rerand
 	0 ( 1000000 <? 1 +
 		1 

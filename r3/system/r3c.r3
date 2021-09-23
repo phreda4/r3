@@ -12,7 +12,7 @@
 :r3-genset
 	mark
 	";---r3 setings" ,ln
-	switchmem "MEMSIZE equ 0x%h" ,print ,cr
+	switchmem 20 << "MEMSIZE equ 0x%h" ,print ,cr
 	0 ,c
 	"asm/set.asm"
 	savemem
@@ -53,7 +53,7 @@
 	;
 
 : mark
-	.home .cls
+	.cls
 	" PHREDA - 2019" .println
 	" r3 compiler" .println
 

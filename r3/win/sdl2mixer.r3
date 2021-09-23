@@ -30,8 +30,9 @@
 ::Mix_OpenAudio sys-Mix_OpenAudio sys4 drop ;
 ::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
-	
-::sdl2mixer
+
+|------- BOOT
+:
 	"SDL2_mixer.DLL" loadlib
 	dup "Mix_Init" getproc 'sys-Mix_Init !
 	dup "Mix_Quit" getproc 'sys-Mix_Quit !

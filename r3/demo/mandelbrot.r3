@@ -6,7 +6,6 @@
 
 ^r3/lib/math.r3
 ^r3/lib/str.r3
-|MEM $ffff
 
 #textbit
 #mpixel 
@@ -59,8 +58,6 @@
 		) drop ;
 
 :main
-	windows
-	sdl2
 	mark
 	here 'vframe !
 	

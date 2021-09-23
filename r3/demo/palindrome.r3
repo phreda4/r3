@@ -9,6 +9,5 @@
 	dup "%d " .print
 	;
 	
-: windows
-	0 ( 500000 <? printcapi 1 + ) drop .input ;
+: 0 ( 500000 <? printcapi 1 + ) drop .input ;
 

@@ -374,7 +374,7 @@
 		) drop cr ;
 
 ::debugtimeline
-	.home .cls
+	.cls
 	timenow "%d " .print
 	t0 "%f" .println
 	dumptline

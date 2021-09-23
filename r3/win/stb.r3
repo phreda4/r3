@@ -13,7 +13,8 @@
 ::STB_RenderText sys-STB_RenderText sys5 drop ;
 ::STB_MeasureText sys-STB_MeasureText sys2 ;
 
-::stb
+|----- BOOT
+:
 	"stb.DLL" loadlib
 	dup "STBTTF_CloseFont" getproc 'sys-STB_CloseFont !
 	dup "STBTTF_OpenFontRW" getproc 'sys-STB_OpenFontRW !

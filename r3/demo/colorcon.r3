@@ -3,8 +3,7 @@
 
 ^r3/win/console.r3
 
-: windows
-	.home .cls
+: .cls
 	0 ( 11 <? 
 		0 ( 10 <? 
 			over 10 * over +

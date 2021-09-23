@@ -12,14 +12,6 @@
 ::InternetReadFile sys-InternetReadFile sys4 drop ;
 ::InternetCloseHandle sys-InternetCloseHandle sys1 drop ;
 
-::wininet
-	"WININET.DLL" loadlib 
-	dup "InternetOpenA" getproc 'sys-internetopen !
-	dup "InternetOpenUrlA" getproc 'sys-InternetOpenUrl !
-	dup "InternetReadFile" getproc 'sys-InternetReadFile !
-	dup "InternetCloseHandle" getproc 'sys-InternetCloseHandle !
-	
-	drop ;
 	
 | R4 source code in C
 |case OPENURL: // url header buff -- buff/0
@@ -46,4 +38,13 @@
 	swap InternetCloseHandle
 	swap InternetCloseHandle ;
 	
+|--------- BOOT	
+: 
+	"WININET.DLL" loadlib 
+	dup "InternetOpenA" getproc 'sys-internetopen !
+	dup "InternetOpenUrlA" getproc 'sys-InternetOpenUrl !
+	dup "InternetReadFile" getproc 'sys-InternetReadFile !
+	dup "InternetCloseHandle" getproc 'sys-InternetCloseHandle !
+	
+	drop ;
 	

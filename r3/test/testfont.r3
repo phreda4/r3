@@ -168,13 +168,6 @@ Hamburguesas proteicas
 :draw
 	'drawl SDLshow ;
 
-:inicio
-	windows
-	sdl2
-	sdl2ttf
-	mark 
-	;
-
 :main
 	"r3sdl" 640 480 SDLinitgl
 	ttf_init
@@ -186,7 +179,7 @@ Hamburguesas proteicas
 	;
 
 : 
-	inicio 
+	mark 
 	main 
 	;
 

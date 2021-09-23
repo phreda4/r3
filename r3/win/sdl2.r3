@@ -94,53 +94,6 @@
 ::SDL_GL_SetSwapInterval sys-SDL_GL_SetSwapInterval sys1 drop ;
 ::SDL_GL_SwapWindow sys-SDL_GL_SwapWindow sys1 drop ;
 
-::sdl2
-	"SDL2.DLL" loadlib
-	dup "SDL_Init" getproc 'sys-SDL_Init !
-	dup "SDL_Quit" getproc 'sys-SDL_Quit !
-	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
-	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
-	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
-	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
-	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
-	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
-	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !
-	dup "SDL_CreateTexture" getproc 'sys-SDL_CreateTexture !
-	dup "SDL_DestroyTexture" getproc 'sys-SDL_DestroyTexture !
-	dup "SDL_DestroyRenderer" getproc 'sys-SDL_DestroyRenderer !
-	dup "SDL_UpdateTexture" getproc 'sys-SDL_UpdateTexture !
-	dup "SDL_RenderClear" getproc 'sys-SDL_RenderClear !
-	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
-	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
-	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
-	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
-	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
-	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
-	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
-	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
-	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
-	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
-	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
-	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
-	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
-	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
-	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !
-	dup "SDL_RenderFillRect" getproc 'sys-SDL_RenderFillRect !
-
-	dup "SDL_Delay" getproc 'sys-SDL_Delay !
-	dup "SDL_PollEvent" getproc 'sys-SDL_PollEvent !
-	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !
-	
-	dup "SDL_RWFromFile" getproc 'sys-SDL_RWFromFile !
-	
-	dup "SDL_GL_SetAttribute" getproc 'sys-SDL_GL_SetAttribute !
-	dup "SDL_GL_CreateContext" getproc 'sys-SDL_GL_CreateContext !
-	dup "SDL_GL_DeleteContext" getproc 'sys-SDL_GL_DeleteContext !
-	dup "SDL_GL_SetSwapInterval" getproc 'sys-SDL_GL_SetSwapInterval !
-	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
-	drop
-	;
-
 |----------------------------------------------------------
 	
 ##SDL_windows
@@ -225,3 +178,51 @@
 ::exit
 	1 '.exit ! ;
 		
+
+|------- BOOT
+:
+	"SDL2.DLL" loadlib
+	dup "SDL_Init" getproc 'sys-SDL_Init !
+	dup "SDL_Quit" getproc 'sys-SDL_Quit !
+	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
+	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
+	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
+	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
+	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
+	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
+	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !
+	dup "SDL_CreateTexture" getproc 'sys-SDL_CreateTexture !
+	dup "SDL_DestroyTexture" getproc 'sys-SDL_DestroyTexture !
+	dup "SDL_DestroyRenderer" getproc 'sys-SDL_DestroyRenderer !
+	dup "SDL_UpdateTexture" getproc 'sys-SDL_UpdateTexture !
+	dup "SDL_RenderClear" getproc 'sys-SDL_RenderClear !
+	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
+	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
+	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
+	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
+	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
+	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
+	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
+	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
+	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
+	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
+	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
+	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
+	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
+	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
+	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !
+	dup "SDL_RenderFillRect" getproc 'sys-SDL_RenderFillRect !
+
+	dup "SDL_Delay" getproc 'sys-SDL_Delay !
+	dup "SDL_PollEvent" getproc 'sys-SDL_PollEvent !
+	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !
+	
+	dup "SDL_RWFromFile" getproc 'sys-SDL_RWFromFile !
+	
+	dup "SDL_GL_SetAttribute" getproc 'sys-SDL_GL_SetAttribute !
+	dup "SDL_GL_CreateContext" getproc 'sys-SDL_GL_CreateContext !
+	dup "SDL_GL_DeleteContext" getproc 'sys-SDL_GL_DeleteContext !
+	dup "SDL_GL_SetSwapInterval" getproc 'sys-SDL_GL_SetSwapInterval !
+	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
+	drop
+	;

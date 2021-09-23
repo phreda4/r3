@@ -25,7 +25,7 @@
 
 |-----------------
 :icls
-	.cls .home ;
+	.cls ;
 
 |-----------------	
 :linedir | adr --
@@ -85,7 +85,6 @@
 
 	
 : 
-windows
 mark
 main ;
 

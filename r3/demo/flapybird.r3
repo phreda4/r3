@@ -1,6 +1,5 @@
 | Demo Flapybird
 | PHRED 2021
-|MEM $fff
 
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
@@ -118,7 +117,6 @@
 
 :main
 	"r3sdl" 800 600 SDLinit
-	$3 IMG_Init
 
 	"media/img/pileline.png" loadtexture 'sprpipe !
 	36 25 "media/img/bird.png" loadts 'sprbird !
@@ -128,9 +126,7 @@
 	SDLquit
 	;
 		
-:ini
-	windows sdl2 sdl2image mark	 ;
 
 :
-ini main
+mark main
 ;

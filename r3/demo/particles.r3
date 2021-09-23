@@ -1,6 +1,5 @@
 | demo particles
 | PHREDA 2021
-|mem $ffff
 
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
@@ -62,10 +61,5 @@
 	
 	SDLquit ;
 	
-:ini
-	windows
-	sdl2
-	sdl2image
-	mark ;
 	
-: ini main ;
+: mark main ;
