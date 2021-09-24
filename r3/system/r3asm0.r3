@@ -345,7 +345,7 @@
 	"idiv rbx" ,ln
 	"sub rbp,8" ,ln ;
 :o*/v
-	"movsxd rbx," ,s ,TOS ,cr
+	"mov rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"imul qword[rbp]" ,ln
 	"idiv rbx" ,ln
@@ -943,56 +943,61 @@
 	"POP RSP" ,ln  ;
 	
 :gSYS0  | a -- b
-	preA16
 	"sub RSP,$20" ,ln 
+	preA16	
 	"CALL rax" ,ln 
+	posA16 
 	"add RSP,$20" ,ln 
-	posA16 ;
+	;
 	
 :gSYS1 
+	"sub RSP,$20" ,ln 
 	preA16
-	"sub RSP,$20" ,ln 		
 	"mov rcx,[rbp]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
 	"sub rbp,8" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$20" ,ln 
+	;
 	
 :gSYS2 
+	"sub RSP,$20" ,ln 
 	preA16
-	"sub RSP,$20" ,ln 	
 	"mov rdx,[rbp]" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
 	"call rax" ,ln 
+	posA16 
 	"add RSP,$20" ,ln 
-	posA16 ;
+	;
 	
 :gSYS3 
-	preA16
 	"sub RSP,$20" ,ln 
+	preA16
 	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
 	"sub rbp,8*3" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$20" ,ln 
+	;
 
 :gSYS4 
-	preA16
 	"sub RSP,$20" ,ln 
+	preA16
 	"mov r9,[rbp]" ,ln
 	"mov r8,[rbp-1*8]" ,ln
 	"mov rdx,[rbp-2*8]" ,ln
 	"mov rcx,[rbp-3*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 
 	"sub rbp,8*4" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$20" ,ln 
+	;
 
 :gSYS5
+	"sub RSP,$28" ,ln 
 	preA16
-	"sub RSP,$28" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-1*8]" ,ln
@@ -1000,13 +1005,14 @@
 	"mov rdx,[rbp-3*8]" ,ln
 	"mov rcx,[rbp-4*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$28" ,ln 
 	"sub rbp,8*5" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$28" ,ln 
+	;
 
 :gSYS6 
+	"sub RSP,$30" ,ln 
 	preA16
-	"sub RSP,$30" ,ln 	
 	"mov rdx,[rbp]" ,ln
 	"mov [rsp+$28],rdx" ,ln	
 	"mov rcx,[rbp-1*8]" ,ln	
@@ -1016,93 +1022,98 @@
 	"mov rdx,[rbp-4*8]" ,ln
 	"mov rcx,[rbp-5*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$30" ,ln 	
 	"sub rbp,8*6" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$30" ,ln 
+	;
 
 :gSYS7 
+	"sub RSP,$38" ,ln 
 	preA16
-	"sub RSP,$38" ,ln 	
 	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
+	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
-	"mov [rsp+8*1],rcx" ,ln
+	"mov [rsp+$28],rcx" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
-	"mov [rsp],rcx" ,ln
+	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-3*8]" ,ln
 	"mov r8,[rbp-4*8]" ,ln
 	"mov rdx,[rbp-5*8]" ,ln
 	"mov rcx,[rbp-6*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$38" ,ln 	
 	"sub rbp,8*7" ,ln 	
-	posA16 ;
+	posA16 
+	"add RSP,$38" ,ln 
+	;
 
 :gSYS8 
+	"sub RSP,$40" ,ln 
 	preA16
-	"sub RSP,$40" ,ln 	
 	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
+	"mov [rsp+$38],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
+	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
-	"mov [rsp+8*1],rcx" ,ln
+	"mov [rsp+$28],rcx" ,ln
 	"mov rcx,[rbp-3*8]" ,ln
-	"mov [rsp],rcx" ,ln
+	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-4*8]" ,ln
 	"mov r8,[rbp-5*8]" ,ln
 	"mov rdx,[rbp-6*8]" ,ln
 	"mov rcx,[rbp-7*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$20" ,ln 	
 	"sub rbp,8*8" ,ln 
-	posA16 ;
+	posA16 
+	"add RSP,$40" ,ln 
+	;
 	
 :gSYS9 
+	"sub RSP,$48" ,ln 
 	preA16
-	"sub RSP,$48" ,ln 	
 	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8*4],rcx" ,ln
+	"mov [rsp+$40],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
+	"mov [rsp+$38],rcx" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
+	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-3*8]" ,ln
-	"mov [rsp+8*1],rcx" ,ln
+	"mov [rsp+$28],rcx" ,ln
 	"mov rcx,[rbp-4*8]" ,ln
-	"mov [rsp],rcx" ,ln
+	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-5*8]" ,ln
 	"mov r8,[rbp-6*8]" ,ln
 	"mov rdx,[rbp-7*8]" ,ln
 	"mov rcx,[rbp-8*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$48" ,ln 	
 	"sub rbp,8*9" ,ln 
-	posA16 ;
+	posA16 
+	"add RSP,$48" ,ln 
+	;
 	
 :gSYS10
+	"sub RSP,$50" ,ln 
 	preA16
-	"sub RSP,$50" ,ln 	
 	"mov rcx,[rbp]" ,ln
-	"mov [rsp+8*5],rcx" ,ln
+	"mov [rsp+$48],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
-	"mov [rsp+8*4],rcx" ,ln
+	"mov [rsp+$40],rcx" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
-	"mov [rsp+8*3],rcx" ,ln
+	"mov [rsp+$38],rcx" ,ln
 	"mov rcx,[rbp-3*8]" ,ln
-	"mov [rsp+8*2],rcx" ,ln
+	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-4*8]" ,ln
-	"mov [rsp+8*1],rcx" ,ln
+	"mov [rsp+$28],rcx" ,ln
 	"mov rcx,[rbp-5*8]" ,ln
-	"mov [rsp],rcx" ,ln
+	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-6*8]" ,ln
 	"mov r8,[rbp-7*8]" ,ln
 	"mov rdx,[rbp-8*8]" ,ln
 	"mov rcx,[rbp-9*8]" ,ln
 	"call rax" ,ln 
-	"add RSP,$50" ,ln 	
 	"sub rbp,8*10" ,ln 
-	posA16 ;
+	posA16 
+	"add RSP,$50" ,ln 
+	;
 	
 |---------------------------------
 #vmc1

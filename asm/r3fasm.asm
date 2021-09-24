@@ -44,8 +44,8 @@ section '.data' data readable writeable
   _error db "err",0
 
 align 16
-  FREE_MEM       dq ?
-  DATASTK        rq 256
+  FREE_MEM	dq ?
+  DATASTK	rq 256
 
 ;----- CODE -----
 align 16
