@@ -12,15 +12,12 @@
 #sprbird
 #sprpipe
 
-|--------------------------------
-:loadtexture | "" -- texture
-	IMG_Load SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
 
 |--------------------------------
 #w #h
 
 :loadts | w h filename -- ts
-	loadtexture 
+	loadimg
 	dup 0 0 'w 'h SDL_QueryTexture
 	mark here >a
 	a!+ | texture
@@ -118,7 +115,7 @@
 :main
 	"r3sdl" 800 600 SDLinit
 
-	"media/img/pileline.png" loadtexture 'sprpipe !
+	"media/img/pileline.png" loadimg 'sprpipe !
 	36 25 "media/img/bird.png" loadts 'sprbird !
 
 	'juego SDLshow

@@ -12,13 +12,11 @@
 #ts_explo
 
 |--------------------------------
-:loadtexture | "" -- texture
-	IMG_Load SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
 	
 #w #h
 
 :loadts | w h filename -- ts
-	loadtexture 
+	loadimg
 	dup 0 0 'w 'h SDL_QueryTexture
 	mark here >a
 	a!+ | texture

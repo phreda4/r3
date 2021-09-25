@@ -56,8 +56,6 @@
 :draw
 	'drawl SDLshow ;
 
-#surface
-
 :main
 	44100 $08010 2 4096 Mix_OpenAudio 
 	
@@ -65,11 +63,8 @@
 	 
 	"r3sdl" 640 480 SDLinit
 	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
-	$3 IMG_Init
 
-	"media/img/lolomario.png" IMG_Load 'surface !
-	SDLrenderer surface SDL_CreateTextureFromSurface 'texture !
-	surface SDL_FreeSurface
+	"media/img/lolomario.png" loadimg 'texture !
 
 	SDLrenderer $16362004 1 427 240 SDL_CreateTexture 'textbit !
 	

@@ -120,7 +120,7 @@
 	
 :loadres
 	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !	
-	SDLrenderer "media/img/lolomario.png" loadtexture 'imagen !
+	SDLrenderer "media/img/lolomario.png" loadimg 'imagen !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !	
 	SDLrenderer font 
 	"Hola a todos los que vinieron por los pochoclos que se regalan en la puerta"

@@ -17,9 +17,7 @@
 	textbit 'srct 'mpixel 'mpitch SDL_LockTexture
 	mpixel vframe 800 600 * dmove 
 	textbit SDL_UnlockTexture
-	
 	SDLrenderer textbit 0 'srct SDL_RenderCopy		
-	
 	SDLrenderer SDL_RenderPresent
 	;
 	
@@ -62,7 +60,7 @@
 	here 'vframe !
 	
 	"r3sdl" 800 600 SDLinit
-	SDLrenderer $16362004 1 800 600 SDL_CreateTexture 'textbit !
+	800 600 SDLframebuffer 'textbit !
 	
 	.cls 
 	" Calculando..." .println
@@ -72,7 +70,7 @@
 	-3.0 'xmin ! -2.0 'ymin !
 	calcmandel
 	renderbitmap	
-	
+
 	msec swap - " %d ms " .println
 	
 	.input

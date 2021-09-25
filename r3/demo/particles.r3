@@ -12,9 +12,6 @@
 
 #list 0 0 
 
-|--------------------------------
-:loadtexture | "" -- texture
-	IMG_Load SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
 
 |--------------------------------
 :choque
@@ -54,7 +51,7 @@
 	$3 IMG_Init
 	SDLrenderer  0 0 0 $ff SDL_SetRenderDrawColor 
 
-	"media/img/ball.png" loadtexture 'spr_ball !
+	"media/img/ball.png" loadimg 'spr_ball !
 	1000 'list p.ini
 	
 	'demo SDLshow

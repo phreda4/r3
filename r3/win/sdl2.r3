@@ -7,6 +7,7 @@
 #sys-SDL_Quit 
 #sys-SDL_GetNumVideoDisplays 
 #sys-SDL_CreateWindow 
+#sys-SDL_SetWindowFullscreen
 #sys-SDL_GetWindowSurface 
 #sys-SDL_ShowCursor 
 #sys-SDL_UpdateWindowSurface 
@@ -52,6 +53,8 @@
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
 ::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
+::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
+
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
 ::SDL_ShowCursor sys-SDL_ShowCursor sys1 drop ;
 ::SDL_UpdateWindowSurface sys-SDL_UpdateWindowSurface sys1 drop ;
@@ -118,7 +121,35 @@
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	|0 SDL_ShowCursor | disable cursor
 	;
-
+	
+::SDLfull | --
+	SDL_windows 1 SDL_SetWindowFullscreen ;
+	
+::SDLframebuffer | w h --
+	>r >r SDLrenderer $16362004 1 r> r> SDL_CreateTexture ;
+	
+| SDL_WINDOW_FULLSCREEN = 0x00000001,
+| SDL_WINDOW_OPENGL = 0x00000002,
+| SDL_WINDOW_SHOWN = 0x00000004,
+| SDL_WINDOW_HIDDEN = 0x00000008,
+| SDL_WINDOW_BORDERLESS = 0x00000010,
+| SDL_WINDOW_RESIZABLE = 0x00000020,
+| SDL_WINDOW_MINIMIZED = 0x00000040,
+| SDL_WINDOW_MAXIMIZED = 0x00000080,
+| SDL_WINDOW_INPUT_GRABBED = 0x00000100,
+| SDL_WINDOW_INPUT_FOCUS = 0x00000200,
+| SDL_WINDOW_MOUSE_FOCUS = 0x00000400,
+| SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
+| SDL_WINDOW_FOREIGN = 0x00000800,
+| SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,
+| SDL_WINDOW_MOUSE_CAPTURE = 0x00004000,
+| SDL_WINDOW_ALWAYS_ON_TOP = 0x00008000,
+| SDL_WINDOW_SKIP_TASKBAR = 0x00010000,
+| SDL_WINDOW_UTILITY = 0x00020000,
+| SDL_WINDOW_TOOLTIP = 0x00040000,
+| SDL_WINDOW_POPUP_MENU = 0x00080000,
+ | | SDL_WINDOW_VULKAN = 0x10000000
+  
 ::SDLinitGL | "titulo" w h --
 	'sh ! 'sw !
 	$3231 SDL_init 
@@ -128,7 +159,6 @@
 	;
 	
 ::SDLquit
-	
 	SDL_windows SDL_DestroyWindow 
 	SDL_Quit ;
 	
@@ -186,6 +216,7 @@
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !
 	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
 	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
+	dup "SDL_SetWindowFullscreen" getproc 'sys-SDL_SetWindowFullscreen !
 	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
 	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
 	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
