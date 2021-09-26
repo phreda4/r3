@@ -6,12 +6,11 @@
 	
 #textbitmap
 
-#srct [ 0 0 800 600 ]
 #mpixel 
 #mpitch
 
 :updatexor
-	textbitmap 'srct 'mpixel 'mpitch SDL_LockTexture
+	textbitmap 0 'mpixel 'mpitch SDL_LockTexture
 	
 	mpixel >a
 	600 ( 1? 1 -

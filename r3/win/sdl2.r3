@@ -79,7 +79,7 @@
 ::SDL_SetRenderDrawBlendMode sys-SDL_SetRenderDrawBlendMode sys2 drop ;
 
 ::SDL_RenderDrawPoint sys-SDL_RenderDrawPoint sys3 drop ;
-::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys4 drop ;
+::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys5 drop ;
 ::SDL_RenderDrawRect sys-SDL_RenderDrawRect sys2 drop ;
 ::SDL_RenderFillRect sys-SDL_RenderFillRect sys2 drop ;
 
@@ -209,6 +209,17 @@
 	1 '.exit ! ;
 		
 
+::SDLcolor | col --
+	SDLrenderer swap
+	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+	$ff SDL_SetRenderDrawColor ;
+
+::SDLPoint | x y --
+	SDLRenderer rot rot SDL_RenderDrawPoint ;
+	
+::SDLLine | x y x y --	
+	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
+	
 |------- BOOT
 :
 	"SDL2.DLL" loadlib

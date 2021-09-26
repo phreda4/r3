@@ -4,6 +4,7 @@
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
+^r3/util/tilesheet.r3
 ^r3/lib/key.r3
 ^r3/lib/rand.r3
 
@@ -12,43 +13,6 @@
 #sprbird
 #sprpipe
 
-
-|--------------------------------
-#w #h
-
-:loadts | w h filename -- ts
-	loadimg
-	dup 0 0 'w 'h SDL_QueryTexture
-	mark here >a
-	a!+ | texture
-	2dup swap da!+ da!+ | w h 
-	0 ( h <? 
-		0 ( w <? | w h y x
-			2dup da!+ da!+
-			pick3 + ) drop 
-		over + ) drop
-	2drop 
-	here a> 'here ! 
-	;
-
-:freets | ts --
-	@ SDL_DestroyTexture 
-	empty ;
-	
-#rdes [ 0 0 0 0 ]
-#rsrc [ 0 0 0 0 ]
-
-:tsdraw | n 'ts x y --
-	swap 'rdes d!+ d!
-	dup 8 + @ dup 1 << 'rdes 8 + ! 'rsrc 8 + !
-	SDLrenderer 	| n 'ts ren
-	rot rot @+		| ren n 'ts texture
-	rot 3 << rot 8 + + 
-	@ 'rsrc ! | ren txture rsrc
-	'rsrc 'rdes 
-	SDL_RenderCopy
-	;
-
 |--------------------------------
 #rbox [ 0 0 64 64 ]
 
@@ -56,12 +20,7 @@
 	swap 2swap swap
 	'rbox d!+ d!+ d!+ d!
 	SDLrenderer swap 0 'rbox SDL_RenderCopy ;
-	
-:sdlcolor | col --
-	SDLrenderer swap
-	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
-	$ff SDL_SetRenderDrawColor ;
-	
+
 |--------------------------------	
 | posicion y velocidad 
 #px 200.0 #py 10.0

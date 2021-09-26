@@ -31,6 +31,15 @@
 ::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
 
+::SNDInit
+	44100 $08010 2 4096 Mix_OpenAudio ;
+	
+::SNDplay | adr --
+	-1 swap 0 -1 Mix_PlayChannelTimed ;
+	
+::SNDQuit	
+	Mix_CloseAudio ;
+	
 |------- BOOT
 :
 	"SDL2_mixer.DLL" loadlib
