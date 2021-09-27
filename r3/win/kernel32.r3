@@ -8,8 +8,11 @@
 #sys-WriteFile 
 #sys-GetConsoleMode 
 #sys-SetConsoleMode
+#sys-PeekConsoleInput
 #sys-ReadConsoleInput
+#sys-WriteConsole
 #sys-FlushConsoleInputBuffer
+
 #sys-Sleep
 #sys-WaitForSingleObject 
 #sys-GetLastError
@@ -43,7 +46,10 @@
 ::WriteFile sys-WriteFile sys5 ;
 ::GetConsoleMode sys-GetConsoleMode sys2 ;
 ::SetConsoleMode sys-SetConsoleMode sys2 ;
+::PeekConsoleInput sys-PeekConsoleInput sys4 drop ;
 ::ReadConsoleInput sys-ReadConsoleInput sys4 drop ;
+::WriteConsole sys-WriteConsole sys5 drop ;
+
 ::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 ;
 ::Sleep sys-Sleep sys1 drop ;
 ::WaitForSingleObject sys-WaitForSingleObject sys2 ;
@@ -89,7 +95,10 @@
 	
 	dup "GetConsoleMode" getproc 'sys-GetConsoleMode !
 	dup "SetConsoleMode" getproc 'sys-SetConsoleMode !
+	dup "PeekConsoleInputW" getproc 'sys-PeekConsoleInput !
 	dup "ReadConsoleInputW" getproc 'sys-ReadConsoleInput !
+	dup "WriteConsole" getproc 'sys-WriteConsole !
+	
 	dup "FlushConsoleInputBuffer" getproc 'sys-FlushConsoleInputBuffer !
 	dup "Sleep" getproc 'sys-Sleep !
 	dup "WaitForSingleObject" getproc 'sys-WaitForSingleObject ! 

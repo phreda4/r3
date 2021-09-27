@@ -514,12 +514,12 @@
 	,dup "movsx rax,word [" ,s ,TOS "]" ,ln ;
 
 :gD@
-	"movsx rax,dword [rax]" ,ln ;
+	"movsxd rax,dword [rax]" ,ln ;
 :oD@
-	,dup "movsx rax,dword [" ,s ,TOS "]" ,ln ;
+	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
 :oD@v
 	varget
-	,dup "movsx rax,dword [" ,s ,TOS "]" ,ln ;
+	,dup "movsxd rax,dword [" ,s ,TOS "]" ,ln ;
 
 :g@+
 	"mov rbx,[rax]" ,ln
@@ -563,21 +563,21 @@
 
 
 :gD@+
-	"movsx rbx,dword [rax]" ,ln
+	"movsxd rbx,dword [rax]" ,ln
 	"add rax,4" ,ln
 	,dup
 	"mov rax,rbx" ,ln ;
 :oD@+
 	,dup
 	"mov rbx," ,s ,TOS ,cr
-	"movsx rax,dword [rbx]" ,ln
+	"movsxd rax,dword [rbx]" ,ln
 	"add rbx,4" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
 :oD@+v
 	,dup
 	"mov rbx," ,s ,TOS ,cr
-	"movsx rax,dword [rbx]" ,ln
+	"movsxd rax,dword [rbx]" ,ln
 	"add rbx,4" ,ln
 	,dup
 	"mov [rbp],rbx" ,ln ;
@@ -770,13 +770,13 @@
 :oCA!+	"mov byte[r14]," ,s ,TOSB ,cr "add r14,1" ,ln ;
 :oCA!+v	varget "mov byte[r14],bl" ,ln "add r14,1" ,ln ;
 
-:gDA@	,dup "movsx rax,dword[r14]" ,ln ;
+:gDA@	,dup "movsxd rax,dword[r14]" ,ln ;
 
 :gDA!	"mov dword[r14],eax" ,ln ,drop ;
 :oDA!	"mov dword[r14]," ,s ,TOSE ,cr ;
 :oDA!v	varget "mov dword[r14],ebx" ,ln ;
 
-:gDA@+	,dup "movsx rax,dword[r14]" ,ln "add r14,4" ,ln ;
+:gDA@+	,dup "movsxd rax,dword[r14]" ,ln "add r14,4" ,ln ;
 :gDA!+	"mov dword[r14],eax" ,ln "add r14,4" ,ln ,drop ;
 :oDA!+	"mov dword[r14]," ,s ,TOSE ,cr "add r14,4" ,ln ;
 :oDA!+v	varget "mov dword[r14],ebx" ,ln "add r14,4" ,ln ;
@@ -803,13 +803,13 @@
 :oB!+	"mov qword[r15]," ,s ,TOS ,cr "add r15,8" ,ln ;
 :oB!+v	varget "mov qword[r15],rbx" ,ln "add r15,8" ,ln ;
 
-:gDB@	,dup "movsx rax,dword[r15]" ,ln ;
+:gDB@	,dup "movsxd rax,dword[r15]" ,ln ;
 
 :gDB!	"mov dword[r15],eax" ,ln ,drop ;
 :oDB!	"mov dword[r15]," ,s ,TOSE ,cr ;
 :oDB!v	varget "mov dword[r15],ebx" ,ln ;
 
-:gDB@+	,dup "movsx rax,dword[r15]" ,ln "add r15,4" ,ln ;
+:gDB@+	,dup "movsxd rax,dword[r15]" ,ln "add r15,4" ,ln ;
 
 :gDB!+	"mov dword[r15],eax" ,ln "add r15,4" ,ln ,drop ;
 :oDB!+	"mov dword[r15]," ,s ,TOSE ,cr "add r15,4" ,ln ;

@@ -25,6 +25,7 @@
 	drop 
 	0 dup 'codekey ! ;
 	
+
 ::waitesc
 	( getch 27 <>? drop ) drop ;
 	
@@ -135,3 +136,4 @@
 ::.printe | "" --
 	sprint
 	( c@+ 1? emite ) 2drop ;
+	
