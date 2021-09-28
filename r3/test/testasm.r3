@@ -3,5 +3,7 @@
 
 : 
 	.cls
-	.input
+	( key? dup "%d " .print
+		0? drop )
+	dup "%d" .print
 	;

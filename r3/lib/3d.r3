@@ -17,30 +17,30 @@
 	'mats dup 'mat> ! 'mati 16 move ;
 
 ::mpush | --
-	mat> dup 64 + dup 'mat> ! swap 16 move ;
+	mat> dup 128 + dup 'mat> ! swap 16 move ;
 
 ::mpop | --
 	mat> |'mats =? ( drop ; )
-	64 - 'mat> ! ;
+	128 - 'mat> ! ;
 
 ::nmpop | n --
-	6 << mat> swap - |'mats <? ( 'mats nip )
+	7 << mat> swap - |'mats <? ( 'mats nip )
 	'mat> ! ;
 
 |-----------------------------
 ::mtrans | x y z --
 	mat> >a
-	pick2 a> 48 + @ *. a@ + a!+
-	pick2 a> 48 + @ *. a@ + a!+
-	pick2 a> 48 + @ *. a@ + a!+
+	pick2 a> 96 + @ *. a@ + a!+
+	pick2 a> 96 + @ *. a@ + a!+
+	pick2 a> 96 + @ *. a@ + a!+
 	rot a@ + a!+
-	over a> 32 + @ *. a@ + a!+
-	over a> 32 + @ *. a@ + a!+
-	over a> 32 + @ *. a@ + a!+
+	over a> 64 + @ *. a@ + a!+
+	over a> 64 + @ *. a@ + a!+
+	over a> 64 + @ *. a@ + a!+
 	swap a@ + a!+
-	dup a> 16 + @ *. a@ + a!+
-	dup a> 16 + @ *. a@ + a!+
-	dup a> 16 + @ *. a@ + a!+
+	dup a> 32 + @ *. a@ + a!+
+	dup a> 32 + @ *. a@ + a!+
+	dup a> 32 + @ *. a@ + a!+
 	a> +! ;
 
 ::mtransi | x y z -- ;pre
@@ -65,35 +65,35 @@
 |-----------------------------
 ::mrotx | x -- ; posmultiplica
 	0? ( drop ; )
-	mat> 16 + >a
+	mat> 32 + >a
 	dup sin swap cos
-	a@ a> 16 + @ | s c e i
+	a@ a> 32 + @ | s c e i
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c f j
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c f j
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c g k
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c g k
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c h l
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c h l
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r *. r> + a> 12 + ! ;
+	rot *. >r *. r> + a> 24 + ! ;
 
 ::mrotxi |x -- ; premultiplica
 	0? ( drop ; )
-	mat> 4 + >a
+	mat> 8 + >a
 	dup sin swap cos
-	a@ a> 4 + @ | s c b c
+	a@ a> 8 + @ | s c b c
 	pick2 pick2 *. pick4 neg pick2 *. + a!+ | s c b c
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c f g
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c f g
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c j k
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c j k
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c m o
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c m o
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
 	rot *. >r *. r> + a! ;
 
@@ -102,64 +102,64 @@
 	0? ( drop ; )
 	mat> >a
 	dup sin swap cos
-	a@ a> 32 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 28 + !
-	a@ a> 32 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 28 + !
-	a@ a> 32 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 28 + !
-	a@ a> 32 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r swap neg *. r> + a> 28 + ! ;
+	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
+	pick2 *. >r pick2 neg *. r> + a> 56 + !
+	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
+	pick2 *. >r pick2 neg *. r> + a> 56 + !
+	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
+	pick2 *. >r pick2 neg *. r> + a> 56 + !
+	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
+	rot *. >r swap neg *. r> + a> 56 + ! ;
 
 ::mrotyi | y --
 	0? ( drop ; )
 	mat> >a
 	dup sin swap cos
-	a@ a> 8 + @ | s c a c
+	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 4 + ! 12 a+
-	a@ a> 8 + @ | s c a c
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 4 + ! 12 a+
-	a@ a> 8 + @ | s c a c
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 4 + ! 12 a+
-	a@ a> 8 + @ | s c a c
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r swap neg *. r> + a> 4 + ! ;
+	rot *. >r swap neg *. r> + a> 8 + ! ;
 
 |-----------------------------
 ::mrotz | z --
 	0? ( drop ; )
 	mat> >a
 	dup sin swap cos
-	a@ a> 16 + @ | s c e i
+	a@ a> 32 + @ | s c e i
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c e i
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c e i
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c e i
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c e i
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 12 + !
-	a@ a> 16 + @ | s c e i
+	pick2 *. >r pick2 neg *. r> + a> 24 + !
+	a@ a> 32 + @ | s c e i
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r *. r> + a> 12 + ! ;
+	rot *. >r *. r> + a> 24 + ! ;
 
 ::mrotzi | z --
 	0? ( drop ; )
 	mat> >a
 	dup sin swap cos
-	a@ a> 4 + @ | s c a b
+	a@ a> 8 + @ | s c a b
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c a b
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c a b
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c a b
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c a b
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 8 a+
-	a@ a> 4 + @ | s c a b
+	pick2 *. >r pick2 *. r> + a!+ 16 a+
+	a@ a> 8 + @ | s c a b
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
 	rot *. >r *. r> + a! ;
 
@@ -170,11 +170,11 @@
 
 ::matinv
 	mat> >a
-	a> 12 + @  neg a> 28 + @  neg a> 44 + @ neg | tx ty tz
-	a> 4 + dup 12 + invierte a> 8 + dup 24 + invierte a> 24 + dup 12 + invierte
-	pick2 a@  *. pick2 a> 4 + @ *. + over a> 8 + @  *. + a> 12 + !
-	pick2 a> 16 + @  *. pick2 a> 20 + @  *. + over a> 24 + @  *. + a> 28 + !
-	rot a> 32 + @  *. rot a> 36 + @  *. + swap a> 40 + @  *. + a> 44 + !
+	a> 24 + @  neg a> 56 + @  neg a> 88 + @ neg | tx ty tz
+	a> 8 + dup 24 + invierte a> 16 + dup 48 + invierte a> 48 + dup 24 + invierte
+	pick2 a@  *. pick2 a> 8 + @ *. + over a> 16 + @  *. + a> 24 + !
+	pick2 a> 32 + @  *. pick2 a> 40 + @  *. + over a> 48 + @  *. + a> 56 + !
+	rot a> 64 + @  *. rot a> 72 + @  *. + swap a> 80 + @  *. + a> 88 + !
 	;
 
 ::transform | x y z -- x y z
@@ -184,20 +184,20 @@
 	r> r> swap rot ;
 
 ::transformr | x y z -- x y z
-	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 4 a+
-	>r pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 4 a+
+	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 8 a+
+	>r pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 8 a+
 	>r rot a@+ *. rot a@+ *. + swap a@ *. +
 	r> r> swap rot ;
 
 ::ztransform | x y z -- z
-	mat> 32 + >a
+	mat> 64 + >a
 	rot a@+ *. rot a@+ *. + swap a@+ *. + a@ + ;
 
 ::oztransform | -- z
-	mat> 44 + @ ;
+	mat> 88 + @ ;
 
 ::oxyztransform | -- x y z
-	mat> dup 12 + @ over 28 + @ rot 44 + @ ;
+	mat> dup 24 + @ over 56 + @ rot 88 + @ ;
 
 |-----------------------------
 ::2dmode | --

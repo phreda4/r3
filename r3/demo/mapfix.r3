@@ -1,4 +1,4 @@
-| demo map 
+| demo map fix
 | PHREDA 2021
 |------------------
 
@@ -49,8 +49,30 @@
 )
 
 #nspr ( 0 84 85 86 87 88 89 90 1 2 3 4 5 )
-	
-|----- PLAYER
+
+|------ DRAW MAP
+
+:gettilea | x y -- t
+	4 >> swap 4 >> swap 32 * + 'map + ;
+
+:gettile | x y -- t
+	4 >> swap 4 >> swap 32 * + 'map + c@ ;
+
+:drawtile | x y adr tile -- y x adr  
+	0? ( drop ; ) 'nspr + c@ ts_spr 
+	pick4 4 << pick4 4 << swap
+	16 16 tsdraws ;
+
+:drawmap
+	'map 
+	0 ( 32 <? 
+		0 ( 32 <?
+			rot c@+ drawtile rot rot 
+			1 + ) drop
+		1 + ) 2drop ;
+
+		
+|--------- PLAYER
 #nplay ( 
 91 92 91 93  
 94 95 94 96 
@@ -59,22 +81,21 @@
 #nstep
 #ddx
 #dx #dy
-#xp 128.0 #yp 64.0
+#xp 32.0 #yp 32.0
 
 :[map]@ | x y -- adr
 	swap -? ( 2drop 0 ; ) wmap >=? ( 2drop 0 ; )
 	swap -? ( 2drop 0 ; ) hmap >=? ( 2drop 0 ; )
 	wmap * + 'map + c@ ;
-
 	
 :roof? | -- techo?
-	xp 32.0 + 22 >> yp 8.0 - 22 >> [map]@ ;
+	xp 8.0 + 20 >> yp 2.0 - 20 >> [map]@ ;
 
 :floor? | -- piso?
-	xp 32.0 + 22 >> yp 64.0 + 22 >> [map]@ ;
+	xp 8.0 + 20 >> yp 16.0 + 20 >> [map]@ ;
 
 :wall? | dx -- wall?
-	xp + 32.0 + 22 >> yp 32.0 + 22 >> [map]@ ;
+	xp + 8.0 + 20 >> yp 8.0 + 20 >> [map]@ ;
 
 :jump
 	floor? 0? ( drop
@@ -82,22 +103,22 @@
 		roof? 1? ( dy -? ( 0 'dy ! ) drop ) drop
 		; ) drop
 	0 'dy !
-	yp $ffffc00000 and 'yp ! | fit y to map (64.0)
+	yp $fffff00000 and 'yp ! | fit y to map (16.0)
 	SDLkey
-	<up> =? ( -12.0 'dy ! )
+	<up> =? ( -6.0 'dy ! )
 	drop
 	;
 
 :go>>
-	32.0 wall? 0? ( drop 0.08 nstep + $3ffff and 'nstep ! ; ) drop
+	8.0 wall? 0? ( drop 0.08 nstep + $3ffff and 'nstep ! ; ) drop
 	0 'nstep !
 	xp $fff00000 and 'xp !
 	drop 0 ;
 
 :go<<
-	-32.0 wall? 0? ( drop 0.08 nstep + $3ffff and 4.0 + 'nstep !	; ) drop
+	-8.0 wall? 0? ( drop 0.08 nstep + $3ffff and 4.0 + 'nstep !	; ) drop
 	4.0 'nstep ! 
-	xp $fff00000 and 8.0 + 'xp !
+	xp $fff00000 and 16.0 + 'xp !
 	drop 0 ;
 
 :player
@@ -119,12 +140,13 @@
 	dy 'yp +!
 	;
 
+
 :drawplayer
 	player
 	nstep 16 >> 'nplay + c@  
 	ts_spr
-	sw 1 >> sh 1 >> 
-	tsdraw 
+	xp 16 >> yp 16 >>
+	16 16 tsdraws
 	;
 
 :resetplayer
@@ -134,33 +156,12 @@
 	480.0 'yp !
 	;		
 
-|----- RELATIVE MAP
-#xm #ym
-
-:drawrtile | y x -- y x
-	dup xp 22 >> +
-	pick2 yp 22 >> +
-	[map]@ 0? ( drop ; )
-	'nspr + c@ ts_spr xm ym tsdraw ;
-
-:drawrmap
-	-7 6 << sw 1 >> + xp 16 >> $3f and - 'xm !
-	-5 6 << sh 1 >> + yp 16 >> $3f and - 'ym !	
-	-5 ( 6 <? 
-		-7 ( 8 <?
-        	drawrtile
-			64 'xm +! 
-			1 + ) drop
-		-960 'xm +!
-		64 'ym +!
-		1 + ) drop ;
-	
-|---- MAIN
+|----- MAIN
 :demo
 	0 SDLcolor 
 	SDLrenderer SDL_RenderClear
 	
-	drawrmap
+	drawmap
 	drawplayer
 
 	SDLrenderer SDL_RenderPresent

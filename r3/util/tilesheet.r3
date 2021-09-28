@@ -36,3 +36,14 @@
 	'rsrc 'rdes 
 	SDL_RenderCopy
 	;
+
+::tsdraws | n 'ts x y w h --
+	swap 2swap swap 'rdes d!+ d!+ d!+ d!
+	dup 8 + @ 'rsrc 8 + !
+	SDLrenderer 	| n 'ts ren
+	rot rot @+		| ren n 'ts texture
+	rot 3 << rot 8 + + 
+	@ 'rsrc ! | ren txture rsrc
+	'rsrc 'rdes 
+	SDL_RenderCopy
+	;

@@ -10,7 +10,7 @@
 	stdin 'kb 1 0 0 ReadFile drop kb ;
 	
 ::key? | -- f 
-	stdin 0 WaitForSingleObject  ;
+	stdin 0 WaitForSingleObject ;
 	
 ::type | str cnt --
 	stdout rot rot 0 0 WriteFile drop ;

@@ -48,7 +48,6 @@
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	$3 IMG_Init
 	SDLrenderer  0 0 0 $ff SDL_SetRenderDrawColor 
 
 	"media/img/ball.png" loadimg 'spr_ball !
