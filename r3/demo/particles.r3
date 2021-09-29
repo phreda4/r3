@@ -33,6 +33,7 @@
 
 |--------------------------------
 :demo
+	0 SDLColor
 	SDLrenderer SDL_RenderClear
 	'list p.draw
 	SDLrenderer SDL_RenderPresent
@@ -42,13 +43,13 @@
 		spr_ball 
 		6.0 randmax 3 - 
 		6.0 randmax 3 - 
-		10.0 10.0 +obj )	
+		500.0 randmax 10.0 +
+		700.0 randmax 10.0 + +obj )	
 	>esc< =? ( exit )
 	drop ;
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	SDLrenderer  0 0 0 $ff SDL_SetRenderDrawColor 
 
 	"media/img/ball.png" loadimg 'spr_ball !
 	1000 'list p.ini

@@ -950,11 +950,29 @@
 	"add RSP,$20" ,ln 
 	;
 	
+:gSYS0v
+	"sub RSP,$20" ,ln 
+	preA16	
+	"CALL " ,s ,TOS ,cr
+	posA16 
+	"add RSP,$20" ,ln 
+	;
+	
 :gSYS1 
 	"sub RSP,$20" ,ln 
 	preA16
 	"mov rcx,[rbp]" ,ln
 	"call rax" ,ln 
+	"sub rbp,8" ,ln 	
+	posA16 
+	"add RSP,$20" ,ln 
+	;
+
+:gSYS1v
+	"sub RSP,$20" ,ln 
+	preA16
+	"mov rcx,[rbp]" ,ln
+	"call " ,s ,TOS ,cr
 	"sub rbp,8" ,ln 	
 	posA16 
 	"add RSP,$20" ,ln 
@@ -1253,7 +1271,10 @@ o>Bv 0 oB+v
 0 0 0 
 0
 0 vGETPROC 
-0 0 0 0 0 0 0 0 0 0 0 
+0 0 
+|gSYS0v gSYS1v 
+0 0 0 0 
+0 0 0 0 0 
 
 :varopt
 	"; OPTV " ,s over @ ,tokenprint ,cr

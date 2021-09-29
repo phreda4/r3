@@ -41,12 +41,7 @@
 	dup rot swap SDL_CreateTextureFromSurface | sd surface texture
 	swap SDL_FreeSurface ;
 
-|-----------------------------
-::loadtexture | render "" -- text
-	IMG_Load | ren surf
-	swap over SDL_CreateTextureFromSurface
-	swap SDL_FreeSurface ;
-	
+
 |-----------------------------
 
 #pfont 
@@ -55,7 +50,7 @@
 #dp 0 0
 
 ::bmfont | w h "" --
-	SDLrenderer swap loadtexture 'pfont !
+	loadimg 'pfont !
 	2dup 32 << or dup
 	'dp 8 + ! 'op 8 + !
 	'hp ! 'wp ! 

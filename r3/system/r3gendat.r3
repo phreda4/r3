@@ -18,7 +18,7 @@
 #d1 "dq "
 #d2 "dd "
 #d3	"db "
-#d4 "rq "
+#d4 "rb "
 #dtipo 'd1
 #dini 0
 #dcnt 0

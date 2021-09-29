@@ -219,6 +219,14 @@
 	min dup 'xf ! 'yf !
 	matini
 	;
+	
+
+::whmode | w h --
+	over 1 >> 'ox ! 
+	dup 1 >> 'oy !
+	min dup 'xf ! 'yf !
+	matini
+	;
 
 |----------------------------
 ::o3dmode | w h --
