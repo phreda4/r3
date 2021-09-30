@@ -1,6 +1,6 @@
 | Señal de ajuste
 | PHREDA 2020
-^r3/win/console.r3
+|^r3/win/console.r3
 ^r3/win/SDL2.r3
 ^r3/win/SDL2ttf.r3
 ^r3/lib/mem.r3

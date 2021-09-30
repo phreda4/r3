@@ -748,13 +748,13 @@
 :oA+	"add r14," ,s ,TOS ,cr ;
 :oA+v	varget "add r14," ,s ,TOS ,cr ;
 
-:gA@	,dup "movs rax,qword[r14]" ,ln ;
+:gA@	,dup "mov rax,qword[r14]" ,ln ;
 
 :gA!	"mov qword[r14],rax" ,ln ,drop ;
 :oA!	"mov qword[r14]," ,s ,TOS ,cr ;
 :oA!v	varget "mov qword[r14]," ,s ,TOS ,cr ;
 
-:gA@+	,dup "movs rax,qword[r14]" ,ln "add r14,8" ,ln ;
+:gA@+	,dup "mov rax,qword[r14]" ,ln "add r14,8" ,ln ;
 :gA!+	"mov qword[r14],rax" ,ln "add r14,8" ,ln ,drop ;
 :oA!+	"mov qword[r14]," ,s ,TOS ,cr "add r14,8" ,ln ;
 :oA!+v	varget "mov qword[r14]," ,s ,TOS ,cr  "add r14,8" ,ln ;
@@ -791,13 +791,13 @@
 :oB+	"add r15," ,s ,TOS ,cr ;
 :oB+v	varget "add r15," ,s ,TOS ,cr ;
 
-:gB@	,dup "movsx rax,qword[r15]" ,ln ;
+:gB@	,dup "mov rax,qword[r15]" ,ln ;
 
 :gB!	"mov qword[r15],rax" ,ln ,drop ;
 :oB!	"mov qword[r15]," ,s ,TOS ,cr ;
 :oB!v	varget "mov qword[r15],rbx" ,ln ;
 
-:gB@+	,dup "movs rax,qword[r15]" ,ln "add r15,8" ,ln ;
+:gB@+	,dup "mov rax,qword[r15]" ,ln "add r15,8" ,ln ;
 
 :gB!+	"mov qword[r15],rax" ,ln "add r15,8" ,ln ,drop ;
 :oB!+	"mov qword[r15]," ,s ,TOS ,cr "add r15,8" ,ln ;
@@ -943,11 +943,11 @@
 	"POP RSP" ,ln  ;
 	
 :gSYS0  | a -- b
-	"sub RSP,$20" ,ln 
 	preA16	
+	"sub RSP,$20" ,ln 	
 	"CALL rax" ,ln 
+	"add RSP,$20" ,ln 	
 	posA16 
-	"add RSP,$20" ,ln 
 	;
 	
 :gSYS0v
@@ -959,63 +959,65 @@
 	;
 	
 :gSYS1 
-	"sub RSP,$20" ,ln 
 	preA16
+	"sub RSP,$20" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8" ,ln 	
-	posA16 
 	"add RSP,$20" ,ln 
+	posA16 	
 	;
 
 :gSYS1v
+	,DUP
 	"sub RSP,$20" ,ln 
 	preA16
 	"mov rcx,[rbp]" ,ln
 	"call " ,s ,TOS ,cr
-	"sub rbp,8" ,ln 	
+	|"sub rbp,8" ,ln 	
 	posA16 
 	"add RSP,$20" ,ln 
 	;
 	
 :gSYS2 
-	"sub RSP,$20" ,ln 
 	preA16
+	"sub RSP,$20" ,ln 
 	"mov rdx,[rbp]" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
 	"call rax" ,ln 
-	posA16 
+	"sub rbp,8*2" ,ln 		
 	"add RSP,$20" ,ln 
+	posA16 	
 	;
 	
 :gSYS3 
-	"sub RSP,$20" ,ln 
 	preA16
+	"sub RSP,$20" ,ln 
 	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
 	"mov rcx,[rbp-2*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*3" ,ln 	
-	posA16 
 	"add RSP,$20" ,ln 
+	posA16 	
 	;
 
 :gSYS4 
-	"sub RSP,$20" ,ln 
 	preA16
+	"sub RSP,$20" ,ln 
 	"mov r9,[rbp]" ,ln
 	"mov r8,[rbp-1*8]" ,ln
 	"mov rdx,[rbp-2*8]" ,ln
 	"mov rcx,[rbp-3*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*4" ,ln 	
-	posA16 
 	"add RSP,$20" ,ln 
+	posA16 	
 	;
 
 :gSYS5
-	"sub RSP,$28" ,ln 
 	preA16
+	"sub RSP,$28" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-1*8]" ,ln
@@ -1024,13 +1026,13 @@
 	"mov rcx,[rbp-4*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*5" ,ln 	
-	posA16 
 	"add RSP,$28" ,ln 
+	posA16 	
 	;
 
 :gSYS6 
-	"sub RSP,$30" ,ln 
 	preA16
+	"sub RSP,$30" ,ln 
 	"mov rdx,[rbp]" ,ln
 	"mov [rsp+$28],rdx" ,ln	
 	"mov rcx,[rbp-1*8]" ,ln	
@@ -1041,13 +1043,13 @@
 	"mov rcx,[rbp-5*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*6" ,ln 	
-	posA16 
 	"add RSP,$30" ,ln 
+	posA16 	
 	;
 
 :gSYS7 
-	"sub RSP,$38" ,ln 
 	preA16
+	"sub RSP,$38" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1060,13 +1062,13 @@
 	"mov rcx,[rbp-6*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*7" ,ln 	
-	posA16 
 	"add RSP,$38" ,ln 
+	posA16 	
 	;
 
 :gSYS8 
-	"sub RSP,$40" ,ln 
 	preA16
+	"sub RSP,$40" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$38],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1081,13 +1083,13 @@
 	"mov rcx,[rbp-7*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*8" ,ln 
-	posA16 
 	"add RSP,$40" ,ln 
+	posA16 	
 	;
 	
 :gSYS9 
-	"sub RSP,$48" ,ln 
 	preA16
+	"sub RSP,$48" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$40],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1104,13 +1106,13 @@
 	"mov rcx,[rbp-8*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*9" ,ln 
-	posA16 
 	"add RSP,$48" ,ln 
+	posA16 	
 	;
 	
 :gSYS10
-	"sub RSP,$50" ,ln 
 	preA16
+	"sub RSP,$50" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$48],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1129,8 +1131,8 @@
 	"mov rcx,[rbp-9*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*10" ,ln 
-	posA16 
 	"add RSP,$50" ,ln 
+	posA16 	
 	;
 	
 |---------------------------------
@@ -1271,8 +1273,8 @@ o>Bv 0 oB+v
 0 0 0 
 0
 0 vGETPROC 
-0 0 
-|gSYS0v gSYS1v 
+|gSYS0v 
+0 0 |gSYS1v 
 0 0 0 0 
 0 0 0 0 0 
 

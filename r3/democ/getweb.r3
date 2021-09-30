@@ -12,7 +12,8 @@ mark
 dup here - 'cnt !
 0 swap c!
 
-|here .println
+.cls
+here count type
 
 cnt " largo:%d " .println
 
