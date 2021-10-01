@@ -19,22 +19,25 @@
 :r.8 8.0 randmax ;
 
 |---------
-#rbox [ 0 0 64 64 ]
+#rbox [ 0 0 28 28 ]
 
 :drawball | -- 
-	0 0	0 project3d 
-	2dup "%d %d " .print
-	32 - swap 32 - 'rbox d!+ d!
-	SDLrenderer 'spr_ball 0 'rbox SDL_RenderCopy ;
+	0 0 0 project3d 
+	14 - swap 14 - 'rbox d!+ d!
+	SDLrenderer spr_ball 0 'rbox SDL_RenderCopy ;
+	
+:hitwall | limit --
+	b> 8 - !
+	b> 8 + dup @ neg swap ! ;
 	
 :bub | adr -- adr/adr 0 delete
  	>b
 	mpush
 	b@+
-	18.0 >? ( 18.0 b> 4 - ! b> 8 + dup @ neg swap ! )
-	-18.0 <? ( -18.0 b> 4 - ! b> 8 + dup @ neg swap ! )
+	26.0 >? ( 26.0  hitwall )
+	-26.0 <? ( -26.0 hitwall )
 	b@+
-	-18.0 <? ( -18.0 b> 4 - ! b> 8 + dup @ neg swap ! )
+	-20.0 <? ( -20.0 hitwall )
 	0 mtransi
 	b@+ b> 24 - +!
 	b@ 0.01 - b> ! | gravedad
@@ -52,33 +55,33 @@
 	over 8 + @ over 8 + @ - dup *. | (x1-x2)^2
 	pick2 16 + @ pick2 16 + @ - dup *. +
 	4.0 >=? ( drop ; ) sqrt. 2.0 swap -
-	1 >> >r
+	1 >> >a
 	over 8 + @ over 8 + @ -
 	pick2 16 + @ pick2 16 + @ -
-	atan2 sincos swap				| p1 p2 si co
-	dup r@ *. pick4 8 + +!
-	dup r@ *. neg pick3 8 + +!
-	over r@ *. pick4 16 + +!
-	over r@ *. neg pick3 16 + +!
+	atan2 sincos 				| p1 p2 si co
+	
+	a> *.
+	dup pick4 16 + +!
+	dup pick4 32 + +!
+	neg dup pick3 16 + +!
+	pick2 32 + +!
 
-	dup r@ *. pick4 24 + +!
-	dup r@ *. neg pick3 24 + +!
-	over r@ *. pick4 32 + +!
-	over r@ *. neg pick3 32 + +!
-
-	2drop
-	r> drop
+	a> *. 
+	dup pick3 8 + +! 
+	dup pick3 24 + +!
+	neg dup pick2 8 + +! 
+	over 24 + +!
 	;
 
 :main
+
 	$0 SDLColor
 	SDLrenderer SDL_RenderClear
 	
 	800 600 whmode
 	
-	0 0 -40.0 mtrans
+	0 0 -45.0 mtrans
 	'bubles p.draw
-	
 	SDLrenderer SDL_RenderPresent
 	
 	'collision 'bubles p.map2
@@ -91,8 +94,9 @@
 
 :inicio
 	mark
+	here "%h " .println
 	1000 'bubles p.ini
-
+	here "%h " .println
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/ball.png" loadimg 'spr_ball !

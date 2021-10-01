@@ -18,9 +18,15 @@
 :popbl | -- block
 	-4 'stbl> +! stbl> d@ ;
 
+:dumpbl
+	'stbl ( stbl> <? d@+ "%d " ,print ) drop ;
+	
 |--- @@
 ::getval | a -- a v
 	dup 4 - d@ 8 >>> ;
+
+::getvalo | a -- a v
+	dup 4 + d@ 8 >>> ;
 
 ::getcte | a -- a v
 	dup 4 - d@ 8 >>> src + str>anro nip ;
@@ -89,7 +95,7 @@
 |--- IF/WHILE
 
 ::getiw | v -- iw
-    3 << blok + @ $10000000 and ;
+    3 << blok + d@ $10000000 and ;
 
 :g(
 	getval getiw 0? ( pushbl 2drop ; ) drop
@@ -104,6 +110,10 @@
 
 :?? | -- nblock
 	getval getiw
+	0? ( drop nblock ; ) drop stbl> 4 - d@ ;
+
+:??o | -- nblock
+	getvalo getiw
 	0? ( drop nblock ; ) drop stbl> 4 - d@ ;
 
 |---- Optimization WORDS
@@ -939,6 +949,7 @@
 	"PUSH qword [RSP]" ,ln 
 	"ADD RSP,8" ,ln 
 	"AND SPL,0F0h" ,ln ;
+	
 :posA16
 	"POP RSP" ,ln  ;
 	
@@ -958,7 +969,7 @@
 	"add RSP,$20" ,ln 
 	;
 	
-:gSYS1 
+:gSYS1 | a b -- c
 	preA16
 	"sub RSP,$20" ,ln 
 	"mov rcx,[rbp]" ,ln
