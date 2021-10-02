@@ -11,16 +11,13 @@
 #nblock 0
 
 :pushbl | -- block
-	nblock
+	nblock 
 	dup 1 + 'nblock !
 	dup stbl> d!+ 'stbl> ! ;
 
 :popbl | -- block
 	-4 'stbl> +! stbl> d@ ;
 
-:dumpbl
-	'stbl ( stbl> <? d@+ "%d " ,print ) drop ;
-	
 |--- @@
 ::getval | a -- a v
 	dup 4 - d@ 8 >>> ;
@@ -109,12 +106,9 @@
 	"_o%h:" ,print ,cr ;
 
 :?? | -- nblock
-	getval getiw
+	getval getiw 
 	0? ( drop nblock ; ) drop stbl> 4 - d@ ;
 
-:??o | -- nblock
-	getvalo getiw
-	0? ( drop nblock ; ) drop stbl> 4 - d@ ;
 
 |---- Optimization WORDS
 #preval * 32
@@ -190,9 +184,6 @@
 :o<?
 	"cmp rax," ,s ,TOS ,cr
 	?? "jge _o%h" ,print ,cr ;
-:o<?v
-	"cmp rax," ,s ,TOS ,cr
-	?? "jge _o%h" ,print ,cr ;
 
 
 :g>?
@@ -201,9 +192,6 @@
 	"cmp rax,rbx" ,ln
 	?? "jle _o%h" ,print ,cr ;
 :o>?
-	"cmp rax," ,s ,TOS ,cr
-	?? "jle _o%h" ,print ,cr ;
-:o>?v
 	"cmp rax," ,s ,TOS ,cr
 	?? "jle _o%h" ,print ,cr ;
 
@@ -215,9 +203,6 @@
 :o=?
 	"cmp rax," ,s ,TOS ,cr
 	?? "jne _o%h" ,print ,cr ;
-:o=?v
-	"cmp rax," ,s ,TOS ,cr
-	?? "jne _o%h" ,print ,cr ;
 
 :g>=?
 	"mov rbx,rax" ,ln
@@ -225,9 +210,6 @@
 	"cmp rax,rbx" ,ln
 	?? "jl _o%h" ,print ,cr ;
 :o>=?
-	"cmp rax," ,s ,TOS ,cr
-	?? "jl _o%h" ,print ,cr ;
-:o>=?v
 	"cmp rax," ,s ,TOS ,cr
 	?? "jl _o%h" ,print ,cr ;
 
@@ -239,9 +221,6 @@
 :o<=?
 	"cmp rax," ,s ,TOS ,cr
 	?? "jg _o%h" ,print ,cr ;
-:o<=?v
-	"cmp rax," ,s ,TOS ,cr
-	?? "jg _o%h" ,print ,cr ;
 
 :g<>?
 	"mov rbx,rax" ,ln
@@ -249,9 +228,6 @@
 	"cmp rax,rbx" ,ln
 	?? "je _o%h" ,print ,cr ;
 :o<>?
-	"cmp rax," ,s ,TOS ,cr
-	?? "je _o%h" ,print ,cr ;
-:o<>?v
 	"cmp rax," ,s ,TOS ,cr
 	?? "je _o%h" ,print ,cr ;
 
@@ -263,9 +239,6 @@
 :oAND?
 	"test rax," ,s ,TOS ,cr
 	?? "jz _o%h" ,print ,cr ;
-:oAND?v
-	"test rax," ,s ,TOS ,cr
-	?? "jz _o%h" ,print ,cr ;
 
 :gNAND?
 	"mov rbx,rax" ,ln
@@ -273,9 +246,6 @@
 	"test rax,rbx" ,ln
 	?? "jnz _o%h" ,print ,cr ;
 :oNAND?
-	"test rax," ,s ,TOS ,cr
-	?? "jnz _o%h" ,print ,cr ;
-:oNAND?v
 	"test rax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
 
@@ -301,15 +271,12 @@
 
 :gAND	"and rax,[rbp]" ,ln ,nip ;
 :oAND	"and rax," ,s ,TOS ,cr ;
-:oANDv	varget "and rax," ,s ,TOS ,cr ;
 
 :gOR    "or rax,[rbp]" ,ln ,nip ;
 :oOR	"or rax," ,s ,TOS ,cr ;
-:oORv	varget "or rax," ,s ,TOS ,cr ;
 
 :gXOR   "xor rax,[rbp]" ,ln ,nip ;
 :oXOR	"xor rax," ,s ,TOS ,cr ;
-:oXORv	varget "xor rax," ,s ,TOS ,cr ;
 
 :gNOT	"not rax" ,ln ;
 
@@ -317,15 +284,12 @@
 
 :g+		"add rax,[rbp]" ,ln ,nip ;
 :o+		"add rax," ,s ,TOS ,cr ;
-:o+v	varget "add rax," ,s ,TOS ,cr ;
 
 :g-		"neg rax" ,ln "add rax,[rbp]" ,ln ,nip ;
 :o-		"sub rax," ,s ,TOS ,cr ;
-:o-v	varget "sub rax," ,s ,TOS ,cr ;
 
 :g*		"imul rax,[rbp]" ,ln ,nip ;
 :o*		"imul rax," ,s ,TOS ,cr ;
-:o*v	varget "imul rax," ,s ,TOS ,cr ;
 
 :g/
 	"mov rbx,rax" ,ln
@@ -333,10 +297,6 @@
 	"cqo" ,ln
 	"idiv rbx" ,ln	;
 :o/
-	"mov rbx," ,s ,TOS ,cr
-	"cqo" ,ln
-	"idiv rbx" ,ln ;
-:o/v
 	"mov rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"idiv rbx" ,ln ;
@@ -349,12 +309,6 @@
 	"imul rcx" ,ln
 	"idiv rbx" ,ln 	;
 :o*/
-	"mov rbx," ,s ,TOS ,cr
-	"cqo" ,ln
-	"imul qword[rbp]" ,ln
-	"idiv rbx" ,ln
-	"sub rbp,8" ,ln ;
-:o*/v
 	"mov rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"imul qword[rbp]" ,ln
@@ -375,13 +329,6 @@
 	"add rbp,8" ,ln
 	"mov [rbp],rax" ,ln
 	"mov rax,rdx" ,ln ;
-:o/MODv
-	"mov rbx," ,s ,TOS ,cr
-	"cqo" ,ln
-	"idiv rbx" ,ln
-	"add rbp,8" ,ln
-	"mov [rbp],rax" ,ln
-	"mov rax,rdx" ,ln ;
 
 :gMOD
 	"mov rbx,rax" ,ln
@@ -390,11 +337,6 @@
 	"idiv rbx" ,ln
 	"mov rax,rdx" ,ln ;
 :oMOD
-	"mov rbx," ,s ,TOS ,cr
-	"cqo" ,ln
-	"idiv rbx" ,ln
-	"mov rax,rdx" ,ln ;
-:oMODv
 	"mov rbx," ,s ,TOS ,cr
 	"cqo" ,ln
 	"idiv rbx" ,ln
@@ -1262,10 +1204,10 @@ oLOADLIB oGETPROC
 |----------- var
 #vmc2
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 oEXv 0 0 0 0 o<?v o>?v o=?v o>=?v o<=?v o<>?v
-oAND?v oNAND?v 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 oANDv oORv oXORv o+v o-v o*v o/v o<<v o>>v o>>>v oMODv
-o/MODv o*/v o*>>v o<</v 0 0 0 0 0 
+0 0 0 0 0 oEXv 0 0 0 0 o<? o>? o=? o>=? o<=? o<>?
+oAND? oNAND? 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 oAND oOR oXOR o+ o- o* o/ o<<v o>>v o>>>v oMOD
+o/MOD o*/ o*>>v o<</v 0 0 0 0 0 
 o@v oC@v oW@v oD@v 
 o@+v oC@+v oW@+v oD@+v 
 o!v oC!v oW!v oD!v 
@@ -1344,6 +1286,7 @@ gSYS6 gSYS7 gSYS8 gSYS9 gSYS10
 
 ::,tokenprinto
 	"; " ,s
+	dup " %h " ,print
 	dup dup $ff and 8 =? ( drop ctetoken ; ) drop
 	,tokenprint ,cr
 	;

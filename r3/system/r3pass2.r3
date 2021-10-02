@@ -89,11 +89,11 @@
 #iswhile
 
 :blockIn
-	1 'nbloques +!
 	code> code - 2 >>
 	nbloques dup sst!
 	3 << blok + d!
 	nbloques 8 << +  | #block in (
+	1 'nbloques +!
 	;
 
 :cond | bl from to adr+ -- bl from to adr
@@ -123,11 +123,11 @@
 	;
 
 :anonIn
-	1 'nbloques +!
 	code> code - 2 >>
 	nbloques dup sst!
 	3 << blok + d!
 	nbloques 8 << +  | #block in [
+	1 'nbloques +!
 	;
 :anonOut
 	sst@ dup dup
