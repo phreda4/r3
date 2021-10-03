@@ -219,6 +219,12 @@
 	
 ::SDLLine | x y x y --	
 	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
+
+#rec [ 0 0 0 0 ]
+
+::SDLFillRect | x y w h --	
+	swap 2swap swap 'rec d!+ d!+ d!+ d!
+	SDLRenderer 'rec SDL_RenderFillRect ;
 	
 |------- BOOT
 :

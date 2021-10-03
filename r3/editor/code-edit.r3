@@ -471,7 +471,8 @@
 
 :emitl
 	9 =? ( drop "    " .write ; )
-	emit ;
+	emit 
+	;
 :a	
 	|ccx xsele <? ( drop ; ) drop
 	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0

@@ -27,10 +27,22 @@
 	a@+ a> 24 - +!
 	a@+ a> 24 - +!	
 	SDLrenderer a@+ 0 'rbox SDL_RenderCopy ;
-
+	
 :+obj | 'spr vy vx y x --
 	'ballexec 'list p!+ >a a!+ a!+ a!+ a!+ a! ;
 
+:ballexecr | adr --
+	>a
+	a@+ 16 >> 0 <? ( choque ) sw 64 - >? ( choque )
+	a@+ 16 >> 0 <? ( choque ) sh 64 - >? ( choque )
+	swap 'rbox d!+ d!
+	a@+ a> 24 - +!
+	a@+ a> 24 - +!	
+	SDLrenderer a@+ 0 'rbox a@+ 0 0 SDL_RenderCopyEx ; | don't work rot is double!
+
+:+objr | r 'spr vy vx y x --
+	'ballexecr 'list p!+ >a a!+ a!+ a!+ a!+ a!+ a! ;
+	
 |--------------------------------
 :demo
 	0 SDLColor
@@ -45,6 +57,14 @@
 		6.0 randmax 3 - 
 		500.0 randmax 10.0 +
 		700.0 randmax 10.0 + +obj )	
+	<f2> =? ( 
+		360 randmax
+		spr_ball 
+		6.0 randmax 3 - 
+		6.0 randmax 3 - 
+		500.0 randmax 10.0 +
+		700.0 randmax 10.0 + +objr )	
+		
 	>esc< =? ( exit )
 	drop ;
 	
