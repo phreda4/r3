@@ -16,7 +16,7 @@ common
    PUSH RSP             ;save current RSP position on the stack
    PUSH qword [RSP]     ;keep another copy of that on the stack
    ADD RSP,8
-   AND SPL,0F0h         ;adjust RSP to align the stack if not already there
+   AND SPL,$F0         ;adjust RSP to align the stack if not already there
    cinvoke name, args
    POP RSP              ;restore RSP to its original value
 }
