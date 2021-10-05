@@ -81,8 +81,8 @@
 
 |	error 1? ( drop savedebug ; ) drop
 
-|    "asm\fasm.exe asm\r3fasm.asm" sys
-
+    "asm\fasm.exe asm\r3fasm.asm" sys
+|	"copy asm\r3fasm.exe r3compile.exe" sys
 |    "asm\fasm.exe asm\r3fasm.asm > asm\log.txt" sys
 |	mark
 |	here "asm\log.txt" load 0 swap !
@@ -91,7 +91,8 @@
 |	"press >esc< to run..." println
 |	waitesc
 
-|	"asm\r3fasm.exe" sys
+|	"asm\test.bat" sys
+|	"r3fasm.exe" sys
 
 	"press <enter> to continue..." .print
 	.input

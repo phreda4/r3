@@ -22,9 +22,6 @@
 ::getval | a -- a v
 	dup 4 - d@ 8 >>> ;
 
-::getvalo | a -- a v
-	dup 4 + d@ 8 >>> ;
-
 ::getcte | a -- a v
 	dup 4 - d@ 8 >>> src + str>anro nip ;
 
@@ -83,7 +80,7 @@
 
 |----------------------
 :g;
-	dup 8 - @ $ff and
+	dup 8 - d@ $ff and
 	12 =? ( drop ; ) | tail call  call..ret?
 	21 =? ( drop ; ) | tail call  EX
 	drop

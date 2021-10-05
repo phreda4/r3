@@ -1,11 +1,12 @@
 | r3STACK 2018
+| virtual stack
 | PHREDA
 |--------------------
 
 ^r3/lib/trace.r3
 ^r3/system/r3base.r3
 
-| buffer code
+|-------------- buffer code
 | -make code for generate code, last step
 | -save after modification (inline, folding, etc..)
 
@@ -41,7 +42,7 @@
 	code!+
 	!+ 'ctecode> ! ;
 
-|--- Pilas
+|--- virtual stack
 ##TOS 0
 ##PSP * 1024
 ##NOS 'PSP
@@ -70,7 +71,8 @@
 	stkvalue# dup 1 + $7f and 'stkvalue# ! ;
 
 |-------------------------------
-::.DUP		4 'NOS +! TOS NOS ! ;
+::.DUP		
+	4 'NOS +! TOS NOS ! ;
 
 ::PUSH.NRO | nro --
 	.DUP
@@ -98,40 +100,46 @@
 	.DUP 8 << 8 or 'TOS ! ;
 
 ::.POP | -- nro
-	TOS NOS @ 'TOS ! -4 'NOS +! ;
+	TOS NOS d@ 'TOS ! -4 'NOS +! ;
 
 :STKval	8 >> 3 << 'stkvalue + @ ;
 
 :aTOS	TOS 8 >> 3 << 'stkvalue + ;
-:aNOS	NOS @ 8 >> 3 << 'stkvalue + ;
+:aNOS	NOS d@ 8 >> 3 << 'stkvalue + ;
 
 ::vTOS	TOS STKval ;
-::vNOS	NOS @ STKval ;
-:vPK2	NOS 4 - @ STKval ;
-:vPK3	NOS 8 - @ STKval ;
-:vPK4	NOS 12 - @ STKval ;
-:vPK5	NOS 16 - @ STKval ;
+::vNOS	NOS d@ STKval ;
+:vPK2	NOS 4 - d@ STKval ;
+:vPK3	NOS 8 - d@ STKval ;
+:vPK4	NOS 12 - d@ STKval ;
+:vPK5	NOS 16 - d@ STKval ;
 
-::.OVER     .DUP NOS 4 - @ 'TOS ! ;
-::.PICK2    .DUP NOS 8 - @ 'TOS ! ;
-::.PICK3    .DUP NOS 12 - @ 'TOS ! ;
-::.PICK4    .DUP NOS 16 - @ 'TOS ! ;
+::.OVER     .DUP NOS 4 - d@ 'TOS ! ;
+::.PICK2    .DUP NOS 8 - d@ 'TOS ! ;
+::.PICK3    .DUP NOS 12 - d@ 'TOS ! ;
+::.PICK4    .DUP NOS 16 - d@ 'TOS ! ;
 ::.2DUP     .OVER .OVER ;
 ::.2OVER    .PICK3 .PICK3 ;
-::.DROP		NOS @ 'TOS !	|...
+::.DROP		NOS d@ 'TOS !	|...
 ::.NIP      -4 'NOS +! ;
-::.2NIP      -8 'NOS +! ;
-::.2DROP    NOS 4 - @ 'TOS ! -8 'NOS +! ;
-::.3DROP    NOS 8 - @ 'TOS ! -12 'NOS +! ;
-::.4DROP    NOS 12 - @ 'TOS ! -16 'NOS +! ;
-| ::.6DROP    NOS 20 - @ 'TOS ! -24 'NOS +! ;
-::.SWAP     NOS @ TOS NOS ! 'TOS ! ;
-::.ROT      TOS NOS 4 - @ 'TOS ! NOS @ NOS 4 - !+ ! ;
-::.2SWAP    TOS NOS @ NOS 4 - dup 4 - @ NOS ! @ 'TOS !  NOS 8 - !+ ! ;
+::.2NIP		-8 'NOS +! ;
+::.2DROP	NOS 4 - d@ 'TOS ! -8 'NOS +! ;
+::.3DROP	NOS 8 - d@ 'TOS ! -12 'NOS +! ;
+::.4DROP	NOS 12 - d@ 'TOS ! -16 'NOS +! ;
+::.5DROP	NOS 16 - d@ 'TOS ! -20 'NOS +! ;
+::.6DROP	NOS 20 - d@ 'TOS ! -24 'NOS +! ;
+::.7DROP	NOS 24 - d@ 'TOS ! -28 'NOS +! ;
+::.8DROP	NOS 28 - d@ 'TOS ! -32 'NOS +! ;
+::.9DROP	NOS 32 - d@ 'TOS ! -36 'NOS +! ;
+::.10DROP	NOS 36 - d@ 'TOS ! -40 'NOS +! ;
 
-::.>R		4 'RTOS +! TOS RTOS ! .DROP ;
-::.R>		.DUP RTOS dup @ 'TOS ! 4 - 'RTOS ! ;
-::.R@		.DUP RTOS @ 'TOS ! ;
+::.SWAP     NOS d@ TOS NOS d! 'TOS ! ;
+::.ROT      TOS NOS 4 - d@ 'TOS ! NOS d@ NOS 4 - d!+ d! ;
+::.2SWAP    TOS NOS d@ NOS 4 - dup 4 - d@ NOS d! d@ 'TOS ! NOS 8 - d!+ d! ;
+
+::.>R		4 'RTOS +! TOS RTOS d! .DROP ;
+::.R>		.DUP RTOS dup d@ 'TOS ! 4 - 'RTOS d! ;
+::.R@		.DUP RTOS d@ 'TOS ! ;
 
 ::.AND		vNOS vTOS and .NIP TOS.NRO! ;
 ::.OR		vNOS vTOS or .NIP TOS.NRO! ;
@@ -155,8 +163,7 @@
 ::.>>>		vNOS vTOS >>> .NIP TOS.NRO! ;
 
 |-------- constantes del sistema
-#syscons "XRES" "YRES"
-#sysconm "[FREE_MEM]" "[SYSFRAME]" "dword[SYSXM]" "dword[SYSYM]" "dword[SYSBM]" "dword[SYSKEY]" "dword[SYSCHAR]"
+#sysconm "[FREE_MEM]" 
 
 #sysregr "rax" "rbx" "rcx" "rdx" "r8"  "r9"  "r10"  "r11"  "r12"  "r13"  "r14"  "r15"  "rdi" "rsi"
 #sysregs "eax" "ebx" "ecx" "edx" "r8d" "r9d" "r10d" "r11d" "r12d" "r13d" "r14d" "r15d" "edi" "esi"
@@ -196,17 +203,17 @@
 #needword 0
 
 ::,celld | nro --
-	dup $f and 2 << 'tiposrm + @ ex ;
+	dup $f and 3 << 'tiposrm + @ ex ;
 
 ::,cell | val --
 	needword 1? ( drop ,celld ; ) drop
-	dup $f and 2 << 'tiposrmq + @ ex ;
+	dup $f and 3 << 'tiposrmq + @ ex ;
 
 ::,cellb | nro --
-	dup $f and 2 << 'tiposrmb + @ ex ;
+	dup $f and 3 << 'tiposrmb + @ ex ;
 
 ::,cellw | nro --
-	dup $f and 2 << 'tiposrmw + @ ex ;
+	dup $f and 3 << 'tiposrmw + @ ex ;
 
 
 :mt4p value "[w" ,s ,h "]" ,s ;	|--	4 var   [var]
@@ -218,7 +225,7 @@
 #tiposrmqp mt0 mt1 mt2 mt3 mt4p mt5r mt6p mt7 mt8
 
 ::,cellp | val -- : cell print
-	dup $f and 2 << 'tiposrmqp + @ ex ;
+	dup $f and 3 << 'tiposrmqp + @ ex ;
 
 |---------- ASM
 | "add #1,#0" --> add rax,rbx
@@ -228,24 +235,31 @@
 	c@+
 	$30 -
 	0? ( drop TOS ,celld ; )
-	1 - 2 << NOS swap - @ ,celld ;
+	1 - 2 << NOS swap - d@ ,celld ;
 
 :,cstack | adr -- adr
 	c@+
 	$30 -
 	0? ( drop TOS ,cell ; )
-	1 - 2 << NOS swap - @ ,cell ;
+	1 - 2 << NOS swap - d@ ,cell ;
 
 :,cstackb | adr -- adr
 	c@+
 	$30 -
 	0? ( drop TOS ,cellb ; )
-	1 - 2 << NOS swap - @ ,cellb ;
+	1 - 2 << NOS swap - d@ ,cellb ;
+	
+:,cstackw | adr -- adr
+	c@+
+	$30 -
+	0? ( drop TOS ,cellw ; )
+	1 - 2 << NOS swap - d@ ,cellw ;
 
 :,car
 	$23 =? ( drop ,cstack ; ) | # qword reg
 	$24 =? ( drop ,cstackb ; ) | $ byte reg
 	$2A =? ( drop ,cstackd ; ) | * dword reg
+	$26 =? ( drop ,cstackw ; ) | & word reg
 	$3b =? ( drop ,cr ; ) | ;
 	,c ;
 
@@ -277,14 +291,14 @@
 |--------- DEBUG
 ::,printstk
 	"; [ " ,s
-	'PSP 8 + ( NOS <=? @+ ,cellp ,sp ) drop
+	'PSP 8 + ( NOS <=? d@+ ,cellp ,sp ) drop
 	'PSP NOS <? ( TOS ,cellp ) drop
 	" ]n:" ,s stacknow ,d " r:" ,s stack.cnt ,d
 	;
 
 ::,printstka
 	"; [ " ,s
-	'PSP 8 + ( NOS <=? @+ 8 >> "%h " ,print ) drop
+	'PSP 8 + ( NOS <=? d@+ 8 >> "%h " ,print ) drop
 	'PSP NOS <? ( TOS 8 >> "%h " ,print ) drop
 	"] " ,s
 	;
@@ -293,25 +307,25 @@
 :pstk | adr --
 	@+ "sn:" ,s ,d " (" ,s
 	@+ 2 >> ( 1? 1 -
-		swap @+ ,cellp ,sp swap ) 2drop
+		swap d@+ ,cellp ,sp swap ) 2drop
 	;
 
 ::stk.printstk
 	,cr
 	'stks ( stks> <?
-		"* " ,s @+ pstk
+		"* " ,s d@+ pstk
 		,cr ) drop
 	,cr
 	;
 |--------- DEBUG
 
 ::stk.push
-	memstk> dup stks> !+ 'stks> !
+	memstk> dup stks> d!+ 'stks> !
 	>a
-	stacknow a!+
-	NOS 'PSP - a!+
-	'PSP 16 + ( NOS <=? @+ a!+ ) drop
-	'PSP NOS <? ( TOS a!+ ) drop
+	stacknow da!+
+	NOS 'PSP - da!+
+	'PSP 16 + ( NOS <=? d@+ da!+ ) drop
+	'PSP NOS <? ( TOS da!+ ) drop
 	a> 'memstk> !
 
 |	"; PUSHSTK " ,s stk.printstk |,printstk ,cr
@@ -319,12 +333,12 @@
 
 ::stk.pop
 	-8 'stks> +!
-	stks> @ dup 'memstk> !
+	stks> d@ dup 'memstk> !
 	>a
-	a@+ 'stacknow !
-	a@+ 'PSP + 'NOS !
-	'PSP 16 + ( NOS <=? a@+ swap !+ ) drop
-	'PSP NOS <? ( a@+ 'TOS ! ) drop
+	da@+ 'stacknow !
+	da@+ 'PSP + 'NOS !
+	'PSP 16 + ( NOS <=? da@+ swap d!+ ) drop
+	'PSP NOS <? ( da@+ 'TOS d! ) drop
 
 |	"; POPSTK " ,s stk.printstk |,printstk ,cr
 	;
@@ -335,7 +349,7 @@
 		"asm/code.asm" savemem
 		)
 	'stks> !
-	stks> @ 'memstk> !
+	stks> d@ 'memstk> !
 
 |	"; DROPSTK " ,s ,cr
 	;
