@@ -39,18 +39,18 @@
 :hit? | x y -- x y
 	py <>? ( ; )
 	swap px <>? ( swap ; ) swap
-|..
+|.. check if hit tail??
 	;
 
 :logic
 	px xv + 
-	0 <? ( drop tcx 1 -  ) 
-	tcx >=? ( drop 0 ; )
+	0 <? ( drop tcx 1 - ) 
+	tcx >=? ( drop 0 )
 	'px !
 	
 	py yv + 
 	0 <? ( drop tcy 1 - ) 
-	tcy >=? ( drop 0  ) 
+	tcy >=? ( drop 0 ) 
 	'py !
 	
 	px py pack rpush

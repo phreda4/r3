@@ -49,48 +49,43 @@
 	;
 
 :divc | nn -- res
-	mn sn *>> dup 31 >> - ;
+	mn sn *>> dup 63 >> - ;
 
 |------ metodo2
 #sn2 #mn2
 
 :calcmagic2 | div --
-	$100000000 swap /. 'mn2 !
-	32 'sn2 !
+	$1000000000 swap / 1 + 'mn2 !
+	36 'sn2 !
 	;
 
-:divc2
-	mn2 sn2 *>> dup 31 >> - ;
+:divc2 | nn -- r
+	mn2 sn2 *>> dup 63 >> - ;
 
-|--------------------------
-:inversemod | a -- x
-	dup | a x 2
-	2 pick2 pick2 * - *
-	2 pick2 pick2 * - *
-	2 pick2 pick2 * - *
-	2 pick2 pick2 * - *
-	nip
-	;
 
 |------------- test
 #nro 22
 
-:
+:test
 	.cls 
 	nro calcmagic
 	nro calcmagic2
+	
 	nro "/%d" .print cr
-
 	sn mn "%h %h *>> " .print cr
 	sn2 mn2 "%h %h *>> " .print cr
+	nro findinv "%h" .print cr
 	cr
-	-80 ( 80 <? 11 +
+	
+	-1800 ( 1800 <? 210 +
 		nro over "%d/%d=" .print
 		dup nro / "%d " .print
 		dup divc "%d " .print
 		dup divc2 "%d " .print
-		cr ) drop
+		cr ) drop ;
 
+:
+	test
 	.input
 	;
 
