@@ -3,6 +3,7 @@
 
 ^r3/win/core.r3
 ^r3/lib/mem.r3
+^r3/lib/parse.r3
 
 #kb 0
 
@@ -123,11 +124,13 @@
 
 ##pad * 256
 
-::.input
+::.input | --
 	'pad
 	( key 13 <>? swap c!+ ) drop
 	0 swap c! ;
 
+::.inputn | -- nro
+	.input 'pad str>nro nip ;
 
 :emite | char --
 	$5e =? ( drop 27 emit ; ) | ^=escape

@@ -15,7 +15,7 @@
 
 :check | adr -- adr 
 	dup 513 - >a	ca@+ ca@+ + ca@ + 
-	512 a+ 			ca@ + -2 a+ ca@ +
+	512 a+			ca@ + -2 a+ ca@ +
 	512 a+  		ca@+ + ca@+ + ca@ +
 	3 =? ( drop 1 cb!+ ; )
 	2 <>? ( drop 0 cb!+ ; ) 
