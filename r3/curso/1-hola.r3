@@ -1,7 +1,6 @@
 | Programa 1
 | consola
 ^r3/win/console.r3
-^r3/lib/parse.r3
 
 |---- Dato
 #nro

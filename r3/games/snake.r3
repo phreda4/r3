@@ -65,8 +65,7 @@
 	;
 	
 :game
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 
 	$ff SDLcolor
 	'trail ( trail> <?
@@ -74,7 +73,7 @@
 	$ff0000 SDLcolor
 	ax ay drawbox
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 |----- variable framelimit
 	msec dup ntime - 'dtime +! 'ntime !
@@ -91,7 +90,7 @@
 	;
 
 :reset
-	200 'speed !
+	300 'speed !
 	msec 'ntime ! 0 'dtime !
 	5 'tail ! ;
 

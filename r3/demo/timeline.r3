@@ -100,8 +100,7 @@
 	$ff SDL_SetRenderDrawColor ;
 
 :demo
-	0 sdlcolor
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 	timeline.draw
 	
@@ -109,7 +108,7 @@
 	0 0 bmat "<f1> example 1" bmprint
 	|0 16 bmat  "<f2> example 2" bmprint
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	SDLkey
 	<f1> =? ( example1 )
 	

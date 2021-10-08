@@ -114,8 +114,7 @@
 	a> 'ss> ! ;
 
 :game
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 	drawback
 	player
@@ -123,7 +122,7 @@
 	ovni
 	explode
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 
 	SDLkey
 	>esc< =? ( exit )

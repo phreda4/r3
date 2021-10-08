@@ -42,7 +42,7 @@
 	SDLrenderer textbit 0 'desrec3 SDL_RenderCopy		
 	SDLrenderer texture 0 'desrec SDL_RenderCopy
 	SDLrenderer texture 0 'desrec2 SDL_RenderCopy
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 
 	vx 'desrec3 d+!
 	

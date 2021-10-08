@@ -91,7 +91,7 @@
 	pdy 'py +!
 	px
 	0 <? ( 0 'px ! 0 'pdx ! )
-	sw 16 << >? ( sw 16 << 'px ! 0 'pdx ! )
+	sw 22 - 16 << >? ( sw 22 - 16 << 'px ! 0 'pdx ! )
 	drop
 	py
 	-3 <? ( -3 'py ! 0 'pdy ! )
@@ -120,8 +120,7 @@
 #timee
 
 :crash
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	stars
 	ground
 
@@ -130,22 +129,21 @@
 	px 16 >> 22 - py 16 >> 32 -
 	tsdraw
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	timee 0.2 + 
 	15.5 >? ( exit ) 
 	'timee ! 
 	;
 	
 :game
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 	stars
 	ground
 	player
 	hitground? -? ( 0 'timee ! 'crash SDLshow reset ) drop
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	keyboard
 	;

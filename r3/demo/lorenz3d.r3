@@ -12,7 +12,7 @@
 #xcam 0 #ycam 0 #zcam -100.0
 
 :fcircle | xc yc r --
-	3drop ;
+	dup 2swap SDLfellipse ;
 	
 #xo #yo	
 :3dop project3d 'yo ! 'xo ! ;
@@ -68,6 +68,10 @@
 	'lorenz> ! ;
 
 :lorenz3d
+	lorenz!+
+	lorenz!+
+	lorenz!+
+	lorenz!+
 	lorenz!+
 
 	lorenz>
@@ -127,15 +131,14 @@
 	rx mrotx ry mroty
 	xcam ycam zcam mtrans
 
-	$0 SDLColor
-	SDLrenderer SDL_RenderClear
+	$0 SDLclear
 	
 	$1f1f1f SDLColor
 	grillaxy grillayz grillaxz
 
 	$ff0000 SDLColor
 	lorenz3d
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	teclado
 	;

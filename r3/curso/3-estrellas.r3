@@ -45,13 +45,12 @@
 
 
 :dibuja
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
-	dibujarpuntos	
-	| dibujarymoverpuntos | comentada.. no ocurre
+	|dibujarpuntos	
+	dibujarymoverpuntos | comentada.. no ocurre
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 
 	SDLkey
 	>esc< =? ( exit )

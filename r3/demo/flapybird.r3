@@ -60,10 +60,10 @@
 	;
 	
 :juego
-	0 sdlcolor SDLrenderer SDL_RenderClear
+	0 SDLclear
 	fondo
 	jugador
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	SDLkey
 	>esc< =? ( exit )

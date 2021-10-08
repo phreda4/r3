@@ -45,10 +45,9 @@
 	
 |--------------------------------
 :demo
-	0 SDLColor
-	SDLrenderer SDL_RenderClear
+	0 SDLClear
 	'list p.draw
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 
 	SDLkey
 	<f1> =? ( 

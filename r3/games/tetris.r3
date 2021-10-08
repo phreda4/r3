@@ -193,8 +193,7 @@
 #dtime
 
 :game | ( --- )
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 |	20 20 atxy "Tetris R3" print
 
@@ -209,7 +208,7 @@
 	draw_player
 	draw_nextpiece
 
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	msec dup ntime - 'dtime +! 'ntime !
 	dtime speed >? ( dup speed - 'dtime !

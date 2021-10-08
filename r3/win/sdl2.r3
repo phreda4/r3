@@ -226,6 +226,68 @@
 ::SDLFillRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderFillRect ;
+
+::SDLRect | x y w h --	
+	swap 2swap swap 'rec d!+ d!+ d!+ d!
+	SDLRenderer 'rec SDL_RenderDrawRect ;
+	
+::SDLclear | color --
+	SDLcolor SDLrenderer SDL_RenderClear ;
+	
+::SDLRedraw | -- 
+	SDLrenderer SDL_RenderPresent ;
+	
+#ym #xm
+#dx #dy
+
+:inielipse | x y --
+	'ym ! 'xm !
+	over dup * dup 1 <<		| a b c 2aa
+	swap dup >a 'dy ! 		| a b 2aa
+	rot rot over neg 1 << 1 +	| 2aa a b c
+	swap dup * dup 1 << 		| 2aa a c b 2bb
+	rot rot * dup a+ 'dx !	| 2aa a 2bb
+	1 + swap 1				| 2aa 2bb x y
+	pick3 'dy +! dy a+
+	;
+
+:qf
+	xm pick2 - ym pick2 - xm pick4 + over SDLLine 
+	xm pick2 - ym pick2 + xm pick4 + over SDLLine  ;
+
+::SDLfellipse | rx ry x y --
+	a> >r
+	inielipse
+	xm pick2 - ym xm pick4 + over SDLLine 
+	( swap 0 >? swap 		| 2aa 2bb x y
+		a> 1 <<
+		dx >=? ( rot 1 - rot rot pick3 'dx +! dx a+ )
+		dy <=? ( rot rot qf 1 + rot pick4 'dy +! dy a+ )
+		drop
+		)
+	4drop 
+	r> >a ;
+	
+:borde | x y x
+	over SDLPoint SDLPoint ;
+
+:qfb
+	xm pick2 - ym pick2 - xm pick4 + borde
+	xm pick2 - ym pick2 + xm pick4 + borde ;
+
+::SDLellipse | rx ry x y --
+	a> >r
+    inielipse
+	xm pick2 - ym xm pick4 + borde
+	( swap 0 >? swap 		| 2aa 2bb x y
+		a> 1 <<
+		dx >=? ( rot 1 - rot qfb rot pick3 'dx +! dx a+ )
+		dy <=? ( rot rot qfb 1 + rot pick4 'dy +! dy a+ )
+		drop
+		)
+	4drop 
+	r> >a ;
+
 	
 |------- BOOT
 :

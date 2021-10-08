@@ -157,13 +157,12 @@
 	
 |---- MAIN
 :demo
-	0 SDLcolor 
-	SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 	drawrmap
 	drawplayer
 
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	SDLkey
 	>esc< =? ( exit )

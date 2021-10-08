@@ -75,14 +75,13 @@
 
 :main
 
-	$0 SDLColor
-	SDLrenderer SDL_RenderClear
+	$0 SDLclear
 	
 	800 600 whmode
 	
 	0 0 -45.0 mtrans
 	'bubles p.draw
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	'collision 'bubles p.map2
 	

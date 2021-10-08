@@ -14,13 +14,13 @@
 
 |----------------------------------------
 :demo
-	0 sdlcolor SDLrenderer SDL_RenderClear
+	0 SDLclear
 	
 	msec 5 >> $3 and ts_alien 10 10 tsdraw 
 	msec 6 >> $3 and ts_ship 200 10 tsdraw 
 	msec 6 >> $f and ts_explo 300 100 tsdraw 	
 	
-	SDLrenderer SDL_RenderPresent
+	SDLRedraw
 	
 	SDLkey
 	>esc< =? ( exit )
