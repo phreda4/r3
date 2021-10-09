@@ -6,8 +6,7 @@
 
 #array * 160 | 20 * 8bytes
 
-: mark
-	.cls
+: 	.cls
 	rerand
 	0 ( 1000000 <? 1 +
 		1 

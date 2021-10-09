@@ -707,4 +707,4 @@
 	savetxt
 	;
 
-: mark 4 main ;
+: 4 main ;

@@ -163,6 +163,7 @@
 ::.>>>		vNOS vTOS >>> .NIP TOS.NRO! ;
 
 |-------- constantes del sistema
+#syscons "FREE_MEM" | << no used
 #sysconm "[FREE_MEM]" 
 
 #sysregr "rax" "rbx" "rcx" "rdx" "r8"  "r9"  "r10"  "r11"  "r12"  "r13"  "r14"  "r15"  "rdi" "rsi"
@@ -178,7 +179,7 @@
 
 :mt0 value 3 << 'stkvalue + @ ,d ;	|--	0 nro 	33
 
-:mt1 value 'syscons list2str ,s ;	|--	1 cte	XRES
+:mt1 value 'syscons list2str ,s ;	|--	0 cte	XRES
 :mt2 value "str" ,s ,h ;			|--	2 str   "hola"
 :mt3 value "w" ,s ,h ;				|--	3 word  'word
 :mt4 value "dword[w" ,s ,h "]" ,s ;	|--	4 var   [var]

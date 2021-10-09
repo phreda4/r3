@@ -28,7 +28,6 @@
 	;
 
 :main
-	mark
 	"r3sdl" 800 600 SDLinit
 
 	40 30 "media/img/alien_40x30.png" loadts 'ts_alien !

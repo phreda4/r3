@@ -1283,7 +1283,7 @@ gSYS6 gSYS7 gSYS8 gSYS9 gSYS10
 
 ::,tokenprinto
 	"; " ,s
-	dup " %h " ,print
+|	dup " %h " ,print
 	dup dup $ff and 8 =? ( drop ctetoken ; ) drop
 	,tokenprint ,cr
 	;
@@ -1296,6 +1296,7 @@ gSYS6 gSYS7 gSYS8 gSYS9 gSYS10
 	drop
 	'bcode ( bcode> <?
 		d@+
+|		dup "%h " .print
         ,tokenprinto
 |		"asm/code.asm" savemem
 		codestep

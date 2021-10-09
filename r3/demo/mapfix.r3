@@ -171,7 +171,6 @@
 	;
 
 :main
-	mark
 	"r3sdl" 800 600 SDLinit
 
 	64 64 "media/img/sokoban_tilesheet.png" loadts 'ts_spr !

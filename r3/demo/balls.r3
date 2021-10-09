@@ -92,7 +92,6 @@
 	;
 
 :inicio
-	mark
 	here "%h " .println
 	1000 'bubles p.ini
 	here "%h " .println

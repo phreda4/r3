@@ -72,8 +72,7 @@
 	empty
 	;
 
-: 	mark
-	'name "mem/main.mem" load drop
+: 	'name "mem/main.mem" load drop
 	" PHREDA - 2019" .println
 	" r3 compiler" .println
 
@@ -84,7 +83,6 @@
     "asm\fasm.exe asm\r3fasm.asm" sys
 |	"copy asm\r3fasm.exe r3compile.exe" sys
 |    "asm\fasm.exe asm\r3fasm.asm > asm\log.txt" sys
-|	mark
 |	here "asm\log.txt" load 0 swap !
 |
 |	here print

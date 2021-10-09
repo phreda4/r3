@@ -74,4 +74,4 @@
 	Mix_CloseAudio
 	;
 
-: mark main ;
+: main ;

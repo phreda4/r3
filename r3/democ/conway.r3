@@ -55,7 +55,6 @@
 
 : 
 	.getconsoleinfo
-	mark 
 	here cols + 			| one more line for calc
 	dup 'arena !			| start of arena
 	rows cols * + 'arenan !	| copy of arena

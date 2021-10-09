@@ -598,7 +598,7 @@
 :gLOADLIB | aa "" -- aa
 	"cinvoke64 LoadLibraryA,#0" ,asm ;
 	
-:oGETPROC | aa "" -- dd
+:gGETPROC | aa "" -- dd
 	"cinvoke64 GetProcAddress,rax,#0" ,asm .drop ;
 
 :preA16

@@ -150,7 +150,6 @@
 
 : 
 	rerand
-	mark
 	"r3sdl" 800 600 SDLinit
 	SNDInit
 

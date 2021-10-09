@@ -177,8 +177,5 @@ Hamburguesas proteicas
 	SDLquit
 	;
 
-: 
-	mark 
-	main 
-	;
+: main ;
 

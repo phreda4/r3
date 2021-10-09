@@ -1,4 +1,4 @@
-| programa 2 
+| programa 3
 | puntos en pantalla
 
 ^r3/win/sdl2.r3

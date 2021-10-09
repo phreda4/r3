@@ -78,4 +78,4 @@
 	SDLquit ;
 	
 	
-: mark main ;
+: main ;

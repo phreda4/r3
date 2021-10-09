@@ -56,7 +56,6 @@
 		) drop ;
 
 :main
-	mark
 	here 'vframe !
 	
 	"r3sdl" 800 600 SDLinit

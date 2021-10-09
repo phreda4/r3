@@ -4,8 +4,8 @@
 ^./r3base.r3
 |^./r3cellana.r3
 
-|^./r3asm0.r3
-^./r3asm1.r3
+^./r3asm0.r3
+|^./r3asm1.r3
 
 #lastdircode
 
@@ -548,7 +548,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 |------------------------------------------
 :tocode | adr token -- adr
-	
+dup "%h " .print
 "; " ,s over "%h:" ,print dup ,tokenprint 9 ,c ,printstka ,cr
 |"asm/code.asm" savemem | debug
 	$ff and 3 << 'vmc + @ ex ;
@@ -560,7 +560,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	,cr
 	dicc> 32 - =? ( "INICIO:" ,s ,cr ; )
 	
-| dup @ "%w " .print
+ dup @ ":%w " .print
 	
 	dup adr>dicname ,s
 	":" ,s ,cr ;
@@ -590,7 +590,6 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 
 ";---------OPT" ,ln |----- generate buffer
 |"asm/code.asm" savemem | debug
-
 	dup adr>toklen | w adr len
 	multientry
 	( 1? 1 - swap
@@ -613,7 +612,6 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 |   anaend
 
 |	cellinfo
-
     ";---------GEN" ,ln |----- generate code
 	24 + @ $f and	| use
 	genasmcode

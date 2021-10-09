@@ -143,7 +143,6 @@
 	;
 
 :memory
-	mark
 	timeline.inimem
 	;
 

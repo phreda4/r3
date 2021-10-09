@@ -83,6 +83,4 @@
 	;
 		
 
-:
-mark main
-;
+: main ;

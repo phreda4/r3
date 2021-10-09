@@ -84,7 +84,5 @@
 		) drop ;
 
 	
-: 
-mark
-main ;
+: main ;
 

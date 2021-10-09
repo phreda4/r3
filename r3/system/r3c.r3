@@ -52,8 +52,7 @@
 	r3-gendata
 	;
 
-: mark
-	.cls
+: 	.cls
 	" PHREDA - 2019" .println
 	" r3 compiler" .println
 

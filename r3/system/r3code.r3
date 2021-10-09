@@ -139,8 +139,7 @@
 	'browser onshow
 	;
 
-: mark
-	fonti
+: 	fonti
 	rows 2 - 'cntlines !
 
 	"r3/test.r3"

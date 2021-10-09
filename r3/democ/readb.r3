@@ -18,4 +18,4 @@
 	;
 
 	
-: mark main ;
+: main ;

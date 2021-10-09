@@ -884,8 +884,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	empty ;
 
 |--------------------- BOOT
-: mark
-	'name "mem/main.mem" load drop
+: 	'name "mem/main.mem" load drop
 	'name r3debuginfo
 	error 1? ( drop savedebug ; ) drop
 	emptyerror

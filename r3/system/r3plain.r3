@@ -66,8 +66,7 @@
 	r3-genplain
 	;
 
-:  mark
-	" PHREDA - 2020" .println
+:  	" PHREDA - 2020" .println
 	" r3 plain generator" .println
 	'name "mem/main.mem" load drop
 	'name r3plain

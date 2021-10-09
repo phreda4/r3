@@ -7,7 +7,6 @@
 #cnt
 
 : 
-mark
 "http://www.google.com" 0 here openurl
 dup here - 'cnt !
 0 swap c!

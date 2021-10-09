@@ -66,7 +66,6 @@
 		1 + ) drop ;
 		
 :main
-	mark 
 	here dup 'arena !			| start of arena
 	512 512 * + 'arenan !	| copy of arena
 	arenarand	

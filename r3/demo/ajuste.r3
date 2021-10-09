@@ -84,7 +84,6 @@
 		SDLupdate ) drop ;	
 
 : 
-	mark
 	"r3sdl" 640 480 SDLinitgl
 	initfont
 

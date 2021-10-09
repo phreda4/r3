@@ -11,8 +11,7 @@
 #memmap> 'memmap
 
 ::mark | --
-	here 0? ( mem dup 'here ! nip )
-	memmap> !+ 'memmap> ! ;
+	here memmap> !+ 'memmap> ! ;
 
 ::empty | --
 	memmap> 'memmap =? ( drop mem 'here ! ; )
@@ -108,3 +107,5 @@
 
 ::sprint | p p .. "" -- adr
 	mark 'buff 'here ! ,print ,eol empty 'buff ;
+	
+: mem 'here ! ;
