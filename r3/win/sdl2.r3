@@ -163,23 +163,11 @@
 	SDL_windows SDL_DestroyWindow 
 	SDL_Quit ;
 	
-::SDLredraw
-	SDL_windows SDL_UpdateWindowSurface 
-	;
-
 ##SDLevent * 56 
 
 ##SDLkey
 ##SDLkeychar
 ##SDLx ##SDLy ##SDLb
-	
-|#SDL_KEYDOWN	$300     | Key pressed
-|#SDL_KEYUP		$301     | Key released
-|#SDL_TEXTINPUT	$303 | Keyboard text input
-|#SDL_MOUSEMOTION	$400     | Mouse moved
-|#SDL_MOUSEBUTTONDOWN $401    | Mouse button pressed
-|#SDL_MOUSEBUTTONUP	$402     | Mouse button released
-|#SDL_MOUSEWHEEL		$403     | Mouse wheel motion
 	
 ::SDLupdate
 	0 'SDLkey !
@@ -187,15 +175,21 @@
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop
 		'SDLevent d@ 
+			|#SDL_KEYDOWN	$300     | Key pressed		
 		$300 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! )
+			|#SDL_KEYUP		$301     | Key released		
 		$301 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! )
+			|#SDL_TEXTINPUT	$303 | Keyboard text input		
 		$303 =? ( 'SDLevent 12 + c@ 'SDLkeychar ! )
+			|#SDL_MOUSEMOTION	$400     | Mouse moved		
 		$400 =? ( 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! )
+			|#SDL_MOUSEBUTTONDOWN $401    | Mouse button pressed		
 		$401 =? ( 'SDLevent 16 + c@ SDLb or 'SDLb ! )
+			|#SDL_MOUSEBUTTONUP	$402     | Mouse button released		
 		$402 =? ( 'SDLevent 16 + c@ not SDLb and 'SDLb ! )
+			|#SDL_MOUSEWHEEL	$403     | Mouse wheel motion		
 		drop
-		) drop ;	
-		
+		) drop ;			
 		
 ##.exit 0
 

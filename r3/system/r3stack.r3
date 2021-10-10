@@ -321,12 +321,12 @@
 |--------- DEBUG
 
 ::stk.push
-	memstk> dup stks> d!+ 'stks> !
+	memstk> dup stks> !+ 'stks> !
 	>a
-	stacknow da!+
-	NOS 'PSP - da!+
-	'PSP 16 + ( NOS <=? d@+ da!+ ) drop
-	'PSP NOS <? ( TOS da!+ ) drop
+	stacknow a!+
+	NOS 'PSP - a!+
+	'PSP 16 + ( NOS <=? @+ a!+ ) drop
+	'PSP NOS <? ( TOS a!+ ) drop
 	a> 'memstk> !
 
 |	"; PUSHSTK " ,s stk.printstk |,printstk ,cr
@@ -334,28 +334,25 @@
 
 ::stk.pop
 	-8 'stks> +!
-	stks> d@ dup 'memstk> !
+	stks> @ dup 'memstk> !
 	>a
-	da@+ 'stacknow !
-	da@+ 'PSP + 'NOS !
-	'PSP 16 + ( NOS <=? da@+ swap d!+ ) drop
-	'PSP NOS <? ( da@+ 'TOS d! ) drop
+	a@+ 'stacknow !
+	a@+ 'PSP + 'NOS !
+	'PSP 16 + ( NOS <=? a@+ swap !+ ) drop
+	'PSP NOS <? ( a@+ 'TOS ! ) drop
 
 |	"; POPSTK " ,s stk.printstk |,printstk ,cr
 	;
-
 ::stk.drop
 	stks> 8 - 'stks <? (
 		dup "ERROR stk.drop %h" ,print
 		"asm/code.asm" savemem
 		)
 	'stks> !
-	stks> d@ 'memstk> !
+	stks> @ 'memstk> !
 
 |	"; DROPSTK " ,s ,cr
 	;
-
-
 |---------- map cells in stack
 ::stackmap | xx vector -- xx  ; LAST...TOS
 	>a 'PSP 16 +

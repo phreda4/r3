@@ -32,7 +32,7 @@
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
 
 ::SNDInit
-	44100 $08010 2 4096 Mix_OpenAudio ;
+	48000 $08010 2 4096 Mix_OpenAudio ;
 	
 ::SNDplay | adr --
 	-1 swap 0 -1 Mix_PlayChannelTimed ;

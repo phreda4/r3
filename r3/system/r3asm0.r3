@@ -256,15 +256,9 @@
 	?? "jle _o%h" ,print ,cr
 	;
 
-:g>R
-	"push rax" ,ln ,drop ;
-
-:gR>
-	,dup "pop rax" ,ln ;
-
-:gR@
-	,dup "mov rax,[rsp]" ,ln ;
-
+:g>R	"push rax" ,ln ,drop ;
+:gR>	,dup "pop rax" ,ln ;
+:gR@	,dup "mov rax,[rsp]" ,ln ;
 
 :gAND	"and rax,[rbp]" ,ln ,nip ;
 :oAND	"and rax," ,s ,TOS ,cr ;
