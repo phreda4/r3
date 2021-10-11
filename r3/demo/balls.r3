@@ -1,10 +1,8 @@
 | bubles
 | PHREDA 2021
 
-^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
-^r3/lib/key.r3
 
 ^r3/lib/rand.r3
 ^r3/lib/3d.r3
@@ -92,9 +90,7 @@
 	;
 
 :inicio
-	here "%h " .println
 	1000 'bubles p.ini
-	here "%h " .println
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/ball.png" loadimg 'spr_ball !

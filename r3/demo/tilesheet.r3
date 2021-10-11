@@ -6,7 +6,6 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
 ^r3/util/tilesheet.r3
-^r3/lib/key.r3
 
 #ts_alien
 #ts_ship

@@ -6,7 +6,6 @@
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 
-^r3/lib/key.r3
 ^r3/lib/3d.r3
 
 #xcam 0 #ycam 0 #zcam -100.0

@@ -50,7 +50,7 @@
 	evolve
 	drawarena
 	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
-	SDLrenderer SDL_RenderPresent
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )
@@ -66,7 +66,8 @@
 		1 + ) drop ;
 		
 :main
-	here dup 'arena !			| start of arena
+	here 
+	dup 'arena !			| start of arena
 	512 512 * + 'arenan !	| copy of arena
 	arenarand	
 	

@@ -18,7 +18,7 @@
 	sw randmax sh randmax 
 	sw randmax sh randmax 
 	SDLLine
-
+	
 	SDLRedraw 
 	SDLkey >esc< =? ( exit ) drop ;
 
@@ -65,7 +65,7 @@
 
 	0 SDLclear
 	'puntos SDLShow
-	
+
 	0 SDLclear
 	'lineas SDLShow
 

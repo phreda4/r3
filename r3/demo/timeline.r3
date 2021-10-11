@@ -9,7 +9,6 @@
 ^r3/win/sdl2mixer.r3
 
 ^r3/lib/mem.r3
-^r3/lib/key.r3
 ^r3/util/timeline.r3
 ^r3/util/fontutil.r3
 

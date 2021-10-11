@@ -683,13 +683,11 @@
 
 :g>A	"mov r14,rax" ,ln ,drop ;
 :o>A	"mov r14," ,s ,TOS ,cr ;
-:o>Av	varget "mov r14," ,s ,TOS ,cr ;
 
 :gA>	,dup "mov rax,r14" ,ln ;
 
 :gA+	"add r14,rax" ,ln ,drop ;
 :oA+	"add r14," ,s ,TOS ,cr ;
-:oA+v	varget "add r14," ,s ,TOS ,cr ;
 
 :gA@	,dup "mov rax,qword[r14]" ,ln ;
 
@@ -726,13 +724,11 @@
 
 :g>B	"mov r15,rax" ,ln ,drop ;
 :o>B	"mov r15," ,s ,TOS ,cr ;
-:o>Bv	varget "mov r15," ,s ,TOS ,cr ;
 
 :gB>	,dup "mov rax,r15" ,ln ;
 
 :gB+	"add r15,rax" ,ln ,drop ;
 :oB+	"add r15," ,s ,TOS ,cr ;
-:oB+v	varget "add r15," ,s ,TOS ,cr ;
 
 :gB@	,dup "mov rax,qword[r15]" ,ln ;
 
@@ -961,7 +957,7 @@
 
 :gSYS5
 	preA16
-	"sub RSP,$28" ,ln 
+	"sub RSP,$30" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$20],rcx" ,ln
 	"mov r9,[rbp-1*8]" ,ln
@@ -970,7 +966,7 @@
 	"mov rcx,[rbp-4*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*5" ,ln 	
-	"add RSP,$28" ,ln 
+	"add RSP,$30" ,ln 
 	posA16 	
 	;
 
@@ -993,7 +989,7 @@
 
 :gSYS7 
 	preA16
-	"sub RSP,$38" ,ln 
+	"sub RSP,$40" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$30],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1006,7 +1002,7 @@
 	"mov rcx,[rbp-6*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*7" ,ln 	
-	"add RSP,$38" ,ln 
+	"add RSP,$40" ,ln 
 	posA16 	
 	;
 
@@ -1033,7 +1029,7 @@
 	
 :gSYS9 
 	preA16
-	"sub RSP,$48" ,ln 
+	"sub RSP,$50" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$40],rcx" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
@@ -1050,7 +1046,7 @@
 	"mov rcx,[rbp-8*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*9" ,ln 
-	"add RSP,$48" ,ln 
+	"add RSP,$50" ,ln 
 	posA16 	
 	;
 	
@@ -1204,11 +1200,11 @@ o@+v oC@+v oW@+v oD@+v
 o!v oC!v oW!v oD!v 
 o!+v oC!+v oW!+v oD!+v 
 o+!v oC+!v oW+!v oD+!v 
-o>Av 0 oA+v 
+o>A 0 oA+ 
 0 oA!v 0 oA!+v 
 0 oCA!v 0 oCA!+v 
 0 oDA!v 0 oDA!+v 
-o>Bv 0 oB+v 
+o>B 0 oB+
 0 oB!v 0 oB!+v 
 0 oCB!v 0 oCB!+v 
 0 oDB!v 0 oDB!+v 

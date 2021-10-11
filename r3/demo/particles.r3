@@ -4,7 +4,6 @@
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
-^r3/lib/key.r3
 ^r3/lib/rand.r3
 ^r3/util/arr8.r3
 

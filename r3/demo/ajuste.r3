@@ -4,7 +4,6 @@
 ^r3/win/SDL2.r3
 ^r3/win/SDL2ttf.r3
 ^r3/lib/mem.r3
-^r3/lib/key.r3
 
 |---- datetime
 :,2d
