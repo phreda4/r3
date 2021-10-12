@@ -276,7 +276,6 @@
 	4 =? ( 1 'needword ! )
 	drop ;
 
-
 |-------------------------------------------
 ##stacknow
 
@@ -325,7 +324,7 @@
 	>a
 	stacknow a!+
 	NOS 'PSP - a!+
-	'PSP 16 + ( NOS <=? @+ a!+ ) drop
+	'PSP 8 + ( NOS <=? d@+ da!+ ) drop
 	'PSP NOS <? ( TOS a!+ ) drop
 	a> 'memstk> !
 
@@ -338,11 +337,12 @@
 	>a
 	a@+ 'stacknow !
 	a@+ 'PSP + 'NOS !
-	'PSP 16 + ( NOS <=? a@+ swap !+ ) drop
+	'PSP 8 + ( NOS <=? da@+ swap d!+ ) drop
 	'PSP NOS <? ( a@+ 'TOS ! ) drop
 
 |	"; POPSTK " ,s stk.printstk |,printstk ,cr
 	;
+	
 ::stk.drop
 	stks> 8 - 'stks <? (
 		dup "ERROR stk.drop %h" ,print
@@ -827,13 +827,13 @@
 	;
 
 ::cellR	| 'cell -- ; only register
-	dup @ $ff and
+	dup d@ $ff and
 	5 =? ( 2drop ; )
 	drop
 	cell2reg ;
 
 ::cellI | 'cell -- ; imm or register
-	dup @ $ff and
+	dup d@ $ff and
 	4 <? ( 2drop ; )
 	5 =? ( 2drop ; )
 	7 >? ( 2drop ; )
@@ -842,7 +842,7 @@
     cell2reg ;
 
 ::cellM | 'cell -- ; mem or register
-	dup @ $ff and
+	dup d@ $ff and
 	4 7 bt? ( 2drop ; )
 	drop
 	dup cell?dword

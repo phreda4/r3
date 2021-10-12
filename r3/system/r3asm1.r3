@@ -4,6 +4,7 @@
 | PHREDA 2020
 |-------------
 ^./r3base.r3
+^./r3stack.r3
 
 #stbl * 40 | 10 niveles ** falta inicializar si hay varias ejecuciones
 #stbl> 'stbl
@@ -38,7 +39,7 @@
 	12 =? ( drop ; ) | tail call  call..ret?
 	21 =? ( drop ; ) | tail call  EX
 	drop
-	stk.normal
+|	stk.normal
 	"ret" ,ln ;
 
 |--- IF/WHILE
@@ -47,18 +48,18 @@
     3 << blok + d@ $10000000 and ;
 
 :g(
-	stk.resolve
-	stk.push
+|	stk.resolve
+|	stk.push
 	getval getiw 0? ( pushbl 2drop ; ) drop
 	pushbl
 	"_i%h:" ,print ,cr ;		| while
 
 :g)
-	dup 8 - @ $ff and
-	16 <>? ( stk.conv ) | tail call  call..ret?
+	dup 8 - d@ $ff and
+|	16 <>? ( stk.conv ) | tail call  call..ret?
 	drop
 
-	stk.pop
+|	stk.pop
 	getval getiw
 	popbl swap
 	1? ( over "jmp _i%h" ,print ,cr ) drop	| while
@@ -67,7 +68,7 @@
 :?? | -- nblock
 	getval getiw
 	0? ( drop nblock ; ) drop
-	stk.drop stk.push
+|	stk.drop stk.push
 	stbl> 4 - @ ;
 
 |---
@@ -831,7 +832,7 @@ gSYS6 gSYS7 gSYS8 gSYS9 gSYS10
 
 :codestep | token --
 	"; " ,s ,tokenprinto 9 ,c ,printstk ,cr
-|	"asm/code.asm" savememinc
+	"asm/code.asm" savemem
 	$ff and 3 << 'vmc + @ ex ;
 
 

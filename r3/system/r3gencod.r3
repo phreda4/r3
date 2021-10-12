@@ -638,7 +638,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	"; " ,s 'r3filename ,s ,cr
 
 |	"asm/code.asm" savemem
-	debugblok
+|	debugblok
 
 	dicc ( dicc> <?
 		dup gencode
