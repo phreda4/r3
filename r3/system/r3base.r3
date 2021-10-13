@@ -4,8 +4,8 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
-^./r3parse.r3
-^./r3stack.r3
+^r3/system/r3parse.r3
+^r3/system/r3stack.r3
 
 ##r3filename * 256
 ##r3path * 256

@@ -597,19 +597,20 @@
 	0 PUSH.CTEM ;
 
 :gLOADLIB | aa "" -- aa
-	"cinvoke64 LoadLibraryA,#0" ,asm ;
+	"cinvoke64 LoadLibraryA,#0" ,asm 
+	| rax=tos
+	;
 	
 :gGETPROC | aa "" -- dd
-	"cinvoke64 GetProcAddress,rax,#0" ,asm .drop ;
+	"cinvoke64 GetProcAddress,#0,#1" ,asm .drop 
+	| rax=tos
+	;
 
 :preA16
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,0F0h" ,ln ;
+	"PUSH RSP;PUSH qword [RSP];ADD RSP,8;AND SPL,$F0" ,asm ;
 	
 :posA16
-	"POP RSP" ,ln  ;
+	"POP RSP" ,asm ;
 	
 :gSYS0  | a -- b
 	preA16	
@@ -622,8 +623,7 @@
 :gSYS1 | a b -- c
 	preA16
 	"sub RSP,$20" ,ln 
-	"mov rcx,#1" ,asm
-	"call #0" ,asm
+	"mov rcx,#1;call #0" ,asm
 	"add RSP,$20" ,ln 
 	posA16 	
 	.drop ;
@@ -631,9 +631,7 @@
 :gSYS2 
 	preA16
 	"sub RSP,$20" ,ln 
-	"mov rdx,#1" ,asm
-	"mov rcx,#2" ,asm
-	"call #0" ,asm
+	"mov rdx,#1;mov rcx,#2;call #0" ,asm
 	"add RSP,$20" ,ln 
 	posA16 	
 	.2drop ;
@@ -641,10 +639,7 @@
 :gSYS3 
 	preA16
 	"sub RSP,$20" ,ln 
-	"mov r8,#1" ,asm
-	"mov rdx,#2" ,asm
-	"mov rcx,#3" ,asm
-	"call #0" ,asm
+	"mov r8,#1;mov rdx,#2;mov rcx,#3'call #0" ,asm
 	"add RSP,$20" ,ln 
 	posA16 	
 	.3drop ;
@@ -652,25 +647,17 @@
 :gSYS4 
 	preA16
 	"sub RSP,$20" ,ln 
-	"mov r9,#1" ,ln
-	"mov r8,#2" ,ln
-	"mov rdx,#3" ,ln
-	"mov rcx,#4" ,ln
-	"call #0" ,ln 
+	"mov r9,#1;mov r8,#2;mov rdx,#3;mov rcx,#4;call #0" ,asm
 	"add RSP,$20" ,ln 
 	posA16 	
 	.4drop ;
 
 :gSYS5
 	preA16
-	"sub RSP,$28" ,ln 
+	"sub RSP,$30" ,ln 
 	"mov [rsp+$20],#1" ,asm
-	"mov r9,#2" ,asm
-	"mov r8,#3" ,asm
-	"mov rdx,#4" ,asm
-	"mov rcx,#5" ,asm
-	"call #0" ,asm
-	"add RSP,$28" ,ln 
+	"mov r9,#2;mov r8,#3;mov rdx,#4;mov rcx,#5;call #0" ,asm
+	"add RSP,$30" ,ln 
 	posA16 	
 	.5drop ;
 
@@ -679,27 +666,19 @@
 	"sub RSP,$30" ,ln 
 	"mov [rsp+$28],#1" ,asm
 	"mov [rsp+$20],#2" ,asm
-	"mov r9,#3" ,asm
-	"mov r8,#4" ,asm
-	"mov rdx,#5" ,asm
-	"mov rcx,#6" ,asm
-	"call #0" ,asm
+	"mov r9,#3;mov r8,#4;mov rdx,#5;mov rcx,#6;call #0" ,asm
 	"add RSP,$30" ,ln 
 	posA16 	
 	.6drop ;
 
 :gSYS7 
 	preA16
-	"sub RSP,$38" ,ln 
+	"sub RSP,$40" ,ln 
 	"mov [rsp+$30],#1" ,asm
 	"mov [rsp+$28],#2" ,asm
 	"mov [rsp+$20],#2" ,asm
-	"mov r9,#4" ,asm
-	"mov r8,#5" ,asm
-	"mov rdx,#6" ,asm
-	"mov rcx,#7" ,asm
-	"call #0" ,asm
-	"add RSP,$38" ,ln 
+	"mov r9,#4;mov r8,#5;mov rdx,#6;mov rcx,#7;call #0" ,asm
+	"add RSP,$40" ,ln 
 	posA16 	
 	.7drop ;
 
@@ -710,29 +689,21 @@
 	"mov [rsp+$30],#2" ,asm
 	"mov [rsp+$28],#3" ,asm
 	"mov [rsp+$20],#4" ,asm
-	"mov r9,#5" ,asm
-	"mov r8,#6" ,asm
-	"mov rdx,#7" ,asm
-	"mov rcx,#8" ,asm
-	"call #0" ,asm
+	"mov r9,#5;mov r8,#6;mov rdx,#7;mov rcx,#8;call #0" ,asm
 	"add RSP,$40" ,ln 
 	posA16 	
 	.8drop ;
 	
 :gSYS9 
 	preA16
-	"sub RSP,$48" ,ln 
-	"mov [rsp+$40],#1" ,ln
+	"sub RSP,$50" ,ln 
+	"mov [rsp+$40],#1" ,asm
 	"mov [rsp+$38],#2" ,asm
 	"mov [rsp+$30],#3" ,asm
 	"mov [rsp+$28],#4" ,asm
 	"mov [rsp+$20],#5" ,asm
-	"mov r9,#6" ,asm
-	"mov r8,#7" ,asm
-	"mov rdx,#8" ,asm
-	"mov rcx,#9" ,asm
-	"call #0" ,asm
-	"add RSP,$48" ,ln 
+	"mov r9,#6;mov r8,#7;mov rdx,#8;mov rcx,#9;call #0" ,asm
+	"add RSP,$50" ,ln 
 	posA16 	
 	.9drop ;
 
@@ -740,17 +711,13 @@
 :gSYS10
 	preA16
 	"sub RSP,$50" ,ln 
-	"mov [rsp+$48],#1" ,ln
-	"mov [rsp+$40],#2" ,ln
+	"mov [rsp+$48],#1" ,asm
+	"mov [rsp+$40],#2" ,asm
 	"mov [rsp+$38],#3" ,asm
 	"mov [rsp+$30],#4" ,asm
 	"mov [rsp+$28],#5" ,asm
 	"mov [rsp+$20],#6" ,asm
-	"mov r9,#7" ,asm
-	"mov r8,#8" ,asm
-	"mov rdx,#9" ,asm
-	"mov rcx,#10" ,asm
-	"call #0" ,asm
+	"mov r9,#7;mov r8,#8;mov rdx,#9;mov rcx,#:;call #0" ,asm
 	"add RSP,$50" ,ln 
 	posA16 	
 	.10drop ;
