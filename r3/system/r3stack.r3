@@ -282,15 +282,18 @@
 	"; [ " ,s
 	'PSP 8 + ( NOS <=? d@+ 8 >> "%h " ,print ) drop
 	'PSP NOS <? ( TOS 8 >> "%h " ,print ) drop
-	"] " ,s
-	;
+	"] " ,s ;
 
 ::,printstk
 	"; [ " ,s
 	'PSP 8 + ( NOS <=? d@+ ,cellp ,sp ) drop
 	'PSP NOS <? ( TOS ,cellp ) drop
-	" ] " ,s 
-	;
+	" ] " ,s ; 
+
+::,printvstk
+	"| " ,s
+	'PSP 8 + ( NOS <=? d@+ ,cellp ,sp ) drop
+	'PSP NOS <? ( TOS ,cellp ) drop ; 
 
 
 |-------------------------------------------
