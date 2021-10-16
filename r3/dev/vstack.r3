@@ -12,6 +12,17 @@
 |-----------------
 :ibye 1 '.bye ! "bye!" .write cr ;
 
+:iini 
+	8 stk.start
+	;
+	
+:inormal 
+	mark
+	stk.normal 
+	,eol empty
+	here .println
+	;
+
 #inst 
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
 "ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
@@ -20,7 +31,7 @@
 "<<" ">>" ">>>"
 "MOD" "/MOD" "*/" "*>>" "<</"
 "NOT" "NEG" "ABS" "SQRT" "CLZ"
-"bye" 0
+"bye" "istack" "inormal" 0
 
 #insc 
 .dup .drop .over .pick2 .pick3 .pick4 .swap .nip
@@ -30,7 +41,7 @@
 .<< .>> .>>>
 .mod ./mod .*/ .*>> .<</
 .not .neg .abs .sqrt .clz
-'ibye 0
+'ibye 'iini 'inormal 0
 
 :interp | adr -- ex/0
 	'insc >a
