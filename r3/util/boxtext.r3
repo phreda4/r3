@@ -52,8 +52,8 @@
 	;
 	
 :emit
-	13 =? ( over c@ 10 =? ( 2drop ; ) 0 ca!+ a> b!+ 2drop ; )
-	10 =? ( 0 ca!+ a> b!+ drop ; )
+	13 =? ( over c@ 10 =? ( 2drop ; ) inwbox 0 ca!+ a> b!+ 2drop ; )
+	10 =? ( inwbox 0 ca!+ a> b!+ drop ; )
 	32 =? ( inwbox )
 	ca!+ ;
 	
@@ -64,7 +64,8 @@
 :splitlines | "" --
 	'lines >b
 	'buffer dup >a b!+ 
-	( c@+ 1? emit ) ca!+ a> b!+
+	( c@+ 1? emit ) 
+	inwbox ca!+ a> b!+
 	drop 
 	lastline 'lines> ! ;
 
