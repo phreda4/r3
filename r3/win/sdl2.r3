@@ -126,7 +126,7 @@
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
 	
-::SDLframebuffer | w h --
+::SDLframebuffer | w h -- texture
 	>r >r SDLrenderer $16362004 1 r> r> SDL_CreateTexture ;
 	
 | SDL_WINDOW_FULLSCREEN = 0x00000001,
@@ -215,7 +215,8 @@
 ::SDLLine | x y x y --	
 	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
 
-#rec [ 0 0 0 0 ]
+#rec [ 0 0 0 0 ] | aux rect
+#w 0 #h 0
 
 ::SDLFillRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
@@ -224,6 +225,16 @@
 ::SDLRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
+
+::SDLimages | x y w h img --
+	>r
+	swap 2swap swap 'rec d!+ d!+ d!+ d!
+	SDLrenderer r> 0 'rec SDL_RenderCopy ;
+	
+::SDLimage | x y img --		
+	dup 0 0 'w 'h SDL_QueryTexture >r
+	swap 'rec d!+ d!+ h w rot d!+ d!
+	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
 ::SDLclear | color --
 	SDLcolor SDLrenderer SDL_RenderClear ;
@@ -249,7 +260,7 @@
 	xm pick2 - ym pick2 - xm pick4 + over SDLLine 
 	xm pick2 - ym pick2 + xm pick4 + over SDLLine  ;
 
-::SDLfellipse | rx ry x y --
+::SDLFillellipse | rx ry x y --
 	a> >r
 	inielipse
 	xm pick2 - ym xm pick4 + over SDLLine 
@@ -269,7 +280,7 @@
 	xm pick2 - ym pick2 - xm pick4 + borde
 	xm pick2 - ym pick2 + xm pick4 + borde ;
 
-::SDLellipse | rx ry x y --
+::SDLEllipse | rx ry x y --
 	a> >r
     inielipse
 	xm pick2 - ym xm pick4 + borde
@@ -281,8 +292,9 @@
 		)
 	4drop 
 	r> >a ;
-
 	
+
+
 |------- BOOT
 :
 	"SDL2.DLL" loadlib

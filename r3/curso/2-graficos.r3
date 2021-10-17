@@ -54,7 +54,7 @@
 	$ffffff randmax SDLcolor 
 	sw 3 >> randmax sh 3 >> randmax 
 	sw randmax sh randmax 
-	SDLfellipse
+	SDLFillEllipse
 	
 	SDLRedraw 
 	SDLkey >esc< =? ( exit ) drop ;

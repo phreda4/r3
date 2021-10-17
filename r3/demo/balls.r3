@@ -17,12 +17,10 @@
 :r.8 8.0 randmax ;
 
 |---------
-#rbox [ 0 0 28 28 ]
-
 :drawball | -- 
 	0 0 0 project3d 
-	14 - swap 14 - 'rbox d!+ d!
-	SDLrenderer spr_ball 0 'rbox SDL_RenderCopy ;
+	14 - swap 14 - swap
+	28 28 spr_ball SDLimages ;
 	
 :hitwall | limit --
 	b> 8 - !

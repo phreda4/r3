@@ -16,19 +16,21 @@
 :choque
 	a> 8 + dup @ neg swap ! ;
 	
-#rbox [ 0 0 64 64 ]
 
 :ballexec | adr -- 
 	>a
 	a@+ 16 >> 0 <? ( choque ) sw 64 - >? ( choque )
 	a@+ 16 >> 0 <? ( choque ) sh 64 - >? ( choque )
-	swap 'rbox d!+ d!
 	a@+ a> 24 - +!
 	a@+ a> 24 - +!	
-	SDLrenderer a@+ 0 'rbox SDL_RenderCopy ;
+	a@+ SDLImage ;
 	
 :+obj | 'spr vy vx y x --
 	'ballexec 'list p!+ >a a!+ a!+ a!+ a!+ a! ;
+
+
+|----- rotacion..float arg!!
+#rbox [ 0 0 64 64 ]
 
 :ballexecr | adr --
 	>a
