@@ -1,0 +1,209 @@
+Library referencia
+------------------
+
+
+********************************************************************************
+^r3/win/console.r3 | console read/write
+********************************************************************************
+
+::key | -- key
+::key? | -- f 
+::type | str cnt --
+##codekey 0 0 0
+::getch | -- key
+::waitesc | --
+::cr | --
+::sp | --
+::nsp | n --
+::emit | ascii --
+::.[ | "" --
+
+::.write | "" --
+::.print | "" --
+::.println | "" --
+
+::.home	
+::.cls 
+::.at | x y -- 
+::.eline | erase line from cursor
+
+::.fc | Set foreground color.
+::.bc | backgroud color
+
+::.Bold 
+::.Under 
+::.Rever 
+::.Reset 
+
+::.alsb	 | alternate screen buffer
+::.masb | main screen buffer
+
+::.showc| show cursor
+::.hidec | hide cursor
+::.ovec | over cursor
+::.insc | insert cursor
+
+##consoleinfo 0 0 0
+##rows 
+##cols
+
+::.getconsoleinfo 
+
+##pad * 256
+::.input | --
+::.inputn | -- nro
+
+
+********************************************************************************
+^r3/win/inet.r3 | get data fron web
+********************************************************************************
+
+::InternetOpen | a b c d e -- a
+::InternetOpenUrl | a b c d e f -- a
+::InternetReadFile | a b c d --
+::InternetCloseHandle | a --
+::openurl | url header buff -- buff 
+
+
+********************************************************************************
+^r3/win/sdl2.r3 | graphics with sdl2 library
+********************************************************************************
+
+::SDL_Init | a --
+::SDL_Quit | --
+::SDL_GetNumVideoDisplays | -- a
+::SDL_CreateWindow | a b c d e f -- a
+::SDL_SetWindowFullscreen | a b --
+::SDL_GetWindowSurface | a -- b
+::SDL_ShowCursor | a --
+::SDL_UpdateWindowSurface | a --
+::SDL_DestroyWindow | a --
+::SDL_CreateRenderer | a b c -- d
+::SDL_CreateTexture | a b c d e -- a
+::SDL_QueryTexture | a b c d e --
+::SDL_SetTextureColorMod | a b c d --
+::SDL_DestroyTexture | a --
+::SDL_DestroyRenderer | a -- a
+::SDL_UpdateTexture | a b c d -- a
+::SDL_RenderClear | a --
+::SDL_RenderCopy | a b c d -- e
+::SDL_RenderCopyEx | a b c d e f g -- 
+::SDL_RenderPresent 
+::SDL_CreateTextureFromSurface 
+::SDL_SetRenderDrawColor 
+::SDL_FreeSurface 
+::SDL_LockTexture 
+::SDL_UnlockTexture 
+::SDL_RenderSetLogicalSize 
+::SDL_SetRenderDrawBlendMode 
+::SDL_RenderDrawPoint 
+::SDL_RenderDrawLine 
+::SDL_RenderDrawRect
+::SDL_RenderFillRect
+::SDL_Delay
+::SDL_PollEvent
+::SDL_GetTicks
+::SDL_StartTextInput
+::SDL_StopTextInput
+::SDL_RWFromFile
+::SDL_GL_SetAttribute 
+::SDL_GL_CreateContext 
+::SDL_GL_DeleteContext 
+::SDL_GL_SetSwapInterval
+::SDL_GL_SwapWindow 
+
+##SDL_windows
+##SDL_screen
+##SDLrenderer
+
+##sw	| screen width
+##sh	| screen height
+
+##pitch
+##sizebuffer
+##vframe
+
+::SDLinit | "titulo" w h --
+::SDLinitGL | "titulo" w h --
+
+::SDLfull | --
+::SDLframebuffer | w h -- img
+
+::SDLquit
+
+##SDLkey
+##SDLkeychar
+##SDLx 
+##SDLy 
+##SDLb
+	
+::SDLupdate
+::SDLshow | 'word --
+
+::exit
+
+::SDLcolor | col --
+::SDLPoint | x y --
+::SDLLine | x y x y --	
+::SDLFillRect | x y w h --	
+::SDLRect | x y w h --	
+::SDLFillEllipse | rx ry x y --
+::SDLellipse | rx ry x y --
+::SDLimages | x y w h img --
+::SDLimage | x y img --		
+
+::SDLclear | color --
+::SDLRedraw | -- 
+
+
+********************************************************************************
+^r3/win/sdl2image.r3 | load many image formats
+********************************************************************************
+
+::IMG_Load | "" -- a
+::IMG_Init | a --
+::loadimg | "" -- texture
+
+	
+********************************************************************************
+^r3/win/sdl2mixer.r3 | play sound and music
+********************************************************************************
+
+::Mix_Init | a -- b
+::Mix_Quit | --
+	
+::Mix_LoadWAV | "" -- a
+::Mix_LoadMUS | "" -- a
+::Mix_PlayChannelTimed | a b c d --
+::Mix_HaltChannel | a b c d --
+::Mix_PlayMusic | a b --
+::Mix_HaltMusic | a --
+::Mix_FreeChunk | a --
+::Mix_FreeMusic | a --
+::Mix_OpenAudio | a b c d --
+::Mix_CloseAudio | --
+::Mix_PlayingMusic | -- a
+
+::SNDInit
+::SNDplay | adr --
+::SNDQuit	
+	
+********************************************************************************
+^r3/win/sdl2ttf.r3 | draw ttf,otf fonts in SDL graphics
+********************************************************************************
+
+::TTF_Init 
+::TTF_OpenFont 	|TTF_Font *TTF_OpenFont(const char *file, int ptsize);
+::TTF_SetFontStyle |void TTF_SetFontStyle(TTF_Font *font, int style);
+::TTF_SetFontOutline |void TTF_SetFontOutline(TTF_Font *font, int outline);
+::TTF_SizeText  |int TTF_SizeText(TTF_Font *font, const char *text, int *w, int *h);
+::TTF_SizeUTF8 |int TTF_SizeUTF8(TTF_Font *font, const char *text, int *w, int *h);
+::TTF_RenderText_Solid |SDL_Surface * TTF_RenderText_Solid(TTF_Font *font,const char *text, SDL_Color fg);
+::TTF_RenderUTF8_Solid |SDL_Surface * TTF_RenderUTF8_Solid(TTF_Font *font,const char *text, SDL_Color fg);
+::TTF_RenderText_Shaded |SDL_Surface * TTF_RenderText_Shaded(TTF_Font *font,const char *text, SDL_Color fg, SDL_Color bg);
+::TTF_RenderUTF8_Shaded |SDL_Surface * TTF_RenderUTF8_Shaded(TTF_Font *font,const char *text, SDL_Color fg, SDL_Color bg);
+::TTF_RenderText_Blended |SDL_Surface * TTF_RenderText_Blended(TTF_Font *font,const char *text, SDL_Color fg);
+::TTF_RenderUTF8_Blended |SDL_Surface * TTF_RenderUTF8_Blended(TTF_Font *font,const char *text, SDL_Color fg);
+::TTF_CloseFont |void TTF_CloseFont(TTF_Font *font);
+::TTF_Quit  |void TTF_Quit();
+

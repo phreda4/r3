@@ -12,14 +12,6 @@
 #sprbird
 #sprpipe
 
-|--------------------------------
-#rbox [ 0 0 64 64 ]
-
-:sprite | tex x y w h -- 
-	swap 2swap swap
-	'rbox d!+ d!+ d!+ d!
-	SDLrenderer swap 0 'rbox SDL_RenderCopy ;
-
 |--------------------------------	
 | posicion y velocidad 
 #px 200.0 #py 10.0
@@ -37,13 +29,12 @@
 #pyp 300
 #pxp2 800.0
 #pyp2 300
-
 	
 :drawpipe | x y --
-	sprpipe pick2 0 60 pick4 80 - sprite 
-	sprpipe pick2 5 - pick2 80 - 70 40 sprite
-	sprpipe pick2 5 - pick2 80 + 70 40 sprite
-	sprpipe pick2 pick2 120 + 60 sh pick2 - sprite 
+	over 0 60 pick3 80 - sprpipe SDLimages
+	over 5 - over 80 - 70 40 sprpipe SDLimages
+	over 5 - over 80 + 70 40 sprpipe SDLimages
+	over over 120 + 60 sh over - sprpipe SDLimages
 	2drop ;
 
 :newpipe

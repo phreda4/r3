@@ -40,7 +40,6 @@
 :bbfill
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
-
 #lastsp
 
 :inwbox | c -- c
@@ -49,7 +48,7 @@
 	x 'boxt 8 + d@ | wsize wbox
 	<=? ( drop a> 'lastsp ! ; ) drop
 	0 lastsp c!+ b!+
-	;
+	a> 'lastsp ! ;
 	
 :emit
 	13 =? ( over c@ 10 =? ( 2drop ; ) inwbox 0 ca!+ a> b!+ 2drop ; )
@@ -107,7 +106,6 @@
 		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
 		a> 4 + d@ 'htotal +!
 		8 a+ ) drop
-	
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
@@ -161,7 +159,6 @@
 		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
 		a> 4 + d@ 'htotal +!
 		8 a+ ) drop
-	
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )

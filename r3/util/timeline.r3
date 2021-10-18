@@ -142,7 +142,7 @@
 	a> 12 + d@ 
 	>? ( ratio2 ; ) 
 	nip nip a> 8 + d@ 	| HN WN
-	setbox	
+	setbox	;
 	
 |--------------	
 :swapcolor | color -- swapcolor
@@ -173,7 +173,6 @@
 	drop
 	b@+ 'sdlbox 64box
 	SDLrenderer b@+ 
-	|b@ 'sdlbox 64boxratio
 	0 'sdlbox SDL_RenderCopy
 	;
 
@@ -186,6 +185,26 @@
 	a!+ | texture
 	imgwh a! ; 
 
+|-------------------- IMAGEN with Aspect Ratio
+:drawimgar | adr --
+	>b b@+ 1 and? ( drop ; ) 
+|	8 >> 1? ( SDLrenderer over 
+|		dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+|		SDL_SetTextureColorMod )
+	drop
+	b@+ 'sdlbox 64box
+	SDLrenderer b@+ 
+	b@ 'sdlbox 64boxratio
+	0 'sdlbox SDL_RenderCopy
+	;
+
+::+imgar  | img box --
+	'drawimgar 'screen p!+ >a
+	0 a!+ a!+ 
+	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
+	a!+ | texture
+	imgwh a! ; 
+	
 |-------------------- TEXTO
 :drawtxt | adr --
 	>b b@+ 1 and? ( drop ; ) 
