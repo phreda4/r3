@@ -1,7 +1,34 @@
-Library referencia
-------------------
+Windows Library reference
+-------------------------
+
+R3 can load and connect with any dll with this words
+
+[code]
+loadlib | "name" -- lib
+getproc | lib "func" -- address	
+sys0 | -- a 
+sys1 | a -- b
+sys2 | a b -- c
+...
+[/code]
+
+Dynamic library can be called with the next segment of code:
+
+[code]
+#sys-AllocConsole
+
+::AllocConsole sys-allocconsole sys0 drop ;
+
+:
+	"KERNEL32.DLL" loadlib 
+	dup "AllocConsole" getproc 'sys-AllocConsole !
+	...
+[/code]
 
 
+This can be used for connect with the windows api or others DLL, like SDL2.
+
+	
 ********************************************************************************
 ^r3/win/console.r3 | console read/write
 ********************************************************************************

@@ -1,0 +1,25 @@
+
+
+****************************************************
+^r3/util/arr8.r3 | words for manage arrays of 8 values 
+****************************************************
+
+::p.ini | cantidad list --
+::p.clear | list --
+::p!+ | 'act list -- adr
+::p! | list -- adr
+
+|---- borra desordenado (mas rapido)
+::p.draw | list --
+|---- borra ordenado!!
+::p.drawo | list --
+
+::p.nro | nro list -- adr
+::p.last | nro list -- adr
+::p.cnt | list -- cnt
+::p.cpy | adr 'list --
+::p.del | adr list --
+::p.mapv | 'vector list --
+::p.mapd | 'vector list --
+::p.mapi | 'vector fin ini list --
+::p.deli | fin ini list --
