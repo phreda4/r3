@@ -1,0 +1,166 @@
+****************************************
+^r3/lib/math.r3
+****************************************
+| r3 base - bangle
+| 0.0--360.0
+| 0.0--2.0*pi
+| 0.0--1.0 <--- us use this
+| resultado = [0..1.0) [0..$ffff]
+|---------------------------------
+
+|------- punto fijo 16.16
+::*.u	| a b -- c ; neg not 0
+::*.	| a b -- c
+::/.	| a b -- c
+::ceil	| a -- a
+::sign | v -- v s
+::cos | v -- r
+::sin | v -- r
+::tan | v -- f
+::sincos | bangle -- sin cos
+::xy+polar | x y bangle r -- x y
+::ar>xy | xc yc bangle r -- xc yc x y
+::polar | bangle largo -- dx dy
+::polar2 | largo bangle  -- dx dy
+::atan2 | x y -- bangle
+
+::distfast | dx dy -- dis
+::average | x y -- v
+::min	| a b -- m
+::max	| a b -- m
+::clampmax | v max -- v
+::clampmin | v min -- v
+::clamp0 | v -- v
+::clamp0max | v max -- v
+::between | v min max -- -(out)/+(in)
+::sqrt. | n -- v
+::ln. | x --r
+::exp. | x --  r	; sin *.
+::exp. | x --  r
+::cubicpulse | c w x -- v ; iñigo Quilez
+::pow | base exp -- r
+::pow. | base exp -- r
+::root. | base root -- r
+
+::bswap
+
+| next pow2
+::nextpow2 | v -- p2
+::6/ | n -- r
+::6mod | n -- m
+::10/mod | n -- r m
+::100/ | n -- r
+::10/ | n -- r
+::1000000*	
+::100000*
+::10000*
+::1000*	
+::100*
+::10*
+
+****************************************
+^r3/lib/str.r3 |------ STRING LIB
+****************************************
+
+::zcopy | destino fuente -- destino' con 0
+::strcat | src des --
+::strcpy | src des --
+::strcpyl | src des -- ndes
+::strcpyln | src des --
+
+::copynom | sc s1 --
+::copystr | sc s1 --
+::toupp | c -- C
+::tolow | C -- c
+::count | s1 -- s1 cnt
+::= | s1 s2 -- 1/0
+::=s | s1 s2 -- 0/1
+::=w | s1 s2 -- 1/0
+::=pre | adr "str" -- adr 1/0
+::=pos | s1 ".pos" -- s1 1/0
+
+|----------- find str
+:=p | s1 s2 -- 1/0
+::findstr | adr "texto" -- adr'
+:=pi | s1 s2 -- 1/0
+::findstri | adr "texto" -- adr'/0
+
+::.d | val -- str
+::.b | bin -- str
+::.h | hex -- str
+::.o | oct -- str
+::.f | fix -- str
+::.r. | b nro -- b
+
+::trim | adr -- adr'
+::trimc | car adr -- adr'
+::trim" | adr -- adr'
+::>>cr | adr -- adr'
+::>>0 | adr -- adr' ; pasa 0
+::only13 | adr -- ; remove 10..reeplace with 13
+::>>sp | adr -- adr'	; next space
+
+****************************************
+^r3/lib/parse.r3 |------ parse lib
+****************************************
+
+::str$>nro | adr -- adr' nro
+::str%>nro | adr -- adr' nro
+::str>nro | adr -- adr' nro ;1234 $12f %101 -12
+::?sint | adr -- adr' nro
+::?numero | str -- 0 / str' nro 1
+::?fnumero | str -- 0/ str' fix 1		; b
+::str>fix | adr -- adr' fix
+::getnro | adr -- adr' nro
+::str>fnro | adr -- adr fnro
+::str>anro | adr -- adr anro
+::getfenro | adr -- adr fnro
+
+|----- test solo si es numero (sin calcular)
+::isHex |adr -- 3/0
+::isBin | adr -- 2/0
+::isNro | adr - t/0 ; 1-dec 2-bin 3-hex 4-fix
+
+::scanp | adr "str" -- adr'/0
+::scanstr | adr 'str -- adr'
+::scannro | adr 'nro -- adr'
+::scanc | c adr -- adr'/0
+::scann | adr "str" -- adr'
+
+****************************************
+^r3/lib/mem.r3
+****************************************
+
+|--- free memory
+##here 0
+
+::mark | --
+::empty | --
+::savemem | "" --
+::sizemem | -- size
+
+::savememinc | "" --
+::cpymem | 'destino --
+::appendmem | "" --
+
+|---
+::, | d--
+::,c | b --
+::,q | q --
+::,s
+::,w
+::,l
+::,d
+::,h
+::,b
+::,f
+
+::,ln
+::,cr
+::,eol
+::,sp 
+::,nl 
+::,print | p p .. "" --
+::sprint | p p .. "" -- adr
+
+
