@@ -82,6 +82,11 @@
 	empty
 	saverow	;
 
+::prevdb-i | "filename" --
+	loadrow
+	-1 'rowdb +!
+	'rowdb 8 rot "%s.now" sprint save ;
+	
 | get field nro
 |
 ::dbfld | nro -- string
