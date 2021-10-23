@@ -14,10 +14,10 @@
 	swap dup 32 << 48 >> rot d!+
 	swap 48 << 48 >> swap d! ;	
 	
-#buffer * 8192
-#lines * 512
+#buffer * 4096
+#lines * 256
 #lines>
-#boxlines * 512
+#boxlines * 256
 #clines
 
 #font
@@ -32,7 +32,6 @@
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
-
 	
 :bbrect
 	SDLrenderer 'boxt SDL_RenderDrawRect ;
@@ -44,11 +43,13 @@
 
 :inwbox | c -- c
 	0 ca!
+	0 'x ! 0 'y ! | store 32, clear sign
 	font b> 8 - @ 'x 'y TTF_SizeUTF8 drop
 	x 'boxt 8 + d@ | wsize wbox
 	<=? ( drop a> 'lastsp ! ; ) drop
-	0 lastsp c!+ b!+
-	a> 'lastsp ! ;
+	0 lastsp c!+ b!+ 
+	a> 'lastsp !
+	;
 	
 :emit
 	13 =? ( over c@ 10 =? ( 2drop ; ) inwbox 0 ca!+ a> b!+ 2drop ; )
@@ -70,7 +71,7 @@
 
 |----------------------------------------------
 :textl
-	'boxt d@+ 'x ! d@+ 'y +! drop 
+	'boxt d@+ 'x ! d@ 'y +! 
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x 'bbtext d!+ d!+ !
@@ -79,7 +80,7 @@
 		) drop ;
 		
 :textc
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 1 >> 'x +! drop | x=center
+	'boxt d@+ 'x ! d@+ 'y +! d@ 1 >> 'x +! | x=center
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
@@ -88,7 +89,7 @@
 		) drop ;
 		
 :textr
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 'x +! drop | x=last
+	'boxt d@+ 'x ! d@+ 'y +! d@ 'x +! | x=last
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
@@ -106,6 +107,7 @@
 		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
 		a> 4 + d@ 'htotal +!
 		8 a+ ) drop
+	
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
@@ -123,7 +125,7 @@
 
 
 :textls
-	'boxt d@+ 'x ! d@+ 'y +! drop 
+	'boxt d@+ 'x ! d@ 'y +! 
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x 'bbtext d!+ d!+ !
@@ -132,7 +134,7 @@
 		) drop ;
 		
 :textcs
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 1 >> 'x +! drop | x=center
+	'boxt d@+ 'x ! d@+ 'y +! d@ 1 >> 'x +! | x=center
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
@@ -141,7 +143,7 @@
 		) drop ;
 		
 :textrs
-	'boxt d@+ 'x ! d@+ 'y +! d@+ 'x +! drop | x=last
+	'boxt d@+ 'x ! d@+ 'y +! d@ 'x +! | x=last
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
@@ -150,6 +152,7 @@
 		) drop ;
 
 ::textboxs | $vh str box color font --
+
 	'font ! 'color !
 	'boxt 64box
 	splitlines	
@@ -159,6 +162,7 @@
 		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
 		a> 4 + d@ 'htotal +!
 		8 a+ ) drop
+	
 	0 'y !
 	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
 	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )

@@ -57,7 +57,7 @@
 	timeline< timenow
 	( over
 		timeline> =? ( 'timeline< ! 2drop ; )
-		@ >?
+		@ >=?
 		swap
 		dup 8 + @ ex
 		32 + swap ) drop

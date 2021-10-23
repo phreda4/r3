@@ -81,7 +81,7 @@
 	here over load here >? ( parsedb ) drop
 	empty
 	saverow	;
-
+	
 ::prevdb-i | "filename" --
 	loadrow
 	-1 'rowdb +!
@@ -110,7 +110,13 @@
 	swap @ swap
 	( dup @ 1? pick2 =? ( drop nip ; ) drop
 		>>line trim ) nip nip ;
-
+		
+::cntdbrow | 'db -- cnt
+	>a
+	0 ( ca@+ 1?
+	 	$5e =? ( swap 1 + swap ) | ^
+		drop ) drop ;
+	
 ::>>fld | adr -- adr'
 	( c@+ 1?
 		$7c =? ( drop ; )
