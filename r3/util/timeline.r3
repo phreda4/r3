@@ -180,7 +180,7 @@
 
 ::+img  | img box --
 	'drawimg 'screen p!+ >a
-	0 a!+ a!+ 
+	1 a!+ a!+ 
 	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
 	a!+ | texture
 	imgwh a! ; 
@@ -200,7 +200,7 @@
 
 ::+imgar  | img box --
 	'drawimgar 'screen p!+ >a
-	0 a!+ a!+ 
+	1 a!+ a!+ 
 	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
 	a!+ | texture
 	imgwh a! ; 
@@ -231,7 +231,7 @@
 	textbox | $vh str box color font --
 	;
 	
-::+tbox | font "" boz color -- ; HVRRGGBB00
+::+tbox | font "" box color -- ; HVRRGGBB00
 	'drawtbox 'screen p!+ >a
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a! ;
@@ -274,7 +274,7 @@
 
 
 |-----------------------------
-:getscr | -- adrlast
+::getscr | -- adrlast
 	'screen p.last ;
 
 :getfx | -- adrlast
@@ -335,7 +335,22 @@
 ::+fx.box | boxstart boxend func duration sec --
 	dup >r 'fxp p!+ >a a!+ a!+ a!+ a!
 	getfx getscr 'evt.box r> +tline ;
+
 	
+|-------------------- DINAMICOS
+::+ifx.box | elemento boxstart boxend func duration sec --
+	timenow +
+	dup >r 'fxp p!+ >a a!+ a!+ a!+ a!
+	getfx 
+	swap 
+	'evt.box r> +tline ;
+	
+::+ifx.text | text elemento --
+	;
+	
+::+ievent | exec inicio --
+	timenow + 0 0 2swap +tline ;
+
 |-------------------- ANIMADOR color
 :setlastcol
 	8 a+ a@+ a@+ a@
@@ -429,3 +444,4 @@
 	512 'fx p.ini
 	512 'fxp p.ini
 	;
+
