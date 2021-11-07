@@ -27,11 +27,11 @@
 |  InternetCloseHandle(hOpen);
 |  TOS=(int)buffData;
 |  continue;   
-		 
+
 #cnt
 		 
 ::openurl | url header buff -- buff 
-	>r "InetURL/1.0" 1 0 0 0 InternetOpen  | url head hopen
+	>r "InetURL/1.0" 1 0 0 0 InternetOpen  | url head hopen |1 0 0 0=direct
 	dup >r rot rot 0 $80000000 0 InternetOpenUrl | hopen
 	r> swap r>
 	( 2dup 8192 'cnt InternetReadFile cnt + cnt 1? drop ) drop

@@ -10,6 +10,8 @@
 #sys-Mix_HaltChannel
 #sys-Mix_PlayMusic
 #sys-Mix_HaltMusic
+#sys-Mix_fadeOutMusic
+
 #sys-Mix_FreeChunk
 #sys-Mix_FreeMusic
 #sys-Mix_OpenAudio
@@ -25,11 +27,13 @@
 ::Mix_HaltChannel sys-Mix_HaltChannel sys4 drop ;
 ::Mix_PlayMusic sys-Mix_PlayMusic sys2 drop ;
 ::Mix_HaltMusic sys-Mix_HaltMusic sys1 drop ;
+::Mix_FadeOutMusic sys-Mix_fadeOutMusic sys1 drop ;
+::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
+
 ::Mix_FreeChunk sys-Mix_FreeChunk sys1 drop ;
 ::Mix_FreeMusic sys-Mix_FreeMusic sys1 drop ;
 ::Mix_OpenAudio sys-Mix_OpenAudio sys4 drop ;
 ::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
-::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
 
 ::SNDInit
 	48000 $08010 2 4096 Mix_OpenAudio ;
@@ -51,6 +55,8 @@
 	dup "Mix_HaltChannel" getproc 'sys-Mix_HaltChannel !
 	dup "Mix_PlayMusic" getproc 'sys-Mix_PlayMusic !
 	dup "Mix_HaltMusic" getproc 'sys-Mix_HaltMusic !
+	dup "Mix_FadeOutMusic" getproc 'sys-Mix_fadeOutMusic !
+	
 	dup "Mix_FreeChunk" getproc 'sys-Mix_FreeChunk !
 	dup "Mix_FreeMusic" getproc 'sys-Mix_FreeMusic !
 	dup "Mix_OpenAudio" getproc 'sys-Mix_OpenAudio !

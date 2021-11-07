@@ -54,6 +54,7 @@
 :emit
 	13 =? ( over c@ 10 =? ( 2drop ; ) inwbox 0 ca!+ a> b!+ 2drop ; )
 	10 =? ( inwbox 0 ca!+ a> b!+ drop ; )
+	$3b =? ( inwbox 0 ca!+ a> b!+ drop ; ) | ;
 	32 =? ( inwbox )
 	ca!+ ;
 	

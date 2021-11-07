@@ -1,5 +1,6 @@
 | SDL2_image.dll
 |
+^r3/win/sdl2.r3
 
 #sys-IMG_Init
 #sys-IMG_Load
@@ -9,7 +10,12 @@
 
 
 ::loadimg | "" -- texture
-	IMG_Load SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
+	IMG_Load 0? ( ; )
+	SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
+	
+::unloadimg | adr --
+	0? ( drop ; ) 
+	SDL_DestroyTexture ;	
 	
 |----- BOOT	
 :

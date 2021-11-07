@@ -172,7 +172,7 @@
 |		SDL_SetTextureColorMod )
 	drop
 	b@+ 'sdlbox 64box
-	SDLrenderer b@+ 
+	SDLrenderer b@+ 0? ( 2drop ; ) 
 	0 'sdlbox SDL_RenderCopy
 	;
 
@@ -193,7 +193,7 @@
 |		SDL_SetTextureColorMod )
 	drop
 	b@+ 'sdlbox 64box
-	SDLrenderer b@+ 
+	SDLrenderer b@+ 0? ( 2drop ; ) | 0 en imagen
 	b@ 'sdlbox 64boxratio
 	0 'sdlbox SDL_RenderCopy
 	;
@@ -426,8 +426,16 @@
 		@ "%d " .print
 		cr ; ] 'fxp p.mapv cr
 	cr
-
 	;
+	
+::debugtlmem
+	"" .println
+	'screen p.cnt "screen:%d " .println
+	'fx p.cnt "fx:%d " .println
+	'fxp p.cnt "fxp:%d " .println
+	timeline> timeline  - "tl:%h " .println
+	;
+	
 |*********DEBUG
 
 ::timeline.draw
@@ -438,10 +446,10 @@
 	;
 
 ::timeline.inimem
-	here 'timeline !
-	$fff 'here +!
 	512 'screen p.ini
 	512 'fx p.ini
 	512 'fxp p.ini
+	here 'timeline !
+	$1fff 'here +!
 	;
 
