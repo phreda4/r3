@@ -59,6 +59,15 @@
 	SDLRedraw 
 	SDLkey >esc< =? ( exit ) drop ;
 
+:filltri
+	$ffffff randmax SDLcolor 
+	sw randmax sh randmax 
+	sw randmax sh randmax 
+	sw randmax sh randmax 
+	SDLtriangle
+
+	SDLRedraw 
+	SDLkey >esc< =? ( exit ) drop ;
 	
 :	|====================== INICIO 
 	"r3sdl" 800 600 SDLinit
@@ -80,6 +89,9 @@
 	
 	0 SDLclear
 	'fillelipse SDLShow
+
+	0 SDLclear
+	'filltri SDLShow
 	
 	SDLquit 
 	;
