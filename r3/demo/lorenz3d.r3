@@ -11,7 +11,7 @@
 #xcam 0 #ycam 0 #zcam -100.0
 
 :fcircle | xc yc r --
-	dup 2swap SDLfellipse ;
+	dup 2swap SDLFillellipse ;
 	
 #xo #yo	
 :3dop project3d 'yo ! 'xo ! ;
