@@ -191,6 +191,15 @@
 		drop
 		) drop ;			
 		
+#clickb 0
+		
+::SDLClick | 'event --
+	SDLb 1? ( 'clickb ! drop ; ) drop
+	clickb 0? ( 2drop ; ) drop
+	ex 
+	0 'clickb !
+	;
+	
 ##.exit 0
 
 ::SDLshow | 'word --
