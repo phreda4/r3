@@ -17,7 +17,7 @@
 	swap points> !+ !+ 'points> ! ;
 
 :randpoints
-	500 ( 1? 1 -
+	5 ( 1? 1 -
 		2.0 randmax 1.0 -
 		2.0 randmax 1.0 -
 		p!+ 
@@ -46,41 +46,17 @@
 	ymax ymin 
 	2dup + 1 >> 'yc !	
 	- sh 16 << swap /. 'ys ! 
-	
-|	xmax xmin "%f %f " .print
-|	xc xs "scal:%f center:%f" .println
-|	ymax ymin "%f %f " .print
-|	yc ys "scal:%f center:%f" .println
 	;
 	
 | y = a*x + b	
-#a 0
-#b 0
+#a #b 
 
 :linefx | x -- y
-	a * b + ;
+	a *. b + ;
 
-#xm
-#ym
+#xm #ym | center point
 
-:getlr
-	points 
-	@+ 'xm !
-	@+ 'ym !
-	( points> <?
-		@+ xm + 1 >> 'xm !
-		@+ ym + 1 >> 'ym !
-		) drop 
-	ym xm /. 'a !
-	points 
-	@+ swap @+ rot 
-	a *. + 'b !
-	( points> <?
-		@+ swap @+ rot 
-		a *. + b + 1 >> 'b !
-		) drop ;
-
-:getlr
+:getlinealr
 	points 
 	@+ 'xm ! @+ 'ym !
 	( points> <?
@@ -93,10 +69,10 @@
 	ym xm /. 'a !
 	points 
 	@+ swap @+ rot | next x y
-	a *. + 'b !
+	a *. swap - 'b !
 	( points> <?
 		@+ swap @+ rot | next x y
-		a *. + 'b +! 
+		a *. swap - 'b +! 
 		) drop 
 	points> points - 4 >> | cnt		
 	b swap / 'b !
@@ -104,30 +80,31 @@
 	
 		
 |---------------------------------------
+| world to screen
 :xy2scr | x y -- xs ys
 	ys *. yc + 16 >> sh 1 >> + swap
 	xs *. xc + 16 >> sw 1 >> + swap ;
 	
+| screen to world	
 :scr2xy | x y -- x y 
 	sh 1 >> - 16 << yc - ys /. swap
 	sw 1 >> - 16 << xc - xs /. swap ;
 	
-	
 :drawpoints
 	$ffffff SDLcolor 
 	points ( points> <? >a
-		a@+ a@+  xy2scr SDLPoint	
+		a@+ a@+ xy2scr SDLPoint	
 		a> ) drop ;
 	
 :drawline
 	$ff0000 SDLColor
 	-0.5 dup linefx xy2scr
 	0.5 dup linefx xy2scr
-	SDLLine
-	;
+	SDLLine ;
 	
 :main
 	0 SDLclear
+	
 	drawpoints
 	
 	$ff00 SDLColor
@@ -138,25 +115,24 @@
 	SDLRedraw 
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( getlr )
-	<f2> =? ( xs 'xs +! ys 'ys +! )
-	<f3> =? ( xs 1 >> 'xs ! ys 1 >> 'ys ! )
+	<f1> =? ( getlinealr ) 					| recalculate
+	<f2> =? ( xs 'xs +! ys 'ys +! ) 		| double view
+	<f3> =? ( xs 1 >> 'xs ! ys 1 >> 'ys ! ) | half view
 	drop
-	[ SDLx SDLy scr2xy p!+ ; ] SDLClick
+	[ SDLx SDLy scr2xy p!+ getlinealr ; ] SDLClick | add point
 	;
 		
 :
 	"r3sdl" 800 600 SDLinit
 	
 	here dup 'points ! 'points> !
-	0 0 p!+
 	
-	|rerand 
-	|randpoints
-	-1.0 ( 1.0 <? dup dup p!+ 0.1 + ) drop
+	|rerand randpoints
 	
+	-1.0 ( 1.0 <? dup over neg p!+ 0.4 + ) drop
+
 	limitspoints
-	getlr
+	getlinealr
 	
 	'main SDLShow
 	SDLquit 
