@@ -1,8 +1,12 @@
 | Obj Model Loader
 | PHREDA 2017
 |-----------------------------------
+^r3/lib/sys.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
+
+^r3/win/SDL2image.r3
+
 
 #textobj | textparse
 #textmtl

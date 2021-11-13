@@ -2,8 +2,10 @@
 | - faltan indices negativos
 | PHREDA 2017,2021
 |-----------------------------------
-
+^r3/win/console.r3
 ^r3/win/SDL2.r3
+
+^r3/lib/3d.r3
 ^r3/util/loadobj.r3
 
 
@@ -20,9 +22,9 @@
 
 :dumptri
 	'tritt
-	@+ "%d " print @+ "%d " print @+ "%d " print @+ "%h " print cr
-	@+ "%d " print @+ "%d " print @+ "%d " print @+ "%h " print cr
-	@+ "%d " print @+ "%d " print @+ "%d " print @+ "%h " print cr
+	@+ "%d " .print @+ "%d " .print @+ "%d " .print @+ "%h " .print cr
+	@+ "%d " .print @+ "%d " .print @+ "%d " .print @+ "%h " .print cr
+	@+ "%d " .print @+ "%d " .print @+ "%d " .print @+ "%h " .print cr
 	drop ;
 
 :setcolor
@@ -34,6 +36,11 @@
 	drop
 	;
 
+:d>xy
+	dup 32 >> swap 32 << 32 >> ;
+:xy>d
+	$ffffffff and swap 32 << or ;
+	
 :svert
 	b@+ 1 - 3 << v2d + @+ d>xy swap a!+ a!+ | x y
 	@ a!+ | z
@@ -75,17 +82,9 @@
 | WIRE
 |-------------
 :drawtri | x y x y x y --
-	2dup op
-	2swap line
-	2swap line
-	line ;
-
-:drawtrif | x y x y x y --
-	2dup op
-	2swap pline
-	2swap pline
-	pline
-	poli ;
+	>r >r 2over 2over SDLLine
+	r> r> 2swap 2over SDLLine
+	SDLLine ;
 
 ::objwire
 	mark
@@ -111,7 +110,7 @@
 #xr #yr
 
 :freelook
-	xypen
+	SDLx SDLy
 	sh 1 >> - 7 << swap
 	sw 1 >> - neg 7 << swap
 	neg
@@ -122,35 +121,23 @@
 
 :main
 	0 SDLClear
-	gui
-	cr sp
-	red 'exit " X " btnt sp
 
-	over ":r%d " white print
-	"Load Obj" green print cr cr
-	nver " %d vertices" print cr
-   	nface " %d caras" print cr
-
-|	facel dumpd
-|		dumpcolor
 	1.0 3dmode
 	freelook
 	xcam ycam zcam mtrans
+	
 	$ffffff SDLColor
 	objwire
-|		objsolid
-
+	SDLRedraw
+	
 	SDLkey
 	<up> =? ( 1.0 'zcam +! )
 	<dn> =? ( -1.0 'zcam +! )
 	<f1> =? ( objminmax objcentra )
 	>esc< =? ( exit )
-	drop
-
-	acursor ;
+	drop ;
 
 :memory
-	0 'paper !
 	mark
 	"media/obj/mario/mario.obj"
 	loadobj 'model !
@@ -158,4 +145,8 @@
 	objcentra
 	;
 
-: memory 3 'main SDLshow ;
+: memory 3 
+	"r3sdl" 800 600 SDLinit
+	'main SDLshow 
+	SDLquit
+	;

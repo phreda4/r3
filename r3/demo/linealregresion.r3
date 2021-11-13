@@ -124,11 +124,9 @@
 		
 :
 	"r3sdl" 800 600 SDLinit
-	
 	here dup 'points ! 'points> !
-	
+
 	|rerand randpoints
-	
 	-1.0 ( 1.0 <? dup over neg p!+ 0.4 + ) drop
 
 	limitspoints
