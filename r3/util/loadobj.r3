@@ -74,8 +74,11 @@
 
 :searchcol | str -- nro
 	0 ( ncolor <?
+		|dup "%d." .print
 		dup 4 << colorl + @ 0? ( 3drop -1 ; )
-		pick2 =pre 1? ( 2drop nip ; )
+		pick2
+		|2dup "%w %w" .println
+		=pre 1? ( 2drop nip ; )
 		2drop 1 + ) 2drop -1 ;
 
 :uface
@@ -96,7 +99,7 @@
 :4to
 	dup c@ $ff and 13 <=? ( drop ; ) drop
 	uface
-	nv b!+ nt 16 << nn or b!+
+	nv b!+ nt 32 << nn or b!+
 	b> 72 - @+ b!+ @+ b!+		| vert 0
 	16 + @+ b!+ @+ b!+           | vert 2
 	colornow b!+ ;
@@ -106,11 +109,11 @@
 	facel> >b
 	| solo tres
 	uface
-	nv b!+ nt 16 << nn or b!+
+	nv b!+ nt 32 << nn or b!+
 	uface
-	nv b!+ nt 16 << nn or b!+
+	nv b!+ nt 32 << nn or b!+
    	uface
-	nv b!+ nt 16 << nn or b!+
+	nv b!+ nt 32 << nn or b!+
 	colornow b!+
 	| manejar aca si hay cuatro
 |	4to
@@ -128,7 +131,9 @@
 
 :usmt	| usemtl [material name]
 	6 + trim
-	dup "%l" sprint searchcol 'colornow !
+	dup "%l" sprint 
+|	dup .println
+	searchcol 'colornow !
 	;
 
 :parseline
@@ -166,10 +171,13 @@
 	;
 
 :texmap
-	7 + trim dup colora 4 + !
+	7 + trim dup colora 8 + !
 |	existe?
 	dup 'path "%s%l" sprint
-	loadimg colora 24 + !
+	| loadimg  |** no carga imagen
+	|dup .println
+	
+	colora 24 + !
 	;
 
 :colorp
@@ -266,15 +274,19 @@
 	here
 	dup dup 'verl ! 'verl> !
 	nver 0? ( nip ; )
-	4 << +
+	5 << +
 	dup dup 'texl ! 'texl> !
-	ntex 24 * +
+	ntex 
+	24 * +
 	dup dup 'facel ! 'facel> ! | falta contar 4 vertices
-	nface 7 3 << * +
+	nface 
+	7 3 << * +
     dup dup 'norml ! 'norml> !
-	nnorm 24 * +
+	nnorm
+	24 * +
     dup dup 'paral ! 'paral> !
-	npara 24 * +
+	npara
+	24 * +
 	dup dup 'colorl ! 'colorl> !
 	ncolor 1 + 5 << +
 	'here !

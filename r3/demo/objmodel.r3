@@ -36,9 +36,9 @@
 	drop
 	;
 
-:d>xy
+:d>xy | d -- x y
 	dup 32 >> swap 32 << 32 >> ;
-:xy>d
+:xy>d | x y --
 	$ffffffff and swap 32 << or ;
 	
 :svert
@@ -92,7 +92,7 @@
 	verl >b
 	nver ( 1? 1 -
 		b@+ b@+ b@+ 8 b+ project3d
-		xy>d , ) drop
+		xy>d ,q ) drop
 	facel >b
 	nface ( 1? 1 -
 		b@+ 8 b+ 1 - 3 << v2d + @ d>xy
@@ -103,6 +103,7 @@
 		) drop
 	empty
 	;
+
 
 | MAIN
 |-----------------------------------
@@ -143,6 +144,7 @@
 	loadobj 'model !
 	objminmax
 	objcentra
+	
 	;
 
 : memory 3 
