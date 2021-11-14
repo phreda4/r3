@@ -27,9 +27,11 @@
 #ymin #ymax
 
 :limitspoints
+	-1.0 dup 'xmin ! 'ymin !
+	1.0 dup 'xmax ! 'ymax !	
 	points 
-	@+ dup 'xmin ! 'xmax !
-	@+ dup 'ymin ! 'ymax !
+|	@+ dup 'xmin ! 'xmax !
+|	@+ dup 'ymin ! 'ymax !
 	( points> <?
 		@+ 
 		xmin <? ( dup 'xmin ! )
@@ -54,31 +56,29 @@
 :linefx | x -- y
 	a *. b + ;
 
-#xm #ym | center point
+#xm | sum x
+#ym | sum y
+#xq | sum x*x
+#xy | sum x*y
 
 :getlinealr
 	points 
-	@+ 'xm ! @+ 'ym !
+	@+ dup 'xm ! dup dup *. 'xq !
+	swap 
+	@+ dup 'ym ! rot *. 'xy !
 	( points> <?
-		@+ 'xm +! @+ 'ym +!
+		@+ dup 'xm +! dup dup *. 'xq +!
+		swap 
+		@+ dup 'ym +! rot *. 'xy +!		
 		) drop 
-	points> points - 4 >> | cnt
-	xm over / 'xm !
-	ym swap / 'ym ! 
-	
-	ym xm /. 'a !
-	points 
-	@+ swap @+ rot | next x y
-	a *. swap - 'b !
-	( points> <?
-		@+ swap @+ rot | next x y
-		a *. swap - 'b +! 
-		) drop 
-	points> points - 4 >> | cnt		
-	b swap / 'b !
+	points> points - 4 >> | cnt			
+	0? ( drop ; )
+	xq over * xm dup *. - | n d
+	0? ( 2drop ; ) 
+	swap xy * xm ym *. - over /. 'a !
+	ym xq *. xm xy *. - swap /. 'b !
 	;
 	
-		
 |---------------------------------------
 | world to screen
 :xy2scr | x y -- xs ys
@@ -106,10 +106,6 @@
 	0 SDLclear
 	
 	drawpoints
-	
-	$ff00 SDLColor
-	4 4 xm ym xy2scr SDLFillEllipse
-	
 	drawline
 	
 	SDLRedraw 
@@ -125,9 +121,6 @@
 :
 	"r3sdl" 800 600 SDLinit
 	here dup 'points ! 'points> !
-
-	|rerand randpoints
-	-1.0 ( 1.0 <? dup over neg p!+ 0.4 + ) drop
 
 	limitspoints
 	getlinealr
