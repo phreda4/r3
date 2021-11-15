@@ -10,6 +10,9 @@ This make posible utilice any Library, test with SDL2, SDLmixer, SDLTTF and FFMP
 
 This version start in WIN enviroment, I try to run in LINUX and Raspberry PI 4 commming next, I not have mac but the R3d4 is working on this system, I hope this working too.
 
+The vm used here is
+https://github.com/phreda4/r3evm
+
 ## How the language works
 
 A WORD is defined as a sequence of letters separated by spaces, there are three exceptions to improve the expressiveness of the language that are seen later.
@@ -348,6 +351,12 @@ This feature can convert a recursion into a loop with no callback cost, the foll
 	1 -
 	loopback ;
 ```
+
+## Youtube Videos
+
+https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
+
+
 
 
 
