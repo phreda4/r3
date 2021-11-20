@@ -10,10 +10,7 @@
 ^./r3vm.r3
 
 ^r3/lib/print.r3
-^r3/lib/btn.r3
 ^r3/lib/input.r3
-^r3/lib/fontm.r3
-^media/fntm/droidsans13.fnt
 
 #name * 1024
 #namenow * 256
@@ -892,9 +889,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	savemap | save info in file for debug
 
 	vm2run
-
-	'fontdroidsans13 fontm
-|	fonti
 
 |	mode!view 0 +word
 
