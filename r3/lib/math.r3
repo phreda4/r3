@@ -5,8 +5,17 @@
 | resultado = [0..1.0) [0..$ffff]
 |---------------------------------
 
-|------- punto fijo 16.16
-::*.u	| a b -- c ; neg not 0
+|---- basic size op
+
+::cell+	8 + ;
+::ncell+ 3 << + ;
+::1+ 1 + ;
+::1- 1 - ;
+::2/ 1 >> ;
+::2* 1 << ;
+
+|---- fixed point 48.16
+::*.u	| a b -- c ; all positive
 	16 *>> ;
 
 ::*.	| a b -- c
@@ -14,6 +23,9 @@
 
 ::/.	| a b -- c
 	16 <</ ;
+	
+::2/. 	| shift and adjust
+	1 >> dup 63 >> - ;
 
 ::ceil	| a -- a
 	$ffff + 16 >> ;
@@ -21,16 +33,16 @@
 ::sign | v -- v s
 	dup 63 >> 1 or ;
 
-:sinp
+:sinp 
 	$7fff and $4000 -
    	dup dup 16 *>>
 	dup 4876210 16 *>>
 	2699161 - 16 *>>
 	411769 + 16 *>> ;
 
-::cos | v -- r
+::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
-::sin | v -- r
+::sin | bangle -- r
 	$4000 + $8000 nand? ( sinp ; ) sinp neg ;
 
 ::tan | v -- f
@@ -150,25 +162,8 @@
 :xp
 	swap -? ( $b1721 + swap 16 >> ; ) swap ;
 
-::exp. | x --  r	; sin *.
-	$10000	| x y
-	xp
-	ex1 ex2 ex3 ex4 ex5 ex6
-	ex7 ex8 ex9 exa exb
-	swap
-	$100 and? ( swap dup 8 >> + swap )
-	$80 and? ( swap dup 9 >> + swap )
-	$40 and? ( swap dup 10 >> + swap )
-	$20 and? ( swap dup 11 >> + swap )
-	$10 and? ( swap dup 12 >> + swap )
-	$8 and? ( swap dup 13 >> + swap )
-	$4 and? ( swap dup 14 >> + swap )
-	$2 and? ( swap dup 15 >> + swap )
-	$1 and? ( swap dup 16 >> + swap )
-	drop ;
-
 ::exp. | x --  r
-	$10000	| x y
+	1.0 | x y
 	xp
 	ex1 ex2 ex3 ex4 ex5 ex6
 	ex7 ex8 ex9 exa exb
@@ -197,11 +192,11 @@
 ::root. | base root -- r
 	swap ln. swap /. exp. ;
 
-::bswap
+
+::bswap32 | v -- vs ; 32 bits
 	dup 8 >> $ff00ff and
 	swap 8 << $ff00ff00 and or
-	dup 16 >>>
-	swap 16 << or ;
+	dup 16 >>> swap 16 << or ;
 
 | next pow2
 ::nextpow2 | v -- p2

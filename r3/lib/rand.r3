@@ -11,7 +11,7 @@
   'seed8 !
   $ff and ;
 
-##seed 495090497
+##seed $a3b195354a39b70d
 
 ::rand | -- rand
   seed $da942042e4dd58b5 * 1 + dup 'seed ! ;
