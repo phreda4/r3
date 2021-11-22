@@ -221,6 +221,19 @@
 		4 'y +!
 		0.01 + ) drop ;
 	
+:printmap
+	0 ( 1.0 <?
+		0  ( 1.0 <?
+			2dup 'vec !+ !
+
+			'vec setin
+			fowardpp
+			getout @ "%f " .print
+			
+			0.1 + ) drop
+		cr
+		0.1 + ) drop ;	
+		
 |--------------------------------------	main
 :main
 	0 SDLclear
@@ -245,7 +258,9 @@
 	.cls
 	printnn	
 	1.0 1.0 'vec !+ ! 'vec setin fowardpp printnn
+	printmap
 	0.0 1.0 'vec !+ ! 'vec setin fowardpp printnn
+	printmap
 
 	|-3.0 ( 3.0 <? dup fdact over "%f %f" .println 0.4 + ) drop
 	

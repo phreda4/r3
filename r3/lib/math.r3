@@ -6,6 +6,7 @@
 |---------------------------------
 
 |---- basic size op
+##cell 8 	| cell size
 
 ::cell+	8 + ;
 ::ncell+ 3 << + ;
