@@ -26,6 +26,9 @@
 #deltaOutput
 #deltaHidden
 
+#training
+#ntraining 0
+
 :nnmem | memory map
 	here
 
@@ -45,6 +48,7 @@
 	dup 'deltaOutput ! numOutputs ncell+
 	dup 'deltaHidden ! numHiddenNodes ncell+
 	
+	dup 'training !
 	'here !
 	;
     
@@ -107,7 +111,6 @@
 		- *. | delta num soutput*result-output*lr
 		rot !+ swap				
 		) 2drop
-
 	outputWeights >b
 	outputLayerBias
 	deltaOutput
@@ -131,7 +134,6 @@
 			) drop
 		lr *. rot !+ swap
 		) 2drop
-	
 	hiddenWeights >b
 	hiddenLayerBias
 	deltaHidden 
@@ -145,19 +147,68 @@
 		r> ) 3drop
 	;
 	
-:trainstep |
-
+:nnerror | -- n
+	outputLayer >b
+	resultLayer >a
+	0.0
+	numOutputs ( 1? 1 -					| delta num
+		b@+ a@+ - abs 
+		rot + swap
+		) drop ;
+	
+:trainstep | adr --
+	>a
+	inputLayer >b
+	numInputs ( 1? 1 - a@+ b!+ ) drop
+	resultLayer >b
+	numOutputs ( 1? 1 - a@+ b!+ ) drop
 	forwardpp
 	backwardpp
 	;
 	
 
-|--------------------------------------	draw nn
-#x #y
-
+|--------------------------------------	color
 :neuroncolor | ; 0..1 -> 0..$ff
 	8 >> $ff clamp0max dup 8 << over 16 << or or ;
 	
+:linkcolor | ; -1..0 -> red  0..1 -> green
+	-? ( 1.0 swap - $ff 16 *>> 16 << ; )
+	$ff 16 *>> 8 << ;	
+	
+|--------------------------------------	train set
+:cleartrain
+	0 'ntraining ! ;
+
+:atrain | n -- adr
+	numInputs numOutputs + *
+	training swap ncell+ ;
+	
+:addtrain | -- adr
+	ntraining atrain
+	1 'ntraining +! ;
+
+:randtrainstep
+	ntraining randmax atrain trainstep ;
+	
+:tomap | x y -- xm ym
+	swap 400 16 *>> 200 +
+	swap 400 16 *>>
+	;
+	
+:drawtrain
+	training >a
+	ntraining ( 1? 1 -
+		a> numInputs ncell+ @ neuroncolor	| result
+		SDLColor
+		8 dup a@+ a@+ 
+		tomap SDLFillellipse
+	
+		numInputs 2 - numOutputs + cell * a+
+		) drop ;
+		
+|--------------------------------------	draw nn
+#x #y
+
 :drawneuron	| 
 	neuroncolor SDLColor
 	10 dup x y SDLFillellipse
@@ -167,7 +218,34 @@
 	( swap 1? 1 - swap
 		@+ drawneuron 
 		40 'y +! ) 2drop ;
-:draww | 	
+		
+:drawlink | n2 n1 w -- n2 n1
+	linkcolor SDLColor
+	x
+	over 40 * y + 
+	x 40 +
+	pick4 40 * y +
+	SDLLine
+	;
+	
+:draww 
+	30 'x !
+	30 'y !
+	hiddenWeights >a
+	0 ( numHiddenNodes <? 
+		0 ( numInputs <?
+			a@+ drawlink
+			1 + ) drop
+		1 + ) drop
+	80 'x !
+	30 'y !
+	outputWeights >a
+	0 ( numOutputs <?
+		0 ( numHiddenNodes <? 
+			a@+ drawlink
+			1 + ) drop
+		1 + ) drop	;	
+	
 :drawnn
 	30 'x !
 	30 'y !
@@ -181,12 +259,11 @@
 	;
 
 |--------------------------------------	draw map
-
 :dbox | color --
 	SDLcolor x y 4 dup SDLFillRect ;
 	
 :drawmap
-	10 'y !
+	0 'y !
 	0 ( 1.0 <?
 		200 'x !
 		0  ( 1.0 <?
@@ -203,26 +280,45 @@
 		0.01 + ) drop ;
 		
 |----------------------------------------- MAIN		
+#entrenando 0
+
 :main
 	0 SDLclear
 	
 	drawmap	
-	drawnn
+	drawtrain	
+
+	draww 
+	drawnn	
 	
 	SDLRedraw 
-	
+
+	entrenando 1? ( 
+		10 ( 1? 1 - randtrainstep ) drop 
+		nnerror "%f" .println
+		) drop
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( trainstep )
+	<f1> =? ( randtrainstep )
 	<f2> =? ( nnini )
+	<f3> =? ( entrenando 1 xor 'entrenando ! ) 
+	
 	drop	
+	;
+
+:xortrain
+	cleartrain
+	addtrain >a 0.0 a!+ 0.0 a!+ 0.0 a!+	
+	addtrain >a 0.0 a!+ 1.0 a!+ 1.0 a!+	
+	addtrain >a 1.0 a!+ 0.0 a!+ 1.0 a!+	
+	addtrain >a 1.0 a!+ 1.0 a!+ 0.0 a!+		
 	;
 	
 :
 	nnmem
 	nnini
+	xortrain
 	
-	"%d " .println
 	"r3sdl" 800 600 SDLinit
 	'main SDLShow
 	SDLquit 
