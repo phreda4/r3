@@ -40,36 +40,3 @@
 	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
 	dup rot swap SDL_CreateTextureFromSurface | sd surface texture
 	swap SDL_FreeSurface ;
-
-
-|-----------------------------
-
-#pfont 
-#wp #hp
-#op 0 0
-#dp 0 0
-
-::bmfont | w h "" --
-	loadimg 'pfont !
-	2dup 32 << or dup
-	'dp 8 + ! 'op 8 + !
-	'hp ! 'wp ! 
-	;
-	
-::bcolor	| rrggbb --
-	pfont swap
-	dup 16 >> $ff and over 8 >> $ff and rot $ff and
-	SDL_SetTextureColorMod
-	;
-	
-::bemit | ascii --
-	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
-	SDLrenderer pfont 'op 'dp SDL_RenderCopy
-	wp 'dp d+!
-	;
-	
-::bmprint | "" --
-	( c@+ 1? bemit ) 2drop ;
-	
-::bmat | x y --
-	32 << or 'dp ! ;	

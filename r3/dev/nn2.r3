@@ -6,21 +6,23 @@
 ^r3/lib/mem.r3
 ^r3/lib/rand.r3
 
+^r3/util/bfont.r3
+
 #numInputs 2
-#numHiddenNodes 3
+#numHidden 3
 #numOutputs 1
     
 #lr 0.1
     
 #inputLayer 		| [numinputs]	
 	
-#hiddenLayer		|[numHiddenNodes];
-#hiddenLayerBias	|[numHiddenNodes];
-#hiddenWeights		|[numInputs][numHiddenNodes];
+#hiddenLayer		|[numHidden];
+#hiddenLayerBias	|[numHidden];
+#hiddenWeights		|[numInputs][numHidden];
 	
 #outputLayer		|[numOutputs];
 #outputLayerBias	|[numOutputs];
-#outputWeights		|[numHiddenNodes][numOutputs];
+#outputWeights		|[numHidden][numOutputs];
 
 #resultLayer		|[numOutputs];
 #deltaOutput
@@ -34,54 +36,61 @@
 
 	dup 'inputLayer ! numInputs ncell+ 
 	
-	dup 'hiddenLayer ! numHiddenNodes ncell+
-	dup 'hiddenLayerBias ! numHiddenNodes ncell+
+	dup 'hiddenLayer ! numHidden ncell+
+	dup 'hiddenLayerBias ! numHidden ncell+
 	
 	dup 'outputLayer ! numOutputs ncell+
 	dup 'outputLayerBias ! numOutputs ncell+
 	
 	dup 'resultLayer ! numOutputs ncell+
 	
-	dup 'hiddenWeights ! numInputs numHiddenNodes * ncell+
-	dup 'outputWeights ! numHiddenNodes numOutputs * ncell+
+	dup 'hiddenWeights ! numInputs numHidden * ncell+
+	dup 'outputWeights ! numHidden numOutputs * ncell+
 
 	dup 'deltaOutput ! numOutputs ncell+
-	dup 'deltaHidden ! numHiddenNodes ncell+
+	dup 'deltaHidden ! numHidden ncell+
 	
 	dup 'training !
 	'here !
 	;
     
 :r-1.1	2.0 randmax 1.0 - ;
-	
+:r0.1	1.0 randmax ;	
+
 :iniw | cnt mem --
 	>a ( 1? 1 - r-1.1 a!+ ) drop ;
 
 :inib | cnt mem --
 	>a ( 1? 1 - 1.0 a!+ ) drop ;
+
+:iniz | cnt mem --
+	>a ( 1? 1 - 0 a!+ ) drop ;
 	
 :nnini |
 	rerand
-	numInputs numHiddenNodes * hiddenWeights iniw
-	numHiddenNodes numOutputs * outputWeights iniw
-	numHiddenNodes hiddenLayerBias inib
-	numOutputs outputLayerBias inib
+	numInputs numHidden * hiddenWeights iniw
+	numHidden numOutputs * outputWeights iniw
+	numHidden hiddenLayerBias iniw
+	numOutputs outputLayerBias iniw
 	;
 
+	
 |-----------	
 :sigmoid | v -- v ; activate function
-	neg exp. 1.0 + 1.0 swap /. ; 			| 1 / (1 + exp(-x)); ; 0..1
-|	neg 1 << exp. 1.0 + 2.0 swap /. 1.0 - ; | 2/(1+exp(-2*x)) -1 ; -1..1
+|	neg exp. 1.0 + 1.0 swap /. ; 			| 1 / (1 + exp(-x)); ; 0..1
+	neg 1 << exp. 1.0 + 2.0 swap /. 1.0 - ; | 2/(1+exp(-2*x)) -1 ; -1..1
+	;
 	
 :dsigmoid | v -- v ; derivate activate function
-	1.0 over - *. ; 		| x*(1-x);	; 0..1
-|	sigmoid dup *. 1.0 swap - ; 	| 1-(f(x)^2) ; -1..1	
+|	1.0 over - *. ; 		| x*(1-x);	; 0..1
+	sigmoid dup *. 1.0 swap - ; 	| 1-(f(x)^2) ; -1..1	
 
+	
 :forwardpp
 	hiddenWeights >a
 	hiddenLayer
 	hiddenLayerBias
-	numHiddenNodes ( 1? 1 - >r
+	numHidden ( 1? 1 - >r
 		@+ 
 		inputLayer >b
 		numInputs ( 1? 1 - 
@@ -96,12 +105,13 @@
 	numOutputs ( 1? 1 - >r
 		@+
 		hiddenLayer >b
-		numHiddenNodes ( 1? 1 -
+		numHidden ( 1? 1 -
 			a@+ b@+ *. rot +
 			swap ) drop
 		sigmoid rot !+ swap
 		r> ) 3drop	;
-	
+
+
 :backwardpp
 	outputLayer >b
 	resultLayer >a
@@ -118,7 +128,7 @@
 		@+ lr *. dup >r 			| output delta @delta r:@delta
 		pick2 +! swap cell+ swap 	| output delta
 		r> hiddenLayer >a			| output delta @delta
-		numHiddenNodes ( 1? 1 -		| output delta @delta num
+		numHidden ( 1? 1 -		| output delta @delta num
 			over a@+ *. b@ + b!+	| output delta @delta num 
 			) 2drop
 		r> ) 3drop
@@ -126,7 +136,7 @@
 	
 	outputWeights >a	
 	deltaHidden 
-	numHiddenNodes ( 1? 1 -
+	numHidden ( 1? 1 -
 		0.0
 		deltaOutput >b
 		numOutputs ( 1? 1 - 
@@ -137,7 +147,7 @@
 	hiddenWeights >b
 	hiddenLayerBias
 	deltaHidden 
-	numHiddenNodes ( 1? 1 - >r		| bias delta 
+	numHidden ( 1? 1 - >r		| bias delta 
 		@+ lr *. dup pick3 +! 			| bias delta @delta
 		rot cell+ rot rot
 		inputLayer >a
@@ -166,7 +176,10 @@
 	backwardpp
 	;
 	
-
+#test 1.0 1.0 1.0	
+:testrain
+	'test trainstep ;
+	
 |--------------------------------------	color
 :neuroncolor | ; 0..1 -> 0..$ff
 	8 >> $ff clamp0max dup 8 << over 16 << or or ;
@@ -232,7 +245,7 @@
 	30 'x !
 	30 'y !
 	hiddenWeights >a
-	0 ( numHiddenNodes <? 
+	0 ( numHidden <? 
 		0 ( numInputs <?
 			a@+ drawlink
 			1 + ) drop
@@ -241,7 +254,7 @@
 	30 'y !
 	outputWeights >a
 	0 ( numOutputs <?
-		0 ( numHiddenNodes <? 
+		0 ( numHidden <? 
 			a@+ drawlink
 			1 + ) drop
 		1 + ) drop	;	
@@ -252,11 +265,40 @@
 	numInputs inputLayer drawlayer
 	80 'x !
 	30 'y !
-	numHiddenNodes hiddenLayer drawlayer
+	numHidden hiddenLayer drawlayer
 	120 'x !
 	30 'y !
 	numOutputs outputLayer drawlayer
 	;
+
+:printnn
+	"input:" .print
+	inputLayer 
+	numInputs ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
+	cr
+	"hidden:" .print	
+	hiddenLayer
+	numHidden ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
+	cr
+	"output:" .print	
+	outputLayer
+	numOutputs  ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
+	cr cr
+	hiddenWeights 
+	0 ( numHidden <? 
+		0 ( numInputs <?
+			rot @+ "%f " .print rot rot
+			1 + ) drop
+		cr
+		1 + ) 2drop
+	cr		
+	outputWeights 
+	0 ( numOutputs <?
+		0 ( numHidden <? 
+			rot @+ "%f " .print rot rot		
+			1 + ) drop
+		cr
+		1 + ) 2drop	;		
 
 |--------------------------------------	draw map
 :dbox | color --
@@ -271,7 +313,7 @@
 			2dup inputLayer !+ !
 			forwardpp
 			outputLayer @
-			|neuroncolor 
+			neuroncolor 
 			dbox
 
 			4 'x +!
@@ -281,7 +323,18 @@
 		
 |----------------------------------------- MAIN		
 #entrenando 0
+#value 0
 
+:getval
+	inputLayer >a
+	SDLx 200 - 1.0 400 */ a!+
+	SDLy 1.0 400 */ a!+
+"-----------------------------" .println	
+	forwardpp
+	outputLayer @ 'value !
+	printnn
+	;
+	
 :main
 	0 SDLclear
 	
@@ -290,20 +343,24 @@
 
 	draww 
 	drawnn	
-	
+	$ff00 bcolor
+	0 0 bmat
+	nnerror "Error: %f" sprint bmprint
+
 	SDLRedraw 
 
 	entrenando 1? ( 
 		10 ( 1? 1 - randtrainstep ) drop 
-		nnerror "%f" .println
 		) drop
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( randtrainstep )
 	<f2> =? ( nnini )
 	<f3> =? ( entrenando 1 xor 'entrenando ! ) 
-	
+	<f4> =? ( printnn )
+	<f5> =? ( testrain )
 	drop	
+	'getval SDLClick 
 	;
 
 :xortrain
@@ -320,6 +377,8 @@
 	xortrain
 	
 	"r3sdl" 800 600 SDLinit
+	bfont1
+	
 	'main SDLShow
 	SDLquit 
 	;	

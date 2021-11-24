@@ -11,6 +11,7 @@
 ^r3/lib/mem.r3
 ^r3/util/timeline.r3
 ^r3/util/fontutil.r3
+^r3/util/bfont.r3
 
 #imagen | an imge
 #letras
@@ -129,8 +130,8 @@
 	"r3sdl" 640 480 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
 	
-	|16 24 "media/img/font16x24.png" bmfont
-	8 16 "media/img/VGA8x16.png" bmfont
+	bfont2
+	
 	ttf_init
 	
 	loadres
