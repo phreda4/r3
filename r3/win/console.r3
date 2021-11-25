@@ -117,7 +117,8 @@
 
 ::.getconsoleinfo 
 	stdout 'consoleinfo GetConsoleScreenBufferInfo drop 
-	'consoleinfo 10 + @
+	'consoleinfo 
+	10 + @
 	dup 32 >> $ffff and over $ffff and - 'cols !
 	dup 48 >> $ffff and swap 16 >> $ffff and - 'rows !
 	;
