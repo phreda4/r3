@@ -25,6 +25,8 @@
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
 #sys-SDL_QueryTexture
+#sys-SDL_LockSurface
+#sys-SDL_UnlockSurface
 #sys-SDL_FreeSurface
 #sys-SDL_LockTexture
 #sys-SDL_UnlockTexture
@@ -34,6 +36,7 @@
 #sys-SDL_RenderDrawLine
 #sys-SDL_RenderDrawRect
 #sys-SDL_RenderFillRect
+#sys-SDL_RenderReadPixels
 
 #sys-SDL_Delay
 #sys-SDL_PollEvent	
@@ -73,6 +76,8 @@
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
+::SDL_LockSurface sys-SDL_LockSurface sys1 drop ;
+::SDL_UnlockSurface sys-SDL_UnlockSurface sys1 drop ;
 ::SDL_FreeSurface sys-SDL_FreeSurface sys1 drop ;
 ::SDL_LockTexture sys-SDL_LockTexture sys4 drop ;
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
@@ -83,6 +88,7 @@
 ::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys5 drop ;
 ::SDL_RenderDrawRect sys-SDL_RenderDrawRect sys2 drop ;
 ::SDL_RenderFillRect sys-SDL_RenderFillRect sys2 drop ;
+::SDL_RenderReadPixels sys-SDL_RenderReadPixels sys5 drop ;
 
 ::SDL_Delay sys-SDL_Delay sys1 drop ;
 ::SDL_PollEvent sys-SDL_PollEvent sys1 ; | &evt -- ok
@@ -149,7 +155,7 @@
 | SDL_WINDOW_UTILITY = 0x00020000,
 | SDL_WINDOW_TOOLTIP = 0x00040000,
 | SDL_WINDOW_POPUP_MENU = 0x00080000,
- | | SDL_WINDOW_VULKAN = 0x10000000
+| SDL_WINDOW_VULKAN = 0x10000000
   
 ::SDLinitGL | "titulo" w h --
 	'sh ! 'sw !
@@ -390,6 +396,8 @@
 	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
 	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
 	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
+	dup "SDL_LockSurface" getproc 'sys-SDL_LockSurface !
+	dup "SDL_UnlockSurface" getproc 'sys-SDL_UnlockSurface !
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
 	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
@@ -399,7 +407,7 @@
 	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
 	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !
 	dup "SDL_RenderFillRect" getproc 'sys-SDL_RenderFillRect !
-
+	dup "SDL_RenderReadPixels" getproc 'sys-SDL_RenderReadPixels !
 	dup "SDL_Delay" getproc 'sys-SDL_Delay !
 	dup "SDL_PollEvent" getproc 'sys-SDL_PollEvent !
 	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !

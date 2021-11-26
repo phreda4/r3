@@ -13,21 +13,22 @@
 #index * 256 | 64 rgba values
 
 :chash! | v px --
-	dup 16 >> xor dup 8 >> xor $3f and 2 << 'index + !	;
+	dup 16 >> xor dup 8 >> xor $3f and 
+	dup "%h!" .print 2 << 'index + d! ;
 	
 :chash@ | px -- v
-	dup 16 >> xor dup 8 >> xor $3f and 2 << 'index + @	;
+	dup 16 >> xor dup 8 >> xor $3f and 2 << 'index + d@	$ffffffff and ;
 	
 :chashclear
-	'index >a 32 ( 1? 1 - 0 a!+ ) drop ;
+	'index 0 32 fill ;
 	
 #px
 
 :runlen | cnt -- 
-	( 1? 1 - px a!+ ) drop ;
+	( 1? 1 - px da!+ ) drop ;
 
 :img!+ | px --
-	dup chash! b!+ ;
+	dup chash! db!+ ;
 
 :diff8 | val --
 	dup 4 >> $3 and 1 - 'px c+!
@@ -76,7 +77,7 @@
 	px img!+
 	;
 
-#qmagic "qoif"
+#qmagic $716f6966 | fioq
 #qw #qh
 #qsize
 
@@ -95,12 +96,15 @@
 #run 
 #pxprev	| for encode
 	
-:encoderun
+:encoderun | run --
+	|dup "encode:%d" .println
 	33 <? ( 1 - $40 or ca!+ 0 'run ! ; )
 	33 - dup 8 >> $60 or ca!+ ca!+ 
+	0 'run !
 	;
 	
-:runlen | run --
+:runlen | --
+	run 0? ( drop ; ) 
 	$2020 =? ( encoderun ; )
 	over 0? ( drop encoderun ; ) drop
 	px pxprev <>? ( drop encoderun ; ) drop 
@@ -110,16 +114,19 @@
 #vr #vg #vb #va
 
 :getdiff
-	px pxprev
+	px dup dup chash! pxprev
 	over $ff and over $ff and - 'vr !
 	over 8 >> $ff and over 8 >> $ff and - 'vg !
 	over 16 >> $ff and over 16 >> $ff and - 'vb !
 	swap 24 >> $ff and swap 24 >> $ff and - 'va !
+	px pxprev "%h %h" .println
+	vr vg vb va "%d %d %d %d " .println
 	vr -16 17 between -? ( ; ) drop
 	vg -16 17 between -? ( ; ) drop
 	vb -16 17 between -? ( ; ) drop
 	va -16 17 between -? ( ; ) drop
 	
+	"fix" .print
 	va 6 <<
 	vr 1 + 4 << or
 	vg 1 + 2 << or
@@ -142,37 +149,117 @@
 	0 ;
 	
 :encode | 
-	px pxprev =? ( 1 'run +! ) drop
-	run 1? ( runlen ; ) drop
-	px chash@ px =? ( ca!+ ; ) drop | INDEX=0
-	getdiff 1? ( drop ; ) drop
-	0 
-	vr 1? ( swap 8 or swap )
-	vg 1? ( swap 4 or swap )
-	vb 1? ( swap 2 or swap )
-	va 1? ( swap 1 or swap )
-	$f0 or ca!+
+	runlen
+	px pxprev =? ( drop ; )  
+	chash@ px =? ( ca!+ ; ) drop | INDEX=0
+	getdiff 0? ( drop ; ) drop
+	$f0 
+	vr 1? ( swap 8 or swap ) drop
+	vg 1? ( swap 4 or swap ) drop
+	vb 1? ( swap 2 or swap ) drop
+	va 1? ( swap 1 or swap ) drop
+	ca!+
 	vr 1? ( px ca!+ ) drop
 	vg 1? ( px 8 >> ca!+ ) drop
 	vb 1? ( px 16 >> ca!+ ) drop
 	va 1? ( px 24 >> ca!+ ) drop
 	;
 	
-::qoi_ecode | bitmap x y data -- size
+::qoi_ecode | bitmap w h data -- size
 	>a 'qh ! 'qw !
 	qmagic da!+
-	qw qh 16 << da!+ 
+	qw qh 16 << or da!+ 
 	a> 'qsize ! | where size
-	0 da!+
+	$deadbeef da!+
 	chashclear
 	0 'run !
-	$ff00000 dup 'px ! 'pxprev !
-	>b |  bitmap
-	qh qw * ( 1? 1 -
-		db@+ 'px !
+	$ff000000 dup 'px ! 'pxprev !
+	qh qw * ( 1? 1 - swap
+		d@+ $ffffffff and
+		pxprev =? ( 1 'run +! )
+		'px !
 		encode
 		px 'pxprev !
-		) drop  
+		swap ) 2drop  
 	a> qsize - 8 + dup 'qsize d!
 	;
 	
+	
+|---------------------------------------
+
+^r3/lib/mem.r3
+^r3/win/console.r3
+^r3/win/sdl2.r3
+^r3/win/sdl2image.r3
+^r3/util/bfont.r3
+
+#textbitmap
+
+#imagens
+#ibox [ 100 100 40 40 ]
+
+#pixels
+#wi #hi #pi
+
+#code
+#csize
+
+:encodeimg
+	imagens SDL_LockSurface
+	imagens
+	16 + 
+	d@+ 'wi !
+	d@+ 'hi !
+	d@+ 'pi !
+	4 +
+	@ 'pixels !
+	mark
+	hi wi "%d %d" .println
+	
+	here 'code !
+	pixels wi hi here qoi_ecode 
+	dup 'csize ! 
+	'here +!
+	
+	imagens SDL_UnlockSurface
+	
+	cr cr
+	csize "%d" .println
+	code csize ( 1? 1 - swap 
+		c@+ $ff and "%h " .print 
+		swap ) 2drop
+	
+	;
+		
+:draw
+|	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
+	
+	0 0 bmat
+	$ff00 bcolor
+	'ibox 8 + >a
+	da@+ da@ "%d %d" sprint bmprint
+	
+
+	SDLredraw
+	
+	SDLkey
+	>esc< =? ( exit )
+	drop ;
+	
+:cargar
+	"media/img/lolomario.png" IMG_Load 'imagens !
+	encodeimg
+	;
+	
+|---------------------------------------
+:
+	"r3sdl" 800 600 SDLinit
+	bfont1
+	cargar
+	
+|	800 600 SDLframebuffer 'textbitmap !
+	
+	'draw SDLshow 
+	
+	SDLquit	;
+	;

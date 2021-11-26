@@ -16,7 +16,7 @@
 ::unloadimg | adr --
 	0? ( drop ; ) 
 	SDL_DestroyTexture ;	
-	
+
 |----- BOOT	
 :
 	"SDL2_image.DLL" loadlib
