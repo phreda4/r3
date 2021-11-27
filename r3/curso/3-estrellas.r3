@@ -3,16 +3,17 @@
 
 ^r3/win/sdl2.r3
 ^r3/lib/rand.r3
- 
-#puntos * 8192 		| memoria para x,y de cada punto
+
+
+#puntos * $3fff 		| memoria para x,y de cada punto
 #puntos> 'puntos
 
 :dibujarpuntos
 	$ffffff sdlcolor 
 	'puntos ( puntos> <?	| desde la memoria hasta el final
-		d@+		| dir x
+		w@+		| dir+ x
 		swap	| x dir
-		d@+		| x dir y
+		w@+		| x dir+ y
 		rot 	| dir y x
 		swap	| dir x y
 		SDLPoint | dir
@@ -21,35 +22,35 @@
 :dibujarymoverpuntos
 	$ffffff sdlcolor 
 	'puntos ( puntos> <?	| desde la memoria hasta el final
-		d@+ 			| dir x
+		dup w@ 			| dir x
 		-? ( sw nip )	| dir x (si es negativo se cambia por sw (ancho)
 		dup 			| dir x x
 		1 - 			| dir x x-1
-		pick2 			| dir x x-1 dir
-		4 - 			| dir x x-1 dir-4 (donde estaba x)
-		d!				| dir x  ( grabo nuevo x )
-		swap 			| x dir
-		d@+ 			| x dir y
+		rot 			| x x-1 dir
+		w!+				| x dir+ ( grabo nuevo x )
+		w@+ 			| x dir y
 		rot swap 		| dir x y
 		SDLPoint
 		) drop ;
 
 :llenapuntos
 	rerand			| numeros al azar
-	'puntos >a		| memoria donde lo graba
-	1024 ( 1? 1 -
-		sw randmax da!+	| entre 0 y sw (ancho de pantalla)
-		sh randmax da!+ | entre 0 y sh (alto de pantalla)
-		) drop
-	a> 'puntos> ! ;	| graba el fin del esta lista
+	'puntos 		| mem    ; memoria donde lo graba
+	$fff ( 1? 1 -	| mem cnt
+		sw randmax 	| mem cnt rand ; entre 0 y sw (ancho de pantalla)
+		rot w!+		| cnt mem+
+		sh randmax 	| cnt mem rand ; entre 0 y sh (alto de pantalla)
+		swap w!+	| cnt mem
+		swap ) drop | mem
+	'puntos> ! ;	| graba el fin del esta lista
 
 
 :dibuja
 	0 SDLclear
 	
-	|dibujarpuntos	
-	dibujarymoverpuntos | comentada.. no ocurre
-	
+	|dibujarpuntos	 | comentada.. no ocurre
+	dibujarymoverpuntos
+
 	SDLRedraw
 
 	SDLkey
@@ -57,11 +58,10 @@
 	drop
 	;
 
-:	|====================== INICIO 
+|-------------------------- INICIO 
+:	
 	"r3sdl" 800 600 SDLinit
-
 	llenapuntos
 	'dibuja SDLshow
-	
 	SDLquit 
 	;

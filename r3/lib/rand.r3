@@ -1,4 +1,4 @@
-| nnumeros aleatorias
+| numeros aleatorios
 | PHREDA 2010
 
 ##seed8 12345
@@ -21,7 +21,6 @@
 
 ::randmax | max -- rand
 	rand 
-	|$7fffffffffffffff and | only positive
 	1 >>> | only positive
 	63 *>> ;
   

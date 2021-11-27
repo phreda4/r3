@@ -9,7 +9,7 @@
 ^r3/util/arr16.r3
 
 #spr_ball
-#bubles 0 0
+#bubles 0 0	| array
 
 |---------
 :r.01 0.001 randmax ;

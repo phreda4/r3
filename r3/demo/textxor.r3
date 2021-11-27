@@ -25,7 +25,7 @@
 :draw
 	updatexor
 	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
-	SDLrenderer SDL_RenderPresent
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )
