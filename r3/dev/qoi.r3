@@ -34,21 +34,21 @@
 	dup dup hasha d! db!+ ;
 
 :diff8 | val --
-	dup 4 >> $3 and 1 - 'px c+!
+	dup 4 >> $3 and 1 - 'px 2 + c+!
 	dup 2 >> $3 and 1 - 'px 1 + c+!
-	$3 and 1 - 			'px 2 + c+! 
+	$3 and 1 - 			'px 0 + c+! 
 	px img!+ ;
 	
 :diff16 | val --
-	$1f and 15 - 		'px c+! 
+	$1f and 15 - 		'px 2 + c+! 
 	ca@+ dup 4 >> 7 - 	'px 1 + c+!
-	$f and 7 - 			'px 2 + c+! 
+	$f and 7 - 			'px 0 + c+! 
 	px img!+ ;
 
 :diff24 | val --
-	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px c+! 	| red
+	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px 2 + c+! 	| red
 	dup $7c and 2 >> 15 - 							'px 1 + c+! | green
-	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px 2 + c+! | blue
+	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px 0 + c+! | blue
 	$1f and 15 - 									'px 3 + c+! | alpha
 	px img!+ ;
 	
@@ -100,29 +100,39 @@
 	over 16 >> $ff and over 16 >> $ff and - 'vb !
 	over 24 >> $ff and swap 24 >> $ff and - 'va !
 
-	vr -16 17 between -? ( ; ) drop
-	vg -16 17 between -? ( ; ) drop
-	vb -16 17 between -? ( ; ) drop
-	va -16 17 between -? ( ; ) drop
+	vr -15 16 between -? ( ; ) drop
+	vg -15 16 between -? ( ; ) drop
+	vb -15 16 between -? ( ; ) drop
+	va -15 16 between -? ( ; ) drop
 	
-	va 6 <<
-	vr 1 + 4 << or
-	vg 1 + 2 << or
-	vb 1 + or
-	$c0 nand? ( $80 or ca!+ 0 ; ) drop
+	vr -1 2 between
+	vg -1 2 between or
+	vb -1 2 between or
+	63 >> va or
+	0? ( drop	| ..rrggbb
+		vr 1 + 4 << 
+		vg 1 + 2 << or
+		vb 1 + or
+		$80 or ca!+ 
+		0 ; ) drop
 	
-	va 11 << 
-	vr 15 + 8 << or
-	vg 7 + 4 << or
-	vb 7 + or
-	$e000 nand? ( dup 8 >> $c0 or ca!+ ca!+ 0 ; ) drop
+	vr -15 16 between
+	vg -7 8 between or
+	vb -7 8 between or
+	63 >> va or
+	0? ( drop | ...rrrrr ggggbbbb
+		vr 15 + $c0 or ca!+
+		vg 7 + 4 << 
+		vb 7 + or ca!+
+		0 ; ) drop
 
+	| ....rrrr rgggggbb bbbaaaaa
 	vr 15 + dup 
 	1 >> $e0 or ca!+
-	1 and 7 << 
+	7 << 
 	vg 15 + 2 << or
 	vb 15 + 3 >> or ca!+
-	vb 15 + $7 and 5 <<
+	vb 15 + 5 <<
 	va 15 + or ca!+
 	0 ;
 	
@@ -149,7 +159,122 @@
 	qmagic da!+
 	qw qh 16 << or da!+ 
 	a> 'qsize ! | where size
-	$deadbeef da!+
+	0 da!+
+	hashclear
+	0 'run !
+	$ff000000 'px !
+	qh qw * ( 1? 1 - swap
+		d@+ $ffffffff and
+		encode
+		'px ! 
+		swap ) 2drop  
+	run 1? ( dup encoderun ) drop
+	a> qsize - dup qsize d!
+	;
+
+|------ encode stat
+
+##cntINDEX
+##cntRUN8
+##cntRUN16
+##cntDIFF8
+##cntDIFF16
+##cntDIFF24
+##cntDIFF
+
+
+:encoderun | run --
+	33 <? ( 1 - $40 or ca!+ 0 'run ! 
+		1 'cntRUN8 +! ; )
+	33 - dup 8 >> $60 or ca!+ ca!+ 
+	0 'run !
+	1 'cntRUN16 +!
+	;
+
+:runencode | px -- px
+	run $2020 =? ( encoderun ; ) drop ;
+
+#vr #vg #vb #va
+
+:getdiff
+	dup dup hasha d! px	
+	over $ff and over $ff and - 'vr !
+	over 8 >> $ff and over 8 >> $ff and - 'vg !
+	over 16 >> $ff and over 16 >> $ff and - 'vb !
+	over 24 >> $ff and swap 24 >> $ff and - 'va !
+
+	vr -15 16 between -? ( ; ) drop
+	vg -15 16 between -? ( ; ) drop
+	vb -15 16 between -? ( ; ) drop
+	va -15 16 between -? ( ; ) drop
+	
+	vr -1 2 between
+	vg -1 2 between or
+	vb -1 2 between or
+	63 >> va or
+	0? ( drop	| ..rrggbb
+		vr 1 + 4 << 
+		vg 1 + 2 << or
+		vb 1 + or
+		$80 or ca!+ 
+		1 'cntDIFF8 +! 
+		0 ; ) drop
+	
+	vr -15 16 between
+	vg -7 8 between or
+	vb -7 8 between or
+	63 >> va or
+	0? ( drop | ...rrrrr ggggbbbb
+		vr 15 + $c0 or ca!+
+		vg 7 + 4 << 
+		vb 7 + or ca!+
+		1 'cntDIFF16 +! 
+		0 ; ) drop
+
+	| ....rrrr rgggggbb bbbaaaaa
+	vr 15 + dup 
+	1 >> $e0 or ca!+
+	7 << 
+	vg 15 + 2 << or
+	vb 15 + 3 >> or ca!+
+	vb 15 + 5 <<
+	va 15 + or ca!+
+	1 'cntDIFF24 +!
+	0 ;
+	
+:encode | 
+	px =? ( 1 'run +! runencode ; )
+	run 1? ( dup encoderun ) drop
+	dup hasha d@ $ffffffff and 
+	=? ( dup hash ca!+ 1 'cntINDEX +! ; )  		| INDEX=0
+	getdiff 0? ( drop ; ) drop
+	$f0 
+	vr 1? ( swap 8 or swap ) drop
+	vg 1? ( swap 4 or swap ) drop
+	vb 1? ( swap 2 or swap ) drop
+	va 1? ( swap 1 or swap ) drop
+	ca!+
+	vr 1? ( over ca!+ ) drop
+	vg 1? ( over 8 >> ca!+ ) drop
+	vb 1? ( over 16 >> ca!+ ) drop
+	va 1? ( over 24 >> ca!+ ) drop
+	1 'cntDIFF +!
+	;
+	
+::qoi_encode_stat | bitmap w h data -- size
+	0 'cntINDEX !
+	0 'cntRUN8 !
+	0 'cntRUN16 !
+	0 'cntDIFF8 !
+	0 'cntDIFF16 !
+	0 'cntDIFF24 !
+	0 'cntDIFF !
+
+	>a 'qh ! 'qw !
+	qmagic da!+
+	qw qh 16 << or da!+ 
+	a> 'qsize ! | where size
+	0 da!+
 	hashclear
 	0 'run !
 	$ff000000 'px !

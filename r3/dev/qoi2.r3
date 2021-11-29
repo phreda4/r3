@@ -1,11 +1,9 @@
-| qoi encoder/decoder
+| qoi variation encoder/decoder 
 | PHREDA 2021
 ^r3/lib/math.r3
 
-| QOI_INDEX   0x00 // 00xxxxxx
-| QOI_RUN_8   0x40 // 010xxxxx
-| QOI_RUN_16  0x60 // 011xxxxx
-| QOI_DIFF_8  0x80 // 10xxxxxx
+| QOI_INDEX   0x00 // 0xxxxxxx
+| QOI_RUN_8   0x40 // 10xxxxx
 | QOI_DIFF_16 0xc0 // 110xxxxx
 | QOI_DIFF_24 0xe0 // 1110xxxx
 | QOI_COLOR   0xf0 // 1111xxxx
@@ -16,28 +14,22 @@
 #qsize
 #run 
 
-#index * 256 | 64 rgba values
+#index * 512 | 128 rgba values
 
 :hash | color -- hash
-	dup 16 >> xor dup 8 >> xor $3f and ;
-	
+	dup 14 >> xor dup 7 >> xor $7f and ;
+
 :hasha | color -- adr
 	hash 2 << 'index + ;
 	
 :hashclear
-	'index 0 32 fill ;
+	'index 0 64 fill ;
 
 :runlen | cnt -- 
 	( 1? 1 - px db!+ ) drop ;
 
 :img!+ | px --
 	dup dup hasha d! db!+ ;
-
-:diff8 | val --
-	dup 4 >> $3 and 1 - 'px c+!
-	dup 2 >> $3 and 1 - 'px 1 + c+!
-	$3 and 1 - 			'px 2 + c+! 
-	px img!+ ;
 	
 :diff16 | val --
 	$1f and 15 - 		'px c+! 
@@ -54,14 +46,10 @@
 	
 :decode | token -- px
 	ca@+
-	$c0 nand? ( 					| 00.. index
-		2 << 'index + d@ $ffffffff and dup 'px ! db!+ ; ) 
-	$80 nand? (						| 01..
-		$20 nand? ( $1f and 1 + runlen ; ) 				| 010. run 8
-		$1f and 8 << ca@+ $ff and or 33 + runlen ; )	| 011. run 16
-	$40 nand? ( diff8 ; )			| 10.. diff 8
-	$20 nand? ( diff16 ; )			| 110. diff 16
-	$10 nand? ( diff24 ; )			| 1110 diff 24
+	$80 nand? ( 2 << 'index + d@ $ffffffff and dup 'px ! db!+ ; ) 	| 0.......
+	$40 nand? (	$3f and 1 + runlen ; )								| 10......
+	$20 nand? ( diff16 ; )											| 110..... diff 16
+	$10 nand? ( diff24 ; )											| 1110.... diff 24
 	$8 and? ( ca@+ $ff and 'px 2 + c! ) 
 	$4 and? ( ca@+ $ff and 'px 1 + c! )
 	$2 and? ( ca@+ $ff and 'px 0 + c! )
@@ -70,7 +58,7 @@
 	px img!+ ;
 
 
-::qoi_decode | bitmap data -- 1/0
+::qoi_decode2 | bitmap data -- 1/0
 	d@+ drop | qmagic <>? ( drop 0 ; )
 	w@+ 'qw !
 	w@+ 'qh !
@@ -83,13 +71,11 @@
 	
 |------ encode
 :encoderun | run --
-	33 <? ( 1 - $40 or ca!+ 0 'run ! ; )
-	33 - dup 8 >> $60 or ca!+ ca!+ 
-	0 'run !
-	;
+	1 - $80 or ca!+ 
+	0 'run ! ; 
 
 :runencode | px -- px
-	run $2020 =? ( encoderun ; ) drop ;
+	run 64 =? ( encoderun ; ) drop ;
 
 #vr #vg #vb #va
 
@@ -98,37 +84,38 @@
 	over $ff and over $ff and - 'vr !
 	over 8 >> $ff and over 8 >> $ff and - 'vg !
 	over 16 >> $ff and over 16 >> $ff and - 'vb !
-	over 24 >> $ff and swap 24 >> $ff and - 'va !
+	over 24 >> $ff and swap 24 >> $ff and - 'va ! 
 
-	vr -16 17 between -? ( ; ) drop
-	vg -16 17 between -? ( ; ) drop
-	vb -16 17 between -? ( ; ) drop
-	va -16 17 between -? ( ; ) drop
+	vr -15 16 between -? ( ; ) drop | 
+	vg -15 16 between -? ( ; ) drop | 
+	vb -15 16 between -? ( ; ) drop | 
+	va -15 16 between -? ( ; ) drop
 	
-	va 6 <<
-	vr 1 + 4 << or
-	vg 1 + 2 << or
-	vb 1 + or
-	$c0 nand? ( $80 or ca!+ 0 ; ) drop
-	
-	va 11 << 
-	vr 15 + 8 << or
-	vg 7 + 4 << or
-	vb 7 + or
-	$e000 nand? ( dup 8 >> $c0 or ca!+ ca!+ 0 ; ) drop
+	vr -15 16 between
+	vg -7 8 between or
+	vb -7 8 between or
+	63 >> va or
+	0? ( drop | ...rrrrr ggggbbbb
+		vr 15 + $c0 or ca!+
+		vg 7 + 4 << 
+		vb 7 + or ca!+
+		0 ; ) drop
 
+	| ....rrrr rgggggbb bbbaaaaa
 	vr 15 + dup 
 	1 >> $e0 or ca!+
-	1 and 7 << 
+	7 << 
 	vg 15 + 2 << or
 	vb 15 + 3 >> or ca!+
-	vb 15 + $7 and 5 <<
+	vb 15 + 5 <<
 	va 15 + or ca!+
 	0 ;
+	
 	
 :encode | 
 	px =? ( 1 'run +! runencode ; )
 	run 1? ( dup encoderun ) drop
+	
 	dup hasha d@ $ffffffff and 
 	=? ( dup hash ca!+ ; )  		| INDEX=0
 	getdiff 0? ( drop ; ) drop
@@ -144,12 +131,12 @@
 	va 1? ( over 24 >> ca!+ ) drop
 	;
 	
-::qoi_encode | bitmap w h data -- size
+::qoi_encode2 | bitmap w h data -- size
 	>a 'qh ! 'qw !
 	qmagic da!+
 	qw qh 16 << or da!+ 
 	a> 'qsize ! | where size
-	$deadbeef da!+
+	0 da!+
 	hashclear
 	0 'run !
 	$ff000000 'px !

@@ -10,8 +10,8 @@
 
 #textbitmap
 
+#imagen
 #imagens
-#ibox [ 100 100 40 40 ]
 
 #pixels
 #wi #hi #pi
@@ -49,15 +49,13 @@
 	
 	mark
 	here 'code !
-	pixels wi hi here qoi_encode 
+	pixels wi hi here qoi_encode_stat
 	dup 'csize ! 
 	8 + 'here +! 0 , 
-|	"test.qoi" savemem
+	"test.qoi" savemem
 
 	imagens SDL_UnlockSurface
 
-	qw qh SDLframebuffer 'textbitmap !	
-	writetex	
 	
 	cr cr
 	csize "%d" .println
@@ -66,17 +64,39 @@
 		swap ) 2drop
 	cr cr
 	
-|	printdiffimg	
+	|printdiffimg	
+	
+	qw qh SDLframebuffer 'textbitmap !	
+	writetex	
+
 	;
 		
+#box [ 100 0 300 200 ]
+#box1 [ 410 0 300 200 ]
+
 :draw
-	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
+	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
+	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
-	$ff00 bcolor
+	$ffffff bcolor
 	0 0 bmat
 	qh qw "%d %d" sprint bmprint
 	0 12 bmat
 	csize "%d" sprint bmprint
+	0 12 2 * bmat
+	cntINDEX "INDEX %d" sprint bmprint
+	0 12 3 * bmat
+	cntRUN8 "RUN8 %d" sprint bmprint
+	0 12 4 * bmat
+	cntRUN16 "RUN16 %d" sprint bmprint
+	0 12 5 * bmat
+	cntDIFF8 "DIFF8 %d" sprint bmprint
+	0 12 6 * bmat
+	cntDIFF16 "DIFF16 %d" sprint bmprint
+	0 12 7 * bmat
+	cntDIFF24 "DIFF24 %d" sprint bmprint
+	0 12 8 * bmat
+	cntDIFF "DIFF %d" sprint bmprint
 	
 	SDLredraw
 	
@@ -85,7 +105,13 @@
 	drop ;
 	
 :cargar
-	"media/img/lolomario.png" IMG_Load 'imagens !
+	|"media/img/lolomario.png" 
+	|"media/img/ship_64x29.png" | fail
+	"media/img/lander.png" 
+	|"media/img/bird.png" | fail
+	dup
+	IMG_Load 'imagens !
+	loadimg 'imagen !
 	encodeimg
 	;
 	
