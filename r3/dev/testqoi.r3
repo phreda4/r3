@@ -49,7 +49,7 @@
 	
 	mark
 	here 'code !
-	pixels wi hi here qoi_encode_stat
+	pixels wi hi here qoi_encode
 	dup 'csize ! 
 	8 + 'here +! 0 , 
 	"test.qoi" savemem
@@ -106,8 +106,8 @@
 	
 :cargar
 	|"media/img/lolomario.png" 
-	|"media/img/ship_64x29.png" | fail
-	"media/img/lander.png" 
+	"media/img/ship_64x29.png" | fail
+	|"media/img/lander.png" 
 	|"media/img/bird.png" | fail
 	dup
 	IMG_Load 'imagens !

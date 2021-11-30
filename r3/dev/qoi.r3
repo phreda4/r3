@@ -81,97 +81,6 @@
 	qsize a> +
 	( a> >? decode ) ;
 	
-|------ encode
-:encoderun | run --
-	33 <? ( 1 - $40 or ca!+ 0 'run ! ; )
-	33 - dup 8 >> $60 or ca!+ ca!+ 
-	0 'run !
-	;
-
-:runencode | px -- px
-	run $2020 =? ( encoderun ; ) drop ;
-
-#vr #vg #vb #va
-
-:getdiff
-	dup dup hasha d! px	
-	over $ff and over $ff and - 'vr !
-	over 8 >> $ff and over 8 >> $ff and - 'vg !
-	over 16 >> $ff and over 16 >> $ff and - 'vb !
-	over 24 >> $ff and swap 24 >> $ff and - 'va !
-
-	vr -15 16 between -? ( ; ) drop
-	vg -15 16 between -? ( ; ) drop
-	vb -15 16 between -? ( ; ) drop
-	va -15 16 between -? ( ; ) drop
-	
-	vr -1 2 between
-	vg -1 2 between or
-	vb -1 2 between or
-	63 >> va or
-	0? ( drop	| ..rrggbb
-		vr 1 + 4 << 
-		vg 1 + 2 << or
-		vb 1 + or
-		$80 or ca!+ 
-		0 ; ) drop
-	
-	vr -15 16 between
-	vg -7 8 between or
-	vb -7 8 between or
-	63 >> va or
-	0? ( drop | ...rrrrr ggggbbbb
-		vr 15 + $c0 or ca!+
-		vg 7 + 4 << 
-		vb 7 + or ca!+
-		0 ; ) drop
-
-	| ....rrrr rgggggbb bbbaaaaa
-	vr 15 + dup 
-	1 >> $e0 or ca!+
-	7 << 
-	vg 15 + 2 << or
-	vb 15 + 3 >> or ca!+
-	vb 15 + 5 <<
-	va 15 + or ca!+
-	0 ;
-	
-:encode | 
-	px =? ( 1 'run +! runencode ; )
-	run 1? ( dup encoderun ) drop
-	dup hasha d@ $ffffffff and 
-	=? ( dup hash ca!+ ; )  		| INDEX=0
-	getdiff 0? ( drop ; ) drop
-	$f0 
-	vr 1? ( swap 8 or swap ) drop
-	vg 1? ( swap 4 or swap ) drop
-	vb 1? ( swap 2 or swap ) drop
-	va 1? ( swap 1 or swap ) drop
-	ca!+
-	vr 1? ( over ca!+ ) drop
-	vg 1? ( over 8 >> ca!+ ) drop
-	vb 1? ( over 16 >> ca!+ ) drop
-	va 1? ( over 24 >> ca!+ ) drop
-	;
-	
-::qoi_encode | bitmap w h data -- size
-	>a 'qh ! 'qw !
-	qmagic da!+
-	qw qh 16 << or da!+ 
-	a> 'qsize ! | where size
-	0 da!+
-	hashclear
-	0 'run !
-	$ff000000 'px !
-	qh qw * ( 1? 1 - swap
-		d@+ $ffffffff and
-		encode
-		'px ! 
-		swap ) 2drop  
-	run 1? ( dup encoderun ) drop
-	a> qsize - dup qsize d!
-	;
-
 |------ encode stat
 
 ##cntINDEX
@@ -181,7 +90,6 @@
 ##cntDIFF16
 ##cntDIFF24
 ##cntDIFF
-
 
 :encoderun | run --
 	33 <? ( 1 - $40 or ca!+ 0 'run ! 
@@ -261,7 +169,7 @@
 	1 'cntDIFF +!
 	;
 	
-::qoi_encode_stat | bitmap w h data -- size
+::qoi_encode | bitmap w h data -- size
 	0 'cntINDEX !
 	0 'cntRUN8 !
 	0 'cntRUN16 !
