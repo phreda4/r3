@@ -7,6 +7,7 @@
 ^r3/win/sdl2image.r3
 ^r3/util/bfont.r3
 ^r3/dev/qoi.r3
+|^r3/dev/qoi2.r3
 
 #textbitmap
 
@@ -20,12 +21,20 @@
 #csize
 
 :printdiffimg
+	cr cr
 	pixels here
 	hi wi * ( 1? 1 -
 		hi wi * over - "%d. " .print
 		rot d@+ $ffffffff and "%h " .print rot d@+ $ffffffff and "=%h " .println rot
 		) 3drop	;
 
+:printout
+	cr cr
+	csize "%d" .println
+	code csize ( 1? 1 - swap 
+		c@+ $ff and "%h " .print 
+		swap ) 2drop ;
+		
 #mpixel
 #mpitch
 
@@ -56,14 +65,7 @@
 
 	imagens SDL_UnlockSurface
 
-	
-	cr cr
-	csize "%d" .println
-	code csize ( 1? 1 - swap 
-		c@+ $ff and "%h " .print 
-		swap ) 2drop
-	cr cr
-	
+	|printout	
 	|printdiffimg	
 	
 	qw qh SDLframebuffer 'textbitmap !	
@@ -106,9 +108,9 @@
 	
 :cargar
 	|"media/img/lolomario.png" 
-	"media/img/ship_64x29.png" | fail
-	|"media/img/lander.png" 
-	|"media/img/bird.png" | fail
+	|"media/img/ship_64x29.png" | fail
+	|"media/img/lander.png" |
+	"media/img/bird.png" | fail
 	dup
 	IMG_Load 'imagens !
 	loadimg 'imagen !
@@ -116,7 +118,9 @@
 	;
 	
 |---------------------------------------
+#col
 :
+	
 	"r3sdl" 800 600 SDLinit
 	bfont1
 	cargar

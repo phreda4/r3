@@ -46,7 +46,7 @@
 	px img!+ ;
 
 :diff24 | val --
-	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px 2 + c+! 	| red
+	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px 2 + c+! | red
 	dup $7c and 2 >> 15 - 							'px 1 + c+! | green
 	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px 0 + c+! | blue
 	$1f and 15 - 									'px 3 + c+! | alpha
@@ -62,10 +62,10 @@
 	$40 nand? ( diff8 ; )			| 10.. diff 8
 	$20 nand? ( diff16 ; )			| 110. diff 16
 	$10 nand? ( diff24 ; )			| 1110 diff 24
-	$8 and? ( ca@+ $ff and 'px 2 + c! ) 
-	$4 and? ( ca@+ $ff and 'px 1 + c! )
-	$2 and? ( ca@+ $ff and 'px 0 + c! )
-	$1 and? ( ca@+ $ff and 'px 3 + c! )
+	$8 and? ( ca@+ 'px 2 + c! ) 
+	$4 and? ( ca@+ 'px 1 + c! )
+	$2 and? ( ca@+ 'px 0 + c! )
+	$1 and? ( ca@+ 'px 3 + c! )
 	drop
 	px img!+ ;
 

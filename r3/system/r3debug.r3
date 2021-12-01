@@ -1,6 +1,8 @@
 | r3debug
 | PHREDA 2020
 |------------------
+^r3/win/console.r3
+
 ^./r3base.r3
 ^./r3pass1.r3
 ^./r3pass2.r3
@@ -8,9 +10,6 @@
 ^./r3pass4.r3
 
 ^./r3vm.r3
-
-^r3/lib/print.r3
-^r3/lib/input.r3
 
 #name * 1024
 #namenow * 256
