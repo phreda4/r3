@@ -25,7 +25,7 @@
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	r3fullmode swap	|	"stage 1" slog
+	swap	|	"stage 1" slog
 	r3-stage-1 error 1? ( drop ; ) drop	|	"stage 2" slog
 	r3-stage-2 1? ( drop ; ) drop 		|	"stage 3" slog
 	r3-stage-3			|	"stage 4" slog
@@ -55,8 +55,9 @@
 
 |------ MODES
 :calcselect
-	xcode wcode + gotox ccx 'xsele !
-	xcode gotox ccx 'xseli !
+|	xcode wcode + gotox
+|	ccx 'xsele !
+|	xcode gotox ccx 'xseli !
 	;
 
 :mode!imm
@@ -89,13 +90,12 @@
 #incnow
 
 :incmap
-	$ffff00 'ink !
 	0 ( cntinc <?
-		30 over 1 + gotoxy
-		dup "%d " print
-		dup 3 << 'inc + @+ swap @ "%h %l" print
+		30 over 1 + .at
+		dup "%d " .print
+		dup 3 << 'inc + @+ swap @ "%h %l" .print
 
-		incnow =? ( " <" print )
+		incnow =? ( " <" .print )
 		1 + ) drop
 	;
 
@@ -110,37 +110,31 @@
 :token | n
 	cnttok >=? ( drop ; )
 	2 << initok +
-	$ffffff 'ink !
 	@ | dup
 	tokenprintc
 	;
-:tokencode
-	35 gotox
-	dup $ff and "%h " print
-	8 >> 0? ( drop ; ) "%d" print ;
-
+	
 :wordmap
 	0 ( hcode <?
 		cnttok <?
-		3 over 2 + gotoxy
+		3 over 2 + .at
 		dup token
 		1 + ) drop ;
 
 |---------
 :printcode
-	$ff0000 'ink !
-	@+ " :%w " print
+	@+ " :%w " .print
 	drop ;
 
 :printdata
-	$ff00ff 'ink !
-	@+ " #%w " print
+|	$ff00ff 'ink !
+	@+ " #%w " .print
 	drop ;
 
 :printword | nro --
-	actword =? ( $222222 'ink ! backline )
-	$888888 'ink !
-	dup 1 + "%d." print
+	|actword =? ( |$222222 'ink !  backline )
+	|$888888 'ink !
+	dup 1 + "%d." .print
 	4 << dicc +
 	dup 8 + @ 1 nand? ( drop printcode ; ) drop
 	printdata ;
@@ -172,24 +166,30 @@
 	actword dic>adr @ findinclude 'incnow !
 	;
 
+:btnf | txt tecla -- ***
+	.print .print
+	;
+	
 :modeview
-	0 1 gotoxy
+	0 1 .at
 |	dicmap
 |	incmap
-	$ff0000 'ink !
+	|$ff0000 'ink !
 	mark actword ,wordinfo empty
 	here .print
 	wordmap
 
-	0 hcode 1 + gotoxy
-	$0000AE 'ink !
-	rows hcode - 1 - backlines
-	0 rows 1 - gotoxy
+	0 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
+	0 rows 1 - .at
 	"CODE" "F10" btnf
 
 	key
-	>esc< =? ( mode!src )
-	<f10> =? ( mode!src )
+	$27 |>esc< 
+	=? ( mode!src )
+	$45 |<f10> 
+	=? ( mode!src )
 
 |	<up> =? ( -1 +word )
 |	<dn> =? ( 1 +word )
@@ -206,7 +206,8 @@
 #varlistc
 
 :col_var
-	$ff00ff 'ink ! ;
+|	$ff00ff 'ink ! 
+	;
 
 :prevars
 	'varlist >a
@@ -219,10 +220,12 @@
 :showvars
 	0 ( hcode <?
 		varlistc >=? ( drop ; )
-		cols 1 >> over 1 + gotoxy
+		cols 1 >> over 1 + .at
 		dup 2 << 'varlist + @
-		dup dic>adr @ "%w " col_var print
-		dic>tok @ @ "%d" $ffffff 'ink ! print
+		dup dic>adr @ "%w " col_var .print
+		dic>tok @ @ "%d" 
+		|$ffffff 'ink ! 
+		.print
 		cr
 		1 + ) drop ;
 
@@ -240,15 +243,25 @@
 
 |------------- sourc code
 
-:col_inc $ff7f00 'ink ! ;
-:col_com $666666 'ink ! ;
-:col_cod $ff0000 'ink ! ;
-:col_dat $ff00ff 'ink ! ;
-:col_str $ffffff 'ink ! ;
-:col_adr $ffff 'ink ! ;
-:col_nor $ff00 'ink ! ;
-:col_nro $ffff00 'ink ! ;
-:col_select $444444 'ink ! ;
+:col_inc 
+	|$ff7f00 'ink ! ;
+:col_com 
+	|$666666 'ink ! ;
+:col_cod 
+	|$ff0000 'ink ! ;
+:col_dat 
+	|$ff00ff 'ink ! ;
+:col_str 
+	|$ffffff 'ink ! ;
+:col_adr 
+	|$ffff 'ink ! ;
+:col_nor 
+	|$ff00 'ink ! ;
+:col_nro 
+	|$ffff00 'ink ! ;
+:col_select 
+	|$444444 'ink ! 
+	;
 
 #mcolor
 
@@ -293,11 +306,12 @@
 		drop swap ) drop ;
 
 :emitl
-	9 =? ( drop gtab ; )
-	emit ccx xsele <? ( drop ; ) drop
+|	9 =? ( drop gtab ; )
+	emit |ccx xsele <? ( drop ; ) drop
 	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
-	wcode xcode + gotox
-	$ffffff 'ink ! "." print
+	|wcode xcode + gotox
+	|$ffffff 'ink ! 
+	"." .print
 	;
 
 :drawline
@@ -313,8 +327,8 @@
 |..............................
 :linenro | lin -- lin
 	dup ylinea +
-	ycursor =? ( $222222 'ink ! backline )
-	$aaaaaa 'ink !
+|	ycursor =? ( |$222222 'ink ! backline )
+|	$aaaaaa 'ink !
 	 1 + .d 3 .r. .print sp ;
 
 :<<13 | a -- a
@@ -385,40 +399,10 @@
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
 	9 =? ( drop 4 'xcursor +! ; )
 	1 'xcursor +!
-	noemit ;
-
-
-:cursorpos
-	ylinea 'ycursor ! 0 'xcursor !
-	pantaini> ( fuente> <? c@+ emitcur ) drop
-	xcursor
-	xlinea <? ( dup 'xlinea ! )
-	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
-	drop ;
-
-:drawcursor
-	cursorpos
-	blink 1? ( drop ; ) drop
-	xcode xlinea - xcursor + xlineat -
-	ycode ylinea - ycursor + gotoxy
-	ccx ccy xy>v >a
-	cch ( 1? 1 -
-		ccw ( 1? 1 -
-			a@ not a!+
-			) drop
-		sw ccw - 2 << a+
-		) drop ;
-
-:drawcursorfix
-	cursorpos
-	xcode xlinea - xcursor + xlineat -
-	ycode ylinea - ycursor + gotoxy
-	ccx 1 - ccy 1 - over
-	fuente> ( c@+ $ff and 32 >? drop swap ccw + swap ) 2drop	| to end of the word
-	1 + over cch + 1 + | x1 y1 x2 y2
-	blink 1? ( $ffffff or ) 'ink !
-	rectbox
+	drop
+|	noemit 
 	;
+
 
 |..............................
 :drawcode
@@ -429,9 +413,9 @@
 
 	pantaini>
 	0 ( hcode <?
-		0 ycode pick2 + gotoxy
+		0 ycode pick2 + .at
 		linenro
-		xcode gotox
+|		xcode gotox
 		swap drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
@@ -448,35 +432,39 @@
 
 :tagpos
 	over 12 >> $fff and xcode + xlinea - xlineat -
-	over ycode + ylinea - gotoxy ;
+	over ycode + ylinea - .at ;
 
 :tagdec
-	tagpos pick2 @ "%d" $f0f000 bprint ;
+	tagpos pick2 @ "%d" .print ;
 :taghex
-	tagpos pick2 @ "%h" $f0f000 bprint ;
+	tagpos pick2 @ "%h" .print ;
 :tagbin
-	tagpos pick2 @ "%b" $f0f000 bprint ;
+	tagpos pick2 @ "%b" .print ;
 :tagfix
-	tagpos pick2 @ "%f" $f0f000 bprint ;
+	tagpos pick2 @ "%f" .print ;
 :tagmem
-	tagpos pick2 "'%h" $f0f0 bprint ;
+	tagpos pick2 "'%h" .print ;
 :tagadr
-	tagpos pick2 "'%h" $f0f0 bprint ;
+	tagpos pick2 "'%h" .print ;
 
 :tagip	| ip
 	tagpos
-	$ffffff 'ink !
-	pick2 @ ccw *
-	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
- 	box.dot ;
+|	$ffffff 'ink !
+|	pick2 @ ccw *
+|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
+| box.dot 
+	"*" .print
+	;
 
 :tagbp	| breakpoint
-	blink 0? ( drop ; ) drop
+|	blink 0? ( drop ; ) drop
 	tagpos
-	pick2 @ ccw *
-	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
-	$ff0000 'ink !
- 	rectbox ;
+|	pick2 @ ccw *
+|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
+|	$ff0000 'ink !
+| 	rectbox 
+	"?" .print
+	;
 
 
 #infostr * 256
@@ -510,8 +498,8 @@
 :taginfo | infoword
 	tagpos
 	pick2 @ buildinfo
-	count cols swap - 1 - gotox
-	infocol bprint
+|	count cols swap - 1 - gotox
+	.print
 	;
 
 :tagnull
@@ -566,7 +554,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 |	"MEMORY" "F3" btnf
 |	"RUN" "F4" btnf
 
-	'namenow printr
+	'namenow .print
 	;
 
 
@@ -599,33 +587,35 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 :execerr
 	'outpad strcpy
 	emptycode
-	refreshfoco
+|	refreshfoco
 	;
 
 |vvv DEBUG  vvv
 
 :stepdebug
-	0 hcode 1 + gotoxy
-	$0000AE 'ink !
-	rows hcode - 1 - backlines
+	0 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
 
-	$ff00 'ink !
+|	$ff00 'ink !
 |	'outpad sp text cr
 	dup "%h" .println
 
-	$ffffff 'ink !
+|	$ffffff 'ink !
 	" > " .print
-	'inpad 1024 input cr
-	$ffff00 'ink !
+|	'inpad 1024 input cr
+|	$ffff00 'ink !
 	stackprintvm cr
-	regb rega " RA:%h RB:%h " print
-	waitesc ;
+	regb rega " RA:%h RB:%h " .print
+	|waitesc 
+	;
 
 :viewimm
-	cls home cr cr cr
+	.cls 
+	cr cr cr
 	here ( code> <? @+
 		dup tokenprintc
-		"   %h" print
+		"   %h" .print
 		cr
 		) drop
 	waitesc ;
@@ -651,34 +641,34 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	0 'inpad !
 	"Ok" 'outpad strcpy
 
-	refreshfoco
+|	refreshfoco
 	;
 
 :showip
-	<<ip 0? ( drop "END" print ; )
-	dup @ "%h (%h)" print
+	<<ip 0? ( drop "END" .print ; )
+	dup @ "%h (%h)" .print
 	<<bp 0? ( drop ; )
-	dup @ " %h (%h)" print
+	dup @ " %h (%h)" .print
 	;
 
 :console
 |	xsele cch op
-|	wcode hcode 1 + gotoxy
+|	wcode hcode 1 + .at
 |	xsele ccy pline
 |	sw ccy pline
 |	sw cch pline
 |	$040466 'ink !
 |	poli
 
-	0 hcode 1 + gotoxy
-	$0000AE 'ink !
-	rows hcode - 1 - backlines
+	0 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
 
     showip
-	'outpad sp text cr
+|	'outpad sp text cr
 
 	" > " .print
-	'inpad 1024 input cr
+|	'inpad 1024 input cr
 	stackprintvm cr
 	regb rega " RA:%h RB:%h " .print
 	;
@@ -744,22 +734,25 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 |-------- view screen
 :waitf6
-	key >f6< =? ( exit ) drop ;
+|	key >f6< =? ( exit ) drop 
+	;
 
 :viewscreen
-	xfb> 'waitf6 onshow ;
+	|xfb> 'waitf6 onshow 
+	;
 
 #statevars
 
 |-------------------------------
 :modesrc
 	drawcode
-	drawcursor
+|drawcursor
 	drawtags
 	statevars 1? ( showvars ) drop
 
-	0 rows 1 - gotoxy
-	$3465A4 'ink ! backline
+	0 rows 1 - .at
+|	$3465A4 'ink ! 
+|	backline
 	"IMM" "TAB" btnf
 	"PLAY" "F1" btnf
 	"PLAY2C" "F2" btnf
@@ -771,25 +764,30 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 	showvstack
 
-	key
-	<up> =? ( karriba ) <dn> =? ( kabajo )
-	<ri> =? ( kder ) <le> =? ( kizq )
-	<home> =? ( khome ) <end> =? ( kend )
-	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
-	>esc< =? ( exit )
+	codekey 32 >>
+	$48 =? ( karriba ) 
+	$50 =? ( kabajo )
+	$4d =? ( kder ) 
+	$4b =? ( kizq )
+	$47 =? ( khome ) 
+	$4f =? ( kend )
+	$49 =? ( kpgup ) 
+	$51 =? ( kpgdn )
 
-	<f1> =? ( playvm gotosrc )
-	<f2> =? ( play2cursor playvm gotosrc )
+|	27 =? ( exit )
 
-	<f3> =? ( mode!view codetoword ) | word analisys
+	$3b =? ( playvm gotosrc )
+	$3c =? ( play2cursor playvm gotosrc )
+
+	$3d =? ( mode!view codetoword ) | word analisys
 |	<f10> =? ( mode!view 0 +word )
 
-	<f5> =? ( setbp )
-	>f6< =? ( viewscreen )
-	<f7> =? ( stepvm gotosrc )
-	<f8> =? ( stepvmn gotosrc )
-	<f9> =? ( 1 statevars xor 'statevars ! )
-	<tab> =? ( mode!imm )
+	$3f =? ( setbp )
+|	>f6< =? ( viewscreen )
+|	<f7> =? ( stepvm gotosrc )
+|	<f8> =? ( stepvmn gotosrc )
+|	<f9> =? ( 1 statevars xor 'statevars ! )
+|	<tab> =? ( mode!imm )
 
 
 	drop
@@ -804,8 +802,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	console
 	showvars
 
-	0 rows 1 - gotoxy
-	$989898 'ink ! backline
+	0 rows 1 - .at
+|	$989898 'ink ! backline
 	"SRC" "TAB" btnf
 
 	"PLAY2C" "F1" btnf
@@ -814,16 +812,16 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	"STEPN" "F8" btnf
 
 	key
-	>esc< =? ( exit )
-	<ret> =? ( execimm )
-	<tab> =? ( mode!src )
+|	>esc< =? ( exit )
+|	<ret> =? ( execimm )
+|	<tab> =? ( mode!src )
 
-	<f1> =? ( fuente> breakpoint playvm gotosrc )
+|	<f1> =? ( fuente> breakpoint playvm gotosrc )
 |	<f2> =? ( fuente> incnow src2code drop )
 
-	<f6> =? ( viewscreen )
-	<f7> =? ( stepvm gotosrc )
-	<f8> =? ( stepvmn gotosrc )
+|	<f6> =? ( viewscreen )
+|	<f7> =? ( stepvm gotosrc )
+|	<f8> =? ( stepvmn gotosrc )
 
 |	<f10> =? ( mode!view 0 +word )
 
@@ -833,7 +831,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 |------ MAIN
 :debugmain
-	cls gui
+	.cls 
 	barratop
 
 	emode
@@ -842,7 +840,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	2 =? ( modesrc )
 	drop
 
-	acursor ;
+	;
 
 |----------- SAVE DEBUG
 :,printword | adr --
@@ -910,6 +908,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 	prevars | add vars to panel
 
-	'debugmain onshow
+	debugmain 
 	;
 
