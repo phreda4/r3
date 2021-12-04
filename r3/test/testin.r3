@@ -1,15 +1,12 @@
 ^r3/win/console.r3
 
-::inkey
-|	stdin 'irec 1 'kb PeekConsoleInput		
-|	irec $100000001 <>? ( drop ; ) drop
-	stdin 'irec 1 'kb ReadConsoleInput
-|	codekey 48 >> 
-	irec
-	;
-	
+
 :main
-	inkey "%h " .print
+	getch 
+	27 =? ( drop ; )
+	"getch: %h " .println
+	codekey "codekey: %h " .println
+	
 	main ;
 	
 : main ;

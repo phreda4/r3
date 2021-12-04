@@ -421,74 +421,81 @@
 	;
 
 |------ Color line
-:col_inc .yellow ;
-:col_com .blackl ;
-:col_cod .redl ;
-:col_dat .Magental ;
-:col_str .whitel ;
-:col_adr .cyanl ;
-:col_nor .greenl ;
-:col_nro .yellowl ;
-:col_select .whitel ;
-
-#mcolor
+#colornow 0
 
 :wcolor
-	mcolor 1? ( drop ; ) drop
 	over c@
-	$5e =? ( drop col_inc ; )				| $5e ^  Include
-	$7c =? ( drop col_com 1 'mcolor ! ; )	| $7c |	 Comentario
-	$3A =? ( drop col_cod ; )				| $3a :  Definicion
-	$23 =? ( drop col_dat ; )				| $23 #  Variable
-	$27 =? ( drop col_adr ; )				| $27 ' Direccion
+	$22 =? ( drop 15 'colornow ! ; )	| $22 " string
+	$5e =? ( drop 3 'colornow ! ; )	| $5e ^  Include
+	$7c =? ( drop 8 'colornow ! ; )	| $7c |	 Comentario
+	$3A =? ( drop 9 'colornow ! ; )	| $3a :  Definicion
+	$23 =? ( drop 13 'colornow ! ; )	| $23 #  Variable
+	$27 =? ( drop 14 'colornow ! ; )	| $27 ' Direccion
     drop
-	over isNro 1? ( drop col_nro ; ) drop
-	col_nor ;
+	over isNro 1? ( drop 11 'colornow ! ; ) 
+	drop 10 'colornow ! ;
 
-| "" logic
-:strcol
-	mcolor
-	0? ( drop col_str 2 'mcolor ! ; )
-	1 =? ( drop ; )
-	drop
-	over c@ $22 <>? ( drop
-		mcolor 3 =? ( drop 2 'mcolor ! ; )
-		drop 0 'mcolor ! ; ) drop
-	mcolor 2 =? ( drop 3 'mcolor ! ; ) drop
-	2 'mcolor !
+:,esc $1b ,c $5b ,c	;
+:,fcolor ,esc "38;5;%dm" ,print ;
+:,bcolor ,esc "48;5;%dm" ,print ;
+:,eline  ,esc "K" ,s ; | erase line from cursor
+
+:,tcolor colornow ,fcolor ;
+
+:inselect
+	inisel finsel bt? ( 4 ,bcolor ; )
+	0 ,bcolor ;
+	
+:atselect
+	inisel =? ( 4 ,bcolor ; )
+	finsel =? ( 0 ,bcolor ; )
 	;
 
 :iniline
-	0 'mcolor !
+	inselect
 	xlinea wcolor
 	( 1? 1 - swap
-		c@+ 0? ( drop nip 1 - ; )
+		atselect c@+ 0? ( drop nip 1 - ; )
 		13 =? ( drop nip 1 - ; )
 		9 =? ( wcolor )
 		32 =? ( wcolor )
-		$22 =? ( strcol )
 		drop swap ) drop ;
-
-:emitl
-	9 =? ( drop "    " .write ; )
-	emit 
-	;
-:a	
-	|ccx xsele <? ( drop ; ) drop
-	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
-|	wcode xcode + gotox
-	"." .write
-	;
-
-:drawline
+		
+	
+:strword
+	,c
+	( atselect c@+ 1?
+		$22 =? (
+			over c@  $22 <>? ( drop ; )
+			,c swap 1 + swap )
+		,c	) drop 1 - ;
+	
+:endline
+	,c ( atselect c@+ 1? 
+			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
+	
+:parseline 
 	iniline
-	( c@+ 1?
-		13 =? ( drop ; )
-		9 =? ( wcolor )
-		32 =? ( wcolor )
-		$22 =? ( strcol )
-		emitl
-		) drop 1 - ;
+	,tcolor
+	( atselect c@+ 1? 13 <>?  | 0 o 13 sale
+		9 =? ( wcolor ,tcolor )
+		32 =? ( wcolor ,tcolor )
+		$22 =? ( strword ) 		| $22 " string
+		$5e =? ( endline ; )	| $5e ^  Include
+		$7c =? ( endline ; )	| $7c |	 Comentario
+		,c
+		) 
+	1? ( drop ; ) drop
+	1 - ;
+
+:drawline | adr -- adr'
+	mark 
+	,eline
+	
+	parseline 
+	here
+	empty
+	here dup rot rot - type ;
 
 |..............................
 :linenow
@@ -507,7 +514,7 @@
 	0 ( hcode <?
 		0 ycode pick2 + .at
 		linenro 
-		swap drawline .eline
+		swap drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
 	fuente>
@@ -517,7 +524,7 @@
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 4 'xcursor +! ; )
+	9 =? ( drop 3 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
 :cursorpos
@@ -603,7 +610,7 @@
 			drop 'lins 'modo ! .insc )
 
 	|<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	|<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+	$2a =? ( 1 'mshift ! ) $36 =? ( 0 'mshift ! ) | shit der ize.. falsa soltar\
 
 	$3b =? ( runfile )
 	$3c =? ( debugfile )
