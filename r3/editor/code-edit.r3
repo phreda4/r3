@@ -1,4 +1,4 @@
-| edit-code
+||||| edit-code
 | PHREDA 2007
 |---------------------------------------
 ^r3/win/console.r3
@@ -588,8 +588,13 @@
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	ckey 16 >> $ff and 
-	8 >? ( modo ex ; )
+	ckey 
+	$1000 nand? (
+		16 >> $ff and 
+		27 <>? (
+			8 >? ( modo ex ; )
+			)
+		) 
 	drop
 
 	ckey

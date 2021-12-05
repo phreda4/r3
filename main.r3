@@ -344,6 +344,7 @@
     dup getinfo $3 and 3 << 'filecolor + @ .fc ;
 
 :drawl | n --
+	.eline
 	sp colorfile printfn .reset ;
 	
 :drawtree
@@ -355,21 +356,20 @@
 		cr 1 + ) drop ;
 	
 :screen
-	.reset .cls 
+	.reset |.cls 
 	.bblue .white
-	0 0 .at .eline
-	0 0 .at " r3 " .print
+	0 0 .at 
+	.eline " r3 " .print
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " .printe
 	
 	.reset
 	drawtree
-
-	.bblue .white	
-	0 linesv 2 + .at .eline
-	0 linesv 2 + .at 
+	"0J" .[ | clear 
 	
-	'name 'path " %s/%s  " .print
-
+	.bblue .white	
+	0 linesv 2 + .at 
+	.eline 'name 'path " %s/%s  " .print
+	
 	0 actual pagina - 2 + .at
 	;
 
@@ -398,10 +398,12 @@
 	rows 3 - 'linesv !
 	loadm
 
+	.getconsoleinfo
+	.alsb 
 	screen
 	( getch $1B1001 <>?
  		teclado ) drop
-		
+	.masb	
 	savem		
 	;
 
