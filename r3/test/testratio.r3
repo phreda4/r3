@@ -27,7 +27,7 @@
 	
 ::64boxratio | 64wh 'box -- ; adjust box by ratio and pad!
 	>a
-	dup 32 >> swap 32 << 32 >>	| h w | texture
+	dup 32 >> swap 32 << 32 >>	| h w | texture
 	a> 8 + d@ pick2 pick2 */	| h w HN
 	a> 12 + d@ 
 	>? ( ratio2 ; ) 

@@ -452,15 +452,13 @@
 	;
 
 :iniline
-	inselect
 	xlinea wcolor
 	( 1? 1 - swap
-		atselect c@+ 0? ( drop nip 1 - ; )
+		c@+ 0? ( drop nip 1 - ; )
 		13 =? ( drop nip 1 - ; )
 		9 =? ( wcolor )
 		32 =? ( wcolor )
 		drop swap ) drop ;
-		
 	
 :strword
 	,c
@@ -475,7 +473,6 @@
 			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
 	
 :parseline 
-	iniline
 	,tcolor
 	( atselect c@+ 1? 13 <>?  | 0 o 13 sale
 		9 =? ( wcolor ,tcolor )
@@ -488,24 +485,24 @@
 	1? ( drop ; ) drop
 	1 - ;
 
-:drawline | adr -- adr'
-	mark 
-	,eline
+|..............................
+:linenow
+	ycursor =? ( ">" ,s ; ) 32 ,c ;
 	
+:linenro | lin -- lin
+	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+
+:drawline | adr line -- line adr'
+	mark 
+	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
+	linenro	swap 
+	iniline
+	inselect	
 	parseline 
 	here
 	empty
 	here dup rot rot - type ;
 
-|..............................
-:linenow
-	ycursor =? ( ">" .write ; ) sp ;
-	
-:linenro | lin -- lin
-	.reset .white
-	dup ylinea + 
-	linenow 1 + .d 3 .r. .write sp
-	; 
 
 |..............................
 :drawcode
@@ -513,8 +510,7 @@
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + .at
-		linenro 
-		swap drawline
+		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
 	fuente>
@@ -546,6 +542,8 @@
 :controloff 0 'panelcontrol ! ;
 
 |---------- manejo de teclado
+#ckey
+
 :buscapad
 	fuente 'findpad findstri
 	0? ( drop ; ) 'fuente> ! ;
@@ -558,7 +556,7 @@
 	|'buscapad 'findpad .print
 	.input
 
-	codekey 32 >>
+	ckey
     $d001c =? ( mode!edit )
 	|>esc< =? ( mode!edit )
 	|>ctrl< =? ( controloff )
@@ -566,7 +564,7 @@
 	;
 
 :controlkey
-	codekey 32 >>
+	ckey
 	|>ctrl< =? ( controloff )
 	|<f> =? ( mode!find )
 	|<x> =? ( controlx )
@@ -590,11 +588,11 @@
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	codekey 48 >> $ff and 
+	ckey 16 >> $ff and 
 	8 >? ( modo ex ; )
 	drop
 
-	codekey 32 >>
+	ckey
 	$8000e =? ( kback )
 	$53 =? ( kdel )
 	$48 =? ( karriba ) 
@@ -610,7 +608,9 @@
 			drop 'lins 'modo ! .insc )
 
 	|<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	$2a =? ( 1 'mshift ! ) $36 =? ( 0 'mshift ! ) | shit der ize.. falsa soltar\
+	
+	$2a =? ( 1 'mshift ! ) $36 =? ( 1 'mshift ! ) | shift der ize.. falta soltar
+	$102a =? ( 0 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift der ize.. falta soltar	
 
 	$3b =? ( runfile )
 	$3c =? ( debugfile )
@@ -671,7 +671,7 @@
 	0 'xlinea !
 	mode!edit
 	pantalla .insc
-	( getch 27 <>? drop
+	( getch $1B1001 <>? 'ckey !
 		emode
 		0? ( editmodekey )
 |	1 =? ( immmodekey )

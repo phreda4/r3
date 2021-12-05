@@ -370,14 +370,11 @@
 	
 	'name 'path " %s/%s  " .print
 
-	codekey 32 >> " $%h " .print
-	
 	0 actual pagina - 2 + .at
 	;
 
 :teclado
-	codekey 32 >>
-	$d001c =? ( fenter screen )
+	$D001C =? ( fenter screen )
 	
 	$48 =? ( fup screen ) | up
 	$50 =? ( fdn screen ) | dn
@@ -402,7 +399,7 @@
 	loadm
 
 	screen
-	( getch 27 <>? drop
+	( getch $1B1001 <>?
  		teclado ) drop
 		
 	savem		

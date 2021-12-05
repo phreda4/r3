@@ -17,18 +17,20 @@
 	stdout rot rot 0 0 WriteFile drop ;
 
 #irec 0 
-##codekey 0 0 0
+#codekey 0 0 0
 
+|--- format key =  $ccp0ss
+|    scancode			    ss
+|    char				cc0000
+|    press(0) release(1)  p000
+|   
+| ej: $1B1001 = release esc
 ::getch | -- key
 	stdin 'irec 1 'kb ReadConsoleInput 
-	irec 
-	$100000001 =? ( drop codekey 48 >> ; )
-	drop 
-	0 dup 'codekey ! ;
-	
+	codekey 32 >> $1000 or irec 20 >> xor ;
 
 ::waitesc
-	( getch 27 <>? drop ) drop ;
+	( getch $1B1001 <>? drop ) drop ;
 	
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
