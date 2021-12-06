@@ -11,25 +11,35 @@
 
 ^./r3vm.r3
 
+#ckey 
 #name * 1024
 #namenow * 256
 
 ::r3debuginfo | str --
+	.reset .cls 
 	r3name
 	here dup 'src !
 	'r3filename
+	dup "load %s" .println
 	2dup load			|	"load" slog
-	here =? ( 3drop "no src" 'error ! ; )
+	here =? ( "no source code." .println  ; )
 	src only13 0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	swap	|	"stage 1" slog
-	r3-stage-1 error 1? ( drop ; ) drop	|	"stage 2" slog
-	r3-stage-2 1? ( drop ; ) drop 		|	"stage 3" slog
-	r3-stage-3			|	"stage 4" slog
-	r3-stage-4			|	"stage ok" slog
+	swap	
+	"stage 1" .println
+	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
+	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+	
+	"stage 2" .println
+	r3-stage-2 1? ( drop ; ) drop 		
+	"stage 3" .println
+	r3-stage-3			
+	"stage 4" .println
+	r3-stage-4			
+	"stage ok" .println
 	;
 
 :savedebug
@@ -185,11 +195,9 @@
 	0 rows 1 - .at
 	"CODE" "F10" btnf
 
-	key
-	$27 |>esc< 
-	=? ( mode!src )
-	$45 |<f10> 
-	=? ( mode!src )
+	ckey 16 >>
+	$27 =? ( mode!src ) |>esc< 
+	$45 =? ( mode!src ) |<f10> 
 
 |	<up> =? ( -1 +word )
 |	<dn> =? ( 1 +word )
@@ -241,95 +249,79 @@
 #fuente> 	| cursor
 #$fuente	| fin de texto
 
-|------------- sourc code
-
-:col_inc 
-	|$ff7f00 'ink ! ;
-:col_com 
-	|$666666 'ink ! ;
-:col_cod 
-	|$ff0000 'ink ! ;
-:col_dat 
-	|$ff00ff 'ink ! ;
-:col_str 
-	|$ffffff 'ink ! ;
-:col_adr 
-	|$ffff 'ink ! ;
-:col_nor 
-	|$ff00 'ink ! ;
-:col_nro 
-	|$ffff00 'ink ! ;
-:col_select 
-	|$444444 'ink ! 
-	;
-
-#mcolor
+|------ Color line
+#colornow 0
 
 :wcolor
-	mcolor 1? ( drop ; ) drop
 	over c@
-	$5e =? ( drop col_inc ; )				| $5e ^  Include
-	$7c =? ( drop col_com 1 'mcolor ! ; )	| $7c |	 Comentario
-	$3A =? ( drop col_cod ; )				| $3a :  Definicion
-	$23 =? ( drop col_dat ; )				| $23 #  Variable
-	$27 =? ( drop col_adr ; )				| $27 ' Direccion
+	$22 =? ( drop 15 'colornow ! ; )	| $22 " string
+	$5e =? ( drop 3 'colornow ! ; )	| $5e ^  Include
+	$7c =? ( drop 8 'colornow ! ; )	| $7c |	 Comentario
+	$3A =? ( drop 9 'colornow ! ; )	| $3a :  Definicion
+	$23 =? ( drop 13 'colornow ! ; )	| $23 #  Variable
+	$27 =? ( drop 14 'colornow ! ; )	| $27 ' Direccion
     drop
-	over isNro 1? ( drop col_nro ; ) drop
-	col_nor
-	;
+	over isNro 1? ( drop 11 'colornow ! ; ) 
+	drop 10 'colornow ! ;
 
-| "" logic
-:strcol
-	mcolor
-	0? ( drop col_str 2 'mcolor ! ; )
-	1 =? ( drop ; )
-	drop
-	over c@ $22 <>? ( drop
-		mcolor 3 =? ( drop 2 'mcolor ! ; )
-		drop 0 'mcolor ! ; ) drop
-	mcolor 2 =? ( drop 3 'mcolor ! ; ) drop
-	2 'mcolor !
-	;
+:,esc $1b ,c $5b ,c	;
+:,fcolor ,esc "38;5;%dm" ,print ;
+:,bcolor ,esc "48;5;%dm" ,print ;
+:,eline  ,esc "K" ,s ; | erase line from cursor
 
-#xlineat
+:,tcolor colornow ,fcolor ;
 
 :iniline
-	0 'mcolor !
-	0 'xlineat !
 	xlinea wcolor
 	( 1? 1 - swap
 		c@+ 0? ( drop nip 1 - ; )
 		13 =? ( drop nip 1 - ; )
-		9 =? ( wcolor 3 'xlineat +! )
-		32 =? ( wcolor )
-		$22 =? ( strcol )
-		drop swap ) drop ;
-
-:emitl
-|	9 =? ( drop gtab ; )
-	emit |ccx xsele <? ( drop ; ) drop
-	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
-	|wcode xcode + gotox
-	|$ffffff 'ink ! 
-	"." .print
-	;
-
-:drawline
-	iniline
-	( c@+ 1?
-		13 =? ( drop ; )
 		9 =? ( wcolor )
 		32 =? ( wcolor )
-		$22 =? ( strcol )
-		emitl
-		) drop 1 - ;
+		drop swap ) drop ;
+	
+:strword
+	,c
+	( c@+ 1?
+		$22 =? (
+			over c@  $22 <>? ( drop ; )
+			,c swap 1 + swap )
+		,c	) drop 1 - ;
+	
+:endline
+	,c ( c@+ 1? 
+			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
+	
+:parseline 
+	,tcolor
+	( c@+ 1? 13 <>?  | 0 o 13 sale
+		9 =? ( wcolor ,tcolor )
+		32 =? ( wcolor ,tcolor )
+		$22 =? ( strword ) 		| $22 " string
+		$5e =? ( endline ; )	| $5e ^  Include
+		$7c =? ( endline ; )	| $7c |	 Comentario
+		,c
+		) 
+	1? ( drop ; ) drop
+	1 - ;
 
 |..............................
+:linenow
+	ycursor =? ( ">" ,s ; ) 32 ,c ;
+	
 :linenro | lin -- lin
-	dup ylinea +
-|	ycursor =? ( |$222222 'ink ! backline )
-|	$aaaaaa 'ink !
-	 1 + .d 3 .r. .print sp ;
+	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+
+:drawline | adr line -- line adr'
+	mark 
+	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
+	linenro	swap 
+	iniline
+	parseline 
+	here
+	empty
+	here dup rot rot - type ;
+|..............................
 
 :<<13 | a -- a
 	( fuente >=?
@@ -397,12 +389,8 @@
 |..............................
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 4 'xcursor +! ; )
-	1 'xcursor +!
-	drop
-|	noemit 
-	;
-
+	9 =? ( drop 3 'xcursor +! ; )
+	drop 1 'xcursor +! ;
 
 |..............................
 :drawcode
@@ -414,9 +402,7 @@
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + .at
-		linenro
-|		xcode gotox
-		swap drawline
+		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
 	;
@@ -431,7 +417,7 @@
 
 
 :tagpos
-	over 12 >> $fff and xcode + xlinea - xlineat -
+	over 12 >> $fff and xcode + xlinea - |xlineat -
 	over ycode + ylinea - .at ;
 
 :tagdec
@@ -744,6 +730,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 #statevars
 
 |-------------------------------
+
 :modesrc
 	drawcode
 |drawcursor
@@ -764,7 +751,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 	showvstack
 
-	codekey 32 >>
+	ckey 32 >>
 	$48 =? ( karriba ) 
 	$50 =? ( kabajo )
 	$4d =? ( kder ) 
@@ -811,7 +798,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	"STEP" "F7" btnf
 	"STEPN" "F8" btnf
 
-	key
+	ckey
 |	>esc< =? ( exit )
 |	<ret> =? ( execimm )
 |	<tab> =? ( mode!src )
@@ -831,22 +818,32 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 |------ MAIN
 :debugmain
-	.cls 
-	barratop
+|	emode
+|	0 =? ( modeimm )
+|	1 =? ( modeview )
+|	2 =? ( modesrc )
+|	drop
 
-	emode
-	0 =? ( modeimm )
-	1 =? ( modeview )
-	2 =? ( modesrc )
-	drop
+	modeview
+	
+	( getch $1B1001 <>? 'ckey !
+		.cls 
+		barratop
 
-	;
+		modeview
+|		emode
+|		0 =? ( modeimm )
+|		1 =? ( modeview )
+|		2 =? ( modesrc )
+|		drop
+	
+ 		) drop ;
 
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
 	( 1? 1 - swap
-		@+
+		d@+
 		dup $ff and "%h " ,print
 		dup 8 >> 1? ( dup "%h " ,print ) drop
 		,tokenprintc ,cr
@@ -859,43 +856,50 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 		@+ "%w " ,print
 		@+ "%h " ,print ,cr
 		) drop
-
+	
 	"dicc-----------" ,ln
 	dicc ( dicc> <?
 		@+ "%w " ,print
 		@+ "%h " ,print
 		@+ "%h " ,print
 		@+ "%h " ,print ,cr
-		dup 16 - ,printword
+		dup 32 - ,printword
 		,cr ) drop
+	
 	"block----------" ,ln
 	blok cntblk ( 1? 1 - swap
-		@+ "%h " ,print
-		@+ "%h " ,print ,cr
+		d@+ "%h " ,print
+		d@+ "%h " ,print ,cr
 		swap ) 2drop
 
 	"mem/map.txt" savemem
 	empty ;
 
 |--------------------- BOOT
-: 	'name "mem/main.mem" load drop
+: 	
+	'name "mem/main.mem" load drop
+	'name .println
+	
 	'name r3debuginfo
-	error 1? ( drop savedebug ; ) drop
+	error 
+	1? ( drop savedebug ; ) drop
+"1" .println	
 	emptyerror
-
+"2" .println
 	savemap | save info in file for debug
-
+"a" .println
 	vm2run
-
+"b" .println
 |	mode!view 0 +word
 
 	calcselect
+"c" .println	
 	'name 'namenow strcpy
 	src setsource
-
+"d" .println
 |	mode!imm
 	mode!src
-
+"e" .println
 | tags
 	'taglist >a
 	$f000000 a!+ 0 a!+ | IP
@@ -903,10 +907,16 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	a> 'taglist> !
 
 	cntdef 1 - 'actword !
+"f" .println	
 	resetvm
+"g" .println	
 	gotosrc
+"h" .println	
 
 	prevars | add vars to panel
+	
+	
+"i" .println
 
 	debugmain 
 	;

@@ -655,9 +655,8 @@
 	0 hcode 2 + .at 
 	.bblue .white .eline
 	sp 'name .write sp ycursor xcursor " %d:%d " .print 
-	hashfile " %h " .print 
-	fuente simplehash " %h " .print 
-|	fuente count  " %d" .print
+
+	fuente count  " %d chars" .print
 	;
 	
 |-------------------------------------
