@@ -265,18 +265,18 @@
 	here 'sortinc !
 	'inc >a
 	0 ( cntinc <?
-		4 a+ a@+ ,
-		dup ,
+		8 a+ a@+ ,q
+		dup ,q
 		1 + ) drop
 	cntinc 1 + sortinc shellsort ;
 
 ::findinclude | adr -- nro
 	sortinc >a
 	0 ( cntinc <?
-		over a@+ <? ( 3drop a> 8 - @ ; ) drop
-		4 a+
+		over a@+ <? ( 3drop a> 16 - @ ; ) drop
+		8 a+
 		1 + ) 2drop
-	a> 4 - @ ;
+	a> 8 - @ ;
 
 |---------- generate include/position in src from tokens
 
@@ -293,7 +293,7 @@
 
 :getsrcxy | adr -- adr
 	0 'sopx ! 0 'sopy !
-	sink 3 << 'inc + 4 + @ | start of include
+	sink 3 << 'inc + 8 + @ | start of include
 	'posnow !
 	getsrcxyinc ;
 
@@ -308,7 +308,7 @@
 
 |---------- PREPARE CODE FOR RUN
 :tokvalue | 'adr tok -- 'adr tok value
-	over 4 - @ 8 >> ;
+	over 4 - d@ 8 >> ;
 
 :valstr
 	( c@+ 1?
@@ -316,24 +316,24 @@
 		,c ) 2drop ;
 
 :blwhile? | -- fl
-	tokvalue 3 << blok + @ $10000000 and ;
+	tokvalue 3 << blok + d@ $10000000 and ;
 
 :blini | -- end?
-	tokvalue 3 << blok + @  $fffffff and 2 << code + ;
+	tokvalue 3 << blok + d@  $fffffff and 2 << code + ;
 
 :blend | -- end?
-	tokvalue 3 << blok + 4 + @ 2 << code + ;
+	tokvalue 3 << blok + 4 + d@ 2 << code + ;
 
 :patch! | adr tok value -- adr tok
-	pick2 4 - dup @ $ff and rot or swap ! ;
+	pick2 4 - dup d@ $ff and rot or swap d! ;
 
 :transfcond | adr' tok -- adr' tok | ; 22..34
 	blend pick2 - 4 + 8 << patch! ;
 
 :trwor
-	over @ $ff and
+	over d@ $ff and
 	16 <>? ( drop ; ) drop
-	over 4 - dup @ $ff not and 6 or swap ! | call tail call
+	over 4 - dup d@ $ff not and 6 or swap ! | call tail call
 	;
 
 :tr( | adr' tok -- adr' tok
@@ -358,7 +358,7 @@
 	pick2 code - memixy + !
 	over code - memsrc + !
 	srcnow >>next 'srcnow !
-	@+ $ff and
+	d@+ $ff and
 |	12 =? ( trwor ) | call
 	17 =? ( tr( )
 	18 =? ( tr) )
@@ -368,10 +368,14 @@
 	drop ;
 
 :code2mem1 | adr -- adr
-	dup 8 + @ 1 and? ( drop ; ) drop	| code only
+	dup 16 + @ 1 and? ( drop ; ) drop	| code only
+	"1" .println
 	dup @ findinclude 'sink ! | include
+	"2" .println
 	dup @ >>next getsrcxy 'srcnow !
+	"3" .println
 	dup adr>toklenreal
+	"4" .println
 	( 1? 1 - swap
 		transform1
 		swap ) 2drop ;
@@ -387,7 +391,7 @@
 	;
 
 :code2mem1 | adr -- adr
-	dup 8 + @ 1 and? ( drop ; ) drop	| code only
+	dup 16 + @ 1 and? ( drop ; ) drop	| code only
 	sameinc
 	dup adr>toklenreal
 	( 1? 1 - swap
@@ -399,7 +403,7 @@
 :storebig | adr tok type big -- adr' tok
 	memaux !
 	6 -
-	memaux blok - 8 << or pick2 4 - !
+	memaux blok - 8 << or pick2 4 - d!
 	8 'memaux +!
 	;
 
@@ -408,25 +412,25 @@
 	dup isNro 0? ( 1 + ) 6 + | 7-dec,8-bin,9-hex,10-fix ..
 	swap str>anro nip
 	dup 40 << 40 >> <>? ( storebig ; )
-	8 << or pick2 4 - ! ;
+	8 << or pick2 4 - d! ;
 
 :trstr
 	mark
 	memaux 'here !
-	over 4 - @ 8 >> src + valstr 0 ,c
-	memaux blok - 8 << 11 or pick2 4 - !
+	over 4 - d@ 8 >> src + valstr 0 ,c
+	memaux blok - 8 << 11 or pick2 4 - d!
 	here 'memaux !
 	empty
 	;
 
 :transform2 | adr' -- adr'
-	@+ $ff and
+	d@+ $ff and
 	7 10 bt? ( transflit )
 	11 =? ( trstr ) | str
 	drop ;
 
 :code2mem2 | adr -- adr
-	dup 8 + @ 1 and? ( drop ; ) drop	| code only
+	dup 16 + @ 1 and? ( drop ; ) drop	| code only
 	dup adr>toklenreal
 	( 1? 1 - swap
 		transform2
@@ -437,11 +441,12 @@
 	-1 'sink ! | include nr
 	dicc ( dicc> <?
 		code2mem1
-		16 + ) drop
+		32 + ) drop
 	blok 'memaux !
 	dicc ( dicc> <?
 		code2mem2
-		16 + ) drop	;
+		32 + ) drop	
+	;
 
 |------- IMM CODE
 :transformimm
@@ -463,7 +468,7 @@
 	 	) drop ;
 
 |------ PREPARE DATA FOR RUN
-#gmem ',
+#gmem ',q
 
 :memlit
 	tokvalue src + str>anro nip gmem ex ;
@@ -472,30 +477,30 @@
 	'here +! ;
 
 :memstr | store string
-	over 4 - @ 8 >> src + valstr 0 ,c ;
+	over 4 - d@ 8 >> src + valstr 0 ,c ;
 
 :memwor
-	tokvalue dic>tok @ , ;
+	tokvalue dic>tok @ ,q ;
 
 :getvarmem
-	@+ $ff and
+	d@+ $ff and
 	7 10 bt? ( memlit )
 	11 =? ( memstr ) | str
 	12 15 bt? ( memwor )
 	17 =? ( ',c 'gmem ! )	| (
-	18 =? ( ', 'gmem ! )	| )
-	19 =? ( ',q 'gmem ! )	| [
-	20 =? ( ', 'gmem ! )	| ]
+	18 =? ( ',q 'gmem ! )	| )
+	19 =? ( ', 'gmem ! )	| [
+	20 =? ( ',q 'gmem ! )	| ]
 	58 =? ( 'resbyte 'gmem ! ) | *
 	drop
 	;
 
 :var2mem | adr -- adr
-	dup 8 + @ 1 nand? ( drop ; ) drop	| data only
+	dup 16 + @ 1 nand? ( drop ; ) drop	| data only
 	dup adr>toklen
 	here pick3 4 + !	| save mem place
-	0? ( , drop ; )
-	', 'gmem ! 			| save dword default
+	0? ( ,q drop ; )
+	',q 'gmem ! 			| save dword default
 	( 1? 1 - swap
 		getvarmem
 		swap ) 2drop ;
@@ -503,7 +508,7 @@
 ::data2mem
 	dicc ( dicc> <?
 		var2mem
-		16 + ) drop ;
+		32 + ) drop ;
 
 
 |------ PREPARE 2 RUN

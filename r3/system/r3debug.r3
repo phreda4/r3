@@ -182,8 +182,9 @@
 	
 :modeview
 	0 1 .at
-|	dicmap
-|	incmap
+	dicmap
+	incmap
+	
 	|$ff0000 'ink !
 	mark actword ,wordinfo empty
 	here .print
@@ -409,9 +410,9 @@
 
 |------- TAG VIEWS
 | tipo/y/x/ info
-| tipo(ff)-x(fff)-y(fff)
-| info-tipo
-
+| tipo(ff)-x(fff)-y(fff) (32)
+| info-tipo (32)
+| 
 #taglist * $3fff
 #taglist> 'taglist
 
@@ -495,12 +496,12 @@
 tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 :drawtag | adr txy y -- adr txy y
-	over 24 >> $f and 2 << 'tt + @ ex ;
+	over 24 >> $f and 3 << 'tt + @ ex ;
 
 :drawtags
 	'taglist
 	( taglist> <?
-		@+ dup $fff and
+		d@+ dup $fff and
 		ylinea dup hcode + bt? ( drawtag )
 		2drop 4 + ) drop ;
 
@@ -511,8 +512,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	code2ixy 0? ( drop ; )
 	dup 24 >> incnow <>? ( 2drop ; ) drop
 	$ffffff and cntcr - $2000000 or
-	taglist> !+
-	over swap !+ 'taglist> ! | save >info,mov
+	taglist> d!+
+	over swap d!+ 'taglist> ! | save >info,mov
 	;
 
 :calccrs | adr src -- adr
@@ -524,11 +525,11 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 :maketags
 	'taglist 8 + >a
-	$f000000 a!+ 0 a!+ 		| only ip+bp clear bp
+	$f000000 da!+ 0 a!+ 		| only ip+bp clear bp
 	a> 'taglist> !
 |	incnow 3 << 'inc + 4 + @	| firs src
 	dicc ( dicc> <?
-		@+ calccrs @+ addtag 8 + ) drop ;
+		@+ calccrs @+ addtag 16 + ) drop ;
 
 |---------------------------------
 :barratop
@@ -692,17 +693,17 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	0 'xlinea !
 	dup code2ixy
 	dup 24 >> $ff and srcnow
-	$ffffff and 'taglist !
+	$ffffff and 'taglist d!
 	code2src dup 'fuente> !
-	getsrclen 'taglist 4 + ! ;
+	getsrclen 'taglist 4 + d! ;
 
 :setbp
 	fuente> incnow src2code
 	dup '<<bp !
 	code2ixy
 	$ffffff and $1000000 or
-	'taglist 8 + !
-	<<bp code2src getsrclen 'taglist 12 + ! ;
+	'taglist 8 + d!
+	<<bp code2src getsrclen 'taglist 12 + d! ;
 	;
 
 :play2cursor
@@ -710,8 +711,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	dup '<<bp !
 	code2ixy
 	$ffffff and $1000000 or
-	'taglist 8 + !
-	<<bp code2src getsrclen 'taglist 12 + ! ;
+	'taglist 8 + d!
+	<<bp code2src getsrclen 'taglist 12 + d! ;
 	;
 
 
@@ -883,39 +884,28 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	'name r3debuginfo
 	error 
 	1? ( drop savedebug ; ) drop
-"1" .println	
 	emptyerror
-"2" .println
 	savemap | save info in file for debug
-"a" .println
 	vm2run
-"b" .println
 |	mode!view 0 +word
 
 	calcselect
-"c" .println	
 	'name 'namenow strcpy
 	src setsource
-"d" .println
 |	mode!imm
 	mode!src
-"e" .println
 | tags
 	'taglist >a
-	$f000000 a!+ 0 a!+ | IP
-	$f000000 a!+ 0 a!+ | BP
+	$f000000 da!+ 0 da!+ | IP
+	$f000000 da!+ 0 da!+ | BP
 	a> 'taglist> !
 
 	cntdef 1 - 'actword !
-"f" .println	
 	resetvm
-"g" .println	
-	gotosrc
-"h" .println	
+	
+	|gotosrc
 
 	prevars | add vars to panel
-	
-	
 "i" .println
 
 	debugmain 
