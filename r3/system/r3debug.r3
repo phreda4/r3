@@ -533,15 +533,9 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 |---------------------------------
 :barratop
-	.home
+	.cls
+	"r3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe 
 
-	" D3bug " .print
-
-|	"INSPECT" "F2" btnf
-|	"MEMORY" "F3" btnf
-|	"RUN" "F4" btnf
-
-	'namenow .print
 	;
 
 
@@ -818,27 +812,18 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 
 |------ MAIN
+:modeshow
+	barratop
+	emode
+	0 =? ( modeimm )
+	1 =? ( modeview )
+	2 =? ( modesrc )
+	drop ;
+	
 :debugmain
-|	emode
-|	0 =? ( modeimm )
-|	1 =? ( modeview )
-|	2 =? ( modesrc )
-|	drop
-
-	modeview
-	
+	modeshow
 	( getch $1B1001 <>? 'ckey !
-		.cls 
-		barratop
-
-		modeview
-|		emode
-|		0 =? ( modeimm )
-|		1 =? ( modeview )
-|		2 =? ( modesrc )
-|		drop
-	
- 		) drop ;
+		modeshow ) drop ;
 
 |----------- SAVE DEBUG
 :,printword | adr --
@@ -887,13 +872,17 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	emptyerror
 	savemap | save info in file for debug
 	vm2run
+	
 |	mode!view 0 +word
-
 	calcselect
 	'name 'namenow strcpy
 	src setsource
+	
 |	mode!imm
-	mode!src
+|	mode!src
+
+	1 'emode ! 
+
 | tags
 	'taglist >a
 	$f000000 da!+ 0 da!+ | IP
@@ -906,7 +895,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	|gotosrc
 
 	prevars | add vars to panel
-"i" .println
 
 	debugmain 
 	;
