@@ -1,7 +1,7 @@
 | r3-gendat
 | PHREDA 2018
 |
-^./r3base.r3
+^r3/system/r3base.r3
 
 :tok>dicn | nro -- adr
 	8 >>> 5 << dicc + @ "%w" sprint ;

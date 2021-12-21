@@ -7,7 +7,7 @@
 ^r3/lib/str.r3
 ^r3/lib/parse.r3
 
-^./r3base.r3
+^r3/system/r3base.r3
 
 ##cntinc
 

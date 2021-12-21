@@ -2,7 +2,7 @@
 | pass4 - static stack analisys
 | PHREDA 2019
 |---------------------------------
-^./r3base.r3
+^r3/system/r3base.r3
 
 #MAXINLINE 8
 

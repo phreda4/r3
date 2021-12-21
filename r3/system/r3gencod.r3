@@ -1,11 +1,11 @@
 | r3-gencode
 | PHREDA 2018
 |
-^./r3base.r3
-|^./r3cellana.r3
+^r3/system/r3base.r3
+|^r3/system/r3cellana.r3
 
-^./r3asm0.r3
-|^./r3asm1.r3
+^r3/system/r3asm0.r3
+|^r3/system/r3asm1.r3
 
 #lastdircode
 

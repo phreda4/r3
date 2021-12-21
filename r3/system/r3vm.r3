@@ -1,8 +1,8 @@
 | VM r3
 | PHREDA 2020
 |-------------
-^./r3base.r3
-^./r3stack.r3
+^r3/system/r3base.r3
+^r3/system/r3stack.r3
 
 ^r3/util/sort.r3
 

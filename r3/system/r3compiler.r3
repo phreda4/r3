@@ -2,13 +2,13 @@
 | PHREDA 2019
 |------------------
 ^r3/win/console.r3
-^./r3base.r3
-^./r3pass1.r3
-^./r3pass2.r3
-^./r3pass3.r3
-^./r3pass4.r3
-^./r3gencod.r3
-^./r3gendat.r3
+^r3/system/r3base.r3
+^r3/system/r3pass1.r3
+^r3/system/r3pass2.r3
+^r3/system/r3pass3.r3
+^r3/system/r3pass4.r3
+^r3/system/r3gencod.r3
+^r3/system/r3gendat.r3
 
 #name * 1024
 
