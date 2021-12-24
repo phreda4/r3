@@ -39,6 +39,8 @@
 
 #sys-GetConsoleScreenBufferInfo
 
+#sys-GetCommandLine
+
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::ExitProcess sys-ExitProcess sys1 ;
 ::GetStdHandle sys-GetStdHandle sys1 ;
@@ -75,6 +77,8 @@
 ::FindClose sys-FindClose sys1 drop ;
 ::CreateProcess sys-CreateProcess sys10 ;
 ::GetConsoleScreenBufferInfo sys-GetConsoleScreenBufferInfo sys2 ;
+
+::GetCommandLine sys-GetCommandLine sys0 ;
 
 #console-mode
 ##process-heap
@@ -125,6 +129,7 @@
 	dup "CreateProcessA" getproc 'sys-CreateProcess	!
 	dup "GetTickCount" getproc 'sys-GetTickCount !
 	dup "GetConsoleScreenBufferInfo" getproc 'sys-GetConsoleScreenBufferInfo !
+	dup "GetCommandLineA" getproc 'sys-GetCommandLine !
 	
 	drop
 	AllocConsole 

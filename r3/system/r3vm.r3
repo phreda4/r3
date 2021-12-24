@@ -369,13 +369,9 @@
 
 :code2mem1 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
-	"1" .println
 	dup @ findinclude 'sink ! | include
-	"2" .println
 	dup @ >>next getsrcxy 'srcnow !
-	"3" .println
 	dup adr>toklenreal
-	"4" .println
 	( 1? 1 - swap
 		transform1
 		swap ) 2drop ;
@@ -450,7 +446,7 @@
 
 |------- IMM CODE
 :transformimm
-	@+ $ff and
+	d@+ $ff and
 	7 10 bt? ( transflit )
 	11 =? ( trstr ) | str
 |	12 =? ( trwor ) | call

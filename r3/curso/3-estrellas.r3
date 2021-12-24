@@ -4,7 +4,6 @@
 ^r3/win/sdl2.r3
 ^r3/lib/rand.r3
 
-
 #puntos * $3fff 		| memoria para x,y de cada punto
 #puntos> 'puntos
 

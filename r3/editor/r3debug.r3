@@ -78,9 +78,10 @@
 
 :mode!view
 	1 'emode !
-	rows 2 - 'hcode !
-	cols 7 - 'wcode !
-	calcselect ;
+|	rows 2 - 'hcode !
+|	cols 7 - 'wcode !
+|	calcselect 
+	;
 
 :mode!src
 	2 'emode !
@@ -101,9 +102,9 @@
 
 :incmap
 	0 ( cntinc <?
-		30 over 1 + .at
+		30 over 2 + .at
 		dup "%d " .print
-		dup 3 << 'inc + @+ swap @ "%h %l" .print
+		dup 4 << 'inc + @+ swap @ "%h %l" .print
 
 		incnow =? ( " <" .print )
 		1 + ) drop
@@ -142,17 +143,20 @@
 	drop ;
 
 :printword | nro --
-	|actword =? ( |$222222 'ink !  backline )
-	|$888888 'ink !
+	actword =? ( .Rever )
 	dup 1 + "%d." .print
-	4 << dicc +
-	dup 8 + @ 1 nand? ( drop printcode ; ) drop
-	printdata ;
+	5 << dicc +
+	dup 16 + @ 1 nand? ( drop printcode ; ) drop
+	printdata 
+	;
 
 :dicmap
+	.reset
 	0 ( hcode <?
+		2 over 2 + .at
 		dup iniword +
-		printword cr
+		printword
+		.reset
 		1 + ) drop ;
 
 :+word | d --
@@ -162,7 +166,8 @@
 	iniword hcode + >=? ( dup hcode - 1 + 'iniword ! )
 	'actword !
 	wordanalysis
-	actword dic>adr @ findinclude 'incnow !
+	actword dic>adr @ findinclude 
+	'incnow !
 	;
 
 :setword | w --
@@ -181,32 +186,35 @@
 	;
 	
 :modeview
-	0 1 .at
 	dicmap
-	incmap
+|	incmap
 	
 	|$ff0000 'ink !
-	mark actword ,wordinfo empty
+	mark actword ,wordinfo ,eol empty
 	here .print
-	wordmap
+	
+	|wordmap
 
-	0 hcode 1 + .at
+|	1 hcode 1 + .at
 |	$0000AE 'ink !
 |	rows hcode - 1 - backlines
-	0 rows 1 - .at
-	"CODE" "F10" btnf
+|	1 rows 1 - .at
+|	"CODE" "F10-" btnf
 
-	ckey 16 >>
-	$27 =? ( mode!src ) |>esc< 
+	ckey 
+|	$27 =? ( mode!src ) |>esc< 
 	$45 =? ( mode!src ) |<f10> 
 
-|	<up> =? ( -1 +word )
-|	<dn> =? ( 1 +word )
-|	<home> =? ( cntdef neg +word )
-|	<end> =? ( cntdef +word )
-|	<pgup> =? ( hcode neg +word )
-|	<pgdn> =? ( hcode +word )
+	$48 =? ( -1 +word ) | arriba 
+	$50 =? ( 1 +word )	| abajo
 
+|	$4d =? ( kder ) 
+|	$4b =? ( kizq )
+	$47 =? ( cntdef neg +word )	| home 
+	$4f =? ( cntdef +word ) 	| end 
+	$49 =? ( hcode neg +word )	| pgup 
+	$51 =? ( hcode +word )		| pgdn 
+	
 	drop
 	;
 
@@ -221,8 +229,8 @@
 :prevars
 	'varlist >a
 	dicc< ( dicc> <?
-		dup 8 + @ 1 and? ( over dicc - 4 >> a!+ ) drop
-		16 + ) drop
+		dup 16 + @ 1 and? ( over dicc - 5 >> da!+ ) drop
+		32 + ) drop
 	a> 'varlist - 2 >>
 	'varlistc ! ;
 
@@ -230,7 +238,7 @@
 	0 ( hcode <?
 		varlistc >=? ( drop ; )
 		cols 1 >> over 1 + .at
-		dup 2 << 'varlist + @
+		dup 2 << 'varlist + d@
 		dup dic>adr @ "%w " col_var .print
 		dic>tok @ @ "%d" 
 		|$ffffff 'ink ! 
@@ -534,8 +542,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 |---------------------------------
 :barratop
 	.cls
-	"r3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe 
-
+	"r3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe cr
 	;
 
 
@@ -822,6 +829,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	
 :debugmain
 	modeshow
+	0 +word
 	( getch $1B1001 <>? 'ckey !
 		modeshow ) drop ;
 
@@ -871,7 +879,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	1? ( drop savedebug ; ) drop
 	emptyerror
 	savemap | save info in file for debug
-	vm2run
+|	vm2run
 	
 |	mode!view 0 +word
 	calcselect
@@ -880,22 +888,23 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	
 |	mode!imm
 |	mode!src
-
-	1 'emode ! 
-
+	mode!view
+	
 | tags
-	'taglist >a
-	$f000000 da!+ 0 da!+ | IP
-	$f000000 da!+ 0 da!+ | BP
-	a> 'taglist> !
+|	'taglist >a
+|	$f000000 da!+ 0 da!+ | IP
+|	$f000000 da!+ 0 da!+ | BP
+|	a> 'taglist> !
 
 	cntdef 1 - 'actword !
-	resetvm
+|	resetvm
 	
 	|gotosrc
 
-	prevars | add vars to panel
-
+|	prevars | add vars to panel
+	.getconsoleinfo
+	.alsb 
 	debugmain 
+	.masb
 	;
 
