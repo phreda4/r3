@@ -348,7 +348,7 @@
 	sp colorfile printfn .reset ;
 	
 :drawtree
-	0 2 .at
+	1 2 .at
 	0 ( linesv <?
 		dup pagina +
 		nfiles  >=? ( 2drop ; )
@@ -358,7 +358,7 @@
 :screen
 	.reset |.cls 
 	.bblue .white
-	0 0 .at 
+	1 1 .at 
 	.eline " r3 " .print
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " .printe
 	
@@ -395,7 +395,7 @@
 :main
 	rebuild
 	.getconsoleinfo
-	rows 3 - 'linesv !
+	rows 1 - 'linesv !
 	loadm
 
 	.getconsoleinfo

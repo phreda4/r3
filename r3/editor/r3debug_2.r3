@@ -60,25 +60,34 @@
 #wcode 40
 #hcode 25
 
+#xseli	| x ini win
+#xsele	| x end win
+
 |------ MODES
+:calcselect
+|	xcode wcode + gotox
+|	ccx 'xsele !
+|	xcode gotox ccx 'xseli !
+	;
 
 :mode!imm
 	0 'emode !
 	rows 7 - 'hcode !
 	cols 1 >> 'wcode !
-	;
+	calcselect ;
 
 :mode!view
 	1 'emode !
-	rows 2 - 'hcode !
-	cols 7 - 'wcode !
+|	rows 2 - 'hcode !
+|	cols 7 - 'wcode !
+|	calcselect 
 	;
 
 :mode!src
 	2 'emode !
 	rows 2 - 'hcode !
 	cols 7 - 'wcode !
-	;
+	calcselect ;
 
 |------ MEMORY VIEW
 #actword 0
@@ -112,28 +121,29 @@
 :token | n
 	cnttok >=? ( drop ; )
 	2 << initok +
-	d@ | dup
+	@ | dup
 	tokenprintc
 	;
 	
 :wordmap
 	0 ( hcode <?
 		cnttok <?
-		13 over 2 + .at
+		3 over 2 + .at
 		dup token
 		1 + ) drop ;
 
-|-------------------------------------------
+|---------
 :printcode
 	@+ " :%w " .print
 	drop ;
 
 :printdata
+|	$ff00ff 'ink !
 	@+ " #%w " .print
 	drop ;
 
 :printword | nro --
-	actword =? ( .rever )
+	actword =? ( .Rever )
 	dup 1 + "%d." .print
 	5 << dicc +
 	dup 16 + @ 1 nand? ( drop printcode ; ) drop
@@ -156,31 +166,41 @@
 	iniword hcode + >=? ( dup hcode - 1 + 'iniword ! )
 	'actword !
 	wordanalysis
-	actword dic>adr @ findinclude 'incnow !
+	actword dic>adr @ findinclude 
+	'incnow !
 	;
 
 :setword | w --
-	cntdef 1 - clamp0max 'actword !
-	0 +word
+	cntdef 1 - clamp0max
+
+|	iniword <? ( dup 'iniword ! )
+|	iniword hcode + >=? ( dup hcode - 1 + 'iniword ! )
+
+	'actword !
+	wordanalysis
+	actword dic>adr @ findinclude 'incnow !
 	;
 
 :btnf | txt tecla -- ***
-	.print sp .print ;
+	.print .print
+	;
 	
 :modeview
 	dicmap
 |	incmap
 	
-|	mark actword ,wordinfo ,eol empty
-|	here .print
+	|$ff0000 'ink !
+	mark actword ,wordinfo ,eol empty
+	here .print
 	
-|	wordmap
+	|wordmap
 
-	1 rows 1 + .at .rever
-	cnttokens cntdef cntinc "inc:%d def:%d tokens:%d " .print
-	actword "%d" .print
-	.reset
-	
+|	1 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
+|	1 rows 1 - .at
+|	"CODE" "F10-" btnf
+
 	ckey 
 |	$27 =? ( mode!src ) |>esc< 
 	$45 =? ( mode!src ) |<f10> 
@@ -396,6 +416,128 @@
 	$fuente <? ( 1 - ) 'pantafin> !
 	;
 
+|------- TAG VIEWS
+| tipo/y/x/ info
+| tipo(ff)-x(fff)-y(fff) (32)
+| info-tipo (32)
+| 
+#taglist * $3fff
+#taglist> 'taglist
+
+
+:tagpos
+	over 12 >> $fff and xcode + xlinea - |xlineat -
+	over ycode + ylinea - .at ;
+
+:tagdec
+	tagpos pick2 @ "%d" .print ;
+:taghex
+	tagpos pick2 @ "%h" .print ;
+:tagbin
+	tagpos pick2 @ "%b" .print ;
+:tagfix
+	tagpos pick2 @ "%f" .print ;
+:tagmem
+	tagpos pick2 "'%h" .print ;
+:tagadr
+	tagpos pick2 "'%h" .print ;
+
+:tagip	| ip
+	tagpos
+|	$ffffff 'ink !
+|	pick2 @ ccw *
+|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
+| box.dot 
+	"*" .print
+	;
+
+:tagbp	| breakpoint
+|	blink 0? ( drop ; ) drop
+	tagpos
+|	pick2 @ ccw *
+|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
+|	$ff0000 'ink !
+| 	rectbox 
+	"?" .print
+	;
+
+
+#infostr * 256
+#infocol
+
+:,ncar | n car -- car
+	( swap 1? 1 - swap dup ,c 1 + ) drop ;
+
+:,mov | mov --
+	97 >r	| 'a'
+	dup $f and " " ,s
+	dup r> ,ncar >r "--" ,s
+	swap 55 << 59 >> + | deltaD
+	-? ( ,d r> drop ; ) | error en analisis!!
+	r> ,ncar drop " " ,s ;
+
+:buildinfo | infmov -- str
+	mark
+	'infostr 'here !
+	$f000 'infocol !
+	@+
+	$20 and? ( "R" ,s )		| recurse
+	$80 nand? ( "."  ,s	)	| no ;
+	12 >> $fff and 0? ( $f00000 'infocol ! ) | calls?
+	drop @ ,mov
+	,eol
+	empty
+	'infostr
+	;
+
+:taginfo | infoword
+	tagpos
+	pick2 @ buildinfo
+|	count cols swap - 1 - gotox
+	.print
+	;
+
+:tagnull
+	;
+
+#tt tagip tagbp taginfo tagdec taghex tagbin tagfix tagmem tagadr
+tagnull tagnull tagnull tagnull tagnull tagnull tagnull
+
+:drawtag | adr txy y -- adr txy y
+	over 24 >> $f and 3 << 'tt + @ ex ;
+
+:drawtags
+	'taglist
+	( taglist> <?
+		d@+ dup $fff and
+		ylinea dup hcode + bt? ( drawtag )
+		2drop 4 + ) drop ;
+
+
+#cntcr	| cnt cr from src to first token
+
+:addtag
+	code2ixy 0? ( drop ; )
+	dup 24 >> incnow <>? ( 2drop ; ) drop
+	$ffffff and cntcr - $2000000 or
+	taglist> d!+
+	over swap d!+ 'taglist> ! | save >info,mov
+	;
+
+:calccrs | adr src -- adr
+	over @ code2src
+	0 'cntcr !
+	swap ( over <? c@+
+		13 =? ( 1 'cntcr +! )
+		drop ) 2drop ;
+
+:maketags
+	'taglist 8 + >a
+	$f000000 da!+ 0 a!+ 		| only ip+bp clear bp
+	a> 'taglist> !
+|	incnow 3 << 'inc + 4 + @	| firs src
+	dicc ( dicc> <?
+		@+ calccrs @+ addtag 16 + ) drop ;
 
 |---------------------------------
 :barratop
@@ -541,7 +683,7 @@
 	3 << 'inc +
 	@+ "%l" sprint 'namenow strcpy | warning ! is IN the source code
 	@ setsource
-	|maketags
+	maketags
 	;
 
 :getsrclen | adr -- len
@@ -552,25 +694,26 @@
 	0 'xlinea !
 	dup code2ixy
 	dup 24 >> $ff and srcnow
-	|$ffffff and 'taglist d!
+	$ffffff and 'taglist d!
 	code2src dup 'fuente> !
-	|getsrclen 'taglist 4 + d! 
-	;
+	getsrclen 'taglist 4 + d! ;
 
 :setbp
 	fuente> incnow src2code
 	dup '<<bp !
 	code2ixy
-|	$ffffff and $1000000 or 'taglist 8 + d!
-|	<<bp code2src getsrclen 'taglist 12 + d! ;
+	$ffffff and $1000000 or
+	'taglist 8 + d!
+	<<bp code2src getsrclen 'taglist 12 + d! ;
 	;
 
 :play2cursor
 	fuente> incnow src2code
 	dup '<<bp !
 	code2ixy
-|	$ffffff and $1000000 or 'taglist 8 + d!
-|	<<bp code2src getsrclen 'taglist 12 + d! ;
+	$ffffff and $1000000 or
+	'taglist 8 + d!
+	<<bp code2src getsrclen 'taglist 12 + d! ;
 	;
 
 
@@ -589,10 +732,11 @@
 #statevars
 
 |-------------------------------
+
 :modesrc
 	drawcode
 |drawcursor
-|	drawtags
+	drawtags
 	statevars 1? ( showvars ) drop
 
 	0 rows 1 - .at
@@ -673,6 +817,22 @@
 	drop
 	;
 
+
+|------ MAIN
+:modeshow
+	barratop
+	emode
+	0 =? ( modeimm )
+	1 =? ( modeview )
+	2 =? ( modesrc )
+	drop ;
+	
+:debugmain
+	modeshow
+	0 +word
+	( getch $1B1001 <>? 'ckey !
+		modeshow ) drop ;
+
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
@@ -709,15 +869,6 @@
 	"mem/map.txt" savemem
 	empty ;
 
-|------ MAIN
-:modeshow
-	barratop
-	emode
-	0 =? ( modeimm )
-	1 =? ( modeview )
-	2 =? ( modesrc )
-	drop ;
-
 |--------------------- BOOT
 : 	
 	'name "mem/main.mem" load drop
@@ -727,31 +878,33 @@
 	error 
 	1? ( drop savedebug ; ) drop
 	emptyerror
+	savemap | save info in file for debug
+|	vm2run
 	
-	|savemap | save info in file for debug
-	
-	vm2run
-	
+|	mode!view 0 +word
+	calcselect
 	'name 'namenow strcpy
 	src setsource
-
-	.getconsoleinfo
-	.alsb 
 	
 |	mode!imm
 |	mode!src
-	mode!view 
+	mode!view
 	
-	cntdef 1 - setword
-	
-|	resetvm
-|	gotosrc
-|	prevars | add vars to panel
+| tags
+|	'taglist >a
+|	$f000000 da!+ 0 da!+ | IP
+|	$f000000 da!+ 0 da!+ | BP
+|	a> 'taglist> !
 
-	modeshow
-	( getch $1B1001 <>? 'ckey !
-		modeshow 
-		) drop 
+	cntdef 1 - 'actword !
+|	resetvm
+	
+	|gotosrc
+
+|	prevars | add vars to panel
+	.getconsoleinfo
+	.alsb 
+	debugmain 
 	.masb
 	;
 

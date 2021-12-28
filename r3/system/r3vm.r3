@@ -355,9 +355,9 @@
 	srcnow
 	getsrcxyinc
 	sopy sopx 12 << or sink 24 << or
-	pick2 code - memixy + !
-	over code - memsrc + !
-	srcnow >>next 'srcnow !
+	pick2 code - memixy + d!
+	over code - memsrc + d!
+	srcnow >>next 'srcnow d!
 	d@+ $ff and
 |	12 =? ( trwor ) | call
 	17 =? ( tr( )
@@ -370,7 +370,7 @@
 :code2mem1 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
 	dup @ findinclude 'sink ! | include
-	dup @ >>next getsrcxy 'srcnow !
+	dup @ >>next getsrcxy 'srcnow d!
 	dup adr>toklenreal
 	( 1? 1 - swap
 		transform1
@@ -379,11 +379,11 @@
 :sameinc | adr -- adr
 	dup @
 	dup findinclude
-	sink =? ( drop >>next 'srcnow ! ; )
+	sink =? ( drop >>next 'srcnow d! ; )
 	|---first word in include
 
 	'sink !
-	>>next getsrcxy 'srcnow !
+	>>next getsrcxy 'srcnow d!
 	;
 
 :code2mem1 | adr -- adr
@@ -514,9 +514,9 @@
 	here dup 'memsrc !			| array code to source
 	code> code - + 'memixy !	| array code to include/X/Y
 	code> code - 1 << 'here +!
-	code2run
+|	code2run
 	here 'memvars !
-	data2mem
+|	data2mem
 	here 'freemem !
 	;
 
@@ -527,14 +527,14 @@
 	code - memixy + @ ;
 
 :backsrc | adr -- adr
-	4 - ( dup @ 0? drop 4 - ) drop ;
+	4 - ( dup d@ 0? drop 4 - ) drop ;
 
 ::src2code | src incnow -- code
 	memixy
-	( @+ 24 >> pick2 <>?
+	( d@+ 24 >> pick2 <>?
 		drop ) drop nip
 	4 - memixy - memsrc + |	first code from include
-	( @+ ( 0? drop @+ )
+	( d@+ ( 0? drop d@+ )
 		pick2 <=? drop ) drop	| search src
 	nip
 	backsrc backsrc	| back 2
@@ -545,7 +545,7 @@
 	src2code
 	dicc>
 	( 16 - dicc >=?
-		dup 4 + @ pick2 <? (  drop nip dicc - 4 >> ; )
+		dup 4 + d@ pick2 <? (  drop nip dicc - 4 >> ; )
 		drop ) 2drop
 	0 ;
 
@@ -576,23 +576,23 @@
 	;
 
 ::tokenexec | adr+ token -- adr+
-	$ff and 2 << 'vmc + @ ex ;
+	$ff and 3 << 'vmc + @ ex ;
 
 ::stepvm
 	<<ip 0? ( drop resetvm ; )
 	**emu
-	@+ $ff and 2 << 'vmc + @ ex
+	d@+ $ff and 3 << 'vmc + @ ex
 	'<<ip !
 	emu**
 	;
 
 ::stepvmn | --
 	<<ip 0? ( drop resetvm ; )
-	dup @ $ff and $c <>? ( 2drop stepvm ; ) drop
+	dup d@ $ff and $c <>? ( 2drop stepvm ; ) drop
 	**emu
 	dup 4 + swap
 	( over <>?
-		@+ $ff and 2 << 'vmc + @ ex
+		d@+ $ff and 3 << 'vmc + @ ex
 		1? ) nip
 	'<<ip !
 	emu** ;
@@ -601,7 +601,7 @@
 	<<ip 0? ( drop resetvm ; )
 	**emu
 	( <<bp <>?
-		@+ $ff and 2 << 'vmc + @ ex
+		d@+ $ff and 2 << 'vmc + @ ex
 		1? )
 	'<<ip !
 	emu** ;
