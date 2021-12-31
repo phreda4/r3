@@ -27,15 +27,15 @@
 	px dup dup hasha d! db!+ ;
 	
 :diff16 | val --
-	$1f and 15 - 		'px 2 + c+! 
+	$1f and 15 - 		'px c+! 
 	ca@+ dup 4 >> 7 - 	'px 1 + c+!
-	$f and 7 - 			'px c+! 
+	$f and 7 - 			'px 2 + c+! 
 	img!+ ;
 
 :diff24 | val --
-	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px 2 + c+! 	| red
+	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px c+! 	| red
 	dup $7c and 2 >> 15 - 							'px 1 + c+! | green
-	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px c+! | blue
+	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px 2 + c+! | blue
 	$1f and 15 - 									'px 3 + c+! | alpha
 	img!+ ;
 	
@@ -45,9 +45,9 @@
 	$40 nand? (	$3f and 1 + runlen ; )								| 10......
 	$20 nand? ( diff16 ; )											| 110..... diff 16
 	$10 nand? ( diff24 ; )											| 1110.... diff 24
-	$8 and? ( ca@+ 'px 2 + c! ) 
+	$8 and? ( ca@+ 'px c! ) 
 	$4 and? ( ca@+ 'px 1 + c! )
-	$2 and? ( ca@+ 'px c! )
+	$2 and? ( ca@+ 'px 2 + c! )
 	$1 and? ( ca@+ 'px 3 + c! )
 	drop
 	img!+ ;
@@ -86,6 +86,8 @@
 	over 8 >> $ff and over 8 >> $ff and - 'vg !
 	over 16 >> $ff and over 16 >> $ff and - 'vb !
 	over 24 >> $ff and swap 24 >> $ff and - 'va ! 
+	
+	|	va vr vg vb "b:%d g:%d r:%d a:%d" .println
 	
 	vr -15 16 between
 	vg -7 8 between or
@@ -134,3 +136,23 @@
 	run 1? ( dup encoderun ) drop
 	a> qsize - dup qsize d!
 	;
+
+|---------- 2do pass
+| 0nnnnnnn - n literal number
+| 1nnnnnnn oooooooo - n copy from o ofsset
+
+:lit2 | adr --
+	1 + ( 1? 1 - cb@+ ca!+ ) drop ;
+	
+:dec2pass
+	cb@+ $80 nand? ( lit2 ; )
+	$7f and 1 +
+	a> cb@+ 1 + -
+	swap ( 1? 1 -
+		swap c@+ ca!+ swap ) 2drop ;
+
+:pass2decode | 'adre adr dst --
+	>a >b
+	( b> <? 
+		dec2pass
+		) drop ;
