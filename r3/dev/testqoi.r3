@@ -61,7 +61,7 @@
 	pixels wi hi here qoi_encode
 	dup 'csize ! 
 	8 + 'here +! 0 , 
-	"test.qoi" savemem
+|	"test.qoi" savemem
 
 	imagens SDL_UnlockSurface
 

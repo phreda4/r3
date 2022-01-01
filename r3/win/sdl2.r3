@@ -32,6 +32,8 @@
 #sys-SDL_UnlockTexture
 #sys-SDL_RenderSetLogicalSize
 #sys-SDL_SetRenderDrawBlendMode
+#sys-SDL_SetTextureBlendMode
+
 #sys-SDL_RenderDrawPoint
 #sys-SDL_RenderDrawLine
 #sys-SDL_RenderDrawRect
@@ -83,6 +85,7 @@
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
 ::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_SetRenderDrawBlendMode sys-SDL_SetRenderDrawBlendMode sys2 drop ;
+::SDL_SetTextureBlendMode sys-SDL_SetTextureBlendMode sys2 drop ;
 
 ::SDL_RenderDrawPoint sys-SDL_RenderDrawPoint sys3 drop ;
 ::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys5 drop ;
@@ -403,6 +406,7 @@
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
 	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
 	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
+	dup "SDL_SetTextureBlendMode" getproc 'sys-SDL_SetTextureBlendMode !
 	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
 	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
 	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !

@@ -44,6 +44,13 @@
 |	0? ( drop ; ) drop
 	drop
 	
+	mpixel >a
+	$ffff0000 da!+	
+	$ff00ff00 da!+
+	$ff0000ff da!+
+	$7f0000ff da!+
+	$ff0000ff da!+
+	
 	textbitmap SDL_UnlockTexture
 	;
 	
@@ -60,7 +67,7 @@
 	pixels wi hi here qoi_encode2
 	dup 'csize ! 
 	8 + 'here +! 0 , 
-	"test.qoi" savemem
+|	"test.qoi" savemem
 
 	imagens SDL_UnlockSurface
 
@@ -68,6 +75,7 @@
 	|printdiffimg	
 	
 	qw qh SDLframebuffer 'textbitmap !	
+	textbitmap 1 SDL_SetTextureBlendMode | 1 = blend
 	writetex	
 
 	;
@@ -76,6 +84,7 @@
 #box1 [ 410 0 300 200 ]
 
 :draw
+	$222222 SDLclear
 	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
 	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
@@ -92,10 +101,10 @@
 	drop ;
 	
 :cargar
-	|"media/img/lolomario.png" 
+	"media/img/lolomario.png" 
 	|"media/img/ship_64x29.png" | fail
 	|"media/img/lander.png" |
-	"media/img/bird.png" | fail
+	|"media/img/bird.png" | fail
 	dup
 	IMG_Load 'imagens !
 	loadimg 'imagen !
@@ -109,6 +118,8 @@ $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
+$1 $2 $3 $4 $5 $6
+10 9 8 7 6 5 
 ]
 
 #result * 1024
@@ -118,7 +129,7 @@ $ff0000 $ff00 $ff $ff00 $fe00 $8000
 
 :printimg |adr --
 	>a
-	4 ( 1? 1 -
+	6 ( 1? 1 -
 		6 ( 1? 1 -
 			da@+ $ffffffff and "%h " .print
 		) drop 
@@ -131,7 +142,7 @@ $ff0000 $ff00 $ff $ff00 $fe00 $8000
 	
 	'testimg printimg
 	
-	'testimg 6 4 'result qoi_encode2 'ressize !
+	'testimg 6 6 'result qoi_encode2 'ressize !
 	
 	'result 
 	ressize
@@ -146,15 +157,18 @@ $ff0000 $ff00 $ff $ff00 $fe00 $8000
 	'backimg printimg
 	;
 	
-
-|------------------------------------
-:
-
-	test
-	
+:testimg
 	"r3sdl" 800 600 SDLinit
 	bfont1
 	cargar
 	'draw SDLshow 
 	SDLquit	
+
+	;
+	
+|------------------------------------
+:
+
+	test
+	testimg
 	;
