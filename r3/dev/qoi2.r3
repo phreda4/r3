@@ -26,17 +26,32 @@
 :img!+ | --
 	px dup dup hasha d! db!+ ;
 	
-:diff16 | val --
-	$1f and 15 - 		'px 2 + c+! 
-	ca@+ dup 4 >> 7 - 	'px 1 + c+!
-	$f and 7 - 			'px c+! 
+:diff16 | val -- | ...ggggg rrrrbbbb
+	$1f and 8 << 
+	ca@+ 
+	dup 12 << $f0000 and or or $f1f0f and 
+	px xor 'px !
+	
+|	$1f and 15 - 		'px c+! 
+|	ca@+ dup 4 >> 7 - 	'px 1 + c+!
+|	$f and 7 - 			'px 2 + c+! 
 	img!+ ;
 
-:diff24 | val --
-	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px 2 + c+! 	| red
-	dup $7c and 2 >> 15 - 							'px 1 + c+! | green
-	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px c+! | blue
-	$1f and 15 - 									'px 3 + c+! | alpha
+:diff24 | val --  | ....aaaa arrrrrgg gggbbbbb
+	$f and 25 << 
+	ca@+ dup 24 << $1000000 and rot or | aa......
+	over 14 <<      $1f0000 and rot or | aarr....
+	swap 11 <<        $1f00 and or
+	ca@+ dup 3 <<     $1f00 and rot or | aarrgg...
+	swap $1f and or
+	px xor 
+	'px !
+
+|	$f and 1 << ca@+ dup 7 >> $1 and rot or 15 - 	'px c+! 	| red
+|	dup $7c and 2 >> 15 - 							'px 1 + c+! | green
+|	$3 and 3 << ca@+ dup $e0 and 5 >> rot or 15 - 	'px 2 + c+! | blue
+|	$1f and 15 - 									'px 3 + c+! | alpha
+	
 	img!+ ;
 	
 :decode | -- 
@@ -45,9 +60,9 @@
 	$40 nand? (	$3f and 1 + runlen ; )								| 10......
 	$20 nand? ( diff16 ; )											| 110..... diff 16
 	$10 nand? ( diff24 ; )											| 1110.... diff 24
-	$8 and? ( ca@+ 'px 2 + c! ) 
+	$8 and? ( ca@+ 'px c! ) 
 	$4 and? ( ca@+ 'px 1 + c! )
-	$2 and? ( ca@+ 'px c! )
+	$2 and? ( ca@+ 'px 2 + c! )
 	$1 and? ( ca@+ 'px 3 + c! )
 	drop
 	img!+ ;
@@ -80,42 +95,45 @@
 	dup hasha d@ $ffffffff and 
 	=? ( dup hash ca!+ ; )  		| INDEX=0
 	
-	dup dup hasha d! px	
+	dup dup hasha d! 
 	
-	over $ff and over $ff and - 'vr !
-	over 8 >> $ff and over 8 >> $ff and - 'vg !
-	over 16 >> $ff and over 16 >> $ff and - 'vb !
-	over 24 >> $ff and swap 24 >> $ff and - 'va ! 
+	px over xor 
+	dup $ff and 'vb !
+	dup 8 >> $ff and 'vg !
+	dup 16 >> $ff and 'vr !
+	24 >> $ff and 'va !
 	
-	|	va vr vg vb "b:%d g:%d r:%d a:%d" .println
-	
-	vr -15 16 between
-	vg -7 8 between or
-	vb -7 8 between or
-	63 >> va or
-	0? ( drop | ...rrrrr ggggbbbb
-		vr 15 + $c0 or ca!+
-		vg 7 + 4 << vb 7 + or ca!+ ; ) drop
+|	vb vg vr va "a:%h r:%h g:%h b:%h" .println
 
-	vr -15 16 between 
-	vg -15 16 between or
-	vb -15 16 between or
-	va -15 16 between or
-	63 >> va or
-	0? ( drop | ....rrrr rgggggbb bbbaaaaa
-		vr 15 + dup 1 >> $e0 or ca!+
-		7 << vg 15 + 2 << or vb 15 + 3 >> or ca!+
-		vb 15 + 5 << va 15 + or ca!+ ; ) drop
+	va vg 5 >> or
+	vr vb or 4 >> or 
+	0? ( drop | ...ggggg rrrrbbbb
+		$c0 vg or ca!+
+		vr 4 << vb or ca!+
+		; ) drop
+	
+	vg 5 >> vr 5 >> or
+	vb 5 >> or va 5 >> or
+	0? ( drop | ....aaaa arrrrrgg gggbbbbb
+		$e0 va 1 >> or ca!+
+		va 7 << 
+		vr 2 << or
+		vg 3 >> or ca!+
+		vg 5 <<
+		vb or ca!+
+		; ) drop
+		
+		| .....rrr rrrggggg ggbbbbbb
 
 	$f0 
-	vr 1? ( swap 8 or swap ) drop
+	vb 1? ( swap 8 or swap ) drop
 	vg 1? ( swap 4 or swap ) drop
-	vb 1? ( swap 2 or swap ) drop
+	vr 1? ( swap 2 or swap ) drop
 	va 1? ( swap 1 or swap ) drop
 	ca!+
-	vr 1? ( over ca!+ ) drop
+	vb 1? ( over ca!+ ) drop
 	vg 1? ( over 8 >> ca!+ ) drop
-	vb 1? ( over 16 >> ca!+ ) drop
+	vr 1? ( over 16 >> ca!+ ) drop
 	va 1? ( over 24 >> ca!+ ) drop
 	;
 	
@@ -130,6 +148,9 @@
 	$ff000000 'px !
 	qh qw * ( 1? 1 - swap
 		d@+ $ffffffff and
+		| ARGB --> ABGR
+		|dup $ff and 16 << over $ff0000 and 16 >> or swap $ff00ff00 and or
+		
 		encode
 		'px ! 
 		swap ) 2drop  

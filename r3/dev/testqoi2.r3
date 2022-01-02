@@ -44,13 +44,6 @@
 |	0? ( drop ; ) drop
 	drop
 	
-	mpixel >a
-	$ffff0000 da!+	
-	$ff00ff00 da!+
-	$ff0000ff da!+
-	$7f0000ff da!+
-	$ff0000ff da!+
-	
 	textbitmap SDL_UnlockTexture
 	;
 	
@@ -80,8 +73,8 @@
 
 	;
 		
-#box [ 100 0 300 200 ]
-#box1 [ 410 0 300 200 ]
+#box [ 100 0 300 500 ]
+#box1 [ 410 0 300 500 ]
 
 :draw
 	$222222 SDLclear
@@ -101,8 +94,8 @@
 	drop ;
 	
 :cargar
-	"media/img/lolomario.png" 
-	|"media/img/ship_64x29.png" | fail
+	|"media/img/lolomario.png" 
+	"media/img/ship_64x29.png" | fail
 	|"media/img/lander.png" |
 	|"media/img/bird.png" | fail
 	dup
@@ -119,7 +112,7 @@ $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $1 $2 $3 $4 $5 $6
-10 9 8 7 6 5 
+$100 $f900 $8f0 $700 $600 $500 
 ]
 
 #result * 1024
@@ -168,7 +161,6 @@ $1 $2 $3 $4 $5 $6
 	
 |------------------------------------
 :
-
 	test
 	testimg
 	;
