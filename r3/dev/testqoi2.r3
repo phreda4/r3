@@ -95,9 +95,9 @@
 	
 :cargar
 	|"media/img/lolomario.png" 
-	"media/img/ship_64x29.png" | fail
-	|"media/img/lander.png" |
-	|"media/img/bird.png" | fail
+	|"media/img/ship_64x29.png" 
+	|"media/img/lander.png" 
+	"media/img/sokoban_tilesheet.png" 
 	dup
 	IMG_Load 'imagens !
 	loadimg 'imagen !
@@ -105,14 +105,14 @@
 	;
 	
 |---------------------------------------
-
 #testimg [
+0 $f1f0f 0 $1f1f1f1f 0 0 
+0 0 0 0 0 0
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
 $ff0000 $ff00 $ff $ff00 $fe00 $8000
-$ff0000 $ff00 $ff $ff00 $fe00 $8000
-$ff0000 $ff00 $ff $ff00 $fe00 $8000
-$1 $2 $3 $4 $5 $6
-$100 $f900 $8f0 $700 $600 $500 
+$100 $200 $300 $400 $500 $600
+$10000 $f90000 $03f80000 $70000 $60000 $50000 
+
 ]
 
 #result * 1024
@@ -138,7 +138,7 @@ $100 $f900 $8f0 $700 $600 $500
 	'testimg 6 6 'result qoi_encode2 'ressize !
 	
 	'result 
-	ressize
+	ressize 12 +
 	( 1? 1 - swap
 		c@+ $ff and "%h " .print
 		swap ) drop
@@ -161,6 +161,6 @@ $100 $f900 $8f0 $700 $600 $500
 	
 |------------------------------------
 :
-	test
+|	test
 	testimg
 	;
