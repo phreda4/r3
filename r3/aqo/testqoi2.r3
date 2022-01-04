@@ -1,12 +1,12 @@
 | qoi encoder/decoder
 | PHREDA 2021
-
+|MEM 100
 ^r3/lib/mem.r3
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
 ^r3/util/bfont.r3
-^r3/dev/qoi2.r3
+^r3/aqo/qoi2.r3
 
 #textbitmap
 
@@ -39,31 +39,36 @@
 
 :writetex	
 	textbitmap 0 'mpixel 'mpitch SDL_LockTexture
-	
+	"decode" .println
 	mpixel code qoi_decode2 | bitmap data -- 1/0
 |	0? ( drop ; ) drop
 	drop
-	
+	"decode end" .println
 	textbitmap SDL_UnlockTexture
 	;
 	
+	
 :encodeimg
 	imagens SDL_LockSurface
-	imagens 16 + 
+	imagens 
+	16 + 
 	d@+ 'wi !
 	d@+ 'hi !
 	d@+ 'pi !
 	4 + @ 'pixels !
-	
+	pi hi wi "w:%d h:%d p:%d" .println
+	wi hi * 2 << "%h bytes" .println
 	mark
 	here 'code !
+	
+	"encode" .println
 	pixels wi hi here qoi_encode2
+	imagens SDL_UnlockSurface
+	
 	dup 'csize ! 
+	"encode end" .println
 	8 + 'here +! 0 , 
 |	"test.qoi" savemem
-
-	imagens SDL_UnlockSurface
-
 	|printout	
 	|printdiffimg	
 	
@@ -79,7 +84,7 @@
 :draw
 	$222222 SDLclear
 	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
-	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
+|	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
 	$ffffff bcolor
 	0 0 bmat
@@ -94,13 +99,21 @@
 	drop ;
 	
 :cargar
-	|"media/img/lolomario.png" 
-	|"media/img/ship_64x29.png" 
-	|"media/img/lander.png" 
-	"media/img/sokoban_tilesheet.png" 
-	dup
-	IMG_Load 'imagens !
-	loadimg 'imagen !
+|	"r3/aqo/dice.png" | ok
+|	"r3/aqo/kodim10.png"
+|	"r3/aqo/kodim23.png"
+|	"r3/aqo/qoi_logo.png" |ok
+|	"r3/aqo/testcard.png" |ok
+	"r3/aqo/testcard_rgba.png" |OK
+|	"r3/aqo/wikipedia_008.png"
+	
+|	dup
+	IMG_Load 
+|	0? ( drop "error png" .println ; )
+	$16362004 0 | format ARGB
+	SDL_ConvertSurfaceFormat
+	'imagens !
+|	loadimg 'imagen !
 	encodeimg
 	;
 	
