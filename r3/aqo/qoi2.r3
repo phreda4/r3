@@ -45,13 +45,6 @@
 	px xor 'px !
 	img!+ ;
 	
-|			else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA) {
-|				int b2 = bytes[p++];
-|				int vg = (b1 & 0x3f) - 32;
-|				px.rgba.r += vg - 8 + ((b2 >> 4) & 0x0f);
-|				px.rgba.g += vg;
-|				px.rgba.b += vg - 8 +  (b2       & 0x0f);	
-	
 :decode | -- 
 	ca@+
 	$80 nand? ( 2 << 'index + d@ $ffffffff and dup 'px ! db!+ ; ) 	| 0.......
@@ -96,29 +89,11 @@
 	drop 
 	;
 
-|					signed char vr = px.rgba.r - px_prev.rgba.r;
-|					signed char vg = px.rgba.g - px_prev.rgba.g;
-|					signed char vb = px.rgba.b - px_prev.rgba.b;
-|					signed char vg_r = vr - vg;
-|					signed char vg_b = vb - vg;
-
-|					else if (
-|						vg_r >  -9 && vg_r <  8 &&
-|						vg   > -33 && vg   < 32 &&
-|						vg_b >  -9 && vg_b <  8
-|					) {
-|						bytes[p++] = QOI_OP_LUMA     | (vg   + 32);
-|						bytes[p++] = (vg_r + 8) << 4 | (vg_b +  8);
-
 :encode | pixel -- pixel
 	px =? ( 1 'run +! runencode ; )
 	run 1? ( dup encoderun ) drop
 	dup hasha d@ $ffffffff and 
-	=? ( 
-|		over "index %h" .print  
-		dup hash ca!+ 
-|		dup ".%h. " .print
-		; )  		| INDEX=0
+	=? ( dup hash ca!+ ; )  		| INDEX=0
 	dup dup hasha d! 
 	px over xor 
 	0
@@ -155,69 +130,9 @@
 	0 'run !
 	$ff000000 'px !
 	qh qw * ( 1? 1 - swap
-		d@+ $ffffffff and
-		| ARGB --> ABGR
-|		dup $ff and 16 << over $ff0000 and 16 >> or swap $ff00ff00 and or
-		encode 
-		'px ! 
-		swap 
-
-		) 2drop  
+		d@+ $ffffffff and encode 'px ! 
+		swap ) 2drop  
 	"end" .print
 	run 1? ( dup encoderun ) drop
 	a> qsize - dup qsize d!
 	;
-
-|---------- 2do pass
-| 0nnnnnnn - n literal number
-| 1nnnnnnn oooooooo - n copy from o ofsset
-
-:lit2 | adr --
-	1 + ( 1? 1 - cb@+ ca!+ ) drop ;
-	
-:dec2pass
-	cb@+ $80 nand? ( lit2 ; )
-	$7f and 1 +
-	a> cb@+ 1 + -
-	swap ( 1? 1 -
-		swap c@+ ca!+ swap ) 2drop ;
-
-:pass2decode | 'adre adr dst --
-	>a >b
-	( b> <? 
-		dec2pass
-		) drop ;
-	
-|-----------------------
-#runlenb
-#inisrc	
-
-:findyte | byte hasta desde --
-	( over <?
-		c@+ pick3 =? ( 
-		drop ) 3drop 0 ;
-	
-:search 
-	a> 256 - inisrc max 
-	( a> <?
-		
-	;
-	
-:encodebyte | byte --
-	search
-	;
-	
-:enclit | nro --
-	dup 1 - cb!+ 
-	( 1? 1 - ca@+ cb!+ ) drop ;
-	
-:endcpy	| off nro --
-	dup a+
-	1 - $80 or cb!+ 1 - cb!+ ;
-	
-:pass2encode | cnt 'scr 'dst --
-	>b dup 'inisrc ! >a
-	( 1? 1 -
-		ca@+
-		encodebyte
-		) drop ;

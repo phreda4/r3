@@ -1,12 +1,12 @@
 | qoi encoder/decoder
 | PHREDA 2021
-|MEM 100
 ^r3/lib/mem.r3
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3
 ^r3/util/bfont.r3
-^r3/aqo/qoi2.r3
+|^r3/aqo/qoi2.r3
+^r3/aqo/aqoi.r3
 
 #textbitmap
 
@@ -49,6 +49,7 @@
 	
 	
 :encodeimg
+	.cls
 	imagens SDL_LockSurface
 	imagens 
 	16 + 
@@ -64,13 +65,22 @@
 	"encode" .println
 	pixels wi hi here qoi_encode2
 	imagens SDL_UnlockSurface
-	
 	dup 'csize ! 
 	"encode end" .println
 	8 + 'here +! 0 , 
+	
 |	"test.qoi" savemem
 	|printout	
 	|printdiffimg	
+	csize "size:%d" .println
+	cntINDEX "INDEX:%d" .println
+	cntRUN 	 "  RUN:%d" .println
+	cntLUMA  " LUMA:%d" .println
+	cntXOR 	 "  XOR:%d" .println
+	cntARGB1 " RGB1:%d" .println
+	cntARGB2 " RGB2:%d" .println
+	cntARGB3 " RGB3:%d" .println
+	cntARGB4 " RGB4:%d" .println
 	
 	qw qh SDLframebuffer 'textbitmap !	
 	textbitmap 1 SDL_SetTextureBlendMode | 1 = blend
@@ -78,8 +88,8 @@
 
 	;
 		
-#box [ 100 0 300 500 ]
-#box1 [ 410 0 300 500 ]
+#box [ 100 0 500 500 ]
+#box1 [ 410 0 500 500 ]
 
 :draw
 	$222222 SDLclear
@@ -87,10 +97,8 @@
 |	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
 	$ffffff bcolor
-	0 0 bmat
-	qh qw "%d %d" sprint bmprint
-	0 12 bmat
-	csize "%d" sprint bmprint
+	0 0 bmat qh qw "%d %d" sprint bmprint
+	0 12 bmat csize "%d" sprint bmprint
 	
 	SDLredraw
 	
@@ -103,17 +111,16 @@
 |	"r3/aqo/kodim10.png"
 |	"r3/aqo/kodim23.png"
 |	"r3/aqo/qoi_logo.png" |ok
-|	"r3/aqo/testcard.png" |ok
-	"r3/aqo/testcard_rgba.png" |OK
+	"r3/aqo/testcard.png" |ok
+|	"r3/aqo/testcard_rgba.png" |OK
 |	"r3/aqo/wikipedia_008.png"
 	
-|	dup
 	IMG_Load 
-|	0? ( drop "error png" .println ; )
+	dup
 	$16362004 0 | format ARGB
 	SDL_ConvertSurfaceFormat
 	'imagens !
-|	loadimg 'imagen !
+	SDL_DestroyTexture
 	encodeimg
 	;
 	
