@@ -19,21 +19,6 @@
 #code
 #csize
 
-:printdiffimg
-	cr cr
-	pixels here
-	hi wi * ( 1? 1 -
-		hi wi * over - "%d. " .print
-		rot d@+ $ffffffff and "%h " .print rot d@+ $ffffffff and "=%h " .println rot
-		) 3drop	;
-
-:printout
-	cr cr
-	csize "%d" .println
-	code csize ( 1? 1 - swap 
-		c@+ $ff and "%h " .print 
-		swap ) 2drop ;
-		
 #mpixel
 #mpitch
 
@@ -70,17 +55,7 @@
 	8 + 'here +! 0 , 
 	
 |	"test.qoi" savemem
-	|printout	
-	|printdiffimg	
 	csize "size:%d" .println
-	cntINDEX "INDEX:%d" .println
-	cntRUN 	 "  RUN:%d" .println
-	cntLUMA  " LUMA:%d" .println
-	cntXOR 	 "  XOR:%d" .println
-	cntARGB1 " RGB1:%d" .println
-	cntARGB2 " RGB2:%d" .println
-	cntARGB3 " RGB3:%d" .println
-	cntARGB4 " RGB4:%d" .println
 	
 	qw qh SDLframebuffer 'textbitmap !	
 	textbitmap 1 SDL_SetTextureBlendMode | 1 = blend
@@ -89,12 +64,10 @@
 	;
 		
 #box [ 100 0 500 500 ]
-#box1 [ 410 0 500 500 ]
 
 :draw
 	$222222 SDLclear
 	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
-|	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
 	$ffffff bcolor
 	0 0 bmat qh qw "%d %d" sprint bmprint
@@ -125,49 +98,80 @@
 	;
 	
 |---------------------------------------
-#testimg [
-0 $f1f0f 0 $1f1f1f1f 0 0 
-0 0 0 0 0 0
-$ff0000 $ff00 $ff $ff00 $fe00 $8000
-$ff0000 $ff00 $ff $ff00 $fe00 $8000
-$100 $200 $300 $400 $500 $600
-$10000 $f90000 $03f80000 $70000 $60000 $50000 
+| 0nnnnnnn - n literal number 
+| n=1..128
+| 1nnnnnnn oooooooo - n copy from o ofsset
+| n=4..131
+| o=1..256
+#testbytes (
+1 2 3 4 5 5 6 1 2 3 4 3 3 4 5 5 6 1 2 3 3 6 6 6 5 4 1 2 3 
+)
 
-]
+#testcomp (
+$6 1 2 3 4 5 5 6 
+$80 $6 | 1 2 3 4 | 0 = 4 menos de 4 no
+$0 3
+$84 $9 | 3 4 5 5 6 1 2 3
+$9 1 3 6 6 6 5 4 1 2 3
+)
+|---------- 2do pass
 
-#result * 1024
-#ressize
-
-#backimg * 1024
-
-:printimg |adr --
-	>a
-	6 ( 1? 1 -
-		6 ( 1? 1 -
-			da@+ $ffffffff and "%h " .print
-		) drop 
-	cr
-	) drop ;
+:lit2 | adr --
+	1 + ( 1? 1 - cb@+ ca!+ ) drop ;
 	
+:dec2pass
+	cb@+ $80 nand? ( lit2 ; )
+	$7f and 4 +
+	a> cb@+ 1 + -
+	swap ( 1? 1 -
+		swap c@+ ca!+ swap ) 2drop ;
+
+:pass2decode | 'adre adr dst --
+	>a >b
+	( b> <? 
+		dec2pass
+		) drop ;
+		
+|-----------------------
+| CNTBYTE .. 24bits adr for last byte
+
+#bytemap * 1024 | 256* cnt+adr
+#bytelist * 4096 | 256* 16	
+#startmem
+
+:zeromap
+	'bytemap 0 128 fill 
+	'bytelist 0 512 fill 
+	;
+	
+:setbyte | adr byte --
+	1 swap 2 << 'bytemap + c+!
+	;
+	
+:delbyte | byte --
+	-1 swap 2 << 'bytemap + c+!
+	;
+
+|---- encode
+:enclit | nro --
+	dup 1 - cb!+ 
+	( 1? 1 - ca@+ cb!+ ) drop ;
+	
+:endcpy	| off nro --
+	dup a+
+	
+	4 - $80 or cb!+ 1 - cb!+ ;
+	
+:pass2encode | cnt 'scr 'dst --
+	zeromap
+	>b dup 'startmem ! >a
+	( 1? 1 -
+		ca@+
+		encodebyte
+		) drop ;
+		
 	
 :test
-	"encoding.." .println
-	
-	'testimg printimg
-	
-	'testimg 6 6 'result qoi_encode2 'ressize !
-	
-	'result 
-	ressize 12 +
-	( 1? 1 - swap
-		c@+ $ff and "%h " .print
-		swap ) drop
-	cr
-	
-	"decoding.." .println	
-	'backimg 'result qoi_decode2 
-	
-	'backimg printimg
 	;
 	
 :testimg
@@ -176,11 +180,10 @@ $10000 $f90000 $03f80000 $70000 $60000 $50000
 	cargar
 	'draw SDLshow 
 	SDLquit	
-
 	;
 	
 |------------------------------------
 :
-|	test
-	testimg
+	test
+|	testimg
 	;

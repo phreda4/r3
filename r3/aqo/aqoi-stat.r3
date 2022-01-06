@@ -1,4 +1,5 @@
 | Almost Quite OK Image Format
+| with stat variables
 | PHREDA 2022
 | from qoi - https://github.com/phoboslab/qoi
 | qoi variation + simple repeat sequencer encoder/decoder 
@@ -74,8 +75,19 @@
 	( a> >? decode ) ;
 	
 |------ encode
+##cntINDEX
+##cntRUN
+##cntLUMA
+##cntXOR
+#cntRGB
+##cntARGB1
+##cntARGB2
+##cntARGB3
+##cntARGB4
 
 :encoderun | run --
+	1 'cntRUN +!
+	
 	1 - $e0	or ca!+ 0 'run ! ; 
 
 :runencode | -- 
@@ -88,7 +100,7 @@
 	px =? ( 1 'run +! runencode ; )
 	run 1? ( dup encoderun ) drop
 	dup hasha d@ $ffffffff and 
-	=? ( dup hash ca!+ ; ) 				| INDEX=0
+	=? ( dup hash ca!+ 1 'cntINDEX +! ; )  		| INDEX=0
 	dup dup hasha d! 
 	px
 	over $ff and over $ff and - 'vb !
@@ -102,21 +114,29 @@
 | 10 xxxxxx luma16 0..63 : -32..31 : -16...47
 	vgr -8 7 between vg -16 47 between or vgb -8 7 between or 63 >> va or
 	0? ( drop 
+		1 'cntLuma +!
+		
 		vg 16 + $80	or ca!+ vgr 8 + 4 << vgb 8 + or ca!+
 		; ) drop
 		
 | 110 xxxxx luma16 0..32 : -16..15 : -48..-17
 	vgr -7 8 between vg -48 -17 between or vgb -7 8 between or 63 >> va or
 	0? ( drop 
+		1 'cntXOR +!
+		
 		vg 48 + $c0	or ca!+ vgr 7 + 4 << vgb 7 + or ca!+
 		; ) drop
 
+	0 'cntRGB !
+
 	$f0
-	va 1? ( swap 1 or swap ) drop	
-	vr 1? ( swap 2 or swap ) drop
-	vg 1? ( swap 4 or swap ) drop
-	vb 1? ( swap 8 or swap ) drop
+	va 1? ( swap 1 or swap 1 'cntRGB +! ) drop	
+	vr 1? ( swap 2 or swap 1 'cntRGB +! ) drop
+	vg 1? ( swap 4 or swap 1 'cntRGB +! ) drop
+	vb 1? ( swap 8 or swap 1 'cntRGB +! ) drop
 	
+	1 'cntRGB cntRGB 3 << + +!
+
 	dup ca!+
 	8 and? ( over ca!+ ) 
 	4 and? ( over 8 >> ca!+ ) 
@@ -136,6 +156,18 @@
 	qh qw * ( 1? 1 - swap
 		d@+ $ffffffff and encode 'px ! 
 		swap ) 2drop  
+|	"end" .print
 	run 1? ( dup encoderun ) drop
 	a> qsize - dup qsize d!
+	;
+
+::.printstat
+	cntINDEX "INDEX:%d" .println
+	cntRUN 	 "  RUN:%d" .println
+	cntLUMA  " LUMA:%d" .println
+	cntXOR 	 "  XOR:%d" .println
+	cntARGB1 " RGB1:%d" .println
+	cntARGB2 " RGB2:%d" .println
+	cntARGB3 " RGB3:%d" .println
+	cntARGB4 " RGB4:%d" .println
 	;
