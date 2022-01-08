@@ -43,7 +43,7 @@
 	img!+ ;
 
 :luma16d | val -- | ...ggggg rrrrbbbb
-	$3f and 48 - ca@+
+	$1f and 48 - ca@+
 	2dup 4 >> $f and + 7 -	'px 2 + c+! | r
 	over 					'px 1 + c+! | g
 	$f and + 7 - 			'px c+! 	| b

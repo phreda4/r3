@@ -116,6 +116,7 @@ $9 1 3 6 6 6 5 4 1 2 3
 )
 |---------- 2do pass
 
+	
 :lit2 | adr --
 	1 + ( 1? 1 - cb@+ ca!+ ) drop ;
 	
@@ -131,21 +132,81 @@ $9 1 3 6 6 6 5 4 1 2 3
 	( b> <? 
 		dec2pass
 		) drop ;
+	
+:.pmem | 'adr cnt --
+	( 1? 1 - swap
+		c@+ $ff and "%h " .print 
+		swap ) 2drop ;
 		
 |-----------------------
-| CNTBYTE .. 24bits adr for last byte
+|new idea
+#startmem
+
+#bcnt * 256
+#bfirst * 256
+#bnext * 256
+
+:posnext | adrr -- bnext
+	startmem over - $ff and 'bnext + ;
+
+:setmap | byte --
+	1 over 'bcnt + c+! | add 1 to cnt
+	a> posnext
+	over 'bfirst + c!
+	drop
+	;
+	
+:debug
+	'bcnt 32 .pmem cr
+	'bfirst 32 .pmem cr	
+	'bnext 32 .pmem cr	
+
+	.input
+	;
+	
+:encode | dest src cnt -- cdest
+	over 'startmem !
+	swap >a swap >b | a=src b=dst
+	( 1? 1 -
+		ca@+ $ff and 
+		| encode
+		| set
+		setmap
+		debug
+		) drop
+	b> ;
+
+
+
+|--------------------------
+| fisrt idea
 
 #bytemap * 1024 | 256* cnt+adr
 #bytelist * 4096 | 256* 16	
-#startmem
 
+
+
+:calccnt | adr adr -- 
+	>a dup >b
+	( a@+ cb@+ =? drop ) drop
+	b> - ;
+	
+:advance | adr --
+	dup 1 + 15 move> | src dst cnt
+	;
+	
 :zeromap
 	'bytemap 0 128 fill 
 	'bytelist 0 512 fill 
 	;
 	
 :setbyte | adr byte --
-	1 swap 2 << 'bytemap + c+!
+	dup 2 << 'bytemap + 
+	dup @ 8 >>> pick2 - 
+	pick2 4 << 'bytelist + dup advance c!
+	
+	1 over 2 << 'bytemap + c+!
+	
 	;
 	
 :delbyte | byte --
@@ -162,18 +223,36 @@ $9 1 3 6 6 6 5 4 1 2 3
 	
 	4 - $80 or cb!+ 1 - cb!+ ;
 	
+:encodebyte | byte
+		;
+		
 :pass2encode | cnt 'scr 'dst --
 	zeromap
 	>b dup 'startmem ! >a
 	( 1? 1 -
 		ca@+
 		encodebyte
-		) drop ;
+		) drop 
+	;
 		
 	
+
+	
+#res
+#cres	
 :test
+	.cls
+	"test" .println
+	'testbytes 29 .pmem cr
+
+
+	here 'res !	
+	res 'testbytes 29 encode 'cres !
+	
+|	res cres .pmem cr
 	;
 	
+|-------------------------
 :testimg
 	"r3sdl" 800 600 SDLinit
 	bfont1
