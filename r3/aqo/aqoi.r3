@@ -3,11 +3,16 @@
 | from qoi - https://github.com/phoboslab/qoi
 | qoi variation + simple repeat sequencer encoder/decoder 
 | format:
-| 0	xxxxxxx index haash
+| 0	xxxxxxx index hash
 | 10 xxxxxx luma16 0..63 : -32..31 : -16...47
 | 110 xxxxx luma16d 0..32 : -16..15 : -48..-17
 | 1110 xxxx run 0..15 (1..16)
 | 1111 xxxx pixel argb
+
+| more ideas
+| index with hash
+|  dup hash swap $80 and or ; | $80 bit is in the color
+|
 
 ^r3/lib/math.r3
 

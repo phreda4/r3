@@ -1,3 +1,4 @@
+
 | qoi encoder/decoder
 | PHREDA 2021
 ^r3/lib/mem.r3
@@ -139,22 +140,48 @@ $9 1 3 6 6 6 5 4 1 2 3
 		swap ) 2drop ;
 		
 |-----------------------
-|new idea
+| new idea
+| bcnt [byte] cnt of this byte in windows
+| bfisrt [byte] last position of this byte
+| bnext [position] next position of the byte in this position
+
 #startmem
 
 #bcnt * 256
 #bfirst * 256
 #bnext * 256
 
-:posnext | adrr -- bnext
-	startmem over - $ff and 'bnext + ;
-
 :setmap | byte --
-	1 over 'bcnt + c+! | add 1 to cnt
-	a> posnext
-	over 'bfirst + c!
-	drop
-	;
+	1 over 'bcnt + c+! 			| add 1 to cnt
+	a> 1 - startmem - $ff and 	| position
+	swap 'bfirst + 
+	dup c@ 						| byte pos bfirst prev --
+	pick2 'bnext + c!
+	c! ;						| store first
+
+:unset | byte --
+	-1 swap 'bcnt + c+! ;
+	
+#maxcnt
+#maxoff
+	
+:compare | s1 s2 -- s1' s2'
+	( c@+ rot c@+ rot =? 
+		drop swap ) drop ;
+		
+:testoff |
+	
+:traverse | byte -- byte
+	0 'maxcnt !
+	dup "%h? " .print
+	dup 'bcnt + c@ 0? ( drop ; ) | no hay
+	over 'bfirst + c@ | adr byte cnt first
+	dup "%h-" .print
+	swap
+	( 1 - 1? swap 
+		'bnext + c@  | adr byte cnt first
+		dup "%h-" .print
+		swap ) 2drop ;
 	
 :debug
 	'bcnt 32 .pmem cr
@@ -169,8 +196,9 @@ $9 1 3 6 6 6 5 4 1 2 3
 	swap >a swap >b | a=src b=dst
 	( 1? 1 -
 		ca@+ $ff and 
+		traverse 
+		cr
 		| encode
-		| set
 		setmap
 		debug
 		) drop
