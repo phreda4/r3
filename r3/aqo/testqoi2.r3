@@ -146,125 +146,97 @@ $9 1 3 6 6 6 5 4 1 2 3
 | bnext [position] next position of the byte in this position
 
 #startmem
+#posnow
+#maxcnt
+#maxoff
 
 #bcnt * 256
 #bfirst * 256
 #bnext * 256
 
 :setmap | byte --
-	1 over 'bcnt + c+! 			| add 1 to cnt
-	a> 1 - startmem - $ff and 	| position
+	1 over 'bcnt + c+! 	| add 1 to cnt
+	posnow 				| position
 	swap 'bfirst + 
-	dup c@ 						| byte pos bfirst prev --
+	dup c@ 				| byte pos bfirst prev --
 	pick2 'bnext + c!
-	c! ;						| store first
+	c! ;				| store first
 
 :unset | byte --
 	-1 swap 'bcnt + c+! ;
 	
-#maxcnt
-#maxoff
-	
-:compare | s1 s2 -- s1' s2'
-	( c@+ rot c@+ rot =? 
-		drop swap ) drop ;
+:compare | s1 s2 -- s1'
+	( c@+ rot c@+ rot 
+|		2dup "%h=%h " .println 
+		=? drop swap ) drop nip ;
 		
-:testoff |
+:testoff | pos -- pos cnt
+	a> a> posnow pick3 - 
+	-? ( 256 + )
+	- compare a> - 
+	;
 	
 :traverse | byte -- byte
 	0 'maxcnt !
 	dup "%h? " .print
 	dup 'bcnt + c@ 0? ( drop ; ) | no hay
-	over 'bfirst + c@ | adr byte cnt first
-	dup "%h-" .print
-	swap
-	( 1 - 1? swap 
-		'bnext + c@  | adr byte cnt first
-		dup "%h-" .print
-		swap ) 2drop ;
+	over 'bfirst + c@ $ff and | byte cnt first
+	( 
+|		dup "%h-" .print
+		testoff maxcnt >? ( over 'maxoff ! dup 'maxcnt ! ) drop
+		swap 1 - 1? swap 
+		'bnext + c@ $ff and  | byte cnt first
+		) 2drop ;
 	
 :debug
-	'bcnt 32 .pmem cr
-	'bfirst 32 .pmem cr	
-	'bnext 32 .pmem cr	
+|	'bcnt 32 .pmem cr
+|	'bfirst 32 .pmem cr	
+|	'bnext 32 .pmem cr	
 
 	.input
 	;
-	
-:encode | dest src cnt -- cdest
-	over 'startmem !
-	swap >a swap >b | a=src b=dst
-	( 1? 1 -
-		ca@+ $ff and 
-		traverse 
-		cr
-		| encode
-		setmap
-		debug
-		) drop
-	b> ;
 
-
-
-|--------------------------
-| fisrt idea
-
-#bytemap * 1024 | 256* cnt+adr
-#bytelist * 4096 | 256* 16	
-
-
-
-:calccnt | adr adr -- 
-	>a dup >b
-	( a@+ cb@+ =? drop ) drop
-	b> - ;
-	
-:advance | adr --
-	dup 1 + 15 move> | src dst cnt
-	;
-	
-:zeromap
-	'bytemap 0 128 fill 
-	'bytelist 0 512 fill 
-	;
-	
-:setbyte | adr byte --
-	dup 2 << 'bytemap + 
-	dup @ 8 >>> pick2 - 
-	pick2 4 << 'bytelist + dup advance c!
-	
-	1 over 2 << 'bytemap + c+!
-	
-	;
-	
-:delbyte | byte --
-	-1 swap 2 << 'bytemap + c+!
-	;
-
-|---- encode
 :enclit | nro --
 	dup 1 - cb!+ 
 	( 1? 1 - ca@+ cb!+ ) drop ;
 	
 :endcpy	| off nro --
 	dup a+
-	
 	4 - $80 or cb!+ 1 - cb!+ ;
-	
-:encodebyte | byte
-		;
-		
-:pass2encode | cnt 'scr 'dst --
-	zeromap
-	>b dup 'startmem ! >a
-	( 1? 1 -
-		ca@+
-		encodebyte
-		) drop 
-	;
-		
-	
 
+#lenlit #adrlit
+#lencpy #adrcpy
+
+:enlit | len
+	"lit %d " .println
+	0 'lenlit !
+	;
+	
+:runencode
+	maxcnt 4 <? ( drop 1 'lenlit +! ; )
+	lenlit 1? ( enlit ) drop
+	lencpy "run %d " .println
+	lencpy a+
+	0 'lencpy !
+	;
+	
+:encode | dest src cnt -- cdest
+	0 'lenlit ! over 'adrlit !
+	0 'lencpy ! over 'adrcpy !
+	over 'startmem !
+	swap >a swap >b | a=src b=dst
+	( 1? 1 -
+		a> startmem - $ff and 'posnow !
+		ca@+ $ff and 
+		traverse 
+|		maxcnt " c:%d" .print
+		runencode
+		setmap
+		debug
+		) drop
+	b> ;
+
+|---- encode
 	
 #res
 #cres	

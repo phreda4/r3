@@ -9,11 +9,6 @@
 | 1110 xxxx run 0..15 (1..16)
 | 1111 xxxx pixel argb
 
-| more ideas
-| index with hash
-|  dup hash swap $80 and or ; | $80 bit is in the color
-|
-
 ^r3/lib/math.r3
 
 #qmagic $66696f71 | fioq
@@ -26,7 +21,7 @@
 #index * 512 | 128 rgba values
 
 :hash | color -- hash
-	dup 14 >> xor dup 7 >> xor $7f and ;
+	dup 16 >> xor dup 8 >> xor $7f and ;
 
 :hasha | color -- adr
 	hash 2 << 'index + ;
