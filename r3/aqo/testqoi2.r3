@@ -214,6 +214,12 @@ $8 3 6 6 6 5 4 1 2 3
 	'adrfrom !
 	0 'lenlit !
 	;
+
+:enlitall
+	( 127 >? 
+		128 enclit 
+		128 - ) 
+	enclit  ;
 	
 :runencode | byte -- 
 	maxcnt 4 <? ( drop 1 'lenlit +! setmap ; )
