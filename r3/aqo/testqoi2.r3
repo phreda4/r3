@@ -110,9 +110,11 @@
 
 #testcomp (
 $6 1 2 3 4 5 5 6 
-$80 $6 			| 1 2 3 4 | 0 = 4 menos de 4 no
+|$80 $6 			| 1 2 3 4 | 0 = 4 menos de 4 no
+$83 $6
 $0 3
-$84 $9 			| 3 4 5 5 6 1 2 3
+|$84 $9 			| 3 4 5 5 6 1 2 3
+$87 9
 $8 3 6 6 6 5 4 1 2 3
 )
 |---------- 2do pass
@@ -123,7 +125,7 @@ $8 3 6 6 6 5 4 1 2 3
 	
 :dec2pass
 	cb@+ $80 nand? ( lit2 ; )
-	$7f and 4 +
+	$7f and 1 +
 	a> cb@+ 1 + -
 	swap ( 1? 1 -
 		swap c@+ ca!+ swap ) 2drop ;
@@ -193,40 +195,39 @@ $8 3 6 6 6 5 4 1 2 3
 	|cr 
 	;
 	
-:debug
-	1 1 .at
-	'bcnt 32 .pmem cr
-	'bfirst 32 .pmem cr	
-	'bnext 32 .pmem cr	
-
-	.input
-	1 30 .at
-	;
-
 #adrfrom
 #lenlit 
 
 | encode literal
-:enlit | len --
+:enclit | len --
+	0? ( drop ; )
 	dup 1 - cb!+ |"$%h " .print
 	adrfrom swap 
 	( 1? 1 - swap c@+ cb!+ swap ) drop
-	'adrfrom !
-	0 'lenlit !
-	;
+	'adrfrom ! ;
 
-:enlitall
+:enlit | cnt --
 	( 127 >? 
 		128 enclit 
 		128 - ) 
-	enclit  ;
+	enclit 
+	0 'lenlit ! ;
+	
+:encpy | off cnt --
+	( 127 >?
+		127 $80 or cb!+ over cb!+
+		128 - )
+	0? ( 2drop ; )
+	1 - $80 or cb!+ cb!+
+	;
 	
 :runencode | byte -- 
 	maxcnt 4 <? ( drop 1 'lenlit +! setmap ; )
 	lenlit 1? ( enlit ) drop
 	
-	maxcnt 4 - $80 or cb!+ 					| cant
-	posnow maxoff - -? ( 256 + ) 1 - cb!+	| offset
+	posnow maxoff - -? ( 256 + ) 1 - 
+	maxcnt encpy
+	
 	setmap
 	maxcnt 1 - ( 1? 1 -
 		a> startmem - $ff and 'posnow !	
@@ -259,11 +260,6 @@ $8 3 6 6 6 5 4 1 2 3
 
 :test
 	.cls
-
-|	'testcomp dup 24 + swap here pass2decode | 'adre adr dst --
-|	here 29 .pmem
-|	.input
-	
 	"test" .println
 	'testbytes 29 .pmem cr
 	here 'res !	
@@ -277,7 +273,7 @@ $8 3 6 6 6 5 4 1 2 3
 	here cdst over - .pmem cr
 	
 |	res cres .pmem cr
-.input
+	.input
 	;
 	
 |-------------------------
