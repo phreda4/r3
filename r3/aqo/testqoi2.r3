@@ -9,6 +9,9 @@
 |^r3/aqo/qoi2.r3
 ^r3/aqo/aqoi.r3
 
+^r3/lib/rand.r3
+
+
 #textbitmap
 
 #imagen
@@ -257,22 +260,39 @@ $8 3 6 6 6 5 4 1 2 3
 
 #cdst
 
+:randmem
+	swap >a ( 1? 1 - 5 randmax ca!+ ) drop ;
 
 :test
 	.cls
 	"test" .println
-	'testbytes 29 .pmem cr
-	here 'res !	
-	res 'testbytes 29 encode 'cres !
 	
-	res cres over - .pmem cr
-	cres 1 + 'here !
+	here 'res !
+	res 1024 randmem
 	
-	cres res here pass2decode 'cdst !
+	res 1024 .pmem cr
 	
-	here cdst over - .pmem cr
+	1024 'here +!
+	here 'cdst !
+	here res 1024 encode 'cres !
+
+|	.input
+	here cres over - .pmem cr
+	cres here - "%d bytes" .println
+	
+|	'testbytes 29 .pmem cr
+|	here 'res !	
+|	res 'testbytes 29 encode 'cres !
+	
+|	res cres over - .pmem cr
+|	cres 1 + 'here !
+	
+|	cres res here pass2decode 'cdst !
+	
+|	here cdst over - .pmem cr
 	
 |	res cres .pmem cr
+
 	.input
 	;
 	
