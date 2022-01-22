@@ -3,7 +3,7 @@
 | PHREDA 2020
 |------------------
 ^r3/win/console.r3
-^r3/win/sdl2.r3
+^r3/win/sdl2gfx.r3
 ^r3/win/sdl2ttf.r3
 ^r3/win/sdl2image.r3	
 ^r3/win/sdl2mixer.r3

@@ -2,7 +2,7 @@
 | PHREDA 2010
 |---------------------------------
 ^r3/win/console.r3	
-^r3/win/sdl2.r3	
+^r3/win/sdl2gfx.r3	
 
 ^r3/lib/math.r3
 ^r3/lib/str.r3

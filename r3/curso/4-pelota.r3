@@ -1,4 +1,4 @@
-^r3/win/sdl2.r3
+^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 
 #sprPelota	| dibujo

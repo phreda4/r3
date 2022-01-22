@@ -2,7 +2,7 @@
 | fit text in a box, with SDL2 and SDL2ttf library
 | PHREDA 2021
 
-^r3/win/sdl2.r3	
+^r3/win/sdl2gfx.r3	
 ^r3/win/sdl2ttf.r3
 
 #boxt 0 0 

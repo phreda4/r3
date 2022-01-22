@@ -3,7 +3,7 @@
 
 ^r3/lib/mem.r3
 ^r3/win/console.r3
-^r3/win/sdl2.r3
+^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 ^r3/util/bfont.r3
 ^r3/dev/qoi.r3
