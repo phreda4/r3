@@ -185,16 +185,16 @@ $8 3 6 6 6 5 4 1 2 3
 	
 :traverse | byte -- byte
 	0 'maxcnt !
-|	dup "%h? " .print
+	dup "%h? " .print
 	dup 'bcnt + c@ 0? ( drop ; ) | no hay
 	over 'bfirst + c@ $ff and | byte cnt first
 	( 
-|		dup "%d-" .print
+		dup "%d-" .print
 		testoff maxcnt >? ( over 'maxoff ! dup 'maxcnt ! ) drop
 		swap 1 - 1? swap 
 		'bnext + c@ $ff and  | byte cnt first
 		) 2drop 
-	|cr 
+cr 
 	;
 	
 #adrfrom
@@ -244,12 +244,16 @@ $8 3 6 6 6 5 4 1 2 3
 	over 'adrfrom !
 	over 'startmem !
 	swap >a swap >b | a=src b=dst
-	( 1? 1 -
+	( 1? 1 - 
 		a> startmem - $ff and 'posnow !
 		ca@+ $ff and 
+		over "%d=" .print
 		traverse 
+		over "%d=" .print
 		runencode
+		dup "%d=" .print
 		) drop
+	dup "$%h " .print
 	lenlit 1? ( enlit ) drop
 	b> ;
 
@@ -257,6 +261,7 @@ $8 3 6 6 6 5 4 1 2 3
 #res
 #cres	
 
+#compr
 #cdst
 
 :randmem
@@ -276,8 +281,15 @@ $8 3 6 6 6 5 4 1 2 3
 	here res 1024 encode 'cres !
 
 |	.input
+	here 'compr !
 	here cres over - .pmem cr
 	cres here - "%d bytes" .println
+	cres 1 + 'here !
+	
+	cres compr here pass2decode 'cdst !
+
+	here cdst over - .pmem cr
+	cdst here - "%d bytes" .println
 	
 |	'testbytes 29 .pmem cr
 |	here 'res !	

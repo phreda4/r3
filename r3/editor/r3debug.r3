@@ -119,7 +119,7 @@
 :wordmap
 	0 ( hcode <?
 		cnttok <?
-		13 over 2 + .at
+		30 over 2 + .at
 		dup token
 		1 + ) drop ;
 
@@ -174,7 +174,7 @@
 |	mark actword ,wordinfo ,eol empty
 |	here .print
 	
-|	wordmap
+	wordmap
 
 	1 rows 1 + .at .rever
 	cnttokens cntdef cntinc "inc:%d def:%d tokens:%d " .print

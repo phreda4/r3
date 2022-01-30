@@ -351,7 +351,7 @@
 	2drop ;
 
 :tn col_nro val src + "%w" .print ;
-:ts col_str """" .print valstr """" .print ;
+:ts col_str 34 emit valstr 34 emit ;
 :tw col_nor val dic>adr @ "%w" .print ;
 :taw col_adr val dic>adr @ "'%w" .print ;
 
@@ -378,7 +378,7 @@
 :thb col_nro 8 >> "$%h" .print ;
 :tfb col_nro 8 >> "%f" .print ;
 
-:ts col_str 8 >> blok + 34 emit .print 34 emit ;
+:ts col_str 34 emit valstr 34 emit ;
 
 :nil drop "nil" .print ;
 

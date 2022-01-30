@@ -218,7 +218,10 @@
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
-	sprint sys
+	sprint 
+	.masb	
+	sys
+	.alsb
 	;
 
 |--------------------------------
