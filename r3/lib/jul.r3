@@ -44,10 +44,10 @@
 
 #days 'mo 'tu 'we 'th 'fr 'sa 'su
 
-::date2day date2jul 7 mod ;                                 | ( d m y - num )
+::date2day date2jul 7 mod ;                                 | ( d m y -- num )
 
-::jul2day 7 mod ;                                 	    | ( d m y - num )
+::jul2day 7 mod ;                                 	    | ( jul -- num )
 
-::date2daystr date2day 2 << 'days + @ ;
+::date2daystr date2day 3 << 'days + @ ;
 
 ::jul2daystr jul2day  'days + @ ;
