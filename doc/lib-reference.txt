@@ -80,9 +80,8 @@
 ::=pos | s1 ".pos" -- s1 1/0
 
 |----------- find str
-:=p | s1 s2 -- 1/0
 ::findstr | adr "texto" -- adr'
-:=pi | s1 s2 -- 1/0
+::findstr | adr "texto" -- adr'
 ::findstri | adr "texto" -- adr'/0
 
 ::.d | val -- str
