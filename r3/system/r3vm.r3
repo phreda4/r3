@@ -514,7 +514,7 @@
 	here dup 'memsrc !			| array code to source
 	code> code - + 'memixy !	| array code to include/X/Y
 	code> code - 1 << 'here +!
-|	code2run
+	code2run
 	here 'memvars !
 |	data2mem
 	here 'freemem !

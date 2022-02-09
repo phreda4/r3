@@ -56,7 +56,7 @@
 #emode
 
 #xcode 6
-#ycode 1
+#ycode 2
 #wcode 40
 #hcode 25
 
@@ -383,24 +383,40 @@
 
 |..............................
 :drawcode
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop
-
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + .at
 		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	drop
+	;
+
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 3 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+:cursorpos
+	ylinea 'ycursor ! 0 'xcursor !
+	pantaini> ( fuente> <? c@+ emitcur ) drop
+	| hscroll
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	drop 
+	xcode xlinea - xcursor +
+	ycode ylinea - ycursor + .at 
 	;
 
 
 |---------------------------------
 :barratop
 	.cls
-	"r3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe cr
+	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe cr
 	;
 
 
@@ -530,6 +546,7 @@
 :setsource | src --
 	dup 'pantaini> !
 	dup 'fuente !
+	dup 'fuente> !
 	count + '$fuente !
 	0 'xlinea !
 	0 'ylinea !
@@ -590,26 +607,18 @@
 
 |-------------------------------
 :modesrc
+	.hidec
+	barratop
 	drawcode
-|drawcursor
+
 |	drawtags
-	statevars 1? ( showvars ) drop
+|	statevars 1? ( showvars ) drop
+|	showvstack
 
-	0 rows 1 - .at
-|	$3465A4 'ink ! 
-|	backline
-	"IMM" "TAB" btnf
-	"PLAY" "F1" btnf
-	"PLAY2C" "F2" btnf
-	"ANALYSIS" "F3" btnf
+	cursorpos
+	.showc
 
-	"VIEW" "F6" btnf
-	"STEP" "F7" btnf
-	"STEPN" "F8" btnf
-
-	showvstack
-
-	ckey 32 >>
+	ckey 
 	$48 =? ( karriba ) 
 	$50 =? ( kabajo )
 	$4d =? ( kder ) 
@@ -618,8 +627,6 @@
 	$4f =? ( kend )
 	$49 =? ( kpgup ) 
 	$51 =? ( kpgdn )
-
-|	27 =? ( exit )
 
 	$3b =? ( playvm gotosrc )
 	$3c =? ( play2cursor playvm gotosrc )
@@ -633,7 +640,6 @@
 |	<f8> =? ( stepvmn gotosrc )
 |	<f9> =? ( 1 statevars xor 'statevars ! )
 |	<tab> =? ( mode!imm )
-
 
 	drop
 	;
@@ -711,7 +717,6 @@
 
 |------ MAIN
 :modeshow
-	barratop
 	emode
 	0 =? ( modeimm )
 	1 =? ( modeview )
@@ -737,15 +742,16 @@
 
 	.getconsoleinfo
 	.alsb 
+	.ovec
 	
 |	mode!imm
-|	mode!src
-	mode!view 
+	mode!src
+|	mode!view 
 	
 	cntdef 1 - setword
 	
-|	resetvm
-|	gotosrc
+	resetvm
+|	gotosrc |*****
 |	prevars | add vars to panel
 
 	modeshow
