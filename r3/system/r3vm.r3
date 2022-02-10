@@ -509,15 +509,23 @@
 
 |------ PREPARE 2 RUN
 ::vm2run
-|	iniXFB
 	sortincludes
+	
 	here dup 'memsrc !			| array code to source
 	code> code - + 'memixy !	| array code to include/X/Y
 	code> code - 1 << 'here +!
-	code2run
+|	code2run
 	here 'memvars !
 |	data2mem
 	here 'freemem !
+
+|	0 ( cntdef <? 
+|		dup 2 << 'memsrc + d@ "%h > " .print 
+|		dup 3 << 'memixy + @ "%h " .println
+|		1 + ) 2drop
+|	cr
+	
+
 	;
 
 ::code2src | code -- src
@@ -569,10 +577,6 @@
 	0 'TOS !
 	0 RTOS !
 	<<boot '<<ip !
-	**emu
-|	$ffffff 'ink !
-|	cls
-	emu**
 	;
 
 ::tokenexec | adr+ token -- adr+

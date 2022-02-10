@@ -93,11 +93,11 @@
 
 :incmap
 	0 ( cntinc <?
-		40 over 2 + .at
-		incnow =? ( .rever )
+		30 over 2 + .at
 		dup "%d " .print
 		dup 4 << 'inc + @+ swap @ "%h %l" .print
-		incnow =? ( .reset )
+
+		incnow =? ( " <" .print )
 		1 + ) drop
 	;
 
@@ -113,16 +113,14 @@
 	cnttok >=? ( drop ; )
 	2 << initok +
 	d@ | dup
-	tokenprint
+	tokenprintc
 	;
 	
 :wordmap
-	1 18 .at
-	actword dic>adr
-	dup 16 + @ 1 and ":#" + c@ emit
-	@ "%w" .print cr
-	0 ( cnttok <?
-		dup token sp
+	0 ( hcode <?
+		cnttok <?
+		30 over 2 + .at
+		dup token
 		1 + ) drop ;
 
 |-------------------------------------------
@@ -144,8 +142,8 @@
 
 :dicmap
 	.reset
-	0 ( 15 <?
-		1 over 2 + .at
+	0 ( hcode <?
+		2 over 2 + .at
 		dup iniword +
 		printword
 		.reset
@@ -155,7 +153,7 @@
 	actword +
 	cntdef 1 - clamp0max
 	iniword <? ( dup 'iniword ! )
-	iniword 15 + >=? ( dup 15 - 1 + 'iniword ! )
+	iniword hcode + >=? ( dup hcode - 1 + 'iniword ! )
 	'actword !
 	wordanalysis
 	actword dic>adr @ findinclude 'incnow !
@@ -170,9 +168,8 @@
 	.print sp .print ;
 	
 :modeview
-	.cls
 	dicmap
-	incmap
+|	incmap
 	
 |	mark actword ,wordinfo ,eol empty
 |	here .print
@@ -657,6 +654,38 @@
 
 #ninclude
 
+:modeimm
+	drawcode
+|	drawcursorfix
+	console
+	showvars
+
+	0 rows 1 - .at
+|	$989898 'ink ! backline
+	"SRC" "TAB" btnf
+
+	"PLAY2C" "F1" btnf
+	"VIEW" "F6" btnf
+	"STEP" "F7" btnf
+	"STEPN" "F8" btnf
+
+	ckey
+|	>esc< =? ( exit )
+|	<ret> =? ( execimm )
+|	<tab> =? ( mode!src )
+
+|	<f1> =? ( fuente> breakpoint playvm gotosrc )
+|	<f2> =? ( fuente> incnow src2code drop )
+
+|	<f6> =? ( viewscreen )
+|	<f7> =? ( stepvm gotosrc )
+|	<f8> =? ( stepvmn gotosrc )
+
+|	<f10> =? ( mode!view 0 +word )
+
+	drop
+	;
+
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
@@ -696,6 +725,7 @@
 |------ MAIN
 :modeshow
 	emode
+	0 =? ( modeimm )
 	1 =? ( modeview )
 	2 =? ( modesrc )
 	drop ;
@@ -718,7 +748,8 @@
 	src setsource
 
 	.getconsoleinfo
-|	.alsb .ovec
+	.alsb 
+	.ovec
 	
 |	mode!imm
 |	mode!src
@@ -726,8 +757,7 @@
 	
 	cntdef 1 - setword
 	
-|	resetvm
-
+	resetvm
 |	gotosrc |*****
 |	prevars | add vars to panel
 
@@ -735,6 +765,6 @@
 	( getch $1B1001 <>? 'ckey !
 		modeshow 
 		) drop 
-	|.masb
+	.masb
 	;
 

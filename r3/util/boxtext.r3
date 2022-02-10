@@ -66,7 +66,7 @@
 	'lines >b
 	'buffer dup >a b!+ 
 	( c@+ 1? emit ) 
-	inwbox ca!+ a> b!+
+	inwbox ca!+ 0 ca! a> b!+
 	drop 
 	lastline 'lines> ! ;
 
