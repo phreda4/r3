@@ -112,11 +112,9 @@
 
 #testcomp (
 $6 1 2 3 4 5 5 6 
-|$80 $6 			| 1 2 3 4 | 0 = 4 menos de 4 no
-$83 $6
+$83 $6			| 1 2 3 4 
 $0 3
-|$84 $9 			| 3 4 5 5 6 1 2 3
-$87 9
+$87 9			| 3 4 5 5 6 1 2 3
 $8 3 6 6 6 5 4 1 2 3
 )
 |---------- 2do pass
@@ -185,16 +183,17 @@ $8 3 6 6 6 5 4 1 2 3
 	
 :traverse | byte -- byte
 	0 'maxcnt !
+	a> startmem - "%d " .print
 	dup "%h? " .print
 	dup 'bcnt + c@ 0? ( drop ; ) | no hay
 	over 'bfirst + c@ $ff and | byte cnt first
 	( 
-		dup "%d-" .print
+|		dup "%d-" .print
 		testoff maxcnt >? ( over 'maxoff ! dup 'maxcnt ! ) drop
 		swap 1 - 1? swap 
 		'bnext + c@ $ff and  | byte cnt first
 		) 2drop 
-cr 
+	maxcnt " max:%d" .print cr 
 	;
 	
 #adrfrom
@@ -203,12 +202,14 @@ cr
 | encode literal
 :enclit | len --
 	0? ( drop ; )
+	dup "lit %d " .print
 	dup 1 - cb!+ |"$%h " .print
 	adrfrom swap 
 	( 1? 1 - swap c@+ cb!+ swap ) drop
 	'adrfrom ! ;
 
-:enlit | cnt --
+:enlit | --
+	lenlit 0? ( drop ; ) 
 	( 127 >? 
 		128 enclit 
 		128 - ) 
@@ -223,18 +224,21 @@ cr
 	1 - $80 or cb!+ cb!+
 	;
 	
-:runencode | byte -- 
-	maxcnt 4 <? ( drop 1 'lenlit +! setmap ; )
-	lenlit 1? ( enlit ) drop
+:runencode | i byte -- 
+	maxcnt 4 <? ( drop 1 'lenlit +! setmap ; ) drop
+	enlit 
 	
-	posnow maxoff - -? ( 256 + ) 1 - 
-	maxcnt encpy
+	posnow maxoff - 
+	-? ( 256 + ) 1 - 
+	maxcnt 
+	encpy
 	
 	setmap
 	maxcnt 1 - ( 1? 1 -
 		a> startmem - $ff and 'posnow !	
 		ca@+ $ff and 
 		setmap ) drop
+|	dup "{%d}" .print
 	maxcnt - 1 +
 	maxcnt 'adrfrom +!
 	;
@@ -245,16 +249,18 @@ cr
 	over 'startmem !
 	swap >a swap >b | a=src b=dst
 	( 1? 1 - 
+		dup "{%d}" .print
 		a> startmem - $ff and 'posnow !
 		ca@+ $ff and 
-		over "%d=" .print
+|		over "1)%d=" .print
 		traverse 
-		over "%d=" .print
+|		over "2)%d=" .print
+|		2dup "+%h %d+" .println
 		runencode
-		dup "%d=" .print
+|		dup "3)%d=" .print
 		) drop
-	dup "$%h " .print
-	lenlit 1? ( enlit ) drop
+|	dup "$%h " .print
+	enlit
 	b> ;
 
 |---- encode
@@ -267,13 +273,9 @@ cr
 :randmem
 	swap >a ( 1? 1 - 5 randmax ca!+ ) drop ;
 
-:test
-	.cls
-	"test" .println
-	
+:randtest
 	here 'res !
 	res 1024 randmem
-	
 	res 1024 .pmem cr
 	
 	1024 'here +!
@@ -290,19 +292,33 @@ cr
 
 	here cdst over - .pmem cr
 	cdst here - "%d bytes" .println
+	;
 	
-|	'testbytes 29 .pmem cr
-|	here 'res !	
-|	res 'testbytes 29 encode 'cres !
+:auxtest	
+"..................." .println
 	
-|	res cres over - .pmem cr
-|	cres 1 + 'here !
+	'testbytes 29 .pmem cr
+	here 'res !	
+	res 'testbytes 29 encode 'cres !
+	cr 
+	res cres over - 
+	dup "cnt:%d " .println
+	.pmem cr
+	cres 1 + 'here !
 	
 |	cres res here pass2decode 'cdst !
 	
 |	here cdst over - .pmem cr
 	
 |	res cres .pmem cr
+
+	;
+	
+:test
+	.cls
+	"test" .println
+	
+	randtest
 
 	.input
 	;

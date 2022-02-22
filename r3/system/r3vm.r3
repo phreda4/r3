@@ -214,16 +214,16 @@
 :.LOADLIB TOS loadlib .DROP 'TOS ! ;
 :.GETPROC NOS @ TOS getproc .NIP 'TOS ! ;
 :.SYS0 TOS sys0 'TOS ! ;
-:.SYS1 NOS @ TOS sys0 'TOS ! ;
-:.SYS2 NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS3 NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS4 NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS5 NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS6 NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS7 NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS8 NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS9 NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
-:.SYS10 NOS 72 - @ NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! ;
+:.SYS1 NOS @ TOS sys0 'TOS ! -8 'NOS +! ;
+:.SYS2 NOS 8 - @ NOS @ TOS sys0 'TOS ! -16 'NOS +! ;
+:.SYS3 NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -24 'NOS +! ;
+:.SYS4 NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -32 'NOS +! ;
+:.SYS5 NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -40 'NOS +! ;
+:.SYS6 NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -48 'NOS +! ;
+:.SYS7 NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -56 'NOS +! ;
+:.SYS8 NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -64 'NOS +! ;
+:.SYS9 NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -72 'NOS +! ;
+:.SYS10 NOS 72 - @ NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys0 'TOS ! -80 'NOS +! ;
 	
 #vmc
 0 .dec2 .bin2 .hex2 .fix2 0 .wor2 .dec .bin .hex .fix .str .wor .var .dwor .dvar
