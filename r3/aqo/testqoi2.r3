@@ -126,7 +126,7 @@ $8 3 6 6 6 5 4 1 2 3
 :dec2pass
 	cb@+ $80 nand? ( lit2 ; )
 	$7f and 1 +
-	a> cb@+ 1 + -
+	a> cb@+ $ff and 1 + -
 	swap ( 1? 1 -
 		swap c@+ ca!+ swap ) 2drop ;
 
@@ -141,6 +141,14 @@ $8 3 6 6 6 5 4 1 2 3
 	( 1? 1 - swap
 		c@+ $ff and "%h " .print 
 		swap ) 2drop ;
+		
+:.compare | cnt 'adr1 'adr2 --
+	>a >b
+	( 1? 1 -
+		ca@+ cb@+ <>? ( "*" .print )
+		$ff and "%h " .print 
+		) drop ;
+			
 		
 |-----------------------
 | new idea
@@ -183,8 +191,8 @@ $8 3 6 6 6 5 4 1 2 3
 	
 :traverse | byte -- byte
 	0 'maxcnt !
-	a> startmem - "%d " .print
-	dup "%h? " .print
+|	a> startmem - "%d " .print
+|	dup "%h? " .print
 	dup 'bcnt + c@ 0? ( drop ; ) | no hay
 	over 'bfirst + c@ $ff and | byte cnt first
 	( 
@@ -193,7 +201,7 @@ $8 3 6 6 6 5 4 1 2 3
 		swap 1 - 1? swap 
 		'bnext + c@ $ff and  | byte cnt first
 		) 2drop 
-	maxcnt " max:%d" .print cr 
+|	maxcnt " max:%d" .print cr 
 	;
 	
 #adrfrom
@@ -202,7 +210,7 @@ $8 3 6 6 6 5 4 1 2 3
 | encode literal
 :enclit | len --
 	0? ( drop ; )
-	dup "lit %d " .print
+|	dup "lit %d " .print
 	dup 1 - cb!+ |"$%h " .print
 	adrfrom swap 
 	( 1? 1 - swap c@+ cb!+ swap ) drop
@@ -249,7 +257,7 @@ $8 3 6 6 6 5 4 1 2 3
 	over 'startmem !
 	swap >a swap >b | a=src b=dst
 	( 1? 1 - 
-		dup "{%d}" .print
+|		dup "{%d}" .print
 		a> startmem - $ff and 'posnow !
 		ca@+ $ff and 
 |		over "1)%d=" .print
@@ -270,17 +278,19 @@ $8 3 6 6 6 5 4 1 2 3
 #compr
 #cdst
 
+#cnttest 1024
+
 :randmem
 	swap >a ( 1? 1 - 5 randmax ca!+ ) drop ;
 
 :randtest
 	here 'res !
-	res 1024 randmem
-	res 1024 .pmem cr
+	res cnttest randmem
+	res cnttest .pmem cr
 	
-	1024 'here +!
+	cnttest 'here +!
 	here 'cdst !
-	here res 1024 encode 'cres !
+	here res cnttest encode 'cres !
 
 |	.input
 	here 'compr !
@@ -292,11 +302,12 @@ $8 3 6 6 6 5 4 1 2 3
 
 	here cdst over - .pmem cr
 	cdst here - "%d bytes" .println
+	
+	cr
+	cnttest here res .compare
 	;
 	
 :auxtest	
-"..................." .println
-	
 	'testbytes 29 .pmem cr
 	here 'res !	
 	res 'testbytes 29 encode 'cres !
@@ -306,9 +317,9 @@ $8 3 6 6 6 5 4 1 2 3
 	.pmem cr
 	cres 1 + 'here !
 	
-|	cres res here pass2decode 'cdst !
+	cres res here pass2decode 'cdst !
 	
-|	here cdst over - .pmem cr
+	here cdst over - .pmem cr
 	
 |	res cres .pmem cr
 
@@ -319,7 +330,8 @@ $8 3 6 6 6 5 4 1 2 3
 	"test" .println
 	
 	randtest
-
+	|auxtest	
+	
 	.input
 	;
 	
