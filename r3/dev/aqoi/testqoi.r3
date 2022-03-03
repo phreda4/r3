@@ -6,8 +6,8 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 ^r3/util/bfont.r3
-^r3/aqo/qoi.r3
-|^r3/aqo/qoi2.r3
+^r3/dev/aqoi/qoi.r3
+|^r3/dev/aqoi/qoi2.r3
 
 #textbitmap
 

@@ -125,6 +125,7 @@
 		setmap ) drop
 |	dup "{%d}" .print
 	maxcnt - 1 +
+	clamp0
 	maxcnt 'adrfrom +!
 	;
 	

@@ -198,6 +198,7 @@
 	$49 =? ( hcode neg +word )	| pgup 
 	$51 =? ( hcode +word )		| pgdn 
 	
+	$3d =? ( mode!src ) | <f4> -- vie src
 	drop
 	;
 
