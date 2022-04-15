@@ -1,13 +1,14 @@
-
-
-#var
+^r3/win/sdl2gfx.r3
 
 :	
-	
-	3 'var !
-	
-	0 ( 120 <? 
-		1 'var +!
-		1 + ) drop
+	"r3sdl" 800 600 SDLinit
 
+	$ffffff SDLcolor 
+	10 10
+	100 100
+	SDLRect
+	
+	SDLRedraw 
+	( SDLupdate SDLkey >esc< <>? drop ) drop
+	SDLquit 
 	;

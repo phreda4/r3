@@ -5,6 +5,7 @@
 |^r3/system/r3cellana.r3
 
 ^r3/system/r3asm0.r3
+|^r3/system/r3asm0_2.r3
 |^r3/system/r3asm1.r3
 
 #lastdircode

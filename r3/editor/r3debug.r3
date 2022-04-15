@@ -40,6 +40,8 @@
 	"stage 4" .println
 	r3-stage-4			
 	"stage ok" .println
+	
+|	debugmemtoken waitesc
 	;
 
 :savedebug
@@ -185,9 +187,6 @@
 	.reset
 	
 	ckey 
-|	$27 =? ( mode!src ) |>esc< 
-	$45 =? ( mode!src ) |<f10> 
-
 	$48 =? ( -1 +word ) | arriba 
 	$50 =? ( 1 +word )	| abajo
 
@@ -198,6 +197,7 @@
 	$49 =? ( hcode neg +word )	| pgup 
 	$51 =? ( hcode +word )		| pgdn 
 	
+	| $3b |f1
 	$3d =? ( mode!src ) | <f4> -- vie src
 	drop
 	;
@@ -707,6 +707,7 @@
 	'name .println
 	
 	'name r3debuginfo
+	
 	error 
 	1? ( drop savedebug ; ) drop
 	emptyerror

@@ -27,7 +27,7 @@ section '' code readable executable
 start:
   invoke VirtualAlloc,0,MEMSIZE,MEM_COMMIT+MEM_RESERVE,PAGE_READWRITE
   mov [FREE_MEM],rax
-  mov rbp,DATASTK
+  mov rbp,DATASTK-8
   xor rax,rax
   jmp INICIO
 

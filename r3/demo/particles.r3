@@ -39,7 +39,10 @@
 	swap 'rbox d!+ d!
 	a@+ a> 24 - +!
 	a@+ a> 24 - +!	
-	SDLrenderer a@+ 0 'rbox a@+ 0 0 SDL_RenderCopyEx ; | don't work rot is double!
+	
+	|a@+ a@+ swap SDLrenderer swap 0 'rbox 0 0 SDL_RenderCopyEx 
+	a@+ SDLrenderer swap 0 'rbox SDL_RenderCopy
+	; | don't work rot is double!
 
 :+objr | r 'spr vy vx y x --
 	'ballexecr 'list p!+ >a a!+ a!+ a!+ a!+ a!+ a! ;

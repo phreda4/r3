@@ -75,7 +75,7 @@
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
 ::SDL_RenderClear sys-SDL_RenderClear sys1 drop ;
 ::SDL_RenderCopy sys-SDL_RenderCopy sys4 drop ;
-::SDL_RenderCopyEx sys-SDL_RenderCopyEx sys7 drop ;
+::SDL_RenderCopyEx sys-SDL_RenderCopyEx sys7 drop ; |sys6f1 drop ;
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 

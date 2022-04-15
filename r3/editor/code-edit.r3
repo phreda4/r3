@@ -211,7 +211,7 @@
 
 :mode!edit
 	0 'emode !
-	rows 2 - 'hcode !
+	rows 1 - 'hcode !
 	cols 7 - 'wcode !
 	;
 :mode!find
@@ -279,9 +279,9 @@
 :compile
 	.masb .reset .cls
 	savetxt
-|WIN| "r3 r3/editor/r3compiler.r3"
-|LIN| "./r3lin r3/editor/r3compiler.r3"
-|RPI| "./r3rpi r3/editor/r3compiler.r3"
+|WIN| "r3 r3/system/r3compiler.r3"
+|LIN| "./r3lin r3/system/r3compiler.r3"
+|RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
 	;

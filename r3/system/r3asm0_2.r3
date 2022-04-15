@@ -145,16 +145,28 @@
 	"mov rcx,rax" ,ln
 	,DROP
 	dup @ $ff and
-	16 <>? ( drop "call rcx" ,ln ; ) drop
+	16 <>? ( drop
+		"sub  rsp, 8" ,ln
+		"call rcx" ,ln 
+		"add  rsp, 8" ,ln
+		; ) drop
 	"jmp rcx" ,ln ;
 :oEX
 	dup @ $ff and
-	16 <>? ( drop "call " ,s ,TOS ,cr ; ) drop
+	16 <>? ( drop 
+		"sub  rsp, 8" ,ln
+		"call " ,s ,TOS ,cr 
+		"add  rsp, 8" ,ln
+		; ) drop
 	"jmp " ,s ,TOS ,cr ;
 :oEXv
 	"mov rcx," ,s ,TOS ,cr
 	dup @ $ff and
-	16 <>? ( drop "call rcx" ,ln ; ) drop
+	16 <>? ( drop 
+		"sub  rsp, 8" ,ln
+		"call rcx" ,ln 
+		"add  rsp, 8" ,ln
+		; ) drop
 	"jmp rcx" ,ln ;
 
 :g0?
@@ -873,62 +885,45 @@
 	varget 
 	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
-:preA16
-	"PUSH RSP" ,ln 
-	"PUSH qword [RSP]" ,ln 
-	"ADD RSP,8" ,ln 
-	"AND SPL,$F0" ,ln ;
-	
-:posA16
-	"POP RSP" ,ln  ;
-	
 :gSYS0  | a -- b
-	preA16	
 	"sub RSP,$20" ,ln 	
 	"CALL rax" ,ln 
 	"add RSP,$20" ,ln 	
-	posA16 ;
+	;
 	
 :gSYS0v
 	"sub RSP,$20" ,ln 
-	preA16	
 	"CALL " ,s ,TOS ,cr
-	posA16 
 	"add RSP,$20" ,ln 
 	;
 	
 :gSYS1 | a b -- c
-	preA16
 	"sub RSP,$20" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8" ,ln 	
 	"add RSP,$20" ,ln 
-	posA16 ;
+	;
 
 :gSYS1v
 	,DUP
 	"sub RSP,$20" ,ln 
-	preA16
 	"mov rcx,[rbp]" ,ln
 	"call " ,s ,TOS ,cr
 	"sub rbp,8" ,ln 	
-	posA16 
 	"add RSP,$20" ,ln 
 	;
 	
 :gSYS2 
-	preA16
 	"sub RSP,$20" ,ln 
 	"mov rdx,[rbp]" ,ln
 	"mov rcx,[rbp-1*8]" ,ln
 	"call rax" ,ln 
 	"sub rbp,8*2" ,ln 		
 	"add RSP,$20" ,ln 
-	posA16 	;
+	;
 	
 :gSYS3 
-	preA16
 	"sub RSP,$20" ,ln 
 	"mov r8,[rbp]" ,ln
 	"mov rdx,[rbp-1*8]" ,ln
@@ -936,10 +931,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*3" ,ln 	
 	"add RSP,$20" ,ln 
-	posA16 	;
+	;
 
 :gSYS4 
-	preA16
 	"sub RSP,$20" ,ln 
 	"mov r9,[rbp]" ,ln
 	"mov r8,[rbp-1*8]" ,ln
@@ -948,10 +942,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*4" ,ln 	
 	"add RSP,$20" ,ln 
-	posA16 	;
+	;
 
 :gSYS5
-	preA16
 	"sub RSP,$30" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$20],rcx" ,ln
@@ -962,10 +955,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*5" ,ln 	
 	"add RSP,$30" ,ln 
-	posA16 	;
+	;
 
 :gSYS6 
-	preA16
 	"sub RSP,$30" ,ln 
 	"mov rdx,[rbp]" ,ln
 	"mov [rsp+$28],rdx" ,ln	
@@ -978,10 +970,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*6" ,ln 	
 	"add RSP,$30" ,ln 
-	posA16 	;
+	;
 
 :gSYS7 
-	preA16
 	"sub RSP,$40" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$30],rcx" ,ln
@@ -996,10 +987,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*7" ,ln 	
 	"add RSP,$40" ,ln 
-	posA16 	;
+	;
 
 :gSYS8 
-	preA16
 	"sub RSP,$40" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$38],rcx" ,ln
@@ -1016,10 +1006,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*8" ,ln 
 	"add RSP,$40" ,ln 
-	posA16 	;
+	;
 	
 :gSYS9 
-	preA16
 	"sub RSP,$50" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$40],rcx" ,ln
@@ -1038,10 +1027,9 @@
 	"call rax" ,ln 
 	"sub rbp,8*9" ,ln 
 	"add RSP,$50" ,ln 
-	posA16 	;
+	;
 	
 :gSYS10
-	preA16
 	"sub RSP,$50" ,ln 
 	"mov rcx,[rbp]" ,ln
 	"mov [rsp+$48],rcx" ,ln
@@ -1062,7 +1050,7 @@
 	"call rax" ,ln 
 	"sub rbp,8*10" ,ln 
 	"add RSP,$50" ,ln 
-	posA16 	;
+	;
 	
 |---------------------------------
 #vmc1
@@ -1221,7 +1209,10 @@ o>B 0 oB+
 :gwor
 	dup d@ $ff and
 	16 =? ( drop getval "jmp w%h" ,print ,cr ; ) drop | ret?
-	getval "call w%h" ,print ,cr ;
+	"sub  rsp, 8" ,ln
+	getval "call w%h" ,print ,cr 
+	"add  rsp, 8" ,ln
+	;
 
 |-----------------------------------------
 #vmc

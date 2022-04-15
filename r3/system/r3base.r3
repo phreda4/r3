@@ -429,3 +429,20 @@
 	"mem/code.db" savemem
 	empty
 	;
+	
+::debugmemtoken
+	"------" .println
+	src dup src - "SRC:%h - %h" .println
+	
+	dicc dup src - "DICC:%h - %h" .println
+	dicc< dup src - "DICC<:%h - %h" .println
+	dicc> dup src - "DICC>:%h - %h" .println
+
+	code dup src - "CODE:%h - %h" .println
+|	<<boot dup src - "<<BOOT:%h - %h" .println
+	code> dup src - "CODE>:%h - %h" .println
+	blok dup src - "BLOK:%h - %h" .println
+	here dup src - "HERE:%h - %h" .println
+	"------" .println
+	;
+	
