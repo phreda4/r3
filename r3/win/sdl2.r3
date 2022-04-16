@@ -10,6 +10,7 @@
 #sys-SDL_CreateWindow 
 #sys-SDL_SetWindowFullscreen
 #sys-SDL_GetWindowSurface 
+#sys-SDL_RaiseWindow
 #sys-SDL_ShowCursor 
 #sys-SDL_UpdateWindowSurface 
 #sys-SDL_DestroyWindow 
@@ -61,7 +62,7 @@
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
 ::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
 ::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
-
+::SDL_RaiseWindow sys-SDL_RaiseWindow sys1 drop ;
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
 ::SDL_ShowCursor sys-SDL_ShowCursor sys1 drop ;
 ::SDL_UpdateWindowSurface sys-SDL_UpdateWindowSurface sys1 drop ;
@@ -125,13 +126,23 @@
 	2dup * 'sizebuffer !
 	'sh ! 'sw !
 	$3231 SDL_init 
-	$1FFF0000 $1FFF0000 sw sh 0 SDL_CreateWindow dup 'SDL_windows !
+	$1FFF0000 $1FFF0000 sw sh $0 SDL_CreateWindow dup 'SDL_windows !
 	SDL_GetWindowSurface dup 'SDL_screen !
 	24 + d@+ 'pitch !
 	4 + @ 'vframe ! 
-
+|	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	|0 SDL_ShowCursor | disable cursor
+	SDL_windows SDL_RaiseWindow
+	;
+
+::SDLinitGL | "titulo" w h --
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$1FFF0000 $1FFF0000 sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
+	SDL_GetWindowSurface dup 'SDL_screen !
+|	0 SDL_ShowCursor | disable cursor
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDL_windows SDL_RaiseWindow
 	;
 	
 ::SDLfull | --
@@ -162,15 +173,8 @@
 | SDL_WINDOW_POPUP_MENU = 0x00080000,
 | SDL_WINDOW_VULKAN = 0x10000000
   
-::SDLinitGL | "titulo" w h --
-	'sh ! 'sw !
-	$3231 SDL_init 
-	$1FFF0000 $1FFF0000 sw sh 6 SDL_CreateWindow dup 'SDL_windows ! 
-	SDL_GetWindowSurface dup 'SDL_screen !
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	;
-	
 ::SDLquit
+	SDLrenderer SDL_DestroyRenderer
 	SDL_windows SDL_DestroyWindow 
 	SDL_Quit ;
 	
@@ -233,6 +237,8 @@
 	dup "SDL_SetWindowFullscreen" getproc 'sys-SDL_SetWindowFullscreen !
 	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
 	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
+	
+	dup "SDL_RaiseWindow" getproc 'sys-SDL_RaiseWindow !
 	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
 	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
 	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !

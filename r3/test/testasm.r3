@@ -4,7 +4,7 @@
 	"r3sdl" 800 600 SDLinit
 
 	$ffffff SDLcolor 
-	10 10
+	30 10
 	100 100
 	SDLRect
 	

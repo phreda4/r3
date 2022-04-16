@@ -72,25 +72,27 @@
 	empty
 	;
 
-: 	'name "mem/main.mem" load drop
+: 	
+	'name "mem/main.mem" load drop
 	" PHREDA - 2019" .println
 	" r3 compiler" .println
 
 	'name r3c
 
-|	error 1? ( drop savedebug ; ) drop
+	error 1? ( drop savedebug ; ) drop
 
-    "asm\fasm.exe asm\r3fasm.asm" sys
-|	"copy asm\r3fasm.exe r3compile.exe" sys
-|    "asm\fasm.exe asm\r3fasm.asm > asm\log.txt" sys
-|	here "asm\log.txt" load 0 swap !
-|
-|	here print
+|    "asm\fasm.exe asm\r3fasm.asm" sys
+|	"asm\test.bat" sys
+
+|   "asm\fasm.exe r3fasm.asm > asm\log.txt" sys
+|	here "asm\log.txt" load 0 swap ! here print
+	
+	"asm\compile.bat" sys
+	
 |	"press >esc< to run..." println
 |	waitesc
-
-|	"asm\test.bat" sys
-|	"r3fasm.exe" sys
+	
+	"r3fasm.exe" sys
 
 	"press <enter> to continue..." .print
 	.input

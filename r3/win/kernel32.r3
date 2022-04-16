@@ -80,13 +80,6 @@
 
 ::GetCommandLine sys-GetCommandLine sys0 ;
 
-#console-mode
-##process-heap
-
-##stdin 
-##stdout
-##stderr
-
 |------- BOOT
 :
 	"KERNEL32.DLL" loadlib 
@@ -130,17 +123,7 @@
 	dup "GetTickCount" getproc 'sys-GetTickCount !
 	dup "GetConsoleScreenBufferInfo" getproc 'sys-GetConsoleScreenBufferInfo !
 	dup "GetCommandLineA" getproc 'sys-GetCommandLine !
-	
+
 	drop
-	AllocConsole 
-	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
-	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
-	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE	
-	stdin 'console-mode GetConsoleMode drop	
-	stdin console-mode $1a neg and SetConsoleMode drop | 1a! ENABLE LINE
-	stdout 'console-mode GetConsoleMode drop	
-	stdout console-mode $4 or SetConsoleMode drop
-	
-	GetProcessHeap 'process-heap !
 	;
 	

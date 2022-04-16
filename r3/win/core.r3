@@ -4,6 +4,8 @@
 ^r3/win/kernel32.r3
 ^r3/lib/str.r3
 	
+#process-heap
+
 ::ms | ms --
 	Sleep ;
 	
@@ -123,4 +125,8 @@
 	68 'sinfo d!
 	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
 	pinfo -1 WaitForSingleObject
+	;
+	
+:
+	GetProcessHeap 'process-heap !
 	;

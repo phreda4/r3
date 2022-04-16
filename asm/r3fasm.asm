@@ -25,6 +25,7 @@ section '' code readable executable
 
 ;===============================================
 start:
+  sub rsp,40
   invoke VirtualAlloc,0,MEMSIZE,MEM_COMMIT+MEM_RESERVE,PAGE_READWRITE
   mov [FREE_MEM],rax
   mov rbp,DATASTK-8
@@ -34,6 +35,7 @@ start:
 ;----- CODE -----
 include 'code.asm'
 ;----- CODE -----
+  add rsp,$40
   ret
 
 ;-----------------------------------------------
