@@ -466,7 +466,8 @@
 		$22 =? (
 			over c@  $22 <>? ( drop ; )
 			,c swap 1 + swap )
-		,c	) drop 1 - ;
+		13 <>?
+		,c ) drop 1 - 0 ;
 	
 :endline
 	,c ( atselect c@+ 1? 
@@ -482,6 +483,12 @@
 		$7c =? ( endline ; )	| $7c |	 Comentario
 		,c
 		) 
+	1? ( drop ; ) drop
+	1 - ;
+
+|... no color line	
+:parselinenc
+	( atselect c@+ 1? 13 <>? ,c ) 
 	1? ( drop ; ) drop
 	1 - ;
 
