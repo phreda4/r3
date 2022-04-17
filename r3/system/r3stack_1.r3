@@ -43,6 +43,7 @@
 
 | store a literal number (for calculate)
 ::cte!+ | val --
+"cte2" ,s "asm/code.asm" savemem 
 	ctecode>
 	dup 'ctecode - 8 << 8 or | token hex are generated
 	code!+

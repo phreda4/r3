@@ -14,13 +14,16 @@
 #arenan
 
 :check | adr -- adr 
-	dup 513 - >a	ca@+ ca@+ + ca@ + 
+	dup 513 - >a	
+	ca@+ 
+	ca@+ + ca@ + 
 	512 a+			ca@ + -2 a+ ca@ +
 	512 a+  		ca@+ + ca@+ + ca@ +
 	3 =? ( drop 1 cb!+ ; )
 	2 <>? ( drop 0 cb!+ ; ) 
 	drop
-	dup c@ cb!+ ;
+	dup c@ cb!+ 
+	;
 	
 :evolve
 	arenan >b
@@ -66,11 +69,10 @@
 		1 + ) drop ;
 		
 :main
-	here 
+	here 513 +
 	dup 'arena !			| start of arena
 	512 512 * + 'arenan !	| copy of arena
 	arenarand	
-	
 	"r3sdl" 512 512 SDLinit
 	512 512 SDLframebuffer 'textbitmap !
 	| SDLfull | fullscreen

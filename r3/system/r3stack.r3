@@ -20,15 +20,15 @@
 ##ctecode> 'ctecode
 
 ::codeini
-	'bcode 'bcode> d!
-	'ctecode 'ctecode> d!
+	'bcode 'bcode> !
+	'ctecode 'ctecode> !
 	;
 
 ::code!+ | tok --
-	bcode> d!+ 'bcode> d! ;
+	bcode> d!+ 'bcode> ! ;
 
 ::2code!+ | adr -- adr
-	dup 4 - @ code!+ ;
+	dup 4 - d@ code!+ ;
 
 ::code<< | --
 	-4 'bcode> +! ;
