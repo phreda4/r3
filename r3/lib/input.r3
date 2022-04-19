@@ -1,7 +1,7 @@
 | Input words
 | PHREDA
 |-----------------------
-^r3/lib/print.r3
+^r3/util/bfont.r3
 ^r3/lib/gui.r3
 
 |--- Edita linea
