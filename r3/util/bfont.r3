@@ -1,4 +1,5 @@
-| bfont
+| bfont.r3
+| fuentes de ancho fijo 
 | PHREDA 2021
 |-----------------------------
 ^r3/win/sdl2image.r3
@@ -27,10 +28,10 @@
 	wp 'dp d+!
 	;
 	
-::bmprint | "" --
+::bprint | "" --
 	( c@+ 1? bemit ) 2drop ;
 	
-::bmat | x y --
+::bat | x y --
 	32 << or 'dp ! ;	
 
 ::bfont1	

@@ -105,8 +105,8 @@
 	timeline.draw
 	
 	$ffffff bcolor 
-	0 0 bmat "<f1> example 1" bmprint
-	|0 16 bmat  "<f2> example 2" bmprint
+	0 0 bat "<f1> example 1" bprint
+	|0 16 bat  "<f2> example 2" bprint
 	
 	SDLRedraw
 	SDLkey

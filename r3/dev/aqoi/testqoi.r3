@@ -81,24 +81,24 @@
 	SDLrenderer imagen 0 'box1 SDL_RenderCopy		
 	
 	$ffffff bcolor
-	0 0 bmat
-	qh qw "%d %d" sprint bmprint
-	0 12 bmat
-	csize "%d" sprint bmprint
-	0 12 2 * bmat
-	cntINDEX "INDEX %d" sprint bmprint
-	0 12 3 * bmat
-	cntRUN8 "RUN8 %d" sprint bmprint
-	0 12 4 * bmat
-	cntRUN16 "RUN16 %d" sprint bmprint
-	0 12 5 * bmat
-	cntDIFF8 "DIFF8 %d" sprint bmprint
-	0 12 6 * bmat
-	cntDIFF16 "DIFF16 %d" sprint bmprint
-	0 12 7 * bmat
-	cntDIFF24 "DIFF24 %d" sprint bmprint
-	0 12 8 * bmat
-	cntDIFF "DIFF %d" sprint bmprint
+	0 0 bat
+	qh qw "%d %d" sprint bprint
+	0 12 bat
+	csize "%d" sprint bprint
+	0 12 2 * bat
+	cntINDEX "INDEX %d" sprint bprint
+	0 12 3 * bat
+	cntRUN8 "RUN8 %d" sprint bprint
+	0 12 4 * bat
+	cntRUN16 "RUN16 %d" sprint bprint
+	0 12 5 * bat
+	cntDIFF8 "DIFF8 %d" sprint bprint
+	0 12 6 * bat
+	cntDIFF16 "DIFF16 %d" sprint bprint
+	0 12 7 * bat
+	cntDIFF24 "DIFF24 %d" sprint bprint
+	0 12 8 * bat
+	cntDIFF "DIFF %d" sprint bprint
 	
 	SDLredraw
 	

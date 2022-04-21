@@ -93,9 +93,9 @@
 	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
 	
 	$ffffff bcolor
-	0 0 bmat qh qw "%d %d" sprint bmprint
-	0 12 bmat csize "%d" sprint bmprint
-	0 24 bmat csize2 "%d" sprint bmprint
+	0 0 bat qh qw "%d %d" sprint bprint
+	0 12 bat csize "%d" sprint bprint
+	0 24 bat csize2 "%d" sprint bprint
 	
 	SDLredraw
 	

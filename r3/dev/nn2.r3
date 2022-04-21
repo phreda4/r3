@@ -344,8 +344,8 @@
 	draww 
 	drawnn	
 	$ff00 bcolor
-	0 0 bmat
-	nnerror "Error: %f" sprint bmprint
+	0 0 bat
+	nnerror "Error: %f" sprint bprint
 
 	SDLRedraw 
 
