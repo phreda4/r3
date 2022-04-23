@@ -33,6 +33,9 @@
 	
 ::bat | x y --
 	32 << or 'dp ! ;	
+	
+::bsize | "" -- "" w h
+	count wp * hp ;
 
 ::bfont1	
 	8 16 "media/img/VGA8x16.png" bmfont	;	

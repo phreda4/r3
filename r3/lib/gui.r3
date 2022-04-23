@@ -2,7 +2,6 @@
 | gui.r3 - PHREDA
 | Immediate mode gui for r3
 |------------------------------
-^r3/lib/sys.r3
 
 |--- state
 ##hot	| activo actual
@@ -19,72 +18,57 @@
 ##xr1 ##yr1
 ##xr2 ##yr2
 
-::whin | x y -- -1/0
-	yr2 over - swap yr1 - or swap
-	xr2 over - swap xr1 - or or
-	63 >> not ;
-
-::guiAll
-	0 'xr1 ! 0 'yr1 ! sw 'xr2 ! sh 'yr2 ! ;
-
 ::guiBox | x1 y1 w h --
 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! ;
 
 ::guiRect | x1 y1 x2 y2 --
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! ;
+	
+#in?
+#btn?
 
-::guiFill
-	xr1 yr1 xr2 yr2 fillbox ;
-
-::guiBorde
-	xr1 1 - yr1 1 - xr2 yr2 rectbox ;
-
-::guizone
-	xr1 yr1 xr2 yr2 rectbox ;
-
+::guiIn	| b x y --
+	yr2 over - swap yr1 - or swap	
+	xr2 over - swap xr1 - or or
+	63 >> not 						| x y -- -1/0
+	'in? ! 
+	'btn? ! ;
+	
 |---------
 ::gui
 	idf 'idl ! hot 'hotnow !
 	0 'id ! 0 'idf ! 0 'hot !
-	guiAll
-	;
-
-::guidump
-	"idl:" print idl .d .println
-	"hotnow:" print hotnow .d .println
-	"foco:" print foco .d .println
-	"foconow:" print foconow .d .println
 	;
 
 |-- boton
 ::onClick | 'click --
 	1 'id +!
-	xypen whin 0? ( 2drop ; ) drop
-	bpen 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 2drop
+	in? 0? ( 2drop ; ) drop
+	btn? 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 2drop
 	id 'hot ! ;
 
 |-- move
 ::onMove | 'move --
 	1 'id +!
-	bpen 0? ( 2drop ; ) drop
-	xypen whin 0? ( 2drop ; ) drop
+	btn? 0? ( 2drop ; ) drop
+	in? 0? ( 2drop ; ) drop
 	id 'hot !
 	ex ;
 
 |-- dnmove
 ::onDnMove | 'dn 'move --
 	1 'id +!
-	bpen 0? ( 3drop ; ) drop
-	xypen whin 0? ( 3drop ; ) drop
+	btn? 0? ( 3drop ; ) drop
+	in? 0? ( 3drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
 	drop nip ex ;
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
 	1 'id +!
-	bpen 0? ( 3drop ; ) drop
+	btn? 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
-	xypen whin 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
+	in? 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
 	drop nip ex ;
@@ -93,47 +77,34 @@
 |-- mapa
 ::guiMap | 'dn 'move 'up --
 	1 'id +!
-	xypen whin 0? ( 4drop ; ) drop
-	bpen 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
+	in? 0? ( 4drop ; ) drop
+	btn? 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ex ; )
 	2drop nip ex ;
 
 ::guiDraw | 'move 'up --
 	1 'id +!
-	xypen whin 0? ( 3drop ; ) drop
-	bpen 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
+	in? 0? ( 3drop ; ) drop
+	btn? 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ; )
 	2drop ex ;
 
 ::guiEmpty | --		; si toca esta zona no hay interaccion
 	1 'id +!
-	xypen whin 1? ( id 'hot ! )
+	in? 1? ( id 'hot ! )
 	drop ;
 
 |----- test adentro/afuera
 ::guiI | 'vector --
-	xypen whin 0? ( 2drop ; ) drop ex ;
+	in? 0? ( 2drop ; ) drop ex ;
 
 ::guiO | 'vector --
-	xypen whin 1? ( 2drop ; ) drop ex ;
+	in? 1? ( 2drop ; ) drop ex ;
 
 ::guiIO | 'vi 'vo --
-	xypen whin 1? ( 2drop ex ; ) drop nip ex ;
-
-
-::waitms | ms --
-	redraw
-	msec +
-	( msec >? update )
-	drop ;
-
-##col-prim $337ab7
-##col-succ $5cb85c
-##col-info $5bc0de
-##col-warn $f0ad4e
-##col-dang $d9534f
+	in? 1? ( 2drop ex ; ) drop nip ex ;
 
 |---------------------------------------------------
 | manejo de foco (teclado)
@@ -147,9 +118,9 @@
 ::setfoco | nro --
 	'foco ! -1 'foconow ! ;
 
-::ktab
-	mshift 1? ( drop prevfoco ; ) drop
-	nextfoco ;
+|::ktab
+|	mshift 1? ( drop prevfoco ; ) drop
+|	nextfoco ;
 
 ::clickfoco
 	idf foco =? ( drop ; ) 'foco ! ;
