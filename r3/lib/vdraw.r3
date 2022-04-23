@@ -91,7 +91,7 @@
 
 ::vfill | c x y --
 	2dup vecg ex pick3 =? ( 4drop ; )
-	'cf ! rot 'ink !
+	'cf ! rot drop |'ink !
 	here dup 'herel !
 	!+ !+	| x y
  	( herel >? 8 - dup @+ swap @	| adr y x

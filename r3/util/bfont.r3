@@ -36,6 +36,9 @@
 	
 ::bsize | "" -- "" w h
 	count wp * hp ;
+	
+::bpos | -- x y
+	dp dup $ffffff and swap 32 >> ;
 
 ::bfont1	
 	8 16 "media/img/VGA8x16.png" bmfont	;	
