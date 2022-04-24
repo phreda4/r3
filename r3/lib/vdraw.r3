@@ -13,7 +13,7 @@
 ::vget! | 'get --
 	'vecg ! ;
 
-::vsize | w h --
+::vsize! | w h --
 	'maxh ! 'maxw ! ;
 
 #xa #ya

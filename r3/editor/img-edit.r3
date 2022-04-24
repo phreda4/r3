@@ -9,6 +9,9 @@
 ^r3/lib/rand.r3
 ^r3/lib/vdraw.r3
 
+^r3/util/dlgcolor.r3
+^r3/util/dlgfile.r3
+
 ^r3/lib/trace.r3
 
 #nombre * 256
@@ -17,8 +20,6 @@
 #imagenw 320
 #imagenh 200
 #textura
-
-#color $ff00
 
 #limx 60 #limy 24
 
@@ -153,8 +154,7 @@
 
 :teclado
 	SDLkey
-	>esc< =? ( exit )
-	
+
 	<up> =? ( 1 zoom << neg 'yi +! )
 	<dn> =? ( 1 zoom << 'yi +! )
 	<le> =? ( 1 zoom << neg 'xi +! )
@@ -168,21 +168,24 @@
 :canvassize | w h --
 	2dup 'imagenh ! 'imagenw !
 	2dup SDLframebuffer 'textura !	
-	vsize
-	here 'imagen !
+	vsize!
+	
+	here dup >a 'imagen !
+	imagenh imagenw *
+	( 1? 1 - $ffffff da!+ ) drop
 	
 	"new" 'nombre strcpy
 	;
 
 :loadfile
-	|dlgFileLoad 
+	dlgFileLoad 
 	0? ( drop ; )
 	dup 'nombre strcpy
 |	loadImg 
 	0? ( drop ; )
 |	dup spr.wh
 	2dup 'imagenh ! 'imagenw !
-	vsize
+	vsize!
 	imagen swap 
 	|spr.cntmem 
 	4 - swap 1 + move
@@ -210,13 +213,11 @@
 |-----------------------------
 :main
 	gui
-	$454545 SDLClear
-
-	'imagenset vset!
+	$0 SDLClear
     imagen.draw
 
 	$454545 SDLColor
-|	2 backlines
+	0 0 sw 20 SDLFillRect
 
 	$ffffff SDLColor
 	4 4 bat
@@ -228,17 +229,17 @@
 	[ 1 'zoom ! ; ] "x2" btnt " " bprint
 	[ 2 'zoom ! ; ] "x4" btnt " " bprint
 	[ 3 'zoom ! ; ] "x8" btnt " " bprint
-	'loadfile "load" btnt
+	'loadfile " load " btnt
 	toolbar
-	|dlgColor
+	dlgColor
 
 	xi limx clampmin
 	yi limy clampmin
 	imagenw zoom << xi + sw clampmax
 	imagenh zoom << yi + sh clampmax
-	guiBox
+	guiRect
 	SDLb SDLx SDLy guiIn
-	modoex 1? ( dup ex ) drop
+	modoex 1? ( dup guiI ) drop
 
 	teclado
 	SDLRedraw 
@@ -249,12 +250,12 @@
 	'imagenset vset!
 	'imagenget vget!
 	mark
-|	dlgColorIni
+	dlgColorIni
 	"media/img/img-toolbar.png" loadimg 'imgtoolbar !
 	mark
 	here 'imagen !
 	320 240 canvassize
-|	"media/img" dlgSetPath
+	"media/img/*" dlgSetPath
 	;
 
 :   
@@ -262,6 +263,8 @@
 	bfont1
 	inimem
 |	"mem/img-edit.mem" bmr.load
+	buffercopy
+	
 	'main SDLShow
 |	"mem/img-edit.mem" bmr.save
 	SDLquit

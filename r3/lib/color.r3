@@ -72,7 +72,7 @@
 	>r
 	16 *>> 1.0 swap - | v (1-s*f)
 	over 16 *>> r> | vnm
-	r> 2 << 'acch + @ ex | rgb
+	r> 3 << 'acch + @ ex | rgb
 	8 >> swap
 	$ff00 and or swap
 	8 << $ff0000 and or ;
