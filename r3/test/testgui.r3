@@ -1,6 +1,7 @@
 ^r3/lib/gui.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
+^r3/lib/input.r3
 
 #cv 0
 
@@ -23,6 +24,9 @@
 	onClick
 	;
 	
+#buffer * 100
+#otrob * 50
+	
 :main
 	gui
 	0 SDLClear
@@ -30,6 +34,14 @@
 	
 	10 10 bat
 	cv "%d" sprint bprint
+	
+	10 30 bat
+	"buffer: " bprint
+	'buffer 100 input
+	
+	10 50 bat
+	"otro: " bprint
+	'otrob 100 input
 	
 	[ 1 'cv +! ; ] "suma 1" 200 300 100 30 tbtn
 	[ -1 'cv +! ; ] "resta 1" 200 340 100 30 tbtn

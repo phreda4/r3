@@ -6,7 +6,7 @@
 ##<ret> $d		##>ret< $100d
 ##<esc> $1b		##>esc< $101b
 ##<esp> $20		##>esp< $1020
-##<del> $7f		##>del< $1007f
+##<del> $7f		##>del< $107f
 
 ##<home> $404a	##>home< $504a
 ##<end> $404d	##>end< $504d

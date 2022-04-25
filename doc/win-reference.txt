@@ -159,7 +159,7 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ::SDLquit
 
 ##SDLkey
-##SDLkeychar
+##SDLchar
 ##SDLx 
 ##SDLy 
 ##SDLb

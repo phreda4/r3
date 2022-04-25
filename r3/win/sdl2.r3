@@ -182,12 +182,12 @@
 ##SDLevent * 56 
 
 ##SDLkey
-##SDLkeychar
+##SDLchar
 ##SDLx ##SDLy ##SDLb
 	
 ::SDLupdate
 	0 'SDLkey !
-	0 'SDLkeychar !
+	0 'SDLchar !
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop
 		'SDLevent d@ 
@@ -196,7 +196,7 @@
 			|#SDL_KEYUP		$301     | Key released		
 		$301 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! )
 			|#SDL_TEXTINPUT	$303 | Keyboard text input		
-		$303 =? ( 'SDLevent 12 + c@ 'SDLkeychar ! )
+		$303 =? ( 'SDLevent 12 + c@ 'SDLchar ! )
 			|#SDL_MOUSEMOTION	$400     | Mouse moved		
 		$400 =? ( 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! )
 			|#SDL_MOUSEBUTTONDOWN $401    | Mouse button pressed		

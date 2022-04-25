@@ -42,19 +42,11 @@
 
 #modo 'lins
 
-:drc
-	;
-
-:drci
-	;
-
 :cursor
-	modo 'lins =? ( drop drci ; ) drop drc ;
-
-:cursori
 	blink 1? ( drop ; ) drop
-|	padi> ( pad> =? ( drop cursor ; ) c@+ 1? noemit ) 2drop 
-		;
+	modo 'lins =? ( drop pad> padi> - bcursori ; ) drop
+	pad> padi> - bcursor
+	;
 
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
@@ -70,14 +62,15 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
-	|ccx cursori 'ccx !
-|	char 1? ( modo ex ; ) drop
+	cursor
+	SDLchar 1? ( modo ex ; ) drop
 	SDLkey
 	<ins> =? ( chmode )
 	<le> =? ( kizq ) <ri> =? ( kder )
 	<back> =? ( kback ) <del> =? ( kdel )
 	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
-	|<tab> =? ( ktab )
+	<tab> =? ( nextfoco )
+	<ret> =? ( nextfoco )
 	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
 	drop
@@ -93,7 +86,7 @@
 
 |************************************
 |:proinputc | --
-|	ccx cursori 'ccx !
+|	cursor 
 |	[ key toasc modo ex ; ] <visible>
 |	[ modo 'lins =? ( 'lover )( 'lins ) 'modo ! drop  ; ] <ins>
 |	'kback <back>	'kdel <del>
@@ -118,11 +111,11 @@
 |	;
 
 :proinputexe | --
-|	ccx cursori 'ccx !
-|	char
-|	1? ( dup modo ex pick3 ex )
-|	drop
-	key
+|	cursor
+	SDLchar
+	1? ( dup modo ex pick3 ex )
+	drop
+	SDLkey
 	<ins> =? ( chmode )
 	<back> =? ( kback pick3 ex )
 	<del> =? ( kdel pick3 ex )
@@ -158,13 +151,13 @@
 
 :proinputi
 	knro
-	key
+	SDLkey
 	<back> =? ( cmax @ 10 / cmax ! )
 	<del> =? ( cmax @ 10 / cmax ! )
 |	<tab> =? ( ktab )
 |	<ret> =? ( ktab )
 	drop
-	blink 1? ( cursor ) drop ;
+	cursor ;
 
 |************************************
 ::inputint | 'var --
