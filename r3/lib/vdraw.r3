@@ -94,7 +94,7 @@
 	'cf ! rot drop |'ink !
 	here dup 'herel !
 	!+ !+	| x y
- 	( herel >? 8 - dup @+ swap @	| adr y x
+ 	( herel >? 16 - dup @+ swap @	| adr y x
  		firstx	| adr y x1
 		fillline
  		) drop ;

@@ -181,7 +181,7 @@
 	dlgFileLoad 
 	0? ( drop ; )
 	dup 'nombre strcpy
-|	loadImg 
+	loadImg 
 	0? ( drop ; )
 |	dup spr.wh
 	2dup 'imagenh ! 'imagenw !
