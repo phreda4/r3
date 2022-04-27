@@ -28,7 +28,7 @@
 	teclado
 	;
 
-	
+
 :main
 	"r3sdl" 800 600 SDLinit
 	"media/img/ball.png" loadimg 'sprpelota !
