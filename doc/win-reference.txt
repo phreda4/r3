@@ -181,7 +181,9 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 
 ::SDLclear | color --
 ::SDLRedraw | -- 
-
+::SDLFillellipse | rx ry x y --
+::SDLEllipse | rx ry x y --
+::SDLtriangle | x y x y x y --
 
 ********************************************************************************
 ^r3/win/sdl2image.r3 | load many image formats
