@@ -1,7 +1,5 @@
-mem/
+mem
 asm/code.asm
 asm/data.asm
 asm/r3fasm.exe
-mem/main.mem
-mem/menu.mem
 r3fasm.exe
