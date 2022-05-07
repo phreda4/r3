@@ -23,6 +23,9 @@
 
 ::sizemem | -- size
 	here memmap> 8 - @ - ;
+	
+::memsize | -- mem size
+	memmap> 8 - @ here over - ;
 
 #inc 0
 ::savememinc | "" --

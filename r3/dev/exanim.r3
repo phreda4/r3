@@ -60,10 +60,10 @@
 	SDLkey
 	>esc< =? ( exit )
 
-	<a> =? ( -1.0 'xv ! 'camiizq 'spr1 anim! )
+	<a> =? ( xv -1.0 <>? ( -1.0 'xv ! 'camiizq 'spr1 anim! ) drop )
 	>a< =? ( 0 'xv ! 'quieizq 'spr1 anim! )
 	
-	<d> =? ( 1.0 'xv ! 'camider 'spr1 anim! )
+	<d> =? ( xv 1.0 <>? ( 1.0 'xv ! 'camider 'spr1 anim! ) drop )
 	>d< =? ( 0 'xv ! 'quieder 'spr1 anim! )	
 	
 	drop ;
@@ -75,11 +75,11 @@
 	xp int. yp int. 
 	tsdraw 
 	
-	100 SDL_Delay
+	|100 SDL_Delay
 	
 	'spr1 anima
 	
-	'spr1 @+ "%d " .print @+ "%d " .print @ "%h " .println
+	|'spr1 @+ "%d " .print @+ "%d " .print @ "%h " .println
 	
 	SDLRedraw
 	

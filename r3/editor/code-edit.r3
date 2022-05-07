@@ -2,6 +2,7 @@
 | PHREDA 2007
 |---------------------------------------
 ^r3/win/console.r3
+^r3/win/mconsole.r3
 ^r3/lib/math.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
@@ -435,11 +436,6 @@
 	over isNro 1? ( drop 11 'colornow ! ; ) 
 	drop 10 'colornow ! ;
 
-:,esc $1b ,c $5b ,c	;
-:,fcolor ,esc "38;5;%dm" ,print ;
-:,bcolor ,esc "48;5;%dm" ,print ;
-:,eline  ,esc "K" ,s ; | erase line from cursor
-
 :,tcolor colornow ,fcolor ;
 
 :inselect
@@ -500,23 +496,19 @@
 	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
-	mark 
 	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
 	linenro	swap 
 	iniline
 	inselect	
 	parseline 
-	here
-	empty
-	here dup rot rot - type ;
-
+	;
 
 |..............................
 :drawcode
-	.reset
+	,reset
 	pantaini>
 	0 ( hcode <?
-		0 ycode pick2 + .at
+		0 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
@@ -539,7 +531,7 @@
 	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
 	drop 
 	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + .at 
+	ycode ylinea - ycursor + ,at 
 	;
 	
 |-------------- panel control
@@ -619,7 +611,7 @@
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
 
-	|<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
+|	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
 	
 	$2a =? ( 1 'mshift ! ) $36 =? ( 1 'mshift ! ) | shift der ize.. falta soltar
 	$102a =? ( 0 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift der ize.. falta soltar	
@@ -634,19 +626,18 @@
 
 :errmodekey
 	0 hcode 1 + .at
-|	rows hcode - 1 - backlines
 	'outpad .write
 	editmodekey
 	;
 
 :barraf | F+
-	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" .printe ;
+	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
 
 :barrac | control+
-	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " .printe
+	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " ,printe
 	'findpad
 	dup c@ 0? ( 2drop ; ) drop
-	" [%s]" .print ;
+	" [%s]" ,print ;
 
 :printpanel
 	panelcontrol
@@ -654,42 +645,43 @@
 	barrac ;
 
 :top
-	0 0 .at 
-	.bblue .white .eline
-	printpanel sp ;
+	0 0 ,at 
+	,bblue ,white ,eline
+	printpanel ,sp ;
 
 :bottom
-	0 hcode 2 + .at 
-	.bblue .white .eline
-	sp 'name .write sp ycursor xcursor " %d:%d " .print 
-
-	fuente count  " %d chars" .print
+	0 hcode 2 + ,at 
+	,bblue ,white ,eline
+	sp 'name ,s  ycursor xcursor "  %d:%d " ,print 
+	$fuente fuente - " %d chars" ,print 
 	;
 	
 |-------------------------------------
 :pantalla	
-	.reset
-	.hidec
+	mark
+	,reset
 	top
 	drawcode
 	bottom
 	cursorpos
+	
+	.hidec
+	memsize type
 	.showc
+	empty
 	;
 
 :editor
-	.reset .cls
 	0 'xlinea !
-	mode!edit
-	pantalla .insc
-	( getch $1B1001 <>? 'ckey !
+	mode!edit .insc
+	( pantalla
 		emode
 		0? ( editmodekey )
 |	1 =? ( immmodekey )
 		2 =? ( findmodekey )
 		3 =? ( errmodekey )
 		drop
-		pantalla
+		getch $1B1001 <>? 'ckey !		
  		) drop
 	;
 
