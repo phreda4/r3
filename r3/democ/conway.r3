@@ -36,10 +36,9 @@
 	arena >a
 	0 ( rows <? 
 		0 ( cols <? 
-			ca@+ cbox drop 
-			,sp
+			ca@+ cbox drop ,sp
 			1 + ) drop
-		|,nl
+		,nl
 		1 + ) drop 
 	memsize type 
 	empty ;
@@ -55,7 +54,7 @@
 :main
 	.cls
 	arenarand
-	( getch 27 <>? drop
+	( getch $1B1001 <>? drop
 		drawscreen
 		evolve
 		) drop ;
@@ -64,7 +63,8 @@
 	.getconsoleinfo
 	here cols + 			| one more line for calc
 	dup 'arena !			| start of arena
-	rows cols * + 'arenan !	| copy of arena
+	rows cols * + dup 'arenan !	| copy of arena
+	rows cols * + 'here !
 	.alsb .hidec		
 	main
 	.masb .showc

@@ -239,30 +239,40 @@
 	;
 
 |--------------------------------
-#nfile
-
-:newfile
-	1 'nfile !
-	0 'name !
-	;
 
 :remaddtxt | --
 	'name ".r3" =pos 1? ( drop ; ) drop
 	".r3" swap strcat
 	;
 
+|===================================
+#newprg1 "| r3 sdl program
+^r3/win/sdl2gfx.r3
+	
+:demo
+	0 SDLClear
+	$ff0000 SDLColor
+	10 10 20 20 SDLFillRect
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+
+:main
+	""r3sdl"" 800 600 SDLinit
+	'demo SDLshow
+	SDLquit ;	
+	
+: main ;"
+|===================================
+
 :createfile
 	remaddtxt
 	'name 'path "%s/%s" sprint 'name strcpy
 
 	mark
-	"^r3/lib/gui.r3" ,s ,cr
-	":main" ,s ,cr
-	"	cls home" ,s ,cr
-	"	""Hello Human!"" print" ,s ,cr
-	"	key >esc< =? ( exit ) drop" ,s ,cr
-	"	;" ,s ,cr
-	": 'main onshow ;" ,s ,cr
+	'newprg1 ,s
 	'name savemem
 	empty
 
@@ -277,6 +287,15 @@
 
 	rebuild
 	loadm
+	;
+
+:newfile
+	0 linesv 1 + .at 
+	.bblue .white .eline 
+	" Name: " .print
+	.input 
+	'pad 'name strcpy
+	createfile
 	;
 
 |--------------------------------
@@ -406,6 +425,7 @@
 	screen
 	( getch $1B1001 <>?
  		teclado ) drop
+	.reset .cls
 	.masb	
 	savem		
 	;
