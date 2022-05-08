@@ -42,9 +42,6 @@
 #linecomm 	| comentarios de linea
 #linecomm>
 
-|----- find text
-#findpad * 64
-
 |----- scratchpad
 #outpad * 2048
 
@@ -213,11 +210,6 @@
 :mode!edit
 	0 'emode !
 	rows 1 - 'hcode !
-	cols 7 - 'wcode !
-	;
-:mode!find
-	2 'emode !
-	rows 3 - 'hcode !
 	cols 7 - 'wcode !
 	;
 :mode!error
@@ -392,7 +384,7 @@
 	drop nip nip 'fuente> ! ;
 
 :controla | -- ;find prev
-	'findpad
+	'pad
 	dup c@ $ff and
 	0? ( 2drop ; )
 	toupp
@@ -402,7 +394,7 @@
 		drop 1 - ) 3drop ;
 
 :controls | -- ;find next
-	'findpad
+	'pad
 	dup c@ $ff and
 	0? ( drop ; )
 	toupp
@@ -425,7 +417,8 @@
 #colornow 0
 
 :wcolor
-	over c@
+	over c@ 
+	32 =? ( drop ; ) 9 =? ( drop ; )
 	$22 =? ( drop 15 'colornow ! ; )	| $22 " string
 	$5e =? ( drop 3 'colornow ! ; )	| $5e ^  Include
 	$7c =? ( drop 8 'colornow ! ; )	| $7c |	 Comentario
@@ -438,12 +431,13 @@
 
 :,tcolor colornow ,fcolor ;
 
+| 18 = blue dark for select
 :inselect
-	inisel finsel bt? ( 4 ,bcolor ; )
+	inisel finsel bt? ( 18 ,bcolor ; )
 	0 ,bcolor ;
 	
 :atselect
-	inisel =? ( 4 ,bcolor ; )
+	inisel =? ( 18 ,bcolor ; )
 	finsel =? ( 0 ,bcolor ; )
 	;
 
@@ -490,7 +484,7 @@
 
 |..............................
 :linenow
-	ycursor =? ( ">" ,s ; ) 32 ,c ;
+	ycursor =? ( $3e ,c ; ) 32 ,c ;
 	
 :linenro | lin -- lin
 	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
@@ -544,60 +538,53 @@
 #ckey
 
 :buscapad
-	fuente 'findpad findstri
+	fuente 'pad findstri
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	0 hcode 1 + .at 
-|	rows hcode - 1 - backlines
-
-	" > " .write
-	|'buscapad 'findpad .print
-	.input
-
-	ckey
-    $d001c =? ( mode!edit )
-	|>esc< =? ( mode!edit )
-	|>ctrl< =? ( controloff )
-    drop
+	0 hcode 1 + .at  .eline
+	" > " .write .input 
+	controls
 	;
 
 :controlkey
 	ckey
-	|>ctrl< =? ( controloff )
-	|<f> =? ( mode!find )
-	|<x> =? ( controlx )
-	|<c> =? ( controlc )
-	|<v> =? ( controlv )
+	$101d =? ( controloff ) |>ctrl<
+	$1000 and? ( drop ; )	| upkey
+	$ff and
 
-|	<up> =? ( controla )
-|	<dn> =? ( controls )
+	
+	$2d =? ( controlx )		| x-cut
+	$2e =? ( controlc )		| c-copy
+	$2f =? ( controlv )		| v-paste
 
-|	'controle 18 ?key " E-Edit" emits | ctrl-E dit
-||	'controlh 35 ?key " H-Help" emits  | ctrl-H elp
-|	'controlz 44 ?key " Z-Undo" emits
-||	'controld 32 ?key " D-Def" emits
-||	'controln 49 ?key " N-New" emits
-||	'controlm 50 ?key " M-Mode" emits
+	$48 =? ( controla )		| up
+	$50 =? ( controls )		| dn
+	
+	$12 =? ( controle ) | E-Edit
+|	$23 =? ( controlh ) | H-Help
+	$2c =? ( controlz ) | Z-Undo
+	$20 =? ( controld ) | D-Def
+	$31 =? ( controln ) | N-New
+|	$32 =? ( controlm ) | M-Mode
 
+	$21 =? ( findmodekey )	| f-find
 	drop
 	;
 
+:vchar | char --  ; visible char
+	$1000 and? ( drop ; )
+	16 >> $ff and
+	$8 =? ( drop kback ; )
+	modo ex
+	;
 
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 
 	ckey 
-	$1000 nand? (
-		16 >> $ff and 
-		27 <>? (
-			8 >? ( modo ex ; )
-			)
-		) 
-	drop
-
-	ckey
-	$8000e =? ( kback )
+	$ff0000 and? ( vchar ; ) 
+	
 	$53 =? ( kdel )
 	$48 =? ( karriba ) 
 	$50 =? ( kabajo )
@@ -607,14 +594,13 @@
 	$4f =? ( kend )
 	$49 =? ( kpgup ) 
 	$51 =? ( kpgdn )
+	
 	$52 =? (  modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
-
-|	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	
-	$2a =? ( 1 'mshift ! ) $36 =? ( 1 'mshift ! ) | shift der ize.. falta soltar
-	$102a =? ( 0 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift der ize.. falta soltar	
+	$1d =? ( controlon ) 
+	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
+	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
 	$3b =? ( runfile )
 	$3c =? ( debugfile )
@@ -635,7 +621,7 @@
 
 :barrac | control+
 	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " ,printe
-	'findpad
+	'pad
 	dup c@ 0? ( 2drop ; ) drop
 	" [%s]" ,print ;
 
@@ -645,20 +631,20 @@
 	barrac ;
 
 :top
-	0 0 ,at 
-	,bblue ,white ,eline
+	0 0 ,at ,bblue ,white ,eline
 	printpanel ,sp ;
 
 :bottom
 	0 hcode 2 + ,at 
 	,bblue ,white ,eline
-	sp 'name ,s  ycursor xcursor "  %d:%d " ,print 
+	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
 	$fuente fuente - " %d chars" ,print 
+	clipboard> clipboard - " %d " ,print
 	;
 	
 |-------------------------------------
 :pantalla	
-	mark
+	mark			| buffer in freemem
 	,reset
 	top
 	drawcode
@@ -666,23 +652,22 @@
 	cursorpos
 	
 	.hidec
-	memsize type
+	memsize type	| type buffer
 	.showc
-	empty
+	empty			| free buffer
 	;
 
 :editor
 	0 'xlinea !
 	mode!edit .insc
 	( pantalla
+		getch $1B1001 <>? 'ckey !
 		emode
 		0? ( editmodekey )
-|	1 =? ( immmodekey )
-		2 =? ( findmodekey )
+	|	1 =? ( immmodekey )
 		3 =? ( errmodekey )
 		drop
-		getch $1B1001 <>? 'ckey !		
- 		) drop
+		) drop
 	;
 
 	
@@ -714,7 +699,7 @@
 	loadtxt
 	.getconsoleinfo
 	.alsb editor .masb
-	savetxt
+	|savetxt
 	;
 
 : 4 main ;
