@@ -1,11 +1,15 @@
 ^r3/win/console.r3
-
 
-:main
+::main
 	getch 
 	$1B1001 =? ( drop ; )
 	"getch: %h " .println
 	main ;
 	
-: main ;
+: 
+	.cls
+	"show GETCH value for keys" .println
+	"press ESC to quit." .println
+	cr
+	main ;
 

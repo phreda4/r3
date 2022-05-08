@@ -49,7 +49,6 @@
 
 #lerror 0
 #cerror 0
-#emode 0
 
 |----- edicion
 :lins  | c --
@@ -206,43 +205,15 @@
 	empty ;
 
 |----------------------------------
-
-:mode!edit
-	0 'emode !
-	rows 1 - 'hcode !
-	cols 7 - 'wcode !
-	;
-:mode!error
-	3 'emode !
-	rows 4 - 'hcode !
-	cols 7 - 'wcode !
-	;
-
-|----------------------------------
-:runfile
-	savetxt
-	.masb .reset .cls
-	mark
-|WIN|	"r3 "
-|LIN|	"./r3lin "
-|RPI|	"./r3rpi "
-	,s 'name ,s ,eol
-	empty here sys
-	cr .reset
-	"press <enter> to continue" .write .input
-	.alsb
-	;
-
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
 		13 =? ( rot 1 + rot rot ) drop ) drop ;
-
-:debugfile
-	savetxt
-|WIN|	"r3 r3/editor/r3debug.r3"
-|LIN|	"./r3lin r3/editor/r3debug.r3"
-|RPI|	"./r3rpi r3/editor/r3debug.r3"
-	sys
+		
+:r3info
+	rows 1 - 'hcode !
+	0 'outpad !
+	0 'cerror !
+	
 	mark
 |... load file info.
 	here "mem/debuginfo.db" load 0 swap c!
@@ -256,7 +227,39 @@
 	here >>cr 0 swap c!
 	fuente> lerror 1 + here
 	" %s in line %d%. %w " sprint 'outpad strcpy
-	mode!error
+	
+	rows 2 - 'hcode !
+	;
+	
+
+:runfile
+	savetxt
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+	r3info	
+	cerror 1? ( drop ; ) drop
+	.masb .reset .cls
+	mark
+|WIN|	"r3 "
+|LIN|	"./r3lin "
+|RPI|	"./r3rpi "
+	,s 'name ,s ,eol
+	empty here sys
+	cr .reset
+	"press <enter> to continue" .write .input
+	.alsb
+	;
+
+
+:debugfile
+	savetxt
+|WIN|	"r3 r3/editor/r3debug.r3"
+|LIN|	"./r3lin r3/editor/r3debug.r3"
+|RPI|	"./r3rpi r3/editor/r3debug.r3"
+	sys
+	r3info
 	;
 
 :mkplain
@@ -267,6 +270,7 @@
 |RPI| "./r3rpi r3/editor/r3plain.r3"
 	sys
 	.alsb
+	r3info
 	;
 
 :compile
@@ -277,6 +281,7 @@
 |RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
+	r3info
 	;
 
 |-------------------------------------------
@@ -552,15 +557,10 @@
 	$101d =? ( controloff ) |>ctrl<
 	$1000 and? ( drop ; )	| upkey
 	$ff and
-
 	
 	$2d =? ( controlx )		| x-cut
 	$2e =? ( controlc )		| c-copy
 	$2f =? ( controlv )		| v-paste
-
-	$48 =? ( controla )		| up
-	$50 =? ( controls )		| dn
-	
 	$12 =? ( controle ) | E-Edit
 |	$23 =? ( controlh ) | H-Help
 	$2c =? ( controlz ) | Z-Undo
@@ -568,6 +568,9 @@
 	$31 =? ( controln ) | N-New
 |	$32 =? ( controlm ) | M-Mode
 
+	$48 =? ( controla )		| up
+	$50 =? ( controls )		| dn
+	
 	$21 =? ( findmodekey )	| f-find
 	drop
 	;
@@ -579,7 +582,7 @@
 	modo ex
 	;
 
-:editmodekey
+:teclado
 	panelcontrol 1? ( drop controlkey ; ) drop
 
 	ckey 
@@ -610,11 +613,6 @@
 	drop
 	;
 
-:errmodekey
-	0 hcode 1 + .at
-	'outpad .write
-	editmodekey
-	;
 
 :barraf | F+
 	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
@@ -649,6 +647,9 @@
 	top
 	drawcode
 	bottom
+	cerror 1? (
+		0 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
+		) drop
 	cursorpos
 	
 	.hidec
@@ -658,17 +659,14 @@
 	;
 
 :editor
+	rows 1 - 'hcode !
+	cols 7 - 'wcode !
 	0 'xlinea !
-	mode!edit .insc
+	.insc
 	( pantalla
 		getch $1B1001 <>? 'ckey !
-		emode
-		0? ( editmodekey )
-	|	1 =? ( immmodekey )
-		3 =? ( errmodekey )
-		drop
-		) drop
-	;
+		teclado 
+		) drop ;
 
 	
 |---- Mantiene estado del editor
@@ -699,7 +697,7 @@
 	loadtxt
 	.getconsoleinfo
 	.alsb editor .masb
-	|savetxt
+	savetxt
 	;
 
 : 4 main ;
