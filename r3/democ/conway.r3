@@ -1,6 +1,7 @@
-| Conway Game of Life
+|| Conway Game of Life
 | PHREDA 2021
 ^r3/win/console.r3
+^r3/win/mconsole.r3
 ^r3/lib/rand.r3
 
 #arena 
@@ -24,18 +25,24 @@
 			check 1 + rot rot 
 			1 + ) drop
 		1 + ) 2drop 
-	arena arenan cols rows * move ;
+	arena arenan cols rows * cmove ;
 	
+:cbox
+	1? ( ,rever ; ) ,reset ;
+
 :drawscreen
-	.home
+	mark
+	,cls
 	arena >a
 	0 ( rows <? 
 		0 ( cols <? 
-			.Reset ca@+ 1? ( .Rever ) drop 
-			" " 1 type
+			ca@+ cbox drop 
+			,sp
 			1 + ) drop
-			cr
-		1 + ) drop ;
+		|,nl
+		1 + ) drop 
+	memsize type 
+	empty ;
 	
 :arenarand
 	arena >a

@@ -256,13 +256,13 @@
 	'name 'path "%s/%s" sprint 'name strcpy
 
 	mark
-	"^r3/lib/gui.r3" ,ln ,cr
-	":main" ,ln
-	"	cls home" ,ln
-	"	""Hello Human!"" print" ,ln
-	"	key >esc< =? ( exit ) drop" ,ln
-	"	;" ,ln ,cr
-	": 'main onshow ;" ,ln
+	"^r3/lib/gui.r3" ,s ,cr
+	":main" ,s ,cr
+	"	cls home" ,s ,cr
+	"	""Hello Human!"" print" ,s ,cr
+	"	key >esc< =? ( exit ) drop" ,s ,cr
+	"	;" ,s ,cr
+	": 'main onshow ;" ,s ,cr
 	'name savemem
 	empty
 

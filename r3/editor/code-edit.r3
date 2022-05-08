@@ -459,7 +459,7 @@
 	,c
 	( atselect c@+ 1?
 		$22 =? (
-			over c@  $22 <>? ( drop ; )
+			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
 		13 <>?
 		,c ) drop 1 - 0 ;
@@ -471,7 +471,7 @@
 :parseline 
 	,tcolor
 	( atselect c@+ 1? 13 <>?  | 0 o 13 sale
-		9 =? ( wcolor ,tcolor )
+		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
 		$5e =? ( endline ; )	| $5e ^  Include
@@ -579,6 +579,7 @@
 	$1000 and? ( drop ; )
 	16 >> $ff and
 	$8 =? ( drop kback ; )
+	27 =? ( drop ; )
 	modo ex
 	;
 
