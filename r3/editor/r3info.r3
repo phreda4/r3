@@ -25,13 +25,9 @@
 	'inc 'inc> !
 	swap	
 	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
-|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
-	
 	r3-stage-2 1? ( drop ; ) drop 		
 	r3-stage-3			
 	r3-stage-4			
-
-|	debugmemtoken waitesc
 	;
 
 :savedebug
@@ -44,6 +40,25 @@
 :emptyerror
  	0 0	"mem/debuginfo.db" save ;
 
+|----------- SAVE INFOMAP
+|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+
+:savemap
+	mark
+	inc> 'inc - ,q | cantidad de includes
+	dicc> dicc - ,q | cantidad de palabras
+	
+	dicc ( dicc> <? @+ ,q 8 +  @+ ,q @+ ,q ) drop
+
+|	"inc-----------" ,ln
+|	'inc ( inc> <?
+|		@+ "%w " ,print
+|		@+ "%h " ,print ,cr
+|		) drop
+	
+	"mem/infomap.db" savemem
+	empty ;
+	
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
@@ -54,15 +69,15 @@
 		,tokenprintc ,cr
 		swap ) 2drop ;
 
-:savemap
+:savedebugi
 	mark
-	"inc-----------" ,ln
+	"inc-----------" ,print ,cr
 	'inc ( inc> <?
 		@+ "%w " ,print
 		@+ "%h " ,print ,cr
 		) drop
 	
-	"dicc-----------" ,ln
+	"dicc-----------" ,print ,cr
 	dicc ( dicc> <?
 		@+ "%w " ,print
 		@+ "%h " ,print
@@ -71,7 +86,7 @@
 		dup 32 - ,printword
 		,cr ) drop
 	
-	"block----------" ,ln
+	"block----------" ,print ,cr
 	blok cntblk ( 1? 1 - swap
 		d@+ "%h " ,print
 		d@+ "%h " ,print ,cr
@@ -86,9 +101,11 @@
 	'name r3debuginfo
 	
 	error 
-	1? ( drop savedebug ; ) drop
-	emptyerror
+	1? ( drop savedebug ; )
+	drop
 	
-	|savemap | save info in file for debug
+	emptyerror 
+	savemap
+	|savedebugi | save info in file for debug
 	;
 

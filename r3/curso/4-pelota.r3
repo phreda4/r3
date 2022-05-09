@@ -6,7 +6,7 @@
 #xv #yv		| velocidad
 
 :int. 16 >> ;
-
+  
 :teclado
 	SDLkey
 	>esc< =? ( exit )

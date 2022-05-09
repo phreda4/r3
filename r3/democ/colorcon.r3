@@ -1,4 +1,4 @@
-|| print console colors
+||| print console colors
 | PHREDA 2021
 ^r3/win/console.r3
 

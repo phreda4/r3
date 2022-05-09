@@ -226,8 +226,8 @@
 	linetocursor 'lerror !
 	here >>cr 0 swap c!
 	fuente> lerror 1 + here
-	" %s in line %d%. %w " sprint 'outpad strcpy
-	
+	" %s in line %d (%w)" sprint 'outpad strcpy
+
 	rows 2 - 'hcode !
 	;
 	
@@ -247,8 +247,8 @@
 |RPI|	"./r3rpi "
 	,s 'name ,s ,eol
 	empty here sys
-	cr .reset
-	"press <enter> to continue" .write .input
+	.reset
+	|"press <ESC> to continue" .write waitesc
 	.alsb
 	;
 

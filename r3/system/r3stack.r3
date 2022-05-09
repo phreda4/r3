@@ -435,7 +435,7 @@
 #stacknormal * 256
 
 :fillnormal | deep --
-	-? ( ";fillnormal -" ,ln drop ; ) |trace drop ; )
+	-? ( ";fillnormal -" ,s ,cr drop ; ) |trace drop ; )
 	'stacknormal >a
 	dup a!+	| stacknow
 	dup 2 << a!+
