@@ -52,9 +52,15 @@
 	0 src ( pick2 <? 
 		>>13 swap 1 + swap ) 
 	drop nip ;
-		
-:lineincode | adr -- nrlinea
-	countlines
+	
+:onlywords
+	dup 16 + @ 1 and? ( drop 32 + ; ) drop | variable no graba
+	@+ countlines 
+	,q				| fff -nro de linea
+	8 +
+	@+ swap @+ 
+	rot 32 << or 
+	,q 				| info y mov<<32
 	;
 	
 :savemap
@@ -66,22 +72,8 @@
 	,q
 	
 	dicc< ( dicc> <? | solo codigo principal
-		@+ countlines 
-		|,d " - " ,s 
-		,q
-		8 +
-		@+ swap @+ 
-		rot 32 << or 
-		|,h ,cr 
-		,q 
-		) drop
+		onlywords ) drop
 
-|	"inc-----------" ,print ,cr
-|	'inc ( inc> <?
-|		@+ "%w " ,print
-|		@+ "%h " ,print ,cr
-|		) drop
-	
 	"mem/infomap.db" savemem
 	empty ;
 	

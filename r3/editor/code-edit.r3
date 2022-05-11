@@ -629,11 +629,34 @@
 	;
 
 |---------- TAGS in code	
+:,ncar | n car -- car
+	( swap 1? 1 - swap dup ,c 1 + ) drop ;
+
+:buildinfo | infmov --
+	$200000 and? ( "R" ,s )		| recurse
+	$800000 and? ( "."  ,s	)	| no ;
+	97 >r	| 'a'
+	dup $f and ,sp
+	dup r> ,ncar >r " -- " ,s
+	swap 55 << 59 >> + | deltaD
+	-? ( ,d r> drop ; ) | error en analisis!!
+	r> ,ncar drop ,sp ;
+	
+:colright
+	cols
+	over $f and 
+	pick2 55 << 59 >> over + 
+	+ - 7 -
+	;
+	
 :drawtag | adr val line -- adr val line
-	|,bred
+	pick2 @
 	,bgreen ,black
-	40 over ylinea - 1 + ,at
-	pick2 @ "%h" ,print 
+	dup 12 32 + >> $ff and 0? ( ,bred ) drop
+	colright
+	pick2 ylinea - 1 + 
+	,at
+	buildinfo
 	;
 
 :drawcomm
@@ -641,7 +664,6 @@
 		@+ dup $fff and
 		ylinea dup hcode + bt? ( drawtag )
 		2drop 8 + ) drop ;
-		
 
 |------------------------
 :barraf | F+
@@ -678,7 +700,7 @@
 	drawcode
 	fotbar
 	
-|	drawcomm
+	drawcomm
 	cursorpos
 	,showc
 	memsize type	| type buffer
