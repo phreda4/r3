@@ -23,6 +23,8 @@
 
 :codtok	dup 'lastdircode ! ;
 
+:,ln ,print ,cr ;
+
 |--- @@
 ::getval | a -- a v
 	dup 4 - d@ 8 >>> ;

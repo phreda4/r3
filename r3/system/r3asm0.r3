@@ -28,6 +28,8 @@
 ::getcte2 | a -- a v
 	dup 4 - d@ 8 >>> 'ctecode + @ ;
 
+:,ln ,print ,cr ;
+
 |--------------------------
 :,DUP
 	"add rbp,8" ,ln

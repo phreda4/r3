@@ -77,6 +77,6 @@
 	512 512 SDLframebuffer 'textbitmap !
 	| SDLfull | fullscreen
 	'draw SDLshow 
-	SDLquit	;
+	SDLquit	; 
 
 : main ;

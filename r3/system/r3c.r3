@@ -11,7 +11,7 @@
 
 :r3-genset
 	mark
-	";---r3 setings" ,ln
+	";---r3 setings" ,print ,cr
 	switchmem 20 << "MEMSIZE equ 0x%h" ,print ,cr
 	0 ,c
 	"asm/set.asm"

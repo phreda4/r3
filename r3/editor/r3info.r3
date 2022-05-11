@@ -16,15 +16,15 @@
 	r3name
 	here dup 'src !
 	'r3filename
-	2dup load			|	"load" slog
-	here =? ( "no source code." .println  ; )
+	2dup load 
+	here =? ( "no source code." .println ; )
 	src only13 0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
 	swap	
-	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
+	r3-stage-1 error 1? ( drop ; ) drop	
 	r3-stage-2 1? ( drop ; ) drop 		
 	r3-stage-3			
 	r3-stage-4			
@@ -43,14 +43,40 @@
 |----------- SAVE INFOMAP
 |	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 
+:>>13 | a -- a
+	( c@+ 1?
+		13 =? ( drop ; ) 
+		drop ) drop 1 - ;
+	
+:countlines | adr -- line
+	0 src ( pick2 <? 
+		>>13 swap 1 + swap ) 
+	drop nip ;
+		
+:lineincode | adr -- nrlinea
+	countlines
+	;
+	
 :savemap
 	mark
-	inc> 'inc - ,q | cantidad de includes
-	dicc> dicc - ,q | cantidad de palabras
+	inc> 'inc -		| cantidad de includes
+	dicc> dicc -	| cantidad de palabras
+	swap 32 << or
+	|,h ,cr
+	,q
 	
-	dicc ( dicc> <? @+ ,q 8 +  @+ ,q @+ ,q ) drop
+	dicc< ( dicc> <? | solo codigo principal
+		@+ countlines 
+		|,d " - " ,s 
+		,q
+		8 +
+		@+ swap @+ 
+		rot 32 << or 
+		|,h ,cr 
+		,q 
+		) drop
 
-|	"inc-----------" ,ln
+|	"inc-----------" ,print ,cr
 |	'inc ( inc> <?
 |		@+ "%w " ,print
 |		@+ "%h " ,print ,cr

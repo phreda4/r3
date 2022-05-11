@@ -255,13 +255,8 @@
 	'name 'path "%s/%s" sprint 'name strcpy
 
 	mark
-	"^r3/lib/gui.r3" ,ln ,cr
-	":main" ,ln
-	"	cls home" ,ln
-	"	""Hello Human!"" print" ,ln
-	"	key >esc< =? ( exit ) drop" ,ln
-	"	;" ,ln ,cr
-	": 'main onshow ;" ,ln
+	"--- new code here --" ,print ,cr
+
 	'name savemem
 	empty
 

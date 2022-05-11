@@ -90,7 +90,7 @@
 
 :>>13 | a -- a
 	( $fuente <?
-		 dup c@
+		dup c@
 		13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;

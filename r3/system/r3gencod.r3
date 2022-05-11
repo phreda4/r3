@@ -101,7 +101,7 @@
 #tcte d1 d1 d1 d1 d2 d3 d3 d3 d3
 
 :icte | adr word -- adr
-	"; INLINE CTE" ,ln
+	"; INLINE CTE" ,print ,cr
 	dic>tok @
 	d@ dup dup $ff and 7 -
 	0 8 bt? ( 3 << 'tcte + @ ex code!+ ; )
@@ -587,7 +587,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 	dup 24 + @ $f and
 	DeepStack
 
-";---------OPT" ,ln |----- generate buffer
+";---------OPT" ,print ,cr |----- generate buffer
 |"asm/code.asm" savemem | debug
 	dup adr>toklen | w adr len
 	multientry
@@ -595,7 +595,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 		d@+ tocode
 		swap ) 2drop
 
-";---------ANA" ,ln |----- cell analisys
+";---------ANA" ,print ,cr |----- cell analisys
 |"asm/code.asm" savemem | debug
 
 |	dup 12 + @ $f and
@@ -611,7 +611,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 |   anaend
 
 |	cellinfo
-    ";---------GEN" ,ln |----- generate code
+    ";---------GEN" ,print ,cr |----- generate code
 	24 + @ $f and	| use
 	genasmcode
 	
@@ -634,7 +634,7 @@ iSYS6 iSYS7 iSYS8 iSYS9 iSYS10
 ::r3-gencode
 	'tocode 'tocodeex !
 	mark
-	";---r3 compiler code.asm" ,ln
+	";---r3 compiler code.asm" ,print ,cr
 	"; " ,s 'r3filename ,s ,cr
 
 |	"asm/code.asm" savemem

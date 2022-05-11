@@ -142,7 +142,7 @@
 
 ::r3-gendata
 	mark
-	";---r3 compiler data.asm" ,ln
+	";---r3 compiler data.asm" ,print ,cr
 	"; *** STRINGS ***" ,s ,cr
 
 	dicc ( dicc> <?

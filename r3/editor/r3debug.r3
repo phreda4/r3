@@ -324,7 +324,7 @@
 
 :>>13 | a -- a
 	( $fuente <?
-		 dup c@
+		dup c@
 		13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;
@@ -670,13 +670,13 @@
 
 :savemap
 	mark
-	"inc-----------" ,ln
+	"inc-----------" ,print ,cr
 	'inc ( inc> <?
 		@+ "%w " ,print
 		@+ "%h " ,print ,cr
 		) drop
 	
-	"dicc-----------" ,ln
+	"dicc-----------" ,print ,cr
 	dicc ( dicc> <?
 		@+ "%w " ,print
 		@+ "%h " ,print
@@ -685,7 +685,7 @@
 		dup 32 - ,printword
 		,cr ) drop
 	
-	"block----------" ,ln
+	"block----------" ,print ,cr
 	blok cntblk ( 1? 1 - swap
 		d@+ "%h " ,print
 		d@+ "%h " ,print ,cr

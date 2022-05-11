@@ -205,6 +205,11 @@
 	empty ;
 
 |----------------------------------
+:loadinfo
+	linecomm "mem/infomap.db" load 'linecomm> !
+	8 'linecomm +!
+	;
+
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
 		13 =? ( rot 1 + rot rot ) drop ) drop ;
@@ -220,14 +225,14 @@
 	here >>cr trim str>nro 'cerror ! drop
 	empty
 
-	cerror 0? ( drop ; ) drop
+	cerror 0? ( drop loadinfo ; ) drop
 |... enter error mode
 	fuente cerror + 'fuente> !
 	linetocursor 'lerror !
 	here >>cr 0 swap c!
 	fuente> lerror 1 + here
 	" %s in line %d (%w)" sprint 'outpad strcpy
-
+	
 	rows 2 - 'hcode !
 	;
 	
@@ -259,6 +264,7 @@
 |LIN|	"./r3lin r3/editor/r3debug.r3"
 |RPI|	"./r3rpi r3/editor/r3debug.r3"
 	sys
+	|"press <ESC> to continue" .write waitesc
 	r3info
 	;
 
@@ -502,19 +508,27 @@
 	parseline 
 	;
 
+:setpantafin
+	pantaini>
+	0 ( hcode <?
+		swap >>cr 1 + swap
+		1 + ) drop
+	$fuente <? ( 1 - ) 'pantafin> ! ;
+	
 |..............................
 :drawcode
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	drop 
+
 	,reset
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
-	$fuente <? ( 1 - ) 'pantafin> !
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop ;
+	$fuente <? ( 1 - ) 'pantafin> ! ;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
@@ -614,7 +628,22 @@
 	drop
 	;
 
+|---------- TAGS in code	
+:drawtag | adr val line -- adr val line
+	|,bred
+	,bgreen ,black
+	40 over ylinea - 1 + ,at
+	pick2 @ "%h" ,print 
+	;
 
+:drawcomm
+	linecomm ( linecomm> <?
+		@+ dup $fff and
+		ylinea dup hcode + bt? ( drawtag )
+		2drop 8 + ) drop ;
+		
+
+|------------------------
 :barraf | F+
 	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
 
@@ -624,46 +653,44 @@
 	dup c@ 0? ( 2drop ; ) drop
 	" [%s]" ,print ;
 
-:printpanel
+:topbar
+	0 0 ,at ,bblue ,white ,eline
 	panelcontrol
 	0? ( drop barraf ; ) drop
 	barrac ;
 
-:top
-	0 0 ,at ,bblue ,white ,eline
-	printpanel ,sp ;
-
-:bottom
+:fotbar
 	0 hcode 2 + ,at 
 	,bblue ,white ,eline
 	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
 	$fuente fuente - " %d chars" ,print 
 	clipboard> clipboard - " %d " ,print
+	| error-
+	cerror 0? ( drop ; ) drop
+	0 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
 	;
-	
-|-------------------------------------
+
 :pantalla	
 	mark			| buffer in freemem
-	,reset
-	top
-	drawcode
-	bottom
-	cerror 1? (
-		0 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
-		) drop
-	cursorpos
+	,hidec ,reset
 	
-	.hidec
+	topbar
+	drawcode
+	fotbar
+	
+|	drawcomm
+	cursorpos
+	,showc
 	memsize type	| type buffer
-	.showc
 	empty			| free buffer
 	;
 
 :editor
+	setpantafin
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
 	0 'xlinea !
-	.insc
+	.showc .insc
 	( pantalla
 		getch $1B1001 <>? 'ckey !
 		teclado 
@@ -696,6 +723,7 @@
 	'name "mem/main.mem" load drop
 	ram
 	loadtxt
+	loadinfo
 	.getconsoleinfo
 	.alsb editor .masb
 	savetxt
