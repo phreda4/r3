@@ -73,7 +73,7 @@
 ::SDL_QueryTexture sys-SDL_QueryTexture sys5 drop ;
 ::SDL_SetTextureColorMod sys-SDL_SetTextureColorMod sys4 drop ;
 ::SDL_DestroyTexture sys-SDL_DestroyTexture sys1 drop ;
-::SDL_DestroyRenderer sys-SDL_DestroyRenderer sys1 ;
+::SDL_DestroyRenderer sys-SDL_DestroyRenderer sys1 drop ;
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
 ::SDL_RenderClear sys-SDL_RenderClear sys1 drop ;
 ::SDL_RenderCopy sys-SDL_RenderCopy sys4 drop ;

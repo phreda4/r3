@@ -55,6 +55,7 @@
 	
 :onlywords
 	dup 16 + @ 1 and? ( drop 32 + ; ) drop | variable no graba
+	
 	@+ countlines 
 	,q				| fff -nro de linea
 	8 +

@@ -206,7 +206,9 @@
 
 |----------------------------------
 :loadinfo
-	linecomm "mem/infomap.db" load 'linecomm> !
+	linecomm "mem/infomap.db" load 
+	0 $fff rot !+ !+ 
+	'linecomm> !
 	8 'linecomm +!
 	;
 
@@ -424,6 +426,46 @@
 	| agregar palabra :new  ;
 	;
 
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
+
+:buildinfo | infmov --
+	,bcyan 
+	dup $f and ,sp
+	dup ,ncar " -- " ,s
+	over 55 << 59 >> + | deltaD
+	-? ( ,d ; ) | error en analisis!!
+	,ncar ,sp 
+	,reset ,sp ,bcyan ,black
+	$1000000000 and? ( "."  ,s	)	| multiple
+	$2000000000 and? ( "R" ,s )		| recurse
+	$8000000000 nand? ( ";"  ,s	)	| no ;
+	drop
+	;
+	
+#linecommnow 	
+
+:inicomm
+	linecomm
+	( @+ $fff and ylinea <? drop 8 + ) drop
+	8 - 'linecommnow !
+	;
+	
+:prntcom | line adr' -- line adr'
+	linecommnow @ $fff and 
+	pick2 ylinea + 1 +
+	>? ( drop ; ) drop
+	,sp
+	linecommnow 8 +
+	@+ swap 'linecommnow !
+	dup 12 32 + >> $ff and 
+	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+	,black
+	buildinfo
+	prntcom
+	;
+
 |------ Color line
 #colornow 0
 
@@ -506,6 +548,7 @@
 	iniline
 	inselect	
 	parseline 
+	prntcom
 	;
 
 :setpantafin
@@ -523,6 +566,7 @@
 	drop 
 
 	,reset
+	inicomm
 	pantaini>
 	0 ( hcode <?
 		0 ycode pick2 + ,at
@@ -628,42 +672,6 @@
 	drop
 	;
 
-|---------- TAGS in code	
-:,ncar | n car -- car
-	( swap 1? 1 - swap dup ,c 1 + ) drop ;
-
-:buildinfo | infmov --
-	$200000 and? ( "R" ,s )		| recurse
-	$800000 and? ( "."  ,s	)	| no ;
-	97 >r	| 'a'
-	dup $f and ,sp
-	dup r> ,ncar >r " -- " ,s
-	swap 55 << 59 >> + | deltaD
-	-? ( ,d r> drop ; ) | error en analisis!!
-	r> ,ncar drop ,sp ;
-	
-:colright
-	cols
-	over $f and 
-	pick2 55 << 59 >> over + 
-	+ - 7 -
-	;
-	
-:drawtag | adr val line -- adr val line
-	pick2 @
-	,bgreen ,black
-	dup 12 32 + >> $ff and 0? ( ,bred ) drop
-	colright
-	pick2 ylinea - 1 + 
-	,at
-	buildinfo
-	;
-
-:drawcomm
-	linecomm ( linecomm> <?
-		@+ dup $fff and
-		ylinea dup hcode + bt? ( drawtag )
-		2drop 8 + ) drop ;
 
 |------------------------
 :barraf | F+
@@ -700,7 +708,6 @@
 	drawcode
 	fotbar
 	
-	drawcomm
 	cursorpos
 	,showc
 	memsize type	| type buffer
@@ -736,16 +743,16 @@
 	dup	'linecomm> !
 	$3fff +				| 4096 linecomm
 	'here  ! | -- FREE
-	0 here !
+	0 here ! 
 	mark 
+	loadtxt
+	loadinfo
 	;
 
 |----------- principal
 :main
 	'name "mem/main.mem" load drop
 	ram
-	loadtxt
-	loadinfo
 	.getconsoleinfo
 	.alsb editor .masb
 	savetxt

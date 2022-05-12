@@ -212,6 +212,9 @@
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
+
+
+	
 	.reset
 	'path
 |WIN| "r3 ""%s/%s"""
@@ -231,6 +234,12 @@
 	.reset
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
+	
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+	
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"

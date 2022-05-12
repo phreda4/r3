@@ -93,6 +93,7 @@
 	"r3sdl" 800 600 SDLinit
 	104 150 "media/img/guybrush.png" loadts 'tsguy !
 	'demo SDLshow
-	SDLquit ;	
+	SDLquit 
+	;	
 	
 : main ;	

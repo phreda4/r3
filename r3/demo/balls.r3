@@ -18,7 +18,7 @@
 
 |---------
 :drawball | -- 
-	0 0 0 project3d 
+	0 0 0 project3d
 	14 - swap 14 - swap
 	28 28 spr_ball SDLimages ;
 	
