@@ -16,7 +16,6 @@
 #namenow * 256
 
 ::r3debuginfo | str --
-	.reset .cls 
 	r3name
 	here dup 'src !
 	'r3filename
@@ -29,17 +28,12 @@
 	0 'cntdef !
 	'inc 'inc> !
 	swap	
-	"stage 1" .println
 	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
 	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 	
-	"stage 2" .println
 	r3-stage-2 1? ( drop ; ) drop 		
-	"stage 3" .println
 	r3-stage-3			
-	"stage 4" .println
 	r3-stage-4			
-	"stage ok" .println
 	
 |	debugmemtoken waitesc
 	;
@@ -387,16 +381,17 @@
 
 |..............................
 :drawcode
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	drop
+
 	pantaini>
 	0 ( hcode <?
 		1 ycode pick2 + .at
 		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop
 	;
 
 :emitcur

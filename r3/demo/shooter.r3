@@ -84,7 +84,7 @@
 	xs 1? ( drop ; ) drop
 	yp 16 >> 14 + 'ys !
 	xp 16 >> 30 + 'xs !
-	snd_shoot SNDplay
+	snd_shoot SNDplay ;
 
 :ovni | --
 	3.0 randmax 1.5 - 'ya +!
