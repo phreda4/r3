@@ -2,7 +2,7 @@
 | PHREDA 2019
 |------------------------
 ^r3/win/console.r3
-^r3/lib/trace.r3
+^r3/win/mconsole.r3
 
 #reset 0
 #path * 1024
@@ -202,7 +202,6 @@
 	actual getname 'name strcat
 	'name 1024 "mem/menu.mem" save ;
 
-
 |--------------------------
 :remlastpath
 	'path ( c@+ 1? drop ) drop 1 -
@@ -212,24 +211,33 @@
 |--------------------------------
 :runfile
 	actual -? ( drop ; )
-	getinfo $7 and
-	2 <? ( drop ; )
-	drop
-
+	getinfo $7 and 2 <? ( drop ; ) drop
+	
+	.reset
 	'path
 |WIN| "r3 ""%s/%s"""
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
-	sprint sys
+	sprint 
+	.masb	
+	sys
+	.alsb
 	;
 
 |--------------------------------
 :editfile
 	actual -? ( drop ; )
 	getinfo $3 and 2 <>? ( drop ; ) drop
+	.reset
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
+	
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+	
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
@@ -238,25 +246,40 @@
 	;
 
 |--------------------------------
-#nfile
-
-:newfile
-	1 'nfile !
-	0 'name !
-	;
 
 :remaddtxt | --
 	'name ".r3" =pos 1? ( drop ; ) drop
 	".r3" swap strcat
 	;
 
+|===================================
+#newprg1 "| r3 sdl program
+^r3/win/sdl2gfx.r3
+	
+:demo
+	0 SDLClear
+	$ff0000 SDLColor
+	10 10 20 20 SDLFillRect
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+
+:main
+	""r3sdl"" 800 600 SDLinit
+	'demo SDLshow
+	SDLquit ;	
+	
+: main ;"
+|===================================
+
 :createfile
 	remaddtxt
 	'name 'path "%s/%s" sprint 'name strcpy
 
 	mark
-	"--- new code here --" ,print ,cr
-
+	'newprg1 ,s
 	'name savemem
 	empty
 
@@ -271,6 +294,16 @@
 
 	rebuild
 	loadm
+	;
+
+:newfile
+	0 linesv 1 + .at 
+	.bblue .white .eline 
+	" Name: " .print
+	.input 
+	'pad 'name strcpy
+	'name c@ 0? ( drop ; ) drop
+	createfile
 	;
 
 |--------------------------------
@@ -326,72 +359,59 @@
 	setactual ;
 
 
-|---------------------------------
-
-:pfilename
-	" [" .write 'path .write "/" .write 'name .write "] " .
-|	nfile 0? ( drop ; ) drop
-|	" " . 'path . "/" . 
-|	'name 32 .input 
-	;
-
-
 |--------------------------------
-:printfn | n
-	sp
-	dup getlvl 1 << nsp
-	dup getinfo $3 and "+- ." + c@ emit
-	sp getname .write sp
-	;
-
 #filecolor 1 2 3 4 
 
 :colorfile | n -- n
-	actual =? ( .bwhite .black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ .fc ;
+	actual =? ( ,bwhite ,black ; )
+    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+	;
+
+:printfn | n --
+	,sp
+	dup getlvl 1 << ,nsp
+	dup getinfo $3 and "+- ." + c@ ,c
+	,sp getname ,s ,sp
+	;
 
 :drawl | n --
-	colorfile printfn  .reset ;
+	,sp colorfile printfn ,reset ,eline ;
 	
 :drawtree
-	0 2 .at
-	0 ( linesv <?
+	1 2 ,at
+	0  ( linesv <?
 		dup pagina +
-		nfiles  >=? ( 2drop ; )
-    	drawl
-		cr 1 + ) drop ;
+		nfiles >=? ( 2drop ; )
+    	drawl ,nl 
+		1 + ) drop ;
 	
 :screen
-	.reset .cls 
-	.bblue .white
-	0 0 .at .eline
-	0 0 .at " r3 " .write cr
+	mark
+	,hidec
+	,reset ,bblue ,white
+	1 1 ,at	" r3 " ,s
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	
-	.reset
+	,reset
 	drawtree
-
-	.bblue .white	
-	0 linesv 2 + .at .eline
-	0 linesv 2 + .at 
-	rows cols " w:%d h:%d " .print	
-	pfilename 
 	
-	codekey 32 >> " $%h " .print
-
-|	"Run " "F1" btnf
-|	"Edit " "F2" btnf
-|	"New " "F3" btnf
-
+	,bblue ,white	
+	0 linesv 2 + ,at 
+	'name 'path " %s/%s  " ,print ,eline 
+	
+	0 actual pagina - 2 + ,at
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer	
 	;
 
 :teclado
-	codekey 32 >>
-	$d001c =? ( fenter screen )
+	$D001C =? ( fenter screen )
 	
 	$48 =? ( fup screen ) | up
 	$50 =? ( fdn screen ) | dn
-|	<pgup> =? ( fpgup screen )
-|	<pgdn> =? ( fpgdn screen )
+	$49 =? ( fpgup screen )
+	$51 =? ( fpgdn screen )
 	$47 =? ( fhome screen )
 	$4f =? ( fend screen )
 	
@@ -399,6 +419,7 @@
 	$3c =? ( editfile screen )
 	$3d =? ( newfile screen )
 	drop 
+|	screen
 	;
 
 
@@ -406,13 +427,16 @@
 :main
 	rebuild
 	.getconsoleinfo
-	rows 3 - 'linesv !
+	rows 1 - 'linesv !
 	loadm
 
+	.getconsoleinfo
+	.alsb 
 	screen
-	( getch 27 <>? drop
+	( getch $1B1001 <>?
  		teclado ) drop
-		
+	.reset .cls
+	.masb	
 	savem		
 	;
 

@@ -448,7 +448,7 @@
 
 :inicomm
 	linecomm
-	( @+ $fff and ylinea <? drop 8 + ) drop
+	( @+ $fff and ylinea <=? drop 8 + ) drop
 	8 - 'linecommnow !
 	;
 	
@@ -540,11 +540,12 @@
 	ycursor =? ( $3e ,c ; ) 32 ,c ;
 	
 :linenro | lin -- lin
-	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+	over ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
-	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
-	linenro	swap 
+	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	swap
+	linenro	
 	iniline
 	inselect	
 	parseline 
@@ -569,7 +570,7 @@
 	inicomm
 	pantaini>
 	0 ( hcode <?
-		0 ycode pick2 + ,at
+		1 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> ! ;
@@ -605,7 +606,7 @@
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	0 hcode 1 + .at  .eline
+	1 hcode 1 + .at  .eline
 	" > " .write .input 
 	controls
 	;
@@ -684,25 +685,25 @@
 	" [%s]" ,print ;
 
 :topbar
-	0 0 ,at ,bblue ,white ,eline
+	1 1 ,at ,bblue ,white ,eline
 	panelcontrol
 	0? ( drop barraf ; ) drop
 	barrac ;
 
 :fotbar
-	0 hcode 2 + ,at 
+	1 hcode 2 + ,at 
 	,bblue ,white ,eline
 	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
 	$fuente fuente - " %d chars" ,print 
 	clipboard> clipboard - " %d " ,print
 	| error-
 	cerror 0? ( drop ; ) drop
-	0 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
+	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
 	;
 
 :pantalla	
 	mark			| buffer in freemem
-	,hidec ,reset
+	,hidec ,reset ,cls
 	
 	topbar
 	drawcode

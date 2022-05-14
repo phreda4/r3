@@ -2,6 +2,7 @@
 | PHREDA 2020
 |------------------
 ^r3/win/console.r3
+^r3/win/mconsole.r3
 
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
@@ -19,7 +20,7 @@
 	r3name
 	here dup 'src !
 	'r3filename
-	dup "load %s" .println
+|	dup "load %s" .println
 	2dup load			|	"load" slog
 	here =? ( "no source code." .println  ; )
 	src only13 0 swap c!+ 'here !
@@ -29,7 +30,7 @@
 	'inc 'inc> !
 	swap	
 	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
-	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 	
 	r3-stage-2 1? ( drop ; ) drop 		
 	r3-stage-3			
@@ -69,10 +70,10 @@
 	rows 2 - 'hcode !
 	cols 7 - 'wcode !
 	;
-
+ 
 :mode!src
 	2 'emode !
-	rows 2 - 'hcode !
+	rows 4 - 'hcode !
 	cols 7 - 'wcode !
 	;
 
@@ -251,11 +252,6 @@
 	over isNro 1? ( drop 11 'colornow ! ; ) 
 	drop 10 'colornow ! ;
 
-:,esc $1b ,c $5b ,c	;
-:,fcolor ,esc "38;5;%dm" ,print ;
-:,bcolor ,esc "48;5;%dm" ,print ;
-:,eline  ,esc "K" ,s ; | erase line from cursor
-
 :,tcolor colornow ,fcolor ;
 
 :iniline
@@ -294,20 +290,18 @@
 
 |..............................
 :linenow
-	ycursor =? ( ">" ,s ; ) 32 ,c ;
+	ycursor =? ( $3e ,c ; ) 32 ,c ;
 	
 :linenro | lin -- lin
 	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
-	mark 
 	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
 	linenro	swap 
 	iniline
 	parseline 
-	here
-	empty
-	here dup rot rot - type ;
+	;
+	
 |..............................
 
 :<<13 | a -- a
@@ -374,12 +368,6 @@
 	20 ( 1? 1 - kabajo ) drop ;
 
 |..............................
-:emitcur
-	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 3 'xcursor +! ; )
-	drop 1 'xcursor +! ;
-
-|..............................
 :drawcode
 	fuente>
 	( pantafin> >? scrolldw )
@@ -388,7 +376,7 @@
 
 	pantaini>
 	0 ( hcode <?
-		1 ycode pick2 + .at
+		1 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
@@ -408,19 +396,19 @@
 	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
 	drop 
 	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + .at 
+	ycode ylinea - ycursor + ,at 
 	;
 
 
 |---------------------------------
 :barratop
-	.cls
-	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " .printe 
+	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " ,printe 
 	;
 
 :infobottom
-	1 rows 1 + .at
-	"^[7m info ^[0m" .printe
+	1 hcode 2 + ,at 
+	,bblue ,white ,eline
+	" info ^[7mF1^[27m " ,printe 
 	;
 
 |----- scratchpad
@@ -458,7 +446,7 @@
 |vvv DEBUG  vvv
 
 :stepdebug
-	0 hcode 1 + .at
+	1 hcode 1 + .at
 |	$0000AE 'ink !
 |	rows hcode - 1 - backlines
 
@@ -525,7 +513,7 @@
 |	$040466 'ink !
 |	poli
 
-	0 hcode 1 + .at
+	1 hcode 1 + .at
 |	$0000AE 'ink !
 |	rows hcode - 1 - backlines
 
@@ -611,19 +599,6 @@
 |-------------------------------
 
 :modesrc
-	.hidec
-	barratop
-	drawcode
-
-	infobottom
-
-|	drawtags
-|	statevars 1? ( showvars ) drop
-|	showvstack
-
-	cursorpos
-	.showc
-
 	ckey 
 	$48 =? ( karriba ) 
 	$50 =? ( kabajo )
@@ -648,6 +623,22 @@
 |	<tab> =? ( mode!imm )
 
 	drop
+
+
+	mark
+	,hidec
+	barratop
+	drawcode
+	infobottom
+
+|	drawtags
+|	statevars 1? ( showvars ) drop
+|	showvstack
+
+	cursorpos
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
 	;
 
 
@@ -663,32 +654,6 @@
 		,tokenprintc ,cr
 		swap ) 2drop ;
 
-:savemap
-	mark
-	"inc-----------" ,print ,cr
-	'inc ( inc> <?
-		@+ "%w " ,print
-		@+ "%h " ,print ,cr
-		) drop
-	
-	"dicc-----------" ,print ,cr
-	dicc ( dicc> <?
-		@+ "%w " ,print
-		@+ "%h " ,print
-		@+ "%h " ,print
-		@+ "%h " ,print ,cr
-		dup 32 - ,printword
-		,cr ) drop
-	
-	"block----------" ,print ,cr
-	blok cntblk ( 1? 1 - swap
-		d@+ "%h " ,print
-		d@+ "%h " ,print ,cr
-		swap ) 2drop
-
-	"mem/map.txt" savemem
-	empty ;
-
 |------ MAIN
 :modeshow
 	emode
@@ -699,7 +664,7 @@
 |--------------------- BOOT
 : 	
 	'name "mem/main.mem" load drop
-	'name .println
+|	'name .println
 	
 	'name r3debuginfo
 	
@@ -715,15 +680,15 @@
 	src setsource
 
 	.getconsoleinfo
-|	.alsb .ovec
+	.alsb .ovec .cls
 	
 |	mode!imm
-|	mode!src
-	mode!view 
+	mode!src
+|	mode!view 
 	
 	cntdef 1 - setword
 	
-|	resetvm
+	resetvm
 
 |	gotosrc |*****
 |	prevars | add vars to panel
@@ -732,6 +697,6 @@
 	( getch $1B1001 <>? 'ckey !
 		modeshow 
 		) drop 
-	|.masb
+	.masb
 	;
 

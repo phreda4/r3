@@ -13,3 +13,6 @@
 	( SDLupdate SDLkey >esc< <>? drop ) drop
 	SDLquit 
 	;
+fkds
+
+dsf

@@ -2,7 +2,7 @@
 | PHREDA 2019
 |------------------------
 ^r3/win/console.r3
-^r3/lib/trace.r3
+^r3/win/mconsole.r3
 
 #reset 0
 #path * 1024
@@ -212,17 +212,14 @@
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
-
-
 	
-	.reset
 	'path
 |WIN| "r3 ""%s/%s"""
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
 	sprint 
-	.masb	
+	.reset .masb	
 	sys
 	.alsb
 	;
@@ -231,7 +228,6 @@
 :editfile
 	actual -? ( drop ; )
 	getinfo $3 and 2 <>? ( drop ; ) drop
-	.reset
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
 	
@@ -244,7 +240,7 @@
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
-	 sys
+	sys
 	;
 
 |--------------------------------
@@ -304,6 +300,7 @@
 	" Name: " .print
 	.input 
 	'pad 'name strcpy
+	'name c@ 0? ( drop ; ) drop
 	createfile
 	;
 
@@ -361,47 +358,49 @@
 
 
 |--------------------------------
-:printfn | n
-	sp
-	dup getlvl 1 << nsp
-	dup getinfo $3 and "+- ." + c@ emit
-	sp getname .print sp
-	;
-
 #filecolor 1 2 3 4 
 
 :colorfile | n -- n
-	actual =? ( .bwhite .black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ .fc ;
+	actual =? ( ,bwhite ,black ; )
+    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+	;
+
+:printfn | n --
+	,sp
+	dup getlvl 1 << ,nsp
+	dup getinfo $3 and "+- ." + c@ ,c
+	,sp getname ,s ,sp
+	;
 
 :drawl | n --
-	.eline
-	sp colorfile printfn .reset ;
+	,sp colorfile printfn ,reset ,nl ;
 	
 :drawtree
-	1 2 .at
-	0 ( linesv <?
+	1 2 ,at
+	0  ( linesv <?
 		dup pagina +
-		nfiles  >=? ( 2drop ; )
-    	drawl
-		cr 1 + ) drop ;
+		nfiles >=? ( 2drop ; )
+    	drawl 
+		1 + ) drop ;
 	
 :screen
-	.reset |.cls 
-	.bblue .white
-	1 1 .at 
-	.eline " r3 " .print
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " .printe
+	mark
+	,hidec
+	,reset ,cls ,bblue ,white
+	1 1 ,at	" r3 " ,s
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	
-	.reset
+	,reset
 	drawtree
-	"0J" .[ | clear 
 	
-	.bblue .white	
-	0 linesv 2 + .at 
-	.eline 'name 'path " %s/%s  " .print
+	,bblue ,white	
+	0 linesv 2 + ,at 
+	'name 'path " %s/%s  " ,print ,eline 
 	
-	0 actual pagina - 2 + .at
+	0 actual pagina - 2 + ,at
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer	
 	;
 
 :teclado
@@ -417,8 +416,8 @@
 	$3b =? ( fenter screen )
 	$3c =? ( editfile screen )
 	$3d =? ( newfile screen )
+	|$3e =? ( newfolder screen ) | f4 - new folder
 	drop 
-|	screen
 	;
 
 
