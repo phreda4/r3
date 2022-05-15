@@ -20,11 +20,11 @@
 
 
 | cantidad de pila usada en formato print "%d.."
-#controc 1  1  1  1  1  1  1  1  1  1  1  1  1  0  0  1
+#controc ( 1  1  1  1  1  1  1  1  1  1  1  1  1  0  0  1 )
 
 :count
 	$25 <>? ( drop ; ) drop
-	c@+ $f and 2 << 'controc + @
+	c@+ $f and 'controc + c@
 	rot + swap
 	;
 

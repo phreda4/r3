@@ -267,7 +267,7 @@
 |LIN|	"./r3lin r3/editor/r3debug.r3"
 |RPI|	"./r3rpi r3/editor/r3debug.r3"
 	sys
-	|"press <ESC> to continue" .write waitesc
+	"press <ESC> to continue" .write waitesc
 	r3info
 	;
 
@@ -436,12 +436,11 @@
 	dup $f and ,sp
 	dup ,ncar " -- " ,s
 	over 55 << 59 >> + | deltaD
-	-? ( ,d ; ) | error en analisis!!
 	,ncar ,sp 
 	,reset ,sp ,bcyan ,black
-	$1000000000 and? ( "."  ,s	)	| multiple
+	$1000000000 and? ( ";"  ,s	)	| multiple
 	$2000000000 and? ( "R" ,s )		| recurse
-	$8000000000 nand? ( ";"  ,s	)	| no ;
+	$8000000000 nand? ( "."  ,s	)	| no ;
 	drop
 	;
 	

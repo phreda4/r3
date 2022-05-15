@@ -1,7 +1,11 @@
 ^r3/win/sdl2gfx.r3
 
+:test
+	3 "hola %d" .print
+	;
 
 :	
+	test
 	"r3sdl" 800 600 SDLinit
 
 	$ffffff Color 
@@ -13,6 +17,3 @@
 	( SDLupdate SDLkey >esc< <>? drop ) drop
 	SDLquit 
 	;
-fkds
-
-dsf

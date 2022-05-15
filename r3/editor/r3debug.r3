@@ -16,6 +16,9 @@
 #name * 1024
 #namenow * 256
 
+#linecomm 
+#linecomm>
+
 ::r3debuginfo | str --
 	r3name
 	here dup 'src !
@@ -237,6 +240,45 @@
 #fuente> 	| cursor
 #$fuente	| fin de texto
 
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
+
+:buildinfo | infmov --
+	,bcyan 
+	dup $f and ,sp
+	dup ,ncar " -- " ,s
+	over 55 << 59 >> + | deltaD
+	,ncar ,sp 
+	,reset ,sp ,bcyan ,black
+	$1000000000 and? ( ";"  ,s	)	| multiple
+	$2000000000 and? ( "R" ,s )		| recurse
+	$8000000000 nand? ( "."  ,s	)	| no ;
+	drop
+	;
+
+#linecommnow 	
+
+:inicomm
+	linecomm 8 + | head 
+	( @+ $fff and ylinea <=? drop 8 + ) drop
+	8 - 'linecommnow !
+	;
+	
+:prntcom | line adr' -- line adr'
+	linecommnow @ $fff and 
+	pick2 ylinea + 1 +
+	>? ( drop ; ) drop
+	,sp
+	linecommnow 8 +
+	@+ swap 'linecommnow !
+	dup 12 32 + >> $ff and 
+	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+	,black
+	buildinfo
+	prntcom
+	;
+
 |------ Color line
 #colornow 0
 
@@ -300,6 +342,7 @@
 	linenro	swap 
 	iniline
 	parseline 
+	prntcom
 	;
 	
 |..............................
@@ -367,8 +410,6 @@
 :kpgdn
 	20 ( 1? 1 - kabajo ) drop ;
 
-
-		
 |..............................
 :drawcode
 	fuente>
@@ -376,6 +417,8 @@
 	( pantaini> <? scrollup )
 	drop
 
+	,reset
+	inicomm
 	pantaini>
 	0 ( hcode <?
 		1 ycode pick2 + ,at
@@ -682,6 +725,12 @@
 	1? ( drop savedebug ; ) drop
 	emptyerror
 	
+	here dup 'linecomm !
+	"mem/infomap.db" load 
+	0 $fff rot !+ !+ 
+	dup 'linecomm> ! 
+	'here !
+	
 	|savemap | save info in file for debug
 	
 	vm2run
@@ -693,7 +742,7 @@
 	.alsb .ovec .cls
 	
 |	mode!imm
-|	mode!src
+	mode!src
 |	mode!view 
 	
 	cntdef 1 - setword
