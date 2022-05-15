@@ -207,10 +207,11 @@
 |----------------------------------
 :loadinfo
 	linecomm "mem/infomap.db" load 
-	0 $fff rot !+ !+ 
-	'linecomm> !
-	8 'linecomm +!
-	;
+	0 $fff rot !+ !+ 'linecomm> ! ;
+	
+:clearinfo
+	linecomm 8 +
+	0 $fff rot !+ !+ 'linecomm> ! ;
 
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
@@ -447,7 +448,7 @@
 #linecommnow 	
 
 :inicomm
-	linecomm
+	linecomm 8 + | head 
 	( @+ $fff and ylinea <=? drop 8 + ) drop
 	8 - 'linecommnow !
 	;
@@ -637,10 +638,11 @@
 :vchar | char --  ; visible char
 	$1000 and? ( drop ; )
 	16 >> $ff and
-	$8 =? ( drop kback ; )
-	27 =? ( drop ; )
-	modo ex
-	;
+	8 =? ( drop kback ; )
+	9 =? ( modo ex ; )
+	13 =? ( clearinfo modo ex ; )
+	32 <? ( drop ; )
+	modo ex ;
 
 :teclado
 	panelcontrol 1? ( drop controlkey ; ) drop
@@ -744,7 +746,6 @@
 	dup	'linecomm> !
 	$3fff +				| 4096 linecomm
 	'here  ! | -- FREE
-	0 here ! 
 	mark 
 	loadtxt
 	loadinfo

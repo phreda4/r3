@@ -13,9 +13,9 @@
 :drawline
 	xo yo xypen	
 	2dup xy!
-	SDLline
+	Line
 	
-	SDLredraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )
@@ -27,7 +27,7 @@
 	SDLupdate 
 	xypen xy!
 	
-	$ff00 SDLColor
+	$ff00 Color
 	
 	'drawline SDLshow 
 	SDLquit

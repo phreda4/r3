@@ -8,7 +8,7 @@
 #xpal 0 #ypal 200
 #cwx 60 #cwy 200
 
-##color $0
+##colord $0
 
 #colorwimg |188x189
 #c1 $ffffff
@@ -19,7 +19,7 @@
 #select 0
 
 ::color! | color --
-	dup 'color !
+	dup 'colord !
 	select 0? ( 2drop ; ) drop
 	rgb2hsv | h s v
 	128 16 *>> 128 swap - 'c1w !
@@ -33,16 +33,16 @@
 
 :setcolor | color --
 |	cwx 140 + cwy c1w + SDLgetpixel
-	dup 'color !
+	dup 'colord !
 	'pal8 npal 2 << + !
 	;
 
 :xypen SDLx SDLy ;
 
 :selectColorWheel
-	$999999 SDLColor
-	cwx cwy 200 160 SDLFillRect
-	cwx 2 + cwy 2 + colorwimg SDLimage
+	$999999 Color
+	cwx cwy 200 160 FRect
+	cwx 2 + cwy 2 + colorwimg Image
 |	cwx 140 + cwy xy>v >a
 |	0 ( 128 <?
 |		c1 0 pick2 1 << colmix
@@ -57,17 +57,17 @@
 	cwx 138 + cwy 12 130 guiBox
 	[ xypen nip cwy - 128 clamp0max 'c1w ! setcolor ; ] onMove
 
-	$0 SDLColor
-	c1x 3 - c1y 3 - 6 6 SDLRect
-	cwx 137 + cwy c1w + 2 - 16 4 SDLRect
+	$0 Color
+	c1x 3 - c1y 3 - 6 6 Rect
+	cwx 137 + cwy c1w + 2 - 16 4 Rect
 
-	$ffffff SDLColor
-	c1x 2 - c1y 2 - 4 4 SDLRect
-	cwx 138 + cwy c1w + 1 - 14 2 SDLRect
+	$ffffff Color
+	c1x 2 - c1y 2 - 4 4 Rect
+	cwx 138 + cwy c1w + 1 - 14 2 Rect
  	cwx 70 + cwy 138 + bat
-	color $ffffffff and "$%h" sprint bprint
-	color SDLColor
-	cwx 10 + cwy 134 + 50 20 SDLFillRect
+	colord $ffffffff and "$%h" sprint bprint
+	colord Color
+	cwx 10 + cwy 134 + 50 20 FRect
 	;
 
 #ink
@@ -75,31 +75,31 @@
 ::dlgColor
 	select 1? ( selectColorWheel ) drop
 
-	$454545 SDLColor
-	xpal ypal 60 380 SDLFillRect
+	$454545 Color
+	xpal ypal 60 380 FRect
 
-	color SDLColor
+	colord Color
 	xpal 10 + ypal 5 + 40 30 
-	2over 2over SDLFillRect
+	2over 2over FRect
 	guiBox
 	SDLb SDLx SDLy guiIn
-	[ select 1 xor 'select ! selectColorWheel color color! ; ] onClick
+	[ select 1 xor 'select ! selectColorWheel colord color! ; ] onClick
 
 	'pal8
 	0 ( 20 <?
 		0 ( 3 <?
-			rot d@+ dup 'ink ! SDLColor
+			rot d@+ dup 'ink ! Color
 			rot rot
         	over 4 << 41 + ypal +
 			over 4 << 7 + xpal + swap 14 14
-			2over 2over SDLFillRect
+			2over 2over FRect
 			guiBox
 			SDLb SDLx SDLy guiIn
 			over 3 * over +
 			[ dup 'npal ! ink color! ; ] onClick
 			npal =? ( 
-				$ffffff SDLColor
-				xr1 yr1 xr2 pick2 - yr2 pick2 - SDLREct
+				$ffffff Color
+				xr1 yr1 xr2 pick2 - yr2 pick2 - Rect
 				)
 			drop
 			1 + ) drop
@@ -116,7 +116,7 @@
 		dup 1.0 19 */ 1.0 1.0 hsv2rgb da!+
 		dup 1.0 19 */ 0.5 1.0 hsv2rgb da!+
 		1 + ) drop
-	$0 'color !
+	$0 'colord !
 	;
 
 ::xydlgColor! | x y --

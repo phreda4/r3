@@ -63,10 +63,10 @@
 	8 >> $ff clamp0max dup 8 << over 16 << or or ;
 	
 :drawneuron	| layer tot now
-	a@+ neuroncolor SDLColor
+	a@+ neuroncolor Color
 
 	pick2 40 * 30 + over 40 * 30 + | x y
-	10 dup 2swap SDLFillellipse
+	10 dup 2swap FEllipse
 	;
 	
 :linkcolor | ; -1..0 -> red  0..1 -> green
@@ -74,11 +74,11 @@
 	$ff 16 *>> 8 << ;
 	
 :drawlink | l t1 n1 t2 n2
-	a@+ linkcolor SDLColor
+	a@+ linkcolor Color
 
 	pick4 40 * 30 + pick3 40 * 30 +
 	over 40 + pick3 40 * 30 +
-	SDLLine
+	Line
 	;
 	
 :drawnn
@@ -200,7 +200,7 @@
 
 #x #y
 :dbox | color --
-	SDLcolor x y 4 dup SDLFillRect ;
+	Color x y 4 dup FRect ;
 	
 :drawmap
 	10 'y !
@@ -236,12 +236,12 @@
 		
 |--------------------------------------	main
 :main
-	0 SDLclear
+	0 clrscr
 	
 	drawmap	
 	drawnn
 	
-	SDLRedraw 
+	redraw 
 	
 	SDLkey
 	>esc< =? ( exit )

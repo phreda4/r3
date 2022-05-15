@@ -39,12 +39,12 @@ Hamburguesas proteicas
 #clines
 
 #font
-#color
+#ink
 #htotal
 #x #y
 
 :bbtextb | "text" ---
-	font swap color TTF_RenderUTF8_Blended | surface
+	font swap ink TTF_RenderUTF8_Blended | surface
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
@@ -125,7 +125,7 @@ Hamburguesas proteicas
 	b> 8 - 'lines> ! ;
 		
 :textbox | $vh str box color --
-	'color !
+	'ink !
 	'boxt 64box
 	
 |	SDLrenderer 0 55 0 255 SDL_SetRenderDrawColor bbfill
@@ -148,7 +148,7 @@ Hamburguesas proteicas
 
 	
 :drawl
-	0 SDLclear
+	0 clrscr
 
 	vx 'texto 0.1 0.1 0.8 0.8 xywh%64 $ff0000 textbox
 	
@@ -156,7 +156,7 @@ Hamburguesas proteicas
 	
 	
 	SDLrenderer $ff00 font vx "x:%d" sprint 50 350 RenderText
-	SDLRedraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )

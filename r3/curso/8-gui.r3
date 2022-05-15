@@ -5,7 +5,7 @@
 ^r3/lib/rand.r3	
 
 #xo #yo	
-#color $ff00
+#ink $ff00
 
 :xy!
 	'yo ! 'xo ! ;
@@ -19,21 +19,19 @@
 	SDLb SDLx SDLy guiIn
 	
 	[ xypen xy! ; ] 
-	[ color SDLcolor xypen 2dup xo yo SDLLine xy! ; ]  
+	[ ink Color xypen 2dup xo yo Line xy! rand 'ink ! ; ]  
 	onDnMove 
 	
-	SDLredraw
+	redraw
 	
 	SDLkey
-	<esp> =? ( rand 'color ! )
 	>esc< =? ( exit )
 	drop ;
 
 : 
 	"r3sdl" 800 600 SDLinit
 
-	$ff00 SDLcolor
-	0 SDLClear
+	0 clrscr
 	
 	'drawline SDLshow 
 	SDLquit

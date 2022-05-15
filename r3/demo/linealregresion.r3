@@ -91,24 +91,24 @@
 	sw 1 >> - 16 << xc - xs /. swap ;
 	
 :drawpoints
-	$ffffff SDLcolor 
+	$ffffff Color 
 	points ( points> <? >a
-		a@+ a@+ xy2scr SDLPoint	
+		a@+ a@+ xy2scr Point	
 		a> ) drop ;
 	
 :drawline
-	$ff0000 SDLColor
+	$ff0000 Color
 	-0.5 dup linefx xy2scr
 	0.5 dup linefx xy2scr
-	SDLLine ;
+	Line ;
 	
 :main
-	0 SDLclear
+	0 clrscr
 	
 	drawpoints
 	drawline
 	
-	SDLRedraw 
+	redraw 
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( getlinealr ) 					| recalculate

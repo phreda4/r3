@@ -4,12 +4,12 @@
 :	
 	"r3sdl" 800 600 SDLinit
 
-	$ffffff SDLcolor 
+	$ffffff Color 
 	30 10
 	100 100
-	SDLRect
+	Rect
 		
-	SDLRedraw 
+	redraw 
 	( SDLupdate SDLkey >esc< <>? drop ) drop
 	SDLquit 
 	;

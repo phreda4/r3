@@ -1,4 +1,4 @@
-^r3/win/console.r3
+^r3/win/console.r3
 
 :main
 	getch 

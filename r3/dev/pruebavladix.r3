@@ -127,7 +127,7 @@
 
 	
 :demo
-	0 SDLClear
+	0 clrscr
 	
 	nroimagen
 	vladix
@@ -145,7 +145,7 @@
 	200 104
 	tsdraws
 	
-	SDLRedraw
+	redraw
 	
 	xv 'xp +!
 	yv 'yp +!

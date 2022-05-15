@@ -94,13 +94,13 @@
 
 |-----------------------------	
 
-:sdlcolor | col --
+:Color | col --
 	SDLrenderer swap
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
 	$ff SDL_SetRenderDrawColor ;
 
 :demo
-	0 SDLclear
+	0 clrscr
 	
 	timeline.draw
 	
@@ -108,7 +108,7 @@
 	0 0 bat "<f1> example 1" bprint
 	|0 16 bat  "<f2> example 2" bprint
 	
-	SDLRedraw
+	redraw
 	SDLkey
 	<f1> =? ( example1 )
 	

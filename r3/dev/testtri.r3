@@ -10,7 +10,7 @@
 
 :tri | yf x1. x2. yi -- x1. x2.
 	( pick3 <? 
-		pick2 16 >> over pick3 16 >> over SDLLine
+		pick2 16 >> over pick3 16 >> over Line
 		rot dx1 + rot dx2 + rot
 		1 + ) 
 	drop rot drop ;
@@ -23,7 +23,7 @@
 	pick2 pick2 pick2 min min
 	>r max max
 	>r >r | max min y
-	rot over SDLLine ;
+	rot over Line ;
 
 :triV | yx1 yx2 yx3 --  ; V
 	pick2 32 >> over 32 >> -
@@ -66,16 +66,16 @@
 	32 << swap $ffffffff and or ;
 	
 :drawl
-	0 SDLclear
+	0 clrscr
 	
-	$ff00 SDLcolor
+	$ff00 Color
 	
 	100 40 xy 
 	140 300 xy
 	SDLx SDLy xy
 	triangle
 
-	SDLRedraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )

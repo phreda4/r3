@@ -21,13 +21,13 @@
 #clines
 
 #font
-#color
+#ink
 #htotal
 #x #y
 #bbtext [ 0 0 0 0 ]
 
 :bbtextb | "text" ---
-	font swap color TTF_RenderUTF8_Blended | surface
+	font swap ink TTF_RenderUTF8_Blended | surface
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
@@ -99,7 +99,7 @@
 		) drop ;
 		
 ::textbox | $vh str box color font --
-	'font ! 'color !
+	'font ! 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !
@@ -118,7 +118,7 @@
 	
 |------------------------------------------------
 :bbtexts | "text" ---
-	font swap color dup $ffffffff and swap 32 >> TTF_RenderUTF8_shaded | surface
+	font swap ink dup $ffffffff and swap 32 >> TTF_RenderUTF8_shaded | surface
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
@@ -154,7 +154,7 @@
 
 ::textboxs | $vh str box color font --
 
-	'font ! 'color !
+	'font ! 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !

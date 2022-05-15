@@ -53,7 +53,7 @@
 	evolve
 	drawarena
 	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
-	SDLredraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )

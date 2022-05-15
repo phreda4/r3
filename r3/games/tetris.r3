@@ -44,13 +44,13 @@
 	;
 
 :draw_block | ( x y -- )
-	15 15 SDLFillRect ;
+	15 15 FRect ;
 
 :nthcolor | ( n -- color )
 	2 << 'colors + d@ ;
 
 :visit_block | ( y x -- y x )
-	da@+ 0? ( drop ; ) SDLColor
+	da@+ 0? ( drop ; ) Color
 	2dup or packed2xy draw_block ;
 
 :draw_grid | ( --- )
@@ -81,7 +81,7 @@
 	translate_block packed2xy draw_block ;
 
 :draw_player | ( --- )
-	playercolor SDLColor
+	playercolor Color
 	'player
 	@+ draw_player_block
 	@+ draw_player_block
@@ -92,7 +92,7 @@
 	inmask 15 + packed2xy draw_block ;
 	  
 :draw_nextpiece
-	nextpiece dup nthcolor SDLcolor
+	nextpiece dup nthcolor Color
 	1 - 2 << 'pieces +
 	c@+ draw_nextpiece_block
 	c@+ draw_nextpiece_block
@@ -193,22 +193,22 @@
 #dtime
 
 :game | ( --- )
-	0 SDLclear
+	0 clrscr
 	
 |	20 20 atxy "Tetris R3" print
 
-	$444444 SDLcolor
-	286 96 128 70 SDLFillRect
-	62 96 166 326 SDLFillRect
+	$444444 Color
+	286 96 128 70 FRect
+	62 96 166 326 FRect
 
-	$ffffff SDLcolor
+	$ffffff Color
 |	360 100 atxy points "%d" print
 
 	draw_grid
 	draw_player
 	draw_nextpiece
 
-	SDLRedraw
+	redraw
 	
 	msec dup ntime - 'dtime +! 'ntime !
 	dtime speed >? ( dup speed - 'dtime !

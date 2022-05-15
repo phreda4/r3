@@ -69,14 +69,14 @@
 #box [ 100 0 500 500 ]
 
 :draw
-	$222222 SDLclear
+	$222222 clrscr
 	SDLrenderer textbitmap 0 'box SDL_RenderCopy		
 	
 	$ffffff bcolor
 	0 0 bat qh qw "%d %d" sprint bprint
 	0 12 bat csize "%d" sprint bprint
 	
-	SDLredraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )

@@ -255,10 +255,10 @@
 ^r3/win/sdl2gfx.r3
 	
 :demo
-	0 SDLClear
-	$ff0000 SDLColor
-	10 10 20 20 SDLFillRect
-	SDLRedraw
+	0 clrscr
+	$ff0000 Color
+	10 10 20 20 FRect
+	redraw
 	
 	SDLkey 
 	>esc< =? ( exit )
@@ -284,6 +284,11 @@
 	'name 1024 "mem/main.mem" save
 	'name 1024 "mem/menu.mem" save
 
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+	
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
@@ -373,24 +378,24 @@
 	;
 
 :drawl | n --
-	,sp colorfile printfn ,reset ,nl ;
+	,sp colorfile printfn ,nl ;
 	
 :drawtree
 	1 2 ,at
 	0  ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
+		,reset
     	drawl 
 		1 + ) drop ;
 	
 :screen
 	mark
 	,hidec
-	,reset ,cls ,bblue ,white
+	,reset ,cls ,bblue 
 	1 1 ,at	" r3 " ,s
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	
-	,reset
 	drawtree
 	
 	,bblue ,white	

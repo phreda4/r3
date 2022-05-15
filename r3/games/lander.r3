@@ -30,7 +30,7 @@
 
 #xo #yo	
 :op 'yo ! 'xo ! ;
-:line 2dup xo yo SDLLine 'yo ! 'xo ! ;
+:lineo 2dup xo yo Line 'yo ! 'xo ! ;
 
 :makeGround
 	'grd >a
@@ -61,12 +61,12 @@
 	;
 
 :stars
-	$ffffff sdlcolor 
+	$ffffff Color 
 	'astars >b
 	100 ( 1? 1 -
 		db@+
 		dup $ffff and swap 16 >>
-		SDLPoint
+		Point
 		) drop ;
 
 :keyboard
@@ -107,7 +107,7 @@
 	'grd >a
 	0 da@+ op
 	0 ( 255 <? 1 +
-		dup sw 255 */ da@+ line
+		dup sw 255 */ da@+ lineo
 		) drop ;
 
 :hitground? | -- +/-
@@ -120,7 +120,7 @@
 #timee
 
 :crash
-	0 SDLclear
+	0 clrscr
 	stars
 	ground
 
@@ -129,21 +129,21 @@
 	px 16 >> 22 - py 16 >> 32 -
 	tsdraw
 	
-	SDLRedraw
+	redraw
 	timee 0.2 + 
 	15.5 >? ( exit ) 
 	'timee ! 
 	;
 	
 :game
-	0 SDLclear
+	0 clrscr
 	
 	stars
 	ground
 	player
 	hitground? -? ( 0 'timee ! 'crash SDLshow reset ) drop
 	
-	SDLRedraw
+	redraw
 	
 	keyboard
 	;

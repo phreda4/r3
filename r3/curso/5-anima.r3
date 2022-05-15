@@ -42,14 +42,14 @@
 
 	
 :demo
-	0 SDLClear
+	0 clrscr
 	
 	nroimagen
 	tsguy
 	xp int. yp int. 
 	tsdraw 
 	
-	SDLRedraw
+	redraw
 	
 	xv 'xp +!
 	yv 'yp +!

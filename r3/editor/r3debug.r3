@@ -367,6 +367,8 @@
 :kpgdn
 	20 ( 1? 1 - kabajo ) drop ;
 
+
+		
 |..............................
 :drawcode
 	fuente>
@@ -402,13 +404,18 @@
 
 |---------------------------------
 :barratop
-	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " ,printe 
+|	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " ,printe 
+	
+	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF6^[27mVIEW ^[7mF7^[27mSTEP ^[7mF8^[27mSTEPN" ,printe 
 	;
 
 :infobottom
 	1 hcode 2 + ,at 
-	,bblue ,white ,eline
-	" info ^[7mF1^[27m " ,printe 
+	,bblue ,white |,eline
+	" info ^[7mF1^[27m " ,printe ,nl
+	,reset ,bblack
+	<<ip "IP:%h" ,print ,nl
+	,stackprintvm
 	;
 
 |----- scratchpad
@@ -559,9 +566,11 @@
 	<<ip 0? ( drop ; )
 	0 'xlinea !
 	dup code2ixy
-	dup 24 >> $ff and srcnow
-	|$ffffff and 'taglist d!
-	code2src dup 'fuente> !
+	
+|	dup 24 >> $ff and srcnow |$ffffff and 'taglist d!
+	code2src 'fuente> ! 
+	
+	| dup 'fuente> !
 	|getsrclen 'taglist 4 + d! 
 	;
 
@@ -632,6 +641,7 @@
 	infobottom
 
 |	drawtags
+	
 |	statevars 1? ( showvars ) drop
 |	showvstack
 
@@ -683,7 +693,7 @@
 	.alsb .ovec .cls
 	
 |	mode!imm
-	mode!src
+|	mode!src
 |	mode!view 
 	
 	cntdef 1 - setword

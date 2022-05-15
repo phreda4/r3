@@ -7,7 +7,7 @@
 	drop ;
 
 :demo
-	0 SDLClear
+	0 clrscr
 	
 	$ffffff bcolor 
 	10 10 bat 
@@ -17,7 +17,7 @@
 	10 30 bat 
 	msec "milisegundos del sistema:%d" sprint bprint
 	
-	SDLredraw
+	redraw
 	teclado
 	;
 	

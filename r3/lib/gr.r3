@@ -52,7 +52,7 @@
     r@ + swap
     r> r> ) 4drop ;
 
-::line | x y --
+::bline | x y --
   2dup iline
 ::op | x y --
   'yop ! 'xop ! ;
@@ -162,9 +162,9 @@
 |-----------------------------------------
 ::rectbox | x1 y1 x2 y2 --
 	2dup op
-	over pick3 line
-	2swap over swap line
-	over line line ;
+	over pick3 bline
+	2swap over swap bline
+	over bline bline ;
 
 ::box.inv | w h x y --
 	xy>v >a

@@ -257,10 +257,10 @@
 ^r3/win/sdl2gfx.r3
 	
 :demo
-	0 SDLClear
-	$ff0000 SDLColor
-	10 10 20 20 SDLFillRect
-	SDLRedraw
+	0 clrscr
+	$ff0000 Color
+	10 10 20 20 FRect
+	redraw
 	
 	SDLkey 
 	>esc< =? ( exit )

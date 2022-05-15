@@ -1,4 +1,4 @@
-| Demo Flapybird
+| Demo Flapybird
 | PHRED 2021
 
 ^r3/win/console.r3
@@ -31,10 +31,10 @@
 #pyp2 300
 	
 :drawpipe | x y --
-	over 0 60 pick3 80 - sprpipe SDLimages
-	over 5 - over 80 - 70 40 sprpipe SDLimages
-	over 5 - over 80 + 70 40 sprpipe SDLimages
-	over over 120 + 60 sh over - sprpipe SDLimages
+	over 0 60 pick3 80 - sprpipe Images
+	over 5 - over 80 - 70 40 sprpipe Images
+	over 5 - over 80 + 70 40 sprpipe Images
+	over over 120 + 60 sh over - sprpipe Images
 	2drop ;
 
 :newpipe
@@ -50,10 +50,10 @@
 	;
 	
 :juego
-	0 SDLclear
+	0 clrscr
 	fondo
 	jugador
-	SDLRedraw
+	redraw
 	
 	SDLkey
 	>esc< =? ( exit )

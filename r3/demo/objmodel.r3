@@ -82,9 +82,9 @@
 | WIRE
 |-------------
 :drawtri | x y x y x y --
-	>r >r 2over 2over SDLLine
-	r> r> 2swap 2over SDLLine
-	SDLLine ;
+	>r >r 2over 2over Line
+	r> r> 2swap 2over Line
+	Line ;
 
 ::objwire
 	mark
@@ -121,15 +121,15 @@
 #model
 
 :main
-	0 SDLClear
+	0 clrscr
 
 	1.0 3dmode
 	freelook
 	xcam ycam zcam mtrans
 	
-	$ffffff SDLColor
+	$ffffff Color
 	objwire
-	SDLRedraw
+	redraw
 	
 	SDLkey
 	<up> =? ( 1.0 'zcam +! )

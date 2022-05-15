@@ -35,7 +35,7 @@
 	imagenw * + 2 << imagen + ;
 
 :imagenset | x y --
-	imagena color swap d! ;
+	imagena colord swap d! ;
 
 :imagenget | x y -- c
 	imagena d@ ;
@@ -60,18 +60,18 @@
 
 |----------- FILL
 :modofill
-	[ color xypen scr2img vfill buffercopy ; ] onClick ;
+	[ colord xypen scr2img vfill buffercopy ; ] onClick ;
 
 |----------- LINE
 :modoline
 	[ xypen 'ya ! 'xa ! ; ]
-	[ color SDLColor xa ya xypen SDLline ; ]
+	[ colord Color xa ya xypen Line ; ]
 	[ xa ya scr2img vop xypen scr2img vline buffercopy ; ] guiMap ;
 
 |----------- BOX
 :modobox
 	[ xypen 'ya ! 'xa ! ; ]
-	[ color SDLColor xa ya xypen pick2 - swap pick3 - swap SDLRect ; ]
+	[ colord Color xa ya xypen pick2 - swap pick3 - swap Rect ; ]
 	[ xa ya scr2img xypen scr2img vrect buffercopy ; ] guiMap ;
 
 |----------- CIRCLE
@@ -82,13 +82,13 @@
 
 :modocircle
 	[ xypen 'ya ! 'xa ! ; ]
-	[ color SDLColor xa ya xypen border2cenrad SDLEllipse ; ]
+	[ colord Color xa ya xypen border2cenrad Ellipse ; ]
 	[ xa ya scr2img xypen scr2img 	| x y x y
 		border2cenrad vellipseb buffercopy ; ] guiMap ;
 
 |----------- PICKER
 :modopicker
-	[ xypen scr2img imagenget 'color ! ; ] onClick ;
+	[ xypen scr2img imagenget 'colord ! ; ] onClick ;
 
 |----------- ERASER
 :modoeraser
@@ -97,7 +97,7 @@
 |----------- SELECT
 :modoselect
 	[ xypen 'ys1 ! 'xs1 ! ; ]
-	[ xs1 ys1 xypen pick2 - swap pick3 - swap  SDLRect ; ]
+	[ xs1 ys1 xypen pick2 - swap pick3 - swap  Rect ; ]
 	[ xypen scr2img 'ys2 ! 'xs2 ! ; ] guiMap ;
 
 |------------------------------
@@ -123,8 +123,8 @@
 	;
 	
 :intool
-	$ffffff SDLColor
-	xytool modo2xy 30 30 SDLRect 
+	$ffffff Color
+	xytool modo2xy 30 30 Rect 
 	;
 	
 :settool
@@ -133,9 +133,9 @@
 	;
 
 :toolbar
-    xtool ytool imgtoolbar SDLimage
-	$ff00 SDLColor
-	modo modo2xy 30 30 SDLRect |box.inv
+    xtool ytool imgtoolbar Image
+	$ff00 Color
+	modo modo2xy 30 30 Rect |box.inv
 
 	xtool ytool 60 180 guiBox
 	SDLb SDLx SDLy guiIn
@@ -149,7 +149,7 @@
 	imagenw zoom <<
 	imagenh zoom <<
 	textura
-	SDLimages 
+	Images 
 	;
 
 :teclado
@@ -197,11 +197,11 @@
 	
 	$7f 
 	[ $ff nip ; ] guiI
-	SDLColor
+	Color
 	xr1 yr1 xr2 pick2 - yr2 pick2 -
-	SDLFillRect	
+	FRect	
 	
-	$ffffff SDLColor
+	$ffffff Color
 	bsize | w h
 	xr2 xr1 + 1 >> rot 1 >> - 
 	yr2 yr1 + 1 >> rot 1 >> -
@@ -213,18 +213,18 @@
 |-----------------------------
 :main
 	gui
-	$0 SDLClear
+	$0 clrscr
     imagen.draw
 
-	$454545 SDLColor
-	0 0 sw 20 SDLFillRect
+	$454545 Color
+	0 0 sw 20 FRect
 
-	$ffffff SDLColor
+	$ffffff Color
 	4 4 bat
 	":r3 Img Editor [ " bprint
 	'nombre bprint
 	imagenh imagenw " | %dx%d ] " sprint bprint
-	$7f7f7f SDLColor
+	$7f7f7f Color
 	[ 0 'zoom ! ; ] "x1" btnt " " bprint
 	[ 1 'zoom ! ; ] "x2" btnt " " bprint
 	[ 2 'zoom ! ; ] "x4" btnt " " bprint
@@ -242,7 +242,7 @@
 	modoex 1? ( dup guiI ) drop
 
 	teclado
-	SDLRedraw 
+	redraw 
 	;	
 
 

@@ -41,10 +41,10 @@
 	dp dup $ffffff and swap 32 >> ;
 	
 ::bcursor | n --
-	wp * bpos swap rot + swap wp hp SDLFillRect ;
+	wp * bpos swap rot + swap wp hp FRect ;
 
 ::bcursori | n --
-	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> SDLFillRect ;
+	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> FRect ;
 
 ::bfont1	
 	8 16 "media/img/VGA8x16.png" bmfont	;	

@@ -1,4 +1,4 @@
-| Señal de ajuste
+| Señal de ajuste
 | PHREDA 2020
 
 ^r3/win/SDL2gfx.r3
@@ -44,7 +44,7 @@
 	SDL_FreeSurface ;
 
 
-:datetime
+:datetime
 	SDLrenderer $ffffff font
 	mark ,sp ,date ,sp ,eol empty here 
 	40 40 RenderText

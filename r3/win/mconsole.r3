@@ -19,6 +19,7 @@
 ::,fc "38;5;%dm" sprint ,[ ; | Set foreground color.
 ::,bc  "48;5;%dm" sprint ,[ ; 
 
+
 ::,Black "30m" ,[ ;
 ::,Red "31m" ,[ ;
 ::,Green "32m" ,[ ;
@@ -56,7 +57,7 @@
 ::,Bold "1m" ,[ ;
 ::,Under "4m" ,[ ;
 ::,Rever "7m" ,[ ;
-::,Reset "0m" ,[ ;
+::,Reset "0m" ,[ "40m" ,[ "37m" ,[ ;
 
 ::,alsb	"?1049h" ,[ ; | alternate screen buffer
 ::,masb "?1049l" ,[ ; | main screen buffer

@@ -85,15 +85,15 @@
 	
 :dlgtitle
 	xdlg 4 + ydlg 4 + bat
-	$ffffff SDLColor
+	$ffffff Color
 	bprint
 	;
 
 :fillback
-	$ffffff SDLColor
+	$ffffff Color
 	xdlg 8 + pick2
     wdlg 16 - 16 | alto letra
-	SDLFillRect
+	FRect
 	;
 
 :colorline | n --
@@ -155,21 +155,21 @@
 	drop ;
 
 :dlgback
-	0 SDLClear
+	0 clrscr
 	gui
-	$696969 SDLColor 
-	xdlg ydlg wdlg hdlg SDLFillRect
+	$696969 Color 
+	xdlg ydlg wdlg hdlg FRect
 	
-	$006900 SDLColor 
-	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + SDLFillRect
+	$006900 Color 
+	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + FRect
 
-	$00 SDLColor 
-	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + SDLFillRect
-	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + SDLFillRect
+	$00 Color 
+	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + FRect
+	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + FRect
 	
-	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * SDLFillRect
+	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * FRect
 
-	$ffffff SDLColor
+	$ffffff Color
 	xdlg 8 + ydlg 20 1 << + 3 + bat
 	'path bprint | 64 input
 
@@ -187,7 +187,7 @@
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename bprint
 	teclado
-	SDLRedraw 	
+	redraw 	
 	;
 
 :fullfilename | -- fn
@@ -219,7 +219,7 @@
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename 64 input
 	teclado
-	SDLRedraw 
+	redraw 
 	;
 
 ::dlgFileSave | -- fn/0

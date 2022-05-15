@@ -11,11 +11,11 @@
 #xcam 0 #ycam 0 #zcam -100.0
 
 :fcircle | xc yc r --
-	dup 2swap SDLFillellipse ;
+	dup 2swap FEllipse ;
 	
 #xo #yo	
 :3dop project3d 'yo ! 'xo ! ;
-:3dline project3d 2dup xo yo SDLLine 'yo ! 'xo ! ;
+:3dline project3d 2dup xo yo Line 'yo ! 'xo ! ;
 
 :3dpoint project3d msec 6 >> $7 and 4 and? ( $7 xor ) 1 + fcircle ;
 
@@ -90,7 +90,7 @@
 
 	lorenz> 24 -
 	'lorenz <? ( 'lorenz> 24 - nip )	| ultimo punto
-	$ffffff SDLColor
+	$ffffff Color
 	@+ swap @+ swap @ 3dpoint
 	;
 
@@ -130,14 +130,14 @@
 	rx mrotx ry mroty
 	xcam ycam zcam mtrans
 
-	$0 SDLclear
+	$0 clrscr
 	
-	$1f1f1f SDLColor
+	$1f1f1f Color
 	grillaxy grillayz grillaxz
 
-	$ff0000 SDLColor
+	$ff0000 Color
 	lorenz3d
-	SDLRedraw
+	redraw
 	
 	teclado
 	;

@@ -625,6 +625,21 @@
 		@+ "%h " .print
 		) drop 	;
 
+::,stackprintvm
+	" D) " ,print
+	'PSP 16 + ( NOS <=?
+		@+ "%d " ,print
+		) drop
+	'PSP NOS <? (
+		TOS "%d " ,print
+		) drop
+	,nl
+	" R) " ,print
+	'RSP 8 +
+	( RTOS <=?
+		@+ "%h " ,print
+		) drop 	;
+		
 :printpila
 	@ " %d " .print ;
 
