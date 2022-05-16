@@ -141,6 +141,8 @@
 	$3231 SDL_init 
 	$1FFF0000 $1FFF0000 sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
 	SDL_GetWindowSurface dup 'SDL_screen !
+	24 + d@+ 'pitch !
+	4 + @ 'vframe ! 
 |	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
@@ -227,7 +229,7 @@
 
 ::exit
 	1 '.exit ! ;
-		
+	
 |------- BOOT
 :
 	"SDL2.DLL" loadlib

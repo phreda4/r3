@@ -40,6 +40,16 @@
 ::redraw | -- 
 	SDLrenderer SDL_RenderPresent ;
 	
+#cc
+	
+::GetPixel | x y -- v
+	swap 'rec d!+ d!+ 1 dup rot d!+ d!
+	SDLrenderer 'rec 0 'cc pitch SDL_RenderReadPixels 
+	cc ;
+|::SDLgetPixel | x y -- c
+|	SDLrenderer 
+|	pitch * swap 2 << + vframe + d@ ;	
+	
 #ym #xm
 #dx #dy
 

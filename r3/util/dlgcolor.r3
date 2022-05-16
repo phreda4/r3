@@ -26,13 +26,13 @@
 	61 16 *>> | 61 cae en color siempre, deberia ser 64!
 	cwx 68 + cwy 68 + 2swap
 	xy+polar
-|	2dup SDLgetpixel  0? ( 3drop ; )
-|	'c1 ! 'c1y ! 'c1x !
+	2dup getpixel  0? ( 3drop ; )
+	'c1 ! 'c1y ! 'c1x !
 	2drop
 	;
 
 :setcolor | color --
-|	cwx 140 + cwy c1w + SDLgetpixel
+	cwx 140 + cwy c1w + getpixel
 	dup 'colord !
 	'pal8 npal 2 << + !
 	;
@@ -43,18 +43,19 @@
 	$999999 Color
 	cwx cwy 200 160 FRect
 	cwx 2 + cwy 2 + colorwimg Image
-|	cwx 140 + cwy xy>v >a
-|	0 ( 128 <?
-|		c1 0 pick2 1 << colmix
-|		a> swap 10 fill sw 2 << a+
-|		1 + ) drop
+	0 ( 128 <?
+		c1 0 pick2 1 << colmix Color
+		cwx 140 + over cwy + over 10 + over Line
+		1 + ) drop
 	cwx 2 + cwy 2 + 128 128 guiBox
+	SDLb SDLx SDLy guiIn
 	[ 
 		xypen 
-		|2dup xy>v @ 0? ( 3drop ; ) 
-		0
+		2dup getPixel |0? ( 3drop ; ) 
+		|0
 		'c1 ! 'c1y ! 'c1x ! setcolor ; ] onMove
 	cwx 138 + cwy 12 130 guiBox
+	SDLb SDLx SDLy guiIn
 	[ xypen nip cwy - 128 clamp0max 'c1w ! setcolor ; ] onMove
 
 	$0 Color
