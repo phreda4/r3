@@ -230,6 +230,23 @@
 ::exit
 	1 '.exit ! ;
 	
+#rec 0 $100000001
+#cc
+	
+|::GetPixel | x y -- v
+|	swap 'rec d!+ d! | + 1 dup rot d!+ d!
+|	SDLrenderer 0 'cc 'pitch SDL_LockTexture
+|	SDLrenderer 'rec 0 'cc pitch SDL_RenderReadPixels 
+|	SDLrenderer SDL_UnlockTexture
+|	cc ;
+::SDLgetPixel | x y -- c
+	SDL_screen SDL_LockSurface
+	pitch * swap 2 << + vframe + d@ 
+	SDL_screen SDL_UnLockSurface
+	;	
+	
+	
+	
 |------- BOOT
 :
 	"SDL2.DLL" loadlib

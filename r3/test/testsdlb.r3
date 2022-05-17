@@ -7,7 +7,8 @@
 ^r3/lib/sys.r3
 ^r3/lib/gr.r3
 
-#texture
+
+#texture 
 #snd_shoot	
 #textbit
 
@@ -33,15 +34,31 @@
 	mpixel >a 427 240 * ( 1? 1 - rand da!+ ) drop
 	textbit SDL_UnlockTexture
 	;
+
+|::GetPixel | x y -- v
+|	swap 'rec d!+ d! | + 1 dup rot d!+ d!
+|	SDLrenderer 0 'cc 'pitch SDL_LockTexture
+|	SDLrenderer 'rec 0 'cc pitch SDL_RenderReadPixels 
+|	SDLrenderer SDL_UnlockTexture
+|	cc ;
+|:SDLgetPixel | x y -- c
+|SDLrenderer 
+|	pitch * swap 2 << + vframe + d@ ;		
+
 	
 :drawl
 
 	updatetexbit
-	
+	0 clrscr
 	SDLrenderer SDL_RenderClear
 	SDLrenderer textbit 0 'desrec3 SDL_RenderCopy		
 	SDLrenderer texture 0 'desrec SDL_RenderCopy
 	SDLrenderer texture 0 'desrec2 SDL_RenderCopy
+	
+	
+	201 151 SDLgetPixel Color
+	10 10 20 20 FRect
+	
 	redraw
 
 	vx 'desrec3 d+!
@@ -55,7 +72,8 @@
 		
 :draw
 	'drawl SDLshow ;
-
+	
+	
 :main
 	44100 $08010 2 4096 Mix_OpenAudio 
 	

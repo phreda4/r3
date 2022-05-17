@@ -49,14 +49,14 @@
 		drop ) drop 1 - ;
 	
 :countlines | adr -- line
-	0 src ( pick2 <? 
+	0 src ( pick2 <=? 
 		>>13 swap 1 + swap ) 
 	drop nip ;
 	
 :onlywords
 	dup 16 + @ 1 and? ( drop 32 + ; ) drop | variable no graba
 	
-	@+ countlines 
+	@+ countlines 1 -
 	,q				| fff -nro de linea
 	8 +
 	@+ swap @+ 
@@ -65,6 +65,7 @@
 	;
 	
 :savemap
+	emptyerror
 	mark
 	inc> 'inc -		| cantidad de includes
 	dicc> dicc -	| cantidad de palabras
@@ -75,6 +76,17 @@
 	dicc< ( dicc> <? | solo codigo principal
 		onlywords ) drop
 
+	"mem/infomap.db" savemem
+	empty ;
+	
+:saveerr
+	savedebug 
+	mark
+	0 ,q
+	lerror countlines 1 -
+	$100000000 or
+	,q
+	error ,q
 	"mem/infomap.db" savemem
 	empty ;
 	
@@ -120,11 +132,10 @@
 	'name r3debuginfo
 	
 	error 
-	1? ( drop savedebug ; )
+	1? ( drop saveerr ; )
 	drop
-	
-	emptyerror 
 	savemap
+	
 	|savedebugi | save info in file for debug
 	;
 

@@ -228,7 +228,8 @@
 	here >>cr trim str>nro 'cerror ! drop
 	empty
 
-	cerror 0? ( drop loadinfo ; ) drop
+	loadinfo
+	cerror 0? ( drop ; ) drop
 |... enter error mode
 	fuente cerror + 'fuente> !
 	linetocursor 'lerror !
@@ -443,8 +444,13 @@
 	$8000000000 nand? ( "."  ,s	)	| no ;
 	drop
 	;
-	
-#linecommnow 	
+
+#linecommnow 
+
+:prnerr	
+	drop
+	,sp ,bred ,white " << Error " ,s 
+	;
 
 :inicomm
 	linecomm 8 + | head 
@@ -454,13 +460,16 @@
 	
 :prntcom | line adr' -- line adr'
 	linecommnow @ $fff and 
-	pick2 ylinea + 1 +
+	pick2 ylinea + 
 	>? ( drop ; ) drop
-	,sp
-	linecommnow 8 +
+	linecommnow @+
+	$100000000 and? ( 
+		drop @+ swap 'linecommnow ! 
+		prnerr prntcom ; ) drop
 	@+ swap 'linecommnow !
+	,sp
 	dup 12 32 + >> $ff and 
-	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s prntcom ; ) drop
 	,black
 	buildinfo
 	prntcom
