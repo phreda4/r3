@@ -134,7 +134,6 @@
 |	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
-	pitch "%d " .print
 	;
 
 ::SDLinitGL | "titulo" w h --
