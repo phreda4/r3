@@ -31,36 +31,35 @@
 
 :updatetexbit
 	textbit 'srct 'mpixel 'mpitch SDL_LockTexture
-	mpixel >a 427 240 * ( 1? 1 - rand da!+ ) drop
+	mpixel >a 427 240 * ( 1? 1 - rand 
+	da!+ ) drop
 	textbit SDL_UnlockTexture
 	;
 
-|::GetPixel | x y -- v
-|	swap 'rec d!+ d! | + 1 dup rot d!+ d!
-|	SDLrenderer 0 'cc 'pitch SDL_LockTexture
-|	SDLrenderer 'rec 0 'cc pitch SDL_RenderReadPixels 
-|	SDLrenderer SDL_UnlockTexture
-|	cc ;
-|:SDLgetPixel | x y -- c
-|SDLrenderer 
-|	pitch * swap 2 << + vframe + d@ ;		
-
+:testa
+	200 ( 210 <? 
+		150 ( 160 <? 
+			2dup getpixel "%h " .print 
+			1 + ) drop
+		1 + cr ) drop
+	;
 	
 :drawl
 
 	updatetexbit
-	0 clrscr
+	$7f clrscr
 	SDLrenderer SDL_RenderClear
 	SDLrenderer textbit 0 'desrec3 SDL_RenderCopy		
 	SDLrenderer texture 0 'desrec SDL_RenderCopy
 	SDLrenderer texture 0 'desrec2 SDL_RenderCopy
 	
 	
-	201 151 SDLgetPixel Color
-	10 10 20 20 FRect
-	
-	redraw
 
+	sdlx sdly getPixel Color
+	10 10 20 20 FRect
+
+	redraw
+	
 	vx 'desrec3 d+!
 	
 	SDLkey
@@ -68,6 +67,7 @@
 	<le> =? ( 1 'vx ! )
 	<ri> =? ( -1 'vx ! )	
 	<f1> =? ( -1 snd_shoot 0 -1 Mix_PlayChannelTimed )	
+	<f2> =? ( testa )
 	drop ;
 		
 :draw

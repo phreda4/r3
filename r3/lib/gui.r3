@@ -93,7 +93,7 @@
 
 ::guiEmpty | --		; si toca esta zona no hay interaccion
 	1 'id +!
-	in? 1? ( id 'hot ! )
+	in? 1? ( id 'hotnow ! )
 	drop ;
 
 |----- test adentro/afuera

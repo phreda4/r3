@@ -134,6 +134,7 @@
 |	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
+	pitch "%d " .print
 	;
 
 ::SDLinitGL | "titulo" w h --
@@ -230,22 +231,13 @@
 ::exit
 	1 '.exit ! ;
 	
-#rec 0 $100000001
+#rec [ 0 0 1 1 ]
 #cc
 	
-|::GetPixel | x y -- v
-|	swap 'rec d!+ d! | + 1 dup rot d!+ d!
-|	SDLrenderer 0 'cc 'pitch SDL_LockTexture
-|	SDLrenderer 'rec 0 'cc pitch SDL_RenderReadPixels 
-|	SDLrenderer SDL_UnlockTexture
-|	cc ;
-::SDLgetPixel | x y -- c
-	SDL_screen SDL_LockSurface
-	pitch * swap 2 << + vframe + d@ 
-	SDL_screen SDL_UnLockSurface
-	;	
-	
-	
+::GetPixel | x y -- v
+	swap 'rec d!+ d!
+	SDLrenderer 'rec $16362004 'cc 1 SDL_RenderReadPixels 
+	cc $ffffff and ;
 	
 |------- BOOT
 :

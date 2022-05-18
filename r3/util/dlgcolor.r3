@@ -28,7 +28,6 @@
 	xy+polar
 	2dup getpixel  0? ( 3drop ; )
 	'c1 ! 'c1y ! 'c1x !
-	2drop
 	;
 
 :setcolor | color --
@@ -49,10 +48,8 @@
 		1 + ) drop
 	cwx 2 + cwy 2 + 128 128 guiBox
 	SDLb SDLx SDLy guiIn
-	[ 
-		xypen 
-		2dup getPixel |0? ( 3drop ; ) 
-		|0
+	[ 	xypen 2dup 
+		getPixel 0? ( 3drop ; ) 
 		'c1 ! 'c1y ! 'c1x ! setcolor ; ] onMove
 	cwx 138 + cwy 12 130 guiBox
 	SDLb SDLx SDLy guiIn
@@ -69,6 +66,10 @@
 	colord $ffffffff and "$%h" sprint bprint
 	colord Color
 	cwx 10 + cwy 134 + 50 20 FRect
+	
+	cwx cwy 200 160 guiBox
+	SDLb SDLx SDLy guiIn
+	guiEmpty
 	;
 
 #ink
