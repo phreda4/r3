@@ -8,18 +8,18 @@
 #puntos> 'puntos
 
 :dibujarpuntos
-	$ffffff Color 
+	$ffffff SDLColor 
 	'puntos ( puntos> <?	| desde la memoria hasta el final
 		w@+		| dir+ x
 		swap	| x dir
 		w@+		| x dir+ y
 		rot 	| dir y x
 		swap	| dir x y
-		Point | dir
+		SDLPoint | dir
 		) drop ;
 
 :dibujarymoverpuntos
-	$ffffff Color 
+	$ffffff SDLColor 
 	'puntos ( puntos> <?	| desde la memoria hasta el final
 		dup w@ 			| dir x
 		-? ( sw nip )	| dir x (si es negativo se cambia por sw (ancho)
@@ -29,7 +29,7 @@
 		w!+				| x dir+ ( grabo nuevo x )
 		w@+ 			| x dir y
 		rot swap 		| dir x y
-		Point
+		SDLPoint
 		) drop ;
 
 :llenapuntos
@@ -45,12 +45,12 @@
 
 
 :dibuja
-	0 clrscr
+	0 SDLcls
 	
 	|dibujarpuntos	 | comentada.. no ocurre
 	dibujarymoverpuntos
 
-	redraw
+	SDLredraw
 
 	SDLkey
 	>esc< =? ( exit )

@@ -39,12 +39,12 @@
 :xypen SDLx SDLy ;
 
 :selectColorWheel
-	$999999 Color
-	cwx cwy 200 160 FRect
-	cwx 2 + cwy 2 + colorwimg Image
+	$999999 SDLColor
+	cwx cwy 200 160 SDLFRect
+	cwx 2 + cwy 2 + colorwimg SDLImage
 	0 ( 128 <?
-		c1 0 pick2 1 << colmix Color
-		cwx 140 + over cwy + over 10 + over Line
+		c1 0 pick2 1 << colmix SDLColor
+		cwx 140 + over cwy + over 10 + over SDLLine
 		1 + ) drop
 	cwx 2 + cwy 2 + 128 128 guiBox
 	SDLb SDLx SDLy guiIn
@@ -55,17 +55,17 @@
 	SDLb SDLx SDLy guiIn
 	[ xypen nip cwy - 128 clamp0max 'c1w ! setcolor ; ] onMove
 
-	$0 Color
-	c1x 3 - c1y 3 - 6 6 Rect
-	cwx 137 + cwy c1w + 2 - 16 4 Rect
+	$0 SDLColor
+	c1x 3 - c1y 3 - 6 6 SDLRect
+	cwx 137 + cwy c1w + 2 - 16 4 SDLRect
 
-	$ffffff Color
-	c1x 2 - c1y 2 - 4 4 Rect
-	cwx 138 + cwy c1w + 1 - 14 2 Rect
+	$ffffff SDLColor
+	c1x 2 - c1y 2 - 4 4 SDLRect
+	cwx 138 + cwy c1w + 1 - 14 2 SDLRect
  	cwx 70 + cwy 138 + bat
 	colord $ffffffff and "$%h" sprint bprint
-	colord Color
-	cwx 10 + cwy 134 + 50 20 FRect
+	colord SDLColor
+	cwx 10 + cwy 134 + 50 20 SDLFRect
 	
 	cwx cwy 200 160 guiBox
 	SDLb SDLx SDLy guiIn
@@ -77,12 +77,12 @@
 ::dlgColor
 	select 1? ( selectColorWheel ) drop
 
-	$454545 Color
-	xpal ypal 60 380 FRect
+	$454545 SDLColor
+	xpal ypal 60 380 SDLFRect
 
-	colord Color
+	colord SDLColor
 	xpal 10 + ypal 5 + 40 30 
-	2over 2over FRect
+	2over 2over SDLFRect
 	guiBox
 	SDLb SDLx SDLy guiIn
 	[ select 1 xor 'select ! selectColorWheel colord color! ; ] onClick
@@ -90,18 +90,18 @@
 	'pal8
 	0 ( 20 <?
 		0 ( 3 <?
-			rot d@+ dup 'ink ! Color
+			rot d@+ dup 'ink ! SDLColor
 			rot rot
         	over 4 << 41 + ypal +
 			over 4 << 7 + xpal + swap 14 14
-			2over 2over FRect
+			2over 2over SDLFRect
 			guiBox
 			SDLb SDLx SDLy guiIn
 			over 3 * over +
 			[ dup 'npal ! ink color! ; ] onClick
 			npal =? ( 
-				$ffffff Color
-				xr1 yr1 xr2 pick2 - yr2 pick2 - Rect
+				$ffffff SDLColor
+				xr1 yr1 xr2 pick2 - yr2 pick2 - SDLRect
 				)
 			drop
 			1 + ) drop

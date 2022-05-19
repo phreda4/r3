@@ -60,7 +60,7 @@
 :reload
 	files 'files> !
 	filen 'filen> !
-	'path
+	'path "%s/*" sprint
 	ffirst ( fileadd fnext 1? ) drop
 	files> files - 4 >> 'nfiles !
 	0 'fileini !
@@ -93,7 +93,7 @@
 	$ffffff Color
 	xdlg 8 + pick2
     wdlg 16 - 16 | alto letra
-	FRect
+	SDLFRect
 	;
 
 :colorline | n --
@@ -155,19 +155,19 @@
 	drop ;
 
 :dlgback
-	0 clrscr
+	0 SDLcls
 	gui
 	$696969 Color 
-	xdlg ydlg wdlg hdlg FRect
+	xdlg ydlg wdlg hdlg SDLFRect
 	
 	$006900 Color 
-	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + FRect
+	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + SDLFRect
 
 	$00 Color 
-	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + FRect
-	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + FRect
+	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + SDLFRect
+	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + SDLFRect
 	
-	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * FRect
+	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * SDLFRect
 
 	$ffffff Color
 	xdlg 8 + ydlg 20 1 << + 3 + bat
@@ -187,7 +187,7 @@
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename bprint
 	teclado
-	redraw 	
+	SDLredraw 	
 	;
 
 :fullfilename | -- fn
@@ -219,7 +219,7 @@
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename 64 input
 	teclado
-	redraw 
+	SDLredraw 
 	;
 
 ::dlgFileSave | -- fn/0

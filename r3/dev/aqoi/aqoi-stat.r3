@@ -162,7 +162,7 @@
 	;
 
 ::.printstat
-	cntINDEX "INDEX:%d" .println
+	cntINDEX "INDEX:%d" .print
 	cntRUN 	 "  RUN:%d" .println
 	cntLUMA  " LUMA:%d" .println
 	cntXOR 	 "  XOR:%d" .println

@@ -148,7 +148,7 @@ Hamburguesas proteicas
 
 	
 :drawl
-	0 clrscr
+	0 SDLcls
 
 	vx 'texto 0.1 0.1 0.8 0.8 xywh%64 $ff0000 textbox
 	
@@ -156,7 +156,7 @@ Hamburguesas proteicas
 	
 	
 	SDLrenderer $ff00 font vx "x:%d" sprint 50 350 RenderText
-	redraw
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )

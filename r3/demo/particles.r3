@@ -23,7 +23,7 @@
 	a@+ 16 >> 0 <? ( choque ) sh 64 - >? ( choque )
 	a@+ a> 24 - +!
 	a@+ a> 24 - +!	
-	a@+ Image ;
+	a@+ SDLImage ;
 	
 :+obj | 'spr vy vx y x --
 	'ballexec 'list p!+ >a a!+ a!+ a!+ a!+ a! ;
@@ -49,9 +49,9 @@
 	
 |--------------------------------
 :demo
-	0 clrscr
+	0 SDLcls
 	'list p.draw
-	redraw
+	SDLredraw
 
 	SDLkey
 	<f1> =? ( 

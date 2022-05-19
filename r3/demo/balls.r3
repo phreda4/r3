@@ -20,7 +20,7 @@
 :drawball | -- 
 	0 0 0 project3d
 	14 - swap 14 - swap
-	28 28 spr_ball Images ;
+	28 28 spr_ball SDLImages ;
 	
 :hitwall | limit --
 	b> 8 - !
@@ -71,13 +71,13 @@
 
 :main
 
-	$0 clrscr
+	$0 SDLcls
 	
 	800 600 whmode
 	
 	0 0 -45.0 mtrans
 	'bubles p.draw
-	redraw
+	SDLredraw
 	
 	'collision 'bubles p.map2
 	

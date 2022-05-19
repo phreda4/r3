@@ -9,7 +9,7 @@
 #x #y
 :op! 'y ! 'x ! ;
 
-:line! x y line ;	
+:line! x y SDLLine ;	
 
 |--------- reloj
 :aguja | ang largo --
@@ -18,7 +18,7 @@
 	xc rot + yc rot - line! ;
 
 :drawclock | --
-	$ffffff Color
+	$ffffff SDLColor
 	0 ( 1.0 <? 
 		dup csize polar
 		swap xc + swap yc + op!
@@ -26,17 +26,17 @@
 		swap xc + swap yc + line!
 		0.0834 + ) drop
 	time | s m h --
-	$ff0000 Color
+	$ff0000 SDLColor
 	dup 16 >> $ff and 1.0 12 */ csize 4 - 2/ aguja
-	$ff00 Color
+	$ff00 SDLColor
 	dup 8 >> $ff and 1.0 60 */ csize 4 - dup 2 >> - aguja
-	$ffffff Color
+	$ffffff SDLColor
 	$ff and 1.0 60 */ csize 4 - aguja ;
 	
 :clock	
-	0 clrscr
+	0 SDLcls
 	drawclock
-	redraw
+	SDLredraw
 	
 	SDLKey
 	>esc< =? ( exit )

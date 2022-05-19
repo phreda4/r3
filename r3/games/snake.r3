@@ -34,7 +34,7 @@
 	'trail dup 8 + trail> over - 3 >> move -8 'trail> +! ;
 
 :drawbox | x y --
-	gs * swap gs * swap gs 1 - dup FRect ;
+	gs * swap gs * swap gs 1 - dup SDLFRect ;
 
 :hit? | x y -- x y
 	py <>? ( ; )
@@ -65,15 +65,15 @@
 	;
 	
 :game
-	0 clrscr
+	0 SDLcls
 
-	$ff Color
+	$ff SDLColor
 	'trail ( trail> <?
 		@+ unpack hit? drawbox ) drop
-	$ff0000 Color
+	$ff0000 SDLColor
 	ax ay drawbox
 	
-	redraw
+	SDLredraw
 	
 |----- variable framelimit
 	msec dup ntime - 'dtime +! 'ntime !

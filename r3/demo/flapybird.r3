@@ -31,10 +31,10 @@
 #pyp2 300
 	
 :drawpipe | x y --
-	over 0 60 pick3 80 - sprpipe Images
-	over 5 - over 80 - 70 40 sprpipe Images
-	over 5 - over 80 + 70 40 sprpipe Images
-	over over 120 + 60 sh over - sprpipe Images
+	over 0 60 pick3 80 - sprpipe SDLImages
+	over 5 - over 80 - 70 40 sprpipe SDLImages
+	over 5 - over 80 + 70 40 sprpipe SDLImages
+	over over 120 + 60 sh over - sprpipe SDLImages
 	2drop ;
 
 :newpipe
@@ -50,10 +50,10 @@
 	;
 	
 :juego
-	0 clrscr
+	0 SDLcls
 	fondo
 	jugador
-	redraw
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )

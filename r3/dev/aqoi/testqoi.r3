@@ -100,7 +100,7 @@
 	0 12 8 * bat
 	cntDIFF "DIFF %d" sprint bprint
 	
-	redraw
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )

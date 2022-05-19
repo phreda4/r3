@@ -5,13 +5,13 @@
 
 #yj1 10 #v1 0 #p1
 :j1
-	$ff0000 Color 10 yj1 20 80 FRect
+	$ff0000 SDLColor 10 yj1 20 80 SDLFRect
 	v1 'yj1 +!
 	;
 
 #yj2 10 #v2 0 #p2
 :j2
-	$ff Color 770 yj2 20 80 FRect
+	$ff SDLColor 770 yj2 20 80 SDLFRect
 	v2 'yj2 +!
 	;
 
@@ -51,8 +51,8 @@
 :pierde2 1 'p1 +! reset ;
 
 :pelota
-	$ffffff Color
-	x int y int 20 20 FRect
+	$ffffff SDLColor
+	x int y int 20 20 SDLFRect
 	vx 'x +!
 	vy 'y +!
 |	x 0 <? ( hitx ) 780.0 >? ( hitx ) drop
@@ -66,14 +66,14 @@
 	;
 
 :demo
-	0 clrscr
+	0 SDLcls
 	j1 j2 pelota
 	
 	$ffffff bcolor 
 	350 10 bat 
 	p2 p1 "%d - %d" sprint bprint
 	
-	redraw
+	SDLredraw
 	
 	SDLkey 
 	>esc< =? ( exit )

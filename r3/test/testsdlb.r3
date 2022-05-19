@@ -39,7 +39,7 @@
 :testa
 	200 ( 210 <? 
 		150 ( 160 <? 
-			2dup getpixel "%h " .print 
+			2dup SDLgetpixel "%h " .print 
 			1 + ) drop
 		1 + cr ) drop
 	;
@@ -47,7 +47,7 @@
 :drawl
 
 	updatetexbit
-	$7f clrscr
+	$7f SDLcls
 	SDLrenderer SDL_RenderClear
 	SDLrenderer textbit 0 'desrec3 SDL_RenderCopy		
 	SDLrenderer texture 0 'desrec SDL_RenderCopy
@@ -55,10 +55,10 @@
 	
 	
 
-	sdlx sdly getPixel Color
-	10 10 20 20 FRect
+	sdlx sdly SDLgetPixel SDLColor
+	10 10 20 20 SDLFRect
 
-	redraw
+	SDLredraw
 	
 	vx 'desrec3 d+!
 	

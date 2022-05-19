@@ -13,13 +13,13 @@
 
 |----------------------------------------
 :demo
-	0 clrscr
+	0 SDLcls
 	
 	msec 5 >> $3 and ts_alien 10 10 tsdraw 
 	msec 6 >> $3 and ts_ship 200 10 tsdraw 
 	msec 6 >> $f and ts_explo 300 100 tsdraw 	
 	
-	redraw
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )

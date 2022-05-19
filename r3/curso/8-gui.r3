@@ -19,10 +19,10 @@
 	SDLb SDLx SDLy guiIn
 	
 	[ xypen xy! ; ] 
-	[ ink Color xypen 2dup xo yo Line xy! rand 'ink ! ; ]  
+	[ ink SDLColor xypen 2dup xo yo SDLLine xy! rand 'ink ! ; ]  
 	onDnMove 
 	
-	redraw
+	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )
@@ -31,7 +31,7 @@
 : 
 	"r3sdl" 800 600 SDLinit
 
-	0 clrscr
+	0 SDLcls
 	
 	'drawline SDLshow 
 	SDLquit

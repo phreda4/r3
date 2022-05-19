@@ -18,9 +18,9 @@
 
 	
 :demo
-	0 clrscr
-	xp int. yp int. sprPelota Image
-	redraw
+	0 SDLcls
+	xp int. yp int. sprPelota SDLImage
+	SDLredraw
 
 	xv 'xp +!
 	yv 'yp +!

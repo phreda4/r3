@@ -22,7 +22,7 @@
 	SDLrenderer SDL_RenderClear
 	SDLrenderer texture 0 'desrec SDL_RenderCopy
 	SDLrenderer texture 0 'desrec2 SDL_RenderCopy
-	redraw
+	SDLredraw
 
 	vx 'desrec d+!
 	

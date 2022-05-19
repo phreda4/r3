@@ -2,42 +2,42 @@
 |
 ^r3/win/sdl2.r3
 
-::Color | col --
+::SDLColor | col --
 	SDLrenderer swap
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
 	$ff SDL_SetRenderDrawColor ;
 
-::Point | x y --
+::SDLPoint | x y --
 	SDLRenderer rot rot SDL_RenderDrawPoint ;
 	
-::Line | x y x y --	
+::SDLLine | x y x y --	
 	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
 
 #rec [ 0 0 0 0 ] | aux rect
 #w 0 #h 0
 
-::FRect | x y w h --	
+::SDLFRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderFillRect ;
 
-::Rect | x y w h --	
+::SDLRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
 
-::Images | x y w h img --
+::SDLImages | x y w h img --
 	>r
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
-::Image | x y img --		
+::SDLImage | x y img --		
 	dup 0 0 'w 'h SDL_QueryTexture >r
 	swap 'rec d!+ d!+ h w rot d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
-::clrscr | color --
-	Color SDLrenderer SDL_RenderClear ;
+::SDLcls | color --
+	SDLColor SDLrenderer SDL_RenderClear ;
 	
-::redraw | -- 
+::SDLredraw | -- 
 	SDLrenderer SDL_RenderPresent ;
 	
 	
@@ -56,13 +56,13 @@
 	;
 
 :qf
-	xm pick2 - ym pick2 - xm pick4 + over Line 
-	xm pick2 - ym pick2 + xm pick4 + over Line  ;
+	xm pick2 - ym pick2 - xm pick4 + over SDLLine 
+	xm pick2 - ym pick2 + xm pick4 + over SDLLine  ;
 
-::FEllipse | rx ry x y --
+::SDLFEllipse | rx ry x y --
 	a> >r
 	inielipse
-	xm pick2 - ym xm pick4 + over Line 
+	xm pick2 - ym xm pick4 + over SDLLine 
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1 - rot rot pick3 'dx +! dx a+ )
@@ -73,13 +73,13 @@
 	r> >a ;
 	
 :borde | x y x
-	over Point Point ;
+	over SDLPoint SDLPoint ;
 
 :qfb
 	xm pick2 - ym pick2 - xm pick4 + borde
 	xm pick2 - ym pick2 + xm pick4 + borde ;
 
-::Ellipse | rx ry x y --
+::SDLEllipse | rx ry x y --
 	a> >r
     inielipse
 	xm pick2 - ym xm pick4 + borde
@@ -98,7 +98,7 @@
 
 :tri | yf x1. x2. yi -- x1. x2.
 	( pick3 <? 
-		pick2 16 >> over pick3 16 >> over Line
+		pick2 16 >> over pick3 16 >> over SDLLine
 		rot dx1 + rot dx2 + rot
 		1 + ) 
 	drop rot drop ;
@@ -111,7 +111,7 @@
 	pick2 pick2 pick2 min min
 	>r max max
 	>r >r | max min y
-	rot over Line ;
+	rot over SDLLine ;
 
 :triV | yx1 yx2 yx3 --  ; V
 	pick2 32 >> over 32 >> -
@@ -152,6 +152,6 @@
 	
 :xy 32 << swap $ffffffff and or ;
 	
-::Triangle | x y x y x y --
+::SDLTriangle | x y x y x y --
 	xy >r xy >r xy r> r> itriangle ;
 

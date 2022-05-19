@@ -69,7 +69,7 @@
 	drop ;
 
 :demo
-	0 clrscr
+	0 SDLcls
 	
 	spr1 tsguy 
 	xp int. yp int. 
@@ -81,7 +81,7 @@
 	
 	|'spr1 @+ "%d " .print @+ "%d " .print @ "%h " .println
 	
-	redraw
+	SDLredraw
 	
 	xv 'xp +!
 	yv 'yp +!

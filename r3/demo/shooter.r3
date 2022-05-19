@@ -75,8 +75,8 @@
 	xs 0? ( drop ; ) drop
 	8 'xs +!
 	xs sw >? ( 0 'xs ! drop ; ) drop
-	$ffffff Color
-	xs ys over 10 + over Line
+	$ffffff SDLColor
+	xs ys over 10 + over SDLLine
 	hit??
 	;
 
@@ -98,11 +98,11 @@
 #ss> 'ss
 
 :drawback
-	$ffffff Color 
+	$ffffff SDLColor 
 	'ss ( ss> <?
 		d@+ -? ( 800 nip )
 		dup 1 - pick2 4 - d!
-		swap d@+ rot swap Point
+		swap d@+ rot swap SDLPoint
 		) drop ;
 
 :fillback
@@ -114,7 +114,7 @@
 	a> 'ss> ! ;
 
 :game
-	0 clrscr
+	0 SDLcls
 	
 	drawback
 	player
@@ -122,7 +122,7 @@
 	ovni
 	explode
 	
-	redraw
+	SDLredraw
 
 	SDLkey
 	>esc< =? ( exit )

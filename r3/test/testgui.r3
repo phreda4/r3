@@ -11,11 +11,11 @@
 	
 	$7f 
 	[ $ff nip ; ] guiI
-	Color
+	SDLColor
 	xr1 yr1 xr2 pick2 - yr2 pick2 -
-	FRect	
+	SDLFRect	
 	
-	$ffffff Color
+	$ffffff SDLColor
 	bsize | w h
 	xr2 xr1 + 1 >> rot 1 >> - 
 	yr2 yr1 + 1 >> rot 1 >> -
@@ -29,8 +29,8 @@
 	
 :main
 	gui
-	0 clrscr
-	$ff00 Color
+	0 SDLcls
+	$ff00 SDLColor
 	
 	10 10 bat
 	cv "%d" sprint bprint
@@ -46,7 +46,7 @@
 	[ 1 'cv +! ; ] "suma 1" 200 300 100 30 tbtn
 	[ -1 'cv +! ; ] "resta 1" 200 340 100 30 tbtn
 
-	redraw 
+	SDLredraw 
 	SDLkey
 	>esc< =? ( exit )
 	drop ;	

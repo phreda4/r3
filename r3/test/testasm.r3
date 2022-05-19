@@ -8,12 +8,12 @@
 	test
 	"r3sdl" 800 600 SDLinit
 
-	$ffffff Color 
+	$ffffff SDLColor 
 	30 10
 	100 100
-	Rect
+	SDLRect
 		
-	redraw 
+	SDLredraw 
 	( SDLupdate SDLkey >esc< <>? drop ) drop
 	SDLquit 
 	;
