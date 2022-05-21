@@ -52,7 +52,7 @@
 	here over realfilename rtrim
 	load here =? ( drop
 		over 'lerror !
-		"Include not found" dup .println
+		"Include not found" |dup .println
 		'error !
 		0 ; ) | no existe
 	here

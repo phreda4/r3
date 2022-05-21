@@ -26,12 +26,12 @@
 	61 16 *>> | 61 cae en color siempre, deberia ser 64!
 	cwx 68 + cwy 68 + 2swap
 	xy+polar
-	2dup getpixel  0? ( 3drop ; )
+	2dup SDLgetpixel  0? ( 3drop ; )
 	'c1 ! 'c1y ! 'c1x !
 	;
 
 :setcolor | color --
-	cwx 140 + cwy c1w + getpixel
+	cwx 140 + cwy c1w + SDLgetpixel
 	dup 'colord !
 	'pal8 npal 2 << + !
 	;
@@ -49,7 +49,7 @@
 	cwx 2 + cwy 2 + 128 128 guiBox
 	SDLb SDLx SDLy guiIn
 	[ 	xypen 2dup 
-		getPixel 0? ( 3drop ; ) 
+		SDLgetPixel 0? ( 3drop ; ) 
 		'c1 ! 'c1y ! 'c1x ! setcolor ; ] onMove
 	cwx 138 + cwy 12 130 guiBox
 	SDLb SDLx SDLy guiIn

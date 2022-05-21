@@ -2,17 +2,11 @@
 | PHREDA 2020
 |--------------------------------------------------
 ^r3/win/sdl2gfx.r3
-
 ^r3/util/bfont.r3
-
 ^r3/lib/gui.r3
-^r3/lib/rand.r3
 ^r3/lib/vdraw.r3
-
 ^r3/util/dlgcolor.r3
 ^r3/util/dlgfile.r3
-
-^r3/lib/trace.r3
 
 #nombre * 256
 
@@ -172,8 +166,8 @@
 	
 	here dup >a 'imagen !
 	imagenh imagenw *
-	( 1? 1 - $ffffff da!+ ) drop
-	
+	dup ( 1? 1 - $ffffff da!+ ) drop
+	2 << 'here +!
 	"new" 'nombre strcpy
 	;
 

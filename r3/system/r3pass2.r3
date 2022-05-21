@@ -174,17 +174,16 @@
 	$27 =? ( drop 			| $27 ' Direccion
 		dup ?base 0 >=? ( .base ; ) drop
 		1 + ?word 1? ( .adr ; ) drop
-		
-		"Addr not exist" dup 'error !
-		.println
+		"Addr not exist" |dup .println
+		'error !
 		dup 1 - 'lerror !
 		drop 0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop		| numero
 	dup ?base 0 >=? ( .base ; ) drop		| macro
 	?word 1? ( .word ; ) drop		| palabra
- 	"Word not found" dup 'error !
-	.println
+ 	"Word not found" |dup .println 
+	'error !
 	dup 'lerror !
 	drop 0 ;
 
