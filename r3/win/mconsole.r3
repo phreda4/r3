@@ -3,7 +3,7 @@
 | PHREDA 2021
 
 ::,sp 32 ,c ;
-::,nsp ( 1? 1 - sp ) drop ;
+::,nsp ( 1? 1 - ,sp ) drop ;
 
 ::,esc $1b ,c $5b ,c ;
 ::,[ ,esc ,s ;

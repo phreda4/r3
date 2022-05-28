@@ -1,3 +1,8 @@
+| linux system calls
+| stdio : 0 
+| stdout : 1
+| stderr : 2
+
 #sys-open
 #sys-creat
 #sys-close
@@ -18,25 +23,25 @@
 #sys-usleep
 
 ::libc-open sys-open sys3 ;
-::libc-creat" sys-creat sys2 ;
-::libc-close" sys-close sys1 ;
-::libc-read" sys-read sys3 ;
-::libc-write" sys-write sys3 ;
-::libc-lseek" sys-lseek sys3 ;
-::libc-exit" sys-exit sys1 ;
-::libc-fork" sys-fork sys0 ;
-::libc-wait" sys-wait sys1 ;
-::libc-waitpid" sys-waitpid sys3 ;
-::libc-mmap" sys-mmap sys6 ;
-::libc-munmap" sys-munmap sys2 ;
-::libc-unlink" sys-unlink sys1 ;
-::libc-rename" sys-rename sys2 ;
-::libc-malloc" sys-malloc sys1 ;
-::libc-free" sys-free sys1 ;
-::libc-realloc" sys-realloc sys2 ;
-::libc-usleep" sys-usleep sys1 ;
+::libc-creat sys-creat sys2 ;
+::libc-close sys-close sys1 ;
+::libc-read sys-read sys3 ;
+::libc-write sys-write sys3 ;
+::libc-lseek sys-lseek sys3 ;
+::libc-exit sys-exit sys1 ;
+::libc-fork sys-fork sys0 ;
+::libc-wait sys-wait sys1 ;
+::libc-waitpid sys-waitpid sys3 ;
+::libc-mmap sys-mmap sys6 ;
+::libc-munmap sys-munmap sys2 ;
+::libc-unlink sys-unlink sys1 ;
+::libc-rename sys-rename sys2 ;
+::libc-malloc sys-malloc sys1 ;
+::libc-free sys-free sys1 ;
+::libc-realloc sys-realloc sys2 ;
+::libc-usleep sys-usleep sys1 ;
 
-::posix
+:
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
 	dup "creat" getproc 'sys-creat ! 

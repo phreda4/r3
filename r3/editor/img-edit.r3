@@ -46,7 +46,6 @@
 	textura 0 'mpixel 'mpitch SDL_LockTexture
 	mpixel imagen imagenh imagenw * dmove
 	textura SDL_UnlockTexture ;
-
 	
 |----------- DRAW
 :mododraw
@@ -164,11 +163,23 @@
 	2dup SDLframebuffer 'textura !	
 	vsize!
 	
+	mark
 	here dup >a 'imagen !
 	imagenh imagenw *
-	dup ( 1? 1 - $ffffff da!+ ) drop
-	2 << 'here +!
+	( 1? 1 - $ffffff da!+ ) drop
+	a> 'here !
 	"new" 'nombre strcpy
+	;
+	
+:canvasresize | w h --
+	textura SDL_DestroyTexture
+	empty
+	2dup 'imagenh ! 'imagenw !
+	2dup SDLframebuffer 'textura !	
+	vsize!
+	mark
+	here 'imagen !
+	imagenh imagenw * 2 << 'here +! 
 	;
 
 :loadfile
@@ -177,10 +188,20 @@
 	dup 'nombre strcpy
 	loadImg 0? ( drop ; )	| suface
 	dup 0 0 'imagenw 'imagenh SDL_queryTexture
+	
+	imagenw imagenh canvasresize
+	
 	dup 0 'mpixel 'mpitch SDL_LockTexture
-	mpixel imagen imagenw imagenh * dmove
+	imagen mpixel imagenw imagenh * dmove
+	
+	imagen >a
+	imagenh imagenw *
+	( 1? 1 - $ff00 da!+ ) drop
+	
+|	mpixel "%h" .print
 	dup SDL_UnLockTexture
 	SDL_DestroyTexture
+	buffercopy
 	;
 
 :btnt | exe "text" --
