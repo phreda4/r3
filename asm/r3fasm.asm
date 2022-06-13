@@ -21,7 +21,7 @@ common
    POP RSP              ;restore RSP to its original value
 }
 
-section '' code readable executable
+section '.text' code readable executable
 
 ;===============================================
 start:
@@ -30,13 +30,13 @@ start:
   mov [FREE_MEM],rax
   mov rbp,DATASTK-8
   xor rax,rax
-  jmp INICIO
-
+  call INICIO
+  add rsp,40
+  cinvoke64 ExitProcess,0
+  ret
 ;----- CODE -----
 include 'code.asm'
 ;----- CODE -----
-  add rsp,$40
-  ret
 
 ;-----------------------------------------------
 ;-----------------------------------------------

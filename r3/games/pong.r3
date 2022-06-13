@@ -4,16 +4,12 @@
 ^r3/lib/rand.r3
 
 #yj1 10 #v1 0 #p1
-:j1
-	$ff0000 SDLColor 10 yj1 20 80 SDLFRect
-	v1 'yj1 +!
-	;
+
+:j1 $ff0000 SDLColor 10 yj1 20 80 SDLFRect v1 'yj1 +! ;
 
 #yj2 10 #v2 0 #p2
-:j2
-	$ff SDLColor 770 yj2 20 80 SDLFRect
-	v2 'yj2 +!
-	;
+
+:j2 $ff SDLColor 770 yj2 20 80 SDLFRect v2 'yj2 +! ;
 
 #x 400.0 #y 300.0
 #vx 3.0 #vy 1.0
