@@ -169,19 +169,19 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 
 ::exit
 
-::Color | col --
-::Point | x y --
-::Line | x y x y --	
-::FRect | x y w h --	
-::Rect | x y w h --	
-::FEllipse | rx ry x y --
-::Ellipse | rx ry x y --
-::Triangle | x y x y x y --
-::Image | x y img --		
-::Images | x y w h img --
+::SDLColor | col --
+::SDLPoint | x y --
+::SDLLine | x y x y --	
+::SDLFRect | x y w h --	
+::SDLRect | x y w h --	
+::SDLFEllipse | rx ry x y --
+::SDLEllipse | rx ry x y --
+::SDLTriangle | x y x y x y --
+::SDLImage | x y img --		
+::SDLImages | x y w h img --
 
-::clrscr | color --
-::Redraw | -- 
+::SDLcls | color --
+::SDLRedraw | -- 
 
 ********************************************************************************
 ^r3/win/sdl2image.r3 | load many image formats
