@@ -19,6 +19,23 @@
 	here a> 'here ! 
 	;
 
+::loadtsb | w h filename -- ts ; with 1 space
+	loadimg
+	dup 0 0 'w 'h SDL_QueryTexture
+	mark here >a
+	a!+ | texture
+	2dup swap da!+ da!+ | w h 
+	0 ( h <? 
+		0 ( w <? | w h y x
+			2dup da!+ da!+
+			pick3 + 
+			1 + ) drop 
+		over + 
+		1 + ) drop
+	2drop 
+	here a> 'here ! 
+	;
+
 ::freets | ts --
 	@ SDL_DestroyTexture 
 	empty ;
