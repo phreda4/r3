@@ -372,7 +372,8 @@ This feature can convert a recursion into a loop with no callback cost, the foll
 
 https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
 
+## Some inprogress documentation
 
-
+https://docs.google.com/document/d/12I8o1x5pbSpvpNkZ8mz5g8PXDkkCLCLJsrkN-UqGA6o/edit?usp=sharing
 
 
