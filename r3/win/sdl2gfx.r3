@@ -1,5 +1,6 @@
-| SDL2 graf
-|
+| SDL2 basic graphics 
+| PHREDA 2022
+
 ^r3/win/sdl2.r3
 
 ::SDLColor | col --

@@ -157,6 +157,7 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ::SDLframebuffer | w h -- img
 
 ::SDLquit
+::SDLClick | 'event --
 
 ##SDLkey
 ##SDLchar
@@ -166,8 +167,16 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 	
 ::SDLupdate
 ::SDLshow | 'word --
+::SDLGetPixel | x y -- v
 
 ::exit
+
+********************************************************************************
+^r3/win/sdl2gfx.r3
+********************************************************************************
+
+::SDLcls | color --
+::SDLRedraw | -- 
 
 ::SDLColor | col --
 ::SDLPoint | x y --
@@ -179,9 +188,6 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ::SDLTriangle | x y x y x y --
 ::SDLImage | x y img --		
 ::SDLImages | x y w h img --
-
-::SDLcls | color --
-::SDLRedraw | -- 
 
 ********************************************************************************
 ^r3/win/sdl2image.r3 | load many image formats
@@ -220,17 +226,17 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ********************************************************************************
 
 ::TTF_Init 
-::TTF_OpenFont 	|TTF_Font *TTF_OpenFont(const char *file, int ptsize);
-::TTF_SetFontStyle |void TTF_SetFontStyle(TTF_Font *font, int style);
-::TTF_SetFontOutline |void TTF_SetFontOutline(TTF_Font *font, int outline);
-::TTF_SizeText  |int TTF_SizeText(TTF_Font *font, const char *text, int *w, int *h);
-::TTF_SizeUTF8 |int TTF_SizeUTF8(TTF_Font *font, const char *text, int *w, int *h);
-::TTF_RenderText_Solid |SDL_Surface * TTF_RenderText_Solid(TTF_Font *font,const char *text, SDL_Color fg);
-::TTF_RenderUTF8_Solid |SDL_Surface * TTF_RenderUTF8_Solid(TTF_Font *font,const char *text, SDL_Color fg);
-::TTF_RenderText_Shaded |SDL_Surface * TTF_RenderText_Shaded(TTF_Font *font,const char *text, SDL_Color fg, SDL_Color bg);
-::TTF_RenderUTF8_Shaded |SDL_Surface * TTF_RenderUTF8_Shaded(TTF_Font *font,const char *text, SDL_Color fg, SDL_Color bg);
-::TTF_RenderText_Blended |SDL_Surface * TTF_RenderText_Blended(TTF_Font *font,const char *text, SDL_Color fg);
-::TTF_RenderUTF8_Blended |SDL_Surface * TTF_RenderUTF8_Blended(TTF_Font *font,const char *text, SDL_Color fg);
-::TTF_CloseFont |void TTF_CloseFont(TTF_Font *font);
-::TTF_Quit  |void TTF_Quit();
+::TTF_OpenFont 	| *file, int ptsize -- TTF_Font 
+::TTF_SetFontStyle | font, int style
+::TTF_SetFontOutline |font, int outline
+::TTF_SizeText  |font *text w h -- size
+::TTF_SizeUTF8 | font *text *w *h -- size
+::TTF_RenderText_Solid | font,*text, SDL_Color fg
+::TTF_RenderUTF8_Solid | font,*text, SDL_Color fg
+::TTF_RenderText_Shaded | font,*text, SDL_Color fg, SDL_Color bg
+::TTF_RenderUTF8_Shaded | font,*text, SDL_Color fg, SDL_Color bg 
+::TTF_RenderText_Blended | font,*text, SDL_Color --
+::TTF_RenderUTF8_Blended | font,*text, SDL_Color --
+::TTF_CloseFont | font --
+::TTF_Quit  | --
 
