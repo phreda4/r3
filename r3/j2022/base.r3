@@ -76,14 +76,26 @@
 #mapw
 #maph
 #mapm
+#mapx
+#mapy
 
-:map> | x y 
+:map! | w h mem --
+	'mapm ! 'maph ! 'mapw ! ;
+
+:map> | x y -- a
 	mapw * + mapm + ;
 	
+:[map]@ | x y -- v
+	mapw clamp0max swap
+	maph clamp0max swap
+	map> c@ ;
+	
 :maptile
-		;
+	;
 		
-:mapdraw | w h --
+#xm #ym		
+:mapdraw | w h x y xs ys --
+	'ym ! 'xm !
 	( 1? 1 - over
 		( 1? 1 - 
 			maptile
@@ -165,9 +177,6 @@
 	0 SDLcls
 
 	drawmap
-
-	10 10 mapdraw
-	
 	player
 	SDLredraw
 	
