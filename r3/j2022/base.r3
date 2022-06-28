@@ -1,12 +1,15 @@
 | r3 sdl program
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
+
+^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
 #tilecity
 #sprplayer
 
+#fx 0 0
 	
 #wmap 32
 #hmap 32
@@ -90,7 +93,8 @@
 |--------------------------------
 #xp 30.0 
 #yp 30.0
-
+#zp 0
+#vzp 0
 #np 65
 
 #sanim ( 0 1 0 2 )
@@ -118,6 +122,11 @@
 	2.0 'yp +!
 	;
 
+:saltar
+	zp 1? ( drop ; ) drop
+	4.0 'vzp !
+	;
+	
 #ep 'pstay
 
 :int. 16 >> ;
@@ -128,21 +137,27 @@
 	yp xp "%f %f" sprint bprint
 
 	12 sprplayer xp int. 2 + yp int. 2 + tsdraw	| sombra
-	np sprplayer xp int. yp int. tsdraw
+	np sprplayer xp int. yp zp - int. tsdraw
 	ep ex
+	
+	zp vzp +
+	0 <=? ( drop 0 'zp ! 0 'vzp ! ; )
+	'zp !
+	-0.1 'vzp +!
 	;
 	
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<w> =? ( 'prunu 'ep ! )
-	<s> =? ( 'prund 'ep ! )
-	<a> =? ( 'prunl 'ep ! )
-	<d> =? ( 'prunr 'ep ! )
-	>w< =? ( 'pstay 'ep ! )
-	>s< =? ( 'pstay 'ep ! )
-	>a< =? ( 'pstay 'ep ! )
-	>d< =? ( 'pstay 'ep ! )
+	<up> =? ( 'prunu 'ep ! )
+	<dn> =? ( 'prund 'ep ! )
+	<le> =? ( 'prunl 'ep ! )
+	<ri> =? ( 'prunr 'ep ! )
+	>up< =? ( 'pstay 'ep ! )
+	>dn< =? ( 'pstay 'ep ! )
+	>le< =? ( 'pstay 'ep ! )
+	>ri< =? ( 'pstay 'ep ! )
+	<esp> =? ( saltar )
 	drop 
 	;
 	
@@ -159,6 +174,7 @@
 	teclado ;
 
 :main
+	1000 'fx p.ini
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull

@@ -88,7 +88,6 @@
 	;
 
 :inicio
-	1000 'bubles p.ini
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/ball.png" loadimg 'spr_ball !
