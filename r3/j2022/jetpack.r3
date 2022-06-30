@@ -14,16 +14,28 @@
 #vxp #vyp			| velocidad
 #axp #ayp			| aceleracion
 
+#nspr 91
+
 :disparo
 	>a
 	25 sprplayer 
 	a@+ int. a@+ int. tsdraw
+	a@ a> 16 - +!
+	| limites 
+	a> 16 - @  int.
+	-16 <? ( drop 0 ; )
+	800 >? ( drop 0 ; )
+	drop
 	;
 	
+:veldisp
+	nspr 91 =? ( drop 4.0 ; ) drop
+	-4.0 ;
 	
-:+disparo | d x y --
+:+disparo | x y --
 	'disparo 'fx p!+ >a
-	swap a!+ a!+ a!
+	swap a!+ a!+ 
+	veldisp a!
 	;
 	
 :jetpack
@@ -32,7 +44,7 @@
 	ayp axp vyp vxp "%f %f %f %f" sprint bprint	
 
 	|cohete 1? ( fuego ) drop 
-	65 sprplayer xp int. yp int. tsdraw
+	nspr sprplayer xp int. yp int. tsdraw
 
 	xp vxp axp +
 	1.9 clampmax -1.9 clampmin | limites x
@@ -54,16 +66,17 @@
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<up> =? ( -0.2 'ayp ! )	>up< =? ( 0 'ayp ! )	
-	<le> =? ( -0.2 'axp ! ) >le< =? ( 0 'axp ! )	
+	<up> =? ( -0.2 'ayp ! 91 'nspr ! )	>up< =? ( 0 'ayp ! )	
+	<le> =? ( -0.2 'axp ! 94 'nspr ! ) >le< =? ( 0 'axp ! )	
 	<ri> =? ( 0.2 'axp ! ) >ri< =? ( 0 'axp ! )
-	<esp> =? ( 1.0 xp yp +disparo )
+	<esp> =? ( xp yp +disparo )
 	drop 
 	;
 	
 :juego
 	0 SDLcls
 	
+	'fx p.draw
 	jetpack
 	SDLredraw
 	
