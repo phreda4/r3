@@ -10,12 +10,22 @@
 #sprplayer
 #fx 0 0
 
-#xp 200.0 #yp 500.0
-#vxp #vyp
-#axp #ayp
+#xp 200.0 #yp 500.0	| posicion
+#vxp #vyp			| velocidad
+#axp #ayp			| aceleracion
 
-:int. 16 >> ;
-
+:disparo
+	>a
+	25 sprplayer 
+	a@+ int. a@+ int. tsdraw
+	;
+	
+	
+:+disparo | d x y --
+	'disparo 'fx p!+ >a
+	swap a!+ a!+ a!
+	;
+	
 :jetpack
 	
 	10 10 bat 
@@ -37,7 +47,7 @@
 	vyp 'yp +!
 	
 	yp
-	500.0 >? ( 500.0 'yp ! 0 'vyp ! )
+	500.0 >? ( 500.0 'yp ! 0 'vyp ! 0 'vxp ! )
 	drop
 	;
 
@@ -47,7 +57,7 @@
 	<up> =? ( -0.2 'ayp ! )	>up< =? ( 0 'ayp ! )	
 	<le> =? ( -0.2 'axp ! ) >le< =? ( 0 'axp ! )	
 	<ri> =? ( 0.2 'axp ! ) >ri< =? ( 0 'axp ! )
-	<esp> =? (  )
+	<esp> =? ( 1.0 xp yp +disparo )
 	drop 
 	;
 	

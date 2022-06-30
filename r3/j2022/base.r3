@@ -10,6 +10,12 @@
 #sprplayer
 
 #fx 0 0
+
+#xp 30.0 
+#yp 30.0
+#zp 0
+#vzp 0
+#np 65
 	
 #wmap 32
 #hmap 32
@@ -101,13 +107,33 @@
 			maptile
 			) drop
 		) 2drop ;
-		
+
 |--------------------------------
-#xp 30.0 
-#yp 30.0
-#zp 0
-#vzp 0
-#np 65
+	
+:humo
+	>a
+	a@
+	100 >? ( drop 0 ; ) 
+	1 + a!+
+	25 sprplayer 
+	a@+ int. a@+ int. tsdraw
+	;
+	
+:+humo | x y --
+	'humo 'fx p!+ >a 
+	0 a!+
+	swap a!+ a!+
+	;
+	
+#ev 0	
+:estela	
+	1 'ev +!
+	ev 20 <? ( drop ; ) drop
+	0 'ev !
+	xp yp zp - +humo
+	;
+	
+|--------------------------------
 
 #sanim ( 0 1 0 2 )
 
@@ -118,18 +144,22 @@
 	65 'np !
 	;
 :prunl
+	estela	
 	94 panim + 'np !
 	-2.0 'xp +!
 	;
 :prunr
+	estela	
 	91 panim + 'np !
 	2.0 'xp +!
 	;
 :prunu
+	estela	
 	68 panim + 'np !
 	-2.0 'yp +!
 	;
 :prund
+	estela	
 	65 panim + 'np !
 	2.0 'yp +!
 	;
@@ -141,7 +171,6 @@
 	
 #ep 'pstay
 
-:int. 16 >> ;
 
 :player	
 	$ffffff bcolor 
@@ -177,6 +206,7 @@
 	0 SDLcls
 
 	drawmap
+	'fx p.draw
 	player
 	SDLredraw
 	
