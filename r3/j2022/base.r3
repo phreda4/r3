@@ -17,9 +17,7 @@
 #vzp 0
 #np 65
 	
-#wmap 32
-#hmap 32
-
+#mapa1 [ 32 32 32 32 ] | anchomap altomap tielancho tilealto
 #map (
 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 1
@@ -78,15 +76,11 @@
 		1 + ) 2drop ;
 
 |--------------------------------
-
-#mapw
-#maph
+#mapw #maph 
 #mapm
-#mapx
-#mapy
-
-:map! | w h mem --
-	'mapm ! 'maph ! 'mapw ! ;
+#mapx #mapy
+#tilew #tileh
+#xm #ym		
 
 :map> | x y -- a
 	mapw * + mapm + ;
@@ -95,19 +89,30 @@
 	mapw clamp0max swap
 	maph clamp0max swap
 	map> c@ ;
-	
-:maptile
-	;
-		
-#xm #ym		
-:mapdraw | w h x y xs ys --
-	'ym ! 'xm !
-	( 1? 1 - over
-		( 1? 1 - 
-			maptile
-			) drop
-		) 2drop ;
 
+:drawtile | y x tile -- y x 
+	0? ( drop ; ) tilecity 
+	pick3 tileh * ym +
+	pick3 tilew * xm +
+	swap
+	tilew tileh
+	tsdraws ;
+
+:tilemapdraw | w h x y sx sy 'amap --
+	d@+ 'mapw !
+	d@+ 'maph !
+	d@+ 'tilew !
+	d@+ 'tileh !
+	'mapm ! 
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + pick2 mapy + [map]@
+			drawtile
+			1 + ) drop
+		1 + ) 3drop ;
+	
 |--------------------------------
 	
 :humo
@@ -205,7 +210,8 @@
 :demo
 	0 SDLcls
 
-	drawmap
+	10 10 5 5 0 0 'mapa1 tilemapdraw
+	
 	'fx p.draw
 	player
 	SDLredraw
