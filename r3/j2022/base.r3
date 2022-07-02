@@ -17,8 +17,10 @@
 #vzp 0
 #np 65
 	
-#mapa1 [ 32 32 32 32 ] | anchomap altomap tielancho tilealto
-#map (
+#mapa1
+0 | <--tileset
+[ 32 32 32 32 ] | anchomap altomap tielancho tilealto
+(
 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 1
 1 3 3 2 2 3 3 3 6 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 1
@@ -54,64 +56,10 @@
 )
 
 
-|------ DRAW MAP
-
-:gettilea | x y -- t
-	4 >> swap 4 >> swap 32 * + 'map + ;
-
-:gettile | x y -- t
-	4 >> swap 4 >> swap 32 * + 'map + c@ ;
-
-:drawtile | x y adr tile -- y x adr  
-	0? ( drop ; ) tilecity 
-	pick4 5 << pick4 5 << swap
-	tsdraw ;
-
-:drawmap
-	'map 
-	0 ( 32 <? 
-		0 ( 32 <?
-			rot c@+ drawtile rot rot 
-			1 + ) drop
-		1 + ) 2drop ;
-
-|--------------------------------
-#mapw #maph 
-#mapm
-#mapx #mapy
-#tilew #tileh
-#xm #ym		
-
-:map> | x y -- a
-	mapw * + mapm + ;
-	
-:[map]@ | x y -- v
-	mapw clamp0max swap
-	maph clamp0max swap
-	map> c@ ;
-
-:drawtile | y x tile -- y x 
-	0? ( drop ; ) tilecity 
-	pick3 tileh * ym +
-	pick3 tilew * xm +
-	swap
-	tilew tileh
-	tsdraws ;
-
-:tilemapdraw | w h x y sx sy 'amap --
-	d@+ 'mapw !
-	d@+ 'maph !
-	d@+ 'tilew !
-	d@+ 'tileh !
-	'mapm ! 
-	'ym ! 'xm !
-	'mapy ! 'mapx !
-	0 ( over <? 
-		0 ( pick3 <?
-			mapx over + pick2 mapy + [map]@
-			drawtile
-			1 + ) drop
-		1 + ) 3drop ;
+:changemap	| x y --
+	scr2tile
+	1 swap c+!
+	;
 	
 |--------------------------------
 	
@@ -178,10 +126,6 @@
 
 
 :player	
-	$ffffff bcolor 
-	10 10 bat 
-	yp xp "%f %f" sprint bprint
-
 	12 sprplayer xp int. 2 + yp int. 2 + tsdraw	| sombra
 	np sprplayer xp int. yp zp - int. tsdraw
 	ep ex
@@ -210,7 +154,10 @@
 :demo
 	0 SDLcls
 
-	10 10 5 5 0 0 'mapa1 tilemapdraw
+	24 18 0 0 0 0 'mapa1 tiledraw
+	
+	sdlx sdly changemap
+
 	
 	'fx p.draw
 	player
@@ -223,7 +170,10 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	32 32 "media\img\open_tileset.png" loadts 'tilecity !	
+	32 32 "media\img\open_tileset.png" loadts 
+	dup 'tilecity !	
+	'mapa1 !
+	
 	64 64 "media\img\sokoban_tilesheet.png" loadts 'sprplayer !
 
 	'demo SDLshow

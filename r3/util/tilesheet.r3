@@ -1,6 +1,8 @@
 | TileSheet Library
 | PHREDA 2021
 ^r3/lib/mem.r3
+^r3/lib/math.r3
+^r3/win/sdl2image.r3
 	
 #w #h
 
@@ -64,3 +66,56 @@
 	'rsrc 'rdes 
 	SDL_RenderCopy
 	;
+
+|--------------------------------
+#mapm #mapt
+#mapw #maph 
+#mapx #mapy
+#tilew #tileh
+#xm #ym		
+
+:map> | x y -- a
+	mapw * + mapm + ;
+	
+:[map]@ | x y -- v
+	mapw clamp0max swap
+	maph clamp0max swap
+	map> c@ ;
+
+::drawtile | y x tile -- y x 
+	0? ( drop ; ) mapt
+	pick2 tilew * xm + ym
+	tilew tileh
+	tsdraws ;
+
+::tiledraw | w h x y sx sy 'amap --
+	@+ 'mapt !
+	d@+ 'mapw !
+	d@+ 'maph !
+	d@+ 'tilew !
+	d@+ 'tileh !
+	'mapm ! 
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@
+			drawtile
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	drop
+	;
+	
+		
+::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
+	ym - tilew / mapy +
+	maph clamp0max 
+	swap
+	xm - tileh / mapx +
+	mapw clamp0max 
+	swap
+	map> ;

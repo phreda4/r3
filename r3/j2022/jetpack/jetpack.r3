@@ -88,7 +88,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	SDLfull
-	32 32 "r3\jetpack\jetpack.png" loadts 'sprplayer !
+	32 32 "r3\j2022\jetpack\jetpack.png" loadts 'sprplayer !
 
 	'juego SDLshow
 	SDLquit ;	
