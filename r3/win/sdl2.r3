@@ -225,6 +225,7 @@
 	( .exit 0? drop
 		SDLupdate
 		dup ex ) 2drop
+	SDLupdate
 	0 '.exit ! ;
 
 ::exit

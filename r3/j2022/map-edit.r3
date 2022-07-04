@@ -6,9 +6,9 @@
 
 ^r3/lib/gui.r3
 
-^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
+^r3/util/dlgfile.r3
 
 #sprgui
 
@@ -61,6 +61,59 @@
 
 
 |--------------------------------
+#ntilepage 0
+
+:xy2pal | -- x y 
+	sdlx 40 - tilew 8 + / tilew 8 + * 40 +
+	sdly 40 - tileh 8 + / tileh 8 + * 40 + ;
+	
+:inpal
+	$403DFF SDLColor
+	xy2pal tilew 8 + tileh 8 + SDLFRect ;	
+	
+:clpal
+	sdlx 40 - tilew 8 + / 
+	sdly 40 - tileh 8 + / 
+	sw 40 - tilew 8 + /
+	*
+	+ 
+	'tilenow !
+	exit
+	;
+	
+:pagetile
+	40 40 sw sh guiBox
+	SDLb SDLx SDLy guiIn
+	
+	'inpal guiI
+	'clpal onClick
+
+	ntilepage
+	44 ( sh <? 
+		44 ( sw <? 
+			pick2 tilecity 2over swap tsdraw
+			rot 1 + rot rot
+			tilew 8 + + ) drop
+		tileh 8 + + ) 2drop
+	;
+
+:stileset
+	gui
+	0 SDLcls
+
+	$ffffff bcolor 
+	44 4 bat "TILESET " bprint
+	44 20 bat tileh tilew "tilew:%d tilew:%d" sprint bprint
+	
+	pagetile
+	
+	SDLredraw
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+
+	
+|--------------------------------
 #paleta 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
 
 :pal? | color -- color nro
@@ -68,7 +121,6 @@
 	15 ( 1? 1 -
 		a@+ pick2 =? ( 2drop a> 'paleta - 3 >> 1 - ; )
 		drop ) drop 14 ;
-		
 
 :palins! | nro --
 	pal?
@@ -77,10 +129,11 @@
 	;
 
 :selectile
+	'stileset SDLshow
+	tilenow palins!
 	;
 
 :paldraw
-
 	0 0 40 40 guiBox
 	SDLb SDLx SDLy guiIn
 	'selectile onClick
@@ -105,20 +158,18 @@
 :xy2tool | -- btn
 	sdlx Xinitool - 40 / ;
 :tool2xy | btbn -- x y
-	40 * Xinitool + 0
-	;
-	
+	40 * Xinitool + 0 ;
 :inbtn
 	$403DFF SDLColor
-	xy2tool tool2xy 40 40 SDLFRect 
-	;	
+	xy2tool tool2xy 40 40 SDLFRect ;	
 	
 :clicktool
 	xy2tool 
 	4 <? ( 'modo ! ; )
-	drop
-	exit
-	;
+	4 =? ( drop ; )
+	5 =? ( drop ; )
+	6 =? ( drop ; )
+	drop exit ;
 	
 :toolbar	
 	$999999 SDLColor
