@@ -12,12 +12,18 @@
 
 #sprgui
 
+
+#filemap * 1024
+#mapamem
+
+#filetile * 1024
+#tilemem
+
 #mapx 0 #mapy 0
 #mapw 32 #maph 32
 #tilew 32 #tileh 32
-#maptile
 
-#tilecity
+#maptile
 
 #tilenow 0
 	
@@ -59,7 +65,14 @@
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 )
 
-
+|--------------------------------
+:loadfile
+	dlgFileLoad 
+	0? ( drop ; )
+	dup 'filemap strcpy
+	
+	;
+	
 |--------------------------------
 #ntilepage 0
 
@@ -91,7 +104,7 @@
 	ntilepage
 	44 ( sh <? 
 		44 ( sw <? 
-			pick2 tilecity 2over swap tsdraw
+			pick2 tilemem 2over swap tsdraw
 			rot 1 + rot rot
 			tilew 8 + + ) drop
 		tileh 8 + + ) 2drop
@@ -145,7 +158,7 @@
 
 	0
 	0 ( 12 <?
-		'paleta over ncell+ @ tilecity 4 pick4 4 + tsdraw
+		'paleta over ncell+ @ tilemem 4 pick4 4 + tsdraw
 		swap 40 + swap
 		1 + ) 2drop ;	
 	
@@ -167,7 +180,7 @@
 	xy2tool 
 	4 <? ( 'modo ! ; )
 	4 =? ( drop ; )
-	5 =? ( drop ; )
+	5 =? ( drop loadfile ; )
 	6 =? ( drop ; )
 	drop exit ;
 	
@@ -247,14 +260,19 @@
 	teclado ;
 
 :main
+	"media/map" dlgSetPath
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	32 32 "media\img\open_tileset.png" loadts 
-	dup 'tilecity !	
-	'mapa1 !
 	
 	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !
+
+	here 'mapamem !
+	
+	32 32 "media\img\open_tileset.png" loadts 
+	dup 'tilemem !	
+	'mapa1 !
+	
 	
 	'demo SDLshow
 	SDLquit ;	
