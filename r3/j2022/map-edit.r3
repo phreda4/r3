@@ -14,56 +14,16 @@
 
 
 #filemap * 1024
-#mapamem
-
-#filetile * 1024
-#tilemem
-
 #mapx 0 #mapy 0
 #mapw 32 #maph 32
-#tilew 32 #tileh 32
+#mapamem 0	| 0 when not allocate 
 
-#maptile
+#filetile * 1024
+#tilew 32 #tileh 32
+#tilemem
 
 #tilenow 0
-	
-#mapa1
-0 | <--tileset
-[ 32 32 32 32 ] | anchomap altomap tielancho tilealto
-(
-6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 2 2 0 0 0 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 5 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 4 0 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 2 0 0 7 7 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 6 6 6 6 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 9 9 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1
-1 0 0 0 0 5 5 5 5 5 5 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 11 11 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 10 10 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 2 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 2 0 2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 2 0 2 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-)
+
 
 |--------------------------------
 :loadfile
@@ -227,8 +187,22 @@
 	
 #modelist 'mdraw 'mmove 'msele 'mfill
 
+:grid
+	$666666 SDLColor
+	40 ( sh <? 
+		40 over sw over SDLline
+		tileh + ) drop
+	40 ( sw	<? 
+		dup 40 over sh SDLLine
+		tilew + ) drop 
+	;
+	
 :mapinscreen
-	24 18 mapx mapy 40 40 'mapa1 tiledraw	
+	24 18 mapx mapy 40 40  	
+	mapamem tiledraw	
+	
+	grid
+
 	40 40 sw sh guiBox
 	SDLb SDLx SDLy guiIn
 	modo 3 << 'modelist + @ ex
@@ -259,6 +233,20 @@
 	SDLredraw
 	teclado ;
 
+:loadmap
+	mapamem 1? ( empty ) drop
+	mark
+	tilew tileh 'filetile loadts 
+	dup 'tilemem !	
+	here dup >a 'mapamem !
+	a!+ | tile
+	mapw da!+ maph da!+ 
+	tilew da!+ tileh da!+ 
+	32 ( 1? 32 ( 1? 
+		0 ca!+ 
+		1 - ) drop 1 - ) drop
+	;
+	
 :main
 	"media/map" dlgSetPath
 	"r3sdl" 800 600 SDLinit
@@ -267,12 +255,15 @@
 	
 	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !
 
-	here 'mapamem !
 	
-	32 32 "media\img\open_tileset.png" loadts 
-	dup 'tilemem !	
-	'mapa1 !
+	20 20 'tilew ! 'tileh !
+	"r3\j2022\trebor\trebortiles.png" 
+	'filetile strcpy
+	loadmap
 	
+|	32 32 "media\img\open_tileset.png" loadts 
+|	dup 'tilemem !	
+|	'mapa1 !
 	
 	'demo SDLshow
 	SDLquit ;	
