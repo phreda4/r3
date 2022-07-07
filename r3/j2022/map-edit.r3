@@ -22,15 +22,32 @@
 #tilew 32 #tileh 32
 #tilemem
 
-#tilenow 0
+#mgrid 0
+#tilenow 1
+#scrw #scrh
+#scrmw #scrmh
 
+|--------------------------------
+#paleta 1 0 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+
+:pal? | color -- color nro
+	'paleta >a 
+	15 ( 1? 1 -
+		a@+ pick2 =? ( 2drop a> 'paleta - 3 >> 1 - ; )
+		drop ) drop 14 ;
+
+:palins! | nro --
+	pal?
+	'paleta dup cell+ swap rot move>
+	'paleta !
+	;
 
 |--------------------------------
 :loadfile
 	dlgFileLoad 
 	0? ( drop ; )
 	dup 'filemap strcpy
-	
+	drop
 	;
 	
 |--------------------------------
@@ -75,7 +92,7 @@
 	0 SDLcls
 
 	$ffffff bcolor 
-	44 4 bat "TILESET " bprint
+	44 4 bat 'filetile "TILESET [ %s ]" sprint bprint
 	44 20 bat tileh tilew "tilew:%d tilew:%d" sprint bprint
 	
 	pagetile
@@ -84,22 +101,6 @@
 	SDLkey 
 	>esc< =? ( exit )
 	drop ;
-
-	
-|--------------------------------
-#paleta 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
-
-:pal? | color -- color nro
-	'paleta >a 
-	15 ( 1? 1 -
-		a@+ pick2 =? ( 2drop a> 'paleta - 3 >> 1 - ; )
-		drop ) drop 14 ;
-
-:palins! | nro --
-	pal?
-	'paleta dup cell+ swap rot move>
-	'paleta !
-	;
 
 :selectile
 	'stileset SDLshow
@@ -116,12 +117,29 @@
 	[ $403DFF SDLColor sdly 40 / 0 swap 40 * 40 40 SDLFRect ; ] guiI
 	[ 'paleta sdly 40 / ncell+ @ dup palins! 'tilenow ! ; ] onClick
 
-	0
-	0 ( 12 <?
-		'paleta over ncell+ @ tilemem 4 pick4 4 + tsdraw
+	0 0 ( 12 <?
+		'paleta over ncell+ @ tilemem 4 pick4 4 + 
+		32 32 tsdraws
 		swap 40 + swap
 		1 + ) 2drop ;	
+|--------------------------------
+:viewscr
+	gui
+	0 SDLcls
+
+	$ffffff bcolor 
+	44 4 bat "FULLMAP" bprint
+	44 20 bat maph mapw "maxx:%d maxy:%d" sprint bprint
 	
+	sw sh 0 0 0 40 2 2	mapamem tiledraws	
+	
+	SDLredraw
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+
+:viewfull	
+	'viewscr SDLshow ;
 	
 |--------------------------------
 #modo 0
@@ -139,7 +157,7 @@
 :clicktool
 	xy2tool 
 	4 <? ( 'modo ! ; )
-	4 =? ( drop ; )
+	4 =? ( drop viewfull ; )
 	5 =? ( drop loadfile ; )
 	6 =? ( drop ; )
 	drop exit ;
@@ -160,11 +178,8 @@
 		1 + ) 2drop ;
 
 |-------------------------------
-
 :writetile	|  --
-	tilenow
-	sdlx sdly scr2tile c!
-	;
+	tilenow sdlx sdly scr2tile c! ;
 	
 :mdraw
 	'writetile dup onDnMove ;
@@ -172,14 +187,17 @@
 #ox #oy
 #mx #my
 
+:mapx! scrmw clamp0max 'mapx ! ;
+:mapy! scrmh clamp0max 'mapy ! ;
+
 :mmove
 	[ sdlx 'ox ! sdly 'oy ! mapx 'mx ! mapy 'my ! ; ] 
-	[ ox sdlx - tilew / mx + clamp0 'mapx !
-	  oy sdly - tileh / my + clamp0 'mapy ! ; ] 
+	[ ox sdlx - tilew / mx + mapx! oy sdly - tileh / my + mapy! ; ] 
 	onDnMove ;
 	
 :msele
 	[ ; ] [ ; ] onDnMove ;
+	
 	
 :mfill
 	'writetile onClick
@@ -189,19 +207,20 @@
 
 :grid
 	$666666 SDLColor
-	40 ( sh <? 
-		40 over sw over SDLline
+	maph mapy - tileh * 40 + sh min
+	mapw mapx - tilew * 40 + sw min
+	40 ( pick2 <=? 
+		40 over pick3 over SDLline
 		tileh + ) drop
-	40 ( sw	<? 
-		dup 40 over sh SDLLine
-		tilew + ) drop 
-	;
+	40 ( over <=? 
+		dup pick3 over 40 SDLLine
+		tilew + ) 3drop ;
 	
 :mapinscreen
-	24 18 mapx mapy 40 40  	
+	scrw scrh mapx mapy 40 40  	
 	mapamem tiledraw	
 	
-	grid
+	mgrid 1? ( grid ) drop
 
 	40 40 sw sh guiBox
 	SDLb SDLx SDLy guiIn
@@ -215,15 +234,20 @@
 	<f2> =? ( 1 'modo ! )
 	<f3> =? ( 2 'modo ! )
 	<f4> =? ( 3 'modo ! )
+	<up> =? ( mapy 1 - mapy! )
+	<dn> =? ( mapy 1 + mapy! )
+	<le> =? ( mapx 1 - mapx! )
+	<ri> =? ( mapx 1 + mapx! )
+	<g> =? ( mgrid 1 xor 'mgrid ! )
 	drop 
 	;
 	
-:demo
+:editing
 	gui
 	0 SDLcls
 
 	$ffffff bcolor 
-	44 4 bat "MAPEDIT " bprint
+	44 4 bat 'filemap "MAPEDIT [ %s ]" sprint bprint
 	44 20 bat maph mapw mapy mapx "x:%d y:%d w:%d h:%d" sprint bprint
 	
 	mapinscreen
@@ -238,34 +262,43 @@
 	mark
 	tilew tileh 'filetile loadts 
 	dup 'tilemem !	
-	here dup >a 'mapamem !
-	a!+ | tile
-	mapw da!+ maph da!+ 
-	tilew da!+ tileh da!+ 
-	32 ( 1? 32 ( 1? 
+	
+	here dup >a 
+	'mapamem !
+	a!+ 					| tilemap
+	mapw da!+ maph da!+ 	| map dim
+	tilew da!+ tileh da!+ 	| tile size
+	
+	maph ( 1? mapw ( 1? 
 		0 ca!+ 
 		1 - ) drop 1 - ) drop
+	
+	sw 40 - tilew / 'scrw !
+	sh 40 - tileh / 'scrh !
+
+	mapw scrw - 1 + 'scrmw	!
+	maph scrh - 1 + 'scrmh	!
 	;
 	
 :main
 	"media/map" dlgSetPath
 	"r3sdl" 800 600 SDLinit
+	| SDLfull	
+	
+	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !	
 	bfont1 
-	|SDLfull
 	
-	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !
-
-	
-	20 20 'tilew ! 'tileh !
+	20 'tilew ! 20 'tileh !
 	"r3\j2022\trebor\trebortiles.png" 
 	'filetile strcpy
+	50 'maph ! 50 'mapw !
 	loadmap
 	
 |	32 32 "media\img\open_tileset.png" loadts 
 |	dup 'tilemem !	
 |	'mapa1 !
 	
-	'demo SDLshow
+	'editing SDLshow
 	SDLquit ;	
 	
 : main ;

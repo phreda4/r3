@@ -170,8 +170,9 @@
 	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * SDLFRect
 
 	$ffffff SDLColor
+	$ffffff bcolor
 	xdlg 8 + ydlg 20 1 << + 3 + bat
-	'path bprint | 64 input
+	'path 64 input
 
 	ydlg 20 3 << + 4 +
 	0 ( filelines <? swap

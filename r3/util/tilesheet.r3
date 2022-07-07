@@ -78,22 +78,19 @@
 	mapw * + mapm + ;
 	
 :[map]@ | x y -- v
-	mapw clamp0max swap
-	maph clamp0max swap
+	mapw 1 - clamp0max swap
+	maph 1 - clamp0max swap
 	map> c@ ;
 
 ::drawtile | y x tile -- y x 
 	0? ( drop ; ) mapt
 	pick2 tilew * xm + ym
-	tilew tileh
-	tsdraws ;
+	tsdraw ;
 
 ::tiledraw | w h x y sx sy 'amap --
 	@+ 'mapt !
-	d@+ 'mapw !
-	d@+ 'maph !
-	d@+ 'tilew !
-	d@+ 'tileh !
+	d@+ 'mapw ! d@+ 'maph !
+	d@+ 'tilew ! d@+ 'tileh !
 	'mapm ! 
 	'ym ! 'xm !
 	'mapy ! 'mapx !
@@ -109,13 +106,38 @@
 	tileh * 'ym +!
 	drop
 	;
+
+::drawtile | y x tile -- y x 
+	0? ( drop ; ) mapt
+	pick2 tilew * xm + ym
+	tilew tileh
+	tsdraws ;
 	
+::tiledraws | w h x y sx sy sw sh 'amap --
+	@+ 'mapt !
+	d@+ 'mapw ! d@+ 'maph !
+	8 + 'mapm ! 
+	'tileh ! 'tilew !
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@
+			drawtile
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	drop
+	;
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 	ym - tilew / mapy +
-	maph clamp0max 
+	maph 1 - clamp0max 
 	swap
 	xm - tileh / mapx +
-	mapw clamp0max 
+	mapw 1 - clamp0max 
 	swap
 	map> ;
