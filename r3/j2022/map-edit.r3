@@ -13,7 +13,8 @@
 #sprgui
 
 
-#filemap * 1024
+#filemap "media/map/ini.map" * 1024
+
 #mapx 0 #mapy 0
 #mapw 32 #maph 32
 #mapamem 0	| 0 when not allocate 
@@ -43,6 +44,47 @@
 	;
 
 |--------------------------------
+:recalc
+	sw 40 - tilew / 'scrw !
+	sh 40 - tileh / 'scrh !
+
+	mapw scrw - 1 + 'scrmw	!
+	maph scrh - 1 + 'scrmh	!
+	;
+
+:savemap | --
+	mark
+	0 ,q 			| "tilemap" ,s 0 ,c | 8 bytes
+	mapw , maph ,
+	tilew , tileh ,
+	mapamem 24 + >a
+	maph ( 1? mapw ( 1? 
+		ca@+ ,c
+		1 - ) drop 1 - ) drop
+	'filetile ,s 0 ,c
+	'filemap savemem
+	empty
+	;
+
+:loadmap
+	mapamem 1? ( empty ) drop
+	mark
+	here 'filemap load here =? ( drop ; )
+	
+	here 8 + 
+	d@+ 'mapw ! d@+ 'maph !
+	d@+ 'tilew ! d@+ 'tileh !
+	mapw maph * + 'filetile strcpy
+	
+	tilew tileh 'filetile loadts 'tilemem !	
+	
+	here 'filemap load drop
+	here dup 'mapamem ! 
+	tilemem swap !
+	24 mapw maph * + 'here +!
+	
+	recalc ;
+		
 :loadfile
 	dlgFileLoad 
 	0? ( drop ; )
@@ -159,7 +201,7 @@
 	4 <? ( 'modo ! ; )
 	4 =? ( drop viewfull ; )
 	5 =? ( drop loadfile ; )
-	6 =? ( drop ; )
+	6 =? ( drop savemap ; )
 	drop exit ;
 	
 :toolbar	
@@ -257,28 +299,7 @@
 	SDLredraw
 	teclado ;
 
-:loadmap
-	mapamem 1? ( empty ) drop
-	mark
-	tilew tileh 'filetile loadts 
-	dup 'tilemem !	
-	
-	here dup >a 
-	'mapamem !
-	a!+ 					| tilemap
-	mapw da!+ maph da!+ 	| map dim
-	tilew da!+ tileh da!+ 	| tile size
-	
-	maph ( 1? mapw ( 1? 
-		0 ca!+ 
-		1 - ) drop 1 - ) drop
-	
-	sw 40 - tilew / 'scrw !
-	sh 40 - tileh / 'scrh !
 
-	mapw scrw - 1 + 'scrmw	!
-	maph scrh - 1 + 'scrmh	!
-	;
 	
 :main
 	"media/map" dlgSetPath
@@ -288,10 +309,10 @@
 	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !	
 	bfont1 
 	
-	20 'tilew ! 20 'tileh !
-	"r3\j2022\trebor\trebortiles.png" 
-	'filetile strcpy
-	50 'maph ! 50 'mapw !
+|	20 'tilew ! 20 'tileh !
+|	"r3\j2022\trebor\trebortiles.png" 
+|	'filetile strcpy
+|	50 'maph ! 50 'mapw !
 	loadmap
 	
 |	32 32 "media\img\open_tileset.png" loadts 

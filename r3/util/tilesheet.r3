@@ -9,7 +9,7 @@
 ::loadts | w h filename -- ts
 	loadimg
 	dup 0 0 'w 'h SDL_QueryTexture
-	mark here >a
+	here >a
 	a!+ | texture
 	2dup swap da!+ da!+ | w h 
 	0 ( h <? 
@@ -24,7 +24,7 @@
 ::loadtsb | w h filename -- ts ; with 1 space
 	loadimg
 	dup 0 0 'w 'h SDL_QueryTexture
-	mark here >a
+	here >a
 	a!+ | texture
 	2dup swap da!+ da!+ | w h 
 	0 ( h <? 

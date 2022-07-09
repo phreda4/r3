@@ -150,7 +150,8 @@
 	SDLkey
 	<up> =? ( lineup )
 	<dn> =? ( linedn )
-	<ret> =? ( linenter )
+	|<ret> =? ( linenter )
+	<ret> =? ( exit )
 	>esc< =? ( "" 'filename strcpy exit )
 	drop ;
 
@@ -173,6 +174,9 @@
 	$ffffff bcolor
 	xdlg 8 + ydlg 20 1 << + 3 + bat
 	'path 64 input
+	xdlg 8 + ydlg 20 2 << + 3 + bat
+	'filename 64 input
+	
 
 	ydlg 20 3 << + 4 +
 	0 ( filelines <? swap
