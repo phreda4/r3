@@ -113,14 +113,20 @@
 	printline
 	;
 
+:setfilenow! | nfile --
+	nfiles 1 - clamp0Max  
+	dup 'filenow !
+	4 << files + @ 'filename strcpy 
+	;
+	
 :lineup
 	filenow 1 - clamp0 fileini <? ( dup 'fileini ! )
-	'filenow ! ;
+	setfilenow! ;
 
 :linedn
 	filenow 1 + nfiles 1 - clampMax
 	fileini filelines + >=? ( dup filelines - 1 + 'fileini ! )
-	'filenow ! ;
+	setfilenow! ;
 
 :setfile
 	filenow 4 << files + @ 'filename strcpy 
@@ -170,14 +176,19 @@
 	
 	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * SDLFRect
 
-	$ffffff SDLColor
 	$ffffff bcolor
 	xdlg 8 + ydlg 20 1 << + 3 + bat
-	'path 64 input
-	xdlg 8 + ydlg 20 2 << + 3 + bat
-	'filename 64 input
+	'path bprint |64 input
 	
-
+	xdlg 8 + 
+	ydlg 20 3 << + 4 +
+	wdlg 12 -
+	filelines 16 * guiBox
+	SDLb SDLx SDLy guiIn
+	
+	[ sdly ydlg 20 3 << + 4 + - 16 / fileini + 
+		setfilenow! ; ] onClick
+	
 	ydlg 20 3 << + 4 +
 	0 ( filelines <? swap
 		xdlg 8 + over bat
@@ -188,6 +199,7 @@
 |----------------------
 :fileload
 	dlgback
+	$ffffff bcolor
 	"load File " dlgtitle
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename bprint
@@ -220,6 +232,7 @@
 
 :filesave
 	dlgback
+	$ffffff bcolor
 	"save file" dlgtitle
 	xdlg 8 + ydlg 20 2 << + 3 + bat
 	'filename 64 input
