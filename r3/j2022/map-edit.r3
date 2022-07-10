@@ -13,7 +13,7 @@
 #sprgui
 
 
-#filemap "media/map/ini.map" * 1024
+#filemap * 1024
 
 #mapx 0 #mapy 0
 #mapw 32 #maph 32
@@ -91,7 +91,43 @@
 	dup 'filemap strcpy
 	drop
 	;
+
+|--------------------------------
+:actualiza
+	exit
+	;
 	
+:config
+	gui
+	0 SDLcls
+	
+	$666699 SDLColor
+	50 60 bat 'loadfile "[ TILES ]" tbtn
+	
+	
+	$ffffff bcolor 
+	140 40 bat "TILEMAP:" bprint  
+	220 40 bat 'filemap bprint
+	140 60 bat "TILESET:" bprint  
+	220 60 bat 'filetile bprint
+	
+	140 80 bat "Width:" bprint 
+	210 80 bat 'mapw inputint
+	140 100 bat "Height:" bprint 
+	210 100 bat 'maph inputint
+	
+	50 200 bat 'actualiza "[ RELOAD ]" tbtn
+		SDLredraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+	;
+	
+:configuracion
+	'config SDLshow
+	;
+		
 |--------------------------------
 #ntilepage 0
 
@@ -201,7 +237,7 @@
 	4 <? ( 'modo ! ; )
 	4 =? ( drop viewfull ; )
 	5 =? ( drop loadfile ; )
-	6 =? ( drop savemap ; )
+	6 =? ( drop configuracion ; ) |savemap 
 	drop exit ;
 	
 :toolbar	
@@ -290,7 +326,7 @@
 
 	$ffffff bcolor 
 	44 4 bat 'filemap "MAPEDIT [ %s ]" sprint bprint
-	44 20 bat maph mapw mapy mapx "x:%d y:%d w:%d h:%d" sprint bprint
+	44 20 bat maph mapw mapy mapx "(%d,%d) [%d:%d]" sprint bprint
 	
 	mapinscreen
 	toolbar
@@ -298,28 +334,19 @@
 
 	SDLredraw
 	teclado ;
-
-
 	
 :main
 	"media/map" dlgSetPath
 	"r3sdl" 800 600 SDLinit
-	| SDLfull	
-	
-	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !	
 	bfont1 
+	| SDLfull	
+	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !	
 	
-|	20 'tilew ! 20 'tileh !
-|	"r3\j2022\trebor\trebortiles.png" 
-|	'filetile strcpy
-|	50 'maph ! 50 'mapw !
+	'filemap "mem/mapedit.mem" load drop
 	loadmap
 	
-|	32 32 "media\img\open_tileset.png" loadts 
-|	dup 'tilemem !	
-|	'mapa1 !
-	
 	'editing SDLshow
+	
 	SDLquit ;	
 	
 : main ;

@@ -36,9 +36,12 @@
 	
 ::bsize | "" -- "" w h
 	count wp * hp ;
-	
+ 
 ::bpos | -- x y
 	dp dup $ffffff and swap 32 >> ;
+
+::brect |  "" -- "" x y w h
+	bsize bpos 2swap ;
 	
 ::bcursor | n --
 	wp * bpos swap rot + swap wp hp SDLFRect ;

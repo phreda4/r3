@@ -141,3 +141,13 @@
 	mapw 1 - clamp0max 
 	swap
 	map> ;
+	
+::loadtilemap | "" -- amap
+	here dup rot load 'here !
+	dup dup
+	8 +
+	d@+ 'mapw ! d@+ 'maph !
+	d@+ 'tilew ! d@+ 'tileh !
+	mapw maph * +  | image tilesa
+	tilew tileh rot loadts over !
+	;
