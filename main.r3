@@ -395,13 +395,11 @@
 	,reset ,cls ,bblue 
 	1 1 ,at	" r3 " ,s
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
-	
 	drawtree
 	
 	,bblue ,white	
 	0 linesv 2 + ,at 
 	'name 'path " %s/%s  " ,print ,eline 
-	
 	0 actual pagina - 2 + ,at
 	,showc
 	memsize type	| type buffer

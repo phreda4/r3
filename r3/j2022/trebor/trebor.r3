@@ -7,14 +7,15 @@
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
-#sprites
+#sprj
+#spre
 
 #fx 0 0
 
 #xp 30.0 #yp 30.0
 #vxp #vyp
 
-#np 65
+#np 0
 
 #mapajuego
 
@@ -25,7 +26,7 @@
 	a@
 	100 >? ( drop 0 ; ) 
 	1 + a!+
-	25 sprites 
+	25 spre
 	a@+ int. a@+ int. tsdraw
 	;
 	
@@ -44,69 +45,89 @@
 	;
 	
 |--------------------------------
+:[map]@ | x y -- adr
+	scr2tile c@ ;
+	
+:roof? | -- techo?
+	xp int. 32 + 
+	yp int. 8 +
+	[map]@ ;
 
-#sanim ( 0 1 0 2 )
+:floor? | -- piso?
+	xp int. 16 + yp int. 64 + [map]@ 
+	xp int. 40 + yp int. 64 + [map]@ or	
+	;
 
+:wall? | dx -- wall?
+	xp int. +
+	yp int. 32 +
+	[map]@ ;
+	
 :panim | -- nanim	
-	msec 7 >> $3 and 'sanim + c@ ;
+	msec 5 >> 7 mod abs ;
 	
 :pstay
-	65 'np !
+	|0 'np !
 	;
 :prunl
-	estela	
-	94 panim + 'np !
+|	estela	
+	4 wall? 1? ( drop ; ) drop
+	22 panim + 'np !
 	-2.0 'xp +!
 	;
 :prunr
-	estela	
-	91 panim + 'np !
+|	estela	
+	52 wall? 1? ( drop ; ) drop
+	0 panim + 'np !
 	2.0 'xp +!
 	;
-:prunu
-	estela	
-	68 panim + 'np !
-	-2.0 'yp +!
-	;
-:prund
-	estela	
-	65 panim + 'np !
-	2.0 'yp +!
-	;
 
-:saltar
-|	zp 1? ( drop ; ) drop
-|	4.0 'vzp !
-	;
 	
 #ep 'pstay
 
-
-:player	
-	np sprites xp int. yp int. 64 64 tsdraws
-	ep ex
+:pisoysalto
+	floor? 0? ( drop
+		0.3 'vyp +!
+		10.0 clampmax
+		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
+		; ) drop
+	0 'vyp !
+	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
 	
+	SDLkey
+	<up> =? ( -8.0 'vyp ! )
+	drop
+	;
+
+:debug
+	$ffffff bcolor 
+	10 10 bat 
+	floor? "f:%d " sprint bprint  	
+	roof? "r:%d " sprint bprint
+	;
+	
+:player	
+	np sprj xp int. yp int. 6 + 64 64 tsdraws
+	ep ex
+	pisoysalto
+	vyp 'yp +!
+	vxp 'xp +!
 	;
 	
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<up> =? ( 'prunu 'ep ! )
-	<dn> =? ( 'prund 'ep ! )
 	<le> =? ( 'prunl 'ep ! )
 	<ri> =? ( 'prunr 'ep ! )
-	>up< =? ( 'pstay 'ep ! )
-	>dn< =? ( 'pstay 'ep ! )
 	>le< =? ( 'pstay 'ep ! )
 	>ri< =? ( 'pstay 'ep ! )
-	<esp> =? ( saltar )
 	drop 
 	;
 	
 :jugando
-	0 SDLcls
+	$666666 SDLcls
 
-	24 18 0 0 0 0 64 64
+	24 18 0 0 0 0 32 32
 	mapajuego tiledraws
 	
 	'fx p.draw
@@ -121,7 +142,8 @@
 	bfont1 
 	|SDLfull
 	
-	32 32 "r3\j2022\trebor\trebor.png" loadts 'sprites !
+	32 32 "r3\j2022\trebor\treborj.png" loadts 'sprj !
+	20 20 "r3\j2022\trebor\trebore.png" loadts 'spre !
 	"media/map/ini.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow
