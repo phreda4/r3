@@ -148,7 +148,7 @@
 	$30 - cmax @ 10 * + cmax ! ;
 
 :proinputi
-	cursor
+	0 bcursor
 	SDLchar 1? ( knro ; ) drop
 	SDLkey
 	<back> =? ( cmax @ 10 / cmax ! )

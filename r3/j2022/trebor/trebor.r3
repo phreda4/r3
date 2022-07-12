@@ -144,7 +144,7 @@
 	
 	32 32 "r3\j2022\trebor\treborj.png" loadts 'sprj !
 	20 20 "r3\j2022\trebor\trebore.png" loadts 'spre !
-	"media/map/ini.map" loadtilemap 'mapajuego !
+	"r3\j2022\trebor\nivel.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow
 	SDLquit ;	

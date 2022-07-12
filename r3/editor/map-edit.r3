@@ -94,6 +94,7 @@
 
 |--------------------------------
 :actualiza
+	'filemap count "mem/mapedit.mem" save 
 	savemap
 	exit
 	;
@@ -103,22 +104,26 @@
 	0 SDLcls
 	
 	$666699 SDLColor
-	50 60 bat 'loadfile "[ TILES ]" tbtn
-	
+|	50 60 bat 'loadfile "[ TILES ]" tbtn
 	
 	$ffffff bcolor 
 	140 40 bat "TILEMAP:" bprint  
-	220 40 bat 'filemap bprint
+	
+|	220 40 bat 'filemap bprint
+	220 40 bat 'filemap 64 input
+	
 	140 60 bat "TILESET:" bprint  
-	220 60 bat 'filetile bprint
+|	220 60 bat 'filetile bprint
+	220 60 bat 'filetile 64 input
 	
 	140 80 bat "Width:" bprint 
 	210 80 bat 'mapw inputint
 	140 100 bat "Height:" bprint 
 	210 100 bat 'maph inputint
 	
-	50 200 bat 'actualiza "[ RELOAD ]" tbtn
-		SDLredraw
+	50 200 bat 'actualiza "[ SAVE ]" tbtn
+	
+	SDLredraw
 	
 	SDLkey 
 	>esc< =? ( exit )
@@ -341,7 +346,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	| SDLfull	
-	32 32 "r3\j2022\mapeditor32.png" loadts 'sprgui !	
+	32 32 "r3\editor\mapeditor32.png" loadts 'sprgui !	
 	
 	'filemap "mem/mapedit.mem" load drop
 	loadmap

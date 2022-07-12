@@ -14,11 +14,12 @@
 #vxp #vyp			| velocidad
 #axp #ayp			| aceleracion
 
+#cohete
 #nspr 1
 
 :disparo
 	>a
-	6 sprplayer 
+	8 sprplayer 
 	a@+ int. a@+ int. tsdraw
 	a@ a> 16 - +!
 	| limites 
@@ -38,12 +39,16 @@
 	veldisp a!
 	;
 	
+:fuego	
+	2 msec 4 >> $3 and + sprplayer xp int. yp int. 10 + tsdraw
+	;
+	
 :jetpack
 	
 	10 10 bat 
 	ayp axp vyp vxp "%f %f %f %f" sprint bprint	
 
-	|cohete 1? ( fuego ) drop 
+	cohete 1? ( fuego ) drop 
 	nspr sprplayer xp int. yp int. tsdraw
 
 	xp vxp axp +
@@ -66,9 +71,9 @@
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<up> =? ( -0.2 'ayp ! 1 'nspr ! )	>up< =? ( 0 'ayp ! )	
-	<le> =? ( -0.2 'axp ! 3 'nspr ! ) >le< =? ( 0 'axp ! )	
-	<ri> =? ( 0.2 'axp ! ) >ri< =? ( 0 'axp ! )
+	<up> =? ( -0.2 'ayp ! 1 'cohete ! )	>up< =? ( 0 'ayp ! 0 'cohete ! )	
+	<le> =? ( -0.2 'axp ! 0 'nspr ! ) >le< =? ( 0 'axp ! )	
+	<ri> =? ( 0.2 'axp ! 1 'nspr ! ) >ri< =? ( 0 'axp ! )
 	<esp> =? ( xp yp +disparo )
 	drop 
 	;

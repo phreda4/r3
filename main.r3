@@ -226,8 +226,6 @@
 
 |--------------------------------
 :editfile
-	actual -? ( drop ; )
-	getinfo $3 and 2 <>? ( drop ; ) drop
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
 	
@@ -243,8 +241,28 @@
 	sys
 	;
 
-|--------------------------------
+:editmap
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/mapedit.mem" save
 
+|WIN| "r3 r3/editor/map-edit.r3"
+|LIN| "./r3lin r3/editor/map-edit.r3"
+|RPI| "./r3rpi r3/editor/map-edit.r3"
+|MAC| "./r3mac r3/editor/map-edit.r3"
+	sys
+	;
+	
+:f2edit
+	actual -? ( drop ; )
+	getinfo $3 and 2 <>? ( drop ; ) drop
+	actual getname 
+	".r3" =pos 1? ( 2drop editfile ; ) drop
+	".map" =pos 1? ( 2drop editmap ; ) drop
+	| ".png"
+	drop
+	;
+	
+|--------------------------------
 :remaddtxt | --
 	'name ".r3" =pos 1? ( drop ; ) drop
 	".r3" swap strcat
@@ -417,7 +435,7 @@
 	$4f =? ( fend screen )
 	
 	$3b =? ( fenter screen )
-	$3c =? ( editfile screen )
+	$3c =? ( f2edit screen ) |editfile screen )
 	$3d =? ( newfile screen )
 	|$3e =? ( newfolder screen ) | f4 - new folder
 	drop 
