@@ -263,11 +263,6 @@
 	;
 	
 |--------------------------------
-:remaddtxt | --
-	'name ".r3" =pos 1? ( drop ; ) drop
-	".r3" swap strcat
-	;
-
 |===================================
 #newprg1 "| r3 sdl program
 ^r3/win/sdl2gfx.r3
@@ -289,10 +284,38 @@
 	
 : main ;"
 |===================================
+:createmap
+	'path "%s/%s" sprint 'name strcpy
+	mark
+	0 ,q
+	10 , 10 ,
+	100 ( 1? 1 - 0 ,c ) drop
+	0 ,c
+	'name savemem
+	empty	
 
+	'name 1024 "mem/mapedit.mem" save
+	'name 1024 "mem/menu.mem" save
+
+|WIN| "r3 r3/editor/map-edit.r3"
+|LIN| "./r3lin r3/editor/map-edit.r3"
+|RPI| "./r3rpi r3/editor/map-edit.r3"
+|MAC| "./r3mac r3/editor/map-edit.r3"
+	sys
+
+	rebuild
+	loadm
+	;
+
+	
 :createfile
-	remaddtxt
-	'name 'path "%s/%s" sprint 'name strcpy
+	'name 
+	".map" =pos 1? ( drop createmap ; ) drop
+	".r3" =pos 0? ( ".r3" pick2 strcat ) drop
+
+|	remaddtxt
+	|'name 
+	'path "%s/%s" sprint 'name strcpy
 
 	mark
 	'newprg1 ,s
@@ -302,11 +325,6 @@
 	'name 1024 "mem/main.mem" save
 	'name 1024 "mem/menu.mem" save
 
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
-	
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"

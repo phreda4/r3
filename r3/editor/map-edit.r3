@@ -45,22 +45,26 @@
 
 |--------------------------------
 :recalc
-	sw 40 - tilew / 'scrw !
-	sh 40 - tileh / 'scrh !
+	sw 40 - tilew / 1 + 'scrw !
+	sh 40 - tileh / 1 + 'scrh !
 
 	mapw scrw - 1 + 'scrmw	!
 	maph scrh - 1 + 'scrmh	!
 	;
 
+:mapmemmory
+	mapamem 
+	0? ( maph ( 1? mapw ( 1?  0 ,c 1 - ) drop 1 - ) drop ; ) 
+	24 + >a
+	maph ( 1? mapw ( 1?	ca@+ ,c 1 - ) drop 1 - ) drop
+	;
+	
 :savemap | --
 	mark
 	0 ,q 			| "tilemap" ,s 0 ,c | 8 bytes
 	mapw , maph ,
 	tilew , tileh ,
-	mapamem 24 + >a
-	maph ( 1? mapw ( 1? 
-		ca@+ ,c
-		1 - ) drop 1 - ) drop
+	mapmemmory
 	'filetile ,s 0 ,c
 	'filemap savemem
 	empty
@@ -75,7 +79,7 @@
 	d@+ 'mapw ! d@+ 'maph !
 	d@+ 'tilew ! d@+ 'tileh !
 	mapw maph * + 'filetile strcpy
-	
+	'filetile c@ 0? ( 'mapamem ! ; ) drop 
 	tilew tileh 'filetile loadts 'tilemem !	
 	
 	here 'filemap load drop
@@ -120,6 +124,11 @@
 	210 80 bat 'mapw inputint
 	140 100 bat "Height:" bprint 
 	210 100 bat 'maph inputint
+
+	140 120 bat "tileW:" bprint
+	210 120 bat 'tilew inputint
+	140 140 bat "tileH:" bprint 
+	210 140 bat 'tileh inputint
 	
 	50 200 bat 'actualiza "[ SAVE ]" tbtn
 	
@@ -192,6 +201,7 @@
 	;
 
 :paldraw
+	mapamem 0? ( drop ; ) drop
 	0 0 40 40 guiBox
 	SDLb SDLx SDLy guiIn
 	'selectile onClick
@@ -302,7 +312,8 @@
 	
 :mapinscreen
 	scrw scrh mapx mapy 40 40  	
-	mapamem tiledraw	
+	mapamem 0? ( 4drop 3drop ; )
+	tiledraw	
 	
 	mgrid 1? ( grid ) drop
 

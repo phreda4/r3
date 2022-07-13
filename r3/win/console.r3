@@ -147,7 +147,7 @@
 	sprint
 	( c@+ 1? emite ) 2drop ;
 
-#console-mode
+|#console-mode
 
 :
 	AllocConsole 
@@ -155,14 +155,12 @@
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
 	
-|	stdin 'console-mode GetConsoleMode drop	
-|	console-mode 'c1 !
+|	stdin 'console-mode GetConsoleMode drop		
 |	stdin console-mode $1a neg and SetConsoleMode drop | 1a! ENABLE LINE
 |	stdout 'console-mode GetConsoleMode drop	
-|	console-mode 'c2 !
 |	stdout console-mode $4 or SetConsoleMode drop	
 
-	stdin $1e4 SetConsoleMode drop 
+	stdin $1f7 SetConsoleMode drop 
 	stdout $7 SetConsoleMode drop	
 ;
 	
