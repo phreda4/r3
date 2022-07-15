@@ -9,15 +9,16 @@
 
 #mapajuego
 #sprplayer
+#sprperro
 
 #fx 0 0
 
 #xp 30.0 
-#yp 30.0
+#yp 230.0
 #zp 0
 #vzp 0
 
-#np 0
+#np 3
 
 |--------------------------------
 :humo
@@ -42,7 +43,17 @@
 	0 'ev !
 	|xp yp zp - +humo
 	;
+
+|--------------------------------
+#xpe 800
+#ype 400
+
+:perro
+	msec 7 >> 3 mod abs sprperro xpe ype tsdraw
+	-2 'xpe +!
 	
+	xpe -96 <? ( 800 'xpe ! ) drop
+	;
 |--------------------------------
 
 #sanim ( 0 1 0 2 )
@@ -51,7 +62,7 @@
 	msec 7 >> $3 and 'sanim + c@ ;
 	
 :pstay
-	0 'np !
+	3 panim + 'np !
 	;
 :prunl
 	estela	
@@ -108,14 +119,17 @@
 	drop 
 	;
 	
-:jugando
-	0 SDLcls
-
-	24 18 0 0 0 0 mapajuego tiledraw
+#xmapa 0
 	
+:jugando
+	$039be5 SDLcls
+
+	24 18 0 0 xmapa 0 256 dup mapajuego tiledraws
+	-1 'xmapa +!
 
 	'fx p.draw
 	player
+	perro
 	SDLredraw
 	
 	teclado ;
@@ -129,7 +143,7 @@
 	"r3\j2022\vial\mapa.map" loadtilemap 'mapajuego !
 	
 	128 128 "r3\j2022\vial\Robot.png" loadts 'sprplayer !
-
+	96 96 "r3\j2022\vial\perro.png" loadts 'sprperro !
 	'jugando SDLshow
 	SDLquit ;	
 	
