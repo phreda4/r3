@@ -3,6 +3,8 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 
+^r3/lib/rand.r3
+
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
@@ -45,25 +47,31 @@
 	;
 
 |--------------------------------
-#xpe 800
-#ype 400
-
-:perro
-	msec 7 >> 3 mod abs sprperro xpe ype tsdraw
-	-2 'xpe +!
-	
-	xpe -96 <? ( 800 'xpe ! ) drop
+:perro | a --
+	>a
+	a@ dup 0.1 + a!+ 
+	16 >> $3 and sprperro a@+ 
+	dup 1 - -96 <? ( 4drop 0 ; ) a> 8 - !
+	a@+ tsdraw
 	;
+	
+:+perro | x y --
+	'perro 'fx p!+ >a
+	0 a!+
+	swap a!+ a!
+	
+	3 'fx p.sort
+	;
+	
 |--------------------------------
-
 #sanim ( 0 1 0 2 )
 
 :panim | -- nanim	
 	msec 7 >> $3 and 'sanim + c@ ;
 	
 :pstay
-	3 panim + 'np !
-	;
+	3 panim + 'np ! ;
+	
 :prunl
 	estela	
 	0 panim + 'np !
@@ -92,8 +100,9 @@
 	
 #ep 'pstay
 
-
-:player	
+:jugador
+	>a 0
+	
 |	12 sprplayer xp int. 2 + yp int. 2 + tsdraw	| sombra
 	np sprplayer xp int. yp zp - int. tsdraw
 	ep ex
@@ -104,6 +113,28 @@
 	-0.1 'vzp +!
 	;
 	
+:+jugador
+	'jugador 'fx p!+ >a
+	8 a+
+	xp int. a!+
+	yp int. 32 + a!+
+	3 'fx p.sort
+	;
+		
+|--------------------------------
+:coso
+	>a
+	8 a+
+	0 sprperro a@+ a@+ tsdraw
+	;
+	
+:+coso
+	'coso 'fx p!+ >a			
+	0 a!+
+	400 a!+
+	300 a!+
+	;
+|--------------------------------
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
@@ -116,20 +147,24 @@
 	>le< =? ( 'pstay 'ep ! )
 	>ri< =? ( 'pstay 'ep ! )
 	<esp> =? ( saltar )
+	<f1> =? ( 800 400 randmax 180 + +perro ) 
 	drop 
 	;
-	
+
 #xmapa 0
+#xfmapa 0
 	
 :jugando
 	$039be5 SDLcls
 
-	24 18 0 0 xmapa 0 256 dup mapajuego tiledraws
-	-1 'xmapa +!
-
-	'fx p.draw
-	player
-	perro
+	5 3 xfmapa 0 xmapa 0 256 dup mapajuego tiledraws
+	xmapa 1 -
+	-255 <? ( 0 nip 1 'xfmapa +! ) 
+	'xmapa ! 
+	
+	+jugador
+	'fx p.drawo
+	
 	SDLredraw
 	
 	teclado ;
@@ -144,6 +179,7 @@
 	
 	128 128 "r3\j2022\vial\Robot.png" loadts 'sprplayer !
 	96 96 "r3\j2022\vial\perro.png" loadts 'sprperro !
+|	+coso
 	'jugando SDLshow
 	SDLquit ;	
 	

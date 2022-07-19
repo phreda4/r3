@@ -12,8 +12,10 @@
 
 #fx 0 0
 
-#xp 30.0 #yp 30.0
-#vxp #vyp
+#xvp #yvp	| viewport
+
+#xp 30.0 #yp 30.0	| pos player
+#vxp 0 #vyp 0		| vel player
 
 #np 0
 
@@ -43,9 +45,16 @@
 	0 'ev !
 	xp yp +humo
 	;
-	
+
+:viewport
+	xp int. sw 1 >> - 'xvp !
+	yp int. sh 1 >> - 'yvp !
+	;
+		
 |--------------------------------
 :[map]@ | x y -- adr
+	swap xvp - 
+	swap yvp - 
 	scr2tile c@ ;
 	
 :roof? | -- techo?
@@ -69,12 +78,14 @@
 :pstay
 	|0 'np !
 	;
+	
 :prunl
 |	estela	
 	4 wall? 1? ( drop ; ) drop
 	22 panim + 'np !
 	-2.0 'xp +!
 	;
+	
 :prunr
 |	estela	
 	52 wall? 1? ( drop ; ) drop
@@ -107,11 +118,17 @@
 	;
 	
 :player	
-	np sprj xp int. yp int. 6 + 64 64 tsdraws
+	np sprj 
+	xp int. xvp -
+	yp int. 6 + yvp -
+	64 64 tsdraws
 	ep ex
 	pisoysalto
+	
 	vyp 'yp +!
 	vxp 'xp +!
+	
+	viewport
 	;
 	
 :teclado
@@ -127,11 +144,18 @@
 :jugando
 	$666666 SDLcls
 
-	24 18 0 0 0 0 32 32
+	viewport
+	
+	26 20
+	xvp 5 >> yvp 5 >>
+	xvp $1f and neg 
+	yvp $1f and neg
+	32 32
 	mapajuego tiledraws
 	
 	'fx p.draw
 	player
+	
 	SDLredraw
 	
 	teclado ;

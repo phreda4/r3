@@ -27,6 +27,7 @@
 	dup >r @
 	128 r> +! ;
 
+|---- borra desordenado (mas rapido)
 :delp | list end now -- list end- now-
 	nip over @ | recalc end!!
 	128 - 2dup 16 move
@@ -38,6 +39,20 @@
 	( over <?
 		dup @+ ex 0? ( drop delp )
 		128 + ) 3drop ;
+
+|---- borra ordenado!!
+:delpo | list end now --
+	dup dup 128 +
+	pick3 over - 3 >> move
+	swap 128 - dup pick3 !
+	swap 128 - ;
+
+::p.drawo | list --
+	dup @+ swap @
+	( over <?
+		dup @+ ex 0? ( drop delpo )
+		128 + ) 3drop ;
+		
 
 ::p.del | adr list --
 	>r r@ @ 128 - 16 move -128 r> +! ; | not mix
@@ -59,7 +74,6 @@
 		pick2 ex 0? ( drop dup delp )
 		128 + ) 3drop ;
 
-
 ::p.map2 | 'vec 'list ---
 	@+ swap @
 	( over <?
@@ -67,3 +81,32 @@
 			pick3 ex
 			128 + ) drop
 		128 + ) 3drop ;
+		
+|------- sort by column (only last sort
+:up | adr -- adr ; swap 64 -
+	dup dup 128 - >a | p1 r:p2
+	8 ( 1? 1 - swap
+		a@ over @ a!+ swap !+
+		swap )
+	2drop ;
+
+::p.sort | col 'list --
+	@+ swap @ swap 128 - | first last
+	( over >?
+		dup 128 -
+		pick3 3 << + @
+		over pick4 3 << + @
+		<? ( 4drop ; ) drop
+		up
+		128 - ) 3drop ;
+
+::p.isort | col 'list --
+	@+ swap @ swap 128 - | first last
+	( over >?
+		dup 128 -
+		pick3 3 << + @
+		over pick4 3 << + @
+		>? ( 4drop ; ) drop
+		up
+		128 - ) 3drop ;
+		
