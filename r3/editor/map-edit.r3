@@ -122,7 +122,7 @@
 	gui
 	0 SDLcls
 	
-	mapw maph
+	newmapw newmaph
 	0 0 
 	200 80 
 	2 2	mapamem tiledraws
@@ -141,9 +141,9 @@
 	120 60 bat 'filetile 64 input
 	
 	40 80 bat "Width:" bprint 
-	110 80 bat 'mapw inputint
+	110 80 bat 'newmapw inputint
 	40 100 bat "Height:" bprint 
-	110 100 bat 'maph inputint
+	110 100 bat 'newmaph inputint
 
 	40 120 bat "tileW:" bprint
 	110 120 bat 'tilew inputint

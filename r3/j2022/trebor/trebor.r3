@@ -153,7 +153,7 @@
 	
 |---- con reemplazo	
 :vectortile | tile x y --
-	rot 0? ( 3drop ; ) mapt
+|	rot 0? ( 3drop ; ) mapt
 	2swap 32 32 tsdraws ;
 	
 :drawmapa
@@ -162,8 +162,8 @@
 	xvp $1f and neg 
 	yvp $1f and neg
 	32 32
-	mapajuego 'vectortile 
-	tiledrawvs ;
+	mapajuego |'vectortile 
+	tiledraws ;
 	
 	
 :jugando
