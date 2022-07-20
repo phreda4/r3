@@ -107,6 +107,30 @@
 	drop
 	;
 
+::tiledrawv | w h x y sx sy 'amap 'vec --
+	>r
+	@+ 'mapt !
+	d@+ 'mapw ! d@+ 'maph !
+	d@+ 'tilew ! d@+ 'tileh !
+	'mapm ! 
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@ | y x tile
+			
+			over tilew * xm + ym	| yx tile x y 
+			
+			r@ ex 					| y x
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	r> 2drop
+	;
+
 ::drawtile | y x tile -- y x 
 	0? ( drop ; ) mapt
 	pick2 tilew * xm + ym
@@ -132,6 +156,28 @@
 	tileh * 'ym +!
 	drop
 	;
+	
+::tiledrawvs | w h x y sx sy sw sh 'amap 'v --
+	>r
+	@+ 'mapt !
+	d@+ 'mapw ! d@+ 'maph !
+	8 + 'mapm ! 
+	'tileh ! 'tilew !
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@
+			over tilew * xm + ym	| yx tile x y 
+			r@ ex
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	r> 2drop
+	;	
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 	ym - tilew / mapy +

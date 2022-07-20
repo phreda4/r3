@@ -52,12 +52,24 @@
 	maph scrh - 1 + 'scrmh	!
 	;
 
+#newmapw
+#newmaph
+
+:mapzero
+	maph ( 1? mapw ( 1?  
+		0 ,c 1 - ) drop 1 - ) drop ;
+	
 :mapmemmory
 	mapamem 
-	0? ( maph ( 1? mapw ( 1?  0 ,c 1 - ) drop 1 - ) drop ; ) 
-	24 + >a
-	maph ( 1? mapw ( 1?	ca@+ ,c 1 - ) drop 1 - ) drop
-	;
+	0? ( drop mapzero ; ) 
+	24 + >b
+	maph ( 1? 
+		b> >a
+		mapw ( 1?	
+			ca@+ ,c 
+			1 - ) drop 
+		newmapw b+	
+		1 - ) drop ;
 	
 :savemap | --
 	mark
@@ -97,8 +109,11 @@
 	;
 
 |--------------------------------
+
 :actualiza
 	'filemap count "mem/mapedit.mem" save 
+	maph newmaph 'maph ! 'newmaph !
+	mapw newmapw 'mapw ! 'newmapw !
 	savemap
 	exit
 	;
@@ -107,28 +122,33 @@
 	gui
 	0 SDLcls
 	
+	mapw maph
+	0 0 
+	200 80 
+	2 2	mapamem tiledraws
+	
 	$666699 SDLColor
 |	50 60 bat 'loadfile "[ TILES ]" tbtn
 	
 	$ffffff bcolor 
-	140 40 bat "TILEMAP:" bprint  
+	40 40 bat "TILEMAP:" bprint  
 	
-|	220 40 bat 'filemap bprint
-	220 40 bat 'filemap 64 input
+|	120 40 bat 'filemap bprint
+	120 40 bat 'filemap 64 input
 	
-	140 60 bat "TILESET:" bprint  
-|	220 60 bat 'filetile bprint
-	220 60 bat 'filetile 64 input
+	40 60 bat "TILESET:" bprint  
+|	120 60 bat 'filetile bprint
+	120 60 bat 'filetile 64 input
 	
-	140 80 bat "Width:" bprint 
-	210 80 bat 'mapw inputint
-	140 100 bat "Height:" bprint 
-	210 100 bat 'maph inputint
+	40 80 bat "Width:" bprint 
+	110 80 bat 'mapw inputint
+	40 100 bat "Height:" bprint 
+	110 100 bat 'maph inputint
 
-	140 120 bat "tileW:" bprint
-	210 120 bat 'tilew inputint
-	140 140 bat "tileH:" bprint 
-	210 140 bat 'tileh inputint
+	40 120 bat "tileW:" bprint
+	110 120 bat 'tilew inputint
+	40 140 bat "tileH:" bprint 
+	110 140 bat 'tileh inputint
 	
 	50 200 bat 'actualiza "[ SAVE ]" tbtn
 	
@@ -140,44 +160,46 @@
 	;
 	
 :configuracion
+	mapw 'newmapw !
+	maph 'newmaph !
 	'config SDLshow
 	;
 		
 |--------------------------------
 #ntilepage 0
+#ntilew 8
+#ntileh 8
 
 :xy2pal | -- x y 
-	sdlx 40 - tilew 8 + / tilew 8 + * 40 +
-	sdly 40 - tileh 8 + / tileh 8 + * 40 + ;
+	sdlx 40 - tilew / ntilew 1 - clamp0max tilew * 40 +
+	sdly 40 - tileh / ntileh 1 - clamp0max tileh * 40 + ;
+	
+:blink
+	msec $80 and 1? ( $ffffff nip ; )
+	0 nip ;
 	
 :inpal
-	$403DFF SDLColor
-	xy2pal tilew 8 + tileh 8 + SDLFRect ;	
+	blink SDLColor
+	xy2pal tilew tileh SDLRect ;	
 	
-:clpal
-	sdlx 40 - tilew 8 + / 
-	sdly 40 - tileh 8 + / 
-	sw 40 - tilew 8 + /
-	*
-	+ 
-	'tilenow !
-	exit
+:xy2tile
+	sdlx 40 - tilew / ntilew 1 - clamp0max
+	sdly 40 - tileh / ntileh 1 - clamp0max
+	ntilew * +
 	;
+:clpal
+	xy2tile 'tilenow ! exit ;
 	
 :pagetile
 	40 40 sw sh guiBox
 	SDLb SDLx SDLy guiIn
 	
+	40 40 tilemem @ sdlimage
+	
 	'inpal guiI
 	'clpal onClick
 
-	ntilepage
-	44 ( sh <? 
-		44 ( sw <? 
-			pick2 tilemem 2over swap tsdraw
-			rot 1 + rot rot
-			tilew 8 + + ) drop
-		tileh 8 + + ) 2drop
+	paleta tilemem 4 4 32 32 tsdraws
 	;
 
 :stileset
@@ -187,7 +209,8 @@
 	$ffffff bcolor 
 	44 4 bat 'filetile "TILESET [ %s ]" sprint bprint
 	44 20 bat tileh tilew "tilew:%d tilew:%d" sprint bprint
-	
+	200 20 bat xy2tile "tile:%d " sprint bprint 
+
 	pagetile
 	
 	SDLredraw
@@ -196,6 +219,9 @@
 	drop ;
 
 :selectile
+	tilemem @ 0 0 'ntilew 'ntileh SDL_QueryTexture
+	ntilew tilew / 'ntilew !
+	ntileh tileh / 'ntileh !
 	'stileset SDLshow
 	tilenow palins!
 	;
@@ -225,7 +251,7 @@
 	44 4 bat "FULLMAP" bprint
 	44 20 bat maph mapw "maxx:%d maxy:%d" sprint bprint
 	
-	sw sh 0 0 0 40 2 2	mapamem tiledraws	
+	mapw maph 0 0 0 40 2 2	mapamem tiledraws	
 	
 	SDLredraw
 	SDLkey 
@@ -337,16 +363,26 @@
 	drop 
 	;
 	
+:upbar
+	$ffffff bcolor 
+	44 4 bat 
+	'filemap "MAPEDIT [ %s ]" sprint bprint
+	44 20 bat 
+	maph mapw mapy mapx "(%d,%d) [%d:%d]" sprint bprint
+	200 20 bat 
+	sdly 40 - tileh / mapy +
+	sdlx 40 - tilew / mapx +
+	tilenow
+	"%d (%d,%d) " sprint bprint 
+	toolbar
+	;
+	
 :editing
 	gui
 	0 SDLcls
 
-	$ffffff bcolor 
-	44 4 bat 'filemap "MAPEDIT [ %s ]" sprint bprint
-	44 20 bat maph mapw mapy mapx "(%d,%d) [%d:%d]" sprint bprint
-	
+	upbar
 	mapinscreen
-	toolbar
 	paldraw
 
 	SDLredraw

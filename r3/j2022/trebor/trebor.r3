@@ -140,19 +140,37 @@
 	>ri< =? ( 'pstay 'ep ! )
 	drop 
 	;
-	
-:jugando
-	$666666 SDLcls
 
-	viewport
-	
+|---- sin reemplazo	
+:drawmapa
 	26 20
 	xvp 5 >> yvp 5 >>
 	xvp $1f and neg 
 	yvp $1f and neg
 	32 32
-	mapajuego tiledraws
+	mapajuego tiledraws ;
 	
+	
+|---- con reemplazo	
+:vectortile | tile x y --
+	rot 0? ( 3drop ; ) mapt
+	2swap 32 32 tsdraws ;
+	
+:drawmapa
+	26 20
+	xvp 5 >> yvp 5 >>
+	xvp $1f and neg 
+	yvp $1f and neg
+	32 32
+	mapajuego 'vectortile 
+	tiledrawvs ;
+	
+	
+:jugando
+	$666666 SDLcls
+
+	viewport
+	drawmapa	
 	'fx p.draw
 	player
 	
