@@ -316,7 +316,9 @@
 	onDnMove ;
 	
 :msele
-	[ ; ] [ ; ] onDnMove ;
+	[ sdlx sdly scr2view 'oy ! 'ox ! ; ] 
+	[ ; ] 
+	[ ; ] onDnMoveUp ;
 	
 	
 :mfill

@@ -177,14 +177,16 @@
 	r> 2drop
 	;	
 		
-::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
+::scr2view | xs ys -- xv yv
 	ym - tilew / mapy +
 	maph 1 - clamp0max 
 	swap
 	xm - tileh / mapx +
 	mapw 1 - clamp0max 
-	swap
-	map> ;
+	swap ;
+		
+::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
+	scr2view map> ;
 	
 ::loadtilemap | "" -- amap
 	here dup rot load 'here !
