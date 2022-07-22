@@ -12,6 +12,7 @@
 #sys-ReadConsoleInput
 #sys-WriteConsole
 #sys-FlushConsoleInputBuffer
+#sys-GetNumberOfConsoleInputEvents
 
 #sys-Sleep
 #sys-WaitForSingleObject 
@@ -51,6 +52,7 @@
 ::PeekConsoleInput sys-PeekConsoleInput sys4 drop ;
 ::ReadConsoleInput sys-ReadConsoleInput sys4 drop ;
 ::WriteConsole sys-WriteConsole sys5 drop ;
+::GetNumberOfConsoleInputEvents sys-GetNumberOfConsoleInputEvents sys2 drop ;
 
 ::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 ;
 ::Sleep sys-Sleep sys1 drop ;
@@ -95,6 +97,7 @@
 	dup "PeekConsoleInputW" getproc 'sys-PeekConsoleInput !
 	dup "ReadConsoleInputW" getproc 'sys-ReadConsoleInput !
 	dup "WriteConsole" getproc 'sys-WriteConsole !
+	dup "GetNumberOfConsoleInputEvents" getproc 'sys-GetNumberOfConsoleInputEvents !
 	
 	dup "FlushConsoleInputBuffer" getproc 'sys-FlushConsoleInputBuffer !
 	dup "Sleep" getproc 'sys-Sleep !

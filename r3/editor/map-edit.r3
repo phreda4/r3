@@ -372,8 +372,10 @@
 	200 20 bat 
 	sdly 40 - tileh / mapy +
 	sdlx 40 - tilew / mapx +
+	
+	sdlx sdly scr2tile 1? ( c@ $ff and )
 	tilenow
-	"%d (%d,%d) " sprint bprint 
+	"%d > [%d] (%d,%d)" sprint bprint 
 	toolbar
 	;
 	
@@ -381,8 +383,8 @@
 	gui
 	0 SDLcls
 
-	upbar
 	mapinscreen
+	upbar
 	paldraw
 
 	SDLredraw

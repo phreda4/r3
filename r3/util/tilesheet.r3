@@ -118,10 +118,8 @@
 	0 ( over <? 
 		0 ( pick3 <?
 			mapx over + mapy [map]@ | y x tile
-			
-			over tilew * xm + ym	| yx tile x y 
-			
-			r@ ex 					| y x
+			r@ ex 					| tile->tile
+			mapt pick2 tilew * xm + ym tsdraw
 			1 + ) drop
 		tileh 'ym +!
 		1 'mapy +!
@@ -168,8 +166,8 @@
 	0 ( over <? 
 		0 ( pick3 <?
 			mapx over + mapy [map]@
-			over tilew * xm + ym	| yx tile x y 
-			r@ ex
+			r@ ex	| tile->tile
+			mapt pick2 tilew * xm + ym tilew tileh tsdraws
 			1 + ) drop
 		tileh 'ym +!
 		1 'mapy +!
