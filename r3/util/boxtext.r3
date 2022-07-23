@@ -7,6 +7,12 @@
 
 #boxt 0 0 
 
+::xywh64 | x y w h -- 64b
+	$ffff and swap
+	$ffff and 16 << or swap
+	$ffff and 32 << or swap
+	$ffff and 48 << or ;
+	
 ::64box | b adr --
 	swap
 	dup 48 >> rot d!+

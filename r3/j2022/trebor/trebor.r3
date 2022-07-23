@@ -63,7 +63,7 @@
 	[map]@ ;
 
 :floor? | -- piso?
-	xp int. 16 + yp int. 64 + [map]@ 
+	xp int. 16 + yp int. 64 + [map]@
 	xp int. 40 + yp int. 64 + [map]@ or	
 	;
 

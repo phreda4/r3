@@ -71,8 +71,6 @@ Hamburguesas proteicas
 	swap dup 16 << 48 >> rot d!+
 	swap dup 32 << 48 >> rot d!+
 	swap 48 << 48 >> swap d! ;	
-	
-
 
 :textl
 	'boxt d@+ 'x ! d@+ 'y +! drop 
