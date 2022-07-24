@@ -315,10 +315,32 @@
 	[ ox sdlx - tilew / mx + mapx! oy sdly - tileh / my + mapy! ; ] 
 	onDnMove ;
 	
+:drawselect | --
+	blink SDLColor
+	sdlx sdly mx pick2 - my pick2 -  SDLRect
+	;
+	
+:sort1d | m1 m2 -- mm mM
+	over <? ( swap )
+	;
+	
+:writetile	|  --
+	tilenow sdlx sdly scr2tile c! ;
+	
+:fillmap | --
+	sdlx sdly scr2view | x y
+	oy sort1d 'oy ! 'my !
+	ox sort1d 'ox ! 'mx !
+	mx ( ox <=?  
+		my ( oy <=?
+			2dup [map] tilenow swap c!
+			1 + ) drop
+		1 + ) drop ;
+	
 :msele
-	[ sdlx sdly scr2view 'oy ! 'ox ! ; ] 
-	[ ; ] 
-	[ ; ] onDnMoveUp ;
+	[ sdlx sdly 2dup 'my ! 'mx ! scr2view 'oy ! 'ox ! ; ] 
+	[ drawselect ; ] 
+	[  fillmap ; ] guiMap ;
 	
 	
 :mfill

@@ -76,11 +76,14 @@
 
 :map> | x y -- a
 	mapw * + mapm + ;
-	
-:[map]@ | x y -- v
+
+::[map] | x y -- ad
 	mapw 1 - clamp0max swap
 	maph 1 - clamp0max swap
-	map> c@ ;
+	map> ;
+	
+:[map]@ | x y -- v
+	[map] c@ ;
 
 ::drawtile | y x tile -- y x 
 	0? ( drop ; ) mapt
