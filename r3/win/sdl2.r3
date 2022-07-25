@@ -235,6 +235,7 @@
 #cc
 	
 ::SDLGetPixel | x y -- v
+
 	swap 'rec d!+ d!
 	SDLrenderer 'rec $16362004 'cc 1 SDL_RenderReadPixels 
 	cc $ffffff and ;

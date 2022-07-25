@@ -200,6 +200,11 @@
 	over 24 + +!
 	;
 
+:seterrorfile
+	over 16 - @ "%w" sprint count "mem/main.mem" save
+	over 8 - @ 'src !
+	;
+	
 ::r3-stage-2 | -- err/0
 	cntdef allocdic
 	here dup 'code ! 'code> !
@@ -212,7 +217,7 @@
 |		dup @ "%w" .println
 		8 + @+
 		str2token
-		error 1? ( nip ; ) drop
+		error 1? ( seterrorfile nip ; ) drop
 		inc> <? ( dicc> 'dicc< ! ) | main source code mark
 		) drop
 	callen

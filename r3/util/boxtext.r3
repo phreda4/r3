@@ -45,6 +45,12 @@
 :bbfill
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
+::textline | str x y color font --
+	'font ! 'ink !
+	swap 'bbtext d!+ d!+
+	font pick2 rot dup 4 + TTF_SizeUTF8 drop
+	bbtextb ;
+	
 #lastsp
 
 :inwbox | c -- c
@@ -159,7 +165,6 @@
 		) drop ;
 
 ::textboxs | $vh str box color font --
-
 	'font ! 'ink !
 	'boxt 64box
 	splitlines	
