@@ -46,6 +46,62 @@
 	xp yp +humo
 	;
 
+
+|--------------------------------
+#timeene
+
+#enemilist
+1.1 [ 2 3 20 3 ] [ 4 7 ]
+
+:procene
+	>a
+	a@+ msec 10 *>> |escala
+	$1ffff and
+	$10000 and? ( $1ffff xor )
+	;
+
+|--------------------------------
+#enelist 
+0.9 [ 2 20 3 3 ] 
+0.4 [ 10 10 5 10 ]
+0
+
+
+:vlerp | vel xi xf -- xn
+	over - pick2 msec 10 *>> $1ffff and $10000 and? ( $1ffff xor )
+	*. + ;
+
+:getxyene	| vel -- x y
+	da@+ 32 * xvp - | 32 tile map size - viewport
+	da@+ 32 * xvp - | vel x1 x2
+	vlerp 	| vel x
+	swap
+	da@+ 32 * yvp - 
+	da@+ 32 * yvp - | vel y1 y2
+	vlerp
+	nip 	| x y
+	;
+	
+:drawene	
+	7 spre
+	2swap
+	64 64 tsdraws ;
+
+:hitplayer | x y -- x y
+|	over xp - over yp - distfast
+|	32 <? ( 1 'modo ! )
+|	drop
+	;	
+	
+:enemigos
+	'enelist >a ( a@+ 1? 
+		getxyene
+		hitplayer
+		drawene
+		) drop
+	;
+	
+|--------------------------------
 :viewport
 	xp int. sw 1 >> - 'xvp !
 	yp int. sh 1 >> - 'yvp !
@@ -98,6 +154,7 @@
 
 :pisoysalto
 	floor? 0? ( drop
+		|7 panim + 'np !
 		0.3 'vyp +!
 		10.0 clampmax
 		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
@@ -127,8 +184,6 @@
 	
 	vyp 'yp +!
 	vxp 'xp +!
-	
-	viewport
 	;
 	
 :teclado
@@ -174,6 +229,7 @@
 	viewport
 	drawmapa	
 	'fx p.draw
+	enemigos
 	player
 	
 	SDLredraw
