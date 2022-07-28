@@ -4,6 +4,7 @@
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
 
+|--------- main words
 :part- | dx dy part -- dx dy
 	dup c@ 1 nand? ( 2drop ; ) drop | lock
 	pick2 neg over 1 + d+!
@@ -44,9 +45,37 @@
 	over +
 	-8 a+ da!+ da!+	
 	;
+
+:upd-spring | 'slist ax*dt*dt ay*dt*dt 'plist --
+	>b 
+	( b@+ 1? >a updpart 
+		) 3drop
+	>a
+	( a@+ 1? updspring 
+		) drop ;
+
+:pxy! | x y 'p --
+	rot over 1 + d! 9 + d! ;
 	
+:pxy | 'p -- x y
+	1 + d@+ 16 >> swap 4 + d@ 16 >> ;
+
+:drawpoint | 'plist --
+	>b
+	( b@+ 1? 
+		4 dup rot pxy SDLFEllipse
+		) drop ;
+		
+:drawsprints
+	>a
+	( a@+ 1? 
+		pxy a@+ pxy SDLLine
+		8 a+
+		) drop 	;
+
+|-------------- demo pendulum	
 | particles
-#p1 ( 0 ) [ 64.0 64.0 10.0 10.0 ]
+#p1 ( 0 ) [ 400.0 400.0 100.0 100.0 ]
 #p2 ( 1 ) [ 10.0 10.0 15.0 15.0 ]
 #p3 ( 1 ) [ 10.0 10.0 60.0 60.0 ]
 
@@ -60,53 +89,112 @@
 #plist 
 'p1 'p2 'p3 0
 
-:update
-	0.0 0.04 	| ax*dt*dt ay*dt*dt
-	'plist >b
-	( b@+ 1? >a updpart 
-		) 3drop
-	'splist >a
-	( a@+ 1? updspring 
-		) drop 
-	;
-
-:pxy
-	1 + d@+ 16 >> swap 4 + d@ 16 >> ;
-	
-:drawpoint
-	'plist >b
-	( b@+ 1? 
-		4 dup rot pxy SDLFEllipse
-		) drop ;
-		
-:drawsprints
-	'splist >a
-	( a@+ 1? 
-		pxy a@+ pxy SDLLine
-		8 a+
-		) drop 	;
-		
-:draw
-	$0 SDLCls
-
-	$ffe451 SDLcolor
-	drawsprints
-	$00aefa SDLcolor
-	drawpoint
-	
-|	2 dup SDLX sdly SDLFEllipse
-
-	update
-	
+:key&mouse
 	SDLkey
 	>esc< =? ( exit )
 	drop
+
+	sdlb 0? ( drop ; ) drop
+	sdlx 16 << sdly 16 << 'p3 pxy!
+	;
 	
+:pendulum
+	$0 SDLCls
+
+	10 10 bat "pendulum demo" bprint
+	$ffe451 SDLcolor
+	'splist drawsprints
+	$00aefa SDLcolor
+	'plist drawpoint
+	
+	'splist 0.0 0.04 'plist upd-spring
+	
+	key&mouse
 	SDLredraw ;
+
+|-------------- demo cloth
+#points 
+#springs
+#listp
+
+:newpoint | x y --
+	1 ca!+ swap dup da!+ da!+ dup da!+ da!+ ;
+:getpointxy | x y -- p
+	10 * + 17 * points + ;
 	
+:inicloth
+	here dup 'points ! >a
+	0 ( 10 <?
+		0 ( 10 <?
+			over 30 * 150 + 16 <<
+			over 30 * 150 + 16 <<
+			newpoint
+			1 + ) drop
+		1 + ) drop
+	0 0 getpointxy 0 swap c!
+	0 9 getpointxy 0 swap c!
+		
+	a> 'listp !
+	here >b
+	0 ( 10 <?
+		0 ( 10 <?
+			b> a!+ 17 b+
+			1 + ) drop
+		1 + ) drop
+	0 a!+
+	a> 'springs !
+	0 ( 9 <?
+		0 ( 9 <?
+			over over getpointxy a!+
+			over 1 + over getpointxy a!+
+			30.0 da!+ 0.5 da!+
+			over over getpointxy a!+
+			over over 1 + getpointxy a!+
+			30.0 da!+ 0.5 da!+
+			1 + ) drop
+		dup 9 getpointxy a!+
+		dup 1 + 9 getpointxy a!+
+		30.0 da!+ 0.5 da!+
+		1 + ) drop
+	0 ( 9 <? 
+		9 over getpointxy a!+
+		9 over 1 + getpointxy a!+
+		30.0 da!+ 0.5 da!+
+		1 + ) drop 
+	0 a!+
+	;
+	
+:key&mouse
+	SDLkey
+	>esc< =? ( exit )
+	drop
+
+	sdlb 0? ( drop ; ) drop
+	sdlx 16 << sdly 16 << 
+	9 9 getpointxy pxy!
+	;
+	
+:cloth
+	$0 SDLCls
+
+	10 10 bat "cloth demo" bprint
+	$ffe451 SDLcolor
+	springs drawsprints
+	
+	springs |0.0 0.04 
+	msec 4 << sin 7 >> 0.04 
+	listp upd-spring
+	
+	key&mouse
+	SDLredraw ;
+
+|-----------------------------------------	
 : 
 	"r3sdl" 800 600 SDLinit
 	bfont1 
-	'draw SDLshow
+	'pendulum SDLshow
+	
+	inicloth
+	'cloth SDLshow
 	SDLquit ;	
 	
