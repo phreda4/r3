@@ -35,7 +35,28 @@
 
 ::waitesc
 	( getch $1B1001 <>? drop ) drop ;
+
+
+#ne
+#nr
+
+:evkey 
+	codekey 32 >> $1000 or irec 20 >> xor
+	'kb ! ;
+
+::inkey
+	0 'kb !
+	stdin 'ne GetNumberOfConsoleInputEvents
+	ne 0? ( ; )
+	( 1? 1 -
+		stdin 'irec 1 'nr ReadConsoleInput
+		irec $ff and
+		$1 =? ( evkey )
+		drop
+	) drop
+	kb ;
 	
+|-----------------------------------------------	
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
 
