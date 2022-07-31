@@ -117,16 +117,17 @@
 
 ::sqrt. | n -- v
 	1 <? ( drop 0 ; )
-	0 0 rot | root remhi remlo | 15 + bits/2+1
-	24 ( 1? 1 - >r
-		dup 30 >> $3 and	| ro rh rl rnh
+	0 0 rot | root remhi remlo | 31 + bits/2
+	39 ( 1? 1 - >r
+		dup 62 >> $3 and	| ro rh rl rnh
 		rot 2 << or			| ro rl rh
 		swap 2 << swap
 		rot 1 << dup 1 << 1 +		| rl rh ro td
 		sq | rl rh ro
 		swap rot r> )
     3drop ;
-
+	
+	
 | http://www.quinapalus.com/efunc.html
 
 :l1 over dup 1 >> + +? ( rot drop swap $67cd - ; ) drop ;

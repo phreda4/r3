@@ -1,4 +1,6 @@
-| r3 sdl program
+| TILEMAP + ENEMY + PLAYER
+| PHREDA 2022
+
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 
@@ -69,29 +71,29 @@
 #hitene
 #timeene
 
-| velocidad forma+tipo+ease x y x y n1 n2
-#listene [
-1.9 $0  2 20 3  3 6 10
-1.5 $1 10 10 5 10 6 10
-1.5 $2 12 12 5 10 6 10
-1.5 $3 14 14 5 10 6 10
-1.5 $4 16 16 5 10 6 10
-1.5 $101 18 18 5 10 6 10
-1.5 $102 20 20 5 10 6 10
-1.5 $103 22 22 5 10 6 10
-1.1 $104 24 24 5 10 6 10
-0 ]
-
+| velocidad pp+ease x1 x2 y1 y2 n1 n2
 | $1xx = pingpong $0xx = ping
 
-:tt | pp|ease vel -- pp|ease mul
+#listene [
+1.9 $100  2 20 3  3 6 10
+1.5 $1 10 10 5 15 6 10
+1.5 $2 12 12 5 15 6 10
+1.5 $3 14 14 5 15 6 10
+1.5 $4 16 16 5 15 6 10
+1.5 $101 18 18 5 15 6 10
+1.5 $102 20 20 5 15 6 10
+1.5 $103 22 22 5 15 6 10
+1.1 $104 24 24 5 15 6 10
+0 ]
+
+:pp | pp|ease vel -- pp|ease mul
 	over 
 	$100 nand? ( drop $ffff and ; ) drop
 	$1ffff and $10000 and? ( $1ffff xor )
 	;
 	
 :calctime | pp|ease vel -- mult
-	timeene 10 *>> tt swap $ff and ease ;
+	timeene 10 *>> pp swap $ff and ease ;
 	
 :calcxi | calc xi yi -- calc x
 	over - pick2 *. + ;
@@ -99,12 +101,12 @@
 :calcpos | v -- x y 
 	da@+ swap 
 	calctime 
-	da@+ 32 * | 32 tile map size
-	da@+ 32 * | vel x1 x2
+	da@+ 5 << |32 * | 32 tile map size
+	da@+ 5 << |32 * | vel x1 x2
 	calcxi 	| vel x
 	swap
-	da@+ 32 * 
-	da@+ 32 * | vel y1 y2
+	da@+ 5 << |32 * 
+	da@+ 5 << |32 * | vel y1 y2
 	calcxi nip 	| x y
 	;
 	
@@ -115,14 +117,21 @@
 	2swap 
 	yvp - swap
 	xvp - swap
-	64 64 tsdraws ;
+	tsdraw ;
+
+:hitplayer | x y -- x y
+	over xp 16 >> - 
+	over yp 16 >> - distfast
+	32 <? ( a> 'hitene ! )
+	drop
+	;	
 	
 :enemys | 
 	msec 'timeene !
 	0 'hitene !
 	'listene >a ( da@+ 1? 
 		calcpos
-|		hitplayer
+		hitplayer
 		drawene
 		) drop  ;
 	
@@ -216,6 +225,9 @@
 	
 	enemys
 	player
+	
+	2 2 bat 
+	hitene "%h" sprint bprint
 	
 	SDLredraw
 	teclado 

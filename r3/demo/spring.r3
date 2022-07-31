@@ -24,8 +24,13 @@
 	over dup *. over dup *. +
 	sqrt. 
 	dup da@+ - 			| p1 p2 dx dy d2 d2-len
-	swap /.						| p1 p2 dx dy d3
-	da@+ *.	2/.					| p1 p2 dx dy d3*stiff
+	
+|	swap 0? ( 1 + )
+|	/.						| p1 p2 dx dy d3
+|	da@+ *.	2/.				| p1 p2 dx dy d3*stiff
+
+	da@+ 2/. rot 0? ( 1 + ) */ 
+
 	rot over *.			| p1 p2 dy d3 dx*d3
 	rot rot *. 			| p1 p2 dx* dy*
 	rot part+
@@ -36,7 +41,7 @@
 | particula
 | (lock) [ x x1 y y1 ]
 :updpart | dt*dt*ax y -- ; a part
-	ca@+ 1 nand? ( drop ; ) drop | 16 a+
+	ca@+ 1 nand? ( drop 16 a+ ; ) drop | 16 a+
 	da@+ da@+			| x x1
 	neg over + pick3 +	| x nx
 	over +
@@ -148,19 +153,19 @@
 		0 ( 9 <?
 			over over getpointxy a!+
 			over 1 + over getpointxy a!+
-			30.0 da!+ 0.5 da!+
+			15.0 da!+ 0.5 da!+
 			over over getpointxy a!+
 			over over 1 + getpointxy a!+
-			30.0 da!+ 0.5 da!+
+			15.0 da!+ 0.5 da!+
 			1 + ) drop
 		dup 9 getpointxy a!+
 		dup 1 + 9 getpointxy a!+
-		30.0 da!+ 0.5 da!+
+		15.0 da!+ 0.5 da!+
 		1 + ) drop
 	0 ( 9 <? 
 		9 over getpointxy a!+
 		9 over 1 + getpointxy a!+
-		30.0 da!+ 0.5 da!+
+		15.0 da!+ 0.5 da!+
 		1 + ) drop 
 	0 a!+
 	;
@@ -189,6 +194,75 @@
 	key&mouse
 	SDLredraw ;
 
+|-------------- softboy
+:lim-point | 'plist --
+	>b
+	( b@+ 1? 
+		dup 1 + | x 
+		dup d@ sw 1 - 16 << clamp0max swap d!
+		9 +		| y
+		dup d@ sh 1 - 16 << clamp0max swap d!
+		) drop ;
+
+:getpointn | n -- a
+	17 * points + ;
+	
+:ppdist | p1 p2 -- dist
+	over 1 + d@ over 1 + d@ - dup *.
+	rot 9 + d@ rot 9 + d@ - dup *. +
+	sqrt.
+	;
+	
+:inisoftbody
+	here dup 'points ! >a
+	0 ( 5 <?
+		dup 1.0 5 */ sincos
+		100.0 *. 400.0 + swap 
+		100.0 *. 300.0 +
+		newpoint
+		1 + ) drop
+		
+	a> 'listp !
+	here >b
+	0 ( 5 <?
+		b> a!+ 17 b+
+		1 + ) drop
+	0 a!+
+	
+	a> 'springs !
+	0 ( 5 <?
+		dup ( 5 <? 
+			over getpointn a!+
+			dup getpointn a!+
+			over getpointn over getpointn ppdist 
+			da!+ 0.5 da!+
+			1 + ) drop
+		1 + ) drop
+	0 a!+
+	;
+	
+:key&mouse
+	SDLkey
+	>esc< =? ( exit )
+	drop
+	
+	sdlb 0? ( drop ; ) drop
+	sdlx 16 << sdly 16 << points pxy!	
+	;
+		
+:softbody
+	$0 SDLCls
+
+	10 10 bat "soft body" bprint
+	$ffe451 SDLcolor
+	springs drawsprints
+	
+	springs 0.0 0.04 listp upd-spring
+
+	listp lim-point
+	key&mouse
+	SDLredraw ;
+	
 |-----------------------------------------	
 : 
 	"r3sdl" 800 600 SDLinit
@@ -197,5 +271,9 @@
 	
 	inicloth
 	'cloth SDLshow
+
+	inisoftbody
+	'softbody SDLshow
+	
 	SDLquit ;	
 	
