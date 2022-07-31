@@ -22,7 +22,8 @@
 	over 1 + d@ over 1 + d@ -	| p1 p2 dx
 	pick2 9 + d@ pick2 9 + d@ - | p1 p2 dx dy
 	over dup *. over dup *. +
-	sqrt. dup da@+ - 			| p1 p2 dx dy d2 d2-len
+	sqrt. 
+	dup da@+ - 			| p1 p2 dx dy d2 d2-len
 	swap /.						| p1 p2 dx dy d3
 	da@+ *.	2/.					| p1 p2 dx dy d3*stiff
 	rot over *.			| p1 p2 dy d3 dx*d3

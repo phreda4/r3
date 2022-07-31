@@ -68,7 +68,7 @@ Bou_In Bou_Out Bou_InOut
 0
 
 ::ease | t nro -- t'
-	0? ( drop ; ) 2 << 'easet + @ ex ;
+	0? ( drop ; ) 3 << 'easet + @ ex ;
 
 ::catmullRom | p0 p1 p2 p3 t -- v
 	>r pick2 - 1 >> 	| p0 p1 p2 v1

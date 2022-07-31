@@ -6,6 +6,8 @@
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
+^r3/util/penner.r3
+
 #tilecity
 #sprplayer
 
@@ -16,6 +18,8 @@
 #zp 0
 #vzp 0
 #np 65
+	
+#xvp #yvp	| viewport
 	
 #mapa1
 0 | <--tileset
@@ -55,21 +59,83 @@
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 )
 
-
-:changemap	| x y --
-	scr2tile
-	1 swap c+!
+|--------------------------------
+:viewport
+	xp int. sw 1 >> - 'xvp !
+	yp int. sh 1 >> - 'yvp !
 	;
 	
 |--------------------------------
+#hitene
+#timeene
+
+| velocidad forma+tipo+ease x y x y n1 n2
+#listene [
+1.9 $0  2 20 3  3 6 10
+1.5 $1 10 10 5 10 6 10
+1.5 $2 12 12 5 10 6 10
+1.5 $3 14 14 5 10 6 10
+1.5 $4 16 16 5 10 6 10
+1.5 $101 18 18 5 10 6 10
+1.5 $102 20 20 5 10 6 10
+1.5 $103 22 22 5 10 6 10
+1.1 $104 24 24 5 10 6 10
+0 ]
+
+| $1xx = pingpong $0xx = ping
+
+:tt | pp|ease vel -- pp|ease mul
+	over 
+	$100 nand? ( drop $ffff and ; ) drop
+	$1ffff and $10000 and? ( $1ffff xor )
+	;
 	
+:calctime | pp|ease vel -- mult
+	timeene 10 *>> tt swap $ff and ease ;
+	
+:calcxi | calc xi yi -- calc x
+	over - pick2 *. + ;
+	
+:calcpos | v -- x y 
+	da@+ swap 
+	calctime 
+	da@+ 32 * | 32 tile map size
+	da@+ 32 * | vel x1 x2
+	calcxi 	| vel x
+	swap
+	da@+ 32 * 
+	da@+ 32 * | vel y1 y2
+	calcxi nip 	| x y
+	;
+	
+:drawene | x y --
+	msec 1 >> $ff and 
+	da@+ da@+ over - rot 8 *>> +
+	sprplayer
+	2swap 
+	yvp - swap
+	xvp - swap
+	64 64 tsdraws ;
+	
+:enemys | 
+	msec 'timeene !
+	0 'hitene !
+	'listene >a ( da@+ 1? 
+		calcpos
+|		hitplayer
+		drawene
+		) drop  ;
+	
+|--------------------------------
 :humo
 	>a
 	a@
 	100 >? ( drop 0 ; ) 
 	1 + a!+
 	25 sprplayer 
-	a@+ int. a@+ int. tsdraw
+	a@+ int. xvp -
+	a@+ int. yvp -
+	tsdraw
 	;
 	
 :+humo | x y --
@@ -93,41 +159,28 @@
 :panim | -- nanim	
 	msec 7 >> $3 and 'sanim + c@ ;
 	
-:pstay
-	65 'np !
-	;
-:prunl
-	estela	
-	94 panim + 'np !
-	-2.0 'xp +!
-	;
-:prunr
-	estela	
-	91 panim + 'np !
-	2.0 'xp +!
-	;
-:prunu
-	estela	
-	68 panim + 'np !
-	-2.0 'yp +!
-	;
-:prund
-	estela	
-	65 panim + 'np !
-	2.0 'yp +!
-	;
+:pstay 	65 'np ! ;
+:prunl estela 94 panim + 'np ! -2.0 'xp +! ;
+:prunr estela 91 panim + 'np ! 2.0 'xp +! ;
+:prunu estela 68 panim + 'np ! -2.0 'yp +! ;
+:prund estela 65 panim + 'np ! 2.0 'yp +!	;
 
-:saltar
+:saltar 
 	zp 1? ( drop ; ) drop
-	4.0 'vzp !
-	;
+	4.0 'vzp ! ;
 	
 #ep 'pstay
 
-
 :player	
-	12 sprplayer xp int. 2 + yp int. 2 + tsdraw	| sombra
-	np sprplayer xp int. yp zp - int. tsdraw
+	12 sprplayer 
+	xp int. 2 + xvp -
+	yp int. 2 + yvp -
+	tsdraw	| sombra
+	
+	np sprplayer 
+	xp int. xvp -
+	yp zp - int. yvp -
+	tsdraw
 	ep ex
 	
 	zp vzp +
@@ -153,17 +206,20 @@
 	
 :demo
 	0 SDLcls
-
-	24 18 0 0 0 0 'mapa1 tiledraw
-	
-	sdlx sdly changemap
-
-	
+	viewport
+	26 20 
+	xvp 5 >> yvp 5 >>
+	xvp $1f and neg 
+	yvp $1f and neg	
+	'mapa1 tiledraw
 	'fx p.draw
-	player
-	SDLredraw
 	
-	teclado ;
+	enemys
+	player
+	
+	SDLredraw
+	teclado 
+	;
 
 :main
 	1000 'fx p.ini
@@ -173,10 +229,10 @@
 	32 32 "media\img\open_tileset.png" loadts 
 	dup 'tilecity !	
 	'mapa1 !
-	
 	64 64 "media\img\sokoban_tilesheet.png" loadts 'sprplayer !
 
 	'demo SDLshow
+
 	SDLquit ;	
 	
 : main ;

@@ -7,6 +7,9 @@
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
+^r3/util/penner.r3
+
+
 #sprj
 #spre
 
@@ -46,20 +49,6 @@
 	xp yp +humo
 	;
 
-
-|--------------------------------
-#timeene
-
-#enemilist
-1.1 [ 2 3 20 3 ] [ 4 7 ]
-
-:procene
-	>a
-	a@+ msec 10 *>> |escala
-	$1ffff and
-	$10000 and? ( $1ffff xor )
-	;
-
 |--------------------------------
 #enelist 
 0.9 [ 2 20 3 3 ] 
@@ -72,28 +61,33 @@
 	*. + ;
 
 :getxyene	| vel -- x y
-	da@+ 32 * xvp - | 32 tile map size - viewport
-	da@+ 32 * xvp - | vel x1 x2
+	da@+ 32 * | 32 tile map size
+	da@+ 32 * | vel x1 x2
 	vlerp 	| vel x
 	swap
-	da@+ 32 * yvp - 
-	da@+ 32 * yvp - | vel y1 y2
+	da@+ 32 * 
+	da@+ 32 * | vel y1 y2
 	vlerp
 	nip 	| x y
 	;
 	
-:drawene	
+:drawene | x y --
 	7 spre
-	2swap
+	2swap 
+	yvp - swap
+	xvp - swap
 	64 64 tsdraws ;
 
+#hitene
+
 :hitplayer | x y -- x y
-|	over xp - over yp - distfast
-|	32 <? ( 1 'modo ! )
-|	drop
+	over xp 16 >> - over yp 16 >> - distfast
+	32 <? ( a> 'hitene ! )
+	drop
 	;	
 	
 :enemigos
+	0 'hitene !
 	'enelist >a ( a@+ 1? 
 		getxyene
 		hitplayer
@@ -231,6 +225,8 @@
 	'fx p.draw
 	enemigos
 	player
+	
+	8 8 bat hitene "%h" sprint bprint
 	
 	SDLredraw
 	
