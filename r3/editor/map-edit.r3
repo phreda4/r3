@@ -23,7 +23,7 @@
 #tilew 32 #tileh 32
 #tilemem
 
-#mgrid 0
+#mgrid 1
 #tilenow 1
 #scrw #scrh
 #scrmw #scrmh
@@ -110,6 +110,11 @@
 
 |--------------------------------
 
+:clearmap
+	mapamem 24 + >a
+	maph ( 1? mapw ( 1?  
+		0 ca!+ 1 - ) drop 1 - ) drop ;
+	
 :actualiza
 	'filemap count "mem/mapedit.mem" save 
 	maph newmaph 'maph ! 'newmaph !
@@ -150,7 +155,8 @@
 	40 140 bat "tileH:" bprint 
 	110 140 bat 'tileh inputint
 	
-	50 200 bat 'actualiza "[ SAVE ]" tbtn
+	40 200 bat 'clearmap "[ CLEAR ]" tbtn
+	40 220 bat 'actualiza "[ SAVE ]" tbtn
 	
 	SDLredraw
 	
