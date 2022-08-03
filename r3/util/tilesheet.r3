@@ -78,8 +78,8 @@
 	mapw * + mapm + ;
 
 ::[map] | x y -- ad
-	mapw 1 - clamp0max swap
 	maph 1 - clamp0max swap
+	mapw 1 - clamp0max swap
 	map> ;
 	
 :[map]@ | x y -- v

@@ -13,7 +13,9 @@
 ::strcpyl | src des -- ndes
 	( swap c@+ 1? rot c!+ ) rot c!+ nip ;
 ::strcpyln | src des --
-	( swap c@+ 1? 13 =? ( 2drop 0 swap c! ; )
+	( swap c@+ 1? 
+		10 =? ( 2drop 0 swap c! ; )
+		13 =? ( 2drop 0 swap c! ; ) 
 		rot c!+ ) rot c!+ drop ;
 
 ::copynom | sc s1 --
@@ -53,6 +55,20 @@
 		) 2drop
 	c@ $ff and 33 <? ( drop 1 ; )
 	drop 0 ;
+
+| a<b -- -
+| a=b -- 0
+| a>b -- +
+::cmpstr | a b -- n
+	( c@+ 1? $ff and rot	| a ac b 
+		c@+ $ff and rot -	| a b bc-ac
+		-? ( nip nip ; )
+		1 - 
+		+? ( nip nip 1 + ; )	| 0 pasa
+		drop swap )
+	rot c@ - 0? ( nip ; )	| a bS b1 a1
+	2drop 1 ;
+
 
 ::=s | s1 s2 -- 0/1
 	( c@+ $ff and 32 >? toupp >r | s1 s2  r:c2
@@ -94,7 +110,7 @@
 		drop swap )
 	3drop 1 ;
 
-::findstr | adr "texto" -- adr'
+::findstr | adr "texto" -- adr'/0
 	( 2dup =p 0?
 		drop swap c@+
 		0? ( nip nip ; )
@@ -149,6 +165,24 @@
 ::.f | fix -- str
  	mbuffi over
 	$ffff and 10000 16 *>> 10000 +
+	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
+	1 + $2e over c! 1 -
+	over abs 16 >>
+	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
+	swap sign ;
+
+::.f2 | fix -- str
+ 	mbuffi over
+	$ffff and 100 16 *>> 100 +
+	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
+	1 + $2e over c! 1 -
+	over abs 16 >>
+	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
+	swap sign ;
+
+::.f1 | fix -- str
+ 	mbuffi over
+	$ffff and 10 16 *>> 10 +
 	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
 	1 + $2e over c! 1 -
 	over abs 16 >>

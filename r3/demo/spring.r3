@@ -29,7 +29,7 @@
 |	/.						| p1 p2 dx dy d3
 |	da@+ *.	2/.				| p1 p2 dx dy d3*stiff
 
-	da@+ 2/. rot 0? ( 1 + ) */ 
+	da@+ 2/. rot 1 or */ | 1 or = never 0/
 
 	rot over *.			| p1 p2 dy d3 dx*d3
 	rot rot *. 			| p1 p2 dx* dy*
