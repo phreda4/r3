@@ -11,7 +11,6 @@
 
 #mapajuego
 #sprplayer
-#sprperro
 
 #fx 0 0
 
@@ -50,7 +49,7 @@
 :perro | a --
 	>a
 	a@ dup 0.1 + a!+ 
-	16 >> $3 and sprperro a@+ 
+	16 >> $3 and sprplayer a@+ 
 	dup 1 - -96 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ tsdraw
 	;
@@ -125,7 +124,7 @@
 :coso
 	>a
 	8 a+
-	0 sprperro a@+ a@+ tsdraw
+	0 sprplayer a@+ a@+ tsdraw
 	;
 	
 :+coso
@@ -177,8 +176,7 @@
 	
 	"r3\j2022\vial\mapa.map" loadtilemap 'mapajuego !
 	
-	128 128 "r3\j2022\vial\Robot.png" loadts 'sprplayer !
-	96 96 "r3\j2022\vial\perro.png" loadts 'sprperro !
+	128 128 "r3\j2022\vial\sprites.png" loadts 'sprplayer !
 |	+coso
 	'jugando SDLshow
 	SDLquit ;	
