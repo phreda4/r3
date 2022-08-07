@@ -40,6 +40,9 @@
 
 #sys-GetConsoleScreenBufferInfo
 
+#sys-SetConsoleScreenBufferSize
+#sys-SetConsoleWindowInfo
+
 #sys-GetCommandLine
 
 ::AllocConsole sys-allocconsole sys0 drop ;
@@ -79,6 +82,9 @@
 ::FindClose sys-FindClose sys1 drop ;
 ::CreateProcess sys-CreateProcess sys10 ;
 ::GetConsoleScreenBufferInfo sys-GetConsoleScreenBufferInfo sys2 ;
+
+::SetConsoleScreenBufferSize sys-SetConsoleScreenBufferSize sys2 drop ;
+::SetConsoleWindowInfo sys-SetConsoleWindowInfo sys3 drop ;
 
 ::GetCommandLine sys-GetCommandLine sys0 ;
 
@@ -126,6 +132,9 @@
 	dup "GetTickCount" getproc 'sys-GetTickCount !
 	dup "GetConsoleScreenBufferInfo" getproc 'sys-GetConsoleScreenBufferInfo !
 	dup "GetCommandLineA" getproc 'sys-GetCommandLine !
+
+	dup "SetConsoleScreenBufferSize" getproc 'sys-SetConsoleScreenBufferSize !
+	dup "SetConsoleWindowInfo" getproc 'sys-SetConsoleWindowInfo !
 
 	drop
 	;
