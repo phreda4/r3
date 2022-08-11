@@ -7,6 +7,8 @@
 
 #simaneges
 #stablero
+#smapa
+
 #fontt
 #font
 #preguntas
@@ -73,21 +75,25 @@
 	
 :jugando
 	$0 SDLcls
-	0 0 stablero sdlimage
-
+	0 0 
+	1280 720
+	stablero sdlimages
+	
+	500 180 
+	400 523
+	smapa sdlimages
+	
 	reloj
 
 	msec 8 >> 3 and 
 	simaneges 
 	20 20 
 	256 dup tsdraws
-		
-	$0 'pregunta 200 100 800 400 xywh64 $00 fontt textbox | $vh str box color font	
-	
-	$0 r1 40 300 300 100 xywh64 $0 font textbox
-	$0 r2 40 360 300 100 xywh64 $0 font textbox
-	$0 r3 40 420 300 100 xywh64 $0 font textbox
-	$0 r4 40 480 300 100 xywh64 $0 font textbox
+	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
+	$11 r1 25 312 288 65 xywh64 $0 font textbox
+	$11 r2 25 404 288 65 xywh64 $0 font textbox
+	$11 r3 25 498 288 65 xywh64 $0 font textbox
+	$11 r4 25 590 288 65 xywh64 $0 font textbox
 
 	SDLredraw
 	teclado
@@ -95,11 +101,12 @@
 
 :inicio
 	ttf_init
-	"media\ttf\roboto-bold.ttf" 32 TTF_OpenFont 'fontt !	
-	"media\ttf\roboto-bold.ttf" 28 TTF_OpenFont 'font !	
+	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
+	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
 	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simaneges !
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
+	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
 	
 	here dup 'preguntas !
 	"r3\j2022\pregunta\preguntas.txt" load 

@@ -1,122 +1,123 @@
-﻿1. ¿Qué había en el terreno donde hoy se encuentra la plaza España?
-   1. Una laguna
-   2. Una cancha de fútbol
-   3. Un terreno baldío
-   4. Una pista de automovilismo
-2. ¿Qué espacio público divide el barrio villa trave del centro?
-   1. Ambas son correctas
-   2. Ruta provincial N°85
-   3. Frente de vías
-   4. Ninguna es correcta
-3. ¿Cómo se llama la escuela primaria número 1?
-   1. Remedios Escalada de San Martin 
-   2. Domingo Faustino Sarmiento
-   3. Cornelio Saavedra
-   4. Paula Albarracin de Sarmiento
-4. ¿Qué había en el terreno donde hoy se encuentra la plaza América?
-   1. Cancha de fútbol
-   2. Terreno baldío
-   3. Laguna
-   4. Pista de automovilismo
-5. ¿Dónde funcionaba la escuela N°19?
-   1. Todas son correctas
-   2. Canal 2
-   3. Pampa
-   4. Consejo escolar
-6. ¿Cómo se llama el museo san cayetanense?
-   1. Faustino Queipo
-   2. Enrique Corradi
-   3. Tulio Cosentino
-   4. Beatriz Souto
-7. ¿Cual es el club que tiene una biblioteca popular en su sede?
-   1. Club ciclista
-   2. Club independiente
-   3. Sociedad Española
-   4. Sociedad italiana
-8. ¿Quién es San Cayetano?
-   1. Santo del pan y el trabajo
-   2. Santo de los animales
-   3. Santo de los enfermos
-   4. Santo del campo
-9. ¿Dónde se encuentra la sede de Guías?
-   1. Frente a la torre de agua
-   2. Prado español
-   3. Museo
-   4. Parque independiente
-10. ¿Cómo se llaman las fiestas anuales del Fortín Gaucho?
-   1. Baguales y milongas
-   2. Corcovos y sonrisas
-   3. Tradición y solidaridad
-   4. Domas y música
-11. ¿Cuántos galpones hay en el frente de vías?
-   1. Cuatro
-   2. Tres
-   3. Dos
-   4. Cinco
-12. ¿En qué año se habilitó el circuito Parque Independiente?
-   1. 1971
-   2. 1981
-   3. 1976
-   4. 1986
-13. ¿En qué año se asfaltó el circuito Parque Independiente?
-   1. 2018
-   2. 2017
-   3. 2019
-   4. 2020
-14. ¿Quién fué el primer intendente democrático de San Cayetano?
-   1. Fadael Hendriksen
-   2. Ricardo Soldavini
-   3. Horacio Sieber
-   4. Martín Truelsegaard
-15. ¿Qué programa ha funcionado por más de 20 años?
-   1. Todos ellos
-   2. Quorum Propio
-   3. 8200/8400
-   4. En acción
-16. ¿Cuál es el eslogan actual de la municipalidad de San Cayetano?
-   1. Donde queremos vivir
-   2. La tierra del buen trigo
-   3. Naturalmente junto al mar
-   4. No tiene eslogan
-17. ¿Qué colores tiene la bandera del partido de San Cayetano?
-   1. Verde, amarillo, celeste y blanco
-   2. Verde, rojo, celeste y blanco
-   3. Verde, rojo, azul y blanco
-   4. Verde, amarillo, celeste y negro
-18. ¿Qué reconocido futbolista sancayetanense llegó a jugar en la Selección Nacional Argentina de fútbol?
-   1. Agustín Marchesin
-   2. Ramón Gazaneo
-   3. Julio Armentía
-   4. Ningún futbolista llegó a jugar en la selección
-19. ¿Qué hombre donó las tierras para permitir el paso del ferrocarril por San Cayetano?
-   1. Victorio de la Canal
-   2. Pedro N. Carrera
-   3. Agustín Luzardi
-   4. Juan Claudio Magnin
-20. ¿A cuántos kilómetros se encuentra el balneario de la ciudad de San Cayetano?
-   1. 75km
-   2. 65km
-   3. 80km
-   4. 85km
-21. ¿Cómo se llama actualmente el teatro municipal?
-   1. Tulio Cosentino
-   2. Milagros de la Vega
-   3. Luis Sandrini
-   4. No tiene un nombre
-22. ¿En qué año se fundó San Cayetano?
-   1. 1911
-   2. 1910
-   3. 1921
-   4. 1915
-23. ¿Cuándo se aprobó la autonomía de San Cayetano?
-   1. 24 de octubre de 1958
-   2. 24 de agosto de 1985
-   3. 24 de abril de 1958
-   4. 24 de septiembre de 1985
-24. ¿Cómo se llama la sala de música del espacio cultural?
-   1. Enrique "Quique" Corradi
-   2. Faustino Queipo
-   3.    4. 
+﻿¿Qué había en el terreno donde hoy se encuentra la plaza España?
+   Una laguna
+   Una cancha de fútbol
+   Un terreno baldío
+   Una pista de automovilismo
+¿Qué espacio público divide el barrio villa trave del centro?
+   Ambas son correctas
+   Ruta provincial N°85
+   Frente de vías
+   Ninguna es correcta
+¿Cómo se llama la escuela primaria número 1?
+   Remedios Escalada de San Martin 
+   Domingo Faustino Sarmiento
+   Cornelio Saavedra
+   Paula Albarracin de Sarmiento
+¿Qué había en el terreno donde hoy se encuentra la plaza América?
+   Cancha de fútbol
+   Terreno baldío
+   Laguna
+   Pista de automovilismo
+¿Dónde funcionaba la escuela N°19?
+   Todas son correctas
+   Canal 2
+   Pampa
+   Consejo escolar
+¿Cómo se llama el museo san cayetanense?
+   Faustino Queipo
+   Enrique Corradi
+   Tulio Cosentino
+   Beatriz Souto
+¿Cual es el club que tiene una biblioteca popular en su sede?
+   Club ciclista
+   Club independiente
+   Sociedad Española
+   Sociedad italiana
+¿Quién es San Cayetano?
+   Santo del pan y el trabajo
+   Santo de los animales
+   Santo de los enfermos
+   Santo del campo
+¿Dónde se encuentra la sede de Guías?
+   Frente a la torre de agua
+   Prado español
+   Museo
+   Parque independiente
+¿Cómo se llaman las fiestas anuales del Fortín Gaucho?
+   Baguales y milongas
+   Corcovos y sonrisas
+   Tradición y solidaridad
+   Domas y música
+¿Cuántos galpones hay en el frente de vías?
+   Cuatro
+   Tres
+   Dos
+   Cinco
+¿En qué año se habilitó el circuito Parque Independiente?
+   1971
+   1981
+   1976
+   1986
+¿En qué año se asfaltó el circuito Parque Independiente?
+   2018
+   2017
+   2019
+   2020
+¿Quién fué el primer intendente democrático de San Cayetano?
+   Fadael Hendriksen
+   Ricardo Soldavini
+   Horacio Sieber
+   Martín Truelsegaard
+¿Qué programa ha funcionado por más de 20 años?
+   Todos ellos
+   Quorum Propio
+   8200/8400
+   En acción
+¿Cuál es el eslogan actual de la municipalidad de San Cayetano?
+   Donde queremos vivir
+   La tierra del buen trigo
+   Naturalmente junto al mar
+   No tiene eslogan
+¿Qué colores tiene la bandera del partido de San Cayetano?
+   Verde, amarillo, celeste y blanco
+   Verde, rojo, celeste y blanco
+   Verde, rojo, azul y blanco
+   Verde, amarillo, celeste y negro
+¿Qué reconocido futbolista sancayetanense llegó a jugar en la Selección Nacional Argentina de fútbol?
+   Agustín Marchesin
+   Ramón Gazaneo
+   Julio Armentía
+   Ningún futbolista llegó a jugar en la selección
+¿Qué hombre donó las tierras para permitir el paso del ferrocarril por San Cayetano?
+   Victorio de la Canal
+   Pedro N. Carrera
+   Agustín Luzardi
+   Juan Claudio Magnin
+¿A cuántos kilómetros se encuentra el balneario de la ciudad de San Cayetano?
+   75km
+   65km
+   80km
+   85km
+¿Cómo se llama actualmente el teatro municipal?
+   Tulio Cosentino
+   Milagros de la Vega
+   Luis Sandrini
+   No tiene un nombre
+¿En qué año se fundó San Cayetano?
+   1911
+   1910
+   1921
+   1915
+¿Cuándo se aprobó la autonomía de San Cayetano?
+   24 de octubre de 1958
+   24 de agosto de 1985
+   24 de abril de 1958
+   24 de septiembre de 1985
+¿Cómo se llama la sala de música del espacio cultural?
+   Enrique "Quique" Corradi
+   Faustino Queipo
+   3.
+   4. 
 25. ¿Quién conduce Quorum Propio?
    1. Mario Cipollone
    2. Federico Perez Spinelli
