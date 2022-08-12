@@ -56,44 +56,60 @@
 	;
 		
 |--------------------------------
-:[map]@ | x y -- adr
+:[map]@ | x y -- c
 	swap xvp - 
 	swap yvp - 
 	scr2tile c@ ;
+
+:[map]! | c x y -- 
+	swap xvp - 
+	swap yvp - 
+	scr2tile c! ;
+	
+:[map]@s
+	[map]@ 
+	8 =? ( 0 nip ; )
+	13 =? ( 0 nip ; )
+	33 =? ( 0 nip ; )
+	59 =? ( 0 nip ; )
+	60 =? ( 0 nip ; )
+	;
 	
 :roof? | -- techo?
 	xp int. 32 + 
 	yp int. 8 +
-	[map]@ ;
+	[map]@s ;
 
 :floor? | -- piso?
-	xp int. 16 + yp int. 64 + [map]@
-	xp int. 40 + yp int. 64 + [map]@ or	
+	xp int. 16 + yp int. 64 + [map]@s
+	xp int. 40 + yp int. 64 + [map]@s or	
 	;
 
 :wall? | dx -- wall?
 	xp int. +
 	yp int. 32 +
-	[map]@ ;
+	[map]@s ;
 	
 :panim | -- nanim	
-	msec 5 >> 7 mod abs ;
+	msec 5 >> $3 and ;
 	
 :pstay
-	|0 'np !
+	0
+	np 11 >? ( 2drop 12 dup ) drop
+	'np !
 	;
 	
 :prunl
 |	estela	
 	4 wall? 1? ( drop ; ) drop
-	22 panim + 'np !
+	0 panim + 'np !
 	-2.0 'xp +!
 	;
 	
 :prunr
 |	estela	
 	52 wall? 1? ( drop ; ) drop
-	0 panim + 'np !
+	12 panim + 'np !
 	2.0 'xp +!
 	;
 
@@ -111,7 +127,7 @@
 	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
 	
 	SDLkey
-	<up> =? ( -8.0 'vyp ! )
+	<up> =? ( -10.0 'vyp ! )
 	drop
 	;
 
@@ -122,13 +138,21 @@
 	roof? "r:%d " sprint bprint
 	;
 	
+:monedas
+	xp int. 32 + yp int. 60 + [map]@
+	33 <>? ( drop ; ) drop
+	0 
+	xp int. 32 + yp int. 60 + [map]!
+	;
+		
 :player	
 	np sprj 
 	xp int. xvp -
-	yp int. 6 + yvp -
+	yp int. yvp -
 	64 64 tsdraws
 	ep ex
 	pisoysalto
+	monedas
 	
 	vyp 'yp +!
 	vxp 'xp +!
@@ -172,13 +196,12 @@
 	
 	
 :jugando
-	$666666 SDLcls
+	$0 SDLcls
 
 	viewport
 	drawmapa	
 	'fx p.draw
 	player
-	
 	
 	SDLredraw
 	

@@ -102,25 +102,33 @@
 	;
 		
 |--------------------------------
-:[map]@ | x y -- adr
+:[map]@ | x y -- c
 	swap xvp - 
 	swap yvp - 
 	scr2tile c@ ;
+
+:[map]! | c x y -- 
+	swap xvp - 
+	swap yvp - 
+	scr2tile c! ;
+
+:[map]@s | x y -- c
+	[map]@ 10 22 bt? ( ; ) drop 0 ;
 	
 :roof? | -- techo?
 	xp int. 32 + 
 	yp int. 8 +
-	[map]@ ;
+	[map]@s ;
 
 :floor? | -- piso?
-	xp int. 16 + yp int. 64 + [map]@
-	xp int. 40 + yp int. 64 + [map]@ or	
+	xp int. 16 + yp int. 64 + [map]@s
+	xp int. 40 + yp int. 64 + [map]@s or	
 	;
 
 :wall? | dx -- wall?
 	xp int. +
 	yp int. 32 +
-	[map]@ ;
+	[map]@s ;
 	
 :panim | -- nanim	
 	msec 5 >> 7 mod abs ;
@@ -202,9 +210,8 @@
 	
 |---- con reemplazo	
 :vectortile | tile -- tile
-	17 <? ( ; ) 19 >? ( ; ) | agua
-	drop
-	msec 8 >> 3 mod abs 17 + 
+	31 33 bt? ( drop msec 8 >> 3 mod abs 31 + ; )
+	34 36 bt? ( drop msec 8 >> 3 mod abs 34 + ; )
 	;
 	
 :drawmapa
