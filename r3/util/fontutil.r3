@@ -1,3 +1,5 @@
+^r3/win/sdl2.r3
+^r3/win/sdl2ttf.r3
 
 |:initfont
 |	ttf_init
@@ -40,3 +42,6 @@
 	dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
 	dup rot swap SDL_CreateTextureFromSurface | sd surface texture
 	swap SDL_FreeSurface ;
+	
+::ttfprint | color font "text" x y -- 
+	>r >r >r >r >r SDLrenderer r> r> r> r> r> RenderText ;

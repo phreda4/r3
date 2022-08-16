@@ -7,10 +7,11 @@
 
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
-^r3/util/bfont.r3
+^r3/util/fontutil.r3
 
 #mapajuego
 #sprplayer
+#font
 
 #fx 0 0
 
@@ -47,6 +48,7 @@
 	0 'ev !
 	|xp yp zp - +humo
 	;
+|--------------------------------
 
 | nro-tile mask-cnt ( 0>1 1>2 3>4)
 #tipoitems (
@@ -67,7 +69,7 @@
 	>a a@ dup 0.02 + a!+ 
 	16 >> a@+ and a@+ + sprplayer a@+ 
 	dup 1 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ tsdraw
+	a@+ ymapa - tsdraw
 	;
 	
 :+item | x y c i --
@@ -83,7 +85,7 @@
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 30 + sprplayer a@+ 
 	dup 3 + sw >? ( 4drop 0 ; ) a> 8 - !
-	a@+ tsdraw
+	a@+ ymapa - tsdraw
 	;
 	
 :+gato | x y --
@@ -96,7 +98,7 @@
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ tsdraw
+	a@+ ymapa - tsdraw
 	;
 	
 :+perro | x y --
@@ -110,11 +112,24 @@
 :pstay
 	;
 	
-:prunl -2 'xp +! ;
-:prunr 2 'xp +! ;
-:prunu -2 'yp +! ;
-:prund 2 'yp +! ;
-
+:prunl 
+	xp 2 -
+	100 <? ( drop ; )
+	'xp ! ;
+:prunr 
+	xp 2 +
+	500 >? ( drop ; ) 
+	'xp ! ;
+:prunu 
+	yp 2 -
+	200 <? ( drop ; )
+	dup 330 - 'ymapa !
+	'yp ! ;
+:prund 
+	yp 2 +
+	700 >? ( drop ; )
+	dup 330 - 'ymapa !
+	'yp ! ;
 :saltar
 	zp 1? ( drop ; ) drop
 	5.0 'vzp !
@@ -126,7 +141,7 @@
 	>a 0
 	
 |	12 sprplayer xp 2 + yp 2 + tsdraw	| sombra
-	0 panim + sprplayer xp yp zp int. - tsdraw
+	0 panim + sprplayer xp yp zp int. - ymapa - tsdraw
 	ep ex
 	
 	zp vzp +
@@ -137,25 +152,16 @@
 	
 :+jugador
 	'jugador 'fx p!+ >a
-	8 a+
-	xp a!+
-	yp a!+
+	8 a+ xp a!+ yp a!+
 	3 'fx p.sort
 	;
 		
-|--------------------------------
-:coso
-	>a
-	8 a+
-	0 sprplayer a@+ a@+ tsdraw
-	;
-	
-:+coso
-	'coso 'fx p!+ >a			
-	0 a!+
-	400 a!+
-	300 a!+
-	;
+:hacenivel
+	200 ( 1? 1 -
+		12000 randmax 800 +
+		440 randmax 260 + +ritem
+		) drop ;
+		
 |--------------------------------
 :teclado
 	SDLkey 
@@ -175,35 +181,37 @@
 	drop 
 	;
 
-
-
-:jugando
-	$039be5 SDLcls
-
-	5 3 
+:ciudad
+	5 4
 	xmapa 8 >> ymapa 8 >>
 	xmapa $ff and neg 
 	ymapa $ff and neg
 	256 dup mapajuego tiledraws
-	1 'xmapa +! 
-	
+	1 'xmapa +! ;
+
+:jugando
+	$039be5 SDLcls
+	ciudad
 	+jugador
 	'fx p.drawo
 	
+	$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
 	SDLredraw
-	
 	teclado ;
 
 :main
 	1000 'fx p.ini
 	"r3sdl" 800 600 SDLinit
-	bfont1 
 	|SDLfull
+
+	ttf_init
+	"r3/j2022/basura/font/ChakraPetch-Bold.ttf" 30 TTF_OpenFont 'font !		
 	
 	"r3\j2022\basura\mapa.map" loadtilemap 'mapajuego !
-	
 	128 128 "r3\j2022\basura\sprites.png" loadts 'sprplayer !
-|	+coso
+	
+	hacenivel
+	
 	'jugando SDLshow
 	SDLquit ;	
 	

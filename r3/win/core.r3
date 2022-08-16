@@ -84,8 +84,9 @@
 	CloseHandle ;
 	
 ::append | 'from cnt "filename" -- 
-	$4 0 0 2 $8000000 0 CreateFile
+	$4 1 0 4 $80 0 CreateFile
 	-1 =? ( 3drop ; )
+	dup 0 0 2 SetFilePointer drop
 	dup >r rot rot 'cntf 0 WriteFile
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
