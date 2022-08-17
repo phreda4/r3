@@ -41,17 +41,17 @@
 	;
 
 :searchless | time adr --time adr
-	( 32 - timeline >=?
+	( 64 - timeline >=?
 		dup @	| time adr time
-		pick2 <=? ( drop 32 + ; )
-		drop ) 32 + ;
+		pick2 <=? ( drop 64 + ; )
+		drop ) 64 + ;
 
 :+tline	| 'fx 'scr event time --
 	1000 *.
 	timeline> searchless | adr
-	dup dup 32 + swap timeline> over - 2 >> move>
+	dup dup 64 + swap timeline> over - 2 >> move>
 	>a a!+ a!+ a!+ a!
-	32 'timeline> +! ;
+	64 'timeline> +! ;
 
 :tictline
 	timeline< timenow
@@ -60,7 +60,7 @@
 		@ >=?
 		swap
 		dup 8 + @ ex
-		32 + swap ) drop
+		64 + swap ) drop
 	'timeline< ! ;
 
 |-------------------- LOOP
@@ -450,6 +450,6 @@
 	512 'fx p.ini
 	512 'fxp p.ini
 	here 'timeline !
-	$1fff 'here +!
+	$ffff 'here +!
 	;
 

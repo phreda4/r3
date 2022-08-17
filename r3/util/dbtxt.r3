@@ -131,3 +131,11 @@
 		$7c =? ( 2drop 0 swap c! ; )
 	 	$5e =? ( 2drop 0 swap c! ; ) | ^
 		rot c!+ ) nip swap c! ;
+		
+::cpydbfldn | max 'fld 'str --
+	>b >a 
+	( 1? 1 -
+		ca@+ 0? ( cb! drop ; )
+		$7c =? ( 2drop 0 cb! ; )
+	 	$5e =? ( 2drop 0 cb! ; ) | ^
+		cb!+ ) cb! ;		
