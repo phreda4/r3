@@ -85,7 +85,7 @@
 |------- sort by column (only last sort
 :up | adr -- adr ; swap 64 -
 	dup dup 128 - >a | p1 r:p2
-	8 ( 1? 1 - swap
+	16 ( 1? 1 - swap
 		a@ over @ a!+ swap !+
 		swap )
 	2drop ;
