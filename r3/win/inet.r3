@@ -7,11 +7,15 @@
 #sys-InternetReadFile 
 #sys-InternetCloseHandle 
 
+#sys-DeleteUrlCacheEntry 
+
+
 ::InternetOpen sys-internetopen sys5 ;
 ::InternetOpenUrl sys-InternetOpenUrl sys6 ;
 ::InternetReadFile sys-InternetReadFile sys4 drop ;
 ::InternetCloseHandle sys-InternetCloseHandle sys1 drop ;
 
+::DeleteUrlCacheEntry sys-DeleteUrlCacheEntry sys1 drop ;
 	
 | R4 source code in C
 |case OPENURL: // url header buff -- buff/0
@@ -32,7 +36,7 @@
 		 
 ::openurl | url header buff -- buff 
 	>r "InetURL/1.0" 1 0 0 0 InternetOpen  | url head hopen |1 0 0 0=direct
-	dup >r rot rot 0 $80000000 0 InternetOpenUrl | hopen
+	dup >r rot rot -1 $80000000 0 InternetOpenUrl | hopen
 	r> swap r>
 	( 2dup 8192 'cnt InternetReadFile cnt + cnt 1? drop ) drop
 	swap InternetCloseHandle
@@ -45,6 +49,6 @@
 	dup "InternetOpenUrlA" getproc 'sys-InternetOpenUrl !
 	dup "InternetReadFile" getproc 'sys-InternetReadFile !
 	dup "InternetCloseHandle" getproc 'sys-InternetCloseHandle !
-	
+	dup "DeleteUrlCacheEntryA" getproc 'sys-DeleteUrlCacheEntry !
 	drop ;
 	
