@@ -170,7 +170,43 @@
 	maph 'newmaph !
 	'config SDLshow
 	;
-		
+
+|--------------------------------
+:mapup
+	mapamem 24 + >a
+	here a> mapw cmove | d s c
+	a> dup mapw + maph 1 - mapw * cmove
+	a> maph 1 - mapw * + here mapw cmove
+	;
+:mapdn
+	mapamem 24 + >a
+	here a> maph 1 - mapw * + mapw cmove
+	a> dup mapw + swap maph 1 - mapw * cmove>	
+	 a> here mapw cmove | d s c
+	;
+:maple
+	mapamem 24 + >a
+	ca@
+	a> dup 1 + mapw maph * 1 - cmove
+	a> mapw maph * + 1 - >b
+	maph ( 1? 1 - 
+		b> mapw - c@ cb! 
+		mapw neg b+
+		) drop
+	a> mapw + 1 - c!
+	;
+:mapri
+	mapamem 24 + >a
+	a> mapw maph * + 1 - c@
+	a> dup 1 + swap mapw maph * 1 - cmove>
+	a> >b
+	maph ( 1? 1 - 
+		b> mapw + c@ cb! 
+		mapw b+
+		) drop
+	cb!	
+	;
+	
 |--------------------------------
 #ntilepage 0
 #ntilew 8
@@ -390,6 +426,11 @@
 	<le> =? ( mapx 1 - mapx! )
 	<ri> =? ( mapx 1 + mapx! )
 	<g> =? ( mgrid 1 xor 'mgrid ! )
+	
+	<a>	=? ( maple )
+	<d> =? ( mapri )
+	<w> =? ( mapup )
+	<s> =? ( mapdn )
 	drop 
 	;
 	

@@ -15,41 +15,15 @@
 
 #fx 0 0
 
-#xp 30
-#yp 230
+#xmapa 0 
+#ymapa 170
+
+#xp 100
+#yp 500
 #zp 0
 #vzp 0
 
-#xmapa 0 
-#ymapa 0
-
-#np 3
-
 |--------------------------------
-:humo
-	>a
-	a@
-	100 >? ( drop 0 ; ) 
-	1 + a!+
-	25 sprplayer 
-	a@+  a@+ tsdraw
-	;
-	
-:+humo | x y --
-	'humo 'fx p!+ >a 
-	0 a!+
-	swap a!+ a!+
-	;
-	
-#ev 0	
-:estela	
-	1 'ev +!
-	ev 20 <? ( drop ; ) drop
-	0 'ev !
-	|xp yp zp - +humo
-	;
-|--------------------------------
-
 | nro-tile mask-cnt ( 0>1 1>2 3>4)
 #tipoitems (
 6 0
@@ -62,11 +36,12 @@
 24 1
 34 0
 35 0
+36 0
 )
 
 |--------------------------------
 :item | a --
-	>a a@ dup 0.02 + a!+ 
+	>a a@ dup 0.05 + a!+ 
 	16 >> a@+ and a@+ + sprplayer a@+ 
 	dup 1 - -128 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - tsdraw
@@ -77,7 +52,7 @@
 	3 'fx p.sort ;
 
 :+ritem | x y --
-	10 randmax 1 << 'tipoitems +
+	11 randmax 1 << 'tipoitems +
 	c@+ swap c@ +item ;
 	
 |--------------------------------
@@ -106,33 +81,42 @@
 	3 'fx p.sort ;
 	
 |--------------------------------
-:panim | -- nanim	
-	msec 7 >> $3 and ;
+#nrop
+
+:panim! | nro -- 
+	msec 7 >> $3 and + 'nrop ! ;
 	
 :pstay
+	zp 1? ( drop ; ) drop 
+	0 panim!
 	;
 	
 :prunl 
+	0 panim! 
 	xp 2 -
 	100 <? ( drop ; )
 	'xp ! ;
 :prunr 
+	0 panim!
 	xp 2 +
 	500 >? ( drop ; ) 
 	'xp ! ;
 :prunu 
+	0 panim!
 	yp 2 -
-	200 <? ( drop ; )
+	420 <? ( drop ; )
 	dup 330 - 'ymapa !
 	'yp ! ;
 :prund 
+	0 panim!	
 	yp 2 +
-	700 >? ( drop ; )
+	990 >? ( drop ; )
 	dup 330 - 'ymapa !
 	'yp ! ;
 :saltar
 	zp 1? ( drop ; ) drop
 	5.0 'vzp !
+	4 'nrop !
 	;
 	
 #ep 'pstay
@@ -140,8 +124,9 @@
 :jugador
 	>a 0
 	
-|	12 sprplayer xp 2 + yp 2 + tsdraw	| sombra
-	0 panim + sprplayer xp yp zp int. - ymapa - tsdraw
+	37 sprplayer xp 8 - yp 8 + ymapa - tsdraw	| sombra
+	
+	nrop sprplayer xp yp zp int. - ymapa - tsdraw
 	ep ex
 	
 	zp vzp +
@@ -155,13 +140,17 @@
 	8 a+ xp a!+ yp a!+
 	3 'fx p.sort
 	;
+
+:randy | -- ; 420..990
+	570 randmax 420 + ;
 		
 :hacenivel
 	200 ( 1? 1 -
 		12000 randmax 800 +
-		440 randmax 260 + +ritem
+		randy +ritem
 		) drop ;
-		
+	
+	
 |--------------------------------
 :teclado
 	SDLkey 
@@ -175,9 +164,9 @@
 	>le< =? ( 'pstay 'ep ! )
 	>ri< =? ( 'pstay 'ep ! )
 	<esp> =? ( saltar )
-	<f1> =? ( 800 400 randmax 180 + +perro ) 
-	<f2> =? ( -128 400 randmax 180 + +gato ) 
-	<f3> =? ( 800 400 randmax 180 + +ritem )
+	<f1> =? ( 800 randy +perro ) 
+	<f2> =? ( -128 randy +gato ) 
+	<f3> =? ( 800 randy +ritem )
 	drop 
 	;
 
@@ -195,7 +184,11 @@
 	+jugador
 	'fx p.drawo
 	
-	$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
+	|$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
+	
+	$0 font 
+	yp "vidas:%d" sprint
+	20 20 ttfprint | color font "text" x y -- 
 	SDLredraw
 	teclado ;
 

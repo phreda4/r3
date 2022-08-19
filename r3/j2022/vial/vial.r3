@@ -18,16 +18,14 @@
 
 #semaforoestado 0
 
-	
-#xvp #yvp	| viewport
 
 |--------------------------------
 :perro | a --
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer 
-	a@+ xvp -
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ yvp - 
+	a@+ 
 	tsdraw
 	;
 	
@@ -40,9 +38,9 @@
 :robot1 | a --
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer 
-	a@+ xvp -
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ yvp - 
+	a@+ 
 	tsdraw
 	;
 	
@@ -54,9 +52,9 @@
 :robot2 | a --
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer 
-	a@+ xvp -
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ yvp - 
+	a@+ 
 	tsdraw
 	;
 	
@@ -69,9 +67,9 @@
 :autoh | a --
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer 
-	a@+ xvp -
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ yvp - 
+	a@+ 
 	tsdraw
 	;
 	
@@ -83,9 +81,9 @@
 :autov | a --
 	>a a@ dup 0.1 + a!+ 
 	16 >> $3 and 26 + sprplayer 
-	a@+ xvp -
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ yvp - 
+	a@+ 
 	tsdraw
 	;
 	
@@ -118,11 +116,7 @@
 	;
 
 :dibujomapa
-	10 6 
-	xvp 7 >> yvp 7 >>
-	xvp $7f and neg 
-	yvp $7f and neg
-	mapajuego tiledraw
+	0 0 mapajuego SDLimage
 	;
 	
 :demo
@@ -147,7 +141,7 @@
 	bfont1 
 	|SDLfull
 	
-	"r3\j2022\vial\mapa.map" loadtilemap 'mapajuego !
+	"r3\j2022\vial\mapa.png" loadimg 'mapajuego !
 	
 	124 124 "r3\j2022\vial\robot.png" loadts 'sprplayer !
 	
