@@ -96,8 +96,7 @@
 		dup 128 -
 		pick3 3 << + @
 		over pick4 3 << + @
-		<? ( 4drop ; ) drop
-		up
+		>? ( drop up dup ) drop
 		128 - ) 3drop ;
 
 ::p.isort | col 'list --
@@ -106,7 +105,6 @@
 		dup 128 -
 		pick3 3 << + @
 		over pick4 3 << + @
-		>? ( 4drop ; ) drop
-		up
+		<? ( drop up dup  ) drop
 		128 - ) 3drop ;
 		

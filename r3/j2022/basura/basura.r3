@@ -42,14 +42,13 @@
 |--------------------------------
 :item | a --
 	>a a@ dup 0.05 + a!+ 
-	16 >> a@+ and a@+ + sprplayer a@+ 
-	dup 1 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ ymapa - tsdraw
-	;
+	16 >> a@+ and a@+ + sprplayer 
+	a@+ xmapa -
+	a@+ ymapa - 
+	tsdraw ;
 	
 :+item | x y c i --
-	'item 'fx p!+ >a 0 a!+ a!+ a!+ swap a!+ a!
-	3 'fx p.sort ;
+	'item 'fx p!+ >a 0 a!+ a!+ a!+ swap a!+ a! ;
 
 :+ritem | x y --
 	11 randmax 1 << 'tipoitems +
@@ -58,29 +57,40 @@
 |--------------------------------
 :gato | a --
 	>a a@ dup 0.1 + a!+ 
-	16 >> $3 and 30 + sprplayer a@+ 
+	16 >> $3 and 30 + sprplayer 
+	16 a+
+	a@+ 
 	dup 3 + sw >? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - tsdraw
 	;
 	
 :+gato | x y --
-	'gato 'fx p!+ >a 0 a!+ swap a!+ a!
-	3 'fx p.sort ;
-	
+	'gato 'fx p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
 
 |--------------------------------
 :perro | a --
 	>a a@ dup 0.1 + a!+ 
-	16 >> $3 and 26 + sprplayer a@+ 
+	16 >> $3 and 26 + sprplayer 
+	16 a+
+	a@+ 
 	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - tsdraw
 	;
 	
 :+perro | x y --
-	'perro 'fx p!+ >a 0 a!+ swap a!+ a!
-	3 'fx p.sort ;
+	'perro 'fx p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
 	
 |--------------------------------
+#ajug
+
+:jug.x	ajug 3 3 << + ;
+:jug.y	ajug 4 3 << + ;
+
+:viewport
+	jug.x @ 300 - 'xmapa !
+	jug.y @ 200 - 'ymapa !
+	;
+
 #nrop
 
 :panim! | nro -- 
@@ -90,29 +100,29 @@
 	zp 1? ( drop ; ) drop 
 	0 panim!
 	;
-	
+	 
 :prunl 
 	0 panim! 
-	xp 2 -
-	100 <? ( drop ; )
-	'xp ! ;
+	jug.x dup @ 1 - swap ! ;
+	
 :prunr 
 	0 panim!
-	xp 2 +
-	500 >? ( drop ; ) 
-	'xp ! ;
+	jug.x dup @ 1 + swap ! ;
+	
 :prunu 
 	0 panim!
-	yp 2 -
-	420 <? ( drop ; )
-	dup 330 - 'ymapa !
-	'yp ! ;
+	
+	jug.y dup @ 2 - 
+	420 <? ( 2drop ; )
+	swap ! ;
+	
 :prund 
 	0 panim!	
-	yp 2 +
-	990 >? ( drop ; )
-	dup 330 - 'ymapa !
-	'yp ! ;
+	
+	jug.y dup @ 2 + 
+	990 >? ( 2drop ; )
+	swap ! ;
+
 :saltar
 	zp 1? ( drop ; ) drop
 	5.0 'vzp !
@@ -121,26 +131,27 @@
 	
 #ep 'pstay
 
-:jugador
-	>a 0
-	
-	37 sprplayer xp 8 - yp 8 + ymapa - tsdraw	| sombra
-	
-	nrop sprplayer xp yp zp int. - ymapa - tsdraw
-	ep ex
+:jug	
+	dup 'ajug ! >a
+	a@ dup 0.05 + a!+ 
+	16 >> a@+ and a@+ + 
+	drop
+	nrop sprplayer 
+	a@+ xmapa -
+	a@+ ymapa - zp int. -
+	tsdraw
 	
 	zp vzp +
 	0 <=? ( drop 0 'zp ! 0 'vzp ! ; )
 	'zp !
-	-0.1 'vzp +!
-	;
-	
-:+jugador
-	'jugador 'fx p!+ >a
-	8 a+ xp a!+ yp a!+
-	3 'fx p.sort
+	-0.1 'vzp +!	
 	;
 
+:+juga
+	'jug 'fx p!+ >a
+	8 a+ 0 a!+ 0 a!+ xp a!+ yp a!+
+	;
+	
 :randy | -- ; 420..990
 	570 randmax 420 + ;
 		
@@ -148,8 +159,14 @@
 	200 ( 1? 1 -
 		12000 randmax 800 +
 		randy +ritem
-		) drop ;
+		) drop 
+	+juga		
+	;
 	
+	
+:debug	
+	.cls "list:" .println
+	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'fx p.mapv ;
 	
 |--------------------------------
 :teclado
@@ -176,19 +193,24 @@
 	xmapa $ff and neg 
 	ymapa $ff and neg
 	256 dup mapajuego tiledraws
-	1 'xmapa +! ;
+
+	'fx p.drawo
+	ep ex
+	2 jug.x +! 
+	viewport	
+	
+	5 'fx p.sort	
+	;
 
 :jugando
-	$039be5 SDLcls
 	ciudad
-	+jugador
-	'fx p.drawo
 	
 	|$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
 	
 	$0 font 
 	yp "vidas:%d" sprint
 	20 20 ttfprint | color font "text" x y -- 
+	
 	SDLredraw
 	teclado ;
 

@@ -1,19 +1,20 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3	
 ^r3/win/sdl2mixer.r3
-^r3/util/tilesheet.r3
 
+^r3/util/arr16.r3
+^r3/util/tilesheet.r3
 ^r3/lib/rand.r3
  
 #graficos
 
-#xs #ys
-#xss #yss #nss
-
+#fx 0 0
+#balas 0 0
+#aliens 0 0
+	
 #xp 355.0 #yp 500.0
 #vxp #vyp
 
-#xa #ya
 
 :player
 	|yp vyp + 10.0 max sh 100 - 16 << min 'yp !
@@ -25,59 +26,57 @@
 	;
 
 :explode
-	xss 0? ( drop ; ) drop
-	nss 16 >>
-|	ts_explo 
-	xss yss tsdraw
-
-	-1 'xss +!
-	0.2 'nss +!
-	nss 15.5 >? ( 0 'xss ! ) drop
+	>a
+	a@ 3.0 >=? ( 0 nip ; ) 
+	0.1 + dup a!+
+	16 >> 14 + graficos
+	a@+ 16 >> a@+ 16 >>
+	tsdraw
 	;
 
-:+explode
-	xa 16 >> 10 - 'xss !
-	ya 16 >> 10 - 'yss !
-	0 'nss !
-	
-	;
+:+fx | x y
+	'explode 'fx p!+ >a 0 a!+ swap a!+ a! ;
 
-:newovni
-	500.0 randmax 50.0 + 'ya !
-	sw 16 << 'xa ! ;
+|:newovni
+|	500.0 randmax 50.0 + 'ya !
+|	sw 16 << 'xa ! ;
 
 :hit??
-	xa 16 >> 20 + xs -
-	ya 16 >> 15 + ys - distfast
-	20 >? ( drop ; ) drop
-	0 'xs !
-	+explode
-	newovni
+|	xa 16 >> 20 + xs -
+|	ya 16 >> 15 + ys - distfast
+|	20 >? ( drop ; ) drop
+|	0 'xs !
+|	+fx
+|	newovni
 	;
-
-:shoot
-	xs 0? ( drop ; ) drop
-	8 'xs +!
-	xs sw >? ( 0 'xs ! drop ; ) drop
-	$ffffff SDLColor
-	xs ys over 10 + over SDLLine
-	hit??
+	
+:alien | a --
+	>a 
+	msec 7 >> $3 and 9 +
+	graficos a@+ 16 >> a@+ 16 >> tsdraw
+	-8 a+
+	a@ 1.2 + 
+	600.0 >? ( drop 0 ; )
+	a!
 	;
-
-:+shoot
-	xs 1? ( drop ; ) drop
-	yp 16 >> 14 + 'ys !
-	xp 16 >> 30 + 'xs !
+	
+:+alien | x y --
+	'alien 'aliens p!+ >a swap a!+ a! ;
+	
+|--------------------------------
+:disp | a --
+	>a 
+	8 graficos
+	a@+ 16 >> 
+	a@ 8.0 - dup a!+ 16 >>
+	-40 <? ( 4drop 0 ; )
+	tsdraw
 	;
+	
+:+disp | x y --
+	'disp 'balas p!+ >a swap a!+ a! ;
 
-:ovni | --
-	3.0 randmax 1.5 - 'ya +!
-	-2.0 'xa +!
-	xa -10.0 <? ( newovni ) drop
-	msec 6 >> $3 and 
-|	ts_alien 
-	xa 16 >> ya 16 >> tsdraw ;
-
+|--------------------------------
 
 #ss * 8192 | estrellas
 
@@ -101,10 +100,11 @@
 	0 SDLcls
 	
 	drawback
+	
+	'balas p.draw
+	'aliens p.draw
+	'fx p.draw
 	player
-|	shoot
-|	ovni
-|	explode
 	
 	SDLredraw
 
@@ -114,7 +114,8 @@
 	<ri> =? ( 2.0 'vxp ! )
 	>le< =? ( 0 'vxp ! )
 	>ri< =? ( 0 'vxp ! )
-	<esp> =? ( +shoot )
+	<esp> =? ( xp yp +disp )
+	<f1> =? ( 800.0 randmax -90.0 +alien ) 
 	drop
 	;
 
@@ -122,7 +123,11 @@
 	"r3sdl" 800 600 SDLinit
 	SNDInit
 
-	90 90 "r3/j2022/shooter/nave.png" loadts 'graficos !
+	100 'fx p.ini
+	100 'balas p.ini
+	100 'aliens p.ini
+	
+	90 90 "r3/j2022/shooter/shooter.png" loadts 'graficos !
 
 	fillback
 	
