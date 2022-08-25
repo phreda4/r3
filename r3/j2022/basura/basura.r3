@@ -81,15 +81,7 @@
 	'perro 'fx p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
 	
 |--------------------------------
-#ajug
-
-:jug.x	ajug 3 3 << + ;
-:jug.y	ajug 4 3 << + ;
-
-:viewport
-	jug.x @ 300 - 'xmapa !
-	jug.y @ 200 - 'ymapa !
-	;
+#btnpad
 
 #nrop
 
@@ -101,45 +93,41 @@
 	0 panim!
 	;
 	 
-:prunl 
-	0 panim! 
-	jug.x dup @ 1 - swap ! ;
-	
-:prunr 
-	0 panim!
-	jug.x dup @ 1 + swap ! ;
-	
-:prunu 
-	0 panim!
-	
-	jug.y dup @ 2 - 
-	420 <? ( 2drop ; )
-	swap ! ;
-	
-:prund 
-	0 panim!	
-	
-	jug.y dup @ 2 + 
-	990 >? ( 2drop ; )
-	swap ! ;
-
 :saltar
 	zp 1? ( drop ; ) drop
 	5.0 'vzp !
 	4 'nrop !
 	;
-	
-#ep 'pstay
+
+:xmove | d --
+	a@ + a! ;
+
+:ymove | d --
+	a@ + 420 max 990 min a! ;
 
 :jug	
-	dup 'ajug ! >a
+	>a
 	a@ dup 0.05 + a!+ 
 	16 >> a@+ and a@+ + 
 	drop
+	0 panim! 
 	nrop sprplayer 
 	a@+ xmapa -
 	a@+ ymapa - zp int. -
 	tsdraw
+	
+	btnpad
+	-8 a+
+	%1000 and? ( -2 ymove  )
+	%100 and? ( 2 ymove  )
+	-8 a+
+	%10 and? ( -1 xmove )
+	%1 and? ( 1 xmove )
+	drop
+	a@ 2 + a!
+	
+	a@+ 300 - 'xmapa ! 
+	a@ 200 - 'ymapa ! 
 	
 	zp vzp +
 	0 <=? ( drop 0 'zp ! 0 'vzp ! ; )
@@ -166,20 +154,21 @@
 	
 :debug	
 	.cls "list:" .println
-	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'fx p.mapv ;
+	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'fx p.mapv 
+	;
 	
 |--------------------------------
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<up> =? ( 'prunu 'ep ! )
-	<dn> =? ( 'prund 'ep ! )
-	<le> =? ( 'prunl 'ep ! )
-	<ri> =? ( 'prunr 'ep ! )
-	>up< =? ( 'pstay 'ep ! )
-	>dn< =? ( 'pstay 'ep ! )
-	>le< =? ( 'pstay 'ep ! )
-	>ri< =? ( 'pstay 'ep ! )
+	<up> =? ( btnpad %1000 or 'btnpad ! )
+	<dn> =? ( btnpad %100 or 'btnpad ! )
+	<le> =? ( btnpad %10 or 'btnpad ! )
+	<ri> =? ( btnpad %1 or 'btnpad ! )
+	>up< =? ( btnpad %1000 not and 'btnpad ! )
+	>dn< =? ( btnpad %100 not and 'btnpad ! )
+	>le< =? ( btnpad %10 not and 'btnpad ! )
+	>ri< =? ( btnpad %1 not and 'btnpad ! )	
 	<esp> =? ( saltar )
 	<f1> =? ( 800 randy +perro ) 
 	<f2> =? ( -128 randy +gato ) 
@@ -195,14 +184,12 @@
 	256 dup mapajuego tiledraws
 
 	'fx p.drawo
-	ep ex
-	2 jug.x +! 
-	viewport	
 	
 	5 'fx p.sort	
 	;
 
 :jugando
+	$039be5 SDLcls
 	ciudad
 	
 	|$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 

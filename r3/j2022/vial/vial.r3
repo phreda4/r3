@@ -149,29 +149,63 @@
 
 :+objr
 	8 randmax 6 3 << * 'res1 + +objg ;
+
+|-------------------------------------------
+	
+| msec addani|cntani x y vx vy lim|xy dest
+:vehiculo | a --
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + sprplayer | frame 'sprites
+	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
+	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
+	tsdraw 
+	a@+ a> 24 - +!	| vx
+	a@+ a> 24 - +!	| vy
+	
+	a@ getcoor 16 >> 
+	swap getval 
+	<? ( drop ; ) drop
+|	a@ 32 >> $f and  | cambia a estado 0..15
+	
+	|$80005 a> 5 3 << - !
+|	a> 2 3 << - dup @ neg swap !
+|	a> 1 3 << - dup @ neg swap !	
+	;
+
+:+vehi	| adr --
+	'vehiculo 'obj p!+ >a >b
+	0 a!+
+	db@+ a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + db@ or a!
+	;
+
+#veh1 [ $120004  | anim
+-32.0 0.0 	| xp
+408.0 90.0	| yp
+0.7 1.0 	| vx
+0.0 0.0 	| vy
+1080 60 $110000 ]
+
+#veh2 [ $e0004  | anim
+1080.0 0.0 	| xp
+210.0 100.0	| yp
+-0.7 -1.0 	| vx
+0.0 0.0 	| vy
+-80 60 $100000 ]
+
+
+:+vehir
+	2 randmax 6 3 << * 'veh1 + 
+	+vehi ;
+	
 	
 | x yrand 	
-#lugarpea [
--32 512
--32 150
-380 0
-580 0
-1056 150
-1056 512
-580 664
-380 664
-]	
-#waitpea [
-340 512
-350 150
-380 150
-580 150
-600 150
-600 512
-570 530
-380 530
-]
-
 #lugarbic [
 -32 400
 -32 220
@@ -192,21 +226,49 @@
 
 |-------------------------------- semaforo
 :sema
-	8 + >a semaforoestado sprsemaforo a@+ 48 - a@+ 96 - tsdraw ;
+	16 + >a semaforoestado sprsemaforo a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw ;
 
 :+sema | x y --
-	'sema 'obj p!+ >a 0 a!+ swap a!+ a! ;
+	'sema 'obj p!+ >a 0 a!+ 0 a!+  
+	swap 16 << a!+ 16 << a! ;
 	
 |--------------------------------
+#btnpad
+
+:player
+	16 + >a semaforoestado sprsemaforo 
+	a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
+	-8 a+
+	btnpad
+	%1000 and? ( a@ 2.0 - a! )
+	%100 and? ( a@ 2.0 + a! )
+	-8 a+
+	%10 and? ( a@ 2.0 - a! )
+	%1 and? ( a@ 2.0 + a! )
+	drop
+	;
+
+:+pla | x y --
+	'player 'obj p!+ >a 0 a!+ 0 a!+  
+	swap 16 << a!+ 16 << a! ;
+	
 
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
 	
 	<f1> =? ( +objr )
-	<f2> =? ( 'res5 +objg )
+	<f2> =? ( +vehir )
 
-	<up> =? ( semaforoestado 1 + 3 =? ( 0 nip ) 'semaforoestado ! ) 
+|	<up> =? ( semaforoestado 1 + 3 =? ( 0 nip ) 'semaforoestado ! ) 
+	<up> =? ( btnpad %1000 or 'btnpad ! )
+	<dn> =? ( btnpad %100 or 'btnpad ! )
+	<le> =? ( btnpad %10 or 'btnpad ! )
+	<ri> =? ( btnpad %1 or 'btnpad ! )
+	>up< =? ( btnpad %1000 not and 'btnpad ! )
+	>dn< =? ( btnpad %100 not and 'btnpad ! )
+	>le< =? ( btnpad %10 not and 'btnpad ! )
+	>ri< =? ( btnpad %1 not and 'btnpad ! )
 	
 	drop 
 	;
@@ -219,7 +281,7 @@
 :jugando
 	0 0 mapajuego SDLimage
 
-	|3 'obj p.sort
+	4 'obj p.sort
 	time.delta
 	'obj p.drawo
 	'fx p.draw
@@ -237,6 +299,7 @@
 	
 	354 48 + 100 96 + +sema
 	546 48 + 426 96 + +sema
+	400 300 +pla
 	| lamparas de luz
 	time.start
 	

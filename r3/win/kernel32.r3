@@ -44,6 +44,9 @@
 #sys-SetConsoleWindowInfo
 
 #sys-GetCommandLine
+#sys-GetConsoleWindow
+
+#sys-showwindow
 
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::ExitProcess sys-ExitProcess sys1 ;
@@ -87,6 +90,8 @@
 ::SetConsoleWindowInfo sys-SetConsoleWindowInfo sys3 drop ;
 
 ::GetCommandLine sys-GetCommandLine sys0 ;
+::GetConsoleWindow sys-GetConsoleWindow sys0 ;
+::ShowWindow sys-showwindow sys2 drop ;
 
 |------- BOOT
 :
@@ -135,7 +140,11 @@
 
 	dup "SetConsoleScreenBufferSize" getproc 'sys-SetConsoleScreenBufferSize !
 	dup "SetConsoleWindowInfo" getproc 'sys-SetConsoleWindowInfo !
-
+	
+	dup "GetConsoleWindow" getproc 'sys-GetConsoleWindow !
 	drop
+	"USER32.DLL" loadlib 
+	dup "ShowWindow" getproc 'sys-showwindow !
+	drop	
 	;
 	
