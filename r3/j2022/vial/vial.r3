@@ -13,6 +13,7 @@
 #mapajuego
 
 #sprplayer
+#sprauto
 #sprsemaforo
 
 #fx 0 0
@@ -20,19 +21,27 @@
 
 #semaforoestado 0
 
+|----------------- map 
+| 1024*600 = 64*37 (16x16)
+#mapa * 2368
 
-#botrs $000000001
-#botrr $100000005 |1 2 3 4 5
-#botrt $600000001
+:mapa.ini
+	'mapa 0 2368 cfill ;
 
-#botrb $1200000004 | 18 19 20 21
-
-#botls $700000001
-#botlr $800000005 |8 9 10 11 12
-#botlt $d00000001 |13
-
-#botlb $e00000004 |14 15 16 17
-
+:mapa. | x y -- amapa
+	600 clamp0max 
+	4 >> 6 << swap | 16 / 64 *
+	1024 clamp0max 
+	4 >> + 'mapa + ;
+	
+:mapa.show
+	'mapa >a
+	0 ( 37 <? 
+		0 ( 64 <?
+			ca@+ 1? ( over 4 << pick3 4 <<  8 8 SDLFRect ) drop
+			1 + ) drop
+		1 + ) drop ;
+	
 |-------------- tiempo
 #prevt
 #dtime
@@ -46,12 +55,27 @@
 :animcntm | cnt msec -- 0..cnt-1
 	55 << 1 >>> 63 *>> ; | 55 speed
 	
-|------------- cursor
+:+obj | 'from 'vec --
+	'obj p!+ >a >b
+	0 a!+
+	db@+ a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + db@ or a!
+	;
 	
+|------------- cursor
+#upclick	
+
 ::cursor!!	| x y -- hit?
 	SDLx pick2 - SDLy pick2 - distfast
-	16 >? ( 3drop 0 ; ) drop
+	32 >? ( 3drop 0 ; ) drop
 	32 dup 2swap SDLfEllipse
+	SDLB 1? ( 'upclick ! 0 ; ) drop
+	upclick 0? ( ; ) drop
+	0 'upclick !
 	1 ;
 	
 |-------------- cambio de estado
@@ -67,15 +91,15 @@
 	animcntm + sprplayer | frame 'sprites
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
+	
+	over 32 + over 64 + mapa. 1 swap c!
+	
 	over 32 + over 32 + cursor!! | hit?
-	>r
+	
+	1? ( mode.com a> 5 3 << - ! ) drop
 	tsdraw 
 	a@+ a> 24 - +!	| vx
 	a@+ a> 24 - +!	| vy
-	r> 0? ( drop ; ) drop | hit
-	| falta click
-	SDLb 0? ( drop ; ) drop
-	mode.com a> 7 3 << - !
 	;
 
 :robot.2 | a --
@@ -86,111 +110,95 @@
 	sprplayer | frame 'sprites
 	a@+ 16 >> 32 -
 	a@+ 16 >> 64 -
-	over 32 + over 32 + cursor!! >r | hit?	
+	
+	over 32 + over 64 + mapa. 1 swap c!
+	
+	over 32 + over 32 + cursor!! | hit?	
+	
+	1? ( mode.run a> 5 3 << - ! ) drop
 	tsdraw 
-	r> 0? ( drop ; ) drop | hit
-	
-	SDLb 0? ( drop ; ) drop	
-	mode.run a> 7 3 << - !
 	;
-
-|================================
-:getcoor
-	$10000 and? ( a> 4 3 << - @ ; )
-	a> 3 3 << - @ ;
-	
-:getval | v val -- v v2
-	$100000 and? ( $ffff and ; )
-	$ffff and swap ;
-	
-:robot.0 | a --
-	>a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + sprplayer | frame 'sprites
-	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
-	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
-	
-	over 32 + over 32 + cursor!!
-	
-	tsdraw 
-	a@+ a> 24 - +!	| vx
-	a@+ a> 24 - +!	| vy
-	
-	a@ getcoor 16 >> 
-	swap getval 
-	<? ( drop ; ) drop
-|	a@ 32 >> $f and  | cambia a estado 0..15
-	| |-------------cambiaestado
-|	$80005 a> 5 3 << - !
-|	a> 2 3 << - dup @ neg swap !
-|	a> 1 3 << - dup @ neg swap !	
-	;
-|================================	
 
 		| anim 	| xp	|dxp 	| yp	|dyp	| vx	|dvx	| vy	|dvy 	| limit | dlimit | test
-#res1 [ $10005 -32.0	0.0		512.0 	50.0 	0.5 	0.8 	0.0 	0.0 	350 60 $110000 ]
-#res2 [ $10005 -32.0	0.0 	150.0 	50.0	0.5 	0.8 	0.0 	0.0 	350 60 $110000 ]
-#res3 [ $80005 1024.0	0.0 	512.0 	50.0	-0.5 	-0.8 	0.0 	0.0 	600 60 $010000 ]
-#res4 [ $80005 1024.0	0.0 	150.0 	50.0	-0.5 	-0.8 	0.0 	0.0 	600 60 $010000 ]
-#res5 [ $10005 380.0	40.0 	0.0 	0.0		0.0 	0.0 	0.5 	0.8 	150 60 $100000 ]
-#res6 [ $10005 580.0	40.0 	0.0 	0.0		0.0 	0.0 	0.5 	0.8 	150 60 $100000 ]
-#res7 [ $10005 380.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.5 	-0.8 	500 60 $000000 ]
-#res8 [ $10005 580.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.5 	-0.8 	500 60 $000000 ]
+#res1 [ $10005 -32.0	0.0		512.0 	50.0 	0.3 	0.8 	0.0 	0.0 	350 60 $110000 ]
+#res2 [ $10005 -32.0	0.0 	150.0 	50.0	0.3 	0.8 	0.0 	0.0 	350 60 $110000 ]
+#res3 [ $80005 1024.0	0.0 	512.0 	50.0	-0.3 	-0.8 	0.0 	0.0 	600 60 $010000 ]
+#res4 [ $80005 1024.0	0.0 	150.0 	50.0	-0.3 	-0.8 	0.0 	0.0 	600 60 $010000 ]
+#res5 [ $10005 380.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	150 60 $100000 ]
+#res6 [ $10005 580.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	150 60 $100000 ]
+#res7 [ $10005 380.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	500 60 $000000 ]
+#res8 [ $10005 580.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	500 60 $000000 ]
 	
 #modes 'robot.1 'robot.2
 
-:+objg	| adr --
-	|1 randmax 3 << 'modes + @ 
-	'robot.1
-	'obj p!+ >a >b
-	0 a!+
-	db@+ a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + db@ or a!
-	;
-
 :+objr
-	8 randmax 6 3 << * 'res1 + +objg ;
+	8 randmax 6 3 << * 'res1 + 
+	|1 randmax 3 << 'modes + @ 
+	'robot.1 +obj
+	;
 
 |-------------------------------------------
 	
 | msec addani|cntani x y vx vy lim|xy dest
-:vehiculo | a --
+:bici | a --
 	>a
 	a@ dup dtime + a!+ 
 	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
 	animcntm + sprplayer | frame 'sprites
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
-	over 32 + over 32 + cursor!! >r
+	
+	over 32 + over 64 + mapa. 1 swap c!
+	
+	over 32 + over 32 + cursor!! 
+	
+	1? ( mode.com a> 5 3 << - ! ) drop
 	tsdraw 
 	a@+ a> 24 - +!	| vx
 	a@+ a> 24 - +!	| vy
-	r> drop
-	;
-
-:+vehi	| adr --
-	'vehiculo 'obj p!+ >a >b
-	0 a!+
-	db@+ a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + a!+
-	db@+ db@+ randmax + db@ or a!
 	;
 
 		| anim 	| xp	|dxp 	| yp	|dyp	| vx	|dvx	| vy	|dvy 	| limit | dlimit | test
 #veh1 [ $120004  -32.0 	0.0 	408.0 	90.0	0.7 	1.0 	0.0 	0.0 	1080 60 $110000 ]
 #veh2 [ $e0004	1080.0 	0.0 	210.0 	100.0	-0.7 	-1.0 	0.0 	0.0 	-80 60 $100000 ]
 
-:+vehir
+:+bicir
 	2 randmax 6 3 << * 'veh1 + 
-	+vehi ;
+	'bici +obj
+	;
+
+|----------------- autos
+#aut1 [ $00001	1080.0 	0.0 	210.0 	80.0	-0.9 	-1.2 	0.0 	0.0 	-80 60 $100000 ]
+#aut2 [ $10001  -32.0 	0.0 	390.0 	80.0	0.9 	1.2 	0.0 	0.0 	1080 60 $110000 ]
+#aut3 [ $20001	430.0	70.0 	664.0 	0.0		0.0 	0.0 	-0.9 	-1.2 	500 60 $000000 ]
+
+#factor
+:sensor | x y
+	over 64 + over 64 + mapa. c@ 'factor !
+	over 64 + over 64 + mapa. 1 swap c!
+	;
+	
+:auto
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + sprauto | frame 'sprites
+	a@+ 16 >> 64 -	-128 <? ( 3drop 0 ; ) 1152 >? ( 3drop 0 ; )
+	a@+ 16 >> 64 -	-128 <? ( 4drop 0 ; ) 728 >? ( 4drop 0 ; ) 
+	sensor
+	tsdraw 
+	factor 1? ( drop ; ) drop
+	a@+ a> 24 - +!	| vx
+	a@+ a> 24 - +!	| vy
+	;
+	
+:+autor	
+	3 randmax 6 3 << * 'aut1 + 'auto  +obj
+	a> 5 3 << - dup @
+	6 randmax 2 << 16 << + | dibujo de auto
+	swap !
+	
+	;
 	
 |-------------------------------- semaforo
 #sematime
@@ -212,53 +220,27 @@
 	'sema 'obj p!+ >a 0 a!+ 0 a!+  
 	swap 16 << a!+ 16 << a! ;
 	
-|============================== player
-#btnpad
-
-:player
-	16 + >a semaforoestado sprsemaforo 
-	a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
-	-8 a+
-	btnpad
-	%1000 and? ( a@ 2.0 - a! )
-	%100 and? ( a@ 2.0 + a! )
-	-8 a+
-	%10 and? ( a@ 2.0 - a! )
-	%1 and? ( a@ 2.0 + a! )
-	drop
+|-------------------------------- adornos
+:quieto
+	a@+ sprsemaforo 8 a+ a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
 	;
 
-:+pla | x y --
-	'player 'obj p!+ >a 0 a!+ 0 a!+  
+:+quieto | nro x y --
+	'quieto 'obj p!+ >a 
+	rot a!+ 0 a!+  
 	swap 16 << a!+ 16 << a! ;
 	
-:playerkeys
-	<up> =? ( btnpad %1000 or 'btnpad ! )
-	<dn> =? ( btnpad %100 or 'btnpad ! )
-	<le> =? ( btnpad %10 or 'btnpad ! )
-	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 not and 'btnpad ! )
-	>dn< =? ( btnpad %100 not and 'btnpad ! )
-	>le< =? ( btnpad %10 not and 'btnpad ! )
-	>ri< =? ( btnpad %1 not and 'btnpad ! )
-	;
-	
-|==============================
-	
+|------------------------------	
 :usuario
 	SDLkey 
 	>esc< =? ( exit )
 	
-|	playerkeys
-
 	<f1> =? ( +objr )
-	<f2> =? ( +vehir )
-
-|	<up> =? ( semaforoestado 1 + 3 =? ( 0 nip ) 'semaforoestado ! ) 
+	<f2> =? ( +bicir )
+	<f3> =? ( +autor )
 	
 	drop 
 	;
-
 
 :debug	
 	.cls "list:" .println
@@ -269,12 +251,14 @@
 
 	4 'obj p.sort
 	time.delta
+	mapa.ini
 	'obj p.drawo
 	'fx p.draw
 	
+mapa.show
 
 	|debug	
-	2 2 bat cursor "%h" sprint bprint
+|	2 2 bat cercano "%d" sprint bprint
 	
 	SDLredraw
 	usuario
@@ -286,8 +270,10 @@
 	
 	354 48 + 100 96 + +sema
 	546 48 + 426 96 + +sema
-|	400 300 +pla
-	| lamparas de luz
+	
+	| adornos
+|	3 400 300 +quieto
+	
 	time.start
 
 	'robot.1 'mode.run !
@@ -301,6 +287,7 @@
 	
 	"r3\j2022\vial\mapa.png" loadimg 'mapajuego !
 	
+	128 128 "r3\j2022\vial\autos.png" loadts 'sprauto !
 	64 64 "r3\j2022\vial\robot.png" loadts 'sprplayer !
 	96 96 "r3\j2022\vial\semaforo.png" loadts 'sprsemaforo !
 	
