@@ -38,6 +38,7 @@
 ::gui
 	idf 'idl ! hot 'hotnow !
 	0 'id ! 0 'idf ! 0 'hot !
+	0 0 sw sh guiRect
 	;
 
 |-- boton

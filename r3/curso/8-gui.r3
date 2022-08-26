@@ -15,7 +15,6 @@
 
 :drawline
 	gui		
-	0 0 sw sh guiRect
 	SDLb SDLx SDLy guiIn
 	
 	[ xypen xy! ; ] 
