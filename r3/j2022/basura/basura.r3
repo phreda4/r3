@@ -16,12 +16,37 @@
 #fx 0 0
 
 #xmapa 0 
-#ymapa 170
+#ymapa 0
 
 #xp 100
-#yp 500
+#yp 600
 #zp 0
 #vzp 0
+
+|-------------- tiempo
+#prevt
+#dtime
+
+:time.start
+	msec 'prevt ! 0 'dtime ! ;
+
+:time.delta
+	msec dup prevt - 'dtime ! 'prevt ! ;
+
+	
+:+obj | 'from 'vec --
+	'fx p!+ >a >b
+	0 a!+	| estado
+	db@+ a!+	| anima
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	db@+ db@+ randmax + a!+
+	1.0 a!
+	;
+
+:animcntm | cnt msec -- 0..cnt-1
+	55 << 1 >>> 63 *>> ; | 55 speed
 
 |--------------------------------
 | nro-tile mask-cnt ( 0>1 1>2 3>4)
@@ -34,9 +59,9 @@
 18 1
 20 2
 24 1
-34 0
-35 0
 36 0
+34 0	| tacho verde
+35 0	| tacho gris
 )
 
 |--------------------------------
@@ -51,7 +76,7 @@
 	'item 'fx p!+ >a 0 a!+ a!+ a!+ swap a!+ a! ;
 
 :+ritem | x y --
-	11 randmax 1 << 'tipoitems +
+	9 randmax 1 << 'tipoitems +
 	c@+ swap c@ +item ;
 	
 |--------------------------------
@@ -73,7 +98,7 @@
 	16 >> $3 and 26 + sprplayer 
 	16 a+
 	a@+ 
-	dup 3 - -128 <? ( 4drop 0 ; ) a> 8 - !
+	dup 5 - -128 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - tsdraw
 	;
 	
@@ -83,72 +108,74 @@
 |--------------------------------
 #btnpad
 
-#nrop
-
-:panim! | nro -- 
-	msec 7 >> $3 and + 'nrop ! ;
-	
-:pstay
-	zp 1? ( drop ; ) drop 
-	0 panim!
-	;
-	 
-:saltar
-	zp 1? ( drop ; ) drop
-	5.0 'vzp !
-	4 'nrop !
-	;
-
 :xmove | d --
-	a@ + a! ;
+	a@ + 80 max dup 300 - 'xmapa ! a! ;
 
 :ymove | d --
-	a@ + 420 max 990 min a! ;
+	a@ + 420 max 990 min dup 200 - 'ymapa ! a! ;
+
+:a@anim | -- nroanim ; A@!+
+	a@ dup dtime 32 << + a!+
+	dup $ffff and 
+	over 16 >> $ffff and 
+	rot 32 >> animcntm + 
+	;
+	
+:a!anim | nuevoanim -- ; a:
+	a@ $ffffffff not and or a! ;
 
 :jug	
 	>a
-	a@ dup 0.05 + a!+ 
-	16 >> a@+ and a@+ + 
-	drop
-	0 panim! 
-	nrop sprplayer 
+	a@anim a@+
+	8 a+
 	a@+ xmapa -
 	a@+ ymapa - zp int. -
 	tsdraw
 	
 	btnpad
-	-8 a+
-	%1000 and? ( -2 ymove  )
-	%100 and? ( 2 ymove  )
-	-8 a+
-	%10 and? ( -1 xmove )
-	%1 and? ( 1 xmove )
+	-8 a+ %1000 and? ( -2 ymove ) %100 and? ( 2 ymove  )
+	-8 a+ %10 and? ( -2 xmove ) %1 and? ( 2 xmove )
 	drop
-	a@ 2 + a!
 	
-	a@+ 300 - 'xmapa ! 
-	a@ 200 - 'ymapa ! 
+	|a@ 3 + a!
 	
 	zp vzp +
 	0 <=? ( drop 0 'zp ! 0 'vzp ! ; )
 	'zp !
-	-0.1 'vzp +!	
-	;
-
-:+juga
-	'jug 'fx p!+ >a
-	8 a+ 0 a!+ 0 a!+ xp a!+ yp a!+
+	-0.3 'vzp +!	
 	;
 	
-:randy | -- ; 420..990
-	570 randmax 420 + ;
-		
-:hacenivel
-	200 ( 1? 1 -
-		12000 randmax 800 +
-		randy +ritem
-		) drop 
-	+juga		
+
+	
+:a!xy | x y --
+	swap a!+ a!+ ;
+	
+:center> | x y -- v 
+	32 << swap $ffffffff and or ;
+	
+:a@xyz | -- x y 
+	a@+ |center
+	a@+ over 32 >> - xmapa -
+	a@+ rot 32 << 32 >> - ymapa - zp int. -
+	;
+
+:a@xy | -- x y 
+	a@+ |center
+	a@+ over 32 >> - xmapa -
+	a@+ rot 32 << 32 >> - ymapa -
+	;
+	
+	
+|=======================	
+:+jugador
+	'jug 'fx p!+ >a
+	$40000 a!+ | anim
+	sprplayer a!+ | sprite
+	
+	0 a!+ 
+	xp a!+ yp a!+
+	xp 300 - 'xmapa ! 
+	yp 200 - 'ymapa !
 	;
 	
 	
@@ -158,6 +185,23 @@
 	;
 	
 |--------------------------------
+:randy | -- ; 420..990
+	570 randmax 420 + ;
+	
+|---------------------
+#secant
+
+:creador
+	msec 10 >>
+	secant =? ( drop ; )
+	'secant !
+	3 randmax 0? ( 800 randy +perro ) drop | 1/3
+	4 randmax 0? ( -128 randy +gato ) drop
+	;
+
+:saltar
+	zp 0? ( 8.0 'vzp ! ) drop  ;
+
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
@@ -170,12 +214,17 @@
 	>le< =? ( btnpad %10 not and 'btnpad ! )
 	>ri< =? ( btnpad %1 not and 'btnpad ! )	
 	<esp> =? ( saltar )
-	<f1> =? ( 800 randy +perro ) 
-	<f2> =? ( -128 randy +gato ) 
-	<f3> =? ( 800 randy +ritem )
+|	<f1> =? ( 800 randy +perro ) 
+|	<f2> =? ( -128 randy +gato ) 
+|	<f3> =? ( 800 randy +ritem )
 	drop 
 	;
 
+:alive!
+	800 randy +perro 
+	-128 randy +gato
+	;
+	
 :ciudad
 	5 4
 	xmapa 8 >> ymapa 8 >>
@@ -190,16 +239,27 @@
 
 :jugando
 	$039be5 SDLcls
+	time.delta
+	creador
 	ciudad
 	
 	|$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
-	
-	$0 font 
-	yp "vidas:%d" sprint
+	$ffffff font "Viernes de agosto - San Cayetano" sprint
 	20 20 ttfprint | color font "text" x y -- 
 	
 	SDLredraw
 	teclado ;
+
+|---------------------------------------
+:hacenivel
+	'fx p.clear
+	200 ( 1? 1 -
+		12000 randmax 500 +
+		randy +ritem
+		) drop 
+	+jugador
+	time.start
+	;
 
 :main
 	1000 'fx p.ini

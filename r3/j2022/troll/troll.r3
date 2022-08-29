@@ -75,9 +75,34 @@
 :panim | -- nanim	
 	msec 6 >> 3 mod abs ;
 	
-:pstay
-	|0 'np !
+
+
+
+	
+:pisoysalto
+	floor? 0? ( drop
+		0.3 'vyp +!
+		10.0 clampmax
+		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
+		; ) drop
+	0 'vyp !
+|	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
+	
+	SDLkey
+|	<up> =? ( -8.0 'vyp ! )
+	drop
 	;
+
+:debug
+	$ffffff bcolor 
+	10 10 bat 
+	floor? "f:%d " sprint bprint  	
+	roof? "r:%d " sprint bprint
+	;
+
+#btnpad
+
+
 	
 :prunl
 |	estela	
@@ -92,29 +117,12 @@
 	0 panim + 'np !
 	2.0 'xp +!
 	;
-
 	
-#ep 'pstay
-
-:pisoysalto
-	floor? 0? ( drop
-		0.3 'vyp +!
-		10.0 clampmax
-		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
-		; ) drop
-	0 'vyp !
-	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
-	
-	SDLkey
-	<up> =? ( -8.0 'vyp ! )
-	drop
+:xmove
+	'xp +!
 	;
-
-:debug
-	$ffffff bcolor 
-	10 10 bat 
-	floor? "f:%d " sprint bprint  	
-	roof? "r:%d " sprint bprint
+:ymove
+	'yp +!
 	;
 	
 :player	
@@ -122,11 +130,18 @@
 	xp int. xvp -
 	yp int. yvp -
 	32 32 tsdraws
-	ep ex
-	pisoysalto
+
+	btnpad
+	%1000 and? ( -1.0 ymove  )
+	%100 and? ( 1.0 ymove  )
+	%10 and? ( -1.0 xmove )
+	%1 and? ( 1.0 xmove )
+	drop
 	
-	vyp 'yp +!
-	vxp 'xp +!
+|	pisoysalto
+	
+|	vyp 'yp +!
+|	vxp 'xp +!
 	
 	viewport
 	;
@@ -134,10 +149,14 @@
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<le> =? ( 'prunl 'ep ! )
-	<ri> =? ( 'prunr 'ep ! )
-	>le< =? ( 'pstay 'ep ! )
-	>ri< =? ( 'pstay 'ep ! )
+	<up> =? ( btnpad %1000 or 'btnpad ! )
+	<dn> =? ( btnpad %100 or 'btnpad ! )
+	<le> =? ( btnpad %10 or 'btnpad ! )
+	<ri> =? ( btnpad %1 or 'btnpad ! )
+	>up< =? ( btnpad %1000 not and 'btnpad ! )
+	>dn< =? ( btnpad %100 not and 'btnpad ! )
+	>le< =? ( btnpad %10 not and 'btnpad ! )
+	>ri< =? ( btnpad %1 not and 'btnpad ! )	
 	drop 
 	;
 

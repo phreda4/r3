@@ -4,10 +4,12 @@
 ^r3/util/boxtext.r3
 ^r3/util/tilesheet.r3
 ^r3/lib/rand.r3
+^r3/lib/gui.r3
 
 #simaneges
 #stablero
 #smapa
+#scursor
 
 #fontt
 #font
@@ -72,8 +74,17 @@
 	drop 
 	;
 	
+:boton | -- size
+	2over 2over guibox
+	SDLb SDLx SDLy guiIn	
+	$ffffff  [ $00ff00 nip ; ] guiI
+	SDLColor
+	2over 2over SDLFRect	
+	xywh64
+	;
 	
 :jugando
+	gui
 	$0 SDLcls
 	0 0 
 	1280 720
@@ -90,11 +101,17 @@
 	20 20 
 	256 dup tsdraws
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
-	$11 r1 25 312 288 65 xywh64 $0 font textbox
-	$11 r2 25 404 288 65 xywh64 $0 font textbox
-	$11 r3 25 498 288 65 xywh64 $0 font textbox
-	$11 r4 25 590 288 65 xywh64 $0 font textbox
+	
+	25 312 288 65 boton
+	$11 r1 rot $0 font textbox
+	25 403 288 65 boton
+	$11 r2 rot $0 font textbox
+	25 497 288 65 boton
+	$11 r3 rot $0 font textbox
+	25 590 288 65 boton
+	$11 r4 rot $0 font textbox
 
+	0 scursor sdlx sdly tsdraw
 	SDLredraw
 	teclado
 	;
@@ -104,6 +121,7 @@
 	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
 	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
+	128 dup "r3\j2022\pregunta\cursor.png" loadts 'scursor !	
 	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simaneges !
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
 	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
@@ -121,6 +139,7 @@
 	|"r3sdl" 1024 576 SDLinit
 	|SDLfull
 	inicio
+	0 SDL_ShowCursor
 	'jugando SDLshow
 	SDLquit ;	
 	
