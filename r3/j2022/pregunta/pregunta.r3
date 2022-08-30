@@ -26,7 +26,10 @@
 
 #r1 #r2 #r3 #r4
 
+|-------------------------------------------
 
+
+|-------------------------------------------
 #mseca
 
 :inireloj
@@ -66,7 +69,6 @@
 	inireloj
 	;
 
-	
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
@@ -74,14 +76,77 @@
 	drop 
 	;
 	
+
+|-------------------------------------------
+#resusr
+
+:resp | r1 -- color
+	resusr <>? ( drop $ffffff ; )
+	'res1 =? ( drop $ff00 ; )  
+	drop $ff0000 ;
+
+:botonr | -- size
+	resp SDLColor
+	2over 2over SDLFRect	
+	xywh64 ;
+	
+:respuesta
+	gui
+	$0 SDLcls
+	0 0 
+	1280 720
+	stablero sdlimages
+	
+	500 180 
+	400 523
+	smapa sdlimages
+	
+	reloj
+
+	msec 8 >> 3 and 
+	simaneges 
+	20 20 
+	256 dup tsdraws
+	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
+	
+	25 312 288 65 r1 botonr
+	$11 r1 rot $0 font textbox
+	
+	25 403 288 65 r2 botonr
+	$11 r2 rot $0 font textbox
+	
+	25 497 288 65 r3 botonr
+	$11 r3 rot $0 font textbox
+	
+	25 590 288 65 r4 botonr
+	$11 r4 rot $0 font textbox
+
+	0 scursor sdlx sdly tsdraw
+	SDLredraw
+	teclado
+	;
+	
+|-------------------------------------------
+
 :boton | -- size
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
 	$ffffff  [ $00ff00 nip ; ] guiI
 	SDLColor
 	2over 2over SDLFRect	
-	xywh64
+	xywh64 ;
+
+:resok
+	1 'nropreg +! cpypreg
 	;
+:reserror
+	1 'nropreg +! cpypreg
+	;
+	
+:tocoboton	| adr
+	dup 'resusr !
+	'res1 =? ( resok ; ) 
+	reserror ;
 	
 :jugando
 	gui
@@ -104,18 +169,30 @@
 	
 	25 312 288 65 boton
 	$11 r1 rot $0 font textbox
+	r1 'tocoboton onClick drop
+	
 	25 403 288 65 boton
 	$11 r2 rot $0 font textbox
+	r2 'tocoboton onClick drop
+	
 	25 497 288 65 boton
 	$11 r3 rot $0 font textbox
+	r3 'tocoboton onClick drop
+	
 	25 590 288 65 boton
 	$11 r4 rot $0 font textbox
+	r4 'tocoboton onClick drop
 
 	0 scursor sdlx sdly tsdraw
 	SDLredraw
 	teclado
 	;
 
+:jugar
+	'jugando SDLshow
+	'respuesta SDLshow
+	;
+	
 :inicio
 	ttf_init
 	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
@@ -140,7 +217,7 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-	'jugando SDLshow
+	jugar
 	SDLquit ;	
 	
 : main ;

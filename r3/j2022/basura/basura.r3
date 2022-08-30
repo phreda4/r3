@@ -48,6 +48,9 @@
 :animcntm | cnt msec -- 0..cnt-1
 	55 << 1 >>> 63 *>> ; | 55 speed
 
+:distplayer | x y -- x y f
+	over xp - over yp - distfast ;
+	
 |--------------------------------
 | nro-tile mask-cnt ( 0>1 1>2 3>4)
 #tipoitems (
@@ -70,6 +73,7 @@
 	16 >> a@+ and a@+ + sprplayer 
 	a@+ xmapa -
 	a@+ ymapa - 
+	distplayer 32 <? ( drop 4drop 0 ; ) drop
 	tsdraw ;
 	
 :+item | x y c i --
@@ -86,7 +90,10 @@
 	16 a+
 	a@+ 
 	dup 3 + sw >? ( 4drop 0 ; ) a> 8 - !
-	a@+ ymapa - tsdraw
+	a@+ ymapa - 
+	
+	distplayer 32 <? ( drop 4drop 0 ; ) drop
+	tsdraw
 	;
 	
 :+gato | x y --
@@ -99,7 +106,9 @@
 	16 a+
 	a@+ 
 	dup 5 - -128 <? ( 4drop 0 ; ) a> 8 - !
-	a@+ ymapa - tsdraw
+	a@+ ymapa - 
+	distplayer 32 <? ( drop 4drop 0 ; ) drop
+	tsdraw
 	;
 	
 :+perro | x y --
@@ -128,8 +137,9 @@
 	>a
 	a@anim a@+
 	8 a+
-	a@+ xmapa -
-	a@+ ymapa - zp int. -
+	a@+ xmapa - dup 'xp !
+	a@+ ymapa - dup 'yp !
+	zp int. -
 	tsdraw
 	
 	btnpad

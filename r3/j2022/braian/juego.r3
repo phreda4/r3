@@ -6,6 +6,7 @@
 ^r3/lib/rand.r3
 
 #sfondo
+#scursor
 
 #simaneges
 #stablero
@@ -49,6 +50,8 @@
 	1280 720
 	sfondo sdlimages
 	
+	sdlb scursor sdlx sdly tsdraw
+	
 	SDLredraw
 	teclado
 	;
@@ -57,6 +60,8 @@
 	ttf_init
 |	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
 |	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
+	
+	128 dup "r3\j2022\pregunta\cursor.png" loadts 'scursor !	
 	
 |	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simaneges !
 |	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
@@ -74,6 +79,7 @@
 	|"r3sdl" 1024 576 SDLinit
 	|SDLfull
 	inicio
+	0 SDL_ShowCursor
 	'jugando SDLshow
 	SDLquit ;	
 	
