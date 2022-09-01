@@ -10,6 +10,10 @@
 #sprplayer
 #fx 0 0
 
+
+#mapajuego
+#xvp #yvp
+
 #xp 200.0 #yp 500.0	| posicion
 #vxp #vyp			| velocidad
 #axp #ayp			| aceleracion
@@ -78,8 +82,17 @@
 	drop 
 	;
 	
+:drawmapa
+	26 20
+	xvp 5 >> yvp 5 >>
+	xvp $1f and neg 
+	yvp $1f and neg
+	32 32
+	mapajuego tiledraws ;
+	
 :juego
 	0 SDLcls
+	drawmapa
 	
 	'fx p.draw
 	jetpack
@@ -94,7 +107,8 @@
 	bfont1 
 	SDLfull
 	32 32 "r3\j2022\jetpack\jetpack.png" loadts 'sprplayer !
-
+	"r3\j2022\jetpack\nivel.map" loadtilemap 'mapajuego !
+	
 	'juego SDLshow
 	SDLquit ;	
 	

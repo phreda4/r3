@@ -70,9 +70,9 @@
 	[map]@ 
 	1 =? ( ; )
 	3 =? ( ; )
-	8 =? ( ; )
-	42 =? ( ; ) 
-	53 56 bt? ( ; )
+	9 =? ( ; )
+	41 42 bt? ( ; ) 
+	50 56 bt? ( ; )
 	0 nip ; 
 	
 :roof? | -- techo?
@@ -185,7 +185,7 @@
 	msec 8 >> 3 mod abs 17 + 
 	;
 	
-:drawmapa
+:drawmapar
 	26 20
 	xvp 5 >> yvp 5 >>
 	xvp $1f and neg 

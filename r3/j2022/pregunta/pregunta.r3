@@ -11,6 +11,11 @@
 #smapa
 #scursor
 
+#snd_boton 
+#snd_correcta 
+#snd_incorrecta
+#snd_pregunta
+
 #fontt
 #font
 #preguntas
@@ -67,6 +72,7 @@
 	drop 
 	mixres 
 	inireloj
+|	snd_pregunta SNDplay
 	;
 
 :teclado
@@ -202,6 +208,11 @@
 	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simaneges !
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
 	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
+	
+	"r3\j2022\pregunta\boton.mp3" Mix_LoadWAV 'snd_boton !
+	"r3\j2022\pregunta\correcta.mp3" Mix_LoadWAV 'snd_correcta !
+	"r3\j2022\pregunta\incorrecta.mp3" Mix_LoadWAV 'snd_incorrecta !
+	"r3\j2022\pregunta\pregunta.mp3" Mix_LoadWAV 'snd_pregunta !
 	
 	here dup 'preguntas !
 	"r3\j2022\pregunta\preguntas.txt" load 

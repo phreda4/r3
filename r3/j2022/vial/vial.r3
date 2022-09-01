@@ -196,8 +196,8 @@
 	;
 
 |----------------- autos
-#aut1 [ $00001	1080.0 	0.0 	210.0 	80.0	-0.9 	-1.2 	0.0 	0.0 	0 ]  1.0
-#aut2 [ $10001  -32.0 	0.0 	390.0 	80.0	0.9 	1.2 	0.0 	0.0 	0 ]  1.0
+#aut1 [ $00001	1080.0 	0.0 	210.0 	70.0	-0.9 	-1.2 	0.0 	0.0 	0 ]  1.0
+#aut2 [ $10001  -32.0 	0.0 	380.0 	70.0	0.9 	1.2 	0.0 	0.0 	0 ]  1.0
 #aut3 [ $20001	470.0	72.0 	664.0 	0.0		0.0 	0.0 	-0.9 	-1.2 	0 ]  1.0
 
 #sensorhit
@@ -259,7 +259,9 @@
 	;
 
 :sema
-	16 + >a semaforoestado sprsemaforo a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
+	>a a@+ semaforoestado + sprsemaforo 
+	8 a+
+	a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
 	
 	dtime 'sematime +!
 	sematime 9 >>
@@ -271,12 +273,14 @@
 	drop
 	;
 
-:+sema | x y --
-	'sema 'obj p!+ >a 0 a!+ 0 a!+  
+:+sema | r x y --
+	'sema 'obj p!+ >a 
+	rot a!+ 0 a!+  
 	swap 16 << a!+ 16 << a! ;
 	
 |-------------------------------- adornos
 :quieto
+	>a
 	a@+ sprsemaforo 8 a+ a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
 	;
 
@@ -329,11 +333,14 @@
 	'obj p.clear
 	'fx p.clear
 	
-	354 48 + 100 96 + +sema
-	546 48 + 426 96 + +sema
+	0 354 48 + 100 96 + +sema
+	3 546 48 + 426 96 + +sema
 	
 	| adornos
-|	3 400 300 +quieto
+	6 0 350 +quieto
+	6 254 350 +quieto
+	6 792 350 +quieto
+	6 990 350 +quieto
 	
 	time.start
 	;
