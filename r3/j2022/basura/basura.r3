@@ -118,10 +118,10 @@
 #btnpad
 
 :xmove | d --
-	a@ + 80 max dup 300 - 'xmapa ! a! ;
+	a@ + 80 max a! ;
 
 :ymove | d --
-	a@ + 420 max 990 min dup 200 - 'ymapa ! a! ;
+	a@ + 420 max 990 min a! ;
 
 :a@anim | -- nroanim ; A@!+
 	a@ dup dtime 32 << + a!+
@@ -137,17 +137,19 @@
 	>a
 	a@anim a@+
 	8 a+
-	a@+ xmapa - dup 'xp !
-	a@+ ymapa - dup 'yp !
+	a@+ dup 300 - 'xmapa !
+	xmapa - dup 'xp !
+	a@+ dup 200 - 'ymapa !
+	ymapa - dup 'yp !
 	zp int. -
 	tsdraw
 	
 	btnpad
-	-8 a+ %1000 and? ( -2 ymove ) %100 and? ( 2 ymove  )
-	-8 a+ %10 and? ( -2 xmove ) %1 and? ( 2 xmove )
+	-8 a+ %1000 and? ( -3 ymove ) %100 and? ( 3 ymove  )
+	-8 a+ %10 and? ( -1 xmove ) %1 and? ( 1 xmove )
 	drop
 	
-	|a@ 3 + a!
+	a@ 2 + a!
 	
 	zp vzp +
 	0 <=? ( drop 0 'zp ! 0 'vzp ! ; )
