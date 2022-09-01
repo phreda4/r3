@@ -57,7 +57,7 @@
 	SDLTriangle
 	;
 	
-:poligono | ang n r x y --
+:tpoli | ang n r x y --
 	'yc ! 'xc ! 'ra !
 	1.0 swap / 'sa !
 	'an !
@@ -89,14 +89,17 @@
 :hit | v pos -- v pos
 	swap neg swap ;
 	
-
+:changevel
+	a> -2 3 << +
+	dup @ $ffffffff and 0.03 randmax 0.015 - 32 << or swap !
+	;
 	
 :tfigura
 	0? ( drop nip a@+ pv.p 16 >> a@+ pv.p 16 >> tcirc ; )
 	swap
-	a@+ pv.p 16 >> 
-	a@+ pv.p 16 >> poligono ;
+	a@+ pv.p 16 >> a@+ pv.p 16 >> tpoli ;
 	
+|600 10 600 500	
 :figura
 	>a
 	a@+ SDLColor
@@ -108,24 +111,20 @@
 	a@ pv@ swap 32 << or a!+
 	8 a+
 	a@ pv@
-	600.0 <? ( hit )
-	1200.0 >? ( hit )
+	650.0 <? ( hit changevel )
+	1150.0 >? ( hit changevel )
 	swap 32 << or a!+
 	a@ pv@
 	50.0 <? ( hit )
-	300.0 >? ( hit )
+	470.0 >? ( hit )
 	swap 32 << or a!+
-	
-	
-|	a@+ a> 
-	
 	;
 	
 :+obj | x y size caras color --
 	'figura 'obj p!+ >a
 	a!+ 
 	0
-	0.02 randmax 0.01 - | -0.01 __ 0.01
+	0.03 randmax 0.015 - | -0.01 __ 0.01
 	pv>v a!+ | rotacion
 	32 << or a!+  | caras|size
 	swap 
@@ -137,53 +136,43 @@
 	pv>v a!+ ;
 	
 |----------------------------------------	
-#circulo
-#cuadrado
-#triangulo
-#pentagono
-
-
+:randpos
+	500 randmax 650 +
+	400 randmax 60 + ;
+	
 :pregunta
 	$0 SDLColor
-	600 10 600 400 SDLFRect
+	600 10 600 500 SDLFRect
 
 	'obj p.draw
-	
-	;
-	:a
-	$ff0000 SDLColor
-	msec 4 << 5 40 660 90 poligono
-	$ff00 SDLColor
-	30 750 40 tcirc
-	$ff SDLColor
-	msec 4 << 3 40 760 120 poligono
-	$ffff SDLColor
-	msec 3 << 4 40 860 220 poligono
 	;
 	
-:boton | x y w h -- size
+:boton | x y w h -- xy
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
-	$ffffff  [ $00ff00 nip ; ] guiI
+	$ffffff  [ $666666 nip ; ] guiI
 	SDLColor
 	2over 2over SDLFRect	
-	xywh64 ;
+	1 >> rot + rot rot 1 >> + swap
+	;
 
 	
 :respuesta
-	600 420 300 100 boton
-	$11 "CUA" rot $0 fontt textbox
-	|r1 'tocoboton onClick drop	
+	600 520 300 90 boton
+	$ffff SDLColor
+	40 rot rot tcirc | ang n r x y --
 	
-	910 420 300 100 boton
-	$11 "CUA" rot $0 fontt textbox
+	910 520 300 90 boton
+	$ff SDLColor
+	>r >r 0.125 3 40 r> r> tpoli | ang n r x y --
 
-	600 530 300 100 boton
-	$11 "CUA" rot $0 fontt textbox
-	|r1 'tocoboton onClick drop	
+	600 620 300 90 boton
+	$ff00 SDLColor
+	>r >r 0.125 4 40 r> r> tpoli | ang n r x y --
 	
-	910 530 300 100 boton
-	$11 "CUA" rot $0 fontt textbox
+	910 620 300 90 boton
+	$ff0000 SDLColor
+	>r >r 0.125 5 40 r> r> tpoli | ang n r x y --
 	;
 	
 	
@@ -194,20 +183,43 @@
 	
 	pregunta
 	respuesta
+
+	reloj	
 	
 	0 scursor sdlx sdly tsdraw
+
 	
 	SDLredraw
 	teclado
 	;
 
+
+	
 :jugar
 	'obj p.clear
 	
-	660 90 40 5 $ff0000 +obj
-	660 90 40 4 $ff00 +obj
-	660 90 40 3 $ff +obj
-	660 90 40 0 $ffff +obj
+	
+	4 randmax 1 +
+	( 1? 1 -
+		randpos 40 5 $ff0000 +obj
+		) drop
+
+	4 randmax 1 +
+	( 1? 1 -
+		randpos 40 4 $ff00 +obj
+		) drop
+		
+	4 randmax 1 +
+	( 1? 1 -
+		randpos 40 3 $ff +obj
+		) drop
+
+	4 randmax 1 +
+	( 1? 1 -
+		randpos 40 0 $ffff +obj
+		) drop
+		
+	inireloj		
 	'jugando SDLshow
 	;
 	
