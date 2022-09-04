@@ -105,9 +105,9 @@
 	1000 'fx p.ini
 	"r3sdl" 800 600 SDLinit
 	bfont1 
-	SDLfull
+	|SDLfull
 	32 32 "r3\j2022\jetpack\jetpack.png" loadts 'sprplayer !
-	"r3\j2022\jetpack\nivel.map" loadtilemap 'mapajuego !
+	"r3\j2022\jetpack\mapa.map" loadtilemap 'mapajuego !
 	
 	'juego SDLshow
 	SDLquit ;	

@@ -1,12 +1,14 @@
 
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
+^r3/win/sdl2mixer.r3
+
 ^r3/util/boxtext.r3
 ^r3/util/tilesheet.r3
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 
-#simaneges
+#simagenes
 #stablero
 #smapa
 #scursor
@@ -31,8 +33,70 @@
 
 #r1 #r2 #r3 #r4
 
-|-------------------------------------------
+#cntjug 1
+#njug 0 0 0 0 0 0 0 0
+#pjug 0 0 0 0 0 0 0 0
 
+#posiciones [ 
+580 890
+570 720
+610 520
+640 340
+590 180
+370 120
+170 400
+210 560
+360 730
+430 920 ]
+
+#xresm 800 #yresm 1047
+
+:nposjug | n -- x y
+	3 << 'posiciones +
+	d@+ 400 xresm */ 500 + 32 -
+	swap 
+	d@ 523 yresm */ 180 + 32 - ;
+	
+:mapascreen
+	500 180 
+	400 523
+	smapa sdlimages 
+
+	'pjug >a
+	cntjug ( 1? 1-
+		dup simagenes da@+ da@+ tsdraw
+		) drop ;
+	
+:resetjug | n --
+	dup 'cntjug !
+	'njug >a
+	'pjug >b
+	( 1? 1 - 
+		0 a!+
+		0 nposjug
+		swap 32 randmax 16 - +
+		swap 32 randmax 16 - +
+		swap db!+ db!+
+		) drop ;
+
+:avjug | n --
+	3 <<
+	1 over 'njug + +!
+	dup 'pjug + >a
+	'njug + @
+	nposjug		
+	swap 32 randmax 16 - +
+	swap 32 randmax 16 - +
+	swap da!+ da!+
+	;
+	
+|-------------------------------------------
+:robot
+	msec 8 >> 3 and 7 +
+	simagenes 
+	-44 dup
+	400 dup tsdraws
+	;
 
 |-------------------------------------------
 #mseca
@@ -75,13 +139,17 @@
 |	snd_pregunta SNDplay
 	;
 
+	
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<f1> =? ( 1 'nropreg +! cpypreg )
+|	<f1> =? ( 1 'nropreg +! cpypreg )
+	<f1> =? ( 0 avjug )
+	<f2> =? ( 1 avjug )
+	<f3> =? ( 2 avjug )
+	<f4> =? ( 3 avjug )
 	drop 
 	;
-	
 
 |-------------------------------------------
 #resusr
@@ -103,16 +171,11 @@
 	1280 720
 	stablero sdlimages
 	
-	500 180 
-	400 523
-	smapa sdlimages
+	mapascreen
 	
 	reloj
 
-	msec 8 >> 3 and 
-	simaneges 
-	20 20 
-	256 dup tsdraws
+
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
 	25 312 288 65 r1 botonr
@@ -161,16 +224,11 @@
 	1280 720
 	stablero sdlimages
 	
-	500 180 
-	400 523
-	smapa sdlimages
-	
-	reloj
+	mapascreen
 
-	msec 8 >> 3 and 
-	simaneges 
-	20 20 
-	256 dup tsdraws
+	reloj
+	robot
+	
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
 	25 312 288 65 boton
@@ -194,9 +252,12 @@
 	teclado
 	;
 
+
+	
 :jugar
+	4 resetjug
 	'jugando SDLshow
-	'respuesta SDLshow
+	|'respuesta SDLshow
 	;
 	
 :inicio
@@ -205,7 +266,7 @@
 	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
 	128 dup "r3\j2022\pregunta\cursor.png" loadts 'scursor !	
-	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simaneges !
+	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simagenes !
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
 	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
 	
