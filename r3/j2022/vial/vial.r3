@@ -83,12 +83,15 @@
 |-------------- tiempo
 #prevt
 #dtime
+#reloj
 
 :time.start
-	msec 'prevt ! 0 'dtime ! ;
+	msec 'prevt ! 0 'dtime ! 
+	0 'reloj ! ;
 
 :time.delta
-	msec dup prevt - 'dtime ! 'prevt ! ;
+	msec dup prevt - 'dtime ! 'prevt ! 
+	dtime 'reloj +! ;
 
 :animcntm | cnt msec -- 0..cnt-1
 	55 << 1 >>> 63 *>> ; | 55 speed
@@ -181,10 +184,10 @@
 
 
 		| anim 	| xp	|dxp 	| yp	|dyp	| vx	|dvx	| vy	|dvy 	| limit | dlimit | test
-#res1 [ $10005 -32.0	0.0		512.0 	50.0 	0.3 	0.8 	0.0 	0.0 	0 ]  1.0
-#res2 [ $10005 -32.0	0.0 	150.0 	50.0	0.3 	0.8 	0.0 	0.0 	0 ]  1.0
-#res3 [ $80005 1024.0	0.0 	512.0 	50.0	-0.3 	-0.8 	0.0 	0.0 	0 ]  1.0
-#res4 [ $80005 1024.0	0.0 	150.0 	50.0	-0.3 	-0.8 	0.0 	0.0 	0 ]  1.0
+#res1 [ $10005 -32.0	0.0		512.0 	50.0 	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
+#res2 [ $10005 -32.0	0.0 	150.0 	50.0	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
+#res3 [ $80005 1024.0	0.0 	512.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
+#res4 [ $80005 1024.0	0.0 	150.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
 #res5 [ $10005 380.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	0 ]  1.0
 #res6 [ $10005 580.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	0 ]  1.0
 #res7 [ $10005 380.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
@@ -252,15 +255,18 @@
 
 #sensorhit
 
+:testsensor | dx dy --
+	swap pick4 + swap pick3 + mapa@ 'sensorhit ! ;
+
 :sensor | x y
 	0 'sensorhit !
 	a@ |vx
-	0 <? ( pick2 32 - pick2 72 + mapa@ 'sensorhit ! )
-	0 >? ( pick2 128 + pick2 72 + mapa@ 'sensorhit ! )
+	0 <? ( -32 72 testsensor )
+	0 >? ( 128 72 testsensor )
 	drop
 	a> 8 + @
-	0 <? ( pick2 64 + pick2 16 + mapa@ 'sensorhit ! )
-|	0 >? ( pick2 64 + pick2 64 + mapa@ 'sensorhit ! )
+	0 <? ( 64 16 testsensor )
+|	0 >? ( 64 64 testsensor )
 	drop
 	over 24 + over 40 + 6 4 mapa.rect
 	;
@@ -294,8 +300,8 @@
 	secant =? ( drop ; )
 	'secant !
 	3 randmax 0? ( +autor ) drop | 1/3
-	4 randmax 0? ( +robotr ) drop
-	4 randmax 0? ( +bicir ) drop
+	5 randmax 0? ( +robotr ) drop
+	5 randmax 0? ( +bicir ) drop
 	;
 	
 |-------------------------------- semaforo
@@ -331,7 +337,8 @@
 |-------------------------------- adornos
 :quieto
 	>a
-	a@+ sprsemaforo 8 a+ a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
+	a@+ sprsemaforo 8 a+ 
+	a@+ 16 >> 48 - a@+ 16 >> 96 - tsdraw 
 	;
 
 :+quieto | nro x y --
@@ -352,6 +359,10 @@
 		
 	740 500 base2 sdlimage
 	
+	0 sdlcolor
+	780 530 bat 
+	reloj 1000 / 
+	"%d" sprint bprint
 	;
 	
 |------------------------------	
@@ -414,7 +425,7 @@
 
 :main
 	"r3sdl" 1024 600 SDLinit
-	bfont1 
+	bfont2 
 	|SDLfull
 	
 	"r3\j2022\vial\mapa.png" loadimg 'mapajuego !
