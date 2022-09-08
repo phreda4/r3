@@ -33,13 +33,17 @@
 
 #r1 #r2 #r3 #r4
 
-#cntjug 1
+#cntjug 2
 #njug 0 0 0 0 0 0 0 0
 #pjug 0 0 0 0 0 0 0 0
 
+#jnow
+#resusr
+#maxjug
+
 #posiciones [ 
 580 890
-570 720
+570 700
 610 520
 640 340
 590 180
@@ -52,6 +56,7 @@
 #xresm 800 #yresm 1047
 
 :nposjug | n -- x y
+	10 mod 
 	3 << 'posiciones +
 	d@+ 400 xresm */ 500 + 32 -
 	swap 
@@ -81,9 +86,11 @@
 
 :avjug | n --
 	3 <<
+|	dup 'njug + dup @ 1 + 10 mod swap !
 	1 over 'njug + +!
 	dup 'pjug + >a
 	'njug + @
+	dup maxjug max 'maxjug !
 	nposjug		
 	swap 32 randmax 16 - +
 	swap 32 randmax 16 - +
@@ -111,7 +118,7 @@
 	
 	tiempo 1000 /
 	"%d" sprint
-	100 10 $ff0000 font
+	100 10 $ff0000 fontt
 	textline | str x y color font --
 	;
 
@@ -140,83 +147,18 @@
 	;
 
 	
-:teclado
-	SDLkey 
-	>esc< =? ( exit )
-|	<f1> =? ( 1 'nropreg +! cpypreg )
-	<f1> =? ( 0 avjug )
-	<f2> =? ( 1 avjug )
-	<f3> =? ( 2 avjug )
-	<f4> =? ( 3 avjug )
-	drop 
-	;
-
-|-------------------------------------------
-#resusr
-
-:resp | r1 -- color
-	resusr <>? ( drop $ffffff ; )
-	'res1 =? ( drop $ff00 ; )  
-	drop $ff0000 ;
-
-:botonr | -- size
-	resp SDLColor
-	2over 2over SDLFRect	
-	xywh64 ;
-	
-:respuesta
-	gui
-	$0 SDLcls
-	0 0 
-	1280 720
-	stablero sdlimages
-	
-	mapascreen
-	
-	reloj
-
-
-	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
-	
-	25 312 288 65 r1 botonr
-	$11 r1 rot $0 font textbox
-	
-	25 403 288 65 r2 botonr
-	$11 r2 rot $0 font textbox
-	
-	25 497 288 65 r3 botonr
-	$11 r3 rot $0 font textbox
-	
-	25 590 288 65 r4 botonr
-	$11 r4 rot $0 font textbox
-
-	0 scursor sdlx sdly tsdraw
-	SDLredraw
-	teclado
-	;
-	
 |-------------------------------------------
 
-:boton | -- size
+:boton | 'vecor "text" -- size
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
 	$ffffff  [ $00ff00 nip ; ] guiI
 	SDLColor
 	2over 2over SDLFRect	
-	xywh64 ;
+	xywh64 
+	$11 rot rot $0 font textbox 
+	onCLick ;
 
-:resok
-	1 'nropreg +! cpypreg
-	;
-:reserror
-	1 'nropreg +! cpypreg
-	;
-	
-:tocoboton	| adr
-	dup 'resusr !
-	'res1 =? ( resok ; ) 
-	reserror ;
-	
 :jugando
 	gui
 	$0 SDLcls
@@ -231,33 +173,77 @@
 	
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
-	25 312 288 65 boton
-	$11 r1 rot $0 font textbox
-	r1 'tocoboton onClick drop
-	
-	25 403 288 65 boton
-	$11 r2 rot $0 font textbox
-	r2 'tocoboton onClick drop
-	
-	25 497 288 65 boton
-	$11 r3 rot $0 font textbox
-	r3 'tocoboton onClick drop
-	
-	25 590 288 65 boton
-	$11 r4 rot $0 font textbox
-	r4 'tocoboton onClick drop
+	[ 0 'resusr ! exit ; ] r1 25 312 288 65 boton
+	[ 1 'resusr ! exit ; ] r2 25 403 288 65 boton
+	[ 2 'resusr ! exit ; ] r3 25 497 288 65 boton
+	[ 3 'resusr ! exit ; ] r4 25 590 288 65 boton
 
 	0 scursor sdlx sdly tsdraw
 	SDLredraw
-	teclado
+
+	SDLkey 
+	>esc< =? ( exit ) | terminar siempre
+	drop 
 	;
 
 
+|----------------------------------
+:respuestaOK
+	jnow avjug 
+	;
+
+:respuestaNO
+	;
+	
+:respuesta	
+	resusr 3 << 'r1 + @ 'res1 =? ( drop respuestaOK ; ) drop
+	respuestaNO
+	;
 	
 :jugar
-	4 resetjug
-	'jugando SDLshow
-	|'respuesta SDLshow
+	cntjug resetjug
+	0 'jnow !
+	0 'maxjug !
+	( maxjug 10 <? drop
+		'jugando SDLshow
+	
+		respuesta	
+		1 'nropreg +! cpypreg
+		jnow 1 + cntjug mod 'jnow ! 
+	
+		) drop ;
+
+:menuprincipal
+	gui
+	$0 SDLcls
+
+	$11 "Preguntas de San Cayetano"
+	0 10 1280 100 xywh64 
+	$ffffff fontt textbox
+
+	$11 cntjug "%d jugadores" sprint
+	0 140 1280 80 xywh64 
+	$ffffff fontt textbox
+
+|	$11 "Cuantos Jugadores ?"
+|	0 140 1280 80 xywh64 
+|	$ffffff fontt textbox
+	
+	[ 2 'cntjug ! ; ] "2" 200 300 100 80 boton	
+	[ 3 'cntjug ! ; ] "3" 400 300 100 80 boton	
+	[ 4 'cntjug ! ; ] "4" 600 300 100 80 boton	
+	[ 5 'cntjug ! ; ] "5" 860 300 100 80 boton	
+	
+	[ jugar ; ] "Jugar" 400 500 120 80 boton
+	[ exit ; ] "Salir" 600 500 120 80 boton
+	
+	0 scursor sdlx sdly tsdraw
+	
+	SDLredraw
+
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
 	;
 	
 :inicio
@@ -289,7 +275,9 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-	jugar
+	
+	'menuprincipal SDLshow 
+	
 	SDLquit ;	
 	
 : main ;

@@ -24,18 +24,18 @@
 :disparo
 	>a
 	8 sprplayer 
-	a@+ int. a@+ int. tsdraw
+	a@+ int. xvp - a@+ int. tsdraw
 	a@ a> 16 - +!
 	| limites 
 	a> 16 - @  int.
-	-16 <? ( drop 0 ; )
-	800 >? ( drop 0 ; )
+	xvp <? ( drop 0 ; )
+	xvp 800 + >? ( drop 0 ; )
 	drop
 	;
 	
 :veldisp
-	nspr 1 =? ( drop 4.0 ; ) drop
-	-4.0 ;
+	nspr 1 =? ( drop 5.0 ; ) drop
+	-5.0 ;
 	
 :+disparo | x y --
 	'disparo 'fx p!+ >a
@@ -44,7 +44,7 @@
 	;
 	
 :fuego	
-	2 msec 4 >> $3 and + sprplayer xp int. yp int. 10 + tsdraw
+	2 msec 4 >> $3 and + sprplayer xp int. xvp - yp int. 10 + tsdraw
 	;
 	
 :jetpack
@@ -53,12 +53,13 @@
 	ayp axp vyp vxp "%f %f %f %f" sprint bprint	
 
 	cohete 1? ( fuego ) drop 
-	nspr sprplayer xp int. yp int. tsdraw
+	nspr sprplayer xp int. xvp - yp int. tsdraw
 
 	xp vxp axp +
 	1.9 clampmax -1.9 clampmin | limites x
 	dup 'vxp !
 	+
+	dup 16 >> 400 - 'xvp !
 	'xp !
 
 	vyp ayp + 0.1 + | graveda

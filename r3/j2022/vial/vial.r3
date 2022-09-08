@@ -15,6 +15,11 @@
 #sprplayer
 #sprauto
 #sprsemaforo
+#sprvida
+#base1 
+#base2
+
+#vidas 
 
 #fx 0 0
 #obj 0 0
@@ -98,6 +103,34 @@
 	db@+ db@+ randmax + a!+
 	1.0 a!
 	;
+
+|------------------------------------------- muerte
+	
+| msec addani|cntani x y vx vy lim|xy dest
+:fantasma | a --
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + sprplayer | frame 'sprites
+	a@+ 16 >> 32 -	
+	a@+ 16 >> 64 -	
+	tsdraw 
+	-16 a+
+	a@ 
+	prevt 5 << sin 2 >> +
+	a!+
+	a@ 1.0 - 
+	-? ( drop 0 ; )
+	a!+
+	;
+
+:+fantasma | x y --
+	'fantasma 'fx p!+ >a 
+	0 a!+
+	$00003 a!+
+	swap 16 << a!+ 16 << a!+
+	-1 'vidas +!
+	;
 	
 |------------- cursor
 #hotnow
@@ -161,6 +194,14 @@
 :+robotr
 	8 randmax 6 3 << * 'res1 + 
 	'robot +obj
+	
+	'obj p.cnt 1 - 
+	'obj p.nro
+	16 +
+	dup @ 
+	$30000 + 
+	3 randmax 22 * 16 << +
+	swap !
 	;
 
 |-------------------------------------------
@@ -193,7 +234,16 @@
 :+bicir
 	2 randmax 6 3 << * 'veh1 + 
 	'bici +obj
+
+	'obj p.cnt 1 - 
+	'obj p.nro
+	16 +
+	dup @ 
+	$30000 + 
+	3 randmax 22 * 16 << +
+	swap !	
 	;
+
 
 |----------------- autos
 #aut1 [ $00001	1080.0 	0.0 	210.0 	70.0	-0.9 	-1.2 	0.0 	0.0 	0 ]  1.0
@@ -253,7 +303,7 @@
 
 :mapa.sema
 	semaforoestado
-	1? ( drop 440 530 8 4 mapa.rect ; ) drop
+	0? ( drop 440 530 8 4 mapa.rect ; ) drop
 	620 210 4 7 mapa.rect
 	330 390 4 7 mapa.rect
 	;
@@ -289,6 +339,21 @@
 	rot a!+ 0 a!+  
 	swap 16 << a!+ 16 << a! ;
 	
+|------------------------------	 estado
+:vidanro | nro -- nro spr
+	vidas >=? ( 1 ; ) 0 ;
+	
+:barraestado
+	40 500 base1 sdlimage
+	
+	5 ( 1? 1 -
+		vidanro sprvida pick2 54 * 70 + 524 tsdraw
+		) drop
+		
+	740 500 base2 sdlimage
+	
+	;
+	
 |------------------------------	
 :usuario
 	SDLkey 
@@ -298,10 +363,12 @@
 	<f2> =? ( +bicir )
 	<f3> =? ( +autor )
 	
+	<f4> =? ( sdlx sdly +fantasma )
 	drop 
 	;
 
 :debug	
+	1 4 sdlx sdly mapa.test "%d" sprint bprint
 	.cls "list:" .println
 	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'obj p.mapv ;
 	
@@ -319,11 +386,9 @@
 	'fx p.draw
 	
 |mapa.show
-
-	|debug	
-	2 2 bat 
-	 
-|	1 4 sdlx sdly mapa.test "%d" sprint bprint
+|debug	
+	
+	barraestado
 	
 	SDLredraw
 	usuario
@@ -342,8 +407,10 @@
 	6 792 350 +quieto
 	6 990 350 +quieto
 	
+	5 'vidas !
 	time.start
 	;
+
 
 :main
 	"r3sdl" 1024 600 SDLinit
@@ -355,7 +422,9 @@
 	128 128 "r3\j2022\vial\autos.png" loadts 'sprauto !
 	64 64 "r3\j2022\vial\robot.png" loadts 'sprplayer !
 	96 96 "r3\j2022\vial\semaforo.png" loadts 'sprsemaforo !
-	
+	51 42 "r3\j2022\vial\vida.png" loadts 'sprvida !
+	"r3\j2022\vial\base1.png" loadimg 'base1 !
+	"r3\j2022\vial\base2.png" loadimg 'base2 !
 	1000 'obj p.ini
 	1000 'fx p.ini
 	reset
