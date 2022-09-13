@@ -146,11 +146,30 @@
 	-1 'vidas +!
 	;
 
+:explo | a --
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	1 >> animcntm + 
+	$49 =? ( drop 0 ; ) sprplayer | frame 'sprites
+	a@+ 16 >> 32 -	
+	a@+ 16 >> 64 -	
+	tsdraw ;
+
+:+explo | x y --
+	'explo 'fx p!+ >a 
+	0 a!+
+	$460004 a!+
+	swap 16 << a!+ 16 << a!+
+	;
+
 :testchoque | x y -- t
 	over 32 + over 50 + 
 	mapa@ 
 	2 <? ( 0 nip ; ) drop
-	2dup +fantasma
+	over 32 + over 50 + 
+	2dup +explo
+	+fantasma
 	1
 	;	
 	
@@ -283,14 +302,11 @@
 :sensor | x y
 	0 'sensorhit !
 	a@ |vx
-	0 <? ( -16 72 testsensor )
-	0 >? ( 128 72 testsensor )
+	0 <? ( drop -16 72 testsensor over 24 + over 40 + 6 4 mapa.car ; )
+	0 >? ( drop 128 72 testsensor over 24 + over 40 + 6 4 mapa.car ; )
 	drop
-	a> 8 + @
-	0 <? ( 64 16 testsensor )
-|	0 >? ( 64 64 testsensor )
-	drop
-	over 24 + over 40 + 6 4 mapa.car
+	64 16 testsensor 
+	over 40 + over 40 + 4 4 mapa.car
 	;
 	
 :auto
@@ -414,15 +430,13 @@
 	
 	mapa.ini
 	mapa.sema
-	
 	'obj p.drawo
 	'fx p.draw
 	
-	mapa.show
-|debug	
+|	mapa.show
+|	debug	
 	
 	barraestado
-	
 	SDLredraw
 	usuario
 	;
@@ -443,7 +457,6 @@
 	5 'vidas !
 	time.start
 	;
-
 
 :main
 	"r3sdl" 1024 600 SDLinit
