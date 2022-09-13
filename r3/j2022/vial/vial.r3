@@ -39,19 +39,20 @@
 :mapa. | x y -- amapa
 	4 >> 6 << swap 4 >> + 'mapa + ;
 
-:mapa@ | x y -- n
+:mapa.mem | x y -- adr
 	0 <? ( 2drop 0 ; ) 600 >? ( 2drop 0 ; )
 	4 >> 6 << swap | 16 / 64 *
 	0 <? ( 2drop 0 ; ) 1024 >? ( 2drop 0 ; )
-	4 >> + 'mapao + c@ ;
+	4 >> + ;
+	
+:mapa@ | x y -- n
+	mapa.mem 0? ( ; )
+	'mapao + c@ ;
 
 :mapa! | x y --
-	0 <? ( 2drop ; ) 600 >? ( 2drop ; )
-	4 >> 6 << swap | 16 / 64 *
-	0 <? ( 2drop ; ) 1024 >? ( 2drop ; )
-	4 >> + 'mapa +
-	1 swap c! ;
-	
+	mapa.mem 0? ( drop ; )
+	'mapa + 1 swap c! ;
+
 :mapa.show
 	'mapa >a
 	0 ( 37 <? 
@@ -64,6 +65,16 @@
 	( 1? 1 -
 		over ( 1? 1 - 
 			pick4 over 4 << + pick4 pick3 4 << + mapa!
+			) drop
+		) 4drop ;
+
+:mapa!c | x y --
+	mapa.mem 0? ( drop ; ) 'mapa + 2 swap c! ;
+
+:mapa.car | x y w h --
+	( 1? 1 -
+		over ( 1? 1 - 
+			pick4 over 4 << + pick4 pick3 4 << + mapa!c
 			) drop
 		) 4drop ;
 	
@@ -134,6 +145,14 @@
 	swap 16 << a!+ 16 << a!+
 	-1 'vidas +!
 	;
+
+:testchoque | x y -- t
+	over 32 + over 50 + 
+	mapa@ 
+	2 <? ( 0 nip ; ) drop
+	2dup +fantasma
+	1
+	;	
 	
 |------------- cursor
 #hotnow
@@ -147,10 +166,10 @@
 	a@ hotnow =? ( 0 'hotnow ! ) drop
 	0
 	;
+
 	
 |-------------- objeto animado	
 | msec addani|cntani x y vx vy lim|xy dest
-
 :estado
 	0? ( 1.0 + ; )
 	drop 0
@@ -172,7 +191,8 @@
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
 	
-	over 32 + over 50 + mapa!
+|	over 32 + over 50 + mapa!
+	testchoque 1? ( 4drop drop 0 ; ) drop
 	
 	over 32 + over 32 + cursor!! | hit?
 	1? ( quietoycamina ) drop
@@ -218,7 +238,8 @@
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
 	
-	over 32 + over 50 + mapa!
+|	over 32 + over 50 + mapa!
+	testchoque 1? ( 4drop drop 0 ; ) drop
 	
 	over 32 + over 32 + cursor!! 
 	1? ( quietoycamina ) drop
@@ -254,21 +275,22 @@
 #aut3 [ $20001	470.0	72.0 	664.0 	0.0		0.0 	0.0 	-0.9 	-1.2 	0 ]  1.0
 
 #sensorhit
-
+	
 :testsensor | dx dy --
-	swap pick4 + swap pick3 + mapa@ 'sensorhit ! ;
+	swap pick4 + swap pick3 + 
+	mapa@ 'sensorhit ! ;
 
 :sensor | x y
 	0 'sensorhit !
 	a@ |vx
-	0 <? ( -32 72 testsensor )
+	0 <? ( -16 72 testsensor )
 	0 >? ( 128 72 testsensor )
 	drop
 	a> 8 + @
 	0 <? ( 64 16 testsensor )
 |	0 >? ( 64 64 testsensor )
 	drop
-	over 24 + over 40 + 6 4 mapa.rect
+	over 24 + over 40 + 6 4 mapa.car
 	;
 	
 :auto
@@ -396,7 +418,7 @@
 	'obj p.drawo
 	'fx p.draw
 	
-|mapa.show
+	mapa.show
 |debug	
 	
 	barraestado

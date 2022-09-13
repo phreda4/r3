@@ -82,7 +82,10 @@
 			128 + ) drop
 		128 + ) 3drop ;
 		
-|------- sort by column (only last sort
+|------- sort by column
+| only 1 pass, not full order
+| if sort en every frame yo get full order array!
+
 :up | adr -- adr ; swap 64 -
 	dup dup 128 - >a | p1 r:p2
 	16 ( 1? 1 - swap
