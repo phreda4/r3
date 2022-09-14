@@ -121,8 +121,8 @@
 	[map]@s ;
 
 :floor? | -- piso?
-	xp int. 16 + yp int. 64 + [map]@s
-	xp int. 40 + yp int. 64 + [map]@s or	
+	xp int. 18 + yp int. 64 + [map]@s
+	xp int. 32 + yp int. 64 + [map]@s or	
 	;
 
 :wall? | dx -- wall?
@@ -139,14 +139,14 @@
 	
 :prunl
 |	estela	
-	4 wall? 1? ( drop ; ) drop
+	8 wall? 1? ( drop ; ) drop
 	22 panim + 'np !
 	-2.0 'xp +!
 	;
 	
 :prunr
 |	estela	
-	52 wall? 1? ( drop ; ) drop
+	48 wall? 1? ( drop ; ) drop
 	0 panim + 'np !
 	2.0 'xp +!
 	;

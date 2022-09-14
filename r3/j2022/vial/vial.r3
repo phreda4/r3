@@ -46,12 +46,10 @@
 	4 >> + ;
 	
 :mapa@ | x y -- n
-	mapa.mem 0? ( ; )
-	'mapao + c@ ;
+	mapa.mem 0? ( ; ) 'mapao + c@ ;
 
 :mapa! | x y --
-	mapa.mem 0? ( drop ; )
-	'mapa + 1 swap c! ;
+	mapa.mem 0? ( drop ; ) 'mapa + 1 swap c! ;
 
 :mapa.show
 	'mapa >a
@@ -181,8 +179,9 @@
 	32 >? ( 3drop 0 ; ) drop
 	0 SDLColor
 	32 dup 2swap SDLfEllipse
-	sdlb 1? ( a@ hotnow =? ( 2drop 0 ; ) 'hotnow ! ; ) drop
-	a@ hotnow =? ( 0 'hotnow ! ) drop
+	
+	sdlb 1? ( a> hotnow =? ( 2drop 0 ; ) 'hotnow ! ; ) drop
+	a> hotnow =? ( 0 'hotnow ! ) drop
 	0
 	;
 
@@ -190,15 +189,10 @@
 |-------------- objeto animado	
 | msec addani|cntani x y vx vy lim|xy dest
 :estado
-	0? ( 1.0 + ; )
-	drop 0
-	;
+	0? ( 1.0 + ; ) dup xor ;
 	
 :quietoycamina
-	a> 16 + @
-	estado
-	a> 16 + !
-	;
+	a> 16 + dup @ estado swap ! ;
 	
 :robot | v a -- v
 	>a
@@ -210,13 +204,12 @@
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
 	
-|	over 32 + over 50 + mapa!
 	testchoque 1? ( 4drop drop 0 ; ) drop
 	
 	over 32 + over 32 + cursor!! | hit?
 	1? ( quietoycamina ) drop
 	tsdraw 
-	a> 16 + @
+	a> 16 + @ 
 	a@+ over *. a> 24 - +!	| vx
 	a@+ *. a> 24 - +!	| vy
 	;
@@ -257,7 +250,6 @@
 	a@+ 16 >> 32 -	-64 <? ( 3drop 0 ; ) 1064 >? ( 3drop 0 ; )
 	a@+ 16 >> 64 -	-64 <? ( 4drop 0 ; ) 664 >? ( 4drop 0 ; ) 
 	
-|	over 32 + over 50 + mapa!
 	testchoque 1? ( 4drop drop 0 ; ) drop
 	
 	over 32 + over 32 + cursor!! 
@@ -296,7 +288,7 @@
 #sensorhit
 	
 :testsensor | dx dy --
-	swap pick4 + swap pick3 + 
+	swap pick3 + swap pick2 + 
 	mapa@ 'sensorhit ! ;
 
 :sensor | x y
@@ -458,6 +450,17 @@
 	time.start
 	;
 
+|---------------------------------
+:findejuego
+	;
+	
+:menuprincipal
+
+|	[ reset 'jugando SDLShow 'findejuego SDLShow ; ]
+|	'exit
+	;
+
+|---------------------------------
 :main
 	"r3sdl" 1024 600 SDLinit
 	bfont2 
