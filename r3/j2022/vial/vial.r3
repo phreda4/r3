@@ -147,6 +147,7 @@
 	$00003 a!+
 	swap 16 << a!+ 16 << a!+
 	-1 'vidas +!
+	vidas 1 <? ( exit ) drop
 	;
 
 :explo | a --
@@ -480,9 +481,16 @@
 	
 	
 :findejuego
-	$0 SDLcls
+	gui
+|	$0 SDLcls
 
-	$11 "GAME OVER" 100 100 924 500 xywh64 $0 font textbox 	
+	$11 "GAME OVER" 0 10 1024 200 xywh64 $ff font textbox 	
+
+	$11 
+	reloj 1000 / "Ultimo tiempo: %d" sprint
+	0 210 1024 200 xywh64 $ff00 font textbox 	
+
+	SDLRedraw
 	
 	SDLkey 
 	>esc< =? ( exit )
@@ -490,13 +498,15 @@
 	;
 	
 :menuprincipal
-
+	gui
 	$0 SDLcls
 
-	$11 "Juego de Vialidad" 100 100 924 500 xywh64 $0 font textbox 	
+	$11 "Juego de Vialidad" 0 10 1024 200 xywh64 $ffffff font textbox 	
 
-|	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] "Jugar" boton
-|	'exit "Sair" boton
+	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] "Jugar" 300 400 200 80 boton
+	'exit "Salir" 600 400 200 80 boton
+
+	SDLRedraw
 
 	SDLkey 
 	>esc< =? ( exit )
@@ -508,7 +518,8 @@
 	"r3sdl" 1024 600 SDLinit
 	bfont2 
 	|SDLfull
-	
+
+		
 	"r3\j2022\vial\mapa.png" loadimg 'mapajuego !
 	
 	128 128 "r3\j2022\vial\autos.png" loadts 'sprauto !
@@ -517,14 +528,15 @@
 	38 31 "r3\j2022\vial\vida.png" loadts 'sprvida !
 	"r3\j2022\vial\base1.png" loadimg 'base1 !
 	"r3\j2022\vial\base2.png" loadimg 'base2 !
-	
-	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !
+ttf_init	
+	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
 	
 	200 'obj p.ini
 	100 'fx p.ini
 	reset
-	
-	'jugando SDLshow
+
+'menuprincipal	SDLshow
+	|'jugando SDLshow
 
 	SDLquit ;	
 	
