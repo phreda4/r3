@@ -3,12 +3,17 @@
 
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
+^r3/win/sdl2mixer.r3
 
 ^r3/lib/rand.r3
+^r3/lib/gui.r3
 
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
+^r3/util/boxtext.r3
 ^r3/util/bfont.r3
+
+#font
 
 #mapajuego
 
@@ -27,14 +32,14 @@
 #semaforoestado 0
 
 |----------------- map 
-| 1024*600 = 64*37 (16x16)
-#mapa * 2368
-#mapao * 2368
+| 1024*600 = 64*38 (16x16)
+#mapa * 2432
+#mapao * 2432
 #mapaw 64
 
 :mapa.ini
-	'mapao 'mapa 2368 cmove
-	'mapa 0 2368 cfill ;
+	'mapao 'mapa 2432 cmove
+	'mapa 0 2432 cfill ;
 
 :mapa. | x y -- amapa
 	4 >> 6 << swap 4 >> + 'mapa + ;
@@ -52,7 +57,7 @@
 	mapa.mem 0? ( drop ; ) 'mapa + 1 swap c! ;
 
 :mapa.show
-	'mapa >a
+	'mapao >a
 	0 ( 37 <? 
 		0 ( 64 <?
 			ca@+ 1? ( over 4 << pick3 4 << 16 dup SDLRect ) drop
@@ -216,19 +221,31 @@
 
 
 		| anim 	| xp	|dxp 	| yp	|dyp	| vx	|dvx	| vy	|dvy 	| limit | dlimit | test
-#res1 [ $10005 -32.0	0.0		512.0 	50.0 	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
-#res2 [ $10005 -32.0	0.0 	150.0 	50.0	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
-#res3 [ $80005 1024.0	0.0 	512.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
-#res4 [ $80005 1024.0	0.0 	150.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
+#res1 [ $10005 -32.0	0.0		472.0 	50.0 	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
+#res2 [ $10005 -32.0	0.0 	110.0 	50.0	0.3 	0.5 	0.0 	0.0 	0 ]  1.0
+#res3 [ $80005 1024.0	0.0 	472.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
+#res4 [ $80005 1024.0	0.0 	110.0 	50.0	-0.3 	-0.5 	0.0 	0.0 	0 ]  1.0
 #res5 [ $10005 380.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	0 ]  1.0
 #res6 [ $10005 580.0	40.0 	0.0 	0.0		0.0 	0.0 	0.3 	0.8 	0 ]  1.0
-#res7 [ $10005 380.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
-#res8 [ $10005 580.0	40.0 	664.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
+#res7 [ $10005 380.0	40.0 	624.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
+#res8 [ $10005 580.0	40.0 	624.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
 	
 
 :+robotr
 	8 randmax 6 3 << * 'res1 + 
 	'robot +obj
+	
+	'obj p.cnt 1 - 
+	'obj p.nro
+	16 +
+	dup @ 
+	$30000 + 
+	3 randmax 22 * 16 << +
+	swap !
+	;
+	
+:+robotr1
+	'res7 'robot +obj
 	
 	'obj p.cnt 1 - 
 	'obj p.nro
@@ -263,8 +280,8 @@
 
 
 		| anim 	| xp	|dxp 	| yp	|dyp	| vx	|dvx	| vy	|dvy 	| limit | dlimit | test
-#veh1 [ $120004  -32.0 	0.0 	408.0 	90.0	0.7 	1.0 	0.0 	0.0 	0 ]  1.0
-#veh2 [ $e0004	1080.0 	0.0 	210.0 	100.0	-0.7 	-1.0 	0.0 	0.0 	0 ]  1.0
+#veh1 [ $120004  -32.0 	0.0 	368.0 	90.0	0.7 	1.0 	0.0 	0.0 	0 ]  1.0
+#veh2 [ $e0004	1080.0 	0.0 	170.0 	100.0	-0.7 	-1.0 	0.0 	0.0 	0 ]  1.0
 
 :+bicir
 	2 randmax 6 3 << * 'veh1 + 
@@ -281,9 +298,9 @@
 
 
 |----------------- autos
-#aut1 [ $00001	1080.0 	0.0 	210.0 	70.0	-0.9 	-1.2 	0.0 	0.0 	0 ]  1.0
-#aut2 [ $10001  -32.0 	0.0 	380.0 	70.0	0.9 	1.2 	0.0 	0.0 	0 ]  1.0
-#aut3 [ $20001	470.0	72.0 	664.0 	0.0		0.0 	0.0 	-0.9 	-1.2 	0 ]  1.0
+#aut1 [ $00001	1080.0 	0.0 	170.0 	70.0	-0.9 	-1.2 	0.0 	0.0 	0 ]  1.0
+#aut2 [ $10001  -32.0 	0.0 	340.0 	70.0	0.9 	1.2 	0.0 	0.0 	0 ]  1.0
+#aut3 [ $20001	470.0	72.0 	624.0 	0.0		0.0 	0.0 	-0.9 	-1.2 	0 ]  1.0
 
 #sensorhit
 	
@@ -339,9 +356,9 @@
 
 :mapa.sema
 	semaforoestado
-	0? ( drop 440 530 8 4 mapa.rect ; ) drop
-	620 210 4 7 mapa.rect
-	330 390 4 7 mapa.rect
+	0? ( drop 440 490 8 4 mapa.rect ; ) drop
+	620 170 4 7 mapa.rect
+	330 350 4 7 mapa.rect
 	;
 
 :sema
@@ -381,16 +398,16 @@
 	vidas >=? ( 1 ; ) 0 ;
 	
 :barraestado
-	40 500 base1 sdlimage
+	40 530 base1 sdlimage
 	
 	5 ( 1? 1 -
-		vidanro sprvida pick2 54 * 70 + 524 tsdraw
+		vidanro sprvida pick2 40 * 64 + 544 tsdraw
 		) drop
 		
-	740 500 base2 sdlimage
+	740 530 base2 sdlimage
 	
 	0 sdlcolor
-	780 530 bat 
+	766 550 bat 
 	reloj 1000 / 
 	"%d" sprint bprint
 	;
@@ -404,7 +421,7 @@
 	<f2> =? ( +bicir )
 	<f3> =? ( +autor )
 	
-	<f4> =? ( sdlx sdly +fantasma )
+	<f4> =? ( +robotr1 )
 	drop 
 	;
 
@@ -437,27 +454,53 @@
 	'obj p.clear
 	'fx p.clear
 	
-	0 354 48 + 100 96 + +sema
-	3 546 48 + 426 96 + +sema
+	0 354 48 + 60 96 + +sema
+	3 546 48 + 386 96 + +sema
 	
 	| adornos
-	6 0 350 +quieto
-	6 254 350 +quieto
-	6 792 350 +quieto
-	6 990 350 +quieto
+	6 0 310 +quieto
+	6 254 310 +quieto
+	6 792 310 +quieto
+	6 990 310 +quieto
 	
 	5 'vidas !
 	time.start
 	;
 
 |---------------------------------
+:boton | 'vecor "text" -- size
+	2over 2over guibox
+	SDLb SDLx SDLy guiIn	
+	$ffffff  [ $00ff00 nip ; ] guiI
+	SDLColor
+	2over 2over SDLFRect	
+	xywh64 
+	$11 rot rot $0 font textbox 
+	onCLick ;
+	
+	
 :findejuego
+	$0 SDLcls
+
+	$11 "GAME OVER" 100 100 924 500 xywh64 $0 font textbox 	
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop
 	;
 	
 :menuprincipal
 
-|	[ reset 'jugando SDLShow 'findejuego SDLShow ; ]
-|	'exit
+	$0 SDLcls
+
+	$11 "Juego de Vialidad" 100 100 924 500 xywh64 $0 font textbox 	
+
+|	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] "Jugar" boton
+|	'exit "Sair" boton
+
+	SDLkey 
+	>esc< =? ( exit )
+	drop
 	;
 
 |---------------------------------
@@ -471,11 +514,14 @@
 	128 128 "r3\j2022\vial\autos.png" loadts 'sprauto !
 	64 64 "r3\j2022\vial\robot.png" loadts 'sprplayer !
 	96 96 "r3\j2022\vial\semaforo.png" loadts 'sprsemaforo !
-	51 42 "r3\j2022\vial\vida.png" loadts 'sprvida !
+	38 31 "r3\j2022\vial\vida.png" loadts 'sprvida !
 	"r3\j2022\vial\base1.png" loadimg 'base1 !
 	"r3\j2022\vial\base2.png" loadimg 'base2 !
-	1000 'obj p.ini
-	1000 'fx p.ini
+	
+	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !
+	
+	200 'obj p.ini
+	100 'fx p.ini
 	reset
 	
 	'jugando SDLshow
