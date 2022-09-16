@@ -37,6 +37,12 @@
 #njug 0 0 0 0 0 0 0 0
 #pjug 0 0 0 0 0 0 0 0
 
+#njug1 * 32
+#njug2 * 32
+#njug3 * 32
+#njug4 * 32
+#njug5 * 32
+
 #jnow
 #resusr
 #maxjug
@@ -71,6 +77,14 @@
 	cntjug ( 1? 1-
 		dup simagenes da@+ da@+ tsdraw
 		) drop ;
+
+:resetname
+	"Jugador 1" 'njug1 strcpy 
+	"Jugador 2" 'njug2 strcpy 
+	"Jugador 3" 'njug3 strcpy 
+	"Jugador 4" 'njug4 strcpy 
+	"Jugador 5" 'njug5 strcpy 
+	;
 	
 :resetjug | n --
 	dup 'cntjug !
@@ -173,6 +187,8 @@
 	
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
+	$11 jnow 5 << 'njug1 + 600 600 600 80 xywh64 $00ff00 fontt textbox
+	
 	[ 0 'resusr ! exit ; ] r1 25 312 288 65 boton
 	[ 1 'resusr ! exit ; ] r2 25 403 288 65 boton
 	[ 2 'resusr ! exit ; ] r3 25 497 288 65 boton
@@ -211,8 +227,13 @@
 		1 'nropreg +! cpypreg
 		jnow 1 + cntjug mod 'jnow ! 
 	
+		1 'maxjug +! | ****
+		
 		) drop ;
 
+:jcolor | n -- color
+	cntjug >? ( drop $333333 ; ) drop $ffffff ;
+	
 :menuprincipal
 	gui
 	$0 SDLcls
@@ -222,20 +243,22 @@
 	$ffffff fontt textbox
 
 	$11 cntjug "%d jugadores" sprint
-	0 140 1280 80 xywh64 
+	0 80 1280 80 xywh64 
 	$ffffff fontt textbox
-
-|	$11 "Cuantos Jugadores ?"
-|	0 140 1280 80 xywh64 
-|	$ffffff fontt textbox
 	
-	[ 2 'cntjug ! ; ] "2" 200 300 100 80 boton	
-	[ 3 'cntjug ! ; ] "3" 400 300 100 80 boton	
-	[ 4 'cntjug ! ; ] "4" 600 300 100 80 boton	
-	[ 5 'cntjug ! ; ] "5" 860 300 100 80 boton	
+	[ 2 'cntjug ! ; ] "2" 100 300 100 60 boton	
+	[ 3 'cntjug ! ; ] "3" 100 380 100 60 boton	
+	[ 4 'cntjug ! ; ] "4" 100 460 100 60 boton	
+	[ 5 'cntjug ! ; ] "5" 100 540 100 60 boton	
 	
-	[ jugar ; ] "Jugar" 400 500 120 80 boton
-	[ exit ; ] "Salir" 600 500 120 80 boton
+	$01 'njug1 220 220 800 60 xywh64 $ffffff fontt textbox
+	$01 'njug2 220 300 800 60 xywh64 2 jcolor fontt textbox
+	$01 'njug3 220 380 800 60 xywh64 3 jcolor fontt textbox
+	$01 'njug4 220 460 800 60 xywh64 4 jcolor fontt textbox
+	$01 'njug5 220 540 800 60 xywh64 5 jcolor fontt textbox
+	
+	[ jugar ; ] "Jugar" 400 640 160 60 boton
+	[ exit ; ] "Salir" 600 640 160 60 boton
 	
 	0 scursor sdlx sdly tsdraw
 	
@@ -267,6 +290,8 @@
 
 	0 'nropreg !
 	cpypreg
+	
+	resetname
 	;
 	
 :main
