@@ -520,16 +520,16 @@
 	|SDLfull
 
 		
-	"r3\j2022\vial\mapa.png" loadimg 'mapajuego !
+	"r3\j2022\vialbot\mapa.png" loadimg 'mapajuego !
 	
-	128 128 "r3\j2022\vial\autos.png" loadts 'sprauto !
-	64 64 "r3\j2022\vial\robot.png" loadts 'sprplayer !
-	96 96 "r3\j2022\vial\semaforo.png" loadts 'sprsemaforo !
-	38 31 "r3\j2022\vial\vida.png" loadts 'sprvida !
-	"r3\j2022\vial\base1.png" loadimg 'base1 !
-	"r3\j2022\vial\base2.png" loadimg 'base2 !
+	128 128 "r3\j2022\vialbot\autos.png" loadts 'sprauto !
+	64 64 "r3\j2022\vialbot\robot.png" loadts 'sprplayer !
+	96 96 "r3\j2022\vialbot\semaforo.png" loadts 'sprsemaforo !
+	38 31 "r3\j2022\vialbot\vida.png" loadts 'sprvida !
+	"r3\j2022\vialbot\base1.png" loadimg 'base1 !
+	"r3\j2022\vialbot\base2.png" loadimg 'base2 !
 ttf_init	
-	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
+	"r3/j2022/vialbot/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
 	
 	200 'obj p.ini
 	100 'fx p.ini

@@ -9,31 +9,33 @@
 #ymin #ymax
 #dx #dy #sx #sy
 
+
 ::SDLop | x y --
-	ymin 3 << segs + >a
-	ymax ymin - 1+ ( 1? 1 - $7fffffff da!+ -1 da!+ ) drop |  -1 $7ffff
+	a>
+	ymin 3 << 'segs + >a
+	ymax ymin - 1+ ( 1? 1 - 
+		$7fffffff da!+ -1 da!+ ) drop
+	>a
 	dup 'ymin ! dup 'ymax !
-	over dup pick2 3 << segs + d!+ d!
+	over dup pick2 3 << 'segs + d!+ d!
 	'py ! 'px !
 	;
+
+:bdot | x y --	
+	3 << 'segs + swap 				| a x
+	over d@ <? ( dup pick2 d! )
+	swap 4 + swap
+	over d@ >? ( dup pick2 d! )
+	2drop ;
 
 ::SDLop2 | x y --
 	ymin <? ( dup 'ymin ! )
  	ymax >? ( dup 'ymax ! )
-	dup 'py !
-	3 << segs + >a
-	da@+ <? ( dup a> 4 - d! )
-	da@+ >? ( dup a> 4 - d! )
-	'px ! ;
-
-:bdot | x y --
-	3 << segs + >a
-	da@+ <? ( dup a> 4 - d! )
-	da@+ >? ( dup a> 4 - d! )
-	drop ;
+	2dup 'py ! 'px !
+	bdot ;
 
 :bline2
-	dy dup neg |2/
+	dy dup neg 
 	swap
 	( 1? 1 - >r
 		pick2 pick2 bdot
@@ -51,8 +53,7 @@
  	ymax >? ( dup 'ymax ! )
 	2dup 'py ! 'px !
 	dx dy <=? ( drop bline2 ; )
-	dup |2/
-	swap | err n
+	dup swap | err n
 	2over bdot
 	( 1 - 1? >r
 		dy - rot sx + rot rot
@@ -65,10 +66,30 @@
 	bdot ;
 
 ::SDLpoly
+	a>
 	ymax
-	ymin dup 3 << segs + >b
+	ymin dup 3 << 'segs + >a
 	( over <=?
-		db@+ over db@+ b> >r 
-		over SDLLine
-		r> >b
-		1 + ) 2drop ;
+		da@+ over da@+ over SDLLine		
+		1 + ) 2drop 
+	>a 	;
+	
+#xc #yc #sa #ra 
+
+::SDLngon | ang n r x y --
+	'yc ! 'xc ! 'ra !
+	1.0 swap / 'sa !
+	dup ra polar 
+	swap xc + swap yc + SDLop
+	0 ( 1.0 <? sa +
+		2dup + ra polar 
+		swap xc + swap yc + SDLpline
+		) 2drop 
+	SDLpoly
+	;
+			
+	
+:
+	'segs >a
+	1024 ( 1? 1 - $7fffffff da!+ -1 da!+ ) drop 
+	;
