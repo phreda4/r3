@@ -73,7 +73,7 @@
 :tfigura
 	0? ( drop nip a@+ pv.p 16 >> a@+ pv.p 16 >> tcirc ; )
 	swap
-	a@+ pv.p 16 >> a@+ pv.p 16 >> SDLngon ;
+	a@+ pv.p 16 >> a@+ pv.p 16 >> SDLFngon ;
 	
 |600 10 600 500	
 :figura
@@ -140,15 +140,15 @@
 	
 	910 520 300 90 boton
 	$ff SDLColor
-	>r >r 0.125 3 40 r> r> SDLngon | ang n r x y --
+	>r >r 0.125 3 40 r> r> SDLFngon | ang n r x y --
 
 	600 620 300 90 boton
 	$ff00 SDLColor
-	>r >r 0.125 4 40 r> r> SDLngon | ang n r x y --
+	>r >r 0.125 4 40 r> r> SDLFngon | ang n r x y --
 	
 	910 620 300 90 boton
 	$ff0000 SDLColor
-	>r >r 0.125 5 40 r> r> SDLngon | ang n r x y --
+	>r >r 0.125 5 40 r> r> SDLFngon | ang n r x y --
 	;
 	
 	
@@ -160,6 +160,18 @@
 	respuesta
 
 	reloj	
+	$ffff00 SDLColor
+	msec 3 << 6 100 300 300 SDLFngon
+
+	5 linegr!
+	$ffff SDLColor
+	msec 4 << 6 100 300 300 SDLngon
+	
+	$ffffff SDLColor
+	10 linegr!
+
+	300 300 gop
+	msec 4 << 100 polar 300 + swap 300 + swap gline
 	
 	0 scursor sdlx sdly tsdraw
 	

@@ -76,7 +76,7 @@
 	
 #xc #yc #sa #ra 
 
-::SDLngon | ang n r x y --
+::SDLFngon | ang n r x y --
 	'yc ! 'xc ! 'ra !
 	1.0 swap / 'sa !
 	dup ra polar 
@@ -87,6 +87,71 @@
 		) 2drop 
 	SDLpoly
 	;
+			
+|---------------------
+|---- grosor GG1
+#gg1 0 
+#ss1 0 
+
+#ang1 
+
+#x1 #y1 #x2 #y2
+#x3 #y3 #x4 #y4
+#xa #ya
+#xb #yb
+#xe #ye
+
+|---- lineas gruesas
+:calcsum | n -- n suma
+	2 <? ( $800 ; )
+	8 <? ( $400 ; )
+	32 <? ( $200 ; )
+	128 <? ( $100 ; )
+	$80 ;
+
+::linegr!	| grosor --
+	calcsum 'ss1 ! 'gg1 ! ;
+
+::linegr	| -- grosor
+	gg1 ;
+
+:calg1 | angulo -- x y
+	sincos gg1 16 *>> rot + swap gg1 16 *>> rot + swap ;
+
+| lineas multigruesas
+:glinei |x y x y --
+	gg1 0? ( drop SDLLine ; ) drop
+	pick3 pick2 - pick3 pick2 - atan2 $4000 + 'ang1 ! | +1/4 de angulo
+	2over ang1 calg1 SDLop
+	0 ( $8000 <? >r
+		2dup ang1 r@ + calg1 SDLpline
+		r> ss1 + ) drop
+	2dup ang1 $8000 + calg1 SDLpline
+	2drop
+	$8000 ( $10000 <? >r
+		2dup ang1 r@ + calg1 SDLpline
+		r> ss1 + ) drop
+	ang1 calg1 SDLpline 
+	SDLpoly ;
+
+::gop | x y --
+	'y1 ! 'x1 ! ;
+
+::gline | x y --
+	y1 =? ( swap x1 =? ( 2drop ; ) swap )
+	x1 y1 2over  'y1 ! 'x1 ! glinei ;
+	
+
+::SDLngon | ang n r x y --
+	'yc ! 'xc ! 'ra !
+	1.0 swap / 'sa !
+	dup ra polar 
+	swap xc + swap yc + gop
+	0 ( 1.0 <? sa +
+		2dup + ra polar 
+		swap xc + swap yc + gline
+		) 2drop 
+	;	
 			
 	
 :
