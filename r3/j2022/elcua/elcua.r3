@@ -3,6 +3,7 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2poly.r3
 ^r3/win/sdl2image.r3
+^r3/win/sdl2mixer.r3
 
 ^r3/util/boxtext.r3
 ^r3/util/tilesheet.r3
@@ -41,8 +42,21 @@
 	textline | str x y color font --
 	;
 
+|----------------------------------------	
+#sndfile "inicio.mp3" "correcto.mp3" "incorrecto.mp3" "siguiente.mp4" 0
 
+#sndlist * 1024
 
+:loadsndfile
+	'sndlist >a
+	'sndfile ( dup c@ 1? drop
+		dup "r3/j2022/elcua/audio/%s" sprint
+		Mix_LoadWAV a!+
+		>>0 ) drop ;
+
+:playsnd | n --
+	3 << 'sndlist + @ SNDplay ;
+	
 |----------------------------------------	
 :tcirc | r x y --
 	pick2 rot rot SDLFEllipse ;
@@ -112,14 +126,9 @@
 	pv>v a!+ ;
 	
 |----------------------------------------	
-:randpos
-	500 randmax 650 +
-	400 randmax 60 + ;
-	
 :pregunta
 	$0 SDLColor
 	600 10 600 500 SDLFRect
-
 	'obj p.draw
 	;
 	
@@ -160,20 +169,18 @@
 	respuesta
 
 	reloj	
-	$ffff00 SDLColor
-	msec 3 << 6 100 300 300 SDLFngon
-
-	5 linegr!
-	$ffff SDLColor
-	msec 4 << 6 100 300 300 SDLngon
 	
-	$ffffff SDLColor
-	10 linegr!
-
-	300 300 gop
-	msec 4 << 100 polar 300 + swap 300 + swap gline
+|	$ffff00 SDLColor
+|	msec 3 << 6 100 300 300 SDLFngon
+|	5 linegr!
+|	$ffff SDLColor
+|	msec 4 << 6 100 300 300 SDLngon
+|	$ffffff SDLColor
+|	10 linegr!
+|	300 300 gop
+|	msec 4 << 100 polar 300 + swap 300 + swap gline
 	
-	0 scursor sdlx sdly tsdraw
+	sdlx sdly scursor SDLimage
 	
 	SDLredraw
 
@@ -183,9 +190,9 @@
 	drop 
 	;
 
-	;
-
-
+:randpos
+	500 randmax 650 +
+	400 randmax 60 + ;
 	
 :jugar
 	'obj p.clear
@@ -207,17 +214,22 @@
 
 	4 randmax 1 +
 	( 1? 1 -
-		randpos 40 0 $ffff +obj
+		randpos 40 6 $ffff +obj
 		) drop
 		
 	inireloj		
 	'jugando SDLshow
 	;
 	
+
+
 :inicio
 	ttf_init
 	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
-	128 dup "r3\j2022\elcua\cursor.png" loadts 'scursor !	
+	"r3/j2022/elcua/cursor.png" loadimg 'scursor !	
+	
+	SNDInit
+	loadsndfile
 	
 	100 'obj p.ini
 	0 'nropreg !
@@ -225,8 +237,7 @@
 	;
 	
 :main
-	"r3sdl" 1280 720 SDLinit
-	|"r3sdl" 1024 576 SDLinit
+	"El Cua" 1280 720 SDLinit
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor

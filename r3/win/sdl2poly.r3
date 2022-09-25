@@ -9,7 +9,6 @@
 #ymin #ymax
 #dx #dy #sx #sy
 
-
 ::SDLop | x y --
 	a>
 	ymin 3 << 'segs + >a
@@ -88,18 +87,9 @@
 	SDLpoly
 	;
 			
-|---------------------
-|---- grosor GG1
-#gg1 0 
-#ss1 0 
-
-#ang1 
-
-#x1 #y1 #x2 #y2
-#x3 #y3 #x4 #y4
-#xa #ya
-#xb #yb
-#xe #ye
+|--------------------- lineas gruesas
+#gg1 0 #ss1 0 #ang1 
+#x1 #y1 
 
 |---- lineas gruesas
 :calcsum | n -- n suma
@@ -116,9 +106,10 @@
 	gg1 ;
 
 :calg1 | angulo -- x y
-	sincos gg1 16 *>> rot + swap gg1 16 *>> rot + swap ;
+	sincos 
+	gg1 16 *>> rot + swap 
+	gg1 16 *>> rot + swap ;
 
-| lineas multigruesas
 :glinei |x y x y --
 	gg1 0? ( drop SDLLine ; ) drop
 	pick3 pick2 - pick3 pick2 - atan2 $4000 + 'ang1 ! | +1/4 de angulo
@@ -141,7 +132,7 @@
 	y1 =? ( swap x1 =? ( 2drop ; ) swap )
 	x1 y1 2over  'y1 ! 'x1 ! glinei ;
 	
-
+|----------------------------------
 ::SDLngon | ang n r x y --
 	'yc ! 'xc ! 'ra !
 	1.0 swap / 'sa !
@@ -152,7 +143,6 @@
 		swap xc + swap yc + gline
 		) 2drop 
 	;	
-			
 	
 :
 	'segs >a

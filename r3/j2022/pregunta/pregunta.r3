@@ -13,11 +13,23 @@
 #smapa
 #scursor
 
-#snd_boton 
-#snd_correcta 
-#snd_incorrecta
-#snd_pregunta
+|----------------------------------------	
+#sndfile "correcta.mp3" "incorrecta.mp3" "boton.mp3" 0
 
+#sndlist * 1024
+
+:loadsndfile
+	'sndlist >a
+	'sndfile ( dup c@ 1? drop
+		dup "r3/j2022/pregunta/audio/%s" sprint
+		Mix_LoadWAV a!+
+		>>0 ) drop ;
+
+:playsnd | n --
+	3 << 'sndlist + @ SNDplay ;
+	
+|----------------------------------------	
+	
 #fontt
 #font
 #preguntas
@@ -41,7 +53,6 @@
 #njug2 * 32
 #njug3 * 32
 #njug4 * 32
-#njug5 * 32
 
 #jnow
 #resusr
@@ -83,7 +94,7 @@
 	"Jugador 2" 'njug2 strcpy 
 	"Jugador 3" 'njug3 strcpy 
 	"Jugador 4" 'njug4 strcpy 
-	"Jugador 5" 'njug5 strcpy 
+ 
 	;
 	
 :resetjug | n --
@@ -157,7 +168,7 @@
 	drop 
 	mixres 
 	inireloj
-|	snd_pregunta SNDplay
+|	3 playsnd
 	;
 
 	
@@ -249,13 +260,12 @@
 	[ 2 'cntjug ! ; ] "2" 100 300 100 60 boton	
 	[ 3 'cntjug ! ; ] "3" 100 380 100 60 boton	
 	[ 4 'cntjug ! ; ] "4" 100 460 100 60 boton	
-	[ 5 'cntjug ! ; ] "5" 100 540 100 60 boton	
+
 	
 	$01 'njug1 220 220 800 60 xywh64 $ffffff fontt textbox
 	$01 'njug2 220 300 800 60 xywh64 2 jcolor fontt textbox
 	$01 'njug3 220 380 800 60 xywh64 3 jcolor fontt textbox
 	$01 'njug4 220 460 800 60 xywh64 4 jcolor fontt textbox
-	$01 'njug5 220 540 800 60 xywh64 5 jcolor fontt textbox
 	
 	[ jugar ; ] "Jugar" 400 640 160 60 boton
 	[ exit ; ] "Salir" 600 640 160 60 boton
@@ -279,10 +289,8 @@
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
 	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
 	
-	"r3\j2022\pregunta\boton.mp3" Mix_LoadWAV 'snd_boton !
-	"r3\j2022\pregunta\correcta.mp3" Mix_LoadWAV 'snd_correcta !
-	"r3\j2022\pregunta\incorrecta.mp3" Mix_LoadWAV 'snd_incorrecta !
-	"r3\j2022\pregunta\pregunta.mp3" Mix_LoadWAV 'snd_pregunta !
+	SNDInit
+	loadsndfile
 	
 	here dup 'preguntas !
 	"r3\j2022\pregunta\preguntas.txt" load 
