@@ -122,13 +122,6 @@
 	swap da!+ da!+
 	;
 	
-|-------------------------------------------
-:robot
-	msec 8 >> 3 and 7 +
-	simagenes 
-	-44 dup
-	400 dup tsdraws
-	;
 
 |-------------------------------------------
 #mseca
@@ -143,10 +136,25 @@
 	
 	tiempo 1000 /
 	"%d" sprint
-	100 10 $ff0000 fontt
+	30 28 $ff0000 fontt
 	textline | str x y color font --
 	;
 
+|-------------------------------------------
+:robot
+	|msec 8 >> 3 and 7 +
+	7
+	simagenes 
+	-44 dup 400 dup tsdraws
+
+	6
+	simagenes 
+	-10 dup 150 dup tsdraws
+	
+	reloj	
+	;
+	
+|-------------------------------------------
 :rswap |
 	3 randmax 3 << 'r1 +
 	3 randmax 3 << 'r1 +
@@ -193,19 +201,19 @@
 	
 	mapascreen
 
-	reloj
+
 	robot
 	
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
-	$11 jnow 5 << 'njug1 + 600 600 600 80 xywh64 $00ff00 fontt textbox
+	$11 jnow 5 << 'njug1 + 1280 300 - 600 300 80 xywh64 $0000 fontt textbox
 	
 	[ 0 'resusr ! exit ; ] r1 25 312 288 65 boton
 	[ 1 'resusr ! exit ; ] r2 25 403 288 65 boton
 	[ 2 'resusr ! exit ; ] r3 25 497 288 65 boton
 	[ 3 'resusr ! exit ; ] r4 25 590 288 65 boton
 
-	0 scursor sdlx sdly tsdraw
+	sdlx sdly scursor SDLimage
 	SDLredraw
 
 	SDLkey 
@@ -270,7 +278,7 @@
 	[ jugar ; ] "Jugar" 400 640 160 60 boton
 	[ exit ; ] "Salir" 600 640 160 60 boton
 	
-	0 scursor sdlx sdly tsdraw
+	sdlx sdly scursor SDLimage
 	
 	SDLredraw
 
@@ -284,7 +292,7 @@
 	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
 	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
-	128 dup "r3\j2022\pregunta\cursor.png" loadts 'scursor !	
+	"r3\j2022\pregunta\cursor.png" loadimg 'scursor !	
 	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simagenes !
 	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
 	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !

@@ -89,7 +89,7 @@
 	swap
 	a@+ pv.p 16 >> a@+ pv.p 16 >> SDLFngon ;
 	
-|600 10 600 500	
+
 :figura
 	>a
 	a@+ SDLColor
@@ -101,12 +101,12 @@
 	a@ pv@ swap 32 << or a!+
 	8 a+
 	a@ pv@
-	650.0 <? ( hit changevel )
-	1150.0 >? ( hit changevel )
+	320.0 <? ( hit changevel )
+	920.0 >? ( hit changevel )
 	swap 32 << or a!+
 	a@ pv@
 	50.0 <? ( hit )
-	470.0 >? ( hit )
+	400.0 >? ( hit )
 	swap 32 << or a!+
 	;
 	
@@ -132,6 +132,17 @@
 	'obj p.draw
 	;
 	
+
+:botont | 'v "" x y w h --
+	2over 2over guibox
+	SDLb SDLx SDLy guiIn	
+	$ffffff  [ $00ff00 nip ; ] guiI
+	SDLColor
+	2over 2over SDLFRect	
+	xywh64 
+	$11 rot rot $0 fontt textbox 
+	onCLick ;	
+	
 :boton | x y w h -- xy
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
@@ -143,6 +154,14 @@
 
 	
 :respuesta
+	320 480 200 90 boton 2drop
+	720 480 200 90 boton 2drop
+	
+	320 600 200 90 boton 2drop
+	720 600 200 90 boton 2drop
+	
+	;
+:r2
 	600 520 300 90 boton
 	$ffff SDLColor
 	40 rot rot tcirc | ang n r x y --
@@ -168,6 +187,7 @@
 	pregunta
 	respuesta
 
+	'exit "Salir" 1000 600 100 40 botont
 	reloj	
 	
 |	$ffff00 SDLColor
@@ -191,7 +211,7 @@
 	;
 
 :randpos
-	500 randmax 650 +
+	600 randmax 320 +
 	400 randmax 60 + ;
 	
 :jugar
@@ -225,7 +245,7 @@
 
 :inicio
 	ttf_init
-	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
+	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
 	"r3/j2022/elcua/cursor.png" loadimg 'scursor !	
 	
 	SNDInit

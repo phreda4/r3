@@ -1,7 +1,7 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3	
 ^r3/win/sdl2mixer.r3
-
+^r3/util/bfont.r3
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/lib/rand.r3
@@ -11,6 +11,9 @@
 #fx 0 0
 #balas 0 0
 #aliens 0 0
+	
+#puntos
+#vidas
 	
 #xp 355.0 #yp 500.0
 #vxp #vyp
@@ -37,19 +40,7 @@
 :+fx | x y
 	'explode 'fx p!+ >a 0 a!+ swap a!+ a! ;
 
-|:newovni
-|	500.0 randmax 50.0 + 'ya !
-|	sw 16 << 'xa ! ;
 
-:hit??
-|	xa 16 >> 20 + xs -
-|	ya 16 >> 15 + ys - distfast
-|	20 >? ( drop ; ) drop
-|	0 'xs !
-|	+fx
-|	newovni
-	;
-	
 :alien | a --
 	>a 
 	msec 7 >> $3 and 9 +
@@ -64,12 +55,25 @@
 	'alien 'aliens p!+ >a swap a!+ a! ;
 	
 |--------------------------------
+:hitene | x y i n p -- x y p
+	dup 8 + >a 
+	pick4 a@+ 16 >> -
+	pick4 a@+ 16 >> -
+	distfast 
+	40 >? ( drop ; )
+	drop
+	dup 'aliens p.del
+	pick4 16 << pick4 16 << +fx
+	1 'puntos +!
+	;
+	
 :disp | a --
 	>a 
 	8 graficos
 	a@+ 16 >> 
 	a@ 8.0 - dup a!+ 16 >>
 	-40 <? ( 4drop 0 ; )
+	'hitene 'aliens p.mapv
 	tsdraw
 	;
 	
@@ -77,7 +81,6 @@
 	'disp 'balas p!+ >a swap a!+ a! ;
 
 |--------------------------------
-
 #ss * 8192 | estrellas
 
 :drawback
@@ -96,6 +99,24 @@
 		sh randmax da!+
 		) drop ;
 
+:reset
+	0 'puntos !
+	3 'vidas !
+	'fx p.clear
+	'balas p.clear
+	'aliens p.clear
+	;
+	
+|---------------------
+#secant
+
+:creador
+	msec 10 >>
+	secant =? ( drop ; )
+	'secant !
+	4 randmax 0? ( 800.0 randmax -90.0 +alien ) drop
+	;
+
 :game
 	0 SDLcls
 	
@@ -106,8 +127,14 @@
 	'fx p.draw
 	player
 	
+	$ffffff sdlcolor
+	8 8 bat
+	puntos "PUNTOS:%d" sprint bprint
+	
 	SDLredraw
 
+	creador
+	
 	SDLkey
 	>esc< =? ( exit )
 	<le> =? ( -2.0 'vxp ! )
@@ -115,14 +142,13 @@
 	>le< =? ( 0 'vxp ! )
 	>ri< =? ( 0 'vxp ! )
 	<esp> =? ( xp yp +disp )
-	<f1> =? ( 800.0 randmax -90.0 +alien ) 
 	drop
 	;
 
 :	
 	"r3sdl" 800 600 SDLinit
 	SNDInit
-
+	bfont1 
 	100 'fx p.ini
 	100 'balas p.ini
 	100 'aliens p.ini
