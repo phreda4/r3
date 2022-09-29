@@ -23,6 +23,14 @@
 #zp 0
 #vzp 0
 
+#puntos
+#vidas
+
+#dias "Lunes" "Martes" "Miercoles" "Jueves" "Viernes" "Sabado" "Domingo"
+#nrodia 0
+#mododia 0
+
+
 |-------------- tiempo
 #prevt
 #dtime
@@ -49,6 +57,7 @@
 	55 << 1 >>> 63 *>> ; | 55 speed
 
 :distplayer | x y -- x y f
+	zp 0 >? ( drop 1000 ; ) drop	| saltando no toca
 	over xp - over yp - distfast ;
 	
 |--------------------------------
@@ -83,6 +92,7 @@
 	9 randmax 1 << 'tipoitems +
 	c@+ swap c@ +item ;
 	
+
 |--------------------------------
 :gato | a --
 	>a a@ dup 0.1 + a!+ 
@@ -190,7 +200,7 @@
 	yp 200 - 'ymapa !
 	;
 	
-	
+
 :debug	
 	.cls "list:" .println
 	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'fx p.mapv 
@@ -199,7 +209,29 @@
 |--------------------------------
 :randy | -- ; 420..990
 	570 randmax 420 + ;
+
+:reset
+	'fx p.clear
+	200 ( 1? 1 -
+		12000 randmax 500 +
+		randy +ritem
+		) drop 
+	+jugador
+	time.start
 	
+	100 'xp !
+	600 'yp !
+	0 'zp !
+	0 'vzp !
+	
+	0 'puntos !
+	3 'vidas !
+	
+	0 'nrodia !
+	0 'mododia !
+
+	;	
+		
 |---------------------
 #secant
 
@@ -212,7 +244,7 @@
 	;
 
 :saltar
-	zp 0? ( 8.0 'vzp ! ) drop  ;
+	zp 0? ( 9.0 'vzp ! ) drop  ;
 
 :teclado
 	SDLkey 
@@ -221,10 +253,10 @@
 	<dn> =? ( btnpad %100 or 'btnpad ! )
 	<le> =? ( btnpad %10 or 'btnpad ! )
 	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 not and 'btnpad ! )
-	>dn< =? ( btnpad %100 not and 'btnpad ! )
-	>le< =? ( btnpad %10 not and 'btnpad ! )
-	>ri< =? ( btnpad %1 not and 'btnpad ! )	
+	>up< =? ( 0 'btnpad ! )
+	>dn< =? ( 0 'btnpad ! )
+	>le< =? ( 0 'btnpad ! )
+	>ri< =? ( 0 'btnpad ! )	
 	<esp> =? ( saltar )
 |	<f1> =? ( 800 randy +perro ) 
 |	<f2> =? ( -128 randy +gato ) 
@@ -259,19 +291,14 @@
 	$ffffff font "Viernes de agosto - San Cayetano" sprint
 	20 20 ttfprint | color font "text" x y -- 
 	
+	$ffffff font puntos "%d" sprint
+	600 20 ttfprint | color font "text" x y -- 
+	
 	SDLredraw
 	teclado ;
 
 |---------------------------------------
-:hacenivel
-	'fx p.clear
-	200 ( 1? 1 -
-		12000 randmax 500 +
-		randy +ritem
-		) drop 
-	+jugador
-	time.start
-	;
+
 
 :main
 	1000 'fx p.ini
@@ -284,7 +311,7 @@
 	"r3\j2022\basura\mapa.map" loadtilemap 'mapajuego !
 	128 128 "r3\j2022\basura\sprites.png" loadts 'sprplayer !
 	
-	hacenivel
+	reset
 	
 	'jugando SDLshow
 	SDLquit ;	
