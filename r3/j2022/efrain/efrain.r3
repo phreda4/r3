@@ -13,6 +13,7 @@
 #sprj
 
 #fx 0 0
+#ene 0 0
 
 #xvp #yvp	| viewport
 
@@ -24,30 +25,53 @@
 #mapajuego
 
 |--------------------------------
-	
-:humo
+#prevt
+#dtime
+#reloj
+
+:time.start
+	msec 'prevt ! 0 'dtime ! 
+	0 'reloj ! ;
+
+:time.delta
+	msec dup prevt - 'dtime ! 'prevt ! 
+	dtime 'reloj +! ;
+
+:animcntm | cnt msec -- 0..cnt-1
+	55 << 1 >>> 63 *>> ; | 55 speed
+
+|--------------------------------
+
+:a>anim@ a> 8 + @ ;
+:a>anim! a> 8 + ! ;
+
+#dirx
+
+:enemigo | adr --
 	>a
-	a@
-	100 >? ( drop 0 ; ) 
-	1 + a!+
-	25 sprj
-	a@+ int. a@+ int. tsdraw
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + 	
+	sprj 
+	a@+ int. 
+	xp <? ( 1.0 'dirx ! )
+	xp >? ( -1.0 'dirx ! )
+	xvp -
+	a@+ int. yvp -
+	64 64 tsdraws
+
+	dirx
+	
+	drop
+	
 	;
 	
-:+humo | x y --
-	'humo 'fx p!+ >a 
-	0 a!+
+:+enemigo | x y --
+	'enemigo 'ene p!+ >a 
+	0 a!+ | TIME
+	$80004 a!+
 	swap a!+ a!+
 	;
-	
-#ev 0	
-:estela	
-	1 'ev +!
-	ev 20 <? ( drop ; ) drop
-	0 'ev !
-	xp yp +humo
-	;
-
 
 |--------------------------------
 :viewport
@@ -89,7 +113,8 @@
 	xp int. +
 	yp int. 32 +
 	[map]@s ;
-	
+
+
 :panim | -- nanim	
 	msec 5 >> $3 and ;
 	
@@ -165,6 +190,8 @@
 	<ri> =? ( 'prunr 'ep ! )
 	>le< =? ( 'pstay 'ep ! )
 	>ri< =? ( 'pstay 'ep ! )
+	
+	<f1> =? ( xp yp +enemigo )
 	drop 
 	;
 
@@ -197,24 +224,29 @@
 	
 :jugando
 	$0 SDLcls
-
+	time.delta
+	
 	viewport
 	drawmapa	
-	'fx p.draw
+	'ene p.draw
 	player
+	'fx p.draw
 	
 	SDLredraw
 	
 	teclado ;
 
 :main
-	1000 'fx p.ini
+	100 'fx p.ini
+	100 'ene  p.ini
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
 	
 	32 32 "r3\j2022\efrain\sprites.png" loadts 'sprj !
 	"r3\j2022\efrain\nivel.map" loadtilemap 'mapajuego !
+	
+	time.start
 	
 	'jugando SDLshow
 	SDLquit ;	
