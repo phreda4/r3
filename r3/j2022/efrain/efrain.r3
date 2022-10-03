@@ -10,6 +10,9 @@
 ^r3/util/penner.r3
 
 
+#puntos
+#vidas
+
 #sprj
 
 #fx 0 0
@@ -47,22 +50,26 @@
 
 #dirx
 
+:direne | dirx -- dirx sdir
+	-? ( $80004 ; ) $140004 ;
+	
 :enemigo | adr --
-	>a
+	dup >a
 	a@ dup dtime + a!+ 
 	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
 	animcntm + 	
 	sprj 
-	a@+ int. 
+	a@+ 
 	xp <? ( 1.0 'dirx ! )
 	xp >? ( -1.0 'dirx ! )
-	xvp -
+	int. xvp -
 	a@+ int. yvp -
 	64 64 tsdraws
 
-	dirx
-	
-	drop
+	>a 8 a+
+	dirx 
+	direne a!+
+	a> +!
 	
 	;
 	
@@ -168,6 +175,7 @@
 	33 <>? ( drop ; ) drop
 	0 
 	xp int. 32 + yp int. 60 + [map]!
+	1 'puntos +!
 	;
 		
 :player	
@@ -193,6 +201,10 @@
 	
 	<f1> =? ( xp yp +enemigo )
 	drop 
+	;
+
+:creador
+	+enemigo
 	;
 
 |---- sin reemplazo	

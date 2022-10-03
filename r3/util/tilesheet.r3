@@ -83,10 +83,11 @@
 	map> ;
 	
 :[map]@ | x y -- v
-	[map] c@ ;
+	[map] c@ $ff and ;
 
 ::drawtile | y x tile -- y x 
-	0? ( drop ; ) mapt
+	| 0? ( drop ; ) 
+	mapt
 	pick2 tilew * xm + ym
 	tsdraw ;
 
