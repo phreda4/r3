@@ -185,7 +185,7 @@
 :boton | 'vecor "text" -- size
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
-	$ffffff  [ $00ff00 nip ; ] guiI
+	$ffffff  [  $00ff00 nip ; ] guiI
 	SDLColor
 	2over 2over SDLFRect	
 	xywh64 
@@ -224,10 +224,12 @@
 
 |----------------------------------
 :respuestaOK
-	jnow avjug 
+	jnow avjug
+	0 playsnd 
 	;
 
 :respuestaNO
+	1 playsnd
 	;
 	
 :respuesta	
@@ -265,9 +267,9 @@
 	0 80 1280 80 xywh64 
 	$ffffff fontt textbox
 	
-	[ 2 'cntjug ! ; ] "2" 100 300 100 60 boton	
-	[ 3 'cntjug ! ; ] "3" 100 380 100 60 boton	
-	[ 4 'cntjug ! ; ] "4" 100 460 100 60 boton	
+	[ 2 'cntjug ! 2 playsnd ; ] "2" 100 300 100 60 boton	
+	[ 3 'cntjug ! 2 playsnd ; ] "3" 100 380 100 60 boton	
+	[ 4 'cntjug ! 2 playsnd ; ] "4" 100 460 100 60 boton	
 
 	
 	$01 'njug1 220 220 800 60 xywh64 $ffffff fontt textbox
@@ -275,8 +277,8 @@
 	$01 'njug3 220 380 800 60 xywh64 3 jcolor fontt textbox
 	$01 'njug4 220 460 800 60 xywh64 4 jcolor fontt textbox
 	
-	[ jugar ; ] "Jugar" 400 640 160 60 boton
-	[ exit ; ] "Salir" 600 640 160 60 boton
+	[ jugar 2 playsnd ; ] "Jugar" 400 640 160 60 boton
+	[ exit 2 playsnd ; ] "Salir" 600 640 160 60 boton
 	
 	sdlx sdly scursor SDLimage
 	

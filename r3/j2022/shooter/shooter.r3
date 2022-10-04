@@ -19,6 +19,21 @@
 #vxp #vyp
 
 
+|----------------------------------------	
+#sndfile "disparo.mp3" "explosion.mp3" 0
+
+#sndlist * 1024
+
+:loadsndfile
+	'sndlist >a
+	'sndfile ( dup c@ 1? drop
+		dup "r3/j2022/shooter/%s" sprint
+		Mix_LoadWAV a!+
+		>>0 ) drop ;
+
+:playsnd | n --
+	3 << 'sndlist + @ SNDplay ;
+
 :player
 	|yp vyp + 10.0 max sh 100 - 16 << min 'yp !
 	xp vxp + 10.0 max sw 90 - 16 << min 'xp !
@@ -65,6 +80,7 @@
 	dup 'aliens p.del
 	pick4 16 << pick4 16 << +fx
 	1 'puntos +!
+1 playsnd
 	;
 	
 :disp | a --
@@ -78,7 +94,8 @@
 	;
 	
 :+disp | x y --
-	'disp 'balas p!+ >a swap a!+ a! ;
+	'disp 'balas p!+ >a swap a!+ a! 
+0 playsnd ;
 
 |--------------------------------
 #ss * 8192 | estrellas
@@ -147,7 +164,10 @@
 
 :	
 	"r3sdl" 800 600 SDLinit
+
 	SNDInit
+	loadsndfile
+	
 	bfont1 
 	100 'fx p.ini
 	100 'balas p.ini
