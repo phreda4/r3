@@ -45,9 +45,6 @@
 
 |--------------------------------
 
-:a>anim@ a> 8 + @ ;
-:a>anim! a> 8 + ! ;
-
 #dirx
 
 :direne | dirx -- dirx sdir
@@ -71,6 +68,11 @@
 	direne a!+
 	a> +!
 	
+	a@+ xp - int. 
+	a@+ yp - int. 
+	distfast 32 >? ( drop ; ) drop
+	|-4.0 'vxp !
+	-10.0 'vyp !
 	;
 	
 :+enemigo | x y --
@@ -80,6 +82,17 @@
 	swap a!+ a!+
 	;
 
+#enelist  24 36 37 46 81 82 83 104 106 108 131 133 135 137 139 155 166 0
+#enenow 'enelist
+
+:testene
+	enenow @ 0? ( drop ; )
+	5 << | 32*
+	xp int. sw 2 >> + <? ( drop ; )
+	16 << 
+	15 5 << 16 << +enemigo
+	8 'enenow +! ;
+	
 |--------------------------------
 :viewport
 	xp int. sw 1 >> - 'xvp !
@@ -203,10 +216,6 @@
 	drop 
 	;
 
-:creador
-	+enemigo
-	;
-
 |---- sin reemplazo	
 :drawmapa
 	26 20
@@ -237,6 +246,8 @@
 :jugando
 	$0 SDLcls
 	time.delta
+	
+	testene
 	
 	viewport
 	drawmapa	
