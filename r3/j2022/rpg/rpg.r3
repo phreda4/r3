@@ -73,11 +73,7 @@
 	[map]@ ;
 	
 :panim | -- nanim	
-	msec 6 >> 3 mod abs ;
-	
-
-
-
+	msec 6 >> $3 and ;
 	
 :pisoysalto
 	floor? 0? ( drop
@@ -102,26 +98,17 @@
 
 #btnpad
 
-
-	
-:prunl
-|	estela	
-	0 wall? 1? ( drop ; ) drop
-	8 panim + 'np !
-	-2.0 'xp +!
-	;
-	
-:prunr
-|	estela	
-	32 wall? 1? ( drop ; ) drop
-	0 panim + 'np !
-	2.0 'xp +!
-	;
-	
+:dirv	
+	-? ( 1 2 << ; ) 2 2 << ;
 :xmove
+	dirv panim + 'np !
 	'xp +!
 	;
+	
+:dirh
+	-? ( 3 2 << ; ) 0 ;
 :ymove
+	dirh panim + 'np !
 	'yp +!
 	;
 	
@@ -129,7 +116,7 @@
 	np sprj 
 	xp int. xvp -
 	yp int. yvp -
-	32 32 tsdraws
+	34 52 tsdraws
 
 	btnpad
 	%1000 and? ( -1.0 ymove  )
@@ -202,7 +189,7 @@
 	bfont1 
 	|SDLfull
 	
-	8 8 "r3\j2022\rpg\tiles.png" loadts 'sprj !
+	17 26 "r3\j2022\rpg\scientist.png" loadts 'sprj !
 	"r3\j2022\rpg\nivel.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow

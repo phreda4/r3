@@ -88,7 +88,7 @@
 :testene
 	enenow @ 0? ( drop ; )
 	5 << | 32*
-	xp int. sw 2 >> + <? ( drop ; )
+	xp int. sw 1 >> + >? ( drop ; )
 	16 << 
 	15 5 << 16 << +enemigo
 	8 'enenow +! ;
