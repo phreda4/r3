@@ -43,7 +43,19 @@
 	;
 
 |----------------------------------------	
-#sndfile "inicio.mp3" "correcto.mp3" "incorrecto.mp3" "siguiente.mp4" 0
+#sndfile 
+"inicio.mp3" 
+"correcto.mp3" 
+"incorrecto.mp3" 
+"siguiente-nivel.mp3"
+"cual-de-estas-es-el-cuadrado.mp3"
+"cual-de-estas-es-un-triangulo.mp3"
+"cual-es-el-pentagono.mp3"
+"reconocer-el-ciculo.mp3"
+"cuantos lados tiene esta figura.mp3"
+"esta-otra-cuantos-tiene.mp3"
+
+0
 
 #sndlist * 1024
 
@@ -206,7 +218,16 @@
 
 	SDLkey 
 	>esc< =? ( exit )
-	<f1> =? ( 1 'nropreg +! )
+	<f1> =? ( 1 playsnd )
+	<f2> =? ( 2 playsnd )
+	<f3> =? ( 3 playsnd )
+	<f4> =? ( 4 playsnd )
+	<f5> =? ( 5 playsnd )
+	<f6> =? ( 6 playsnd )
+	<f7> =? ( 7 playsnd )
+	<f8> =? ( 8 playsnd )
+	<f9> =? ( 9 playsnd )
+
 	drop 
 	;
 
@@ -261,6 +282,7 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
+	0 playsnd
 	jugar
 	SDLquit ;	
 	

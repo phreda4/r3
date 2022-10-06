@@ -17,6 +17,17 @@
 
 #mapajuego
 
+#imginicio
+#imggover
+#imgbtns
+#imgbtnsd
+#imgbtne
+#imgbtned
+
+#scursor
+
+#mapajuego
+
 #sprplayer
 #sprauto
 #sprsemaforo
@@ -447,6 +458,8 @@
 |	debug	
 	
 	barraestado
+	sdlx sdly scursor SDLimage
+
 	SDLredraw
 	usuario
 	;
@@ -479,16 +492,22 @@
 	$11 rot rot $0 font textbox 
 	onCLick ;
 	
+:btni | 'vecor 'ip 'i x y w h -- size
+	guibox
+	SDLb SDLx SDLy guiIn	
+	[ swap ; ] guiI nip
+	xr1 yr1 rot SDLImage
+	onCLick ;
 	
 :findejuego
 	gui
-|	$0 SDLcls
-
-	$11 "GAME OVER" 0 10 1024 200 xywh64 $ff font textbox 	
+	0 0 imggover SDLImage
 
 	$11 
 	reloj 1000 / "Ultimo tiempo: %d" sprint
-	0 210 1024 200 xywh64 $ff00 font textbox 	
+	0 10 1024 200 xywh64 $ff00 font textbox 	
+
+	sdlx sdly scursor SDLimage
 
 	SDLRedraw
 	
@@ -499,12 +518,12 @@
 	
 :menuprincipal
 	gui
-	$0 SDLcls
+	0 0 imginicio SDLImage 
 
-	$11 "Juego de Vialidad" 0 10 1024 200 xywh64 $ffffff font textbox 	
+	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] imgbtnsd imgbtns 200 300 200 80 btni
+	'exit imgbtned imgbtne 600 300 200 80 btni
 
-	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] "Jugar" 300 400 200 80 boton
-	'exit "Salir" 600 400 200 80 boton
+	sdlx sdly scursor SDLimage
 
 	SDLRedraw
 
@@ -518,7 +537,7 @@
 	"r3sdl" 1024 600 SDLinit
 	bfont2 
 	|SDLfull
-
+	0 SDL_ShowCursor
 		
 	"r3\j2022\vialbot\mapa.png" loadimg 'mapajuego !
 	
@@ -528,6 +547,15 @@
 	38 31 "r3\j2022\vialbot\vida.png" loadts 'sprvida !
 	"r3\j2022\vialbot\base1.png" loadimg 'base1 !
 	"r3\j2022\vialbot\base2.png" loadimg 'base2 !
+	"r3\j2022\vialbot\apertura.png" loadimg 'imginicio !
+	"r3\j2022\vialbot\gameover.png" loadimg 'imggover !
+	"r3\j2022\vialbot\btns.png" loadimg 'imgbtns !
+	"r3\j2022\vialbot\btnsd.png" loadimg 'imgbtnsd !
+	"r3\j2022\vialbot\btne.png" loadimg 'imgbtne !
+	"r3\j2022\vialbot\btned.png" loadimg 'imgbtned !
+
+	"r3\j2022\vialbot\cursor.png" loadimg 'scursor !	
+
 ttf_init	
 	"r3/j2022/vialbot/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
 	

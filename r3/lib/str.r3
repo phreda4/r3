@@ -197,10 +197,10 @@
 
 |----------------------------------
 ::trim | adr -- adr'
-	( c@+ 0? ( 33 + ) $ff and 33 <? drop ) drop 1 - ;
+	( c@+ 1?  $ff and 33 <? drop ) drop 1 - ;
 
 ::trimc | car adr -- adr'
-	( c@+ 0? pick2 =? ( drop nip 1 - ; ) drop ) drop nip 1 - ;
+	( c@+ 1? pick2 =? ( drop nip 1 - ; ) drop ) drop nip 1 - ;
 
 ::trim" | adr -- adr'
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 2 - ; ) ) drop ) drop 1 - ;
