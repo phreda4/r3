@@ -42,6 +42,21 @@
 
 #semaforoestado 0
 
+|----------------------------------------	
+#sndfile "boton.mp3" "rcrash.mp3" 0
+
+#sndlist * 1024
+
+:loadsndfile
+	'sndlist >a
+	'sndfile ( dup c@ 1? drop
+		dup "r3/j2022/vialbot/audio/%s" sprint
+		Mix_LoadWAV a!+
+		>>0 ) drop ;
+
+:playsnd | n --
+	3 << 'sndlist + @ SNDplay ;
+
 |----------------- map 
 | 1024*600 = 64*38 (16x16)
 #mapa * 2432
@@ -185,6 +200,7 @@
 	over 32 + over 50 + 
 	2dup +explo
 	+fantasma
+	1 playsnd
 	1
 	;	
 	
@@ -209,6 +225,7 @@
 	0? ( 1.0 + ; ) dup xor ;
 	
 :quietoycamina
+	0 playsnd
 	a> 16 + dup @ estado swap ! ;
 	
 :robot | v a -- v
@@ -520,7 +537,7 @@
 	gui
 	0 0 imginicio SDLImage 
 
-	[ reset 'jugando SDLShow 'findejuego SDLShow ; ] imgbtnsd imgbtns 200 300 200 80 btni
+	[ 0 playsnd reset 'jugando SDLShow 'findejuego SDLShow ; ] imgbtnsd imgbtns 200 300 200 80 btni
 	'exit imgbtned imgbtne 600 300 200 80 btni
 
 	sdlx sdly scursor SDLimage
@@ -556,9 +573,12 @@
 
 	"r3\j2022\vialbot\cursor.png" loadimg 'scursor !	
 
-ttf_init	
+	ttf_init	
 	"r3/j2022/vialbot/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
-	
+
+	SNDInit
+	loadsndfile	
+
 	200 'obj p.ini
 	100 'fx p.ini
 	reset
