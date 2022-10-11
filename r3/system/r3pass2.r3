@@ -201,7 +201,7 @@
 	;
 
 :seterrorfile
-	over 16 - @ "%w" sprint count "mem/main.mem" save
+	over 16 - @ "%w" sprint count "mem/main.mem" save | change error file (error in include)
 	over 8 - @ 'src !
 	;
 	

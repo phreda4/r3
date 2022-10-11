@@ -1,4 +1,4 @@
-| sdl2 test program
+| sdl2 text in box 
 | PHREDA 2021
 ^r3/win/console.r3
 ^r3/win/sdl2gfx.r3	
@@ -8,12 +8,8 @@
 
 #vx 0
 
-#texto "para bebés y niños
-Yogures naturales
-Budines 
-Tartas ñ¿⌐óúº╕
-Hamburguesas proteicas
-"
+#texto "El veloz murciélago hindú comía feliz cardillo y kiwi. 
+La cigüeña tocaba el saxofón detrás del palenque de paja"
 
 #t2 "esto es un texto demasiado largo para que entre en la caja"
 

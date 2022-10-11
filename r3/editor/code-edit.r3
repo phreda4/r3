@@ -695,13 +695,13 @@
 	" [%s]" ,print ;
 
 :topbar
-	1 1 ,at ,bblue ,white ,eline
+	1 hcode 2 + ,at ,bblue ,white ,eline
 	panelcontrol
 	0? ( drop barraf ; ) drop
 	barrac ;
 
 :fotbar
-	1 hcode 2 + ,at 
+	1 1 ,at 
 	,bblue ,white ,eline
 	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
 	$fuente fuente - " %d chars" ,print 
