@@ -50,50 +50,64 @@
 	;
 
 |--------------------------------
-#enelist 
-0.9 [ 2 20 3 3 ] 
-0.4 [ 10 10 5 10 ]
-0
+#hitene
+#timeene
 
+| velocidad pp+ease x1 x2 y1 y2 n1 n2
+| $1xx = pingpong $0xx = ping
 
-:vlerp | vel xi xf -- xn
-	over - pick2 msec 10 *>> $1ffff and $10000 and? ( $1ffff xor )
-	*. + ;
+#listene [
+1.0 $100  6 12 39 39 0 4
+0 ]
 
-:getxyene	| vel -- x y
-	da@+ 32 * | 32 tile map size
-	da@+ 32 * | vel x1 x2
-	vlerp 	| vel x
+:pp | pp|ease vel -- pp|ease mul
+	over 
+	$100 nand? ( drop $ffff and ; ) drop
+	$1ffff and $10000 and? ( $1ffff xor )
+	;
+	
+:calctime | pp|ease vel -- mult
+	timeene 10 *>> pp swap $ff and ease ;
+	
+:calcxi | calc xi yi -- calc x
+	over - pick2 *. + ;
+	
+:calcpos | v -- x y 
+	da@+ swap 
+	calctime 
+	da@+ 5 << |32 * | 32 tile map size
+	da@+ 5 << |32 * | vel x1 x2
+	calcxi 	| vel x
 	swap
-	da@+ 32 * 
-	da@+ 32 * | vel y1 y2
-	vlerp
-	nip 	| x y
+	da@+ 5 << |32 * 
+	da@+ 5 << |32 * | vel y1 y2
+	calcxi nip 	| x y
 	;
 	
 :drawene | x y --
-	7 spre
+	msec 1 >> $ff and 
+	da@+ da@+ over - rot 8 *>> +
+	spre
 	2swap 
 	yvp - swap
 	xvp - swap
-	64 64 tsdraws ;
-
-#hitene
+	100 dup tsdraws ;
 
 :hitplayer | x y -- x y
-	over xp 16 >> - over yp 16 >> - distfast
+	over xp 16 >> - 
+	over yp 16 >> - distfast
 	32 <? ( a> 'hitene ! )
 	drop
 	;	
 	
-:enemigos
+:enemigos | 
+	msec 'timeene !
 	0 'hitene !
-	'enelist >a ( a@+ 1? 
-		getxyene
+	'listene >a ( da@+ 1? 
+		calcpos
 		hitplayer
 		drawene
-		) drop
-	;
+		) drop  ;
 	
 |--------------------------------
 :viewport
@@ -246,7 +260,7 @@
 	|SDLfull
 	
 	32 32 "r3\j2022\trebor\treborj.png" loadts 'sprj !
-	20 20 "r3\j2022\trebor\trebore.png" loadts 'spre !
+	50 50 "r3\j2022\trebor\enemigos.png" loadts 'spre !
 	"r3\j2022\trebor\nivel.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow

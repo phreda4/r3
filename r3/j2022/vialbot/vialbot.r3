@@ -574,7 +574,7 @@
 	"r3\j2022\vialbot\cursor.png" loadimg 'scursor !	
 
 	ttf_init	
-	"r3/j2022/vialbot/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'font !	
+	"r3/j2022/vialbot/font/PressStart2P-Regular.ttf" 40 TTF_OpenFont 'font !	
 
 	SNDInit
 	loadsndfile	
