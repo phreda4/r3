@@ -10,7 +10,6 @@
 
 #simagenes
 #stablero
-#smapa
 #scursor
 
 |----------------------------------------	
@@ -80,10 +79,6 @@
 	d@ 523 yresm */ 180 + 32 - ;
 	
 :mapascreen
-	500 180 
-	400 523
-	smapa sdlimages 
-
 	'pjug >a
 	cntjug ( 1? 1-
 		dup simagenes da@+ da@+ tsdraw
@@ -94,7 +89,6 @@
 	"Jugador 2" 'njug2 strcpy 
 	"Jugador 3" 'njug3 strcpy 
 	"Jugador 4" 'njug4 strcpy 
- 
 	;
 	
 :resetjug | n --
@@ -296,8 +290,7 @@
 	
 	"r3\j2022\pregunta\cursor.png" loadimg 'scursor !	
 	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simagenes !
-	"r3\j2022\pregunta\tablero juego.png" loadimg 'stablero !
-	"r3\j2022\pregunta\mapa.png" loadimg 'smapa !
+	"r3\j2022\pregunta\tablero.png" loadimg 'stablero !
 	
 	SNDInit
 	loadsndfile

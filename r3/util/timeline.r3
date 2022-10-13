@@ -82,25 +82,6 @@
 	>r 0 0 'evt.stop r> +tline ;
 	
 |-----------------------------
-::xywh64 | x y w h -- 64b
-	$ffff and swap
-	$ffff and 16 << or swap
-	$ffff and 32 << or swap
-	$ffff and 48 << or ;
-
-::w% sw 16 *>> ;
-::h% sh 16 *>> ;
-
-::xywh%64 | x y w h -- 64b
-	h% $ffff and swap
-	w% $ffff and 16 << or swap
-	h% $ffff and 32 << or swap
-	w% $ffff and 48 << or ;
-
-::xy%64 | x y -- 64b
-	h% $ffff and 32 << or swap
-	w% $ffff and 48 << or 
-	$ffffffff or ;
 
 ::64xy | b -- x y 
 	dup 48 >> swap 16 << 48 >> ;
@@ -114,13 +95,6 @@
 	
 #sdlbin [ 0 0 0 0 ]
 #sdlbox [ 0 0 0 0 ]
-
-::64box | b adr --
-	swap
-	dup 48 >> rot d!+
-	swap dup 16 << 48 >> rot d!+
-	swap dup 32 << 48 >> rot d!+
-	swap 48 << 48 >> swap d! ;
 
 |--- ratio adjust
 :setbox | hn wn --

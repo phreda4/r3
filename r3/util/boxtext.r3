@@ -7,12 +7,27 @@
 
 #boxt 0 0 
 
+
 ::xywh64 | x y w h -- 64b
 	$ffff and swap
 	$ffff and 16 << or swap
 	$ffff and 32 << or swap
 	$ffff and 48 << or ;
+
+::w% sw 16 *>> ;
+::h% sh 16 *>> ;
+
+::xywh%64 | x y w h -- 64b
+	h% $ffff and swap
+	w% $ffff and 16 << or swap
+	h% $ffff and 32 << or swap
+	w% $ffff and 48 << or ;
 	
+::xy%64 | x y -- 64b
+	h% $ffff and 32 << or swap
+	w% $ffff and 48 << or 
+	$ffffffff or ;
+
 ::64box | b adr --
 	swap
 	dup 48 >> rot d!+
@@ -21,9 +36,9 @@
 	swap 48 << 48 >> swap d! ;	
 	
 #buffer * 4096
-#lines * 256
+#lines * 512
 #lines>
-#boxlines * 256
+#boxlines * 512
 #clines
 
 #font

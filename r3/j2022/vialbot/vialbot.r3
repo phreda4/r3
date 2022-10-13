@@ -19,6 +19,7 @@
 
 #imginicio
 #imggover
+#imgfin
 #imgbtns
 #imgbtnsd
 #imgbtne
@@ -42,12 +43,20 @@
 
 #semaforoestado 0
 
+#musicini
+#musicrun
+#musicend
+
 |----------------------------------------	
 #sndfile "boton.mp3" "rcrash.mp3" 0
-
-#sndlist * 1024
+#sndlist * 64
 
 :loadsndfile
+	SNDInit
+	"r3/j2022/vialbot/audio/musica-ini.mp3" Mix_LoadMUS 'musicini !
+	"r3/j2022/vialbot/audio/musica-run.mp3" Mix_LoadMUS 'musicrun !
+	"r3/j2022/vialbot/audio/musica-end.mp3" Mix_LoadMUS 'musicend !
+
 	'sndlist >a
 	'sndfile ( dup c@ 1? drop
 		dup "r3/j2022/vialbot/audio/%s" sprint
@@ -171,7 +180,10 @@
 	'fantasma 'fx p!+ >a 
 	0 a!+
 	$00003 a!+
-	swap 16 << a!+ 16 << a!+
+	swap 16 << a!+ 16 << a!+ 
+	;
+	
+:restavida
 	-1 'vidas +!
 	vidas 1 <? ( exit ) drop
 	;
@@ -199,7 +211,7 @@
 	2 <? ( 0 nip ; ) drop
 	over 32 + over 50 + 
 	2dup +explo
-	+fantasma
+	+fantasma restavida
 	1 playsnd
 	1
 	;	
@@ -259,7 +271,6 @@
 #res7 [ $10005 380.0	40.0 	624.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
 #res8 [ $10005 580.0	40.0 	624.0 	0.0		0.0 	0.0 	-0.3 	-0.8 	0 ]  1.0
 	
-
 :+robotr
 	8 randmax 6 3 << * 'res1 + 
 	'robot +obj
@@ -499,6 +510,79 @@
 	;
 
 |---------------------------------
+#mensajefinal "Jugá bien, sólo tenes una vida..."
+#buffer * 128
+#m1> #m2> 
+
+:fin1
+	0 0 imggover SDLImage
+	
+	time.delta
+	'fx p.draw
+
+	$11 
+	reloj 1000 / "Puntaje: %d" sprint
+	0 10 1024 100 xywh64 $ff00 font textbox 	
+
+	sdlx sdly scursor SDLimage
+	SDLRedraw
+
+	reloj 2000 >? ( exit ) drop
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop
+	;
+
+:fin2
+	0 0 imgfin SDLImage
+	
+	time.delta
+	'fx p.draw
+
+	$11 
+	reloj 1000 / "Puntaje: %d" sprint
+	0 10 1024 100 xywh64 $ff00 font textbox 	
+
+	$10 'buffer
+	100 200 824 200 xywh64 $ffffff font textbox 	
+	
+	sdlx sdly scursor SDLimage
+	SDLRedraw
+
+	reloj 200 >? (
+		m1> c@ dup $ff and m2> !
+		1? ( 1 'm1> +! 1 'm2> +! ) drop
+		time.start		
+		) drop
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop
+	;
+	
+:findejuego
+	'mensajefinal 'm1> !
+	'buffer 'm2> !
+	0 'buffer !
+	'fx p.clear
+	time.start	
+	musicend 0 Mix_PlayMusic
+	'fin1 SDLShow
+	time.start	
+	'fin2 SDLShow	
+	;
+	
+:jugar
+	0 playsnd reset
+	musicrun -1 Mix_PlayMusic	
+	'jugando SDLShow
+
+	findejuego
+	musicini 0 Mix_PlayMusic
+	;
+
+|--------------------------------------------------
 :boton | 'vecor "text" -- size
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
@@ -516,28 +600,14 @@
 	xr1 yr1 rot SDLImage
 	onCLick ;
 	
-:findejuego
-	gui
-	0 0 imggover SDLImage
-
-	$11 
-	reloj 1000 / "Ultimo tiempo: %d" sprint
-	0 10 1024 200 xywh64 $ff00 font textbox 	
-
-	sdlx sdly scursor SDLimage
-
-	SDLRedraw
-	
-	SDLkey 
-	>esc< =? ( exit )
-	drop
-	;
-	
 :menuprincipal
 	gui
 	0 0 imginicio SDLImage 
 
-	[ 0 playsnd reset 'jugando SDLShow 'findejuego SDLShow ; ] imgbtnsd imgbtns 200 300 200 80 btni
+	time.delta
+|	'obj p.draw
+
+	'jugar imgbtnsd imgbtns 200 300 200 80 btni
 	'exit imgbtned imgbtne 600 300 200 80 btni
 
 	sdlx sdly scursor SDLimage
@@ -546,6 +616,7 @@
 
 	SDLkey 
 	>esc< =? ( exit )
+	<f2> =? ( findejuego )
 	drop
 	;
 
@@ -556,35 +627,37 @@
 	|SDLfull
 	0 SDL_ShowCursor
 		
-	"r3\j2022\vialbot\mapa.png" loadimg 'mapajuego !
+	"r3\j2022\vialbot\img\mapa.png" loadimg 'mapajuego !
 	
-	128 128 "r3\j2022\vialbot\autos.png" loadts 'sprauto !
-	64 64 "r3\j2022\vialbot\robot.png" loadts 'sprplayer !
-	96 96 "r3\j2022\vialbot\semaforo.png" loadts 'sprsemaforo !
-	38 31 "r3\j2022\vialbot\vida.png" loadts 'sprvida !
-	"r3\j2022\vialbot\base1.png" loadimg 'base1 !
-	"r3\j2022\vialbot\base2.png" loadimg 'base2 !
-	"r3\j2022\vialbot\apertura.png" loadimg 'imginicio !
-	"r3\j2022\vialbot\gameover.png" loadimg 'imggover !
-	"r3\j2022\vialbot\btns.png" loadimg 'imgbtns !
-	"r3\j2022\vialbot\btnsd.png" loadimg 'imgbtnsd !
-	"r3\j2022\vialbot\btne.png" loadimg 'imgbtne !
-	"r3\j2022\vialbot\btned.png" loadimg 'imgbtned !
+	128 128 "r3\j2022\vialbot\img\autos.png" loadts 'sprauto !
+	64 64 "r3\j2022\vialbot\img\robot.png" loadts 'sprplayer !
+	96 96 "r3\j2022\vialbot\img\semaforo.png" loadts 'sprsemaforo !
+	38 31 "r3\j2022\vialbot\img\vida.png" loadts 'sprvida !
+	"r3\j2022\vialbot\img\base1.png" loadimg 'base1 !
+	"r3\j2022\vialbot\img\base2.png" loadimg 'base2 !
+	"r3\j2022\vialbot\img\apertura.png" loadimg 'imginicio !
+	
+	"r3\j2022\vialbot\img\gameover.png" loadimg 'imggover !	
+	"r3\j2022\vialbot\img\fondofin.png" loadimg 'imgfin !
+	
+	"r3\j2022\vialbot\img\btns.png" loadimg 'imgbtns !
+	"r3\j2022\vialbot\img\btnsd.png" loadimg 'imgbtnsd !
+	"r3\j2022\vialbot\img\btne.png" loadimg 'imgbtne !
+	"r3\j2022\vialbot\img\btned.png" loadimg 'imgbtned !
 
-	"r3\j2022\vialbot\cursor.png" loadimg 'scursor !	
+	"r3\j2022\vialbot\img\cursor.png" loadimg 'scursor !	
 
 	ttf_init	
 	"r3/j2022/vialbot/font/PressStart2P-Regular.ttf" 40 TTF_OpenFont 'font !	
 
-	SNDInit
 	loadsndfile	
 
 	200 'obj p.ini
 	100 'fx p.ini
 	reset
 
-'menuprincipal	SDLshow
-	|'jugando SDLshow
+	musicini 0 Mix_PlayMusic
+	'menuprincipal	SDLshow
 
 	SDLquit ;	
 	
