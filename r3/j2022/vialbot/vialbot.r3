@@ -14,10 +14,12 @@
 ^r3/util/bfont.r3
 
 #font
+#font2
 
 #mapajuego
 
 #imginicio
+#imgmenu
 #imggover
 #imgfin
 #imgbtns
@@ -37,6 +39,7 @@
 #base2
 
 #vidas 
+#puntos
 
 #fx 0 0
 #obj 0 0
@@ -48,7 +51,7 @@
 #musicend
 
 |----------------------------------------	
-#sndfile "boton.mp3" "rcrash.mp3" 0
+#sndfile "boton.mp3" "rcrash.mp3" "sem1.mp3" "sem2.mp3" "sem3.mp3" 0
 #sndlist * 64
 
 :loadsndfile
@@ -284,8 +287,10 @@
 	swap !
 	;
 	
-:+robotr1
-	'res7 'robot +obj
+#resdemo [ $10005 -32.0	0.0	550.0 	50.0 	0.8 	0.5 	0.0 	0.0 	0 ]  1.0
+	
+:+robotdemo
+	'resdemo 'robot +obj
 	
 	'obj p.cnt 1 - 
 	'obj p.nro
@@ -408,10 +413,10 @@
 	
 	dtime 'sematime +!
 	sematime 9 >>
-	0 =? ( 0 'semaforoestado ! 1 9 << 'sematime ! )
-	30 =? ( 1 'semaforoestado ! 31 9 << 'sematime ! )
-	33 =? ( 2 'semaforoestado ! 34 9 << 'sematime ! )
-	55 =? ( 1 'semaforoestado ! 56 9 << 'sematime ! )	
+	0 =? ( 0 'semaforoestado ! 1 9 << 'sematime ! 2 playsnd )
+	30 =? ( 1 'semaforoestado ! 31 9 << 'sematime ! 3 playsnd )
+	33 =? ( 2 'semaforoestado ! 34 9 << 'sematime ! 4 playsnd )
+	55 =? ( 1 'semaforoestado ! 56 9 << 'sematime ! 3 playsnd )	
 	58 =? ( 0 'semaforoestado ! 0 'sematime ! )	
 	drop
 	;
@@ -461,7 +466,7 @@
 	<f2> =? ( +bicir )
 	<f3> =? ( +autor )
 	
-	<f4> =? ( +robotr1 )
+	<f4> =? ( +robotdemo )
 	drop 
 	;
 
@@ -510,48 +515,49 @@
 	;
 
 |---------------------------------
-#mensajefinal "Jugá bien, sólo tenes una vida..."
+#mensajefinal "Jugá bien, sólo tenes una vida...;        "
 #buffer * 128
 #m1> #m2> 
 
-:fin1
+:fin2
 	0 0 imggover SDLImage
 	
 	time.delta
 	'fx p.draw
 
 	$11 
-	reloj 1000 / "Puntaje: %d" sprint
+	puntos 1000 / "Puntaje: %d" sprint
 	0 10 1024 100 xywh64 $ff00 font textbox 	
 
 	sdlx sdly scursor SDLimage
 	SDLRedraw
 
-	reloj 2000 >? ( exit ) drop
+	reloj 8000 >? ( exit ) drop
 	
 	SDLkey 
 	>esc< =? ( exit )
 	drop
 	;
 
-:fin2
+:fin1
 	0 0 imgfin SDLImage
 	
 	time.delta
 	'fx p.draw
 
 	$11 
-	reloj 1000 / "Puntaje: %d" sprint
-	0 10 1024 100 xywh64 $ff00 font textbox 	
+	puntos 1000 / "Puntaje: %d" sprint
+	0 40 1024 100 xywh64 $ff00 font textbox 	
 
 	$10 'buffer
-	100 200 824 200 xywh64 $ffffff font textbox 	
+	100 300 824 200 xywh64 $ffffff font textbox 	
 	
 	sdlx sdly scursor SDLimage
 	SDLRedraw
 
-	reloj 200 >? (
+	reloj 150 >? (
 		m1> c@ dup $ff and m2> !
+		0? ( exit ) 
 		1? ( 1 'm1> +! 1 'm2> +! ) drop
 		time.start		
 		) drop
@@ -574,12 +580,14 @@
 	;
 	
 :jugar
+	reset
 	0 playsnd reset
 	musicrun -1 Mix_PlayMusic	
 	'jugando SDLShow
-
+	reloj 'puntos !
 	findejuego
 	musicini 0 Mix_PlayMusic
+	'obj p.clear
 	;
 
 |--------------------------------------------------
@@ -600,25 +608,65 @@
 	xr1 yr1 rot SDLImage
 	onCLick ;
 	
+#timesec
+	
 :menuprincipal
 	gui
-	0 0 imginicio SDLImage 
+	0 0 imgmenu SDLImage 
 
 	time.delta
-|	'obj p.draw
+	'obj p.draw
 
 	'jugar imgbtnsd imgbtns 200 300 200 80 btni
 	'exit imgbtned imgbtne 600 300 200 80 btni
+
+	$11 "Evita cruzar en rojo;Click en Robot para detener/avanzar"
+	4 326 1024 200 xywh64 $0
+	font2 textbox 	
+	$11 "Evita cruzar en rojo;Click en Robot para detener/avanzar"
+	0 322 1024 200 xywh64 $ffffff
+	font2 textbox 	
 
 	sdlx sdly scursor SDLimage
 
 	SDLRedraw
 
+	
 	SDLkey 
 	>esc< =? ( exit )
-	<f2> =? ( findejuego )
+|	<f2> =? ( findejuego )
+	<f3> =? ( +robotdemo )
+	drop
+	
+	time $fe and 
+	timesec =? ( drop ; ) 'timesec !
+	+robotdemo
+	
+	;
+
+:inicio
+	0 0 imginicio SDLImage 
+|	sdlx sdly scursor SDLimage
+
+	$11 "pulse ESPACIO para continuar"
+	4 474 1024 200 xywh64 
+	msec 9 >> 1 and 
+	1? ( $ffffff or ) not
+	font2 textbox 	
+
+	$11 "pulse ESPACIO para continuar"
+	0 470 1024 200 xywh64 
+	msec 9 >> 1 and 
+	1? ( $ffffff or )
+	font2 textbox 	
+
+	SDLRedraw
+
+	SDLkey 
+	<esp> =? ( exit )
 	drop
 	;
+	
 
 |---------------------------------
 :main
@@ -635,7 +683,9 @@
 	38 31 "r3\j2022\vialbot\img\vida.png" loadts 'sprvida !
 	"r3\j2022\vialbot\img\base1.png" loadimg 'base1 !
 	"r3\j2022\vialbot\img\base2.png" loadimg 'base2 !
-	"r3\j2022\vialbot\img\apertura.png" loadimg 'imginicio !
+	
+	"r3\j2022\vialbot\img\inicio.png" loadimg 'imginicio !
+	"r3\j2022\vialbot\img\menu.png" loadimg 'imgmenu !
 	
 	"r3\j2022\vialbot\img\gameover.png" loadimg 'imggover !	
 	"r3\j2022\vialbot\img\fondofin.png" loadimg 'imgfin !
@@ -649,12 +699,14 @@
 
 	ttf_init	
 	"r3/j2022/vialbot/font/PressStart2P-Regular.ttf" 40 TTF_OpenFont 'font !	
+	"r3/j2022/vialbot/font/PressStart2P-Regular.ttf" 30 TTF_OpenFont 'font2 !	
 
 	loadsndfile	
 
 	200 'obj p.ini
 	100 'fx p.ini
-	reset
+
+	'inicio	SDLshow
 
 	musicini 0 Mix_PlayMusic
 	'menuprincipal	SDLshow
