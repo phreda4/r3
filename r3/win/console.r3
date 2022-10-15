@@ -9,10 +9,10 @@
 ##stdout
 ##stderr
 
-#kb 0
+#conkb 0	| last key 
 
 ::key | -- key
-	stdin 'kb 1 0 0 ReadFile drop kb ;
+	stdin 'conkb 1 0 0 ReadFile drop conkb ;
 	
 ::key? | -- f 
 	stdin 0 WaitForSingleObject ;
@@ -20,8 +20,11 @@
 ::type | str cnt --
 	stdout rot rot 0 0 WriteFile drop ;
 
-#irec 0 
-#codekey 0 0 0
+#irec 0 		| INPUT_RECORD
+#codekey 0 0 0	| ...INPUT_RECORD
+
+#ne 0
+#nr
 
 |--- format key =  $ccp0ss
 |    scancode			    ss
@@ -30,31 +33,101 @@
 |   
 | ej: $1B1001 = release esc
 ::getch | -- key
-	stdin 'irec 1 'kb ReadConsoleInput 
+	stdin 'irec 1 'nr ReadConsoleInput 
 	codekey 32 >> $1000 or irec 20 >> xor ;
 
 ::waitesc
 	( getch $1B1001 <>? drop ) drop ;
 
-
-#ne
-#nr
-
+|------- console input not wait
 :evkey 
 	codekey 32 >> $1000 or irec 20 >> xor
-	'kb ! ;
+	'conkb ! ;
 
-::inkey
-	0 'kb !
-	stdin 'ne GetNumberOfConsoleInputEvents
-	ne 0? ( ; )
-	( 1? 1 -
-		stdin 'irec 1 'nr ReadConsoleInput
-		irec $ff and
-		$1 =? ( evkey )
-		drop
-	) drop
-	kb ;
+::inkey | -- key (0=none)
+	0 'conkb !
+	ne 0? ( stdin 'ne GetNumberOfConsoleInputEvents ) drop
+	ne 0? ( ; ) 
+	1 - 'ne ! 
+	stdin 'irec 1 'nr ReadConsoleInput
+	irec $ff and
+	$1 =? ( evkey )
+	drop
+	conkb  
+	;
+
+|------- full console input (key,mouse,size,menu,focos)
+|typedef struct _INPUT_RECORD {
+|  WORD  EventType;
+|  union {
+|    KEY_EVENT_RECORD          KeyEvent;
+|    MOUSE_EVENT_RECORD        MouseEvent;
+|    WINDOW_BUFFER_SIZE_RECORD WindowBufferSizeEvent;
+|    MENU_EVENT_RECORD         MenuEvent;
+|    FOCUS_EVENT_RECORD        FocusEvent;
+
+##conev ( 0 0 )
+##aconev 0 0 0 0
+
+|typedef struct _KEY_EVENT_RECORD {
+|  BOOL  bKeyDown;
+|  WORD  wRepeatCount;
+|  WORD  wVirtualKeyCode; WORD  wVirtualScanCode;
+|  union {
+|    WCHAR UnicodeChar; CHAR  AsciiChar;
+|  } uChar;
+|  DWORD dwControlKeyState;
+
+:evkey 
+|	aconev 32 >> $1000 or irec 20 >> xor
+|	$ffff and 'conev ! 
+	;
+
+|typedef struct _COORD { |  SHORT X; |  SHORT Y;
+
+|typedef struct _MOUSE_EVENT_RECORD {
+|  COORD dwMousePosition;
+|  DWORD dwButtonState;
+|  DWORD dwControlKeyState;
+|  DWORD dwEventFlags;
+
+:evmouse
+	
+	;
+	
+|typedef struct _WINDOW_BUFFER_SIZE_RECORD {
+|  COORD dwSize;
+
+:evsize
+	;
+	
+|typedef struct _MENU_EVENT_RECORD {
+|  UINT dwCommandId;
+
+:evmenu
+	;
+	
+|typedef struct _FOCUS_EVENT_RECORD {
+|  BOOL bSetFocus;
+
+:evfocus		
+	;
+
+::evtcon
+	0 'conev !
+	ne 0? ( stdin 'ne GetNumberOfConsoleInputEvents ) drop
+	ne 0? ( ; ) 
+	1 - 'ne ! 
+	stdin 'conev 1 'nr ReadConsoleInput
+	conev $ff and
+	$1 =? ( evkey )
+	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	$8 =? ( evmenu )
+	$10 =? ( evfocus )
+	drop
+	conev
+	;
 	
 |-----------------------------------------------	
 #crb ( 10 13 0 0 )

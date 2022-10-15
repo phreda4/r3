@@ -20,7 +20,7 @@
 :loadsndfile
 	'sndlist >a
 	'sndfile ( dup c@ 1? drop
-		dup "r3/j2022/pregunta/audio/%s" sprint
+		dup "r3/j2022/quepaso/audio/%s" sprint
 		Mix_LoadWAV a!+
 		>>0 ) drop ;
 
@@ -181,7 +181,7 @@
 	SDLb SDLx SDLy guiIn	
 	$ffffff  [  $00ff00 nip ; ] guiI
 	SDLColor
-	2over 2over SDLFRect	
+	2over 2over SDLRect	
 	xywh64 
 	$11 rot rot $0 font textbox 
 	onCLick ;
@@ -285,18 +285,18 @@
 	
 :inicio
 	ttf_init
-	"r3/j2022/pregunta/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
-	"r3/j2022/pregunta/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
+	"r3/j2022/quepaso/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
+	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
-	"r3\j2022\pregunta\cursor.png" loadimg 'scursor !	
-	64 dup "r3\j2022\pregunta\preguntas.png" loadts 'simagenes !
-	"r3\j2022\pregunta\tablero.png" loadimg 'stablero !
+	"r3\j2022\quepaso\cursor.png" loadimg 'scursor !	
+	64 dup "r3\j2022\quepaso\preguntas.png" loadts 'simagenes !
+	"r3\j2022\quepaso\tablero.png" loadimg 'stablero !
 	
 	SNDInit
 	loadsndfile
 	
 	here dup 'preguntas !
-	"r3\j2022\pregunta\preguntas.txt" load 
+	"r3\j2022\quepaso\preguntas.txt" load 
 	0 swap c!+ 'here !
 
 	0 'nropreg !
