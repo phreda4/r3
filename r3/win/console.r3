@@ -11,11 +11,11 @@
 
 #conkb 0	| last key 
 
-::key | -- key
-	stdin 'conkb 1 0 0 ReadFile drop conkb ;
+|::key | -- key
+|	stdin 'conkb 1 0 0 ReadFile drop conkb ;
 	
-::key? | -- f 
-	stdin 0 WaitForSingleObject ;
+|::key? | -- f 
+|	stdin 0 WaitForSingleObject ;
 	
 ::type | str cnt --
 	stdout rot rot 0 0 WriteFile drop ;
@@ -227,7 +227,7 @@
 
 ::.input | --
 	'pad
-	( key 13 <>? swap c!+ ) drop
+	( getch 13 <>? swap c!+ ) drop
 	0 swap c! ;
 
 ::.inputn | -- nro
@@ -254,7 +254,8 @@
 |	stdout 'console-mode GetConsoleMode drop	
 |	stdout console-mode $4 or SetConsoleMode drop	
 
-	stdin $1f7 SetConsoleMode drop 
+	stdin $31 SetConsoleMode drop 
+	|stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
 	stdout $7 SetConsoleMode drop	
 ;
 	

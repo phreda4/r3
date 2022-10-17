@@ -24,6 +24,7 @@
 #ylinea 0	| primera linea visible
 #ycursor
 #xcursor
+#mshift
 
 #name * 1024
 

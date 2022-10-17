@@ -672,6 +672,7 @@
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
 	$1d =? ( controlon ) 
+	
 	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
@@ -706,6 +707,7 @@
 	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
 	$fuente fuente - " %d chars" ,print 
 	clipboard> clipboard - " %d " ,print
+	mshift " %d " ,print
 	| error-
 	cerror 0? ( drop ; ) drop
 	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
