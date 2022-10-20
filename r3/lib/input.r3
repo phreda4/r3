@@ -71,7 +71,7 @@
 	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
 	<tab> =? ( nextfoco )
 	<ret> =? ( nextfoco )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+|	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
 	drop
 	;
@@ -122,7 +122,7 @@
 	<le> =? ( kizq ) <ri> =? ( kder )
 	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
 |	<tab> =? ( ktab )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+|	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 	drop
 	;
 

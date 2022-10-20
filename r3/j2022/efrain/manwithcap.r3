@@ -6,6 +6,7 @@
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
+^r3/lib/gui.r3
 
 ^r3/util/penner.r3
 
@@ -24,6 +25,7 @@
 #vxp 0 #vyp 0		| vel player
 
 #np 0
+#face
 
 #mapajuego
 
@@ -43,56 +45,6 @@
 :animcntm | cnt msec -- 0..cnt-1
 	55 << 1 >>> 63 *>> ; | 55 speed
 
-|--------------------------------
-
-#dirx
-
-:direne | dirx -- dirx sdir
-	-? ( $80004 ; ) $140004 ;
-	
-:enemigo | adr --
-	dup >a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + 	
-	sprj 
-	a@+ 
-	xp <? ( 1.0 'dirx ! )
-	xp >? ( -1.0 'dirx ! )
-	int. xvp -
-	a@+ int. yvp -
-	64 64 tsdraws
-
-	>a 8 a+
-	dirx 
-	direne a!+
-	a> +!
-	
-	a@+ xp - int. 
-	a@+ yp - int. 
-	distfast 32 >? ( drop ; ) drop
-	|-4.0 'vxp !
-	-10.0 'vyp !
-	;
-	
-:+enemigo | x y --
-	'enemigo 'ene p!+ >a 
-	0 a!+ | TIME
-	$80004 a!+
-	swap a!+ a!+
-	;
-
-#enelist  24 36 37 46 81 82 83 104 106 108 131 133 135 137 139 155 166 0
-#enenow 'enelist
-
-:testene
-	enenow @ 0? ( drop ; )
-	5 << | 32*
-	xp int. sw 1 >> + >? ( drop ; )
-	16 << 
-	15 5 << 16 << +enemigo
-	8 'enenow +! ;
-	
 |--------------------------------
 :viewport
 	xp int. sw 1 >> - 'xvp !
@@ -134,9 +86,109 @@
 	yp int. 32 +
 	[map]@s ;
 
+|--------------------------------
+:reset
+	0 'puntos !
+	3 'vidas !
+	'fx p.clear
+	'ene  p.clear
+	0 'xvp ! 0 'yvp	! | viewport
+
+	30.0 'xp ! 500.0 'yp !	| pos player
+	0 'vxp ! 0 'vyp !		| vel player
+	
+	12 'np ! 1 'face !
+ 	;
+
+|---------------------------------------------
+:disparo
+	dup >a
+	a@+ int. xvp - 4 - 
+	-8 <? ( 2drop 0 ; )
+	800 >? ( 2drop 0 ; )
+	a@+ int. yvp -
+	
+	over xvp +
+	over yvp +
+	[map]@s 1? ( 4drop 0 ; ) drop
+	
+	over 8 + over 
+	SDLLine
+	a@ swap +!
+	;
+	
+:+disparo | dirx x y --
+	'disparo 'fx p!+ >a 
+	swap a!+ a!+
+	a!+
+	;
+
+:disparar
+	6.0
+	face 0? ( swap neg swap ) drop 
+	xp 32.0 + yp 32.0 + +disparo
+	;
+	
+|---------------------------------------------
+#dirx
+
+:direne | dirx -- dirx sdir
+	-? ( $80004 ; ) $140004 ;
+	
+:enemigo | adr --
+	dup >a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + 	
+	sprj 
+	a@+ 
+	xp <? ( 1.0 'dirx ! )
+	xp >? ( -1.0 'dirx ! )
+	int. xvp -
+	a@+ int. yvp -
+	64 64 tsdraws
+
+	>a 8 a+
+	dirx 
+	direne a!+
+	a> +!
+	
+	a@+ xp - int. 
+	a@+ yp - int. 
+	distfast 32 >? ( drop ; ) drop
+
+	-16 a+
+	5.0
+	a@ xp >? ( swap neg swap ) drop
+	'vxp !
+	
+	-10.0 'vyp !  
+	-1 'vidas +!
+	;
+	
+:+enemigo | x y --
+	'enemigo 'ene p!+ >a 
+	0 a!+ | TIME
+	$80004 a!+
+	swap a!+ a!+
+	;
+
+#enelist  24 36 37 46 81 82 83 104 106 108 131 133 135 137 139 155 166 0
+#enenow 'enelist
+
+:testene
+	enenow @ 0? ( drop ; )
+	5 << | 32*
+	xp int. sw 1 >> + >? ( drop ; )
+	16 << 
+	15 5 << 16 << +enemigo
+	8 'enenow +! ;
+	
+
 
 :panim | -- nanim	
 	msec 5 >> $3 and ;
+	
 	
 :pstay
 	0
@@ -149,6 +201,7 @@
 	4 wall? 1? ( drop ; ) drop
 	0 panim + 'np !
 	-2.0 'xp +!
+	0 'face !
 	;
 	
 :prunr
@@ -156,6 +209,7 @@
 	52 wall? 1? ( drop ; ) drop
 	12 panim + 'np !
 	2.0 'xp +!
+	1 'face !
 	;
 
 	
@@ -168,7 +222,7 @@
 		10.0 clampmax
 		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
 		; ) drop
-	0 'vyp !
+	vxp 0? ( 0 'vyp ! ) drop
 	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
 	
 	SDLkey
@@ -202,7 +256,10 @@
 	
 	vyp 'yp +!
 	vxp 'xp +!
+	
+	vxp 0.96 *. 'vxp !
 	;
+	
 	
 :teclado
 	SDLkey 
@@ -212,6 +269,7 @@
 	>le< =? ( 'pstay 'ep ! )
 	>ri< =? ( 'pstay 'ep ! )
 	
+	<esp> =? ( disparar ) 
 	<f1> =? ( xp yp +enemigo )
 	drop 
 	;
@@ -254,16 +312,49 @@
 	'ene p.draw
 	player
 	'fx p.draw
+		
+	10 10 bat
+	vidas "vidas:%d" sprint bprint
+	
+	600 10 bat
+	puntos "%d" sprint bprint
 	
 	SDLredraw
 	
 	teclado ;
 
+|------------
+:tbtn | 'vecor "text" -- 
+	2over 2over guibox
+	SDLb SDLx SDLy guiIn	
+	$666666  [ $006600 nip ; ] guiI
+	SDLColor
+	2over 2over SDLFRect	
+
+	$0 sdlcolor
+	2drop bat bprint
+	onCLick ;
+
+:menu
+	gui
+
+	$0 SDLcls
+
+	[ reset 'jugando SDLshow ; ] "Jugar" 100 300 100 30 tbtn
+	'exit "Salir" 100 400 100 30 tbtn
+	SDLredraw
+	
+	SDLkey
+	>ESC< =? ( exit )
+	drop
+	
+	;
+	
 :main
 	100 'fx p.ini
 	100 'ene  p.ini
 	"r3sdl" 800 600 SDLinit
-	bfont1 
+	bfont2 
 	|SDLfull
 	
 	32 32 "r3\j2022\efrain\sprites.png" loadts 'sprj !
@@ -271,7 +362,10 @@
 	
 	time.start
 	
-	'jugando SDLshow
+|	'menu SDLshow
+	
+	reset 'jugando sdlshow
+	
 	SDLquit ;	
 	
 : main ;

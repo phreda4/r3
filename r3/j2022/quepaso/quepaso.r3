@@ -11,6 +11,10 @@
 #simagenes
 #stablero
 #scursor
+#sfin
+#spodio
+#sf1 #sf2 #sf3
+#tu1 #tu2 #tu3
 
 |----------------------------------------	
 #sndfile "correcta.mp3" "incorrecta.mp3" "boton.mp3" 0
@@ -45,13 +49,12 @@
 #r1 #r2 #r3 #r4
 
 #cntjug 2
-#njug 0 0 0 0 0 0 0 0
-#pjug 0 0 0 0 0 0 0 0
+#njug 0 0 0 0
+#pjug 0 0 0 0
 
 #njug1 * 32
 #njug2 * 32
 #njug3 * 32
-#njug4 * 32
 
 #jnow
 #resusr
@@ -84,12 +87,6 @@
 		dup simagenes da@+ da@+ tsdraw
 		) drop ;
 
-:resetname
-	"Jugador 1" 'njug1 strcpy 
-	"Jugador 2" 'njug2 strcpy 
-	"Jugador 3" 'njug3 strcpy 
-	"Jugador 4" 'njug4 strcpy 
-	;
 	
 :resetjug | n --
 	dup 'cntjug !
@@ -263,14 +260,8 @@
 	
 	[ 2 'cntjug ! 2 playsnd ; ] "2" 100 300 100 60 boton	
 	[ 3 'cntjug ! 2 playsnd ; ] "3" 100 380 100 60 boton	
-	[ 4 'cntjug ! 2 playsnd ; ] "4" 100 460 100 60 boton	
 
-	
-	$01 'njug1 220 220 800 60 xywh64 $ffffff fontt textbox
-	$01 'njug2 220 300 800 60 xywh64 2 jcolor fontt textbox
-	$01 'njug3 220 380 800 60 xywh64 3 jcolor fontt textbox
-	$01 'njug4 220 460 800 60 xywh64 4 jcolor fontt textbox
-	
+
 	[ jugar 2 playsnd ; ] "Jugar" 400 640 160 60 boton
 	[ exit 2 playsnd ; ] "Salir" 600 640 160 60 boton
 	
@@ -288,26 +279,33 @@
 	"r3/j2022/quepaso/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
 	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
 	
-	"r3\j2022\quepaso\cursor.png" loadimg 'scursor !	
-	64 dup "r3\j2022\quepaso\preguntas.png" loadts 'simagenes !
-	"r3\j2022\quepaso\tablero.png" loadimg 'stablero !
+	"r3/j2022/quepaso/img/cursor.png" loadimg 'scursor !	
+	"r3/j2022/quepaso/img/tablero.png" loadimg 'stablero !
+	"r3/j2022/quepaso/img/fin.png" loadimg 'sfin !
+	"r3/j2022/quepaso/img/podio.png" loadimg 'spodio !
+	
+	"r3/j2022/quepaso/img/ficha1.png" loadimg 'sf1 !
+	"r3/j2022/quepaso/img/ficha2.png" loadimg 'sf2 !
+	"r3/j2022/quepaso/img/ficha3.png" loadimg 'sf3 !
+	
+	"r3/j2022/quepaso/img/turno1.png" loadimg 'tu1 !
+	"r3/j2022/quepaso/img/turno2.png" loadimg 'tu2 !
+	"r3/j2022/quepaso/img/turno3.png" loadimg 'tu3 !
 	
 	SNDInit
 	loadsndfile
 	
 	here dup 'preguntas !
-	"r3\j2022\quepaso\preguntas.txt" load 
+	"r3/j2022/quepaso/preguntas.txt" load 
 	0 swap c!+ 'here !
 
 	0 'nropreg !
 	cpypreg
 	
-	resetname
 	;
 	
 :main
 	"r3sdl" 1280 720 SDLinit
-	|"r3sdl" 1024 576 SDLinit
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
