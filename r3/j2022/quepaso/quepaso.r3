@@ -16,6 +16,7 @@
 #sf1 #sf2 #sf3
 #tu1 #tu2 #tu3
 
+
 |----------------------------------------	
 #sndfile "correcta.mp3" "incorrecta.mp3" "boton.mp3" 0
 
@@ -52,10 +53,6 @@
 #njug 0 0 0 0
 #pjug 0 0 0 0
 
-#njug1 * 32
-#njug2 * 32
-#njug3 * 32
-
 #jnow
 #resusr
 #maxjug
@@ -77,23 +74,23 @@
 :nposjug | n -- x y
 	10 mod 
 	3 << 'posiciones +
-	d@+ 400 xresm */ 500 + 32 -
+	d@+ 400 xresm */ 500 + 40 -
 	swap 
-	d@ 523 yresm */ 180 + 32 - ;
+	d@ 523 yresm */ 180 + 120 - ;
 	
 :mapascreen
 	'pjug >a
-	cntjug ( 1? 1-
-		dup simagenes da@+ da@+ tsdraw
-		) drop ;
+	'sf1 >b
+	0 ( cntjug <? 
+		da@+ da@+ 
+		pick2 3 << 'sf1 + @ sdlimage
+		1 + ) drop ;
 
 	
 :resetjug | n --
 	dup 'cntjug !
-	'njug >a
 	'pjug >b
 	( 1? 1 - 
-		0 a!+
 		0 nposjug
 		swap 32 randmax 16 - +
 		swap 32 randmax 16 - +
@@ -102,7 +99,6 @@
 
 :avjug | n --
 	3 <<
-|	dup 'njug + dup @ 1 + 10 mod swap !
 	1 over 'njug + +!
 	dup 'pjug + >a
 	'njug + @
@@ -127,24 +123,11 @@
 	
 	tiempo 1000 /
 	"%d" sprint
-	30 28 $ff0000 fontt
+	36 36 $ff0000 fontt
 	textline | str x y color font --
 	;
 
-|-------------------------------------------
-:robot
-	|msec 8 >> 3 and 7 +
-	7
-	simagenes 
-	-44 dup 400 dup tsdraws
 
-	6
-	simagenes 
-	-10 dup 150 dup tsdraws
-	
-	reloj	
-	;
-	
 |-------------------------------------------
 :rswap |
 	3 randmax 3 << 'r1 +
@@ -187,22 +170,24 @@
 	gui
 	$0 SDLcls
 	0 0 
-	1280 720
-	stablero sdlimages
+	stablero sdlimage
 	
 	mapascreen
+	'pjug jnow 3 << + >a
+	da@+ da@+ jnow 3 << 'sf1 + @ sdlimage
 
-
-	robot
-	
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
-	$11 jnow 5 << 'njug1 + 1280 300 - 600 300 80 xywh64 $0000 fontt textbox
+|	$11 jnow 5 << 'njug1 + 1280 300 - 600 300 80 xywh64 $0000 fontt textbox
+	
+	970 550 jnow 3 << 'tu1 + @ sdlimage
 	
 	[ 0 'resusr ! exit ; ] r1 25 312 288 65 boton
 	[ 1 'resusr ! exit ; ] r2 25 403 288 65 boton
 	[ 2 'resusr ! exit ; ] r3 25 497 288 65 boton
 	[ 3 'resusr ! exit ; ] r4 25 590 288 65 boton
+
+	reloj
 
 	sdlx sdly scursor SDLimage
 	SDLredraw
@@ -216,11 +201,11 @@
 |----------------------------------
 :respuestaOK
 	jnow avjug
-	0 playsnd 
+|	0 playsnd 
 	;
 
 :respuestaNO
-	1 playsnd
+|	1 playsnd
 	;
 	
 :respuesta	
@@ -310,7 +295,12 @@
 	inicio
 	0 SDL_ShowCursor
 	
-	'menuprincipal SDLshow 
+|	'menuprincipal SDLshow 
+
+	|jugar
+	3 'cntjug !
+	cntjug resetjug
+	'jugando SDLshow
 	
 	SDLquit ;	
 	
