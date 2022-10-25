@@ -26,6 +26,7 @@
 
 #np 0
 #face
+#ep 0
 
 #mapajuego
 
@@ -86,21 +87,24 @@
 	yp int. 32 +
 	[map]@s ;
 
-|--------------------------------
-:reset
-	0 'puntos !
-	3 'vidas !
-	'fx p.clear
-	'ene  p.clear
-	0 'xvp ! 0 'yvp	! | viewport
 
-	30.0 'xp ! 500.0 'yp !	| pos player
-	0 'vxp ! 0 'vyp !		| vel player
-	
-	12 'np ! 1 'face !
- 	;
+#testf
 
 |---------------------------------------------
+:hitene | x y i n p -- x y p
+	dup 24 + >a 
+	pick4 a@+ 16 >> xvp - 32 - -
+	pick4 a@+ 16 >> yvp - 32 - -
+	distfast |dup 'testf !
+	40 >? ( drop ; )
+	drop
+|	dup 'ene p.del
+|	pick4 16 << pick4 16 << +fx
+	1 'puntos +!
+|	1 playsnd
+	;
+
+	
 :disparo
 	dup >a
 	a@+ int. xvp - 4 - 
@@ -111,6 +115,8 @@
 	over xvp +
 	over yvp +
 	[map]@s 1? ( 4drop 0 ; ) drop
+	
+	'hitene 'ene p.mapv
 	
 	over 8 + over 
 	SDLLine
@@ -123,10 +129,13 @@
 	a!+
 	;
 
+#timeshoot
+
 :disparar
+|	msec timeshoot <? ( drop ; ) 1000 + 'timeshoot !
 	6.0
-	face 0? ( swap neg swap ) drop 
-	xp 32.0 + yp 32.0 + +disparo
+	face 1 nand? ( swap neg swap ) drop 
+	xp 32.0 + over + yp 32.0 + +disparo
 	;
 	
 |---------------------------------------------
@@ -201,7 +210,7 @@
 	4 wall? 1? ( drop ; ) drop
 	0 panim + 'np !
 	-2.0 'xp +!
-	0 'face !
+	$e face and 'face !
 	;
 	
 :prunr
@@ -209,24 +218,29 @@
 	52 wall? 1? ( drop ; ) drop
 	12 panim + 'np !
 	2.0 'xp +!
-	1 'face !
+	1 face or 'face !
 	;
 
+:saltando
+	0.3 vyp + 
+	10.0 clampmax
+	'vyp !
+	roof? 1? ( vyp -? ( 0 'vyp ! ) drop )  drop
+	floor? 0? ( drop ; ) drop
+	0 'vyp !
+	yp $ffffe00000 and 'yp !
+	1 face and 'face !
+	;
 	
-#ep 'pstay
-
 :pisoysalto
+	face %10 and? ( drop saltando ; ) drop
 	floor? 0? ( drop
-		|7 panim + 'np !
-		0.3 'vyp +!
-		10.0 clampmax
-		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
+		%10 face or 'face !
+		saltando
 		; ) drop
-	vxp 0? ( 0 'vyp ! ) drop
-	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
 	
 	SDLkey
-	<up> =? ( -10.0 'vyp ! )
+	<up> =? ( -10.0 'vyp ! %10 face or 'face ! )
 	drop
 	;
 
@@ -317,11 +331,25 @@
 	vidas "vidas:%d" sprint bprint
 	
 	600 10 bat
-	puntos "%d" sprint bprint
-	
+	puntos "%d " sprint bprint
+	testf "%d" sprint bprint
 	SDLredraw
 	
 	teclado ;
+
+|--------------------------------
+:reset
+	0 'puntos !
+	3 'vidas !
+	'fx p.clear
+	'ene  p.clear
+	0 'xvp ! 0 'yvp	! | viewport
+
+	30.0 'xp ! 446.0 'yp !	| pos player
+	0 'vxp ! 0 'vyp !		| vel player
+	
+	12 'np ! 1 'face ! 'pstay 'ep !
+ 	;
 
 |------------
 :tbtn | 'vecor "text" -- 
@@ -347,12 +375,11 @@
 	SDLkey
 	>ESC< =? ( exit )
 	drop
-	
 	;
 	
 :main
 	100 'fx p.ini
-	100 'ene  p.ini
+	100 'ene p.ini
 	"r3sdl" 800 600 SDLinit
 	bfont2 
 	|SDLfull
