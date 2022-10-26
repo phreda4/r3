@@ -12,8 +12,19 @@
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 
-
+#sinicio
+#sprincipal
 #scursor
+#btncir1 	
+#btncir2 	
+#btntri1 	
+#btntri2 	
+#btncua1 	
+#btncua2 	
+#btnhex1 	
+#btnhex2 	
+#vida1
+#vida2
 
 #obj 0 0
 
@@ -136,6 +147,11 @@
 	16 << 
 	2.0 randmax 0.4 +
 	pv>v a!+ ;
+
+| 676 107,56,51
+:vidas
+	
+
 	
 |----------------------------------------	
 :pregunta
@@ -143,7 +159,6 @@
 	600 10 600 500 SDLFRect
 	'obj p.draw
 	;
-	
 
 :botont | 'v "" x y w h --
 	2over 2over guibox
@@ -165,42 +180,38 @@
 	;
 
 	
-:respuesta
-	320 480 200 90 boton 2drop
-	720 480 200 90 boton 2drop
-	
-	320 600 200 90 boton 2drop
-	720 600 200 90 boton 2drop
-	
-	;
-:r2
-	600 520 300 90 boton
-	$ffff SDLColor
-	40 rot rot tcirc | ang n r x y --
-	
-	910 520 300 90 boton
-	$ff SDLColor
-	>r >r 0.125 3 40 r> r> SDLFngon | ang n r x y --
+| 213 x 118
 
-	600 620 300 90 boton
-	$ff00 SDLColor
-	>r >r 0.125 4 40 r> r> SDLFngon | ang n r x y --
-	
-	910 620 300 90 boton
-	$ff0000 SDLColor
-	>r >r 0.125 5 40 r> r> SDLFngon | ang n r x y --
+:btni | 'vecor 'ip 'i x y -- size
+	213 118 guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+
+#resp
+
+:botones
+	[ 1 'resp ! ; ] 'btncir1 210 546 btni
+	[ 2 'resp ! ; ] 'btntri1 420 546 btni
+	[ 3 'resp ! ; ] 'btncua1 640 546 btni
+	[ 4 'resp ! ; ] 'btnhex1 860 546 btni
+|	210 546 btncir1 SDLImage
+|	420 546 btntri1 SDLImage
+|	640 546 btncua1 SDLImage
+|	860 546 btnhex1 SDLImage
 	;
-	
 	
 :jugando
 	gui
-	$0 SDLcls
-	
-	pregunta
-	respuesta
+	0 0 sprincipal SDLImage 
 
-	'exit "Salir" 1000 600 100 40 botont
-	reloj	
+	vidas
+|	pregunta
+	botones
+
+|	'exit "Salir" 1000 600 100 40 botont
+|	reloj	
 	
 |	$ffff00 SDLColor
 |	msec 3 << 6 100 300 300 SDLFngon
@@ -267,7 +278,21 @@
 :inicio
 	ttf_init
 	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
-	"r3/j2022/elcua/cursor.png" loadimg 'scursor !	
+	"r3/j2022/elcua/img/cursor.png" loadimg 'scursor !	
+	"r3/j2022/elcua/img/inicio.png" loadimg 'sinicio !	
+	"r3/j2022/elcua/img/principal.png" loadimg 'sprincipal !	
+
+	"r3/j2022/elcua/img/btncir1.png" loadimg 'btncir1 !	
+	"r3/j2022/elcua/img/btncir2.png" loadimg 'btncir2 !	
+	"r3/j2022/elcua/img/btntri1.png" loadimg 'btntri1 !	
+	"r3/j2022/elcua/img/btntri2.png" loadimg 'btntri2 !	
+	"r3/j2022/elcua/img/btncua1.png" loadimg 'btncua1 !	
+	"r3/j2022/elcua/img/btncua2.png" loadimg 'btncua2 !	
+	"r3/j2022/elcua/img/btnhex1.png" loadimg 'btnhex1 !	
+	"r3/j2022/elcua/img/btnhex2.png" loadimg 'btnhex2 !	
+
+	"r3/j2022/elcua/img/vida1.png" loadimg 'vida1 !	
+	"r3/j2022/elcua/img/vida2.png" loadimg 'vida2 !	
 	
 	SNDInit
 	loadsndfile
@@ -282,7 +307,7 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-	0 playsnd
+|	0 playsnd
 	jugar
 	SDLquit ;	
 	

@@ -10,7 +10,6 @@
 
 ^r3/util/penner.r3
 
-
 #puntos
 #vidas
 
@@ -93,15 +92,17 @@
 |---------------------------------------------
 :hitene | x y i n p -- x y p
 	dup 24 + >a 
-	pick4 a@+ 16 >> xvp - 32 - -
-	pick4 a@+ 16 >> yvp - 32 - -
-	distfast |dup 'testf !
-	40 >? ( drop ; )
+
+	pick4 a@+ int. xvp - 32 + -
+	pick4 a@+ int. yvp - 32 + -	
+	distfast 
+	16 >? ( drop ; )
 	drop
-|	dup 'ene p.del
+	dup 'ene p.del
 |	pick4 16 << pick4 16 << +fx
 	1 'puntos +!
 |	1 playsnd
+	0 'testf !
 	;
 
 	
@@ -115,12 +116,15 @@
 	over xvp +
 	over yvp +
 	[map]@s 1? ( 4drop 0 ; ) drop
-	
+	a> >r
+	1 'testf !
 	'hitene 'ene p.mapv
 	
 	over 8 + over 
 	SDLLine
+	r> >a
 	a@ swap +!
+	testf 0? ( ; ) drop
 	;
 	
 :+disparo | dirx x y --
@@ -132,7 +136,7 @@
 #timeshoot
 
 :disparar
-|	msec timeshoot <? ( drop ; ) 1000 + 'timeshoot !
+	msec timeshoot <? ( drop ; ) 1000 + 'timeshoot !
 	6.0
 	face 1 nand? ( swap neg swap ) drop 
 	xp 32.0 + over + yp 32.0 + +disparo
@@ -192,7 +196,6 @@
 	16 << 
 	15 5 << 16 << +enemigo
 	8 'enenow +! ;
-	
 
 
 :panim | -- nanim	
@@ -222,7 +225,7 @@
 	;
 
 :saltando
-	0.3 vyp + 
+	0.4 vyp + 
 	10.0 clampmax
 	'vyp !
 	roof? 1? ( vyp -? ( 0 'vyp ! ) drop )  drop
@@ -384,8 +387,8 @@
 	bfont2 
 	|SDLfull
 	
-	32 32 "r3\j2022\efrain\sprites.png" loadts 'sprj !
-	"r3\j2022\efrain\nivel.map" loadtilemap 'mapajuego !
+	32 32 "r3\j2022\manwithcap\sprites.png" loadts 'sprj !
+	"r3\j2022\manwithcap\nivel.map" loadtilemap 'mapajuego !
 	
 	time.start
 	
