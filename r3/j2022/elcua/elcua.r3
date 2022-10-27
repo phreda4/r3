@@ -35,6 +35,7 @@
 #fontt
 #preguntas
 
+#vidas 3
 #tiempo
 #nropreg 0
 
@@ -56,16 +57,12 @@
 |----------------------------------------	
 #sndfile 
 "inicio.mp3" 
+"comencemos.mp3"
 "correcto.mp3" 
 "incorrecto.mp3" 
-"siguiente-nivel.mp3"
-"cual-de-estas-es-el-cuadrado.mp3"
-"cual-de-estas-es-un-triangulo.mp3"
-"cual-es-el-pentagono.mp3"
-"reconocer-el-ciculo.mp3"
-"cuantos lados tiene esta figura.mp3"
-"esta-otra-cuantos-tiene.mp3"
-
+"cual-de-estas-figuras.mp3"
+"triangulo.mp3"
+"cuadrado.mp3"
 0
 
 #sndlist * 1024
@@ -80,6 +77,32 @@
 :playsnd | n --
 	3 << 'sndlist + @ SNDplay ;
 	
+#playlist * 1024
+#playnow 'playlist
+#playlast 'playlist
+
+:playreset
+	'playlist dup 'playnow ! 'playlast ! ;
+	
+:playloop
+	Mix_PlayingMusic 1? ( drop ; ) drop
+	playnow playlast =? ( drop playreset ; ) 
+	@+ playsnd 'playnow ! ;
+
+:>>play | nro --
+	playlast !+ 'playlast ! ;
+	
+|1, Cual de estas figuras es un
+|circulo
+|triangulo
+|cuadrado
+|hexagono
+
+|2.Cual figura es la mas rapida
+|3 Cual Figura es la mas lenta
+|4.De que figura hay mas
+|5.De que figura hay menos
+
 |----------------------------------------	
 :tcirc | r x y --
 	pick2 rot rot SDLFEllipse ;
@@ -124,12 +147,12 @@
 	a@ pv@ swap 32 << or a!+
 	8 a+
 	a@ pv@
-	320.0 <? ( hit changevel )
-	920.0 >? ( hit changevel )
+	340.0 <? ( hit changevel )
+	867.0 >? ( hit changevel )
 	swap 32 << or a!+
 	a@ pv@
-	50.0 <? ( hit )
-	400.0 >? ( hit )
+	166.0 <? ( hit )
+	462.0 >? ( hit )
 	swap 32 << or a!+
 	;
 	
@@ -148,9 +171,17 @@
 	2.0 randmax 0.4 +
 	pv>v a!+ ;
 
-| 676 107,56,51
-:vidas
+:nvidas | n -- img
+	vidas <? ( drop vida2 ; ) drop vida1 ;
 	
+| 676 107,56,51
+:impvidas
+	676
+	0 ( 3 <? swap
+		dup 107 
+		pick3 nvidas SDLImage 
+		60 +
+		swap 1 + ) 2drop ;
 
 	
 |----------------------------------------	
@@ -206,7 +237,9 @@
 	gui
 	0 0 sprincipal SDLImage 
 
-	vidas
+	playloop
+	
+	impvidas
 |	pregunta
 	botones
 
@@ -229,15 +262,7 @@
 
 	SDLkey 
 	>esc< =? ( exit )
-	<f1> =? ( 1 playsnd )
-	<f2> =? ( 2 playsnd )
-	<f3> =? ( 3 playsnd )
-	<f4> =? ( 4 playsnd )
-	<f5> =? ( 5 playsnd )
-	<f6> =? ( 6 playsnd )
-	<f7> =? ( 7 playsnd )
-	<f8> =? ( 8 playsnd )
-	<f9> =? ( 9 playsnd )
+	<f1> =? ( 4 >>play )
 
 	drop 
 	;
@@ -269,7 +294,8 @@
 		randpos 40 6 $ffff +obj
 		) drop
 		
-	inireloj		
+	inireloj	
+	1 >>play
 	'jugando SDLshow
 	;
 	

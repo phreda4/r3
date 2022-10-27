@@ -24,6 +24,7 @@
 #sys-MoveFile
 #sys-SetFilePointer
 #sys-SetEndOfFile
+#sys-GetFileAttributes
 #sys-GetFileSize
 
 #sys-GetProcessHeap
@@ -71,6 +72,7 @@
 ::MoveFile sys-MoveFile sys2 ;
 ::SetFilePointer sys-SetFilePointer sys4 ;
 ::SetEndOfFile sys-SetEndOfFile sys1 ;
+::GetFileAttributes sys-GetFileAttributes sys1 ;
 ::GetFileSize sys-GetFileSize sys2 ;
 
 ::GetProcessHeap sys-GetProcessHeap sys0 ;
@@ -121,6 +123,7 @@
 	dup "MoveFileA" getproc 'sys-MoveFile !
 	dup "SetFilePointer" getproc 'sys-SetFilePointer !
 	dup "SetEndOfFile" getproc 'sys-SetEndOfFile !
+	dup "GetFileAttributesA" getproc 'sys-GetFileAttributes !
 	dup "GetFileSize" getproc 'sys-GetFileSize !
 
 	dup "GetProcessHeap" getproc 'sys-GetProcessHeap !
