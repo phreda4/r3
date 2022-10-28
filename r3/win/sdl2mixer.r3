@@ -18,6 +18,7 @@
 #sys-Mix_OpenAudio
 #sys-Mix_CloseAudio
 #sys-Mix_PlayingMusic
+#sys-Mix_Playing
 	
 ::Mix_Init sys-Mix_Init sys1 ;
 ::Mix_Quit sys-MIX_Quit sys0 drop ;
@@ -31,6 +32,7 @@
 ::Mix_FadeOutMusic sys-Mix_fadeOutMusic sys1 drop ;
 ::Mix_VolumeMusic sys-Mix_VolumeMusic sys1 ;
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
+::Mix_Playing sys-Mix_Playing sys1 ;
 
 ::Mix_FreeChunk sys-Mix_FreeChunk sys1 drop ;
 ::Mix_FreeMusic sys-Mix_FreeMusic sys1 drop ;
@@ -42,6 +44,9 @@
 	
 ::SNDplay | adr --
 	-1 swap 0 -1 Mix_PlayChannelTimed ;
+
+::SNDplayn | channel adr --
+	0 -1 Mix_PlayChannelTimed ;
 	
 ::SNDQuit	
 	Mix_CloseAudio ;
@@ -64,6 +69,7 @@
 	dup "Mix_OpenAudio" getproc 'sys-Mix_OpenAudio !
 	dup "Mix_CloseAudio" getproc 'sys-Mix_CloseAudio !
 	dup "Mix_PlayingMusic" getproc 'sys-Mix_PlayingMusic !
+	dup "Mix_Playing" getproc 'sys-Mix_Playing !
 	drop
 	;
 

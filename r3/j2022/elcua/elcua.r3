@@ -75,7 +75,7 @@
 		>>0 ) drop ;
 
 :playsnd | n --
-	3 << 'sndlist + @ SNDplay ;
+	3 << 'sndlist + @ 1 swap SNDplayn ;
 	
 #playlist * 1024
 #playnow 'playlist
@@ -85,7 +85,7 @@
 	'playlist dup 'playnow ! 'playlast ! ;
 	
 :playloop
-	Mix_PlayingMusic 1? ( drop ; ) drop
+	1 Mix_Playing 1? ( drop ; ) drop
 	playnow playlast =? ( drop playreset ; ) 
 	@+ playsnd 'playnow ! ;
 
