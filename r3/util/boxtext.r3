@@ -7,7 +7,6 @@
 
 #boxt 0 0 
 
-
 ::xywh64 | x y w h -- 64b
 	$ffff and swap
 	$ffff and 16 << or swap
@@ -61,7 +60,7 @@
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
 ::textline | str x y color font --
-	'font ! 'ink !
+	'font ! bswap 'ink !
 	swap 'bbtext d!+ d!+
 	font pick2 rot dup 4 + TTF_SizeUTF8 drop
 	bbtextb ;
@@ -126,7 +125,7 @@
 		) drop ;
 		
 ::textbox | $vh str box color font --
-	'font ! 'ink !
+	'font ! bswap 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !
@@ -180,7 +179,7 @@
 		) drop ;
 
 ::textboxs | $vh str box color font --
-	'font ! 'ink !
+	'font ! bswap 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !

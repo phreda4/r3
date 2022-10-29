@@ -25,6 +25,7 @@
 #sys-SetFilePointer
 #sys-SetEndOfFile
 #sys-GetFileAttributes
+#sys-GetFileAttributesEx
 #sys-GetFileSize
 
 #sys-GetProcessHeap
@@ -73,6 +74,7 @@
 ::SetFilePointer sys-SetFilePointer sys4 ;
 ::SetEndOfFile sys-SetEndOfFile sys1 ;
 ::GetFileAttributes sys-GetFileAttributes sys1 ;
+::GetFileAttributesEx sys-GetFileAttributesex sys3 ;
 ::GetFileSize sys-GetFileSize sys2 ;
 
 ::GetProcessHeap sys-GetProcessHeap sys0 ;
@@ -124,6 +126,7 @@
 	dup "SetFilePointer" getproc 'sys-SetFilePointer !
 	dup "SetEndOfFile" getproc 'sys-SetEndOfFile !
 	dup "GetFileAttributesA" getproc 'sys-GetFileAttributes !
+	dup "GetFileAttributesExA" getproc 'sys-GetFileAttributesEx !
 	dup "GetFileSize" getproc 'sys-GetFileSize !
 
 	dup "GetProcessHeap" getproc 'sys-GetProcessHeap !
