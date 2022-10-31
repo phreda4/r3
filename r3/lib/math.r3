@@ -199,7 +199,7 @@
 
 ::bswap32 | v -- vs ; 32 bits
 	dup 8 >> $ff00ff and
-	swap 8 << $ff00ff00 and or
+	swap $ff00ff and 8 << or
 	dup 16 >>> swap 16 << or ;
 
 | next pow2

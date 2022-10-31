@@ -15,6 +15,7 @@
 #sinicio
 #sprincipal
 #scursor
+#ssigno
 #btncir1 	
 #btncir2 	
 #btntri1 	
@@ -56,16 +57,23 @@
 
 |----------------------------------------	
 #sndfile 
-"inicio.mp3" 
+"inicio.mp3" 		| 0
 "comencemos.mp3"
 "correcto.mp3" 
 "incorrecto.mp3" 
-"cual-de-estas-figuras.mp3"
+"siguiente-nivel.mp3" 
+"circulo.mp3"		| 5
 "triangulo.mp3"
 "cuadrado.mp3"
+"hexagono.mp3"
+"cual-de-estas-figuras.mp3" | 9
+"de-que-hay-mas.mp3"
+"de-que-hay-menos.mp3"
+"es-la-mas-lenta.mp3"
+"es-la-mas-rapida.mp3"
 0
 
-#sndlist * 1024
+#sndlist * 128
 
 :loadsndfile
 	'sndlist >a
@@ -77,21 +85,51 @@
 :playsnd | n --
 	3 << 'sndlist + @ 1 swap SNDplayn ;
 	
+	
 #playlist * 1024
 #playnow 'playlist
 #playlast 'playlist
 
+#playestado 0
+#waitnext	
+
 :playreset
-	'playlist dup 'playnow ! 'playlast ! ;
+	'playlist dup 'playnow ! 'playlast ! 
+	0 'playestado ! ;
+
+:nextevent
+	playnow	playlast =? ( drop playreset ; ) 
+	@+
+	$100000000 and? ( dup $fffff and playsnd ) | play
+	$200000000 and? ( dup $fffff and msec + 'waitnext ! ) | wait
+	$400000000 and? ( dup $fffff and msec + 'waitnext ! ) | exec
+	32 >> 'playestado !
+	'playnow ! ;
 	
 :playloop
-	1 Mix_Playing 1? ( drop ; ) drop
-	playnow playlast =? ( drop playreset ; ) 
-	@+ playsnd 'playnow ! ;
+	playestado 0? ( drop ; ) 
+	$ff =? ( nextevent )
+	$1 =? ( 1 Mix_Playing 1? ( 2drop ; ) 2drop nextevent ; )
+	$2 =? ( msec waitnext <? ( 2drop ; ) 2drop nextevent ; )
+	$4 =? ( msec waitnext <? ( 2drop ; ) 2drop nextevent playnow @+ ex 'playnow ! ; )
+	drop ;
 
-:>>play | nro --
-	playlast !+ 'playlast ! ;
+:activate
+	playestado 0? ( $ff 'playestado ! ) drop ;
 	
+:>>play | nro --
+	$100000000 or playlast !+ 'playlast ! 
+	activate ;
+	
+:>>wait | msec --
+	$200000000 or playlast !+ 'playlast ! 
+	activate ;
+	
+:>>ex | 'vec msec --
+	$400000000 or playlast !+ !+ 'playlast ! 
+	activate ;
+	
+|----------------------------------------------	
 |1, Cual de estas figuras es un
 |circulo
 |triangulo
@@ -134,7 +172,6 @@
 	0? ( drop nip a@+ pv.p 16 >> a@+ pv.p 16 >> tcirc ; )
 	swap
 	a@+ pv.p 16 >> a@+ pv.p 16 >> SDLFngon ;
-	
 
 :figura
 	>a
@@ -165,12 +202,13 @@
 	32 << or a!+  | caras|size
 	swap 
 	16 << 
-	2.0 randmax 0.4 +
+	2.0 randmax 0.4 + 	|vx
 	pv>v a!+ 
 	16 << 
-	2.0 randmax 0.4 +
+	2.0 randmax 0.4 +	|vy 
 	pv>v a!+ ;
 
+|---------------------------------------- vidas
 :nvidas | n -- img
 	vidas <? ( drop vida2 ; ) drop vida1 ;
 	
@@ -185,12 +223,6 @@
 
 	
 |----------------------------------------	
-:pregunta
-	$0 SDLColor
-	600 10 600 500 SDLFRect
-	'obj p.draw
-	;
-
 :botont | 'v "" x y w h --
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
@@ -235,26 +267,18 @@
 	
 :jugando
 	gui
-	0 0 sprincipal SDLImage 
+	$0 SDLcls
 
-	playloop
+	'obj p.draw
 	
+	0 0 sprincipal SDLImage 
+	
+	playloop
 	impvidas
-|	pregunta
 	botones
 
 |	'exit "Salir" 1000 600 100 40 botont
 |	reloj	
-	
-|	$ffff00 SDLColor
-|	msec 3 << 6 100 300 300 SDLFngon
-|	5 linegr!
-|	$ffff SDLColor
-|	msec 4 << 6 100 300 300 SDLngon
-|	$ffffff SDLColor
-|	10 linegr!
-|	300 300 gop
-|	msec 4 << 100 polar 300 + swap 300 + swap gline
 	
 	sdlx sdly scursor SDLimage
 	
@@ -267,39 +291,51 @@
 	drop 
 	;
 
+|	340.0 .. 870.0 
+|	160.0 .. 470.0 
 :randpos
-	600 randmax 320 +
-	400 randmax 60 + ;
+	530 randmax 340 +
+	310 randmax 160 + ;
 	
-:jugar
+|"cual-de-estas-figuras.mp3" | 9
+:signopreg
+	drop
+	605 56 - 
+	310 107 -
+	msec 5 << 40 xy+polar
+	ssigno SDLImage
+	;
+	
+:j1
+	'obj p.clear
+	'signopreg 'obj p!+ drop ;
+
+|"de-que-hay-mas.mp3"
+:j2
 	'obj p.clear
 	
 	4 randmax 1 +
-	( 1? 1 -
-		randpos 40 5 $ff0000 +obj
-		) drop
+	( 1? 1 - randpos 40 0 $ff0000 +obj ) drop
+	4 randmax 1 +
+	( 1? 1 - randpos 40 3 $ffff00 +obj ) drop
+	4 randmax 1 +
+	( 1? 1 - randpos 40 4 $ff9900 +obj ) drop
+	4 randmax 1 +
+	( 1? 1 - randpos 40 6 $ffff +obj ) drop
+	;
+|"de-que-hay-menos.mp3"
+|"es-la-mas-lenta.mp3"
+|"es-la-mas-rapida.mp3"	
 
-	4 randmax 1 +
-	( 1? 1 -
-		randpos 40 4 $ff00 +obj
-		) drop
-		
-	4 randmax 1 +
-	( 1? 1 -
-		randpos 40 3 $ff +obj
-		) drop
-
-	4 randmax 1 +
-	( 1? 1 -
-		randpos 40 6 $ffff +obj
-		) drop
-		
+|--------------------------------------------------	
+:jugar
 	inireloj	
+	2000 >>wait
 	1 >>play
+	|j2
+	j1
 	'jugando SDLshow
 	;
-	
-
 
 :inicio
 	ttf_init
@@ -320,6 +356,8 @@
 	"r3/j2022/elcua/img/vida1.png" loadimg 'vida1 !	
 	"r3/j2022/elcua/img/vida2.png" loadimg 'vida2 !	
 	
+	"r3/j2022/elcua/img/pregunta.png" loadimg 'ssigno !	
+	
 	SNDInit
 	loadsndfile
 	
@@ -333,7 +371,6 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-|	0 playsnd
 	jugar
 	SDLquit ;	
 	

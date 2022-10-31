@@ -2,6 +2,8 @@
 | fit text in a box, with SDL2 and SDL2ttf library
 | PHREDA 2021
 
+^r3/lib/math.r3	
+
 ^r3/win/sdl2gfx.r3	
 ^r3/win/sdl2ttf.r3
 
@@ -60,7 +62,7 @@
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
 ::textline | str x y color font --
-	'font ! bswap 'ink !
+	'font ! bswap32 'ink !
 	swap 'bbtext d!+ d!+
 	font pick2 rot dup 4 + TTF_SizeUTF8 drop
 	bbtextb ;
@@ -125,7 +127,7 @@
 		) drop ;
 		
 ::textbox | $vh str box color font --
-	'font ! bswap 'ink !
+	'font ! bswap32 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !
@@ -179,7 +181,7 @@
 		) drop ;
 
 ::textboxs | $vh str box color font --
-	'font ! bswap 'ink !
+	'font ! bswap32 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !

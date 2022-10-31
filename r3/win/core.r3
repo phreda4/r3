@@ -91,6 +91,34 @@
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 
+::filexist | "file" -- 0=no
+	GetFileAttributes $ffffffff xor ;
+	
+|typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
+|DWORD dwFileAttributes; // attributes (the same as for the function GetFileAttributes)
+|FILETIME ftCreationTime; // creation time
+|FILETIME ftLastAccessTime; // last access time
+|FILETIME ftLastWriteTime; // last modification time
+|DWORD nFileSizeHigh; // the high DWORD of the file size (it is zero unless the file is over four gigabytes)
+|DWORD nFileSizeLow; // the low DWORD of the file size
+|} WIN32_FILE_ATTRIBUTE_DATA;
+
+| atrib creation access write size
+#fileatrib [ 0 ] 0 0 0 0
+	
+::fileisize | -- size
+	'fileatrib 28 + @ 
+	dup 32 >> swap 32 << or ;
+
+::fileijul | -- jul
+	'fileatrib 20 + @
+	864000000000 / | segundos>days
+	2305814 + | julian from 1601-01-01
+	;	
+	
+::fileinfo | "file" -- 0=not exist
+	0 'fileatrib GetFileAttributesEx  ;
+	
 |struct STARTUPINFO
 |  cb		  dd ?,?
 |  lpReserved	  dq ?

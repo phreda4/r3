@@ -10,30 +10,29 @@
 | jul2daystr: juliandate -> day of the week as a (pointer to) string
 |------------------------------------------------------------
 
-::date2jul 4800 + swap dup 14 - 12 / dup >r rot + >r        | ( d m y - jul )
-	  r@ 1461 * 4 / r> 100 + 100 / 3 * 4 / -
-	  swap 2 - r> 12 * - 367 * 12 / + + 32075 - ;
+:4/ 2 >> ;
+:4* 2 << ;
+
+::now2jul | -- jul
+	date 
+	dup $ff and swap 		| d
+	dup 8 >> $ff and swap	| m
+	16 >> $ffff and 		| y
+|...	
+::date2jul | d m y -- jul 
+	4800 + swap dup 14 - 12 / dup >r rot + >r        
+	r@ 1461 * 4/ r> 100 + 100 / 3 * 4/ -
+	swap 2 - r> 12 * - 367 * 12 / + + 32075 - ;
+
+::jul2date | jul -- d m y 
+	68569 + dup 4* 146097 / dup >r 
+	146097 * 3 + 4/ - dup 1 + 4000 * 1461001 / dup >r 
+	1461 * 4/ - 31 + dup 80 * 2447 / 2dup 2447 * 80 / - rot 
+	drop swap dup 11 / dup >r 
+	12 * neg + 2 + 
+	r> r> r> 49 - 100 * + + ;
 
 |------------------------------------------------------------
-
-:_p 68569 + ;
-:_q 4 * 146097 / ;
-:_r 146097 * 3 + 4 / - ;
-:_s 1 + 4000 * 1461001 / ;
-:_t 1461 * 4 / - 31 + ;
-:_u 80 * 2447 / ;
-:_v 11 / ;
-
-:_m 12 * neg + 2 + ;
-:_d 2447 * 80 / - ;
-:_y 49 - 100 * + + ;
-
-::jul2date _p dup _q dup >r _r dup _s dup >r _t             | ( jul - d m y )
-	   dup _u 2dup _d rot drop swap dup _v dup >r _m
-	   r> r> r> _y ;
-
-|------------------------------------------------------------
-
 #mo "Monday"
 #tu "Tuesday"
 #we "Wednesday"
@@ -44,10 +43,14 @@
 
 #days 'mo 'tu 'we 'th 'fr 'sa 'su
 
-::date2day date2jul 7 mod ;                                 | ( d m y -- num )
+::date2day | d m y -- num 
+	date2jul 7 mod ;                                 
 
-::jul2day 7 mod ;                                 	    | ( jul -- num )
+::jul2day | jul -- num 
+	7 mod ;                                 	    
 
-::date2daystr date2day 3 << 'days + @ ;
+::date2daystr 
+	date2day 3 << 'days + @ ;
 
-::jul2daystr jul2day  'days + @ ;
+::jul2daystr 
+	jul2day 3 << 'days + @ ;
