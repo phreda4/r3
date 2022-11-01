@@ -54,7 +54,7 @@
 :main
 	.cls
 	arenarand
-	( getch $1B1001 <>? drop
+	( inkey $1B1001 <>? drop
 		drawscreen
 		evolve
 		) drop ;

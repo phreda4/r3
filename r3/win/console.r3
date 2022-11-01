@@ -70,7 +70,7 @@
 ##aconev 0 0 0 0
 
 |typedef struct _KEY_EVENT_RECORD {
-|  BOOL  bKeyDown;
+|  BOOL  bKeyDown; | WORD
 |  WORD  wRepeatCount;
 |  WORD  wVirtualKeyCode; WORD  wVirtualScanCode;
 |  union {
@@ -227,7 +227,7 @@
 
 ::.input | --
 	'pad
-	( getch 13 <>? swap c!+ ) drop
+	( getch $D001C <>? swap c!+ ) drop
 	0 swap c! ;
 
 ::.inputn | -- nro
@@ -241,10 +241,10 @@
 	sprint
 	( c@+ 1? emite ) 2drop ;
 
-|#console-mode
+#console-mode
 
 :
-	AllocConsole 
+|	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
@@ -255,7 +255,7 @@
 |	stdout console-mode $4 or SetConsoleMode drop	
 
 	stdin $31 SetConsoleMode drop 
-	|stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
+|	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
 	stdout $7 SetConsoleMode drop	
 ;
 	
