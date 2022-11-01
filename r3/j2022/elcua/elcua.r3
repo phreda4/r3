@@ -12,6 +12,7 @@
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 
+#sbuffer 
 #sinicio
 #sprincipal
 #scursor
@@ -111,7 +112,7 @@
 	$ff =? ( nextevent )
 	$1 =? ( 1 Mix_Playing 1? ( 2drop ; ) 2drop nextevent ; )
 	$2 =? ( msec waitnext <? ( 2drop ; ) 2drop nextevent ; )
-	$4 =? ( msec waitnext <? ( 2drop ; ) 2drop nextevent playnow @+ ex 'playnow ! ; )
+	$4 =? ( msec waitnext <? ( 2drop ; ) 2drop playnow @+ ex 'playnow ! nextevent ; )
 	drop ;
 
 :activate
@@ -223,6 +224,31 @@
 
 	
 |----------------------------------------	
+#estado
+#respur -1 
+#respok	
+
+:interaccion
+	1 'estado ! -1 'respur ! ;
+:habla
+	0 'estado ! ;
+	
+:esok
+	habla
+	2 >>play
+	'interaccion 0 >>ex
+	;
+	
+:respuestabtn | resp -- resp
+	dup 'respur !
+	respok =? ( esok ; ) 
+	habla
+	3 >>play
+	'interaccion 0 >>ex
+	-1 'vidas +!
+	;
+	
+|----------------------------------------	
 :botont | 'v "" x y w h --
 	2over 2over guibox
 	SDLb SDLx SDLy guiIn	
@@ -242,29 +268,23 @@
 	1 >> rot + rot rot 1 >> + swap
 	;
 
+
+|--- boton
+:btnd  | n 'vecor 'i x y -- n
+	rot pick4 
+	respur =? ( swap 8 + swap ) drop
+	@ SDLImage
+	drop ;
 	
 | 213 x 118
-
-:btni | 'vecor 'ip 'i x y -- size
+:btni | n 'vecor 'i x y -- n
+	estado 0? ( drop btnd ; ) drop
 	213 118 guibox
 	SDLb SDLx SDLy guiIn	
 	[ 8 + ; ] guiI 
 	@ xr1 yr1 rot SDLImage
 	onCLick ;
 
-#resp
-
-:botones
-	[ 1 'resp ! ; ] 'btncir1 210 546 btni
-	[ 2 'resp ! ; ] 'btntri1 420 546 btni
-	[ 3 'resp ! ; ] 'btncua1 640 546 btni
-	[ 4 'resp ! ; ] 'btnhex1 860 546 btni
-|	210 546 btncir1 SDLImage
-|	420 546 btntri1 SDLImage
-|	640 546 btncua1 SDLImage
-|	860 546 btnhex1 SDLImage
-	;
-	
 :jugando
 	gui
 	$0 SDLcls
@@ -275,8 +295,12 @@
 	
 	playloop
 	impvidas
-	botones
-
+	
+	0 'respuestabtn 'btncir1 210 546 btni drop
+	1 'respuestabtn 'btntri1 420 546 btni drop
+	2 'respuestabtn 'btncua1 640 546 btni drop
+	3 'respuestabtn 'btnhex1 860 546 btni drop
+	
 |	'exit "Salir" 1000 600 100 40 botont
 |	reloj	
 	
@@ -296,6 +320,25 @@
 :randpos
 	530 randmax 340 +
 	310 randmax 160 + ;
+
+#srct [ 0 0 530 310 ]
+#mpixel 
+#mpitch
+
+:statica
+	drop 
+	sbuffer 'srct 'mpixel 'mpitch SDL_LockTexture
+	mpixel >a 530 310 * ( 1? 1 - 
+		rand8 $7f and dup 8 << over 16 << or or
+		da!+ ) drop
+	sbuffer SDL_UnlockTexture
+	340 160 sbuffer SDLImage 	
+	;
+	
+:jini
+	'obj p.clear
+	'statica 'obj p!+ drop 
+	;
 	
 |"cual-de-estas-figuras.mp3" | 9
 :signopreg
@@ -307,8 +350,14 @@
 	;
 	
 :j1
+	9 >>play
+	4 randmax dup 'respok !
+	5 + >>play
+	'interaccion 0 >>ex
 	'obj p.clear
-	'signopreg 'obj p!+ drop ;
+	'statica 'obj p!+ drop 	
+	'signopreg 'obj p!+ drop 
+	;
 
 |"de-que-hay-mas.mp3"
 :j2
@@ -322,6 +371,7 @@
 	( 1? 1 - randpos 40 4 $ff9900 +obj ) drop
 	4 randmax 1 +
 	( 1? 1 - randpos 40 6 $ffff +obj ) drop
+	10 >>play
 	;
 |"de-que-hay-menos.mp3"
 |"es-la-mas-lenta.mp3"
@@ -329,11 +379,13 @@
 
 |--------------------------------------------------	
 :jugar
+	0 'nropreg !
+	-1 'respur !
 	inireloj	
-	2000 >>wait
+	jini
+	1000 >>wait
 	1 >>play
-	|j2
-	j1
+	'j1 2000 >>ex
 	'jugando SDLshow
 	;
 
@@ -360,14 +412,14 @@
 	
 	SNDInit
 	loadsndfile
-	
+	rerand
 	100 'obj p.ini
-	0 'nropreg !
-
 	;
 	
 :main
 	"El Cua" 1280 720 SDLinit
+	530 310 SDLframebuffer 'sbuffer !
+	
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
