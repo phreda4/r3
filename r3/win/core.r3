@@ -112,8 +112,9 @@
 
 ::fileijul | -- jul
 	'fileatrib 20 + @
-	864000000000 / | segundos>days
-	2305814 + | julian from 1601-01-01
+	86400000000 / | segundos>days
+	23058135 + | julian from 1601-01-01
+	10 /
 	;	
 	
 ::fileinfo | "file" -- 0=not exist

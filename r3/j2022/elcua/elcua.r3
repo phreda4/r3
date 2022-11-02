@@ -209,6 +209,17 @@
 	2.0 randmax 0.4 +	|vy 
 	pv>v a!+ ;
 
+:+objv | vx x vy y size caras color --
+	'figura 'obj p!+ >a
+	a!+ 
+	0
+	0.03 randmax 0.015 - | -0.01 __ 0.01
+	pv>v a!+ | rotacion
+	32 << or a!+  | caras|size
+	2swap 
+	16 << swap pv>v a!+ 
+	16 << swap pv>v a!+ ;
+
 |---------------------------------------- vidas
 :nvidas | n -- img
 	vidas <? ( drop vida2 ; ) drop vida1 ;
@@ -228,6 +239,7 @@
 #respur -1 
 #respok	
 
+#cambiaestado
 :interaccion
 	1 'estado ! -1 'respur ! ;
 :habla
@@ -237,6 +249,11 @@
 	habla
 	2 >>play
 	'interaccion 0 >>ex
+	1000 >>wait
+	4 >>play
+	1 'nropreg +!
+	cambiaestado 10 >>ex
+	
 	;
 	
 :respuestabtn | resp -- resp
@@ -359,33 +376,116 @@
 	'signopreg 'obj p!+ drop 
 	;
 
+#cntmax
 |"de-que-hay-mas.mp3"
+
+:fill0 ( 1? 1 - randpos 40 0 $ff0000 +obj ) drop ; 
+:fill1 ( 1? 1 - randpos 40 3 $ffff00 +obj ) drop ;
+:fill2 ( 1? 1 - randpos 40 4 $ff9900 +obj ) drop ;
+:fill3 ( 1? 1 - randpos 40 6 $ffff +obj ) drop ;
+ 
 :j2
 	'obj p.clear
 	
-	4 randmax 1 +
-	( 1? 1 - randpos 40 0 $ff0000 +obj ) drop
-	4 randmax 1 +
-	( 1? 1 - randpos 40 3 $ffff00 +obj ) drop
-	4 randmax 1 +
-	( 1? 1 - randpos 40 4 $ff9900 +obj ) drop
-	4 randmax 1 +
-	( 1? 1 - randpos 40 6 $ffff +obj ) drop
 	10 >>play
+	'interaccion 0 >>ex
+	4 randmax 'respok !
+	4 randmax 3 + 'cntmax !
+
+	respok
+	0 =? ( cntmax dup fill0 1 - dup fill1 dup fill2 fill3 )
+	1 =? ( cntmax dup fill1 1 - dup fill0 dup fill2 fill3 )
+	2 =? ( cntmax dup fill2 1 - dup fill0 dup fill1 fill3 )
+	3 =? ( cntmax dup fill3 1 - dup fill0 dup fill1 fill2 )
+	drop
 	;
 |"de-que-hay-menos.mp3"
+
+:j3
+	'obj p.clear
+	
+	11 >>play
+	'interaccion 0 >>ex
+	4 randmax 'respok !
+	4 randmax 2 + 'cntmax !
+
+	respok
+	0 =? ( cntmax dup fill0 1 + dup fill1 dup fill2 fill3 )
+	1 =? ( cntmax dup fill1 1 + dup fill0 dup fill2 fill3 )
+	2 =? ( cntmax dup fill2 1 + dup fill0 dup fill1 fill3 )
+	3 =? ( cntmax dup fill3 1 + dup fill0 dup fill1 fill2 )
+	drop
+	;
+
+:signo
+	rand %100000 and? ( swap neg swap ) drop ;
+	
+:randvpos | vel
+	dup signo 
+	530 randmax 340 +
+	rot signo
+	310 randmax 160 + 
+	;
+
+:vel0 randvpos 40 0 $ff0000 +objv ; 
+:vel1 randvpos 40 3 $ffff00 +objv ;
+:vel2 randvpos 40 4 $ff9900 +objv ;
+:vel3 randvpos 40 6 $ffff +objv ;
+
 |"es-la-mas-lenta.mp3"
+
+:j4
+	'obj p.clear
+	
+	12 >>play
+	'interaccion 0 >>ex
+	4 randmax 'respok !
+	4.0 randmax 2.0 + 'cntmax !
+
+	respok
+	0 =? ( cntmax dup vel0 2.0 + dup vel1 dup vel2 vel3 )
+	1 =? ( cntmax dup vel1 2.0 + dup vel0 dup vel2 vel3 )
+	2 =? ( cntmax dup vel2 2.0 + dup vel0 dup vel1 vel3 )
+	3 =? ( cntmax dup vel3 2.0 + dup vel0 dup vel1 vel2 )
+	drop
+	;
 |"es-la-mas-rapida.mp3"	
 
+:j5
+	'obj p.clear
+	
+	13 >>play
+	'interaccion 0 >>ex
+	4 randmax 'respok !
+	3.0 randmax 3.0 + 'cntmax !
+
+	respok
+	0 =? ( cntmax dup vel0 2.0 - dup vel1 dup vel2 vel3 )
+	1 =? ( cntmax dup vel1 2.0 - dup vel0 dup vel2 vel3 )
+	2 =? ( cntmax dup vel2 2.0 - dup vel0 dup vel1 vel3 )
+	3 =? ( cntmax dup vel3 2.0 - dup vel0 dup vel1 vel2 )
+	drop
+	;
+
 |--------------------------------------------------	
+:subenivel
+	nropreg
+	2 =? ( 'j2 1000 >>ex )
+	3 =? ( 'j3 1000 >>ex )
+	4 =? ( 'j4 1000 >>ex )
+	5 =? ( 'j5 1000 >>ex )
+	drop
+	;
+	
 :jugar
-	0 'nropreg !
+	'subenivel 'cambiaestado !
+	1 'nropreg !
 	-1 'respur !
 	inireloj	
 	jini
 	1000 >>wait
 	1 >>play
-	'j1 2000 >>ex
+	'j1 1000 >>ex
 	'jugando SDLshow
 	;
 
