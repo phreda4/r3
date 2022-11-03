@@ -16,6 +16,8 @@
 #sinicio
 #sprincipal
 #scursor
+#splay1
+#splay2
 #ssigno
 #btncir1 	
 #btncir2 	
@@ -266,25 +268,6 @@
 	;
 	
 |----------------------------------------	
-:botont | 'v "" x y w h --
-	2over 2over guibox
-	SDLb SDLx SDLy guiIn	
-	$ffffff  [ $00ff00 nip ; ] guiI
-	SDLColor
-	2over 2over SDLFRect	
-	xywh64 
-	$11 rot rot $0 fontt textbox 
-	onCLick ;	
-	
-:boton | x y w h -- xy
-	2over 2over guibox
-	SDLb SDLx SDLy guiIn	
-	$ffffff  [ $666666 nip ; ] guiI
-	SDLColor
-	2over 2over SDLFRect	
-	1 >> rot + rot rot 1 >> + swap
-	;
-
 
 |--- boton
 :btnd  | n 'vecor 'i x y -- n
@@ -304,7 +287,7 @@
 
 :jugando
 	gui
-	$0 SDLcls
+|	$0 SDLcls
 
 	'obj p.draw
 	
@@ -478,7 +461,6 @@
 	;
 	
 :jugar
-	'subenivel 'cambiaestado !
 	1 'nropreg !
 	-1 'respur !
 	inireloj	
@@ -487,6 +469,35 @@
 	1 >>play
 	'j1 1000 >>ex
 	'jugando SDLshow
+	;
+
+:btnplay | n 'vecor 'i x y -- n
+	435 95 guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+
+:pantini
+	gui
+	0 0 sinicio SDLImage 
+	playloop
+	
+	[ jugar 0 >>play ; ] 'splay1 420 600 btnplay
+	
+	sdlx sdly scursor SDLimage
+	SDLredraw
+
+	SDLkey 
+	>esc< =? ( exit )
+	<f1> =? ( jugar 0 >>play )
+	drop 
+	;
+	
+:iniciojuego
+	'subenivel 'cambiaestado !
+	0 >>play
+	'pantini SDLshow
 	;
 
 :inicio
@@ -504,6 +515,9 @@
 	"r3/j2022/elcua/img/btncua2.png" loadimg 'btncua2 !	
 	"r3/j2022/elcua/img/btnhex1.png" loadimg 'btnhex1 !	
 	"r3/j2022/elcua/img/btnhex2.png" loadimg 'btnhex2 !	
+
+	"r3/j2022/elcua/img/play1.png" loadimg 'splay1 !	
+	"r3/j2022/elcua/img/play2.png" loadimg 'splay2 !	
 
 	"r3/j2022/elcua/img/vida1.png" loadimg 'vida1 !	
 	"r3/j2022/elcua/img/vida2.png" loadimg 'vida2 !	
@@ -523,7 +537,7 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-	jugar
+	iniciojuego
 	SDLquit ;	
 	
 : main ;

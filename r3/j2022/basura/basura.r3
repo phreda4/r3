@@ -13,6 +13,11 @@
 #sprplayer
 #font
 
+#sbtndia
+#sbtniempo
+#svida1
+#svida2
+
 #fx 0 0
 
 #xmapa 0 
@@ -24,9 +29,10 @@
 #vzp 0
 
 #puntos
-#vidas
+#vidas 5
 
 #dias "Lunes" "Martes" "Miercoles" "Jueves" "Viernes" "Sabado" "Domingo"
+#diahoy 'dias
 #nrodia 0
 #mododia 0
 
@@ -167,8 +173,6 @@
 	-0.3 'vzp +!	
 	;
 	
-
-	
 :a!xy | x y --
 	swap a!+ a!+ ;
 	
@@ -186,7 +190,6 @@
 	a@+ over 32 >> - xmapa -
 	a@+ rot 32 << 32 >> - ymapa -
 	;
-	
 	
 |=======================	
 :+jugador
@@ -225,11 +228,10 @@
 	0 'vzp !
 	
 	0 'puntos !
-	3 'vidas !
+	5 'vidas !
 	
 	0 'nrodia !
 	0 'mododia !
-
 	;	
 		
 |---------------------
@@ -281,35 +283,55 @@
 	5 'fx p.sort	
 	;
 
+|---------------------------------------- vidas
+:nvidas | n -- img
+	vidas <? ( drop svida2 ; ) drop svida1 ;
+	
+| 676 107,56,51
+:impvidas
+	500
+	0 ( 5 <? swap
+		dup 10 
+		pick3 nvidas SDLImage 
+		60 +
+		swap 1 + ) 2drop ;
+		
+|------------------------------------------------
 :jugando
 	$039be5 SDLcls
 	time.delta
 	creador
 	ciudad
+
+	impvidas	
 	
-	|$0 font "vidas:" 20 20 ttfprint | color font "text" x y -- 
-	$ffffff font "Viernes de agosto - San Cayetano" sprint
-	20 20 ttfprint | color font "text" x y -- 
-	
+	10 16 sbtniempo sdlImage
+
 	$ffffff font puntos "%d" sprint
-	600 20 ttfprint | color font "text" x y -- 
+	60 16 ttfprint | color font "text" x y -- 
+
+	500 534 sbtndia sdlImage
+	$ffffff font diahoy
+	570 550 ttfprint | color font "text" x y -- 
 	
 	SDLredraw
 	teclado ;
 
 |---------------------------------------
-
-
 :main
-	1000 'fx p.ini
+	500 'fx p.ini
 	"r3sdl" 800 600 SDLinit
 	|SDLfull
 
 	ttf_init
 	"r3/j2022/basura/font/ChakraPetch-Bold.ttf" 30 TTF_OpenFont 'font !		
 	
-	"r3\j2022\basura\mapa.map" loadtilemap 'mapajuego !
-	128 128 "r3\j2022\basura\sprites.png" loadts 'sprplayer !
+	"r3/j2022/basura/mapa.map" loadtilemap 'mapajuego !
+	128 128 "r3/j2022/basura/img/sprites.png" loadts 'sprplayer !
+	"r3/j2022/basura/img/btndia.png" loadimg 'sbtndia !
+	"r3/j2022/basura/img/btntiempo.png" loadimg 'sbtniempo !
+	"r3/j2022/basura/img/vida1.png" loadimg 'svida2 !
+	"r3/j2022/basura/img/vida2.png" loadimg 'svida1 !
 	
 	reset
 	

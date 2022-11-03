@@ -10,6 +10,7 @@
 ^r3/util/penner.r3
 
 
+#sfondo
 #sprj
 #spre
 
@@ -329,6 +330,7 @@
 	
 :jugando
 	$666666 SDLcls
+	xvp neg yvp neg 64 + 7472 3344 sfondo SDLImages
 
 	viewport
 	drawmapa	
@@ -336,7 +338,9 @@
 	enemigos
 	player
 	
-	8 8 bat hitene "%h" sprint bprint
+	8 8 bat
+xvp yvp "%d %d " sprint bprint	
+	hitene "%h" sprint bprint
 	
 	SDLredraw
 	
@@ -347,7 +351,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	
+	"r3/j2022/trebor/mapatrebor.png" loadimg 'sfondo ! 
 	32 32 "r3\j2022\trebor\treborj.png" loadts 'sprj !
 	50 50 "r3\j2022\trebor\enemigos.png" loadts 'spre !
 	"r3\j2022\trebor\nivel.map" loadtilemap 'mapajuego !
