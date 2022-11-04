@@ -74,26 +74,10 @@
 	
 :panim | -- nanim	
 	msec 6 >> $3 and ;
-	
-:pisoysalto
-	floor? 0? ( drop
-		0.3 'vyp +!
-		10.0 clampmax
-		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
-		; ) drop
-	0 'vyp !
-|	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
-	
-	SDLkey
-|	<up> =? ( -8.0 'vyp ! )
-	drop
-	;
 
 :debug
 	$ffffff bcolor 
 	10 10 bat 
-	floor? "f:%d " sprint bprint  	
-	roof? "r:%d " sprint bprint
 	;
 
 #btnpad
@@ -124,11 +108,6 @@
 	%10 and? ( -1.0 xmove )
 	%1 and? ( 1.0 xmove )
 	drop
-	
-|	pisoysalto
-	
-|	vyp 'yp +!
-|	vxp 'xp +!
 	
 	viewport
 	;

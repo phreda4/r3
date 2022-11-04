@@ -57,73 +57,43 @@
 	swap yvp - 
 	scr2tile c@ ;
 	
-:roof? | -- techo?
-	xp int. 16 + 
-	yp int. 2 +
-	[map]@ ;
-
-:floor? | -- piso?
-	xp int. 2 + yp int. 32 + [map]@
-	xp int. 30 + yp int. 32 + [map]@ or	
-	;
-
-:wall? | dx -- wall?
-	xp int. +
-	yp int. 16 +
-	[map]@ ;
+:[map]@s | x y -- c
+	[map]@
+	11 =? ( ; ) 
+	12 =? ( ; ) 
+	drop 0 ;	
 	
-:panim | -- nanim	
-	msec 6 >> 3 mod abs ;
-	
-
-
-
-	
-:pisoysalto
-	floor? 0? ( drop
-		0.3 'vyp +!
-		10.0 clampmax
-		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
-		; ) drop
-	0 'vyp !
-|	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
-	
-	SDLkey
-|	<up> =? ( -8.0 'vyp ! )
-	drop
+:wall? | -- piso?
+	xp int. 10 + yp int. 32 + [map]@s
+	xp int. 20 + yp int. 32 + [map]@s or	
 	;
 
 :debug
 	$ffffff bcolor 
 	10 10 bat 
-	floor? "f:%d " sprint bprint  	
-	roof? "r:%d " sprint bprint
 	;
 
 #btnpad
 
-
+:animh | v --
+	63 >> 2 and | 0/2
+	2 << | 4 *
+	msec 6 >> $3 and + 'np ! ;
 	
-:prunl
-|	estela	
-	0 wall? 1? ( drop ; ) drop
-	8 panim + 'np !
-	-2.0 'xp +!
-	;
-	
-:prunr
-|	estela	
-	32 wall? 1? ( drop ; ) drop
-	0 panim + 'np !
-	2.0 'xp +!
-	;
+:animv | v --
+	neg 63 >> 2 and 1 + | 1/3
+	2 << | 4 *
+	msec 6 >> $3 and + 'np ! ;
 	
 :xmove
-	'xp +!
-	;
+	dup 'xp +!
+	wall? 0? ( drop animh ; )
+	drop neg 'xp +! ; 
+	
 :ymove
-	'yp +!
-	;
+	dup 'yp +!
+	wall? 0? ( drop animv ; )
+	drop neg 'yp +! ; 
 	
 :player	
 	np sprj 
@@ -137,12 +107,7 @@
 	%10 and? ( -1.0 xmove )
 	%1 and? ( 1.0 xmove )
 	drop
-	
-|	pisoysalto
-	
-|	vyp 'yp +!
-|	vxp 'xp +!
-	
+
 	viewport
 	;
 	
@@ -174,7 +139,7 @@
 :vectortile | tile -- tile
 	;
 	
-:drawmapa
+:drawmapar
 	26 20
 	xvp 5 >> yvp 5 >>
 	xvp $1f and neg 
