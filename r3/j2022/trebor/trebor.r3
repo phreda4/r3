@@ -145,7 +145,7 @@
 1.0 $100  75 70 101 101 12 14
 1.0 $100  80 78 101 101 12 14
 1.0 $100  88 85 100 100 12 14
-1.0 $100  126 126 101 101 72 104 
+1.0 $100  126 126 100 100 72 104 
 0 ]
 
 :pp | pp|ease vel -- pp|ease mul
@@ -216,8 +216,9 @@
 
 :[map]@s | x y -- c
 	[map]@
-4 =? ( ; ) 
-9 22 bt? ( ; ) drop 0 ;
+	4 =? ( ; ) 
+	9 21 bt? ( ; ) 
+	drop 0 ;
 	
 :roof? | -- techo?
 	xp int. 32 + 
@@ -327,10 +328,10 @@
 	mapajuego 'vectortile 
 	tiledrawvs ;
 	
-	
+| 2240 1050
 :jugando
-	$666666 SDLcls
-	xvp neg yvp neg 64 + 7472 3344 sfondo SDLImages
+	$256BCB SDLcls
+	xvp neg 8 + yvp neg 72 + 7168 3392 sfondo SDLImages
 
 	viewport
 	drawmapa	
