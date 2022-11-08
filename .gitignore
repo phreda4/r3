@@ -5,3 +5,8 @@ asm/code.asm
 asm/data.asm
 asm/r3fasm.exe
 r3fasm.exe
+mem/debuginfo.db
+mem/infomap.db
+mem/debuginfo.db
+mem/main.mem
+mem/menu.mem

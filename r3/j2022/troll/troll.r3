@@ -6,6 +6,7 @@
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
+^r3/util/penner.r3
 
 #sprj
 #spre
@@ -45,7 +46,67 @@
 	0 'ev !
 	xp yp +humo
 	;
+	
+|--------------------------------
+#hitene
+#timeene
 
+| velocidad pp+ease x1 x2 y1 y2 n1 n2
+| $1xx = pingpong $0xx = ping
+
+#listene [
+1.0 $100  1 4 2 8 0 4
+0 ]
+
+:pp | pp|ease vel -- pp|ease mul
+	over 
+	$100 nand? ( drop $ffff and ; ) drop
+	$1ffff and $10000 and? ( $1ffff xor )
+	;
+	
+:calctime | pp|ease vel -- mult
+	timeene 10 *>> pp swap $ff and ease ;
+	
+:calcxi | calc xi yi -- calc x
+	over - pick2 *. + ;
+	
+:calcpos | v -- x y 
+	da@+ swap 
+	calctime 
+	da@+ 5 << |32 * | 32 tile map size
+	da@+ 5 << |32 * | vel x1 x2
+	calcxi 	| vel x
+	swap
+	da@+ 5 << |32 * 
+	da@+ 5 << |32 * | vel y1 y2
+	calcxi nip 	| x y
+	;
+	
+:drawene | x y --
+	msec 1 >> $ff and 
+	da@+ da@+ over - rot 8 *>> +
+	sprj
+	2swap 
+	yvp - swap
+	xvp - swap
+	32 dup tsdraws ;
+
+:hitplayer | x y -- x y
+	over xp 16 >> - 
+	over yp 16 >> - distfast
+	32 <? ( a> 'hitene ! )
+	drop
+	;	
+	
+:enemigos | --
+	msec 'timeene !
+	0 'hitene !
+	'listene >a ( da@+ 1? 
+		calcpos
+		hitplayer
+		drawene
+		) drop  ;
+		
 :viewport
 	xp int. sw 1 >> - 'xvp !
 	yp int. sh 1 >> - 'yvp !
@@ -156,6 +217,7 @@
 	drawmapa	
 	'fx p.draw
 	player
+	enemigos
 	
 	SDLredraw
 	
