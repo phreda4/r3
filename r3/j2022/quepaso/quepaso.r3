@@ -15,6 +15,8 @@
 #spodio
 #sf1 #sf2 #sf3
 #tu1 #tu2 #tu3
+#sbtn1 #sbtn2
+
 
 
 |----------------------------------------	
@@ -166,6 +168,16 @@
 	$11 rot rot $0 font textbox 
 	onCLick ;
 
+| 483,143
+:btnn | 'vec "text" -- 
+	2dup 288 65 guibox 
+	sdlb sdlx sdly guiIn
+	'sbtn1 [ 8 + rot 4 + rot 4 + rot ; ] guiI
+	@ pick2 pick2 rot SDLimage
+	280 74 xywh64
+	$11 rot rot $0 font textbox 
+	onCLick ;
+	
 :jugando
 	gui
 	$0 SDLcls
@@ -182,10 +194,11 @@
 	
 	970 550 jnow 3 << 'tu1 + @ sdlimage
 	
-	[ 0 'resusr ! exit ; ] r1 25 312 288 65 boton
-	[ 1 'resusr ! exit ; ] r2 25 403 288 65 boton
-	[ 2 'resusr ! exit ; ] r3 25 497 288 65 boton
-	[ 3 'resusr ! exit ; ] r4 25 590 288 65 boton
+
+	[ 0 'resusr ! exit ; ] r1 25 305 btnn
+	[ 1 'resusr ! exit ; ] r2 25 400 btnn
+	[ 2 'resusr ! exit ; ] r3 25 495 btnn
+	[ 3 'resusr ! exit ; ] r4 25 590 btnn
 
 	reloj
 
@@ -262,7 +275,7 @@
 :inicio
 	ttf_init
 	"r3/j2022/quepaso/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
-	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 28 TTF_OpenFont 'font !	
+	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 26 TTF_OpenFont 'font !	
 	
 	"r3/j2022/quepaso/img/cursor.png" loadimg 'scursor !	
 	"r3/j2022/quepaso/img/tablero.png" loadimg 'stablero !
@@ -276,6 +289,9 @@
 	"r3/j2022/quepaso/img/turno1.png" loadimg 'tu1 !
 	"r3/j2022/quepaso/img/turno2.png" loadimg 'tu2 !
 	"r3/j2022/quepaso/img/turno3.png" loadimg 'tu3 !
+
+	"r3/j2022/quepaso/img/btn1.png" loadimg 'sbtn1 !
+	"r3/j2022/quepaso/img/btn2.png" loadimg 'sbtn2 !
 	
 	SNDInit
 	loadsndfile
