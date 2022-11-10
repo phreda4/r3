@@ -15,6 +15,8 @@
 #sbuffer 
 #sinicio
 #sprincipal
+#swin
+#sperdio
 #scursor
 #splay1
 #splay2
@@ -74,6 +76,7 @@
 "de-que-hay-menos.mp3"
 "es-la-mas-lenta.mp3"
 "es-la-mas-rapida.mp3"
+"otra-oportunidad.mp3" |14
 0
 
 #sndlist * 128
@@ -251,7 +254,7 @@
 	habla
 	2 >>play
 	'interaccion 0 >>ex
-	1000 >>wait
+	500 >>wait
 	4 >>play
 	1 'nropreg +!
 	cambiaestado 10 >>ex
@@ -265,6 +268,8 @@
 	3 >>play
 	'interaccion 0 >>ex
 	-1 'vidas +!
+	
+	vidas 0? ( exit ) drop
 	;
 	
 |----------------------------------------	
@@ -287,7 +292,7 @@
 
 :jugando
 	gui
-|	$0 SDLcls
+	$0 SDLcls
 
 	'obj p.draw
 	
@@ -310,8 +315,6 @@
 
 	SDLkey 
 	>esc< =? ( exit )
-	<f1> =? ( 4 >>play )
-
 	drop 
 	;
 
@@ -329,7 +332,7 @@
 	drop 
 	sbuffer 'srct 'mpixel 'mpitch SDL_LockTexture
 	mpixel >a 530 310 * ( 1? 1 - 
-		rand8 $7f and dup 8 << over 16 << or or
+		rand8 $7f and dup 8 << over 16 << or or 
 		da!+ ) drop
 	sbuffer SDL_UnlockTexture
 	340 160 sbuffer SDLImage 	
@@ -356,17 +359,18 @@
 	'interaccion 0 >>ex
 	'obj p.clear
 	'statica 'obj p!+ drop 	
-	'signopreg 'obj p!+ drop 
+	'signopreg 'obj p!+ drop 	
 	;
 
 #cntmax
-|"de-que-hay-mas.mp3"
+
 
 :fill0 ( 1? 1 - randpos 40 0 $ff0000 +obj ) drop ; 
 :fill1 ( 1? 1 - randpos 40 3 $ffff00 +obj ) drop ;
 :fill2 ( 1? 1 - randpos 40 4 $ff9900 +obj ) drop ;
 :fill3 ( 1? 1 - randpos 40 6 $ffff +obj ) drop ;
- 
+
+|"de-que-hay-mas.mp3" 
 :j2
 	'obj p.clear
 	
@@ -451,12 +455,60 @@
 	;
 
 |--------------------------------------------------	
+:pantgano
+	gui
+	0 0 swin SDLImage 
+	'obj p.draw
+	playloop
+	
+	sdlx sdly scursor SDLimage
+	SDLredraw
+
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
+:gano
+	'obj p.clear
+	1 fill0
+	1 fill1
+	1 fill2
+	1 fill3
+	'exit 10000 >>ex
+	'pantgano SDLshow
+	;
+	
+|-----------------------------------	
+:pantperdio
+	gui
+	0 0 sperdio SDLImage 
+	'obj p.draw
+	playloop
+	
+	sdlx sdly scursor SDLimage
+	SDLredraw
+
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
+:perdio
+	'obj p.clear
+	'exit 10000 >>ex
+	'pantperdio SDLshow
+	exit
+	;
+	
+	
 :subenivel
 	nropreg
 	2 =? ( 'j2 1000 >>ex )
 	3 =? ( 'j3 1000 >>ex )
 	4 =? ( 'j4 1000 >>ex )
 	5 =? ( 'j5 1000 >>ex )
+	6 =? ( exit ) 
 	drop
 	;
 	
@@ -465,10 +517,13 @@
 	-1 'respur !
 	inireloj	
 	jini
-	1000 >>wait
+	
+	500 >>wait
 	1 >>play
 	'j1 1000 >>ex
 	'jugando SDLshow
+	vidas 0? ( drop perdio ; ) drop
+	gano
 	;
 
 :btnplay | n 'vecor 'i x y -- n
@@ -483,20 +538,19 @@
 	0 0 sinicio SDLImage 
 	playloop
 	
-	[ jugar 0 >>play ; ] 'splay1 420 600 btnplay
+	[ jugar ; ] 'splay1 420 600 btnplay
 	
 	sdlx sdly scursor SDLimage
 	SDLredraw
 
 	SDLkey 
 	>esc< =? ( exit )
-	<f1> =? ( jugar 0 >>play )
 	drop 
 	;
 	
 :iniciojuego
 	'subenivel 'cambiaestado !
-	0 >>play
+	0 >>play 
 	'pantini SDLshow
 	;
 
@@ -505,7 +559,10 @@
 	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
 	"r3/j2022/elcua/img/cursor.png" loadimg 'scursor !	
 	"r3/j2022/elcua/img/inicio.png" loadimg 'sinicio !	
+	
 	"r3/j2022/elcua/img/principal.png" loadimg 'sprincipal !	
+	"r3/j2022/elcua/img/win.png" loadimg 'swin !	
+	"r3/j2022/elcua/img/lose.png" loadimg 'sperdio !	
 
 	"r3/j2022/elcua/img/btncir1.png" loadimg 'btncir1 !	
 	"r3/j2022/elcua/img/btncir2.png" loadimg 'btncir2 !	
