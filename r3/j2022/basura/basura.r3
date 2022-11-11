@@ -8,6 +8,7 @@
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/fontutil.r3
+^r3/util/boxtext.r3
 
 #mapajuego
 #sprplayer
@@ -17,6 +18,7 @@
 #sbtniempo
 #svida1
 #svida2
+#sinicio
 
 #fx 0 0
 
@@ -33,9 +35,7 @@
 
 #dias "Lunes" "Martes" "Miercoles" "Jueves" "Viernes" "Sabado" "Domingo"
 #diahoy 'dias
-#nrodia 0
-#mododia 0
-
+#mododia 1
 
 |-------------- tiempo
 #prevt
@@ -67,35 +67,57 @@
 	over xp - over yp - distfast ;
 	
 |--------------------------------
+:vidamenos
+	-1 'vidas +!
+| modo renace
+	vidas 0? ( exit ) drop
+	;
+	
+:basuraok
+	10 'puntos +!
+
+	;
+	
+:basuraerr
+	-10 'puntos +!
+	;
+	
+:tocobasura	
+	mododia =? ( drop basuraok ; ) drop basuraerr ;
+	
+|--------------------------------
 | nro-tile mask-cnt ( 0>1 1>2 3>4)
 #tipoitems (
-6 0
-7 0
-8 3
-12 1
-14 3
-18 1
-20 2
-24 1
-36 0
-34 0	| tacho verde
-35 0	| tacho gris
+6 $0
+7 $10
+8 $13
+12 $11
+14 $3
+18 $11
+20 $2
+24 $1
+36 $0
+34 $10	| tacho verde
+35 $0	| tacho gris
 )
 
 |--------------------------------
 :item | a --
 	>a a@ dup 0.05 + a!+ 
-	16 >> a@+ and a@+ + sprplayer 
+	16 >> a@+ $f and and a@+ + sprplayer 
 	a@+ xmapa -
 	a@+ ymapa - 
-	distplayer 32 <? ( drop 4drop 0 ; ) drop
+	distplayer 32 <? ( drop 4drop
+		a> 32 - @
+		4 >> tocobasura
+		0 ; ) drop
 	tsdraw ;
 	
 :+item | x y c i --
 	'item 'fx p!+ >a 0 a!+ a!+ a!+ swap a!+ a! ;
 
 :+ritem | x y --
-	9 randmax 1 << 'tipoitems +
+	9 randmax 1 << 'tipoitems + 
 	c@+ swap c@ +item ;
 	
 
@@ -108,7 +130,7 @@
 	dup 3 + sw >? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - 
 	
-	distplayer 32 <? ( drop 4drop 0 ; ) drop
+	distplayer 32 <? ( drop 4drop 0 vidamenos ; ) drop
 	tsdraw
 	;
 	
@@ -123,7 +145,7 @@
 	a@+ 
 	dup 5 - -128 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - 
-	distplayer 32 <? ( drop 4drop 0 ; ) drop
+	distplayer 32 <? ( drop 4drop 0 vidamenos ; ) drop
 	tsdraw
 	;
 	
@@ -230,8 +252,15 @@
 	0 'puntos !
 	5 'vidas !
 	
-	0 'nrodia !
-	0 'mododia !
+	1 
+	'dias
+	5 randmax ( 1? 1 -
+		rot 1 +
+		rot >>0
+		rot ) drop 
+	'diahoy !
+	$1 and 'mododia !
+	
 	;	
 		
 |---------------------
@@ -317,6 +346,51 @@
 	SDLredraw
 	teclado ;
 
+:jugar
+	rerand
+	reset
+	
+	'jugando SDLshow
+	;
+	
+|---------------------------------------
+#texto
+"¡Hola, soy Protectrón!
+En este juego tendrás que
+juntar en un minuto la
+mayor cantidad de 
+residuos.
+
+¡IMPORTANTE!
+los días lunes, miércoles y
+viernes junta los RESÍDUOS
+ORGÁNICOS
+Los dias martes y jueves los
+RESIDUOS INORGÁNICOS
+
+Depende también de vos
+que la ciudad esté limpia"
+
+:inicio
+	0 0 sinicio SDLImage
+
+	msec 7 >> $3 and sprplayer
+	80 280 
+	256 dup tsdraws
+
+	$11
+'texto 	
+	260 100 550 300 xywh64
+	$ffffffff font textbox 
+	
+	SDLRedraw 
+	SDLkey 
+	<F1> =? ( jugar ) 
+	>esc< =? ( exit )
+	drop 
+	
+	;
+
 |---------------------------------------
 :main
 	500 'fx p.ini
@@ -332,10 +406,10 @@
 	"r3/j2022/basura/img/btntiempo.png" loadimg 'sbtniempo !
 	"r3/j2022/basura/img/vida1.png" loadimg 'svida2 !
 	"r3/j2022/basura/img/vida2.png" loadimg 'svida1 !
+
+	"r3/j2022/basura/img/inicio.png" loadimg 'sinicio !
 	
-	reset
-	
-	'jugando SDLshow
+	'inicio SDLshow
 	SDLquit ;	
 	
 : main ;
