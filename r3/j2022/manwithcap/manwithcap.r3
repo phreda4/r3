@@ -14,6 +14,7 @@
 #vidas
 
 #sprj
+#sinicio
 
 #fx 0 0
 #ene 0 0
@@ -87,6 +88,26 @@
 	[map]@s ;
 
 
+|---------------------------------------------
+:muerto
+	>a
+	a@ dtime + 
+	10000 >? ( drop 0 ; ) 
+	a!+ 
+	a@+
+	sprj 
+	a@+ int. xvp -
+	a@+ int. yvp -
+	64 64 tsdraws
+	;
+	
+:+muerto | face x y --
+	'muerto 'fx p!+ >a 
+	0 a!+ | TIME
+	rot a!+
+	swap a!+ a!+
+	;
+
 #testf
 
 |---------------------------------------------
@@ -98,6 +119,11 @@
 	distfast 
 	16 >? ( drop ; )
 	drop
+	
+	-24 a+
+	a@+	16 >> 3 >> 16 +
+	a@+ a@+ 16.0 + +muerto
+	
 	dup 'ene p.del
 |	pick4 16 << pick4 16 << +fx
 	1 'puntos +!
@@ -139,14 +165,15 @@
 	msec timeshoot <? ( drop ; ) 1000 + 'timeshoot !
 	6.0
 	face 1 nand? ( swap neg swap ) drop 
-	xp 32.0 + over + yp 32.0 + +disparo
+	xp 32.0 + over + yp 34.0 + +disparo
 	;
+
 	
 |---------------------------------------------
 #dirx
 
 :direne | dirx -- dirx sdir
-	-? ( $80004 ; ) $140004 ;
+	-? ( $40004 ; ) $c0004 ;
 	
 :enemigo | adr --
 	dup >a
@@ -204,7 +231,7 @@
 	
 :pstay
 	0
-	np 11 >? ( 2drop 12 dup ) drop
+	np 7 >? ( 2drop 8 dup ) drop
 	'np !
 	;
 	
@@ -219,7 +246,7 @@
 :prunr
 |	estela	
 	52 wall? 1? ( drop ; ) drop
-	12 panim + 'np !
+	8 panim + 'np !
 	2.0 'xp +!
 	1 face or 'face !
 	;
@@ -351,7 +378,7 @@
 	30.0 'xp ! 446.0 'yp !	| pos player
 	0 'vxp ! 0 'vyp !		| vel player
 	
-	12 'np ! 1 'face ! 'pstay 'ep !
+	8 'np ! 1 'face ! 'pstay 'ep !
  	;
 
 |------------
@@ -369,10 +396,11 @@
 :menu
 	gui
 
-	$0 SDLcls
+|	$0 SDLcls
+	0 0 sinicio SDLImage
 
-	[ reset 'jugando SDLshow ; ] "Jugar" 100 300 100 30 tbtn
-	'exit "Salir" 100 400 100 30 tbtn
+	[ reset 'jugando SDLshow ; ] "Jugar" 200 400 100 30 tbtn
+	'exit "Salir" 450 400 100 30 tbtn
 	SDLredraw
 	
 	SDLkey
@@ -387,13 +415,15 @@
 	bfont2 
 	|SDLfull
 	
-	32 32 "r3\j2022\manwithcap\sprites.png" loadts 'sprj !
+	
+	
 	"r3\j2022\manwithcap\nivel.map" loadtilemap 'mapajuego !
+	32 32 "r3\j2022\manwithcap\sprites.png" loadts 'sprj !
+	"r3\j2022\manwithcap\inicio.png" loadimg 'sinicio !		
 	
 	time.start
 	
 |	'menu SDLshow
-	
 	reset 'jugando sdlshow
 	
 	SDLquit ;	
