@@ -35,6 +35,12 @@
 	swap 'rec d!+ d!+ h w rot d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
+::SDLImageb | box img --
+	SDLrenderer swap rot 0 swap SDL_RenderCopy ;
+	
+::SDLImagebb | box box img --
+	SDLrenderer swap 2swap SDL_RenderCopy ;	
+	
 ::SDLcls | color --
 	SDLColor SDLrenderer SDL_RenderClear ;
 	

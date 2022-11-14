@@ -314,7 +314,7 @@
 	SDLredraw
 
 	SDLkey 
-	>esc< =? ( exit )
+	>esc< =? ( 0 'vidas ! exit )
 	drop 
 	;
 
