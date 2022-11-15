@@ -2,6 +2,7 @@
 
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
+^r3/win/sdl2mixer.r3
 
 ^r3/lib/rand.r3
 
@@ -12,6 +13,9 @@
 
 #mapajuego
 #sprplayer
+
+#musicplay
+
 #font
 
 #sbtndia
@@ -359,18 +363,38 @@
 En este juego tendrás que
 juntar en un minuto la
 mayor cantidad de 
-residuos.
-
+residuos.*
 ¡IMPORTANTE!
 los días lunes, miércoles y
 viernes junta los RESÍDUOS
 ORGÁNICOS
 Los dias martes y jueves los
-RESIDUOS INORGÁNICOS
-
+RESIDUOS INORGÁNICOS*
 Depende también de vos
-que la ciudad esté limpia"
+que la ciudad esté limpia
+$"
 
+#texto> 
+#buffer * 1024
+#buffer>
+
+#tt
+#waitnext
+
+:>>title
+	time.delta 
+	dtime 'tt +!
+	tt waitnext <? ( drop ; ) drop
+	
+	texto> c@
+	0? ( drop jugar exit ; )
+	$2a =? ( drop 'buffer 'buffer> ! tt 3000 + 'waitnext ! 1 'texto> +! ; ) |*
+	$24 =? ( drop tt 3000 + 'waitnext ! 1 'texto> +! ; ) |$
+	buffer> c!+ 0 over c! 'buffer> !
+	1 'texto> +! 
+	tt 50 + 'waitnext !
+	;
+	
 :inicio
 	0 0 sinicio SDLImage
 
@@ -378,9 +402,11 @@ que la ciudad esté limpia"
 	80 280 
 	256 dup tsdraws
 
+	>>title	
+	
 	$11
-'texto 	
-	260 100 550 300 xywh64
+	'buffer
+	260 60 550 300 xywh64
 	$ffffffff font textbox 
 	
 	SDLRedraw 
@@ -388,9 +414,16 @@ que la ciudad esté limpia"
 	<F1> =? ( jugar ) 
 	>esc< =? ( exit )
 	drop 
-	
 	;
 
+:pantalla1
+	'texto 'texto> !
+	'buffer 0 over c! 'buffer> !
+	time.start
+	0 'tt !
+	'inicio SDLshow
+	;
+	
 |---------------------------------------
 :main
 	500 'fx p.ini
@@ -409,7 +442,12 @@ que la ciudad esté limpia"
 
 	"r3/j2022/basura/img/inicio.png" loadimg 'sinicio !
 	
-	'inicio SDLshow
+	SNDInit
+	"r3/j2022/basura/audio/Basuralu.mp3" Mix_LoadMUS 'musicplay !	
+	rerand
+	
+	pantalla1
+	
 	SDLquit ;	
 	
 : main ;
