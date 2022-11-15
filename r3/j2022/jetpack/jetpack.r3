@@ -3,6 +3,8 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 
+^r3/lib/rand.r3
+
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
@@ -21,6 +23,21 @@
 #cohete
 #nspr 1
 
+:[map]@ | x y -- c
+	swap xvp - 
+	swap yvp - 
+	scr2tile c@ ;
+
+:[map]! | c x y -- 
+	swap xvp - 
+	swap yvp - 
+	scr2tile c! ;
+
+:[map]@s | x y -- c
+	[map]@
+	3 <? ( ; ) 
+	drop 0 ;
+	
 :disparo
 	>a
 	8 sprplayer 
@@ -62,11 +79,15 @@
 	dup 16 >> 400 - 'xvp !
 	'xp !
 
-	vyp ayp + 0.1 + | graveda
+	vyp ayp + 0.1 + | gravedad
 	5.0 clampmax -4.0 clampmin | limite y
 	'vyp !
 	
 	vyp 'yp +!
+	
+	xp int. yp int. [map]@s 1? ( 
+		1.0 randmax 0.5 - 'vyp +! 1.0 randmax 0.5 - 'vxp +! 
+		) drop
 	
 	yp
 	500.0 >? ( 500.0 'yp ! 0 'vyp ! 0 'vxp ! )
