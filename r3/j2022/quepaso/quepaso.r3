@@ -17,7 +17,8 @@
 #tu1 #tu2 #tu3
 #sbtn1 #sbtn2
 
-
+#musicini
+#musicrun
 
 |----------------------------------------	
 #sndfile "correcta.mp3" "incorrecta.mp3" "boton.mp3" 0
@@ -25,6 +26,9 @@
 #sndlist * 1024
 
 :loadsndfile
+	"r3/j2022/quepaso/audio/musinicio.mp3" Mix_LoadMUS 'musicini !
+	"r3/j2022/quepaso/audio/musjuego.mp3" Mix_LoadMUS 'musicrun !
+
 	'sndlist >a
 	'sndfile ( dup c@ 1? drop
 		dup "r3/j2022/quepaso/audio/%s" sprint
@@ -51,13 +55,14 @@
 
 #r1 #r2 #r3 #r4
 
-#cntjug 2
+#cntjug 3
 #njug 0 0 0 0
 #pjug 0 0 0 0
 
 #jnow
 #resusr
 #maxjug
+#nrojug
 
 #posiciones [ 
 580 890
@@ -105,6 +110,7 @@
 	dup 'pjug + >a
 	'njug + @
 	dup maxjug max 'maxjug !
+	njug 'nrojug !
 	nposjug		
 	swap 32 randmax 16 - +
 	swap 32 randmax 16 - +
@@ -181,8 +187,7 @@
 :jugando
 	gui
 	$0 SDLcls
-	0 0 
-	stablero sdlimage
+	0 0 stablero sdlimage
 	
 	mapascreen
 	'pjug jnow 3 << + >a
@@ -190,10 +195,7 @@
 
 	$11 'pregunta 370 22 870 136 xywh64 $00 fontt textbox | $vh str box color font	
 	
-|	$11 jnow 5 << 'njug1 + 1280 300 - 600 300 80 xywh64 $0000 fontt textbox
-	
 	970 550 jnow 3 << 'tu1 + @ sdlimage
-	
 
 	[ 0 'resusr ! exit ; ] r1 25 305 btnn
 	[ 1 'resusr ! exit ; ] r2 25 400 btnn
@@ -210,15 +212,51 @@
 	drop 
 	;
 
+|---------------------------------
+#col0 "Verde"
+#col1 "Naranja"
+#col2 "Celeste"
+#lcol col0 col1 col2
+#ccol $42A30A $F68E1F $13BFC1
 
+| 109X139
+:ganador
+	gui
+	$0 SDLcls
+	0 0 spodio sdlimage
+	
+	170 300 
+	msec 4 >> $3f and +
+	218 288 nrojug 3 << 'sf1 + @ sdlimages
+
+	$11
+	nrojug 3 << 'lcol + @
+	400 490 500 140 xywh64
+	nrojug 3 << 'ccol + @ 8 <<
+	fontt textbox 
+
+	900 300 
+	msec 4 >> $3f and +
+	218 288 nrojug 3 << 'sf1 + @ sdlimages
+
+	sdlx sdly scursor SDLimage
+
+	SDLredraw
+
+	SDLkey 
+	>esc< =? ( exit ) | terminar siempre
+	<f1> =? ( nrojug 1 + 3 mod 'nrojug ! )
+	drop 
+	;
+	
 |----------------------------------
 :respuestaOK
 	jnow avjug
-|	0 playsnd 
+	0 playsnd 
 	;
 
 :respuestaNO
-|	1 playsnd
+	1 playsnd
 	;
 	
 :respuesta	
@@ -230,6 +268,9 @@
 	cntjug resetjug
 	0 'jnow !
 	0 'maxjug !
+
+	musicrun -1 Mix_PlayMusic
+
 	( maxjug 10 <? drop
 		'jugando SDLshow
 	
@@ -237,9 +278,10 @@
 		1 'nropreg +! cpypreg
 		jnow 1 + cntjug mod 'jnow ! 
 	
-		1 'maxjug +! | ****
+		) drop 
 		
-		) drop ;
+	'ganador SDLshow	
+	;
 
 :jcolor | n -- color
 	cntjug >? ( drop $333333 ; ) drop $ffffff ;
@@ -256,9 +298,6 @@
 	0 80 1280 80 xywh64 
 	$ffffff fontt textbox
 	
-	[ 2 'cntjug ! 2 playsnd ; ] "2" 100 300 100 60 boton	
-	[ 3 'cntjug ! 2 playsnd ; ] "3" 100 380 100 60 boton	
-
 
 	[ jugar 2 playsnd ; ] "Jugar" 400 640 160 60 boton
 	[ exit 2 playsnd ; ] "Salir" 600 640 160 60 boton
@@ -310,13 +349,12 @@
 	|SDLfull
 	inicio
 	0 SDL_ShowCursor
-	
-|	'menuprincipal SDLshow 
 
-	|jugar
-	3 'cntjug !
-	cntjug resetjug
-	'jugando SDLshow
+	musicini -1 Mix_PlayMusic
+	
+	'menuprincipal SDLshow 
+|	jugar
+|0 'nrojug ! 'ganador SDLshow
 	
 	SDLquit ;	
 	
