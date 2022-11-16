@@ -225,9 +225,15 @@
 
 ##pad * 256
 
+:.char
+	$1000 and? ( drop ; )
+	16 >> 0? ( drop ; )
+	dup emit
+	swap c!+ ;
+	
 ::.input | --
 	'pad
-	( getch $D001C <>? swap c!+ ) drop
+	( getch $D001C <>? .char ) drop
 	0 swap c! ;
 
 ::.inputn | -- nro

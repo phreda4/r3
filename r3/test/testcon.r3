@@ -10,10 +10,13 @@
 	"%h" .println
 	loope
 	;
-	
+
+:loopc
+	( getch $1B1001 <>? "%h" .println ) drop ;	
 :
 .cls
 "test" .println
-loope
+|loope
 |.input
+loopc
 ;
