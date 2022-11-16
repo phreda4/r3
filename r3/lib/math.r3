@@ -243,7 +243,7 @@
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 
-::i2f | i -- f
+::i2fp | i -- f
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
@@ -252,4 +252,15 @@
 	swap $7fffff and or 
 	swap $80000000 and or 
 	;
+	
+::f2fp | f.p -- fp
+	dup 63 >> swap	| sign i
+	over + over xor | sign abs(i) 
+	dup clz 8 - 	| s i shift
+	swap over << 	| v s shift i
+	134 rot - 23 << | s i m | 16 - (fractional part)
+	swap $7fffff and or 
+	swap $80000000 and or 
+	;
+	
 

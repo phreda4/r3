@@ -57,7 +57,8 @@
 ::,h .h ,s ;
 ::,b .b ,s ;
 ::,f .f ,s ;
-::,ifp i2f , ;
+::,ifp i2fp , ;
+::,ffp f2fp , ;
 
 ::,cr 13 ,c ;
 ::,eol 0 ,c ;

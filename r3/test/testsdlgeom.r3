@@ -1,5 +1,5 @@
 | sdl2 test program
-| PHREDA 2021
+| PHREDA 2022
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3	
@@ -16,9 +16,9 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 
 :gira
 	'vert >a
-	400 300 msec 4 << 200 xy+polar swap i2f da!+ i2f da!+ 12 a+
-	400 300 msec 4 << 0.33 + 200 xy+polar swap i2f da!+ i2f da!+ 12 a+	
-	400 300 msec 4 << 0.66 + 200 xy+polar swap i2f da!+ i2f da!+ |12 a+
+	400 300 msec 4 << 200 xy+polar swap i2fp da!+ i2fp da!+ 12 a+
+	400 300 msec 4 << 0.33 + 200 xy+polar swap i2fp da!+ i2fp da!+ 12 a+	
+	400 300 msec 4 << 0.66 + 200 xy+polar swap i2fp da!+ i2fp da!+ |12 a+
 	;
 	
 :main

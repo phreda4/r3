@@ -63,10 +63,9 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
 	swap over << 	| v s shift i
-	150 rot - 23 << | s i m
+	134 rot - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or 
 	swap $80000000 and or 
-|	swap $ffff and or
 	;
 	
 :
