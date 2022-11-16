@@ -5,7 +5,6 @@
 ^r3/win/sdl2image.r3	
 ^r3/win/sdl2mixer.r3	
 ^r3/lib/sys.r3
-^r3/lib/gr.r3
 
 #texture
 	

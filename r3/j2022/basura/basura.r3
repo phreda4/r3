@@ -1,10 +1,11 @@
-| vial
+| vialbot 
 
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 ^r3/win/sdl2mixer.r3
 
 ^r3/lib/rand.r3
+^r3/lib/gui.r3
 
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
@@ -23,6 +24,13 @@
 #svida1
 #svida2
 #sinicio
+#sinicial
+#sganaste
+#sperdiste
+#sbtnj1
+#sbtnj2
+#sbtns1
+#sbtns2
 
 #fx 0 0
 
@@ -34,7 +42,7 @@
 #zp 0
 #vzp 0
 
-#puntos
+#puntos 0
 #vidas 5
 
 #dias "Lunes" "Martes" "Miercoles" "Jueves" "Viernes" "Sabado" "Domingo"
@@ -163,7 +171,7 @@
 	a@ + 80 max a! ;
 
 :ymove | d --
-	a@ + 420 max 990 min a! ;
+	a@ + 420 max 790 min a! ;
 
 :a@anim | -- nroanim ; A@!+
 	a@ dup dtime 32 << + a!+
@@ -237,24 +245,21 @@
 	
 |--------------------------------
 :randy | -- ; 420..990
-	570 randmax 420 + ;
+	370 randmax 420 + ;
 
 :reset
+	100 dup 300 - 'xmapa ! 'xp ! 
+	600 dup 200 - 'ymapa ! 'yp ! 
+	0 'zp ! 0 'vzp !
+	0 'puntos ! 5 'vidas !	
+
 	'fx p.clear
 	200 ( 1? 1 -
-		12000 randmax 500 +
+		12000 randmax 600 +
 		randy +ritem
 		) drop 
 	+jugador
 	time.start
-	
-	100 'xp !
-	600 'yp !
-	0 'zp !
-	0 'vzp !
-	
-	0 'puntos !
-	5 'vidas !
 	
 	1 
 	'dias
@@ -264,7 +269,6 @@
 		rot ) drop 
 	'diahoy !
 	$1 and 'mododia !
-	
 	;	
 		
 |---------------------
@@ -283,7 +287,8 @@
 
 :teclado
 	SDLkey 
-	>esc< =? ( exit )
+	<f1> =? ( exit )
+	<f2> =? ( 0 'vidas ! exit )
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )
 	<le> =? ( btnpad %10 or 'btnpad ! )
@@ -350,11 +355,44 @@
 	SDLredraw
 	teclado ;
 
+
+|---------------------------------------
+:perdiste
+	0 0 sperdiste SDLImage
+
+|	[ pantalla1 ; ] 'sbtnj1 200 300 btni
+|	[ exit ; ] 'sbtns1 400 300 btni
+	
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+
+:ganaste	
+	0 0 sganaste SDLImage
+
+|	[ pantalla1 ; ] 'sbtnj1 200 300 btni
+|	[ exit ; ] 'sbtns1 400 300 btni
+	
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
 :jugar
 	rerand
 	reset
 	
 	'jugando SDLshow
+
+	vidas 0? ( drop 
+		'perdiste SDLshow 
+		; ) drop
+	'ganaste SDLshow
 	;
 	
 |---------------------------------------
@@ -411,7 +449,7 @@ $"
 	
 	SDLRedraw 
 	SDLkey 
-	<F1> =? ( jugar ) 
+	<F1> =? ( jugar exit ) 
 	>esc< =? ( exit )
 	drop 
 	;
@@ -420,8 +458,36 @@ $"
 	'texto 'texto> !
 	'buffer 0 over c! 'buffer> !
 	time.start
-	0 'tt !
+	0 'tt ! 0 'waitnext !
 	'inicio SDLshow
+	;
+
+|---------------------------------------
+	
+:btni | 'vecor 'i x y -- 
+	181 51 guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+	
+:inicial
+	gui
+	0 0 sinicial SDLImage
+
+	[ pantalla1 ; ] 'sbtnj1 200 300 btni
+	[ exit ; ] 'sbtns1 400 300 btni
+	
+	SDLRedraw
+	
+	SDLkey 
+	<F1> =? ( pantalla1 ) 
+	>esc< =? ( exit )
+	drop 
+	;
+
+:principal
+	'inicial SDLshow
 	;
 	
 |---------------------------------------
@@ -440,13 +506,23 @@ $"
 	"r3/j2022/basura/img/vida1.png" loadimg 'svida2 !
 	"r3/j2022/basura/img/vida2.png" loadimg 'svida1 !
 
+	"r3/j2022/basura/img/inicial.png" loadimg 'sinicial !
 	"r3/j2022/basura/img/inicio.png" loadimg 'sinicio !
+	"r3/j2022/basura/img/ganaste.png" loadimg 'sganaste !
+	"r3/j2022/basura/img/perdiste.png" loadimg 'sperdiste !
+
+	"r3/j2022/basura/img/inicial.png" loadimg 'sinicial !
+
+	"r3/j2022/basura/img/btnj1.png" loadimg 'sbtnj1 ! 
+	"r3/j2022/basura/img/btnj2.png" loadimg 'sbtnj2 ! 
+	"r3/j2022/basura/img/btns1.png" loadimg 'sbtns1 ! 
+	"r3/j2022/basura/img/btns2.png" loadimg 'sbtns2 ! 
 	
 	SNDInit
 	"r3/j2022/basura/audio/Basuralu.mp3" Mix_LoadMUS 'musicplay !	
 	rerand
 	
-	pantalla1
+	principal
 	
 	SDLquit ;	
 	

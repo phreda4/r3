@@ -27,6 +27,7 @@
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
 #sys-SDL_QueryTexture
+#sys-SDL_CreateRGBSurface 
 #sys-SDL_LockSurface
 #sys-SDL_UnlockSurface
 #sys-SDL_FreeSurface
@@ -81,6 +82,7 @@
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
+::SDL_CreateRGBSurface sys-SDL_CreateRGBSurface sys8 ;
 ::SDL_LockSurface sys-SDL_LockSurface sys1 drop ;
 ::SDL_UnlockSurface sys-SDL_UnlockSurface sys1 drop ;
 ::SDL_FreeSurface sys-SDL_FreeSurface sys1 drop ;
@@ -119,18 +121,41 @@
 
 ##sw
 ##sh
-##pitch
-##sizebuffer
-##vframe
 
 ::SDLinit | "titulo" w h --
-	2dup * 'sizebuffer !
 	'sh ! 'sw !
 	$3231 SDL_init 
-	$1FFF0000 $1FFF0000 sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface dup 'SDL_screen !
-	24 + d@+ 'pitch !
-	4 + @ 'vframe ! 
+	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
+	SDL_GetWindowSurface 'SDL_screen !
+|	0 SDL_ShowCursor | disable cursor
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDL_windows SDL_RaiseWindow
+	;
+
+::SDLmini | "" w h --
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
+	SDL_GetWindowSurface 'SDL_screen !
+	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	;
+
+|int displays=SDL_GetNumVideoDisplays()-1;
+|	window=SDL_CreateWindow(title,
+|		SDL_WINDOWPOS_CENTERED_DISPLAY(displays),
+|		SDL_WINDOWPOS_CENTERED_DISPLAY(displays),XRES,YRES,
+|		SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN);
+|	screen = SDL_GetWindowSurface(window);
+|	XRES=screen->w;
+|	YRES=screen->h;
+
+::SDLinitScr | "titulo" display w h --
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$2fff0000 or dup 
+|	$1FFF0000 dup
+	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
+	SDL_GetWindowSurface 'SDL_screen !
 |	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
@@ -139,14 +164,14 @@
 ::SDLinitGL | "titulo" w h --
 	'sh ! 'sw !
 	$3231 SDL_init 
-	$1FFF0000 $1FFF0000 sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
-	SDL_GetWindowSurface dup 'SDL_screen !
-	24 + d@+ 'pitch !
-	4 + @ 'vframe ! 
+	$1FFF0000 dup
+	sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
+	SDL_GetWindowSurface 'SDL_screen !
 |	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
+	
 	
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
@@ -235,7 +260,6 @@
 #cc
 	
 ::SDLGetPixel | x y -- v
-
 	swap 'rec d!+ d!
 	SDLrenderer 'rec $16362004 'cc 1 SDL_RenderReadPixels 
 	cc $ffffff and ;
@@ -267,6 +291,7 @@
 	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
 	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
 	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
+	dup "SDL_CreateRGBSurface" getproc 'sys-SDL_CreateRGBSurface !
 	dup "SDL_LockSurface" getproc 'sys-SDL_LockSurface !
 	dup "SDL_UnlockSurface" getproc 'sys-SDL_UnlockSurface !
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
@@ -276,7 +301,6 @@
 	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
 	dup "SDL_SetTextureBlendMode" getproc 'sys-SDL_SetTextureBlendMode !
 	dup "SDL_ConvertSurfaceFormat" getproc 'sys-SDL_ConvertSurfaceFormat !
-	
 	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
 	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
 	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !

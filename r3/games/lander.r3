@@ -7,7 +7,6 @@
 ^r3/util/tilesheet.r3
 
 ^r3/lib/sys.r3
-^r3/lib/gr.r3
 ^r3/lib/rand.r3
 
 

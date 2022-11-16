@@ -91,6 +91,9 @@
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 
+::delete | "filename" --
+	DeleteFile drop ;
+	
 ::filexist | "file" -- 0=no
 	GetFileAttributes $ffffffff xor ;
 	
@@ -113,8 +116,8 @@
 ::fileijul | -- jul
 	'fileatrib 20 + @
 	86400000000 / | segundos>days
-	23058135 + | julian from 1601-01-01
-	10 /
+	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
+	10 /	
 	;	
 	
 ::fileinfo | "file" -- 0=not exist

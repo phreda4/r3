@@ -4,7 +4,6 @@
 ^r3/win/sdl2gfx.r3	
 ^r3/win/sdl2ttf.r3
 ^r3/lib/sys.r3
-^r3/lib/gr.r3
 
 #vx 0
 
