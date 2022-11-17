@@ -13,9 +13,14 @@
 #scursor
 #sfin
 #spodio
+#sinicio
+
 #sf1 #sf2 #sf3
 #tu1 #tu2 #tu3
+
 #sbtn1 #sbtn2
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
 
 #musicini
 #musicrun
@@ -46,6 +51,7 @@
 
 #tiempo
 #nropreg 0
+#cntpreg
 #pregunta * 1024
 
 #res1 * 1024
@@ -65,16 +71,16 @@
 #nrojug
 
 #posiciones [ 
-580 890
-570 700
-610 520
-640 340
-590 180
-370 120
-170 400
-210 560
-360 730
-430 920 ]
+610 850
+570 650
+620 500
+640 350
+600 180
+490 200
+300 350
+300 550
+430 700
+490 890 ]
 
 #xresm 800 #yresm 1047
 
@@ -92,7 +98,6 @@
 		da@+ da@+ 
 		pick2 3 << 'sf1 + @ sdlimage
 		1 + ) drop ;
-
 	
 :resetjug | n --
 	dup 'cntjug !
@@ -110,7 +115,6 @@
 	dup 'pjug + >a
 	'njug + @
 	dup maxjug max 'maxjug !
-	njug 'nrojug !
 	nposjug		
 	swap 32 randmax 16 - +
 	swap 32 randmax 16 - +
@@ -128,13 +132,11 @@
 	
 :reloj
 	msec dup mseca - 'tiempo +! 'mseca ! 
-	
-	tiempo 1000 /
-	"%d" sprint
-	36 36 $ff0000 fontt
-	textline | str x y color font --
-	;
 
+	$11
+	tiempo 1000 / "%d" sprint
+	36 36 66 60 xywh64 $ffffff fontt textbox 	
+	;
 
 |-------------------------------------------
 :rswap |
@@ -148,7 +150,9 @@
 	
 :cpypreg |
 	preguntas
-	nropreg dup 2 << + | * 5
+	|nropreg 
+	cntpreg randmax
+	dup 2 << + | * 5
 	( 1? 1 - swap >>cr trim swap ) drop
 	dup 'pregunta strcpyln
 	>>cr trim dup 'res1 strcpyln
@@ -160,19 +164,15 @@
 	inireloj
 |	3 playsnd
 	;
-
 	
 |-------------------------------------------
-
-:boton | 'vecor "text" -- size
-	2over 2over guibox
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLimagewh guibox
 	SDLb SDLx SDLy guiIn	
-	$ffffff  [  $00ff00 nip ; ] guiI
-	SDLColor
-	2over 2over SDLRect	
-	xywh64 
-	$11 rot rot $0 font textbox 
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
 	onCLick ;
+
 
 | 483,143
 :btnn | 'vec "text" -- 
@@ -202,13 +202,16 @@
 	[ 2 'resusr ! exit ; ] r3 25 495 btnn
 	[ 3 'resusr ! exit ; ] r4 25 590 btnn
 
+	[ exit 100 'maxjug ! ; ] 'sbtns1 230 15 btni
+	
 	reloj
-
+	tiempo 10000 >=? ( 4 'resusr ! exit ) drop | 10 seg para responder
+	
 	sdlx sdly scursor SDLimage
 	SDLredraw
 
 	SDLkey 
-	>esc< =? ( exit ) | terminar siempre
+	>esc< =? ( 4 'resusr ! exit ) | terminar siempre
 	drop 
 	;
 
@@ -239,13 +242,14 @@
 	msec 4 >> $3f and +
 	218 288 nrojug 3 << 'sf1 + @ sdlimages
 
+	[ 2 playsnd exit ; ] 'sbtns1 1024 78 btni
+	
 	sdlx sdly scursor SDLimage
 
 	SDLredraw
 
 	SDLkey 
 	>esc< =? ( exit ) | terminar siempre
-	<f1> =? ( nrojug 1 + 3 mod 'nrojug ! )
 	drop 
 	;
 	
@@ -260,6 +264,7 @@
 	;
 	
 :respuesta	
+	maxjug 99 >? ( drop ; ) drop | salio
 	resusr 3 << 'r1 + @ 'res1 =? ( drop respuestaOK ; ) drop
 	respuestaNO
 	;
@@ -268,39 +273,30 @@
 	cntjug resetjug
 	0 'jnow !
 	0 'maxjug !
-
 	musicrun -1 Mix_PlayMusic
 
 	( maxjug 10 <? drop
+		1 'nropreg +! 
+		cpypreg
+	
 		'jugando SDLshow
-	
+
 		respuesta	
-		1 'nropreg +! cpypreg
+		jnow 'nrojug !
 		jnow 1 + cntjug mod 'jnow ! 
-	
 		) drop 
 		
-	'ganador SDLshow	
+	maxjug 100 <? ( 'ganador SDLshow ) drop
+	musicini -1 Mix_PlayMusic
 	;
 
-:jcolor | n -- color
-	cntjug >? ( drop $333333 ; ) drop $ffffff ;
-	
+|------------------------------------
 :menuprincipal
 	gui
-	$0 SDLcls
-
-	$11 "Preguntas de San Cayetano"
-	0 10 1280 100 xywh64 
-	$ffffff fontt textbox
-
-	$11 cntjug "%d jugadores" sprint
-	0 80 1280 80 xywh64 
-	$ffffff fontt textbox
+	0 0 sinicio sdlimage
 	
-
-	[ jugar 2 playsnd ; ] "Jugar" 400 640 160 60 boton
-	[ exit 2 playsnd ; ] "Salir" 600 640 160 60 boton
+	[ 2 playsnd jugar ; ] 'sbtnj1 490 530 btni
+	[ 2 playsnd exit ; ] 'sbtns1 1024 78 btni
 	
 	sdlx sdly scursor SDLimage
 	
@@ -313,13 +309,14 @@
 	
 :inicio
 	ttf_init
-	"r3/j2022/quepaso/font/RobotoCondensed-Bold.ttf" 50 TTF_OpenFont 'fontt !	
-	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 26 TTF_OpenFont 'font !	
+	"r3/j2022/quepaso/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
+	"r3/j2022/quepaso/font/RobotoCondensed-Regular.ttf" 24 TTF_OpenFont 'font !	
 	
 	"r3/j2022/quepaso/img/cursor.png" loadimg 'scursor !	
 	"r3/j2022/quepaso/img/tablero.png" loadimg 'stablero !
 	"r3/j2022/quepaso/img/fin.png" loadimg 'sfin !
 	"r3/j2022/quepaso/img/podio.png" loadimg 'spodio !
+	"r3/j2022/quepaso/img/inicio.png" loadimg 'sinicio !
 	
 	"r3/j2022/quepaso/img/ficha1.png" loadimg 'sf1 !
 	"r3/j2022/quepaso/img/ficha2.png" loadimg 'sf2 !
@@ -331,17 +328,28 @@
 
 	"r3/j2022/quepaso/img/btn1.png" loadimg 'sbtn1 !
 	"r3/j2022/quepaso/img/btn2.png" loadimg 'sbtn2 !
+
+	"r3/j2022/quepaso/img/btnj1.png" loadimg 'sbtnj1 !
+	"r3/j2022/quepaso/img/btnj2.png" loadimg 'sbtnj2 !
+
+	"r3/j2022/quepaso/img/btns1.png" loadimg 'sbtns1 !
+	"r3/j2022/quepaso/img/btns2.png" loadimg 'sbtns2 !
 	
 	SNDInit
 	loadsndfile
 	
 	here dup 'preguntas !
 	"r3/j2022/quepaso/preguntas.txt" load 
-	0 swap c!+ 'here !
+	0 swap !+ 'here !
+
+	0 'cntpreg +!
+	preguntas
+	( dup c@ 1? drop
+		>>cr trim >>cr trim >>cr trim >>cr trim >>cr trim
+		1 'cntpreg +!
+		) 2drop
 
 	0 'nropreg !
-	cpypreg
-	
 	;
 	
 :main
@@ -351,10 +359,9 @@
 	0 SDL_ShowCursor
 
 	musicini -1 Mix_PlayMusic
-	
 	'menuprincipal SDLshow 
 |	jugar
-|0 'nrojug ! 'ganador SDLshow
+|	0 'nrojug ! 'ganador SDLshow
 	
 	SDLquit ;	
 	

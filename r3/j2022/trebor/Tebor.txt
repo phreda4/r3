@@ -1,0 +1,7 @@
+-Agregar animación de salto
+-Agregar secuencia de ataque a los jefes
+-El personaje tiene que correr un poco mas rapido
+-Agregar las vidas
+-Al saltar sobre un enemigo lo mata y este desparesca
+-Agregar que pueda "nadar"
+-Que se trabe la pantalla hasta que venzas el jefe (para despues)

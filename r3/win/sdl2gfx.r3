@@ -102,6 +102,9 @@
 	;
 
 |-------------------
+::SDLimagewh | img -- w h
+	0 0 'xm 'ym SDL_QueryTexture xm ym ;
+
 ::SDLImage | x y img --		
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	swap 'rec d!+ d!+ ym xm rot d!+ d!
