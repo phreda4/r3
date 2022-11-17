@@ -3,11 +3,20 @@
 
 ^r3/win/sdl2.r3
 
+#sdlink
+
 ::SDLColor | col --
+	dup 'sdlink !
 	SDLrenderer swap
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
 	$ff SDL_SetRenderDrawColor ;
 
+::SDLcls | color --
+	SDLColor SDLrenderer SDL_RenderClear ;
+	
+::SDLredraw | -- 
+	SDLrenderer SDL_RenderPresent ;
+	
 ::SDLPoint | x y --
 	SDLRenderer rot rot SDL_RenderDrawPoint ;
 	
@@ -15,7 +24,6 @@
 	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
 
 #rec [ 0 0 0 0 ] | aux rect
-#w 0 #h 0
 
 ::SDLFRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
@@ -25,29 +33,6 @@
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
 
-::SDLImages | x y w h img --
-	>r
-	swap 2swap swap 'rec d!+ d!+ d!+ d!
-	SDLrenderer r> 0 'rec SDL_RenderCopy ;
-	
-::SDLImage | x y img --		
-	dup 0 0 'w 'h SDL_QueryTexture >r
-	swap 'rec d!+ d!+ h w rot d!+ d!
-	SDLrenderer r> 0 'rec SDL_RenderCopy ;
-	
-::SDLImageb | box img --
-	SDLrenderer swap rot 0 swap SDL_RenderCopy ;
-	
-::SDLImagebb | box box img --
-	SDLrenderer swap 2swap SDL_RenderCopy ;	
-	
-::SDLcls | color --
-	SDLColor SDLrenderer SDL_RenderClear ;
-	
-::SDLredraw | -- 
-	SDLrenderer SDL_RenderPresent ;
-	
-	
 #ym #xm
 #dx #dy
 
@@ -99,66 +84,72 @@
 	4drop 
 	r> >a ;
 	
-|-------------------
-#dx1 0
-#dx2 0
+#vert [
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+]
 
-:tri | yf x1. x2. yi -- x1. x2.
-	( pick3 <? 
-		pick2 16 >> over pick3 16 >> over SDLLine
-		rot dx1 + rot dx2 + rot
-		1 + ) 
-	drop rot drop ;
-	
-:triL | yx1 yx2 yx3 --  ; L
-	dup 32 >> >r
-	32 << 32 >> rot
-	32 << 32 >> rot
-	32 << 32 >> 
-	pick2 pick2 pick2 min min
-	>r max max
-	>r >r | max min y
-	rot over SDLLine ;
+#index [ 0 1 2 2 3 0 ]
 
-:triV | yx1 yx2 yx3 --  ; V
-	pick2 32 >> over 32 >> -
-	0? ( drop triL ; ) 
-	pick3 32 << 32 >> pick2 32 << 32 >> - 16 <<
-	swap / 'dx1 !
-	32 << 32 >> 16 <<
-	pick2 32 >> swap	| yx1 yx2 yf x3. 
-	2swap 				| yf x3. yx1 yx2 
-	over 32 << 32 >> over 32 << 32 >> - 16 << | x1 - x2 (fp)
-	rot 32 >> pick2 32 >> - 
-	/  'dx2 !
-	dup	32 << 32 >> 16 <<	|  yf x3. yx2 x2. 
-	swap 32 >>
-	tri 2drop ;
-		
-:itriangle | yx1 yx2 yx3 --
-	over >? ( swap ) 
-	pick2 >? ( rot ) >r 
-	over >? ( swap ) r> | yxmax yxmed yxmin
-	over 32 >> over 32 >> -
-	0? ( drop triV ; )
-	pick2 32 << 32 >> pick2 32 << 32 >> - 16 <<
-	swap / 'dx1 !
-	pick2 32 << 32 >> over 32 << 32 >> - 16 <<
-	pick3 32 >> pick2 32 >> - /  'dx2 ! 
-	over 32 >> 	over 32 << 32 >> 16 << dup  | yf x1 x1 
-	pick3 32 >> | yf x1 x1 yi
-	tri
-	>r >r drop
-	over 32 >> over 32 >> -
-	0? ( 3drop r> r> 2drop ; )
-	pick2 32 << 32 >> pick2 32 << 32 >> - 16 <<
-	swap / 'dx1 !
-	swap 32 >> swap
-	r> r> rot 32 >>
-	tri 2drop ;	
-	
-:xy 32 << swap $ffffffff and or ;
-	
 ::SDLTriangle | x y x y x y --
-	xy >r xy >r xy r> r> itriangle ;
+	'vert >a
+	swap i2fp da!+ i2fp da!+ sdlink da!+ 8 a+
+	swap i2fp da!+ i2fp da!+ sdlink da!+ 8 a+
+	swap i2fp da!+ i2fp da!+ sdlink da!+ 
+	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
+	;
 
+|-------------------
+::SDLImage | x y img --		
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	swap 'rec d!+ d!+ ym xm rot d!+ d!
+	SDLrenderer r> 0 'rec SDL_RenderCopy ;
+	
+::SDLImages | x y w h img --
+	>r
+	swap 2swap swap 'rec d!+ d!+ d!+ d!
+	SDLrenderer r> 0 'rec SDL_RenderCopy ;
+	
+::SDLImageb | box img --
+	SDLrenderer swap rot 0 swap SDL_RenderCopy ;
+	
+::SDLImagebb | box box img --
+	SDLrenderer swap 2swap SDL_RenderCopy ;	
+	
+		
+:fillvertr | x y --
+	'vert >a
+	over xm dx *. xm dy *. + - i2fp da!+ 
+	dup ym dy *. ym dx *. + - i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 0.0 f2fp da!+
+	over xm dx *. xm dy *. + + i2fp da!+ 
+	dup ym dy *. ym dx *. + - i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 0.0 f2fp da!+
+	over xm dx *. xm dy *. + + i2fp da!+ 
+	dup ym dy *. ym dx *. + + i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 1.0 f2fp da!+
+	swap xm dx *. xm dy *. + - i2fp da!+ 
+	ym dy *. ym dx *. + + i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 1.0 f2fp da!+
+	;
+	
+::SDLSpriteR | x y ang img --
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	xm 1 >> 'xm ! ym 1 >> 'ym !
+	sincos 'dx ! 'dy !
+	fillvertr
+	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
+	;
+
+:fillvertz | x y --
+	'vert >a
+	over xm - i2fp da!+ dup ym - i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 0.0 f2fp da!+
+	over xm + i2fp da!+ dup ym - i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 0.0 f2fp da!+
+	over xm + i2fp da!+ dup ym + i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 1.0 f2fp da!+
+	swap xm - i2fp da!+ ym + i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 1.0 f2fp da!+
+	;
+
+::SDLspriteZ | x y zoom img --
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
+	fillvertz
+	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
+	;

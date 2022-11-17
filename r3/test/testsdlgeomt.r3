@@ -1,4 +1,4 @@
-| sdl2 render texture triangle
+| sdl2 rotate render texture triangle
 | PHREDA 2022
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gfx.r3
