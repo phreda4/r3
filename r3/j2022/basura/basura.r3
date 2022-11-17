@@ -108,7 +108,7 @@
 18 $11
 20 $2
 24 $1
-36 $0
+36 $1
 34 $10	| tacho verde
 35 $0	| tacho gris
 )
@@ -433,6 +433,15 @@ $"
 	tt 50 + 'waitnext !
 	;
 	
+:>>adv	
+	texto> c@
+	0? ( drop jugar exit ; )
+	$2a =? ( drop 'buffer 'buffer> ! tt 3000 + 'waitnext ! 1 'texto> +! ; ) |*
+	$24 =? ( drop tt 3000 + 'waitnext ! 1 'texto> +! ; ) |$
+	buffer> c!+ 0 over c! 'buffer> !
+	1 'texto> +! >>adv
+	;
+	
 :inicio
 	0 0 sinicio SDLImage
 
@@ -450,6 +459,7 @@ $"
 	SDLRedraw 
 	SDLkey 
 	<F1> =? ( jugar exit ) 
+	<ret> =? ( >>adv )
 	>esc< =? ( exit )
 	drop 
 	;

@@ -15,6 +15,8 @@
 
 #sprj
 #sinicio
+#sganaste
+#sperdiste
 
 #fx 0 0
 #ene 0 0
@@ -344,6 +346,17 @@
 	mapajuego 'vectortile 
 	tiledrawvs ;
 	
+|---- vidas	
+:nvidas | n -- img
+	vidas <? ( drop 18 ; ) drop 19 ;
+	
+| 676 107,56,51
+:impvidas
+	20
+	0 ( 3 <? swap
+		over nvidas sprj 
+		pick2 10 tsdraw
+		40 + swap 1 + ) 2drop ;
 	
 :jugando
 	$0 SDLcls
@@ -356,13 +369,12 @@
 	'ene p.draw
 	player
 	'fx p.draw
-		
-	10 10 bat
-	vidas "vidas:%d" sprint bprint
+
+	impvidas		
+	|10 10 bat vidas "vidas:%d" sprint bprint
 	
 	600 10 bat
 	puntos "%d " sprint bprint
-	testf "%d" sprint bprint
 	SDLredraw
 	
 	teclado ;
@@ -374,12 +386,38 @@
 	'fx p.clear
 	'ene  p.clear
 	0 'xvp ! 0 'yvp	! | viewport
-
 	30.0 'xp ! 446.0 'yp !	| pos player
 	0 'vxp ! 0 'vyp !		| vel player
-	
 	8 'np ! 1 'face ! 'pstay 'ep !
  	;
+	
+:gano
+	0 0 sganaste SDLImage
+
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
+:perdio
+	0 0 sperdiste SDLImage
+
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+
+:jugar
+	reset 
+	'jugando sdlshow
+
+	vidas 0? ( drop perdio ; ) drop
+	gano
+	;
 
 |------------
 :tbtn | 'vecor "text" -- 
@@ -395,11 +433,10 @@
 
 :menu
 	gui
-
 |	$0 SDLcls
 	0 0 sinicio SDLImage
 
-	[ reset 'jugando SDLshow ; ] "Jugar" 200 400 100 30 tbtn
+	'jugar "Jugar" 200 400 100 30 tbtn
 	'exit "Salir" 450 400 100 30 tbtn
 	SDLredraw
 	
@@ -415,16 +452,16 @@
 	bfont2 
 	|SDLfull
 	
-	
-	
 	"r3\j2022\manwithcap\nivel.map" loadtilemap 'mapajuego !
-	32 32 "r3\j2022\manwithcap\sprites.png" loadts 'sprj !
-	"r3\j2022\manwithcap\inicio.png" loadimg 'sinicio !		
+	32 32 "r3\j2022\manwithcap\img\sprites.png" loadts 'sprj !
+	"r3\j2022\manwithcap\img\inicio.png" loadimg 'sinicio !		
+	"r3\j2022\manwithcap\img\ganaste.png" loadimg 'sganaste !		
+	"r3\j2022\manwithcap\img\perdiste.png" loadimg 'sperdiste !		
 	
 	time.start
 	
 |	'menu SDLshow
-	reset 'jugando sdlshow
+	jugar
 	
 	SDLquit ;	
 	
