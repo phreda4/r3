@@ -11,8 +11,6 @@
 
 #xv #yv		| velocidad
 
-:int. 16 >> ;
-
 :animacion	| cnt nro -- 
 	16 << 
 	nroguy =? ( 2drop ; )

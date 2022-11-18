@@ -2,8 +2,6 @@
 ^r3/win/sdl2gfx.r3
 ^r3/util/arr16.r3
 
-:int. 16 >> ;
-	
 #px	300.0 #py 580.0
 #pvx 0.0
 

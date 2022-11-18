@@ -5,8 +5,6 @@
 #xp 100.0 #yp 100.0		| posicion
 #xv #yv		| velocidad
 
-:int. 16 >> ;
-  
 :teclado
 	SDLkey
 	>esc< =? ( exit )

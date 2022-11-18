@@ -24,7 +24,8 @@
 	
 :hitwall | limit --
 	b> 8 - !
-	b> 8 + dup @ neg swap ! ;
+	b> 8 + dup @ -0.8 *. | lose impulse
+	swap ! ;
 	
 :bub | adr -- adr/adr 0 delete
  	>b
@@ -51,7 +52,7 @@
 	over 8 + @ over 8 + @ - dup *. | (x1-x2)^2
 	pick2 16 + @ pick2 16 + @ - dup *. +
 	4.0 >=? ( drop ; ) sqrt. 2.0 swap -
-	1 >> >a
+	0.1 *. >a | lose impulse
 	over 8 + @ over 8 + @ -
 	pick2 16 + @ pick2 16 + @ -
 	atan2 sincos 				| p1 p2 si co

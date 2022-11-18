@@ -5,10 +5,9 @@
 #xp 400.0 #yp 300.0		| posicion
 #xv #yv		| velocidad
 
+#ang #vang 0.01
 #zoom 1.0
 
-:int. 16 >> ;
-  
 :teclado
 	SDLkey
 	>esc< =? ( exit )
@@ -19,16 +18,18 @@
 	<f1> =? ( -0.01 'zoom +! )
 	<f2> =? ( 0.01 'zoom +! )
 	drop ;
-
 	
 :demo
 	0 SDLcls
 	
-	xp int. yp int. zoom sprPelota SDLspriteZ
+	xp int. yp int. 
+	ang zoom 
+	sprPelota SDLspriteRZ
 	SDLredraw
 
 	xv 'xp +!
 	yv 'yp +!
+	vang 'ang +!
 	
 	xp 0 <? ( xv neg 'xv ! ) 800.0 >? ( xv neg 'xv ! ) drop
 	yp 0 <? ( yv neg 'yv ! ) 600.0 >? ( yv neg 'yv ! ) drop
@@ -39,7 +40,7 @@
 
 :main
 	"r3sdl" 800 600 SDLinit
-	"media/img/ball.png" loadimg 'sprpelota !
+	"media/img/lolomario.png" loadimg 'sprpelota !
 	'demo SDLshow
 	SDLquit ;	
 	
