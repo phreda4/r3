@@ -27,10 +27,8 @@
 #sinicial
 #sganaste
 #sperdiste
-#sbtnj1
-#sbtnj2
-#sbtns1
-#sbtns2
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
 
 #fx 0 0
 
@@ -171,7 +169,7 @@
 	a@ + 80 max a! ;
 
 :ymove | d --
-	a@ + 420 max 790 min a! ;
+	a@ + 410 max 770 min a! ;
 
 :a@anim | -- nroanim ; A@!+
 	a@ dup dtime 32 << + a!+
@@ -189,7 +187,7 @@
 	8 a+
 	a@+ dup 300 - 'xmapa !
 	xmapa - dup 'xp !
-	a@+ dup 200 - 'ymapa !
+	a@+ |dup 200 - 'ymapa !
 	ymapa - dup 'yp !
 	zp int. -
 	tsdraw
@@ -234,7 +232,7 @@
 	0 a!+ 
 	xp a!+ yp a!+
 	xp 300 - 'xmapa ! 
-	yp 200 - 'ymapa !
+	|yp 200 - 'ymapa !
 	;
 	
 
@@ -245,11 +243,13 @@
 	
 |--------------------------------
 :randy | -- ; 420..990
-	370 randmax 420 + ;
+	360 randmax 410 + ;
 
 :reset
 	100 dup 300 - 'xmapa ! 'xp ! 
-	600 dup 200 - 'ymapa ! 'yp ! 
+	600 |dup 200 - 'ymapa ! 
+	'yp ! 
+	300 'ymapa !
 	0 'zp ! 0 'vzp !
 	0 'puntos ! 5 'vidas !	
 
@@ -360,9 +360,7 @@
 :perdiste
 	0 0 sperdiste SDLImage
 
-|	[ pantalla1 ; ] 'sbtnj1 200 300 btni
-|	[ exit ; ] 'sbtns1 400 300 btni
-	
+
 	SDLRedraw
 	
 	SDLkey 
@@ -373,8 +371,6 @@
 :ganaste	
 	0 0 sganaste SDLImage
 
-|	[ pantalla1 ; ] 'sbtnj1 200 300 btni
-|	[ exit ; ] 'sbtns1 400 300 btni
 	
 	SDLRedraw
 	
@@ -475,7 +471,7 @@ $"
 |---------------------------------------
 	
 :btni | 'vecor 'i x y -- 
-	181 51 guibox
+	pick2 @ SDLImagewh guibox
 	SDLb SDLx SDLy guiIn	
 	[ 8 + ; ] guiI 
 	@ xr1 yr1 rot SDLImage

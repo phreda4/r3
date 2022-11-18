@@ -17,6 +17,9 @@
 #sinicio
 #sganaste
 #sperdiste
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
+
 
 #fx 0 0
 #ene 0 0
@@ -420,24 +423,20 @@
 	;
 
 |------------
-:tbtn | 'vecor "text" -- 
-	2over 2over guibox
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
 	SDLb SDLx SDLy guiIn	
-	$666666  [ $006600 nip ; ] guiI
-	SDLColor
-	2over 2over SDLFRect	
-
-	$0 sdlcolor
-	2drop bat bprint
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
 	onCLick ;
-
+	
 :menu
 	gui
 |	$0 SDLcls
 	0 0 sinicio SDLImage
 
-	'jugar "Jugar" 200 400 100 30 tbtn
-	'exit "Salir" 450 400 100 30 tbtn
+	'jugar 'sbtnj1 200 400 btni
+	'exit 'sbtns1 400 400 btni
 	SDLredraw
 	
 	SDLkey
@@ -457,11 +456,16 @@
 	"r3\j2022\manwithcap\img\inicio.png" loadimg 'sinicio !		
 	"r3\j2022\manwithcap\img\ganaste.png" loadimg 'sganaste !		
 	"r3\j2022\manwithcap\img\perdiste.png" loadimg 'sperdiste !		
+
+	"r3\j2022\manwithcap\img\btnj1.png" loadimg 'sbtnj1 !		
+	"r3\j2022\manwithcap\img\btnj2.png" loadimg 'sbtnj2 !		
+	"r3\j2022\manwithcap\img\btns1.png" loadimg 'sbtns1 !		
+	"r3\j2022\manwithcap\img\btns2.png" loadimg 'sbtns2 !		
 	
 	time.start
 	
-|	'menu SDLshow
-	jugar
+	'menu SDLshow
+|	jugar
 	
 	SDLquit ;	
 	
