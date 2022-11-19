@@ -30,6 +30,7 @@
 #sbtnj1 #sbtnj2
 #sbtns1 #sbtns2
 
+#items 0 0
 #fx 0 0
 
 #xmapa 0 
@@ -59,7 +60,7 @@
 
 	
 :+obj | 'from 'vec --
-	'fx p!+ >a >b
+	'items p!+ >a >b
 	0 a!+	| estado
 	db@+ a!+	| anima
 	db@+ db@+ randmax + a!+
@@ -85,11 +86,11 @@
 	
 :basuraok
 	10 'puntos +!
-
 	;
 	
 :basuraerr
-	-10 'puntos +!
+|	-10 'puntos +!
+	vidamenos
 	;
 	
 :tocobasura	
@@ -124,13 +125,17 @@
 	tsdraw ;
 	
 :+item | x y c i --
-	'item 'fx p!+ >a 0 a!+ a!+ a!+ swap a!+ a! ;
+	'item 'items p!+ >a 
+	rand a!+ a!+ a!+ swap a!+ a! ;
 
 :+ritem | x y --
 	9 randmax 1 << 'tipoitems + 
 	c@+ swap c@ +item ;
 	
 
+#error 0
+#errornow 
+:descompone 1 'error ! ;
 |--------------------------------
 :gato | a --
 	>a a@ dup 0.1 + a!+ 
@@ -139,13 +144,14 @@
 	a@+ 
 	dup 3 + sw >? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - 
-	
-	distplayer 32 <? ( drop 4drop 0 vidamenos ; ) drop
+	distplayer 48 <? ( |drop 4drop 0 vidamenos ; 
+				descompone
+				) drop
 	tsdraw
 	;
 	
 :+gato | x y --
-	'gato 'fx p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
+	'gato 'items p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
 
 |--------------------------------
 :perro | a --
@@ -155,12 +161,15 @@
 	a@+ 
 	dup 5 - -128 <? ( 4drop 0 ; ) a> 8 - !
 	a@+ ymapa - 
-	distplayer 32 <? ( drop 4drop 0 vidamenos ; ) drop
+	distplayer 48 <? ( 
+|		drop 4drop 0 vidamenos ; 
+		descompone
+		) drop
 	tsdraw
 	;
 	
 :+perro | x y --
-	'perro 'fx p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
+	'perro 'items p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! ;
 	
 |--------------------------------
 #btnpad
@@ -172,6 +181,7 @@
 	a@ + 410 max 770 min a! ;
 
 :a@anim | -- nroanim ; A@!+
+	errornow 1? ( drop rand 4 >> $1 and 4 + 8 a+ ; ) drop
 	a@ dup dtime 32 << + a!+
 	dup $ffff and 
 	over 16 >> $ffff and 
@@ -179,7 +189,7 @@
 	;
 	
 :a!anim | nuevoanim -- ; a:
-	a@ $ffffffff not and or a! ;
+	a@ $ffffffff not and or	a! ;
 
 :jug	
 	>a
@@ -192,10 +202,12 @@
 	zp int. -
 	tsdraw
 	
-	btnpad
-	-8 a+ %1000 and? ( -3 ymove ) %100 and? ( 3 ymove  )
-	-8 a+ %10 and? ( -1 xmove ) %1 and? ( 1 xmove )
-	drop
+	errornow 0? ( 
+		btnpad
+		-8 a+ %1000 and? ( -3 ymove ) %100 and? ( 3 ymove  )
+		-8 a+ %10 and? ( -1 xmove ) %1 and? ( 1 xmove )
+		drop
+		) drop
 	
 	a@ 2 + a!
 	
@@ -225,7 +237,7 @@
 	
 |=======================	
 :+jugador
-	'jug 'fx p!+ >a
+	'jug 'items p!+ >a
 	$40000 a!+ | anim
 	sprplayer a!+ | sprite
 	
@@ -233,12 +245,6 @@
 	xp a!+ yp a!+
 	xp 300 - 'xmapa ! 
 	|yp 200 - 'ymapa !
-	;
-	
-
-:debug	
-	.cls "list:" .println
-	[ dup 8 + >a a@+ a@+ a@+ "%d %d %d" .println ; ] 'fx p.mapv 
 	;
 	
 |--------------------------------
@@ -253,7 +259,7 @@
 	0 'zp ! 0 'vzp !
 	0 'puntos ! 5 'vidas !	
 
-	'fx p.clear
+	'items p.clear
 	200 ( 1? 1 -
 		12000 randmax 600 +
 		randy +ritem
@@ -309,6 +315,7 @@
 	-128 randy +gato
 	;
 	
+
 :ciudad
 	5 4
 	xmapa 8 >> ymapa 8 >>
@@ -316,9 +323,11 @@
 	ymapa $ff and neg
 	256 dup mapajuego tiledraws
 
-	'fx p.drawo
+	0 'error !
+	'items p.drawo
+	error 'errornow !
 	
-	5 'fx p.sort	
+	5 'items p.sort	
 	;
 
 |---------------------------------------- vidas
@@ -343,14 +352,13 @@
 
 	impvidas	
 	
-	10 16 sbtniempo sdlImage
-
+	330 16 sbtniempo sdlImage
 	$ffffff font puntos "%d" sprint
-	60 16 ttfprint | color font "text" x y -- 
+	380 16 ttfprint | color font "text" x y -- 
 
-	500 534 sbtndia sdlImage
+	10 10 sbtndia sdlImage
 	$ffffff font diahoy
-	570 550 ttfprint | color font "text" x y -- 
+	80 14 ttfprint | color font "text" x y -- 
 	
 	SDLredraw
 	teclado ;
@@ -359,7 +367,6 @@
 |---------------------------------------
 :perdiste
 	0 0 sperdiste SDLImage
-
 
 	SDLRedraw
 	
@@ -371,7 +378,6 @@
 :ganaste	
 	0 0 sganaste SDLImage
 
-	
 	SDLRedraw
 	
 	SDLkey 
@@ -422,7 +428,7 @@ $"
 	
 	texto> c@
 	0? ( drop jugar exit ; )
-	$2a =? ( drop 'buffer 'buffer> ! tt 3000 + 'waitnext ! 1 'texto> +! ; ) |*
+	$2a =? ( drop 'buffer 'buffer> ! tt 3000 + 'waitnext ! 2 'texto> +! ; ) |*
 	$24 =? ( drop tt 3000 + 'waitnext ! 1 'texto> +! ; ) |$
 	buffer> c!+ 0 over c! 'buffer> !
 	1 'texto> +! 
@@ -498,6 +504,7 @@ $"
 	
 |---------------------------------------
 :main
+	500 'items p.ini
 	500 'fx p.ini
 	"r3sdl" 800 600 SDLinit
 	|SDLfull

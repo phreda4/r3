@@ -337,6 +337,18 @@
 	sbuffer SDL_UnlockTexture
 	340 160 sbuffer SDLImage 	
 	;
+
+:correcto
+	$11 "Correcto !!!"
+	330 160 530 310 xywh64 
+	$ffffff fontt textbox | $vh str box color font	
+	;
+
+:nono
+	$11 "No, No !!"
+	330 160 530 310 xywh64 
+	$ffffff fontt textbox | $vh str box color font	
+	;
 	
 :jini
 	'obj p.clear
@@ -363,7 +375,6 @@
 	;
 
 #cntmax
-
 
 :fill0 ( 1? 1 - randpos 40 0 $ff0000 +obj ) drop ; 
 :fill1 ( 1? 1 - randpos 40 3 $ffff00 +obj ) drop ;
@@ -557,6 +568,7 @@
 :inicio
 	ttf_init
 	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
+	
 	"r3/j2022/elcua/img/cursor.png" loadimg 'scursor !	
 	"r3/j2022/elcua/img/inicio.png" loadimg 'sinicio !	
 	

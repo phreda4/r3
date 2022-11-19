@@ -158,7 +158,6 @@
 |	$1FFF0000 dup
 	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
 	SDL_GetWindowSurface 'SDL_screen !
-|	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
@@ -169,7 +168,6 @@
 	$1FFF0000 dup
 	sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
 	SDL_GetWindowSurface 'SDL_screen !
-|	0 SDL_ShowCursor | disable cursor
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
@@ -218,21 +216,15 @@
 	0 'SDLkey !
 	0 'SDLchar !
 	10 SDL_delay
-	( 'SDLevent SDL_PollEvent 1? drop
+	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
-			|#SDL_KEYDOWN	$300     | Key pressed		
-		$300 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! )
-			|#SDL_KEYUP		$301     | Key released		
-		$301 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! )
-			|#SDL_TEXTINPUT	$303 | Keyboard text input		
-		$303 =? ( 'SDLevent 12 + c@ 'SDLchar ! )
-			|#SDL_MOUSEMOTION	$400     | Mouse moved		
-		$400 =? ( 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! )
-			|#SDL_MOUSEBUTTONDOWN $401    | Mouse button pressed		
-		$401 =? ( 'SDLevent 16 + c@ SDLb or 'SDLb ! )
-			|#SDL_MOUSEBUTTONUP	$402     | Mouse button released		
-		$402 =? ( 'SDLevent 16 + c@ not SDLb and 'SDLb ! )
-			|#SDL_MOUSEWHEEL	$403     | Mouse wheel motion		
+		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
+		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
+		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
+		$400 =? ( drop 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
+		$401 =? ( drop 'SDLevent 16 + c@ SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 Mouse but pressed
+		$402 =? ( drop 'SDLevent 16 + c@ not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 Mouse but released
+				| #SDL_MOUSEWHEEL $403 Mouse wheel motion		
 		drop
 		) drop ;			
 		

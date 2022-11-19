@@ -165,6 +165,9 @@
 |	3 playsnd
 	;
 	
+:cambioturno
+	;
+	
 |-------------------------------------------
 :btni | 'vecor 'i x y -- 
 	pick2 @ SDLimagewh guibox

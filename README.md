@@ -19,7 +19,7 @@ A WORD is defined as a sequence of letters separated by spaces, there are three 
 
 Each word can be a number or is searched in the DICTIONARY.
 
-If it is a valid number, in decimal, binary (%), hexa ($) or fixed point (0.1) its value is pushed to DATA STACK.
+If it is a valid number, in decimal `33`, binary `%101`, hexadecimal `$7f` or fixed point `0.1` its value is pushed to DATA STACK.
 
 Like all FORTH, the DATA STACK is the memory structure used to perform intermediate calculations and pass parameters between words.
 
@@ -27,9 +27,19 @@ If the word is NOT a valid number, then it is searched in the DICTIONARY, if it 
 
 The language has a BASIC DICTIONARY that is already defined, from which new WORDS are defined that will be used to build the program.
 
+The start of execution is marked with the word colon ` : ` alone, not as a prefix.
+
+The code is in a text file, you can include code files (word definitions) with the prefix caret `^` indicating the file name below.
+
+The included code will only add to the caller's dictionary words that are marked as exported ( prefixes `::` or `##` ).
+
+If the included code contains the start definition "colon" ` : `, it will be executed before starting the program, to initialize structures or states.
+
 ## BASE word list:
 
 We use `|` to indicate comment until the end of the line (the first exception to word separation).
+
+We use `^` to indicate include a library, the name end in the end of the line too.
 
 Each word can take and/or leave values of the DATA STACK, this is expressed with a state diagram of the stack before -- and after the word.
 
@@ -54,17 +64,30 @@ EX	| Run a word through your address
 ```
 
 ## Conditional, together with blocks make the control structures
+
+There are three types of comparers: 
+The simple ones, compare but do not affect stack. ` a -- a '
 ```
 0? 1?	| Zero and non-zero conditionals
 +? -?	| Conditional positive and negative
+```
+The doubles, compare two numbers in stack and consume one, ` a b -- a '
+```
 <? >?	| Comparison conditions
 =? >=? 	| Comparison conditions
 <=? <>?	| Comparison conditions
-AND? NAND?	| Logical conditioners AND and NOT AND
+AND? 	| Logical conditioners AND 
+NAND?	| Logical conditioners NOT AND
+```
+
+And the interval comparator that consumes two numbers, ` a b c -- a '
+```
 BT?	| Conditional between
 ```
 
 ## Words to modify the DATA STACK
+
+This words modify the data stack, copy or eliminate values in the stack.
 ```
 DUP	| a -- a a
 DROP	| a --
