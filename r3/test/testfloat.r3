@@ -82,9 +82,32 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 0.25 dup dup x2f "3e800000 %h %f %h " .println
 0.6554 dup dup x2f "3f27c84b %h %f %h " .println
 
+-2.4 dup "%f %h" .println
+"-2.4" getfenro dup "%f %h" .println
 
-0 400
-( $800000 nand? 1 << swap 1 + swap ) 
-"%h %d" .println
+-2.8 dup "%f %h" .println
+"-2.8" getfenro dup "%f %h" .println
+cr
+
+-2.75 0.1 + dup "-2.65 %f %h" .print
+"-2.65" getfenro dup " %f %h" .println
+
+0 2.75 - dup "-2.75 %f %h" .print
+"-2.75" getfenro dup " %f %h" .println
+
+2.75 dup "2.75 %f %h" .print
+"2.75" getfenro dup " %f %h" .println
+
+0.2 dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+0.2 - dup dup "%f %h" .println
+
+drop
+
 waitesc
 ;

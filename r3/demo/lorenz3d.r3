@@ -110,13 +110,11 @@
 #xm #ym
 #rx #ry
 
-:xypen SDLx SDLy ;
-
 :dnlook
-	xypen 'ym ! 'xm ! ;
+	SDLx SDLy 'ym ! 'xm ! ;
 
 :movelook
-	xypen
+	SDLx SDLy
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 

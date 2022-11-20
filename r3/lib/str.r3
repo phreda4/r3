@@ -163,8 +163,7 @@
 	1 + ;
 
 ::.f | fix -- str
- 	mbuffi over
-	$ffff and 10000 16 *>> 10000 +
+ 	mbuffi over	abs $ffff and 10000 16 *>> 10000 +
 	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
 	1 + $2e over c! 1 -
 	over abs 16 >>
@@ -172,8 +171,7 @@
 	swap sign ;
 
 ::.f2 | fix -- str
- 	mbuffi over
-	$ffff and 100 16 *>> 100 +
+ 	mbuffi over	abs $ffff and 100 16 *>> 100 +
 	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
 	1 + $2e over c! 1 -
 	over abs 16 >>
@@ -181,8 +179,7 @@
 	swap sign ;
 
 ::.f1 | fix -- str
- 	mbuffi over
-	$ffff and 10 16 *>> 10 +
+ 	mbuffi over abs $ffff and 10 16 *>> 10 +
 	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
 	1 + $2e over c! 1 -
 	over abs 16 >>

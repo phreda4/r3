@@ -10,7 +10,7 @@
 0 1.0 0 0
 0 0 1.0 0
 0 0 0 1.0
-#mats * 1280 | 20 matrices
+#mats * 2560 | 20 matrices
 #mat> 'mats
 
 ::matini
@@ -58,8 +58,8 @@
 
 ::mscalei | x y z --
 	mat> >a
-	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 4 a+
-	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 4 a+
+	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
+	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	rot a@ *. a!+ swap a@ *. a!+ a@ *. a! ;
 
 |-----------------------------
@@ -117,13 +117,13 @@
 	dup sin swap cos
 	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
 	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
 	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 12 a+
+	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
 	a@ a> 16 + @ | s c a c
 	pick2 pick2 *. pick4 pick2 *. + a!+
 	rot *. >r swap neg *. r> + a> 8 + ! ;
@@ -274,11 +274,9 @@
 	rot pick2 9 <</ ox + ;	| z y' x'
 
 ::project3d | x y z -- u v
-	transform
-	0? ( 3drop ox oy ; )
-	>r
-	yf r@ */ oy + swap
-	xf r> */ ox + swap ;
+	transform 0? ( 3drop ox oy ; ) | x y z
+	rot xf pick2 */ ox + | y z x'
+	rot rot yf swap */ oy + ;
 
 ::project3dz | x y z -- z x y
 	transform
