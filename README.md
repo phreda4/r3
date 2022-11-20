@@ -41,14 +41,14 @@ We use `|` to indicate comment until the end of the line (the first exception to
 
 We use `^` to indicate include a library, the name end in the end of the line too.
 
-Each word can take and/or leave values of the DATA STACK, this is expressed with a state diagram of the stack before -- and after the word.
+Each word can take and/or leave values of the DATA STACK, this is expressed with a state diagram of the stack before ` -- ` and after the word.
 
 for example
 
 ```
 + | a b -- c
 ```
-the word + takes the two elements from the top of the DATA STACK, consumes them and leaves the result.
+the word `+` takes the two elements from the top of the DATA STACK, consumes them and leaves the result.
 In addition to a modification in the stack, there may also be a lateral action, for example:
 
 ```
@@ -66,12 +66,12 @@ EX	| Run a word through your address
 ## Conditional, together with blocks make the control structures
 
 There are three types of comparers: 
-The simple ones, compare but do not affect stack. ` a -- a '
+The simple ones, compare but do not affect stack. ` a -- a `
 ```
 0? 1?	| Zero and non-zero conditionals
 +? -?	| Conditional positive and negative
 ```
-The doubles, compare two numbers in stack and consume one, ` a b -- a '
+The doubles, compare two numbers in stack and consume one, ` a b -- a `
 ```
 <? >?	| Comparison conditions
 =? >=? 	| Comparison conditions
@@ -80,7 +80,7 @@ AND? 	| Logical conditioners AND
 NAND?	| Logical conditioners NOT AND
 ```
 
-And the interval comparator that consumes two numbers, ` a b c -- a '
+And the interval comparator that consumes two numbers, ` a b c -- a `
 ```
 BT?	| Conditional between
 ```
