@@ -1,5 +1,0 @@
-
-Al chocar el bloque rojo el jetpack directamente pierde y salta la pantalla de perdiste
-
-si se puede que el mapa se repita una vez, y al pasar la ultima columna salte la pantalla de ganaste
-
