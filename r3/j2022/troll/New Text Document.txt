@@ -1,0 +1,4 @@
+-Animación de salto, de puñetazo y de patada.
+-En donde el mapa parece continuar seguirá con otro nivel específico.
+-Enemigos ubicados en (39;12) (7;22) (8;45) (11;49) (7;49) (34;54) (42;52) (26;49) (36;54) (6;68) (10;69) (68;45) (38;72) (39;69) (63;5) (56;7) (68;23).
+-
