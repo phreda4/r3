@@ -246,14 +246,14 @@
 |	estela	
 	8 wall? 1? ( drop ; ) drop
 	22 panim + 'np !
-	-2.0 'xp +!
+	-2.5 'xp +!
 	;
 	
 :prunr
 |	estela	
 	48 wall? 1? ( drop ; ) drop
 	0 panim + 'np !
-	2.0 'xp +!
+	2.5 'xp +!
 	;
 
 	

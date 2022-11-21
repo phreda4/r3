@@ -153,7 +153,7 @@
 	
 :ymove
 	dup 'yp +!
-	wall? 0? ( drop animv ; )
+	wall? 0? ( drop animh ; )
 	drop neg 'yp +! ; 
 	
 :player	
@@ -163,10 +163,10 @@
 	32 32 tsdraws
 
 	btnpad
-	%1000 and? ( -1.0 ymove  )
-	%100 and? ( 1.0 ymove  )
-	%10 and? ( -1.0 xmove )
-	%1 and? ( 1.0 xmove )
+	%1000 and? ( -2.0 ymove  )
+	%100 and? ( 2.0 ymove  )
+	%10 and? ( -2.0 xmove )
+	%1 and? ( 2.0 xmove )
 	drop
 
 	viewport
@@ -229,7 +229,7 @@
 	bfont1 
 	|SDLfull
 	
-	8 8 "r3\j2022\troll\troll-p.png" loadts 'sprj !
+	8 8 "r3\j2022\troll\sprites.png" loadts 'sprj !
 	"r3\j2022\troll\nivel.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow

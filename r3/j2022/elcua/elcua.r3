@@ -245,6 +245,36 @@
 #respok	
 
 #cambiaestado
+
+#srct [ 0 0 530 310 ]
+#mpixel 
+#mpitch
+
+:statica
+	drop 
+	sbuffer 'srct 'mpixel 'mpitch SDL_LockTexture
+	mpixel >a 530 310 * ( 1? 1 - 
+		rand8 $7f and dup 8 << over 16 << or or 
+		da!+ ) drop
+	sbuffer SDL_UnlockTexture
+	340 160 sbuffer SDLImage 	
+	;
+
+:correcto
+	drop
+	$11 "Correcto !!!"
+	330 160 530 310 xywh64 
+	$ffffff fontt textbox | $vh str box color font	
+	;
+
+:nono
+	drop
+	$11 "No, No !!"
+	330 160 530 310 xywh64 
+	$ffffff fontt textbox | $vh str box color font	
+	;
+
+
 :interaccion
 	1 'estado ! -1 'respur ! ;
 :habla
@@ -253,12 +283,17 @@
 :esok
 	habla
 	2 >>play
-	'interaccion 0 >>ex
-	500 >>wait
+	200 >>wait
 	4 >>play
-	1 'nropreg +!
-	cambiaestado 10 >>ex
 	
+	'obj p.clear
+	'statica 'obj p!+ drop 	
+	'correcto 'obj p!+ drop 	
+
+	1 'nropreg +!
+
+ 	'interaccion 1000 >>ex
+	cambiaestado 1000 >>ex
 	;
 	
 :respuestabtn | resp -- resp
@@ -266,7 +301,14 @@
 	respok =? ( esok ; ) 
 	habla
 	3 >>play
-	'interaccion 0 >>ex
+
+	'obj p.clear
+	'statica 'obj p!+ drop 	
+	'nono 'obj p!+ drop 	
+
+	'interaccion 1000 >>ex
+	cambiaestado 1000 >>ex
+	
 	-1 'vidas +!
 	
 	vidas 0? ( exit ) drop
@@ -324,31 +366,6 @@
 	530 randmax 340 +
 	310 randmax 160 + ;
 
-#srct [ 0 0 530 310 ]
-#mpixel 
-#mpitch
-
-:statica
-	drop 
-	sbuffer 'srct 'mpixel 'mpitch SDL_LockTexture
-	mpixel >a 530 310 * ( 1? 1 - 
-		rand8 $7f and dup 8 << over 16 << or or 
-		da!+ ) drop
-	sbuffer SDL_UnlockTexture
-	340 160 sbuffer SDLImage 	
-	;
-
-:correcto
-	$11 "Correcto !!!"
-	330 160 530 310 xywh64 
-	$ffffff fontt textbox | $vh str box color font	
-	;
-
-:nono
-	$11 "No, No !!"
-	330 160 530 310 xywh64 
-	$ffffff fontt textbox | $vh str box color font	
-	;
 	
 :jini
 	'obj p.clear
@@ -388,7 +405,7 @@
 	10 >>play
 	'interaccion 0 >>ex
 	4 randmax 'respok !
-	4 randmax 3 + 'cntmax !
+	2 randmax 3 + 'cntmax !
 
 	respok
 	0 =? ( cntmax dup fill0 1 - dup fill1 dup fill2 fill3 )
@@ -405,7 +422,7 @@
 	11 >>play
 	'interaccion 0 >>ex
 	4 randmax 'respok !
-	4 randmax 2 + 'cntmax !
+	2 randmax 2 + 'cntmax !
 
 	respok
 	0 =? ( cntmax dup fill0 1 + dup fill1 dup fill2 fill3 )
@@ -515,10 +532,11 @@
 	
 :subenivel
 	nropreg
-	2 =? ( 'j2 1000 >>ex )
-	3 =? ( 'j3 1000 >>ex )
-	4 =? ( 'j4 1000 >>ex )
-	5 =? ( 'j5 1000 >>ex )
+	1 =? ( 'j1 100 >>ex )
+	2 =? ( 'j2 100 >>ex )
+	3 =? ( 'j3 100 >>ex )
+	4 =? ( 'j4 100 >>ex )
+	5 =? ( 'j5 100 >>ex )
 	6 =? ( exit ) 
 	drop
 	;
@@ -529,16 +547,18 @@
 	inireloj	
 	jini
 	
-	500 >>wait
+	subenivel 
+|	500 >>wait
 	1 >>play
-	'j1 1000 >>ex
+|	'j1 1000 >>ex
 	'jugando SDLshow
 	vidas 0? ( drop perdio ; ) drop
 	gano
 	;
 
 :btnplay | n 'vecor 'i x y -- n
-	435 95 guibox
+	|435 95 guibox
+	pick2 @ SDLimagewh guibox
 	SDLb SDLx SDLy guiIn	
 	[ 8 + ; ] guiI 
 	@ xr1 yr1 rot SDLImage
@@ -567,7 +587,7 @@
 
 :inicio
 	ttf_init
-	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 40 TTF_OpenFont 'fontt !	
+	"r3/j2022/elcua/font/RobotoCondensed-Bold.ttf" 60 TTF_OpenFont 'fontt !	
 	
 	"r3/j2022/elcua/img/cursor.png" loadimg 'scursor !	
 	"r3/j2022/elcua/img/inicio.png" loadimg 'sinicio !	

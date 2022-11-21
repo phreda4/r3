@@ -93,12 +93,12 @@
 
 :incmap
 	0 ( cntinc <?
-		40 over 2 + .at
-		incnow =? ( .rever )
-		dup "%d " .print
-		dup 4 << 'inc + @+ swap @ "%h %l" .print
-		incnow =? ( .reset )
-		1 + ) drop
+		40 over 2 + ,at
+		incnow =? ( ,rever )
+		dup "%d " ,print
+		dup 4 << 'inc + @+ swap @ "%h %l" ,print
+		incnow =? ( ,reset )
+		1 + ) drop 
 	;
 
 :wordanalysis
@@ -113,42 +113,43 @@
 	cnttok >=? ( drop ; )
 	2 << initok +
 	d@ | dup
-	tokenprint
+	,tokenprintc
 	;
 	
 :wordmap
-	1 18 .at
-	actword dic>adr
-	dup 16 + @ 1 and ":#" + c@ emit
-	@ "%w" .print cr
+|	1 18 ,at
+|	actword dic>adr
+|	dup 16 + @ 1 and ":#" + c@ ,c |emit
+|	@ "%w" ,print ,cr
+	1 19 ,at
 	0 ( cnttok <?
-		dup token sp
+		dup token ,sp
 		1 + ) drop ;
 
 |-------------------------------------------
 :printcode
-	@+ " :%w " .print
+	@+ " :%w " ,print
 	drop ;
 
 :printdata
-	@+ " #%w " .print
+	@+ " #%w " ,print
 	drop ;
 
 :printword | nro --
-	actword =? ( .rever )
-	dup 1 + "%d." .print
+	actword =? ( ,rever )
+	dup 1 + "%d." ,print
 	5 << dicc +
 	dup 16 + @ 1 nand? ( drop printcode ; ) drop
 	printdata 
 	;
 
 :dicmap
-	.reset
+	,reset
 	0 ( 15 <?
-		1 over 2 + .at
+		1 over 2 + ,at
 		dup iniword +
 		printword
-		.reset
+		,reset
 		1 + ) drop ;
 
 :+word | d --
@@ -166,24 +167,7 @@
 	0 +word
 	;
 
-:btnf | txt tecla -- ***
-	.print sp .print ;
-	
 :modeview
-	.cls
-	dicmap
-	incmap
-	
-|	mark actword ,wordinfo ,eol empty
-|	here .print
-	
-	wordmap
-
-	1 rows 1 + .at .rever
-	cnttokens cntdef cntinc "inc:%d def:%d tokens:%d " .print
-	actword "%d" .print
-	.reset
-	
 	ckey 
 	$48 =? ( -1 +word ) | arriba 
 	$50 =? ( 1 +word )	| abajo
@@ -198,6 +182,24 @@
 	| $3b |f1
 	$3d =? ( mode!src ) | <f4> -- vie src
 	drop
+
+	mark
+	,hidec ,reset ,cls
+	dicmap
+	incmap
+	
+	1 18 ,at
+	actword ,wordinfo ,eol 
+	wordmap
+
+	1 rows 1 + ,at ,rever
+	cnttokens cntdef cntinc "inc:%d def:%d tokens:%d " ,print
+	actword "%d" ,print
+|	cursorpos
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	
 	;
 
 |------ VARIABLE VIEW
@@ -219,13 +221,13 @@
 :showvars
 	0 ( hcode <?
 		varlistc >=? ( drop ; )
-		cols 1 >> over 1 + .at
+		cols 1 >> over 1 + ,at
 		dup 2 << 'varlist + d@
-		dup dic>adr @ "%w " col_var .print
+		dup dic>adr @ "%w " col_var ,print
 		dic>tok @ @ "%d" 
 		|$ffffff 'ink ! 
-		.print
-		cr
+		,print
+		,cr
 		1 + ) drop ;
 
 |------ CODE VIEW
@@ -267,7 +269,7 @@
 	
 :prntcom | line adr' -- line adr'
 	linecommnow @ $fff and 
-	pick2 ylinea + 1 +
+	pick2 ylinea + 
 	>? ( drop ; ) drop
 	,sp
 	linecommnow 8 +
@@ -449,7 +451,8 @@
 :barratop
 |	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " ,printe 
 	
-	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF6^[27mVIEW ^[7mF7^[27mSTEP ^[7mF8^[27mSTEPN" ,printe 
+|	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF6^[27mVIEW ^[7mF7^[27mSTEP ^[7mF8^[27mSTEPN" ,printe 
+	"^[37mr3Debug ^[7mF4^[27mVIEWW " ,printe 
 	;
 
 :infobottom
@@ -501,25 +504,25 @@
 |	rows hcode - 1 - backlines
 
 |	$ff00 'ink !
-|	'outpad sp text cr
+|	'outpad sp text ,cr
 	dup "%h" .println
 
 |	$ffffff 'ink !
 	" > " .print
-|	'inpad 1024 input cr
+|	'inpad 1024 input ,cr
 |	$ffff00 'ink !
-	stackprintvm cr
-	regb rega " RA:%h RB:%h " .print
+	stackprintvm ,cr
+	regb rega " RA:%h RB:%h " ,print
 	|waitesc 
 	;
 
 :viewimm
-	.cls 
-	cr cr cr
+	,cls 
+	,cr ,cr ,cr
 	here ( code> <? @+
-		dup tokenprintc
-		"   %h" .print
-		cr
+		dup ,tokenprintc
+		"   %h" ,print
+		,cr
 		) drop
 	waitesc ;
 
@@ -568,12 +571,12 @@
 |	rows hcode - 1 - backlines
 
     showip
-|	'outpad sp text cr
+|	'outpad sp text ,cr
 
 	" > " .print
-|	'inpad 1024 input cr
+|	'inpad 1024 input ,cr
 	stackprintvm cr
-	regb rega " RA:%h RB:%h " .print
+	regb rega " RA:%h RB:%h " ,print
 	;
 
 |------ search code in includes
@@ -661,10 +664,11 @@
 	$49 =? ( kpgup ) 
 	$51 =? ( kpgdn )
 
-	$3b =? ( playvm gotosrc )
-	$3c =? ( play2cursor playvm gotosrc )
+	|$3a | f1
+|	$3b =? ( playvm gotosrc ) |f2
+|	$3c =? ( play2cursor playvm gotosrc )
 
-	$3d =? ( mode!view codetoword ) | word analisys
+	$3d =? ( mode!view codetoword ) | f4 word analisys
 |	<f10> =? ( mode!view 0 +word )
 
 	$3f =? ( setbp )

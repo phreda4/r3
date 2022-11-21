@@ -71,11 +71,8 @@
 	;
 
 :main
-
 	$0 SDLcls
-	
 	800 600 whmode
-	
 	0 0 -45.0 mtrans
 	'bubles p.draw
 	SDLredraw

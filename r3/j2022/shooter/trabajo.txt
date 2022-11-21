@@ -1,0 +1,5 @@
+A medida que la nave vaya avanzando se vuelva mas complicado, que la nave vaya mas rápido, aparezcan mas enemigos, etc
+Que se pueda perder
+Que no sea por puntos, sino que se cuente el tiempo
+Que tenga 1 sola vida
+Agregar pantalla de inicio

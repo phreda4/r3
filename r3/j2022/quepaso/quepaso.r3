@@ -1,4 +1,6 @@
-
+| Juego de preguntas
+| Itinerario de informatica
+| PHREDA 2022
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 ^r3/win/sdl2mixer.r3
@@ -38,7 +40,7 @@
 	'sndfile ( dup c@ 1? drop
 		dup "r3/j2022/quepaso/audio/%s" sprint
 		Mix_LoadWAV a!+
-		>>0 ) drop ;
+		>>0 ) 2drop ;
 
 :playsnd | n --
 	3 << 'sndlist + @ SNDplay ;
@@ -75,8 +77,8 @@
 570 650
 620 500
 640 350
-600 180
-490 200
+600 200
+470 200
 300 350
 300 550
 430 700
@@ -126,17 +128,23 @@
 #mseca
 
 :inireloj
-	0 'tiempo !
-	msec 'mseca !
-	;
+	0 'tiempo ! msec 'mseca ! ;
 	
 :reloj
-	msec dup mseca - 'tiempo +! 'mseca ! 
-
+	msec dup mseca - 'tiempo +! 'mseca ! ;
+	
+:showreloj
 	$11
 	tiempo 1000 / "%d" sprint
 	36 36 66 60 xywh64 $ffffff fontt textbox 	
 	;
+
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLimagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
 
 |-------------------------------------------
 :rswap |
@@ -161,29 +169,55 @@
 	>>cr trim dup 'res4 strcpyln
 	drop 
 	mixres 
-	inireloj
-|	3 playsnd
+	3 playsnd
 	;
-	
+
+#col0 "VERDE" #col1 "NARANJA" #col2 "CELESTE"
+#lcol col0 col1 col2
+#ccol $42A30A $F68E1F $13BFC1
+#t0 "TURNO VERDE" #t1 "TURNO NARANJA" #t2 "TURNO CELESTE"
+#lturno t0 t1 t2
+
 :cambioturno
+	gui
+	$0 SDLcls
+	0 0 stablero sdlimage
+	
+	mapascreen
+
+	$11 
+	jnow 3 << 'lturno + @
+	370 22 870 136 xywh64 
+	jnow 3 << 'ccol + @ 8 <<
+	fontt textbox | $vh str box color font	
+
+	970 550 jnow 3 << 'tu1 + @ sdlimage
+
+	[ exit 100 'maxjug ! ; ] 'sbtns1 230 15 btni
+	
+	sdlx sdly scursor SDLimage
+	
+	reloj
+	tiempo 3000 >? ( exit ) drop
+	SDLredraw
+	
+	exit |*********
+
+	SDLkey 
+	>esc< =? ( 4 'resusr ! exit ) | terminar siempre
+	drop 
 	;
 	
 |-------------------------------------------
-:btni | 'vecor 'i x y -- 
-	pick2 @ SDLimagewh guibox
-	SDLb SDLx SDLy guiIn	
-	[ 8 + ; ] guiI 
-	@ xr1 yr1 rot SDLImage
-	onCLick ;
 
 
 | 483,143
-:btnn | 'vec "text" -- 
-	2dup 288 65 guibox 
+:btnn | 'vec "text" x y -- 
+	2dup 280 65 guibox 
 	sdlb sdlx sdly guiIn
 	'sbtn1 [ 8 + rot 4 + rot 4 + rot ; ] guiI
 	@ pick2 pick2 rot SDLimage
-	280 74 xywh64
+	swap 5 + swap 280 74 xywh64
 	$11 rot rot $0 font textbox 
 	onCLick ;
 	
@@ -208,6 +242,7 @@
 	[ exit 100 'maxjug ! ; ] 'sbtns1 230 15 btni
 	
 	reloj
+	showreloj
 	tiempo 10000 >=? ( 4 'resusr ! exit ) drop | 10 seg para responder
 	
 	sdlx sdly scursor SDLimage
@@ -219,11 +254,6 @@
 	;
 
 |---------------------------------
-#col0 "Verde"
-#col1 "Naranja"
-#col2 "Celeste"
-#lcol col0 col1 col2
-#ccol $42A30A $F68E1F $13BFC1
 
 | 109X139
 :ganador
@@ -277,11 +307,14 @@
 	0 'jnow !
 	0 'maxjug !
 	musicrun -1 Mix_PlayMusic
-
 	( maxjug 10 <? drop
 		1 'nropreg +! 
-		cpypreg
+
+		inireloj
+		'cambioturno SDLshow
 	
+		cpypreg
+		inireloj
 		'jugando SDLshow
 
 		respuesta	
@@ -298,8 +331,8 @@
 	gui
 	0 0 sinicio sdlimage
 	
-	[ 2 playsnd jugar ; ] 'sbtnj1 490 530 btni
 	[ 2 playsnd exit ; ] 'sbtns1 1024 78 btni
+	[ 2 playsnd jugar ; ] 'sbtnj1 490 530 btni
 	
 	sdlx sdly scursor SDLimage
 	
@@ -363,9 +396,7 @@
 
 	musicini -1 Mix_PlayMusic
 	'menuprincipal SDLshow 
-|	jugar
-|	0 'nrojug ! 'ganador SDLshow
-	
+
 	SDLquit ;	
 	
 : main ;
