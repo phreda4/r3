@@ -1,43 +1,43 @@
-﻿¿Qué había en el terreno donde hoy se encuentra la plaza España?
+¿Qué había en el terreno donde hoy se encuentra la plaza España?
 Una laguna
 Una cancha de fútbol
 Un terreno baldío
 Una pista de automovilismo
-¿Qué espacio público divide el barrio villa trave del centro?
+¿Qué espacio público divide el barrio Villa Trave del centro?
 Ambas son correctas
 Ruta provincial N°85
 Frente de vías
 Ninguna es correcta
-¿Cómo se llama la escuela primaria número 1?
-Remedios Escalada de San Martin 
+¿Cómo se llama la Escuela Primaria Nº 1?
+Remedios Escalada de San Martín 
 Domingo Faustino Sarmiento
 Cornelio Saavedra
 Paula Albarracin de Sarmiento
-¿Qué había en el terreno donde hoy se encuentra la plaza América?
+¿Qué había en el terreno donde hoy se encuentra la Plaza América?
 Cancha de fútbol
 Terreno baldío
 Laguna
 Pista de automovilismo
-¿Cuál es la distancia entre San Cayetano y la ciudad de Buenos Aires?
+¿Cuál es la distancia entre San Cayetano y la Ciudad de Buenos Aires?
 429 km
 469 km
 459 km
 419 km
-¿Dónde funcionaba la escuela N°19?
+¿Dónde funcionaba la Escuela N°19?
 Todas son correctas
 Canal 2
 Pampa
 Consejo escolar
-¿Cómo se llama el museo san cayetanense?
+¿Cómo se llama el Museo San Cayetanense?
 Faustino Queipo
 Enrique Corradi
 Tulio Cosentino
 Beatriz Souto
 ¿Cual es el club que tiene una biblioteca popular en su sede?
-Club ciclista
-Club independiente
+Club Ciclista
+Club Independiente
 Sociedad Española
-Sociedad italiana
+Sociedad Italiana
 ¿Quién es San Cayetano?
 Santo del pan y el trabajo
 Santo de los animales
@@ -45,15 +45,15 @@ Santo de los enfermos
 Santo del campo
 ¿Dónde se encuentra la sede de Guías?
 Frente a la torre de agua
-Prado español
+Prado Español
 Museo
-Parque independiente
+Parque Independiente
 ¿Cómo se llaman las fiestas anuales del Fortín Gaucho?
 Baguales y milongas
 Corcovos y sonrisas
 Tradición y solidaridad
 Domas y música
-¿Cuántos galpones hay en el frente de vías?
+¿Cuántos galpones hay en el Frente de Vías?
 Cuatro
 Tres
 Dos
@@ -78,7 +78,7 @@ Todos ellos
 Quorum Propio
 8200/8400
 En acción
-¿Cuál es el eslogan actual de la municipalidad de San Cayetano?
+¿Cuál es el eslogan actual de la Municipalidad de San Cayetano?
 Donde queremos vivir
 La tierra del buen trigo
 Naturalmente junto al mar
@@ -113,7 +113,7 @@ Juan Claudio Magnin
 65km
 80km
 85km
-¿Cómo se llama actualmente el teatro municipal?
+¿Cómo se llama actualmente el Teatro Municipal?
 Tulio Cosentino
 Milagros de la Vega
 Luis Sandrini
@@ -133,8 +133,8 @@ Mario Cipollone
 Federico Perez Spinelli
 Jorge Dip
 Ninguna es correcta
-¿Qué institución tiene su sede en Avenida San Martin y Presidente Perón?
-Club español
+¿Qué institución tiene su sede en Avenida San Martín y Presidente Perón?
+Club Español
 Sociedad Italiana
 Sociedad Danesa
 Club Atlético Independiente
@@ -146,7 +146,7 @@ Club Atlético Independiente
 ¿Cómo se llama la avenida donde funcionó la estación de trenes de San Cayetano?
 Av. Victorio de la Canal
 Av. Independencia
-Av. San Martin
+Av. San Martín
 Av. Sargento Cabral
 ¿Cuál es la superficie del distrito de San Cayetano?
 3004,00 km²
@@ -168,7 +168,7 @@ Mayoría no binaria
 1983
 1974
 1943
-¿En qué año fué el trágico ciclón san cayetanense?
+¿En qué año fué el trágico ciclón sancayetanense?
 1919
 1992
 1954
@@ -208,7 +208,7 @@ Barrio Moreno
 Barrio Villa Trave
 Barrio la Boca del tigre
 Barrio 43
-¿Quién fué el primer delegado municipal de san cayetanense?
+¿Quién fué el primer Delegado Municipal de San Cayetano?
 Juan José Cernadas Conesa
 Abelardo Bortayro
 Juan Güerci
@@ -228,12 +228,12 @@ dos
 tres
 uno
 Ninguno
-¿Quién escribió el libro “el gigante dormido”?
+¿Quién escribió el libro “El Gigante Dormido”?
 Clarisa Hernandez
 José Orlando Escobedo
 Bernardo Girado
 Mario Cipollone
-¿Qué había donde hoy está el centro cultural?
+¿Qué había donde hoy está el Espacio Cultural?
 Una cooperativa
 Una entidad financiera
 Un galpón
@@ -253,7 +253,7 @@ La Estancia
 El galpón
 La industrial
 Bambú
-¿Qué había en el terreno donde hoy se encuentra el barrio moreno?
+¿Qué había en el terreno donde hoy se encuentra el Barrio Moreno?
 Fábrica de ladrillos
 Terreno baldío
 Planta de residuos
@@ -263,17 +263,17 @@ Campo de cultivos
 30° aniversario
 35° aniversario
 33° aniversario
-¿En qué año se inauguró la plaza España?
+¿En qué año se inauguró la Plaza España?
 1983
 1985
 1973
 1975
-¿En qué año se inauguró la plazoleta Italia?
+¿En qué año se inauguró la Plazoleta Italia?
 1996 
 1986
 1990
 1980
-¿En qué año se remodeló la plaza Italia?
+¿En qué año se remodeló la Plaza Italia?
 2019
 2020
 2018
@@ -298,7 +298,7 @@ Todos
 Chameca
 Guadalupe
 Matilda
-¿En qué año se inauguró el monumento al general don José de San Martin?
+¿En qué año se inauguró el monumento al general don José de San Martín?
 1969
 1986
 1995
@@ -308,7 +308,7 @@ Sagrado Corazón de Jesús
 San Roque
 Jacobo  Fidersek
 San Isidro de Labrador
-¿Qué había en el terreno donde hoy se encuentra el barrio moreno?
+¿Qué había en el terreno donde hoy se encuentra el Barrio Moreno?
 Fábrica de ladrillos
 Terreno baldío
 Planta de residuos
@@ -433,7 +433,7 @@ Ecos de San Cayetano
 1970
 1991
 1980
-¿Cómo se llamaba la avenida Apezteguia?
+¿Cómo se llamaba la Avenida Apezteguia?
 Mar del Plata
 Necochea
 Bahía Blanca

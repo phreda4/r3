@@ -201,7 +201,7 @@
 	tiempo 3000 >? ( exit ) drop
 	SDLredraw
 	
-	exit |*********
+	|exit |*********
 
 	SDLkey 
 	>esc< =? ( 4 'resusr ! exit ) | terminar siempre
