@@ -1,5 +1,6 @@
 | numeros aleatorios
 | PHREDA 2010
+^r3/win/core.r3
 
 ##seed8 12345
 

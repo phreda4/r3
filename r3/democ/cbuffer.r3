@@ -1,37 +1,61 @@
-^r3/win/kernel32.r3
 
-#stdin
-#stdout
+^r3/win/console.r3
+^r3/win/kernel32.r3
+^r3/lib/rand.r3
+
+|#stdin
+|#stdout
 
 #eventBuffer 0 0 0 0 0
 
 |  SHORT Left;  SHORT Top;  SHORT Right;  SHORT Bottom;
 #windowsize ( 0 0 0 0 79 0 49 0 )
+
 #bufferSize ( 80 0 50 0 )
 #consoleBuffer * 16000 | 80*50*4
 #charBufSize ( 80 0 50 0 )
 #characterPos ( 0 0 0 0 ) 
-#writeArea ( 0 0 0 0 79 0 49 0 )
+#writeArea2 ( 0 0 0 0 79 0 49 0 )
+#writeArea [ 0 $0031004f ]
 #nr
 #numEvents 
 #appIsRunning 1
 
 :rebuffer
-	stdout 'consoleBuffer 'charBufSize d@ 'characterPos d@ 'writeArea 
+	stdout 'consoleBuffer $00320050 |$00320050 |'charBufSize d@ 
+	$0 |'characterPos d@ 
+	'writeArea 
 	WriteConsoleOutput ;
 	
 :clsbuffer
-	'consoleBuffer >a 80 50 * ( 1? 1 - $f00020 da!+ ) drop ;
+	'consoleBuffer >a 80 50 * ( 1? 1 - |$f00020
+	rand
+	da!+ ) drop ;
+
+|---------------------	
+#rect [ 0 $004f0031 ]
 	
 :init
-	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
-	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
-	"titulo" SetConsoleTitle
+|	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
+|	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
+
 	
-	stdout 1 'windowsize SetConsoleWindowInfo |(wHnd, TRUE, &windowSize);
-	stdout 'buffersize SetConsoleScreenBufferSize |(wHnd, bufferSize);
+	stdout -1 'rect 
+	|'windowsize 
+	SetConsoleWindowInfo |(wHnd, TRUE, &windowSize);
+	stdout $00500032 SetConsoleScreenBufferSize |(wHnd, bufferSize);
 	clsbuffer
-    rebuffer
+	rebuffer
+	
+	"titulo" SetConsoleTitle
+	;
+	
+|---------------------	
+#rect [ 0 $0032004f ]
+
+:resizeconsole |
+	stdout -1 'rect SetConsoleWindowInfo
+	stdout $00310050 SetConsoleScreenBufferSize
 	;
 	
 :evkey	
@@ -70,6 +94,14 @@
 		) drop ;
 	
 :
-init
-app
+|init
+resizeconsole
+|app
+clsbuffer
+rebuffer
+
+( inkey $1B1001 <>? drop
+	clsbuffer
+	rebuffer
+	) drop
 ;

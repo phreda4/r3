@@ -28,7 +28,7 @@
 ::Mix_PlayChannelTimed sys-Mix_PlayChannelTimed sys4 drop ;
 ::Mix_HaltChannel sys-Mix_HaltChannel sys4 drop ;
 ::Mix_PlayMusic sys-Mix_PlayMusic sys2 drop ;
-::Mix_HaltMusic sys-Mix_HaltMusic sys1 drop ;
+::Mix_HaltMusic sys-Mix_HaltMusic sys0 drop ;
 ::Mix_FadeOutMusic sys-Mix_fadeOutMusic sys1 drop ;
 ::Mix_VolumeMusic sys-Mix_VolumeMusic sys1 ;
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;

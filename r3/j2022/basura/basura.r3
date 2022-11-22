@@ -51,12 +51,13 @@
 |-------------- tiempo
 #prevt
 #dtime
+#tiempo 
 
 :time.start
-	msec 'prevt ! 0 'dtime ! ;
+	msec 'prevt ! 0 'dtime ! 0 'tiempo ! ;
 
 :time.delta
-	msec dup prevt - 'dtime ! 'prevt ! ;
+	msec dup prevt - dup 'tiempo +! 'dtime ! 'prevt ! ;
 
 	
 :+obj | 'from 'vec --
@@ -353,12 +354,16 @@
 	impvidas	
 	
 	330 16 sbtniempo sdlImage
-	$ffffff font puntos "%d" sprint
+	$ffffff font 
+	60 tiempo 1000 / - "0:%d" sprint
+	|puntos "%d" sprint
 	380 16 ttfprint | color font "text" x y -- 
 
 	10 10 sbtndia sdlImage
 	$ffffff font diahoy
 	80 14 ttfprint | color font "text" x y -- 
+	
+	tiempo 59000 >? ( exit ) drop
 	
 	SDLredraw
 	teclado ;
@@ -368,6 +373,11 @@
 :perdiste
 	0 0 sperdiste SDLImage
 
+	$11
+	puntos "hiciste %d puntos!" sprint
+	100 10 600 100 xywh64
+	$0 font textbox 
+	
 	SDLRedraw
 	
 	SDLkey 
@@ -377,6 +387,11 @@
 
 :ganaste	
 	0 0 sganaste SDLImage
+
+	$11
+	puntos "hiciste %d puntos!" sprint
+	100 10 600 100 xywh64
+	$0 font textbox 
 
 	SDLRedraw
 	
@@ -471,7 +486,9 @@ $"
 	'buffer 0 over c! 'buffer> !
 	time.start
 	0 'tt ! 0 'waitnext !
+	musicplay -1 Mix_PlayMusic
 	'inicio SDLshow
+	Mix_HaltMusic
 	;
 
 |---------------------------------------

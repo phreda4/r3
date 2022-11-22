@@ -58,7 +58,9 @@
 #sys-SDL_GL_DeleteContext
 #sys-SDL_GL_SetSwapInterval
 #sys-SDL_GL_SwapWindow
+
 #sys-SDL_SetTextureColorMod
+#sys-SDL_SetHint
 
 ::SDL_Init sys-SDL_Init sys1 drop ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
@@ -114,6 +116,8 @@
 ::SDL_GL_DeleteContext sys-SDL_GL_DeleteContext sys1 drop ;
 ::SDL_GL_SetSwapInterval sys-SDL_GL_SetSwapInterval sys1 drop ;
 ::SDL_GL_SwapWindow sys-SDL_GL_SwapWindow sys1 drop ;
+
+::SDL_SetHint sys-SDL_SetHint sys2 drop ; 
 
 |----------------------------------------------------------
 	
@@ -313,5 +317,6 @@
 	dup "SDL_GL_DeleteContext" getproc 'sys-SDL_GL_DeleteContext !
 	dup "SDL_GL_SetSwapInterval" getproc 'sys-SDL_GL_SetSwapInterval !
 	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
+	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
 	drop
 	;
