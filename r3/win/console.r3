@@ -250,7 +250,7 @@
 #console-mode
 
 :
-|	AllocConsole 
+	|AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE

@@ -4,14 +4,20 @@
 ^r3/win/sdl2image.r3
 
 ^r3/lib/rand.r3
+^r3/lib/gui.r3
 
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
+#sinicio
+#sganaste
+#sperdiste
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
+
 #sprplayer
 #fx 0 0
-
 
 #mapajuego
 #xvp #yvp
@@ -22,6 +28,7 @@
 
 #cohete
 #nspr 1
+#puntos
 
 :[map]@ | x y -- c
 	swap xvp - 
@@ -66,8 +73,8 @@
 	
 :jetpack
 	
-	10 10 bat 
-	ayp axp vyp vxp "%f %f %f %f" sprint bprint	
+	|10 10 bat ayp axp vyp vxp "%f %f %f %f" sprint bprint	
+10 10 bat xp yp "%f %f" sprint bprint	
 
 	cohete 1? ( fuego ) drop 
 	nspr sprplayer xp int. xvp - yp int. tsdraw
@@ -86,8 +93,12 @@
 	vyp 'yp +!
 	
 	xp int. yp int. [map]@s 1? ( 
-		1.0 randmax 0.5 - 'vyp +! 1.0 randmax 0.5 - 'vxp +! 
+|		1.0 randmax 0.5 - 'vyp +! 1.0 randmax 0.5 - 'vxp +! 
+|		-1 'puntos !
+|		exit
 		) drop
+		
+	xp 3500.0 >? ( 	exit ) drop
 	
 	yp
 	500.0 >? ( 500.0 'yp ! 0 'vyp ! 0 'vxp ! )
@@ -122,16 +133,79 @@
 	
 	teclado
 	;
+	
+:gano
+	0 0 sganaste SDLImage
+
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
+:perdio
+	0 0 sperdiste SDLImage
+
+	SDLRedraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop 
+	;
+	
+:jugar
+	200.0 'xp !
+	500.0 'yp !
+	0 'puntos !
+	'juego SDLshow
+
+	puntos -? ( drop 'perdio SDLShow ; ) drop
+	'gano sdlShow
+	
+	;
+	
+|------------
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+	
+:menu
+	gui
+|	$0 SDLcls
+	0 0 sinicio SDLImage
+
+	'jugar 'sbtnj1 100 400 btni
+	'exit 'sbtns1 450 400 btni
+	SDLredraw
+	
+	SDLkey
+	>ESC< =? ( exit )
+	drop
+	;	
 
 :main
 	1000 'fx p.ini
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	32 32 "r3\j2022\jetpack\jetpack.png" loadts 'sprplayer !
+	32 32 "r3\j2022\jetpack\img\jetpack.png" loadts 'sprplayer !
 	"r3\j2022\jetpack\mapa.map" loadtilemap 'mapajuego !
 	
-	'juego SDLshow
+	"r3\j2022\jetpack\img\inicio.png" loadimg 'sinicio !		
+	"r3\j2022\jetpack\img\ganaste.png" loadimg 'sganaste !		
+	"r3\j2022\jetpack\img\perdiste.png" loadimg 'sperdiste !		
+
+	"r3\j2022\jetpack\img\btnp1.png" loadimg 'sbtnj1 !		
+	"r3\j2022\jetpack\img\btnp2.png" loadimg 'sbtnj2 !		
+	"r3\j2022\jetpack\img\btns1.png" loadimg 'sbtns1 !		
+	"r3\j2022\jetpack\img\btns2.png" loadimg 'sbtns2 !			
+	
+	'menu sdlshow
+	
 	SDLquit ;	
 	
 : main ;
