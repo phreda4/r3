@@ -5,19 +5,24 @@
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/lib/rand.r3
- 
+^r3/lib/gui.r3
+
+
+#sinicio 
 #graficos
 
 #fx 0 0
 #balas 0 0
 #aliens 0 0
+
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
 	
 #puntos
 #vidas
 	
 #xp 355.0 #yp 500.0
 #vxp #vyp
-
 
 |----------------------------------------	
 #sndfile "disparo.mp3" "explosion.mp3" 0
@@ -60,10 +65,23 @@
 	>a 
 	msec 7 >> $3 and 9 +
 	graficos a@+ 16 >> a@+ 16 >> tsdraw
-	-8 a+
+	-16 a+
+	a@ a> 8 + @ 8 >> sin 2 <<  + 
+	a!+
 	a@ 1.2 + 
 	600.0 >? ( drop 0 ; )
 	a!
+	
+	-8 a+
+	a@+ xp - int.  
+	a@+ yp - int. distfast 
+	90 >? ( drop ; ) drop
+
+	xp yp +fx
+	1 playsnd
+	-1 'vidas +!
+	vidas 0? ( exit ) drop
+	0
 	;
 	
 :+alien | x y --
@@ -80,7 +98,7 @@
 	dup 'aliens p.del
 	pick4 16 << pick4 16 << +fx
 	1 'puntos +!
-1 playsnd
+	1 playsnd
 	;
 	
 :disp | a --
@@ -95,7 +113,7 @@
 	
 :+disp | x y --
 	'disp 'balas p!+ >a swap a!+ a! 
-0 playsnd ;
+	0 playsnd ;
 
 |--------------------------------
 #ss * 8192 | estrellas
@@ -122,6 +140,7 @@
 	'fx p.clear
 	'balas p.clear
 	'aliens p.clear
+	355.0 'xp ! 500.0 'yp !
 	;
 	
 |---------------------
@@ -131,7 +150,7 @@
 	msec 10 >>
 	secant =? ( drop ; )
 	'secant !
-	4 randmax 0? ( 800.0 randmax -90.0 +alien ) drop
+	3 randmax 0? ( 800.0 randmax -90.0 +alien ) drop
 	;
 
 :game
@@ -141,13 +160,15 @@
 	
 	'balas p.draw
 	'aliens p.draw
-	'fx p.draw
 	player
-	
+	'fx p.draw
+
 	$ffffff sdlcolor
 	8 8 bat
 	puntos "PUNTOS:%d" sprint bprint
-	
+	600 8 bat
+	vidas "VIDAS:%d" sprint bprint
+
 	SDLredraw
 
 	creador
@@ -159,9 +180,40 @@
 	>le< =? ( 0 'vxp ! )
 	>ri< =? ( 0 'vxp ! )
 	<esp> =? ( xp yp +disp )
+	<f1> =? ( 200.0 10.0 +alien )
+	
 	drop
 	;
 
+:jugar
+	reset
+	fillback
+	'game SDLshow
+	;
+	
+|---------------------------------------
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+	
+:inicial
+	gui
+	0 0 sinicio SDLImage
+
+	'jugar 'sbtnj1 300 320 btni
+	'exit 'sbtns1 330 450 btni
+	
+	SDLRedraw
+	
+	SDLkey 
+	<F1> =? ( jugar ) 
+	>esc< =? ( exit )
+	drop 
+	;
+	
 :	
 	"r3sdl" 800 600 SDLinit
 
@@ -174,10 +226,16 @@
 	100 'aliens p.ini
 	
 	90 90 "r3/j2022/shooter/shooter.png" loadts 'graficos !
+	"r3/j2022/shooter/inicio.png" loadimg 'sinicio	 !
 
-	fillback
+	"r3/j2022/shooter/btnj1.png" loadimg 'sbtnj1 ! 
+	"r3/j2022/shooter/btnj2.png" loadimg 'sbtnj2 ! 
+	"r3/j2022/shooter/btns1.png" loadimg 'sbtns1 ! 
+	"r3/j2022/shooter/btns2.png" loadimg 'sbtns2 ! 
+
+	rerand
 	
-	'game SDLshow
+	'inicial SDLshow
 	
 	SDLquit 
 	;

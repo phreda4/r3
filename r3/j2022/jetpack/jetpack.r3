@@ -94,8 +94,8 @@
 	
 	xp int. yp int. [map]@s 1? ( 
 |		1.0 randmax 0.5 - 'vyp +! 1.0 randmax 0.5 - 'vxp +! 
-|		-1 'puntos !
-|		exit
+		-1 'puntos !
+		exit
 		) drop
 		
 	xp 3500.0 >? ( 	exit ) drop
