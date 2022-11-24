@@ -230,6 +230,13 @@
 	xp int. 32 + yp int. 64 + [map]@s or	
 	;
 
+:water? | -- 
+	xp int. 32 +
+	yp int. 64 + 
+	[map]@
+	22 33 bt? ( ; ) 
+	drop 0 ;
+
 :wall? | dx -- wall?
 	xp int. +
 	yp int. 32 +
@@ -259,7 +266,15 @@
 	
 #ep 'pstay
 
+:enagua
+	0.09 'vyp +! 
+	SDLkey
+	<up> =? ( -3.0 'vyp ! )
+	<dn> =? ( 0.2 'vyp +! )
+	drop ;
+	
 :pisoysalto
+	water? 1? ( drop enagua ; ) drop
 	floor? 0? ( drop
 		|7 panim + 'np !
 		0.3 'vyp +!
@@ -331,9 +346,9 @@
 | 2240 1050
 :jugando
 	$256BCB SDLcls
-	xvp neg 8 + yvp neg 72 + 7168 3392 sfondo SDLImages
-
+	
 	viewport
+	xvp neg 8 + yvp neg 72 + 7168 3360 sfondo SDLImages
 	drawmapa	
 	'fx p.draw
 	enemigos
