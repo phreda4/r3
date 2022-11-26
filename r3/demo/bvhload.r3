@@ -25,7 +25,7 @@
 
 #framenow
 
-#xcam 0 #ycam 0 #zcam 40.0
+#xcam 0 #ycam 0 #zcam 400.0
 #xr 0 #yr 0
 
 :,off+cha
@@ -296,8 +296,7 @@
 
 |	model drawbones
 |	people
-|	model drawbones01
-	drawcube
+	model drawbones0
 	
 	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	
@@ -313,9 +312,9 @@
 	mark
 	here dup 'bvhfile !
 	'smem !
-	"media/bvh/guitar_playing.bvh"
+|	"media/bvh/guitar_playing.bvh"
 |	"media/bvh/0008_ChaCha001.bvh"
-|	"media/bvh/10_01.bvh"
+	"media/bvh/10_01.bvh"
 	reload
 	model dumpmod cr
 	0 'framenow !
