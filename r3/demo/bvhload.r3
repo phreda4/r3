@@ -114,14 +114,18 @@
 	trim getnro 'frames !
 	trim dup "Frame Time:" scanp 0? ( drop ; ) nip
 	trim getfenro 'frametime !
+	
+|	frames chsum "%d %d" .println
 	frames ( 1? 
 		chsum ( 1?
-			rot trim getfenro 
+			rot trim 
+			|pick2 pick2 pick2 "%w %d %d " .println	
+			getfenro 
 			typech
+			|pick2 pick2 pick2 "%f %d %d" .println waitesc
 			, rot rot
 			1 - ) drop
-		1 - ) drop
-	;
+		1 - ) drop ;
 
 :nextword
 	trim
@@ -131,9 +135,7 @@
 	;
 
 :parsebvh | --
-	bvhfile ( $bvhfile <? nextword >>sp ) drop 
-|	"endparse" .println 
-	;
+	bvhfile ( $bvhfile <? nextword >>sp ) drop ;
 
 #smem
 
@@ -179,17 +181,15 @@
 
 #boneslevel * 1024
 
-:box
-	>a
-	over a> - over a> - 2swap
-	swap a> + swap a> +
-	SDLREct
+:box | x y r --
+	rot over - rot pick2 -
+	rot 1 << dup SDLREct
 	;
 
 :drawstick | level
 	0 0 0 project3d
 	$ff00 SDLColor 
-	2dup 1 box 
+	2dup 2 box 
 	2dup XXOP
 	swap
 	pick2 5 << 'boneslevel + d!+ d!
@@ -249,18 +249,20 @@
 		) drop
 	nmpop
 	;
-
-:drawbones01 | bones --
-	>a
-	0 ( da@+ 1? $ff and
-|		swap over - 1 + clamp0 nmpop
-|		mpush
-		da@+ da@+ da@+ mtransi
-|		drawcube
-		) drop
-|	nmpop
-	;
 	
+:drawbones1 | bones --	
+	>b
+	0 ( db@+ 1? $ff and
+		swap over - 1 + clamp0 | anterior-actual+1
+		nmpop
+		mpush
+		db@+ db@+ db@+ mtransi
+		drawstick  |drawcube
+		) drop
+	nmpop
+	;	
+
+|----------------------------------------------
 :freelook
 	SDLx SDLy
 	sh 1 >> - 7 << swap
@@ -296,7 +298,7 @@
 
 |	model drawbones
 |	people
-	model drawbones0
+	model drawbones1
 	
 	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	
@@ -312,11 +314,11 @@
 	mark
 	here dup 'bvhfile !
 	'smem !
-|	"media/bvh/guitar_playing.bvh"
+	"media/bvh/guitar_playing.bvh"
 |	"media/bvh/0008_ChaCha001.bvh"
-	"media/bvh/10_01.bvh"
+|	"media/bvh/10_01.bvh"
 	reload
-	model dumpmod cr
+|	model dumpmod cr
 	0 'framenow !
 |	model here over - "mem.mem" save |debug
 	;

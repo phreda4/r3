@@ -194,7 +194,7 @@
 
 |----------------------------------
 ::trim | adr -- adr'
-	( c@+ 1?  $ff and 33 <? drop ) drop 1 - ;
+	( c@+ 1? $ff and 33 <? drop ) drop 1 - ;
 
 ::trimc | car adr -- adr'
 	( c@+ 1? pick2 =? ( drop nip 1 - ; ) drop ) drop nip 1 - ;
@@ -217,4 +217,4 @@
 	swap c! ;
 
 ::>>sp | adr -- adr'	; next space
-	( c@+ $ff and 32 >? drop ) drop 1 - ;
+	( c@+ 1? $ff and 32 >? drop ) drop 1 - ;
