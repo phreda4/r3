@@ -57,11 +57,12 @@
 	>>sp interprete ;
 	
 :main
+	.getconsoleinfo 
 	.cls
 	"r3 test vstack - PHREDA 2021" .write cr
 	cr
 	( .bye 0? drop
-		"> " .write .input cr
+		"> " .write .input sp
 		'pad interprete
 		.stack
 		) drop ;

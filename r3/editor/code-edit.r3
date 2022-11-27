@@ -608,8 +608,6 @@
 :controloff 0 'panelcontrol ! ;
 
 |---------- manejo de teclado
-#ckey
-
 :buscapad
 	fuente 'pad findstri
 	0? ( drop ; ) 'fuente> ! ;
@@ -621,7 +619,6 @@
 	;
 
 :controlkey
-	ckey
 	$101d =? ( controloff ) |>ctrl<
 	$1000 and? ( drop ; )	| upkey
 	$ff and
@@ -655,7 +652,6 @@
 :teclado
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	ckey 
 	$ff0000 and? ( vchar ; ) 
 	
 	$53 =? ( kdel )
@@ -734,8 +730,7 @@
 	0 'xlinea !
 	.showc .insc
 	( pantalla
-		getch $1B1001 <>? 'ckey !
-		teclado 
+		getch $1B1001 <>? teclado 
 		) drop ;
 
 	

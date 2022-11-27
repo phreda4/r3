@@ -55,7 +55,18 @@
 	drop
 	conkb  
 	;
-
+	
+::inkey
+	0 'conkb !
+	stdin 'ne GetNumberOfConsoleInputEvents
+	ne ( 1? 1 -
+		stdin 'irec 1 'nr ReadConsoleInput
+		irec $ff and
+		$1 =? ( drop evkey conkb ; )
+		drop
+		) drop 
+	conkb ;
+		
 |------- full console input (key,mouse,size,menu,focos)
 |typedef struct _INPUT_RECORD {
 |  WORD  EventType;
@@ -228,12 +239,16 @@
 :.char
 	$1000 and? ( drop ; )
 	16 >> 0? ( drop ; )
+	8 =? ( swap 
+		1 - 'pad <? ( 1 + nip ; )
+		swap emit "1P" .[ ; )
 	dup emit
 	swap c!+ ;
 	
 ::.input | --
-	'pad
-	( getch $D001C <>? .char ) drop
+	'pad 
+	( getch $D001C <>? 
+		.char ) drop
 	0 swap c! ;
 
 ::.inputn | -- nro
@@ -249,6 +264,11 @@
 
 #console-mode
 
+:conmouse
+	stdin $71 SetConsoleMode drop ; 
+
+|	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
+	
 :
 	|AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
@@ -260,8 +280,7 @@
 |	stdout 'console-mode GetConsoleMode drop	
 |	stdout console-mode $4 or SetConsoleMode drop	
 
-	stdin $31 SetConsoleMode drop 
-|	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
+	stdin $21 SetConsoleMode drop
 	stdout $7 SetConsoleMode drop	
-;
+	; 
 	
