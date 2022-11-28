@@ -64,4 +64,5 @@ $100 ctz2 "$100 ctz2 = %d" .println
 $10 ctz2 "$10 ctz2 = %d" .println
 $1 ctz2 "$1 ctz2 = %d" .println
 
+waitesc
 	;

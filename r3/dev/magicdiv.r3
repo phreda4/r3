@@ -74,7 +74,7 @@
 	nro "/%d" .print cr
 	sn mn "%h %h *>> " .print cr
 	sn2 mn2 "%h %h *>> " .print cr
-	nro findinv "%h" .print cr
+|	nro findinv "%h" .print cr
 	cr
 	
 	-1800 ( 1800 <? 210 +

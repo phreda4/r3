@@ -59,6 +59,12 @@
 	-1 ;
 |		  return box.x1>=self.x1 and box.y1>=self.y1 and box.x2<=self.x2 and box.y2<=self.y2
 		   
+:expand | b1 b2 -- b3
+	over .x1 over .x1 min 48 << >a
+	over .y1 over .y1 min $ffff and 32 << a+
+	over .x2 over .x2 max $ffff and 16 << a+
+	.y2 swap .y2 max $ffff and >a or ;
+	
 |------------------------------------------
 #box1
 
