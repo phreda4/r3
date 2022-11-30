@@ -29,7 +29,6 @@
 :.state 13 ncell+ ;
 
 |---------
-| /64 6
 :bitmaskx | min max -- mask
 	sw clamp0max 63 sw */ 1 swap << 1 - | 000001111
 	swap
@@ -94,12 +93,14 @@
 |----------------------------------------
 | need 1+ because first is the vector to ex
 |
-| over 12 ncell+ over 12 ncell+
-| @+ rot @+ rot and rot @ rot @ and or 0? ( drop ; ) drop
 |
 :collision | p1 p2 -- p1 p2
 	over 12 ncell+ @ over 12 ncell+ @ and 0? ( drop ; ) drop | maskx
 	over 13 ncell+ @ over 13 ncell+ @ and 0? ( drop ; ) drop | masky
+
+|	over 12 ncell+ over 12 ncell+
+|	@+ rot @+ rot and rot @ rot @ and or 0? ( drop ; ) drop
+
 	1 pick2 14 ncell+ !	| state
 	1 over 14 ncell+ !
 	;
@@ -128,6 +129,7 @@
 	
 	SDLkey
 	>esc< =? ( exit )
+	<f1> =? ( +randobj )
 	drop
 	;
 

@@ -7,9 +7,16 @@
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 ^r3/util/penner.r3
+^r3/lib/gui.r3
+
 
 #sprj
 #spre
+#sinicio
+#sganaste
+#sperdiste
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
 
 #fx 0 0
 
@@ -55,14 +62,14 @@
 | $1xx = pingpong $0xx = ping
 
 #listene [
-1.0 $100  39 39 12 12 16 19
-1.0 $100  7 7 22 22 16 19
-1.0 $100  8 8 45 45 16 19
-1.0 $100  11 11 49 49 16 19
-1.0 $100  7 7 49 49 16 19
+1.0 $100  39 39 10 14 16 19
+1.0 $100  5 9 22 22 16 19
+1.0 $100  8 8 43 50 16 19
+1.0 $100  10 10 50 43 16 19
+1.5 $100  13 13 46 49 16 19
 1.0 $100  34 34 54 54 16 19
+1.0 $100  19 21 50 50 16 19
 1.0 $100  42 42 52 52 16 19
-1.0 $100  26 26 49 49 16 19
 1.0 $100  36 36 54 54 16 19
 1.0 $100  6 6 68 68 16 19
 1.0 $100  10 10 69 69 16 19
@@ -178,10 +185,10 @@
 	32 32 tsdraws
 
 	btnpad
-	%1000 and? ( -2.0 ymove  )
-	%100 and? ( 2.0 ymove  )
-	%10 and? ( -2.0 xmove )
-	%1 and? ( 2.0 xmove )
+	%1000 and? ( -5.0 ymove  )
+	%100 and? ( 5.0 ymove  )
+	%10 and? ( -5.0 xmove )
+	%1 and? ( 5.0 xmove )
 	drop
 
 	viewport
@@ -237,6 +244,38 @@
 	SDLredraw
 	
 	teclado ;
+:reset
+	;
+	
+:jugar
+	reset 
+	'jugando sdlshow
+
+|	vidas 0? ( drop perdio ; ) drop
+|	gano
+	;	
+|------------
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+	
+:menu
+	gui
+|	$0 SDLcls
+	0 0 sinicio SDLImage
+
+	'jugar 'sbtnj1 100 400 btni
+	'exit 'sbtns1 500 400 btni
+	SDLredraw
+	
+	SDLkey
+	>ESC< =? ( exit )
+	drop
+	;
+		
 
 :main
 	1000 'fx p.ini
@@ -246,8 +285,16 @@
 	
 	8 8 "r3\j2022\troll\sprites.png" loadts 'sprj !
 	"r3\j2022\troll\nivel.map" loadtilemap 'mapajuego !
+	"r3\j2022\troll\img\inicio.png" loadimg 'sinicio !		
+
+	"r3\j2022\troll\img\btnj1.png" loadimg 'sbtnj1 !		
+	"r3\j2022\troll\img\btnj2.png" loadimg 'sbtnj2 !		
+	"r3\j2022\troll\img\btns1.png" loadimg 'sbtns1 !		
+	"r3\j2022\troll\img\btns2.png" loadimg 'sbtns2 !		
+		
 	
-	'jugando SDLshow
+	|'jugando SDLshow
+	'menu SDLshow
 	SDLquit ;	
 	
 : main ;

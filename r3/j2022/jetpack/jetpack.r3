@@ -136,7 +136,7 @@
 	
 :gano
 	0 0 sganaste SDLImage
-
+	'exit 'sbtns1 450 400 btni
 	SDLRedraw
 	
 	SDLkey 
@@ -146,7 +146,7 @@
 	
 :perdio
 	0 0 sperdiste SDLImage
-
+	'exit 'sbtns1 450 400 btni
 	SDLRedraw
 	
 	SDLkey 

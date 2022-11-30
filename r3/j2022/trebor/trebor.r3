@@ -22,9 +22,17 @@
 #vxp 0 #vyp 0		| vel player
 
 #np 0
-
+#vida
 #mapajuego
 
+:reset
+	3616.0 'xp ! 
+	256.0 'yp !
+	0 'vxp !
+	0 'vyp !		| vel player
+	200 'vida !
+	;
+		
 |--------------------------------
 	
 :humo
@@ -195,7 +203,10 @@
 		calcpos
 		hitplayer
 		drawene
-		) drop  ;
+		) drop  
+	hitene 0? ( drop ; ) drop
+	-1 'vida +!
+	;
 	
 |--------------------------------
 :viewport
@@ -273,14 +284,20 @@
 	<dn> =? ( 0.2 'vyp +! )
 	drop ;
 	
+|#testy	
 :pisoysalto
 	water? 1? ( drop enagua ; ) drop
 	floor? 0? ( drop
 		|7 panim + 'np !
 		0.3 'vyp +!
-		10.0 clampmax
+|		10.0 clampmax
 		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
 		; ) drop
+		
+|	vyp 10.0 >? ( exit ) drop
+	
+|	vyp 1? ( dup 'testy ! ) drop
+
 	0 'vyp !
 	yp $ffffe00000 and 'yp ! | fit y to map (64.0)
 	
@@ -318,6 +335,10 @@
 	drop 
 	;
 
+:barra
+	$ff00 SDLColor
+	10 10 vida 10 + 20 SDLFRect ;
+	
 |---- sin reemplazo	
 :drawmapa
 	26 20
@@ -348,15 +369,18 @@
 	$256BCB SDLcls
 	
 	viewport
-	xvp neg 8 + yvp neg 72 + 7168 3360 sfondo SDLImages
+	xvp neg 8 + yvp neg 80 + 7168 3360 sfondo SDLImages
 	drawmapa	
+	barra
+	
 	'fx p.draw
 	enemigos
 	player
 	
-	8 8 bat
-xvp yvp "%d %d " sprint bprint	
-	hitene "%h" sprint bprint
+	10 20 bat
+|	testy "%f" sprint bprint
+|xvp yvp "%d %d " sprint bprint	
+|hitene "%h" sprint bprint
 	
 	SDLredraw
 	
@@ -372,6 +396,7 @@ xvp yvp "%d %d " sprint bprint
 	50 50 "r3\j2022\trebor\enemigos.png" loadts 'spre !
 	"r3\j2022\trebor\nivel.map" loadtilemap 'mapajuego !
 	
+	reset
 	'jugando SDLshow
 	SDLquit ;	
 	
