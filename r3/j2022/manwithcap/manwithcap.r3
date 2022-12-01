@@ -374,11 +374,13 @@
 	player
 	'fx p.draw
 
+	xp 7600.0 >? ( exit ) drop
 	impvidas		
 	|10 10 bat vidas "vidas:%d" sprint bprint
 	
 	600 10 bat
 	puntos "%d " sprint bprint
+	|xp "%f" sprint bprint
 	SDLredraw
 	
 	teclado ;
@@ -393,6 +395,7 @@
 	30.0 'xp ! 446.0 'yp !	| pos player
 	0 'vxp ! 0 'vyp !		| vel player
 	8 'np ! 1 'face ! 'pstay 'ep !
+	'enelist 'enenow !
  	;
 
 |------------
@@ -403,8 +406,8 @@
 	@ xr1 yr1 rot SDLImage
 	onCLick ;
 	
-	
 :gano
+	gui
 	0 0 sganaste SDLImage
 	'exit 'sbtns1 400 400 btni
 	SDLRedraw
@@ -415,6 +418,7 @@
 	;
 	
 :perdio
+	gui
 	0 0 sperdiste SDLImage
 	'exit 'sbtns1 400 400 btni
 	SDLRedraw
@@ -428,13 +432,13 @@
 	reset 
 	'jugando sdlshow
 
-	vidas 0? ( drop perdio ; ) drop
-	gano
+	vidas dup "%d" .println
+	0? ( drop 'perdio sdlshow ; ) drop
+	'gano sdlshow
 	;
 
 :menu
 	gui
-|	$0 SDLcls
 	0 0 sinicio SDLImage
 
 	'jugar 'sbtnj1 200 400 btni
@@ -465,10 +469,7 @@
 	"r3\j2022\manwithcap\img\btns2.png" loadimg 'sbtns2 !		
 	
 	time.start
-	
 	'menu SDLshow
-|	jugar
-	
 	SDLquit ;	
 	
 : main ;

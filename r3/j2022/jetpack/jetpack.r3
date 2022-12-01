@@ -142,8 +142,8 @@
 	@ xr1 yr1 rot SDLImage
 	onCLick ;
 		
-	
 :gano
+	gui
 	0 0 sganaste SDLImage
 	'exit 'sbtns1 450 400 btni
 	SDLRedraw
@@ -154,6 +154,7 @@
 	;
 	
 :perdio
+	gui
 	0 0 sperdiste SDLImage
 	'exit 'sbtns1 450 400 btni
 	SDLRedraw
@@ -171,13 +172,10 @@
 
 	puntos -? ( drop 'perdio SDLShow ; ) drop
 	'gano sdlShow
-	
 	;
-	
 
 :menu
 	gui
-|	$0 SDLcls
 	0 0 sinicio SDLImage
 
 	'jugar 'sbtnj1 100 400 btni
