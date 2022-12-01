@@ -26,6 +26,7 @@
 #vxp 0 #vyp 0		| vel player
 
 #np 0
+#vida
 
 #mapajuego
 
@@ -127,7 +128,11 @@
 		calcpos
 		hitplayer
 		drawene
-		) drop  ;
+		) drop  
+	hitene 0? ( drop ; ) drop
+	-1 'vida +!
+	vida 0? ( exit ) drop
+	;
 		
 :viewport
 	xp int. sw 1 >> - 'xvp !
@@ -149,11 +154,6 @@
 :wall? | -- piso?
 	xp int. 10 + yp int. 32 + [map]@s
 	xp int. 20 + yp int. 32 + [map]@s or	
-	;
-
-:debug
-	$ffffff bcolor 
-	10 10 bat 
 	;
 
 #btnpad
@@ -185,10 +185,10 @@
 	32 32 tsdraws
 
 	btnpad
-	%1000 and? ( -5.0 ymove  )
-	%100 and? ( 5.0 ymove  )
-	%10 and? ( -5.0 xmove )
-	%1 and? ( 5.0 xmove )
+	%1000 and? ( -3.0 ymove  )
+	%100 and? ( 3.0 ymove  )
+	%10 and? ( -3.0 xmove )
+	%1 and? ( 3.0 xmove )
 	drop
 
 	viewport
@@ -231,12 +231,16 @@
 	mapajuego 'vectortile 
 	tiledrawvs ;
 	
+:barra
+	$ff00 SDLColor
+	10 10 vida 10 + 20 SDLFRect ;	
 	
 :jugando
 	$666666 SDLcls
 
 	viewport
 	drawmapa	
+	barra
 	'fx p.draw
 	player
 	enemigos
@@ -244,7 +248,10 @@
 	SDLredraw
 	
 	teclado ;
+	
 :reset
+	200 'vida !
+	30.0 'xp ! 30.0 'yp !	| pos player
 	;
 	
 :jugar

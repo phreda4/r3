@@ -294,8 +294,7 @@
 
 :teclado
 	SDLkey 
-	<f1> =? ( exit )
-	<f2> =? ( 0 'vidas ! exit )
+	<esc> =? ( 0 'vidas ! exit )
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )
 	<le> =? ( btnpad %10 or 'btnpad ! )
