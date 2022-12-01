@@ -133,6 +133,15 @@
 	
 	teclado
 	;
+
+|------------
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+		
 	
 :gano
 	0 0 sganaste SDLImage
@@ -165,14 +174,7 @@
 	
 	;
 	
-|------------
-:btni | 'vecor 'i x y -- 
-	pick2 @ SDLImagewh guibox
-	SDLb SDLx SDLy guiIn	
-	[ 8 + ; ] guiI 
-	@ xr1 yr1 rot SDLImage
-	onCLick ;
-	
+
 :menu
 	gui
 |	$0 SDLcls

@@ -209,6 +209,7 @@
 	
 	-10.0 'vyp !  
 	-1 'vidas +!
+	vidas 0? ( exit ) drop
 	;
 	
 :+enemigo | x y --
@@ -393,6 +394,15 @@
 	0 'vxp ! 0 'vyp !		| vel player
 	8 'np ! 1 'face ! 'pstay 'ep !
  	;
+
+|------------
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
+	
 	
 :gano
 	0 0 sganaste SDLImage
@@ -422,14 +432,6 @@
 	gano
 	;
 
-|------------
-:btni | 'vecor 'i x y -- 
-	pick2 @ SDLImagewh guibox
-	SDLb SDLx SDLy guiIn	
-	[ 8 + ; ] guiI 
-	@ xr1 yr1 rot SDLImage
-	onCLick ;
-	
 :menu
 	gui
 |	$0 SDLcls

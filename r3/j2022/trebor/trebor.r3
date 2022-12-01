@@ -3,13 +3,19 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
 
+^r3/lib/gui.r3
+
 ^r3/util/arr16.r3
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
 
 ^r3/util/penner.r3
 
+#sbtnj1 #sbtnj2
+#sbtns1 #sbtns2
 
+#sinicio
+#sfin
 #sfondo
 #sprj
 #spre
@@ -206,6 +212,7 @@
 		) drop  
 	hitene 0? ( drop ; ) drop
 	-1 'vida +!
+	vida 0? ( exit ) drop
 	;
 	
 |--------------------------------
@@ -294,7 +301,7 @@
 		roof? 1? ( vyp -? ( 0 'vyp ! ) drop ) drop
 		; ) drop
 		
-|	vyp 10.0 >? ( exit ) drop
+	vyp 20.0 >? ( exit ) drop
 	
 |	vyp 1? ( dup 'testy ! ) drop
 
@@ -338,6 +345,13 @@
 :barra
 	$ff00 SDLColor
 	10 10 vida 10 + 20 SDLFRect ;
+	
+:btni | 'vecor 'i x y -- 
+	pick2 @ SDLImagewh guibox
+	SDLb SDLx SDLy guiIn	
+	[ 8 + ; ] guiI 
+	@ xr1 yr1 rot SDLImage
+	onCLick ;
 	
 |---- sin reemplazo	
 :drawmapa
@@ -385,6 +399,26 @@
 	SDLredraw
 	
 	teclado ;
+	
+:jugar
+	reset
+	'jugando SDLshow
+	;
+
+:menu
+	gui
+|	$0 SDLcls
+	0 0 sinicio SDLImage
+
+	'jugar 'sbtnj1 150 300 btni
+	'exit 'sbtns1 450 300 btni
+	SDLredraw
+	
+	SDLkey
+	<f1> =? ( jugar )
+	>ESC< =? ( exit )
+	drop
+	;		
 
 :main
 	1000 'fx p.ini
@@ -392,12 +426,19 @@
 	bfont1 
 	|SDLfull
 	"r3/j2022/trebor/mapatrebor.png" loadimg 'sfondo ! 
+	
+	"r3/j2022/trebor/inicio.jpg" loadimg 'sinicio !
+	"r3/j2022/trebor/fin.png" loadimg 'sfin !
+
 	32 32 "r3\j2022\trebor\treborj.png" loadts 'sprj !
 	50 50 "r3\j2022\trebor\enemigos.png" loadts 'spre !
 	"r3\j2022\trebor\nivel.map" loadtilemap 'mapajuego !
 	
-	reset
-	'jugando SDLshow
+	"r3\j2022\trebor\btnj1.png" loadimg 'sbtnj1 !		
+	"r3\j2022\trebor\btnj2.png" loadimg 'sbtnj2 !		
+	"r3\j2022\trebor\btns1.png" loadimg 'sbtns1 !		
+	"r3\j2022\trebor\btns2.png" loadimg 'sbtns2 !		
+	'menu SDLshow
 	SDLquit ;	
 	
 : main ;
