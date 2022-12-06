@@ -16,6 +16,8 @@
 
 #arr 0 0	| array
 
+#xvp #yvp	| viewport
+
 |------------------------------
 #control
 
@@ -37,21 +39,21 @@
 	power 0? ( dup 'av ! ) drop
 	;
 	  
-#maxpower 16.0
+#maxpower 8.0
 
 :accelerate 
 	power 0.2 + maxpower min 'power ! ;
 
-:slower 
+:slower | a --
 	power swap - 0 max 'power ! ;
 
-:turn | ( amount - )
+:turn | amount --
 	power 1 >> *. 'av +! ;
 
 :carcontrol 
 	control
 	%1 and? ( accelerate )  
-    %10 and? ( 0.2 slower ) 
+	%10 and? ( 0.2 slower ) 
 	%100 and? ( 0.0002 turn ) 
 	%1000 and? ( -0.0002 turn )
 	drop
@@ -63,7 +65,10 @@
 	;	  
 	
 :drawcar	
-	px int. py int. angle spr_car SDLspriteR | x y ang img --
+	px int. xvp -
+	py int. yvp -
+	angle spr_car 
+	SDLspriteR | x y ang img --
 	;
 	
 :resetcar
@@ -77,10 +82,13 @@
 	;
 |------------------------------
 :drawtrack
+	px int. sw 1 >> - 'xvp !
+	py int. sh 1 >> - 'yvp !
 	26 20
-	0 0 
-	0 0
-	180 180
+	xvp 8 >> yvp 8 >>
+	xvp $ff and neg 
+	yvp $ff and neg	
+	$ff $ff
 	track tiledraws ;
 	
 |------------------------------
