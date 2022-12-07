@@ -1,5 +1,7 @@
 | glfw3.dll
 |
+^r3/win/console.r3
+
 #sys-glfwInit
 #sys-glfwWindowHint
 #sys-glfwCreateWindow
@@ -77,10 +79,9 @@
 	dup "glfwCreateWindow" getproc 'sys-glfwCreateWindow !
 	dup "glfwTerminate" getproc 'sys-glfwTerminate !
 	dup "glfwMakeContextCurrent" getproc 'sys-glfwMakeContextCurrent !
-	dup "gladLoadGL" getproc 'sys-gladLoadGL !
+
 	dup "glfwSwapInterval" getproc 'sys-glfwSwapInterval !
-	dup "glGenBuffers" getproc 'sys-glGenBuffers !
-	dup "glBindBuffer" getproc 'sys-glBindBuffer !
+
 	dup "glBufferData" getproc 'sys-glBufferData !
 	dup "glCreateShader" getproc 'sys-glCreateShader !
 	dup "glShaderSource" getproc 'sys-glShaderSource !
@@ -95,7 +96,6 @@
 	dup "glfwWindowShouldClose" getproc 'sys-glfwWindowShouldClose !
 	dup "glfwGetFramebufferSize" getproc 'sys-glfwGetFramebufferSize !
 	dup "glViewport" getproc 'sys-glViewport !
-	dup "glClear" getproc 'sys-glClear !
 	dup "glUseProgram" getproc 'sys-glUseProgram !
 	dup "glUniformMatrix4fv" getproc 'sys-glUniformMatrix4fv !
 	dup "glDrawArrays" getproc 'sys-glDrawArrays !
@@ -106,5 +106,13 @@
 	dup "glfwSetErrorCallback" getproc 'sys-glfwSetErrorCallback !
 	dup "glfwSetKeyCallback" getproc 'sys-glfwSetKeyCallback !
 	
+	drop
+	"opengl32.dll" loadlib
+	dup "glClear" getproc 'sys-glClear !
+	drop
+	"glew32.dll" loadlib
+
+	dup "__glewGenBuffers" getproc dup "%d" .println 'sys-glGenBuffers !
+	dup "__glewBindBuffer" getproc dup "%d" .println 'sys-glBindBuffer !
 	drop
 	;

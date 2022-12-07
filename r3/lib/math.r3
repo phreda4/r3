@@ -202,13 +202,6 @@
 	swap $ff00ff and 8 << or
 	dup 16 >>> swap 16 << or ;
 
-::bswap64 | v -- vs
-	dup 8 >> $ff00ff00ff00ff and
-	swap $ff00ff00ff00ff and 8 << or
-	dup 16 >> $ffff0000ffff and
-	swap $ffff0000ffff and 16 << or
-	dup 32 >>> swap 32 << or ;	
-
 | next pow2
 ::nextpow2 | v -- p2
 	1 -
