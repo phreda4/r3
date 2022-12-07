@@ -41,9 +41,9 @@ $44160000 $43e10000 $ffffffff 0 0 | 600 450
 :main
 	$0 SDLcls
 	gira
-
+	|SDLrenderer 0 SDL_RenderSetClipRect
 	SDLrenderer textura 'vert 4 'index 6 SDL_RenderGeometry
-
+	10 10 textura SDLImage
 	SDLredraw
 	
 	SDLkey

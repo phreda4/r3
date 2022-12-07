@@ -18,9 +18,9 @@
 
 #xvp #yvp	| viewport
 
-|------------------------------
 #control
 
+|------------------------------
 #px #py | positionX, positionY - where the car is
 #vx #vy | velocityX, velocityY - speed on each axis
 #drag   | drag - how fast the car slows down
@@ -48,7 +48,7 @@
 	power swap - 0 max 'power ! ;
 
 :turn | amount --
-	power 1 >> *. 'av +! ;
+	power 3 >> *. 'av +! ;
 
 :carcontrol 
 	control
@@ -84,7 +84,7 @@
 :drawtrack
 	px int. sw 1 >> - 'xvp !
 	py int. sh 1 >> - 'yvp !
-	26 20
+	5 4
 	xvp 8 >> yvp 8 >>
 	xvp $ff and neg 
 	yvp $ff and neg	
@@ -98,6 +98,7 @@
 	'arr p.draw
 	carcontrol
 	drawcar
+
 	SDLredraw
 	
 	SDLkey
@@ -117,7 +118,7 @@
 	"r3sdl" 800 600 SDLinit
 |	bfont1	
 	"r3/games/race/car.png" loadimg 'spr_car !
-	"r3/game/race/cartrail.png" loadimg 'spr_trail !
+	"r3/games/race/cartrail.png" loadimg 'spr_trail !
 	"r3/games/race/track.map" loadtilemap 'track !
 	100 'arr p.ini
 	'arr p.clear
