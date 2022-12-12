@@ -1,7 +1,7 @@
 |#include <GL/gl3w.h>
 |#include <SDL.h>
 ^r3/win/sdl2.r3
-^r3/win/sdl2gl.r3
+^r3/win/glew.r3
 
 #width 640
 #height 480
@@ -70,12 +70,12 @@ void main() {
 #GL_FLOAT $1406
 #GL_FALSE 0
 
+#GL_TRIANGLES $0004
+
 :initgl
-	$3231 SDL_init  
-|    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
-|        std::cerr << "failed to init SDL" << std::endl;
-|        return 1;
-|    }
+	"SDL2" width height SDLinitGL 
+	
+|	$3231 SDL_init  
 
     | select opengl version
     21 1 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -83,21 +83,19 @@ void main() {
     18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
     | create a window
-	"SDL2" 0 0 width height $6 SDL_CreateWindow 'window ! | 2 or 4
-	
-	window SDL_GL_CreateContext 'context !
+|	"SDL2" 0 0 width height $6 SDL_CreateWindow 'window ! | 2 or 4
+|	window SDL_GL_CreateContext 'context !
 
-|	gl3wInit drop
-|	glfwInit drop
+	glewInit
 
     | create and compiler vertex shader
     GL_VERTEX_SHADER glCreateShader 'vertex_shader !
-    vertex_shader 1 'vertex_source dup count glShaderSource
+    vertex_shader 1 'vertex_source count glShaderSource
     vertex_shader glCompileShader
-
+;
     | create and compiler fragment shader
     GL_FRAGMENT_SHADER glCreateShader 'fragment_shader !
-    fragment_shader 1 'fragment_source dup count glShaderSource
+    fragment_shader 1 'fragment_source count glShaderSource
     fragment_shader glCompileShader
 
     | create program
@@ -106,7 +104,7 @@ void main() {
     | attach shaders
     shader_program vertex_shader glAttachShader
     shader_program fragment_shader glAttachShader
-
+;
     | link the program and check for errors
     shader_program glLinkProgram
 
@@ -148,10 +146,10 @@ void main() {
 :main
 	GL_COLOR_BUFFER_BIT glClear
 	shader_program glUseProgram
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	vao glBindVertexArray
+	GL_TRIANGLES 0 6 glDrawArrays
 
-	SDL_GL_SwapWindow(window);
+	window SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 
 	drop ;
@@ -159,4 +157,5 @@ void main() {
 
 : 	initgl 
 	'main SDLshow
-	glend ;
+	glend 
+	;
