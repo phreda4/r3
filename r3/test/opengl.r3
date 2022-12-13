@@ -1,7 +1,7 @@
 ^r3/win/core.r3
 
 ^r3/win/glfw3.r3
-^r3/win/console.r3
+^r3/win/glew.r3
 
 #window
 
@@ -55,17 +55,29 @@ void main()
 #GL_FLOAT $1406
 #GL_FALSE 0
 
-#ws #hs
+#VertexArrayID
+
 |----------------------------
 :
-|vert!
+vert!
+
 glfwInit drop
+
+$2100D 4 glfwWindowHint |(GLFW_SAMPLES, 4);
+$22002 3 glfwWindowHint |(GLFW_CONTEXT_VERSION_MAJOR, 3);
+$22003 3 glfwWindowHint |(GLFW_CONTEXT_VERSION_MINOR, 3);
+	
 640 480 "Simple example" 0 0 glfwCreateWindow 'window !
 window glfwMakeContextCurrent
+glewInit
+
+|1 'VertexArrayID glGenVertexArrays
+|VertexArrayID glBindVertexArray
 
 ( window glfwWindowShouldClose 0? drop
 
 	GL_COLOR_BUFFER_BIT glClear
+	
 	window glfwSwapBuffers
 	glfwPollEvents
 	) drop

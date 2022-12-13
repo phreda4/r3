@@ -107,7 +107,6 @@
 	dup "__glewGenBuffers" getproc 'sys-glGenBuffers !
 	dup "__glewBindBuffer" getproc 'sys-glBindBuffer !
 	dup "__glewBufferData" getproc 'sys-glBufferData !
-	dup "__glewClear" getproc 'sys-glClear !
 	dup "__glewUseProgram" getproc 'sys-glUseProgram !
 	dup "__glewEnableVertexAttribArray" getproc 'sys-glEnableVertexAttribArray !
 	dup "__glewVertexAttribPointer" getproc 'sys-glVertexAttribPointer !
@@ -119,7 +118,7 @@
 	dup "__glewBindVertexArray" getproc 'sys-glBindVertexArray !
 	dup "__glewGetShaderInfoLog" getproc 'sys-glGetShaderInfoLog !
 	dup "__glewBindFragDataLocation" getproc 'sys-glBindFragDataLocation !
-	dup "__glewLinkProgram" getproc dup "%d" .println 'sys-glLinkProgram !
+	dup "__glewLinkProgram" getproc 'sys-glLinkProgram !
 	dup "__glewActiveTexture" getproc 'sys-glActiveTexture !
 	dup "__glewUniform1i" getproc 'sys-glUniform1i !
 
@@ -128,7 +127,7 @@
 	dup "__glewDeleteTextures" getproc 'sys-glDeleteTextures !
 	dup "__glewDeleteBuffers" getproc 'sys-glDeleteBuffers !
 	dup "__glewDeleteVertexArrays" getproc 'sys-glDeleteVertexArrays !
-	dup "__glDrawArraysEXT" getproc 'sys-glDrawArrays !
+	
 	drop
 	
 	"opengl32.dll" loadlib
@@ -142,7 +141,8 @@
 	dup "glTexSubImage2D" getproc 'sys-glTexSubImage2D !
 	dup "glEnable" getproc 'sys-glEnable !	
 	dup "glBlendFunc" getproc 'sys-glBlendFunc !	
+	dup "glDrawArrays" getproc 'sys-glDrawArrays !
 	drop
 	
-	0 'sys-glewInit ( 'sys-glGenTextures <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
+	|0 'sys-glewInit ( 'sys-glGenTextures <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;

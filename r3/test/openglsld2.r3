@@ -72,27 +72,41 @@ void main() {
 
 #GL_TRIANGLES $0004
 
+#varr
+#carr
+
 :initgl
 	"SDL2" width height SDLinitGL 
 	
 |	$3231 SDL_init  
 
     | select opengl version
-    21 1 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    17 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+|    21 1 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+|    17 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+|    18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
     | create a window
 |	"SDL2" 0 0 width height $6 SDL_CreateWindow 'window ! | 2 or 4
 |	window SDL_GL_CreateContext 'context !
 
+
 	glewInit
+
+"a" .println
 
     | create and compiler vertex shader
     GL_VERTEX_SHADER glCreateShader 'vertex_shader !
-    vertex_shader 1 'vertex_source count glShaderSource
+"d" .println
+	'vertex_source 1 'carr d! 'varr !
+
+	
+    vertex_shader 1 'varr 'carr |vertex_source count 
+	glShaderSource
+"e" .println
+	
     vertex_shader glCompileShader
-;
+
+"b" .println
     | create and compiler fragment shader
     GL_FRAGMENT_SHADER glCreateShader 'fragment_shader !
     fragment_shader 1 'fragment_source count glShaderSource
@@ -101,10 +115,11 @@ void main() {
     | create program
     glCreateProgram 'shader_program !
 
+"c" .println
     | attach shaders
     shader_program vertex_shader glAttachShader
     shader_program fragment_shader glAttachShader
-;
+
     | link the program and check for errors
     shader_program glLinkProgram
 
@@ -125,6 +140,8 @@ void main() {
 
     1 glEnableVertexAttribArray
     1 3 GL_FLOAT GL_FALSE 6 4 * 4 3 * glVertexAttribPointer
+	
+	fillvertex
 	;
 	
 :glend

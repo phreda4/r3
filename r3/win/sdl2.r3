@@ -59,6 +59,7 @@
 #sys-SDL_GL_DeleteContext
 #sys-SDL_GL_SetSwapInterval
 #sys-SDL_GL_SwapWindow
+#sys-SDL_GL_MakeCurrent
 
 #sys-SDL_SetTextureColorMod
 #sys-SDL_SetHint
@@ -119,6 +120,7 @@
 ::SDL_GL_SetSwapInterval sys-SDL_GL_SetSwapInterval sys1 drop ;
 ::SDL_GL_SwapWindow sys-SDL_GL_SwapWindow sys1 drop ;
 
+::SDL_GL_MakeCurrent sys-SDL_GL_MakeCurrent sys2 drop ; 
 ::SDL_SetHint sys-SDL_SetHint sys2 drop ; 
 
 |----------------------------------------------------------
@@ -319,6 +321,7 @@
 	dup "SDL_GL_DeleteContext" getproc 'sys-SDL_GL_DeleteContext !
 	dup "SDL_GL_SetSwapInterval" getproc 'sys-SDL_GL_SetSwapInterval !
 	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
+	dup "SDL_GL_MakeCurrent" getproc 'sys-SDL_GL_MakeCurrent ! 
 	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
 	drop
 	;
