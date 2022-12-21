@@ -44,18 +44,6 @@
 	codekey 32 >> $1000 or irec 20 >> xor
 	'conkb ! ;
 
-::inkey | -- key (0=none)
-	0 'conkb !
-	ne 0? ( stdin 'ne GetNumberOfConsoleInputEvents ) drop
-	ne 0? ( ; ) 
-	1 - 'ne ! 
-	stdin 'irec 1 'nr ReadConsoleInput
-	irec $ff and
-	$1 =? ( evkey )
-	drop
-	conkb  
-	;
-	
 ::inkey
 	0 'conkb !
 	stdin 'ne GetNumberOfConsoleInputEvents

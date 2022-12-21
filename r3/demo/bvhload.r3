@@ -7,6 +7,8 @@
 ^r3/lib/3d.r3
 ^r3/lib/mem.r3
 
+^r3/lib/trace.r3
+
 #bvhfile
 #$bvhfile
 
@@ -318,7 +320,9 @@
 |	"media/bvh/0008_ChaCha001.bvh"
 |	"media/bvh/10_01.bvh"
 	reload
-|	model dumpmod cr
+	
+	model memmap cr
+
 	0 'framenow !
 |	model here over - "mem.mem" save |debug
 	;
