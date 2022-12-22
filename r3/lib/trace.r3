@@ -49,4 +49,25 @@
 		$49 =? ( -32 23 * 'memini +! ) 
 		$51 =? ( 32 23 * 'memini +! )		
 		drop ) drop ;
+
+#vmem
+#cntbytes
+	
+:showmem
+	.cls
+	memini 0
+	( 24 <? swap
+		pick2 ex cr
+		swap 1 + ) 2drop ;
+	 
+::memmapv | 'v mem --
+	'memini !
+	memini over ex memini - 'cntbytes !
+	( showmem
+		getch $1B1001 <>? 
+		$48 =? ( cntbytes neg 'memini +! ) 
+		$50 =? ( cntbytes 'memini +! )
+		$49 =? ( cntbytes -23 * 'memini +! ) 
+		$51 =? ( cntbytes 23 * 'memini +! )		
+		drop ) 2drop ;
 	

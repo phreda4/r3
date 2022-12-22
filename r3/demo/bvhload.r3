@@ -8,6 +8,7 @@
 ^r3/lib/mem.r3
 
 ^r3/lib/trace.r3
+|MEM 64
 
 #bvhfile
 #$bvhfile
@@ -116,22 +117,17 @@
 	trim getnro 'frames !
 	trim dup "Frame Time:" scanp 0? ( drop ; ) nip
 	trim getfenro 'frametime !
-	
-|	frames chsum "%d %d" .println
 	frames ( 1? 
 		chsum ( 1?
 			rot trim 
-			|pick2 pick2 pick2 "%w %d %d " .println	
 			getfenro 
 			typech
-			|pick2 pick2 pick2 "%f %d %d" .println waitesc
 			, rot rot
 			1 - ) drop
 		1 - ) drop ;
 
 :nextword
 	trim
-|	dup "%w" .println
 	dup "HIERARCHY" scanp 1? ( nip parsehie ; ) drop
 	dup "MOTION" scanp 1? ( nip parsemot ; ) drop
 	;
@@ -161,8 +157,7 @@
 		d@+ "%f " .print
 		d@+ "%f " .print
 		cr
-		) 2drop
-	;
+		) 2drop ;
 
 #xop #yop
 :xxop 'yop ! 'xop ! ;
@@ -235,7 +230,7 @@
 		nmpop
 		mpush
 		db@+ db@+ db@+ mtransi
-		swap drop anibones
+		swap anibones
 		drawstick  |drawcube
 		) drop
 	nmpop
@@ -298,9 +293,9 @@
 	freelook
 	xcam ycam zcam mtrans
 
-|	model drawbones
+	model drawbones
 |	people
-	model drawbones1
+|	model drawbones1
 	
 	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	
@@ -316,12 +311,13 @@
 	mark
 	here dup 'bvhfile !
 	'smem !
-	"media/bvh/guitar_playing.bvh"
-|	"media/bvh/0008_ChaCha001.bvh"
+|	"media/bvh/guitar_playing.bvh"
+	"media/bvh/0008_ChaCha001.bvh"
 |	"media/bvh/10_01.bvh"
 	reload
 	
-	model memmap cr
+|	model memmap cr
+|	[ d@+ "%h " .print d@+ "%f " .print d@+ "%f " .print d@+ "%f " .print ; ] model memmapv 
 
 	0 'framenow !
 |	model here over - "mem.mem" save |debug
