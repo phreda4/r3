@@ -3,6 +3,7 @@
 ^r3/win/sdl2image.r3	
 ^r3/lib/rand.r3	
 ^r3/lib/gui.r3	
+^r3/util/bfont.r3
 
 |------------------------------------------
 | polygon points 
@@ -19,27 +20,45 @@
 :>Y 32 >> ;
 :>X 32 << 32 >> ;
 
+:parea | v1 v2 -- area
+	over >X over >Y * rot >Y rot >X * - ;
+	
+:tarea | -- area
+	0 >a
+	'p 
+	cntp 1 - 3 << over + @ | v0 vu
+	swap
+	( np <? | vu 'v0
+		@+  | vu 'v1 v0
+		rot over | 'v1 v0 vu v0
+		parea a+
+		swap ) 2drop
+	a> ;
+	
+
 :tsign | v1 v2 v3 -- -1/0
 	pick2 >X over >X - pick2 >Y pick2 >Y - *
 	rot >X pick2 >X - rot >Y pick3 >Y swap - * 
-	- 63 >> nip ;
+	- nip ;
 	
 :isPointInTri | pt v1 v2 v3 -- 0/1
-	pick3 pick3 pick3 tsign >r
-	pick3 rot pick2 tsign r> 	| pt v1 v3
-	<>? ( 4drop 0 ; ) >r
-	swap tsign r>	
-	<>? ( drop 0 ; )
-	drop 1 ;
+	pick3 pick3 pick3 tsign -? ( nip 4drop 0 ; ) drop
+	pick3 rot pick2 tsign	-? ( 4drop 0 ; ) drop
+	swap tsign				-? ( drop 0 ; ) drop
+	1 ;
+
+:invlist
+	'v >a 0 ( nv <? dup ca!+ 1 + ) drop ;
 
 :makelist
-	'v >a
-	cntp dup 'nv !
-	( 1? 1 -
-		dup ca!+ ) drop 
-	0 'ni ! ;
+	0 'ni ! 
+	cntp 'nv !
+	tarea -? ( drop invlist ; ) drop
+	'v >a nv ( 1? 1 - dup ca!+ ) drop ;
 	
 :]v 'v + c@ ;
+
+:]vp 'v + c@ 3 << 'p + @ ;
 	
 :1+nv
 	1 + nv >=? ( 0 nip ) ;
@@ -49,7 +68,8 @@
 	
 :v- | n --
 	'v over + dup 1 + rot nv swap - cmove | 
-	-1 'nv !
+|	drop
+	-1 'nv +!
 	;
 	
 #pu #pv #pw	
@@ -58,7 +78,7 @@
 	pu =? ( 1 a+ ; )
 	pv =? ( 1 a+ ; )
 	pw =? ( 1 a+ ; )
-	a@+ pu ]v pv ]v pw ]v isPointInTri
+	a@+ pu ]vp pv ]vp pw ]vp isPointInTri
 	1? ( 2drop 0 ; ) drop
 	;
 	
@@ -80,9 +100,11 @@
 	makelist
 	0 'pv !
 	cntp 'nv !
-	2 ( nv >?
+	2 ( nv <?
 		pv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
+|		pv pu pw "%d %d %d" .println
 		emptyTri 1? ( insTri ) drop
+|		dup "%d" .println
 		) drop
 	;
 
@@ -110,7 +132,11 @@
 	
 
 :dpoint | 'l xy -- 'l
-	dup >X 8 - swap >Y 8 - | x w
+	dup >X 8 - swap >Y 8 - | x y
+	
+	over 18 + over bat 
+	pick2 'p - 3 >> 1 - "%d" sprint bprint
+	
 	16 16 | w h 
 	2over 2over SDLRect 	
 	guibox SDLb SDLx SDLy guiIn	
@@ -154,17 +180,33 @@
 	$ff00 SDLColor ;
 		
 :drawpoints
-	
 	'points ( point> <? 
 		@+ 
 		pointcolor
 		dup >X 4 - swap >Y 4 - 8 8 SDLRect
 		) drop ;
-		
+
+:pdebug
+	1 1 bat
+	$ffffff bcolor
+	'p ( np <? 
+		@+ dup >y swap >x "(%d:%d) " sprint bprint		
+		) drop
+	1 14 bat
+	0 ( nv <? 
+		dup 'v + c@ "%d " sprint bprint
+		1 + ) drop 
+	1 28 bat
+	0 ( ni <? 
+		dup 'i + c@ "%d " sprint bprint
+		1 + ) drop 
+	;
+	
 |------------------------------------------		
 :main
 	gui
 	$0 SDLcls
+	pdebug
 
 	drawl
 	drawp
@@ -176,10 +218,13 @@
 	>esc< =? ( exit )
 	<f1> =? ( repoly )
 	<f2> =? ( addpoint ) 
+	<f3> =? ( triangulate )
 	drop ;
 
 :
 	"r3sdl" 800 600 SDLinit
+	bfont1
+	
 	repoly
 	'main SDLshow 
 	SDLquit
