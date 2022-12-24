@@ -383,6 +383,11 @@ https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
 
 https://docs.google.com/document/d/12I8o1x5pbSpvpNkZ8mz5g8PXDkkCLCLJsrkN-UqGA6o/edit?usp=sharing
 
+## More code from play
+
+https://github.com/phreda4/r3-games
+download and decompress in the r3/r3 folder
+
 ## History
 
 I start with r4 in 2005, in 2020 I develop r3 with 64 bits and some internal diferences, more clear vm and some ideas, breaking r4 code, in 2021 I experiment with DLL linking more concise with 64 bits and remove all SO conecction (now are DLL calls), I think it is a real usefull version, but R3d4 (the prev version) has implementationfor WIN,LIN, RPI and MAX, this version can have this SO but need make all the connetion, not for now.
