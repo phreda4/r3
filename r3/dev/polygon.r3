@@ -61,14 +61,15 @@
 :]vp 'v + c@ 3 << 'p + @ ;
 	
 :1+nv
-	1 + nv >=? ( 0 nip ) ;
+	1 + 
+:vv
+	nv >=? ( 0 nip ) ;
 
 :i!+ | i --
 	'i ni + c! 1 'ni +! ;
 	
 :v- | n --
-	'v over + dup 1 + rot nv swap - cmove | 
-|	drop
+	'v over + dup 1 + rot nv swap - cmove |  delete vertex
 	-1 'nv +!
 	;
 	
@@ -82,7 +83,19 @@
 	1? ( 2drop 0 ; ) drop
 	;
 	
+:close? | -- sign
+	pu ]vp
+	pv ]vp
+	pw ]vp
+	over >Y pick3 >Y -
+	over >X pick4 >X - * >r
+	over >X pick3 >X -
+	over >Y pick4 >Y - * r> -
+	nip nip nip ;
+	
 :emptyTri | -- 0/1= without point inside
+	close? |dup "=%d" .println
+	+? ( 0 nip ; ) drop
 	'v >a
 	nv ( 1?  
 		inside? 0? ( ; )
@@ -95,17 +108,35 @@
 	pw ]v i!+
 	pv v- 
 	;
-	
+
+:pdebug	
+	pw pv pu "u:%d v:%d w:%d" .println
+	0 ( nv <? 
+		dup 'v + c@ "%d " .print
+		1 + ) drop cr
+	0 ( ni <? 
+		dup 'i + c@ "%d " .print
+		1 + ) drop cr ;
+		
+#loop		
 :triangulate
 	makelist
 	0 'pv !
-	cntp 'nv !
-	2 ( nv <?
-		pv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
-|		pv pu pw "%d %d %d" .println
-		emptyTri 1? ( insTri ) drop
-|		dup "%d" .println
+	cntp dup 'nv !
+	1 << 'loop !
+	3 ( nv <?
+|		pdebug	
+		pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
+		emptyTri 1? ( 
+			insTri 
+			nv 1 << 'loop !
+			) drop
+		loop 1 - 0? ( 2drop ; ) 'loop !
 		) drop
+
+	pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
+	insTri
+|	pdebug
 	;
 
 |------------------------------------------
