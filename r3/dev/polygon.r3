@@ -15,7 +15,6 @@
 #i * 128
 #ni
 
-
 | pack xy in a 64 bits number
 :>Y 32 >> ;
 :>X 32 << 32 >> ;
@@ -39,12 +38,13 @@
 :tsign | v1 v2 v3 -- -1/0
 	pick2 >X over >X - pick2 >Y pick2 >Y - *
 	rot >X pick2 >X - rot >Y pick3 >Y swap - * 
-	- nip ;
+	- nip 63 >> ;
 	
 :isPointInTri | pt v1 v2 v3 -- 0/1
-	pick3 pick3 pick3 tsign -? ( nip 4drop 0 ; ) drop
-	pick3 rot pick2 tsign	-? ( 4drop 0 ; ) drop
-	swap tsign				-? ( drop 0 ; ) drop
+	pick3 pick3 pick3 tsign >r 
+	pick3 rot pick2 tsign >r 
+	swap tsign r> r> | s1 s2 s3
+	<>? ( 2drop 0 ; ) <>? ( drop 0 ; ) drop
 	1 ;
 
 :invlist
@@ -75,14 +75,6 @@
 	
 #pu #pv #pw	
 
-:inside? | n -- n/0
-	pu =? ( 1 a+ ; )
-	pv =? ( 1 a+ ; )
-	pw =? ( 1 a+ ; )
-	a@+ pu ]vp pv ]vp pw ]vp isPointInTri
-	1? ( 2drop 0 ; ) drop
-	;
-	
 :close? | -- sign
 	pu ]vp
 	pv ]vp
@@ -92,15 +84,26 @@
 	over >X pick3 >X -
 	over >Y pick4 >Y - * r> -
 	nip nip nip ;
+
+:inside? | n -- n/0
+	pu ]v =? ( 8 a+ "u" .print ; )
+	pv ]v =? ( 8 a+ "v" .print ; )
+	pw ]v =? ( 8 a+ "w" .print ; )
+	a@+ dup >y over >x "(%d:%d) " .print
+	pu ]vp pv ]vp pw ]vp isPointInTri
+	1? ( 2drop -1 ; ) drop
+	;
 	
-:emptyTri | -- 0/1= without point inside
-	close? |dup "=%d" .println
-	+? ( 0 nip ; ) drop
-	'v >a
-	nv ( 1?  
-		inside? 0? ( ; )
-		1 - ) 
-	1 or ;
+:emptyTri | -- -/1= without point inside
+	close? dup "=%d " .print
+	+? ( -1 nip ; ) drop
+	'p >a
+	0 ( cntp <?  
+		dup " %d" .print
+		inside? -? ( ; )
+		1 + ) 
+	" ok " .print
+	;
 	
 :insTri
 	pu ]v i!+
@@ -120,22 +123,23 @@
 		
 #loop		
 :triangulate
+	"----" .println
 	makelist
 	0 'pv !
 	cntp dup 'nv !
 	1 << 'loop !
-	3 ( nv <?
-|		pdebug	
+	2 ( nv <?
+		pdebug	
 		pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
-		emptyTri 1? ( 
+		emptyTri +? ( 
 			insTri 
 			nv 1 << 'loop !
 			) drop
 		loop 1 - 0? ( 2drop ; ) 'loop !
 		) drop
 
-	pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
-	insTri
+|	pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
+|	insTri
 |	pdebug
 	;
 
@@ -197,7 +201,10 @@
 | points alone
 #points * 1024
 #point> 'points
+#index * 1024 | index in dword
 
+
+| test point
 :addpoint
 	SDLx SDLy 
 	32 << swap $ffffffff and or 
@@ -216,7 +223,32 @@
 		pointcolor
 		dup >X 4 - swap >Y 4 - 8 8 SDLRect
 		) drop ;
+		
+| draw poly		
+:drawpoly		
+	'points point> =? ( drop ; ) drop
+	SDLrenderer 0 'points cntp 'index ni SDL_RenderGeometry
+	;
 
+| build point and index for randergeometry
+:buildpoly
+	triangulate
+	'points >a
+	'p ( np <?
+		@+ dup >x i2fp da!+
+		>y i2fp da!+
+		rand da!+
+		0 da!+
+		0 da!+
+		) drop
+	a> 'point> !
+	'index >a
+	'i ni ( 1? 1 - swap
+		c@+ da!+
+		swap ) 2drop
+	;
+	
+| debug
 :pdebug
 	1 1 bat
 	$ffffff bcolor
@@ -233,23 +265,28 @@
 		1 + ) drop 
 	;
 	
+	
 |------------------------------------------		
 :main
 	gui
 	$0 SDLcls
 	pdebug
 
+	drawpoly
+|	drawpoints
+
 	drawl
 	drawp
-	drawpoints
+
 	
 	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( repoly )
-	<f2> =? ( addpoint ) 
-	<f3> =? ( triangulate )
+	<f2> =? ( buildpoly )
+|	<f2> =? ( addpoint ) 
+
 	drop ;
 
 :
