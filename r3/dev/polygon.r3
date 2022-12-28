@@ -136,12 +136,7 @@
 			nv 1 << 'loop !
 			) drop
 		loop 1 - 0? ( 2drop ; ) 'loop !
-		) drop
-
-|	pv vv dup 'pu ! 1+nv dup 'pv ! 1+nv 'pw !
-|	insTri
-|	pdebug
-	;
+		) drop ;
 
 |------------------------------------------
 :randxy
