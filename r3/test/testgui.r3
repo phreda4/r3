@@ -7,7 +7,6 @@
 
 :tbtn | exe "" x1 y1 w h --
 	guibox
-	SDLb SDLx SDLy guiIn	
 	
 	$7f 
 	[ $ff nip ; ] guiI

@@ -2,6 +2,7 @@
 | gui.r3 - PHREDA
 | Immediate mode gui for r3
 |------------------------------
+^r3/win/sdl2.r3
 
 |--- state
 ##hot	| activo actual
@@ -18,12 +19,6 @@
 ##xr1 ##yr1
 ##xr2 ##yr2
 
-::guiBox | x1 y1 w h --
-	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! ;
-
-::guiRect | x1 y1 x2 y2 --
-	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! ;
-	
 #in?
 #btn?
 
@@ -34,6 +29,15 @@
 	'in? ! 
 	'btn? ! ;
 	
+::guiBox | x1 y1 w h --
+	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
+	SDLb SDLx SDLy guiIn ;
+
+::guiRect | x1 y1 x2 y2 --
+	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
+	SDLb SDLx SDLy guiIn ;
+	
+
 |---------
 ::gui
 	idf 'idl ! hot 'hotnow !

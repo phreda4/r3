@@ -8,13 +8,18 @@
 #xpal 0 #ypal 200
 #cwx 60 #cwy 200
 
+|VErtex
+| 4  4   4    4   4
+| xf yf rgba xtf ytf
+#vert [ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ]
+#index [ 0 1 3 1 2 3 ] 
+
 ##colord $0
 
-#colorwimg |188x189
-#c1 $ffffff
-#c1x #c1y #c1w
+#c1x #c1y #c1w #c1a
 
 #pal8 * 300
+#col128 * 512
 #npal
 #select 0
 
@@ -22,53 +27,80 @@
 	dup 'colord !
 	select 0? ( 2drop ; ) drop
 	rgb2hsv | h s v
-	128 16 *>> 128 swap - 'c1w !
-	61 16 *>> | 61 cae en color siempre, deberia ser 64!
-	cwx 68 + cwy 68 + 2swap
-	xy+polar
-	2dup SDLgetpixel  0? ( 3drop ; )
-	'c1 ! 'c1y ! 'c1x !
+	rot 
+	128 16 *>> 'c1w !
+	128 16 *>> 'c1y ! 
+	128 16 *>> 'c1x !
 	;
 
-:setcolor | color --
-	cwx 140 + cwy c1w + SDLgetpixel
+:setcolor | --
+	cwx 2 + c1x +
+	cwy 2 + c1y +
+	SDLgetpixel
 	dup 'colord !
 	'pal8 npal 2 << + !
 	;
-
+	
+:setcolorw
+	cwx 140 + cwy c1w + SDLgetpixel
+	'vert 7 2 << + !
+	setcolor
+	;
+	
 :xypen SDLx SDLy ;
+
+:fillcbox
+	'vert >a
+	cwx 2 + i2fp da!+ cwy 2 + i2fp da!+ $ffffff da!+ 8 a+
+	cwx 2 + 128 + i2fp da!+ cwy 2 + i2fp da!+ colord da!+ 8 a+
+	cwx 2 + 128 + i2fp da!+ cwy 2 + 128 + i2fp da!+ 0 da!+ 8 a+
+	cwx 2 + i2fp da!+ cwy 2 + 128 + i2fp da!+ 0 da!+ 8 a+
+	;
 
 :selectColorWheel
 	$999999 SDLColor
 	cwx cwy 200 160 SDLFRect
-	cwx 2 + cwy 2 + colorwimg SDLImage
-	0 ( 128 <?
-		c1 0 pick2 1 << colmix SDLColor
+
+	'col128 >a
+	0 ( 127 <?
+		da@+ SDLColor
 		cwx 140 + over cwy + over 10 + over SDLLine
 		1 + ) drop
+	
+	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry	
+	
+	cwx 138 + cwy 12 127 guiBox
+	[ SDLy cwy - 127 clamp0max 'c1w ! setcolorw ; ] dup
+	onDnMoveA
+	
 	cwx 2 + cwy 2 + 128 128 guiBox
-	[ 	xypen 2dup 
-		SDLgetPixel 0? ( 3drop ; ) 
-		'c1 ! 'c1y ! 'c1x ! setcolor ; ] onMove
-	cwx 138 + cwy 12 130 guiBox
-	[ xypen nip cwy - 128 clamp0max 'c1w ! setcolor ; ] onMove
-
+	[ xypen cwy - 'c1y ! cwx - 'c1x ! setcolor ; ] dup
+	onDnMoveA
+		
 	$0 SDLColor
-	c1x 3 - c1y 3 - 6 6 SDLRect
-	cwx 137 + cwy c1w + 2 - 16 4 SDLRect
+	cwx 138 + cwy c1w + 1 - 
+	14 3 SDLRect
+	
+	cwx 2 + c1x + 4 -
+	cwy 2 + c1y + 4 -
+	8 8 SDLRect
 
 	$ffffff SDLColor
-	c1x 2 - c1y 2 - 4 4 SDLRect
-	cwx 138 + cwy c1w + 1 - 14 2 SDLRect
+	cwx 2 + c1x + 3 -
+	cwy 2 + c1y + 3 -
+	6 6 SDLRect
+
+	
  	cwx 70 + cwy 138 + bat
 	colord $ffffffff and "$%h" sprint bprint
+	
 	colord SDLColor
 	cwx 10 + cwy 134 + 50 20 SDLFRect
 	
 	cwx cwy 200 160 guiBox
 	guiEmpty
 	;
-
+		
 #ink
 
 ::dlgColor
@@ -103,7 +135,6 @@
 		1 + ) 2drop ;
 
 ::dlgColorIni
-	"media/img/colorwheel.png" loadimg 'colorwimg !
 	'pal8 >a
 	$000000 da!+
 	$888888 da!+
@@ -113,7 +144,12 @@
 		dup 1.0 19 */ 1.0 1.0 hsv2rgb da!+
 		dup 1.0 19 */ 0.5 1.0 hsv2rgb da!+
 		1 + ) drop
-	$0 'colord !
+	'col128 >a
+	0 ( $7f <?
+		dup 9 << 1.0 1.0 hsv2rgb da!+
+		1 + ) drop
+	fillcbox		
+	$ff 'colord !
 	;
 
 ::xydlgColor! | x y --

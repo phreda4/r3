@@ -169,7 +169,7 @@
 	
 	16 16 | w h 
 	2over 2over SDLRect 	
-	guibox SDLb SDLx SDLy guiIn	
+	guibox 
 	[ SDLx 'xa ! SDLy 'ya ! ; ]
 	[ SDLx xa - SDLy ya - setxy ; ]
 	onDnMoveA

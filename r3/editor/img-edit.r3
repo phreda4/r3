@@ -131,7 +131,6 @@
 	modo modo2xy 30 30 SDLRect |box.inv
 
 	xtool ytool 60 180 guiBox
-	SDLb SDLx SDLy guiIn
 	'intool guiI
 	'settool onClick
 	;
@@ -206,8 +205,7 @@
 
 :btnt | exe "text" --
 	bsize bpos 2swap guibox
-	SDLb SDLx SDLy guiIn	
-	
+		
 	$7f 
 	[ $ff nip ; ] guiI
 	SDLColor
@@ -251,7 +249,6 @@
 	imagenw zoom << xi + sw clampmax
 	imagenh zoom << yi + sh clampmax
 	guiRect
-	SDLb SDLx SDLy guiIn
 	modoex 1? ( dup guiI ) drop
 
 	teclado

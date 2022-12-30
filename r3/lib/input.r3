@@ -171,7 +171,6 @@
 	|$ff00 SDLColor 
 	2over 1 - swap 1 - swap 2over 2 + swap 2 + swap SDLRect
 	guiBox
-	SDLb SDLx SDLy guiIn
 	[ xr1 yr1 xr2 pick2 - yr2 pick2 - SDLFRect ; ] guiI
 	bprint
 	onClick

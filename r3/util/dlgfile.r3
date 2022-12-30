@@ -184,7 +184,6 @@
 	ydlg 20 3 << + 4 +
 	wdlg 12 -
 	filelines 16 * guiBox
-	SDLb SDLx SDLy guiIn
 	
 	[ sdly ydlg 20 3 << + 4 + - 16 / fileini + 
 		setfilenow! ; ] onClick

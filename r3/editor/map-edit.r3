@@ -234,8 +234,7 @@
 	
 :pagetile
 	40 40 sw sh guiBox
-	SDLb SDLx SDLy guiIn
-	
+		
 	40 40 tilemem @ sdlimage
 	
 	'inpal guiI
@@ -271,11 +270,9 @@
 :paldraw
 	mapamem 0? ( drop ; ) drop
 	0 0 40 40 guiBox
-	SDLb SDLx SDLy guiIn
 	'selectile onClick
 	
 	0 40 40 sh guiBox
-	SDLb SDLx SDLy guiIn
 	[ $403DFF SDLColor sdly 40 / 0 swap 40 * 40 40 SDLFRect ; ] guiI
 	[ 'paleta sdly 40 / ncell+ @ dup palins! 'tilenow ! ; ] onClick
 
@@ -329,7 +326,6 @@
 	modo tool2xy 40 40 SDLFRect 
 
 	Xinitool 0 sw 40 guiBox
-	SDLb SDLx SDLy guiIn
 	'inbtn guiI
 	'clicktool onClick
 	
@@ -410,7 +406,6 @@
 	mgrid 1? ( grid ) drop
 
 	40 40 sw sh guiBox
-	SDLb SDLx SDLy guiIn
 	modo 3 << 'modelist + @ ex
 	;
 	
