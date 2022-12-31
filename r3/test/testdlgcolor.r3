@@ -7,7 +7,7 @@
 	gui
 	$0 SDLcls
 
-	dlgColor
+	30 30 dlgColor
 
 	SDLkey
 	>esc< =? ( exit )
