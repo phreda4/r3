@@ -1,4 +1,5 @@
-| VM r3
+| VM 
+| token interpreter
 | PHREDA 2020
 |-------------
 ^r3/system/r3base.r3
@@ -14,8 +15,8 @@
 | src|code|info|mov  << CODE
 | src|<mem>|info|mov << DATA
 
-#memsrc		| mem token>src ; code to src
-#memixy		| code to inc x y
+##memsrc		| mem token>src ; code to src
+##memixy		| code to inc x y
 
 #sortinc
 #memvars	| mem vars		; real mem vars
@@ -24,18 +25,6 @@
 
 #srcnow
 #sopx #sopy #sink
-
-:**emu
-|	sink 'ink !
-|	sopx sopy op
-|	xfb> 
-	;
-
-:emu**
-|	>xfb
-|	ink 'sink !
-|	opx 'sopx ! opy 'sopy !
-	;
 
 |----------
 
@@ -47,15 +36,7 @@
 ##RSP * 1024
 ##RTOS 'RSP
 
-:getbig
-	blok + @ ;
-
-:.DUP
-	8 'NOS +! TOS NOS ! ;
-
-:PUSH.NRO | nro --
-	.DUP 'TOS ! ;
-
+:.DUP		8 'NOS +! TOS NOS ! ;
 :.OVER     .DUP NOS 8 - @ 'TOS ! ;
 :.PICK2    .DUP NOS 16 - @ 'TOS ! ;
 :.PICK3    .DUP NOS 24 - @ 'TOS ! ;
@@ -73,11 +54,14 @@
 :.ROT		TOS NOS 8 - @ 'TOS ! NOS @ NOS 8 - !+ ! ;
 :.2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 
+:pish.nro	.DUP 'TOS ! ;
+:getbig		blok + @ ;
+
 :.dec2	dup 4 - d@ 8 >> getbig push.nro ;
 :.bin2	dup 4 - d@ 8 >> getbig push.nro ;
 :.hex2	dup 4 - d@ 8 >> getbig push.nro ;
 :.fix2	dup 4 - d@ 8 >> getbig push.nro ;
-:.wor2 4 - d@ 8 >> dic>tok @ ; | tail call
+:.wor2	4 - d@ 8 >> dic>tok @ ; | tail call
 
 :.dec	dup 4 - d@ 8 >> push.nro ;
 :.hex   dup 4 - d@ 8 >> push.nro ;
@@ -117,26 +101,26 @@
 :.B?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr .2DROP ; ) drop .2DROP ;
 
 
-:.AND		NOS @ TOS and .NIP 'TOS ! ;
-:.OR		NOS @ TOS or .NIP 'TOS ! ;
-:.XOR		NOS @ TOS xor .NIP 'TOS ! ;
-:.NOT		TOS not 'TOS ! ;
-:.+			NOS @ TOS + .NIP 'TOS ! ;
-:.-			NOS @ TOS - .NIP 'TOS ! ;
-:.*			NOS @ TOS * .NIP 'TOS ! ;
-:./			NOS @ TOS / .NIP 'TOS ! ;
-:.*/		NOS 8 - @ NOS @ TOS */ .2NIP 'TOS ! ;
-:.*>>		NOS 8 - @ NOS @ TOS *>> .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
-:.<</		NOS 8 - @ NOS @ TOS <</ .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
-:./MOD		NOS @ TOS /mod 'TOS ! NOS ! ;
-:.MOD		NOS @ TOS mod .NIP 'TOS ! ;
-:.ABS		TOS abs 'TOS ! ;
-:.NEG		TOS neg 'TOS ! ;
-:.CLZ		TOS clz 'TOS ! ;
-:.SQRT		TOS sqrt 'TOS ! ;
-:.<<		NOS @ TOS << .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:.>>		NOS @ TOS >> .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:.>>>		NOS @ TOS >>> .NIP 'TOS ! ;    | need LSB (TOS is 32bits)
+:.AND	NOS @ TOS and .NIP 'TOS ! ;
+:.OR	NOS @ TOS or .NIP 'TOS ! ;
+:.XOR	NOS @ TOS xor .NIP 'TOS ! ;
+:.NOT	TOS not 'TOS ! ;
+:.+		NOS @ TOS + .NIP 'TOS ! ;
+:.-		NOS @ TOS - .NIP 'TOS ! ;
+:.*		NOS @ TOS * .NIP 'TOS ! ;
+:./		NOS @ TOS / .NIP 'TOS ! ;
+:.*/	NOS 8 - @ NOS @ TOS */ .2NIP 'TOS ! ;
+:.*>>	NOS 8 - @ NOS @ TOS *>> .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
+:.<</	NOS 8 - @ NOS @ TOS <</ .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
+:./MOD	NOS @ TOS /mod 'TOS ! NOS ! ;
+:.MOD	NOS @ TOS mod .NIP 'TOS ! ;
+:.ABS	TOS abs 'TOS ! ;
+:.NEG	TOS neg 'TOS ! ;
+:.CLZ	TOS clz 'TOS ! ;
+:.SQRT	TOS sqrt 'TOS ! ;
+:.<<	NOS @ TOS << .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
+:.>>	NOS @ TOS >> .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
+:.>>>	NOS @ TOS >>> .NIP 'TOS ! ;    | need LSB (TOS is 32bits)
 
 |--- R
 :.>R	8 'RTOS +! TOS RTOS ! .DROP ;
@@ -319,7 +303,7 @@
 	tokvalue 3 << blok + d@ $10000000 and ;
 
 :blini | -- end?
-	tokvalue 3 << blok + d@  $fffffff and 2 << code + ;
+	tokvalue 3 << blok + d@ $fffffff and 2 << code + ;
 
 :blend | -- end?
 	tokvalue 3 << blok + 4 + d@ 2 << code + ;
@@ -357,7 +341,7 @@
 	sopy sopx 12 << or sink 24 << or
 	pick2 code - memixy + d!
 	over code - memsrc + d!
-	srcnow >>next 'srcnow d!
+	srcnow >>next 'srcnow !
 	d@+ $ff and
 |	12 =? ( trwor ) | call
 	17 =? ( tr( )
@@ -370,7 +354,7 @@
 :code2mem1 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
 	dup @ findinclude 'sink ! | include
-	dup @ >>next getsrcxy 'srcnow d!
+	dup @ >>next getsrcxy 'srcnow !
 	dup adr>toklenreal
 	( 1? 1 - swap
 		transform1
@@ -379,17 +363,21 @@
 :sameinc | adr -- adr
 	dup @
 	dup findinclude
-	sink =? ( drop >>next 'srcnow d! ; )
+	sink =? ( drop >>next 'srcnow ! ; )
 	|---first word in include
 
 	'sink !
-	>>next getsrcxy 'srcnow d!
+	>>next getsrcxy 'srcnow !
 	;
 
 :code2mem1 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
+|	dup @ "%w " .print		
 	sameinc
 	dup adr>toklenreal
+	
+|	2dup " %d %h" .println
+	
 	( 1? 1 - swap
 		transform1
 		swap ) 2drop ;
@@ -427,7 +415,11 @@
 
 :code2mem2 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
+|	dup @ "%w " .print	
 	dup adr>toklenreal
+	
+|	2dup " %d %h" .println
+	
 	( 1? 1 - swap
 		transform2
 		swap ) 2drop ;
@@ -493,8 +485,10 @@
 
 :var2mem | adr -- adr
 	dup 16 + @ 1 nand? ( drop ; ) drop	| data only
+	|dup @ "%w " .print
 	dup adr>toklen
-	here pick3 4 + !	| save mem place
+	|2dup " %d %h" .println
+	here pick3 8 + !	| save mem place in token place
 	0? ( ,q drop ; )
 	',q 'gmem ! 			| save dword default
 	( 1? 1 - swap
@@ -514,25 +508,19 @@
 	here dup 'memsrc !			| array code to source
 	code> code - + 'memixy !	| array code to include/X/Y
 	code> code - 1 << 'here +!
-|	code2run
+	code2run
 	here 'memvars !
-|	data2mem
+	data2mem
 	here 'freemem !
-
-|	0 ( cntdef <? 
-|		dup 2 << 'memsrc + d@ "%h > " .print 
-|		dup 3 << 'memixy + @ "%h " .println
-|		1 + ) 2drop
-|	cr
-	
-
+		
+|	.input 
 	;
 
 ::code2src | code -- src
-	code - memsrc + @ ;
+	code - memsrc + d@ ;
 
 ::code2ixy | code -- ixy
-	code - memixy + @ ;
+	code - memixy + d@ ;
 
 :backsrc | adr -- adr
 	4 - ( dup d@ 0? drop 4 - ) drop ;
@@ -561,12 +549,6 @@
 	src2code '<<bp !
 	;
 
-::dumpmm
-	|cls home
-	|$ff00 'ink !
-	|memsrc dumpd 
-	;
-
 |-------------------------------
 | palabras de interaccion
 |-------------------------------
@@ -584,31 +566,24 @@
 
 ::stepvm
 	<<ip 0? ( drop resetvm ; )
-	**emu
 	d@+ $ff and 3 << 'vmc + @ ex
-	'<<ip !
-	emu**
-	;
+	'<<ip ! ;
 
 ::stepvmn | --
 	<<ip 0? ( drop resetvm ; )
 	dup d@ $ff and $c <>? ( 2drop stepvm ; ) drop
-	**emu
 	dup 4 + swap
 	( over <>?
 		d@+ $ff and 3 << 'vmc + @ ex
 		1? ) nip
-	'<<ip !
-	emu** ;
+	'<<ip ! ;
 
 ::playvm | --
 	<<ip 0? ( drop resetvm ; )
-	**emu
 	( <<bp <>?
 		d@+ $ff and 2 << 'vmc + @ ex
 		1? )
-	'<<ip !
-	emu** ;
+	'<<ip ! ;
 
 ::stackprintvm
 	" D) " .print

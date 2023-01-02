@@ -73,6 +73,12 @@
 	rows 2 - 'hcode !
 	cols 7 - 'wcode !
 	;
+ 
+:mode!src
+	2 'emode !
+	rows 4 - 'hcode !
+	cols 7 - 'wcode !
+	;
 
 |------ MEMORY VIEW
 #actword 0
@@ -85,7 +91,6 @@
 
 #incnow
 
-| includes list with cursor in actual
 :incmap
 	0 ( cntinc <?
 		40 over 2 + ,at
@@ -104,39 +109,6 @@
 	0 'pagtok !
 	;
 
-:val 8 >>> ;
-
-:valstr
-	8 >>> src +
-	( c@+ 1?
-		34 =? ( drop c@+ 34 <>? ( 2drop ; ) dup ,c )
-		,c )
-	2drop ;
-	
-:tn 13 ,fcolor val src + ,w ;
-:ts 15 ,fcolor """" ,s valstr """" ,s ;
-:tw 10 ,fcolor val dic>adr @ ,w ;
-:taw 14 ,fcolor val dic>adr @ "'" ,s ,w ;
-
-:nil drop 0 ,d ;
-:td 11 ,fcolor 8 >> ,d ;
-:tb 11 ,fcolor "%" ,s 8 >> ,b ;
-:th 11 ,fcolor "$" ,s 8 >> ,h ;
-:tf 11 ,fcolor 8 >> ,f ;
-
-|*** big version, not done
-:tdb 8 >> ,d ;
-:tbb "%" ,s 8 >> ,b ;
-:thb "$" ,s 8 >> ,h ;
-:tfb 8 >> ,f ;
-
-#ltok nil tdb tbb thb tfb 0 tw td tb th tf ts tw tw taw taw
-
-::,tokenprintc
-	dup $ff and
-	15 >? ( 16 - r3basename 9 ,fcolor ,s drop ; )
-	3 << 'ltok + @ ex ;
-	
 :token | n
 	cnttok >=? ( drop ; )
 	2 << initok +
@@ -156,12 +128,10 @@
 
 |-------------------------------------------
 :printcode
-	9 ,fcolor 
 	@+ " :%w " ,print
 	drop ;
 
 :printdata
-	13 ,fcolor 
 	@+ " #%w " ,print
 	drop ;
 
@@ -210,14 +180,13 @@
 	$51 =? ( hcode +word )		| pgdn 
 	
 	| $3b |f1
-|	$3d =? ( mode!src ) | <f4> -- vie src
+	$3d =? ( mode!src ) | <f4> -- vie src
 	drop
 
 	mark
 	,hidec ,reset ,cls
 	dicmap
-	
-|	incmap
+	incmap
 	
 	1 18 ,at
 	actword ,wordinfo ,eol 
@@ -261,7 +230,231 @@
 		,cr
 		1 + ) drop ;
 
+|------ CODE VIEW
+#xlinea 0
+#ylinea 0	| primera linea visible
+#ycursor
+#xcursor
+
+#pantaini>	| comienzo de pantalla
+#pantafin>	| fin de pantalla
+#fuente  	| fuente editable
+#fuente> 	| cursor
+#$fuente	| fin de texto
+
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
+
+:buildinfo | infmov --
+	,bcyan 
+	dup $f and ,sp
+	dup ,ncar " -- " ,s
+	over 55 << 59 >> + | deltaD
+	,ncar ,sp 
+	,reset ,sp ,bcyan ,black
+	$1000000000 and? ( ";"  ,s	)	| multiple
+	$2000000000 and? ( "R" ,s )		| recurse
+	$8000000000 nand? ( "."  ,s	)	| no ;
+	drop
+	;
+
+#linecommnow 	
+
+:inicomm
+	linecomm 8 + | head 
+	( @+ $fff and ylinea <=? drop 8 + ) drop
+	8 - 'linecommnow !
+	;
+	
+:prntcom | line adr' -- line adr'
+	linecommnow @ $fff and 
+	pick2 ylinea + 
+	>? ( drop ; ) drop
+	,sp
+	linecommnow 8 +
+	@+ swap 'linecommnow !
+	dup 12 32 + >> $ff and 
+	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+	,black
+	buildinfo
+	prntcom
+	;
+
+|------ Color line
+#colornow 0
+
+:wcolor
+	over c@
+	$22 =? ( drop 15 'colornow ! ; )	| $22 " string
+	$5e =? ( drop 3 'colornow ! ; )	| $5e ^  Include
+	$7c =? ( drop 8 'colornow ! ; )	| $7c |	 Comentario
+	$3A =? ( drop 9 'colornow ! ; )	| $3a :  Definicion
+	$23 =? ( drop 13 'colornow ! ; )	| $23 #  Variable
+	$27 =? ( drop 14 'colornow ! ; )	| $27 ' Direccion
+    drop
+	over isNro 1? ( drop 11 'colornow ! ; ) 
+	drop 10 'colornow ! ;
+
+:,tcolor colornow ,fcolor ;
+
+:iniline
+	xlinea wcolor
+	( 1? 1 - swap
+		c@+ 0? ( drop nip 1 - ; )
+		13 =? ( drop nip 1 - ; )
+		9 =? ( wcolor )
+		32 =? ( wcolor )
+		drop swap ) drop ;
+	
+:strword
+	,c
+	( c@+ 1?
+		$22 =? (
+			over c@  $22 <>? ( drop ; )
+			,c swap 1 + swap )
+		,c	) drop 1 - ;
+	
+:endline
+	,c ( c@+ 1? 
+			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
+	
+:parseline 
+	,tcolor
+	( c@+ 1? 13 <>?  | 0 o 13 sale
+		9 =? ( wcolor ,tcolor )
+		32 =? ( wcolor ,tcolor )
+		$22 =? ( strword ) 		| $22 " string
+		$5e =? ( endline ; )	| $5e ^  Include
+		$7c =? ( endline ; )	| $7c |	 Comentario
+		,c
+		) 
+	1? ( drop ; ) drop
+	1 - ;
+
+|..............................
+:linenow
+	ycursor =? ( $3e ,c ; ) 32 ,c ;
+	
+:linenro | lin -- lin
+	dup ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+
+:drawline | adr line -- line adr'
+	,esc "0m" ,s ,esc "37m" ,s ,eline | reset,white,clear
+	linenro	swap 
+	iniline
+	parseline 
+	prntcom
+	;
+	
+|..............................
+
+:<<13 | a -- a
+	( fuente >=?
+		 dup c@
+		13 =? ( drop ; )
+		drop 1 - ) ;
+
+:>>13 | a -- a
+	( $fuente <?
+		dup c@
+		13 =? ( drop 1 - ; ) | quitar el 1 -
+		drop 1 + )
+	drop $fuente 2 - ;
+
+:khome
+	fuente> 1 - <<13 1 + 'fuente> ! ;
+:kend
+	fuente> >>13  1 + 'fuente> ! ;
+
+:scrollup | 'fuente -- 'fuente
+	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
+	ylinea 1? ( 1 - ) 'ylinea ! ;
+
+:scrolldw
+	pantaini> >>13 2 + 'pantaini> !
+	pantafin> >>13 2 + 'pantafin> !
+	1 'ylinea +! ;
+
+:colcur
+	fuente> 1 - <<13 swap - ;
+
+:karriba
+	fuente> fuente =? ( drop ; )
+	dup 1 - <<13		| cur inili
+	swap over - swap	| cnt cur
+	dup 1 - <<13			| cnt cur cura
+	swap over - 		| cnt cura cur-cura
+	rot min + fuente max
+	'fuente> !
+	;
+
+:kabajo
+	fuente> $fuente >=? ( drop ; )
+	dup 1 - <<13 | cur inilinea
+	over swap - swap | cnt cursor
+	>>13 1 +    | cnt cura
+	dup 1 + >>13 1 + 	| cnt cura curb
+	over -
+	rot min +
+	'fuente> !
+	;
+
+:kder
+	fuente> $fuente <? ( 1 + 'fuente> ! ; ) drop ;
+
+:kizq
+	fuente> fuente >? ( 1 - 'fuente> ! ; ) drop ;
+
+:kpgup
+	20 ( 1? 1 - karriba ) drop ;
+
+:kpgdn
+	20 ( 1? 1 - kabajo ) drop ;
+
+|..............................
+:drawcode
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	drop
+
+	,reset
+	inicomm
+	pantaini>
+	0 ( hcode <?
+		1 ycode pick2 + ,at
+		drawline
+		swap 1 + ) drop
+	$fuente <? ( 1 - ) 'pantafin> !
+	;
+
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 3 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+:cursorpos
+	ylinea 'ycursor ! 0 'xcursor !
+	pantaini> ( fuente> <? c@+ emitcur ) drop
+	| hscroll
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	drop 
+	xcode xlinea - xcursor +
+	ycode ylinea - ycursor + ,at 
+	;
+
+
 |---------------------------------
+:barratop
+|	"^[37mr3Debug ^[7mF1^[27m INFO ^[7mF2^[27m DICC ^[7mF3^[27m WORD ^[7mF4^[27m MEM ^[7mF5^[27m SRC  " ,printe 
+	
+|	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF6^[27mVIEW ^[7mF7^[27mSTEP ^[7mF8^[27mSTEPN" ,printe 
+	"^[37mr3Debug ^[7mF4^[27mVIEWW " ,printe 
+	;
+
 :infobottom
 	1 hcode 2 + ,at 
 	,bblue ,white |,eline
@@ -307,12 +500,17 @@
 
 :stepdebug
 	1 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
 
+|	$ff00 'ink !
 |	'outpad sp text ,cr
 	dup "%h" .println
 
+|	$ffffff 'ink !
 	" > " .print
 |	'inpad 1024 input ,cr
+|	$ffff00 'ink !
 	stackprintvm ,cr
 	regb rega " RA:%h RB:%h " ,print
 	|waitesc 
@@ -360,8 +558,20 @@
 	;
 
 :console
+|	xsele cch op
+|	wcode hcode 1 + .at
+|	xsele ccy pline
+|	sw ccy pline
+|	sw cch pline
+|	$040466 'ink !
+|	poli
+
 	1 hcode 1 + .at
+|	$0000AE 'ink !
+|	rows hcode - 1 - backlines
+
     showip
+|	'outpad sp text ,cr
 
 	" > " .print
 |	'inpad 1024 input ,cr
@@ -369,6 +579,67 @@
 	regb rega " RA:%h RB:%h " ,print
 	;
 
+|------ search code in includes
+:setpantafin
+	pantaini>
+	0 ( hcode <?
+		swap >>cr 1 + swap
+		1 + ) drop
+	$fuente <? ( 1 - ) 'pantafin> ! ;
+
+:setsource | src --
+	dup 'pantaini> !
+	dup 'fuente !
+	dup 'fuente> !
+	count + '$fuente !
+	0 'xlinea !
+	0 'ylinea !
+	setpantafin
+	;
+
+:srcnow | nro --
+	incnow =? ( drop ; ) dup 'incnow !
+	3 << 'inc +
+	@+ "%l" sprint 'namenow strcpy | warning ! is IN the source code
+	@ setsource
+	|maketags
+	;
+
+:getsrclen | adr -- len
+	dup ( c@+ $ff and 32 >? drop ) drop 1 - swap - ;
+
+:gotosrc
+	<<ip 0? ( drop ; )
+	0 'xlinea !
+	dup code2ixy
+	
+	dup 24 >> $ff and srcnow
+	|$ffffff and 'taglist !
+	drop
+	code2src dup 'fuente> !
+	drop
+	|getsrclen 'taglist 4 + ! 
+	;
+
+:setbp
+	fuente> incnow src2code
+	dup '<<bp !
+	code2ixy
+|	$ffffff and $1000000 or 'taglist 8 + d!
+|	<<bp code2src getsrclen 'taglist 12 + d! ;
+	;
+
+:play2cursor
+	fuente> incnow src2code
+	dup '<<bp !
+	code2ixy
+|	$ffffff and $1000000 or 'taglist 8 + d!
+|	<<bp code2src getsrclen 'taglist 12 + d! ;
+	;
+
+
+:codetoword
+	fuente> incnow src2word setword ;
 
 |-------- view screen
 :waitf6
@@ -379,22 +650,119 @@
 	|xfb> 'waitf6 onshow 
 	;
 
+#statevars
+
 |-------------------------------
+
+:modesrc
+	ckey 
+	$48 =? ( karriba ) 
+	$50 =? ( kabajo )
+	$4d =? ( kder ) 
+	$4b =? ( kizq )
+	$47 =? ( khome ) 
+	$4f =? ( kend )
+	$49 =? ( kpgup ) 
+	$51 =? ( kpgdn )
+
+	|$3a | f1
+|	$3b =? ( playvm gotosrc ) |f2
+|	$3c =? ( play2cursor playvm gotosrc )
+
+	$3d =? ( mode!view codetoword ) | f4 word analisys
+|	<f10> =? ( mode!view 0 +word )
+
+	$3f =? ( setbp )
+|	>f6< =? ( viewscreen )
+|	<f7> =? ( stepvm gotosrc )
+|	<f8> =? ( stepvmn gotosrc )
+|	<f9> =? ( 1 statevars xor 'statevars ! )
+|	<tab> =? ( mode!imm )
+
+	drop
+
+
+	mark
+	,hidec
+	barratop
+	
+	drawcode
+	
+	infobottom
+
+|	drawtags
+	
+|	statevars 1? ( showvars ) drop
+|	showvstack
+
+	cursorpos
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	;
+
+
+#ninclude
+
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
 	( 1? 1 - swap
+		dup "%h : " ,print
 		d@+
 		dup $ff and "%h " ,print
 		dup 8 >> 1? ( dup "%h " ,print ) drop
 		,tokenprintc ,cr
 		swap ) 2drop ;
 
+:savemap
+	mark
+	"inc-----------" ,print ,cr
+	'inc ( inc> <?
+		@+ "%w " ,print
+		@+ "%h " ,print ,cr
+		) drop
+	
+	"dicc-----------" ,print ,cr
+	dicc ( dicc> <?
+		@+ "#:%w " ,print
+		@+ "%h " ,print
+		@+ "%h " ,print
+		@+ "%h " ,print ,cr
+		dup 32 - ,printword
+		,cr ) drop
+	
+	"block----------" ,print ,cr
+	blok cntblk ( 1? 1 - swap
+		d@+ "%h " ,print
+		d@+ "%h " ,print ,cr
+		swap ) 2drop
+
+	"runmap ----------" ,print ,cr
+
+|	here dup 'memsrc !			| array code to source
+|	code> code - + 'memixy !	| array code to include/X/Y
+|	code> code - 1 << 'here +!
+|	code2run
+|	here 'memvars !
+|	data2mem
+|	here 'freemem !
+
+	0 ( cntdef <? 
+		dup "%h " ,print
+		dup 2 << 'memsrc + d@ "%h > " ,print 
+		dup 2 << 'memixy + d@ "%h " ,println
+		1 + ) drop
+
+	"mem/map.txt" savemem
+	empty ;
+
+
 |------ MAIN
 :modeshow
 	emode
-|	0 =? ( modeview )	
 	1 =? ( modeview )
+	2 =? ( modesrc )
 	drop ;
 
 |--------------------- BOOT
@@ -414,19 +782,23 @@
 	dup 'linecomm> ! 
 	'here !
 	
-	|savemap | save info in file for debug
-	
 	vm2run
+
+	savemap | save info in file for debug
 	
 	'name 'namenow strcpy
+	src setsource
 
 	.getconsoleinfo
 	.alsb .ovec .cls
 	
-	mode!view 
+|	mode!imm
+	mode!src
+|	mode!view 
+	
 	cntdef 1 - setword
+	
 	resetvm
-
 |	gotosrc |*****
 |	prevars | add vars to panel
 
