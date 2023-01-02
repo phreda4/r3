@@ -558,17 +558,7 @@
 	;
 
 :console
-|	xsele cch op
-|	wcode hcode 1 + .at
-|	xsele ccy pline
-|	sw ccy pline
-|	sw cch pline
-|	$040466 'ink !
-|	poli
-
 	1 hcode 1 + .at
-|	$0000AE 'ink !
-|	rows hcode - 1 - backlines
 
     showip
 |	'outpad sp text ,cr
@@ -612,6 +602,8 @@
 	<<ip 0? ( drop ; )
 	0 'xlinea !
 	dup code2ixy
+|	dup "%h" .println
+|	.input
 	
 	dup 24 >> $ff and srcnow
 	|$ffffff and 'taglist !
@@ -685,9 +677,7 @@
 	mark
 	,hidec
 	barratop
-	
 	drawcode
-	
 	infobottom
 
 |	drawtags
@@ -748,11 +738,10 @@
 |	data2mem
 |	here 'freemem !
 
-	0 ( cntdef <? 
-		dup "%h " ,print
-		dup 2 << 'memsrc + d@ "%h > " ,print 
-		dup 2 << 'memixy + d@ "%h " ,println
-		1 + ) drop
+	code ( code> <? 
+		dup code2src "%w " ,print
+		dup code2ixy "%h " ,println
+		4 + ) drop
 
 	"mem/map.txt" savemem
 	empty ;
@@ -799,7 +788,7 @@
 	cntdef 1 - setword
 	
 	resetvm
-|	gotosrc |*****
+	gotosrc |*****
 |	prevars | add vars to panel
 
 	modeshow

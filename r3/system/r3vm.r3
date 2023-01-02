@@ -351,6 +351,7 @@
 	22 34 bt? ( transfcond )
 	drop ;
 
+|---------- sin incremental
 :code2mem1 | adr -- adr
 	dup 16 + @ 1 and? ( drop ; ) drop	| code only
 	dup @ findinclude 'sink ! | include
@@ -359,14 +360,13 @@
 	( 1? 1 - swap
 		transform1
 		swap ) 2drop ;
+|---------- sin incremental
 
 :sameinc | adr -- adr
 	dup @
 	dup findinclude
 	sink =? ( drop >>next 'srcnow ! ; )
-	|---first word in include
-
-	'sink !
+	'sink ! 	|---first word in include
 	>>next getsrcxy 'srcnow !
 	;
 
@@ -504,7 +504,6 @@
 |------ PREPARE 2 RUN
 ::vm2run
 	sortincludes
-	
 	here dup 'memsrc !			| array code to source
 	code> code - + 'memixy !	| array code to include/X/Y
 	code> code - 1 << 'here +!
@@ -512,8 +511,6 @@
 	here 'memvars !
 	data2mem
 	here 'freemem !
-		
-|	.input 
 	;
 
 ::code2src | code -- src
@@ -558,7 +555,7 @@
 	'RSP 'RTOS !
 	0 'TOS !
 	0 RTOS !
-	<<boot '<<ip !
+	<<boot dic>tok @ '<<ip !
 	;
 
 ::tokenexec | adr+ token -- adr+
