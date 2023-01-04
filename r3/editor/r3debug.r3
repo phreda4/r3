@@ -444,6 +444,8 @@
 	drop 
 	xcode xlinea - xcursor +
 	ycode ylinea - ycursor + ,at 
+	| draw code
+	|,rever <<ip code2src "%w" ,print
 	;
 
 
@@ -457,8 +459,9 @@
 
 :infobottom
 	1 hcode 2 + ,at 
-	,bblue ,white |,eline
-	" info ^[7mF1^[27m " ,printe ,nl
+	,bblue ,white ,eline
+	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN" ,printe ,nl
+|	" info ^[7mF1^[27m " ,printe ,nl
 	,reset ,bblack
 	<<ip "IP:%h" ,print ,nl
 	,stackprintvm
@@ -500,8 +503,6 @@
 
 :stepdebug
 	1 hcode 1 + .at
-|	$0000AE 'ink !
-|	rows hcode - 1 - backlines
 
 |	$ff00 'ink !
 |	'outpad sp text ,cr
@@ -657,17 +658,18 @@
 	$49 =? ( kpgup ) 
 	$51 =? ( kpgdn )
 
-	|$3a | f1
-|	$3b =? ( playvm gotosrc ) |f2
-|	$3c =? ( play2cursor playvm gotosrc )
+	
+|	$3b =? ( playvm gotosrc ) |f1
+|	$3c =? ( play2cursor playvm gotosrc ) |f2
+	$3d =? ( mode!view codetoword ) | f3 word analisys
+	| $3e f4
+	$3f =? ( stepvm gotosrc )	| f5
+	$40 =? ( stepvmn gotosrc )	| f6
 
-	$3d =? ( mode!view codetoword ) | f4 word analisys
 |	<f10> =? ( mode!view 0 +word )
 
-	$3f =? ( setbp )
+|	$3f =? ( setbp )
 |	>f6< =? ( viewscreen )
-|	<f7> =? ( stepvm gotosrc )
-|	<f8> =? ( stepvmn gotosrc )
 |	<f9> =? ( 1 statevars xor 'statevars ! )
 |	<tab> =? ( mode!imm )
 
@@ -686,6 +688,8 @@
 |	showvstack
 
 	cursorpos
+	
+	
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer
@@ -788,7 +792,7 @@
 	cntdef 1 - setword
 	
 	resetvm
-	gotosrc |*****
+	gotosrc
 |	prevars | add vars to panel
 
 	modeshow
