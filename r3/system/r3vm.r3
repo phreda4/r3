@@ -54,7 +54,7 @@
 :.ROT		TOS NOS 8 - @ 'TOS ! NOS @ NOS 8 - !+ ! ;
 :.2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 
-:pish.nro	.DUP 'TOS ! ;
+:push.nro	.DUP 'TOS ! ;
 :getbig		blok + @ ;
 
 :.dec2	dup 4 - d@ 8 >> getbig push.nro ;

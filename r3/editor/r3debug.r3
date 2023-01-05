@@ -677,7 +677,7 @@
 
 
 	mark
-	,hidec
+	,hidec ,cls
 	barratop
 	drawcode
 	infobottom

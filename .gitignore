@@ -11,3 +11,4 @@ mem/debuginfo.db
 mem/main.mem
 mem/menu.mem
 mem/map.txt
+asm/set.asm
