@@ -63,22 +63,28 @@
 :add.inc | src here -- src
 	over inc> !+ !+ 'inc> ! ;
 
+|*** need recursion detection!!
 :includes | src --
 	dup ( trimcar 1?
+|		over "%l%." filelog
 			( $5e =? drop | $5e ^  Include
 			ininc? 0? ( drop
+|				cr dup 20 type cr
 				load.inc 0? ( drop ; ) |no existe
 				includes
 				error 1? ( drop ; ) drop
 				dup ) drop
 			>>cr trimcar )
 		includepal ) 2drop
-	add.inc ;
+	add.inc 
+|	cr debuginc trace	
+	;
 
-::r3-stage-1 | filename str -- err/0
+::r3-stage-1 | str -- err/0
+|clearlog
 	10 'switchmem !
+|debuginc trace
 	includes
 |debuginc
 	inc> 'inc - 4 >> 'cntinc !
-|8 'cntblk +! | 8 blocks more for immediate!
 	;

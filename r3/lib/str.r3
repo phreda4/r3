@@ -221,4 +221,4 @@
 	swap c! ;
 
 ::>>sp | adr -- adr'	; next space
-	( c@+ 1? $ff and 32 >? drop ) drop 1 - ;
+	( c@+ $ff and 32 >? drop ) drop 1 - ;

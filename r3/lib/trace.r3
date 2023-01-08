@@ -16,7 +16,7 @@
 		swap ) 2drop ;
 
 ::clearlog
-	0 0 "filelog.txt" save ;
+	"filelog.txt" delete ;
 
 ::filelog | .. str --
 	sprint count "filelog.txt" append ;

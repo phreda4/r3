@@ -1,7 +1,10 @@
 | r3debug
 | PHREDA 2020
 |------------------
+|MEM 128
 ^r3/win/console.r3
+
+^r3/lib/trace.r3
 
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
@@ -17,17 +20,18 @@
 	here dup 'src !
 	'r3filename
 	2dup load 
-	here =? ( "no source code." .println ; )
+	here =? ( 3drop "no source code." .println ; )
 	src only13 0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	swap	
-	r3-stage-1 error 1? ( drop ; ) drop	
-	r3-stage-2 1? ( drop ; ) drop 		
+	swap 
+	r3-stage-1 error 1? ( 4drop ; ) drop	
+	r3-stage-2 1? ( 4drop ; ) drop 		
 	r3-stage-3			
-	r3-stage-4			
+	r3-stage-4	
+	3drop	
 	;
 
 :savedebug
@@ -36,9 +40,6 @@
 	lerror src - ,d ,cr
 	"mem/debuginfo.db" savemem
 	empty ;
-
-:emptyerror
- 	0 0	"mem/debuginfo.db" save ;
 
 |----------- SAVE INFOMAP
 |	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
@@ -65,7 +66,6 @@
 	;
 	
 :savemap
-	emptyerror
 	mark
 	inc> 'inc -		| cantidad de includes
 	dicc> dicc -	| cantidad de palabras
@@ -128,6 +128,9 @@
 
 |--------------------- BOOT
 : 	
+	"mem/debuginfo.db" delete 
+	"mem/infomap.db" delete
+	
 	'name "mem/main.mem" load drop
 	'name r3debuginfo
 	

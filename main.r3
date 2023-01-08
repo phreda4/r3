@@ -225,9 +225,9 @@
 	;
 
 :r3info
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
+|WIN| "r3 r3/editor/r3info.r3"
+|LIN| "./r3lin r3/editor/r3info.r3"
+|RPI| "./r3rpi r3/editor/r3info.r3"
 	sys ;
 
 :r3edit

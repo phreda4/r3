@@ -1,3 +1,4 @@
+
 | r3debug
 | PHREDA 2020
 |------------------
@@ -23,23 +24,19 @@
 	r3name
 	here dup 'src !
 	'r3filename
-|	dup "load %s" .println
-	2dup load			|	"load" slog
-	here =? ( "no source code." .println  ; )
+	2dup load
+	here =? ( 3drop "no source code." .println  ; )
 	src only13 0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
 	swap	
-	r3-stage-1 error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop	
-|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
-	
-	r3-stage-2 1? ( drop ; ) drop 		
+	r3-stage-1 error 1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop	
+	r3-stage-2 1? ( 4drop ; ) drop 		
 	r3-stage-3			
 	r3-stage-4			
-	
-|	debugmemtoken waitesc
+	3drop	
 	;
 
 :savedebug
@@ -50,7 +47,7 @@
 	empty ;
 
 :emptyerror
- 	0 0	"mem/debuginfo.db" save ;
+ 	"mem/debuginfo.db" delete ;
 
 |-----------------------------
 #emode
@@ -539,12 +536,14 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 #cntcr	| cnt cr from src to first token
 
-:addtag
+:addtag | 'code --
 	code2ixy 0? ( drop ; )
 	dup 24 >> incnow <>? ( 2drop ; ) drop
+|	"." .println
 	$ffffff and cntcr - $2000000 or
 	taglist> d!+
-	over swap d!+ 'taglist> ! | save >info,mov
+	over swap d!+ 
+	'taglist> ! | save >info,mov
 	;
 
 :calccrs | adr src -- adr
@@ -852,8 +851,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 |--------------------- BOOT
 : 	
 	'name "mem/main.mem" load drop
-|	'name .println
-	
 	'name r3debuginfo
 	
 	error 
@@ -889,6 +886,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$f000000 da!+ 0 da!+ | IP
 	$f000000 da!+ 0 da!+ | BP
 	a> 'taglist> !
+|	maketags
+	
 	gotosrc
 	
 	prevars | add vars to panel
