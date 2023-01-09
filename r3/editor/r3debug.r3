@@ -197,7 +197,7 @@
 	;
 
 |------ VARIABLE VIEW
-#varlist * $fff
+#varlist * $ffff
 #varlistc
 
 :prevars
@@ -505,7 +505,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	code2ixy 0? ( drop ; )
 	dup 24 >> incnow <>? ( 2drop ; ) drop
 |	"." .println
-	$ffffff and cntcr - $2000000 or
+	$ffffff and cntcr - $2000000 or | first code minus 
 	taglist> d!+
 	over swap d!+ 
 	'taglist> ! | save >info,mov
@@ -522,7 +522,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	'taglist 8 + >a
 	$f000000 da!+ 0 da!+ 		| only ip+bp clear bp
 	a> 'taglist> !
-	incnow 4 << 'inc + 8 + @	| firs src
+|	incnow 4 << 'inc + 8 + @	| firs src
 	dicc ( dicc> <?
 		@+ calccrs @+ addtag 16 + ) drop 
 		;
@@ -796,11 +796,18 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 		swap ) 2drop
 
 	"runmap ----------" ,print ,cr
+|	code ( code> <? 
+|		dup code2src "%w " ,print
+|		dup code2ixy "%h " ,println
+|		4 + ) drop
 
-	code ( code> <? 
-		dup code2src "%w " ,print
-		dup code2ixy "%h " ,println
-		4 + ) drop
+	"tag ----------" ,print ,cr
+	'taglist
+	( taglist> <?
+		d@+ "%h " ,print
+		d@+ "%h " ,println
+		) drop 
+
 
 	"mem/map.txt" savemem
 	empty ;
@@ -824,8 +831,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	
 	vm2run
 
-|	savemap | save info in file for debug
-	
 	'name 'namenow strcpy
 	src setsource
 
@@ -836,9 +841,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	mode!src
 |	mode!view 
 	
-	
 	cntdef 1 - setword
-	
 	resetvm
 | tags
 	'taglist >a
@@ -846,11 +849,11 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$f000000 da!+ 0 da!+ | BP
 	a> 'taglist> !
 	maketags
+
+|	savemap | save info in file for debug
 	
 	gotosrc
-	
 	prevars | add vars to panel
-
 	modeshow
 	( getch $1B1001 <>? 'ckey !
 		modeshow 

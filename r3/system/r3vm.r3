@@ -277,7 +277,7 @@
 
 :getsrcxy | adr -- adr
 	0 'sopx ! 0 'sopy !
-	sink 3 << 'inc + 8 + @ | start of include
+	sink 4 << 'inc + 8 + @ | start of include
 	'posnow !
 	getsrcxyinc ;
 
@@ -632,7 +632,7 @@
 		" r " .print
 |		dup printpila
 		swap 1 - ) 2drop
-|	cols 34 - rows 1 - gotoxy
+|	cols 34 - rows 1 - .at
 |	regb rega " A:%h B:%h" .print
 
 	;

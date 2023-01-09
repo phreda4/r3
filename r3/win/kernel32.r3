@@ -4,6 +4,8 @@
 #sys-AllocConsole
 #sys-ExitProcess 
 #sys-GetStdHandle
+#sys-SetStdHandle
+
 #sys-ReadFile
 #sys-WriteFile 
 #sys-GetConsoleMode 
@@ -55,6 +57,8 @@
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::ExitProcess sys-ExitProcess sys1 ;
 ::GetStdHandle sys-GetStdHandle sys1 ;
+::SetStdHandle sys-SetStdHandle sys2 drop ;
+
 ::ReadFile sys-ReadFile sys5 ;
 ::WriteFile sys-WriteFile sys5 ;
 ::GetConsoleMode sys-GetConsoleMode sys2 ;
@@ -107,6 +111,7 @@
 	dup "AllocConsole" getproc 'sys-AllocConsole !
 	dup "ExitProcess" getproc 'sys-ExitProcess ! 
 	dup "GetStdHandle" getproc 'sys-GetStdHandle !
+	dup "SetStdHandle" getproc 'sys-SetStdHandle !
 	
 	dup "ReadFile" getproc 'sys-ReadFile !
 	dup "WriteFile" getproc 'sys-WriteFile !

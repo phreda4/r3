@@ -20,7 +20,7 @@
 ##switchmem	10 | MEM 640 		set data memory size (in kb) min 1kb
 
 |---- includes
-| 'string|'mem
+| 'name|'memsrc
 ##inc * $fff
 ##inc> 'inc
 
