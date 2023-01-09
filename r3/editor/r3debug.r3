@@ -17,9 +17,6 @@
 #name * 1024
 #namenow * 256
 
-|#linecomm 
-|#linecomm>
-
 ::r3debuginfo | str --
 	r3name
 	here dup 'src !
@@ -233,45 +230,6 @@
 #fuente> 	| cursor
 #$fuente	| fin de texto
 
-|---------- TAGS in code	
-:,ncar | n -- 
-	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
-
-:buildinfo | infmov --
-	,bcyan 
-	dup $f and ,sp
-	dup ,ncar " -- " ,s
-	over 55 << 59 >> + | deltaD
-	,ncar ,sp 
-	,reset ,sp ,bcyan ,black
-	$1000000000 and? ( ";"  ,s	)	| multiple
-	$2000000000 and? ( "R" ,s )		| recurse
-	$8000000000 nand? ( "."  ,s	)	| no ;
-	drop
-	;
-
-|#linecommnow 	
-
-|:inicomm
-|	linecomm 8 + | head 
-|	( @+ $fff and ylinea <=? drop 8 + ) drop
-|	8 - 'linecommnow !
-|	;
-	
-|:prntcom | line adr' -- line adr'
-|	linecommnow @ $fff and 
-|	pick2 ylinea + 
-|	>? ( drop ; ) drop
-|	,sp
-|	linecommnow 8 +
-|	@+ swap 'linecommnow !
-|	dup 12 32 + >> $ff and 
-|	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
-|	,black
-|	buildinfo
-|	prntcom
-|	;
-
 |------ Color line
 #colornow 0
 
@@ -342,14 +300,12 @@
 
 :<<13 | a -- a
 	( fuente >=?
-		 dup c@
-		13 =? ( drop ; )
+		dup c@ 13 =? ( drop ; )
 		drop 1 - ) ;
 
 :>>13 | a -- a
 	( $fuente <?
-		dup c@
-		13 =? ( drop 1 - ; ) | quitar el 1 -
+		dup c@ 13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;
 
@@ -466,54 +422,61 @@
 
 :tagip	| ip
 	tagpos
-|	pick2 @ ccw *
-|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
-| box.dot 
-	"*" ,print
+|	"*" ,print
+	,byellow ,black
+	<<ip code2src "%w" ,print
+	,Reset
 	;
 
 :tagbp	| breakpoint
-|	blink 0? ( drop ; ) drop
 	tagpos
-|	pick2 @ ccw *
-|	ccx 1 - ccy 1 - rot pick2 + 2 + over cch + 2 +
-| 	rectbox 
-	"?" ,print
+	,bred ,black
+	">" ,print
 	;
 
-#infostr * 256
-#infocol
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
 
-:,ncar | n car -- car
-	( swap 1? 1 - swap dup ,c 1 + ) drop ;
-
-:,mov | mov --
-	97 >r	| 'a'
-	dup $f and " " ,s
-	dup r> ,ncar >r "--" ,s
-	swap 55 << 59 >> + | deltaD
-	-? ( ,d r> drop ; ) | error en analisis!!
-	r> ,ncar drop " " ,s ;
-
-:buildinfo | infmov -- str
-	mark
-	'infostr 'here !
-	$f000 'infocol !
-	@+
-	$20 and? ( "R" ,s )		| recurse
-	$80 nand? ( "."  ,s	)	| no ;
-	12 >> $fff and 0? ( $f00000 'infocol ! ) | calls?
-	drop @ ,mov
-	,eol
-	empty
-	'infostr
+:buildinfo | infmov --
+	,bcyan 
+	dup $f and ,sp
+	dup ,ncar " -- " ,s
+	over 55 << 59 >> + | deltaD
+	,ncar ,sp 
+	,reset ,sp ,bcyan ,black
+	$1000000000 and? ( ";"  ,s	)	| multiple
+	$2000000000 and? ( "R" ,s )		| recurse
+	$8000000000 nand? ( "."  ,s	)	| no ;
+	drop
 	;
+
+	
+|:prntcom | line adr' -- line adr'
+|	linecommnow @ $fff and 
+|	pick2 ylinea + 
+|	>? ( drop ; ) drop
+|	,sp
+|	linecommnow 8 +
+|	@+ swap 'linecommnow !
+|	dup 12 32 + >> $ff and 
+|	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+|	,black
+|	buildinfo
+|	prntcom
+|	;
 
 :taginfo | infoword
 	tagpos
-	pick2 @ buildinfo
+|	pick2 @ buildinfo
 |	count cols swap - 1 - gotox
-	,print
+	"??" ,print
+	
+|	@+ swap 'linecommnow !
+|	dup 12 32 + >> $ff and 
+|	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s ; ) drop
+|	,black
+|	buildinfo	
 	;
 
 :tagnull
@@ -523,12 +486,14 @@
 tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 :drawtag | adr txy y -- adr txy y
-	over 24 >> $f and 3 << 'tt + @ ex ;
+	over 24 >> $f and 
+|	dup ">>%d" .println
+	3 << 'tt + @ ex ;
 
 :drawtags
 	'taglist
 	( taglist> <?
-		|dup "tag:%h" ,println
+|		dup "tag:%h" .println
 		d@+ dup $fff and
 		ylinea dup hcode + bt? ( drawtag )
 		2drop 4 + ) drop ;
@@ -557,9 +522,10 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	'taglist 8 + >a
 	$f000000 da!+ 0 da!+ 		| only ip+bp clear bp
 	a> 'taglist> !
-|	incnow 3 << 'inc + 4 + @	| firs src
+	incnow 4 << 'inc + 8 + @	| firs src
 	dicc ( dicc> <?
-		@+ calccrs @+ addtag 16 + ) drop ;
+		@+ calccrs @+ addtag 16 + ) drop 
+		;
 		
 |---------------------------------
 :barratop
@@ -578,8 +544,9 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN" ,printe ,nl
 |	" info ^[7mF1^[27m " ,printe ,nl
 	,reset ,bblack
-	<<ip "IP:%h" ,print ,nl
-	,stackprintvm
+	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+	,stackprintvm 
+
 	;
 
 |----- scratchpad
@@ -625,7 +592,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	" > " .print
 |	'inpad 1024 input ,cr
 	stackprintvm ,cr
-	regb rega " RA:%h RB:%h " ,print
+	
 	|waitesc 
 	;
 
@@ -702,7 +669,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 
 :srcnow | nro --
 	incnow =? ( drop ; ) dup 'incnow !
-	3 << 'inc +
+	4 << 'inc + | ??
 	@+ "%l" sprint 'namenow strcpy | warning ! is IN the source code
 	@ setsource
 	maketags
@@ -794,8 +761,6 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	;
 
 
-#ninclude
-
 |----------- SAVE DEBUG
 :,printword | adr --
   	adr>toklen
@@ -857,15 +822,9 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	1? ( drop savedebug ; ) drop
 	emptyerror
 	
-|	here dup 'linecomm !
-|	"mem/infomap.db" load 
-|	0 $fff rot !+ !+ 
-|	dup 'linecomm> ! 
-|	'here !
-	
 	vm2run
 
-	savemap | save info in file for debug
+|	savemap | save info in file for debug
 	
 	'name 'namenow strcpy
 	src setsource
@@ -886,7 +845,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$f000000 da!+ 0 da!+ | IP
 	$f000000 da!+ 0 da!+ | BP
 	a> 'taglist> !
-|	maketags
+	maketags
 	
 	gotosrc
 	
