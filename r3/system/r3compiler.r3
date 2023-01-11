@@ -28,7 +28,7 @@
 	'r3filename
 	dup "load %s" .println
 	2dup load | "fn" mem
-	here =? ( "no source code." .println ; )
+	here =? ( 3drop "no source code." .println ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !
@@ -37,18 +37,19 @@
 	" pass1" .println
 	swap r3-stage-1
 
-	error 1? ( "ERROR %s" .println lerror "%l" .println ; ) drop
+	error 1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop
 	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 
 	" pass2" .println 
 	r3-stage-2
-	1? ( "ERROR %s" .println lerror "%l" .println ; ) drop
+	1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop
 	code> code - 2 >> "tokens:%d" .println
 
 	" pass3" .println
 	r3-stage-3
 	" pass4" .println 
 	r3-stage-4
+	3drop
 	|-----------------
 	" genset" .println
 	r3-genset

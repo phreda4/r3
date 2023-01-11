@@ -4,6 +4,7 @@
 | PHREDA 2020
 |-------------
 ^r3/system/r3base.r3
+^r3/system/r3stack.r3
 
 #stbl * 40 | 10 niveles ** falta inicializar si hay varias ejecuciones
 #stbl> 'stbl

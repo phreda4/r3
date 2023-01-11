@@ -195,7 +195,7 @@
 
 :.MEM mem push.nro ;
 
-:.LOADLIB TOS loadlib .DROP 'TOS ! ;
+:.LOADLIB TOS loadlib 'TOS ! ;
 :.GETPROC NOS @ TOS getproc .NIP 'TOS ! ;
 :.SYS0 TOS sys0 'TOS ! ;
 :.SYS1 NOS @ TOS sys1 'TOS ! -8 'NOS +! ;
@@ -270,7 +270,7 @@
 	posnow
 	( over <? c@+
 		1 'sopx +!
-		9 =? ( 3 'sopx +! )
+		9 =? ( 2 'sopx +! ) | 1+ in prev line
 		13 =? ( 1 'sopy +! 0 'sopx ! )
 		drop ) drop
 	dup 'posnow ! ;
@@ -578,7 +578,7 @@
 ::playvm | --
 	<<ip 0? ( drop resetvm ; )
 	( <<bp <>?
-		d@+ $ff and 2 << 'vmc + @ ex
+		d@+ $ff and 3 << 'vmc + @ ex
 		1? )
 	'<<ip ! ;
 

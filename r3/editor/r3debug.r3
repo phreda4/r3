@@ -404,7 +404,7 @@
 #taglist> 'taglist
 
 :tagpos
-	over 12 >> $fff and xcode + xlinea - 1 -
+	over 12 >> $fff and xcode + xlinea - 
 	over ycode + ylinea - ,at ;
 
 :tagdec
@@ -523,8 +523,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$f000000 da!+ 0 da!+ 		| only ip+bp clear bp
 	a> 'taglist> !
 |	incnow 4 << 'inc + 8 + @	| firs src
-	dicc ( dicc> <?
-		@+ calccrs @+ addtag 16 + ) drop 
+|	dicc ( dicc> <?
+|		@+ calccrs @+ addtag 16 + ) drop 
 		;
 		
 |---------------------------------
@@ -541,7 +541,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 :infobottom
 	1 hcode 2 + ,at 
 	,bblue ,white ,eline
-	"^[37mr3Debug ^[7mF1^[27mPLAY2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN" ,printe ,nl
+	"^[37mr3Debug ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" ,printe ,nl
 |	" info ^[7mF1^[27m " ,printe ,nl
 	,reset ,bblack
 	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
@@ -644,7 +644,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 |	'outpad sp text ,cr
 
 	" > " .print
-|	'inpad 1024 input ,cr
+	|'inpad 1024 input ,cr
 	stackprintvm cr
 	regb rega " RA:%h RB:%h " ,print
 	;
@@ -727,20 +727,19 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	$47 =? ( khome ) $4f =? ( kend )
 	$49 =? ( kpgup ) $51 =? ( kpgdn )
 	
-|	$3b =? ( playvm gotosrc ) |f1
-|	$3c =? ( play2cursor playvm gotosrc ) |f2
+	$3b =? ( playvm gotosrc ) |f1
+	$3c =? ( play2cursor playvm gotosrc ) |f2
 	$3d =? ( mode!view codetoword ) | f3 word analisys
 	| $3e f4
 	$3f =? ( stepvm gotosrc )	| f5
 	$40 =? ( stepvmn gotosrc )	| f6
+	$41 =? ( setbp ) | f7
+
+	$43 =? ( 1 statevars xor 'statevars ! ) | f9
 
 |	<f10> =? ( mode!view 0 +word )
-
-|	$3f =? ( setbp )
 |	>f6< =? ( viewscreen )
-	$43 =? ( 1 statevars xor 'statevars ! ) | f9
-|	<tab> =? ( mode!imm )
-
+	$9000F =? ( mode!imm ) | tab
 	drop
 
 	mark
@@ -748,9 +747,8 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	barratop
 	drawcode
 	infobottom
-
 	drawtags
-	
+
 	statevars 1? ( showvars ) drop
 
 	cursorpos
@@ -816,6 +814,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 |------ MAIN
 :modeshow
 	emode
+	0 =? ( console )
 	1 =? ( modeview )
 	2 =? ( modesrc )
 	drop ;
