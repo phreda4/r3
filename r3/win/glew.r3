@@ -3,6 +3,7 @@
 ^r3/win/console.r3
 
 #sys-glewInit
+##glewExperimental
 #sys-glCreateProgram
 #sys-glCreateShader
 #sys-glShaderSource
@@ -46,7 +47,8 @@
 #sys-glDrawArrays
 #sys-glGenTextures
 
-::glewInit sys-glewInit sys0 drop ;
+::glewInit sys-glewInit sys0 ;
+
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
 ::glShaderSource sys-glShaderSource sys4 drop ;
@@ -88,13 +90,14 @@
 ::glDeleteBuffers sys-glDeleteBuffers sys2 drop ;
 ::glDeleteVertexArrays sys-glDeleteVertexArrays sys2 drop ;
 
-
 ::glDrawArrays sys-glDrawArrays sys3 drop ;
+
 
 |----- BOOT
 :
 	"GLEW32.DLL" loadlib
 	dup "glewInit" getproc 'sys-glewInit ! 
+	dup "glewExperimental" getproc 'glewExperimental !
 	dup "__glewCreateProgram" getproc 'sys-glCreateProgram !
 	dup "__glewCreateShader" getproc 'sys-glCreateShader !
 	dup "__glewShaderSource" getproc   'sys-glShaderSource !
@@ -124,7 +127,8 @@
 
 	dup "__glewDetachShader" getproc 'sys-glDetachShader !
 	dup "__glewDeleteShader" getproc 'sys-glDeleteShader !
-	dup "__glewDeleteTextures" getproc 'sys-glDeleteTextures !
+	dup "__glewDeleteProgram" getproc 'sys-glDeleteProgram !
+	dup "__glewDeleteTexturesEXT" getproc 'sys-glDeleteTextures !
 	dup "__glewDeleteBuffers" getproc 'sys-glDeleteBuffers !
 	dup "__glewDeleteVertexArrays" getproc 'sys-glDeleteVertexArrays !
 	
@@ -144,5 +148,5 @@
 	dup "glDrawArrays" getproc 'sys-glDrawArrays !
 	drop
 	
-	|0 'sys-glewInit ( 'sys-glGenTextures <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
+|	0 'sys-glewInit ( 'sys-glGenTextures <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;

@@ -4,8 +4,8 @@
 #window
 #context
 
-#vao 
-#vbo
+#vao 0 
+#vbo 0 
 
 #GL_COLOR_BUFFER_BIT $00004000
 #GL_FRAGMENT_SHADER $8B30
@@ -32,7 +32,7 @@
 	3drop ;
 
 :initgl
-	$3231 SDL_init 
+	$3 SDL_init 
     | select opengl version
     17 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -40,37 +40,39 @@
 |  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
   |SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 	
-	$1FFF0000 dup 800 600 $6 SDL_CreateWindow 'window ! 
+	$1FFF0000 dup 800 600 $2 SDL_CreateWindow 'window ! 
 	window SDL_GL_CreateContext 'context !
-	window context SDL_GL_MakeCurrent
+|	window context SDL_GL_MakeCurrent
 
-	fillvertex
+	|fillvertex
 "a" .println
-	glewInit
-
+	
+	0 glewExperimental d!
+	glewInit "%h" .println
 "b" .println
-    | generate and bind the vao
-    1 'vao glGenVertexArrays
+    | ---generate and bind the vao
+|   1 'vao glGenVertexArrays
 "." .println	
-    vao glBindVertexArray
+|    vao glBindVertexArray
 "c" .println
-	1 'vbo glGenBuffers
-	GL_ARRAY_BUFFER vbo glBindBuffer
-	GL_ARRAY_BUFFER 9 4 * 'vertexData GL_STATIC_DRAW  glBufferData
+|	1 'vbo glGenBuffers
+|	GL_ARRAY_BUFFER vbo glBindBuffer
+|	GL_ARRAY_BUFFER 9 4 * 'vertexData GL_STATIC_DRAW  glBufferData
 "d" .println	
 	;
 	
 :glend
-    1 'vao glDeleteVertexArrays
-    1 'vbo glDeleteBuffers
+|    1 'vao glDeleteVertexArrays
+    |1 'vbo glDeleteBuffers
 
+	context SDL_Gl_DeleteContext
     SDL_Quit
 	;
 
 :main
 	GL_COLOR_BUFFER_BIT glClear
-	vao glBindVertexArray
-	GL_TRIANGLES 0 3 glDrawArrays
+|	vao glBindVertexArray
+|	GL_TRIANGLES 0 3 glDrawArrays
 
 	window SDL_GL_SwapWindow
 	SDLkey

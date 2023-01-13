@@ -49,8 +49,8 @@
 #sys-SDL_Delay
 #sys-SDL_PollEvent	
 #sys-SDL_GetTicks
-#sys-SDL_StartTextInput	
-#sys-SDL_StopTextInput
+|#sys-SDL_StartTextInput	
+|#sys-SDL_StopTextInput
 
 #sys-SDL_RWFromFile
 
@@ -109,8 +109,9 @@
 ::SDL_Delay sys-SDL_Delay sys1 drop ;
 ::SDL_PollEvent sys-SDL_PollEvent sys1 ; | &evt -- ok
 ::SDL_GetTicks sys-SDL_GetTicks sys0 ; | -- msec
-::SDL_StartTextInput sys-SDL_StartTextInput sys0 drop ;
-::SDL_StopTextInput sys-SDL_StopTextInput sys0 drop ;
+
+|::SDL_StartTextInput sys-SDL_StartTextInput sys0 drop ;
+|::SDL_StopTextInput sys-SDL_StopTextInput sys0 drop ;
 
 ::SDL_RWFromFile sys-SDL_RWFromFile sys2 ;
 
@@ -324,4 +325,6 @@
 	dup "SDL_GL_MakeCurrent" getproc 'sys-SDL_GL_MakeCurrent ! 
 	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
 	drop
+	
+|	0 'sys-SDL_Init  ( 'sys-SDL_SetHint <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
