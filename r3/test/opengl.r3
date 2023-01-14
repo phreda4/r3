@@ -69,6 +69,7 @@ $22003 3 glfwWindowHint |(GLFW_CONTEXT_VERSION_MINOR, 3);
 	
 640 480 "Simple example" 0 0 glfwCreateWindow 'window !
 window glfwMakeContextCurrent
+1 glewExperimental d!
 glewInit
 
 |1 'VertexArrayID glGenVertexArrays

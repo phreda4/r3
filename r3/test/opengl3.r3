@@ -32,38 +32,53 @@
 	3drop ;
 
 :initgl
-	$3 SDL_init 
     | select opengl version
+
+	20 2 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     17 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	21 2 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);	
 |SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-|  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-  |SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+
+	13 1 SDL_GL_SetAttribute |  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	14 4 SDL_GL_SetAttribute   |SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 	
-	$1FFF0000 dup 800 600 $2 SDL_CreateWindow 'window ! 
+	$3231 SDL_init 	
+	
+	$1FFF0000 dup 800 600 $2 SDL_CreateWindow 'window !
+	
 	window SDL_GL_CreateContext 'context !
 |	window context SDL_GL_MakeCurrent
 
-	|fillvertex
-"a" .println
+
+	fillvertex
+	1 glewExperimental d!
+	glewInit 	
 	
-	0 glewExperimental d!
-	glewInit "%h" .println
-"b" .println
+	|--- info
+	"glew " .print
+	1 glewGetString .println 
+|	2 glewGetString .println 
+|	3 glewGetString .println 
+|	4 glewGetString .println 
+	"OpenGl " .print
+	$1f00 glGetString .println | vendor
+	$1f01 glGetString .println | render
+	$1f02 glGetString .println | version
+	$8B8C glGetString .println | shader
+	
     | ---generate and bind the vao
-|   1 'vao glGenVertexArrays
-"." .println	
-|    vao glBindVertexArray
-"c" .println
-|	1 'vbo glGenBuffers
-|	GL_ARRAY_BUFFER vbo glBindBuffer
-|	GL_ARRAY_BUFFER 9 4 * 'vertexData GL_STATIC_DRAW  glBufferData
-"d" .println	
+	1 'vao glGenVertexArrays
+	vao glBindVertexArray
+
+	1 'vbo glGenBuffers
+	GL_ARRAY_BUFFER vbo glBindBuffer
+	GL_ARRAY_BUFFER 9 4 * 'vertexData GL_STATIC_DRAW  glBufferData
 	;
 	
 :glend
-|    1 'vao glDeleteVertexArrays
-    |1 'vbo glDeleteBuffers
+	1 'vao glDeleteVertexArrays
+	1 'vbo glDeleteBuffers
 
 	context SDL_Gl_DeleteContext
     SDL_Quit
@@ -71,8 +86,8 @@
 
 :main
 	GL_COLOR_BUFFER_BIT glClear
-|	vao glBindVertexArray
-|	GL_TRIANGLES 0 3 glDrawArrays
+	vao glBindVertexArray
+	GL_TRIANGLES 0 3 glDrawArrays
 
 	window SDL_GL_SwapWindow
 	SDLkey
