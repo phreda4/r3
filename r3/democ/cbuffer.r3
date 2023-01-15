@@ -1,49 +1,41 @@
+| use console buffer
+| PHREDA 2023
 
 ^r3/win/console.r3
 ^r3/win/kernel32.r3
 ^r3/lib/rand.r3
 
-|#stdin
-|#stdout
+| 28 1c
+| 113 71
 
 #eventBuffer 0 0 0 0 0
+#consoleBuffer * $ffff | 
 
 |  SHORT Left;  SHORT Top;  SHORT Right;  SHORT Bottom;
-#windowsize ( 0 0 0 0 79 0 49 0 )
 
-#bufferSize ( 80 0 50 0 )
-#consoleBuffer * 16000 | 80*50*4
-#charBufSize ( 80 0 50 0 )
-#characterPos ( 0 0 0 0 ) 
-#writeArea2 ( 0 0 0 0 79 0 49 0 )
-#writeArea [ 0 $0031004f ]
 #nr
 #numEvents 
 #appIsRunning 1
 
+#writeArea [ 0 $001b0070 ]
 :rebuffer
-	stdout 'consoleBuffer $00320050 |$00320050 |'charBufSize d@ 
-	$0 |'characterPos d@ 
-	'writeArea 
+	stdout 'consoleBuffer 
+	$001c0071 $00000000 'writeArea 
 	WriteConsoleOutput ;
 	
 :clsbuffer
-	'consoleBuffer >a 80 50 * ( 1? 1 - |$f00020
-	rand
-	da!+ ) drop ;
+	'consoleBuffer >a $71 $1c * ( 1? 1 - 
+		rand da!+ ) drop ;
 
 |---------------------	
-#rect [ 0 $004f0031 ]
 	
 :init
 |	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
 |	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 
+	stdout -1 'writeArea SetConsoleWindowInfo |(wHnd, TRUE, &windowSize);
+	stdout $001c0071 SetConsoleScreenBufferSize |(wHnd, bufferSize);
 	
-	stdout -1 'rect 
-	|'windowsize 
-	SetConsoleWindowInfo |(wHnd, TRUE, &windowSize);
-	stdout $00500032 SetConsoleScreenBufferSize |(wHnd, bufferSize);
 	clsbuffer
 	rebuffer
 	
@@ -51,13 +43,7 @@
 	;
 	
 |---------------------	
-#rect [ 0 $0032004f ]
 
-:resizeconsole |
-	stdout -1 'rect SetConsoleWindowInfo
-	stdout $00310050 SetConsoleScreenBufferSize
-	;
-	
 :evkey	
 	'eventBuffer 6 + w@
 	$1B =? ( 0 'appIsRunning ! ) | esc
@@ -94,14 +80,12 @@
 		) drop ;
 	
 :
-|init
-resizeconsole
-|app
+init
 clsbuffer
 rebuffer
 
 ( inkey $1B1001 <>? drop
-	clsbuffer
-	rebuffer
+	clsbuffer 
+	rebuffer 
 	) drop
 ;
