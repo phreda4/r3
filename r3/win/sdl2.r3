@@ -60,6 +60,8 @@
 #sys-SDL_GL_SetSwapInterval
 #sys-SDL_GL_SwapWindow
 #sys-SDL_GL_MakeCurrent
+#sys-SDL_GL_LoadLibrary
+#sys-SDL_GL_GetProcAddress
 
 #sys-SDL_SetTextureColorMod
 #sys-SDL_SetHint
@@ -120,6 +122,8 @@
 ::SDL_GL_DeleteContext sys-SDL_GL_DeleteContext sys1 drop ;
 ::SDL_GL_SetSwapInterval sys-SDL_GL_SetSwapInterval sys1 drop ;
 ::SDL_GL_SwapWindow sys-SDL_GL_SwapWindow sys1 drop ;
+::SDL_GL_LoadLibrary sys-SDL_GL_LoadLibrary sys1 ;
+::SDL_GL_GetProcAddress sys-SDL_GL_GetProcAddress sys1 ;
 
 ::SDL_GL_MakeCurrent sys-SDL_GL_MakeCurrent sys2 drop ; 
 ::SDL_SetHint sys-SDL_SetHint sys2 drop ; 
@@ -324,6 +328,9 @@
 	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
 	dup "SDL_GL_MakeCurrent" getproc 'sys-SDL_GL_MakeCurrent ! 
 	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
+	dup "SDL_GL_LoadLibrary" getproc 'sys-SDL_GL_LoadLibrary !
+	dup "SDL_GL_GetProcAddress" getproc 'sys-SDL_GL_GetProcAddress !
+	
 	drop
 	
 |	0 'sys-SDL_Init  ( 'sys-SDL_SetHint <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop

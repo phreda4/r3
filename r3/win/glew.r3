@@ -2,8 +2,9 @@
 |
 ^r3/win/console.r3
 
-#sys-glewInit
 ##glewExperimental
+
+#sys-glewInit
 #sys-glCreateProgram
 #sys-glCreateShader
 #sys-glShaderSource
@@ -53,6 +54,11 @@
 #sys-glGetString
 #sys-wglGetProcAddress
 
+#sys-glBegin
+#sys-glEnd
+#sys-glColor4ubv
+#sys-glVertex3fv
+
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
 ::glShaderSource sys-glShaderSource sys4 drop ;
@@ -99,6 +105,12 @@
 ::glGetString sys-glGetString sys1 ;
 ::wglGetProcAddress sys-wglGetProcAddress sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
+
+::glBegin sys-glBegin sys1 drop ;
+::glEnd sys-glEnd sys0 drop ;
+::glColor4ubv sys-glColor4ubv sys1 drop ;
+::glVertex3fv sys-glVertex3fv sys1 drop ;
+
 
 ::InitGLAPI
 	"glCreateProgram" wglGetProcAddress 'sys-glCreateProgram !
@@ -168,6 +180,13 @@
 	"glBindVertexArray" wglGetProcAddress 'sys-glBindVertexArray !
 	"glDeleteBuffers" wglGetProcAddress 'sys-glDeleteBuffers !
 	"glDeleteVertexArrays" wglGetProcAddress 'sys-glDeleteVertexArrays !	
+	
+| old
+	"glBegin" wglGetProcAddress 'sys-glBegin !
+	"glEnd" wglGetProcAddress 'sys-glEnd !
+	"glColor4ubv" wglGetProcAddress 'sys-glColor4ubv !
+	"glVertex3fv" wglGetProcAddress 'sys-glVertex3fv !
+	
 	;
 	
 ::glewInit 
@@ -176,16 +195,16 @@
 |	0 'sys-glewInit ( 'sys-glGenTextures <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
 |----- BOOT
-:
+:	"opengl32.dll" loadlib
+	dup "glGetString" getproc 'sys-glGetString !
+	dup "wglGetProcAddress" getproc 'sys-wglGetProcAddress !
+	drop
+
 	"GLEW32.DLL" loadlib
 	dup "glewInit" getproc 'sys-glewInit ! 
 	dup "glewExperimental" getproc 'glewExperimental !
 	dup "glewGetString" getproc 'sys-glewGetString ! 
 	drop
 	
-	"opengl32.dll" loadlib
-	dup "glGetString" getproc 'sys-glGetString !
-	dup "wglGetProcAddress" getproc 'sys-wglGetProcAddress !
-	drop
 
 	;

@@ -638,15 +638,16 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	;
 
 :console
-	1 hcode 1 + .at
 
-    showip
+	1 hcode 1 + .at .eline
+
+    showip regb rega " RA:%h RB:%h " .print cr
 |	'outpad sp text ,cr
 
 	" > " .print
 	|'inpad 1024 input ,cr
 	stackprintvm cr
-	regb rega " RA:%h RB:%h " ,print
+
 	;
 
 |------ search code in includes
