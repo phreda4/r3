@@ -122,7 +122,7 @@
 ::SDL_GL_DeleteContext sys-SDL_GL_DeleteContext sys1 drop ;
 ::SDL_GL_SetSwapInterval sys-SDL_GL_SetSwapInterval sys1 drop ;
 ::SDL_GL_SwapWindow sys-SDL_GL_SwapWindow sys1 drop ;
-::SDL_GL_LoadLibrary sys-SDL_GL_LoadLibrary sys1 ;
+::SDL_GL_LoadLibrary sys-SDL_GL_LoadLibrary sys1 drop ;
 ::SDL_GL_GetProcAddress sys-SDL_GL_GetProcAddress sys1 ;
 
 ::SDL_GL_MakeCurrent sys-SDL_GL_MakeCurrent sys2 drop ; 
