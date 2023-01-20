@@ -15,6 +15,7 @@
 #sys-glBindBuffer
 #sys-glBufferData
 #sys-glUseProgram
+#sys-glValidateProgram
 #sys-glEnableVertexAttribArray
 #sys-glVertexAttribPointer
 #sys-glDisableVertexAttribArray
@@ -24,6 +25,7 @@
 #sys-glGenVertexArrays
 #sys-glBindVertexArray
 #sys-glGetShaderInfoLog
+#sys-glGetProgramInfoLog
 #sys-glBindFragDataLocation
 #sys-glLinkProgram
 #sys-glActiveTexture
@@ -48,6 +50,7 @@
 #sys-glDrawArrays
 #sys-glGenTextures
 
+#sys-glGetError
 #sys-glGetString
 
 #sys-glBegin
@@ -85,6 +88,7 @@
 ::glBufferData sys-glBufferData sys4 drop ;
 ::glClear sys-glClear sys1 drop ;
 ::glUseProgram sys-glUseProgram sys1 drop ;
+::glValidateProgram sys-glValidateProgram sys1 drop ;
 ::glEnableVertexAttribArray sys-glEnableVertexAttribArray sys1 drop ;
 ::glVertexAttribPointer sys-glVertexAttribPointer sys6 drop ;
 ::glDrawElements sys-glDrawElements sys4 drop ;
@@ -95,6 +99,7 @@
 ::glGenVertexArrays sys-glGenVertexArrays sys2 drop ;
 ::glBindVertexArray sys-glBindVertexArray sys1 drop ;
 ::glGetShaderInfoLog sys-glGetShaderInfoLog sys4 drop ;
+::glGetProgramInfoLog sys-glGetProgramInfoLog sys4 drop ; 
 ::glBindFragDataLocation sys-glBindFragDataLocation sys3 drop ;
 ::glLinkProgram sys-glLinkProgram sys1 drop ;
 ::glGenTextures sys-glGenTextures sys2 drop ;
@@ -114,6 +119,7 @@
 ::glDeleteVertexArrays sys-glDeleteVertexArrays sys2 drop ;
 
 ::glDrawArrays sys-glDrawArrays sys3 drop ;
+::glGetError sys-glGetError sys0 ; 
 ::glGetString sys-glGetString sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
 
@@ -140,15 +146,18 @@
 
 ::InitGLAPI
 	0 SDL_GL_LoadLibrary
+	"glGetError" SDL_GL_GetProcAddress 'sys-glGetError !
 	"glGetString" SDL_GL_GetProcAddress 'sys-glGetString !
 	"glCreateProgram" SDL_GL_GetProcAddress 'sys-glCreateProgram !
 	"glDeleteProgram" SDL_GL_GetProcAddress 'sys-glDeleteProgram !
 	"glUseProgram" SDL_GL_GetProcAddress 'sys-glUseProgram !
+	"glValidateProgram" SDL_GL_GetProcAddress 'sys-glValidateProgram !
 	"glAttachShader" SDL_GL_GetProcAddress 'sys-glAttachShader !
 	"glDetachShader" SDL_GL_GetProcAddress 'sys-glDetachShader !
 	"glLinkProgram" SDL_GL_GetProcAddress 'sys-glLinkProgram !
 	"glGetProgramiv" SDL_GL_GetProcAddress 'sys-glGetProgramiv !
 	"glGetShaderInfoLog" SDL_GL_GetProcAddress 'sys-glGetShaderInfoLog !
+	"glGetProgramInfoLog" SDL_GL_GetProcAddress 'sys-glGetProgramInfoLog !
 	"glGetAttribLocation" SDL_GL_GetProcAddress 'sys-glGetAttribLocation !
 	"glEnableVertexAttribArray" SDL_GL_GetProcAddress 'sys-glEnableVertexAttribArray !
 	"glUniform1i" SDL_GL_GetProcAddress 'sys-glUniform1i !
@@ -188,7 +197,7 @@
 	"glEnable" SDL_GL_GetProcAddress 'sys-glEnable !	
 	"glBlendFunc" SDL_GL_GetProcAddress 'sys-glBlendFunc !	
 	"glViewport" SDL_GL_GetProcAddress 'sys-glViewport !
-	
+	"glDepthFunc" SDL_GL_GetProcAddress 'sys-glDepthFunc !
 	
 | Shader
 	"glCreateShader" SDL_GL_GetProcAddress 'sys-glCreateShader !
@@ -214,4 +223,5 @@
 	"glColor4ubv" SDL_GL_GetProcAddress 'sys-glColor4ubv !
 	"glVertex3fv" SDL_GL_GetProcAddress 'sys-glVertex3fv !
 	
+|	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
