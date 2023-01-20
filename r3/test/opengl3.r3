@@ -7,57 +7,38 @@
 
 #window
 #context
+
 #vao 
 #vbo 
-#colvbo
 #vs 
 #fs
 #sp | shader program
 
-#matrix [
-0.5  0.0 0.0  0.0
-0.0  0.5 0.0  0.0
-0.0  0.0 0.5  0.0
-0.25 0.5 0.75 1.0 ]
-#fmatrix * 64
-
-#points [
- 0.0  0.5 0.0
- 0.5 -0.5 0.0
--0.5 -0.5 0.0
- 0.0  0.8 0.0
--0.5 -0.2 0.0
- 0.5 -0.2 0.0 ]
-#fpoints * 72
-
-#colours [
-1.0 1.0 0.0
-1.0 1.0 0.0
-1.0 1.0 0.0
-1.0 0.0 0.0
-1.0 0.0 0.0
-1.0 0.0 0.0 ]
-#fcolours * 72
+#vboData [
+ -1.0 -1.0 0.0
+  1.0 -1.0 0.0
+  1.0  1.0 0.0
+]
 
 :mem2float | cnt to from --
 	>a >b ( 1? 1 - da@+ f2fp db!+ ) drop ;
 
-#vertex_shader_text "#version 410 core
-layout(location = 0) in vec3 vertex_position;
-layout(location = 1) in vec3 vertex_colour;
-out vec3 color;
-uniform mat4 matrix;
-void main () {
-	color = vertex_colour;
-	gl_Position=matrix * vec4(vertex_position, 1.0);
+#vertex_shader_text "#version 330 core
+layout(location = 0) in vec3 vertexPosition_modelspace;
+
+void main()
+{
+//We're not modifying positions of vertices
+gl_Position.xyz = vertexPosition_modelspace;
+gl_Position.w = 1.0;
 }"
 #vht 'vertex_shader_text
  
-#fragment_shader_text "#version 410 core
-in vec3 color;
-out vec4 frag_colour;
-void main () {
-	frag_colour = vec4 (color, 1.0);
+#fragment_shader_text "#version 330 core
+out vec3 color;
+void main()
+{
+color = vec3(1,0,1);
 }"
 #fst 'fragment_shader_text 
 
@@ -77,9 +58,6 @@ void main () {
 #GL_LESS $0201
 
 #GL_TRIANGLES $0004
-
-#matrix_location
-
 
 #ss | error compile
 #log * 512
@@ -128,27 +106,6 @@ void main () {
 	
 	glInfo	
 
-|	GL_DEPTH_TEST glEnable 
-|	GL_LESS glDepthFunc 
-	
-	1 'vbo glGenBuffers
-	GL_ARRAY_BUFFER vbo glBindBuffer
-	GL_ARRAY_BUFFER 18 2 << 'fpoints GL_STATIC_DRAW  glBufferData
-	
-	1 'colvbo glGenBuffers
-	GL_ARRAY_BUFFER colvbo glBindBuffer
-	GL_ARRAY_BUFFER 18 2 << 'fcolours GL_STATIC_DRAW  glBufferData	
-
-	1 'vao glGenVertexArrays
-	vao glBindVertexArray
-	0 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER vbo glBindBuffer 
-	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-
-	1 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER colvbo glBindBuffer 
-	1 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-
 	"Vertex" .println
 	GL_VERTEX_SHADER glCreateShader 'vs !
 	vs 1 'vht 0 glShaderSource
@@ -163,7 +120,7 @@ void main () {
 	fs shCheckErr
 	glError
 
-	"Program:" .println
+	"Program" .println
 	glCreateProgram 'sp !
 	sp vs glAttachShader
 	sp fs glAttachShader
@@ -171,10 +128,20 @@ void main () {
 	sp glValidateProgram
 	sp prCheckErr glError
 	
-	sp "matrix" glGetUniformLocation 'matrix_location !	
-	
 	vs glDeleteShader
 	fs glDeleteShader
+
+
+	1 'vao glGenVertexArrays
+	vao glBindVertexArray
+
+	1 'vbo glGenBuffers
+	GL_ARRAY_BUFFER vbo glBindBuffer
+	GL_ARRAY_BUFFER 9 4 * 'vboData GL_STATIC_DRAW glBufferData
+
+	sp glUseProgram
+	0 glEnableVertexAttribArray
+	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 
 	;
 		
@@ -182,7 +149,6 @@ void main () {
 	sp glDeleteProgram
 	1 'vao glDeleteVertexArrays
 	1 'vbo glDeleteBuffers
-	1 'colvbo glDeleteBuffers
 
 	context SDL_Gl_DeleteContext
     SDL_Quit
@@ -195,12 +161,9 @@ void main () {
 
 	$4100 glClear
 	
-	sp glUseProgram
-	matrix_location 1 GL_FALSE 'fmatrix glUniformMatrix4fv 	
-	vao glBindVertexArray
-	GL_TRIANGLES 0 3 glDrawArrays glError
-	GL_TRIANGLES 3 6 glDrawArrays glError
-|	$5 4 $1405 'index glDrawElements glError
+    vao glBindVertexArray
+
+    GL_TRIANGLES 0 3 glDrawArrays
 
 	window SDL_GL_SwapWindow
 	SDLkey
@@ -210,9 +173,7 @@ void main () {
 	
 |----------- BOOT
 : 	
-	18 'fcolours 'colours mem2float
-	18 'fpoints 'points mem2float
-	16 'fmatrix 'matrix mem2float	
+	9 'vboData 'vboData mem2float
 	
 	initgl 
 	'main SDLshow

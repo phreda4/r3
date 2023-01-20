@@ -44,6 +44,9 @@
 #sys-glDeleteVertexArrays
 
 #sys-glViewport
+#sys-glVertexPointer
+|#sys-glEnableClientState
+|#sys-glDisableClientState
 
 #sys-glClear
 #sys-glDrawElements
@@ -122,6 +125,10 @@
 ::glGetError sys-glGetError sys0 ; 
 ::glGetString sys-glGetString sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
+::glVertexPointer sys-glVertexPointer sys4 drop ;
+|::glEnableClientState sys-glEnableClientState sys1 drop ;
+|::glDisableClientState sys-glDisableClientState sys1 drop ;
+
 
 ::glBegin sys-glBegin sys1 drop ;
 ::glEnd sys-glEnd sys0 drop ;
@@ -184,6 +191,11 @@
 	"glActiveTexture" SDL_GL_GetProcAddress 'sys-glActiveTexture !
 
 	"glDeleteTexturesEXT" SDL_GL_GetProcAddress 'sys-glDeleteTextures !
+
+	"glVertexPointer" SDL_GL_GetProcAddress 'sys-glVertexPointer !
+
+|	"glEnableClientState" SDL_GL_GetProcAddress 'sys-glEnableClientState !
+|	"glDisableClientState" SDL_GL_GetProcAddress 'sys-glDisableClientState !
 
 	"glDrawArrays" SDL_GL_GetProcAddress 'sys-glDrawArrays !
 	"glClear" SDL_GL_GetProcAddress 'sys-glClear !
