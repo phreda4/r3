@@ -244,6 +244,7 @@
 ::10*		1 << dup 2 << + ;
 
 ::i2fp | i -- f
+	0? ( ; )
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
@@ -254,6 +255,7 @@
 	;
 	
 ::f2fp | f.p -- fp
+	0? ( ; )
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift

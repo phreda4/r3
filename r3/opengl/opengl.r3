@@ -1,4 +1,4 @@
-| OpenGL example
+| OpenGL example - first example without shaders
 | PHREDA 2023
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
@@ -8,7 +8,7 @@
 
 #v0 [ -0.8 -0.8 0.8 ]
 #v1 [ 0.8 -0.8 0.8 ]
-#v2 [ 0.8 0.8 0.8 ]
+#v2 [ 0.0 0.8 0.8 ]
 
 #c0 ( 255 0 0 255 )
 #c1 ( 0 255 0 255 )
@@ -38,11 +38,11 @@
 :initgl
     | select opengl version
 	5 1 SDL_GL_SetAttribute |  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    17 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    18 3 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    17 4 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    18 0 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	20 2 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
 	21 2 SDL_GL_SetAttribute |(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);	
-|SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+|	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 |	13 1 SDL_GL_SetAttribute |  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 |	14 4 SDL_GL_SetAttribute   |SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 	
@@ -74,9 +74,8 @@
 	>esc< =? ( exit ) 
 	drop ;	
 	
-	
 |----------- BOOT
-: 	
+:
 	fillv	
 	initgl 
 	'main SDLshow

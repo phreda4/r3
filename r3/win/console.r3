@@ -44,7 +44,7 @@
 	codekey 32 >> $1000 or irec 20 >> xor
 	'conkb ! ;
 
-::inkey
+::inkey | -- key
 	0 'conkb !
 	stdin 'ne GetNumberOfConsoleInputEvents
 	ne ( 1? 1 -
