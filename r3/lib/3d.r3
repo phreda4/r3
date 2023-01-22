@@ -28,6 +28,74 @@
 	'mat> ! ;
 
 |-----------------------------
+
+::getfmat | -- fmat ; make float point mat
+	mat> dup 128 + >b >a
+	16 ( 1? 1 - a@+ f2fp db!+ ) drop 
+	mat> 128 + ;
+
+|t_mat *mat_perspective(float angle, float ratio, float near, float far)
+| Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+| glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+::matper | angle ratio near far --
+	'mats dup 'mat> ! 'mati 16 move 
+	rot pick3 *. 1.0 swap /. 		mat> !	| ang near far	[1 1] !
+	rot 1.0 swap /. 				mat> 5 3 << + !	| near far		[2 2] !
+	swap
+	2dup + neg pick2 pick2 - /. 	mat> 10 3 << + ! | [3 3]!
+	-1.0 							mat> 11 3 << + ! | [4 3]!
+	2dup *. 1 << neg rot rot - /.	mat> 14 3 << + ! | [3 4]!
+	;
+|    mat_zero(to_return);
+|    tan_half_angle = tan(angle / 2);
+|    mat_set(to_return, 1, 1, 1 / (ratio * tan_half_angle));
+|    mat_set(to_return, 2, 2, 1 / (tan_half_angle));
+|    mat_set(to_return, 3, 3, -(far + near) / (far - near));
+|    mat_set(to_return, 4, 3, -1);
+|    mat_set(to_return, 3, 4, -(2 * far * near) / (far - near));
+
+|    1 2 3 4 a b c d
+|    5 6 7 8 e
+::mper |
+	mat> >a
+	rot pick3 *. 1.0 swap /. 	a!+	0 a!+ 0 a!+ 0 a!+ 	| ang near far	[1 1] !
+	0 a!+ rot 1.0 swap /. 		a!+	0 a!+ 0 a!+			| near far		[2 2] !
+	swap
+	0 a!+ 0 a!+
+	2dup + neg pick2 pick2 - /. 	a!+ | [3 3]!
+	-1.0 a!+ | [4 3]!
+	0 a!+ 0 a!+
+	2dup *. 1 << neg rot rot - /.	a!+ | [3 4]!
+	0 a!
+	;
+
+::mprint
+	mat>
+	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
+	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
+	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
+	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
+	drop
+	;
+	
+:mline | -- v
+	a@+ b@ *. 32 b+
+	a@+ b@ *. + 32 b+
+	a@+ b@ *. + 32 b+
+	a@+ b@ *. + ;
+	
+:mrow | adr -- adr'
+	mline swap !+ -96 b+ 8 b+ -32 a+
+	mline swap !+ -96 b+ 8 b+ -32 a+
+	mline swap !+ -96 b+ 8 b+ -32 a+
+	mline swap !+ -96 b+ -24 b+ ;
+	
+::m* |
+	mat> dup 128 - >a dup >b 128 +
+	mrow mrow mrow mrow 
+	'mat> !
+	;
+|-----------------------------
 ::mtrans | x y z --
 	mat> >a
 	pick2 a> 96 + @ *. a@ + a!+

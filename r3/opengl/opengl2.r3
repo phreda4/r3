@@ -205,7 +205,9 @@ void main () {
 	window SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 
-	|	16 'fmatrix 'matrix mem2float	
+	<f1> =? (  0.01 'matrix d+! 16 'fmatrix 'matrix mem2float ) 
+	<f2> =? (  0.01 'matrix 4 + d+! 16 'fmatrix 'matrix mem2float ) 
+	|		
 	drop ;	
 	
 |----------- BOOT

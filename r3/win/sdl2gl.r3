@@ -151,6 +151,8 @@
 ::glVertexAttrib4fv sys-glVertexAttrib4fv sys2 drop ;
 ::glBindAttribLocation sys-glBindAttribLocation sys3 drop ;
 
+
+
 ::InitGLAPI
 	0 SDL_GL_LoadLibrary
 	"glGetError" SDL_GL_GetProcAddress 'sys-glGetError !
@@ -237,3 +239,23 @@
 	
 |	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
+	
+#SDL_context
+
+::SDLinitGL | "titulo" w h --
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$1FFF0000 dup sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
+	SDL_windows SDL_GL_CreateContext 'SDL_context !
+	1 SDL_GL_SetSwapInterval	
+|	SDL_GetWindowSurface 'SDL_screen !
+|	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+|	SDL_windows SDL_RaiseWindow
+
+	InitGLAPI
+	;
+
+::SDLquit
+	SDL_context SDL_Gl_DeleteContext
+	SDL_windows SDL_DestroyWindow 
+	SDL_Quit ;		

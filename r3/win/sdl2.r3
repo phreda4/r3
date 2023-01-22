@@ -175,17 +175,6 @@
 	SDL_windows SDL_RaiseWindow
 	;
 
-::SDLinitGL | "titulo" w h --
-	'sh ! 'sw !
-	$3231 SDL_init 
-	$1FFF0000 dup
-	sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
-	SDL_GetWindowSurface 'SDL_screen !
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	SDL_windows SDL_RaiseWindow
-	;
-	
-	
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
 	
