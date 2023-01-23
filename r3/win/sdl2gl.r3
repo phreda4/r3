@@ -45,8 +45,6 @@
 
 #sys-glViewport
 #sys-glVertexPointer
-|#sys-glEnableClientState
-|#sys-glDisableClientState
 
 #sys-glClear
 #sys-glDrawElements
@@ -126,9 +124,6 @@
 ::glGetString sys-glGetString sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
 ::glVertexPointer sys-glVertexPointer sys4 drop ;
-|::glEnableClientState sys-glEnableClientState sys1 drop ;
-|::glDisableClientState sys-glDisableClientState sys1 drop ;
-
 
 ::glBegin sys-glBegin sys1 drop ;
 ::glEnd sys-glEnd sys0 drop ;
@@ -196,9 +191,6 @@
 
 	"glVertexPointer" SDL_GL_GetProcAddress 'sys-glVertexPointer !
 
-|	"glEnableClientState" SDL_GL_GetProcAddress 'sys-glEnableClientState !
-|	"glDisableClientState" SDL_GL_GetProcAddress 'sys-glDisableClientState !
-
 	"glDrawArrays" SDL_GL_GetProcAddress 'sys-glDrawArrays !
 	"glClear" SDL_GL_GetProcAddress 'sys-glClear !
 	"glDrawElements" SDL_GL_GetProcAddress 'sys-glDrawElements !	
@@ -251,7 +243,6 @@
 |	SDL_GetWindowSurface 'SDL_screen !
 |	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 |	SDL_windows SDL_RaiseWindow
-
 	InitGLAPI
 	;
 

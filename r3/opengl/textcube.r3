@@ -40,30 +40,21 @@
 #GL_TEXTURE_MIN_FILTER $2801
 #GL_LINEAR $2601
 
-#matrix [
-0.5  0.0 0.0  0.0
-0.0  0.5 0.0  0.0
-0.0  0.0 0.5  0.0
-0.25 0.5 0.75 1.0 ]
-#fmatrix * 64
-
 #vertex_shader_text "#version 330 core
-// Input vertex data, different for all executions of this shader.
-layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec2 vertexUV;
-out vec2 UV; // Output data ; will be interpolated for each fragment.
-uniform mat4 MVP; // Values that stay constant for the whole mesh.
+out vec2 UV; 		// Output data ; will be interpolated for each fragment.
+uniform mat4 MVP; 
 void main(){
-	gl_Position =  MVP * vec4(vertexPosition_modelspace,1); // Output position of the vertex, in clip space : MVP * position
-	UV = vertexUV; // UV of the vertex. No special space for this one.
+	gl_Position =  MVP * vec4(vertexPosition,1) ; 
+	UV = vertexUV; 
 }"
 #vht 'vertex_shader_text
  
 #fragment_shader_text "#version 330 core
-// Interpolated values from the vertex shaders
 in vec2 UV;
-out vec3 color; // Ouput data
-uniform sampler2D myTextureSampler; // Values that stay constant for the whole mesh.
+out vec3 color; 
+uniform sampler2D myTextureSampler;
 void main(){
 	color = texture( myTextureSampler, UV ).rgb; 	// Output color = color of the texture at the specified UV
 }"
@@ -255,8 +246,10 @@ void main(){
 
 	|GLuint Texture = loadDDS("uvtemplate.DDS");
 |---------------------------	
-	"media/img/lolomario.png" IMG_Load 'Surface !
- 
+	"media/img/lolomario.png" 
+|	"r3/opengl/uvtemplate.png"
+	IMG_Load 'Surface !
+	
 	1 'Texture glGenTextures
 	GL_TEXTURE_2D Texture glBindTexture
  
@@ -300,22 +293,27 @@ void main(){
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 
+|	1.0 3dmode
+| Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+| perspective(tan(45.0f/2), 4.0f / 3.0f, 0.1f, 100.0f);	
+|	matini
+|	0.9 4.0 3.0 /. 0.1 1000.0 mper
+|	xcam ycam zcam mtrans
+|	rx mrotx ry mroty
+
+:mvp
+	matini
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective	
+	xcam ycam zcam mtrans
+	rx mrotx ry mroty ;
+
 |--------------	
 :main
 	gui
 	'dnlook 'movelook onDnMove
 	
-	|1.0 3dmode
-	| Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	|perspective(tan(45.0f/2), 4.0f / 3.0f, 0.1f, 100.0f);	
-	0.9 4.0 3.0 /. 0.1 1000.0 matper
-	rx mrotxi ry mrotyi
-	xcam ycam zcam mtransi
-	
-|	mper
-|mprint	
-|	m*
-|mprint	
+	mvp
+
 	$4100 glClear
 
 |......
@@ -344,14 +342,14 @@ void main(){
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
+	<up> =? ( 1.0 'zcam +! )
+	<dn> =? ( -1.0 'zcam +! )
 	drop ;	
 	
 |----------- BOOT
 : 	
 	36 3 * 'g_vertex_buffer_data 'g_vertex_buffer_data mem2float
 	36 2 * 'g_uv_buffer_data 'g_uv_buffer_data mem2float
-	
-	16 'fmatrix 'matrix mem2float	
 	
 	initgl 
 	'main SDLshow

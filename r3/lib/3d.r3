@@ -1,6 +1,8 @@
 | 3dmath - PHREDA
 |-------------------------
-^r3/lib/math.r3
+
+^r3/lib/vec3.r3
+^r3/win/sdl2.r3
 
 ##xf ##yf
 ##ox ##oy
@@ -11,13 +13,16 @@
 0 0 1.0 0
 0 0 0 1.0
 #mats * 2560 | 20 matrices
-#mat> 'mats
+##mat> 'mats
 
 ::matini
 	'mats dup 'mat> ! 'mati 16 move ;
 
 ::mpush | --
 	mat> dup 128 + dup 'mat> ! swap 16 move ;
+	
+::mpushi | --  ; push new id
+	mat> 128 + dup 'mat> ! 'mati 16 move ;
 
 ::mpop | --
 	mat> |'mats =? ( drop ; )
@@ -27,57 +32,91 @@
 	7 << mat> swap - |'mats <? ( 'mats nip )
 	'mat> ! ;
 
-|-----------------------------
+|----------- generate floating point matrix
 
 ::getfmat | -- fmat ; make float point mat
 	mat> dup 128 + >b >a
 	16 ( 1? 1 - a@+ f2fp db!+ ) drop 
 	mat> 128 + ;
+	
+::gettfmat |  -- fmat ; transpose
+	mat> dup 128 + >b
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	;
 
-|t_mat *mat_perspective(float angle, float ratio, float near, float far)
 | Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-::matper | angle ratio near far --
-	'mats dup 'mat> ! 'mati 16 move 
-	rot pick3 *. 1.0 swap /. 		mat> !	| ang near far	[1 1] !
-	rot 1.0 swap /. 				mat> 5 3 << + !	| near far		[2 2] !
-	swap
-	2dup + neg pick2 pick2 - /. 	mat> 10 3 << + ! | [3 3]!
-	-1.0 							mat> 11 3 << + ! | [4 3]!
-	2dup *. 1 << neg rot rot - /.	mat> 14 3 << + ! | [3 4]!
-	;
-|    mat_zero(to_return);
-|    tan_half_angle = tan(angle / 2);
-|    mat_set(to_return, 1, 1, 1 / (ratio * tan_half_angle));
-|    mat_set(to_return, 2, 2, 1 / (tan_half_angle));
-|    mat_set(to_return, 3, 3, -(far + near) / (far - near));
-|    mat_set(to_return, 4, 3, -1);
-|    mat_set(to_return, 3, 4, -(2 * far * near) / (far - near));
+|--- from kazmath/mat4.c
 
-|    1 2 3 4 a b c d
-|    5 6 7 8 e
-::mper |
-	mat> >a
+:a]! 3 << a> + ! ;
+
+::mper 
+	mat> dup >a 'mati 16 move 
 	rot pick3 *. 1.0 swap /. 	a!+	0 a!+ 0 a!+ 0 a!+ 	| ang near far	[1 1] !
 	0 a!+ rot 1.0 swap /. 		a!+	0 a!+ 0 a!+			| near far		[2 2] !
 	swap
 	0 a!+ 0 a!+
-	2dup + neg pick2 pick2 - /. 	a!+ | [3 3]!
-	-1.0 a!+ | [4 3]!
-	0 a!+ 0 a!+
-	2dup *. 1 << neg rot rot - /.	a!+ | [3 4]!
-	0 a!
+	2dup + neg pick2 pick2 - /. 	a!+ -1.0 a!+ 
+	0 a!+ 0 a!+ 
+	2dup *. 1 << neg rot rot - /.	a!+ 0 a!+
 	;
 
-::mprint
-	mat>
-	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
-	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
-	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
-	@+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f " .println
-	drop
+::mperspective | near far contang aspect  --
+	mat> dup >a 'mati 16 move 
+	over *. a!		|mat[0] = cotangent / aspect;
+	5 a]!			|mat[5] = cotangent;
+	2dup -			| near far deltaz
+	pick2 pick2 + over /. 10 a]!	|mat[10] = (zFar + zNear) / deltaZ;
+	-1.0 11 a]! 					|mat[11] = -1;
+	rot rot *. 1 << swap /. 14 a]!	|mat[14] = (2 * zFar * zNear) / deltaZ;
+	0 15 a]!						|mat[15] = 0;
 	;
 	
+::mortho | r l t b f n --
+	mat> dup >a 'mati 16 move 
+	2dup - -2.0 over /. 10 a]!		| 	mat[10] = -2 / (farVal - nearVal);
+	rot rot + swap /. neg 14 a]!	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
+	2dup - 2.0 over /. 5 a]!		| mat[5] = 2 / (top - bottom);
+	rot rot + swap /. neg 13 a]!	| mat[13] = -((top + bottom) / (top - bottom));
+	2dup - 2.0 over /. a> !			| mat[0] = 2 / (right - left);
+	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
+	;
+	
+##pEye 0 0 0
+##pCenter 0 0 0
+##pUp 0 0 0
+
+#f 0 0 0 
+#s 0 0 0
+#u 0 0 0 
+
+::mlookat | --
+	'f dup 'pCenter v3= dup 'pEye v3- v3Nor
+	's dup 'f v3= dup 'pUp v3vec v3Nor
+	'u dup 's v3= 'f v3vec
+	mat> >a
+	s a!+ |mat[0] = s.x;
+    u a!+ |mat[1] = u.x;
+    f neg a!+ |mat[2] = -f.x;
+    0 a!+ |mat[3] = 0.0;
+    's 8 + @ a!+ |mat[4] = s.y;
+    'u 8 + @ a!+ |mat[5] = u.y;
+    'f 8 + @ neg a!+ |mat[6] = -f.y;
+    0 a!+ |mat[7] = 0.0;
+    's 16 + @ a!+ |mat[8] = s.z;
+    'u 16 + @ a!+ |mat[9] = u.z;
+    'f 16 + @ neg a!+ |mat[10] = -f.z;
+    0 a!+ |mat[11] = 0.0;
+    's 'pEye v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'u 'pEye v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
+    'f 'pEye v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
+    1.0 a! |mat[15] = 1.0;
+	;
+
+|-- mat mult	
 :mline | -- v
 	a@+ b@ *. 32 b+
 	a@+ b@ *. + 32 b+
@@ -85,16 +124,17 @@
 	a@+ b@ *. + ;
 	
 :mrow | adr -- adr'
-	mline swap !+ -96 b+ 8 b+ -32 a+
-	mline swap !+ -96 b+ 8 b+ -32 a+
-	mline swap !+ -96 b+ 8 b+ -32 a+
+	mline swap !+ -88 b+ -32 a+
+	mline swap !+ -88 b+ -32 a+
+	mline swap !+ -88 b+ -32 a+
 	mline swap !+ -96 b+ -24 b+ ;
 	
-::m* |
+::m* | -- ; mult two prev mat and generate a new one
 	mat> dup 128 - >a dup >b 128 +
-	mrow mrow mrow mrow 
-	'mat> !
+	mrow mrow mrow mrow drop
+	128 'mat> +!
 	;
+	
 |-----------------------------
 ::mtrans | x y z --
 	mat> >a
@@ -388,11 +428,87 @@
 ::aspect | -- a
 	sw sh 16 <</ ;
 
-|------- vectores
-::normInt2Fix | x y z -- xf yf zf
-	pick2 dup * pick2 dup * + over dup * + sqrt
-	1? ( 1.0 swap /. ) >r rot r@ *. rot r@ *. rot r> *. ;
+|-------------- rota directo -----------------------------
+#cox #coy #coz
+#six #siy #siz
 
-::normFix | x y z -- x y z
-	pick2 dup *. pick2 dup *. + over dup *. + sqrt.
-	1? ( 1.0 swap /. ) >r rot r@ *. rot r@ *. rot r> *. ;
+::calcrot | rx ry rz --
+	sincos 'coz ! 'siz !
+	sincos 'coy ! 'siy !
+	sincos 'cox ! 'six !
+	;
+
+::makerot | x y z -- x' y' z'
+	rot rot | z x y
+	over cox *. over six *. +	| z x y x'
+	rot six *. rot cox *. - 	| z x' y'
+	swap rot 					| y' x' z
+	over coy *. over siy *. +	| y' x' z x''
+	rot siy *. rot coy *. -		| y' x'' z'
+	rot							| x'' y' z'
+	over coz *. over siz *. +	|  x'' y' z' y''
+	rot siz *. rot coz *. -		| x'' y'' z''
+	;
+
+#m11 #m12 #m13
+#m21 #m22 #m23
+#m31 #m32 #m33
+
+::calcvrot | rx ry rz --
+	sincos 'coz ! 'siz !
+	sincos 'coy ! 'siy !
+	sincos 'cox ! 'six !
+    coz coy *. 'm11 !
+    cox siz *. coy *. six siy *. + 'm12 !
+    six siz *. coy *. cox siy *. - 'm13 !
+	siz neg 'm21 !
+    cox coz *. 'm22 !
+    six coz *. 'm23 !
+    coz siy *. 'm31 !
+    cox siz *. siy *. six coy *. - 'm32 !
+    six siz *. siy *. cox coy *. + 'm33 !
+	;
+
+::mrotxyz | x y z --
+	calcvrot
+	mat> >a
+	a@+ a@+ a@+ -12 a+
+	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
+	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
+	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
+	a@+ a@+ a@+ -12 a+
+	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
+	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
+	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
+	a@+ a@+ a@+ -12 a+
+	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
+	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
+	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
+	a@+ a@+ a@+ -12 a+
+	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
+	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
+	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
+	;
+
+::mrotxyzi | x y z --
+ 	calcrot
+	mat> >a
+	a@ a> 16 + @ a> 32 + @
+	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
+	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
+	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
+	a@ a> 16 + @ a> 32 + @
+	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
+	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
+	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
+   	a@ a> 16 + @ a> 32 + @
+	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
+	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
+	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
+   	a@ a> 16 + @ a> 32 + @
+	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
+	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
+	rot m31 *. rot m32 *. + swap m33 *. + a!
+	;
+
+|------- vectores

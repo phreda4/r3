@@ -1,5 +1,6 @@
 | 3dmath - PHREDA
-|-------------------------
+| 3d vector
+|------------------------
 ^r3/lib/math.r3
 
 ::v3len | v1 -- l
@@ -24,104 +25,16 @@
 ::v3+ | v1 v2 -- ; v1=v1+v2
 	>a dup @ a@+ + swap !+ dup @ a@+ + swap !+ dup @ a@ + swap ! ;
 
-::v3* | v1 s -- ; v1=v1*s
+::v3* | v1 s -- ; v1=v1*s ; cross
 	swap >a a@ over *. a!+ a@ over *. a!+ a@ *. a! ;
 
-::v3= | v1 v2 --
+::v3= | v1 v2 -- ; v1=v2
 	3 move ;
 
-|-------------- rota directo -----------------------------
-#cox #coy #coz
-#six #siy #siz
+::normInt2Fix | x y z -- xf yf zf
+	pick2 dup * pick2 dup * + over dup * + sqrt
+	1? ( 1.0 swap /. ) >r rot r@ *. rot r@ *. rot r> *. ;
 
-::calcrot | rx ry rz --
-	sincos 'coz ! 'siz !
-	sincos 'coy ! 'siy !
-	sincos 'cox ! 'six !
-	;
-
-::makerot | x y z -- x' y' z'
-	rot rot | z x y
-	over cox *. over six *. +	| z x y x'
-	rot six *. rot cox *. - 	| z x' y'
-	swap rot 					| y' x' z
-	over coy *. over siy *. +	| y' x' z x''
-	rot siy *. rot coy *. -		| y' x'' z'
-	rot							| x'' y' z'
-	over coz *. over siz *. +	|  x'' y' z' y''
-	rot siz *. rot coz *. -		| x'' y'' z''
-	;
-
-#m11 #m12 #m13
-#m21 #m22 #m23
-#m31 #m32 #m33
-
-::calcvrot | rx ry rz --
-	sincos 'coz ! 'siz !
-	sincos 'coy ! 'siy !
-	sincos 'cox ! 'six !
-    coz coy *. 'm11 !
-    cox siz *. coy *. six siy *. + 'm12 !
-    six siz *. coy *. cox siy *. - 'm13 !
-	siz neg 'm21 !
-    cox coz *. 'm22 !
-    six coz *. 'm23 !
-    coz siy *. 'm31 !
-    cox siz *. siy *. six coy *. - 'm32 !
-    six siz *. siy *. cox coy *. + 'm33 !
-	;
-
-::mrotxyz | x y z --
- 	calcvrot
-	mat> >a
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
-	;
-
-::mrotxyzi | x y z --
- 	calcrot
-	mat> >a
-	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-   	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-   	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a!
-	;
-
-
-#oh #ow
-::3dnorm | w h xc yc --
-	rot 'oh !
-	rot 'ow !
-	'oy !
-	'ox !
-	;
-
-::3dpp | x y z -- x y
-	rot over / ox + >r / oy + r> ;
-
+::normFix | x y z -- x y z
+	pick2 dup *. pick2 dup *. + over dup *. + sqrt.
+	1? ( 1.0 swap /. ) >r rot r@ *. rot r@ *. rot r> *. ;
