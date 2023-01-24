@@ -85,15 +85,15 @@
 	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
 	;
 	
-##pEye 0 0 0
+##pEye 4.0 3.0 3.0
 ##pCenter 0 0 0
-##pUp 0 0 0
+##pUp 0 1.0 0
 
 #f 0 0 0 
 #s 0 0 0
 #u 0 0 0 
 
-::mlookat | --
+::mlookatv | eye to up --
 	'f dup 'pCenter v3= dup 'pEye v3- v3Nor
 	's dup 'f v3= dup 'pUp v3vec v3Nor
 	'u dup 's v3= 'f v3vec
@@ -116,6 +116,30 @@
     1.0 a! |mat[15] = 1.0;
 	;
 
+::mlookat | eye to up --
+	swap
+	'f dup rot v3= dup pick3 v3- v3Nor | eye up
+	's dup 'f v3= dup rot v3vec v3Nor | eye
+	'u dup 's v3= 'f v3vec
+	mat> >a
+	s a!+ |mat[0] = s.x;
+    u a!+ |mat[1] = u.x;
+    f neg a!+ |mat[2] = -f.x;
+    0 a!+ |mat[3] = 0.0;
+    's 8 + @ a!+ |mat[4] = s.y;
+    'u 8 + @ a!+ |mat[5] = u.y;
+    'f 8 + @ neg a!+ |mat[6] = -f.y;
+    0 a!+ |mat[7] = 0.0;
+    's 16 + @ a!+ |mat[8] = s.z;
+    'u 16 + @ a!+ |mat[9] = u.z;
+    'f 16 + @ neg a!+ |mat[10] = -f.z;
+    0 a!+ |mat[11] = 0.0;
+    's over v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'u over v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
+    'f swap v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
+    1.0 a! |mat[15] = 1.0;
+	;
+
 |-- mat mult	
 :mline | -- v
 	a@+ b@ *. 32 b+
@@ -134,6 +158,15 @@
 	mrow mrow mrow mrow drop
 	128 'mat> +!
 	;
+
+:a]@ | val nro --
+	3 << a> + @ ;
+
+::mmove | x y z --
+	mat> dup >a 'mati 16 move 
+	14 a]!
+	13 a]!
+	12 a]! ;
 	
 |-----------------------------
 ::mtrans | x y z --

@@ -2,64 +2,30 @@
 | PHREDA 2023
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
-^r3/win/sdl2image.r3
+
 ^r3/lib/3d.r3
 ^r3/lib/gui.r3
+
+^r3/opengl/ogl2util.r3
+
 
 #xcam 0 #ycam 0 #zcam -3.0
 
 | opengl Constant
 #GL_COLOR_BUFFER_BIT $4000
 #GL_DEPTH_BUFFER_BIT $100
-#GL_FRAGMENT_SHADER $8B30
-#GL_VERTEX_SHADER $8B31
+
 #GL_ARRAY_BUFFER $8892
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
 #GL_FALSE 0
-
-#GL_COMPILE_STATUS $8B81
-#GL_LINK_STATUS $8B82
 
 #GL_DEPTH_TEST $0B71
 #GL_LESS $0201
 
 #GL_TRIANGLES $0004
 
-#GL_TEXTURE $1702
-#GL_TEXTURE0 $84C0
-#GL_TEXTURE_2D $0DE1
-#GL_TEXTURE_2D_ARRAY $8C1A
-#GL_TEXTURE_3D $806F
-
-#GL_RGB $1907
-#GL_RGBA $1908
-
-#GL_UNSIGNED_BYTE $1401
-#GL_TEXTURE_MAG_FILTER $2800
-#GL_TEXTURE_MIN_FILTER $2801
-#GL_LINEAR $2601
-
-#vertex_shader_text "#version 330 core
-layout(location = 0) in vec3 vertexPosition;
-layout(location = 1) in vec2 vertexUV;
-out vec2 UV; 		// Output data ; will be interpolated for each fragment.
-uniform mat4 MVP; 
-void main(){
-	gl_Position =  MVP * vec4(vertexPosition,1) ; 
-	UV = vertexUV; 
-}"
-#vht 'vertex_shader_text
- 
-#fragment_shader_text "#version 330 core
-in vec2 UV;
-out vec3 color; 
-uniform sampler2D myTextureSampler;
-void main(){
-	color = texture( myTextureSampler, UV ).rgb; 	// Output color = color of the texture at the specified UV
-}"
-#fst 'fragment_shader_text 
-
+	
 #g_vertex_buffer_data [
 -1.0 -1.0 -1.0 
 -1.0 -1.0  1.0 
@@ -141,85 +107,16 @@ void main(){
 :mem2float | cnt to from --
 	>a >b ( 1? 1 - da@+ f2fp db!+ ) drop ;
 
-:glInfo
-	$1f00 glGetString .println | vendor
-	$1f01 glGetString .println | render
-	$1f02 glGetString .println | version
-	$8B8C glGetString .println | shader
-	;
 	
-#programID #vs #fs
+#programID 
 #VertexArrayID
 #MatrixID
+
 #vertexbuffer	
 #uvbuffer
-#texture
+#texture	
 #textureID
 
-|--- sdl2 surface
-|struct SDL_Surface
-|	flags           dd ? 0 dd ? 4
-|	?format        	dq ? 8 8
-|	w               dd ? 16 4
-|	h               dd ? 20 4
-|	pitch           dd ? 24 4 dd ? 28 4
-|	pixels          dq ? 32 8
-|	userdata        dq ?
-|	locked          dd ? dd ?
-|	lock_data       dq ?
-|	clip_rect       SDL_Rect
-|	map             dq ?
-|	refcount        dd ? dd ?
-#surface
-:Surface->w surface 16 + d@ ;
-:Surface->h surface 20 + d@ ;
-:Surface->pixels surface 32 + @ ;
-:Surface->format->bpp surface 8 + @ 16 + c@ ;
-:GLBPP Surface->format->bpp 4 =? ( drop GL_RGB ; ) drop GL_RGBA ;
-	
-|-----------------------------------------------	
-#ss | error compile
-#log * 512
-:shCheckErr | ss --
-	dup GL_COMPILE_STATUS 'ss glGetShaderiv
-	ss 1? ( 2drop ; ) drop
-	512 0 'log glGetShaderInfoLog
-	'log .println ;
-
-:prCheckErr | ss --
-	dup GL_LINK_STATUS 'ss glGetProgramiv
-	ss 1? ( 2drop ; ) drop
-	512 'ss 'log glGetProgramInfoLog
-	'log .println ;
-	
-:glError
-	glGetError 0? ( drop ; ) "Error %d:" .println ;
-	
-
-:loadshaders
-|	"Vertex" .println
-	GL_VERTEX_SHADER glCreateShader 'vs !
-	vs 1 'vht 0 glShaderSource
-	vs glCompileShader 
-	vs shCheckErr glError
-	
-|	"Fragment" .println
-	GL_FRAGMENT_SHADER glCreateShader 'fs !
-	fs 1 'fst 0 glShaderSource
-	fs glCompileShader
-	fs shCheckErr glError
-
-|	"Program:" .println
-	glCreateProgram 'programID !
-	programID vs glAttachShader
-	programID fs glAttachShader
-	programID glLinkProgram 
-	programID glValidateProgram
-	programID prCheckErr glError
-	
-	vs glDeleteShader
-	fs glDeleteShader
-	;
 	
 :initgl
 	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
@@ -241,26 +138,29 @@ void main(){
 	
 	1 'VertexArrayID glGenVertexArrays
 	VertexArrayID glBindVertexArray
-	
-	loadshaders
 
+|---------------------------		
+	"r3/opengl/TextureFragmentShader.fs" 
+	"r3/opengl/TransformVertexShader.vs" 
+	loadShaders | "fragment" "vertex" -- idprogram
+	'programID !
+|---------------------------		
 	|GLuint Texture = loadDDS("uvtemplate.DDS");
-|---------------------------	
-	"media/img/lolomario.png" 
-|	"r3/opengl/uvtemplate.png"
-	IMG_Load 'Surface !
-	
+
 	1 'Texture glGenTextures
 	GL_TEXTURE_2D Texture glBindTexture
- 
-	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
+	
+|	"media/img/lolomario.png" 	
+	"r3/opengl/uvtemplate.png"
+|	"media/img/colorwheel.png" 	
+	glLoadImg 
+	
 
 |---------------------------	
 	programID "MVP" glGetUniformLocation 'MatrixID !
 	programID "myTextureSampler" glGetUniformLocation 'TextureID !
-	
+
+|---------------------------		
 	1 'vertexbuffer glGenBuffers
 	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
 	GL_ARRAY_BUFFER 36 3 * 2 << 'g_vertex_buffer_data GL_STATIC_DRAW glBufferData
@@ -268,7 +168,6 @@ void main(){
 	1 'uvbuffer glGenBuffers
 	GL_ARRAY_BUFFER uvbuffer glBindBuffer
 	GL_ARRAY_BUFFER 36 2 * 2 << 'g_uv_buffer_data GL_STATIC_DRAW glBufferData
-
 	;	
 	
 :glend
@@ -296,29 +195,54 @@ void main(){
 |	1.0 3dmode
 | Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | perspective(tan(45.0f/2), 4.0f / 3.0f, 0.1f, 100.0f);	
-|	matini
-|	0.9 4.0 3.0 /. 0.1 1000.0 mper
-|	xcam ycam zcam mtrans
-|	rx mrotx ry mroty
+|	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+|	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+|	// Camera matrix
+|	glm::mat4 View  = glm::lookAt(
+|								glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+|								glm::vec3(0,0,0), // and looks at the origin
+|								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+|						   );
+|	// Model matrix : an identity matrix (model will be at the origin)
+|	glm::mat4 Model      = glm::mat4(1.0f);
+|	// Our ModelViewProjection : multiplication of our 3 matrices
+|	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+
+:mvp2
+	matini rx mrotx ry mroty 
+	mpush xcam ycam zcam mmove m*
+	mpush -4.0 4.0 -4.0 4.0 -4.0 4.0 mortho m*
+	;
 
 :mvp
-	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective	
-	xcam ycam zcam mtrans
-	rx mrotx ry mroty ;
+	matini rx mrotx ry mroty 
+	mpush xcam ycam zcam mmove m*
+	mpush 0.1 1000.0 0.9 3.0 4.0 /. mperspective m*
+	;
 
+#pEye 4.0 3.0 3.0
+#pTo 0 0 0
+#pUp 0 1.0 0
+
+:mvp
+	matini 
+	rx mrotx ry mroty 
+	mpush xcam ycam zcam mmove m*
+	|'pEye 'pTo 'pUp mlookat | eye to up --
+	mpush 0.1 1000.0 0.9 3.0 4.0 /. mperspective m*
+	;
+	
 |--------------	
 :main
 	gui
 	'dnlook 'movelook onDnMove
 	
-	mvp
-
 	$4100 glClear
 
-|......
 	programID glUseProgram
 	
+	mvp
 	MatrixID 1 GL_FALSE getfmat glUniformMatrix4fv 	
 	
 	GL_TEXTURE0 glActiveTexture

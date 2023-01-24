@@ -1,117 +1,115 @@
-|----------------------------------------------------------------------------	
-	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
-	glm::mat4 View       = glm::lookAt(
-								glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
-								glm::vec3(0,0,0), // and looks at the origin
-								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-						   );
-	// Model matrix : an identity matrix (model will be at the origin)
-	glm::mat4 Model      = glm::mat4(1.0f);
-	// Our ModelViewProjection : multiplication of our 3 matrices
-	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
-	
-|----------------------------------------------------------------------------	
-        mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-        mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        mat4x4_mul(mvp, p, m);
+^r3/lib/mem.r3
+^r3/win/sdl2.r3
+^r3/win/sdl2gl.r3
+^r3/win/sdl2image.r3
+
+
+::glInfo
+	$1f00 glGetString .println | vendor
+	$1f01 glGetString .println | render
+	$1f02 glGetString .println | version
+	$8B8C glGetString .println | shader
+	;
+
+
+#GL_COMPILE_STATUS $8B81
+#GL_LINK_STATUS $8B82
+
+#GL_FRAGMENT_SHADER $8B30
+#GL_VERTEX_SHADER $8B31
  	
-|----------------------------------------------------------------------------
-#define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
-#define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
-#define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
+| mem---
+| 'vertsh -> vertsh + 16
+| 'fragsh -> fragsh + len(vertsh)
+| vertsh 
+| fragsh
 
-GLuint loadDDS(const char * imagepath){
-
-	unsigned char header[124];
-
-	FILE *fp; 
- 
-	/* try to open the file */ 
-	fp = fopen(imagepath, "rb"); 
-	if (fp == NULL){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); 
-		return 0;
-	}
-   
-	/* verify the type of file */ 
-	char filecode[4]; 
-	fread(filecode, 1, 4, fp); 
-	if (strncmp(filecode, "DDS ", 4) != 0) { 
-		fclose(fp); 
-		return 0; 
-	}
+#frag
+#vert
+#err
+::loadShaders | "fragment" "vertex" -- idprogram
+	here 16 + 
+	dup 'vert !
+	swap LOAD vert =? ( 2drop 0 ; ) 
+	0 swap c!+ 
+	dup 'frag !
+	swap LOAD frag =? ( drop 0 ; )  
+	0 swap c!
+	frag vert here !+ !
 	
-	/* get the surface desc */ 
-	fread(&header, 124, 1, fp); 
-
-	unsigned int height      = *(unsigned int*)&(header[8 ]);
-	unsigned int width	     = *(unsigned int*)&(header[12]);
-	unsigned int linearSize	 = *(unsigned int*)&(header[16]);
-	unsigned int mipMapCount = *(unsigned int*)&(header[24]);
-	unsigned int fourCC      = *(unsigned int*)&(header[80]);
-
- 
-	unsigned char * buffer;
-	unsigned int bufsize;
-	/* how big is it going to be including all mipmaps? */ 
-	bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize; 
-	buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char)); 
-	fread(buffer, 1, bufsize, fp); 
-	/* close the file pointer */ 
-	fclose(fp);
-
-	unsigned int components  = (fourCC == FOURCC_DXT1) ? 3 : 4; 
-	unsigned int format;
-	switch(fourCC) 
-	{ 
-	case FOURCC_DXT1: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; 
-		break; 
-	case FOURCC_DXT3: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; 
-		break; 
-	case FOURCC_DXT5: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; 
-		break; 
-	default: 
-		free(buffer); 
-		return 0; 
-	}
-
-	// Create one OpenGL texture
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT,1);	
+	GL_VERTEX_SHADER glCreateShader dup 
+	dup 1 here 0 glShaderSource
+	dup glCompileShader 
+	dup GL_COMPILE_STATUS 'err glGetShaderiv
+	err 0? ( 2drop 0 ; ) drop
+	'vert !
 	
-	unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16; 
-	unsigned int offset = 0;
+	GL_FRAGMENT_SHADER glCreateShader dup
+	dup 1 here 8 + 0 glShaderSource
+	dup glCompileShader
+	dup GL_COMPILE_STATUS 'err glGetShaderiv
+	err 0? ( 2drop 0 ; ) drop
+	'frag ! 
+	
+	glCreateProgram |'programID !
+	dup vert glAttachShader
+	dup frag glAttachShader
+	dup glLinkProgram 
+	dup glValidateProgram
+	dup GL_LINK_STATUS 'err glGetProgramiv
+	err 0? ( 2drop 0 ; ) drop
+	
+	vert glDeleteShader
+	frag glDeleteShader
+	;
+	
+|--------------------------------
 
-	/* load the mipmaps */ 
-	for (unsigned int level = 0; level < mipMapCount && (width || height); ++level) 
-	{ 
-		unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize; 
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,  
-			0, size, buffer + offset); 
-	 
-		offset += size; 
-		width  /= 2; 
-		height /= 2; 
+##GL_UNSIGNED_BYTE $1401
 
-		// Deal with Non-Power-Of-Two textures. This code is not included in the webpage to reduce clutter.
-		if(width < 1) width = 1;
-		if(height < 1) height = 1;
+##GL_TEXTURE $1702
+##GL_TEXTURE0 $84C0
+##GL_TEXTURE_2D $0DE1
+##GL_TEXTURE_2D_ARRAY $8C1A
+##GL_TEXTURE_3D $806F
 
-	} 
+#GL_TEXTURE_MAG_FILTER $2800
+#GL_TEXTURE_MIN_FILTER $2801
+#GL_LINEAR $2601
 
-	free(buffer); 
-
-	return textureID;
-
-
-}
+#GL_RGB $1907
+#GL_RGBA $1908
+|--- sdl2 surface
+|struct SDL_Surface
+|	flags           dd ? 0 dd ? 4
+|	?format        	dq ? 8 8
+|	w               dd ? 16 4
+|	h               dd ? 20 4
+|	pitch           dd ? 24 4 dd ? 28 4
+|	pixels          dq ? 32 8
+|	userdata        dq ?
+|	locked          dd ? dd ?
+|	lock_data       dq ?
+|	clip_rect       SDL_Rect
+|	map             dq ?
+|	refcount        dd ? dd ?
+#surface
+:Surface->w surface 16 + d@ ;
+:Surface->h surface 20 + d@ ;
+:Surface->pixels surface 32 + @ ;
+:Surface->format->bpp surface 8 + @ 16 + c@ ;
+:GLBPP Surface->format->bpp 32 =? ( drop GL_RGBA ; ) drop GL_RGB ;
+	
+::glLoadImg | "" -- 
+	IMG_Load 'Surface !
+ 
+	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
+	;	
+	
+::glLoadDDS | "" -- 
+	here swap LOAD here =? ( drop ; ) drop
+	here "DDS " =pre 0? ( drop ; ) drop
+	
+	;
