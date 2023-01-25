@@ -133,9 +133,6 @@
 	GL_DEPTH_TEST glEnable 
 	GL_LESS glDepthFunc 
 	
-	1 'VertexArrayID glGenVertexArrays
-	VertexArrayID glBindVertexArray
-
 |---------------------------		
 	"r3/opengl/shader/TextureFragmentShader.fs" 
 	"r3/opengl/shader/TransformVertexShader.vs" 
@@ -153,6 +150,9 @@
 	"r3/opengl/tex/uvtemplate.png" glLoadImg 
 
 |---------------------------		
+	1 'VertexArrayID glGenVertexArrays
+	VertexArrayID glBindVertexArray
+
 	1 'vertexbuffer glGenBuffers
 	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
 	GL_ARRAY_BUFFER 36 3 * 2 << 'g_vertex_buffer_data GL_STATIC_DRAW glBufferData
