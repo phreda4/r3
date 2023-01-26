@@ -158,15 +158,8 @@
 	mrow mrow mrow mrow drop
 	128 'mat> +!
 	;
-
-:a]@ | val nro --
-	3 << a> + @ ;
-
-::mmove | x y z --
-	mat> dup >a 'mati 16 move 
-	14 a]!
-	13 a]!
-	12 a]! ;
+	
+	
 	
 |-----------------------------
 ::mtrans | x y z --
@@ -544,4 +537,31 @@
 	rot m31 *. rot m32 *. + swap m33 *. + a!
 	;
 
-|------- vectores
+|-------- with matrix in var
+::mmcpy | 'mat --
+	mat> 16 move ;
+
+::mm* | 'mat --
+	>b mat> dup >a 128 +
+	mrow mrow mrow mrow drop
+	128 'mat> +! ;
+
+::mtra | x y z -- ; traslate
+	mat> dup >a 'mati 16 move 
+	14 a]! 13 a]! 12 a]! ;
+
+::mrot | rx ry rz -- ; rotate
+	mat> dup >a 'mati 16 move 
+	sincos 'coz ! 'siz !
+	sincos 'coy ! 'siy !
+	sincos 'cox ! 'six !
+    coz coy *. 0 a]! |'m11 !
+    cox siz *. coy *. six siy *. + 1 a]! |'m12 !
+    six siz *. coy *. cox siy *. - 2 a]! |'m13 !
+	siz neg 4 a]! |'m21 !
+    cox coz *. 5 a]! |'m22 !
+    six coz *. 6 a]! |'m23 !
+    coz siy *. 8 a]! |'m31 !
+    cox siz *. siy *. six coy *. - 9 a]! |'m32 !
+    six siz *. siy *. cox coy *. + 10 a]! |'m33 !
+	;

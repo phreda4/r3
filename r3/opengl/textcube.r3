@@ -137,8 +137,8 @@
 	VertexArrayID glBindVertexArray
 
 |---------------------------		
-	"r3/opengl/shader/TextureFragmentShader.fs" 
-	"r3/opengl/shader/TransformVertexShader.vs" 
+	"r3/opengl/shader/basic.frag" 
+	"r3/opengl/shader/basic.vert" 
 	loadShaders | "fragment" "vertex" -- idprogram
 	'programID !
 
@@ -203,13 +203,13 @@
 
 :mvp2
 	matini rx mrotx ry mroty 
-	mpush xcam ycam zcam mmove m*
+	mpush xcam ycam zcam mtra m*
 	mpush -4.0 4.0 -4.0 4.0 -4.0 4.0 mortho m*
 	;
 
 :mvp
 	matini rx mrotx ry mroty 
-	mpush xcam ycam zcam mmove m*
+	mpush xcam ycam zcam mtra m*
 	mpush 0.1 1000.0 0.9 3.0 4.0 /. mperspective m*
 	;
 
@@ -220,7 +220,7 @@
 :mvp
 	matini 
 	rx mrotx ry mroty 
-	mpush xcam ycam zcam mmove m*
+	mpush xcam ycam zcam mtra m*
 	|'pEye 'pTo 'pUp mlookat | eye to up --
 	mpush 0.1 1000.0 0.9 3.0 4.0 /. mperspective m*
 	;

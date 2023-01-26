@@ -39,18 +39,17 @@
 		drop swap 1 + swap ) 2drop  ;
 
 ::count | s1 -- s1 cnt	v3
-	dup >a
-	0 ( a@+ dup $0101010101010101 -
-		swap not and
-		$8080808080808080 nand? drop 8 + )
-	$80 and? ( drop ; )
-	$8000 and? ( drop 1 + ; )
-	$800000 and? ( drop 2 + ; )
-	$80000000 and? ( drop 3 + ; )	
-	$8000000000 and? ( drop 4 + ; )
-	$800000000000 and? ( drop 5 + ; )
-	$80000000000000 and? ( drop 6 + ; )	
-	drop 7 + ;
+	0 over ( @+ dup $0101010101010101 -
+		swap not and $8080808080808080 nand? 
+		drop swap 8 + swap )
+	$80 and? ( 2drop ; )
+	$8000 and? ( 2drop 1 + ; )
+	$800000 and? ( 2drop 2 + ; )
+	$80000000 and? ( 2drop 3 + ; )	
+	$8000000000 and? ( 2drop 4 + ; )
+	$800000000000 and? ( 2drop 5 + ; )
+	$80000000000000 and? ( 2drop 6 + ; )	
+	2drop 7 + ;
 
 ::= | s1 s2 -- 1/0
 	( swap c@+ 1?

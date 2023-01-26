@@ -95,9 +95,9 @@
 		xy>d ,q ) drop
 	facel >b
 	nface ( 1? 1 -
-		b@+ 8 b+ 1 - 3 << v2d + @ d>xy
-		b@+ 8 b+ 1 - 3 << v2d + @ d>xy
-		b@+ 8 b+ 1 - 3 << v2d + @ d>xy
+		b@+ $fffff and 1 - 3 << v2d + @ d>xy
+		b@+ $fffff and 1 - 3 << v2d + @ d>xy
+		b@+ $fffff and 1 - 3 << v2d + @ d>xy
 		8 b+
 		drawtri
 		) drop

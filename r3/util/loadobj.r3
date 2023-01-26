@@ -23,9 +23,9 @@
 #norml>
 #nnorm
 
-##texl	| text
+##texl	| texture coord
 #texl>
-#ntex
+##ntex
 
 ##paral	| parametros
 #paral>
@@ -104,16 +104,16 @@
 	16 + @+ b!+ @+ b!+           | vert 2
 	colornow b!+ ;
 
+:pack nn 20 << nt or 20 << nv or ; 
+	
+| formato normal|texture|vertice  - 20 bits c/u 
 :face	| face nvert( v/t/n  v//n v/t  v)??
 	2 + trim
 	facel> >b
-	| solo tres
-	uface
-	nv b!+ nt 32 << nn or b!+
-	uface
-	nv b!+ nt 32 << nn or b!+
-   	uface
-	nv b!+ nt 32 << nn or b!+
+	| solo tres 
+	uface pack b!+
+	uface pack b!+
+   	uface pack b!+
 	colornow b!+
 	| manejar aca si hay cuatro
 |	4to
@@ -154,7 +154,6 @@
 
 :parseobj | text --
 	( trim parseline >>cr 1? ) drop ;
-
 
 |--------------------
 | nombre text mem solido
@@ -276,17 +275,13 @@
 	nver 0? ( nip ; )
 	5 << +
 	dup dup 'texl ! 'texl> !
-	ntex 
-	24 * +
-	dup dup 'facel ! 'facel> ! | falta contar 4 vertices
-	nface 
-	7 3 << * +
+	ntex 24 * +
+	dup dup 'facel ! 'facel> ! | falta contar 4 vertices 
+	nface 4 3 << * + | 4 valores
     dup dup 'norml ! 'norml> !
-	nnorm
-	24 * +
+	nnorm 24 * +
     dup dup 'paral ! 'paral> !
-	npara
-	24 * +
+	npara 24 * +
 	dup dup 'colorl ! 'colorl> !
 	ncolor 1 + 5 << +
 	'here !

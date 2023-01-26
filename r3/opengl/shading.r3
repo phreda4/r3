@@ -14,9 +14,6 @@
 #xcam 0 #ycam 0 #zcam -30.0
 
 | opengl Constant
-#GL_COLOR_BUFFER_BIT $4000
-#GL_DEPTH_BUFFER_BIT $100
-
 #GL_ARRAY_BUFFER $8892
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
@@ -29,20 +26,25 @@
 #GL_TRIANGLES $0004
 
 #vertex_buffer_data 
+#normal_buffer_data
 #uv_buffer_data 
-
-:mem2float | cnt to from --
-	>a >b ( 1? 1 - da@+ f2fp db!+ ) drop ;
-	
 	
 :vert+uv | nro --
 	dup | norm|text|vertex
 	$fffff and 1 - | vertex
 	5 << verl +
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
-	20 >> $fffff and 1 - | texture
+	dup 20 >> $fffff and 1 - | texture
 	24 * texl +
 	@+ f2fp db!+ @ f2fp db!+
+	
+	nface 1 - 3 * 3 * 2 << + a+
+	
+	40 >> $fffff and 1 - | normal
+	24 * norml +
+	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
+	
+	nface 3 * 3 * 2 << + neg a+
 	;
 
 :convertobj | "" --
@@ -51,9 +53,12 @@
 
 	here dup 'vertex_buffer_data ! 
 	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
+	dup 'normal_buffer_data !
+	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
 	'uv_buffer_data  !
 
 	vertex_buffer_data >a
+	| normal_buffer_data = vertex+ nface 3 * 3 * 2 << +
 	uv_buffer_data >b
 	facel 
 	nface ( 1? 1 - swap
@@ -67,8 +72,10 @@
 #programID 
 #VertexArrayID
 #MatrixID
+#lightID
 
 #vertexbuffer	
+#normalbuffer	
 #uvbuffer
 #texture	
 #textureID
@@ -93,13 +100,17 @@
 	GL_CULL_FACE glEnable
 	
 |---------------------------		
-	"r3/opengl/shader/basic.frag" 
-	"r3/opengl/shader/basic.vert" 
+	"r3/opengl/shader/StandardShading.frag" 
+	"r3/opengl/shader/StandardShading.vert" 
 	loadShaders | "fragment" "vertex" -- idprogram
 	'programID !
 
 	programID "MVP" glGetUniformLocation 'MatrixID !
+	programID "V" glGetUniformLocation 'ViewMatrixID !
+	programID "M" glGetUniformLocation 'ModelMatrixID !		
 	programID "myTextureSampler" glGetUniformLocation 'TextureID !	
+	programID "LightPosition_worldspace" glGetUniformLocation 'LightID !
+	
 |---------------------------		
 	|GLuint Texture = loadDDS("uvtemplate.DDS");
 
@@ -107,7 +118,7 @@
 	GL_TEXTURE_2D Texture glBindTexture
 	
 ||	"r3/opengl/tex/uvtemplate.png" 
-	"media/obj/mario/Mario_body.png"
+	"media/obj/mario/Mario_body.png" 
 	glLoadImg 
 
 |---------------------------		
@@ -116,15 +127,15 @@
 
 	1 'vertexbuffer glGenBuffers
 	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
-	GL_ARRAY_BUFFER |nver 3 * 
-	nface 3 * 3 *
-	2 << vertex_buffer_data GL_STATIC_DRAW glBufferData
+	GL_ARRAY_BUFFER nface 3 * 3 * 2 << vertex_buffer_data GL_STATIC_DRAW glBufferData
+
+	1 'normalbuffer glGenBuffers
+	GL_ARRAY_BUFFER normalbuffer glBindBuffer
+	GL_ARRAY_BUFFER nface 3 * 3 * 2 << normal_buffer_data GL_STATIC_DRAW glBufferData
 
 	1 'uvbuffer glGenBuffers
 	GL_ARRAY_BUFFER uvbuffer glBindBuffer
-	GL_ARRAY_BUFFER |ntex 2 * 
-	nface 3 * 2 *
-	2 << uv_buffer_data GL_STATIC_DRAW glBufferData
+	GL_ARRAY_BUFFER nface 3 * 2 * 2 << uv_buffer_data GL_STATIC_DRAW glBufferData
 	;	
 	
 :glend
@@ -132,6 +143,7 @@
 	1 'VertexArrayID glDeleteVertexArrays
 	1 'uvbuffer glDeleteBuffers
 	1 'vertexbuffer glDeleteBuffers
+	1 'normalbuffer glDeleteBuffers
 	1 'Texture glDeleteTextures
 
     SDL_Quit
@@ -154,13 +166,17 @@
 #pUp 0 1.0 0
 
 #matcam * 128
-#t
+
+#fviemat * 64
+#fmodelmat * 64
+
+#flightpos [ 4.0 4.0 4.0 ]
 
 :mvp
 	matini 
 	|rx mrotx ry mroty 
 |	0.5 0.0 0.0 mtrans
-	rx ry t 3 <<  mrot
+	rx ry 0 mrot
 	mpush xcam ycam zcam mtra m*
 	|'pEye 'pTo 'pUp mlookat | eye to up --
 	'matcam mm* | perspective
@@ -171,13 +187,16 @@
 	gui
 	'dnlook 'movelook onDnMove
 
-	0.0001 't +!
 	$4100 glClear
 
 	programID glUseProgram
 	
 	mvp
 	MatrixID 1 GL_FALSE getfmat glUniformMatrix4fv 	
+	ModelMatrixID 1 GL_FALSE 'fmodelmat glUniformMatrix4fv 		
+	ViewMatrixID 1 GL_FALSE 'fviemat glUniformMatrix4fv 		
+	
+	LightID 'flightpos glUniform3fv
 	
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D Texture glBindTexture
@@ -191,6 +210,10 @@
 	GL_ARRAY_BUFFER uvbuffer glBindBuffer
 	1 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 
+	2 glEnableVertexAttribArray
+	GL_ARRAY_BUFFER normalbuffer glBindBuffer
+	2 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
+	
 	GL_TRIANGLES 0 nface 3 * glDrawArrays
 
 	0 glDisableVertexAttribArray
@@ -206,9 +229,7 @@
 	
 |----------- BOOT
 : 	
-	"media/obj/cube.obj" 
-	|"media/obj/suzanne.obj" 
-	"media/obj/mario/mario.obj" 
+	"media/obj/suzanne.obj" 
 	convertobj
 
 	matini 
