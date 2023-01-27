@@ -42,10 +42,10 @@
 	$ffffffff and swap 32 << or ;
 	
 :svert
-	b@+ 1 - 3 << v2d + @+ d>xy swap a!+ a!+ | x y
-	@ a!+ | z
-	b@+ 16 >>> 1 - 24 * texl +
-	@+ txres
+	b@+ 
+	dup $fffff and 1 - 3 << v2d + @+ d>xy swap a!+ a!+ | x y
+		@ a!+ | z
+	20 >> $ffff and 1 - 24 * texl + @+ txres
 	1.0 */ $ffff and 16 <<  | 0..1 0
 	swap @ tyres
 	1.0 - 1.0 */ $ffff and
@@ -64,7 +64,7 @@
 
 	facel >b
 	nface ( 1? 1 -
-		b> 6 3 << + @ setcolor
+		b> 3 3 << + @ setcolor
 		'tritt >a
 		svert svert svert
 		8 b+

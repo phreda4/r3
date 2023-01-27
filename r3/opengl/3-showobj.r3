@@ -206,7 +206,7 @@
 	
 |----------- BOOT
 : 	
-	"media/obj/cube.obj" 
+	|"media/obj/cube.obj" 
 	|"media/obj/suzanne.obj" 
 	"media/obj/mario/mario.obj" 
 	convertobj

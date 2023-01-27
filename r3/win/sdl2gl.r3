@@ -146,8 +146,7 @@
 ::glVertexAttrib4fv sys-glVertexAttrib4fv sys2 drop ;
 ::glBindAttribLocation sys-glBindAttribLocation sys3 drop ;
 
-
-
+|------------------------------------------------------
 ::InitGLAPI
 	0 SDL_GL_LoadLibrary
 	"glGetError" SDL_GL_GetProcAddress 'sys-glGetError !

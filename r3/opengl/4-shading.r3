@@ -11,7 +11,7 @@
 
 ^r3/opengl/ogl2util.r3
 
-#xcam 0 #ycam 0 #zcam -30.0
+#xcam 0 #ycam 0 #zcam -4.0
 
 | opengl Constant
 #GL_ARRAY_BUFFER $8892
@@ -30,33 +30,32 @@
 #uv_buffer_data 
 	
 :vert+uv | nro --
-	dup | norm|text|vertex
-	$fffff and 1 - | vertex
+	dup $fffff and 1 - | vertex
 	5 << verl +
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
+	
 	dup 20 >> $fffff and 1 - | texture
 	24 * texl +
 	@+ f2fp db!+ @ f2fp db!+
 	
-	nface 1 - 3 * 3 * 2 << + a+
+	nface 3 * 3 * 2 << 12 - a+
 	
 	40 >> $fffff and 1 - | normal
 	24 * norml +
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
 	
-	nface 3 * 3 * 2 << + neg a+
+	nface 3 * 3 * 2 << neg a+
 	;
 
 :convertobj | "" --
 	loadobj drop |'model !
 |	objcentra
-
-	here dup 'vertex_buffer_data ! 
+	here 
+	dup 'vertex_buffer_data ! 
 	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
 	dup 'normal_buffer_data !
 	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
 	'uv_buffer_data  !
-
 	vertex_buffer_data >a
 	| normal_buffer_data = vertex+ nface 3 * 3 * 2 << +
 	uv_buffer_data >b
@@ -72,6 +71,8 @@
 #programID 
 #VertexArrayID
 #MatrixID
+#ViewMatrixID 
+#ModelMatrixID 
 #lightID
 
 #vertexbuffer	
@@ -93,7 +94,7 @@
 	
 	"test opengl" 800 600 SDLinitGL
 
-|	glInfo	
+	glInfo	
 
 	GL_DEPTH_TEST glEnable 
 	GL_LESS glDepthFunc 
@@ -167,10 +168,22 @@
 
 #matcam * 128
 
-#fviemat * 64
+#fviewmat * 64
 #fmodelmat * 64
 
 #flightpos [ 4.0 4.0 4.0 ]
+
+:initvec
+	matini 
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
+	'matcam mmcpy
+
+	matini
+	getfmat 'fviewmat swap 8 move | copy fmatrix
+
+	'flightpos >a
+	da@ f2fp da!+ da@ f2fp da!+ da@ f2fp da!+ 
+	;
 
 :mvp
 	matini 
@@ -178,6 +191,9 @@
 |	0.5 0.0 0.0 mtrans
 	rx ry 0 mrot
 	mpush xcam ycam zcam mtra m*
+	
+	getfmat 'fmodelmat swap 8 move | copy fmatrix
+	
 	|'pEye 'pTo 'pUp mlookat | eye to up --
 	'matcam mm* | perspective
 	;
@@ -194,9 +210,9 @@
 	mvp
 	MatrixID 1 GL_FALSE getfmat glUniformMatrix4fv 	
 	ModelMatrixID 1 GL_FALSE 'fmodelmat glUniformMatrix4fv 		
-	ViewMatrixID 1 GL_FALSE 'fviemat glUniformMatrix4fv 		
+	ViewMatrixID 1 GL_FALSE 'fviewmat glUniformMatrix4fv 		
 	
-	LightID 'flightpos glUniform3fv
+	LightID 1 'flightpos glUniform3fv
 	
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D Texture glBindTexture
@@ -218,6 +234,7 @@
 
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
+	2 glDisableVertexAttribArray
 
 |......		
 	SDL_windows SDL_GL_SwapWindow
@@ -229,12 +246,11 @@
 	
 |----------- BOOT
 : 	
+	|"media/obj/cube.obj" 
 	"media/obj/suzanne.obj" 
 	convertobj
 
-	matini 
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-	'matcam mmcpy
+	initvec
 	
 	initgl 
 	'main SDLshow

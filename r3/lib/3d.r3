@@ -47,6 +47,13 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
 	;
 
+::mcpyf | fmat --
+	>b mat> >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+	
+::midf | fmat --
+	>b 'mati >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+ 
+	
 | Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 |--- from kazmath/mat4.c
@@ -116,11 +123,20 @@
     1.0 a! |mat[15] = 1.0;
 	;
 
+|    kmVec3Subtract(&f, pCenter, pEye);
+|    kmVec3Normalize(&f, &f);
+|    kmVec3Cross(&s, &f, pUp);
+    |kmVec3Normalize(&s, &s);
+|    kmVec3Cross(&u, &s, &f);
+
 ::mlookat | eye to up --
-	swap
-	'f dup rot v3= dup pick3 v3- v3Nor | eye up
-	's dup 'f v3= dup rot v3vec v3Nor | eye
+	'f rot v3= 'f dup pick3 v3- v3Nor | eye up s s
+	's 'f v3= 's swap v3vec 's v3Nor
 	'u dup 's v3= 'f v3vec
+|	swap
+|	'f dup rot v3= dup pick3 v3- v3Nor | eye up
+|	's dup 'f v3= dup rot v3vec v3Nor | eye
+|	'u dup 's v3= 'f v3vec
 	mat> >a
 	s a!+ |mat[0] = s.x;
     u a!+ |mat[1] = u.x;
@@ -565,3 +581,27 @@
     cox siz *. siy *. six coy *. - 9 a]! |'m32 !
     six siz *. siy *. cox coy *. + 10 a]! |'m33 !
 	;
+
+::mpos | x y z --
+	mat> >a 14 a]! 13 a]! 12 a]! ;
+
+::mrpos | r x y z -- ; r=....xxxxyyyyzzzz rot
+	mat> >a 
+	1.0 15 a]! 14 a]! 13 a]! 12 a]!  | pos
+	dup $ffff and sincos 'coz ! 'siz !
+	dup 16 >> $ffff and sincos 'coy ! 'siy !
+	32 >> $ffff and sincos 'cox ! 'six !
+    coz coy *. a!+ |'m11 !
+    cox siz *. coy *. six siy *. + a!+ |'m12 !
+    six siz *. coy *. cox siy *. - a!+ |'m13 !
+	0 a!+
+	siz neg a!+ |'m21 !
+    cox coz *. a!+ |'m22 !
+    six coz *. a!+ |'m23 !
+	0 a!+
+    coz siy *. a!+ |'m31 !
+    cox siz *. siy *. six coy *. - a!+ |'m32 !
+    six siz *. siy *. cox coy *. + a!+ |'m33 !
+	0 a!+
+	;
+	
