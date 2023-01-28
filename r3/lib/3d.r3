@@ -92,67 +92,40 @@
 	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
 	;
 	
-##pEye 4.0 3.0 3.0
-##pCenter 0 0 0
-##pUp 0 1.0 0
+#fx 0 #fy 0 #fz 0 
+#sx 0 #sy 0 #sz 0
+#ux 0 #uy 0 #uz 0 
 
-#f 0 0 0 
-#s 0 0 0
-#u 0 0 0 
-
-::mlookatv | eye to up --
-	'f dup 'pCenter v3= dup 'pEye v3- v3Nor
-	's dup 'f v3= dup 'pUp v3vec v3Nor
-	'u dup 's v3= 'f v3vec
-	mat> >a
-	s a!+ |mat[0] = s.x;
-    u a!+ |mat[1] = u.x;
-    f neg a!+ |mat[2] = -f.x;
-    0 a!+ |mat[3] = 0.0;
-    's 8 + @ a!+ |mat[4] = s.y;
-    'u 8 + @ a!+ |mat[5] = u.y;
-    'f 8 + @ neg a!+ |mat[6] = -f.y;
-    0 a!+ |mat[7] = 0.0;
-    's 16 + @ a!+ |mat[8] = s.z;
-    'u 16 + @ a!+ |mat[9] = u.z;
-    'f 16 + @ neg a!+ |mat[10] = -f.z;
-    0 a!+ |mat[11] = 0.0;
-    's 'pEye v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
-    'u 'pEye v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
-    'f 'pEye v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
-    1.0 a! |mat[15] = 1.0;
-	;
-
-|    kmVec3Subtract(&f, pCenter, pEye);
-|    kmVec3Normalize(&f, &f);
-|    kmVec3Cross(&s, &f, pUp);
-    |kmVec3Normalize(&s, &s);
-|    kmVec3Cross(&u, &s, &f);
+|kmVec3Subtract(&f, pCenter, pEye);
+|kmVec3Normalize(&f, &f);
+|kmVec3Cross(&s, &f, pUp);
+|kmVec3Normalize(&s, &s);
+|kmVec3Cross(&u, &s, &f);
 
 ::mlookat | eye to up --
-	'f rot v3= 'f dup pick3 v3- v3Nor | eye up s s
-	's 'f v3= 's swap v3vec 's v3Nor
-	'u dup 's v3= 'f v3vec
-|	swap
-|	'f dup rot v3= dup pick3 v3- v3Nor | eye up
-|	's dup 'f v3= dup rot v3vec v3Nor | eye
+|	'f rot v3= 'f dup pick3 v3- v3Nor | eye up s s
+|	's 'f v3= 's swap v3vec 's v3Nor
 |	'u dup 's v3= 'f v3vec
+	swap
+	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
+	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
+	'ux dup 'sx v3= 'fx v3vec
 	mat> >a
-	s a!+ |mat[0] = s.x;
-    u a!+ |mat[1] = u.x;
-    f neg a!+ |mat[2] = -f.x;
+	sx a!+ |mat[0] = s.x;
+    ux a!+ |mat[1] = u.x;
+    fx neg a!+ |mat[2] = -f.x;
     0 a!+ |mat[3] = 0.0;
-    's 8 + @ a!+ |mat[4] = s.y;
-    'u 8 + @ a!+ |mat[5] = u.y;
-    'f 8 + @ neg a!+ |mat[6] = -f.y;
+    sy a!+ |mat[4] = s.y;
+    uy a!+ |mat[5] = u.y;
+    fy neg a!+ |mat[6] = -f.y;
     0 a!+ |mat[7] = 0.0;
-    's 16 + @ a!+ |mat[8] = s.z;
-    'u 16 + @ a!+ |mat[9] = u.z;
-    'f 16 + @ neg a!+ |mat[10] = -f.z;
+    sz a!+ |mat[8] = s.z;
+    uz a!+ |mat[9] = u.z;
+    fz neg a!+ |mat[10] = -f.z;
     0 a!+ |mat[11] = 0.0;
-    's over v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
-    'u over v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
-    'f swap v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
+    'sx over v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'ux over v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
+    'fx swap v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
     1.0 a! |mat[15] = 1.0;
 	;
 
@@ -604,4 +577,24 @@
     six siz *. siy *. cox coy *. + a!+ |'m33 !
 	0 a!+
 	;
+
+|------ pack 3 rot in 48bits (16x3)	- gain space+vel (paralel add and rotation from here)
+::packrota | rx ry rz -- rp
+	$ffff and swap $ffff and 16 << or swap $ffff and 32 << or ;
+
+::+rota | ra rb -- rr
+	+ $100010001 not and ;
+
+|------ pack 3 vel in 60bits (20x3) - gain space
+::packvpos | vx vy vz -- vp
+	8 >> $fffff and swap
+	8 >> $fffff and 20 << or swap
+	8 >> $fffff and 40 << or ;
 	
+::+vpos | va vb -- vr
+	+ $10000100001 not and ;
+
+::vpos.x 4 << 36 >> ;
+::vpos.y $fffff00000 and 24 << 36 >> ;
+::vpos.z $fffff and 44 << 36 >> ;
+

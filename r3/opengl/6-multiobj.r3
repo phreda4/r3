@@ -199,6 +199,7 @@
 :initvec
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
+|	-10.0 10.0 -10.0 10.0 -10.0 10.0 mortho
 	'matcam mmcpy	| perspective matrix
 
 |	matini
@@ -220,18 +221,17 @@
 	
 :rhit	
 	fhit 
-	%1 and? ( b> 24 + dup @ neg swap ! )
-	%10 and? ( b> 32 + dup @ neg swap ! )
-	%100 and? ( b> 40 + dup @ neg swap !  )
+	%1 and? ( b> 8 + dup @ neg swap ! )
+	%10 and? ( b> 16 + dup @ neg swap ! )
+	%100 and? ( b> 24 + dup @ neg swap !  )
 	drop ;
 	
 :objexec | adr -- 
 	dup >b
 	matini 
-	|------- mov obj
-	b@+ b@+ b@+ mrot
+	|------- rot+pos obj
 	0 'fhit ! 
-	%1 b@+ hit %10 b@+ hit %100 b@+ hit mpos
+	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
 	'fmodelmat mcpyf | model matrix	>>
 	
 	|------- mov camara
@@ -243,44 +243,37 @@
 	
 	Shader1!
 	objDraw!
-	6 3 << + >b
+	4 3 << + >b
 	rhit
-	b@+ b> 7 3 << - +!
-	b@+ b> 7 3 << - +!
-	b@+ b> 7 3 << - +!
-	b@+ b> 7 3 << - +!
-	b@+ b> 7 3 << - +!
-	b@+ b> 7 3 << - +!
+	b@+ b> 5 3 << - dup @ rot +rota swap !
+	
+	b@+ b> 5 3 << - +! | + x
+	b@+ b> 5 3 << - +!
+	b@+ b> 5 3 << - +!
 	;
 	
-:+obj | vz vy vx vrz vry vrx z y x rz ry rx --
+:+obj | vz vy vx vrzyx z y x rzyx --
 	'objexec 'arrayobj p!+ >a 
-	a!+ a!+ a!+ 
-	a!+ a!+ a!+ 
-	a!+ a!+ a!+ 
-	a!+ a!+ a!+ ;
+	a!+ a!+ a!+ a!+ 
+	a!+ a!+ a!+ a!+ ;
 
 :velrot 0.01 randmax 0.005 - ;
 :velpos 0.5 randmax 0.25 - ;
 	
 :+objr	
 	velpos velpos velpos |vz |vy |vx
-	velrot velrot velrot |vrz |vry |vrx
-	0 0 0
-	1.0 randmax 
-	1.0 randmax 
-	1.0 randmax  
+	velrot velrot velrot packrota |vrz |vry |vrx
+	0 0 0 
+	0 |1.0 randmax 1.0 randmax 1.0 randmax  packrota
 	+obj ;
 
 :+objr2
 	0 0 0 
-	0 0 0
+	velrot velrot velrot packrota
 	20.0 randmax 10.0 -	| pos z
 	20.0 randmax 10.0 - | pos y
 	20.0 randmax 10.0 - | pos x	
-	1.0 randmax 
-	1.0 randmax 
-	1.0 randmax  
+	0 |1.0 randmax 1.0 randmax 1.0 randmax  packrota
 	+obj ;
 
 |--------------	
@@ -310,12 +303,14 @@
 |---------------------------		
 :ini	
 	Shader1			| load shader
+	
 	"media/obj/cube.png" 
 	glLoadImg 		| load tex
 	
 	"media/obj/suzanne.obj" 
 	|"media/obj/cube.obj" 
 	objModel		| load model
+	
 	initvec
 	
 	1000 'arrayobj p.ini 

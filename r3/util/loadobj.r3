@@ -31,7 +31,7 @@
 #paral>
 #npara
 
-#ncolor	| colores
+##ncolor	| colores
 ##colorl
 #colorl>
 
@@ -174,7 +174,7 @@
 |	existe?
 	dup 'path "%s%l" sprint
 	| loadimg  |** no carga imagen
-	|dup .println
+	dup .println
 	
 	colora 24 + !
 	;

@@ -11,12 +11,12 @@
 	a@ over *. a!+ a@ over *. a!+ a@ *. a! ;
 
 ::v3ddot | v1 v2 -- r ; r=v1.v2
-	>a @+ a@+ *. swap @+ a@+ *. swap @ a@ *. + +  ;
+	>a @+ a@+ *. swap @+ a@+ *. swap @ a@ *. + + ;
 
 ::v3vec | v1 v2 -- ; v1=v1 x v2
-	>a dup @ a> 4 + @ *. over 4 + @ a@ *. -
-	over 8 + @ a@ *. pick2 @ a> 8 + @ *. -
-	pick2 4 + @ a> 8 + @ *. pick3 8 + @ a> 4 + @ *. -
+	>a dup @ a> 8 + @ *. over 8 + @ a@ *. -
+	over 16 + @ a@ *. pick2 @ a> 16 + @ *. -
+	pick2 8 + @ a> 16 + @ *. pick3 16 + @ a> 8 + @ *. -
 	>r rot r> swap !+ !+ ! ;
 
 ::v3- | v1 v2 -- ; v1=v1-v2

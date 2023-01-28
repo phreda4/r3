@@ -118,9 +118,7 @@
 	1 'Texture glGenTextures
 	GL_TEXTURE_2D Texture glBindTexture
 	
-||	"r3/opengl/tex/uvtemplate.png" 
-	"media/obj/mario/Mario_body.png" 
-	glLoadImg 
+	"media/obj/cube.png" glLoadImg 
 
 |---------------------------		
 	1 'VertexArrayID glGenVertexArrays

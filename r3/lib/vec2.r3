@@ -4,7 +4,7 @@
 ^r3/lib/math.r3
 
 :2d+ | 'v1 'v2 -- ; v1=v1+v2
-	@+ pick2 +! @ swap 4 + +! ;
+	@+ pick2 +! @ swap 8 + +! ;
 
 :2d* | 'v1 n -- ; v1=v1*n
 	over @ over *. swap !+

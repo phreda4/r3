@@ -523,19 +523,19 @@
 :stk.cnv | 'adr --
 	cell.fillreg
 	@+ stacknow over - shiftrbp 'stacknow !
-	TOS NOS 4 + ! 	| TOS in PSP
+	TOS NOS 8 + ! 	| TOS in PSP
 	@+ 2 >> |	NOS 'PSP - <>? ( ; )	| diferent size
 	'PSP 8 + >a
 	( 1? 1 - swap
 		@+ a@+ cellcpy 		| to from
 |		">>" ,s	,printstk ,cr
 		swap ) 2drop
-	NOS 4 + @ 'TOS !
+	NOS 8 + @ 'TOS !
 	;
 
 ::stk.conv | --
 	"; CONV " ,s ,cr
-	stks> 4 - @ stk.cnv ;
+	stks> 8 - @ stk.cnv ;
 
 ::IniStack
 	'PSP 'NOS !
