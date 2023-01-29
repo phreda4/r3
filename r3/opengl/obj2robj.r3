@@ -41,12 +41,15 @@
 :convertobj1 | --
 	mark
 	here 'inimem !
-	$101 ,q		| tipo 1byte-cnt mtl 
+	
+	| cnt partes
+	ncolor $ff and 8 << | cnt colores
+	$01 or ,q			| tipo 
+	0 ,			| filenames
 
 	0 , 		| vertex>
 	0 , 		| normal>
 	0 , 		| uv>
-	
 	nface 3 * , | cntvert
 	
 	here 		
@@ -65,7 +68,7 @@
 		@+ vert+uv
 		8 + swap ) 2drop
 	b> 'here !
-	
+		
 	
 	vertex_buffer_data inimem - inimem 8 + d!
 	normal_buffer_data inimem - inimem 12 + d!
@@ -138,6 +141,7 @@
 :objinfo
 	8 0 bat 'filename bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
+	|ncol
 	8 32 bat 
 	
 	8 64 bat sizemem 10 >> "mem used: %d kb" sprint bprint

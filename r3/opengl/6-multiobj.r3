@@ -47,7 +47,7 @@
 	'programID !
 	;
 
-#texture	
+
 #fmvp * 64
 #fviewmat * 64
 #fmodelmat * 64
@@ -59,9 +59,6 @@
 	ModelMatrixID 1 GL_FALSE 'fmodelmat glUniformMatrix4fv 		
 	ViewMatrixID 1 GL_FALSE 'fviewmat glUniformMatrix4fv 		
 	LightID 1 'flightpos glUniform3fv
-	
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D Texture glBindTexture
 	TextureID 0 glUniform1i
 	;
 
@@ -108,10 +105,21 @@
 #vertexbuffer	
 #normalbuffer	
 #uvbuffer
-
+#texture	
+#text2
 	
 :objModel | "" --
 	convertobj
+
+|	1 'texture glGenTextures
+
+	"media/obj/cube.png" 
+	glLoadImg 		| load tex
+
+|	1 'text2 glGenTextures
+
+|	"media/obj/food/Apple.png" 
+|	glLoadImg 		| load tex
 
 	1 'VertexArrayID glGenVertexArrays
 	VertexArrayID glBindVertexArray
@@ -129,8 +137,13 @@
 	GL_ARRAY_BUFFER nface 3 * 2 * 2 << uv_buffer_data GL_STATIC_DRAW glBufferData
 	;
 	
-		
+
+| nro -> texture?,vertexbuffer,uvbuffer,normalbuffer,sizebytes
 :objDraw! | nro --
+	GL_TEXTURE0 glActiveTexture
+	
+	GL_TEXTURE_2D texture glBindTexture |?
+
 	0 glEnableVertexAttribArray
 	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
 	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
@@ -169,14 +182,14 @@
 	
 :glend
 	programID glDeleteProgram
+	
 	1 'VertexArrayID glDeleteVertexArrays
 	1 'uvbuffer glDeleteBuffers
 	1 'vertexbuffer glDeleteBuffers
 	1 'normalbuffer glDeleteBuffers
-	1 'Texture glDeleteTextures
+	1 'TextureID glDeleteTextures
 
-    SDL_Quit
-	;
+    SDL_Quit ;
 	
 |------ vista
 #xm #ym
@@ -228,9 +241,9 @@
 	
 :objexec | adr -- 
 	dup >b
-	matini 
 	|------- rot+pos obj
 	0 'fhit ! 
+	matini 
 	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
 	'fmodelmat mcpyf | model matrix	>>
 	
@@ -241,15 +254,15 @@
 	'matcam mm* 	| cam matrix
 	'fmvp mcpyf		| mvp matrix >>
 	
+	|------- draw
 	Shader1!
 	objDraw!
-	4 3 << + >b
-	rhit
+	|------- refresh & hit
+	4 3 << + >b rhit
 	b@+ b> 5 3 << - dup @ rot +rota swap !
-	
-	b@+ b> 5 3 << - +! | + x
-	b@+ b> 5 3 << - +!
-	b@+ b> 5 3 << - +!
+	b@+ b> 5 3 << - +! | +x
+	b@+ b> 5 3 << - +! | +y
+	b@+ b> 5 3 << - +! | +z
 	;
 	
 :+obj | vz vy vx vrzyx z y x rzyx --
@@ -303,9 +316,6 @@
 |---------------------------		
 :ini	
 	Shader1			| load shader
-	
-	"media/obj/cube.png" 
-	glLoadImg 		| load tex
 	
 	"media/obj/suzanne.obj" 
 	|"media/obj/cube.obj" 

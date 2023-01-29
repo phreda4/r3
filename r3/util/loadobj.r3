@@ -11,29 +11,13 @@
 #textobj | textparse
 #textmtl
 
-##verl	| vertices
-#verl>
-##nver
+##verl #verl> ##nver 	| vertices
+##facel	#facel> ##nface | faces
+##norml #norml> #nnorm	| normal
+##texl #texl> ##ntex	| texture coord
+##paral #paral> #npara	| parametros
+##ncolor #colorl #colorl>	| colores
 
-##facel	| faces
-#facel>
-##nface
-
-##norml	| normal
-#norml>
-#nnorm
-
-##texl	| texture coord
-#texl>
-##ntex
-
-##paral	| parametros
-#paral>
-#npara
-
-##ncolor	| colores
-##colorl
-#colorl>
 
 |-----------------------------
 :vert	| vertices (x,y,z[,w=1])
@@ -172,9 +156,9 @@
 :texmap
 	7 + trim dup colora 8 + !
 |	existe?
-	dup 'path "%s%l" sprint
+	dup |'path "%s%l" sprint
 	| loadimg  |** no carga imagen
-	dup .println
+	|dup .println
 	
 	colora 24 + !
 	;

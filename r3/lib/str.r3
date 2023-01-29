@@ -4,19 +4,19 @@
 ^r3/lib/math.r3
 
 |------ STRING LIB
-::zcopy | destino fuente -- destino' con 0
-	( @+ 1? rot !+ swap ) rot !+ nip ;
-::strcat | src des --
-	( c@+ 1? drop ) drop 1 -
-::strcpy | src des --
-	( swap c@+ 1? rot c!+ ) nip swap c! ;
+	
 ::strcpyl | src des -- ndes
-	( swap c@+ 1? rot c!+ ) rot c!+ nip ;
-::strcpyln | src des --
+	( swap c@+ 1? rot c!+ ) nip swap c!+ ;
+::strcpy | src des --
+	strcpyl drop ;
+::strcat | src des --
+	( c@+ 1? drop ) drop 1 - strcpy ;
+::strcpylnl | src des -- ndes
 	( swap c@+ 1? 
-		10 =? ( 2drop 0 swap c! ; )
-		13 =? ( 2drop 0 swap c! ; ) 
-		rot c!+ ) rot c!+ drop ;
+		10 =? ( 2drop 0 swap c!+ ; )
+		13 =? ( 2drop 0 swap c!+ ; ) 
+		rot c!+ ) rot c!+ ;
+::strcpyln strcpylnl drop ;
 
 ::copynom | sc s1 --
 	( c@+ 32 >?
@@ -38,7 +38,7 @@
 	0 over ( c@+ 1?
 		drop swap 1 + swap ) 2drop  ;
 
-::count | s1 -- s1 cnt	v3
+::count | s1 -- s1 cnt	'v3 8bytes
 	0 over ( @+ dup $0101010101010101 -
 		swap not and $8080808080808080 nand? 
 		drop swap 8 + swap )
@@ -50,7 +50,7 @@
 	$800000000000 and? ( 2drop 5 + ; )
 	$80000000000000 and? ( 2drop 6 + ; )	
 	2drop 7 + ;
-
+	
 ::= | s1 s2 -- 1/0
 	( swap c@+ 1?
 		toupp rot c@+ toupp rot -
