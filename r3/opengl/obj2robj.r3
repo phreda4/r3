@@ -12,13 +12,24 @@
 
 
 #filename * 1024
-#path * 1024
+#cutpath ( 0 )
+#fpath * 1024
+#fname 
 
+:getpath | 'filename 'path --
+	strcpyl 2 -
+	( dup c@ $2f <>?
+		0? ( 'fpath c! drop ; )
+		drop 1 - ) drop
+	0 swap c!+ 'fname !
+	;
+	
 | GENERATE file
 |-------------
 #vertex_buffer_data 
 #normal_buffer_data
 #uv_buffer_data 
+#filenames
 
 :vert+uv | nro --
 	dup $fffff and 1 - | vertex
@@ -68,14 +79,20 @@
 		@+ vert+uv
 		8 + swap ) 2drop
 	b> 'here !
-		
+	b> 'filenames !
 	
-	vertex_buffer_data inimem - inimem 8 + d!
-	normal_buffer_data inimem - inimem 12 + d!
-	uv_buffer_data inimem - 	inimem 16 + d!
+	0 ( ncolor <? 
+		colorl over 5 << + 8 + @ 
+		here strcpylnl 'here !
+		1 + ) drop
+	
+	filenames inimem - inimem 8 + d!
+	vertex_buffer_data inimem - inimem 12 + d!
+	normal_buffer_data inimem - inimem 16 + d!
+	uv_buffer_data inimem - 	inimem 20 + d!
 	
 	here inimem - 'sizemem !
-	'path "%s/obj1.robj" sprint savemem
+	fname 'fpath "%s/%s.mem" sprint savemem
 	empty
 	;
 
@@ -133,6 +150,7 @@
 :useobj | ""
 	empty
 	mark
+	dup 'fpath getpath
 	dup 'filename strcpy
 	loadobj 'model !
 	| objminmax objcentra
@@ -141,11 +159,11 @@
 :objinfo
 	8 0 bat 'filename bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
-	|ncol
-	8 32 bat 
-	
-	8 64 bat sizemem 10 >> "mem used: %d kb" sprint bprint
-	
+	0 ( ncolor <? 
+		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
+		colorl over 5 << + 8 + @ "%w" sprint bprint
+		1 + ) drop
+	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
 	;
 	
 :main
@@ -179,9 +197,10 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1
 
-	"media/obj/" 'path strcpy
 	mark
-	"media/obj/food/Apple.obj" useobj
+	"media/obj/food/Apple.obj" 
+	|"media/obj/mario/mario.obj"
+	useobj
 	
 	'main SDLshow 
 	SDLquit

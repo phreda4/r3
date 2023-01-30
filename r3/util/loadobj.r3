@@ -16,7 +16,7 @@
 ##norml #norml> #nnorm	| normal
 ##texl #texl> ##ntex	| texture coord
 ##paral #paral> #npara	| parametros
-##ncolor #colorl #colorl>	| colores
+##colorl #colorl> ##ncolor 	| colores
 
 
 |-----------------------------
@@ -154,13 +154,14 @@
 	;
 
 :texmap
-	7 + trim dup colora 8 + !
+	7 + trim 
+	dup colora 8 + !
 |	existe?
-	dup |'path "%s%l" sprint
+|	dup |'path "%s%l" sprint
 	| loadimg  |** no carga imagen
 	|dup .println
 	
-	colora 24 + !
+|	colora 24 + !
 	;
 
 :colorp

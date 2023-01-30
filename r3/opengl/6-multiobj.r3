@@ -13,7 +13,6 @@
 
 ^r3/opengl/ogl2util.r3
 
-
 | opengl Constant
 #GL_ARRAY_BUFFER $8892
 #GL_STATIC_DRAW $88E4
@@ -111,15 +110,15 @@
 :objModel | "" --
 	convertobj
 
-|	1 'texture glGenTextures
-
-	"media/obj/cube.png" 
-	glLoadImg 		| load tex
-
-|	1 'text2 glGenTextures
-
-|	"media/obj/food/Apple.png" 
-|	glLoadImg 		| load tex
+	1 'texture glGenTextures
+    GL_TEXTURE_2D texture glBindTexture
+	"media/obj/cube.png" glLoadImg 		| load tex
+|    GL_TEXTURE_2D 0 glBindTexture
+	
+	1 'text2 glGenTextures
+	GL_TEXTURE_2D text2 glBindTexture
+	"media/obj/food/Apple.png" glLoadImg 		| load tex
+|	GL_TEXTURE_2D 0 glBindTexture
 
 	1 'VertexArrayID glGenVertexArrays
 	VertexArrayID glBindVertexArray
@@ -136,14 +135,14 @@
 	GL_ARRAY_BUFFER uvbuffer glBindBuffer
 	GL_ARRAY_BUFFER nface 3 * 2 * 2 << uv_buffer_data GL_STATIC_DRAW glBufferData
 	;
-	
 
-| nro -> texture?,vertexbuffer,uvbuffer,normalbuffer,sizebytes
+#fnamefull * 1024
+:loadobjm | file -- mem
+	
+	;
+	
+| nro -> texture,vertexbuffer,uvbuffer,normalbuffer,sizevert.....index,sizeindex
 :objDraw! | nro --
-	GL_TEXTURE0 glActiveTexture
-	
-	GL_TEXTURE_2D texture glBindTexture |?
-
 	0 glEnableVertexAttribArray
 	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
 	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
@@ -154,6 +153,9 @@
 	GL_ARRAY_BUFFER normalbuffer glBindBuffer
 	2 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D texture glBindTexture 
+	
 	GL_TRIANGLES 0 nface 3 * glDrawArrays
 
 	0 glDisableVertexAttribArray
@@ -277,7 +279,7 @@
 	velpos velpos velpos |vz |vy |vx
 	velrot velrot velrot packrota |vrz |vry |vrx
 	0 0 0 
-	0 |1.0 randmax 1.0 randmax 1.0 randmax  packrota
+	0 | 0 0 0 packrota
 	+obj ;
 
 :+objr2
@@ -286,7 +288,7 @@
 	20.0 randmax 10.0 -	| pos z
 	20.0 randmax 10.0 - | pos y
 	20.0 randmax 10.0 - | pos x	
-	0 |1.0 randmax 1.0 randmax 1.0 randmax  packrota
+	0 | 0 0 0 packrota
 	+obj ;
 
 |--------------	
@@ -320,6 +322,8 @@
 	"media/obj/suzanne.obj" 
 	|"media/obj/cube.obj" 
 	objModel		| load model
+	
+	"media/obj/food/Apple.obj.mem" loadobjm 'o1 !
 	
 	initvec
 	
