@@ -9,8 +9,6 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
-^r3/util/loadobj.r3
-
 ^r3/opengl/ogl2util.r3
 
 | opengl Constant
@@ -61,108 +59,87 @@
 	TextureID 0 glUniform1i
 	;
 
-|--------------------- model
-#vertex_buffer_data 
-#normal_buffer_data
-#uv_buffer_data 
+|-------------------------------------
+:remname/ | adr --  ; get path only
+	( dup c@ $2f <>? drop 1 - ) drop 0 swap c! ;
 	
-:vert+uv | nro --
-	dup $fffff and 1 - | vertex
-	5 << verl +
-	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
-	dup 20 >> $fffff and 1 - | texture
-	24 * texl +
-	@+ f2fp db!+ @ f2fp db!+
-	nface 3 * 3 * 2 << 12 - a+
-	40 >> $fffff and 1 - | normal
-	24 * norml +
-	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
-	nface 3 * 3 * 2 << neg a+
-	;
-
-:convertobj | "" --
-	loadobj drop |'model !
-	here 
-	dup 'vertex_buffer_data ! 
-	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
-	dup 'normal_buffer_data !
-	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
-	'uv_buffer_data  !
-	vertex_buffer_data >a
-	| normal_buffer_data = vertex + nface 3 * 3 * 2 << +
-	uv_buffer_data >b
-	facel 
-	nface ( 1? 1 - swap
-		@+ vert+uv
-		@+ vert+uv
-		@+ vert+uv
-		8 + swap ) 2drop
-	b> 'here !
-	;
-
-#VertexArrayID
-#vertexbuffer	
-#normalbuffer	
-#uvbuffer
-#texture	
-#text2
-	
-:objModel | "" --
-	convertobj
-
-	1 'texture glGenTextures
-    GL_TEXTURE_2D texture glBindTexture
-	"media/obj/cube.png" glLoadImg 		| load tex
-|    GL_TEXTURE_2D 0 glBindTexture
-	
-	1 'text2 glGenTextures
-	GL_TEXTURE_2D text2 glBindTexture
-	"media/obj/food/Apple.png" glLoadImg 		| load tex
-|	GL_TEXTURE_2D 0 glBindTexture
-
-	1 'VertexArrayID glGenVertexArrays
-	VertexArrayID glBindVertexArray
-
-	1 'vertexbuffer glGenBuffers
-	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
-	GL_ARRAY_BUFFER nface 3 * 3 * 2 << vertex_buffer_data GL_STATIC_DRAW glBufferData
-
-	1 'normalbuffer glGenBuffers
-	GL_ARRAY_BUFFER normalbuffer glBindBuffer
-	GL_ARRAY_BUFFER nface 3 * 3 * 2 << normal_buffer_data GL_STATIC_DRAW glBufferData
-
-	1 'uvbuffer glGenBuffers
-	GL_ARRAY_BUFFER uvbuffer glBindBuffer
-	GL_ARRAY_BUFFER nface 3 * 2 * 2 << uv_buffer_data GL_STATIC_DRAW glBufferData
-	;
-
 #fnamefull * 1024
+#fpath * 1024
+#mobj
+|	0 ,			| filenames +8
+| 	0 ,			| va		+12
+|	0 , 		| vertex>	+16
+|	0 , 		| normal>	+20
+|	0 , 		| uv>		+24
+|	nface 3 * , | cntvert	+28
+
+:cntvert mobj 28 + d@ dup "%d " .println ;
+
 :loadobjm | file -- mem
-	
+	dup 'fnamefull strcpy
+	dup 'fpath strcpyl remname/
+	here dup 'mobj !
+	swap load here =? ( drop 0 ; ) 'here !
+|	'fpath .println
+	mobj @+ drop | cnt | tipo
+	dup d@ mobj + 	| adr names
+|	over .println
+	1 pick2 glGenTextures	| d@ string
+    GL_TEXTURE_2D pick2 d@ glBindTexture
+	'fpath "%s/%s" sprint glLoadImg 		| load tex
+	4 +
+	| adr
+	1 over glGenVertexArrays
+	dup d@ glBindVertexArray
+	4 +
+	dup d@ mobj + | adr vertex
+	1 pick2 glGenBuffers
+	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
+	GL_ARRAY_BUFFER cntvert 12 * rot GL_STATIC_DRAW glBufferData
+	4 +	
+	dup d@ mobj +	| adr normal
+	1 pick2 glGenBuffers
+	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
+	GL_ARRAY_BUFFER cntvert 12 * rot GL_STATIC_DRAW glBufferData
+	4 +	
+	dup d@ mobj +	| adr uv
+	1 pick2 glGenBuffers
+	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
+	GL_ARRAY_BUFFER cntvert 3 << rot GL_STATIC_DRAW glBufferData	
+	drop
+	mobj
+	|dup memmap
 	;
 	
-| nro -> texture,vertexbuffer,uvbuffer,normalbuffer,sizevert.....index,sizeindex
-:objDraw! | nro --
+|VA	
+| vertexbuffer 
+| uvbuffer 
+| normalbuffer 
+| texture 
+| nface 3 *
+:drawobjm | adr --
+|	dup memmap
+	8 + >a 
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D da@+ glBindTexture 
 	0 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER vertexbuffer glBindBuffer
+	4 a+ |VA
+	GL_ARRAY_BUFFER da@+ glBindBuffer
 	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 	1 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER uvbuffer glBindBuffer
+	GL_ARRAY_BUFFER a> 4 + d@ |da@+ 
+	glBindBuffer
 	1 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 	2 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER normalbuffer glBindBuffer
+	GL_ARRAY_BUFFER da@+ glBindBuffer
 	2 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D texture glBindTexture 
-	
-	GL_TRIANGLES 0 nface 3 * glDrawArrays
-
+	4 a+
+| index
+	GL_TRIANGLES 0 da@+ glDrawArrays
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
 	2 glDisableVertexAttribArray
 	;
-	
 
 |-------------------------------------
 :glinit
@@ -183,13 +160,13 @@
 	;	
 	
 :glend
-	programID glDeleteProgram
+|	programID glDeleteProgram
 	
-	1 'VertexArrayID glDeleteVertexArrays
-	1 'uvbuffer glDeleteBuffers
-	1 'vertexbuffer glDeleteBuffers
-	1 'normalbuffer glDeleteBuffers
-	1 'TextureID glDeleteTextures
+|	1 'VertexArrayID glDeleteVertexArrays
+|	1 'uvbuffer glDeleteBuffers
+|	1 'vertexbuffer glDeleteBuffers
+|	1 'normalbuffer glDeleteBuffers
+|	1 'TextureID glDeleteTextures
 
     SDL_Quit ;
 	
@@ -225,13 +202,15 @@
 	;
 
 |--------------	
+#o1 * 80
+
 #arrayobj 0 0
 
 #fhit
 
 :hit | mask pos -- pos
-	-20.0 <? ( over 'fhit +! )
-	20.0 >? ( over 'fhit +! )
+	-1.0 <? ( over 'fhit +! )
+	1.0 >? ( over 'fhit +! )
 	nip ;
 	
 :rhit	
@@ -256,24 +235,31 @@
 	'matcam mm* 	| cam matrix
 	'fmvp mcpyf		| mvp matrix >>
 	
-	|------- draw
-	Shader1!
-	objDraw!
 	|------- refresh & hit
 	4 3 << + >b rhit
 	b@+ b> 5 3 << - dup @ rot +rota swap !
 	b@+ b> 5 3 << - +! | +x
 	b@+ b> 5 3 << - +! | +y
 	b@+ b> 5 3 << - +! | +z
+	
+	|------- draw
+	Shader1!
+|	objDraw!
+	b@+ drawobjm
+	
 	;
 	
-:+obj | vz vy vx vrzyx z y x rzyx --
+:+obj | obj vz vy vx vrzyx z y x rzyx --
 	'objexec 'arrayobj p!+ >a 
 	a!+ a!+ a!+ a!+ 
-	a!+ a!+ a!+ a!+ ;
+	a!+ a!+ a!+ a!+ 
+	a! ;
 
+:objrand
+	5 randmax 3 << 'o1 + @ ;
+	
 :velrot 0.01 randmax 0.005 - ;
-:velpos 0.5 randmax 0.25 - ;
+:velpos 0.05 randmax 0.025 - ;
 	
 :+objr	
 	velpos velpos velpos |vz |vy |vx
@@ -285,9 +271,9 @@
 :+objr2
 	0 0 0 
 	velrot velrot velrot packrota
-	20.0 randmax 10.0 -	| pos z
-	20.0 randmax 10.0 - | pos y
-	20.0 randmax 10.0 - | pos x	
+	2.0 randmax 1.0 -	| pos z
+	2.0 randmax 1.0 - | pos y
+	2.0 randmax 1.0 - | pos x	
 	0 | 0 0 0 packrota
 	+obj ;
 
@@ -302,8 +288,8 @@
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( 50 ( 1? 1 - +objr ) drop ) 
-	<f2> =? ( 50 ( 1? 1 - +objr2 ) drop ) 
+	<f1> =? ( 50 ( 1? 1 - objrand +objr ) drop ) 
+	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
 	
 	<up> =? ( 1.0 'pEye +! )
 	<dn> =? ( -1.0 'pEye +! )
@@ -312,28 +298,29 @@
 	<a> =? ( 1.0 'pEye 16 + +! )
 	<d> =? ( -1.0 'pEye 16 + +! )
 
-	<esp> =? ( +objr )
+	<esp> =? ( objrand 0 0 0 $001000200001 -0.5 0.0 0.0 0 +obj )
 	drop ;	
 
 |---------------------------		
 :ini	
 	Shader1			| load shader
 	
-	"media/obj/suzanne.obj" 
-	|"media/obj/cube.obj" 
-	objModel		| load model
-	
-	"media/obj/food/Apple.obj.mem" loadobjm 'o1 !
+	'o1
+	"media/obj/food/Brocolli.obj.mem" loadobjm swap !+
+	"media/obj/food/Bellpepper.obj.mem" loadobjm swap !+
+	"media/obj/food/Banana.obj.mem" loadobjm swap !+
+	"media/obj/food/Apple.obj.mem" loadobjm swap !+
+	"media/obj/food/Crabcake.obj.mem" loadobjm swap !
 	
 	initvec
 	
 	1000 'arrayobj p.ini 
-	.cls	
+|	.cls	
 	glinfo
 	"<esc> - Exit" .println
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println
-	"<esp> - 1 obj moving" .println
+	"<esp> - 1 obj moving" .println	
 	;
 	
 |----------- BOOT

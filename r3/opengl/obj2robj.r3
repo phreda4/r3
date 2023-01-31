@@ -56,12 +56,12 @@
 	| cnt partes
 	ncolor $ff and 8 << | cnt colores
 	$01 or ,q			| tipo 
-	0 ,			| filenames
-
-	0 , 		| vertex>
-	0 , 		| normal>
-	0 , 		| uv>
-	nface 3 * , | cntvert
+	0 ,			| filenames +8
+	0 ,			| VA		+12
+	0 , 		| vertex>	+16
+	0 , 		| normal>	+20
+	0 , 		| uv>		+24
+	nface 3 * , | cntvert	+28
 	
 	here 		
 	dup 'vertex_buffer_data ! 
@@ -87,9 +87,9 @@
 		1 + ) drop
 	
 	filenames inimem - inimem 8 + d!
-	vertex_buffer_data inimem - inimem 12 + d!
-	normal_buffer_data inimem - inimem 16 + d!
-	uv_buffer_data inimem - 	inimem 20 + d!
+	vertex_buffer_data inimem - inimem 16 + d!
+	normal_buffer_data inimem - inimem 20 + d!
+	uv_buffer_data inimem - 	inimem 24 + d!
 	
 	here inimem - 'sizemem !
 	fname 'fpath "%s/%s.mem" sprint savemem
@@ -198,7 +198,11 @@
 	bfont1
 
 	mark
-	"media/obj/food/Apple.obj" 
+	"media/obj/food/Brocolli.obj" 	
+|	"media/obj/food/Bellpepper.obj" 
+|	"media/obj/food/Banana.obj" 
+|	"media/obj/food/Crabcake.obj" 
+	|"media/obj/food/Apple.obj" 
 	|"media/obj/mario/mario.obj"
 	useobj
 	
