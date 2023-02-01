@@ -37,7 +37,7 @@
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
 	dup 20 >> $fffff and 1 - | texture
 	24 * texl +
-	@+ f2fp db!+ @ f2fp db!+
+	@+ f2fp db!+ @ neg f2fp db!+
 	nface 3 * 3 * 2 << 12 - a+
 	40 >> $fffff and 1 - | normal
 	24 * norml +
@@ -202,7 +202,7 @@
 |	"media/obj/food/Bellpepper.obj" 
 |	"media/obj/food/Banana.obj" 
 |	"media/obj/food/Crabcake.obj" 
-	|"media/obj/food/Apple.obj" 
+|	"media/obj/food/Apple.obj" 
 	|"media/obj/mario/mario.obj"
 	useobj
 	

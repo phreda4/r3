@@ -1,9 +1,13 @@
+| OpenGl utilities
+| PHREDA 2023
+
 ^r3/lib/mem.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 ^r3/win/sdl2image.r3
 
 
+| print info from GPU
 ::glInfo
 	$1f00 glGetString .println | vendor
 	$1f01 glGetString .println | render
@@ -18,17 +22,14 @@
 #GL_FRAGMENT_SHADER $8B30
 #GL_VERTEX_SHADER $8B31
  	
-| mem---
-| 'vertsh -> vertsh + 16
-| 'fragsh -> fragsh + len(vertsh)
-| vertsh 
-| fragsh
 
 #frag
 #vert
 #err
+| load shader/vertex shader and return id
+| free memory used - return 0 if fail
 ::loadShaders | "fragment" "vertex" -- idprogram
-	here 16 + 
+	here 16 + 	| room for 'vert and 'frag
 	dup 'vert !
 	swap LOAD vert =? ( 2drop 0 ; ) 
 	0 swap c!+ 
@@ -77,8 +78,10 @@
 #GL_TEXTURE_MIN_FILTER $2801
 #GL_LINEAR $2601
 
+#GL_RED $1903
 #GL_RGB $1907
 #GL_RGBA $1908
+
 |--- sdl2 surface
 |struct SDL_Surface
 |	flags           dd ? 0 dd ? 4
@@ -98,12 +101,17 @@
 :Surface->h surface 20 + d@ ;
 :Surface->pixels surface 32 + @ ;
 :Surface->format->bpp surface 8 + @ 16 + c@ ;
-:GLBPP Surface->format->bpp 32 =? ( drop GL_RGBA ; ) drop GL_RGB ;
+:GLBPP 
+	Surface->format->bpp 
+	32 =? ( drop GL_RGBA ; ) 
+	24 =? ( drop GL_RGB ; )
+	drop GL_RED ;
 	
 ::glLoadImg | "" -- 
 	IMG_Load 'Surface !
  
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
 	

@@ -73,22 +73,20 @@
 |	0 , 		| uv>		+24
 |	nface 3 * , | cntvert	+28
 
-:cntvert mobj 28 + d@ dup "%d " .println ;
+:cntvert mobj 28 + d@ ;
 
+| v 1.0
 :loadobjm | file -- mem
 	dup 'fnamefull strcpy
 	dup 'fpath strcpyl remname/
 	here dup 'mobj !
 	swap load here =? ( drop 0 ; ) 'here !
-|	'fpath .println
 	mobj @+ drop | cnt | tipo
 	dup d@ mobj + 	| adr names
-|	over .println
 	1 pick2 glGenTextures	| d@ string
     GL_TEXTURE_2D pick2 d@ glBindTexture
 	'fpath "%s/%s" sprint glLoadImg 		| load tex
-	4 +
-	| adr
+	4 + | adr
 	1 over glGenVertexArrays
 	dup d@ glBindVertexArray
 	4 +
@@ -108,7 +106,6 @@
 	GL_ARRAY_BUFFER cntvert 3 << rot GL_STATIC_DRAW glBufferData	
 	drop
 	mobj
-	|dup memmap
 	;
 	
 |VA	
@@ -118,7 +115,6 @@
 | texture 
 | nface 3 *
 :drawobjm | adr --
-|	dup memmap
 	8 + >a 
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D da@+ glBindTexture 
@@ -126,14 +122,12 @@
 	4 a+ |VA
 	GL_ARRAY_BUFFER da@+ glBindBuffer
 	0 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-	1 glEnableVertexAttribArray
-	GL_ARRAY_BUFFER a> 4 + d@ |da@+ 
-	glBindBuffer
-	1 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-	2 glEnableVertexAttribArray
+	2 glEnableVertexAttribArray	
 	GL_ARRAY_BUFFER da@+ glBindBuffer
 	2 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-	4 a+
+	1 glEnableVertexAttribArray
+	GL_ARRAY_BUFFER da@+ glBindBuffer
+	1 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 | index
 	GL_TRIANGLES 0 da@+ glDrawArrays
 	0 glDisableVertexAttribArray
@@ -191,7 +185,7 @@
 :initvec
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-10.0 10.0 -10.0 10.0 -10.0 10.0 mortho
+|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'matcam mmcpy	| perspective matrix
 
 |	matini
@@ -244,9 +238,7 @@
 	
 	|------- draw
 	Shader1!
-|	objDraw!
 	b@+ drawobjm
-	
 	;
 	
 :+obj | obj vz vy vx vrzyx z y x rzyx --
@@ -290,6 +282,7 @@
 	>esc< =? ( exit ) 	
 	<f1> =? ( 50 ( 1? 1 - objrand +objr ) drop ) 
 	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
+	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
 	<up> =? ( 1.0 'pEye +! )
 	<dn> =? ( -1.0 'pEye +! )
@@ -298,7 +291,7 @@
 	<a> =? ( 1.0 'pEye 16 + +! )
 	<d> =? ( -1.0 'pEye 16 + +! )
 
-	<esp> =? ( objrand 0 0 0 $001000200001 -0.5 0.0 0.0 0 +obj )
+	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
 	drop ;	
 
 |---------------------------		

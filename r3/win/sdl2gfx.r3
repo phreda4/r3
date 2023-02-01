@@ -123,10 +123,10 @@
 	
 :fillvertz | x y --
 	'vert >a
-	over xm - i2fp da!+ dup ym - i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 0.0 f2fp da!+
-	over xm + i2fp da!+ dup ym - i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 0.0 f2fp da!+
-	over xm + i2fp da!+ dup ym + i2fp da!+ $ffffffff da!+ 1.0 f2fp da!+ 1.0 f2fp da!+
-	swap xm - i2fp da!+ ym + i2fp da!+ $ffffffff da!+ 0.0 f2fp da!+ 1.0 f2fp da!+
+	over xm - i2fp da!+ dup ym - i2fp da!+ 12 a+ |$ffffffff da!+ x1 f2fp da!+ y1 f2fp da!+
+	over xm + i2fp da!+ dup ym - i2fp da!+ 12 a+ |$ffffffff da!+ x2 f2fp da!+ y1 f2fp da!+
+	over xm + i2fp da!+ dup ym + i2fp da!+ 12 a+ |$ffffffff da!+ x2 f2fp da!+ y2 f2fp da!+
+	swap xm - i2fp da!+ ym + i2fp da!+ 12 a+ |$ffffffff da!+ x1 f2fp da!+ y2 f2fp da!+
 	;
 
 ::SDLspriteZ | x y zoom img --
@@ -149,14 +149,14 @@
 	17 >> pick4 + i2fp da!+
 	swap dy * swap dx * + | x y y'
 	17 >> over + i2fp da!+ 
-	$ffffffff da!+ ;	| color
+	;	
 
 :fillvertr | x y --
 	'vert >a
-	xm neg ym neg rotxya! 0.0 f2fp da!+ 0.0 f2fp da!+
-	xm ym neg rotxya! 1.0 f2fp da!+ 0.0 f2fp da!+
-	xm ym rotxya! 1.0 f2fp da!+ 1.0 f2fp da!+
-	xm neg ym rotxya! 0.0 f2fp da!+ 1.0 f2fp da!+
+	xm neg ym neg rotxya! 12 a+ |x1 f2fp da!+ y1 f2fp da!+
+	xm ym neg rotxya! 12 a+ |x2 f2fp da!+ y1 f2fp da!+
+	xm ym rotxya! 12 a+ |x2 f2fp da!+ y2 f2fp da!+
+	xm neg ym rotxya! 12 a+ |x1 f2fp da!+ y2 f2fp da!+
 	2drop
 	;
 	
@@ -174,3 +174,28 @@
 	fillvertr
 	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
 	;
+
+|-------------- sprite in tilesheet
+::SDLspr.tilesheet | nro width height -- | 2 .25 .25
+	'vert >a
+	|x1 y1 x2 y2 ************8
+	0 f2fp 0 f2fp 1.0 f2fp 1.0 f2fp 
+	12 a+ pick3 da!+ pick2 da!+
+	12 a+ over da!+ pick2 da!+
+	12 a+ over da!+ dup da!+
+	12 a+ pick3 da!+ dup da!+
+	4drop
+	;
+	
+::SDLspr.tilefull 
+	'vert >a 
+	$ffffffff 0 f2fp 1.0 f2fp 
+	8 a+ pick2 da!+ over da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ dup da!+
+	8 a+ pick2 da!+ over da!+ dup da!+
+	3drop
+	;
+
+
+: SDLspr.tilefull ;
