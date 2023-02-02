@@ -290,10 +290,10 @@
 		,c )
 	2drop ;
 
-:tn val src + ,w ;
+:tn val src + ,word ;
 :ts """" ,s valstr """" ,s ;
-:tw val dic>adr @ ,w ;
-:taw val dic>adr @ "'" ,s ,w ;
+:tw val dic>adr @ ,word ;
+:taw val dic>adr @ "'" ,s ,word ;
 
 #ltok 0 0 0 0 0 0 0 tn tn tn tn ts tw tw taw taw
 
@@ -323,7 +323,7 @@
 	3 << 'ltok + @ ex ;
 
 |--------------------
-:tn val src + ,w ;
+:tn val src + ,word ;
 :tw val "w" ,s ,h ;
 :taw val "'w" ,s ,h ;
 

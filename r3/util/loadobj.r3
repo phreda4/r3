@@ -12,12 +12,23 @@
 #textmtl
 
 ##verl #verl> ##nver 	| vertices
-##facel	#facel> ##nface | faces
+##facel	#facel> ##nface | faces (tri or quad)
 ##norml #norml> #nnorm	| normal
 ##texl #texl> ##ntex	| texture coord
 ##paral #paral> #npara	| parametros
 ##colorl #colorl> ##ncolor 	| colores
 
+::]face | nro -- FACE ( p1 p2 p3 color)
+	5 << facel + ;
+
+::]vert | nro -- vertex 
+	5 << verl + ;
+
+::]norm | nro -- normal
+	24 * norml + ;
+
+::]uv | nro -- uv 
+	24 * texl + ;
 
 |-----------------------------
 :vert	| vertices (x,y,z[,w=1])
@@ -88,7 +99,7 @@
 	16 + @+ b!+ @+ b!+           | vert 2
 	colornow b!+ ;
 
-:pack nn 20 << nt or 20 << nv or ; 
+:pack nn 20 << nt or 20 << nv or ; | 4 | 20 nn|20 nt | 20 nv
 	
 | formato normal|texture|vertice  - 20 bits c/u 
 :face	| face nvert( v/t/n  v//n v/t  v)??

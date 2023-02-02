@@ -45,11 +45,12 @@
 ::, here d!+ 'here ! ;
 ::,c here c!+ 'here ! ;
 ::,q here !+ 'here ! ;
+::,w here w!+ 'here ! ;
 ::,s here swap
 	( c@+ 1? rot c!+ swap ) 2drop 'here ! ;
-::,w here swap
+::,word here swap
 	( c@+ $ff and 32 >? rot c!+ swap ) 2drop 'here ! ;
-::,l here swap
+::,line here swap
 	( c@+ 1?
 		10 =? ( 3 + ) 13 =? ( 2drop 'here ! ; )
 		rot c!+ swap ) 2drop 'here ! ;
@@ -81,7 +82,7 @@
 :c6	| f,v		(%f) punto fijo
 	swap .f ,s ;
 :c7	| ..w		(%w) palabra
-	swap 0? ( drop ; ) ,w ;
+	swap 0? ( drop ; ) ,word ;
 :c8	| h..		(%h) hexa
 	swap .h ,s ;
 :c9	| i,y		(%i) parte entera fixed
@@ -91,7 +92,7 @@
 :cb	| k,		(%k) caracter
 	swap ,c ;
 :cc	| l,		(%l) linea
-	swap 0? ( drop ; ) ,l ;
+	swap 0? ( drop ; ) ,line ;
 :cd	| m,}
 	;
 :ce	| .	| cr	(%.) finlinea

@@ -32,15 +32,14 @@
 #filenames
 
 :vert+uv | nro --
-	dup $fffff and 1 - | vertex
-	5 << verl +
+	dup $fffff and 1 - ]vert | vertex
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
-	dup 20 >> $fffff and 1 - | texture
-	24 * texl +
+	
+	dup 20 >> $fffff and 1 - ]uv | texture
 	@+ f2fp db!+ @ neg f2fp db!+
+	
 	nface 3 * 3 * 2 << 12 - a+
-	40 >> $fffff and 1 - | normal
-	24 * norml +
+	40 >> $fffff and 1 - ]norm | normal
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
 	nface 3 * 3 * 2 << neg a+
 	;
@@ -55,7 +54,7 @@
 	
 	| cnt partes
 	ncolor $ff and 8 << | cnt colores
-	$01 or ,q			| tipo 
+	$01 or ,q			| tipo 1 - plano
 	0 ,			| filenames +8
 	0 ,			| VA		+12
 	0 , 		| vertex>	+16
@@ -94,6 +93,119 @@
 	here inimem - 'sizemem !
 	fname 'fpath "%s/%s.mem" sprint savemem
 	empty
+	;
+
+
+
+|--- how many vertes repeat?
+#facerep
+
+:eqvert | 'v1 a2 'v2 -- 'v1 a2
+	pick2 =? ( 1 'facerep +! ) drop ;
+
+:equalsvert | face2 face1 --
+	@+ pick2 @+ eqvert @+ eqvert @ eqvert drop
+	@+ pick2 @+ eqvert @+ eqvert @ eqvert drop
+	@ over @+ eqvert @+ eqvert @ eqvert drop
+	drop
+	;
+
+:vertexrep?
+	0 'facerep !
+	facel 
+	0 ( nface <? 1 + swap
+		over ( nface <?  | nro face n2
+			dup ]face	| nro face1 n2 face2
+			pick2 equalsvert
+			1 + ) drop
+		32 + swap ) 2drop ;
+|---------------------------------		
+
+| tipo 2 -- +index	
+#auxvert | vertices
+#auxvert>
+
+#indexa | index
+#indexa> 
+
+:searchvert | vert -- vert nvert/-1 
+	auxvert ( auxvert> <? 
+		@+ pick2 
+		=? ( drop auxvert - 3 >> 1 - ; )
+		drop ) drop 
+	-1 ;
+	
+:newvert | vert -- vert nvert
+	dup auxvert> !+ 'auxvert> !
+	auxvert> auxvert - 3 >> 1 - ;
+	
+:addvert, | vert --
+	searchvert -? ( drop newvert ) 
+	indexa> w!+ 'indexa> !
+	drop ;
+
+:savever
+	$fffff and 1 - ]vert
+	@+ f2fp , @+ f2fp , @ f2fp , ;
+
+:savenor
+	40 >> $fffff and 1 - ]norm 
+	@+ f2fp , @+ f2fp , @ f2fp , ;
+	
+:saveuv
+	20 >> $fffff and 1 - ]uv 
+	@+ f2fp , @ neg f2fp , ;
+	
+:convertobj2 | --
+	mark
+	here 
+	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
+	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
+	dup dup 'indexa ! 'indexa> !
+	'here !
+	
+	facel 
+	nface ( 1? 1 - swap
+		@+ addvert, 
+		@+ addvert,
+		@+ addvert,
+		8 + swap ) 2drop
+		
+	indexa> 'here !
+	|---- generate file
+	mark
+	here 'inimem !
+	| cnt partes
+	ncolor $ff and 8 << | cnt colores
+	$02 or ,q			| tipo 2 - indices
+	0 ,			| filenames +8
+	0 ,			| VA		+12
+	0 , 		| vertex>	+16
+	0 , 		| normal>	+20
+	0 , 		| uv>		+24
+	0 ,			| index> 	+28
+	auxvert> auxvert - 3 >> ,		| cntvert
+	indexa> indexa - 1 >> ,			| cntindex
+	
+	here inimem - inimem 16 + d!
+	auxvert ( auxvert> <? @+ savever ) drop
+	here inimem - inimem 20 + d!
+	auxvert ( auxvert> <? @+ savenor ) drop
+	here inimem - inimem 24 + d!
+	auxvert ( auxvert> <? @+ saveuv ) drop
+	here inimem - inimem 28 + d!
+	indexa ( indexa> <? w@+ ,w ) drop
+	
+	here inimem - inimem 8 + d!
+	0 ( ncolor <? 
+		colorl over 5 << + 8 + @ 
+		here strcpylnl 'here !
+		1 + ) drop
+
+	fname 'fpath "%s/%sm" sprint savemem
+	empty
+	
+	empty	
 	;
 
 
@@ -147,7 +259,7 @@
 
 #model
 
-:useobj | ""
+:useobj | "" --
 	empty
 	mark
 	dup 'fpath getpath
@@ -156,13 +268,23 @@
 	| objminmax objcentra
 	;
 	
+:loadobj | --	
+	;
+|---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
+	"| F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
 	0 ( ncolor <? 
 		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
 		colorl over 5 << + 8 + @ "%w" sprint bprint
 		1 + ) drop
+	8 sh 48 - bat 
+	|facerep "rep:%d" sprint bprint
+	auxvert> auxvert - 3 >> "vertices:%d " sprint bprint
+	indexa> indexa  - 1 >> "index:%d " sprint bprint
+
+	
 	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
 	;
 	
@@ -187,7 +309,9 @@
 	<up> =? ( 1.0 'zcam +! )
 	<dn> =? ( -1.0 'zcam +! )
 
-	<f1> =? ( convertobj1 )
+	<f1> =? ( loadobj ) 
+	<f2> =? ( convertobj1 )
+	<f3> =? ( convertobj2 )
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
 	drop ;
@@ -198,11 +322,17 @@
 	bfont1
 
 	mark
-	"media/obj/food/Brocolli.obj" 	
+|	"media/obj/food/Brocolli.obj" 	
 |	"media/obj/food/Bellpepper.obj" 
 |	"media/obj/food/Banana.obj" 
 |	"media/obj/food/Crabcake.obj" 
 |	"media/obj/food/Apple.obj" 
+
+|	"media/obj/food/Cake.obj" 
+|	"media/obj/food/Carrot.obj" 
+|	"media/obj/food/Cherries.obj" 
+	"media/obj/food/Chicken.obj" 
+
 	|"media/obj/mario/mario.obj"
 	useobj
 	

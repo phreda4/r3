@@ -352,7 +352,7 @@
 	swap 1 + | ext name
 	mark
 	dup c@ 46 =? ( swap 2 + 'path ,s ) drop
-	,w
+	,word
 |	dup "mem/inc-%w.mem" sprint savemem
 	empty
 |	"r4/system/inc-%w.txt" sprint run
