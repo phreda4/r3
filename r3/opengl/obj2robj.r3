@@ -9,7 +9,7 @@
 
 ^r3/util/loadobj.r3
 ^r3/util/bfont.r3
-
+^r3/util/dlgfile.r3
 
 #filename * 1024
 #cutpath ( 0 )
@@ -128,6 +128,10 @@
 #indexa | index
 #indexa> 
 
+#colornow
+#vertcolor * 128
+#indcolor * 128
+
 :searchvert | vert -- vert nvert/-1 
 	auxvert ( auxvert> <? 
 		@+ pick2 
@@ -137,12 +141,16 @@
 	
 :newvert | vert -- vert nvert
 	dup auxvert> !+ 'auxvert> !
-	auxvert> auxvert - 3 >> 1 - ;
+	auxvert> auxvert - 3 >> 1 - 
+|	1 colornow 3 << vertcolor + +!
+	;
 	
 :addvert, | vert --
 	searchvert -? ( drop newvert ) 
 	indexa> w!+ 'indexa> !
-	drop ;
+	drop 
+|	1 colornow 3 << indcolor + +!
+	;
 
 :savever
 	$fffff and 1 - ]vert
@@ -156,8 +164,10 @@
 	20 >> $fffff and 1 - ]uv 
 	@+ f2fp , @ neg f2fp , ;
 	
+|-------------- prev	
 :convertobj2 | --
 	mark
+	|*** find and reeplace repetitions in vertex,normal and uv!!
 	here 
 	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
 	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
@@ -179,6 +189,7 @@
 	ncolor $ff and 8 << | cnt colores
 	$02 or ,q			| tipo 2 - indices
 	0 ,			| filenames +8
+	
 	0 ,			| VA		+12
 	0 , 		| vertex>	+16
 	0 , 		| normal>	+20
@@ -186,6 +197,69 @@
 	0 ,			| index> 	+28
 	auxvert> auxvert - 3 >> ,		| cntvert
 	indexa> indexa - 1 >> ,			| cntindex
+	
+	here inimem - inimem 16 + d!
+	auxvert ( auxvert> <? @+ savever ) drop
+	here inimem - inimem 20 + d!
+	auxvert ( auxvert> <? @+ savenor ) drop
+	here inimem - inimem 24 + d!
+	auxvert ( auxvert> <? @+ saveuv ) drop
+	here inimem - inimem 28 + d!
+	indexa ( indexa> <? w@+ ,w ) drop
+	
+	here inimem - inimem 8 + d!
+	0 ( ncolor <? 
+		colorl over 5 << + 8 + @ 
+		here strcpylnl 'here !
+		1 + ) drop
+
+	fname 'fpath "%s/%sm" sprint savemem
+	empty
+	
+	empty	
+	;
+
+|--------------------------
+:convertobj3 | --
+	0 ( ncolor <? 
+		0 over 3 << 'vertcolor + !
+		0 over 3 << 'indcolor + !
+		1 + ) drop
+
+	mark
+	|*** find and reeplace repetitions in vertex,normal and uv!!
+	here 
+	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
+	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
+	dup dup 'indexa ! 'indexa> !
+	'here !
+	
+	facel 
+	nface ( 1? 1 - swap
+		dup 24 + @ 'colornow !
+		@+ addvert, 
+		@+ addvert,
+		@+ addvert,
+		8 + swap ) 2drop
+		
+	indexa> 'here !
+	|---- generate file
+	mark
+	here 'inimem !
+	| cnt partes
+	ncolor $ff and 8 << | cnt colores
+	$02 or ,q			| tipo 2 - indices
+	0 ,			| filenames +8
+	0 ,			| VA		+12
+	0 , 		| vertex>	+16
+	0 , 		| normal>	+20
+	0 , 		| uv>		+24
+	0 ,			| index> 	+28
+	
+	0 ( ncolor <? 
+		'vertcolor over 3 << + ,	| cntvert
+		'indcolor over 3 << + ,		| cntindex
+		1 + ) drop
 	
 	here inimem - inimem 16 + d!
 	auxvert ( auxvert> <? @+ savever ) drop
@@ -268,8 +342,12 @@
 	| objminmax objcentra
 	;
 	
+|---------------------------------------------------		
 :loadobj | --	
+	dlgFileLoad
+	drop
 	;
+	
 |---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
@@ -321,19 +399,19 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1
 
+	"media/obj/" dlgSetPath
 	mark
 |	"media/obj/food/Brocolli.obj" 	
 |	"media/obj/food/Bellpepper.obj" 
 |	"media/obj/food/Banana.obj" 
 |	"media/obj/food/Crabcake.obj" 
 |	"media/obj/food/Apple.obj" 
-
 |	"media/obj/food/Cake.obj" 
 |	"media/obj/food/Carrot.obj" 
 |	"media/obj/food/Cherries.obj" 
-	"media/obj/food/Chicken.obj" 
+|	"media/obj/food/Chicken.obj" 
 
-	|"media/obj/mario/mario.obj"
+	"media/obj/mario/mario.obj"
 	useobj
 	
 	'main SDLshow 

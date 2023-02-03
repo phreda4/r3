@@ -52,7 +52,7 @@
 	over 8 + @ over 8 + @ - dup *. | (x1-x2)^2
 	pick2 16 + @ pick2 16 + @ - dup *. +
 	4.0 >=? ( drop ; ) sqrt. 2.0 swap -
-	0.1 *. >a | lose impulse
+	1 >> >a | lose impulse
 	over 8 + @ over 8 + @ -
 	pick2 16 + @ pick2 16 + @ -
 	atan2 sincos 				| p1 p2 si co

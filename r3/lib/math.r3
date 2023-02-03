@@ -118,7 +118,7 @@
 ::sqrt. | n -- v
 	1 <? ( drop 0 ; )
 	0 0 rot | root remhi remlo | 31 + bits/2
-	39 ( 1? 1 - >r
+	40 ( 1? 1 - >r
 		dup 62 >> $3 and	| ro rh rl rnh
 		rot 2 << or			| ro rl rh
 		swap 2 << swap

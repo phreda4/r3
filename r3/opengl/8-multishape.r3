@@ -13,8 +13,11 @@
 
 | opengl Constant
 #GL_ARRAY_BUFFER $8892
+#GL_ELEMENT_ARRAY_BUFFER $8893
+
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
+#GL_UNSIGNED_SHORT $1403
 #GL_FALSE 0
 
 #GL_DEPTH_TEST $0B71
@@ -66,16 +69,20 @@
 #fnamefull * 1024
 #fpath * 1024
 #mobj
+|	ncolor $ff and 8 << $02 or ,q			| tipo 2 - indices
 |	0 ,			| filenames +8
-| 	0 ,			| va		+12
+|	0 ,			| VA		+12
 |	0 , 		| vertex>	+16
 |	0 , 		| normal>	+20
 |	0 , 		| uv>		+24
-|	nface 3 * , | cntvert	+28
+|	0 ,			| index> 	+28
+|	auxvert> auxvert - ,		| cntvert +32
+|	indexa> indexa - ,			| cntindex +36
 
-:cntvert mobj 28 + d@ ;
+:cntvert mobj 32 + d@ ;
+:cntind mobj 36 + d@ ;
 
-| v 1.0
+| v 2.0 - index
 :loadobjm | file -- mem
 	dup 'fnamefull strcpy
 	dup 'fpath strcpyl remname/
@@ -104,16 +111,26 @@
 	1 pick2 glGenBuffers
 	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
 	GL_ARRAY_BUFFER cntvert 3 << rot GL_STATIC_DRAW glBufferData	
+	4 +	
+	dup d@ mobj +	| adr index
+	1 pick2 glGenBuffers
+	GL_ELEMENT_ARRAY_BUFFER pick2 d@ glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER cntind 1 << rot GL_STATIC_DRAW glBufferData	
 	drop
+	
 	mobj
 	;
 	
-|VA	
-| vertexbuffer 
-| uvbuffer 
-| normalbuffer 
-| texture 
-| nface 3 *
+|	ncolor $ff and 8 << $02 or ,q			| tipo 2 - indices
+|	0 ,			| filenames +8
+|	0 ,			| VA		+12
+|	0 , 		| vertex>	+16
+|	0 , 		| normal>	+20
+|	0 , 		| uv>		+24
+|	0 ,			| index> 	+28
+|	auxvert> auxvert - ,		| cntvert +32
+|	indexa> indexa - ,			| cntindex +36
+
 :drawobjm | adr --
 	8 + >a 
 	GL_TEXTURE0 glActiveTexture
@@ -128,8 +145,13 @@
 	1 glEnableVertexAttribArray
 	GL_ARRAY_BUFFER da@+ glBindBuffer
 	1 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
-| index
-	GL_TRIANGLES 0 da@+ glDrawArrays
+	GL_ELEMENT_ARRAY_BUFFER da@+ glBindBuffer
+	4 a+
+	GL_TRIANGLES da@+ GL_UNSIGNED_SHORT 0 glDrawElements
+	
+	|glDrawElements(mode, end-start, type, data + start)
+	|glDrawRangeElements(mode, start, end, end-start, type, data)
+	
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
 	2 glDisableVertexAttribArray
@@ -138,15 +160,19 @@
 |-------------------------------------
 :glinit
 	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
-|	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
-|	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
+	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+	
     17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
     18 6 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MINOR_VERSION
 	20 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
 	21 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
 |	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+	"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
 	
 	"test opengl" 800 600 SDLinitGL
+		
 	glInfo	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	
@@ -176,24 +202,34 @@
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 
-#pEye 4.0 0.0 0.0
+
+#mateye * 128
+#matcam * 128
+
+#pEye 4.0 4.0 4.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
-#matcam * 128
+:eyecam
+	'pTo 'pEye 'pUp mlookat  | eye to up -- 
+	'mateye mcpy ;
 
 :initvec
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
+	0.
+	1 1000.0 0.9 3.0 4.0 /. mperspective 
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'matcam mmcpy	| perspective matrix
 
+	eyecam		| eyemat
+	
 |	matini
 	'fviewmat midf	| view matrix >>
 	
 	'flightpos >a	| light position
 	da@ f2fp da!+ da@ f2fp da!+ da@ f2fp da!+ 
 	;
+
 
 |--------------	
 #o1 * 80
@@ -203,8 +239,8 @@
 #fhit
 
 :hit | mask pos -- pos
-	-1.0 <? ( over 'fhit +! )
-	1.0 >? ( over 'fhit +! )
+	-20.0 <? ( over 'fhit +! )
+	20.0 >? ( over 'fhit +! )
 	nip ;
 	
 :rhit	
@@ -223,7 +259,8 @@
 	'fmodelmat mcpyf | model matrix	>>
 	
 	|------- mov camara
-	mpush 'pTo 'pEye 'pUp mlookat m* | eye to up -- 
+	|mpush 'pTo 'pEye 'pUp mlookat m* | to eye up -- 
+	'mateye mm*
 
 	|------- perspective
 	'matcam mm* 	| cam matrix
@@ -248,7 +285,9 @@
 	a! ;
 
 :objrand
-	5 randmax 3 << 'o1 + @ ;
+|	9 randmax 3 << 'o1 + @ 
+	o1
+	;
 	
 :velrot 0.01 randmax 0.005 - ;
 :velpos 0.05 randmax 0.025 - ;
@@ -263,9 +302,9 @@
 :+objr2
 	0 0 0 
 	velrot velrot velrot packrota
-	2.0 randmax 1.0 -	| pos z
-	2.0 randmax 1.0 - | pos y
-	2.0 randmax 1.0 - | pos x	
+	20.0 randmax 10.0 -	| pos z
+	20.0 randmax 10.0 - | pos y
+	20.0 randmax 10.0 - | pos x	
 	0 | 0 0 0 packrota
 	+obj ;
 
@@ -284,12 +323,12 @@
 	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
 	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
-	<up> =? ( 1.0 'pEye +! )
-	<dn> =? ( -1.0 'pEye +! )
-	<le> =? ( 1.0 'pEye 8 + +! )
-	<ri> =? ( -1.0 'pEye 8 + +! )
-	<a> =? ( 1.0 'pEye 16 + +! )
-	<d> =? ( -1.0 'pEye 16 + +! )
+	<up> =? ( 1.0 'pEye +! eyecam )
+	<dn> =? ( -1.0 'pEye +! eyecam )
+	<le> =? ( 1.0 'pEye 8 + +! eyecam )
+	<ri> =? ( -1.0 'pEye 8 + +! eyecam )
+	<a> =? ( 1.0 'pEye 16 + +! eyecam )
+	<d> =? ( -1.0 'pEye 16 + +! eyecam )
 
 	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
 	drop ;	
@@ -298,12 +337,7 @@
 :ini	
 	Shader1			| load shader
 	
-	'o1
-	"media/obj/food/Brocolli.obj.mem" loadobjm swap !+
-	"media/obj/food/Bellpepper.obj.mem" loadobjm swap !+
-	"media/obj/food/Banana.obj.mem" loadobjm swap !+
-	"media/obj/food/Apple.obj.mem" loadobjm swap !+
-	"media/obj/food/Crabcake.obj.mem" loadobjm swap !
+	"media/obj/mario/mario.objm" loadobjm 'o1 !
 	
 	initvec
 	

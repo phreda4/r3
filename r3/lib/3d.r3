@@ -96,37 +96,28 @@
 #sx 0 #sy 0 #sz 0
 #ux 0 #uy 0 #uz 0 
 
-|kmVec3Subtract(&f, pCenter, pEye);
-|kmVec3Normalize(&f, &f);
-|kmVec3Cross(&s, &f, pUp);
-|kmVec3Normalize(&s, &s);
-|kmVec3Cross(&u, &s, &f);
-
 ::mlookat | eye to up --
-|	'f rot v3= 'f dup pick3 v3- v3Nor | eye up s s
-|	's 'f v3= 's swap v3vec 's v3Nor
-|	'u dup 's v3= 'f v3vec
 	swap
 	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
 	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
 	'ux dup 'sx v3= 'fx v3vec
-	mat> >a
-	sx a!+ |mat[0] = s.x;
-    ux a!+ |mat[1] = u.x;
-    fx neg a!+ |mat[2] = -f.x;
-    0 a!+ |mat[3] = 0.0;
-    sy a!+ |mat[4] = s.y;
-    uy a!+ |mat[5] = u.y;
-    fy neg a!+ |mat[6] = -f.y;
-    0 a!+ |mat[7] = 0.0;
-    sz a!+ |mat[8] = s.z;
-    uz a!+ |mat[9] = u.z;
-    fz neg a!+ |mat[10] = -f.z;
-    0 a!+ |mat[11] = 0.0;
-    'sx over v3ddot neg a!+ |mat[12] = -kmVec3Dot(&s, pEye);
-    'ux over v3ddot neg a!+ |mat[13] = -kmVec3Dot(&u, pEye);
-    'fx swap v3ddot a!+ |mat[14] = kmVec3Dot(&f, pEye);
-    1.0 a! |mat[15] = 1.0;
+	mat> >b
+	sx b!+ |mat[0] = s.x;
+    ux b!+ |mat[1] = u.x;
+    fx neg b!+ |mat[2] = -f.x;
+    0 b!+ |mat[3] = 0.0;
+    sy b!+ |mat[4] = s.y;
+    uy b!+ |mat[5] = u.y;
+    fy neg b!+ |mat[6] = -f.y;
+    0 b!+ |mat[7] = 0.0;
+    sz b!+ |mat[8] = s.z;
+    uz b!+ |mat[9] = u.z;
+    fz neg b!+ |mat[10] = -f.z;
+    0 b!+ |mat[11] = 0.0;
+    'sx over v3ddot neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'ux over v3ddot neg b!+ |mat[13] = -kmVec3Dot(&u, pEye);
+    'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
+    1.0 b! |mat[15] = 1.0;
 	;
 
 |-- mat mult	
@@ -148,7 +139,8 @@
 	128 'mat> +!
 	;
 	
-	
+::mcpy | 'mat --	
+	mat> 16 move ;
 	
 |-----------------------------
 ::mtrans | x y z --

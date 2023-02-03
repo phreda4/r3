@@ -149,6 +149,9 @@
 	4 a+
 	GL_TRIANGLES da@+ GL_UNSIGNED_SHORT 0 glDrawElements
 	
+	|glDrawElements(mode, end-start, type, data + start)
+	|glDrawRangeElements(mode, start, end, end-start, type, data)
+	
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
 	2 glDisableVertexAttribArray
@@ -157,15 +160,20 @@
 |-------------------------------------
 :glinit
 	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
-|	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
-|	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
+	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+	
     17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
     18 6 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MINOR_VERSION
 	20 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
 	21 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
 |	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
 	
 	"test opengl" 800 600 SDLinitGL
+	 
+	
 	glInfo	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	
@@ -195,11 +203,17 @@
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 
-#pEye 4.0 0.0 0.0
+
+#mateye * 128
+#matcam * 128
+
+#pEye 4.0 4.0 4.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
-#matcam * 128
+:eyecam
+	'pTo 'pEye 'pUp mlookat  | eye to up -- 
+	'mateye mcpy ;
 
 :initvec
 	matini
@@ -207,12 +221,15 @@
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'matcam mmcpy	| perspective matrix
 
+	eyecam		| eyemat
+	
 |	matini
 	'fviewmat midf	| view matrix >>
 	
 	'flightpos >a	| light position
 	da@ f2fp da!+ da@ f2fp da!+ da@ f2fp da!+ 
 	;
+
 
 |--------------	
 #o1 * 80
@@ -242,7 +259,8 @@
 	'fmodelmat mcpyf | model matrix	>>
 	
 	|------- mov camara
-	|mpush 'pEye 'pTo 'pUp mlookat m* | eye to up -- : **** BAD MATRIX
+	|mpush 'pTo 'pEye 'pUp mlookat m* | to eye up -- 
+	'mateye mm*
 
 	|------- perspective
 	'matcam mm* 	| cam matrix
@@ -303,12 +321,12 @@
 	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
 	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
-	<up> =? ( 1.0 'pEye +! )
-	<dn> =? ( -1.0 'pEye +! )
-	<le> =? ( 1.0 'pEye 8 + +! )
-	<ri> =? ( -1.0 'pEye 8 + +! )
-	<a> =? ( 1.0 'pEye 16 + +! )
-	<d> =? ( -1.0 'pEye 16 + +! )
+	<up> =? ( 1.0 'pEye +! eyecam )
+	<dn> =? ( -1.0 'pEye +! eyecam )
+	<le> =? ( 1.0 'pEye 8 + +! eyecam )
+	<ri> =? ( -1.0 'pEye 8 + +! eyecam )
+	<a> =? ( 1.0 'pEye 16 + +! eyecam )
+	<d> =? ( -1.0 'pEye 16 + +! eyecam )
 
 	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
 	drop ;	
