@@ -7,7 +7,6 @@
 
 ^r3/win/SDL2image.r3
 
-
 #textobj | textparse
 #textmtl
 
@@ -17,6 +16,7 @@
 ##texl #texl> ##ntex	| texture coord
 ##paral #paral> #npara	| parametros
 ##colorl #colorl> ##ncolor 	| colores
+
 
 ::]face | nro -- FACE ( p1 p2 p3 color)
 	5 << facel + ;
@@ -132,6 +132,7 @@
 	;
 
 :parseline
+|	dup "%l" .println
 	"vt" =pre 1? ( drop texc ; ) drop	| textcoor (u, v [,w])
 	"vn" =pre 1? ( drop norm ; ) drop	| normales (x,y,z)
 	"vp" =pre 1? ( drop pspa ; ) drop	| param space ( u [,v] [,w] )
@@ -152,60 +153,82 @@
 
 |--------------------
 | nombre text mem solido
-#colora
+#colornow
 
-:illum
-	;
+#colka * 1024
+#colkd * 1024
+#colks * 1024
+#colke * 1024
+#colMapKd * 1024
+#colMapNs * 1024
+#colMapBp * 1024
+#colNs * 1024
+#colNi * 1024
+#cold * 1024
+#colI * 1024
+
+:n]Ka! colornow 3 << 'colka + ! ;
+:n]Kd! colornow 3 << 'colkd + ! ;
+:n]Ks! colornow 3 << 'colks + ! ;
+:n]Ke! colornow 3 << 'colke + ! ;
+:n]Mkd! colornow 3 << 'colMapKd + ! ;
+:n]MNs! colornow 3 << 'colMapNs + ! ;
+:n]Mbp! colornow 3 << 'colMapBp + ! ;
+:n]Ns! colornow 3 << 'colNs + ! ;
+:n]Ni! colornow 3 << 'colNi + ! ;
+:n]d! colornow 3 << 'cold + ! ;
+:n]i! colornow 3 << 'colI + ! ;
+
+:parseV | adr -- adr val
+	>>sp trim
+	getfenro ;
+	
+:parseV3 | adr -- adr val
+	>>sp trim
+	getfenro $fffff and swap
+	getfenro $fffff and 20 << swap
+	getfenro $fffff and 40 << 
+	rot or rot or ;
 
 :newmtl
-	colorl> 'colora !
-	32 'colorl> +!
-	7 + trim
-	dup colora !
-	;
-
-:texmap
-	7 + trim 
-	dup colora 8 + !
-|	existe?
-|	dup |'path "%s%l" sprint
-	| loadimg  |** no carga imagen
-	|dup .println
-	
-|	colora 24 + !
-	;
-
-:colorp
-	3 + trim
-	getfenro $ff 1.0 */ $ff0000 and swap
-	getfenro $ff 1.0 */ 8 >> $ff00 and swap
-	getfenro $ff 1.0 */ 16 >> $ff and
-	rot or rot or
-	colora 24 + !
+	1 'colornow +!
+	dup >>sp trim 
+	colornow swap
+	colorl> !+ !+ 'colorl> !
+|	colornow "c:%d" .println
+	0 n]Ka! 0 n]Kd! 0 n]Ks! 0 n]Ke!
+	0 n]Mkd! 0 n]MNs! 0 n]Mbp!
+	0 n]Ns! 0 n]Ni!
+	0 n]d! 0 n]i! 
 	;
 
 :parselinem
+	|dup "%l" .println
 	"newmtl " =pre 1? ( drop newmtl ; ) drop
-	"Ka" =pre 1? ( drop colorp ; ) drop
-	"Kd" =pre 1? ( drop colorp ; ) drop
-	"Ks" =pre 1? ( drop ; ) drop
-	"Ke" =pre 1? ( drop ; ) drop
-	"Ni" =pre 1? ( drop ; ) drop
-	"d " =pre 1? ( drop ; ) drop
-	"Tr" =pre 1? ( drop ; ) drop | 1-d
-	"illum" =pre 1? ( drop illum ; ) drop
-	"map_Kd" =pre 1? ( drop texmap ; ) drop
-	"map_Ka" =pre 1? ( drop texmap ; ) drop
+	"Ka" =pre 1? ( drop parseV3 n]Ka! ; ) drop
+	"Kd" =pre 1? ( drop parseV3 n]Kd! ; ) drop
+	"Ks" =pre 1? ( drop parseV3 n]Ks! ; ) drop
+	"Ke" =pre 1? ( drop parseV3 n]Ke! ; ) drop
+	"Ni" =pre 1? ( drop parseV n]Ni! ; ) drop
+	"Ns" =pre 1? ( drop parseV n]Ns! ; ) drop	
+	"d " =pre 1? ( drop parseV n]d! ; ) drop
+	"illum" =pre 1? ( drop parseV n]i! ; ) drop
+	"map_Kd" =pre 1? ( drop >>sp trim dup n]Mkd! ; ) drop
+	"map_Ns" =pre 1? ( drop >>sp trim dup n]Mns! ; ) drop
+	"map_bump " =pre 1? ( drop >>sp trim dup n]Mbp! ; ) drop
+	;
+:a	
+	"map_Ka" =pre 1? ( drop ; ) drop
 	"map_Ks" =pre 1? ( drop ; ) drop
-	"map_Ns" =pre 1? ( drop ; ) drop
 	"map_d" =pre 1? ( drop ; ) drop
-	"map_bump " =pre 1? ( drop ; ) drop
 	"bump" =pre 1? ( drop ; ) drop
 	"disp" =pre 1? ( drop ; ) drop
 	"decal" =pre 1? ( drop ; ) drop
+	"Tr" =pre 1? ( drop ; ) drop | 1-d	
 	;
 
 :notmtl
+	"error, not MTL!" .println
 |	7 + trim dup colora 4 + !
 |	existe?
 |	dup 'path "%s%l" sprint
@@ -214,6 +237,7 @@
 
 :parsemtl | text --
 	0? ( drop notmtl ; )
+	-1 'colornow !
 	( trim parselinem >>cr 1? ) drop ;
 
 |--------- contar elementos y cargar mtl
@@ -223,7 +247,7 @@
 	"%s%l" sprint
 	here dup 'textmtl !
 	swap
-	load 0 swap !+ 'here !
+	load 0 swap c!+ 'here !
 	;
 
 ::cnt/
@@ -257,8 +281,8 @@
 ::loadobj | "" -- mem
 	getpath
 	here dup 'textobj !
-	swap load over =? ( 2drop 0 ; ) 0 swap !+
-	'here !
+	swap load over =? ( 2drop 0 ; ) 
+	0 swap c!+ 'here !
 	0 'nver !
 	0 'nface !
 	0 'nnorm !
@@ -279,10 +303,12 @@
     dup dup 'paral ! 'paral> !
 	npara 24 * +
 	dup dup 'colorl ! 'colorl> !
-	ncolor 1 + 5 << +
+	ncolor 1 + 4 << + | adrname id?
 	'here !
+|	here textobj - 10 >> "%d kb" .println
 	textmtl parsemtl
 	textobj parseobj
+	here textobj - 10 >> "%d kb" .println
 	here
 	;
 

@@ -153,19 +153,19 @@
 		0 ( 9 <?
 			over over getpointxy a!+
 			over 1 + over getpointxy a!+
-			15.0 da!+ 0.5 da!+
+			30.0 da!+ 0.5 da!+
 			over over getpointxy a!+
 			over over 1 + getpointxy a!+
-			15.0 da!+ 0.5 da!+
+			30.0 da!+ 0.5 da!+
 			1 + ) drop
 		dup 9 getpointxy a!+
 		dup 1 + 9 getpointxy a!+
-		15.0 da!+ 0.5 da!+
+		30.0 da!+ 0.5 da!+
 		1 + ) drop
 	0 ( 9 <? 
 		9 over getpointxy a!+
 		9 over 1 + getpointxy a!+
-		15.0 da!+ 0.5 da!+
+		30.0 da!+ 0.5 da!+
 		1 + ) drop 
 	0 a!+
 	;

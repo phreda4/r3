@@ -1,6 +1,6 @@
 | OpenGL example
 | PHREDA 2023
-|M 64
+|MEM 64
 ^r3/lib/3d.r3
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
@@ -207,12 +207,12 @@
 #mateye * 128
 #matcam * 128
 
-#pEye 4.0 4.0 4.0
+#pEye 1.0 1.0 1.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
 :eyecam
-	'pTo 'pEye 'pUp mlookat  | eye to up -- 
+	 'pEye 'pTo 'pUp mlookat  | eye to up -- 
 	'mateye mcpy ;
 
 :initvec
@@ -223,7 +223,6 @@
 
 	eyecam		| eyemat
 	
-|	matini
 	'fviewmat midf	| view matrix >>
 	
 	'flightpos >a	| light position
@@ -258,11 +257,7 @@
 	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
 	'fmodelmat mcpyf | model matrix	>>
 	
-	|------- mov camara
-	|mpush 'pTo 'pEye 'pUp mlookat m* | to eye up -- 
-	'mateye mm*
-
-	|------- perspective
+	'mateye mm* 	|------- mov eye
 	'matcam mm* 	| cam matrix
 	'fmvp mcpyf		| mvp matrix >>
 	
@@ -331,27 +326,23 @@
 	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
 	drop ;	
 
+#objs 	
+"media/obj/food/Brocolli.objm" "media/obj/food/Bellpepper.objm" "media/obj/food/Banana.objm" "media/obj/food/Apple.objm"  "media/obj/food/Crabcake.objm" "media/obj/food/Cake.objm" "media/obj/food/Carrot.objm" "media/obj/food/Cherries.objm" "media/obj/food/Chicken.objm" ( 0 )
+
 |---------------------------		
 :ini	
 	Shader1			| load shader
-	
-	'o1
-	"media/obj/food/Brocolli.objm" loadobjm swap !+
-	"media/obj/food/Bellpepper.objm" loadobjm swap !+
-	"media/obj/food/Banana.objm" loadobjm swap !+
-	"media/obj/food/Apple.objm" loadobjm swap !+
-	"media/obj/food/Crabcake.objm" loadobjm swap !+
-	"media/obj/food/Cake.objm" loadobjm swap !+
-	"media/obj/food/Carrot.objm" loadobjm swap !+
-	"media/obj/food/Cherries.objm" loadobjm swap !+
-	"media/obj/food/Chicken.objm" loadobjm swap !+
-	drop
+
+	'o1 >a			| load objs
+	'objs ( dup c@ 1? drop
+		dup loadobjm a!+
+		>>0 ) drop
 	
 	initvec
 	
 	1000 'arrayobj p.ini 
 |	.cls	
-	glinfo
+	cr cr cr cr glinfo
 	"<esc> - Exit" .println
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println

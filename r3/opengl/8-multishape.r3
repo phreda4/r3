@@ -1,6 +1,6 @@
 | OpenGL example
 | PHREDA 2023
-|M 64
+|MEM 64
 ^r3/lib/3d.r3
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
@@ -9,7 +9,7 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
-^r3/opengl/ogl2util.r3
+^r3/opengl/shader.r3
 
 | opengl Constant
 #GL_ARRAY_BUFFER $8892
@@ -26,42 +26,6 @@
 
 #GL_TRIANGLES $0004
 
-|--------------------- shader
-#programID 
-
-#MatrixID
-#ViewMatrixID 
-#ModelMatrixID 
-#lightID
-#textureID
-
-:Shader1 | 'vars "vert" "frag" -- nro
-	"r3/opengl/shader/StandardShading.frag" 
-	"r3/opengl/shader/StandardShading.vert" 
-	loadShaders | "fragment" "vertex" -- idprogram
-	dup "MVP" glGetUniformLocation 'MatrixID !
-	dup "V" glGetUniformLocation 'ViewMatrixID !
-	dup "M" glGetUniformLocation 'ModelMatrixID !		
-	dup "myTextureSampler" glGetUniformLocation 'TextureID !	
-	dup "LightPosition_worldspace" glGetUniformLocation 'LightID !
-	'programID !
-	;
-
-
-#fmvp * 64
-#fviewmat * 64
-#fmodelmat * 64
-#flightpos [ 4.0 4.0 4.0 ]
-	
-:Shader1! | --
-	programID glUseProgram
-	MatrixID 1 GL_FALSE 'fmvp glUniformMatrix4fv 	
-	ModelMatrixID 1 GL_FALSE 'fmodelmat glUniformMatrix4fv 		
-	ViewMatrixID 1 GL_FALSE 'fviewmat glUniformMatrix4fv 		
-	LightID 1 'flightpos glUniform3fv
-	TextureID 0 glUniform1i
-	;
-
 |-------------------------------------
 :remname/ | adr --  ; get path only
 	( dup c@ $2f <>? drop 1 - ) drop 0 swap c! ;
@@ -76,6 +40,7 @@
 |	0 , 		| normal>	+20
 |	0 , 		| uv>		+24
 |	0 ,			| index> 	+28
+
 |	auxvert> auxvert - ,		| cntvert +32
 |	indexa> indexa - ,			| cntindex +36
 
@@ -88,6 +53,7 @@
 	dup 'fpath strcpyl remname/
 	here dup 'mobj !
 	swap load here =? ( drop 0 ; ) 'here !
+	
 	mobj @+ drop | cnt | tipo
 	dup d@ mobj + 	| adr names
 	1 pick2 glGenTextures	| d@ string
@@ -206,18 +172,17 @@
 #mateye * 128
 #matcam * 128
 
-#pEye 4.0 4.0 4.0
+#pEye 40.0 40.0 40.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
 :eyecam
-	'pTo 'pEye 'pUp mlookat  | eye to up -- 
+	'pEye 'pTo 'pUp mlookat  | eye to up -- 
 	'mateye mcpy ;
 
 :initvec
 	matini
-	0.
-	1 1000.0 0.9 3.0 4.0 /. mperspective 
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'matcam mmcpy	| perspective matrix
 
@@ -239,8 +204,8 @@
 #fhit
 
 :hit | mask pos -- pos
-	-20.0 <? ( over 'fhit +! )
-	20.0 >? ( over 'fhit +! )
+	-400.0 <? ( over 'fhit +! )
+	400.0 >? ( over 'fhit +! )
 	nip ;
 	
 :rhit	
@@ -274,7 +239,7 @@
 	b@+ b> 5 3 << - +! | +z
 	
 	|------- draw
-	Shader1!
+	setshader
 	b@+ drawobjm
 	;
 	
@@ -290,7 +255,7 @@
 	;
 	
 :velrot 0.01 randmax 0.005 - ;
-:velpos 0.05 randmax 0.025 - ;
+:velpos 5.0 randmax 2.5 - ;
 	
 :+objr	
 	velpos velpos velpos |vz |vy |vx
@@ -302,9 +267,9 @@
 :+objr2
 	0 0 0 
 	velrot velrot velrot packrota
-	20.0 randmax 10.0 -	| pos z
-	20.0 randmax 10.0 - | pos y
-	20.0 randmax 10.0 - | pos x	
+	200.0 randmax 100.0 -	| pos z
+	200.0 randmax 100.0 - | pos y
+	200.0 randmax 100.0 - | pos x	
 	0 | 0 0 0 packrota
 	+obj ;
 
@@ -335,9 +300,11 @@
 
 |---------------------------		
 :ini	
-	Shader1			| load shader
+	loadshader		| load shader
 	
-	"media/obj/mario/mario.objm" loadobjm 'o1 !
+|	"media/obj/mario/mario.objm" 
+	"media/obj/tinker.objm" 
+	loadobjm 'o1 !
 	
 	initvec
 	

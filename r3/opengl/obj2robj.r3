@@ -1,6 +1,7 @@
 | Obj Model Loader to Robj
 | PHREDA 2023
 |-----------------------------------
+|MEM 512
 ^r3/win/console.r3
 ^r3/win/SDL2gfx.r3
 
@@ -81,7 +82,7 @@
 	b> 'filenames !
 	
 	0 ( ncolor <? 
-		colorl over 5 << + 8 + @ 
+		colorl over 4 << + @ 
 		here strcpylnl 'here !
 		1 + ) drop
 	
@@ -142,14 +143,16 @@
 :newvert | vert -- vert nvert
 	dup auxvert> !+ 'auxvert> !
 	auxvert> auxvert - 3 >> 1 - 
-|	1 colornow 3 << vertcolor + +!
+
+	1 colornow 3 << vertcolor + +!	| add vertex to col
 	;
 	
 :addvert, | vert --
 	searchvert -? ( drop newvert ) 
 	indexa> w!+ 'indexa> !
 	drop 
-|	1 colornow 3 << indcolor + +!
+	
+	1 colornow 3 << indcolor + +! | add index to col
 	;
 
 :savever
@@ -164,24 +167,25 @@
 	20 >> $fffff and 1 - ]uv 
 	@+ f2fp , @ neg f2fp , ;
 	
-|-------------- prev	
-:convertobj2 | --
-	mark
-	|*** find and reeplace repetitions in vertex,normal and uv!!
+:fillvertex&index
 	here 
 	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
 	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
 	dup dup 'indexa ! 'indexa> !
 	'here !
-	
+	"vertex add" .println
 	facel 
 	nface ( 1? 1 - swap
-		@+ addvert, 
-		@+ addvert,
-		@+ addvert,
-		8 + swap ) 2drop
-		
-	indexa> 'here !
+		@+ addvert, @+ addvert,	@+ addvert,
+		8 + swap 
+		) 2drop
+	indexa> 'here ! ;
+	
+|-------------- prev	
+:convertobj2 | --
+	mark
+	|*** find and reeplace repetitions in vertex,normal and uv!!
+	fillvertex&index
 	|---- generate file
 	mark
 	here 'inimem !
@@ -209,7 +213,7 @@
 	
 	here inimem - inimem 8 + d!
 	0 ( ncolor <? 
-		colorl over 5 << + 8 + @ 
+		colorl over 4 << + @ 
 		here strcpylnl 'here !
 		1 + ) drop
 
@@ -228,21 +232,7 @@
 
 	mark
 	|*** find and reeplace repetitions in vertex,normal and uv!!
-	here 
-	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
-	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
-	dup dup 'indexa ! 'indexa> !
-	'here !
-	
-	facel 
-	nface ( 1? 1 - swap
-		dup 24 + @ 'colornow !
-		@+ addvert, 
-		@+ addvert,
-		@+ addvert,
-		8 + swap ) 2drop
-		
-	indexa> 'here !
+	fillvertex&index
 	|---- generate file
 	mark
 	here 'inimem !
@@ -351,11 +341,11 @@
 |---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
-	"| F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
+	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
 	0 ( ncolor <? 
 		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
-		colorl over 5 << + 8 + @ "%w" sprint bprint
+		|colorl over 5 << + 8 + @ "%w" sprint bprint
 		1 + ) drop
 	8 sh 48 - bat 
 	|facerep "rep:%d" sprint bprint
@@ -377,10 +367,8 @@
 	xcam ycam zcam mtrans
 	
 	$007f00 SDLColor
-	objwire
-	
+	nface 10000 <? ( objwire ) drop
 	objinfo
-	
 	SDLredraw
 	
 	SDLkey
@@ -390,6 +378,7 @@
 	<f1> =? ( loadobj ) 
 	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
+	<f3> =? ( convertobj3 )
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
 	drop ;
@@ -411,9 +400,10 @@
 |	"media/obj/food/Cherries.obj" 
 |	"media/obj/food/Chicken.obj" 
 
-	"media/obj/mario/mario.obj"
+|	"media/obj/mario/mario.obj"
+|	"media/obj/lolo/tinker.obj"
+	"media/obj/tinker.obj"
 	useobj
-	
 	'main SDLshow 
 	SDLquit
 	;

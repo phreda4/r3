@@ -12,20 +12,24 @@ out vec3 color;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
-uniform mat4 MV;
 uniform vec3 LightPosition_worldspace;
+//uniform vec3 v3D,v3A,v3S;
 
 void main(){
 
 	// Light emission properties
 	// You probably want to put them as uniforms
 	vec3 LightColor = vec3(1,1,1);
-	float LightPower = 150.0f;
+	float LightPower = 100.0f;
 	
 	// Material properties
 	vec3 MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
 	vec3 MaterialAmbientColor = vec3(0.1,0.1,0.1) * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = vec3(0.3,0.3,0.3);
+
+//	vec3 MaterialDiffuseColor = v3D*texture( myTextureSampler, UV ).rgb;
+//	vec3 MaterialAmbientColor = v3A * MaterialDiffuseColor;
+//	vec3 MaterialSpecularColor = v3S ;
 
 	// Distance to the light
 	float distance = length( LightPosition_worldspace - Position_worldspace );

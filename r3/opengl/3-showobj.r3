@@ -1,6 +1,6 @@
 | OpenGL example
 | PHREDA 2023
-|M 64
+|MEM 64
 ^r3/lib/3d.r3
 ^r3/lib/gui.r3
 
@@ -42,7 +42,7 @@
 	@+ f2fp da!+ @+ f2fp da!+ @ f2fp da!+ | x y z
 	20 >> $fffff and 1 - | texture
 	24 * texl +
-	@+ f2fp db!+ @ f2fp db!+
+	@+ f2fp db!+ @ neg f2fp db!+
 	;
 
 :convertobj | "" --
