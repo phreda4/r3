@@ -129,8 +129,7 @@
 #indexa | index
 #indexa> 
 
-#colornow
-#vertcolor * 128
+#colornow -1
 #indcolor * 128
 
 :searchvert | vert -- vert nvert/-1 
@@ -143,16 +142,13 @@
 :newvert | vert -- vert nvert
 	dup auxvert> !+ 'auxvert> !
 	auxvert> auxvert - 3 >> 1 - 
-
-	1 colornow 3 << vertcolor + +!	| add vertex to col
 	;
 	
 :addvert, | vert --
 	searchvert -? ( drop newvert ) 
 	indexa> w!+ 'indexa> !
 	drop 
-	
-	1 colornow 3 << indcolor + +! | add index to col
+	1 colornow 3 << 'indcolor + +! | add index to col
 	;
 
 :savever
@@ -173,9 +169,12 @@
 	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
 	dup dup 'indexa ! 'indexa> !
 	'here !
-	"vertex add" .println
+|	"vertex add" .println
 	facel 
 	nface ( 1? 1 - swap
+		dup 24 + @ 
+|		colornow <>? ( dup pick3 "%d %d " .print )
+		'colornow ! 
 		@+ addvert, @+ addvert,	@+ addvert,
 		8 + swap 
 		) 2drop
@@ -224,9 +223,40 @@
 	;
 
 |--------------------------
+:,vf3
+	dup $fffff and f2fp ,
+	dup 20 >> $fffff and f2fp ,
+	40 >> $fffff and f2fp , ;
+	
+:,vf
+	f2fp , ;
+	
+:,material | n -- n
+	'indcolor over 3 << + @ ,		| cntindex
+	dup ]Kd@ ,vf3
+	dup ]Ka@ ,vf3	
+	dup ]Ke@ ,vf3
+	dup ]Ks@ ,vf3
+	dup ]Ns@ ,vf
+	dup ]d@ ,vf
+	dup ]Ni@ drop	
+	dup ]i@ drop
+	dup ]Mkd@ ,
+	dup ]MNs@ , 
+	dup ]Mbp@ ,
+	;
+
+:,filen
+	0? ( ,c ; ) here strcpylnl 'here ! ;
+	
+:,filesimg | n -- n
+	dup ]Mkd@ ,filen
+	dup ]MNs@ ,filen
+	dup ]Mbp@ ,filen
+	;
+
 :convertobj3 | --
 	0 ( ncolor <? 
-		0 over 3 << 'vertcolor + !
 		0 over 3 << 'indcolor + !
 		1 + ) drop
 
@@ -246,10 +276,10 @@
 	0 , 		| uv>		+24
 	0 ,			| index> 	+28
 	
-	0 ( ncolor <? 
-		'vertcolor over 3 << + ,	| cntvert
-		'indcolor over 3 << + ,		| cntindex
-		1 + ) drop
+	auxvert> auxvert - 3 >> ,		| cnt vert
+	indexa> indexa - 1 >> ,			| cntindex
+	
+	0 ( ncolor <? ,material 1 + ) drop	| Materiales
 	
 	here inimem - inimem 16 + d!
 	auxvert ( auxvert> <? @+ savever ) drop
@@ -261,10 +291,8 @@
 	indexa ( indexa> <? w@+ ,w ) drop
 	
 	here inimem - inimem 8 + d!
-	0 ( ncolor <? 
-		colorl over 5 << + 8 + @ 
-		here strcpylnl 'here !
-		1 + ) drop
+	
+	0 ( ncolor <? ,filesimg 1 + ) drop | texture
 
 	fname 'fpath "%s/%sm" sprint savemem
 	empty
@@ -341,11 +369,11 @@
 |---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
-	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
+	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F4:OBJ3 F10:CENTER" bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
 	0 ( ncolor <? 
 		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
-		|colorl over 5 << + 8 + @ "%w" sprint bprint
+		colorl over 4 << + @ "%w" sprint bprint
 		1 + ) drop
 	8 sh 48 - bat 
 	|facerep "rep:%d" sprint bprint
@@ -378,7 +406,7 @@
 	<f1> =? ( loadobj ) 
 	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
-	<f3> =? ( convertobj3 )
+	<f4> =? ( convertobj3 )
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
 	drop ;
@@ -400,9 +428,11 @@
 |	"media/obj/food/Cherries.obj" 
 |	"media/obj/food/Chicken.obj" 
 
+	"media/obj/cube.obj"
+|	"media/obj/food/Lollipop.obj"
 |	"media/obj/mario/mario.obj"
 |	"media/obj/lolo/tinker.obj"
-	"media/obj/tinker.obj"
+|	"media/obj/tinker.obj"
 	useobj
 	'main SDLshow 
 	SDLquit

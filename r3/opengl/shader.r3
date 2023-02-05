@@ -14,7 +14,19 @@
 #frag
 #vert
 
-#t		| auc var
+#t		| aux var
+
+:shCheckErr | ss --
+	dup GL_COMPILE_STATUS 't glGetShaderiv
+	t 1? ( 2drop ; ) drop
+	512 0 here glGetShaderInfoLog
+	here .println ;
+	
+:prCheckErr | ss --
+	dup GL_LINK_STATUS 't glGetProgramiv
+	t 1? ( 2drop ; ) drop
+	512 't here glGetProgramInfoLog
+	here .println ;
 
 | load shader/vertex shader and return id
 | free memory used - return 0 if fail
@@ -31,21 +43,24 @@
 	GL_VERTEX_SHADER glCreateShader dup 
 	dup 1 here 0 glShaderSource
 	dup glCompileShader 
-|	dup GL_COMPILE_STATUS 't glGetShaderiv t 0? ( 2drop 0 ; ) drop
+	dup GL_COMPILE_STATUS 't glGetShaderiv 
+	t 0? ( drop shCheckErr 0 ; ) drop
 	'vert !
 	
 	GL_FRAGMENT_SHADER glCreateShader dup
 	dup 1 here 8 + 0 glShaderSource
 	dup glCompileShader
-|	dup GL_COMPILE_STATUS 't glGetShaderiv t 0? ( 2drop 0 ; ) drop
+	dup GL_COMPILE_STATUS 't glGetShaderiv 
+	t 0? ( drop shCheckErr 0 ; ) drop
 	'frag ! 
 	
 	glCreateProgram |'programID !
 	dup vert glAttachShader
 	dup frag glAttachShader
 	dup glLinkProgram 
-|	dup glValidateProgram
-|	dup GL_LINK_STATUS 't glGetProgramiv t 0? ( 2drop 0 ; ) drop
+	dup glValidateProgram
+	dup GL_LINK_STATUS 't glGetProgramiv 
+	t 0? ( drop prCheckErr 0 ; ) drop
 	
 	vert glDeleteShader
 	frag glDeleteShader
@@ -110,12 +125,15 @@
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	t ;	
 	
+	
+#cc * 80
+#cc> 'cc
 
 ::glColorTex | col -- texid
+	cc> d!+ 'cc> ! | store color (here)
 	1 't glGenTextures
     GL_TEXTURE_2D t glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE here glTexImage2D
-	, | store color (here)
+	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE cc> 4 - glTexImage2D
 	t ;
 	
 |*** need code	
@@ -145,12 +163,23 @@
 #shidu_world	|uniform mat4 u_world;
 #shidu_viewWorldPosition |uniform vec3 u_viewWorldPosition;
 
-#shaderid
+##shaderid
+
+##IDpos
+##IDnor
+##IDuv
+##IDtan
+##IDcol
 
 ::loadshader | --
 	"r3/opengl/shader/mtl.frag" 
 	"r3/opengl/shader/mtl.vert" 	
 	loadShaders | "fragment" "vertex" -- idprogram
+	dup "u_projection" glGetUniformLocation 'shidu_projection !
+	dup "u_view" glGetUniformLocation 'shidu_view !
+	dup "u_world" glGetUniformLocation 'shidu_world !
+	dup "u_viewWorldPosition" glGetUniformLocation 'shidu_viewWorldPosition !
+
 	dup "diffuse" glGetUniformLocation 'shiddiffuse !
 	dup "ambient" glGetUniformLocation 'shidambient !
 	dup "emissive" glGetUniformLocation 'shidemissive !
@@ -164,56 +193,68 @@
 	
 	dup "u_lightDirection" glGetUniformLocation 'shidu_lightDirection !
 	dup "u_ambientLight" glGetUniformLocation 'shidu_ambientLight !
-
-	dup "u_projection" glGetUniformLocation 'shidu_projection !
-	dup "u_view" glGetUniformLocation 'shidu_view !
-	dup "u_world" glGetUniformLocation 'shidu_world !
-	dup "u_viewWorldPosition" glGetUniformLocation 'shidu_viewWorldPosition !
-	'shaderid ! ;
+	
+	dup "a_position" glGetAttribLocation 'IDpos !
+	dup "a_normal" glGetAttribLocation 'IDnor !
+	dup "a_texcoord" glGetAttribLocation 'IDuv !
+	dup "a_tangent" glGetAttribLocation 'IDtan !
+	dup "a_color" glGetAttribLocation 'IDcol !
+	'shaderid ! 
+	;
 	
 #fdiffuse * 12		|uniform vec3 diffuse;
 #fambient * 12		|uniform vec3 ambient;
 #femissive * 12		|uniform vec3 emissive;
 #fspecular * 12		|uniform vec3 specular;
-#fshininess 0			|uniform float shininess;
-#fopacity 0				|uniform float opacity;
+#fshininess [ 0	]	|uniform float shininess;
+#fopacity [ 0 ]		|uniform float opacity;
 
-#fdiffuseMap  	|uniform sampler2D diffuseMap;
-#fspecularMap	|uniform sampler2D specularMap;
-#fnormalMap		| uniform sampler2D normalMap;
+#fdiffuseMap [ 0 ]  |uniform sampler2D diffuseMap;
+#fspecularMap [ 0 ]	|uniform sampler2D specularMap;
+#fnormalMap [ 0 ]	| uniform sampler2D normalMap;
 
-#fu_lightDirection * 12 |uniform vec3 u_lightDirection;
-#fu_ambientLight * 12	|uniform vec3 u_ambientLight;
+##fu_lightDirection * 12	|uniform vec3 u_lightDirection;
+##fu_ambientLight * 12		|uniform vec3 u_ambientLight;
 
-#fu_projection * 64			|uniform mat4 u_projection;
-#fu_view * 64				|uniform mat4 u_view;
-#fu_world * 64				|uniform mat4 u_world;
-#fu_viewWorldPosition * 12	|uniform vec3 u_viewWorldPosition;
+##fu_projection * 64		|uniform mat4 u_projection;
+##fu_view * 64				|uniform mat4 u_view;
+##fu_world * 64				|uniform mat4 u_world;
+##fu_viewWorldPosition * 12	|uniform vec3 u_viewWorldPosition;
 	
-::setshader | --
-	shaderid glUseProgram
+::setshader | src --
+	|dup >a 'fdiffuse swap 17 dmove |
+	>a
 
-	shiddiffuse 1 'fdiffuse glUniform3fv
-	shidambient 1 'fambient glUniform3fv
-	shidemissive 1 'femissive glUniform3fv
-	shidspecular 1 'fspecular glUniform3fv
-	shidshininess 1 'fspecular glUniform1fv
-	shidopacity 1 'fspecular glUniform1fv
+	shiddiffuse 1 a> glUniform3fv 12 a+
+	shidambient 1 a> glUniform3fv 12 a+
+	shidemissive 1 a> glUniform3fv 12 a+
+	shidspecular 1 a> glUniform3fv 12 a+
+	shidshininess 1 a> glUniform1fv 4 a+
+	shidopacity 1 a> glUniform1fv 4 a+
+
+	shiddiffuseMap 0 glUniform1i
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D da@+ glBindTexture 
+	
+	shidspecularMap 1 glUniform1i
+	GL_TEXTURE0 1 + glActiveTexture
+	GL_TEXTURE_2D da@+ glBindTexture
+	
+	shidnormalMap 2 glUniform1i
+	GL_TEXTURE0 2 + glActiveTexture
+	GL_TEXTURE_2D da@+ glBindTexture 
 	
 	shidu_lightDirection 1 'fu_lightDirection glUniform3fv
 	shidu_ambientLight 1 'fu_ambientLight glUniform3fv
 
 	shidu_projection 1 0 'fu_projection glUniformMatrix4fv 	
-	shidu_view 1 0 'fu_view glUniformMatrix4fv 	
+	shidu_view 1 0 'fu_view glUniformMatrix4fv
 	shidu_world 1 0 'fu_world glUniformMatrix4fv 	
 	shidu_viewWorldPosition 1 'fu_viewWorldPosition glUniform3fv
 
-	fdiffuseMap 0 glUniform1i
-	fspecularMap 1 glUniform1i
-	fnormalMap 2 glUniform1i
 	;
 
-#texWhite
+#texWhite 
 #texNorm
 #vec30 [ 0 0 0 ]
 #vec31 [ 1 1 1 ]
@@ -226,18 +267,18 @@
 	'fambient 'vec30 3 dmove
 	'femissive 'vec30 3 dmove
 	'fspecular 'vec31 3 dmove
-	400.0 f2fp 'fshininess !
-	1.0 f2fp 'fopacity !
+	400.0 f2fp 'fshininess d!
+	1.0 f2fp 'fopacity d!
 	
-	texWhite 'fdiffuseMap !
-	texNorm 'fnormalMap !
-	texWhite 'fspecularMap !
+	texWhite 'fdiffuseMap d!
+	texNorm 'fnormalMap d!
+	texWhite 'fspecularMap d!
 	;
 	
 |-----------------------------------------
 : 
-	$ffffffff glColorTex 'texWhite !
-	$ff7f7f glColorTex 'texNorm !
+|	$ffffffff glColorTex 'texWhite !
+|	$ff7f7f glColorTex 'texNorm !
 	'vec30 vec32fp
 	'vec31 vec32fp
 	;

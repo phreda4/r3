@@ -1,24 +1,28 @@
- precision highp float;
+#version 330 core
+//precision highp float;
 
-  varying vec3 v_normal;
-  varying vec3 v_tangent;
-  varying vec3 v_surfaceToView;
-  varying vec2 v_texcoord;
-  varying vec4 v_color;
+varying vec3 v_normal;
+varying vec3 v_tangent;
+varying vec3 v_surfaceToView;
+varying vec2 v_texcoord;
+varying vec4 v_color;
 
-  uniform vec3 diffuse;
-  uniform sampler2D diffuseMap;
-  uniform vec3 ambient;
-  uniform vec3 emissive;
-  uniform vec3 specular;
-  uniform sampler2D specularMap;
-  uniform float shininess;
-  uniform sampler2D normalMap;
-  uniform float opacity;
-  uniform vec3 u_lightDirection;
-  uniform vec3 u_ambientLight;
+uniform vec3 diffuse;
 
-  void main () {
+uniform vec3 ambient;
+uniform vec3 emissive;
+uniform vec3 specular;
+uniform float shininess;
+uniform float opacity;
+
+uniform sampler2D diffuseMap;
+uniform sampler2D specularMap;
+uniform sampler2D normalMap;
+
+uniform vec3 u_lightDirection;
+uniform vec3 u_ambientLight;
+
+void main () {
     vec3 normal = normalize(v_normal) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
     vec3 tangent = normalize(v_tangent) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
     vec3 bitangent = normalize(cross(normal, tangent));

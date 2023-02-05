@@ -15,7 +15,7 @@
 	( swap c@+ 1? 
 		10 =? ( 2drop 0 swap c!+ ; )
 		13 =? ( 2drop 0 swap c!+ ; ) 
-		rot c!+ ) rot c!+ ;
+		rot c!+ ) nip swap c!+ ;
 ::strcpyln strcpylnl drop ;
 
 ::copynom | sc s1 --

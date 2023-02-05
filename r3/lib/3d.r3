@@ -49,6 +49,14 @@
 
 ::mcpyf | fmat --
 	>b mat> >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+
+::mcpyft | fmat -- ; transpose
+	>b mat> 
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	;	
 	
 ::midf | fmat --
 	>b 'mati >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;

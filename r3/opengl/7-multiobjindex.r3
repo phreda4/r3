@@ -134,6 +134,7 @@
 :drawobjm | adr --
 	8 + >a 
 	GL_TEXTURE0 glActiveTexture
+	
 	GL_TEXTURE_2D da@+ glBindTexture 
 	0 glEnableVertexAttribArray
 	4 a+ |VA
@@ -148,10 +149,7 @@
 	GL_ELEMENT_ARRAY_BUFFER da@+ glBindBuffer
 	4 a+
 	GL_TRIANGLES da@+ GL_UNSIGNED_SHORT 0 glDrawElements
-	
-	|glDrawElements(mode, end-start, type, data + start)
-	|glDrawRangeElements(mode, start, end, end-start, type, data)
-	
+
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
 	2 glDisableVertexAttribArray
@@ -279,8 +277,9 @@
 	a!+ a!+ a!+ a!+ 
 	a! ;
 
+#cntobj 
 :objrand
-	9 randmax 3 << 'o1 + @ ;
+	cntobj  randmax 3 << 'o1 + @ ;
 	
 :velrot 0.01 randmax 0.005 - ;
 :velpos 0.05 randmax 0.025 - ;
@@ -326,16 +325,19 @@
 	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
 	drop ;	
 
+
 #objs 	
-"media/obj/food/Brocolli.objm" "media/obj/food/Bellpepper.objm" "media/obj/food/Banana.objm" "media/obj/food/Apple.objm"  "media/obj/food/Crabcake.objm" "media/obj/food/Cake.objm" "media/obj/food/Carrot.objm" "media/obj/food/Cherries.objm" "media/obj/food/Chicken.objm" ( 0 )
+"media/obj/food/Brocolli.objm" "media/obj/food/Bellpepper.objm" "media/obj/food/Banana.objm" "media/obj/food/Apple.objm"  "media/obj/food/Crabcake.objm" "media/obj/food/Cake.objm" "media/obj/food/Carrot.objm" "media/obj/food/Cherries.objm" "media/obj/food/Chicken.objm" "media/obj/food/Lollipop.objm" ( 0 )
 
 |---------------------------		
 :ini	
 	Shader1			| load shader
-
+	
+	0 'cntobj !
 	'o1 >a			| load objs
 	'objs ( dup c@ 1? drop
 		dup loadobjm a!+
+		1 'cntobj +!
 		>>0 ) drop
 	
 	initvec

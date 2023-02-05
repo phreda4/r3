@@ -69,11 +69,8 @@
 
 :searchcol | str -- nro
 	0 ( ncolor <?
-		|dup "%d." .print
 		dup 4 << colorl + @ 0? ( 3drop -1 ; )
-		pick2
-		|2dup "%w %w" .println
-		=pre 1? ( 2drop nip ; )
+		pick2 =pre 1? ( 2drop nip ; )
 		2drop 1 + ) 2drop -1 ;
 
 :uface
@@ -103,30 +100,26 @@
 	
 | formato normal|texture|vertice  - 20 bits c/u 
 :face	| face nvert( v/t/n  v//n v/t  v)??
-	2 + trim
+	>>sp trim
 	facel> >b
 	| solo tres 
-	uface pack b!+
-	uface pack b!+
-   	uface pack b!+
+	uface pack b!+ uface pack b!+ uface pack b!+
 	colornow b!+
 	| manejar aca si hay cuatro
 |	4to
 	b> 'facel> !
 	;
+	
 :smoo	| 1/off
-	2 + trim
-	;
+	2 + trim ;
 :onam	| o [object name]
-	2 + trim
-	;
+	2 + trim ;
 :gman	| g [group name]
-	2 + trim
-	;
+	2 + trim ;
 
 :usmt	| usemtl [material name]
-	6 + trim
-	dup "%l" sprint 
+	>>sp trim
+	dup "%w" sprint 
 |	dup .println
 	searchcol 'colornow !
 	;
@@ -138,9 +131,9 @@
 	"vp" =pre 1? ( drop pspa ; ) drop	| param space ( u [,v] [,w] )
 	"v" =pre 1? ( drop vert ; ) drop	| vertices (x,y,z[,w=1])
 	"f" =pre 1? ( drop face ; ) drop	| face nvert( v/t/n  v//n v/t  v)??
-	"s" =pre 1? ( drop smoo ; ) drop	| 1/off
-	"o" =pre 1? ( drop onam ; ) drop	| o [object name]
-	"g" =pre 1? ( drop gman ; ) drop	| g [group name]
+|	"s" =pre 1? ( drop smoo ; ) drop	| 1/off
+|	"o" =pre 1? ( drop onam ; ) drop	| o [object name]
+|	"g" =pre 1? ( drop gman ; ) drop	| g [group name]
 	"mtllib" =pre 1? ( drop ; ) drop	| mtllib [external .mtl file name]
 	"usemtl" =pre 1? ( drop usmt ; ) drop	| usemtl [material name]
 	;
@@ -159,25 +152,39 @@
 #colkd * 1024
 #colks * 1024
 #colke * 1024
-#colMapKd * 1024
-#colMapNs * 1024
-#colMapBp * 1024
 #colNs * 1024
 #colNi * 1024
 #cold * 1024
 #colI * 1024
+#colMapKd * 1024
+#colMapNs * 1024
+#colMapBp * 1024
+
 
 :n]Ka! colornow 3 << 'colka + ! ;
 :n]Kd! colornow 3 << 'colkd + ! ;
 :n]Ks! colornow 3 << 'colks + ! ;
 :n]Ke! colornow 3 << 'colke + ! ;
-:n]Mkd! colornow 3 << 'colMapKd + ! ;
-:n]MNs! colornow 3 << 'colMapNs + ! ;
-:n]Mbp! colornow 3 << 'colMapBp + ! ;
 :n]Ns! colornow 3 << 'colNs + ! ;
 :n]Ni! colornow 3 << 'colNi + ! ;
 :n]d! colornow 3 << 'cold + ! ;
 :n]i! colornow 3 << 'colI + ! ;
+:n]Mkd! colornow 3 << 'colMapKd + ! ;
+:n]MNs! colornow 3 << 'colMapNs + ! ;
+:n]Mbp! colornow 3 << 'colMapBp + ! ;
+
+::]Ka@ 3 << 'colka + @ ;
+::]Kd@ 3 << 'colkd + @ ;
+::]Ks@ 3 << 'colks + @ ;
+::]Ke@ 3 << 'colke + @ ;
+::]Ns@ 3 << 'colNs + @ ;
+::]Ni@ 3 << 'colNi + @ ;
+::]d@ 3 << 'cold + @ ;
+::]i@ 3 << 'colI + @ ;
+::]Mkd@ 3 << 'colMapKd + @ ;
+::]MNs@ 3 << 'colMapNs + @ ;
+::]Mbp@ 3 << 'colMapBp + @ ;
+
 
 :parseV | adr -- adr val
 	>>sp trim
@@ -217,15 +224,14 @@
 	"map_Ns" =pre 1? ( drop >>sp trim dup n]Mns! ; ) drop
 	"map_bump " =pre 1? ( drop >>sp trim dup n]Mbp! ; ) drop
 	;
-:a	
-	"map_Ka" =pre 1? ( drop ; ) drop
-	"map_Ks" =pre 1? ( drop ; ) drop
-	"map_d" =pre 1? ( drop ; ) drop
-	"bump" =pre 1? ( drop ; ) drop
-	"disp" =pre 1? ( drop ; ) drop
-	"decal" =pre 1? ( drop ; ) drop
-	"Tr" =pre 1? ( drop ; ) drop | 1-d	
-	;
+	
+|	"map_Ka" =pre 1? ( drop ; ) drop
+|	"map_Ks" =pre 1? ( drop ; ) drop
+|	"map_d" =pre 1? ( drop ; ) drop
+|	"bump" =pre 1? ( drop ; ) drop
+|	"disp" =pre 1? ( drop ; ) drop
+|	"decal" =pre 1? ( drop ; ) drop
+|	"Tr" =pre 1? ( drop ; ) drop | 1-d	
 
 :notmtl
 	"error, not MTL!" .println
@@ -242,12 +248,10 @@
 
 |--------- contar elementos y cargar mtl
 :mtli	| mtllib [external .mtl file name]
-	6 + trim
-	dup 'path
-	"%s%l" sprint
+	>>sp trim
+	dup 'path "%s%l" sprint
 	here dup 'textmtl !
-	swap
-	load 0 swap c!+ 'here !
+	swap load 0 swap c!+ 'here !
 	;
 
 ::cnt/
