@@ -180,48 +180,6 @@
 		) 2drop
 	indexa> 'here ! ;
 	
-|-------------- prev	
-:convertobj2 | --
-	mark
-	|*** find and reeplace repetitions in vertex,normal and uv!!
-	fillvertex&index
-	|---- generate file
-	mark
-	here 'inimem !
-	| cnt partes
-	ncolor $ff and 8 << | cnt colores
-	$02 or ,q			| tipo 2 - indices
-	0 ,			| filenames +8
-	
-	0 ,			| VA		+12
-	0 , 		| vertex>	+16
-	0 , 		| normal>	+20
-	0 , 		| uv>		+24
-	0 ,			| index> 	+28
-	auxvert> auxvert - 3 >> ,		| cntvert
-	indexa> indexa - 1 >> ,			| cntindex
-	
-	here inimem - inimem 16 + d!
-	auxvert ( auxvert> <? @+ savever ) drop
-	here inimem - inimem 20 + d!
-	auxvert ( auxvert> <? @+ savenor ) drop
-	here inimem - inimem 24 + d!
-	auxvert ( auxvert> <? @+ saveuv ) drop
-	here inimem - inimem 28 + d!
-	indexa ( indexa> <? w@+ ,w ) drop
-	
-	here inimem - inimem 8 + d!
-	0 ( ncolor <? 
-		colorl over 4 << + @ 
-		here strcpylnl 'here !
-		1 + ) drop
-
-	fname 'fpath "%s/%sm" sprint savemem
-	empty
-	
-	empty	
-	;
-
 |--------------------------
 :,vf3
 	dup $fffff and f2fp ,
@@ -232,30 +190,36 @@
 	f2fp , ;
 	
 :,material | n -- n
-	'indcolor over 3 << + @ ,		| cntindex
-	dup ]Kd@ ,vf3
-	dup ]Ka@ ,vf3	
-	dup ]Ke@ ,vf3
-	dup ]Ks@ ,vf3
-	dup ]Ns@ ,vf
-	dup ]d@ ,vf
+	'indcolor over 3 << + @ ,		| cntindex +0
+	dup ]Kd@ ,vf3	| diffuse color +4
+	dup ]Ka@ ,vf3	| ambient color +16
+	dup ]Ke@ ,vf3	| emissive +28
+	dup ]Ks@ ,vf3	| specular	+40
+	dup ]Ns@ ,vf	| shininess +52
+	dup ]d@ ,vf		| opacity	+56
 	dup ]Ni@ drop	
 	dup ]i@ drop
-	dup ]Mkd@ ,
-	dup ]MNs@ , 
-	dup ]Mbp@ ,
-	;
+	dup ]Mkd@ ,		| diffuse Map { 255 255 255 255} +60
+	dup ]MNs@ , 	| especular Map { 255 255 255 255} +64
+	dup ]Mbp@ ,		| normal Map { 127 127 255 0 } +68
+	; | +72
 
-:,filen
-	0? ( ,c ; ) here strcpylnl 'here ! ;
+:namenmap | n --
+	72 * 40 + inimem + ;
+
+:,filen | "" -- adri
+	0? ( dup ,c ; ) 
+	here strcpylnl 
+	here swap 'here ! 
+	inimem - ;
 	
 :,filesimg | n -- n
-	dup ]Mkd@ ,filen
-	dup ]MNs@ ,filen
-	dup ]Mbp@ ,filen
+	dup ]Mkd@ ,filen over namenmap 60 + d!
+	dup ]MNs@ ,filen over namenmap 64 + d!
+	dup ]Mbp@ ,filen over namenmap 68 + d!
 	;
 
-:convertobj3 | --
+:convertobj2 | --
 	0 ( ncolor <? 
 		0 over 3 << 'indcolor + !
 		1 + ) drop
@@ -269,16 +233,16 @@
 	| cnt partes
 	ncolor $ff and 8 << | cnt colores
 	$02 or ,q			| tipo 2 - indices
-	0 ,			| filenames +8
+	0 ,			| filenames +8 | not used <<<
 	0 ,			| VA		+12
 	0 , 		| vertex>	+16
 	0 , 		| normal>	+20
 	0 , 		| uv>		+24
 	0 ,			| index> 	+28
 	
-	auxvert> auxvert - 3 >> ,		| cnt vert
-	indexa> indexa - 1 >> ,			| cntindex
-	
+	auxvert> auxvert - 3 >> ,		| cnt vert +32
+	indexa> indexa - 1 >> ,			| cntindex +36
+	| +40
 	0 ( ncolor <? ,material 1 + ) drop	| Materiales
 	
 	here inimem - inimem 16 + d!
@@ -290,9 +254,10 @@
 	here inimem - inimem 28 + d!
 	indexa ( indexa> <? w@+ ,w ) drop
 	
-	here inimem - inimem 8 + d!
+	|--- old format
+	here inimem - inimem 8 + d! | start string
 	
-	0 ( ncolor <? ,filesimg 1 + ) drop | texture
+	0 ( ncolor <? ,filesimg 1 + ) drop | texture names
 
 	fname 'fpath "%s/%sm" sprint savemem
 	empty
@@ -369,7 +334,7 @@
 |---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
-	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F4:OBJ3 F10:CENTER" bprint
+	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
 	0 ( ncolor <? 
 		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
@@ -406,7 +371,6 @@
 	<f1> =? ( loadobj ) 
 	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
-	<f4> =? ( convertobj3 )
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
 	drop ;
@@ -428,8 +392,8 @@
 |	"media/obj/food/Cherries.obj" 
 |	"media/obj/food/Chicken.obj" 
 
-	"media/obj/cube.obj"
-|	"media/obj/food/Lollipop.obj"
+|	"media/obj/cube.obj"
+	"media/obj/food/Lollipop.obj"
 |	"media/obj/mario/mario.obj"
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"

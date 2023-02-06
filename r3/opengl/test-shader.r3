@@ -172,8 +172,8 @@
 ##IDcol
 
 ::loadshader | --
-	"r3/opengl/shader/mtl.frag" 
-	"r3/opengl/shader/mtl.vert" 	
+	"r3/opengl/shader/mtl-test.frag" 
+	"r3/opengl/shader/mtl-test.vert" 	
 	loadShaders | "fragment" "vertex" -- idprogram
 	dup "u_projection" glGetUniformLocation 'shidu_projection !
 	dup "u_view" glGetUniformLocation 'shidu_view !

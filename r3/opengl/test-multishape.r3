@@ -11,7 +11,7 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
-^r3/opengl/shader.r3
+^r3/opengl/test-shader.r3
 
 | opengl Constant
 #GL_ARRAY_BUFFER $8892

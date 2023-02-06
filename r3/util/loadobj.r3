@@ -110,12 +110,9 @@
 	b> 'facel> !
 	;
 	
-:smoo	| 1/off
-	2 + trim ;
-:onam	| o [object name]
-	2 + trim ;
-:gman	| g [group name]
-	2 + trim ;
+|:smoo	2 + trim ;
+|:onam	2 + trim ;
+|:gman	2 + trim ;
 
 :usmt	| usemtl [material name]
 	>>sp trim
@@ -160,8 +157,7 @@
 #colMapNs * 1024
 #colMapBp * 1024
 
-
-:n]Ka! colornow 3 << 'colka + ! ;
+:n]Ka! colornow 3 << 'colka + ! ; 
 :n]Kd! colornow 3 << 'colkd + ! ;
 :n]Ks! colornow 3 << 'colks + ! ;
 :n]Ke! colornow 3 << 'colke + ! ;
@@ -212,17 +208,17 @@
 :parselinem
 	|dup "%l" .println
 	"newmtl " =pre 1? ( drop newmtl ; ) drop
-	"Ka" =pre 1? ( drop parseV3 n]Ka! ; ) drop
-	"Kd" =pre 1? ( drop parseV3 n]Kd! ; ) drop
-	"Ks" =pre 1? ( drop parseV3 n]Ks! ; ) drop
-	"Ke" =pre 1? ( drop parseV3 n]Ke! ; ) drop
-	"Ni" =pre 1? ( drop parseV n]Ni! ; ) drop
-	"Ns" =pre 1? ( drop parseV n]Ns! ; ) drop	
-	"d " =pre 1? ( drop parseV n]d! ; ) drop
-	"illum" =pre 1? ( drop parseV n]i! ; ) drop
-	"map_Kd" =pre 1? ( drop >>sp trim dup n]Mkd! ; ) drop
-	"map_Ns" =pre 1? ( drop >>sp trim dup n]Mns! ; ) drop
-	"map_bump " =pre 1? ( drop >>sp trim dup n]Mbp! ; ) drop
+	"Ka" =pre 1? ( drop parseV3 n]Ka! ; ) drop	| ambient color
+	"Kd" =pre 1? ( drop parseV3 n]Kd! ; ) drop	| diffuse color
+	"Ks" =pre 1? ( drop parseV3 n]Ks! ; ) drop	| specular
+	"Ke" =pre 1? ( drop parseV3 n]Ke! ; ) drop	| emissive
+	"Ni" =pre 1? ( drop parseV n]Ni! ; ) drop	| optical density*
+	"Ns" =pre 1? ( drop parseV n]Ns! ; ) drop	| shininess
+	"d " =pre 1? ( drop parseV n]d! ; ) drop	| opacity
+	"illum" =pre 1? ( drop parseV n]i! ; ) drop | illumination
+	"map_Kd" =pre 1? ( drop >>sp trim dup n]Mkd! ; ) drop | diffuse Map { 255 255 255 255}
+	"map_Ns" =pre 1? ( drop >>sp trim dup n]Mns! ; ) drop | especular Map { 255 255 255 255}
+	"map_bump " =pre 1? ( drop >>sp trim dup n]Mbp! ; ) drop | normal Map { 127 127 255 0 }
 	;
 	
 |	"map_Ka" =pre 1? ( drop ; ) drop
