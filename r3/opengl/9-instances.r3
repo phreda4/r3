@@ -9,6 +9,7 @@
 
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
+^r3/win/sdl2gfx.r3
 
 ^r3/opengl/shaderobj.r3
 
@@ -38,6 +39,12 @@
 	;	
 	
 :glend
+|	programID glDeleteProgram
+|	1 'VertexArrayID glDeleteVertexArrays
+|	1 'uvbuffer glDeleteBuffers
+|	1 'vertexbuffer glDeleteBuffers
+|	1 'normalbuffer glDeleteBuffers
+|	1 'TextureID glDeleteTextures
     SDL_Quit ;
 
 |-------------------------------------
@@ -50,7 +57,7 @@
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 0.0 40.0
+#pEye 0.0 0.0 0.3
 #pTo 0 0 0
 #pUp 0 1.0 0
 
@@ -75,76 +82,27 @@
 
 
 |--------------	
-#o1 * 80
-#arrayobj 0 0
-#fhit
+#rock 	
+#xm #ym
+#rx #ry
 
-:hit | mask pos -- pos
-	-80.0 <? ( over 'fhit +! )
-	90.0 >? ( over 'fhit +! )
-	nip ;
-	
-:rhit	
-	fhit 
-	%1 and? ( b> 8 + dup @ neg swap ! )
-	%10 and? ( b> 16 + dup @ neg swap ! )
-	%100 and? ( b> 24 + dup @ neg swap !  )
-	drop ;
-	
-:objexec | adr -- 
-	dup >b
-	|------- rot+pos obj
-	0 'fhit ! 
+:renderobj
 	matini 
-	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
+	rx ry 0 packrota
+	0 0 0 mrpos
 	'fmodel mcpyf | model matrix
-	
-	|------- refresh & hit
-	4 3 << + >b rhit
-	b@+ b> 5 3 << - dup @ rot +rota swap !
-	b@+ b> 5 3 << - +! | +x
-	b@+ b> 5 3 << - +! | +y
-	b@+ b> 5 3 << - +! | +z
 	
 	|------- draw
 	startshader
 	'fprojection shadercam
 	'flpos shaderlight
-	b@+ drawobjm
+	rock drawobjm
+	
+
 	;
-	
-:+obj | obj vz vy vx vrzyx z y x rzyx --
-	'objexec 'arrayobj p!+ >a 
-	a!+ a!+ a!+ a!+ 
-	a!+ a!+ a!+ a!+ 
-	a! ;
-
-#cntobj 
-:objrand
-	cntobj randmax 3 << 'o1 + @ ;
-	
-:velrot 0.01 randmax 0.005 - ;
-:velpos 0.5 randmax 0.25 - ;
-	
-:+objr	
-	velpos velpos velpos |vz |vy |vx
-	velrot velrot velrot packrota |vrz |vry |vrx
-	0 0 0 
-	0 | 0 0 0 packrota
-	+obj ;
-
-:+objr2
-	0 0 0 
-	velrot velrot velrot packrota
-	2.0 randmax 1.0 -	| pos z
-	2.0 randmax 1.0 - | pos y
-	2.0 randmax 1.0 - | pos x	
-	0 | 0 0 0 packrota
-	+obj ;
+		
 
 |------ vista
-#xm #ym
-#rx #ry
 
 :dnlook
 	SDLx SDLy 'ym ! 'xm ! ;
@@ -160,14 +118,12 @@
 	'dnlook 'movelook onDnMove
 
 	$4100 glClear | color+depth
-	'arrayobj p.draw
+|	'arrayobj p.draw
+	renderobj
 
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( 50 ( 1? 1 - objrand +objr ) drop ) 
-	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
-	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
 	<up> =? ( 0.5 'pEye +! eyecam )
 	<dn> =? ( -0.5 'pEye +! eyecam )
@@ -176,35 +132,22 @@
 	<a> =? ( 0.5 'pEye 16 + +! eyecam )
 	<d> =? ( -0.5 'pEye 16 + +! eyecam )
 
-	<esp> =? ( objrand 0 0 0 0 0 0.0 0.0 0 +obj )
 	drop ;	
-
-
-#objs 	
-"media/obj/mario/mario.objm"
-|"media/obj/rock.objm"
-|"media/obj/food/Lollipop.objm"
- ( 0 )
 
 |---------------------------		
 :ini	
 	loadshader			| load shader
-	0 'cntobj !
-	'o1 >a			| load objs
-	'objs ( dup c@ 1? drop
-		dup loadobjm a!+
-		1 'cntobj +!
-		>>0 ) drop
+	
+|	"media/obj/rock.objm" 
+|	"media/obj/mario/mario.objm"
+	"media/obj/food/Lollipop.objm"
+	loadobjm 'rock !
+
 	initvec
-	1000 'arrayobj p.ini 
 |	.cls	
 	cr cr glinfo
 	"<esc> - Exit" .println
-	"<f1> - 50 obj moving" .println
-	"<f2> - 50 obj static" .println
-	"<esp> - 1 obj moving" .println	
-	
-|	 o1 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj 
+
 	;
 	
 |----------- BOOT

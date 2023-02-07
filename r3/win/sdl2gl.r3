@@ -48,6 +48,7 @@
 
 #sys-glClear
 #sys-glDrawElements
+#sys-glDrawRangeElements
 #sys-glDrawArrays
 #sys-glGenTextures
 
@@ -93,6 +94,7 @@
 ::glEnableVertexAttribArray sys-glEnableVertexAttribArray sys1 drop ;
 ::glVertexAttribPointer sys-glVertexAttribPointer sys6 drop ;
 ::glDrawElements sys-glDrawElements sys4 drop ;
+::glDrawRangeElements sys-glDrawRangeElements sys6 drop ;
 ::glDisableVertexAttribArray sys-glDisableVertexAttribArray sys1 drop ;
 ::glDeleteProgram sys-glDeleteProgram sys1 drop ;
 ::glIsProgram sys-glIsProgram sys1 ;
@@ -193,6 +195,7 @@
 	"glDrawArrays" SDL_GL_GetProcAddress 'sys-glDrawArrays !
 	"glClear" SDL_GL_GetProcAddress 'sys-glClear !
 	"glDrawElements" SDL_GL_GetProcAddress 'sys-glDrawElements !	
+	"glDrawRangeElements" SDL_GL_GetProcAddress 'sys-glDrawRangeElements !
 	"glGenTextures" SDL_GL_GetProcAddress 'sys-glGenTextures !
 	"glBindTexture" SDL_GL_GetProcAddress 'sys-glBindTexture !
 	"glTexImage2D" SDL_GL_GetProcAddress 'sys-glTexImage2D !	
@@ -239,6 +242,7 @@
 	$1FFF0000 dup sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
 	SDL_windows SDL_GL_CreateContext 'SDL_context !
 	1 SDL_GL_SetSwapInterval	
+
 |	SDL_GetWindowSurface 'SDL_screen !
 |	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 |	SDL_windows SDL_RaiseWindow

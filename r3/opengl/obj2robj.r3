@@ -13,15 +13,13 @@
 ^r3/util/dlgfile.r3
 
 #filename * 1024
-#cutpath ( 0 )
+#cutpath ( $2f )
 #fpath * 1024
 #fname 
 
 :getpath | 'filename 'path --
 	strcpyl 2 -
-	( dup c@ $2f <>?
-		0? ( 'fpath c! drop ; )
-		drop 1 - ) drop
+	( dup c@ $2f <>? drop 1 - ) drop
 	0 swap c!+ 'fname !
 	;
 	
@@ -208,7 +206,7 @@
 	72 * 40 + inimem + ;
 
 :,filen | "" -- adri
-	0? ( dup ,c ; ) 
+	0? ( ; ) 
 	here strcpylnl 
 	here swap 'here ! 
 	inimem - ;
@@ -393,8 +391,9 @@
 |	"media/obj/food/Chicken.obj" 
 
 |	"media/obj/cube.obj"
-	"media/obj/food/Lollipop.obj"
+|	"media/obj/food/Lollipop.obj"
 |	"media/obj/mario/mario.obj"
+	"media/obj/rock.obj"	
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
 	useobj

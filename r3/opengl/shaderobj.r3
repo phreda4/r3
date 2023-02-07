@@ -76,7 +76,6 @@
 #GL_UNSIGNED_SHORT $1403
 #GL_FALSE 0
 
-
 #GL_UNSIGNED_BYTE $1401
 
 #GL_TEXTURE $1702
@@ -122,10 +121,8 @@
     GL_TEXTURE_2D t glBindTexture
 	IMG_Load 'Surface !
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-	
 |	Surface->w isPowerOf2
 |	Surface->h isPowerOf2 or 
 |	0? ( drop  
@@ -179,24 +176,21 @@
 	dup "aNormal" glGetAttribLocation 'IDnor !
 	dup "aTexCoords" glGetAttribLocation 'IDtex !
 
-	dup "Light.position" glGetAttribLocation 'IDlpos !
-	dup "Light.ambient" glGetAttribLocation 'IDlamb !
-	dup "Light.diffuse" glGetAttribLocation 'IDldif !
-	dup "Light.specular" glGetAttribLocation 'IDlspe !
+	dup "light.position" glGetUniformLocation 'IDlpos !
+	dup "light.ambient" glGetUniformLocation 'IDlamb !
+	dup "light.diffuse" glGetUniformLocation 'IDldif !
+	dup "light.specular" glGetUniformLocation 'IDlspe !
 
-	dup "Material.ambient" glGetAttribLocation 'IDmamb !
-	dup "Material.diffuse" glGetAttribLocation 'IDmdif !
-	dup "Material.specular" glGetAttribLocation 'IDmspe !
-	dup "Material.diffuseMap" glGetAttribLocation 'IDmdifM !
-	dup "Material.specularMap" glGetAttribLocation 'IDmspeM !
-	dup "Material.shininess" glGetAttribLocation 'IDmshi !
+	dup "material.ambient" glGetUniformLocation 'IDmamb !
+	dup "material.diffuse" glGetUniformLocation 'IDmdif !
+	dup "material.specular" glGetUniformLocation 'IDmspe !
+	dup "material.diffuseMap" glGetUniformLocation 'IDmdifM !
+	dup "material.specularMap" glGetUniformLocation 'IDmspeM !
+	dup "material.shininess" glGetUniformLocation 'IDmshi !
 
 	dup "projection" glGetUniformLocation 'IDprojection !
 	dup "view" glGetUniformLocation 'IDview !
 	dup "model" glGetUniformLocation 'IDmodel !
-
-	IDmdifM 0 glUniform1i
-	IDmspeM 1 glUniform1i
 
 	'shaderid ! 
 	;
@@ -207,9 +201,9 @@
 	
 |----------------------------------------------------------
 ::shadercam | adr --
-	IDprojection 1 0 pick2 glUniformMatrix4fv 64 +
-	IDview 1 0 pick2 glUniformMatrix4fv 64 +
-	IDmodel 1 0 pick2 glUniformMatrix4fv |64 +
+	IDprojection 1 0 pick3 glUniformMatrix4fv 64 +
+	IDview 1 0 pick3 glUniformMatrix4fv 64 +
+	IDmodel 1 0 pick3 glUniformMatrix4fv |64 +
 	drop
 	;
 	
@@ -237,9 +231,12 @@
 	IDmspe 1 pick2 glUniform3fv 12 + | vec3 Material.specular;    
 	IDmshi 1 pick2 glUniform1fv 4 + | float Material.shininess;
 	4 + | opacity
+
+	IDmdifM 0 glUniform1i
 	GL_TEXTURE0 glActiveTexture | sampler2D Material.diffuseMap;
 	GL_TEXTURE_2D over d@ glBindTexture 4 +
 
+	IDmspeM 1 glUniform1i
 	GL_TEXTURE0 1 + glActiveTexture | sampler2D Material.specularMap;
 	GL_TEXTURE_2D over d@ glBindTexture |4 +
 
@@ -255,8 +252,8 @@
 	
 #fnamefull * 1024
 #fpath * 1024
-#mobj
 #cmat
+
 |	ncolor $ff and 8 << $02 or ,q			| tipo 2 - indices
 |	0 ,			| filenames +8 | not used<<
 |	0 ,			| VA		+12
@@ -267,12 +264,15 @@
 |	auxvert> auxvert - ,		| cntvert +32
 |	indexa> indexa - ,			| cntindex +36
 
-:cntvert mobj 32 + d@ ;
-:cntind mobj 36 + d@ ;
+:cntvert b> 32 + d@ ;
+:cntind b> 36 + d@ ;
 
 :loadtex | adr -- adr val
-	dup c@ 0? ( ; ) drop | need texcolor!
-	dup 'fpath "%s/%s" sprint glImgTex 	| load tex
+	dup d@ 0? ( ; ) | need texcolor!
+	b> + 
+	'fpath "%s/%s" sprint |dup .print
+	glImgTex 	| load tex
+|	dup "-->%h" .println
 	;
 	
 :loadmat | adr -- adr' 
@@ -284,39 +284,39 @@
 ::loadobjm | file -- mem
 	dup 'fnamefull strcpy
 	dup 'fpath strcpyl remname/
-	here dup 'mobj !
+	here dup >b
 	swap load here =? ( drop 0 ; ) 'here !
-	mobj @+ 
+	b> @+ 
 	dup 8 >> $ff and 'cmat ! | cant materials
 	drop | cnt | tipo
 	4 + | not used..
 	1 over glGenVertexArrays	| VA
 	dup d@ glBindVertexArray 
 	4 + | vertex>
-	dup d@ mobj + | adr vertex	
+	dup d@ b> + | adr vertex	
 	1 pick2 glGenBuffers
 	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
 	GL_ARRAY_BUFFER cntvert 12 * rot GL_STATIC_DRAW glBufferData
 	4 +	| normal>
-	dup d@ mobj +	| adr normal
+	dup d@ b> +	| adr normal
 	1 pick2 glGenBuffers
 	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
 	GL_ARRAY_BUFFER cntvert 12 * rot GL_STATIC_DRAW glBufferData
 	4 +	| uv>
-	dup d@ mobj +	| adr uv
+	dup d@ b> +	| adr uv
 	1 pick2 glGenBuffers
 	GL_ARRAY_BUFFER pick2 d@ glBindBuffer
 	GL_ARRAY_BUFFER cntvert 3 << rot GL_STATIC_DRAW glBufferData	
 	4 +	| index>
-	dup d@ mobj +	| adr index
+	dup d@ b> +	| adr index
 	1 pick2 glGenBuffers
 	GL_ELEMENT_ARRAY_BUFFER pick2 d@ glBindBuffer
 	GL_ELEMENT_ARRAY_BUFFER cntind 1 << rot GL_STATIC_DRAW glBufferData	
-	8 + | first material
+	12 + | first material
 	cmat ( 1? 1 - swap
 		loadmat
 		swap ) 2drop
-	mobj
+	b>
 	;
 
 	
@@ -331,11 +331,10 @@
 |	indexa> indexa - ,			| cntindex +36
 
 ::drawobjm | adr --
-	@+  8 >> $ff and 'cmat ! | cant materials
+	@+ 8 >> $ff and 'cmat ! | cant materials
 	>a 
 	4 a+ | no used
-	4 a+ | VA
-	
+	da@+ glBindVertexArray | VA
 	IDpos glEnableVertexAttribArray	
 	GL_ARRAY_BUFFER da@+ glBindBuffer | vertex>
 	IDpos 3 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
@@ -349,13 +348,12 @@
 	IDtex 2 GL_FLOAT GL_FALSE 0 0 glVertexAttribPointer
 	
 	GL_ELEMENT_ARRAY_BUFFER da@+ glBindBuffer | index>
-	
-	4 a+	| cntvert total
-	
-	a> 8 + shadermat | solo el 1ro
-	
-	GL_TRIANGLES da@+ GL_UNSIGNED_SHORT 0 glDrawElements
-
+	8 a+	| cntvert total
+	0 cmat ( 1? 1 - swap
+		da@+ | start cnt
+		a> shadermat 
+		GL_TRIANGLES over GL_UNSIGNED_SHORT pick4 1 << glDrawElements		
+		+ 68 a+ swap ) 2drop
 	IDtex glDisableVertexAttribArray
 	IDnor glDisableVertexAttribArray
 	IDpos glDisableVertexAttribArray
