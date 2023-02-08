@@ -148,6 +148,7 @@
 #IDpos
 #IDnor
 #IDtex
+#IDins
 
 #IDlpos | vec3 Light.position;
 #IDlamb | vec3 Light.ambient;
@@ -165,7 +166,8 @@
 #IDview			|uniform mat4 u_view;
 #IDmodel		|uniform mat4 u_world;
 
-##shaderid
+#shaderid
+#shaderidi
 
 ::loadshader | --
 	"r3/opengl/shader/mat1.fs" 
@@ -198,12 +200,51 @@
 ::startshader	
 	shaderid glUseProgram	
 	;
+
+::loadshaderi | --
+	"r3/opengl/shader/mat1ins.fs" 
+	"r3/opengl/shader/mat1ins.vs" 	
+	loadShaders | "fragment" "vertex" -- idprogram
+	0? ( drop .input ; )
+	dup "aPos" glGetAttribLocation 'IDpos !
+	dup "aNormal" glGetAttribLocation 'IDnor !
+	dup "aTexCoords" glGetAttribLocation 'IDtex !
+	dup "aInstanceMatrix" glGetAttribLocation 'IDins !
 	
+	dup "light.position" glGetUniformLocation 'IDlpos !
+	dup "light.ambient" glGetUniformLocation 'IDlamb !
+	dup "light.diffuse" glGetUniformLocation 'IDldif !
+	dup "light.specular" glGetUniformLocation 'IDlspe !
+
+	dup "material.ambient" glGetUniformLocation 'IDmamb !
+	dup "material.diffuse" glGetUniformLocation 'IDmdif !
+	dup "material.specular" glGetUniformLocation 'IDmspe !
+	dup "material.diffuseMap" glGetUniformLocation 'IDmdifM !
+	dup "material.specularMap" glGetUniformLocation 'IDmspeM !
+	dup "material.shininess" glGetUniformLocation 'IDmshi !
+
+	dup "projection" glGetUniformLocation 'IDprojection !
+	dup "view" glGetUniformLocation 'IDview !
+|	dup "model" glGetUniformLocation 'IDmodel !
+
+	'shaderidi ! 
+	;
+	
+::startshaderi	
+	shaderidi glUseProgram	
+	;	
 |----------------------------------------------------------
 ::shadercam | adr --
 	IDprojection 1 0 pick3 glUniformMatrix4fv 64 +
 	IDview 1 0 pick3 glUniformMatrix4fv 64 +
 	IDmodel 1 0 pick3 glUniformMatrix4fv |64 +
+	drop
+	;
+
+::shadercami | adr --
+	IDprojection 1 0 pick3 glUniformMatrix4fv 64 +
+	IDview 1 0 pick3 glUniformMatrix4fv 64 +
+|	IDmodel 1 0 pick3 glUniformMatrix4fv |64 +
 	drop
 	;
 	
@@ -272,7 +313,7 @@
 	b> + 
 	'fpath "%s/%s" sprint |dup .print
 	glImgTex 	| load tex
-|	dup "-->%h" .println
+	|dup "-->%h" .println
 	;
 	
 :loadmat | adr -- adr' 

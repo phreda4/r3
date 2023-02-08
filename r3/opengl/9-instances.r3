@@ -57,7 +57,7 @@
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 0.0 0.3
+#pEye 0.0 0.0 4.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
@@ -69,20 +69,20 @@
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'fprojection mcpyf	| perspective matrix
-|	'fmodel midf	| view matrix >>
 	eyecam		| eyemat
 	
 	'flpos >a
-	1.2 f2fp da!+ 20.0 f2fp da!+ 2.0 f2fp da!+ | light position
+	1.2 f2fp da!+ 6.0 f2fp da!+ 2.0 f2fp da!+ | light position
 	
-	1.0 f2fp da!+ 1.0  f2fp da!+ 1.0 f2fp da!+ | ambi
+	0.8 f2fp da!+ 0.8  f2fp da!+ 0.8 f2fp da!+ | ambi
 	0.9 f2fp da!+ 0.9 f2fp da!+ 0.9 f2fp da!+ | diffuse
 	1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ | spec
 	;
 
 
 |--------------	
-#rock 	
+#obj-rock
+#obj-lool
 #xm #ym
 #rx #ry
 
@@ -96,11 +96,9 @@
 	startshader
 	'fprojection shadercam
 	'flpos shaderlight
-	rock drawobjm
-	
-
+	obj-rock drawobjm
 	;
-		
+
 
 |------ vista
 
@@ -118,7 +116,6 @@
 	'dnlook 'movelook onDnMove
 
 	$4100 glClear | color+depth
-|	'arrayobj p.draw
 	renderobj
 
 	SDL_windows SDL_GL_SwapWindow
@@ -138,11 +135,9 @@
 :ini	
 	loadshader			| load shader
 	
-|	"media/obj/rock.objm" 
-|	"media/obj/mario/mario.objm"
-	"media/obj/food/Lollipop.objm"
-	loadobjm 'rock !
-
+	"media/obj/rock.objm" 
+	loadobjm 'obj-rock !
+	
 	initvec
 |	.cls	
 	cr cr glinfo

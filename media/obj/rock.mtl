@@ -9,4 +9,5 @@ Ks 0.007937 0.007937 0.007937
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump rock.png
+  map_Kd rock.png
+
