@@ -11,7 +11,7 @@
 ^r3/win/sdl2gl.r3
 ^r3/win/sdl2gfx.r3
 
-^r3/opengl/shaderobj.r3
+^r3/opengl/shaderobjins.r3
 
 | opengl Constant
 #GL_DEPTH_TEST $0B71
@@ -80,6 +80,57 @@
 	;
 
 
+|----------------------------------
+#arrayobj 0 0
+#fhit
+#matmem>
+
+:hit | mask pos -- pos
+	-80.0 <? ( over 'fhit +! )
+	90.0 >? ( over 'fhit +! )
+	nip ;
+	
+:rhit	
+	fhit 
+	%1 and? ( b> 8 + dup @ neg swap ! )
+	%10 and? ( b> 16 + dup @ neg swap ! )
+	%100 and? ( b> 24 + dup @ neg swap !  )
+	drop ;
+	
+:fillmat | adr -- 
+	dup >b
+	|------- rot+pos obj
+	0 'fhit ! 
+	matini 
+	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
+	matmem> mcpyf | model matrix
+	64 'matmem> +!
+	
+	|------- refresh & hit
+	4 3 << + >b rhit
+	b@+ b> 5 3 << - dup @ rot +rota swap !
+	b@+ b> 5 3 << - +! | +x
+	b@+ b> 5 3 << - +! | +y
+	b@+ b> 5 3 << - +! | +z
+	;
+	
+:+obj | vz vy vx vrzyx z y x rzyx --
+	'fillmat 'arrayobj p!+ >a 
+	a!+ a!+ a!+ a!+ 
+	a!+ a!+ a!+ a!+ 
+	;
+
+	
+:velrot 0.01 randmax 0.005 - ;
+:velpos 0.5 randmax 0.25 - ;
+	
+:+objr	
+	velpos velpos velpos |vz |vy |vx
+	velrot velrot velrot packrota |vrz |vry |vrx
+	0 0 0 
+	0 | 0 0 0 packrota
+	+obj ;
+	
 |--------------	
 #obj-rock
 #obj-lool
@@ -87,16 +138,20 @@
 #rx #ry
 
 :renderobj
-	matini 
-	rx ry 0 packrota
-	0 0 0 mrpos
-	'fmodel mcpyf | model matrix
+|--- fill matrixs
+	obj-rock matmemobj 'matmem> !	| where ?
+	
+	'arrayobj p.draw	| fill
+	
+|	obj-rock matmemobj
+|	@+ "%h " .println
 	
 	|------- draw
-	startshader
-	'fprojection shadercam
+	startshaderi
+
+	'fprojection shadercami
 	'flpos shaderlight
-	obj-rock drawobjm
+	obj-rock drawobjmi	| draw
 	;
 
 
@@ -117,7 +172,6 @@
 
 	$4100 glClear | color+depth
 	renderobj
-
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
@@ -133,12 +187,14 @@
 
 |---------------------------		
 :ini	
-	loadshader			| load shader
+	loadshaderi			| load shader
 	
-	"media/obj/rock.objm" 
-	loadobjm 'obj-rock !
+	"media/obj/rock.objm" 100 
+	loadobjmi 'obj-rock !
 	
 	initvec
+	100 'arrayobj p.ini 
+	100 ( 1? 1 - +objr ) drop 
 |	.cls	
 	cr cr glinfo
 	"<esc> - Exit" .println

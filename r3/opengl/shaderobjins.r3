@@ -70,6 +70,10 @@
 
 #GL_ARRAY_BUFFER $8892
 #GL_ELEMENT_ARRAY_BUFFER $8893
+#GL_UNIFORM_BUFFER $8A11
+#GL_DYNAMIC_COPY $88EA
+#GL_DYNAMIC_DRAW $88E8
+#GL_DYNAMIC_READ $88E9
 
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
@@ -149,6 +153,8 @@
 #IDnor
 #IDtex
 
+#IDins | mat inst
+
 #IDlpos | vec3 Light.position;
 #IDlamb | vec3 Light.ambient;
 #IDldif | vec3 Light.diffuse;
@@ -163,19 +169,21 @@
 
 #IDprojection	|uniform mat4 u_projection;
 #IDview			|uniform mat4 u_view;
-#IDmodel		|uniform mat4 u_world;
+|#IDmodel		|uniform mat4 u_world;
 
 #shaderid
+#shaderidi
 
-::loadshader | --
-	"r3/opengl/shader/mat1.fs" 
-	"r3/opengl/shader/mat1.vs" 	
+::loadshaderi | --
+	"r3/opengl/shader/mat1ins.fs" 
+	"r3/opengl/shader/mat1ins.vs" 	
 	loadShaders | "fragment" "vertex" -- idprogram
 	0? ( drop .input ; )
 	dup "aPos" glGetAttribLocation 'IDpos !
 	dup "aNormal" glGetAttribLocation 'IDnor !
 	dup "aTexCoords" glGetAttribLocation 'IDtex !
-
+	dup "aInstanceMatrix" glGetAttribLocation 'IDins ! |<<
+	
 	dup "light.position" glGetUniformLocation 'IDlpos !
 	dup "light.ambient" glGetUniformLocation 'IDlamb !
 	dup "light.diffuse" glGetUniformLocation 'IDldif !
@@ -190,23 +198,22 @@
 
 	dup "projection" glGetUniformLocation 'IDprojection !
 	dup "view" glGetUniformLocation 'IDview !
-	dup "model" glGetUniformLocation 'IDmodel !
+|	dup "model" glGetUniformLocation 'IDmodel !
 
-	'shaderid ! 
+	'shaderidi ! 
 	;
 	
-::startshader	
-	shaderid glUseProgram	
-	;
-
+::startshaderi	
+	shaderidi glUseProgram	
+	;	
 |----------------------------------------------------------
-::shadercam | adr --
+::shadercami | adr --
 	IDprojection 1 0 pick3 glUniformMatrix4fv 64 +
 	IDview 1 0 pick3 glUniformMatrix4fv 64 +
-	IDmodel 1 0 pick3 glUniformMatrix4fv |64 +
+|	IDmodel 1 0 pick3 glUniformMatrix4fv |64 +
 	drop
 	;
-
+	
 ::shaderlight | adr --
 	IDlpos 1 pick2 glUniform3fv 12 +
 	IDlamb 1 pick2 glUniform3fv 12 +
@@ -246,6 +253,9 @@
 	drop
 	;
 	
+::shaderinstance | 'adr --
+	;
+
 |-------------------------------------
 :remname/ | adr --  ; get path only
 	( dup c@ $2f <>? drop 1 - ) drop 0 swap c! ;
@@ -280,8 +290,11 @@
 	dup 64 + loadtex swap d!
 	dup 68 + loadtex swap d!
 	72 + ;
+
+#instanceCount
 	
-::loadobjm | file -- mem
+::loadobjmi | file cnt -- mem
+	'instanceCount !
 	dup 'fnamefull strcpy
 	dup 'fpath strcpyl remname/
 	here dup >b
@@ -289,7 +302,7 @@
 	b> @+ 
 	dup 8 >> $ff and 'cmat ! | cant materials
 	drop | cnt | tipo
-	4 + | not used..
+	4 + | not used..--> instance mem
 	1 over glGenVertexArrays	| VA
 	dup d@ glBindVertexArray 
 	4 + | vertex>
@@ -316,9 +329,21 @@
 	cmat ( 1? 1 - swap
 		loadmat
 		swap ) 2drop
+	here dup b> - b> 8 + d! | store the offset
+	1 over glGenBuffers |(1, &UBOInst);
+	GL_UNIFORM_BUFFER over d@ glBindBuffer
+	4 +
+	GL_UNIFORM_BUFFER 64 instanceCount * pick2 GL_DYNAMIC_DRAW glBufferData 
+	4 + | mem for count * matrix
+	64 instanceCount * + 'here !
+	|(GL_UNIFORM_BUFFER, uboInstance.size() * sizeof(UboInstanceData), uboInstance.data(), GL_DYNAMIC_DRAW);
+|	glBindBuffer(GL_UNIFORM_BUFFER, 0);		
 	b>
 	;
 
+::matmemobj | obj -- mem
+	dup 8 + d@ + ;
+ 
 	
 |	ncolor $ff and 8 << $02 or ,q			| tipo 2 - indices
 |	0 ,			| filenames +8
@@ -330,7 +355,9 @@
 |	auxvert> auxvert - ,		| cntvert +32
 |	indexa> indexa - ,			| cntindex +36
 
-::drawobjm | adr --
+
+
+::drawobjmi | adr --
 	@+ 8 >> $ff and 'cmat ! | cant materials
 	>a 
 	4 a+ | no used
@@ -352,10 +379,15 @@
 	0 cmat ( 1? 1 - swap
 		da@+ | start cnt
 		a> shadermat 
-		GL_TRIANGLES over GL_UNSIGNED_SHORT pick4 1 << glDrawElements		
+|		GL_TRIANGLES over GL_UNSIGNED_SHORT pick4 1 << glDrawElements
+
+		GL_TRIANGLES over GL_UNSIGNED_SHORT pick4 1 << instanceCount glDrawElementsInstanced
+		
 		+ 68 a+ swap ) 2drop
 	IDtex glDisableVertexAttribArray
 	IDnor glDisableVertexAttribArray
 	IDpos glDisableVertexAttribArray
 	;
+
+
 
