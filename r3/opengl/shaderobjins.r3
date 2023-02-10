@@ -98,6 +98,11 @@
 
 #GL_TRIANGLES $0004
 
+
+#GL_READ_ONLY $88B8
+#GL_WRITE_ONLY $88B9
+#GL_WRITE_WRITE $88BA
+
 |--- sdl2 surface
 |struct SDL_Surface
 |	flags           dd ? 0 dd ? 4
@@ -291,7 +296,7 @@
 	dup 68 + loadtex swap d!
 	72 + ;
 
-#instanceCount
+##instanceCount
 	
 ::loadobjmi | file cnt -- mem
 	'instanceCount !
@@ -330,19 +335,40 @@
 		loadmat
 		swap ) 2drop
 	here dup b> - b> 8 + d! | store the offset
-	1 over glGenBuffers |(1, &UBOInst);
-	GL_UNIFORM_BUFFER over d@ glBindBuffer
-	4 +
-	GL_UNIFORM_BUFFER 64 instanceCount * pick2 GL_DYNAMIC_DRAW glBufferData 
-	4 + | mem for count * matrix
-	64 instanceCount * + 'here !
-	|(GL_UNIFORM_BUFFER, uboInstance.size() * sizeof(UboInstanceData), uboInstance.data(), GL_DYNAMIC_DRAW);
-|	glBindBuffer(GL_UNIFORM_BUFFER, 0);		
+	1 over glGenBuffers |(1, &modelmartrixbuffer);
+	GL_ARRAY_BUFFER over d@ glBindBuffer | model_matrix_buffer
+	4 + 
+	GL_ARRAY_BUFFER 64 instanceCount * 0 GL_DYNAMIC_DRAW glBufferData 
+	
+	IDins 4 GL_FLOAT GL_FALSE 64 0 glVertexAttribPointer
+	IDins glEnableVertexAttribArray
+	IDins 1 glVertexAttribDivisor
+
+	IDins 1 + 4 GL_FLOAT GL_FALSE 64 16 glVertexAttribPointer
+	IDins 1 + glEnableVertexAttribArray
+	IDins 1 + 1 glVertexAttribDivisor
+
+	IDins 2 + 4 GL_FLOAT GL_FALSE 64 32 glVertexAttribPointer
+	IDins 2 + glEnableVertexAttribArray
+	IDins 2 + 1 glVertexAttribDivisor
+
+	IDins 3 + 4 GL_FLOAT GL_FALSE 64 48 glVertexAttribPointer
+	IDins 3 + glEnableVertexAttribArray
+	IDins 3 + 1 glVertexAttribDivisor
+	'here !
+|	64 instanceCount * + 'here ! | no need mem here!!
 	b>
 	;
 
-::matmemobj | obj -- mem
-	dup 8 + d@ + ;
+::matmemset | obj -- mem
+	dup 8 + d@ + 
+	GL_ARRAY_BUFFER swap d@ glBindBuffer
+	GL_ARRAY_BUFFER GL_WRITE_ONLY glMapBuffer
+	;
+::matmemun
+	GL_ARRAY_BUFFER glUnmapBuffer
+	;
+	
  
 	
 |	ncolor $ff and 8 << $02 or ,q			| tipo 2 - indices

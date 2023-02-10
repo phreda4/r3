@@ -14,6 +14,10 @@
 #sys-glGenBuffers
 #sys-glBindBuffer
 #sys-glBufferData
+
+#sys-glMapBuffer
+#sys-glUnmapBuffer
+
 #sys-glUseProgram
 #sys-glValidateProgram
 #sys-glEnableVertexAttribArray
@@ -46,6 +50,7 @@
 #sys-glViewport
 #sys-glVertexPointer
 
+
 #sys-glClear
 #sys-glDrawElements
 #sys-glDrawElementsInstanced
@@ -75,6 +80,7 @@
 #sys-glVertexAttrib2fv 
 #sys-glVertexAttrib3fv 
 #sys-glVertexAttrib4fv 
+#sys-glVertexAttribDivisor
 #sys-glBindAttribLocation 
 
 ::glCreateProgram sys-glCreateProgram sys0 ;
@@ -89,6 +95,10 @@
 ::glGenBuffers sys-glGenBuffers sys2 drop ;
 ::glBindBuffer sys-glBindBuffer sys2 drop ;
 ::glBufferData sys-glBufferData sys4 drop ;
+
+::glMapBuffer sys-glMapBuffer sys2 ;
+::glUnmapBuffer sys-glUnmapBuffer sys1 drop ;
+
 ::glClear sys-glClear sys1 drop ;
 ::glUseProgram sys-glUseProgram sys1 drop ;
 ::glValidateProgram sys-glValidateProgram sys1 drop ;
@@ -143,6 +153,7 @@
 ::glUniform2fv sys-glUniform2fv sys3 drop ;
 ::glUniform3fv sys-glUniform3fv sys3 drop ;
 ::glUniform4fv sys-glUniform4fv sys3 drop ;
+::glVertexAttribDivisor sys-glVertexAttribDivisor sys2 drop ;
 ::glUniformMatrix4fv sys-glUniformMatrix4fv sys4 drop ;
 ::glVertexAttrib1fv sys-glVertexAttrib1fv sys2 drop ;
 ::glVertexAttrib2fv sys-glVertexAttrib2fv sys2 drop ;
@@ -182,6 +193,7 @@
 	"glVertexAttrib2fv" SDL_GL_GetProcAddress 'sys-glVertexAttrib2fv !
 	"glVertexAttrib3fv" SDL_GL_GetProcAddress 'sys-glVertexAttrib3fv !
 	"glVertexAttrib4fv" SDL_GL_GetProcAddress 'sys-glVertexAttrib4fv !
+	"glVertexAttribDivisor" SDL_GL_GetProcAddress 'sys-glVertexAttribDivisor !
 	"glBindAttribLocation" SDL_GL_GetProcAddress 'sys-glBindAttribLocation !
 	"glClearColor" SDL_GL_GetProcAddress 'sys-glClearColor !
 	"glDisableVertexAttribArray" SDL_GL_GetProcAddress 'sys-glDisableVertexAttribArray !
@@ -222,6 +234,9 @@
 	"glBindBuffer" SDL_GL_GetProcAddress 'sys-glBindBuffer !
 	"glBufferData" SDL_GL_GetProcAddress 'sys-glBufferData !
 	"glVertexAttribPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribPointer !
+	"glMapBuffer" SDL_GL_GetProcAddress 'sys-glMapBuffer !
+	"glUnmapBuffer" SDL_GL_GetProcAddress 'sys-glUnmapBuffer !
+	
 	
 	"glGenVertexArrays" SDL_GL_GetProcAddress 'sys-glGenVertexArrays !
 	"glBindVertexArray" SDL_GL_GetProcAddress 'sys-glBindVertexArray !

@@ -32,7 +32,6 @@
 	
 	"test opengl" 800 600 SDLinitGL
 	
-	glInfo	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	
 	GL_LESS glDepthFunc 
@@ -87,7 +86,7 @@
 
 :hit | mask pos -- pos
 	-80.0 <? ( over 'fhit +! )
-	90.0 >? ( over 'fhit +! )
+	80.0 >? ( over 'fhit +! )
 	nip ;
 	
 :rhit	
@@ -123,11 +122,12 @@
 	
 :velrot 0.01 randmax 0.005 - ;
 :velpos 0.5 randmax 0.25 - ;
+:posxyz 40.0 randmax 20.0 - ;
 	
 :+objr	
 	velpos velpos velpos |vz |vy |vx
 	velrot velrot velrot packrota |vrz |vry |vrx
-	0 0 0 
+	posxyz posxyz posxyz 
 	0 | 0 0 0 packrota
 	+obj ;
 	
@@ -138,13 +138,12 @@
 #rx #ry
 
 :renderobj
-|--- fill matrixs
-	obj-rock matmemobj 'matmem> !	| where ?
-	
+	|--- fill matrixs
+      
+	obj-rock matmemset 'matmem> !	| where ?
 	'arrayobj p.draw	| fill
 	
-|	obj-rock matmemobj
-|	@+ "%h " .println
+	matmemun
 	
 	|------- draw
 	startshaderi
@@ -189,14 +188,16 @@
 :ini	
 	loadshaderi			| load shader
 	
-	"media/obj/rock.objm" 100 
-	loadobjmi 'obj-rock !
+	"media/obj/rock.objm" 
+|	"media/obj/mario/mario.objm" 
+	1000 loadobjmi 'obj-rock !
 	
 	initvec
-	100 'arrayobj p.ini 
-	100 ( 1? 1 - +objr ) drop 
+	1000 'arrayobj p.ini 
+	1000 ( 1? 1 - +objr ) drop 
 |	.cls	
 	cr cr glinfo
+	"1000 instances" .println
 	"<esc> - Exit" .println
 
 	;
@@ -205,6 +206,7 @@
 :
 	glinit
  	ini
+	|3 'instanceCount !
 	'main SDLshow
 	glend 
 	;	
