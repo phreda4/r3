@@ -178,6 +178,11 @@
 |-------------- sprite in tilesheet
 ::SDLspr.tilesheet | nro width height -- | 2 .25 .25
 	'vert >a
+	rot pick2 /mod | w h yn xn
+	2swap 1.0 rot / 1.0 rot / | yn xn dw dh
+	
+	
+	
 	|x1 y1 x2 y2 ************8
 	0 f2fp 0 f2fp 1.0 f2fp 1.0 f2fp 
 	12 a+ pick3 da!+ pick2 da!+
@@ -197,5 +202,20 @@
 	3drop
 	;
 
+::SDLspr.load | tw th filename -- ts
+	loadimg
+	here >a a!+ | texture
+	1.0 rot / da!+
+	1.0 swap / da!+
+	
+	2dup swap da!+ da!+ | w h 
+	0 ( h <? 
+		0 ( w <? | w h y x
+			2dup da!+ da!+
+			pick3 + ) drop 
+		over + ) drop
+	2drop 
+	here a> 'here ! 
+	;
 
 : SDLspr.tilefull ;

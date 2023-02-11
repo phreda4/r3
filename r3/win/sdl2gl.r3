@@ -39,6 +39,7 @@
 #sys-glTexParameteri
 #sys-glTexSubImage2D
 #sys-glEnable
+#sys-glDisable
 #sys-glDepthFunc
 #sys-glBlendFunc
 #sys-glDetachShader
@@ -65,6 +66,8 @@
 #sys-glEnd
 #sys-glColor4ubv
 #sys-glVertex3fv
+#sys-glTexCoord2fv
+#sys-glVertex2fv
 
 #sys-glGetUniformLocation 
 #sys-glUniform1iv 
@@ -125,6 +128,7 @@
 ::glTexParameteri sys-glTexParameteri sys3 drop ;
 ::glTexSubImage2D sys-glTexSubImage2D sys9 drop ;
 ::glEnable sys-glEnable sys1 drop ;
+::glDisable sys-glDisable sys1 drop ;
 ::glBlendFunc sys-glBlendFunc sys2 drop ;
 ::glDepthFunc sys-glDepthFunc sys1 drop ;
 ::glDetachShader sys-glDetachShader sys2 drop ;
@@ -143,6 +147,8 @@
 ::glEnd sys-glEnd sys0 drop ;
 ::glColor4ubv sys-glColor4ubv sys1 drop ;
 ::glVertex3fv sys-glVertex3fv sys1 drop ;
+::glTexCoord2fv sys-glTexCoord2fv sys1 drop ;
+::glVertex2fv sys-glVertex2fv sys1 drop ;
 
 ::glGetUniformLocation sys-glGetUniformLocation sys2 ;
 ::glUniform1iv sys-glUniform1iv sys3 drop ;
@@ -218,6 +224,7 @@
 	"glTexParameteri" SDL_GL_GetProcAddress 'sys-glTexParameteri !
 	"glTexSubImage2D" SDL_GL_GetProcAddress 'sys-glTexSubImage2D !
 	"glEnable" SDL_GL_GetProcAddress 'sys-glEnable !	
+	"glDisable" SDL_GL_GetProcAddress 'sys-glDisable !	
 	"glBlendFunc" SDL_GL_GetProcAddress 'sys-glBlendFunc !	
 	"glViewport" SDL_GL_GetProcAddress 'sys-glViewport !
 	"glDepthFunc" SDL_GL_GetProcAddress 'sys-glDepthFunc !
@@ -248,6 +255,8 @@
 	"glEnd" SDL_GL_GetProcAddress 'sys-glEnd !
 	"glColor4ubv" SDL_GL_GetProcAddress 'sys-glColor4ubv !
 	"glVertex3fv" SDL_GL_GetProcAddress 'sys-glVertex3fv !
+	"glTexCoord2fv" SDL_GL_GetProcAddress 'sys-glTexCoord2fv !
+	"glVertex2fv" SDL_GL_GetProcAddress 'sys-glVertex2fv !
 	
 |	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
