@@ -86,6 +86,14 @@
 #sys-glVertexAttribDivisor
 #sys-glBindAttribLocation 
 
+#sys-glGenFramebuffers
+#sys-glTexParameterfv
+#sys-glBindFramebuffer
+#sys-glFramebufferTexture2D
+#sys-glDrawBuffer
+#sys-glReadBuffer
+
+
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
 ::glShaderSource sys-glShaderSource sys4 drop ;
@@ -166,6 +174,13 @@
 ::glVertexAttrib3fv sys-glVertexAttrib3fv sys2 drop ;
 ::glVertexAttrib4fv sys-glVertexAttrib4fv sys2 drop ;
 ::glBindAttribLocation sys-glBindAttribLocation sys3 drop ;
+
+::glGenFramebuffers sys-glGenFramebuffers sys2 drop ;
+::glTexParameterfv sys-glTexParameterfv sys3 drop ;
+::glBindFramebuffer sys-glBindFramebuffer sys2 drop ;
+::glFramebufferTexture2D sys-glFramebufferTexture2D sys5 drop ;
+::glDrawBuffer sys-glDrawBuffer sys1 drop ;
+::glReadBuffer sys-glReadBuffer sys1 drop ;
 
 |------------------------------------------------------
 ::InitGLAPI
@@ -257,6 +272,14 @@
 	"glVertex3fv" SDL_GL_GetProcAddress 'sys-glVertex3fv !
 	"glTexCoord2fv" SDL_GL_GetProcAddress 'sys-glTexCoord2fv !
 	"glVertex2fv" SDL_GL_GetProcAddress 'sys-glVertex2fv !
+	
+	"glGenFramebuffers" SDL_GL_GetProcAddress 'sys-glGenFramebuffers !
+	"glTexParameterfv" SDL_GL_GetProcAddress 'sys-glTexParameterfv !
+	"glBindFramebuffer" SDL_GL_GetProcAddress 'sys-glBindFramebuffer !
+	"glFramebufferTexture2D" SDL_GL_GetProcAddress 'sys-glFramebufferTexture2D !
+
+	"glDrawBuffer" SDL_GL_GetProcAddress 'sys-glDrawBuffer !
+	"glReadBuffer" SDL_GL_GetProcAddress 'sys-glReadBuffer !
 	
 |	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;

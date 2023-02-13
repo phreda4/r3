@@ -66,6 +66,17 @@
 	frag glDeleteShader
 	;
 	
+	
+::shadera!i | int shader "name"  --
+	glGetAttribLocation swap glUniform1i ;
+	
+::shader!i | int shader "name"  --
+	glGetUniformLocation swap glUniform1i ;
+::shader!v3 | 'v3 shader "name" --
+	glGetUniformLocation 1 rot glUniform3fv ;
+::shader!m4 | 'm4 shader "name" --	
+	glGetUniformLocation 1 rot 0 swap glUniformMatrix4fv ;	
+	
 |--------------------------------
 
 #GL_ARRAY_BUFFER $8892
