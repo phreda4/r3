@@ -17,116 +17,6 @@
 #GL_LESS $0201
 #GL_CULL_FACE $0B44
 
-|-------------------------------------
-:glinit
-	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
-	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
-	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
-    17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
-    18 6 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MINOR_VERSION
-	20 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
-	21 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
-|	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-|	"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
-	
-	"test opengl" 800 600 SDLinitGL
-	
-	glInfo	
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable	
-	GL_LESS glDepthFunc 
-	;	
-	
-:glend
-    SDL_Quit ;
-
-|-------------------------------------
-#flpos * 12
-#flamb * 12
-#fldif * 12
-#flspe * 12
-	
-#fprojection * 64
-#fview * 64
-#fmodel * 64
-	
-#pEye 0.0 10.0 10.0
-#pTo 0 0 0
-#pUp 0 1.0 0
-
-#lightPos [ -2.0 4.0 -1.0 ]
-
-#lightSpaceMatrix * 64
-
-:eyecam
-	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
-
-
-|--------------	
-#o1 * 80
-#arrayobj 0 0
-#fhit
-
-:hit | mask pos -- pos
-	-20.0 <? ( over 'fhit +! )
-	20.0 >? ( over 'fhit +! )
-	nip ;
-
-:hitz | mask pos -- pos
-	0.0 <? ( over 'fhit +! )
-	40.0 >? ( over 'fhit +! )
-	nip ;
-	
-:rhit	
-	fhit 
-	%1 and? ( b> 8 + dup @ neg swap ! )
-	%10 and? ( b> 16 + dup @ neg swap ! )
-	%100 and? ( b> 24 + dup @ neg swap !  )
-	drop ;
-	
-:objexec | adr -- 
-	dup >b
-	|------- rot+pos obj
-	0 'fhit ! 
-	matini 
-	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
-	'fmodel mcpyf | model matrix
-	
-	|------- refresh & hit
-	4 3 << + >b rhit
-	b@+ b> 5 3 << - dup @ rot +rota swap !
-	b@+ b> 5 3 << - +! | +x
-	b@+ b> 5 3 << - +! | +y
-	b@+ b> 5 3 << - +! | +z
-	
-	|------- draw
-	'fprojection shadercam | only model mat change
-	b@+ drawobjm
-	;
-	
-:+obj | obj vz vy vx vrzyx z y x rzyx --
-	'objexec 'arrayobj p!+ >a 
-	a!+ a!+ a!+ a!+ 
-	a!+ a!+ a!+ a!+ 
-	a! ;
-
-#cntobj 
-:objrand
-	cntobj randmax 3 << 'o1 + @ ;
-	
-:velrot 0.01 randmax 0.005 - ;
-:velpos 0.5 randmax 0.25 - ;
-	
-:+objr	
-	velpos velpos velpos |vz |vy |vx
-	velrot velrot velrot packrota |vrz |vry |vrx
-	2.0 randmax 	| pos z
-	0 0 
-	0 | 0 0 0 packrota
-	+obj ;
-
-
-|---------------
 #GL_ARRAY_BUFFER $8892
 #GL_ELEMENT_ARRAY_BUFFER $8893
 
@@ -143,7 +33,47 @@
 #GL_TEXTURE0 $84C0
 #GL_TEXTURE_2D $0DE1
 
+#GL_DEPTH_COMPONENT $1902
+#GL_TEXTURE_MAG_FILTER $2800
+#GL_TEXTURE_MAX_ANISOTROPY_EXT $84FE
+#GL_TEXTURE_MAX_LEVEL $813D
+#GL_TEXTURE_MAX_LOD $813B
+#GL_TEXTURE_MIN_FILTER $2801
+#GL_TEXTURE_MIN_LOD $813A
+#GL_TEXTURE_WRAP_R $8072
+#GL_TEXTURE_WRAP_S $2802
+#GL_TEXTURE_WRAP_T $2803
+#GL_NEAREST $2600
+#GL_NEAREST_MIPMAP_LINEAR $2702
+#GL_NEAREST_MIPMAP_NEAREST $2700
+#GL_CLAMP_TO_BORDER $812D
+#GL_TEXTURE_BORDER_COLOR $1004
+#GL_FRAMEBUFFER $8D40
+#GL_DEPTH_ATTACHMENT $8D00
+#GL_TEXTURE1 $84C1
 	
+#GL_DEPTH_BUFFER_BIT $100	
+
+|-------------------------------------
+#fprojection * 64
+#fview * 64
+#fmodel * 64
+	
+#pEye 0.0 10.0 10.0
+#pTo 0 0 0
+#pUp 0 1.0 0
+
+#lightPos [ -2.0 4.0 -1.0 ]
+
+#lightSpaceMatrix * 64
+
+#near_plane [ 1.0 ]
+#far_plane [ 7.5 ]
+
+:eyecam
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
+
+
 :memfloat | cnt place --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 	
@@ -255,6 +185,36 @@
 	;
 	
 |----------------------------------------------	
+#quadVAO
+#quadVBO
+
+#quadVertices [
+	-0.8  0.0 0.0 0.0 1.0
+	-0.8 -0.8 0.0 0.0 0.0
+	 0.0  0.0 0.0 1.0 1.0
+	 0.0 -0.8 0.0 1.0 0.0
+	]
+
+:initquad
+	20 'quadVertices memfloat
+	1 'quadVAO glGenVertexArrays
+	1 'quadVBO glGenBuffers
+	quadVAO glBindVertexArray
+	GL_ARRAY_BUFFER quadVBO glBindBuffer
+	GL_ARRAY_BUFFER 20 2 << 'quadVertices GL_STATIC_DRAW glBufferData
+	0 glEnableVertexAttribArray
+	0 3 GL_FLOAT GL_FALSE 5 2 << 0 glVertexAttribPointer
+	1 glEnableVertexAttribArray
+	1 2 GL_FLOAT GL_FALSE 5 2 << 3 2 << glVertexAttribPointer
+	;
+	
+:renderquad
+	quadVAO glBindVertexArray
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	0 glBindVertexArray
+	;
+	
+|----------------------------------------------	
 #shader	
 #simpleDepthShader
 #debugDepthQuad
@@ -273,6 +233,15 @@
 	"r3/opengl/shader/debug_quad.vs"
 	loadShaders 'debugDepthQuad !
 
+	shader glUseProgram	
+	0 shader "diffuseTexture" shader!i
+	1 shader "shadowMap" shader!i
+
+	debugDepthQuad glUseProgram	
+	0 debugDepthQuad "depthMap" shader!i
+	'near_plane debugDepthQuad "near_plane" shader!f1
+	'far_plane debugDepthQuad "far_plane" shader!f1
+	
 	"media/img/wood.png" glImgTex 'woodTexture !
 	"media/img/marble.jpg" glImgTex 'marbleTexture !
 	;
@@ -284,25 +253,10 @@
 |const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 #borderColor [ 1.0 1.0 1.0 1.0 ]
 
-#GL_DEPTH_COMPONENT $1902
-#GL_TEXTURE_MAG_FILTER $2800
-#GL_TEXTURE_MAX_ANISOTROPY_EXT $84FE
-#GL_TEXTURE_MAX_LEVEL $813D
-#GL_TEXTURE_MAX_LOD $813B
-#GL_TEXTURE_MIN_FILTER $2801
-#GL_TEXTURE_MIN_LOD $813A
-#GL_TEXTURE_WRAP_R $8072
-#GL_TEXTURE_WRAP_S $2802
-#GL_TEXTURE_WRAP_T $2803
-#GL_NEAREST $2600
-#GL_NEAREST_MIPMAP_LINEAR $2702
-#GL_NEAREST_MIPMAP_NEAREST $2700
-#GL_CLAMP_TO_BORDER $812D
-#GL_TEXTURE_BORDER_COLOR $1004
-#GL_FRAMEBUFFER $8D40
-#GL_DEPTH_ATTACHMENT $8D00
-
 :initDepthMap
+	4 'borderColor memfloat
+	2 'near_plane memfloat	
+
     1 'depthMapFBO glGenFramebuffers
     1 'depthMap glGenTextures
     GL_TEXTURE_2D depthMap glBindTexture
@@ -311,7 +265,7 @@
     GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
     GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_BORDER glTexParameteri
     GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_BORDER glTexParameteri
-  
+	
     GL_TEXTURE_2D GL_TEXTURE_BORDER_COLOR 'borderColor glTexParameterfv
     
     GL_FRAMEBUFFER depthMapFBO glBindFramebuffer
@@ -319,13 +273,6 @@
     0 glDrawBuffer | none
     0 glReadBuffer | none
     GL_FRAMEBUFFER 0 glBindFramebuffer
-	
-	shader glUseProgram	
-	0 shader "diffuseTexture" shader!i
-	1 shader "shadowMap" shader!i
-
-	debugDepthQuad glUseProgram	
-	0 debugDepthQuad "depthMap" shader!i
 	;
 	
 
@@ -346,13 +293,7 @@
 |        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 |        lightSpaceMatrix = lightProjection * lightView;	
 	3 'lightPos memfloat	
-	
-	'flpos >a
-	1.2 f2fp da!+ 20.0 f2fp da!+ 2.0 f2fp da!+ | light position
-	
-	1.0 f2fp da!+ 1.0  f2fp da!+ 1.0 f2fp da!+ | ambi
-	0.9 f2fp da!+ 0.9 f2fp da!+ 0.9 f2fp da!+ | diffuse
-	1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ | spec
+
 	;
 
 #mmodel	* 64
@@ -371,14 +312,13 @@
 	GL_TEXTURE_2D marbleTexture  glBindTexture
 
 	matini 
-	$0 0.0 1.5 0.0 mrpos
-	0.8 dup dup mscale	
+	msec $ffff and 0.0 1.5 0.0 mrpos
 	'mmodel mcpyf 
 	'mmodel over "model" shader!m4
 	rendercube
 
 	matini 
-	$0 2.0 0.0 1.0 mrpos
+	$0 2.0 msec 7 << $1ffff and 1.0 mrpos
 	0.8 dup dup mscale
 	'mmodel mcpyf 
 	'mmodel over "model" shader!m4
@@ -386,14 +326,14 @@
 	
 	matini 
 	$3fff -1.0 0.0 2.0 mrpos
-	1.2 dup dup mscale
+	msec 4 << $ffff and 0.5 + dup dup mscale
 	'mmodel mcpyf 
 	'mmodel over "model" shader!m4
 	rendercube
 	drop
 	;
 
-:setrender
+:render
 	shader glUseProgram
 	
 	'fprojection shader "projection" shader!m4
@@ -403,11 +343,11 @@
 	'lightPos shader "lightPos" shader!v3
 	'lightSpaceMatrix shader "lightSpaceMatrix" shader!m4
 	
-	GL_TEXTURE0 1 + glActiveTexture
+	GL_TEXTURE1 glActiveTexture
 	GL_TEXTURE_2D depthMap glBindTexture
+	shader renderScene
 	;
-	
-#GL_DEPTH_BUFFER_BIT $100	
+
 
 :rendershadow
 	simpleDepthShader glUseProgram
@@ -416,6 +356,7 @@
 	0 0 1024 dup glViewport
 	GL_FRAMEBUFFER depthMapFBO glBindFramebuffer
 	GL_DEPTH_BUFFER_BIT glClear
+	|$4100 glClear
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D woodTexture glBindTexture
 	simpleDepthShader renderScene
@@ -424,16 +365,13 @@
 	;
 		
 |-------- debug
-#near_plane 1.0
-#far_plane 7.5
 :renderdebug
-	| debugDepthQuad glUseProgram
-	| 'near_plane debugDepthQuad "near_plane" shader!f1
-	| 'far_plane debugDepthQuad "far_plane" shader!f1
-	| GL_TEXTURE0 glActiveTexture
-	| GL_TEXTURE_2D depthMap glBindTexture
-	| renderQuad
+	debugDepthQuad glUseProgram
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D depthMap glBindTexture
+	renderQuad
 	;
+	
 |------ vista
 #xm #ym
 #rx #ry
@@ -451,24 +389,19 @@
 	gui
 	'dnlook 'movelook onDnMove
 
-	rendershadow
-
 	$4100 glClear | color+depth
 	
-	startshader
-	'flpos shaderlight
-	'arrayobj p.draw
+	rendershadow
 	
-	setrender
-	shader renderScene	
+	$4100 glClear | color+depth
+	
+	render
 	
 	renderdebug
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( objrand +objr ) 
-	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
 	<up> =? ( 0.5 'pEye +! eyecam )
 	<dn> =? ( -0.5 'pEye +! eyecam )
@@ -477,49 +410,44 @@
 	<a> =? ( 0.5 'pEye 16 + +! eyecam )
 	<d> =? ( -0.5 'pEye 16 + +! eyecam )
 
-	<esp> =? ( objrand 0 0 0 0 0 0.0 0.0 0 +obj )
 	drop ;	
-
-
-#objs 	
-|"media/obj/mario/mario.objm"
-|"media/obj/rock.objm"
-"media/obj/food/Lollipop.objm"
- ( 0 )
-
-
 	
 |---------------------------		
 :ini	
-	loadshader			| load shader
+	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
+	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
+	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+    17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
+    18 6 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MINOR_VERSION
+	20 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
+	21 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
+|	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+|	"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
+	
+	"test opengl" 800 600 SDLinitGL
+	
+	glInfo	
+	GL_DEPTH_TEST glEnable 
+|	GL_CULL_FACE glEnable	
+|	GL_LESS glDepthFunc 
+
 	initshaders
-	
-	0 'cntobj !
-	'o1 >a			| load objs
-	'objs ( dup c@ 1? drop
-		dup loadobjm a!+
-		1 'cntobj +!
-		>>0 ) drop
 	initvec
-	
-	1000 'arrayobj p.ini 
-	
 	initCube
 	initPlane
+	initQuad
 	initDepthMap
-	
-|	.cls	
-	cr cr glinfo
+
+	cr cr
 	"<esc> - Exit" .println
 	"<f1> - 1 obj moving" .println
 	"<esp> - 1 obj fix" .println	
-
 	;
 	
 |----------- BOOT
 :
-	glinit
+
  	ini
 	'main SDLshow
-	glend 
+	SDL_Quit 
 	;	

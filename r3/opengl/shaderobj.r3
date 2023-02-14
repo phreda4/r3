@@ -77,6 +77,10 @@
 ::shader!m4 | 'm4 shader "name" --	
 	glGetUniformLocation 1 rot 0 swap glUniformMatrix4fv ;	
 	
+::shader!f1
+	glGetUniformLocation 1 rot glUniform1fv ;
+
+	
 |--------------------------------
 
 #GL_ARRAY_BUFFER $8892
