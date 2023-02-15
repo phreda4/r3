@@ -57,21 +57,19 @@
 |-------------------------------------
 #fprojection * 64
 #fview * 64
-#fmodel * 64
 	
 #pEye 0.0 10.0 10.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
-#lightPos [ -2.0 4.0 -1.0 ]
+#lightPos -2.0 4.0 -1.0 
 
 #lightSpaceMatrix * 64
 
+#borderColor [ 1.0 1.0 1.0 1.0 ]
+
 #near_plane [ 1.0 ]
 #far_plane [ 7.5 ]
-
-:eyecam
-	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
 
 
 :memfloat | cnt place --
@@ -251,12 +249,9 @@
 #depthMapFBO
 #depthMap
 |const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-#borderColor [ 1.0 1.0 1.0 1.0 ]
+
 
 :initDepthMap
-	4 'borderColor memfloat
-	2 'near_plane memfloat	
-
     1 'depthMapFBO glGenFramebuffers
     1 'depthMap glGenTextures
     GL_TEXTURE_2D depthMap glBindTexture
@@ -276,27 +271,36 @@
 	;
 	
 
+:eyecam
+	'pEye 'pTo 'pUp mlookat 
+	'fview mcpyf ;
+
 :initvec
+	4 'borderColor memfloat
+	2 'near_plane memfloat	
+	
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'fprojection mcpyf	| perspective matrix
-|	'fmodel midf	| view matrix >>
 	eyecam		| eyemat
 
 
 	matini
 	'lightPos 'pTo 'pUp mlookat
-	mpush
-	-10.0 10.0 -10.0 10.0 1.0 7.5 mortho m*
+	mpush 
+	10.0 -10.0 10.0 -10.0 7.5 -1.0 mortho 
+	m*
 	'lightSpaceMatrix mcpyf
-|        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-|        lightSpaceMatrix = lightProjection * lightView;	
-	3 'lightPos memfloat	
 
 	;
 
 #mmodel	* 64
+
+:model>shader | shader --
+	'mmodel mcpyf 
+	'mmodel over "model" shader!m4
+	;
 
 :renderScene | shader --
 	GL_TEXTURE0 glActiveTexture
@@ -304,8 +308,7 @@
 
 	matini 
 	$7fff 0.0 -2.0 0.0 mrpos
-	'mmodel mcpyf 
-	'mmodel over "model" shader!m4
+	model>shader
 	renderplane
 
 	GL_TEXTURE0 glActiveTexture
@@ -313,23 +316,21 @@
 
 	matini 
 	msec $ffff and 0.0 1.5 0.0 mrpos
-	'mmodel mcpyf 
-	'mmodel over "model" shader!m4
+	model>shader
 	rendercube
 
 	matini 
 	$0 2.0 msec 7 << $1ffff and 1.0 mrpos
 	0.8 dup dup mscale
-	'mmodel mcpyf 
-	'mmodel over "model" shader!m4
+	model>shader
 	rendercube
 	
 	matini 
 	$3fff -1.0 0.0 2.0 mrpos
 	msec 4 << $ffff and 0.5 + dup dup mscale
-	'mmodel mcpyf 
-	'mmodel over "model" shader!m4
+	model>shader
 	rendercube
+	
 	drop
 	;
 
@@ -340,7 +341,7 @@
 	'fview shader "view" shader!m4
 
 	'fview 12 2 << + shader "viewPos" shader!v3  |'camera.Position = 'fview +12
-	'lightPos shader "lightPos" shader!v3
+	'lightSpaceMatrix 12 2 << + shader "lightPos" shader!v3
 	'lightSpaceMatrix shader "lightSpaceMatrix" shader!m4
 	
 	GL_TEXTURE1 glActiveTexture
@@ -355,6 +356,7 @@
 	
 	0 0 1024 dup glViewport
 	GL_FRAMEBUFFER depthMapFBO glBindFramebuffer
+	
 	GL_DEPTH_BUFFER_BIT glClear
 	|$4100 glClear
 	GL_TEXTURE0 glActiveTexture
@@ -389,14 +391,10 @@
 	gui
 	'dnlook 'movelook onDnMove
 
-	$4100 glClear | color+depth
-	
+|	$4100 glClear | color+depth
 	rendershadow
-	
 	$4100 glClear | color+depth
-	
 	render
-	
 	renderdebug
 	
 	SDL_windows SDL_GL_SwapWindow
@@ -412,9 +410,9 @@
 
 	drop ;	
 	
-|---------------------------		
-:ini	
-	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
+|----------- BOOT
+:
+ 	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
 	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
 	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
     17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
@@ -426,28 +424,28 @@
 	
 	"test opengl" 800 600 SDLinitGL
 	
-	glInfo	
+	
 	GL_DEPTH_TEST glEnable 
-|	GL_CULL_FACE glEnable	
-|	GL_LESS glDepthFunc 
+	GL_CULL_FACE glEnable	
+	GL_LESS glDepthFunc 
+
+	initvec
 
 	initshaders
-	initvec
+	
 	initCube
 	initPlane
 	initQuad
 	initDepthMap
 
-	cr cr
+	cr 
+	glInfo		
+	cr 
 	"<esc> - Exit" .println
 	"<f1> - 1 obj moving" .println
 	"<esp> - 1 obj fix" .println	
-	;
-	
-|----------- BOOT
-:
+	cr
 
- 	ini
 	'main SDLshow
 	SDL_Quit 
 	;	

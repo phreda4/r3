@@ -74,6 +74,9 @@
 	glGetUniformLocation swap glUniform1i ;
 ::shader!v3 | 'v3 shader "name" --
 	glGetUniformLocation 1 rot glUniform3fv ;
+::shader!v4 | 'v4 shader "name" --
+	glGetUniformLocation 1 rot glUniform4fv ;	
+	
 ::shader!m4 | 'm4 shader "name" --	
 	glGetUniformLocation 1 rot 0 swap glUniformMatrix4fv ;	
 	
