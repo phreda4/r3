@@ -203,17 +203,17 @@
 	;
 
 ::SDLspr.load | tw th filename -- ts
-	loadimg
+	|loadimg
 	here >a a!+ | texture
 	1.0 rot / da!+
 	1.0 swap / da!+
 	
 	2dup swap da!+ da!+ | w h 
-	0 ( h <? 
-		0 ( w <? | w h y x
-			2dup da!+ da!+
-			pick3 + ) drop 
-		over + ) drop
+|	0 ( h <? 
+|		0 ( w <? | w h y x
+|			2dup da!+ da!+
+|			pick3 + ) drop 
+|		over + ) drop
 	2drop 
 	here a> 'here ! 
 	;

@@ -92,7 +92,7 @@
 #sys-glFramebufferTexture2D
 #sys-glDrawBuffer
 #sys-glReadBuffer
-
+#sys-glPixelStorei
 
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
@@ -181,6 +181,7 @@
 ::glFramebufferTexture2D sys-glFramebufferTexture2D sys5 drop ;
 ::glDrawBuffer sys-glDrawBuffer sys1 drop ;
 ::glReadBuffer sys-glReadBuffer sys1 drop ;
+::glPixelStorei sys-glPixelStorei sys2 drop ;
 
 |------------------------------------------------------
 ::InitGLAPI
@@ -280,7 +281,7 @@
 
 	"glDrawBuffer" SDL_GL_GetProcAddress 'sys-glDrawBuffer !
 	"glReadBuffer" SDL_GL_GetProcAddress 'sys-glReadBuffer !
-	
+	"glPixelStorei" SDL_GL_GetProcAddress 'sys-glPixelStorei !
 |	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
 	

@@ -6,7 +6,8 @@ out vec4 FragColor;
 
 void main()
 {
-	//float alpha = texture(u_FontTexture, uv).a;
+//	float alpha = texture(u_FontTexture, uv).a;
+//	vec4 Fc = vec4(1,1,0.2,1);FragColor = vec4(Fc.rgb, alpha);
 	//FragColor = vec4(fgColor.rgb, alpha);
 	//FragColor = vec4(1,1,1,1);
 	FragColor = texture(u_FontTexture, uv);

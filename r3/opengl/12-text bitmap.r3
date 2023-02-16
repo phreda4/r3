@@ -53,6 +53,7 @@
 #GL_TEXTURE1 $84C1
 	
 #GL_DEPTH_BUFFER_BIT $100	
+#GL_UNPACK_ALIGNMENT $0CF5
 
 |-------------------------------------
 
@@ -61,7 +62,6 @@
 	
 #fontshader	
 #fontTexture 
-#fmscreen * 64	
 #fcolor [ 1.0 1.0 1.0 1.0 ]
 
 |---------- load img
@@ -74,6 +74,7 @@
 
 :Surface->w surface 16 + d@ ;
 :Surface->h surface 20 + d@ ;
+:Surface->p surface 24 + d@ ;
 :Surface->pixels surface 32 + @ ;
 :GLBPP 
 	surface 8 + @ 16 + c@
@@ -82,6 +83,7 @@
 	drop GL_RED ;
 
 ::glImgFnt | "" -- 
+	GL_UNPACK_ALIGNMENT 1 glPixelStorei
 	1 'fontTexture glGenTextures
     GL_TEXTURE_2D fontTexture glBindTexture IMG_Load 'Surface !
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
@@ -89,6 +91,12 @@
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	;	
 |-------------
+
+#xt 0 #yt 0 
+#wt 0 #ht 0 #wts 0 #hts 0
+
+#xs 0 #ys 0
+#ws 0.05 #hs 0.1
 
 :initshaders
 	4 'fcolor memfloat	
@@ -101,71 +109,34 @@
 	0 over "u_FontTexture" shader!i
 	'fcolor over "fgColor" shader!v4
 
-	"media/img/font16x24.png" glImgFnt
+|	"media/img/font16x24.png" glImgFnt
+	"media/img/VGA8x16.png" glImgFnt
+
+	0.5 8 / 'wt ! 
+	wt 'wts ! 
+	1.0 16 / 'ht ! 
+	ht 'hts !
 	;
 
-
-|----------------------------------------------	
-#quadVAO
-#quadVBO
-
-#quadVertices [
-	-1.0  1.0 0.0 1.0
-	-1.0 -1.0 0.0 0.0
-	 1.0  1.0 1.0 1.0
-	 1.0 -1.0 1.0 0.0
-	]
-
-:initquad
-	20 'quadVertices memfloat
-
-	1 'quadVAO glGenVertexArrays
-	1 'quadVBO glGenBuffers
-	quadVAO glBindVertexArray
-	GL_ARRAY_BUFFER quadVBO glBindBuffer
-	GL_ARRAY_BUFFER 20 2 << 'quadVertices GL_STATIC_DRAW glBufferData
-	0 glEnableVertexAttribArray
-	0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
-	1 glEnableVertexAttribArray
-	1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
-	;
-	
-:renderquad
-	fontshader glUseProgram
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D fontTexture glBindTexture
-	quadVAO glBindVertexArray
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
-	0 glBindVertexArray
-	;
-
+|---------------------------------------
 #vt
 #bt
 
-#wp 16 #hp 24
-
-#xt 0 #yt 0
-#wt 0 #ht 0
-
-#xs 0 #ys 0
-#ws 0.1 #hs 0.2
+:fp, f2fp , ;
 
 :gchar | char --
-	1.0 wp / 'wt !
-	1.0 hp / 'ht !
-	
 	dup $f and wt * 'xt ! | x1
 	4 >> $f and ht * 'yt ! | y1
 
-	xs f2fp , ys f2fp , 			xt f2fp , yt f2fp ,
-	xs ws + f2fp , ys f2fp , 		xt wt + f2fp , yt f2fp ,
-	xs ws + f2fp , ys hs + f2fp , 	xt wt + f2fp , yt ht + f2fp ,
+	xs fp, ys fp, 			xt fp, yt ht + fp,
+	xs ws + fp, ys fp, 		xt wt + fp, yt ht + fp,
+	xs ws + fp, ys hs + fp, xt wt + fp, yt fp,
 	
-	xs f2fp , ys f2fp , 			xt f2fp , yt f2fp ,
-	xs ws + f2fp , ys hs + f2fp , 	xt wt + f2fp , yt ht + f2fp ,
-	xs f2fp , ys hs + f2fp , 		xt f2fp , yt ht + f2fp ,
+	xs fp, ys fp, 			xt fp, yt ht + fp,
+	xs ws + fp, ys hs + fp, xt wt + fp, yt fp,
+	xs fp, ys hs + fp, 		xt fp, yt fp,
 	
-	0.1 'xs +!
+	0.05 'xs +!
 	;
 	
 :rendergen | "" --
@@ -175,14 +146,13 @@
 	
 	1 'vt glGenVertexArrays
 	1 'bt glGenBuffers
-	quadVAO glBindVertexArray
+	vt glBindVertexArray
 	GL_ARRAY_BUFFER bt glBindBuffer
 	
 	here mark
-	swap
-	( c@+ 1? gchar ) 2drop
-	
+	swap ( c@+ 1? gchar ) 2drop
 	here swap - empty | size
+	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
 	1 glEnableVertexAttribArray 1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
@@ -196,14 +166,16 @@
 :main
 	$4100 glClear | color+depth
 
-|	renderQuad
-	-0.8 'xs ! 0 'ys !
-	"hola mun" rendergen
+	-0.8 'xs ! 0.8 'ys !
+	"Hola Forth/r3 - OpenGL" rendergen
+	-0.8 'xs ! 0.7 'ys !
+	"Bitmap FONT" rendergen
+	-0.8 'xs ! 0.6 'ys !
+	msec "%h" sprint rendergen
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
-	
 	drop ;	
 	
 |----------- BOOT
@@ -220,16 +192,11 @@
 	
 	"test opengl" 800 600 SDLinitGL
 	
-	
 	GL_DEPTH_TEST glEnable 
 |	GL_CULL_FACE glEnable	
 |	GL_LESS glDepthFunc 
 
-	800.0 0.0 600.0 0.0 100.0 0.0 mortho 
-	'fmscreen mcpyf
-
 	initshaders
-	initQuad
 
 	cr 
 	glInfo		
