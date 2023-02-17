@@ -58,11 +58,13 @@
 #fprojection * 64
 #fview * 64
 	
-#pEye 0.0 10.0 10.0
+#pEye 1.0 7.0 7.0
+#fpEye [ 0 0 0 ]
 #pTo 0 0 0
 #pUp 0 1.0 0
 
-#lightPos -2.0 4.0 -1.0 
+#lightPos -4.0 4.0 -1.0 
+#flightPos [ 0 0 0  ]
 
 #lightSpaceMatrix * 64
 
@@ -74,6 +76,9 @@
 
 :memfloat | cnt place --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+
+:mem2float | cnt to from --
+	>a >b ( 1? 1 - a@+ f2fp db!+ ) drop ;
 	
 |-----------
 #cubevao
@@ -150,12 +155,10 @@
 	
 #vertplane [ | positions   | normals    | texcoords 8 *
 	 25.0 -0.5  25.0  0.0 1.0 0.0  25.0  0.0
+	 25.0 -0.5 -25.0  0.0 1.0 0.0  25.0 25.0 	 
+	-25.0 -0.5 -25.0  0.0 1.0 0.0   0.0 25.0	 
 	-25.0 -0.5  25.0  0.0 1.0 0.0   0.0  0.0
-	-25.0 -0.5 -25.0  0.0 1.0 0.0   0.0 25.0
-
-	 25.0 -0.5  25.0  0.0 1.0 0.0  25.0  0.0
-	-25.0 -0.5 -25.0  0.0 1.0 0.0   0.0 25.0
-	 25.0 -0.5 -25.0  0.0 1.0 0.0  25.0 25.0 ]
+	 ]
 	
 #planeVAO
 #planeVBO
@@ -165,7 +168,7 @@
     1 'planeVBO glGenBuffers
     planeVAO glBindVertexArray
     GL_ARRAY_BUFFER planeVBO glBindBuffer
-	6 8 * 'vertplane memfloat
+	4 8 * 'vertplane memfloat
     GL_ARRAY_BUFFER 48 2 << 'vertplane GL_STATIC_DRAW glBufferData
     0 glEnableVertexAttribArray
     0 3 GL_FLOAT GL_FALSE 8 2 << 0 glVertexAttribPointer
@@ -176,9 +179,11 @@
     0 glBindVertexArray
 	;
 
+#GL_TRIANGLE_FAN $0006
+
 :renderplane
     planeVAO glBindVertexArray
-    GL_TRIANGLES 0 6 glDrawArrays 
+	GL_TRIANGLE_FAN 0 4 glDrawArrays 
     0 glBindVertexArray
 	;
 	
@@ -187,10 +192,10 @@
 #quadVBO
 
 #quadVertices [
-	-0.8  0.0 0.0 0.0 1.0
-	-0.8 -0.8 0.0 0.0 0.0
-	 0.0  0.0 0.0 1.0 1.0
-	 0.0 -0.8 0.0 1.0 0.0
+	-0.98 0.98 0.0 0.0 1.0
+	-0.98 0.2 0.0 0.0 0.0
+	-0.2 0.98 0.0 1.0 1.0
+	-0.2 0.2 0.0 1.0 0.0
 	]
 
 :initquad
@@ -273,7 +278,9 @@
 
 :eyecam
 	'pEye 'pTo 'pUp mlookat 
-	'fview mcpyf ;
+	'fview mcpyf 
+	3 'fpEye 'pEye mem2float | cnt to from --
+	;
 
 :initvec
 	4 'borderColor memfloat
@@ -289,10 +296,10 @@
 	matini
 	'lightPos 'pTo 'pUp mlookat
 	mpush 
-	10.0 -10.0 10.0 -10.0 7.5 -1.0 mortho 
+	10.0 -10.0 10.0 -10.0 17.5 -8.0 mortho 
 	m*
 	'lightSpaceMatrix mcpyf
-
+	3 'flightPos 'lightPos mem2float | cnt to from --
 	;
 
 #mmodel	* 64
@@ -304,28 +311,29 @@
 
 :renderScene | shader --
 	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D woodTexture glBindTexture
+	GL_TEXTURE_2D marbleTexture glBindTexture
 
-	matini 
-	$7fff 0.0 -2.0 0.0 mrpos
+|	matini 
+	0 0.0 -1.0 0.0 mrpos
 	model>shader
 	renderplane
 
 	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D marbleTexture  glBindTexture
+	GL_TEXTURE_2D woodTexture 	glBindTexture
 
-	matini 
-	msec $ffff and 0.0 1.5 0.0 mrpos
+|	matini 
+	msec $ffff and dup 16 << or
+	0.0 1.5 0.0 mrpos
 	model>shader
 	rendercube
 
-	matini 
+|	matini 
 	$0 2.0 msec 7 << $1ffff and 1.0 mrpos
 	0.8 dup dup mscale
 	model>shader
 	rendercube
 	
-	matini 
+|	matini 
 	$3fff -1.0 0.0 2.0 mrpos
 	msec 4 << $ffff and 0.5 + dup dup mscale
 	model>shader
@@ -335,22 +343,26 @@
 	;
 
 :render
+|	GL_BACK glCullFace
 	shader glUseProgram
 	
 	'fprojection shader "projection" shader!m4
-	'fview shader "view" shader!m4
 
-	'fview 12 2 << + shader "viewPos" shader!v3  |'camera.Position = 'fview +12
-	'lightSpaceMatrix 12 2 << + shader "lightPos" shader!v3
+	'fview shader "view" shader!m4
+	'fpEye shader "viewPos" shader!v3  
+
+	'flightPos shader "lightPos" shader!v3
 	'lightSpaceMatrix shader "lightSpaceMatrix" shader!m4
-	
+
 	GL_TEXTURE1 glActiveTexture
 	GL_TEXTURE_2D depthMap glBindTexture
+	
 	shader renderScene
 	;
 
 
 :rendershadow
+	|GL_FRONT glCullFace
 	simpleDepthShader glUseProgram
 	'lightSpaceMatrix simpleDepthShader "lightSpaceMatrix" shader!m4
 	
@@ -358,9 +370,7 @@
 	GL_FRAMEBUFFER depthMapFBO glBindFramebuffer
 	
 	GL_DEPTH_BUFFER_BIT glClear
-	|$4100 glClear
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D woodTexture glBindTexture
+
 	simpleDepthShader renderScene
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	0 0 800 600 glViewport
@@ -391,11 +401,10 @@
 	gui
 	'dnlook 'movelook onDnMove
 
-|	$4100 glClear | color+depth
 	rendershadow
 	$4100 glClear | color+depth
 	render
-	renderdebug
+|	renderdebug
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
@@ -426,7 +435,7 @@
 	
 	
 	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable	
+	GL_CULL_FACE glEnable
 	GL_LESS glDepthFunc 
 
 	initvec
@@ -435,7 +444,7 @@
 	
 	initCube
 	initPlane
-	initQuad
+|	initQuad
 	initDepthMap
 
 	cr 
