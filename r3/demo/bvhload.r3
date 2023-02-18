@@ -1,14 +1,13 @@
 | bvh load
 | PHREDA 2016,2020
 |----------------
-|MEM $ffff
+|MEM 64
 ^r3/win/console.r3
 ^r3/win/sdl2gfx.r3
 ^r3/lib/3d.r3
 ^r3/lib/mem.r3
 
 ^r3/lib/trace.r3
-|MEM 64
 
 #bvhfile
 #$bvhfile
@@ -137,10 +136,13 @@
 
 #smem
 
+#emem 
+
 :reload | "" --
 	smem swap
 	load dup '$bvhfile ! 0 over !+ dup 'model ! 'here !
 	parsebvh
+	here 'emem !
 	;
 
 :loadbvh
@@ -149,6 +151,22 @@
 |	reload
 	;
 
+:savebvhr
+	mark
+	"bvhr" d@ ,
+	animation model - ,
+	chsum , 	
+	frames ,
+	frametime ,
+	
+	here model emem model - 2 >> dmove | des scr cnt
+		
+	emem model - 'here +!
+	
+	"media/bvh/ChaCha001.bvhr" savemem
+	empty
+	;
+	
 |------------------------------------------
 :dumpmod | adr
 	( d@+ 1?
@@ -203,6 +221,7 @@
 	0.5 -0.5 drawlinez
 	0.5 0.5 drawlinez
 	-0.5 0.5 drawlinez ;
+
 
 
 |-------------------------------
@@ -304,6 +323,7 @@
 	SDLkey
 |	<f1> =? ( loadbvh )
 	>esc< =? ( exit )
+	<f2> =? ( savebvhr )
 	drop
 	;
 
