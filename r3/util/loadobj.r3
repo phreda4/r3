@@ -313,7 +313,8 @@
 	;
 
 |------------------------------------------
-#xmin #ymin #zmin #xmax #ymax #zmax
+##xmin ##ymin ##zmin ##xmax ##ymax ##zmax
+
 
 ::objminmax | --
 	verl >b
@@ -353,6 +354,33 @@
 		8 b+
 		) 3drop ;
 
+::objescalax | por div --
+	verl >b
+	nver ( 1? 1 -
+		b@ pick3 pick3 */ b!+
+		8 b+ |b@ pick3 pick3 */ b!+
+		8 b+ |b@ pick3 pick3 */ b!+
+		8 b+
+		) 3drop ;
+
+::objescalay | por div --
+	verl >b
+	nver ( 1? 1 -
+		8 b+ |b@ pick3 pick3 */ b!+
+		b@ pick3 pick3 */ b!+
+		8 b+ |b@ pick3 pick3 */ b!+
+		8 b+
+		) 3drop ;
+
+::objescalaz | por div --
+	verl >b
+	nver ( 1? 1 -
+		8 b+ |b@ pick3 pick3 */ b!+
+		8 b+ |b@ pick3 pick3 */ b!+
+		b@ pick3 pick3 */ b!+
+		8 b+
+		) 3drop ;
+		
 
 ::objcube | lado --
 	xmax ymax zmax max max

@@ -11,7 +11,6 @@
 
 |-------------
 #v2d
-#zbuffer
 
 :d>xy | d -- x y
 	dup 32 >> swap 32 << 32 >> ;

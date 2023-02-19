@@ -2,45 +2,19 @@
 | PHREDA 2022
 
 ^r3/posix/posix.r3
-^r3/lib/mem.r3
-^r3/lib/parse.r3
+^r3/lib/str.r3
 
 #kb 0
 
-:stdout-write 1 -rot write drop ;
 :stdin-key 
 	0 'kb !  
-	0 'kb 1 read drop  ;
+	0 'kb 1 libc-read drop  ;
 	
-:posix-bye   0 sysexit drop ;
+:posix-bye   0 libc-exit drop ;
 
-::key | -- key
-	stdin 'kb 1 0 0 ReadFile drop kb 
-	;
-	
-::key? | -- f 
-	stdin 0 WaitForSingleObject ;
-	
 ::type | str cnt --
-	1 rot rot write drop ;
+	 1 rot rot libc-write drop ;
 
-
-#irec 0 
-#codekey 0 0 0
-
-|--- format key =  $ccp0ss
-|    scancode			    ss
-|    char				cc0000
-|    press(0) release(1)  p000
-|   
-| ej: $1B1001 = release esc
-::getch | -- key
-|	stdin 'irec 1 'kb ReadConsoleInput 
-	codekey 32 >> $1000 or irec 20 >> xor ;
-
-::waitesc
-	( getch $1B1001 <>? drop ) drop ;
-	
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
 
@@ -57,17 +31,17 @@
 
 ::.write count type ;
 	
-::.print sprint count type ;
+::.print count type ; | sprint!!
 
-::.println sprint count type cr ;
+::.println count type cr ; | sprint!!
 
 ::.home	"H" .[ ; | home
 ::.cls "H" .[ "J" .[ ; | cls 
-::.at "%d;%df" sprint .[ ; | x y -- 
+|::.at "%d;%df" sprint .[ ; | x y -- 
 ::.eline "K" .[ ; | erase line from cursor
 
-::.fc "38;5;%dm" sprint .[ ; | Set foreground color.
-::.bc  "48;5;%dm" sprint .[ ; 
+|::.fc "38;5;%dm" sprint .[ ; | Set foreground color.
+|::.bc  "48;5;%dm" sprint .[ ; 
 
 ::.Black "30m" .[ ;
 ::.Red "31m" .[ ;
@@ -120,27 +94,15 @@
 ##rows 
 ##cols
 
-##pad * 256
-
-::.input | --
-	'pad
-	( key 13 <>? swap c!+ ) drop
-	0 swap c! ;
-
-::.inputn | -- nro
-	.input 'pad str>nro nip ;
 
 :emite | char --
 	$5e =? ( drop 27 emit ; ) | ^=escape
 	emit ;
 	
 ::.printe | "" --
-	sprint
+|	sprint
 	( c@+ 1? emite ) 2drop ;
 
 :ms 1000 * libc-usleep drop ;
 
-:ms-ticks 
-|   0 >r 0 >r CLOCK_MONOTONIC_RAW r@ cell - clock_gettime throw
-|	r> 1000000 / r> 1000 * + 
-	;
+

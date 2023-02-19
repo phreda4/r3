@@ -1,4 +1,5 @@
-| bvh load
+| load bvh and obj
+| try to calculate bones influence by distance
 | PHREDA 2016,2020
 |----------------
 |MEM 64
@@ -6,9 +7,12 @@
 ^r3/win/sdl2gfx.r3
 ^r3/lib/3d.r3
 ^r3/lib/mem.r3
+^r3/util/loadobj.r3
+^r3/util/bfont.r3
 
 ^r3/lib/trace.r3
 
+|----------
 #chsum
 #model
 #frames
@@ -17,9 +21,66 @@
 
 #framenow
 
-#xcam 0 #ycam 0 #zcam 400.0
+|----------
+#model
+
+#nbones 
+| x y z cnt
+#bonespos	
+| dist|nbone dist|nbone dist|nbone dist|nbone 
+#vertexbones
+
+|----------
+#xcam 0 #ycam 0 #zcam -100.0
 #xr 0 #yr 0
 
+|-------------
+#v2d
+
+:d>xy | d -- x y
+	dup 32 >> swap 32 << 32 >> ;
+:xy>d | x y --
+	$ffffffff and swap 32 << or ;
+	
+
+| WIRE
+|-------------
+#colorp [ $ffffff $ff0000 $00ff00 $0000ff $ffff00 $00ffff $ff00ff $7f7f7f $7f0000 $007f00 $00007f $7f7f00 $007f7f $7f007f $444444 $004400 
+$ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f $7f7f80 $807f7f $7f807f $444444 $804480
+]
+
+:bonecolor | vert -- vert
+	dup 5 << vertexbones +
+	@ $1f and 2 << 'colorp + d@
+	SDLColor
+	;
+	
+:drawtri | x y x y x y --
+	>r >r 2over 2over SDLLine
+	r> r> 2swap 2over SDLLine
+	SDLLine ;
+
+:objwire
+	mark
+	here 'v2d !
+	verl >b
+	nver ( 1? 1 -
+		b@+ b@+ b@+ 8 b+ project3d
+		xy>d ,q ) drop
+	facel >b
+	nface ( 1? 1 -
+		b@+ $fffff and 1 - 
+		bonecolor
+		3 << v2d + @ d>xy
+		b@+ $fffff and 1 - 3 << v2d + @ d>xy
+		b@+ $fffff and 1 - 3 << v2d + @ d>xy
+		8 b+
+		drawtri
+		) drop
+	empty
+	;
+
+|--------------------------------
 :bvhrload
 	here dup rot load 'here !
 	4 + d@+ 'animation !
@@ -140,7 +201,131 @@
 		) drop
 	nmpop
 	;	
+	
+|----------------------------------------------
+#xminb #yminb #zminb #xmaxb #ymaxb #zmaxb
+	
+:inilimit
+	-10000.0 dup 'xmaxb ! dup 'ymaxb ! 'zmaxb !
+	 10000.0 dup 'xminb ! dup 'yminb ! 'zminb ! 
+	;
+	
+:adjlimit
+	0 0 0 transform
+	zminb <? ( dup 'zminb ! ) zmaxb >? ( dup 'zmaxb ! ) drop	
+	yminb <? ( dup 'yminb ! ) ymaxb >? ( dup 'ymaxb ! ) drop	
+	xminb <? ( dup 'xminb ! ) xmaxb >? ( dup 'xmaxb ! ) drop
+	;
+	
+:bonesminmax | bones --
+	>b
+	matini
+	inilimit
+	0 ( db@+ 1? $ff and
+		swap over - 1 + clamp0 | anterior-actual+1
+		nmpop
+		mpush
+		db@+ db@+ db@+ mtransi
+		adjlimit
+		) drop
+	nmpop
+	;
+	
+:resizevertex
+	objminmax
+	model bonesminmax
+	xmaxb xmax objescalax
+	ymaxb ymax objescalay
+	zmaxb zmax objescalaz
+	;
+	
+|----------------------------------------------
 
+#nb>
+:bonesposc | --
+	bonespos 'nb> !
+	model >b
+	matini
+	0 ( db@+ 1? $ff and
+		swap over - 1 + clamp0 | anterior-actual+1
+		nmpop
+		mpush
+		db@+ db@+ db@+ mtransi
+		0 0 0 transform
+		swap rot nb> !+ !+ !+ 0 swap !+ 'nb> !
+		) drop
+	nmpop
+	;
+
+| keep 4 bones near
+#maxbones 0 0 0 0
+
+:insbone | nro dist -- nro
+	8 << over $ff and or | 256 huesos
+	'maxbones | dist' bones
+	@+ pick2 >? ( 2drop 
+		'maxbones dup 8 + swap 3 move> 
+		'maxbones ! ; ) drop
+	@+ pick2 >? ( 2drop 
+		'maxbones 8 + dup 8 + swap 2 move> 
+		'maxbones 8 + ! ; ) drop 
+	@+ pick2 >? ( 2drop 
+		'maxbones 16 + dup 8 + swap 1 move> 
+		'maxbones 16 + ! ; ) drop
+	@+ pick2 >? ( 2drop 
+		'maxbones 24 + ! ; ) 
+	3drop
+	;
+	
+:everybone | x y z --
+	'maxbones 1000.0 8 << 4 fill
+	bonespos >a
+	0 ( nbones <?
+|		'maxbones @+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f = " .print drop
+|		dup "%d." .println .input
+		pick3 a@+ - dup *.
+		pick3 a@+ - dup *. 
+		pick3 a@+ - dup *.
+		+ + sqrt. insbone
+		8 a+
+		1 + ) 4drop
+	nb> 'maxbones 4 move
+	4 3 << 'nb> +!
+	;
+	
+:calcbones	
+	bonesposc
+	vertexbones 'nb> !
+	matini
+	verl >b
+	nver ( 1? 1 -
+|		dup "%d " .println
+		b@+ b@+ b@+ everybone
+		8 b+ 
+		) drop ;
+	
+:scalex	1.0 objescalax ;
+:scaley	1.0 objescalay ;
+:scalez	1.0 objescalaz ;
+
+#sumw
+:wb, |
+	a@+ dup 8 >> sumw /. 1.0 swap - , | 16.16 weight
+	$ff and ,c | nro vert
+	;
+	
+:savebones
+	mark
+	vertexbones >a
+	nver ( 1? 1 -
+		a@+ 8 >> a@+ 8 >> + a@+ 8 >> + a@+ 8 >> +  'sumw !
+		4 3 << neg a+ | back to first
+		wb, wb, wb, wb, | 4 bones
+		) drop
+	"media/bvh/bones2mario" savemem
+	empty
+	;
+	
 |----------------------------------------------
 :freelook
 	SDLx SDLy
@@ -150,47 +335,74 @@
 |	swap 0 mrotxyz
 	mrotx mroty ;
 	
-:people
-	-200.0 ( 200.0 <? 100.0 +
-		-200.0 ( 200.0 <? 100.0 +
-			mpush
-			2dup 0.0 swap mtransi
-			model drawbones
-			mpop ) drop
-		) drop
-	;
-
-
+|-------------------
 :main
 	0 SDLcls
 	
 	1.0 3dmode
-	|freelook
+	freelook
 	xcam ycam zcam mtrans
 
-	model drawbones
-|	people
-|	model drawbones1
+	$ff  SDLColor
+	
+|	model drawbones
+	model drawbones1
+
+	$ffffff SDLColor
+	objwire
 	
 	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	
+|	10 10 bat xmin ymin zmin "zm:%f ym:%f xm:%f" sprint bprint 
+|	10 30 bat xmax ymax zmax "zM:%f yM:%f xM:%f" sprint bprint
+	
+	10 10 bat nbones "%d bones " sprint bprint
 	SDLRedraw
 	
 	SDLkey
 |	<f1> =? ( loadbvh )
 	>esc< =? ( exit )
+	<f1> =? ( objminmax objcentra )
+	<f2> =? ( resizevertex ) 
+	<f3> =? ( calcbones )
+	<f4> =? ( savebones )
+	
+	<a> =? ( 1.1 scalex )
+	<d> =? ( 0.9 scalex )
+	<w> =? ( 1.1 scaley )
+	<s> =? ( 0.9 scaley )
+	<q> =? ( 1.1 scalez )
+	<e> =? ( 0.9 scalez )
+
+	<j> =? ( 0.1 0 0 objmove )
+	<l> =? ( -0.1 0 0 objmove )
+	<i> =? ( 0 0.1 0 objmove )
+	<k> =? ( 0 -0.1 0 objmove )
+	<u> =? ( 0 0 0.1 objmove )
+	<o> =? ( 0 0 -0.1 objmove )
 
 	drop
 	;
 
 :ini
+	mark
+	"media/obj/mario/mario.obj" loadobj 'model !
 	"media/bvh/ChaCha001.bvhr" bvhrload
 	0 'framenow !
+	
+	animation model - 4 >> 'nbones !
+	here 
+	dup 'bonespos ! | x y z cnt
+	nver 5 << + | 8 * 4
+	dup 'vertexbones ! | b1 b2 b3 b4
+	nbones 5 << + 
+	'here !	
 	;
 
 : 
 	ini 
 	"r3sdl" 800 600 SDLinit	
+	bfont1 
 	'main SDLshow 
 	SDLquit
 	;
