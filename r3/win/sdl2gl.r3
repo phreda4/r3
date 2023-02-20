@@ -22,6 +22,7 @@
 #sys-glValidateProgram
 #sys-glEnableVertexAttribArray
 #sys-glVertexAttribPointer
+#sys-glVertexAttribIPointer
 #sys-glDisableVertexAttribArray
 #sys-glDeleteProgram
 #sys-glIsProgram
@@ -115,6 +116,7 @@
 ::glValidateProgram sys-glValidateProgram sys1 drop ;
 ::glEnableVertexAttribArray sys-glEnableVertexAttribArray sys1 drop ;
 ::glVertexAttribPointer sys-glVertexAttribPointer sys6 drop ;
+::glVertexAttribIPointer sys-glVertexAttribIPointer sys5 drop ;
 ::glDrawElements sys-glDrawElements sys4 drop ;
 ::glDrawElementsInstanced sys-glDrawElementsInstanced sys5 drop ;
 |::glDrawRangeElements sys-glDrawRangeElements sys6 drop ;
@@ -257,6 +259,7 @@
 	"glBindBuffer" SDL_GL_GetProcAddress 'sys-glBindBuffer !
 	"glBufferData" SDL_GL_GetProcAddress 'sys-glBufferData !
 	"glVertexAttribPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribPointer !
+	"glVertexAttribIPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribIPointer !	
 	"glMapBuffer" SDL_GL_GetProcAddress 'sys-glMapBuffer !
 	"glUnmapBuffer" SDL_GL_GetProcAddress 'sys-glUnmapBuffer !
 	
