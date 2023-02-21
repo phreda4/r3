@@ -131,6 +131,24 @@
 	0 , 0 , 0 ,
 	0 , 0 , 0 ,
 	
+#vao
+#vbo
+#vio
+
+#cbuffer 
+#buffer>> 
+#cindex 
+#index>>
+
+#GL_ARRAY_BUFFER $8892
+#GL_ELEMENT_ARRAY_BUFFER $8893
+
+#GL_STATIC_DRAW $88E4
+#GL_FLOAT $1406
+#GL_UNSIGNED_SHORT $1403
+#GL_INT $1404
+#GL_FALSE 0
+#GL_TRIANGLE $0004
 
 :initobj | "" -- obj
     1 'VAO glGenVertexArrays
@@ -164,7 +182,7 @@
 :renderobj | obj --
 
     VAO glBindVertexArray
-	GL_TRIANGLE 0 cntindex glDrawArrays 
+	GL_TRIANGLE 0 cindex glDrawArrays 
     0 glBindVertexArray
 	;
 	
@@ -289,7 +307,6 @@
 	'dnlook 'movelook onDnMove
 
 	$4100 glClear | color+depth
-	'arrayobj p.draw
 
 	'pEye @+ swap @+ swap @
 	"CAM z:%f y:%f x:%f" sprint
@@ -307,6 +324,8 @@
 	<d> =? ( -0.5 'pEye 16 + +! eyecam )
 
 	drop ;	
+
+#o1
 
 |---------------------------		
 :ini	

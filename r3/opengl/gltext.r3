@@ -53,6 +53,8 @@
 #tt #vt #bt
 #ws #hs
 
+##gltextsize 0.003
+
 ::gltext | "" x y --
 	rot
 	fontshader glUseProgram
@@ -63,8 +65,8 @@
 	GL_TEXTURE_2D 0 GLBPP Surface->p 2 >> Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-	Surface->w 0.003 * 'ws !
-	Surface->h 0.003 * 'hs !
+	Surface->w gltextsize * 'ws !
+	Surface->h gltextsize * 'hs !
 	surface SDL_FreeSurface
 	
 	GL_TEXTURE0 glActiveTexture

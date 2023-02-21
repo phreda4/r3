@@ -39,14 +39,14 @@
 	swap LOAD frag =? ( drop 0 ; )  
 	0 swap c!
 	frag vert here !+ !
-	
+	"vertex shader." .println
 	GL_VERTEX_SHADER glCreateShader dup 
 	dup 1 here 0 glShaderSource
 	dup glCompileShader 
 	dup GL_COMPILE_STATUS 't glGetShaderiv 
 	t 0? ( drop shCheckErr 0 ; ) drop
 	'vert !
-	
+	"fragment shader." .println
 	GL_FRAGMENT_SHADER glCreateShader dup
 	dup 1 here 8 + 0 glShaderSource
 	dup glCompileShader

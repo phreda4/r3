@@ -3,14 +3,14 @@
 |-----------------------------------
 |MEM 512
 ^r3/win/console.r3
-^r3/win/SDL2gfx.r3
+^r3/win/sdl2gl.r3
 
 ^r3/lib/3d.r3
 ^r3/lib/gui.r3
 
 ^r3/util/loadobj.r3
-^r3/util/bfont.r3
-^r3/util/dlgfile.r3
+^r3/opengl/gltext.r3
+
 
 #filename * 1024
 #cutpath ( $2f )
@@ -178,7 +178,6 @@
 	facel 
 	nface ( 1? 1 - swap
 		dup 24 + @ 
-|		colornow <>? ( dup pick3 "%d %d " .print )
 		'colornow ! 
 		@+ addvert, @+ addvert,	@+ addvert,
 		8 + swap 
@@ -271,40 +270,129 @@
 	;
 
 
-| DRAW
-|-------------
-#v2d
+	
+#fprojection * 64
+#fview * 64
+#fmodel * 64
+	
+#pEye 0.0 40.0 40.0
+#pTo 0 20.0 0.0
+#pUp 0 1.0 0
 
-| WIRE
-:drawtri | x y x y x y --
-	>r >r 2over 2over SDLLine
-	r> r> 2swap 2over SDLLine
-	SDLLine ;
+:eyecam
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
 
-:d>xy | d -- x y
-	dup 32 >> swap 32 << 32 >> ;
-:xy>d | x y --
-	$ffffffff and swap 32 << or ;
-
-::objwire
-	mark
-	here 'v2d !
-	verl >b
-	nver ( 1? 1 -
-		b@+ b@+ b@+ 8 b+ project3d
-		xy>d ,q ) drop
-	facel >b
-	nface ( 1? 1 -
-		b@+ $fffff and 1 - 3 << v2d + @ d>xy
-		b@+ $fffff and 1 - 3 << v2d + @ d>xy
-		b@+ $fffff and 1 - 3 << v2d + @ d>xy
-		8 b+
-		drawtri
-		) drop
-	empty
+:initvec
+	matini
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
+|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
+	'fprojection mcpyf	| perspective matrix
+	eyecam		| eyemat
+	'fmodel midf
 	;
 
 
+| DRAW
+|-------------
+#GL_ARRAY_BUFFER $8892
+#GL_ELEMENT_ARRAY_BUFFER $8893
+
+#GL_STATIC_DRAW $88E4
+#GL_FLOAT $1406
+#GL_UNSIGNED_SHORT $1403
+#GL_FALSE 0
+#GL_TRIANGLE $0004
+
+#shaderd
+:initshaders
+	"r3/opengl/shader/anim_model.fs"
+	"r3/opengl/shader/anim_model.vs" 
+	loadShaders 'shaderd !
+
+	0 shaderd "depthMap" shader!i
+|	shaderd glUseProgram	
+|	0 shaderd "diffuseTexture" shader!i
+|	1 shaderd "shadowMap" shader!i
+	;
+	
+#vao 0
+#vbo
+
+#buffer>>
+#cbuffer
+#cfaces
+#idt
+
+:,posnor |
+	dup $fffff and 1 - ]vert
+	@+ f2fp , @+ f2fp , @ f2fp , 
+	dup 40 >> $fffff and 1 - ]norm 
+	@+ f2fp , @+ f2fp , @ f2fp , 
+	20 >> $fffff and 1 - ]uv 
+	@+ f2fp , @ neg f2fp , ;	
+	;
+	
+#bufferv
+:initobj | "" -- obj
+	mark
+	
+	here 'bufferv !
+	facel >b
+	nface ( 1? 1 -
+		b@+ ,posnor
+		b@+ ,posnor
+		b@+ ,posnor
+		8 b+
+		) drop
+	
+|	here bufferv - "%d bytes" .println
+	
+    1 'VAO glGenVertexArrays
+    1 'VBO glGenBuffers
+
+    VAO glBindVertexArray
+    GL_ARRAY_BUFFER VBO glBindBuffer
+    GL_ARRAY_BUFFER nface 3 * 8 * 2 << bufferv GL_STATIC_DRAW glBufferData
+	
+    0 glEnableVertexAttribArray |POS
+    0 3 GL_FLOAT GL_FALSE 8 2 << 0 glVertexAttribPointer
+	
+    1 glEnableVertexAttribArray | NOR
+    1 3 GL_FLOAT GL_FALSE 8 2 << 3 2 << glVertexAttribPointer
+
+    2 glEnableVertexAttribArray | NOR
+    2 2 GL_FLOAT GL_FALSE 8 2 << 6 2 << glVertexAttribPointer
+	
+    0 glBindVertexArray	
+	empty
+	nface 3 * 'cfaces !
+	"media/obj/Mario/Mario_body.png" glImgTex 'idt !
+	
+	;
+
+#GL_TEXTURE_2D $0DE1
+#GL_TEXTURE0 $84C0
+
+:renderobj | obj --
+	shaderd glUseProgram
+	'fprojection shaderd "projection" shader!m4
+	'fview shaderd "view" shader!m4
+	'fmodel shaderd "model" shader!m4
+	
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D idt glBindTexture
+	
+    VAO glBindVertexArray
+	GL_TRIANGLE 0 cfaces glDrawArrays 
+    0 glBindVertexArray
+	;
+
+:deleteobj | obj --
+	VBO glDeleteBuffers	
+	VAO glDeleteVertexArrays
+	;
+	
+	
 | MAIN
 |-----------------------------------
 #xcam 0 #ycam 0 #zcam -20.0
@@ -327,47 +415,43 @@
 	dup 'fpath getpath
 	dup 'filename strcpy
 	loadobj 'model !
-	| objminmax objcentra
+
+	initobj
 	;
 	
-|---------------------------------------------------		
-:loadobj | --	
-	dlgFileLoad
-	drop
-	;
-	
+
 |---------------------------------------------------	
 :objinfo
-	8 0 bat 'filename bprint
-	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
-	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
-	0 ( ncolor <? 
-		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
-		colorl over 4 << + @ "%w" sprint bprint
-		1 + ) drop
-	8 sh 48 - bat 
-	|facerep "rep:%d" sprint bprint
-	auxvert> auxvert - 3 >> "vertices:%d " sprint bprint
-	indexa> indexa  - 1 >> "index:%d " sprint bprint
+	0.002 'gltextsize !
+	'filename -0.98 -0.9 gltext
+	"F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" -0.98 0.9 gltext
+|	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
+|	0 ( ncolor <? 
+|		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
+|		colorl over 4 << + @ "%w" sprint bprint
+|		1 + ) drop
+|	8 sh 48 - bat 
+|	|facerep "rep:%d" sprint bprint
+|	auxvert> auxvert - 3 >> "vertices:%d " sprint bprint
+|	indexa> indexa  - 1 >> "index:%d " sprint bprint
 
 	
-	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
+|	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
+
+|	'pEye @+ swap @+ swap @ "CAM z:%f y:%f x:%f" sprint -0.8 0.8 gltext
+
 	;
 	
 :main
 	gui
 	'dnlook 'movelook onDnMove
-	0 SDLcls
-
-	1.0 3dmode
-|	freelook
-	rx ry 0 mrot
-	xcam ycam zcam mtrans
+	$4100 glClear | color+depth
 	
-	$007f00 SDLColor
-	nface 10000 <? ( objwire ) drop
 	objinfo
-	SDLredraw
+	
+	renderobj
+	
+	SDL_windows SDL_GL_SwapWindow
 	
 	SDLkey
 	<up> =? ( 1.0 'zcam +! )
@@ -381,11 +465,22 @@
 	drop ;
 
 |------------------------------------	
-: 
-	"r3sdl" 800 600 SDLinit
-	bfont1
+#GL_DEPTH_TEST $0B71
+#GL_LESS $0201
+#GL_CULL_FACE $0B44
 
-	"media/obj/" dlgSetPath
+: 
+	"test opengl" 800 600 SDLinitGL
+	initglfont
+	initvec
+	initshaders
+	
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable
+	GL_LESS glDepthFunc 
+	
+
+|	"media/obj/" dlgSetPath
 	mark
 |	"media/obj/food/Brocolli.obj" 	
 |	"media/obj/food/Bellpepper.obj" 
