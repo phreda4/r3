@@ -23,11 +23,44 @@
 	0 swap c!+ 'fname !
 	;
 	
+|-------- file bones and weigth
 #bones 
 
 :loadbones | "" --
+	here dup 'bones !
+	swap load 'here !
+	;
+	
+| 4(w) 1(bone) - x4
+:,4xw | vertex -- ;
+	20 * bones +
+	d@+ f2fp , 1+ d@+ f2fp , 1+ d@+ f2fp , 1+ d@+ f2fp , drop ;
+	
+:,4xi | vertex
+	20 * bones +
+	4 + c@+ 
+	dup "%d " .print
+	, 4 + c@+ , 4 + c@+ , 4 + c@+ , drop ;
+
+|---------- file animation bvh
+#chsum
+#model
+#frames
+#frametime
+#animation
+#cbones
+
+#framenow
+	
+:bvhrload | "" --
 	here dup rot load 'here !
-	'bones !
+	4 + d@+ 'animation !
+	d@+ 'chsum !
+	d@+ 'frames !
+	d@+ 'frametime ! 
+	dup 'animation +!
+	animation over - 4 >> 'cbones !
+	'model !
 	;
 	
 | GENERATE file
@@ -52,56 +85,6 @@
 
 #inimem
 #sizemem
-
-| tipo 1 -- 1 texture, all vertex in 1 draw call
-:convertobj1 | --
-	mark
-	here 'inimem !
-	
-	| cnt partes
-	ncolor $ff and 8 << | cnt colores
-	$01 or ,q			| tipo 1 - plano
-	0 ,			| filenames +8
-	0 ,			| VA		+12
-	0 , 		| vertex>	+16
-	0 , 		| normal>	+20
-	0 , 		| uv>		+24
-	nface 3 * , | cntvert	+28
-	
-	here 		
-	dup 'vertex_buffer_data ! 
-	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
-	dup 'normal_buffer_data !
-	nface 3 * 3 * 2 << + | 3 vertices por vertice 3 coor por vertices 4 bytes por nro
-	'uv_buffer_data  !
-	vertex_buffer_data >a
-	| normal_buffer_data = vertex + nface 3 * 3 * 2 << +
-	uv_buffer_data >b
-	facel 
-	nface ( 1? 1 - swap
-		@+ vert+uv
-		@+ vert+uv
-		@+ vert+uv
-		8 + swap ) 2drop
-	b> 'here !
-	b> 'filenames !
-	
-	0 ( ncolor <? 
-		colorl over 4 << + @ 
-		here strcpylnl 'here !
-		1 + ) drop
-	
-	filenames inimem - inimem 8 + d!
-	vertex_buffer_data inimem - inimem 16 + d!
-	normal_buffer_data inimem - inimem 20 + d!
-	uv_buffer_data inimem - 	inimem 24 + d!
-	
-	here inimem - 'sizemem !
-	fname 'fpath "%s/%s.mem" sprint savemem
-	empty
-	;
-
-
 
 |--- how many vertes repeat?
 #facerep
@@ -270,12 +253,49 @@
 	;
 
 
+
+|-------------------------------
+#bonesmat>
+
+#anip
+:val anip d@+ swap 'anip ! ;
+
+:xpos val 0 0 mtransi ;
+:ypos val 0 swap 0 mtransi ;
+:zpos val 0 0 rot mtransi ;
+:xrot val mrotxi ;
+:yrot val mrotyi ;
+:zrot val mrotzi ;
+#lani xpos ypos zpos xrot yrot zrot
+
+:anibones | flags --
+	8 >> $ffffff and
+	( 1? dup $f and 1 - 3 << 'lani + @ ex 4 >> )
+	drop ;
+
+:drawbones | bones --
+	>b
+	framenow chsum * 2 << animation + 'anip !
+	0 ( db@+ 1? dup $ff and
+		rot over - 1 + clamp0 | anterior-actual+1
+		nmpop
+		mpush
+		db@+ db@+ db@+ mtransi
+		swap anibones
+		b>
+		bonesmat> mcpyf
+		|bonesmat> midf
+		64 'bonesmat> +!
+		>b ) drop
+	nmpop
+	;
 	
+|-------------------------	
 #fprojection * 64
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 40.0 40.0
+#pEye 0.0 40.0 -80.0
 #pTo 0 20.0 0.0
 #pUp 0 1.0 0
 
@@ -300,6 +320,7 @@
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
 #GL_UNSIGNED_SHORT $1403
+#GL_INT $1404
 #GL_FALSE 0
 #GL_TRIANGLE $0004
 
@@ -309,7 +330,7 @@
 	"r3/opengl/shader/anim_model.vs" 
 	loadShaders 'shaderd !
 
-	0 shaderd "depthMap" shader!i
+	0 shaderd "texture_diffuse1" shader!i
 |	shaderd glUseProgram	
 |	0 shaderd "diffuseTexture" shader!i
 |	1 shaderd "shadowMap" shader!i
@@ -328,8 +349,11 @@
 	@+ f2fp , @+ f2fp , @ f2fp , 
 	dup 40 >> $fffff and 1 - ]norm 
 	@+ f2fp , @+ f2fp , @ f2fp , 
-	20 >> $fffff and 1 - ]uv 
-	@+ f2fp , @ neg f2fp , ;	
+	dup 20 >> $fffff and 1 - ]uv 
+	@+ f2fp , @ neg f2fp , 
+	dup $fffff and 1 - ,4xi	| 4 index 
+	dup $fffff and 1 - ,4xw	| 4 float
+	drop
 	;
 	
 #bufferv
@@ -352,16 +376,22 @@
 
     VAO glBindVertexArray
     GL_ARRAY_BUFFER VBO glBindBuffer
-    GL_ARRAY_BUFFER nface 3 * 8 * 2 << bufferv GL_STATIC_DRAW glBufferData
+    GL_ARRAY_BUFFER nface 3 * 16 * 2 << bufferv GL_STATIC_DRAW glBufferData
 	
     0 glEnableVertexAttribArray |POS
-    0 3 GL_FLOAT GL_FALSE 8 2 << 0 glVertexAttribPointer
+    0 3 GL_FLOAT GL_FALSE 16 2 << 0 glVertexAttribPointer
 	
     1 glEnableVertexAttribArray | NOR
-    1 3 GL_FLOAT GL_FALSE 8 2 << 3 2 << glVertexAttribPointer
+    1 3 GL_FLOAT GL_FALSE 16 2 << 3 2 << glVertexAttribPointer
 
-    2 glEnableVertexAttribArray | NOR
-    2 2 GL_FLOAT GL_FALSE 8 2 << 6 2 << glVertexAttribPointer
+    2 glEnableVertexAttribArray | UV
+    2 2 GL_FLOAT GL_FALSE 16 2 << 6 2 << glVertexAttribPointer
+
+    3 glEnableVertexAttribArray | bones
+    3 4 GL_INT 16 2 << 8 2 << glVertexAttribIPointer
+
+    4 glEnableVertexAttribArray | weight
+    4 4 GL_FLOAT GL_FALSE 16 2 << 12 2 << glVertexAttribPointer
 	
     0 glBindVertexArray	
 	empty
@@ -381,6 +411,21 @@
 	
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D idt glBindTexture
+
+	here 'bonesmat> !
+	model drawbones
+	
+	shaderd "finalBonesMatrices" glGetUniformLocation 
+	cbones 0 here glUniformMatrix4fv
+	
+|	shaderd "finalBonesMatrices[1]" glGetUniformLocation 
+|	1 0 here 64 + glUniformMatrix4fv
+	
+|	glUniformMatrix4fv(jointMatrixLoc, 2, GL_FALSE, glm::value_ptr(jointM[0]));
+|	for (int i = 0; i < transforms.size(); ++i)
+|		ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+	
+	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	
     VAO glBindVertexArray
 	GL_TRIANGLE 0 cfaces glDrawArrays 
@@ -407,14 +452,12 @@
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 
-#model
+#modelo
 
 :useobj | "" --
-	empty
-	mark
 	dup 'fpath getpath
 	dup 'filename strcpy
-	loadobj 'model !
+	loadobj 'modelo !
 
 	initobj
 	;
@@ -425,21 +468,8 @@
 	0.002 'gltextsize !
 	'filename -0.98 -0.9 gltext
 	"F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" -0.98 0.9 gltext
-|	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
-|	0 ( ncolor <? 
-|		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
-|		colorl over 4 << + @ "%w" sprint bprint
-|		1 + ) drop
-|	8 sh 48 - bat 
-|	|facerep "rep:%d" sprint bprint
-|	auxvert> auxvert - 3 >> "vertices:%d " sprint bprint
-|	indexa> indexa  - 1 >> "index:%d " sprint bprint
-
+	frames framenow "%d %d" sprint -0.98 -0.8 gltext
 	
-|	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
-
-|	'pEye @+ swap @+ swap @ "CAM z:%f y:%f x:%f" sprint -0.8 0.8 gltext
-
 	;
 	
 :main
@@ -449,7 +479,7 @@
 	
 	objinfo
 	
-	renderobj
+	|renderobj
 	
 	SDL_windows SDL_GL_SwapWindow
 	
@@ -458,7 +488,6 @@
 	<dn> =? ( -1.0 'zcam +! )
 
 	<f1> =? ( loadobj ) 
-	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
@@ -472,6 +501,7 @@
 : 
 	"test opengl" 800 600 SDLinitGL
 	initglfont
+	
 	initvec
 	initshaders
 	
@@ -479,9 +509,11 @@
 	GL_CULL_FACE glEnable
 	GL_LESS glDepthFunc 
 	
-
 |	"media/obj/" dlgSetPath
 	mark
+	"media/bvh/bones2mario" loadbones
+	"media/bvh/ChaCha001.bvhr" bvhrload
+	
 |	"media/obj/food/Brocolli.obj" 	
 |	"media/obj/food/Bellpepper.obj" 
 |	"media/obj/food/Banana.obj" 
@@ -499,7 +531,7 @@
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
 	useobj
-	"media/bvh/bones2mario" loadbones
+	
 	'main SDLshow 
 	SDLquit
 	;

@@ -32,14 +32,15 @@ void main()
 //        totalPosition += localPosition * weights[i];
 //        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
 //   }
-	totalPosition += (finalBonesMatrices[boneIds[0]] * vec4(pos,1.0f)) * weights[0];
-	totalPosition += (finalBonesMatrices[boneIds[1]] * vec4(pos,1.0f)) * weights[1];
-	totalPosition += (finalBonesMatrices[boneIds[2]] * vec4(pos,1.0f)) * weights[2];
-	totalPosition += (finalBonesMatrices[boneIds[3]] * vec4(pos,1.0f)) * weights[3];	
+	totalPosition += (finalBonesMatrices[0] * vec4(pos,1.0f)) ; //* weights[0];
+	//totalPosition += (finalBonesMatrices[boneIds[0]] * vec4(pos,1.0f)) ; //* weights[0];
+//	totalPosition += (finalBonesMatrices[boneIds[1]] * vec4(pos,1.0f)) * weights[1];
+//	totalPosition += (finalBonesMatrices[boneIds[2]] * vec4(pos,1.0f)) * weights[2];
+//	totalPosition += (finalBonesMatrices[boneIds[3]] * vec4(pos,1.0f)) * weights[3];	
 	
 //	vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
 	
     mat4 viewModel = view * model;
-    gl_Position =  projection * viewModel * vec4(pos,1.0f) ;//totalPosition;
+    gl_Position =  projection * viewModel * totalPosition;//vec4(pos,1.0f) ;//totalPosition;
 	TexCoords = tex;
 }

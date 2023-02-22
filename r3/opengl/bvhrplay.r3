@@ -22,7 +22,6 @@
 #framenow
 
 |----------
-#model
 
 #nbones 
 | x y z cnt
@@ -310,19 +309,22 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 #sumw
 :wb, |
-	a@+ dup 8 >> sumw /. 1.0 swap - , | 16.16 weight
-	$ff and ,c | nro vert
+	a@+ dup 8 >> sumw /. 1.0 swap - 
+|	dup "%f" .print , | 16.16 weight
+	$ff and 
+|	dup "(%d)" .println ,c | nro vert
 	;
 	
 :savebones
 	mark
+	"save" .println
 	vertexbones >a
 	nver ( 1? 1 -
 		a@+ 8 >> a@+ 8 >> + a@+ 8 >> + a@+ 8 >> +  'sumw !
 		4 3 << neg a+ | back to first
 		wb, wb, wb, wb, | 4 bones
 		) drop
-	"media/bvh/bones2mario" savemem
+	"media/bvh/bones2mario2" savemem
 	empty
 	;
 	
@@ -345,8 +347,8 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 	$ff  SDLColor
 	
-|	model drawbones
-	model drawbones1
+	model drawbones
+|	model drawbones1
 
 	$ffffff SDLColor
 	objwire
