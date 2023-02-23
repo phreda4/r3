@@ -81,6 +81,7 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 |--------------------------------
 :bvhrload
+	here "%h" .println
 	here dup rot load 'here !
 	4 + d@+ 'animation !
 	d@+ 'chsum !
@@ -88,6 +89,8 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 	d@+ 'frametime ! 
 	dup 'animation +!
 	'model !
+	here "%h" .println
+	
 	;
 
 |------------------------------------------
@@ -281,13 +284,15 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 	bonespos >a
 	0 ( nbones <?
 |		'maxbones @+ "%f " .print @+ "%f " .print @+ "%f " .print @+ "%f = " .print drop
-|		dup "%d." .println .input
+|		dup "%d." .println 
 		pick3 a@+ - dup *.
 		pick3 a@+ - dup *. 
 		pick3 a@+ - dup *.
 		+ + sqrt. insbone
 		8 a+
 		1 + ) 4drop
+|	maxbones $ff and "%d " .print
+
 	nb> 'maxbones 4 move
 	4 3 << 'nb> +!
 	;
@@ -301,7 +306,10 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 |		dup "%d " .println
 		b@+ b@+ b@+ everybone
 		8 b+ 
-		) drop ;
+		) drop 
+		
+|	.input		
+		;
 	
 :scalex	1.0 objescalax ;
 :scaley	1.0 objescalay ;
@@ -309,22 +317,31 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 #sumw
 :wb, |
-	a@+ dup 8 >> sumw /. 1.0 swap - 
-|	dup "%f" .print , | 16.16 weight
+	a@+ 
+	dup 8 >> sumw /. 1.0 swap - 
+|	dup "%f" .print 
+	, | 16.16 weight
 	$ff and 
-|	dup "(%d)" .println ,c | nro vert
+|	dup "%d " .print
+	,c | nro vert
 	;
 	
+|#mm	
 :savebones
 	mark
-	"save" .println
-	vertexbones >a
+|	here "save %h" .println
+|	here 'mm !
+	vertexbones  >a
 	nver ( 1? 1 -
 		a@+ 8 >> a@+ 8 >> + a@+ 8 >> + a@+ 8 >> +  'sumw !
 		4 3 << neg a+ | back to first
 		wb, wb, wb, wb, | 4 bones
 		) drop
-	"media/bvh/bones2mario2" savemem
+		
+|	here "save %h" .println		
+|	here mm - 20 / "%d vertices" .println
+|	.input
+	"media/bvh/bones2mario" savemem
 	empty
 	;
 	
@@ -347,8 +364,8 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 	$ff  SDLColor
 	
-	model drawbones
-|	model drawbones1
+|	model drawbones
+	model drawbones1
 
 	$ffffff SDLColor
 	objwire
@@ -395,9 +412,9 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 	animation model - 4 >> 'nbones !
 	here 
 	dup 'bonespos ! | x y z cnt
-	nver 5 << + | 8 * 4
-	dup 'vertexbones ! | b1 b2 b3 b4
 	nbones 5 << + 
+	dup 'vertexbones ! | b1 b2 b3 b4
+	nver 5 << + | 8 * 4
 	'here !	
 	;
 

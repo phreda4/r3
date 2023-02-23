@@ -308,7 +308,7 @@
 |	here textobj - 10 >> "%d kb" .println
 	textmtl parsemtl
 	textobj parseobj
-	here textobj - 10 >> "%d kb" .println
+	|here textobj - 10 >> "%d kb" .println
 	here
 	;
 
