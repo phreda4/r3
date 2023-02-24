@@ -70,12 +70,12 @@
 #anip
 :val anip d@+ swap 'anip ! ;
 
-:xpos val 0 0 mtransi ;
-:ypos val 0 swap 0 mtransi ;
-:zpos val 0 0 rot mtransi ;
-:xrot val mrotxi ;
-:yrot val mrotyi ;
-:zrot val mrotzi ;
+:xpos val 0 0 mtran ;
+:ypos val 0 swap 0 mtran ;
+:zpos val 0 0 rot mtran ;
+:xrot val mrotx ;
+:yrot val mroty ;
+:zrot val mrotz ;
 #lani xpos ypos zpos xrot yrot zrot
 
 :anibones | flags --
@@ -86,14 +86,16 @@
 :drawbones | bones --
 	>b
 	framenow chsum * 2 << animation + 'anip !
+	matini
 	0 ( db@+ 1? dup $ff and
 		rot over - 1 + clamp0 | anterior-actual+1
 		nmpop
 		mpush
-		db@+ db@+ db@+ mtransi
+		db@+ db@+ db@+ mtran
 		swap anibones
 		b>
 		bonesmat> mcpyf
+		|bonesmat> midf
 		64 'bonesmat> +!
 		>b ) drop
 	nmpop
@@ -104,7 +106,7 @@
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 40.0 -80.0
+#pEye 0.0 40.0 -100.0
 #pTo 0 20.0 0.0
 #pUp 0 1.0 0
 
@@ -224,6 +226,7 @@
 	here 'bonesmat> !
 	model drawbones
 	
+
 	shaderd "finalBonesMatrices" glGetUniformLocation 
 	cbones 0 here glUniformMatrix4fv
 	

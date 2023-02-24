@@ -67,6 +67,8 @@
 |--- from kazmath/mat4.c
 
 :a]! 3 << a> + ! ;
+:a]+! 3 << a> + +! ;
+:a]@ 3 << a> + @ ;
 
 ::mper 
 	mat> dup >a 'mati 16 move 
@@ -172,6 +174,15 @@
 	pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@ + a!+
 	rot a@+ *. rot a@+ *. + swap a@+ *. + a@ + a! ;
 
+::mtran | x y z --
+	mat> >a
+	pick2 0 a]@ *. pick2 4 a]@ *. + over 8 a]@ *. + 12 a]+!
+	pick2 1 a]@ *. pick2 5 a]@ *. + over 9 a]@ *. + 13 a]+!
+	pick2 2 a]@ *. pick2 6 a]@ *. + over 10 a]@ *. + 14 a]+!
+	pick2 3 a]@ *. pick2 7 a]@ *. + over 11 a]@ *. + 15 a]+!
+	3drop
+	;
+	
 |-----------------------------
 ::mscale | x y z -- ; post
 	mat> >a

@@ -81,7 +81,6 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 
 |--------------------------------
 :bvhrload
-	here "%h" .println
 	here dup rot load 'here !
 	4 + d@+ 'animation !
 	d@+ 'chsum !
@@ -89,8 +88,6 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 	d@+ 'frametime ! 
 	dup 'animation +!
 	'model !
-	here "%h" .println
-	
 	;
 
 |------------------------------------------
