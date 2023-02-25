@@ -252,7 +252,7 @@
 
 : 
 	initnn
-	rerand
+	msec time rerand
 	randnn
 	
 	.cls

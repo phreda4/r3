@@ -148,7 +148,7 @@
 	;
 
 : 
-	rerand
+	msec time rerand
 	"r3sdl" 800 600 SDLinit
 	SNDInit
 

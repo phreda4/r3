@@ -1,7 +1,7 @@
 | OpenGL example
 | PHREDA 2023
 |MEM 64
-^r3/lib/3d.r3
+^r3/lib/3dgl.r3
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 ^r3/util/arr16.r3

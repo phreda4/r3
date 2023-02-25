@@ -1,7 +1,7 @@
 | OpenGL example
 | PHREDA 2023
 
-^r3/lib/3d.r3
+^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
 
 ^r3/win/sdl2.r3

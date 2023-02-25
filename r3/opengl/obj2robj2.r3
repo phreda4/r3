@@ -5,14 +5,13 @@
 ^r3/win/console.r3
 ^r3/win/sdl2gl.r3
 
-^r3/lib/3d.r3
+^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
 
 ^r3/lib/trace.r3
 
 ^r3/util/loadobj.r3
 ^r3/opengl/gltext.r3
-
 
 #filename * 1024
 #cutpath ( $2f )
@@ -62,7 +61,6 @@
 	animation over - 4 >> 'cbones !
 	'model !
 	;
-	
 
 |-------------------------------
 #bonesmat>
@@ -70,20 +68,17 @@
 #anip
 :val anip d@+ swap 'anip ! ;
 
-:xpos val 0 0 mtran ;
-:ypos val 0 swap 0 mtran ;
-:zpos val 0 0 rot mtran ;
-:xrot val mrotx ;
-:yrot val mroty ;
-:zrot val mrotz ;
-#lani xpos ypos zpos xrot yrot zrot
+#lani 'mtranx 'mtrany 'mtranz 'mrotx 'mroty 'mrotz 
 
 :anibones | flags --
 	8 >> $ffffff and
-	( 1? dup $f and 1 - 3 << 'lani + @ ex 4 >> )
-	drop ;
+	( 1? 
+		val
+		over $f and 1 - 3 << 'lani + @ ex 
+		4 >> ) drop ;
 
-:drawbones | bones --
+:matbones | bones --
+	here 'bonesmat> !
 	>b
 	framenow chsum * 2 << animation + 'anip !
 	matini
@@ -95,10 +90,17 @@
 		swap anibones
 		b>
 		bonesmat> mcpyf
-		|bonesmat> midf
 		64 'bonesmat> +!
 		>b ) drop
 	nmpop
+	;
+
+:matbonesid
+	here 'bonesmat> !
+	31 ( 1? 1 -
+		bonesmat> midf
+		64 'bonesmat> +!	
+		) drop
 	;
 	
 |-------------------------	
@@ -106,7 +108,7 @@
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 40.0 -100.0
+#pEye 0.0 40.0 -80.0
 #pTo 0 20.0 0.0
 #pUp 0 1.0 0
 
@@ -165,12 +167,6 @@
 
 #bufferv
 :initobj | "" -- obj
-	|mark
-
-|	here "%h" .println
-
-|	bones memmap
-	
 	here 'bufferv !
 	facel >b
 	nface ( 1? 1 -
@@ -179,8 +175,6 @@
 		b@+ ,posnor
 		8 b+
 		) drop
-	
-|	here bufferv - "%d bytes" .println
 	
     1 'VAO glGenVertexArrays
     1 'VBO glGenBuffers
@@ -223,9 +217,8 @@
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D idt glBindTexture
 
-	here 'bonesmat> !
-	model drawbones
-	
+|	model matbones
+	matbonesid
 
 	shaderd "finalBonesMatrices" glGetUniformLocation 
 	cbones 0 here glUniformMatrix4fv
@@ -254,7 +247,10 @@
 :movelook
 	SDLx SDLy
 	ym over 'ym ! - neg 7 << 'rx +!
-	xm over 'xm ! - 7 << neg 'ry +!  ;
+	xm over 'xm ! - 7 << neg 'ry +!  
+	rx $ffff and 32 << ry $ffff and 16 << or 0 0 0 mrpos
+	'fmodel mcpyf	
+	;
 
 #modelo
 
@@ -271,7 +267,7 @@
 :objinfo
 	0.002 'gltextsize !
 	'filename -0.98 -0.9 gltext
-	"F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" -0.98 0.9 gltext
+	"Obj view" -0.98 0.9 gltext
 	frames framenow "%d %d" sprint -0.98 -0.8 gltext
 	
 	;
@@ -307,6 +303,8 @@
 	
 	initvec
 	initshaders
+	
+	matbonesid
 	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable

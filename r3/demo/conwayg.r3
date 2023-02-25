@@ -60,7 +60,7 @@
 	drop ;
 
 :arenarand
-	rerand
+	msec time rerand
 	arena >a
 	0 ( 512 <? 
 		0 ( 512 <? 

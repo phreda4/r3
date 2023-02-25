@@ -33,7 +33,7 @@
 		) drop ;
 
 :llenapuntos
-	rerand			| numeros al azar
+	msec time rerand			| numeros al azar
 	'puntos 		| mem    ; memoria donde lo graba
 	$fff ( 1? 1 -	| mem cnt
 		sw randmax 	| mem cnt rand ; entre 0 y sw (ancho de pantalla)

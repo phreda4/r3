@@ -32,6 +32,36 @@
 	7 << mat> swap - |'mats <? ( 'mats nip )
 	'mat> ! ;
 
+|----------- generate floating point matrix
+
+::getfmat | -- fmat ; make float point mat
+	mat> dup 128 + >b >a
+	16 ( 1? 1 - a@+ f2fp db!+ ) drop 
+	mat> 128 + ;
+	
+::gettfmat |  -- fmat ; transpose
+	mat> dup 128 + >b
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	;
+
+::mcpyf | fmat --
+	>b mat> >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+
+::mcpyft | fmat -- ; transpose
+	>b mat> 
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	;	
+	
+::midf | fmat --
+	>b 'mati >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+ 
+	
 | Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 |--- from kazmath/mat4.c
@@ -88,31 +118,8 @@
     'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
     1.0 b! |mat[15] = 1.0;
 	;
-
-
 	
 |-----------------------------
-::mtrans | x y z --
-	mat> >a
-	pick2 a> 96 + @ *. a@ + a!+
-	pick2 a> 96 + @ *. a@ + a!+
-	pick2 a> 96 + @ *. a@ + a!+
-	rot a@ + a!+
-	over a> 64 + @ *. a@ + a!+
-	over a> 64 + @ *. a@ + a!+
-	over a> 64 + @ *. a@ + a!+
-	swap a@ + a!+
-	dup a> 32 + @ *. a@ + a!+
-	dup a> 32 + @ *. a@ + a!+
-	dup a> 32 + @ *. a@ + a!+
-	a> +! ;
-
-::mtransi | x y z -- ;pre
-	mat> >a
-	pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@ + a!+
-	pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@ + a!+
-	rot a@+ *. rot a@+ *. + swap a@+ *. + a@ + a! ;
-
 ::mtran | x y z --
 	mat> >a
 	pick2 0 a]@ *. pick2 4 a]@ *. + over 8 a]@ *. + 12 a]+!
@@ -126,7 +133,6 @@
 	dup 1 a]@ *. 13 a]+!
 	dup 2 a]@ *. 14 a]+!
 	3 a]@ *. 15 a]+! ;
-
 
 ::mtrany | y --
 	mat> >a
@@ -143,6 +149,55 @@
 	11 a]@ *. 15 a]+! ;
 
 
+::mrotx	| rx --
+	mat> dup >a 128 + >b
+	sincos | sin cos
+    4 a]@ over *. 8 a]@ pick3 *. + b!+
+    5 a]@ over *. 9 a]@ pick3 *. + b!+
+	6 a]@ over *. 10 a]@ pick3 *. + b!+
+    7 a]@ over *. 11 a]@ pick3 *. + b!+
+	swap neg | cos sin
+	4 a]@ over *. 8 a]@ pick3 *. + b!+
+	5 a]@ over *. 9 a]@ pick3 *. + b!+
+	6 a]@ over *. 10 a]@ pick3 *. + b!+
+	7 a]@ over *. 11 a]@ pick3 *. + b!+
+	2drop 
+	mat> 4 3 << + mat> 128 + 8 move
+	;
+	
+::mroty
+	mat> dup >a 128 + >b
+	sincos swap | cos sin
+    0 a]@ over *. 8 a]@ pick3 *. + b!+ 
+    1 a]@ over *. 9 a]@ pick3 *. + b!+ 
+	2 a]@ over *. 10 a]@ pick3 *. + b!+
+    3 a]@ over *. 11 a]@ pick3 *. + b!+
+	neg swap | sin cos
+    0 a]@ over *. 8 a]@ pick3 *. + b!+
+    1 a]@ over *. 9 a]@ pick3 *. + b!+
+	2 a]@ over *. 10 a]@ pick3 *. + b!+
+    3 a]@ over *. 11 a]@ pick3 *. + b!+
+	2drop 
+	mat> mat> 128 + 4 3 << + 4 move | 0..3
+	mat> 8 3 << + mat> 128 + 4 move | 8..11
+	;
+	
+::mrotz	
+	mat> dup >a 128 + >b
+	sincos | sin cos
+    0 a]@ over *. 4 a]@ pick3 *. + b!+ 
+	1 a]@ over *. 5 a]@ pick3 *. + b!+ 
+	2 a]@ over *. 6 a]@ pick3 *. + b!+ 
+	3 a]@ over *. 7 a]@ pick3 *. + b!+ 
+	swap neg | cos -sin
+	0 a]@ over *. 4 a]@ pick3 *. + b!+ 
+	1 a]@ over *. 5 a]@ pick3 *. + b!+ 
+	2 a]@ over *. 6 a]@ pick3 *. + b!+ 
+	3 a]@ over *. 7 a]@ pick3 *. + b!+ 
+	2drop 
+	mat> mat> 128 + 8 move
+	;
+	
 |-----------------------------
 ::mscale | x y z -- ; post
 	mat> >a
@@ -155,108 +210,6 @@
 	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	rot a@ *. a!+ swap a@ *. a!+ a@ *. a! ;
-
-|-----------------------------
-::mrotx | x -- ; posmultiplica
-	0? ( drop ; )
-	mat> 32 + >a
-	dup sin swap cos
-	a@ a> 32 + @ | s c e i
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c f j
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c g k
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c h l
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r *. r> + a> 24 + ! ;
-
-::mrotxi |x -- ; premultiplica
-	0? ( drop ; )
-	mat> 8 + >a
-	dup sin swap cos
-	a@ a> 8 + @ | s c b c
-	pick2 pick2 *. pick4 neg pick2 *. + a!+ | s c b c
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c f g
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c j k
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c m o
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	rot *. >r *. r> + a! ;
-
-|-----------------------------
-::mroty | y  --
-	0? ( drop ; )
-	mat> >a
-	dup sin swap cos
-	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 56 + !
-	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 56 + !
-	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 56 + !
-	a@ a> 64 + @ pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r swap neg *. r> + a> 56 + ! ;
-
-::mrotyi | y --
-	0? ( drop ; )
-	mat> >a
-	dup sin swap cos
-	a@ a> 16 + @ | s c a c
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
-	a@ a> 16 + @ | s c a c
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
-	a@ a> 16 + @ | s c a c
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 8 + ! 24 a+
-	a@ a> 16 + @ | s c a c
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r swap neg *. r> + a> 8 + ! ;
-
-|-----------------------------
-::mrotz | z --
-	0? ( drop ; )
-	mat> >a
-	dup sin swap cos
-	a@ a> 32 + @ | s c e i
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c e i
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c e i
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	pick2 *. >r pick2 neg *. r> + a> 24 + !
-	a@ a> 32 + @ | s c e i
-	pick2 pick2 *. pick4 pick2 *. + a!+
-	rot *. >r *. r> + a> 24 + ! ;
-
-::mrotzi | z --
-	0? ( drop ; )
-	mat> >a
-	dup sin swap cos
-	a@ a> 8 + @ | s c a b
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c a b
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c a b
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	pick2 *. >r pick2 *. r> + a!+ 16 a+
-	a@ a> 8 + @ | s c a b
-	pick2 pick2 *. pick4 neg pick2 *. + a!+
-	rot *. >r *. r> + a! ;
-
 
 |-----------------------------
 :invierte
@@ -292,127 +245,6 @@
 
 ::oxyztransform | -- x y z
 	mat> dup 24 + @ over 56 + @ rot 88 + @ ;
-
-|-----------------------------
-::2dmode | --
-	sw 1 >> 'ox !
-	sh 1 >> 'oy !
-	;
-
-::3dmode | fov --
-	sh *. dup 'yf ! 'xf !
-	sw 1 >> 'ox !
-	sh 1 >> 'oy !
-	matini
-	;
-
-|----------------------------
-::Omode | --
-	sw dup 1 >> 'ox !
-	sh dup 1 >> 'oy !
-	min dup 'xf ! 'yf !
-	matini
-	;
-	
-
-::whmode | w h --
-	over 1 >> 'ox ! 
-	dup 1 >> 'oy !
-	min dup 'xf ! 'yf !
-	matini
-	;
-
-|----------------------------
-::o3dmode | w h --
-	dup 1 >> 'oy !
-	over 1 >> 'ox !
-	min dup 'xf ! 'yf !
-	matini ;
-
-::p3d | x y z -- x y
-	dup >r
-	yf swap */ oy + swap
-	xf r> */ ox + swap ;
-
-::p3dz | x y z -- x y z
-	rot xf pick2 */ ox + | y z x'
-	rot yf pick3 */ oy +
-	rot ;
-
-::p3di | x y z -- z y x
-	swap yf pick2 */ oy +	| x z y'
-	rot xf pick3 */ ox + ;	| z y' x'
-
-::p3ditest | x y z -- z y x
-	xf over 20 <</ >r | 20 bits
-	swap r@ 20 *>> oy +
-	rot r> 20 *>> ox + ;
-
-::p3dizb | x y z -- z y x
-	swap over 20 *>> oy +
-	rot pick2 20 *>> ox + ;
-
-::p3dcz | z -- 1/z
-	0? ( 1 nip )
-	xf swap 20 <</ ;
-
-|----------------------------
-
-::p3d1 | x y z -- x y
-	dup >r
-	9 <</ oy + swap
-	r> 9 <</ ox + swap ;
-
-::p3di1 | x y z -- z y x
-	swap over 9 <</ oy +	| x z y'
-	rot pick2 9 <</ ox + ;	| z y' x'
-
-::project3d | x y z -- u v
-	transform 0? ( 3drop ox oy ; ) | x y z
-	rot xf pick2 */ ox + | y z x'
-	rot rot yf swap */ oy + ;
-
-::project3dz | x y z -- z x y
-	transform
-	0? ( 3drop ox oy 1 ; )
-	rot xf pick2 */ ox + | y z X
-	rot yf pick3 */ oy + ;
-
-::invproject3d | x y z -- x y
-	>r
-	oy - r@ yf */ swap
-	ox - r> xf */ swap ;
-
-::projectdim | x y z -- u v
-	transform
-	0? ( 3drop 0 0 ; )
-	>r
-	yf r@ */ swap
-	xf r> */ swap ;
-
-::project | x y z -- u v
-	0? ( 3drop ox oy ; )
-	rot xf pick2 */ ox +
-	rot rot yf swap */ oy +
-	;
-
-::projectv | x y z -- u v
-	rot xf pick2 */ ox +
-	rot rot yf swap */ oy +
-	;
-
-::inscreen | -- x y
-	oxyztransform
-	0? ( 3drop ox oy ; )
-	>r
-	yf r@ */ oy + swap
-	xf r> */ ox + swap ;
-
-::proyect2d | x y z -- x y
-	drop oy + swap ox + swap ;
-
-::aspect | -- a
-	sw sh 16 <</ ;
 
 |-------------- rota directo -----------------------------
 #cox #coy #coz
@@ -497,11 +329,10 @@
 	rot m31 *. rot m32 *. + swap m33 *. + a!
 	;
 
-|-------- with matrix in var
+|-- mat mult	
 ::mcpy | 'mat --	
 	mat> 16 move ;
 
-|-- mat mult	
 :mline | -- v
 	a@+ b@ *. 32 b+
 	a@+ b@ *. + 32 b+
@@ -519,7 +350,7 @@
 	mrow mrow mrow mrow drop
 	128 'mat> +!
 	;
-	
+
 ::mm* | 'mat --
 	>b mat> dup >a 128 +
 	mrow mrow mrow mrow drop

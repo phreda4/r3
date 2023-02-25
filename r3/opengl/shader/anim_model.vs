@@ -10,8 +10,7 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-const int MAX_BONES = 64;
-//const int MAX_BONE_INFLUENCE = 4;
+const int MAX_BONES = 32;
 uniform mat4 finalBonesMatrices[MAX_BONES];
 
 out vec2 TexCoords;
@@ -19,28 +18,13 @@ out vec2 TexCoords;
 void main()
 {
     vec4 totalPosition = vec4(0.0f);
- //   for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
- //   {
-//        if(boneIds[i] == -1) 
-//            continue;
-//        if(boneIds[i] >=MAX_BONES) 
-//        {
-//            totalPosition = vec4(pos,1.0f);
-//            break;
-//        }
-//        vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos,1.0f);
-//        totalPosition += localPosition * weights[i];
-//        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
-//   }
 	
 	totalPosition += (finalBonesMatrices[boneIds[0]] * vec4(pos,1.0f)) * weights[0];
 	totalPosition += (finalBonesMatrices[boneIds[1]] * vec4(pos,1.0f)) * weights[1];
 	totalPosition += (finalBonesMatrices[boneIds[2]] * vec4(pos,1.0f)) * weights[2];
 	totalPosition += (finalBonesMatrices[boneIds[3]] * vec4(pos,1.0f)) * weights[3];	
 	
-//	vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
-	
     mat4 viewModel = view * model;
-    gl_Position =  projection * viewModel * totalPosition;//vec4(pos,1.0f) ;//totalPosition;
+    gl_Position =  projection * viewModel * totalPosition;
 	TexCoords = tex;
 }

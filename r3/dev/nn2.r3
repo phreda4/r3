@@ -67,7 +67,7 @@
 	>a ( 1? 1 - 0 a!+ ) drop ;
 	
 :nnini |
-	rerand
+	msec time rerand
 	numInputs numHidden * hiddenWeights iniw
 	numHidden numOutputs * outputWeights iniw
 	numHidden hiddenLayerBias iniw

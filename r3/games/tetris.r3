@@ -227,13 +227,13 @@
 	0 'points !
 	300 'speed !
 	msec 'ntime ! 0 'dtime !
-	rerand
+	msec time rerand
 	6 randmax 1 + 'nextpiece !
 	'game SDLshow
 	;
 
 :
-	rerand
+	msec time rerand
 	"r3sdl" 800 600 SDLinit
 	start
 	SDLquit 

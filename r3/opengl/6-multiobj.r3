@@ -1,7 +1,7 @@
 | OpenGL example
 | PHREDA 2023
 |M 64
-^r3/lib/3d.r3
+^r3/lib/3dgl.r3
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 ^r3/util/arr16.r3
@@ -186,7 +186,7 @@
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
 |	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
-	'matcam mmcpy	| perspective matrix
+	'matcam mcpy	| perspective matrix
 
 |	matini
 	'fviewmat midf	| view matrix >>

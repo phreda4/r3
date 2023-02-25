@@ -1,7 +1,7 @@
 | OpenGL example
 | PHREDA 2023
 |MEM 64
-^r3/lib/3d.r3
+^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
 
 ^r3/win/sdl2.r3
@@ -213,7 +213,7 @@
 
 	matini 
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-	'matcam mmcpy
+	'matcam mcpy
 	
 	initgl 
 	'main SDLshow

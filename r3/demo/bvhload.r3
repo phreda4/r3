@@ -27,7 +27,7 @@
 
 #framenow
 
-#xcam 0 #ycam 0 #zcam 400.0
+#xcam 0 #ycam 0 #zcam -400.0
 #xr 0 #yr 0
 
 :,off+cha

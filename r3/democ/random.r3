@@ -7,7 +7,7 @@
 #array * 160 | 20 * 8bytes
 
 : 	.cls
-	rerand
+	msec time rerand
 	0 ( 1000000 <? 1 +
 		1 
 		15 randmax 3 << 'array +  | 0..14

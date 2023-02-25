@@ -16,8 +16,8 @@
 ::rand | -- rand
   seed $da942042e4dd58b5 * 1 + dup 'seed ! ;
 
-::rerand | --
-  time $a3b195354a39b70d * msec + 'seed ! ;
+::rerand | s1 s2 --
+  $a3b195354a39b70d * + 'seed ! ;
 
 ::randmax | max -- rand
 	rand 
