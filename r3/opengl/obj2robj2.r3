@@ -237,7 +237,6 @@
 	
 | MAIN
 |-----------------------------------
-#xcam 0 #ycam 0 #zcam -20.0
 #xm #ym
 #rx #ry
 
@@ -284,9 +283,6 @@
 	SDL_windows SDL_GL_SwapWindow
 	
 	SDLkey
-	<up> =? ( 1.0 'zcam +! )
-	<dn> =? ( -1.0 'zcam +! )
-
 	<f1> =? ( loadobj ) 
 	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
