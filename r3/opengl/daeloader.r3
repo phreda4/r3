@@ -10,8 +10,13 @@
 ^r3/lib/gui.r3
 ^r3/opengl/gltext.r3
 
-:>>sp0 | adr -- adr'/0	; proxima linea/0
-	>>sp dup c@ 0? ( nip ; ) drop ;
+::>>sp0 | adr -- adr'	; next space
+	dup c@ $3c =? ( swap 1 + swap ) drop
+	( c@+ $ff and 32 >? 
+		$3c <>?
+		drop ) drop 1 - 
+	dup c@ 0? ( nip ; ) drop ;
+	
 
 #filename * 1024
 #cnt 
@@ -28,11 +33,16 @@
 :]uv | n -- u1
 	3 << 2 * map1 + ;
 	
-#datavc
-#datap
+#trib * 2048
+#trib>
+
+#datavc		| count poli
+#datavc$
+
+#datap		| data ver
 #datap$
 
-|-----------------------------
+|-------------------------------
 :<float_array> | adr -- adr
 	"<float_array" =pre 0? ( drop ; ) drop
 	"count=" findstr
@@ -46,25 +56,25 @@
 		1? ) drop ;
 		
 
-:<vcount> | adr -- adr
+:<vcount> | cnt -- adr
 	"<vcount>" =pre 0? ( drop ; ) drop
-	>>sp0
+	8 +
 	here dup 'datavc ! >a
 	( trim 
-		"</vcount>" =pre 1? ( drop a> 'here ! ; ) drop
-		getnro a!+
+		"</vcount>" =pre 1? ( drop a> dup 'here ! 'datavc$ ! ; ) drop
+		getnro ca!+ | save bytes!!
 		1? ) drop ;		
 
-:<p> | adr -- adr
+:<p> | cnt -- adr
 	"<p>" =pre 0? ( drop ; ) drop
-	>>sp0
+	3 +
 	here dup 'datap ! >a
 	( trim 
 		"</p>" =pre 1? ( drop a> dup 'here ! 'datap$ ! ; ) drop
-		getnro a!+
+		getnro da!+ | save dwords
 		1? ) drop ;		
 
-|-----------------------------
+|-------------------------------
 :toklvl1a
 	;
 :parseAnimation | adr - adr
@@ -74,10 +84,10 @@
 		"</library_animations" =pre 1? ( drop ; ) drop
 		toklvl1a >>sp0 1? ) drop ;
 
-		
+|-------------------------------		
 :toklvl1ac		
 	;
-:parseAnimationClip | library node --
+:parseAnimationClip | --
 	"<library_animation_clips" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim
@@ -85,28 +95,39 @@
 		toklvl1ac 
 		>>sp0 1? ) drop ;
 
+|-------------------------------		
 :toklvl1c
 |	"<source" =pre 1? (
 	<float_array>
 	;
 	
-:parseController | library node --
+:tok<wei	
+	"<vertex_weights" =pre 0? ( drop ; ) drop
+	"count=" findstr
+	7 + str>nro 'cnt !
+	">" findstr 1 +
+	( trim 
+		"</vertex_weights" =pre 1? ( drop  ; ) drop
+		<vcount>
+		<p>
+		>>sp0 1? ) drop ;
+	
+:parseController | --
 	"<library_controllers" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_controllers" =pre 1? ( drop ; ) drop
-		toklvl1c 
+		tok<wei
 		>>sp0 1? ) drop ;
 
-|-------------------------
+|-------------------------------
 :loadimage | adr pre -- adr pre
 	swap
 	"id=" findstr 4 + | store id "
 	dup a!+
 	"<init_from>" findstr 11 + | filename "<"
 	dup a!+
-	swap
-	;
+	swap ;
 	
 :parseImage | library node --
 	"<library_images" =pre 0? ( drop ; ) drop
@@ -114,10 +135,10 @@
 	>>sp0
 	( trim 
 		"</library_images" =pre 1? ( drop a> 'here ! ; ) drop
-		"<image" =pre 1? ( loadimage ) drop
+		"<image " =pre 1? ( loadimage ) drop
 		>>sp0 1? ) drop ;
 
-		
+|-------------------------------		
 :parseEffect  | library node --
 	"<library_effects" =pre 0? ( drop ; ) drop
 	>>sp0
@@ -146,6 +167,7 @@
 		"</library_lights" =pre 1? ( drop ; ) drop
 		toklvl1c >>sp0 1? ) drop ;
 
+|-------------------------------
 
 :tok<source
 	"<source" =pre 0? ( drop ; ) drop
@@ -161,7 +183,25 @@
 		"</source" =pre 1? ( drop ; ) drop
 		<float_array>
 		>>sp0 1? ) drop ;
-		
+
+:getv | -- nv
+	da@+ $fffff and 
+	da@+ $fffff and 20 << or
+	da@+ $fffff and 40 << or ;
+
+:genvertexp
+	here trib> !+ 'trib> !
+	datap >a
+	datavc ( datavc$ <? 
+		c@+ 3 - >b
+		getv getv getv			| 1 2 3
+		( 	pick2 ,q over ,q dup ,q
+			b> 1? 1 - >b
+				nip getv )		| 1 3 4 ..etc
+		4drop
+		) drop
+	here trib> !+ 'trib> ! ;
+	
 |<polylist material="Ch46_bodySG" count="24564">		
 :tok<poly
 	"<polylist" =pre 0? ( drop ; ) drop
@@ -169,11 +209,30 @@
 	7 + str>nro 'cnt !
 	">" findstr 1 +
 	( trim 
-		"</polylist" =pre 1? ( drop ; ) drop
+		"</polylist" =pre 1? ( drop genvertexp ; ) drop
 		<vcount>
 		<p>
 		>>sp0 1? ) drop ;
 
+:genvertext
+	here trib> !+ 'trib> !
+	datap ( datap$ <?
+		d@+ $fffff and swap
+		d@+ $fffff and 20 << swap
+		d@+ $fffff and 40 << 
+		rot or rot or ,q
+		) drop 
+	here trib> !+ 'trib> ! ;
+
+:tok<tri
+	"<triangles" =pre 0? ( drop ; ) drop
+	"count=" findstr
+	7 + str>nro 'cnt !
+	">" findstr 1 +
+	( trim 
+		"</triangles" =pre 1? ( drop genvertext ; ) drop
+		<p>
+		>>sp0 1? ) drop ;
 
 :parseGeometry | library node --
 	"<library_geometries" =pre 0? ( drop ; ) drop
@@ -182,22 +241,59 @@
 		"</library_geometries" =pre 1? ( drop ; ) drop
 		tok<source
 		tok<poly
+		tok<tri
 		>>sp0 1? ) drop ;
+		
+|-------------------------------		
 	
-:parseNode | library node --
+:parseNode | --
 	"<library_nodes" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_nodes" =pre 1? ( drop ; ) drop
 		toklvl1c >>sp0 1? ) drop ;
 		
+|-----------------------------------	
+#bone * 2048	
+#bone>			| now
+#level
+	
+:tok>mat	
+	"<matrix" =pre 0? ( drop ; ) drop
+	">" findstr 1 +
+	16 ( 1? 1 - swap 
+		getfenro 
+		, swap ) drop 
+	"/matrix>" findstr 8 + ;
+	
+:lvlup
+	here level bone> !+ !+ 'bone> ! 
+	1 'level +! ;
+	
+:lvldn
+	-1 'level +! ;
+	
 :parseVisualScene | library node --
 	"<library_visual_scenes" =pre 0? ( drop ; ) drop
 	>>sp0
+	0 'level !
+	'bone 'bone> !
 	( trim 
+|		dup "%w" .println
 		"</library_visual_scenes" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
-		
+		"<node" =pre 1? ( lvlup ) drop
+		"</node" =pre 1? ( lvldn ) drop
+		tok>mat	
+|		"<instance_camera" =pre 1? ( ) drop
+|		"<instance_controller" =pre 1? ( ) drop
+|		"<instance_light" =pre 1? ( ) drop
+|		"<instance_geometry" =pre 1? ( ) drop
+|		"<instance_node" =pre 1? ( ) drop
+|		"<translate" =pre 1? ( ) drop
+|		"<rotate" =pre 1? ( ) drop
+		>>sp0 1? ) drop ;
+
+|-----------------------------------		
 :parseKinematicsModel | library node --
 	"<library_kinematics_models" =pre 0? ( drop ; ) drop
 	>>sp0
@@ -223,6 +319,7 @@
 |------------------------------
 :daeload | "" --
 	dup 'filename strcpy
+	'trib 'trib> !
 	here dup rot load 0 swap c!+ 'here !
 	( trim 
 		parseAnimation
@@ -276,7 +373,8 @@
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 100.0 -100.0
+#pEye 0.0 100.0 100.0
+|#pEye 0.0 0.0 10.0
 #pTo 0 90.0 0.0
 #pUp 0 1.0 0
 
@@ -335,15 +433,19 @@
 	here 'bufferv !
 	|......................
 	0 'nface !
-	datap ( datap$ <?
-		@+ ]pos @+ f2fp , @+ f2fp , @ f2fp ,
-		@+ ]nor @+ f2fp , @+ f2fp , @ f2fp ,
-		@+ ]uv @+ f2fp , @ neg f2fp ,
-		0 , 0 , 0 , 0 ,
-		1.0 f2fp , 0 , 0 , 0 ,
-		1 'nface +!
+	'trib ( trib> <?
+		@+ swap @+ rot | hasta desde
+		( over <? @+
+			dup $fffff and ]pos @+ f2fp , @+ f2fp , @ f2fp ,
+			dup 20 >> $fffff and ]nor @+ f2fp , @+ f2fp , @ f2fp ,
+			40 >> $fffff and ]uv @+ f2fp , @ neg f2fp , | y neg
+			0 , 0 , 0 , 0 ,
+			1.0 f2fp , 0 , 0 , 0 ,
+			1 'nface +!
+			) 2drop		
 		) drop
-	nface "%d" .println
+		
+|	nface "%d" .println
 
 	|......................
     1 'VAO glGenVertexArrays
@@ -422,6 +524,8 @@
 	cr
 	"dae loader" .println
 	"media/dae/walking/Walking.dae" daeload	
+|	"media/dae/demo.dae" daeload	
+|	"media/dae/AstroBoy_walk/astroBoy_walk_Maya.dae" daeload	
 
 	"test opengl" 800 600 SDLinitGL
 	GL_DEPTH_TEST glEnable 
