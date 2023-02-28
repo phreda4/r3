@@ -1,5 +1,6 @@
-| OpenGL example
+| Parse collada file format and show in opengl
 | PHREDA 2023
+
 |MEM 64
 
 ^r3/win/console.r3
@@ -10,17 +11,34 @@
 ^r3/lib/gui.r3
 ^r3/opengl/gltext.r3
 
-::>>sp0 | adr -- adr'	; next space
+|-------------- UTILS
+
+| next space or <, but if start with < skip (nodes not always space separator)
+:>>sp0 | adr -- adr'	; next space
 	dup c@ $3c =? ( swap 1 + swap ) drop
 	( c@+ $ff and 32 >? 
 		$3c <>?
 		drop ) drop 1 - 
 	dup c@ 0? ( nip ; ) drop ;
+
+| string in id (end with ") convert to hash in 64bits
+:strhash | adr -- hash
+	0 swap
+	( c@+ $22 <>? 
+		$7f and
+		rot dup 57 >>> swap 7 << or
+		xor swap ) 2drop ;
 	
+| copy filename, end with <	
+:cpyfile | dst adr  --
+	( c@+ $3c <>? rot c!+ swap ) 2drop 0 swap c! ;
+
 
 #filename * 1024
 #cnt 
-#images 
+
+#images 	| hash-filename
+#images$
 
 #position
 #normal
@@ -47,7 +65,6 @@
 	"<float_array" =pre 0? ( drop ; ) drop
 	"count=" findstr
 	7 + str>nro 'cnt !
-|	cnt "float array:%d" .println
 	">" findstr 1 +
 	here >a
 	( trim 
@@ -75,14 +92,28 @@
 		1? ) drop ;		
 
 |-------------------------------
-:toklvl1a
-	;
+#anisou * 1024
+#anisou$
+
+:tok<source
+	"<source" =pre 0? ( drop ; ) drop
+	"id=" findstr 4 + | store id "
+	here over strhash anisou$ !+ !+ 'anisou$ !
+	">" findstr 1 +	
+	( trim 
+		"</source" =pre 1? ( drop ; ) drop
+		<float_array>
+		>>sp0 1? ) drop ;	
+
+
 :parseAnimation | adr - adr
 	"<library_animations" =pre 0? ( drop ; ) drop
+	'anisou 'anisou$ !
 	>>sp0
 	( trim 
 		"</library_animations" =pre 1? ( drop ; ) drop
-		toklvl1a >>sp0 1? ) drop ;
+		tok<source 
+		>>sp0 1? ) drop ;
 
 |-------------------------------		
 :toklvl1ac		
@@ -96,10 +127,18 @@
 		>>sp0 1? ) drop ;
 
 |-------------------------------		
-:toklvl1c
-|	"<source" =pre 1? (
-	<float_array>
-	;
+#consou * 1024
+#consou$
+
+:tok<source
+	"<source" =pre 0? ( drop ; ) drop
+	"id=" findstr 4 + | store id "
+	here over strhash consou$ !+ !+ 'consou$ !
+	">" findstr 1 +	
+	( trim 
+		"</source" =pre 1? ( drop ; ) drop
+		<float_array>
+		>>sp0 1? ) drop ;	
 	
 :tok<wei	
 	"<vertex_weights" =pre 0? ( drop ; ) drop
@@ -112,11 +151,19 @@
 		<p>
 		>>sp0 1? ) drop ;
 	
+:tok<joi	
+	"<joints>" =pre 0? ( drop ; ) drop
+	( trim 
+		"</joints>" =pre 1? ( drop  ; ) drop
+		>>sp0 1? ) drop ;	
+		
 :parseController | --
 	"<library_controllers" =pre 0? ( drop ; ) drop
+	'consou 'consou$ !
 	>>sp0
 	( trim 
 		"</library_controllers" =pre 1? ( drop ; ) drop
+		tok<source
 		tok<wei
 		>>sp0 1? ) drop ;
 
@@ -124,17 +171,17 @@
 :loadimage | adr pre -- adr pre
 	swap
 	"id=" findstr 4 + | store id "
-	dup a!+
+	dup strhash ,q
 	"<init_from>" findstr 11 + | filename "<"
-	dup a!+
+	dup ,q
 	swap ;
 	
 :parseImage | library node --
 	"<library_images" =pre 0? ( drop ; ) drop
-	here dup 'images ! >a
+	here 'images !
 	>>sp0
 	( trim 
-		"</library_images" =pre 1? ( drop a> 'here ! ; ) drop
+		"</library_images" =pre 1? ( drop here 'images$ ! ; ) drop
 		"<image " =pre 1? ( loadimage ) drop
 		>>sp0 1? ) drop ;
 
@@ -144,28 +191,28 @@
 	>>sp0
 	( trim 
 		"</library_effects" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 :parseMaterial | library node --
 	"<library_materials" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_materials" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 :parseCamera | library node --
 	"<library_cameras" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_cameras" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 :parseLight | library node --
 	"<library_lights" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_lights" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 
 |-------------------------------
 
@@ -251,7 +298,7 @@
 	>>sp0
 	( trim 
 		"</library_nodes" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 |-----------------------------------	
 #bone * 2048	
@@ -299,21 +346,21 @@
 	>>sp0
 	( trim 
 		"</library_kinematics_models" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 :parseKinematicsScene | adr -- adr
 	"<library_physics_models" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</library_physics_models" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 :parsePhysicsModel | library node --
 	"<scene" =pre 0? ( drop ; ) drop
 	>>sp0
 	( trim 
 		"</scene" =pre 1? ( drop ; ) drop
-		toklvl1c >>sp0 1? ) drop ;
+		>>sp0 1? ) drop ;
 		
 
 |------------------------------
@@ -505,15 +552,10 @@
 	gui
 	'dnlook 'movelook onDnMove
 	$4100 glClear | color+depth
-	
 	objinfo
-	
 	renderobj
-	
 	SDL_windows SDL_GL_SwapWindow
-	
 	SDLkey
-
 	>esc< =? ( exit )
 	drop ;
 	
@@ -523,10 +565,28 @@
 :
 	cr
 	"dae loader" .println
+	|.................
 	"media/dae/walking/Walking.dae" daeload	
 |	"media/dae/demo.dae" daeload	
 |	"media/dae/AstroBoy_walk/astroBoy_walk_Maya.dae" daeload	
 
+"image" .println
+	images ( images$ <?
+		@+ "%h >> " .print
+		@+ "%w >> " .println
+		) drop
+"source con" .println		
+	'consou ( consou$ <?
+		@+ "%h >> " .print
+		@+ "%w >> " .println
+		) drop
+"source ani" .println		
+	'anisou  ( anisou$ <?
+		@+ "%h >> " .print
+		@+ "%w >> " .println
+		) drop
+	
+	|.................
 	"test opengl" 800 600 SDLinitGL
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable
