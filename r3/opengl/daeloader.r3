@@ -51,14 +51,17 @@
 :]uv | n -- u1
 	3 << 2 * map1 + ;
 	
+| triangle vertex
 #trib * 2048
 #trib>
 
 #datavc		| count poli
 #datavc$
-
-#datap		| data ver
+#datap		| data vertex
 #datap$
+
+#bwc #bwc$	| cnt bones w cnt
+#bwp #bwp$	| bones w 
 
 |-------------------------------
 :<float_array> | adr -- adr
@@ -71,26 +74,36 @@
 		"</float_array" =pre 1? ( drop a> 'here ! ; ) drop
 		getfenro a!+
 		1? ) drop ;
-		
 
-:<vcount> | cnt -- adr
-	"<vcount>" =pre 0? ( drop ; ) drop
+:<vcount> | var str -- str
+	swap
+	"<vcount>" =pre 0? ( drop nip ; ) drop
 	8 +
-	here dup 'datavc ! >a
+	here dup pick3 ! >a
 	( trim 
-		"</vcount>" =pre 1? ( drop a> dup 'here ! 'datavc$ ! ; ) drop
+		"</vcount>" =pre 1? ( drop a> dup 'here ! rot 8 + ! ; ) drop
 		getnro ca!+ | save bytes!!
 		1? ) drop ;		
-
-:<p> | cnt -- adr
-	"<p>" =pre 0? ( drop ; ) drop
+		
+:<p> | var str -- str
+	swap
+	"<p>" =pre 0? ( drop nip ; ) drop
 	3 +
-	here dup 'datap ! >a
+	here dup pick3 ! >a
 	( trim 
-		"</p>" =pre 1? ( drop a> dup 'here ! 'datap$ ! ; ) drop
+		"</p>" =pre 1? ( drop a> dup 'here ! rot 8 + ! ; ) drop
 		getnro da!+ | save dwords
 		1? ) drop ;		
 
+:<v> | var str -- str
+	swap
+	"<v>" =pre 0? ( drop nip ; ) drop
+	3 +
+	here dup pick3 ! >a
+	( trim 
+		"</v>" =pre 1? ( drop a> dup 'here ! rot 8 + ! ; ) drop
+		getnro da!+ | save dwords
+		1? ) drop ;	
 |-------------------------------
 #anisou * 1024
 #anisou$
@@ -130,6 +143,16 @@
 #consou * 1024
 #consou$
 
+:searchso | hash -- mem
+	consou ( consou$ <?
+		@+ pick2 =? ( nip ; ) drop
+		8 + ) drop
+	0
+	;
+	
+#vertexw
+
+|<input semantic="WEIGHT" source="#pCylinderShape1-skin-weights" offset="1"></input>
 :tok<source
 	"<source" =pre 0? ( drop ; ) drop
 	"id=" findstr 4 + | store id "
@@ -147,8 +170,8 @@
 	">" findstr 1 +
 	( trim 
 		"</vertex_weights" =pre 1? ( drop  ; ) drop
-		<vcount>
-		<p>
+		'bwc <vcount>
+		'bwp <v>
 		>>sp0 1? ) drop ;
 	
 :tok<joi	
@@ -257,8 +280,8 @@
 	">" findstr 1 +
 	( trim 
 		"</polylist" =pre 1? ( drop genvertexp ; ) drop
-		<vcount>
-		<p>
+		'datavc <vcount>
+		'datap <p>
 		>>sp0 1? ) drop ;
 
 :genvertext
@@ -278,7 +301,7 @@
 	">" findstr 1 +
 	( trim 
 		"</triangles" =pre 1? ( drop genvertext ; ) drop
-		<p>
+		'datap <p>
 		>>sp0 1? ) drop ;
 
 :parseGeometry | library node --
@@ -369,6 +392,7 @@
 	'trib 'trib> !
 	here dup rot load 0 swap c!+ 'here !
 	( trim 
+|	dup "%w" .println
 		parseAnimation
 		parseAnimationClip 
 		parseController
@@ -461,14 +485,48 @@
 #bonesmat>
 #cbones 31
 
-:matbonesid
+:matbonesid | fill animation with id
 	here 'bonesmat> !
 	31 ( 1? 1 -
 		bonesmat> midf
 		64 'bonesmat> +!	
-		) drop
+		) drop 	;
+
+#vertexb 
+#vertexw
+
+:genbonewe	
+	here 'vertexb !
+	bwp >a
+	bwc ( bwc$ <? 
+		c@+ 1 -
+		dup 3 - 0 max 
+		swap 3 max
+		( 1? 1 - da@+ ,c 4 a+ ) drop 
+		( 1? 1 - 8 a+ ) drop
+		) drop	
+		
+	here 'vertexw !
+	bwp >a
+	bwc ( bwc$ <? 
+		c@+ 1 - 
+		dup 3 - 0 max 
+		swap 3 max
+		( 1? 1 - 4 a+ da@+ , ) drop 
+		( 1? 1 - 8 a+ ) drop
+		) drop	
+	;
+		
+:weightvertex | nro --
+	dup 2 << vertexb + 
+|	c@+ , c@+ , c@+ , c@ ,
+	drop 0 , 0 , 0 , 0 ,
+	4 << vertexw +
+|	d@+ f2fp , d@+ f2fp , d@+ f2fp , d@ f2fp ,
+	drop 1.0 f2fp , 0 , 0 , 0 ,	
 	;
 	
+|---------------------------------	
 #VAO
 #VBO
 #bufferv
@@ -477,21 +535,29 @@
 #idt
 
 :initobj | "" -- obj
+	genbonewe	
 	here 'bufferv !
 	|......................
+	| generate geometry (without index)
+	
 	0 'nface !
 	'trib ( trib> <?
 		@+ swap @+ rot | hasta desde
 		( over <? @+
 			dup $fffff and ]pos @+ f2fp , @+ f2fp , @ f2fp ,
 			dup 20 >> $fffff and ]nor @+ f2fp , @+ f2fp , @ f2fp ,
-			40 >> $fffff and ]uv @+ f2fp , @ neg f2fp , | y neg
-			0 , 0 , 0 , 0 ,
-			1.0 f2fp , 0 , 0 , 0 ,
+			dup 40 >> $fffff and ]uv @+ f2fp , @ neg f2fp , | y neg
+			
+			$fffff and weightvertex
+|			drop
+|			0 , 0 , 0 , 0 ,
+|			1.0 f2fp , 0 , 0 , 0 ,
+			
 			1 'nface +!
 			) 2drop		
 		) drop
-		
+	nface 3 * 'cfaces !		
+	
 |	nface "%d" .println
 
 	|......................
@@ -519,9 +585,8 @@
 	
     0 glBindVertexArray	
 	|empty
-	nface 3 * 'cfaces !
+
 	"media/dae/walking/textures/Ch46_1001_Diffuse.png" glImgTex 'idt !
-	
 	;
 
 		
@@ -534,6 +599,8 @@
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D idt glBindTexture
 
+	|................
+	| animation
 |	model matbones
 	matbonesid
 
@@ -541,6 +608,7 @@
 	cbones 0 here glUniformMatrix4fv
 	
 |	framenow 1 + frames >=? ( 0 nip ) 'framenow !
+	|................
 	
     VAO glBindVertexArray
 	GL_TRIANGLE 0 cfaces glDrawArrays 
@@ -558,6 +626,19 @@
 	SDLkey
 	>esc< =? ( exit )
 	drop ;
+
+:debug
+	"image" .println
+	images ( images$ <? @+ "%h >> " .print @+ "%w >> " .println ) drop
+	"source con" .println		
+	'consou ( consou$ <? @+ "%h >> " .print @+ "%w >> " .println ) drop
+	"source ani" .println		
+	'anisou  ( anisou$ <? @+ "%h >> " .print @+ "%w >> " .println ) drop
+	
+	|	bwc ( bwc$ <? c@+ "%d " .print ) drop
+|		bwp ( bwp$ <? d@+ "%d " .print ) drop
+
+	;
 	
 |------------------------------
 |----------- BOOT
@@ -570,21 +651,7 @@
 |	"media/dae/demo.dae" daeload	
 |	"media/dae/AstroBoy_walk/astroBoy_walk_Maya.dae" daeload	
 
-"image" .println
-	images ( images$ <?
-		@+ "%h >> " .print
-		@+ "%w >> " .println
-		) drop
-"source con" .println		
-	'consou ( consou$ <?
-		@+ "%h >> " .print
-		@+ "%w >> " .println
-		) drop
-"source ani" .println		
-	'anisou  ( anisou$ <?
-		@+ "%h >> " .print
-		@+ "%w >> " .println
-		) drop
+	| debug
 	
 	|.................
 	"test opengl" 800 600 SDLinitGL
