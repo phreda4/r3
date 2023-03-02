@@ -38,3 +38,58 @@
 ::normFix | x y z -- x y z
 	pick2 dup *. pick2 dup *. + over dup *. + sqrt.
 	1? ( 1.0 swap /. ) >r rot r@ *. rot r@ *. rot r> *. ;
+	
+	
+|--- quaternios
+|#q 0 0 0 0
+
+::q4= | v1 v2 -- ; v1=v2
+	4 move ;
+
+::q4W | q dest --
+	>a @+ dup a!+ dup *. | x*x
+	swap @+ dup a!+ dup *. | y*y
+	swap @ dup a!+ dup *. | z*z
+	+ + 1.0 swap - abs sqrt. neg a!+
+	;
+
+::q4dot | q1 q2 -- dot
+	>a
+	@+ a@+ *. swap @+ a@+ *. swap @+ a@+ *. swap @ a@+ *. 
+	+ + + ;
+	
+::q4inv | q1 q2d --
+	2dup q4dot 1.0 swap /.
+	rot >a swap | invdot d
+	over a@+ neg *. swap !+
+	over a@+ neg *. swap !+
+	over a@+ neg *. swap !+
+	swap a@ *. swap !
+	;
+
+::q4conj | q1 q2d --
+	>a
+	@+ neg a!+
+	@+ neg a!+
+	@+ neg a!+
+	@ a! ;
+
+::q4len | q -- len
+	@+ dup *. swap
+	@+ dup *. swap	
+	@+ dup *. swap
+	@+ dup *. swap
+	+ + + sqrt. ;
+	
+::q4nor | q qd --
+	over q4len | q qd len
+	0? ( drop nip 0 4 fill ; )
+	1.0 swap /.
+	swap >a
+	swap
+	@+ pick2 *. a!+
+	@+ pick2 *. a!+
+	@+ pick2 *. a!+
+	@ *. a! ;
+	
+

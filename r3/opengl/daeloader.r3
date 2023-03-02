@@ -153,6 +153,13 @@
 #vertexw
 
 |<input semantic="WEIGHT" source="#pCylinderShape1-skin-weights" offset="1"></input>
+:tok<input
+	"<input semantic=""WEIGHT""" =pre 0? ( drop ; ) drop
+	"source=" findstr
+	8 + strhash 
+	searchso 'vertexw !
+	;
+	
 :tok<source
 	"<source" =pre 0? ( drop ; ) drop
 	"id=" findstr 4 + | store id "
@@ -160,6 +167,7 @@
 	">" findstr 1 +	
 	( trim 
 		"</source" =pre 1? ( drop ; ) drop
+		tok<input
 		<float_array>
 		>>sp0 1? ) drop ;	
 	
@@ -549,7 +557,6 @@
 			dup 40 >> $fffff and ]uv @+ f2fp , @ neg f2fp , | y neg
 			
 			$fffff and weightvertex
-|			drop
 |			0 , 0 , 0 , 0 ,
 |			1.0 f2fp , 0 , 0 , 0 ,
 			
