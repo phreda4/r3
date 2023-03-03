@@ -8,7 +8,7 @@ Now the graphic library is not mandatory, then boot in console mode.
 
 This make posible utilice any Library, test with SDL2, SDLmixer, SDLTTF and FFMPEG. I'm interest in connect with OPENGL, VULKAN, FCGI, MariaDB or whatever need.
 
-This version start in WIN enviroment, I try to run in LINUX and Raspberry PI 4 commming next, I not have mac but the R3d4 is working on this system, I hope this working too.
+This version start in WIN enviroment, I try to run in LINUX and Raspberry PI 4 commming next, I not have mac but the R3d4 is working on this system, I hope this working too. See 'mainl.r3' for try the linux version.
 
 The vm used here is
 https://github.com/phreda4/r3evm
