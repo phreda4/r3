@@ -10,6 +10,6 @@
 	.cls
 	"show GETCH value for keys" .println
 	"press ESC to quit." .println
-	cr
+	.cr
 	main ;
 

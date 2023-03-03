@@ -333,7 +333,7 @@
 	
 	1000 'arrayobj p.ini 
 |	.cls	
-	cr cr cr cr glinfo
+	.cr .cr .cr .cr glinfo
 	"<esc> - Exit" .println
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println

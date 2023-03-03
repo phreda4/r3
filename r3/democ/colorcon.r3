@@ -9,7 +9,7 @@
 			dup 
 			"^[%dm %d ^[m" .printe
 			1 + ) drop
-		cr
+		.cr
 		1 + ) drop 
 		
 	.input

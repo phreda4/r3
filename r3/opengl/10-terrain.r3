@@ -410,7 +410,7 @@ here 'ftex !
 	genfloor
 	
 |	.cls	
-	cr cr glinfo
+	.cr .cr glinfo
 	"<esc> - Exit" .println
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println

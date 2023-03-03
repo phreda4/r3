@@ -243,6 +243,7 @@
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 
+|--- integer to floating point
 ::i2fp | i -- f
 	0? ( ; )
 	dup 63 >> swap	| sign i
@@ -253,7 +254,8 @@
 	swap $7fffff and or 
 	swap $80000000 and or 
 	;
-	
+
+|--- fixed point to floating point	
 ::f2fp | f.p -- fp
 	0? ( ; )
 	dup 63 >> swap	| sign i
@@ -265,4 +267,12 @@
 	swap $80000000 and or 
 	;
 	
-
+|--- floating point	to fixed point (32 bit but sign bit in 64)
+:shift
+	-? ( neg >> ; ) << ;
+	
+::fp2f | fp -- fixed point
+	dup $7fffff and $800000 or
+	over 23 >> $ff and 134 - 
+	shift 
+	swap 63 >> - ;

@@ -71,7 +71,7 @@
 	'name "mem/main.mem" load drop
 	'name r3plain
 	
-	cr "press <enter> to continue..." .print	
+	.cr "press <enter> to continue..." .print	
 	.input
 	;
 

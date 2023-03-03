@@ -116,10 +116,10 @@
 	pw pv pu "u:%d v:%d w:%d" .println
 	0 ( nv <? 
 		dup 'v + c@ "%d " .print
-		1 + ) drop cr
+		1 + ) drop .cr
 	0 ( ni <? 
 		dup 'i + c@ "%d " .print
-		1 + ) drop cr ;
+		1 + ) drop .cr ;
 		
 #loop		
 :triangulate

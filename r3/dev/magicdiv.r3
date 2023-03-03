@@ -71,18 +71,18 @@
 	nro calcmagic
 	nro calcmagic2
 	
-	nro "/%d" .print cr
-	sn mn "%h %h *>> " .print cr
-	sn2 mn2 "%h %h *>> " .print cr
+	nro "/%d" .print .cr
+	sn mn "%h %h *>> " .print .cr
+	sn2 mn2 "%h %h *>> " .print .cr
 |	nro findinv "%h" .print cr
-	cr
+	.cr
 	
 	-1800 ( 1800 <? 210 +
 		nro over "%d/%d=" .print
 		dup nro / "%d " .print
 		dup divc "%d " .print
 		dup divc2 "%d " .print
-		cr ) drop ;
+		.cr ) drop ;
 
 :
 	test

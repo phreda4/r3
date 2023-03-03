@@ -590,7 +590,7 @@
 	'PSP NOS <? (
 		TOS "%d " .print
 		) drop
-	cr
+	.cr
 	" R) " .print
 	'RSP 8 +
 	( RTOS <=?

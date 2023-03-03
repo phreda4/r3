@@ -188,13 +188,13 @@
 
 	initshaders
 
-	cr 
+	.cr 
 	glInfo		
-	cr 
+	.cr 
 	"<esc> - Exit" .println
 	"<f1> - 1 obj moving" .println
 	"<esp> - 1 obj fix" .println	
-	cr
+	.cr
 
 	'main SDLshow
 	SDL_Quit 

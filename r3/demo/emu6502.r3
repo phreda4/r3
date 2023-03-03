@@ -92,13 +92,13 @@
 
 :
 	.cls
-	" ejecutando 6502..." .print cr
+	" ejecutando 6502..." .print .cr
 
 	msec
 
 	bench6502
 
-	msec swap - " resultado %d ms " .print cr
+	msec swap - " resultado %d ms " .print .cr
 	" Presione <ENTER> para continuar..." .print
 	.input
 	;

@@ -111,9 +111,9 @@
 		0 ( over <? | layer lsize nro
 			b@+ "%f " .print
 			1 + ) 2drop
-		cr
+		.cr
 		1 + ) drop
-	cr
+	.cr
 	Weights >a
 	0 ( nnsize 1 - <?
 		dup nnsizel
@@ -122,9 +122,9 @@
 			0 ( over <? | l lsize1 n1 lsize2 n2
 				b@+ "%f " .print
 				1 + ) 2drop
-			cr
+			.cr
 			1 + ) 2drop
-		cr
+		.cr
 		1 + ) drop ;
 	
 |--------------------------------------	foward propagation
@@ -231,7 +231,7 @@
 			getout @ "%f " .print
 			
 			0.1 + ) drop
-		cr
+		.cr
 		0.1 + ) drop ;	
 		
 |--------------------------------------	main

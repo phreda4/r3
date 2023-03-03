@@ -42,6 +42,6 @@
 	|640 410 32 << or 
 	410 640 32 << or 
 	'sdlbox 64boxratio
-	cr
+	.cr
 	.printbox	
 	;

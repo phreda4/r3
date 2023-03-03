@@ -343,7 +343,7 @@
 	initvec
 
 |	.cls	
-	cr cr glinfo
+	.cr .cr glinfo
 	"<esc> - Exit" .println
 	
 	;

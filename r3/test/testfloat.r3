@@ -68,6 +68,36 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 	swap $80000000 and or 
 	;
 	
+:shift
+	-? ( neg >> ; ) << ;
+	
+:fp2f | fp -- fixed point
+	dup $7fffff and $800000 or
+	over 23 >> $ff and 134 - 
+	shift swap -? ( drop neg ; ) drop
+	;
+
+:parsefloat
+	-2.4 dup "%f %h" .println "-2.4" getfenro dup "%f %h" .println
+	-2.8 dup "%f %h" .println "-2.8" getfenro dup "%f %h" .println
+	.cr
+
+	-2.75 0.1 + dup "-2.65 %f %h" .print "-2.65" getfenro dup " %f %h" .println
+	0 2.75 - dup "-2.75 %f %h" .print "-2.75" getfenro dup " %f %h" .println
+	2.75 dup "2.75 %f %h" .print "2.75" getfenro dup " %f %h" .println
+	;
+	
+:incparse
+	0.2 dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	0.2 - dup dup "%f %h" .println
+	drop ;
+	
 :
 .cls
 "test to float" .println
@@ -75,39 +105,25 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 600 dup i2f "%h %d" .println
 -10 dup i2f "%h %d" .println
 38452 dup i2f "%h %d" .println
-
+.cr
 1.0 dup dup x2f "3f800000 %h %f %h " .println
+1.0 x2f fp2f "%f" .println
+
 12.0 dup dup x2f "41400000 %h %f %h " .println
-2.5 dup dup x2f "40200000 %h %f %h " .println
-0.25 dup dup x2f "3e800000 %h %f %h " .println
+12.0 x2f fp2f "%f" .println
+
+-2.5 dup dup x2f "40200000 %h %f %h " .println
+-2.5 x2f 32 << 32 >> fp2f "%f" .println
+
+-0.25 dup dup x2f "3e800000 %h %f %h " .println
+-0.25 x2f 32 << 32 >> fp2f "%f" .println
+
 0.6554 dup dup x2f "3f27c84b %h %f %h " .println
+0.6554 x2f fp2f "%f" .println
 
--2.4 dup "%f %h" .println
-"-2.4" getfenro dup "%f %h" .println
 
--2.8 dup "%f %h" .println
-"-2.8" getfenro dup "%f %h" .println
-cr
-
--2.75 0.1 + dup "-2.65 %f %h" .print
-"-2.65" getfenro dup " %f %h" .println
-
-0 2.75 - dup "-2.75 %f %h" .print
-"-2.75" getfenro dup " %f %h" .println
-
-2.75 dup "2.75 %f %h" .print
-"2.75" getfenro dup " %f %h" .println
-
-0.2 dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-0.2 - dup dup "%f %h" .println
-
-drop
+|parsefloat
+|incparse
 
 waitesc
 ;

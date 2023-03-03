@@ -21,7 +21,7 @@
 #csize
 
 :printdiffimg
-	cr cr
+	.cr .cr
 	pixels here
 	hi wi * ( 1? 1 -
 		hi wi * over - "%d. " .print
@@ -29,7 +29,7 @@
 		) 3drop	;
 
 :printout
-	cr cr
+	.cr .cr
 	csize "%d" .println
 	code csize ( 1? 1 - swap 
 		c@+ $ff and "%h " .print 

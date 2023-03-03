@@ -69,7 +69,7 @@
 |		over "%l%." filelog
 			( $5e =? drop | $5e ^  Include
 			ininc? 0? ( drop
-|				cr dup 20 type cr
+|				.cr dup 20 type .cr
 				load.inc 0? ( drop ; ) |no existe
 				includes
 				error 1? ( drop ; ) drop
@@ -77,7 +77,7 @@
 			>>cr trimcar )
 		includepal ) 2drop
 	add.inc 
-|	cr debuginc trace	
+|	.cr debuginc trace	
 	;
 
 ::r3-stage-1 | str -- err/0

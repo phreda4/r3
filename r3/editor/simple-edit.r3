@@ -566,7 +566,7 @@
 	;
 
 :btnf | "" "fx" --
-	sp
+	.sp
 	$ff0000 'ink ! backprint
 	$ffffff 'ink ! emits
 	$ff00 'ink ! emits
@@ -588,9 +588,9 @@
 	$ff00 'ink !
 	":r3 editor" emits
 	xcode wcode + 8 - gotox
-	$ffff 'ink ! sp
-	xcursor 1 + .d emits sp
-	ycursor 1 + .d emits sp
+	$ffff 'ink ! .sp
+	xcursor 1 + .d emits .sp
+	ycursor 1 + .d emits .sp
 	xcode ycode hcode + gotoxy
 	panelcontrol 1? ( drop barrac ; ) drop
     $ff00 'ink !

@@ -97,7 +97,7 @@ $ff8080 $80ff80 $8080ff $ffff80 $80ffff $ff80ff $7f7f7f $7f8080 $807f00 $80807f 
 		d@+ "%f " .print
 		d@+ "%f " .print
 		d@+ "%f " .print
-		cr
+		.cr
 		) 2drop ;
 
 #xop #yop

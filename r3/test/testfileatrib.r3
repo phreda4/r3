@@ -38,7 +38,7 @@
 	@+ todate 
 	@+ swapd "size: %d" .println
 	drop
-	cr
+	.cr
 	;
 	
 		

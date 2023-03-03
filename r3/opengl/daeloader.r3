@@ -651,7 +651,7 @@
 |----------- BOOT
 |------------------------------
 :
-	cr
+	.cr
 	"dae loader" .println
 	|.................
 	"media/dae/walking/Walking.dae" daeload	

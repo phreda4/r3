@@ -40,7 +40,7 @@
 		150 ( 160 <? 
 			2dup SDLgetpixel "%h " .print 
 			1 + ) drop
-		1 + cr ) drop
+		1 + .cr ) drop
 	;
 	
 :drawl

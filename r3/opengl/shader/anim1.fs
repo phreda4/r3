@@ -16,7 +16,7 @@ void main()
     vec3 light_color = vec3(1.f, 1.f, 1.f);
     float abbient_K = 0.6f;
     float specular_K = 0.9f;
-    float specular_P = 32f;
+    float specular_P = 32.0f;
 
     // Ambient.
     vec3 ambient = abbient_K * light_color;

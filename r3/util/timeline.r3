@@ -379,7 +379,7 @@
 		@+ "%d " .print
 		@+ "%d " .print
 		@+ "%d " .println
-		) drop cr ;
+		) drop .cr ;
 
 ::debugtimeline
 	.cls
@@ -389,8 +389,8 @@
 	[ dup @+ "%h " .print 
 		@+ "%d " .print  
 		@+ 64xywh "%d,%d:%d,%d " .print 
-		@ "%h " .println ; ] 'screen p.mapv cr
-	cr
+		@ "%h " .println ; ] 'screen p.mapv .cr
+	.cr
 	[ dup @+ "%f " .print
 		@+ "%f " .print
 		@+ "%h " .print
@@ -398,8 +398,8 @@
 		@+ 64xywh "%d,%d:%d,%d " .print
 		@+ "%d " .print
 		@ "%d " .print
-		cr ; ] 'fxp p.mapv cr
-	cr
+		.cr ; ] 'fxp p.mapv .cr
+	.cr
 	;
 	
 ::debugtlmem

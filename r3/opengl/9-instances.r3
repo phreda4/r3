@@ -186,7 +186,7 @@
 	1000 'arrayobj p.ini 
 	1000 ( 1? 1 - +objr ) drop 
 |	.cls	
-	cr cr glinfo
+	.cr .cr glinfo
 	"1000 instances" .println
 	"<esc> - Exit" .println
 

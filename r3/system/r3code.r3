@@ -51,7 +51,7 @@
     defnow ,wordinfo ,eol
     empty
     here .print
-	cr
+	.cr
 	;
 
 :wcursor
@@ -63,7 +63,7 @@
 	4 << dicc +
 	@+ "%w " .print
 	drop
-	cr
+	.cr
 	;
 
 :pagdef

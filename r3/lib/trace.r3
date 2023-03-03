@@ -12,7 +12,7 @@
 
 ::memdumpc | adr cnt --
 	( 1? 1 - 
-		swap c@+ emit
+		swap c@+ .emit
 		swap ) 2drop ;
 
 ::clearlog
@@ -24,7 +24,7 @@
 #memini
 
 :.dh
-	$f and $30 + $39 >? ( 7 + ) emit ;
+	$f and $30 + $39 >? ( 7 + ) .emit ;
 	
 :.print2hex | nro --
 	dup 4 >> .dh .dh ;
@@ -36,8 +36,8 @@
 		dup "%h:" .print
 		dup 32 ( 1? 1 - swap c@+ .print2hex swap ) 2drop
 		": " .print
-		32 ( 1? 1 - swap c@+ 32 <? ( $2e nip ) emit swap ) drop
-		cr
+		32 ( 1? 1 - swap c@+ 32 <? ( $2e nip ) .emit swap ) drop
+		.cr
 		swap 1 + ) 2drop ;
 	
 ::memmap | inimem --
@@ -57,7 +57,7 @@
 	.cls
 	memini 0
 	( 24 <? swap
-		pick2 ex cr
+		pick2 ex .cr
 		swap 1 + ) 2drop ;
 	 
 ::memmapv | 'v mem --

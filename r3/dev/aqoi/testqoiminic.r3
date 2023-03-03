@@ -201,7 +201,7 @@ $8 3 6 6 6 5 4 1 2 3
 		swap 1 - 1? swap 
 		'bnext + c@ $ff and  | byte cnt first
 		) 2drop 
-|	maxcnt " max:%d" .print cr 
+|	maxcnt " max:%d" .print .cr 
 	;
 	
 #adrfrom
@@ -286,7 +286,7 @@ $8 3 6 6 6 5 4 1 2 3
 :randtest
 	here 'res !
 	res cnttest randmem
-	res cnttest .pmem cr
+	res cnttest .pmem .cr
 	
 	cnttest 'here +!
 	here 'cdst !
@@ -294,34 +294,34 @@ $8 3 6 6 6 5 4 1 2 3
 
 |	.input
 	here 'compr !
-	here cres over - .pmem cr
+	here cres over - .pmem .cr
 	cres here - "%d bytes" .println
 	cres 1 + 'here !
 	
 	cres compr here pass2decode 'cdst !
 
-	here cdst over - .pmem cr
+	here cdst over - .pmem .cr
 	cdst here - "%d bytes" .println
 	
-	cr
+	.cr
 	cnttest here res .compare
 	;
 	
 :auxtest	
-	'testbytes 29 .pmem cr
+	'testbytes 29 .pmem .cr
 	here 'res !	
 	res 'testbytes 29 encode 'cres !
-	cr 
+	.cr 
 	res cres over - 
 	dup "cnt:%d " .println
-	.pmem cr
+	.pmem .cr
 	cres 1 + 'here !
 	
 	cres res here pass2decode 'cdst !
 	
-	here cdst over - .pmem cr
+	here cdst over - .pmem .cr
 	
-|	res cres .pmem cr
+|	res cres .pmem .cr
 
 	;
 	

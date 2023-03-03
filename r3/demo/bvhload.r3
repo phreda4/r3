@@ -174,7 +174,7 @@
 		d@+ "%f " .print
 		d@+ "%f " .print
 		d@+ "%f " .print
-		cr
+		.cr
 		) 2drop ;
 
 #xop #yop
@@ -301,13 +301,13 @@
 :main
 	0 SDLcls
 	
-|	dup "%d" print cr
-|	chsum "chsum:%d " print
-|	frames "frames:%d " print
-|	frametime " frame time:%f " print
-|	here model - "%d bytes" print cr
-|	framenow "%d " print cr
-|	model dumpmod cr
+|	dup "%d" .print .cr
+|	chsum "chsum:%d " .print
+|	frames "frames:%d " .print
+|	frametime " frame time:%f " .print
+|	here model - "%d bytes" .print .cr
+|	framenow "%d " .print .cr
+|	model dumpmod .cr
 	1.0 3dmode
 	freelook
 	xcam ycam zcam mtrans

@@ -30,15 +30,15 @@
 |	'u dup 's v3= 'f v3vec
 	swap
 	'fx dup rot v3= dup pick3 v3- 
-	dup .vecprint cr
+	dup .vecprint .cr
 	v3Nor | eye up
-	"f:" .print 'fx .vecprint cr
+	"f:" .print 'fx .vecprint .cr
 	
 	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
-	"s:" .print 'sx .vecprint cr
+	"s:" .print 'sx .vecprint .cr
 	
 	'ux dup 'sx v3= 'fx v3vec
-	"u:" .print 'ux .vecprint cr
+	"u:" .print 'ux .vecprint .cr
 	mat> >b
 	
 	sx b!+ |mat[0] = s.x;
@@ -55,7 +55,7 @@
     0 b!+ |mat[11] = 0.0;
 	
     'sx over 
-	cr over .vecprint cr dup .vecprint cr 
+	.cr over .vecprint .cr dup .vecprint .cr 
 	v3ddot 
 	dup "= %f " .println
 	neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
@@ -74,18 +74,18 @@
 :
 .cls
 "mat" .println
-matini .matprint cr
+matini .matprint .cr
 'pEye 'pTo 'pUp mlookat | eye to up --
-.matprint cr
+.matprint .cr
 |1.0 'pto !
 |'pEye 'pTo 'pUp mlookat | eye to up --
-|.matprint cr
+|.matprint .cr
 
 
-|'v1 .vecprint cr
-|'v2 .vecprint cr
-|'s 'v1 v3= 's .vecprint cr
-|'s 'v2 v3vec 's .vecprint cr
+|'v1 .vecprint .cr
+|'v2 .vecprint .cr
+|'s 'v1 v3= 's .vecprint .cr
+|'s 'v2 v3vec 's .vecprint .cr
 
 |0.2 0.1 0.5 packrota
 |dup .rotprint
@@ -94,12 +94,12 @@ matini .matprint cr
 
 
 |mpush
-|0.9 4.0 3.0 /. 0.1 1000.0 mper .matprint cr
-|m* .matprint cr
-cr
-cr
-25.0 sqrt. "%f" .println cr
-25 sqrt "%d" .println cr
+|0.9 4.0 3.0 /. 0.1 1000.0 mper .matprint .cr
+|m* .matprint .cr
+.cr
+.cr
+25.0 sqrt. "%f" .println .cr
+25 sqrt "%d" .println .cr
 .input
 
 ;

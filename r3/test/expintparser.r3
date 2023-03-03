@@ -40,18 +40,18 @@
 	.cls 
 
 	"0000000000001234" parse16
-	"%d" .print cr
+	"%d" .print .cr
 
 	"0000000000012345" parse16
-	"%d" .print cr
+	"%d" .print .cr
 
 	"0123456789012345" parse16
-	"%d" .print cr
+	"%d" .print .cr
 
 	"1585201087123567" parse16
-	"%d" .print cr
+	"%d" .print .cr
 	
-	12345 10* "%d " .print cr
+	12345 10* "%d " .print .cr
 
 	.input
 	;

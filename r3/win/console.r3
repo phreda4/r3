@@ -132,11 +132,11 @@
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
 
-::cr 'crb 2 type ;
-::sp " " 1 type ;
-::nsp ( 1? 1 - sp ) drop ;
+::.cr 'crb 2 type ;
+::.sp " " 1 type ;
+::.nsp ( 1? 1 - .sp ) drop ;
 
-::emit | nro
+::.emit | nro
 	" " dup rot swap c! 1 type ;
 	
 ::.[ 'esc[ 2 + swap
@@ -147,7 +147,7 @@
 	
 ::.print sprint count type ;
 
-::.println sprint count type cr ;
+::.println sprint count type .cr ;
 
 ::.home	"H" .[ ; | home
 ::.cls "H" .[ "J" .[ ; | cls 
@@ -229,8 +229,8 @@
 	16 >> 0? ( drop ; )
 	8 =? ( swap 
 		1 - 'pad <? ( 1 + nip ; )
-		swap emit "1P" .[ ; )
-	dup emit
+		swap .emit "1P" .[ ; )
+	dup .emit
 	swap c!+ ;
 	
 ::.input | --
@@ -243,8 +243,8 @@
 	.input 'pad str>nro nip ;
 
 :emite | char --
-	$5e =? ( drop 27 emit ; ) | ^=escape
-	emit ;
+	$5e =? ( drop 27 .emit ; ) | ^=escape
+	.emit ;
 	
 ::.printe | "" --
 	sprint

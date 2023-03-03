@@ -275,29 +275,29 @@
 	"input:" .print
 	inputLayer 
 	numInputs ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
-	cr
+	.cr
 	"hidden:" .print	
 	hiddenLayer
 	numHidden ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
-	cr
+	.cr
 	"output:" .print	
 	outputLayer
 	numOutputs  ( 1? 1 - swap @+ "%f " .print swap ) 2drop 
-	cr cr
+	.cr .cr
 	hiddenWeights 
 	0 ( numHidden <? 
 		0 ( numInputs <?
 			rot @+ "%f " .print rot rot
 			1 + ) drop
-		cr
+		.cr
 		1 + ) 2drop
-	cr		
+	.cr		
 	outputWeights 
 	0 ( numOutputs <?
 		0 ( numHidden <? 
 			rot @+ "%f " .print rot rot		
 			1 + ) drop
-		cr
+		.cr
 		1 + ) 2drop	;		
 
 |--------------------------------------	draw map

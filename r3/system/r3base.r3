@@ -346,12 +346,12 @@
 :valstr
 	8 >>> src +
 	( c@+ 1?
-		34 =? ( drop c@+ 34 <>? ( 2drop ; ) dup emit )
-		emit )
+		34 =? ( drop c@+ 34 <>? ( 2drop ; ) dup .emit )
+		.emit )
 	2drop ;
 
 :tn col_nro val src + "%w" .print ;
-:ts col_str 34 emit valstr 34 emit ;
+:ts col_str 34 .emit valstr 34 .emit ;
 :tw col_nor val dic>adr @ "%w" .print ;
 :taw col_adr val dic>adr @ "'%w" .print ;
 
@@ -378,7 +378,7 @@
 :thb col_nro 8 >> "$%h" .print ;
 :tfb col_nro 8 >> "%f" .print ;
 
-:ts col_str 34 emit valstr 34 emit ;
+:ts col_str 34 .emit valstr 34 .emit ;
 
 :nil drop "nil" .print ;
 
@@ -408,7 +408,7 @@
 		dup "%h:" .print 
 		d@+ dup "%h " .print
 		tokenprint 
-		cr ) drop ;
+		.cr ) drop ;
 		
 |------------- FILE
 ::savedicc

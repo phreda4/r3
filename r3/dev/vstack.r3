@@ -10,7 +10,7 @@
 #.bye 0
 
 |-----------------
-:ibye 1 '.bye ! "bye!" .write cr ;
+:ibye 1 '.bye ! "bye!" .write .cr ;
 
 :iini 
 	8 stk.start
@@ -59,10 +59,10 @@
 :main
 	.getconsoleinfo 
 	.cls
-	"r3 test vstack - PHREDA 2021" .write cr
-	cr
+	"r3 test vstack - PHREDA 2021" .write .cr
+	.cr
 	( .bye 0? drop
-		"> " .write .input sp
+		"> " .write .input .sp
 		'pad interprete
 		.stack
 		) drop ;

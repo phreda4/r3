@@ -10,5 +10,5 @@
 :
 "hello linux" .println 
 "forth/r3 is waiting for developers" .println
-cr cr
+.cr .cr
 ;
