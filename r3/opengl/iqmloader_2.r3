@@ -146,8 +146,8 @@
 #shaderd
 
 :initshaders
-|	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs" 
-	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" 	
+	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs" 
+|	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" 	
 	loadShaders 'shaderd !
 	;
 	
@@ -167,10 +167,6 @@
 	'fiview mcpyf 
 	;
 
-#tex_dif
-#tex_nor
-#tex_spe
-
 :initvec
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
@@ -178,10 +174,8 @@
 	'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
-	$ffffffff glColorTex 'tex_dif !
-	$7f7fffff glColorTex 'tex_nor !
-	$000000ff glColorTex 'tex_spe !
 	;
+	
 #xm #ym
 #rx #ry
 
@@ -268,14 +262,14 @@
 	
     0 glEnableVertexAttribArray |POS
     0 3 GL_FLOAT GL_FALSE 16 2 << 0 glVertexAttribPointer
-    1 glEnableVertexAttribArray | UV
-    1 2 GL_FLOAT GL_FALSE 16 2 << 3 2 << glVertexAttribPointer
-    2 glEnableVertexAttribArray | NOR
-    2 3 GL_FLOAT GL_FALSE 16 2 << 5 2 << glVertexAttribPointer
-    5 glEnableVertexAttribArray | bones
-    5 4 GL_INT 16 2 << 8 2 << glVertexAttribIPointer
-    6 glEnableVertexAttribArray | weight
-    6 4 GL_FLOAT GL_FALSE 16 2 << 12 2 << glVertexAttribPointer
+    1 glEnableVertexAttribArray | NOR
+    1 3 GL_FLOAT GL_FALSE 16 2 << 3 2 << glVertexAttribPointer
+    2 glEnableVertexAttribArray | UV
+    2 2 GL_FLOAT GL_FALSE 16 2 << 6 2 << glVertexAttribPointer
+    3 glEnableVertexAttribArray | bones
+    3 4 GL_INT 16 2 << 8 2 << glVertexAttribIPointer
+    4 glEnableVertexAttribArray | weight
+    4 4 GL_FLOAT GL_FALSE 16 2 << 12 2 << glVertexAttribPointer
 	
 	|..... rotate triangles
 	iqm.trio >a
@@ -289,6 +283,8 @@
 	
     0 glBindVertexArray	
 
+
+	
 	
 	"media/dae/walking/textures/Ch46_1001_Diffuse.png" glImgTex 'idt !
 	;
@@ -301,38 +297,23 @@
 
 	shaderd glUseProgram
 	
-	'fprojection shaderd "u_projection" shader!m4
-	'fview shaderd "u_view" shader!m4
-	'fiview shaderd "u_inverse_view" shader!m4
-	'fmodel shaderd "u_model" shader!m4
+	'fprojection shaderd "projection" shader!m4
+	'fview shaderd "view" shader!m4
+|	'fiview shaderd "u_inverse_view" shader!m4
+	'fmodel shaderd "model" shader!m4
 	
-	0 shaderd "u_point_active" shader!i
-	0 shaderd "u_point_count" shader!i
-  
-	0 shaderd "u_ambient_pass" shader!i
-	
-	0 shaderd "u_has_skeleton" shader!i
-	
-	4 shaderd "u_texture" shader!i
-	5 shaderd "u_spec" shader!i
-	6 shaderd "u_norm" shader!i
+|	0 shaderd "u_has_skeleton" shader!i
 	
 	
-	GL_TEXTURE0 4 + glActiveTexture
-	GL_TEXTURE_2D idt 
-	|tex_dif 
-	glBindTexture
-	GL_TEXTURE0 5 + glActiveTexture
-	GL_TEXTURE_2D tex_nor glBindTexture
-	GL_TEXTURE0 6 + glActiveTexture
-	GL_TEXTURE_2D tex_spe glBindTexture
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D idt glBindTexture
 	
 	|................
 	| animation
 |	model matbones
 	matbonesid
 
-	shaderd "u_bone_matrix" glGetUniformLocation 
+	shaderd "finalBonesMatrices" glGetUniformLocation 
 	cbones 0 here glUniformMatrix4fv
 	
 |	framenow 1 + frames >=? ( 0 nip ) 'framenow !

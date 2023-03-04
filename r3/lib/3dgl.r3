@@ -212,18 +212,6 @@
 	rot a@ *. a!+ swap a@ *. a!+ a@ *. a! ;
 
 |-----------------------------
-:invierte
-	over @ over @ swap rot ! swap ! ;
-
-::matinv
-	mat> >a
-	a> 24 + @  neg a> 56 + @  neg a> 88 + @ neg | tx ty tz
-	a> 8 + dup 24 + invierte a> 16 + dup 48 + invierte a> 48 + dup 24 + invierte
-	pick2 a@  *. pick2 a> 8 + @ *. + over a> 16 + @  *. + a> 24 + !
-	pick2 a> 32 + @  *. pick2 a> 40 + @  *. + over a> 48 + @  *. + a> 56 + !
-	rot a> 64 + @  *. rot a> 72 + @  *. + swap a> 80 + @  *. + a> 88 + !
-	;
-
 ::transform | x y z -- x y z
 	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@+ +
 	>r pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@+ +
@@ -245,7 +233,99 @@
 
 ::oxyztransform | -- x y z
 	mat> dup 24 + @ over 56 + @ rot 88 + @ ;
-
+	
+:b]@ 3 << b> + @ ;
+	
+::matinv | --
+	mat> dup >a 128 + >b
+    0 a]@ 5 a]@ *. 1 a]@ 4 a]@ *. - b!+
+    0 a]@ 6 a]@ *. 2 a]@ 4 a]@ *. - b!+
+    0 a]@ 7 a]@ *. 3 a]@ 4 a]@ *. - b!+
+    1 a]@ 6 a]@ *. 2 a]@ 5 a]@ *. - b!+
+    1 a]@ 7 a]@ *. 3 a]@ 5 a]@ *. - b!+
+    2 a]@ 7 a]@ *. 3 a]@ 6 a]@ *. - b!+
+    8 a]@ 13 a]@ *. 9 a]@ 12 a]@ *. - b!+
+    8 a]@ 14 a]@ *. 10 a]@ 12 a]@ *. - b!+
+    8 a]@ 15 a]@ *. 11 a]@ 12 a]@ *. - b!+
+    9 a]@ 14 a]@ *. 10 a]@ 13 a]@ *. - b!+
+    9 a]@ 15 a]@ *. 11 a]@ 13 a]@ *. - b!+
+    10 a]@ 15 a]@ *. 11 a]@ 14 a]@ *. - b!+
+	-128 b+
+    0 b]@ 11 b]@ *. 
+	1 b]@ 10 b]@ *. -  
+	2 b]@ 9 b]@ *. + 
+	3 b]@ 8 b]@ *. + 
+	4 b]@ 7 b]@ *. - 
+	5 b]@ 6 b]@ *. + 
+	0? ( drop ; )
+	1.0 swap /. 
+	mat> 256 +	| det nemat
+	5 a]@ 11 b]@ *. 
+	6 a]@ 10 b]@ *. -
+	7 a]@ 9 b]@ *. +
+	pick2 *. swap !+
+    1 a]@ neg 11 b]@ *.
+	2 a]@ 10 b]@ *. +
+	3 a]@ 9 b]@ *. -
+	pick2 *. swap !+
+    13 a]@ 5 b]@ *.
+	14 a]@ 4 b]@ *. -
+	15 a]@ 3 b]@ *. +
+	pick2 *. swap !+
+    9 a]@ neg 5 b]@ *.
+	10 a]@ 4 b]@ *. + 
+	11 a]@ 3 b]@ *. -
+	pick2 *. swap !+
+    4 a]@ neg 11 b]@ *.
+	6 a]@ 8 b]@ *. + 
+	7 a]@ 7 b]@ *. -
+	pick2 *. swap !+
+    0 a]@ 11 b]@ *.
+	2 a]@ 8 b]@ *. -
+	3 a]@ 7 b]@ *. +
+	pick2 *. swap !+
+    12 a]@ neg 5 b]@ *.
+	14 a]@ 2 b]@ *. +
+	15 a]@ 1 b]@ *. -
+	pick2 *. swap !+
+    8 a]@ 5 b]@ *.
+	10 a]@ 2 b]@ *. -
+	11 a]@ 1 b]@ *. +
+	pick2 *. swap !+
+    4 a]@ 10 b]@ *.
+	5 a]@ 8 b]@ *. -
+	7 a]@ 6 b]@ *. +
+	pick2 *. swap !+
+    0 a]@ neg 10 b]@ *.
+	1 a]@ 8 b]@ *. +
+	3 a]@ 6 b]@ *. -
+	pick2 *. swap !+
+    12 a]@ 4 b]@ *.
+	13 a]@ 2 b]@ *. -
+	15 a]@ 0 b]@ *. +
+	pick2 *. swap !+
+    8 a]@ neg 4 b]@ *.
+	9 a]@ 2 b]@ *. +
+	11 a]@ 0 b]@ *. -
+	pick2 *. swap !+
+    4 a]@ neg 9 b]@ *.
+	5 a]@ 7 b]@ *. + 
+	6 a]@ 6 b]@ *. -
+	pick2 *. swap !+
+    0 a]@ 9 b]@ *.
+	1 a]@ 7 b]@ *. -
+	2 a]@ 6 b]@ *. +
+	pick2 *. swap !+
+    12 a]@ neg 3 b]@ *.
+	13 a]@ 1 b]@ *. + 
+	14 a]@ 0 b]@ *. -
+	pick2 *. swap !+
+    8 a]@ 3 b]@ *.
+	9 a]@ 1 b]@ *. -
+	10 a]@ 0 b]@ *. +
+	rot *. swap !
+	256 'mat> +! ;
+	
 |-------------- rota directo -----------------------------
 #cox #coy #coz
 #six #siy #siz
