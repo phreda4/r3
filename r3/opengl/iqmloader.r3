@@ -1,4 +1,4 @@
-| Parse iqm7 file format and show in opengl
+| Parse iqm file format and show in opengl
 | PHREDA 2023
 
 |MEM 64
@@ -15,7 +15,7 @@
 #EX_IQM_VERSION 2
 
 #filename * 1024
-
+#filepath * 1024
 #iqm.
 #iqm.str
 
@@ -36,88 +36,27 @@
 #IQM_TANGENT      
 #IQM_BLENDINDEXES 
 #IQM_BLENDWEIGHTS 
-#IQM_COLOR        
+#IQM_COLOR     
+#IQM_CUS	| $10 -> $7
+
+#nil 0 0		
   
-:]offvpos 3 2 << * IQM_POSITION + ;
-:]offvtex 2 2 << * IQM_TEXCOORD + ;
-:]offvnor 3 2 << * IQM_NORMAL + ;
-:]offvtan 3 2 << * IQM_TANGENT + ;
-:]offvbin 2 << IQM_BLENDINDEXES + ;
-:]offvbwe 2 << IQM_BLENDWEIGHTS + ;
-:]offvcol 2 << IQM_COLOR + ;
+:]offvpos IQM_POSITION 0? ( 2drop 'nil ; ) swap 3 2 << * + ;
+:]offvtex IQM_TEXCOORD 0? ( 2drop 'nil ; ) swap 2 2 << * + ;
+:]offvnor IQM_NORMAL 0? ( 2drop 'nil ; ) swap 3 2 << * + ;
+:]offvtan IQM_TANGENT 0? ( 2drop 'nil ; ) swap 4 2 << * + ;
+:]offvbin IQM_BLENDINDEXES 0? ( 2drop 'nil ; ) swap 2 << + ;
+:]offvbwe IQM_BLENDWEIGHTS 0? ( 2drop 'nil ; ) swap 2 << + ;
+:]offvcol IQM_COLOR 0? ( 2drop 'nil ; ) swap 2 << + ;
 	
 :vertexoff |
-	'IQM_POSITION 0 7 fill
+	'IQM_POSITION 0 8 fill
 	iqm.vertao 
 	iqm.verta ( 1? 1- swap
-		d@+ $7 and
-		over 12 + d@ iqm. +
+		d@+ $10 and? ( $7 nip ) $7 and
+		over 12 + d@ 1? ( iqm. + )
 		swap 3 << 'IQM_POSITION + !
 		16 + swap ) 2drop ;	
-
-|.................
-
-:meshes |
-	iqm.mesho
-	iqm.mesh ( 1? 1- swap
-		d@+ ]iqm.str .print | name
-		d@+ ]iqm.str " %s" .print | material
-		d@+ " %d-" .print
-		d@+ "%d " .print
-		d@+ " %d-" .print
-		d@+ "%d " .println
-		swap ) 2drop ;
-		
-:iqmmesh |
-	iqm.mesho
-	iqm.mesh ( 1? 1- swap
-		d@+ ]iqm.str .print | name
-		d@+ ]iqm.str " %s" .print | material
-		d@+ " %d-" .print
-		d@+ "%d " .print
-		d@+ " %d-" .print
-		d@+ "%d " .println
-		swap ) 2drop ;
-
-|.................
-:fvec4 
-	d@+ fp2f "%f " .print
-:fvec3	
-	d@+ fp2f "%f " .print
-	d@+ fp2f "%f " .print
-	d@+ fp2f "%f :" .print ;
-	
-:iqmjoin
-	iqm.joino
-	iqm.join ( 1? 1- swap
-		d@+ ]iqm.str "%s " .print | name
-		d@+ "%d " .print | parent
-		fvec3 fvec4 fvec3
-		.cr
-		swap ) 2drop ;
-
-|.................	
-:iqmanim	
-	iqm.animo
-	iqm.anim ( 1? 1 - swap
-		d@+ ]iqm.str "%s " .print | name
-		d@+ "%d-" .print d@+ "%d " .print
-		d@+ fp2f "fps:%f " .print
-		d@+ "%h" .println
-		swap ) 2drop ;
-|   anims[i].loop   = a->flags || (1<<0);
-
-|.................
-#v * 80 | 10 	
-:iqmpose
-	0 ( iqm.nroframes <? 
-		0 ( iqm.pose <? 
-|			iqm.poseo 
-			0 ( 10 <?
-				1+ ) drop
-			1+ ) drop
-		1+ ) drop ;
-	
 
 	
 |------------------------------
@@ -135,36 +74,38 @@
 
 #GL_STATIC_DRAW $88E4
 
+#GL_UNSIGNED_BYTE $1401
 #GL_UNSIGNED_SHORT $1403
 #GL_INT $1404
 #GL_UNSIGNED_INT $1405
 #GL_FLOAT $1406
 
 #GL_FALSE 0
+#GL_TRUE 1
 #GL_TRIANGLE $0004
 
 #shaderd
 
 :initshaders
-|	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs" 
-	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" 	
+|	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
+|	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs"
+	"r3/opengl/shader/f2.fs" "r3/opengl/shader/f2.vs"
 	loadShaders 'shaderd !
 	;
 	
 #fprojection * 64
 #fview * 64
-#fiview * 64
+|#fiview * 64
 #fmodel * 64
 	
-#pEye 0.0 0.0 20.0
+#pEye 0.0 0.0 10.0
 #pTo 0 0.0 0.0
-#pUp 0 1.0 0
+#pUp 0 1.0 0.0
 
 :eyecam
 	'pEye 'pTo 'pUp mlookat 
 	'fview mcpyf 
-	matinv
-	'fiview mcpyf 
+|	matinv 'fiview mcpyf 
 	;
 
 #tex_dif
@@ -182,6 +123,7 @@
 	$7f7fffff glColorTex 'tex_nor !
 	$000000ff glColorTex 'tex_spe !
 	;
+	
 #xm #ym
 #rx #ry
 
@@ -204,11 +146,11 @@
 
 |------------------------------
 #bonesmat>
-#cbones 31
+#cbones 75
 
 :matbonesid | fill animation with id
 	here 'bonesmat> !
-	31 ( 1? 1 -
+	cbones ( 1? 1 -
 		bonesmat> midf
 		64 'bonesmat> +!	
 		) drop 	;
@@ -219,11 +161,62 @@
 #VBO
 #VIO
 
-#idt
+#listmesh
+#listbones
+#listanim
+
+#listframes
+
+:loadt | default string pre -- fl
+	'filepath "%s/%s%s" sprint 
+		
+	dup .println
+	dup filexist 0? ( 2drop ; ) drop
+	nip glImgTex ;
+		
+	
+:strpath | src dst --
+	strcpyl 
+	( dup c@ $2f <>? 
+		drop 1 - ) drop 0 swap c! ;
+	
+:,fvec | adr cnt -- adr'
+	( 1? 1- swap
+		d@+ fp2f , 
+		swap ) drop ;
+
+|typedef struct {
+|  int parent;
+|  uint channelmask;
+|  float channeloffset[10];
+|  float channelscale[10];
+
+#offfra>
+:offval | -- val
+	offfra> d@+ swap 'offfra> ! fp2f ;
+
+#trans 0 0 0
+#rotat 0 0 0 0
+#scale 0 0 0 
+
+:]iqm.pose | nro - ooff
+	88 * iqm.poseo + ;
+
+:getpose | frame pose -- frame pose
+	dup ]iqm.pose
+	'trans >a
+	dup 8 + >b | off/+40->scale
+	dup 4 + d@ | mask
+	$01 ( $400 <?  | mask cnt 
+		db@ fp2f swap | mask off cnt
+		pick2 and? ( swap offval b> 40 + d@ fp2f *. + swap  )
+		swap a!+ 4 b+
+		1 << ) 3drop ;
 
 |.................
 :iqmload | "" -- obj
 	dup 'filename strcpy
+	dup 'filepath strpath
 	here dup rot load 0 swap c!+ 'here !
 	'iqm. !
 	
@@ -253,8 +246,10 @@
 		dup ]offvpos d@+ da!+ d@+ da!+ d@ da!+
 		dup ]offvtex d@+ da!+ d@ da!+
 		dup ]offvnor d@+ da!+ d@+ da!+ d@ da!+
-		0 da!+ 0 da!+ 0 da!+ 0 da!+
-		1.0 f2fp da!+ 0 da!+ 0 da!+ 0 da!+
+		dup ]offvtan d@+ da!+ d@+ da!+ d@+ da!+ d@ da!+
+		dup ]offvcol d@ da!+
+		dup ]offvbin d@ da!+
+		dup ]offvbwe d@ da!+
 		1+ ) drop 
 		
 	|......................
@@ -264,19 +259,23 @@
 
     VAO glBindVertexArray
     GL_ARRAY_BUFFER VBO glBindBuffer
-    GL_ARRAY_BUFFER iqm.vert 16 * 2 << here GL_STATIC_DRAW glBufferData
+    GL_ARRAY_BUFFER iqm.vert 15 * 2 << here GL_STATIC_DRAW glBufferData
 	
     0 glEnableVertexAttribArray |POS
-    0 3 GL_FLOAT GL_FALSE 16 2 << 0 glVertexAttribPointer
+    0 3 GL_FLOAT GL_FALSE 15 2 << 0 glVertexAttribPointer
     1 glEnableVertexAttribArray | UV
-    1 2 GL_FLOAT GL_FALSE 16 2 << 3 2 << glVertexAttribPointer
+    1 2 GL_FLOAT GL_FALSE 15 2 << 3 2 << glVertexAttribPointer
     2 glEnableVertexAttribArray | NOR
-    2 3 GL_FLOAT GL_FALSE 16 2 << 5 2 << glVertexAttribPointer
-    5 glEnableVertexAttribArray | bones
-    5 4 GL_INT 16 2 << 8 2 << glVertexAttribIPointer
-    6 glEnableVertexAttribArray | weight
-    6 4 GL_FLOAT GL_FALSE 16 2 << 12 2 << glVertexAttribPointer
-	
+    2 3 GL_FLOAT GL_FALSE 15 2 << 5 2 << glVertexAttribPointer
+	3 glEnableVertexAttribArray | TAN
+    3 4 GL_FLOAT GL_FALSE 15 2 << 8 2 << glVertexAttribPointer
+    4 glEnableVertexAttribArray | COL
+    4 4 GL_UNSIGNED_BYTE GL_TRUE 15 2 << 12 2 << glVertexAttribPointer
+    5 glEnableVertexAttribArray | B IND
+    5 4 GL_UNSIGNED_BYTE GL_TRUE 15 2 << 13 2 << glVertexAttribPointer
+    6 glEnableVertexAttribArray | B WEI
+    6 4 GL_UNSIGNED_BYTE GL_TRUE 15 2 << 14 2 << glVertexAttribPointer
+
 	|..... rotate triangles
 	iqm.trio >a
 	iqm.tri ( 1? 1-
@@ -289,49 +288,91 @@
 	
     0 glBindVertexArray	
 
+	here 'listmesh !
+	|... load texture and meshes
+	iqm.mesho
+	iqm.mesh dup , 
+	( 1? 1- swap
+		d@+ drop 			|]iqm.str .print | name
+		d@+ ]iqm.str 		|" %s" .print | material
+		tex_dif over "" loadt ,
+		tex_spe over "spec_" loadt ,
+		tex_nor swap "norm_" loadt ,
+		d@+ drop d@+ drop | vertex ini-end
+		d@+ 3 * 2 << swap | tri-ini (bytes)
+		d@+ 3 *  | tri-cnt (vertex)
+		, swap ,
+		swap ) 2drop 
 	
-	"media/dae/walking/textures/Ch46_1001_Diffuse.png" glImgTex 'idt !
+	|............... bones
+	| cnt
+	| parent | 3pos 4rot 3scale
+	here 'listbones !
+	iqm.joino
+	iqm.join dup , 
+	( 1? 1- swap
+		d@+ drop |]iqm.str "%s " .print | name
+		d@+ , |"%d " .print | parent
+		10 ,fvec | fvec3 ,fvec4 ,fvec3
+		swap ) 2drop 
+	
+	|............... anims
+	| cnt
+	| ini cnt fps flag
+	here 'listanim !
+	iqm.animo
+	iqm.anim dup ,
+	( 1? 1 - swap
+		d@+ drop |]iqm.str "%s " .print | name
+		d@+ , |"%d-" .print | inicio
+		d@+ , |"%d " .print | cant
+		d@+ fp2f , |"fps:%f " .print
+		d@+ , |"%h" .println flag
+		swap ) 2drop 
+		
+	|............... poses
+	| frames * poses
+	| frame, (40 bytes)/pose
+	iqm.frameo 'offfra> !
+	iqm.nroframes ,
+	iqm.pose ,
+	0 ( iqm.nroframes <? 
+		0 ( iqm.pose <? 
+				getpose
+				'trans >a 
+				10 ( 1? 1 - a@+ dup "%f " .print , ) drop | dwors (16.16)
+				.cr
+			1+ ) drop
+
+		1+ ) drop 
+
 	;
 
-	
-:rendermesh
-	;
-	
 :renderobj | obj --
 
 	shaderd glUseProgram
 	
 	'fprojection shaderd "u_projection" shader!m4
 	'fview shaderd "u_view" shader!m4
-	'fiview shaderd "u_inverse_view" shader!m4
+|	'fiview shaderd "u_inverse_view" shader!m4
 	'fmodel shaderd "u_model" shader!m4
 	
-	0 shaderd "u_point_active" shader!i
 	0 shaderd "u_point_count" shader!i
   
 	0 shaderd "u_ambient_pass" shader!i
-	
-	0 shaderd "u_has_skeleton" shader!i
-	
+
 	4 shaderd "u_texture" shader!i
 	5 shaderd "u_spec" shader!i
 	6 shaderd "u_norm" shader!i
-	
-	
-	GL_TEXTURE0 4 + glActiveTexture
-	GL_TEXTURE_2D idt 
-	|tex_dif 
-	glBindTexture
-	GL_TEXTURE0 5 + glActiveTexture
-	GL_TEXTURE_2D tex_nor glBindTexture
-	GL_TEXTURE0 6 + glActiveTexture
-	GL_TEXTURE_2D tex_spe glBindTexture
 	
 	|................
 	| animation
 |	model matbones
 	matbonesid
 
+	
+	1 shaderd "u_has_skeleton" shader!i
+	
 	shaderd "u_bone_matrix" glGetUniformLocation 
 	cbones 0 here glUniformMatrix4fv
 	
@@ -339,9 +380,15 @@
 	|................
 	
     VAO glBindVertexArray
-
 	GL_ELEMENT_ARRAY_BUFFER VIO glBindBuffer
-	GL_TRIANGLE iqm.tri 3 * GL_UNSIGNED_INT 0 glDrawElements	
+	
+	listmesh >a
+	da@+ ( 1? 1- 
+		GL_TEXTURE0 4 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TEXTURE0 5 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TEXTURE0 6 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TRIANGLE da@+ GL_UNSIGNED_INT da@+ glDrawElements	
+		) drop 
 
     0 glBindVertexArray
 	;
