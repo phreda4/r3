@@ -30,6 +30,9 @@
 #iqm.anim #iqm.animo
 #iqm.nroframes #iqm.fracha #iqm.frameo #iqm.bouo
 
+#framenow
+#frames
+
 #IQM_POSITION
 #IQM_TEXCOORD     
 #IQM_NORMAL       
@@ -150,12 +153,66 @@
 
 :matbonesid | fill animation with id
 	here 'bonesmat> !
-	cbones ( 1? 1 -
+	matini
+	msec 0 0 0 mrpos
+	matinv
+	7 ( 1? 1 -
+|		bonesmat> midf
+		bonesmat> mcpyf
+		64 'bonesmat> +!	
+		) drop 	
+	70 ( 1? 1 -
 		bonesmat> midf
+|		bonesmat> mcpyf
 		64 'bonesmat> +!	
 		) drop 	;
+;
 
+#bonesmat>
 
+#anip
+:val anip d@+ swap 'anip ! ;
+
+#lani 'mtranx 'mtrany 'mtranz 'mrotx 'mroty 'mrotz 
+
+:anibones | flags --
+	8 >> $ffffff and
+	( 1? 
+		val
+		over $f and 1 - 3 << 'lani + @ ex 
+		4 >> ) drop ;
+
+:matbones | bones --
+	here 'bonesmat> !
+	>b
+|	framenow chsum * 2 << animation + 'anip !
+	matini
+	0 ( db@+ 1? dup $ff and
+		rot over - 1 + clamp0 | anterior-actual+1
+		nmpop
+		mpush
+		db@+ db@+ db@+ mtran
+		swap anibones
+		b>
+		bonesmat> mcpyf
+		64 'bonesmat> +!
+		>b ) drop
+	nmpop
+	;
+
+:calcbones | frame  --
+	here 'bonesmat> !
+	framenow 
+	iqm.pose 40 * +
+	matini
+	0 ( iqm.pose <? swap 
+		
+		10 ( 1? 1 - a@+ , ) drop | dwors (16.16)
+
+		bonesmat> mcpyf
+		64 'bonesmat> +!
+		swap 1+ ) drop
+	;
 |---------------------------------	
 #VAO
 #VBO
@@ -167,23 +224,22 @@
 
 #listframes
 
+:makeinvert
+	listbones
+	d@+ ( 1? 1- swap
+		d@+ | parent
+		
+		swap ) 2drop ;
+
+|		10 ,fvec | fvec3 ,fvec4 ,fvec3
+
+|------------------------
 :loadt | default string pre -- fl
 	'filepath "%s/%s%s" sprint 
-		
-	dup .println
+|	dup .println
 	dup filexist 0? ( 2drop ; ) drop
 	nip glImgTex ;
 		
-	
-:strpath | src dst --
-	strcpyl 
-	( dup c@ $2f <>? 
-		drop 1 - ) drop 0 swap c! ;
-	
-:,fvec | adr cnt -- adr'
-	( 1? 1- swap
-		d@+ fp2f , 
-		swap ) drop ;
 
 |typedef struct {
 |  int parent;
@@ -199,12 +255,29 @@
 #rotat 0 0 0 0
 #scale 0 0 0 
 
+:,fvec | adr cnt -- adr'
+	'trans >a
+	( 1? 1- swap
+		d@+ fp2f a!+ 
+		swap ) drop 
+	matini
+	'scale @+ swap @+ swap @ mscale
+	'rotat matqua m*
+	'trans @+ swap @+ swap @ mtran
+	matinv
+	here mcpy
+	128 'here +!
+	;
+
+
 :]iqm.pose | nro - ooff
 	88 * iqm.poseo + ;
 
 :getpose | frame pose -- frame pose
 	dup ]iqm.pose
 	'trans >a
+|	dup d@ , parent
+|	dup d@ $ff and "%h " .print 
 	dup 8 + >b | off/+40->scale
 	dup 4 + d@ | mask
 	$01 ( $400 <?  | mask cnt 
@@ -222,7 +295,7 @@
 	
 	iqm. @ 'EX_IQM_MAGIC @ <>? ( drop ; ) drop
 	
-	'filename "load: %s" .println
+|	'filename "load: %s" .println
 	
 	iqm. 28 +
 	d@+ drop d@+ iqm. + 'iqm.str ! 
@@ -312,10 +385,10 @@
 	iqm.join dup , 
 	( 1? 1- swap
 		d@+ drop |]iqm.str "%s " .print | name
-		d@+ , |"%d " .print | parent
+		d@+ |dup $ff and "%h " .print | parent
+		,
 		10 ,fvec | fvec3 ,fvec4 ,fvec3
 		swap ) 2drop 
-	
 	|............... anims
 	| cnt
 	| ini cnt fps flag
@@ -340,12 +413,10 @@
 		0 ( iqm.pose <? 
 				getpose
 				'trans >a 
-				10 ( 1? 1 - a@+ dup "%f " .print , ) drop | dwors (16.16)
-				.cr
+				10 ( 1? 1 - a@+ , ) drop | dwors (16.16)
 			1+ ) drop
-
+|.cr
 		1+ ) drop 
-
 	;
 
 :renderobj | obj --
@@ -370,13 +441,12 @@
 |	model matbones
 	matbonesid
 
-	
 	1 shaderd "u_has_skeleton" shader!i
 	
 	shaderd "u_bone_matrix" glGetUniformLocation 
 	cbones 0 here glUniformMatrix4fv
 	
-|	framenow 1 + frames >=? ( 0 nip ) 'framenow !
+	framenow 1 + frames >=? ( 0 nip ) 'framenow !
 	|................
 	
     VAO glBindVertexArray

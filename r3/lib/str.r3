@@ -18,14 +18,19 @@
 		rot c!+ ) nip swap c!+ ;
 ::strcpyln strcpylnl drop ;
 
-::copynom | sc s1 --
+::copynom | sc s1 -- ; copy until space
 	( c@+ 32 >?
 		rot c!+ swap ) 2drop
 	0 swap c! ;
 
-::copystr | sc s1 --
+::copystr | sc s1 -- ; copy until "
 	( c@+ 34 <>?
 		rot c!+ swap ) 2drop
+	0 swap c! ;
+
+::strpath | src dst -- ; copy path only (need /)
+	strcpyl 
+	( dup c@ $2f <>? drop 1 - ) drop 
 	0 swap c! ;
 
 ::toupp | c -- C

@@ -352,6 +352,31 @@
 #m21 #m22 #m23
 #m31 #m32 #m33
 
+::matqua | 'quat --
+	@+ dup dup + 'fx ! 'sx !
+	@+ dup dup + 'fy ! 'sy !
+	@+ dup dup + 'fz ! 'sz !
+	@ | w
+	dup fx *. 'm31 ! dup fy *. 'm32 ! fz *. 'm33 !
+	sy fy *. 'm21 ! sy fz *. 'm22 ! sz fz *. 'm23 !
+	sx fx *. 'm11 ! sx fy *. 'm12 ! sx fz *. 'm13 !
+	mat> 128 + dup 'mat> ! >a
+
+	1.0 m21 m23 + - a!+
+	m12 m33 + a!+
+	m13 m32 - a!+
+	0 a!+
+    m12 m33 - a!+
+    1.0 m11 m23 + - a!+
+    m22 m31 + a!+
+    0 a!+
+    m13 m32 + a!+
+    m22 m31 - a!+
+    1.0 m11 m21 + - a!+
+    0 a!+
+	0 a!+ 0 a!+ 0 a!+ 1.0 a!
+	;
+	
 ::calcvrot | rx ry rz --
 	sincos 'coz ! 'siz !
 	sincos 'coy ! 'siy !
