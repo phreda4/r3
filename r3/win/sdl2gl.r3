@@ -13,6 +13,7 @@
 #sys-glClearColor
 #sys-glGenBuffers
 #sys-glBindBuffer
+#sys-glBindRenderbuffer
 #sys-glBufferData
 
 #sys-glMapBuffer
@@ -94,6 +95,10 @@
 #sys-glDrawBuffer
 #sys-glReadBuffer
 #sys-glPixelStorei
+#sys-glRenderbufferStorage
+#sys-glFramebufferRenderbuffer
+#sys-glGenRenderbuffers
+#sys-glGenTextures
 
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
@@ -106,6 +111,7 @@
 ::glClearColor sys-glClearColor sys4 drop ;
 ::glGenBuffers sys-glGenBuffers sys2 drop ;
 ::glBindBuffer sys-glBindBuffer sys2 drop ;
+::glBindRenderbuffer sys-glBindRenderbuffer sys2 drop ;
 ::glBufferData sys-glBufferData sys4 drop ;
 
 ::glMapBuffer sys-glMapBuffer sys2 ;
@@ -184,6 +190,10 @@
 ::glDrawBuffer sys-glDrawBuffer sys1 drop ;
 ::glReadBuffer sys-glReadBuffer sys1 drop ;
 ::glPixelStorei sys-glPixelStorei sys2 drop ;
+::glRenderbufferStorage sys-glRenderbufferStorage sys4 drop ;
+::glFramebufferRenderbuffer sys-glFramebufferRenderbuffer sys4 drop ;
+::glGenRenderbuffers sys-glGenRenderbuffers sys2 drop ;
+::glGenTextures sys-glGenTextures sys2 drop ;
 
 |------------------------------------------------------
 ::InitGLAPI
@@ -257,6 +267,7 @@
 | VBO
 	"glGenBuffers" SDL_GL_GetProcAddress 'sys-glGenBuffers !
 	"glBindBuffer" SDL_GL_GetProcAddress 'sys-glBindBuffer !
+	"glBindRenderbuffer" SDL_GL_GetProcAddress 'sys-glBindRenderbuffer !
 	"glBufferData" SDL_GL_GetProcAddress 'sys-glBufferData !
 	"glVertexAttribPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribPointer !
 	"glVertexAttribIPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribIPointer !	
@@ -285,6 +296,12 @@
 	"glDrawBuffer" SDL_GL_GetProcAddress 'sys-glDrawBuffer !
 	"glReadBuffer" SDL_GL_GetProcAddress 'sys-glReadBuffer !
 	"glPixelStorei" SDL_GL_GetProcAddress 'sys-glPixelStorei !
+	"glRenderbufferStorage" SDL_GL_GetProcAddress 'sys-glRenderbufferStorage !
+	"glFramebufferRenderbuffer" SDL_GL_GetProcAddress 'sys-glFramebufferRenderbuffer !
+
+	"glGenRenderbuffers" SDL_GL_GetProcAddress 'sys-glGenRenderbuffers !
+	"glGenTextures" SDL_GL_GetProcAddress 'sys-glGenTextures !
+	
 |	0 'sys-glCreateProgram  ( 'sys-glBindAttribLocation  <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;
 	

@@ -192,43 +192,6 @@
 	VAO glDeleteVertexArrays
 	;
 	
-	| glUseProgram(_shader._id);
-	| glUniformMatrix4fv(_projection_ptr, 1, GL_FALSE, glm::value_ptr(projection));
-	| glUniformMatrix4fv(_view_ptr, 1, GL_FALSE, glm::value_ptr(view));
-	| glUniformMatrix4fv(_model_ptr, 1, GL_FALSE, glm::value_ptr(model));
-	| glUniformMatrix4fv(_transforms_ptr, GLsizei(transforms.size()), GL_FALSE, glm::value_ptr(transforms[0]));
-	| glUniform3fv(_light_position_ptr, 1, glm::value_ptr(light_position));
-	| glUniform3fv(_view_position_ptr, 1, glm::value_ptr(view_position));	
-	
-| unsigned VAO = 0;
-| unsigned VBO = 0;
-| unsigned EBO = 0;
-| glGenVertexArrays(1, &VAO);
-| glGenBuffers(1, &VBO);
-| glGenBuffers(1, &EBO);
-
-| glBindVertexArray(VAO);
-| glBindBuffer(GL_ARRAY_BUFFER, VBO);
-| glBufferData(GL_ARRAY_BUFFER , vertices.size() * sizeof(AnimVertex) , vertices.data(), GL_STATIC_DRAW);
-| glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-| glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), indices.data(), GL_STATIC_DRAW);
-| glEnableVertexAttribArray(0);
-| glVertexAttribPointer(0, 3/*vec3*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, position));
-| glEnableVertexAttribArray(1);
-| glVertexAttribPointer(1, 3/*vec3*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, normal));
-| glEnableVertexAttribArray(2);
-| glVertexAttribPointer(2, 2/*vec2*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, texture_uv));
-| glEnableVertexAttribArray(3);
-| glVertexAttribIPointer(3, 4/*int[4]*/, GL_INT, sizeof(AnimVertex), (void*)offsetof(AnimVertex, bone_ids));
-| glEnableVertexAttribArray(4);
-| glVertexAttribPointer(4, 4/*float[4]*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, weights));
-| glEnableVertexAttribArray(5);
-| glVertexAttribPointer(5, 3/*vec3*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, tangent));
-| glEnableVertexAttribArray(6);
-| glVertexAttribPointer(6, 3/*vec3*/, GL_FLOAT, GL_FALSE, sizeof(AnimVertex), (void*)offsetof(AnimVertex, bitangent));
-| glBindVertexArray(0);
-
-| return RenderMesh(VAO, VBO, EBO, indices.size(), GetTexture(textures, TextureType::Diffuse), GetTexture(textures, TextureType::Normal));	
 |------------------------------	
 :cntvert b> 32 + d@ ;
 :cntind b> 36 + d@ ;

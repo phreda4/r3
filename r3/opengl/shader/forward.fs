@@ -115,7 +115,7 @@ vec3 calc_point_light(point_light light)
   bias           = clamp(bias, 0.1, 0.2);
   float shadow = 0.0f;
   if (l.is_shadow) {
-    vec3 frag_to_light  = mat3(u_inverse_view) * (fragpos - l.position);
+    vec3 frag_to_light  = mat3(inverse(u_view)) * (fragpos - l.position);
     float current_depth = length(frag_to_light);
     float view_dist     = length(-fragpos);
 
@@ -140,14 +140,15 @@ void main()
 {
   vec3 diffuse = vec3(0.0f);
 
-  if (u_ambient_pass) {
-    diffuse += texture(u_texture, uv).rgb * 0.025;
-  } else {
+
+//  if (u_ambient_pass) {
+    diffuse += texture(u_texture, uv).rgb * 0.5;
+//  } else {
     // shadow casters
-    if (u_point_active && u_point_count <= 0)
-      diffuse += calc_point_light(u_point_light);
-  }
-    
+//    if (u_point_count <= 0)
+//      diffuse += calc_point_light(u_point_light);
+//  }
+
   // non shadow casters
   if (u_point_count > 0)
     for (int i=0; i<u_point_count; i++)

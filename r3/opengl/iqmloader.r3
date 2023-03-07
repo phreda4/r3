@@ -77,6 +77,9 @@
 
 #GL_STATIC_DRAW $88E4
 
+#GL_RGB10_A2 $8059
+#GL_DEPTH24_STENCIL8 $88F0
+
 #GL_UNSIGNED_BYTE $1401
 #GL_UNSIGNED_SHORT $1403
 #GL_INT $1404
@@ -87,15 +90,42 @@
 #GL_TRUE 1
 #GL_TRIANGLE $0004
 
+#GL_FRAMEBUFFER $8D40
+#GL_RGBA $1908
+
+#GL_TEXTURE $1702
+#GL_TEXTURE0 $84C0
+#GL_TEXTURE_2D $0DE1
+
+#GL_DEPTH_COMPONENT $1902
+#GL_TEXTURE_MAG_FILTER $2800
+#GL_TEXTURE_MAX_ANISOTROPY_EXT $84FE
+#GL_TEXTURE_MAX_LEVEL $813D
+#GL_TEXTURE_MAX_LOD $813B
+#GL_TEXTURE_MIN_FILTER $2801
+#GL_TEXTURE_MIN_LOD $813A
+#GL_TEXTURE_WRAP_R $8072
+#GL_TEXTURE_WRAP_S $2802
+#GL_TEXTURE_WRAP_T $2803
+#GL_NEAREST $2600
+#GL_NEAREST_MIPMAP_LINEAR $2702
+#GL_NEAREST_MIPMAP_NEAREST $2700
+#GL_CLAMP_TO_BORDER $812D
+#GL_TEXTURE_BORDER_COLOR $1004
+#GL_FRAMEBUFFER $8D40
+#GL_DEPTH_ATTACHMENT $8D00
+#GL_TEXTURE_CUBE_MAP $8513
+
 #shaderd
+#shaderfb
 
 :initshaders
 |	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
-|	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs"
-	"r3/opengl/shader/f2.fs" "r3/opengl/shader/f2.vs"
-	loadShaders 'shaderd !
+	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" loadShaders 'shaderd !
+	"r3/opengl/shader/fboshader.fs" "r3/opengl/shader/fboshader.vs" loadShaders 'shaderfb !
 	;
 	
+ 
 #fprojection * 64
 #fview * 64
 |#fiview * 64
@@ -211,8 +241,12 @@
 
 		bonesmat> mcpyf
 		64 'bonesmat> +!
-		swap 1+ ) drop
+		swap 1+ ) drop 
 	;
+	
+:updatemat
+	;
+	
 |---------------------------------	
 #VAO
 #VBO
@@ -241,15 +275,6 @@
 	nip glImgTex ;
 		
 
-|typedef struct {
-|  int parent;
-|  uint channelmask;
-|  float channeloffset[10];
-|  float channelscale[10];
-
-#offfra>
-:offval | -- val
-	offfra> d@+ swap 'offfra> ! fp2f ;
 
 #trans 0 0 0
 #rotat 0 0 0 0
@@ -269,6 +294,17 @@
 	128 'here +!
 	;
 
+
+|typedef struct {
+|  int parent;
+|  uint channelmask;
+|  float channeloffset[10];
+|  float channelscale[10];
+
+#offfra>
+
+:offval | -- val
+	offfra> d@+ swap 'offfra> ! fp2f ;
 
 :]iqm.pose | nro - ooff
 	88 * iqm.poseo + ;
@@ -379,7 +415,7 @@
 	
 	|............... bones
 	| cnt
-	| parent | 3pos 4rot 3scale
+	| parent | mat4x4 inv
 	here 'listbones !
 	iqm.joino
 	iqm.join dup , 
@@ -389,6 +425,7 @@
 		,
 		10 ,fvec | fvec3 ,fvec4 ,fvec3
 		swap ) 2drop 
+		
 	|............... anims
 	| cnt
 	| ini cnt fps flag
@@ -415,7 +452,6 @@
 				'trans >a 
 				10 ( 1? 1 - a@+ , ) drop | dwors (16.16)
 			1+ ) drop
-|.cr
 		1+ ) drop 
 	;
 
@@ -464,6 +500,95 @@
 	;
 	
 |------------------------------
+|  /* -- SCREEN QUAD -- */
+#vertices [
+    -1.0  1.0 0.0 1.0
+    -1.0 -1.0 0.0 0.0
+     1.0 -1.0 1.0 0.0
+    -1.0  1.0 0.0 1.0
+     1.0 -1.0 1.0 0.0
+     1.0  1.0 1.0 1.0 
+	]
+#border [ 1.0 1.0 1.0 1.0 ]
+
+#vaosq
+#vbosq
+
+#display.width 800
+#display.height 600
+
+#framebuffer.fbo
+#framebuffer.rbo
+#framebuffer.cbo
+#framebuffer.vao 
+#framebuffer.vbo
+#framebuffer.width
+#framebuffer.height
+ 
+#GL_COLOR_ATTACHMENT0 $8CE0
+#GL_RENDERBUFFER $8D41
+#GL_DEPTH_STENCIL_ATTACHMENT $821A
+
+:render_resize | 
+	GL_FRAMEBUFFER framebuffer.fbo glBindFramebuffer
+
+	display.width 'framebuffer.width !
+	display.height 'framebuffer.height !
+
+	GL_TEXTURE_2D framebuffer.cbo glBindTexture
+	GL_TEXTURE_2D 0 GL_RGB10_A2 framebuffer.width framebuffer.height 0 GL_RGBA GL_UNSIGNED_BYTE 0 glTexImage2D
+
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_R GL_CLAMP_TO_BORDER glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_BORDER glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_BORDER glTexParameteri
+  
+	GL_TEXTURE_CUBE_MAP GL_TEXTURE_BORDER_COLOR 'border glTexParameterfv
+	GL_TEXTURE_2D 0 glBindTexture
+	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D framebuffer.cbo 0 glFramebufferTexture2D
+
+	GL_RENDERBUFFER framebuffer.rbo glBindRenderbuffer
+	GL_RENDERBUFFER GL_DEPTH24_STENCIL8 framebuffer.width framebuffer.height glRenderbufferStorage
+	GL_RENDERBUFFER 0 glBindRenderbuffer
+	GL_FRAMEBUFFER GL_DEPTH_STENCIL_ATTACHMENT GL_RENDERBUFFER framebuffer.rbo glFramebufferRenderbuffer
+
+|  // test framebuffer
+|  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+|    printf("Error! Framebuffer is not complete\n");
+
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	;
+	
+:iniscrquad
+	'vertices >a 24 ( 1? 1 - da@ f2fp da!+ ) drop
+	'border >a 4 ( 1? 1 - da@ f2fp da!+ ) drop
+	
+	1 'vaosq glGenVertexArrays
+	1 'vbosq glGenBuffers
+	vaosq glBindVertexArray
+
+	GL_ARRAY_BUFFER vbosq glBindBuffer
+	GL_ARRAY_BUFFER 24 2 << 'vertices GL_STATIC_DRAW glBufferData
+
+	0 2 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
+	0 glEnableVertexAttribArray
+
+	1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
+	1 glEnableVertexAttribArray
+	0 glBindVertexArray
+	
+	1 'framebuffer.fbo glGenFramebuffers
+	1 'framebuffer.rbo glGenRenderbuffers
+	1 'framebuffer.cbo glGenTextures
+	vaosq 'framebuffer.vao !
+	vbosq 'framebuffer.vbo !
+ 
+	display.width display.height render_resize
+  
+	;
+	
+|------------------------------
 :main
 	gui
 	'dnlook 'movelook onDnMove
@@ -500,6 +625,7 @@
 	initglfont
 	initvec
 	initshaders
+	iniscrquad
 	
 	'main SDLshow 
 	SDLquit	
