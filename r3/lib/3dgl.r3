@@ -18,6 +18,9 @@
 ::matini
 	'mats dup 'mat> ! 'mati 16 move ;
 
+::matinim | 'mat --
+	'mats dup 'mat> ! swap 16 move ;
+
 ::mpush | --
 	mat> dup 128 + dup 'mat> ! swap 16 move ;
 	
