@@ -55,6 +55,10 @@
 #GL_DEPTH_BUFFER_BIT $100	
 #GL_UNPACK_ALIGNMENT $0CF5
 
+#GL_BLEND $0BE2
+#GL_SRC_ALPHA $0302
+#GL_ONE_MINUS_SRC_ALPHA $0303
+
 |-------------------------------------
 
 :memfloat | cnt place --
@@ -62,7 +66,8 @@
 	
 #fontshader	
 #fontTexture 
-#fcolor [ 1.0 1.0 1.0 1.0 ]
+#fcolor [ 1.0 0.0 0.0 1.0 ]
+#fwintext * 64
 
 |---------- load img
 #surface
@@ -71,6 +76,7 @@
 #GL_RGB $1907
 #GL_RGBA $1908
 #GL_UNSIGNED_BYTE $1401
+#GL_CLAMP_TO_EDGE $812F
 
 :Surface->w surface 16 + d@ ;
 :Surface->h surface 20 + d@ ;
@@ -83,39 +89,36 @@
 	drop GL_RED ;
 
 ::glImgFnt | "" -- 
-	GL_UNPACK_ALIGNMENT 1 glPixelStorei
+	|GL_UNPACK_ALIGNMENT 1 glPixelStorei
 	1 'fontTexture glGenTextures
     GL_TEXTURE_2D fontTexture glBindTexture IMG_Load 'Surface !
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
 	;	
 |-------------
 
 #xt 0 #yt 0 
-#wt 0 #ht 0 #wts 0 #hts 0
-
+#wt 0 #ht 0 
 #xs 0 #ys 0
-#ws 0.05 #hs 0.1
+|#ws 8.0 #hs 16.0 
+#ws 16.0 #hs 24.0 
 
 :initshaders
 	4 'fcolor memfloat	
+	800.0 0 0 600.0 1 0 mortho
+	'fwintext mcpyf
 	
-	"r3/opengl/shader/font1.fs"
-	"r3/opengl/shader/font1.vs" 
+	"r3/opengl/shader/font2.fs"
+	"r3/opengl/shader/font2.vs" 
 	loadShaders 'fontshader !
 	
-	fontshader glUseProgram
-	0 over "u_FontTexture" shader!i
-	'fcolor over "fgColor" shader!v4
-
-|	"media/img/font16x24.png" glImgFnt
-	"media/img/VGA8x16.png" glImgFnt
-
-	0.5 8 / 'wt ! 
-	wt 'wts ! 
-	1.0 16 / 'ht ! 
-	ht 'hts !
+	"media/img/font16x24.png" glImgFnt
+|	"media/img/VGA8x16.png" glImgFnt
+	
+	1.0 16 / 'wt ! 1.0 16 / 'ht ! 
 	;
 
 |---------------------------------------
@@ -124,23 +127,36 @@
 
 :fp, f2fp , ;
 
+:textcolor | fc --
+	'fcolor >a  
+	dup $ff0000 and 255 / f2fp da!+ 
+	dup 8 << $ff0000 and 255 / f2fp da!+ 
+	16 << $ff0000 and 255 / f2fp da! 
+	;
+	
 :gchar | char --
 	dup $f and wt * 'xt ! | x1
 	4 >> $f and ht * 'yt ! | y1
 
-	xs fp, ys fp, 			xt fp, yt ht + fp,
-	xs ws + fp, ys fp, 		xt wt + fp, yt ht + fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt fp,
+	xs fp, ys fp, 			xt fp, yt fp,
+	xs ws + fp, ys fp, 		xt wt + fp, yt fp,
+	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
 	
-	xs fp, ys fp, 			xt fp, yt ht + fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt fp,
-	xs fp, ys hs + fp, 		xt fp, yt fp,
+	xs fp, ys fp, 			xt fp, yt fp,
+	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
+	xs fp, ys hs + fp, 		xt fp, yt ht + fp,
 	
-	0.05 'xs +!
+|	8.0 'xs +!
+	16.0 'xs +!
 	;
 	
-:rendergen | "" --
+:text | "" x y --
+	'ys ! 'xs !
 	fontshader glUseProgram
+	0 fontshader "u_FontTexture" shader!i
+	'fcolor fontshader "fgColor" shader!v4
+	'fwintext fontshader "projection" shader!m4
+	
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D fontTexture glBindTexture
 	
@@ -152,6 +168,9 @@
 	here mark
 	swap ( c@+ 1? gchar ) 2drop
 	here swap - empty | size
+	
+	GL_BLEND glEnable
+	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
@@ -166,12 +185,12 @@
 :main
 	$4100 glClear | color+depth
 
-	-0.8 'xs ! 0.8 'ys !
-	"Hola Forth/r3 - OpenGL" rendergen
-	-0.8 'xs ! 0.7 'ys !
-	"Bitmap FONT" rendergen
-	-0.8 'xs ! 0.6 'ys !
-	msec "%h" sprint rendergen
+	$ffffff textcolor
+	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
+	$ff textcolor
+	msec "%h" sprint 0.0 24.0 text
+	$ff00 textcolor
+	"Bitmap FONT" 0.0 48.0 text
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
@@ -192,8 +211,6 @@
 	glInfo		
 	.cr 
 	"<esc> - Exit" .println
-	"<f1> - 1 obj moving" .println
-	"<esp> - 1 obj fix" .println	
 	.cr
 
 	'main SDLshow

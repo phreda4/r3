@@ -31,7 +31,6 @@
 #iqm.nroframes #iqm.fracha #iqm.frameo #iqm.bouo
 
 #framenow
-#frames
 
 #IQM_POSITION
 #IQM_TEXCOORD     
@@ -174,7 +173,7 @@
 :objinfo
 	0.002 'gltextsize !
 	'filename "Model: %s" sprint -0.98 0.9 gltext
-|	frames framenow "%d %d" sprint -0.98 -0.8 gltext
+	iqm.nroframes framenow "%d %d" sprint -0.98 0.8 gltext
 	;
 
 |------------------------------
@@ -326,14 +325,14 @@
 
 :calcbones | frame  --
 	here dup 'bonesmat> !	| skeleton mat now
-	iqm.pose 6 << * animamats +
+	iqm.pose 6 << + 
 	dup 'bonestr ! 'bonestr> ! | transform now
-	7 << listbones +
+	iqm.pose 7 << * animamats +	| frame 
 	0 ( iqm.pose <? swap | nro pose[i]
 		dup matinim | init matrix in pose
 		parentmat 	| * parent if 
 		bonestr> mcpy 128 'bonestr> +! | copy transform
-		over 
+		over 7 << listbones + mm* | mul
 		bonesmat> mcpyf 64 'bonesmat> +! | copy result
 		128 + swap 1+ ) 2drop 
 	;
@@ -501,15 +500,15 @@
 	
 	|................
 	| animation
-	matbonesid
-|	framenow calcbones
+|	matbonesid
+	framenow calcbones
 
 	1 shaderd "u_has_skeleton" shader!i
 	
 	shaderd "u_bone_matrix" glGetUniformLocation 
 	iqm.join 0 here glUniformMatrix4fv
 	
-	framenow 1 + frames >=? ( 0 nip ) 'framenow !
+	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !
 	|................
 	
     VAO glBindVertexArray
