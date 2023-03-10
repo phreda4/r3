@@ -117,7 +117,7 @@
 
 #shaderd
 #shaderfb
-
+| http://rodolphe-vaillant.fr/entry/77/skeletal-animation-forward-kinematic
 :initshaders
 |	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
 	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" loadShaders 'shaderd !

@@ -104,18 +104,18 @@
 #wt 0 #ht 0 
 #xs 0 #ys 0
 |#ws 8.0 #hs 16.0 
-#ws 16.0 #hs 24.0 
+#ws 30.0 #hs 40.0 
 
 :initshaders
 	4 'fcolor memfloat	
 	800.0 0 0 600.0 1 0 mortho
 	'fwintext mcpyf
 	
-	"r3/opengl/shader/font2.fs"
+	"r3/opengl/shader/msdf1.fs"
 	"r3/opengl/shader/font2.vs" 
 	loadShaders 'fontshader !
 	
-	"media/img/font16x24.png" glImgFnt
+	"media/img/mdf-font.png" glImgFnt
 |	"media/img/VGA8x16.png" glImgFnt
 	
 	1.0 4 >> dup 'wt ! 'ht ! 
@@ -147,7 +147,7 @@
 	xs fp, ys hs + fp, 		xt fp, yt ht + fp,
 	
 |	8.0 'xs +!
-	16.0 'xs +!
+	30.0 'xs +!
 	;
 	
 :text | "" x y --
@@ -188,9 +188,9 @@
 	$ffffff textcolor
 	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
 	$ff textcolor
-	msec "%h" sprint 0.0 24.0 text
+	msec "%h" sprint 0.0 40.0 text
 	$ff00 textcolor
-	"Bitmap FONT" 0.0 48.0 text
+	"Bitmap FONT" 0.0 80.0 text
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
