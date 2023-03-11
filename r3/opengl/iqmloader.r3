@@ -312,10 +312,10 @@
 		64 'bonesmat> +!	
 		) drop 	
 		
-	matini
-	msec 0 0 0 mrpos
-	matinv
-	here 64 6 * + mcpyf
+|	matini
+|	msec 0 0 0 mrpos
+|	matinv
+|	here 64 6 * + mcpyf
 	;
 
 :parentmat | nro 'pose -- nro 'pose
@@ -330,9 +330,10 @@
 	iqm.pose 7 << * animamats +	| frame 
 	0 ( iqm.pose <? swap | nro pose[i]
 		dup matinim | init matrix in pose
-		parentmat 	| * parent if 
-		bonestr> mcpy 128 'bonestr> +! | copy transform
-		over 7 << listbones + mm* | mul
+|		parentmat 	| * parent if 
+|		bonestr> mcpy 128 'bonestr> +! | copy transform
+|		over 7 << listbones + mm* | mul
+		
 		bonesmat> mcpyf 64 'bonesmat> +! | copy result
 		128 + swap 1+ ) 2drop 
 	;
@@ -500,8 +501,8 @@
 	
 	|................
 	| animation
-|	matbonesid
-	framenow calcbones
+	matbonesid
+|	framenow calcbones
 
 	1 shaderd "u_has_skeleton" shader!i
 	
@@ -616,11 +617,14 @@
 	
 |------------------------------
 :main
-	gui
-	'dnlook 'movelook onDnMove
 	$4100 glClear | color+depth
 	objinfo
 	renderobj
+	
+	gui
+	'dnlook 'movelook onDnMove
+	glfbox
+	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit )
