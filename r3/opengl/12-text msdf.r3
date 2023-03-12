@@ -54,19 +54,17 @@
 	
 #GL_DEPTH_BUFFER_BIT $100	
 #GL_UNPACK_ALIGNMENT $0CF5
+#GL_LINEAR $2601
 
 #GL_BLEND $0BE2
 #GL_SRC_ALPHA $0302
 #GL_ONE_MINUS_SRC_ALPHA $0303
 
 |-------------------------------------
-
-:memfloat | cnt place --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
-	
 #fontshader	
 #fontTexture 
-#fcolor [ 1.0 0.0 0.0 1.0 ]
+#fcolor [ 0 0 0 0 ]
+
 #fwintext * 64
 
 |---------- load img
@@ -89,25 +87,49 @@
 	drop GL_RED ;
 
 ::glImgFnt | "" -- 
-	|GL_UNPACK_ALIGNMENT 1 glPixelStorei
 	1 'fontTexture glGenTextures
     GL_TEXTURE_2D fontTexture glBindTexture IMG_Load 'Surface !
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR  glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR  glTexParameteri
 	;	
 |-------------
 
-#xt 0 #yt 0 
-#wt 0 #ht 0 
-#xs 0 #ys 0
-|#ws 8.0 #hs 16.0 
-#ws 30.0 #hs 40.0 
+#arrt
+#arrf
+#fw 304.0 #fh 304.0 
+
+:savech | adr char --
+	32 <? ( 2drop ; ) 32 -
+	9 * 2 << arrf + >a
+	1 + str>fnro da!+
+	1 + str>fnro da!+
+	1 + str>fnro da!+
+	1 + str>fnro da!+
+	1 + str>fnro da!+
+	1 + str>fnro fw /. da!+
+	1 + str>fnro fh swap - fh /. da!+
+	1 + str>fnro fw /. da!+
+	1 + str>fnro fh swap - fh /. da!+
+	drop ;
+	
+:genarr | str --
+	here dup 'arrt !
+	"media/msdf/Roboto.csv" load 
+	0 swap c!+ 
+	dup 'here ! 'arrf !
+	arrf 0 9 255 32 - * dfill 
+	arrt
+	( dup c@ 1? drop
+		dup str>nro 
+		savech		
+		>>cr trim
+		) 2drop
+	9 255 32 - * 2 << 'here +!
+	;
+
 
 :initshaders
-	4 'fcolor memfloat	
 	800.0 0 0 600.0 1 0 mortho
 	'fwintext mcpyf
 	
@@ -115,10 +137,9 @@
 	"r3/opengl/shader/font2.vs" 
 	loadShaders 'fontshader !
 	
-	"media/img/mdf-font.png" glImgFnt
-|	"media/img/VGA8x16.png" glImgFnt
+	"media/msdf/roboto.png" glImgFnt
 	
-	1.0 4 >> dup 'wt ! 'ht ! 
+	genarr	
 	;
 
 |---------------------------------------
@@ -127,31 +148,48 @@
 
 :fp, f2fp , ;
 
-:textcolor | fc --
+:fgcolor | fc --
 	'fcolor >a  
 	dup $ff0000 and 255 / f2fp da!+ 
 	dup 8 << $ff0000 and 255 / f2fp da!+ 
-	16 << $ff0000 and 255 / f2fp da! 
+	dup 16 << $ff0000 and 255 / f2fp da!+ 
+	8 >> $ff0000 and 255 / f2fp da! 
 	;
-	
-:gchar | char --
-	dup $f and wt * 'xt ! | x1
-	4 >> $f and ht * 'yt ! | y1
 
-	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys fp, 		xt wt + fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
 	
-	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
-	xs fp, ys hs + fp, 		xt fp, yt ht + fp,
+#size 30.0
+#xs 0 #ys 0
 	
-|	8.0 'xs +!
-	30.0 'xs +!
+#sl #sb #sr #st		
+#l #b #r #t	
+
+:gchar |ch
+	32 <? ( drop ; ) 32 - 9 * 2 << arrf + >a
+	da@+
+	
+	da@+ size *. xs + 'sl ! ys size + da@+ size *. - 'sb !
+	da@+ size *. xs + 'sr !	ys size + da@+ size *. - 'st !
+	
+	da@+ 'l ! da@+ 'b ! da@+ 'r ! da@+ 't !
+	
+	sl fp, st fp,	l fp, t fp,
+	sr fp, st fp,	r fp, t fp,
+	sr fp, sb fp,	r fp, b fp,
+	
+	sl fp, st fp,	l fp, t fp,
+	sr fp, sb fp,	r fp, b fp,
+	sl fp, sb fp,	l fp, b fp,
+	
+	size *. 'xs +!
 	;
+
+:glat
+	16 << 'ys ! 16 << 'xs ! ;
 	
-:text | "" x y --
-	'ys ! 'xs !
+:glcr
+	0 'xs ! size 'ys +! ;
+	
+:gltext | "" --
 	fontshader glUseProgram
 	0 fontshader "u_FontTexture" shader!i
 	'fcolor fontshader "fgColor" shader!v4
@@ -169,8 +207,8 @@
 	swap ( c@+ 1? gchar ) 2drop
 	here swap - empty | size
 	
-	GL_BLEND glEnable
-	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
+|	GL_BLEND glEnable
+|	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
@@ -185,12 +223,13 @@
 :main
 	$4100 glClear | color+depth
 
-	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
-	$ff textcolor
-	msec "%h" sprint 0.0 40.0 text
-	$ff00 textcolor
-	"Bitmap FONT" 0.0 80.0 text
+	$ffffffff fgcolor
+	0 0 glat
+	"Hola Forth/r3 - OpenGL" gltext glcr
+	$ff0000ff fgcolor 
+	msec "%h" sprint gltext glcr
+	$ff00ff00 fgcolor
+	"Bitmap FONT" gltext glcr
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
@@ -200,7 +239,7 @@
 |----------- BOOT
 :
 	"test opengl" 800 600 SDLinitGL
-	
+|	0 0 800 600 glViewport
 	GL_DEPTH_TEST glEnable 
 |	GL_CULL_FACE glEnable	
 |	GL_LESS glDepthFunc 
