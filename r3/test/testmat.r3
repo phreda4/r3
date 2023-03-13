@@ -81,6 +81,12 @@ matini .matprint .cr
 matinv
 "inv:" .println
 .matprint .cr
+
+
+800.0 0 0 600.0 1.0 0.0 mortho
+"ortho:" .println
+.matprint .cr
+
 |1.0 'pto !
 |'pEye 'pTo 'pUp mlookat | eye to up --
 |.matprint .cr

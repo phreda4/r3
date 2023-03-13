@@ -105,7 +105,7 @@
 
 :glscr
 	4 'fcolor memfloat	
-	sw 16 << 0 0 sh 16 << 1 0 mortho
+	sw 16 << 0 0 sh 16 << 1.0 0 mortho
 	'fwintext mcpyf
 	
 	"r3/opengl/shader/font2.fs"
@@ -217,9 +217,8 @@
 :main
 	$4100 glClear | color+depth
 
-	GL_DEPTH_TEST glDisable 
 	$0000ff textcolor
-	30 30 200 100 fillrect
+	msec 2 >> $1ff and 130 200 100 fillrect
 	
 	$ffffff textcolor
 	"Hola Forth/r3 - OpenGL" 0 0 text

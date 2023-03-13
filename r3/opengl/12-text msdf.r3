@@ -130,7 +130,7 @@
 
 
 :initshaders
-	800.0 0 0 600.0 1 0 mortho
+	800.0 0 0 600.0 1.0 -1.0 mortho
 	'fwintext mcpyf
 	
 	"r3/opengl/shader/msdf1.fs"
@@ -206,9 +206,10 @@
 	here mark
 	swap ( c@+ 1? gchar ) 2drop
 	here swap - empty | size
-	
-|	GL_BLEND glEnable
-|	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
+
+	GL_CULL_FACE glDisable
+	GL_BLEND glEnable
+	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
@@ -219,10 +220,13 @@
 	1 'bt glDeleteBuffers	
 	;
 
+
 |--------------	
 :main
 	$4100 glClear | color+depth
 
+	msec 5 << $3fffff and 5.0 + 'size !
+	
 	$ffffffff fgcolor
 	0 0 glat
 	"Hola Forth/r3 - OpenGL" gltext glcr

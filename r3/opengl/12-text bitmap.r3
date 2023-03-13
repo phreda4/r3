@@ -108,7 +108,7 @@
 
 :initshaders
 	4 'fcolor memfloat	
-	800.0 0 0 600.0 1 0 mortho
+	800.0 0 0 600.0 1.0 0 mortho
 	'fwintext mcpyf
 	
 	"r3/opengl/shader/font2.fs"
@@ -171,7 +171,8 @@
 	
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
-	
+	0 0 800 600 glViewport
+	 
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
 	1 glEnableVertexAttribArray 1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
@@ -186,7 +187,8 @@
 	$4100 glClear | color+depth
 
 	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
+	"Hola Forth/r3 - OpenGL - linea larga - todo" 0.0 0.0 text
+	
 	$ff textcolor
 	msec "%h" sprint 0.0 24.0 text
 	$ff00 textcolor
