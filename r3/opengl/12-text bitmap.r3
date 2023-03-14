@@ -187,7 +187,7 @@
 	$4100 glClear | color+depth
 
 	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL - linea larga - todo" 0.0 0.0 text
+	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
 	
 	$ff textcolor
 	msec "%h" sprint 0.0 24.0 text

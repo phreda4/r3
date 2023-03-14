@@ -243,13 +243,17 @@
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 
+|- shift with sign
+:shift
+	-? ( neg >> ; ) << ;
+
 |--- integer to floating point
 ::i2fp | i -- f
 	0? ( ; )
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
-	swap over << 	| s shift i
+	swap over shift 	| s shift i
 	150 rot - 23 << | s i m
 	swap $7fffff and or 
 	swap $80000000 and or 
@@ -261,16 +265,13 @@
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
-	swap over << 	| v s shift i
+	swap over shift 	| v s shift i
 	134 rot - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or 
 	swap $80000000 and or 
 	;
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
-:shift
-	-? ( neg >> ; ) << ;
-	
 ::fp2f | fp -- fixed point
 	dup $7fffff and $800000 or
 	over 23 >> $ff and 134 - 

@@ -46,30 +46,33 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 	swap $7fffff and or 
 	or 
 	;
+
+:shift
+	-? ( neg >> ; ) << ;	
 	
 | v2 - abs bit trick	
 :i2f | i -- fp
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
-	swap over << 	| s shift i
+	swap over shift 	| s shift i
 	150 rot - 23 << | s i m
 	swap $7fffff and or 
 	swap $80000000 and or 
 	;
+
 	
 :x2f | f.p -- fp
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 
 	dup clz 8 - 	| s i shift
-	swap over << 	| v s shift i
+	swap over shift
 	134 rot - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or 
 	swap $80000000 and or 
 	;
 	
-:shift
-	-? ( neg >> ; ) << ;
+
 	
 :fp2f | fp -- fixed point
 	dup $7fffff and $800000 or
@@ -121,7 +124,11 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 0.6554 dup dup x2f "3f27c84b %h %f %h " .println
 0.6554 x2f fp2f "%f" .println
 
+100.0 dup dup x2f dup fp2f "%f 43960000 %h %f %h " .println 
 
+300.0 dup dup x2f dup fp2f "%f 43960000 %h %f %h " .println 
+
+1532.625 dup dup x2f dup fp2f "%f 44bf9400 %h %f %h " .println 
 |parsefloat
 |incparse
 
