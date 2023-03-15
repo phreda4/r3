@@ -96,9 +96,10 @@
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
 	;	
 |-------------
+#vt
+#bt
 
 #xt 0 #yt 0 
-#wt 0 #ht 0 
 #xs 0 #ys 0
 #ws 8.0 #hs 16.0 
 |#ws 16.0 #hs 24.0 
@@ -118,12 +119,10 @@
 |	"media/img/font16x24.png" glImgFnt
 	"media/img/VGA8x16.png" glImgFnt
 	
-	1.0 4 >> dup 'wt ! 'ht ! 
+	| 1.0 4 >> dup 'wt ! 'ht ! | = $1000
 	;
 
-|---------------------------------------
-#vt
-#bt
+|--------------	FONT
 
 :fp, f2fp , ;
 
@@ -135,23 +134,28 @@
 	;
 	
 :gchar | char --
-	dup $f and wt * 'xt ! | x1
-	4 >> $f and ht * 'yt ! | y1
+	dup $f and $1000 * 'xt ! | x1
+	4 >> $f and $1000 * 'yt ! | y1
 
 	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys fp, 		xt wt + fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
+	xs ws + fp, ys fp, 		xt $1000 + fp, yt fp,
+	xs ws + fp, ys hs + fp, xt $1000 + fp, yt $1000 + fp,
 	
 	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
-	xs fp, ys hs + fp, 		xt fp, yt ht + fp,
+	xs ws + fp, ys hs + fp, xt $1000 + fp, yt $1000 + fp,
+	xs fp, ys hs + fp, 		xt fp, yt $1000 + fp,
 	
 	8.0 'xs +!
 	|16.0 'xs +!
 	;
 	
-:text | "" x y --
-	16 << 'ys ! 16 << 'xs !
+:glat
+	16 << 'ys ! 16 << 'xs ! ;
+	
+:glcr
+	0 'xs ! 16.0 'ys +! ;
+	
+:gltext | "" --
 	fontshader glUseProgram
 	0 fontshader "u_FontTexture" shader!i
 	'fcolor fontshader "fgColor" shader!v4
@@ -181,10 +185,14 @@
 	1 'bt glDeleteBuffers	
 	;
 	
+:gltextsize | "" -- "" sizew sizeh
+	count 8 * 16 ;
+
+|-------- RECT	
 #wscr
 #hscr	
 :fillrect | x y w h --
-	16 << 'hscr ! 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
+	pick2 + 16 << 'hscr ! pick2 + 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
 	scrshader glUseProgram
 	'fcolor scrshader "fgColor" shader!v4
 	'fwintext scrshader "projection" shader!m4
@@ -194,38 +202,135 @@
 	GL_ARRAY_BUFFER bt glBindBuffer
 	
 	here mark
-	xs fp, ys fp, 			
-	xs wscr + fp, ys fp, 	
-	xs wscr + fp, ys hscr + fp,
 	xs fp, ys fp,
-	xs wscr + fp, ys hscr + fp,
-	xs fp, ys hscr + fp,
+	wscr fp, ys fp,
+	wscr fp, hscr fp,
+	xs fp, hscr fp,
 	here swap - empty | size
-	
+
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
-	
+
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 2 2 << 0 glVertexAttribPointer
-	GL_TRIANGLES 0 rot 2 >> glDrawArrays 
+	6 0 rot 3 >> glDrawArrays | TRIANGLE_FAN
 	0 glBindVertexArray
 	1 'vt glDeleteVertexArrays
 	1 'bt glDeleteBuffers	
 	;
 
+:rect | x y w h --
+	pick2 + 16 << 'hscr ! pick2 + 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
+	scrshader glUseProgram
+	'fcolor scrshader "fgColor" shader!v4
+	'fwintext scrshader "projection" shader!m4
+	1 'vt glGenVertexArrays
+	1 'bt glGenBuffers
+	vt glBindVertexArray
+	GL_ARRAY_BUFFER bt glBindBuffer
+	
+	here mark
+	xs fp, ys fp,
+	wscr fp, ys fp,
+	wscr fp, hscr fp,
+	xs fp, hscr fp,
+	here swap - empty | size
+
+	GL_BLEND glEnable
+	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
+
+	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
+	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 2 2 << 0 glVertexAttribPointer
+	2 0 rot 3 >> glDrawArrays | LINE_LOOP
+	0 glBindVertexArray
+	1 'vt glDeleteVertexArrays
+	1 'bt glDeleteBuffers	
+	;
+	
+	
+|--------------	GUI
+#padx 4 #pady 4
+#curx 10 #cury 10
+#boxw 80 #boxh 20
+#winx 10 #winy 10
+
+:glgui |
+	gui 
+	10 'curx ! 10 'cury !
+	;
+
+:glwin |
+	'cury ! 'curx ! ;
+	
+:gltextcen | "" --
+	gltextsize swap
+	boxw swap - 1 >> curx + padx + swap
+	boxh swap - 1 >> cury + pady + 
+	glat
+	gltext ;
+	
+	
+:gltbtn | 'click "" --
+	curx padx + cury pady + boxw boxh 
+	2over 2over guiBox
+	$0000ff textcolor
+	[ $00007f textcolor ; ] guiI 
+	fillrect
+	$ffffff textcolor
+	gltextcen
+	onClick
+	;
+	
+:glSliderf | 0.0 1.0 'value --
+	;
+:glSlideri | 0 255 'value --
+	;
+:glCheck | 'val "op1|op2|op3" -- ; v op1  v op2  x op3
+	;
+:glRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
+	;
+:glCombo | 'val "op1|op2|op3" -- ; [op1  v]
+	;
+	
+:glInputText | 'buff 255 --
+	;
+:glInputInt | 'buff  --
+	;
+:glInputFix | 'buff  --
+	;
+	
+:glwindow
+	;
+:gltab
+	;
+:glTable
+	;
+	
+:gldn
+	pady 1 << boxh + 'cury +! ;
+:glri
+	padx 1 << boxw + 'curx +! ;
+	
 |--------------	
 :main
 	$4100 glClear | color+depth
 
-	$0000ff textcolor
-	msec 2 >> $1ff and 130 200 100 fillrect
+	glgui
+
+	300 10 glwin
+	'exit "hola" gltbtn	gldn
+	'exit "salir" gltbtn glri
+	'exit "otro" gltbtn glri
+
 	
+	0 0 glat
 	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL" 0 0 text
+	"Hola Forth/r3 - OpenGL" gltext glcr
 	$ff textcolor
-	msec "%h" sprint 0 16 text
+	msec "%h" sprint gltext glcr
 	$ff00 textcolor
-	"Bitmap FONT" 0 32 text
+	"Bitmap FONT" gltext
+
 	
 	
 	SDL_windows SDL_GL_SwapWindow
