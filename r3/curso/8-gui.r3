@@ -15,7 +15,7 @@
 
 :drawline
 	gui		
-	SDLb SDLx SDLy guiIn
+	SDLx SDLy guiIn
 	
 	[ xypen xy! ; ] 
 	[ ink SDLColor xypen 2dup xo yo SDLLine xy! rand 'ink ! ; ]  

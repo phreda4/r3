@@ -27,15 +27,15 @@
 	xr2 over - swap xr1 - or or
 	63 >> not 						| x y -- -1/0
 	'in? ! 
-	'btn? ! ;
+	;
 	
 ::guiBox | x1 y1 w h --
 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
-	SDLb SDLx SDLy guiIn ;
+	SDLx SDLy guiIn ;
 
 ::guiRect | x1 y1 x2 y2 --
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
-	SDLb SDLx SDLy guiIn ;
+	SDLx SDLy guiIn ;
 	
 
 |---------
@@ -49,13 +49,13 @@
 ::onClick | 'click --
 	1 'id +!
 	in? 0? ( 2drop ; ) drop
-	btn? 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 2drop
+	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 2drop
 	id 'hot ! ;
 
 |-- move
 ::onMove | 'move --
 	1 'id +!
-	btn? 0? ( 2drop ; ) drop
+	SDLb 0? ( 2drop ; ) drop
 	in? 0? ( 2drop ; ) drop
 	id 'hot !
 	ex ;
@@ -63,7 +63,7 @@
 |-- dnmove
 ::onDnMove | 'dn 'move --
 	1 'id +!
-	btn? 0? ( 3drop ; ) drop
+	SDLb 0? ( 3drop ; ) drop
 	in? 0? ( 3drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
@@ -71,7 +71,7 @@
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
 	1 'id +!
-	btn? 0? ( 3drop ; ) drop
+	SDLb 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
 	in? 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
@@ -83,7 +83,7 @@
 ::guiMap | 'dn 'move 'up --
 	1 'id +!
 	in? 0? ( 4drop ; ) drop
-	btn? 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
+	SDlb 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ex ; )
 	2drop nip ex ;
@@ -91,7 +91,7 @@
 ::guiDraw | 'move 'up --
 	1 'id +!
 	in? 0? ( 3drop ; ) drop
-	btn? 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
+	SDLb 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ; )
 	2drop ex ;

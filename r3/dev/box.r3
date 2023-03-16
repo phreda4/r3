@@ -82,7 +82,7 @@
 		) drop ;
 	
 :insertbox
-	SDLb SDLx SDLy guiIn	
+	SDLx SDLy guiIn	
 	[ SDLx 'x1 ! SDLy 'y1 ! ; ]
 	[ $ff00 SDLColor x1 y1 SDLx SDLy box2rec SDLRect ; ]
 	[ x1 y1 SDLx SDLy box2rec rec2box xywh64 listb> !+ 'listb> ! ; ]
