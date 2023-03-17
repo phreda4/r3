@@ -8,8 +8,8 @@
 
 ^r3/win/sdl2gl.r3
 ^r3/lib/3dgl.r3
-^r3/lib/gui.r3
-^r3/opengl/gltext.r3
+
+^r3/opengl/glgui.r3
 
 #EX_IQM_MAGIC "INTERQUAKEMODEL"
 #EX_IQM_VERSION 2
@@ -156,25 +156,6 @@
 	$000000ff glColorTex 'tex_spe !
 	;
 	
-#xm #ym
-#rx #ry
-
-:dnlook
-	SDLx SDLy 'ym ! 'xm ! ;
-
-:movelook
-	SDLx SDLy
-	ym over 'ym ! - neg 7 << 'rx +!
-	xm over 'xm ! - 7 << neg 'ry +!  
-	rx $ffff and 32 << ry $ffff and 16 << or 0 0 0 mrpos
-	'fmodel mcpyf	
-	;
-	
-:objinfo
-	0.002 'gltextsize !
-	'filename "Model: %s" sprint -0.98 0.9 gltext
-	iqm.nroframes framenow "%d %d" sprint -0.98 0.8 gltext
-	;
 
 |------------------------------
 
@@ -482,50 +463,6 @@
 		
 	;
 
-:renderobj | obj --
-
-	shaderd glUseProgram
-	
-	'fprojection shaderd "u_projection" shader!m4
-	'fview shaderd "u_view" shader!m4
-|	'fiview shaderd "u_inverse_view" shader!m4
-	'fmodel shaderd "u_model" shader!m4
-	
-	0 shaderd "u_point_count" shader!i
-  
-	0 shaderd "u_ambient_pass" shader!i
-
-	4 shaderd "u_texture" shader!i
-	5 shaderd "u_spec" shader!i
-	6 shaderd "u_norm" shader!i
-	
-	|................
-	| animation
-	matbonesid
-|	framenow calcbones
-
-	1 shaderd "u_has_skeleton" shader!i
-	
-	shaderd "u_bone_matrix" glGetUniformLocation 
-	iqm.join 0 here glUniformMatrix4fv
-	
-	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !
-	|................
-	
-    VAO glBindVertexArray
-	GL_ELEMENT_ARRAY_BUFFER VIO glBindBuffer
-	
-	listmesh >a
-	da@+ ( 1? 1- 
-		GL_TEXTURE0 4 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
-		GL_TEXTURE0 5 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
-		GL_TEXTURE0 6 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
-		GL_TRIANGLE da@+ GL_UNSIGNED_INT da@+ glDrawElements	
-		) drop 
-
-    0 glBindVertexArray
-	;
-	
 |------------------------------
 |  /* -- SCREEN QUAD -- */
 #vertices [
@@ -616,23 +553,83 @@
 	;
 	
 |------------------------------
+#rx #ry #rz
+#mx #my #mz
+#anima
+
+:animation
+	anima 0? ( drop matbonesid ; ) drop
+	framenow calcbones 
+	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !	
+	;
+
+:renderobj | obj --
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable
+	GL_LESS glDepthFunc 	
+	shaderd glUseProgram
+	
+	'fprojection shaderd "u_projection" shader!m4
+	'fview shaderd "u_view" shader!m4
+	'fmodel shaderd "u_model" shader!m4
+	0 shaderd "u_point_count" shader!i
+	0 shaderd "u_ambient_pass" shader!i
+	4 shaderd "u_texture" shader!i
+	5 shaderd "u_spec" shader!i
+	6 shaderd "u_norm" shader!i
+	|................
+	animation
+	1 shaderd "u_has_skeleton" shader!i
+	shaderd "u_bone_matrix" glGetUniformLocation 
+	iqm.join 0 here glUniformMatrix4fv
+	|................
+    VAO glBindVertexArray
+	GL_ELEMENT_ARRAY_BUFFER VIO glBindBuffer
+	listmesh >a
+	da@+ ( 1? 1- 
+		GL_TEXTURE0 4 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TEXTURE0 5 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TEXTURE0 6 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
+		GL_TRIANGLE da@+ GL_UNSIGNED_INT da@+ glDrawElements	
+		) drop 
+    0 glBindVertexArray
+	;
+	
+:control
+	glgui
+	$ffffff textcolor
+	0 0 glat
+	'filename "Model: %s" sprint gltext glcr
+	iqm.nroframes framenow "%d %d" sprint gltext
+	
+	10 32 180 20 glwin
+	-1.0 1.0 'rx glSliderf gldn	
+	-1.0 1.0 'ry glSliderf gldn	
+	-1.0 1.0 'rz glSliderf gldn	
+	-10.0 10.0 'mx glSliderf gldn	
+	-10.0 10.0 'my glSliderf gldn	
+	-10.0 10.0 'mz glSliderf gldn	
+	'anima "Animate" glCheck gldn
+	'exit "Exit" gltbtn gldn
+	
+	rx $ffff and 32 << 
+	ry $ffff and 16 << or 
+	rz $ffff and or 
+	mx my mz mrpos
+	'fmodel mcpyf	
+	;
+
 :main
 	$4100 glClear | color+depth
-	objinfo
+
 	renderobj
-	
-	gui
-	'dnlook 'movelook onDnMove
-	glfbox
+	control
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit )
 	drop ;
 
-:debug
-
-	;
 	
 |------------------------------
 |----------- BOOT
@@ -640,19 +637,12 @@
 :
 	|.................
 	"test opengl" 800 600 SDLinitGL
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable
-	GL_LESS glDepthFunc 	
-
-	|.................
-	
 
 	"media/dae/iqm/mrfixit.iqm" iqmload	
 |	"media/dae/raph/raph.iqm" iqmload	
 |	"media/dae/cube.iqm" iqmload	
 
-	| debug
-	initglfont
+	glimmgui
 	initvec
 	initshaders
 	iniscrquad
