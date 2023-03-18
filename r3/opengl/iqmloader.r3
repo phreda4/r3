@@ -120,8 +120,13 @@
 | http://rodolphe-vaillant.fr/entry/77/skeletal-animation-forward-kinematic
 :initshaders
 |	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
-	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" loadShaders 'shaderd !
-	"r3/opengl/shader/fboshader.fs" "r3/opengl/shader/fboshader.vs" loadShaders 'shaderfb !
+
+|	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" loadShaders 'shaderd !
+|	"r3/opengl/shader/fboshader.fs" "r3/opengl/shader/fboshader.vs" loadShaders 'shaderfb !
+
+	"r3/opengl/shader/forward.sha" loadShader 'shaderd !
+	"r3/opengl/shader/fboshader.sha" loadShader 'shaderfb !
+
 	;
 	
  
@@ -220,8 +225,8 @@
 		'scale @+ swap @+ swap @ mscale
 		'rotat matqua m*
 		'trans @+ swap @+ swap @ mtran
-		matinv
-		matparent
+		|matinv
+		|matparent
 		here mcpy
 		128 'here +!
 		swap 1 + ) 2drop ;
@@ -298,6 +303,16 @@
 |	matinv
 |	here 64 6 * + mcpyf
 	;
+
+:matbonesbase | fill animation with id
+	here 'bonesmat> !
+	listbones iqm.pose ( 1? 1 - swap
+		dup matinim
+		bonesmat> mcpyf
+		64 'bonesmat> +!
+		128 +
+		swap ) 2drop 	
+
 
 :parentmat | nro 'pose -- nro 'pose
 	over ]parent 0? ( drop ; )
@@ -559,7 +574,8 @@
 
 :animation
 	anima 0? ( drop matbonesid ; ) drop
-	framenow calcbones 
+	matbonesbase
+|	framenow calcbones 
 	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !	
 	;
 

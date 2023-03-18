@@ -117,10 +117,4 @@
 	
 	;	
 	
-|*** need code	
-::glLoadDDS | "" -- 
-	here swap LOAD here =? ( drop ; ) drop
-	here "DDS " =pre 0? ( drop ; ) drop
-	
-	;
 

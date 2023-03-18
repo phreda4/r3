@@ -4,7 +4,7 @@
 ^r3/lib/3dgl.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
-^r3/opengl/shaderobj.r3
+|^r3/opengl/shaderobj.r3
 ^r3/opengl/glgui.r3
 
 |--------------	

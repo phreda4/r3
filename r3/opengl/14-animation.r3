@@ -264,6 +264,7 @@
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 
+#o1
 |--------------	
 :main
 	gui
@@ -275,6 +276,8 @@
 	"CAM z:%f y:%f x:%f" sprint
 	-0.8 0.8 gltext
 	
+	
+	o1 renderobj
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
@@ -288,7 +291,7 @@
 
 	drop ;	
 
-#o1
+
 
 |---------------------------		
 :ini	

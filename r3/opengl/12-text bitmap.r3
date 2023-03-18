@@ -10,7 +10,7 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
-^r3/opengl/shaderobj.r3
+^r3/opengl/glutil.r3
 
 | opengl Constant
 #GL_DEPTH_TEST $0B71
@@ -33,28 +33,6 @@
 #GL_TEXTURE0 $84C0
 #GL_TEXTURE_2D $0DE1
 
-#GL_DEPTH_COMPONENT $1902
-#GL_TEXTURE_MAG_FILTER $2800
-#GL_TEXTURE_MAX_ANISOTROPY_EXT $84FE
-#GL_TEXTURE_MAX_LEVEL $813D
-#GL_TEXTURE_MAX_LOD $813B
-#GL_TEXTURE_MIN_FILTER $2801
-#GL_TEXTURE_MIN_LOD $813A
-#GL_TEXTURE_WRAP_R $8072
-#GL_TEXTURE_WRAP_S $2802
-#GL_TEXTURE_WRAP_T $2803
-#GL_NEAREST $2600
-#GL_NEAREST_MIPMAP_LINEAR $2702
-#GL_NEAREST_MIPMAP_NEAREST $2700
-#GL_CLAMP_TO_BORDER $812D
-#GL_TEXTURE_BORDER_COLOR $1004
-#GL_FRAMEBUFFER $8D40
-#GL_DEPTH_ATTACHMENT $8D00
-#GL_TEXTURE1 $84C1
-	
-#GL_DEPTH_BUFFER_BIT $100	
-#GL_UNPACK_ALIGNMENT $0CF5
-
 #GL_BLEND $0BE2
 #GL_SRC_ALPHA $0302
 #GL_ONE_MINUS_SRC_ALPHA $0303
@@ -69,36 +47,6 @@
 #fcolor [ 1.0 0.0 0.0 1.0 ]
 #fwintext * 64
 
-|---------- load img
-#surface
-
-#GL_RED $1903
-#GL_RGB $1907
-#GL_RGBA $1908
-#GL_UNSIGNED_BYTE $1401
-#GL_CLAMP_TO_EDGE $812F
-
-:Surface->w surface 16 + d@ ;
-:Surface->h surface 20 + d@ ;
-:Surface->p surface 24 + d@ ;
-:Surface->pixels surface 32 + @ ;
-:GLBPP 
-	surface 8 + @ 16 + c@
-	32 =? ( drop GL_RGBA ; ) 
-	24 =? ( drop GL_RGB ; )
-	drop GL_RED ;
-
-::glImgFnt | "" -- 
-	|GL_UNPACK_ALIGNMENT 1 glPixelStorei
-	1 'fontTexture glGenTextures
-    GL_TEXTURE_2D fontTexture glBindTexture IMG_Load 'Surface !
-	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
-	;	
-|-------------
 
 #xt 0 #yt 0 
 #wt 0 #ht 0 
@@ -111,12 +59,10 @@
 	800.0 0 0 600.0 1.0 0 mortho
 	'fwintext mcpyf
 	
-	"r3/opengl/shader/font2.fs"
-	"r3/opengl/shader/font2.vs" 
-	loadShaders 'fontshader !
-	
-	"media/img/font16x24.png" glImgFnt
-|	"media/img/VGA8x16.png" glImgFnt
+	"r3/opengl/shader/font2.sha" loadShader 'fontshader !
+
+	"media/img/font16x24.png" glImgFnt 'fontTexture !
+|	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
 	
 	1.0 4 >> dup 'wt ! 'ht ! 
 	;
