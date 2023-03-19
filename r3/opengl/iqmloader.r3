@@ -117,22 +117,18 @@
 
 #shaderd
 #shaderfb
+
 | http://rodolphe-vaillant.fr/entry/77/skeletal-animation-forward-kinematic
 :initshaders
 |	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
 
-|	"r3/opengl/shader/forward.fs" "r3/opengl/shader/forward.vs" loadShaders 'shaderd !
-|	"r3/opengl/shader/fboshader.fs" "r3/opengl/shader/fboshader.vs" loadShaders 'shaderfb !
-
 	"r3/opengl/shader/forward.sha" loadShader 'shaderd !
 	"r3/opengl/shader/fboshader.sha" loadShader 'shaderfb !
-
 	;
 	
  
 #fprojection * 64
 #fview * 64
-|#fiview * 64
 #fmodel * 64
 	
 #pEye 0.0 0.0 10.0
@@ -140,10 +136,7 @@
 #pUp 0 1.0 0.0
 
 :eyecam
-	'pEye 'pTo 'pUp mlookat 
-	'fview mcpyf 
-|	matinv 'fiview mcpyf 
-	;
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
 
 #tex_dif
 #tex_nor
@@ -151,16 +144,13 @@
 
 :initvec
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
-	'fprojection mcpyf	| perspective matrix
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
 	$ffffffff glColorTex 'tex_dif !
 	$7f7fffff glColorTex 'tex_nor !
 	$000000ff glColorTex 'tex_spe !
 	;
-	
 
 |------------------------------
 
@@ -652,7 +642,7 @@
 |------------------------------
 :
 	|.................
-	"test opengl" 800 600 SDLinitGL
+	"iqm loader" 800 600 SDLinitGL
 
 	"media/dae/iqm/mrfixit.iqm" iqmload	
 |	"media/dae/raph/raph.iqm" iqmload	

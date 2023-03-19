@@ -19,15 +19,13 @@
 ##xr1 ##yr1
 ##xr2 ##yr2
 
-#in?
-#btn?
+#in? | mouse in rect?
 
 ::guiIn	| b x y --
 	yr2 over - swap yr1 - or swap	
 	xr2 over - swap xr1 - or or
 	63 >> not 						| x y -- -1/0
-	'in? ! 
-	;
+	'in? ! ;
 	
 ::guiBox | x1 y1 w h --
 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
@@ -160,7 +158,7 @@
 	'idf !
 	ex ;
 
- | no puedo retroceder!
+ | no puedo retroceder! (idea: separa id for text input)
 ::lostfoco | 'acc --
 	idf 1 + foco <>? ( 'idf ! drop ; ) 'idf !
 	ex

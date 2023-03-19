@@ -4,7 +4,7 @@
 ^r3/lib/3dgl.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
-|^r3/opengl/shaderobj.r3
+
 ^r3/opengl/glgui.r3
 
 |--------------	
@@ -13,6 +13,9 @@
 #val3 4.0
 #val4 0
 
+#texto1 * 64
+#texto2 * 64
+
 #vchek
 #vradio
 :main
@@ -20,7 +23,7 @@
 
 	glgui
 
-	300 10 100 20 glwin
+	10 10 200 20 glwin
 	
 	'exit "salir" gltbtn gldn
 	
@@ -31,13 +34,20 @@
 	-100 200 'val2 glSlideri gldn
 	
 	'vchek "Check" glCheck gldn
-	'vradio "Radio" glRadio gldn
+	'vradio "Radio 1|Radio 2|Radio 3" glRadio 
+
+	'texto1 20 glInput gldn
+	'texto2 20 glInput
 	
-	0 0 glat
+	300 0 glat
 	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL" gltext glcr
+	"Hola Forth/r3 - OpenGL" gltext
+	
+	300 16 glat
 	$ff textcolor
-	val1 "%f" sprint gltext glcr
+	val1 "%f" sprint gltext 
+	
+	300 32 glat
 	$ff00 textcolor
 	"Bitmap FONT" gltext
 

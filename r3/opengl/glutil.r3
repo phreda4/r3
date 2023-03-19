@@ -21,7 +21,7 @@
 #GL_VERTEX_SHADER $8B31
 #GL_GEOMETRY_SHADER $8dd9 	
 	
-#t
+#t | aux for error
 #f #g #v	
 	
 :prCheckErr | ss --
@@ -45,6 +45,7 @@
 	;
 
 :typeshader | adr -- adr
+	0 swap c!+ | adr
 	dup c@ toupp
 	$46 =? ( drop >>cr trim dup 'f ! ; ) | F
 	$47 =? ( drop >>cr trim dup 'g ! ; ) | G
@@ -60,8 +61,7 @@
 	here dup rot
 	LOAD over =? ( 2drop "Not shader found" .println 0 ; ) 0 swap c!
 	0 'f ! 0 'g ! 0 'v !
-	( "@" findstr 1? 
-		0 swap c!+ | adr
+	( 64 findchar 1? |"@" findstr 
 		typeshader ) drop
 
 	f 1? ( GL_FRAGMENT_SHADER 'f createsh 'f ! ) drop
@@ -84,17 +84,14 @@
 
 ::shadera!i | int shader "name"  --
 	glGetAttribLocation swap glUniform1i ;
-	
 ::shader!i | int shader "name"  --
 	glGetUniformLocation swap glUniform1i ;
 ::shader!v3 | 'v3 shader "name" --
 	glGetUniformLocation 1 rot glUniform3fv ;
 ::shader!v4 | 'v4 shader "name" --
 	glGetUniformLocation 1 rot glUniform4fv ;	
-	
 ::shader!m4 | 'm4 shader "name" --	
 	glGetUniformLocation 1 rot 0 swap glUniformMatrix4fv ;	
-	
 ::shader!f1
 	glGetUniformLocation 1 rot glUniform1fv ;
 	
@@ -142,6 +139,7 @@
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
+	Surface SDL_FreeSurface
 	t ;		
 
 
@@ -163,9 +161,11 @@
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	Surface SDL_FreeSurface
 	t ;	
 	
 	
+|******* not need this..test when use!!
 #cc * 80
 #cc> 'cc
 

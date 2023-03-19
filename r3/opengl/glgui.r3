@@ -131,6 +131,9 @@
 :gltextsize | "" -- "" sizew sizeh
 	count 8 * 16 ;
 
+:gltextsizecnt | "" cnt -- "" 	
+	8 * 16 ;
+
 |-------- RECT	
 #wscr
 #hscr	
@@ -163,16 +166,15 @@
 	1 'bt glDeleteBuffers	
 	;
 	
-:rectangle
+:rectangle | -- size
 	here mark
 	xs fp, ys fp,
 	wscr fp, ys fp,
 	wscr fp, hscr fp,
 	xs fp, hscr fp,
-	here swap - empty | size
-	;
+	here swap - empty ;
 	
-:circle
+:circle | -- size
 	here mark
 	wscr hscr min 1 >>
 	xs wscr 1 >> +
@@ -181,9 +183,23 @@
 		r@ pick3 ar>xy | xc yc bangle r -- xc yc x y
 		swap fp, fp,
 		r> 0.1 + ) 4drop 
-	here swap - empty | size
-	;
+	here swap - empty ;
 	
+| 0 = up
+| 0.166 =dn
+| 0.25 	=le
+| 0.082 =ri	
+:tri | ang -- size
+	>r here mark
+	wscr hscr min 1 >>
+	xs wscr 1 >> +
+	ys hscr 1 >> +
+	r> ( 1.0 <? >r
+		r@ pick3 ar>xy | xc yc bangle r -- xc yc x y
+		swap fp, fp,
+		r> 0.334 + ) 4drop 
+	here swap - empty ;
+
 ::rect | x y w h --
 	pick2 + 16 << 'hscr ! pick2 + 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
 	inishaderg rectangle endshadergl ;
@@ -199,6 +215,7 @@
 ::fcirc | x y w h --
 	16 << 'hscr ! 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
 	inishaderg circle endshadergf ;
+
 	
 |--------------	GUI
 #padx 2 #pady 2
@@ -219,6 +236,12 @@
 ::glwin | xini yini w h --
 	'boxh ! 'boxw !
 	'cury ! 'curx ! ;
+
+|----------------------	
+::gldn
+	pady 1 << boxh + 'cury +! ;
+::glri
+	padx 1 << boxw + 'curx +! ;	
 	
 ::gltextcen | "" --
 	gltextsize swap
@@ -243,8 +266,7 @@
 	frect
 	$ffffff textcolor
 	gltextcen
-	onClick
-	;
+	onClick ;
 	
 |----------------------
 :slideh | 0.0 1.0 'value --
@@ -295,43 +317,155 @@
 	[ dup @ 1 xor over ! ; ] onClick
 	drop ;
 
-|----------------------	
-:radio | 'var ""
+|----------------------
+#cntlist
+	
+:makelist | "" -- list
+	1 'cntlist !
+	here >a
+	a> swap
+	( c@+ 1?
+		$7c =? ( 1 'cntlist +! 0 nip )
+		ca!+ ) ca!+ 
+	a> 'here !
+	drop ;
+
+:radio | 'var nro "" -- 'var nro "" 
 	curx padx + cury pady + 14 boxh fcirc
-	over @ 1 nand? ( drop ; ) drop 
+	pick2 @ pick2 <>? ( drop ; ) drop 
 	$7f7fff textcolor 
 	curx padx + 3 + cury pady + 3 + 9 boxh 7 - fcirc
 	;
-
-::glRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
+	
+:iglRadio | val nro str -- val nro str
 	curx padx + cury pady + boxw boxh guiBox
 	$00007f [ $0000ff nip ; ] guiI textcolor 
 	radio
-	$ffffff textcolor 20 gltextlef
-	[ dup @ 1 xor over ! ; ] onClick
-	drop ;
+	$ffffff textcolor 
+	dup 20 gltextlef
+	[ over pick3 ! ; ] onClick
+	;
+
+::glRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
+	mark
+	makelist
+	0 ( cntlist <? swap
+		iglRadio gldn |glri
+		>>0 swap 1 + ) 3drop 
+	empty ;
 	
 |----------------------	
 :glCombo | 'val "op1|op2|op3" -- ; [op1  v]
 	;
 
-|----------------------	
-:glInputText | 'buff 255 --
-	;
-:glInputInt | 'buff  --
-	;
-:glInputFix | 'buff  --
-	;
-	
+|----------------------
 :glwindow
 	;
 :gltab
 	;
 :glTable
 	;
+
+|--- Edita linea
+#cmax
+#padi>	| inicio
+#pad>	| cursor
+#padf>	| fin
+
+:lins  | c --
+	padf> padi> - cmax >=? ( 2drop ; ) drop
+	pad> dup 1 - padf> over - 1 + cmove> 1 'padf> +!
+:lover | c --
+	pad> c!+ dup 'pad> !
+	padf> >? (
+		dup padi> - cmax >=? ( swap 1 - swap -1 'pad> +! ) drop
+		dup 'padf> ! ) drop
+:0lin | --
+	0 padf> c! ;
+:kdel
+	pad> padf> >=? ( drop ; ) drop
+	1 'pad> +!
+:kback
+	pad> padi> <=? ( drop ; )
+	dup 1 - swap padf> over - 1 + cmove -1 'padf> +! -1 'pad> +! ;
+:kder
+	pad> padf> <? ( 1 + ) 'pad> ! ;
+:kizq
+	pad> padi> >? ( 1 - ) 'pad> ! ;
+:kup
+	pad> ( padi> >?
+		1 - dup c@ $ff and 32 <? ( drop 'pad> ! ; )
+		drop ) 'pad> ! ;
+:kdn
+	pad> ( c@+ 1?
+		$ff and 32 <? ( drop 'pad> ! ; )
+		drop ) drop 1 - 'pad> ! ;
+
+#modo 'lins
+
+::glcursoro | pos --
+	xs ys >r >r
+	gltextsizecnt drop | w h
+	xs 16 >> + ys 16 >> 8 16 frect
+	r> r> 'ys ! 'xs !
+	;
 	
-::gldn
-	pady 1 << boxh + 'cury +! ;
-::glri
-	padx 1 << boxw + 'curx +! ;
+::glcursori | pos --
+	xs ys >r >r
+	gltextsizecnt drop | w h
+	xs 16 >> + ys 16 >> 12 + 8 4 frect
+	r> r> 'ys ! 'xs !
+	;
+
+:cursor
+	msec $100 and? ( drop ; ) drop
+	$ff00 textcolor
+	modo 'lins =? ( drop pad> padi> - glcursori ; ) drop
+	pad> padi> - glcursoro ;
 	
+|----- ALFANUMERICO
+:iniinput | 'var max IDF -- 'var max IDF
+	pick2 1 - 'cmax !
+	pick3 dup 'padi> !
+	( c@+ 1? drop ) drop 1 -
+	dup 'pad> ! 'padf> !
+	'lins 'modo !
+	;
+
+:chmode
+	modo 'lins =? ( drop 'lover 'modo ! ; )
+	drop 'lins 'modo ! ;
+
+:proinputa | --
+	cursor 
+	SDLchar 1? ( modo ex ; ) drop
+	SDLkey 0? ( drop ; )
+	<ins> =? ( chmode )
+	<le> =? ( kizq ) <ri> =? ( kder )
+	<back> =? ( kback ) <del> =? ( kdel )
+	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
+	<tab> =? ( nextfoco )
+	<ret> =? ( nextfoco )
+|	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	drop
+	;
+
+
+|************************************
+::glInput | 'buff max --
+	$ff textcolor
+	curx padx + cury pady + 2dup boxw boxh 
+	2over 2over guiBox rect
+	boxh 16 - 1 >> + glat
+|	$7f7f7f [ $ffffff nip ; ] guiI textcolor
+	'proinputa 'iniinput w/foco
+	'clickfoco onClick
+	$ffffff textcolor
+	drop gltext ;
+
+:glInputInt | 'buff  --
+	;
+:glInputFix | 'buff  --
+	;
+

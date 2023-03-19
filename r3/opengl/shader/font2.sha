@@ -7,13 +7,7 @@ out vec4 FragColor;
 
 void main()
 {
-//float alpha = texture(u_FontTexture, uv).a;
-//FragColor = vec4(fgColor.rgb, alpha);
-
-FragColor =  fgColor * texture(u_FontTexture, uv);
-	
-//	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(u_FontTexture, uv).a);
- //   FragColor = vec4(fgColor, 1.0) * sampled;
+	FragColor =  fgColor * texture(u_FontTexture, uv);
 }
 @vertex--------------------------
 #version 330 core

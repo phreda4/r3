@@ -39,11 +39,11 @@
 ::tolow | C -- c
 	$20 or ;
 
-::count | s1 -- s1 cnt
+::count | s1 -- s1 cnt ; naive version (nou used)
 	0 over ( c@+ 1?
 		drop swap 1 + swap ) 2drop  ;
 
-::count | s1 -- s1 cnt	'v3 8bytes
+::count | s1 -- s1 cnt ; version 3 - 8 bytes
 	0 over ( @+ dup $0101010101010101 -
 		swap not and $8080808080808080 nand? 
 		drop swap 8 + swap )
@@ -109,6 +109,12 @@
 	rot swap - | s1 s1 "" dc
 	rot + | s1 "" s1.
 	= ;
+
+::findchar | adr char -- adr'/0
+	swap
+	( c@+ 0? ( nip nip ; )
+		pick2 <>? drop ) drop nip
+	1 - ;
 
 |----------- find str
 :=p | s1 s2 -- 1/0
@@ -194,7 +200,7 @@
 	( 10/mod $30 + pick2 c! swap 1 - swap 1? ) drop
 	swap sign ;
 
-::.r. | b nro -- b
+::.r. | b nro -- b ; right spaces
 	'mbuff 64 + swap -
 	swap ( over >?
 		1 - $20 over c!
