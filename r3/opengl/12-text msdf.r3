@@ -82,10 +82,7 @@
 
 
 :initshaders
-	800.0 0 0 600.0 1.0 -1.0 mortho
-	'fwintext mcpyf
-	
-|	"r3/opengl/shader/msdf1.fs"	"r3/opengl/shader/font2.vs" loadShaders 'fontshader !
+	800.0 0 0 600.0 1.0 -1.0 mortho 'fwintext mcpyf
 	"r3/opengl/shader/msdf1.sha" loadShader 'fontshader !
 	
 	"media/msdf/roboto.png" glImgFnt 'fontTexture !
@@ -141,6 +138,11 @@
 	0 'xs ! size 'ys +! ;
 	
 :gltext | "" --
+	GL_DEPTH_TEST glDisable 
+	GL_CULL_FACE glDisable
+	GL_BLEND glEnable
+	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
+	
 	fontshader glUseProgram
 	0 fontshader "u_FontTexture" shader!i
 	'fcolor fontshader "fgColor" shader!v4
@@ -195,7 +197,7 @@
 :
 	"test opengl" 800 600 SDLinitGL
 |	0 0 800 600 glViewport
-	GL_DEPTH_TEST glEnable 
+|	GL_DEPTH_TEST glEnable 
 |	GL_CULL_FACE glEnable	
 |	GL_LESS glDepthFunc 
 

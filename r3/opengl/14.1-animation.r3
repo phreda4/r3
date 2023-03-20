@@ -4,14 +4,14 @@
 |MEM 512
 ^r3/win/console.r3
 ^r3/win/sdl2gl.r3
-
 ^r3/lib/3dgl.r3
-^r3/lib/gui.r3
-
-^r3/lib/trace.r3
 
 ^r3/util/loadobj.r3
-^r3/opengl/gltext.r3
+^r3/opengl/glgui.r3
+
+#GL_DEPTH_TEST $0B71
+#GL_LESS $0201
+#GL_CULL_FACE $0B44
 
 #filename * 1024
 #cutpath ( $2f )
@@ -140,9 +140,7 @@
 
 #shaderd
 :initshaders
-	"r3/opengl/shader/anim_model.fs"
-	"r3/opengl/shader/anim_model.vs" 
-	loadShaders 'shaderd !
+	"r3/opengl/shader/anim_model.sha" loadShader 'shaderd !
 
 	0 shaderd "texture_diffuse1" shader!i
 	;
@@ -209,6 +207,10 @@
 #GL_TEXTURE0 $84C0
 
 :renderobj | obj --
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable
+	GL_LESS glDepthFunc 	
+	
 	shaderd glUseProgram
 	'fprojection shaderd "projection" shader!m4
 	'fview shaderd "view" shader!m4
@@ -264,18 +266,18 @@
 
 |---------------------------------------------------	
 :objinfo
-	0.002 'gltextsize !
-	'filename -0.98 -0.9 gltext
-	"Obj view" -0.98 0.9 gltext
-	frames framenow "%d %d" sprint -0.98 -0.8 gltext
-	
+	$ffffff glcolor
+	0 0 glat 'filename gltext
+	0 16 glat "Obj view" gltext
+	0 32 glat frames framenow "%d %d" sprint gltext
 	;
 	
 :main
 	gui
 	'dnlook 'movelook onDnMove
 	$4100 glClear | color+depth
-	
+
+	glgui
 	objinfo
 	
 	renderobj
@@ -289,14 +291,13 @@
 	drop ;
 
 |------------------------------------	
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
+
 
 : 
 	"test opengl" 800 600 SDLinitGL
-	initglfont
 	
+	glimmgui
+		
 	initvec
 	initshaders
 	

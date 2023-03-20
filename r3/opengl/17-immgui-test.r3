@@ -40,15 +40,15 @@
 	'texto2 20 glInput
 	
 	300 0 glat
-	$ffffff textcolor
+	$ffffff glcolor
 	"Hola Forth/r3 - OpenGL" gltext
 	
 	300 16 glat
-	$ff textcolor
+	$ff glcolor
 	val1 "%f" sprint gltext 
 	
 	300 32 glat
-	$ff00 textcolor
+	$ff00 glcolor
 	"Bitmap FONT" gltext
 
 	

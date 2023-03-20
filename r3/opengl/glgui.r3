@@ -69,7 +69,7 @@
 
 :fp, f2fp , ;
 
-::textcolor | fc --
+::glcolor | fc --
 	'fcolor >a  
 	dup $ff0000 and 255 / f2fp da!+ 
 	dup 8 << $ff0000 and 255 / f2fp da!+ 
@@ -262,9 +262,9 @@
 ::gltbtn | 'click "" --
 	curx padx + cury pady + boxw boxh 
 	2over 2over guiBox
-	$0000ff [ $00007f nip ; ] guiI textcolor
+	$0000ff [ $00007f nip ; ] guiI glcolor
 	frect
-	$ffffff textcolor
+	$ffffff glcolor
 	gltextcen
 	onClick ;
 	
@@ -276,9 +276,9 @@
 	over ! ;
 	
 :slideshow | 0.0 1.0 'value --
-	$00007f textcolor
+	$00007f glcolor
 	curx padx + cury pady + boxw boxh frect
-	$3f3fff [ $7f7fff nip ; ] guiI textcolor
+	$3f3fff [ $7f7fff nip ; ] guiI glcolor
 	dup @ pick3 - 
 	boxw 8 - pick4 pick4 swap - */ 
 	curx padx + 1 + +
@@ -291,29 +291,29 @@
 	curx padx + cury pady + boxw boxh guiBox
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow
-	$ffffff textcolor @ .f2 gltextcen
+	$ffffff glcolor @ .f2 gltextcen
 	2drop ;
 
 ::glSlideri | 0 255 'value --
 	curx padx + cury pady + boxw boxh guiBox
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow	
-	$ffffff textcolor @ .d gltextcen
+	$ffffff glcolor @ .d gltextcen
 	2drop ;
 
 |----------------------	
 :check | 'var ""
 	curx padx + cury pady + 14 boxh frect
 	over @ 1 nand? ( drop ; ) drop 
-	$7f7fff textcolor 
+	$7f7fff glcolor 
 	curx padx + 4 + cury pady + 4 + 8 boxh 8 - frect
 	;
 	
 ::glCheck | 'val "op1" -- ; v op1  v op2  x op3
 	curx padx + cury pady + boxw boxh guiBox
-	$00007f [ $0000ff nip ; ] guiI textcolor 
+	$00007f [ $0000ff nip ; ] guiI glcolor 
 	check
-	$ffffff textcolor 20 gltextlef
+	$ffffff glcolor 20 gltextlef
 	[ dup @ 1 xor over ! ; ] onClick
 	drop ;
 
@@ -333,15 +333,15 @@
 :radio | 'var nro "" -- 'var nro "" 
 	curx padx + cury pady + 14 boxh fcirc
 	pick2 @ pick2 <>? ( drop ; ) drop 
-	$7f7fff textcolor 
+	$7f7fff glcolor 
 	curx padx + 3 + cury pady + 3 + 9 boxh 7 - fcirc
 	;
 	
 :iglRadio | val nro str -- val nro str
 	curx padx + cury pady + boxw boxh guiBox
-	$00007f [ $0000ff nip ; ] guiI textcolor 
+	$00007f [ $0000ff nip ; ] guiI glcolor 
 	radio
-	$ffffff textcolor 
+	$ffffff glcolor 
 	dup 20 gltextlef
 	[ over pick3 ! ; ] onClick
 	;
@@ -419,7 +419,7 @@
 
 :cursor
 	msec $100 and? ( drop ; ) drop
-	$ff00 textcolor
+	$ff00 glcolor
 	modo 'lins =? ( drop pad> padi> - glcursori ; ) drop
 	pad> padi> - glcursoro ;
 	
@@ -454,14 +454,14 @@
 
 |************************************
 ::glInput | 'buff max --
-	$ff textcolor
+	$ff glcolor
 	curx padx + cury pady + 2dup boxw boxh 
 	2over 2over guiBox rect
 	boxh 16 - 1 >> + glat
-|	$7f7f7f [ $ffffff nip ; ] guiI textcolor
+|	$7f7f7f [ $ffffff nip ; ] guiI glcolor
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
-	$ffffff textcolor
+	$ffffff glcolor
 	drop gltext ;
 
 :glInputInt | 'buff  --

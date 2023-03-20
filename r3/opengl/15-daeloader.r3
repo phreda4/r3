@@ -5,11 +5,10 @@
 
 ^r3/win/console.r3
 ^r3/lib/str.r3
-
 ^r3/win/sdl2gl.r3
 ^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
-^r3/opengl/gltext.r3
+^r3/opengl/glgui.r3
 
 |-------------- UTILS
 
@@ -441,9 +440,7 @@
 
 #shaderd
 :initshaders
-	"r3/opengl/shader/anim_model.fs"
-	"r3/opengl/shader/anim_model.vs" 
-	loadShaders 'shaderd !
+	"r3/opengl/shader/anim_model.sha" loadShader 'shaderd !
 
 	0 shaderd "texture_diffuse1" shader!i
 	;
@@ -462,9 +459,7 @@
 
 :initvec
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
-	'fprojection mcpyf	| perspective matrix
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
 	;
@@ -484,9 +479,10 @@
 	;
 	
 :objinfo
-	0.002 'gltextsize !
-	'filename "Model: %s" sprint -0.98 0.9 gltext
-|	frames framenow "%d %d" sprint -0.98 -0.8 gltext
+	$ffffff glcolor
+	0 0 glat
+	'filename "Model: %s " sprint gltext
+|	frames framenow "%d %d" sprint gltext
 	;
 
 |------------------------------
@@ -598,6 +594,10 @@
 
 		
 :renderobj | obj --
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable
+	GL_LESS glDepthFunc 	
+	
 	shaderd glUseProgram
 	'fprojection shaderd "projection" shader!m4
 	'fview shaderd "view" shader!m4
@@ -627,6 +627,7 @@
 	gui
 	'dnlook 'movelook onDnMove
 	$4100 glClear | color+depth
+	glgui	
 	objinfo
 	renderobj
 	SDL_windows SDL_GL_SwapWindow
@@ -662,11 +663,10 @@
 	
 	|.................
 	"test opengl" 800 600 SDLinitGL
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable
-	GL_LESS glDepthFunc 	
+
 	
-	initglfont
+	glimmgui
+	
 	initvec
 	initshaders
 	initobj

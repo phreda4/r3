@@ -603,7 +603,7 @@
 	
 :control
 	glgui
-	$ffffff textcolor
+	$ffffff glcolor
 	0 0 glat
 	'filename "Model: %s" sprint gltext glcr
 	iqm.nroframes framenow "%d %d" sprint gltext
