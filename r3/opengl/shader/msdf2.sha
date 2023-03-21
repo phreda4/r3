@@ -1,3 +1,13 @@
+@fragment-----------------------
+#version 330 core
+in vec2 uv;
+uniform vec4 fgColor;
+out vec4 color;
+uniform sampler2D u_FontTexture;
+
+float median(float r, float g, float b) {
+    return max(min(r, g), min(max(r, g), b));
+}
 
 vec2 safeNormalize( in vec2 v )
 {
@@ -26,6 +36,21 @@ void main(void)
     float afwidth = min( kNormalization * length( grad ), 0.5 );
     float opacity = smoothstep( 0.0 - afwidth, 0.0 + afwidth, sigDist );
     // Apply pre-multiplied alpha with gamma correction.
-    color.a = pow( fgColor.a * opacity, 1.0 / 2.2 );
-    color.rgb = fgColor.rgb * color.a;
+//    color.a = pow( fgColor.a * opacity, 1.0 / 2.2 );
+//    color.rgb = fgColor.rgb * color.a;
+		color = fgColor*opacity;
 }
+@vertex--------------------------
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 uvIn;
+out vec2 uv;
+
+uniform mat4 projection;
+
+void main()
+{
+	gl_Position = projection * vec4(aPos.x, aPos.y, 0.0, 1.0);
+	uv = uvIn;
+}
+@-------------------------------

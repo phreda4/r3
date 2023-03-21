@@ -59,10 +59,10 @@
 	1 + str>fnro da!+
 	1 + str>fnro da!+
 	1 + str>fnro da!+
-	1 + str>fnro fw /. da!+
-	1 + str>fnro fh swap - fh /. da!+
-	1 + str>fnro fw /. da!+
-	1 + str>fnro fh swap - fh /. da!+
+	1 + str>fnro fw /. f2fp da!+
+	1 + str>fnro fh swap - fh /. f2fp da!+
+	1 + str>fnro fw /. f2fp da!+
+	1 + str>fnro fh swap - fh /. f2fp da!+
 	drop ;
 	
 :genarr | str --
@@ -85,7 +85,7 @@
 	800.0 0 0 600.0 1.0 -1.0 mortho 'fwintext mcpyf
 	"r3/opengl/shader/msdf1.sha" loadShader 'fontshader !
 	
-	"media/msdf/roboto.png" glImgFnt 'fontTexture !
+	"media/msdf/roboto.png" glImgTex 'fontTexture !
 	
 	genarr	
 	;
@@ -120,13 +120,13 @@
 	
 	da@+ 'l ! da@+ 'b ! da@+ 'r ! da@+ 't !
 	
-	sl fp, st fp,	l fp, t fp,
-	sr fp, st fp,	r fp, t fp,
-	sr fp, sb fp,	r fp, b fp,
+	sl fp, st fp,	l , t ,
+	sr fp, st fp,	r , t ,
+	sr fp, sb fp,	r , b ,
 	
-	sl fp, st fp,	l fp, t fp,
-	sr fp, sb fp,	r fp, b fp,
-	sl fp, sb fp,	l fp, b fp,
+	sl fp, st fp,	l , t ,
+	sr fp, sb fp,	r , b ,
+	sl fp, sb fp,	l , b ,
 	
 	size *. 'xs +!
 	;
@@ -139,7 +139,6 @@
 	
 :gltext | "" --
 	GL_DEPTH_TEST glDisable 
-	GL_CULL_FACE glDisable
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	
@@ -159,10 +158,6 @@
 	here mark
 	swap ( c@+ 1? gchar ) 2drop
 	here swap - empty | size
-
-	GL_CULL_FACE glDisable
-	GL_BLEND glEnable
-	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
@@ -174,11 +169,13 @@
 	;
 
 
-|--------------	
+|--------------
+#fsize 115.0
+	
 :main
 	$4100 glClear | color+depth
 
-	msec 5 << $3fffff and 5.0 + 'size !
+	fsize 'size !
 	
 	$ffffffff fgcolor
 	0 0 glat
@@ -187,10 +184,14 @@
 	msec "%h" sprint gltext glcr
 	$ff00ff00 fgcolor
 	"Bitmap FONT" gltext glcr
-	
+	fsize "%f" sprint gltext
+
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
+	<up> =? ( 1.0 'fsize +! )
+	<dn> =? ( -1.0 'fsize +! )
+
 	drop ;	
 	
 |----------- BOOT

@@ -1,7 +1,7 @@
-| OpenGL example
+| OpenGL IMMGUI example
 | PHREDA 2023
 |MEM 64
-^r3/lib/3dgl.r3
+
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
@@ -18,6 +18,8 @@
 
 #vchek
 #vradio
+#vcombo
+
 :main
 	$4100 glClear | color+depth
 
@@ -34,8 +36,9 @@
 	-100 200 'val2 glSlideri gldn
 	
 	'vchek "Check" glCheck gldn
-	'vradio "Radio 1|Radio 2|Radio 3" glRadio 
-
+	'vradio "Radio 1|Radio 2|Radio 3" glRadio  
+	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo gldn
+	
 	'texto1 20 glInput gldn
 	'texto2 20 glInput
 	

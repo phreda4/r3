@@ -19,7 +19,7 @@ void main() {
 	float sigDist = median( sample.r, sample.g, sample.b );
 	float w = fwidth( sigDist );
 	float opacity = smoothstep( 0.5 - w, 0.5 + w, sigDist );
-	color = fgColor*opacity;
+	color = vec4(fgColor.rgb, opacity); //fgColor*opacity;
 }
 @vertex--------------------------
 #version 330 core

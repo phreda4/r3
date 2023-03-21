@@ -14,22 +14,14 @@
 #GL_CULL_FACE $0B44
 
 #GL_ARRAY_BUFFER $8892
-#GL_ELEMENT_ARRAY_BUFFER $8893
 
 #GL_STATIC_DRAW $88E4
 #GL_FLOAT $1406
 #GL_UNSIGNED_SHORT $1403
 
-#GL_TRIANGLE_FAN $0006
-#GL_TRIANGLE_STRIP $0005
-#GL_TRIANGLES $0004
-
 #GL_TEXTURE $1702
 #GL_TEXTURE0 $84C0
 #GL_TEXTURE_2D $0DE1
-	
-#GL_DEPTH_BUFFER_BIT $100	
-#GL_UNPACK_ALIGNMENT $0CF5
 
 #GL_BLEND $0BE2
 #GL_SRC_ALPHA $0302
@@ -38,7 +30,7 @@
 |-------------------------------------
 #fontshader	
 #fontTexture 
-#fcolor [ 1.0 0.0 0.0 1.0 ]
+#fcolor [ 0 0 0 0 ]
 #fwintext * 64
 
 #scrshader
@@ -61,8 +53,6 @@
 	
 |	"media/img/font16x24.png" glImgFnt 'fontTexture !
 	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
-	
-	| 1.0 4 >> dup 'wt ! 'ht ! | = $1000
 	;
 
 |--------------	FONT
@@ -91,14 +81,16 @@
 	xs ws + fp, ys hs + fp, xt $1000 + fp, yt $1000 + fp,
 	xs fp, ys hs + fp, 		xt fp, yt $1000 + fp,
 	
-	8.0 'xs +!
-	|16.0 'xs +!
+	8.0 'xs +! |16.0 'xs +!
 	;
 	
-::glat
+::glat | x y --
 	16 << 'ys ! 16 << 'xs ! ;
 	
-::glcr
+::glxat | n --
+	16 << 'xs ! ;
+	
+::glcr | --
 	0 'xs ! 16.0 'ys +! ;
 	
 ::gltext | "" --
@@ -122,7 +114,7 @@
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray 0 3 GL_FLOAT 0 4 2 << 0 glVertexAttribPointer
 	1 glEnableVertexAttribArray 1 2 GL_FLOAT 0 4 2 << 2 2 << glVertexAttribPointer
-	GL_TRIANGLES 0 rot 4 >> glDrawArrays | 16 bytes per vertex
+	4 0 rot 4 >> glDrawArrays | 4 = triangle 
 	0 glBindVertexArray
 	1 'vt glDeleteVertexArrays
 	1 'bt glDeleteBuffers	
@@ -228,7 +220,6 @@
 	10 'curx ! 10 'cury !
 	
 	GL_DEPTH_TEST glDisable 
-	GL_CULL_FACE glDisable
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	;
@@ -250,14 +241,6 @@
 	glat
 	gltext ;
 
-::gltextlef | "" +x --
-	curx + padx +
-	swap gltextsize nip
-	rot swap 
-	boxh swap - 1 >> cury + pady + 
-	glat
-	gltext ;
-	
 |----------------------	
 ::gltbtn | 'click "" --
 	curx padx + cury pady + boxw boxh 
@@ -313,7 +296,9 @@
 	curx padx + cury pady + boxw boxh guiBox
 	$00007f [ $0000ff nip ; ] guiI glcolor 
 	check
-	$ffffff glcolor 20 gltextlef
+	$ffffff glcolor 
+	curx padx + 20 + cury pady + glat
+	gltext
 	[ dup @ 1 xor over ! ; ] onClick
 	drop ;
 
@@ -329,7 +314,11 @@
 		ca!+ ) ca!+ 
 	a> 'here !
 	drop ;
+	
+:nlist | here n -- str
+	( 1? 1 - swap >>0 swap ) drop ;
 
+|----------------------
 :radio | 'var nro "" -- 'var nro "" 
 	curx padx + cury pady + 14 boxh fcirc
 	pick2 @ pick2 <>? ( drop ; ) drop 
@@ -342,7 +331,8 @@
 	$00007f [ $0000ff nip ; ] guiI glcolor 
 	radio
 	$ffffff glcolor 
-	dup 20 gltextlef
+	curx padx + 20 + cury pady + glat
+	dup gltext
 	[ over pick3 ! ; ] onClick
 	;
 
@@ -355,7 +345,19 @@
 	empty ;
 	
 |----------------------	
-:glCombo | 'val "op1|op2|op3" -- ; [op1  v]
+::glCombo | 'val "op1|op2|op3" -- ; [op1  v]
+	mark
+	makelist
+	curx padx + cury pady + boxw boxh
+	2over 2over guiBox rect	
+	$00007f [ $0000ff nip ; ] guiI glcolor 
+	$ffffff glcolor 
+	curx padx + 1 + cury pady + boxh 16 - 1 >> + glat	
+	over @ nlist gltext
+	
+	[ dup @ 1 + cntlist >=? ( 0 nip ) over ! ; ] onClick
+	drop
+	empty
 	;
 
 |----------------------

@@ -117,9 +117,7 @@
 
 :initvec
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
-	'fprojection mcpyf	| perspective matrix
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
 	;
@@ -270,14 +268,16 @@
 	0 0 glat 'filename gltext
 	0 16 glat "Obj view" gltext
 	0 32 glat frames framenow "%d %d" sprint gltext
+	
+	
 	;
 	
 :main
-	gui
-	'dnlook 'movelook onDnMove
+
 	$4100 glClear | color+depth
 
 	glgui
+	'dnlook 'movelook onDnMove	
 	objinfo
 	
 	renderobj
@@ -285,8 +285,6 @@
 	SDL_windows SDL_GL_SwapWindow
 	
 	SDLkey
-	<f1> =? ( loadobj ) 
-	<f10> =? ( objminmax objcentra )
 	>esc< =? ( exit )
 	drop ;
 
@@ -303,9 +301,7 @@
 	
 	matbonesid
 	
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable
-	GL_LESS glDepthFunc 
+
 	
 	mark
 	"media/bvh/ChaCha001.bvhr" bvhrload
