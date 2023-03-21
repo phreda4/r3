@@ -1,11 +1,9 @@
 | OpenGL example
 | PHREDA 2023
 |MEM 64
-^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
-^r3/win/sdl2.r3
+^r3/lib/3dgl.r3
 ^r3/win/sdl2gl.r3
-
 ^r3/opengl/glutil.r3
 
 | opengl Constant
@@ -220,6 +218,7 @@
 	10 'curx ! 10 'cury !
 	
 	GL_DEPTH_TEST glDisable 
+	GL_CULL_FACE glDisable
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	;

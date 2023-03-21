@@ -97,6 +97,8 @@
 	
 |--------------------------------
 #surface
+##glimgw
+##glimgh
 
 ##GL_TEXTURE $1702
 ##GL_TEXTURE0 $84C0
@@ -113,7 +115,6 @@
 #GL_TEXTURE_WRAP_R $8072
 #GL_TEXTURE_WRAP_S $2802
 #GL_TEXTURE_WRAP_T $2803
-
 
 #GL_RED $1903
 #GL_RGB $1907
@@ -161,6 +162,8 @@
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 |	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	Surface->w 'glimgw !
+	Surface->h 'glimgh !
 	Surface SDL_FreeSurface
 	t ;	
 	

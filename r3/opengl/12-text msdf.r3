@@ -49,25 +49,27 @@
 
 #arrt
 #arrf
-#fw 304.0 #fh 304.0 
 
 :savech | adr char --
-	32 <? ( 2drop ; ) 32 -
-	9 * 2 << arrf + >a
+	32 <? ( 2drop ; ) 255 >? ( 2drop ; )
+	32 - 9 * 2 << arrf + >a
 	1 + str>fnro da!+
 	1 + str>fnro da!+
 	1 + str>fnro da!+
 	1 + str>fnro da!+
 	1 + str>fnro da!+
-	1 + str>fnro fw /. f2fp da!+
-	1 + str>fnro fh swap - fh /. f2fp da!+
-	1 + str>fnro fw /. f2fp da!+
-	1 + str>fnro fh swap - fh /. f2fp da!+
+	1 + str>fnro glimgw /. f2fp da!+
+	1 + str>fnro glimgh swap - glimgh /. f2fp da!+
+	1 + str>fnro glimgw /. f2fp da!+
+	1 + str>fnro glimgh swap - glimgh /. f2fp da!+
 	drop ;
 	
-:genarr | str --
+:glLoadMsdf | str --
+	dup "%s.png" sprint glImgTex 'fontTexture !
+	glimgh 16 << 'glimgh !
+	glimgw 16 << 'glimgw !
 	here dup 'arrt !
-	"media/msdf/Roboto.csv" load 
+	swap "%s.csv" sprint load 
 	0 swap c!+ 
 	dup 'here ! 'arrf !
 	arrf 0 9 255 32 - * dfill 
@@ -80,14 +82,11 @@
 	9 255 32 - * 2 << 'here +!
 	;
 
-
 :initshaders
 	800.0 0 0 600.0 1.0 -1.0 mortho 'fwintext mcpyf
 	"r3/opengl/shader/msdf1.sha" loadShader 'fontshader !
-	
-	"media/msdf/roboto.png" glImgTex 'fontTexture !
-	
-	genarr	
+
+	"media/msdf/roboto-bold" glLoadMsdf
 	;
 
 |---------------------------------------

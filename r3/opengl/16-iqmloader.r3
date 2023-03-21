@@ -7,8 +7,6 @@
 ^r3/lib/str.r3
 
 ^r3/win/sdl2gl.r3
-^r3/lib/3dgl.r3
-
 ^r3/opengl/glgui.r3
 
 #EX_IQM_MAGIC "INTERQUAKEMODEL"
@@ -87,7 +85,7 @@
 
 #GL_FALSE 0
 #GL_TRUE 1
-#GL_TRIANGLE $0004
+#GL_TRIANGLES $0004
 
 #GL_FRAMEBUFFER $8D40
 #GL_RGBA $1908
@@ -596,7 +594,7 @@
 		GL_TEXTURE0 4 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
 		GL_TEXTURE0 5 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
 		GL_TEXTURE0 6 + glActiveTexture GL_TEXTURE_2D da@+ glBindTexture
-		GL_TRIANGLE da@+ GL_UNSIGNED_INT da@+ glDrawElements	
+		GL_TRIANGLES da@+ GL_UNSIGNED_INT da@+ glDrawElements	
 		) drop 
     0 glBindVertexArray
 	;
