@@ -59,11 +59,11 @@
 
 ::glcolor | fc --
 	'fcolor >a  
-	dup $ff0000 and 255 / f2fp da!+ 
-	dup 8 << $ff0000 and 255 / f2fp da!+ 
-	16 << $ff0000 and 255 / f2fp da!+
-	1.0 f2fp da!+
-	;
+	dup 16 >> $ff and $101 * f2fp da!+ | 255.0 255 / --> 255 $101 *
+	dup 8 >> $ff and $101 * f2fp da!+ 
+	$ff and $101 * f2fp da!+ 
+	1.0 f2fp da!
+	;	
 	
 :gchar | char --
 	dup $f and 12 << |$1000 * 
@@ -175,8 +175,8 @@
 		r> 0.1 + ) 4drop 
 	here swap - empty ;
 	
-| 0 = up
-| 0.166 =dn
+| 0 = dn
+| 0.166 =up
 | 0.25 	=le
 | 0.082 =ri	
 :tri | ang -- size
@@ -187,7 +187,7 @@
 	r> ( 1.0 <? >r
 		r@ pick3 ar>xy | xc yc bangle r -- xc yc x y
 		swap fp, fp,
-		r> 0.334 + ) 4drop 
+		r> 0.3334 + ) 4drop 
 	here swap - empty ;
 
 ::rect | x y w h --
@@ -206,6 +206,10 @@
 	16 << 'hscr ! 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
 	inishaderg circle endshadergf ;
 
+::ftridn | x y w h --
+	16 << 'hscr ! 16 << 'wscr ! 16 << 'ys ! 16 << 'xs !
+	inishaderg 0 tri 
+	endshadergf ;
 	
 |--------------	GUI
 #padx 2 #pady 2
@@ -347,9 +351,11 @@
 ::glCombo | 'val "op1|op2|op3" -- ; [op1  v]
 	mark
 	makelist
+	$00007f glcolor
 	curx padx + cury pady + boxw boxh
 	2over 2over guiBox rect	
 	$00007f [ $0000ff nip ; ] guiI glcolor 
+	curx padx + boxw + 16 - cury 14 boxh ftridn	
 	$ffffff glcolor 
 	curx padx + 1 + cury pady + boxh 16 - 1 >> + glat	
 	over @ nlist gltext

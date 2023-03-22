@@ -132,5 +132,15 @@ $44160000 $43e10000 $00ff00ff 0 0 | 600 450
 |parsefloat
 |incparse
 
+128.0 255 2dup / "%f %d %f" .println
+255.0 255 2dup / "%f %d %f" .println
+0.0 255 2dup / "%f %d %f" .println
+1.0 255 / "%h" .println
+
+128.0 16 >> $101 2dup * "%f %h %f" .println
+$ff $101 2dup * "%h %h %d" .println
+$0 $101 2dup * "%h %h %d" .println
+
+
 waitesc
 ;

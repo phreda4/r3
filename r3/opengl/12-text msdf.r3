@@ -84,7 +84,7 @@
 
 :initshaders
 	800.0 0 0 600.0 1.0 -1.0 mortho 'fwintext mcpyf
-	"r3/opengl/shader/msdf1.sha" loadShader 'fontshader !
+	"r3/opengl/shader/msdf.sha" loadShader 'fontshader !
 
 	"media/msdf/roboto-bold" glLoadMsdf
 	;
@@ -93,49 +93,37 @@
 #vt
 #bt
 
-:fp, f2fp , ;
-
 :fgcolor | fc --
 	'fcolor >a  
-	dup $ff0000 and 255 / f2fp da!+ 
-	dup 8 << $ff0000 and 255 / f2fp da!+ 
-	dup 16 << $ff0000 and 255 / f2fp da!+ 
-	8 >> $ff0000 and 255 / f2fp da! 
+	dup 16 >> $ff and $101 * f2fp da!+ | 255.0 255 / --> 255 $101 *
+	dup 8 >> $ff and $101 * f2fp da!+ 
+	dup $ff and $101 * f2fp da!+ 
+	24 >> $ff and $101 * f2fp da! 
 	;
-
 	
 #size 30.0
 #xs 0 #ys 0
 	
 #sl #sb #sr #st		
-#l #b #r #t	
 
-:gchar |ch
-	32 <? ( drop ; ) 32 - 9 * 2 << arrf + >a
-	da@+
-	
-	da@+ size *. xs + 'sl ! ys size + da@+ size *. - 'sb !
-	da@+ size *. xs + 'sr !	ys size + da@+ size *. - 'st !
-	
-	da@+ 'l ! da@+ 'b ! da@+ 'r ! da@+ 't !
-	
-	sl fp, st fp,	l , t ,
-	sr fp, st fp,	r , t ,
-	sr fp, sb fp,	r , b ,
-	
-	sl fp, st fp,	l , t ,
-	sr fp, sb fp,	r , b ,
-	sl fp, sb fp,	l , b ,
+:gchar | ch --
+	32 <? ( drop ; ) 32 - 
+	2 << dup 3 << + arrf + >a |	9 * 2 << 
+	da@+ | size
+	da@+ size *. xs + f2fp 'sl ! ys size + da@+ size *. - f2fp 'sb !
+	da@+ size *. xs + f2fp 'sr ! ys size + da@+ size *. - f2fp 'st !
+	da@+ da@+ da@+ da@ | l b r t 
+	sl , st ,	pick3 , dup ,
+	sr , st ,	over , dup ,
+	sr , sb ,	over , pick2 ,
+
+	sl , st ,	pick3 , ,
+	sr , sb ,	, dup ,
+	sl , sb ,	swap , ,
 	
 	size *. 'xs +!
 	;
 
-:glat
-	16 << 'ys ! 16 << 'xs ! ;
-	
-:glcr
-	0 'xs ! size 'ys +! ;
-	
 :gltext | "" --
 	GL_DEPTH_TEST glDisable 
 	GL_BLEND glEnable
@@ -159,13 +147,27 @@
 	here swap - empty | size
 	
 	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
-	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
-	1 glEnableVertexAttribArray 1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
-	GL_TRIANGLES 0 rot 4 >> glDrawArrays | 16 bytes per vertex
+	0 glEnableVertexAttribArray 0 3 GL_FLOAT 0 16 0 glVertexAttribPointer
+	1 glEnableVertexAttribArray 1 2 GL_FLOAT 0 16 8 glVertexAttribPointer
+	4 0 rot 4 >> glDrawArrays | 16 bytes per vertex
 	0 glBindVertexArray
 	1 'vt glDeleteVertexArrays
 	1 'bt glDeleteBuffers	
 	;
+
+	
+:gsize | char -- size
+	32 <? ( drop 0 ; ) 32 - 2 << dup 3 << + arrf + d@ ;
+
+:gltextw | "" -- "" wsize
+	0 over ( c@+ 1? gsize rot + swap ) 2drop ;
+
+:glat
+	16 << 'ys ! 16 << 'xs ! ;
+	
+:glcr
+	0 'xs ! size 'ys +! ;
+	
 
 
 |--------------

@@ -1,0 +1,38 @@
+@fragment-----------------------
+#version 330
+
+in vec2 uv;
+out vec4 color;
+uniform sampler2D u_FontTexture;
+uniform vec4 fgColor;
+
+float median(float r, float g, float b) {
+    return max(min(r, g), min(max(r, g), b));
+}
+
+void main() {
+	vec3 sample = texture( u_FontTexture, uv ).rgb;
+	ivec2 sz = textureSize( u_FontTexture, 0 );
+	float dx = dFdx( uv.x ) * sz.x;
+	float dy = dFdy( uv.y ) * sz.y;
+	float toPixels = 8.0 * inversesqrt( dx * dx + dy * dy );
+	float sigDist = median( sample.r, sample.g, sample.b );
+	float w = fwidth( sigDist );
+	float opacity = smoothstep( 0.5 - w, 0.5 + w, sigDist );
+	float border=smoothstep(0.5 - 0.5, 0.5 + 0.5, texture( u_FontTexture, uv ).a);
+	color = vec4(mix(fgColor.rgb,vec3(0.0f,0.0f,0.0f),border), fgColor.a*opacity);
+}
+@vertex--------------------------
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 uvIn;
+out vec2 uv;
+
+uniform mat4 projection;
+
+void main()
+{
+	gl_Position = projection * vec4(aPos.x, aPos.y, 0.0, 1.0);
+	uv = uvIn;
+}
+@-------------------------------
