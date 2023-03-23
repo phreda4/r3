@@ -115,6 +115,7 @@
 
 #shaderd
 #shaderfb
+#shaderba
 
 | http://rodolphe-vaillant.fr/entry/77/skeletal-animation-forward-kinematic
 :initshaders
@@ -122,6 +123,8 @@
 
 	"r3/opengl/shader/forward.sha" loadShader 'shaderd !
 	"r3/opengl/shader/fboshader.sha" loadShader 'shaderfb !
+	
+	"r3/opengl/shader/basic.sha" loadShader 'shaderba !
 	;
 	
  
@@ -210,8 +213,10 @@
 			d@+ fp2f a!+ 
 			swap ) drop 
 		matini
-		'scale @+ swap @+ swap @ mscale
-		'rotat matqua m*
+|		'rotat 'rotat q4nor
+|		'rotat matqua |m*
+|		'scale @+ swap @+ swap @ mscale
+
 		'trans @+ swap @+ swap @ mtran
 		|matinv
 		|matparent
@@ -265,7 +270,7 @@
 			getpose
 			matini
 			'scale @+ swap @+ swap @ mscale
-			'rotat matqua m*
+			'rotat 	matqua m*
 			'trans @+ swap @+ swap @ mtran
 			matparent		
 			here mcpy
@@ -555,6 +560,8 @@
   
 	;
 	
+
+	
 |------------------------------
 #rx #ry #rz
 #mx #my #mz
@@ -568,13 +575,18 @@
 	;
 
 :renderobj | obj --
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable
-	GL_LESS glDepthFunc 	
 	shaderd glUseProgram
 	
 	'fprojection shaderd "u_projection" shader!m4
 	'fview shaderd "u_view" shader!m4
+	
+	
+	rx $ffff and 32 << 
+	ry $ffff and 16 << or 
+	rz $ffff and or 
+	mx my mz mrpos
+	'fmodel mcpyf	
+	
 	'fmodel shaderd "u_model" shader!m4
 	0 shaderd "u_point_count" shader!i
 	0 shaderd "u_ambient_pass" shader!i
@@ -599,6 +611,44 @@
     0 glBindVertexArray
 	;
 	
+|------------------------------
+:cuber
+	shaderba glUseProgram
+	'fprojection shaderba "projection" shader!m4
+	'fview shaderba "view" shader!m4
+	
+|	matini
+|	'fmodel mcpyf	
+|	'fmodel midf
+	rx neg $ffff and 32 << 
+	ry neg $ffff and 16 << or 
+	rz neg $ffff and or 
+	mx my mz mrpos
+	msec 3 << $1ffff and 0.2 + dup dup mscale
+	'fmodel mcpyf	
+
+	'fmodel shaderba "model" shader!m4
+	rendercube
+	;
+
+:bonescube
+	shaderba glUseProgram
+	'fprojection shaderba "projection" shader!m4
+	'fview shaderba "view" shader!m4
+
+	listbones iqm.pose ( 1? 1 - swap
+		dup matinim
+		'fmodel mcpyf	
+
+		'fmodel shaderba "model" shader!m4
+		rendercube
+		
+		128 +
+		swap ) 2drop 	
+	;
+	
+|------------------------------
+	
 :control
 	glgui
 	$ffffff glcolor
@@ -606,6 +656,8 @@
 	'filename "Model: %s" sprint gltext glcr
 	iqm.nroframes framenow "%d %d" sprint gltext
 	
+	sw 70 - 10 60 20 glwin
+	'exit "Exit" gltbtn gldn
 	10 32 180 20 glwin
 	-1.0 1.0 'rx glSliderf gldn	
 	-1.0 1.0 'ry glSliderf gldn	
@@ -613,20 +665,21 @@
 	-10.0 10.0 'mx glSliderf gldn	
 	-10.0 10.0 'my glSliderf gldn	
 	-10.0 10.0 'mz glSliderf gldn	
-	'anima "Animate" glCheck gldn
-	'exit "Exit" gltbtn gldn
-	
-	rx $ffff and 32 << 
-	ry $ffff and 16 << or 
-	rz $ffff and or 
-	mx my mz mrpos
-	'fmodel mcpyf	
+	'anima "Model|Bones|Animation" glCombo
 	;
 
 :main
 	$4100 glClear | color+depth
 
-	renderobj
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable
+	GL_LESS glDepthFunc 	
+	anima
+	0? ( renderobj ) 
+	1 =? ( bonescube )
+	2 =? ( cuber ) 
+	drop
+	
 	control
 	
 	SDL_windows SDL_GL_SwapWindow
@@ -650,6 +703,8 @@
 	initvec
 	initshaders
 	iniscrquad
+	
+	initcube
 	
 	'main SDLshow 
 	SDLquit	

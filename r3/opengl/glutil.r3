@@ -178,4 +178,84 @@
     GL_TEXTURE_2D t glBindTexture
 	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE cc> 4 - glTexImage2D
 	t ;
+
+|-----------
+#GL_ARRAY_BUFFER $8892
+#GL_STATIC_DRAW $88E4
+#GL_FLOAT $1406
+
+#cubevao
+#cubevbo
+
+| x y z nx ny nz tu tv
+#vertcube [ | back face
+	-1.0 -1.0 -1.0  0.0  0.0 -1.0 0.0 0.0 | bottom-left
+	 1.0  1.0 -1.0  0.0  0.0 -1.0 1.0 1.0 | top-right
+	 1.0 -1.0 -1.0  0.0  0.0 -1.0 1.0 0.0 | bottom-right         
+	 1.0  1.0 -1.0  0.0  0.0 -1.0 1.0 1.0 | top-right
+	-1.0 -1.0 -1.0  0.0  0.0 -1.0 0.0 0.0 | bottom-left
+	-1.0  1.0 -1.0  0.0  0.0 -1.0 0.0 1.0 | top-left
+	| front face
+	-1.0 -1.0  1.0  0.0  0.0  1.0 0.0 0.0 | bottom-left
+	 1.0 -1.0  1.0  0.0  0.0  1.0 1.0 0.0 | bottom-right
+	 1.0  1.0  1.0  0.0  0.0  1.0 1.0 1.0 | top-right
+	 1.0  1.0  1.0  0.0  0.0  1.0 1.0 1.0 | top-right
+	-1.0  1.0  1.0  0.0  0.0  1.0 0.0 1.0 | top-left
+	-1.0 -1.0  1.0  0.0  0.0  1.0 0.0 0.0 | bottom-left
+	| left face
+	-1.0  1.0  1.0 -1.0  0.0  0.0 1.0 0.0 | top-right
+	-1.0  1.0 -1.0 -1.0  0.0  0.0 1.0 1.0 | top-left
+	-1.0 -1.0 -1.0 -1.0  0.0  0.0 0.0 1.0 | bottom-left
+	-1.0 -1.0 -1.0 -1.0  0.0  0.0 0.0 1.0 | bottom-left
+	-1.0 -1.0  1.0 -1.0  0.0  0.0 0.0 0.0 | bottom-right
+	-1.0  1.0  1.0 -1.0  0.0  0.0 1.0 0.0 | top-right
+	| right face
+	 1.0  1.0  1.0  1.0  0.0  0.0 1.0 0.0 | top-left
+	 1.0 -1.0 -1.0  1.0  0.0  0.0 0.0 1.0 | bottom-right
+	 1.0  1.0 -1.0  1.0  0.0  0.0 1.0 1.0 | top-right         
+	 1.0 -1.0 -1.0  1.0  0.0  0.0 0.0 1.0 | bottom-right
+	 1.0  1.0  1.0  1.0  0.0  0.0 1.0 0.0 | top-left
+	 1.0 -1.0  1.0  1.0  0.0  0.0 0.0 0.0 | bottom-left     
+	| bottom face
+	-1.0 -1.0 -1.0  0.0 -1.0  0.0 0.0 1.0 | top-right
+	 1.0 -1.0 -1.0  0.0 -1.0  0.0 1.0 1.0 | top-left
+	 1.0 -1.0  1.0  0.0 -1.0  0.0 1.0 0.0 | bottom-left
+	 1.0 -1.0  1.0  0.0 -1.0  0.0 1.0 0.0 | bottom-left
+	-1.0 -1.0  1.0  0.0 -1.0  0.0 0.0 0.0 | bottom-right
+	-1.0 -1.0 -1.0  0.0 -1.0  0.0 0.0 1.0 | top-right
+	| top face
+	-1.0  1.0 -1.0  0.0  1.0  0.0 0.0 1.0 | top-left
+	 1.0  1.0  1.0  0.0  1.0  0.0 1.0 0.0 | bottom-right
+	 1.0  1.0 -1.0  0.0  1.0  0.0 1.0 1.0 | top-right     
+	 1.0  1.0  1.0  0.0  1.0  0.0 1.0 0.0 | bottom-right
+	-1.0  1.0 -1.0  0.0  1.0  0.0 0.0 1.0 | top-left
+	-1.0  1.0  1.0  0.0  1.0  0.0 0.0 0.0  | bottom-left        
+	]
 	
+:memfloat | cnt place --
+	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+	
+::initcube
+	1 'cubeVAO glGenVertexArrays
+	1 'cubeVBO glGenBuffers
+	| fill buffer
+	36 8 * 'vertcube memfloat
+	GL_ARRAY_BUFFER cubeVBO glBindBuffer
+	GL_ARRAY_BUFFER 36 8 * 2 << 'vertcube GL_STATIC_DRAW glBufferData
+	| link vertex attributes
+	cubeVAO glBindVertexArray
+	0 glEnableVertexAttribArray
+	0 3 GL_FLOAT 0 8 2 << 0 glVertexAttribPointer
+	1 glEnableVertexAttribArray
+	1 3 GL_FLOAT 0 8 2 << 3 2 << glVertexAttribPointer
+	2 glEnableVertexAttribArray
+	2 2 GL_FLOAT 0 8 2 << 6 2 << glVertexAttribPointer
+	GL_ARRAY_BUFFER 0 glBindBuffer
+	0 glBindVertexArray
+	;
+
+::rendercube
+    cubevao glBindVertexArray
+    4 0 36 glDrawArrays 
+    0 glBindVertexArray
+	;

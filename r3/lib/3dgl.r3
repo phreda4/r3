@@ -315,7 +315,7 @@
 	dup fx *. 'm31 ! dup fy *. 'm32 ! fz *. 'm33 !
 	sy fy *. 'm21 ! sy fz *. 'm22 ! sz fz *. 'm23 !
 	sx fx *. 'm11 ! sx fy *. 'm12 ! sx fz *. 'm13 !
-	mat> 128 + dup 'mat> ! >a
+	mat> >a
 
 	1.0 m21 m23 + - a!+
 	m12 m33 + a!+
