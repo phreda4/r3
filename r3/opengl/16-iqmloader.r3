@@ -148,8 +148,8 @@
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
-	$ffffffff glColorTex 'tex_dif !
-	$7f7fffff glColorTex 'tex_nor !
+	$ffffffff glColorTex 'tex_dif ! | ALPHA B G R 
+	$ffff7f7f glColorTex 'tex_nor !
 	$000000ff glColorTex 'tex_spe !
 	;
 
@@ -175,8 +175,6 @@
 		
 :]parent | nro -- parent
 	parenbones + c@ ;
-:]invmat | nro -- mat
-	7 << listbones + ;
 
 #trans 0 0 0
 #rotat 0 0 0 0
@@ -189,8 +187,9 @@
 	1.0 a!+ 1.0 a!+ 1.0 a!+ ;
 	
 :matparent
-	over ]parent 0? ( drop ; )  
-	]invmat mm* ;
+	over ]parent -? ( drop ; )  
+	7 << listbones + mmi* 
+	;
 	
 :makebones
 	here 'parenbones !
@@ -198,9 +197,8 @@
 	iqm.join 
 	( 1? 1- swap
 		d@+ drop |]iqm.str "%s " .print | name
-		d@+ |dup $ff and "%h " .print | parent
-		,c
-		swap ) 2drop
+		d@+ ,c |dup $ff and "%h " .print | parent
+		40 + swap ) 2drop
 		
 	here 'listbones !
 	iqm.joino
@@ -213,13 +211,11 @@
 			d@+ fp2f a!+ 
 			swap ) drop 
 		matini
-|		'rotat 'rotat q4nor
-|		'rotat matqua |m*
-|		'scale @+ swap @+ swap @ mscale
-
+		'rotat matqua 
 		'trans @+ swap @+ swap @ mtran
+		'scale @+ swap @+ swap @ mscale
 		|matinv
-		|matparent
+		matparent
 		here mcpy
 		128 'here +!
 		swap 1 + ) 2drop ;
@@ -257,8 +253,8 @@
 #posenow
 
 :matparent
-	dup ]parent 0? ( drop ; ) 
-	7 << posenow + mm* ;
+	dup ]parent -? ( drop ; ) 
+	7 << posenow + mmi* ;
 	
 :makeposes
 	iqm.frameo 'offfra> !
@@ -269,9 +265,9 @@
 |		dup "%d" .println
 			getpose
 			matini
-			'scale @+ swap @+ swap @ mscale
-			'rotat 	matqua m*
+			'rotat  matqua 
 			'trans @+ swap @+ swap @ mtran
+			'scale @+ swap @+ swap @ mscale
 			matparent		
 			here mcpy
 			128 'here +!
@@ -291,25 +287,18 @@
 		64 'bonesmat> +!	
 		) drop 	
 		
-|	matini
-|	msec 0 0 0 mrpos
-|	matinv
-|	here 64 6 * + mcpyf
-	;
-
 :matbonesbase | fill animation with id
 	here 'bonesmat> !
 	listbones iqm.pose ( 1? 1 - swap
 		dup matinim
 		bonesmat> mcpyf
 		64 'bonesmat> +!
-		128 +
-		swap ) 2drop 	
+		128 + swap ) 2drop ;
 
 
 :parentmat | nro 'pose -- nro 'pose
 	over ]parent 0? ( drop ; )
-	7 << bonestr + mm* | * parent
+	7 << bonestr + mmi* | * parent
 	;
 
 :calcbones | frame  --
@@ -568,7 +557,7 @@
 #anima
 
 :animation
-	anima 0? ( drop matbonesid ; ) drop
+|	anima 0? ( drop matbonesid ; ) drop
 	matbonesbase
 |	framenow calcbones 
 	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !	
@@ -579,7 +568,6 @@
 	
 	'fprojection shaderd "u_projection" shader!m4
 	'fview shaderd "u_view" shader!m4
-	
 	
 	rx $ffff and 32 << 
 	ry $ffff and 16 << or 
@@ -624,7 +612,7 @@
 	ry neg $ffff and 16 << or 
 	rz neg $ffff and or 
 	mx my mz mrpos
-	msec 3 << $1ffff and 0.2 + dup dup mscale
+|	msec 3 << $1ffff and 0.2 + dup dup mscale
 	'fmodel mcpyf	
 
 	'fmodel shaderba "model" shader!m4
@@ -636,16 +624,48 @@
 	'fprojection shaderba "projection" shader!m4
 	'fview shaderba "view" shader!m4
 
+	GL_TEXTURE0 glActiveTexture 
+	GL_TEXTURE_2D tex_nor glBindTexture
+	
 	listbones iqm.pose ( 1? 1 - swap
 		dup matinim
+		mpush
+		rx neg $ffff and 32 << 
+		ry neg $ffff and 16 << or 
+		rz neg $ffff and or 
+		mx my mz mrpos
+		m*
+
 		'fmodel mcpyf	
 
 		'fmodel shaderba "model" shader!m4
 		rendercube
 		
-		128 +
-		swap ) 2drop 	
-	;
+		128 + swap ) 2drop ;
+
+:bonescubeani
+	shaderba glUseProgram
+	'fprojection shaderba "projection" shader!m4
+	'fview shaderba "view" shader!m4
+
+	GL_TEXTURE0 glActiveTexture 
+	GL_TEXTURE_2D tex_nor glBindTexture
+	
+	listbones iqm.pose ( 1? 1 - swap
+		dup matinim
+		mpush
+		rx neg $ffff and 32 << 
+		ry neg $ffff and 16 << or 
+		rz neg $ffff and or 
+		mx my mz mrpos
+		m*
+
+		'fmodel mcpyf	
+
+		'fmodel shaderba "model" shader!m4
+		rendercube
+		
+		128 + swap ) 2drop ;
 	
 |------------------------------
 	
@@ -664,7 +684,7 @@
 	-1.0 1.0 'rz glSliderf gldn	
 	-10.0 10.0 'mx glSliderf gldn	
 	-10.0 10.0 'my glSliderf gldn	
-	-10.0 10.0 'mz glSliderf gldn	
+	-500.0 500.0 'mz glSliderf gldn	
 	'anima "Model|Bones|Animation" glCombo
 	;
 

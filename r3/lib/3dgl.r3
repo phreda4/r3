@@ -308,6 +308,7 @@
 #m31 #m32 #m33
 
 ::matqua | 'quat --
+	dup q4nor
 	@+ dup dup + 'fx ! 'sx !
 	@+ dup dup + 'fy ! 'sy !
 	@+ dup dup + 'fz ! 'sz !
@@ -316,7 +317,6 @@
 	sy fy *. 'm21 ! sy fz *. 'm22 ! sz fz *. 'm23 !
 	sx fx *. 'm11 ! sx fy *. 'm12 ! sx fz *. 'm13 !
 	mat> >a
-
 	1.0 m21 m23 + - a!+
 	m12 m33 + a!+
 	m13 m32 - a!+
@@ -413,6 +413,11 @@
 
 ::mm* | 'mat --
 	>b mat> dup >a 128 +
+	mrow mrow mrow mrow drop
+	128 'mat> +! ;
+
+::mmi* | 'mat --
+	>a mat> dup >b 128 +
 	mrow mrow mrow mrow drop
 	128 'mat> +! ;
 

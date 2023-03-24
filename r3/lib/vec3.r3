@@ -78,18 +78,17 @@
 	@+ dup *. swap
 	@+ dup *. swap	
 	@+ dup *. swap
-	@+ dup *. swap
+	@ dup *. swap
 	+ + + sqrt. ;
 	
-::q4nor | q qd --
-	over q4len | q qd len
-	0? ( drop nip 0 4 fill ; )
+::q4nor | q --
+	dup q4len | q len
+	0? ( drop 0 4 fill ; )
 	1.0 swap /.
 	swap >a
-	swap
-	@+ pick2 *. a!+
-	@+ pick2 *. a!+
-	@+ pick2 *. a!+
-	@ *. a! ;
+	a@ over *. a!+
+	a@ over *. a!+
+	a@ over *. a!+
+	a@ *. a! ;
 	
 

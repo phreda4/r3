@@ -168,15 +168,13 @@
 	t ;	
 	
 	
-|******* not need this..test when use!!
-#cc * 80
-#cc> 'cc
+#cc
 
 ::glColorTex | col -- texid
-	cc> d!+ 'cc> ! | store color (here)
+	'cc d!
 	1 't glGenTextures
     GL_TEXTURE_2D t glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE cc> 4 - glTexImage2D
+	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE 'cc glTexImage2D
 	t ;
 
 |-----------
