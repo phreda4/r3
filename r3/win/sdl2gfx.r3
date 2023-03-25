@@ -2,6 +2,7 @@
 | PHREDA 2022
 
 ^r3/win/sdl2.r3
+^r3/win/sdl2image.r3	
 
 #sdlink
 
@@ -120,29 +121,24 @@
 	
 ::SDLImagebb | box box img --
 	SDLrenderer swap 2swap SDL_RenderCopy ;	
-	
-:fillvertz | x y --
-	'vert >a
-	over xm - i2fp da!+ dup ym - i2fp da!+ 12 a+ |$ffffffff da!+ x1 f2fp da!+ y1 f2fp da!+
-	over xm + i2fp da!+ dup ym - i2fp da!+ 12 a+ |$ffffffff da!+ x2 f2fp da!+ y1 f2fp da!+
-	over xm + i2fp da!+ dup ym + i2fp da!+ 12 a+ |$ffffffff da!+ x2 f2fp da!+ y2 f2fp da!+
-	swap xm - i2fp da!+ ym + i2fp da!+ 12 a+ |$ffffffff da!+ x1 f2fp da!+ y2 f2fp da!+
-	;
 
-::SDLspriteZ | x y zoom img --
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
-	fillvertz
-	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
-	;
-		
-:rotxy | x y -- x' y'
-	over dx * over dy * -
-	rot dy * rot dx * + ;
+|-------------------	
+:fillfull
+	'vert >a 
+	$ffffffff 0 $3f800000 |1.0 f2fp 
+	8 a+ pick2 da!+ over da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ dup da!+
+	8 a+ pick2 da!+ over da!+ dup da!+
+	3drop ;
 	
-:coord | x y 'x 'y -- 
-	swap 17 >> pick3 + i2fp da!+
-	17 >> over + i2fp da!+ ;
+:fillvertxy | x y --
+	'vert >a
+	over xm - i2fp da!+ dup ym - i2fp da!+ 12 a+ 
+	over xm + i2fp da!+ dup ym - i2fp da!+ 12 a+
+	over xm + i2fp da!+ dup ym + i2fp da!+ 12 a+
+	swap xm - i2fp da!+ ym + i2fp da!+ 12 a+
+	;
 
 :rotxya! | x y x1 y1 -- x y
 	over dx * over dy * - | x y x1 y1 x'
@@ -153,16 +149,25 @@
 
 :fillvertr | x y --
 	'vert >a
-	xm neg ym neg rotxya! 12 a+ |x1 f2fp da!+ y1 f2fp da!+
-	xm ym neg rotxya! 12 a+ |x2 f2fp da!+ y1 f2fp da!+
-	xm ym rotxya! 12 a+ |x2 f2fp da!+ y2 f2fp da!+
-	xm neg ym rotxya! 12 a+ |x1 f2fp da!+ y2 f2fp da!+
-	2drop
-	;
-	
+	xm neg ym neg rotxya! 12 a+
+	xm ym neg rotxya! 12 a+
+	xm ym rotxya! 12 a+
+	xm neg ym rotxya! 12 a+
+	2drop ;
+
+|-------------------------	
+::SDLspriteZ | x y zoom img --
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
+	fillfull
+	fillvertxy
+	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
+	;	
+
 ::SDLSpriteR | x y ang img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	sincos 'dx ! 'dy !
+	fillfull
 	fillvertr
 	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
 	;
@@ -171,51 +176,68 @@
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm *. 'xm ! ym *. 'ym ! 
 	sincos 'dx ! 'dy !
+	fillfull
 	fillvertr
 	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
 	;
 
-|-------------- sprite in tilesheet
-::SDLspr.tilesheet | nro width height -- | 2 .25 .25
+|----------------------	
+:loadssheet | w h file -- ss
+	loadimg
+	dup 0 0 'dx 'dy SDL_QueryTexture
+	here >a a!+ 		| texture
+	2dup 32 << or a!+	| wi hi
+	1.0 pick2 dx */ 'dx !
+	1.0 over dy */ 'dy ! 
+	swap | h w
+	0 ( 1.0 <?
+		0 ( 1.0 <?
+			dup pick2 over dx + over dy + | x1 y1 x2 y2
+			$1ffff and 47 <<
+			swap $1ffff and 31 << or
+			swap $1ffff and 15 << or
+			swap $1ffff and 1 >> or
+			a!+
+			dx + ) drop
+		dy + ) drop
+	here a> 'here ! 
+	;
+
+:settile | n adr -- adr
+	swap 3 << 16 + over +
+	@ dup 1 << $1ffff and f2fp | x1
+	swap dup 15 >> $1ffff and f2fp 
+	swap dup 31 >> $1ffff and f2fp 
+	swap 47 >> $1ffff and f2fp 
 	'vert >a
-	rot pick2 /mod | w h yn xn
-	2swap 1.0 rot / 1.0 rot / | yn xn dw dh
-	
-	
-	
-	|x1 y1 x2 y2 ************8
-	0 f2fp 0 f2fp 1.0 f2fp 1.0 f2fp 
 	12 a+ pick3 da!+ pick2 da!+
 	12 a+ over da!+ pick2 da!+
 	12 a+ over da!+ dup da!+
 	12 a+ pick3 da!+ dup da!+
-	4drop
-	;
+	4drop ;
 	
-::SDLspr.tilefull 
-	'vert >a 
-	$ffffffff 0 f2fp 1.0 f2fp 
-	8 a+ pick2 da!+ over da!+ over da!+
-	8 a+ pick2 da!+ dup da!+ over da!+
-	8 a+ pick2 da!+ dup da!+ dup da!+
-	8 a+ pick2 da!+ over da!+ dup da!+
-	3drop
+:ssprite | x y n ssprite --
+	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
+	settile >r 
+	fillvertxy
+	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;
 
-::SDLspr.load | tw th filename -- ts
-	|loadimg
-	here >a a!+ | texture
-	1.0 rot / da!+
-	1.0 swap / da!+
-	
-	2dup swap da!+ da!+ | w h 
-|	0 ( h <? 
-|		0 ( w <? | w h y x
-|			2dup da!+ da!+
-|			pick3 + ) drop 
-|		over + ) drop
-	2drop 
-	here a> 'here ! 
+:sspriter | x y ang n ssprite --
+	dup 8 + d@+ 'xm ! d@ 'ym !
+	settile >r 
+	sincos 'dx ! 'dy !
+	fillvertr
+	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;
 
-: SDLspr.tilefull ;
+::sspritez | x y ang zoom n ssprite --
+	dup 8 + d@+ 'xm ! d@ 'ym !
+	settile >r 
+	dup xm *. 'xm ! ym *. 'ym ! 
+	sincos 'dx ! 'dy !
+	fillvertr
+	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
+	;	
+
+: fillfull ;

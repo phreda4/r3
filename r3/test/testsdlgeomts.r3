@@ -36,14 +36,6 @@
 	swap xm - i2fp da!+ ym + i2fp da!+ 12 a+
 	;
 
-:rotxy | x y -- x' y'
-	over dx * over dy * -
-	rot dy * rot dx * + ;
-	
-:coord | x y 'x 'y -- 
-	swap 17 >> pick3 + i2fp da!+
-	17 >> over + i2fp da!+ ;
-
 :rotxya! | x y x1 y1 -- x y
 	over dx * over dy * - | x y x1 y1 x'
 	17 >> pick4 + i2fp da!+
@@ -59,40 +51,41 @@
 	xm neg ym rotxya! 12 a+
 	2drop ;
 	
-#w #h
-#dw #dh
-
 :loadssheet | w h file -- ss
 	loadimg
-	dup 0 0 'w 'h SDL_QueryTexture
+	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
 	2dup 32 << or a!+	| wi hi
-	1.0 pick2 w */ dup 'dw ! da!+
-	1.0 over h */ dup 'dh ! da!+
+	1.0 pick2 dx */ 'dx !
+	1.0 over dy */ 'dy ! 
 	swap | h w
 	0 ( 1.0 <?
 		0 ( 1.0 <?
-|			2dup "%f %f" .println
-			dup da!+
-			over da!+
-			dw + ) drop
-		dh + ) drop
+			dup pick2 over dx + over dy + | x1 y1 x2 y2
+|			pick3 f2fp pick3 f2fp pick3 f2fp pick3 f2fp "%h %h %h %h" .println | any better encode?
+			$1ffff and 47 <<
+			swap $1ffff and 31 << or
+			swap $1ffff and 15 << or
+			swap $1ffff and 1 >> or
+			a!+
+			dx + ) drop
+		dy + ) drop
 	here a> 'here ! 
 	;
 
-
 :settile | n adr -- adr
-	dup 16 + d@+ 'dw ! d@ 'dh !
-	swap 3 << 24 + over +
-	d@+ swap d@ over dw + f2fp over dh + f2fp
-	2swap swap f2fp swap f2fp 2swap
+	swap 3 << 16 + over +
+	@ dup 1 << $1ffff and f2fp | x1
+	swap dup 15 >> $1ffff and f2fp 
+	swap dup 31 >> $1ffff and f2fp 
+	swap 47 >> $1ffff and f2fp 
 	'vert >a
 	12 a+ pick3 da!+ pick2 da!+
 	12 a+ over da!+ pick2 da!+
 	12 a+ over da!+ dup da!+
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
-
+	
 :ssprite | x y n ssprite --
 	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
 	settile >r 
@@ -116,6 +109,7 @@
 	fillvertr
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;	
+	
 :main
 	$0 SDLcls
 	20 20 textura SDLImage

@@ -1,11 +1,7 @@
-| 3dmath - PHREDA
+| 3dmath for opengl 
+| PHREDA
 |-------------------------
-
 ^r3/lib/vec3.r3
-^r3/win/sdl2.r3
-
-##xf ##yf
-##ox ##oy
 
 #mati | matrix id
 1.0 0 0 0		| 1.0 = $10000
@@ -50,7 +46,7 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
 	;
 
-::mcpyf | fmat --
+::mcpyf | fmat --	; copy floating opoint mat to mem
 	>b mat> >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
 
 ::mcpyft | fmat -- ; transpose
@@ -94,7 +90,7 @@
 	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
 	;
 	
-#fx 0 #fy 0 #fz 0 
+#fx 0 #fy 0 #fz 0
 #sx 0 #sy 0 #sz 0
 #ux 0 #uy 0 #uz 0 
 
