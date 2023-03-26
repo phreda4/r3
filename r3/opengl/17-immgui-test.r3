@@ -5,7 +5,7 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2gl.r3
 
-^r3/opengl/glgui.r3
+^r3/opengl/glfgui.r3
 
 |--------------	
 #val1 0 

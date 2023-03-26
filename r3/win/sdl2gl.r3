@@ -329,6 +329,13 @@
 	InitGLAPI
 	;
 
+::SDLGLcls
+	$4100 glClear | color+depth
+	;
+
+::SDLGLupdate
+	SDL_windows SDL_GL_SwapWindow ;
+	
 ::SDLquit
 	SDL_context SDL_Gl_DeleteContext
 	SDL_windows SDL_DestroyWindow 
