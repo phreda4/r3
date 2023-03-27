@@ -219,8 +219,11 @@
 ::>>cr | adr -- adr'
 	( c@+ 1? 10 =? ( drop 1 - ; ) 13 =? ( drop 1 - ; ) drop ) drop 1 - ;
 
-::>>0 | adr -- adr' ; pasa 0
+::>>0 | adr -- adr' ; skip 0
 	( c@+ 1? drop ) drop ;
+
+::n>>0 | adr n -- adr' 
+	( 1? swap >>0 swap 1 - ) drop ;
 
 ::only13 | adr -- ; remove 10..reeplace with 13
 	dup
