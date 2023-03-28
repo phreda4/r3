@@ -14,21 +14,55 @@
 #floor * 32 | 32 floor max
 
 :reset	'floor 0 32 cfill ;
-	
-:pushup	'floor + dup c@ 1 xor swap c! ; | f --
-	
-:pushdn	'floor + dup c@ 2 xor swap c! ; | f --
 
-:light | f mask -- f color
-	over 'floor + c@ and 
-	0? ( drop $ff040404 ; ) drop $ff007f00 ;
+:touch | f mask -- f
+	over 'floor + dup c@ 
+	rot xor swap c! ;
+
+:floor@ | f -- f v
+	dup 'floor + c@ ;
 	
-	
-:setdest | f --
+:checkbtn | f mask $c1c2 -- f color
+	pick2 'floor + c@ rot and 
+	0? ( swap 24 >> swap ) drop
+	$ffffff and $ff000000 or 
+	'guicolorbtn !
+	;
+
+:go | f --
 	16 << dup 'delevator !
 	pelevator <? ( drop -0.01 'velevator ! ; ) 
 	drop 0.01 'velevator ! ;
 
+|---------------------------
+:listdel | 'list 'from --
+	dup 1 + pick2 @ cmove
+	-1 swap +! ;
+
+:list! | f 'list --
+	1 over +! @+ + 1 - c! ;
+	
+:list- | f 'list
+	swap over @+ | 'adr cnt
+	( 1? 1- swap
+		c@+ pick3 
+		=? ( drop nip nip swap listdel ; )
+		drop swap ) 
+	4drop ;
+		
+:list@ | 'list -- f/0
+	dup @ 0? ( nip ; ) drop
+	dup c@
+	swap 8 + dup listdel ;
+	
+:list? | f 'list -- f/0
+	@+ ( 1? 1- swap
+		c@+ pick3 =? ( 2drop ; )
+		drop swap ) 
+	3drop 0 ;
+	
+#testlist 0 * 32
+	
 |--- list for elevator
 #flist * 32
 #nlist
@@ -36,6 +70,11 @@
 :addf | f --
 	nlist 'flist + c!
 	1 'nlist +! ;
+	
+:delf | f --
+	'flist nlist ( 1? 1- swap
+		c@+ pick3 =? ( drop 1 - dup 1 + nlist cmove 2drop -1 'nlist +! ; )
+		drop swap ) 3drop ;
 	
 :getf | -- f/0
 	nlist 0? ( ; ) drop
@@ -48,14 +87,20 @@
 		c@+ pick3 =? ( 2drop ; )
 		drop swap ) 
 	3drop 0 ;
-
+	
+	
 |--- list for floor
 #bflist * 32
 #bnlist 
 
-:addbf
+:addbf | f --
 	bnlist 'bflist + c!
 	1 'bnlist +! ;
+
+:delbf | f --
+	'bflist bnlist ( 1? 1- swap
+		c@+ pick3 =? ( drop 1 - dup 1 + bnlist cmove 2drop -1 'nlist +! ; )
+		drop swap ) 3drop ;
 	
 :getbf | -- f/0
 	bnlist 0? ( ; ) drop
@@ -69,25 +114,39 @@
 		drop swap ) 
 	3drop 0 ;
 
-	
-:debug
-	'flist nlist ( 1? 1- swap
-		c@+ "%d " .print
-		swap ) 2drop
-	.cr
-	;
 
+|--- buttons
+:pushup	| f --
+	1 touch 
+	floor@ 1 and? ( drop addbf ; )
+	drop delbf 
+	; 
+	
+:pushdn	| f --
+	2 touch 
+	floor@ 2 and? ( drop addbf ; )
+	drop delbf ;
+
+:pushbtnf | f --
+	4 touch 
+	floor@ 4 and? ( drop addf ; )
+	drop delf ;
+	
+:offbtn | f --
+	0 swap 'floor + c!
+	;
+	
 #door
 
 |--- elevator state
 :idle
-	nlist 0? ( drop ; ) drop
-	getf setdest
-	2 'state ! | runing
+	nlist 1? ( drop getf go 2 'state ! ; ) drop | runing
+	bnlist 1? ( drop getbf go 2 'state ! ; ) drop | runing
 	;
+	
 :wait
-	nlist 0? ( drop ; ) drop
-	4 'state !  | close
+	nlist 1? ( 4 'state ! ) drop | close
+	bnlist 1? ( 4 'state ! ) drop | close	
 	;
 :run
 	velevator 'pelevator +!
@@ -96,6 +155,7 @@
 	0 'velevator ! 
 	delevator 'pelevator ! 
 	3 'state !	| open
+	delevator 16 >> offbtn
 	;
 :open
 	door
@@ -130,6 +190,7 @@
 	door 29 *. 1 + 40 frect
 	;
 	
+|--- main loop	
 :main
 	SDLGLcls 
 	GLgui
@@ -146,10 +207,10 @@
 		100 glwidth
 		dup "piso %d" sprint glLabel gl>>
 		60 glwidth
-		1 light 'guicolorbtn !
+		1 $040404007f00 checkbtn 
 		[ dup pushup ; ] "up" sprint gltbtn 
 		gl>>
-		2 light 'guicolorbtn !
+		2 $040404007f00 checkbtn
 		[ dup pushdn ; ] "dn" sprint gltbtn 		
 		gl<<dn
 		1 - ) drop
@@ -157,7 +218,8 @@
 	$ff007f00 'guicolorbtn !
 	340 60 60 36 glwin
 	cntfloors ( 1? 	
-		[ dup addf ; ]
+		4 $00007f0000ff checkbtn
+		[ dup pushbtnf ; ]
 		over "%d" sprint sprint gltbtn 		
 		gl<<dn
 		1 - ) drop		
@@ -174,9 +236,6 @@
 	SDLGLupdate
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( msec addf )
-	<f2> =? ( getf drop )
-	<f3> =? ( debug )
 	drop ;	
 
 |----------- BOOT
