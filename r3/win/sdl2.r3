@@ -30,6 +30,8 @@
 #sys-SDL_CreateRGBSurface 
 #sys-SDL_LockSurface
 #sys-SDL_UnlockSurface
+#sys-SDL_BlitSurface
+#sys-SDL_SetSurfaceBlendMode
 #sys-SDL_FreeSurface
 #sys-SDL_LockTexture
 #sys-SDL_UnlockTexture
@@ -92,6 +94,8 @@
 ::SDL_CreateRGBSurface sys-SDL_CreateRGBSurface sys8 ;
 ::SDL_LockSurface sys-SDL_LockSurface sys1 drop ;
 ::SDL_UnlockSurface sys-SDL_UnlockSurface sys1 drop ;
+::SDL_BlitSurface sys-SDL_BlitSurface sys4 drop ;
+::SDL_SetSurfaceBlendMode sys-SDL_SetSurfaceBlendMode sys2 drop ;
 ::SDL_FreeSurface sys-SDL_FreeSurface sys1 drop ;
 ::SDL_LockTexture sys-SDL_LockTexture sys4 drop ;
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
@@ -290,6 +294,9 @@
 	dup "SDL_CreateRGBSurface" getproc 'sys-SDL_CreateRGBSurface !
 	dup "SDL_LockSurface" getproc 'sys-SDL_LockSurface !
 	dup "SDL_UnlockSurface" getproc 'sys-SDL_UnlockSurface !
+	dup "SDL_UpperBlit" getproc 'sys-SDL_BlitSurface !
+	dup "SDL_SetSurfaceBlendMode" getproc 'sys-SDL_SetSurfaceBlendMode !
+
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
 	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !

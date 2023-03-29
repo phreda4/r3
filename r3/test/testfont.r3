@@ -14,17 +14,32 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 
 #bbtext [ 0 0 0 0 ]
 
+#outline 2
+#dddest [ 2 2 1 1 ]
+
+:gentext | font "" color -- surface
+	pick2 outline TTF_SetFontOutline 
+	pick2 pick2 pick2 24 >> TTF_RenderUTF8_Blended >r | sdlr surface
+	pick2 0 TTF_SetFontOutline
+	$ffffff and TTF_RenderUTF8_Blended | sdlr surface
+	dup 1 SDL_SetSurfaceBlendMode |(fg_surface, SDL_BLENDMODE_BLEND);
+	dup 0 r@ 'dddest SDL_BlitSurface
+	SDL_FreeSurface
+	r>
+|	r@ 0 pick2 0 SDL_BlitSurface
+|	r> SDL_FreeSurface
+	;
+
 :RenderText | SDLrender color font "texto" x y --
 	swap 'bbtext d!+ d!
 	2dup 'bbtext dup 8 + swap 12 + TTF_SizeUTF8 drop
 	rot 
-	|TTF_RenderUTF8_Solid
-	TTF_RenderUTF8_Blended | sdlr surface	
+	gentext
 	2dup SDL_CreateTextureFromSurface | sd surface texture
 	rot over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture 
 	SDL_FreeSurface ;
-
+	
 #boxt 0 0 
 
 #buffer * 8192
@@ -148,7 +163,7 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 	vx 't2 0.3 0.3 0.3 0.3 xywh%64 $ff00 textbox
 	
 	
-	SDLrenderer $ff00 font vx "x:%d" sprint 50 350 RenderText
+	SDLrenderer $ffffff007f00 font vx "Valor x:%d" sprint 50 350 RenderText
 	SDLredraw
 	
 	SDLkey
@@ -164,7 +179,7 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 	"r3sdl" 640 480 SDLinit
 	ttf_init
 	"media/ttf/roboto-bold.ttf" 24 TTF_OpenFont 'font !
-
+	font 2 TTF_SetFontOutline
 	draw
 
 	SDLquit
