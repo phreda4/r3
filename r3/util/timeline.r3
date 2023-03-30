@@ -217,9 +217,9 @@
 	b@+ b@+ swap | box in 2do for animation
 	r> $ffffff and | color
 	b@+ >r | font
-	b@+ 32 << or 
+	b@+ 24 << or 
 	r>
-	textboxs | $vh str box colorfb font --
+	textboxb | $vh str box colorfb font --
 	;
 	
 ::+tboxb | colorb font "" boz color -- ; HVRRGGBB00
@@ -227,6 +227,24 @@
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a!+ 
 	swapcolor a! ;
+	
+|-------------------- TEXT BOX FILL BACK
+:drawtboxo
+	>b b@+ 1 and? ( drop ; )
+	8 >> dup >r 24 >>
+	b@+ b@+ swap | box in 2do for animation
+	r> $ffffff and | color
+	b@+ >r | font
+	b@+ 24 << or 
+	r>
+	textboxo | $vh str box colorfb font --
+	;
+	
+::+tboxo | colorb font "" ooboz color -- ; HVRRGGBB00
+	'drawtboxo 'screen p!+ >a
+	swapcolor
+	8 << 1 or a!+ a!+ a!+ a!+ 
+	swapcolor a! ;	
 	
 |-------------------- SOUND
 :evt.play | adr --

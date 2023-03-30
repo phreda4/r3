@@ -44,16 +44,47 @@
 
 #font
 #ink
+#inko
 #htotal
 #x #y
 #bbtext [ 0 0 0 0 ]
+#outline 2
+#dddest [ 2 2 1 1 ]
 
-:bbtextb | "text" ---
+:bbtextb | "text" --
 	font swap ink TTF_RenderUTF8_Blended | surface
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'bbtext SDL_RenderCopy	
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
+	
+:bbtexts | "text" ---
+	font swap ink inko TTF_RenderUTF8_shaded | surface
+	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
+	SDLrenderer over 0 'bbtext SDL_RenderCopy	
+	SDL_DestroyTexture
+	SDL_FreeSurface ;	
+
+:bbtextbo | "text" --
+	font outline TTF_SetFontOutline
+	font over inko TTF_RenderUTF8_Blended >r | surface
+	
+	font 0 TTF_SetFontOutline
+	font swap ink TTF_RenderUTF8_Blended | surface
+	
+	dup 1 SDL_SetSurfaceBlendMode 
+|	'bbtext 8 + @ 'dddest 8 + !
+	dup 0 r@ 'dddest SDL_BlitSurface
+	SDL_FreeSurface
+	r>
+	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
+	dddest 1 << 'bbtext 8 + +!
+	SDLrenderer over 0 'bbtext SDL_RenderCopy	
+	dddest 1 << neg 'bbtext 8 + +!
+	SDL_DestroyTexture
+	SDL_FreeSurface ;
+
+#vbbtext 'bbtextb
 	
 :bbrect
 	SDLrenderer 'boxt SDL_RenderDrawRect ;
@@ -65,7 +96,7 @@
 	'font ! bswap32 'ink !
 	swap 'bbtext d!+ d!+
 	font pick2 rot dup 4 + TTF_SizeUTF8 drop
-	bbtextb ;
+	vbbtext ex ;
 	
 #lastsp
 
@@ -104,7 +135,7 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x 'bbtext d!+ d!+ !
-		@+ bbtextb
+		@+ vbbtext ex
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 		
@@ -113,7 +144,7 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
-		@+ bbtextb
+		@+ vbbtext ex
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 		
@@ -122,12 +153,15 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
-		@+ bbtextb
+		@+ vbbtext ex
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
-		
-::textbox | $vh str box color font --
-	'font ! bswap32 'ink !
+	
+| color OOc1c1c1c2c2c2	
+::textbox. | $vh str box color font --
+	'font ! 
+	dup $ffffff and 'ink !
+	24 >> $ffffffff and 'inko !
 	'boxt 64box
 	splitlines	
 	0 'htotal !
@@ -144,56 +178,19 @@
 	%100000 and? ( drop textr ; )
 	drop textl ;
 	
-|------------------------------------------------
-:bbtexts | "text" ---
-	font swap ink dup $ffffffff and swap 32 >> TTF_RenderUTF8_shaded | surface
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'bbtext SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
+::textbox | $vh str box color font --
+	'bbtextb 'vbbtext !
+	textbox. ;
 
+::textboxb | $vh str box col1col2 font --
+	'bbtexts 'vbbtext !
+	textbox. ;
 
-:textls
-	'boxt d@+ 'x ! d@ 'y +! 
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x 'bbtext d!+ d!+ !
-		@+ bbtexts
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
-		
-:textcs
-	'boxt d@+ 'x ! d@+ 'y +! d@ 1 >> 'x +! | x=center
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
-		@+ bbtexts
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
-		
-:textrs
-	'boxt d@+ 'x ! d@+ 'y +! d@ 'x +! | x=last
-	'boxlines >a	
-	'lines ( lines> <?
-		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
-		@+ bbtexts
-		a> 8 - @ 32 >> 'y +!
-		) drop ;
-
-::textboxs | $vh str box color font --
-	'font ! bswap32 'ink !
-	'boxt 64box
-	splitlines	
-	0 'htotal !
-	'boxlines >a
-	'lines ( lines> <?
-		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
-		a> 4 + d@ 'htotal +!
-		8 a+ ) drop
+::textboxo | $vh str box oocol1col2 font --
+	over 48 >> 
+	dup dup 32 << or 'dddest !
+	'outline !
+	swap $ff000000000000 or swap
+	'bbtextbo 'vbbtext !
+	textbox. ;
 	
-	0 'y !
-	%01 and? ( 'boxt 12 + d@ htotal - 1 >> 'y ! )
-	%10 and? ( 'boxt 12 + d@ htotal - 'y ! )
-	%010000 and? ( drop textcs ; )
-	%100000 and? ( drop textrs ; )
-	drop textls ;

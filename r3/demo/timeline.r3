@@ -16,7 +16,11 @@
 #imagen | an imge
 #letras
 #font
+#font1
 #snd_shoot
+
+#texto "El veloz murciélago hindú comía feliz cardillo y kiwi. 
+La cigüeña tocaba el saxofón detrás del palenque de paja"
 
 |-------------------- asorted animations
 :example1 | --
@@ -82,9 +86,21 @@
 	0.8 0.2 0.1 0.1 xywh%64
 	'Quad_In 1.0
 	1.0 +fx.box
+
+	|........................
+
+|	$08ff0000 font1 'texto 0.07 0.35 0.54 0.1 xywh%64 $ffffff +tboxb 
+	font1 'texto 0.07 0.1 0.54 0.1 xywh%64 $ffffff +tbox
+	0.0 +fx.on	
+
+	$7fff0000 font1 'texto 0.47 0.3 0.54 0.1 xywh%64 $11ffffff +tboxb 
+	0.0 +fx.on	
+
+	$02ffffff font1 'texto 0.1 0.5 0.54 0.1 xywh%64 $110000ff +tboxo
+	0.0 +fx.on	
 	
 	|........................
-	snd_shoot 4.0 +sound
+|	snd_shoot 4.0 +sound
 
 	|........................
 	10.0 +restart
@@ -116,6 +132,7 @@
 	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !	
 	SDLrenderer "media/img/lolomario.png" loadimg 'imagen !
 	"media/ttf/roboto-bold.ttf" 32 TTF_OpenFont 'font !	
+	"media/ttf/roboto-bold.ttf" 16 TTF_OpenFont 'font1 !	
 	SDLrenderer font 
 	"Hola a todos los que vinieron por los pochoclos que se regalan en la puerta"
 	$ffffff0000ff00 RenderTexture 'letras !
