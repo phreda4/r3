@@ -178,14 +178,17 @@
 	%100000 and? ( drop textr ; )
 	drop textl ;
 	
+|--- text blended with transparency	
 ::textbox | $vh str box color font --
 	'bbtextb 'vbbtext !
 	textbox. ;
 
-::textboxb | $vh str box col1col2 font --
+|--- text in box
+::textboxb | $vh str box aacol1col2 font --
 	'bbtexts 'vbbtext !
 	textbox. ;
-
+	
+|--- text outline
 ::textboxo | $vh str box oocol1col2 font --
 	over 48 >> 
 	dup dup 32 << or 'dddest !

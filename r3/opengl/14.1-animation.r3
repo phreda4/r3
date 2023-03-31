@@ -7,7 +7,7 @@
 ^r3/lib/3dgl.r3
 
 ^r3/util/loadobj.r3
-^r3/opengl/glgui.r3
+^r3/opengl/glfgui.r3
 
 #GL_DEPTH_TEST $0B71
 #GL_LESS $0201

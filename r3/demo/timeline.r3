@@ -96,7 +96,7 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 	$7fff0000 font1 'texto 0.47 0.3 0.54 0.1 xywh%64 $11ffffff +tboxb 
 	0.0 +fx.on	
 
-	$02ffffff font1 'texto 0.1 0.5 0.54 0.1 xywh%64 $110000ff +tboxo
+	$02ffffff font 'texto 0.1 0.5 0.54 0.1 xywh%64 $110000ff +tboxo
 	0.0 +fx.on	
 	
 	|........................

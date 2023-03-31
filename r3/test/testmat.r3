@@ -68,11 +68,11 @@
 #pTo 0.0 0.0 0.0
 #pUp 1.0 0 0
 
-#v1 2.0 0.0 1.0
+#v1 1.0 1.0 0.0
 #v2 1.0 -1.0 3.0
 #s 0 0 0
-:
-.cls
+
+:test1
 "mat" .println
 matini .matprint .cr
 'pEye 'pTo 'pUp mlookat | eye to up --
@@ -110,6 +110,43 @@ matinv
 |.cr
 |25.0 sqrt. "%f" .println .cr
 |25 sqrt "%d" .println .cr
-.input
+;
 
+:col | mat -- mat'
+	dup @ a@+ *.
+	over 4 3 << + @ a@+ *. +
+	over 8 3 << + @ a@+ *. +
+	over 12 3 << + @ a@+ *. +
+	b!+ -32 a+
+	8 + ;
+
+:matvec* | 'mat 'vec 'vec --
+	>b >a
+	col	col col
+	drop ;
+
+#v1 1.0 1.0 0
+#v2 1.0 0.0 1.0
+#vr 0 0 0
+
+
+:
+.cls
+matini
+"mat" .println
+.matprint .cr
+
+'v1 .vecprint  .cr
+0.25 0.3 0.1  mrot
+|0.1 0.32 0.11 mpos
+mat> 'v1 'vr matvec*
+'vr .vecprint  .cr
+.cr
+'v2 'vr v3=
+'v2 .vecprint  .cr
+matinv
+mat> 'v2 'vr matvec*
+'vr .vecprint  .cr
+
+.input
 ;

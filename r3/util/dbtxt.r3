@@ -17,7 +17,7 @@
 :FNAME | adr -- adrname
 	44 + ;
 
-:getnfilename | n "path" -- filename/0
+::getnfilename | n "path" -- filename/0
 	"%s/*" sprint
 	ffirst drop fnext drop
 	( fnext 0? ( nip ; ) swap 1? 1 - nip ) drop

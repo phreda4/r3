@@ -119,8 +119,6 @@
 
 | http://rodolphe-vaillant.fr/entry/77/skeletal-animation-forward-kinematic
 :initshaders
-|	"r3/opengl/shader/anim_model.fs" "r3/opengl/shader/anim_model.vs"
-
 	"r3/opengl/shader/forward.sha" loadShader 'shaderd !
 	"r3/opengl/shader/fboshader.sha" loadShader 'shaderfb !
 	
@@ -299,7 +297,7 @@
 		bonesmat> midf
 |		bonesmat> mcpyf
 		64 'bonesmat> +!	
-		) drop 	
+		) drop ;
 		
 :matbonesbase | fill animation 
 	here 'bonesmat> !
@@ -548,10 +546,10 @@
 #anima
 
 :animation
-|	anima 0? ( drop 
-	matbonesid 
-|	; ) drop
-|	matbonesbase
+|	matbonesid 
+
+	matbonesbase
+
 |	framenow calcbones 
 |	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !	
 	;
