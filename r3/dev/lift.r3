@@ -1,4 +1,4 @@
-| PETER JACKAKI lift challenge forth2020 
+| Peter Jakacki lift challenge forth2020 
 | simple state machine. no up-dn diference
 | PHREDA 2023
 
