@@ -624,10 +624,9 @@
 	
 |------------------------------
 :main
-	gui
-	'dnlook 'movelook onDnMove
 	$4100 glClear | color+depth
 	glgui	
+	'dnlook 'movelook onDnMove
 	objinfo
 	renderobj
 	SDL_windows SDL_GL_SwapWindow

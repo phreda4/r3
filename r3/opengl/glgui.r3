@@ -65,13 +65,6 @@
 	scrx 'curx !
 	pady 1 << boxh + 'cury +! ;
 	
-	
-::glTextC | "" --
-	GlTextW 16 >> boxw swap - 1 >> curx + padx +
-	boxh glFontSize 16 >> - 2 >> cury + pady + | why not work 2/?? ( 1 >> )
-	glat
-	glText ;
-
 |----------------------	
 ::gllabel | "" --
 	guicolortex glcolor
@@ -84,6 +77,13 @@
 ::gllabelC | "" --
 	guicolortex glcolor
 	GlTextW 16 >> boxw swap - 1 >> curx + padx +
+	boxh glFontSize 16 >> - 2 >> cury + pady + 
+	glat
+	glText ;
+
+::gllabelR | "" --
+	guicolortex glcolor
+	GlTextW 16 >> boxw swap - curx + padx +
 	boxh glFontSize 16 >> - 2 >> cury + pady + 
 	glat
 	glText ;

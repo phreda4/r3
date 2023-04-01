@@ -546,9 +546,9 @@
 #anima
 
 :animation
-|	matbonesid 
+	matbonesid 
 
-	matbonesbase
+|	matbonesbase
 
 |	framenow calcbones 
 |	framenow 1 + iqm.nroframes >=? ( 0 nip ) 'framenow !	

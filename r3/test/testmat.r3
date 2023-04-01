@@ -119,7 +119,6 @@ matinv
 	over 12 3 << + @ a@+ *. +
 	b!+ -32 a+
 	8 + ;
-
 :matvec* | 'mat 'vec 'vec --
 	>b >a
 	col	col col
@@ -130,6 +129,7 @@ matinv
 #vr 0 0 0
 
 
+
 :
 .cls
 matini
@@ -138,15 +138,27 @@ matini
 
 'v1 .vecprint  .cr
 0.25 0.3 0.1  mrot
-|0.1 0.32 0.11 mpos
+0.1 0.32 0.11 mpos
+.cr
+.matprint .cr
+.cr
+
 mat> 'v1 'vr matvec*
 'vr .vecprint  .cr
 .cr
 'v2 'vr v3=
-'v2 .vecprint  .cr
+|'v2 .vecprint  
+.cr
 matinv
+|1.0 mat> 120 + !
+.matprint .cr
 mat> 'v2 'vr matvec*
-'vr .vecprint  .cr
+'vr .vecprint  .cr .cr
+
+"(-0.249946, -0.587559, 0.769420, -0.000000), 
+(0.951263, -0.000043, 0.308980, -0.000000), 
+(-0.181583, 0.809087, 0.558973, -0.000000), 
+(-0.259383, -0.030208, -0.237139, 1.000000))" .println
 
 .input
 ;
