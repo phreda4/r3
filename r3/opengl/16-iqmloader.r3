@@ -167,7 +167,6 @@
 |------------------------
 :loadt | default string pre -- fl
 	'filepath "%s/%s%s" sprint 
-|	dup .println
 	dup filexist 0? ( 2drop ; ) drop
 	nip glImgTex ;
 		
@@ -209,9 +208,9 @@
 			d@+ fp2f a!+ 
 			swap ) drop 
 		matini
-		
+
+		'rotat matqua 		
 		'trans @+ swap @+ swap @ mtran		
-		'rotat matqua 
 |		'scale @+ swap @+ swap @ mscale
 		|matinv
 		
@@ -707,9 +706,9 @@
 	|.................
 	"iqm loader" 800 600 SDLinitGL
 
-	"media/dae/iqm/mrfixit.iqm" iqmload	
-|	"media/dae/raph/raph.iqm" iqmload	
-|	"media/dae/cube.iqm" iqmload	
+|	"media/dae/iqm/mrfixit.iqm" iqmload	
+	"media/dae/iqm/Sparrow.iqm" iqmload	
+	|"media/dae/cube.iqm" iqmload	
 
 	glimmgui
 	initvec

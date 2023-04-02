@@ -134,7 +134,7 @@
 	10 60 80 36 glwin
 	cntfloors ( 1? 	
 		100 glwidth
-		dup "floor %d" sprint glLabel gl>>
+		dup "floor %d " sprint glLabelR gl>>
 		60 glwidth
 		1 $040404007f00 checkbtn 
 		[ dup pushup ; ] "up" sprint gltbtn 
