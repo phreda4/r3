@@ -706,8 +706,8 @@
 	|.................
 	"iqm loader" 800 600 SDLinitGL
 
-|	"media/dae/iqm/mrfixit.iqm" iqmload	
-	"media/dae/iqm/Sparrow.iqm" iqmload	
+	"media/dae/iqm/mrfixit.iqm" iqmload	
+|	"media/dae/iqm/Sparrow.iqm" iqmload	
 	|"media/dae/cube.iqm" iqmload	
 
 	glimmgui
