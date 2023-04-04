@@ -182,21 +182,21 @@
 	;
 
 |----------------------	
-:loadssheet | w h file -- ss
+::loadssheet | w h file -- ss
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
 	2dup 32 << or a!+	| wi hi
-	1.0 pick2 dx */ 'dx !
+	1.0	pick2 dx */ 'dx !
 	1.0 over dy */ 'dy ! 
 	swap | h w
 	0 ( 1.0 <?
 		0 ( 1.0 <?
 			dup pick2 over dx + over dy + | x1 y1 x2 y2
-			$1ffff and 47 <<
-			swap $1ffff and 31 << or
-			swap $1ffff and 15 << or
-			swap $1ffff and 1 >> or
+			$1fffe and 47 << 
+			swap $1fffe and 31 << or
+			swap $1fffe and 15 << or
+			swap $1fffe and 1 >> or
 			a!+
 			dx + ) drop
 		dy + ) drop
@@ -205,10 +205,10 @@
 
 :settile | n adr -- adr
 	swap 3 << 16 + over +
-	@ dup 1 << $1ffff and f2fp | x1
-	swap dup 15 >> $1ffff and f2fp 
-	swap dup 31 >> $1ffff and f2fp 
-	swap 47 >> $1ffff and f2fp 
+	@ dup 1 << $1fffe and f2fp | x1
+	swap dup 15 >> $1fffe and f2fp 
+	swap dup 31 >> $1fffe and f2fp 
+	swap 47 >> $1fffe and f2fp 
 	'vert >a
 	12 a+ pick3 da!+ pick2 da!+
 	12 a+ over da!+ pick2 da!+
@@ -216,14 +216,14 @@
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
 	
-:ssprite | x y n ssprite --
+::ssprite | x y n ssprite --
 	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
 	settile >r 
 	fillvertxy
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;
 
-:sspriter | x y ang n ssprite --
+::sspriter | x y ang n ssprite --
 	dup 8 + d@+ 'xm ! d@ 'ym !
 	settile >r 
 	sincos 'dx ! 'dy !
