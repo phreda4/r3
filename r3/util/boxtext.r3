@@ -197,3 +197,16 @@
 	'bbtextbo 'vbbtext !
 	textbox. ;
 	
+|--- calculate size
+::textboxh | $vh str box col... font -- htotal
+	'font ! 
+	drop	
+	'boxt 64box
+	splitlines	
+	0 'htotal !
+	'boxlines >a
+	'lines ( lines> <?
+		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
+		a> 4 + d@ 'htotal +!
+		8 a+ ) drop
+	htotal ;
