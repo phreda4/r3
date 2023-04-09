@@ -35,6 +35,21 @@
 #sys-SDLNet_CheckSockets
 #sys-SDLNet_FreeSocketSet
 
+    |Uint32 host;            /* 32-bit IPv4 host address */
+    |Uint16 port;            /* 16-bit protocol port */
+|} IPaddress;
+
+|    int channel;        /* The src/dst channel of the packet */
+|    Uint8 *data;        /* The packet data */
+|    int len;            /* The length of the packet data */
+|    int maxlen;         /* The size of the data buffer */
+|    int status;         /* packet status after sending */
+|   IPaddress address;  /* The source/dest address of an incoming/outgoing packet */
+|} UDPpacket;
+
+|    int ready;
+|} *SDLNet_GenericSocket;
+
 
 ::SDLNet_Init sys-SDLNet_Init sys0 drop ;
 ::SDLNet_Quit sys-SDLNet_Quit sys0 drop ; 
@@ -85,7 +100,7 @@
 	dup "SDLNet_TCP_Accept" getproc 'sys-SDLNet_TCP_Accept !
 	dup "SDLNet_TCP_GetPeerAddress" getproc 'sys-SDLNet_TCP_GetPeerAddress !
 	dup "SDLNet_TCP_Send" getproc 'sys-SDLNet_TCP_Send !
-	dup "SDLNet_TCP_Recv" getproc 'sys-TTF_RenderText_Shaded !
+	dup "SDLNet_TCP_Recv" getproc 'sys-SDLNet_TCP_Recv !
 	dup "SDLNet_TCP_Close" getproc 'sys-SDLNet_TCP_Close !
 	dup "SDLNet_AllocPacket" getproc 'sys-SDLNet_AllocPacket !
 	dup "SDLNet_ResizePacket" getproc 'sys-SDLNet_ResizePacket !
