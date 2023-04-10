@@ -4,20 +4,23 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2net.r3
 ^r3/util/arr16.r3
+^r3/lib/rand.r3
 
-
-#GAME_PACKETSIZE 256	
-#GAME_PORT 7777
+#objs 0 0
 
 #sprj
 #spre
+#xvp #yvp
 
 |-------------------------------------------	
+#GAME_PACKETSIZE 256	
+#GAME_PORT 7777
+#server "localhost" |"220.233.28.6";
+
 #packets 
 #serverIP
 #myIP
 
-#server "localhost" |"220.233.28.6";
 #tcpsock
 #udpsock
 #socketset
@@ -39,13 +42,10 @@
 	2 SDLNet_AllocSocketSet 
 	0? ( "Couldn't create socket set" .println drop ; ) 
 	'socketset !
-	socketset tcpsock SDLNet_AddSocket
-	socketset udpsock SDLNet_AddSocket
+	socketset tcpsock SDLNet_AddSocket drop
+	socketset udpsock SDLNet_AddSocket drop
 	;
 
-:SendTCP | "" --
-	tcpsock swap count SDLNet_TCP_Send
-	;
 	
 :netclient
 	SDLNet_Init
@@ -59,9 +59,16 @@
 	tryPorts	
 	allocateSocketSet
 	udpsock -1 SDLNet_UDP_GetPeerAddress 'myip !
-	myip "myip%h" .println
+	myip "myip:%h" .println
 	
-	"Hola" SendTCP 
+|	"Hola" SendTCP 
+	'data >a
+	33 da!+
+	myip da!+
+	"hola" d@ da!+
+	0 da!+
+	
+	tcpsock 'data 512 SDLNet_TCP_Send
 	;
 
 |	if ( serverIP.host == INADDR_NONE ) {
@@ -86,66 +93,107 @@
 :HandleClient
 	udpsock 'packets SDLNet_UDP_Recv drop
 	"UDP Packet incoming" .println
-	'packets .println
+|	'packets .println
+	;
+
+#packet
+|    int channel;        /* The src/dst channel of the packet */ 0
+|    Uint8 *data;        /* The packet data */					8
+|    int len;            /* The length of the packet data */	12
+|    int maxlen;         /* The size of the data buffer */		16
+|    int status;         /* packet status after sending */		20
+|   IPaddress address;  /* The source/dest address of an incoming/outgoing packet */ 24
+|} UDPpacket;
+    |Uint32 host;            /* 32-bit IPv4 host address */	24
+    |Uint16 port;            /* 16-bit protocol port */		28
+|} IPaddress;
+
+:send2server
+	512 SDLNet_AllocPacket 'packet !
+
+	'serverIP d@ packet 24 + d!
+	'serverIP 4 + w@ packet 28 + w!
+	
+	10 packet 12 + d!
+	"coso" d@ packet 8 + d@ !+ 
+	udpsock -1 packet SDLNet_UDP_Send drop
+	
+	packet SDLNet_FreePacket
 	;
 
 :HandleNet	
-	socketset 0 SDLNet_CheckSockets
+	socketset 0 SDLNet_CheckSockets 0 <=? ( drop ; ) drop
 	tcpsock 1? ( HandleServer ) drop
 	udpsock 1? ( HandleClient ) drop
 	;
 	
 |-------------------------------------------
-#fx 0 0
-
-#xvp #yvp	| viewport
-
-#xp 30.0 #yp 30.0	| pos player
-#vxp 0 #vyp 0		| vel player
-
-#np 0
-
-:viewport
-	xp int. sw 1 >> - 'xvp !
-	yp int. sh 1 >> - 'yvp !
+:randxy |  -- x y
+	800.0 randmax 
+	800.0 randmax 
 	;
 	
+:ocoso	
+	>a a@ dup 0.1 + a!+ 
+	16 >> $3 and sprj 
+	16 a+
+	a@+ int. xvp -
+	a@+ int. yvp - 
+	2swap
+	0 2.0 
+	2swap
+	sspritez
+	;
+	
+:+coso | x y --
+	'ocoso 'objs p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! 
+	;
 
-|--------------------------------
+|-------------------------------------------
 #btnpad
+#face
 
-:panim | -- nanim	
-	msec 5 >> $3 and ;
+:xymove | d --
+	a@ + a! ;
 
-:dirv	
-	-? ( 1 2 << ; ) 2 2 << ;
-:xmove
-	
-	dirv panim + 'np !
-	'xp +!
+:facebtnpad | 0..3 -- n
+	btnpad 0? ( swap ) drop
+	face +
 	;
-	
-:dirh
-	-? ( 3 2 << ; ) 0 ;
-:ymove
-	dirh panim + 'np !
-	'yp +!
+
+:viewport | x y -- 
+	over sw 1 >> - 'xvp !
+	dup sh 1 >> - 'yvp !
 	;
 	
 :player	
-	xp int. xvp -
-	yp int. yvp -
-	0 2.0 
-	np sprj 
-	sspritez
-
+	dup >a
 	btnpad
-	%1000 and? ( -1.0 ymove  )
-	%100 and? ( 1.0 ymove  )
-	%10 and? ( -1.0 xmove )
-	%1 and? ( 1.0 xmove )
-	drop
+	24 a+
+	%10 and? ( -1.0 xymove 4 'face ! )
+	%1 and? ( 1.0 xymove 8 'face ! )
+	8 a+
+	%1000 and? ( -1.0 xymove 12 'face ! )
+	%100 and? ( 1.0 xymove 0 'face ! )
+	drop	
+
+	>a a@ dup 0.1 + a!+ 
+	16 >> $3 and facebtnpad
+	sprj 
+	16 a+
+	a@+ int. 
+	a@+ int. 
+	viewport
+	swap xvp -
+	swap yvp -
+	2swap
+	0 2.0 
+	2swap
+	sspritez
+	;
 	
+:+player | x y --
+	'player 'objs p!+ >a 0 a!+ 0 a!+ 0 a!+ swap a!+ a! 
 	;
 	
 :teclado
@@ -159,28 +207,32 @@
 	>dn< =? ( btnpad %100 not and 'btnpad ! )
 	>le< =? ( btnpad %10 not and 'btnpad ! )
 	>ri< =? ( btnpad %1 not and 'btnpad ! )	
+	
+	<f1> =? ( randxy +coso ) 
+	<f2> =? ( send2server )
 	drop 
 	;
 
 
 :jugando
 	$666666 SDLcls
-	|viewport
-	player
-	
+	'objs p.drawo
 	SDLredraw
+	
 	HandleNet
 	teclado 
+	5 'objs p.sort	
 	;
 	
 |-------------------------------------------
 :main
 	"r3sdl" 800 600 SDLinit
 	netclient
-
 	17 26 "media\img\scientist.png" loadssheet 'sprj !
+
+	100 'objs p.ini
+	30.0 30.0 +player
 	
-	viewport
 	'jugando SDLshow
 	SDLquit ;	
 	

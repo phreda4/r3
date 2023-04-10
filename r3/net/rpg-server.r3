@@ -20,8 +20,15 @@
 #serverIP
 #socketset
 #servsock
+#udpSocket
+#udpPacket
 
-:initChannels
+:initNET
+	SDLNet_Init
+
+	GAME_PORT SDLNet_UDP_Open 'udpSocket !
+	512 SDLNet_AllocPacket 'udpPacket !
+	
 	0 'p.last !
 	'p.a 0 GAME_MAXPEOPLE fill
 	'p.s 0 GAME_MAXPEOPLE fill
@@ -37,7 +44,7 @@
 	0? ( "Error tcp open" .println )
 	'servsock !
 	
-	socketset servsock SDLNet_AddSocket
+	socketset servsock SDLNet_AddSocket drop
 	;
 
 #newsock
@@ -51,18 +58,37 @@
 	"new client" .println
 |	if ( which == GAME_MAXPEOPLE ) { findInactivePersonSlot(which); }
 |	if ( which == GAME_MAXPEOPLE ) { roomFull(newsock); } else { addInactiveSocket(which, newsock); }
+
+	newsock p.last 3 << 'p.s + !
+	newsock SDLNet_TCP_GetPeerAddress p.last 3 << 'p.p + !
+|     people[which].sock = newsock;
+|     people[which].peer = *SDLNet_TCP_GetPeerAddress(newsock);
+	socketset newsock SDLNet_AddSocket drop
+	1 'p.last +!
+	
+	0 ( p.last <?
+		dup 3 << 'p.p + @ "%h" .println
+		1 + ) drop
 	;
 
 #data * 512
-:HandleClient | n sock -- n
 
+:newclient
+	;
+	
+:HandleClient | n sock -- n
 	'data 512 SDLNet_TCP_Recv
 	-? ( drop 
 |		notifyAllConnectionClosed(data, which);
 |		deleteConnection(which);
+		"error" .println
 		; ) drop
 	"Activating socket" .println
-	'data .println
+	'data 8 + .println
+	'data d@
+	33 =? ( newclient )
+	drop
+	
 |	switch (data[0]) {
 |		case GAME_HELLO: {
 |				memcpy(&people[which].peer.port, &data[GAME_HELLO_PORT], 2);
@@ -86,19 +112,18 @@
 	
 :loop
 |"ch" .println
-	socketset -1 SDLNet_CheckSockets
+	socketset 0 SDLNet_CheckSockets 0 <=? ( drop ; ) drop
 
 	servsock 1? ( HandleServer ) drop
 	0 ( GAME_MAXPEOPLE <?
-		dup 3 << 'p.s + @ 1? ( over HandleClient ) drop
+		dup 3 << 'p.s + @ 1? ( dup HandleClient ) drop
 		1 + ) drop
 	;
 	
 : |<<<<<<<< BOOT
 .cls
 "RPG Server" .println
-SDLNet_Init
-initChannels
+initNET
 ( inkey $1B1001 <>? drop
 	loop
 	) drop
