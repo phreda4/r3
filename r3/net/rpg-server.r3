@@ -23,10 +23,18 @@
 #udpSocket
 #udpPacket
 
+:.ip | nro
+	dup 24 >> $ff and swap
+	dup 16 >> $ff and swap
+	dup 8  >> $ff and swap
+	$ff and "%d.%d.%d.%d" .println
+	;
+
 :initNET
 	SDLNet_Init
 
 	GAME_PORT SDLNet_UDP_Open 'udpSocket !
+	
 	512 SDLNet_AllocPacket 'udpPacket !
 	
 	0 'p.last !
@@ -38,7 +46,8 @@
 	'socketset ! 
 	
 	'serverIP 0 GAME_PORT SDLNet_ResolveHost
-	serverIP "Server IP: %h" .println
+	serverIP .ip
+|	"Server IP: %h" .println
 	
 	'serverIP SDLNet_TCP_Open 
 	0? ( "Error tcp open" .println )
@@ -111,13 +120,51 @@
 	;
 	
 :loop
-|"ch" .println
-	socketset 0 SDLNet_CheckSockets 0 <=? ( drop ; ) drop
+	socketset 0 SDLNet_CheckSockets 0? ( drop ; ) | no in
+	-? ( r> drop ; ) | error
+	drop
 
 	servsock 1? ( HandleServer ) drop
 	0 ( GAME_MAXPEOPLE <?
 		dup 3 << 'p.s + @ 1? ( dup HandleClient ) drop
 		1 + ) drop
+	;
+	
+	
+:.packet | adr --
+	@+ "Chan:    %d" .println
+	@+ "Data:    %s" .println
+	d@+ "Len:     %d" .println
+	d@+ "MaxLen:  %d" .println
+	d@+ "status:  %d" .println
+	@ .ip
+	;
+
+#packet
+	
+:send2Client
+	serverIP .ip
+	512 SDLNet_AllocPacket 'packet !
+
+|	'serverIP d@ packet 28 + d!
+|	'serverIP 4 + w@ packet 32 + w!
+	
+	10 packet 16 + d!
+	"hola co" @ packet 8 + @ ! 
+	
+|	packet .packet
+	
+	udpSocket -1 packet SDLNet_UDP_Send drop
+	"send udp" .println
+	packet SDLNet_FreePacket
+	;	
+	
+:handleUDP
+	udpSocket udpPacket SDLNet_UDP_Recv 0? ( drop ; ) drop
+	"rev UDP" .println
+	udpPacket .packet
+
+|			sendOutUDPs((char *)udpPacket->data, udpPacket->channel);
 	;
 	
 : |<<<<<<<< BOOT
@@ -126,6 +173,7 @@
 initNET
 ( inkey $1B1001 <>? drop
 	loop
+	handleUDP
 	) drop
 SDLNet_Quit
 ;

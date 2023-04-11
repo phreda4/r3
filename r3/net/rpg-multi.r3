@@ -17,7 +17,6 @@
 #GAME_PORT 7777
 #server "localhost" |"220.233.28.6";
 
-#packets 
 #serverIP
 #myIP
 
@@ -25,7 +24,37 @@
 #udpsock
 #socketset
 
-#data 512
+#udpPacket
+#packets 
+#data * 512
+
+:.ip | nro --
+	"ip:" .print
+	dup 24 >> $ff and swap
+	dup 16 >> $ff and swap
+	dup 8  >> $ff and swap
+	$ff and "%d.%d.%d.%d" .println ;
+
+|    int channel;        /* The src/dst channel of the packet */ 0
+|    Uint8 *data;        /* The packet data */					8
+|    int len;            /* The length of the packet data */	16
+|    int maxlen;         /* The size of the data buffer */		20
+|    int status;         /* packet status after sending */		24
+|   IPaddress address;  /* The source/dest address of an incoming/outgoing packet */ 24
+|} UDPpacket;
+    |Uint32 host;            /* 32-bit IPv4 host address */	28
+    |Uint16 port;            /* 16-bit protocol port */		32
+|} IPaddress;
+
+:.packet | adr --
+	@+ "Chan:    %d" .println
+	@+ "Data:    %s" .println
+	d@+ "Len:     %d" .println
+	d@+ "MaxLen:  %d" .println
+	d@+ "status:  %d" .println
+	@ .ip
+	;
+
 
 |/* Try ports in the range {GAME_PORT - GAME_PORT+10} */
 :tryPorts
@@ -46,15 +75,19 @@
 	socketset udpsock SDLNet_AddSocket drop
 	;
 
-	
 :netclient
 	SDLNet_Init
+	
+	512 SDLNet_AllocPacket 'udpPacket !
+	
 	4 GAME_PACKETSIZE SDLNet_AllocPacketV 'packets !
 	
 	'server "Connecting to %s" .println
 	'serverIP 'server GAME_PORT SDLNet_ResolveHost
 	'serverIP SDLNet_TCP_Open 'tcpsock !
 	tcpsock .h .println
+	"server:" .print
+	serverIP .ip
 
 	tryPorts	
 	allocateSocketSet
@@ -68,7 +101,7 @@
 	"hola" d@ da!+
 	0 da!+
 	
-	tcpsock 'data 512 SDLNet_TCP_Send
+	tcpsock 'data 512 SDLNet_TCP_Send drop
 	;
 
 |	if ( serverIP.host == INADDR_NONE ) {
@@ -96,30 +129,20 @@
 |	'packets .println
 	;
 
-#packet
-|    int channel;        /* The src/dst channel of the packet */ 0
-|    Uint8 *data;        /* The packet data */					8
-|    int len;            /* The length of the packet data */	12
-|    int maxlen;         /* The size of the data buffer */		16
-|    int status;         /* packet status after sending */		20
-|   IPaddress address;  /* The source/dest address of an incoming/outgoing packet */ 24
-|} UDPpacket;
-    |Uint32 host;            /* 32-bit IPv4 host address */	24
-    |Uint16 port;            /* 16-bit protocol port */		28
-|} IPaddress;
-
+	
 :send2server
-	512 SDLNet_AllocPacket 'packet !
-
-	'serverIP d@ packet 24 + d!
-	'serverIP 4 + w@ packet 28 + w!
+	'serverIP d@ udpPacket 28 + d!
+	'serverIP 4 + w@ udpPacket 32 + w!
 	
-	10 packet 12 + d!
-	"coso" d@ packet 8 + d@ !+ 
-	udpsock -1 packet SDLNet_UDP_Send drop
+	10 udpPacket 16 + d!
+	"hola 22" @ udpPacket 8 + @ ! 
 	
-	packet SDLNet_FreePacket
+|	udppacket .packet
+	
+	udpsock -1 udpPacket SDLNet_UDP_Send drop
+	".send udp" .println
 	;
+
 
 :HandleNet	
 	socketset 0 SDLNet_CheckSockets 0 <=? ( drop ; ) drop
@@ -127,6 +150,10 @@
 	udpsock 1? ( HandleClient ) drop
 	;
 	
+:exitnet
+	udpPacket SDLNet_FreePacket
+	;
+		
 |-------------------------------------------
 :randxy |  -- x y
 	800.0 randmax 
