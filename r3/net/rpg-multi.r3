@@ -111,6 +111,7 @@
 |			cout<<"Connect failed\n";
 |			cout<<SDLNet_GetError()<<endl;
 #lenpack
+#idI
 
 :HandleServer
 	tcpsock 'data 512 SDLNet_TCP_Recv 
@@ -119,7 +120,9 @@
 	"TCP Packet incoming" .println
 	
 	|
-|	'data c@ | ADD DEL ID
+	'data c@ | ADD DEL ID
+	1 =? ( 'data 1 + @ 'idI ! )
+	drop
 	
 	;
 	
@@ -135,7 +138,7 @@
 	'serverIP 4 + w@ udpPacket 32 + w!
 	
 	10 udpPacket 16 + d!
-	"hola 22" @ udpPacket 8 + @ ! 
+	msec udpPacket 8 + @ ! 
 	
 |	udppacket .packet
 	

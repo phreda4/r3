@@ -231,7 +231,15 @@
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;
 
-::sspritez | x y ang zoom n ssprite --
+::sspritez | x y zoom n ssprite --
+	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
+	settile >r 
+	dup xm *. 'xm ! ym *. 'ym ! 
+	fillvertxy
+	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
+	;
+	
+::sspriterz | x y ang zoom n ssprite --
 	dup 8 + d@+ 'xm ! d@ 'ym !
 	settile >r 
 	dup xm *. 'xm ! ym *. 'ym ! 

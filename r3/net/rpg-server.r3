@@ -5,13 +5,10 @@
 #GAME_MAXPEOPLE	10
 #GAME_PORT	7777
 
-|	int active;
 |	TCPsocket sock;
 |	IPaddress peer;
-|	Uint8 name[256+1];
-| 8 16 24 32
-| active | socket | peer | name
-#p.a * 256
+|	Uint8 name;
+| socket | peer | name
 #p.s * 256
 #p.p * 256
 #p.n * 256
@@ -20,9 +17,11 @@
 #serverIP
 #socketset
 #servsock
+
 #udpSocket
 #udpPacket
 
+|---------------------
 :.ip | nro
 	dup 24 >> $ff and swap
 	dup 16 >> $ff and swap
@@ -30,6 +29,16 @@
 	$ff and "%d.%d.%d.%d" .println
 	;
 
+:.packet | adr --
+	@+ "Chan:    %d" .println
+	@+ "Data:    %s" .println
+	d@+ "Len:     %d" .println
+	d@+ "MaxLen:  %d" .println
+	d@+ "status:  %d" .println
+	@ .ip
+	;
+
+|---------------------
 :initNET
 	SDLNet_Init
 
@@ -38,7 +47,6 @@
 	512 SDLNet_AllocPacket 'udpPacket !
 	
 	0 'p.last !
-	'p.a 0 GAME_MAXPEOPLE fill
 	'p.s 0 GAME_MAXPEOPLE fill
 
 	GAME_MAXPEOPLE 1 + SDLNet_AllocSocketSet 
@@ -59,6 +67,26 @@
 #newsock
 #which
 
+:SendNew |(int about, int to)
+
+|	data[0] = GAME_ADD;
+|	data[GAME_ADD_SLOT] = about;
+|	memcpy(&data[GAME_ADD_HOST], &people[about].peer.host, 4);
+|	memcpy(&data[GAME_ADD_PORT], &people[about].peer.port, 2);
+|	data[GAME_ADD_NLEN] = n;
+|	memcpy(&data[GAME_ADD_NAME], people[about].name, n); //if more info, add it here on next line ie appearance/colour
+	SDLNet_TCP_Send |(people[to].sock, data, GAME_ADD_NAME+n);
+	;
+
+:SendID | which --
+|    data[0] = GAME_ID;
+|    data[1] = which;
+    SDLNet_TCP_Send |(people[which].sock,data,GAME_ID_LEN+1);
+;
+
+
+#data * 512
+
 :HandleServer | --
 	servsock SDLNet_TCP_Accept 
 	0? ( drop ; )
@@ -68,11 +96,19 @@
 |	if ( which == GAME_MAXPEOPLE ) { findInactivePersonSlot(which); }
 |	if ( which == GAME_MAXPEOPLE ) { roomFull(newsock); } else { addInactiveSocket(which, newsock); }
 
-	newsock p.last 3 << 'p.s + !
-	newsock SDLNet_TCP_GetPeerAddress p.last 3 << 'p.p + !
+	newsock p.last 3 << 'p.s + ! | socket
+	newsock SDLNet_TCP_GetPeerAddress p.last 3 << 'p.p + ! | peer adress
 |     people[which].sock = newsock;
 |     people[which].peer = *SDLNet_TCP_GetPeerAddress(newsock);
 	socketset newsock SDLNet_AddSocket drop
+	
+	1 'data c!
+	p.last 'data 1 + !
+	
+	newsock 'data 10 SDLNet_TCP_Send
+	|SendNew
+	|p.last SendID
+	
 	1 'p.last +!
 	
 	0 ( p.last <?
@@ -80,7 +116,6 @@
 		1 + ) drop
 	;
 
-#data * 512
 
 :newclient
 	;
@@ -119,7 +154,7 @@
 |				SendID(which);
 	;
 	
-:loop
+:handleTCP
 	socketset 0 SDLNet_CheckSockets 0? ( drop ; ) | no in
 	-? ( r> drop ; ) | error
 	drop
@@ -131,38 +166,27 @@
 	;
 	
 	
-:.packet | adr --
-	@+ "Chan:    %d" .println
-	@+ "Data:    %s" .println
-	d@+ "Len:     %d" .println
-	d@+ "MaxLen:  %d" .println
-	d@+ "status:  %d" .println
-	@ .ip
-	;
-
-#packet
 	
 :send2Client
-	serverIP .ip
-	512 SDLNet_AllocPacket 'packet !
 
 |	'serverIP d@ packet 28 + d!
 |	'serverIP 4 + w@ packet 32 + w!
 	
-	10 packet 16 + d!
-	"hola co" @ packet 8 + @ ! 
+	10 udppacket 16 + d!
+	"hola co" @ udppacket 8 + @ ! 
 	
 |	packet .packet
 	
-	udpSocket -1 packet SDLNet_UDP_Send drop
+	udpSocket -1 udppacket SDLNet_UDP_Send drop
 	"send udp" .println
-	packet SDLNet_FreePacket
 	;	
 	
 :handleUDP
 	udpSocket udpPacket SDLNet_UDP_Recv 0? ( drop ; ) drop
 	"rev UDP" .println
-	udpPacket .packet
+	
+|	udpPacket .packet
+	udpPacket 8 + @ @ "%h" .println
 
 |			sendOutUDPs((char *)udpPacket->data, udpPacket->channel);
 	;
@@ -172,7 +196,7 @@
 "RPG Server" .println
 initNET
 ( inkey $1B1001 <>? drop
-	loop
+	handleTCP
 	handleUDP
 	) drop
 SDLNet_Quit
