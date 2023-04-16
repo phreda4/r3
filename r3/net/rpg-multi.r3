@@ -12,6 +12,9 @@
 #spre
 #xvp #yvp
 
+|------- estado de juego
+
+
 |-------------------------------------------	
 #GAME_PACKETSIZE 256	
 #GAME_PORT 7777
@@ -77,9 +80,7 @@
 
 :netclient
 	SDLNet_Init
-	
 	512 SDLNet_AllocPacket 'udpPacket !
-	
 	4 GAME_PACKETSIZE SDLNet_AllocPacketV 'packets !
 	
 	'server "Connecting to %s" .println
@@ -102,6 +103,7 @@
 	0 da!+
 	
 	tcpsock 'data 512 SDLNet_TCP_Send drop
+	"send" .println
 	;
 
 |	if ( serverIP.host == INADDR_NONE ) {
@@ -147,13 +149,13 @@
 	;
 
 
-:HandleNet	
+:HandleNet
 	socketset 0 SDLNet_CheckSockets 0 <=? ( drop ; ) drop
 	tcpsock 1? ( HandleServer ) drop
 	udpsock 1? ( HandleClient ) drop
 	;
 	
-:exitnet
+:closeNET
 	udpPacket SDLNet_FreePacket
 	;
 		
@@ -219,7 +221,7 @@
 	2swap
 	0 2.0 
 	2swap
-	sspritez
+	sspriterz
 	;
 	
 :+player | x y --
@@ -262,8 +264,8 @@
 
 	100 'objs p.ini
 	30.0 30.0 +player
-	
 	'jugando SDLshow
+	closeNET
 	SDLquit ;	
 	
 : main ;

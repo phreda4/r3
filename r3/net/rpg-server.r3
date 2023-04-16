@@ -14,6 +14,9 @@
 #p.n * 256
 #p.last
 
+:]sock	3 << 'p.s + @ ;
+:sock!	3 << 'p.s + ! ;
+
 #serverIP
 #socketset
 #servsock
@@ -102,10 +105,11 @@
 |     people[which].peer = *SDLNet_TCP_GetPeerAddress(newsock);
 	socketset newsock SDLNet_AddSocket drop
 	
-	1 'data c!
-	p.last 'data 1 + !
+|	1 'data c!
+|	p.last 'data 1 + !
 	
-	newsock 'data 10 SDLNet_TCP_Send
+|	newsock 'data 10 SDLNet_TCP_Send
+
 	|SendNew
 	|p.last SendID
 	
@@ -120,12 +124,19 @@
 :newclient
 	;
 	
+:deleteConnection | n -- n
+	socketset over ]sock SDLNet_DelSocket drop
+	dup ]sock SDLNet_TCP_Close
+	0 over sock!
+	;
+	
 :HandleClient | n sock -- n
 	'data 512 SDLNet_TCP_Recv
-	-? ( drop 
+	dup "%d" .println
+	0 <=? ( drop 
 |		notifyAllConnectionClosed(data, which);
-|		deleteConnection(which);
-		"error" .println
+		deleteConnection
+|		"error" .println
 		; ) drop
 	"Activating socket" .println
 	'data 8 + .println
@@ -161,7 +172,7 @@
 
 	servsock 1? ( HandleServer ) drop
 	0 ( GAME_MAXPEOPLE <?
-		dup 3 << 'p.s + @ 1? ( dup HandleClient ) drop
+		dup ]sock 1? ( dup HandleClient ) drop
 		1 + ) drop
 	;
 	
@@ -190,6 +201,13 @@
 
 |			sendOutUDPs((char *)udpPacket->data, udpPacket->channel);
 	;
+
+:closeNET
+	servsock 1? ( dup SDLNet_TCP_Close ) drop
+	socketset 1? ( dup SDLNet_FreeSocketSet ) drop
+	udpPacket SDLNet_FreePacket
+	SDLNet_Quit
+	;
 	
 : |<<<<<<<< BOOT
 .cls
@@ -197,8 +215,8 @@
 initNET
 ( inkey $1B1001 <>? drop
 	handleTCP
-	handleUDP
+|	handleUDP
 	) drop
-SDLNet_Quit
+closeNET
 ;
 
