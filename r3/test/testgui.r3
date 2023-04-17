@@ -30,6 +30,15 @@
 :immbox
 	'boxh ! 'boxw ! ;
 	
+|----------------------	
+::imm>>
+	padx 1 << boxw + 'curx +! ;	
+::immdn
+	pady 1 << boxh + 'cury +! ;
+::imm<<dn
+	winx 'curx !
+	pady 1 << boxh + 'cury +! ;	
+	
 |--- place
 :plgui
 	curx padx + cury pady + boxw boxh guiBox ;
@@ -40,19 +49,19 @@
 	
 |--- label
 
-:immlabel
+::immlabel
 	immcolortex SDLColor
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
 	bat bprint ;
 	
-:immlabelc
+::immlabelc
 	immcolortex SDLColor
 	immfontsw boxw swap - 1 >> curx + padx +
 	boxh immfontsh - 1 >> cury + pady + 
 	bat	bprint ;
 
-:immlabelr
+::immlabelr
 	immcolortex SDLColor
 	immfontsw boxw swap - curx + padx +
 	boxh immfontsh - 1 >> cury + pady + 
@@ -88,10 +97,10 @@
 	
 :immwin | 'win -- 0/1
 	dup 8 + @+ winxy! @+ winwh! wintitle
-	curx padx + cury pady + boxw boxh guiBox
+	plgui
 	[ sdlx 'px ! sdly 'py ! ; ] 'movwin onDnMoveA
 	@ winhome
-	100 'boxw !
+	winw 1 >> 'boxw !
 	;		
 
 |--- widget	
@@ -101,6 +110,74 @@
 	plxywh SDLFRect
 	immlabelc
 	onClick ;	
+
+|----------------------
+:slideh | 0.0 1.0 'value --
+	sdlx curx padx + - boxw clamp0max 
+	2over swap - | Fw
+	boxw */ pick3 +
+	over ! ;
+	
+:slideshow | 0.0 1.0 'value --
+	$ff00007f SDLColor
+	curx padx + cury pady + boxw boxh SDLFRect
+	$ff3f3fff [ $ff7f7fff nip ; ] guiI SDLColor
+	dup @ pick3 - 
+	boxw 8 - pick4 pick4 swap - */ 
+	curx padx + 1 + +
+	cury pady + 2 + 
+	6 
+	boxh 4 - 
+	SDLFRect ;
+	
+::immSliderf | 0.0 1.0 'value --
+	plgui
+	'slideh dup onDnMoveA | 'dn 'move --	
+	slideshow
+	@ .f2 immLabelC
+	2drop ;
+
+::immSlideri | 0 255 'value --
+	plgui
+	'slideh dup onDnMoveA | 'dn 'move --	
+	slideshow	
+	@ .d immLabelC
+	2drop ;	
+
+|----------------------	
+:check | 'var ""
+	curx padx + cury pady + 14 boxh SDLFRect
+	over @ 1 nand? ( drop ; ) drop 
+	$ff7f7fff SDLColor 
+	curx padx + 4 + cury pady + 4 + 8 boxh 8 - SDLFRect
+	;
+	
+::immCheck | 'val "op1" -- ; v op1  v op2  x op3
+	plgui
+	$ff00007f [ $ff0000ff nip ; ] guiI SDLColor 
+	check
+	immcolortex SDLColor
+	20 'padx +!
+	immLabel
+	-20 'padx +!
+	[ dup @ 1 xor over ! ; ] onClick
+	drop ;
+	
+|----------------------
+#cntlist
+	
+:makelist | "" -- list
+	1 'cntlist !
+	here >a
+	a> swap
+	( c@+ 1?
+		$7c =? ( 1 'cntlist +! 0 nip )
+		ca!+ ) ca!+ 
+	a> 'here !
+	drop ;
+	
+:nlist | here n -- str
+	( 1? 1 - swap >>0 swap ) drop ;	
 	
 |--------------------------------
 
@@ -116,7 +193,9 @@
 	immgui
 	
 	'win1 immwin drop
-	'exit "salir" immbtn
+	immdn
+	'exit "salir" immbtn immdn
+	0 255 'cv immSlideri
 	
 	SDLredraw 
 	SDLkey

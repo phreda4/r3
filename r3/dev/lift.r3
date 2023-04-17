@@ -110,7 +110,7 @@
 |---  draw elevator	
 :drawelevator
 	$ff007f00 'guicolorbtn !
-	340 60 60 36 glwin
+	340 60 60 36 glnowin
 	cntfloors ( 1? 	
 		4 $00007f0000ff checkbtn
 		[ dup pushbtnf ; ]
@@ -131,7 +131,7 @@
 
 :drawfloors	
 	$ff0000ff 'guicolorbtn !
-	10 60 80 36 glwin
+	10 60 80 36 glnowin
 	cntfloors ( 1? 	
 		100 glwidth
 		dup "floor %d " sprint glLabelR gl>>
@@ -152,7 +152,7 @@
 	24.0 'glFontSize !
 	
 	$ffff0000 'guicolorbtn !
-	sw 70 - 10 60 40 glwin
+	sw 70 - 10 60 40 glnowin
 	'exit "Exit" gltbtn gldn
 	
 	drawfloors	
@@ -160,7 +160,7 @@
 	runelevator
 	
 	40.0 'glFontSize !
-	10 480 780 40 glWin
+	10 480 780 40 glnoWin
 	pelevator 16 >> "- %d -" sprint glLabelC gldn
 	'strelevator state n>>0 glLabelC gldn
 	

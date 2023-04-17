@@ -9,19 +9,7 @@
 
 | opengl Constant
 #GL_DEPTH_TEST $0B71
-#GL_LESS $0201
 #GL_CULL_FACE $0B44
-
-#GL_ARRAY_BUFFER $8892
-
-#GL_STATIC_DRAW $88E4
-#GL_FLOAT $1406
-#GL_UNSIGNED_SHORT $1403
-
-#GL_TEXTURE $1702
-#GL_TEXTURE0 $84C0
-#GL_TEXTURE_2D $0DE1
-
 #GL_BLEND $0BE2
 #GL_SRC_ALPHA $0302
 #GL_ONE_MINUS_SRC_ALPHA $0303
@@ -30,17 +18,19 @@
 ##guicolorbtn $ff0000ff
 ##guicolortex $ffffffff
 
+
+#winx 10 #winy 10
+#winh 10 #winh 10 
 	
 |--------------	GUI
 #padx 2 #pady 2
-#scrx 10 #scry 10 
+
 #curx 10 #cury 10
 #boxw 100 #boxh 20
-#winx 10 #winy 10
 
 ::glgui |
 	gui 
-	scrx 'curx ! scry 'cury !
+	winx 'curx ! winy 'cury !
 	
 	GL_DEPTH_TEST glDisable 
 	GL_CULL_FACE glDisable
@@ -48,10 +38,10 @@
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	;
 
-::glwin | xini yini w h --
+::glnowin | xini yini w h --
 	'boxh ! 'boxw !
-	dup 'scry ! 'cury ! 
-	dup 'scrx ! 'curx ! ;
+	dup 'winy ! 'cury ! 
+	dup 'winx ! 'curx ! ;
 
 ::glwidth
 	'boxw ! ;
@@ -62,7 +52,7 @@
 ::gldn
 	pady 1 << boxh + 'cury +! ;
 ::gl<<dn
-	scrx 'curx !
+	winx 'curx !
 	pady 1 << boxh + 'cury +! ;
 	
 |----------------------	
