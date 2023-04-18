@@ -125,7 +125,7 @@
 	curx padx + cury pady + 14 boxh frect
 	over @ 1 nand? ( drop ; ) drop 
 	$ff7f7fff glcolor 
-	curx padx + 4 + cury pady + 4 + 8 boxh 8 - frect
+	curx padx + 4 + cury pady + 4 + 6 boxh 8 - frect
 	;
 	
 ::glCheck | 'val "op1" -- ; v op1  v op2  x op3
