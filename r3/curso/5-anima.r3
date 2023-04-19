@@ -1,6 +1,6 @@
+| Animation example
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
-^r3/util/tilesheet.r3
 
 #tsguy	| dibujo
 #nroguy 12	| frame inicio
@@ -23,18 +23,18 @@
 	0.09 'sumguy +!		| velocidad de cambio de imagen
 	
 	nroguy sumguy + int.
-	maxguy >=? ( drop nroguy int. 0 'sumguy ! ) 
+	maxguy >? ( drop nroguy int. 0 'sumguy ! ) 
 	;
 	
 :teclado
 	SDLkey
 	>esc< =? ( exit )
 	
-	<a> =? ( -1.0 'xv ! 12 6 animacion )
-	>a< =? ( 0 'xv ! 0 13 animacion )
+	<a> =? ( -1.0 'xv ! 8 1 animacion )
+	>a< =? ( 0 'xv ! 0 0 animacion )
 	
-	<d> =? ( 1.0 'xv ! 6 0 animacion )
-	>d< =? ( 0 'xv ! 0 12 animacion )	
+	<d> =? ( 1.0 'xv ! 17 10 animacion )
+	>d< =? ( 0 'xv ! 0 9 animacion )	
 	
 	drop ;
 
@@ -42,10 +42,7 @@
 :demo
 	0 SDLcls
 	
-	nroimagen
-	tsguy
-	xp int. yp int. 
-	tsdraw 
+	xp int. yp int. 3.0 nroimagen tsguy sspritez	
 	
 	SDLredraw
 	
@@ -57,7 +54,7 @@
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	104 150 "media/img/guybrush.png" loadts 'tsguy !
+	16 32 "media/img/p2.png" ssload 'tsguy !
 	'demo SDLshow
 	SDLquit ;	
 	

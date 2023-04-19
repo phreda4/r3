@@ -123,6 +123,46 @@
 	SDLrenderer swap 2swap SDL_RenderCopy ;	
 
 |-------------------	
+::tsload | w h filename -- ts
+	loadimg
+	dup 0 0 'xm 'ym SDL_QueryTexture
+	here >a
+	a!+ | texture
+	2dup swap da!+ da!+ | w h 
+	0 ( ym <? 
+		0 ( xm <? | w h y x
+			2dup da!+ da!+
+			pick3 + ) drop 
+		over + ) drop
+	2drop 
+	here a> 'here ! 
+	;
+	
+#rdes [ 0 0 0 0 ]
+
+::tsdraw | n 'ts x y --
+	swap 'rdes d!+ d!
+	dup 8 + @ dup 'rdes 8 + ! 'rec 8 + !
+	SDLrenderer 	| n 'ts ren
+	rot rot @+		| ren n 'ts texture
+	rot 3 << rot 8 + + 
+	@ 'rec ! | ren txture rsrc
+	'rec 'rdes 
+	SDL_RenderCopy
+	;
+
+::tsdraws | n 'ts x y w h --
+	swap 2swap swap 'rdes d!+ d!+ d!+ d!
+	dup 8 + @ 'rec 8 + !
+	SDLrenderer 	| n 'ts ren
+	rot rot @+		| ren n 'ts texture
+	rot 3 << rot 8 + + 
+	@ 'rec ! | ren txture rsrc
+	'rec 'rdes 
+	SDL_RenderCopy
+	;
+	
+|-------------------	
 :fillfull
 	'vert >a 
 	$ffffffff 0 $3f800000 |1.0 f2fp 
@@ -182,7 +222,7 @@
 	;
 
 |----------------------	
-::loadssheet | w h file -- ss
+::ssload | w h file -- ss
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
@@ -190,8 +230,8 @@
 	1.0	pick2 dx */ 'dx !
 	1.0 over dy */ 'dy ! 
 	swap | h w
-	0 ( 1.0 <?
-		0 ( 1.0 <?
+	0 ( 1.0 dy - <?
+		0 ( 1.0 dx - <?
 			dup pick2 over dx + over dy + | x1 y1 x2 y2
 			$1fffe and 47 << 
 			swap $1fffe and 31 << or

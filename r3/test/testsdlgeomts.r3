@@ -51,7 +51,7 @@
 	xm neg ym rotxya! 12 a+
 	2drop ;
 	
-:loadssheet | w h file -- ss
+:ssload | w h file -- ss
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
@@ -126,7 +126,7 @@
 :
 	"r3sdl" 800 600 SDLinit
 	"media/img/lolomario.png" loadimg 'textura !
-	64 64 "media/img/explo_64x64.png" loadssheet 'ssexplode !
+	64 64 "media/img/explo_64x64.png" ssload 'ssexplode !
 	fillfull
 	'main SDLshow 
 	SDLquit

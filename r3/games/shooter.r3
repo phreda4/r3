@@ -138,9 +138,9 @@
 	"r3sdl" 800 600 SDLinit
 	SNDInit
 
-	40 30 "media/img/alien_40x30.png" loadts 'ts_alien !
-	64 29 "media/img/ship_64x29.png" loadts 'ts_ship !
-	64 64 "media/img/explo_64x64.png" loadts 'ts_explo !
+	40 30 "media/img/alien_40x30.png" tsload 'ts_alien !
+	64 29 "media/img/ship_64x29.png" tsload 'ts_ship !
+	64 64 "media/img/explo_64x64.png" tsload 'ts_explo !
 
 	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !
 	"media/snd/explode.mp3" Mix_LoadWAV 'snd_explosion !

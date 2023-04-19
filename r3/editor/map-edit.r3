@@ -92,7 +92,7 @@
 	d@+ 'tilew ! d@+ 'tileh !
 	mapw maph * + 'filetile strcpy
 	'filetile c@ 0? ( 'mapamem ! ; ) drop 
-	tilew tileh 'filetile loadts 'tilemem !	
+	tilew tileh 'filetile tsload 'tilemem !	
 	
 	here 'filemap load drop
 	here dup 'mapamem ! 
@@ -461,7 +461,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	| SDLfull	
-	32 32 "r3\editor\mapeditor32.png" loadts 'sprgui !	
+	32 32 "r3\editor\mapeditor32.png" tsload 'sprgui !	
 	
 	'filemap "mem/mapedit.mem" load drop
 	loadmap

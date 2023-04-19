@@ -172,7 +172,7 @@
 :main
 	"r3sdl" 800 600 SDLinit
 
-	64 64 "media/img/sokoban_tilesheet.png" loadts 'ts_spr !
+	64 64 "media/img/sokoban_tilesheet.png" tsload 'ts_spr !
 	'demo SDLshow
 	
 	SDLquit

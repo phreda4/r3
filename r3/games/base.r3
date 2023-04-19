@@ -238,10 +238,10 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	32 32 "media\img\open_tileset.png" loadts 
+	32 32 "media\img\open_tileset.png" tsload 
 	dup 'tilecity !	
 	'mapa1 !
-	64 64 "media\img\sokoban_tilesheet.png" loadts 'sprplayer !
+	64 64 "media\img\sokoban_tilesheet.png" tsload 'sprplayer !
 
 	'demo SDLshow
 

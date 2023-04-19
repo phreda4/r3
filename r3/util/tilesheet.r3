@@ -4,69 +4,6 @@
 ^r3/lib/math.r3
 ^r3/win/sdl2image.r3
 	
-#w #h
-
-::loadts | w h filename -- ts
-	loadimg
-	dup 0 0 'w 'h SDL_QueryTexture
-	here >a
-	a!+ | texture
-	2dup swap da!+ da!+ | w h 
-	0 ( h <? 
-		0 ( w <? | w h y x
-			2dup da!+ da!+
-			pick3 + ) drop 
-		over + ) drop
-	2drop 
-	here a> 'here ! 
-	;
-
-::loadtsb | w h filename -- ts ; with 1 space
-	loadimg
-	dup 0 0 'w 'h SDL_QueryTexture
-	here >a
-	a!+ | texture
-	2dup swap da!+ da!+ | w h 
-	0 ( h <? 
-		0 ( w <? | w h y x
-			2dup da!+ da!+
-			pick3 + 
-			1 + ) drop 
-		over + 
-		1 + ) drop
-	2drop 
-	here a> 'here ! 
-	;
-
-::freets | ts --
-	@ SDL_DestroyTexture 
-	empty ;
-	
-#rdes [ 0 0 0 0 ]
-#rsrc [ 0 0 0 0 ]
-
-::tsdraw | n 'ts x y --
-	swap 'rdes d!+ d!
-	dup 8 + @ dup 'rdes 8 + ! 'rsrc 8 + !
-	SDLrenderer 	| n 'ts ren
-	rot rot @+		| ren n 'ts texture
-	rot 3 << rot 8 + + 
-	@ 'rsrc ! | ren txture rsrc
-	'rsrc 'rdes 
-	SDL_RenderCopy
-	;
-
-::tsdraws | n 'ts x y w h --
-	swap 2swap swap 'rdes d!+ d!+ d!+ d!
-	dup 8 + @ 'rsrc 8 + !
-	SDLrenderer 	| n 'ts ren
-	rot rot @+		| ren n 'ts texture
-	rot 3 << rot 8 + + 
-	@ 'rsrc ! | ren txture rsrc
-	'rsrc 'rdes 
-	SDL_RenderCopy
-	;
-
 |--------------------------------
 #mapm #mapt
 #mapw #maph 
@@ -200,5 +137,5 @@
 	d@+ 'mapw ! d@+ 'maph !
 	d@+ 'tilew ! d@+ 'tileh !
 	mapw maph * +  | image tilesa
-	tilew tileh rot loadts over !
+	tilew tileh rot tsload over !
 	;

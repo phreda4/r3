@@ -88,7 +88,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	64 64 "media\img\sokoban_tilesheet.png" loadts 'sprplayer !
+	64 64 "media\img\sokoban_tilesheet.png" tsload 'sprplayer !
 
 	'juego SDLshow
 	SDLquit ;	

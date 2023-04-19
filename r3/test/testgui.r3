@@ -20,6 +20,7 @@
 #immcolortex $ffffff	| text
 #immcolorbtn $0000ff	| button
 
+#icons
 #immfontsh 16
 
 ::immgui gui ;
@@ -61,6 +62,12 @@
 	ttsize boxw rot - curx + padx +
 	boxh rot - 2 >> cury + pady + 
 	ttat ttprint ;
+	
+|--- icon
+::immicon | nro --
+	icons curx cury tsdraw 
+	|16 padx 1 << + 'curx +!
+	;
 	
 |--- win
 :winxy!
@@ -141,10 +148,10 @@
 
 |----------------------	
 :check | 'var ""
-	curx padx + cury pady + 14 boxh SDLFRect
-	over @ 1 nand? ( drop ; ) drop 
-	$ff7f7fff SDLColor 
-	curx padx + 4 + cury pady + 4 + 6 boxh 8 - SDLFRect
+	60
+	pick2 @ 1 nand? ( swap 1 - swap ) drop 
+|	$ff7f7fff SDLColor 
+	immicon
 	;
 	
 ::immCheck | 'val "op1" -- ; v op1  v op2  x op3
@@ -175,14 +182,16 @@
 	
 |----------------------
 :radio | 'var nro "" -- 'var nro "" 
-	boxh 1 >> pady - dup
-	curx boxh 1 >> + cury boxh 1 >> + pady +
-	SDLfEllipse
-	pick2 @ pick2 <>? ( drop ; ) drop 
-	$ff7f7fff SDLColor 
-	boxh 1 >> pady - 4 - dup
-	curx boxh 1 >> + cury boxh 1 >> + pady +
-	SDLfEllipse
+|	boxh 1 >> pady - dup
+|	curx boxh 1 >> + cury boxh 1 >> + pady +
+|	SDLfEllipse
+	236
+	pick3 @ pick3 <>? ( swap 2 + swap ) drop 
+	immicon
+	|$ff7f7fff SDLColor 
+|	boxh 1 >> pady - 4 - dup
+|	curx boxh 1 >> + cury boxh 1 >> + pady +
+|	SDLfEllipse
 	;
 	
 :iglRadio | val nro str -- val nro str
@@ -202,6 +211,22 @@
 		iglRadio immdn |glri
 		>>0 swap 1 + ) 3drop 
 	empty ;
+
+|----------------------	
+::glCombo | 'val "op1|op2|op3" -- ; [op1  v]
+	mark
+	makelist
+	$ff00007f SDLColor
+	plgui
+	plxywh SDLFRect
+	$ff00007f [ $ff0000ff nip ; ] guiI SDLColor 
+|	curx padx + boxw + 16 - cury 14 boxh ftridn	
+	over @ nlist immLabel
+	[ dup @ 1 + cntlist >=? ( 0 nip ) over ! ; ] onClick
+	drop
+	empty
+	;
+	
 	
 |--------------------------------
 
@@ -224,8 +249,8 @@
 	'exit "salir" immbtn immdn
 	0 255 'cv immSlideri immdn
 	'vchek "Check" immCheck immdn
-	'vradio "Radio 1|Radio 2|Radio 3" immRadio  
-|	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo gldn	
+	'vradio "Radio 1|Radio 2|Radio 3" immRadio 
+	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo 	
 	
 	SDLredraw 
 	SDLkey
@@ -241,6 +266,7 @@
 	"media/ttf/Roboto-Medium.ttf" 
 	16 TTF_OpenFont 'font !	
 	font ttfont
+	24 21 "media/img/icong16.png" tsload 'icons !
 |	bfont1
 	
 	'main SDLShow 

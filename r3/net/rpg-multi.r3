@@ -260,7 +260,7 @@
 :main
 	"r3sdl" 800 600 SDLinit
 	netclient
-	17 26 "media\img\scientist.png" loadssheet 'sprj !
+	17 26 "media\img\scientist.png" ssload 'sprj !
 
 	100 'objs p.ini
 	30.0 30.0 +player
