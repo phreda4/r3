@@ -138,6 +138,12 @@
 	here a> 'here ! 
 	;
 	
+::tscolor | rrggbb 'ts --
+	@ swap
+	dup 16 >> $ff and over 8 >> $ff and rot $ff and
+	SDL_SetTextureColorMod
+	;
+	
 #rdes [ 0 0 0 0 ]
 
 ::tsdraw | n 'ts x y --

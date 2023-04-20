@@ -64,10 +64,8 @@
 	ttat ttprint ;
 	
 |--- icon
-::immicon | nro --
-	icons curx cury tsdraw 
-	|16 padx 1 << + 'curx +!
-	;
+::immicon | nro x y --
+	icons rot rot tsdraw ;
 	
 |--- win
 :winxy!
@@ -76,14 +74,12 @@
 :winwh!
 	dup $ffffffff and 'winw ! 32 >> 'winh ! ;
 
-:winhome
-	winx padx + 'curx ! 
-	winy pady 2 << + immfontsh + | bfont1 h
-	'cury ! ;
-
 :wintitle | "" --
 	immcolorwin SDLColor
 	winx winy winw winh SDLFRect
+	0 SDLColor
+	winx winy winw winh SDLRect
+	
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady 1 << + 'boxh !
 	immcolortwin SDLColor
@@ -95,12 +91,22 @@
 :movwin
 	sdlx dup px - swap 'px ! over 8 + d+!
 	sdly dup py - swap 'py ! over 12 + d+! ;
-	
-::immwin | 'win -- 0/1
-	dup 8 + @+ winxy! @+ winwh! wintitle
+
+:wintit
+	dup 8 + 
+	@+ dup $ffffffff and 'curx ! 32 >> 'cury ! 
+	@ $ffffffff and padx 1 << - 'boxw !
+	immfontsh pady 1 << + 'boxh !
 	plgui
 	[ sdlx 'px ! sdly 'py ! ; ] 'movwin onDnMoveA
-	@ winhome
+	;
+	
+::immwin | 'win -- 0/1
+	wintit
+	dup 8 + @+ winxy! @+ winwh! wintitle
+	@ 
+	winx padx + 'curx ! 
+	winy pady 2 << + immfontsh + 'cury ! 
 
 	winw 1 >> 'boxw !
 	;		
@@ -147,17 +153,13 @@
 	2drop ;	
 
 |----------------------	
-:check | 'var ""
-	60
-	pick2 @ 1 nand? ( swap 1 - swap ) drop 
-|	$ff7f7fff SDLColor 
-	immicon
-	;
+:checkic | 'var ""
+	over @ 1 nand? ( 60 nip ; ) drop 59 ;
 	
 ::immCheck | 'val "op1" -- ; v op1  v op2  x op3
 	plgui
-	$ff00007f [ $ff0000ff nip ; ] guiI SDLColor 
-	check
+	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
+	checkic curx cury immicon
 	20 'padx +!
 	immLabel
 	-20 'padx +!
@@ -181,23 +183,13 @@
 	( 1? 1 - swap >>0 swap ) drop ;	
 	
 |----------------------
-:radio | 'var nro "" -- 'var nro "" 
-|	boxh 1 >> pady - dup
-|	curx boxh 1 >> + cury boxh 1 >> + pady +
-|	SDLfEllipse
-	236
-	pick3 @ pick3 <>? ( swap 2 + swap ) drop 
-	immicon
-	|$ff7f7fff SDLColor 
-|	boxh 1 >> pady - 4 - dup
-|	curx boxh 1 >> + cury boxh 1 >> + pady +
-|	SDLfEllipse
-	;
+:radioic | 'var nro "" -- 'var nro "" 
+	pick2 @ pick2 <>? ( 238 nip ; ) drop 236 ;
 	
 :iglRadio | val nro str -- val nro str
 	plgui
-	$ff00007f [ $ff0000ff nip ; ] guiI SDLColor 
-	radio
+	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
+	radioic curx cury immicon
 	20 'padx +!
 	dup immLabel
 	-20 'padx +!
@@ -219,8 +211,8 @@
 	$ff00007f SDLColor
 	plgui
 	plxywh SDLFRect
-	$ff00007f [ $ff0000ff nip ; ] guiI SDLColor 
-|	curx padx + boxw + 16 - cury 14 boxh ftridn	
+	$ffffff [ $7f7f7fff nip ; ] guiI icons TSColor
+	268	curx boxw + 24 - cury immicon
 	over @ nlist immLabel
 	[ dup @ 1 + cntlist >=? ( 0 nip ) over ! ; ] onClick
 	drop
@@ -230,7 +222,6 @@
 	
 |--------------------------------
 
-#win1 1 [ 10 10 300 500 ] "Ventana de prueba"
 
 |--------------------------------	
 #cv 0
@@ -239,18 +230,33 @@
 #vchek
 #vradio
 #vcombo
+
+#v1
+#win2 1 [ 400 10 100 100 ] "Check"
+:window2
+	v1 0? ( drop ; ) drop
+	'win2 immwin 0? ( drop ; ) drop
+	[ 0 'v1 ! ; ] "no win" immbtn
+	;
+
+#win1 1 [ 10 10 300 500 ] "Ventana de prueba"
+:window1
+	'win1 immwin 0? ( drop ; ) drop
+	'exit "salir" immbtn immdn
+	0 255 'cv immSlideri immdn
+	'vchek "Check" immCheck immdn
+	
+	'vradio "Radio 1|Radio 2|Radio 3" immRadio 
+	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo immdn
+	'v1 "Ventana2" immCheck immdn
+	;
 	
 :main
 	0 SDLcls
 	immgui
-	
-	'win1 immwin drop
 
-	'exit "salir" immbtn immdn
-	0 255 'cv immSlideri immdn
-	'vchek "Check" immCheck immdn
-	'vradio "Radio 1|Radio 2|Radio 3" immRadio 
-	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo 	
+	window1
+	window2
 	
 	SDLredraw 
 	SDLkey
