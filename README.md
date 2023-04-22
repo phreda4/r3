@@ -35,7 +35,6 @@ The included code will only add to the caller's dictionary words that are marked
 
 If the included code contains the start definition "colon" ` : `, it will be executed before starting the program, to initialize structures or states.
 
-## BASE word list:
 
 We use `|` to indicate comment until the end of the line (the first exception to word separation).
 
@@ -55,6 +54,135 @@ In addition to a modification in the stack, there may also be a lateral action, 
 ; | --
 ```
 It does not consume or produce values in the stack but end a word 
+
+
+## Prefixes in words
+
+* `|` ignored until the end of the line, this is a comment
+* `^` the name of the file to be included is taken until the end of the line, this allows filenames with spaces.
+* `"` the end of quotation marks is searched to delimit the content, if there is a double quotation mark `""` it is taken as a quotation mark included in the string.
+* `:` define action
+* `::` define action and this definition prevails when a file is included (* exported)
+* `#` define data
+* `##` define exported data
+* `$` define hexadecimal number
+* `%` defines binary number, allows the `.` like `0`
+* `'` means the direction of a word, this address is pushed to DATA STACK, it should be clarified that the words of the BASIC DICTIONARY have NO address, but those defined by the programmer, yes.
+
+Programming occurs when we define our own words.
+We can define words as actions with the prefix:
+
+```
+:addmul + * ;
+```
+
+or data with the prefix #
+
+```
+#lives 3
+```
+
+`: ` only is the beginning of the program, a complete program in r3 can be the following
+
+```
+:sum3 dup dup + + ;
+
+: 2 sum3 ;
+```
+
+
+## Conditional and Repeat
+
+The way to build conditionals and repetitions is through the words `(` and `)`
+
+for example:
+```
+5 >? ( drop 5 )
+```
+
+The meaning of these 6 words is: check the top of the stack with 5, if it is greater, remove this value and stack a 5.
+
+The condition produces a jump at the end of the code block if it is not met. It becomes an IF block.
+
+r3 identifies this construction when there is a conditional word before the word `(`. If this does not happen the block represents a repetition and, a conditional in that this repetition that is not an IF is used with the WHILE condition.
+
+for example:
+```
+1 ( 10 <?
+	1 + ) drop
+```
+
+account from 1 to 9, while the Top of stack is less 10.
+
+You have to notice some details:
+
+There is no IF-ELSE construction, this is one of the differences with: r4, on the other hand, ColorForth also does not allow this construction, although it seems limiting, this forces to factor the part of the code that needs this construction, or reformulate the code.
+
+In: r4 could be constructed as follows
+
+```
+...
+1? ( notzero )( zero )
+follow
+```
+
+It must become:
+
+```
+:choice 1? ( nocero ; ) zero ;
+
+...
+choice
+follow
+```
+
+Sometimes it happens that rethinking code logic avoids ELSE without the need to do this factoring. There are also tricks with bit operations that allow you to avoid conditionals completely but this no longer depends on the language.
+
+Another feature to note that it is possible to perform a WHILE with multiple output conditions at different points, I do not know that this construction exists in another language, in fact it emerged when the way to detect the IF and WHILE was defined
+
+```
+'list ( c@+
+	1?
+	13 <>?
+	emit ) 2drop
+```
+
+Does this repetition meet that the byte obtained is not 0 ` 1? ` and that is not 13 ` 13 <>? `, in any of the two conditions the WHILE ends
+
+Another possible construction, that if it is in other FORTH, is the definition that continues in the following.
+For example, define1 adds 3 to the top of the stack while define2 adds 2.
+
+```
+:define1 | n -- n+3
+	1 +
+:define2 | n -- n+2
+	2 + ;
+```
+
+## Recursion
+
+Recursion occurs naturally, when the word is defined with ` : ` it appears in the dictionary and it is possible to call it even when its definition is not closed.
+
+```
+:fibonacci | n -- f
+	2 <? ( 1 nip ; )
+	1 - dup 1 - fibonacci swap fibonacci + ;
+```
+
+## Call Optimization
+
+When the last word before a `;` is a word defined by the programmer, both in the interpreter and in the compiler, the call is translated into JMP or jump and not with a CALL or call with return, this is commonly called TAIL CALL and saves a return in the chain of words called.
+
+This feature can convert a recursion into a loop with no callback cost, the following definition has no impact on the return stack.
+
+```
+:loopback | n -- 0
+	0? ( ; )
+	1 -
+	loopback ;
+```
+
+## BASE word list:
 
 ```
 ;	| End of Word
@@ -247,132 +375,6 @@ SYS7	| abcdefgh -- a
 SYS8	| abcdefghi -- a
 SYS9	| abcdefghij -- a
 SYS10 	| abcdefghijk -- a
-```
-
-## Prefixes in words
-
-* `|` ignored until the end of the line, this is a comment
-* `^` the name of the file to be included is taken until the end of the line, this allows filenames with spaces.
-* `"` the end of quotation marks is searched to delimit the content, if there is a double quotation mark `""` it is taken as a quotation mark included in the string.
-* `:` define action
-* `::` define action and this definition prevails when a file is included (* exported)
-* `#` define data
-* `##` define exported data
-* `$` define hexadecimal number
-* `%` defines binary number, allows the `.` like `0`
-* `'` means the direction of a word, this address is pushed to DATA STACK, it should be clarified that the words of the BASIC DICTIONARY have NO address, but those defined by the programmer, yes.
-
-Programming occurs when we define our own words.
-We can define words as actions with the prefix:
-
-```
-:addmul + * ;
-```
-
-or data with the prefix #
-
-```
-#lives 3
-```
-
-`: ` only is the beginning of the program, a complete program in r3 can be the following
-
-```
-:sum3 dup dup + + ;
-
-: 2 sum3 ;
-```
-
-
-## Conditional and Repeat
-
-The way to build conditionals and repetitions is through the words `(` and `)`
-
-for example:
-```
-5 >? ( drop 5 )
-```
-
-The meaning of these 6 words is: check the top of the stack with 5, if it is greater, remove this value and stack a 5.
-
-The condition produces a jump at the end of the code block if it is not met. It becomes an IF block.
-
-r3 identifies this construction when there is a conditional word before the word `(`. If this does not happen the block represents a repetition and, a conditional in that this repetition that is not an IF is used with the WHILE condition.
-
-for example:
-```
-1 ( 10 <?
-	1 + ) drop
-```
-
-account from 1 to 9, while the Top of stack is less 10.
-
-You have to notice some details:
-
-There is no IF-ELSE construction, this is one of the differences with: r4, on the other hand, ColorForth also does not allow this construction, although it seems limiting, this forces to factor the part of the code that needs this construction, or reformulate the code.
-
-In: r4 could be constructed as follows
-
-```
-...
-1? ( notzero )( zero )
-follow
-```
-
-It must become:
-
-```
-:choice 1? ( nocero ; ) zero ;
-
-...
-choice
-follow
-```
-
-Sometimes it happens that rethinking code logic avoids ELSE without the need to do this factoring. There are also tricks with bit operations that allow you to avoid conditionals completely but this no longer depends on the language.
-
-Another feature to note that it is possible to perform a WHILE with multiple output conditions at different points, I do not know that this construction exists in another language, in fact it emerged when the way to detect the IF and WHILE was defined
-
-```
-'list ( c@+
-	1?
-	13 <>?
-	emit ) 2drop
-```
-
-Does this repetition meet that the byte obtained is not 0 ` 1? ` and that is not 13 ` 13 <>? `, in any of the two conditions the WHILE ends
-
-Another possible construction, that if it is in other FORTH, is the definition that continues in the following.
-For example, define1 adds 3 to the top of the stack while define2 adds 2.
-
-```
-:define1 | n -- n+3
-	1 +
-:define2 | n -- n+2
-	2 + ;
-```
-
-## Recursion
-
-Recursion occurs naturally, when the word is defined with ` : ` it appears in the dictionary and it is possible to call it even when its definition is not closed.
-
-```
-:fibonacci | n -- f
-	2 <? ( 1 nip ; )
-	1 - dup 1 - fibonacci swap fibonacci + ;
-```
-
-## Call Optimization
-
-When the last word before a `;` is a word defined by the programmer, both in the interpreter and in the compiler, the call is translated into JMP or jump and not with a CALL or call with return, this is commonly called TAIL CALL and saves a return in the chain of words called.
-
-This feature can convert a recursion into a loop with no callback cost, the following definition has no impact on the return stack.
-
-```
-:loopback | n -- 0
-	0? ( ; )
-	1 -
-	loopback ;
 ```
 
 ## Youtube Videos
