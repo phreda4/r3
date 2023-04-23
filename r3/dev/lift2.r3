@@ -4,8 +4,9 @@
 
 ^r3/win/sdl2.r3
 ^r3/util/sdlgui.r3
-
+^r3/lib/rand.r3
 ^r3/util/blist.r3
+^r3/util/arr16.r3
 
 #cntfloors 8	| cnt of floor
 
@@ -108,6 +109,63 @@
 	
 |---
 #person1 #person2 #person3
+#per 0 0
+
+#prevt
+#dtime
+#reloj
+
+:time.start
+	msec 'prevt ! 0 'dtime ! 
+	0 'reloj ! ;
+
+:time.delta
+	msec dup prevt - 'dtime ! 'prevt ! 
+	dtime 'reloj +! ;
+
+:animcntm | cnt msec -- 0..cnt-1
+	55 << 1 >>> 63 *>> ; | 55 speed
+	
+|--
+| 'vec time x y 
+	
+:guydraw | v a -- v
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + 
+	
+	a@+ int. -32 <? ( 3drop ; ) 	| X
+	a@+ int. 						| y
+	a@+ a> 24 - +!	| vx
+	a@+ a> 24 - +!	| vy
+	rot 2.0 swap
+	a@ sspritez		
+	;	
+
+:+guy | ss vy vx y x anim --
+	'guydraw 'per p!+ >a 
+	0 a!+	| time
+	a!+ 	| anim
+	a!+ a!+
+	a!+ a!+
+	a!
+	;
+
+#plist person1 person2 person3
+
+:+guyfloor | n -
+	3 randmax 3 << 'plist + @ @
+	0.0 1.0 pick3 40.0 * 60.0 + -16.0 $a0008 +guy
+	drop
+	;
+	
+	
+:animacion
+	time.delta
+	'per p.drawo
+	4 'per p.sort
+	;
 	
 |---  draw elevator	
 :drawelevator
@@ -159,6 +217,7 @@
 	drawfloors	
 	drawelevator
 	runelevator
+	animacion
 	
 	10 480 780 40 immnoWin
 	pelevator 16 >> "- %d -" sprint immLabelC immdn
@@ -167,6 +226,7 @@
 	SDLredraw 
 	SDLkey
 	>esc< =? ( exit ) 	
+	<f1> =? ( 8 randmax +guyfloor )
 	drop ;	
 
 |----------- BOOT
@@ -176,6 +236,8 @@
 	16 32 "media/img/p1.png" ssload 'person1 !
 	16 32 "media/img/p2.png" ssload 'person2 !
 	16 32 "media/img/p3.png" ssload 'person3 !	
+	200 'per p.ini
+	
 	'main SDLshow
 	SDL_Quit 
 	;	
