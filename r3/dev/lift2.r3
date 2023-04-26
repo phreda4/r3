@@ -14,6 +14,8 @@
 #pelevator 1.0	| position
 #velevator 0.01	| velocity 
 
+#ylift 500	
+
 #state 3 | idle wait run open close broke
 
 |--- buttons on floor
@@ -79,6 +81,7 @@
 	;
 :run
 	velevator 'pelevator +! | velocity
+	-1 'ylift +!
 	pelevator delevator - $ffc00 and | in floor? (adjust)
 	1? ( drop ; ) drop 
 	0 'velevator ! 
@@ -130,39 +133,6 @@
 | 'vec time anim x y vx vy sprite	
 |--
 
-:gowait
-:golift
-:goback
-	;
-	
-:guywalk | v a -- v
-	>a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + 
-	
-	a@+ int. -32 <? ( 2drop 0 ; ) 	| X
-	a@+ int. 						| y
-	a@+ a> 24 - +!	| vx
-	a@+ a> 24 - +!	| vy
-	rot 2.0 swap
-	a@ sspritez		
-	;	
-
-:guywait | v a -- v
-	>a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + 
-	
-	a@+ int. |-32 <? ( 3drop ; ) 	| X
-	a@+ int. 						| y
-|	a@+ a> 24 - +!	| vx
-|	a@+ a> 24 - +!	| vy
-	rot 2.0 swap
-	a@ sspritez		
-	;	
-
 :guyload | v a -- v
 	>a
 	a@ dup dtime + a!+ 
@@ -170,7 +140,7 @@
 	animcntm + 
 	
 	a@+ int. |-32 <? ( 3drop ; ) 	| X
-	cntfloors 16 << pelevator - 40 * 60.0 + int.
+	ylift
 |	a@+ int. 						| y
 |	a@+ a> 24 - +!	| vx
 |	a@+ a> 24 - +!	| vy
@@ -179,14 +149,49 @@
 	a@ sspritez		
 	;	
 
+:guywait | v a -- v
+	>a
+	a@ dup dtime + a!+ drop
+	8 a+ |a@+ dup 16 >> swap $ffff and rot animcntm + 
+	$9
+	a@+ int. |-32 <? ( 3drop ; ) 	| X
+	a@+ int. 						| y
+|	a@+ a> 24 - +!	| vx
+|	a@+ a> 24 - +!	| vy
+	16 a+
+	rot 2.0 swap
+	a@ sspritez		
+	;	
+	
+:guywalk | v a -- v
+	>a
+	a@ dup dtime + a!+ 
+	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
+	animcntm + 
+	
+	a@+ int. 
+		280 >? ( 'guywait pick3 ! ) 
+		-32 <? ( 2drop 0 ; ) 	| X
+	a@+ int. 						| y
+	a@+ a> 24 - +!	| vx
+	a@+ a> 24 - +!	| vy
+	rot 2.0 swap
+	a@ sspritez		
+	;	
+
+
+
 
 #plist person1 person2 person3
+
+:ntoy | n -- y
+	70.0 * 46.0 + ;
 
 :+guyin | n --
 	'guywalk 'per p!+ >a 
 	0 a!+		| tiempo
 	$a0008 a!+	| animacion
-	-16.0 a!+ dup 40.0 * 60.0 + a!+	| x y 
+	-16.0 a!+ dup ntoy a!+	| x y 
 	1.0 a!+ 0.0 a!+					| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
 	a!+								| floor
@@ -196,7 +201,7 @@
 	'guywalk 'per p!+ >a 
 	0 a!+		| tiempo
 	$10008 a!+	| animacion
-	400.0 a!+ dup 40.0 * 60.0 + a!+	| x y 
+	400.0 a!+ dup ntoy a!+	| x y 
 	-1.0 a!+ 0.0 a!+				| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
 	a!+								| floor
@@ -206,7 +211,7 @@
 	'guywalk 'per p!+ >a 
 	0 a!+		| tiempo
 	$90001 a!+	| animacion
-	390.0 a!+ dup 40.0 * 60.0 + a!+	| x y 
+	390.0 a!+ dup ntoy a!+	| x y 
 	0.0 a!+ 0.0 a!+				| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
 	a!+								| floor
@@ -217,7 +222,7 @@
 	0 a!+		| tiempo
 	$00001 a!+	| animacion
 	400.0 a!+ |pelevator 
-	cntfloors 16 << pelevator - 40 * 60.0 +
+	cntfloors 16 << pelevator - ntoy
 	a!+	| x y 
 	0.0 a!+ 0.0 a!+				| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
@@ -234,23 +239,13 @@
 |---  draw elevator	
 :drawelevator
 	$ff007f00 'immcolorbtn !
-	340 60 60 36 immnowin
+	600 4 40 66 immnowin
 	cntfloors ( 1? 	
 		4 $00007f0000ff checkbtn
 		[ dup pushbtnf ; ]
 		over "%d" sprint sprint immbtn 		
 		imm<<dn
 		1 - ) drop		
-
-	$ff0f0fff SDLColor
-	500 
-	cntfloors 16 << pelevator - 40 *. 60 +
-	60 40 SDLfrect
-	$ff7f7fff SDLColor
-	
-	530 door 1 >> 29 *. -
-	cntfloors 16 << pelevator - 40 *. 60 +
-	door 29 *. 1 + 40 sdlfrect
 	;
 
 :drawfloors	
@@ -268,10 +263,34 @@
 		imm<<dn
 		1 - ) drop ;
 	
+:drawbuiling
+	$21B8B8 SDLColor
+	0 0 300 560 SDLfrect
+	560 ( 60 >? 
+		$DEDEDE SDLColor
+		0 over 300 10 SDLFRect
+		$B8B8B8 SDLColor
+		0 over 10 + 300 6 SDLFRect
+		70 - ) drop
+
+	
+	$B8B8B8 SDLColor
+	301 ylift 80 76 SDLFRect
+	340 0 4 ylift SDLFRect
+	
+|	$FFB8DE SDLColor
+|	301 ylift 80 70 SDLFRect
+
+	$DEDEDE SDLColor
+	301 ylift 60 + 80 10 SDLFRect
+	;
+	
 |--- main loop	
 :main
 	0 SDLcls
 	immgui
+	
+	drawbuiling
 	
 	$ffff0000 'immcolorbtn !
 	sw 70 - 10 60 30 immnowin
