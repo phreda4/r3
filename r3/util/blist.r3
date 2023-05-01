@@ -7,7 +7,7 @@
 ::blist! | f 'list --
 	1 over +! @+ + 1 - c! ;
 	
-::blist- | f 'list
+::blist- | f 'list --
 	swap over @+ | 'adr cnt
 	( 1? 1 - swap
 		c@+ pick3 

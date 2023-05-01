@@ -1,9 +1,23 @@
-| Array 16 vals
-| PHREDA 2021
-| uso
-| #list 0 0 | last first
-| cnt 'list p.ini | create list
-|------
+| Array 16 vals - PHREDA 2021
+| 
+| #l 0 0 | last first
+|
+| cnt 'l p.ini	| create list
+| 'l p.clear 	| remove all
+| 'l p.cnt 		| cnt
+| 'l p.nro 		| adr from n
+| 've 'l p!+	| add exe and give adr for add parameters
+| 'l p!			| give adr (first)
+| 'l p.draw		| traverse exe every ( return 0 for delete )
+| 'l p.drawo	| traverse exe every ( return 0 for delete in order )
+| 'a 'l p.del	| delete 
+| 'a 'l p.nnow	| give nro
+| 'v 'l p.mapd	| exe v for every
+| 'v 'l p.map2	| exe v for every pair (triangle traverse)
+| c 'l p.sort	| sort for c column (1pass)
+| c 'l p.isort	| reverse sort for c column (1pass)
+|----------------------------------------------------------
+
 ^r3/lib/mem.r3
 
 ::p.ini | cantidad list --
@@ -52,7 +66,7 @@
 	( over <?
 		dup @+ ex 0? ( drop delpo )
 		128 + ) 3drop ;
-		
+	
 
 ::p.del | adr list --
 	>r r@ @ 128 - 16 move -128 r> +! ; | not mix

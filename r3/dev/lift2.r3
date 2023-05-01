@@ -6,18 +6,37 @@
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
 ^r3/util/blist.r3
+^r3/util/dlist.r3
 ^r3/util/arr16.r3
 
-#cntfloors 8	| cnt of floor
+#cntfloors	8	| cnt of floor
+#capacity	3	| elevator capacity
 
 #delevator 1.0	| destination
 #pelevator 1.0	| position
-#velevator 0.01	| velocity 
+#velevator 0.1	| velocity 
 
-#ylift 500	
+#nowelevator 0 
+#toelevator 0
+#yelevator 500	
 
 #state 3 | idle wait run open close broke
 
+#plist 
+
+:plistini | listmax --
+	here dup 'plist !
+	cntfloors 4 << + 
+	'here ! 
+	plist
+	cntfloors ( 1? swap
+		pick2 over dc.ini
+		16 + swap 1 - ) 3drop ;
+
+:plistn | n -- adr
+	4 << plist + ;
+
+	
 |--- buttons on floor
 #floor * 32 	| 32 floor max
 
@@ -72,8 +91,10 @@
 	flist 1? ( drop 'flist blist@ go 2 'state ! ; ) drop | button in elevator
 	bflist 1? ( drop 'bflist blist@ go 2 'state ! ; ) drop | button in floor
 	;
+	
 :wait
-	0.01 'waitdoor +! | count time
+
+	0.1 'waitdoor +! | count time
 	waitdoor 0.5 <? ( drop ; ) drop | wait allways
 	flist 1? ( 4 'state ! ) drop 	| close	if button in elevator
 	waitdoor 2.0 <? ( drop ; ) drop	| wait for buton in elevator
@@ -81,7 +102,7 @@
 	;
 :run
 	velevator 'pelevator +! | velocity
-	-1 'ylift +!
+	-1 'yelevator +!
 	pelevator delevator - $ffc00 and | in floor? (adjust)
 	1? ( drop ; ) drop 
 	0 'velevator ! 
@@ -116,119 +137,118 @@
 
 #prevt
 #dtime
-#reloj
 
-:time.start
-	msec 'prevt ! 0 'dtime ! 
-	0 'reloj ! ;
+:time.start		msec 'prevt ! 0 'dtime ! ;
+:time.delta		msec dup prevt - 'dtime ! 'prevt ! ;
 
-:time.delta
-	msec dup prevt - 'dtime ! 'prevt ! 
-	dtime 'reloj +! ;
-
-:animcntm | cnt msec -- 0..cnt-1
-	55 << 1 >>> 63 *>> ; | 55 speed
+| anim $0ini0cnt (16.16)
+:nanim | time namin -- n
+	dup 16 >> swap $ffff and rot |  add cnt msec
+	55 << 1 >>> 63 *>> + ; | 55 speed
 	
 | guy
-| 'vec time anim x y vx vy sprite	
+|		0	1	2	3	4	5	6	7		8
+| 'vec time anim x 	y 	vx 	vy 	spr to|fr 	sta
 |--
 
-:guyload | v a -- v
-	>a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + 
+:gstate! | ad xx state --
+	pick2 8 3 << + ! ;
+:gvelx! | ad xx v --
+	pick2 4 3 << + ! ;
+:ganim! | ad xx ani --
+	pick2 1 3 << + ! ;
 	
-	a@+ int. |-32 <? ( 3drop ; ) 	| X
-	ylift
-|	a@+ int. 						| y
-|	a@+ a> 24 - +!	| vx
-|	a@+ a> 24 - +!	| vy
-	3 3 << a+
-	rot 2.0 swap
-	a@ sspritez		
-	;	
+:gfloor@
+	7 3 << + @ $ff and ;
+:gto@
+	7 3 << + @ 8 >> $ff and ;
+	
+:gcntfloor | ad -- cnt
+	7 3 << + @ $ff and plistn dc? ;
 
-:guywait | v a -- v
-	>a
-	a@ dup dtime + a!+ drop
-	8 a+ |a@+ dup 16 >> swap $ffff and rot animcntm + 
-	$9
-	a@+ int. |-32 <? ( 3drop ; ) 	| X
-	a@+ int. 						| y
-|	a@+ a> 24 - +!	| vx
-|	a@+ a> 24 - +!	| vy
-	16 a+
-	rot 2.0 swap
-	a@ sspritez		
-	;	
+:pushud | from to
+	<? ( dup pushup ; )
+	dup pushdn ;
 	
-:guywalk | v a -- v
-	>a
-	a@ dup dtime + a!+ 
-	a@+ dup 16 >> swap $ffff and rot |  add cnt msec
-	animcntm + 
+:gpushbutton | ad --
+	dup 7 3 << + @
+	dup $ff and swap 8 >>  | a from to
+	pushud			| push up or down
+	plistn dc! 		| add to row
+	;
+
+|-- states	
+:gwalk
+	dup 
+	2 3 << + @ int. 
+	over gcntfloor 4 << neg
+	280 +
+	>? (
+		1 gstate! 			| wait
+		0 gvelx! 			| stop x
+		$90001 ganim! 		| anim stop
+		over gpushbutton 
+		) 
+	-32 <? ( 2drop 0 ; ) | delete
+	drop
+	;
+
+:gwait
 	
-	a@+ int. 
-		280 >? ( 'guywait pick3 ! ) 
-		-32 <? ( 2drop 0 ; ) 	| X
-	a@+ int. 						| y
+	;
+	
+:glift
+	dup 3 3 << +
+	yelevator swap !
+	;
+	
+	
+#guystate gwalk gwait glift gwalk
+
+:guydraw | v -- 
+	dup 8 3 << + @ $3 and 3 << 'guystate + @ ex
+	0? ( ; )
+	>a
+	a@ dup dtime + a!+ | time
+	a@+ nanim | nsprite
+	a@+ int. a@+ int.  | x y
 	a@+ a> 24 - +!	| vx
 	a@+ a> 24 - +!	| vy
-	rot 2.0 swap
-	a@ sspritez		
-	;	
-
-
-
-
+	rot 2.0 swap a@ sspritez
+	;
+	
+|---------------------------------
 #plist person1 person2 person3
 
 :ntoy | n -- y
-	70.0 * 46.0 + ;
+	-70.0 * 534.0 + 
+	7.0 randmax 1.0 - + | rand y
+	;
 
-:+guyin | n --
-	'guywalk 'per p!+ >a 
+:randto | from -- from to
+	( cntfloors randmax over =? drop ) ;
+	
+:+guy | n --
+	'guydraw 'per p!+ >a 
 	0 a!+		| tiempo
 	$a0008 a!+	| animacion
 	-16.0 a!+ dup ntoy a!+	| x y 
 	1.0 a!+ 0.0 a!+					| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
-	a!+								| floor
+	randto 8 << or	a!+								| floor
 	;
 
-:+guyout | n --
-	'guywalk 'per p!+ >a 
-	0 a!+		| tiempo
-	$10008 a!+	| animacion
-	400.0 a!+ dup ntoy a!+	| x y 
-	-1.0 a!+ 0.0 a!+				| vx vy
-	3 randmax 3 << 'plist + @ @ a!+ | sprite
-	a!+								| floor
-	;
+|:+guyout | n --
+|	$10008 a!+	| animacion
+|	400.0 a!+ dup ntoy a!+	| x y 
 	
-:+guywait | n --
-	'guywalk 'per p!+ >a 
-	0 a!+		| tiempo
-	$90001 a!+	| animacion
-	390.0 a!+ dup ntoy a!+	| x y 
-	0.0 a!+ 0.0 a!+				| vx vy
-	3 randmax 3 << 'plist + @ @ a!+ | sprite
-	a!+								| floor
-	;
+|:+guywait | n --
+|	$90001 a!+	| animacion
+|	390.0 a!+ dup ntoy a!+	| x y 
 	
-:+guyload
-	'guyload 'per p!+ >a 
-	0 a!+		| tiempo
-	$00001 a!+	| animacion
-	400.0 a!+ |pelevator 
-	cntfloors 16 << pelevator - ntoy
-	a!+	| x y 
-	0.0 a!+ 0.0 a!+				| vx vy
-	3 randmax 3 << 'plist + @ @ a!+ | sprite
-	a!+								| floor
-	;
-
+|:+guyload
+|	$00001 a!+	| animacion
+|	400.0 a!+ |pelevator 
 	
 :animacion
 	time.delta
@@ -239,29 +259,32 @@
 |---  draw elevator	
 :drawelevator
 	$ff007f00 'immcolorbtn !
-	600 4 40 66 immnowin
-	cntfloors ( 1? 	
+	600 4 40 36 immnowin
+	cntfloors ( 1? 1 -	
 		4 $00007f0000ff checkbtn
 		[ dup pushbtnf ; ]
 		over "%d" sprint sprint immbtn 		
 		imm<<dn
-		1 - ) drop		
+		) drop		
 	;
 
 :drawfloors	
 	$ff0000ff 'immcolorbtn !
-	10 60 80 36 immnowin
-	cntfloors ( 1? 	
-		100 immwidth
-		dup "floor %d " sprint immLabelR imm>>
-		60 immwidth
+	400 4 40 36 immnowin
+	cntfloors ( 1? 1 -
+		40 immwidth
+		dup "%d " sprint immLabelR imm>>
+		40 immwidth
 		1 $040404007f00 checkbtn 
 		[ dup pushup ; ] "up" sprint immbtn 
 		imm>>
 		2 $040404007f00 checkbtn
 		[ dup pushdn ; ] "dn" sprint immbtn 		
+		imm>>
+		dup dup plistn dc? "%d %d" sprint immLabel
+
 		imm<<dn
-		1 - ) drop ;
+		) drop ;
 	
 :drawbuiling
 	$21B8B8 SDLColor
@@ -275,14 +298,14 @@
 
 	
 	$B8B8B8 SDLColor
-	301 ylift 80 76 SDLFRect
-	340 0 4 ylift SDLFRect
+	301 yelevator 80 76 SDLFRect
+	340 0 4 yelevator SDLFRect
 	
 |	$FFB8DE SDLColor
-|	301 ylift 80 70 SDLFRect
+|	301 yelevator 80 70 SDLFRect
 
 	$DEDEDE SDLColor
-	301 ylift 60 + 80 10 SDLFRect
+	301 yelevator 60 + 80 10 SDLFRect
 	;
 	
 |--- main loop	
@@ -308,10 +331,10 @@
 	SDLredraw 
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( 8 randmax +guyin )
-	<f2> =? ( 8 randmax +guyout )
-	<f3> =? ( 8 randmax +guywait )
-	<f4> =? ( 8 randmax +guyload )	
+	<f1> =? ( 8 randmax +guy )
+	<f2> =? ( 0 +guy )
+	<f3> =? ( 1 +guy )
+	<f4> =? ( 2 +guy )	
 	drop ;	
 
 |----------- BOOT
@@ -321,8 +344,10 @@
 	16 32 "media/img/p1.png" ssload 'person1 !
 	16 32 "media/img/p2.png" ssload 'person2 !
 	16 32 "media/img/p3.png" ssload 'person3 !	
-	200 'per p.ini
 	
+	200 'per p.ini
+	32 plistini
+
 	'main SDLshow
 	SDL_Quit 
 	;	

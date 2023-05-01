@@ -193,7 +193,8 @@
 	17 >> over + i2fp da!+ 
 	;	
 
-:fillvertr | x y --
+:fillvertr | x y ang --
+	sincos 'dx ! 'dy !
 	'vert >a
 	xm neg ym neg rotxya! 12 a+
 	xm ym neg rotxya! 12 a+
@@ -212,7 +213,6 @@
 
 ::SDLSpriteR | x y ang img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	sincos 'dx ! 'dy !
 	fillfull
 	fillvertr
 	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
@@ -221,7 +221,6 @@
 ::SDLspriteRZ | x y ang zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm *. 'xm ! ym *. 'ym ! 
-	sincos 'dx ! 'dy !
 	fillfull
 	fillvertr
 	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
@@ -272,7 +271,6 @@
 ::sspriter | x y ang n ssprite --
 	dup 8 + d@+ 'xm ! d@ 'ym !
 	settile >r 
-	sincos 'dx ! 'dy !
 	fillvertr
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;
@@ -289,7 +287,6 @@
 	dup 8 + d@+ 'xm ! d@ 'ym !
 	settile >r 
 	dup xm *. 'xm ! ym *. 'ym ! 
-	sincos 'dx ! 'dy !
 	fillvertr
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;	
