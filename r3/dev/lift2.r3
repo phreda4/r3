@@ -5,12 +5,13 @@
 ^r3/win/sdl2.r3
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
-^r3/util/blist.r3
 ^r3/util/dlist.r3
 ^r3/util/arr16.r3
 
 #cntfloors	8	| cnt of floor
-#capacity	3	| elevator capacity
+
+#maxcapacity	3	| elevator capacity
+#capacity		0	| elevator capacity
 
 #delevator 1.0	| destination
 #pelevator 1.0	| position
@@ -22,13 +23,17 @@
 
 #state 3 | idle wait run open close broke
 
+| guy
+|		0	1	2	3	4	5	6	7		8
+| 'vec time anim x 	y 	vx 	vy 	spr to|fr 	sta
+|--
+
+| queue for every floor
 #plist 
 
 :plistini | listmax --
-	here dup 'plist !
-	cntfloors 4 << + 
-	'here ! 
-	plist
+	here dup dup 'plist !
+	cntfloors 4 << + 'here ! 
 	cntfloors ( 1? swap
 		pick2 over dc.ini
 		16 + swap 1 - ) 3drop ;
@@ -64,41 +69,69 @@
 	pelevator <? ( drop -0.01 'velevator ! ; ) 
 	drop 0.01 'velevator ! ;
 
-#flist * 32 | list for elevator
-#bflist * 32 | list for floor
+| queue for Elevator and wait in Floor
+#erow 0 0 
+#frow 0 0 
 
 |--- buttons
 :pushup	| f --
 	1 touch 
-	floor@ 1 and? ( drop 'bflist blist! ; )
-	drop 'bflist blist- ; 
+	floor@ 1 and? ( drop 'frow dc! ; )
+	drop 'frow dc@- ; 
 	
 :pushdn	| f --
 	2 touch 
-	floor@ 2 and? ( drop 'bflist blist! ; )
-	drop 'bflist blist- ;
+	floor@ 2 and? ( drop 'frow dc! ; )
+	drop 'frow dc@-	;
 
 :pushbtnf | f --
 	4 touch 
-	floor@ 4 and? ( drop 'flist blist! ; )
-	drop 'flist blist- ;
+	floor@ 4 and? ( drop 'erow dc! ; )
+	drop 'erow dc@- ;
+
 	
 #door		| door position
 #waitdoor 	| wait for buttons
 
+:loadpeople
+	nowelevator plistn
+	dc? 0? ( drop ; ) 
+	nowelevator plistn dc@- 
+	2 over 8 3 << + ! | in asc
+	$00001 over 1 3 << + ! 
+	320.0 rot 3 << + over 2 3 << + !
+	1 'nowelevator +!
+	7 3 << + @ 8 >> pushbtnf
+	0 'waitdoor ! 
+	;
+	
+:downpeople	
+
+	;
+	
 |--- elevator state
 :idle
-	flist 1? ( drop 'flist blist@ go 2 'state ! ; ) drop | button in elevator
-	bflist 1? ( drop 'bflist blist@ go 2 'state ! ; ) drop | button in floor
+	'erow dc?
+	1? ( drop 
+		'erow dc@-
+		go 2 'state ! ; ) drop | button in elevator
+	'frow dc?
+	1? ( drop 
+		'frow dc@-
+		go 2 'state ! ; ) drop | button in floor
 	;
 	
 :wait
+	capacity 
+	1? ( downpeople )				| any for donwload
+	maxcapacity <? ( loadpeople ) 	| any for load
+	drop
 
 	0.1 'waitdoor +! | count time
-	waitdoor 0.5 <? ( drop ; ) drop | wait allways
-	flist 1? ( 4 'state ! ) drop 	| close	if button in elevator
+	waitdoor 1.0 <? ( drop ; ) drop | wait allways
+	'erow dc? 1? ( 4 'state ! ) drop 	| close	if button in elevator
 	waitdoor 2.0 <? ( drop ; ) drop	| wait for buton in elevator
-	bflist 1? ( 4 'state ! ) drop 	| close	if button in floor
+	'frow dc? 1? ( 4 'state ! ) drop 	| close	if button in floor
 	;
 :run
 	velevator 'pelevator +! | velocity
@@ -107,8 +140,10 @@
 	1? ( drop ; ) drop 
 	0 'velevator ! 
 	delevator 'pelevator ! 
+
 	3 'state !				| open
 	delevator 16 >> offbtn	| turn off buttons
+	delevator 16 >> 'nowelevator !
 	;
 :open
 	door
@@ -145,11 +180,7 @@
 :nanim | time namin -- n
 	dup 16 >> swap $ffff and rot |  add cnt msec
 	55 << 1 >>> 63 *>> + ; | 55 speed
-	
-| guy
-|		0	1	2	3	4	5	6	7		8
-| 'vec time anim x 	y 	vx 	vy 	spr to|fr 	sta
-|--
+
 
 :gstate! | ad xx state --
 	pick2 8 3 << + ! ;
@@ -194,12 +225,11 @@
 	;
 
 :gwait
-	
 	;
 	
 :glift
 	dup 3 3 << +
-	yelevator swap !
+	yelevator 38 + 16 << swap !
 	;
 	
 	
@@ -220,11 +250,13 @@
 |---------------------------------
 #plist person1 person2 person3
 
+| floor to y coord
 :ntoy | n -- y
 	-70.0 * 534.0 + 
 	7.0 randmax 1.0 - + | rand y
 	;
 
+| chose the destination floor
 :randto | from -- from to
 	( cntfloors randmax over =? drop ) ;
 	
@@ -233,7 +265,7 @@
 	0 a!+		| tiempo
 	$a0008 a!+	| animacion
 	-16.0 a!+ dup ntoy a!+	| x y 
-	1.0 a!+ 0.0 a!+					| vx vy
+	5.0 a!+ 0.0 a!+					| vx vy
 	3 randmax 3 << 'plist + @ @ a!+ | sprite
 	randto 8 << or	a!+								| floor
 	;
@@ -241,14 +273,6 @@
 |:+guyout | n --
 |	$10008 a!+	| animacion
 |	400.0 a!+ dup ntoy a!+	| x y 
-	
-|:+guywait | n --
-|	$90001 a!+	| animacion
-|	390.0 a!+ dup ntoy a!+	| x y 
-	
-|:+guyload
-|	$00001 a!+	| animacion
-|	400.0 a!+ |pelevator 
 	
 :animacion
 	time.delta
@@ -347,6 +371,8 @@
 	
 	200 'per p.ini
 	32 plistini
+	100 'erow dc.ini
+	100 'frow dc.ini
 
 	'main SDLshow
 	SDL_Quit 
