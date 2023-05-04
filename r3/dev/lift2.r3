@@ -12,6 +12,7 @@
 
 #maxcapacity	3	| elevator capacity
 #capacity		0	| elevator capacity
+#pinasc * 80	| 10 max
 
 #delevator 1.0	| destination
 #pelevator 1.0	| position
@@ -100,14 +101,32 @@
 	2 over 8 3 << + ! | in asc
 	$00001 over 1 3 << + ! 
 	320.0 rot 3 << + over 2 3 << + !
+	dup nowelevator 3 << 'pinasc + !
 	1 'nowelevator +!
 	7 3 << + @ 8 >> pushbtnf
 	0 'waitdoor ! 
 	;
+
+:gto@
+	7 3 << + @ 8 >> $ff and ;
+
+:donwpeople | 
+	|"%d" .println
+	-8 a+
+	a@ 
+	$10008 over 1 3 << + ! 
+	-5.0 over 4 3 << + !
+	0 over 8 3 << + ! | in asc	
+	drop
+	a> dup 8 + swap capacity move
+	-1 'capacity +!
+	;
 	
 :downpeople	
-
-	;
+	'pinasc >a
+	0 ( over <?
+		a@+ gto@ nowelevator =? ( donwpeople ) drop
+		) drop  ;
 	
 |--- elevator state
 :idle
