@@ -1,4 +1,3 @@
-
 |------------------------
 ^r3/win/console.r3
 ^r3/lib/rand.r3
@@ -8,18 +7,18 @@
 
 :test
 	.cls 
-	"hola" .println
+	"Heap Test" .println
 	
 	100 'heap heapini
 	
-	100
+	100		| add 100 numbers
 	dup ( 1?
 		50 randmax
 		dup ">>%d " .print
 		'heap heap!
 		1 - ) drop
 	.cr .cr
-	( 1?		
+	( 1?	| get 100 numbers in orden
 		'heap heap@ "%d<< " .print
 		1 - ) drop
 	.cr

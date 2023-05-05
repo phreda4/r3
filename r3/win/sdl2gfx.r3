@@ -12,12 +12,6 @@
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
 	$ff SDL_SetRenderDrawColor ;
 
-::SDLcls | color --
-	SDLColor SDLrenderer SDL_RenderClear ;
-	
-::SDLredraw | -- 
-	SDLrenderer SDL_RenderPresent ;
-	
 ::SDLPoint | x y --
 	SDLRenderer rot rot SDL_RenderDrawPoint ;
 	

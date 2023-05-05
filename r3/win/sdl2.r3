@@ -256,6 +256,12 @@
 ::exit
 	1 '.exit ! ;
 	
+::SDLcls | color --
+	SDLColor SDLrenderer SDL_RenderClear ;
+	
+::SDLredraw | -- 
+	SDLrenderer SDL_RenderPresent ;	
+	
 #rec [ 0 0 1 1 ]
 #cc
 	

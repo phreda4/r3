@@ -14,13 +14,16 @@
 #capacity		0	| elevator capacity
 #pinasc * 80	| 10 max
 
-#delevator 1.0	| destination
-#pelevator 1.0	| position
-#velevator 0.1	| velocity 
+|#delevator 1.0	| destination
+|#pelevator 1.0	| position
+|#velevator 0.1	| velocity 
 
 #nowelevator 0 
 #toelevator 0
-#yelevator 500	
+
+#yelev 500.0
+#ytoelev 500.0	
+#vyelev 0
 
 #state 3 | idle wait run open close broke
 
@@ -65,10 +68,15 @@
 	'immcolorbtn !
 	;
 
+:entoy | n -- y
+	-70.0 * 500.0 + ;
+
+
 :go | f --
-	16 << dup 'delevator !
-	pelevator <? ( drop -0.01 'velevator ! ; ) 
-	drop 0.01 'velevator ! ;
+	dup 'toelevator !
+	entoy dup 'ytoelev !
+	yelev <? ( drop -2.0 'vyelev ! ; ) 
+	drop 2.0 'vyelev ! ;
 
 | queue for Elevator and wait in Floor
 #erow 0 0 
@@ -132,12 +140,12 @@
 :idle
 	'erow dc?
 	1? ( drop 
-		'erow dc@-
-		go 2 'state ! ; ) drop | button in elevator
+		'erow dc@- go 
+		2 'state ! ; ) drop | button in elevator
 	'frow dc?
 	1? ( drop 
-		'frow dc@-
-		go 2 'state ! ; ) drop | button in floor
+		'frow dc@- go 
+		2 'state ! ; ) drop | button in floor
 	;
 	
 :wait
@@ -152,27 +160,27 @@
 	waitdoor 2.0 <? ( drop ; ) drop	| wait for buton in elevator
 	'frow dc? 1? ( 4 'state ! ) drop 	| close	if button in floor
 	;
+	
 :run
-	velevator 'pelevator +! | velocity
-	-1 'yelevator +!
-	pelevator delevator - $ffc00 and | in floor? (adjust)
-	1? ( drop ; ) drop 
-	0 'velevator ! 
-	delevator 'pelevator ! 
-
+	vyelev 'yelev +! 
+	yelev ytoelev - $ffffc00 and
+	1? ( drop ; ) drop
+	0 'vyelev !
+	ytoelev 'yelev !
 	3 'state !				| open
-	delevator 16 >> offbtn	| turn off buttons
-	delevator 16 >> 'nowelevator !
+	
+	toelevator offbtn	| turn off buttons
+	toelevator 'nowelevator !
 	;
 :open
 	door
 	0.9 >? ( 1 'state ! 0 'waitdoor ! ) | wait
-	0.01 + 'door !
+	0.1 + 'door !
 	;
 :close
 	door 
 	0.1 <? ( 0 'state ! 0 'door ! ) | idle
-	0.01 - 'door !
+	0.1 - 'door !
 	;
 :broke
 	;
@@ -247,8 +255,8 @@
 	;
 	
 :glift
-	dup 3 3 << +
-	yelevator 38 + 16 << swap !
+	yelev 38.0 + 
+	over 3 3 << + !
 	;
 	
 	
@@ -341,14 +349,14 @@
 
 	
 	$B8B8B8 SDLColor
-	301 yelevator 80 76 SDLFRect
-	340 0 4 yelevator SDLFRect
+	301 yelev 16 >> 80 76 SDLFRect
+	340 0 4 yelev 16 >> SDLFRect
 	
 |	$FFB8DE SDLColor
-|	301 yelevator 80 70 SDLFRect
+|	301 yelev 16 >> 80 70 SDLFRect
 
 	$DEDEDE SDLColor
-	301 yelevator 60 + 80 10 SDLFRect
+	301 yelev 16 >> 60 + 80 10 SDLFRect
 	;
 	
 |--- main loop	
@@ -368,7 +376,8 @@
 	animacion
 	
 	10 480 780 40 immnoWin
-	pelevator 16 >> "- %d -" sprint immLabelC immdn
+	|pelevator 16 >> "- %d -" sprint immLabelC immdn
+	yelev ytoelev vyelev "%f %f %f" sprint immLabelC immdn
 	'strelevator state n>>0 immLabelC immdn
 	
 	SDLredraw 
@@ -392,7 +401,8 @@
 	32 plistini
 	100 'erow dc.ini
 	100 'frow dc.ini
-
+	0 entoy 'yelev !
+	
 	'main SDLshow
 	SDL_Quit 
 	;	
