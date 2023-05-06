@@ -257,7 +257,10 @@
 	1 '.exit ! ;
 	
 ::SDLcls | color --
-	SDLColor SDLrenderer SDL_RenderClear ;
+	SDLrenderer swap
+	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
+	$ff SDL_SetRenderDrawColor
+	SDLrenderer SDL_RenderClear ;
 	
 ::SDLredraw | -- 
 	SDLrenderer SDL_RenderPresent ;	
