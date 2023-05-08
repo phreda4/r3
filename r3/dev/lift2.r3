@@ -4,6 +4,7 @@
 
 ^r3/win/sdl2.r3
 ^r3/util/sdlgui.r3
+
 ^r3/lib/rand.r3
 ^r3/util/dlist.r3
 ^r3/util/arr16.r3
@@ -106,14 +107,23 @@
 :g.vx 4 3 << + ;
 :f.flo 7 3 << + ;
 
+:.dcprint | 'dc --
+	@+ swap @
+	( over <?
+		@+ "%d " .print ) 2drop
+	.cr
+	;
+	
 |--- elevator state
 :idle
 	'erow dc?
 	1? ( drop 
+		"e:" .print 'frow .dcprint
 		'erow dc@- go 
 		2 'state ! ; ) drop | button in elevator
 	'frow dc?
 	1? ( drop 
+		"f:" .print 'frow .dcprint
 		'frow dc@- go 
 		2 'state ! ; ) drop | button in floor
 	;
@@ -310,14 +320,25 @@
 		imm<<dn
 		) drop ;
 	
+	
+:drawbb
+	ca@+
+	$3 and? ( drop
+		msec $100 and? ( $ffffff nip ; ) 
+		$ff0000 nip ; )
+	$0 nip ;
+	
 :drawbuiling
 	$21B8B8 SDLColor
 	0 0 300 560 SDLfrect
+	'floor >a
 	560 ( 60 >? 
 		$DEDEDE SDLColor
 		0 over 300 10 SDLFRect
 		$B8B8B8 SDLColor
 		0 over 10 + 300 6 SDLFRect
+		drawbb SDLColor
+		294 over 30 - 4 4 SDLFRect
 		70 - ) drop
 
 	
