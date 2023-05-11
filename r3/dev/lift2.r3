@@ -16,6 +16,8 @@
 :time.start		msec 'prevt ! 0 'dtime ! ;
 :time.delta		msec dup prevt - 'dtime ! 'prevt ! ;
 
+#debugmode 0
+
 #cntfloors	8	| cnt of floor
 
 #maxcapacity	3	| elevator capacity
@@ -55,6 +57,7 @@
 |--
 :g>a! 1 3 << + ! ;
 :g>x 2 3 << + ;
+:g>xy 2 3 << + @+ int. swap @ int. ;
 :g>vx 4 3 << + ;
 :g>f 7 3 << + ;
 :g>s! 8 3 << + ! ;
@@ -69,9 +72,6 @@
 	c@ 1 - 16 << swap +!
 	;
 
-:gqueue- | ad --
-	g>f @ $ff and 'queuef + 
-	-1 swap +! ;
 
 :entoy | n -- y
 	-70.0 * 500.0 + ;
@@ -85,20 +85,15 @@
 
 | queue for Elevator and wait in Floor
 #erow 0 0 
-|#frow 0 0 
 
 |--- buttons
 :pushup	| f --
 	floor@ 1 and? ( 2drop ; ) drop
-	1 touch drop
-|	'frow dc! 
-	; 
+	1 touch drop ; 
 	
 :pushdn	| f --
 	floor@ 2 and? ( 2drop ; ) drop
-	2 touch drop 
-|	'frow dc! 
-	; 
+	2 touch drop ; 
 
 :pushbtnf | f --
 	floor@ 4 and? ( 2drop ; ) drop
@@ -108,27 +103,20 @@
 #door		| door position
 #waitdoor 	| wait for buttons
 
-#mind
-#minf
 
 |... choose near floor call
 :this? | floor button -- floor
-	$1 nand? ( drop ; )
-	$2 nand? ( drop ; )
-	drop
+	$3 and 0? ( drop ; ) drop
 	nowelevator =? ( ; )
-	nowelevator over - abs mind >? ( drop ; ) 
-	'mind !
-	dup 'minf !
-	;
+	nowelevator over - abs 
+	pick2 >? ( drop ; ) 
+	2swap 2drop over ;
 	
 :searchfloor
-	-1 'minf !
-	0 'mind !
-	cntfloors ( 1? 1 -
-		floor@ this?
-		) drop 
-	minf ;
+	-1 cntfloors | min minvalue
+	dup ( 1? 1 -
+		floor@ this? 
+		) 2drop ;
 	
 |.... elevator states 
 :idle
@@ -138,14 +126,8 @@
 		2 'state ! ; ) drop | button in elevator
 		
 	| search for the close floor
-	searchfloor -? ( drop ; ) 
-	go 
+	searchfloor -? ( drop ; ) go 
 	2 'state !
-	
-|	'frow dc?
-|	1? ( drop 
-|		'frow dc@- go 
-|		2 'state ! ; ) drop | button in floor
 	;
 	
 :wait
@@ -154,7 +136,6 @@
 	'erow dc? 1? ( 4 'state ! ) drop 	| close	if button in elevator
 	waitdoor 2.0 <? ( drop ; ) drop	| wait for buton in elevator
 	searchfloor 0 >? ( 4 'state ! ) drop
-|	'frow dc? 1? ( 4 'state ! ) drop 	| close	if button in floor
 	nowelevator offbtn	
 	;
 	
@@ -223,19 +204,23 @@
 
 |........... advance in queue
 :advanceq
-	$ff and nowelevator <>? ( drop ; ) drop
-	dup g>f dup
-	@ 16 >> 1 - clamp0 16 << 
-	over @ $ffff and or swap !			| advance in row
-	dup gcntfloor 3 << neg 280 + 16 <<
-	over g>x !	
+	dup 8 3 << + @ $ff and nowelevator <>? ( drop ; ) drop
+	dup 8 3 << + dup @ 
+	dup 16 >> 1 - -? ( 3drop ; ) 	| no negative
+	0? ( pick2 gpushbutton ) | push button
+	16 << swap $ffff and or swap !	| advance in row
+	dup 8 3 << + @ 16 >> 8.0 * neg 280.0 +
+	over 3 3 << + !					| move coord x
 	;
 
+:gqueue- | ad --
+	g>f @ $ff and 'queuef + -1 swap +! 
+	'advanceq 'per p.mapv ;
+	
 |........... waint in 	
 :guywait | adr -- adr
 	dup g>f @ 
-	$ff0000 and? ( advanceq ; ) | not first in row
-	$ff and nowelevator <>? ( drop ; ) drop | not in elevator
+	$ffff00ff and nowelevator <>? ( drop ; ) drop | not in elevator and in place 0
 	state 1 <>? ( drop ; ) drop				| elevator is waiting
 	capacity maxcapacity >=? ( drop ; ) drop | capacity?
 	| load guy to elevator
@@ -262,6 +247,12 @@
 	;
 
 	
+:dbg | adr dbg - adr dbg
+	$ffffff ttcolor
+	over g>xy 40 - ttat
+	over g>f @ 16 >> "%d" sprint ttprint
+	;
+	
 | anim $0ini0cnt (16.16)
 :nanim | time namin -- n
 	dup 16 >> swap $ffff and rot |  add cnt msec
@@ -269,6 +260,7 @@
 	
 :guydraw | v -- 
 	dup 8 3 << + @ ex 0? ( nip ; )	| execute the state
+	debugmode 1? ( dbg ) drop
 	>a
 	a@ dup dtime + a!+ 	| time
 	a@+ nanim			| nsprite
@@ -322,7 +314,7 @@
 		$B8B8B8 SDLColor
 		0 over 10 + 300 6 SDLFRect
 		buttonfloorcolor SDLColor
-		294 over 30 - 4 4 SDLFRect
+		294 over 26 - 4 4 SDLFRect
 		70 - ) drop
 
 	
@@ -355,15 +347,17 @@
 		imm<<dn
 		) drop 	
 	
+	
 	290 immwidth
+	
 	|pelevator 16 >> "- %d -" sprint immLabelC immdn
 |	yelev ytoelev vyelev "%f %f %f" sprint immLabelR immdn
 |	capacity toelevator nowelevator "ne:%d te:%d capa:%d" sprint immLabelR immdn
-|	'frow dc? 'erow dc? "%d %d" sprint immLabelR immdn
 	'strelevator state n>>0 immLabelC
 	imm<<dn
 	
 	100 immwidth
+	'debugmode " Debug" immCheck immdn	
 	imm>> $ffff0000 'immcolorbtn !
 	'exit "exit" immbtn 
 	;
@@ -402,7 +396,6 @@
 	
 	200 'per p.ini
 	100 'erow dc.ini
-|	100 'frow dc.ini
 	0 entoy 'yelev !
 	
 	'main SDLshow
