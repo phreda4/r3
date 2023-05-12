@@ -16,7 +16,9 @@
 :time.start		msec 'prevt ! 0 'dtime ! ;
 :time.delta		msec dup prevt - 'dtime ! 'prevt ! ;
 
+
 #debugmode 0
+#automode 0
 
 #cntfloors	8	| cnt of floor
 
@@ -69,9 +71,7 @@
 
 :gqueue+ | ad --
 	g>f dup @ $ff and 'queuef + 1 over +! 
-	c@ 1 - 16 << swap +!
-	;
-
+	c@ 1 - 16 << swap +! ;
 
 :entoy | n -- y
 	-70.0 * 500.0 + ;
@@ -98,14 +98,13 @@
 :pushbtnf | f --
 	floor@ 4 and? ( 2drop ; ) drop
 	4 touch 
-	'erow dc!  ;
+	'erow dc! ;
 	
 #door		| door position
 #waitdoor 	| wait for buttons
 
-
 |... choose near floor call
-:this? | floor button -- floor
+:this? | min minvalue floor button -- min minvalue floor
 	$3 and 0? ( drop ; ) drop
 	nowelevator =? ( ; )
 	nowelevator over - abs 
@@ -129,16 +128,14 @@
 	searchfloor -? ( drop ; ) go 
 	2 'state !
 	;
-	
 :wait
 	0.1 'waitdoor +! | count time
 	waitdoor 1.0 <? ( drop ; ) drop | wait allways
 	'erow dc? 1? ( 4 'state ! ) drop 	| close	if button in elevator
 	waitdoor 2.0 <? ( drop ; ) drop	| wait for buton in elevator
 	searchfloor 0 >? ( 4 'state ! ) drop
-	nowelevator offbtn	
+|	nowelevator offbtn	
 	;
-	
 :run
 	vyelev 'yelev +! 
 	yelev ytoelev - 1? ( drop ; ) drop
@@ -180,20 +177,18 @@
 	g>f @ dup $ff and swap 8 >> $ff and  | a from to
 	<? ( pushup ; ) pushdn ;
 
-:gfrom@	g>f @ $ff and ;
-:gto@	g>f @ 8 >> $ff and ;
-
 |........... walking to exit
 :guyout | adr -- adr
 	dup g>x @ int. 
-	-32 <? ( drop 0 ; ) | delete
+	-32 <? ( drop dup @ 'statsum +! 1 'statcnt +! 0 ; ) | delete
 	drop
 	;
 
 |........... in elevator
 :guyinasc | adr -- adr
 	yelev 38.0 + over 3 3 << + !
-	dup gto@ nowelevator <>? ( drop ; ) drop
+	dup g>f @ 8 >> $ff and		| destination floor
+	nowelevator <>? ( drop ; ) drop
 	| exit guy from elevator
 	$10008 over g>a! 	| anim
 	-5.0 over g>vx !	| vx
@@ -207,7 +202,7 @@
 	dup 8 3 << + @ $ff and nowelevator <>? ( drop ; ) drop
 	dup 8 3 << + dup @ 
 	dup 16 >> 1 - -? ( 3drop ; ) 	| no negative
-	0? ( pick2 gpushbutton ) | push button
+|	0? ( pick4 gpushbutton ) | push button
 	16 << swap $ffff and or swap !	| advance in row
 	dup 8 3 << + @ 16 >> 8.0 * neg 280.0 +
 	over 3 3 << + !					| move coord x
@@ -215,7 +210,10 @@
 
 :gqueue- | ad --
 	g>f @ $ff and 'queuef + -1 swap +! 
-	'advanceq 'per p.mapv ;
+	'advanceq 'per p.mapv 
+	'queuef nowelevator + c@ 0? ( drop nowelevator offbtn ; ) drop
+	nowelevator 1 touch drop 
+	;
 	
 |........... waint in 	
 :guywait | adr -- adr
@@ -294,15 +292,13 @@
 	'guyin a!+						| state
 	;
 
-
 |---  draw elevator	
-
 :buttonfloorcolor
 	ca@+
-	$3 and? ( drop
-		msec $100 and? ( $ffffff nip ; ) 
-		$ff0000 nip ; )
-	$0 nip ;
+	$3 and? ( drop		| active?
+		msec $100 and? ( $ffffff nip ; ) | blink
+		$ff0000 nip ; )					
+	$0 nip ; 
 	
 :drawbuiling
 	$21B8B8 SDLColor
@@ -317,23 +313,26 @@
 		294 over 26 - 4 4 SDLFRect
 		70 - ) drop
 
-	
 	$B8B8B8 SDLColor
 	301 yelev 16 >> 80 76 SDLFRect
 	340 0 4 yelev 16 >> SDLFRect
 	
-|	$FFB8DE SDLColor
-|	301 yelev 16 >> 80 70 SDLFRect
-
 	$DEDEDE SDLColor
 	301 yelev 16 >> 60 + 80 10 SDLFRect
 	;
 	
 |--- gui	
 #win1 1 [ 400 4 300 500 ] "Lift Challenger"
+#interv	2000
+#sec 	
 
 :guiwindow
 	'win1 immwin 0? ( drop ; ) drop
+
+	94 immwidth
+	imm>> imm>> $ffff0000 'immcolorbtn !
+	'exit "exit" immbtn 
+	imm<<dn
 	
 	cntfloors ( 1? 1 -
 		40 immwidth
@@ -341,54 +340,60 @@
 		30 immwidth
 		1 $040404007f00 checkbtn [ dup pushup ; ] "u" sprint immbtn imm>>
 		2 $040404007f00 checkbtn [ dup pushdn ; ] "d" sprint immbtn imm>> 
-		dup 'queuef + c@ "%d" sprint immLabel imm>>
+		|dup 'queuef + c@ "%d" sprint immLabel imm>>
 		40 immwidth
 		4 $00007f0000ff checkbtn [ dup pushbtnf ; ] over "%d" sprint sprint immbtn 		
 		imm<<dn
 		) drop 	
 	
-	
 	290 immwidth
-	
-	|pelevator 16 >> "- %d -" sprint immLabelC immdn
-|	yelev ytoelev vyelev "%f %f %f" sprint immLabelR immdn
-|	capacity toelevator nowelevator "ne:%d te:%d capa:%d" sprint immLabelR immdn
 	'strelevator state n>>0 immLabelC
 	imm<<dn
-	
-	100 immwidth
+	statcnt " cnt: %d" sprint immLabel immdn
+	statsum statcnt 0? ( 1 + ) | avoid 0/
+	/ " media: %d ms" sprint immLabel immdn
+	immdn
+	'automode " Automatic (ms)" immCheck immdn	
+	500 5000 'interv  immSlideri immdn
 	'debugmode " Debug" immCheck immdn	
-	imm>> $ffff0000 'immcolorbtn !
-	'exit "exit" immbtn 
+	debugmode 1? ( 
+|		yelev ytoelev vyelev "%f %f %f" sprint immLabelR immdn
+		capacity toelevator nowelevator "ne:%d te:%d capacity:%d" sprint immLabelR immdn
+		) drop
+	immdn
 	;
 	
+:automatic
+	automode 0? ( drop ; ) drop
+	sec dtime +
+	interv <? ( 'sec ! ; ) drop
+	0 'sec !
+	8 randmax +guy
+	;
+		
 |--- main loop	
 :main
 	0 SDLcls
-	immgui
-	
+	immgui		| ini IMMGUI
 	drawbuiling
 	runelevator
-
-	time.delta
-	'per p.drawo
-	4 'per p.sort
-
-	guiwindow
-
+	time.delta		| calc time 
+	'per p.drawo	| draw sprites
+	4 'per p.sort	| sort for draw
+	guiwindow		| GUI
 	SDLredraw 
+	
+	automatic
 	SDLkey
 	>esc< =? ( exit ) 	
 	<f1> =? ( 8 randmax +guy )
-	<f2> =? ( 0 +guy )
-	<f3> =? ( 1 +guy )
-	<f4> =? ( 2 +guy )	
+	<f2> =? ( msec time rerand )
 	drop ;	
 
 |----------- BOOT
 :
 	"Lift Challenge" 800 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 20 immSDL
+	"media/ttf/Roboto-Medium.ttf" 18 immSDL
 	16 32 "media/img/p1.png" ssload 'person1 !
 	16 32 "media/img/p2.png" ssload 'person2 !
 	16 32 "media/img/p3.png" ssload 'person3 !	
