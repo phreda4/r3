@@ -50,13 +50,12 @@
 	
 :load.inc | str -- str new ; incluye codigo
 	here over realfilename rtrim
-	load here =? ( drop
-		over 'lerror !
-		"Include not found" |dup .println
-		'error !
-		0 ; ) | no existe
-	here
-	dup only13 			| for see in debug
+	dup filexist 0? ( drop 
+			dup 'lerror ! 
+			"Include not found" 'error !
+			0 ; ) drop
+	load 
+	here dup only13 			| for see in debug
 	0 rot c!+ 'here !
 	;
 

@@ -71,7 +71,7 @@
 #r3base
 ";" "(" ")" "[" "]"
 "EX" "0?" "1?" "+?" "-?"
-"<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "BT?"
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
 "ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
 ">R" "R>" "R@"
@@ -233,9 +233,9 @@
 	@+ drop |code - 2 >> "(%h) " ,print
 	@+
 	dup "%h|" ,print
-	dup 1 >> $1 and "le" + c@ ,c	| export/local
+	dup 1 >> $1 and "le" + c@ ,c	| local/export
 	dup 2 >> $1 and " '" + c@ ,c	| /adress used
-	dup 3 >> $1 and " r" + c@ ,c	| /rstack mod
+	dup 3 >> $1 and " r" + c@ ,c	| /rstack modify
 	dup 4 >> $1 and " ;" + c@ ,c	| /multi;
 	dup 5 >> $1 and " R" + c@ ,c	| /recurse
 	dup 6 >> $1 and " [" + c@ ,c	| /anon
@@ -263,7 +263,7 @@
 	@+ "#%w " ,print
 	@+ drop |code - 2 >> "(%h) " ,print
 	@+
-	dup 1 >> $1 and "le" + c@ ,c	| export/local
+	dup 1 >> $1 and "le" + c@ ,c	| local/export
 	dup 2 >> $1 and " '" + c@ ,c	| /adress used
 	dup 3 >> $1 and " c" + c@ ,c	| cte
 
