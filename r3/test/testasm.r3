@@ -1,16 +1,14 @@
-| test
 | code
-
-#var1 2
-#var2 33
-|#str1 "uno"
+^r3/win/console.r3
+|^r3/lib/rand.r3
 
 :test
-	3 3 + 
-	var1 *
-	'var2 !
-|	"dos"
+	"test" .println
+	.input
 	;
+
+:test1
+	1 2 + ;
 
 :	
 	test

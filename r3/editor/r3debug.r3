@@ -29,7 +29,7 @@
 	0 'cntdef !
 	'inc 'inc> !
 	swap	
-	r3-stage-1 error 1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop	
+	r3-stage-1 error 1? ( 4drop ; ) drop	
 	r3-stage-2 1? ( 4drop ; ) drop 		
 	r3-stage-3			
 	r3-stage-4			
@@ -271,7 +271,7 @@
 :parseline 
 	,tcolor
 	( c@+ 1? 13 <>?  | 0 o 13 sale
-		9 =? ( wcolor ,tcolor )
+		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
 		$5e =? ( endline ; )	| $5e ^  Include
