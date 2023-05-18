@@ -512,6 +512,9 @@
 		32 =? ( wcolor )
 		drop swap ) drop ;
 	
+:,ct
+	9 =? ( ,sp ,sp 32 nip ) ,c ;
+	
 :strword
 	,c
 	( atselect c@+ 1?
@@ -519,11 +522,11 @@
 			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
 		13 <>?
-		,c ) drop 1 - 0 ;
+		,ct ) drop 1 - 0 ;
 	
 :endline
-	,c ( atselect c@+ 1? 
-			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
+	,c ( atselect c@+ 1? 13 <>? ,ct )	
+	1? ( drop ; ) drop 1 - ;
 	
 :parseline 
 	,tcolor

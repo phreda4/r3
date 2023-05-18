@@ -2,6 +2,7 @@
 | Memory words
 
 ^r3/lib/str.r3
+^r3/win/core.r3
 
 |---- free memory
 

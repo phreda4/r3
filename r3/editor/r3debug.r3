@@ -256,17 +256,20 @@
 		32 =? ( wcolor )
 		drop swap ) drop ;
 	
+:,ct
+	9 =? ( ,sp ,sp 32 nip ) ,c ;
+	
 :strword
 	,c
 	( c@+ 1?
 		$22 =? (
-			over c@  $22 <>? ( drop ; )
+			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
-		,c	) drop 1 - ;
+		,ct	) drop 1 - ;
 	
 :endline
-	,c ( c@+ 1? 
-			13 <>? ,c )	1? ( drop ; ) drop 1 - ;
+	,c ( c@+ 1? 13 <>? ,ct )	
+	1? ( drop ; ) drop 1 - ;
 	
 :parseline 
 	,tcolor
