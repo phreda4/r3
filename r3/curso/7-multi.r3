@@ -4,7 +4,7 @@
 ^r3/util/arr16.r3
 ^r3/win/sdl2gfx.r3
 
-#spritesheet | dibujo
+#spritesheet 0 0 0 | sprites
 #people 0 0 | array
 
 |.... time control
@@ -13,7 +13,6 @@
 
 :timeI msec 'prevt ! 0 'dtime ! ;
 :time. msec dup prevt - 'dtime ! 'prevt ! ;
-
 :time+ dtime + $ffffff7fffffffff and  ;
 
 | anima
@@ -26,7 +25,7 @@
 	swap 52 >>> + | ini
 	;
 	
-:aa |  vel cnt ini -- nanim 
+:vni>anim | vel cnt ini -- nanim 
 	$fff and 52 << swap
 	$ff and 44 << or swap
 	$f and 40 << or 
@@ -44,7 +43,7 @@
 	a@+ sspriterz
 	
 	|..... remove when outside screen
-	dup @ 0 800.0 between -? ( 2drop 0 ; ) drop
+	dup @ -17.0 817.0 between -? ( 2drop 0 ; ) drop
 	dup 8 + @ 0 600.0 between -? ( 2drop 0 ; ) drop
 	
 	|..... add velocity to position
@@ -55,42 +54,50 @@
 	;
 
 |----------------------------
-:+people1
+:+people | vx vy sheet anim zoom ang x y --
 	'person 'people p!+ >a 
-	0.0 a!+ 500.0 randmax 50.0 + a!+	| x y 
-	0 32 << 2.0 or a!+ | ang zoom
-	7 8 10 aa a!+	| velocidad frames iniframe
-	spritesheet a!+
-	0.8 a!+ 0.0 a!+			| vx vy
-	0.0 a!
+	swap a!+ a!+	| x y 
+	32 << or a!+	| ang zoom
+	a!+	a!+			| anim sheet
+	swap a!+ a!+ 	| vx vy
+	0 a!			| vrz
 	;
 
-:+people2	
-	'person 'people p!+ >a 
-	800.0 a!+ 500.0 randmax 50.0 + a!+	| x y 
-	0 32 << 2.0 or a!+ | ang zoom
-	7 8 1 aa a!+	| velocidad frames iniframe
-	spritesheet a!+
-	-0.8 a!+ 0.0 a!+			| vx vy
-	0.01 32 << 0.0 or a!
-	;
+#vx #x #a
 
+:toright 
+	0.8 'vx ! -16.0 'x ! 7 8 10 vni>anim 'a ! ;
+
+:toleft
+	-0.8 'vx ! 816.0 'x ! 7 8 1 vni>anim 'a ! ;
+
+:+randpeople
+	toright rand $1000 and? ( toleft ) drop
+	vx 0.2 randmax 0.1 -
+	'spritesheet 3 randmax 3 << + @
+	a 2.0 0 
+	x 400.0 randmax 150.0 + 
+	+people ;
+	
 :demo
 	0 SDLcls
 	time.
 	'people p.drawo		| draw sprites
 	2 'people p.sort	| sort for draw (y coord)
-	SDLredraw
+	SDLredraw 
+	+randpeople
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( +people1 )
-	<f2> =? ( +people2 )
+	<f1> =? ( +randpeople )
 	drop ;
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	16 32 "media/img/p1.png" ssload 'spritesheet !
-	100 'people p.ini
+	'spritesheet 
+	16 32 "media/img/p1.png" ssload swap !+
+	16 32 "media/img/p2.png" ssload swap !+
+	16 32 "media/img/p3.png" ssload swap !
+	2000 'people p.ini
 	timeI
 	'demo SDLshow
 	SDLquit ;	
