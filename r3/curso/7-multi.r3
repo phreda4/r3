@@ -11,68 +11,87 @@
 #prevt
 #dtime
 
-:time.start		msec 'prevt ! 0 'dtime ! ;
-:time.delta		msec dup prevt - 'dtime ! 'prevt ! ;
+:timeI msec 'prevt ! 0 'dtime ! ;
+:time. msec dup prevt - 'dtime ! 'prevt ! ;
 
-|person
-| x y ang anim ss vx vy ar
-| 0 8 16  24   32 40 48 56
-:nanim | namin -- n
-|	dup 16 >> $ffff and swap $ffff and rot |  add cnt msec
-|	55 << 1 >>> 63 *>> swap 32 >>> + 
+:time+ dtime + $ffffff7fffffffff and  ;
+
+| anima
+| $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
+
+:nanim | nanim -- n
 	dup $ffffffffff and 
 	over 40 >> $f and 48 + << 1 >>>
 	over 44 >> $ff and 63 *>>
 	swap 52 >>> + | ini
 	;
 	
-:aa |  vel cnt ini -- val | $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
+:aa |  vel cnt ini -- nanim 
 	$fff and 52 << swap
 	$ff and 44 << or swap
 	$f and 40 << or 
 	;
+
+|person
+| x y ang anim ss vx vy ar
+| 0 8 16  24   32 40 48 56
 	
 :person | v -- 
 	dup >a
 	a@+ int. a@+ int.	| x y
-	a@+ dup 32 >> swap $ffffffff and 
-	a@ dtime + $ffffff7fffffffff and dup a!+ nanim 
+	a@+ dup 32 >> swap $ffffffff and | rot zoom
+	a@ time+ dup a!+ nanim 			| n
 	a@+ sspriterz
+	
+	|..... remove when outside screen
+	dup @ 0 800.0 between -? ( 2drop 0 ; ) drop
+	dup 8 + @ 0 600.0 between -? ( 2drop 0 ; ) drop
+	
+	|..... add velocity to position
 	dup 40 + @ over +!
 	dup 48 + @ over 8 + +!
 	dup 56 + @ over 16 + +!
 	drop
 	;
-	
-:+people	
+
+|----------------------------
+:+people1
 	'person 'people p!+ >a 
-	400.0 a!+ 300.0 a!+	| x y 
-	0.5 32 << 3.0 or a!+ | ang rot
-	8 8 10 aa a!+	| animacion+ tiempo
+	0.0 a!+ 500.0 randmax 50.0 + a!+	| x y 
+	0 32 << 2.0 or a!+ | ang zoom
+	7 8 10 aa a!+	| velocidad frames iniframe
 	spritesheet a!+
-	0.1 a!+ 0.0 a!+			| vx vy
+	0.8 a!+ 0.0 a!+			| vx vy
 	0.0 a!
+	;
+
+:+people2	
+	'person 'people p!+ >a 
+	800.0 a!+ 500.0 randmax 50.0 + a!+	| x y 
+	0 32 << 2.0 or a!+ | ang zoom
+	7 8 1 aa a!+	| velocidad frames iniframe
+	spritesheet a!+
+	-0.8 a!+ 0.0 a!+			| vx vy
+	0.01 32 << 0.0 or a!
 	;
 
 :demo
 	0 SDLcls
-	time.delta	
-	
-	'people p.drawo	| draw sprites
-	1 'people p.sort	| sort for draw
-
+	time.
+	'people p.drawo		| draw sprites
+	2 'people p.sort	| sort for draw (y coord)
 	SDLredraw
-	
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( +people )
+	<f1> =? ( +people1 )
+	<f2> =? ( +people2 )
 	drop ;
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	16 32 "media/img/p2.png" ssload 'spritesheet !
+	16 32 "media/img/p1.png" ssload 'spritesheet !
 	100 'people p.ini
-	time.start
+	timeI
 	'demo SDLshow
 	SDLquit ;	
 	
