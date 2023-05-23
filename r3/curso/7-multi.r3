@@ -44,7 +44,7 @@
 	
 	|..... remove when outside screen
 	dup @ -17.0 817.0 between -? ( 2drop 0 ; ) drop
-	dup 8 + @ 0 600.0 between -? ( 2drop 0 ; ) drop
+	dup 8 + @ 0 616.0 between -? ( 2drop 0 ; ) drop
 	
 	|..... add velocity to position
 	dup 40 + @ over +!
@@ -66,14 +66,14 @@
 #vx #x #a
 
 :toright 
-	0.8 'vx ! -16.0 'x ! 7 8 10 vni>anim 'a ! ;
+	0.8 'vx ! -8.0 'x ! 7 8 10 vni>anim 'a ! ;
 
 :toleft
-	-0.8 'vx ! 816.0 'x ! 7 8 1 vni>anim 'a ! ;
+	-0.8 'vx ! 808.0 'x ! 7 8 1 vni>anim 'a ! ;
 
 :+randpeople
 	toright rand $1000 and? ( toleft ) drop
-	vx 0.2 randmax 0.1 -
+	vx 0.2 randmax 0.1 - + 0.2 randmax 0.1 -
 	'spritesheet 3 randmax 3 << + @
 	a 2.0 0 
 	x 400.0 randmax 150.0 + 

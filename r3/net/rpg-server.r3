@@ -14,6 +14,8 @@
 #p.n * 256
 #p.last
 
+#framegame * 512
+
 :]sock	3 << 'p.s + @ ;
 :sock!	3 << 'p.s + ! ;
 
@@ -132,7 +134,7 @@
 	
 :HandleClient | n sock -- n
 	'data 512 SDLNet_TCP_Recv
-	dup "%d" .println
+	|dup "%d" .println
 	0 <=? ( drop 
 |		notifyAllConnectionClosed(data, which);
 		deleteConnection
@@ -165,9 +167,12 @@
 |				SendID(which);
 	;
 	
+#sttcpsoc	
 :handleTCP
-	socketset 0 SDLNet_CheckSockets 0? ( drop ; ) | no in
-	-? ( r> drop ; ) | error
+	socketset 0 SDLNet_CheckSockets 
+	dup 'sttcpsoc !
+	0? ( drop ; ) | no in
+	-? ( drop ; ) 
 	drop
 
 	servsock 1? ( HandleServer ) drop
@@ -209,11 +214,23 @@
 	SDLNet_Quit
 	;
 	
+:screen 
+	.cls
+	servsock "ss:%h " .print
+	sttcpsoc "status:%h" .println
+	0 ( GAME_MAXPEOPLE <?
+		dup ]sock 
+		over "%d %h" .println
+		1 + ) drop	
+	10 ms
+	;
+	
 : |<<<<<<<< BOOT
 .cls
 "RPG Server" .println
 initNET
 ( inkey $1B1001 <>? drop
+	screen
 	handleTCP
 |	handleUDP
 	) drop
