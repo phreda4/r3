@@ -1,7 +1,7 @@
-| demo map2
-| PHREDA 2021
+| demo map2 - PHREDA 2023
+| map with 64bits per cell
+| info|tile|tile|tile..
 |------------------
-
 ^r3/win/console.r3
 ^r3/win/sdl2gfx.r3
 
@@ -10,68 +10,37 @@
 #wmap 32
 #hmap 32
 
-#map 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
-$10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 
+#map * $ffff
 
 |------ DRAW MAP
 
-:gettilea | x y -- t
-	32 * + 'map + ;
-
-:gettile | x y -- t
-	32 * + 'map + c@ ;
-
-:drawtile | x y adr tile -- y x adr  
-	ts_spr 
-	pick4 4 << pick4 4 << swap
-	tsdraw ;
+:]map | x y -- t
+	wmap 3 << * + 'map + ;
 
 #rec [ 0 0 0 0 ]
 #rdes [ 0 0 0 0 ]
 
 :setto | x y --
 	swap 'rdes d!+ d! ;
-:setfr | x y --
-	swap 'rec d!+ d! ;
 	
-:tsdraw | n 'ts x y --
+:drawtile | n map -- 
+	@+ swap		| n texture 'ts 
+	8 + rot 
 	
-	dup 8 + @ dup 'rdes 8 + ! 'rec 8 + !
-	SDLrenderer 	| n 'ts ren
-	rot rot @+		| ren n 'ts texture
-	rot 3 << rot 8 + + 
-	@ 'rec ! | ren txture rsrc
-	'rec 'rdes 
-	SDL_RenderCopy
+	3 << + @ 'rec !
+	SDLrenderer swap 'rec 'rdes SDL_RenderCopy 
 	;
 	
-:drawtile | n -- 
-
-	SDLrenderer ts_spr 'rec 'rdes SDL_RenderCopy ;
-	
-:drawmap
+:drawmap | map 
+	dup 8 + @ 
+	dup 'rdes 8 + ! 'rec 8 + ! | w h 
 	'map 
 	0 ( 16 <? 
 		0 ( 16 <?
 			over 4 << over 4 << setto
-			rot @+ drawtile rot rot 
+			rot @+ pick4 drawtile rot rot 
 			1 + ) drop
-		1 + ) 2drop ;
+		1 + ) 3drop ;
 
 :setmapall
 	'map >a
@@ -85,11 +54,8 @@ $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10
 |----- MAIN
 :demo
 	0 SDLcls
-	
-	drawmap
-
+	ts_spr drawmap
 	SDLredraw
-	
 	SDLkey
 	>esc< =? ( exit )
 	drop
