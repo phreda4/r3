@@ -16,11 +16,6 @@
 #lines>
 #prev
 
-:limit | x y -- x y
-	0 <? ( sh + ) sh >? ( sh - ) swap
-	0 <? ( sw + ) sw >? ( sw - ) swap
-	;
-
 :rando+
 	7 randmax 3 - + ;
 	
@@ -86,7 +81,7 @@
 	drop ;
 
 : 
-	"r3sdl" 800 600 SDLinit
+	"AniDraw" 800 600 SDLinit
 	here 
 	0 over ! | en with 0
 	dup 'lines ! 'lines> ! 

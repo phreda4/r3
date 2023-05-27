@@ -220,7 +220,8 @@
 	sttcpsoc "status:%h" .println
 	0 ( GAME_MAXPEOPLE <?
 		dup ]sock 
-		over "%d %h" .println
+		over "%d %h " .print
+		dup 3 << 'p.p + @ .ip
 		1 + ) drop	
 	10 ms
 	;
@@ -230,9 +231,9 @@
 "RPG Server" .println
 initNET
 ( inkey $1B1001 <>? drop
-	screen
+|	screen
 	handleTCP
-|	handleUDP
+	handleUDP
 	) drop
 closeNET
 ;

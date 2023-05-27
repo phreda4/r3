@@ -128,6 +128,27 @@
 	
 	;
 	
+#prepos 0
+
+:sendServerUDP
+	'serverIP d@ udpPacket 28 + d!
+	'serverIP 4 + w@ udpPacket 32 + w!
+	
+	8 udpPacket 16 + d!
+	prepos udpPacket 8 + @ ! 
+
+	udpsock -1 udpPacket SDLNet_UDP_Send
+	"send pos UDP %h" .println
+	;
+	
+:sendpos | x y --
+	2dup
+	$ffffffff and swap 32 << or
+	prepos =? ( drop ; ) 
+	'prepos !
+	SendServerUDP
+	;
+	
 :HandleClient
 	udpsock 'packets SDLNet_UDP_Recv drop
 	"UDP Packet incoming" .println
@@ -215,6 +236,7 @@
 	16 a+
 	a@+ int. 
 	a@+ int. 
+	sendpos
 	viewport
 	swap xvp -
 	swap yvp -
