@@ -53,7 +53,7 @@
 	;
 	
 :main
-	"r3sdl" 800 600 SDLinit
+	"sdl" 800 600 SDLinit
 	16 32 "media/img/p2.png" ssload 'tsguy !
 	'demo SDLshow
 	SDLquit ;	

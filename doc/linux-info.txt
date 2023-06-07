@@ -1,0 +1,45 @@
+Documentation for linux development
+
+The comunication with the SO is made with this words:
+
+LOADLIB | "" -- lib
+load the library and push the address
+
+GETPROC | lib "" -- adr
+get the address for call the API
+
+SYS0 | adr -- returnvalue 
+call system API with 0 argument
+
+SYS1 | arg0 adr -- returnvalue
+call system API with 1 arguments
+
+..SYS2,SYS3,SYS4..
+
+SYS10 | a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 adr -- returnvaalue
+call system API with 10 arguments (see inverse order)
+
+all the arguments are INTEGER, floating point not implemented!!
+
+---------------------------------------------------------------
+In file posix/posix.r3, the first LIBRARY for linux, from line 44 this code call when start the program
+
+:
+	"/lib/libc.so.6" loadlib
+...
+	dup "write" getproc 'sys-write ! 
+...
+
+assign a var sys-open the address to call and in previous lines
+
+#sys-write	| address to fuction (local, not see when include this file)
+..
+::libc-write sys-write sys3 ;
+| exported word with the stack -> | libc-write | a b c -- r 
+
+---------------------------------------------------------------
+in file posix/console.r3
+::type | str cnt --
+	 1 rot rot libc-write drop ;
+
+from here wee need a base for comunicate with the os

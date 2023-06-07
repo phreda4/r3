@@ -31,7 +31,7 @@
 	dup 24 >> $ff and swap
 	dup 16 >> $ff and swap
 	dup 8  >> $ff and swap
-	$ff and "%d.%d.%d.%d" .println
+	$ff and "%d.%d.%d.%d " .print
 	;
 
 :.packet | adr --
@@ -222,6 +222,7 @@
 		dup ]sock 
 		over "%d %h " .print
 		dup 3 << 'p.p + @ .ip
+		dup 3 << 'p.n + @ "%h" .println
 		1 + ) drop	
 	10 ms
 	;
