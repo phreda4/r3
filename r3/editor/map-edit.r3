@@ -12,7 +12,6 @@
 
 #sprgui
 
-
 #filemap * 1024
 
 #mapx 0 #mapy 0
@@ -361,9 +360,6 @@
 :sort1d | m1 m2 -- mm mM
 	over <? ( swap )
 	;
-	
-:writetile	|  --
-	tilenow sdlx sdly scr2tile c! ;
 	
 :fillmap | --
 	sdlx sdly scr2view | x y

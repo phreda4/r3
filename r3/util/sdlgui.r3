@@ -11,7 +11,7 @@
 #winw 10 #winh 10
 
 #padx 2 #pady 2
-#curx 10 #cury 10
+##curx 10 ##cury 10
 #boxw 100 #boxh 20
 
 ##immcolorwin $666666	| window 
@@ -34,7 +34,7 @@
 ::immdn
 	pady 1 << boxh + 'cury +! ;
 ::imm<<dn
-	winx 'curx !
+	winx padx + 'curx !
 	pady 1 << boxh + 'cury +! ;	
 	
 |--- place
@@ -66,6 +66,13 @@
 |--- icon
 ::immicon | nro x y --
 	icons rot rot tsdraw ;
+	
+::immiconb
+	immcolortex ttColor
+	curx padx +
+	cury  
+	immicon ;
+	
 	
 |--- win
 :winxy!
@@ -125,6 +132,13 @@
 	immcolorbtn [ $808080 xor ; ] guiI SDLColor
 	plxywh SDLFRect
 	immlabelc
+	onClick ;	
+
+::immibtn | 'click nro --
+	plgui
+	immcolorbtn [ $808080 xor ; ] guiI SDLColor
+	plxywh SDLFRect
+	immiconb
 	onClick ;	
 
 |----------------------
