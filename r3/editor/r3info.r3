@@ -13,7 +13,6 @@
 ^r3/system/r3pass4.r3
 
 #name * 1024
-#namenow * 256
 
 ::r3debuginfo | str --
 	r3name

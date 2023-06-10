@@ -171,24 +171,14 @@
 |------------------------------------------------
 ##path * 1024
 
-| extrat path from string, keep in path var
-::getpath | str -- str
-	'path over
-	( c@+ $ff and 32 >=?
-		rot c!+ swap ) 2drop
-	1 -
-	( dup c@ $2f <>? drop
-		1 - 'path <=? ( 0 'path ! drop ; )
-		) drop
-	0 swap 1 + c! ;
 
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
 	
 :loadtxt | -- ; cargar texto
-	fuente 'name getpath
+	fuente 'name 
 	load 0 swap c!
-
+	
 	fuente only13 	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> !
 	count + '$fuente !
@@ -755,6 +745,7 @@
 	$3fff +				| 4096 linecomm
 	'here  ! | -- FREE
 	mark 
+
 	loadtxt
 	loadinfo
 	;
@@ -764,7 +755,9 @@
 	'name "mem/main.mem" load drop
 	ram
 	.getconsoleinfo
-	.alsb editor .masb
+	.alsb 
+	editor 
+	.masb
 	savetxt
 	;
 

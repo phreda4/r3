@@ -1,4 +1,5 @@
 Documentation for linux development
+-----------------------------------
 
 The comunication with the SO is made with this words:
 
@@ -43,3 +44,38 @@ in file posix/console.r3
 	 1 rot rot libc-write drop ;
 
 from here wee need a base for comunicate with the os
+
+
+Missing pieces:
+---------------
+
+file win/core.r3 need traslate to Linux system calls!
+
+the mains are:
+
+::msec | -- msec
+::time | -- hms
+::date | -- ymd
+::ffirst | "path//*" -- fdd/0
+::fnext | -- fdd/0
+::load | 'from "filename" -- 'to
+::save | 'from cnt "filename" -- 
+::append | 'from cnt "filename" -- 
+::delete | "filename" --
+::filexist | "file" -- 0=no
+::sys | "" --
+
+with this words the console programs work!
+
+this file can place in posix/core.r3
+
+win/mconsole.r3 are SO agnostic!! need sort this things
+
+I think the sdl2 imports are the same!, only change "SDl2.dll" to "SDL2.so" or something!!
+
+when work this in wire (some test can be made for this), sure add prefix for system
+|WIN|
+|LIN| 
+for call the correct SO
+
+

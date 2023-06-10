@@ -7,8 +7,8 @@
 ^r3/system/r3parse.r3
 |^r3/system/r3stack.r3
 
-##r3filename * 256
-##r3path * 256
+##r3filename * 1024
+##r3path * 1024
 
 ##cnttokens
 ##cntdef
@@ -191,14 +191,8 @@
 
 
 ::r3name | "" --
-	dup
-	'r3filename strcpy
-	'r3path strcpyl
-	( 'r3path >? 1 -
-		dup c@ $2f | /
-			=? ( drop 0 swap c! ; )
-		drop ) drop
-	0 'r3path !
+	dup 'r3filename strcpy
+	'r3path strpath
 	;
 
 |--- dibuja movimiento pilas

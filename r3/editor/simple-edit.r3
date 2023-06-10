@@ -600,8 +600,7 @@
 |------------------------------------------------
 ::edload | "" --
 	'name strcpy
-	fuente 'name getpath
-	load 0 swap c!
+	fuente 'name load 0 swap c!
 
 	fuente only13 	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> !
