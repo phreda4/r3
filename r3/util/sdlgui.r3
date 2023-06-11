@@ -88,7 +88,7 @@
 	winx winy winw winh SDLRect
 	
 	winx 'curx ! winy 'cury !
-	winw padx 1 << - 'boxw ! immfontsh pady 1 << + 'boxh !
+	winw padx 2 << - 'boxw ! immfontsh pady 1 << + 'boxh !
 	immcolortwin SDLColor
 	plxywh SDLFRect
 	immlabelc
@@ -123,7 +123,7 @@
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
 	
-::immwidth
+::immwidth |w -- 
 	'boxw ! ;	
 
 |--- widget	

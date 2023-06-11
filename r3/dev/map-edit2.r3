@@ -9,10 +9,11 @@
 #modod
 
 #ts_spr
+#tilenow 16
 
-#map * $ffff
+#map * $fffff
 #mapx 0 #mapy 0
-#mapw 16 #maph 16
+#mapw 32 #maph 32
 #tilew 16 #tileh 16
 
 #rec [ 0 0 0 0 ]
@@ -20,15 +21,15 @@
 
 |------ DRAW MAP
 :]map | x y -- t
-	mapw 3 << * + 'maph + ;
+	mapw * + 3 << 'maph + ;
 
-:setto | x y --
-	swap 'rdes d!+ d! ;
+:setto | y x --
+	'rdes d!+ d! ;
 	
 :drawtile | n map -- 
 	@+ swap		| n texture 'ts 
 	8 + rot 
-	
+
 	3 << + @ 'rec !
 	SDLrenderer swap 'rec 'rdes SDL_RenderCopy 
 	;
@@ -39,23 +40,16 @@
 	'map 
 	0 ( maph <? 
 		0 ( mapw <?
-			over 4 << mapx +
 			over 4 << mapy +
-			setto
+			over 4 << mapx + 
+			setto | y x
 			rot @+ pick4 drawtile rot rot 
 			1 + ) drop
 		1 + ) 3drop ;
 
-:setmapall
-	'map >a
-	0 ( 16 <? 
-		0 ( 16 <?
-			2dup 16 * + a!+
-			1 + ) drop
-		1 + ) 2drop ;
 
 |---- MODO
-#win1 1 [ 0 0 48 128 ] "Tools"
+#win1 1 [ 532 0 64 128 ] "Tools"
 
 :wintools
 	'win1 immwin 0? ( drop ; ) drop
@@ -88,21 +82,43 @@
 	swap ;
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
-	scr2view 'map ;
+	scr2view mapw * + 3 << 'map + ;
 	
-:writetile	| tile --
-	sdlx curx - sdly cury - scr2tile ! ;
+:tile! | --
+	tilenow 
+	sdlx sdly scr2tile ! ;
 	
 :mdraw
-	'writetile dup onDnMove ;	
+	'tile! dup onDnMove ;	
 
+:drawmapedit
+|	'pendn 'penmv 'pencopy guiMap
+	mdraw
+	ts_spr drawmap	
+	;
 
+|------------
+:resetmap
+	'map >a
+	0 ( maph <? 
+		0 ( mapw <?
+		
+			2dup swap mapw * + a!+
+			
+			1 + ) drop
+		1 + ) drop 
+		
+	ts_spr @ SDLimagewh
+	16 + | title in window
+	swap 'win2 16 + d!+ d!
+	;
+	
 |----- MAIN
 :demo
 	0 SDLcls
 	immgui		| ini IMMGUI	
 
-	ts_spr drawmap	
+	drawmapedit
 	wintiles	
 	wintools
 	
@@ -115,8 +131,10 @@
 :main
 	"r3sdl" 800 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 14 immSDL
+	
 	16 16 "media/img/First Asset pack.png" tsload 'ts_spr !
-	setmapall
+	resetmap
+	
 	'demo SDLshow
 	
 	SDLquit
