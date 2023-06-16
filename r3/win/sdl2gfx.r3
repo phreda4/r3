@@ -161,6 +161,10 @@
 	'rec 'rdes 
 	SDL_RenderCopy
 	;
+
+::tsfree | ts --
+	@ SDL_DestroyTexture 
+	empty ;	
 	
 |-------------------	
 :fillfull

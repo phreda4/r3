@@ -46,13 +46,13 @@
 #prev 
 :pendn
 	sdlx sdly 16 << or 
-	dup $fff0fff0 and 'prev ! | 15 pixels are the same!
+	dup $fff8fff8 and 'prev ! | 15 pixels are the same!
 	ink 33 << or
 	'aline !+ 'aline> ! ;
 	
 :penmv
 	sdlx sdly 16 << or 
-	dup $fff0fff0 and prev =? ( 2drop ; ) | don't store same point
+	dup $fff8fff8 and prev =? ( 2drop ; ) | don't store same point
 	'prev !
 	aline> !+ 'aline> ! ;
 	
