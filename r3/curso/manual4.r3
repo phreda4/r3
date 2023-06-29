@@ -18,7 +18,7 @@
 :disparo
 	$ffffff SDLColor
 	xd -? ( drop ; ) | si es negativo sale
-	int. yd int. over yd int. 4 + SDLLine
+	int. yd int. over yd int. 8 + SDLLine
 	-4.0 'yd +!
 	yd -? ( -1.0 'xd ! ) drop ;
 
@@ -50,9 +50,7 @@
 :main
 	"r3sdl" 640 480 SDLinit
 	"media/img/ball.png" loadimg 'spr1 ! 
-	|"media/img/alien.png" 
-	"media/img/ball.png" 
-	loadimg 'alien ! 		
+	"media/img/ball.png" loadimg 'alien ! 		
 	
 	'juego SDLshow
 	SDLquit ;	

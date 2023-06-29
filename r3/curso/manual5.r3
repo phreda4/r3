@@ -33,7 +33,7 @@
 	-1 'xd !
 	+alien ;
 	
-:choco? | -- c ; si no choco=0
+:choco?
 	xa xd - abs 16.0 >? ( drop ; ) drop
 	ya yd - abs 16.0 >? ( drop ; ) drop
 	+punto
@@ -65,9 +65,7 @@
 :main
 	"r3sdl" 640 480 SDLinit
 	"media/img/ball.png" loadimg 'spr1 ! 
-	|"media/img/alien.png" 
-	"media/img/ball.png" 
-	loadimg 'alien ! 		
+	"media/img/ball.png" loadimg 'alien ! 		
 	
 	'juego SDLshow
 	SDLquit ;	
