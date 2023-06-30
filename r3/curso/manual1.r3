@@ -1,11 +1,11 @@
 ^r3/win/sdl2gfx.r3
 
-#spr1
+#sprites
 #x 320 #y 380
 	
 :juego
 	0 SDLcls
-	x y spr1 SDLImage
+	x y 2.0 0 sprites sspritez 
 	SDLredraw
 
 	SDLkey 
@@ -16,7 +16,7 @@
 
 :main
 	"r3sdl" 640 480 SDLinit
-	"media/img/ball.png" loadimg 'spr1 ! 	
+	16 16 "media/img/manual.png" ssload 'sprites !
 	'juego SDLshow
 	SDLquit ;	
 	
