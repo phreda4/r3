@@ -288,4 +288,28 @@
 	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
 	;	
 
+|.... time control
+#prevt
+##deltatime
+
+::timer$ msec 'prevt ! 0 'deltatime ! ;
+::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
+::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
+
+|.... animamation
+| $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
+
+::nanim | nanim -- n
+	dup $ffffffffff and 
+	over 40 >> $f and 48 + << 1 >>>
+	over 44 >> $ff and 63 *>>
+	swap 52 >>> + | ini
+	;
+	
+::vci>anim | vel cnt ini -- nanim 
+	$fff and 52 << swap
+	$ff and 44 << or swap
+	$f and 40 << or 
+	;
+	
 : fillfull ;

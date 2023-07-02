@@ -9,7 +9,7 @@
 #xa 0.0 #ya 100.0
 
 :+alien
-	-16.0 'ya ! 480.0 randmax 'xa ! ;
+	-16.0 'ya ! 640.0 randmax 'xa ! ;
 
 :alien
 	xa int. ya int. 2.0 

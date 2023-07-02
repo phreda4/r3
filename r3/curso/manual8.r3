@@ -1,6 +1,27 @@
 ^r3/win/sdl2gfx.r3
 ^r3/lib/rand.r3
+^r3/util/bfont.r3
 
+#buffer * 1024			| lugar para guardar las coordenadas
+#buffer> 'buffer
+
+:+estrella | x y –
+	buffer> w!+ w!+ 'buffer> ! ;
+
+:.estrellas
+$ffffff sdlColor
+	'buffer ( buffer> <?
+		w@+ swap
+		over 1 + sh >? ( 0 nip ) 
+		over 2 - w!
+		w@+ rot
+		SDLPoint ) drop ;
+
+:llenaestrellas
+	256 ( 1? 1 -
+		sw randmax sh randmax +estrella
+		) drop ;
+		
 #sprites
 #x 320.0 #y 380.0
 #xv 0 #yv 0
@@ -11,14 +32,18 @@
 	-16.0 'ya ! 640.0 randmax 'xa ! ;
 
 :alien
-	xa int. ya int. 2.0 2 sprites sspritez 
+	xa int. ya int. 2.0 
+	msec 7 >> $3 and 2 +
+	sprites sspritez 
 	2.0 'ya +!
 	ya 480.0 >? ( +alien ) drop ;
 	
 :jugador
-	x int. y int. 2.0 0 sprites sspritez 
+	x int. y int. 2.0 	
+	msec 7 >> $1 and 
+	sprites sspritez 
 	xv 'x +! yv 'y +! ;
-
+	
 #xd #yd 
 
 :disparo
@@ -30,8 +55,7 @@
 
 :+disparo
 	xd +? ( drop ; ) drop 
-	x 'xd ! y 8.0 - 
-	'yd ! ;
+	x 'xd ! y 'yd ! ;
 
 #puntos 0
 #vidas 3
@@ -44,8 +68,7 @@
 :choco?
 	xa xd - abs 16.0 >? ( drop ; ) drop
 	ya yd - abs 8.0 >? ( drop ; ) drop
-	+punto
-	;
+	+punto ;
 
 :perdio?
 	xa x - abs 16.0 >? ( drop ; ) drop
@@ -54,13 +77,15 @@
 	vidas 0? ( exit ) drop
 	320.0 'x ! 
 	380.0 'y !
-	+alien
-	;
+	+alien ;
 
 :juego
 	0 SDLcls
+	.estrellas 
 	disparo jugador	alien	
 	choco? perdio?
+	10 8 bat puntos "puntos:%d" sprint bprint
+	10 24 bat vidas "vidas:%d" sprint bprint
 	SDLredraw
 
 	SDLkey 
@@ -72,7 +97,9 @@
 
 :main
 	"r3sdl" 640 480 SDLinit
+	bfont1 
 	16 16 "media/img/manual.png" ssload 'sprites !			
+	llenaestrellas
 	+alien
 	'juego SDLshow
 	SDLquit ;	
