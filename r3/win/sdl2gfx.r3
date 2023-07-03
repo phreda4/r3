@@ -292,7 +292,7 @@
 #prevt
 ##deltatime
 
-::timer$ msec 'prevt ! 0 'deltatime ! ;
+::timer< msec 'prevt ! 0 'deltatime ! ;
 ::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
 ::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
 
