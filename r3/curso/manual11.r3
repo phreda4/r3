@@ -13,6 +13,7 @@
 
 #listalien 0 0 | lista de aliens
 #listshoot 0 0 | lista de disparos
+#listfx 0 0 | fx
 
 :objsprite | adr -- adr
 	dup >a
@@ -23,7 +24,23 @@
 	dup 40 + @ over +!		| vx
 	dup 48 + @ over 8 + +!	| vy
 	;
-	
+
+|--------------- fx	
+:explosion
+	objsprite	
+	24 + @ nanim 10 =? ( drop 0 ; )
+	drop
+	;
+
+:+explo	| y x --
+	'explosion 'listfx p!+ >a 
+	swap a!+ a!+	| x y 
+	2.0 a!+			| zoom
+	7 5 6 vci>anim | vel cnt ini 
+	a!+	sprites a!+			| anim sheet
+	0 a!+ 0 a!+ 	| vx vy
+	;
+
 |--------------- Jugador
 :jugador
 	x int. y int. 2.0 	
@@ -41,13 +58,14 @@
 	
 |-------------- Disparo	
 #hit
-:choque  | x y i n p -- x y p
+:choque?  | x y i n p -- x y p
 	dup 8 + >a 
 	pick4 a@+ -	pick4 a@+ -
 	distfast 20.0 >? ( drop ; )	drop
 	dup 'listalien p.del
 	1 'puntos +!
 	0 'hit !
+	pick4 pick4 +explo
 	;
 	
 :bala | v -- 
@@ -56,7 +74,7 @@
 	1 'hit !
 	dup @ |-20.0 <? ( 2drop 0 ; ) 660.0 >? ( 2drop 0 ; ) ; fuera de pantalla
 	over 8 + @ -20.0 <? ( 3drop 0 ; ) |500.0 >? ( 3drop 0 ; ) ; fuera de pantalla
-	'choque 'listalien p.mapv | 'vector list --	
+	'choque? 'listalien p.mapv | 'vector list --	
 	2drop
 	hit 0? ( nip ; ) drop
 	drop
@@ -74,6 +92,7 @@
 |-------------- Alien	
 :alien | v -- 
 	objsprite	
+	
 	dup @ x - 
 	over 8 + @ 
 	500.0 >? ( 3drop 0 ; ) | llego abajo?
@@ -126,6 +145,7 @@
 	.estrellas 
 	'listalien p.draw
 	'listshoot p.draw
+	'listfx p.draw
 	jugador	
 	horda
 	
@@ -147,6 +167,7 @@
 	llenaestrellas
 	200 'listalien p.ini
 	200 'listshoot p.ini
+	200 'listfx p.ini
 	timer<
 	'juego SDLshow
 	SDLquit ;	
