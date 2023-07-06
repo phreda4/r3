@@ -71,5 +71,6 @@
 	dup "Mix_PlayingMusic" getproc 'sys-Mix_PlayingMusic !
 	dup "Mix_Playing" getproc 'sys-Mix_Playing !
 	drop
+	SNDInit
 	;
 
