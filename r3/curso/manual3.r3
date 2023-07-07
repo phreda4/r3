@@ -21,7 +21,7 @@
 
 :juego
 	0 SDLcls
-	jugador	alien	
+	jugador alien	
 	SDLredraw
 
 	SDLkey 

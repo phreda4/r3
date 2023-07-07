@@ -22,7 +22,7 @@
 	xv 'x +! yv 'y +! ;
 	;
 
-|-------------- Disparo	
+|-------------- Aliens
 :alien | adr –
 	>a
 	a@+ int. a@+ int. | x y , convertidos a enteros
@@ -30,7 +30,6 @@
 	a@+ | nro de sprite
 	a@+ | hoja de sprite
 	sspritez ;
-
 
 :+alien
 	'alien 'listalien p!+ >a
@@ -40,7 +39,6 @@
 	12 randmax a!+
 	sprites a!+ 
 	;
-
 
 |------------- fondo de estrellas
 #buffer * 1024			| lugar para guardar las coordenadas

@@ -54,8 +54,8 @@
 	objsprite
 
 	1 'hit !
-	dup @ |-20.0 <? ( 2drop 0 ; ) 660.0 >? ( 2drop 0 ; ) ; fuera de pantalla
-	over 8 + @ -20.0 <? ( 3drop 0 ; ) |500.0 >? ( 3drop 0 ; ) ; fuera de pantalla
+	dup @ |x
+	over 8 + @ -20.0 <? ( 3drop 0 ; ) | y fuera de pantalla
 	'choque 'listalien p.mapv | 'vector list --	
 	2drop
 	hit 0? ( nip ; ) drop
