@@ -138,7 +138,7 @@
 :l6 over dup 6 >> + +? ( rot drop swap $3f8 - ; ) drop ;
 :l7 over dup 7 >> + +? ( rot drop swap $1fe - ; ) drop ;
 
-::ln. | x --r
+::ln. | x -- r
 	-? ( $80000000 nip ; )
 	$a65af swap | y x
 	$8000 <? ( 16 << swap $b1721 - swap )
@@ -166,7 +166,7 @@
 :xp
 	swap -? ( $b1721 + swap 16 >> ; ) swap ;
 
-::exp. | x --  r
+::exp. | x -- r
 	1.0 | x y
 	xp
 	ex1 ex2 ex3 ex4 ex5 ex6
@@ -255,7 +255,7 @@
 	-? ( neg >> ; ) << ;
 
 |--- integer to floating point
-::i2fp | i -- f
+::i2fp | i -- fp
 	0? ( ; )
 	dup 63 >> swap	| sign i
 	over + over xor | sign abs(i) 

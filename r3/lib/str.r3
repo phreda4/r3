@@ -41,7 +41,7 @@
 
 ::count | s1 -- s1 cnt ; naive version (nou used)
 	0 over ( c@+ 1?
-		drop swap 1 + swap ) 2drop  ;
+		drop swap 1 + swap ) 2drop ;
 
 ::count | s1 -- s1 cnt ; version 3 - 8 bytes
 	0 over ( @+ dup $0101010101010101 -
