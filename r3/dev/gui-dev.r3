@@ -4,6 +4,7 @@
 ^r3/lib/gui.r3
 
 ^r3/win/sdl2gfx.r3
+|^r3/util/bfont.r3
 ^r3/util/ttfont.r3
 ^r3/lib/input.r3
 
@@ -11,22 +12,18 @@
 #winw 10 #winh 10
 
 #padx 2 #pady 2
-##curx 10 ##cury 10
-##boxw 100 ##boxh 20
+#curx 10 #cury 10
+#boxw 100 #boxh 20
 
-##immcolorwin $666666	| window 
-##immcolortwin $444444	| title window (back)
-##immcolortex $ffffff	| text
-##immcolorbtn $0000ff	| button
+#immcolorwin $666666	| window 
+#immcolortwin $444444	| title window (back)
+#immcolortex $ffffff	| text
+#immcolorbtn $0000ff	| button
 
 #icons
-#font	
 #immfontsh 16
 
-::immgui 
-	gui 
-	immfontsh 8 + 'boxh !
-	;
+::immgui gui ;
 	
 ::immat 'cury ! 'curx ! ;
 ::immbox 'boxh ! 'boxw ! ;
@@ -37,7 +34,7 @@
 ::immdn
 	pady 1 << boxh + 'cury +! ;
 ::imm<<dn
-	winx padx + 'curx !
+	winx 'curx !
 	pady 1 << boxh + 'cury +! ;	
 	
 |--- place
@@ -51,31 +48,24 @@
 ::immlabel | "" --
 	immcolortex ttColor
 	curx padx + 
-	boxh immfontsh - 1 >> cury + pady + 
+	boxh immfontsh - 2 >> cury + pady + 
 	ttat ttprint ;
 	
 ::immlabelc | "" --
 	immcolortex ttColor
 	ttsize boxw rot - 1 >> curx + padx +
-	boxh rot - 1 >> cury + pady + 
+	boxh rot - 2 >> cury + pady + 
 	ttat ttprint ;
 
 ::immlabelr | "" --
 	immcolortex ttColor
 	ttsize boxw rot - curx + padx +
-	boxh rot - 1 >> cury + pady + 
+	boxh rot - 2 >> cury + pady + 
 	ttat ttprint ;
 	
 |--- icon
 ::immicon | nro x y --
 	icons rot rot tsdraw ;
-	
-::immiconb
-	immcolortex icons tscolor 
-	curx padx + 
-	cury 
-	immicon ;
-	
 	
 |--- win
 :winxy!
@@ -91,7 +81,7 @@
 	winx winy winw winh SDLRect
 	
 	winx 'curx ! winy 'cury !
-	winw padx 2 << - 'boxw ! immfontsh pady + 'boxh !
+	winw padx 1 << - 'boxw ! immfontsh pady 1 << + 'boxh !
 	immcolortwin SDLColor
 	plxywh SDLFRect
 	immlabelc
@@ -119,15 +109,7 @@
 	winy pady 2 << + immfontsh + 'cury ! 
 
 	winw 1 >> 'boxw !
-	;	
-
-::immnowin | xini yini w h --
-	'boxh ! 'boxw !
-	dup 'winy ! 'cury ! 
-	dup 'winx ! 'curx ! ;
-	
-::immwidth |w -- 
-	'boxw ! ;	
+	;		
 
 |--- widget	
 ::immbtn | 'click "" --
@@ -135,13 +117,6 @@
 	immcolorbtn [ $808080 xor ; ] guiI SDLColor
 	plxywh SDLFRect
 	immlabelc
-	onClick ;	
-
-::immibtn | 'click nro --
-	plgui
-	immcolorbtn [ $808080 xor ; ] guiI SDLColor
-	plxywh SDLFRect
-	immiconb
 	onClick ;	
 
 |----------------------
@@ -244,12 +219,62 @@
 	empty
 	;
 	
+	
 |--------------------------------
-::immSDL | "font" size --
+
+
+|--------------------------------	
+#cv 0
+#buffer * 100
+#otrob * 50
+#vchek
+#vradio
+#vcombo
+
+#v1
+#win2 1 [ 400 10 100 100 ] "Check"
+:window2
+	v1 0? ( drop ; ) drop
+	'win2 immwin 0? ( drop ; ) drop
+	[ 0 'v1 ! ; ] "no win" immbtn
+	;
+
+#win1 1 [ 10 10 300 500 ] "Ventana de prueba"
+:window1
+	'win1 immwin 0? ( drop ; ) drop
+	'exit "salir" immbtn immdn
+	0 255 'cv immSlideri immdn
+	'vchek "Check" immCheck immdn
+	
+	'vradio "Radio 1|Radio 2|Radio 3" immRadio 
+	'vcombo "Combo 1|Combo 2|Combo 3|Combo 4" glCombo immdn
+	'v1 "Ventana2" immCheck immdn
+	;
+	
+:main
+	0 SDLcls
+	immgui
+
+	window1
+	window2
+	
+	SDLredraw 
+	SDLkey
+	>esc< =? ( exit )
+	drop ;	
+	
+#font	
+
+: 	|<<<<<<<<<<<<<< BOOT
+	"r3sdl" 800 600 SDLinit
 	ttf_init	
-|	"media/ttf/ProggyClean.ttf" 16
-	TTF_OpenFont 
-	dup 'font ! ttfont 
-	"A" ttsize 'immfontsh ! drop
+|	"media/ttf/ProggyClean.ttf" 
+	"media/ttf/Roboto-Medium.ttf" 
+	16 TTF_OpenFont 'font !	
+	font ttfont
 	24 21 "media/img/icong16.png" tsload 'icons !
+|	bfont1
+	
+	'main SDLShow 
+	SDLquit
 	;
