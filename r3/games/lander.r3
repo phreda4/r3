@@ -150,7 +150,6 @@
 : 
 	msec time rerand
 	"r3sdl" 800 600 SDLinit
-	SNDInit
 
 	20 23 "media/img/lander.png" tsload 'ts_lander !
 	64 64 "media/img/explo_64x64.png" tsload 'ts_explo !

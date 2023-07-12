@@ -21,7 +21,7 @@
 
 #icons
 #font	
-#immfontsh 16
+#immfontsh 
 
 ::immgui 
 	gui 
@@ -30,7 +30,8 @@
 	
 ::immat 'cury ! 'curx ! ;
 ::immbox 'boxh ! 'boxw ! ;
-	
+::immfont 
+
 |----------------------	
 ::imm>>
 	padx 1 << boxw + 'curx +! ;	
@@ -246,7 +247,6 @@
 	
 |--------------------------------
 ::immSDL | "font" size --
-	ttf_init	
 |	"media/ttf/ProggyClean.ttf" 16
 	TTF_OpenFont 
 	dup 'font ! ttfont 

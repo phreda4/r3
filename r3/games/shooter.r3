@@ -136,7 +136,6 @@
 :	
 	msec time rerand
 	"r3sdl" 800 600 SDLinit
-	SNDInit
 
 	40 30 "media/img/alien_40x30.png" tsload 'ts_alien !
 	64 29 "media/img/ship_64x29.png" tsload 'ts_ship !

@@ -2,7 +2,6 @@
 ^r3/win/sdl2ttf.r3
 
 |:initfont
-|	ttf_init
 |	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 |	;
 	

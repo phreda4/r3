@@ -137,7 +137,6 @@
 :
 	glinit
 	initshaders
-	ttf_init
 
 	"media/ttf/roboto-bold.ttf" 24 TTF_OpenFont 'font !
 |	font 1 TTF_SetFontSDF

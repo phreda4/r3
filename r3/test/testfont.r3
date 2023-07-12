@@ -177,7 +177,6 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 
 :main
 	"r3sdl" 640 480 SDLinit
-	ttf_init
 	"media/ttf/roboto-bold.ttf" 24 TTF_OpenFont 'font !
 	font 2 TTF_SetFontOutline
 	draw

@@ -4,6 +4,7 @@
 |	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 |
 |-----------------------------
+^r3/win/sdl2gfx.r3
 ^r3/win/sdl2ttf.r3
 
 #textbox [ 0 0 0 0 ]
@@ -40,7 +41,9 @@
 #ttx #tty
 	
 ::ttcolor | rrggbb --
-	'ttink ! ;
+	dup $ff and 16 <<
+	over 16 >> $ff and or 
+	swap $ff00 and or 'ttink ! ;
 	
 ::ttfont | font --
 	'ttfon ! ;

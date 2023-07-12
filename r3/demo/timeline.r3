@@ -142,7 +142,6 @@ La cigüeña tocaba el saxofón detrás del palenque de paja"
 	"r3sdl" 640 480 SDLinit
 	44100 $08010 2 4096 Mix_OpenAudio 
 	bfont2
-	ttf_init
 	loadres
 	'demo SDLshow
 	

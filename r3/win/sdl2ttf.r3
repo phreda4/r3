@@ -55,5 +55,7 @@
 	dup "TTF_CloseFont" getproc 'sys-TTF_CloseFont !
 	dup "TTF_Quit" getproc 'sys-TTF_Quit !
 	drop
+	
+	ttf_init
 	;
 
