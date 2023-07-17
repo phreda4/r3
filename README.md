@@ -383,7 +383,8 @@ https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
 
 ## Some inprogress documentation
 
-https://docs.google.com/document/d/12I8o1x5pbSpvpNkZ8mz5g8PXDkkCLCLJsrkN-UqGA6o/edit?usp=sharing
+Manual in spanish, in doc folder.
+https://docs.google.com/document/d/1sqXfo0UohQpSLen6JWSniBvtZzGFqe09V65nIpSiu60/edit#heading=h.mib1z4xpalhz
 
 ## More code from play
 
