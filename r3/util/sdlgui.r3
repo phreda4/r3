@@ -73,8 +73,8 @@
 	
 ::immiconb
 	immcolortex icons tscolor 
-	curx padx + 
-	cury 
+	boxw 24 - 1 >> curx + padx +
+	boxh 21 - 1 >> cury + 
 	immicon ;
 	
 	
@@ -92,7 +92,7 @@
 	winx winy winw winh SDLRect
 	
 	winx 'curx ! winy 'cury !
-	winw padx 2 << - 'boxw ! immfontsh pady + 'boxh !
+	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
 	immcolortwin SDLColor
 	plxywh SDLFRect
 	immlabelc

@@ -49,15 +49,17 @@
 
 
 |---- MODO
-#win1 1 [ 532 0 64 128 ] "Tools"
+#win1 1 [ 532 0 64 180 ] "Tools"
 
 :wintools
 	'win1 immwin 0? ( drop ; ) drop
-
+	28 24 immbox
 	'exit 11 immibtn imm<<dn | winclose
 	
 	'exit 192 immibtn imm<<dn | pencil edit
 	'exit 115 immibtn imm<<dn | fill bucket
+	
+	'exit 116 immibtn imm<<dn | 
 	
 	'exit 2 immibtn imm<<dn
 	
@@ -88,7 +90,7 @@
 :tile! | --
 	tilenow 
 	sdlx sdly scr2tile 
-	-? ( 2drop ; ) 
+	-? ( 2drop ; ) | don't set outside
 	! ;
 	
 :mdraw
