@@ -75,18 +75,21 @@
 
 ::scr2view | xs ys -- xv yv
 	ym - tilew / mapy +
-	maph 1 - clamp0max 
+	maph >=? ( -1 nip )
 	swap
 	xm - tileh / mapx +
-	mapw 1 - clamp0max 
+	mapw >=? ( -1 nip ) 
 	swap ;
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
-	scr2view mapw * + 3 << 'map + ;
+	scr2view 2dup or -? ( nip nip ; ) drop
+	mapw * + 3 << 'map + ;
 	
 :tile! | --
 	tilenow 
-	sdlx sdly scr2tile ! ;
+	sdlx sdly scr2tile 
+	-? ( 2drop ; ) 
+	! ;
 	
 :mdraw
 	'tile! dup onDnMove ;	

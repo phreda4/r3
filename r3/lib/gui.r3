@@ -7,6 +7,7 @@
 |--- state
 ##hot	| activo actual
 #hotnow	| activo anterior
+#actnow | real activo 
 #foco	| activo teclado
 #foconow	| activo teclado
 
@@ -55,7 +56,8 @@
 	1 'id +!
 	SDLb 0? ( 2drop ; ) drop
 	in? 0? ( 2drop ; ) drop
-	id 'hot !
+	id dup 'hot !
+	hotnow <>? ( 2drop ; ) drop
 	ex ;
 
 |-- dnmove
@@ -64,7 +66,8 @@
 	SDLb 0? ( 3drop ; ) drop
 	in? 0? ( 3drop ; ) drop
 	id dup 'hot !
-	hotnow <>? ( 2drop ex ; )
+	hotnow <>? ( 3drop ; )
+	actnow <>? ( 'actnow ! drop ex ; ) | 1er vez que toca
 	drop nip ex ;
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
