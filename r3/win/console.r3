@@ -21,7 +21,8 @@
 	stdout rot rot 0 0 WriteFile drop ;
 
 #irec 0 		| INPUT_RECORD
-#codekey 0 0 0	| ...INPUT_RECORD
+|#codekey | compiler remove var!!!
+0 0 0	| ...INPUT_RECORD
 
 #ne 0
 #nr
@@ -34,14 +35,18 @@
 | ej: $1B1001 = release esc
 ::getch | -- key
 	stdin 'irec 1 'nr ReadConsoleInput 
-	codekey 32 >> $1000 or irec 20 >> xor ;
+|	codekey 
+	'irec 8 + @
+	32 >> $1000 or irec 20 >> xor ;
 
 ::waitesc
 	( getch $1B1001 <>? drop ) drop ;
 
 |------- console input not wait
 :evkey 
-	codekey 32 >> $1000 or irec 20 >> xor
+|	codekey 
+	'irec 8 + @
+	32 >> $1000 or irec 20 >> xor
 	'conkb ! ;
 
 ::inkey | -- key
@@ -145,9 +150,9 @@
 
 ::.write count type ;
 	
-::.print sprint count type ;
+::.print sprintc type ;
 
-::.println sprint count type .cr ;
+::.println sprintlnc type ;
 
 ::.home	"H" .[ ; | home
 ::.cls "H" .[ "J" .[ ; | cls 
@@ -257,8 +262,11 @@
 
 |	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
 	
+::.free
+	FreeConsole ;
+	
 :
-	|AllocConsole 
+	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE

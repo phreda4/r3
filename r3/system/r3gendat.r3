@@ -50,11 +50,15 @@
 
 :cpycad | adr --
 	( c@+ 1? 34 =? ( dup ,c ) ,c ) 2drop ;
-
+	
 :cpycadsrc | adr --
-	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( 2drop ; )
-		"""," ,s 34 ,c ",""" ,s
-		) ,c ) 2drop ;
+	( c@+ 1? 
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop ; )
+			"""," ,s dup ,d "," ,s
+			) 
+		$ff and 32 <? ( """," ,s ,d "," ,s 34 ) | not print char
+		,c ) 2drop ;
 
 :stringwith0
 	34 ,c here swap cpycadsrc here - 34 ,c drop ",0" ,s ;

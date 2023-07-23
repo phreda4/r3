@@ -2,6 +2,7 @@
 | PHREDA 2021
 
 #sys-AllocConsole
+#sys-FreeConsole
 #sys-ExitProcess 
 #sys-GetStdHandle
 #sys-SetStdHandle
@@ -55,6 +56,8 @@
 #sys-showwindow
 
 ::AllocConsole sys-allocconsole sys0 drop ;
+::FreeConsole sys-freeconsole sys0 drop ;
+
 ::ExitProcess sys-ExitProcess sys1 ;
 ::GetStdHandle sys-GetStdHandle sys1 ;
 ::SetStdHandle sys-SetStdHandle sys2 drop ;
@@ -109,6 +112,7 @@
 :
 	"KERNEL32.DLL" loadlib 
 	dup "AllocConsole" getproc 'sys-AllocConsole !
+	dup "FreeConsole" getproc 'sys-FreeConsole !
 	dup "ExitProcess" getproc 'sys-ExitProcess ! 
 	dup "GetStdHandle" getproc 'sys-GetStdHandle !
 	dup "SetStdHandle" getproc 'sys-SetStdHandle !

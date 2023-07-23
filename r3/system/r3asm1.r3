@@ -259,7 +259,7 @@
 
 :gCLZ
 	'TOS cellR
-	"bsr #0,#0;xor #0,63" ,asm ;
+	"bsr #0,#0;xor #0,31" ,asm ; | <<<< not 63!!
 
 :g<<
 	stk.RC

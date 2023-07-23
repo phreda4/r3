@@ -115,5 +115,14 @@
 ::sprint | p p .. "" -- adr
 	mark 'buff 'here ! ,print ,eol empty 'buff ;
 	
+::sprintln | p p .. "" -- adr
+	mark 'buff 'here ! ,print 10 ,c 13 ,c ,eol empty 'buff ;
+
+::sprintc | p p .. "" -- adr c
+	mark 'buff 'here ! ,print ,eol here empty 'buff swap over - ;
+	
+::sprintlnc | p p .. "" -- adr c
+	mark 'buff 'here ! ,print 10 ,c 13 ,c ,eol here empty 'buff swap over - ;
+	
 |---- init here with free mem	
 : mem 'here ! ;
