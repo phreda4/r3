@@ -254,9 +254,9 @@
 	"mov rbx,[rbp+8]" ,ln
 	"xchg rax,rbx" ,ln
 	"cmp rax,[rbp+8*2]" ,ln
-	?? "jge _o%h" ,print ,cr
-	"cmp rax,rbx" ,ln
 	?? "jle _o%h" ,print ,cr
+	"cmp rax,rbx" ,ln
+	?? "jge _o%h" ,print ,cr
 	;
 
 :g>R	"push rax" ,ln ,drop ;
@@ -628,7 +628,7 @@
 :oW!+v
 	varget
 	"mov word[" ,s ,TOS "],ax" ,ln
-	"add " ,s ,TOS ",4" ,ln
+	"add " ,s ,TOS ",2" ,ln
 	"mov rax," ,s ,TOS ,cr ;
 
 :gD!+

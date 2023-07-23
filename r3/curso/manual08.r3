@@ -5,7 +5,7 @@
 #buffer * 1024			| lugar para guardar las coordenadas
 #buffer> 'buffer
 
-:+estrella | x y –
+:+estrella | x y --
 	buffer> w!+ w!+ 'buffer> ! ;
 
 :.estrellas
