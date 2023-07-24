@@ -82,6 +82,7 @@
 
 	error 1? ( drop savedebug ; ) drop
 
+	
 |    "asm\fasm.exe asm\r3fasm.asm" sys
 |	"asm\test.bat" sys
 

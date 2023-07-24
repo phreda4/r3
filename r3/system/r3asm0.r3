@@ -861,6 +861,7 @@
 	"cinvoke64 LoadLibraryA,rax" ,ln	;
 
 :oLOADLIB | "" -- aa
+	,dup
 	"cinvoke64 LoadLibraryA," ,s ,TOS ,cr ;
 	
 	

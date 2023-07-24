@@ -8,8 +8,10 @@
 #arenan
 
 :check | adr -- adr 
-	dup cols - 1 - >a	ca@+ ca@+ + ca@ + 
-	over 1 - >a			ca@+ + 1 a+ ca@ +
+	dup cols - 1 - >a	
+	ca@+ ca@+ + ca@ + 
+	over 1 - >a	
+	ca@+ + 1 a+ ca@ +
 	over cols + 1 - >a	ca@+ + ca@+ + ca@ + 	| calc 
 	3 =? ( drop 1 cb!+ ; )
 	2 <>? ( drop 0 cb!+ ; ) 
@@ -25,7 +27,8 @@
 			check 1 + rot rot 
 			1 + ) drop
 		1 + ) 2drop 
-	arena arenan cols rows * cmove ;
+	arena arenan cols rows * cmove 
+	;
 	
 :cbox
 	1? ( ,rever ; ) ,reset ;
@@ -61,7 +64,7 @@
 
 : 
 	.getconsoleinfo
-	here cols + 			| one more line for calc
+	here 1 + cols + 			| one more line for calc
 	dup 'arena !			| start of arena
 	rows cols * + dup 'arenan !	| copy of arena
 	rows cols * + 'here !
