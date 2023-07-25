@@ -1,8 +1,9 @@
-| r3 sdl program
+| Brick Game
+| PHREDA
 ^r3/win/sdl2gfx.r3
 ^r3/util/arr16.r3
 
-#px	300.0 #py 580.0
+#px	300.0 #py 560.0
 #pvx 0.0
 
 :paddle
@@ -14,7 +15,7 @@
 	;
 
 #bx 420.0 #by 400.0
-#bxv 0.0 #byv 1.0
+#bxv 0.0 #byv 1.8
 
 :hitx bxv neg 'bxv ! ;
 :hity byv neg 'byv ! ;
@@ -23,10 +24,10 @@
 	$ffffff SDLColor
 	bx int. by int. 10 10 SDLFRect 
 	bx bxv +
-	0.0 <? ( hitx ) 790.0 >? ( hitx )
+	10.0 <? ( hitx ) 790.0 >? ( hitx )
 	'bx !
 	by byv +
-	0.0 <? ( hity ) 590.0 >? ( hity )
+	10.0 <? ( hity ) 590.0 >? ( hity )
 	'by !
 	
 	by py 10.0 - <? ( drop ; ) drop
@@ -44,8 +45,8 @@
 :tbricks | adr --
 	>a a@+ SDLColor 
 	a@+ a@+	| x y 
-	2dup 58 20 SDLFRect
-	bx int. rot 10 - dup 58 + bt? ( -1 nip )
+	2dup 60 20 SDLFRect
+	bx int. rot 10 - dup 60 + bt? ( -1 nip )
 	by int. rot 10 - dup 20 + bt? ( -1 nip ) 
 	and -? ( drop 0 hity ; ) drop
 	;

@@ -11,6 +11,7 @@
 #foco	| activo teclado
 #foconow	| activo teclado
 
+##clkbtn
 |--- id
 #id		| id gui actual
 #idf	| id gui foco actual (teclado)
@@ -48,7 +49,9 @@
 ::onClick | 'click --
 	1 'id +!
 	in? 0? ( 2drop ; ) drop
-	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 2drop
+	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 
+	'clkbtn !
+	drop
 	id 'hot ! ;
 
 |-- move

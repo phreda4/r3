@@ -12,7 +12,8 @@
 	'exit "Salir" immbtn 
 	immdn
 	'exit "coso" immbtn 
-	
+	immdn
+	sdlb sdly sdlx "%d %d %d" sprint immlabelc	
 	100 20 immat
 	$ff00 'immcolorbtn !
 	$0 'immcolortex !
