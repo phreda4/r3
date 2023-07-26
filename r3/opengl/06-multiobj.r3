@@ -314,6 +314,7 @@
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println
 	"<esp> - 1 obj moving" .println	
+	 objrand +objr 
 	;
 	
 |----------- BOOT

@@ -279,7 +279,8 @@
 
 :valstr
 	8 >>> src +
-	( c@+ 1?
+	( c@+ 1? $ff and
+		32 <? ( 32 nip )
 		34 =? ( drop c@+ 34 <>? ( 2drop ; ) dup ,c )
 		,c )
 	2drop ;

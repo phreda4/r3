@@ -157,10 +157,8 @@
 
 |-------------------------------------
 :glinit
-
 	"test opengl" 800 600 SDLinitGL
-	 
-	
+
 	glInfo	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	

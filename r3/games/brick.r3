@@ -24,10 +24,10 @@
 	$ffffff SDLColor
 	bx int. by int. 10 10 SDLFRect 
 	bx bxv +
-	10.0 <? ( hitx ) 790.0 >? ( hitx )
+	5.0 <? ( hitx ) 785.0 >? ( hitx )
 	'bx !
 	by byv +
-	10.0 <? ( hity ) 590.0 >? ( hity )
+	5.0 <? ( hity ) 585.0 >? ( hity )
 	'by !
 	
 	by py 10.0 - <? ( drop ; ) drop

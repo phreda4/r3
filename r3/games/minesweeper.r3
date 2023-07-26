@@ -1,3 +1,5 @@
+| BUscaminas
+| PHREDA 2023
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
@@ -23,29 +25,21 @@
 		) drop ;
 
 :xymap | x y c -- x y c xs ys
-	pick2 4 << 8 +
-	pick2 4 << 8 + ;
+	pick2 4 << 8 + pick2 4 << 8 + ;
 	
 :drawc	| x y c -- x y
-	xymap rot 1 >> sprites ssprite ;
+	2dup ]map c@ xymap rot 1 >> sprites ssprite ;
 	
 :drawmap
-	1 ( w <=?
-		1 ( h <=?
-			2dup ]map c@ drawc
-			1 + ) drop
-		1 + ) drop ;
+	1 ( w <=? 1 ( h <=? drawc 1 + ) drop 1 + ) drop ;
 
 :drawb	| x y c -- x y
+	2dup ]map c@ 
 	xymap rot 1 and 0? ( 3drop ; ) 
 	8 + sprites ssprite ;
 	
 :drawmapr
-	1 ( w <=?
-		1 ( h <=?
-			2dup ]map c@ drawb
-			1 + ) drop
-		1 + ) drop ;
+	1 ( w <=? 1 ( h <=? drawb 1 + ) drop 1 + ) drop ;
 
 :win?
 	2dup ]map c@
@@ -54,11 +48,8 @@
 	
 :checkwin | -- 
 	0 'sumw !
-	1 ( w <=?
-		1 ( h <=? win? 1 + ) drop
-		1 + ) drop 
-	sumw  
-	bombs <>? ( drop ; ) drop
+	1 ( w <=? 1 ( h <=? win? 1 + ) drop 1 + ) drop 
+	sumw bombs <>? ( drop ; ) drop
 	1 'sb ! "You WiN !" 'state strcpy
 	;
 	
@@ -66,8 +57,7 @@
 	0 >a
 	-1 ( 1 <=? 
 		-1 ( 1 <=? 
-			pick3 pick2 +
-			pick3 pick2 +
+			pick3 pick2 + pick3 pick2 +
 			]map c@ $1 and a+
 			1 + ) drop
 		1 + ) drop 
