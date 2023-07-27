@@ -90,7 +90,10 @@
 	1 swap | nro 1 adr'
 	( c@+ $2f >?
 		$39 >? ( rot 'f ! ; )
-		$30 - rot 10* + swap )
+		$30 - rot 10* + 
+		$1000000 >? ( 'f ! 
+			( c@+ $2f >? $3a <? drop ) ; ) 
+		swap )
 	rot 'f ! ;
 
 ::getnro | adr -- adr' nro
@@ -106,8 +109,7 @@
 
 ::str>fnro | adr -- adr fnro
 	0 'f !
-	trim
-	signo
+	trim signo
 	over c@ 33 <? ( 2drop 1 - 0 ; ) | caso + y - solos
 	swap 1? ( [ neg ; ] >r ) drop
 	drop
@@ -117,7 +119,7 @@
 	$2e =? ( getfrac )
 	drop 1 - swap
 	16 << $10000 f
-	1 over ( 1 >? 10 / swap 10* swap ) drop
+	1 over ( 1 >? 10/ swap 10* swap ) drop
 	*/ $ffff and or
 	;
 
@@ -142,11 +144,11 @@
 	$2e =? ( getfrac gete )
 	drop 1 - swap
 	16 << $10000 f
-	1 over ( 1 >? 10 / swap 10* swap ) drop
+	1 over ( 1 >? 10/ swap 10* swap ) drop
 	*/ $ffff and or
 	e 0? ( drop ; )
 	+? ( ( 1? 1 - swap 10* swap ) drop ; )
-	( 1? 1 + swap 10 / swap ) drop
+	( 1? 1 + swap 10/ swap ) drop
 	;
 
 |----- test solo si es numero (sin calcular)

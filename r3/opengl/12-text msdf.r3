@@ -75,7 +75,7 @@
 	arrf 0 9 255 32 - * dfill 
 	arrt
 	( dup c@ 1? drop
-		dup str>nro 
+		dup str>nro
 		savech		
 		>>cr trim
 		) 2drop
@@ -85,7 +85,6 @@
 :initshaders
 	800.0 0 0 600.0 1.0 -1.0 mortho 'fwintext mcpyf
 	"r3/opengl/shader/msdf.sha" loadShader 'fontshader !
-
 	"media/msdf/roboto-bold" glLoadMsdf
 	;
 
