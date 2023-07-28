@@ -135,7 +135,7 @@
 
 :main
 	"r3sdl" 800 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 14 immSDL
+	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	
 	16 16 "media/img/First Asset pack.png" tsload 'ts_spr !
 	resetmap

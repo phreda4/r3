@@ -2,9 +2,8 @@
 | PHREDA 2020
 |-------------------
 ^r3/win/sdl2gfx.r3
-^r3/lib/mem.r3
+^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
-^r3/lib/sys.r3
 
 #grid * 800 | 10 * 20 *4
 
@@ -37,6 +36,8 @@
 #points 0
 #nextpiece 0
 #speed 300
+
+#Label * 32
 
 :packed2xy | n -- x y
 	dup $ff and 4 << 50 +
@@ -150,10 +151,10 @@
 :removeline |
 	'grid dup 40 + swap a> pick2 - 2 >> dmove>
 	-1 'speed +!
-	4 'combo +! ;
+	1 'combo +! ;
 
 :testline
-	'combop 'combo !
+	0 'combo !
 	'grid >a
 	0 ( $1400 <?
 		0 1 ( 11 <?
@@ -161,7 +162,7 @@
 			1 + ) drop
 		10 =? ( removeline ) drop
 		$100 + ) drop
-	combo @ 'points +!
+	'combop combo 3 << + @ 'points +!
 	;
 
 :write_block | ( v -- )
@@ -192,17 +193,31 @@
 #ntime
 #dtime
 
-:game | ( --- )
-	0 SDLcls
-	
-|	20 20 atxy "Tetris R3" print
+:reset 
+	0 'points !
+	300 'speed !
+	msec 'ntime ! 0 'dtime !
+	msec time rerand
+	6 randmax 1 + 'nextpiece !
+	new_piece
+	;
 
-	$444444 SDLColor
+:game | ( --- )
+	$444444 SDLcls
+	
+	immgui 	
+	200 28 immbox
+	500 50 immat
+	"Tetris R3" immlabelc immdn
+	points "Points:%d" sprint
+	immlabelC immdn	
+	'Label immlabelc immdn
+	'reset "Reset" immbtn immdn
+	'exit "Exit" immbtn 
+
+	$0 SDLColor
 	286 96 128 70 SDLFRect
 	62 96 166 326 SDLFRect
-
-	$ffffff SDLColor
-|	360 100 atxy points "%d" print
 
 	draw_grid
 	draw_player
@@ -223,19 +238,13 @@
 	<up> =? ( rotate )
 	drop ;
 
-:start | ( --- )
-	0 'points !
-	300 'speed !
-	msec 'ntime ! 0 'dtime !
-	msec time rerand
-	6 randmax 1 + 'nextpiece !
-	'game SDLshow
-	;
-
+|-------------------------
 :
 	msec time rerand
-	"r3sdl" 800 600 SDLinit
-	start
+	"Tetris" 800 600 SDLinit
+	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	reset
+	'game SDLshow
 	SDLquit 
 	;
 

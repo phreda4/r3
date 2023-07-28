@@ -3,7 +3,7 @@
 ^r3/win/sdl2gfx.r3
 ^r3/util/arr16.r3
 
-#px	300.0 #py 560.0
+#px	350.0 #py 560.0
 #pvx 0.0
 
 :paddle
@@ -14,8 +14,8 @@
 	'px !
 	;
 
-#bx 420.0 #by 400.0
-#bxv 0.0 #byv 1.8
+#bx 390.0 #by 400.0
+#bxv 0.0 #byv 2.0
 
 :hitx bxv neg 'bxv ! ;
 :hity byv neg 'byv ! ;
@@ -23,6 +23,7 @@
 :ball
 	$ffffff SDLColor
 	bx int. by int. 10 10 SDLFRect 
+
 	bx bxv +
 	5.0 <? ( hitx ) 785.0 >? ( hitx )
 	'bx !
@@ -34,11 +35,10 @@
 	bx 
 	px 10.0 - <? ( drop ; )
 	px 100.0 + >? ( drop ; )
-	px 40.0 + <? ( drop -1.2 'bxv ! -1.2 'byv ! ; )
-	px 60.0 + >? ( drop 1.2 'bxv ! -1.2 'byv ! ; )
-	0.0 'bxv ! -1.9 'byv !
-	drop
-	;
+	px 40.0 + <? ( drop -1.6 'bxv ! -1.6 'byv ! ; )
+	px 60.0 + >? ( drop 1.6 'bxv ! -1.6 'byv ! ; )
+	0.0 'bxv ! -2.0 'byv !
+	drop ;
 
 #bricks 0 0
 
@@ -56,25 +56,24 @@
 	
 :brick_row | y color --
     20 
-	10 ( 1? 1 - swap
+	11 ( 1? 1 - swap
 		dup pick4 pick4 +brick
-		78 + swap ) 4drop ;
+		70 + swap ) 4drop ;
 		
 :game
 	$0 SDLcls
-	'bricks p.draw
 	ball
+	'bricks p.draw
 	paddle
 	SDLredraw
 
 	SDLkey 
 	>esc< =? ( exit )
-	<le> =? ( -1.0 'pvx ! )
-	<ri> =? ( 1.0 'pvx ! )
+	<le> =? ( -2.0 'pvx ! )
+	<ri> =? ( 2.0 'pvx ! )
 	>le< =? ( 0.0 'pvx ! )
 	>ri< =? ( 0.0 'pvx ! )
-	drop 
-	;
+	drop ;
 	
 :main
 	100 'bricks p.ini
@@ -92,4 +91,3 @@
 	SDLquit ;	
 	
 : main ;
-

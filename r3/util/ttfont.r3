@@ -49,7 +49,7 @@
 	'ttfon ! ;
 	
 ::ttprint | "" --
-	>r SDLrenderer ttink ttfon r> ttx tty RenderText ;
+	sprint >r SDLrenderer ttink ttfon r> ttx tty RenderText ;
 	
 ::ttat | x y --
 	'tty ! 'ttx ! ;	

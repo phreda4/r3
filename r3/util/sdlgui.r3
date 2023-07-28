@@ -20,7 +20,7 @@
 ##immcolorbtn $0000ff	| button
 
 #icons
-#font	
+#immfont
 #immfontsh 
 
 ::immgui 
@@ -30,11 +30,13 @@
 	
 ::immat 'cury ! 'curx ! ;
 ::immbox 'boxh ! 'boxw ! ;
-::immfont 
+::immfont! dup 'immfont ! ttfont "A" ttsize 'immfontsh ! drop ;
 
 |----------------------	
 ::imm>>
 	padx 1 << boxw + 'curx +! ;	
+::imm<<
+	padx 1 << boxw + neg 'curx +! ;	
 ::immdn
 	pady 1 << boxh + 'cury +! ;
 ::imm<<dn
@@ -246,10 +248,8 @@
 	;
 	
 |--------------------------------
-::immSDL | "font" size --
-|	"media/ttf/ProggyClean.ttf" 16
-	TTF_OpenFont 
-	dup 'font ! ttfont 
-	"A" ttsize 'immfontsh ! drop
+::immSDL | font --
+|	"media/ttf/ProggyClean.ttf" 16 TTF_OpenFont 
+	immfont!
 	24 21 "media/img/icong16.png" tsload 'icons !
 	;

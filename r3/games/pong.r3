@@ -1,74 +1,69 @@
-| r3 sdl program
+| r3 pong
+| PHREDA
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
 ^r3/lib/rand.r3
 
-#yj1 10 #v1 0 #p1
+#yj1 #v1 #p1
 
 :j1 $ff0000 SDLColor 10 yj1 20 80 SDLFRect v1 'yj1 +! ;
 
-#yj2 10 #v2 0 #p2
+#yj2 #v2 #p2
 
 :j2 $ff SDLColor 770 yj2 20 80 SDLFRect v2 'yj2 +! ;
 
-#x 400.0 #y 300.0
-#vx 3.0 #vy 1.0
+#x #y #vx #vy 
 
 :reset 
-	400.0 'x ! 300.0 'y ! 
+	400.0 'x ! 290.0 'y ! 
 	3.0 randmax 1.0 + 
 	%1000 and? ( neg )
-	'vx ! 
-	0 'vy ! ;
+	'vx ! 0 'vy ! 
+	260 'yj1 ! 260 'yj2 !
+	;
 
 :hitx vx neg 'vx ! ;
 :hity vy neg 'vy ! ;
-:int 16 >> ;
 
 :hit1 | x -- x
-	y int
+	y int.
 	yj1 30 + -
 	-40 <? ( drop ; )
 	40 >? ( drop ; )
 	0.1 * 'vy +!
 	30.0 'x !	
-	hitx
-	;
+	hitx ;
+	
 :hit2
-	y int
+	y int.
 	yj2 30 + -
 	-40 <? ( drop ; )
 	40 >? ( drop ; )
 	0.1 * 'vy +!
 	750.0 'x !
-	hitx
-	;
+	hitx ;
+	
 :pierde1 1 'p2 +! reset ;
 :pierde2 1 'p1 +! reset ;
 
 :pelota
 	$ffffff SDLColor
-	x int y int 20 20 SDLFRect
-	vx 'x +!
-	vy 'y +!
+	x int. y int. 20 20 SDLFRect
+	vx 'x +! vy 'y +!
 |	x 0 <? ( hitx ) 780.0 >? ( hitx ) drop
 	y 0 <? ( hity ) 580.0 >? ( hity ) drop
 	x 
-	30.0 <? ( hit1 )
-	0 <? ( pierde1 )
-	750.0 >? ( hit2 ) 
-	780.0 >? ( pierde2 ) 
+	30.0 <? ( hit1 ) 0 <? ( pierde1 )
+	750.0 >? ( hit2 ) 780.0 >? ( pierde2 ) 
 	drop
 	;
 
 :demo
 	0 SDLcls
 	j1 j2 pelota
-	
 	$ffffff bcolor 
 	350 10 bat 
 	p2 p1 "%d - %d" sprint bprint
-	
 	SDLredraw
 	
 	SDLkey 
@@ -80,8 +75,9 @@
 	drop ;
 
 :main
-	"r3sdl" 800 600 SDLinit
-	bfont2
+	"Pong" 800 600 SDLinit
+	bfont1
+	reset
 	'demo SDLshow
 	SDLquit ;	
 	

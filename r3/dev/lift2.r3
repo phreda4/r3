@@ -393,7 +393,7 @@
 |----------- BOOT
 :
 	"Lift Challenge" 800 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 18 immSDL
+	"media/ttf/Roboto-Medium.ttf" 18 TTF_OpenFont immSDL
 	16 32 "media/img/p1.png" ssload 'person1 !
 	16 32 "media/img/p2.png" ssload 'person2 !
 	16 32 "media/img/p3.png" ssload 'person3 !	

@@ -28,7 +28,7 @@
 	
 :main
 	"r3sdl" 800 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 20 immSDL	
+	"media/ttf/Roboto-Medium.ttf" 20 TTF_OpenFont immSDL	
 	'menu SDLshow
 	SDLquit ;	
 	

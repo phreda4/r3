@@ -207,7 +207,7 @@
 	16 16 "media/img/manual.png" ssload 'sprites !	
 	"media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !
 	"media/snd/explode.mp3" Mix_LoadWAV 'snd_explode !	
-	"media/ttf/Roboto-bold.ttf" 40 immSDL	
+	"media/ttf/Roboto-bold.ttf" 40 TTF_OpenFont immSDL	
 	llenaestrellas
 	200 'listalien p.ini
 	200 'listshoot p.ini
