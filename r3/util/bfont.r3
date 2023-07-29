@@ -5,9 +5,10 @@
 ^r3/win/sdl2image.r3
 
 #pfont 
-#wp #hp
+##wp ##hp
 #op 0 0
 #dp 0 0
+
 
 ::bmfont | w h "" --
 	loadimg 'pfont !
@@ -27,12 +28,28 @@
 	SDLrenderer pfont 'op 'dp SDL_RenderCopy
 	wp 'dp d+!
 	;
+
+::bemits | "" --
+	( c@+ 1? bemit ) 2drop ;
 	
 ::bprint | "" --
 	( c@+ 1? bemit ) 2drop ;
 	
 ::bat | x y --
 	32 << or 'dp ! ;	
+
+::ccx dp $ffffffff and ;
+::ccy dp 32 >> ;
+
+::gotoxy | x y --
+	hp * swap wp * swap bat ;
+::gotox | x --
+	wp * dp 32 >> bat ;
+::bcr
+	hp 'dp 4 + d+! ;
+::bnoemit
+	drop
+	wp 'dp d+! ;
 	
 ::bsize | "" -- "" w h
 	count wp * hp ;

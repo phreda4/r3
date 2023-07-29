@@ -71,7 +71,9 @@
 	
 :clearcell | x y --
 	2dup ]map c@ 20 <>? ( 3drop ; ) drop
-	checkc 1? ( 3drop ; ) 
+	checkc 1? ( 
+		1 << rot rot ]map c!
+		; ) 
 	pick2 pick2 ]map c!
 	over 1 - 1 max over clearcell 
 	over 1 + w min over clearcell

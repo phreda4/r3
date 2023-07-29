@@ -38,7 +38,7 @@
 
 #ttink	
 #ttfon
-#ttx #tty
+##ttx ##tty
 	
 ::ttcolor | rrggbb --
 	dup $ff and 16 <<
@@ -49,11 +49,14 @@
 	'ttfon ! ;
 	
 ::ttprint | "" --
-	sprint >r SDLrenderer ttink ttfon r> ttx tty RenderText ;
+	sprint 
+
+::tt. | "" --
+	>r SDLrenderer ttink ttfon r> ttx tty RenderText ;
 	
 ::ttat | x y --
 	'tty ! 'ttx ! ;	
-	
+
 ::ttsize | "" -- "" w h
 	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeText drop
 	'textbox 8 + d@+ swap d@ ;
