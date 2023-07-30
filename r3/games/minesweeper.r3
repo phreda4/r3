@@ -69,6 +69,7 @@
 	$2 xor swap c!
 	checkwin ;
 	
+|----------- recursive (overflow if big)
 :clearcell | x y --
 	2dup ]map c@ 20 <>? ( 3drop ; ) drop
 	checkc 1? ( 
@@ -79,6 +80,30 @@
 	over 1 + w min over clearcell
 	over over 1 - 1 max clearcell
 	1 + h min clearcell ;
+
+|----------- list
+#last>
+
+:addcell | x y -- 
+	2dup ]map c@ 20 <>? ( 3drop ; ) drop
+	checkc 0? ( pick2 pick2 last> c!+ c!+ 'last> ! ) | expand if 0
+	1 << rot rot ]map c! 
+	;
+	
+:markcell | x y --
+	over 1 - 1 max over addcell
+	over 1 + w min over addcell
+	over over 1 - 1 max addcell
+	1 + h min addcell ;
+	
+:clearcell | x y --
+	here 'last> !
+	addcell
+	here ( last> <? 
+		c@+ swap c@+ rot 
+		markcell
+		) drop ;
+|-----------		
 
 :click
 	SDLx 4 >> -? ( drop ; ) w >? ( drop ; )

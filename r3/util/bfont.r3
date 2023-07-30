@@ -29,10 +29,22 @@
 	wp 'dp d+!
 	;
 
+::bfbox | --
+	SDLRenderer 'dp SDL_RenderFillRect ;
+
+::bbox | --
+	SDLRenderer 'dp SDL_RenderDrawRect ;
+
+::bbox2 | --
+	hp 1 >> dup 'dp 4 + d+! 'dp 12 + d!
+	SDLRenderer 'dp SDL_RenderDrawRect 
+	hp dup 1 >> neg 'dp 4 + d+! 'dp 12 + d!
+	;
+
+
+::bprint
+	sprint
 ::bemits | "" --
-	( c@+ 1? bemit ) 2drop ;
-	
-::bprint | "" --
 	( c@+ 1? bemit ) 2drop ;
 	
 ::bat | x y --
@@ -44,12 +56,13 @@
 ::gotoxy | x y --
 	hp * swap wp * swap bat ;
 ::gotox | x --
-	wp * dp 32 >> bat ;
+	wp * 'dp d! ;
 ::bcr
 	hp 'dp 4 + d+! ;
-::bnoemit
-	drop
+::bsp
 	wp 'dp d+! ;
+::bnsp | n --
+	wp * 'dp d+! ;
 	
 ::bsize | "" -- "" w h
 	count wp * hp ;

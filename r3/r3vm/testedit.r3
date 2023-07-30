@@ -23,9 +23,9 @@
 |	"media/ttf/ProggyClean.TTF" 16 TTF_OpenFont ttfont 
 	
 	bfont1
-	1 2 40 25 edwin
+	1 2 80 25 edwin
 	edram
-|	"r3/r3vm/testedit.r3" edload
+	"r3/r3vm/testedit.r3" edload
 	edrun
 |	'main SDLshow
 

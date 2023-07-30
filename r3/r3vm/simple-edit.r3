@@ -10,8 +10,6 @@
 #ycode 1
 #wcode 40
 #hcode 20
-#xseli	| x ini win
-#xsele	| x end win
 
 #xlinea 0
 #ylinea 0	| primera linea visible
@@ -79,13 +77,13 @@
 
 :<<13 | a -- a
 	( fuente >=?
-		 dup c@
+		dup c@
 		13 =? ( drop ; )
 		drop 1 - ) ;
 
 :>>13 | a -- a
 	( $fuente <?
-		 dup c@
+		dup c@
 		13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;
@@ -107,7 +105,7 @@
 
 :kend
 	selecc
-	fuente> >>13  1 + 'fuente> !
+	fuente> >>13 1 + 'fuente> !
 	selecc ;
 
 :scrollup | 'fuente -- 'fuente
@@ -121,6 +119,14 @@
 	1 'ylinea +!
 	selecc ;
 
+:cursorcalc
+	ylinea 'ycursor !
+	pantaini> ( fuente> <=?
+		>>13 2 +
+		1 'ycursor +! )
+	fuente> swap 2 - <<13 - 1 - 'xcursor ! | need tab calc!!
+	-1 'ycursor +! ;
+	
 :colcur
 	fuente> 1 - <<13 swap - ;
 
@@ -173,11 +179,6 @@
 
 
 |----------------------------------
-:calcselect
-	xcode wcode + gotox ccx 'xsele !
-	xcode gotox ccx 'xseli !
-	;
-
 :mode!edit
 	0 'emode ! ;
 :mode!find
@@ -301,15 +302,14 @@
 	;
 
 |------ Color line
-:col_inc $ff7f00 bcolor ;
-:col_com $666666 bcolor ;
+:col_inc $EF7D57 bcolor ;
+:col_com $566C86 bcolor ;
 :col_cod $ff0000 bcolor ;
 :col_dat $ff00ff bcolor ;
 :col_str $ffffff bcolor ;
-:col_adr $ffff bcolor ;
-:col_nor $ff00 bcolor ;
+:col_adr $73EFF7 bcolor ;
+:col_nor $A7F070 bcolor ;
 :col_nro $ffff00 bcolor ;
-:col_select $444444 bcolor ;
 
 #mcolor
 
@@ -350,84 +350,31 @@
 		$22 =? ( strcol )
 		drop swap ) drop ;
 
-:emitl
-	9 =? ( drop "   " bemits ; )
-	bemit ccx xsele <? ( drop ; ) drop
-	( c@+ 1? 13 <>? drop ) drop 1 -		| eat line to cr or 0
-	wcode xcode + gotox
-	$ffffff bcolor "." bemits
-	;
-
+:showcursor
+	inisel >=? ( finsel <=? ( $566C86 SDLColor bfbox ) )
+	fuente> <>? ( ; )
+	msec $100 and? ( drop ; ) drop
+	$ffffff SDLColor 
+	'lover modo	=? ( bbox drop ; ) drop
+	bfbox ;
+	
 :drawline
 	iniline
-	( c@+ 1?
+	( showcursor
+		c@+ 1?
 		13 =? ( drop ; )
-		9 =? ( wcolor )
+		9 =? ( wcolor drop 3 bnsp 32 )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
-		emitl
+		bemit
 		) drop 1 - ;
 
 |..............................
 :linenro | lin -- lin
-	$aaaaaa bcolor
+	$afafaf bcolor
 	dup ylinea + 1 + .d 3 .r. bemits ;
 
-|..............................
-:emitsel
-	13 =? ( drop bcr xcode xlinea - gotox ; )
-	9 =? ( drop "   " bemits ; )
-	bnoemit ;
-
-:drawselect
-|	inisel 0? ( drop ; )
-|	pantafin> >? ( drop ; )
-|	xcode xlinea - ycode gotoxy
-|	pantaini> ( over <? c@+ emitsel ) nip
-|	xseli ccy cch + dup >r op
-|	ccx ccy cch + pline
-|	ccx ccy pline xsele ccy pline
-|	( pantafin> <? finsel <? c@+ emitsel ) drop
-|	xsele ccy pline ccx ccy pline
-|	ccx ccy cch + pline
-|	xseli ccy cch + pline
-|	xseli r> pline
-|	col_select poli
-	;
-
-|..............................
-:emitcur
-	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 4 'xcursor +! ; )
-	1 'xcursor +!
-	bnoemit ;
-
-:drawcursor
-	ylinea 'ycursor ! 0 'xcursor !
-	pantaini> ( fuente> <? c@+ emitcur ) drop
-
-	| hscroll
-	xcursor
-	xlinea <? ( dup 'xlinea ! )
-	xlinea wcode + 4 - >=? ( dup wcode - 5 + 'xlinea ! ) | 4 linenumber
-	drop
-
-	|blink 1? ( drop ; ) drop
-
-	xcode 4 + xlinea - xcursor +
-	ycode ylinea - ycursor + gotoxy
-|	ccx ccy xy>v >a
-|	cch ( 1? 1 -
-|		ccw ( 1? 1 -
-|			a@ not a!+
-|			) drop
-|		sw ccw - 2 << a+
-|		) drop 
-	;
-
-
 :drawcode
-	drawselect
 	pantaini>
 	0 ( hcode <?
 		xcode ycode pick2 + gotoxy
@@ -435,7 +382,6 @@
 		xcode 4 + gotox
 		swap drawline
 		swap 1 + ) drop
-	drawcursor
 	$fuente <? ( 1 - ) 'pantafin> !
 	fuente>
 	( pantafin> >? scrolldw )
@@ -453,7 +399,7 @@
 	rot c@+
 	13 =? ( 0 nip )
 	0? ( drop 1 - rot rot sw + ; )
-	9 =? ( drop swap wp 2 << + rot swap ; ) | 4*ccw is tab
+	9 =? ( drop swap wp 3 * + rot swap ; ) | 4*ccw is tab
 	drop swap wp + rot swap ;
 
 :cursormouse
@@ -526,11 +472,13 @@
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 |	'dns 'mos 'ups guiMap |------ mouse
-	SDLchar
-	1? ( modo ex ; )
-	drop
+	SDLchar 1? ( modo ex ; ) drop
 
-	SDLkey
+	SDLkey 0? ( drop ; )
+	>esc< =? ( exit )
+	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
+	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+
 	<back> =? ( kback )
 	<del> =? ( kdel )
 	<up> =? ( karriba ) <dn> =? ( kabajo )
@@ -538,16 +486,12 @@
 	<home> =? ( khome ) <end> =? ( kend )
 	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
 	<ins> =? (  modo
-				'lins =? ( drop 'lover 'modo ! ; )
+				'lins =? ( 2drop 'lover 'modo ! ; )
 				drop 'lins 'modo ! )
 	<ret> =? (  13 modo ex )
 	<tab> =? (  9 modo ex )
-	>esc< =? ( exit )
-
-	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
-
 	drop
+	cursorcalc
 	;
 
 :errmodekey
@@ -577,16 +521,14 @@
 	$ffffff bcolor
 	" [%s]" bprint ;
 
-:sp 32 bemit ;
-
 :barra
 	xcode ycode 1 - gotoxy
 	$ff00 bcolor
 	":r3 editor" bemits
 	xcode wcode + 8 - gotox
-	$ffff bcolor sp
-	xcursor 1 + .d bemits sp
-	ycursor 1 + .d bemits sp
+	$ffff bcolor bsp
+	xcursor 1 + .d bemits bsp
+	ycursor 1 + .d bemits bsp
 	xcode ycode hcode + gotoxy
 	panelcontrol 1? ( drop barrac ; ) drop
     $ff00 bcolor
@@ -596,8 +538,8 @@
 |------------------------------------------------
 ::edload | "" --
 	'name strcpy
-|	fuente 'name getpath
-	'name load 0 swap c!
+	fuente 'name |getpath
+	load 0 swap c!
 
 	fuente only13 	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> !
@@ -616,8 +558,10 @@
 :editando
 	0 SDLcls 
 
-	$101010 bcolor
-	xcode ycode wcode hcode SDLFRect
+	$333C57 sdlcolor
+	xcode wp * ycode hp * wcode wp * hcode hp * SDLFRect
+	$566C86 sdlcolor
+	xcode wp * ycode hp * wp 2 << hcode hp * SDLFRect
 	barra
 
 	drawcode
@@ -633,6 +577,7 @@
 |----------- principal
 ::edrun
 	0 'xlinea !
+	0 'ylinea !
 	mode!edit
 	'editando SDLshow
 	;
@@ -658,6 +603,5 @@
 ::edwin | x y w h --
 	'hcode ! 'wcode !
 	'ycode ! 'xcode !
-	calcselect
 	;
 
