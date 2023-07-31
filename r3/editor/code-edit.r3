@@ -119,9 +119,6 @@
 	1 'ylinea +!
 	selecc ;
 
-:colcur
-	fuente> 1 - <<13 swap - ;
-
 :karriba
 	fuente> fuente =? ( drop ; )
 	selecc
@@ -170,7 +167,6 @@
 
 |------------------------------------------------
 ##path * 1024
-
 
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;

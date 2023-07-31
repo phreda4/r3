@@ -4,14 +4,21 @@
 ^r3/util/sdlgui.r3
 ^r3/r3vm/simple-edit.r3
 
-#font
-
+:play
+	;
+	
 :main
 	0 SDLcls
+	edshow
 	
-	$ffffff ttcolor
-	10 10 ttat
-	"prueba" tt.
+	immgui 	
+	$ffffff sdlcolor
+	100 20 immbox
+	680 16 immat
+	"r3Arena" immlabelc		immdn
+	'play "Play" immbtn 	immdn
+	'exit "Exit" immbtn 
+	
 	
 	SDLredraw
 	SDLkey
@@ -20,14 +27,14 @@
 	
 :	
 	"SDLEdit" 800 600 SDLinit
-|	"media/ttf/ProggyClean.TTF" 16 TTF_OpenFont ttfont 
+	"media/ttf/Roboto-Medium.TTF" 19 TTF_OpenFont immSDL
 	
 	bfont1
-	1 2 80 25 edwin
+	1 1 80 35 edwin
 	edram
 	"r3/r3vm/testedit.r3" edload
-	edrun
-|	'main SDLshow
+|	edrun
+	'main SDLshow
 
 	SDLquit 
 	;

@@ -9,7 +9,6 @@
 #op 0 0
 #dp 0 0
 
-
 ::bmfont | w h "" --
 	loadimg 'pfont !
 	2dup 32 << or dup
@@ -40,8 +39,20 @@
 	SDLRenderer 'dp SDL_RenderDrawRect 
 	hp dup 1 >> neg 'dp 4 + d+! 'dp 12 + d!
 	;
-
-
+	
+#rec 0 0
+::bfillline | x y w h --
+	hp * 32 << swap wp * or 
+	rot wp * rot hp * 32 << or 
+	'rec !+ !
+	SDLRenderer 'rec SDL_RenderFillRect ;
+	
+::bfillemit | "" -- ""
+	count wp *
+	hp 32 << or
+	dp 'rec !+ !
+	SDLRenderer 'rec SDL_RenderFillRect ;
+	
 ::bprint
 	sprint
 ::bemits | "" --

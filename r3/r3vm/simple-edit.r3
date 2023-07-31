@@ -3,20 +3,17 @@
 |---------------------------------------
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
+^r3/util/sdlgui.r3
 ^r3/lib/parse.r3
 
 | ventana de texto
-#xcode 1
-#ycode 1
-#wcode 40
-#hcode 20
+#xcode 1 #ycode 1
+#wcode 40 #hcode 20
 
-#xlinea 0
-#ylinea 0	| primera linea visible
-#ycursor
-#xcursor
+#xlinea 0 #ylinea 0	| primera linea visible
+##ycursor ##xcursor
 
-#name * 1024
+##edfilename * 1024
 
 #pantaini>	| comienzo de pantalla
 #pantafin>	| fin de pantalla
@@ -37,17 +34,12 @@
 #linecomm 	| comentarios de linea
 #linecomm>
 
-|----- find text
-#findpad * 64
-
-|----- scratchpad
-#outpad * 2048
+#findpad * 64 |----- find text
 
 #mshift
-
-#lerror 0
-#cerror 0
 #emode 0
+
+#lerror 0 #cerror 0
 
 |----- edicion
 :lins  | c --
@@ -119,17 +111,6 @@
 	1 'ylinea +!
 	selecc ;
 
-:cursorcalc
-	ylinea 'ycursor !
-	pantaini> ( fuente> <=?
-		>>13 2 +
-		1 'ycursor +! )
-	fuente> swap 2 - <<13 - 1 - 'xcursor ! | need tab calc!!
-	-1 'ycursor +! ;
-	
-:colcur
-	fuente> 1 - <<13 swap - ;
-
 :karriba
 	fuente> fuente =? ( drop ; )
 	selecc
@@ -155,7 +136,7 @@
 
 :kder
 	selecc
-	fuente> $fuente <?
+	fuente> $fuente <? 
 	( 1 + 'fuente> ! selecc ; ) drop
 	;
 
@@ -303,7 +284,7 @@
 
 |------ Color line
 :col_inc $EF7D57 bcolor ;
-:col_com $566C86 bcolor ;
+:col_com $667C96 bcolor ;
 :col_cod $ff0000 bcolor ;
 :col_dat $ff00ff bcolor ;
 :col_str $ffffff bcolor ;
@@ -433,8 +414,8 @@
 
 :findmodekey
 	0 hcode 1 + gotoxy
-	|$0000AE bcolor
-	|rows hcode - 1 - backlines
+	$0000AE SDLColor
+	rows hcode - 1 - bfillline
 
 	$ffffff bcolor
 	" > " bemits
@@ -469,6 +450,15 @@
 	;
 
 
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 4 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+:cursorpos
+	ylinea 'ycursor ! 0 'xcursor !
+	pantaini> ( fuente> <? c@+ emitcur ) drop ;
+	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
 |	'dns 'mos 'ups guiMap |------ mouse
@@ -491,27 +481,28 @@
 	<ret> =? (  13 modo ex )
 	<tab> =? (  9 modo ex )
 	drop
-	cursorcalc
+	cursorpos
 	;
 
 :errmodekey
+	$AE0000 SDLColor
+	xcode ycode 1 - wcode 1 bfillline
+	
 	xcode hcode 1 + gotoxy
-|	$AE0000 bcolor
-|	rows hcode - 1 - backlines
-
 |	$ffffff bcolor
 |	'outpad text
 	editmodekey
 	;
 
 :btnf | "" "fx" --
-|	sp
-|	$ff0000 bcolor backprint
+	bsp
+	$ff0000 bcolor bfillemit
 	$ffffff bcolor bemits
 	$ff00 bcolor bemits
 	;
 
 :barrac | control+
+	" Ctrl-" bemits
 	"Cut" "X" btnf
 	"opy" "C" btnf
 	"Paste" "V" btnf
@@ -522,57 +513,62 @@
 	" [%s]" bprint ;
 
 :barra
+	$747474 SDLColor
+	xcode ycode 1 - wcode 1 bfillline
+	
 	xcode ycode 1 - gotoxy
-	$ff00 bcolor
-	":r3 editor" bemits
+	$ffffff bcolor ":r3 editor " bemits 
+	$0 bcolor 'edfilename " [%s]" bprint
 	xcode wcode + 8 - gotox
 	$ffff bcolor bsp
 	xcursor 1 + .d bemits bsp
 	ycursor 1 + .d bemits bsp
-	xcode ycode hcode + gotoxy
+	
+|	xcode ycode 1 - wcode 1 bfillline
+|	xcode ycode hcode + gotoxy
 	panelcontrol 1? ( drop barrac ; ) drop
-    $ff00 bcolor
-	'name bemits
 	;
 
 |------------------------------------------------
+#hashfile
+:simplehash | adr -- hash
+	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
+	
 ::edload | "" --
-	'name strcpy
-	fuente 'name |getpath
+	'edfilename strcpy
+	fuente 'edfilename |getpath
 	load 0 swap c!
 
 	fuente only13 	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> !
 	count + '$fuente !
+	fuente simplehash 'hashfile !
 	;
 
 ::edsave | --
+	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
 	mark	| guarda texto
 	fuente ( c@+ 1?
 		13 =? ( ,c 10 ) ,c ) 2drop
-	'name savemem
+	'edfilename savemem
 	empty ;
 
-
 |-------------------------------------
-:editando
-	0 SDLcls 
-
+::edshow
 	$333C57 sdlcolor
-	xcode wp * ycode hp * wcode wp * hcode hp * SDLFRect
+	xcode 4 + ycode wcode 4 - hcode bfillline
 	$566C86 sdlcolor
-	xcode wp * ycode hp * wp 2 << hcode hp * SDLFRect
-	barra
-
+	xcode ycode 4 hcode bfillline	
+|	barra
 	drawcode
 	emode
 	0? ( editmodekey )
 	2 =? ( findmodekey )
 	3 =? ( errmodekey )
-	drop
-|	acursor
-	SDLredraw
-	;
+	drop ;
+	
+:editando
+	0 SDLcls edshow SDLredraw ;
 
 |----------- principal
 ::edrun
@@ -594,7 +590,7 @@
 	$3fff +				| 16KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
-	$1fff +         	| 16kb
+	$1fff +         	| 8kb
 	'here  ! | -- FREE
 	0 here !
 	mark
