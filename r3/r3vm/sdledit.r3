@@ -355,7 +355,9 @@
 	$afafaf bcolor
 	dup ylinea + 1 + .d 3 .r. bemits ;
 
-:drawcode
+::edcodedraw
+	$333C57 sdlcolor xcode 4 + ycode wcode 4 - hcode bfillline
+	$566C86 sdlcolor xcode ycode 4 hcode bfillline	
 	pantaini>
 	0 ( hcode <?
 		xcode ycode pick2 + gotoxy
@@ -555,12 +557,8 @@
 
 |-------------------------------------
 ::edshow
-	$333C57 sdlcolor
-	xcode 4 + ycode wcode 4 - hcode bfillline
-	$566C86 sdlcolor
-	xcode ycode 4 hcode bfillline	
 |	barra
-	drawcode
+	edcodedraw
 	emode
 	0? ( editmodekey )
 	2 =? ( findmodekey )

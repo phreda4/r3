@@ -2,7 +2,7 @@
 | PHREDA 2023
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlgui.r3
-^r3/r3vm/simple-edit.r3
+^r3/r3vm/sdledit.r3
 
 :play
 	;
