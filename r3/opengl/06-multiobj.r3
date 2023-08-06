@@ -85,7 +85,9 @@
 	dup d@ mobj + 	| adr names
 	1 pick2 glGenTextures	| d@ string
     GL_TEXTURE_2D pick2 d@ glBindTexture
-	'fpath "%s/%s" sprint glLoadImg 		| load tex
+	'fpath "%s/%s" sprint 
+|	dup .write .cr
+	glLoadImg 		| load tex
 	4 + | adr
 	1 over glGenVertexArrays
 	dup d@ glBindVertexArray
@@ -115,6 +117,7 @@
 | texture 
 | nface 3 *
 :drawobjm | adr --
+	|dup "%h " .print
 	8 + >a 
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D da@+ glBindTexture 
@@ -291,7 +294,7 @@
 	<a> =? ( 1.0 'pEye 16 + +! )
 	<d> =? ( -1.0 'pEye 16 + +! )
 
-	<esp> =? ( objrand 0 0 0 $001000f0000e -0.5 0.0 0.0 0 +obj )
+	<esp> =? ( objrand 0 0 0 $001000f0000e 0.0 0.2 0.5 0 +obj )
 	drop ;	
 
 |---------------------------		
@@ -314,7 +317,8 @@
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println
 	"<esp> - 1 obj moving" .println	
-	 objrand +objr 
+|	 objrand +objr 
+	objrand 0 0 0 0 0.0 0.2 0.5 0 +obj
 	;
 	
 |----------- BOOT

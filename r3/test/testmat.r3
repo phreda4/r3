@@ -20,7 +20,7 @@
 	dup 16 >> $ffff and "%f " .print
 	32 >> $ffff and "%f " .print ;
 	
-#fx 0 #fy 0 #fz 0 
+#fx 0 #fy 0 #fz 0 | in compiler again constant remover! 
 #sx 0 #sy 0 #sz 0
 #ux 0 #uy 0 #uz 0 
 
@@ -30,15 +30,14 @@
 |	'u dup 's v3= 'f v3vec
 	swap
 	'fx dup rot v3= dup pick3 v3- 
-|	dup .vecprint .cr
+	dup .vecprint .cr
 	v3Nor | eye up
-|	"f:" .print 'fx .vecprint .cr
+	"f:" .print 'fx .vecprint .cr
 	
 	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
-|	"s:" .print 'sx .vecprint .cr
-	
+
 	'ux dup 'sx v3= 'fx v3vec
-|	"u:" .print 'ux .vecprint .cr
+	"u:" .print 'ux .vecprint .cr
 	mat> >b
 	
 	sx b!+ |mat[0] = s.x;
@@ -55,9 +54,9 @@
     0 b!+ |mat[11] = 0.0;
 	
     'sx over 
-|	.cr over .vecprint .cr dup .vecprint .cr 
+	.cr over .vecprint .cr dup .vecprint .cr 
 	v3ddot 
-|	dup "= %f " .println
+	dup "= %f " .println
 	neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
     'ux over v3ddot neg b!+ |mat[13] = -kmVec3Dot(&u, pEye);
     'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
@@ -128,10 +127,7 @@ matinv
 #v2 1.0 0.0 1.0
 #vr 0 0 0
 
-
-
-:
-.cls
+:test2
 matini
 "mat" .println
 .matprint .cr
@@ -159,6 +155,51 @@ mat> 'v2 'vr matvec*
 (0.951263, -0.000043, 0.308980, -0.000000), 
 (-0.181583, 0.809087, 0.558973, -0.000000), 
 (-0.259383, -0.030208, -0.237139, 1.000000))" .println
+	;
+	
+#fmvp * 64
+#fviewmat * 64
+#fmodelmat * 64
+#flightpos [ 4.0 4.0 4.0 ]
+	
+#pEye 4.0 0.0 0.0
+#pTo 0 0 0
+#pUp 0 1.0 0
 
+#matcam * 128
+
+:test3
+	matini
+	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
+|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
+	'matcam mcpy	| perspective matrix
+.matprint .cr
+	
+	"mat" .println
+	matini 
+
+	0.0 0.2 0.5 mrpos
+	'fmodelmat mcpyf | model matrix	>>
+	
+	.matprint .cr		
+	|------- mov camara
+	mpush 'pTo 'pEye 'pUp mlookat 
+	.matprint .cr	
+	m* | eye to up -- 
+	|------- perspective
+	'matcam mm* 	| cam matrix
+	'fmvp mcpyf		| mvp matrix >>
+	
+	.matprint .cr	
+	;
+:test4
+	matini
+	'pTo 'pEye 'pUp mlookat 
+	.matprint .cr	
+	;
+
+:
+.cls
+test4
 .input
 ;

@@ -58,9 +58,11 @@
 	
 	'flpos >a
 	1.2 f2fp da!+ 20.0 f2fp da!+ 2.0 f2fp da!+ | light position
-	
+	'flamb >a
 	1.0 f2fp da!+ 1.0  f2fp da!+ 1.0 f2fp da!+ | ambi
+	'fldif >a
 	0.9 f2fp da!+ 0.9 f2fp da!+ 0.9 f2fp da!+ | diffuse
+	'flspe >a
 	1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ | spec
 	;
 

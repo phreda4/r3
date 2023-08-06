@@ -61,9 +61,15 @@
 	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
 	;
 	
-#fx 0 #fy 0 #fz 0 
-#sx 0 #sy 0 #sz 0
-#ux 0 #uy 0 #uz 0 
+#fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
+:fy 'fx 8 + @ ;
+:fz 'fx 16 + @ ;
+#sx 0 0 0 |#sy 0 #sz 0
+:sy 'sx 8 + @ ;
+:sz 'sx 16 + @ ;
+#ux 0 0 0 |#uy 0 #uz 0 
+:uy 'ux 8 + @ ;
+:uz 'ux 16 + @ ;
 
 ::mlookat | eye to up --
 	swap

@@ -136,7 +136,7 @@
 	face2move
 	2dup test@ 
 	3 << 'psig + @ ex 
-	win? 1? ( "- You Win !!" 'strstate strcpy ) drop
+	win? 1? ( "- You Win !! press F3" 'strstate strcpy ) drop
 	; | dx dy 
 	
 |------- MAIN

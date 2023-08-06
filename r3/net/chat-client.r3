@@ -20,6 +20,15 @@
 	d@ ":%d" .print
 	;
 	
+:SayHello
+	'pad >a
+	2 ca!+
+	ip @ a!+
+	"Pepe" @ a!+
+|	memcpy(&hello[CHAT_HELLO_PORT], &myip->port, 2);
+	tcpsock 'pad len SDLNet_TCP_Send 'result !
+	;
+	
 :sendpad
 	"> " .print .input .cr
 	'pad count 'len !
@@ -34,9 +43,7 @@
 	'ip "127.0.0.1" 9999 SDLNet_ResolveHost drop
 	'ip .ip .cr
 	'ip SDLNet_TCP_Open 'tcpsock !
-|    tcpsock = SDLNet_TCP_Open(&ip);
-|    if (!tcpsock) {
-|      printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
+	SayHello
 	( done 0? drop
 		sendpad ) drop
     tcpsock SDLNet_TCP_Close

@@ -31,10 +31,10 @@
     SDL_Quit ;
 
 |-------------------------------------
-#flpos * 12
-#flamb * 12
-#fldif * 12
-#flspe * 12
+#flpos * 48
+|#flamb * 12
+|#fldif * 12
+|#flspe * 12
 	
 #fprojection * 64
 #fview * 64
