@@ -193,27 +193,26 @@
 	iqm.joino
 	iqm.join 
 	( 1? 1- swap
-		d@+ drop |]iqm.str "%s " .print | name
+		d@+ drop 
+		|d@+ ]iqm.str "%s " .println | name
 		d@+ ,c |dup $ff and "%h " .print | parent
 		40 + swap ) 2drop
 		
 	here 'listbones !
 	iqm.joino
-	
 	0 ( iqm.join <? swap
-		d@+ drop |]iqm.str "%s " .print | name
+		d@+ drop 
+		|d@+ ]iqm.str "%s " .println | name
 		d@+ drop |dup $ff and "%h " .print | parent
 		'trans >a
 		10 ( 1? 1- swap
 			d@+ fp2f a!+ 
 			swap ) drop 
 		matini
-
-		'rotat matqua 		
+		'rotat matqua
 		'trans @+ swap @+ swap @ mtran		
 |		'scale @+ swap @+ swap @ mscale
 		|matinv
-		
 		matparent
 		here mcpy
 		128 'here +!
@@ -368,7 +367,7 @@
 	drop
 
 	vertexoff
-	
+
 	|......................
 	| generate geometry (without index)
 	here >a
@@ -381,7 +380,6 @@
 		dup ]offvbin d@ da!+
 		dup ]offvbwe d@ da!+
 		1+ ) drop 
-		
 	|......................
     1 'VAO glGenVertexArrays
     1 'VBO glGenBuffers
@@ -433,7 +431,6 @@
 		d@+ 3 *  | tri-cnt (vertex)
 		, swap ,
 		swap ) 2drop 
-	
 	|............... bones
 	| cnt
 	| parent | mat4x4 inv
@@ -709,7 +706,6 @@
 	"media/dae/iqm/mrfixit.iqm" iqmload	
 |	"media/dae/iqm/Sparrow.iqm" iqmload	
 	|"media/dae/cube.iqm" iqmload	
-
 	glimmgui
 	initvec
 	initshaders

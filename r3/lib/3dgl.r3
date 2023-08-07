@@ -315,13 +315,13 @@
 
 ::matqua | 'quat --
 	dup q4nor
-	@+ dup dup + 'fx ! 'sx !
-	@+ dup dup + 'fy ! 'sy !
-	@+ dup dup + 'fz ! 'sz !
+	@+ dup dup + 'cox ! 'six !
+	@+ dup dup + 'coy ! 'siy !
+	@+ dup dup + 'coz ! 'siz !
 	@ | w
-	dup fx *. 'm31 ! dup fy *. 'm32 ! fz *. 'm33 !
-	sy fy *. 'm21 ! sy fz *. 'm22 ! sz fz *. 'm23 !
-	sx fx *. 'm11 ! sx fy *. 'm12 ! sx fz *. 'm13 !
+	dup cox *. 'm31 ! dup coy *. 'm32 ! coz *. 'm33 !
+	siy coy *. 'm21 ! siy coz *. 'm22 ! siz coz *. 'm23 !
+	six cox *. 'm11 ! six coy *. 'm12 ! six coz *. 'm13 !
 	mat> >a
 	1.0 m21 m23 + - a!+
 	m12 m33 + a!+
