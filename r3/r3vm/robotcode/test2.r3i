@@ -1,0 +1,18 @@
+#io
+
+#seed 495090497
+
+:rand | -- r32
+  seed 3141592621 * 1 + dup 'seed ! ;
+
+:delay | msec --
+	2 << ( 1? 1 - ) drop ;
+
+:main
+	1 'io !
+	8 delay
+	rand
+	8 >> $1f and 'io !
+	main ;
+
+: main ;
