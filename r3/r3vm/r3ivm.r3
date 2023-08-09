@@ -115,37 +115,84 @@
 :iADR	4 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	4 'NOS +! TOS NOS ! @+ code + @ 'TOS ! ;	| 32 bits
 
+:ioAND 	
+:ioOR 
+:ioXOR		
+:io+ 
+:io- 
+:io* 
+:io/
+:io<< 
+:io>> 
+:io>>>
+:ioMOD 
+:io/MOD 
+:io*/ 
+:io*>> 
+:io<<
+:io<? 
+:io>? 
+:io=? 
+:io>=? 
+:io<=? 
+:io<>? 
+:ioAN? 
+:ioNA?
 
-#r3maci
-iLIT1 iLIT2 iLITs iCOM iJMPR iJMP iCALL iADR iVAR	|0-8
-i; i( i) i[ i] iEX i0? i1? i+? i-? 				|9-18
-i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? iBT? 	|19-27
-iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	|28-35
-iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	|36-42
-i@ iC@ i@+ iC@+ i! iC! i!+ iC!+ i+! iC+! 		|43-52
-i>A iA> iA@ iA! iA+ iA@+ iA!+ 					|53-59
-i>B iB> iB@ iB! iB+ iB@+ iB!+ 					|60-66
-iNOT iNEG iABS iSQRT iCLZ						|67-71
-iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
-i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
-iMOV iMOV> iFILL iCMOV iCMOV> iCFILL			|87-92
-			|92-127
-
-:exlit | 7 bit number
-	4 'NOS +! TOS NOS !
-	57 << 57 >> 'TOS ! ; | 7 to 64 bits // in 32bits 25 <<
+#vmc
+i; i( i) i[ i] iEX i0? i1? i+? i-? 				
+i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? iBT? 	
+iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	
+iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	
+i>R iR> iR@ 
+iAND iOR iXOR 
+i+ i- i* i/ 
+i<< i>> i>>> 
+iMOD i/MOD i*/ i*>> i<</ 
+iNOT iNEG iABS iSQRT iCLZ 
+i@ iC@ iW@ iD@ 
+i@+ iC@+ iW@+ iD@+ 
+i! iC! iW! iD! 
+i!+ iC!+ iW!+ iD!+ 
+i+! iC+! iW+! iD+! 
+i>A iA> iA+ 
+iA@ iA! iA@+ iA!+ 
+icA@ icA! icA@+ icA!+ 
+idA@ idA! idA@+ idA!+ 
+i>B iB> iB+ 
+iB@ iB! iB@+ iB!+ 
+icB@ icB! icB@+ icB!+ 
+idB@ idB! idB@+ idB!+ 
+iMOVE iMOVE> iFILL 
+iCMOVE iCMOVE> iCFILL 
+iDMOVE iDMOVE> iDFILL 
+iMEM
+iLOADLIB iGETPROC
+iSYS0 iSYS1 iSYS2 iSYS3 iSYS4 iSYS5
+iSYS6 iSYS7 iSYS8 iSYS9 iSYS10 
+#vmc_int
+LIT1 iLIT2 iLITs iCOM iJMPR iJMP iCALL iADR iVAR	
+#vmc_opt | OPTIMIZATION WORDS
+ioAND ioOR ioXOR		
+io+ io- io* io/
+io<< io>> io>>>
+ioMOD io/MOD io*/ io*>> io<<
+io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
+0
+| (0|1|2|3|4|5|6|7) << 'var + @ ! c@ c! w@ w! d@ d!
+| call;
+| minilit 'var! d! w! c!
+| 'var+! d+! w+! c+!
+|
 
 ::vmstep | ip -- ip'
-	0? ( ; )
-	c@+ $80 and? ( exlit ; )
-	3 << 'r3maci + @ ex ;
+	d@+ dup $ff and 3 << 'vmc + @ ex ; | ip val -- ip
 
-::vmrun | ip -- ip'
-	( 1? | *** avoid with REPEAT
-		vmstep ) ;
+::vmrun | to ip -- ip'
+	( over <>? vmstep ) ;
 
 ::vmreset
-	code 4 - 'NOS ! 0 'TOS !
+	code 8 - 'NOS ! 0 'TOS !
 ::vmresetr
 	code 252 + 0 over ! 'RTOS !
 	;
