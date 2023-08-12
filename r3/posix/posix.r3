@@ -2,7 +2,6 @@
 | stdio : 0 
 | stdout : 1
 | stderr : 2
-
 #sys-open
 #sys-creat
 #sys-close
@@ -21,7 +20,21 @@
 #sys-free
 #sys-realloc
 #sys-usleep
-
+#sys-ftruncate 
+#sys-fsync
+#sys-mprotect
+#sys-signal
+#sys-chdir
+#sys-mkdir
+#sys-rmdir
+#sys-getwd
+#sys-opendir
+#sys-closedir
+#sys-readdir
+#sys-clock_gettime 
+#sys-fcntl 
+#sys-time
+#sys-localtime
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
 ::libc-close sys-close sys1 ;
@@ -40,7 +53,21 @@
 ::libc-free sys-free sys1 ;
 ::libc-realloc sys-realloc sys2 ;
 ::libc-usleep sys-usleep sys1 ;
-
+::libc-ftruncate sys-ftruncate sys2 ;
+::libc-fsync sys-fsync sys1 ;
+::libc-mprotect sys-mprotect sys3 ;
+::libc-signal sys-signal sys2 ;
+::libc-chdir sys-chdir sys1 ;
+::libc-mkdir sys-mkdir sys2 ;
+::libc-rmdir sys-rmdir sys1 ;
+::libc-getwd sys-getwd sys1 ;
+::libc-opendir sys-opendir sys1 ;
+::libc-closedir sys-closedir sys1 ;
+::libc-readdir sys-readdir sys1 ;
+::libc-clock_gettime sys-clock_gettime sys2 ;
+::libc-fcntl sys-fcntl sys3 ;
+::libc-time sys-time sys1 drop ;
+::libc-localtime sys-localtime sys1 drop ;
 :
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
@@ -62,4 +89,21 @@
 	dup "realloc" getproc 'sys-realloc ! 
 	dup "usleep" getproc 'sys-usleep ! 
 	
+	dup "ftruncate" getproc 'sys-ftruncate !
+	dup "fsync" getproc 'sys-fsync !
+	dup "mprotect" getproc 'sys-mprotect !
+	dup "signal" getproc 'sys-signal !
+	dup "chdir" getproc 'sys-chdir !
+	dup "mkdir" getproc 'sys-mkdir !
+	dup "rmdir" getproc 'sys-rmdir !
+	dup "getwd" getproc 'sys-getwd !
+	dup "opendir" getproc 'sys-opendir !
+	dup "closedir" getproc 'sys-closedir !
+	dup "readdir" getproc 'sys-readdir !
+|: .d_type ( a -- n ) 18 + c@ ;
+|: .d_name ( a -- z ) 19 + ;
+	dup "clock_gettime" getproc 'sys-clock_gettime !
+	dup "fcntl" getproc 'sys-fcntl ! 
+	dup "time" getproc 'sys-time !
+	dup "localtime" getproc 'sys-localtime !
 	drop ;
