@@ -1,21 +1,21 @@
 | test multi virtual cpu
 | PHREDA 2023
 
-^r3/lib/gui.r3
-^r3/lib/input.r3
+^r3/win/console.r3
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
 
-^./r3ivm.r3
-^./r3itok.r3
-^./r3iprint.r3
+^r3/r3vm/r3ivm.r3
+^r3/r3vm/r3itok.r3
+^r3/r3vm/r3iprint.r3
 
 #spad * 256
 #output * 8192
 
 |------
 :xbye
-	exit ;
+|	exit 
+;
 
 
 |#wsys "BYE" "shoot" "turn" "adv" "stop"
@@ -34,42 +34,42 @@
 |    dup c@ 0? ( 'state ! drop patchend pinput ; ) drop
 	r3i2token
 	state 0? ( immediate ) drop
-	0 'spad ! refreshfoco
+	0 'spad ! 
 	;
 
 #vm1 #vm2 #vm3
 
 :dumpvm | adr --
 	dup vm@ >b
-	8 ( 1? 1 - b@+ $ffffffff and "%h " print ) drop
-	cr
+	8 ( 1? 1 - b@+ $ffffffff and "%h " .print ) drop
+	.cr
 	256 b+
 	16 ( 1? 1 -
 		16 ( 1? 1 -
-			b> ip code + =? ( $ff0000 'ink ! "*" print $ffffff 'ink ! )
-			c@+ $ff and "%h " print
+			b> ip code + =? ( .red "*" .print .white )
+			c@+ $ff and "%h " .print
 			>b
-			) drop cr
+			) drop .cr
 		) drop
-	cr
-	NOS CODE - "d:%d " print
-	CODE 256 + RTOS - "r:%d " print
+	.cr
+	NOS CODE - "d:%d " .print
+	CODE 256 + RTOS - "r:%d " .print
 
 	;
 
 
 :dumpvmcode | adr --
 	vm@
-	ip "ip:%h " print
-	TOS "TOS:%d " print 
-	|ip code + c@ "(%d) " print
-|	NOS "NOS:%h " print
-|	RTOS @ "RTOS:%d " print
-	NOS CODE 8 + - "d:%d " print
-	CODE 256 + RTOS - "r:%d " print
-	cr
+	ip "ip:%h " .print
+	TOS "TOS:%d " .print 
+	|ip code + c@ "(%d) " .print
+|	NOS "NOS:%h " .print
+|	RTOS @ "RTOS:%d " .print
+	NOS CODE 8 + - "d:%d " .print
+	CODE 256 + RTOS - "r:%d " .print
+	.cr
 	code 256 + ( code> <?
-|		dup printdef cr
+|		dup .printdef cr
 		4 + @+ $ffff and + ) drop ;
 
 :step
@@ -80,34 +80,34 @@
 
 |----------------------------------
 :screen
-	cls home gui
-	$ff00 'ink !
-	"r3i" print cr
-	$ffffff 'ink !
-	"> " print
-	'spad 1024 input
-|	cr vm1 dumpvmcode
-	cr vm1 dumpvm
+	.cls
+	.green
+	"r3i" .println
+	.white
+	"> " .print
+	|'spad 1024 
+	.input
+|	.cr vm1 dumpvmcode
+	.cr vm1 dumpvm
 
-|	cr vm2 dumpvmcode
-|	cr vm2 dumpvm
+|	.cr vm2 dumpvmcode
+|	.cr vm2 dumpvm
 
-|	cr vm3 dumpvmcode
-|	cr vm3 dumpvm
+|	.cr vm3 dumpvmcode
+|	.cr vm3 dumpvm
 
-	key
-	<ret> =? ( parse&run )
-	<f1> =? ( step )
-	>esc< =? ( exit )
-	drop
-	acursor ;
+	inkey
+|	<ret> =? ( parse&run )
+|	<f1> =? ( step )
+|	>esc< =? ( exit )
+	drop 
+	;
 
 
 :main
 	'wsysdic syswor!
 	'xsys vecsys!
 
-	fontj2
 	mark
 	$fff vmcpu 'vm1 !
 	$fff vmcpu 'vm2 !
@@ -117,6 +117,7 @@
 |	vm2 "r3/r3vm/robotcode/test2.r3i" vmload
 |	vm3 "r3/r3vm/robotcode/test3.r3i" vmload
 
-	'screen onshow ;
+|	'screen onshow 
+;
 
 : main ;

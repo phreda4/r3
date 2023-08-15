@@ -463,7 +463,9 @@
 	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-|	'dns 'mos 'ups guiMap |------ mouse
+
+	'dns 'mos 'ups guiMap |------ mouse
+	
 	SDLchar 1? ( modo ex ; ) drop
 
 	SDLkey 0? ( drop ; )

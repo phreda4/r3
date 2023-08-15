@@ -3,15 +3,12 @@
 
 |MEM $fffff
 
-^r3/lib/gui.r3
-^r3/lib/input.r3
 ^r3/lib/rand.r3
-
 ^r3/r3vm/sdledit.r3
 
-^./r3ivm.r3
-^./r3itok.r3
-^./r3iprint.r3
+^r3/r3vm/r3ivm.r3
+^r3/r3vm/r3itok.r3
+^r3/r3vm/r3iprint.r3
 
 #codepath "r3/r3vm/robotcode/"
 

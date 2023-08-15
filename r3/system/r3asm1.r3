@@ -598,14 +598,15 @@
 :gMEM
 	0 PUSH.CTEM ;
 
-:gLOADLIB | aa "" -- aa
+:gLOADLIB | "" -- aa
 	"cinvoke64 LoadLibraryA,#0" ,asm 
 	| rax=tos
 	;
 	
 :gGETPROC | aa "" -- dd
-	"cinvoke64 GetProcAddress,#0,#1" ,asm .drop 
-	| rax=tos
+	"cinvoke64 GetProcAddress,#0,#1" ,asm 
+	.drop  | 
+	| rax=tos !
 	;
 
 :preA16

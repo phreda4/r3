@@ -2,8 +2,8 @@
 | experiment for make a r3computer like jupiter ace
 | PHREDA 2021
 
-^./r3ivm.r3
-^./r3itok.r3
+^r3/r3vm/r3ivm.r3
+^r3/r3vm/r3itok.r3
 
 |------------------------
 :,tokenl | nro dic -- str

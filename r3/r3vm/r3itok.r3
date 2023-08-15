@@ -4,8 +4,7 @@
 
 ^r3/lib/parse.r3
 
-
-^./r3ivm.r3
+^r3/r3vm/r3ivm.r3
 
 ##INTWORDS 9
 

@@ -9,9 +9,9 @@
 	
 :main
 	0 SDLcls
-	edshow
-	
 	immgui 	
+	edshow	
+	
 	$ffffff sdlcolor
 	100 20 immbox
 	680 16 immat
