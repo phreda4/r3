@@ -132,6 +132,18 @@
 	2drop 
 	here a> 'here ! 
 	;
+
+::point2ts | x y 'ts -- ts
+	@+ 0 0 'xm 'ym SDL_QueryTexture
+	d@+ 'dx ! d@ 'dy !
+	dy / xm dx / * swap dx / + ;
+
+::ts2rec | x y nro 'ts -- 
+	8 + @+ 'rec 8 + !
+	swap 3 << + @ 
+	rot rot 32 << + + 'rec ! 
+	SDLRenderer 'rec SDL_RenderDrawRect 
+	;
 	
 ::tscolor | rrggbb 'ts --
 	@ swap

@@ -7,7 +7,7 @@
 
 |------------------------
 :,tokenl | nro dic -- str
-	swap 2 << + @ code2name ,s ;
+	swap 3 << + @ code2name ,s ;
 
 :,i16	drop @+ 48 << 48 >> "%d" ,print 2 - ;
 :,i32	drop @+ "%d" ,print ;

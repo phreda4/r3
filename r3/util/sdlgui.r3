@@ -98,6 +98,7 @@
 	immcolortwin SDLColor
 	plxywh SDLFRect
 	immlabelc
+	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
 	;	
 	
 #px #py 	

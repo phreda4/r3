@@ -79,7 +79,7 @@
 	;
 
 |----------------------------------
-:screen
+:mainloop
 	.cls
 	.green
 	"r3i" .println
@@ -105,19 +105,21 @@
 
 
 :main
+	.cls
 	'wsysdic syswor!
 	'xsys vecsys!
-
+	"init" .println
 	mark
 	$fff vmcpu 'vm1 !
 	$fff vmcpu 'vm2 !
 	$fff vmcpu 'vm3 !
-
+	"loading" .println
 	vm1 "r3/r3vm/robotcode/test1.r3i" vmload
 |	vm2 "r3/r3vm/robotcode/test2.r3i" vmload
 |	vm3 "r3/r3vm/robotcode/test3.r3i" vmload
 
-|	'screen onshow 
-;
+	mainloop
+	waitesc
+	;
 
 : main ;

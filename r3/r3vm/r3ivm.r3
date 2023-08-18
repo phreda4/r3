@@ -21,12 +21,12 @@
 :dic>tok ;
 
 :iDUP		8 'NOS +! TOS NOS ! ;
-:iOVER     iDUP NOS 8 - @ 'TOS ! ;
-:iPICK2    iDUP NOS 16 - @ 'TOS ! ;
-:iPICK3    iDUP NOS 24 - @ 'TOS ! ;
-:iPICK4    iDUP NOS 32 - @ 'TOS ! ;
-:i2DUP     iOVER iOVER ;
-:i2OVER    iPICK3 iPICK3 ;
+:iOVER		iDUP NOS 8 - @ 'TOS ! ;
+:iPICK2		iDUP NOS 16 - @ 'TOS ! ;
+:iPICK3		iDUP NOS 24 - @ 'TOS ! ;
+:iPICK4		iDUP NOS 32 - @ 'TOS ! ;
+:i2DUP		iOVER iOVER ;
+:i2OVER		iPICK3 iPICK3 ;
 :iDROP		NOS @ 'TOS !	|iii
 :iNIP		-8 'NOS +! ;
 :i2NIP      -16 'NOS +! ;
@@ -194,15 +194,15 @@
 :iSYS10 NOS 72 - @ NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys10 'TOS ! -80 'NOS +! ;
 	
 
-:iLIT1	4 'NOS +! TOS NOS ! @+ 48 << 48 >> 'TOS ! 2 - ; | 16 bits
-:iLIT2	4 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits
-:iLITs	4 'NOS +! TOS NOS ! c@+ over code - 'TOS ! $ff and + ;	| 8+s bits
+:iLIT1	8 'NOS +! TOS NOS ! @+ 48 << 48 >> 'TOS ! 2 - ; | 16 bits
+:iLIT2	8 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits
+:iLITs	8 'NOS +! TOS NOS ! c@+ over code - 'TOS ! $ff and + ;	| 8+s bits
 :iCOM   c@+ -1 =? ( drop c@+ 2 << exsys + @ ex ; ) $ff and + ;
 :iJMPR  @ 48 << 48 >> + ; 				| 16 bits
 :iJMP   @ code + ;						| 32 bits
 :iCALL	@+ code + swap -4 'RTOS +! RTOS ! ; 	| 32 bits
-:iADR	4 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits (iLIT)
-:iVAR	4 'NOS +! TOS NOS ! @+ code + @ 'TOS ! ;	| 32 bits
+:iADR	8 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits (iLIT)
+:iVAR	8 'NOS +! TOS NOS ! @+ code + @ 'TOS ! ;	| 32 bits
 
 :ioAND 	
 :ioOR 
@@ -283,20 +283,20 @@ io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
 ::vmreset
 	code 8 - 'NOS ! 0 'TOS !
 ::vmresetr
-	code 252 + 0 over ! 'RTOS !
+	code 504 + 0 over ! 'RTOS ! | 512-8 
 	;
 
 ::vecsys! 'exsys ! ;
 
 ::vmdeep | -- stack
-	NOS code - 2 >> 1 + ;
+	NOS code - 3 >> 1 + ;
 
 ::vmpop | -- t
 	TOS
-	NOS dup @ 'TOS ! 4 - 'NOS ! ;
+	NOS dup @ 'TOS ! 8 - 'NOS ! ;
 
 ::vmpush | v --
-	4 'NOS +! TOS NOS !
+	8 'NOS +! TOS NOS !
 	'TOS ! ;
 
 ::vm@ | 'vm --	; get vm current
@@ -306,9 +306,9 @@ io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
 
 ::vmcpu | ram -- 'adr
 	here
-	8 2 << over +	| IP,TOS,NOS,RTOS,RA,RB,CODE,CODE>
+	8 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,CODE,CODE>
 	dup 'code !
-	256 +		| stacks
+	512 +		| stacks  (64stack cell)
 	dup 'code> !
 	rot + 'here !
 	dup vm!

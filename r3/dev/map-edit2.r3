@@ -9,12 +9,15 @@
 #modod
 
 #ts_spr
-#tilenow 16
+
+#tilenow 11
 
 #map * $fffff
-#mapx 0 #mapy 0
+#mapx 32 #mapy 32
 #mapw 32 #maph 32
-#tilew 16 #tileh 16
+
+#tilew 24 #tileh 24
+#tilefile "media/img/classroom.png"
 
 #rec [ 0 0 0 0 ]
 #rdes [ 0 0 0 0 ]
@@ -33,15 +36,15 @@
 	3 << + @ 'rec !
 	SDLrenderer swap 'rec 'rdes SDL_RenderCopy 
 	;
-	
+
 :drawmap | map --
 	dup 8 + @ 
 	dup 'rdes 8 + ! 'rec 8 + ! | w h 
 	'map 
 	0 ( maph <? 
 		0 ( mapw <?
-			over 4 << mapy +
-			over 4 << mapx + 
+			over tileh * mapy + 
+			over tilew * mapx + 
 			setto | y x
 			rot @+ pick4 drawtile rot rot 
 			1 + ) drop
@@ -49,37 +52,45 @@
 
 
 |---- MODO
-#win1 1 [ 532 0 64 180 ] "Tools"
-
 :wintools
-	'win1 immwin 0? ( drop ; ) drop
+|	'win1 immwin 0? ( drop ; ) drop
+	0 0 immat
 	28 24 immbox
-	'exit 11 immibtn imm<<dn | winclose
+	'exit 11 immibtn imm>> | winclose
 	
-	'exit 192 immibtn imm<<dn | pencil edit
-	'exit 115 immibtn imm<<dn | fill bucket
+	'exit 192 immibtn imm>> | pencil edit
+	'exit 115 immibtn imm>> | fill bucket
 	
-	'exit 116 immibtn imm<<dn | 
+	'exit 116 immibtn imm>> | 
 	
-	'exit 2 immibtn imm<<dn
-	
+	'exit 2 immibtn imm>>
 	;
 
 #win2 1 [ 600 0 200 512 ] "Tiles"
 
+:chtile
+	sdlx curx - 
+	sdly cury - 
+	ts_spr
+	point2ts 
+	'tilenow !
+	;
+	
 :wintiles
 	'win2 immwin 0? ( drop ; ) drop
 	curx cury ts_spr @ SDLImage
+|	sdlb sdlx sdly "%d %d %d" sprint immLabel
+	tilenow "%d" sprint immLabel
+	'chtile 'chtile 'chtile guiMap
+	curx cury tilenow ts_spr ts2rec
 	;
 
 |------------------------ MAP
-#xm #ym
-
 ::scr2view | xs ys -- xv yv
-	ym - tilew / mapy +
+	mapy - tilew / 
 	maph >=? ( -1 nip )
 	swap
-	xm - tileh / mapx +
+	mapx - tileh / 
 	mapw >=? ( -1 nip ) 
 	swap ;
 		
@@ -108,7 +119,8 @@
 	0 ( maph <? 
 		0 ( mapw <?
 		
-			2dup swap mapw * + a!+
+			|2dup swap mapw * + 
+			0 a!+
 			
 			1 + ) drop
 		1 + ) drop 
@@ -137,7 +149,8 @@
 	"r3sdl" 800 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	
-	16 16 "media/img/First Asset pack.png" tsload 'ts_spr !
+|	32 32 "media/img/rpg2.png" tsload 'ts_spr !
+	tilew tileh 'tilefile tsload 'ts_spr !
 	resetmap
 	
 	'demo SDLshow

@@ -106,7 +106,7 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 	word2code lastdicc>	| code dicc
 	( dup @ $3fffffffffffffff and
 		pick2 =? ( drop nip ; )
-		drop code 256 + >?
+		drop code 512 + >?
 		dup 4 + @ 16 >>> 8 + - ) 2drop 0 ;
 
 |--------------------------
@@ -149,7 +149,8 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 	,id ,id
 	1 'state !
 	>>sp
-	0 'flagdata ! ;
+	0 'flagdata ! 
+	;
 
 :.var | adr -- adr' | #
 	newentry
@@ -275,9 +276,9 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 	3 ,i -1 ,i 1 - ,i >>sp ;
 
 :wrd2token | str -- str'
-	( dup c@ $ff and 33 <?
+	( dup c@ $ff and 33 <? 
 		0? ( drop 'msgok 'error ! ; ) drop 1 + )	| trim0
-|	dup "%w " slog
+	over "%w<<" .println
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
@@ -313,8 +314,9 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 	over vm@
 	r3reset
 	mark
-	here swap load 0 swap c!
-	here r3i2token drop
+	here swap load 0 swap c!+
+	here swap 'here !
+	r3i2token drop
 	'lerror !
 	vmreset
 	lastdicc> code - 8 + 'ip ! | ultima definicion
