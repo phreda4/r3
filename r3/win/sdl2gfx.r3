@@ -5,21 +5,36 @@
 ^r3/win/sdl2.r3
 ^r3/win/sdl2image.r3	
 
-#sdlink
+#rec [ 0 0 0 0 ] | aux rect
 
+#vert [
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+]
+
+#index [ 0 1 2 2 3 0 ]
+
+:rgb23 | rgb -- r g b
+	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
+	
 ::SDLColor | col --
-	dup 'sdlink !
-	SDLrenderer swap
-	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
-	$ff SDL_SetRenderDrawColor ;
+	SDLrenderer swap rgb23 $ff SDL_SetRenderDrawColor ;
 
+::SDLcls | color --
+	SDLColor SDLrenderer SDL_RenderClear ;
+	
 ::SDLPoint | x y --
 	SDLRenderer rot rot SDL_RenderDrawPoint ;
-	
+
+::SDLGetPixel | x y -- v
+	swap 'rec d!+ d!+ $10001 swap !
+	SDLrenderer 'rec $16362004 'vert 1 SDL_RenderReadPixels 
+	vert $ffffff and ;
+
 ::SDLLine | x y x y --	
 	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
-
-#rec [ 0 0 0 0 ] | aux rect
 
 ::SDLFRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
@@ -80,20 +95,13 @@
 	4drop 
 	r> >a ;
 	
-#vert [
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-]
-
-#index [ 0 1 2 2 3 0 ]
 
 ::SDLTriangle | x y x y x y --
+	SDLrenderer 'rec dup 1 + dup 1 + dup 1 + SDL_GetRenderDrawColor
 	'vert >a
-	swap i2fp da!+ i2fp da!+ sdlink da!+ 8 a+
-	swap i2fp da!+ i2fp da!+ sdlink da!+ 8 a+
-	swap i2fp da!+ i2fp da!+ sdlink da!+ 
+	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
+	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
+	swap i2fp da!+ i2fp da!+ rec da!+ 
 	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
 	;
 
@@ -117,7 +125,7 @@
 ::SDLImagebb | box box img --
 	SDLrenderer swap 2swap SDL_RenderCopy ;	
 
-|-------------------	
+|------------------- TILESET	
 ::tsload | w h filename -- ts
 	loadimg
 	dup 0 0 'xm 'ym SDL_QueryTexture
@@ -133,23 +141,11 @@
 	here a> 'here ! 
 	;
 
-::point2ts | x y 'ts -- ts
-	@+ 0 0 'xm 'ym SDL_QueryTexture
-	d@+ 'dx ! d@ 'dy !
-	dy / xm dx / * swap dx / + ;
-
-::ts2rec | x y nro 'ts -- 
-	8 + @+ 'rec 8 + !
-	swap 3 << + @ 
-	rot rot 32 << + + 'rec ! 
-	SDLRenderer 'rec SDL_RenderDrawRect 
-	;
-	
 ::tscolor | rrggbb 'ts --
-	@ swap
-	dup 16 >> $ff and over 8 >> $ff and rot $ff and
-	SDL_SetTextureColorMod
-	;
+	@ swap rgb23 SDL_SetTextureColorMod	;
+	
+::tsalpha | alpha 'ts --
+	@ swap SDL_SetTextureAlphaMod ;
 	
 #rdes [ 0 0 0 0 ]
 
@@ -160,9 +156,7 @@
 	rot rot @+		| ren n 'ts texture
 	rot 3 << rot 8 + + 
 	@ 'rec ! | ren txture rsrc
-	'rec 'rdes 
-	SDL_RenderCopy
-	;
+	'rec 'rdes SDL_RenderCopy ;
 
 ::tsdraws | n 'ts x y w h --
 	swap 2swap swap 'rdes d!+ d!+ d!+ d!
@@ -171,13 +165,10 @@
 	rot rot @+		| ren n 'ts texture
 	rot 3 << rot 8 + + 
 	@ 'rec ! | ren txture rsrc
-	'rec 'rdes 
-	SDL_RenderCopy
-	;
+	'rec 'rdes SDL_RenderCopy ;
 
 ::tsfree | ts --
-	@ SDL_DestroyTexture 
-	empty ;	
+	@ SDL_DestroyTexture ;	
 	
 |-------------------	
 :fillfull

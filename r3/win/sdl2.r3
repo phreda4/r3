@@ -25,6 +25,7 @@
 #sys-SDL_RenderCopyEx
 #sys-SDL_RenderPresent 
 #sys-SDL_SetRenderDrawColor
+#sys-SDL_GetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
 #sys-SDL_QueryTexture
 #sys-SDL_CreateRGBSurface 
@@ -66,6 +67,7 @@
 #sys-SDL_GL_GetProcAddress
 
 #sys-SDL_SetTextureColorMod
+#sys-SDL_SetTextureAlphaMod
 #sys-SDL_SetHint
 
 ::SDL_Init sys-SDL_Init sys1 drop ;
@@ -82,6 +84,7 @@
 ::SDL_CreateTexture sys-SDL_CreateTexture sys5 ;
 ::SDL_QueryTexture sys-SDL_QueryTexture sys5 drop ;
 ::SDL_SetTextureColorMod sys-SDL_SetTextureColorMod sys4 drop ;
+::SDL_SetTextureAlphaMod sys-SDL_SetTextureAlphaMod sys2 drop ;
 ::SDL_DestroyTexture sys-SDL_DestroyTexture sys1 drop ;
 ::SDL_DestroyRenderer sys-SDL_DestroyRenderer sys1 drop ;
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
@@ -91,6 +94,7 @@
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
+::SDL_GetRenderDrawColor sys-SDL_GetRenderDrawColor sys5 drop ; 
 ::SDL_CreateRGBSurface sys-SDL_CreateRGBSurface sys8 ;
 ::SDL_LockSurface sys-SDL_LockSurface sys1 drop ;
 ::SDL_UnlockSurface sys-SDL_UnlockSurface sys1 drop ;
@@ -256,22 +260,9 @@
 ::exit
 	1 '.exit ! ;
 	
-::SDLcls | color --
-	SDLrenderer swap
-	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and 
-	$ff SDL_SetRenderDrawColor
-	SDLrenderer SDL_RenderClear ;
-	
 ::SDLredraw | -- 
 	SDLrenderer SDL_RenderPresent ;	
 	
-#rec [ 0 0 1 1 ]
-#cc
-	
-::SDLGetPixel | x y -- v
-	swap 'rec d!+ d!
-	SDLrenderer 'rec $16362004 'cc 1 SDL_RenderReadPixels 
-	cc $ffffff and ;
 	
 |------- BOOT
 :
@@ -299,7 +290,9 @@
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
 	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
 	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
+	dup "SDL_SetTextureAlphaMod" getproc 'sys-SDL_SetTextureAlphaMod !
 	dup "SDL_SetRenderDrawColor" getproc 'sys-SDL_SetRenderDrawColor !
+	dup "SDL_GetRenderDrawColor" getproc 'sys-SDL_GetRenderDrawColor !
 	dup "SDL_CreateRGBSurface" getproc 'sys-SDL_CreateRGBSurface !
 	dup "SDL_LockSurface" getproc 'sys-SDL_LockSurface !
 	dup "SDL_UnlockSurface" getproc 'sys-SDL_UnlockSurface !
@@ -337,6 +330,4 @@
 	dup "SDL_GL_GetProcAddress" getproc 'sys-SDL_GL_GetProcAddress !
 	
 	drop
-	
-|	0 'sys-SDL_Init  ( 'sys-SDL_SetHint <=? @+ pick2 "%d %h " .print swap 1 + swap ) 2drop
 	;

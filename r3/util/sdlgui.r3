@@ -129,6 +129,7 @@
 	'boxh ! 'boxw !
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
+
 	
 ::immwidth |w -- 
 	'boxw ! ;	

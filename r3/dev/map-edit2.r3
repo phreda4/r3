@@ -10,15 +10,19 @@
 
 #ts_spr
 
-#tilenow 11
-
 #map * $fffff
 #mapx 32 #mapy 32
 #mapw 32 #maph 32
 
 #tilew 24 #tileh 24
 #tilefile "media/img/classroom.png"
+#tileimgw #tileimgh #tilesww
 
+#tilex1 #tiley1
+#tilex2 #tiley2
+#tilenow 11
+#tw 1 #th 1
+#tx 0 #ty 0
 #rec [ 0 0 0 0 ]
 #rdes [ 0 0 0 0 ]
 
@@ -64,27 +68,53 @@
 	'exit 116 immibtn imm>> | 
 	
 	'exit 2 immibtn imm>>
+	
+	tilenow "%d" sprint immLabel
+
 	;
 
-#win2 1 [ 600 0 200 512 ] "Tiles"
+|---- tileset
+#wint 1 [ 32 32 512 512 ] "Tiles"
 
-:chtile
-	sdlx curx - 
-	sdly cury - 
-	ts_spr
+:point2ts | x y -- nts
+	tileh / tilesww * swap tilew / + ;
+	
+:chdn
+	sdlx curx - 'tilex1 ! 
+	sdly cury - 'tiley1 !
+	;
+	
+:chmv
+	sdlx curx - 'tilex2 !
+	sdly cury - 'tiley2 !
+	
+	tilex1 tilex2 min dup tilew / 'tx !
+	tiley1 tiley2 min dup tileh / 'ty !
 	point2ts 
 	'tilenow !
+	tilex1 tilex2 - abs tilew / 1 + 'tw !
+	tiley1 tiley2 - abs tileh / 1 + 'th !
 	;
 	
 :wintiles
-	'win2 immwin 0? ( drop ; ) drop
+	'wint immwin 0? ( drop ; ) drop
 	curx cury ts_spr @ SDLImage
 |	sdlb sdlx sdly "%d %d %d" sprint immLabel
-	tilenow "%d" sprint immLabel
-	'chtile 'chtile 'chtile guiMap
-	curx cury tilenow ts_spr ts2rec
+	'chdn 'chmv dup guiMap
+	
+	$ffffff sdlcolor	| cursor
+	curx tx tilew * + cury ty tileh * +
+	tw tilew * th tileh * 
+	SDLRect
 	;
 
+:tileinfo
+	ts_spr @ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
+	tileimgw tilew / 'tilesww !
+	tileimgw 4 + 'wint 16 + d!
+	tileimgh 28 + 'wint 20 + d!
+	;
+	
 |------------------------ MAP
 ::scr2view | xs ys -- xv yv
 	mapy - tilew / 
@@ -96,6 +126,7 @@
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 	scr2view 2dup or -? ( nip nip ; ) drop
+::tile2map | xm ym -- adr	
 	mapw * + 3 << 'map + ;
 	
 :tile! | --
@@ -103,6 +134,21 @@
 	sdlx sdly scr2tile 
 	-? ( 2drop ; ) | don't set outside
 	! ;
+	
+:puttile | xi yi h w --	xi yi h w 
+	pick3 over + 
+	pick3 pick3 +
+	tile2map
+	;
+	
+:tilebox! | --
+	sdlx sdly scr2view | xm ym
+	 2dup or -? ( 3drop ; ) drop | out of map
+	0 ( tileh <? 
+		0 ( tilew <?  | xm ym h w
+			|puttile
+			1 + ) drop
+		1 + ) 3drop ;
 	
 :mdraw
 	'tile! dup onDnMove ;	
@@ -118,20 +164,14 @@
 	'map >a
 	0 ( maph <? 
 		0 ( mapw <?
-		
 			|2dup swap mapw * + 
 			0 a!+
-			
 			1 + ) drop
 		1 + ) drop 
-		
-	ts_spr @ SDLimagewh
-	16 + | title in window
-	swap 'win2 16 + d!+ d!
 	;
 	
 |----- MAIN
-:demo
+:editor
 	0 SDLcls
 	immgui		| ini IMMGUI	
 
@@ -148,12 +188,10 @@
 :main
 	"r3sdl" 800 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
-	
-|	32 32 "media/img/rpg2.png" tsload 'ts_spr !
 	tilew tileh 'tilefile tsload 'ts_spr !
+	tileinfo
 	resetmap
-	
-	'demo SDLshow
+	'editor SDLshow
 	
 	SDLquit
 	;
