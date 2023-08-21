@@ -92,7 +92,6 @@
 	winx winy winw winh SDLFRect
 	0 SDLColor
 	winx winy winw winh SDLRect
-	
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
 	immcolortwin SDLColor
@@ -116,13 +115,13 @@
 	;
 	
 ::immwin | 'win -- 0/1
+	dup @ 0? ( nip ; ) drop
 	wintit
 	dup 8 + @+ winxy! @+ winwh! wintitle
 	@ 
 	winx padx + 'curx ! 
 	winy pady 2 << + immfontsh + 'cury ! 
-
-	winw 1 >> 'boxw !
+	winw 1 >> padx 1 << - padx - 'boxw !
 	;	
 
 ::immnowin | xini yini w h --
@@ -130,7 +129,6 @@
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
 
-	
 ::immwidth |w -- 
 	'boxw ! ;	
 
