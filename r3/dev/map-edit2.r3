@@ -67,6 +67,80 @@
 			rot rot 1 + ) drop
 		1 + ) 3drop ;
 
+|--------------------------------
+
+|#mapw #maph 
+|#mapx #mapy
+#mapm #mapt
+|#tilew #tileh
+#xm #ym		
+
+:map> | x y -- a
+	mapw * + mapm + ;
+
+::[map] | x y -- ad
+	maph 1 - clamp0max swap
+	mapw 1 - clamp0max swap
+	map> ;
+	
+:[map]@ | x y -- v
+	[map] c@ $ff and ;
+
+::drawtile | y x tile -- y x 
+	| 0? ( drop ; ) 
+	mapt
+	pick2 tilew * xm + ym
+	tsdraw ;
+
+::tiledraw | w h x y sx sy 'amap --
+	@+ 'mapt !
+	d@+ 'mapw ! d@+ 'maph !
+	d@+ 'tilew ! d@+ 'tileh !
+	'mapm ! 
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@
+			drawtile
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	drop
+	;
+
+
+::drawtile | y x tile -- y x 
+	|0? ( drop ; ) 
+	mapt
+	pick2 tilew * xm + ym
+	tilew tileh
+	tsdraws ;
+	
+::tiledraws | w h x y sx sy sw sh 'amap --
+	@+ 'mapt !
+	d@+ 'mapw ! d@+ 'maph !
+	8 + 'mapm ! 
+	'tileh ! 'tilew !
+	'ym ! 'xm !
+	'mapy ! 'mapx !
+	0 ( over <? 
+		0 ( pick3 <?
+			mapx over + mapy [map]@
+			drawtile
+			1 + ) drop
+		tileh 'ym +!
+		1 'mapy +!
+		1 + ) drop | w h
+	neg dup 'mapy +!	
+	tileh * 'ym +!
+	drop
+	;
+	
+|-----	
 :grid
 	$666666 SDLColor
 	0 ( maph <=? 
@@ -150,8 +224,8 @@
 		1 + ) drop ;
 		
 :loadmap
-	$ffff here + 'filename load drop
-	here $ffff +
+	here $ffff + dup 'filename load | inimem endmem
+	over =? ( 2drop 4 4 resizemap resetmap ; ) drop
 	d@+ swap d@+ rot swap resizemap
 	mapmem swap maph mapw * 3 << move
 	;
@@ -239,22 +313,40 @@
 
 |---- config
 #wincon 0 [ 824 300 200 200 ] "CONFIG"
+#mapwn 
+#maphn
 
+:getconfig
+	mapw 'mapwn !
+	maph 'maphn !
+	wincon 1 xor 'wincon ! 
+	;
+
+:setconfig
+	mapwn maphn resizemap
+	wincon 1 xor 'wincon ! 
+	;
+	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
+	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
+	'setconfig  "OK" immbtn imm<< immdn
+	
 	'filename immlabel immdn
 	'tilefile immlabel immdn
 	190 20 immbox
-	4 254 'mapw immSlideri immdn
-	4 254 'maph immSlideri immdn
+	4 254 'mapwn immSlideri immdn
+	4 254 'maphn immSlideri immdn
+	
 	;
 
+	
 |---- settings
 #winset 1 [ 824 0 200 300 ] "TILEMAP"
 
 :winsetings
 	'winset immwin 0? ( drop ; ) drop
-	 [ wincon 1 xor 'wincon ! ; ] "CONFIG" immbtn imm>>
+	 [ getconfig ; ] "CONFIG" immbtn imm>>
 	|'loadmap "GRID" immbtn 
 	imm<< immdn
 	
