@@ -233,7 +233,7 @@
 	empty ;
 
 |----------------------	
-::glCombo | 'val "op1|op2|op3" -- ; [op1  v]
+::immCombo | 'val "op1|op2|op3" -- ; [op1  v]
 	mark
 	makelist
 	$ff00007f SDLColor
