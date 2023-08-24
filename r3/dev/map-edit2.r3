@@ -12,6 +12,7 @@
 #mgrid 1
 #mapx 0 #mapy 0		| screen ini
 #clevel 0
+#mlevel $ff
 #cmode 0
 
 #filename * 1024
@@ -34,38 +35,44 @@
 
 |------ DRAW MAP
 :]map | x y -- t
-	mapw * + 3 << 'maph + ;
+	mapw * + 3 << mapmem + ;
 
-:setto | y x --
-	'rdes d!+ d! ;
+:desxy | y x --
+	over tileh * mapy + 32 <<
+	over tilew * mapx + or
+	'rdes ! ;
 	
-:drawtile | n map -- 
-	@+ swap		| n texture 'ts 
-	8 + rot 	| texture 'ts n 
-	2dup $fff and 3 << + @ 'rec ! | texture 'ts n  r
-	SDLrenderer pick3 'rec 'rdes SDL_RenderCopy | background
-	2dup 12 >> $fff and 3 << + @ 'rec !
-	SDLrenderer pick3 'rec 'rdes SDL_RenderCopy | background2
-	2dup 24 >> $fff and 3 << + @ 'rec !
-	SDLrenderer pick3 'rec 'rdes SDL_RenderCopy | From
-	2dup 36 >> $fff and 3 << + @ 'rec !
-	SDLrenderer pick3 'rec 'rdes SDL_RenderCopy | Up
-	3drop
+#tsimg
+#tsmap
+
+:dlayer | n -- 
+	$fff and 0? ( drop ; )
+	3 << tsmap + @ 'rec ! | texture 'ts n  r
+	SDLrenderer tsimg 'rec 'rdes SDL_RenderCopy 
 	;
 
+|	     up from bk2 bk
+| $ffff fff f.ff fff fff	
+:drawtile | n -- 
+	mlevel 
+	$1 and? ( over dlayer )	| background
+	$2 and? ( over 12 >> dlayer ) | background2
+	$4 and? ( over 24 >> dlayer ) | From
+	$8 and? ( over 36 >> dlayer ) | Up
+	2drop
+	;	
+
 :drawmap | map --
-	dup 8 + @ 
-	dup 'rdes 8 + ! 'rec 8 + ! | w h 
+	@+ 'tsimg !
+	@+ dup 'rdes 8 + ! 'rec 8 + ! | w h 
+	'tsmap !
 	mapmem
 	0 ( maph <? 
 		0 ( mapw <?
-			over tileh * mapy + 
-			over tilew * mapx + 
-			setto | y x
-			rot @+ pick4 
-			drawtile 
+			desxy rot 
+			@+ drawtile
 			rot rot 1 + ) drop
-		1 + ) 3drop ;
+		1 + ) 2drop ;
 
 |--------------------------------
 
@@ -330,13 +337,14 @@
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
 	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
-	'setconfig  "OK" immbtn imm<< immdn
+	'setconfig  "OK" immbtn immcr
+	'resetmap "CLEAR" immbtn immcr
 	
-	'filename immlabel immdn
-	'tilefile immlabel immdn
+	'filename immlabel immcr
+	'tilefile immlabel immcr
 	190 20 immbox
-	4 254 'mapwn immSlideri immdn
-	4 254 'maphn immSlideri immdn
+	4 254 'mapwn immSlideri immcr
+	4 254 'maphn immSlideri immcr
 	
 	;
 
@@ -344,8 +352,32 @@
 |---- settings
 #winset 1 [ 824 0 200 300 ] "TILEMAP"
 
+
+#nlayer "Background" "Background2" "Front" "Up" "Wall" "Trigger"
+
+:colbtn 
+	clevel =? ( $3f00 'immcolorbtn ! ; ) 
+	$666666 'immcolorbtn ! ;
+	
+:colview	
+	1 over << mlevel and? ( $3f00 'immcolorbtn ! drop ; ) 
+	$666666 'immcolorbtn ! drop ;
+	
+:layers
+	'nlayer
+	0 ( 5 <? 
+		colbtn
+		150 18 immbox
+		[ dup 'clevel ! ; ] pick2 immbtn imm>>
+		26 18 immbox
+		colview
+		[ 1 over << mlevel xor 'mlevel ! ; ] 112 immibtn
+		immcr
+		swap >>0 swap 1 + ) 2drop ;
+		
 :winsetings
 	'winset immwin 0? ( drop ; ) drop
+	$7f 'immcolorbtn !
 	 [ getconfig ; ] "CONFIG" immbtn imm>>
 	|'loadmap "GRID" immbtn 
 	imm<< immdn
@@ -353,10 +385,11 @@
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn imm<< immdn
 
-	130 20 immbox
-	'clevel "Background|Background2|Front|Up|Wall|Trigger" immRadio  immdn
+	
+	layers
 |	'cmode "Write|Erase" immCombo  immdn
 	
+	$7f 'immcolorbtn !
 	28 24 immbox
 |	'exit 11 immibtn imm>> | winclose
 	

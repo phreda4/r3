@@ -33,7 +33,7 @@
 	padx 1 << boxw + 'curx +! ;	
 ::immdn
 	pady 1 << boxh + 'cury +! ;
-::imm<<dn
+::immcr
 	winx 'curx !
 	pady 1 << boxh + 'cury +! ;	
 	

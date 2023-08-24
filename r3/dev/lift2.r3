@@ -332,7 +332,7 @@
 	94 immwidth
 	imm>> imm>> $ffff0000 'immcolorbtn !
 	'exit "exit" immbtn 
-	imm<<dn
+	immcr
 	
 	cntfloors ( 1? 1 -
 		40 immwidth
@@ -343,12 +343,12 @@
 		|dup 'queuef + c@ "%d" sprint immLabel imm>>
 		40 immwidth
 		4 $00007f0000ff checkbtn [ dup pushbtnf ; ] over "%d" sprint sprint immbtn 		
-		imm<<dn
+		immcr
 		) drop 	
 	
 	290 immwidth
 	'strelevator state n>>0 immLabelC
-	imm<<dn
+	immcr
 	statcnt " cnt: %d" sprint immLabel immdn
 	statsum statcnt 0? ( 1 + ) | avoid 0/
 	/ " media: %d ms" sprint immLabel immdn

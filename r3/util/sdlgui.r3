@@ -39,8 +39,8 @@
 	padx 1 << boxw + neg 'curx +! ;	
 ::immdn
 	pady 1 << boxh + 'cury +! ;
-::imm<<dn
-	winx padx + 'curx !
+::immcr
+	winx padx + 'curx ! 
 	pady 1 << boxh + 'cury +! ;	
 	
 |--- place
