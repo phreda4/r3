@@ -189,6 +189,9 @@
 ::SDLframebuffer | w h -- texture
 	>r >r SDLrenderer $16362004 1 r> r> SDL_CreateTexture ;
 	
+::SDLblend	
+	SDLrenderer 1 SDL_SetRenderDrawBlendMode ;
+	
 | SDL_WINDOW_FULLSCREEN = 0x00000001,
 | SDL_WINDOW_OPENGL = 0x00000002,
 | SDL_WINDOW_SHOWN = 0x00000004,

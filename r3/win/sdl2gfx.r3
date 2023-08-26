@@ -18,9 +18,15 @@
 
 :rgb23 | rgb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
+
+:rgb24 | argb -- r g b
+	dup 16 >> $ff and swap dup 8 >> $ff and swap dup $ff and swap 24 >> $ff and ;
 	
 ::SDLColor | col --
 	SDLrenderer swap rgb23 $ff SDL_SetRenderDrawColor ;
+
+::SDLColorA | col --
+	SDLrenderer swap rgb24 SDL_SetRenderDrawColor ;
 
 ::SDLcls | color --
 	SDLColor SDLrenderer SDL_RenderClear ;

@@ -19,8 +19,8 @@
 #mapmem				| map adreess
 #mapw 32 #maph 32	| w,h map
 
-#tilew 24 #tileh 24
-#tilefile "media/img/classroom.png"
+#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
+|#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
 
 #tileimgw #tileimgh #tilesww
 
@@ -51,6 +51,13 @@
 	SDLrenderer tsimg 'rec 'rdes SDL_RenderCopy 
 	;
 
+:BITlayer
+	$fff and 0? ( drop ; )
+	drop
+	$7fff0000 SDLColorA
+	SDLRenderer 'rdes SDL_RenderFillRect 
+	;
+	
 |	     up from bk2 bk
 | $ffff fff f.ff fff fff	
 :drawtile | n -- 
@@ -59,6 +66,9 @@
 	$2 and? ( over 12 >> dlayer ) | background2
 	$4 and? ( over 24 >> dlayer ) | From
 	$8 and? ( over 36 >> dlayer ) | Up
+		
+	$10 and? ( over 48 >> bitlayer ) | WALL
+|	$20 and? ( over 36 >> dlayer ) | TRIGGER
 	2drop
 	;	
 
@@ -175,7 +185,8 @@
 	scr2view 2dup or -? ( nip nip ; ) drop
 ::tile2map | xm ym -- adr	
 	mapw * + 3 << mapmem + ;
-	
+
+|-------------	
 :tile! | --
 	tilenow 
 	sdlx sdly scr2tile 
@@ -192,21 +203,26 @@
 	
 :tilebox! | --
 	sdlx sdly scr2view | xm ym
-	 2dup or -? ( 3drop ; ) drop | out of map
+	2dup or -? ( 3drop ; ) drop | out of map
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
 			puttile
 			1 + ) drop
 		1 + ) 3drop ;
 	
-:mdraw
-|	'tile! dup onDnMove ;	
-	'tilebox! dup onDnMove ;	
+|-------------	
+:tilewall!	
+	sdlx sdly scr2view | xm ym
+	2dup or -? ( 3drop ; ) drop | out of map
+	tile2map
+	dup @ $1000000000000 xor swap !
+	;
+	
 
+#exeondnmv 'tilebox!
 
 :drawmapedit
-|	'pendn 'penmv 'pencopy guiMap
-	mdraw
+	exeondnmv dup onDnMove
 	ts_spr drawmap	
 	mgrid 1? ( grid ) drop	
 	;
@@ -368,7 +384,11 @@
 	0 ( 5 <? 
 		colbtn
 		150 18 immbox
-		[ dup 'clevel ! ; ] pick2 immbtn imm>>
+		[ dup 'clevel ! 
+			4 <? ( 'tilebox! 'exeondnmv ! )
+			4 =? ( 'tilewall! 'exeondnmv ! )
+			; ] 
+		pick2 immbtn imm>>
 		26 18 immbox
 		colview
 		[ 1 over << mlevel xor 'mlevel ! ; ] 112 immibtn
@@ -378,6 +398,20 @@
 :winsetings
 	'winset immwin 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
+	28 24 immbox
+
+	
+	'exit 192 immibtn imm>> | pencil edit
+	'exit 115 immibtn imm>> | fill bucket
+	
+|	[ winl 1 xor 'winl ! ; ] 116 immibtn imm>> | 
+	[ wint 1 xor 'wint ! ; ] 2 immibtn imm>>
+	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
+	$7f0000 'immcolorbtn !
+	'exit 185 immibtn  | winclose
+	immcr
+	$7f 'immcolorbtn !
+	94 18 immbox
 	 [ getconfig ; ] "CONFIG" immbtn imm>>
 	|'loadmap "GRID" immbtn 
 	imm<< immdn
@@ -389,16 +423,7 @@
 	layers
 |	'cmode "Write|Erase" immCombo  immdn
 	
-	$7f 'immcolorbtn !
-	28 24 immbox
-|	'exit 11 immibtn imm>> | winclose
-	
-	'exit 192 immibtn imm>> | pencil edit
-	'exit 115 immibtn imm>> | fill bucket
-	
-|	[ winl 1 xor 'winl ! ; ] 116 immibtn imm>> | 
-	[ wint 1 xor 'wint ! ; ] 2 immibtn imm>>
-	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
+
 	
 |	tilenow "%d" sprint immLabel	
 	;
@@ -430,6 +455,7 @@
 
 :main
 	"r3sdl" 1024 600 SDLinit
+	SDLblend
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	
 	tilew tileh 'tilefile tsload 'ts_spr !
