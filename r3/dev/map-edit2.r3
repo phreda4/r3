@@ -10,7 +10,6 @@
 #ts_spr
 
 #mgrid 1
-#mapx 0 #mapy 0		| screen ini
 #clevel 0
 #mlevel $ff
 #cmode 0
@@ -18,6 +17,10 @@
 #filename * 1024
 #mapmem				| map adreess
 #mapw 32 #maph 32	| w,h map
+#mapm #mapt
+#xm #ym		
+#mapx 0 #mapy 0		| screen ini
+#scrmw #scrmh
 
 #tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
 |#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
@@ -84,79 +87,6 @@
 			rot rot 1 + ) drop
 		1 + ) 2drop ;
 
-|--------------------------------
-
-|#mapw #maph 
-|#mapx #mapy
-#mapm #mapt
-|#tilew #tileh
-#xm #ym		
-
-:map> | x y -- a
-	mapw * + mapm + ;
-
-::[map] | x y -- ad
-	maph 1 - clamp0max swap
-	mapw 1 - clamp0max swap
-	map> ;
-	
-:[map]@ | x y -- v
-	[map] c@ $ff and ;
-
-::drawtile | y x tile -- y x 
-	| 0? ( drop ; ) 
-	mapt
-	pick2 tilew * xm + ym
-	tsdraw ;
-
-::tiledraw | w h x y sx sy 'amap --
-	@+ 'mapt !
-	d@+ 'mapw ! d@+ 'maph !
-	d@+ 'tilew ! d@+ 'tileh !
-	'mapm ! 
-	'ym ! 'xm !
-	'mapy ! 'mapx !
-	0 ( over <? 
-		0 ( pick3 <?
-			mapx over + mapy [map]@
-			drawtile
-			1 + ) drop
-		tileh 'ym +!
-		1 'mapy +!
-		1 + ) drop | w h
-	neg dup 'mapy +!	
-	tileh * 'ym +!
-	drop
-	;
-
-
-::drawtile | y x tile -- y x 
-	|0? ( drop ; ) 
-	mapt
-	pick2 tilew * xm + ym
-	tilew tileh
-	tsdraws ;
-	
-::tiledraws | w h x y sx sy sw sh 'amap --
-	@+ 'mapt !
-	d@+ 'mapw ! d@+ 'maph !
-	8 + 'mapm ! 
-	'tileh ! 'tilew !
-	'ym ! 'xm !
-	'mapy ! 'mapx !
-	0 ( over <? 
-		0 ( pick3 <?
-			mapx over + mapy [map]@
-			drawtile
-			1 + ) drop
-		tileh 'ym +!
-		1 'mapy +!
-		1 + ) drop | w h
-	neg dup 'mapy +!	
-	tileh * 'ym +!
-	drop
-	;
-	
 |-----	
 :grid
 	$666666 SDLColor
@@ -215,9 +145,9 @@
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
 	tile2map
-	dup @ $1000000000000 xor swap !
+	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
+	dup @ $1000000000000 not and swap !
 	;
-	
 
 #exeondnmv 'tilebox!
 
@@ -315,10 +245,11 @@
 	tiley1 tiley2 - abs tileh / 1 + 'th !
 	;
 	
-:wintiles
+|wintiles
 	'wint immwin 0? ( drop ; ) drop
 	curx cury ts_spr @ SDLImage
-|	sdlb sdlx sdly "%d %d %d" sprint immLabel
+|	sdlb sdlx sdly "%d %d %d" sprint immLabel immcr
+|	
 	'chdn 'chmv dup guiMap
 	
 	$ffffff sdlcolor	| cursor
@@ -368,54 +299,54 @@
 |---- settings
 #winset 1 [ 824 0 200 300 ] "TILEMAP"
 
-
 #nlayer "Background" "Background2" "Front" "Up" "Wall" "Trigger"
+
+:clevel!
+	4 <? ( 'tilebox! 'exeondnmv ! )
+	4 =? ( 'tilewall! 'exeondnmv ! )
+	'clevel ! ;
 
 :colbtn 
 	clevel =? ( $3f00 'immcolorbtn ! ; ) 
 	$666666 'immcolorbtn ! ;
 	
-:colview	
-	1 over << mlevel and? ( $3f00 'immcolorbtn ! drop ; ) 
-	$666666 'immcolorbtn ! drop ;
+:icoview
+	1 pick2 << mlevel and? ( 112 nip ; ) 
+	154 nip ;
 	
 :layers
 	'nlayer
 	0 ( 5 <? 
 		colbtn
 		150 18 immbox
-		[ dup 'clevel ! 
-			4 <? ( 'tilebox! 'exeondnmv ! )
-			4 =? ( 'tilewall! 'exeondnmv ! )
-			; ] 
+		[ dup clevel! ; ] 
 		pick2 immbtn imm>>
 		26 18 immbox
-		colview
-		[ 1 over << mlevel xor 'mlevel ! ; ] 112 immibtn
+		$666666 'immcolorbtn !
+		[ 1 over << mlevel xor 'mlevel ! ; ] 
+		icoview immibtn
 		immcr
 		swap >>0 swap 1 + ) 2drop ;
+
 		
 :winsetings
 	'winset immwin 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
 	28 24 immbox
-
 	
 	'exit 192 immibtn imm>> | pencil edit
+	
 	'exit 115 immibtn imm>> | fill bucket
 	
-|	[ winl 1 xor 'winl ! ; ] 116 immibtn imm>> | 
-	[ wint 1 xor 'wint ! ; ] 2 immibtn imm>>
+	'getconfig 71 immibtn imm>>
+	[ wint 1 xor 'wint ! ; ] 0 immibtn imm>>
 	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
 	$7f0000 'immcolorbtn !
 	'exit 185 immibtn  | winclose
 	immcr
 	$7f 'immcolorbtn !
 	94 18 immbox
-	 [ getconfig ; ] "CONFIG" immbtn imm>>
-	|'loadmap "GRID" immbtn 
-	imm<< immdn
-	
+
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn imm<< immdn
 
@@ -428,7 +359,8 @@
 |	tilenow "%d" sprint immLabel	
 	;
 	
-
+:mapx! scrmw clamp0max 'mapx ! ;
+:mapy! scrmh clamp0max 'mapy ! ;
 
 |----- MAIN
 :editor
@@ -444,8 +376,18 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<g> =? ( mgrid 1 xor 'mgrid ! )
+	<1> =? ( 0 clevel! )
+	<2> =? ( 1 clevel! )
+	<3> =? ( 2 clevel! )
+	<4> =? ( 3 clevel! )
+	<5> =? ( 4 clevel! )
 	
+	<t> =? ( wint 1 xor 'wint ! )
+	<g> =? ( mgrid 1 xor 'mgrid ! )
+	<up> =? ( mapy 1 - mapy! )
+	<dn> =? ( mapy 1 + mapy! )
+	<le> =? ( mapx 1 - mapx! )
+	<ri> =? ( mapx 1 + mapx! )	
 	<a>	=? ( map<< )
 	<d> =? ( map>> )
 	<w> =? ( mapup )

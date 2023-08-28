@@ -235,9 +235,9 @@
 		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
 		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
 		$400 =? ( drop 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
-		$401 =? ( drop 'SDLevent 16 + c@ SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 Mouse but pressed ; 1 swap <<
-		$402 =? ( drop 'SDLevent 16 + c@ not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 Mouse but released
-				| #SDL_MOUSEWHEEL $403 Mouse wheel motion		
+		$401 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
+		$402 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
+				| #SDL_MOUSEWHEEL $403 Mouse wheel motion
 		drop
 		) drop ;			
 		
