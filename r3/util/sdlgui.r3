@@ -42,6 +42,9 @@
 ::immcr
 	winx padx + 'curx ! 
 	pady 1 << boxh + 'cury +! ;	
+
+::immln
+	winx padx + 'curx ! boxh 'cury +! ;	
 	
 |--- place
 :plgui
@@ -49,6 +52,19 @@
 
 :plxywh
 	curx padx + cury pady + boxw boxh ;
+
+::immcur | x y w h --
+	pick3 winx + pick3 winy + pick3 pick3 guiBox
+	'boxh ! 'boxw ! 'cury ! 'curx ! ;
+	
+::immcur> | -- cur
+	curx cury 16 << or boxw 32 << or boxh 48 << or ;
+	
+::imm>cur | cur --
+	dup $ffff and 'curx !
+	16 >> dup $ffff and 'cury !
+	16 >> dup $ffff and 'boxw !
+	16 >> $ffff and 'boxh ! ;
 	
 |--- label
 ::immlabel | "" --
@@ -65,8 +81,20 @@
 
 ::immlabelr | "" --
 	immcolortex ttColor
-	ttsize boxw rot - curx + padx +
-	boxh rot - 1 >> cury + pady + 
+	ttsize boxw rot - curx + padx -
+	boxh rot - 1 >> cury + pady +
+	ttat ttprint ;
+
+::immListBox | lines --
+	boxh * curx cury rot boxw swap guiBox ;
+
+::immback | color --
+	SDLColor curx padx + cury boxw boxh SDLFRect ;
+
+::immblabel | "" --
+	immcolortex ttColor
+	curx padx + 
+	boxh immfontsh - 1 >> cury + 
 	ttat ttprint ;
 	
 |--- icon
@@ -95,8 +123,9 @@
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
 	immcolortwin SDLColor
-	plxywh SDLFRect
+	plxywh SDLFRect 
 	immlabelc
+	| close button
 	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
 	;	
 	
@@ -131,6 +160,7 @@
 
 ::immwidth |w -- 
 	'boxw ! ;	
+	
 
 |--- widget	
 ::immbtn | 'click "" --
@@ -147,7 +177,7 @@
 	immiconb
 	onClick ;	
 
-|----------------------
+|---- Horizontal slide
 :slideh | 0.0 1.0 'value --
 	sdlx curx padx + - boxw clamp0max 
 	2over swap - | Fw
@@ -180,6 +210,49 @@
 	@ .d immLabelC
 	2drop ;	
 
+|---- Vertical slide
+:slidev | 0.0 1.0 'value --
+	sdly cury pady + - boxh clamp0max 
+	2over swap - | Fw
+	boxh */ pick3 +
+	over ! ;
+	
+#wid	
+:slideshowv | 0.0 1.0 'value --
+	$ff00007f SDLColor
+	curx padx + cury pady + boxw boxh SDLFRect
+	$ff3f3fff [ $ff7f7fff nip ; ] guiI SDLColor
+	dup @ pick3 - 
+	boxh 8 - pick4 pick4 swap - */ 
+	curx padx + 2 + 
+	cury pady + 1 + rot +
+	boxw 4 - 
+	wid
+	SDLFRect ;
+
+::immSliderfv | 0.0 1.0 'value --
+	plgui
+	'slidev dup onDnMoveA | 'dn 'move --	
+	boxh pick2 / 'wid !
+	slideshowv
+	@ .f2 immLabelC
+	2drop ;
+
+::immSlideriv | 0 255 'value --
+	plgui
+	'slidev dup onDnMoveA | 'dn 'move --	
+	boxh pick2 / 'wid !
+	slideshowv	
+	@ .d immLabelC
+	2drop ;	
+	
+::immScrollv | 0 max 'value --
+	plgui
+	'slidev dup onDnMoveA | 'dn 'move --	
+	boxh pick3 pick3 swap - / 'wid !
+	slideshowv	
+	3drop ;	
+	
 |----------------------	
 :checkic | 'var ""
 	over @ 1 nand? ( 60 nip ; ) drop 59 ;
