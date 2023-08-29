@@ -222,113 +222,6 @@
 		) drop
 	b! ;
 
-|---- filedlg
-#winfiledlg 1 [ 10 10 240 512 ] "FileDlg"
-
-#path * 1024
-#nfiles
-#files
-#files>
-#filenow
-#fileini
-#filelines
-#filescroll
-#filen
-#filen>
-	
-|--------------------------------
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|WEB| 19 +
-|RPI| 11 +
-	;
-
-:FDIR | adr -- dir
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|WEB| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-	;
-
-:fileadd
-	dup FNAME "." = 1? ( 2drop ; ) drop
-	dup FDIR 32 << filen> filen - or 
-	files> !+ 'files> !
-	FNAME filen> strcpyl 'filen> ! ;
-	
-:reload
-	files 'files> !
-	filen 'filen> !
-	'path "%s/*" sprint
-	ffirst ( fileadd fnext 1? ) drop
-	files> files - 3 >> 'nfiles !
-	nfiles filelines - 0 max 'filescroll !
-	0 'fileini !
-	0 'filenow ! 
-	;
-	
-:colorline | n --
-	filenow =? ( $7f00 ; ) 0 ;
-
-:printline | n --
-	3 << files + @ | filename
-	$100000000 and? ( " >" immBLabel )
-	$ffffffff and filen +
-	14 'curx +!
-	immBLabel ;
-
-:linefile | n -- n 
-	dup fileini + nfiles >=? ( drop ; )
-	colorline immback
-	printline
-	;	
-	
-:listscroll | n --
-	filescroll 0? ( 2drop ; ) 
-	immcur> >r 
-	boxh rot *
-	curx boxw + boxh - 
-	cury pick2 - 2 -
-	rot boxh swap immcur
-|	0 swap 'fileini immSlideriv 
-	0 swap 'fileini immScrollv 
-	r> imm>cur
-	;
-	
-::immlist | cnt --
-	dup immListBox
-	[ sdly cury - boxh / fileini + 'filenow ! ; ] onClick	
-	0 ( over <? linefile immln 1 + ) drop	
-	listscroll
-	immcr
-	;
-	
-:filedlg
-	'winfiledlg immwin 0? ( drop ; ) drop
-	232 18 immbox
-	immcr
-	15 immlist
-	immcr immcr
-	$7f 'immcolorbtn !
-	94 18 immbox
-	'loadmap "LOAD" immbtn imm>>
-	'exit "CANCEL" immbtn 
-	immcr		
-	;
-	
-:fileini | "" --
-	'path strcpy
-	15 'filelines !
-	mark
-	here dup 'files !
-	8192 + dup 'filen !
-	'here !
-	reload	;
-	
-:fileend
-	empty ;
-
 |---- tileset
 #wint 1 [ 0 400 512 512 ] "Tiles"
 
@@ -466,6 +359,7 @@
 |	tilenow "%d" sprint immLabel	
 	;
 	
+	
 :mapx! scrmw clamp0max 'mapx ! ;
 :mapy! scrmh clamp0max 'mapy ! ;
 
@@ -516,7 +410,7 @@
 	"mem/mapedit2.mem" 'filename strcpy
 	loadmap
 	
-	"./" fileini
+	"." filedlgini
 	
 	'editor SDLshow
 	savemap
