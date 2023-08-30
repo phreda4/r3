@@ -5,6 +5,7 @@
 ^r3/win/console.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlgui.r3
+^r3/util/sdlfiledlg.r3
 
 
 #ts_spr
@@ -223,7 +224,7 @@
 	b! ;
 
 |---- tileset
-#wint 1 [ 0 400 512 512 ] "Tiles"
+#wint 1 [ 0 0 512 512 ] "Tiles"
 
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
@@ -364,19 +365,7 @@
 :mapy! scrmh clamp0max 'mapy ! ;
 
 |----- MAIN
-:editor
-	0 SDLcls
-	immgui		| ini IMMGUI	
-
-	drawmapedit
-	
-	wintiles	
-	winsetings
-	winconfig
-	
-	filedlg
-	
-	SDLredraw
+:keymain
 	SDLkey
 	>esc< =? ( exit )
 	<1> =? ( 0 clevel! )
@@ -396,6 +385,23 @@
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
 	drop
+	;
+	
+:editor
+	0 SDLcls
+	immgui		| ini IMMGUI	
+	'keymain immkey!
+
+	drawmapedit
+	
+	wintiles	
+	winsetings
+	winconfig
+	
+	filedlg
+	
+	immRedraw
+	SDLredraw
 	;
 
 :main

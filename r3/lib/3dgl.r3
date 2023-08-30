@@ -79,6 +79,12 @@
 	0 15 a]!						|mat[15] = 0;
 	;
 	
+|#preload * 128	
+|:makematcte
+|	mperspective mat> 'preload 16 move ;
+|:mperspectivestatic
+|	'preload 'mat 16 move ;	
+	
 ::mortho | r l t b f n --
 	mat> dup >a 'mati 16 move 
 	2dup - -2.0 over /. 10 a]!		| 	mat[10] = -2 / (farVal - nearVal);
