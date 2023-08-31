@@ -170,6 +170,20 @@
 	@ .d immLabelC
 	2drop ;	
 
+|----------------------	
+:checkic | 'var ""
+	over @ 1 nand? ( 60 nip ; ) drop 59 ;
+	
+::immCheck | 'val "op1" -- ; v op1  v op2  x op3
+	plgui
+	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
+	checkic curx cury immicon
+	20 'padx +!
+	immLabel
+	-20 'padx +!
+	[ dup @ 1 xor over ! ; ] onClick
+	drop ;
+	
 |---- Vertical slide *** incorrect
 :slidev | 0.0 1.0 'value --
 	sdly cury - boxh clamp0max 
@@ -195,23 +209,9 @@
 ::immScrollv | 0 max 'value --
 	plgui
 	'slidev dup onDnMoveA | 'dn 'move --	
-	boxh pick3 pick3 swap -  1 + / 'wid !
+	boxh pick3 pick3 swap - 1 + / 'wid !
 	scrollshowv	
 	3drop ;	
-	
-|----------------------	
-:checkic | 'var ""
-	over @ 1 nand? ( 60 nip ; ) drop 59 ;
-	
-::immCheck | 'val "op1" -- ; v op1  v op2  x op3
-	plgui
-	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
-	checkic curx cury immicon
-	20 'padx +!
-	immLabel
-	-20 'padx +!
-	[ dup @ 1 xor over ! ; ] onClick
-	drop ;
 	
 |----------------------
 #cntlist
@@ -357,6 +357,7 @@
 |	boxh 16 - 1 >> + ttat
 |	$7f7f7f [ $ffffff nip ; ] guiI glcolor
 	'proinputa 'iniinput w/foco
+	
 	'clickfoco onClick
 	$ffffff ttcolor
 	drop
@@ -415,6 +416,9 @@
 	'boxh ! 'boxw !
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
+
+::immwinbot	| win --
+	cury winy - swap 20 + d! ;
 
 #winlist * 32
 #winlist> 'winlist

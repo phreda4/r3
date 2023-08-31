@@ -132,9 +132,14 @@
 	or swap !
 	;
 	
+:erasetile | x y --
+	tile2map
+	dup @ $fff clevel 12 * << not and swap ! ;
+		
 :tilebox! | --
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
+	sdlb 1 nand? ( drop erasetile ; ) drop
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
 			puttile
@@ -159,16 +164,17 @@
 	;
 
 |------------
+
 :resizemap | w h --
 	'maph ! 'mapw !
 	mapmem 1? ( empty ) drop
 	mark
-	here 
-	8 + dup 'mapmem !
-	maph mapw * 3 << + 'here ! 
-	mapw maph 32 << or mapmem 8 - !
+	maph mapw here d!+ d!+ 
+	dup 'mapmem !
+	maph mapw * 3 << + 
+	'here ! 
 	;
-	
+
 :resetmap	
 	mapmem >a 
 	0 ( maph <? 
@@ -176,10 +182,10 @@
 			0 a!+
 			1 + ) drop
 		1 + ) drop ;
-		
+	
 :loadmap
-	here $ffff + dup 'filename load | inimem endmem
-	over =? ( 2drop 4 4 resizemap resetmap ; ) drop
+	here dup 'filename load | inimem endmem
+	over =? ( 2drop ; ) drop
 	d@+ swap d@+ rot swap resizemap
 	mapmem swap maph mapw * 3 << move
 	;
@@ -334,11 +340,8 @@
 	'winset immwin 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
 	28 24 immbox
-	
 	'exit 192 immibtn imm>> | pencil edit
-	
 	'exit 115 immibtn imm>> | fill bucket
-	
 	'getconfig 71 immibtn imm>>
 	[ wint 1 xor 'wint ! ; ] 0 immibtn imm>>
 	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
@@ -347,16 +350,10 @@
 	immcr
 	$7f 'immcolorbtn !
 	94 18 immbox
-
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
-
-	
 	layers
-|	'cmode "Write|Erase" immCombo  immdn
-	
-
-	
+	'filename immLabel immcr
 |	tilenow "%d" sprint immLabel	
 	;
 	
@@ -398,7 +395,7 @@
 	winsetings
 	winconfig
 	
-	filedlg
+	|filedlg
 	
 	immRedraw
 	SDLredraw
@@ -412,11 +409,12 @@
 	tilew tileh 'tilefile tsload 'ts_spr !
 	tileinfo
 	
-|	16 16 resizemap resetmap
+	32 32 resizemap resetmap
+	
 	"mem/mapedit2.mem" 'filename strcpy
 	loadmap
 	
-	"." filedlgini
+	"r3" filedlgini
 	
 	'editor SDLshow
 	savemap

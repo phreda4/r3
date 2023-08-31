@@ -58,17 +58,13 @@
 	.name immBLabel 
 	;
 
-:linefile | n -- n 
-	dup fileini + nfiles >=? ( drop ; )
-	colorline immback
-	printline
-	;	
+
 	
 :listscroll | n --
 	filescroll 0? ( 2drop ; ) 
 	immcur> >r 
 	boxh rot *
-	curx boxw + boxh - 
+	curx boxw + boxh 1 >> -
 	cury pick2 - 2 -
 	rot boxh swap immcur
 	0 swap 'fileini immScrollv 
@@ -109,9 +105,9 @@
 	'path strcpy
 	15 'filelines !
 	mark
-	here dup 'files !
-	$ffff + dup 'filen ! | 64k names
-	'here !
+	here dup 'files !	| 1k files
+	8192 + dup 'filen ! | 64k names
+	$ffff + 'here !
 	reload	
 	;
 	
@@ -123,9 +119,14 @@
 ::immlist | cnt --
 	dup immListBox
 	'clicklist onClick	
-	0 ( over <? linefile immln 1 + ) drop	
-	listscroll
-	immcr
+	0 ( over over >=?  drop
+		dup fileini + nfiles <? 
+		colorline immback
+		printline
+		immln 1 + 
+		) 2drop	
+	listscroll immln
+	'winfiledlg immwinbot
 	;
 
 ::filedlg
