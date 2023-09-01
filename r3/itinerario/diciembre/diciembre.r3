@@ -77,8 +77,8 @@
 	here dup rot load | inimem endmem
 	over =? ( 2drop 0 ; ) 'here !
 	d@+ 'mapw ! d@+ 'maph !
-	24 'tileh ! 64 'mapth ! 
-	24 'tilew ! 64 'maptw ! 
+	32 'tileh ! 64 'mapth ! 
+	32 'tilew ! 64 'maptw ! 
 	maptw mapth 32 << or 'rdes 8 + ! 
 	tilew tileh 32 << or 'rec 8 + ! | w h 
 	17 'mapsw ! 
@@ -101,11 +101,16 @@
 	drop 
 	;
 
-	
+
 #anidn ( 0 1 0 2 )
 #anile ( 3 4 3 5 )
 #aniri ( 6 7 6 8 )
 #aniup ( 9 10 9 11 )
+	
+#anidn ( 12 13 12 14 )
+#anile ( 15 16 15 17 )
+#aniri ( 18 19 18 20 )
+#aniup ( 21 22 21 23 )
 
 :panim | -- nanim	
 	msec 7 >> $3 and + c@ ;
@@ -153,7 +158,8 @@ drawmaps
 	"r3sdl" 1024 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 
-	24 24 "r3/itinerario/diciembre/classroom.png" tsload 'tileset !
+	|24 24 "r3/itinerario/diciembre/classroom.png" tsload 'tileset !
+	32 32 "r3/itinerario/diciembre/tiles.png" tsload 'tileset !
 	"r3/itinerario/diciembre/escuela1.map" loadmap 'mapgame !
 	32 32 "r3/itinerario/diciembre/protagonista.png" ssload 'sprjug !
 

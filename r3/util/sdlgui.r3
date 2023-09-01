@@ -24,12 +24,12 @@
 #immfontsh 
 
 #keyevent
-#winevent
+|#winevent
 
 ::immgui 
 	gui 
 	0 'keyevent !
-	0 'winevent !
+|	0 'winevent !
 
 	0 'cury ! 0 'curx !
 	sw 'boxw !
@@ -37,7 +37,7 @@
 	;
 	
 ::immkey! 'keyevent ! ;
-::immwin! 'winevent ! ;
+|::immwin! 'winevent ! ;
 	
 ::immat 'cury ! 'curx ! ;
 ::immbox 'boxh ! 'boxw ! ;
@@ -424,23 +424,25 @@
 #winlist> 'winlist
 
 ::immwin! | win --
+	'winlist ( winlist> <?
+		@+ pick2 =? ( 2drop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
 
+::immwin- | win --
+	'winlist 'winlist> !
+	;
+	
 :procwin | 'w --
-	drop
+	ex
 	;
 	
-::immwindows
-	'winlist ( winlist> <?
-		@+ procwin
-		) drop ;
-	
-
 ::immRedraw
-	keyevent 0? ( drop ; ) ex
-	winevent 0? ( drop ; ) ex
+	'winlist ( winlist> <?
+		@+ ex
+		) drop 
+	keyevent 1? ( dup ex ) drop
+	winevent 1? ( dup ex ) drop
 	;
-|------
 
 
 |------ Init

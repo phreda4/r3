@@ -7,7 +7,6 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlfiledlg.r3
 
-
 #ts_spr
 
 #mgrid 1
@@ -23,8 +22,8 @@
 #mapx 0 #mapy 0		| screen ini
 #scrmw #scrmh
 
-#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
-|#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
+|#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
+#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
 
 #tileimgw #tileimgh #tilesww
 

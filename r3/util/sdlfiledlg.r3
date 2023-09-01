@@ -134,10 +134,20 @@
 	$7f 'immcolorbtn !
 	94 18 immbox
 	'exit "LOAD" immbtn imm>>
-	'exit "CANCEL" immbtn 
+	'immwin- "CANCEL" immbtn 
 	immcr		
 	232 18 immbox
 	'path immLabel immcr
 	'filename 1024 immText immcr 	
 	15 immlist
+	;
+	
+::immfileload
+	'filedlg immwin!
+|	1 'winfiledlg !
+	;
+	
+::immfilesave
+	'filedlg immwin!
+|	1 'winfiledlg !
 	;
