@@ -283,7 +283,6 @@
 	;
 
 :setconfig
-	mapwn maphn resizemap
 	wincon 1 xor 'wincon ! 
 	;
 	
@@ -291,7 +290,7 @@
 	'wincon immwin 0? ( drop ; ) drop
 	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
 	'setconfig  "OK" immbtn immcr
-	'resetmap "CLEAR" immbtn immcr
+	[ mapwn maphn resizemap resetmap ; ] "CLEAR" immbtn immcr
 	
 	'filename immlabel immcr
 	'tilefile immlabel immcr
