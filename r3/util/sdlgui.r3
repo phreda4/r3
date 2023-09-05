@@ -441,7 +441,7 @@
 		@+ ex
 		) drop 
 	keyevent 1? ( dup ex ) drop
-	winevent 1? ( dup ex ) drop
+|	winevent 1? ( dup ex ) drop
 	;
 
 
