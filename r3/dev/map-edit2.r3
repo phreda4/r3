@@ -9,7 +9,7 @@
 
 #ts_spr
 
-#mgrid 1
+
 #clevel 0
 #mlevel $ff
 #cmode 0
@@ -17,10 +17,12 @@
 #filename * 1024
 #mapmem				| map adreess
 #mapw 32 #maph 32	| w,h map
-#mapm #mapt
+
+#mapx 0 #mapy 0		| screen x,y pixel start
+#mapsx 0 #mapsy 0	| screen x,y map start
+#mapsw 30 #mapsh 16	| screen w,h 
+
 #xm #ym		
-#mapx 0 #mapy 0		| screen ini
-#scrmw #scrmh
 
 |#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
 #tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
@@ -37,14 +39,7 @@
 #rdes [ 0 0 0 0 ]
 
 |------ DRAW MAP
-:]map | x y -- t
-	mapw * + 3 << mapmem + ;
 
-:desxy | y x --
-	over tileh * mapy + 32 <<
-	over tilew * mapx + or
-	'rdes ! ;
-	
 #tsimg
 #tsmap
 
@@ -61,9 +56,22 @@
 	SDLRenderer 'rdes SDL_RenderFillRect 
 	;
 	
+|--------------	
+
+:mapx+! | dx --
+	mapsx + mapw mapsw - clamp0max 'mapsx ! ;
+:mapy+! | dy --
+	mapsy + maph mapsh - clamp0max 'mapsy ! ;
+:map> | x y -- adr
+	mapw * + 3 << mapmem + ;
+
 |	     up from bk2 bk
 | $ffff fff f.ff fff fff	
-:drawtile | n -- 
+
+:drawtile | y x -- 
+	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
+	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
+	map> @ 
 	mlevel 
 	$1 and? ( over dlayer )	| background
 	$2 and? ( over 12 >> dlayer ) | background2
@@ -73,48 +81,54 @@
 	$10 and? ( over 48 >> bitlayer ) | WALL
 |	$20 and? ( over 36 >> dlayer ) | TRIGGER
 	2drop
-	;	
+	;
 
+:setxy | y x --	
+	over tileh * mapy + 32 << 
+	over tilew * mapx + $ffffffff and or
+	'rdes ! ;
+	
 :drawmap | map --
 	@+ 'tsimg !
 	@+ dup 'rdes 8 + ! 'rec 8 + ! | w h 
 	'tsmap !
-	mapmem
-	0 ( maph <? 
-		0 ( mapw <?
-			desxy rot 
-			@+ drawtile
-			rot rot 1 + ) drop
-		1 + ) 2drop ;
+	0 ( mapsh <? 
+		0 ( mapsw <?
+			setxy 
+			drawtile 
+			1 + ) drop
+		1 + ) drop ;
 
 |-----	
-:grid
+#mgrid 1
+
+:drawgrid
 	$666666 SDLColor
-	0 ( maph <=? 
+	mgrid 0? ( drop ; ) drop		
+	0 ( mapsh <=? 
 		mapx 
 		over tileh * mapy +
-		mapw tilew * mapx + 
+		mapsw tilew * pick2 + 
 		over 
 		SDLLine
 		1 + ) drop 
-	0 ( mapw <=?
+	0 ( mapsw <=?
 		dup tilew * mapx + 
 		mapy 
 		over 
-		maph tileh * mapy + 
+		mapsh tileh * pick2 + 
 		SDLLine
 		1 + ) drop ;
 
 	
 |----  MAP
 ::scr2view | xs ys -- xv yv
-	mapy - tilew / maph >=? ( -1 nip ) swap
-	mapx - tileh / mapw >=? ( -1 nip ) swap ;
+	mapy - tilew / mapsy + maph >=? ( -1 nip ) swap
+	mapx - tileh / mapsx + mapw >=? ( -1 nip ) swap ;
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 	scr2view 2dup or -? ( nip nip ; ) drop
-::tile2map | xm ym -- adr	
-	mapw * + 3 << mapmem + ;
+	map> ;
 
 |-------------	
 :tile! | --
@@ -124,7 +138,7 @@
 	! ;
 	
 :puttile | xi yi h w --	xi yi h w 
-	pick3 over + pick3 pick3 + tile2map
+	pick3 over + pick3 pick3 + map>
 	pick2 ty + tilesww * pick2 tx + + 
 	$fff and clevel 12 * <<
 	over @ $fff clevel 12 * << not and
@@ -132,7 +146,7 @@
 	;
 	
 :erasetile | x y --
-	tile2map
+	map>
 	dup @ $fff clevel 12 * << not and swap ! ;
 		
 :tilebox! | --
@@ -149,7 +163,7 @@
 :tilewall!	
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
-	tile2map
+	map>
 	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
 	dup @ $1000000000000 not and swap !
 	;
@@ -158,8 +172,8 @@
 
 :drawmapedit
 	exeondnmv dup onDnMove
-	ts_spr drawmap	
-	mgrid 1? ( grid ) drop	
+	ts_spr drawmap
+	drawgrid
 	;
 
 |------------
@@ -352,12 +366,11 @@
 	'loadmap "LOAD" immbtn immcr
 	layers
 	'filename immLabel immcr
+|	maph mapw mapsy mapsx "%d %d %d %d" sprint immLabel
 |	tilenow "%d" sprint immLabel	
 	;
 	
 	
-:mapx! scrmw clamp0max 'mapx ! ;
-:mapy! scrmh clamp0max 'mapy ! ;
 
 |----- MAIN
 :keymain
@@ -371,10 +384,10 @@
 	
 	<t> =? ( wint 1 xor 'wint ! )
 	<g> =? ( mgrid 1 xor 'mgrid ! )
-	<up> =? ( mapy 1 - mapy! )
-	<dn> =? ( mapy 1 + mapy! )
-	<le> =? ( mapx 1 - mapx! )
-	<ri> =? ( mapx 1 + mapx! )	
+	<up> =? ( -1 mapy+! )
+	<dn> =? ( 1 mapy+! )
+	<le> =? ( -1 mapx+! )
+	<ri> =? ( 1 mapx+! )	
 	<a>	=? ( map<< )
 	<d> =? ( map>> )
 	<w> =? ( mapup )
