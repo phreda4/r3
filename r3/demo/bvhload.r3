@@ -331,9 +331,7 @@
 	mark
 	here dup 'bvhfile !
 	'smem !
-|	"media/bvh/guitar_playing.bvh"
-	"media/bvh/0008_ChaCha001.bvh"
-|	"media/bvh/10_01.bvh"
+	"media/bvh/guitar_playing.bvh"
 	reload
 	
 |	model memmap cr

@@ -48,30 +48,7 @@
 	0 'filenow ! 
 	;
 	
-:colorline | n --
-	filenow =? ( $7f00 ; ) $3a3a3a ;
-
-:printline | n --
-	]file | filename
-	$10000 and? ( " >" immBLabel )
-	14 'curx +!
-	.name immBLabel 
-	;
-
-
-	
-:listscroll | n --
-	filescroll 0? ( 2drop ; ) 
-	immcur> >r 
-	boxh rot *
-	curx boxw + boxh 1 >> -
-	cury pick2 - 2 -
-	rot boxh swap immcur
-	0 swap 'fileini immScrollv 
-	r> imm>cur
-	;
-	
-
+|-----
 :backfolder
 	'path ( c@+ 1? drop ) drop 1 -
 	( 'path >?
@@ -91,7 +68,6 @@
 	]file
 	$10000 and? ( setfolder ; )
 	.name 'filename strcpy ;
-
 	
 :clicklist
 	sdly cury - boxh / fileini + 
@@ -116,15 +92,33 @@
 
 #winfiledlg 1 [ 500 0 280 416 ] "FileDlg"
 
+:listscroll | n --
+	filescroll 0? ( 2drop ; ) 
+	immcur> >r 
+	boxh rot *
+	curx boxw + 2 + | pad?
+	cury pick2 -
+	rot boxh swap immcur
+	0 swap 'fileini immScrollv 
+	r> imm>cur
+	;
+	
+:colorline | n --
+	filenow =? ( $7f00 ; ) $3a3a3a ;
+
+:printline | n --
+	]file | filename
+	$10000 and? ( " >" immBLabel )
+	14 'curx +!
+	.name immBLabel immln ;
+	
 ::immlist | cnt --
 	dup immListBox
 	'clicklist onClick	
-	0 ( over over >=?  drop
+	0 ( over over >?  drop
 		dup fileini + nfiles <? 
-		colorline immback
-		printline
-		immln 1 + 
-		) 2drop	
+		colorline immback printline
+		1 + ) 2drop	
 	listscroll immln
 	'winfiledlg immwinbot
 	;
@@ -139,7 +133,7 @@
 	232 18 immbox
 	'path immLabel immcr
 	'filename 1024 immText immcr 	
-	15 immlist
+	filelines immlist
 	;
 	
 ::immfileload

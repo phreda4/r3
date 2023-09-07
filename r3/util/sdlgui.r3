@@ -66,7 +66,9 @@
 
 ::immcur | x y w h --
 	pick3 winx + pick3 winy + pick3 pick3 guiBox
-	'boxh ! 'boxw ! 'cury ! 'curx ! ;
+	$999999 sdlcolor pick3 pick3 pick3 pick3 SDLRect
+	'boxh ! 'boxw ! 'cury ! 'curx ! 
+	;
 	
 ::immcur> | -- cur
 	curx cury 16 << or boxw 32 << or boxh 48 << or ;
@@ -186,8 +188,8 @@
 	
 |---- Vertical slide *** incorrect
 :slidev | 0.0 1.0 'value --
-	sdly cury - boxh clamp0max 
-	2over swap - | Fw
+	sdly cury - boxh 4 - clamp0max 
+	2over swap - 1 + | Fw
 	boxh */ pick3 +
 	over ! ;
 	
@@ -196,15 +198,13 @@
 :scrollshowv | 0.0 1.0 'value --
 |	$ff00007f SDLColor
 |	curx padx + cury pady + boxw boxh SDLFRect
-	$1f1f1f [ $7f7f7f nip ; ] guiI SDLColor
+	$7f7f7f [ $1f1f1f nip ; ] guiI SDLColor
 	
 	dup @ pick3 - 
-	boxh 2 - pick4 pick4 swap - 1 + */ 
-	curx padx + 2 + 
-	cury pady + 1 + rot +
-	boxw 4 - 
-	wid
-	SDLFRect ;
+	boxh 4 - pick4 pick4 swap - 1 + */ 
+	curx padx + 
+	cury pady + rot +
+	boxw 4 - wid SDLFRect ;
 	
 ::immScrollv | 0 max 'value --
 	plgui
