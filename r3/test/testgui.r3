@@ -6,6 +6,7 @@
 	0 SDLcls
 	immgui		| ini IMMGUI
 	
+	400 40 immbox
 	200 200 immat
 	$ff0000 'immcolorbtn !
 	$ffffff 'immcolortex !
@@ -14,6 +15,8 @@
 	'exit "coso" immbtn 
 	immdn
 	sdlb sdly sdlx "%d %d %d" sprint immlabelc	
+	
+	40 40 immbox
 	100 20 immat
 	$ff00 'immcolorbtn !
 	$0 'immcolortex !

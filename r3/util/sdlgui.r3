@@ -203,8 +203,8 @@
 	dup @ pick3 - 
 	boxh 4 - pick4 pick4 swap - 1 + */ 
 	curx padx + 
-	cury pady + rot +
-	boxw 4 - wid SDLFRect ;
+	cury pady + rot + 
+	boxw 4 - wid 1 - SDLFRect ;
 	
 ::immScrollv | 0 max 'value --
 	plgui
@@ -367,11 +367,26 @@
 
 	
 |----- windows
+#winnow 0
+#winlist * 64
+#winlist> 'winlist
+
+::immwin! | win --
+	'winlist ( winlist> <?
+		@+ pick2 =? ( 2drop ; ) drop ) drop
+	winlist> !+ 'winlist> ! ;
+
 :winxy!
 	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;
 	
 :winwh!
 	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
+	
+::winexit
+	winnow 0? ( drop ; )
+	dup 8 + winlist> over - 3 >> move
+	-8 'winlist> +!
+	;
 
 :wintitle | "" --
 	immcolorwin SDLColor
@@ -383,8 +398,11 @@
 	immcolortwin SDLColor
 	plxywh SDLFRect 
 	immlabelc
-	| close button
-	|'exit 134 immibtn 
+	|---- close button
+	$444444 'immcolorbtn !
+	22 'boxw ! curx winw + 26 - 'curx !
+	'winexit 91 immibtn 
+	|----
 	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
 	;	
 	
@@ -403,7 +421,7 @@
 	;
 	
 ::immwin | 'win -- 0/1
-	dup @ 0? ( nip ; ) drop
+	|dup @ 0? ( nip ; ) drop
 	wintit
 	dup 8 + @+ winxy! @+ winwh! wintitle
 	@ 
@@ -420,24 +438,14 @@
 ::immwinbot	| win --
 	cury winy - swap 20 + d! ;
 
-#winlist * 32
-#winlist> 'winlist
 
-::immwin! | win --
-	'winlist ( winlist> <?
-		@+ pick2 =? ( 2drop ; ) drop ) drop
-	winlist> !+ 'winlist> ! ;
-
-::immwin- | win --
-	'winlist 'winlist> !
-	;
 	
 :procwin | 'w --
 	ex
 	;
 	
 ::immRedraw
-	'winlist ( winlist> <?
+	'winlist ( winlist> <? dup 'winnow !
 		@+ ex
 		) drop 
 	keyevent 1? ( dup ex ) drop

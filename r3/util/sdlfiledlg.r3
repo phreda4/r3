@@ -95,10 +95,12 @@
 :listscroll | n --
 	filescroll 0? ( 2drop ; ) 
 	immcur> >r 
+	
 	boxh rot *
 	curx boxw + 2 + | pad?
 	cury pick2 -
 	rot boxh swap immcur
+
 	0 swap 'fileini immScrollv 
 	r> imm>cur
 	;
@@ -127,8 +129,8 @@
 	'winfiledlg immwin 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
 	94 18 immbox
-	'exit "LOAD" immbtn imm>>
-	'immwin- "CANCEL" immbtn 
+	[ winexit ; ] "LOAD" immbtn imm>>
+	'winexit "CANCEL" immbtn 
 	immcr		
 	232 18 immbox
 	'path immLabel immcr
