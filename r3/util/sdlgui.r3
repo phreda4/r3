@@ -382,6 +382,18 @@
 	'winlist ( winlist> <?
 		@+ pick2 =? ( 3drop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
+	
+:windrop | win adr+  -- 
+	( winlist> <?
+		dup @ over 8 - !
+		8 + ) 2drop 	
+	-8 'winlist> +! ;
+		
+::immwin$ | win --
+	'winlist ( winlist> <?
+		@+ pick2 =? ( drop windrop ; ) drop ) drop
+	winlist> !+ 'winlist> ! ;
+	
 
 :winxy!
 	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;

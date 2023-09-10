@@ -12,6 +12,7 @@
 
 #clevel 0
 #mlevel $ff
+#slevel 0
 #cmode 0
 
 #filename * 1024
@@ -170,6 +171,10 @@
 	
 
 |-------------
+:moderect
+	;
+
+|-------------
 :modefill
 	;
 	
@@ -251,7 +256,7 @@
 	b! ;
 
 |---- tileset
-#wint 1 [ 0 0 512 512 ] "Tiles"
+#wint 1 [ 0 32 512 512 ] "Tiles"
 
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
@@ -298,10 +303,6 @@
 #mapwn 
 #maphn
 
-:getconfig
-	mapw 'mapwn !
-	maph 'maphn !
-	;
 
 :setconfig
 
@@ -320,41 +321,47 @@
 	
 	;
 
+:getconfig
+	mapw 'mapwn !
+	maph 'maphn !
+	'winconfig immwin$
+	;
 	
 |---- settings
-#winset 1 [ 824 0 200 300 ] "LAYERS"
+#winset 1 [ 834 32 190 300 ] "LAYERS"
 
-#nlayer "Background" "Background2" "Front" "Up" "Wall" "Trigger"
+#nlayer "Back 1" "Back 2" "Front" "Up" "Wall" "Trigger"
 
 :colbtn 
-	clevel =? ( $3f00 'immcolorbtn ! ; ) 
-	$666666 'immcolorbtn ! ;
+	clevel =? ( $3f00 ; ) $666666  ;
 	
 :icoview
-	1 pick2 << mlevel and? ( 112 nip ; ) 
-	154 nip ;
+	1 pick2 << mlevel and? ( 112 nip ; ) 154 nip ;
+	
+:icosafe
+	1 pick2 << slevel and? ( 187 nip ; ) 165 nip ;
 	
 :layers
 	'nlayer
 	0 ( 5 <? 
-		colbtn
-		150 18 immbox
-		[ dup clevel ! ; ] 
+		colbtn 'immcolorbtn !
+		120 18 immbox
+		[ dup 'clevel ! ; ] 
 		pick2 immbtn imm>>
-		26 18 immbox
+		25 18 immbox
 		$666666 'immcolorbtn !
-		[ 1 over << mlevel xor 'mlevel ! ; ] 
-		icoview immibtn
+		[ 1 over << mlevel xor 'mlevel ! ; ] icoview immibtn imm>>
+		[ 1 over << slevel xor 'slevel ! ; ] icosafe immibtn imm>>
 		immln
 		swap >>0 swap 1 + ) 2drop ;
 
 		
 :winmain
 	'winset immwin 0? ( drop ; ) drop
-	layers
+	layers immln
 	
 	$7f 'immcolorbtn !
-	94 18 immbox
+	89 18 immbox
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
 	
@@ -369,11 +376,11 @@
 :keymain
 	SDLkey
 	>esc< =? ( exit )
-	<1> =? ( 0 clevel ! )
-	<2> =? ( 1 clevel ! )
-	<3> =? ( 2 clevel ! )
-	<4> =? ( 3 clevel ! )
-	<5> =? ( 4 clevel ! )
+	<1> =? ( 0 'clevel ! )
+	<2> =? ( 1 'clevel ! )
+	<3> =? ( 2 'clevel ! )
+	<4> =? ( 3 'clevel ! )
+	<5> =? ( 4 'clevel ! )
 	
 	<t> =? ( wint 1 xor 'wint ! )
 	<g> =? ( mgrid 1 xor 'mgrid ! )
@@ -386,38 +393,42 @@
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
 	
-	<f1> =? ( 'winmain immwin! )
-	<f2> =? ( 'wintiles immwin! )
-	<f3> =? ( 'winconfig immwin! )
+	<f1> =? ( 'winmain immwin$ )
+	<f2> =? ( 'wintiles immwin$ )
+	<f3> =? ( 'winconfig immwin$ )
 	drop
 	;
 	
 :colorbtn | n -- c
-	=? ( $7f7f ; ) $7f ;
+	=? ( $7f00 ; ) $7f ;
+	
+:btnmode | nro adr --
+	modexe colorbtn 'immcolorbtn !	
+	[ dup 'modexe ! ; ] rot immibtn imm<< 
+	drop ;
 	
 :toolbar	
 	'keymain immkey!
 	$ffffff ttcolor
-	0 0 ttat sdlx sdly scr2view swap "x:%d y:%d" ttprint
-	0 14 ttat maph mapw "w:%d h:%d" ttprint
-	100 0 ttat 'filename "MAPEDIT [ %s ]" ttprint
-	100 14 ttat 'tilefile tt.
+	0 16 ttat sdlx sdly scr2view swap maph mapw "w:%d h:%d | x:%d y:%d" ttprint
+	0 0 ttat 'tilefile 'filename "MAP [ %s ] TILESET [ %s ]" ttprint
 
 	28 28 immbox
-	400 0 immat
-	
-	modexe	
-	'modeedit colorbtn 'immcolorbtn !
-	[ 'modeedit 'modexe ! ; ] 192 immibtn imm>> | pencil edit
-	'modefill colorbtn 'immcolorbtn !
-	[ 'modefill 'modexe ! ; ] 115 immibtn imm>> | fill bucket
-	drop
-	$7f 'immcolorbtn !
-	'getconfig 71 immibtn imm>>
-	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
-	
+	990 0 immat
+
 	$7f0000 'immcolorbtn !
-	'exit 185 immibtn  | winclose
+	'exit 185 immibtn  imm<< | winclose
+	imm<<
+	$7f 'immcolorbtn !
+
+	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm<<
+	'getconfig 71 immibtn imm<<	
+	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
+	[ 'wintiles immwin$ ; ] 0 immibtn imm<<		
+	imm<<	
+	115 'modefill btnmode 
+	15 'moderect btnmode 
+	192 'modeedit btnmode 
 	;
 		
 :editor
