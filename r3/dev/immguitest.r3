@@ -3,6 +3,37 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlfiledlg.r3
 
+|---- config
+#filename "filename"
+#tilefile "tilefile"
+
+#wincon 0 [ 824 300 200 200 ] "CONFIG"
+#mapwn 
+#maphn
+
+:getconfig
+	wincon 1 xor 'wincon ! 
+	;
+
+:setconfig
+	wincon 1 xor 'wincon ! 
+	;
+	
+:winconfig
+	'wincon immwin 0? ( drop ; ) drop
+	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
+	'setconfig  "OK" immbtn immcr
+	[ ; ] "CLEAR" immbtn immcr
+	
+	'filename immlabel immcr
+	'tilefile immlabel immcr
+	190 20 immbox
+	4 254 'mapwn immSlideri immcr
+	4 254 'maphn immSlideri immcr
+	
+	;
+	
+|----
 :keymain
 	SDLkey
 	>esc< =? ( exit )
@@ -37,6 +68,7 @@
 	"r3sdl" 1024 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
 	"r3" filedlgini
+	'winconfig immwin!
 	'editor SDLshow
 	SDLquit
 	;

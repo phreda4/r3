@@ -26,8 +26,18 @@
 #keyevent
 |#winevent
 
+#winnow 0
+#winhot 0
+#winhotn 0
+#winlist * 64
+#winlist> 'winlist
+
+
 ::immgui 
 	gui 
+	winhot 'winhotn !
+	0 'winhot !
+	
 	0 'keyevent !
 |	0 'winevent !
 
@@ -367,13 +377,10 @@
 
 	
 |----- windows
-#winnow 0
-#winlist * 64
-#winlist> 'winlist
 
 ::immwin! | win --
 	'winlist ( winlist> <?
-		@+ pick2 =? ( 2drop ; ) drop ) drop
+		@+ pick2 =? ( 3drop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
 
 :winxy!
@@ -383,16 +390,22 @@
 	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
 	
 ::winexit
-	winnow 0? ( drop ; )
-	dup 8 + winlist> over - 3 >> move
+	winhotn 0? ( drop ; ) drop 
+	|dup 8 + winlist> over - 3 >> move
 	-8 'winlist> +!
+	0 'winhot !
 	;
 
 :wintitle | "" --
 	immcolorwin SDLColor
-	winx winy winw winh SDLFRect
+	winx winy winw winh 
+	pick3 pick3 pick3 pick3 SDLFRect
+	guiBox
+	[ |sdlb 0? ( drop ; ) drop 
+	  winnow 'winhot ! ; ] guiI
 	0 SDLColor
 	winx winy winw winh SDLRect
+	
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
 	immcolortwin SDLColor
@@ -412,6 +425,7 @@
 	sdly dup py - swap 'py ! over 12 + d+! ;
 
 :wintit
+|	winnow winhot <>? ( drop ; ) drop
 	dup 8 + 
 	@+ dup $ffffffff and 'curx ! 32 >> 'cury ! 
 	@ $ffffffff and padx 1 << - 'boxw !
@@ -438,16 +452,17 @@
 ::immwinbot	| win --
 	cury winy - swap 20 + d! ;
 
-
-	
-:procwin | 'w --
-	ex
-	;
+:win2front
+	winhot 0? ( drop ; )
+	dup @ winlist> 8 - dup @
+|	winlist> 8 - =? ( drop ; )
+	rot rot ! swap ! ;
 	
 ::immRedraw
 	'winlist ( winlist> <? dup 'winnow !
 		@+ ex
 		) drop 
+	win2front 		
 	keyevent 1? ( dup ex ) drop
 |	winevent 1? ( dup ex ) drop
 	;

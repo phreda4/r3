@@ -18,7 +18,7 @@
 #mapmem				| map adreess
 #mapw 32 #maph 32	| w,h map
 
-#mapx 0 #mapy 0		| screen x,y pixel start
+#mapx 0 #mapy 32		| screen x,y pixel start
 #mapsx 0 #mapsy 0	| screen x,y map start
 #mapsw 30 #mapsh 16	| screen w,h 
 
@@ -149,9 +149,18 @@
 	map>
 	dup @ $fff clevel 12 * << not and swap ! ;
 		
-:tilebox! | --
+
+|-------------	
+:modewall
+	map>
+	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
+	dup @ $1000000000000 not and swap !
+	;
+		
+:modeedit | --
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
+	clevel 4 =? ( drop modewall ; ) drop
 	sdlb 1 nand? ( drop erasetile ; ) drop
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
@@ -159,19 +168,18 @@
 			1 + ) drop
 		1 + ) 3drop ;
 	
-|-------------	
-:tilewall!	
-	sdlx sdly scr2view | xm ym
-	2dup or -? ( 3drop ; ) drop | out of map
-	map>
-	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
-	dup @ $1000000000000 not and swap !
-	;
 
-#exeondnmv 'tilebox!
+|-------------
+:modefill
+	;
+	
+|------------
+
+#modexe 'modeedit
 
 :drawmapedit
-	exeondnmv dup onDnMove
+	mapx mapy mapsw tilew * mapsh tileh * guiBox
+	modexe dup onDnMove
 	ts_spr drawmap
 	drawgrid
 	;
@@ -286,28 +294,26 @@
 	;
 
 |---- config
-#wincon 0 [ 824 300 200 200 ] "CONFIG"
+#wincon 1 [ 824 300 200 200 ] "CONFIG"
 #mapwn 
 #maphn
 
 :getconfig
 	mapw 'mapwn !
 	maph 'maphn !
-	wincon 1 xor 'wincon ! 
 	;
 
 :setconfig
-	wincon 1 xor 'wincon ! 
+
 	;
 	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
-	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
-	'setconfig  "OK" immbtn immcr
+	'setconfig  "OK" immbtn imm>>
 	[ mapwn maphn resizemap resetmap ; ] "CLEAR" immbtn immcr
 	
-	'filename immlabel immcr
-	'tilefile immlabel immcr
+|	'filename immlabel immcr
+|	'tilefile immlabel immcr
 	190 20 immbox
 	4 254 'mapwn immSlideri immcr
 	4 254 'maphn immSlideri immcr
@@ -316,14 +322,9 @@
 
 	
 |---- settings
-#winset 1 [ 824 0 200 300 ] "TILEMAP"
+#winset 1 [ 824 0 200 300 ] "LAYERS"
 
 #nlayer "Background" "Background2" "Front" "Up" "Wall" "Trigger"
-
-:clevel!
-	4 <? ( 'tilebox! 'exeondnmv ! )
-	4 =? ( 'tilewall! 'exeondnmv ! )
-	'clevel ! ;
 
 :colbtn 
 	clevel =? ( $3f00 'immcolorbtn ! ; ) 
@@ -338,7 +339,7 @@
 	0 ( 5 <? 
 		colbtn
 		150 18 immbox
-		[ dup clevel! ; ] 
+		[ dup clevel ! ; ] 
 		pick2 immbtn imm>>
 		26 18 immbox
 		$666666 'immcolorbtn !
@@ -348,24 +349,16 @@
 		swap >>0 swap 1 + ) 2drop ;
 
 		
-:winsetings
+:winmain
 	'winset immwin 0? ( drop ; ) drop
-	$7f 'immcolorbtn !
-	28 24 immbox
-	'exit 192 immibtn imm>> | pencil edit
-	'exit 115 immibtn imm>> | fill bucket
-	'getconfig 71 immibtn imm>>
-	[ wint 1 xor 'wint ! ; ] 0 immibtn imm>>
-	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
-	$7f0000 'immcolorbtn !
-	'exit 185 immibtn  | winclose
-	immcr
+	layers
+	
 	$7f 'immcolorbtn !
 	94 18 immbox
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
-	layers
-	'filename immLabel immcr
+	
+|	'filename immLabel immcr
 |	maph mapw mapsy mapsx "%d %d %d %d" sprint immLabel
 |	tilenow "%d" sprint immLabel	
 	;
@@ -376,11 +369,11 @@
 :keymain
 	SDLkey
 	>esc< =? ( exit )
-	<1> =? ( 0 clevel! )
-	<2> =? ( 1 clevel! )
-	<3> =? ( 2 clevel! )
-	<4> =? ( 3 clevel! )
-	<5> =? ( 4 clevel! )
+	<1> =? ( 0 clevel ! )
+	<2> =? ( 1 clevel ! )
+	<3> =? ( 2 clevel ! )
+	<4> =? ( 3 clevel ! )
+	<5> =? ( 4 clevel ! )
 	
 	<t> =? ( wint 1 xor 'wint ! )
 	<g> =? ( mgrid 1 xor 'mgrid ! )
@@ -392,22 +385,46 @@
 	<d> =? ( map>> )
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
+	
+	<f1> =? ( 'winmain immwin! )
+	<f2> =? ( 'wintiles immwin! )
+	<f3> =? ( 'winconfig immwin! )
 	drop
 	;
 	
+:colorbtn | n -- c
+	=? ( $7f7f ; ) $7f ;
+	
+:toolbar	
+	'keymain immkey!
+	$ffffff ttcolor
+	0 0 ttat sdlx sdly scr2view swap "x:%d y:%d" ttprint
+	0 14 ttat maph mapw "w:%d h:%d" ttprint
+	100 0 ttat 'filename "MAPEDIT [ %s ]" ttprint
+	100 14 ttat 'tilefile tt.
+
+	28 28 immbox
+	400 0 immat
+	
+	modexe	
+	'modeedit colorbtn 'immcolorbtn !
+	[ 'modeedit 'modexe ! ; ] 192 immibtn imm>> | pencil edit
+	'modefill colorbtn 'immcolorbtn !
+	[ 'modefill 'modexe ! ; ] 115 immibtn imm>> | fill bucket
+	drop
+	$7f 'immcolorbtn !
+	'getconfig 71 immibtn imm>>
+	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm>>
+	
+	$7f0000 'immcolorbtn !
+	'exit 185 immibtn  | winclose
+	;
+		
 :editor
 	0 SDLcls
 	immgui		| ini IMMGUI	
-	'keymain immkey!
-
+	toolbar
 	drawmapedit
-	
-	wintiles	
-	winsetings
-	winconfig
-	
-	|filedlg
-	
 	immRedraw
 	SDLredraw
 	;
@@ -415,7 +432,7 @@
 :main
 	"r3sdl" 1024 600 SDLinit
 	SDLblend
-	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
+	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	
 	tilew tileh 'tilefile tsload 'ts_spr !
 	tileinfo
@@ -426,6 +443,7 @@
 	loadmap
 	
 	"r3" filedlgini
+	'winmain immwin!
 	
 	'editor SDLshow
 	savemap
