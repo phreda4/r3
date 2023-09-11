@@ -328,6 +328,9 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
+	$ffffff SDLColor
+	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
 	SDLkey 0? ( drop ; )

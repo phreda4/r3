@@ -22,6 +22,7 @@
 #mapx 0 #mapy 32		| screen x,y pixel start
 #mapsx 0 #mapsy 0	| screen x,y map start
 #mapsw 30 #mapsh 16	| screen w,h 
+#maptw 64 #mapth 64 | screen tile size
 
 #xm #ym		
 
@@ -39,8 +40,19 @@
 #rec [ 0 0 0 0 ]
 #rdes [ 0 0 0 0 ]
 
-|------ DRAW MAP
+#tilescale 0
+#tilescalen 6
 
+:tilescalecalc
+	tilescalen tilescale =? ( drop ; ) 
+	dup 'tilescale !
+	tilew over 6 */ 'maptw !
+	tileh swap 6 */ 'mapth !
+	sw maptw / 1 + 'mapsw !
+	sh mapth / 1 + 'mapsh !
+	;
+	
+|------ DRAW MAP
 #tsimg
 #tsmap
 
@@ -58,11 +70,10 @@
 	;
 	
 |--------------	
-
 :mapx+! | dx --
-	mapsx + mapw mapsw - clamp0max 'mapsx ! ;
+	mapsx + mapw mapsw - 2 + clamp0max 'mapsx ! ;
 :mapy+! | dy --
-	mapsy + maph mapsh - clamp0max 'mapsy ! ;
+	mapsy + maph mapsh - 2 + clamp0max 'mapsy ! ;
 :map> | x y -- adr
 	mapw * + 3 << mapmem + ;
 
@@ -85,13 +96,16 @@
 	;
 
 :setxy | y x --	
-	over tileh * mapy + 32 << 
-	over tilew * mapx + $ffffffff and or
+	over mapth * |tileh * 
+	mapy + 32 << 
+	over maptw * |tilew * 
+	mapx + $ffffffff and or
 	'rdes ! ;
 	
 :drawmap | map --
 	@+ 'tsimg !
-	@+ dup 'rdes 8 + ! 'rec 8 + ! | w h 
+	@+ 'rec 8 + !
+	mapth 32 << maptw or 'rdes 8 + !  | w h 
 	'tsmap !
 	0 ( mapsh <? 
 		0 ( mapsw <?
@@ -104,28 +118,22 @@
 #mgrid 1
 
 :drawgrid
-	$666666 SDLColor
 	mgrid 0? ( drop ; ) drop		
-	0 ( mapsh <=? 
-		mapx 
-		over tileh * mapy +
-		mapsw tilew * pick2 + 
-		over 
-		SDLLine
-		1 + ) drop 
-	0 ( mapsw <=?
-		dup tilew * mapx + 
-		mapy 
-		over 
-		mapsh tileh * pick2 + 
-		SDLLine
-		1 + ) drop ;
+	$666666 SDLColor
+	maph mapsy - mapth * mapy + sh min
+	mapw mapsx - maptw * mapx + sw min
+	mapy ( pick2 <=? 
+		mapx over pick3 over SDLline
+		mapth + ) drop
+	mapx ( over <=? 
+		dup pick3 over mapy SDLLine
+		maptw + ) 3drop ;
 
 	
 |----  MAP
 ::scr2view | xs ys -- xv yv
-	mapy - tilew / mapsy + maph >=? ( -1 nip ) swap
-	mapx - tileh / mapsx + mapw >=? ( -1 nip ) swap ;
+	mapy - maptw / mapsy + maph >=? ( -1 nip ) swap
+	mapx - mapth / mapsx + mapw >=? ( -1 nip ) swap ;
 		
 ::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 	scr2view 2dup or -? ( nip nip ; ) drop
@@ -159,9 +167,10 @@
 	;
 		
 :modeedit | --
+	1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
-	clevel 4 =? ( drop modewall ; ) drop
+	clevel 4 =? ( drop modewall ; ) drop	| draw wall
 	sdlb 1 nand? ( drop erasetile ; ) drop
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
@@ -187,7 +196,7 @@
 #modexem 'modeedit
 
 :drawmapedit
-	mapx mapy mapsw tilew * mapsh tileh * guiBox
+	mapx mapy mapsw maptw * mapsh mapth * guiBox
 	modexe dup onDnMove
 	ts_spr drawmap
 	drawgrid
@@ -304,24 +313,34 @@
 
 |---- config
 #wincon 1 [ 824 300 200 200 ] "CONFIG"
+
 #mapwn 
 #maphn
 
-:setconfig
+:recalc
 
+	mapwn mapw -
+	maphn maph - or
+	0? ( drop ; ) drop
+	mapwn maphn resizemap 
 	;
 	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
-	'setconfig  "OK" immbtn imm>>
-	[ mapwn maphn resizemap resetmap ; ] "CLEAR" immbtn immcr
+	'recalc  "RECALC" immbtn imm>>
+	[ resetmap ; ] "CLEAR" immbtn immcr
 	
 |	'filename immlabel immcr
 |	'tilefile immlabel immcr
 	190 20 immbox
-	4 254 'mapwn immSlideri immcr
-	4 254 'maphn immSlideri immcr
-	
+	"Tile Scale" immLabel immcr
+	1 8 'tilescalen immSlideri immcr
+	"Map Size" immLabel immcr
+	4 254 'mapwn immSlideri 
+	" w" immlabel immcr
+	4 254 'maphn immSlideri 
+	" h" immlabel immcr
+	tilescalecalc
 	;
 
 :getconfig
@@ -452,6 +471,7 @@
 	tileinfo
 	
 	32 32 resizemap resetmap
+	tilescalecalc
 	
 	"mem/mapedit2.mem" 'filename strcpy
 	loadmap
