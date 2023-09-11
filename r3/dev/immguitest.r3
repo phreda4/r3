@@ -6,27 +6,24 @@
 |---- config
 #filename "filename"
 #tilefile "tilefile"
+#inputtxt * 512
+#inputtxt2 * 512
 
-#wincon 0 [ 824 300 200 200 ] "CONFIG"
+#wincon 1 [ 400 30 200 400 ] "CONFIG"
 #mapwn 
 #maphn
 
-:getconfig
-	wincon 1 xor 'wincon ! 
-	;
 
-:setconfig
-	wincon 1 xor 'wincon ! 
-	;
-	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
-	[ wincon 1 xor 'wincon ! ; ] "CANCEL" immbtn imm>>
-	'setconfig  "OK" immbtn immcr
+	[ ; ] "CANCEL" immbtn imm>>
+	[ ; ]  "OK" immbtn immcr
 	[ ; ] "CLEAR" immbtn immcr
-	
+	192 24 immbox
 	'filename immlabel immcr
 	'tilefile immlabel immcr
+	'inputtxt 256 immText immcr
+	'inputtxt2 256 immText immcr
 	190 20 immbox
 	4 254 'mapwn immSlideri immcr
 	4 254 'maphn immSlideri immcr
@@ -60,6 +57,7 @@
 	0 'immcolortex !
 	'exit 0 immibtn 
 
+	
 	immRedraw
 	SDLredraw
 	;

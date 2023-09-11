@@ -60,7 +60,35 @@
 ::ttsize | "" -- "" w h
 	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeText drop
 	'textbox 8 + d@+ swap d@ ;
- 
+	
+#backc	
+:sizechar | -- w 
+	backc 0? ( drop 8 ; ) drop
+	ttfon 'backc 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	'textbox 8 + d@ ;
+	
+::ttcursor | str strcur -- str
+	dup c@ 'backc c! | str strcur
+	0 over c!		| set end
+	swap ttsize  | strcur str w h
+	ttx rot + tty rot 
+	sizechar
+	swap sdlFrect
+	backc rot c!
+	;
+
+::ttcursori | str strcur -- str
+	dup c@ 'backc c! | str strcur
+	0 over c!		| set end
+	swap ttsize  | strcur str w h
+	ttx rot + tty rot 
+	sizechar | x y h w
+	rot 	| x h w y
+	rot + 2 -	| x w y+h
+	swap 2 sdlFrect
+	backc rot c!
+	;
+	
 ::ttpos | -- x y
 	ttx tty ;
 

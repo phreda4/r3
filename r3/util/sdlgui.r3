@@ -277,6 +277,7 @@
 	;
 	
 |--------- input text	
+
 |--- Edita linea
 #cmax
 #padi>	| inicio
@@ -307,28 +308,11 @@
 
 #modo 'lins
 
-::cursoro | pos --
-	|ttfont "A" ttsize | w y
-|	xs ys >r >r
-|	gltextsizecnt drop | w h
-|	xs 16 >> + ys 16 >> 8 16 frect
-|	r> r> 'ys ! 'xs !
-	drop
-	;
-	
-::cursori | pos --
-|	xs ys >r >r
-|	gltextsizecnt drop | w h
-|	xs 16 >> + ys 16 >> 12 + 8 4 frect
-|	r> r> 'ys ! 'xs !
-	drop
-	;
-
-:cursor
+:cursor | 'var max
 	msec $100 and? ( drop ; ) drop
-	$ff00 SDLColor
-	modo 'lins =? ( drop pad> padi> - cursori ; ) drop
-	pad> padi> - cursoro ;
+	$a0a0a0 SDLColor
+	modo 'lins =? ( drop padi> pad> ttcursor drop ; ) drop
+	padi> pad> ttcursori drop ;
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
@@ -362,18 +346,18 @@
 |************************************
 ::immText | 'buff max --
 	plgui
-	$666666 SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+	$222222 SDLColor
+	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
 |	boxh 16 - 1 >> + ttat
 |	$7f7f7f [ $ffffff nip ; ] guiI glcolor
+	curx padx + 
+	boxh immfontsh - 1 >> cury + pady + 
+	ttat 
 	'proinputa 'iniinput w/foco
-	
 	'clickfoco onClick
 	$ffffff ttcolor
 	drop
-	curx padx + 
-	boxh immfontsh - 1 >> cury + pady + 
-	ttat ttprint ;
+	ttprint ;
 
 	
 |----- windows
@@ -403,9 +387,8 @@
 	
 ::winexit
 	winhotn 0? ( drop ; ) drop 
-	|dup 8 + winlist> over - 3 >> move
 	-8 'winlist> +!
-	0 'winhot !
+	0 'winhot ! | need this!!!
 	;
 
 :wintitle | "" --

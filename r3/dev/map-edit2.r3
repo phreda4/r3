@@ -172,6 +172,10 @@
 
 |-------------
 :moderect
+	sdlx sdly scr2view | xm ym
+	2dup or -? ( 3drop ; ) drop | out of map
+	'tiley1 ! 'tilex1 !
+	|'tiley2 ! 'tiley2 ! 
 	;
 
 |-------------
@@ -179,8 +183,8 @@
 	;
 	
 |------------
-
 #modexe 'modeedit
+#modexem 'modeedit
 
 :drawmapedit
 	mapx mapy mapsw tilew * mapsh tileh * guiBox
@@ -302,7 +306,6 @@
 #wincon 1 [ 824 300 200 200 ] "CONFIG"
 #mapwn 
 #maphn
-
 
 :setconfig
 
