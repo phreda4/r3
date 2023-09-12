@@ -9,7 +9,6 @@
 
 #ts_spr
 
-
 #clevel 0
 #mlevel $ff
 #slevel 0
@@ -41,16 +40,17 @@
 #rdes [ 0 0 0 0 ]
 
 #tilescale 0
-#tilescalen 6
+#tilescalen 8
 
 :tilescalecalc
 	tilescalen tilescale =? ( drop ; ) 
 	dup 'tilescale !
-	tilew over 6 */ 'maptw !
-	tileh swap 6 */ 'mapth !
+	tilew over 3 *>> 'maptw !
+	tileh swap 3 *>> 'mapth !
 	sw maptw / 1 + 'mapsw !
 	sh mapth / 1 + 'mapsh !
 	;
+
 	
 |------ DRAW MAP
 #tsimg
@@ -103,6 +103,7 @@
 	'rdes ! ;
 	
 :drawmap | map --
+	0? ( drop ; )
 	@+ 'tsimg !
 	@+ 'rec 8 + !
 	mapth 32 << maptw or 'rdes 8 + !  | w h 
@@ -203,7 +204,6 @@
 	;
 
 |------------
-
 :resizemap | w h --
 	'maph ! 'mapw !
 	mapmem 1? ( empty ) drop
@@ -222,17 +222,40 @@
 			1 + ) drop
 		1 + ) drop ;
 	
+
+|------ SAVE/LOAD
+:savemap
+	mark
+	"tilemap" ,s 0 ,c | 8 bytes
+	mapw , maph , |warning ! is d!
+	here mapmem mapw maph * move
+	mapw maph * 3 << 'here +!
+	tilew , tileh ,
+	'tilefile ,s 0 ,c
+	'filename savemem
+	empty ;		
+
 :loadmap
-	here dup 'filename load | inimem endmem
-	over =? ( 2drop ; ) drop
-	d@+ swap d@+ rot swap resizemap
-	mapmem swap maph mapw * 3 << move
+	mapmem 1? ( empty ) drop
+	mark
+	here 'filename load here =? ( drop empty ; ) drop
+	here 8 + | "tilemap"0
+	d@+ 'mapw ! d@+ 'maph !
+	mapw maph * 3 << +
+	d@+ 'tilew ! d@+ 'tileh !
+	'tilefile strcpy
+	|... load tiles
+	tilew tileh 'tilefile tsload 'ts_spr !	
+|	tileinfo
+	|... load map
+	here 'filename load drop
+	here 16 + 'mapmem !
+	tilescalecalc
+	0 'mapsx ! 0 'mapsy !	| screen x,y map start	
 	;
 	
-:savemap
-	mapmem 8 - mapw maph * 1 + 3 << 'filename save
-	;		
-
+	
+|------ MOVE MAP
 :mapup
 	mapmem >a
 	here a> mapw move | d s c
@@ -293,7 +316,7 @@
 	
 :wintiles
 	'wint immwin 0? ( drop ; ) drop
-	curx cury ts_spr @ SDLImage
+	curx cury ts_spr 0? ( 3drop ; ) @ SDLImage
 |	sdlb sdlx sdly "%d %d %d" sprint immLabel immcr
 |	
 	'chdn 'chmv dup guiMap
@@ -304,8 +327,9 @@
 	SDLRect
 	;
 
-:tileinfo
-	ts_spr @ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
+:tileinfo | -- 
+	ts_spr 0? ( drop ; )
+	@ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
 	tileimgw tilew / 'tilesww !
 	tileimgw 4 + 'wint 16 + d!
 	tileimgh 28 + 'wint 20 + d!
@@ -318,29 +342,33 @@
 #maphn
 
 :recalc
-
 	mapwn mapw -
 	maphn maph - or
 	0? ( drop ; ) drop
 	mapwn maphn resizemap 
 	;
+
+:changetile		
+	immfileload
+	;
 	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
+	$7f 'immcolorbtn !
 	'recalc  "RECALC" immbtn imm>>
 	[ resetmap ; ] "CLEAR" immbtn immcr
 	
 |	'filename immlabel immcr
 |	'tilefile immlabel immcr
 	190 20 immbox
-	"Tile Scale" immLabel immcr
-	1 8 'tilescalen immSlideri immcr
+	'changetile "TILESET" immbtn immcr	
+	
 	"Map Size" immLabel immcr
 	4 254 'mapwn immSlideri 
 	" w" immlabel immcr
 	4 254 'maphn immSlideri 
 	" h" immlabel immcr
-	tilescalecalc
+	
 	;
 
 :getconfig
@@ -350,7 +378,7 @@
 	;
 	
 |---- settings
-#winset 1 [ 834 32 190 300 ] "LAYERS"
+#winset 1 [ 824 32 200 240 ] "LAYERS"
 
 #nlayer "Back 1" "Back 2" "Front" "Up" "Wall" "Trigger"
 
@@ -381,15 +409,22 @@
 :winmain
 	'winset immwin 0? ( drop ; ) drop
 	layers immln
-	
+
 	$7f 'immcolorbtn !
-	89 18 immbox
+	
+	188 20 immbox
+	1 16 'tilescalen immSlideri
+	" Tile Scale" immLabel immcr
+
+	90 18 immbox
+	immcr
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
 	
 |	'filename immLabel immcr
 |	maph mapw mapsy mapsx "%d %d %d %d" sprint immLabel
 |	tilenow "%d" sprint immLabel	
+	tilescalecalc
 	;
 	
 	
@@ -462,19 +497,22 @@
 	SDLredraw
 	;
 
+
+|------ MAIN
 :main
 	"r3sdl" 1024 600 SDLinit
 	SDLblend
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	
-	tilew tileh 'tilefile tsload 'ts_spr !
-	tileinfo
 	
-	32 32 resizemap resetmap
-	tilescalecalc
+|	tilew tileh 'tilefile tsload 'ts_spr !
+|	tileinfo
+|	32 32 resizemap resetmap
+|	tilescalecalc
 	
-	"mem/mapedit2.mem" 'filename strcpy
+	"mem/bmapedit.mem" 'filename strcpy
 	loadmap
+	tilescalecalc tileinfo
 	
 	"r3" filedlgini
 	'winmain immwin!

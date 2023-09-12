@@ -257,6 +257,17 @@
 |MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
 	;
+
+:editbmap
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/bmapedit.mem" save
+
+|WIN| "r3 r3/editor/bmap-edit.r3"
+|LIN| "./r3lin r3/editor/bmap-edit.r3"
+|RPI| "./r3rpi r3/editor/bmap-edit.r3"
+|MAC| "./r3mac r3/editor/bmap-edit.r3"
+	sys
+	;
 	
 :f2edit
 	actual -? ( drop ; )
@@ -264,6 +275,7 @@
 	actual getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop
+	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
 	drop
 	;
