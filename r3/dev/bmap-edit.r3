@@ -7,33 +7,35 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlfiledlg.r3
 
-#ts_spr
-
 #clevel 0
 #mlevel $ff
 #slevel 0
 #cmode 0
 
 #filename * 1024
-#mapmem				| map adreess
+
 #mapw 32 #maph 32	| w,h map
+#mapmem	0			| map adreess
 
 #mapx 0 #mapy 32		| screen x,y pixel start
 #mapsx 0 #mapsy 0	| screen x,y map start
 #mapsw 30 #mapsh 16	| screen w,h 
 #maptw 64 #mapth 64 | screen tile size
 
-#xm #ym		
+#ts_spr	| tileset
+#tsimg	| tiles image
+#tsmap	| tiles box array
 
 |#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
-#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
+|#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
+#tilew 32 #tileh 32 #tilefile * 1024
 
 #tileimgw #tileimgh #tilesww
 
 #tilex1 #tiley1
 #tilex2 #tiley2
 
-#tilenow 11
+#tilenow 0
 #tx 0 #ty 0 #tw 1 #th 1
 
 #rec [ 0 0 0 0 ]
@@ -50,11 +52,8 @@
 	sw maptw / 1 + 'mapsw !
 	sh mapth / 1 + 'mapsh !
 	;
-
 	
 |------ DRAW MAP
-#tsimg
-#tsmap
 
 :dlayer | n -- 
 	$fff and 0? ( drop ; )
@@ -120,7 +119,7 @@
 
 :drawgrid
 	mgrid 0? ( drop ; ) drop		
-	$666666 SDLColor
+	$7f666666 SDLColorA
 	maph mapsy - mapth * mapy + sh min
 	mapw mapsx - maptw * mapx + sw min
 	mapy ( pick2 <=? 
@@ -140,13 +139,13 @@
 	scr2view 2dup or -? ( nip nip ; ) drop
 	map> ;
 
-|-------------	
 :tile! | --
 	tilenow 
 	sdlx sdly scr2tile 
 	-? ( 2drop ; ) | don't set outside
 	! ;
-	
+
+|-------------  PAINT
 :puttile | xi yi h w --	xi yi h w 
 	pick3 over + pick3 pick3 + map>
 	pick2 ty + tilesww * pick2 tx + + 
@@ -159,15 +158,13 @@
 	map>
 	dup @ $fff clevel 12 * << not and swap ! ;
 		
-
-|-------------	
 :modewall
 	map>
 	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
 	dup @ $1000000000000 not and swap !
 	;
-		
-:modeedit | --
+
+:paint
 	1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
@@ -178,33 +175,97 @@
 			puttile
 			1 + ) drop
 		1 + ) 3drop ;
-	
+		
+:modeedit | --
+	'paint dup onDnMove ;
 
-|-------------
-:moderect
+|------------- SELECT
+:select1
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
-	'tiley1 ! 'tilex1 !
-	|'tiley2 ! 'tiley2 ! 
-	;
+	2dup 'tiley1 ! 'tilex1 !
+	'tiley2 ! 'tilex2 !	;
 
-|-------------
-:modefill
+:select2
+	sdlx sdly scr2view | xm ym
+	2dup or -? ( 3drop ; ) drop | out of map
+	'tiley2 ! 'tilex2 ! ;
+
+:moderect
+	'select1 'select2 onDnMoveA 
+	$7f007f00 SDLColorA
+	tilex1 tilex2 2dup min | x1 x2 x
+	mapsx - maptw * mapx + rot rot - abs | x w
+	tiley1 tiley2 2dup min | x w y1 y2 y
+	mapsy - mapth * mapy + rot rot - abs | x w y h
+	rot 1 + maptw * | x y h w
+	swap 1 + mapth * 
+	SDLFRect ;
+
+|------------- FILL
+#last>
+#rrtile
+
+:addcell | x y -- 
+	2dup map> @ rrtile <>? ( 3drop ; ) drop
+	2dup swap last> w!+ w!+ 'last> !
+	map> dup 
+	@ $fff clevel 12 * << not and | clear level
+	tilenow $fff and clevel 12 * << or
+	swap !
+|	map> tilenow swap ! 
 	;
+	
+:addcellc | x y --
+	swap -? ( 2drop ; ) mapw >=? ( 2drop ; )
+	swap -? ( 2drop ; ) maph >=? ( 2drop ; )
+	addcell ;
+	
+:markcell | x y --
+	over 1 - over addcellc
+	over 1 + over addcellc
+	over over 1 - addcellc
+	1 + addcellc ;
+	
+:filltile | --
+	1 clevel << slevel and? ( drop ; ) drop | safe mark 
+	sdlx sdly scr2view | xm ym
+	2dup or -? ( 3drop ; ) drop | out of map
+	2dup map> @ 'rrtile ! | tile to reeplace
+	here 'last> !
+	addcell
+	here ( last> <? 
+		w@+ swap w@+ rot swap markcell
+		) drop ;
+		
+:modefill
+	'filltile onClick ;
 	
 |------------
 #modexe 'modeedit
-#modexem 'modeedit
 
 :drawmapedit
 	mapx mapy mapsw maptw * mapsh mapth * guiBox
-	modexe dup onDnMove
 	ts_spr drawmap
 	drawgrid
+	modexe ex		
 	;
 
 |------------
 :resizemap | w h --
+	mark
+	"tilemap" ,s 0 ,c | 8 bytes
+	over , dup , |warning ! is d!
+	
+	here mapmem mapw maph * move
+	mapw maph * 3 << 'here +!
+	
+	tilew , tileh ,
+	'tilefile ,s 0 ,c
+	"mem/resize.bmap" savemem
+	empty ;		
+
+
 	'maph ! 'mapw !
 	mapmem 1? ( empty ) drop
 	mark
@@ -216,12 +277,7 @@
 
 :resetmap	
 	mapmem >a 
-	0 ( maph <? 
-		0 ( mapw <?
-			0 a!+
-			1 + ) drop
-		1 + ) drop ;
-	
+	maph mapw * ( 1? 0 a!+ 1 - ) drop ;
 
 |------ SAVE/LOAD
 :savemap
@@ -235,10 +291,21 @@
 	'filename savemem
 	empty ;		
 
+:emptymap
+	32 'mapw ! 32 'maph !
+	24 'tilew ! 24 'tileh ! 
+	"media/img/classroom.png" 'tilefile strcpy
+	tilew tileh 'tilefile tsload 'ts_spr !	
+	here 'mapmem !
+	mapw maph * 3 << 'here +!
+	resetmap	
+	0 'mapsx ! 0 'mapsy !	| screen x,y map start	
+	;
+	
 :loadmap
 	mapmem 1? ( empty ) drop
 	mark
-	here 'filename load here =? ( drop empty ; ) drop
+	here 'filename load here =? ( drop emptymap ; ) drop
 	here 8 + | "tilemap"0
 	d@+ 'mapw ! d@+ 'maph !
 	mapw maph * 3 << +
@@ -246,12 +313,11 @@
 	'tilefile strcpy
 	|... load tiles
 	tilew tileh 'tilefile tsload 'ts_spr !	
-|	tileinfo
 	|... load map
 	here 'filename load drop
 	here 16 + 'mapmem !
-	tilescalecalc
 	0 'mapsx ! 0 'mapsy !	| screen x,y map start	
+	mapw maph * 2 + 3 << 'here +!
 	;
 	
 	
@@ -321,10 +387,10 @@
 |	
 	'chdn 'chmv dup guiMap
 	
-	$ffffff sdlcolor	| cursor
+	$7f0000ff sdlcolorA	| cursor
 	curx tx tilew * + cury ty tileh * +
 	tw tilew * th tileh * 
-	SDLRect
+	SDLfRect
 	;
 
 :tileinfo | -- 
@@ -491,9 +557,9 @@
 :editor
 	0 SDLcls
 	immgui		| ini IMMGUI	
-	toolbar
+	toolbar		
 	drawmapedit
-	immRedraw
+	immRedraw	| IMMGUI windows
 	SDLredraw
 	;
 
@@ -503,18 +569,12 @@
 	"r3sdl" 1024 600 SDLinit
 	SDLblend
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
-	
-	
-|	tilew tileh 'tilefile tsload 'ts_spr !
-|	tileinfo
-|	32 32 resizemap resetmap
-|	tilescalecalc
+	"r3" filedlgini
+
 	
 	"mem/bmapedit.mem" 'filename strcpy
-	loadmap
-	tilescalecalc tileinfo
-	
-	"r3" filedlgini
+	loadmap tilescalecalc tileinfo
+
 	'winmain immwin!
 	
 	'editor SDLshow
