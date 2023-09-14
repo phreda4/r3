@@ -50,31 +50,35 @@
 	
 |-----
 :backfolder
-	'path ( c@+ 1? drop ) drop 1 -
+	'path ( c@+ 1? drop ) drop 3 - | /0.
+:backfhere | fromhere --	
 	( 'path >?
-		dup c@ $2f =? ( drop 0 swap c! reload ; )
+		dup c@ $2f =? ( drop 0 swap ! reload ; )
 		drop 1 - ) drop
 	reload ;
 
 :setfolder
     .name
 	dup ".." = 1? ( 2drop backfolder ; ) drop
-	"/" 'path strcat
 	'path strcat
-	reload
-	;
+	reload ;
 
 :linenter | nfile --
 	]file
 	$10000 and? ( setfolder ; )
+	.name 'filename strcpy 
+	refreshfoco ;
+	
+:clicknfile | n -- 
+	]file 
+	$10000 and? ( drop 0 'filename ! ; )
 	.name 'filename strcpy ;
 	
 :clicklist
 	sdly cury - boxh / fileini + 
 	filenow =? ( linenter ; )
-	dup ]file .name 'filename strcpy 
-	'filenow ! ; 
-	;
+	dup 'filenow !
+	clicknfile ;
 	
 	
 ::filedlgini | "" --
@@ -90,7 +94,7 @@
 ::filedlgend
 	empty ;
 
-#winfiledlg 1 [ 500 0 280 416 ] "FileDlg"
+#winfiledlg 1 [ 500 0 400 416 ] "FileDlg"
 
 :listscroll | n --
 	filescroll 0? ( 2drop ; ) 
@@ -110,9 +114,10 @@
 
 :printline | n --
 	]file | filename
-	$10000 and? ( " >" immBLabel )
+	$10000 and? ( " /" immBLabel )
 	14 'curx +!
-	.name immBLabel immln ;
+	.name immBLabel 
+	immln ;
 	
 ::immlist | cnt --
 	dup immListBox
@@ -122,20 +127,47 @@
 		colorline immback printline
 		1 + ) 2drop	
 	listscroll immln
-	'winfiledlg immwinbot
 	;
 
+#cfold
+
+:scan/ | "" -- adr/
+	( c@+ 1?
+		$5c =? ( $2c nip )
+		$2f =? ( drop 1 - ; )
+		drop ) over c! | duplicate 0
+		1 - ;
+		
+:clickf
+	$2f cfold c!
+	cfold backfhere ;
+	
+:boxpath
+	1 immListBox
+	'path 
+	( dup c@ 1? drop
+		dup scan/ | adr .
+		0 over c! 'cfold !
+		'clickf swap immtbtn
+		$2f cfold c!+
+		">" imm.
+		) 2drop ;
+	
 ::filedlg
 	'winfiledlg immwin 0? ( drop ; ) drop
-	$7f 'immcolorbtn !
-	94 18 immbox
-	[ winexit ; ] "LOAD" immbtn imm>>
-	'winexit "CANCEL" immbtn 
-	immcr		
-	232 18 immbox
-	'path immLabel immcr
+	390 18 immbox
+	boxpath immcr
+	390 18 immbox
 	'filename 1024 immText immcr 	
+	370 18 immbox
 	filelines immlist
+	94 18 immbox
+	$7f 'immcolorbtn !
+
+	[ winexit ; ] "LOAD" immbtn imm>>
+	'winexit "CANCEL" immbtn immcr		
+	immln
+	'winfiledlg immwinbottom
 	;
 	
 ::immfileload

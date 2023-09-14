@@ -108,6 +108,15 @@
 	boxh rot - 1 >> cury + pady +
 	ttat ttprint ;
 
+::imm. | "" --
+	immcolortex ttColor
+	curx padx + 
+	boxh immfontsh - 1 >> cury + pady + 
+	ttat sprint dup tt.
+	ttsize drop nip padx 1 << + 'curx +!
+	;
+	
+
 ::immListBox | lines --
 	boxh * curx cury rot boxw swap guiBox ;
 
@@ -149,6 +158,14 @@
 	immiconb
 	onClick ;	
 
+::immtbtn | 'click "" --
+	ttsize drop 'boxw !
+	plgui
+	[ immcolorbtn SDLColor plxywh SDLFRect ; ] guiI
+	imm.
+	onClick
+	;
+	
 |---- Horizontal slide
 :slideh | 0.0 1.0 'value --
 	sdlx curx padx + - boxw clamp0max 
@@ -364,7 +381,6 @@
 
 	
 |----- windows
-
 ::immwin! | win --
 	'winlist ( winlist> <?
 		@+ pick2 =? ( 3drop ; ) drop ) drop
@@ -447,7 +463,7 @@
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
 
-::immwinbot	| win --
+::immwinbottom	| ywin -- 
 	cury winy - swap 20 + d! ;
 
 :win2front

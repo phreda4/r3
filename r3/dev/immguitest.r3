@@ -13,6 +13,7 @@
 #mapwn 
 #maphn
 
+:cku ;
 
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
@@ -20,6 +21,12 @@
 	[ ; ]  "OK" immbtn immcr
 	[ ; ] "CLEAR" immbtn immcr
 	192 24 immbox
+	
+	|immRct
+	| 
+	'cku "unos" immtbtn ">" imm. 
+	'cku "dos" immtbtn immcr
+	192 24 immbox	
 	'filename immlabel immcr
 	'tilefile immlabel immcr
 	'inputtxt 256 immText immcr
