@@ -251,29 +251,6 @@
 	modexe ex		
 	;
 
-|------------
-:resizemap | w h --
-	mark
-	"tilemap" ,s 0 ,c | 8 bytes
-	over , dup , |warning ! is d!
-	
-	here mapmem mapw maph * move
-	mapw maph * 3 << 'here +!
-	
-	tilew , tileh ,
-	'tilefile ,s 0 ,c
-	"mem/resize.bmap" savemem
-	empty ;		
-
-
-	'maph ! 'mapw !
-	mapmem 1? ( empty ) drop
-	mark
-	maph mapw here d!+ d!+ 
-	dup 'mapmem !
-	maph mapw * 3 << + 
-	'here ! 
-	;
 
 :resetmap	
 	mapmem >a 
@@ -320,6 +297,25 @@
 	mapw maph * 2 + 3 << 'here +!
 	;
 	
+
+|------------
+:resizemap | w h --
+	'maph ! 'mapw !
+	mark
+	"tilemap" ,s 0 ,c | 8 bytes
+	mapw , maph , |warning ! is d!
+	
+|	here mapmem mapw maph * move
+	mapw maph * 3 << 'here +!
+
+	32 , 32 ,
+	"r3/itinerario/diciembre/tiles.png" ,s 0 ,c
+|	tilew , tileh ,
+|	'tilefile ,s 0 ,c
+	"mem/bmapedit.mem" savemem
+	empty 
+	loadmap
+	;		
 	
 |------ MOVE MAP
 :mapup
@@ -411,7 +407,8 @@
 	mapwn mapw -
 	maphn maph - or
 	0? ( drop ; ) drop
-	mapwn maphn resizemap 
+	mapwn maphn resizemap
+	tileinfo	
 	;
 
 :changetile		
@@ -424,8 +421,6 @@
 	'recalc  "RECALC" immbtn imm>>
 	[ resetmap ; ] "CLEAR" immbtn immcr
 	
-|	'filename immlabel immcr
-|	'tilefile immlabel immcr
 	190 20 immbox
 	'changetile "TILESET" immbtn immcr	
 	
