@@ -45,15 +45,15 @@
 #fdd * 260
 #hfind 
 |struct WIN32_FIND_DATAA
-|  dwFileAttributes   dd ?
-|  ftCreationTime     FILETIME
-|  ftLastAccessTime   FILETIME
-|  ftLastWriteTime    FILETIME
-|  nFileSizeHigh      dd ?
-|  nFileSizeLow	     dd ?
-|  dwReserved0	     dd ?
-|  dwReserved1	     dd ?
-|  cFileName	     db MAX_PATH dup (?)
+|  dwFileAttributes   dd ? 0
+|  ftCreationTime     FILETIME 4
+|  ftLastAccessTime   FILETIME 12
+|  ftLastWriteTime    FILETIME 20
+|  nFileSizeHigh      dd ? 28
+|  nFileSizeLow	     dd ? 32
+|  dwReserved0	     dd ? 36
+|  dwReserved1	     dd ? 40
+|  cFileName	     db MAX_PATH dup (?) 44
 |  cAlternateFileName db 14 dup (?)
 
 ::ffirst | "path//*" -- fdd/0

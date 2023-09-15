@@ -27,12 +27,17 @@
 |RPI| 10 + c@ 2 >>
 	;
 	
+:FSIZE
+	32 + d@ 10 >> ; | in kb
+	
 :]file 3 << files + @ ;	
 :.name $ffff and filen + ;
+:.size 17 >>> ;
 
 :fileadd
 	dup FNAME "." = 1? ( 2drop ; ) drop
-	dup FDIR 16 << 
+	dup FDIR $1 and 16 << 
+	over FSIZE 17 << or
 	filen> filen - or 	| start string
 	files> !+ 'files> !
 	FNAME filen> strcpyl 'filen> ! ;
@@ -81,20 +86,9 @@
 	clicknfile ;
 	
 	
-::filedlgini | "" --
-	'path strcpy
-	15 'filelines !
-	mark
-	here dup 'files !	| 1k files
-	8192 + dup 'filen ! | 64k names
-	$ffff + 'here !
-	reload	
-	;
-	
-::filedlgend
-	empty ;
 
-#winfiledlg 1 [ 500 0 400 416 ] "FileDlg"
+
+#winfiledlg 3 [ 500 0 400 416 ] "FileDlg"
 
 :listscroll | n --
 	filescroll 0? ( 2drop ; ) 
@@ -115,6 +109,7 @@
 :printline | n --
 	]file | filename
 	$10000 and? ( " /" immBLabel )
+	$10000 nand? ( dup .size "%d KB" sprint immLabelR )
 	14 'curx +!
 	.name immBLabel 
 	immln ;
@@ -158,7 +153,7 @@
 	390 18 immbox
 	boxpath immcr
 	390 18 immbox
-	'filename 1024 immText immcr 	
+	'filename 1024 immInputLine immcr 	
 	370 18 immbox
 	filelines immlist
 	94 18 immbox
@@ -170,12 +165,26 @@
 	'winfiledlg immwinbottom
 	;
 	
-::immfileload
-	'filedlg immwin!
-|	1 'winfiledlg !
+::filedlgini | "" --
+	'path strcpy
+	15 'filelines !
+	here dup 'files !	| 1k files
+	8192 + dup 'filen ! | 64k names
+	$ffff + 'here !
+	reload	
 	;
 	
-::immfilesave
+::immfileload | 'file -- 'file/0
+|	mark
+|	filedlgini
+	
+	'filedlg immwin! | winfix
+	;
+	
+::immfilesave | 'file -- 'file/0
+|	mark
+|	filedlgini
 	'filedlg immwin!
-|	1 'winfiledlg !
+|	empty
+|	'path dup 'filename strcat
 	;

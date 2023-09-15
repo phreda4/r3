@@ -54,7 +54,6 @@
 	;
 	
 |------ DRAW MAP
-
 :dlayer | n -- 
 	$fff and 0? ( drop ; )
 	3 << tsmap + @ 'rec ! | texture 'ts n  r
@@ -298,25 +297,6 @@
 	;
 	
 
-|------------
-:resizemap | w h --
-	'maph ! 'mapw !
-	mark
-	"tilemap" ,s 0 ,c | 8 bytes
-	mapw , maph , |warning ! is d!
-	
-|	here mapmem mapw maph * move
-	mapw maph * 3 << 'here +!
-
-	32 , 32 ,
-	"r3/itinerario/diciembre/tiles.png" ,s 0 ,c
-|	tilew , tileh ,
-|	'tilefile ,s 0 ,c
-	"mem/bmapedit.mem" savemem
-	empty 
-	loadmap
-	;		
-	
 |------ MOVE MAP
 :mapup
 	mapmem >a
@@ -398,48 +378,85 @@
 	;
 
 |---- config
-#wincon 1 [ 824 300 200 200 ] "CONFIG"
+#wincon 1 [ 824 260 200 300 ] "CONFIG"
 
 #mapwn 
 #maphn
+#tilewn
+#tilehn
+
+|------------
+:resizemap | --
+	mark
+	"tilemap" ,s 0 ,c | 8 bytes
+	mapwn , maphn , |warning ! is d!
+	
+	here 0 mapwn maphn * fill | clear all
+
+	maph maphn min
+	mapw mapwn min
+	0 ( pick2 <? | y
+		here over mapwn * 3 << + | dest
+		mapmem pick2 mapw * 3 << + | source
+		pick3 move 
+		1 + ) 3drop
+		
+	mapwn maphn * 3 << 'here +! | adv 
+
+|	32 , 32 , "r3/itinerario/diciembre/tiles.png" ,s 0 ,c
+	tilew , tileh , 'tilefile ,s 0 ,c
+	"mem/bmapedit.mem" savemem
+	empty 
+	loadmap
+	;		
 
 :recalc
-	mapwn mapw -
-	maphn maph - or
-	0? ( drop ; ) drop
-	mapwn maphn resizemap
+	resizemap
+	tilewn 'tilew !
+	tilehn 'tileh !
+	mapwn 'mapw !
+	maphn 'maph ! 
 	tileinfo	
 	;
 
-:changetile		
-	immfileload
+:changetile
+	'tilefile
+	immfileload 0? ( drop ; )
+	'tilefile strcpy
 	;
 	
 :winconfig
 	'wincon immwin 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
-	'recalc  "RECALC" immbtn imm>>
-	[ resetmap ; ] "CLEAR" immbtn immcr
-	
+
 	190 20 immbox
 	'changetile "TILESET" immbtn immcr	
-	
+	"Tile Size" immLabel immcr
+	70 20 immbox
+	"W" imm. 'tilewn immInputInt imm>>
+	": H" imm. 'tilehn immInputInt immcr
+	|4 256 'tilewn immSlideri " w" immlabel immcr
+	|4 256 'tilehn immSlideri " h" immlabel immcr
 	"Map Size" immLabel immcr
-	4 254 'mapwn immSlideri 
-	" w" immlabel immcr
-	4 254 'maphn immSlideri 
-	" h" immlabel immcr
-	
+	"W" imm. 'mapwn immInputInt imm>>
+	": H" imm. 'maphn immInputInt immcr
+|	4 255 'mapwn immSlideri " w" immlabel immcr
+|	4 255 'maphn immSlideri " h" immlabel immcr
+	[ recalc ; ] "RECALC" immbtn imm>>
+	[ resetmap ; ] "CLEAR" immbtn immcr
+
 	;
 
 :getconfig
 	mapw 'mapwn !
 	maph 'maphn !
+	tilew 'tilewn !
+	tileh 'tilehn !
 	'winconfig immwin$
 	;
 	
 |---- settings
-#winset 1 [ 824 32 200 240 ] "LAYERS"
+#winset 1 [ 824 32 200 220 ] "LAYERS"
 
 #nlayer "Back 1" "Back 2" "Front" "Up" "Wall" "Trigger"
 
@@ -482,9 +499,6 @@
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
 	
-|	'filename immLabel immcr
-|	maph mapw mapsy mapsx "%d %d %d %d" sprint immLabel
-|	tilenow "%d" sprint immLabel	
 	tilescalecalc
 	;
 	
@@ -500,12 +514,13 @@
 	<4> =? ( 3 'clevel ! )
 	<5> =? ( 4 'clevel ! )
 	
-	<t> =? ( wint 1 xor 'wint ! )
 	<g> =? ( mgrid 1 xor 'mgrid ! )
+	
 	<up> =? ( -1 mapy+! )
 	<dn> =? ( 1 mapy+! )
 	<le> =? ( -1 mapx+! )
 	<ri> =? ( 1 mapx+! )	
+	
 	<a>	=? ( map<< )
 	<d> =? ( map>> )
 	<w> =? ( mapup )
@@ -513,7 +528,7 @@
 	
 	<f1> =? ( 'winmain immwin$ )
 	<f2> =? ( 'wintiles immwin$ )
-	<f3> =? ( 'winconfig immwin$ )
+	<f3> =? ( getconfig )
 	drop
 	;
 	
@@ -558,14 +573,12 @@
 	SDLredraw
 	;
 
-
 |------ MAIN
 :main
 	"r3sdl" 1024 600 SDLinit
 	SDLblend
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	"r3" filedlgini
-
 	
 	"mem/bmapedit.mem" 'filename strcpy
 	loadmap tilescalecalc tileinfo

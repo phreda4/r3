@@ -364,7 +364,7 @@
 
 
 |************************************
-::immText | 'buff max --
+::immInputLine | 'buff max --
 	plgui
 	$222222 SDLColor
 	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
@@ -379,7 +379,45 @@
 	drop
 	ttprint ;
 
+
+|----- ENTERO
+:iniinputi
+	pick2 'cmax ! ;
+
+:knro
+	SDLchar 0? ( drop ; ) $30 <? ( drop ; ) $39 >? ( drop ; )
+	$30 - cmax @ 10 * + cmax ! ;
+
+|	ttx rot + tty rot 
+|	sizechar
+|	swap SDLFrect
 	
+:proinputi
+	$ffffff SDLColor
+	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+	|1 cursor drop
+	knro
+	sdlkey
+	<back> =? ( cmax @ 10 / cmax ! )
+	<del> =? ( cmax @ 10 / cmax ! )
+	|<-> =? ( cmax neg 'cmax ! )
+	<tab> =? ( nextfoco )
+	<ret> =? ( nextfoco )
+	drop ;
+
+|************************************
+::immInputInt | 'var --
+	plgui
+	$222222 SDLColor
+	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+	curx padx + 
+	boxh immfontsh - 1 >> cury + pady + 
+	ttat 
+	'proinputi 'iniinputi w/foco
+	'clickfoco onClick
+	$ffffff ttcolor
+	@ "%d" ttprint ;
+
 |----- windows
 ::immwin! | win --
 	'winlist ( winlist> <?
@@ -398,6 +436,9 @@
 	winlist> !+ 'winlist> ! ;
 	
 
+::immwinfix
+	;
+	
 :winxy!
 	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;
 	
@@ -408,6 +449,7 @@
 	winhotn 0? ( drop ; ) drop 
 	-8 'winlist> +!
 	0 'winhot ! | need this!!!
+|	winevent exe
 	;
 
 :wintitle | "" --
@@ -449,7 +491,7 @@
 	;
 	
 ::immwin | 'win -- 0/1
-	|dup @ 0? ( nip ; ) drop
+	dup @ $2 and? ( winnow 'winhot ! ) drop | all in top
 	wintit
 	dup 8 + @+ winxy! @+ winwh! wintitle
 	@ 

@@ -73,7 +73,7 @@
 	swap ttsize  | strcur str w h
 	ttx rot + tty rot 
 	sizechar
-	swap sdlFrect
+	swap SDLFrect
 	backc rot c!
 	;
 
@@ -89,9 +89,6 @@
 	backc rot c!
 	;
 	
-::ttpos | -- x y
-	ttx tty ;
-
 ::ttrect |  "" -- "" x y w h
 	ttsize ttx tty 2swap ;
 	
