@@ -250,10 +250,8 @@
 	modexe ex		
 	;
 
-
 :resetmap	
-	mapmem >a 
-	maph mapw * ( 1? 0 a!+ 1 - ) drop ;
+	mapmem 0 mapw maph * fill ;	
 
 |------ SAVE/LOAD
 :savemap
@@ -281,19 +279,18 @@
 :loadmap
 	mapmem 1? ( empty ) drop
 	mark
-	here 'filename load here =? ( drop emptymap ; ) drop
+	here 'filename load here =? ( drop emptymap ; ) drop | no file
+	here "tilemap" = 0? ( drop emptymap ; ) drop | magic number
 	here 8 + | "tilemap"0
 	d@+ 'mapw ! d@+ 'maph !
+	dup 'mapmem !
 	mapw maph * 3 << +
 	d@+ 'tilew ! d@+ 'tileh !
+	dup 'here !
 	'tilefile strcpy
 	|... load tiles
 	tilew tileh 'tilefile tsload 'ts_spr !	
-	|... load map
-	here 'filename load drop
-	here 16 + 'mapmem !
 	0 'mapsx ! 0 'mapsy !	| screen x,y map start	
-	mapw maph * 2 + 3 << 'here +!
 	;
 	
 
@@ -580,7 +577,9 @@
 	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
 	"r3" filedlgini
 	
-	"mem/bmapedit.mem" 'filename strcpy
+	'filename "mem/bmapedit.mem" load drop
+	'filename .println
+|	"mem/bmapedit.mem" 'filename strcpy
 	loadmap tilescalecalc tileinfo
 
 	'winmain immwin!
