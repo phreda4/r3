@@ -455,7 +455,7 @@
 |---- settings
 #winset 1 [ 824 32 200 220 ] "LAYERS"
 
-#nlayer "Back 1" "Back 2" "Front" "Up" "Wall" "Trigger"
+#nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Trigger"
 
 :colbtn 
 	clevel =? ( $3f00 ; ) $666666  ;

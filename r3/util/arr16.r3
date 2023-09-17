@@ -5,7 +5,7 @@
 | cnt 'l p.ini	| create list
 | 'l p.clear 	| remove all
 | 'l p.cnt 		| cnt
-| 'l p.nro 		| adr from n
+| n 'l p.nro 	| adr from n
 | 've 'l p!+	| add exe and give adr for add parameters
 | 'l p!			| give adr (first)
 | 'l p.draw		| traverse exe every ( return 0 for delete )
