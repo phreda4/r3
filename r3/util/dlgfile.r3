@@ -13,20 +13,6 @@
 #wdlg 0 #hdlg 0
 
 |--------------------------------
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|WEB| 19 +
-|RPI| 11 +
-	;
-
-:FDIR | adr -- dir
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|WEB| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-	;
-
 #files
 #files>
 #filenow

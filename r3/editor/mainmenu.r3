@@ -21,22 +21,8 @@
 #linesv 15
 
 |--------------------------------
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|RPI| 11 +
-|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	;
-
-:FDIR? | adr -- 1/0
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	1 and ;
-
 :FINFO | adr -- adr info
-	dup FDIR? 0? ( 2 + ; ) drop 0 ;
+	dup FDIR 0? ( 2 + ; ) drop 0 ;
 
 :getname | nro -- ""
 	3 << 'files + @ 8 >> 'filen + ;

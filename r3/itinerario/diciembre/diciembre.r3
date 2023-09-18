@@ -56,6 +56,7 @@
 	12 >> layer | back2
 	;
 
+| capa de arriba
 :drawtile2 | y x -- 
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
@@ -102,7 +103,6 @@
 	8 - 'sprinscr< !
 	drop
 	;
-
 	
 :drawmaps | --
 	0 sprinscr> !

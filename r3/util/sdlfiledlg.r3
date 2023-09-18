@@ -13,23 +13,7 @@
 #filen
 #filen>
 	
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|WEB| 19 +
-|RPI| 11 +
-	;
 
-:FDIR | adr -- dir
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|WEB| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-	;
-	
-:FSIZE
-	32 + d@ 10 >> ; | in kb
-	
 :]file 3 << files + @ ;	
 :.name $ffff and filen + ;
 :.size 17 >>> ;

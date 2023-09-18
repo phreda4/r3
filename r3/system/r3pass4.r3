@@ -418,9 +418,8 @@
 |--------------------
 :everyword | n -- n
 	dup dic>call@ 0? ( drop ; ) drop
-
+:everywordfull | n -- n
 |	dup dic>adr @ "::%w" .println
-
 	dup dic>inf @ 1 and? ( drop analisisvar ; ) drop
 	analisiscode
 	;
@@ -428,4 +427,9 @@
 ::r3-stage-4
 	0 ( cntdef <?
 		everyword
+		1 + ) drop ;
+
+::r3-stage-4-full
+	0 ( cntdef <?
+		everywordfull
 		1 + ) drop ;
