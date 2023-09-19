@@ -9,6 +9,7 @@
 | date2daystr: day month year -> day of the week as a (pointer to) string
 | jul2daystr: juliandate -> day of the week as a (pointer to) string
 |------------------------------------------------------------
+^r3/win/core.r3
 
 :4/ 2 >> ;
 :4* 2 << ;

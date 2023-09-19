@@ -54,7 +54,7 @@
 			pick2 'lerror ! 
 			"Include not found" 'error !
 			; ) drop
-	load 
+	load 0 over c!
 	here dup only13 			| for see in debug
 	0 rot c!+ 'here !
 	;
@@ -79,7 +79,7 @@
 |	.cr debuginc trace	
 	;
 
-::r3-stage-1 | str -- err/0
+::r3-stage-1 | src -- err/0
 |clearlog
 	10 'switchmem !
 |debuginc trace

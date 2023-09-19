@@ -2,6 +2,7 @@
 | PHREDA 2019
 |----------------
 ^r3/lib/key.r3
+^r3/win/core.r3
 
 ##path * 1024
 

@@ -1,6 +1,7 @@
 | Virtual Draw
 | PHREDA 2020
 |-------------
+^r3/lib/mem.r3
 ^r3/lib/math.r3
 
 #vecs

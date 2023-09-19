@@ -165,7 +165,7 @@
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1 + )	| trim0
-	|over "%w " .print |** debug
+|	over "%w " .print |** debug
 	$5e =? ( drop >>cr ; )	| $5e ^  Include
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion

@@ -1,6 +1,8 @@
 | Color
 | PHREDA 2020
 |-----------------------------------------
+^r3/lib/math.r3
+
 ::colavg | a b -- c
 	2dup xor $fefefefe and 1 >> >r or r> - ;
 

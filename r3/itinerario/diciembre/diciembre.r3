@@ -35,7 +35,7 @@
 
 
 |------ DRAW MAP
-:map>
+:map> | tx ty -- adr
 	mapw * + 3 << mapgame + ;
 
 :layer | ts n -- 
@@ -185,6 +185,20 @@
 :ymove
 	dirh panim 'np ! a> 8 + +! ;
 
+:sumax | adv -- tilew
+	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
+	
+:xymove | dx dy --
+	a> @ pick2 + 16 >> pick2 sumax +
+	maptw / 
+	a> 8 + @ pick2 + 16 >> 32 + | piso
+	mapth /
+	map> @ $1000000000000 and? ( 3drop ; ) drop
+	a> 8 + +!
+	a> +!
+	;
+		
+	
 :viewportx | x -- x
 	dup sw 1 >> - 'xvp ! ;
 	
@@ -194,10 +208,14 @@
 :player	
 	dup >a
 	btnpad
-	%1000 and? ( -1.0 ymove  )
-	%100 and? ( 1.0 ymove  )
-	%10 and? ( -1.0 xmove )
-	%1 and? ( 1.0 xmove )
+	%1000 and? ( |-1.0 ymove 
+			0 -1.0 xymove 	)
+	%100 and? ( |1.0 ymove 
+			0 1.0 xymove  )
+	%10 and? ( |-1.0 xmove 
+			-1.0 0.0 xymove )
+	%1 and? ( |1.0 xmove 
+				1.0 0.0 xymove )
 	drop	
 	a@+ int. viewportx xvp -
 	a@+ int. viewporty yvp -

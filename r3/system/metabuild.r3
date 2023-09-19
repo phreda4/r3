@@ -76,8 +76,7 @@
 	"##" ,s 'filenamev ,s
 	" 'name 'words 'call 'info" ,s 
 	,cr
-	'filenamev "r3/system/meta/%s" sprint
-	savemem
+	"r3/system/meta/metalibs.r3" appendmem
 	empty ;
 
 :namevirtual | name -- name
@@ -89,27 +88,26 @@
 		) 2drop ;
 	
 ::makelib | str --
-	mark
 	r3name
-	here dup 'src !
-	'r3filename
-	namevirtual
-	dup "load %s" .println
-	2dup load | "fn" mem
-|	here =? ( 3drop "no source code." .println ; )
+	mark
+	here dup 'src ! | mem
+	'r3filename dup "load %s" .println
+	namevirtual	| mem fn
+	load | mem
+	here =? ( drop "no source code." .println empty ; )
 	0 swap c!+ 'here !
+	
 	0 'error ! 0 'cnttokens ! 0 'cntdef !
 	'inc 'inc> !
-	swap 
-	r3-stage-1
+	src 
+	r3-stage-1 drop
 |	error 1? ( 4drop "ERROR %s" .println ; ) drop
-	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
-	r3-stage-2
-|	1? ( "ERROR %s" .println 3drop ; ) drop
+|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+	r3-stage-2 |drop
+	1? ( "ERROR %s" .println empty ; ) drop
 |	code> code - 2 >> "tokens:%d" .println
 	r3-stage-3
 	r3-stage-4-full
-	3drop
 	genlib
 	empty
 	;
@@ -118,21 +116,19 @@
 |----------------------------
 #folders "r3/lib" "r3/win" "r3/util" 0
 #foldern * 1024
-#filen * 1024
 
 :build | filename --
-	dup 'filen strcpy
-	'foldern "%s/%s " sprint 
-	dup .println
-	makelib
+	'foldern "%s/%s" sprint 
+|	dup .print
+|	mark dup ,cr ,print ,cr "r3/system/meta/metalibs.r3" appendmem empty 
+	makelib 
 	;
 	
 :nextfile | file --
-	dup FNAME
-	dup ".." = 1? ( 3drop ; ) drop
-	dup "." = 1? ( 3drop ; ) drop
+	FNAME
+	dup ".." = 1? ( 2drop ; ) drop
+	dup "." = 1? ( 2drop ; ) drop
 	build
-	drop
 	;
 	
 :folder | "" --
@@ -142,18 +138,26 @@
 :main
 	.cls
 	"library generator" .println
+	mark "r3/system/meta/metalibs.r3" savemem empty 
+	
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
-		dup .println
+		dup ">>>>%s" .println
 		dup folder
+		dup ">>>>%s" .println
+		.input
 		>>0 ) 2drop
 	"end" .println
 	.input
 	;
 
-|:main
-|	"r3/lib/str.r3" makelib
-|	.input
-|	;
+:maint
+	mark "r3/system/meta/metalibs.r3" savemem empty 
+
+	"r3/lib/jul.r3" makelib
+	"r3/lib/mem.r3" makelib
+	"r3/lib/str.r3" makelib
+	.input
+	;
 	
 : main ;
