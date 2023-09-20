@@ -100,12 +100,12 @@
 	0 'error ! 0 'cnttokens ! 0 'cntdef !
 	'inc 'inc> !
 	src 
-	r3-stage-1 drop
-|	error 1? ( 4drop "ERROR %s" .println ; ) drop
-|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+	r3-stage-1 
+	error 1? ( 4drop "ERROR %s" .println ; ) drop
+	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 	r3-stage-2 |drop
 	1? ( "ERROR %s" .println empty ; ) drop
-|	code> code - 2 >> "tokens:%d" .println
+	code> code - 2 >> "tokens:%d" .println
 	r3-stage-3
 	r3-stage-4-full
 	genlib
@@ -119,7 +119,7 @@
 
 :build | filename --
 	'foldern "%s/%s" sprint 
-|	dup .print
+	dup .print
 |	mark dup ,cr ,print ,cr "r3/system/meta/metalibs.r3" appendmem empty 
 	makelib 
 	;
@@ -144,8 +144,6 @@
 		dup 'foldern strcpy
 		dup ">>>>%s" .println
 		dup folder
-		dup ">>>>%s" .println
-		.input
 		>>0 ) 2drop
 	"end" .println
 	.input

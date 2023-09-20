@@ -1,6 +1,7 @@
 | memory console words
 | generate buffer for send to console
 | PHREDA 2021
+^r3/lib/mem.r3
 
 ::,sp 32 ,c ;
 ::,nsp ( 1? 1 - ,sp ) drop ;

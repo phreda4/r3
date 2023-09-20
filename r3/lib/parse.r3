@@ -20,15 +20,15 @@
 	drop -1 ;
 
 ::str$>nro | adr -- adr' nro
-	0 swap ( c@+ $2f >?
+	0 ( swap c@+ $2f >?
 		dighex -? ( drop 1 - swap ; )
-		rot 4 << + swap )
+		rot 4 << + )
 	drop 1 - swap ;
 
 ::str%>nro | adr -- adr' nro
-	0 swap ( c@+ $2e >=?
+	0 ( swap c@+ $2e >=?
 		$31 >? ( drop 1 - swap ; )
-		$30 - $1 and rot 1 << + swap )
+		$30 - $1 and rot 1 << + )
 	drop 1 - swap ;
 
 ::str>nro | adr -- adr' nro ;1234 $12f %101 -12
@@ -38,15 +38,15 @@
 	$24 =? ( drop 1 + 16 'basen ! str$>nro ; )	| $ hexa $24
 	$25 =? ( drop 1 + 2 'basen ! str%>nro ; ) 	| % bin  $25
 	drop 10 'basen !
-	0 swap ( c@+ $2f >? 	| 0 adr car
+	0 ( swap c@+ $2f >? 	| 0 adr car
 		$39 >? ( drop 1 - swap ; )			| 0..9
-		$30 - rot 10* + swap )
+		$30 - rot 10* + )
 	drop 1 - swap ;
 
 ::?sint | adr -- adr' nro
 	signo swap
-	0 swap ( c@+ $2f >? $39 <=?
-		$30 - rot 10* + swap )
+	0 ( swap c@+ $2f >? $39 <=?
+		$30 - rot 10* + )
 	drop swap
 	rot 0? ( drop ; ) drop neg ;
 
