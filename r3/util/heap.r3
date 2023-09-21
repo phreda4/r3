@@ -5,6 +5,7 @@
 | 2 'heap heap! | add 2 to heap
 | 'heap heap@	| get first number
 |
+^r3/lib/mem.r3
 
 #heapc
 #heapv

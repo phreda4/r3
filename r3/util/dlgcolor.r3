@@ -4,6 +4,7 @@
 ^r3/win/sdl2gfx.r3
 ^r3/lib/color.r3
 ^r3/lib/gui.r3
+^r3/util/bfont.r3
 
 #xpal 0 #ypal 200
 #cwx 60 #cwy 200

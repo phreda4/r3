@@ -1,5 +1,7 @@
 | LIST BYTE
 |--- 
+^r3/win/console.r3
+
 ::blistdel | 'list 'from --
 	dup 1 + pick2 @ cmove
 	-1 swap +! ;
@@ -21,7 +23,7 @@
 	swap dup 8 + blistdel ;
 	
 ::blist? | f 'list -- f/0
-	@+ ( 1? 1- swap
+	@+ ( 1? 1 - swap
 		c@+ pick3 =? ( 2drop ; )
 		drop swap ) 
 	3drop 0 ;

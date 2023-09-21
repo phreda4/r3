@@ -1,6 +1,8 @@
 | RadixSort
 | PHREDA 2012
 |-----------------------------------------
+^r3/lib/mem.r3
+
 #count * 1024
 
 :inicount

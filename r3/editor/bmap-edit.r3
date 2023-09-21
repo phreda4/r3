@@ -61,9 +61,7 @@
 	;
 
 :BITlayer
-	$fff and 0? ( drop ; )
-	drop
-	$7fff0000 SDLColorA
+	$1 and 0? ( drop ; ) drop
 	SDLRenderer 'rdes SDL_RenderFillRect 
 	;
 	
@@ -83,13 +81,14 @@
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ 
 	mlevel 
-	$1 and? ( over dlayer )	| background
-	$2 and? ( over 12 >> dlayer ) | background2
-	$4 and? ( over 24 >> dlayer ) | From
-	$8 and? ( over 36 >> dlayer ) | Up
+	$1 and? ( over dlayer )			| back
+	$2 and? ( over 12 >> dlayer ) | back2
+	$4 and? ( over 24 >> dlayer ) | front
+	$8 and? ( over 36 >> dlayer ) | front2
 		
-	$10 and? ( over 48 >> bitlayer ) | WALL
-|	$20 and? ( over 36 >> dlayer ) | TRIGGER
+	$10 and? ( $7fff0000 SDLColorA over 48 >> bitlayer ) | WALL
+	$20 and? ( $7f00ff00 SDLColorA over 49 >> bitlayer ) | up
+|	$40 and? ( over 36 >> dlayer ) | TRIGGER
 	2drop
 	;
 
@@ -163,11 +162,18 @@
 	dup @ $1000000000000 not and swap !
 	;
 
+:modeup
+	map>
+	sdlb 1 and? ( drop dup @ $2000000000000 or swap ! ; ) drop
+	dup @ $2000000000000 not and swap !
+	;
+
 :paint
 	1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
 	clevel 4 =? ( drop modewall ; ) drop	| draw wall
+	clevel 5 =? ( drop modeup ; ) drop	| draw up
 	sdlb 1 nand? ( drop erasetile ; ) drop
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
@@ -455,7 +461,7 @@
 |---- settings
 #winset 1 [ 824 32 200 220 ] "LAYERS"
 
-#nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Trigger"
+#nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Up"
 
 :colbtn 
 	clevel =? ( $3f00 ; ) $666666  ;
@@ -468,7 +474,7 @@
 	
 :layers
 	'nlayer
-	0 ( 5 <? 
+	0 ( 6 <? 
 		colbtn 'immcolorbtn !
 		120 18 immbox
 		[ dup 'clevel ! ; ] 

@@ -84,29 +84,31 @@
 	'filenamev
 	( c@+ 1?
 		$2f =? ( $5F pick2 1 - c! )
-		drop
-		) 2drop ;
+		drop ) 2drop 
+|	'filenamev .println
+		;
 	
 ::makelib | str --
 	r3name
 	mark
 	here dup 'src ! | mem
-	'r3filename dup "load %s" .println
+	'r3filename dup "load %s " .println
 	namevirtual	| mem fn
+|	2dup "%s %h" .println
 	load | mem
+|	"a" .println
 	here =? ( drop "no source code." .println empty ; )
 	0 swap c!+ 'here !
-	
 	0 'error ! 0 'cnttokens ! 0 'cntdef !
 	'inc 'inc> !
 	src 
 	r3-stage-1 
 	error 1? ( 4drop "ERROR %s" .println ; ) drop
-	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
+|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 	r3-stage-2 |drop
 	1? ( "ERROR %s" .println empty ; ) drop
-	code> code - 2 >> "tokens:%d" .println
-	r3-stage-3
+|	code> code - 2 >> "tokens:%d" .println
+|	r3-stage-3 | core.r3 fail!! (need inv)
 	r3-stage-4-full
 	genlib
 	empty
@@ -114,12 +116,12 @@
 
 
 |----------------------------
-#folders "r3/lib" "r3/win" "r3/util" 0
+#folders "r3/lib" "r3/util" "r3/win" 0
 #foldern * 1024
 
 :build | filename --
 	'foldern "%s/%s" sprint 
-	dup .print
+|	dup .print
 |	mark dup ,cr ,print ,cr "r3/system/meta/metalibs.r3" appendmem empty 
 	makelib 
 	;

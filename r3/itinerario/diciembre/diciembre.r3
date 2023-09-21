@@ -75,41 +75,6 @@
 	drop
 	;
 
-|------ 
-#mapcol | 0 0 0 0 0 
-#maplink | matrix paint/link ; dibujo/no dibujo/dibuja el de arriba
-
-:paintnor | y x val -- y x val ; dibujo
-	pick2 mapsw * pick2 + maplink +
-	0 swap c! 
-	;
-:paintlin | y x val -- y x val
-	pick2 mapsw * pick2 + maplink +
-	1 swap c!
-	;
-	
-:deferpaint? | y x val -- y x val
-	$1000000000000 and? ( | wall
-		pick2 pick2 mapcol + c!
-		paintnor
-		; ) 
-	dup 24 >> 0? ( dup pick3 mapcol + c! ) drop
-	over mapcol + c@ | link?
-	1? ( drop paintlin ; ) drop
-	paintnor
-	;
-	
-	
-:defermap |y x -- y x
-	over mapsw * over + maplink + c@ 13 +
-	3 << tsmap + @ 'boxsrc ! | texture 'ts n  r
-	SDLrenderer tsimg 'boxsrc 'boxdst SDL_RenderCopy	
-	;
-	
-:deferpaint | y x val --
-
-	;
-
 |------ DRAW MAP
 :map> | tx ty -- adr
 	mapw * + 3 << mapgame + ;
@@ -119,7 +84,7 @@
 	3 << tsmap + @ 'boxsrc ! | texture 'ts n  r
 	SDLrenderer tsimg 'boxsrc 'boxdst SDL_RenderCopy ;
 
-:setxy | y x --	
+:setxy | y x --	y x
 	over mapth * mapy + 32 << 
 	over maptw * mapx + $ffffffff and or
 	'boxdst ! ;
@@ -128,96 +93,56 @@
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ 
-	deferpaint?
 	dup layer | back
 	12 >> layer | back2
-	
-	defermap
 	;
 
-:drawtile1s
-	mapsh ( 1? 1 - 
-		0 ( mapsw <? 
-			setxy drawtile1 
-			1 + ) 
-		drop ) drop ;
-
 | capa de arriba
+:drawup | y x -- y x
+	2dup ( swap 1 - swap
+		setxy 
+		mapsx over + 
+		mapsy pick3 + -? ( 4drop ; )
+		map> @ $2000000000000 and?
+		dup 24 >> layer | Front
+		36 >> layer | Front2
+		) 3drop ;
+	
 :drawtile2 | y x -- y x 
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
-	map> @ 
+	map> @ $2000000000000 and? ( drop ; ) | nodibujar
+	dup 24 >> layer | Front
+	36 >> layer | Front2
+	drawup ;
+
+:drawtilelast | y x -- y x  ; dibujar los que falta
+	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
+	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
+	map> @ $2000000000000 nand? ( drop ; ) | 
 	dup 24 >> layer | Front
 	36 >> layer | Front2
 	;
-		
-:drawtile2s
-	0 ( mapsh <? 
-		drawlineobj | antes de dibujar la linea dibujo los sprite que estan arriba
-		0 ( mapsw <?
-			setxy |drawtile2
-			1 + ) drop
-		1 + ) drop ;
-		
-|-------------------------
-
-:setxy2 | y x --	
-	over mapsy - mapth * mapy + 32 << 
-	over mapsx - maptw * mapx + $ffffffff and or
-	'boxdst ! ;
-
-:drawtile
-	2dup swap map> @ 
-	dup layer | back
-	dup 12 >> layer | back2
-|	mapcollink
-	drop
-|	dup 24 >> layer | Front
-|	36 >> layer | Front2
-	|boxdst mlink!
-	;
 	
-:filltiles1
-	mapsh mapsy + maph min
-	mapsw mapsx + mapw min
-	0 mapsy max
-	( pick2 <?
-		0 mapsx max 
-		( pick2 <? | y x --
-			setxy2 drawtile
-			1 + ) drop 
-		1 + ) 3drop ;
-
-:filltiles2
-	mapsh ( 1? 1 - 
-		drawlineobj | antes de dibujar la linea dibujo los sprite que estan arriba
-		0 ( mapsw <? 
-			setxy drawtile2
-			1 + ) 
-		drop ) drop ;
-
 |-------------------------	
 :drawmaps | --
 	0 sprinscr> !
-	|sprinscr ( sprinscr> <? @+ "%h " .print @+ "%h" .println ) drop 
-	sprinscr>
-	dup 'mapcol !
-	dup 0 mapsw cfill
-	mapsw +
-	dup 'maplink ! | mapsw mapsh *
-	0 mapsw mapsh * cfill
-	
 	xvp $1f and neg 'mapx !
 	yvp $1f and neg 'mapy !
 	xvp 5 >> 'mapsx !
 	yvp 5 >> 'mapsy !
-	
-	|filltiles1
-	drawtile1s
-	|filltiles2
-	drawtile2s
-	;
-
+	0 ( mapsh <? 
+		0 ( mapsw <? 
+			setxy drawtile1 
+			1 + ) drop
+		drawlineobj | antes de dibujar la linea dibujo los sprite que estan arriba
+		0 ( mapsw <?
+			setxy drawtile2
+			1 + ) drop
+		0 ( mapsw <?
+			setxy drawtilelast
+			1 + ) drop
+		1 + ) drop ;
 
 |------ LOAD MAP
 :loadmap | filename -- 
@@ -267,19 +192,6 @@
 #aniup ( 21 22 21 23 )
 
 #animplay
-
-:panim | -- nanim	
-	msec 7 >> $3 and + c@ ;
-
-:dirv | v --
-	-? ( 'anile ; ) 'aniri ;
-:xmove
-	dirv panim 'np ! a> +! ;
-	
-:dirh | v --
-	-? ( 'aniup ; ) 'anidn ;
-:ymove
-	dirh panim 'np ! a> 8 + +! ;
 
 :sumax | adv -- tilew
 	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
