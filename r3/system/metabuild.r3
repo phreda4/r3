@@ -73,7 +73,7 @@
 	dicc< ( dicc> <? dup ginfo 32 + ) drop 
 	" )" ,s 
 	,cr
-	"##" ,s 'filenamev ,s
+	"#" ,s 'filenamev ,s
 	" 'name 'words 'call 'info" ,s 
 	,cr
 	"r3/system/meta/metalibs.r3" appendmem
@@ -84,9 +84,7 @@
 	'filenamev
 	( c@+ 1?
 		$2f =? ( $5F pick2 1 - c! )
-		drop ) 2drop 
-|	'filenamev .println
-		;
+		drop ) 2drop ;
 	
 ::makelib | str --
 	r3name
@@ -94,10 +92,7 @@
 	here dup 'src ! | mem
 	'r3filename dup "load %s " .println
 	namevirtual	| mem fn
-|	2dup "%s %h" .println
-	load | mem
-|	"a" .println
-	here =? ( drop "no source code." .println empty ; )
+	load here =? ( drop "no source code." .println empty ; )
 	0 swap c!+ 'here !
 	0 'error ! 0 'cnttokens ! 0 'cntdef !
 	'inc 'inc> !
@@ -114,49 +109,62 @@
 	empty
 	;
 
-
 |----------------------------
 #folders "r3/lib" "r3/util" "r3/win" 0
 #foldern * 1024
 
-:build | filename --
-	'foldern "%s/%s" sprint 
-|	dup .print
-|	mark dup ,cr ,print ,cr "r3/system/meta/metalibs.r3" appendmem empty 
-	makelib 
-	;
-	
 :nextfile | file --
 	FNAME
 	dup ".." = 1? ( 2drop ; ) drop
 	dup "." = 1? ( 2drop ; ) drop
-	build
-	;
+	'foldern "%s/%s" sprint 
+	makelib  ;
 	
 :folder | "" --
 	"%s//*" sprint ffirst 
 	( nextfile fnext 1? ) drop ;
 	
+|-------------	
+:nextfilelist | file --
+	FNAME
+	dup ".." = 1? ( 2drop ; ) drop
+	dup "." = 1? ( 2drop ; ) drop
+	namevirtual drop
+	" '" ,s 'filenamev ,s 
+	;
+	
+:folderlist	| "" --
+	"%s//*" sprint ffirst 
+	( nextfilelist fnext 1? ) drop ;
+
+|-------------	
 :main
 	.cls
 	"library generator" .println
 	mark "r3/system/meta/metalibs.r3" savemem empty 
-	
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
-		dup ">>>>%s" .println
+		dup ">> %s" .println
 		dup folder
 		>>0 ) 2drop
 	"end" .println
-	.input
-	;
+
+	mark
+	,cr
+	"##liblist" ,s 
+	'folders ( dup c@ 1? drop 
+		dup 'foldern strcpy
+		dup folderlist
+		>>0 ) 2drop
+	" 0" ,s ,cr
+	"r3/system/meta/metalibs.r3" appendmem		
+	empty ;
 
 :maint
 	mark "r3/system/meta/metalibs.r3" savemem empty 
-
-	"r3/lib/jul.r3" makelib
-	"r3/lib/mem.r3" makelib
-	"r3/lib/str.r3" makelib
+	
+	"r3/util/sdlfiledlg.r3" makelib
+	"r3/util/dlgfile.r3" makelib
 	.input
 	;
 	

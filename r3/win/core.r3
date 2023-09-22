@@ -89,6 +89,7 @@
 ::load | 'from "filename" -- 'to
 	$80000000 1 0 3 $8000000 0 CreateFile
 	-1 =? ( drop ; ) swap
+	0 'cntf ! | uso dword! sure 0, when trash in mem..trouble
 	( 2dup $ffff 'cntf 0 ReadFile drop
 		cntf + cntf 1? drop ) drop
 	swap CloseHandle ;

@@ -31,9 +31,9 @@
 #timeline> 0
 
 ::timeline.clear
-	'fxp p.clear
-	'fx p.clear
-	'screen p.clear
+	'fxp p8.clear
+	'fx p8.clear
+	'screen p8.clear
 	timeline
 	dup 'timeline> !
 	'timeline< !
@@ -65,7 +65,7 @@
 
 |-------------------- LOOP
 :evt.restart
-	'fx p.clear
+	'fx p8.clear
 	timeline 'timeline< !
 	timeline.start ;
 
@@ -74,7 +74,7 @@
 
 |-------------------- END
 :evt.stop
-	'fx p.clear
+	'fx p8.clear
 	1 'endtimeline !
 	;
 
@@ -135,7 +135,7 @@
 	;
 
 ::+box | box color --
-	'drawbox 'screen p!+ >a
+	'drawbox 'screen p8!+ >a
 	8 << 1 or a!+ a!+ ;
 
 |-------------------- IMAGEN
@@ -153,7 +153,7 @@
 #imgwh 0
 
 ::+img  | img box --
-	'drawimg 'screen p!+ >a
+	'drawimg 'screen p8!+ >a
 	1 a!+ a!+ 
 	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
 	a!+ | texture
@@ -173,7 +173,7 @@
 	;
 
 ::+imgar  | img box --
-	'drawimgar 'screen p!+ >a
+	'drawimgar 'screen p8!+ >a
 	1 a!+ a!+ 
 	dup 0 0 'imgwh dup 4 + SDL_QueryTexture | texture info
 	a!+ | texture
@@ -192,7 +192,7 @@
 	;
 
 ::+txt  | img boxi boxo --
-	'drawtxt 'screen p!+ >a
+	'drawtxt 'screen p8!+ >a
 	0 a!+ a!+ a!+ a! ;
 	
 |-------------------- TEXT BOX
@@ -206,7 +206,7 @@
 	;
 	
 ::+tbox | font "" box color -- ; HVRRGGBB00
-	'drawtbox 'screen p!+ >a
+	'drawtbox 'screen p8!+ >a
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a! ;
 
@@ -223,7 +223,7 @@
 	;
 	
 ::+tboxb | colorb font "" boz color -- ; HVRRGGBB00
-	'drawtboxb 'screen p!+ >a
+	'drawtboxb 'screen p8!+ >a
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a!+ 
 	swapcolor a! ;
@@ -241,7 +241,7 @@
 	;
 	
 ::+tboxo | colorb font "" ooboz color -- ; HVRRGGBB00
-	'drawtboxo 'screen p!+ >a
+	'drawtboxo 'screen p8!+ >a
 	swapcolor
 	8 << 1 or a!+ a!+ a!+ a!+ 
 	swapcolor a! ;	
@@ -267,10 +267,10 @@
 
 |-----------------------------
 ::getscr | -- adrlast
-	'screen p.last ;
+	'screen p8.last ;
 
 :getfx | -- adrlast
-	'fxp p.last ;
+	'fxp p8.last ;
 
 |-----------------------------
 :evt.on | adr -- adr
@@ -311,7 +311,7 @@
 	;
 
 ::evt.box
-	'boxanim 'fx p!+ >a
+	'boxanim 'fx p8!+ >a
 	dup 24 + @ >b | fxp
 	b@+ 1000 *. a!+	| inicio
 	1.0 b@+ 1000 *.u /. a!+ | tiempo
@@ -325,14 +325,14 @@
 	;
 
 ::+fx.box | boxstart boxend func duration sec --
-	dup >r 'fxp p!+ >a a!+ a!+ a!+ a!
+	dup >r 'fxp p8!+ >a a!+ a!+ a!+ a!
 	getfx getscr 'evt.box r> +tline ;
 
 	
 |-------------------- DINAMICOS
 ::+ifx.box | elemento boxstart boxend func duration sec --
 	timenow +
-	dup >r 'fxp p!+ >a a!+ a!+ a!+ a!
+	dup >r 'fxp p8!+ >a a!+ a!+ a!+ a!
 	getfx 
 	swap 
 	'evt.box r> +tline ;
@@ -368,7 +368,7 @@
 	;
 
 ::evt.color
-	'colanim 'fx p!+ >a
+	'colanim 'fx p8!+ >a
 	dup 24 + @ >b | fxp
 	b@+ 1000 *. a!+	| inicio
 	1.0 b@+ 1000 *.u /. a!+ | tiempo
@@ -384,7 +384,7 @@
 	;
 
 ::+fx.color | colorstart colorend func duraction sec --
-	dup >r 'fxp p!+ >a a!+ a!+ a!+ a!
+	dup >r 'fxp p8!+ >a a!+ a!+ a!+ a!
 	getfx getscr 'evt.color r> +tline ;
 
 |*********DEBUG
@@ -407,7 +407,7 @@
 	[ dup @+ "%h " .print 
 		@+ "%d " .print  
 		@+ 64xywh "%d,%d:%d,%d " .print 
-		@ "%h " .println ; ] 'screen p.mapv .cr
+		@ "%h " .println ; ] 'screen p8.mapv .cr
 	.cr
 	[ dup @+ "%f " .print
 		@+ "%f " .print
@@ -416,15 +416,15 @@
 		@+ 64xywh "%d,%d:%d,%d " .print
 		@+ "%d " .print
 		@ "%d " .print
-		.cr ; ] 'fxp p.mapv .cr
+		.cr ; ] 'fxp p8.mapv .cr
 	.cr
 	;
 	
 ::debugtlmem
 	"" .println
-	'screen p.cnt "screen:%d " .println
-	'fx p.cnt "fx:%d " .println
-	'fxp p.cnt "fxp:%d " .println
+	'screen p8.cnt "screen:%d " .println
+	'fx p8.cnt "fx:%d " .println
+	'fxp p8.cnt "fxp:%d " .println
 	timeline> timeline  - "tl:%h " .println
 	;
 	
@@ -433,14 +433,14 @@
 ::timeline.draw
 	dtime
 	tictline
-	'fx p.draw
-	'screen p.drawo
+	'fx p8.draw
+	'screen p8.drawo
 	;
 
 ::timeline.inimem
-	512 'screen p.ini
-	512 'fx p.ini
-	512 'fxp p.ini
+	512 'screen p8.ini
+	512 'fx p8.ini
+	512 'fxp p8.ini
 	here 'timeline !
 	$ffff 'here +!
 	;

@@ -3,17 +3,17 @@
 |------
 ^r3/lib/mem.r3
 
-::p.ini | cantidad list --
+::p8.ini | cantidad list --
 	here dup rot !+ ! 6 << 'here +! ;
 
-::p.clear | list --
+::p8.clear | list --
 	dup 8 + @ swap ! ;
 
-::p!+ | 'act list -- adr
+::p8!+ | 'act list -- adr
 	dup >r @ !+
 	64 r> +! ;
 
-::p! | list -- adr
+::p8! | list -- adr
 	dup >r @
 	64 r> +! ;
 
@@ -24,7 +24,7 @@
 	dup pick3 !
 	swap 64 - ;
 
-::p.draw | list --
+::p8.draw | list --
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delp )
@@ -37,42 +37,42 @@
 	swap 64 - dup pick3 !
 	swap 64 - ;
 
-::p.drawo | list --
+::p8.drawo | list --
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delpo )
 		64 + ) 3drop ;
 
-::p.nro | nro list -- adr
+::p8.nro | nro list -- adr
 	8 + @ swap 6 << + ;
 
-::p.last | nro list -- adr
+::p8.last | nro list -- adr
 	@ 64 - ;
 
-::p.cnt | list -- cnt
+::p8.cnt | list -- cnt
 	@+ swap @ | last fist
 	- 6 >> ;
 
-::p.cpy | adr 'list --
+::p8.cpy | adr 'list --
 	dup @ rot 8 move
 	64 swap +! ;
 
-::p.del | adr list --
+::p8.del | adr list --
 	>a a@ 64 - 8 move a> dup @ 64 - swap ! ;
 
-::p.mapv | 'vector list --
+::p8.mapv | 'vector list --
 	@+ swap @
 	( over <?
 		pick2 ex
 		64 + ) 3drop ;
 
-::p.mapd | 'vector list --
+::p8.mapd | 'vector list --
 	@+ swap @
 	( over <?
 		pick2 ex 0? ( drop dup delp )
 		64 + ) 3drop ;
 
-::p.mapi | 'vector fin ini list --
+::p8.mapi | 'vector fin ini list --
 	8 + @
 	rot 6 << over +
 	rot 6 << rot +
@@ -80,7 +80,7 @@
 		pick2 ex
 		64 + ) 3drop ;
 
-::p.deli | fin ini list --
+::p8.deli | fin ini list --
 	8 + @
 	rot 6 << over +
 	rot 6 << rot +

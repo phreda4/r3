@@ -26,7 +26,7 @@
 	a@+ SDLImage ;
 	
 :+obj | 'spr vy vx y x --
-	'ballexec 'list p!+ >a a!+ a!+ a!+ a!+ a! ;
+	'ballexec 'list p8!+ >a a!+ a!+ a!+ a!+ a! ;
 
 
 |----- rotacion..float arg!!
@@ -45,12 +45,12 @@
 	; | don't work rot is double!
 
 :+objr | r 'spr vy vx y x --
-	'ballexecr 'list p!+ >a a!+ a!+ a!+ a!+ a!+ a! ;
+	'ballexecr 'list p8!+ >a a!+ a!+ a!+ a!+ a!+ a! ;
 	
 |--------------------------------
 :demo
 	0 SDLcls
-	'list p.draw
+	'list p8.draw
 	SDLredraw
 
 	SDLkey
@@ -75,7 +75,7 @@
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/ball.png" loadimg 'spr_ball !
-	1000 'list p.ini
+	1000 'list p8.ini
 	
 	'demo SDLshow
 	
