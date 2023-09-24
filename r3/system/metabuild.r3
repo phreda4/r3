@@ -73,8 +73,7 @@
 	dicc< ( dicc> <? dup ginfo 32 + ) drop 
 	" )" ,s 
 	,cr
-	"#" ,s 'filenamev ,s
-	" 'name 'words 'call 'info" ,s 
+	"#" ,s 'filenamev ,s " 'name 'words 'calls 'info" ,s 
 	,cr
 	"r3/system/meta/metalibs.r3" appendmem
 	empty ;
@@ -129,6 +128,7 @@
 	FNAME
 	dup ".." = 1? ( 2drop ; ) drop
 	dup "." = 1? ( 2drop ; ) drop
+	'foldern "%s/%s" sprint 
 	namevirtual drop
 	" '" ,s 'filenamev ,s 
 	;
@@ -160,12 +160,4 @@
 	"r3/system/meta/metalibs.r3" appendmem		
 	empty ;
 
-:maint
-	mark "r3/system/meta/metalibs.r3" savemem empty 
-	
-	"r3/util/sdlfiledlg.r3" makelib
-	"r3/util/dlgfile.r3" makelib
-	.input
-	;
-	
 : main ;
