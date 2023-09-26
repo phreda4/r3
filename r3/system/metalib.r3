@@ -29,17 +29,13 @@
 	dup 'pad> ! 'padf> !
 	'lins 'modo ! ;
 	
-:vscreen
-	1 10 .at ">" .write 'pad .write 
-	1 10 padf> 'pad - + ;
-
-|	<ins> =? ( chmode )
-|	<le> =? ( kizq ) <ri> =? ( kder )
-|	<back> =? ( kback ) <del> =? ( kdel )
-|	<home> =? ( 'pad 'pad> ! ) <end> =? ( padf> 'pad> ! )
-	
+|--------------
 :char
 	$1000 and? ( drop ; ) | downkey
+	$4d =? ( kder ) 
+	$4b =? ( kizq )
+	$47 =? ( 'pad 'pad> ! ) 
+	$4f =? ( padf> 'pad> ! )
 	16 >> 0? ( drop ; )
 	31 <? ( drop ; )
 	modo ex ;
@@ -49,6 +45,10 @@
 	( vscreen ( inkey 0? drop ) 
 		$D001C <>? | enter
 		char ) drop ;
+
+:vscreen
+	1 10 .at ">" .write 'pad .write 
+	2 pad> 'pad - + 10 .at ;
 
 |--------------
 :.viewords | adr --

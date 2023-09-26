@@ -3,8 +3,30 @@
 
 ^r3/win/console.r3
 ^r3/system/r3stack.r3
+^r3/system/r3base.r3
+^r3/system/r3pass1.r3
+^r3/system/r3pass2.r3
+^r3/system/r3pass4.r3
 ^r3/system/meta/metalibs.r3
 
+::r3debuginfo | str --
+	r3name
+	here dup 'src !
+	'r3filename
+	2dup load
+	here =? ( 3drop "no source code." .println  ; )
+	src only13 0 swap c!+ 'here !
+	0 'error !
+	0 'cnttokens !
+	0 'cntdef !
+	'inc 'inc> !
+	swap	
+	r3-stage-1 error 1? ( 4drop ; ) drop	
+	r3-stage-2 1? ( 4drop ; ) drop 		
+	r3-stage-4-full
+	3drop	
+	;
+	
 :.stack
 	mark ,printvstk ,eol empty here .print ;
 
