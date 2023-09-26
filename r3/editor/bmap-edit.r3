@@ -211,14 +211,15 @@
 #last>
 #rrtile
 
+:changetile | val -- nval
+	$fff clevel 12 * << not and | clear level
+	tilenow $fff and clevel 12 * << or
+	;
+
 :addcell | x y -- 
 	2dup map> @ rrtile <>? ( 3drop ; ) drop
 	2dup swap last> w!+ w!+ 'last> !
-	map> dup 
-	@ $fff clevel 12 * << not and | clear level
-	tilenow $fff and clevel 12 * << or
-	swap !
-|	map> tilenow swap ! 
+	map> dup @ changetile swap !
 	;
 	
 :addcellc | x y --
@@ -236,7 +237,9 @@
 	1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
-	2dup map> @ 'rrtile ! | tile to reeplace
+	2dup map> @ 
+	dup 'rrtile ! | tile to reeplace
+	dup changetile =? ( 3drop ; ) drop | only is diferent
 	here 'last> !
 	addcell
 	here ( last> <? 
@@ -408,7 +411,7 @@
 
 |	32 , 32 , "r3/itinerario/diciembre/tiles.png" ,s 0 ,c
 	tilew , tileh , 'tilefile ,s 0 ,c
-	"mem/bmapedit.mem" savemem
+	'filename savemem
 	empty 
 	loadmap
 	tilescalecalc
