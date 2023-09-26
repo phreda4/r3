@@ -411,6 +411,7 @@
 	"mem/bmapedit.mem" savemem
 	empty 
 	loadmap
+	tilescalecalc
 	;		
 
 :recalc
@@ -419,7 +420,7 @@
 	tilehn 'tileh !
 	mapwn 'mapw !
 	maphn 'maph ! 
-	tileinfo	
+	tileinfo
 	;
 
 :changetile
