@@ -9,12 +9,10 @@
 
 |----
 #sprplayer
+#mapa1
 
 #btnpad
-#np 0
-
 #xvp #yvp		| viewport
-
 #obj 0 0
 
 |----
@@ -181,20 +179,19 @@
 	;
 
 |---------------------
-#anidn ( 0 1 0 2 )
-#anile ( 3 4 3 5 )
-#aniri ( 6 7 6 8 )
-#aniup ( 9 10 9 11 )
-	
-#anidn ( 12 13 12 14 )
-#anile ( 15 16 15 17 )
-#aniri ( 18 19 18 20 )
-#aniup ( 21 22 21 23 )
+#persona1 (  0  1  0  2  3  4  3  5  6  7  6  8  9 10  9 11 )
+#persona2 ( 12 13 12 14 15 16 15 17 18 19 18 20 21 22 21 23 )
+#persona3 ( 24 25 24 26 27 28 27 29 30 31 30 32 33 34 33 35 )
+#persona4 ( 36 37 36 38 39 40 39 41 42 43 42 44 45 46 45 47 )
 
-#animplay
-
+#xp #yp
 :sumax | adv -- tilew
 	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
+
+:xyinmap@ | x y
+	16 >> 32 + mapth / swap 
+	16 >> maptw / swap 
+	map> @ ;
 	
 :xymove | dx dy --
 	a> @ pick2 + 16 >> pick2 sumax + | costados
@@ -212,39 +209,74 @@
 :viewporty | y -- y
 	dup sh 1 >> - 'yvp ! ;
 	
+:anim! | 'anim --
+	a> 2 3 << + ! ; 
+	
+:anim@
+	a> 2 3 << + @+ 2 << swap @ + ;
+	
+|  x y anim 
 :player	
 	>a
 	btnpad
-	%1000 and? ( 'aniup 'animplay ! 0 -1.0 xymove 	)
-	%100 and? ( 'anidn 'animplay ! 0 1.0 xymove  )
-	%10 and? ( 'anile 'animplay ! -1.0 0.0 xymove )
-	%1 and? ( 'aniri 'animplay ! 1.0 0.0 xymove )
-	drop	
-	btnpad 1? ( msec 7 >> $3 and nip ) animplay + c@
-|	dup "%d " .print
-	a@+ int. viewportx xvp -
-	a@+ int. viewporty yvp -
+	%1000 and? ( 3 anim! 0 -2.0 xymove )
+	%100 and? ( 0 anim! 0 2.0 xymove  )
+	%10 and? ( 1 anim! -2.0 0.0 xymove )
+	%1 and? ( 2 anim! 2.0 0.0 xymove )
+	1? ( msec 7 >> $3 and nip ) anim@ + c@
+	
+	a@+ int. dup 'xp ! viewportx xvp -
+	a@+ int. dup 'yp ! viewporty yvp -
 	+sprite | a x y --
 	;	
 
-:+jugador | x y --
+:+jugador | 'per x y --
 	'player 'obj p!+ >a
 	swap a!+ a!+
-	'anidn 'animplay !
+	0 a!+ a!+ 
 	;	
 
 |---------------------
-:npc	
+:randir
+	40 randmax 1? ( drop ; ) drop
+	$f randmax 
+	a> 4 3 << + !
+	;
+	
+:npc
 	>a
-	0
+	randir
+	a> 4 3 << + @
+	%1000 and? ( 3 anim! 0 -2.0 xymove )
+	%100 and? ( 0 anim! 0 2.0 xymove  )
+	%10 and? ( 1 anim! -2.0 0.0 xymove )
+	%1 and? ( 2 anim! 2.0 0.0 xymove )
+	1? ( msec 7 >> $3 and nip )
+	a> 2 3 << + @+ 2 << swap @ + + c@
 	a@+ int. xvp -
 	a@+ int. yvp -
 	+sprite	| a x y
 	;	
 
-:+npc | x y --
+:+npc | 'dib x y --
 	'npc 'obj p!+ >a
 	swap a!+ a!+
+	0 a!+ a!+ 0 a!+
+	;	
+
+|-----------------------------------
+:cosa
+	>a
+	a> 2 3 << + @
+	a@+ int. xvp -
+	a@+ int. yvp -
+	+sprite	| a x y
+	;	
+
+:+cosa | ndib x y --
+	'cosa 'obj p!+ >a
+	swap a!+ a!+
+	a!+ 
 	;	
 
 	
@@ -265,22 +297,41 @@
 	'obj p.clear
 	;
 		
+:randnpc
+	4 randmax 4 << 'persona1 +
+	( 	1800.0 randmax 32.0 + 
+		800.0 randmax 64.0 +
+		2dup xyinmap@ $1000000000000 and? 
+		3drop ) drop
+	+npc
+	;
+	
+:randcosa	
+	48
+	( 	1800.0 randmax 32.0 + 
+		800.0 randmax 64.0 +
+		2dup xyinmap@ $1000000000000 and? 
+		3drop ) drop
+	+cosa
+	;
 :juego
 	inisprite
 	
 	reset
-	130.0 300.0 +jugador
-	300.0 200.0 +npc
-	400.0 600.0 +npc
+	'persona1 130.0 300.0 +jugador
+|	randnpc
+	10 ( 1? 1 - randnpc ) drop
+	
+|	20 ( 1? 1 - randcosa ) drop
 	'jugar SDLshow
 	;	
 
 :main
 	"r3sdl" 1024 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
-	"r3/itinerario/diciembre/escuela1.bmap" loadmap 
+	"r3/itinerario/diciembre/escuela1.bmap" loadmap 'mapa1 !
 	32 32 "r3/itinerario/diciembre/protagonista.png" ssload 'sprplayer !
-	200 'obj p.ini
+	500 'obj p.ini
 	juego
 	SDLquit
 	;
