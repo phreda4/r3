@@ -13,6 +13,7 @@
 
 #btnpad
 #xvp #yvp		| viewport
+#xvpd #yvpd		| viewport dest
 #obj 0 0
 
 |----
@@ -44,8 +45,9 @@
 	;
 	
 :+sprite | N x y --
-	mapth neg <? ( 3drop ; ) sh mapth + >? ( 3drop ; )
-	32 << swap $ffffffff and or | compress
+	mapth neg <? ( 3drop ; ) sh mapth + >? ( 3drop ; ) 32 << 
+	swap -32 <? ( 3drop ; ) sw 32 + >? ( 3drop ; )
+	$ffffffff and or | compress
 	sprinscr>
 	( 16 - dup @ 						| adr yx adr' yx'
 		pick2 >? 
@@ -203,11 +205,17 @@
 	a> +!
 	;
 	
+	
+:viewpostmove
+	xvpd xvp - 5 >> 'xvp +!
+	yvpd yvp - 5 >> 'yvp +!
+	;
+	
 :viewportx | x -- x
-	dup sw 1 >> - 'xvp ! ;
+	dup sw 1 >> - 'xvpd ! ;
 	
 :viewporty | y -- y
-	dup sh 1 >> - 'yvp ! ;
+	dup sh 1 >> - 'yvpd ! ;
 	
 :anim! | 'anim --
 	a> 2 3 << + ! ; 
@@ -288,6 +296,7 @@
 	inisprite
 	'obj p.draw
 	drawmaps
+	viewpostmove
 
 	SDLredraw
 	teclado
@@ -299,8 +308,8 @@
 		
 :randnpc
 	4 randmax 4 << 'persona1 +
-	( 	1800.0 randmax 32.0 + 
-		800.0 randmax 64.0 +
+	( 	2800.0 randmax 32.0 + 
+		1200.0 randmax 64.0 +
 		2dup xyinmap@ $1000000000000 and? 
 		3drop ) drop
 	+npc
@@ -308,21 +317,19 @@
 	
 :randcosa	
 	48
-	( 	1800.0 randmax 32.0 + 
-		800.0 randmax 64.0 +
+	( 	2800.0 randmax 32.0 + 
+		1200.0 randmax 64.0 +
 		2dup xyinmap@ $1000000000000 and? 
 		3drop ) drop
 	+cosa
 	;
+	
 :juego
 	inisprite
-	
 	reset
 	'persona1 130.0 300.0 +jugador
-|	randnpc
-	10 ( 1? 1 - randnpc ) drop
-	
-|	20 ( 1? 1 - randcosa ) drop
+	500 ( 1? 1 - randnpc ) drop
+	20 ( 1? 1 - randcosa ) drop
 	'jugar SDLshow
 	;	
 
@@ -331,7 +338,7 @@
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	"r3/itinerario/diciembre/escuela1.bmap" loadmap 'mapa1 !
 	32 32 "r3/itinerario/diciembre/protagonista.png" ssload 'sprplayer !
-	500 'obj p.ini
+	1000 'obj p.ini
 	juego
 	SDLquit
 	;
