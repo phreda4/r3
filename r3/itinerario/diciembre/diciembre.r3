@@ -61,6 +61,7 @@
 :drawobj | ylim a vyx -- ylim 'a
 	dup 32 << 32 >> | x
 	swap 32 >>		| adr x y
+	
 	2.0 			| zoom 2.0
 	pick3 @			| tilenro
 	sprplayer sspritez | x y n ssprite --
@@ -107,19 +108,46 @@
 		dup 24 >> layer | Front
 		36 >> layer | Front2
 		) 3drop ;
+
+#cond 
+:cdrawup | y x -- y x
+	2dup ( swap 1 - swap
+		setxy 
+		mapsx over + 
+		mapsy pick3 + -? ( 4drop ; )
+		map> @ $2000000000000 and?
+		cond 24 + >> layer | Front/2
+		) 3drop ;
+	
+:cdrawtile2
+	0 'cond !
+	$8000000000000 and? ( 12 >> 12 'cond ! )
+	24 >> layer | Front
+|	cdrawup
+	;
+	
+:cerasemap
+	mapgame >a
+	mapw maph * ( 1? 1 -
+		a@ $7ffffffffffff and a!+
+		) drop ;
 	
 :drawtile2 | y x -- y x 
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
-	map> @ $2000000000000 and? ( drop ; ) | nodibujar
+	map> @ 
+	$2000000000000 and? ( drop ; ) | nodibujar
+|	$4000000000000 and? ( cdrawtile2 ; ) | condicional
 	dup 24 >> layer | Front
 	36 >> layer | Front2
-	drawup ;
+	|drawup 
+	;
 
 :drawtilelast | y x -- y x  ; dibujar los que falta
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ $2000000000000 nand? ( drop ; ) | 
+	$4000000000000 and? ( cdrawtile2 ; )
 	dup 24 >> layer | Front
 	36 >> layer | Front2
 	;
@@ -142,7 +170,8 @@
 		0 ( mapsw <?
 			setxy drawtilelast
 			1 + ) drop
-		1 + ) drop ;
+		1 + ) drop 
+	cerasemap ;
 
 |------ LOAD MAP
 :loadmap | filename -- 
@@ -175,8 +204,8 @@
 	>le< =? ( btnpad %10 not and 'btnpad ! )
 	>ri< =? ( btnpad %1 not and 'btnpad ! )	
 	
-	<f1> =? ( sprinscr ( sprinscr> <? @+ "%h " .print @+ "%h" .println ) drop .cr )
-	<f2> =? ( 1 0 500 randmax +sprite )
+|	<f1> =? ( sprinscr ( sprinscr> <? @+ "%h " .print @+ "%h" .println ) drop .cr )
+|	<f2> =? ( 1 0 500 randmax +sprite )
 	drop 
 	;
 
@@ -186,7 +215,6 @@
 #persona3 ( 24 25 24 26 27 28 27 29 30 31 30 32 33 34 33 35 )
 #persona4 ( 36 37 36 38 39 40 39 41 42 43 42 44 45 46 45 47 )
 
-#xp #yp
 :sumax | adv -- tilew
 	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
 
@@ -200,11 +228,18 @@
 	maptw / 
 	a> 8 + @ pick2 + 16 >> 32 + | piso
 	mapth /
-	map> @ $1000000000000 and? ( 3drop ; ) drop
+	map> @ $1000000000000 and? ( 3drop ; ) 
+	
+	drop
 	a> 8 + +!
 	a> +!
 	;
 	
+:xytrigger | x y -- x y 
+	over maptw / over 32 +  mapth / map> 
+	dup @ $4000000000000 nand? ( 2drop ; ) 
+	$8000000000000 or swap !
+	;
 	
 :viewpostmove
 	xvpd xvp - 5 >> 'xvp +!
@@ -232,9 +267,10 @@
 	%10 and? ( 1 anim! -2.0 0.0 xymove )
 	%1 and? ( 2 anim! 2.0 0.0 xymove )
 	1? ( msec 7 >> $3 and nip ) anim@ + c@
-	
-	a@+ int. dup 'xp ! viewportx xvp -
-	a@+ int. dup 'yp ! viewporty yvp -
+	a@+ int. a@+ int. 
+	xytrigger
+	swap viewportx xvp -
+	swap viewporty yvp -
 	+sprite | a x y --
 	;	
 
@@ -245,9 +281,12 @@
 	;	
 
 |---------------------
+
+#randmove ( %0000 %0001 %0010 %0100 %0101 %0110 %1000 %1001 %1010 )
+
 :randir
 	40 randmax 1? ( drop ; ) drop
-	$f randmax 
+	9 randmax 'randmove + c@
 	a> 4 3 << + !
 	;
 	
@@ -259,10 +298,11 @@
 	%100 and? ( 0 anim! 0 2.0 xymove  )
 	%10 and? ( 1 anim! -2.0 0.0 xymove )
 	%1 and? ( 2 anim! 2.0 0.0 xymove )
-	1? ( msec 7 >> $3 and nip )
-	a> 2 3 << + @+ 2 << swap @ + + c@
-	a@+ int. xvp -
-	a@+ int. yvp -
+	1? ( msec 7 >> $3 and nip ) anim@ + c@
+	a@+ int. a@+ int.
+	xytrigger
+	swap xvp -
+	swap yvp -
 	+sprite	| a x y
 	;	
 
@@ -328,8 +368,8 @@
 	inisprite
 	reset
 	'persona1 130.0 300.0 +jugador
-	500 ( 1? 1 - randnpc ) drop
-	20 ( 1? 1 - randcosa ) drop
+	200 ( 1? 1 - randnpc ) drop
+	10 ( 1? 1 - randcosa ) drop
 	'jugar SDLshow
 	;	
 
