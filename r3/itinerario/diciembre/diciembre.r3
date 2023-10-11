@@ -110,20 +110,27 @@
 		) 3drop ;
 
 #cond 
+:tiledcond | tile
+	$4000000000000 and? ( cond 24 + >> layer ; ) | Front/2
+	dup 24 >> layer | Front
+	36 >> layer | Front2
+	;
+	
 :cdrawup | y x -- y x
 	2dup ( swap 1 - swap
 		setxy 
 		mapsx over + 
 		mapsy pick3 + -? ( 4drop ; )
-		map> @ $2000000000000 and?
-		cond 24 + >> layer | Front/2
+		map> @ 
+		$2000000000000 and?
+		tiledcond
 		) 3drop ;
 	
 :cdrawtile2
 	0 'cond !
 	$8000000000000 and? ( 12 >> 12 'cond ! )
 	24 >> layer | Front
-|	cdrawup
+	cdrawup
 	;
 	
 :cerasemap
@@ -137,16 +144,17 @@
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ 
 	$2000000000000 and? ( drop ; ) | nodibujar
-|	$4000000000000 and? ( cdrawtile2 ; ) | condicional
+	$4000000000000 and? ( cdrawtile2 ; ) | condicional
 	dup 24 >> layer | Front
 	36 >> layer | Front2
-	|drawup 
+	drawup 
 	;
 
 :drawtilelast | y x -- y x  ; dibujar los que falta
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
-	map> @ $2000000000000 nand? ( drop ; ) | 
+	map> @ 
+	$2000000000000 nand? ( drop ; ) | 
 	$4000000000000 and? ( cdrawtile2 ; )
 	dup 24 >> layer | Front
 	36 >> layer | Front2
@@ -167,10 +175,10 @@
 		0 ( mapsw <?
 			setxy drawtile2
 			1 + ) drop
+		1 + ) 1 - 
 		0 ( mapsw <?
 			setxy drawtilelast
-			1 + ) drop
-		1 + ) drop 
+			1 + ) 2drop		
 	cerasemap ;
 
 |------ LOAD MAP
@@ -235,11 +243,14 @@
 	a> +!
 	;
 	
-:xytrigger | x y -- x y 
-	over maptw / over 32 +  mapth / map> 
+:poketrigger | adr --
 	dup @ $4000000000000 nand? ( 2drop ; ) 
-	$8000000000000 or swap !
-	;
+	$8000000000000 or swap ! ;
+	
+:xytrigger | x y -- x y 
+	over 32 - maptw / over 32 + mapth / map>
+	dup poketrigger 
+	8 + poketrigger ;
 	
 :viewpostmove
 	xvpd xvp - 5 >> 'xvp +!
