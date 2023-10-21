@@ -15,7 +15,7 @@
 #musjuego
 
 #tsguy	| dibujo
-#xp 200.0 #yp 400.0		| posicion
+#xp 300.0 #yp 400.0		| posicion
 |#xv #yv		| velocidad
 #animacion
 #comiendo
@@ -33,14 +33,21 @@
 	dup 56 + @ over 16 + +!
 	;
 
+:objframe | adr -- frame
+	24 + @ nanim ;
+	
 :gatovuela
-	7 6 1 vci>anim 'animacion !	;
+	7 6 6 vci>anim 'animacion !	;
 	
 :gatocome
 	comiendo 1? ( drop ; ) drop
 	60 'comiendo !
-	7 7 7 vci>anim 'animacion !	;
+	7 7 12 vci>anim 'animacion ! ; | 7
 
+:gatonocome
+	comiendo 1? ( drop ; ) drop	
+	50 'comiendo !
+	7 2 19 vci>anim 'animacion ! ; | 7
 	
 |--------------- ARCOIRIS	
 |disparo
@@ -56,12 +63,13 @@
 	drop
 	;
 
+#colorestela 0
 #alterna 
 :+estela
 	'estela 'arcoiris p!+ >a 
-	160.0 a!+ yp 10.0 + alterna + a!+	| x y 
+	260.0 a!+ yp 10.0 + alterna + a!+	| x y 
 	1.0 a!+	| ang zoom
-	0 0 0 vci>anim | vel cnt ini 
+	0 0 colorestela vci>anim | vel cnt ini 
 	a!+	tsguy a!+			| anim sheet
 	-2.0 a!+ 0.0 a!+ 	| vx vy
 	0 a!			| vrz
@@ -76,9 +84,22 @@
 	0 'ce !
 	+estela ;
 
-:comefruta
-	0 gatocome 1 'puntos +!
+|#listframe ( 22 26 27 21 24 )
+|#listframe ( 1 5 6 0 3 )
+|
+#listframe ( 4 1 0 5 0 2 3 )
+
+:comefruta | adr -- 0
+	objframe
+	21 - 'listframe + c@
+	colorestela 
+	"%d %d" .println
+	
+	gatocome 1 'puntos +!
 	sndcomiento sndplay
+	6 randmax 'colorestela !
+	
+	0
 	;
 	
 |--------------- FRUTAS
@@ -88,9 +109,7 @@
 	dup @+ dup -17.0 827.0 between -? ( 4drop 0 ; ) drop
 	swap @ dup -200.0 616.0 between -? ( 4drop 0 ; ) drop
 	yp - swap xp - distfast
-	50.0 <? ( 2drop comefruta ; ) drop
-	drop
-	;
+	45.0 <? ( drop comefruta ; ) 2drop ;
 
 :+fruta | fruta y --
 	'fruta 'frutas p!+ >a 
@@ -101,7 +120,7 @@
 	1.0 a!+	| ang zoom
 	0 0 
 	|8 randmax 
-	rot 16 + | fruta
+	rot  | fruta 
 	vci>anim | vel cnt ini 
 	a!+	tsguy a!+			| anim sheet
 	1.0 randmax neg 1.5 - a!+
@@ -119,7 +138,7 @@
 	a!+	| x y 
 	1.0 a!+	| ang zoom
 	0 0 
-	8 randmax 16 +
+	8 randmax 21 + | 16
 	vci>anim | vel cnt ini 
 	a!+	tsguy a!+			| anim sheet
 	1.0 randmax neg 1.5 - a!+
@@ -136,21 +155,44 @@
 |-------------------------- estrellas
 :estrella | v -- 
 	objsprite
-	dup @ -30.0 >? ( 2drop ; ) drop 
-	830.0 swap !
-	; 
+	dup @ -30.0 <? ( drop 830.0 swap ! ; ) 
+	2drop ; 
 	
 :+estrella 
 	'estrella 'estrellas p!+ >a
 	860.0 randmax 30.0 - a!+
 	600.0 randmax a!+
 	1.0 a!+
-	6 3 24 vci>anim 
+	6 3 29 vci>anim | 24
 	rand $fffffffff and or
 	a!+
 	tsguy a!+
 	0.5 randmax 1.0 - a!+
 	0 a!+ 
+	0 a!+ ;
+
+:planeta | v -- 
+	objsprite
+	dup @ -300.0 <? ( drop 1100.0 swap ! ; ) 2drop 
+|	8 + dup @ 
+|	-60.0 <? ( drop 660.0 swap ! ; ) 
+|	660 >? ( drop -60.0 swap ! ; ) 
+|	2drop
+	; 
+	
+:+planeta | n --
+	'planeta 'estrellas p!+ >a
+	1400.0 randmax 300.0 - a!+
+	600.0 randmax a!+
+	1.0 a!+
+	1 0  
+	rot
+	vci>anim 
+	rand $fffffffff and or
+	a!+
+	tsguy a!+
+	0.5 randmax 0.8 - a!+
+	0.25 randmax 0.125 - a!+ 
 	0 a!+ ;
 	
 |--------------- JUEGO	
@@ -177,6 +219,15 @@
 	puntos "%d" ttprint
 	;
 	
+:canios	
+	740 100 2.0 39 tsguy sspritez	
+	740 200 2.0 40 tsguy sspritez	
+	740 300 2.0 41 tsguy sspritez	
+	740 400 2.0 42 tsguy sspritez	
+	740 500 2.0 43 tsguy sspritez	
+	
+	;
+	
 :juego
 	$252850 SDLcls
 	timer.
@@ -185,6 +236,7 @@
 	jugador
 	'frutas p.draw
 	
+	canios
 	puntaje
 	SDLredraw
 
@@ -193,13 +245,19 @@
 		
 	SDLkey
 	>esc< =? ( exit )
-	<a> =? ( 1 100.0 +fruta ) 
-	<s> =? ( 2 300.0 +fruta ) 
-	<d>  =? ( 3 500.0 +fruta ) 
-|	<w> =? ( -2.0 'yv ! )
-|	>w< =? ( 0 'yv ! )
-|	<s> =? ( 2.0 'yv ! )
-|	>s< =? ( 0 'yv ! )	
+	<a> =? ( 22 100.0 +fruta ) 
+	<s> =? ( 26 200.0 +fruta ) 
+	<d>  =? ( 27 300.0 +fruta ) 
+	<f> =? ( 21 400.0 +fruta ) 
+	<g> =? ( 24 500.0 +fruta ) 
+	
+	<1> =? ( 0 'colorestela ! )
+	<2> =? ( 1 'colorestela ! )
+	<3> =? ( 2 'colorestela ! )
+	<4> =? ( 3 'colorestela ! )
+	<5> =? ( 4 'colorestela ! )
+	<6> =? ( 5 'colorestela ! )
+	
 	drop 
 	;
 	
@@ -208,7 +266,7 @@
 	'arcoiris p.clear
 	'frutas p.clear
 	timer<
-	7 3 1 vci>anim 'animacion !
+	7 3 6 vci>anim 'animacion !
 	;
 
 :jugar
@@ -254,9 +312,9 @@
 	50 'arcoiris p.ini
 	200 'frutas p.ini
 	
-	100 'estrellas p.ini
+	120 'estrellas p.ini
 	100 ( 1? +estrella 1 - ) drop
-	
+	5 ( 1? dup 32 + +planeta 1 - ) drop	
 |	musmenu -1 mix_playmusic
 	'menu SDLshow
 	SDLquit ;	
