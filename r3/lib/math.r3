@@ -112,21 +112,18 @@
 ::between | v min max -- -(out)/+(in)
 	pick2 - rot rot - or ;
 
-:sq
-	pick2 <=? ( swap 1 + >r - r> ; ) drop ;
-
-::sqrt. | n -- v
-	1 <? ( drop 0 ; )
-	0 0 rot | root remhi remlo | 31 + bits/2
-	40 ( 1? 1 - >r
-		dup 62 >> $3 and	| ro rh rl rnh
-		rot 2 << or			| ro rl rh
-		swap 2 << swap
-		rot 1 << dup 1 << 1 +		| rl rh ro td
-		sq | rl rh ro
-		swap rot r> )
-    3drop ;
-	
+::sqrt. | n -- v	
+	0 $40000000 | r q b
+	( $40 <>?
+		2dup +	| r q b t
+		pick3 <=? ( 2swap | b t r q
+			drop over -	| b t r-t
+			rot rot | r b t 
+			2dup +
+			rot rot )
+		drop	| r q b
+		rot 1 << rot rot 1 >> ) drop
+	8 >> nip ;	
 	
 | http://www.quinapalus.com/efunc.html
 
