@@ -112,18 +112,8 @@
 ::between | v min max -- -(out)/+(in)
 	pick2 - rot rot - or ;
 
-::sqrt. | n -- v	
-	0 $40000000 | r q b
-	( $40 <>?
-		2dup +	| r q b t
-		pick3 <=? ( 2swap | b t r q
-			drop over -	| b t r-t
-			rot rot | r b t 
-			2dup +
-			rot rot )
-		drop	| r q b
-		rot 1 << rot rot 1 >> ) drop
-	8 >> nip ;	
+::sqrt. | v -- r
+	dup 1.0 ( over <? + 1 >> 2dup 16 <</ ) drop nip ;	
 	
 | http://www.quinapalus.com/efunc.html
 

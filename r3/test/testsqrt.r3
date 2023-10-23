@@ -79,6 +79,10 @@
 		swap rot r> )
     3drop ;
 	
+:sqrt.3
+  dup 1.0 ( over <? + 1 >> 2dup /. ) 
+  rot 2drop ;
+  
 :speedf
 	1 'seed !
 	msec
@@ -89,6 +93,11 @@
 	msec
 	1000000 ( 1? 1000000 randmax sqrt.2 drop 1 - ) drop
 	msec swap - "sqrt.2 %d" .println
+
+	1 'seed !
+	msec
+	1000000 ( 1? 1000000 randmax sqrt.3 drop 1 - ) drop
+	msec swap - "sqrt.3 %d" .println	
 	;
 	
 :test
@@ -99,6 +108,7 @@
 		dup "%f " .print
 		dup sqrt. "%f " .print
 		dup sqrt.2 "%f " .print
+		dup sqrt.3 "%f " .print
 		drop
 		.cr
 		1 - ) drop
