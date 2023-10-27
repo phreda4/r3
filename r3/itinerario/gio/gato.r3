@@ -46,7 +46,7 @@
 
 :gatonocome
 	comiendo 1? ( drop ; ) drop	
-	50 'comiendo !
+	60 'comiendo !
 	7 2 19 vci>anim 'animacion ! ; | 7
 	
 |--------------- ARCOIRIS	
@@ -84,21 +84,25 @@
 	0 'ce !
 	+estela ;
 
-|#listframe ( 22 26 27 21 24 )
-|#listframe ( 1 5 6 0 3 )
-|
-#listframe ( 4 1 0 5 0 2 3 )
 
+#listframe ( 1 0 0 5 2 3 4 )
+
+:nocomefruta
+	gatonocome
+	|sndcomiento sndplay	
+	-1 'puntos +!
+	;
+	
 :comefruta | adr -- 0
 	objframe
 	21 - 'listframe + c@
-	colorestela 
-	"%d %d" .println
-	
+	colorestela 0? ( drop dup )
+|	2dup "%d %d" .println
+	<>? ( drop nocomefruta 0 ; ) drop
 	gatocome 1 'puntos +!
 	sndcomiento sndplay
-	6 randmax 'colorestela !
-	
+	( 6 randmax colorestela =? drop )
+	'colorestela !
 	0
 	;
 	
@@ -211,21 +215,16 @@
 	;
 
 :puntaje
-	$0 ttcolor
-	314 14 ttat
-	puntos "%d" ttprint
-	$FFFFFF ttcolor
-	310 10 ttat
-	puntos "%d" ttprint
+	$000000 ttcolor 314 14 ttat puntos "%d" ttprint
+	$FFFFFF ttcolor 310 10 ttat puntos "%d" ttprint
 	;
 	
 :canios	
-	740 100 2.0 39 tsguy sspritez	
-	740 200 2.0 40 tsguy sspritez	
-	740 300 2.0 41 tsguy sspritez	
-	740 400 2.0 42 tsguy sspritez	
-	740 500 2.0 43 tsguy sspritez	
-	
+	740 100 2.0 42 tsguy sspritez | naranja
+	740 200 2.0 39 tsguy sspritez | rojo
+	740 300 2.0 40 tsguy sspritez | amarillo
+	740 400 2.0 41 tsguy sspritez | violeta
+	740 500 2.0 43 tsguy sspritez | verde
 	;
 	
 :juego
@@ -245,10 +244,10 @@
 		
 	SDLkey
 	>esc< =? ( exit )
-	<a> =? ( 22 100.0 +fruta ) 
-	<s> =? ( 26 200.0 +fruta ) 
-	<d>  =? ( 27 300.0 +fruta ) 
-	<f> =? ( 21 400.0 +fruta ) 
+	<a> =? ( 21 100.0 +fruta ) 
+	<s> =? ( 25 200.0 +fruta ) 
+	<d>  =? ( 26 300.0 +fruta ) 
+	<f> =? ( 27 400.0 +fruta ) 
 	<g> =? ( 24 500.0 +fruta ) 
 	
 	<1> =? ( 0 'colorestela ! )
