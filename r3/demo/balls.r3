@@ -91,7 +91,7 @@
 	"media/img/ball.png" loadimg 'spr_ball !
 	1000 'bubles p.ini
 	'bubles p.clear
-	
+	"<f1> add ball" .println
 	'main SDLshow
 	
 	SDLquit ;
