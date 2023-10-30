@@ -11,7 +11,7 @@
 		
 :main
 	"dbtest" .println
-	( getch 27 <>? drop
+	( getch $1B1001 <>? drop
 		"media/db/test.db" loaddb-i
 		printdb
 		) drop
