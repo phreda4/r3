@@ -74,11 +74,11 @@
 ##aconev 0 0 0 0
 
 |typedef struct _KEY_EVENT_RECORD {
-|  BOOL  bKeyDown; | WORD
-|  WORD  wRepeatCount;
-|  WORD  wVirtualKeyCode; WORD  wVirtualScanCode;
+|  BOOL  bKeyDown; 		| WORD |2
+|  WORD  wRepeatCount;	|	4
+|  WORD  wVirtualKeyCode; WORD  wVirtualScanCode; |8 12
 |  union {
-|    WCHAR UnicodeChar; CHAR  AsciiChar;
+|    WCHAR UnicodeChar; CHAR  AsciiChar; |14 
 |  } uChar;
 |  DWORD dwControlKeyState;
 
@@ -90,8 +90,8 @@
 |typedef struct _COORD { |  SHORT X; |  SHORT Y;
 
 |typedef struct _MOUSE_EVENT_RECORD {
-|  COORD dwMousePosition;
-|  DWORD dwButtonState;
+|  COORD dwMousePosition;	| 2
+|  DWORD dwButtonState;		| 6
 |  DWORD dwControlKeyState;
 |  DWORD dwEventFlags;
 
@@ -255,11 +255,26 @@
 	sprint
 	( c@+ 1? emite ) 2drop ;
 
+|IN
+|ENABLE_ECHO_INPUT 0x0004
+|ENABLE_INSERT_MODE 0x0020
+|ENABLE_LINE_INPUT 0x0002
+|ENABLE_MOUSE_INPUT 0x0010
+|ENABLE_PROCESSED_INPUT 0x0001
+|ENABLE_QUICK_EDIT_MODE 0x0040
+|ENABLE_WINDOW_INPUT 0x0008
+|ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+|OUT
+|ENABLE_PROCESSED_OUTPUT 0x0001
+|ENABLE_WRAP_AT_EOL_OUTPUT 0x0002
+|ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+|DISABLE_NEWLINE_AUTO_RETURN 0x0008
+|ENABLE_LVB_GRID_WORLDWIDE 0x0010
+
 #console-mode
 
 :conmouse
-	stdin $71 SetConsoleMode drop ; 
-
+	stdin $18 SetConsoleMode drop ; 
 |	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
 	
 ::.free
@@ -271,12 +286,7 @@
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
 	
-|	stdin 'console-mode GetConsoleMode drop		
-|	stdin console-mode $1a neg and SetConsoleMode drop | 1a! ENABLE LINE
-|	stdout 'console-mode GetConsoleMode drop	
-|	stdout console-mode $4 or SetConsoleMode drop	
-
-	stdin $21 SetConsoleMode drop
+	stdin 0 SetConsoleMode drop 
 	stdout $7 SetConsoleMode drop	
 	; 
 	

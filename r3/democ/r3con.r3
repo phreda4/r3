@@ -1,11 +1,30 @@
-| TEST r3stack.r3
+| r3con - consola r3
 | PHREDA 2021
 
 ^r3/win/console.r3
 ^r3/system/r3stack.r3
 
+
+##pad * 256
+
+:.char
+	$1000 and? ( drop ; )
+	16 >> 0? ( drop ; )
+	8 =? ( swap 
+		1 - 'pad <? ( 1 + nip ; )
+		swap .emit "1P" .[ ; )
+	dup .emit
+	swap c!+ ;
+	
+::.input | --
+	'pad 
+	( getch $D001C <>? 
+		.char ) drop
+	0 swap c! ;
+
+
 :.stack
-	mark ,printvstk ,eol empty here .println ;
+	mark ,printvstk ,eol empty here .write ;
 
 #.bye 0
 
@@ -59,12 +78,13 @@
 :main
 	.getconsoleinfo 
 	.cls
-	"r3 test vstack - PHREDA 2021" .write .cr
+	"r3con" .write .cr
 	.cr
 	( .bye 0? drop
-		"> " .write .input .sp
+		.stack "> " .write 
+		.input .cr
 		'pad interprete
-		.stack
+		
 		) drop ;
 		
 : main ;
