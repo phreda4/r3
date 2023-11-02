@@ -52,7 +52,7 @@
 	'eventBuffer 4 + w@+ swap w@ | x y
 	conw * + 2 << 'consoleBuffer +
 	$ff randmax 16 << | color
-	$31 or | char
+	pick2 $30 + or | char
 	swap d!
 	rebuffer ;
 	

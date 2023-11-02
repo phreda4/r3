@@ -233,7 +233,7 @@
 	$1000 and? ( drop ; )
 	16 >> 0? ( drop ; )
 	8 =? ( swap 
-		1 - 'pad <? ( 1 + nip ; )
+		1 - 'pad <? ( 2drop 'pad ; )
 		swap .emit "1P" .[ ; )
 	dup .emit
 	swap c!+ ;
