@@ -1,0 +1,68 @@
+^r3/lib/mem.r3
+^r3/lib/parse.r3
+^r3/win/console.r3
+^r3/win/mconsole.r3
+
+|------ Color line
+#colornow 0
+
+:wcolor
+	over c@ 
+	32 =? ( drop ; ) 9 =? ( drop ; )
+	$22 =? ( drop 15 'colornow ! ; )	| $22 " string
+	$5e =? ( drop 3 'colornow ! ; )	| $5e ^  Include
+	$7c =? ( drop 8 'colornow ! ; )	| $7c |	 Comentario
+	$3A =? ( drop 9 'colornow ! ; )	| $3a :  Definicion
+	$23 =? ( drop 13 'colornow ! ; )	| $23 #  Variable
+	$27 =? ( drop 14 'colornow ! ; )	| $27 ' Direccion
+    drop
+	over isNro 1? ( drop 11 'colornow ! ; ) 
+	drop 10 'colornow ! ;
+
+:,tcolor colornow ,fcolor ;
+
+:,ct
+	9 =? ( ,sp ,sp 32 nip ) ,c ;
+	
+:strword
+	,c
+	( c@+ 1?
+		$22 =? (
+			over c@ $22 <>? ( drop ; )
+			,c swap 1 + swap )
+		13 <>?
+		,ct ) drop 1 - 0 ;
+	
+:eline | adr char -- adr
+	0? ( drop 1 - ; ) drop
+	c@+ 10 =? ( drop ; ) drop 1 -
+	
+:endline
+	,c ( c@+ 1? 13 <>? ,ct )	
+	eline ;
+	
+:parseline 
+	0 wcolor drop
+	,tcolor
+	( c@+ 1? 13 <>?  | 0 o 13 sale
+		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
+		32 =? ( wcolor ,tcolor )
+		$22 =? ( strword ) 		| $22 " string
+		$5e =? ( endline ; )	| $5e ^  Include
+		$7c =? ( endline ; )	| $7c |	 Comentario
+		,c
+		) 
+	eline ;
+	
+:drawline | adr line -- line adr'
+	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	swap
+	parseline 
+|	prntcom
+	;
+
+::code-print | scrx scry lines source --
+	0 ( pick2 <? | scrx lines src linen
+		pick4 pick4 pick2 + ,at
+		drawline
+		swap 1 + ) nip 4drop ;

@@ -22,7 +22,10 @@
 
 |--------------------------------
 :FINFO | adr -- adr info
-	dup FDIR 0? ( 2 + ; ) drop 0 ;
+	dup FDIR 1? ( drop 0 ; ) drop
+	dup FNAME
+	".r3" =pos 1? ( 2drop 2 ; ) drop
+	3 ;
 
 :getname | nro -- ""
 	3 << 'files + @ 8 >> 'filen + ;
@@ -356,7 +359,7 @@
 :printfn | n --
 	,sp
 	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+- ." + c@ ,c
+	dup getinfo $3 and "+-  " + c@ ,c
 	,sp getname ,s ,sp
 	;
 

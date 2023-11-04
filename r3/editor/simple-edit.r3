@@ -4,12 +4,8 @@
 ^r3/lib/math.r3
 ^r3/lib/mem.r3
 ^r3/lib/gui.r3
-^r3/lib/print.r3
 ^r3/lib/input.r3
 ^r3/lib/parse.r3
-
-^r3/lib/fontj.r3
-
 ^r3/lib/trace.r3
 
 | ventana de texto

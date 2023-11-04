@@ -3,6 +3,7 @@
 |------------------------
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
+^r3/editor/code-print.r3
 
 #reset 0
 #path * 1024
@@ -20,9 +21,14 @@
 #actual
 #linesv 15
 
+#source 0
+
 |--------------------------------
 :FINFO | adr -- adr info
-	dup FDIR 0? ( 2 + ; ) drop 0 ;
+	dup FDIR 1? ( drop 0 ; ) drop
+	dup FNAME
+	".r3" =pos 1? ( 2drop 2 ; ) 2drop
+	3 ;
 
 :getname | nro -- ""
 	3 << 'files + @ 8 >> 'filen + ;
@@ -155,9 +161,16 @@
 	actual dup getlvl makepath
 	actual getinfo 1 >? ( remlastpath ) drop
 	actual
-	dup getinfo $3 and 2 <? ( 2drop "" 'name strcpy ; ) drop
+	dup getinfo $3 and 
+	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
+	3 =? ( 2drop getname 'name strcpy 0 'source ! ; ) 
+	drop
 	getname 'name strcpy
-	;
+	here $ffff + dup 'source ! 
+	'name 'path "%s/%s" sprint load 
+	0 swap ! 
+	;	
+	
 
 |---------------------
 :traverse | adr -- adrname
@@ -403,14 +416,15 @@
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+    dup getinfo $3 and |dup "(%d)" ,print
+	3 << 'filecolor + @ ,fc 
 	;
 
 :printfn | n --
 	,sp
 	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+- ." + c@ ,c
-	,sp getname ,s ,sp
+	dup getinfo $3 and "+-  " + c@ ,c ,sp 
+	getname ,s ,sp
 	;
 
 :drawl | n --
@@ -418,12 +432,17 @@
 	
 :drawtree
 	1 2 ,at
-	0  ( linesv <?
+	0 ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
 		,reset
     	drawl 
 		1 + ) drop ;
+
+:drawsrc	
+	source 0? ( drop ; ) 
+	>r 30 2 linesv r> code-print
+	;
 	
 :screen
 	mark
@@ -432,7 +451,7 @@
 	1 1 ,at	" r3 " ,s
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	drawtree
-	
+	drawsrc
 	,bblue ,white	
 	0 linesv 2 + ,at 
 	'name 'path " %s/%s  " ,print ,eline 
