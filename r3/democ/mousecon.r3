@@ -4,14 +4,11 @@
 ^r3/win/console.r3
 ^r3/win/kernel32.r3
 
-#conw 80 
+#conw 113 
 #conh 28 
-
 #conwh 0
 #writeArea [ 0 0 ]
 
-#eventBuffer 0 0 0 0 0
-#nr
 #appIsRunning 1
 #consoleBuffer * $ffff 
 
@@ -39,17 +36,16 @@
 	"Mouse Console Draw" SetConsoleTitle
 	;
 	
-
 |---------------------	
 :evkey	
-	'eventBuffer 14 + w@
-	$1B =? ( 0 'appIsRunning ! ) | esc
+	evtkey
+	$1B1001 =? ( 0 'appIsRunning ! ) | esc
 	$43 =? ( clsbuffer )
 	drop 
 	;
 
 :putpixel
-	'eventBuffer 4 + w@+ swap w@ | x y
+	evtmxy 
 	conw * + 2 << 'consoleBuffer +
 	$ff randmax 16 << | color
 	pick2 $30 + or | char
@@ -57,25 +53,17 @@
 	rebuffer ;
 	
 :evmouse
-	'eventBuffer 8 + d@
+	evtmb
 	$0 <>? ( putpixel )
 	drop ;
-		
+	
 :eventos
-	stdin 'eventBuffer 1 'nr ReadConsoleInput |(rHnd, eventBuffer, numEvents, &numEventsRead);
-	eventBuffer $ff and
+	getevt
 	$1 =? ( evkey )
 	$2 =? ( evmouse )
-|	$4 =? ( evsize )
-|	$8 =? ( evmenu )
-|	$10 =? ( evfocus )
-	drop
-	;
+	drop ;
 	
-:
-	inicon
+:	inicon
 	( appIsRunning 1? drop
-		stdin 'nr GetNumberOfConsoleInputEvents
-		nr 1? ( eventos ) drop
+		eventos
 		) drop ;
-	

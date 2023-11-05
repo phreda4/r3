@@ -79,6 +79,13 @@
 	@ ex 
 	>>sp interprete ;
 	
+#line * 2048	
+:inputline
+	|( evtcon 0? drop )
+	evtcon
+	"%d " .print
+	;
+	
 :main
 	.getconsoleinfo 
 	.cls
@@ -86,7 +93,8 @@
 	.cr
 	( .bye 0? drop
 		.stack
-		"> " .write .input .cr
+		"> " .write 
+		inputline
 		'pad interprete		
 		) drop ;
 		

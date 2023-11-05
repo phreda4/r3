@@ -40,16 +40,18 @@
 	31 <? ( drop ; )
 	modo ex ;
 
-:padinput
-	inipad
-	( vscreen ( inkey 0? drop ) 
-		$D001C <>? | enter
-		char ) drop ;
+
 
 :vscreen
 	1 10 .at ">" .write 'pad .write 
 	2 pad> 'pad - + 10 .at ;
 
+:padinput
+	inipad
+	( vscreen ( inkey 0? drop ) 
+		$D001C <>? | enter
+		char ) drop ;
+		
 |--------------
 :.viewords | adr --
 	( dup c@ 1? drop 

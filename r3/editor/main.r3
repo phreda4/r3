@@ -3,6 +3,7 @@
 |------------------------
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
+^r3/editor/code-print.r3
 
 #reset 0
 #path * 1024
@@ -20,11 +21,13 @@
 #actual
 #linesv 15
 
+#source 0
+
 |--------------------------------
 :FINFO | adr -- adr info
 	dup FDIR 1? ( drop 0 ; ) drop
 	dup FNAME
-	".r3" =pos 1? ( 2drop 2 ; ) drop
+	".r3" =pos 1? ( 2drop 2 ; ) 2drop
 	3 ;
 
 :getname | nro -- ""
@@ -158,9 +161,16 @@
 	actual dup getlvl makepath
 	actual getinfo 1 >? ( remlastpath ) drop
 	actual
-	dup getinfo $3 and 2 <? ( 2drop "" 'name strcpy ; ) drop
+	dup getinfo $3 and 
+	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
+	3 =? ( 2drop getname 'name strcpy 0 'source ! ; ) 
+	drop
 	getname 'name strcpy
-	;
+	here $ffff + dup 'source ! 
+	'name 'path "%s/%s" sprint load 
+	0 swap ! 
+	;	
+	
 
 |---------------------
 :traverse | adr -- adrname
@@ -202,45 +212,74 @@
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
 	
-	.reset
 	'path
 |WIN| "r3 ""%s/%s"""
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
 	sprint 
-	.masb	
+	.reset .masb	
 	sys
 	.alsb
 	;
 
-|--------------------------------
-:editfile
-	actual -? ( drop ; )
-	getinfo $3 and 2 <>? ( drop ; ) drop
-	.reset
-	actual getname 'path "%s/%s" sprint 'name strcpy
-	'name 1024 "mem/main.mem" save
-	
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
-	
+:r3info
+|WIN| "r3 r3/editor/r3info.r3"
+|LIN| "./r3lin r3/editor/r3info.r3"
+|RPI| "./r3rpi r3/editor/r3info.r3"
+	sys ;
+
+:r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
-	 sys
-	;
-
+	sys ;
+	
 |--------------------------------
-
-:remaddtxt | --
-	'name ".r3" =pos 1? ( drop ; ) drop
-	".r3" swap strcat
+:editfile
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/main.mem" save
+	
+	r3info
+	|cerror 1? ( drop ; ) drop	
+	r3edit
 	;
 
+:editmap
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/mapedit.mem" save
+
+|WIN| "r3 r3/editor/map-edit.r3"
+|LIN| "./r3lin r3/editor/map-edit.r3"
+|RPI| "./r3rpi r3/editor/map-edit.r3"
+|MAC| "./r3mac r3/editor/map-edit.r3"
+	sys
+	;
+
+:editbmap
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/bmapedit.mem" save
+
+|WIN| "r3 r3/editor/bmap-edit.r3"
+|LIN| "./r3lin r3/editor/bmap-edit.r3"
+|RPI| "./r3rpi r3/editor/bmap-edit.r3"
+|MAC| "./r3mac r3/editor/bmap-edit.r3"
+	sys
+	;
+	
+:f2edit
+	actual -? ( drop ; )
+	getinfo $3 and 2 <>? ( drop ; ) drop
+	actual getname 
+	".r3" =pos 1? ( 2drop editfile ; ) drop
+	".map" =pos 1? ( 2drop editmap ; ) drop
+	".bmap" =pos 1? ( 2drop editbmap ; ) drop
+	| ".png"
+	drop
+	;
+	
+|--------------------------------
 |===================================
 #newprg1 "| r3 sdl program
 ^r3/win/sdl2gfx.r3
@@ -262,10 +301,38 @@
 	
 : main ;"
 |===================================
+:createmap
+	'path "%s/%s" sprint 'name strcpy
+	mark
+	0 ,q
+	10 , 10 ,
+	100 ( 1? 1 - 0 ,c ) drop
+	0 ,c
+	'name savemem
+	empty	
 
+	'name 1024 "mem/mapedit.mem" save
+	'name 1024 "mem/menu.mem" save
+
+|WIN| "r3 r3/editor/map-edit.r3"
+|LIN| "./r3lin r3/editor/map-edit.r3"
+|RPI| "./r3rpi r3/editor/map-edit.r3"
+|MAC| "./r3mac r3/editor/map-edit.r3"
+	sys
+
+	rebuild
+	loadm
+	;
+
+	
 :createfile
-	remaddtxt
-	'name 'path "%s/%s" sprint 'name strcpy
+	'name 
+	".map" =pos 1? ( drop createmap ; ) drop
+	".r3" =pos 0? ( ".r3" pick2 strcat ) drop
+
+|	remaddtxt
+	|'name 
+	'path "%s/%s" sprint 'name strcpy
 
 	mark
 	'newprg1 ,s
@@ -275,11 +342,7 @@
 	'name 1024 "mem/main.mem" save
 	'name 1024 "mem/menu.mem" save
 
-|WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/editor/code-edit.r3"
-|RPI| "./r3rpi r3/editor/code-edit.r3"
-|MAC| "./r3mac r3/editor/code-edit.r3"
-	sys
+	r3edit
 
 	rebuild
 	loadm
@@ -353,41 +416,45 @@
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+    dup getinfo $3 and |dup "(%d)" ,print
+	3 << 'filecolor + @ ,fc 
 	;
 
 :printfn | n --
 	,sp
 	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+-  " + c@ ,c
-	,sp getname ,s ,sp
+	dup getinfo $3 and "+-  " + c@ ,c ,sp 
+	getname ,s ,sp
 	;
 
 :drawl | n --
-	,sp colorfile printfn ,reset ,eline ;
+	,sp colorfile printfn ,nl ;
 	
 :drawtree
 	1 2 ,at
-	0  ( linesv <?
+	0 ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
-    	drawl ,nl 
+		,reset
+    	drawl 
 		1 + ) drop ;
+
+:drawsrc	
+	source 0? ( drop ; ) 
+	>r 30 2 linesv r> code-print
+	;
 	
 :screen
 	mark
 	,hidec
-	,reset ,bblue ,white
+	,reset ,cls ,bblue 
 	1 1 ,at	" r3 " ,s
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
-	
-	,reset
 	drawtree
-	
+	drawsrc
 	,bblue ,white	
 	0 linesv 2 + ,at 
 	'name 'path " %s/%s  " ,print ,eline 
-	
 	0 actual pagina - 2 + ,at
 	,showc
 	memsize type	| type buffer
@@ -405,10 +472,10 @@
 	$4f =? ( fend screen )
 	
 	$3b =? ( fenter screen )
-	$3c =? ( editfile screen )
+	$3c =? ( f2edit screen ) |editfile screen )
 	$3d =? ( newfile screen )
+	|$3e =? ( newfolder screen ) | f4 - new folder
 	drop 
-|	screen
 	;
 
 
@@ -429,5 +496,4 @@
 	savem		
 	;
 
-	
 : main ;

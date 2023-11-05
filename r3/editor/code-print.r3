@@ -54,15 +54,8 @@
 		) 
 	eline ;
 	
-:drawline | adr line -- line adr'
-	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
-	swap
-	parseline 
-|	prntcom
-	;
-
 ::code-print | scrx scry lines source --
 	0 ( pick2 <? | scrx lines src linen
 		pick4 pick4 pick2 + ,at
-		drawline
+		swap parseline 
 		swap 1 + ) nip 4drop ;
