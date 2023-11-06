@@ -1,4 +1,4 @@
-|| Conway Game of Life
+|| Conway Game of Lifin buffer
 | PHREDA 2021
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
@@ -31,7 +31,6 @@
 	
 	clsbuffer
 	rebuffer
-	
 	"conway life" SetConsoleTitle
 	;	
 	

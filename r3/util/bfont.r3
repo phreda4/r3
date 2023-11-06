@@ -70,6 +70,7 @@
 ::gotox | x --
 	wp * 'dp d! ;
 ::bcr
+	0 'dp d!
 	hp 'dp 4 + d+! ;
 ::bsp
 	wp 'dp d+! ;

@@ -82,7 +82,7 @@
 #line * 2048	
 :inputline
 	|( evtcon 0? drop )
-	evtcon
+	getevt
 	"%d " .print
 	;
 	

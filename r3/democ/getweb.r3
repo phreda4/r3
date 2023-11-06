@@ -13,7 +13,7 @@ dup here - 'cnt !
 
 .cls
 here count type
-
+.cr
 cnt " largo:%d " .println
-
+.input
 ;
