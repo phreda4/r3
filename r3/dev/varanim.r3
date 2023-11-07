@@ -7,36 +7,41 @@
 |
 ^r3/win/console.r3
 ^r3/util/penner.r3
+
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
+^r3/lib/rand.r3
 
 |.... time control
 #prevt
 
 #timenow
+| time
 #timeline #timeline< #timeline> 
+| el timenow
 #exelist #exelist>
-#exevar #exevar>
+| ini fin ease ms | 'VAR
+#exevar #exevar> | el
 
 ::timeline.reset
-	0 'timenow ! timeline 'timeline< ! ;
-	
-::timeline.clear
-	timeline 'timeline> ! timeline.reset ;
+	0 'timenow ! 
+	timeline dup 'timeline< ! 'timeline> ! 
+	exelist 'exelist> !
+	exevar 'exevar> !
+	;
 
 ::timeline.ini
-	here 'timeline ! 
-	$fff 'here +! 
-	here dup 'exelist ! 'exelist> !
-	$fff 'here +!
-	here dup 'exevar ! 'exevar> !
-	$3fff 'here +!
-	timeline.clear ;
+	msec 'prevt ! 
+	here
+	dup 'timeline ! $fff +
+	dup 'exelist ! $fff +
+	dup 'exevar ! $3fff + 
+	'here !
+	timeline.reset ;
 
 :searchless | time adr --time adr
 	( 8 - timeline >=?
-		dup @	| time adr time
-		$ffffffff and
+		dup @ $ffffffff and | time adr time
 		pick2 <=? ( drop 8 + ; )
 		drop ) 8 + ;
 
@@ -59,7 +64,6 @@
 
 |-----
 | timestart duracion ease scale
-	
 :addint | 'var ini fin ease dur. -- nro
 	1000 *. 4 >> $fffff and	| duracion ms
 	swap $f and 20 << or	| ease
@@ -68,57 +72,41 @@
 	exevar> !+ !+ 'exevar> !
 	exevar> exevar - 4 >> 1 -
 	;
-
 	
-#t0
-| interpolate
-| x = 0.0 ... 1.0
-| x = ease(x)
-| x = xmin + xmax-xmin * x
-
-:exlineal | f m
-	;
-
 :delex | 'list var X -- 'list
 	48 >> swap @ !	| set fin
-	8 -
-	exelist> 8 - dup 'exelist> !
-	@ over !
-	;
+	8 - exelist> 8 - dup 'exelist> !
+	@ over ! ;
 	
 :execinterp | var --
-	timenow over $ffffffff and - |'t0 ! | actual-inicio
-	swap 32 >> 4 << exevar + 	| T0 VAR
+	timenow over $ffffffff and -	| actual-inicio
+	swap 32 >> 4 << exevar +		| T0 VAR
 	@+ rot							| var X t0
 	1.0 pick2 $fffff and 4 << */	| var X t0 tmax
 	1.0 >=? ( drop delex ; )		| var X f x 	
-	over 20 >> $f and drop | fn f->f
-	
+	over 20 >> easem				| fn f->f
 	over 24 << 48 >> rot 48 >> over -  | var f ini len
-	rot *. +
-	swap @ !
+	rot *. + swap @ !
 	;
-	
-:exenow	
-	exelist ( exelist> <?  
-		@+ execinterp
-		) drop ;
-	
-|....
-:vease
-	;
-	
-::+vanim | v2 v1 'ex start --
-	+tline ;
-	
-::+vexe | 'vector start --
-	+tline ;
 	
 ::vupdate | --
 	msec dup prevt - swap 'prevt ! 'timenow +!
 	tictline
-	exenow
-	;
+	exelist 
+	( exelist> <?  
+		@+ execinterp
+		) drop 
+	exelist exelist> <? ( drop ; ) drop
+	timeline< timeline> <? ( drop ; ) drop
+	timeline.reset
+	;	
+
+|....
+::+vanim | 'ex start --
+	+tline ;
+	
+::+vexe | 'vector start --
+	+tline ;
 	
 |*********DEBUG
 :dumptline
@@ -131,20 +119,27 @@
 		) drop bcr ;
 
 |------------------
-
-#var1
-#var2
-#cc
-
-:ex1 1 'var1 +! ;
+#var1 30
+#var2 40
 	
+:resetyl
+	timeline.reset
+	'var1 100 600 15 randmax 2.0 addint 0.0 +vanim  
+	'var1 600 100 15 randmax 4.0 addint 2.0 +vanim  
+	'var2 100 500 15 randmax 4.0 addint 0.0 +vanim  
+	'var2 500 100 15 randmax 2.0 addint 4.0 +vanim  
+	;
+
 :main
 	$0 SDLcls
 	
 	$ff00 bcolor
-	0 0 bat "test" bprint bcr
+	0 0 bat "test varanim" bprint bcr
+	
 	var2 var1 "%d %d" bprint bcr
 	bcr
+	$ff00 sdlcolor
+	var1 var2 40 40 sdlfrect
 	
 	dumptline
 	vupdate
@@ -153,21 +148,12 @@
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( timeline.reset )
-	<f2> =? ( 
-	'var1 30 10 0 2.0 addint 2.0 +vanim  
-	'var1 10 30 0 4.0 addint 4.0 +vanim  )
-|	<f3> =? ( 'ex1 3.0 +vexe )
+	<f2> =? ( resetyl 'resetyl 6.0 +vexe )
 	drop ;
 	
 :start
-
- 500 $100000000 2000 / dup "%h " .print 16 *>> "%f" .println
- 500 1.0 2000 */ "%f" .println
- 1000 1.0 2000 */ "%f" .println
- 1500 1.0 2000 */ "%f" .println
- 2000 1.0 2000 */ "%f" .println
 	timeline.ini
-	msec 'prevt ! 
+	
 	
 	'main SDLshow 
 	;

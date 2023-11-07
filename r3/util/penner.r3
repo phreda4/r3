@@ -70,6 +70,17 @@ Bou_In Bou_Out Bou_InOut
 ::ease | t nro -- t'
 	0? ( drop ; ) 3 << 'easet + @ ex ;
 
+#easetm 0
+Sin_In Sin_Out Sin_InOut
+Exp_In Exp_Out Exp_InOut
+Bac_In Bac_Out Bac_InOut
+Ela_In Ela_Out Ela_InOut
+Bou_In Bou_Out Bou_InOut
+
+::easem | t nro -- t'
+	$f and 0? ( drop ; ) 3 << 'easetm + @ ex ;
+
+
 ::catmullRom | p0 p1 p2 p3 t -- v
 	>r pick2 - 1 >> 	| p0 p1 p2 v1
 	>r rot over
