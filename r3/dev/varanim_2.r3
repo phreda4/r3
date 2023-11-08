@@ -1,8 +1,10 @@
 | variable animator
 | PHREDA 2022
-| ---start 1.0 seconds, go from 10 to 100 in 2.0 seconds with QUAD_IN penner function
-| +vanim | 100 10 'Quad_In 2.0 1.0 -- 
-| +exe | 'exe start --
+| ---start 1.0 seconds, go from 10 to 100 in 2.0 seconds with 1 penner function
+| +vanim | 100 10 1 2.0 1.0 -- 
+| ---exe in 3.0 seconds
+| +vexe | 'exe 3.0 --
+| ---update 
 | vupdate | --
 |
 ^r3/win/console.r3
@@ -20,7 +22,7 @@
 #timeline #timeline< #timeline> 
 | el timenow
 #exelist #exelist>
-| ini fin ease ms | 'VAR
+| ini | fin | ease ms | 'VAR
 #exevar #exevar> | el
 
 ::timeline.reset
@@ -35,7 +37,7 @@
 	here
 	dup 'timeline ! $fff +
 	dup 'exelist ! $fff +
-	dup 'exevar ! $3fff + 
+	dup 'exevar ! $7fff + 
 	'here !
 	timeline.reset ;
 
@@ -63,30 +65,26 @@
 	'timeline< ! ;
 
 |-----
-| timestart duracion ease scale
-:addint | 'var ini fin ease dur. -- nro
-	1000 *. 4 >> $fffff and	| duracion ms
-	swap $f and 20 << or	| ease
-	swap $fffff and 24 << or | fin
-	swap $fffff and 48 << or | ini
-	exevar> !+ !+ 'exevar> !
-	exevar> exevar - 4 >> 1 -
-	;
-	
-:delex | 'list var X -- 'list
-	48 >> swap @ !	| set fin
+:delex | 'list var -- 'list
+	8 + @+ swap @ !  | set fin
+	8 - exelist> 8 - dup 'exelist> !
+	@ over ! ;
+
+:delvec | 'list -- 'list
 	8 - exelist> 8 - dup 'exelist> !
 	@ over ! ;
 	
-:execinterp | var --
-	timenow over $ffffffff and -	| actual-inicio
-	swap 32 >> 4 << exevar +		| T0 VAR
-	@+ rot							| var X t0
-	1.0 pick2 $fffff and 4 << */	| var X t0 tmax
-	1.0 >=? ( drop delex ; )		| var X f x 	
-	over 20 >> easem				| fn f->f
-	over 24 << 48 >> rot 48 >> over -  | var f ini len
-	rot *. + swap @ !
+	
+:execinterp | 'list var -- 'list
+	timenow over $ffffffff and -	| actual-inicio=t0
+	swap 32 >> 5 << exevar +		| 'list T0 VAR
+	@+ 0? ( drop @ ex drop delvec ; )
+	rot							| var X t0
+	1.0 pick2 $ffffffff and */		| var X t0 tmax
+	1.0 >=? ( 2drop delex ; )		| var X f x 	
+	swap 32 >> easem				| fn f->f
+	swap >a a@+ a@+ over - 
+	rot *. + a@ !
 	;
 	
 ::vupdate | --
@@ -102,11 +100,24 @@
 	;	
 
 |....
+| timestart duracion ease scale
+| ff00000000000000
+:addint | 'var ini fin ease dur. -- nro
+	1000 *. $ffffffff and	| duracion ms
+	swap $ff and 32 << or	| ease
+	exevar> !+ !+ !+ !+ 'exevar> !
+	exevar> exevar - 5 >> 1 - ;
+	
+:addexe | 'vector -- nro
+	dup dup 0
+	exevar> !+ !+ !+ !+ 'exevar> !
+	exevar> exevar - 5 >> 1 - ;
+
 ::+vanim | 'ex start --
-	+tline ;
+	>r addint r> +tline ;
 	
 ::+vexe | 'vector start --
-	+tline ;
+	swap addexe swap +tline ;
 	
 |*********DEBUG
 :dumptline
@@ -124,10 +135,10 @@
 	
 :ani1t
 	timeline.reset
-	'var1 100 600 15 randmax 2.0 addint 0.0 +vanim  
-	'var1 600 100 15 randmax 4.0 addint 2.0 +vanim  
-	'var2 100 500 15 randmax 4.0 addint 0.0 +vanim  
-	'var2 500 100 15 randmax 2.0 addint 4.0 +vanim  
+	'var1 100 600 15 randmax 2.0 0.0 +vanim  
+	'var1 600 100 15 randmax 4.0 2.0 +vanim  
+	'var2 100 500 15 randmax 4.0 0.0 +vanim  
+	'var2 500 100 15 randmax 2.0 4.0 +vanim  
 	;
 
 :ani1
@@ -141,10 +152,12 @@
 	timeline.reset
 	'varx >a
 	0 ( $10 <? 
-		a> 100 700 pick3 3.0 addint 0.0 +vanim
-		a> 700 100 pick3 3.0 addint 3.0 +vanim
+		a> 700 100 pick3 3.0 0.0 +vanim
+		a> 100 700 pick3 3.0 3.1 +vanim
 		8 a+
-		1 + ) drop ;
+		1 + ) drop 
+	|'exit 6.8 +vexe 
+	;
 
 :ani2
 	$ff sdlcolor
@@ -162,7 +175,7 @@
 |	ani1
 	ani2
 	
-	dumptline
+|	dumptline
 	vupdate
 	
 	SDLredraw	
