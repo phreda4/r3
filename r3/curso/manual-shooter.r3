@@ -196,9 +196,6 @@
 
 	SDLkey 
 	>esc< =? ( exit )
-	<le> =? ( -1.0 'xv ! ) >le< =? ( 0 'xv ! )
-	<ri> =? ( 1.0 'xv ! ) >ri< =? ( 0 'xv ! )
-	<esp> =? ( +disparo )
 	drop ;
 	
 :main

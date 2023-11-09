@@ -20,41 +20,24 @@
 ::,fc "38;5;%dm" sprint ,[ ; | Set foreground color.
 ::,bc  "48;5;%dm" sprint ,[ ; 
 
-
-::,Black "30m" ,[ ;
-::,Red "31m" ,[ ;
-::,Green "32m" ,[ ;
-::,Yellow "33m" ,[ ;
-::,Blue "34m" ,[ ;
-::,Magenta "35m" ,[ ;
-::,Cyan "36m" ,[ ;
-::,White "37m" ,[ ;
-::,Blackl "30;1m" ,[ ;
-::,Redl "31;1m" ,[ ;
-::,Greenl "32;1m" ,[ ;
-::,Yellowl "33;1m" ,[ ;
-::,Bluel "34;1m" ,[ ;
-::,Magental "35;1m" ,[ ;
-::,Cyanl "36;1m" ,[ ;
-::,Whitel "37;1m" ,[ ;
+::,Black "30m" ,[ ; ::,Red "31m" ,[ ;
+::,Green "32m" ,[ ; ::,Yellow "33m" ,[ ;
+::,Blue "34m" ,[ ;  ::,Magenta "35m" ,[ ;
+::,Cyan "36m" ,[ ;  ::,White "37m" ,[ ;
+::,Blackl "30;1m" ,[ ; ::,Redl "31;1m" ,[ ;
+::,Greenl "32;1m" ,[ ; ::,Yellowl "33;1m" ,[ ;
+::,Bluel "34;1m" ,[ ; ::,Magental "35;1m" ,[ ;
+::,Cyanl "36;1m" ,[ ; ::,Whitel "37;1m" ,[ ;
 	
-::,BBlack "40m" ,[ ;
-::,BRed "41m" ,[ ;
-::,BGreen "42m" ,[ ;
-::,BYellow "43m" ,[ ;
-::,BBlue "44m" ,[ ;
-::,BMagenta "45m" ,[ ;
-::,BCyan "46m" ,[ ;
-::,BWhite "47m" ,[ ;
-::,BBlackl "40;1m" ,[ ;
-::,BRedl "41;1m" ,[ ;
-::,BGreenl "42;1m" ,[ ;
-::,BYellowl "43;1m" ,[ ;
-::,BBluel "44;1m" ,[ ;
-::,BMagental "45;1m" ,[ ;
-::,BCyanl "46;1m" ,[ ;
+::,BBlack "40m" ,[ ; ::,BRed "41m" ,[ ;
+::,BGreen "42m" ,[ ; ::,BYellow "43m" ,[ ;
+::,BBlue "44m" ,[ ; ::,BMagenta "45m" ,[ ;
+::,BCyan "46m" ,[ ; ::,BWhite "47m" ,[ ;
+::,BBlackl "100m" ,[ ; ::,BRedl "101m" ,[ ;
+::,BGreenl "102m" ,[ ; ::,BYellowl "103m" ,[ ;
+::,BBluel "104m" ,[ ; ::,BMagental "105m" ,[ ;
+::,BCyanl "106m" ,[ ; ::,BWhitel "107m" ,[ ;
 
-::,BWhitel "47;1m" ,[ ;
 ::,Bold "1m" ,[ ;
 ::,Under "4m" ,[ ;
 ::,Rever "7m" ,[ ;

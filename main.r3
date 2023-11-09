@@ -270,7 +270,7 @@
 	
 :f2edit
 	actual -? ( drop ; )
-	getinfo $3 and 2 <>? ( drop ; ) drop
+	|getinfo $3 and 2 <>? ( drop ; ) drop
 	actual getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop
@@ -416,7 +416,7 @@
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and |dup "(%d)" ,print
+    dup getinfo $3 and
 	3 << 'filecolor + @ ,fc 
 	;
 
@@ -441,6 +441,7 @@
 
 :drawsrc	
 	source 0? ( drop ; ) 
+	235 ,bc 
 	>r 30 2 linesv r> code-print
 	;
 	

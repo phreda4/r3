@@ -57,5 +57,5 @@
 ::code-print | scrx scry lines source --
 	0 ( pick2 <? | scrx lines src linen
 		pick4 pick4 pick2 + ,at
-		swap parseline 
+		swap parseline ,eline
 		swap 1 + ) nip 4drop ;

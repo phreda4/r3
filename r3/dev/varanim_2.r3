@@ -2,7 +2,7 @@
 | PHREDA 2022
 | ---start 1.0 seconds, go from 10 to 100 in 2.0 seconds with 1 penner function
 | +vanim | 100 10 1 2.0 1.0 -- 
-| ---exe in 3.0 seconds
+| ---exe in 3.0 seconds (only one in one time!)
 | +vexe | 'exe 3.0 --
 | ---update 
 | vupdate | --
@@ -32,6 +32,10 @@
 	exelist 'exelist> !
 	exevar 'exevar> !
 	;
+
+::vrew
+	0 'timenow ! 
+	timeline dup 'timeline< ! 'timeline> ! ;
 
 ::timeline.ini
 	here
@@ -65,20 +69,19 @@
 	'timeline< ! ;
 
 |-----
-:delex | 'list var -- 'list
+:delex | 'list var -- 'list | ..
 	8 + @+ swap @ !  | set fin
-	8 - exelist> 8 - dup 'exelist> !
-	@ over ! ;
 
 :delvec | 'list -- 'list
 	8 - exelist> 8 - dup 'exelist> !
 	@ over ! ;
-	
+
+#exepost 
 	
 :execinterp | 'list var -- 'list
 	timenow over $ffffffff and -	| actual-inicio=t0
 	swap 32 >> 5 << exevar +		| 'list T0 VAR
-	@+ 0? ( drop @ ex drop delvec ; )
+	@+ 0? ( drop nip @ 'exepost ! delvec ; )
 	rot							| var X t0
 	1.0 pick2 $ffffffff and */		| var X t0 tmax
 	1.0 >=? ( 2drop delex ; )		| var X f x 	
@@ -90,10 +93,10 @@
 ::vupdate | --
 	msec dup prevt - swap 'prevt ! 'timenow +!
 	tictline
+	0 'exepost !
 	exelist 
-	( exelist> <?  
-		@+ execinterp
-		) drop 
+	( exelist> <? @+ execinterp ) drop 
+	exepost 1? ( ex ; ) drop
 	exelist exelist> <? ( drop ; ) drop
 	timeline< timeline> <? ( drop ; ) drop
 	timeline.reset
@@ -153,12 +156,14 @@
 	'varx >a
 	0 ( $10 <? 
 		a> 700 100 pick3 3.0 0.0 +vanim
-		a> 100 700 pick3 3.0 3.1 +vanim
+		a> 100 700 pick3 3.0 3.5 +vanim
 		8 a+
 		1 + ) drop 
 	|'exit 6.8 +vexe 
+	'ani2t 7.0 +vexe 
 	;
 
+	
 :ani2
 	$ff sdlcolor
 	'varx 

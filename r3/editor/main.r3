@@ -416,7 +416,7 @@
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and |dup "(%d)" ,print
+    dup getinfo $3 and
 	3 << 'filecolor + @ ,fc 
 	;
 
@@ -441,6 +441,7 @@
 
 :drawsrc	
 	source 0? ( drop ; ) 
+	235 ,bc 
 	>r 30 2 linesv r> code-print
 	;
 	

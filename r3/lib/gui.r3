@@ -83,6 +83,15 @@
 	drop nip ex ;
 
 
+::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
+	1 'id +!
+	SDLb 0? ( hotnow id =? ( 2drop nip nip ex ; ) nip 4drop ; ) drop
+	hotnow 1? ( id <>? ( 4drop ; ) ) drop | solo 1
+	in? 0? ( id hotnow =? ( 'hot ! 2drop nip ex ; ) nip 4drop ; ) drop
+	id dup 'hot !
+	hotnow <>? ( 3drop ex ; )
+	2drop nip ex ;
+
 |-- mapa
 ::guiMap | 'dn 'move 'up --
 	1 'id +!

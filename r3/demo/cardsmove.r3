@@ -61,16 +61,6 @@
 	1.0 randmax 0.5 - a!+ 	| vy
 |	0.002 randmax 0.001 - 32 <<  a!			| vrz
 	;
-|--------------------
-:cardinside | adr -- adr
-	dup >a
-	a@+ int. a@+ int.	| x y
-	a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@+ a@+ sspriterz
-	dup 40 + @ over +!
-	dup 48 + @ over 8 + +!
-	dup 56 + @ over 16 + +!
-	;
 
 |--------------------	
 :fillcards
