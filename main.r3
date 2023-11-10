@@ -163,7 +163,7 @@
 	actual
 	dup getinfo $3 and 
 	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
-	3 =? ( 2drop getname 'name strcpy 0 'source ! ; ) 
+	3 =? ( drop getname 'name strcpy 0 'source ! ; ) 
 	drop
 	getname 'name strcpy
 	here $ffff + dup 'source ! 

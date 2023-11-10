@@ -163,7 +163,7 @@
 	actual
 	dup getinfo $3 and 
 	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
-	3 =? ( 2drop getname 'name strcpy 0 'source ! ; ) 
+	3 =? ( drop getname 'name strcpy 0 'source ! ; ) 
 	drop
 	getname 'name strcpy
 	here $ffff + dup 'source ! 
@@ -270,7 +270,7 @@
 	
 :f2edit
 	actual -? ( drop ; )
-	getinfo $3 and 2 <>? ( drop ; ) drop
+	|getinfo $3 and 2 <>? ( drop ; ) drop
 	actual getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop

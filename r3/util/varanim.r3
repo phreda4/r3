@@ -1,5 +1,5 @@
 | variable animator
-| PHREDA 2022
+| PHREDA 2023
 |
 | vaini | max --
 | vareset | -- 
@@ -10,16 +10,10 @@
 | ---update 
 | vupdate | --
 |
-^r3/win/console.r3
 ^r3/util/penner.r3
-
-^r3/win/sdl2gfx.r3
-^r3/util/bfont.r3
-^r3/lib/rand.r3
 
 |.... time control
 #prevt
-
 #timenow
 | time
 #timeline #timeline< #timeline> 
@@ -75,7 +69,6 @@
 |-----
 :delex | 'list var -- 'list | ..
 	8 + @+ swap @ !  | set fin
-
 :delvec | 'list -- 'list
 	8 - exelist> 8 - dup 'exelist> !
 	@ over ! ;
@@ -120,84 +113,3 @@
 	
 ::+vexe | 'vector start --
 	swap dup dup 0 +ev swap +tline ;
-	
-|*********DEBUG
-:dumptline
-	timenow "%d " bprint
-	timeline< timeline - 4 >> "%d" bprint bcr
-	timeline
-	( timeline> <?
-		timeline< =? ( ">" bprint )
-		@+ "%h " bprint
-		) drop bcr ;
-
-|------------------
-#var1 30
-#var2 40
-	
-:ani1t
-	vareset
-	'var1 100 600 15 randmax 2.0 0.0 +vanim  
-	'var1 600 100 15 randmax 4.0 2.0 +vanim  
-	'var2 100 500 15 randmax 4.0 0.0 +vanim  
-	'var2 500 100 15 randmax 2.0 4.0 +vanim  
-	;
-
-:ani1
-	var2 var1 "%d %d" bprint bcr
-	$ff00 sdlcolor
-	var1 var2 40 40 sdlfrect
-	;
-	
-#varx * $ff
-:ani2t
-	vareset
-	'varx >a
-	0 ( $1f <? 
-		a> 700 100 pick3 3.0 0.0 +vanim
-		a> 100 700 pick3 3.0 3.5 +vanim
-		8 a+
-		1 + ) drop 
-	|'exit 6.8 +vexe 
-	'ani2t 7.0 +vexe 
-	;
-
-	
-:ani2
-	$ff sdlcolor
-	'varx 
-	0 ( $1f <?
-		swap @+ pick2 18 * 30 + 25 14 sdlfrect
-		swap 1 + ) 2drop ;
-	
-:main
-	$0 SDLcls
-	
-	$ff00 bcolor
-	0 0 bat "test varanim" bprint bcr
-	
-|	ani1
-	ani2
-	
-|	dumptline
-	vupdate
-	
-	SDLredraw	
-	SDLkey
-	>esc< =? ( exit )
-	<f1> =? ( vareset )
-	<f2> =? ( ani1t )
-	<f3> =? ( ani2t )
-	drop ;
-	
-:start
-	$ff vaini
-	'main SDLshow 
-	;
-	
-: 
-	"r3sdl" 800 600 SDLinit
-	bfont1
-	start
-	SDLquit
-	;	
