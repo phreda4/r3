@@ -442,7 +442,7 @@
 :drawsrc	
 	source 0? ( drop ; ) 
 	235 ,bc 
-	>r 30 2 linesv r> code-print
+	>r 40 2 linesv r> code-print
 	;
 	
 :screen

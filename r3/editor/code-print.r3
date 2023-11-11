@@ -36,6 +36,7 @@
 :eline | adr char -- adr
 	0? ( drop 1 - ; ) drop
 	c@+ 10 =? ( drop ; ) drop 1 -
+	;
 	
 :endline
 	,c ( c@+ 1? 13 <>? ,ct )	
@@ -56,6 +57,6 @@
 	
 ::code-print | scrx scry lines source --
 	0 ( pick2 <? | scrx lines src linen
-		pick4 pick4 pick2 + ,at
+		pick4 pick4 pick2 + ,at ,sp
 		swap parseline ,eline
 		swap 1 + ) nip 4drop ;
