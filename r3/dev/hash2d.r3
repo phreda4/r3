@@ -8,8 +8,7 @@
 ^r3/win/sdl2image.r3
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
-|^r3/util/bfont.r3
-
+^r3/util/bfont.r3
 
 #spr_ball
 #arr 0 0	| array
@@ -31,21 +30,19 @@
 
 |------------------------------
 #spacing
-#maxNumObjects
 #ts
 #cellStart
 #cellEntries
 
 :iniHash2d | maxobj spc --
 	'spacing !
-	dup 'maxNumObjects !
-	1 << nextpow2 1 - 'ts !
+	dup 1 << nextpow2 1 - 'ts !
 	|..... MEMMAP .....
 	here 
 	dup 'cellStart !
 	ts 2 + 1 << + | tablesize+1 (16bits)
 	dup 'cellEntries !
-	maxNumObjects 1 << + | maxNumObjects (16bits)
+	swap 1 << + | maxNumObjects (16bits)
 	'here !
 	;
 				
@@ -78,8 +75,9 @@
 	
 |..... query
 :addo | from to --
-	over - swap 1 << cellEntries + swap
-	( 1? 1 - swap w@+ a!+ swap ) 2drop ;
+	over - swap 
+	1 << cellEntries + swap
+	( 1? 1 - swap w@+ da!+ swap ) 2drop ;
 					
 #x1 #x2 #y1 #y2					
 :qH2d | r x y -- ; here =list
@@ -88,12 +86,22 @@
 	here >a
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
-			2dup hashCoord 1 << cellStart +
+			2dup hashCoord 
+			1 << cellStart +
 			w@+ swap w@ addo
 			1 + ) drop
 		1 + ) drop
-	0 a!
+	0 da!
 	;
+
+
+:nH2 | 'v r x y --
+	here >a ( da@+ 1? 
+		1 -	'arr p.nro 8 + | r x y adr
+		dup .x @ pick3 - dup *. | r x y adr XX
+		swap .y @ pick2 - dup *. + | | r x y D2
+		pick3 <? ( pick4 ex ) drop | nro : [a> 4 - d@ 1 -]
+		) nip 4drop ;
 	
 
 |------------------------------
@@ -111,10 +119,9 @@
 		
 	>a 
 	a@+ int. a@+ int.  | x y
-	
 	over 3 >> over 3 >> hashCoord pick3 .hash ! | set hash
-	
 	a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
+
 	drop
 	;
 
@@ -124,12 +131,9 @@
 	dup a!+ | img
 	SDLimagewh max a!+
 	8 a+
-|	0.9 randmax 
-	0 a!+ | vx
-|	0.9 randmax 
-	0 a!+ | vy	
-	|0.1 randmax 0.05 - 
-	0 a!+ | va
+	1.9 randmax a!+ | vx
+	1.9 randmax a!+ | vy	
+	0.05 randmax 0.025 - a!+ | va
 	;
 
 |------------------------------
@@ -142,53 +146,57 @@
 	+obj ;
 	
 :insobj
-	80 ( 1? 1 -
+	800 ( 1? 1 -
 		+randobj
 		) drop ;	
 	
 |------------------------------
 :.dumpdebug
-	.cls
-|	[ dup 8 + .hash @ "%h " .print ; ] 'arr p.mapv .cr
+	.home
+	[ dup 8 + .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
 	
 	cellStart 
 	ts 2 + ( 1? 
 		swap w@+ "%h " .print | start cellstart cnt
-		swap 1 - ) 2drop .cr
+		swap 1 - ) 2drop .eline .cr
 	
 	cellEntries
-	'arr p.cnt
+	'arr p.cnt 
 	( 1? swap
 		w@+ "%h " .print 
 		swap 1 - ) 2drop
-	.cr
+	.eline .cr
 	;
 
 :drawrect | nro -- 
-	dup "%h" .println
 	'arr p.nro 8 +
-	dup .radio @ over .zoom @ 16 *>> | radio
-	over .x @ int. over 1 + 1 >> - 		| radio xmin
-	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
+	dup .radio @ over .zoom @ 16 *>> | adr radio
+	over .x @ int. over 1 >> - 		| adr radio xmin
+	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin
 	rot dup SDLREct
-	
 	;
+
+:objset 	
+	a> 4 - d@ 1 - drawrect ;
+	
 	
 :main
 	$0 SDLcls
 	'arr p.draw | calc/draw/hash
 	
+	$0 bcolor 
+	
 	buildH2d	
-	.dumpdebug
+|	.dumpdebug
 
 	10.0 sdlx 16 << sdly 16 << qH2d
-	
-	sdlx 3 >> sdly 3 >> hashCoord "(%h)" .println
-	
+
 	$ffffff sdlcolor
-	here ( d@+ 1? 1 -
-		drawrect drop
-		) 2drop
+	.home
+	'objset 100.0 sdlx 16 << sdly 16 << nH2
+	.eline
+	
+|	here ( d@+ 1? 1 - drawrect ) 2drop
 		
 	SDLredraw
 	
@@ -201,11 +209,12 @@
 :inicio
 	"hash2d" 1024 600 SDLinit
 	"media/img/ball.png" loadimg 'spr_ball !
-	100 'arr p.ini
+	bfont1
+	1000 'arr p.ini
 	'arr p.clear
-	100 19 iniHash2d
+	1000 19 iniHash2d
 	insobj
-
+	.cls
 	'main SDLshow
 	
 	SDLquit ;
