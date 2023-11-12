@@ -39,67 +39,60 @@
 :iniHash2d | maxobj spc --
 	'spacing !
 	dup 'maxNumObjects !
-	nextpow2 1 - 'ts !
-
+	1 << nextpow2 1 - 'ts !
+	|..... MEMMAP .....
 	here 
-	dup 'cellEntries !
-	maxNumObjects 1 << + | maxNumObjects (16bits)
 	dup 'cellStart !
 	ts 2 + 1 << + | tablesize+1 (16bits)
+	dup 'cellEntries !
+	maxNumObjects 1 << + | maxNumObjects (16bits)
 	'here !
 	;
 				
 :hashCoord | x y -- hash
-	92837111 * swap 689287499 * xor ts and ;
+	92837111 * swap 689287499 * 
+	xor ts and ;
 	
 :buildH2d | 'arr --
 	cellStart 0 ts 2 + 1 << cfill
-	cellEntries 0 maxNumObjects 1 << cfill
+|	cellEntries 0 maxNumObjects 1 << cfill | **
 	
-	'arr 8 + @
-	'arr p.cnt
-	( 1? swap
-		1 over 8 + .hash @ 1 << cellStart + +!
-		128 + swap 1 - ) 2drop
+	'arr 8 + @ 8 + .hash >a
+	'arr p.cnt ( 1? 
+		1 a@ 1 << cellStart + +!
+		128 a+ 1 - ) drop
 	
 	0 cellStart 
 	ts 1 + ( 1? >r
-		dup w@ | start cellstart cnt
-		rot + | cellstart start 
-		dup rot | start start cellstart 
-		w!+
+		dup w@ rot + dup rot w!+
 		r> 1 - ) drop
 	w!
-
-	'arr 8 + @
+	
+	'arr 8 + @ 8 + .hash >a | adr 
 	'arr p.cnt
-	( 1? swap
-		dup 8 + .hash @ 1 << cellStart + 
-		-1 over w+!
-		w@ 1 << cellEntries + 
-		pick2 swap w!
-		128 + swap 1 - ) 2drop
+	0 ( over <? 1 +
+		a@ 1 << cellStart + -1 over w+!
+		w@ 1 << cellEntries + over swap w!
+		128 a+ ) 2drop 
 	;
 	
-:qq | fromcs tocs --
-	swap ( over <?
-		dup 1 << cellEntries + w@ ,
-		1 + ) 2drop ;
+|..... query
+:addo | from to --
+	over - swap 1 << cellEntries + swap
+	( 1? 1 - swap w@+ a!+ swap ) 2drop ;
 					
 #x1 #x2 #y1 #y2					
 :qH2d | r x y -- ; here =list
 	dup pick3 - spacing >> 'y1 ! pick2 + spacing >> 'y2 !
 	dup pick2 - spacing >> 'x1 ! + spacing >> 'x2 !
-	mark
-	y1 ( y2 <=? 
-		x1 ( x2 <=? 
+	here >a
+	x1 ( x2 <=? 
+		y1 ( y2 <=? 
 			2dup hashCoord 1 << cellStart +
-			w@+ swap w@ | from to
-			qq
+			w@+ swap w@ addo
 			1 + ) drop
 		1 + ) drop
-	0 ,
-	empty
+	0 a!
 	;
 	
 
@@ -131,31 +124,35 @@
 	dup a!+ | img
 	SDLimagewh max a!+
 	8 a+
-	0.9 randmax a!+ | vx
-	0.9 randmax a!+ | vy	
-	0.1 randmax 0.05 - a!+ | va
+|	0.9 randmax 
+	0 a!+ | vx
+|	0.9 randmax 
+	0 a!+ | vy	
+	|0.1 randmax 0.05 - 
+	0 a!+ | va
 	;
 
 |------------------------------
 :+randobj
 	spr_ball 			| img
-	0.4 randmax 0.1 +	| zoom
+	0.5 |0.4 randmax 0.1 +	| zoom
 	1.0 randmax			| ang
 	600.0 randmax 		| y
 	1024.0 randmax		| x 
 	+obj ;
 	
 :insobj
-	10 ( 1? 1 -
+	80 ( 1? 1 -
 		+randobj
 		) drop ;	
 	
 |------------------------------
 :.dumpdebug
 	.cls
-	[ dup 8 + .hash @ "%h " .print ; ] 'arr p.mapv .cr
+|	[ dup 8 + .hash @ "%h " .print ; ] 'arr p.mapv .cr
+	
 	cellStart 
-	ts 1 + ( 1? 
+	ts 2 + ( 1? 
 		swap w@+ "%h " .print | start cellstart cnt
 		swap 1 - ) 2drop .cr
 	
@@ -168,26 +165,28 @@
 	;
 
 :drawrect | nro -- 
-	
+	dup "%h" .println
 	'arr p.nro 8 +
 	dup .radio @ over .zoom @ 16 *>> | radio
 	over .x @ int. over 1 + 1 >> - 		| radio xmin
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
-	rot dup SDLFREct
+	rot dup SDLREct
 	
 	;
 	
 :main
 	$0 SDLcls
-	'arr p.draw
+	'arr p.draw | calc/draw/hash
 	
 	buildH2d	
 	.dumpdebug
 
-	3.0 sdlx 16 << sdly 16 << qH2d
+	10.0 sdlx 16 << sdly 16 << qH2d
+	
+	sdlx 3 >> sdly 3 >> hashCoord "(%h)" .println
 	
 	$ffffff sdlcolor
-	here ( d@+ 1? 
+	here ( d@+ 1? 1 -
 		drawrect drop
 		) 2drop
 		
