@@ -94,13 +94,25 @@
 	0 da!
 	;
 
-
 :nH2 | 'v r x y --
 	here >a ( da@+ 1? 
 		1 -	'arr p.nro 8 + | r x y adr
 		dup .x @ pick3 - dup *. | r x y adr XX
 		swap .y @ pick2 - dup *. + | | r x y D2
 		pick3 <? ( pick4 ex ) drop | nro : [a> 4 - d@ 1 -]
+		) nip 4drop ;
+
+|-- in box
+:inbox | 'v r x y adr -- 'v r x y
+	dup .x @ pick3 - abs pick4 >? ( 2drop ; ) drop
+	.y @ over - abs pick3 >? ( drop ; ) drop
+	pick3 ex | nro : [a> 4 - d@ 1 -]
+	;
+	
+:nH2b | 'v r x y --
+	here >a ( da@+ 1? 
+		1 -	'arr p.nro 8 + | r x y adr
+		inbox
 		) nip 4drop ;
 	
 
@@ -189,11 +201,12 @@
 	buildH2d	
 |	.dumpdebug
 
-	10.0 sdlx 16 << sdly 16 << qH2d
+	30.0 sdlx 16 << sdly 16 << qH2d
 
 	$ffffff sdlcolor
 	.home
-	'objset 100.0 sdlx 16 << sdly 16 << nH2
+|	'objset 900.0 sdlx 16 << sdly 16 << nH2
+	'objset 30.0 sdlx 16 << sdly 16 << nH2b
 	.eline
 	
 |	here ( d@+ 1? 1 - drawrect ) 2drop

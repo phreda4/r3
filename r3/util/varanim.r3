@@ -10,6 +10,8 @@
 | ---update 
 | vupdate | --
 |
+^r3/lib/mem.r3
+^r3/win/core.r3
 ^r3/util/penner.r3
 
 |.... time control
