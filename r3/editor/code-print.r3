@@ -21,41 +21,53 @@
 
 :,tcolor colornow ,fcolor ;
 
+#endlin
+#cntlin
+
+:eline | adr char -- adr
+	0? ( drop 1 - ; ) drop
+	c@+ 10 =? ( drop ; ) drop 1 -
+	;
+
+:endline? | adr -- adr
+	endlin <? ( ; )
+	( c@+ 1? 13 <>? drop ) 
+	drop 1 -
+	;
+	
 :,ct
 	9 =? ( ,sp ,sp 32 nip ) ,c ;
 	
 :strword
 	,c
-	( c@+ 1?
+	( endline? c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
 		13 <>?
 		,ct ) drop 1 - 0 ;
 	
-:eline | adr char -- adr
-	0? ( drop 1 - ; ) drop
-	c@+ 10 =? ( drop ; ) drop 1 -
-	;
 	
 :endline
-	,c ( c@+ 1? 13 <>? ,ct )	
+	,c ( endline? c@+ 1? 13 <>? ,ct )	
 	eline ;
 	
+
 :parseline 
 	0 wcolor drop
 	,tcolor
-	( c@+ 1? 13 <>?  | 0 o 13 sale
+	dup cntlin + 'endlin !
+	( endline? c@+ 1? 13 <>?  | 0 o 13 sale
 		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
 		$5e =? ( endline ; )	| $5e ^  Include
 		$7c =? ( endline ; )	| $7c |	 Comentario
-		,c
-		) 
+		,c ) 
 	eline ;
 	
-::code-print | scrx scry lines source --
+::code-print | scrx scry lines width source --
+	swap 'cntlin !
 	0 ( pick2 <? | scrx lines src linen
 		pick4 pick4 pick2 + ,at ,sp
 		swap parseline ,eline

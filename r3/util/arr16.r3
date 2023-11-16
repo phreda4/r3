@@ -54,6 +54,12 @@
 		dup @+ ex 0? ( drop delp )
 		128 + ) 3drop ;
 
+::p.exec | list --
+	dup @+ swap @
+	( over <?
+		dup @ ex 0? ( drop delp ) drop
+		128 + ) 3drop ;
+		
 |---- borra ordenado!!
 :delpo | list end now --
 	dup dup 128 +
