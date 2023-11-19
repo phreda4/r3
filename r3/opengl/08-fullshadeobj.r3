@@ -85,7 +85,7 @@
 	drop ;
 	
 :objexec | adr -- 
-	dup >b
+	dup 8 + >b
 	|------- rot+pos obj
 	0 'fhit ! 
 	matini 
@@ -93,7 +93,7 @@
 	'fmodel mcpyf | model matrix
 	
 	|------- refresh & hit
-	4 3 << + >b rhit
+	5 3 << + >b rhit
 	b@+ b> 5 3 << - dup @ rot +rota swap !
 	b@+ b> 5 3 << - +! | +x
 	b@+ b> 5 3 << - +! | +y

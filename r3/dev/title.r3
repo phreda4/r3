@@ -16,7 +16,10 @@
 "R3 Presenta"
 "Una Historia sobre la lucha de una laucha en el desierto"
 "Con la presentacion de Lito, la laucha matutina"
-"Y Coqui, el queso provolone"
+"Y Coqui, el queso provolone" 
+0
+
+:nextt texto> >>0 'texto> ! ;
 
 :animstart
 	'texto 'texto> !
@@ -24,16 +27,35 @@
 	vareset
 	'colm 0 $ff 5 1.0 1.0 +vanim
 	'colm $ff 0 5 1.0 3.0 +vanim
-	[ texto> >>0 'texto> ! ; ] 4.0 +vexe
+	'nextt 4.0 +vexe
 	'colm 0 $ff 5 1.0 4.0 +vanim
 	'colm $ff 0 5 1.0 7.0 +vanim
-	[ texto> >>0 'texto> ! ; ] 8.0 +vexe
+	'nextt 8.0 +vexe
 	'colm 0 $ff 5 1.0 8.0 +vanim
 	'colm $ff 0 5 1.0 10.0 +vanim
-	[ texto> >>0 'texto> ! ; ] 11.0 +vexe
+	'nextt 11.0 +vexe
 	'colm 0 $ff 5 1.0 11.0 +vanim
 	'colm $ff 0 5 1.0 14.0 +vanim
 	'exit 15.0 +vexe 
+	;
+	
+:l0count | list -- cnt
+	0 ( swap dup c@ 1? drop >>0 swap 1+ ) 2drop ;
+	
+#t	
+:lines | texto --
+	dup 'texto> !
+	$ff 'colm !
+	vareset
+	1.0 't !
+	l0count 
+	0 ( over <? 
+		'colm 0 $ff 5 1.0 t +vanim
+		'colm $ff 0 5 1.0 t 2.0 + +vanim
+		'nextt t 3.0 + +vexe
+		4.0 't +!
+		1 + ) drop 
+	'exit t +vexe 		
 	;
 	
 :titlestart
@@ -95,7 +117,8 @@
 	
 |------------	
 :start
-	animstart
+	|animstart
+	'texto lines
 	'titlestart SDLshow
 	
 	loopini

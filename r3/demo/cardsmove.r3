@@ -8,35 +8,45 @@
 #sprites
 #cards 0 0
 
+|--- card list
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.rz 3 ncell+ ;
+:.n 4 ncell+ ;
+:.ss 5 ncell+ ;
+:.vx 6 ncell+ ;
+:.vy 7 ncell+ ;
+:.vr 8 ncell+ ;
+
 :objsprite | adr -- adr
-	dup >a
+	dup 8 + >a
 	a@+ int. a@+ int.	| x y
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
 	a@+ a@+ sspriterz
-	dup 40 + @ over +!
-	dup 48 + @ over 8 + +!
-	dup 56 + @ over 16 + +!
+	dup .vx @ over .x +!
+	dup .vy @ over .y +!
+	dup .vr @ over .rz +!
 	;
 
 	
 :guiRectS | adr -- adr
-	dup @+ int. 25 -
-	swap @ int. 40 - | x y
+	dup .x @ int. 25 -
+	over .y @ int. 40 - | x y
 	over 50 + over 80 +
 	guiRect
 	;
 	
 :hitx | adr x -- adr x
-	over 40 + dup @ neg swap ! ;
+	over .vx dup @ neg swap ! ;
 	
 :hity | adr x -- adr x
-	over 48 + dup @ neg swap ! ;
+	over .vy dup @ neg swap ! ;
 		
 #xa #ya
 
 :mvcard
-	sdlx xa - 16 << over +! 
-	sdly ya - 16 << over 8 + +! 
+	sdlx xa - 16 << over .x +! 
+	sdly ya - 16 << over .y +! 
 :setcard	
 	sdlx 'xa ! sdly 'ya ! ;
 	
@@ -45,8 +55,8 @@
 	guiRectS
 	'setcard 'mvcard onDnMoveA
 	
-	dup @ 80.0 <? ( hitx ) 720.0 >? ( hitx ) drop
-	dup 8 + @ 80.0 <? ( hity ) 520.0 >? ( hity ) drop	
+	dup .x @ 80.0 <? ( hitx ) 720.0 >? ( hitx ) drop
+	dup .y @ 80.0 <? ( hity ) 520.0 >? ( hity ) drop	
 	
 	drop
 	;

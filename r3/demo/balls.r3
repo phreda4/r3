@@ -11,6 +11,13 @@
 #spr_ball
 #bubles 0 0	| array
 
+|--- bubles list
+| x y vx vy
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.vx 3 ncell+ ;
+:.vy 4 ncell+ ;
+
 |---------
 :r.01 0.001 randmax ;
 :r.1 1.0 randmax ;
@@ -28,7 +35,7 @@
 	swap ! ;
 	
 :bub | adr -- adr/adr 0 delete
- 	>b
+ 	8 + >b
 	mpush
 	b@+
 	26.0 >? ( 26.0  hitwall )
@@ -49,25 +56,25 @@
 	r.1 r.1 a!+ a! ;
 
 :collision | p1 p2 -- p1 p2
-	over 8 + @ over 8 + @ - dup *. | (x1-x2)^2
-	pick2 16 + @ pick2 16 + @ - dup *. +
+	over .x @ over .x @ - dup *. | (x1-x2)^2
+	pick2 .y @ pick2 .y @ - dup *. +
 	4.0 >=? ( drop ; ) sqrt. 2.0 swap -
 	1 >> >a | lose impulse
-	over 8 + @ over 8 + @ -
-	pick2 16 + @ pick2 16 + @ -
+	over .x @ over .x @ -
+	pick2 .y @ pick2 .y @ -
 	atan2 sincos 				| p1 p2 si co
 	
 	a> *.
-	dup pick4 16 + +!
-	dup pick4 32 + +!
-	neg dup pick3 16 + +!
-	pick2 32 + +!
+	dup pick4 .y +!
+	dup pick4 .vy +!
+	neg dup pick3 .y +!
+	pick2 .vy +!
 
 	a> *. 
-	dup pick3 8 + +! 
-	dup pick3 24 + +!
-	neg dup pick2 8 + +! 
-	over 24 + +!
+	dup pick3 .x +! 
+	dup pick3 .vx +!
+	neg dup pick2 .x +! 
+	over .vx +!
 	;
 
 :main
@@ -92,6 +99,8 @@
 	1000 'bubles p.ini
 	'bubles p.clear
 	"<f1> add ball" .println
+	+buble
+	+buble
 	'main SDLshow
 	
 	SDLquit ;

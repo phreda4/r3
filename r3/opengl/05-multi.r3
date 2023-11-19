@@ -226,7 +226,7 @@
 	drop ;
 	
 :objexec | adr -- 
-	dup >b
+	dup 8 + >b
 	matini 
 	|------- mov obj
 	b@+ b@+ b@+ mrot
@@ -243,7 +243,7 @@
 	
 	Shader1!
 	objDraw!
-	6 3 << + >b
+	7 3 << + >b
 	rhit
 	b@+ b> 7 3 << - +!
 	b@+ b> 7 3 << - +!

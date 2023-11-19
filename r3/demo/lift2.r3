@@ -378,7 +378,7 @@
 	drawbuiling
 	runelevator
 	time.delta		| calc time 
-	'per p.drawo	| draw sprites
+	'per p.drawoo	| draw sprites
 	4 'per p.sort	| sort for draw
 	guiwindow		| GUI
 	SDLredraw 

@@ -43,7 +43,7 @@
 #bricks 0 0
 
 :tbricks | adr --
-	>a a@+ SDLColor 
+	8 + >a a@+ SDLColor 
 	a@+ a@+	| x y 
 	2dup 60 20 SDLFRect
 	bx int. rot 10 - dup 60 + bt? ( -1 nip )

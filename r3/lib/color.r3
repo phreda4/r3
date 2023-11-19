@@ -20,10 +20,10 @@
 	pick2 $ff00ff and
 	over - pick2 * 8 >> +
 	$ff00ff and >r
-	rot $ff00 and
-	rot $ff00 and
+	rot $ff00ff00 and
+	rot $ff00ff00 and
 	over - rot * 8 >> +
-	$ff00 and r> or ;
+	$ff00ff00 and r> or ;
 
 |--- diferencia de color
 ::diffrgb2 | a b -- v

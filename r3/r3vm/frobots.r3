@@ -186,11 +186,11 @@
 #anyerror
 
 :screenrobot | adr -- adr
-	dup >a
+	dup 8 +  >a
 	a@+ a@+ a@+ a@ 2swap
 	'codepath "%s%w.r3i" sprint
 	+robot
-	dup 16 + >a
+	dup 24 + >a
 	error dup 'msgok =? ( 0 nip ) 'anyerror +!
 	a!+
 	lerror a!

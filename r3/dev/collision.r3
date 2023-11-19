@@ -14,19 +14,19 @@
 | 0 1  2    3   4  5   6  7  8  9 10   11    12		13
 | x y ang zoom img rad h vx vy va mat maskx masky state
 
-:.x  ;
-:.y 1 ncell+ ;
-:.a 2 ncell+ ;
-:.zoom 3 ncell+ ;
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.a 3 ncell+ ;
+:.zoom 4 ncell+ ;
 
-:.radio 5 ncell+ ;
+:.radio 6 ncell+ ;
 |:.hi 6 ncell+ ;
-:.vx 7 ncell+ ;
-:.vy 8 ncell+ ;
-:.va 9 ncell+ ;
-:.maskx 11 ncell+ ;
-:.masky 12 ncell+ ;
-:.state 13 ncell+ ;
+:.vx 8 ncell+ ;
+:.vy 9 ncell+ ;
+:.va 10 ncell+ ;
+:.maskx 12 ncell+ ;
+:.masky 13 ncell+ ;
+:.state 14 ncell+ ;
 
 |---------
 :bitmaskx | min max -- mask
@@ -76,7 +76,7 @@
 	
 	0 swap .state !
 	
-	>a a@+ int. a@+ int. a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
+	8 + >a a@+ int. a@+ int. a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
 	;
 
 :+obj | img zoom ang y x --
@@ -95,14 +95,14 @@
 |
 |
 :collision | p1 p2 -- p1 p2
-	over 12 ncell+ @ over 12 ncell+ @ and 0? ( drop ; ) drop | maskx
-	over 13 ncell+ @ over 13 ncell+ @ and 0? ( drop ; ) drop | masky
+	over .maskx @ over .maskx @ and 0? ( drop ; ) drop | maskx
+	over .masky @ over .masky @ and 0? ( drop ; ) drop | masky
 
-|	over 12 ncell+ over 12 ncell+
+|	over .maskx over .maskx
 |	@+ rot @+ rot and rot @ rot @ and or 0? ( drop ; ) drop
 
-	1 pick2 14 ncell+ !	| state
-	1 over 14 ncell+ !
+	1 pick2 .state !	| state
+	1 over .state !
 	;
 
 :+randobj

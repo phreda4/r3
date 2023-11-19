@@ -16,17 +16,17 @@
 | 0 1  2    3   4  5   6  7  8  9 10   11    12		13
 | x y ang zoom img rad h vx vy va hash
 
-:.x  ;
-:.y 1 ncell+ ;
-:.a 2 ncell+ ;
-:.zoom 3 ncell+ ;
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.a 3 ncell+ ;
+:.zoom 4 ncell+ ;
 
-:.radio 5 ncell+ ;
+:.radio 6 ncell+ ;
 |:.hi 6 ncell+ ;
-:.vx 7 ncell+ ;
-:.vy 8 ncell+ ;
-:.va 9 ncell+ ;
-:.hash 10 ncell+ ;
+:.vx 8 ncell+ ;
+:.vy 9 ncell+ ;
+:.va 10 ncell+ ;
+:.hash 11 ncell+ ;
 
 |------------------------------
 #spacing
@@ -54,7 +54,7 @@
 	cellStart 0 ts 2 + 1 << cfill
 |	cellEntries 0 maxNumObjects 1 << cfill | **
 	
-	'arr 8 + @ 8 + .hash >a
+	'arr 8 + @ .hash >a
 	'arr p.cnt ( 1? 
 		1 a@ 1 << cellStart + +!
 		128 a+ 1 - ) drop
@@ -65,7 +65,7 @@
 		r> 1 - ) drop
 	w!
 	
-	'arr 8 + @ 8 + .hash >a | adr 
+	'arr 8 + @ .hash >a | adr 
 	'arr p.cnt
 	0 ( over <? 1 +
 		a@ 1 << cellStart + -1 over w+!
@@ -96,7 +96,7 @@
 
 :nH2 | 'v r x y --
 	here >a ( da@+ 1? 
-		1 -	'arr p.nro 8 + | r x y adr
+		1 -	'arr p.nro | r x y adr
 		dup .x @ pick3 - dup *. | r x y adr XX
 		swap .y @ pick2 - dup *. + | | r x y D2
 		pick3 <? ( pick4 ex ) drop | nro : [a> 4 - d@ 1 -]
@@ -111,7 +111,7 @@
 	
 :nH2b | 'v r x y --
 	here >a ( da@+ 1? 
-		1 -	'arr p.nro 8 + | r x y adr
+		1 -	'arr p.nro  | r x y adr
 		inbox
 		) nip 4drop ;
 	
@@ -129,7 +129,7 @@
 	dup .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
 	dup .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
 		
-	>a 
+	8 + >a 
 	a@+ int. a@+ int.  | x y
 	over 3 >> over 3 >> hashCoord pick3 .hash ! | set hash
 	a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
@@ -181,7 +181,7 @@
 	;
 
 :drawrect | nro -- 
-	'arr p.nro 8 +
+	'arr p.nro
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin

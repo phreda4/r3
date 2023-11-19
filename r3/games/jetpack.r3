@@ -17,7 +17,7 @@
 #nspr 91
 
 :disparo
-	>a
+	8 + >a
 	25 sprplayer 
 	a@+ int. a@+ int. tsdraw
 	a@ a> 16 - +!

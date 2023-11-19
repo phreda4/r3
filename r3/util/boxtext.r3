@@ -93,7 +93,7 @@
 	SDLrenderer 'boxt SDL_RenderFillRect ;
 
 ::textline | str x y color font --
-	'font ! bswap32 'ink !
+	'font ! 'ink !
 	swap 'bbtext d!+ d!+
 	font pick2 rot dup 4 + TTF_SizeUTF8 drop
 	vbbtext ex ;

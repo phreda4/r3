@@ -19,22 +19,30 @@
 #listshoot 0 0 | lista de disparos
 #listfx 0 0 | fx
 
+|-- sprite list
+| x y z a ss vx vy
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.z 3 ncell+ ;
+:.a 4 ncell+ ;
+:.ss 5 ncell+ ;
+:.vx 6 ncell+ ;
+:.vy 7 ncell+ ;
+
 :objsprite | adr -- adr
-	dup >a
+	dup 8 + >a
 	a@+ int. a@+ int.	| x y
 	a@+ 				| zoom
 	a@ timer+ dup a!+ 	| anima
 	nanim a@+ sspritez
-	dup 40 + @ over +!		| vx
-	dup 48 + @ over 8 + +!	| vy
+	dup .vx @ over .x +!	| vx
+	dup .vy @ over .y +!	| vy
 	;
 
 |--------------- fx	
 :explosion
 	objsprite	
-	24 + @ nanim 10 =? ( drop 0 ; )
-	drop
-	;
+	.a @ nanim 10 =? ( drop 0 ; ) drop ;
 
 :+explo	| y x --
 	'explosion 'listfx p!+ >a 
@@ -76,8 +84,8 @@
 	objsprite
 
 	1 'hit !
-	dup @ |-20.0 <? ( 2drop 0 ; ) 660.0 >? ( 2drop 0 ; ) ; fuera de pantalla
-	over 8 + @ -20.0 <? ( 3drop 0 ; ) |500.0 >? ( 3drop 0 ; ) ; fuera de pantalla
+	dup .x @ |-20.0 <? ( 2drop 0 ; ) 660.0 >? ( 2drop 0 ; ) ; fuera de pantalla
+	over .y @ -20.0 <? ( 3drop 0 ; ) |500.0 >? ( 3drop 0 ; ) ; fuera de pantalla
 	'choque? 'listalien p.mapv | 'vector list --	
 	2drop
 	hit 0? ( nip ; ) drop
@@ -98,9 +106,8 @@
 :alien | v -- 
 	objsprite	
 	
-	dup @ x - 
-	over 8 + @ 
-	500.0 >? ( 3drop 0 ; ) | llego abajo?
+	dup .x @ x - 
+	over .y @ 500.0 >? ( 3drop 0 ; ) | llego abajo?
 	y - distfast
 	30.0 <? ( pierdevida ) 
 	drop

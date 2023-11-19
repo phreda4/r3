@@ -31,25 +31,33 @@
 	$f and 40 << or 
 	;
 
-|person
+|person array
 | x y ang anim ss vx vy ar
-| 0 8 16  24   32 40 48 56
-	
+| 1 2 3   4    5  6  7  8
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.a 3 ncell+ ;
+:.ani 4 ncell+ ;
+:.ss 5 ncell+ ;
+:.vx 6 ncell+ ;
+:.vy 7 ncell+ ;
+:.va 8 ncell+ ;
+
 :person | v -- 
-	dup >a
+	dup 8 + >a
 	a@+ int. a@+ int.	| x y
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
 	a@ time+ dup a!+ nanim 			| n
 	a@+ sspriterz
 	
 	|..... remove when outside screen
-	dup @ -17.0 817.0 between -? ( 2drop 0 ; ) drop
-	dup 8 + @ 0 616.0 between -? ( 2drop 0 ; ) drop
+	dup .x @ -17.0 817.0 between -? ( 2drop 0 ; ) drop
+	dup .y @ 0 616.0 between -? ( 2drop 0 ; ) drop
 	
 	|..... add velocity to position
-	dup 40 + @ over +!
-	dup 48 + @ over 8 + +!
-	dup 56 + @ over 16 + +!
+	dup .vx @ over .x +!
+	dup .vy @ over .y +!
+	dup .va @ over .a +!
 	drop
 	;
 

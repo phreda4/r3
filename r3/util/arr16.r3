@@ -48,16 +48,17 @@
 	dup pick3 !
 	swap 128 - ;
 
-::p.draw | list --
+::p.drawo | list --
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delp )
 		128 + ) 3drop ;
 
-::p.exec | list --
+|---new
+::p.draw | list --
 	dup @+ swap @
 	( over <?
-		dup @ ex 0? ( drop delp ) drop
+		dup dup @ ex 0? ( drop delp )
 		128 + ) 3drop ;
 		
 |---- borra ordenado!!
@@ -67,10 +68,16 @@
 	swap 128 - dup pick3 !
 	swap 128 - ;
 
-::p.drawo | list --
+::p.drawoo | list --
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delpo )
+		128 + ) 3drop ;
+|---new
+::p.drawo | list --
+	dup @+ swap @
+	( over <?
+		dup dup @ ex 0? ( drop delpo )
 		128 + ) 3drop ;
 	
 
