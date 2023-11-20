@@ -48,13 +48,6 @@
 	dup pick3 !
 	swap 128 - ;
 
-::p.drawo | list --
-	dup @+ swap @
-	( over <?
-		dup @+ ex 0? ( drop delp )
-		128 + ) 3drop ;
-
-|---new
 ::p.draw | list --
 	dup @+ swap @
 	( over <?
@@ -68,19 +61,12 @@
 	swap 128 - dup pick3 !
 	swap 128 - ;
 
-::p.drawoo | list --
-	dup @+ swap @
-	( over <?
-		dup @+ ex 0? ( drop delpo )
-		128 + ) 3drop ;
-|---new
 ::p.drawo | list --
 	dup @+ swap @
 	( over <?
 		dup dup @ ex 0? ( drop delpo )
 		128 + ) 3drop ;
 	
-
 ::p.del | adr list --
 	>r r@ @ 128 - 16 move -128 r> +! ; | not mix
 |	dup @ 128 - swap ! ; | mix

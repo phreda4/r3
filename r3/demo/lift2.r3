@@ -4,7 +4,6 @@
 
 ^r3/win/sdl2.r3
 ^r3/util/sdlgui.r3
-
 ^r3/lib/rand.r3
 ^r3/util/dlist.r3
 ^r3/util/arr16.r3
@@ -15,7 +14,6 @@
 
 :time.start		msec 'prevt ! 0 'dtime ! ;
 :time.delta		msec dup prevt - 'dtime ! 'prevt ! ;
-
 
 #debugmode 0
 #automode 0
@@ -54,23 +52,24 @@
 	;
 
 | guy
-|		0	1	2	3	4	5	6	7			8
-| 'vec time anim x 	y 	vx 	vy 	spr q|to|fr 	sta
+|		1	2	 3	4	5	6	7	8		 9
+| 'vec time anim x 	y 	vx 	vy 	spr q|to|fr  sta
 |--
-:g>a! 1 3 << + ! ;
-:g>x 2 3 << + ;
-:g>xy 2 3 << + @+ int. swap @ int. ;
-:g>vx 4 3 << + ;
-:g>f 7 3 << + ;
-:g>s! 8 3 << + ! ;
+:.a 2 ncell+ ;
+:.x 3 ncell+ ;
+:.y 4 ncell+ ;
+:.xy@ 3 ncell+ @+ int. swap @ int. ;
+:.vx 5 ncell+ ;
+:.f 8 ncell+ ;
+:.s 9 ncell+ ;
 
 #queuef * 32	| queue in floors, cnt of guys in queue
 
 :gcntfloor | ad -- cnt
-	g>f @ $ff and 'queuef + c@ ; | queue len
+	.f @ $ff and 'queuef + c@ ; | queue len
 
 :gqueue+ | ad --
-	g>f dup @ $ff and 'queuef + 1 over +! 
+	.f dup @ $ff and 'queuef + 1 over +! 
 	c@ 1 - 16 << swap +! ;
 
 :entoy | n -- y
@@ -174,42 +173,42 @@
 #statsum
 
 :gpushbutton | ad --
-	g>f @ dup $ff and swap 8 >> $ff and  | a from to
+	.f @ dup $ff and swap 8 >> $ff and  | a from to
 	<? ( pushup ; ) pushdn ;
 
 |........... walking to exit
 :guyout | adr -- adr
-	dup g>x @ int. 
+	dup .x @ int. 
 	-32 <? ( drop dup @ 'statsum +! 1 'statcnt +! 0 ; ) | delete
 	drop
 	;
 
 |........... in elevator
 :guyinasc | adr -- adr
-	yelev 38.0 + over 3 3 << + !
-	dup g>f @ 8 >> $ff and		| destination floor
+	yelev 38.0 + over .y !
+	dup .f @ 8 >> $ff and		| destination floor
 	nowelevator <>? ( drop ; ) drop
 	| exit guy from elevator
-	$10008 over g>a! 	| anim
-	-5.0 over g>vx !	| vx
-	'guyout over g>s!	| walk to exit
+	$10008 over .a ! 	| anim
+	-5.0 over .vx !	| vx
+	'guyout over .s !	| walk to exit
 	-1 'capacity +!
 	0 'waitdoor ! 
 	;
 
 |........... advance in queue
 :advanceq
-	dup 8 3 << + @ $ff and nowelevator <>? ( drop ; ) drop
-	dup 8 3 << + dup @ 
+	dup .f @ $ff and nowelevator <>? ( drop ; ) drop
+	dup .f dup @ 
 	dup 16 >> 1 - -? ( 3drop ; ) 	| no negative
 |	0? ( pick4 gpushbutton ) | push button
 	16 << swap $ffff and or swap !	| advance in row
-	dup 8 3 << + @ 16 >> 8.0 * neg 280.0 +
-	over 3 3 << + !					| move coord x
+	dup .f @ 16 >> 8.0 * neg 280.0 +
+	over .x !					| move coord x
 	;
 
 :gqueue- | ad --
-	g>f @ $ff and 'queuef + -1 swap +! 
+	.f @ $ff and 'queuef + -1 swap +! 
 	'advanceq 'per p.mapv 
 	'queuef nowelevator + c@ 0? ( drop nowelevator offbtn ; ) drop
 	nowelevator 1 touch drop 
@@ -217,15 +216,15 @@
 	
 |........... waint in 	
 :guywait | adr -- adr
-	dup g>f @ 
+	dup .f @ 
 	$ffff00ff and nowelevator <>? ( drop ; ) drop | not in elevator and in place 0
 	state 1 <>? ( drop ; ) drop				| elevator is waiting
 	capacity maxcapacity >=? ( drop ; ) drop | capacity?
 	| load guy to elevator
-	'guyinasc over g>s! | now in elevator
-	$00001 over g>a! 	| animation
-	320.0 capacity 8.0 * + over g>x !	| position
-	dup g>f @ 8 >> $ff and pushbtnf		| push button
+	'guyinasc over .s ! | now in elevator
+	$00001 over .a ! 	| animation
+	320.0 capacity 8.0 * + over .x !	| position
+	dup .f @ 8 >> $ff and pushbtnf		| push button
 	dup gqueue-
 	1 'capacity +!
 	0 'waitdoor ! 
@@ -233,13 +232,13 @@
 
 |........... walking to elevator
 :guyin | adr -- adr
-	dup g>x @ int. | pos x
+	dup .x @ int. | pos x
 	over gcntfloor 3 << neg 280 +
 	<? ( drop ; ) drop 
 	| put the guy waiting
-	'guywait over g>s! 		| wait
-	0 over g>vx ! 		| stop x
-	$90001 over g>a!	| anim stop
+	'guywait over .s ! 		| wait
+	0 over .vx ! 		| stop x
+	$90001 over .a !	| anim stop
 	dup gpushbutton 
 	dup gqueue+
 	;
@@ -247,8 +246,8 @@
 	
 :dbg | adr dbg - adr dbg
 	$ffffff ttcolor
-	over g>xy 40 - ttat
-	over g>f @ 16 >> "%d" sprint ttprint
+	over .xy@ 40 - ttat
+	over .f @ 16 >> "%d" sprint ttprint
 	;
 	
 | anim $0ini0cnt (16.16)
@@ -257,9 +256,9 @@
 	55 << 1 >>> 63 *>> + ; | 55 speed
 	
 :guydraw | v -- 
-	dup 8 3 << + @ ex 0? ( nip ; )	| execute the state
+	dup .s @ ex 0? ( nip ; )	| execute the state
 	debugmode 1? ( dbg ) drop
-	>a
+	8 + >a
 	a@ dup dtime + a!+ 	| time
 	a@+ nanim			| nsprite
 	a@+ int. a@+ int.	| x y
@@ -378,7 +377,7 @@
 	drawbuiling
 	runelevator
 	time.delta		| calc time 
-	'per p.drawoo	| draw sprites
+	'per p.drawo	| draw sprites
 	4 'per p.sort	| sort for draw
 	guiwindow		| GUI
 	SDLredraw 

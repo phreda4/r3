@@ -122,14 +122,13 @@
 :hity over .vy dup @ neg swap ! ;
 
 :obj | adr -- adr/adr 0 delete
- 	dup 
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
 	dup .va @ over .a +!
 	dup .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
 	dup .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
 		
-	8 + >a 
+	dup 8 + >a 
 	a@+ int. a@+ int.  | x y
 	over 3 >> over 3 >> hashCoord pick3 .hash ! | set hash
 	a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
@@ -165,7 +164,7 @@
 |------------------------------
 :.dumpdebug
 	.home
-	[ dup 8 + .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
+	[ dup .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
 	
 	cellStart 
 	ts 2 + ( 1? 
