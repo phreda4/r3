@@ -13,7 +13,7 @@
 #spr_ball
 #arr 0 0	| array
 
-| 0 1  2    3   4  5   6  7  8  9 10   11    12		13
+| 1 2  3   4   5   6   7 8  9  10 11    
 | x y ang zoom img rad h vx vy va hash
 
 :.x 1 ncell+ ;

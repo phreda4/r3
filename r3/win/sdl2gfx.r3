@@ -331,13 +331,18 @@
 	dup $ffffffffff and 
 	over 40 >> $f and 48 + << 1 >>>
 	over 44 >> $ff and 63 *>>
-	swap 52 >>> + | ini
+	swap 52 >> + | ini
 	;
+
+::canim | nanim -- nframe
+	dup $ffffffffff and 
+	over 40 >> $f and 48 + << 1 >>>
+	swap 44 >> $ff and 63 *>> ;
 	
 ::vci>anim | vel cnt ini -- nanim 
 	$fff and 52 << swap
 	$ff and 44 << or swap
-	$f and 40 << or 
-	;
+	$f and 40 << or ;
+
 	
 : fillfull ;

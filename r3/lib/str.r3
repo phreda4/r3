@@ -213,7 +213,7 @@
 ::trimc | car adr -- adr'
 	( c@+ 1? pick2 =? ( drop nip 1 - ; ) drop ) drop nip 1 - ;
 
-::trim" | adr -- adr'
+::trimstr | adr -- adr'
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 2 - ; ) ) drop ) drop 1 - ;
 
 ::>>cr | adr -- adr'
@@ -222,6 +222,9 @@
 ::>>0 | adr -- adr' ; skip 0
 	( c@+ 1? drop ) drop ;
 
+::l0count | list -- cnt
+	0 ( swap dup c@ 1? drop >>0 swap 1 + ) 2drop ;
+	
 ::n>>0 | adr n -- adr' 
 	( 1? swap >>0 swap 1 - ) drop ;
 

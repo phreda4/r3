@@ -71,7 +71,7 @@
 :plgui
 	curx padx + cury pady + boxw boxh guiBox ;
 
-:plxywh
+::plxywh
 	curx padx + cury pady + boxw boxh ;
 
 ::immcur | x y w h --
@@ -165,7 +165,7 @@
 	imm.
 	onClick
 	;
-	
+
 |---- Horizontal slide
 :slideh | 0.0 1.0 'value --
 	sdlx curx padx + - boxw clamp0max 
