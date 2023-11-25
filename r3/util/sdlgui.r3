@@ -163,8 +163,10 @@
 	plgui
 	[ immcolorbtn SDLColor plxywh SDLFRect ; ] guiI
 	imm.
-	onClick
-	;
+	onClick ;
+
+::immzone | 'click --
+	plgui onClick ;
 
 |---- Horizontal slide
 :slideh | 0.0 1.0 'value --
