@@ -12,19 +12,19 @@
 ::r3debuginfo | str --
 	r3name
 	here dup 'src !
-	'r3filename
-	2dup load
-	here =? ( 3drop "no source code." .println  ; )
-	src only13 0 swap c!+ 'here !
+	'r3filename load
+	here =? ( drop "no source code." .println  ; )
+	0 swap c!+ 'here !
+	src only13
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	swap	
-	r3-stage-1 error 1? ( 4drop ; ) drop	
-	r3-stage-2 1? ( 4drop ; ) drop 		
+	src
+	r3-stage-1 error 1? ( 2drop ; ) drop	
+	r3-stage-2 1? ( 2drop ; ) drop 		
 	r3-stage-4-full
-	3drop	
+	drop	
 	;
 	
 :.stack
