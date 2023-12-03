@@ -49,7 +49,7 @@
 	$ff00 sdlcolor
 	linebox
 	2dup immat
-	pick2 1 + 'nameease over n>>0 "%s %d" sprint immLabelC
+	pick2 1 + 'nameease over n>>0 "%s %d" immLabelC
 	
 	$ffff sdlcolor
 	swap 'varx pick3 ncell+ @ 3 - +

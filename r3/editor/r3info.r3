@@ -18,7 +18,7 @@
 	r3name
 	here dup 'src !
 	'r3filename load 
-	here =? ( 3drop "no source code." .println ; )
+	here =? ( drop "no source code." .println ; )
 	0 swap c!+ 'here !
 	src only13 
 	0 'error !
@@ -131,6 +131,7 @@
 	"mem/infomap.db" delete
 	
 	'name "mem/main.mem" load drop
+	.cls
 	'name r3debuginfo
 	
 	error 

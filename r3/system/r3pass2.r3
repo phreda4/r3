@@ -201,8 +201,10 @@
 	;
 
 :seterrorfile
-	over 16 - @ "%l" sprint count "mem/main.mem" save | change error file (error in include)
 	over 8 - @ 'src !
+	over 16 - @ "%l" sprint count 
+	0? ( drop ; )
+	"mem/main.mem" save | change error file (error in include)
 	;
 	
 ::r3-stage-2 | -- err/0

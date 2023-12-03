@@ -14,7 +14,7 @@
 	immdn
 	'exit "coso" immbtn 
 	immdn
-	sdlb sdly sdlx "%d %d %d" sprint immlabelc	
+	sdlb sdly sdlx "%d %d %d" immlabelc	
 	
 	40 40 immbox
 	100 20 immat

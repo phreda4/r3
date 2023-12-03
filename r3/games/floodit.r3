@@ -97,7 +97,7 @@
 	'reset2 "Intermediate" immbtn 	immdn
 	'reset3 "Advance" immbtn 		immdn 
 	'state immlabelc			immdn
-	turn "turn:%d" sprint immlabelc immdn
+	turn "turn:%d" immlabelc immdn
 	'exit "Exit" immbtn 
 	SDLredraw
 	SDLkey

@@ -56,7 +56,7 @@
 	immdn
 	[ 'tilefile immfileload 'tilefile strcpy ; ] "dlg save" immbtn 
 	immdn
-	sdlb sdly sdlx "%d %d %d" sprint immlabelc	
+	sdlb sdly sdlx "%d %d %d" immlabelc	
 	100 20 immat
 	$ff00 'immcolorbtn !
 	$0 'immcolortex !
