@@ -50,6 +50,7 @@
 |::immwin! 'winevent ! ;
 	
 ::immat 'cury ! 'curx ! ;
+::immat+ 'cury +! 'curx +! ;
 ::immbox 'boxh ! 'boxw ! ;
 ::immfont! dup 'immfont ! ttfont "A" ttsize 'immfontsh ! drop ;
 

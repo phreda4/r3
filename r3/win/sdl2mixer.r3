@@ -40,7 +40,7 @@
 ::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
 
 ::SNDInit
-	48000 $08010 2 4096 Mix_OpenAudio ;
+	44100 $8010 2 4096 Mix_OpenAudio ;
 	
 ::SNDplay | adr --
 	-1 swap 0 -1 Mix_PlayChannelTimed ;
