@@ -13,6 +13,25 @@ This version start in WIN enviroment, I try to run in LINUX and Raspberry PI 4 c
 The vm used here is
 https://github.com/phreda4/r3evm
 
+## Youtube Videos
+
+https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
+
+## Some inprogress documentation
+
+Manual in spanish, in doc folder.
+https://docs.google.com/document/d/1sqXfo0UohQpSLen6JWSniBvtZzGFqe09V65nIpSiu60/edit#heading=h.mib1z4xpalhz
+
+## More code to play
+
+https://github.com/phreda4/r3-games
+download and decompress in the r3/r3 folder
+
+## Versio for others OS
+
+It is possible to run r3 on Linux/Mac/Rpi, the virtual machine code is commented about this, the version for Linux is in the distribution.
+If anyone is interested in running R3 on these or other platforms, write to me to clarify doubts and collaborate with the port.
+
 ## How the language works
 
 A WORD is defined as a sequence of letters separated by spaces, there are three exceptions to improve the expressiveness of the language that are seen later.
@@ -376,20 +395,6 @@ SYS8	| abcdefghi -- a
 SYS9	| abcdefghij -- a
 SYS10 	| abcdefghijk -- a
 ```
-
-## Youtube Videos
-
-https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
-
-## Some inprogress documentation
-
-Manual in spanish, in doc folder.
-https://docs.google.com/document/d/1sqXfo0UohQpSLen6JWSniBvtZzGFqe09V65nIpSiu60/edit#heading=h.mib1z4xpalhz
-
-## More code from play
-
-https://github.com/phreda4/r3-games
-download and decompress in the r3/r3 folder
 
 ## History
 
