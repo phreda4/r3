@@ -17,17 +17,12 @@ https://github.com/phreda4/r3evm
 
 https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
 
-## Some inprogress documentation
-
-Manual in spanish, in doc folder.
-https://docs.google.com/document/d/1sqXfo0UohQpSLen6JWSniBvtZzGFqe09V65nIpSiu60/edit#heading=h.mib1z4xpalhz
-
 ## More code to play
 
 https://github.com/phreda4/r3-games
 download and decompress in the r3/r3 folder
 
-## Versio for others OS
+## Version for others OS
 
 It is possible to run r3 on Linux/Mac/Rpi, the virtual machine code is commented about this, the version for Linux is in the distribution.
 If anyone is interested in running R3 on these or other platforms, write to me to clarify doubts and collaborate with the port.
