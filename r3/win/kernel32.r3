@@ -52,7 +52,7 @@
 
 #sys-GetCommandLine
 #sys-GetConsoleWindow
-
+|#sys-GetConsoleCursorInfo
 #sys-showwindow
 
 ::AllocConsole sys-allocconsole sys0 drop ;
@@ -106,6 +106,7 @@
 
 ::GetCommandLine sys-GetCommandLine sys0 ;
 ::GetConsoleWindow sys-GetConsoleWindow sys0 ;
+|::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
 ::ShowWindow sys-showwindow sys2 drop ;
 
 |------- BOOT
@@ -158,7 +159,7 @@
 	dup "GetTickCount" getproc 'sys-GetTickCount !
 	dup "GetConsoleScreenBufferInfo" getproc 'sys-GetConsoleScreenBufferInfo !
 	dup "GetCommandLineA" getproc 'sys-GetCommandLine !
-
+|	dup "GetConsoleCursorInfo" getproc 'sys-GetConsoleCursorInfo !
 	dup "SetConsoleScreenBufferSize" getproc 'sys-SetConsoleScreenBufferSize !
 	dup "SetConsoleWindowInfo" getproc 'sys-SetConsoleWindowInfo !
 	

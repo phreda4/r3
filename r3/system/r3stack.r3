@@ -291,7 +291,7 @@
 	" ] " ,s ; 
 
 ::,printvstk
-	"| " ,s
+|	"| " ,s
 	'PSP 8 + ( NOS <=? d@+ ,cellp ,sp ) drop
 	'PSP NOS <? ( TOS ,cellp ) drop ; 
 

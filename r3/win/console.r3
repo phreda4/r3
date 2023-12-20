@@ -204,6 +204,18 @@
 
 ##pad * 256
 
+:ink
+	$1000 and? ( drop ; ) | upkey
+|	$ff0000 nand? ( drop ; ) 
+	16 >> $ff and swap c!+ ;
+	
+:.readln
+	'pad ( inkey 1? ink ) swap c! ;
+
+::getcursorpos | -- x y 
+	"6n" .[ .readln 'pad 2 + | get cursor position
+	str>nro swap 1 + str>nro nip swap ;
+
 :.char
 	$1000 and? ( drop ; )
 	16 >> 0? ( drop ; )
