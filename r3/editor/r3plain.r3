@@ -13,7 +13,7 @@
 :genword | adr --
 	dup 16 + @
 |	$8 and? ( 2drop ; ) 		| cte!!
-|	$fff000 nand? ( 2drop ; )	| no calls
+	$fff000 nand? ( 2drop ; )	| no calls
 	1 and ":#" + c@ ,c
 	dicc> 32 - <? ( dup adr>dicname ,s )
 |	dup @ " | %w" ,print ,cr | debug plain

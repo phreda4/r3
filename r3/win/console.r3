@@ -260,7 +260,7 @@
 
 #console-mode
 
-:evtmouse
+::evtmouse
 	stdin $18 SetConsoleMode drop ; 
 |	stdin $1f7 SetConsoleMode drop | don't work mouse event, show select
 	

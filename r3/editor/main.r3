@@ -456,13 +456,17 @@
 	,bblue ,white	
 	0 linesv 2 + ,at 
 	'name 'path " %s/%s  " ,print ,eline 
-	0 actual pagina - 2 + ,at
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer	
 	;
 
-:teclado
+|-------------------------------------
+#exit 0
+
+:evkey	
+	evtkey
+	$1B1001 =? ( 1 'exit ! ) | esc
 	$D001C =? ( fenter screen )
 	
 	$48 =? ( fup screen ) | up
@@ -480,6 +484,24 @@
 	;
 
 
+:evmouse
+|	evtmxy 1 + 'yc ! 1 + 'xc ! 
+	evtmxy swap
+	40 >? ( 2drop ; ) drop
+	1- 'actual !
+	setactual 
+	evtmb
+	$0 <>? ( fenter )
+	drop 
+	screen
+	;
+	
+:evsize	
+	.getconsoleinfo
+	rows 1 - 'linesv !
+	screen
+	;
+	
 |---------------------------------
 :main
 	rebuild
@@ -487,11 +509,17 @@
 	rows 1 - 'linesv !
 	loadm
 
-	.getconsoleinfo
+	evtmouse
+|	.getconsoleinfo
+	
 	.alsb 
 	screen
-	( getch $1B1001 <>?
- 		teclado ) drop
+	( exit 0? drop
+		getevt
+		$1 =? ( evkey )
+		$2 =? ( evmouse )
+		$4 =? ( evsize )
+		drop ) drop
 	.reset .cls
 	.masb	
 	savem		

@@ -15,7 +15,7 @@
 	mpixel >a
 	600 ( 1? 1 -
 		800 ( 1? 1 -
-			2dup xor msec + 8 << da!+
+			2dup xor msec 3 >> + $ff and da!+
 		) drop
 	) drop
 	

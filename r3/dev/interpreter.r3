@@ -155,31 +155,33 @@
 	32 <? ( drop ; )
 	modo ex 		
 	;
-
-::.inputline
+	
+:.pline
+	padi> pad> over - type
 	"s" .[ | save cursor position
+	pad> padf> over - type
+	.eline
+	"u" .[ | restore cursor	
+	;
+
+#xc #yc
+::.inputline
+	getcursorpos 'yc ! 'xc !
 	.eline
 	'pad dup 'padi> ! dup 'padf> ! dup 'pad> !	
 	0 swap c!
 	'lins 'modo !
 	( getch $D001C <>? .char 
-		.hidec
-		"u" .[ | restore cursor
-		'pad .write .eline
-		"u" .[ | restore cursor
-		'pad ( pad> <? c@+ .emit ) drop
-		.showc
-		) drop
-	;
-	
+		.hidec xc yc .at .pline .showc
+		) drop ;
 
 |---------------------------------	
 :main
 	.getconsoleinfo 
 	.cls
-	"r3 interpreter - PHREDA 2023" .write .cr
+	"r3d4 - r3 interactive" .write .cr
 	.cr
-	getcursorpos
+	
 	( .bye 0? drop
 		2 20 .at
 		.stack " > " .write 
