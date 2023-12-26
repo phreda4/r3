@@ -211,16 +211,15 @@
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
-	
+	.reset .cls
 	'path
 |WIN| "r3 ""%s/%s"""
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
 	sprint 
-	.reset .masb	
 	sys
-	.alsb
+	evtmouse
 	;
 
 :r3info
@@ -467,62 +466,50 @@
 :evkey	
 	evtkey
 	$1B1001 =? ( 1 'exit ! ) | esc
-	$D001C =? ( fenter screen )
+	$D001C =? ( fenter )
 	
-	$48 =? ( fup screen ) | up
-	$50 =? ( fdn screen ) | dn
-	$49 =? ( fpgup screen )
-	$51 =? ( fpgdn screen )
-	$47 =? ( fhome screen )
-	$4f =? ( fend screen )
+	$48 =? ( fup ) | up
+	$50 =? ( fdn ) | dn
+	$49 =? ( fpgup )
+	$51 =? ( fpgdn )
+	$47 =? ( fhome )
+	$4f =? ( fend )
 	
-	$3b =? ( fenter screen )
-	$3c =? ( f2edit screen ) |editfile screen )
-	$3d =? ( newfile screen )
-	|$3e =? ( newfolder screen ) | f4 - new folder
+	$3b =? ( fenter )
+	$3c =? ( f2edit ) |editfile  )
+	$3d =? ( newfile )
+	|$3e =? ( newfolder ) | f4 - new folder
 	drop 
 	;
 
-
 :evmouse
-|	evtmxy 1 + 'yc ! 1 + 'xc ! 
+	evtmb 0? ( drop ; ) drop	
 	evtmxy swap
 	40 >? ( 2drop ; ) drop
-	1- 'actual !
+	1- 
+	actual =? ( drop fenter ; )
+	'actual !
 	setactual 
-	evtmb
-	$0 <>? ( fenter )
-	drop 
-	screen
 	;
 	
 :evsize	
 	.getconsoleinfo
 	rows 1 - 'linesv !
-	screen
 	;
 	
 |---------------------------------
 :main
 	rebuild
-	.getconsoleinfo
-	rows 1 - 'linesv !
-	loadm
-
 	evtmouse
-|	.getconsoleinfo
-	
-	.alsb 
-	screen
+	evsize	
+	loadm
 	( exit 0? drop
+		screen
 		getevt
 		$1 =? ( evkey )
 		$2 =? ( evmouse )
 		$4 =? ( evsize )
 		drop ) drop
-	.reset .cls
-	.masb	
-	savem		
-	;
+	savem ;
 
 : main ;

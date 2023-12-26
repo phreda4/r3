@@ -711,17 +711,53 @@
 	empty			| free buffer
 	;
 
+#exit 0
+
+:evkey	
+	evtkey
+	$1B1001 =? ( 1 'exit ! )
+	teclado ;
+	
+:toxy | x y -- cursor
+	pantaini> | x y c
+	( swap 1? 1- swap >>cr 1+ ) drop | x c
+	swap 5 - clamp0 swap
+	( swap 1? 1- swap 
+		c@+ 13 =? ( drop nip 1 - ; )
+		0? ( drop nip 1 - ; ) 
+		drop ) drop ;
+		
+:evmouse
+	evtmb $0 =? ( drop ; ) drop 
+	evtmxy
+	1 <? ( 2drop ; )
+	1 - toxy 
+	'fuente> ! 
+	;
+
+
+:evsize	
+	.getconsoleinfo
+	rows 1 - 'hcode !
+	cols 7 - 'wcode !
+	;
+	
 :editor
 	setpantafin
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
 	0 'xlinea !
 	.showc .insc
-	( pantalla
-		getch $1B1001 <>? teclado 
-		) drop ;
+	( exit 0? drop 
+		pantalla
+		getevt
+		$1 =? ( evkey )
+		$2 =? ( evmouse )
+		$4 =? ( evsize )
+		drop ) drop ;
+|		getch $1B1001 <>? teclado 
+|		) drop ;
 
-	
 |---- Mantiene estado del editor
 :ram
 	here	| --- RAM
@@ -749,6 +785,7 @@
 :main
 	'name "mem/main.mem" load drop
 	ram
+	evtmouse
 	.getconsoleinfo
 	.alsb 
 	editor 
