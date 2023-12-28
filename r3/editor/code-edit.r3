@@ -718,12 +718,17 @@
 	$1B1001 =? ( 1 'exit ! )
 	teclado ;
 	
-:toxy | x y -- cursor
+::>>cr | adr -- adr'
+	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1 - ;
+	
+:xycursor | x y -- cursor
 	pantaini> | x y c
-	( swap 1? 1- swap >>cr 1+ ) drop | x c
+	( swap 1? 1- swap >>cr ) drop | x c
 	swap 5 - clamp0 swap
 	( swap 1? 1- swap 
-		c@+ 13 =? ( drop nip 1 - ; )
+		c@+ 
+		9 =? ( rot 2 - clamp0 rot rot )
+		13 =? ( 0 nip )
 		0? ( drop nip 1 - ; ) 
 		drop ) drop ;
 		
@@ -731,7 +736,7 @@
 	evtmb $0 =? ( drop ; ) drop 
 	evtmxy
 	1 <? ( 2drop ; )
-	1 - toxy 
+	1 - xycursor
 	'fuente> ! 
 	;
 
