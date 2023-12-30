@@ -283,7 +283,7 @@
 
 :>>next
 	dup c@
-	34 =? ( drop 1 + >>" trim ; ) | next in string
+	34 =? ( drop 1 + >>str trim ; ) | next in string
 	drop
 	>>sp trim
 	( dup c@ $7c =? drop >>cr trim ) | avoid comments

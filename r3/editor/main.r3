@@ -454,8 +454,8 @@
 	drawsrc
 	,bblue ,white	
 	0 linesv 2 + ,at 
-	'name 'path " %s/%s  " ,print ,eline 
-	,showc
+	'name 'path " %s/%s  " ,print ,eline
+	,showc 
 	memsize type	| type buffer
 	empty			| free buffer	
 	;
@@ -485,7 +485,7 @@
 :evmouse
 	evtmb 0? ( drop ; ) drop	
 	evtmxy swap
-	40 >? ( 2drop ; ) drop
+	40 >? ( 2drop f2edit ; ) drop
 	1- 
 	actual =? ( drop fenter ; )
 	'actual !

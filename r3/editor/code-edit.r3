@@ -760,8 +760,6 @@
 		$2 =? ( evmouse )
 		$4 =? ( evsize )
 		drop ) drop ;
-|		getch $1B1001 <>? teclado 
-|		) drop ;
 
 |---- Mantiene estado del editor
 :ram

@@ -79,7 +79,7 @@
 :.str
 	1 + dup src - 8 <<
 	11 or ,,
-	>>" ;
+	>>str ;
 
 :.nro
 	dup src - 8 << 7 or ,,	| all de src numbers are token 'dec'

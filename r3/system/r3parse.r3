@@ -12,7 +12,7 @@
 ::>>sp | adr -- adr'
 	( c@+ 1? $ff and 33 <? ( drop 1 - ; ) drop ) drop 1 - ;
 
-::>>" | adr -- adr'
+::>>str | adr -- adr'
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 1 - ; ) ) drop ) drop 1 - ;
 
 ::trimcar | adr -- adr' c
