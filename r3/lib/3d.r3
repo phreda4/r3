@@ -581,16 +581,12 @@
 ::+rota | ra rb -- rr
 	+ $100010001 not and ;
 
-|------ pack 3 vel in 60bits (20x3) - gain space
-::packvpos | vx vy vz -- vp
-	8 >> $fffff and swap
-	8 >> $fffff and 20 << or swap
-	8 >> $fffff and 40 << or ;
+|------ pack 3 vel in 63bits (21x3)
+::pack21 | vx vy vz -- vp
+	$1fffff and swap
+	$1fffff and 21 << or swap
+	$1fffff and 42 << or ;
 	
-::+vpos | va vb -- vr
-	+ $10000100001 not and ;
-
-::vpos.x 4 << 36 >> ;
-::vpos.y $fffff00000 and 24 << 36 >> ;
-::vpos.z $fffff and 44 << 36 >> ;
+::+p21 | va vb -- vr
+	+ $40000200001 not and ;
 
