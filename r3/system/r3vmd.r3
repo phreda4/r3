@@ -26,7 +26,6 @@
 :.2OVER    .PICK3 .PICK3 ;
 :.DROP		NOS @ 'TOS !	|...
 :.NIP		-8 'NOS +! ;
-:.2NIP      -16 'NOS +! ;
 :.2DROP		NOS 8 - @ 'TOS ! -16 'NOS +! ;
 :.3DROP		NOS 16 - @ 'TOS ! -24 'NOS +! ;
 :.4DROP		NOS 24 - @ 'TOS ! -32 'NOS +! ;
@@ -34,6 +33,8 @@
 :.SWAP		NOS @ TOS NOS ! 'TOS ! ;
 :.ROT		TOS NOS 8 - @ 'TOS ! NOS @ NOS 8 - !+ ! ;
 :.2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
+
+:push.nro	.DUP 'TOS ! ;
 
 :jmpr | adr' -- adrj
 	dup 4 - d@ 8 >> + ;
@@ -68,9 +69,9 @@
 :.-		NOS @ TOS - .NIP 'TOS ! ;
 :.*		NOS @ TOS * .NIP 'TOS ! ;
 :./		NOS @ TOS / .NIP 'TOS ! ;
-:.*/	NOS 8 - @+ swap @ TOS */ .2NIP 'TOS ! ;
-:.*>>	NOS 8 - @+ swap @ TOS *>> .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
-:.<</	NOS 8 - @+ swap @ TOS <</ .2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
+:.*/	NOS 8 - @+ swap @ TOS */ -16 'NOS +! 'TOS ! ;
+:.*>>	NOS 8 - @+ swap @ TOS *>> -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
+:.<</	NOS 8 - @+ swap @ TOS <</ -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
 :./MOD	NOS @ TOS /mod 'TOS ! NOS ! ;
 :.MOD	NOS @ TOS mod .NIP 'TOS ! ;
 :.ABS	TOS abs 'TOS ! ;
@@ -141,15 +142,15 @@
 :.D@+	TOS d@ 4 'TOS +! PUSH.NRO ;
 :.D!+	NOS @ TOS d! .NIP 4 'TOS +! ;
 
-:.MOVE		NOS 8 - @ NOS @ TOS move .3DROP ;
-:.MOVE>		NOS 8 - @ NOS @ TOS move> .3DROP ;
-:.FILL		NOS 8 - @ NOS @ TOS fill .3DROP ;
-:.CMOVE		NOS 8 - @ NOS @ TOS cmove .3DROP ;
-:.CMOVE>	NOS 8 - @ NOS @ TOS cmove> .3DROP ;
-:.CFILL		NOS 8 - @ NOS @ TOS cfill .3DROP ;
-:.DMOVE		NOS 8 - @ NOS @ TOS dmove .3DROP ;
-:.DMOVE>	NOS 8 - @ NOS @ TOS dmove> .3DROP ;
-:.DFILL		NOS 8 - @ NOS @ TOS dfill .3DROP ;
+:.MOVE		NOS 8 - @+ swap @ TOS move .3DROP ;
+:.MOVE>		NOS 8 - @+ swap @ TOS move> .3DROP ;
+:.FILL		NOS 8 - @+ swap @ TOS fill .3DROP ;
+:.CMOVE		NOS 8 - @+ swap @ TOS cmove .3DROP ;
+:.CMOVE>	NOS 8 - @+ swap @ TOS cmove> .3DROP ;
+:.CFILL		NOS 8 - @+ swap @ TOS cfill .3DROP ;
+:.DMOVE		NOS 8 - @+ swap @ TOS dmove .3DROP ;
+:.DMOVE>	NOS 8 - @+ swap @ TOS dmove> .3DROP ;
+:.DFILL		NOS 8 - @+ swap @ TOS dfill .3DROP ;
 
 :.MEM mem push.nro ;
 
@@ -168,8 +169,6 @@
 :.SYS10 NOS 72 - @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @ TOS sys10 'TOS ! -80 'NOS +! ;
 
 
-:push.nro	.DUP 'TOS ! ;
-
 |***
 #blok
 :dic>tok ;
@@ -177,33 +176,24 @@
 
 :getbig		blok + @ ;
 
-:.dec2	dup 4 - d@ 8 >> getbig push.nro ;
-:.bin2	dup 4 - d@ 8 >> getbig push.nro ;
-:.hex2	dup 4 - d@ 8 >> getbig push.nro ;
-:.fix2	dup 4 - d@ 8 >> getbig push.nro ;
-:.wor2 4 - d@ 8 >> dic>tok @ ; | tail call
-
-:.dec	dup 4 - d@ 8 >> push.nro ;
-:.hex   dup 4 - d@ 8 >> push.nro ;
-:.bin   dup 4 - d@ 8 >> push.nro ;
-:.fix   dup 4 - d@ 8 >> push.nro ;
+:.lit	dup 4 - d@ 8 >> getbig push.nro ;
+:.word	dup 4 - d@ 8 >> dic>tok @ 8 'RTOS +! swap RTOS ! ;
+:.word2	dup 4 - d@ 8 >> dic>tok @ 8 'RTOS +! swap RTOS ! ;
+:.adr 
+:.adr2 
+:.wadr
 :.str   dup 4 - d@ 8 >> blok + push.nro ;
-:.wor	dup 4 - d@ 8 >> dic>tok @ 8 'RTOS +! swap RTOS ! ;
 :.var   dup 4 - d@ 8 >> dic>tok @ @ push.nro ;
-:.dwor	dup 4 - d@ 8 >> dic>tok @ push.nro ;
-:.dvar  dup 4 - d@ 8 >> dic>tok @ push.nro ;
 	
 #vmc
-0 .dec2 .bin2 .hex2 .fix2 0 .wor2 .dec .bin .hex .fix .str .wor .var .dwor .dvar
+0 .lit .word .word2 .adr .adr2 .wadr .str .var
 .; .( .) .[ .] 
 .EX .0? .1? .+? .-? 
 .<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
 .DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
 .ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 .>R .R> .R@ 
-.AND .OR .XOR 
-.+ .- .* ./ 
-.<< .>> .>>> 
+.AND .OR .XOR .+ .- .* ./ .<< .>> .>>> 
 .MOD ./MOD .*/ .*>> .<</ 
 .NOT .NEG .ABS .SQRT .CLZ 
 .@ .C@ .W@ .D@ 
@@ -211,12 +201,10 @@
 .! .C! .W! .D! 
 .!+ .C!+ .W!+ .D!+ 
 .+! .C+! .W+! .D+! 
-.>A .A> .A+ 
-.A@ .A! .A@+ .A!+ 
+.>A .A> .A+ .A@ .A! .A@+ .A!+ 
 .cA@ .cA! .cA@+ .cA!+ 
 .dA@ .dA! .dA@+ .dA!+ 
-.>B .B> .B+ 
-.B@ .B! .B@+ .B!+ 
+.>B .B> .B+ .B@ .B! .B@+ .B!+ 
 .cB@ .cB! .cB@+ .cB!+ 
 .dB@ .dB! .dB@+ .dB!+ 
 .MOVE .MOVE> .FILL 

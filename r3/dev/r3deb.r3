@@ -134,12 +134,10 @@
 #initok 0
 
 :listtoken
-	initok
-	25 ( 1? 1- swap
-		dup "%d. " ,print 
-		dup 3 << tok + @ 32 >> src + "%w" ,print
-		,nl
-		1+ swap ) 2drop ;
+	0 ( cnttok <?
+		|dup "%d. " ,print 
+		dup 3 << tok + @ 32 >> src + "%w " ,print
+		1+ ) drop ;
 		
 :main | --
 	mark
