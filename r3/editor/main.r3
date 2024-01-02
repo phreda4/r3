@@ -486,7 +486,7 @@
 	evtmb 0? ( drop ; ) drop	
 	evtmxy swap
 	40 >? ( 2drop f2edit ; ) drop
-	1- 
+	1- pagina +
 	actual =? ( drop fenter ; )
 	'actual !
 	setactual 

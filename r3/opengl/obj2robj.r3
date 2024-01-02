@@ -391,9 +391,9 @@
 |	"media/obj/food/Chicken.obj" 
 
 |	"media/obj/cube.obj"
-|	"media/obj/food/Lollipop.obj"
+	"media/obj/food/Lollipop.obj"
 |	"media/obj/mario/mario.obj"
-	"media/obj/rock.obj"	
+|	"media/obj/rock.obj"	
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
 	useobj

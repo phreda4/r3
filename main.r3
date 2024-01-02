@@ -409,7 +409,6 @@
 	>=? ( dup linesv - 1 + 'pagina ! ) drop
 	setactual ;
 
-
 |--------------------------------
 #filecolor 1 2 3 4 
 
@@ -486,7 +485,7 @@
 	evtmb 0? ( drop ; ) drop	
 	evtmxy swap
 	40 >? ( 2drop f2edit ; ) drop
-	1- 
+	1- pagina +
 	actual =? ( drop fenter ; )
 	'actual !
 	setactual 
