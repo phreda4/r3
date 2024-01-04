@@ -286,11 +286,8 @@
 :cntind b> 36 + d@ ;
 
 :loadtex | adr -- adr val
-	dup d@ 0? ( ; ) | need texcolor!
-	b> + 
-	'fpath "%s/%s" sprint |dup .print
-	glImgTex 	| load tex
-	|dup "-->%h" .println
+	dup d@ 0? ( drop $ffffffff glColorTex ; ) | need texcolor!
+	b> + 'fpath "%s/%s" sprint glImgTex 	| load tex
 	;
 	
 :loadmat | adr -- adr' 

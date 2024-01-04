@@ -279,6 +279,11 @@
 :xy>d | x y --
 	$ffffffff and swap 32 << or ;
 
+#colist $ff0000 $ff00 $ff $ffff00 $ff00ff $ffff $ffffff
+
+:ncolorset | nro -- nro
+	dup $fffff and 1 - 3 << 'colist + @ SDLColor ;
+	
 ::objwire
 	mark
 	here 'v2d !
@@ -391,11 +396,16 @@
 |	"media/obj/food/Chicken.obj" 
 
 |	"media/obj/cube.obj"
-	"media/obj/food/Lollipop.obj"
+|	"media/obj/food/Lollipop.obj"
 |	"media/obj/mario/mario.obj"
-|	"media/obj/rock.obj"	
+|	"media/obj/rock.obj"
+|	"media/obj/rock2.obj"
+|	"media/obj/tree.obj"
+|	"media/obj/tree2.obj"
+	"media/obj/tree3.obj"	
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
+|	"media/obj/basicCharacter.obj"
 	useobj
 	'main SDLshow 
 	SDLquit

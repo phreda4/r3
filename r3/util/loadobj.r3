@@ -17,7 +17,21 @@
 ##paral #paral> #npara	| parametros
 ##colorl #colorl> ##ncolor 	| colores
 
+|----- nombre color (10 chars en 1 qword)
 
+:char6bit | char -- 6bitchar
+	$1f - dup $40 and 1 >> or $3f and ;
+
+:word2code | "" -- code
+	10 0 rot				| cnt acc adr     | 5 32bits 10 64bits
+	( c@+ $ff and 32 >?
+		char6bit
+		rot 6 << or		| cnt adr acc
+		rot 1 -			| adr acc cnt
+		0? ( drop nip ; )
+		swap rot ) 2drop nip ;
+		
+|---------
 ::]face | nro -- FACE ( p1 p2 p3 color)
 	5 << facel + ;
 
@@ -74,18 +88,18 @@
 		2drop 1 + ) 2drop -1 ;
 
 :uface
-	?sint
+	trim ?sint
 	-? ( verl> verl - 5 >> 1 + + )
 	'nv ! dup 1 - c@
-	32 <? ( drop 1 - ; ) 33 <? ( drop ; ) drop
-	?sint
+	9 <? ( drop 1 - ; ) 33 <? ( drop ; ) drop
+	trim ?sint
 	-? ( texl> texl - 24 / 1 + + )
 	'nt ! dup 1 - c@
-	32 <? ( drop 1 - ; ) 33 <? ( drop ; ) drop
-	?sint
+	9 <? ( drop 1 - ; ) 33 <? ( drop ; ) drop
+	trim ?sint
 	-? ( norml> norml - 24 / 1 + + )
 	'nn ! dup 1 - c@
-	32 <? ( drop 1 - ; ) drop
+	9 <? ( drop 1 - ; ) drop
 	;
 
 :4to
@@ -100,7 +114,7 @@
 	
 | formato normal|texture|vertice  - 20 bits c/u 
 :face	| face nvert( v/t/n  v//n v/t  v)??
-	>>sp trim
+	>>sp
 	facel> >b
 	| solo tres 
 	uface pack b!+ uface pack b!+ uface pack b!+
@@ -118,11 +132,12 @@
 	>>sp trim
 	dup "%w" sprint 
 |	dup .println
+	|word2code
 	searchcol 'colornow !
 	;
 
 :parseline
-|	dup "%l" .println
+|	dup "%l" .println .input
 	"vt" =pre 1? ( drop texc ; ) drop	| textcoor (u, v [,w])
 	"vn" =pre 1? ( drop norm ; ) drop	| normales (x,y,z)
 	"vp" =pre 1? ( drop pspa ; ) drop	| param space ( u [,v] [,w] )
@@ -195,8 +210,8 @@
 
 :newmtl
 	1 'colornow +!
-	dup >>sp trim 
-	colornow swap
+	dup >>sp trim |word2code
+	colornow swap 
 	colorl> !+ !+ 'colorl> !
 |	colornow "c:%d" .println
 	0 n]Ka! 0 n]Kd! 0 n]Ks! 0 n]Ke!
