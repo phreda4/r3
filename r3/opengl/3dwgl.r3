@@ -465,6 +465,9 @@
 "media/obj/rock.objm"
 |"media/obj/rock2.objm"
 "media/obj/tree.objm"
+|"media/obj/tree2.objm"
+"media/obj/tree3.objm"
+|"media/obj/raceCarRed.objm"
 
 |"media/obj/tinker.objm"
 |"media/obj/food/Lollipop.objm"

@@ -129,7 +129,7 @@
 	str>fnro ;
 
 :gete
-	$65 <>? ( ; ) drop
+	$65 <>? ( $45 <>? ( ; ) ) drop
 	getnro dup 'e ! ;
 
 ::getfenro | adr -- adr fnro

@@ -7,6 +7,7 @@
 
 ^r3/lib/3d.r3
 ^r3/lib/gui.r3
+^r3/lib/mem.r3
 
 ^r3/util/loadobj.r3
 ^r3/util/bfont.r3
@@ -302,6 +303,25 @@
 	empty
 	;
 
+:debugfile
+	mark
+	nver ( 1? 1 -
+		b@+ "%f " ,print
+		b@+ "%f " ,print
+		b@+ "%f " ,print
+		b@+ "%f " ,print ,cr
+		) drop
+	facel >b
+	nface ( 1? 1 -
+		b@+ "%h " ,print 
+		b@+ "%h " ,print 
+		b@+ "%h " ,print 
+		b@+ "%h " ,print  
+		,cr
+		) drop
+	
+	"test.txt" savemem
+	empty ;
 
 | MAIN
 |-----------------------------------
@@ -375,6 +395,7 @@
 	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
 	<f10> =? ( objminmax objcentra )
+	<f11> =? ( debugfile )
 	>esc< =? ( exit )
 	drop ;
 
@@ -402,9 +423,10 @@
 |	"media/obj/rock2.obj"
 |	"media/obj/tree.obj"
 |	"media/obj/tree2.obj"
-	"media/obj/tree3.obj"	
+|	"media/obj/tree3.obj"	
+|	"media/obj/raceCarRed.obj"	
 |	"media/obj/lolo/tinker.obj"
-|	"media/obj/tinker.obj"
+	"media/obj/tinker.obj"
 |	"media/obj/basicCharacter.obj"
 	useobj
 	'main SDLshow 
