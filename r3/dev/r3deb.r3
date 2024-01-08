@@ -17,7 +17,7 @@
 #tok>
 #strm	| string
 #strm>
-#fmem	| const + freemem
+#fmem	| var + freemem
 #fmem>
 
 #boot>>
@@ -30,12 +30,19 @@
 #error
 #lerror
 
-|--------------------------------
 #state
-#tlevel
+#flag
+#datac
 
+|--------------------------------
 :error! | adr "" --
 	'error ! 'lerror ! ;
+
+#sst * 256 	| stack of blocks
+#sst> 'sst
+:sst!	sst> w!+ 'sst> ! ;
+:sst@   -2 'sst> +! sst> w@ ;
+:level 	sst> 'sst xor ;	
 
 |-------------------------------- 1pass
 :iscom | adr -- 'adr
@@ -93,33 +100,91 @@
 	over src - 40 << or
 	tok> !+ 'tok> ! ;
 
-:endef
-	tlevel 1? ( over "Block bad close" error! ) drop
-|	'blk 'blk>  !
-	0 'tlevel !
-	state 0? ( drop ; )	drop
-|	patchend 
-	;
-
-:newentry | adr -- adr prev codename
-	endef
-	dup dic> !+ 'dic> !
-|	icode> lastdicc> - 8 - -? ( 0 nip ) 16 <<
-|	icode> 'lastdicc> !
-|	over 1 + word2code 
-	;
-	
-
 :.inc >>cr ;
 :.com >>cr ;
-:.def 
-	newentry
-	>>sp ;
-:.var 
-	newentry
-	>>sp ;
 
+|------- data
+:,dataq | nro --
+	fmem> !+ 'fmem> ! ;
+:,datad | nro --
+	fmem> d!+ 'fmem> ! ;
+:,datab | nro --
+	fmem> c!+ 'fmem> ! ;
+:,datat | nro --
+	'fmem> +! ;
+	
+#,dtipo	
+
+:invarstr
+	1 'datac +!
+	fmem> >a
+	1+ ( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
+			) drop 
+		) drop 
+	"unfinish str" error!
+	;
+
+:invarnro
+	1 'datac +!
+	str>anro ,dtipo ex ;
+
+:invarbase | adr nro -- adr
+	1 =? ( drop ',datab ',dtipo ! ; )	| (
+	2 =? ( drop ',dataq ',dtipo ! ; )	| )
+	3 =? ( drop ',datad ',dtipo ! ; )	| [
+	4 =? ( drop ',dataq ',dtipo ! ; )	| ]
+	42 =? ( drop ',dataq ',dtipo ! ; )	| *
+	drop
+	"base in var" error!
+	;
+
+|------- code
+:dic>name | dic -- dic str
+	dup @ 40 >> src + ;
+	
+:endef
+	level 1? ( over "bad Block ( )" error! ) drop
+	state 2 <>? ( drop ; ) drop
+	datac 1? ( drop ; ) drop
+	0 ,dataq
+	;
+
+:.def 
+	endef
+	0 'flag !
+	dup 1+ c@
+	$3A =? ( 2 'flag ! ) |::
+	33 <? ( tok> tok - 3 >> 'boot>> ! ) 
+	drop
+	
+	dup src - 40 <<
+	tok> tok - 3 >> 8 << or
+	flag or
+	dic> !+ 'dic> !
+
+	1 'state ! >>sp ;
+	
+:.var 
+	endef
+	1 'flag !
+	dup 1+ c@
+	$23 =? ( 3 'flag ! ) |##
+	drop
+	
+	dup src - 40 <<
+	fmem> fmem - 8 << or
+	flag or
+	dic> !+ 'dic> !
+	',dataq ',dtipo !
+	0 'datac !
+	2 'state ! >>sp ;
+
+	
 :.str 
+	state 2 =? ( drop invarstr ; ) drop
 	strm> strm - 8 << 3 or ,t 
 	strm> >a
 	1+ ( c@+ 1? 
@@ -129,30 +194,37 @@
 			) drop 
 		) drop 1 - ;
 		
+		
 :.nro 
+	state 2 =? ( drop invarnro ; ) drop
 	str>anro 
 	dup 40 << 40 >> =? ( 
 		$ffffff and 8 << 4 or ,t 
-		>>sp ; ) 
-	fmem> !+ 'fmem> !	
-	fmem> fmem - 8 - 8 << 5 or ,t 
+		>>sp ; ) drop
+	5 or ,t | in SRC
 	>>sp ;
 	
-:.base
+:.base | adr nro -- adr
+	state 2 =? ( drop invarbase ; ) drop	
+|	0 =? (  )  | ;
+|	1 =? ( blockIn )	| (
+|	2 =? ( blockOut )	| )
+|	3 =? ( anonIn )		| [
+|	4 =? ( anonOut )	| ]
 	8 +
 	,t >>sp ;
 	
-:.word 
-	6 ,t >>sp ;
+:.word | adr nro -- adr
+	8 << 6 or ,t >>sp ;
 	
-:.adr 
-	7 ,t >>sp ;
+:.adr | adr nro -- adr
+	8 << 7 or ,t >>sp ;
 	
-:.iword 
-	8 ,t >>sp ;
+:.iword | adr nro -- adr
+	8 << 8 or ,t >>sp ;
 	
-:.iadr 
-	9 ,t >>sp ;
+:.iadr | adr nro -- adr
+	8 << 9 or ,t >>sp ;
 
 
 :?base | adr -- nro+1/0
@@ -162,13 +234,26 @@
 		>>0 swap 1+ swap ) 4drop
 	0 ;
 
-:?word	;
-:?iword	;
+:?word | adr -- adr nro+1/0
+	dic> 8 -
+	( dic >=?
+		dic>name pick2			| str ind pal str
+		=s 1? ( drop
+|			drop dicc< >=? ( ; ) dup | export
+			dic> - 3 >> ;
+			) drop
+		8 - ) drop
+	0 ;
+	
+
+:?iword	
+	1
+	;
 
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
-|	over "%w " .print |** debug
+	over "%w " .print |** debug
 	$5e =? ( drop .inc ; )	| $5e ^  Include
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
@@ -205,41 +290,51 @@
 	0 'cnttok !
 	0 'cntstr !
 	|--- 1 pass
+	0 'state !
 	src ( wrd2dicc 1? ) drop	
 	lerror 1? ( drop ; ) drop | cut if error
 	
 	|-- make mem
 	here 
-	dup 'dic ! dup 'dic> !	| dicctionary
-	cntdef 3 << +	| dicc size
-	dup 'tok ! dup 'tok> !	| tokens 
-	cnttok 3 << +	| tok size
-	dup 'strm ! dup 'strm> ! 
-	cntstr +
-	dup 'fmem ! dup 'fmem> ! | memory
+	dup 'dic ! dup 'dic> !		| dicctionary
+	cntdef 3 << +				| dicc size
+	dup 'tok ! dup 'tok> !		| tokens 
+	cnttok 3 << +				| tok size
+	dup 'strm ! dup 'strm> ! 	| strings
+	cntstr +					| str size
+	dup 'fmem ! dup 'fmem> ! 	| memory const+var+free
 	'here !
 	
 	|--- 2 pass
+	0 'state !
 	src ( wrd2token 1? ) drop	
 	;
 	
 |--------------------------------	
+:dicword | nro --
+	3 << dic + @
+	"%h" ,print ,nl
+	;
+	
+:showdic
+	0 ( cntdef <? 
+		dup dicword
+		1+ ) drop 
+	,nl ;
+	
+:showmem
+	fmem ( fmem> <?
+		@+ "%h " ,print
+		) drop 
+	,nl ;
+	
+|---------------------
 :showsrc
 	src 0? ( drop ; ) >r
 	235 ,bc 
 	1 2 rows 10 - cols 1 - r> code-print ;
 
-#initok 0
-
-:showtok | nro
-	dup "%h. " ,print
-	dup $ff and
-	3 =? ( drop 8 >> $ffffff and strm + ,s ; ) 				| str
-	4 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
-	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
-	drop
-	40 >> src + "%w " ,print ;
-	
+|---------------------
 :showvar
 	cntdef "def:%d " ,print  
 	cnttok "tok:%d " ,print  
@@ -247,24 +342,39 @@
 	cntblk "blk:%d " ,print  
 	,nl
 	;
+
+|---------------------
+#initok 0
+
+:showtok | nro
+	dup "%h. " ,print
+	dup $ff and
+	3 =? ( drop 8 >> $ffffff and strm + ,s ; ) 				| str
+	4 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
+|	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
+	drop
+	40 >> src + "%w " ,print ;
 	
 :listtoken
 	0 ( rows 4 - <?
 		dup initok + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + @ 
-		showtok
-		,nl
+		showtok ,nl
 		1+ ) drop ;
-		
+
+|---------------------		
 :main | --
 	mark
 	,hidec 
 	,reset ,cls ,bblue
 	'filename ,s "  " ,s ,eline ,nl ,reset
+	error 1? ( dup ,print ) drop ,nl
 	
 |	showvar 
-	listtoken	
+	showdic
+	showmem
+|	listtoken	
 |	showsrc
 	
 	,showc
