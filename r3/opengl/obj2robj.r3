@@ -367,7 +367,6 @@
 	|facerep "rep:%d" sprint bprint
 	auxvert> auxvert - 3 >> "vertices:%d " sprint bprint
 	indexa> indexa  - 1 >> "index:%d " sprint bprint
-
 	
 	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
 	;
@@ -378,7 +377,6 @@
 	0 SDLcls
 
 	1.0 3dmode
-|	freelook
 	rx ry 0 mrot
 	xcam ycam zcam mtrans
 	
@@ -424,9 +422,9 @@
 |	"media/obj/tree.obj"
 |	"media/obj/tree2.obj"
 |	"media/obj/tree3.obj"	
-|	"media/obj/raceCarRed.obj"	
+	"media/obj/raceCarRed.obj"	
 |	"media/obj/lolo/tinker.obj"
-	"media/obj/tinker.obj"
+|	"media/obj/tinker.obj"
 |	"media/obj/basicCharacter.obj"
 	useobj
 	'main SDLshow 

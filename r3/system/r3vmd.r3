@@ -29,7 +29,6 @@
 :.2DROP		NOS 8 - @ 'TOS ! -16 'NOS +! ;
 :.3DROP		NOS 16 - @ 'TOS ! -24 'NOS +! ;
 :.4DROP		NOS 24 - @ 'TOS ! -32 'NOS +! ;
-:.6DROP		NOS 40 - @ 'TOS ! -48 'NOS +! ;
 :.SWAP		NOS @ TOS NOS ! 'TOS ! ;
 :.ROT		TOS NOS 8 - @ 'TOS ! NOS @ NOS 8 - !+ ! ;
 :.2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;

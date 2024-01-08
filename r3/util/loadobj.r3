@@ -72,6 +72,12 @@
 		dup 4 << colorl + @ 0? ( 3drop -1 ; )
 		pick2 =pre 1? ( 2drop nip ; )
 		2drop 1 + ) 2drop -1 ;
+		
+:unusedcol
+	ncolor ( 1? 1 -
+		dup 4 << colorl + @ 0? ( -1 'ncolor +! ) drop
+		) drop ;
+			
 
 :uface
 	trim ?sint
@@ -300,6 +306,7 @@
 	textmtl parsemtl
 	textobj parseobj
 	|here textobj - 10 >> "%d kb" .println
+	unusedcol
 	here
 	;
 

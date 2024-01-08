@@ -1,7 +1,7 @@
 | r3debug
 | PHREDA 2020
 |------------------
-^r3/system/r3parse.r3
+^r3/lib/parse.r3
 ^r3/system/r3vmd.r3
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
@@ -12,66 +12,33 @@
 
 #src	| src code
 #dic 	| dicctionary
+#dic>
 #tok	| tokens
 #tok>
-#fmem
+#strm	| string
+#strm>
+#fmem	| const + freemem
+#fmem>
 
 #boot>>
+
 #cntdef
 #cnttok
+#cntstr
+#cntblk
+
 #error
 #lerror
 
 |--------------------------------
+#state
+#tlevel
+
 :error! | adr "" --
 	'error ! 'lerror ! ;
 
-:,t | src nro --
-	over src - 32 << or
-	tok> !+ 'tok> ! ;
-
-|--------------------------------
-:.inc >>cr ;
-:.com >>cr ;
-:.def 1 ,t >>sp ;
-:.var 2 ,t >>sp ;
-:.str 3 ,t >>str ;
-:.nro 4 ,t >>sp ;
-:.base 5 ,t >>sp ;
-:.word 6 ,t >>sp ;
-:.adr 7 ,t >>sp ;
-:.iword 8 ,t >>sp ;
-:.iadr 9 ,t >>sp ;
-
-:?base	;
-:?word	;
-:?iword	;
-
-:wrd2token | str -- str'
-	( dup c@ $ff and 33 <?
-		0? ( nip ; ) drop 1 + )	| trim0
-|	over "%w " .print |** debug
-	$5e =? ( drop .inc ; )	| $5e ^  Include
-	$7c =? ( drop .com ; )	| $7c |	 Comentario
-	$3A =? ( drop .def ; )	| $3a :  Definicion
-	$23 =? ( drop .var ; )	| $23 #  Variable
-	$22 =? ( drop .str ; )	| $22 "	 Cadena
-	$27 =? ( drop 			| $27 ' Direccion
-		|dup ?base 0 >=? ( .base ; ) drop
-		1 + 
-		?word 1? ( .adr ; ) drop
-		?iword 1? ( .iadr ; ) drop
-		1 - "Addr not exist" error!
-		0 ; )
-	drop
-	dup isNro 1? ( drop .nro ; ) drop		| numero
-	dup ?base 0 >=? ( .base ; ) drop		| base
-	?word 1? ( .word ; ) drop				| palabra
-	?iword 1? ( .iword ; ) drop				| palabra
- 	"Word not found" error!
-	0 ;
-
-:iscom
+|-------------------------------- 1pass
+:iscom | adr -- 'adr
 |WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
 |LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
 |MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
@@ -82,19 +49,146 @@
 |		>>cr ; ) drop
     >>cr ;
 	
+:isstr | adr -- 'adr
+	1+ ( c@+ 1? 
+		1 'cntstr +! 
+		34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) 
+		drop ) drop 
+	dup 1- "str not close" error!
+	;
+	
 :wrd2dicc
 	( dup c@ $ff and 33 <?
-		0? ( nip ; ) drop 1 + )	| trim0
+		0? ( nip ; ) drop 1+ )	| trim0
 	$7c =? ( drop iscom ; )	| $7c |	 Comentario
-	1 'cnttok +!
 |	$5e =? ( drop isinc ; )	| $5e ^  Include
-	$3A =? ( 1 'cntdef +! )	| $3a :  Definicion
-	$23 =? ( 1 'cntdef +! )	| $23 #  Variable
-|	$28 =? ( 1 'cntblk +! )		| $28 (
-|	$5b =? ( 1 'cntblk +! )		| $5b [	
-	$22 =? ( drop >>str ; )	| $22 "	 Cadena
+	$3A =? ( drop 1 'cntdef +! >>sp ; )	| $3a :  Definicion
+	$23 =? ( drop 1 'cntdef +! >>sp ; )	| $23 #  Variable
+	1 'cnttok +!
+	$28 =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $28 (_
+	$5b =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $5b [_
+	$22 =? ( drop isstr ; )	| $22 "	 Cadena
 	drop >>sp
 	;
+
+|-------------------------------- 2pass
+#r3base
+";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
+"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
+"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
+">R" "R>" "R@" "AND" "OR" "XOR" "+" "-" "*" "/" "<<" ">>" ">>>"
+"MOD" "/MOD" "*/" "*>>" "<</" "NOT" "NEG" "ABS" "SQRT" "CLZ"
+"@" "C@" "W@" "D@" "@+" "C@+" "W@+" "D@+"
+"!" "C!" "W!" "D!" "!+" "C!+" "W!+" "D!+" 
+"+!" "C+!" "W+!" "D+!" 
+">A" "A>" "A+" "A@" "A!" "A@+" "A!+" "CA@" "CA!" "CA@+" "CA!+" "DA@" "DA!" "DA@+" "DA!+"
+">B" "B>" "B+" "B@" "B!" "B@+" "B!+" "CB@" "CB!" "CB@+" "CB!+" "DB@" "DB!" "DB@+" "DB!+" 
+"MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL" "DMOVE" "DMOVE>" "DFILL" 
+"MEM" "LOADLIB" "GETPROC"
+"SYS0" "SYS1" "SYS2" "SYS3" "SYS4" "SYS5" "SYS6" "SYS7" "SYS8" "SYS9" "SYS10" 
+( 0 )
+
+:,t | src nro --
+	over src - 40 << or
+	tok> !+ 'tok> ! ;
+
+:endef
+	tlevel 1? ( over "Block bad close" error! ) drop
+|	'blk 'blk>  !
+	0 'tlevel !
+	state 0? ( drop ; )	drop
+|	patchend 
+	;
+
+:newentry | adr -- adr prev codename
+	endef
+	dup dic> !+ 'dic> !
+|	icode> lastdicc> - 8 - -? ( 0 nip ) 16 <<
+|	icode> 'lastdicc> !
+|	over 1 + word2code 
+	;
+	
+
+:.inc >>cr ;
+:.com >>cr ;
+:.def 
+	newentry
+	>>sp ;
+:.var 
+	newentry
+	>>sp ;
+
+:.str 
+	strm> strm - 8 << 3 or ,t 
+	strm> >a
+	1+ ( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( drop 0 a> 1- c!+ 'strm> ! 1- ; ) 
+			) drop 
+		) drop 1 - ;
+		
+:.nro 
+	str>anro 
+	dup 40 << 40 >> =? ( 
+		$ffffff and 8 << 4 or ,t 
+		>>sp ; ) 
+	fmem> !+ 'fmem> !	
+	fmem> fmem - 8 - 8 << 5 or ,t 
+	>>sp ;
+	
+:.base
+	8 +
+	,t >>sp ;
+	
+:.word 
+	6 ,t >>sp ;
+	
+:.adr 
+	7 ,t >>sp ;
+	
+:.iword 
+	8 ,t >>sp ;
+	
+:.iadr 
+	9 ,t >>sp ;
+
+
+:?base | adr -- nro+1/0
+	0 'r3base			| adr 0 'r3base
+	( dup c@ 1? drop
+		pick2 over =s 1? ( 2drop nip 1+ ; ) drop
+		>>0 swap 1+ swap ) 4drop
+	0 ;
+
+:?word	;
+:?iword	;
+
+:wrd2token | str -- str'
+	( dup c@ $ff and 33 <?
+		0? ( nip ; ) drop 1+ )	| trim0
+|	over "%w " .print |** debug
+	$5e =? ( drop .inc ; )	| $5e ^  Include
+	$7c =? ( drop .com ; )	| $7c |	 Comentario
+	$3A =? ( drop .def ; )	| $3a :  Definicion
+	$23 =? ( drop .var ; )	| $23 #  Variable
+	$22 =? ( drop .str ; )	| $22 "	 Cadena
+	$27 =? ( drop 			| $27 ' Direccion
+		|dup ?base 1? ( drop "No Addr for base dicc" error! ; ) drop
+		1+ 
+		?word 1? ( .adr ; ) drop
+		?iword 1? ( .iadr ; ) drop
+		1- "Addr not exist" error!
+		0 ; )
+	drop
+	dup isNro 1? ( drop .nro ; ) drop	| numero
+	dup ?base 1? ( .base ; ) drop		| base
+	?word 1? ( .word ; ) drop			| palabra
+	?iword 1? ( .iword ; ) drop			| palabra
+ 	"Word not found" error!
+	0 ;
+
 
 :r3load | 'filename --
 	0 0 error!
@@ -109,20 +203,24 @@
 	|-- cnt
 	0 'cntdef !
 	0 'cnttok !
-	src ( wrd2dicc 1? ) drop
+	0 'cntstr !
+	|--- 1 pass
+	src ( wrd2dicc 1? ) drop	
+	lerror 1? ( drop ; ) drop | cut if error
 	
 	|-- make mem
 	here 
-	dup 'dic !	| dicctionary
+	dup 'dic ! dup 'dic> !	| dicctionary
 	cntdef 3 << +	| dicc size
-	dup 'tok ! 	| tokens
-	dup 'tok> !
+	dup 'tok ! dup 'tok> !	| tokens 
 	cnttok 3 << +	| tok size
-	dup 'fmem ! | memory
+	dup 'strm ! dup 'strm> ! 
+	cntstr +
+	dup 'fmem ! dup 'fmem> ! | memory
 	'here !
 	
-	|-- build tok
-	src ( wrd2token 1? ) drop
+	|--- 2 pass
+	src ( wrd2token 1? ) drop	
 	;
 	
 |--------------------------------	
@@ -133,10 +231,30 @@
 
 #initok 0
 
+:showtok | nro
+	dup "%h. " ,print
+	dup $ff and
+	3 =? ( drop 8 >> $ffffff and strm + ,s ; ) 				| str
+	4 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
+	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
+	drop
+	40 >> src + "%w " ,print ;
+	
+:showvar
+	cntdef "def:%d " ,print  
+	cnttok "tok:%d " ,print  
+	cntstr "str:%d " ,print  
+	cntblk "blk:%d " ,print  
+	,nl
+	;
+	
 :listtoken
-	0 ( cnttok <?
-		|dup "%d. " ,print 
-		dup 3 << tok + @ 32 >> src + "%w " ,print
+	0 ( rows 4 - <?
+		dup initok + 
+		cnttok >=? ( 2drop ; )
+		3 << tok + @ 
+		showtok
+		,nl
 		1+ ) drop ;
 		
 :main | --
@@ -145,6 +263,7 @@
 	,reset ,cls ,bblue
 	'filename ,s "  " ,s ,eline ,nl ,reset
 	
+|	showvar 
 	listtoken	
 |	showsrc
 	
@@ -160,6 +279,8 @@
 	evtkey
 	$1B1001 =? ( 1 'exit ! ) | >ESC<
 |	teclado 
+	$50 =? ( 1 'initok +! ) 
+	$48 =? ( -1 initok + 0 max 'initok ! )
 	;
 
 :evmouse
@@ -188,6 +309,6 @@
 		$1 =? ( evkey )
 		$2 =? ( evmouse )
 		$4 =? ( evsize )
-		drop ) drop ;
+		drop ) drop 
 	;
 

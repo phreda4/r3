@@ -39,14 +39,14 @@
 	swap LOAD frag =? ( drop 0 ; )  
 	0 swap c!
 	frag vert here !+ !
-	"vertex shader." .println
+	|"vertex shader." .println
 	GL_VERTEX_SHADER glCreateShader dup 
 	dup 1 here 0 glShaderSource
 	dup glCompileShader 
 	dup GL_COMPILE_STATUS 't glGetShaderiv 
 	t 0? ( drop shCheckErr 0 ; ) drop
 	'vert !
-	"fragment shader." .println
+	|"fragment shader." .println
 	GL_FRAGMENT_SHADER glCreateShader dup
 	dup 1 here 8 + 0 glShaderSource
 	dup glCompileShader
@@ -152,7 +152,7 @@
 	t ;	
 	
 	
-#cc * 80
+#cc * 256
 #cc> 'cc
 
 ::glColorTex | col -- texid
@@ -287,7 +287,9 @@
 
 :loadtex | adr -- adr val
 	dup d@ 0? ( drop $ffffffff glColorTex ; ) | need texcolor!
-	b> + 'fpath "%s/%s" sprint glImgTex 	| load tex
+	b> + 'fpath "%s/%s" sprint 
+	dup .write .cr
+	glImgTex 	| load tex
 	;
 	
 :loadmat | adr -- adr' 

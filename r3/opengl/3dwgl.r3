@@ -115,7 +115,11 @@
 	IDlspe 1 pick2 glUniform3fv |12 +
 	drop ;
 
+:mem2float | cnt to --
+	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+	
 :genfloor
+	10 'dif mem2float | 3+3+3+1
 	"r3/opengl/shader/height.fs" 
 	"r3/opengl/shader/height.vs" 
 	loadShaders 
@@ -290,7 +294,12 @@
 #cntobj 
 
 :hit | mask pos -- pos
-	-80.0 <? ( over 'fhit +! )
+	-50.0 <? ( over 'fhit +! )
+	50.0 >? ( over 'fhit +! )
+	nip ;
+
+:hitz | mask pos -- pos
+	0.0 <? ( over 'fhit +! )
 	90.0 >? ( over 'fhit +! )
 	nip ;
 	
@@ -306,7 +315,7 @@
 	|------- rot+pos obj
 	0 'fhit ! 
 	matini 
-	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hit mrpos
+	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hitz mrpos
 	'fmodel mcpyf | model matrix
 	
 	|------- refresh & hit
@@ -345,13 +354,13 @@
 
 :+objr2
 	0 0 0 
-	0 |velrot velrot velrot packrota
+	0
+
 	0	| pos z
-	20 randmax 10 - 1.0 * | pos y
-	20 randmax 10 - 1.0 * | pos x	
-	
-	
-	0 | 0 0 0 packrota
+	20 randmax 10 - 2.0 * | pos y
+	20 randmax 10 - 2.0 * | pos x	
+	$ffff randmax $ffff randmax $ffff randmax
+	packrota
 	+obj ;
 
 |----- player
@@ -438,24 +447,18 @@
 	>esc< =? ( exit ) 	
 	<f1> =? ( 50 ( 1? 1 - objrand +objr ) drop ) 
 	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
-	
-	
+
 	drop ;		
 	
-:mem2float | cnt to --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+
 	
 :jugar 
 	'listfx p.clear
 	'listobj p.clear
-	
 	20 ( 1? 1-
 		objrand +objr2
 		) drop
-		
-	10 'dif mem2float | 3+3+3+1
-	genfloor		
-	
+
 	'juego SDLShow 
 	;
 	
@@ -463,13 +466,14 @@
 #objs 	
 "media/obj/cube.objm"
 "media/obj/rock.objm"
-|"media/obj/rock2.objm"
+"media/obj/rock2.objm"
 "media/obj/tree.objm"
-|"media/obj/tree2.objm"
+|"media/obj/tree2.objm" |*
 "media/obj/tree3.objm"
-|"media/obj/raceCarRed.objm"
+|"media/obj/raceCarRed.objm" |*
+|"media/obj/basicCharacter.objm" |*
 
-|"media/obj/tinker.objm"
+|"media/obj/tinker.objm" |*
 |"media/obj/food/Lollipop.objm"
 |"media/obj/mario/mario.objm"
 |"media/obj/rock.objm"
@@ -483,8 +487,8 @@
 	
 |-------------------------------------
 :glinit
+	.cls
 	"3d world" 1024 600 SDLinitGL
-
 	glInfo	
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	
@@ -496,6 +500,7 @@
 	
 :
 	glinit
+	
 	loadshader			| load shader
 	0 'cntobj !
 	'o1 >a			| load objs
@@ -503,9 +508,9 @@
 		dup loadobjm a!+
 		1 'cntobj +!
 		>>0 ) drop
+	genfloor		
 	initvec
-|	.cls	
-	.cr .cr glinfo
+	.cr .cr 
 	"<esc> - Exit" .println
 	"<esp> - jmp" .println	
 	
