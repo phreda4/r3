@@ -471,9 +471,9 @@
 "media/obj/tree2.objm" 
 "media/obj/tree3.objm"
 "media/obj/raceCarRed.objm" 
-"media/obj/basicCharacter.objm" 
+|"media/obj/basicCharacter.objm" 
 
-"media/obj/tinker.objm" 
+|"media/obj/tinker.objm" 
 |"media/obj/food/Lollipop.objm"
 |"media/obj/mario/mario.objm"
 |"media/obj/rock.objm"

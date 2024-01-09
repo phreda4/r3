@@ -159,7 +159,6 @@
 	dup 10 a]@ *. 14 a]+!
 	11 a]@ *. 15 a]+! ;
 
-
 ::mrotx	| rx --
 	mat> dup >a 128 + >b
 	sincos | sin cos

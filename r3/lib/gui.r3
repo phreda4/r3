@@ -64,14 +64,14 @@
 	ex ;
 
 |-- dnmove
-::onDnMove | 'dn 'move --
+::onDnMove | 'dn 'move --	
 	1 'id +!
 	SDLb 0? ( 3drop ; ) drop
+	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
 	in? 0? ( 3drop ; ) drop
 	id dup 'hot !
-	hotnow <>? ( 3drop ; )
-	actnow <>? ( 'actnow ! drop ex ; ) | 1er vez que toca
-	drop nip ex ;
+	hotnow <>? ( 2drop ex ; )
+	drop nip ex ;	
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
 	1 'id +!
@@ -81,7 +81,6 @@
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
 	drop nip ex ;
-
 
 ::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
 	1 'id +!
