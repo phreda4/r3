@@ -2,16 +2,18 @@
 | PHREDA 2020
 |------------------
 ^r3/lib/parse.r3
-^r3/system/r3vmd.r3
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 ^r3/editor/code-print.r3
+
 ^r3/system/meta/metalibs.r3
+^r3/system/r3vmd.r3
 
 #filename * 1024
 
+|------------- MEMORY MAP
 #src	| src code
-#dic 	| dicctionary
+#dic	| dicctionary
 #dic>
 #tok	| tokens
 #tok>
@@ -19,6 +21,7 @@
 #strm>
 #fmem	| var + freemem
 #fmem>
+|------------
 
 #boot>>
 
@@ -78,6 +81,7 @@
 	drop >>sp
 	;
 
+		
 |-------------------------------- 2pass
 #r3base
 ";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
@@ -156,11 +160,11 @@
 	endef
 	0 'flag !
 	dup 1+ c@
-	$3A =? ( 2 'flag ! ) |::
-	33 <? ( tok> tok - 3 >> 'boot>> ! ) 
+	$3A =? ( 2 'flag ! ) 				|::
+	33 <? ( tok> tok - 3 >> 'boot>> ! ) | : alone
 	drop
 	
-	dup src - 40 <<
+	dup src - 1 + flag 1 >> + 40 << 	| skip : or ::
 	tok> tok - 3 >> 8 << or
 	flag or
 	dic> !+ 'dic> !
@@ -171,17 +175,17 @@
 	endef
 	1 'flag !
 	dup 1+ c@
-	$23 =? ( 3 'flag ! ) |##
+	$23 =? ( 3 'flag ! ) 			|##
 	drop
 	
-	dup src - 40 <<
+	dup src - 1 + flag 1 >> + 40 << | skip # or ##
 	fmem> fmem - 8 << or
 	flag or
 	dic> !+ 'dic> !
+	
 	',dataq ',dtipo !
 	0 'datac !
 	2 'state ! >>sp ;
-
 	
 :.str 
 	state 2 =? ( drop invarstr ; ) drop
@@ -193,7 +197,6 @@
 			34 <>? ( drop 0 a> 1- c!+ 'strm> ! 1- ; ) 
 			) drop 
 		) drop 1 - ;
-		
 		
 :.nro 
 	state 2 =? ( drop invarnro ; ) drop
@@ -240,20 +243,35 @@
 		dic>name pick2			| str ind pal str
 		=s 1? ( drop
 |			drop dicc< >=? ( ; ) dup | export
-			dic> - 3 >> ;
+			dic - 3 >> ;
 			) drop
 		8 - ) drop
 	0 ;
 	
+|------------ metalibs
+|#r3.. 'name 'words 'calls 'info
+|#liblist 'r3..
+
+:searchword | str lib+ 'names -- str lib+ nro/-1
+	0 ( swap dup c@ 1? drop 
+		dup pick4 =s 1? ( 2drop ; ) drop
+		>>0 swap 1+ ) 3drop -1 ;	
+	
+:searchall | str -- str nro lib/0
+	'liblist ( @+ 1?
+		8 + @ searchword
+		+? ( swap 8 - swap ; ) drop
+		) 2drop 
+	0 0 ;
 
 :?iword	
-	1
+	searchall nip | lib nro
 	;
 
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
-	over "%w " .print |** debug
+|	over "%w " .print |** debug
 	$5e =? ( drop .inc ; )	| $5e ^  Include
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
@@ -263,14 +281,14 @@
 		|dup ?base 1? ( drop "No Addr for base dicc" error! ; ) drop
 		1+ 
 		?word 1? ( .adr ; ) drop
-		?iword 1? ( .iadr ; ) drop
+		?iword +? ( .iadr ; ) drop
 		1- "Addr not exist" error!
 		0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop	| numero
 	dup ?base 1? ( .base ; ) drop		| base
 	?word 1? ( .word ; ) drop			| palabra
-	?iword 1? ( .iword ; ) drop			| palabra
+	?iword +? ( .iword ; ) drop			| palabra
  	"Word not found" error!
 	0 ;
 
@@ -294,6 +312,9 @@
 	src ( wrd2dicc 1? ) drop	
 	lerror 1? ( drop ; ) drop | cut if error
 	
+	|--- load includes
+	|**
+	
 	|-- make mem
 	here 
 	dup 'dic ! dup 'dic> !		| dicctionary
@@ -313,7 +334,9 @@
 |--------------------------------	
 :dicword | nro --
 	3 << dic + @
-	"%h" ,print ,nl
+	dup "%h " ,print 
+	40 >> src + "%w" ,print
+	,nl
 	;
 	
 :showdic
@@ -349,7 +372,7 @@
 :showtok | nro
 	dup "%h. " ,print
 	dup $ff and
-	3 =? ( drop 8 >> $ffffff and strm + ,s ; ) 				| str
+	3 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 				| str
 	4 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
 |	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
 	drop
@@ -372,9 +395,9 @@
 	error 1? ( dup ,print ) drop ,nl
 	
 |	showvar 
-	showdic
-	showmem
-|	listtoken	
+|	showdic
+|	showmem
+	listtoken	
 |	showsrc
 	
 	,showc
@@ -408,9 +431,11 @@
 : 	
 	evtmouse
 	.getconsoleinfo .cls
-	
+
 |	'filename "mem/main.mem" load drop
-	"r3/demo/textxor.r3" r3load
+|	"r3/demo/textxor.r3" 
+	"r3/democ/palindrome.r3"
+	r3load
 	
 	|.ovec 
 	( exit 0? drop 
@@ -419,6 +444,5 @@
 		$1 =? ( evkey )
 		$2 =? ( evmouse )
 		$4 =? ( evsize )
-		drop ) drop 
-	;
-
+		drop ) 
+	drop ;

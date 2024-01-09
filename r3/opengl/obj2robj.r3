@@ -9,6 +9,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/mem.r3
 
+^r3/util/sort.r3
 ^r3/util/loadobj.r3
 ^r3/util/bfont.r3
 ^r3/util/dlgfile.r3
@@ -162,22 +163,40 @@
 	20 >> $fffff and 1 - ]uv 
 	@+ f2fp , @ neg f2fp , ;
 	
+	
+#sortface 
 :fillvertex&index
+	here 'sortface !
+	facel 
+	nface ( 1? 1 - swap
+		dup 24 + @ ,q
+		dup ,q
+		32 + swap 
+		) 2drop
+	|--------- ordenado por colores
+	nface sortface shellsort | len lista			
+
 	here 
 	dup dup 'auxvert ! 'auxvert> ! | cada vertice usado
 	nface 3 * 3 << + | 3 vertices por cara | nro/vert/norm | max
 	dup dup 'indexa ! 'indexa> !
 	'here !
 |	"vertex add" .println
-	facel 
-	nface ( 1? 1 - swap
-		dup 24 + @ 
-|		colornow <>? ( dup pick3 "%d %d " .print )
-		'colornow ! 
-		@+ addvert, @+ addvert,	@+ addvert,
-		8 + swap 
-		) 2drop
+
+|	facel nface ( 1? 1 - swap
+|		dup 24 + @ 'colornow ! 
+|		@+ addvert, @+ addvert,	@+ addvert,
+|		8 + swap ) 2drop
+		
+	sortface nface
+	( 1? 1- swap
+		@+ 'colornow !
+		@+ @+ addvert, @+ addvert, @ addvert,
+		swap ) 2drop
+
 	indexa> 'here ! ;
+
+
 	
 |--------------------------
 :,vf3
@@ -302,30 +321,67 @@
 		) drop
 	empty
 	;
-
-:debugfile
-	mark
-	nver ( 1? 1 -
-		b@+ "%f " ,print
-		b@+ "%f " ,print
-		b@+ "%f " ,print
-		b@+ "%f " ,print ,cr
-		) drop
-	facel >b
-	nface ( 1? 1 -
-		b@+ "%h " ,print 
-		b@+ "%h " ,print 
-		b@+ "%h " ,print 
-		b@+ "%h " ,print  
-		,cr
-		) drop
 	
+:objpoint
+	verl >b
+	nver ( 1? 1 -
+		b@+ b@+ b@+ 
+		8 b+ |b@+ $7 and 3 << 'colist + @ SDLColor
+		project3d
+		SDLPoint ) drop	;
+|------------------------
+:,d "%d " ,print ;
+
+:,vf3
+	dup $fffff and ,d
+	dup 20 >> $fffff and ,d
+	40 >> $fffff and ,d ;
+	
+:,vf ,d ;
+
+:,debcolor
+	'indcolor over 3 << + @ ,d		| cntindex +0
+	dup ]Kd@ ,vf3	| diffuse color +4
+	dup ]Ka@ ,vf3	| ambient color +16
+	dup ]Ke@ ,vf3	| emissive +28
+	dup ]Ks@ ,vf3	| specular	+40
+	dup ]Ns@ ,vf	| shininess +52
+	dup ]d@ ,vf		| opacity	+56
+	dup ]Ni@ drop	
+	dup ]i@ drop
+	dup ]Mkd@ ,d		| diffuse Map { 255 255 255 255} +60
+	dup ]MNs@ ,d 	| especular Map { 255 255 255 255} +64
+	dup ]Mbp@ ,d		| normal Map { 127 127 255 0 } +68
+	,nl
+	;
+	
+:debugfile
+	fillvertex&index
+	mark
+|	nver ( 1? 1 -
+|		b@+ "%f " ,print b@+ "%f " ,print b@+ "%f " ,print b@+ "%f " ,print ,cr
+|		) drop
+	facel >b
+|	nface ( 1? 1 -
+|		b@+ "%h " ,print b@+ "%h " ,print b@+ "%h " ,print 	b@+ "%h " ,print  ,cr
+|		) drop
+	"index" ,print ,nl		
+|	indexa ( indexa> <? w@+ ,d ) drop	
+	sortface 
+	nface ( 1? 1 -
+		swap @+ "%d " ,print @+ "%d " ,print ,nl
+		swap ) 2drop
+		
+	"colors" ,print ,nl
+	0 ( ncolor <? 
+		,debcolor
+		1 + ) drop | texture names	
 	"test.txt" savemem
 	empty ;
 
 | MAIN
 |-----------------------------------
-#xcam 0 #ycam 0 #zcam -20.0
+#xcam 0 #ycam 0 #zcam -8.0
 #xm #ym
 #rx #ry
 
@@ -357,7 +413,7 @@
 |---------------------------------------------------	
 :objinfo
 	8 0 bat 'filename bprint
-	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F10:CENTER" bprint
+	" >> F1:LOAD F2:OBJ1 F3:OBJ2 F9:CUBO1.0 F10:CENTER" bprint
 	8 16 bat nver "vert:%d" sprint bprint nface " tria:%d" sprint bprint ncolor " col:%d" sprint bprint 
 	0 ( ncolor <? 
 		8 32 pick2 4 << + bat dup "Color %d : " sprint bprint
@@ -382,6 +438,8 @@
 	
 	$007f00 SDLColor
 	nface 10000 <? ( objwire ) drop
+	|objpoint
+	
 	objinfo
 	SDLredraw
 	
@@ -392,6 +450,8 @@
 	<f1> =? ( loadobj ) 
 	<f2> =? ( convertobj1 )
 	<f3> =? ( convertobj2 )
+	
+	<f9> =? ( objminmax 1.0 objcube )
 	<f10> =? ( objminmax objcentra )
 	<f11> =? ( debugfile )
 	>esc< =? ( exit )
@@ -422,10 +482,10 @@
 |	"media/obj/tree.obj"
 |	"media/obj/tree2.obj"
 |	"media/obj/tree3.obj"	
-	"media/obj/raceCarRed.obj"	
+|	"media/obj/raceCarRed.obj"	
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
-|	"media/obj/basicCharacter.obj"
+	"media/obj/basicCharacter.obj"
 	useobj
 	'main SDLshow 
 	SDLquit

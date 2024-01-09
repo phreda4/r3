@@ -288,7 +288,7 @@
 :loadtex | adr -- adr val
 	dup d@ 0? ( drop $ffffffff glColorTex ; ) | need texcolor!
 	b> + 'fpath "%s/%s" sprint 
-	dup .write .cr
+	|dup .write .cr
 	glImgTex 	| load tex
 	;
 	

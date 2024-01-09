@@ -195,8 +195,8 @@
 |	colornow "c:%d" .println
 	0 n]Ka! 0 n]Kd! 0 n]Ks! 0 n]Ke!
 	0 n]Mkd! 0 n]MNs! 0 n]Mbp!
-	0 n]Ns! 0 n]Ni!
-	0 n]d! 0 n]i! 
+	0 n]Ns! 1.0 n]Ni!
+	1.0 n]d! 2.0 n]i! 
 	;
 
 :parselinem
@@ -224,7 +224,6 @@
 |	"Tr" =pre 1? ( drop ; ) drop | 1-d	
 
 :notmtl
-	"error, not MTL!" .println
 	"error, not MTL!" .println
 |	7 + trim dup colora 4 + !
 |	existe?
