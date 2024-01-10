@@ -7,7 +7,7 @@
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3
 ^r3/system/r3pass4.r3
-^r3/system/meta/metalibs.r3
+^r3/d4/meta/metalibs.r3
 
 ::r3debuginfo | str --
 	r3name

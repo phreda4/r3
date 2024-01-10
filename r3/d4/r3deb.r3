@@ -6,8 +6,8 @@
 ^r3/win/mconsole.r3
 ^r3/editor/code-print.r3
 
-^r3/system/meta/metalibs.r3
-^r3/system/r3vmd.r3
+^r3/d4/meta/metalibs.r3
+^r3/d4/r3vmd.r3
 
 #filename * 1024
 

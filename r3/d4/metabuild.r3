@@ -75,7 +75,7 @@
 	,cr
 	"#" ,s 'filenamev ,s " 'name 'words 'calls 'info" ,s 
 	,cr
-	"r3/system/meta/metalibs.r3" appendmem
+	"r3/d4/meta/metalibs.r3" appendmem
 	empty ;
 
 :namevirtual | name -- name
@@ -141,7 +141,7 @@
 :main
 	.cls
 	"library generator" .println
-	mark "r3/system/meta/metalibs.r3" savemem empty 
+	mark "r3/d4/meta/metalibs.r3" savemem empty 
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
 		dup ">> %s" .println
@@ -157,7 +157,7 @@
 		dup folderlist
 		>>0 ) 2drop
 	" 0" ,s ,cr
-	"r3/system/meta/metalibs.r3" appendmem		
+	"r3/d4/meta/metalibs.r3" appendmem		
 	empty ;
 
 : main ;
