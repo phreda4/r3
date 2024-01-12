@@ -28,8 +28,8 @@
 	1 'cnttokens +!
 	$3A =? ( 1 'cntdef +! )		| $3a :  Definicion
 	$23 =? ( 1 'cntdef +! )		| $23 #  Variable
-	$28 =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $28 (_
-	$5b =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $5b [_
+	$28 =? ( 1 'cntblk +! )		| $28 (
+	$5b =? ( 1 'cntblk +! )		| $5b [
 	$22 =? ( drop >>str ; )		| $22 "	 Cadena
 	drop >>sp ;
 
@@ -55,7 +55,7 @@
 			"Include not found" 'error !
 			; ) drop
 	load 0 swap c!
-	here dup only13 'here ! 			| for see in debug
+	here dup only13 'here !
 	;
 
 :add.inc | src here -- src

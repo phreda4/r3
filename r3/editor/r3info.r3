@@ -18,9 +18,9 @@
 	r3name
 	here dup 'src !
 	'r3filename load 
-	here =? ( drop "no source code." .println ; )
-	0 swap c!+ 'here !
-	src only13 
+	here =? ( drop "no source code" .println ; )
+	0 swap c! 
+	src only13 'here !
 	0 'error !
 	0 'cnttokens !
 	0 'cntdef !

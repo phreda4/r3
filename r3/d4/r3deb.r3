@@ -1,41 +1,13 @@
 | r3debug
 | PHREDA 2020
 |------------------
-^r3/lib/parse.r3
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 ^r3/editor/code-print.r3
 
 ^r3/d4/meta/metalibs.r3
+^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
-
-#filename * 1024
-
-|------------- MEMORY MAP
-#src	| src code
-#dic	| dicctionary
-#dic>
-#tok	| tokens
-#tok>
-#strm	| string
-#strm>
-#fmem	| var + freemem
-#fmem>
-|------------
-
-#boot>>
-
-#cntdef
-#cnttok
-#cntstr
-#cntblk
-
-#error
-#lerror
-
-#state
-#flag
-#datac
 
 |--------------------------------
 :error! | adr "" --
@@ -83,23 +55,6 @@
 
 		
 |-------------------------------- 2pass
-#r3base
-";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
-"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
-"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
-"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
-">R" "R>" "R@" "AND" "OR" "XOR" "+" "-" "*" "/" "<<" ">>" ">>>"
-"MOD" "/MOD" "*/" "*>>" "<</" "NOT" "NEG" "ABS" "SQRT" "CLZ"
-"@" "C@" "W@" "D@" "@+" "C@+" "W@+" "D@+"
-"!" "C!" "W!" "D!" "!+" "C!+" "W!+" "D!+" 
-"+!" "C+!" "W+!" "D+!" 
-">A" "A>" "A+" "A@" "A!" "A@+" "A!+" "CA@" "CA!" "CA@+" "CA!+" "DA@" "DA!" "DA@+" "DA!+"
-">B" "B>" "B+" "B@" "B!" "B@+" "B!+" "CB@" "CB!" "CB@+" "CB!+" "DB@" "DB!" "DB@+" "DB!+" 
-"MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL" "DMOVE" "DMOVE>" "DFILL" 
-"MEM" "LOADLIB" "GETPROC"
-"SYS0" "SYS1" "SYS2" "SYS3" "SYS4" "SYS5" "SYS6" "SYS7" "SYS8" "SYS9" "SYS10" 
-( 0 )
-
 :,t | src nro --
 	over src - 40 << or
 	tok> !+ 'tok> ! ;
@@ -146,9 +101,6 @@
 	;
 
 |------- code
-:dic>name | dic -- dic str
-	dup @ 40 >> src + ;
-	
 :endef
 	level 1? ( over "bad Block ( )" error! ) drop
 	state 2 <>? ( drop ; ) drop
@@ -167,7 +119,7 @@
 	dup src - 1 + flag 1 >> + 40 << 	| skip : or ::
 	tok> tok - 3 >> 8 << or
 	flag or
-	dic> !+ 'dic> !
+	dic> !+ 0 swap !+ 'dic> !
 
 	1 'state ! >>sp ;
 	
@@ -181,7 +133,7 @@
 	dup src - 1 + flag 1 >> + 40 << | skip # or ##
 	fmem> fmem - 8 << or
 	flag or
-	dic> !+ 'dic> !
+	dic> !+ 0 swap !+ 'dic> !
 	
 	',dataq ',dtipo !
 	0 'datac !
@@ -230,23 +182,6 @@
 	8 << 9 or ,t >>sp ;
 
 
-:?base | adr -- nro+1/0
-	0 'r3base			| adr 0 'r3base
-	( dup c@ 1? drop
-		pick2 over =s 1? ( 2drop nip 1+ ; ) drop
-		>>0 swap 1+ swap ) 4drop
-	0 ;
-
-:?word | adr -- adr nro+1/0
-	dic> 8 -
-	( dic >=?
-		dic>name pick2			| str ind pal str
-		=s 1? ( drop
-|			drop dicc< >=? ( ; ) dup | export
-			dic - 3 >> ;
-			) drop
-		8 - ) drop
-	0 ;
 	
 |------------ metalibs
 |#r3.. 'name 'words 'calls 'info
@@ -292,39 +227,84 @@
  	"Word not found" error!
 	0 ;
 
+|----------- includes
+:escom
+|WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
+|LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
+|MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
+|RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
+    >>cr ;
 
+:includepal | str car -- str'
+	$7c =? ( drop escom ; )		| $7c |	 Comentario
+	$22 =? ( drop >>str ; )		| $22 "	 Cadena
+	drop >>sp ;
+	
+:ininc? | str -- str adr/0
+	'inc ( inc> <?
+		@+ pick2 =s 1? ( drop ; ) drop
+		8 + ) drop 0 ;
+
+:realfilename | str -- str
+	"." =pre 0? ( drop "%l" sprint ; ) drop
+	2 + 'r3path "%s/%l" sprint ;
+
+:rtrim | str -- str
+	dup ( c@+ 1? drop ) drop 2 -
+	( dup c@ $ff and 33 <? drop 1 - ) drop
+	0 swap 1 + c! ;
+	
+:load.inc | str -- str newsrc ; incluye codigo
+	here over realfilename rtrim 
+	dup filexist 0? ( nip
+			pick2 "Include not found" error!
+			; ) drop
+	load 0 swap c!
+	here dup only13 'here !
+	;
+
+|*** need recursion detection!!
+:includes | src --
+	dup ( trimcar 1?
+		( $5e =? drop 					| $5e ^  Include
+			ininc? 0? ( drop
+				load.inc 0? ( drop ; )	| no existe
+				includes
+				error 1? ( drop ; ) drop
+				dup ) drop
+			>>cr trimcar )
+		includepal ) 2drop
+	over inc> !+ !+ 'inc> ! 
+	;
+	
+|---------------------
 :r3load | 'filename --
 	0 0 error!
 	
 	dup 'filename strcpy
+	dup 'r3path strpath
+	
 	here dup 'src !
 	swap load 
-	here =? ( "no source code." error! ; ) 
-	0 swap c!+ 'here !
-	src only13 
+	here =? ( "no source code" error! ; ) 
+	0 swap c! 
+	src only13 'here !
+
+	|--- load includes
+	'inc 'inc> !
+	src includes
 	
 	|-- cnt
 	0 'cntdef !
 	0 'cnttok !
 	0 'cntstr !
+	
 	|--- 1 pass
 	0 'state !
 	src ( wrd2dicc 1? ) drop	
 	lerror 1? ( drop ; ) drop | cut if error
 	
-	|--- load includes
-	|**
-	
-	|-- make mem
-	here 
-	dup 'dic ! dup 'dic> !		| dicctionary
-	cntdef 3 << +				| dicc size
-	dup 'tok ! dup 'tok> !		| tokens 
-	cnttok 3 << +				| tok size
-	dup 'strm ! dup 'strm> ! 	| strings
-	cntstr +					| str size
-	dup 'fmem ! dup 'fmem> ! 	| memory const+var+free
-	'here !
+	makemem	
 	
 	|--- 2 pass
 	0 'state !
@@ -333,7 +313,7 @@
 	
 |--------------------------------	
 :dicword | nro --
-	3 << dic + @
+	4 << dic + @
 	dup "%h " ,print 
 	40 >> src + "%w" ,print
 	,nl
@@ -433,8 +413,8 @@
 	.getconsoleinfo .cls
 
 |	'filename "mem/main.mem" load drop
-|	"r3/demo/textxor.r3" 
-	"r3/democ/palindrome.r3"
+	"r3/demo/textxor.r3" 
+|	"r3/democ/palindrome.r3"
 	r3load
 	
 	|.ovec 

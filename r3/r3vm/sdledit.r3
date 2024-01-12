@@ -542,11 +542,8 @@
 	'edfilename strcpy
 	fuente 'edfilename |getpath
 	load 0 swap c!
-
-	fuente only13 	|-- queda solo cr al fin de linea
-	fuente dup 'pantaini> !
-	count + '$fuente !
-	fuente simplehash 'hashfile !
+	fuente only13 1 - '$fuente ! |-- queda solo cr al fin de linea
+	fuente dup 'pantaini> ! simplehash 'hashfile !
 	;
 
 ::edsave | --

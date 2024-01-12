@@ -212,6 +212,9 @@
 
 ::trimc | car adr -- adr'
 	( c@+ 1? pick2 =? ( drop nip 1 - ; ) drop ) drop nip 1 - ;
+	
+::trimcar | adr -- adr' c
+	( c@+ $ff and 33 <? 0? ( swap 1 - swap ; ) drop ) ;	
 
 ::trimstr | adr -- adr'
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 2 - ; ) ) drop ) drop 1 - ;
@@ -228,13 +231,16 @@
 ::n>>0 | adr n -- adr' 
 	( 1? swap >>0 swap 1 - ) drop ;
 
-::only13 | adr -- ; remove 10..reeplace with 13
+::only13 | adr -- 'adr ; remove 10..reeplace with 13
 	dup
 	( c@+ 1?
 		13 =? ( over c@	10 =? ( rot 1 + rot rot ) drop )
 		10 =? ( drop c@+ 13 <>? ( drop 1 - 13 ) )
 		rot c!+ swap ) nip
-	swap c! ;
+	swap c!+ ;
 
 ::>>sp | adr -- adr'	; next space
 	( c@+ $ff and 32 >? drop ) drop 1 - ;
+
+::>>str | adr -- adr'	; next single quote
+	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 1 - ; ) ) drop ) drop 1 - ;
