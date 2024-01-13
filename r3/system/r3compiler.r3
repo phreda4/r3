@@ -28,7 +28,7 @@
 	'r3filename
 	dup "load %s" .println
 	2dup load | "fn" mem
-	here =? ( 3drop "no source code." .println ; )
+	here =? ( 3drop "no source code" .println ; )
 	0 swap c!+ 'here !
 	0 'error !
 	0 'cnttokens !

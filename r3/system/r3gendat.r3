@@ -112,9 +112,10 @@
 	0 'instr !
 
 |    ";--------------------------" ,s ,cr
+
     "; " ,s
 	dup dicc - 5 >> ,datainfo ,cr
-
+	
 	dup adr>dicname ,s ,sp
 	adr>toklen
 	( 1? 1 - >r
@@ -152,10 +153,11 @@
 	dicc ( dicc> <?
 		dup gendatastr
 		32 + ) drop
-
+	
 	"; *** VARS ***" ,s ,cr
 	"align 16 " ,s ,cr
 	dicc ( dicc> <?
+		
 		dup gendata
 		32 + ) drop
 

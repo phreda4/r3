@@ -61,6 +61,7 @@
 | %0010 A
 | %0100 B
 
+
 #r3basemov (
 0 0 0 0		| ; | fin de palabra (12)
 0 0 0 2		| (
@@ -248,8 +249,8 @@
 	( dic >=?
 		dup @ dic>name pick2			| str ind pal str
 		=s 1? ( drop
-|			drop dic< >=? ( ; ) dup | export
-			dic - 3 >> ;
+			dup @ %10 and? ( drop dic - 4 >> 1 + ; ) drop | export
+			dic< >=? ( dic - 4 >> 1 + ; ) dup | local
 			) drop
 		16 - ) drop
 	0 ;
@@ -257,7 +258,7 @@
 ::makemem
 	|-- make mem
 	here 
-	dup 'dic ! dup 'dic> !		| dicctionary
+	dup 'dic ! dup 'dic> ! dup 'dic< !		| dicctionary
 	cntdef 4 << +				| dicc size
 	dup 'tok ! dup 'tok> !		| tokens 
 	cnttok 3 << +				| tok size

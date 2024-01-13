@@ -28,8 +28,8 @@
 	1 'cnttokens +!
 	$3A =? ( 1 'cntdef +! )		| $3a :  Definicion
 	$23 =? ( 1 'cntdef +! )		| $23 #  Variable
-	$28 =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $28 (_
-	$5b =? ( over 1+ c@ 33 <? ( 1 'cntblk +! ) drop )		| $5b [_
+	$28 =? ( over c@ 33 <? ( 1 'cntblk +! ) drop )		| $28 (_
+	$5b =? ( over c@ 33 <? ( 1 'cntblk +! ) drop )		| $5b [_
 	$22 =? ( drop >>str ; )		| $22 "	 Cadena
 	drop >>sp ;
 

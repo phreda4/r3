@@ -99,9 +99,8 @@
 ::getnro | adr -- adr' nro
 	trim
 	signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) | caso + y - solos
-	swap 1? ( [ neg ; ] >r ) drop
-	drop
+	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >? 	| 0 adr car
 		$39 >? ( drop 1 - swap ; )			| 0..9
 		$30 - rot 10* + swap )
@@ -110,9 +109,8 @@
 ::str>fnro | adr -- adr fnro
 	0 'f !
 	trim signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) | caso + y - solos
-	swap 1? ( [ neg ; ] >r ) drop
-	drop
+	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >?	| 0 adr car
 		$39 >? ( drop 1 - swap ; )			| 0..9
 		$30 - rot 10* + swap )
@@ -135,9 +133,8 @@
 ::getfenro | adr -- adr fnro
 	0 'f ! 0 'e !
 	trim signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) | caso + y - solos
-	swap 1? ( [ neg ; ] >r ) drop
-	drop
+	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >? 	| 0 adr car
 		$39 >? ( drop 1 - swap ; )			| 0..9
 		$30 - rot 10* + swap )
