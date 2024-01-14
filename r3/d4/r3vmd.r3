@@ -6,17 +6,23 @@
 
 ##<<ip	| ip
 ##<<bp	| breakpoint
-##code<
-
-|----------
 
 ##REGA 0 
 ##REGB 0 
+
 ##TOS 0 
 ##PSP * 1024
 ##NOS 'PSP
 ##RSP * 1024
 ##RTOS 'RSP
+
+::.stack
+	'PSP 8 + ( NOS <=? @+ "%d " .print ) drop
+	'PSP NOS <=? ( TOS "%d " .print ) drop ; 
+
+::,stack
+	'PSP 8 + ( NOS <=? @+ "%d " ,print ) drop
+	'PSP NOS <=? ( TOS "%d " ,print ) drop ; 
 
 | token format
 | ..............ff token nro
@@ -26,11 +32,13 @@
 :.DUP	8 'NOS +! TOS NOS ! ;
 | 
 :npush	.DUP 'TOS ! ;
-:jmpr	dup 8 - @ 32 << 40 >> + ;
 
-:.lit	dup 8 - @ 32 << 40 >> npush ;
-:.word	dup 8 - @ 8 >> $ffffffff and tok + 8 'RTOS +! swap RTOS ! ;
-:.adr 	dup 8 - @ 8 >> $ffffffff and tok + npush ;
+:jmpr	dup 8 - @ 24 << 32 >> + ;
+:dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ ;
+
+:.lit	dup 8 - @ 24 << 32 >> npush ;
+:.word	dic@ dic>tok 8 'RTOS +! swap RTOS ! ;
+:.adr 	dic@ dic>tok npush ;
 :.var   dup 8 - @ 8 >> $ffffffff and fmem + @ npush ; | big literal too!
 :.str   dup 8 - @ 8 >> $ffffffff and strm + npush ;
 
@@ -214,11 +222,11 @@
 | palabras de interaccion
 |-------------------------------
 ::resetvm | --
-	'PSP 'NOS !
+	'PSP 8 - 'NOS !
 	'RSP 'RTOS !
 	0 'TOS !
 	0 RTOS !
-	|<<boot  '<<ip !
+	boot>> 4 << dic + @ dic>tok '<<ip ! | first word to tok adress
 	;
 
 ::tokenexec | adr+ token -- adr+

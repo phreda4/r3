@@ -1,10 +1,8 @@
-| r3debug
-| PHREDA 2020
-|------------------
-^r3/win/console.r3
-^r3/win/mconsole.r3
-^r3/editor/code-print.r3
+| r3d4 tokenizer
+| convert source code in exec tokens
 
+| PHREDA 2024
+|------------------
 ^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
 
@@ -85,9 +83,7 @@
 	( c@+ 1? 
 		1 'cntstr +! 
 		34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) 
-		drop ) drop 
-	dup 1- "str not close" error!
-	;
+		drop ) drop ;
 	
 :wrd2dicc
 	( dup c@ $ff and 33 <?
@@ -172,7 +168,8 @@
 | ......ffffffff.. value
 
 
-:,t | src nro --
+:,t | src nro -- src
+|	dup ":%h" .println
 	over src - 40 << or
 	tok> !+ 'tok> ! ;
 	
@@ -182,13 +179,19 @@
 	datac 1? ( drop ; ) drop
 	0 ,dataq | #a :b converto to #a 0 :b
 	;
-
+	
+:boot>>! | src char -- src char
+	boot>> +? ( 
+		pick2 8 << 2 or ,t drop | call prev 
+		) drop 
+	dic> dic - 4 >> 'boot>> ! ;
+	
 :.def 
 	endef
 	0 'flag !
 	dup 1+ c@
-	$3A =? ( 2 'flag ! ) 				|::
-	33 <? ( tok> tok - 3 >> 'boot>> ! ) | : alone
+	$3A =? ( 2 'flag ! ) 	|::
+	33 <? ( boot>>! ) | : alone
 	drop
 	
 	dup src - 1 + flag 1 >> + 40 << 	| skip : or ::
@@ -197,7 +200,7 @@
 	dic> !+ 0 swap !+ 'dic> !
 
 	1 'state ! >>sp ;
-	
+
 :.var 
 	endef
 	1 'flag !
@@ -228,7 +231,9 @@
 		34 =? ( drop c@+ 
 			34 <>? ( drop 0 a> 1- c!+ 'strm> ! 1- ; ) 
 			) drop 
-		) drop 1 - ;
+		) drop 1 - 
+	"str not close" error!
+	;
 		
 :.nro 
 	state 2 =? ( drop invarnro ; ) drop
@@ -240,22 +245,65 @@
 	4 ,t 
 	>>sp ;
 	
+|---------------------------------
+#iswhile
+
+:blockIn
+	tok> tok - 3 >> sst! ;
+
+:cond | atok' tok -- atok'
+|	dup "----%h" .println
+	dup $ff and
+	$b <? ( 2drop ; ) | 0?..
+	$1e >? ( 2drop ; ) | ..bt?
+	drop
+	dup 8 >> $ffffffff and 1? ( 2drop ; ) drop | no jump
+	tok> pick2 - 8 + $ffffffff and 8 << or | saltar a tok>
+	over 8 - !	| add adr to ??
+	1 'iswhile !
+	;
+
+:blockOut | tok n -- tok
+	0 'iswhile !
+	sst@ 3 << tok + 
+	tok> 			| src n from to
+	over 8 + ( over <? @+ 
+		cond ) 2drop 	
+	iswhile 1? ( drop
+		tok> - $ffffffff and 8 << swap 
+		5 + or ,t >>sp
+		; ) drop 
+	8 - dup @ 
+	tok> pick2 - 3 >> 8 << or | jump if
+	swap !
+	5 + ,t >>sp 	
+	;
+
+:anonIn
+	tok> tok - 3 >> sst!
+	;
+	
+:anonOut
+	sst@ 	| jmp to
+			| load adr
+	drop			
+	;
+	
 :.base | adr nro -- adr
 	state 2 =? ( drop invarbase >>sp ; ) drop	
-|	1 =? (  )  | ;
-|	2 =? ( blockIn )	| (
-|	3 =? ( blockOut )	| )
-|	4 =? ( anonIn )		| [
-|	5 =? ( anonOut )	| ]
-	5 +
-	,t >>sp ;
+
+	2 =? ( blockIn )	| (
+	3 =? ( blockOut ; )	| )
+	4 =? ( anonIn )		| [
+	5 =? ( anonOut ; )	| ]
+	
+	5 + ,t >>sp ;
 	
 :.word | adr nro -- adr
-	8 << 2 or ,t >>sp ;
+	1 - 8 << 2 or ,t >>sp ;
 	
 :.adr | adr nro -- adr
-	8 << 3 or ,t >>sp ;
-	
+	1 - 8 << 3 or ,t >>sp ;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
@@ -271,16 +319,15 @@
 		1+ 
 		?word 1? ( .adr ; ) drop
 |		?iword +? ( .iadr ; ) drop
-		1- "Addr not exist" error!
+		1- "addr not exist" error!
 		0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop	| numero
 	dup ?base 1? ( .base ; ) drop		| base
 	?word 1? ( .word ; ) drop			| palabra
 |	?iword +? ( .iword ; ) drop			| palabra externa
- 	"Word not found" error!
+ 	"word not found" error!
 	0 ;
-
 
 :str2pass2 | str --
 	'sst 'sst> !		| reuse stackblock
@@ -288,16 +335,16 @@
 	( wrd2token 1? ) drop ;	
 
 :pass2	
+	-1 'boot>> !
 	'inc ( inc> <?			| every include
 |		dup @ "%w" .println
 		8 + @+ str2pass2
-|		error 1? ( seterrorfile nip ; ) drop
 		error 1? ( 2drop ; ) drop
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		) drop ;
 		
 |---------------------
-:r3load | 'filename --
+::r3load | 'filename --
 	0 0 error!
 	
 	dup 'filename strcpy
@@ -308,139 +355,17 @@
 	here =? ( "no source code" error! ; ) 
 	0 swap c! 
 	src only13 'here !
-
+	
 	'inc 'inc> ! 
 	'filename src includes drop | load includes
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
 	
-	error 0? ( drop ; )
-	.println
-	lerror "%l" .println
+|	.input
+|	error 0? ( drop ; )	.println
+|	lerror "%l" .println
 	
 	;
 	
-|--------------------------------	
-|--------------------------------		
-|--------------------------------	
 
-#initok 0
-
-:dicword | nro --
-	dup "%d." ,print
-	4 << dic + @
-	dup "%h " ,print 
-	40 >>> src + "%w" ,print
-	,nl
-	;
-	
-:showdic
-	0 ( rows 4 - <?
-		dup initok + 
-		cntdef >=? ( 2drop ; )
-		dicword
-		1+ ) drop ;
-	
-:showmem
-	fmem ( fmem> <?
-		@+ "%h " ,print
-		) drop 
-	,nl ;
-	
-|---------------------
-:showsrc
-	src 0? ( drop ; ) >r
-	235 ,bc 
-	1 2 rows 10 - cols 1 - r> code-print ;
-
-|---------------------
-:showvar
-	cntdef "def:%d " ,print  
-	cnttok "tok:%d " ,print  
-	cntstr "str:%d " ,print  
-	cntblk "blk:%d " ,print  
-	,nl
-	;
-
-|---------------------
-
-
-:showtok | nro
-	dup "%h. " ,print
-	dup $ff and
-	3 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 				| str
-	4 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
-|	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
-	drop
-	40 >> src + "%w " ,print ;
-	
-:listtoken
-	0 ( 10 <?
-		dup initok + 
-		cnttok >=? ( 2drop ; )
-		3 << tok + @ 
-		showtok ,nl
-		1+ ) drop ;
-
-|---------------------		
-:main | --
-	mark
-	,hidec 
-	,reset ,cls ,bblue
-	'filename ,s "  " ,s ,eline ,nl ,reset
-	error 1? ( dup ,print ) drop ,nl
-	
-|	showvar 
-|	showdic
-|	showmem
-	listtoken	
-|	showsrc
-	
-	,showc
-	memsize type	| type buffer
-	empty			| free buffer
-	;
-
-|--------------------------------	
-#exit 0	
-
-:evkey	
-	evtkey
-	$1B1001 =? ( 1 'exit ! ) | >ESC<
-|	teclado 
-	$50 =? ( 1 'initok +! ) 
-	$48 =? ( -1 initok + 0 max 'initok ! )
-	drop
-	;
-
-:evmouse
-	evtmb $0 =? ( drop ; ) drop 
-|	evtmxy
-	;
-
-:evsize	
-	.getconsoleinfo
-|	rows 1 - 'hcode !
-|	cols 7 - 'wcode !
-	;	
-	
-|--------------------- BOOT
-: 	
-	evtmouse
-	.getconsoleinfo .cls
-
-|	'filename "mem/main.mem" load drop
-|	"r3/demo/textxor.r3" 
-	"r3/test/testasm.r3"
-	r3load
-
-	|.ovec 
-	( exit 0? drop 
-		main
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) 
-	drop ;

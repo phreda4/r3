@@ -2,8 +2,6 @@
 | PHREDA 2024
 ^r3/lib/parse.r3
 ^r3/lib/str.r3
-^r3/win/console.r3
-^r3/win/mconsole.r3
 
 ##filename * 1024
 ##r3path * 1024
