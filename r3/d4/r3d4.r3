@@ -30,6 +30,7 @@
 		1+ ) drop ;
 	
 :showmem
+	"mem" ,print ,nl
 	fmem ( fmem> <?
 		@+ "%h " ,print
 		) drop 
@@ -47,6 +48,7 @@
 	cnttok "tok:%d " ,print  
 	cntstr "str:%d " ,print  
 	cntblk "blk:%d " ,print  
+	fmem> fmem - "m:%d" ,print
 	,nl
 	;
 
@@ -61,7 +63,7 @@
 	40 >> src + "%w " ,print ;
 	
 :listtoken
-	0 ( 20 <?
+	0 ( 18 <?
 		dup initok + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
@@ -75,13 +77,15 @@
 	,hidec 
 	,reset ,cls ,bblue
 	'filename ,s "  " ,s ,eline ,nl ,reset
-	error 1? ( dup ,print ) drop ,nl
+	
+	|error 1? ( dup ,print ) drop ,nl
 	
 |	showvar 
 |	showdic
 |	showmem
 	listtoken	
 |	showsrc
+|	showmem
 	,nl
 	<<ip "%h" ,print ,nl
 	,stack
@@ -140,7 +144,8 @@
 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-	"r3/test/testasm.r3"
+	"r3/democ/palindrome.r3" 
+|	"r3/test/testasm.r3"
 	r3load
 	resetvm
 

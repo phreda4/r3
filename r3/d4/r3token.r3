@@ -111,11 +111,11 @@
 	0 'cntstr !
 	'inc ( inc> <?				| every include
 		8 + @+ str2pass1
+		1 'cnttok +! | +1 jump for boot sequence
 		) drop ;
 
 		
 |-------------------------------- 2pass
-
 
 :.inc >>cr ;
 :.com >>cr ;
@@ -146,7 +146,8 @@
 
 :invarnro
 	1 'datac +!
-	str>anro ,dtipo ex ;
+	str>anro
+	,dtipo ex ;
 
 :invarbase | adr nro -- adr
 	2 =? ( drop ',datab ',dtipo ! ; )	| (
@@ -182,7 +183,7 @@
 	
 :boot>>! | src char -- src char
 	boot>> +? ( 
-		pick2 8 << 2 or ,t drop | call prev 
+		pick2 8 << 2 or ,t | call prev 
 		) drop 
 	dic> dic - 4 >> 'boot>> ! ;
 	
@@ -238,11 +239,11 @@
 :.nro 
 	state 2 =? ( drop invarnro ; ) drop
 	str>anro 
-	dup 40 << 40 >> =? ( 
-		$ffffff and 8 << 1 or ,t 
+	dup 32 << 32 >> =? ( 
+		$ffffffff and 8 << 1 or ,t 
 		>>sp ; ) 
-	drop | big value in gost var **		
-	4 ,t 
+ 	fmem> fmem - 8 << 4 or ,t 
+	,dataq  | big value in gost var **		
 	>>sp ;
 	
 |---------------------------------
@@ -252,7 +253,6 @@
 	tok> tok - 3 >> sst! ;
 
 :cond | atok' tok -- atok'
-|	dup "----%h" .println
 	dup $ff and
 	$b <? ( 2drop ; ) | 0?..
 	$1e >? ( 2drop ; ) | ..bt?
@@ -274,33 +274,31 @@
 		5 + or ,t >>sp
 		; ) drop 
 	8 - dup @ 
-	tok> pick2 - 3 >> 8 << or | jump if
+	tok> pick2 - 8 << or | jump if
 	swap !
 	5 + ,t >>sp 	
 	;
 
 :anonIn
-	tok> tok - 3 >> sst!
-	;
+	tok> tok - 3 >> sst! ;
 	
 :anonOut
-	sst@ 	| jmp to
-			| load adr
-	drop			
-	;
+	sst@ 3 << tok + | tok[
+	tok> over - 8 - 8 << over @ or over !
+	8 + 8 << swap 5 + or ,t >>sp ;
 	
 :.base | adr nro -- adr
 	state 2 =? ( drop invarbase >>sp ; ) drop	
-
 	2 =? ( blockIn )	| (
 	3 =? ( blockOut ; )	| )
 	4 =? ( anonIn )		| [
 	5 =? ( anonOut ; )	| ]
-	
 	5 + ,t >>sp ;
 	
 :.word | adr nro -- adr
-	1 - 8 << 2 or ,t >>sp ;
+	1 - dup 4 << dic + @ 
+	1 and? ( nip $ffffffff00 and 4 or ,t >>sp ; ) drop | var
+	8 << 2 or ,t >>sp ;
 	
 :.adr | adr nro -- adr
 	1 - 8 << 3 or ,t >>sp ;
@@ -308,7 +306,7 @@
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
-|	over "%w " .println |** debug
+|	over "%w " .print |** debug
 	$5e =? ( drop .inc ; )	| $5e ^  Include
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
@@ -363,6 +361,8 @@
 	pass2			| tokenize code
 	
 |	.input
+	
+	fmem> $ff + 'here ! | 256bytes free mem
 |	error 0? ( drop ; )	.println
 |	lerror "%l" .println
 	

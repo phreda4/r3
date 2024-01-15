@@ -63,7 +63,7 @@
 :.( 	;
 :.)		jmpr ;  | 0=no effect
 :.[		jmpr ;
-:.]		dup 8 - @ 32 << 40 >> npush ;
+:.]		dup 8 - @ 24 << 32 >> npush ;
 
 |--- COND
 :.0?	TOS 1? ( drop jmpr ; ) drop ;
