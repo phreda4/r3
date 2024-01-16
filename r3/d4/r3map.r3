@@ -28,12 +28,10 @@
 ##cntdef
 ##cnttok
 ##cntstr
-##cntblk
 
 ##error
 ##lerror
 
-##state
 ##flag
 ##datac
 
@@ -201,7 +199,6 @@
 10 -9 0 0	|SYS9 abcdefghij -- a
 11 -10 0 0	|SYS10 abcdefghijk -- a
 )
-
 	
 ::?base | adr -- nro+1/0
 	0 'r3base			| adr 0 'r3base
@@ -241,6 +238,9 @@
 	8 >> $ffffffff and 3 << tok + ;
 ::dic>mem | dic -- mem
 	8 >> $ffffffff and fmem + ;
+	
+::nro>dic | nro -- dic
+	4 << dic + ;
 	
 ::?word | adr -- adr nro+1/0
 	dic> 16 -

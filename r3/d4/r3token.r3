@@ -89,96 +89,52 @@
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
 	$7c =? ( drop iscom ; )	| $7c |	 Comentario
-|	$5e =? ( drop isinc ; )	| $5e ^  Include
+	$5e =? ( drop >>cr ; )	| $5e ^  Include
 	$3A =? ( drop 1 'cntdef +! >>sp ; )	| $3a :  Definicion
 	$23 =? ( drop 1 'cntdef +! >>sp ; )	| $23 #  Variable
 	1 'cnttok +!
-	$28 =? ( over 1 + c@ 33 <? ( 1 'cntblk +! ) drop )		| $28 (_
-	$5b =? ( over 1 + c@ 33 <? ( 1 'cntblk +! ) drop )		| $5b [_
 	$22 =? ( drop isstr ; )	| $22 "	 Cadena
 	drop >>sp
 	;
 
-:str2pass1
-	0 'state !
-	( wrd2dicc 1? ) drop ;
 
 |--- 1 pass, traverse code, calc sizes
-
 :pass1
 	0 'cntdef !
 	0 'cnttok !
 	0 'cntstr !
 	'inc ( inc> <?				| every include
-		8 + @+ str2pass1
+		8 + @+
+		( wrd2dicc 1? ) drop
 		1 'cnttok +! | +1 jump for boot sequence
 		) drop ;
 
-		
-|-------------------------------- 2pass
-
-:.inc >>cr ;
-:.com >>cr ;
-
-|------- data
-:,dataq | nro --
-	fmem> !+ 'fmem> ! ;
-:,datad | nro --
-	fmem> d!+ 'fmem> ! ;
-:,datab | nro --
-	fmem> c!+ 'fmem> ! ;
-:,datat | nro --
-	'fmem> +! ;
 	
-#,dtipo	
-
-:invarstr | adr -- adr'
-	1 'datac +!
-	fmem> >a
-	( c@+ 1? 
-		dup ca!+
-		34 =? ( drop c@+ 
-			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
-			) drop 
-		) drop 
-	"unfinish str" error!
-	;
-
-:invarnro
-	1 'datac +!
-	str>anro
-	,dtipo ex ;
-
-:invarbase | adr nro -- adr
-	2 =? ( drop ',datab ',dtipo ! ; )	| (
-	3 =? ( drop ',dataq ',dtipo ! ; )	| )
-	4 =? ( drop ',datad ',dtipo ! ; )	| [
-	5 =? ( drop ',dataq ',dtipo ! ; )	| ]
-	43 =? ( drop ',datat ',dtipo ! ; )	| *
-|	dup "base:%d" .println
-	drop
-	dup "base in var" error!
-	0
-	;
-
-|------- code
-
+|-------------------------------- 2pass
 | token format
 | ..............ff token nro
 | ffffff.......... adr to src
 | ......ffffffff.. value
 
+#codeini | for calc len
 
 :,t | src nro -- src
-|	dup ":%h" .println
-	over src - 40 << or
+	over src - 40 << or		| store src pointer
 	tok> !+ 'tok> ! ;
 	
+:callend
+	tok> codeini - 3 >> | code_length
+	32 <<
+	dic> 8 - ! | info in wordnow
+	flag 1 nand? ( 
+		tok> 8 - @ $ff and 
+		$6 <>? ( $80 dic> 16 - +! ) | 6=;
+		drop ) drop ;
+	
 :endef
-	level 1? ( over "bad Block ( )" error! ) drop
-	state 2 <>? ( drop ; ) drop
-	datac 1? ( drop ; ) drop
-	0 ,dataq | #a :b converto to #a 0 :b
+	level 1? ( over "missing )" error! ) drop
+	codeini 1? ( callend ) drop
+	tok> 'codeini !
 	;
 	
 :boot>>! | src char -- src char
@@ -199,8 +155,7 @@
 	tok> tok - 3 >> 8 << or
 	flag or
 	dic> !+ 0 swap !+ 'dic> !
-
-	1 'state ! >>sp ;
+	>>sp ;
 
 :.var 
 	endef
@@ -210,21 +165,17 @@
 	drop
 	
 	dup src - 1 + flag 1 >> + 40 << | skip # or ##
-	fmem> fmem - 8 << or
+	tok> tok - 8 << or
 	flag or
 	dic> !+ 0 swap !+ 'dic> !
 	
-	',dataq ',dtipo !
-	0 'datac !
-	2 'state ! >>sp ;
-
+	>>sp ;
 	
 |    1    2     3    4    5
 | 0 .lit .word .adr .var .str ...
 	
 :.str 
 	1 + | skip "
-	state 2 =? ( drop invarstr ; ) drop
 	strm> strm - 8 << 5 or ,t 
 	strm> >a
 	( c@+ 1? 
@@ -235,15 +186,13 @@
 		) drop 1 - 
 	"str not close" error!
 	;
-		
+	
 :.nro 
-	state 2 =? ( drop invarnro ; ) drop
 	str>anro 
 	dup 32 << 32 >> =? ( 
 		$ffffffff and 8 << 1 or ,t 
-		>>sp ; ) 
- 	fmem> fmem - 8 << 4 or ,t 
-	,dataq  | big value in gost var **		
+		>>sp ; ) drop
+	0 ,t	| src token
 	>>sp ;
 	
 |---------------------------------
@@ -288,7 +237,7 @@
 	8 + 8 << swap 5 + or ,t >>sp ;
 	
 :.base | adr nro -- adr
-	state 2 =? ( drop invarbase >>sp ; ) drop	
+	flag 1 and? ( drop 5 + ,t >>sp ; ) drop	
 	2 =? ( blockIn )	| (
 	3 =? ( blockOut ; )	| )
 	4 =? ( anonIn )		| [
@@ -297,7 +246,7 @@
 	
 :.word | adr nro -- adr
 	1 - dup 4 << dic + @ 
-	1 and? ( nip $ffffffff00 and 4 or ,t >>sp ; ) drop | var
+	1 and? ( drop 8 << 4 or ,t >>sp ; ) drop | var
 	8 << 2 or ,t >>sp ;
 	
 :.adr | adr nro -- adr
@@ -307,8 +256,8 @@
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
 |	over "%w " .print |** debug
-	$5e =? ( drop .inc ; )	| $5e ^  Include
-	$7c =? ( drop .com ; )	| $7c |	 Comentario
+	$5e =? ( drop >>cr ; )	| $5e ^  Include
+	$7c =? ( drop >>cr ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
 	$22 =? ( drop .str ; )	| $22 "	 Cadena
@@ -316,31 +265,81 @@
 		|dup ?base 1? ( drop "No Addr for base dicc" error! ; ) drop
 		1+ 
 		?word 1? ( .adr ; ) drop
-|		?iword +? ( .iadr ; ) drop
 		1- "addr not exist" error!
 		0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop	| numero
 	dup ?base 1? ( .base ; ) drop		| base
 	?word 1? ( .word ; ) drop			| palabra
-|	?iword +? ( .iword ; ) drop			| palabra externa
  	"word not found" error!
 	0 ;
-
-:str2pass2 | str --
-	'sst 'sst> !		| reuse stackblock
-	0 'state !	
-	( wrd2token 1? ) drop ;	
 
 :pass2	
 	-1 'boot>> !
 	'inc ( inc> <?			| every include
 |		dup @ "%w" .println
-		8 + @+ str2pass2
+		8 + @+ 
+		'sst 'sst> !		| reuse stackblock
+		( wrd2token 1? ) drop 
 		error 1? ( 2drop ; ) drop
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
-		) drop ;
+		) drop 
+	callend
+	;
+	
+|--------------------- tree calls
+:+call! | dic -- dic
+	$10000 over 8 + +! ;
+	
+:2dic	| tok -- dic
+	8 >> $ffffffff and 4 << dic + ;
+	
+:toklen	| dic -- dic tok len
+	dup @ 8 >> $ffffffff and 3 << tok +
+	swap 8 + @ 32 >>> ;
+	
+:overcode | dc 'tok tok ctok -- dc 'tok xx xx
+	drop 2dic +call! 
+	dup 8 + @ 16 >> $fff and 1 >? ( ; ) | only 1 call traverse
+	drop 
+	rot !+ swap | add to dicc calls
+	dup dup ;
+
+:overdire | dc 'tok tok ctok -- dc 'tok xx xx
+	drop 2dic +call! 
+	dup @ $4 or over ! | set adr flag
+	dup 8 + @ 16 >> $fff and 1 >? ( ; ) | only 1 call traverse
+	drop 
+	rot !+ swap | add to dicc calls
+	dup dup ;
+	
+:rcode | dc word -- dc
+	toklen		| dc tok len
+	( 1? 1 - >r
+		@+ dup $ff and | dup "%d" .println
+		2 =? ( overcode ) | word
+		3 =? ( overdire ) | adr
+		4 =? ( overcode ) | var
+		2drop r> ) 2drop ;
+
+:rdata | stack nro -- stack
+	toklen 
+	( 1? 1 - >r
+		@+ dup $ff and |dup "%h " .print
+		2 >=? ( 4 <=? ( overdire ) )
+		2drop r> ) 2drop 
+		;
 		
+:datacode | dc word -- dc
+	dup @ 1 and? ( drop rdata ; ) drop rcode ;
+
+:pass3	
+	cntdef 1 -
+	nro>dic +call!
+	here !+
+	( here >? | diccalls
+		8 - dup @ datacode ) drop ;	
+	
 |---------------------
 ::r3load | 'filename --
 	0 0 error!
@@ -359,13 +358,9 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+|	fmem> 'here ! 	| free mem
+	pass3
 	
 |	.input
-	
-	fmem> $ff + 'here ! | 256bytes free mem
-|	error 0? ( drop ; )	.println
-|	lerror "%l" .println
-	
 	;
 	
-

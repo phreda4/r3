@@ -252,4 +252,94 @@
 		@+ $ff and 3 << 'vmc + @ ex
 		1? )
 	'<<ip ! ;
+	
+|------ PREPARE DATA FOR RUN
+#gmem ',q
+
+:srcpos
+	;
+
+:memlit
+|	srcpos src + str>anro nip gmem ex 
+	;
+
+:resbyte | reserve memory
+	'here +! ;
+
+:memstr | store string
+|	over 4 - d@ 8 >> src + valstr 0 ,c 
+	;
+
+:memwor
+|	srcpos dic>tok @ ,q 
+	;
+
+:getvarmem
+	@+ $ff and
+	7 10 bt? ( memlit )
+	11 =? ( memstr ) | str
+	12 15 bt? ( memwor )
+	17 =? ( ',c 'gmem ! )	| (
+	18 =? ( ',q 'gmem ! )	| )
+	19 =? ( ', 'gmem ! )	| [
+	20 =? ( ',q 'gmem ! )	| ]
+	58 =? ( 'resbyte 'gmem ! ) | *
+	drop
+	;
+
+:var2mem | adr -- adr
+	dup @ 1 nand? ( drop ; ) drop	| data only
+|	dup toklen
+	here pick3 8 + !	| save mem place in token place
+	0? ( ,q drop ; )
+	',q 'gmem ! 			| save dword default
+	( 1? 1 - swap
+		getvarmem
+		swap ) 2drop ;
+
+::data2mem
+	dic ( dic> <?
+		var2mem
+		16 + ) drop ;	
+|------- data
+:,dataq | nro --
+	fmem> !+ 'fmem> ! ;
+:,datad | nro --
+	fmem> d!+ 'fmem> ! ;
+:,datab | nro --
+	fmem> c!+ 'fmem> ! ;
+:,datat | nro --
+	'fmem> +! ;
+	
+#,dtipo	
+
+:invarstr | adr -- adr'
+	1 'datac +!
+	fmem> >a
+	( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
+			) drop 
+		) drop 
+|	"unfinish str" error!
+	;
+
+:invarnro
+	1 'datac +!
+	str>anro
+	,dtipo ex ;
+
+:invarbase | adr nro -- adr
+	2 =? ( drop ',datab ',dtipo ! ; )	| (
+	3 =? ( drop ',dataq ',dtipo ! ; )	| )
+	4 =? ( drop ',datad ',dtipo ! ; )	| [
+	5 =? ( drop ',dataq ',dtipo ! ; )	| ]
+	43 =? ( drop ',datat ',dtipo ! ; )	| *
+|	dup "base:%d" .println
+	drop
+|	dup "base in var" error!
+	0
+	;
+		
 		
