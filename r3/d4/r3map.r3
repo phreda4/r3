@@ -6,7 +6,12 @@
 ##filename * 1024
 ##r3path * 1024
 
-|------------- MEMORY MAP
+|--------------------- token format
+| ..............ff token nro
+| ffffff.......... adr to src
+| ......ffffffff.. value
+
+|--------------------- MEMORY MAP
 ##src	| src code
 ##dic	| dicctionary
 ##dic>
@@ -32,8 +37,8 @@
 ##error
 ##lerror
 
-##flag
-##datac
+::error! | adr "" --
+	'error ! 'lerror ! ;
 
 #r3base
 ";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
@@ -50,12 +55,6 @@
 "MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL" "DMOVE" "DMOVE>" "DFILL" 
 "MEM" "LOADLIB" "GETPROC"
 "SYS0" "SYS1" "SYS2" "SYS3" "SYS4" "SYS5" "SYS6" "SYS7" "SYS8" "SYS9" "SYS10" ( 0 )
-
-| uso-dData-dRet-FLAG
-| FLAG 
-| %0001 mem
-| %0010 A
-| %0100 B
 
 
 #r3basemov (
@@ -221,26 +220,44 @@
 | $..............20	1 si es recursiva
 | $..............40	1 si tiene anonimas
 | $..............80	1 termina sin ;
-| $......ffffffff..	-> tok+/fmem+ -> code/mem
+| $............ff..	flag2
+| $......ffffff....	-> tok+ -> code
 | $ffffff.......... -> src+ -> src
 |
 | info2
 | $..............ff - Data use		255
 | $............ff.. - Data delta	-128..127
-| $.........fff.... - calls			1024+
-| $........f....... - +info: inline,constant,exec,only stack
+| $........ffff.... - calls			1024+
 | $ffffffff........ - len
 
-	
+| uso-dData-dRet-FLAG
+| FLAG 
+| %0001 mem
+| %0010 A
+| %0100 B
+
 ::dic>name | dic -- str
 	40 >>> src + ;	
+	
 ::dic>tok | dic -- tok
-	8 >> $ffffffff and 3 << tok + ;
-::dic>mem | dic -- mem
-	8 >> $ffffffff and fmem + ;
+	16 >> $ffffff and 3 << tok + ;
 	
 ::nro>dic | nro -- dic
 	4 << dic + ;
+
+::tok>dic | tok -- dic
+	8 >> $ffffffff and 4 << dic + ;
+	
+::toklen | dic -- tok len
+	dup @ 16 >> $ffffff and 3 << tok +
+	swap 8 + @ 32 >>> ;
+
+::toklend | dic -- tok len ; len for data
+	dup @ 16 >> $ffffff and 		| dic itok
+	dup 3 << tok + swap 			| dic tok itok
+	rot 16 + @ 16 >> $ffffff and 
+	swap -
+	;
 	
 ::?word | adr -- adr nro+1/0
 	dic> 16 -

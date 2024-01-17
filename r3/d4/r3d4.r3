@@ -19,7 +19,8 @@
 | $..............20	1 si es recursiva
 | $..............40	1 si tiene anonimas
 | $..............80	1 termina sin ;
-| $......ffffffff..	-> tok+/fmem+ -> code/mem
+| $............ff.. flag2
+| $......ffffff....	-> tok+ -> code
 | $ffffff.......... -> src+ -> src
 |
 | info2
@@ -52,6 +53,8 @@
 	dup 1 and 3 << 'colpal + @ ex
 	|dup $3 and 1 << " ::: ###" + c@+ ,c c@ ,c
 	dup 40 >>> src + "%w " ,print
+	
+	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
 	;
 :info2 | n --
@@ -60,17 +63,20 @@
 	dup $ff and "%d " ,print		| duse unsigned
 	dup 48 << 56 >> "%d " ,print	| ddelta signed
 	 9 ,c
-	dup 16 >> $fff and "%d " ,print	| calls
+	dup 16 >> $ffff and "%d " ,print	| calls
 	 9 ,c
-	dup 32 >> " %d" ,print			| len
+	dup 32 >> " %d " ,print			| len
 	drop
+|	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
+	dup 16 - toklend nip " %d" ,print | len for data
 	;
 :dicword | nro --
 	,reset
 	dup "%d." ,print
 	4 << dic + 
 	@+ info1
-	@ info2
+	@+ info2
+	drop
 	,nl
 	;
 	
@@ -128,27 +134,32 @@
 		dup initok + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
-		<<ip =? ( ">" ,print )
+		<<ip =? ( "> " ,print )
 		@ showtok ,nl
 		1+ ) drop ;
 
-|---------------------		
-:main | --
+|--------------------------------	
+#exit 0	
+#mode 0
+
+:screen | --
 	mark
 	,hidec 
 	,reset ,cls ,bblue
 	'filename ,s "  " ,s ,eline ,nl ,reset
 	
-	|error 1? ( dup ,print ) drop ,nl
+	error 1? ( dup ,print ) drop ,nl
 	
-	showvar 
-	showdic
+	mode
+	0? ( listtoken )
+	1 =? ( showdic )
+	2 =? ( showsrc )
+	drop
+|	showvar 
 |	showmem
-|listtoken	
-|	showsrc
-|	showmem
+|	,nl
+|	<<ip "%h" ,print ,nl
 	,nl
-	<<ip "%h" ,print ,nl
 	,stack
 	
 	,showc
@@ -156,9 +167,10 @@
 	empty			| free buffer
 	;
 
-|--------------------------------	
-#exit 0	
-
+:changemode
+	mode 1 + 2 >? ( 0 nip ) 'mode !
+	;
+	
 :evkey	
 	evtkey
 	$1B1001 =? ( 1 'exit ! ) | >ESC<
@@ -171,6 +183,8 @@
 	
 	$49 =? ( -1 'inidic +! ) 
 	$51 =? ( 1 'inidic +! )
+	
+	$9000F =? ( changemode ) | tab
 	drop
 	;
 :a
@@ -210,11 +224,14 @@
 |	"r3/democ/palindrome.r3" 
 	"r3/test/testasm.r3"
 	r3load
+	
 	resetvm
-	cntdef 20 - 0 max 'inidic !
+	
+	cntdef 18 - 0 max 'inidic !
+	cnttok 18 - 0 max 'initok !
 	|.ovec 
 	( exit 0? drop 
-		main
+		screen
 		getevt
 		$1 =? ( evkey )
 		$2 =? ( evmouse )

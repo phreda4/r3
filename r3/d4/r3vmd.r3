@@ -30,18 +30,19 @@
 | ......ffffffff.. value
 
 :.DUP	8 'NOS +! TOS NOS ! ;
-| 
-:npush	.DUP 'TOS ! ;
 
+:npush	.DUP 'TOS ! ;
 :jmpr	dup 8 - @ 24 << 32 >> + ;
 :dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ ;
+:dic@v	dup 8 - @ 8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> fmem + ;
 
+:.blit	40 >>> src + str>anro nip npush ; | big literal, get from src
 :.lit	dup 8 - @ 24 << 32 >> npush ;
 :.word	dic@ dic>tok 8 'RTOS +! swap RTOS ! ;
 :.adr 	dic@ dic>tok npush ;
-:.var   dup 8 - @ 8 >> $ffffffff and fmem + @ npush ; | big literal too!
-:.str   dup 8 - @ 8 >> $ffffffff and strm + npush ;
+:.var   dic@v @ npush ; | ****
 
+:.str   dup 8 - @ 8 >> $ffffffff and strm + npush ;
 
 :.OVER	.DUP NOS 8 - @ 'TOS ! ;
 :.PICK2	.DUP NOS 16 - @ 'TOS ! ;
@@ -63,7 +64,7 @@
 :.( 	;
 :.)		jmpr ;  | 0=no effect
 :.[		jmpr ;
-:.]		dup 8 - @ 24 << 32 >> npush ;
+:.]		dup 8 - @ 24 << 32 >> npush ; |**
 
 |--- COND
 :.0?	TOS 1? ( drop jmpr ; ) drop ;
@@ -171,10 +172,10 @@
 :.DMOVE>	NOS 8 - @+ swap @ TOS dmove> .3DROP ;
 :.DFILL		NOS 8 - @+ swap @ TOS dfill .3DROP ;
 
-:.MEM mem npush ;
+:.MEM 		fmem> npush ; | last memory used! (mem in base)
 
-:.LOADLIB TOS loadlib 'TOS ! ;
-:.GETPROC NOS @ TOS getproc .NIP 'TOS ! ;
+:.LOADLIB	TOS loadlib 'TOS ! ;
+:.GETPROC	NOS @ TOS getproc .NIP 'TOS ! ;
 :.SYS0 TOS sys0 'TOS ! ;
 :.SYS1 NOS @ TOS sys1 'TOS ! -8 'NOS +! ;
 :.SYS2 NOS 8 - @+ swap @ TOS sys2 'TOS ! -16 'NOS +! ;
@@ -188,7 +189,7 @@
 :.SYS10 NOS 72 - @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @ TOS sys10 'TOS ! -80 'NOS +! ;
 	
 #vmc
-0 .lit .word .adr .var .str
+.blit .lit .word .adr .var .str
 .; .( .) .[ .] 
 .EX .0? .1? .+? .-? 
 .<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
@@ -217,10 +218,65 @@
 .SYS0 .SYS1 .SYS2 .SYS3 .SYS4 .SYS5
 .SYS6 .SYS7 .SYS8 .SYS9 .SYS10 
 0
+	
+|------ PREPARE DATA FOR RUN
+#gmem ',q
+
+:srcpos
+	;
+
+:memlit
+|	srcpos src + str>anro nip gmem ex 
+	;
+
+:resbyte | reserve memory
+	'here +! ;
+
+:memstr | store string
+|	over 8 - @ 8 >> src + valstr 0 ,c 
+	;
+
+:invarstr | adr -- adr'
+	fmem> >a
+	( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
+			) drop 
+		) drop 
+|	"unfinish str" error!
+	;
+
+:memwor
+|	srcpos dic>tok @ ,q 
+	;
+
+:getvarmem
+	@+ $ff and
+	7 10 bt? ( memlit )
+	11 =? ( memstr ) | str
+	12 15 bt? ( memwor )
+	
+	7 =? ( ',c 'gmem ! )	| (
+	8 =? ( ',q 'gmem ! )	| )
+	9 =? ( ', 'gmem ! )		| [
+	10 =? ( ',q 'gmem ! )	| ]
+	48 =? ( 'resbyte 'gmem ! ) | *
+	drop
+	;
+
+:var2mem | adr -- adr
+	dup @ 1 nand? ( drop ; ) drop	| data only
+	dup toklen
+	here pick3 8 + !	| save mem place in token place
+	0? ( ,q drop ; )
+	',q 'gmem ! 			| save dword default
+	( 1? 1 - swap
+		getvarmem
+		swap ) 2drop ;
 
 |-------------------------------
-| palabras de interaccion
-|-------------------------------
+	
 ::resetvm | --
 	'PSP 8 - 'NOS !
 	'RSP 'RTOS !
@@ -251,95 +307,5 @@
 	( <<bp <>?
 		@+ $ff and 3 << 'vmc + @ ex
 		1? )
-	'<<ip ! ;
-	
-|------ PREPARE DATA FOR RUN
-#gmem ',q
-
-:srcpos
-	;
-
-:memlit
-|	srcpos src + str>anro nip gmem ex 
-	;
-
-:resbyte | reserve memory
-	'here +! ;
-
-:memstr | store string
-|	over 4 - d@ 8 >> src + valstr 0 ,c 
-	;
-
-:memwor
-|	srcpos dic>tok @ ,q 
-	;
-
-:getvarmem
-	@+ $ff and
-	7 10 bt? ( memlit )
-	11 =? ( memstr ) | str
-	12 15 bt? ( memwor )
-	17 =? ( ',c 'gmem ! )	| (
-	18 =? ( ',q 'gmem ! )	| )
-	19 =? ( ', 'gmem ! )	| [
-	20 =? ( ',q 'gmem ! )	| ]
-	58 =? ( 'resbyte 'gmem ! ) | *
-	drop
-	;
-
-:var2mem | adr -- adr
-	dup @ 1 nand? ( drop ; ) drop	| data only
-|	dup toklen
-	here pick3 8 + !	| save mem place in token place
-	0? ( ,q drop ; )
-	',q 'gmem ! 			| save dword default
-	( 1? 1 - swap
-		getvarmem
-		swap ) 2drop ;
-
-::data2mem
-	dic ( dic> <?
-		var2mem
-		16 + ) drop ;	
-|------- data
-:,dataq | nro --
-	fmem> !+ 'fmem> ! ;
-:,datad | nro --
-	fmem> d!+ 'fmem> ! ;
-:,datab | nro --
-	fmem> c!+ 'fmem> ! ;
-:,datat | nro --
-	'fmem> +! ;
-	
-#,dtipo	
-
-:invarstr | adr -- adr'
-	1 'datac +!
-	fmem> >a
-	( c@+ 1? 
-		dup ca!+
-		34 =? ( drop c@+ 
-			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
-			) drop 
-		) drop 
-|	"unfinish str" error!
-	;
-
-:invarnro
-	1 'datac +!
-	str>anro
-	,dtipo ex ;
-
-:invarbase | adr nro -- adr
-	2 =? ( drop ',datab ',dtipo ! ; )	| (
-	3 =? ( drop ',dataq ',dtipo ! ; )	| )
-	4 =? ( drop ',datad ',dtipo ! ; )	| [
-	5 =? ( drop ',dataq ',dtipo ! ; )	| ]
-	43 =? ( drop ',datat ',dtipo ! ; )	| *
-|	dup "base:%d" .println
-	drop
-|	dup "base in var" error!
-	0
-	;
-		
+	'<<ip ! ;	
 		

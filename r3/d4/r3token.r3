@@ -6,15 +6,25 @@
 ^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
 
-|--------------------------------
-:error! | adr "" --
-	'error ! 'lerror ! ;
-
-#sst * 256 	| stack of blocks
-#sst> 'sst
-:sst!	sst> w!+ 'sst> ! ;
-:sst@   -2 'sst> +! sst> w@ ;
-:level 	sst> 'sst xor ;	
+|---- dicc
+| info1
+| $..............01 - code/data
+| $..............02 - loc/ext
+| $..............04	1 es usado con direccion
+| $..............08	1 r esta desbalanceada		| var cte
+| $..............10	0 un ; 1 varios ;
+| $..............20	1 si es recursiva
+| $..............40	1 si tiene anonimas
+| $..............80	1 termina sin ;
+| $............ff.. flag2
+| $......ffffff....	-> tok+ -> code
+| $ffffff.......... -> src+ -> src
+|
+| info2
+| $..............ff - Data use		255
+| $............ff.. - Data delta	-128..127
+| $........ffff.... - calls			64k
+| $ffffffff........ - len
 
 |-------------------------------- includes
 :escom
@@ -94,11 +104,9 @@
 	$23 =? ( drop 1 'cntdef +! >>sp ; )	| $23 #  Variable
 	1 'cnttok +!
 	$22 =? ( drop isstr ; )	| $22 "	 Cadena
-	drop >>sp
-	;
+	drop >>sp ;
 
-
-|--- 1 pass, traverse code, calc sizes
+| traverse code, calc sizes
 :pass1
 	0 'cntdef !
 	0 'cnttok !
@@ -116,25 +124,51 @@
 | ffffff.......... adr to src
 | ......ffffffff.. value
 
-#codeini | for calc len
+#sst * 256 	| stack of blocks
+#sst> 'sst
+
+:sst!	sst> w!+ 'sst> ! ;
+:sst@   -2 'sst> +! sst> w@ ;
+:level 	sst> 'sst xor ;	
+
+#flag		| current flag for word
+
+#codeini 	| for calc token len
+#iswhile	| flag for IF/WHILE
+#endcnt		| count ;
+
+:,qv	fmem> !+ 'fmem> ! ;
+:,dv	fmem> d!+ 'fmem> ! ;
+:,cv	fmem> c!+ 'fmem> ! ;
+:,tv	'fmem> +! ;
+
+#gmem ',qv | data 
 
 :,t | src nro -- src
 	over src - 40 << or		| store src pointer
 	tok> !+ 'tok> ! ;
 	
+:emptyvar
+	flag 1 nand? ( drop ; ) drop | only var
+	0 ,qv ;
+	
 :callend
+	flag 1 and? ( drop ; ) drop | only code
 	tok> codeini - 3 >> | code_length
 	32 <<
 	dic> 8 - ! | info in wordnow
-	flag 1 nand? ( 
-		tok> 8 - @ $ff and 
-		$6 <>? ( $80 dic> 16 - +! ) | 6=;
-		drop ) drop ;
+	endcnt
+	0? ( $80 'flag +! )
+	1 >? ( $10 'flag +! )
+	drop ;
 	
 :endef
 	level 1? ( over "missing )" error! ) drop
-	codeini 1? ( callend ) drop
+	tok> codeini - 0? ( emptyvar ) drop	| no token in def
+	codeini 1? ( callend ) drop	
+|callend	??
 	tok> 'codeini !
+	flag dic> 16 - +! | store flag
 	;
 	
 :boot>>! | src char -- src char
@@ -146,14 +180,14 @@
 :.def 
 	endef
 	0 'flag !
+	0 'endcnt !
 	dup 1+ c@
 	$3A =? ( 2 'flag ! ) 	|::
 	33 <? ( boot>>! ) | : alone
 	drop
 	
 	dup src - 1 + flag 1 >> + 40 << 	| skip : or ::
-	tok> tok - 3 >> 8 << or
-	flag or
+	tok> tok - 3 >> 16 << or
 	dic> !+ 0 swap !+ 'dic> !
 	>>sp ;
 
@@ -163,16 +197,32 @@
 	dup 1+ c@
 	$23 =? ( 3 'flag ! ) 			|##
 	drop
+
+	',qv 'gmem ! 			| save qword default
 	
 	dup src - 1 + flag 1 >> + 40 << | skip # or ##
-	tok> tok - 8 << or
-	flag or
-	dic> !+ 0 swap !+ 'dic> !
-	
+	tok> tok - 3 >> 16 << or
+	dic> !+ 
+	fmem> fmem - 32 << | start free memory for vars
+	swap !+ 'dic> !
 	>>sp ;
 	
-|    1    2     3    4    5
-| 0 .lit .word .adr .var .str ...
+| 0     1    2     3    4    5
+| .lits .lit .word .adr .var .str ...
+	
+:.strvar | adr -- adr'
+	1 +  | skip "
+	fmem> strm - 8 << 5 or ,t | ** check
+	fmem> >a
+	( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
+			) drop 
+		) drop 
+	"unfinish str" error!
+	0
+	;
 	
 :.str 
 	1 + | skip "
@@ -187,17 +237,21 @@
 	"str not close" error!
 	;
 	
+:.nrovar
+	0 ,t 
+	dup str>anro nip gmem ex
+	>>sp ;
+	
 :.nro 
-	str>anro 
+	flag 1 and? ( drop .nrovar ; ) drop | only var
+	dup str>anro nip
 	dup 32 << 32 >> =? ( 
 		$ffffffff and 8 << 1 or ,t 
 		>>sp ; ) drop
-	0 ,t	| src token
+	0 ,t	| src token, bit literal
 	>>sp ;
 	
-|---------------------------------
-#iswhile
-
+|----------
 :blockIn
 	tok> tok - 3 >> sst! ;
 
@@ -216,7 +270,7 @@
 	0 'iswhile !
 	sst@ 3 << tok + 
 	tok> 			| src n from to
-	over 8 + ( over <? @+ 
+	over 8 + ( over <? @+ 	|** need skip []!
 		cond ) 2drop 	
 	iswhile 1? ( drop
 		tok> - $ffffffff and 8 << swap 
@@ -228,28 +282,60 @@
 	5 + ,t >>sp 	
 	;
 
+|**** need push/pop flags for words
 :anonIn
-	tok> tok - 3 >> sst! ;
+	
+	tok> tok - 3 >> sst! 
+	;
 	
 :anonOut
+	$40 'flag +!
+	-1 'endcnt +!
+	tok> 8 - @ $ff and 6 <>? (
+		pick2 "need ; in ]" error!
+		) drop
 	sst@ 3 << tok + | tok[
 	tok> over - 8 - 8 << over @ or over !
 	8 + 8 << swap 5 + or ,t >>sp ;
 	
+	
+:.basevar | adr nro -- adr
+	dup 5 + ,t >>sp
+	2 =? ( drop ',cv 'gmem ! ; )	| (
+	3 =? ( drop ',qv 'gmem ! ; )	| )
+	4 =? ( drop ',dv 'gmem ! ; )	| [
+	5 =? ( drop ',qv 'gmem ! ; )	| ]
+	43 =? ( drop ',tv 'gmem ! ; )	| *
+|	dup "base:%d" .println
+	drop
+	"base in var" error!
+	0
+	;
+	
 :.base | adr nro -- adr
-	flag 1 and? ( drop 5 + ,t >>sp ; ) drop	
+	flag 1 and? ( drop .basevar ; ) drop	| var
+	1 =? ( 1 'endcnt +! )
 	2 =? ( blockIn )	| (
 	3 =? ( blockOut ; )	| )
-	4 =? ( anonIn )		| [
+	4 =? ( anonIn ) 	| [
 	5 =? ( anonOut ; )	| ]
 	5 + ,t >>sp ;
 	
+:.adrvar | adr nro -- adr
+	dup | transform to real adr
+	,qv
+	8 << 4 or ,t >>sp ;
+	
 :.word | adr nro -- adr
-	1 - dup 4 << dic + @ 
-	1 and? ( drop 8 << 4 or ,t >>sp ; ) drop | var
+	flag 1 and? ( drop .adrvar ; ) drop	| in var always adr
+	1 - dup 4 << dic + 
+	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
+|	drop
+	@ 1 and? ( drop 8 << 4 or ,t >>sp ; ) drop | var
 	8 << 2 or ,t >>sp ;
 	
 :.adr | adr nro -- adr
+	flag 1 and? ( drop .adrvar ; ) drop	| var
 	1 - 8 << 3 or ,t >>sp ;
 	
 :wrd2token | str -- str'
@@ -274,41 +360,44 @@
  	"word not found" error!
 	0 ;
 
+:contword | dic -- dic
+	dup @ $81 and $80 <>? ( drop ; ) drop | code sin ;
+	dup 24 + @
+	$ffffffff00000000 and | len
+	over 8 + +!
+	;
+	
 :pass2	
 	-1 'boot>> !
-	'inc ( inc> <?			| every include
+	'sst 'sst> !		| stack
+	'inc ( inc> <?		| every include
 |		dup @ "%w" .println
 		8 + @+ 
-		'sst 'sst> !		| reuse stackblock
 		( wrd2token 1? ) drop 
 		error 1? ( 2drop ; ) drop
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		) drop 
 	callend
+	| continue word need add lengths
+	dic> 16 - ( dic >? 
+		16 - contword ) drop	
 	;
 	
 |--------------------- tree calls
 :+call! | dic -- dic
 	$10000 over 8 + +! ;
 	
-:2dic	| tok -- dic
-	8 >> $ffffffff and 4 << dic + ;
-	
-:toklen	| dic -- dic tok len
-	dup @ 8 >> $ffffffff and 3 << tok +
-	swap 8 + @ 32 >>> ;
-	
 :overcode | dc 'tok tok ctok -- dc 'tok xx xx
-	drop 2dic +call! 
-	dup 8 + @ 16 >> $fff and 1 >? ( ; ) | only 1 call traverse
+	drop tok>dic +call! 
+	dup 8 + @ 16 >> $ffff and 1 >? ( ; ) | only 1 call traverse
 	drop 
 	rot !+ swap | add to dicc calls
 	dup dup ;
 
 :overdire | dc 'tok tok ctok -- dc 'tok xx xx
-	drop 2dic +call! 
-	dup @ $4 or over ! | set adr flag
-	dup 8 + @ 16 >> $fff and 1 >? ( ; ) | only 1 call traverse
+	drop tok>dic +call! 
+	dup @ $4 or over !					| set adr flag
+	dup 8 + @ 16 >> $ffff and 1 >? ( ; )	| only 1 call traverse
 	drop 
 	rot !+ swap | add to dicc calls
 	dup dup ;
@@ -323,12 +412,11 @@
 		2drop r> ) 2drop ;
 
 :rdata | stack nro -- stack
-	toklen 
+	toklend 
 	( 1? 1 - >r
 		@+ dup $ff and |dup "%h " .print
 		2 >=? ( 4 <=? ( overdire ) )
-		2drop r> ) 2drop 
-		;
+		2drop r> ) 2drop ;
 		
 :datacode | dc word -- dc
 	dup @ 1 and? ( drop rdata ; ) drop rcode ;
@@ -339,6 +427,10 @@
 	here !+
 	( here >? | diccalls
 		8 - dup @ datacode ) drop ;	
+	
+|--------------------- static stack mov
+:pass4
+	;
 	
 |---------------------
 ::r3load | 'filename --
@@ -358,9 +450,12 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
-|	fmem> 'here ! 	| free mem
-	pass3
-	
+	fmem> 'here !	| memory for vars
+	pass3			| calc tree calls
+
+|	pass4
+|	pass5
+
 |	.input
 	;
 	
