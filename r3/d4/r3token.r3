@@ -26,6 +26,7 @@
 | $........ffff.... - calls			64k
 | $ffffffff........ - len
 
+|-------------------------------------------
 |-------------------------------- includes
 :escom
 |WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
@@ -75,7 +76,8 @@
 		includepal ) 2drop
 	over inc> !+ !+ 'inc> ! 
 	;
-
+	
+|-------------------------------------------
 |-------------------------------- 1pass
 :iscom | adr -- 'adr
 |WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
@@ -117,7 +119,7 @@
 		1 'cnttok +! | +1 jump for boot sequence
 		) drop ;
 
-	
+|-------------------------------------------	
 |-------------------------------- 2pass
 | token format
 | ..............ff token nro
@@ -154,6 +156,7 @@
 	
 :callend
 	flag 1 and? ( drop ; ) drop | only code
+	
 	tok> codeini - 3 >> | code_length
 	32 <<
 	dic> 8 - ! | info in wordnow
@@ -166,7 +169,7 @@
 	level 1? ( over "missing )" error! ) drop
 	tok> codeini - 0? ( emptyvar ) drop	| no token in def
 	codeini 1? ( callend ) drop	
-|callend	??
+|callend	|??
 	tok> 'codeini !
 	flag dic> 16 - +! | store flag
 	;
@@ -181,12 +184,11 @@
 	endef
 	0 'flag !
 	0 'endcnt !
-	dup 1+ c@
-	$3A =? ( 2 'flag ! ) 	|::
+	1 + dup c@
+	$3A =? ( 2 'flag ! swap 1 + swap ) 	|::
 	33 <? ( boot>>! ) | : alone
 	drop
-	
-	dup src - 1 + flag 1 >> + 40 << 	| skip : or ::
+	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
 	dic> !+ 0 swap !+ 'dic> !
 	>>sp ;
@@ -194,25 +196,23 @@
 :.var 
 	endef
 	1 'flag !
-	dup 1+ c@
-	$23 =? ( 3 'flag ! ) 			|##
+	1 + dup c@
+	$23 =? ( 3 'flag ! swap 1 + swap ) 	|##
 	drop
-
 	',qv 'gmem ! 			| save qword default
-	
-	dup src - 1 + flag 1 >> + 40 << | skip # or ##
+	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
 	dic> !+ 
 	fmem> fmem - 32 << | start free memory for vars
 	swap !+ 'dic> !
 	>>sp ;
 	
-| 0     1    2     3    4    5
-| .lits .lit .word .adr .var .str ...
+|  0     1    2     3     4    5     6
+| .lits .lit .word .wadr .var .vadr .str ...
 	
 :.strvar | adr -- adr'
 	1 +  | skip "
-	fmem> strm - 8 << 5 or ,t | ** check
+	fmem> strm - 8 << 6 or ,t | ** check
 	fmem> >a
 	( c@+ 1? 
 		dup ca!+
@@ -225,8 +225,9 @@
 	;
 	
 :.str 
+|	flag 1 and? ( drop .strvar ; ) drop | only var
 	1 + | skip "
-	strm> strm - 8 << 5 or ,t 
+	strm> strm - 8 << 6 or ,t 
 	strm> >a
 	( c@+ 1? 
 		dup ca!+
@@ -257,8 +258,8 @@
 
 :cond | atok' tok -- atok'
 	dup $ff and
-	$b <? ( 2drop ; ) | 0?..
-	$1e >? ( 2drop ; ) | ..bt?
+	$c <? ( 2drop ; ) | 0?..
+	$1f >? ( 2drop ; ) | ..bt?
 	drop
 	dup 8 >> $ffffffff and 1? ( 2drop ; ) drop | no jump
 	tok> pick2 - 8 + $ffffffff and 8 << or | saltar a tok>
@@ -274,12 +275,12 @@
 		cond ) 2drop 	
 	iswhile 1? ( drop
 		tok> - $ffffffff and 8 << swap 
-		5 + or ,t >>sp
+		6 + or ,t >>sp
 		; ) drop 
 	8 - dup @ 
 	tok> pick2 - 8 << or | jump if
 	swap !
-	5 + ,t >>sp 	
+	6 + ,t >>sp  | load tok**
 	;
 
 |**** need push/pop flags for words
@@ -291,16 +292,16 @@
 :anonOut
 	$40 'flag +!
 	-1 'endcnt +!
-	tok> 8 - @ $ff and 6 <>? (
+	tok> 8 - @ $ff and 7 <>? ( | 7 = ;
 		pick2 "need ; in ]" error!
 		) drop
 	sst@ 3 << tok + | tok[
 	tok> over - 8 - 8 << over @ or over !
-	8 + 8 << swap 5 + or ,t >>sp ;
+	8 + 8 << swap 6 + or ,t >>sp ;
 	
 	
 :.basevar | adr nro -- adr
-	dup 5 + ,t >>sp
+	dup 6 + ,t >>sp
 	2 =? ( drop ',cv 'gmem ! ; )	| (
 	3 =? ( drop ',qv 'gmem ! ; )	| )
 	4 =? ( drop ',dv 'gmem ! ; )	| [
@@ -319,24 +320,30 @@
 	3 =? ( blockOut ; )	| )
 	4 =? ( anonIn ) 	| [
 	5 =? ( anonOut ; )	| ]
-	5 + ,t >>sp ;
+	6 + ,t >>sp ;
 	
-:.adrvar | adr nro -- adr
-	dup | transform to real adr
-	,qv
-	8 << 4 or ,t >>sp ;
+	
+:.wordinvar | adr nro -- adr
+	1 - dup 4 << dic + 
+	@ 1 and? ( drop 
+		dup 4 << dic + 8 + @ 32 >>> fmem + ,qv 
+		8 << 5 or ,t >>sp ; ) drop 
+	dup 4 << dic + @ dic>tok ,qv
+	8 << 3 or ,t >>sp ; 
 	
 :.word | adr nro -- adr
-	flag 1 and? ( drop .adrvar ; ) drop	| in var always adr
-	1 - dup 4 << dic + 
+	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
+	1 - dup 4 << dic + dup
 	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
-|	drop
-	@ 1 and? ( drop 8 << 4 or ,t >>sp ; ) drop | var
-	8 << 2 or ,t >>sp ;
+	drop
+	@ 1 and? ( drop 8 << 4 or ,t >>sp ; ) | data
+	drop 8 << 2 or ,t >>sp ; | code
 	
 :.adr | adr nro -- adr
-	flag 1 and? ( drop .adrvar ; ) drop	| var
-	1 - 8 << 3 or ,t >>sp ;
+	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
+	1 - dup 4 << dic +
+	@ 1 and? ( drop 8 << 5 or ,t >>sp ; ) | adata
+	drop 8 << 3 or ,t >>sp ; | acode
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
@@ -351,7 +358,7 @@
 		|dup ?base 1? ( drop "No Addr for base dicc" error! ; ) drop
 		1+ 
 		?word 1? ( .adr ; ) drop
-		1- "addr not exist" error!
+		1 - "addr not exist" error!
 		0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop	| numero
@@ -370,11 +377,12 @@
 :pass2	
 	-1 'boot>> !
 	'sst 'sst> !		| stack
+	0 'codeini !
 	'inc ( inc> <?		| every include
 |		dup @ "%w" .println
 		8 + @+ 
 		( wrd2token 1? ) drop 
-		error 1? ( 2drop ; ) drop
+		|error 1? ( 2drop ; ) drop
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		) drop 
 	callend
@@ -383,7 +391,8 @@
 		16 - contword ) drop	
 	;
 	
-|--------------------- tree calls
+|-------------------------------------------	
+|--------------------- pass 3 - tree calls
 :+call! | dic -- dic
 	$10000 over 8 + +! ;
 	
@@ -409,13 +418,14 @@
 		2 =? ( overcode ) | word
 		3 =? ( overdire ) | adr
 		4 =? ( overcode ) | var
+		5 =? ( overdire ) | adr
 		2drop r> ) 2drop ;
 
 :rdata | stack nro -- stack
 	toklend 
 	( 1? 1 - >r
 		@+ dup $ff and |dup "%h " .print
-		2 >=? ( 4 <=? ( overdire ) )
+		2 >=? ( 5 <=? ( overdire ) )
 		2drop r> ) 2drop ;
 		
 :datacode | dc word -- dc
@@ -427,13 +437,15 @@
 	here !+
 	( here >? | diccalls
 		8 - dup @ datacode ) drop ;	
-	
+
+|-------------------------------------------
 |--------------------- static stack mov
 :pass4
 	;
 	
-|---------------------
+|-------------------------------------------
 ::r3load | 'filename --
+|-------------------------------------------
 	0 0 error!
 	
 	dup 'filename strcpy
@@ -450,12 +462,13 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+	
+|	.input
+	
 	fmem> 'here !	| memory for vars
 	pass3			| calc tree calls
 
 |	pass4
-|	pass5
-
 |	.input
 	;
 	

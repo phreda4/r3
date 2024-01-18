@@ -24,7 +24,7 @@
 	
 :,token | tok nro --
 	,sp 
-	5 =? ( drop 8 >> $ffffff and strm + ,str ; ) 				| str
+	6 =? ( drop 8 >> $ffffff and strm + ,str ; ) 				| str
 	drop
 	40 >>> src + "%w" ,print ;
 	

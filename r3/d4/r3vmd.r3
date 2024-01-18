@@ -33,14 +33,16 @@
 
 :npush	.DUP 'TOS ! ;
 :jmpr	dup 8 - @ 24 << 32 >> + ;
-:dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ ;
+:dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ dic>tok ;
 :dic@v	dup 8 - @ 8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> fmem + ;
 
 :.blit	40 >>> src + str>anro nip npush ; | big literal, get from src
 :.lit	dup 8 - @ 24 << 32 >> npush ;
-:.word	dic@ dic>tok 8 'RTOS +! swap RTOS ! ;
-:.adr 	dic@ dic>tok npush ;
-:.var   dic@v @ npush ; | ****
+
+:.code	dic@ 8 'RTOS +! swap RTOS ! ;
+:.acode dic@ npush ;
+:.data  dic@v @ npush ; 
+:.adata dic@v npush ;
 
 :.str   dup 8 - @ 8 >> $ffffffff and strm + npush ;
 
@@ -189,7 +191,7 @@
 :.SYS10 NOS 72 - @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @+ swap @ TOS sys10 'TOS ! -80 'NOS +! ;
 	
 #vmc
-.blit .lit .word .adr .var .str
+.blit .lit .code .acode .data .adata .str
 .; .( .) .[ .] 
 .EX .0? .1? .+? .-? 
 .<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
@@ -219,64 +221,7 @@
 .SYS6 .SYS7 .SYS8 .SYS9 .SYS10 
 0
 	
-|------ PREPARE DATA FOR RUN
-#gmem ',q
-
-:srcpos
-	;
-
-:memlit
-|	srcpos src + str>anro nip gmem ex 
-	;
-
-:resbyte | reserve memory
-	'here +! ;
-
-:memstr | store string
-|	over 8 - @ 8 >> src + valstr 0 ,c 
-	;
-
-:invarstr | adr -- adr'
-	fmem> >a
-	( c@+ 1? 
-		dup ca!+
-		34 =? ( drop c@+ 
-			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
-			) drop 
-		) drop 
-|	"unfinish str" error!
-	;
-
-:memwor
-|	srcpos dic>tok @ ,q 
-	;
-
-:getvarmem
-	@+ $ff and
-	7 10 bt? ( memlit )
-	11 =? ( memstr ) | str
-	12 15 bt? ( memwor )
-	
-	7 =? ( ',c 'gmem ! )	| (
-	8 =? ( ',q 'gmem ! )	| )
-	9 =? ( ', 'gmem ! )		| [
-	10 =? ( ',q 'gmem ! )	| ]
-	48 =? ( 'resbyte 'gmem ! ) | *
-	drop
-	;
-
-:var2mem | adr -- adr
-	dup @ 1 nand? ( drop ; ) drop	| data only
-	dup toklen
-	here pick3 8 + !	| save mem place in token place
-	0? ( ,q drop ; )
-	',q 'gmem ! 			| save dword default
-	( 1? 1 - swap
-		getvarmem
-		swap ) 2drop ;
-
 |-------------------------------
-	
 ::resetvm | --
 	'PSP 8 - 'NOS !
 	'RSP 'RTOS !

@@ -1,1 +1,0 @@
-| r3 optimizer#v2 33 1 v1:w1 v2 dup + ( 1? 1 - ) drop ;: w1 ;

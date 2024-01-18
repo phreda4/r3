@@ -120,12 +120,12 @@
 :showtok | nro
 	dup "%h. " ,print
 	dup $ff and
-	5 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 				| str
-	1 =? ( drop 32 << 40 >> "(%d)" ,print ; )				| lit
-	2 =? ( "w" ,print )
-	3 =? ( "a" ,print )
-	4 =? ( "v" ,print )
-|	5 =? ( drop 8 >> $ffffff and fmem + @ "(%d)" ,print ; ) | big lit
+	1 =? ( drop 32 << 40 >> " %d" ,print ; )				| lit
+	2 =? ( "w " ,print )
+	3 =? ( "wa " ,print )
+	4 =? ( "v " ,print )
+	5 =? ( "va " ,print )
+	6 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 	| str
 	drop
 	40 >> src + "%w " ,print ;
 	
@@ -148,14 +148,14 @@
 	,reset ,cls ,bblue
 	'filename ,s "  " ,s ,eline ,nl ,reset
 	
-	error 1? ( dup ,print ) drop ,nl
+	error 1? ( dup ,bred ,print ,reset ) drop ,nl
 	
 	mode
-	0? ( listtoken )
-	1 =? ( showdic )
+	0? ( showvar listtoken )
+	1 =? ( showvar showdic )
 	2 =? ( showsrc )
 	drop
-|	showvar 
+|	
 |	showmem
 |	,nl
 |	<<ip "%h" ,print ,nl
