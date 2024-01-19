@@ -126,12 +126,18 @@
 | ffffff.......... adr to src
 | ......ffffffff.. value
 
-#sst * 256 	| stack of blocks
+#sst * 256 	| stack for blocks
 #sst> 'sst
 
 :sst!	sst> w!+ 'sst> ! ;
 :sst@   -2 'sst> +! sst> w@ ;
 :level 	sst> 'sst xor ;	
+
+#sinf * 256 	| stack for info
+#sinf> 'sinf
+
+:sinf!	sinf> d!+ 'sinf> ! ;
+:sinf@   -4 'sinf> +! sinf> d@ ;
 
 #flag		| current flag for word
 
@@ -145,6 +151,25 @@
 :,tv	'fmem> +! ;
 
 #gmem ',qv | data 
+
+#usod
+#deltad
+#deltar
+
+:resetinfo | --
+	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
+	
+:resetinfod | --
+	;
+	
+::tokeninfo | t --
+	r3ainfo
+	c@+ deltaD swap - usoD min 'usoD !
+	c@+ 'deltaD +!
+|	deltaD maxdepth max 'maxdepth !
+	c@+ 'deltaR +!
+	c@ 16 << flag or 'flag !
+	;
 
 :,t | src nro -- src
 	over src - 40 << or		| store src pointer
@@ -171,7 +196,11 @@
 	codeini 1? ( callend ) drop	
 |callend	|??
 	tok> 'codeini !
-	flag dic> 16 - +! | store flag
+	deltar 1? ( $08 'flag +! ) drop	| unbalanced R
+	flag 
+	dic> 16 - +! | store flag
+	usod $ff and deltad $ff and 8 << or
+	dic> 8 - +!	| store datamov
 	;
 	
 :boot>>! | src char -- src char
@@ -191,7 +220,8 @@
 	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
 	dic> !+ 0 swap !+ 'dic> !
-	>>sp ;
+	>>sp 
+	resetinfo ;
 
 :.var 
 	endef
@@ -205,7 +235,8 @@
 	dic> !+ 
 	fmem> fmem - 32 << | start free memory for vars
 	swap !+ 'dic> !
-	>>sp ;
+	>>sp
+	resetinfo ;
 	
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
@@ -226,6 +257,7 @@
 	
 :.str 
 |	flag 1 and? ( drop .strvar ; ) drop | only var
+	1 'deltaD +!
 	1 + | skip "
 	strm> strm - 8 << 6 or ,t 
 	strm> >a
@@ -245,6 +277,7 @@
 	
 :.nro 
 	flag 1 and? ( drop .nrovar ; ) drop | only var
+	1 'deltaD +!
 	dup str>anro nip
 	dup 32 << 32 >> =? ( 
 		$ffffffff and 8 << 1 or ,t 
@@ -285,12 +318,11 @@
 
 |**** need push/pop flags for words
 :anonIn
-	
 	tok> tok - 3 >> sst! 
 	;
 	
 :anonOut
-	$40 'flag +!
+	flag $40 or 'flag !
 	-1 'endcnt +!
 	tok> 8 - @ $ff and 7 <>? ( | 7 = ;
 		pick2 "need ; in ]" error!
@@ -320,7 +352,9 @@
 	3 =? ( blockOut ; )	| )
 	4 =? ( anonIn ) 	| [
 	5 =? ( anonOut ; )	| ]
-	6 + ,t >>sp ;
+	6 + dup tokeninfo
+	,t >>sp 
+	;
 	
 	
 :.wordinvar | adr nro -- adr
@@ -333,6 +367,7 @@
 	
 :.word | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
+	
 	1 - dup 4 << dic + dup
 	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
 	drop
@@ -341,6 +376,7 @@
 	
 :.adr | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
+	1 'deltaD +!
 	1 - dup 4 << dic +
 	@ 1 and? ( drop 8 << 5 or ,t >>sp ; ) | adata
 	drop 8 << 3 or ,t >>sp ; | acode

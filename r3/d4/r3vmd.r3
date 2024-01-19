@@ -24,6 +24,10 @@
 	'PSP 8 + ( NOS <=? @+ "%d " ,print ) drop
 	'PSP NOS <=? ( TOS "%d " ,print ) drop ; 
 
+::,fstack
+	'PSP 8 + ( NOS <=? @+ "%f " ,print ) drop
+	'PSP NOS <=? ( TOS "%f " ,print ) drop ; 
+
 | token format
 | ..............ff token nro
 | ffffff.......... adr to src

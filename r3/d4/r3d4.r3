@@ -31,6 +31,9 @@
 | $ffffffff........ - len
 |--------------------------------	
 
+#wcode 40
+#hcode 25
+
 #inidic 0
 
 #colpal ,red ,magenta
@@ -48,6 +51,8 @@
 	dup 5 >> 1 and " R" + c@ ,c	| /recursive
 	dup 6 >> 1 and " [" + c@ ,c	| /have anon
 	dup 7 >> 1 and " ." + c@ ,c	| /not end
+	dup 8 >> $ff and "%h" ,print
+|	dup 8 >> 1 and " ." + c@ ,c	| /not end
 	,reset
 	" " ,s
 	dup 1 and 3 << 'colpal + @ ex
@@ -99,8 +104,8 @@
 :showsrc
 	src 0? ( drop ; ) >r
 	235 ,bc 
-	1 2 rows 10 - cols 1 - r> code-print ;
-
+	3 2 hcode 4 - wcode 4 - r> code-print ;
+	
 |---------------------
 :showvar
 	cntdef "def:%d" ,print  
@@ -142,26 +147,39 @@
 #exit 0	
 #mode 0
 
+:infobottom
+	1 hcode 2 - ,at 
+	,bblue ,white ,eline
+	|" ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" 
+	" ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
+	,printe ,nl
+|	" info ^[7mF1^[27m " ,printe ,nl
+	,reset ,bblack 
+	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+|	,stackprintvm 
+	,stack 
+
+	;	
+
 :screen | --
 	mark
 	,hidec 
 	,reset ,cls ,bblue
+	"^[37mr3d4 " ,printe
 	'filename ,s "  " ,s ,eline ,nl ,reset
 	
 	error 1? ( dup ,bred ,print ,reset ) drop ,nl
 	
 	mode
-	0? ( showvar listtoken )
-	1 =? ( showvar showdic )
+	0 =? ( showvar showdic )
+	1 =? ( showvar listtoken )
 	2 =? ( showsrc )
 	drop
 |	
 |	showmem
 |	,nl
 |	<<ip "%h" ,print ,nl
-	,nl
-	,stack
-	
+	infobottom
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer
@@ -210,14 +228,15 @@
 
 :evsize	
 	.getconsoleinfo
-|	rows 1 - 'hcode !
-|	cols 7 - 'wcode !
+	rows 1 - 'hcode !
+	cols 7 - 'wcode !
 	;	
 	
 |--------------------- BOOT
 : 	
 	evtmouse
-	.getconsoleinfo .cls
+	evsize
+	.cls
 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
