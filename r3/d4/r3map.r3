@@ -90,12 +90,6 @@
 | $........ffff.... - calls			1024+
 | $ffffffff........ - len
 
-| uso-dData-dRet-FLAG
-| FLAG 
-| %0001 mem
-| %0010 A
-| %0100 B
-
 ::dic>name | dic -- str
 	40 >>> src + ;	
 	
@@ -142,6 +136,14 @@
 	dup 'fmem ! dup 'fmem> ! 	| memory const+var+free
 	'here !	;
 
+| FLAG2
+| $01 mem access
+| $02 >A
+| $04 A
+| $08 >B
+| $10 B
+|
+
 | use deltad deltaR flag2
 #r3basemov (
 0 1 0 0		| .lits 
@@ -158,19 +160,19 @@
 0 0 0 0		| [
 0 1 0 0		| ]
 1 -1 0 0	| EX  x/0 --
-1 0 0 3		|0? a -- a
-1 0 0 3		|1? a -- a
-1 0 0 3		|+? a -- a
-1 0 0 3		|-? a -- a
-2 -1 0 3	|<?  ab -- a
-2 -1 0 3	|>?  ab -- a
-2 -1 0 3	|=?  ab -- a
-2 -1 0 3	|>=? ab -- a
-2 -1 0 3	|<=? ab -- a
-2 -1 0 3	|<>? ab -- a
-2 -1 0 3	|and?  ab -- a
-2 -1 0 3	|nand? ab -- a
-3 -2 0 3	|BTW? abc -- a
+1 0 0 0		|0? a -- a
+1 0 0 0		|1? a -- a
+1 0 0 0		|+? a -- a
+1 0 0 0		|-? a -- a
+2 -1 0 0	|<?  ab -- a
+2 -1 0 0	|>?  ab -- a
+2 -1 0 0	|=?  ab -- a
+2 -1 0 0	|>=? ab -- a
+2 -1 0 0	|<=? ab -- a
+2 -1 0 0	|<>? ab -- a
+2 -1 0 0	|and?  ab -- a
+2 -1 0 0	|nand? ab -- a
+3 -2 0 0	|BTW? abc -- a
 1  1 0 0	|DUP    a -- aa
 1 -1 0 0	|DROP  a --
 2 1 0 0		|OVER   ab -- aba
@@ -186,9 +188,9 @@
 4 -4 0 0	|4DROP abcd --
 4 2 0 0		|2OVER  abcd -- abcdab
 4 0 0 0		|2SWAP  abcd -- cdab
-1 -1 1 8	|>R    a -- R: -- a
-0 1 -1 8	|R>    -- a R: a --
-0 1 0 8		|R@      -- a R: a -- a
+1 -1 1 0	|>R    a -- R: -- a
+0 1 -1 0	|R>    -- a R: a --
+0 1 0 0		|R@      -- a R: a -- a
 2 -1 0 0	|AND	ab -- c
 2 -1 0 0	|OR    ab -- c
 2 -1 0 0	|XOR   ab -- c
@@ -230,35 +232,35 @@
 2 -2 0 1	|W+!   ab --
 2 -2 0 1	|D+!   ab --
 1 -1 0 2	|>A
-0 1 0 2		|A>
-1 -1 0 2	|A+
-0 1 0 3		|A@
-1 -1 0 3 	|A!
-0 1 0 3		|A@+
-1 -1 0 3	|A!+
-0 1 0 3		|cA@
-1 -1 0 3 	|cA!
-0 1 0 3		|cA@+
-1 -1 0 3	|cA!+
-0 1 0 3		|dA@
-1 -1 0 3 	|dA!
-0 1 0 3		|dA@+
-1 -1 0 3	|dA!+
-1 -1 0 4	|>B
-0 1 0 4		|B>
-1 -1 0 4	|B+
-0 1 0 5		|B@
-1 -1 0 5 	|B!
-0 1 0 5		|B@+
-1 -1 0 5	|B!+
-0 1 0 5		|cB@
-1 -1 0 5 	|cB!
-0 1 0 5		|cB@+
-1 -1 0 5	|cB!+
-0 1 0 5		|dB@
-1 -1 0 5 	|dB!
-0 1 0 5		|dB@+
-1 -1 0 5	|dB!+
+0 1 0 4		|A>
+1 -1 0 4	|A+
+0 1 0 5		|A@
+1 -1 0 5 	|A!
+0 1 0 5		|A@+
+1 -1 0 5	|A!+
+0 1 0 5		|cA@
+1 -1 0 5 	|cA!
+0 1 0 5		|cA@+
+1 -1 0 5	|cA!+
+0 1 0 5		|dA@
+1 -1 0 5 	|dA!
+0 1 0 5		|dA@+
+1 -1 0 5	|dA!+
+1 -1 0 8	|>B
+0 1 0 $10	|B>
+1 -1 0 $10	|B+
+0 1 0 $11	|B@
+1 -1 0 $11 	|B!
+0 1 0 $11	|B@+
+1 -1 0 $11	|B!+
+0 1 0 $11	|cB@
+1 -1 0 $11	|cB!
+0 1 0 $11	|cB@+
+1 -1 0 $11	|cB!+
+0 1 0 $11	|dB@
+1 -1 0 $11	|dB!
+0 1 0 $11	|dB@+
+1 -1 0 $11	|dB!+
 3 -3 0 1	|MOVE  abc --
 3 -3 0 1	|MOVE> abc --
 3 -3 0 1	|FILL abc --
@@ -287,3 +289,19 @@
 ::r3ainfo | n -- a
 	2 << 'r3basemov + ;
 
+|--- dibuja movimiento pilas
+| mov
+| $1ff - movs delta -16..15 uso:0..15
+
+:,ncar | n car -- car
+	( swap 1? 1 - swap dup ,c 1 + ) drop ;
+
+::,mov | mov --
+	97 >r	| 'a'
+	dup $ff and
+	dup r> ,ncar >r
+	" -- " ,s
+	swap 48 << 56 >> + | deltaD
+	-? ( ,d r> drop " ]" ,s ; ) | error en analisis!!
+	r> ,ncar drop
+	;

@@ -51,8 +51,13 @@
 	dup 5 >> 1 and " R" + c@ ,c	| /recursive
 	dup 6 >> 1 and " [" + c@ ,c	| /have anon
 	dup 7 >> 1 and " ." + c@ ,c	| /not end
-	dup 8 >> $ff and "%h" ,print
-|	dup 8 >> 1 and " ." + c@ ,c	| /not end
+|	dup 8 >> $ff and "%h" ,print
+	dup 8 >> 1 and " m" + c@ ,c	| /mem access
+	dup 9 >> 1 and " A" + c@ ,c	| />A
+	dup 10 >> 1 and " a" + c@ ,c	| /A
+	dup 11 >> 1 and " B" + c@ ,c	| />B
+	dup 12 >> 1 and " b" + c@ ,c	| /B
+
 	,reset
 	" " ,s
 	dup 1 and 3 << 'colpal + @ ex
@@ -62,12 +67,14 @@
 	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
 	;
+	
 :info2 | n --
+	,bwhite ,black dup ,mov 
 	,reset
+|	dup $ff and "%d " ,print		| duse unsigned
+|	dup 48 << 56 >> "%d " ,print	| ddelta signed
+	
 	40 ,col
-	dup $ff and "%d " ,print		| duse unsigned
-	dup 48 << 56 >> "%d " ,print	| ddelta signed
-	 9 ,c
 	dup 16 >> $ffff and "%d " ,print	| calls
 	 9 ,c
 	dup 32 >> " %d " ,print			| len
@@ -75,6 +82,7 @@
 |	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
 	dup 16 - toklend nip " %d" ,print | len for data
 	;
+	
 :dicword | nro --
 	,reset
 	dup "%d." ,print

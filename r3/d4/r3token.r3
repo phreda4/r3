@@ -168,7 +168,7 @@
 	c@+ 'deltaD +!
 |	deltaD maxdepth max 'maxdepth !
 	c@+ 'deltaR +!
-	c@ 16 << flag or 'flag !
+	c@ $ff and 8 << flag or 'flag !
 	;
 
 :,t | src nro -- src
@@ -199,7 +199,7 @@
 	deltar 1? ( $08 'flag +! ) drop	| unbalanced R
 	flag 
 	dic> 16 - +! | store flag
-	usod $ff and deltad $ff and 8 << or
+	usod neg $ff and deltad $ff and 8 << or
 	dic> 8 - +!	| store datamov
 	;
 	
@@ -272,6 +272,7 @@
 	
 :.nrovar
 	0 ,t 
+|	dup "<%w>" .println
 	dup str>anro nip gmem ex
 	>>sp ;
 	
@@ -330,16 +331,15 @@
 	sst@ 3 << tok + | tok[
 	tok> over - 8 - 8 << over @ or over !
 	8 + 8 << swap 6 + or ,t >>sp ;
-	
+
 	
 :.basevar | adr nro -- adr
-	dup 6 + ,t >>sp
-	2 =? ( drop ',cv 'gmem ! ; )	| (
-	3 =? ( drop ',qv 'gmem ! ; )	| )
-	4 =? ( drop ',dv 'gmem ! ; )	| [
-	5 =? ( drop ',qv 'gmem ! ; )	| ]
-	43 =? ( drop ',tv 'gmem ! ; )	| *
-|	dup "base:%d" .println
+	dup 6 + ,t 
+	2 =? ( drop ',cv 'gmem ! >>sp ; )	| (
+	3 =? ( drop ',qv 'gmem ! >>sp ; )	| )
+	4 =? ( drop ',dv 'gmem ! >>sp ; )	| [
+	5 =? ( drop ',qv 'gmem ! >>sp ; )	| ]
+	43 =? ( drop ',tv 'gmem ! >>sp ; )	| *
 	drop
 	"base in var" error!
 	0
@@ -367,11 +367,11 @@
 	
 :.word | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
-	
-	1 - dup 4 << dic + dup
+	1 - dup 4 << dic + 
 	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
-	drop
-	@ 1 and? ( drop 8 << 4 or ,t >>sp ; ) | data
+	@ 
+	dup $ff00 and flag or 'flag ! | copy flag2 to current word
+	1 and? ( drop 8 << 4 or ,t >>sp ; ) | data
 	drop 8 << 2 or ,t >>sp ; | code
 	
 :.adr | adr nro -- adr
@@ -415,7 +415,7 @@
 	'sst 'sst> !		| stack
 	0 'codeini !
 	'inc ( inc> <?		| every include
-|		dup @ "%w" .println
+|		dup @ "%w<<" .println
 		8 + @+ 
 		( wrd2token 1? ) drop 
 		|error 1? ( 2drop ; ) drop
