@@ -88,7 +88,7 @@
 | $..............ff - Data use		255
 | $............ff.. - Data delta	-128..127
 | $........ffff.... - calls			1024+
-| $ffffffff........ - len
+| $ffffffff........ - len in code/fmem+ in data (var place)
 
 ::dic>name | dic -- str
 	40 >>> src + ;	
@@ -143,7 +143,6 @@
 | $08 >B
 | $10 B
 |
-
 | use deltad deltaR flag2
 #r3basemov (
 0 1 0 0		| .lits 

@@ -131,13 +131,13 @@
 #initok 0
 
 :showtok | nro
-	dup "%h. " ,print
+|	dup "%h. " ,print
 	dup $ff and
 	1 =? ( drop 32 << 40 >> " %d" ,print ; )				| lit
-	2 =? ( "w " ,print )
-	3 =? ( "wa " ,print )
-	4 =? ( "v " ,print )
-	5 =? ( "va " ,print )
+|	2 =? ( "" ,print )
+|	3 =? ( "" ,print )
+|	4 =? ( "" ,print )
+|	5 =? ( "" ,print )
 	6 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 	| str
 	drop
 	40 >> src + "%w " ,print ;
@@ -203,6 +203,7 @@
 |	teclado 
 
 	$3b =? ( stepvm ) |f1
+	$3c =? ( pass4 ) |f2
 	
 	$50 =? ( 1 'initok +! ) 
 	$48 =? ( -1 initok + 0 max 'initok ! )

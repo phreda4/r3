@@ -126,18 +126,12 @@
 | ffffff.......... adr to src
 | ......ffffffff.. value
 
-#sst * 256 	| stack for blocks
+#sst * 512 	| stack for blocks and count
 #sst> 'sst
 
-:sst!	sst> w!+ 'sst> ! ;
-:sst@   -2 'sst> +! sst> w@ ;
+:sst!	sst> d!+ 'sst> ! ;
+:sst@   -4 'sst> +! sst> d@ ;
 :level 	sst> 'sst xor ;	
-
-#sinf * 256 	| stack for info
-#sinf> 'sinf
-
-:sinf!	sinf> d!+ 'sinf> ! ;
-:sinf@   -4 'sinf> +! sinf> d@ ;
 
 #flag		| current flag for word
 
@@ -151,25 +145,6 @@
 :,tv	'fmem> +! ;
 
 #gmem ',qv | data 
-
-#usod
-#deltad
-#deltar
-
-:resetinfo | --
-	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
-	
-:resetinfod | --
-	;
-	
-::tokeninfo | t --
-	r3ainfo
-	c@+ deltaD swap - usoD min 'usoD !
-	c@+ 'deltaD +!
-|	deltaD maxdepth max 'maxdepth !
-	c@+ 'deltaR +!
-	c@ $ff and 8 << flag or 'flag !
-	;
 
 :,t | src nro -- src
 	over src - 40 << or		| store src pointer
@@ -196,11 +171,8 @@
 	codeini 1? ( callend ) drop	
 |callend	|??
 	tok> 'codeini !
-	deltar 1? ( $08 'flag +! ) drop	| unbalanced R
 	flag 
 	dic> 16 - +! | store flag
-	usod neg $ff and deltad $ff and 8 << or
-	dic> 8 - +!	| store datamov
 	;
 	
 :boot>>! | src char -- src char
@@ -220,8 +192,7 @@
 	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
 	dic> !+ 0 swap !+ 'dic> !
-	>>sp 
-	resetinfo ;
+	>>sp ;
 
 :.var 
 	endef
@@ -235,8 +206,7 @@
 	dic> !+ 
 	fmem> fmem - 32 << | start free memory for vars
 	swap !+ 'dic> !
-	>>sp
-	resetinfo ;
+	>>sp ;
 	
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
@@ -257,7 +227,6 @@
 	
 :.str 
 |	flag 1 and? ( drop .strvar ; ) drop | only var
-	1 'deltaD +!
 	1 + | skip "
 	strm> strm - 8 << 6 or ,t 
 	strm> >a
@@ -278,7 +247,6 @@
 	
 :.nro 
 	flag 1 and? ( drop .nrovar ; ) drop | only var
-	1 'deltaD +!
 	dup str>anro nip
 	dup 32 << 32 >> =? ( 
 		$ffffffff and 8 << 1 or ,t 
@@ -352,8 +320,7 @@
 	3 =? ( blockOut ; )	| )
 	4 =? ( anonIn ) 	| [
 	5 =? ( anonOut ; )	| ]
-	6 + dup tokeninfo
-	,t >>sp 
+	6 + ,t >>sp 
 	;
 	
 	
@@ -376,7 +343,6 @@
 	
 :.adr | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
-	1 'deltaD +!
 	1 - dup 4 << dic +
 	@ 1 and? ( drop 8 << 5 or ,t >>sp ; ) | adata
 	drop 8 << 3 or ,t >>sp ; | acode
@@ -475,9 +441,125 @@
 		8 - dup @ datacode ) drop ;	
 
 |-------------------------------------------
-|--------------------- static stack mov
-:pass4
+| pass 4 - static stack analisis
+#usod
+#deltad
+#deltar
+#cntfin
+#pano		| anonima
+#cano
+#finlist 0 0 0 0 0 0 0 0 0 0
+#lastdircode
+
+:resetinfo | --
+	0 'flag !
+	'sst 'sst> !		| stack
+	0 'pano ! 0 'cano ! 0 'cntfin !
+	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
+:pushvar
+	deltaD $ff and 8 << 
+	usoD $ff and or 8 << 
+	deltaR $ff and or
+	sst! ;
+:popvar
+	sst@ 
+	dup 56 << 56 >> 'deltaR !
+	dup 8 >> $ff and 'usoD ! 
+	40 << 56 >> 'deltaD ! ;
+	
+:dropvar
+	sst@ drop ;
+
+|------------------------------------------
+:.blit 
+:.lit
 	;
+:.code 
+	dup 8 - @ tok>dic 8 + @ | get info2 from word
+	dup $ff and neg deltaD swap - usoD min 'usoD ! 
+	48 << 56 >> 'deltaD +!
+	;
+:.acode 
+	dup 8 - @ 8 >> $ffffff and 'lastdircode ! ;
+:.data 
+:.adata 
+:.str
+	;
+:.;
+	pano 1? ( drop ; ) drop
+	deltaD $ff and 8 << 
+	usoD $ff and or 8 << 
+	deltaR $ff and or
+	cntfin 3 << 'finlist + !
+	1 'cntfin +! ;
+:.(
+	pushvar ;
+:.)
+	popvar ;
+:.[
+	pushvar 1 'pano +! 1 'cano +! ;
+:.]
+	popvar -1 'pano +! 1 'deltad +! ; | push adr
+:.??
+	dup 8 - @ 24 << 32 >> over + 8 - 		| go to )
+	@ 8 >> $ffffff and 0? ( drop ; ) drop	| IF -> do nothing
+	dropvar pushvar ; 						| WHILE -> copy stack
+:.ex
+	lastdircode nro>dic 8 + @
+	dup $ff and neg deltaD swap - usoD min 'usoD ! 
+	48 << 56 >> 'deltaD +!
+	;
+	
+#toklis 
+.blit .lit .code .acode .data .adata .str
+.; .( .) .[ .] 
+.EX .?? .?? .?? .?? 
+.?? .?? .?? .?? .?? .?? .?? .?? .?? 
+
+|------------------------------------------
+::tokeninfo | t --
+	|dup "%h" .println .input
+	$ff and dup r3ainfo
+	c@+ deltaD swap - usoD min 'usoD !
+	c@+ 'deltaD +!
+	c@+ 'deltaR +!
+	c@ $ff and flag or 'flag !
+	25 >? ( drop ; )
+	3 << 'toklis + @ ex
+	;
+
+
+:anacode | dic info1 --
+	drop
+	resetinfo
+	dup toklen ( 1? 1 - swap
+		@+ tokeninfo
+		swap ) 2drop
+	| store in dic
+	flag 8 << 'flag !
+	deltar 1? ( $08 'flag +! ) drop	| unbalanced R
+	flag over @ or over !	| store flags2
+
+	usod neg $ff and deltad $ff and 8 << or
+	swap 8 + dup @ rot or swap ! | store stackmov
+	;
+
+:resetinfod | --
+	;
+	
+:anadata | dic info1 --
+	resetinfod
+	2drop
+	;
+	
+:StaticStackAnalisis
+	dup @ 1 and? ( anadata ; ) anacode ;
+	
+::pass4
+	0 ( cntdef <? 
+		dup nro>dic StaticStackAnalisis
+		1 + ) drop 
+		;
 	
 |-------------------------------------------
 ::r3load | 'filename --
@@ -498,13 +580,10 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
-	
-|	.input
-	
-	fmem> 'here !	| memory for vars
+	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
-
 |	pass4
 |	.input
 	;
+	
 	
