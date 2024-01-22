@@ -3,6 +3,14 @@
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 
+|..............................
+#fuente  	| fuente editable
+#fuente> 	| cursor
+#$fuente	| fin de texto
+#pantaini>
+#pantafin>
+#ylinea
+
 |------ Color line
 #colornow 0
 
@@ -52,7 +60,6 @@
 	,c ( endline? c@+ 1? 13 <>? ,ct )	
 	eline ;
 	
-
 :parseline 
 	0 wcolor drop
 	,tcolor
@@ -65,6 +72,86 @@
 		$7c =? ( endline ; )	| $7c |	 Comentario
 		,c ) 
 	eline ;
+	
+
+
+:<<13 | a -- a
+	( fuente >=?
+		dup c@ 13 =? ( drop ; )
+		drop 1 - ) ;
+
+:>>13 | a -- a
+	( $fuente <?
+		dup c@ 13 =? ( drop 1 - ; ) | quitar el 1 -
+		drop 1 + )
+	drop $fuente 2 - ;
+
+:khome
+	fuente> 1 - <<13 1 + 'fuente> ! ;
+:kend
+	fuente> >>13  1 + 'fuente> ! ;
+
+:scrollup | 'fuente -- 'fuente
+	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
+	ylinea 1? ( 1 - ) 'ylinea ! ;
+
+:scrolldw
+	pantaini> >>13 2 + 'pantaini> !
+	pantafin> >>13 2 + 'pantafin> !
+	1 'ylinea +! ;
+
+:colcur
+	fuente> 1 - <<13 swap - ;
+
+:karriba
+	fuente> fuente =? ( drop ; )
+	dup 1 - <<13		| cur inili
+	swap over - swap	| cnt cur
+	dup 1 - <<13			| cnt cur cura
+	swap over - 		| cnt cura cur-cura
+	rot min + fuente max
+	'fuente> !
+	;
+
+:kabajo
+	fuente> $fuente >=? ( drop ; )
+	dup 1 - <<13 | cur inilinea
+	over swap - swap | cnt cursor
+	>>13 1 +    | cnt cura
+	dup 1 + >>13 1 + 	| cnt cura curb
+	over -
+	rot min +
+	'fuente> !
+	;
+
+:kder
+	fuente> $fuente <? ( 1 + 'fuente> ! ; ) drop ;
+
+:kizq
+	fuente> fuente >? ( 1 - 'fuente> ! ; ) drop ;
+
+:kpgup
+	20 ( 1? 1 - karriba ) drop ;
+
+:kpgdn
+	20 ( 1? 1 - kabajo ) drop ;
+
+::code-key	
+	evtkey
+	$48 =? ( karriba ) $50 =? ( kabajo )
+	$4d =? ( kder ) $4b =? ( kizq )
+	$47 =? ( khome ) $4f =? ( kend )
+	$49 =? ( kpgup ) $51 =? ( kpgdn )	
+	drop
+	;
+	
+
+::code! | src --
+	dup 'fuente !
+	dup >>0 1 - '$fuente !
+	'fuente> ! 
+	;
+	
 	
 ::code-print | scrx scry lines width source --
 	swap 'cntlin !

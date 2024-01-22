@@ -34,6 +34,8 @@
 #wcode 40
 #hcode 25
 
+
+|--------------- DICCIONARY
 #inidic 0
 
 #colpal ,red ,magenta
@@ -100,7 +102,7 @@
 		dicword
 		1+ ) drop ;
 		
-|--------------------------------			
+|--------------- MEMORY
 :showmem
 	"mem" ,print ,nl
 	fmem ( fmem> <?
@@ -108,13 +110,17 @@
 		) drop 
 	,nl ;
 	
-|---------------------
+|--------------- SRC CODE
 :showsrc
-	src 0? ( drop ; ) >r
+	src 0? ( drop ; ) drop
 	235 ,bc 
-	3 2 hcode 4 - wcode 4 - r> code-print ;
+	3 2 hcode 4 - wcode 4 - src
+	code-print 
 	
-|---------------------
+	;
+	
+
+|--------------- VARIABLE
 :showvar
 	cntdef "def:%d" ,print  
 	dic> dic - 4 >> "(%d) " ,print
@@ -179,9 +185,9 @@
 	error 1? ( dup ,bred ,print ,reset ) drop ,nl
 	
 	mode
-	0 =? ( showvar showdic )
+	0 =? ( showsrc code-key )
 	1 =? ( showvar listtoken )
-	2 =? ( showsrc )
+	2 =? ( showvar showdic )
 	drop
 |	
 |	showmem
@@ -215,10 +221,6 @@
 	drop
 	;
 :a
-|	$48 =? ( karriba ) $50 =? ( kabajo )
-|	$4d =? ( kder ) $4b =? ( kizq )
-|	$47 =? ( khome ) $4f =? ( kend )
-|	$49 =? ( kpgup ) $51 =? ( kpgdn\ )
 |	$3c =? ( play2cursor playvm gotosrc ) |f2
 |	$3d =? ( mode!view codetoword ) | f3 word analisys
 	| $3e f4
