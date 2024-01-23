@@ -34,6 +34,23 @@
 #wcode 40
 #hcode 25
 
+#exit 0	
+
+#smode 'showdic
+#kmode 'keydic
+
+:infobottom
+	1 hcode 2 - ,at 
+	,bblue ,white ,eline
+	|" ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" 
+	" NORMAL ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
+	,printe ,nl
+|	" info ^[7mF1^[27m " ,printe ,nl
+	,reset ,bblack 
+	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+|	,stackprintvm 
+	,stack 
+	;	
 
 |--------------- DICCIONARY
 #inidic 0
@@ -101,6 +118,11 @@
 		cntdef >=? ( 2drop ; )
 		dicword
 		1+ ) drop ;
+
+:keydic | key -- key
+	$49 =? ( -1 'inidic +! ) 
+	$51 =? ( 1 'inidic +! )
+	;
 		
 |--------------- MEMORY
 :showmem
@@ -118,7 +140,9 @@
 	code-print 
 	
 	;
-	
+
+:keysrc | key -- key
+	code-key ;
 
 |--------------- VARIABLE
 :showvar
@@ -157,80 +181,45 @@
 		@ showtok ,nl
 		1+ ) drop ;
 
-|--------------------------------	
-#exit 0	
-#mode 0
-
-:infobottom
-	1 hcode 2 - ,at 
-	,bblue ,white ,eline
-	|" ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" 
-	" ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
-	,printe ,nl
-|	" info ^[7mF1^[27m " ,printe ,nl
-	,reset ,bblack 
-	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
-|	,stackprintvm 
-	,stack 
-
-	;	
-
-:screen | --
-	mark
-	,hidec 
-	,reset ,cls ,bblue
-	"^[37mr3d4 " ,printe
-	'filename ,s "  " ,s ,eline ,nl ,reset
 	
-	error 1? ( dup ,bred ,print ,reset ) drop ,nl
-	
-	mode
-	0 =? ( showsrc code-key )
-	1 =? ( showvar listtoken )
-	2 =? ( showvar showdic )
-	drop
-|	
-|	showmem
-|	,nl
-|	<<ip "%h" ,print ,nl
-	infobottom
-	,showc
-	memsize type	| type buffer
-	empty			| free buffer
-	;
-
-:changemode
-	mode 1 + 2 >? ( 0 nip ) 'mode !
-	;
-	
-:evkey	
-	evtkey
+:keydic	
 	$1B1001 =? ( 1 'exit ! ) | >ESC<
 |	teclado 
+	|$9000F =? ( changemode ) | tab
 
+|	$1B1001 =? ( 0 'nmode ! ) | >ESC<
 	$3b =? ( stepvm ) |f1
 	$3c =? ( pass4 ) |f2
-	
-	$50 =? ( 1 'initok +! ) 
-	$48 =? ( -1 initok + 0 max 'initok ! )
-	
-	$49 =? ( -1 'inidic +! ) 
-	$51 =? ( 1 'inidic +! )
-	
-	$9000F =? ( changemode ) | tab
-	drop
-	;
-:a
 |	$3c =? ( play2cursor playvm gotosrc ) |f2
 |	$3d =? ( mode!view codetoword ) | f3 word analisys
 	| $3e f4
 |	$3f =? ( stepvm gotosrc )	| f5
 |	$40 =? ( stepvmn gotosrc )	| f6
 |	$41 =? ( setbp ) | f7
-
 |	$43 =? ( 1 statevars xor 'statevars ! ) | f9
+	;
 	
-;
+|--------------------------------	
+
+:screen | --
+	mark
+	,hidec 
+	,reset ,cls ,bblue
+	" ^[37mr3d4 " ,printe
+	'filename ,s "  " ,s ,eline ,reset
+	error 1? ( dup ,bred ,print ,reset ) drop ,nl
+	
+	smode ex
+	
+	infobottom
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	;
+
+	
+:evkey	
+	evtkey 'kmode ex drop ;
 
 :evmouse
 	evtmb $0 =? ( drop ; ) drop 
