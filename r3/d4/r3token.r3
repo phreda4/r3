@@ -582,7 +582,7 @@
 	pass2			| tokenize code
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
-|	pass4
+	pass4
 |	.input
 	;
 	

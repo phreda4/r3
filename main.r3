@@ -438,9 +438,9 @@
 		1 + ) drop ;
 
 :drawsrc	
-	source 0? ( drop ; ) 
+	source 0? ( drop ; ) drop
 	235 ,bc 
-	>r 40 2 linesv cols 41 - r> code-print
+	40 2 linesv cols 41 - source code-print
 	;
 	
 :screen

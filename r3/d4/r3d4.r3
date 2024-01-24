@@ -4,40 +4,14 @@
 |-----------------
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
-^r3/editor/code-print.r3
 
+^r3/d4/r3edit.r3
 ^r3/d4/r3token.r3
-
-|--------------------------------	
-| DICCIONARY LIST
-| info1
-| $..............01 - code/data
-| $..............02 - loc/ext
-| $..............04	1 es usado con direccion
-| $..............08	1 r esta desbalanceada		| var cte
-| $..............10	0 un ; 1 varios ;
-| $..............20	1 si es recursiva
-| $..............40	1 si tiene anonimas
-| $..............80	1 termina sin ;
-| $............ff.. flag2
-| $......ffffff....	-> tok+ -> code
-| $ffffff.......... -> src+ -> src
-|
-| info2
-| $..............ff - Data use		255
-| $............ff.. - Data delta	-128..127
-| $.........fff.... - calls			1024+
-| $........f....... - +info: inline,constant,exec,only stack
-| $ffffffff........ - len
-|--------------------------------	
 
 #wcode 40
 #hcode 25
 
 #exit 0	
-
-#smode 'showdic
-#kmode 'keydic
 
 :infobottom
 	1 hcode 2 - ,at 
@@ -138,12 +112,11 @@
 	235 ,bc 
 	3 2 hcode 4 - wcode 4 - src
 	code-print 
-	
 	;
 
 :keysrc | key -- key
 	code-key ;
-
+	
 |--------------- VARIABLE
 :showvar
 	cntdef "def:%d" ,print  
@@ -198,6 +171,10 @@
 |	$41 =? ( setbp ) | f7
 |	$43 =? ( 1 statevars xor 'statevars ! ) | f9
 	;
+
+#smode 'showsrc
+#kmode 'keysrc
+
 	
 |--------------------------------	
 
@@ -219,7 +196,10 @@
 
 	
 :evkey	
-	evtkey 'kmode ex drop ;
+	evtkey 
+	$1B1001 =? ( 1 'exit ! )
+	kmode ex 
+	drop ;
 
 :evmouse
 	evtmb $0 =? ( drop ; ) drop 
@@ -243,6 +223,9 @@
 |	"r3/democ/palindrome.r3" 
 	"r3/test/testasm.r3"
 	r3load
+	
+	src code-set
+	
 	
 	resetvm
 	
