@@ -236,7 +236,7 @@
 
 ::stepvmn | --
 	<<ip 0? ( drop resetvm ; )
-	dup @ $ff and $c <>? ( 2drop stepvm ; ) drop
+	dup @ $ff and 2 <>? ( 2drop stepvm ; ) drop
 	dup 8 + swap
 	( over <>?
 		@+ $ff and 3 << 'vmc + @ ex

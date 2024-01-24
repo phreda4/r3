@@ -175,24 +175,29 @@
 	dic> 16 - +! | store flag
 	;
 	
-:boot>>! | src char -- src char
-	boot>> +? ( 
-		pick2 8 << 2 or ,t | call prev 
-		) drop 
-	dic> dic - 4 >> 'boot>> ! ;
+#noboot	
+
+:boot?	
+	noboot 0? ( drop ; ) 
+	boot>> -? ( drop 'boot>> ! ; ) drop
+	dup 'boot>> ! 	
+	8 << 2 or ,t ; | call prev	
 	
 :.def 
 	endef
 	0 'flag !
 	0 'endcnt !
+	0 'noboot !
 	1 + dup c@
 	$3A =? ( 2 'flag ! swap 1 + swap ) 	|::
-	33 <? ( boot>>! ) | : alone
+	33 <? ( dic> dic - 4 >> 'noboot ! swap 1 - swap ) | : alone
 	drop
 	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
 	dic> !+ 0 swap !+ 'dic> !
-	>>sp ;
+	boot?
+	>>sp 
+	;
 
 :.var 
 	endef
@@ -337,7 +342,7 @@
 	1 - dup 4 << dic + 
 	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
 	@ 
-	dup $ff00 and flag or 'flag ! | copy flag2 to current word
+|	dup $ff00 and flag or 'flag ! | copy flag2 to current word
 	1 and? ( drop 8 << 4 or ,t >>sp ; ) | data
 	drop 8 << 2 or ,t >>sp ; | code
 	

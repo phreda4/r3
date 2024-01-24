@@ -1,13 +1,26 @@
 | editor for d4
 | PHREDA 2024
 |..............................
-#fuente  	| fuente editable
-#fuente> 	| cursor
-#$fuente	| fin de texto
-#pantaini>
-#pantafin>
-#ylinea
+^r3/lib/math.r3
+^r3/lib/parse.r3
+^r3/win/console.r3
+^r3/win/mconsole.r3
 
+##fuente  	| fuente editable
+##fuente> 	| cursor
+##$fuente	| fin de texto
+
+#inisrc>
+#endsrc>
+
+#xlinea
+#ylinea
+#ycursor
+
+##xcode 6
+##ycode 2
+##wcode 40
+##hcode 20
 
 :<<13 | a -- a
 	( fuente >=?
@@ -26,18 +39,18 @@
 	fuente> >>13  1 + 'fuente> ! ;
 
 :scrollup | 'fuente -- 'fuente
-	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
+	inisrc> 1 - <<13 1 - <<13  1 + 'inisrc> !
 	ylinea 1? ( 1 - ) 'ylinea ! ;
 
 :scrolldw
-	pantaini> >>13 2 + 'pantaini> !
-	pantafin> >>13 2 + 'pantafin> !
+	inisrc> >>13 2 + 'inisrc> !
+	endsrc> >>13 2 + 'endsrc> !
 	1 'ylinea +! ;
 
 :colcur
 	fuente> 1 - <<13 swap - ;
 
-:karriba
+:kup
 	fuente> fuente =? ( drop ; )
 	dup 1 - <<13		| cur inili
 	swap over - swap	| cnt cur
@@ -47,7 +60,7 @@
 	'fuente> !
 	;
 
-:kabajo
+:kdn
 	fuente> $fuente >=? ( drop ; )
 	dup 1 - <<13 | cur inilinea
 	over swap - swap | cnt cursor
@@ -65,12 +78,13 @@
 	fuente> fuente >? ( 1 - 'fuente> ! ; ) drop ;
 
 :kpgup
-	20 ( 1? 1 - karriba ) drop ;
+	20 ( 1? 1 - kup ) drop ;
 
 :kpgdn
-	20 ( 1? 1 - kabajo ) drop ;
+	20 ( 1? 1 - kdn ) drop ;
 
 |----------------------------------------
+|------ Color line
 #colornow 0
 
 :wcolor
@@ -88,63 +102,91 @@
 
 :,tcolor colornow ,fcolor ;
 
-#endlin
-#cntlin
-
-:eline | adr char -- adr
-	0? ( drop 1 - ; ) drop
-	c@+ 10 =? ( drop ; ) drop 1 -
+:incursor
+	fuente> <>? ( ; )
+	over 'ycursor !
+	"s" ,[ | save cursor position
 	;
 
-:endline? | adr -- adr
-	endlin <? ( ; )
-	( c@+ 1? 13 <>? drop ) 
-	drop 1 -
-	;
+:iniline
+	xlinea wcolor
+	( 1? 1 - swap
+		c@+ 0? ( drop nip 1 - ; )
+		13 =? ( drop nip 1 - ; )
+		9 =? ( wcolor )
+		32 =? ( wcolor )
+		drop swap ) drop ;
 	
 :,ct
 	9 =? ( ,sp ,sp 32 nip ) ,c ;
 	
 :strword
 	,c
-	( endline? c@+ 1?
+	( incursor c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
 		13 <>?
 		,ct ) drop 1 - 0 ;
 	
-	
 :endline
-	,c ( endline? c@+ 1? 13 <>? ,ct )	
-	eline ;
+	,c ( incursor c@+ 1? 13 <>? ,ct )	
+	1? ( drop ; ) drop 1 - ;
 	
 :parseline 
-	0 wcolor drop
 	,tcolor
-	dup cntlin + 'endlin !
-	( endline? c@+ 1? 13 <>?  | 0 o 13 sale
+	( incursor c@+ 1? 13 <>?  | 0 o 13 sale
 		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
 		$5e =? ( endline ; )	| $5e ^  Include
 		$7c =? ( endline ; )	| $7c |	 Comentario
-		,c ) 
-	eline ;
+		,c
+		) 
+	1? ( drop ; ) drop
+	1 - ;
+
+:setendsrc
+	inisrc>
+	0 ( hcode <?
+		swap >>cr 1 + swap
+		1 + ) drop
+	$fuente <? ( 1 - ) 'endsrc> ! ;
+
+:linenow
+	ycursor =? ( $3e ,c ; ) 32 ,c ;
 	
+:linenro | lin -- lin
+	over ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
 
+:drawline | adr line -- line adr'
+	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	swap
+	linenro	
+	iniline
+	parseline 
+	;
+	
+::code-draw
+	fuente>
+	( endsrc> >? scrolldw )
+	( inisrc> <? scrollup )
+	drop 
 
-::code-print | scrx scry lines width source --
-	swap 'cntlin !
-	0 ( pick2 <? | scrx lines src linen
-		pick4 pick4 pick2 + ,at ,sp
-		swap parseline ,eline
-		swap 1 + ) nip 4drop ;
+	,reset
+	inisrc>
+	0 ( hcode <?
+		1 ycode pick2 + ,at
+		drawline
+		swap 1 + ) drop
+	$fuente <? ( 1 - ) 'endsrc> ! ;		
 		
+
+
 |----------------------------------------
 ::code-key	
 	evtkey
-	$48 =? ( karriba ) $50 =? ( kabajo )
+	$48 =? ( kup ) $50 =? ( kdn )
 	$4d =? ( kder ) $4b =? ( kizq )
 	$47 =? ( khome ) $4f =? ( kend )
 	$49 =? ( kpgup ) $51 =? ( kpgdn )	
@@ -153,11 +195,13 @@
 	
 
 ::code-set | src --
+	dup 'inisrc> !
 	dup 'fuente !
-	dup >>0 1 - '$fuente !
-	'fuente> ! 
+	dup 'fuente> !
+	count + '$fuente !
+	0 'xlinea !
+	0 'ylinea !
+	setendsrc
 	;
-	
-
 	
 	

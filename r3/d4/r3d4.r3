@@ -17,7 +17,7 @@
 	1 hcode 2 - ,at 
 	,bblue ,white ,eline
 	|" ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" 
-	" NORMAL ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
+	" DEBUG ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
 	,printe ,nl
 |	" info ^[7mF1^[27m " ,printe ,nl
 	,reset ,bblack 
@@ -106,16 +106,22 @@
 		) drop 
 	,nl ;
 	
+	
 |--------------- SRC CODE
+:cursor2ip  
+	<<ip 0? ( drop ; )
+	@ 40 >>> src + 'fuente> ! ;
+	
 :showsrc
 	src 0? ( drop ; ) drop
-	235 ,bc 
-	3 2 hcode 4 - wcode 4 - src
-	code-print 
+	code-draw
 	;
 
 :keysrc | key -- key
-	code-key ;
+	code-key 
+	$3b =? ( stepvm cursor2ip ) |f1
+	$3c =? ( stepvmn cursor2ip ) |f2
+	;
 	
 |--------------- VARIABLE
 :showvar
@@ -130,39 +136,30 @@
 	,nl
 	;
 
-|---------------------
+|--------------- TOKENS
 #initok 0
 
 :showtok | nro
-|	dup "%h. " ,print
+	dup "%h. " ,print
 	dup $ff and
-	1 =? ( drop 32 << 40 >> " %d" ,print ; )				| lit
-|	2 =? ( "" ,print )
-|	3 =? ( "" ,print )
-|	4 =? ( "" ,print )
-|	5 =? ( "" ,print )
+	1 =? ( drop 24 << 40 >> " %d" ,print ; )				| lit
 	6 =? ( drop 8 >> $ffffff and strm + 34 ,c ,s 34 ,c ; ) 	| str
 	drop
 	40 >> src + "%w " ,print ;
 	
-:listtoken
+:listtok
 	0 ( 18 <?
 		dup initok + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
-		<<ip =? ( "> " ,print )
+		<<ip =? ( "s" ,[ "> " ,print ) | save cursor position 
 		@ showtok ,nl
 		1+ ) drop ;
 
 	
-:keydic	
-	$1B1001 =? ( 1 'exit ! ) | >ESC<
-|	teclado 
-	|$9000F =? ( changemode ) | tab
-
+:keytok
 |	$1B1001 =? ( 0 'nmode ! ) | >ESC<
 	$3b =? ( stepvm ) |f1
-	$3c =? ( pass4 ) |f2
 |	$3c =? ( play2cursor playvm gotosrc ) |f2
 |	$3d =? ( mode!view codetoword ) | f3 word analisys
 	| $3e f4
@@ -170,14 +167,27 @@
 |	$40 =? ( stepvmn gotosrc )	| f6
 |	$41 =? ( setbp ) | f7
 |	$43 =? ( 1 statevars xor 'statevars ! ) | f9
+	$48 =? ( -1 'initok +! ) 
+	$50 =? ( 1 'initok +! )
 	;
 
+|---------------------------------------------------
 #smode 'showsrc
 #kmode 'keysrc
+#nmode 0
 
-	
+#slist 'showsrc 'listtok 'showdic
+#klist 'keysrc 'keytok 'keydic 
+
+:changemode
+	nmode 1 + 2 >? ( 0 nip )
+	dup 'nmode !
+	3 <<
+	dup 'slist + @ 'smode !
+	'klist + @ 'kmode !
+	;
+
 |--------------------------------	
-
 :screen | --
 	mark
 	,hidec 
@@ -189,15 +199,16 @@
 	smode ex
 	
 	infobottom
-	,showc
+	"u" ,[ ,showc	| restore cursor pos, show cursor
 	memsize type	| type buffer
 	empty			| free buffer
 	;
 
-	
+
 :evkey	
 	evtkey 
 	$1B1001 =? ( 1 'exit ! )
+	$9000F =? ( changemode ) | tab
 	kmode ex 
 	drop ;
 
@@ -223,11 +234,10 @@
 |	"r3/democ/palindrome.r3" 
 	"r3/test/testasm.r3"
 	r3load
-	
 	src code-set
 	
-	
 	resetvm
+	cursor2ip  
 	
 	cntdef 18 - 0 max 'inidic !
 	cnttok 18 - 0 max 'initok !
@@ -240,3 +250,5 @@
 		$4 =? ( evsize )
 		drop ) 
 	drop ;
+	
+	
