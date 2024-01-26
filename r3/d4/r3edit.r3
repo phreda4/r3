@@ -179,9 +179,9 @@
 		1 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
-	$fuente <? ( 1 - ) 'endsrc> ! ;		
+	$fuente <? ( 1 - ) 'endsrc> ! 
+	;		
 		
-
 
 |----------------------------------------
 ::code-key	
