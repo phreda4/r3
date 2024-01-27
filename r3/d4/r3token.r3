@@ -110,7 +110,7 @@
 
 | traverse code, calc sizes
 :pass1
-	0 'cntdef !
+	1 'cntdef !
 	0 'cnttok !
 	0 'cntstr !
 	'inc ( inc> <?				| every include
@@ -396,6 +396,9 @@
 	| continue word need add lengths
 	dic> 16 - ( dic >? 
 		16 - contword ) drop	
+	
+	tok> tok - 3 >> 16 << dic> !+	| last entry in dicc
+	fmem> fmem - 32 << swap !		| tok end & fmem end
 	;
 	
 |-------------------------------------------	

@@ -89,7 +89,7 @@
 :showdic
 	0 ( 20 <?
 		dup inidic + 
-		cntdef >=? ( 2drop ; )
+		cntdef 1 - >=? ( 2drop ; )
 		dicword
 		1+ ) drop ;
 
