@@ -7,7 +7,7 @@
 ^r3/lib/parse.r3
 
 | ventana de texto
-#xcode 1 #ycode 1
+#xcode 1 #ycode 3
 #wcode 40 #hcode 20
 
 #xlinea 0 #ylinea 0	| primera linea visible
@@ -16,13 +16,14 @@
 ##edfilename * 1024
 
 #pantaini>	| comienzo de pantalla
+#pantaini>	| comienzo de pantalla
 #pantafin>	| fin de pantalla
 
 #inisel		| inicio seleccion
 #finsel		| fin seleccion
 
-#fuente  	| fuente editable
-#fuente> 	| cursor
+##fuente  	| fuente editable
+##fuente> 	| cursor
 #$fuente	| fin de texto
 
 #clipboard	|'clipboard
@@ -37,9 +38,7 @@
 #findpad * 64 |----- find text
 
 #mshift
-#emode 0
-
-#lerror 0 #cerror 0
+##edmode 0	
 
 |----- edicion
 :lins  | c --
@@ -161,11 +160,11 @@
 
 |----------------------------------
 :mode!edit
-	0 'emode ! ;
+	0 'edmode ! ;
 :mode!find
-	2 'emode ! ;
+	2 'edmode ! ;
 :mode!error
-	3 'emode ! ;
+	3 'edmode ! ;
 
 
 |----------------------------------
@@ -386,7 +385,8 @@
 	drop swap wp + rot swap ;
 
 :cursormouse
-	SDLx SDLy
+	SDLx xcode wp * - 
+	SDLy ycode 1 - hp * - | upper info bar
 	pantaini>
 	swap hp 1 <<			| x adr y ya
 	( over <?
@@ -463,8 +463,6 @@
 	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-
-	'dns 'mos 'ups guiMap |------ mouse
 	
 	SDLchar 1? ( modo ex ; ) drop
 
@@ -487,6 +485,16 @@
 	drop
 	cursorpos
 	;
+	
+:viewmodekey
+	SDLkey 0? ( drop ; )
+	>esc< =? ( exit )
+	<up> =? ( karriba ) <dn> =? ( kabajo )
+	<ri> =? ( kder ) <le> =? ( kizq )
+	<home> =? ( khome ) <end> =? ( kend )
+	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
+	drop
+	;
 
 :errmodekey
 	$AE0000 SDLColor
@@ -506,6 +514,9 @@
 	;
 
 :barrac | control+
+	$747474 SDLColor
+	xcode ycode hcode + 1 - wcode 1 bfillline
+	xcode ycode hcode + 1 - gotoxy
 	" Ctrl-" bemits
 	"Cut" "X" btnf
 	"opy" "C" btnf
@@ -516,13 +527,20 @@
 	$ffffff bcolor
 	" [%s]" bprint ;
 
-:barra
+
+:printmode
+	edmode
+	0? ( $ffffff bcolor " EDIT " bemits )
+	2 =? ( $7f7f00 bcolor " FIND " bemits )
+	3 =? ( $7f0000 bcolor " ERROR " bemits )
+	4 =? ( $00ff00 bcolor " DEBUG " bemits )
+	drop ;
+	
+::edtoolbar
 	$747474 SDLColor
 	xcode ycode 1 - wcode 1 bfillline
-	
-	xcode ycode 1 - gotoxy
-	$ffffff bcolor ":r3 editor " bemits 
-	$0 bcolor 'edfilename " [%s]" bprint
+	xcode ycode 1 - gotoxy printmode
+	$0 bcolor 'edfilename " %s" bprint
 	xcode wcode + 8 - gotox
 	$ffff bcolor bsp
 	xcursor 1 + .d bemits bsp
@@ -556,12 +574,16 @@
 
 |-------------------------------------
 ::edshow
-|	barra
+	xcode ycode wcode hcode bsrcsize guiBox
+	'dns 'mos 'ups guiMap |------ mouse
 	edcodedraw
-	emode
+	edtoolbar
+
+	edmode
 	0? ( editmodekey )
 	2 =? ( findmodekey )
 	3 =? ( errmodekey )
+	4 =? ( viewmodekey )
 	drop ;
 	
 :editando

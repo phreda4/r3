@@ -6,10 +6,15 @@
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdledit.r3
 
-^r3/d4/r3edit.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
 
+|--------------- SOURCE	
+:cursor2ip  
+	<<ip 0? ( drop ; )
+	@ 40 >>> src + 'fuente> ! ;
+	
+	
 |--------------- DICCIONARY
 #inidic 0
 
@@ -39,12 +44,11 @@
 	;
 	
 :info2 | n --
-	,mov 
+	dup ,mov | stack move
 |	dup $ff and "%d " ,print		| duse unsigned
 |	dup 48 << 56 >> "%d " ,print	| ddelta signed
-	
+
 	dup 16 >> $ffff and "%d " ,print	| calls
-	9 ,c
 	dup 32 >> " %d " ,print			| len
 	drop
 |	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
@@ -53,83 +57,126 @@
 	
 :dicword | nro --
 	mark	
-	dup "%d." ,print
 	4 << dic + 
-	@+ info1
-	@+ info2
-	drop
+	|@+ info1
+	|@+ info2
+	|drop
+	@ 40 >>> src + 1 - "%w " ,print
+	
 	,eol 
 	empty
-	here ttprint
+	here bprint
 	;
 	
-:viewDicc
-	$ff00 ttcolor
+:dicctionary
+	cntdef 0? ( drop ; ) drop
+	$747474 sdlcolor
+	81 4 30 35 bfillline
+	
+	$ffffff bcolor
 	0 ( 20 <?
-		680 over 5 << immat
+		81 over 4 + gotoxy
 		dup inidic + 
-		dup "%d" ttprint
 		cntdef >=? ( 2drop ; )
-		drop
+		dicword
 		1 + ) drop ;
 		
-|-----------------------------
-:menu
-	$ffffff sdlcolor
-	80 20 immbox
-	680 16 immat
-	"DEBUG" immlabelc immdn
-	'exit "Exit" immbtn 
-	;
+|--------------- TOKENS
+#initok 0
 
-:nivel0
-	immgui 	
-	0 SDLcls
-
-	viewDicc
-	menu
+:showtok | nro
+	dup "%h. " bprint
+	dup $ff and
+	1 =? ( drop 24 << 40 >> " %d" bprint ; )				| lit
+	6 =? ( drop 8 >> $ffffff and strm + 34 bemit bemits 34 bemit ; ) 	| str
+	drop
+	40 >> src + "%w " bprint ;
 	
-	SDLredraw
-	SDLkey
-	>esc< =? ( exit )
-	drop ;
-
+:tokens
+	cntdef 0? ( drop ; ) drop
+	$747474 sdlcolor
+	121 4 30 35 bfillline
+	
+	<<ip 1? ( 
+		dup 3 >> tok -
+		10 - clamp0 'initok !
+			)
+	drop
+	$ff bcolor
+	0 ( 30 <?
+		121 over 4 + gotoxy
+		dup initok + 
+		cnttok >=? ( 2drop ; )
+		3 << tok + 
+		<<ip =? ( $ff00 bcolor ) | save cursor position 
+		dup @ showtok 
+		<<ip =? ( $ff bcolor " <IP" bemits ) | save cursor position 
+		drop
+		1 + ) drop ;
+	
+		
 |-----------------------------	
 :play
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
 |	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
-	r3load
-	src code-set
+|	"r3/test/testasm.r3"
+|	r3load
+
+	fuente r3loadmem
+	
+	tok> tok - 3 >> 'cnttok !
+	
+	4 'edmode ! | no edit src
 	
 	resetvm
-	|cursor2ip  
-	'nivel0 SDLshow
+	cursor2ip  
 	;
 
-|-----------------------------
+|---------------- MENU
 :menu
 	$ffffff sdlcolor
 	80 20 immbox
-	680 16 immat
-	"EDIT" immlabelc		immdn
-	'play "Play" immbtn 	immdn
+	0 0 immat
+	"R3d4" immlabelc imm>>
+	'play "Play" immbtn imm>>
 	'exit "Exit" immbtn 
 	;
 	
+|---------------- TOOLBAR
+:toolbar
+	;
+
+:keyboard
+	SDLkey
+	>esc< =? ( exit )
+	<f1> =? ( play )
+	<f2> =? ( stepvm cursor2ip )
+	<f3> =? ( stepvmn cursor2ip )
+	drop 
+	;
+
+	
+:ttstack	
+	"D: " ttprint
+	'PSP 8 + ( NOS <=? @+ "%d " ttprint ) drop
+	'PSP NOS <=? ( TOS "%d " ttprint ) drop ; 
+
 |-----------------------------	
 :main
 	immgui 
 	0 SDLcls
 	edshow	
+	dicctionary
+	tokens
 	menu
-	
+	toolbar
+	8 640 ttat 
+	regb rega <<ip "IP:%h RA:%h RB:%h " ttprint
+	8 660 ttat ttstack 
 	SDLredraw
-	SDLkey
-	>esc< =? ( exit )
-	<f1> =? ( play )
-	drop ;
+	keyboard
+	;
 
 |-----------------------------
 |-----------------------------
@@ -137,12 +184,17 @@
 :	
 	"R3d4" 1280 720 SDLinit
 	
-	"media/ttf/zx-spectrum.ttf" 16 TTF_OpenFont 
+	"media/ttf/Roboto-Medium.ttf" 20 TTF_OpenFont 
 	dup ttfont immSDL
 	
 	bfont1
-	1 1 80 35 edwin
-	edram "r3/d4/r3d4.r3" edload
+	1 4 80 36 edwin
+	edram 
+|	'filename "mem/main.mem" load drop
+|	"r3/demo/textxor.r3" 
+|	"r3/democ/palindrome.r3" 
+	"r3/test/testasm.r3"
+	edload
 	
 	'main SDLshow
 

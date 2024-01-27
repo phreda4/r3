@@ -594,4 +594,19 @@
 |	.input
 	;
 	
+::r3loadmem | mem --
+	0 0 error!
+	dup 'src !
+	>>0 'here !
+	
+	'inc 'inc> ! 
+	'filename src includes drop | load includes
+	pass1			| calc sizes
+	makemem			| reserve mem
+	pass2			| tokenize code
+	fmem> 'here !	| mark memory for vars
+	pass3			| calc tree calls
+	pass4
+	;
+	
 	

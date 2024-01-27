@@ -47,6 +47,11 @@
 	rot wp * rot hp * 32 << or 
 	'rec !+ !
 	SDLRenderer 'rec SDL_RenderFillRect ;
+
+::bsrcsize | x y w h -- x y w h
+	2swap hp * swap wp * swap 
+	2swap hp * swap wp * swap ;
+	
 	
 ::bfillemit | "" -- ""
 	count wp *
