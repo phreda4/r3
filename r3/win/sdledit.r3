@@ -32,13 +32,10 @@
 #undobuffer |'undobuffer
 #undobuffer>
 
-#linecomm 	| comentarios de linea
-#linecomm>
-
 #findpad * 64 |----- find text
 
 #mshift
-##edmode 0	
+##edmode 0
 
 |----- edicion
 :lins  | c --
@@ -467,7 +464,7 @@
 	SDLchar 1? ( modo ex ; ) drop
 
 	SDLkey 0? ( drop ; )
-	>esc< =? ( exit )
+|	>esc< =? ( exit )
 	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
 	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 
@@ -488,7 +485,7 @@
 	
 :viewmodekey
 	SDLkey 0? ( drop ; )
-	>esc< =? ( exit )
+|	>esc< =? ( exit )
 	<up> =? ( karriba ) <dn> =? ( kabajo )
 	<ri> =? ( kder ) <le> =? ( kizq )
 	<home> =? ( khome ) <end> =? ( kend )
@@ -496,13 +493,11 @@
 	drop
 	;
 
-:errmodekey
+:errmodekey |*******
 	$AE0000 SDLColor
-	xcode ycode 1 - wcode 1 bfillline
-	
-	xcode hcode 1 + gotoxy
-|	$ffffff bcolor
-|	'outpad text
+	xcode ycode hcode + 1 + wcode 1 bfillline
+	xcode ycode hcode + 1 + gotoxy
+	|$ffffff bcolor ederror "%w" sprint bemits
 	editmodekey
 	;
 
@@ -539,7 +534,7 @@
 ::edtoolbar
 	$747474 SDLColor
 	xcode ycode 1 - wcode 1 bfillline
-	xcode ycode 1 - gotoxy printmode
+	xcode ycode 1 - gotoxy |printmode
 	$0 bcolor 'edfilename " %s" bprint
 	xcode wcode + 8 - gotox
 	$ffff bcolor bsp

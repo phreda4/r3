@@ -9,11 +9,18 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
 
+#modo 0
+
 |--------------- SOURCE	
 :cursor2ip  
 	<<ip 0? ( drop ; )
 	@ 40 >>> src + 'fuente> ! ;
 	
+
+|--------------- INCLUDES
+:includes	
+
+	;
 	
 |--------------- DICCIONARY
 #inidic 0
@@ -61,7 +68,8 @@
 	|@+ info1
 	|@+ info2
 	|drop
-	@ 40 >>> src + 1 - "%w " ,print
+	@+ 40 >>> src + "%w (" ,print
+	@ ,mov ")" ,print
 	
 	,eol 
 	empty
@@ -70,10 +78,10 @@
 	
 :dicctionary
 	cntdef 0? ( drop ; ) drop
-	$747474 sdlcolor
+	$545454 sdlcolor
 	81 4 30 35 bfillline
 	
-	$ffffff bcolor
+	$0000 bcolor
 	0 ( 20 <?
 		81 over 4 + gotoxy
 		dup inidic + 
@@ -81,28 +89,47 @@
 		dicword
 		1 + ) drop ;
 		
+|---------------- MENU
+#ltit "- EDIT -" "- DEBUG -" 
+#tit 'ltit
+
+:menu
+	$ffffff ttcolor
+	0 0 ttat
+	" R3d4 " ttprint
+	$ff00 ttcolor
+	tit ttprint	
+|	$aaaaaa ttcolor
+|	'edfilename " %s" ttprint
+	;
+	
+:modo! | n --
+	'ltit over n>>0 'tit ! 
+	'modo !
+	;
+	
 |--------------- TOKENS
 #initok 0
 
 :showtok | nro
 	dup "%h. " bprint
 	dup $ff and
-	1 =? ( drop 24 << 40 >> " %d" bprint ; )				| lit
+	1 =? ( drop 24 << 32 >> " %d" bprint ; )				| lit
 	6 =? ( drop 8 >> $ffffff and strm + 34 bemit bemits 34 bemit ; ) 	| str
 	drop
 	40 >> src + "%w " bprint ;
 	
 :tokens
 	cntdef 0? ( drop ; ) drop
-	$747474 sdlcolor
+	$545454 sdlcolor
 	121 4 30 35 bfillline
 	
 	<<ip 1? ( 
 		dup 3 >> tok -
 		10 - clamp0 'initok !
-			)
-	drop
-	$ff bcolor
+		) drop
+		
+	$7f bcolor
 	0 ( 30 <?
 		121 over 4 + gotoxy
 		dup initok + 
@@ -110,55 +137,55 @@
 		3 << tok + 
 		<<ip =? ( $ff00 bcolor ) | save cursor position 
 		dup @ showtok 
-		<<ip =? ( $ff bcolor " <IP" bemits ) | save cursor position 
+		<<ip =? ( $7f bcolor " <IP" bemits ) | save cursor position 
 		drop
 		1 + ) drop ;
 	
 		
 |-----------------------------	
-:play
-|	'filename "mem/main.mem" load drop
-|	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-|	"r3/test/testasm.r3"
-|	r3load
-
-	fuente r3loadmem
+:errormode
+	3 'edmode ! | no edit src
+|	lerror 'ederror !
+	;
 	
-	tok> tok - 3 >> 'cnttok !
+:play
+	empty
+	fuente 'edfilename r3loadmem
+	mark
+	error 1? ( drop errormode ; ) drop
 	
 	4 'edmode ! | no edit src
-	
+	1 modo! 
 	resetvm
-	cursor2ip  
+	cursor2ip
 	;
 
-|---------------- MENU
-:menu
-	$ffffff sdlcolor
-	80 20 immbox
-	0 0 immat
-	"R3d4" immlabelc imm>>
-	'play "Play" immbtn imm>>
-	'exit "Exit" immbtn 
-	;
-	
+
 |---------------- TOOLBAR
 :toolbar
 	;
 
-:keyboard
+:keysrc
 	SDLkey
-	>esc< =? ( exit )
+	>esc< =? ( exit  )
 	<f1> =? ( play )
-	<f2> =? ( stepvm cursor2ip )
-	<f3> =? ( stepvmn cursor2ip )
 	drop 
 	;
-
+	
+:keydbg
+	SDLkey
+	>esc< =? ( 0 modo! 0 'edmode ! )
+	<f1> =? ( stepvm cursor2ip )
+	<f2> =? ( stepvmn cursor2ip )
+	drop 
+	;
+	
+#keyb 'keysrc 'keydbg
+	
+:keyboard
+	modo 3 << 'keyb + @ ex ;
 	
 :ttstack	
-	"D: " ttprint
 	'PSP 8 + ( NOS <=? @+ "%d " ttprint ) drop
 	'PSP NOS <=? ( TOS "%d " ttprint ) drop ; 
 
@@ -167,13 +194,19 @@
 	immgui 
 	0 SDLcls
 	edshow	
-	dicctionary
-	tokens
+	modo 1? (
+		dicctionary
+		tokens
+		) drop
 	menu
 	toolbar
+	
+	$ffffff ttcolor
 	8 640 ttat 
-	regb rega <<ip "IP:%h RA:%h RB:%h " ttprint
+	<<ip 3 >> tok - "IP:%h | " ttprint
+	regb rega "A:%h B:%h " ttprint
 	8 660 ttat ttstack 
+	
 	SDLredraw
 	keyboard
 	;
@@ -192,10 +225,10 @@
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
+	"r3/democ/palindrome.r3" 
+|	"r3/test/testasm.r3"
 	edload
-	
+	mark |  for redoing tokens
 	'main SDLshow
 
 	SDLquit 

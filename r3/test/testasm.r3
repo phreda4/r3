@@ -1,11 +1,4 @@
-|^r3/win/console.r3
 
-:cona	
-	>a ;
-	
-:conb	
-	dup 3 + ;
-	
-:w1 0 1? ( cona ; ) conb ;
+:add + ;
 
-: w1 cona conb ;
+: 1 2 3 add + ;

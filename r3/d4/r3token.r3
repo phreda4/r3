@@ -588,22 +588,30 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+	tok> tok - 3 >> 'cnttok !	| real token use
+	dic> dic - 4 >> 'cntdef !	| real definition use
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
 	pass4
 |	.input
 	;
-	
-::r3loadmem | mem --
+
+|-------------------------------------------
+::r3loadmem | mem 'filename --
+|-------------------------------------------
 	0 0 error!
-	dup 'src !
-	>>0 'here !
 	
+	dup 'filename strcpy
+	'r3path strpath
+	
+	'src !
 	'inc 'inc> ! 
 	'filename src includes drop | load includes
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+	tok> tok - 3 >> 'cnttok !	| real token use
+	dic> dic - 4 >> 'cntdef !	| real definition use
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
 	pass4
