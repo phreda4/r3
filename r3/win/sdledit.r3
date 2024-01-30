@@ -352,11 +352,15 @@
 	dup ylinea + 1 + .d 3 .r. bemits ;
 
 ::edcodedraw
-	$333C57 sdlcolor xcode 4 + ycode wcode 4 - hcode bfillline
-	$566C86 sdlcolor xcode ycode 4 hcode bfillline	
+	$333C57 sdlcolor 
+	xcode 4 + ycode 
+	wcode 4 - hcode 1 + bfillline
+	$566C86 sdlcolor 
+	xcode ycode 
+	4 hcode 1 + bfillline	
 	pantaini>
 	0 ( hcode <?
-		xcode ycode pick2 + gotoxy
+		xcode ycode pick2 + 1 + gotoxy
 		linenro
 		xcode 4 + gotox
 		swap drawline
@@ -533,8 +537,8 @@
 	
 ::edtoolbar
 	$747474 SDLColor
-	xcode ycode 1 - wcode 1 bfillline
-	xcode ycode 1 - gotoxy |printmode
+	xcode ycode wcode 1 bfillline
+	xcode ycode gotoxy |printmode
 	$0 bcolor 'edfilename " %s" bprint
 	xcode wcode + 8 - gotox
 	$ffff bcolor bsp

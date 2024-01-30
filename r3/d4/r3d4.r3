@@ -12,15 +12,24 @@
 #modo 0
 
 |--------------- SOURCE	
-:cursor2ip  
+:cursor2ip
 	<<ip 0? ( drop ; )
 	@ 40 >>> src + 'fuente> ! ;
-	
 
 |--------------- INCLUDES
-:includes	
-
-	;
+#winsetinc 1 [ 790 0 300 200 ] "INCLUDES"
+	
+#clevel
+	
+:wininclude
+	modo 0? ( drop ; ) drop
+	'winsetinc immwin 0? ( drop ; ) drop
+	290 18 immbox
+	'inc ( inc>  <? 
+		@+ "%w" immLabel
+		@+ "%h" immLabelR
+		immln
+		) drop ;
 	
 |--------------- DICCIONARY
 #inidic 0
@@ -73,76 +82,71 @@
 	
 	,eol 
 	empty
-	here bprint
+	here immLabel
 	;
-	
-:dicctionary
-	cntdef 0? ( drop ; ) drop
-	$545454 sdlcolor
-	81 4 30 35 bfillline
-	
-	$0000 bcolor
+
+#winsetwor 1 [ 790 200 300 500 ] "DICCIONARY"
+
+:winwords
+	modo 0? ( drop ; ) drop
+	'winsetwor immwin 0? ( drop ; ) drop
 	0 ( 20 <?
-		81 over 4 + gotoxy
 		dup inidic + 
 		cntdef >=? ( 2drop ; )
-		dicword
+		dicword immln
 		1 + ) drop ;
-		
-|---------------- MENU
-#ltit "- EDIT -" "- DEBUG -" 
-#tit 'ltit
 
-:menu
-	$ffffff ttcolor
-	0 0 ttat
-	" R3d4 " ttprint
-	$ff00 ttcolor
-	tit ttprint	
-|	$aaaaaa ttcolor
-|	'edfilename " %s" ttprint
-	;
-	
-:modo! | n --
-	'ltit over n>>0 'tit ! 
-	'modo !
-	;
 	
 |--------------- TOKENS
 #initok 0
 
+
 :showtok | nro
-	dup "%h. " bprint
+	30 18 immbox
+	dup $ffffff and 
+	"%h" immLabel imm>>
+	150 18 immbox
 	dup $ff and
-	1 =? ( drop 24 << 32 >> " %d" bprint ; )				| lit
-	6 =? ( drop 8 >> $ffffff and strm + 34 bemit bemits 34 bemit ; ) 	| str
+	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
 	drop
-	40 >> src + "%w " bprint ;
+	40 >> src + "%w" immLabel
+	;
+		
+#winsettok 1 [ 1088 0 190 710 ] "TOKENS"
 	
-:tokens
-	cntdef 0? ( drop ; ) drop
-	$545454 sdlcolor
-	121 4 30 35 bfillline
-	
+:wintokens
+	modo 0? ( drop ; ) drop
+	'winsettok immwin 0? ( drop ; ) drop
+
 	<<ip 1? ( 
-		dup 3 >> tok -
+		dup tok - 3 >>
 		10 - clamp0 'initok !
 		) drop
-		
-	$7f bcolor
+
 	0 ( 30 <?
-		121 over 4 + gotoxy
-		dup initok + 
+		initok over + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
-		<<ip =? ( $ff00 bcolor ) | save cursor position 
+		<<ip =? ( $ff00 'immcolortex ! )
 		dup @ showtok 
-		<<ip =? ( $7f bcolor " <IP" bemits ) | save cursor position 
+		<<ip =? ( "< IP" immLabelR $ffffff 'immcolortex ! )
 		drop
+		immln
 		1 + ) drop ;
 	
-		
+	
 |-----------------------------	
+|-----------------------------	
+
+#ltit "- EDIT -" "- DEBUG -" 
+#tit 'ltit
+		
+:modo! | n --
+	'ltit over n>>0 'tit ! 
+	'modo !
+	;
+		
 :errormode
 	3 'edmode ! | no edit src
 |	lerror 'ederror !
@@ -158,13 +162,51 @@
 	1 modo! 
 	resetvm
 	cursor2ip
-	;
+	;		
+		
+|---------------- MENU
+#winsetcon 1 [ 8 516 700 200 ] "R3d4"
 
+:dstack	
+	mark
+	"D:" ,s
+	'PSP 8 + ( NOS <=? @+ "%d " ,print ) drop
+	'PSP NOS <=? ( TOS "%d " ,print ) drop 
+	,eol
+	empty
+	here immLabel
+	; 
+
+:rstack	
+	mark
+	"R:" ,s
+	'RSP 8 + ( RTOS <=? @+ "%h " ,print 	) drop 
+	,eol
+	empty
+	here immLabel
+	; 
+	
+#pad * 512	
+
+:winconsole	
+	'winsetcon immwin 0? ( drop ; ) drop
+	90 20 immbox
+	$7f0000 'immcolorbtn !
+	'exit "EXIT" immbtn  imm>> | winclose
+	$7f 'immcolorbtn !
+	'play "PLAY" immbtn imm>>
+	<<ip tok - 3 >> "IP:%h" immLabel
+	immln
+	790 20 immbox
+	regb rega "A:%h B:%h" immLabel immln
+	
+	dstack immln
+	rstack immln
+|	'pad 256 immInputLine
+	;
+	
 
 |---------------- TOOLBAR
-:toolbar
-	;
-
 :keysrc
 	SDLkey
 	>esc< =? ( exit  )
@@ -184,31 +226,19 @@
 	
 :keyboard
 	modo 3 << 'keyb + @ ex ;
-	
-:ttstack	
-	'PSP 8 + ( NOS <=? @+ "%d " ttprint ) drop
-	'PSP NOS <=? ( TOS "%d " ttprint ) drop ; 
 
 |-----------------------------	
 :main
-	immgui 
-	0 SDLcls
+	0 SDLcls immgui 
 	edshow	
-	modo 1? (
-		dicctionary
-		tokens
-		) drop
-	menu
-	toolbar
+
+	wininclude
+	winwords
+	wintokens
+	winconsole
 	
-	$ffffff ttcolor
-	8 640 ttat 
-	<<ip 3 >> tok - "IP:%h | " ttprint
-	regb rega "A:%h B:%h " ttprint
-	8 660 ttat ttstack 
-	
-	SDLredraw
 	keyboard
+	SDLredraw
 	;
 
 |-----------------------------
@@ -217,16 +247,16 @@
 :	
 	"R3d4" 1280 720 SDLinit
 	
-	"media/ttf/Roboto-Medium.ttf" 20 TTF_OpenFont 
+	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont 
 	dup ttfont immSDL
 	
 	bfont1
-	1 4 80 36 edwin
+	0 0 90 30 edwin
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-	"r3/democ/palindrome.r3" 
-|	"r3/test/testasm.r3"
+|	"r3/democ/palindrome.r3" 
+	"r3/test/testasm.r3"
 	edload
 	mark |  for redoing tokens
 	'main SDLshow

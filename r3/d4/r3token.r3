@@ -179,8 +179,8 @@
 
 :boot?	
 	noboot 0? ( drop ; ) 
-	boot>> -? ( drop 'boot>> ! ; ) drop
-	dup 'boot>> ! 	
+	boot>> -? ( drop 'boot>> ! ; ) 
+	swap 'boot>> ! 	
 	8 << 2 or ,t ; | call prev	
 	
 :.def 
