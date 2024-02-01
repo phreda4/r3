@@ -102,10 +102,10 @@
 
 
 :showtok | nro
-	30 18 immbox
+	40 18 immbox
 	dup $ffffff and 
 	"%h" immLabel imm>>
-	150 18 immbox
+	140 18 immbox
 	dup $ff and
 	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
 	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
@@ -190,12 +190,13 @@
 
 :winconsole	
 	'winsetcon immwin 0? ( drop ; ) drop
-	90 20 immbox
-	$7f0000 'immcolorbtn !
-	'exit "EXIT" immbtn  imm>> | winclose
+	80 20 immbox
 	$7f 'immcolorbtn !
 	'play "PLAY" immbtn imm>>
-	<<ip tok - 3 >> "IP:%h" immLabel
+	$7f0000 'immcolorbtn !
+	'exit "EXIT" immbtn  imm>> | winclose
+	<<ip |tok - 3 >> 
+	"IP:%h" immLabel
 	immln
 	790 20 immbox
 	regb rega "A:%h B:%h" immLabel immln

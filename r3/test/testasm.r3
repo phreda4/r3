@@ -1,8 +1,14 @@
+| test for vm
 
-:coso dup ;
+:loop 10 ( 1? 1 - ) drop ;
 
-: 99 ;
+:conditional 16 <? ( 2 + ) 16 <? ( 5 * ) ;
 
 :add + ;
 
-: 1 2 3 add + ;
+|----Boot
+: 
+	2 3 add 
+	3 * 
+	loop 
+	conditional ;
