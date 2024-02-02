@@ -35,7 +35,7 @@
 :.blit	40 >>> src + str>anro nip npush ; | big literal, get from src
 :.lit	dup 8 - @ 24 << 32 >> npush ;
 
-:.code	dic@ 2dup "to:%h from:%h" .println 8 'RTOS +! swap RTOS ! ;
+:.code	dic@ 8 'RTOS +! swap RTOS ! ;
 :.acode dic@ npush ;
 :.data  dic@v @ npush ; 
 :.adata dic@v npush ;

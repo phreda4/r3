@@ -17,23 +17,73 @@
 	@ 40 >>> src + 'fuente> ! ;
 
 |--------------- INCLUDES
-#winsetinc 1 [ 790 0 300 200 ] "INCLUDES"
+#liincnt
+#liinnow
+#liinini
+#liinlines 10
+#liinscroll
+#winsetinc 1 [ 940 0 300 200 ] "INCLUDES"
 	
-#clevel
+:liinset
+	inc> 'inc - 4 >> 'liincnt !
+	0 'liinnow !
+	0 'liinini !
+	liincnt liinlines - 0 max 'liinscroll !
+	;
+	
+:colorlisti
+	;
+		
+:clicklisti
+	;
+	
+:printlinei	
+	4 << 'inc + @ "%w" immBLabel immln ;
+	
+:listscroll | n --
+	liinscroll 0? ( 2drop ; ) 
+	immcur> >r 
+	
+	boxh rot *
+	curx boxw + 2 + | pad?
+	cury pick2 -
+	rot boxh swap immcur
+
+	0 swap 'liinini immScrollv 
+	r> imm>cur
+	;	
 	
 :wininclude
-	modo 0? ( drop ; ) drop
 	'winsetinc immwin 0? ( drop ; ) drop
 	290 18 immbox
-	'inc ( inc>  <? 
-		@+ "%w" immLabel
-		@+ "%h" immLabelR
-		immln
-		) drop ;
+	liinlines dup immListBox
+	'clicklisti onClick	
+	0 ( over over >?  drop
+		dup liinini + liincnt <? 
+		colorlisti immback printlinei
+		1 + ) 2drop	
+	listscroll immln ;
+	
+|	'inc ( inc>  <? 
+|		@+ "%w" immLabel
+|		@+ "%h" immLabelR
+|		immln
+|		) drop ;
+
 	
 |--------------- DICCIONARY
-#inidic 0
+#lidinow
+#lidiini
+#lidilines 20
+#lidiscroll
+#winsetwor 1 [ 940 200 340 390 ] "DICCIONARY"
 
+:lidiset
+	0 'lidinow !
+	0 'lidiini !
+	cntdef lidilines - 0 max 'lidiscroll !
+	;
+	
 :info1 | n --
 	|dup "%h " ,print
 	dup 1 and ":#" + c@ ,c		| code/data
@@ -77,46 +127,71 @@
 	|@+ info1
 	|@+ info2
 	|drop
-	@+ 40 >>> src + "%w (" ,print
-	@ ,mov ")" ,print
+	@+ 40 >>> src + "%w | " ,print
+	@ ,mov 
 	
 	,eol 
 	empty
-	here immLabel
+	here 
 	;
 
-#winsetwor 1 [ 790 200 300 500 ] "DICCIONARY"
+:printlinew
+	dicword immBLabel immln ;
+	
+:clicklistw
+	sdly cury - boxh / lidiini + 
+|	filenow =? ( linenter ; )
+| dup set
+	'lidinow !
+	;
+	
+:colorlistw | n --
+	lidinow =? ( $7f00 ; ) $3a3a3a ;
 
+:listscroll | n --
+	lidiscroll 0? ( 2drop ; ) 
+	immcur> >r 
+	
+	boxh rot *
+	curx boxw + 2 + | pad?
+	cury pick2 -
+	rot boxh swap immcur
+
+	0 swap 'lidiini immScrollv 
+	r> imm>cur
+	;
+	
 :winwords
-	modo 0? ( drop ; ) drop
 	'winsetwor immwin 0? ( drop ; ) drop
-	0 ( 20 <?
-		dup inidic + 
-		cntdef >=? ( 2drop ; )
-		dicword immln
-		1 + ) drop ;
+	316 18 immbox
+	lidilines dup immListBox
+	'clicklistw onClick	
+	0 ( over over >?  drop
+		dup lidiini + cntdef <? 
+		colorlistw immback printlinew
+		1 + ) 2drop	
+	listscroll immln
+	;
 
 	
 |--------------- TOKENS
 #initok 0
 
-
 :showtok | nro
-	40 18 immbox
-	dup $ffffff and 
-	"%h" immLabel imm>>
-	140 18 immbox
+|	40 16 immbox
+|	dup $ffffff and 
+|	"%h" immLabel imm>>
+	180 16 immbox
 	dup $ff and
 	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
-	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
+|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
 	drop
 	40 >> src + "%w" immLabel
 	;
 		
-#winsettok 1 [ 1088 0 190 710 ] "TOKENS"
+#winsettok 1 [ 530 0 190 400 ] "TOKENS"
 	
 :wintokens
-	modo 0? ( drop ; ) drop
 	'winsettok immwin 0? ( drop ; ) drop
 
 	<<ip 1? ( 
@@ -124,28 +199,49 @@
 		10 - clamp0 'initok !
 		) drop
 
-	0 ( 30 <?
+	0 ( 20 <?
 		initok over + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
-		<<ip =? ( $ff00 'immcolortex ! )
+		<<ip =? ( 0 immback $ff00 'immcolortex ! )
 		dup @ showtok 
 		<<ip =? ( "< IP" immLabelR $ffffff 'immcolortex ! )
 		drop
 		immln
 		1 + ) drop ;
-	
-	
-|-----------------------------	
-|-----------------------------	
-
-#ltit "- EDIT -" "- DEBUG -" 
-#tit 'ltit
 		
-:modo! | n --
-	'ltit over n>>0 'tit ! 
-	'modo !
+|--------------- ANALYSIS
+#initoka 0
+
+:showtoka | nro
+	120 16 immbox
+	dup |$ffffff and 
+	"%h" immLabel imm>>
+	180 16 immbox
+	dup $ff and
+	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
+	drop
+	40 >> src + "%w" immLabel
 	;
+		
+#winsettoka 1 [ 600 0 300 400 ] "ANALYSIS"
+	
+:wintokensa
+	'winsettoka immwin 0? ( drop ; ) drop
+
+	0 ( 20 <?
+		initoka over + 
+		cnttok >=? ( 2drop ; )
+		3 << tok + @ showtoka 
+		immln
+		1 + ) drop ;		
+	
+	
+|-----------------------------	
+|-----------------------------	
+:modo! | n --
+	'modo !	;
 		
 :errormode
 	3 'edmode ! | no edit src
@@ -160,6 +256,8 @@
 	
 	4 'edmode ! | no edit src
 	1 modo! 
+	lidiset
+	liinset
 	resetvm
 	cursor2ip
 	;		
@@ -233,10 +331,13 @@
 	0 SDLcls immgui 
 	edshow	
 
-	wininclude
-	winwords
-	wintokens
 	winconsole
+	modo 1? (
+		|wininclude
+		winwords
+		wintokens
+		wintokensa
+		) drop
 	
 	keyboard
 	SDLredraw
@@ -256,8 +357,8 @@
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
+	"r3/democ/palindrome.r3" 
+|	"r3/test/testasm.r3"
 	edload
 	mark |  for redoing tokens
 	'main SDLshow
