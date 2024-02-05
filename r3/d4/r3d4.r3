@@ -27,7 +27,9 @@
 :lidiset
 	0 'lidinow !
 	0 'lidiini !
-	cntdef lidilines - 0 max 'lidiscroll !
+	cntdef lidilines - 0 max 
+	dup "%d" .println
+	'lidiscroll !
 	;
 	
 :info1 | n --
@@ -102,7 +104,8 @@
 	cury pick2 -
 	rot boxh swap immcur
 
-	0 swap 'lidiini immScrollv 
+	0 swap 
+	'lidiini immScrollv 
 	r> imm>cur
 	;
 	
@@ -133,19 +136,19 @@
 	liincnt liinlines - 0 max 'liinscroll !
 	;
 	
+:incset | nroinc --
+	dup 'liinnow !
+	4 << 'inc + 8 + @
+	32 >> dup 'lidiini ! 'lidinow !	;
+	
 :colorlisti
 	liinnow =? ( $7f00 ; ) $3a3a3a ;
 		
 :clicklisti
-	sdly cury - boxh / liinini + dup 'liinnow ! 
-	4 << 'inc + 8 + @
-	32 >> dup 'lidiini !
-	'lidinow !
-	;
+	sdly cury - boxh / liinini + incset ;
 	
 :printlinei	
-	4 << 'inc + @ "%w" immBLabel immln 
-	;
+	4 << 'inc + @ "%w" immBLabel immln ;
 	
 :listscroll | n --
 	liinscroll 0? ( 2drop ; ) 
@@ -209,6 +212,7 @@
 		1 + ) drop ;
 		
 |--------------- ANALYSIS
+#anaword
 #initoka 0
 
 :showtoka | nro
@@ -227,8 +231,9 @@
 	
 :wintokensa
 	'winsettoka immwin 0? ( drop ; ) drop
-
-	0 ( 20 <?
+	anaword "%w" immlabel
+	immln
+	0 ( 10 <?
 		initoka over + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + @ showtoka 
@@ -256,6 +261,8 @@
 	1 modo! 
 	lidiset
 	liinset
+	inc> 'inc - 4 >> 1 - incset
+	
 	resetvm
 	cursor2ip
 	;		
