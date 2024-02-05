@@ -74,6 +74,7 @@
 				dup ) drop
 			>>cr trimcar )
 		includepal ) 2drop
+	src - 
 	over inc> !+ !+ 'inc> ! 
 	;
 	
@@ -97,7 +98,7 @@
 		34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) 
 		drop ) drop ;
 	
-:wrd2dicc
+:wrd2dicc | src -- src'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
 	$7c =? ( drop iscom ; )	| $7c |	 Comentario
@@ -114,7 +115,7 @@
 	0 'cnttok !
 	0 'cntstr !
 	'inc ( inc> <?				| every include
-		8 + @+
+		8 + @+ src +
 		( wrd2dicc 1? ) drop
 		1 'cnttok +! | +1 jump for boot sequence
 		) drop ;
@@ -387,11 +388,13 @@
 	0 'codeini !
 	'inc ( inc> <?		| every include
 |		dup @ "%w<<" .println
-		8 + @+ 
+		8 + dup @ 
+		dup dic> dic - 4 >> 32 << or pick2 ! | store first word in upper dword
+		src +
 		( wrd2token 1? ) drop 
 		|error 1? ( 2drop ; ) drop
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
-		) drop 
+		8 + ) drop 
 	callend
 	| continue word need add lengths
 	dic> 16 - ( dic >? 

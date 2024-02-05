@@ -16,60 +16,6 @@
 	<<ip 0? ( drop ; )
 	@ 40 >>> src + 'fuente> ! ;
 
-|--------------- INCLUDES
-#liincnt
-#liinnow
-#liinini
-#liinlines 10
-#liinscroll
-#winsetinc 1 [ 940 0 300 200 ] "INCLUDES"
-	
-:liinset
-	inc> 'inc - 4 >> 'liincnt !
-	0 'liinnow !
-	0 'liinini !
-	liincnt liinlines - 0 max 'liinscroll !
-	;
-	
-:colorlisti
-	;
-		
-:clicklisti
-	;
-	
-:printlinei	
-	4 << 'inc + @ "%w" immBLabel immln ;
-	
-:listscroll | n --
-	liinscroll 0? ( 2drop ; ) 
-	immcur> >r 
-	
-	boxh rot *
-	curx boxw + 2 + | pad?
-	cury pick2 -
-	rot boxh swap immcur
-
-	0 swap 'liinini immScrollv 
-	r> imm>cur
-	;	
-	
-:wininclude
-	'winsetinc immwin 0? ( drop ; ) drop
-	290 18 immbox
-	liinlines dup immListBox
-	'clicklisti onClick	
-	0 ( over over >?  drop
-		dup liinini + liincnt <? 
-		colorlisti immback printlinei
-		1 + ) 2drop	
-	listscroll immln ;
-	
-|	'inc ( inc>  <? 
-|		@+ "%w" immLabel
-|		@+ "%h" immLabelR
-|		immln
-|		) drop ;
-
 	
 |--------------- DICCIONARY
 #lidinow
@@ -141,7 +87,6 @@
 :clicklistw
 	sdly cury - boxh / lidiini + 
 |	filenow =? ( linenter ; )
-| dup set
 	'lidinow !
 	;
 	
@@ -173,6 +118,59 @@
 	listscroll immln
 	;
 
+|--------------- INCLUDES
+#liincnt
+#liinnow
+#liinini
+#liinlines 8
+#liinscroll
+#winsetinc 1 [ 940 0 300 176 ] "INCLUDES"
+	
+:liinset
+	inc> 'inc - 4 >> 'liincnt !
+	0 'liinnow !
+	0 'liinini !
+	liincnt liinlines - 0 max 'liinscroll !
+	;
+	
+:colorlisti
+	liinnow =? ( $7f00 ; ) $3a3a3a ;
+		
+:clicklisti
+	sdly cury - boxh / liinini + dup 'liinnow ! 
+	4 << 'inc + 8 + @
+	32 >> dup 'lidiini !
+	'lidinow !
+	;
+	
+:printlinei	
+	4 << 'inc + @ "%w" immBLabel immln 
+	;
+	
+:listscroll | n --
+	liinscroll 0? ( 2drop ; ) 
+	immcur> >r 
+	
+	boxh rot *
+	curx boxw + 2 + | pad?
+	cury pick2 -
+	rot boxh swap immcur
+
+	0 swap 'liinini immScrollv 
+	r> imm>cur
+	;	
+	
+:wininclude
+	'winsetinc immwin 0? ( drop ; ) drop
+	290 18 immbox
+	liinlines dup immListBox
+	'clicklisti onClick	
+	0 ( over over >? drop
+		dup liinini + liincnt <? 
+		colorlisti immback 
+		printlinei
+		1 + ) 2drop	
+	listscroll immln ;
 	
 |--------------- TOKENS
 #initok 0
@@ -189,17 +187,17 @@
 	40 >> src + "%w" immLabel
 	;
 		
-#winsettok 1 [ 530 0 190 400 ] "TOKENS"
+#winsettok 1 [ 500 440 190 270 ] "TOKENS"
 	
 :wintokens
 	'winsettok immwin 0? ( drop ; ) drop
 
 	<<ip 1? ( 
 		dup tok - 3 >>
-		10 - clamp0 'initok !
+		7 - clamp0 'initok !
 		) drop
 
-	0 ( 20 <?
+	0 ( 14 <?
 		initok over + 
 		cnttok >=? ( 2drop ; )
 		3 << tok + 
@@ -333,7 +331,7 @@
 
 	winconsole
 	modo 1? (
-		|wininclude
+		wininclude
 		winwords
 		wintokens
 		wintokensa
