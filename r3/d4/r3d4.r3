@@ -16,22 +16,70 @@
 	<<ip 0? ( drop ; )
 	@ 40 >>> src + 'fuente> ! ;
 
-	
-|--------------- DICCIONARY
-#lidinow
-#lidiini
-#lidilines 20
-#lidiscroll
-#winsetwor 1 [ 940 200 340 390 ] "DICCIONARY"
+		
+|--------------- ANALYSIS
+#anaword
 
-:lidiset
-	0 'lidinow !
-	0 'lidiini !
-	cntdef lidilines - 0 max 
-	dup "%d" .println
-	'lidiscroll !
-	;
+#initoka 0
+#cnttoka 10
+
+|---mem analysis
+#tokana
+#tokana>
+
+|  0     1    2     3     4    5     6
+| .lits .lit .word .wadr .var .vadr .str ...
+|::basename | nro 7 - -- str
+
+:clearana
+	here dup 'tokana ! 'tokana> ! ;
 	
+| val-token(8)	
+:,ana | nro
+	tokana> !+ 'tokana> ! ;
+	
+| format -- 
+
+		
+|--------------
+
+:dataw
+	toklend		| dc tok len
+	( 1? 1 - swap
+		@+ dup $ff and ,ana
+		swap ) 2drop ;
+	
+:codew
+	toklen 
+	( 1? 1 - swap
+		@+ dup $ff and ,ana
+		swap ) 2drop ;
+	
+
+:wordanalysis | nro --
+	clearana
+	dup 'anaword !
+	4 << dic + 
+|	2drop
+	
+|	dup 8 + @ $fff0000 nand? ( 2drop ; ) drop	| no calls
+|	dup @ 
+|	dup 1 and ":#" + c@ ,c
+|	dup 40 >>> src + "%w" ,print
+|	1 and? ( drop dataw ; ) drop 
+	codew 
+	;
+
+:showtoka | nro
+	"%h" immLabel 
+|	dup $ff and
+|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
+|	drop
+	;
+
+#winsettoka 1 [ 600 0 300 400 ] "ANALYSIS"
+
 :info1 | n --
 	|dup "%h " ,print
 	dup 1 and ":#" + c@ ,c		| code/data
@@ -56,7 +104,7 @@
 	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
 	;
-	
+
 :info2 | n --
 	dup ,mov | stack move
 |	dup $ff and "%d " ,print		| duse unsigned
@@ -69,19 +117,48 @@
 	dup 16 - toklend nip " %d" ,print | len for data
 	;
 	
+:wintokensa
+	'winsettoka immwin 0? ( drop ; ) drop
+	anaword "%d" immlabel
+	immln
+	immln
+	0 ( 10 <?
+		initoka over + 
+		cnttoka >=? ( 2drop ; )
+		3 << tokana + @ showtoka 
+		immln
+		1 + ) drop ;		
+	
+|--------------- DICCIONARY
+#lidinow
+#lidiini
+#lidilines 20
+#lidiscroll
+#winsetwor 1 [ 940 200 340 390 ] "DICCIONARY"
+
+:lidiset
+	0 'lidinow !
+	0 'lidiini !
+	cntdef lidilines - 0 max 
+	'lidiscroll !
+	;
+	
+:codew
+	$2 and? ( $3a ,c ) $3a ,c 
+	40 >>> src + "%w | " ,print
+	@ ,mov 
+	,eol empty here ;
+	
+:dataw
+	$2 and? ( $23 ,c ) $23 ,c 
+	40 >>> src + "%w" ,print
+	drop
+	,eol empty here ;
+	
 :dicword | nro --
 	mark	
 	4 << dic + 
-	|@+ info1
-	|@+ info2
-	|drop
-	@+ 40 >>> src + "%w | " ,print
-	@ ,mov 
-	
-	,eol 
-	empty
-	here 
-	;
+	@+ 1 and? ( dataw ; ) codew ;
 
 :printlinew
 	dicword immBLabel immln ;
@@ -89,7 +166,8 @@
 :clicklistw
 	sdly cury - boxh / lidiini + 
 |	filenow =? ( linenter ; )
-	'lidinow !
+	dup 'lidinow !
+	wordanalysis
 	;
 	
 :colorlistw | n --
@@ -210,37 +288,7 @@
 		drop
 		immln
 		1 + ) drop ;
-		
-|--------------- ANALYSIS
-#anaword
-#initoka 0
 
-:showtoka | nro
-	120 16 immbox
-	dup |$ffffff and 
-	"%h" immLabel imm>>
-	180 16 immbox
-	dup $ff and
-	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
-|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
-	drop
-	40 >> src + "%w" immLabel
-	;
-		
-#winsettoka 1 [ 600 0 300 400 ] "ANALYSIS"
-	
-:wintokensa
-	'winsettoka immwin 0? ( drop ; ) drop
-	anaword "%w" immlabel
-	immln
-	0 ( 10 <?
-		initoka over + 
-		cnttok >=? ( 2drop ; )
-		3 << tok + @ showtoka 
-		immln
-		1 + ) drop ;		
-	
-	
 |-----------------------------	
 |-----------------------------	
 :modo! | n --
@@ -262,6 +310,7 @@
 	lidiset
 	liinset
 	inc> 'inc - 4 >> 1 - incset
+	clearana
 	
 	resetvm
 	cursor2ip
