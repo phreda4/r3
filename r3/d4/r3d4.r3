@@ -16,14 +16,25 @@
 	<<ip 0? ( drop ; )
 	@ 40 >>> src + 'fuente> ! ;
 
+:codename | adr' info1 -- str
+	$2 and? ( $3a ,c ) $3a ,c 
+	40 >>> src + "%w | " ,print
+	@ ,mov 
+	,eol empty here ;
+	
+:dataname | adr' info1 -- str
+	$2 and? ( $23 ,c ) $23 ,c 
+	40 >>> src + "%w" ,print
+	drop
+	,eol empty here ;
+	
+:nameword | dicadr -- str
+	mark @+ 1 and? ( dataname ; ) codename ;
 		
 |--------------- ANALYSIS
 #anaword
-
 #initoka 0
 #cnttoka 10
-
-|---mem analysis
 #tokana
 #tokana>
 
@@ -32,27 +43,22 @@
 |::basename | nro 7 - -- str
 
 :clearana
-	here dup 'tokana ! 'tokana> ! ;
+	tokana 'tokana> ! ;
 	
-| val-token(8)	
 :,ana | nro
 	tokana> !+ 'tokana> ! ;
 	
-| format -- 
-
-		
 |--------------
-
 :dataw
 	toklend		| dc tok len
 	( 1? 1 - swap
-		@+ dup $ff and ,ana
+		@+ $ffffffff and ,ana
 		swap ) 2drop ;
 	
 :codew
 	toklen 
 	( 1? 1 - swap
-		@+ dup $ff and ,ana
+		@+ $ffffffff and ,ana
 		swap ) 2drop ;
 	
 
@@ -60,27 +66,15 @@
 	clearana
 	dup 'anaword !
 	4 << dic + 
-|	2drop
-	
-|	dup 8 + @ $fff0000 nand? ( 2drop ; ) drop	| no calls
-|	dup @ 
-|	dup 1 and ":#" + c@ ,c
-|	dup 40 >>> src + "%w" ,print
-|	1 and? ( drop dataw ; ) drop 
-	codew 
-	;
+	dup @ 1 and? ( drop dataw ; ) drop
+	codew ;
 
-:showtoka | nro
-	"%h" immLabel 
-|	dup $ff and
-|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
-|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
-|	drop
-	;
 
-#winsettoka 1 [ 600 0 300 400 ] "ANALYSIS"
+#winsettoka 1 [ 600 0 360 500 ] "ANALYSIS"
 
-:info1 | n --
+:infoword | adr -- str
+	mark
+	@+
 	|dup "%h " ,print
 	dup 1 and ":#" + c@ ,c		| code/data
 	dup 1 >> 1 and " e" + c@ ,c	| local/export
@@ -90,38 +84,35 @@
 	dup 5 >> 1 and " R" + c@ ,c	| /recursive
 	dup 6 >> 1 and " [" + c@ ,c	| /have anon
 	dup 7 >> 1 and " ." + c@ ,c	| /not end
-|	dup 8 >> $ff and "%h" ,print
 	dup 8 >> 1 and " m" + c@ ,c	| /mem access
 	dup 9 >> 1 and " A" + c@ ,c	| />A
 	dup 10 >> 1 and " a" + c@ ,c	| /A
 	dup 11 >> 1 and " B" + c@ ,c	| />B
 	dup 12 >> 1 and " b" + c@ ,c	| /B
-	" " ,s
-	|dup 1 and 3 << 'colpal + @ ex
-	|dup $3 and 1 << " ::: ###" + c@+ ,c c@ ,c
-	dup 40 >>> src + "%w " ,print
-	
-	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
+	@
+	dup 16 >> $ffff and " call:%d" ,print	| calls
+	dup 32 >> " len:%d" ,print			| len
+	drop
+	,eol empty here 
 	;
 
-:info2 | n --
-	dup ,mov | stack move
-|	dup $ff and "%d " ,print		| duse unsigned
-|	dup 48 << 56 >> "%d " ,print	| ddelta signed
-
-	dup 16 >> $ffff and "%d " ,print	| calls
-	dup 32 >> " %d " ,print			| len
-	drop
-|	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
-	dup 16 - toklend nip " %d" ,print | len for data
+:showtoka | nro
+	"%h" immLabel
+|	dup $ff and
+|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
+|	drop
 	;
 	
 :wintokensa
 	'winsettoka immwin 0? ( drop ; ) drop
-	anaword "%d" immlabel
+
+	anaword 4 << dic + dup
+	nameword immLabel immln
+	infoword immlabel immln
 	immln
-	immln
+|	immln
 	0 ( 10 <?
 		initoka over + 
 		cnttoka >=? ( 2drop ; )
@@ -143,22 +134,8 @@
 	'lidiscroll !
 	;
 	
-:codew
-	$2 and? ( $3a ,c ) $3a ,c 
-	40 >>> src + "%w | " ,print
-	@ ,mov 
-	,eol empty here ;
-	
-:dataw
-	$2 and? ( $23 ,c ) $23 ,c 
-	40 >>> src + "%w" ,print
-	drop
-	,eol empty here ;
-	
 :dicword | nro --
-	mark	
-	4 << dic + 
-	@+ 1 and? ( dataw ; ) codew ;
+	4 << dic + nameword ;
 
 :printlinew
 	dicword immBLabel immln ;
@@ -300,18 +277,17 @@
 	;
 	
 :play
-	empty
+	empty mark
 	fuente 'edfilename r3loadmem
-	mark
 	error 1? ( drop errormode ; ) drop
-	
 	4 'edmode ! | no edit src
 	1 modo! 
 	lidiset
 	liinset
 	inc> 'inc - 4 >> 1 - incset
+	here dup 'tokana ! 'tokana> !
+	$ffff 'here +!
 	clearana
-	
 	resetvm
 	cursor2ip
 	;		
