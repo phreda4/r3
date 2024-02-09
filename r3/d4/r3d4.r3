@@ -138,6 +138,7 @@
 	4 << dic + nameword ;
 
 :printlinew
+	cntdef >=? ( drop immln ; )
 	dicword immBLabel immln ;
 	
 :clicklistw
@@ -170,7 +171,7 @@
 	lidilines dup immListBox
 	'clicklistw onClick	
 	0 ( over over >?  drop
-		dup lidiini + cntdef <? 
+		dup lidiini + |cntdef <? 
 		colorlistw immback printlinew
 		1 + ) 2drop	
 	listscroll immln
@@ -203,6 +204,7 @@
 	sdly cury - boxh / liinini + incset ;
 	
 :printlinei	
+	liincnt >=? ( drop immln ; ) 
 	4 << 'inc + @ "%w" immBLabel immln ;
 	
 :listscroll | n --
@@ -224,7 +226,7 @@
 	liinlines dup immListBox
 	'clicklisti onClick	
 	0 ( over over >? drop
-		dup liinini + liincnt <? 
+		dup liinini + |liincnt <? 
 		colorlisti immback 
 		printlinei
 		1 + ) 2drop	
