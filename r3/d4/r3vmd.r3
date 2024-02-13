@@ -27,7 +27,8 @@
 
 :.DUP	8 'NOS +! TOS NOS ! ;
 
-:npush	.DUP 'TOS ! ;
+::NPUSH	.DUP 'TOS ! ;
+
 :jmpr	dup 8 - @ 24 << 32 >> + ;
 :dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ dic>tok ;
 :dic@v	dup 8 - @ 8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> fmem + ;
@@ -48,9 +49,9 @@
 :.PICK4	.DUP NOS 32 - @ 'TOS ! ;
 :.2DUP	.OVER .OVER ;
 :.2OVER	.PICK3 .PICK3 ;
-:.DROP	NOS @ 'TOS !	|...
+::.DROP	NOS @ 'TOS !	|...
 :.NIP	-8 'NOS +! ;
-:.2DROP	NOS 8 - @ 'TOS ! -16 'NOS +! ;
+::.2DROP	NOS 8 - @ 'TOS ! -16 'NOS +! ;
 :.3DROP	NOS 16 - @ 'TOS ! -24 'NOS +! ;
 :.4DROP	NOS 24 - @ 'TOS ! -32 'NOS +! ;
 :.SWAP	NOS @ TOS NOS ! 'TOS ! ;
@@ -79,26 +80,26 @@
 :.N?	NOS @ TOS and? ( drop jmpr .DROP ; ) drop .DROP ;
 :.B?	NOS 8 - @+ swap @ TOS bt? ( drop jmpr .2DROP ; ) drop .2DROP ;
 
-:.AND	NOS @ TOS and .NIP 'TOS ! ;
-:.OR	NOS @ TOS or .NIP 'TOS ! ;
-:.XOR	NOS @ TOS xor .NIP 'TOS ! ;
-:.NOT	TOS not 'TOS ! ;
-:.+		NOS @ TOS + .NIP 'TOS ! ;
-:.-		NOS @ TOS - .NIP 'TOS ! ;
-:.*		NOS @ TOS * .NIP 'TOS ! ;
-:./		NOS @ TOS / .NIP 'TOS ! ;
-:.*/	NOS 8 - @+ swap @ TOS */ -16 'NOS +! 'TOS ! ;
-:.*>>	NOS 8 - @+ swap @ TOS *>> -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
-:.<</	NOS 8 - @+ swap @ TOS <</ -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
-:./MOD	NOS @ TOS /mod 'TOS ! NOS ! ;
-:.MOD	NOS @ TOS mod .NIP 'TOS ! ;
-:.ABS	TOS abs 'TOS ! ;
-:.NEG	TOS neg 'TOS ! ;
-:.CLZ	TOS clz 'TOS ! ;
-:.SQRT	TOS sqrt 'TOS ! ;
-:.<<	NOS @ TOS << .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:.>>	NOS @ TOS >> .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:.>>>	NOS @ TOS >>> .NIP 'TOS ! ;    | need LSB (TOS is 32bits)
+::.AND	NOS @ TOS and .NIP 'TOS ! ;
+::.OR	NOS @ TOS or .NIP 'TOS ! ;
+::.XOR	NOS @ TOS xor .NIP 'TOS ! ;
+::.NOT	TOS not 'TOS ! ;
+::.+		NOS @ TOS + .NIP 'TOS ! ;
+::.-		NOS @ TOS - .NIP 'TOS ! ;
+::.*		NOS @ TOS * .NIP 'TOS ! ;
+::./		NOS @ TOS / .NIP 'TOS ! ;
+::.*/	NOS 8 - @+ swap @ TOS */ -16 'NOS +! 'TOS ! ;
+::.*>>	NOS 8 - @+ swap @ TOS *>> -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
+::.<</	NOS 8 - @+ swap @ TOS <</ -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
+::./MOD	NOS @ TOS /mod 'TOS ! NOS ! ;
+::.MOD	NOS @ TOS mod .NIP 'TOS ! ;
+::.ABS	TOS abs 'TOS ! ;
+::.NEG	TOS neg 'TOS ! ;
+::.CLZ	TOS clz 'TOS ! ;
+::.SQRT	TOS sqrt 'TOS ! ;
+::.<<	NOS @ TOS << .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
+::.>>	NOS @ TOS >> .NIP 'TOS ! ;     | need LSB (TOS is 32bits)
+::.>>>	NOS @ TOS >>> .NIP 'TOS ! ;    | need LSB (TOS is 32bits)
 
 |--- R
 :.>R	8 'RTOS +! TOS RTOS ! .DROP ;

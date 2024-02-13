@@ -35,35 +35,207 @@
 #anaword
 #initoka 0
 #cnttoka 10
-#tokana
+
+#biglit * 160 | 20 bigliteral
+#biglit>
+#tokana * $ffff | 8192 tokens
 #tokana>
 
+|-------------------------------- PRINT
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
-|::basename | nro 7 - -- str
+:.lits 
+	8 >> 'biglit + @ "$%h" sprint ;
+:.lit 
+	8 >> "$%h" sprint ; | literal in opt is bigger
 
-:clearana
-	tokana 'tokana> ! ;
+:.name
+	8 >> $ffffffff and 4 << dic + @ dic>name ;
 	
-:,ana | nro
-	tokana> !+ 'tokana> ! ;
+:.word 
+	.name "%w" sprint ;
+:.wadr 
+	.name "'%w" sprint ;
+:.var 
+	.name "%w" sprint ;
+:.vadr 
+	.name "'%w" sprint ;
+:.str 
+	"%h" sprint ;
+	
+#bmacro .lits .lit .word .wadr .var .vadr .str 
+
+:tokenstr | tok -- str
+	dup $ff and 
+	6 >? ( 7 - basename nip ; )
+	3 << 'bmacro + @ ex ;
+
+|--------------------------------	
+
+:reseta	
+	'tokana 'tokana> ! 
+	'biglit 'biglit> ! ;
+:,t		
+	tokana> !+ 'tokana> !  ;
+
+:,nlit | nro --
+	dup 8 << 8 >> =? ( 8 << 1 or ,t ; ) drop | fit in 56bits
+	biglit> !+ 'biglit> !
+	biglit> 'biglit - 8 << ,t | big nro  0 in token
+	;
+		
+:,lit | token --
+	40 >> src + str>anro nip | get the number
+	,nlit ;
+	
+:1lit?	
+	tokana> 8 - 'tokana <? ( drop 0 ; ) 
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+:2lit?	
+	tokana> 16 - 'tokana <? ( drop 0 ; ) 
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+:3lit?	
+	tokana> 24 - 'tokana <? ( drop 0 ; ) 
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop 	
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+
+:litpush
+	dup $ff and 1? ( drop 8 >> NPUSH ; ) drop
+	8 >> 'biglit + @ NPUSH ;
+	
+:1litpush
+	tokana> 8 - dup 'tokana> !
+	@ litpush ;	
+:2litpush
+	tokana> 16 - dup 'tokana> !
+	@+ litpush @ litpush ;
+:3litpush
+	tokana> 24 - dup 'tokana> !
+	@+ litpush @+ litpush @ litpush ;
+	
+:,TOSLIT | -- ; TOS to tokana>
+	TOS ,nlit .drop ;
+:,2TOSLIT	
+	NOS 8 - @ ,nlit TOS ,nlit .2drop ;
+
+:,AND
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .AND ,TOSLIT ;
+:,OR
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .OR ,TOSLIT ;
+:,XOR
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .XOR ,TOSLIT ;
+:,+
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .+ ,TOSLIT ;
+:,- 
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .- ,TOSLIT ;
+:,* 
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .* ,TOSLIT ;
+:,/ 
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush ./ ,TOSLIT ;
+:,<< 
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .<< ,TOSLIT ;
+:,>> 
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .>> ,TOSLIT ;
+:,>>>	
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .>>> ,TOSLIT ;
+:,mod
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush .mod ,TOSLIT ;
+:,/mod
+	2lit? 0? ( drop ,t ; ) 2drop
+	2litpush ./mod ,2TOSLIT ;
+:,*/
+	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
+	,t ;
+:,*>> 
+	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
+	,t ;
+:,<</
+	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
+	,t ;
+:,NOT 
+	1lit? 0? ( drop ,t ; ) 2drop
+	1litpush .not ,TOSLIT ;
+:,NEG 
+	1lit? 0? ( drop ,t ; ) 2drop
+	1litpush .neg ,TOSLIT ;
+:,ABS 
+	1lit? 0? ( drop ,t ; ) 2drop
+	1litpush .abs ,TOSLIT ;
+:,SQRT 
+	1lit? 0? ( drop ,t ; ) 2drop
+	1litpush .sqrt ,TOSLIT ;
+:,CLZ 
+	1lit? 0? ( drop ,t ; ) 2drop
+	1litpush .clz ,TOSLIT ;
+
+	
+#optw
+,LIT ,LIT ,t ,t ,t ,t ,t 	|.lit .lit .code .acode .data .adata .str
+,t ,t ,t ,t ,t 				|.; .( .) .[ .] 
+,t ,t ,t ,t ,t 				|.EX .0? .1? .+? .-? 
+,t ,t ,t ,t ,t ,t ,t ,t ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
+,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
+,t ,t ,t ,t ,t ,t ,t 		|.ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
+,t ,t ,t 					|.>R .R> .R@ 
+,AND ,OR ,XOR ,+ ,- ,* ,/ ,<< ,>> ,>>>
+,MOD ,/MOD ,*/ ,*>> ,<</ 			
+,NOT ,NEG ,ABS ,SQRT ,CLZ 
+,t ,t ,t ,t 				|.@ .C@ .W@ .D@ 
+,t ,t ,t ,t 				|.@+ .C@+ .W@+ .D@+ 
+,t ,t ,t ,t 				|.! .C! .W! .D! 
+,t ,t ,t ,t 				|.!+ .C!+ .W!+ .D!+ 
+,t ,t ,t ,t 				|.+! .C+! .W+! .D+! 
+,t ,t ,t ,t ,t ,t ,t 		|.>A .A> .A+ .A@ .A! .A@+ .A!+ 
+,t ,t ,t ,t |.cA@ .cA! .cA@+ .cA!+ 
+,t ,t ,t ,t |.dA@ .dA! .dA@+ .dA!+ 
+,t ,t ,t ,t ,t ,t ,t |.>B .B> .B+ .B@ .B! .B@+ .B!+ 
+,t ,t ,t ,t |.cB@ .cB! .cB@+ .cB!+ 
+,t ,t ,t ,t |.dB@ .dB! .dB@+ .dB!+ 
+,t ,t ,t |.MOVE .MOVE> .FILL 
+,t ,t ,t |.CMOVE .CMOVE> .CFILL 
+,t ,t ,t |.DMOVE .DMOVE> .DFILL 
+,t 				|.MEM
+,t ,t 				|.LOADLIB .GETPROC
+,t ,t ,t ,t ,t ,t 	| .SYS0 .SYS1 .SYS2 .SYS3 .SYS4 .SYS5
+,t ,t ,t ,t ,t 		|.SYS6 .SYS7 .SYS8 .SYS9 .SYS10 
+0	
+	
+:,ana | nro --
+	dup $ff and 3 << 'optw + @ ex ;
 	
 |--------------
 :dataw
 	toklend		| dc tok len
 	( 1? 1 - swap
-		@+ $ffffffff and ,ana
-		swap ) 2drop ;
+		@+ ,ana
+		swap ) 2drop 
+	tokana> 'tokana - 3 >> 'cnttoka !		
+	;
 	
 :codew
 	toklen 
 	( 1? 1 - swap
-		@+ $ffffffff and ,ana
-		swap ) 2drop ;
+		@+ ,ana
+		swap ) 2drop 
+	tokana> 'tokana - 3 >> 'cnttoka !
+	;
 	
 
 :wordanalysis | nro --
-	clearana
+	reseta
 	dup 'anaword !
 	4 << dic + 
 	dup @ 1 and? ( drop dataw ; ) drop
@@ -97,13 +269,11 @@
 	,eol empty here 
 	;
 
+
 :showtoka | nro
-	"%h" immLabel
-|	dup $ff and
-|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
-|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
-|	drop
-	;
+	tokenstr
+|	"%h" 
+	immLabel ;
 	
 :wintokensa
 	'winsettoka immwin 0? ( drop ; ) drop
@@ -113,10 +283,10 @@
 	infoword immlabel immln
 	immln
 |	immln
-	0 ( 10 <?
+	0 ( 15 <?
 		initoka over + 
 		cnttoka >=? ( 2drop ; )
-		3 << tokana + @ showtoka 
+		3 << 'tokana + @ showtoka 
 		immln
 		1 + ) drop ;		
 	
@@ -287,9 +457,8 @@
 	lidiset
 	liinset
 	inc> 'inc - 4 >> 1 - incset
-	here dup 'tokana ! 'tokana> !
 	$ffff 'here +!
-	clearana
+	reseta
 	resetvm
 	cursor2ip
 	;		
@@ -389,8 +558,8 @@
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-	"r3/democ/palindrome.r3" 
-|	"r3/test/testasm.r3"
+|	"r3/democ/palindrome.r3" 
+	"r3/test/testasm.r3"
 	edload
 	mark |  for redoing tokens
 	'main SDLshow
