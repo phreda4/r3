@@ -115,6 +115,17 @@
 ::sqrt. | v -- r
 	dup 1.0 ( over <? + 1 >> 2dup 16 <</ ) drop nip ;	
 	
+| CLZ don't wrk on 64 bits!
+::clzl
+	0 swap
+	$ffffffff00000000 nand? ( 32 << swap 32 + swap )
+	$ffff000000000000 nand? ( 16 << swap 16 + swap )
+	$ff00000000000000 nand? ( 8 << swap 8 + swap )
+	$f000000000000000 nand? ( 4 << swap 4 + swap )
+	$c000000000000000 nand? ( 2 << swap 2 + swap )
+	$8000000000000000 nand? ( swap 1 + swap )
+	drop ;	
+	
 | http://www.quinapalus.com/efunc.html
 
 :l1 over dup 1 >> + +? ( rot drop swap $67cd - ; ) drop ;

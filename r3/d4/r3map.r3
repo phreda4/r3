@@ -45,9 +45,9 @@
 #r3base
 ";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
 "<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
-"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
-"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
-">R" "R>" "R@" "AND" "OR" "XOR" "+" "-" "*" "/" "<<" ">>" ">>>"
+"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP" | 26
+"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP" |34
+">R" "R>" "R@" "AND" "OR" "XOR" "+" "-" "*" "/" "<<" ">>" ">>>" |41
 "MOD" "/MOD" "*/" "*>>" "<</" "NOT" "NEG" "ABS" "SQRT" "CLZ"
 "@" "C@" "W@" "D@" "@+" "C@+" "W@+" "D@+"
 "!" "C!" "W!" "D!" "!+" "C!+" "W!+" "D!+" 
