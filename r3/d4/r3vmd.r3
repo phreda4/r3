@@ -252,4 +252,15 @@
 		@+ $ff and 3 << 'vmc + @ ex
 		1? )
 	'<<ip ! ;	
+	
+::exncode | tok --
+	"%h" .println
+	8 >> $ffffffff and 4 << dic + @ dic>tok | store call word
+	8 'RTOS +! 0 RTOS ! 
+	( 1?
+		dup @ "%h  " .print
+		@+ $ff and 3 << 'vmc + @ ex
+		dup "-  %h" .println
+		) drop
+	;
 		

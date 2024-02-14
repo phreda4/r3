@@ -16,7 +16,12 @@
 | $..............20	1 si es recursiva
 | $..............40	1 si tiene anonimas
 | $..............80	1 termina sin ;
-| $............ff.. flag2
+| $............ff.. flag2-------------------
+| $.............100 mem access word
+| $.............200 >A
+| $.............400 a
+| $.............800 >B
+| $............1000 b
 | $......ffffff....	-> tok+ -> code
 | $ffffff.......... -> src+ -> src
 |
@@ -486,7 +491,9 @@
 :.lit
 	;
 :.code 
-	dup 8 - @ tok>dic 8 + @ | get info2 from word
+	dup 8 - @ tok>dic 
+	dup @ 8 >> $ff and flag or 'flag !	| copy flags2 from called word
+	8 + @ 								| get info2 from word
 	dup $ff and neg deltaD swap - usoD min 'usoD ! 
 	48 << 56 >> 'deltaD +!
 	;

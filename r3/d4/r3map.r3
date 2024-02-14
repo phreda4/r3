@@ -290,7 +290,7 @@
 
 |--- dibuja movimiento pilas
 | mov
-| $1ff - movs delta -16..15 uso:0..15
+| $ff - movs delta -128..127 uso:0..255
 
 :,ncar | n car -- car
 	( swap 1? 1 - swap dup ,c 1 + ) drop ;
