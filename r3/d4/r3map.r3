@@ -149,9 +149,9 @@
 0 1 0 0		| .lit
 0 0 0 0		| .word
 0 1 0 0		| .wadr		need calc UD
-0 1 0 0		| .var
+0 1 0 1		| .var
 0 1 0 0		| .vadr
-0 1 0 0		| .str		need "%d"!!
+0 1 0 0		| .str		need "%d"!! | mem?
 
 0 0 0 0		| ; | fin de palabra (12)
 0 0 0 0		| (

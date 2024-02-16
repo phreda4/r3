@@ -358,6 +358,7 @@
 |	"r3/democ/palindrome.r3" 
 	"r3/test/testasm.r3"
 	edload
+	deferwi | for opt
 	mark |  for redoing tokens
 	'main SDLshow
 

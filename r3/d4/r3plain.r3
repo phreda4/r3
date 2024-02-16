@@ -45,10 +45,34 @@
 	dup 40 >>> src + "%w" ,print
 	1 and? ( drop dataw ; ) drop codew 
 	;
+|----------------------------------------
 
+:dataw
+	dup datause? 0? ( drop ; ) drop
+	dup "#w%h" ,print
+	dup wordanalysis
+	'tokana ( tokana> <? 
+		@+ tokenstrw ,sp ,s
+		) drop ,cr ;
+	
+:codew
+	dup worduse? 0? ( drop ; ) drop
+	dup ":w%h" ,print
+	dup wordanalysis
+	'tokana ( tokana> <? 
+		@+ tokenstrw ,sp ,s
+		) drop ,cr ;
+	
+:,everyword | n -- n
+	dup 4 << dic + 
+	dup 8 + @ $ffff0000 nand? ( 2drop ; ) drop	| no calls
+	dup "%h" .println
+	@ 1 and? ( drop dataw ; ) 
+	drop codew ;
 	
 :generate
 	0 ( cntdef <?
+		dup "%d" .println
 		,everyword 
 		1 + ) drop ;
 		
@@ -86,8 +110,7 @@
 	'filename .println
 	error 1? ( dup .print .cr ) drop
 	showvar 
-	
-|	r3exec 
+	deferwi | for opt	
 	resetvm
 	saveopt
 |	.input

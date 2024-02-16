@@ -77,7 +77,7 @@
 |	nro findinv "%h" .print cr
 	.cr
 	
-	-1800 ( 1800 <? 210 +
+	-18000 ( 18000 <? 2100 +
 		nro over "%d/%d=" .print
 		dup nro / "%d " .print
 		dup divc "%d " .print

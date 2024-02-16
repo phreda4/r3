@@ -8,10 +8,11 @@
 |
 | + reemplace constant
 | + calculate pure words
-| - inline words
+| + inline words
 | + folder constant
 | + cte * transform
-| - cte / mod transform
+| + cte / transform
+| - cte mod transform
 |-----------------
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
@@ -47,6 +48,22 @@
 #bmacro .lits .lit .word .wadr .var .vadr .str 
 
 ::tokenstr | tok -- str
+	dup $ff and 
+	6 >? ( 7 - basename nip ; )
+	3 << 'bmacro + @ ex ;
+
+:.word 
+	8 >> $ffffffff and "w%h" sprint ;
+:.wadr 
+	8 >> $ffffffff and "'w%h" sprint ;
+:.var 
+	8 >> $ffffffff and "w%h" sprint ;
+:.vadr 
+	8 >> $ffffffff and "'w%h" sprint ;
+
+#bmacro .lits .lit .word .wadr .var .vadr .str 
+
+::tokenstrw | tok -- str
 	dup $ff and 
 	6 >? ( 7 - basename nip ; )
 	3 << 'bmacro + @ ex ;
@@ -128,21 +145,28 @@
 	
 :dic@	| tok -- info1
 	8 >> $ffffffff and 4 << dic + @ ;
-:dic@v	| tok -- valinmem
-	8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> fmem + @ ;
 :dic@use | tok -- usestack
 	8 >> $ffffffff and 4 << dic + 8 + @ $ff and ;
 :dic@loa | tok -- loadstack
 	8 >> $ffffffff and 4 << dic + 8 + @ 
 	dup $ff and swap 48 << 56 >> + ;
+:dic@len | tok -- len
+	8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> ;
 	
+#deferinline
+	
+| $..............08	1 r esta desbalanceada		| var cte
+| $..............10	0 un ; 1 varios ;
+| $..............20	1 si es recursiva	
 :,inlinecode | ; inline code ?
-	,t ;
+	dup dic@ $38 and 1? ( drop ,t ; ) drop	| not inlline
+	dup dic@len 7 >? ( drop ,t ; ) drop		| min len inline
+	deferinline ex ;
 	
 :,code | tok --
 	dup dic@ $100 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
 	dup dic@use										| tok stack use
-	nlit? 0? ( drop ,inlinecode ; ) drop			| all are literal?
+	nlit? 0? ( 2drop ,inlinecode ; ) drop			| all are literal?
 	nlitpush		| push the numbers in virtual stack
 	dup exncode		| exec code in compile time
 	dic@loa ,ntoslit		| pop the numbers to code
@@ -150,7 +174,7 @@
 	
 :,data | tok --
 	dup dic@ $4 and? ( drop ,t ; ) drop | real var
-	dic@v ,nlit		| detect cte var
+	dic@len fmem + @ ,nlit		| detect cte var
 	;
 
 :,AND
@@ -178,17 +202,15 @@
 :,*pot | tok tos --
 	nip ,<<
 	63 swap clzl - ,tlit
-	TK<< ,t  ;
+	TK<< ,t ;
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
-	nip ,<<
-	TKdup ,t	| dup
+	nip ,<< TKdup ,t
 	64 swap clzl - 1 - ,tlit
 	TK<< ,t TK+ ,t ;
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
-	nip ,<<
-	TKdup ,t	| dup
+	nip ,<< TKdup ,t
 	64 swap clzl - ,tlit
 	TK<< ,t TKswap ,t TK- ,t ;
 :,lit* 	
@@ -205,16 +227,57 @@
 	,t ;
 	
 |----------------------- /
+|----- division by constant
+| http://www.flounder.com/multiplicative_inverse.htm
+
+#ad		| d absoluto
+#t #anc #p #q1 #r1 #q2 #r2
+
+#divm	| magic mult
+#divs   | shift mult
+
+:calcstep
+	1 'p +!
+	q1 1 << 'q1 ! r1 1 << 'r1 !
+	r1 anc >=? ( 1 'q1 +! anc neg 'r1 +! ) drop
+	q2 1 << 'q2 ! r2 1 << 'r2 !
+	r2 ad >=? ( 1 'q2 +! ad neg 'r2 +! ) drop
+	;
+
+:calcmagic | d --
+	dup abs 'ad !
+    $80000000 over 31 >>> + 't !
+    t dup 1 - swap ad mod - 'anc !
+    31 'p !
+    $80000000 anc / abs 'q1 !
+    $80000000 q1 anc * - abs 'r1 !
+	$80000000 ad / abs 'q2 !
+	$80000000 q2 ad * - abs 'r2 !
+	( calcstep
+		ad r2 -	| delta
+		q1 =? ( r1 0? ( swap 1 + swap ) drop )
+		q1 >? drop ) drop
+	q2 1 +
+	swap -? ( drop neg 'divm ! p 'divs ! ; ) drop
+	'divm ! p 'divs ! ;
+	
+|--- ajuste por signo
+:,sigadj | --
+	TKdup ,t 63 ,tlit TK>> ,t TK- ,t ;
+	
 |>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
 :,/pot | tok tos --
 	nip ,<<
 	63 swap clzl - ,tlit
-	TK>> ,t TKdup ,t 63 ,tlit TK>> ,t TK- ,t ;	
+	TK>> ,t ,sigadj ;	
+	
+	
 :,lit/
 	getTOS
 	dup 1 - nand? ( ,/pot ; )	
-	drop
-	,t ;
+	nip ,<< 
+	calcmagic
+	divm ,tlit divs ,tlit TK*>> ,t ,sigadj ;
 	
 :,/ 
 	2lit? 1? ( 2drop 2litpush ./ ,TOSLIT ; ) drop 
@@ -304,21 +367,44 @@
 	dup $ff and 3 << 'optw + @ ex ;
 	
 |--------------
-:dataw
+:dataw | dicc --
 	toklend		| dc tok len
-	( 1? 1 - swap
+	( 1? 1 - swap 
 		@+ ,ana
 		swap ) 2drop ;
 	
-:codew
+:codew | dicc --
 	toklen 
-	( 1? 1 - swap
-		@+ ,ana
-		swap ) 2drop ;
-	
+	( 1? 1 - swap @+ ,ana swap ) 2drop ;
+		
+:inlineword | tok --
+	tok>dic 
+	toklen 1 - | remove ;
+	( 1? 1 - swap @+ ,ana swap ) 2drop ;
 
+|<<<< need the call before all once
+::deferwi
+	'inlineword 'deferinline ! ;
+	
 ::wordanalysis | nro --
 	reseta
 	4 << dic + 
 	dup @ 1 and? ( drop dataw ; ) drop
 	codew ;
+
+| $..............04	1 es usado con direccion
+| $..............08	1 r esta desbalanceada		| var cte
+| $..............10	0 un ; 1 varios ;
+| $..............20	1 si es recursiva	
+| $3c and 1?
+::worduse? | nro -- 0/1
+	4 << dic + dup 8 + @  | dicc dicinfo2
+	dup 16 >> $ffff and 0? ( nip nip ; ) drop	| no calls-> NOT need code
+	32 >>> 7 >? ( 2drop 1 ; ) drop				| larger for inline -> need code
+	@ $3c and 1? ( drop 1 ; ) drop				| not inline-> need code
+	0 ;
+
+::datause? | nro -- 0/1
+	4 << dic + dup 8 + @
+	16 >> $ffff and 0? ( nip ; ) drop	| no calls-> NOT need code
+	@ $4 and? ( ; ) drop 0 ;

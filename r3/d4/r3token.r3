@@ -494,7 +494,7 @@
 	dup 8 - @ tok>dic 
 	dup @ 8 >> $ff and flag or 'flag !	| copy flags2 from called word
 	8 + @ 								| get info2 from word
-	dup $ff and neg deltaD swap - usoD min 'usoD ! 
+	dup $ff and deltaD swap - usoD min 'usoD ! 
 	48 << 56 >> 'deltaD +!
 	;
 :.acode 
