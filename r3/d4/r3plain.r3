@@ -11,68 +11,61 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt.r3
 
-:,str | str --
-	34 ,c 
-	( c@+ 1? 34 =? ( 34 ,c ) ,c ) drop
-	34 ,c ;
-	
-:,token | tok nro --
-	,sp 
-	6 =? ( drop 8 >> $ffffff and strm + ,str ; ) 				| str
-	drop
-	40 >>> src + "%w" ,print ;
-	
-:dataw
-	toklend		| dc tok len
-	( 1? 1 - swap
-		@+ dup $ff and ,token
-		swap ) 2drop 
-	,cr ;
-	
-:codew
-	toklen 
-	( 1? 1 - swap
-		@+ dup $ff and ,token
-		swap ) 2drop 
-	,cr ;
-	
-:,everyword | n -- n
-	dup 4 << dic + 
-	dup 8 + @ $fff0000 nand? ( 2drop ; ) drop	| no calls
-	dup @ 
-|	$8 and? ( 2drop ; ) 		| cte!!
-	dup 1 and ":#" + c@ ,c
-	dup 40 >>> src + "%w" ,print
-	1 and? ( drop dataw ; ) drop codew 
-	;
 |----------------------------------------
-
-:dataw
+:dataw | n -- n
 	dup datause? 0? ( drop ; ) drop
 	dup "#w%h" ,print
-	dup wordanalysis
-	'tokana ( tokana> <? 
-		@+ tokenstrw ,sp ,s
+	dup 4 << dic + toklend		| dc tok len
+	( 1? 1 - swap ,sp 
+		@+ ,tokenstrd
+		swap ) 2drop 
+	,cr ;
+	
+	
+|----------------------------------------	
+:,anonw | token --
+	dup @ 8 >> $ffffffff and  	| to from
+	dup tok - 3 >> ":a%h" ,print 
+	wordanon					| analysis
+	'tokana ( tokana> <? ,sp
+		@+ ,tokenstrw 
 		) drop ,cr ;
+
+#cnta
+#anon * 80 | 10 anon max per word !!!!!!
+
+:withanon | nro --
+	0 'cnta !
+	4 << dic + toklen 
+	( 1? 1 - swap @+ $ff and
+		11 =? ( over 8 - cnta 3 << 'anon + ! 1 'cnta +! ) | ]
+		drop swap ) 2drop 
+	0 ( cnta <? 
+		'anon over 3 << + @ ,anonw
+		1 + ) drop ;
+	
+:nameword | nro --
+	cntdef 1 - =? ( drop ":" ,print ; )
+	":w%h" ,print ;
 	
 :codew
 	dup worduse? 0? ( drop ; ) drop
-	dup ":w%h" ,print
+	dup withanon
+	dup nameword
+	
 	dup wordanalysis
-	'tokana ( tokana> <? 
-		@+ tokenstrw ,sp ,s
+	'tokana ( tokana> <? ,sp
+		@+ ,tokenstrw 
 		) drop ,cr ;
 	
 :,everyword | n -- n
 	dup 4 << dic + 
 	dup 8 + @ $ffff0000 nand? ( 2drop ; ) drop	| no calls
-	dup "%h" .println
 	@ 1 and? ( drop dataw ; ) 
 	drop codew ;
 	
 :generate
 	0 ( cntdef <?
-		dup "%d" .println
 		,everyword 
 		1 + ) drop ;
 		
@@ -103,8 +96,8 @@
 	.cls
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
+	"r3/democ/palindrome.r3" 
+|	"r3/test/testasm.r3"
 	r3load
 	
 	'filename .println
@@ -113,5 +106,5 @@
 	deferwi | for opt	
 	resetvm
 	saveopt
-|	.input
+	|.input
 	;

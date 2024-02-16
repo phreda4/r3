@@ -11,7 +11,7 @@
 	3 'var ! 16 <? ( 2 + ) 16 <? ( var * ) ;
 
 :ncell+ 3 << + ;
-:.x		1 ncell+ ;
+:.x		0 ncell+ ;
 :.vx	4 ncell+ ;
 
 :test
@@ -25,6 +25,8 @@
 |----Boot
 : 
 	1 5 + 2 3 add cte * 
+	[ dup * ; ]
+	2 swap ex
 	loop 
 	conditional 
 	'buff test drop

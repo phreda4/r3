@@ -18,32 +18,22 @@
 ^r3/d4/r3vmd.r3
 
 
-##biglit * 160 | 20 bigliteral
+##biglit * 80 | 10 bigliteral !!!!!!!
 ##biglit>
-##tokana * $ffff | 8192 tokens
+##tokana * $ffff | 8192 tokens !!!!!!!
 ##tokana>
 
 |-------------------------------- PRINT
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
-:.lits 
-	8 >> 'biglit + @ "$%h" sprint ;
-:.lit 
-	8 >> "$%h" sprint ; | literal in opt is bigger
-
-:.name
-	8 >> $ffffffff and 4 << dic + @ dic>name ;
-	
-:.word 
-	.name "%w" sprint ;
-:.wadr 
-	.name "'%w" sprint ;
-:.var 
-	.name "%w" sprint ;
-:.vadr 
-	.name "'%w" sprint ;
-:.str 
-	"%h" sprint ;
+:.lits	8 >> 'biglit + @ "$%h" sprint ;
+:.lit	8 >> "$%h" sprint ; | literal in opt is bigger
+:.name	8 >> $ffffffff and 4 << dic + @ dic>name ;
+:.word	.name "%w" sprint ;
+:.wadr	.name "'%w" sprint ;
+:.var	.name "%w" sprint ;
+:.vadr	.name "'%w" sprint ;
+:.str	8 >> $ffffffff and strm + ;
 	
 #bmacro .lits .lit .word .wadr .var .vadr .str 
 
@@ -52,21 +42,55 @@
 	6 >? ( 7 - basename nip ; )
 	3 << 'bmacro + @ ex ;
 
-:.word 
-	8 >> $ffffffff and "w%h" sprint ;
-:.wadr 
-	8 >> $ffffffff and "'w%h" sprint ;
-:.var 
-	8 >> $ffffffff and "w%h" sprint ;
-:.vadr 
-	8 >> $ffffffff and "'w%h" sprint ;
+|-------------------------------- NAME >> NUMBER
+
+:.word	8 >> $ffffffff and "w%h" sprint ;
+:.wadr	8 >> $ffffffff and "'w%h" sprint ;
+:.var	8 >> $ffffffff and "w%h" sprint ;
+:.vadr	8 >> $ffffffff and "'w%h" sprint ;
 
 #bmacro .lits .lit .word .wadr .var .vadr .str 
 
+:base
+	11 =? ( drop 8 >> $ffffffff and tok - 3 >> "'a%h" sprint ; )
+	7 - basename nip ;
+	
 ::tokenstrw | tok -- str
 	dup $ff and 
-	6 >? ( 7 - basename nip ; )
+	6 >? ( base ; )
 	3 << 'bmacro + @ ex ;
+
+|-------------------------------- NAME >> NUMBER
+:.lits	8 >> 'biglit + @ -? ( neg "-$%h" ,print ; ) "$%h" ,print ;
+:.lit	8 >> -? ( neg "-$%h" ,print ; ) "$%h" ,print ; | literal in opt is bigger
+:.word	8 >> $ffffffff and "w%h" ,print ;
+:.wadr	8 >> $ffffffff and "'w%h" ,print ;
+:.var	8 >> $ffffffff and "w%h" ,print ;
+:.vadr	8 >> $ffffffff and "'w%h" ,print ;
+:.str	8 >> $ffffffff and strm + 34 ,c 
+		( c@+ 1? 34 =? ( dup ,c ) ,c ) 2drop
+		34 ,c ;
+	
+#bmacro .lits .lit .word .wadr .var .vadr .str 
+
+::,tokenstrw | tok --
+	dup $ff and 
+	11 =? ( drop 8 >> $ffffffff and tok - 3 >> "'a%h" ,print ; )	
+	6 >? ( 7 - basename ,s drop ; )
+	3 << 'bmacro + @ ex ;
+	
+
+:.l	40 >>> src + "%w" ,print ;
+
+#bmacro .l .l .word .wadr .var .vadr .str 
+	
+::,tokenstrd
+	dup $ff and 
+|	dup "%h" .println
+|	.input
+	6 >? ( 7 - basename ,s drop ; )
+	3 << 'bmacro + @ ex ;
+		
 
 |--------------------------------	
 
@@ -75,7 +99,7 @@
 	'biglit 'biglit> ! ;
 :,<< | --
 	-8 'tokana> +! 
-	| big? -8 'biglit> +!
+	| big? -8 'biglit> +! | reuse bigliteral 
 	;
 :,t	| tok --
 	tokana> !+ 'tokana> !  ;
@@ -177,25 +201,44 @@
 	dic@len fmem + @ ,nlit		| detect cte var
 	;
 
-:,AND
-	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
-	,t ;
-:,OR
-	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
-	,t ;
-:,XOR
-	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
-	,t ;
-:,+
-	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
-	,t ;
-:,- 
-	2lit? 1? ( 2drop 2litpush .- ,TOSLIT ; ) drop 
-	,t ;
-	
 #tkdup 26 #Tkover 28 #tkswap 32
 #TKand 44 #tk+ 47 #tk- 48 #tk* 49 
 #tk<< 51 #TK>> 52 #TK>>> 53 #TK*>> 57
+#tknot 59 #tkneg 60
+
+:,lAND
+	getTOS -1 =? ( 2drop ,<< ; ) drop ,t ;
+:,AND
+	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
+	1lit? 1? ( drop ,lAND ; ) drop	
+	,t ;
+	
+:,lOR
+	getTOS 0? ( 2drop ,<< ; ) drop ,t ;
+:,OR
+	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
+	1lit? 1? ( drop ,lOR ; ) drop	
+	,t ;
+
+:,lXOR
+	getTOS 
+	0? ( 2drop ,<< ; ) 
+	-1 =? ( 2drop ,<< TKnot ,t ; )
+	drop ,t ;
+:,XOR
+	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
+	1lit? 1? ( drop ,lXOR ; ) drop		
+	,t ;
+
+:,+
+	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
+	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
+	,t ;
+	
+:,- 
+	2lit? 1? ( 2drop 2litpush .- ,TOSLIT ; ) drop 
+	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
+	,t ;
 	
 |----------------------- *	
 |>>>> 8 * --> 3 <<	
@@ -215,6 +258,9 @@
 	TK<< ,t TKswap ,t TK- ,t ;
 :,lit* 	
 	getTOS
+	0? ( 2drop TKand ,t ; ) 
+	1 =? ( 2drop ,<< ; ) 	| 1 * --> _
+	-1 =? ( 2drop ,<< tkneg ,t ; )
 	dup 1 - nand? ( ,*pot ; )
 	dup 1 - dup 1 - nand? (  drop ,*pot+1 ; ) drop
 	dup 1 + nand? ( ,*pot-1 ; )
@@ -274,6 +320,9 @@
 	
 :,lit/
 	getTOS
+	0? ( 2drop 0 "0 division" error! ; )
+	1 =? ( 2drop ,<< ; ) 
+	-1 =? ( 2drop ,<< tkneg ,t ; )
 	dup 1 - nand? ( ,/pot ; )	
 	nip ,<< 
 	calcmagic
@@ -287,34 +336,44 @@
 |------------------------	
 :,<< 
 	2lit? 1? ( 2drop 2litpush .<< ,TOSLIT ; ) drop 
+	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
 	,t ;
 :,>> 
 	2lit? 1? ( 2drop 2litpush .>> ,TOSLIT ; ) drop 
+	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop	
 	,t ;
 :,>>>	
 	2lit? 1? ( 2drop 2litpush .>>> ,TOSLIT ; ) drop 
+	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop	
 	,t ;
 	
 |----------------------- mod	
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
+|	1lit? 1? ( ) drop
 	,t ;
 	
 :,/mod
 	2lit? 1? ( 2drop 2litpush ./mod ,2TOSLIT ; ) drop
+|	1lit? 1? ( ) drop
 	,t ;
+	
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop
+|	1lit? 1? ( ) drop
 	,t ;
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop	
+|	1lit? 1? ( ) drop
 	,t ;
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop	
+|	1lit? 1? ( ) drop
 	,t ;
+	
 :,NOT 
 	1lit? 1? ( 2drop 1litpush .not ,TOSLIT ; ) drop 
 	,t ;
@@ -330,11 +389,15 @@
 :,CLZ 
 	1lit? 1? ( 2drop 1litpush .clz ,TOSLIT ; ) drop 
 	,t ;
-
+	
+:,[ | adr tok -- adr'
+	24 << 32 >> + ;
+:,]
+	,t ;
 	
 #optw
 ,LIT ,LIT ,CODE ,t ,DATA ,t ,t 	|.lit .lit .code .acode .data .adata .str
-,t ,t ,t ,t ,t 				|.; .( .) .[ .] 
+,t ,t ,t ,[ ,] 				|.; .( .) .[ .] 
 ,t ,t ,t ,t ,t 				|.EX .0? .1? .+? .-? 
 ,t ,t ,t ,t ,t ,t ,t ,t ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
@@ -343,23 +406,22 @@
 ,AND ,OR ,XOR ,+ ,- ,* ,/ ,<< ,>> ,>>>
 ,MOD ,/MOD ,*/ ,*>> ,<</ 			
 ,NOT ,NEG ,ABS ,SQRT ,CLZ 
-,t ,t ,t ,t 				|.@ .C@ .W@ .D@ 
-,t ,t ,t ,t 				|.@+ .C@+ .W@+ .D@+ 
-,t ,t ,t ,t 				|.! .C! .W! .D! 
-,t ,t ,t ,t 				|.!+ .C!+ .W!+ .D!+ 
-,t ,t ,t ,t 				|.+! .C+! .W+! .D+! 
-,t ,t ,t ,t ,t ,t ,t 		|.>A .A> .A+ .A@ .A! .A@+ .A!+ 
-,t ,t ,t ,t |.cA@ .cA! .cA@+ .cA!+ 
-,t ,t ,t ,t |.dA@ .dA! .dA@+ .dA!+ 
+,t ,t ,t ,t 		|.@ .C@ .W@ .D@ 
+,t ,t ,t ,t 		|.@+ .C@+ .W@+ .D@+ 
+,t ,t ,t ,t 		|.! .C! .W! .D! 
+,t ,t ,t ,t 		|.!+ .C!+ .W!+ .D!+ 
+,t ,t ,t ,t 		|.+! .C+! .W+! .D+! 
+,t ,t ,t ,t ,t ,t ,t |.>A .A> .A+ .A@ .A! .A@+ .A!+ 
+,t ,t ,t ,t 		|.cA@ .cA! .cA@+ .cA!+ 
+,t ,t ,t ,t 		|.dA@ .dA! .dA@+ .dA!+ 
 ,t ,t ,t ,t ,t ,t ,t |.>B .B> .B+ .B@ .B! .B@+ .B!+ 
-,t ,t ,t ,t |.cB@ .cB! .cB@+ .cB!+ 
-,t ,t ,t ,t |.dB@ .dB! .dB@+ .dB!+ 
-,t ,t ,t |.MOVE .MOVE> .FILL 
-,t ,t ,t |.CMOVE .CMOVE> .CFILL 
-,t ,t ,t |.DMOVE .DMOVE> .DFILL 
-,t 				|.MEM
-,t ,t 				|.LOADLIB .GETPROC
-,t ,t ,t ,t ,t ,t 	| .SYS0 .SYS1 .SYS2 .SYS3 .SYS4 .SYS5
+,t ,t ,t ,t 		|.cB@ .cB! .cB@+ .cB!+ 
+,t ,t ,t ,t 		|.dB@ .dB! .dB@+ .dB!+ 
+,t ,t ,t 			|.MOVE .MOVE> .FILL 
+,t ,t ,t 			|.CMOVE .CMOVE> .CFILL 
+,t ,t ,t 			|.DMOVE .DMOVE> .DFILL 
+,t ,t ,t 			|.MEM .LOADLIB .GETPROC
+,t ,t ,t ,t ,t ,t 	|.SYS0 .SYS1 .SYS2 .SYS3 .SYS4 .SYS5
 ,t ,t ,t ,t ,t 		|.SYS6 .SYS7 .SYS8 .SYS9 .SYS10 
 0	
 	
@@ -367,22 +429,21 @@
 	dup $ff and 3 << 'optw + @ ex ;
 	
 |--------------
+:lenword | dicc - toklast tokini
+	toklend 3 << over + swap ;
+	
 :dataw | dicc --
-	toklend		| dc tok len
-	( 1? 1 - swap 
-		@+ ,ana
-		swap ) 2drop ;
+	lenword ( over <? @+ ,ana ) 2drop ;
 	
 :codew | dicc --
-	toklen 
-	( 1? 1 - swap @+ ,ana swap ) 2drop ;
+	lenword ( over <? @+ ,ana ) 2drop ;
 		
 :inlineword | tok --
-	tok>dic 
-	toklen 1 - | remove ;
-	( 1? 1 - swap @+ ,ana swap ) 2drop ;
+	tok>dic toklend 1 - | ini cnt | remove ;
+	3 << over + swap 
+	( over <? @+ ,ana ) 2drop ;
 
-|<<<< need the call before all once
+|<<<< need the call once before all
 ::deferwi
 	'inlineword 'deferinline ! ;
 	
@@ -391,6 +452,10 @@
 	4 << dic + 
 	dup @ 1 and? ( drop dataw ; ) drop
 	codew ;
+	
+::wordanon | tok> tok --
+	reseta
+	( over <? @+ ,ana ) 2drop ;
 
 | $..............04	1 es usado con direccion
 | $..............08	1 r esta desbalanceada		| var cte
