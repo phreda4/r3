@@ -217,6 +217,14 @@
 .SYS0 .SYS1 .SYS2 .SYS3 .SYS4 .SYS5
 .SYS6 .SYS7 .SYS8 .SYS9 .SYS10 
 0
+
+| exec word from token
+::exncode | tok --
+	8 >> $ffffffff and 4 << dic + @ dic>tok | store call word
+	8 'RTOS +! 0 RTOS ! 
+	( 1?
+		@+ $ff and 3 << 'vmc + @ ex
+		) drop ;
 	
 |-------------------------------
 ::resetvm | --
@@ -253,10 +261,4 @@
 		1? )
 	'<<ip ! ;	
 	
-::exncode | tok --
-	8 >> $ffffffff and 4 << dic + @ dic>tok | store call word
-	8 'RTOS +! 0 RTOS ! 
-	( 1?
-		@+ $ff and 3 << 'vmc + @ ex
-		) drop ;
 		

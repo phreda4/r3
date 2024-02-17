@@ -304,3 +304,7 @@
 	-? ( ,d r> drop " ]" ,s ; ) | error en analisis!!
 	r> ,ncar drop
 	;
+::,movd
+	dup $ff and "%d " ,print
+	48 << 56 >>  | deltaD
+	"%d " ,print ;

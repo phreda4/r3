@@ -472,6 +472,8 @@
 	'sst 'sst> !		| stack
 	0 'pano ! 0 'cano ! 0 'cntfin !
 	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
+	
+
 :pushvar
 	deltaD $ff and 8 << 
 	usoD $ff and or 8 << 
@@ -494,7 +496,8 @@
 	dup 8 - @ tok>dic 
 	dup @ 8 >> $ff and flag or 'flag !	| copy flags2 from called word
 	8 + @ 								| get info2 from word
-	dup $ff and deltaD swap - usoD min 'usoD ! 
+	dup $ff and |deltaD swap - usoD min 'usoD ! 
+				deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
 :.acode 
@@ -524,7 +527,8 @@
 	dropvar pushvar ; 						| WHILE -> copy stack
 :.ex
 	lastdircode nro>dic 8 + @
-	dup $ff and neg deltaD swap - usoD min 'usoD ! 
+	dup $ff and |deltaD swap - usoD min 'usoD ! 
+	deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
 	
@@ -535,49 +539,55 @@
 .?? .?? .?? .?? .?? .?? .?? .?? .?? 
 
 |------------------------------------------
+:debuginfo
+	usoD deltaD " d:%d u:%d " .print
+	dup $ff and 6 >? ( dup 7 - basename .print ) drop
+	;
+	
 ::tokeninfo | t --
 	|dup "%h" .println .input
+|	debuginfo
 	$ff and dup r3ainfo
-	c@+ deltaD swap - usoD min 'usoD !
+	c@+ deltaD swap - neg clamp0 usoD max 'usoD !
 	c@+ 'deltaD +!
 	c@+ 'deltaR +!
 	c@ $ff and flag or 'flag !
+|	usoD deltaD " d:%d u:%d " .println
 	25 >? ( drop ; )
-	3 << 'toklis + @ ex
+	3 << 'toklis + @ ex	
 	;
 
 
-:anacode | dic info1 --
-	drop
+:anacode | dic --
 	resetinfo
 	dup toklen ( 1? 1 - swap
 		@+ tokeninfo
 		swap ) 2drop
+|	usoD deltaD " d:%d u:%d " .println .cr
 	| store in dic
 	flag 8 << 'flag !
 	deltar 1? ( $08 'flag +! ) drop	| unbalanced R
 	flag over @ or over !	| store flags2
 
-	usod neg $ff and deltad $ff and 8 << or
+	usod $ff and deltad $ff and 8 << or
 	swap 8 + dup @ rot or swap ! | store stackmov
 	;
 
 :resetinfod | --
 	;
 	
-:anadata | dic info1 --
+:anadata | dic --
 	resetinfod
-	2drop
+	drop
 	;
 	
 :StaticStackAnalisis
-	dup @ 1 and? ( anadata ; ) anacode ;
+	dup @ 1 and? ( drop anadata ; ) drop anacode ;
 	
 ::pass4
 	0 ( cntdef <? 
 		dup nro>dic StaticStackAnalisis
-		1 + ) drop 
-		;
+		1 + ) drop ;
 	
 |-------------------------------------------
 ::r3load | 'filename --

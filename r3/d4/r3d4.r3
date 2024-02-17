@@ -20,7 +20,7 @@
 :codename | adr' info1 -- str
 	$2 and? ( $3a ,c ) $3a ,c 
 	40 >>> src + "%w | " ,print
-	@ ,mov 
+	@ ,mov |,movd
 	,eol empty here ;
 	
 :dataname | adr' info1 -- str
@@ -35,7 +35,7 @@
 |--------------- ANALYSIS
 #anaword
 #initoka 0
-#cnttoka 10
+#cnttoka 0
 
 
 #winsettoka 1 [ 600 0 360 500 ] "ANALYSIS"
@@ -66,9 +66,9 @@
 	;
 
 
-:showtoka | nro
+:showtoka | nro --
+	dup $ff and 6 =? ( 2drop """str""" immLabel ; ) drop
 	tokenstr
-|	"%h" 
 	immLabel ;
 	
 :wintokensa
@@ -355,8 +355,8 @@
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
+	"r3/democ/palindrome.r3" 
+|	"r3/test/testasm.r3"
 	edload
 	deferwi | for opt
 	mark |  for redoing tokens

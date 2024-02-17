@@ -21,7 +21,6 @@
 		swap ) 2drop 
 	,cr ;
 	
-	
 |----------------------------------------	
 :,anonw | token --
 	dup @ 8 >> $ffffffff and  	| to from
@@ -44,15 +43,10 @@
 		'anon over 3 << + @ ,anonw
 		1 + ) drop ;
 	
-:nameword | nro --
-	cntdef 1 - =? ( drop ":" ,print ; )
-	":w%h" ,print ;
-	
 :codew
 	dup worduse? 0? ( drop ; ) drop
 	dup withanon
-	dup nameword
-	
+	dup ":w%h" ,print 
 	dup wordanalysis
 	'tokana ( tokana> <? ,sp
 		@+ ,tokenstrw 
@@ -65,9 +59,15 @@
 	drop codew ;
 	
 :generate
-	0 ( cntdef <?
+	0 ( cntdef 1 - <?
 		,everyword 
-		1 + ) drop ;
+		1 + )
+	dup withanon | last word is BOOT!
+	":" ,print 
+	wordanalysis
+	'tokana ( tokana> <? ,sp
+		@+ ,tokenstrw 
+		) drop ,cr ;
 		
 |--------------------------------			
 :showvar
@@ -85,6 +85,7 @@
 :saveopt | --
 	error 1? ( drop ; ) drop
 	mark
+	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
 	generate
 	"r3/d4/main.r3" savemem
@@ -96,15 +97,15 @@
 	.cls
 |	'filename "mem/main.mem" load drop
 |	"r3/demo/textxor.r3" 
-	"r3/democ/palindrome.r3" 
-|	"r3/test/testasm.r3"
+|	"r3/democ/palindrome.r3" 
+	"r3/test/testasm.r3"
 	r3load
 	
 	'filename .println
 	error 1? ( dup .print .cr ) drop
-	showvar 
 	deferwi | for opt	
+	showvar 
 	resetvm
 	saveopt
-	|.input
+	.input
 	;
