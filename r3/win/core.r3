@@ -161,7 +161,7 @@
 |  hStdOutput	  dq ?
 |  hStdError	  dq ?
 
-#sinfo * 100
+##sinfo * 100
 
 |struct PROCESS_INFORMATION
 |  hProcess    dq ?
@@ -169,7 +169,7 @@
 |  dwProcessId dd ?
 | dwThreadId  dd ?
 
-#pinfo * 24
+##pinfo * 24
 
 ::sys | "" --
 	'sinfo 0 100 cfill
@@ -178,6 +178,19 @@
 	pinfo -1 WaitForSingleObject
 	;
 	
+|https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags	
+| $10 new console
+::sysnew | "" --
+	'sinfo 0 100 cfill
+	68 'sinfo d!
+	0 swap 0 0 1 $10 0 0 'sinfo 'pinfo CreateProcess drop
+	pinfo -1 WaitForSingleObject
+	;
+	
+
+|https://learn.microsoft.com/es-mx/windows/win32/debug/creating-a-basic-debugger?redirectedfrom=MSDN
+|https://www.codeproject.com/Articles/43682/Writing-a-basic-Windows-debugger
+
 :
 	GetProcessHeap 'process-heap !
 	;

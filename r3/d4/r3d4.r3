@@ -116,7 +116,7 @@
 	tokana> 'tokana - 3 >> 'cnttoka !
 	;
 	
-:colorlistw | n --
+:colorlistw | n -- n c
 	lidinow =? ( $7f00 ; ) $3a3a3a ;
 
 :listscroll | n --
