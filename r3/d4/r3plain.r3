@@ -5,7 +5,7 @@
 |
 | + one file, plain lib
 | + remove unused words
-| - remove noname definitions
+| + translate noname definitions
 |-----------------
 ^r3/win/console.r3
 ^r3/d4/r3token.r3
@@ -44,6 +44,7 @@
 		1 + ) drop ;
 	
 :codew
+|dup 4 << dic + @ dic>name "%w" .println | debug
 	dup worduse? 0? ( drop ; ) drop
 	dup withanon
 	dup ":w%h" ,print 
@@ -88,24 +89,21 @@
 	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
 	generate
-	"r3/d4/main.r3" savemem
+	"r3/plain-o.r3" savemem
 	empty			| free buffer
 	;
 
 |--------------------- BOOT
 : 	
 	.cls
-|	'filename "mem/main.mem" load drop
-|	"r3/demo/textxor.r3" 
-|	"r3/democ/palindrome.r3" 
-	"r3/test/testasm.r3"
-	r3load
+	'filename "mem/main.mem" load drop
+	'filename r3load
 	
 	'filename .println
 	error 1? ( dup .print .cr ) drop
 	deferwi | for opt	
-	showvar 
+|	showvar 
 	resetvm
 	saveopt
-	.input
+|	.input
 	;

@@ -61,7 +61,7 @@
 	3 << 'bmacro + @ ex ;
 
 |-------------------------------- NAME >> NUMBER
-:.lits	8 >> 'biglit + @ -? ( neg "-$%h" ,print ; ) "$%h" ,print ;
+:.lits	8 >> 'biglit + @ "$%h" ,print ;
 :.lit	8 >> -? ( neg "-$%h" ,print ; ) "$%h" ,print ; | literal in opt is bigger
 :.word	8 >> $ffffffff and "w%h" ,print ;
 :.wadr	8 >> $ffffffff and "'w%h" ,print ;
@@ -107,9 +107,9 @@
 	8 << 1 or ,t ;
 	
 :,nlit | nro --
-	dup 8 << 8 >> =? ( ,tlit ; ) drop | fit in 56bits
+	dup 8 << 8 >> =? ( ,tlit ; ) | fit in 56bits
 	biglit> !+ 'biglit> !
-	biglit> 'biglit - 8 << ,t | big nro  0 in token
+	biglit> 'biglit - 8 - 8 << ,t | big nro  0 in token
 	;
 		
 :,lit | token --
@@ -436,6 +436,7 @@
 0	
 	
 :,ana | nro --
+|	dup 40 >> src + "%w " .print
 	dup $ff and 3 << 'optw + @ ex ;
 	
 |--------------

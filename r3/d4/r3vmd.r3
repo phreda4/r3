@@ -33,7 +33,7 @@
 :dic@	dup 8 - @ 8 >> $ffffffff and 4 << dic + @ dic>tok ;
 :dic@v	dup 8 - @ 8 >> $ffffffff and 4 << dic + 8 + @ 32 >>> fmem + ;
 
-:.blit	40 >>> src + str>anro nip npush ; | big literal, get from src
+:.blit	dup 8 - @ 40 >>> src + str>anro nip npush ; | big literal, get from src
 :.lit	dup 8 - @ 24 << 32 >> npush ;
 
 :.code	dic@ 8 'RTOS +! swap RTOS ! ;
