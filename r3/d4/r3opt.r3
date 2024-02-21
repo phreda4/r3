@@ -161,11 +161,11 @@
 :,2TOSLIT | --
 	NOS 8 - @ ,nlit TOS ,nlit .2drop ;
 :,ntoslit | n --
-	0? ( drop ; ) 1 -
-	NOS over 3 << - over | n NOS n
-	( 1? 1 - swap @+ ,nlit swap ) 2drop
+	0? ( drop ; )
+	NOS over 2 - 3 << - over | n NOS n
+	( 1 - 1? swap @+ ,nlit swap ) 2drop
 	TOS ,nlit
-	( .drop 1? 1 - ) drop ;
+	( 1? 1 - .drop ) drop ;
 	
 :dic@	| tok -- info1
 	8 >> $ffffffff and 4 << dic + @ ;

@@ -104,7 +104,12 @@
 
 :
 	"r3sdl" 800 600 SDLinit
-	400 400 100 50 box2rec rec2box xywh64 'box1 !
+	400 400 100 50 box2rec 
+	2over 2over "%h %h %h %h" .println 
+	rec2box 
+	2over 2over "%h %h %h %h" .println 
+	xywh64 
+	dup "%h" .println 'box1 !
 	'main SDLshow 
 	SDLquit
 	;

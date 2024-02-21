@@ -19,8 +19,31 @@
 	0 over ( c@+ 1?
 		drop swap 1 + swap ) 2drop ;
 	
+:2sort | x x -- min max
+	over <? ( swap ) ;
+	
+:box2rec | x y x y -- x y w h
+	rot 2sort 2swap 2sort | ym M xm M
+	over - 2swap over - | xm W ym H
+	rot swap ;
+
+
+:rec2box | x y w h - x y x y
+	swap pick3 + swap pick2 + ;	
+
+::xywh64 | x y w h -- 64b
+	$ffff and swap
+	$ffff and 16 << or swap
+	$ffff and 32 << or swap
+	$ffff and 48 << or ;	
+	
+:coso
+	rot rot 10 * + swap 100 * + ;
+	
 |----Boot
 : 
+	400 400 100 50 box2rec rec2box xywh64
+	1 2 3 coso
 	1.0 f2fp 
 	"hola" count 2drop
 

@@ -122,7 +122,7 @@
 	selecc
 	dup 1 - <<13		| cur inili
 	swap over - swap	| cnt cur
-	dup 1 - <<13			| cnt cur cura
+	dup 1 - <<13		| cnt cur cura
 	swap over - 		| cnt cura cur-cura
 	rot min + fuente max
 	'fuente> !
@@ -258,7 +258,10 @@
 |WIN| "r3 r3/d4/r3plain.r3"
 	sys
 	.alsb
-	r3info
+|WIN|	"r3 r3/d4/gen/plain.r3"
+|LIN|	"./r3lin r3/d4/gen/plain.r3"
+|RPI|	"./r3rpi r3/d4/gen/plain.r3"
+	sys
 	;
 
 :compile
@@ -269,7 +272,7 @@
 |RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
-	r3info
+|	r3info
 	;
 
 |-------------------------------------------

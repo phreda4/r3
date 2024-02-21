@@ -234,6 +234,13 @@
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
 	sys ;
+
+:r3d4
+|WIN| "r3 r3/d4/r3d4-e.r3"
+|LIN| "./r3lin r3/d4/r3d4-e.r3"
+|RPI| "./r3rpi r3/d4/r3d4-e.r3"
+|MAC| "./r3mac r3/d4/r3d4-e.r3"
+	sys ;
 	
 |--------------------------------
 :editfile
@@ -242,7 +249,8 @@
 	
 	r3info
 	|cerror 1? ( drop ; ) drop	
-	r3edit
+	|r3edit
+	r3d4 | new editor
 	;
 
 :editmap
@@ -277,7 +285,7 @@
 	| ".png"
 	drop
 	;
-	
+
 |--------------------------------
 |===================================
 #newprg1 "| r3 sdl program
@@ -475,7 +483,7 @@
 	$4f =? ( fend )
 	
 	$3b =? ( fenter )
-	$3c =? ( f2edit ) |editfile  )
+	$3c =? ( f2edit )
 	$3d =? ( newfile )
 	|$3e =? ( newfolder ) | f4 - new folder
 	drop 

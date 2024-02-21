@@ -228,10 +228,8 @@
 	
 |-------------------------------
 ::resetvm | --
-	'PSP 8 - 'NOS !
-	'RSP 'RTOS !
-	0 'TOS !
-	0 RTOS !
+	'PSP 8 - 'NOS ! 'RSP 'RTOS !
+	0 'TOS ! 0 RTOS !
 	boot>> 4 << dic + @ dic>tok '<<ip ! | first word to tok adress
 	;
 
