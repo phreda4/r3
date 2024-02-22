@@ -159,7 +159,7 @@
 :,TOSLIT | -- ; TOS to tokana>
 	TOS ,nlit .drop ;
 :,2TOSLIT | --
-	NOS 8 - @ ,nlit TOS ,nlit .2drop ;
+	NOS @ ,nlit TOS ,nlit .2drop ;
 :,ntoslit | n --
 	0? ( drop ; )
 	NOS over 2 - 3 << - over | n NOS n

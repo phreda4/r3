@@ -269,20 +269,20 @@
 3 -3 0 1	|DMOVE abc --
 3 -3 0 1	|DMOVE> abc --
 3 -3 0 1	|DFILL abc --
-0 1 0 0		|MEM	-- a
-1 0 0 0		|LOADLIB a -- a
-2 -1 0 0	|GETPROC ab -- a
-1 0 0 0		|SYS0 a -- a 
-2 -1 0 0	|SYS1 ab -- a
-3 -2 0 0	|SYS2 abc -- a
-4 -3 0 0	|SYS3 abcd -- a
-5 -4 0 0	|SYS4 abcde -- a
-6 -5 0 0	|SYS5 abcdef -- a
-7 -6 0 0	|SYS6 abcdefg -- a 
-8 -7 0 0	|SYS7 abcdefgh -- a
-9 -8 0 0	|SYS8 abcdefghi -- a
-10 -9 0 0	|SYS9 abcdefghij -- a
-11 -10 0 0	|SYS10 abcdefghijk -- a
+0 1 0 1		|MEM	-- a
+1 0 0 1		|LOADLIB a -- a
+2 -1 0 1	|GETPROC ab -- a
+1 0 0 1		|SYS0 a -- a 
+2 -1 0 1	|SYS1 ab -- a
+3 -2 0 1	|SYS2 abc -- a
+4 -3 0 1	|SYS3 abcd -- a
+5 -4 0 1	|SYS4 abcde -- a
+6 -5 0 1	|SYS5 abcdef -- a
+7 -6 0 1	|SYS6 abcdefg -- a 
+8 -7 0 1	|SYS7 abcdefgh -- a
+9 -8 0 1	|SYS8 abcdefghi -- a
+10 -9 0 1	|SYS9 abcdefghij -- a
+11 -10 0 1	|SYS10 abcdefghijk -- a
 )
 
 ::r3ainfo | n -- a

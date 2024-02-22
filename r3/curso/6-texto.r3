@@ -8,15 +8,12 @@
 
 :demo
 	0 SDLcls
-	
 	$ffffff bcolor 
 	10 10 bat 
 	"Texto fuente fija" bprint
-	
 	$ffff00 bcolor 
 	10 30 bat 
 	msec "milisegundos del sistema:%d" sprint bprint
-	
 	SDLredraw
 	teclado
 	;

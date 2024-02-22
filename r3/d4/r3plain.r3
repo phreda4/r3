@@ -105,5 +105,5 @@
 |	showvar 
 	resetvm
 	saveopt
-|	.input
+	|.input
 	;

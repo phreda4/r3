@@ -84,10 +84,10 @@
 ::.OR	NOS @ TOS or .NIP 'TOS ! ;
 ::.XOR	NOS @ TOS xor .NIP 'TOS ! ;
 ::.NOT	TOS not 'TOS ! ;
-::.+		NOS @ TOS + .NIP 'TOS ! ;
-::.-		NOS @ TOS - .NIP 'TOS ! ;
-::.*		NOS @ TOS * .NIP 'TOS ! ;
-::./		NOS @ TOS / .NIP 'TOS ! ;
+::.+	NOS @ TOS + .NIP 'TOS ! ;
+::.-	NOS @ TOS - .NIP 'TOS ! ;
+::.*	NOS @ TOS * .NIP 'TOS ! ;
+::./	NOS @ TOS / .NIP 'TOS ! ;
 ::.*/	NOS 8 - @+ swap @ TOS */ -16 'NOS +! 'TOS ! ;
 ::.*>>	NOS 8 - @+ swap @ TOS *>> -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)
 ::.<</	NOS 8 - @+ swap @ TOS <</ -16 'NOS +! 'TOS ! ;  | need LSB (TOS is 32bits)

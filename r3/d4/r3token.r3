@@ -464,7 +464,7 @@
 #cntfin
 #pano		| anonima
 #cano
-#finlist 0 0 0 0 0 0 0 0 0 0
+#finlist * 800  | 100 ;
 #lastdircode
 
 :resetinfo | --
@@ -486,6 +486,7 @@
 	40 << 56 >> 'deltaD ! ;
 	
 :dropvar
+	sst> 'sst =? ( drop ; ) drop
 	sst@ drop ;
 
 |------------------------------------------
@@ -496,8 +497,7 @@
 	dup 8 - @ tok>dic 
 	dup @ 8 >> $ff and flag or 'flag !	| copy flags2 from called word
 	8 + @ 								| get info2 from word
-	dup $ff and |deltaD swap - usoD min 'usoD ! 
-				deltaD swap - neg clamp0 usoD max 'usoD !
+	dup $ff and deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
 :.acode 
@@ -527,8 +527,7 @@
 	dropvar pushvar ; 						| WHILE -> copy stack
 :.ex
 	lastdircode nro>dic 8 + @
-	dup $ff and |deltaD swap - usoD min 'usoD ! 
-	deltaD swap - neg clamp0 usoD max 'usoD !
+	dup $ff and deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
 	
@@ -540,12 +539,13 @@
 
 |------------------------------------------
 :debuginfo
-	usoD deltaD " d:%d u:%d " .print
-	dup $ff and 6 >? ( dup 7 - basename .print ) drop
+|	usoD deltaD " d:%d u:%d " .print
+	dup $ff and |dup "%h<" .print
+	6 >? ( dup 7 - basename .print ) drop
 	;
 	
 ::tokeninfo | t --
-	|dup "%h" .println .input
+|	dup $ffffffff and "%h " .print
 |	debuginfo
 	$ff and dup r3ainfo
 	c@+ deltaD swap - neg clamp0 usoD max 'usoD !
@@ -559,9 +559,10 @@
 
 
 :anacode | dic --
+	|dup @ dic>name "%w" .println
 	resetinfo
 	dup toklen ( 1? 1 - swap
-		@+ tokeninfo
+		@+ tokeninfo 
 		swap ) 2drop
 |	usoD deltaD " d:%d u:%d " .println .cr
 	| store in dic
@@ -585,37 +586,12 @@
 	dup @ 1 and? ( drop anadata ; ) drop anacode ;
 	
 ::pass4
-	0 ( cntdef <? 
-		dup nro>dic StaticStackAnalisis
+	0 ( cntdef <?
+	|dup "%d" .println 
+		dup nro>dic 
+		StaticStackAnalisis
 		1 + ) drop ;
 	
-|-------------------------------------------
-::r3load | 'filename --
-|-------------------------------------------
-	0 0 error!
-	
-	dup 'filename strcpy
-	dup 'r3path strpath
-	
-	here dup 'src !
-	swap load 
-	here =? ( "no source code" error! ; ) 
-	0 swap c! 
-	src only13 'here !
-	
-	'inc 'inc> ! 
-	'filename src includes drop | load includes
-	pass1			| calc sizes
-	makemem			| reserve mem
-	pass2			| tokenize code
-	tok> tok - 3 >> 'cnttok !	| real token use
-	dic> dic - 4 >> 'cntdef !	| real definition use
-	fmem> 'here !	| mark memory for vars
-	pass3			| calc tree calls
-	pass4
-|	.input
-	;
-
 |-------------------------------------------
 ::r3loadmem | mem 'filename --
 |-------------------------------------------
@@ -623,18 +599,29 @@
 	
 	dup 'filename strcpy
 	'r3path strpath
-	
 	'src !
 	'inc 'inc> ! 
 	'filename src includes drop | load includes
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+|	cnttok cntdef "%d %d" .println	
 	tok> tok - 3 >> 'cnttok !	| real token use
 	dic> dic - 4 >> 'cntdef !	| real definition use
+|	cnttok cntdef "%d %d" .println
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
 	pass4
 	;
 	
+|-------------------------------------------
+::r3load | 'filename --
+|-------------------------------------------
+	here dup 'src !
+	over load 
+	here =? ( "no source code" error! drop ; ) 
+	0 swap c! 
+	src only13 'here !
+	src swap r3loadmem
+	;
 	

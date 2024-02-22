@@ -18,6 +18,9 @@
 	TOS " %d" .println
 	( 1? 1 - .drop ) drop ;
 
+:,2TOSLIT | --
+	NOS  @ " %d" .print TOS " %d" .println .2drop ;
+	
 :nlitpush | n --
 	( 1? dup NPUSH 1 - ) drop ;	
 	
@@ -36,13 +39,14 @@
 	'PSP 8 - 'NOS ! 'RSP 'RTOS !
 	0 'TOS ! 0 RTOS !
 
-	"test" .println	
+	"test" .println	 .s
+|	8 nlitpush .s
+|	8 ,ntoslit .s
+|	6 nlitpush .s .+ 5 ,ntoslit .s
+	"----3 2 1" .println
+	3 nlitpush
+	,2TOSLIT
+	|3 ,ntoslit
 	.s
-	8 nlitpush
-	.s
-	8 ,ntoslit
-	.s
-
-	
 	.input
 	;
