@@ -355,9 +355,7 @@
 	edram 
 |	'filename "mem/main.mem" load drop
 |	"r3/test/testasm.r3"
-|	"r3/curso/6-texto.r3"
-	"r3/demo/objmodel.r3"
-|	"r3/opengl/16-iqmloader.r3" 
+	"r3/opengl/16-iqmloader.r3" 
 	edload
 	deferwi | for opt
 	mark |  for redoing tokens

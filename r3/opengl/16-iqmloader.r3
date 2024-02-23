@@ -702,7 +702,6 @@
 :
 	|.................
 	"iqm loader" 800 600 SDLinitGL
-
 	"media/dae/iqm/mrfixit.iqm" iqmload	
 |	"media/dae/iqm/Sparrow.iqm" iqmload	
 	|"media/dae/cube.iqm" iqmload	
@@ -710,9 +709,7 @@
 	initvec
 	initshaders
 	iniscrquad
-	
 	initcube
-	
 	'main SDLshow 
 	SDLquit	
 	;	

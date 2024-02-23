@@ -442,15 +442,18 @@
 |--------------
 :lenword | dicc - toklast tokini
 	toklend 3 << over + swap ;
+
+:lenwor | dicc - toklast tokini
+	toklen 3 << over + swap ;
 	
 :dataw | dicc --
 	lenword ( over <? @+ ,ana ) 2drop ;
 	
 :codew | dicc --
-	lenword ( over <? @+ ,ana ) 2drop ;
+	lenwor ( over <? @+ ,ana ) 2drop ;
 		
 :inlineword | tok --
-	tok>dic toklend 1 - | ini cnt | remove ;
+	tok>dic toklen 1 - | ini cnt | remove ;
 	3 << over + swap 
 	( over <? @+ ,ana ) 2drop ;
 

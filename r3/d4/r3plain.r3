@@ -14,6 +14,11 @@
 |----------------------------------------
 :dataw | n -- n
 	dup datause? 0? ( drop ; ) drop
+	
+	| info in plain--
+	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
+	| info in plain--
+	
 	dup "#w%h" ,print
 	dup 4 << dic + toklend		| dc tok len
 	( 1? 1 - swap ,sp 
@@ -47,6 +52,12 @@
 |dup 4 << dic + @ dic>name "%w" .println | debug
 	dup worduse? 0? ( drop ; ) drop
 	dup withanon
+	
+	| info in plain--
+	dup 4 << dic + @ dic>name "| :%w | " ,print 
+	dup 4 << dic + 8 + @ ,mov ,cr
+	| info in plain--
+	
 	dup ":w%h" ,print 
 	dup wordanalysis
 	'tokana ( tokana> <? ,sp

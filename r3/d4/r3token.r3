@@ -490,6 +490,20 @@
 	sst@ drop ;
 
 |------------------------------------------
+| cantidad de pila usada en formato print "%d.."
+#controc ( 1  1  1  1  1  1  1  1  1  1  1  1  1  0  0  1 )
+
+:is25
+	$25 <>? ( drop ; ) drop
+	c@+ $f and 'controc + c@
+	rot + swap
+	;
+
+:strusestack | "" -- n
+	0 swap ( c@+ 1?
+		34 =? ( drop c@+ 34 <>? ( 2drop ; ) )
+		is25 ) 2drop ;
+		
 :.blit 
 :.lit
 	;
@@ -505,6 +519,14 @@
 :.data 
 :.adata 
 :.str
+ 	dup 8 - @ 
+	dup "%h " .print
+	
+	8 >> strm + | string
+	.write .cr
+|	strusestack drop
+|	dup deltaD swap - neg clamp0 usoD max 'usoD !
+|	neg 'deltaD +!
 	;
 :.;
 	pano 1? ( drop ; ) drop

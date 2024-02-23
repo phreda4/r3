@@ -319,7 +319,7 @@
 |	"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
 	'sh ! 'sw !
 	$3231 SDL_init 
-	$1FFF0000 dup sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
+	$1FFF0000 dup sw sh $6 SDL_CreateWindow 'SDL_windows ! 
 	SDL_windows SDL_GL_CreateContext 'SDL_context !
 	1 SDL_GL_SetSwapInterval	
 
