@@ -347,7 +347,7 @@
 	,t ;
 	
 |----------------------- mod	
-:,litmod
+:,litmod | *****
 	getTOS
 |	0? ( 2drop 0 "0 division" error! ; )
 |	1 =? ( 2drop ,<< ; ) 
@@ -356,11 +356,12 @@
 	nip ,<< 
 	dup calcmagic 
 	TKdup ,t divm ,tlit	divs ,tlit TK*>> ,t ,sigadj
-	,tlit TK* ,t TK- ,t ;
+	,tlit TK* ,t TK- ,t 
+	;
 
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
-	1lit? 1? ( drop ,litmod ; ) drop
+	|1lit? 1? ( drop ,litmod ; ) drop
 	,t ;
 	
 :,/mod

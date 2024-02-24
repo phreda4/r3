@@ -124,18 +124,52 @@
 		16 - ) drop
 	0 ;
 	
+:align16 | mem -- mem ; align to 16
+	$10 over $f and - $f and + ; 
+	
 ::makemem
 	|-- make mem
 	here 
+	align16
 	dup 'dic ! dup 'dic> ! dup 'dic< !		| dicctionary
 	cntdef 4 << +				| dicc size
 	dup 'tok ! dup 'tok> !		| tokens 
 	cnttok 3 << +				| tok size
 	dup 'strm ! dup 'strm> ! 	| strings
 	cntstr +					| str size
+	align16
 	dup 'fmem ! dup 'fmem> ! 	| memory const+var+free
 	'here !	;
 
+|-------------------------
+:,dh | digit --
+	$f and $30 + $39 >? ( 7 + ) ,c ;
+	
+:,bh | byte --
+	dup 4 >> ,dh ,dh ;
+	
+:,mem | memend memini --
+	( over <? 
+		dup "%h:" ,print
+		dup 32 ( 1? 1 - swap c@+ ,bh swap ) 2drop ": " ,s
+		32 ( 1? 1 - swap c@+ 32 <? ( $2e nip ) ,c swap ) drop ,cr
+		32 + ) 2drop ;
+
+::debugmemmap
+	"----dic " ,s dic> dic - "(%d)" ,print
+	,cr
+	dic> dic ,mem ,cr
+	"----tok " ,s cnttok 3 << tok> tok - "(%d %d)" ,print
+	,cr
+	tok> tok ,mem ,cr
+	"----str " ,s cntstr strm> strm - "(%d %d)" ,print
+	,cr
+	strm> strm ,mem ,cr
+	"----var " ,s fmem> fmem - "(%d)" ,print
+	,cr
+	fmem> fmem ,mem ,cr
+	;
+	
 | FLAG2
 | $01 mem access
 | $02 >A

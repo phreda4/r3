@@ -58,6 +58,8 @@
 	dup 4 << dic + 8 + @ ,mov ,cr
 	| info in plain--
 	
+|	dup 4 << dic + @ dic>name "| :%w | " .println
+	
 	dup ":w%h" ,print 
 	dup wordanalysis
 	'tokana ( tokana> <? ,sp
@@ -74,7 +76,8 @@
 	0 ( cntdef 1 - <?
 		,everyword 
 		1 + )
-	dup withanon | last word is BOOT!
+	dup withanon 
+	"|-----BOOT-----" ,s ,cr
 	":" ,print 
 	wordanalysis
 	'tokana ( tokana> <? ,sp

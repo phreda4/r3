@@ -258,6 +258,12 @@
 	$ffff 'here +!
 	resetvm
 	cursor2ip
+	
+	mark
+	'filename ,s ,cr ,cr
+	debugmemmap
+	"r3/d4/gen/map.txt" savemem
+	empty
 	;		
 		
 |---------------- MENU

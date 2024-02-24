@@ -658,7 +658,7 @@
 |	"media/dae/demo.dae" daeload	
 |	"media/dae/AstroBoy_walk/astroBoy_walk_Maya.dae" daeload	
 
-	| debug
+	|debug
 	
 	|.................
 	"test opengl" 800 600 SDLinitGL

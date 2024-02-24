@@ -1,5 +1,10 @@
 | test for vm
 
+#str "uno" "dos" "tres" 0
+
+:tes 
+	'str + ;
+
 :shift
 	-? ( neg >> ; ) << ;
 	
@@ -42,9 +47,9 @@
 	
 |----Boot
 : 
-	400 400 100 50 box2rec rec2box xywh64
-	1 2 3 coso
-	1.0 f2fp 
-	"hola" count 2drop
-
+|	400 400 100 50 box2rec rec2box xywh64
+|	1 2 3 coso
+|	1.0 f2fp 
+	"hola" count
+	tes count 2drop
 	;

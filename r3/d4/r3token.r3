@@ -6,6 +6,15 @@
 ^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
 
+#sst * 512 	| stack for blocks and count
+#sst> 'sst
+
+:sst!	sst> d!+ 'sst> ! ;
+:sst@   -4 'sst> +! sst> d@ ;
+:level 	sst> 'sst xor ;	
+
+#flag		| current flag for word
+
 |---- dicc
 | info1
 | $..............01 - code/data
@@ -97,10 +106,11 @@
     >>cr ;
 	
 :isstr | adr -- 'adr
+	flag 1? ( drop >>str ; ) drop
 	1 + | skyp "
 	( c@+ 1? 
 		1 'cntstr +! 
-		34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) 
+		34 =? ( drop c@+ 34 <>? ( drop 1 - ; ) ) 
 		drop ) drop ;
 	
 :wrd2dicc | src -- src'
@@ -108,8 +118,8 @@
 		0? ( nip ; ) drop 1+ )	| trim0
 	$7c =? ( drop iscom ; )	| $7c |	 Comentario
 	$5e =? ( drop >>cr ; )	| $5e ^  Include
-	$3A =? ( drop 1 'cntdef +! >>sp ; )	| $3a :  Definicion
-	$23 =? ( drop 1 'cntdef +! >>sp ; )	| $23 #  Variable
+	$3A =? ( drop 0 'flag ! 1 'cntdef +! >>sp ; )	| $3a :  Definicion
+	$23 =? ( drop 1 'flag ! 1 'cntdef +! >>sp ; )	| $23 #  Variable
 	1 'cnttok +!
 	$22 =? ( drop isstr ; )	| $22 "	 Cadena
 	drop >>sp ;
@@ -132,14 +142,6 @@
 | ffffff.......... adr to src
 | ......ffffffff.. value
 
-#sst * 512 	| stack for blocks and count
-#sst> 'sst
-
-:sst!	sst> d!+ 'sst> ! ;
-:sst@   -4 'sst> +! sst> d@ ;
-:level 	sst> 'sst xor ;	
-
-#flag		| current flag for word
 
 #codeini 	| for calc token len
 #iswhile	| flag for IF/WHILE
@@ -174,8 +176,7 @@
 :endef
 	level 1? ( over "missing )" error! ) drop
 	tok> codeini - 0? ( emptyvar ) drop	| no token in def
-	codeini 1? ( callend ) drop	
-|callend	|??
+	codeini 1? ( callend ) drop	 |callend	|??
 	tok> 'codeini !
 	flag 
 	dic> 16 - +! | store flag
@@ -221,48 +222,38 @@
 	
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
+
+:str! | src mem -- src 'mem
+	>a 1 + | skip "
+	( c@+ 1? 
+		dup ca!+
+		34 =? ( drop c@+ 
+			34 <>? ( drop 1 - 0 a> 1 - c!+ ; ) 
+			) drop 
+		) swap "unfinish str" error! 
+		dup ;	
 	
 :.strvar | adr -- adr'
-	1 +  | skip "
 	fmem> strm - 8 << 6 or ,t | ** check
-	fmem> >a
-	( c@+ 1? 
-		dup ca!+
-		34 =? ( drop c@+ 
-			34 <>? ( 2drop 0 a> 1- c!+ 'fmem> ! ; ) 
-			) drop 
-		) drop 
-	"unfinish str" error!
-	0
-	;
+	fmem> str! 0? ( drop ; ) 'fmem> ! ;
 	
 :.str 
-|	flag 1 and? ( drop .strvar ; ) drop | only var
-	1 + | skip "
+	flag 1 and? ( drop .strvar ; ) drop | only var
 	strm> strm - 8 << 6 or ,t 
-	strm> >a
-	( c@+ 1? 
-		dup ca!+
-		34 =? ( drop c@+ 
-			34 <>? ( drop 0 a> 1- c!+ 'strm> ! 1- ; ) 
-			) drop 
-		) drop 1 - 
-	"str not close" error!
-	;
+	strm> str! 0? ( drop ; ) 'strm> ! ;
 	
 :.nrovar
-	0 ,t 
-|	dup "<%w>" .println
+	0 ,t | always big literal
 	dup str>anro nip gmem ex
 	>>sp ;
 	
 :.nro 
 	flag 1 and? ( drop .nrovar ; ) drop | only var
 	dup str>anro nip
-	dup 32 << 32 >> =? ( 
-		$ffffffff and 8 << 1 or ,t 
+	dup 32 << 32 >> =? ( | fit in 1 token?
+		$ffffffff and 8 << 1 or ,t | small literal
 		>>sp ; ) drop
-	0 ,t	| src token, bit literal
+	0 ,t	| src token, big literal
 	>>sp ;
 	
 |----------
@@ -296,20 +287,22 @@
 	6 + ,t >>sp  | load tok**
 	;
 
-|**** need push/pop flags for words
 :anonIn
+	flag sst!	| save flag
 	tok> tok - 3 >> sst! 
 	;
 	
 :anonOut
-	flag $40 or 'flag !
 	-1 'endcnt +!
 	tok> 8 - @ $ff and 7 <>? ( | 7 = ;
 		pick2 "need ; in ]" error!
 		) drop
 	sst@ 3 << tok + | tok[
 	tok> over - 8 - 8 << over @ or over !
-	8 + 8 << swap 6 + or ,t >>sp ;
+	8 + 8 << swap 6 + or ,t >>sp 
+	sst@ 'flag !	| restore flag
+	flag $40 or 'flag !
+	;
 
 	
 :.basevar | adr nro -- adr
@@ -410,7 +403,7 @@
 	;
 	
 |-------------------------------------------	
-|--------------------- pass 3 - tree calls
+| pass 3 - tree calls
 :+call! | dic -- dic
 	$10000 over 8 + +! ;
 	
@@ -472,19 +465,19 @@
 	'sst 'sst> !		| stack
 	0 'pano ! 0 'cano ! 0 'cntfin !
 	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
-	
 
 :pushvar
 	deltaD $ff and 8 << 
 	usoD $ff and or 8 << 
 	deltaR $ff and or
 	sst! ;
+
 :popvar
 	sst@ 
 	dup 56 << 56 >> 'deltaR !
 	dup 8 >> $ff and 'usoD ! 
 	40 << 56 >> 'deltaD ! ;
-	
+
 :dropvar
 	sst> 'sst =? ( drop ; ) drop
 	sst@ drop ;
@@ -518,15 +511,15 @@
 	dup 8 - @ 8 >> $ffffff and 'lastdircode ! ;
 :.data 
 :.adata 
+	;
 :.str
  	dup 8 - @ 
-	dup "%h " .print
-	
-	8 >> strm + | string
-	.write .cr
-|	strusestack drop
-|	dup deltaD swap - neg clamp0 usoD max 'usoD !
-|	neg 'deltaD +!
+|	dup "%h " .print
+	8 >> $ffffffff and strm + | string
+|	dup .write .cr
+	strusestack 
+	deltaD over - neg clamp0 usoD max 'usoD !
+	neg 'deltaD +!
 	;
 :.;
 	pano 1? ( drop ; ) drop
