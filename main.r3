@@ -235,22 +235,13 @@
 |MAC| "./r3mac r3/editor/code-edit.r3"
 	sys ;
 
-:r3d4
-|WIN| "r3 r3/d4/r3d4-e.r3"
-|LIN| "./r3lin r3/d4/r3d4-e.r3"
-|RPI| "./r3rpi r3/d4/r3d4-e.r3"
-|MAC| "./r3mac r3/d4/r3d4-e.r3"
-	sys ;
-	
 |--------------------------------
 :editfile
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-	
 	r3info
 	|cerror 1? ( drop ; ) drop	
-	|r3edit
-	r3d4 | new editor
+	r3edit
 	;
 
 :editmap
@@ -278,13 +269,25 @@
 :f2edit
 	actual -? ( drop ; )
 	|getinfo $3 and 2 <>? ( drop ; ) drop
-	actual getname 
+	getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop
 	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
 	drop
 	;
+
+:r3d4
+	actual -? ( drop ; )
+	getname 
+	".r3" =pos 0? ( 2drop ; ) drop
+	'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/main.mem" save
+|WIN| "r3 r3/d4/r3d4-e.r3"
+|LIN| "./r3lin r3/d4/r3d4-e.r3"
+|RPI| "./r3rpi r3/d4/r3d4-e.r3"
+|MAC| "./r3mac r3/d4/r3d4-e.r3"
+	sys ;
 
 |--------------------------------
 |===================================
@@ -486,6 +489,8 @@
 	$3c =? ( f2edit )
 	$3d =? ( newfile )
 	|$3e =? ( newfolder ) | f4 - new folder
+	$3F =? ( r3d4 ) | F5 - NEW VERSION
+	
 	drop 
 	;
 

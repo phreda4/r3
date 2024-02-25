@@ -45,11 +45,17 @@
 :coso
 	rot rot 10 * + swap 100 * + ;
 	
+#EX_IQM_MAGIC "A" 0
+	
 |----Boot
 : 
 |	400 400 100 50 box2rec rec2box xywh64
 |	1 2 3 coso
 |	1.0 f2fp 
+	mem 
+	1 over !
+	@
+	'EX_IQM_MAGIC @
 	"hola" count
 	tes count 2drop
 	;

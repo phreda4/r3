@@ -265,15 +265,6 @@
 	r3info
 	;
 
-:mkplaino
-	.masb .reset .cls
-	savetxt
-|WIN| "r3 r3/d4/r3plain.r3"
-	sys
-	.alsb
-	r3info
-	;
-
 :compile
 	.masb .reset .cls
 	savetxt
@@ -670,8 +661,7 @@
 	$3c =? ( debugfile )
 |	$3d =? ( profiler )
 	$3e =? ( mkplain )
-	$3f =? ( mkplaino )
-	$40 =? ( compile )
+	$3f =? ( compile )
 	
 	drop
 	;
@@ -679,7 +669,7 @@
 
 |------------------------
 :barraf | F+
-	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m PlainO ^[7mF6^[27m Compile" ,printe ;
+	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
 
 :barrac | control+
 	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " ,printe

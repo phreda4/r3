@@ -19,7 +19,7 @@
 ::strcpyln strcpylnl drop ;
 
 ::copynom | sc s1 -- ; copy until space
-	( c@+ 32 >?
+	( c@+ $ff and 32 >?
 		rot c!+ swap ) 2drop
 	0 swap c! ;
 
@@ -39,7 +39,7 @@
 ::tolow | C -- c
 	$20 or ;
 
-::count | s1 -- s1 cnt ; naive version (nou used)
+::count | s1 -- s1 cnt ; naive version (not used)
 	0 over ( c@+ 1?
 		drop swap 1 + swap ) 2drop ;
 

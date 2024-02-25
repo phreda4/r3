@@ -111,9 +111,10 @@
 : 	
 	.cls
 	'filename "mem/main.mem" load drop
+|	"r3/test/testasm.r3" 'filename strcpy
+
 	'filename r3load
-	
-	'filename .println
+|	'filename .println
 	error 1? ( dup .print .cr ) drop
 	deferwi | for opt	
 |	showvar 

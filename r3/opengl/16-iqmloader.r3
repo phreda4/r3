@@ -696,6 +696,11 @@
 	drop ;
 
 	
+#fwintext * 64
+#fontshader
+#scrshader
+#fontTexture
+
 |------------------------------
 |----------- BOOT
 |------------------------------
@@ -705,9 +710,13 @@
 	"media/dae/iqm/mrfixit.iqm" iqmload	
 |	"media/dae/iqm/Sparrow.iqm" iqmload	
 	|"media/dae/cube.iqm" iqmload	
+	4
 	glimmgui
+	dup "%d" .println
 	initvec
+	dup "%d" .println
 	initshaders
+	dup "%d" .println
 	iniscrquad
 	initcube
 	'main SDLshow 

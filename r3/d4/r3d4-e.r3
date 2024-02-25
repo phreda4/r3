@@ -7,6 +7,8 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
+^r3/d4/r3token.r3
+
 | ventana de texto
 #xcode 6
 #ycode 2
@@ -19,7 +21,7 @@
 #xcursor
 
 #hashfile 
-#name * 1024
+#srcname * 1024
 
 #pantaini>	| comienzo de pantalla
 #pantafin>	| fin de pantalla
@@ -47,6 +49,9 @@
 
 #lerror 0
 #cerror 0
+
+#statfile 0 | 0:no info 1:error 2:info
+#modoe 0	| modo edit
 
 |----- edicion
 :lins  | c --
@@ -170,7 +175,7 @@
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
 	
 :loadtxt | -- ; cargar texto
-	fuente 'name 
+	fuente 'srcname 
 	load 0 swap c!
 	fuente only13 1 - '$fuente !	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> ! simplehash 'hashfile !
@@ -181,7 +186,7 @@
 	mark	
 	fuente ( c@+ 1?
 		13 =? ( ,c 10 ) ,c ) 2drop
-	'name savemem
+	'srcname savemem
 	empty ;
 
 |----------------------------------
@@ -221,26 +226,16 @@
 	;
 	
 
-:runfile
+:runfileex
 	savetxt
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
-	r3info	
-	cerror 1? ( drop ; ) drop
 	.masb .reset .cls
 	mark
 |WIN|	"r3 "
 |LIN|	"./r3lin "
 |RPI|	"./r3rpi "
-	,s 'name ,s ,eol
+	,s 'srcname ,s ,eol
 	empty here sysnew | <<<<<<<<< new terminal
-	.reset
-	|"press <ESC> to continue" .write waitesc
-	.alsb
-	;
-
+	.reset .alsb ;
 
 :debugfile
 	savetxt
@@ -275,6 +270,27 @@
 |	r3info
 	;
 
+|-------------------------------------------
+| statfile 0:no data 1:error 2:ok-allinfo
+
+:runfile
+	empty mark
+	fuente 'srcname r3loadmem
+	error 1? ( drop 1 'statfile ! ; ) drop
+	2 'statfile ! 
+|	lidiset
+|	liinset
+|	$ffff 'here +!
+|	resetvm
+|	cursor2ip
+	
+|	mark
+|	'srcname ,s ,cr ,cr
+|	debugmemmap
+|	"r3/d4/gen/map.txt" savemem
+|	empty
+	;	
+	
 |-------------------------------------------
 :copysel
 	inisel 0? ( drop ; )
@@ -379,7 +395,7 @@
 :setcur | adr 1c act 1
 	drop nip nip 'fuente> ! ;
 
-:controla | -- ;find prev
+:findprev | -- ;find prev
 	'pad
 	dup c@ $ff and
 	0? ( 2drop ; )
@@ -389,7 +405,7 @@
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
 		drop 1 - ) 3drop ;
 
-:controls | -- ;find next
+:findnext | -- ;find next
 	'pad
 	dup c@ $ff and
 	0? ( drop ; )
@@ -399,6 +415,21 @@
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
 		drop 1 + ) 3drop ;
 
+:cursorwstart | -- pos>
+	fuente> 
+	dup c@ $ff and 32 <=? ( drop trim ; ) drop 
+	( fuente =? ( ; )
+		dup 1 - c@ $ff and 32 >? drop 1 - ) drop | busca comienzo
+	;
+	
+| current word to search
+:controls
+	'pad
+	cursorwstart
+	copynom
+	findprev
+	;
+	
 |-------------
 :controld | buscar definicion
 	;
@@ -529,19 +560,16 @@
 	1 - ;
 
 |..............................
-:linenow
-	ycursor =? ( $3e ,c ; ) 32 ,c ;
-	
 :linenro | lin -- lin
-	over ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+	over ylinea + 1 + .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
-	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	"^[0m^[37m " ,printe	| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
 	swap
-	linenro	
+	linenro
 	iniline
-	inselect	
-	parseline 
+	inselect
+	parseline
 	prntcom
 	;
 
@@ -558,7 +586,6 @@
 	( pantafin> >? scrolldw )
 	( pantaini> <? scrollup )
 	drop 
-
 	,reset
 	inicomm
 	pantaini>
@@ -581,8 +608,10 @@
 	xlinea <? ( dup 'xlinea ! )
 	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
 	drop 
-	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + ,at 
+	,reset
+	ycode ylinea - ycursor + | y
+	xcode 5 - over ,at $3e ,c			| >
+	xcode xlinea - xcursor + swap ,at 	| cursor position
 	;
 	
 |-------------- panel control
@@ -597,30 +626,80 @@
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	1 hcode 1 + .at  .eline
-	" > " .write .input 
-	controls
+	1 hcode 1 + .at .eline
+	" > " .write .input
+	findnext
 	;
 
+|------------------------
+:barraf | F+
+	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
+
+:barrac | control+
+	" ^[7mX^[27mCut ^[7mC^[27mopy ^[7mV^[27mPaste ^[7mF^[27mind | " ,printe
+	" ^[7mD^[27mefinition ^[7m<-^[27m ^[7m->^[27m | " ,printe
+	" ^[7mQ^[27m<File ^[7mW^[27m>Fike " ,printe	
+	'pad
+	dup c@ 0? ( 2drop ; ) drop
+	" [%s]" ,print ;
+
+:topbar
+	1 hcode 2 + ,at ,bblue ,white ,eline
+	panelcontrol
+	0? ( drop barraf ; ) drop
+	barrac ;
+
+| statfile 0:no data 1:error 2:ok-allinfo
+:fotbar
+	1 1 ,at 
+	,bblue ,white ,eline
+	" r3d4 " ,s
+	statfile "^[4%dm" ,printe | show color mode in name
+	,sp 'srcname ,s ,sp ,bblue
+	
+	ycursor xcursor " %d:%d " ,print 
+	$fuente fuente - " %d " ,print 
+	clipboard> clipboard - " %d " ,print
+	mshift " %d " ,print
+	| error-
+	cerror 0? ( drop ; ) drop
+	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
+	;
+
+#exit 0
+
+| SCANCODES
+| Q : $10 ..
+| A : $1e ..
+| Z : $2c ..
 :controlkey
 	$101d =? ( controloff ) |>ctrl<
 	$1000 and? ( drop ; )	| upkey
 	$ff and
 	
-	$2d =? ( controlx )		| x-cut
-	$2e =? ( controlc )		| c-copy
-	$2f =? ( controlv )		| v-paste
+	$2c =? ( controlz )	| Z-Undo
+	$2d =? ( controlx )	| x-cut
+	$2e =? ( controlc )	| c-copy
+	$2f =? ( controlv )	| v-paste
+	
 	$12 =? ( controle ) | E-Edit
 |	$23 =? ( controlh ) | H-Help
-	$2c =? ( controlz ) | Z-Undo
-	$20 =? ( controld ) | D-Def
+	
+| A - HELP
+
+$1e =? ( 1 'modoe ! controloff ) | A includes
+$10 =? ( 2 'modoe ! controloff ) | Q words
+
+	$1f =? ( controls ) | S - Search word
+	$20 =? ( controld ) | D- search definition
+	$21 =? ( findmodekey )	| f-find text
+| Q - prev file
+| W - next file	
 	$31 =? ( controln ) | N-New
 |	$32 =? ( controlm ) | M-Mode
 
-	$48 =? ( controla )		| up
-	$50 =? ( controls )		| dn
-	
-	$21 =? ( findmodekey )	| f-find
+	$48 =? ( findprev )		| up-prev find
+	$50 =? ( findnext )		| dn-next find
 	drop
 	;
 
@@ -633,7 +712,9 @@
 	32 <? ( drop ; )
 	modo ex ;
 
-:teclado
+:evkey	
+	evtkey
+	$1B1001 =? ( 1 'exit ! )
 	panelcontrol 1? ( drop controlkey ; ) drop
 
 	$ff0000 and? ( vchar ; ) 
@@ -656,64 +737,12 @@
 	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
-	$3b =? ( runfile )
-	$3c =? ( debugfile )
-|	$3d =? ( profiler )
-	$3e =? ( mkplain )
-	$3f =? ( compile )
-	
-	drop
-	;
-
-
-|------------------------
-:barraf | F+
-	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
-
-:barrac | control+
-	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " ,printe
-	'pad
-	dup c@ 0? ( 2drop ; ) drop
-	" [%s]" ,print ;
-
-:topbar
-	1 hcode 2 + ,at ,bblue ,white ,eline
-	panelcontrol
-	0? ( drop barraf ; ) drop
-	barrac ;
-
-:fotbar
-	1 1 ,at 
-	,bblue ,white ,eline
-	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
-	$fuente fuente - " %d " ,print 
-	clipboard> clipboard - " %d " ,print
-	mshift " %d " ,print
-	| error-
-	cerror 0? ( drop ; ) drop
-	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
-	;
-
-:pantalla	
-	mark			| buffer in freemem
-	,hidec ,reset ,cls
-	
-	topbar
-	drawcode
-	fotbar
-	
-	cursorpos
-	,showc
-	memsize type	| type buffer
-	empty			| free buffer
-	;
-
-#exit 0
-
-:evkey	
-	evtkey
-	$1B1001 =? ( 1 'exit ! )
-	teclado ;
+	$3b =? ( runfile )		| f1 - compiler/run
+	$3c =? ( debugfile )	| f2 -
+|	$3d =? ( profiler )		| f3 -
+	$3e =? ( mkplain )		| f4 -
+	$3f =? ( compile )		| f5 -
+	drop ;
 	
 ::>>cr | adr -- adr'
 	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1 - ;
@@ -722,8 +751,7 @@
 	pantaini> | x y c
 	( swap 1? 1- swap >>cr ) drop | x c
 	swap 5 - clamp0 swap
-	( swap 1? 1- swap 
-		c@+ 
+	( swap 1? 1- swap c@+
 		9 =? ( rot 2 - clamp0 rot rot )
 		13 =? ( 0 nip )
 		0? ( drop nip 1 - ; ) 
@@ -731,32 +759,161 @@
 		
 :evmouse
 	evtmb $0 =? ( drop ; ) drop 
-	evtmxy
-	1 <? ( 2drop ; )
-	1 - xycursor
-	'fuente> ! 
-	;
-
+	evtmxy 1 <? ( 2drop ; )
+	1 - xycursor 'fuente> ! ;
 
 :evsize	
 	.getconsoleinfo
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
 	;
+
+:modoeditor
+	getevt
+	$1 =? ( evkey )
+	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 
+	mark			| buffer in freemem
+	,hidec ,reset ,cls
+	topbar drawcode fotbar
+	cursorpos
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	;
+
+|--------------- INCLUDES
+#iniinc
+
+:evkey | key -- key
+	evtkey
+	$1B1001 =? ( 0 'modoe ! )
+	$49 =? ( -1 'iniinc +! ) 
+	$51 =? ( 1 'iniinc +! )
+	drop ;
+
+:incline
+	cntdef >=? ( drop ; )
+	4 << 'inc + @ "%w" ,println ;
 	
-:editor
+:modoincludes
+	getevt
+	$1 =? ( evkey )
+	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 
+	mark			| buffer in freemem
+	,hidec ,reset ,cls
+	topbar 
+	0 ( hcode <? 
+		dup iniinc + incline
+		1+ ) drop
+	fotbar
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	;
+	
+|--------------- WORDS
+#inidic 0
+
+#colpal ,red ,magenta
+
+::,col "%dG" sprint ,[ ; | x y -- 
+
+:info1 | n --
+	|dup "%h " ,print
+	,bblue
+	dup 1 and ":#" + c@ ,c		| code/data
+	dup 1 >> 1 and " e" + c@ ,c	| local/export
+	dup 2 >> 1 and " '" + c@ ,c	| /use adress
+	dup 3 >> 1 and " >" + c@ ,c	| /R unbalanced
+	dup 4 >> 1 and " ;" + c@ ,c	| /many exit
+	dup 5 >> 1 and " R" + c@ ,c	| /recursive
+	dup 6 >> 1 and " [" + c@ ,c	| /have anon
+	dup 7 >> 1 and " ." + c@ ,c	| /not end
+|	dup 8 >> $ff and "%h" ,print
+	dup 8 >> 1 and " m" + c@ ,c	| /mem access
+	dup 9 >> 1 and " A" + c@ ,c	| />A
+	dup 10 >> 1 and " a" + c@ ,c	| /A
+	dup 11 >> 1 and " B" + c@ ,c	| />B
+	dup 12 >> 1 and " b" + c@ ,c	| /B
+
+	,reset
+	" " ,s
+	dup 1 and 3 << 'colpal + @ ex
+	|dup $3 and 1 << " ::: ###" + c@+ ,c c@ ,c
+	dup 40 >>> src + "%w " ,print
+	
+	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
+	drop
+	;
+	
+:info2 | n --
+	,bwhite ,black dup ,mov 
+	,reset
+|	dup $ff and "%d " ,print		| duse unsigned
+|	dup 48 << 56 >> "%d " ,print	| ddelta signed
+	
+	40 ,col
+	dup 16 >> $ffff and "%d " ,print	| calls
+	 9 ,c
+	dup 32 >> " %d " ,print			| len
+	drop
+|	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
+	dup 16 - toklend nip " %d" ,print | len for data
+	;
+	
+:dicword | nro --
+	cntdef 1 - >=? ( drop ; )
+	,reset
+	dup "%d." ,print
+	4 << dic + 
+	@+ info1
+	@+ info2
+	drop
+	,nl
+	;
+	
+:evkey | key -- key
+	evtkey
+	$1B1001 =? ( 0 'modoe ! )
+	$49 =? ( -1 'inidic +! ) 
+	$51 =? ( 1 'inidic +! )
+	drop ;
+	
+:mododictionary
+	getevt
+	$1 =? ( evkey )
+	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 
+	mark			| buffer in freemem
+	,hidec ,reset ,cls
+	topbar 
+	0 ( hcode <?
+		dup inidic + dicword
+		1+ ) drop
+	fotbar
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	;
+
+|--------------- MAIN EDITOR
+#modolist modoeditor modoincludes mododictionary
+
+:runeditor
+	0 'statfile !
 	setpantafin
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
 	0 'xlinea !
 	.showc .insc
 	( exit 0? drop 
-		pantalla
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) drop ;
+		modoe 3 << 'modolist + @ ex
+		) drop ;
 
 |---- Mantiene estado del editor
 :ram
@@ -770,25 +927,25 @@
 	$3fff +				| 16KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
-	$ffff +         	| 64kb
+	$3fff +         	| 16kb
 	dup 'linecomm !
 	dup	'linecomm> !
 	$3fff +				| 4096 linecomm
 	'here  ! | -- FREE
 	mark 
-
+	
 	loadtxt
-	loadinfo
+|	loadinfo
 	;
 
 |----------- principal
 :main
-	'name "mem/main.mem" load drop
+	'srcname "mem/main.mem" load drop
 	ram
 	evtmouse
 	.getconsoleinfo
 	.alsb 
-	editor 
+	runeditor
 	.masb
 	savetxt
 	;

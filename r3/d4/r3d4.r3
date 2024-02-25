@@ -362,7 +362,9 @@
 |	'filename "mem/main.mem" load drop
 |	"r3/test/testasm.r3"
 	"r3/opengl/16-iqmloader.r3" 
-	edload
+	'filename strcpy
+	
+	'filename edload
 	deferwi | for opt
 	mark |  for redoing tokens
 	'main SDLshow
