@@ -5,7 +5,7 @@
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 
-^r3/d4/r3edit.r3
+^r3/d4/r3view.r3
 ^r3/d4/r3token.r3
 
 #wcode 40

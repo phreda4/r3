@@ -1,26 +1,64 @@
-| editor for d4
+| editor
 | PHREDA 2024
-|..............................
-^r3/lib/math.r3
-^r3/lib/parse.r3
-^r3/win/console.r3
-^r3/win/mconsole.r3
 
-##fuente  	| fuente editable
-##fuente> 	| cursor
-##$fuente	| fin de texto
-
-#inisrc>
-#endsrc>
-
-#xlinea
-#ylinea
-#ycursor
+^r3/d4/r3edit.r3
 
 ##xcode 6
 ##ycode 2
 ##wcode 40
 ##hcode 20
+
+##xlinea 0
+##ylinea 0	| primera linea visible
+##ycursor
+##xcursor
+
+##pantaini>	| comienzo de pantalla
+##pantafin>	| fin de pantalla
+
+##inisel		| inicio seleccion
+##finsel		| fin seleccion
+
+##fuente  	| fuente editable
+##fuente> 	| cursor
+##$fuente	| fin de texto
+
+##clipboard	|'clipboard
+##clipboard>
+
+##undobuffer |'undobuffer
+##undobuffer>
+
+##linecomm 	| comentarios de linea
+##linecomm>
+
+##mshift
+
+|----- edicion
+::lins  | c --
+	fuente> dup 1 - $fuente over - 1 + cmove>
+	1 '$fuente +!
+:lover | c --
+	fuente> c!+ dup 'fuente> !
+	$fuente >? ( dup '$fuente ! ) drop
+:0lin | --
+	0 $fuente c! ;
+
+#modo 'lins
+
+:back
+	fuente> fuente <=? ( drop ; )
+	dup 1 - c@ undobuffer> c!+ 'undobuffer> !
+	dup 1 - swap $fuente over - 1 + cmove
+	-1 '$fuente +!
+	-1 'fuente> +! ;
+
+:del
+	fuente>	$fuente >=? ( drop ; )
+    1 + fuente <=? ( drop ; )
+	9 over 1 - c@ undobuffer> c!+ c!+ 'undobuffer> !
+	dup 1 - swap $fuente over - 1 + cmove
+	-1 '$fuente +! ;
 
 :<<13 | a -- a
 	( fuente >=?
@@ -29,61 +67,163 @@
 
 :>>13 | a -- a
 	( $fuente <?
-		dup c@ 13 =? ( drop 1 - ; ) | quitar el 1 -
+		dup c@
+		13 =? ( drop 1 - ; ) | quitar el 1 -
 		drop 1 + )
 	drop $fuente 2 - ;
 
+#1sel #2sel
+
+:selecc	| agrega a la seleccion
+	mshift 0? ( dup 'inisel ! 'finsel ! ; ) drop
+	inisel 0? ( fuente> '1sel ! ) drop
+	fuente> dup '2sel !
+	1sel over <? ( swap )
+	'finsel ! 'inisel !
+	;
+
 :khome
-	fuente> 1 - <<13 1 + 'fuente> ! ;
+	selecc
+	fuente> 1 - <<13 1 + 'fuente> !
+	selecc ;
+
 :kend
-	fuente> >>13  1 + 'fuente> ! ;
+	selecc
+	fuente> >>13  1 + 'fuente> !
+	selecc ;
 
 :scrollup | 'fuente -- 'fuente
-	inisrc> 1 - <<13 1 - <<13  1 + 'inisrc> !
-	ylinea 1? ( 1 - ) 'ylinea ! ;
+	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
+	ylinea 1? ( 1 - ) 'ylinea !
+	selecc ;
 
 :scrolldw
-	inisrc> >>13 2 + 'inisrc> !
-	endsrc> >>13 2 + 'endsrc> !
-	1 'ylinea +! ;
-
-:colcur
-	fuente> 1 - <<13 swap - ;
+	pantaini> >>13 2 + 'pantaini> !
+	pantafin> >>13 2 + 'pantafin> !
+	1 'ylinea +!
+	selecc ;
 
 :kup
 	fuente> fuente =? ( drop ; )
+	selecc
 	dup 1 - <<13		| cur inili
 	swap over - swap	| cnt cur
-	dup 1 - <<13			| cnt cur cura
+	dup 1 - <<13		| cnt cur cura
 	swap over - 		| cnt cura cur-cura
 	rot min + fuente max
 	'fuente> !
-	;
+	selecc ;
 
 :kdn
 	fuente> $fuente >=? ( drop ; )
+	selecc
 	dup 1 - <<13 | cur inilinea
 	over swap - swap | cnt cursor
 	>>13 1 +    | cnt cura
 	dup 1 + >>13 1 + 	| cnt cura curb
-	over -
-	rot min +
+	over - rot min +
 	'fuente> !
+	selecc ;
+
+:kri
+	selecc
+	fuente> $fuente <?
+	( 1 + 'fuente> ! selecc ; ) drop
 	;
 
-:kder
-	fuente> $fuente <? ( 1 + 'fuente> ! ; ) drop ;
-
-:kizq
-	fuente> fuente >? ( 1 - 'fuente> ! ; ) drop ;
+:kle
+	selecc
+	fuente> fuente >?
+	( 1 - 'fuente> ! selecc ; ) drop
+	;
 
 :kpgup
-	20 ( 1? 1 - kup ) drop ;
+	selecc
+	20 ( 1? 1 - kup ) drop
+	selecc ;
 
 :kpgdn
-	20 ( 1? 1 - kdn ) drop ;
+	selecc
+	20 ( 1? 1 - kdn ) drop
+	selecc ;
 
-|----------------------------------------
+|-------------------------------------------
+::copysel
+	inisel 0? ( drop ; )
+	clipboard swap
+	finsel over - pick2 over + 'clipboard> !
+	cmove
+	;
+
+::realdel
+	fuente>
+	inisel <? ( drop ; )
+	finsel <=? ( drop inisel 'fuente> ! ; )
+	finsel inisel - over swap - 'fuente> !
+	drop ;
+
+::borrasel
+	inisel finsel $fuente finsel - 4 + cmove
+	finsel inisel - neg '$fuente +!
+	realdel
+	0 dup 'inisel ! 'finsel ! ;
+
+:kdel
+	inisel 0? ( drop del ; )
+	drop borrasel ;
+
+:kback
+	inisel 0? ( drop back ; )
+	drop borrasel ;
+	
+
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
+
+:buildinfo | infmov --
+	,bcyan 
+	dup $f and ,sp
+	dup ,ncar " -- " ,s
+	over 55 << 59 >> + | deltaD
+	,ncar ,sp 
+	,reset ,sp ,bcyan ,black
+	$1000000000 and? ( ";"  ,s	)	| multiple
+	$2000000000 and? ( "R" ,s )		| recurse
+	$8000000000 nand? ( "."  ,s	)	| no ;
+	drop
+	;
+
+#linecommnow 
+
+:prnerr	
+	drop
+	,sp ,bred ,white " << Error " ,s 
+	;
+
+:inicomm
+	linecomm 8 + | head 
+	( @+ $fff and ylinea <=? drop 8 + ) drop
+	8 - 'linecommnow !
+	;
+	
+:prntcom | line adr' -- line adr'
+	linecommnow @ $fff and 
+	pick2 ylinea + 
+	>? ( drop ; ) drop
+	linecommnow @+
+	$100000000 and? ( 
+		drop @+ swap 'linecommnow ! 
+		prnerr prntcom ; ) drop
+	@+ swap 'linecommnow !
+	,sp
+	dup 12 32 + >> $ff and 
+	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s prntcom ; ) drop
+	,black
+	buildinfo
+	prntcom
+	;
+
 |------ Color line
 #colornow 0
 
@@ -102,10 +242,14 @@
 
 :,tcolor colornow ,fcolor ;
 
-:incursor
-	fuente> <>? ( ; )
-	over 'ycursor !
-	"s" ,[ | save cursor position
+| 18 = blue dark for select
+:inselect
+	inisel finsel bt? ( 18 ,bcolor ; )
+	0 ,bcolor ;
+	
+:atselect
+	inisel =? ( 18 ,bcolor ; )
+	finsel =? ( 0 ,bcolor ; )
 	;
 
 :iniline
@@ -122,7 +266,7 @@
 	
 :strword
 	,c
-	( incursor c@+ 1?
+	( atselect c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
@@ -130,12 +274,12 @@
 		,ct ) drop 1 - 0 ;
 	
 :endline
-	,c ( incursor c@+ 1? 13 <>? ,ct )	
+	,c ( atselect c@+ 1? 13 <>? ,ct )	
 	1? ( drop ; ) drop 1 - ;
 	
 :parseline 
 	,tcolor
-	( incursor c@+ 1? 13 <>?  | 0 o 13 sale
+	( atselect c@+ 1? 13 <>?  | 0 o 13 sale
 		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
@@ -146,62 +290,116 @@
 	1? ( drop ; ) drop
 	1 - ;
 
-:setendsrc
-	inisrc>
+|... no color line	
+:parselinenc
+	( atselect c@+ 1? 13 <>? ,c ) 
+	1? ( drop ; ) drop
+	1 - ;
+
+|..............................
+:linenro | lin -- lin
+	over ylinea + 1 + .d 3 .r. ,s 32 ,c ; 
+
+:drawline | adr line -- line adr'
+	"^[0m^[37m " ,printe	| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	swap
+	linenro
+	iniline
+	inselect
+	parseline
+	prntcom
+	;
+
+:setpantafin
+	pantaini>
 	0 ( hcode <?
 		swap >>cr 1 + swap
 		1 + ) drop
-	$fuente <? ( 1 - ) 'endsrc> ! ;
-
-:linenow
-	ycursor =? ( $3e ,c ; ) 32 ,c ;
+	$fuente <? ( 1 - ) 'pantafin> ! ;
 	
-:linenro | lin -- lin
-	over ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
-
-:drawline | adr line -- line adr'
-	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
-	swap
-	linenro	
-	iniline
-	parseline 
-	;
-	
+|..............................
 ::code-draw
 	fuente>
-	( endsrc> >? scrolldw )
-	( inisrc> <? scrollup )
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
 	drop 
-
 	,reset
-	inisrc>
+	inicomm
+	pantaini>
 	0 ( hcode <?
 		1 ycode pick2 + ,at
 		drawline
 		swap 1 + ) drop
-	$fuente <? ( 1 - ) 'endsrc> ! 
-	;		
-		
+	$fuente <? ( 1 - ) 'pantafin> ! ;
 
-|----------------------------------------
-::code-key	
-	evtkey
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 3 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+::cursorpos
+	ylinea 'ycursor ! 0 'xcursor !
+	pantaini> ( fuente> <? c@+ emitcur ) drop
+	| hscroll
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	drop 
+	,reset
+	ycode ylinea - ycursor + | y
+	xcode 5 - over ,at $3e ,c			| >
+	xcode xlinea - xcursor + swap ,at 	| cursor position
+	;
+	
+:vchar | char --  ; visible char
+	$1000 and? ( drop ; )
+	16 >> $ff and
+	8 =? ( drop kback ; )
+	9 =? ( modo ex ; )
+	13 =? ( modo ex ; )
+	32 <? ( drop ; )
+	modo ex ;
+	
+::code-key | key -- key
+	$ff0000 and? ( dup vchar ; ) 
+
 	$48 =? ( kup ) $50 =? ( kdn )
-	$4d =? ( kder ) $4b =? ( kizq )
+	$4d =? ( kri ) $4b =? ( kle )
 	$47 =? ( khome ) $4f =? ( kend )
 	$49 =? ( kpgup ) $51 =? ( kpgdn )	
-	drop
+	
+	$53 =? ( kdel )
+	
+	$52 =? (  modo | ins
+			'lins =? ( drop 'lover 'modo ! .ovec ; )
+			drop 'lins 'modo ! .insc )	
 	;
 	
 
 ::code-set | src --
-	dup 'inisrc> !
+	dup 'pantaini> !
 	dup 'fuente !
 	dup 'fuente> !
 	count + '$fuente !
 	0 'xlinea !
 	0 'ylinea !
-	setendsrc
+	setpantafin
+	;	
+	
+::code-ram
+	here	| --- RAM
+	dup 'fuente !
+	dup 'fuente> !
+	dup '$fuente !
+	$3ffff +			| 256kb texto
+	dup 'clipboard !
+	dup 'clipboard> !
+	$3fff +				| 16KB
+	dup 'undobuffer !
+	dup 'undobuffer> !
+	$3fff +         	| 16kb
+	dup 'linecomm !
+	dup	'linecomm> !
+	$3fff +				| 4096 linecomm
+	'here ! | -- FREE
 	;
-	
-	
