@@ -9,6 +9,7 @@
 
 ^r3/d4/r3edit.r3
 ^r3/d4/r3token.r3
+^r3/d4/r3imm.r3
 
 #hashfile 
 #srcname * 1024
@@ -21,6 +22,7 @@
 
 #statfile 0 | 0:no info 1:error 2:info
 #modoe 0	| modo edit
+#escnow 0
 
 |------------------------------------------------
 ##path * 1024
@@ -143,15 +145,29 @@
 |	empty
 	;	
 	
+:tokensrc?
+	statfile 2 =? ( drop ; ) drop
+	tokensrc ;
+	
 :modoclear
 	0 'statfile ! 
 	;
-:mododicc
-	|statfile 0? ( token
-	;
 :modowords
+	tokensrc?
+	1 'modoe !
 	;
-
+	
+:modoedit
+	rows 1 - 'hcode !
+	0 'modoe !
+	;
+:modoimm
+	tokensrc?
+	rows 8 - 'hcode !
+	3 'modoe ! 
+	'pad immset
+	;
+	
 |-------------
 | Edit CtrE
 |-------------
@@ -341,9 +357,9 @@
 |	$23 =? ( controlh ) | H-Help
 	
 | A - HELP?
-$1e =? ( 1 'modoe ! controloff  ) | A includes
-$10 =? ( 2 'modoe ! controloff ) | Q words
-
+	$10 =? ( modoimm controloff ) | IMM
+	$11 =? ( modowords controloff ) | W includes
+	
 	$1f =? ( controls ) | S - Search word
 	$20 =? ( controld ) | D- search definition
 	$21 =? ( findmodekey )	| f-find text
@@ -358,7 +374,7 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 
 :evkey	
 	evtkey
-	$1B1001 =? ( 1 'exit ! )
+	$1B1001 =? ( escnow 1? ( 0 'escnow ! 2drop ; ) drop 1 'exit ! )
 	panelcontrol 1? ( drop controlkey ; ) drop
 	
 	code-key
@@ -400,17 +416,17 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 	;
 
 :modoeditor
-	getevt
-	$1 =? ( evkey )
-	$2 =? ( evmouse )
-	$4 =? ( evsize )
-	drop 
 	mark			| buffer in freemem
 	,hidec ,reset ,cls
 	topbar code-draw botbar
 	cursorpos ,showc
 	memsize type	| type buffer
 	empty			| free buffer
+	getevt
+	$1 =? ( evkey )
+	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 
 	;
 
 |--------------- INCLUDES
@@ -418,9 +434,11 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 
 :evkey | key -- key
 	evtkey
-	$1B1001 =? ( 0 'modoe ! )
-	$49 =? ( -1 'iniinc +! ) 
-	$51 =? ( 1 'iniinc +! )
+	$1B0001 =? ( modoedit 1 'escnow ! )
+	$1000 and? ( drop ; )	| upkey
+	$ff and	
+	$48 =? ( -1 'iniinc +! ) 
+	$50 =? ( 1 'iniinc +! )
 	drop ;
 
 :incline
@@ -430,11 +448,6 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 	;
 	
 :modoincludes
-	getevt
-	$1 =? ( evkey )
-|	$2 =? ( evmouse )
-	$4 =? ( evsize )
-	drop 
 	mark			| buffer in freemem
 	,hidec ,reset ,cls
 	topbar 
@@ -445,6 +458,11 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer
+	getevt
+	$1 =? ( evkey )
+|	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 	
 	;
 	
 |--------------- WORDS
@@ -456,51 +474,34 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 
 :info1 | n --
 	|dup "%h " ,print
-	,bblue
-	dup 1 and ":#" + c@ ,c		| code/data
-	dup 1 >> 1 and " e" + c@ ,c	| local/export
-	dup 2 >> 1 and " '" + c@ ,c	| /use adress
-	dup 3 >> 1 and " >" + c@ ,c	| /R unbalanced
-	dup 4 >> 1 and " ;" + c@ ,c	| /many exit
-	dup 5 >> 1 and " R" + c@ ,c	| /recursive
-	dup 6 >> 1 and " [" + c@ ,c	| /have anon
-	dup 7 >> 1 and " ." + c@ ,c	| /not end
-|	dup 8 >> $ff and "%h" ,print
-	dup 8 >> 1 and " m" + c@ ,c	| /mem access
-	dup 9 >> 1 and " A" + c@ ,c	| />A
-	dup 10 >> 1 and " a" + c@ ,c	| /A
-	dup 11 >> 1 and " B" + c@ ,c	| />B
-	dup 12 >> 1 and " b" + c@ ,c	| /B
-
 	,reset
 	" " ,s
 	dup 1 and 3 << 'colpal + @ ex
 	|dup $3 and 1 << " ::: ###" + c@+ ,c c@ ,c
-	dup 40 >>> src + "%w " ,print
+	dup 40 >>> src + "%w |" ,print
 	
 	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
 	;
 	
 :info2 | n --
-	,bwhite ,black dup ,mov 
-	,reset
-|	dup $ff and "%d " ,print		| duse unsigned
-|	dup 48 << 56 >> "%d " ,print	| ddelta signed
+	,reset dup ,mov 
 	
-	40 ,col
-	dup 16 >> $ffff and "%d " ,print	| calls
-	 9 ,c
-	dup 32 >> " %d " ,print			| len
+|	dup $ff and "%d " ,print		| duse unsigned
+|	dup 48 << 56 >> "%d " ,print	| ddelta signed	
+|	40 ,col
+	dup 16 >> $ffff and " %d " ,print	| calls
+|	9 ,c
+|	dup 32 >> " %d " ,print			| len
 	drop
 |	dup @ 16 >> $ffffff and over 16 - @ 16 >> $ffffff and - "%d " ,print
-	dup 16 - toklend nip " %d" ,print | len for data
+|	dup 16 - toklend nip " %d" ,print | len for data
 	;
 	
 :dicword | nro --
 	cntdef 1 - >=? ( drop ; )
 	,reset
-	dup "%d." ,print
+	dup " %d." ,print
 	4 << dic + 
 	@+ info1
 	@+ info2
@@ -509,17 +510,14 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 	
 :evkey | key -- key
 	evtkey
-	$1B1001 =? ( 0 'modoe ! )
-	$49 =? ( -1 'inidic +! ) 
-	$51 =? ( 1 'inidic +! )
+	$1B0001 =? ( modoedit 1 'escnow ! )
+	$1000 and? ( drop ; )	| upkey
+	$ff and	
+	$48 =? ( -1 'inidic +! ) 
+	$50 =? ( 1 'inidic +! )
 	drop ;
 	
 :mododictionary
-	getevt
-	$1 =? ( evkey )
-|	$2 =? ( evmouse )
-	$4 =? ( evsize )
-	drop 
 	mark			| buffer in freemem
 	,hidec ,reset ,cls
 	topbar 
@@ -530,10 +528,53 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer
+	getevt
+	$1 =? ( evkey )
+|	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 	
 	;
 
+|--------------- MAIN IMMEDIATE
+:enterline
+|	'pad vmparse
+|	vmclear
+|	vmrun
+	immclear
+	;
+	
+:evkey | key -- key
+	evtkey
+	$1000 and? ( drop ; )	| upkey	
+	$1B0001 =? ( modoedit 1 'escnow ! )
+	immevkey 
+	$1c =? ( enterline )
+	drop ;
+	
+:modoimmediate
+	mark			| buffer in freemem
+	,hidec ,reset ,cls
+	topbar code-draw 
+	botbar
+	cursorpos 
+	1 hcode 3 + ,at
+	,reset
+	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+	"D) " ,s ,stack ,nl
+	"> " ,s ,immline 
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	getevt
+	$1 =? ( evkey ) 
+|	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 	
+	;
+
+
 |--------------- MAIN EDITOR
-#modolist modoeditor modoincludes mododictionary
+#modolist modoeditor modoincludes mododictionary modoimmediate
 
 :runeditor
 	0 'statfile !
@@ -547,7 +588,7 @@ $10 =? ( 2 'modoe ! controloff ) | Q words
 |---- Mantiene estado del editor
 :ram
 	code-ram
-	0 'modoe !
+	modoedit
 	loadtxt
 	fuente code-set
 |	loadinfo

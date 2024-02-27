@@ -61,3 +61,6 @@
 	
 ::,printe | "" --
 	sprint ( c@+ 1? emite ) 2drop ;
+	
+::,type | adr cnt --
+	( 1? 1 - swap c@+ ,c swap ) 2drop ; 
