@@ -125,6 +125,10 @@
 	;
 
 |-------------------------------------------
+:cursor2ip  
+	<<ip 0? ( drop ; )
+	@ 40 >>> src + 'fuente> ! ;
+
 | statfile 0:no data 1:error 2:ok-allinfo
 
 :tokensrc
@@ -135,8 +139,8 @@
 |	lidiset
 |	liinset
 |	$ffff 'here +!
-|	resetvm
-|	cursor2ip
+	resetvm
+	cursor2ip
 	
 |	mark
 |	'srcname ,s ,cr ,cr
@@ -152,16 +156,28 @@
 :modoclear
 	0 'statfile ! 
 	;
-:modowords
-	tokensrc?
-	1 'modoe !
-	;
 	
+|----------------------
+|#modolist modoeditor mododictionary modoimmediate mododebug
+
 :modoedit
 	rows 1 - 'hcode !
 	0 'modoe !
 	;
+	
+:mododic
+	tokensrc?
+	1 'modoe !
+	;
+	
 :modoimm
+	tokensrc?
+	rows 8 - 'hcode !
+	2 'modoe ! 
+	'pad immset
+	;
+
+:mododeb
 	tokensrc?
 	rows 8 - 'hcode !
 	3 'modoe ! 
@@ -357,8 +373,9 @@
 |	$23 =? ( controlh ) | H-Help
 	
 | A - HELP?
-	$10 =? ( modoimm controloff ) | IMM
-	$11 =? ( modowords controloff ) | W includes
+	$10 =? ( modoimm controloff )
+	$11 =? ( mododic controloff )
+	$12 =? ( mododeb controloff ) 
 	
 	$1f =? ( controls ) | S - Search word
 	$20 =? ( controld ) | D- search definition
@@ -429,43 +446,8 @@
 	drop 
 	;
 
-|--------------- INCLUDES
+|--------------- DICC
 #iniinc
-
-:evkey | key -- key
-	evtkey
-	$1B0001 =? ( modoedit 1 'escnow ! )
-	$1000 and? ( drop ; )	| upkey
-	$ff and	
-	$48 =? ( -1 'iniinc +! ) 
-	$50 =? ( 1 'iniinc +! )
-	drop ;
-
-:incline
-	cntdef >=? ( drop ; )
-	4 << 'inc + @ " %w" ,print | name
-	| cntwords
-	;
-	
-:modoincludes
-	mark			| buffer in freemem
-	,hidec ,reset ,cls
-	topbar 
-	0 ( hcode <? 
-		1 over 2 + ,at
-		dup iniinc + incline
-		1+ ) drop
-	,showc
-	memsize type	| type buffer
-	empty			| free buffer
-	getevt
-	$1 =? ( evkey )
-|	$2 =? ( evmouse )
-	$4 =? ( evsize )
-	drop 	
-	;
-	
-|--------------- WORDS
 #inidic 0
 
 #colpal ,red ,magenta
@@ -507,6 +489,12 @@
 	@+ info2
 	drop
 	;
+
+:incline
+	cntdef >=? ( drop ; )
+	4 << 'inc + @ " %w" ,print | name
+	| cntwords
+	;
 	
 :evkey | key -- key
 	evtkey
@@ -515,7 +503,11 @@
 	$ff and	
 	$48 =? ( -1 'inidic +! ) 
 	$50 =? ( 1 'inidic +! )
+|	$48 =? ( -1 'iniinc +! ) 
+|	$50 =? ( 1 'iniinc +! )
+	
 	drop ;
+
 	
 :mododictionary
 	mark			| buffer in freemem
@@ -525,6 +517,11 @@
 		1 over 2 + ,at
 		dup inidic + dicword
 		1+ ) drop
+	0 ( hcode <? 
+		wcode 1 >> over 2 + ,at
+		dup iniinc + incline
+		1+ ) drop
+		
 	,showc
 	memsize type	| type buffer
 	empty			| free buffer
@@ -572,9 +569,41 @@
 	drop 	
 	;
 
+|--------------- DEBUG
+	
+:evkey | key -- key
+	evtkey
+	$1000 and? ( drop ; )	| upkey	
+	$1B0001 =? ( modoedit 1 'escnow ! )
+|	immevkey 
+|	$1c =? ( enterline )
+	$3b =? ( stepvm cursor2ip ) |f1
+	$3c =? ( stepvmn cursor2ip ) |f2
+	drop ;
 
+:mododebug
+	mark			| buffer in freemem
+	,hidec ,reset ,cls
+	topbar code-draw 
+	botbar
+	cursorpos 
+	1 hcode 3 + ,at
+	,reset
+	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+	"D) " ,s ,stack ,nl
+	"> " ,s ,immline 
+	,showc
+	memsize type	| type buffer
+	empty			| free buffer
+	getevt
+	$1 =? ( evkey ) 
+|	$2 =? ( evmouse )
+	$4 =? ( evsize )
+	drop 	
+	;
+	
 |--------------- MAIN EDITOR
-#modolist modoeditor modoincludes mododictionary modoimmediate
+#modolist modoeditor mododictionary modoimmediate mododebug
 
 :runeditor
 	0 'statfile !

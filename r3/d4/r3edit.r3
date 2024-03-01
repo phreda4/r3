@@ -359,22 +359,22 @@
 	13 =? ( modo ex ; )
 	32 <? ( drop ; )
 	modo ex ;
-	
-::code-key | key -- key
-	$ff0000 and? ( dup vchar ; ) 
 
+::code-vkey | key -- key ; only view key
 	$48 =? ( kup ) $50 =? ( kdn )
 	$4d =? ( kri ) $4b =? ( kle )
 	$47 =? ( khome ) $4f =? ( kend )
 	$49 =? ( kpgup ) $51 =? ( kpgdn )	
-	
+	;
+
+::code-key | key -- key
+	$ff0000 and? ( dup vchar ; ) 
 	$53 =? ( kdel )
-	
 	$52 =? (  modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )	
+	code-vkey
 	;
-	
 
 ::code-set | src --
 	dup 'pantaini> !
