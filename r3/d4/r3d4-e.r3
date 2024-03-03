@@ -24,6 +24,24 @@
 #modoe 0	| modo edit
 #escnow 0
 
+#iniinc
+#nowinc
+#inidic 0
+#nowdic
+
+:dic+! | v --
+	nowdic + cntdef 1 - clamp0max 
+	inidic <? ( dup 'inidic ! )
+	inidic hcode + 1 - >=? ( dup hcode - 1 + 'inidic ! ) 
+	'nowdic !
+	;
+
+:inc+! | v --
+	nowinc + cntinc 1 - clamp0max 
+	iniinc <? ( dup 'iniinc ! )
+	iniinc hcode + 1 - >=? ( dup hcode - 1 + 'iniinc ! ) 
+	'nowinc !
+	;
 |------------------------------------------------
 ##path * 1024
 
@@ -142,6 +160,9 @@
 	resetvm
 	cursor2ip
 	
+	cntinc 1 - 'nowinc !
+	cntdef 1 - 'nowdic !
+
 |	mark
 |	'srcname ,s ,cr ,cr
 |	debugmemmap
@@ -167,6 +188,9 @@
 	
 :mododic
 	tokensrc?
+	rows 8 - 'hcode !	
+	0 dic+!
+	0 inc+!	
 	1 'modoe !
 	;
 	
@@ -447,8 +471,6 @@
 	;
 
 |--------------- DICC
-#iniinc
-#inidic 0
 
 #colpal ,red ,magenta
 
@@ -460,14 +482,14 @@
 	" " ,s
 	dup 1 and 3 << 'colpal + @ ex
 	|dup $3 and 1 << " ::: ###" + c@+ ,c c@ ,c
-	dup 40 >>> src + "%w |" ,print
+	dup 40 >>> src + "%w " ,print
 	
 	|dup 16 >> $ffffff and pick2 8 + @ 16 >> $ffffff and swap - "%d " ,print
 	drop
 	;
 	
 :info2 | n --
-	,reset dup ,mov 
+	,reset dup "| " ,s ,mov 
 	
 |	dup $ff and "%d " ,print		| duse unsigned
 |	dup 48 << 56 >> "%d " ,print	| ddelta signed	
@@ -481,8 +503,9 @@
 	;
 	
 :dicword | nro --
-	cntdef 1 - >=? ( drop ; )
+	cntdef >=? ( drop ; )
 	,reset
+	nowdic =? ( ,rever )
 	dup " %d." ,print
 	4 << dic + 
 	@+ info1
@@ -491,21 +514,22 @@
 	;
 
 :incline
-	cntdef >=? ( drop ; )
+	cntinc >=? ( drop ; )
+	,reset
+	nowinc =? ( ,rever )
 	4 << 'inc + @ " %w" ,print | name
 	| cntwords
 	;
-	
+
 :evkey | key -- key
 	evtkey
 	$1B0001 =? ( modoedit 1 'escnow ! )
 	$1000 and? ( drop ; )	| upkey
 	$ff and	
-	$48 =? ( -1 'inidic +! ) 
-	$50 =? ( 1 'inidic +! )
-|	$48 =? ( -1 'iniinc +! ) 
-|	$50 =? ( 1 'iniinc +! )
-	
+	$48 =? ( -1 dic+! ) 
+	$50 =? ( 1 dic+! )
+	$49 =? ( -1 inc+! ) 
+	$51 =? ( 1 inc+! )	
 	drop ;
 
 	

@@ -33,6 +33,7 @@
 ##cntdef
 ##cnttok
 ##cntstr
+##cntinc
 
 ##error
 ##lerror

@@ -623,6 +623,7 @@
 |	cnttok cntdef "%d %d" .println	
 	tok> tok - 3 >> 'cnttok !	| real token use
 	dic> dic - 4 >> 'cntdef !	| real definition use
+	inc> 'inc - 4 >> 'cntinc !
 |	cnttok cntdef "%d %d" .println
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
