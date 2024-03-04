@@ -24,7 +24,7 @@
 ##fmem>
 
 |---- includes
-| 'name|'memsrc
+| 'name| 'firstok(32<<)  'memsrc(+src)(32)
 ##inc * $fff
 ##inc> 'inc
 

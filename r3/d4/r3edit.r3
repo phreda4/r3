@@ -381,7 +381,7 @@
 	dup 'fuente !
 	dup 'fuente> !
 	count + '$fuente !
-	0 'xlinea ! 0 'ylinea !
+|	0 'xlinea ! 0 'ylinea !
 	setpantafin
 	;
 	

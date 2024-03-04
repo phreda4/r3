@@ -7,6 +7,8 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
+^r3/lib/trace.r3
+
 ^r3/d4/r3edit.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3imm.r3
@@ -109,15 +111,6 @@
 	empty here sysnew | <<<<<<<<< new terminal
 	.reset .alsb ;
 
-:debugfile
-	savetxt
-|WIN|	"r3 r3/editor/r3debug.r3"
-|LIN|	"./r3lin r3/editor/r3debug.r3"
-|RPI|	"./r3rpi r3/editor/r3debug.r3"
-	sys
-	"press <ESC> to continue" .write waitesc
-	r3info
-	;
 
 :mkplain
 	.masb .reset .cls
@@ -143,8 +136,31 @@
 	;
 
 |-------------------------------------------
-:cursor2ip  
+#incnow
+#srcstack * $fff
+#srcstsck> 'srcstack
+
+:pushcode | inc --
+	4 << 'inc + 8 + @ 
+	$ffffffff and src + 
+	code-set
+	;
+
+:popcode
+	|code-set
+	;
+	
+:tok2inc | tok -- tok srcinc
+	'inc ( inc> <?
+		8 + @+
+		dup 32 >> 
+		) drop
+	src
+	;
+	
+:cursor2ip
 	<<ip 0? ( drop ; )
+	
 	@ 40 >>> src + 'fuente> ! ;
 
 | statfile 0:no data 1:error 2:ok-allinfo
@@ -426,7 +442,7 @@
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
 	$3b =? ( tokensrc )		| f1 - compiler/run
-	$3c =? ( debugfile )	| f2 -
+|	$3c =? ( debugfile )	| f2 -
 |	$3d =? ( profiler )		| f3 -
 	$3e =? ( mkplain )		| f4 -
 	$3f =? ( compile )		| f5 -
@@ -469,6 +485,7 @@
 	$4 =? ( evsize )
 	drop 
 	;
+
 
 |--------------- DICC
 
@@ -517,7 +534,9 @@
 	cntinc >=? ( drop ; )
 	,reset
 	nowinc =? ( ,rever )
-	4 << 'inc + @ " %w" ,print | name
+	dup 4 << 'inc + @ " %w " ,print | name
+	dup 4 << 'inc + 8 + @ " %h" ,print | name
+	drop
 	| cntwords
 	;
 
@@ -526,10 +545,13 @@
 	$1B0001 =? ( modoedit 1 'escnow ! )
 	$1000 and? ( drop ; )	| upkey
 	$ff and	
-	$48 =? ( -1 dic+! ) 
-	$50 =? ( 1 dic+! )
-	$49 =? ( -1 inc+! ) 
-	$51 =? ( 1 inc+! )	
+	$48 =? ( -1 dic+! )		| up
+	$50 =? ( 1 dic+! )		| dn
+	$49 =? ( -1 inc+! )		| pgup
+	$51 =? ( 1 inc+! )		| pgdn
+	
+	$3b =? ( nowinc pushcode modoedit ) | f1
+	$3c =? ( popcode )
 	drop ;
 
 	
@@ -633,7 +655,6 @@
 	0 'statfile !
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
-	0 'xlinea !
 	( exit 0? drop 
 		modoe 3 << 'modolist + @ ex
 		) drop ;
@@ -643,6 +664,7 @@
 	code-ram
 	modoedit
 	loadtxt
+	
 	fuente code-set
 |	loadinfo
 	mark 
@@ -657,5 +679,5 @@
 	.alsb .showc .insc
 	runeditor
 	.masb
-	savetxt
+|	savetxt |  save only main?
 	;
