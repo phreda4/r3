@@ -13,7 +13,7 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3imm.r3
 
-#hashfile 
+#path * 1024
 #srcname * 1024
 
 |----- scratchpad
@@ -44,33 +44,8 @@
 	iniinc hcode + 1 - >=? ( dup hcode - 1 + 'iniinc ! ) 
 	'nowinc !
 	;
-|------------------------------------------------
-##path * 1024
-
-:simplehash | adr -- hash
-	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
-	
-:loadtxt | -- ; cargar texto
-	fuente 'srcname load 0 swap c!
-	fuente only13 1 - '$fuente !	|-- queda solo cr al fin de linea
-	fuente dup 'pantaini> ! simplehash 'hashfile !
-	;
-
-:savetxt | -- ; guarda texto
-	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
-	mark	
-	fuente ( c@+ 1? 13 =? ( ,c 10 ) ,c ) 2drop
-	'srcname savemem
-	empty ;
-
+|
 |----------------------------------
-:loadinfo
-	linecomm "mem/infomap.db" load 
-	0 $fff rot !+ !+ 'linecomm> ! ;
-	
-:clearinfo
-	linecomm 8 +
-	0 $fff rot !+ !+ 'linecomm> ! ;
 
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
@@ -87,7 +62,7 @@
 	here >>cr trim str>nro 'cerror ! drop
 	empty
 
-	loadinfo
+|	loadinfo
 	cerror 0? ( drop ; ) drop
 |... enter error mode
 	fuente cerror + 'fuente> !
@@ -139,6 +114,7 @@
 #incnow
 #srcstack * $fff
 #srcstsck> 'srcstack
+| name|src
 
 :pushcode | inc --
 	4 << 'inc + 8 + @ 
@@ -383,9 +359,8 @@
 	,bblue ,white ,eline
 	" r3d4 " ,s
 	statfile "^[4%dm" ,printe | show color mode in name
-	,sp 'srcname ,s ,sp ,bblue
-	
-	ycursor xcursor " %d:%d " ,print 
+	,sp 'srcname ,s 
+	,sp ,bblue ,xycursor
 	$fuente fuente - " %d " ,print 
 	clipboard> clipboard - " %d " ,print
 	mshift " %d " ,print
@@ -490,8 +465,6 @@
 |--------------- DICC
 
 #colpal ,red ,magenta
-
-::,col "%dG" sprint ,[ ; | x y -- 
 
 :info1 | n --
 	|dup "%h " ,print
@@ -655,6 +628,7 @@
 	0 'statfile !
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
+	33 1 10 comm!+
 	( exit 0? drop 
 		modoe 3 << 'modolist + @ ex
 		) drop ;
@@ -663,7 +637,7 @@
 :ram
 	code-ram
 	modoedit
-	loadtxt
+	'srcname loadtxt
 	
 	fuente code-set
 |	loadinfo
@@ -679,5 +653,5 @@
 	.alsb .showc .insc
 	runeditor
 	.masb
-|	savetxt |  save only main?
+| 'srcname savetxt |  save only main?
 	;

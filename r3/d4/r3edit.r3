@@ -3,15 +3,11 @@
 
 ^r3/d4/r3edit.r3
 
-##xcode 6
-##ycode 2
-##wcode 40
-##hcode 20
+##xcode 6 ##ycode 2
+##wcode 40 ##hcode 20
 
-##xlinea 0
-##ylinea 0	| primera linea visible
-##ycursor
-##xcursor
+##xlinea 0 ##ylinea 0	| primera linea visible
+#xcursor #ycursor
 
 ##pantaini>	| comienzo de pantalla
 ##pantafin>	| fin de pantalla
@@ -28,9 +24,6 @@
 
 ##undobuffer |'undobuffer
 ##undobuffer>
-
-##linecomm 	| comentarios de linea
-##linecomm>
 
 ##mshift
 
@@ -178,6 +171,12 @@
 	
 
 |---------- TAGS in code	
+| 00000000 00 xxx yyy
+|
+##linecomm 	| comentarios de linea
+##linecomm>
+#linecommnow 
+
 :,ncar | n -- 
 	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
 
@@ -194,7 +193,6 @@
 	drop
 	;
 
-#linecommnow 
 
 :prnerr	
 	drop
@@ -202,28 +200,36 @@
 	;
 
 :inicomm
-	linecomm 8 + | head 
-	( @+ $fff and ylinea <=? drop 8 + ) drop
-	8 - 'linecommnow !
-	;
+	linecomm | head 
+	( @+ $fff and ylinea <=? drop ) drop
+	8 - 'linecommnow ! ;
 	
-:prntcom | line adr' -- line adr'
+:,comm | line adr' -- line adr'
 	linecommnow @ $fff and 
 	pick2 ylinea + 
 	>? ( drop ; ) drop
 	linecommnow @+
-	$100000000 and? ( 
-		drop @+ swap 'linecommnow ! 
-		prnerr prntcom ; ) drop
-	@+ swap 'linecommnow !
-	,sp
-	dup 12 32 + >> $ff and 
-	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s prntcom ; ) drop
-	,black
-	buildinfo
-	prntcom
+	dup 12 >> $fff and 
+	1? ( dup xcode + 1 - ,col ) drop | 0=here
+	drop
+	'linecommnow !
+	,bred ,white "<<" ,s
+	,comm
 	;
 
+:clearinfo
+	$fff linecomm !+ 'linecomm> ! ;
+
+:loadinfo
+|	linecomm "mem/infomap.db" load 
+	$fff !+ 'linecomm> ! ;
+	
+::comm!+ | tipo x y --
+	$fff and swap $fff and 12 << or swap 24 << or
+	linecomm !+ 
+	$fff swap !+ 
+	'linecomm> ! ;
+	
 |------ Color line
 #colornow 0
 
@@ -307,7 +313,7 @@
 	iniline
 	inselect
 	parseline
-	prntcom
+	,comm
 	;
 
 :setpantafin
@@ -385,6 +391,9 @@
 	setpantafin
 	;
 	
+::,xycursor
+	ycursor xcursor " %d:%d " ,print ;
+	
 ::code-ram
 	here	| --- RAM
 	dup 'fuente !
@@ -402,3 +411,23 @@
 	$3fff +				| 4096 linecomm
 	'here ! | -- FREE
 	;
+
+|----------------------------------------
+#hashfile 
+	
+:simplehash | adr -- hash
+	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
+	
+::loadtxt | name -- ; cargar texto
+	fuente swap load 0 swap c!
+	fuente only13 1 - '$fuente !	|-- queda solo cr al fin de linea
+	fuente dup 'pantaini> ! simplehash 'hashfile !
+	;
+
+::savetxt | name -- ; guarda texto
+	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
+	mark	
+	fuente ( c@+ 1? 13 =? ( ,c 10 ) ,c ) 2drop
+	savemem
+	empty ;
+	

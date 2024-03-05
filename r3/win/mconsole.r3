@@ -15,6 +15,7 @@
 ::,home	"H" ,[ ; | home
 ::,cls "H" ,[ "J" ,[ ; | cls 
 ::,at "%d;%df" sprint ,[ ; | x y -- 
+::,col "%dG" sprint ,[ ; | x -- 
 ::,eline "K" ,[ ; | erase line from cursor
 
 ::,fc "38;5;%dm" sprint ,[ ; | Set foreground color.
