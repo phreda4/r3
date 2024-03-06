@@ -12,8 +12,8 @@
 ##pantaini>	| comienzo de pantalla
 ##pantafin>	| fin de pantalla
 
-##inisel		| inicio seleccion
-##finsel		| fin seleccion
+##inisel	| inicio seleccion
+##finsel	| fin seleccion
 
 ##fuente  	| fuente editable
 ##fuente> 	| cursor
@@ -168,7 +168,6 @@
 :kback
 	inisel 0? ( drop back ; )
 	drop borrasel ;
-	
 
 |---------- TAGS in code	
 | 00000000 00 xxx yyy
@@ -193,11 +192,11 @@
 	drop
 	;
 
-
-:prnerr	
+:t0
 	drop
-	,sp ,bred ,white " << Error " ,s 
-	;
+	,sp ,bred ,white " << ERR " ,s ;
+	
+#tcomm t0 t0 t0 t0 t0 t0 t0 t0
 
 :inicomm
 	linecomm | head 
@@ -209,12 +208,9 @@
 	pick2 ylinea + 
 	>? ( drop ; ) drop
 	linecommnow @+
-	dup 12 >> $fff and 
-	1? ( dup xcode + 1 - ,col ) drop | 0=here
-	drop
+	dup 12 >> $fff and 1? ( dup xcode + 1 - ,col ) drop | 0=here
+	24 >> dup $7 and 3 << 'tcomm + @ ex
 	'linecommnow !
-	,bred ,white "<<" ,s
-	,comm
 	;
 
 :clearinfo

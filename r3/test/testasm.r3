@@ -58,4 +58,5 @@
 	'EX_IQM_MAGIC @
 	"hola" count
 	tes count 2drop
+	des
 	;

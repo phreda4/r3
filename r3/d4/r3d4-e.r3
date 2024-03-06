@@ -1,6 +1,7 @@
 | edit-code
 | PHREDA 2007
 |---------------------------------------
+||MEM 128
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 ^r3/lib/math.r3
@@ -19,17 +20,12 @@
 |----- scratchpad
 #outpad * 2048
 
-#lerror 0
-#cerror 0
-
 #statfile 0 | 0:no info 1:error 2:info
 #modoe 0	| modo edit
-#escnow 0
+#escnow 0	| change mode with esc
 
-#iniinc
-#nowinc
-#inidic 0
-#nowdic
+#iniinc #nowinc
+#inidic #nowdic
 
 :dic+! | v --
 	nowdic + cntdef 1 - clamp0max 
@@ -44,36 +40,8 @@
 	iniinc hcode + 1 - >=? ( dup hcode - 1 + 'iniinc ! ) 
 	'nowinc !
 	;
-|
+
 |----------------------------------
-
-:linetocursor | -- ines
-	0 fuente ( fuente> <? c@+
-		13 =? ( rot 1 + rot rot ) drop ) drop ;
-		
-:r3info
-	rows 1 - 'hcode !
-	0 'outpad !
-	0 'cerror !
-	
-	mark
-|... load file info.
-	here "mem/debuginfo.db" load 0 swap c!
-	here >>cr trim str>nro 'cerror ! drop
-	empty
-
-|	loadinfo
-	cerror 0? ( drop ; ) drop
-|... enter error mode
-	fuente cerror + 'fuente> !
-	linetocursor 'lerror !
-	here >>cr 0 swap c!
-	fuente> lerror 1 + here
-	" %s in line %d (%w)" sprint 'outpad strcpy
-	
-	rows 2 - 'hcode !
-	;
-	
 
 :runfile
 	savetxt
@@ -107,7 +75,6 @@
 |RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
-|	r3info
 	;
 
 |-------------------------------------------
@@ -136,15 +103,38 @@
 	
 :cursor2ip
 	<<ip 0? ( drop ; )
-	
+|	tok2inc	
 	@ 40 >>> src + 'fuente> ! ;
 
+|-------------------------------
+:linetocursor | -- ines
+	0 fuente ( fuente> <? c@+
+		13 =? ( rot 1 + rot rot ) drop ) drop ;
+		
+|... enter error mode
+|	fuente cerror + 'fuente> !
+|	linetocursor 'lerror !
+|	here >>cr 0 swap c!
+|	fuente> lerror 1 + here
+|	" %s in line %d (%w)" sprint 'outpad strcpy
+	
+:modoerror
+| error
+| lerror
+|	error  | error
+|	comm!+
+	lerror 'fuente> ! | cursor to error
+	
+	1 'statfile ! 
+	rows 2 - 'hcode !	
+	;
+	
 | statfile 0:no data 1:error 2:ok-allinfo
 
 :tokensrc
 	empty mark
 	fuente 'srcname r3loadmem
-	error 1? ( drop 1 'statfile ! ; ) drop
+	error 1? ( drop modoerror ; ) drop
 	2 'statfile ! 
 |	lidiset
 |	liinset
@@ -364,9 +354,10 @@
 	$fuente fuente - " %d " ,print 
 	clipboard> clipboard - " %d " ,print
 	mshift " %d " ,print
+	
 	| error-
-	cerror 0? ( drop ; ) drop
-	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
+|	cerror 0? ( drop ; ) drop
+|	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
 	;
 
 #exit 0
@@ -589,6 +580,9 @@
 	;
 
 |--------------- DEBUG
+:botbardb
+	1 hcode 2 + ,at ,bblue ,white ,eline
+	" ^[7mF1^[27m Step ^[7mF2^[27m StepN " ,printe ;
 	
 :evkey | key -- key
 	evtkey
@@ -598,13 +592,15 @@
 |	$1c =? ( enterline )
 	$3b =? ( stepvm cursor2ip ) |f1
 	$3c =? ( stepvmn cursor2ip ) |f2
+	
+	
 	drop ;
 
 :mododebug
 	mark			| buffer in freemem
 	,hidec ,reset ,cls
 	topbar code-draw 
-	botbar
+	botbardb
 	cursorpos 
 	1 hcode 3 + ,at
 	,reset
