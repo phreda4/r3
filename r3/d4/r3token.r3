@@ -327,7 +327,6 @@
 	6 + ,t >>sp 
 	;
 	
-	
 :.wordinvar | adr nro -- adr
 	1 - dup 4 << dic + 
 	@ 1 and? ( drop 
@@ -398,8 +397,9 @@
 	dic> 16 - ( dic >? 
 		16 - contword ) drop	
 	
-	tok> tok - 3 >> 16 << dic> !+	| last entry in dicc
+	tok> tok - 3 >> 16 << dic> !+	| last token in dicc
 	fmem> fmem - 32 << swap !		| tok end & fmem end
+	dic> dic - 4 >> 32 << inc> 8 + ! | last entry in inc
 	;
 	
 |-------------------------------------------	

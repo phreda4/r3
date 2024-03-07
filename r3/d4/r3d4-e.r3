@@ -42,7 +42,6 @@
 	;
 
 |----------------------------------
-
 :runfile
 	savetxt
 	.masb .reset .cls
@@ -53,7 +52,6 @@
 	,s 'srcname ,s ,eol
 	empty here sysnew | <<<<<<<<< new terminal
 	.reset .alsb ;
-
 
 :mkplain
 	.masb .reset .cls
@@ -129,8 +127,41 @@
 	rows 2 - 'hcode !	
 	;
 	
-| statfile 0:no data 1:error 2:ok-allinfo
+|------------------------------
+#srcinc
 
+:>>13 | a -- a
+	( c@+ 1?
+		13 =? ( drop ; ) 
+		drop ) drop 1 - ;
+	
+:countlines | adr -- line
+	0 srcinc ( pick2 <=? 
+		>>13 swap 1 + swap ) 
+	drop nip ;
+	
+:infoword
+	dup 4 << 1 or | type 1 info word
+	swap 4 << dic + 
+	@ 40 >>> src + countlines 1 - 0 swap 
+	info!+ | tipo x y --
+	;
+:incgendoc | nro --
+	|.cls dup "inc:%d" .println
+	4 << 'inc + 8 + @+ 
+	dup $ffffffff and src + 'srcinc ! | src inic
+	swap 8 + @ | fist last
+	32 >> swap 32 >> |
+|	2dup "%d %d" .println
+	clearinfo
+	( over <?
+		dup infoword
+		1 + ) 2drop
+	infoend
+	|.cls linecomm ( linecomm> <? @+ "%h" .println ) drop .input
+	;
+	
+| statfile 0:no data 1:error 2:ok-allinfo
 :tokensrc
 	empty mark
 	fuente 'srcname r3loadmem
@@ -145,6 +176,7 @@
 	cntinc 1 - 'nowinc !
 	cntdef 1 - 'nowdic !
 
+	nowinc incgendoc
 |	mark
 |	'srcname ,s ,cr ,cr
 |	debugmemmap
@@ -184,7 +216,7 @@
 	;
 
 :mododeb
-	tokensrc?
+	tokensrc
 	rows 8 - 'hcode !
 	3 'modoe ! 
 	'pad immset
@@ -407,7 +439,7 @@
 	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
-	$3b =? ( tokensrc )		| f1 - compiler/run
+	$3b =? ( mododeb )		| f1 - compiler/run
 |	$3c =? ( debugfile )	| f2 -
 |	$3d =? ( profiler )		| f3 -
 	$3e =? ( mkplain )		| f4 -
@@ -624,7 +656,6 @@
 	0 'statfile !
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
-	33 1 10 comm!+
 	( exit 0? drop 
 		modoe 3 << 'modolist + @ ex
 		) drop ;

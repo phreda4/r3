@@ -1,7 +1,13 @@
 | editor
 | PHREDA 2024
 
-^r3/d4/r3edit.r3
+^r3/win/console.r3
+^r3/win/mconsole.r3
+^r3/lib/math.r3
+^r3/lib/mem.r3
+^r3/lib/parse.r3
+
+^r3/d4/r3map.r3
 
 ##xcode 6 ##ycode 2
 ##wcode 40 ##hcode 20
@@ -176,27 +182,15 @@
 ##linecomm>
 #linecommnow 
 
-:,ncar | n -- 
-	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
-
-:buildinfo | infmov --
-	,bcyan 
-	dup $f and ,sp
-	dup ,ncar " -- " ,s
-	over 55 << 59 >> + | deltaD
-	,ncar ,sp 
-	,reset ,sp ,bcyan ,black
-	$1000000000 and? ( ";"  ,s	)	| multiple
-	$2000000000 and? ( "R" ,s )		| recurse
-	$8000000000 nand? ( "."  ,s	)	| no ;
-	drop
-	;
-
 :t0
-	drop
-	,sp ,bred ,white " << ERR " ,s ;
+	,sp ,bred ,white 
+	drop " << ERR " ,s ;
+
+:t1
+	,sp ,bcyan ,black 
+	$f not and dic + 8 + @ ,sp ,mov ,sp ;
 	
-#tcomm t0 t0 t0 t0 t0 t0 t0 t0
+#tcomm t0 t1 t0 t0 t0 t0 t0 t0
 
 :inicomm
 	linecomm | head 
@@ -213,19 +207,14 @@
 	'linecommnow !
 	;
 
-:clearinfo
-	$fff linecomm !+ 'linecomm> ! ;
-
-:loadinfo
-|	linecomm "mem/infomap.db" load 
-	$fff !+ 'linecomm> ! ;
-	
-::comm!+ | tipo x y --
+::clearinfo
+	linecomm 'linecomm> ! ;
+::info!+ | tipo x y --
 	$fff and swap $fff and 12 << or swap 24 << or
-	linecomm !+ 
-	$fff swap !+ 
-	'linecomm> ! ;
-	
+	linecomm> !+ 'linecomm> ! ;
+::infoend
+	$fff linecomm> !+ 'linecomm> ! ;
+
 |------ Color line
 #colornow 0
 
