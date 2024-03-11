@@ -205,20 +205,20 @@
 	rows 8 - 'hcode !	
 	0 dic+!
 	0 inc+!	
-	1 'modoe !
+	4 'modoe !
 	;
 	
 :modoimm
 	tokensrc?
 	rows 8 - 'hcode !
-	2 'modoe ! 
+	3 'modoe ! 
 	'pad immset
 	;
 
 :mododeb
 	tokensrc
 	rows 8 - 'hcode !
-	3 'modoe ! 
+	2 'modoe ! 
 	'pad immset
 	;
 	
@@ -650,7 +650,8 @@
 	;
 	
 |--------------- MAIN EDITOR
-#modolist modoeditor mododictionary modoimmediate mododebug
+| edit editinerr debug
+#modolist modoeditor modoeditor mododebug mododictionary modoimmediate 
 
 :runeditor
 	0 'statfile !

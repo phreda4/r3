@@ -207,13 +207,35 @@
 	'linecommnow !
 	;
 
+|------
 ::clearinfo
 	linecomm 'linecomm> ! ;
+
+:swapcomm | now -- now 
+	dup @+ swap @ | now @1 @2
+	pick2 !+ ! ;
+	
+:infosort
+	linecomm> 8 - 
+	dup @ $fff and | y last
+	swap | ylast prev
+	( 8 - linecomm >=? | first
+		dup @ $fff and | ylast now ynow
+		pick2 <=? ( 3drop ; ) drop
+		swapcomm
+		) 2drop ;
+	
 ::info!+ | tipo x y --
 	$fff and swap $fff and 12 << or swap 24 << or
-	linecomm> !+ 'linecomm> ! ;
+	linecomm> !+ 'linecomm> ! 
+	infosort 
+	;
+	
 ::infoend
 	$fff linecomm> !+ 'linecomm> ! ;
+
+::infodel | nro --
+	;
 
 |------ Color line
 #colornow 0
