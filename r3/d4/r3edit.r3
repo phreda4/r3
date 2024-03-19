@@ -215,17 +215,17 @@
 	dup @+ swap @ | now @1 @2
 	pick2 !+ ! ;
 	
-:infosort
+:infosort | -- pos
 	linecomm> 8 - 
 	dup @ $fff and | y last
 	swap | ylast prev
 	( 8 - linecomm >=? | first
 		dup @ $fff and | ylast now ynow
-		pick2 <=? ( 3drop ; ) drop
+		pick2 <=? ( drop nip ; ) drop
 		swapcomm
-		) 2drop ;
+		) nip ;
 	
-::info!+ | tipo x y --
+::info!+ | tipo x y -- pos
 	$fff and swap $fff and 12 << or swap 24 << or
 	linecomm> !+ 'linecomm> ! 
 	infosort 

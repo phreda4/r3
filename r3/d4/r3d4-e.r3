@@ -145,6 +145,7 @@
 	swap 4 << dic + 
 	@ 40 >>> src + countlines 1 - 0 swap 
 	info!+ | tipo x y --
+	drop 
 	;
 :incgendoc | nro --
 	|.cls dup "inc:%d" .println
@@ -620,7 +621,7 @@
 	evtkey
 	$1000 and? ( drop ; )	| upkey	
 	$1B0001 =? ( modoedit 1 'escnow ! )
-|	immevkey 
+	immevkey 
 |	$1c =? ( enterline )
 	$3b =? ( stepvm cursor2ip ) |f1
 	$3c =? ( stepvmn cursor2ip ) |f2
