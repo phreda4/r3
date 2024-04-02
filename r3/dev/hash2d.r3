@@ -34,6 +34,21 @@
 #cellStart
 #cellEntries
 
+:.dumpdebug
+	.home
+|	[ dup .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
+	cellStart 
+	ts 2 + ( 1? 
+		swap w@+ "%h " .print | start cellstart cnt
+		swap 1 - ) 2drop .eline .cr
+	cellEntries
+	'arr p.cnt 
+	( 1? swap
+		w@+ "%h " .print 
+		swap 1 - ) 2drop
+	.eline .cr	
+	;
+
 :iniHash2d | maxobj spc --
 	'spacing !
 	dup 1 << nextpow2 1 - 'ts !
@@ -50,7 +65,7 @@
 	92837111 * swap 689287499 * 
 	xor ts and ;
 	
-:buildH2d | 'arr --
+:buildH2d | --
 	cellStart 0 ts 2 + 1 << cfill
 |	cellEntries 0 maxNumObjects 1 << cfill | **
 	
@@ -156,29 +171,12 @@
 	1024.0 randmax		| x 
 	+obj ;
 	
-:insobj
-	800 ( 1? 1 -
+:insobj | cnt --
+	( 1? 1 -
 		+randobj
 		) drop ;	
 	
 |------------------------------
-:.dumpdebug
-	.home
-	[ dup .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
-	
-	cellStart 
-	ts 2 + ( 1? 
-		swap w@+ "%h " .print | start cellstart cnt
-		swap 1 - ) 2drop .eline .cr
-	
-	cellEntries
-	'arr p.cnt 
-	( 1? swap
-		w@+ "%h " .print 
-		swap 1 - ) 2drop
-	.eline .cr
-	;
-
 :drawrect | nro -- 
 	'arr p.nro
 	dup .radio @ over .zoom @ 16 *>> | adr radio
@@ -187,29 +185,22 @@
 	rot dup SDLREct
 	;
 
-:objset 	
+:objset
 	a> 4 - d@ 1 - drawrect ;
-	
 	
 :main
 	$0 SDLcls
 	'arr p.draw | calc/draw/hash
 	
-	$0 bcolor 
-	
 	buildH2d	
-|	.dumpdebug
+	.dumpdebug
 
 	30.0 sdlx 16 << sdly 16 << qH2d
 
 	$ffffff sdlcolor
-	.home
 |	'objset 900.0 sdlx 16 << sdly 16 << nH2
 	'objset 30.0 sdlx 16 << sdly 16 << nH2b
-	.eline
 	
-|	here ( d@+ 1? 1 - drawrect ) 2drop
-		
 	SDLredraw
 	
 	SDLkey
@@ -219,14 +210,14 @@
 	;
 
 :inicio
+	.cls
 	"hash2d" 1024 600 SDLinit
 	"media/img/ball.png" loadimg 'spr_ball !
 	bfont1
-	1000 'arr p.ini
+	20 'arr p.ini
 	'arr p.clear
-	1000 19 iniHash2d
-	insobj
-	.cls
+	20 19 iniHash2d
+	10 insobj
 	'main SDLshow
 	
 	SDLquit ;

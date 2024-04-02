@@ -35,13 +35,27 @@
 #matrix
 #matlist
 
+:.dumpdebug
+|	[ dup .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
+	matrix 
+	ts ( 1? 
+		swap w@+ "%d " .print | start cellstart cnt
+		swap 1 - ) 2drop .eline .cr
+	matlist
+	'arr p.cnt 
+	( 1? swap
+		w@+ "%d " .print 
+		swap 1 - ) 2drop
+	.eline .cr .cr
+	;
+
 :iniHash2d | maxobj spc --
 	'spacing !
 	dup 1 << nextpow2 1 - 'ts !	
 	|..... MEMMAP .....
 	here 
 	dup 'matrix !
-	ts 1 << + | tablesize (16bits)
+	ts 1 + 1 << + | tablesize (16bits)
 	dup 'matlist !
 	swap 1 << + | max obj
 	'here !
@@ -52,22 +66,20 @@
 	xor ts and ;
 	
 :addlist | nro hash -- nro
-	dup 1 << matrix + w@	| nro hash link
+	1 << matrix + dup w@	| nro hash link
 	pick2 1 << matlist + w!	| link to prev
-	over swap 1 << matrix + w!
+	over swap w!			| obj in matrix
 	;
 	
-:buildH2d | 'arr --
+:buildH2d | --
 	matrix -1 ts 2 >> 1 + fill	| fill hashtable with 0
 	'arr p.cnt	
 	0 ( over <?
 		dup 'arr p.nro .hash @ | nro hash 
-		
 		addlist | nro hash -- nro
 		1 + ) 2drop ;
-	
-|..... query
 
+|..... query
 :addq | list --
 	-? ( drop ; )
 	dup 1 + da!+
@@ -108,10 +120,8 @@
 		1 -	'arr p.nro  | r x y adr
 		inbox
 		) nip 4drop ;
-	
 
 |------------------------------
-
 :hitx over .vx dup @ neg swap ! ;
 :hity over .vy dup @ neg swap ! ;
 
@@ -150,29 +160,12 @@
 	1024.0 randmax		| x 
 	+obj ;
 	
-:insobj
-	800 ( 1? 1 -
+:insobj | cnt --
+	( 1? 1 -
 		+randobj
 		) drop ;	
 	
 |------------------------------
-:.dumpdebug
-	.home
-	[ dup .hash @ "%h " .print ; ] 'arr p.mapv .eline .cr
-	
-	matrix 
-	ts ( 1? 
-		swap w@+ "%d " .print | start cellstart cnt
-		swap 1 - ) 2drop .eline .cr
-	
-	matlist
-	'arr p.cnt 
-	( 1? swap
-		w@+ "%d " .print 
-		swap 1 - ) 2drop
-	.eline .cr
-	;
-
 :drawrect | nro -- 
 	'arr p.nro
 	dup .radio @ over .zoom @ 16 *>> | adr radio
@@ -184,22 +177,17 @@
 :objset 	
 	a> 4 - d@ 1 - drawrect ;
 	
-	
 :main
 	$0 SDLcls
 	'arr p.draw | calc/draw/hash
-	
+
 	buildH2d
-|	.cls .dumpdebug
-
+|	.dumpdebug
 	30.0 sdlx 16 << sdly 16 << qH2d
-
+	
 	$ffffff sdlcolor
 |	'objset 900.0 sdlx 16 << sdly 16 << nH2
 	'objset 30.0 sdlx 16 << sdly 16 << nH2b
-
-|	here ( d@+ 1? 1 - drawrect ) 2drop
-		
 	SDLredraw
 	
 	SDLkey
@@ -209,14 +197,14 @@
 	;
 
 :inicio
+	.cls
 	"hash2d" 1024 600 SDLinit
 	"media/img/ball.png" loadimg 'spr_ball !
 	bfont1
 	1000 'arr p.ini
 	'arr p.clear
 	1000 19 iniHash2d
-	insobj
-	.cls
+	800 insobj
 	'main SDLshow
 	
 	SDLquit ;
