@@ -20,16 +20,20 @@
   $a3b195354a39b70d * + 'seed ! ;
 
 ::randmax | max -- rand
-	rand 
-	1 >>> | only positive
-	63 *>> ;
+	rand 1 >>> 63 *>> ; | only positive
+	
+::randminmax | min max -- rand
+	over - randmax + ;
   
 |---- xorshift
 ::rnd | -- rand
     seed dup 13 << xor dup 7 >> xor dup 17 << xor dup 'seed ! ;
 
 ::rndmax | max -- rand
-	rand 1 >>> 63 *>> ;
+	rnd 1 >>> 63 *>> ;
+	
+::rndminmax | min max -- rand
+	over - rndmax + ;	
 
 |---- xorshit128+
 #state0 1

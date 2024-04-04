@@ -55,7 +55,7 @@
 	|..... MEMMAP .....
 	here 
 	dup 'matrix !
-	ts 1 + 1 << + | tablesize (16bits)
+	ts 1 + 1 << + | tablesize (16bits) 0..ts
 	dup 'matlist !
 	swap 1 << + | max obj
 	'here !
