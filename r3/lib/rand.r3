@@ -13,26 +13,27 @@
 
 ##seed $a3b195354a39b70d
 
-::rand | -- rand
-  seed $da942042e4dd58b5 * 1 + dup 'seed ! ;
-
 ::rerand | s1 s2 --
   $a3b195354a39b70d * + 'seed ! ;
 
-::randmax | max -- rand
+|---- muladd   
+::rand | -- rand 
+  seed $da942042e4dd58b5 * 1 + dup 'seed ! ;
+
+::randmax | max -- rand ; 0..max
 	rand 1 >>> 63 *>> ; | only positive
 	
-::randminmax | min max -- rand
+::randminmax | min max -- rand ; min..max
 	over - randmax + ;
   
 |---- xorshift
 ::rnd | -- rand
     seed dup 13 << xor dup 7 >> xor dup 17 << xor dup 'seed ! ;
 
-::rndmax | max -- rand
+::rndmax | max -- rand ; 0..max
 	rnd 1 >>> 63 *>> ;
 	
-::rndminmax | min max -- rand
+::rndminmax | min max -- rand ; min..max
 	over - rndmax + ;	
 
 |---- xorshit128+
