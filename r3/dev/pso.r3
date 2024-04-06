@@ -1,4 +1,7 @@
-| PSO
+| 2d Particle Swarm Optimization
+| from the post https://novabbs.com/devel/article-flat.php?id=26288&group=comp.lang.forth#26288
+| of Ahmed Melahi
+|
 | PHREDA 2024
 |-----------------------------
 ^r3/win/console.r3
@@ -8,7 +11,7 @@
 ^r3/lib/rand.r3
 
 |-----------------------------
-#xcam 0 #ycam 0 #zcam -100.0
+#xcam 0 #ycam 0.0 #zcam -100.0
 
 :fcircle | xc yc r --
 	dup 2swap SDLFEllipse ;
@@ -49,139 +52,169 @@
 	xm over 'xm ! - 7 << neg 'ry +!  ;
 	
 |-----------------------------
+#Dimension 2 | The number of dimension
+
 #PopulationSize 100 | Population Size (default = 15)
+
 #MaxDomain 50.0 | variable upper limit
 #MinDomain -50.0 | variable lower limit
-#Dimension 2 | The number of dimension
 #W 0.9 | inertia weight
-#C1 2.0 | weight for personal best
-#C2 2.0 | weight for global best
-#Trial 31
-#Iteration 3000
+#C1 0.8 | weight for personal best
+#C2 0.8 | weight for global best
 
-#bestpop
+#bestpx
+#bestpy
 #bestfit
+#bestp
 
 :sphere | arr -- fit
 	0 
+	over @ 3 >> dup *. +
 	over 8 + @ 3 >> dup *. +
-	over 24 + @ 3 >> dup *. +
 	nip ;
 
-:calcfitness | vector -- fitness
-	sphere ;
+:sin1 | arr -- fit ; no global min
+	@+ swap @ 
+	0.2 *. sin swap 0.2 *. sin +  ;
+
+:sin2 | arr -- fit
+	@+ swap @ 
+	0.2 *. exp. neg swap 0.2 *. sin *. ;
 	
+:calcfitness | vector -- fitness
+	sin2 ;
+	
+|--- struct 
+	
+:.posx 0 ncell+ ;
+:.posy 1 ncell+ ;
+:.velx 2 ncell+ ;
+:.vely 3 ncell+ ;
+:.fit 4 ncell+ ;
+:.bpx 5 ncell+ ;
+:.bpy 6 ncell+ ;
+:.bfit 7 ncell+ ;
+
 | vel1 pos1 vel2 pos2 fitness
 |-----------------------------
 #popu
-#popu>
 
 :ini
 	mark
 	here 
-	dup dup 'popu ! 'popu> !
-	PopulationSize 5 3 << * 
-	+ 
-	'here ! 
+	dup 'popu ! 
+	PopulationSize 8 3 << * | reserve memory
+	+ 'here ! 
 	;
 
 |-----------------------------	
-:randpos
+:changebest | adr fit -- adr fit
+	dup 'bestfit !
+	over .posx @ 'bestpx !
+	over .posy @ 'bestpy !
+	over 'bestp !
+	;
+	
+:randmm
 	MinDomain MaxDomain randminmax ;
-:randvel
+
+:randv
 	-0.1 0.1 randminmax ;
 	
 :inip | adr -- adr
 	dup >a
-	randvel a!+ randpos a!+
-	randvel a!+ randpos a!+
-	dup calcfitness a!
+	randmm a!+ randmm a!+	| pos
+	randv a!+ randv a!+	| vel
+	dup calcfitness 
+	bestfit <? ( changebest )
+	a!+		| fitness
+	dup .posx @ a!+			| bestpost
+	dup .posy @ a!+
+	dup .fit @ a!+			| bestfit
 	;
 	
 :inilist
+	$7fffffffffffffff 'bestfit !
 	popu PopulationSize ( 1? 1 - swap
 		inip 
-		5 3 << + swap ) 2drop ;
-
-|-----------------------------	
-:drawp | adr -- adr
-	dup 8 + @ over 24 + @ pick2 32 + @
-	project3d 2 fcircle ;
-	
-:drawlist
-	popu PopulationSize ( 1? 1 - swap
-		drawp 
-		5 3 << + swap ) 2drop ;
+		8 3 << + swap ) 2drop ;
 	
 |-----------------------------	
-:updp | adr -- adr
-	dup 
-	@+ over @ + 
-	MaxDomain clampmax
-	MinDomain clampmin
-	swap !+	| 1
-	@+ over @ + 
-	MaxDomain clampmax
-	MinDomain clampmin
-	swap !+ | 2
-	over calcfitness swap !
+:localbest | adr fitness -- adr fitness
+	over .bfit @ >=? ( ; ) | no update
+	over .posx @ pick2 .bpx !
+	over .posy @ pick2 .bpy !
+	dup pick2 .bfit !
 	;
+
+:limitmm | v -- vl
+	MaxDomain clampmax MinDomain clampmin ;
+	
+:updp | adr -- adr
+	dup .velx @ over .posx @ + limitmm over .posx !
+	dup .vely @ over .posy @ + limitmm over .posy !
+	dup calcfitness 
+	bestfit <? ( changebest )	
+	localbest
+	over .fit !
+
+	dup .velx @ W *.
+	over .bpx @ pick2 .posx @ - C1 randmax *. +
+	bestpx pick2 .posx @ - C2 randmax *. +
+	over .velx ! 
+
+	dup .vely @ W *.
+	over .bpy @ pick2 .posy @ - C1 randmax *. +
+	bestpy pick2 .posy @ - C2 randmax *. +
+	over .vely ! 
+	
+	;
+
+|   v[d+1] =  w * v[d] +
+|		c1 * r1 * ( vbestpos[d] - vpos[d] ) +
+|		c2 * r2 * ( swarm_bestpos[d] - vpos[d] )
 
 :updlist
 	popu PopulationSize ( 1? 1 - swap
 		updp 
-		5 3 << + swap ) 2drop ;
+		8 3 << + swap ) 2drop ;
 
 |-----------------------------	
-|def update_velocity(self, best_position):
-|        r_1 = np.random.rand(cf.get_dimension())
-|       r_2 = np.random.rand(cf.get_dimension())
-|        [Reload Equation] (x indicate position vector)
-|        v = wv + c_1 * r_1 (x_pbest - x) + c_2 * r_2 (x_gbest - x)
-|        self.__velocity = cf.get_W() * self.__velocity \
-|                          + cf.get_C1() * r_1 * (self.__p_best_position - self.__position) \
-|                          + cf.get_C2() * r_2 * (best_position - self.__position)
+:drawp | adr -- adr
+	bestp =? ( $ff00 SDLColor )
+	dup .posx @ 
+	over .posy @ 
+	pick2 .fit @
+	project3d 2 fcircle 
+	bestp =? ( $ff0000 SDLColor )
+	;
 	
+:drawlist
+	popu PopulationSize ( 1? 1 - swap
+		drawp 
+		8 3 << + swap ) 2drop ;
+		
+|-----------------------------	
+#Trial 31
+#Iteration 3000
+
+#bbfit	
+#bbx
+#bby
+
 :solve
-|    for trial in range(cf.get_trial()):
-|        np.random.seed(trial)
-|        results_list = [] # fitness list
-|        pso_list = [] 
-|        """Generate Initial Population"""
-|        for p in range(cf.get_population_size()):
-|            pso_list.append(id.Individual())
-|        """Sort Array"""
-|        pso_list =  sorted(pso_list, key=lambda ID : ID.get_fitness())
-|        """Find Initial Best"""
-|        BestPosition = pso_list[0].get_position() # Best Solution
-|        BestFitness = fn.calculation(BestPosition,0)
-|        """↓↓↓Main Loop↓↓↓"""
-|        for iteration in range(cf.get_iteration()):
-|            """Generate New Solutions"""
-|            for i in range(len(pso_list)):
-|                """Update Position"""
-|                pso_list[i].update_position()
-|                """Calculate Fitness"""
-|                pso_list[i].set_fitness(fn.calculation(pso_list[i].get_position(), t=iteration))
-|                """if f_x < f_(p_best) # for minimize optimization"""
-|                if(pso_list[i].get_fitness() < pso_list[i].get_p_best_fitness()):
-|                    pso_list[i].set_p_best_fitness(pso_list[i].get_fitness())
-|                    pso_list[i].set_p_best_position(pso_list[i].get_position())
-|                """if f_x < f_(g_best) # for minimize optimization"""
-|                if(pso_list[i].get_fitness() < BestFitness):
-|                    BestFitness = pso_list[i].get_fitness()
-|                    BestPosition = pso_list[i].get_position()
-|                """Reload Velocity"""
-|                pso_list[i].update_velocity(BestPosition)
-|            """Sort Array"""
-|            pso_list = sorted(pso_list, key=lambda ID: ID.get_fitness())
-|            """Rank and Find the Current Best"""
-|            if pso_list[0].get_fitness() < BestFitness:
-|                BestPosition = pso_list[0].get_position()
-|                BestFitness = fn.calculation(BestPosition,iteration)
-|            sys.stdout.write("\r Trial:%3d , Iteration:%7d, BestFitness:%.4f" % (trial , iteration, BestFitness))
-|            results_list.append(str(BestFitness))
-|        results_writer.writerow(results_list)
+	$7fffffffffffffff 'bbfit !
+	Trial ( 1? 1 -
+		inilist
+		Iterartion ( 1? 1 - updlist	) drop
+		| check best
+		bestfit bbfit <?
+			dup 'bbfit !
+			bestpx 'bbx !
+			bestpy 'bby !
+			) drop
+		) drop ;
+	
 	
 |-----------------------------	
 :main
@@ -202,18 +235,20 @@
 	movelook
 	SDLkey
 	>esc< =? ( exit )
-	<up> =? ( 0.1 'zcam +! )
-	<dn> =? ( -0.1 'zcam +! )
-	<le> =? ( 0.1 'xcam +! )
-	<ri> =? ( -0.1 'xcam +! )
-	<pgdn> =? ( 0.1 'ycam +! )
-	<pgup> =? ( -0.1 'ycam +! )
+	<up> =? ( 1.0 'zcam +! )
+	<dn> =? ( -1.0 'zcam +! )
+	<le> =? ( 1.0 'xcam +! )
+	<ri> =? ( -1.0 'xcam +! )
+	<pgdn> =? ( 1.0 'ycam +! )
+	<pgup> =? ( -1.0 'ycam +! )
+	
+	<f1> =? ( inilist ) | reini
 	drop
 	;
 	
 |-----------------------------	
 :
-	"r4PSO" 1024 600 SDLinit
+	"r3PSO" 1024 600 SDLinit
 	dnlook
 	ini
 	inilist
