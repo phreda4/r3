@@ -65,8 +65,29 @@
 #bestpx
 #bestpy
 #bestfit
-#bestp
 
+|--- struct 
+:.posx 0 ncell+ ;
+:.posy 1 ncell+ ;
+:.velx 2 ncell+ ;
+:.vely 3 ncell+ ;
+:.fit 4 ncell+ ;
+:.bpx 5 ncell+ ;
+:.bpy 6 ncell+ ;
+:.bfit 7 ncell+ ;
+
+|-----------------------------
+#popu
+
+:ini
+	mark
+	here 
+	dup 'popu ! 
+	PopulationSize 8 3 << * | reserve memory
+	+ 'here ! 
+	;
+
+|-----------------------------	fitness 
 :sphere | arr -- fit
 	0 
 	over @ 3 >> dup *. +
@@ -82,37 +103,13 @@
 	0.2 *. exp. neg swap 0.2 *. sin *. ;
 	
 :calcfitness | vector -- fitness
-	sin2 ;
-	
-|--- struct 
-	
-:.posx 0 ncell+ ;
-:.posy 1 ncell+ ;
-:.velx 2 ncell+ ;
-:.vely 3 ncell+ ;
-:.fit 4 ncell+ ;
-:.bpx 5 ncell+ ;
-:.bpy 6 ncell+ ;
-:.bfit 7 ncell+ ;
+	sin1 ;
 
-| vel1 pos1 vel2 pos2 fitness
-|-----------------------------
-#popu
-
-:ini
-	mark
-	here 
-	dup 'popu ! 
-	PopulationSize 8 3 << * | reserve memory
-	+ 'here ! 
-	;
-
-|-----------------------------	
+|-----------------------------	initialize
 :changebest | adr fit -- adr fit
 	dup 'bestfit !
 	over .posx @ 'bestpx !
 	over .posy @ 'bestpy !
-	over 'bestp !
 	;
 	
 :randmm
@@ -139,7 +136,7 @@
 		inip 
 		8 3 << + swap ) 2drop ;
 	
-|-----------------------------	
+|-----------------------------	update
 :localbest | adr fitness -- adr fitness
 	over .bfit @ >=? ( ; ) | no update
 	over .posx @ pick2 .bpx !
@@ -179,14 +176,12 @@
 		updp 
 		8 3 << + swap ) 2drop ;
 
-|-----------------------------	
+|-----------------------------	drawing
 :drawp | adr -- adr
-	bestp =? ( $ff00 SDLColor )
 	dup .posx @ 
 	over .posy @ 
 	pick2 .fit @
 	project3d 2 fcircle 
-	bestp =? ( $ff0000 SDLColor )
 	;
 	
 :drawlist
@@ -194,7 +189,7 @@
 		drawp 
 		8 3 << + swap ) 2drop ;
 		
-|-----------------------------	
+|-----------------------------	solve
 #Trial 31
 #Iteration 3000
 
@@ -206,9 +201,9 @@
 	$7fffffffffffffff 'bbfit !
 	Trial ( 1? 1 -
 		inilist
-		Iterartion ( 1? 1 - updlist	) drop
+		Iteration ( 1? 1 - updlist	) drop
 		| check best
-		bestfit bbfit <?
+		bestfit bbfit <? (
 			dup 'bbfit !
 			bestpx 'bbx !
 			bestpy 'bby !
@@ -216,7 +211,7 @@
 		) drop ;
 	
 	
-|-----------------------------	
+|----------------------------- main
 :main
 	1.0 3dmode
 	rx mrotx ry mroty
