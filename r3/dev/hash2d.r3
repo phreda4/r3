@@ -120,7 +120,8 @@
 |-- in box
 :inbox | 'v r x y adr -- 'v r x y
 	dup .x @ pick3 - abs pick4 >? ( 2drop ; ) drop
-	.y @ over - abs pick3 >? ( drop ; ) drop
+	.y @ over - abs pick3 >? ( drop ; ) 
+	drop
 	pick3 ex | nro : [a> 4 - d@ 1 -]
 	;
 	
@@ -182,7 +183,7 @@
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin
-	rot dup SDLREct
+	rot dup SDLFREct
 	;
 
 :objset
@@ -193,7 +194,7 @@
 	'arr p.draw | calc/draw/hash
 	
 	buildH2d	
-	.dumpdebug
+|	.dumpdebug
 
 	30.0 sdlx 16 << sdly 16 << qH2d
 
@@ -214,10 +215,10 @@
 	"hash2d" 1024 600 SDLinit
 	"media/img/ball.png" loadimg 'spr_ball !
 	bfont1
-	20 'arr p.ini
+	1000 'arr p.ini
 	'arr p.clear
-	20 19 iniHash2d
-	10 insobj
+	1000 19 iniHash2d
+	800 insobj
 	'main SDLshow
 	
 	SDLquit ;
