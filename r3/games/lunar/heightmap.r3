@@ -1,6 +1,12 @@
+^r3/lib/mem.r3
+^r3/lib/math.r3
+^r3/lib/rand.r3
+
 ^r3/lib/3dgl.r3
+^r3/win/sdl2.r3
+^r3/win/sdl2gl.r3
 
-
+^r3/games/lunar/shaderobj.r3
 |---------------
 #GL_ARRAY_BUFFER $8892
 #GL_ELEMENT_ARRAY_BUFFER $8893
@@ -64,7 +70,7 @@
 :mem2float | cnt to --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 	
-:genfloor
+::genfloor
 	10 'dif mem2float | 3+3+3+1
 	"r3/opengl/shader/height.fs" 
 	"r3/opengl/shader/height.vs" 
@@ -154,12 +160,12 @@
 	"media/img/metal.png" glImgTex 'texm !
 	;
 	
-:genfloordyn
+::genfloordyn
 	1 'vbfl glGenBuffers
 	mark
 	-80.0 ( 80.0 <=?
 		-80.0 ( 80.0 <=?
-			over px + f2fp , dup py + f2fp , 
+			over f2fp , dup f2fp ,  | px + py +
 			|2.0 randmax 3.0 -
 			-3.0 randmax
 			f2fp , | x y z
@@ -171,21 +177,24 @@
 	empty
 	;
 	
-:floorcam | adr --
+:floorcam | fmodel fproj --
 	IDtp 1 0 pick3 glUniformMatrix4fv 64 +
 	IDtv 1 0 pick3 glUniformMatrix4fv 64 +
 |	IDtm 1 0 pick3 glUniformMatrix4fv |64 +
 	drop
 
-	'fmodel midf
-	IDtm 1 0 'fmodel glUniformMatrix4fv |64 +
+	dup midf
+	IDtm 1 0 pick3 glUniformMatrix4fv |64 +
+	drop
 	;
 	
-::drawfloor
+::drawfloor | fmodel fproj flpos
 	shfloor glUseProgram	
 
-	'flpos shaderlightf	
-	'fprojection floorcam
+	|'flpos shaderlightf	
+	shaderlightf	
+	|'fmodel 'fprojection 
+	floorcam
 
 	IDmdif 1 'dif glUniform3fv  | vec3 Material.diffuse;
 	IDmamb 1 'amb glUniform3fv  | vec3 Material.ambient;

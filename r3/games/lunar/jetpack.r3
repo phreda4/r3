@@ -226,7 +226,7 @@
 
 	$4100 glClear | color+depth
 	
-	drawfloor
+	'fmodel 'fprojection 'flpos drawfloor
 	
 	'listobj p.draw
 
