@@ -190,6 +190,7 @@
 
 	matini 
 	prot px py pz mrpos
+	4.0 4.0 4.0 mscalei
 	'fmodel mcpyf | model matrix
 	startshader
 	'fprojection shadercam
@@ -254,7 +255,8 @@
 	
 |-------------------------------------
 #objs 	
-"r3/games/lunar/obj/cara.objm"
+|"r3/games/lunar/obj/pablo.objm"
+"r3/games/lunar/obj/nave1.objm"
  ( 0 )
 
 |---------------------------		
