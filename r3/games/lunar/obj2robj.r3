@@ -427,6 +427,10 @@
 	8 sh 32 - bat sizemem 10 >> "mem used: %d kb" sprint bprint
 	;
 	
+:dibuja
+	nface 10000 <? ( objwire drop ; ) drop
+	objpoint ;
+		
 :main
 	gui
 	'dnlook 'movelook onDnMove
@@ -437,8 +441,7 @@
 	xcam ycam zcam mtrans
 	
 	$007f00 SDLColor
-	nface 10000 <? ( objwire ) drop
-	|objpoint
+	dibuja
 	
 	objinfo
 	SDLredraw
@@ -464,9 +467,11 @@
 
 	"media/obj/" dlgSetPath
 	mark
-	"r3/games/lunar/obj/nave1.obj"
+	|"r3/games/lunar/obj/nave1.obj"
 	|"r3/games/lunar/obj/pablo.obj"
+	"r3/games/lunar/obj/nave.obj"
 	useobj
+	
 	'main SDLshow 
 	SDLquit
 	;

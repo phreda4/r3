@@ -156,10 +156,12 @@
 	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
-	<esp> =? ( vpz 0? ( 0.2 'vpz ! ) drop )
+	<esp> =? ( vpz 0? ( 0.4 'vpz ! ) drop )
 	<w> =? ( 0.1 'zz +! )
 	<s> =? ( -0.1 'zz +! )
 	<a> =? ( genfloordyn )
+	<q> =? (  )
+	<e> =? ( )
 	drop 
 	;
 	
@@ -189,8 +191,10 @@
 	|see1r
 
 	matini 
-	prot px py pz mrpos
-	4.0 4.0 4.0 mscalei
+	prot 0.25 +  | camara siempre atras
+	| 0
+	px py pz mrpos
+	4.0 muscalei
 	'fmodel mcpyf | model matrix
 	startshader
 	'fprojection shadercam
@@ -255,9 +259,9 @@
 	
 |-------------------------------------
 #objs 	
-|"r3/games/lunar/obj/pablo.objm"
-"r3/games/lunar/obj/nave1.objm"
- ( 0 )
+"r3/games/lunar/obj/pablo.objm"
+"r3/games/lunar/obj/nave.objm"
+( 0 )
 
 |---------------------------		
 | opengl Constant

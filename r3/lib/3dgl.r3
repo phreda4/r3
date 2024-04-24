@@ -221,6 +221,12 @@
 	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	rot a@ *. a!+ swap a@ *. a!+ a@ *. a! ;
 
+::muscalei | s --
+	mat> >a
+	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ 8 a+
+	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ 8 a+
+	dup a@ *. a!+ dup a@ *. a!+ a@ *. a! ;
+
 |-----------------------------
 ::transform | x y z -- x y z
 	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@+ +
