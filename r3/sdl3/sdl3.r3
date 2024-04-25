@@ -7,6 +7,8 @@
 
 #sys-SDL_Init 
 #sys-SDL_Quit 
+#sys-SDL_ShowWindow
+
 #sys-SDL_GetNumVideoDisplays 
 #sys-SDL_CreateWindow 
 #sys-SDL_SetWindowFullscreen
@@ -71,6 +73,7 @@
 #names
 "SDL_Init"
 "SDL_Quit"
+"SDL_ShowWindow"
 "SDL_GetNumVideoDisplays"
 "SDL_CreateWindow"
 "SDL_SetWindowFullscreen"
@@ -132,8 +135,10 @@
 "SDL_SetTextureAlphaMod"
 "SDL_SetHint"
 
-::SDL_Init sys-SDL_Init sys1 drop ;
+
+::SDL_Init sys-SDL_Init sys1 ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
+::SDL_ShowWindow sys-SDL_ShowWindow sys1 drop ;
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
 ::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
 ::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
@@ -207,25 +212,50 @@
 ##sw
 ##sh
 
+##SDL_INIT_TIMER     $00000001
+##SDL_INIT_AUDIO     $00000010
+##SDL_INIT_VIDEO     $00000020
+##SDL_INIT_JOYSTICK  $00000200
+##SDL_INIT_HAPTIC    $00001000
+##SDL_INIT_GAMEPAD   $00002000
+##SDL_INIT_EVENTS    $00004000
+##SDL_INIT_SENSOR    $00008000
+##SDL_INIT_CAMERA    $00010000
+
+##SDL_WINDOW_FULLSCREEN         $00000001 |window is in fullscreen mode
+##SDL_WINDOW_OPENGL             $00000002 |window usable with OpenGL context
+##SDL_WINDOW_OCCLUDED           $00000004 |window is occluded
+##SDL_WINDOW_HIDDEN             $00000008 |window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible
+##SDL_WINDOW_BORDERLESS         $00000010 |no window decoration
+##SDL_WINDOW_RESIZABLE          $00000020 |window can be resized
+##SDL_WINDOW_MINIMIZED          $00000040 |window is minimized
+##SDL_WINDOW_MAXIMIZED          $00000080 |window is maximized
+##SDL_WINDOW_MOUSE_GRABBED      $00000100 |window has grabbed mouse input
+##SDL_WINDOW_INPUT_FOCUS        $00000200 |window has input focus
+##SDL_WINDOW_MOUSE_FOCUS        $00000400 |window has mouse focus
+##SDL_WINDOW_EXTERNAL           $00000800 |window not created by SDL
+##SDL_WINDOW_HIGH_PIXEL_DENSITY $00002000 |window uses high pixel density back buffer if possible
+##SDL_WINDOW_MOUSE_CAPTURE      $00004000 |window has mouse captured (unrelated to MOUSE_GRABBED)
+##SDL_WINDOW_ALWAYS_ON_TOP      $00008000 |window should always be above others
+##SDL_WINDOW_UTILITY            $00020000 |window should be treated as a utility window, not showing in the task bar and window list
+##SDL_WINDOW_TOOLTIP            $00040000 |window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window
+##SDL_WINDOW_POPUP_MENU         $00080000 |window should be treated as a popup menu, requires a parent window
+##SDL_WINDOW_KEYBOARD_GRABBED   $00100000 |window has grabbed keyboard input
+##SDL_WINDOW_VULKAN             $10000000 |window usable for Vulkan surface
+##SDL_WINDOW_METAL              $20000000 |window usable for Metal view
+##SDL_WINDOW_TRANSPARENT        $40000000 |window with transparent buffer
+##SDL_WINDOW_NOT_FOCUSABLE      $80000000 |window should not be focusable
+
+##SDL_RENDERER_SOFTWARE $00000001     | The renderer is a software fallback
+##SDL_RENDERER_ACCELERATED $00000002   | The renderer uses hardware acceleration
+##SDL_RENDERER_PRESENTVSYNC $00000004  | Present is synchronized with the refresh rate 
+
 ::SDLinit | "titulo" w h --
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
 	SDL_GetWindowSurface 'SDL_screen !
 |	0 SDL_ShowCursor | disable cursor
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	SDL_windows SDL_RaiseWindow
-	;
-
-
-
-::SDLinitScr | "titulo" display w h --
-	'sh ! 'sw !
-	$3231 SDL_init 
-	$2fff0000 or dup 
-|	$1FFF0000 dup
-	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface 'SDL_screen !
 	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
@@ -308,6 +338,7 @@
 	"SDL3.DLL" loadlib
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !
+	dup "SDL_ShowWindow" getproc 'sys-SDL_ShowWindow !
 	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
 	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
 	dup "SDL_SetWindowFullscreen" getproc 'sys-SDL_SetWindowFullscreen !
@@ -369,8 +400,7 @@
 	dup "SDL_GL_GetProcAddress" getproc 'sys-SDL_GL_GetProcAddress !
 	
 	drop
-	'names 'sys-SDL_Init
-	( 'sys-SDL_SetHint <?
-		swap dup .print >>0 swap @+ " %h ) " .print ) 2drop
-	getch getch
+|	'names 'sys-SDL_Init
+|	( 'sys-SDL_SetHint <? swap dup .print >>0 swap @+ " %h ) " .print ) 2drop
+|	getch getch
 	;
