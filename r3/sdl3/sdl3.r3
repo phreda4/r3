@@ -204,10 +204,8 @@
 
 |----------------------------------------------------------
 	
-##SDL_windows
-##SDL_screen
-##SDLrenderer
-
+##sdlwin
+##sdlscr
 ##sw
 ##sh
 
@@ -249,18 +247,18 @@
 ##SDL_RENDERER_ACCELERATED $00000002   | The renderer uses hardware acceleration
 ##SDL_RENDERER_PRESENTVSYNC $00000004  | Present is synchronized with the refresh rate 
 
-::SDLfull | --
-	SDL_windows 1 SDL_SetWindowFullscreen ;
-	
-::SDLframebuffer | w h -- texture
-	>r >r SDLrenderer $16362004 1 r> r> SDL_CreateTexture ;
-	
-::SDLblend	
-	SDLrenderer 1 SDL_SetRenderDrawBlendMode ;
-	
+::SDLInit | "" w h --
+	SDL_INIT_AUDIO SDL_INIT_VIDEO or SDL_INIT_EVENTS or SDL_Init 1? ( 4drop ; ) drop
+	2dup 'sh ! 'sw !
+	0 SDL_CreateWindow 'sdlwin !
+	sdlwin SDL_ShowWindow
+	sdlwin 0 SDL_RENDERER_ACCELERATED SDL_RENDERER_PRESENTVSYNC or
+	SDL_CreateRenderer 'sdlscr !
+	;
+
 ::SDLquit
-	SDLrenderer SDL_DestroyRenderer
-	SDL_windows SDL_DestroyWindow 
+	sdlscr SDL_DestroyRenderer
+	sdlwin SDL_DestroyWindow 
 	SDL_Quit ;
 	
 ##SDLevent * 56 
@@ -308,7 +306,7 @@
 	1 '.exit ! ;
 	
 ::SDLredraw | -- 
-	SDLrenderer SDL_RenderPresent ;	
+	sdlscr SDL_RenderPresent ;	
 	
 :rgb23 | rgb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
@@ -317,10 +315,10 @@
 	dup 16 >> $ff and swap dup 8 >> $ff and swap dup $ff and swap 24 >> $ff and ;
 	
 ::SDLColor | col --
-	SDLrenderer swap rgb23 $ff SDL_SetRenderDrawColor ;
+	sdlscr swap rgb23 $ff SDL_SetRenderDrawColor ;
 	
 ::SDLcls | color --
-	SDLColor SDLrenderer SDL_RenderClear ;	
+	SDLColor sdlscr SDL_RenderClear ;	
 	
 |------- BOOT
 :
