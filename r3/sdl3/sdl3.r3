@@ -9,7 +9,6 @@
 #sys-SDL_Quit 
 #sys-SDL_ShowWindow
 
-#sys-SDL_GetNumVideoDisplays 
 #sys-SDL_CreateWindow 
 #sys-SDL_SetWindowFullscreen
 #sys-SDL_GetWindowSurface 
@@ -23,8 +22,8 @@
 #sys-SDL_DestroyRenderer 
 #sys-SDL_UpdateTexture 
 #sys-SDL_RenderClear
-#sys-SDL_RenderCopy 
-#sys-SDL_RenderCopyEx
+|#sys-SDL_RenderCopy 
+|#sys-SDL_RenderCopyEx
 #sys-SDL_RenderPresent 
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_GetRenderDrawColor
@@ -74,7 +73,7 @@
 "SDL_Init"
 "SDL_Quit"
 "SDL_ShowWindow"
-"SDL_GetNumVideoDisplays"
+
 "SDL_CreateWindow"
 "SDL_SetWindowFullscreen"
 "SDL_GetWindowSurface"
@@ -88,8 +87,8 @@
 "SDL_DestroyRenderer"
 "SDL_UpdateTexture"
 "SDL_RenderClear"
-"SDL_RenderCopy"
-"SDL_RenderCopyEx"
+|"SDL_RenderCopy"
+|"SDL_RenderCopyEx"
 "SDL_RenderPresent"
 "SDL_SetRenderDrawColor"
 "SDL_GetRenderDrawColor"
@@ -139,8 +138,8 @@
 ::SDL_Init sys-SDL_Init sys1 ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
 ::SDL_ShowWindow sys-SDL_ShowWindow sys1 drop ;
-::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
-::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
+
+::SDL_CreateWindow sys-SDL_CreateWindow sys4 ;
 ::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
 ::SDL_RaiseWindow sys-SDL_RaiseWindow sys1 drop ;
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
@@ -156,8 +155,8 @@
 ::SDL_DestroyRenderer sys-SDL_DestroyRenderer sys1 drop ;
 ::SDL_UpdateTexture sys-SDL_UpdateTexture sys4 ;
 ::SDL_RenderClear sys-SDL_RenderClear sys1 drop ;
-::SDL_RenderCopy sys-SDL_RenderCopy sys4 drop ;
-::SDL_RenderCopyEx sys-SDL_RenderCopyEx sys7 drop ; |sys6f1 drop ;
+|::SDL_RenderCopy sys-SDL_RenderCopy sys4 drop ;
+|::SDL_RenderCopyEx sys-SDL_RenderCopyEx sys7 drop ; |sys6f1 drop ;
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
@@ -250,16 +249,6 @@
 ##SDL_RENDERER_ACCELERATED $00000002   | The renderer uses hardware acceleration
 ##SDL_RENDERER_PRESENTVSYNC $00000004  | Present is synchronized with the refresh rate 
 
-::SDLinit | "titulo" w h --
-	'sh ! 'sw !
-	$3231 SDL_init 
-	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface 'SDL_screen !
-|	0 SDL_ShowCursor | disable cursor
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	SDL_windows SDL_RaiseWindow
-	;
-
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
 	
@@ -339,7 +328,7 @@
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !
 	dup "SDL_ShowWindow" getproc 'sys-SDL_ShowWindow !
-	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
+	
 	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
 	dup "SDL_SetWindowFullscreen" getproc 'sys-SDL_SetWindowFullscreen !
 	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
@@ -354,8 +343,8 @@
 	dup "SDL_DestroyRenderer" getproc 'sys-SDL_DestroyRenderer !
 	dup "SDL_UpdateTexture" getproc 'sys-SDL_UpdateTexture !
 	dup "SDL_RenderClear" getproc 'sys-SDL_RenderClear !
-	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
-	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
+|	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
+|	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
 	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
 	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
