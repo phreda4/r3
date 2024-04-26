@@ -261,7 +261,7 @@
 	sdlwin SDL_DestroyWindow 
 	SDL_Quit ;
 	
-##SDLevent * 56 
+##SDLevent * 128
 
 ##SDLkey
 ##SDLchar
@@ -273,12 +273,12 @@
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
-		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
-		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
-		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
-		$400 =? ( drop 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
-		$401 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
-		$402 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
+		$300 =? ( drop 'SDLevent 32 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
+		$301 =? ( drop 'SDLevent 32 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
+		$303 =? ( drop 'SDLevent 20 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
+		$400 =? ( drop 'SDLevent 28 + d@+ fp2f 16 >> 'SDLx ! d@ fp2f 16 >> 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
+		$401 =? ( drop 'SDLevent 24 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
+		$402 =? ( drop 'SDLevent 24 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
 				| #SDL_MOUSEWHEEL $403 Mouse wheel motion
 		drop
 		) drop ;			
