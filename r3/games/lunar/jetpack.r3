@@ -211,6 +211,34 @@
 	-0.005 'vpz +!	
 	;
 	
+|
+
+:senia
+	matini 
+	0
+	prot sincos 15.0 *. px + swap 15.0 *. py +
+	0 mrpos
+	4.0 muscalei
+	'fmodel mcpyf | model matrix
+	startshader
+	'fprojection shadercam
+	'flpos shaderlight
+	'o1 8 + @ drawobjm 
+	
+	matini 
+	0
+	prot sincos 150.0 *. px + swap 150.0 *. py +
+	0 mrpos
+	4.0 muscalei
+	'fmodel mcpyf | model matrix
+	startshader
+	'fprojection shadercam
+	'flpos shaderlight
+	'o1 8 + @ drawobjm 
+	
+	
+	
+	;
 	
 |------ vista
 #xm #ym
@@ -230,12 +258,12 @@
 	'dnlook 'movelook onDnMove
 
 	$4100 glClear | color+depth
-	
 	'fmodel 'fprojection 'flpos drawfloor
-	
 	'listobj p.draw
-
+	
+	senia
 	player
+	
 	
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
@@ -295,11 +323,6 @@
 		
 	genfloor		
 	initvec
-	.cr .cr 
-	"<esc> - Exit" .println
-	"<esp> - jmp" .println	
-	
-
 	100 'listfx p.ini
 	200 'listobj p.ini
 	jugar

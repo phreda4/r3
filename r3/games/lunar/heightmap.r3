@@ -159,6 +159,15 @@
 	
 	"media/img/metal.png" glImgTex 'texm !
 	;
+
+:altura | x y -- z
+	over 
+	|msec 6 << + 
+	0.01 *. sin 1.4 *. 
+	over 
+	|msec 5 << +
+	0.05 *. cos 1.1 *. + 
+	;
 	
 ::genfloordyn
 	1 'vbfl glGenBuffers
@@ -167,7 +176,8 @@
 		-80.0 ( 80.0 <=?
 			over f2fp , dup f2fp ,  | px + py +
 			|2.0 randmax 3.0 -
-			-3.0 randmax
+			|-3.0 randmax
+			altura
 			f2fp , | x y z
 			4.0 + ) drop
 		4.0 + ) drop
