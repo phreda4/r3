@@ -243,8 +243,6 @@
 ##SDL_WINDOW_TRANSPARENT        $40000000 |window with transparent buffer
 ##SDL_WINDOW_NOT_FOCUSABLE      $80000000 |window should not be focusable
 
-##SDL_RENDERER_SOFTWARE $00000001     | The renderer is a software fallback
-##SDL_RENDERER_ACCELERATED $00000002   | The renderer uses hardware acceleration
 ##SDL_RENDERER_PRESENTVSYNC $00000004  | Present is synchronized with the refresh rate 
 
 ::SDLInit | "" w h --
@@ -252,7 +250,7 @@
 	2dup 'sh ! 'sw !
 	0 SDL_CreateWindow 'sdlwin !
 	sdlwin SDL_ShowWindow
-	sdlwin 0 SDL_RENDERER_ACCELERATED SDL_RENDERER_PRESENTVSYNC or
+	sdlwin 0 SDL_RENDERER_PRESENTVSYNC
 	SDL_CreateRenderer 'sdlscr !
 	;
 

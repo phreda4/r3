@@ -69,6 +69,21 @@
 
 :mem2float | cnt to --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+
+
+:altura | x y -- z
+	over 
+	msec 6 << + 
+	0.01 *. sin 1.4 *. 
+	over 
+	msec 7 << +
+	0.05 *. cos 1.1 *. +
+	3.0 -
+	;
+
+	
+:65* dup 6 << + ;
+:64* 6 << ;
 	
 ::genfloor
 	10 'dif mem2float | 3+3+3+1
@@ -102,27 +117,24 @@
 	
 	1 'vbfl glGenBuffers
 	mark
-	-80.0 ( 80.0 <=?
-		-80.0 ( 80.0 <=?
-			over f2fp , dup f2fp , 
-			|2.0 randmax 3.0 -
-			-5.0 randmax
-			f2fp , | x y z
-			4.0 + ) drop
-		4.0 + ) drop
+	-32.0 ( 32.0 <=?
+		-32.0 ( 32.0 <=?
+			over f2fp , dup f2fp ,
+			altura f2fp , | x y z
+			1.0 + ) drop
+		1.0 + ) drop
 	GL_ARRAY_BUFFER vbfl glBindBuffer	| vertex
 	|GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
 	GL_ARRAY_BUFFER memsize swap GL_DYNAMIC_DRAW glBufferData
 	empty
-
 
     0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
     0 glEnableVertexAttribArray
 
 	1 'vnfl glGenBuffers
 	mark
-	-20.0 ( 20.0 <=?
-		-20.0 ( 20.0 <=?
+	-32.0 ( 32.0 <=?
+		-32.0 ( 32.0 <=?
 			1.0 randmax 1.0 over -
 			0.0 f2fp , f2fp , f2fp , | x y z
 			1.0 + ) drop
@@ -131,11 +143,10 @@
 	GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
 	empty
 
-
 	1 'vtfl glGenBuffers	
 	mark
-	-20.0 ( 20.0 <=?
-		-20.0 ( 20.0 <=?
+	-32.0 ( 32.0 <=?
+		-32.0 ( 32.0 <=?
 			over $10000 and f2fp , 
 			dup $10000 and f2fp , 
 			1.0 + ) drop
@@ -144,12 +155,11 @@
 	GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData	
 	empty
 	
-	| -20 ..20 = 40
 	mark	
-	0 ( 40 <? 
-		0 ( 41 <? 
-			over 41 * over + ,w
-			over 1 + 41 * over + ,w
+	0 ( 64 <? 
+		0 ( 65 <? 
+			over 65* over + ,w
+			over 1 + 65* over + ,w
 			1 + ) drop
 		1 + ) drop
 	1 'vifl glGenBuffers
@@ -160,33 +170,66 @@
 	"media/img/metal.png" glImgTex 'texm !
 	;
 
-:altura | x y -- z
-	over 
-	|msec 6 << + 
+##supx1 ##supx2
+##supy1 ##supy2
+##supx3 ##supx4
+##supy3 ##supy4
+
+:altura2 | x y -- z
+	swap 
+	msec 6 << + 
 	0.01 *. sin 1.4 *. 
-	over 
-	|msec 5 << +
-	0.05 *. cos 1.1 *. + 
+	swap 
+	msec 7 << +
+	0.05 *. cos 1.1 *. 
+	+ 3.0 -
 	;
-	
-::genfloordyn
-	1 'vbfl glGenBuffers
+
+::genfloordyn1
 	mark
-	-80.0 ( 80.0 <=?
-		-80.0 ( 80.0 <=?
-			over f2fp , dup f2fp ,  | px + py +
-			|2.0 randmax 3.0 -
-			|-3.0 randmax
-			altura
-			f2fp , | x y z
-			4.0 + ) drop
-		4.0 + ) drop
+	-32.0 ( 32.0 <=?
+		-32.0 ( 32.0 <=?
+			over f2fp , dup f2fp ,
+			altura f2fp , | x y z
+			1.0 + ) drop
+		1.0 + ) drop
 	GL_ARRAY_BUFFER vbfl glBindBuffer	| vertex
-	|GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
-	GL_ARRAY_BUFFER memsize swap GL_DYNAMIC_DRAW glBufferData
+	GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
+	|GL_ARRAY_BUFFER memsize swap GL_DYNAMIC_DRAW glBufferData
 	empty
 	;
 	
+|
+|      1 -------- 2
+|       \        /
+|        \      /
+|         3----4
+|
+#ax #ay #dax #day
+#bx #by #dbx #dby
+#cx #cy #dcx #dcy
+
+::genfloordyn
+	supx1 6 << 'ax ! supy1 6 << 'ay ! supx3 supx1 - 'dax ! supy3 supy1 - 'day !
+	supx2 6 << 'bx ! supy2 6 << 'by ! supx4 supx2 - 'dbx ! supy4 supy2 - 'dby !
+	mark
+	0 ( 64 <?
+		ax 'cx ! bx ax - 6 >> 'dcx !
+		ay 'cy ! by ay - 6 >> 'dcy !
+		0 ( 64 <?
+			cx 6 >> dup f2fp ,
+			cy 6 >> dup f2fp ,
+			altura2 f2fp , | x y z
+			dcx 'cx +! dcy 'cy +!
+			1 + ) drop
+		dax 'ax +! day 'ay +!
+		dbx 'bx +! dby 'by +!
+		1 + ) drop
+	GL_ARRAY_BUFFER vbfl glBindBuffer	| vertex
+	GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
+	empty
+	;
+
 :floorcam | fmodel fproj --
 	IDtp 1 0 pick3 glUniformMatrix4fv 64 +
 	IDtv 1 0 pick3 glUniformMatrix4fv 64 +
@@ -230,11 +273,11 @@
 	GL_TEXTURE0 glActiveTexture | sampler2D Material.diffuseMap;
 	GL_TEXTURE_2D texm glBindTexture 
 	
-	0 ( 40 <?
+	0 ( 64 <?
 		GL_TRIANGLE_STRIP 
-		40 1 <<
+		64 1 <<
 		GL_UNSIGNED_SHORT
-		41 1 << pick4 * 1 <<
+		65 1 << pick4 * 1 <<
 		glDrawElements
 		1 + ) drop
 	;
