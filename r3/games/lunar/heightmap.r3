@@ -82,7 +82,6 @@
 	;
 
 	
-:65* dup 6 << + ;
 :64* 6 << ;
 	
 ::genfloor
@@ -170,10 +169,6 @@
 	"media/img/metal.png" glImgTex 'texm !
 	;
 
-##supx1 ##supx2
-##supy1 ##supy2
-##supx3 ##supx4
-##supy3 ##supy4
 
 :altura2 | x y -- z
 	swap 
@@ -198,6 +193,11 @@
 	|GL_ARRAY_BUFFER memsize swap GL_DYNAMIC_DRAW glBufferData
 	empty
 	;
+
+##supx1 ##supx2
+##supy1 ##supy2
+##supx3 ##supx4
+##supy3 ##supy4
 	
 |
 |      1 -------- 2
@@ -217,12 +217,15 @@
 ::genfloordyn | prot px py --
 	'py ! 'px ! 'prot !
 	100.0 prot 0.2 - look 'supy1 ! 'supx1 !
-	100.0 prot 0.2 + look 'supy2 ! 'supx2 !
 	-20.0 prot 0.2 + look 'supy3 ! 'supx3 !
-	-20.0 prot 0.2 - look 'supy4 ! 'supx4 !
+	supx3 6 << 'ax ! supy3 6 << 'ay ! 
+	supx1 supx3 - 'dax ! supy1 supy3 - 'day !
 	
-	supx3 6 << 'ax ! supy3 6 << 'ay ! supx1 supx3 - 'dax ! supy1 supy3 - 'day !
-	supx4 6 << 'bx ! supy4 6 << 'by ! supx2 supx4 - 'dbx ! supy2 supy4 - 'dby !
+	100.0 prot 0.2 + look 'supy2 ! 'supx2 !	
+	-20.0 prot 0.2 - look 'supy4 ! 'supx4 !
+	supx4 6 << 'bx ! supy4 6 << 'by ! 
+	supx2 supx4 - 'dbx ! supy2 supy4 - 'dby !
+	
 	mark
 	0 ( 64 <?
 		ax 'cx ! bx ax - 6 >> 'dcx !
