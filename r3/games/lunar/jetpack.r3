@@ -208,49 +208,9 @@
 	-0.005 'vpz +!	
 	;
 	
-:look | dist ang -- x y
-	sincos pick2 *. px + | dist sin x
-	rot rot *. py + ;
-	
+
 :superficie
-	200.0 prot 0.1 - look 'supy1 ! 'supx1 !
-	200.0 prot 0.1 + look 'supy2 ! 'supx2 !
-	-2.0 prot 0.1 + look 'supy3 ! 'supx3 !
-	-2.0 prot 0.1 - look 'supy4 ! 'supx4 !
-	
-	matini 
-	0 supx1 supy1 0 mrpos
-	'fmodel mcpyf | model matrix
-	startshader
-	'fprojection shadercam
-	'flpos shaderlight
-	'o1 8 + @ drawobjm 
-	
-	matini 
-	0 supx2 supy2 0 mrpos
-	'fmodel mcpyf | model matrix
-	startshader
-	'fprojection shadercam
-	'flpos shaderlight
-	'o1 8 + @ drawobjm 
-
-	matini 
-	0 supx3 supy3 0 mrpos
-	'fmodel mcpyf | model matrix
-	startshader
-	'fprojection shadercam
-	'flpos shaderlight
-	'o1 8 + @ drawobjm
-	
-	matini 
-	0 supx4 supy4 0 mrpos
-	'fmodel mcpyf | model matrix
-	startshader
-	'fprojection shadercam
-	'flpos shaderlight
-	'o1 8 + @ drawobjm 
-
-	genfloordyn
+	prot px py genfloordyn
 		
 	'fmodel 'fprojection 'flpos drawfloor
 	;

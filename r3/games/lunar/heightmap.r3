@@ -157,9 +157,9 @@
 	
 	mark	
 	0 ( 64 <? 
-		0 ( 65 <? 
-			over 65* over + ,w
-			over 1 + 65* over + ,w
+		0 ( 64 <? 
+			over 64* over + ,w
+			over 1 + 64* over + ,w
 			1 + ) drop
 		1 + ) drop
 	1 'vifl glGenBuffers
@@ -177,10 +177,10 @@
 
 :altura2 | x y -- z
 	swap 
-	msec 6 << + 
+|	msec 6 << + 
 	0.01 *. sin 1.4 *. 
 	swap 
-	msec 7 << +
+|	msec 7 << +
 	0.05 *. cos 1.1 *. 
 	+ 3.0 -
 	;
@@ -205,13 +205,24 @@
 |        \      /
 |         3----4
 |
+#px #py #prot
 #ax #ay #dax #day
 #bx #by #dbx #dby
 #cx #cy #dcx #dcy
 
-::genfloordyn
-	supx1 6 << 'ax ! supy1 6 << 'ay ! supx3 supx1 - 'dax ! supy3 supy1 - 'day !
-	supx2 6 << 'bx ! supy2 6 << 'by ! supx4 supx2 - 'dbx ! supy4 supy2 - 'dby !
+:look | dist ang -- x y
+	sincos pick2 *. px + | dist sin x
+	rot rot *. py + ;
+	
+::genfloordyn | prot px py --
+	'py ! 'px ! 'prot !
+	100.0 prot 0.2 - look 'supy1 ! 'supx1 !
+	100.0 prot 0.2 + look 'supy2 ! 'supx2 !
+	-20.0 prot 0.2 + look 'supy3 ! 'supx3 !
+	-20.0 prot 0.2 - look 'supy4 ! 'supx4 !
+	
+	supx3 6 << 'ax ! supy3 6 << 'ay ! supx1 supx3 - 'dax ! supy1 supy3 - 'day !
+	supx4 6 << 'bx ! supy4 6 << 'by ! supx2 supx4 - 'dbx ! supy2 supy4 - 'dby !
 	mark
 	0 ( 64 <?
 		ax 'cx ! bx ax - 6 >> 'dcx !
@@ -224,6 +235,8 @@
 			1 + ) drop
 		dax 'ax +! day 'ay +!
 		dbx 'bx +! dby 'by +!
+		dax 1.1 *. 'dax ! day 1.1 *. 'day !
+		dbx 1.1 *. 'dbx ! dby 1.1 *. 'dby !		
 		1 + ) drop
 	GL_ARRAY_BUFFER vbfl glBindBuffer	| vertex
 	GL_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData
@@ -277,7 +290,7 @@
 		GL_TRIANGLE_STRIP 
 		64 1 <<
 		GL_UNSIGNED_SHORT
-		65 1 << pick4 * 1 <<
+		64 1 << pick4 * 1 <<
 		glDrawElements
 		1 + ) drop
 	;
