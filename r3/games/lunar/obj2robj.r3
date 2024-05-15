@@ -441,6 +441,7 @@
 	xcam ycam zcam mtrans
 	
 	$007f00 SDLColor
+	
 	dibuja
 	
 	objinfo
@@ -469,9 +470,12 @@
 	mark
 	|"r3/games/lunar/obj/nave1.obj"
 	|"r3/games/lunar/obj/pablo.obj"
-	"r3/games/lunar/obj/nave.obj"
+|	"r3/games/lunar/obj/nave.obj"
+|	"r3/games/lunar/obj/navelau.obj"
+|	"r3/games/lunar/obj/extraterrestrenave.obj" |*
+|	"r3/games/lunar/obj/piedra.obj" |**
+	"r3/games/lunar/obj/yyyht.obj"
 	useobj
-	
 	'main SDLshow 
 	SDLquit
 	;
