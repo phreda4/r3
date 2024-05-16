@@ -260,7 +260,11 @@
 	
 |-------------------------------------
 #objs 	
+|"r3/games/lunar/obj/yyht.objm"  |*
+"r3/games/lunar/obj/piedra.objm" 
+"r3/games/lunar/obj/extraterrestrenave.objm" 
 "r3/games/lunar/obj/pablo.objm"
+"r3/games/lunar/obj/navelau.objm"
 "r3/games/lunar/obj/nave.objm"
 ( 0 )
 
