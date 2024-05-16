@@ -155,7 +155,7 @@
 	SDL_windows SDL_RaiseWindow
 	;
 
-::SDLmini | "" w h --
+::SDLmini | "titulo" w h --
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
@@ -237,7 +237,7 @@
 		$400 =? ( drop 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
 		$401 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
 		$402 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
-				| #SDL_MOUSEWHEEL $403 Mouse wheel motion
+		|#SDL_MOUSEWHEEL $403 Mouse wheel motion
 		drop
 		) drop ;			
 		

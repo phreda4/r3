@@ -14,24 +14,6 @@
 0 0 0 0 0
 ]
 
-:dfpi d@+ fp2f 16 >> ;
-
-::vertscr | 'adr --
-	'vert 
-	dfpi swap dfpi		| 'adr x1 'v y1
-	$ffffffff and rot 32 << or | 'adr 'v xy1
-	rot !+ swap 12 +
-	dfpi swap dfpi		| 'adr x1 'v y1
-	$ffffffff and rot 32 << or | 'adr 'v xy1
-	rot !+ swap 12 +
-	dfpi swap dfpi		| 'adr x1 'v y1
-	$ffffffff and rot 32 << or | 'adr 'v xy1
-	rot !+ swap 12 +
-	dfpi swap dfpi		| 'adr x1 'v y1
-	$ffffffff and rot 32 << or | 'adr 'v xy1
-	rot ! drop
-	;
-	
 #index [ 0 1 2 2 3 0 ]
 
 :rgb23 | rgb -- r g b
@@ -253,7 +235,7 @@
 	;
 
 |----------------------	
-::ssload | w h file -- ss
+::ssload | w h "file" -- ssprite
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture

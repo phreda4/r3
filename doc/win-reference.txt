@@ -143,60 +143,91 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ##SDL_screen
 ##SDLrenderer
 
-##sw	| screen width
-##sh	| screen height
-
-##pitch
-##sizebuffer
-##vframe
+##sw
+##sh
 
 ::SDLinit | "titulo" w h --
-::SDLinitGL | "titulo" w h --
-
+::SDLmini | "titulo" w h --
+::SDLinitScr | "titulo" display w h --
 ::SDLfull | --
-::SDLframebuffer | w h -- img
-
+::SDLframebuffer | w h -- texture
+::SDLblend	
 ::SDLquit
-::SDLClick | 'event --
+	
+##SDLevent * 56 
 
 ##SDLkey
 ##SDLchar
-##SDLx 
-##SDLy 
-##SDLb
+##SDLx ##SDLy ##SDLb
 	
-::SDLupdate
-::SDLshow | 'word --
-::SDLGetPixel | x y -- v
+::SDLupdate | --
+::SDLclick | 'event --
+::SDLredraw | -- 
 
-::exit
+::exit | --
+::SDLshow | 'word --
 
 ********************************************************************************
 ^r3/win/sdl2gfx.r3
 ********************************************************************************
 
-::SDLcls | color --
-::SDLRedraw | -- 
-
-::SDLColor | col --
+::SDLColor | colRGB --
+::SDLColorA | colARGB --
+::SDLcls | colRGB --
 ::SDLPoint | x y --
+::SDLGetPixel | x y -- RGB
 ::SDLLine | x y x y --	
 ::SDLFRect | x y w h --	
 ::SDLRect | x y w h --	
 ::SDLFEllipse | rx ry x y --
 ::SDLEllipse | rx ry x y --
 ::SDLTriangle | x y x y x y --
+::SDLimagewh | img -- w h
 ::SDLImage | x y img --		
 ::SDLImages | x y w h img --
+::SDLImageb | box img --
+::SDLImagebb | box box img --
+::SDLspriteZ | x y zoom img --
+::SDLSpriteR | x y ang img --
+::SDLspriteRZ | x y ang zoom img --
+
+|------------------- TILESET	
+::tsload | w h filename -- ts
+::tscolor | rrggbb 'ts --
+::tsalpha | alpha 'ts --
+::tsdraw | n 'ts x y --
+::tsdraws | n 'ts x y w h --
+::tsfree | ts --
+
+|------------------- SPRITE SHEET
+::ssload | w h "file" -- ssprite
+::ssprite | x y n ssprite --
+::sspriter | x y ang n ssprite --
+::sspritez | x y zoom n ssprite --
+::sspriterz | x y ang zoom n ssprite --
+
+|--------------- time control
+##deltatime | delta timer
+
+::timer< | --
+::timer. | --
+::timer+ | msec -- newmsec
 
 ********************************************************************************
 ^r3/win/sdl2image.r3 | load many image formats
 ********************************************************************************
 
-::IMG_Load | "" -- a
 ::IMG_Init | a --
-::loadimg | "" -- texture
+::IMG_Load | "" -- s
+::IMG_LoadTexture | rend file -- texture
+::IMG_LoadSizedSVG_RW | src w h -- surface
+::IMG_LoadAnimation | file -- anim
+::IMG_FreeAnimation | anim --
+::IMG_SavePNG | surface "file" --
+::IMG_SaveJPG | surface "file" quality -- 
 
+::loadimg | "" -- texture
+::unloadimg | texture --
 	
 ********************************************************************************
 ^r3/win/sdl2mixer.r3 | play sound and music
