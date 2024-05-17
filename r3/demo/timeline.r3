@@ -10,7 +10,6 @@
 
 ^r3/lib/mem.r3
 ^r3/util/timeline.r3
-^r3/util/fontutil.r3
 ^r3/util/bfont.r3
 
 #imagen | an imge
