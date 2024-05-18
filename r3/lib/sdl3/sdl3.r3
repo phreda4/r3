@@ -1,5 +1,6 @@
-| SDL2.dll
-|
+| SDL3.dll
+| IMHO adding float parameters is not a good idea 
+| pause this dev
 ^r3/win/kernel32.r3
 ^r3/win/core.r3
 ^r3/win/console.r3
