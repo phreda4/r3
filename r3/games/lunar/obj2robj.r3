@@ -474,7 +474,8 @@
 |	"r3/games/lunar/obj/navelau.obj"
 |	"r3/games/lunar/obj/extraterrestrenave.obj" |*
 |	"r3/games/lunar/obj/piedra.obj" |**
-	"r3/games/lunar/obj/yyyht.obj"
+|	"r3/games/lunar/obj/yyyht.obj"
+	"r3/games/lunar/obj/astro1.obj"
 	useobj
 	'main SDLshow 
 	SDLquit

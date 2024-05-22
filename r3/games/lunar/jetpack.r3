@@ -188,8 +188,8 @@
 	|see1r
 
 	matini 
-	prot 0.25 +  | camara siempre atras
-	| 0
+	|prot 0.25 +  | camara siempre atras
+	0
 	px py pz mrpos
 	4.0 muscalei
 	'fmodel mcpyf | model matrix
@@ -261,6 +261,7 @@
 |-------------------------------------
 #objs 	
 |"r3/games/lunar/obj/yyht.objm"  |*
+"r3/games/lunar/obj/astro1.objm" 
 "r3/games/lunar/obj/piedra.objm" 
 "r3/games/lunar/obj/extraterrestrenave.objm" 
 "r3/games/lunar/obj/pablo.objm"
