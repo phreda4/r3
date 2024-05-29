@@ -194,16 +194,43 @@
 	empty
 	;
 
+#imgm | 1024*1024 *3
+#imgmp
+#imgn | 1024*1024 *3
+#imgnp
+
+::loadhm | 	
+	"r3/games/lunar/img/HeightMap1.png" IMG_Load 'imgm !
+	imgm 32 + @ 'imgmp !
+	"r3/games/lunar/img/NormalMap1.png" IMG_Load 'imgn !
+	imgn 32 + @ 'imgnp !
+	;
+	
+:imgm@ | x y -- altura
+	10 << + dup 1 << + imgmp + c@ $ff and ;
+
+:imgn@ | x y -- rrggbb
+	10 << + dup 1 << + imgnp + d@ ;
+
+:altura | x y -- z
+	swap 
+	16 >> $3ff and 
+	swap 
+	16 >> $3ff and 
+	imgm@
+	0.6 *
+	;
+	
 ##supx1 ##supx2
 ##supy1 ##supy2
 ##supx3 ##supx4
 ##supy3 ##supy4
 	
 |
-|      1 -------- 2
+|      3 -------- 4
 |       \        /
 |        \      /
-|         3----4
+|         1----2
 |
 #px #py #prot
 #ax #ay #dax #day
@@ -233,7 +260,7 @@
 		0 ( 64 <?
 			cx 6 >> dup f2fp ,
 			cy 6 >> dup f2fp ,
-			altura2 f2fp , | x y z
+			altura f2fp , | x y z
 			dcx 'cx +! dcy 'cy +!
 			1 + ) drop
 		dax 'ax +! day 'ay +!
@@ -297,3 +324,4 @@
 		glDrawElements
 		1 + ) drop
 	;
+	

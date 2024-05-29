@@ -39,7 +39,6 @@
 	44100 $08010 2 4096 Mix_OpenAudio 
 	
 	 "media/snd/shoot.mp3" Mix_LoadWAV 'snd_shoot !
-	 
 	"r3sdl" 640 480 SDLinit
 	SDLrenderer $ff $ff $ff $ff SDL_SetRenderDrawColor
 

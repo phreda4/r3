@@ -323,9 +323,6 @@
 	SDL_windows SDL_GL_CreateContext 'SDL_context !
 	1 SDL_GL_SetSwapInterval	
 
-|	SDL_GetWindowSurface 'SDL_screen !
-|	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-|	SDL_windows SDL_RaiseWindow
 	InitGLAPI
 	;
 

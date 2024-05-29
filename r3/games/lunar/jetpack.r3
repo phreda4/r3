@@ -298,7 +298,7 @@
 		dup loadobjm a!+
 		1 'cntobj +!
 		>>0 ) drop
-		
+	loadhm	
 	genfloor		
 	initvec
 	100 'listfx p.ini

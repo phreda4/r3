@@ -139,7 +139,6 @@
 |----------------------------------------------------------
 	
 ##SDL_windows
-##SDL_screen
 ##SDLrenderer
 
 ##sw
@@ -149,9 +148,7 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface 'SDL_screen !
-|	0 SDL_ShowCursor | disable cursor
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
 
@@ -159,8 +156,7 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface 'SDL_screen !
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 0 SDL_CreateRenderer 'SDLrenderer !
 	;
 
 |int displays=SDL_GetNumVideoDisplays()-1;
@@ -178,9 +174,8 @@
 	$2fff0000 or dup 
 |	$1FFF0000 dup
 	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	SDL_GetWindowSurface 'SDL_screen !
-	SDL_windows -1 0 SDL_CreateRenderer 'SDLrenderer !
-	SDL_windows SDL_RaiseWindow
+	dup -1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDL_RaiseWindow
 	;
 
 ::SDLfull | --
