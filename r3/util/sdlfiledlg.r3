@@ -158,11 +158,14 @@
 	reload	
 	;
 	
+	
+
 ::immfileload | 'file -- 'file/0
 |	mark
 |	filedlgini
-	
 	'filedlg immwin! | winfix
+|	empty
+|	'path dup 'filename strcat
 	;
 	
 ::immfilesave | 'file -- 'file/0

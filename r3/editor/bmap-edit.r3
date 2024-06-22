@@ -263,6 +263,7 @@
 	mapx mapy mapsw maptw * mapsh mapth * guiBox
 	ts_spr drawmap
 	drawgrid
+|	hot 1? ( drop ; ) drop | no other 
 	modexe ex		
 	;
 
@@ -391,7 +392,7 @@
 	;
 
 |---- config
-#wincon 1 [ 824 260 200 300 ] "CONFIG"
+#wincon 1 [ 800 260 224 300 ] "CONFIG"
 
 #mapwn 
 #maphn
@@ -445,6 +446,7 @@
 
 	190 20 immbox
 	'changetile "TILESET" immbtn immcr	
+	'tilefile immLabel immcr
 	"Tile Size" immLabel immcr
 	70 20 immbox
 	"W" imm. 'tilewn immInputInt imm>>
@@ -456,9 +458,11 @@
 	": H" imm. 'maphn immInputInt immcr
 |	4 255 'mapwn immSlideri " w" immlabel immcr
 |	4 255 'maphn immSlideri " h" immlabel immcr
+
+	immcr
+	90 18 immbox
 	[ recalc ; ] "RECALC" immbtn imm>>
 	[ resetmap ; ] "CLEAR" immbtn immcr
-
 	;
 
 :getconfig
@@ -466,6 +470,8 @@
 	maph 'maphn !
 	tilew 'tilewn !
 	tileh 'tilehn !
+	
+|'editor SDLshow	
 	'winconfig immwin$
 	;
 	
@@ -509,19 +515,19 @@
 	" Tile Scale" immLabel immcr
 
 	90 18 immbox
-	immcr
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
 	
 	tilescalecalc
 	;
-	
-	
 
 |----- MAIN
 :keymain
 	SDLkey
 	>esc< =? ( exit )
+	
+|	hot 1? ( 2drop ; ) drop 
+	
 	<1> =? ( 0 'clevel ! )
 	<2> =? ( 1 'clevel ! )
 	<3> =? ( 2 'clevel ! )
@@ -577,10 +583,10 @@
 	15 'moderect btnmode 
 	192 'modeedit btnmode 
 	;
-		
+	
 :editor
 	0 SDLcls
-	immgui		| ini IMMGUI	
+	immgui		| ini IMMGUI
 	toolbar		
 	drawmapedit
 	immRedraw	| IMMGUI windows

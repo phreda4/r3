@@ -28,7 +28,7 @@
 	xr2 over - swap xr1 - or or
 	63 >> not 						| x y -- -1/0
 	'in? ! ;
-	
+
 ::guiBox | x1 y1 w h --
 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
 	SDLx SDLy guiIn ;
@@ -36,7 +36,6 @@
 ::guiRect | x1 y1 x2 y2 --
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
 	SDLx SDLy guiIn ;
-	
 
 |---------
 ::gui

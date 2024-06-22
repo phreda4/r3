@@ -526,7 +526,6 @@
 |	winevent 1? ( dup ex ) drop
 	;
 
-
 |------ Init
 ::immSDL | font --
 |	"media/ttf/ProggyClean.ttf" 16 TTF_OpenFont 
