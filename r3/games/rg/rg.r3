@@ -1,6 +1,10 @@
+| Rythm game
+| PHREDA 2024
+|------------------
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2mixer.r3
 ^r3/util/sdlgui.r3
+^r3/util/arr16.r3
 
 |------ sound
 #sndfiles 
@@ -21,6 +25,31 @@
 :playsnd | n --
 	3 << 'sndlist + @ SNDplay ;
 
+|------- graficos
+
+| 1 2  3   4   5   6   7 8  9  10 11    
+| x y 
+
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+
+#sprgame
+#cucas 0 0 
+#fx 0 0
+
+:cuca
+	dup 8 + >a 
+	a@+ int. a@+ int.  | x y
+	a@+ sprgame ssprite | x y ang zoom img --
+	drop	
+	;
+	
+:+cuca | d x y --
+	'cuca 'cucas p!+ >a
+	swap a!+ a!+
+	a!+ 
+	;
+	
 |------- game
 #pulso 1.0 
 #largo 1000 | miliseconds
@@ -35,7 +64,7 @@
 
 |------- timeline
 
-#time1 $0 $0 $0 $0 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0
+#time1 $0 $0 $0 $0 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0 -1
 
 #ntime
 
@@ -43,21 +72,27 @@
 	0 'ntime !
 	;
 	
+	
 :showtime
 	ntime 3 << 'time1 + @
+	-? ( drop exit ; )
+	
+	$80 ( 1? 
+		over and? ( ) 
+		1 >>> ) drop
 	
 	;
 	
 :tclock
 	timer.
 	tiempo timer+ 
-	largo >? ( largo - 
-		15 playsnd 
-		tiempo 'thit ! )
-	'tiempo !
-
+	largo <? ( 'tiempo ! ; )
+	largo - 'tiempo ! 
+	|15 playsnd 
+	tiempo 'thit ! 
+	1 'ntime +! 
 	;
-	
+
 
 :bt
 	estado 0? ( drop ; ) drop
@@ -72,28 +107,28 @@
 	$ff sdlcolor
 	600 280 48 40 SDLFrect
 	;
-	
-	
 
 :paso
-	tclock
-
 	$ff00 sdlcolor
 	50 tiempo 1 >> 50 + 20 20 SDLFrect
-
 	;
 	
 :game
-	0 SDLcls
+	$999999 SDLcls
 	immgui 	
 	
 	200 28 immbox
 	500 16 immat
-	dif "d:%d" immlabelc immdn
 	
-	paso
-	rt
-	bt
+	ntime dif "d:%d t:%d" immlabelc immdn
+
+	tclock
+	
+	paso rt bt
+	'cucas p.draw
+	'fx p.draw
+	
+|	showtime
 	
 	SDLredraw
 	SDLkey
@@ -115,9 +150,20 @@
 	
 :main
 	"Ritmo!!" 1024 600 SDLinit
+	
 	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	
+	32 32 "r3/games/rg/cuca1.png" ssload 'sprgame !
+	100 'cucas p.ini
+	100 'fx p.ini
+	
+	0 1000.0 300.0 +cuca
+	1 1000.0 400.0 +cuca
+	2 1000.0 500.0 +cuca
+	
 	44100 $8010 1 1024 Mix_OpenAudio
 	loadsnd
+	
 	timer<
 	'game SDLshow
 	SDLquit 

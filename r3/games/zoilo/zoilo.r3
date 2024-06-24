@@ -1,5 +1,5 @@
-| bmap test 
-|
+| pampa zoilo
+| PHREDA 2024
 |------------------
 ^r3/win/console.r3
 ^r3/win/sdl2gfx.r3
