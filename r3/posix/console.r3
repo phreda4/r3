@@ -2,6 +2,7 @@
 | PHREDA 2022
 
 ^r3/posix/posix.r3
+^r3/posix/mem.r3
 ^r3/lib/str.r3
 
 #kb 0
@@ -37,7 +38,7 @@
 
 ::.home	"H" .[ ; | home
 ::.cls "H" .[ "J" .[ ; | cls 
-|::.at "%d;%df" sprint .[ ; | x y -- 
+::.at "%d;%df" sprint .[ ; | x y -- 
 ::.eline "K" .[ ; | erase line from cursor
 
 |::.fc "38;5;%dm" sprint .[ ; | Set foreground color.
@@ -105,4 +106,16 @@
 
 :ms 1000 * libc-usleep drop ;
 
+|------------ input
+#ch
 
+::getch | 
+   0 'ch 1 libc-read ;
+
+##pad * 256
+
+::.input | --
+	'pad 
+	( getch $D001C <>? 
+		.emit ) drop
+	0 swap c! ;

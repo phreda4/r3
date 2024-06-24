@@ -1,7 +1,8 @@
 | linux system calls
-| stdio : 0 
+| stdin : 0 
 | stdout : 1
 | stderr : 2
+
 #sys-open
 #sys-creat
 #sys-close
@@ -35,6 +36,7 @@
 #sys-fcntl 
 #sys-time
 #sys-localtime
+
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
 ::libc-close sys-close sys1 ;
@@ -68,6 +70,7 @@
 ::libc-fcntl sys-fcntl sys3 ;
 ::libc-time sys-time sys1 drop ;
 ::libc-localtime sys-localtime sys1 drop ;
+
 :
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
@@ -93,6 +96,7 @@
 	dup "fsync" getproc 'sys-fsync !
 	dup "mprotect" getproc 'sys-mprotect !
 	dup "signal" getproc 'sys-signal !
+
 	dup "chdir" getproc 'sys-chdir !
 	dup "mkdir" getproc 'sys-mkdir !
 	dup "rmdir" getproc 'sys-rmdir !

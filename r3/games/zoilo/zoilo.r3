@@ -171,8 +171,8 @@
 	inisprite
 	reset
 	'persona1 130.0 300.0 +jugador
-	200 ( 1? 1 - randnpc ) drop
-	10 ( 1? 1 - randcosa ) drop
+|	200 ( 1? 1 - randnpc ) drop
+|	10 ( 1? 1 - randcosa ) drop
 	'jugar SDLshow
 	;	
 

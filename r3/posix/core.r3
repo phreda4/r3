@@ -1,9 +1,11 @@
 | SO core words
 | PHREDA 2021
+
 ^r3/posix/posix.r3
 ^r3/lib/str.r3
 	
 #process-heap
+
 ::ms | ms --
 	1000 * libc-usleep drop ;
 	
@@ -12,13 +14,16 @@
    
 ::free |( a -- ior )
     libc-free drop 0 ; 
+
 ::resize |( a n -- a ior ) 
 	libc-realloc dup 0 ;
+
 |4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
 ::msec | -- msec
    'te 4 libc-clock_gettime drop
    'te @+ 1000 * swap @ 1000000 / + ;
+
 |struct tm {
 |   int tm_sec;         /* seconds,  range 0 to 59          */
 |   int tm_min;         /* minutes, range 0 to 59           */
@@ -31,39 +36,50 @@
 |   int tm_isdst;       /* daylight saving time             */	
 #sit 0
 	
+
 ::time | -- hms
     'sit libc-time
     'sit libc-localtime 'sit !
+
 |		time(&sit);sitime=localtime(&sit);
 |		NOS++;*NOS=TOS;TOS=(sitime->tm_hour<<16)|(sitime->tm_min<<8)|sitime->tm_sec;continue;	
+
 |	'sistime 8 + @
 |	dup 32 >> $ffff and 
 |	over 16 >> $ffff and 
 |	rot $ffff and
 |	8 << or 8 << or 
 	;
+
 	
 ::date | -- ymd
     'sit libc-time
     'sit libc-localtime 'sit !
+
 |		time(&sit);sitime=localtime(&sit);
 |		NOS++;*NOS=TOS;TOS=(sitime->tm_year+1900)<<16|(sitime->tm_mon+1)<<8|sitime->tm_mday;continue;
+
 |	'sistime @
 |	dup 48 >> $ffff and 
 |	over 16 >> $ffff and
 |	rot $ffff and
 |	8 << or 8 << or
 	;
+
 #dirp
 #dp
+
 ::ffirst | "path//*" -- fdd/0
     dirp 1? ( dup libc-closedir drop ) drop
     libc-opendir dup 'dirp !
     1? ( libc-readdir ) dup 'dp !
     ;
+
 ::fnext | -- fdd/0
     dp 1? ( dirp libc-readdir ) dup 'dp ! 
     ;
+
+
 |        file=fopen((char*)TOS,"rb");
 |        TOS=*NOS;NOS--;
 |        if (file==NULL) continue;
@@ -72,13 +88,14 @@
 	
 ::load | 'from "filename" -- 'to
     0? ( drop ; )
-    2 $1ff libc-fopen     | 0=O_RDONLY 2= O_RDWR   1ff = 777 
+    2 $1ff libc-open     | 0=O_RDONLY 2= O_RDWR   1ff = 777 
     0? ( drop ; ) | adr FILE
     swap 
     ( 2dup $ffff libc-read +? + ) drop
     swap libc-close drop
     ;
  
+
 |    case SAVE: //SAVE: // 'from cnt "filename" --
 |        if (TOS==0||*NOS==0) { remove((char*)TOS);
 |		NOS-=2;TOS=*NOS;NOS--;continue; }
@@ -89,12 +106,13 @@
 |        fclose(file);
 	
 ::save | 'from cnt "filename" --
-     
-	$40000000 0 0 2 $8000000 0 CreateFile
+    0? ( 3drop ; )
+    3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
-	dup >r rot rot 'cntf 0 WriteFile
-	r> swap 0? ( 2drop ; ) drop
-	CloseHandle ;
+|	dup >r rot rot 'cntf 0 WriteFile
+    libc-close drop 
+    ;
+
 |    case APPEND: //APPEND: // 'from cnt "filename" --
 |        if (TOS==0||*NOS==0) { NOS-=2;TOS=*NOS;NOS--;continue; }
 |        file=fopen((char*)TOS,"ab");
@@ -105,17 +123,23 @@
 |        NOS--;TOS=*NOS;NOS--;continue;
 	
 ::append | 'from cnt "filename" -- 
-	$4 1 0 4 $80 0 CreateFile
+    0? ( 3drop ; )
+    3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
-	dup 0 0 2 SetFilePointer drop
-	dup >r rot rot 'cntf 0 WriteFile
-	r> swap 0? ( 2drop ; ) drop
-	CloseHandle ;
+|	dup 0 0 2 SetFilePointer drop
+|	dup >r rot rot 'cntf 0 WriteFile
+|	r> swap 0? ( 2drop ; ) drop
+|	CloseHandle 
+    ;
+
 ::delete | "filename" --
-	DeleteFile drop ;
+|	DeleteFile 
+drop 
+    ;
 	
 ::filexist | "file" -- 0=no
-	GetFileAttributes $ffffffff xor ;
+|	GetFileAttributes $ffffffff xor 
+    ;
 	
 | atrib creation access write size
 #fileatrib [ 0 ] 0 0 0 0
@@ -123,6 +147,7 @@
 ::fileisize | -- size
 	'fileatrib 28 + @ 
 	dup 32 >> swap 32 << or ;
+
 ::fileijul | -- jul
 	'fileatrib 20 + @
 	86400000000 / | segundos>days
@@ -131,15 +156,17 @@
 	;	
 	
 ::fileinfo | "file" -- 0=not exist
-	0 'fileatrib GetFileAttributesEx  ;
+|	0 'fileatrib GetFileAttributesEx  
+    ;
 	
 #sinfo * 100
 #pinfo * 24
+
 ::sys | "" --
 	'sinfo 0 100 cfill
 	68 'sinfo d!
-	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
-	pinfo -1 WaitForSingleObject
+|	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
+|	pinfo -1 WaitForSingleObject
 	;
 	
 :

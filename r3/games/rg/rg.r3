@@ -33,6 +33,32 @@
 #estado
 #ritmo
 
+|------- timeline
+
+#time1 $0 $0 $0 $0 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0
+
+#ntime
+
+:trestart
+	0 'ntime !
+	;
+	
+:showtime
+	ntime 3 << 'time1 + @
+	
+	;
+	
+:tclock
+	timer.
+	tiempo timer+ 
+	largo >? ( largo - 
+		15 playsnd 
+		tiempo 'thit ! )
+	'tiempo !
+
+	;
+	
+
 :bt
 	estado 0? ( drop ; ) drop
 	$ff0000 
@@ -50,12 +76,7 @@
 	
 
 :paso
-	timer.
-	tiempo timer+ 
-	largo >? ( largo - 
-		15 playsnd 
-		tiempo 'thit ! )
-	'tiempo !
+	tclock
 
 	$ff00 sdlcolor
 	50 tiempo 1 >> 50 + 20 20 SDLFrect
