@@ -1,46 +1,54 @@
 ^r3/win/console.r3
-^r3/lib/3dgl.r3
-^r3/lib/vec3.r3
+^r3/win/sdl2gfx.r3
 
 #prevt
 #dtime
 
 :timeI msec 'prevt ! 0 'dtime ! ;
 :time. msec dup prevt - 'dtime ! 'prevt ! ;
-:time+ dtime + $ffffff7fffffffff and  ;
+:time+ dtime + $ffffffff7fffffff and ;
 
-:nanim | nanim -- n
-	dup |$ffffffffff and 
-	over 40 >> $f and 48 + << 1 >>>
-	over 44 >> $ff and 63 *>>
-	swap 52 >>> + | ini
-	;
-	
-:vni>anim | vel cnt ini -- nanim 
-	$fff and 52 << swap
-	$ff and 44 << or swap
-	$f and 40 << or 
-	;
-	
-#vanim
+#vanim1
+#vanim2
 
-:dump 
-|	dup 40 >> $f and "%d " .print 
-|	dup 44 >> $ff and "%d " .print 
-|	dup 52 >>> "%d : " .print
-	dup "%h" .print
-	nanim " : %d" .println
+| inicio(16) cnt(8) escala(8) time(32)
+|                      
+:aICS | init cnt scale -- val
+	32 << swap 40 << or swap 48 << or ;
+	
+:gea | ani -- t
+	dup |$ffffffff and
+	dup 32 >> $ff and * $ffff and
+	over 40 >> $ff and 16 *>>
+	swap 48 >>> +
 	;
 	
-:
-timeI
-.cls
-"ani test" .println
-7 8 4 vni>anim | vel cnt ini 
-'vanim !
-25 ( 1? 1 -
-	20 'vanim +!
-	vanim dump
-	) drop
-.input
+:main
+	0 SDLcls
+	
+	time.
+	vanim1 time+ 'vanim1 !
+	vanim2 time+ 'vanim2 !
+
+	$ff sdlcolor
+	vanim1 gea 5 << 40 40 40 sdlfrect
+
+	$ffff sdlcolor
+	vanim2 gea 5 << 80 40 40 sdlfrect
+	
+	SDLredraw
+	
+	SDLkey
+	>esc< =? ( exit )
+	drop ;
 ;
+
+: 
+	"r3sdl" 800 600 SDLinit
+	timeI
+	1 10 64 aICS 'vanim1 !
+	
+	1 10 32 aICS 'vanim2 !
+	'main SDLshow 
+	SDLquit
+	;
