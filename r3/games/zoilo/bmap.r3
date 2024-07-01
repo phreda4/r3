@@ -154,9 +154,10 @@
 	36 >> layer | Front2
 	;
 	
-|-------------------------	
+|------------------------- 32x32 pixel
+
 ::drawmaps | xvp yvp --
-	dup $1f and neg 'mapy ! 5 >> 'mapsy !
+	dup $1f and neg 'mapy ! 5 >> 'mapsy ! 
 	dup $1f and neg 'mapx ! 5 >> 'mapsx !
 	0 sprinscr> !
 	0 ( mapsh <? 
@@ -191,27 +192,9 @@
 	34 'mapsw ! 22 'mapsh !	
 	;
 
-::xyinmap@ | x y
-	16 >> 32 + mapth / swap 
-	16 >> maptw / swap 
-	map> @ ;
-
+::xyinmap@ | x y -- map
+	16 >> mapth / swap 16 >> maptw / swap map> @ ;
 	
-:sumax | adv -- tilew
-	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
-
-::xymove | dx dy --
-	a> @ pick2 + 16 >> pick2 sumax + | costados
-	maptw / 
-	a> 8 + @ pick2 + 16 >> 32 + | piso
-	mapth /
-	map> @ $1000000000000 and? ( 3drop ; ) 
-	
-	drop
-	a> 8 + +!
-	a> +!
-	;
-
 :poketrigger | adr --
 	dup @ $4000000000000 nand? ( 2drop ; ) 
 	$8000000000000 or swap ! ;

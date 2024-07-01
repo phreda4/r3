@@ -36,7 +36,6 @@
 	;
 
 |---------------------
-
 :viewpostmove
 	xvpd xvp - 5 >> 'xvp +!
 	yvpd yvp - 5 >> 'yvp +!
@@ -59,6 +58,24 @@
 	
 :anim@
 	a> 2 3 << + @+ 2 << swap @ + ;
+
+:sumax | adv -- tilew
+	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
+
+:xymove | dx dy --
+	a> @ pick2 + |16 >> pick2 sumax + | costados
+	|maptw / 
+	a> 8 + @ pick2 + |16 >> 32 + | piso
+	|mapth /
+	|map> @ 
+	xyinmap@
+	$1000000000000 and? ( 3drop ; ) 
+	
+	drop
+	a> 8 + +!
+	a> +!
+	;
+
 	
 |  x y anim 
 :player	

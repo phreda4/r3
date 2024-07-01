@@ -16,17 +16,17 @@
 
 #index [ 0 1 2 2 3 0 ]
 
-:rgb23 | rgb -- r g b
+:rgb24 | rgb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
 
-:rgb24 | argb -- r g b
+:rgb32 | argb -- r g b a
 	dup 16 >> $ff and swap dup 8 >> $ff and swap dup $ff and swap 24 >> $ff and ;
 	
 ::SDLColor | col --
-	SDLrenderer swap rgb23 $ff SDL_SetRenderDrawColor ;
+	SDLrenderer swap rgb24 $ff SDL_SetRenderDrawColor ;
 
 ::SDLColorA | col --
-	SDLrenderer swap rgb24 SDL_SetRenderDrawColor ;
+	SDLrenderer swap rgb32 SDL_SetRenderDrawColor ;
 
 ::SDLcls | color --
 	SDLColor SDLrenderer SDL_RenderClear ;
@@ -148,7 +148,7 @@
 	;
 
 ::tscolor | rrggbb 'ts --
-	@ swap rgb23 SDL_SetTextureColorMod	;
+	@ swap rgb24 SDL_SetTextureColorMod	;
 	
 ::tsalpha | alpha 'ts --
 	@ swap SDL_SetTextureAlphaMod ;
@@ -306,7 +306,7 @@
 ::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
 ::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
 
-|.... animamation
+|.... animation v0
 | $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
 
 ::nanim | nanim -- n
@@ -326,5 +326,17 @@
 	$ff and 44 << or swap
 	$f and 40 << or ;
 
+|.... animation v1
+| inicio(16) cnt(8) escala(8) time(32) (49 dias)
+|                      
+::ICS>anim | init cnt scale -- val
+	32 << swap 40 << or swap 48 << or ;
 	
+::anim>N | ani -- t
+	dup |$ffffffff and
+	dup 32 >> $ff and * $ffff and
+	over 40 >> $ff and 16 *>>
+	swap 48 >>> +
+	;
+
 : fillfull ;
