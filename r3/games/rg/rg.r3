@@ -34,25 +34,34 @@
 :.y 2 ncell+ ;
 
 #sprgame
+#sprplayer
+
 #cucas 0 0 
 #fx 0 0
+
+#jugador 0 0 0 0 0 0 0 0
+
 
 :cuca
 	dup 8 + >a 
 	a@+ int. a@+ int.  | x y
-	a@+ sprgame ssprite | x y ang zoom img --
+	a@ timer+ dup a!+ 
+	anim>N sprgame ssprite | x y ang zoom img --
+	
+	5.0 over .x +!
+	dup .x @ 1024.0 >? ( 2drop 0 ; ) drop
 	drop	
 	;
 	
-:+cuca | d x y --
+:+cuca | x y --
 	'cuca 'cucas p!+ >a
 	swap a!+ a!+
-	a!+ 
+	0 2 $7f ICS>anim a!+ 
 	;
 	
 |------- game
 #pulso 1.0 
-#largo 1000 | miliseconds
+#largo 500 | miliseconds
 
 #thit
 #dif
@@ -64,27 +73,30 @@
 
 |------- timeline
 
-#time1 $0 $0 $0 $0 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0 -1
+#time1 $1 $2 $4 $5 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0 -1
 
+#ltime
 #ntime
 
 :trestart
+	-1 'ltime ! 
 	0 'ntime !
 	;
 	
-	
 :showtime
-	ntime 3 << 'time1 + @
-	-? ( drop exit ; )
-	
-	$80 ( 1? 
-		over and? ( ) 
-		1 >>> ) drop
-	
+	ntime ltime =? ( drop ; ) 
+	dup 'ltime !
+	3 << 'time1 + @
+	-? ( drop 0 'ntime ! ; )
+
+	0 >a
+	$1 ( $8 <? 
+		over and? ( 0.0 280.0 160.0 a> * + +cuca ) 
+		1 << 1 a+ ) drop
+	drop
 	;
 	
 :tclock
-	timer.
 	tiempo timer+ 
 	largo <? ( 'tiempo ! ; )
 	largo - 'tiempo ! 
@@ -99,40 +111,69 @@
 	$ff0000 
 	tiempo 100 >? ( swap $ff or swap ) drop
 	sdlcolor
-	400 280 48 40 SDLFrect
+	400 40 48 40 SDLFrect
 	;
 	
 :rt
 	tiempo 100 >? ( drop ; ) drop
 	$ff sdlcolor
-	600 280 48 40 SDLFrect
+	600 40 48 40 SDLFrect
 	;
 
 :paso
 	$ff00 sdlcolor
-	50 tiempo 1 >> 50 + 20 20 SDLFrect
+	tiempo 2 >> 50 + 40 20 20 SDLFrect
+	;
+	
+|------------- jugadores
+	
+:golpe | time player --
+	3 << 'jugador +
+	dup @ 1? ( 3drop ; ) drop
+	! ;
+	
+:player	| player --
+	960 200 pick2 160 * + 
+	pick2 3 << 'jugador + @ 
+	1? ( drop 1 )
+	sprplayer ssprite
+	
+	3 << 'jugador +
+	dup @ 0? ( 2drop ; ) 
+	timer- -? ( 0 nip ) swap !
 	;
 	
 :game
+	timer.
 	$999999 SDLcls
 	immgui 	
 	
 	200 28 immbox
 	500 16 immat
 	
-	ntime dif "d:%d t:%d" immlabelc immdn
+	ntime dif "d:%d ntime:%d" immlabelc immdn
 
 	tclock
 	
 	paso rt bt
+
 	'cucas p.draw
 	'fx p.draw
+	0 player
+	1 player
+	2 player
 	
-|	showtime
+	showtime
 	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
+	<a> =? ( 200 0 golpe )
+	<s> =? ( 200 1 golpe )
+	<d> =? ( 200 2 golpe )
+	drop ;
+
+:a	
 	<a> =? ( 0 playsnd tiempo thit - 'dif ! 1 'estado ! ) >a< =? ( 0 'estado ! )
 	<s> =? ( 7 playsnd )
 	<d> =? ( 8 playsnd ) 
@@ -143,10 +184,7 @@
 	<k> =? ( 3 playsnd ) 
 	<l> =? ( 4 playsnd ) 
 	<l> =? ( 5 playsnd ) 
-	
-	
-	drop ;
-	
+	;
 	
 :main
 	"Ritmo!!" 1024 600 SDLinit
@@ -154,12 +192,13 @@
 	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
 	
 	32 32 "r3/games/rg/cuca1.png" ssload 'sprgame !
+	128 142 "r3/games/rg/chancla.png" ssload 'sprplayer !
 	100 'cucas p.ini
 	100 'fx p.ini
 	
-	0 1000.0 300.0 +cuca
-	1 1000.0 400.0 +cuca
-	2 1000.0 500.0 +cuca
+|\	0.0 300.0 +cuca
+|	0.0 400.0 +cuca
+|	0.0 500.0 +cuca
 	
 	44100 $8010 1 1024 Mix_OpenAudio
 	loadsnd

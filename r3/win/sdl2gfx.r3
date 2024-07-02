@@ -305,6 +305,7 @@
 ::timer< msec 'prevt ! 0 'deltatime ! ;
 ::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
 ::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
+::timer- deltatime - ; 
 
 |.... animation v0
 | $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
