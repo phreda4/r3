@@ -15,6 +15,8 @@
 	pccr
 	$ff0000 pccolor
 	"Doble size" pcprint2
+	pccr pccr
+	"Text with size 2.3" 2.3 pcprintz	
 	
 	SDLredraw
 	sdlkey

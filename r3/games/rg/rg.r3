@@ -73,7 +73,7 @@
 
 |------- timeline
 
-#time1 $1 $2 $4 $5 $1 $0 $1 $0 $3 $2 $1 $4 $5 $0 -1
+#time1 $1 $2 $4 $5 $1 $8 $1 $f $3 $2 $1 $4 $5 $f -1
 
 #ltime
 #ntime
@@ -88,11 +88,10 @@
 	dup 'ltime !
 	3 << 'time1 + @
 	-? ( drop 0 'ntime ! ; )
-
-	0 >a
-	$1 ( $8 <? 
-		over and? ( 0.0 280.0 160.0 a> * + +cuca ) 
-		1 << 1 a+ ) drop
+	1 and? ( 0.0 120.0 +cuca )
+	2 and? ( 0.0 270.0 +cuca )
+	4 and? ( 0.0 420.0 +cuca )
+	8 and? ( 0.0 570.0 +cuca )
 	drop
 	;
 	
@@ -117,7 +116,7 @@
 :rt
 	tiempo 100 >? ( drop ; ) drop
 	$ff sdlcolor
-	600 40 48 40 SDLFrect
+	0 0 20 20 SDLFrect
 	;
 
 :paso
@@ -133,7 +132,7 @@
 	! ;
 	
 :player	| player --
-	960 200 pick2 160 * + 
+	960 80 pick2 150 * + 
 	pick2 3 << 'jugador + @ 
 	1? ( drop 1 )
 	sprplayer ssprite
@@ -151,7 +150,8 @@
 	200 28 immbox
 	500 16 immat
 	
-	ntime dif "d:%d ntime:%d" immlabelc immdn
+	ntime "ntime:%d" immlabelc immdn
+	ntime 3 << 'time1 + @ "actual:%h" immlabelc immdn
 
 	tclock
 	
@@ -162,6 +162,7 @@
 	0 player
 	1 player
 	2 player
+	3 player
 	
 	showtime
 	
@@ -171,6 +172,7 @@
 	<a> =? ( 200 0 golpe )
 	<s> =? ( 200 1 golpe )
 	<d> =? ( 200 2 golpe )
+	<f> =? ( 200 3 golpe )
 	drop ;
 
 :a	

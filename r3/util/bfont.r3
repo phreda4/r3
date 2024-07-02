@@ -23,12 +23,6 @@
 	SDL_SetTextureColorMod
 	;
 	
-::bemit | ascii --
-	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
-	SDLrenderer pfont 'op 'dp SDL_RenderCopy
-	wp 'dp d+!
-	;
-
 ::bfbox | --
 	SDLRenderer 'dp SDL_RenderFillRect ;
 
@@ -58,11 +52,55 @@
 	hp 32 << or
 	dp 'rec !+ !
 	SDLRenderer 'rec SDL_RenderFillRect ;
+
+::bemit | ascii --
+	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
+	SDLrenderer pfont 'op 'dp SDL_RenderCopy
+	wp 'dp d+! ;
 	
 ::bprint
 	sprint
 ::bemits | "" --
 	( c@+ 1? bemit ) 2drop ;
+
+|----- double w
+:bemitb	
+	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
+	SDLrenderer pfont 'op 'dp SDL_RenderCopy
+	wp 1 << 'dp d+! ;
+
+::bprintd
+	sprint
+::bemitsd | "" --
+	wp 1 << hp 32 << or 'dp 8 + !
+	( c@+ 1? bemitb ) 2drop 
+	wp hp 32 << or 'dp 8 + !
+	;
+
+|----- double w h
+::bprint2
+	sprint
+::bemits2 | "" --
+	wp 1 << hp 33 << or 'dp 8 + !
+	( c@+ 1? bemitb ) 2drop 
+	wp hp 32 << or 'dp 8 + ! ;
+
+|------- sized
+#advx
+
+:bemitz
+	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
+	SDLrenderer pfont 'op 'dp SDL_RenderCopy
+	advx 'dp d+! ;
+	
+::bprintz | .. "" size --
+	>r sprint r>
+::bemitsz | "" size --
+	wp over 16 *>> dup 'advx ! hp rot 16 *>>
+	33 << or 'dp 8 + !
+	( c@+ 1? bemitz ) 2drop 
+	wp hp 32 << or 'dp 8 + ! ;
+
 	
 ::bat | x y --
 	32 << or 'dp ! ;	

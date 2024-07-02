@@ -61,31 +61,38 @@
 :pcemitb	
 	dup $f and ws << swap 4 >> $f and hs 32 + << or 'op !
 	SDLrenderer pfont 'op 'dp SDL_RenderCopy
-	16 'dp d+!
-	;
+	16 'dp d+! ;
 	
 ::pcprintd
 	sprint
 ::pcemitsd | "" --
 	$1000000010 'dp 8 + ! 
 	( c@+ 1? pcemitb ) 2drop 
-	$1000000008 'dp 8 + ! 
-	;
+	$1000000008 'dp 8 + ! ;
 
 |----- double w h
-:pcemit2
-	dup $f and ws << swap 4 >> $f and hs 32 + << or 'op !
-	SDLrenderer pfont 'op 'dp SDL_RenderCopy
-	16 'dp d+!
-	;
-	
 ::pcprint2
 	sprint
 ::pcemits2 | "" --
 	$2000000010 'dp 8 + ! 
 	( c@+ 1? pcemitb ) 2drop 
-	$1000000008 'dp 8 + ! 
-	;
+	$1000000008 'dp 8 + ! ;
+
+|------- sized
+#advx
+
+:pcemitz
+	dup $f and ws << swap 4 >> $f and hs 32 + << or 'op !
+	SDLrenderer pfont 'op 'dp SDL_RenderCopy
+	advx 'dp d+! ;
+	
+::pcprintz | .. "" size --
+	>r sprint r>
+::pcemitsz | "" size --
+	8 over 16 *>> dup 'advx ! 16 rot 16 *>>
+	33 << or 'dp 8 + !
+	( c@+ 1? pcemitz ) 2drop 
+	$1000000008 'dp 8 + ! ;
 	
 	
 ::pcat | x y --
