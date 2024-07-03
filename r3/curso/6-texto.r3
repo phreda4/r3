@@ -19,7 +19,8 @@
 	$ff00 bcolor 
 	"text 2x" bprint2
 	bcr bcr
-	"Text with size 2.3" 2.3 bprintz
+	msec 5 << $7ffff and | 0 to 7.9 interval
+	"Text Size %f" over bprintz
 	SDLredraw
 	teclado
 	;

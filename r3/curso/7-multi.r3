@@ -7,30 +7,6 @@
 #spritesheet 0 0 0 | sprites
 #people 0 0 | array
 
-|.... time control
-#prevt
-#dtime
-
-:timeI msec 'prevt ! 0 'dtime ! ;
-:time. msec dup prevt - 'dtime ! 'prevt ! ;
-:time+ dtime + $ffffff7fffffffff and  ;
-
-| anima
-| $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
-
-:nanim | nanim -- n
-	dup $ffffffffff and 
-	over 40 >> $f and 48 + << 1 >>>
-	over 44 >> $ff and 63 *>>
-	swap 52 >>> + | ini
-	;
-	
-:vni>anim | vel cnt ini -- nanim 
-	$fff and 52 << swap
-	$ff and 44 << or swap
-	$f and 40 << or 
-	;
-
 |person array
 | x y ang anim ss vx vy ar
 | 1 2 3   4    5  6  7  8
@@ -47,7 +23,7 @@
 	dup 8 + >a
 	a@+ int. a@+ int.	| x y
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@ time+ dup a!+ nanim 			| n
+	a@ timer+ dup a!+ anim>n 			| n
 	a@+ sspriterz
 	
 	|..... remove when outside screen
@@ -74,10 +50,14 @@
 #vx #x #a
 
 :toright 
-	0.8 'vx ! -8.0 'x ! 7 8 10 vni>anim 'a ! ;
+	0.8 'vx ! -8.0 'x ! 
+	10 8 $7f ICS>anim | init cnt scale -- val
+	'a ! ;
 
 :toleft
-	-0.8 'vx ! 808.0 'x ! 7 8 1 vni>anim 'a ! ;
+	-0.8 'vx ! 808.0 'x ! 
+	1 8 $7f ICS>anim | init cnt scale -- val
+	'a ! ;
 
 :+randpeople
 	toright rand $1000 and? ( toleft ) drop
@@ -89,7 +69,7 @@
 	
 :demo
 	0 SDLcls
-	time.
+	timer.
 	'people p.drawo		| draw sprites
 	2 'people p.sort	| sort for draw (y coord)
 	SDLredraw 
@@ -106,7 +86,7 @@
 	16 32 "media/img/p2.png" ssload swap !+
 	16 32 "media/img/p3.png" ssload swap !
 	2000 'people p.ini
-	timeI
+	timer<
 	'demo SDLshow
 	SDLquit ;	
 	
