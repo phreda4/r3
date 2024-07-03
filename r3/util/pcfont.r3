@@ -90,7 +90,7 @@
 	>r sprint r>
 ::pcemitsz | "" size --
 	8 over 16 *>> dup 'advx ! 16 rot 16 *>>
-	33 << or 'dp 8 + !
+	32 << or 'dp 8 + !
 	( c@+ 1? pcemitz ) 2drop 
 	$1000000008 'dp 8 + ! ;
 	

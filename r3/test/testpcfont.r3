@@ -6,7 +6,7 @@
 :draw
 	0 SDLcls
 
-	10 10 gotoxy
+	10 2 gotoxy
 	$ffffff pccolor
 	"Hola r3 pcfont" pcprint
 	pccr
@@ -16,7 +16,7 @@
 	$ff0000 pccolor
 	"Doble size" pcprint2
 	pccr pccr
-	"Text with size 2.3" 2.3 pcprintz	
+	"Text with size 4.3" 4.3 pcprintz	
 	
 	SDLredraw
 	sdlkey

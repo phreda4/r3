@@ -97,9 +97,10 @@
 	>r sprint r>
 ::bemitsz | "" size --
 	wp over 16 *>> dup 'advx ! hp rot 16 *>>
-	33 << or 'dp 8 + !
+	32 << or 'dp 8 + !
 	( c@+ 1? bemitz ) 2drop 
-	wp hp 32 << or 'dp 8 + ! ;
+	wp hp 32 << or 'dp 8 + ! 
+	;
 
 	
 ::bat | x y --
