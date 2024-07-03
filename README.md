@@ -11,11 +11,20 @@ Download the code of this repository, uncompress and execute r3.exe
 
 ![Screenshot for execute r3](doc/web/r3-1.png)
 
-The main.r3 execute by r3.exe is a browser for files in /r3 foler
+The main.r3 execute by r3.exe is a browser for files in /r3 folder
 
-a more extensive description are in
+with the keys you can navigate while see the code in the left side of the screen.
 
+![Choose a code](doc/web/r3-2.png)
+Edit with F2 or execute with F1 the code in this folder
+
+![Choose a code](doc/web/r3-3.png)
+When execute a code with f1 you can see in terminal the compilation
+
+A brief description of R3 here
 [## How the language works](doc/web/HOWORK.md)
+
+o in the doc/ folder.
 
 The language use a virtual machine for work, this is the source code for this lang:
 https://github.com/phreda4/r3evm
