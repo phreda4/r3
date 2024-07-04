@@ -22,7 +22,7 @@ Edit with F2 or execute with F1 the code in this folder
 When execute a code with f1 you can see in terminal the compilation
 
 A brief description of R3 here
-[## How the language works](doc/web/HOWORK.md)
+## [How the language works](doc/web/HOWORK.md)
 
 o in the doc/ folder.
 
@@ -38,5 +38,5 @@ download and decompress in the r3/r3 folder
 
 https://www.youtube.com/playlist?list=PLTXylaG4SqxP86WQXKJBbPiNWYk5AF6Jn
 
-[## History](doc/web/HISTORY.md)
+## [History](doc/web/HISTORY.md)
 
