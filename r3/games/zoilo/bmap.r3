@@ -9,6 +9,7 @@
 
 |----
 ##sprplayer
+##sprplayer2
 
 |----
 #mapgame
