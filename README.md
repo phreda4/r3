@@ -9,15 +9,14 @@ R3 can load and call procedures from any dynamic library (.DLL in windows) the d
 
 Download the code of this repository, uncompress and execute r3.exe
 
-![Screenshot for execute r3](doc/web/r3-1.png | width=200)
-<img src="doc/web/r3-1.png" width="100">
+<img src="doc/web/r3-1.png" width="400">
 
 The main.r3 execute by r3.exe is a browser for files in /r3 folder
 
 with the keys you can navigate while see the code in the left side of the screen.
 
-![Choose a code](doc/web/r3-2.png | width=200)
-![Choose a code](doc/web/r3-3.png | width=200)
+<img src="doc/web/r3-2.png" width="400">
+<img src="doc/web/r3-3.png" width="400">
 
 Edit with F2 or execute with F1 the code in this folder
 When execute a code with F1 you can see in terminal the compilation
