@@ -9,6 +9,9 @@
 
 ^r3/games/zoilo/bmap.r3
 
+#aap2
+	
+
 |----
 #mapa1
 #btnpad
@@ -76,15 +79,14 @@
 	a> +!
 	;
 
-	
 |  x y anim 
 :player	
 	8 + >a
 	btnpad
-	%1000 and? ( 3 anim! 0 -2.0 xymove )
-	%100 and? ( 0 anim! 0 2.0 xymove  )
-	%10 and? ( 1 anim! -2.0 0.0 xymove )
-	%1 and? ( 2 anim! 2.0 0.0 xymove )
+	%1000 and? ( 0 -2.0 xymove )
+	%100 and? ( 0 2.0 xymove  )
+	%10 and? ( 12 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! -2.0 0.0 xymove )
+	%1 and? ( 0 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! 2.0 0.0 xymove )
 	1? ( msec 7 >> $3 and nip ) anim@ + c@
 	a@+ int. a@+ int. 
 	xytrigger
@@ -149,6 +151,7 @@
 	
 |----- JUGAR
 :jugar
+	timer.
 	0 SDLcls
 	immgui		| ini IMMGUI	
 
@@ -157,6 +160,9 @@
 	
 	xvp yvp drawmaps
 	viewpostmove
+	
+	aap2 timer+ 'aap2 !
+	500 300 aap2 anim>n sprplayer2 ssprite
 
 	SDLredraw
 	teclado
@@ -198,6 +204,12 @@
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	"r3/games/zoilo/mapa.bmap" loadmap 'mapa1 !
 	32 32 "r3/games/zoilo/sprites.png" ssload 'sprplayer !
+	
+	128 128 "r3/games/zoilo/jugador.png" ssload 'sprplayer2 !
+	
+	0 12 $3f ICS>anim 'aap2 !
+	12 12 $3f ICS>anim 'aap2 !
+	
 	1000 'obj p.ini
 	juego
 	SDLquit
