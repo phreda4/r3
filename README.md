@@ -15,13 +15,13 @@ The main.r3 execute by r3.exe is a browser for files in /r3 folder
 
 with the keys you can navigate while see the code in the left side of the screen.
 
-<img src="doc/web/r3-2.png" width="400">
-<img src="doc/web/r3-3.png" width="400">
+<img src="doc/web/r3-2.png" width="360"><img src="doc/web/r3-3.png" width="360">
 
-Edit with F2 or execute with F1 the code in this folder
-When execute a code with F1 you can see in terminal the compilation
+Edit with F2 or execute with F1 the code in this folder. When execute a code with F1 you can see in terminal the compilation
 
-A brief description of R3 here
+## Programs in the distributions
+
+
 ## [How the language works](doc/web/HOWORK.md)
 
 The language use a virtual machine for work, this is the source code for this lang:
