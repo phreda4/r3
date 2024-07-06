@@ -10,6 +10,7 @@
 #sys-SDL_GetNumVideoDisplays 
 #sys-SDL_CreateWindow 
 #sys-SDL_SetWindowFullscreen
+#sys-SDL_RenderSetLogicalSize
 #sys-SDL_GetWindowSurface 
 #sys-SDL_RaiseWindow
 #sys-SDL_ShowCursor 
@@ -75,6 +76,7 @@
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
 ::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
 ::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
+::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_RaiseWindow sys-SDL_RaiseWindow sys1 drop ;
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
 ::SDL_ShowCursor sys-SDL_ShowCursor sys1 drop ;
@@ -270,6 +272,7 @@
 	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
 	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !
 	dup "SDL_SetWindowFullscreen" getproc 'sys-SDL_SetWindowFullscreen !
+	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
 	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
 	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
 	

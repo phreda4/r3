@@ -19,6 +19,27 @@
 
 #xvp #yvp		| viewport
 #xvpd #yvpd	| viewport dest
+
+
+
+|person array
+| x y ang anim ss vx vy ar
+| 1 2 3   4    5  6  7  8
+:.x 1 ncell+ ;
+:.y 2 ncell+ ;
+:.a 3 ncell+ ;
+:.ani 4 ncell+ ;
+:.ss 5 ncell+ ;
+:.vx 6 ncell+ ;
+:.vy 7 ncell+ ;
+:.va 8 ncell+ ;
+
+#fullscr
+	
+:toglefs
+	fullscr 1 xor 'fullscr !
+	SDL_windows fullscr $1 and SDL_SetWindowFullscreen 
+	;
 	
 |------ PLAYER
 :teclado
@@ -32,9 +53,7 @@
 	>dn< =? ( btnpad %100 not and 'btnpad ! )
 	>le< =? ( btnpad %10 not and 'btnpad ! )
 	>ri< =? ( btnpad %1 not and 'btnpad ! )	
-	
-|	<f1> =? ( sprinscr ( sprinscr> <? @+ "%h " .print @+ "%h" .println ) drop .cr )
-|	<f2> =? ( 1 0 500 randmax +sprite )
+	<f> =? ( toglefs )
 	drop 
 	;
 
@@ -66,17 +85,34 @@
 	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
 
 :xymove | dx dy --
-	a> @ pick2 + |16 >> pick2 sumax + | costados
-	|maptw / 
+	a> @ pick2 + 
 	a> 8 + @ pick2 + |16 >> 32 + | piso
-	|mapth /
-	|map> @ 
 	xyinmap@
 	$1000000000000 and? ( 3drop ; ) 
 	
 	drop
 	a> 8 + +!
 	a> +!
+	;
+
+|0 12 $3f ICS>anim 'aap2 !
+|12 12 $3f ICS>anim 'aap2 !
+
+#btnpadp
+
+:setvel
+	a> .vy !
+	a> .vx !
+	;
+	
+	
+:dobtn
+	btnpad btnpadp =? ( drop ; ) 
+	%1000 and? ( 0 -2.0 xymove )
+	%100 and? ( 0 2.0 xymove  )
+	%10 and? ( 12 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! -2.0 0.0 xymove )
+	%1 and? ( 0 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! 2.0 0.0 xymove )
+	'btnpadp !
 	;
 
 |  x y anim 
@@ -201,14 +237,13 @@
 
 :main
 	"r3sdl" 1024 600 SDLinit
+	SDLrenderer 1024 600 SDL_RenderSetLogicalSize | fullscreen
+	
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	"r3/iti2024/zoilo/mapa.bmap" loadmap 'mapa1 !
 	32 32 "r3/iti2024/zoilo/sprites.png" ssload 'sprplayer !
 	
 	128 128 "r3/iti2024/zoilo/jugador.png" ssload 'sprplayer2 !
-	
-	0 12 $3f ICS>anim 'aap2 !
-	12 12 $3f ICS>anim 'aap2 !
 	
 	1000 'obj p.ini
 	juego
