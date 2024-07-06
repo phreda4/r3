@@ -34,7 +34,7 @@
 	a@+ int. a@+ int.	| x y
 	a@+ 				| zoom
 	a@ timer+ dup a!+ 	| anima
-	nanim a@+ sspritez
+	anim>N a@+ sspritez
 	dup .vx @ over .x +!	| vx
 	dup .vy @ over .y +!	| vy
 	;
@@ -42,13 +42,13 @@
 |--------------- fx	
 :explosion
 	objsprite	
-	.a @ nanim 10 =? ( drop 0 ; ) drop ;
+	.a @ anim>N 10 =? ( drop 0 ; ) drop ;
 
 :+explo	| y x --
 	'explosion 'listfx p!+ >a 
 	swap a!+ a!+	| x y 
 	2.0 a!+			| zoom
-	7 5 6 vci>anim | vel cnt ini 
+	6 5 $7f ICS>anim | init cnt scale
 	a!+	sprites a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
 	snd_explode SNDplay	
@@ -96,7 +96,7 @@
 	'bala 'listshoot p!+ >a 
 	x a!+ y 16.0 - a!+	| x y 
 	1.0 a!+	| zoom
-	8 2 10 vci>anim | vel cnt ini 
+	10 2 $7f ICS>anim | init cnt scale	
 	a!+ sprites a!+	| anim sheet
 	0 a!+ -3.0 a!+ 	| vx vy
 	snd_shoot SNDplay	
@@ -119,7 +119,7 @@
 	500.0 randmax 70.0 + a!+ 
 	-16.0 a!+
 	2.0 a!+	| zoom
-	7 4 2 vci>anim | vel cnt ini 
+	2 4 $7f ICS>anim | init cnt scale
 	a!+	sprites a!+			| anim sheet
 	2.0 randmax 1.0 - 
 	a!+ 2.0 a!+ 	| vx vy

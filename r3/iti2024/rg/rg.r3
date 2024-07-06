@@ -19,7 +19,7 @@
 	'sndlist >a
 	'sndfiles
 	( dup c@ 1? drop
-		dup "r3/games/rg/samples/%s" sprint mix_loadWAV a!+
+		dup "r3/iti2024/rg/samples/%s" sprint mix_loadWAV a!+
 		>>0 ) drop ;
 
 :playsnd | n --
@@ -193,8 +193,8 @@
 	
 	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
 	
-	32 32 "r3/games/rg/cuca1.png" ssload 'sprgame !
-	128 142 "r3/games/rg/chancla.png" ssload 'sprplayer !
+	32 32 "r3/iti2024/rg/cuca1.png" ssload 'sprgame !
+	128 142 "r3/iti2024/rg/chancla.png" ssload 'sprplayer !
 	100 'cucas p.ini
 	100 'fx p.ini
 	

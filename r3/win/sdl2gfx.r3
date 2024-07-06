@@ -307,26 +307,6 @@
 ::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
 ::timer- deltatime - ; 
 
-|.... animation v0
-| $fff ( 4k sprites) $ff (256 movs) $f (vel) ffffffffff (time)
-
-::nanim | nanim -- n
-	dup $ffffffffff and 
-	over 40 >> $f and 48 + << 1 >>>
-	over 44 >> $ff and 63 *>>
-	swap 52 >> + | ini
-	;
-
-::canim | nanim -- nframe
-	dup $ffffffffff and 
-	over 40 >> $f and 48 + << 1 >>>
-	swap 44 >> $ff and 63 *>> ;
-	
-::vci>anim | vel cnt ini -- nanim 
-	$fff and 52 << swap
-	$ff and 44 << or swap
-	$f and 40 << or ;
-
 |.... animation v1
 | inicio(16) cnt(8) escala(8) time(32) (49 dias)
 |                      

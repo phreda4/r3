@@ -7,7 +7,7 @@
 ^r3/util/arr16.r3
 ^r3/lib/rand.r3
 
-^r3/games/zoilo/bmap.r3
+^r3/iti2024/zoilo/bmap.r3
 
 #aap2
 	
@@ -202,10 +202,10 @@
 :main
 	"r3sdl" 1024 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
-	"r3/games/zoilo/mapa.bmap" loadmap 'mapa1 !
-	32 32 "r3/games/zoilo/sprites.png" ssload 'sprplayer !
+	"r3/iti2024/zoilo/mapa.bmap" loadmap 'mapa1 !
+	32 32 "r3/iti2024/zoilo/sprites.png" ssload 'sprplayer !
 	
-	128 128 "r3/games/zoilo/jugador.png" ssload 'sprplayer2 !
+	128 128 "r3/iti2024/zoilo/jugador.png" ssload 'sprplayer2 !
 	
 	0 12 $3f ICS>anim 'aap2 !
 	12 12 $3f ICS>anim 'aap2 !
