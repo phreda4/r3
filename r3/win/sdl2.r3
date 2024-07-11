@@ -13,6 +13,7 @@
 #sys-SDL_RenderSetLogicalSize
 #sys-SDL_GetWindowSurface 
 #sys-SDL_RaiseWindow
+#sys-SDL_GetWindowSize
 #sys-SDL_ShowCursor 
 #sys-SDL_UpdateWindowSurface 
 #sys-SDL_DestroyWindow 
@@ -78,6 +79,7 @@
 ::SDL_SetWindowFullscreen sys-SDL_SetWindowFullscreen sys2 drop ;
 ::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_RaiseWindow sys-SDL_RaiseWindow sys1 drop ;
+::SDL_GetWindowSize sys-SDL_GetWindowSize sys3 drop ;
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
 ::SDL_ShowCursor sys-SDL_ShowCursor sys1 drop ;
 ::SDL_UpdateWindowSurface sys-SDL_UpdateWindowSurface sys1 drop ;
@@ -179,6 +181,14 @@
 	dup -1 0 SDL_CreateRenderer 'SDLrenderer !
 	SDL_RaiseWindow
 	;
+	
+::sdlinitR | "titulo" w h -- | resize windows
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$1FFF0000 dup sw sh $20 SDL_CreateWindow dup 'SDL_windows !
+	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDL_windows SDL_RaiseWindow
+	;
 
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
@@ -221,6 +231,9 @@
 ##SDLkey
 ##SDLchar
 ##SDLx ##SDLy ##SDLb
+
+:changews | change windowsize
+	SDL_windows 'sw 'sh SDL_GetWindowSize ;
 	
 ::SDLupdate
 	0 'SDLkey !
@@ -228,6 +241,7 @@
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
+		$200 =? ( drop changews  ; ) | WINDOWEVENT
 		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
 		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
 		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
@@ -277,6 +291,7 @@
 	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
 	
 	dup "SDL_RaiseWindow" getproc 'sys-SDL_RaiseWindow !
+	dup "SDL_GetWindowSize" getproc 'sys-SDL_GetWindowSize !
 	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
 	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
 	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !
