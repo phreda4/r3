@@ -78,6 +78,26 @@
 	"r3/d4/meta/metalibs.r3" appendmem
 	empty ;
 
+:genlibnocall
+	mark
+|	"^" ,s 'r3filename ,s ,cr
+	"#name """ ,s 'r3filename ,s """" ,s
+	,cr
+	"#words " ,s
+	dicc< ( dicc> <? dup gname 32 + ) drop " 0" ,s 
+	,cr
+|	"#calls " ,s
+|	dicc< ( dicc> <? dup gvector 32 + ) drop 
+|	,cr
+	"#info (" ,s
+	dicc< ( dicc> <? dup ginfo 32 + ) drop 
+	" )" ,s 
+	,cr
+	"#" ,s 'filenamev ,s " 'name 'words 'info" ,s 
+	,cr
+	"r3/d4/meta/mlibs.r3" appendmem
+	empty ;
+
 :namevirtual | name -- name
 	dup 'filenamev strcpy
 	'filenamev
@@ -105,6 +125,7 @@
 |	r3-stage-3 | core.r3 fail!! (need inv)
 	r3-stage-4-full
 	genlib
+	genlibnocall
 	empty
 	;
 
@@ -142,6 +163,7 @@
 	.cls
 	"library generator" .println
 	mark "r3/d4/meta/metalibs.r3" savemem empty 
+	mark "r3/d4/meta/mlibs.r3" savemem empty 
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
 		dup ">> %s" .println
@@ -158,6 +180,8 @@
 		>>0 ) 2drop
 	" 0" ,s ,cr
 	"r3/d4/meta/metalibs.r3" appendmem		
-	empty ;
+	"r3/d4/meta/mlibs.r3" appendmem		
+	empty 
+	;
 
 : main ;
