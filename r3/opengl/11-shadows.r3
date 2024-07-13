@@ -245,7 +245,7 @@
 	'near_plane debugDepthQuad "near_plane" shader!f1
 	'far_plane debugDepthQuad "far_plane" shader!f1
 	
-	"media/img/wood.png" glImgTex 'woodTexture !
+	"media/img/wood.jpg" glImgTex 'woodTexture !
 	"media/img/marble.jpg" glImgTex 'marbleTexture !
 	;
 	

@@ -26,7 +26,6 @@
 #tsimg	| tiles image
 #tsmap	| tiles box array
 
-|#tilew 24 #tileh 24 #tilefile "media/img/classroom.png"
 |#tilew 32 #tileh 32 #tilefile "r3/itinerario/diciembre/tiles.png"
 #tilew 32 #tileh 32 #tilefile * 1024
 
@@ -284,8 +283,8 @@
 
 :emptymap
 	32 'mapw ! 32 'maph !
-	24 'tilew ! 24 'tileh ! 
-	"media/img/classroom.png" 'tilefile strcpy
+	64 'tilew ! 64 'tileh ! 
+	"media/img/sokoban_tilesheet.png" 'tilefile strcpy
 	tilew tileh 'tilefile tsload 'ts_spr !	
 	here 'mapmem !
 	mapw maph * 3 << 'here +!

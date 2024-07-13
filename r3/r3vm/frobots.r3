@@ -4,7 +4,12 @@
 |MEM $fffff
 
 ^r3/lib/rand.r3
-^r3/r3vm/sdledit.r3
+
+^r3/util/arr16.r3
+^r3/win/sdl2gfx.r3
+^r3/util/sdlgui.r3
+|^r3/r3vm/sdledit.r3
+^r3/win/sdledit.r3
 
 ^r3/r3vm/r3ivm.r3
 ^r3/r3vm/r3itok.r3
@@ -20,65 +25,10 @@
 #nrp	| first
 #nrc	| cnt per page
 
+#tsprites 
+
 #robots 0 0
-
-#xcam 0 #ycam 0 #zcam 50.0
 #screen 0 0	| finarray iniarray
-
-|----- draw cube -----
-:3dop project3d op ;
-:3dline project3d line ;
-
-:drawboxz | z --
-	-0.5 -0.5 pick2 3dop
-	0.5 -0.5 pick2 3dline 0.5 0.5 pick2 3dline
-	-0.5 0.5 pick2 3dline -0.5 -0.5 rot 3dline ;
-
-:drawlinez | x1 x2 --
-	2dup -0.5 3dop 0.5 3dline ;
-
-:drawcube |
-	-0.5 drawboxz 0.5 drawboxz
-	-0.5 -0.5 drawlinez 0.5 -0.5 drawlinez
-	0.5 0.5 drawlinez -0.5 0.5 drawlinez ;
-
-:drawbox
-	0 drawboxz ;
-
-:drawtank
-	-0.5 -0.5 0 3dop
-	0.5 -0.5 0 3dline 0.5 0.5 0 3dline
-	-0.5 0.5 0 3dline -0.5 -0.5 0 3dline
-	-0.2 -0.2 0 3dop
-	0.2 -0.2 0 3dline 0.0 0.9 0 3dline
-	-0.2 -0.2 0 3dline ;
-
-:drawshoot
-	-0.1 -0.1 0 3dop
-	0.1 -0.1 0 3dline 0.1 0.1 0 3dline
-	-0.1 0.1 0 3dline -0.1 -0.1 0 3dline ;
-
-:drawbackgroud
-	$ffff 'ink !
-	-30.0 -30.0 0 3dop
-	30.0 -30.0 0 3dline 30.0 30.0 0 3dline
-	-30.0 30.0 0 3dline -30.0 -30.0 0 3dline ;
-
-|-----------------------
-#x1 #y1 #x2 #y2
-
-:updatexy | x y --
-	y1 <? ( dup 'y1 ! ) y2 >? ( dup 'y2 ! ) drop
-	x1 <? ( dup 'x1 ! ) x2 >? ( dup 'x2 ! ) drop
-	;
-
-:tankingui
-	-0.8 -0.8 0 project3d dup 'y1 ! 'y2 ! dup 'x1 ! 'x2 !
-	0.8 -0.8 0 project3d updatexy
-	0.8 0.8 0 project3d updatexy
-	-0.8 0.8 0 project3d updatexy
-	x1 y1 x2 y2 guiRect
-	;
 
 |-----------------------
 #nowrobot
@@ -90,23 +40,20 @@
 :checkdamage
 	;
 
-:star | r --
-	0 over 0 3dop
-	0 ( 1.0 <?
-		0.05 + 	dup pick2 1 >> polar 0 3dline
-		0.05 + dup pick2 polar 0 3dline
-		) 2drop ;
+:star
+	;
 
 :explo
 	>b
-	mpush
+|	mpush
 	-1 b> +!
 	b@+ 0? ( checkdamage ; ) drop
-	b@+ b@+ 0 mtransi
+	b@+ b@+ 0 |mtransi
 	0.1 b> +!
-	$ffffff 'ink !
+	|$ffffff 'ink !
 	b@ star
-	mpop ;
+|	mpop 
+;
 
 
 :+explo | x y exp --
@@ -116,16 +63,17 @@
 |----------- Disparo
 :disparo | adr --
 	>b
-	mpush
+	|mpush
 	-1 b> +!
 	b@+ 0? ( b@+ b@ 20 +explo ; ) drop
-	b@+ b@+ b@+ mtransi
+	b@+ b@+ b@+ |mtransi
 |	b@+ mrotxi b@+ mrotyi b@+ mrotzi | no rota balas
 	12 b+
-	v+ v+ v+
-	$ffffff 'ink !
-	drawshoot
-	mpop ;
+	|v+ v+ v+
+	|$ffffff 'ink !
+	|drawshoot
+	|mpop 
+	;
 
 :+disparo | vel ang x y --
 	'disparo 'screen p!+ >a
@@ -155,19 +103,20 @@
 	>b
 	b@+ dup vm@ ip code + vmstep code - 'ip ! vm!
 	IOrobot
-	mpush
-	b@+ 'ink !
-	b@+ b@+ b@+ mtransi
+	|mpush
+	b@+ |'ink !
+	b@+ b@+ b@+ |mtransi
 	|b@+ mrotxi b@+ mrotyi	| no rotate in x and y
 	8 b+
-	b@+ mrotzi
-	drawtank
+	b@+ |mrotzi
+	|drawtank
 
-	tankingui
+	|tankingui
 |	$ffffff 'ink ! guizone
 	[ dup nowrobot =? ( 0 nip ) 'nowrobot ! ; ] onClick
 
-	mpop ;
+	|mpop 
+	;
 
 |----- add robot and code
 :+robot | x y color "code" --
@@ -247,15 +196,15 @@
 
 :printinfo | --
     nowrobot 0? ( drop ; )
-	$ffffff 'ink !
+|	$ffffff 'ink !
 |	dup 'screen p.nnow 'robots p.nro @+ 'ink ! @ " %s " print cr
-	4 + @+ vm@
-	@+ 'ink !
-	@+ "x:%f " print @+ "y:%f " print cr
-	@+ "%h " print @+ "%h " print cr
+	8 + @+ vm@
+	@+ 'bcolor !
+	@+ "x:%f " bprint @+ "y:%f " bprint bcr
+	@+ "%h " bprint @+ "%h " bprint bcr
 	drop | @ "%h" print cr
-	"> " print 'spad 64 input
-	key
+	"> " bprint |'spad 64 binput
+	|key
 	<ret> =? ( parse&run )
 	drop
 	;
@@ -263,20 +212,17 @@
 
 
 :runscr
-	cls home gui
-	$ffff 'ink !
-	" FRobots" print cr
+	0 sdlcls
+|	$ffff 'ink !
+	" FRobots" bprint bcr
 	printinfo
-	omode
-	xcam ycam zcam mtrans
 
 |	drawbackgroud
 	'screen p.draw
 
-	key
+	sdlkey
 	>esc< =? ( exit )
-	drop
-	acursor ;
+	drop ;
 
 
 :modrun
@@ -287,16 +233,30 @@
 	0 'anyerror !
 	'screenrobot 'robots p.mapv
 	anyerror 1? ( drop empty ; ) drop
-	'runscr onshow
+	'runscr sdlshow
 	empty
 	;
 
 |-------------------
+:modediting
+	0 SDLcls 
+	edshow 
+	SDLredraw
+	sdlkey
+	<f1> =? ( exit )
+	drop
+	;
+	
+:editing
+	edreset
+	'modediting sdlShow
+	;
+	
 :modedit
 	nr> 'robots p.nro
-	4 + @ 'codepath "%s%w.r3i" sprint
+	8 + @ 'codepath "%s%w.r3i" sprint
 	edload
-	edrun
+	editing		| edrun
 	edsave
 	;
 
@@ -319,51 +279,52 @@
 	;
 
 :drawinlist | n -- n
-	'robots p.cnt >=? ( ; )
+|	'robots p.cnt >=? ( ; )
 |	dup "%d. " print
 	dup 'robots p.nro
-	@+ 'ink !
-	@+ " %s " print
+	@+ 'immcolorbtn ! |bcolor |'ink !
+	@+ " %s " immlabel immdn
 
 |	@+ "(%f:" print
 |	@+ "%f)" print
-	8 +
-	@ 1? ( dup $ff0000 'ink ! " %s " print ) drop
-	nr> =? ( $ffffff 'ink ! "<-" print )
-	cr
+
+|	8 +
+|	@ 1? ( dup $ff0000 bcolor " %s " bprint ) drop
+|	nr> =? ( $ffffff bcolor "<-" bprint )
+	drop
 	;
 
-:upr
-	nr> 1 - 0 max
-	nrp <? ( dup 'nrp ! )
-	'nr> !
-	;
-:dnr
-	nr> 1 + 'robots p.cnt 1 - clamp0 min
-	nrc nrp + 1 - >=? ( dup nrc - 1 + 'nrp ! )
-	'nr> !
-	;
 :menu
-	cls home gui
-	$ffff 'ink !
-	" FRobots " print cr
-	cr
-	$202020 'ink ! 0 2 40 over nrc + backfill
-	0 2 gotoxy $ff00 'ink !
-	0 ( nrc <? nrp + drawinlist nrp - 1 + ) drop
+	0 sdlcls 
+	immgui
+	
+	$ff 'immcolorbtn !
+	100 24 immbox
+	4 4 immat
+	"r3Bot" immlabelc imm>>
+	
+	'modrun "Run" immbtn imm>>
+	'modedit "Edit" immbtn imm>>
+|	'modrun "run" immbtn immdn	
+|	turn "turn:%d" immlabelc immdn
+	$ff0000 'immcolorbtn !
+	'exit "Exit" immbtn 
+	
+	$ff00 'immcolorbtn !
+	200 24 immbox
+	4 32 immat
 
-	0 rows 1 - gotoxy
-	$ffffff 'ink !
-	"F1-Run " print
-	"F2-Edit " print
-|	"F3-Debug" print
-	"F4-Add " print
-	"F5-Del " print
-	cr
-
-	key
-	<up> =? ( upr )
-	<dn> =? ( dnr )
+	'robots p.cnt 
+	0 ( over <? 
+		drawinlist
+		1 + ) 2drop
+|	"F4-Add " bprint
+|	"F5-Del " bprint
+	
+	520 300 2.0 2.0 1 tsprites sspriterz
+	
+	SDLredraw 
+	sdlkey
 	<f1> =? ( modrun )
 	<f2> =? ( modedit )
 |	<f3> =? ( debug
@@ -371,16 +332,20 @@
 	<f5> =? ( delrobot )
 	>esc< =? ( exit )
 	drop
-	acursor ;
+	;
 
 :modmenu
 	0 'nrp !
-	rows 16 - 'nrc !
-	'menu onShow ;
+	10 'nrc !
+	'menu sdlShow ;
 
 : |<<< BOOT <<<
-	fontj2
-	mark
+	"r3 robots" 1024 600 SDLinit
+	"media/ttf/roboto-bold.TTF" 22 TTF_OpenFont immSDL
+	
+	16 16 "r3/r3vm/tank.png" ssload 'tsprites !	
+
+	
 | 32 robots
 	32 'robots p.ini
 	-5.0 -5.0 "test1" $ff00 addrobot
@@ -389,8 +354,10 @@
 |	5.0 5.0 "test4" $ff00ff addrobot
 
 | editor
-	1 2 40 25 edwin
+	bfont1
+	1 2 80 25 edwin
 	edram
 | menu
 	modmenu
+	SDLquit 
 	;

@@ -514,8 +514,8 @@
 
 :barrac | control+
 	$747474 SDLColor
-	xcode ycode hcode + 1 - wcode 1 bfillline
-	xcode ycode hcode + 1 - gotoxy
+	xcode ycode hcode + wcode 1 bfillline
+	xcode ycode hcode + gotoxy
 	" Ctrl-" bemits
 	"Cut" "X" btnf
 	"opy" "C" btnf
@@ -589,10 +589,14 @@
 	0 SDLcls edshow SDLredraw ;
 
 |----------- principal
-::edrun
+::edreset
 	0 'xlinea !
 	0 'ylinea !
 	mode!edit
+	;
+	
+::edrun
+	edreset
 	'editando SDLshow
 	;
 

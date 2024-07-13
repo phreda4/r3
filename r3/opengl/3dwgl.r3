@@ -205,7 +205,7 @@
 	GL_ELEMENT_ARRAY_BUFFER memsize swap GL_STATIC_DRAW glBufferData	
 	empty
 	
-	"media/img/metal.png" glImgTex 'texm !
+	"media/img/metal.jpg" glImgTex 'texm !
 	;
 	
 :genfloordyn
