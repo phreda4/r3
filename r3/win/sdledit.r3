@@ -426,7 +426,7 @@
 
 	SDLkey
     <ret> =? ( mode!edit )
-	>esc< =? ( mode!edit )
+|	>esc< =? ( mode!edit )
 	>ctrl< =? ( controloff )
     drop
 	;

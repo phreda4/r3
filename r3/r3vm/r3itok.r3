@@ -104,17 +104,17 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 
 :?word | adr -- adr/0
 	word2code lastdicc>	| code dicc
-	( dup @ $3fffffffffffffff and
+	( dup d@ $3fffffff and
 		pick2 =? ( drop nip ; )
-		drop code 512 + >?
-		dup 4 + @ 16 >>> 8 + - ) 2drop 0 ;
+		drop code 256 + >?
+		dup 4 + d@ 16 >>> 8 + - ) 2drop 0 ;
 
 |--------------------------
 #flagdata
 #blk * 128
 #blk> 'blk
 :pushbl blk> d!+ 'blk> ! ;
-:popbl -4 'blk> d+! blk> @ ;
+:popbl -4 'blk> d+! blk> d@ ;
 
 ::,i	icode> c!+ 'icode> ! ;
 :,iw	icode> w!+ 'icode> ! ;
@@ -122,12 +122,12 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 
 :patchend
 	lastdicc>
-	dup @ flagdata or over ! 			| save flag (word,var0,var1,var2)
+	dup d@ flagdata or over d! 			| save flag (word,var0,var1,var2)
 	icode> over - 8 -
 	0? ( 4 + 0 ,id )					| #x1 #x2 case
 	swap 4 +
 |	+! 									| for write one time..
-	dup @ $ffff0000 and rot or swap !	| for write many..
+	dup d@ $ffff0000 and rot or swap d!	| for write many..
 	icode> 'code> !
 	;
 
@@ -278,7 +278,7 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
 		0? ( drop 'msgok 'error ! ; ) drop 1 + )	| trim0
-	over "%w<<" .println
+|	over "%w<<" .println
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable

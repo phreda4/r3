@@ -135,11 +135,12 @@
 #anyerror
 
 :screenrobot | adr -- adr
-	dup 8 +  >a
+	dup 8 + >a
 	a@+ a@+ a@+ a@ 2swap
 	'codepath "%s%w.r3i" sprint
+	|dup .print
 	+robot
-	dup 24 + >a
+	dup 48 + >a
 	error dup 'msgok =? ( 0 nip ) 'anyerror +!
 	a!+
 	lerror a!
@@ -204,7 +205,7 @@
 	@+ "%h " bprint @+ "%h " bprint bcr
 	drop | @ "%h" print cr
 	"> " bprint |'spad 64 binput
-	|key
+	sdlkey
 	<ret> =? ( parse&run )
 	drop
 	;
@@ -213,12 +214,13 @@
 
 :runscr
 	0 sdlcls
-|	$ffff 'ink !
+	0 0 bat
+	$ffff bcolor
 	" FRobots" bprint bcr
-	printinfo
+	|printinfo
 
 |	drawbackgroud
-	'screen p.draw
+|	'screen p.draw
 
 	sdlkey
 	>esc< =? ( exit )
@@ -231,9 +233,9 @@
 	'xsys vecsys!
 	100 'screen p.ini
 	0 'anyerror !
-	'screenrobot 'robots p.mapv
+	|'screenrobot 'robots p.mapv
 	anyerror 1? ( drop empty ; ) drop
-	'runscr sdlshow
+	|'runscr sdlshow
 	empty
 	;
 
@@ -243,7 +245,7 @@
 	edshow 
 	SDLredraw
 	sdlkey
-	<f1> =? ( exit )
+	>esc< =? ( exit )
 	drop
 	;
 	
@@ -283,16 +285,16 @@
 |	dup "%d. " print
 	dup 'robots p.nro
 	@+ 'immcolorbtn ! |bcolor |'ink !
-	@+ " %s " immlabel immdn
+	@+ " %s " sprint [ over 'nr> ! ; ] swap immbtn 
 
 |	@+ "(%f:" print
 |	@+ "%f)" print
 
 |	8 +
 |	@ 1? ( dup $ff0000 bcolor " %s " bprint ) drop
-|	nr> =? ( $ffffff bcolor "<-" bprint )
 	drop
-	;
+	nr> =? ( imm>> "<" immLabel imm<< )
+	immdn ;
 
 :menu
 	0 sdlcls 
@@ -341,7 +343,7 @@
 
 : |<<< BOOT <<<
 	"r3 robots" 1024 600 SDLinit
-	"media/ttf/roboto-bold.TTF" 22 TTF_OpenFont immSDL
+	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
 	
 	16 16 "r3/r3vm/tank.png" ssload 'tsprites !	
 
@@ -355,7 +357,7 @@
 
 | editor
 	bfont1
-	1 2 80 25 edwin
+	1 4 80 25 edwin
 	edram
 | menu
 	modmenu

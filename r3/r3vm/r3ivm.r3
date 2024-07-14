@@ -18,8 +18,6 @@
 #blok
 #exsys 0
 
-:dic>tok ;
-
 :iDUP		8 'NOS +! TOS NOS ! ;
 :iOVER		iDUP NOS 8 - @ 'TOS ! ;
 :iPICK2		iDUP NOS 16 - @ 'TOS ! ;
@@ -39,35 +37,14 @@
 :i2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 
 :pushinro	iDUP 'TOS ! ;
-:getbig		blok + @ ;
+:jmpr		dup 4 - d@ 8 >> + ;
 
-:idec2	dup 4 - d@ 8 >> getbig pushinro ;
-:ibin2	dup 4 - d@ 8 >> getbig pushinro ;
-:ihex2	dup 4 - d@ 8 >> getbig pushinro ;
-:ifix2	dup 4 - d@ 8 >> getbig pushinro ;
-:iwor2	4 - d@ 8 >> dic>tok @ ; | tail call
-
-:idec	dup 4 - d@ 8 >> pushinro ;
-:ihex   dup 4 - d@ 8 >> pushinro ;
-:ibin   dup 4 - d@ 8 >> pushinro ;
-:ifix   dup 4 - d@ 8 >> pushinro ;
-:istr   dup 4 - d@ 8 >> blok + pushinro ;
-:iwor	dup 4 - d@ 8 >> dic>tok @ 8 'RTOS +! swap RTOS ! ;
-:ivar   dup 4 - d@ 8 >> dic>tok @ @ pushinro ;
-:idwor	dup 4 - d@ 8 >> dic>tok @ pushinro ;
-:idvar  dup 4 - d@ 8 >> dic>tok @ pushinro ;
-
-:i;		RTOS @ nip -8 'RTOS +! ;
-
-:iEX	TOS iDROP 8 'RTOS +! swap RTOS ! ;
-
-:jmpr | adr' -- adrj
-	dup 4 - d@ 8 >> + ;
-
-:i( 	;
-:i)		dup 4 - d@ 8 >> + ;  | 0=no effect
-:i[		jmpr ;
-:i]		dup 4 - d@ 8 >> PUSHiNRO ;
+:i;		drop RTOS @ 8 'RTOS +! ;
+:i(		;
+:i)		w@+ + ;
+:i[		w@+ + ;
+:i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
+:iEX	-8 'RTOS +! RTOS ! TOS code + 8 'NOS +! NOS @ 'TOS ! ;
 
 |--- COND
 :i0?	TOS 1? ( drop jmpr ; ) drop ;
@@ -83,7 +60,6 @@
 :iAND?	NOS @ TOS nand? ( drop jmpr iDROP ; ) drop iDROP ;
 :iNAND?	NOS @ TOS and? ( drop jmpr iDROP ; ) drop iDROP ;
 :iIN?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr i2DROP ; ) drop i2DROP ;
-
 
 :iAND	NOS @ TOS and iNIP 'TOS ! ;
 :iOR	NOS @ TOS or iNIP 'TOS ! ;
@@ -116,56 +92,32 @@
 :iA>	'REGA @ PUSHiNRO ;
 :iA+	TOS 'REGA +! iDROP ;
 
-:iA@	REGA @ PUSHiNRO ;
-:iA!	TOS REGA ! iDROP ;
-:iA@+	REGA dup 8 + 'REGA ! @ PUSHiNRO ;
-:iA!+	TOS REGA dup 8 + 'REGA ! ! iDROP ;
-:icA@	REGA c@ PUSHiNRO ;
-:icA!	TOS REGA c! iDROP ;
-:icA@+	REGA dup 1 + 'REGA ! c@ PUSHiNRO ;
-:icA!+	TOS REGA dup 1 + 'REGA ! c! iDROP ;
-:idA@	REGA d@ PUSHiNRO ;
-:idA!	TOS REGA d! iDROP ;
-:idA@+	REGA dup 4 + 'REGA d! @ PUSHiNRO ;
-:idA!+	TOS REGA dup 4 + 'REGA ! d! iDROP ;
+:iA@	REGA code + @ PUSHiNRO ;
+:iA!	TOS REGA code + ! iDROP ;
+:iA@+	REGA dup 8 + 'REGA ! code + @ PUSHiNRO ;
+:iA!+	TOS REGA dup 8 + 'REGA ! code + ! iDROP ;
+
 
 |--- REGB
 :i>B	TOS 'REGB ! iDROP ;
 :iB>	'REGB @ PUSHiNRO ;
 :iB+	TOS 'REGB +! iDROP ;
-:iB@	REGB @ PUSHiNRO ;
-:iB!	TOS REGB ! iDROP ;
-:iB@+	REGB dup 8 + 'REGB ! @ PUSHiNRO ;
-:iB!+	TOS REGB dup 8 + 'REGB ! ! iDROP ;
-:icB@	REGB c@ PUSHiNRO ;
-:icB!	TOS REGB c! iDROP ;
-:icB@+	REGB dup 1 + 'REGB ! c@ PUSHiNRO ;
-:icB!+	TOS REGB dup 1 + 'REGB ! c! iDROP ;
-:idB@	REGB d@ PUSHiNRO ;
-:idB!	TOS REGB d! iDROP ;
-:idB@+	REGB dup 4 + 'REGB ! d@ PUSHiNRO ;
-:idB!+	TOS REGB dup 4 + 'REGB ! d! iDROP ;
+:iB@	REGB code + @ PUSHiNRO ;
+:iB!	TOS REGB code + ! iDROP ;
+:iB@+	REGB dup 8 + 'REGB ! code + @ PUSHiNRO ;
+:iB!+	TOS REGB dup 8 + 'REGB ! code + ! iDROP ;
 
-:i@		TOS @ 'TOS ! ;
-:iC@	TOS c@ 'TOS ! ;
-:iW@	TOS w@ 'TOS ! ;
-:iD@	TOS d@ 'TOS ! ;
-:i!		NOS @ TOS ! i2DROP ;
-:iC!	NOS @ TOS c! i2DROP ;
-:iW!	NOS @ TOS w! i2DROP ;
-:iD!	NOS @ TOS d! i2DROP ;
-:i+!	NOS @ TOS +! i2DROP ;
-:iC+!	NOS @ TOS c+! i2DROP ;
-:iW+!	NOS @ TOS w+! i2DROP ;
-:iD+!	NOS @ TOS d+! i2DROP ;
-:i@+	TOS @ 8 'TOS +! PUSHiNRO ;
-:i!+	NOS @ TOS ! iNIP 8 'TOS +! ;
-:iC@+	TOS c@ 1 'TOS +! PUSHiNRO ;
-:iC!+	NOS @ TOS c! iNIP 1 'TOS +! ;
-:iW@+	TOS w@ 2 'TOS +! PUSHiNRO ;
-:iW!+	NOS @ TOS w! iNIP 2 'TOS +! ;
-:iD@+	TOS d@ 4 'TOS +! PUSHiNRO ;
-:iD!+	NOS @ TOS d! iNIP 4 'TOS +! ;
+
+:i@		TOS code + d@ 'TOS ! ;
+:iC@	TOS code + c@ 'TOS ! ;
+:i@+    TOS code + d@+ 'TOS ! code - 8 'NOS +! NOS ! ;
+:iC@+	TOS code + c@+ 'TOS ! code - 8 'NOS +! NOS ! ;
+:i!		NOS @ TOS code + d! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC!	NOS @ TOS code + c! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:i!+	NOS @ TOS code + d!+ code - 'TOS ! -8 'NOS ! ;
+:iC!+	NOS @ TOS code + c!+ code - 'TOS ! -8 'NOS ! ;
+:i+!	NOS @ TOS code + d+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC+!	NOS @ TOS code + c+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
 
 :iMOVE		NOS 8 - @ NOS @ TOS move i3DROP ;
 :iMOVE>		NOS 8 - @ NOS @ TOS move> i3DROP ;
@@ -179,103 +131,43 @@
 
 :iMEM mem pushinro ;
 
-:iLOADLIB TOS loadlib 'TOS ! ;
-:iGETPROC NOS @ TOS getproc iNIP 'TOS ! ;
-:iSYS0 TOS sys0 'TOS ! ;
-:iSYS1 NOS @ TOS sys1 'TOS ! -8 'NOS +! ;
-:iSYS2 NOS 8 - @ NOS @ TOS sys2 'TOS ! -16 'NOS +! ;
-:iSYS3 NOS 16 - @ NOS 8 - @ NOS @ TOS sys3 'TOS ! -24 'NOS +! ;
-:iSYS4 NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys4 'TOS ! -32 'NOS +! ;
-:iSYS5 NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys5 'TOS ! -40 'NOS +! ;
-:iSYS6 NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys6 'TOS ! -48 'NOS +! ;
-:iSYS7 NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys7 'TOS ! -56 'NOS +! ;
-:iSYS8 NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys8 'TOS ! -64 'NOS +! ;
-:iSYS9 NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys9 'TOS ! -72 'NOS +! ;
-:iSYS10 NOS 72 - @ NOS 64 - @ NOS 56 - @ NOS 48 - @ NOS 40 - @ NOS 32 - @ NOS 24 - @ NOS 16 - @ NOS 8 - @ NOS @ TOS sys10 'TOS ! -80 'NOS +! ;
-	
-
-:iLIT1	8 'NOS +! TOS NOS ! @+ 48 << 48 >> 'TOS ! 2 - ; | 16 bits
-:iLIT2	8 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits
+:iLIT1	8 'NOS +! TOS NOS ! w@+ 'TOS ! ;	| 16 bits
+:iLIT2	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits
 :iLITs	8 'NOS +! TOS NOS ! c@+ over code - 'TOS ! $ff and + ;	| 8+s bits
-:iCOM   c@+ -1 =? ( drop c@+ 2 << exsys + @ ex ; ) $ff and + ;
-:iJMPR  @ 48 << 48 >> + ; 				| 16 bits
-:iJMP   @ code + ;						| 32 bits
-:iCALL	@+ code + swap -4 'RTOS +! RTOS ! ; 	| 32 bits
-:iADR	8 'NOS +! TOS NOS ! @+ 'TOS ! ;	| 32 bits (iLIT)
-:iVAR	8 'NOS +! TOS NOS ! @+ code + @ 'TOS ! ;	| 32 bits
+:iCOM   c@+ -1 =? ( drop c@+ 3 << exsys + @ ex ; ) $ff and + ;
+:iJMPR  w@ + ; 				| 16 bits
+:iJMP   d@ code + ;			| 32 bits
+:iCALL	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
+:iADR	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
+:iVAR	8 'NOS +! TOS NOS ! d@+ code + d@ 'TOS ! ;	| 32 bits
 
-:ioAND 	
-:ioOR 
-:ioXOR		
-:io+ 
-:io- 
-:io* 
-:io/
-:io<< 
-:io>> 
-:io>>>
-:ioMOD 
-:io/MOD 
-:io*/ 
-:io*>> 
-:io<<
-:io<? 
-:io>? 
-:io=? 
-:io>=? 
-:io<=? 
-:io<>? 
-:ioAN? 
-:ioNA?
-
-#vmc
-i; i( i) i[ i] iEX i0? i1? i+? i-? 				
-i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? iIN? 	
-iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	
-iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	
-i>R iR> iR@ 
-iAND iOR iXOR 
-i+ i- i* i/ 
-i<< i>> i>>> 
-iMOD i/MOD i*/ i*>> i<</ 
-iNOT iNEG iABS iSQRT iCLZ 
-i@ iC@ iW@ iD@ 
-i@+ iC@+ iW@+ iD@+ 
-i! iC! iW! iD! 
-i!+ iC!+ iW!+ iD!+ 
-i+! iC+! iW+! iD+! 
-i>A iA> iA+ 
-iA@ iA! iA@+ iA!+ 
-icA@ icA! icA@+ icA!+ 
-idA@ idA! idA@+ idA!+ 
-i>B iB> iB+ 
-iB@ iB! iB@+ iB!+ 
-icB@ icB! icB@+ icB!+ 
-idB@ idB! idB@+ idB!+ 
-iMOVE iMOVE> iFILL 
-iCMOVE iCMOVE> iCFILL 
-iDMOVE iDMOVE> iDFILL 
-iMEM
-iLOADLIB iGETPROC
-iSYS0 iSYS1 iSYS2 iSYS3 iSYS4 iSYS5
-iSYS6 iSYS7 iSYS8 iSYS9 iSYS10 
-#vmc_int
-iLIT1 iLIT2 iLITs iCOM iJMPR iJMP iCALL iADR iVAR	
-#vmc_opt | OPTIMIZATION WORDS
-ioAND ioOR ioXOR		
-io+ io- io* io/
-io<< io>> io>>>
-ioMOD io/MOD io*/ io*>> io<<
-io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
-0
+#r3maci
+iLIT1 iLIT2 iLITs iCOM iJMPR iJMP iCALL iADR iVAR	|0-8
+i; i( i) i[ i] iEX i0? i1? i+? i-? 				|9-18
+i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? iIN? 	|19-27
+iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	|28-35
+iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	|36-42
+i@ iC@ i@+ iC@+ i! iC! i!+ iC!+ i+! iC+! 		|43-52
+i>A iA> iA@ iA! iA+ iA@+ iA!+ 					|53-59
+i>B iB> iB@ iB! iB+ iB@+ iB!+ 					|60-66
+iNOT iNEG iABS iSQRT iCLZ						|67-71
+iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
+i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
+iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 | (0|1|2|3|4|5|6|7) << 'var + @ ! c@ c! w@ w! d@ d!
 | call;
 | minilit 'var! d! w! c!
 | 'var+! d+! w+! c+!
 |
 
+:exlit | 7 bit number
+	8 'NOS +! TOS NOS !
+	57 << 57 >> 'TOS ! ; | 7 to 64 bits // in 32bits 25 <<
+
 ::vmstep | ip -- ip'
-	d@+ $ff and 3 << 'vmc + @ ex ; | ip val -- ip
+	0? ( ; )
+	c@+ $80 and? ( exlit ; )
+	3 << 'r3maci + @ ex ;
 
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
@@ -283,7 +175,7 @@ io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
 ::vmreset
 	code 8 - 'NOS ! 0 'TOS !
 ::vmresetr
-	code 504 + 0 over ! 'RTOS ! | 512-8 
+	code 248 + 0 over ! 'RTOS ! | 512-8 
 	;
 
 ::vecsys! 'exsys ! ;
@@ -308,7 +200,7 @@ io<? io>? io=? io>=? io<=? io<>? ioAN? ioNA?
 	here
 	8 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,CODE,CODE>
 	dup 'code !
-	512 +		| stacks  (64stack cell)
+	256 +		| stacks  (64stack cell)
 	dup 'code> !
 	rot + 'here !
 	dup vm!

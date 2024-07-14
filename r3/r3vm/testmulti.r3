@@ -68,12 +68,20 @@
 	NOS CODE 8 + - "d:%d " .print
 	CODE 256 + RTOS - "r:%d " .print
 	.cr
-	code 256 + ( code> <?
-|		dup .printdef cr
-		4 + @+ $ffff and + ) drop ;
+	mark
+	code 256 + | skip stack
+	( code> <?				| user
+		d@+ code2name ,s 32 ,c 
+		d@+ $ffff and + ) drop	
+	0 ,c
+	empty
+	here .println
+	;
 
 :step
-	vm1 vm@ ip code + vmstep code - 'ip ! vm1 vm!
+	vm1 vm@ ip code + 
+	vmstep 
+	code - 'ip ! vm1 vm!
 |	vm2 vm@ ip code + vmstep code - 'ip ! vm2 vm!
 |	vm3 vm@ ip code + vmstep code - 'ip ! vm3 vm!
 	;
@@ -82,30 +90,34 @@
 :mainloop
 	.cls
 	.green
-	"r3i" .println
-	.white
-	"> " .print
-	|'spad 1024 
-	.input
-|	.cr vm1 dumpvmcode
-	.cr vm1 dumpvm
+	"r3i" .println .cr
 
+	.cr 
+	vm1 dumpvmcode
+	vm1 dumpvm
+	.cr
+	
 |	.cr vm2 dumpvmcode
 |	.cr vm2 dumpvm
 
 |	.cr vm3 dumpvmcode
 |	.cr vm3 dumpvm
 
-	inkey
-|	<ret> =? ( parse&run )
-|	<f1> =? ( step )
-|	>esc< =? ( exit )
-	drop 
-	;
+	.cr .white
+	"> " .print
+	getch 
+	$1000 and? ( drop mainloop ; )
+	$ff and 
+	0? ( drop mainloop ; )
+	$1 =? ( r> 2drop ; ) | <esc>  end
+	$1c =? ( step ) | <enter>  step
+	drop
+	mainloop ;  
 
 
 :main
-	.cls
+	|getch drop
+
 	'wsysdic syswor!
 	'xsys vecsys!
 	"init" .println
@@ -115,11 +127,13 @@
 	$fff vmcpu 'vm3 !
 	"loading" .println
 	vm1 "r3/r3vm/robotcode/test1.r3i" vmload
+	.cr
+	error .println
+	|getch drop
 |	vm2 "r3/r3vm/robotcode/test2.r3i" vmload
 |	vm3 "r3/r3vm/robotcode/test3.r3i" vmload
 
 	mainloop
-	waitesc
 	;
 
 : main ;
