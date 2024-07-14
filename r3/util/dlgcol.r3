@@ -7,9 +7,10 @@
 ^r3/util/bfont.r3
 
 ##colord 0
+
 #select 0
 
-#cwx #cwy | pos windows
+#cwx 0 #cwy 200 | pos windows
 #c1x #c1y #c1w #c1a
 
 |Vertex * 4
@@ -18,6 +19,9 @@
 #vert [ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ]
 #index [ 0 1 3 1 2 3 ] 
 #col128 * 512
+
+#pal8 * 300
+#npal
 
 ::color! | color --
 	dup 'colord !
@@ -30,15 +34,19 @@
 	;
 
 :setcolor | --
-	cwx 5 + c1x +
-	cwy 5 + c1y +
-	SDLgetpixel
+	c1w 9 <<
+	c1x 9 <<
+	128 c1y - 9 <<
+	hsv2rgb 
 	'colord ! ;
+
+:bgr2rgb | BGR -- RGB
+	dup $ff00 and over 16 << $ff0000 and or swap 16 >> $ff and or ;
 	
-:setcolorw | --
-	cwx 145 + 
-	cwy 5 + c1w + SDLgetpixel
-	dup $ff00 and over 16 << $ff0000 and or swap 16 >> $ff and or | swap BGR to RGB
+:setcolorw | c1w --
+	dup 'c1w !
+	2 << 'col128 + d@ 
+	bgr2rgb
 	'vert 7 2 << + d! | vertex color
 	setcolor 
 	;
@@ -64,23 +72,22 @@
 	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry	
 	
 	cwx 140 + cwy 5 + 12 128 guiBox
-	[ 	SDLy cwy - 5 - 127 clamp0max 'c1w ! 
-		setcolorw ; ] dup
+	[ SDLy cwy - 5 - 128 clamp0max setcolorw ; ] dup
 	onDnMoveA
 	
 	cwx 5 + cwy 5 + 128 128 guiBox
-	[ 	SDLy cwy - 5 - 127 clamp0max 'c1y ! 
-		SDLx cwx - 5 - 127 clamp0max 'c1x ! 
+	[	SDLy cwy - 5 - 128 clamp0max 'c1y ! 
+		SDLx cwx - 5 - 128 clamp0max 'c1x ! 
 		setcolor ; ] dup
 	onDnMoveA
 
 	cwx 5 + cwy 137 + 128 8 guiBox
-	[ 	SDLx cwx - 5 - 127 clamp0max 'c1a ! ; ] dup
+	[ SDLx cwx - 5 - 127 clamp0max 'c1a ! ; ] dup
 	onDnMoveA	
 		
 	$0 SDLColor
 	cwx 4 + cwy 4 + 130 130 SDLRect
-	cwx 139 + cwy 4 + 12 130 SDLRect	
+	cwx 139 + cwy 4 + 12 130 SDLRect
 	
 	cwx 5 + c1x + 2 -
 	cwy 5 + c1y + 2 -
@@ -113,7 +120,6 @@
 	;
 
 ::dlgColor | x y --
-	'cwy ! 'cwx !
 	select 1? ( 40 'cwx +! fillcbox selectColorPick -40 'cwx +! ) drop
 
 	$454545 SDLColor
@@ -136,4 +142,8 @@
 	127 'c1a !
 	$ff 'vert 7 2 << + d! | vertex color
 	colord color! 
+	;
+
+::xydlgColor! | x y --
+	'cwy ! 'cwx !
 	;

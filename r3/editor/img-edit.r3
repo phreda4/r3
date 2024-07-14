@@ -5,7 +5,7 @@
 ^r3/util/bfont.r3
 ^r3/lib/gui.r3
 ^r3/lib/vdraw.r3
-^r3/util/dlgcolor.r3
+^r3/util/dlgcol.r3
 ^r3/util/dlgfile.r3
 
 #nombre * 256
