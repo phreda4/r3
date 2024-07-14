@@ -37,29 +37,29 @@
 :i2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 
 :pushinro	iDUP 'TOS ! ;
-:jmpr		dup 4 - d@ 8 >> + ;
+:jmpr		w@+ + ;
 
 :i;		drop RTOS @ 8 'RTOS +! ;
 :i(		;
-:i)		w@+ + ;
-:i[		w@+ + ;
+:i)		jmpr ;
+:i[		jmpr ;
 :i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
 :iEX	-8 'RTOS +! RTOS ! TOS code + 8 'NOS +! NOS @ 'TOS ! ;
 
 |--- COND
-:i0?	TOS 1? ( drop jmpr ; ) drop ;
-:i1?	TOS 0? ( drop jmpr ; ) drop ;
-:i+?	TOS -? ( drop jmpr ; ) drop ;
-:i-?	TOS +? ( drop jmpr ; ) drop ;
-:i=?	NOS @ TOS <>? ( drop jmpr iDROP ; ) drop iDROP ;
-:i<?	NOS @ TOS >=? ( drop jmpr iDROP ; ) drop iDROP ;
-:i>?	NOS @ TOS <=? ( drop jmpr iDROP ; ) drop iDROP ;
-:i<=?	NOS @ TOS >? ( drop jmpr iDROP ; ) drop iDROP ;
-:i>=?	NOS @ TOS <? ( drop jmpr iDROP ; ) drop iDROP ;
-:i<>?	NOS @ TOS =? ( drop jmpr iDROP ; ) drop iDROP ;
-:iAND?	NOS @ TOS nand? ( drop jmpr iDROP ; ) drop iDROP ;
-:iNAND?	NOS @ TOS and? ( drop jmpr iDROP ; ) drop iDROP ;
-:iIN?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr i2DROP ; ) drop i2DROP ;
+:i0?	TOS 1? ( drop jmpr ; ) drop 2 + ;
+:i1?	TOS 0? ( drop jmpr ; ) drop 2 + ;
+:i+?	TOS -? ( drop jmpr ; ) drop 2 + ;
+:i-?	TOS +? ( drop jmpr ; ) drop 2 + ;
+:i=?	NOS @ TOS <>? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:i<?	NOS @ TOS >=? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:i>?	NOS @ TOS <=? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:i<=?	NOS @ TOS >? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:i>=?	NOS @ TOS <? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:i<>?	NOS @ TOS =? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:iAND?	NOS @ TOS nand? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:iNAND?	NOS @ TOS and? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
+:iIN?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr i2DROP ; ) drop i2DROP 2 + ;
 
 :iAND	NOS @ TOS and iNIP 'TOS ! ;
 :iOR	NOS @ TOS or iNIP 'TOS ! ;

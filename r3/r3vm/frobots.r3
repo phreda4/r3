@@ -1,14 +1,11 @@
 | frobots
-| PHREDA 2021
-
-|MEM $fffff
+| PHREDA 2021-2024 (r3)
+|-------------------------
 
 ^r3/lib/rand.r3
-
 ^r3/util/arr16.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlgui.r3
-|^r3/r3vm/sdledit.r3
 ^r3/win/sdledit.r3
 
 ^r3/r3vm/r3ivm.r3
@@ -345,7 +342,7 @@
 	"r3 robots" 1024 600 SDLinit
 	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
 	
-	16 16 "r3/r3vm/tank.png" ssload 'tsprites !	
+	16 16 "media/img/tank.png" ssload 'tsprites !
 
 	
 | 32 robots
