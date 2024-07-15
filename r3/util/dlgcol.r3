@@ -25,12 +25,15 @@
 
 ::color! | color --
 	dup 'colord !
-	select 0? ( 2drop ; ) drop
+	|select 0? ( 2drop ; ) drop
 	rgb2hsv | h s v
 	rot 
 	128 16 *>> 'c1w !
 	128 16 *>> 128 swap - 'c1y ! 
 	128 16 *>> 'c1x !
+	
+	c1w 2 << 'col128 + d@ bgr2rgb
+	'vert 7 2 << + d! | vertex color
 	;
 
 :setcolor | --
@@ -40,24 +43,9 @@
 	hsv2rgb 
 	'colord ! ;
 
-:bgr2rgb | BGR -- RGB
-	dup $ff00 and over 16 << $ff0000 and or swap 16 >> $ff and or ;
-	
 :setcolorw | c1w --
-	dup 'c1w !
-	2 << 'col128 + d@ 
-	bgr2rgb
-	'vert 7 2 << + d! | vertex color
-	setcolor 
-	;
+	'c1w ! setcolor ;
 	
-:fillcbox | -- ; fill vertex buffer
-	'vert >a
-	cwx 5 + i2fp da!+ cwy 5 + i2fp da!+ $ffffff da!+ 8 a+
-	cwx 5 + 128 + i2fp da!+ cwy 5 + i2fp da!+ 12 a+ | don't store color
-	cwx 5 + 128 + i2fp da!+ cwy 5 + 128 + i2fp da!+ 0 da!+ 8 a+
-	cwx 5 + i2fp da!+ cwy 5 + 128 + i2fp da!+ 0 da!+ 8 a+
-	;
 
 :selectColorPick
 	$454545 SDLColor
@@ -119,31 +107,67 @@
 	guiEmpty
 	;
 
+#ink
+
+:fillcbox | -- ; fill vertex buffer
+	'vert >a
+	cwx 5 + i2fp da!+ cwy 5 + i2fp da!+ $ffffff da!+ 8 a+
+	cwx 5 + 128 + i2fp da!+ cwy 5 + i2fp da!+ 12 a+ | don't store color
+	cwx 5 + 128 + i2fp da!+ cwy 5 + 128 + i2fp da!+ 0 da!+ 8 a+
+	cwx 5 + i2fp da!+ cwy 5 + 128 + i2fp da!+ 0 da!+ 8 a+
+	;
+
 ::dlgColor | x y --
-	select 1? ( 40 'cwx +! fillcbox selectColorPick -40 'cwx +! ) drop
+	select 1? ( 60 'cwx +! fillcbox selectColorPick -60 'cwx +! ) drop
 
 	$454545 SDLColor
-	cwx cwy 40 40 SDLFRect
+	cwx cwy 60 380 SDLFRect
 
 	colord SDLColor
-	cwx 5 + cwy 5 + 30 30 
+	cwx 10 + cwy 5 + 40 30 
 	2over 2over SDLFRect
 	guiBox
 	[ select 1 xor 'select ! ; ] onClick
-	;
+	
+	'pal8
+	0 ( 20 <?
+		0 ( 3 <?
+			rot d@+ dup 'ink ! SDLColor
+			rot rot
+        	over 4 << 41 + cwy +
+			over 4 << 7 + cwx + swap 14 14
+			2over 2over SDLFRect
+			guiBox
+			over 3 * over +
+			[ dup 'npal ! ink color! ; ] onClick
+			npal =? ( 
+				$ffffff SDLColor
+				xr1 yr1 xr2 pick2 - yr2 pick2 - SDLRect
+				)
+			drop
+			1 + ) drop
+		1 + ) 2drop ;	
 
 ::dlgColorIni
 	'col128 >a
 	0 ( 128 <?
 		dup 9 << 1.0 1.0 hsv2rgb da!+
 		1 + ) drop
-	fillcbox		
+	'pal8 >a
+	$000000 da!+
+	$888888 da!+
+	$ffffff da!+
+	0 ( 19 <?
+		dup 1.0 19 */ 1.0 0.5 hsv2rgb da!+
+		dup 1.0 19 */ 1.0 1.0 hsv2rgb da!+
+		dup 1.0 19 */ 0.5 1.0 hsv2rgb da!+
+		1 + ) drop
 	$ffffff 'colord !
 	127 'c1a !
-	$ff 'vert 7 2 << + d! | vertex color
 	colord color! 
 	;
 
 ::xydlgColor! | x y --
 	'cwy ! 'cwx !
+	fillcbox
 	;

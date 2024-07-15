@@ -198,3 +198,8 @@
 	dup $f and dup 4 << or swap
 	dup $f0 and 4 << dup 4 << or swap
 	$f00 and 8 << dup 4 << or or or ;
+	
+::bgr2rgb | BGR -- RGB
+	dup $ff00 and 
+	over $ff and 16 << or 
+	swap 16 >> $ff and or ;	
