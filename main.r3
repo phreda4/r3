@@ -522,6 +522,11 @@
 		$2 =? ( evmouse )
 		$4 =? ( evsize )
 		drop ) drop
-	savem ;
+	savem 
+	;
 
-: main ;
+: |<<<<<<<<<<<<<<< BOOT
+.getconsoleinfo
+.alsb .showc .insc
+main 
+.masb ;
