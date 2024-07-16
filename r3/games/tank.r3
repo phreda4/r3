@@ -17,10 +17,6 @@
 
 #btnpad
 
-:viewreset
-	sw 1 >> 'viewpx !
-	sh 1 >> 'viewpy !
-	;
 
 | tank
 | x y ang anim ss vx vy ar
@@ -34,16 +30,21 @@
 :.vy 7 ncell+ ;
 :.end 8 ncell+ ;
 
-
-|------------------- fx
-:fxobj | x y --
+:drawspr | arr -- arr
 	dup 8 + >a
 	a@+ int. viewpx + 
 	a@+ int. viewpy +	| x y
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
 	a@ timer+ dup a!+ anim>n 			| n
 	a@+ sspriterz
-	16 + a@ over .a anim>n =? ( 2drop 0 ; ) drop 
+	;
+
+|------------------- fx
+:fxobj | adr --
+	dup .ani @ anim>n 
+	over .end @ 
+	=? ( 2drop 0 ; ) drop 
+	drawspr
 	|..... add velocity to position
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
@@ -56,40 +57,37 @@
 	32 << or a!+	| ang zoom
 	a!+ a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	a!			| vrz
+	a!				| last
 	;
 
 :+fxdisp | ang x y --
-	'fxobj 'fx p!+ >a
-	swap a!+ a!+	| x y 
-	32 << 2.0 or a!+	| ang zoom
-	10 5 $3f ICS>anim | init cnt scale
-	a!+ 
-	tsprites a!+			| anim sheet
-	0 a!+ 0 a!+ 	| vx vy
-	14 a!			| vrz
+	'fxobj 'fx p!+ >b
+	swap b!+ b!+	| x y 
+	32 << 2.0 or b!+	| ang zoom
+	10 4 $ff ICS>anim | init cnt scale
+	b!+ 
+	tsprites b!+	| anim sheet
+	0 b!+ 0 b!+ 	| vx vy
+	13 b!			| vrz
 	;
 	
-:+fxexplo | ang x y --
+:+fxexplo | x y --
 	'fxobj 'fx p!+ >a
 	swap a!+ a!+	| x y 
-	32 << 2.0 or a!+	| ang zoom
-	15 6 $3f ICS>anim | init cnt scale
+	2.0 a!+			| ang zoom
+	15 6 $ff ICS>anim | init cnt scale
 	a!+ 
-	tsprites a!+			| anim sheet
+	tsprites a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
 	19 a!			| vrz
 	;
 	
 |------------------- bomb
 :disparo | adr --
-	dup 8 + >a
-	a@+ int. viewpx + 
-	a@+ int. viewpy +	| x y
-	a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@ timer+ dup a!+ anim>n 			| n
-	a@+ sspriterz
-
+	dup .end dup @ timer- -? ( 
+		2drop dup .x @ swap .y @ +fxexplo
+		0 ; ) swap !
+	drawspr
 	|..... add velocity to position
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
@@ -97,48 +95,46 @@
 	;
 
 :+disparo | vel ang x y --
+	pick2 neg 0.5 + pick2 pick2 +fxdisp
 	'disparo 'disp p!+ >b
 	swap b!+ b!+ 
-	dup 0.25 + 32 << 2.0 or b!+	| angulo zoom
+	neg 0.25 + dup 32 << 2.0 or b!+	| angulo zoom
 	14 1 0 ICS>anim | init cnt scale
 	b!+ | ani
 	tsprites b!+ |ss
 	swap polar 
 	b!+ b!+
-	;
-
-:+disp | -- | a in obj
-	3.0
-	a> .a @ 32 >> 0.25 + neg
-	a> .x @ 
-	a> .y @ +disparo
-	btnpad $10 not and 'btnpad !
+	1000 b!
 	;
 
 |------------------- player tank
-	
+:+disp | -- 
+	3.0	| vel
+	a> .a @ 32 >> neg 0.5 +
+	a> .x @ a> .y @
+	pick2 32.0 
+	xy+polar | x y bangle r -- x y
+	+disparo
+	btnpad $10 not and 'btnpad !
+	;
+
 :motor | m --
- 	a> .a @ 32 >> swap polar 
+ 	a> .a @ 32 >> neg 0.5 + swap polar 
 	a> .y +! a> .x +! ;
-	
+
 :turn | a --
 	32 << a> .a +! ;
 
 :ptank | adr -- adr
 	dup >a
 	btnpad
-	$1 and? ( -0.01 turn )
-	$2 and? ( 0.01 turn )
-	$4 and? ( 0.2 motor )
-	$8 and? ( -0.2 motor )
+	$1 and? ( 0.01 turn )
+	$2 and? ( -0.01 turn )
+	$4 and? ( -0.4 motor )
+	$8 and? ( 0.4 motor )
 	$10 and? ( +disp )
 	drop
-	8 a+
-	a@+ int. viewpx + 
-	a@+ int. viewpy +	| x y
-	a@+ dup 32 >> neg swap $ffffffff and | rot zoom
-	a@ timer+ dup a!+ anim>n 			| n
-	a@+ sspriterz
+	drawspr	
 	drop
 	;
 
@@ -148,17 +144,12 @@
 	32 << or a!+	| ang zoom
 	a!+ a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	0 a!			| vrz
+	0 a!			| end
 	;
 
 |------------------- NPC tank
 :dtank | adr -- adr
-	dup 8 + >a
-	a@+ int. viewpx + 
-	a@+ int. viewpy +	| x y
-	a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@ timer+ dup a!+ anim>n 			| n
-	a@+ sspriterz
+	drawspr	
 	drop
 	;
 	
@@ -185,12 +176,6 @@
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( tsprites 
-		0 2 $ff ICS>anim | init cnt scale -- 
-		2.0 1.0 randmax 
-		600.0 randmax 300.0 -
-		400.0 randmax 200.0 -
-		+tank )
 	| ---- player control	
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )
@@ -201,24 +186,40 @@
 	>le< =? ( btnpad %10 not and 'btnpad ! )
 	>ri< =? ( btnpad %1 not and 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
+	
+	<f1> =? ( tsprites 
+		0 2 $ff ICS>anim | init cnt scale -- 
+		2.0 1.0 randmax 
+		600.0 randmax 300.0 -
+		400.0 randmax 200.0 -
+		+tank )
 	drop ;
 
-|-------------------
-: |<<< BOOT <<<
-	"r3 robots" 1024 600 SDLinit
-	viewreset
-	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
-	16 16 "media/img/tank.png" ssload 'tsprites !
-	40 'fx p.ini
-	50 'tanks p.ini
-	100 'disp p.ini
+:reset
+	sw 1 >> 'viewpx !
+	sh 1 >> 'viewpy !
+
+	'fx p.clear
+	'tanks p.clear
+	'disp p.clear
 	
 	tsprites 
 	0 0 0 ICS>anim | init cnt scale -- 
 	2.0 0.0 
 	0 0 +ptank 
+	;
 	
+|-------------------
+: |<<< BOOT <<<
+	"r3 robots" 1024 600 SDLinit
 	bfont1
+	
+	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
+	16 16 "media/img/tank.png" ssload 'tsprites !
+	40 'fx p.ini
+	50 'tanks p.ini
+	100 'disp p.ini
+	reset
 	'runscr SDLshow
 	SDLquit 
 	;

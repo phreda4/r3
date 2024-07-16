@@ -300,24 +300,25 @@
 
 |.... time control
 #prevt
-##deltatime
+#deltatime
 
 ::timer< msec 'prevt ! 0 'deltatime ! ;
 ::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
-::timer+ deltatime + ; | $ffffff7fffffffff and  ; | 17 years in milliseconds
+::timer+ deltatime + ; | $ffffffff7fffffff and  ; | for ring counter
 ::timer- deltatime - ; 
 
 |.... animation v1
-| inicio(16) cnt(8) escala(8) time(32) (49 dias)
+| fff ff fff ........
+| inicio(12) cnt(8) escala(12) time(32) (49 dias)
 |                      
 ::ICS>anim | init cnt scale -- val
-	32 << swap 40 << or swap 48 << or ;
+	32 << swap 44 << or swap 52 << or ;
 	
 ::anim>N | ani -- t
 	dup |$ffffffff and
-	dup 32 >> $ff and * $ffff and
-	over 40 >> $ff and 16 *>>
-	swap 48 >>> +
+	dup 32 >> $fff and * $ffff and
+	over 44 >> $ff and 16 *>>
+	swap 52 >>> +
 	;
 
 : fillfull ;
