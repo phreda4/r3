@@ -9,8 +9,8 @@
 
 ^r3/iti2024/zoilo/bmap.r3
 
-#aap2
-	
+|----
+##sprplayer
 
 |----
 #mapa1
@@ -19,8 +19,6 @@
 
 #xvp #yvp		| viewport
 #xvpd #yvpd	| viewport dest
-
-
 
 |person array
 | x y ang anim ss vx vy ar
@@ -68,63 +66,40 @@
 	
 :viewporty | y -- y
 	dup sh 1 >> - 'yvpd ! ;	
-	
-#persona1 ( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-#persona2 ( 12 13 12 14 15 16 15 17 18 19 18 20 21 22 21 23 )
-#persona3 ( 24 25 24 26 27 28 27 29 30 31 30 32 33 34 33 35 )
-#persona4 ( 36 37 36 38 39 40 39 41 42 43 42 44 45 46 45 47 )
 
+:bsprdrawsimple
+	sprplayer ssprite | x y n ssprite
+	;
 	
-:anim! | 'anim --
-	a> 2 3 << + ! ; 
-	
-:anim@
-	a> 2 3 << + @+ 2 << swap @ + ;
-
-:sumax | adv -- tilew
-	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
 
 :xymove | dx dy --
-	a> @ pick2 + 
-	a> 8 + @ pick2 + |16 >> 32 + | piso
+	a> .x @ pick2 + 
+	a> .y @ pick2 + |16 >> 32 + | piso
 	xyinmap@
 	$1000000000000 and? ( 3drop ; ) 
-	
 	drop
-	a> 8 + +!
-	a> +!
+	a> .y +!
+	a> .x +!
 	;
-
-|0 12 $3f ICS>anim 'aap2 !
-|12 12 $3f ICS>anim 'aap2 !
 
 #btnpadp
 
-:setvel
-	a> .vy !
-	a> .vx !
-	;
-	
-	
-:dobtn
-	btnpad btnpadp =? ( drop ; ) 
-	%1000 and? ( 0 -2.0 xymove )
-	%100 and? ( 0 2.0 xymove  )
-	%10 and? ( 12 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! -2.0 0.0 xymove )
-	%1 and? ( 0 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! 2.0 0.0 xymove )
-	'btnpadp !
-	;
+:setanim
+	a> .ani dup @ $ffffffff and rot or swap ! ;
 
 |  x y anim 
 :player	
-	8 + >a
+	>a
 	btnpad
 	%1000 and? ( 0 -2.0 xymove )
 	%100 and? ( 0 2.0 xymove  )
-	%10 and? ( 12 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! -2.0 0.0 xymove )
-	%1 and? ( 0 12 $3f ICS>anim aap2 $ffffffff and or 'aap2 ! 2.0 0.0 xymove )
-	1? ( msec 7 >> $3 and nip ) anim@ + c@
-	a@+ int. a@+ int. 
+	%10 and? ( 12 12 $3f ICS>anim setanim -2.0 0.0 xymove )
+	%1 and? ( 0 12 $3f ICS>anim setanim 2.0 0.0 xymove )
+	0? ( 0 0 0 ICS>anim setanim )
+	drop
+	a> .ani dup @ timer+ dup rot ! anim>n 			| n
+	a> .x @ int. 
+	a> .y @ int. 
 	xytrigger
 	swap viewportx xvp -
 	swap viewporty yvp -
@@ -134,39 +109,8 @@
 :+jugador | 'per x y --
 	'player 'obj p!+ >a
 	swap a!+ a!+
-	0 a!+ a!+ 
-	;	
-
-|---------------------
-
-#randmove ( %0000 %0001 %0010 %0100 %0101 %0110 %1000 %1001 %1010 )
-
-:randir
-	40 randmax 1? ( drop ; ) drop
-	9 randmax 'randmove + c@
-	a> 4 3 << + !
-	;
-	
-:npc
-	8 + >a
-	randir
-	a> 4 3 << + @
-	%1000 and? ( 3 anim! 0 -2.0 xymove )
-	%100 and? ( 0 anim! 0 2.0 xymove  )
-	%10 and? ( 1 anim! -2.0 0.0 xymove )
-	%1 and? ( 2 anim! 2.0 0.0 xymove )
-	1? ( msec 7 >> $3 and nip ) anim@ + c@
-	a@+ int. a@+ int.
-	xytrigger
-	swap xvp -
-	swap yvp -
-	+sprite	| a x y
-	;	
-
-:+npc | 'dib x y --
-	'npc 'obj p!+ >a
-	swap a!+ a!+
-	0 a!+ a!+ 0 a!+
+	0 a!+ 
+	a!+ 
 	;	
 
 |-----------------------------------
@@ -197,9 +141,6 @@
 	xvp yvp drawmaps
 	viewpostmove
 	
-	aap2 timer+ 'aap2 !
-	500 300 aap2 anim>n sprplayer2 ssprite
-
 	SDLredraw
 	teclado
 	;
@@ -207,16 +148,7 @@
 :reset
 	'obj p.clear
 	;
-		
-:randnpc
-	4 randmax 4 << 'persona1 +
-	( 	2800.0 randmax 32.0 + 
-		1200.0 randmax 64.0 +
-		2dup xyinmap@ $1000000000000 and? 
-		3drop ) drop
-	+npc
-	;
-	
+
 :randcosa	
 	48
 	( 	2800.0 randmax 32.0 + 
@@ -229,8 +161,7 @@
 :juego
 	inisprite
 	reset
-	'persona1 130.0 300.0 +jugador
-|	200 ( 1? 1 - randnpc ) drop
+	0 130.0 300.0 +jugador
 |	10 ( 1? 1 - randcosa ) drop
 	'jugar SDLshow
 	;	
@@ -241,9 +172,11 @@
 	
 	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	"r3/iti2024/zoilo/mapa.bmap" loadmap 'mapa1 !
-	32 32 "r3/iti2024/zoilo/sprites.png" ssload 'sprplayer !
 	
-	128 128 "r3/iti2024/zoilo/jugador.png" ssload 'sprplayer2 !
+	
+|	32 32 "r3/iti2024/zoilo/sprites.png" ssload 'sprplayer !
+	128 128 "r3/iti2024/zoilo/jugador.png" ssload 'sprplayer !
+	'bsprdrawsimple 'bsprdraw !
 	
 	1000 'obj p.ini
 	juego

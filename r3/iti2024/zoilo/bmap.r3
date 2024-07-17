@@ -8,10 +8,6 @@
 ^r3/lib/rand.r3
 
 |----
-##sprplayer
-##sprplayer2
-
-|----
 #mapgame
 #mapw #maph		| size map
 #mapx #mapy		| ini screen
@@ -26,6 +22,11 @@
 
 #boxsrc [ 0 0 0 0 ]
 #boxdst [ 0 0 0 0 ]
+
+:defsprite | x y n --
+	3drop ; | nota draw
+	
+##bsprdraw 'defsprite | redefine fro draw sprite in correct order
 
 |------------ order inscreen render
 #sprinscr 
@@ -53,13 +54,13 @@
 	16 'sprinscr> +! 
 	;
 
+
 :drawobj | ylim a vyx -- ylim 'a
 	dup 32 << 32 >> | x
 	swap 32 >>		| adr x y
-	
-	|1.0 			| zoom 2.0
 	pick2 @			| tilenro
-	sprplayer ssprite | x y n ssprite --
+	bsprdraw ex
+|sprplayer ssprite | x y n ssprite --
 	8 +
 	;
 
@@ -156,7 +157,6 @@
 	;
 	
 |------------------------- 32x32 pixel
-
 ::drawmaps | xvp yvp --
 	dup $1f and neg 'mapy ! 5 >> 'mapsy ! 
 	dup $1f and neg 'mapx ! 5 >> 'mapsx !
