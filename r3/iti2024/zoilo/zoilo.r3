@@ -7,7 +7,7 @@
 ^r3/util/arr16.r3
 ^r3/lib/rand.r3
 
-^r3/iti2024/zoilo/bmap.r3
+^r3/util/bmap.r3
 
 |----
 ##sprplayer
@@ -68,6 +68,7 @@
 	dup sh 1 >> - 'yvpd ! ;	
 
 :bsprdrawsimple
+	swap 32 - swap
 	sprplayer ssprite | x y n ssprite
 	;
 	
@@ -99,7 +100,7 @@
 	drop
 	a> .ani dup @ timer+ dup rot ! anim>n 			| n
 	a> .x @ int. 
-	a> .y @ int. 
+	a> .y @ int.
 	xytrigger
 	swap viewportx xvp -
 	swap viewporty yvp -
