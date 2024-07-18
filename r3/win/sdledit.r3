@@ -3,7 +3,7 @@
 |---------------------------------------
 ^r3/win/sdl2gfx.r3
 ^r3/util/bfont.r3
-^r3/util/sdlgui.r3
+^r3/lib/gui.r3
 ^r3/lib/parse.r3
 
 | ventana de texto
@@ -349,20 +349,20 @@
 |..............................
 :linenro | lin -- lin
 	$afafaf bcolor
-	dup ylinea + 1 + .d 3 .r. bemits ;
+	dup ylinea + 1 + .d 4 .r. bemits ;
 
 ::edcodedraw
 	$333C57 sdlcolor 
-	xcode 4 + ycode 
-	wcode 4 - hcode 1 + bfillline
+	xcode 5 + ycode 
+	wcode 5 - hcode 1 + bfillline
 	$566C86 sdlcolor 
 	xcode ycode 
-	4 hcode 1 + bfillline	
+	5 hcode 1 + bfillline	
 	pantaini>
 	0 ( hcode <?
 		xcode ycode pick2 + 1 + gotoxy
 		linenro
-		xcode 4 + gotox
+		xcode 5 + gotox
 		swap drawline
 		swap 1 + ) drop
 	$fuente <? ( 1 - ) 'pantafin> !
