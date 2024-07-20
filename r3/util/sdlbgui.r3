@@ -7,6 +7,7 @@
 ^r3/lib/input.r3
 
 #winx 0 #winy 0
+#winw 10 #winh 10
 
 #padx 2 #pady 2
 ##curx 10 ##cury 10
@@ -370,3 +371,33 @@
 	$ffffff bcolor
 	@ "%d" bprint ;
 
+|----- static windows
+:winxy!
+	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;
+	
+:winwh!
+	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
+	
+:wintitles | "" --
+	immcolorwin SDLColor
+	winx winy winw winh 
+	pick3 pick3 pick3 pick3 SDLFRect
+	pick3 pick3 pick3 pick3 guiBox
+	0 SDLColor SDLRect
+	winx 'curx ! winy 'cury !
+	winw padx 1 << - 'boxw ! 16 pady + 'boxh !
+	immcolortwin SDLColor
+	plxywh SDLFRect 
+	immlabelc
+	winx winy 16 pady + + winw winh 16 pady + - guiBox 
+	;	
+	
+::immwins
+	|dup @ |$2 and? ( winnow 'winhot ! ) drop | all in top
+	|wintit
+	dup 8 + @+ winxy! @+ winwh! wintitles
+	@ 
+	winx padx + 'curx ! 
+	winy pady 2 << + 16 + 'cury ! 
+	winw 1 >> padx 1 << - padx - 'boxw !
+	;

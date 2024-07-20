@@ -17,7 +17,7 @@
 #mapw 32 #maph 32	| w,h map
 #mapmem	0			| map adreess
 
-#mapx 0 #mapy 32		| screen x,y pixel start
+#mapx 180 #mapy 32		| screen x,y pixel start
 #mapsx 0 #mapsy 0	| screen x,y map start
 #mapsw 30 #mapsh 16	| screen w,h 
 #maptw 64 #mapth 64 | screen tile size
@@ -188,7 +188,9 @@
 		1 + ) 3drop ;
 		
 :modeedit | --
-	'paint dup onDnMove ;
+	|'paint dup onDnMove 
+	'paint onMove 
+	;
 
 |------------- SELECT
 :select1
@@ -347,7 +349,7 @@
 	b! ;
 
 |---- tileset
-#wint 1 [ 0 32 512 512 ] "Tiles"
+#wint 1 [ 200 32 512 512 ] "Tiles"
 
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
@@ -391,7 +393,7 @@
 	;
 
 |---- config
-#wincon 1 [ 800 260 224 300 ] "CONFIG"
+#wincon 1 [ 0 260 190 300 ] "CONFIG"
 
 #mapwn 
 #maphn
@@ -440,14 +442,14 @@
 	;
 	
 :winconfig
-	'wincon immwin 0? ( drop ; ) drop
+	'wincon immwins 0? ( drop ; ) drop
 	$7f 'immcolorbtn !
 
-	190 20 immbox
+	160 20 immbox
 	'changetile "TILESET" immbtn immcr	
-	'tilefile immLabel immcr
+|	'tilefile immLabel immcr
 	"Tile Size" immLabel immcr
-	70 20 immbox
+	50 20 immbox
 	"W" imm. 'tilewn immInputInt imm>>
 	": H" imm. 'tilehn immInputInt immcr
 	|4 256 'tilewn immSlideri " w" immlabel immcr
@@ -459,7 +461,7 @@
 |	4 255 'maphn immSlideri " h" immlabel immcr
 
 	immcr
-	90 18 immbox
+	60 18 immbox
 	[ recalc ; ] "RECALC" immbtn imm>>
 	[ resetmap ; ] "CLEAR" immbtn immcr
 	;
@@ -475,7 +477,7 @@
 	;
 	
 |---- settings
-#winset 1 [ 824 32 200 220 ] "LAYERS"
+#winset 1 [ 0 2 180 400 ] "BMAP EDIT"
 
 #nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Up" "Trigger"
 
@@ -492,10 +494,10 @@
 	'nlayer
 	0 ( 7 <? 
 		colbtn 'immcolorbtn !
-		120 18 immbox
+		90 18 immbox
 		[ dup 'clevel ! ; ] 
 		pick2 immbtn imm>>
-		25 18 immbox
+		20 18 immbox
 		$666666 'immcolorbtn !
 		[ 1 over << mlevel xor 'mlevel ! ; ] icoview immibtn imm>>
 		[ 1 over << slevel xor 'slevel ! ; ] icosafe immibtn imm>>
@@ -504,20 +506,37 @@
 
 		
 :winmain
-	'winset immwin 0? ( drop ; ) drop
-	layers immln
+	'winset immwins 0? ( drop ; ) drop
+	layers 
 
 	$7f 'immcolorbtn !
 	
-	188 20 immbox
+	172 18 immbox
 	1 16 'tilescalen immSlideri
+	tilescalecalc
+	
 	" Tile Scale" immLabel immcr
 
-	90 18 immbox
+	50 18 immbox
 	'savemap "SAVE" immbtn imm>>
 	'loadmap "LOAD" immbtn immcr
 	
-	tilescalecalc
+|	$7f 'immcolorbtn !
+	160 18 immbox
+	'changetile "TILESET" immbtn immcr	
+|	'tilefile immLabel immcr
+	50 18 immbox
+	"Tile:" imm.
+	'tilewn immInputInt imm>> ":" imm. 
+	'tilehn immInputInt immcr
+	"Map:" imm.
+	'mapwn immInputInt imm>> ":" imm. 
+	'maphn immInputInt immcr
+	immcr
+	60 18 immbox
+	[ recalc ; ] "RECALC" immbtn imm>>
+	[ resetmap ; ] "CLEAR" immbtn immcr
+
 	;
 
 |----- MAIN
@@ -562,8 +581,9 @@
 :toolbar	
 	'keymain immkey!
 	$ffffff ttcolor
-	0 16 ttat sdlx sdly scr2view swap maph mapw "w:%d h:%d | x:%d y:%d" ttprint
-	0 0 ttat 'tilefile 'filename "MAP [ %s ] TILESET [ %s ]" ttprint
+	500 0 ttat sdlx sdly scr2view swap maph mapw "w:%d h:%d | x:%d y:%d" ttprint
+	200 0 ttat 'filename "MAP: %s " ttprint 
+	200 16 ttat 'tilefile "TLS: %s " ttprint
 
 	28 28 immbox
 	990 0 immat
@@ -574,8 +594,8 @@
 	$7f 'immcolorbtn !
 
 	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm<<
-	'getconfig 71 immibtn imm<<	
-	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
+|	'getconfig 71 immibtn imm<<	
+|	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
 	[ 'wintiles immwin$ ; ] 0 immibtn imm<<		
 	imm<<	
 	115 'modefill btnmode 

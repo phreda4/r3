@@ -422,6 +422,12 @@
 	@ "%d" ttprint ;
 
 |----- windows
+:winxy!
+	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;
+	
+:winwh!
+	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
+	
 ::immwin! | win --
 	'winlist ( winlist> <?
 		@+ pick2 =? ( 3drop ; ) drop ) drop
@@ -438,16 +444,6 @@
 		@+ pick2 =? ( drop windrop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
 	
-
-::immwinfix
-	;
-	
-:winxy!
-	dup 32 << 32 >> 'winx ! 32 >> 'winy ! ;
-	
-:winwh!
-	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
-	
 ::winexit
 	winhotn 0? ( drop ; ) drop 
 	-8 'winlist> +!
@@ -460,8 +456,7 @@
 	winx winy winw winh 
 	pick3 pick3 pick3 pick3 SDLFRect
 	guiBox
-	[ |sdlb 0? ( drop ; ) drop 
-	  winnow 'winhot ! ; ] guiI
+	[ winnow 'winhot ! ; ] guiI
 	0 SDLColor
 	winx winy winw winh SDLRect
 	
@@ -524,6 +519,32 @@
 	win2front 		
 	keyevent 1? ( dup ex ) drop
 |	winevent 1? ( dup ex ) drop
+	;
+
+|----- static windows
+
+:wintitles | "" --
+	immcolorwin SDLColor
+	winx winy winw winh 
+	pick3 pick3 pick3 pick3 SDLFRect
+	pick3 pick3 pick3 pick3 guiBox
+	0 SDLColor SDLRect
+	winx 'curx ! winy 'cury !
+	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
+	immcolortwin SDLColor
+	plxywh SDLFRect 
+	immlabelc
+	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
+	;	
+	
+::immwins
+	|dup @ |$2 and? ( winnow 'winhot ! ) drop | all in top
+	|wintit
+	dup 8 + @+ winxy! @+ winwh! wintitles
+	@ 
+	winx padx + 'curx ! 
+	winy pady 2 << + immfontsh + 'cury ! 
+	winw 1 >> padx 1 << - padx - 'boxw !
 	;
 
 |------ Init
