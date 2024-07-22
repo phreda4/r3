@@ -264,8 +264,7 @@
 	mapx mapy mapsw maptw * mapsh mapth * guiBox
 	ts_spr drawmap
 	drawgrid
-|	hot 1? ( drop ; ) drop | no other 
-	modexe ex		
+	modexe ex
 	;
 
 :resetmap	
@@ -307,7 +306,7 @@
 	dup 'here !
 	'tilefile strcpy
 	|... load tiles
-	tilew tileh 'tilefile tsload 'ts_spr !	
+	tilew tileh 'tilefile tsload 'ts_spr !
 	0 'mapsx ! 0 'mapsy !	| screen x,y map start	
 	;
 	
@@ -349,7 +348,7 @@
 	b! ;
 
 |---- tileset
-#wint 1 [ 200 32 512 512 ] "Tiles"
+#wint 1 [ 0 300 512 512 ] "Tiles"
 
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
@@ -393,8 +392,6 @@
 	;
 
 |---- config
-#wincon 1 [ 0 260 190 300 ] "CONFIG"
-
 #mapwn 
 #maphn
 #tilewn
@@ -441,41 +438,13 @@
 	'tilefile strcpy
 	;
 	
-:winconfig
-	'wincon immwins 0? ( drop ; ) drop
-	$7f 'immcolorbtn !
-
-	160 20 immbox
-	'changetile "TILESET" immbtn immcr	
-|	'tilefile immLabel immcr
-	"Tile Size" immLabel immcr
-	50 20 immbox
-	"W" imm. 'tilewn immInputInt imm>>
-	": H" imm. 'tilehn immInputInt immcr
-	|4 256 'tilewn immSlideri " w" immlabel immcr
-	|4 256 'tilehn immSlideri " h" immlabel immcr
-	"Map Size" immLabel immcr
-	"W" imm. 'mapwn immInputInt imm>>
-	": H" imm. 'maphn immInputInt immcr
-|	4 255 'mapwn immSlideri " w" immlabel immcr
-|	4 255 'maphn immSlideri " h" immlabel immcr
-
-	immcr
-	60 18 immbox
-	[ recalc ; ] "RECALC" immbtn imm>>
-	[ resetmap ; ] "CLEAR" immbtn immcr
-	;
-
 :getconfig
 	mapw 'mapwn !
 	maph 'maphn !
 	tilew 'tilewn !
 	tileh 'tilehn !
-	
-|'editor SDLshow	
-	'winconfig immwin$
 	;
-	
+
 |---- settings
 #winset 1 [ 0 2 180 400 ] "BMAP EDIT"
 
@@ -543,14 +512,11 @@
 :keymain
 	SDLkey
 	>esc< =? ( exit )
-	
-|	hot 1? ( 2drop ; ) drop 
-	
-	<1> =? ( 0 'clevel ! )
-	<2> =? ( 1 'clevel ! )
-	<3> =? ( 2 'clevel ! )
-	<4> =? ( 3 'clevel ! )
-	<5> =? ( 4 'clevel ! )
+|	<1> =? ( 0 'clevel ! )
+|	<2> =? ( 1 'clevel ! )
+|	<3> =? ( 2 'clevel ! )
+|	<4> =? ( 3 'clevel ! )
+|	<5> =? ( 4 'clevel ! )
 	
 	<g> =? ( mgrid 1 xor 'mgrid ! )
 	
@@ -563,10 +529,8 @@
 	<d> =? ( map>> )
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
-	
-	<f1> =? ( 'winmain immwin$ )
+
 	<f2> =? ( 'wintiles immwin$ )
-	<f3> =? ( getconfig )
 	drop
 	;
 	
@@ -606,8 +570,9 @@
 :editor
 	0 SDLcls
 	immgui		| ini IMMGUI
-	toolbar		
+	toolbar
 	drawmapedit
+	winmain
 	immRedraw	| IMMGUI windows
 	SDLredraw
 	;
@@ -620,11 +585,11 @@
 	"r3" filedlgini
 	
 	'filename "mem/bmapedit.mem" load drop
-	'filename .println
+|	'filename .println
 |	"mem/bmapedit.mem" 'filename strcpy
-	loadmap tilescalecalc tileinfo
-
-	'winmain immwin!
+	loadmap tilescalecalc 
+	tileinfo
+	getconfig
 	
 	'editor SDLshow
 	savemap
