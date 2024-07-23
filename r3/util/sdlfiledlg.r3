@@ -37,6 +37,7 @@
 	0 'filenow ! 
 	;
 	
+	
 |-----
 :backfolder
 	'path ( c@+ 1? drop ) drop 3 - | /0.
@@ -68,10 +69,17 @@
 	filenow =? ( linenter ; )
 	dup 'filenow !
 	clicknfile ;
-	
-	
 
-
+:refile 
+	0 'fileini !
+	'filename
+	0 ( nfiles <? 
+		dup ]file .name pick2 cmpstr 
+		0? ( drop nip 
+			filelines >? ( dup filelines - 1 + 'fileini ! )
+			'filenow ! ; ) drop 
+		1 + ) 2drop ;
+		
 #winfiledlg 3 [ 500 0 400 416 ] "FileDlg"
 
 :listscroll | n --
@@ -132,46 +140,46 @@
 		">" imm.
 		) 2drop ;
 	
-::filedlg
+#vecexec	
+:filedlg
 	'winfiledlg immwin 0? ( drop ; ) drop
 	390 18 immbox
 	boxpath immcr
 	390 18 immbox
-	'filename 1024 immInputLine immcr 	
+	'filename 1024 immInputLine immcr
 	370 18 immbox
 	filelines immlist
 	94 18 immbox
 	$7f 'immcolorbtn !
 
-	[ winexit ; ] "LOAD" immbtn imm>>
-	'winexit "CANCEL" immbtn immcr		
-	immln
-	'winfiledlg immwinbottom
+	[ winexit vecexec ex ; ] "LOAD" immbtn imm>>
+	'winexit "CANCEL" immbtn immcr
+|	immln
+|	'winfiledlg immwinbottom
 	;
 	
-::filedlgini | "" --
-	'path strcpy
+::filedlgini | --
 	15 'filelines !
 	here dup 'files !	| 1k files
 	8192 + dup 'filen ! | 64k names
 	$ffff + 'here !
-	reload	
 	;
-	
-	
 
-::immfileload | 'file -- 'file/0
-|	mark
-|	filedlgini
+:loadnames | filename --
+	dup 'path strpath
+	'path count nip + 
+	dup c@ $2f =? ( swap 1 + swap ) drop
+	'filename strcpy
+	reload refile ;
+	
+::immfileload | 'vecload 'file --
+	loadnames
+	'vecexec !
 	'filedlg immwin! | winfix
-|	empty
-|	'path dup 'filename strcat
 	;
 	
-::immfilesave | 'file -- 'file/0
-|	mark
-|	filedlgini
+::immfilesave | 'vecload 'file --
+	loadnames
+	'vecexec !
 	'filedlg immwin!
-|	empty
-|	'path dup 'filename strcat
 	;

@@ -415,7 +415,7 @@
 		
 	mapwn maphn * 3 << 'here +! | adv 
 
-|	32 , 32 , "r3/itinerario/diciembre/tiles.png" ,s 0 ,c
+|	32 , 32 , "media/img/tiles.png" ,s 0 ,c
 	tilew , tileh , 'tilefile ,s 0 ,c
 	'filename savemem
 	empty 
@@ -432,10 +432,12 @@
 	tileinfo
 	;
 
-:changetile
+:filetile
+
 	'tilefile
 	immfileload 0? ( drop ; )
 	'tilefile strcpy
+	| redoing
 	;
 	
 :getconfig
@@ -492,7 +494,7 @@
 	
 |	$7f 'immcolorbtn !
 	160 18 immbox
-	'changetile "TILESET" immbtn immcr	
+	'filetile "TILESET" immbtn immcr	
 |	'tilefile immLabel immcr
 	50 18 immbox
 	"Tile:" imm.
@@ -530,7 +532,7 @@
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
 
-	<f2> =? ( 'wintiles immwin$ )
+|	<f2> =? ( 'wintiles immwin$ )
 	drop
 	;
 	
@@ -560,19 +562,21 @@
 	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm<<
 |	'getconfig 71 immibtn imm<<	
 |	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
-	[ 'wintiles immwin$ ; ] 0 immibtn imm<<		
+	|[ 'wintiles immwin$ ; ] 0 immibtn imm<<		
 	imm<<	
 	115 'modefill btnmode 
 	15 'moderect btnmode 
 	192 'modeedit btnmode 
+	
+	winmain
+	wintiles
 	;
 	
 :editor
 	0 SDLcls
 	immgui		| ini IMMGUI
+	drawmapedit	
 	toolbar
-	drawmapedit
-	winmain
 	immRedraw	| IMMGUI windows
 	SDLredraw
 	;
@@ -581,8 +585,7 @@
 :main
 	"r3sdl" 1024 600 SDLinit
 	SDLblend
-	"media/ttf/Roboto-Medium.ttf" 14 TTF_OpenFont immSDL
-	"r3" filedlgini
+	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
 	
 	'filename "mem/bmapedit.mem" load drop
 |	'filename .println
@@ -590,7 +593,7 @@
 	loadmap tilescalecalc 
 	tileinfo
 	getconfig
-	
+	"r3/" filedlgini
 	'editor SDLshow
 	savemap
 	

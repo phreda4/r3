@@ -29,9 +29,11 @@
 	0 swap c! ;
 
 ::strpath | src dst -- ; copy path only (need /)
+	over swap
 	strcpyl 
-	( dup c@ $2f <>? drop 1 - ) drop 
-	0 swap c! ;
+	( over =? ( 0 swap c! drop ; )
+		dup c@ $2f <>? drop 1 - ) drop 
+	0 swap c! drop ;
 
 ::toupp | c -- C
 	$df and ;

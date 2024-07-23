@@ -43,6 +43,16 @@
 	drop
 	;
 	
+:loadfile1
+|	'filename strcpy 
+	'filename .println
+	;
+
+:loadfile2
+	'tilefile .println
+|	'tilefile strcpy 
+	;
+	
 :editor
 	0 SDLcls
 	immGui		| ini IMMGUI	
@@ -52,9 +62,9 @@
 	200 200 immat
 	$ff0000 'immcolorbtn !
 	$ffffff 'immcolortex !
-	[ 'filename immfileload 'filename strcpy ; ] "dlg load" immbtn 
+	[ 'loadfile1 'filename immfileload ; ] "dlg load" immbtn 
 	immdn
-	[ 'tilefile immfileload 'tilefile strcpy ; ] "dlg save" immbtn 
+	[ 'loadfile2 'tilefile immfilesave ; ] "dlg save" immbtn 
 	immdn
 	sdlb sdly sdlx "%d %d %d" immlabelc	
 	100 20 immat
@@ -62,7 +72,6 @@
 	$0 'immcolortex !
 	0 'immcolortex !
 	'exit 0 immibtn 
-
 	
 	immRedraw
 	SDLredraw
@@ -73,9 +82,10 @@
 	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
 	'winconfig immwin!
 	
-	"r3" 'filename strcpy
-	"." 'tilefile strcpy
-	'filename filedlgini
+	"media/img/tiles.png" 'tilefile strcpy
+	"media/img/tiles.png" 'filename strcpy
+
+	filedlgini
 
 	'editor SDLshow
 	SDLquit
