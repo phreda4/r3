@@ -383,19 +383,23 @@
 	SDLfRect
 	;
 
+|---- config
+#mapwn 
+#maphn
+#tilewn
+#tilehn
+
 :tileinfo | -- 
 	ts_spr 0? ( drop ; )
 	@ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
 	tileimgw tilew / 'tilesww !
 	tileimgw 4 + 'wint 16 + d!
 	tileimgh 28 + 'wint 20 + d!
+	mapw 'mapwn !
+	maph 'maphn !
+	tilew 'tilewn !
+	tileh 'tilehn !
 	;
-
-|---- config
-#mapwn 
-#maphn
-#tilewn
-#tilehn
 
 |------------
 :resizemap | --
@@ -414,8 +418,6 @@
 		1 + ) 3drop
 		
 	mapwn maphn * 3 << 'here +! | adv 
-
-|	32 , 32 , "media/img/tiles.png" ,s 0 ,c
 	tilew , tileh , 'tilefile ,s 0 ,c
 	'filename savemem
 	empty 
@@ -432,19 +434,9 @@
 	tileinfo
 	;
 
-:filetile
-
-	'tilefile
-	immfileload 0? ( drop ; )
-	'tilefile strcpy
-	| redoing
-	;
-	
-:getconfig
-	mapw 'mapwn !
-	maph 'maphn !
-	tilew 'tilewn !
-	tileh 'tilehn !
+:settilefile
+	fullfilename 'tilefile strcpy 
+	recalc
 	;
 
 |---- settings
@@ -494,7 +486,7 @@
 	
 |	$7f 'immcolorbtn !
 	160 18 immbox
-	'filetile "TILESET" immbtn immcr	
+	[ 'settilefile 'tilefile immfileload ; ] "TILESET" immbtn immcr	
 |	'tilefile immLabel immcr
 	50 18 immbox
 	"Tile:" imm.
@@ -592,7 +584,7 @@
 |	"mem/bmapedit.mem" 'filename strcpy
 	loadmap tilescalecalc 
 	tileinfo
-	getconfig
+	|getconfig
 	"r3/" filedlgini
 	'editor SDLshow
 	savemap

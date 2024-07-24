@@ -208,6 +208,12 @@
 	0 swap c! ;
 
 |--------------------------------
+:conadj | adjust console
+	.getconsoleinfo
+	.alsb .showc .insc
+	evtmouse
+	;
+
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
@@ -219,7 +225,7 @@
 |MAC| "./r3mac %s/%s"
 	sprint 
 	sys
-	evtmouse
+	conadj
 	;
 
 :r3info
@@ -275,6 +281,7 @@
 	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
 	drop
+	conadj
 	;
 
 :r3d4
@@ -287,7 +294,8 @@
 |LIN| "./r3lin r3/d4/r3d4-e.r3"
 |RPI| "./r3rpi r3/d4/r3d4-e.r3"
 |MAC| "./r3mac r3/d4/r3d4-e.r3"
-	sys ;
+	sys 
+	conadj ;
 
 |--------------------------------
 |===================================
@@ -329,9 +337,9 @@
 |RPI| "./r3rpi r3/editor/map-edit.r3"
 |MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
-
 	rebuild
 	loadm
+	conadj
 	;
 
 	
@@ -512,8 +520,6 @@
 |---------------------------------
 :main
 	rebuild
-	evtmouse
-	evsize	
 	loadm
 	( exit 0? drop
 		screen
@@ -526,7 +532,6 @@
 	;
 
 : |<<<<<<<<<<<<<<< BOOT
-.getconsoleinfo
-.alsb .showc .insc
+conadj evsize
 main 
 .masb ;

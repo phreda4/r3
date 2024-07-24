@@ -44,11 +44,12 @@
 	;
 	
 :loadfile1
-|	'filename strcpy 
+	fullfilename 'filename strcpy 
 	'filename .println
 	;
 
 :loadfile2
+	fullfilename 'tilefile strcpy 
 	'tilefile .println
 |	'tilefile strcpy 
 	;
@@ -66,7 +67,7 @@
 	immdn
 	[ 'loadfile2 'tilefile immfilesave ; ] "dlg save" immbtn 
 	immdn
-	sdlb sdly sdlx "%d %d %d" immlabelc	
+	sdlb sdly sdlx "%d %d %d" immlabelc	immdn
 	100 20 immat
 	$ff00 'immcolorbtn !
 	$0 'immcolortex !

@@ -80,7 +80,7 @@
 			'filenow ! ; ) drop 
 		1 + ) 2drop ;
 		
-#winfiledlg 3 [ 500 0 400 416 ] "FileDlg"
+#winfiledlg 3 [ 200 10 500 416 ] "FileDlg"
 
 :listscroll | n --
 	filescroll 0? ( 2drop ; ) 
@@ -137,25 +137,25 @@
 		0 over c! 'cfold !
 		'clickf swap immtbtn
 		$2f cfold c!+
-		">" imm.
+		"/" imm.
 		) 2drop ;
 	
 #vecexec	
+#labelok 0 | 7chars+0
+
 :filedlg
 	'winfiledlg immwin 0? ( drop ; ) drop
-	390 18 immbox
-	boxpath immcr
-	390 18 immbox
-	'filename 1024 immInputLine immcr
-	370 18 immbox
+	490 18 immbox
+	boxpath immcr 8 'cury +!
+	490 18 immbox
+	'filename 1024 immInputLine immcr 8 'cury +!
+	470 18 immbox
 	filelines immlist
 	94 18 immbox
 	$7f 'immcolorbtn !
 
-	[ winexit vecexec ex ; ] "LOAD" immbtn imm>>
+	[ vecexec ex winexit ; ] 'labelok immbtn imm>>
 	'winexit "CANCEL" immbtn immcr
-|	immln
-|	'winfiledlg immwinbottom
 	;
 	
 ::filedlgini | --
@@ -175,11 +175,16 @@
 ::immfileload | 'vecload 'file --
 	loadnames
 	'vecexec !
+	"LOAD" 'labelok strcpy
 	'filedlg immwin! | winfix
 	;
 	
 ::immfilesave | 'vecload 'file --
 	loadnames
 	'vecexec !
+	"SAVE" 'labelok strcpy
 	'filedlg immwin!
 	;
+	
+::fullfilename
+	'filename 'path "%s%s" sprint ;
