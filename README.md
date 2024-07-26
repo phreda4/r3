@@ -21,7 +21,7 @@ Edit with F2 or execute with F1 the code in this folder. When execute a code wit
 
 ## Programs in the distributions
 
-## [WIKI](wiki/home.md)
+## [WIKI](https://github.com/phreda4/r3/wiki)
 
 ## [How the language works](doc/web/HOWORK.md)
 
