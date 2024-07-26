@@ -21,6 +21,7 @@ Edit with F2 or execute with F1 the code in this folder. When execute a code wit
 
 ## Programs in the distributions
 
+## [WIKI](wiki/home.md)
 
 ## [How the language works](doc/web/HOWORK.md)
 
