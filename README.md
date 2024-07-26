@@ -23,7 +23,7 @@ Edit with F2 or execute with F1 the code in this folder. When execute a code wit
 
 ## [WIKI](https://github.com/phreda4/r3/wiki/Welcome-to-the-r3-wiki!)
 
-## [How the language works](doc/web/HOWORK.md)
+## [How the language works](https://github.com/phreda4/r3/wiki/Mini-Manual-R3)
 
 The language use a virtual machine for work, this is the source code for this lang:
 https://github.com/phreda4/r3evm
@@ -32,5 +32,5 @@ https://github.com/phreda4/r3evm
 
 ## [Youtube Videos](https://www.youtube.com/@pablohreda)
 
-## [History](doc/web/HISTORY.md)
+## [History](https://github.com/phreda4/r3/wiki/History)
 
