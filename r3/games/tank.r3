@@ -17,10 +17,9 @@
 
 #btnpad
 
-
 | tank
-| x y ang anim ss vx vy ar
-| 1 2 3   4    5  6  7  8
+| x y ang anim ss vx vy ar io
+| 1 2 3   4    5  6  7  8  9
 :.x 1 ncell+ ;
 :.y 2 ncell+ ;
 :.a 3 ncell+ ;
@@ -29,6 +28,7 @@
 :.vx 6 ncell+ ;
 :.vy 7 ncell+ ;
 :.end 8 ncell+ ;
+:.io 9 ncell+ ;
 
 :drawspr | arr -- arr
 	dup 8 + >a
@@ -115,7 +115,6 @@
 	pick2 32.0 
 	xy+polar | x y bangle r -- x y
 	+disparo
-	btnpad $10 not and 'btnpad !
 	;
 
 :motor | m --
@@ -125,6 +124,10 @@
 :turn | a --
 	32 << a> .a +! ;
 
+:tanima | btn -- btn
+	$f and? ( a> .ani dup @ 0 2 $ff vICS>anim swap ! ; )
+	a> .ani dup @ 0 0 0 vICS>anim swap ! ;
+	
 :ptank | adr -- adr
 	dup >a
 	btnpad
@@ -132,7 +135,8 @@
 	$2 and? ( -0.01 turn )
 	$4 and? ( -0.4 motor )
 	$8 and? ( 0.4 motor )
-	$10 and? ( +disp )
+	$10 and? ( +disp btnpad $10 not and 'btnpad ! )
+	tanima
 	drop
 	drawspr	
 	drop
@@ -149,6 +153,16 @@
 
 |------------------- NPC tank
 :dtank | adr -- adr
+	dup >a
+	a> .io @
+	$1 and? ( 0.01 turn )
+	$2 and? ( -0.01 turn )
+	$4 and? ( -0.4 motor )
+	$8 and? ( 0.4 motor )
+	$10 and? ( +disp a> .io dup @ $f and swap ! )
+	tanima
+	20 randmax 0? ( $1f randmax a> .io ! ) drop
+	drop
 	drawspr	
 	drop
 	;
@@ -159,7 +173,8 @@
 	32 << or a!+	| ang zoom
 	a!+	a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	0 a!			| vrz
+	0 a!+			| end
+	0 a!			| io
 	;
 	
 |-------------------
@@ -188,7 +203,7 @@
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
 	<f1> =? ( tsprites 
-		0 2 $ff ICS>anim | init cnt scale -- 
+		0 0 0 ICS>anim | init cnt scale -- 
 		2.0 1.0 randmax 
 		600.0 randmax 300.0 -
 		400.0 randmax 200.0 -
@@ -216,9 +231,9 @@
 	
 	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
 	16 16 "media/img/tank.png" ssload 'tsprites !
-	40 'fx p.ini
-	50 'tanks p.ini
-	100 'disp p.ini
+	400 'fx p.ini
+	100 'tanks p.ini
+	1000 'disp p.ini
 	reset
 	'runscr SDLshow
 	SDLquit 

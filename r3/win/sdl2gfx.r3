@@ -314,11 +314,20 @@
 ::ICS>anim | init cnt scale -- val
 	32 << swap 44 << or swap 52 << or ;
 	
-::anim>N | ani -- t
+::vICS>anim | v init cnt scale -- val
+	ICS>anim swap $ffffffff and or ;
+	
+::anim>n | ani -- t
 	dup |$ffffffff and
 	dup 32 >> $fff and * $ffff and
 	over 44 >> $ff and 16 *>>
 	swap 52 >>> +
+	;
+
+::anim>c | ani -- c
+	dup |$ffffffff and
+	dup 32 >> $fff and * $ffff and
+	swap 44 >> $ff and 16 *>>
 	;
 
 : fillfull ;
