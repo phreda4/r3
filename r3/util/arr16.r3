@@ -71,7 +71,7 @@
 	>r r@ @ 128 - 16 move -128 r> +! ; | not mix
 |	dup @ 128 - swap ! ; | mix
 
-::p.nnow | adr list -- adr nro
+::p.nnow | adr list -- nro
 	8 + @ | adr first 
 	- 7 >> ;
 
@@ -97,7 +97,7 @@
 		
 |------- sort by column
 | only 1 pass, not full order
-| if sort en every frame yo get full order array!
+| if sort in every frame yo get full order array!
 
 :up | adr -- adr ; swap 64 -
 	dup dup 128 - >a | p1 r:p2
