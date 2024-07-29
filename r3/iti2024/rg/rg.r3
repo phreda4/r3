@@ -3,7 +3,7 @@
 |------------------
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2mixer.r3
-^r3/util/sdlgui.r3
+^r3/util/pcfont.r3
 ^r3/util/arr16.r3
 
 |------ sound
@@ -26,6 +26,8 @@
 	3 << 'sndlist + @ SNDplay ;
 
 |------- graficos
+
+#imgfondo
 
 | 1 2  3   4   5   6   7 8  9  10 11    
 | x y 
@@ -50,13 +52,14 @@
 	
 	5.0 over .x +!
 	dup .x @ 1024.0 >? ( 2drop 0 ; ) drop
+	|dup .x @ 1000.0 >? ( 2drop 0 6 playsnd ; ) drop
 	drop	
 	;
 	
 :+cuca | x y --
 	'cuca 'cucas p!+ >a
 	swap a!+ a!+
-	0 2 $7f ICS>anim a!+ 
+	0 3 $7f ICS>anim a!+ 
 	;
 	
 |------- game
@@ -73,7 +76,8 @@
 
 |------- timeline
 
-#time1 $1 $2 $4 $5 $1 $8 $1 $f $3 $2 $1 $4 $5 $f -1
+#time1 $1 $2 $4 $5 $1 $8 $1 $7 $3 $2 $1 $4 $5 $f -1
+|#time1 1 2 1 2 1 2 1 2 1 2 -1
 
 #ltime
 #ntime
@@ -94,6 +98,7 @@
 	8 and? ( 0.0 570.0 +cuca )
 	drop
 	;
+
 	
 :tclock
 	tiempo timer+ 
@@ -145,13 +150,12 @@
 :game
 	timer.
 	$999999 SDLcls
-	immgui 	
-	
-	200 28 immbox
-	500 16 immat
-	
-	ntime "ntime:%d" immlabelc immdn
-	ntime 3 << 'time1 + @ "actual:%h" immlabelc immdn
+	0 0 1024 600 imgfondo SDLImages
+	|immgui 	
+	$0 pccolor
+	0 0 pcat
+	ntime "ntime:%d" pcprint pccr
+	ntime 3 << 'time1 + @ "actual:%h" pcprint
 
 	tclock
 	
@@ -173,10 +177,15 @@
 	<s> =? ( 200 1 golpe )
 	<d> =? ( 200 2 golpe )
 	<f> =? ( 200 3 golpe )
+	<a> =? ( 0 playsnd )
+	<s> =? ( 7 playsnd )
+	<d> =? ( 8 playsnd ) 
+	<f> =? ( 10 playsnd ) 
+	
 	drop ;
 
 :a	
-	<a> =? ( 0 playsnd tiempo thit - 'dif ! 1 'estado ! ) >a< =? ( 0 'estado ! )
+	<a> =? ( 0 playsnd )
 	<s> =? ( 7 playsnd )
 	<d> =? ( 8 playsnd ) 
 	<f> =? ( 10 playsnd ) 
@@ -190,15 +199,16 @@
 	
 :main
 	"Ritmo!!" 1024 600 SDLinit
-	
-	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	|sdlfull
+	pcfont
 	
 	32 32 "r3/iti2024/rg/cuca1.png" ssload 'sprgame !
 	128 142 "r3/iti2024/rg/chancla.png" ssload 'sprplayer !
+	"r3/iti2024/rg/cocina.png" loadimg 'imgfondo !
 	100 'cucas p.ini
 	100 'fx p.ini
 	
-|\	0.0 300.0 +cuca
+|	0.0 300.0 +cuca
 |	0.0 400.0 +cuca
 |	0.0 500.0 +cuca
 	
