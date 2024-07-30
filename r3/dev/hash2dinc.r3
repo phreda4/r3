@@ -20,7 +20,6 @@
 :.zoom 4 ncell+ ;
 
 :.radio 6 ncell+ ;
-|:.hi 6 ncell+ ;
 :.vx 8 ncell+ ;
 :.vy 9 ncell+ ;
 :.va 10 ncell+ ;
@@ -31,12 +30,13 @@
 #ts
 #matrix	
 #matlist
+#xj #yj #rj
 #colist
 #colist>
 
 :H2d.ini | maxobj spc --
 	'spacing !
-	dup 1 << nextpow2 1 - 'ts !	
+	dup 3 << nextpow2 1 - 'ts !	
 	|..... MEMMAP .....
 	here 
 	dup 'matrix !
@@ -48,8 +48,8 @@
 	;
 				
 :hash | x y -- hash
-	|92837111 * swap 689287499 * xor 
-	10 << xor
+	92837111 * swap 689287499 * xor 
+|	10 << xor
 	ts and ;
 	
 :H2d.clear
@@ -67,11 +67,11 @@
 :H2d.collect |  nro hash -- nro
 	-? ( drop ; )
 	dup pick2 32 << or 
-|	dup "%h" .println
 	colist> !+ 'colist> ! 
 	2 << matlist + d@
 	H2d.collect ;
-	
+
+
 |-------------------------------------------------
 |..... query
 :addq | list --
@@ -80,7 +80,8 @@
 	2 << matlist + d@
 	addq ;
 	
-#x1 #x2 #y1 #y2					
+#x1 #x2 #y1 #y2
+
 :qH2d | r x y -- ; here =list
 	dup pick3 - spacing >> 'y1 ! pick2 + spacing >> 'y2 !
 	dup pick2 - spacing >> 'x1 ! + spacing >> 'x2 !
@@ -114,8 +115,19 @@
 		1 -	'arr p.nro  | r x y adr
 		inbox
 		) nip 4drop ;
+		
 |-------------------------------------------------
-
+:collect | x y --
+	dup pick3 - spacing >> 'y1 ! pick2 + spacing >> 'y2 !
+	dup pick2 - spacing >> 'x1 ! + spacing >> 'x2 !
+	x1 ( x2 <=? 
+		y1 ( y2 <=? 
+			2dup hash 2 << matrix + d@ 
+			H2d.collect
+			1 + ) drop
+		1 + ) drop
+	;
+	
 |------------------------------
 :hitx over .vx dup @ neg swap ! ;
 :hity over .vy dup @ neg swap ! ;
@@ -124,26 +136,22 @@
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
 	dup .va @ over .a +!
-	dup .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
-	dup .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
-		
+	dup .x @ dup 'xj ! int. 0 <? ( hitx ) sw >? ( hitx ) drop
+	dup .y @ dup 'yj ! int. 0 <? ( hity ) sh >? ( hity ) drop
+	dup .radio @ 'rj !
+	
 	dup 8 + >a 
-	a@+ int. a@+ int.  | x y
-
-	over 3 >> over 3 >> hash | adr x y hash
+	a@+ int.	|x
+	a@+ int.	|y
 	
-	pick2 pick2 bat
-	dup "%h" bprint
-	
+	over 4 >> over 4 >> hash | adr x y hash
 	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
-	
 	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
 	
 	swap H2d.+!				| nro hash --
 	
 	a@+ a@+ 0 a@+ 
-	|sspriterz
-	4drop 2drop
+	sspriterz 
 	drop
 	;
 
@@ -153,10 +161,10 @@
 	dup a!+ | img
 	SDLimagewh max a!+
 	8 a+
-	0 0 0 a!+ a!+ a!+
-|	0.1 randmax 0.05 - a!+ | vx
-|	0.1 randmax 0.05 - a!+ | vy	
-|	0.005 randmax 0.0025 - a!+ | va
+|	0 0 0 a!+ a!+ a!+
+	0.2 randmax 0.1 - a!+ | vx
+	0.2 randmax 0.1 - a!+ | vy	
+	0.005 randmax 0.0025 - a!+ | va
 	;
 
 |------------------------------
@@ -191,21 +199,20 @@
 	sdlline 
 	;
 	
-	
 :main
 	$0 SDLcls
 	
 	H2d.clear
 	'arr p.draw | calc/draw/hash
 
-	$ff sdlcolor
+	$ff0000 sdlcolor
 	colist ( colist> <?
 		@+ dup 32 >> swap $ffffffff and drawcl
 		) drop
 	
-	$ff00 sdlcolor	
+	$ff00 sdlcolor
 	sdlx sdly 20 - bat
-	sdlx 3 >> sdly 3 >> hash "%h" bprint
+	sdlx 4 >> sdly 4 >> hash "%h" bprint
 	
 	SDLredraw
 	
