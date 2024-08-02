@@ -8,18 +8,34 @@
 
 |------ sound
 #sndfiles 
-"909CXBD2.mp3" "909CXBD3.mp3" "909CXCHH.mp3" "909CXCP1.mp3" "909CXCS1.mp3" "909CXCS2.mp3" 
-"909CXFTH.mp3" "909CXFTL.mp3" "909CXHTH.mp3" "909CXHTL.mp3" "909CXMTH.mp3" "909CXMTL.mp3" 
-"909CXOHH.mp3" "909CXPHH.mp3" "909CXRD2.mp3" "909CXRM1.mp3" "909CXSN1.mp3" "909CXSN2.mp3" 
-"909CXSN3.mp3" 0
-
-#sndlist * 128
+"909CX BD1.mp3"
+"909CX BD2.mp3"
+"909CX BD3.mp3"
+"909CX CHH.mp3"
+"909CX CP1.mp3"
+"909CX CS1.mp3"
+"909CX CS2.mp3"
+"909CX FTH.mp3"
+"909CX FTL.mp3"
+"909CX HTH.mp3"
+"909CX HTL.mp3"
+"909CX MTH.mp3"
+"909CX MTL.mp3"
+"909CX OHH.mp3"
+"909CX PHH.mp3"
+"909CX RD2.mp3"
+"909CX RM1.mp3"
+"909CX SN1.mp3"
+"909CX SN2.mp3"
+"909CX SN3.mp3"
+0
+#sndlist * 160
 
 :loadsnd
 	'sndlist >a
 	'sndfiles
 	( dup c@ 1? drop
-		dup "r3/iti2024/rg/samples/%s" sprint mix_loadWAV a!+
+		dup "media/snd/909/%s" sprint mix_loadWAV a!+
 		>>0 ) drop ;
 
 :playsnd | n --
@@ -34,6 +50,7 @@
 
 :.x 1 ncell+ ;
 :.y 2 ncell+ ;
+:.s 4 ncell+ ;
 
 #sprgame
 #sprplayer
@@ -52,7 +69,7 @@
 	
 	5.0 over .x +!
 	dup .x @ 1024.0 >? ( 2drop 0 ; ) drop
-	|dup .x @ 1000.0 >? ( 2drop 0 6 playsnd ; ) drop
+	|dup .x @ 1000.0 >? ( drop .s @ playsnd 0 ; ) drop
 	drop	
 	;
 	
@@ -104,11 +121,9 @@
 	tiempo timer+ 
 	largo <? ( 'tiempo ! ; )
 	largo - 'tiempo ! 
-	|15 playsnd 
 	tiempo 'thit ! 
 	1 'ntime +! 
 	;
-
 
 :bt
 	estado 0? ( drop ; ) drop
@@ -158,11 +173,11 @@
 	ntime 3 << 'time1 + @ "actual:%h" pcprint
 
 	tclock
-	
 	paso rt bt
 
 	'cucas p.draw
 	'fx p.draw
+	
 	0 player
 	1 player
 	2 player
