@@ -117,9 +117,12 @@
 	immgui 	
 	$0 SDLcls
 	
-	200 20 immbox
+	180 20 immbox
 	0 0 immat
 	"Rythm Machine" immlabelc immdn
+	740 64 immat
+	largo " speed %d (ms)" sprint immLabel immdn	
+	10 1000 'largo  immSlideri immdn
 	
 	channel
 	drawgrid

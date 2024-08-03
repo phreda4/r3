@@ -18,6 +18,7 @@
 :.y 2 ncell+ ;
 :.a 3 ncell+ ;
 :.zoom 4 ncell+ ;
+:.ani 5 ncell+ ;
 
 :.radio 6 ncell+ ;
 :.vx 8 ncell+ ;
@@ -167,6 +168,47 @@
 	0.005 randmax 0.0025 - a!+ | va
 	;
 
+#btnpad
+
+|------------------- player tank
+:motor | m --
+ 	a> .a @ 32 >> neg 0.5 + swap polar 
+	a> .y +! a> .x +! ;
+
+:turn | a --
+	32 << a> .a +! ;
+
+:drawspr | arr -- arr
+	dup 8 + >a
+	a@+ int.  
+	a@+ int. 	| x y
+	a@+ dup 32 >> swap $ffffffff and | rot zoom
+	a@ timer+ dup a!+ anim>n 			| n
+	
+	a@+ sspriterz
+	;
+	
+:ptank | adr -- adr
+	dup >a
+	btnpad
+	$1 and? ( 0.01 turn )
+	$2 and? ( -0.01 turn )
+	$4 and? ( -0.4 motor )
+	$8 and? ( 0.4 motor )
+	$10 and? ( btnpad $10 not and 'btnpad ! )
+	drop
+	drawspr	
+	drop
+	;
+
+:+ptank | sheet ani zoom ang x y --
+	'ptank 'arr p!+ >a
+	swap a!+ a!+	| x y 
+	32 << or a!+	| ang zoom
+	a!+ a!+			| anim sheet
+	0 a!+ 0 a!+ 	| vx vy
+	0 a!			| end
+	;
 |------------------------------
 :+randobj
 	tssprite 			| img
@@ -219,6 +261,16 @@
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( +randobj )
+	| ---- player control	
+	<up> =? ( btnpad %1000 or 'btnpad ! )
+	<dn> =? ( btnpad %100 or 'btnpad ! )
+	<le> =? ( btnpad %10 or 'btnpad ! )
+	<ri> =? ( btnpad %1 or 'btnpad ! )
+	>up< =? ( btnpad %1000 not and 'btnpad ! )
+	>dn< =? ( btnpad %100 not and 'btnpad ! )
+	>le< =? ( btnpad %10 not and 'btnpad ! )
+	>ri< =? ( btnpad %1 not and 'btnpad ! )
+	<esp> =? ( btnpad $10 or 'btnpad ! )	
 	drop
 	;
 
@@ -231,7 +283,8 @@
 	'arr p.clear
 	
 	1000 19 H2d.ini | 1000*4 matriz 4.0*4.0 cell
-	
+
+	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
 	50 insobj
 	'main SDLshow
 	
