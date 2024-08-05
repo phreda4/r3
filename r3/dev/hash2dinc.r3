@@ -1,6 +1,8 @@
-| simple matrix version
+| find collision structure
+| hash with x,y
+| array in 16bits (max 65535 objects)
+| objs in 64bits x,y,..(48)|link(16)
 | PHREDA 2024
-| incremental
 
 ^r3/win/sdl2gfx.r3
 ^r3/win/sdl2image.r3
@@ -28,22 +30,23 @@
 |------------------------------
 | 0..$fffffffe objects
 #spacing
-#ts
+#arraylen
 #matrix	
 #matlist
+
 #xj #yj #rj
 #colist
 #colist>
 
 :H2d.ini | maxobj spc --
 	'spacing !
-	dup 3 << nextpow2 1 - 'ts !	
+	dup 3 << nextpow2 1 - 'arraylen !	
 	|..... MEMMAP .....
 	here 
-	dup 'matrix !
-	ts 1 + 2 << + | tablesize (32bits) 0..ts
-	dup 'matlist !
-	swap 2 << + | max obj
+	dup 'matrix !	| hash array
+	arraylen 1 + 1 << + 
+	dup 'matlist !	| list objs
+	swap 3 << + 	| max obj
 	'here !
 	here 'colist ! | open list!
 	;
@@ -51,17 +54,18 @@
 :hash | x y -- hash
 	92837111 * swap 689287499 * xor 
 |	10 << xor
-	ts and ;
+	arraylen and ;
 	
 :H2d.clear
-	matrix -1 ts 1 >> 1 + fill	| fill hashtable with -1
+	matrix -1 arraylen 2 >> 1 + fill	| fill hashtable with -1
 	colist 'colist> !
 	;
 	
 :H2d.+! | nro hash --
-	2 << matrix + dup d@	| nro hash link
-	pick2 2 << matlist + d!	| link to prev
-	d!			| obj in matrix
+	1 << matrix + dup w@	| nro hash link
+	
+	pick2 3 << matlist + !	| link to prev
+	w!			| obj in hasharray
 	;
 
 |'vector | nro -- ; check and add to colist
@@ -69,16 +73,15 @@
 	-? ( drop ; )
 	dup pick2 32 << or 
 	colist> !+ 'colist> ! 
-	2 << matlist + d@
+	3 << matlist + @
 	H2d.collect ;
-
 
 |-------------------------------------------------
 |..... query
 :addq | list --
 	-? ( drop ; )
 	dup 1 + da!+
-	2 << matlist + d@
+	3 << matlist + @
 	addq ;
 	
 #x1 #x2 #y1 #y2
@@ -90,7 +93,7 @@
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
 			2dup hash 
-			2 << matrix + d@ addq
+			1 << matrix + w@ addq
 			1 + ) drop
 		1 + ) drop
 	0 da!
@@ -129,6 +132,14 @@
 		1 + ) drop
 	;
 	
+:h2hitlist | nro x y --
+	over 4 >> over 4 >> hash | adr x y hash
+	
+|	over 1 << matrix + w@ H2d.collect		| adr x y hash nro ; nro hash -- nro
+	
+|	swap H2d.+!				| nro hash --
+	;
+	
 |------------------------------
 :hitx over .vx dup @ neg swap ! ;
 :hity over .vy dup @ neg swap ! ;
@@ -141,15 +152,20 @@
 	dup .y @ dup 'yj ! int. 0 <? ( hity ) sh >? ( hity ) drop
 	dup .radio @ 'rj !
 	
+|	dup .x @ int. 
+|	over .y @ int. 
+|	pick3 'arr p.nnow 
+|	h2hitlist
+	
 	dup 8 + >a 
 	a@+ int.	|x
 	a@+ int.	|y
 	
-	over 4 >> over 4 >> hash | adr x y hash
-	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
-	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
+|	over 4 >> over 4 >> hash | adr x y hash
+|	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
+|	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
 	
-	swap H2d.+!				| nro hash --
+|	swap H2d.+!				| nro hash --
 	
 	a@+ a@+ 0 a@+ 
 	sspriterz 
