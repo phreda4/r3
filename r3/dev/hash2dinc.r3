@@ -52,8 +52,8 @@
 	;
 				
 :hash | x y -- hash
-	92837111 * swap 689287499 * xor 
-|	10 << xor
+	4 >> 92837111 * swap 
+	4 >> 689287499 * xor 
 	arraylen and ;
 	
 :H2d.clear
@@ -63,9 +63,23 @@
 	
 :H2d.+! | nro hash --
 	1 << matrix + dup w@	| nro hash link
-	
 	pick2 3 << matlist + !	| link to prev
 	w!			| obj in hasharray
+	;
+	
+| r(10)x(19)y(19)h(16) - 1024|512k|512k|64k
+:h2d+! | nro r x y -- 
+	$7ffff and dup 16 <<		| nro r x yr yrp
+	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
+	rot or 						| nro r yr xr xyrp	
+	rot rot						| nro r xyrp yr xr
+	hash						| nro r xyrp hash
+	rot $3ff and 54 << 			| nro xyrp hash rp
+	rot or 						| nro hash rxyp --
+	swap 1 << matrix + dup w@	| nro rxhp hash ninhash
+	$ffff and rot or 			| nro hash rxhph
+	pick2 3 << matlist + !
+	w!
 	;
 
 |'vector | nro -- ; check and add to colist
@@ -151,11 +165,12 @@
 	dup .x @ dup 'xj ! int. 0 <? ( hitx ) sw >? ( hitx ) drop
 	dup .y @ dup 'yj ! int. 0 <? ( hity ) sh >? ( hity ) drop
 	dup .radio @ 'rj !
-	
-|	dup .x @ int. 
-|	over .y @ int. 
-|	pick3 'arr p.nnow 
-|	h2hitlist
+
+	dup 'arr p.nnow | nro
+	32
+	pick2 .x @ int. 16 + | x 
+	pick3 .y @ int. 16 + | y
+	h2d+!
 	
 	dup 8 + >a 
 	a@+ int.	|x
@@ -163,8 +178,7 @@
 	
 |	over 4 >> over 4 >> hash | adr x y hash
 |	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
-|	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
-	
+||	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
 |	swap H2d.+!				| nro hash --
 	
 	a@+ a@+ 0 a@+ 
@@ -195,9 +209,22 @@
 	32 << a> .a +! ;
 
 :drawspr | arr -- arr
+	dup 'arr p.nnow | nro
+	32
+	pick2 .x @ int. 16 + | x 
+	pick3 .y @ int. 16 + | y
+	h2d+!	
+
 	dup 8 + >a
 	a@+ int.  
 	a@+ int. 	| x y
+	
+|	over 4 >> over 4 >> hash | adr x y hash
+|	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
+||	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
+|	swap H2d.+!	
+	
+	
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
 	a@ timer+ dup a!+ anim>n 			| n
 	
@@ -256,6 +283,13 @@
 	rot 'arr p.nro dup .x @ int. swap .y @ int.
 	sdlline 
 	;
+
+|..... query
+:viewobj | list --
+	-? ( drop ; )
+	dup "%h " bprint
+	$ffff and 3 << matlist + @
+	viewobj ;
 	
 :main
 	$0 SDLcls
@@ -269,8 +303,9 @@
 		) drop
 	
 	$ff00 sdlcolor
-	sdlx sdly 20 - bat
-	sdlx 4 >> sdly 4 >> hash "%h" bprint
+	0 0 bat
+	sdlx sdly hash dup "%h" bprint bcr
+	1 << matrix + w@ viewobj
 	
 	SDLredraw
 	
@@ -301,7 +336,7 @@
 	1000 19 H2d.ini | 1000*4 matriz 4.0*4.0 cell
 
 	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
-	50 insobj
+	9 insobj
 	'main SDLshow
 	
 	SDLquit ;
