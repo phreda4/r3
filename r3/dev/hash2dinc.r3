@@ -40,7 +40,7 @@
 
 :H2d.ini | maxobj spc --
 	'spacing !
-	dup 3 << nextpow2 1 - 'arraylen !	
+	dup 4 << nextpow2 1 - 'arraylen !	
 	|..... MEMMAP .....
 	here 
 	dup 'matrix !	| hash array
@@ -52,8 +52,8 @@
 	;
 				
 :hash | x y -- hash
-	4 >> 92837111 * swap 
-	4 >> 689287499 * xor 
+	5 >> 92837111 * swap 
+	5 >> 689287499 * xor 
 	arraylen and ;
 	
 :H2d.clear
@@ -73,14 +73,15 @@
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
 	rot or 						| nro r yr xr xyrp	
 	rot rot						| nro r xyrp yr xr
-	hash						| nro r xyrp hash
+	swap hash						| nro r xyrp hash
 	rot $3ff and 54 << 			| nro xyrp hash rp
 	rot or 						| nro hash rxyp --
-	swap 1 << matrix + dup w@	| nro rxhp hash ninhash
-	$ffff and rot or 			| nro hash rxhph
+	swap 1 << matrix + dup w@	| nro rxhp phash ninhash
+	$ffff and rot or 			| nro phash rxhph
 	pick2 3 << matlist + !
 	w!
 	;
+
 
 |'vector | nro -- ; check and add to colist
 :H2d.collect |  nro hash -- nro
@@ -168,8 +169,8 @@
 
 	dup 'arr p.nnow | nro
 	32
-	pick2 .x @ int. 16 + | x 
-	pick3 .y @ int. 16 + | y
+	pick2 .x @ int. | x 
+	pick3 .y @ int. | y
 	h2d+!
 	
 	dup 8 + >a 
@@ -192,7 +193,7 @@
 	dup a!+ | img
 	SDLimagewh max a!+
 	8 a+
-|	0 0 0 a!+ a!+ a!+
+	0 0 0 a!+ a!+ a!+
 	0.2 randmax 0.1 - a!+ | vx
 	0.2 randmax 0.1 - a!+ | vy	
 	0.005 randmax 0.0025 - a!+ | va
@@ -211,8 +212,8 @@
 :drawspr | arr -- arr
 	dup 'arr p.nnow | nro
 	32
-	pick2 .x @ int. 16 + | x 
-	pick3 .y @ int. 16 + | y
+	pick2 .x @ int.  | x 
+	pick3 .y @ int.  | y
 	h2d+!	
 
 	dup 8 + >a
@@ -284,20 +285,27 @@
 	sdlline 
 	;
 
-|..... query
+:printmat
+	.cr
+	0 ( 10 <?
+		dup 3 << matlist + @ "%h" .print .cr
+		1 + ) drop
+	.cr
+	matrix 
+	0 ( arraylen <? swap
+		w@+ "%d " .print
+		swap 1+ ) 2drop
+	.cr
+	;
+	
 :viewobj | list --
-	-? ( drop ; )
-	dup "%h " bprint
-	$ffff and 3 << matlist + @
+	dup "%h " bprint bcr
+	48 << 48 >> -? ( drop ; )
+	3 << matlist + @
 	viewobj ;
-	
-:main
-	$0 SDLcls
-	
-	H2d.clear
-	'arr p.draw | calc/draw/hash
 
-	$ff0000 sdlcolor
+:debug
+	$ff sdlcolor
 	colist ( colist> <?
 		@+ dup 32 >> swap $ffffffff and drawcl
 		) drop
@@ -306,12 +314,31 @@
 	0 0 bat
 	sdlx sdly hash dup "%h" bprint bcr
 	1 << matrix + w@ viewobj
+
+	$ff0000 bcolor
+	0 ( sw <?
+		0 ( sh <?
+			over over over 8 + over 16 + bat
+			hash 1 << matrix + w@ 
+			+? ( dup "%d" bprint ) drop
+			32 + ) drop
+		32 + ) drop
+	;
+	
+:main
+	$0 SDLcls
+	
+	H2d.clear
+	'arr p.draw | calc/draw/hash
+
+	debug
 	
 	SDLredraw
 	
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( +randobj )
+	<f2> =? ( printmat )
 	| ---- player control	
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )
@@ -333,7 +360,7 @@
 	1000 'arr p.ini
 	'arr p.clear
 	
-	1000 19 H2d.ini | 1000*4 matriz 4.0*4.0 cell
+	10 19 H2d.ini | 1000*4 matriz 4.0*4.0 cell
 
 	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
 	9 insobj
