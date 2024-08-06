@@ -28,16 +28,27 @@
 :.va 10 ncell+ ;
 
 |------------------------------
-| 0..$fffffffe objects
+| r(10)x(19)y(19)h(16) - 1024|512k|512k|64k
+| radio not used .. (24)(24)(16)
+| in 3d (16)(16)(16)(16) . with 128bits (1)(21)(21)(21)(16)
+|
 #arraylen
 #matrix	
 #matlist
 
-#xj #yj #rj
-#colist
-#colist>
+##colist ##colist>		| list of collition (16)(16)
 
-:H2d.ini | maxobj --
+:hash | x y -- hash
+	5 >> 92837111 * swap 
+	5 >> 689287499 * xor 
+	arraylen and ;
+	
+:hash2 | x y -- hash
+	92837111 * swap 
+	689287499 * xor 
+	arraylen and ;
+
+::H2d.ini | maxobj --
 	dup 4 << nextpow2 1 - 'arraylen !	
 	|..... MEMMAP .....
 	here 
@@ -49,41 +60,29 @@
 	here 'colist ! | open list!
 	;
 				
-:hash | x y -- hash
-	5 >> 92837111 * swap 
-	5 >> 689287499 * xor 
-	arraylen and ;
-	
-:hash2 | x y -- hash
-	92837111 * swap 
-	689287499 * xor 
-	arraylen and ;
-	
-:H2d.clear
+::H2d.clear
 	matrix -1 arraylen 2 >> 1 + fill	| fill hashtable with -1
 	colist 'colist> !
 	;
 	
-:check 
-	and 16 >> 
-	;
-	
-:checkcoll | list --
-|	dup "%h" .print .cr
-	dup colist> !+ 'colist> ! 
-	1 + $ffff nand? ( drop ; ) 1 -
-	$ffff and 3 << matlist + @ checkcoll ;
-
-:check
-	-1 =? ( drop ; ) 
-	3 << matlist + @ checkcoll ;
-	
+#point  
+#cpoint
 #maxr 32
 #x1 #x2 #y1 #y2
+	
+:check | xr yr x y point --
+	1 + $ffff nand? ( drop ; ) 1 -
+	$ffff and dup 3 << matlist + @ 
+	dup 16 >> $7ffff and cpoint 16 >> $7ffff and - abs
+	over 35 >> $7ffff and cpoint 35 >> $7ffff and - abs max
+	maxr <? ( pick2 point or colist> d!+ 'colist> ! ) drop nip
+	check ;
 
 :collect | xyrp xr yr 
 	over maxr - 5 >> 'x1 ! dup maxr - 5 >> 'y1 !
 	over maxr + 5 >> 'x2 ! dup maxr + 5 >> 'y2 !
+	pick4 16 << 'point !
+	pick2 'cpoint !
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
 			2dup hash2 
@@ -92,13 +91,12 @@
 			1 + ) drop
 		1 + ) drop ;
 		
-| r(10)x(19)y(19)h(16) - 1024|512k|512k|64k
-:h2d+! | nro r x y -- 
+
+::h2d+! | nro r x y -- 
 	$7ffff and dup 16 <<		| nro r x yr yrp
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
 	rot or rot rot swap			| nro r xyrp xr yr
-	collect
-	hash					| nro r xyrp hash
+	collect	hash				| nro r xyrp hash
 	rot $3ff and 54 <<			| nro xyrp hash rp
 	rot or 						| nro hash rxyp --
 	swap 1 << matrix + dup w@	| nro rxhp phash ninhash
@@ -107,29 +105,6 @@
 	w!
 	;
 
-|-------------------------------------------------
-:nH2 | 'v r x y --
-	here >a ( da@+ 1? 
-		1 -	'arr p.nro | r x y adr
-		dup .x @ pick3 - dup *. | r x y adr XX
-		swap .y @ pick2 - dup *. + | | r x y D2
-		pick3 <? ( pick4 ex ) drop | nro : [a> 4 - d@ 1 -]
-		) nip 4drop ;
-
-|-- in box
-:inbox | 'v r x y adr -- 'v r x y
-	dup .x @ pick3 - abs pick4 >? ( 2drop ; ) drop
-	.y @ over - abs pick3 >? ( drop ; ) drop
-	pick3 ex | nro : [a> 4 - d@ 1 -]
-	;
-	
-:nH2b | 'v r x y --
-	here >a ( da@+ 1? 
-		1 -	'arr p.nro  | r x y adr
-		inbox
-		) nip 4drop ;
-		
-	
 |------------------------------
 :hitx over .vx dup @ neg swap ! ;
 :hity over .vy dup @ neg swap ! ;
@@ -138,12 +113,11 @@
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
 	dup .va @ over .a +!
-	dup .x @ dup 'xj ! int. 0 <? ( hitx ) sw >? ( hitx ) drop
-	dup .y @ dup 'yj ! int. 0 <? ( hity ) sh >? ( hity ) drop
-	dup .radio @ 'rj !
+	dup .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
+	dup .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
 
 	dup 'arr p.nnow | nro
-	32
+	32 |dup .radio @
 	pick2 .x @ int. | x 
 	pick3 .y @ int. | y
 	h2d+!
@@ -236,10 +210,11 @@
 :objset 	
 	a> 4 - d@ 1 - drawrect ;
 	
+
 :drawcl	| o1 o2 --
 	'arr p.nro dup .x @ int. swap .y @ int.
 	rot 'arr p.nro dup .x @ int. swap .y @ int.
-	sdlline 
+	sdlline
 	;
 
 :printmat
@@ -262,16 +237,6 @@
 	viewobj ;
 
 :debug
-	$ff sdlcolor
-	colist ( colist> <?
-		@+ dup 32 >> swap $ffffffff and drawcl
-		) drop
-	
-	$ff00 sdlcolor
-	0 0 bat
-	sdlx sdly hash dup "%h" bprint bcr
-	1 << matrix + w@ viewobj
-
 	$ff0000 bcolor
 	0 ( sw <?
 		0 ( sh <?
@@ -280,6 +245,18 @@
 			+? ( dup "%d" bprint ) drop
 			32 + ) drop
 		32 + ) drop
+		
+	$ff00 bcolor
+	0 0 bat
+|	sdlx sdly hash dup "%h" bprint bcr
+|	1 << matrix + w@ viewobj
+
+	colist> colist - 3 >> "%d" bprint bcr
+	$ff00 sdlcolor
+	colist ( colist> <?
+		d@+ |"%h" bprint bcr
+		dup 16 >>> swap $ffff and drawcl
+		) drop
 	;
 	
 :main
@@ -316,11 +293,11 @@
 	bfont1
 	1000 'arr p.ini
 	'arr p.clear
-	
-	100 H2d.ini | 1000*4 matriz 4.0*4.0 cell
-
 	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
-	9 insobj
+	40 insobj
+	
+	100 H2d.ini
+	
 	'main SDLshow
 	
 	SDLquit ;
