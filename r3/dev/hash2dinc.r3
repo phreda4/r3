@@ -29,7 +29,6 @@
 
 |------------------------------
 | 0..$fffffffe objects
-#spacing
 #arraylen
 #matrix	
 #matlist
@@ -38,8 +37,7 @@
 #colist
 #colist>
 
-:H2d.ini | maxobj spc --
-	'spacing !
+:H2d.ini | maxobj --
 	dup 4 << nextpow2 1 - 'arraylen !	
 	|..... MEMMAP .....
 	here 
@@ -56,25 +54,52 @@
 	5 >> 689287499 * xor 
 	arraylen and ;
 	
+:hash2 | x y -- hash
+	92837111 * swap 
+	689287499 * xor 
+	arraylen and ;
+	
 :H2d.clear
 	matrix -1 arraylen 2 >> 1 + fill	| fill hashtable with -1
 	colist 'colist> !
 	;
 	
-:H2d.+! | nro hash --
-	1 << matrix + dup w@	| nro hash link
-	pick2 3 << matlist + !	| link to prev
-	w!			| obj in hasharray
+:check 
+	and 16 >> 
 	;
 	
+:checkcoll | list --
+|	dup "%h" .print .cr
+	dup colist> !+ 'colist> ! 
+	1 + $ffff nand? ( drop ; ) 1 -
+	$ffff and 3 << matlist + @ checkcoll ;
+
+:check
+	-1 =? ( drop ; ) 
+	3 << matlist + @ checkcoll ;
+	
+#maxr 32
+#x1 #x2 #y1 #y2
+
+:collect | xyrp xr yr 
+	over maxr - 5 >> 'x1 ! dup maxr - 5 >> 'y1 !
+	over maxr + 5 >> 'x2 ! dup maxr + 5 >> 'y2 !
+	x1 ( x2 <=? 
+		y1 ( y2 <=? 
+			2dup hash2 
+			1 << matrix + w@ | nro 
+			check
+			1 + ) drop
+		1 + ) drop ;
+		
 | r(10)x(19)y(19)h(16) - 1024|512k|512k|64k
 :h2d+! | nro r x y -- 
 	$7ffff and dup 16 <<		| nro r x yr yrp
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
-	rot or 						| nro r yr xr xyrp	
-	rot rot						| nro r xyrp yr xr
-	swap hash						| nro r xyrp hash
-	rot $3ff and 54 << 			| nro xyrp hash rp
+	rot or rot rot swap			| nro r xyrp xr yr
+	collect
+	hash					| nro r xyrp hash
+	rot $3ff and 54 <<			| nro xyrp hash rp
 	rot or 						| nro hash rxyp --
 	swap 1 << matrix + dup w@	| nro rxhp phash ninhash
 	$ffff and rot or 			| nro phash rxhph
@@ -82,38 +107,7 @@
 	w!
 	;
 
-
-|'vector | nro -- ; check and add to colist
-:H2d.collect |  nro hash -- nro
-	-? ( drop ; )
-	dup pick2 32 << or 
-	colist> !+ 'colist> ! 
-	3 << matlist + @
-	H2d.collect ;
-
 |-------------------------------------------------
-|..... query
-:addq | list --
-	-? ( drop ; )
-	dup 1 + da!+
-	3 << matlist + @
-	addq ;
-	
-#x1 #x2 #y1 #y2
-
-:qH2d | r x y -- ; here =list
-	dup pick3 - spacing >> 'y1 ! pick2 + spacing >> 'y2 !
-	dup pick2 - spacing >> 'x1 ! + spacing >> 'x2 !
-	here >a
-	x1 ( x2 <=? 
-		y1 ( y2 <=? 
-			2dup hash 
-			1 << matrix + w@ addq
-			1 + ) drop
-		1 + ) drop
-	0 da!
-	;
-
 :nH2 | 'v r x y --
 	here >a ( da@+ 1? 
 		1 -	'arr p.nro | r x y adr
@@ -135,25 +129,6 @@
 		inbox
 		) nip 4drop ;
 		
-|-------------------------------------------------
-:collect | x y --
-	dup pick3 - spacing >> 'y1 ! pick2 + spacing >> 'y2 !
-	dup pick2 - spacing >> 'x1 ! + spacing >> 'x2 !
-	x1 ( x2 <=? 
-		y1 ( y2 <=? 
-			2dup hash 2 << matrix + d@ 
-			H2d.collect
-			1 + ) drop
-		1 + ) drop
-	;
-	
-:h2hitlist | nro x y --
-	over 4 >> over 4 >> hash | adr x y hash
-	
-|	over 1 << matrix + w@ H2d.collect		| adr x y hash nro ; nro hash -- nro
-	
-|	swap H2d.+!				| nro hash --
-	;
 	
 |------------------------------
 :hitx over .vx dup @ neg swap ! ;
@@ -174,16 +149,7 @@
 	h2d+!
 	
 	dup 8 + >a 
-	a@+ int.	|x
-	a@+ int.	|y
-	
-|	over 4 >> over 4 >> hash | adr x y hash
-|	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
-||	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
-|	swap H2d.+!				| nro hash --
-	
-	a@+ a@+ 0 a@+ 
-	sspriterz 
+	a@+ int. a@+ int. a@+ a@+ 0 a@+ sspriterz 
 	drop
 	;
 
@@ -193,7 +159,7 @@
 	dup a!+ | img
 	SDLimagewh max a!+
 	8 a+
-	0 0 0 a!+ a!+ a!+
+	|0 0 0 a!+ a!+ a!+
 	0.2 randmax 0.1 - a!+ | vx
 	0.2 randmax 0.1 - a!+ | vy	
 	0.005 randmax 0.0025 - a!+ | va
@@ -217,16 +183,7 @@
 	h2d+!	
 
 	dup 8 + >a
-	a@+ int.  
-	a@+ int. 	| x y
-	
-|	over 4 >> over 4 >> hash | adr x y hash
-|	pick3 'arr p.nnow		| adr x y hash nro ; adr list -- nro
-||	over 2 << matrix + d@ H2d.collect		| adr x y hash nro ; nro hash -- nro
-|	swap H2d.+!	
-	
-	
-	a@+ dup 32 >> swap $ffffffff and | rot zoom
+	a@+ int. a@+ int. a@+ dup 32 >> swap $ffffffff and | rot zoom
 	a@ timer+ dup a!+ anim>n 			| n
 	
 	a@+ sspriterz
@@ -299,9 +256,9 @@
 	;
 	
 :viewobj | list --
+	1 + $ffff nand? ( drop ; ) 1 -
 	dup "%h " bprint bcr
-	48 << 48 >> -? ( drop ; )
-	3 << matlist + @
+	$ffff and 3 << matlist + @
 	viewobj ;
 
 :debug
@@ -360,7 +317,7 @@
 	1000 'arr p.ini
 	'arr p.clear
 	
-	10 19 H2d.ini | 1000*4 matriz 4.0*4.0 cell
+	100 H2d.ini | 1000*4 matriz 4.0*4.0 cell
 
 	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
 	9 insobj
