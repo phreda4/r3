@@ -6,6 +6,7 @@
 ^r3/util/arr16.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlgui.r3
+^r3/util/hash2d.r3
 
 #tsprites 
 
@@ -91,6 +92,14 @@
 	|..... add velocity to position
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
+	
+	dup 'disp p.nnow | nro
+	$1000 or | disp ini 200
+	8
+	pick2 .x @ int.  | x 
+	pick3 .y @ int.  | y
+	h2d+!	
+
 	drop
 	;
 
@@ -130,6 +139,13 @@
 	
 :ptank | adr -- adr
 	dup >a
+	
+	a> 'tanks p.nnow | nro
+	32
+	a> .x @ int.  | x 
+	a> .y @ int.  | y
+	h2d+!
+	
 	btnpad
 	$1 and? ( 0.01 turn )
 	$2 and? ( -0.01 turn )
@@ -154,6 +170,13 @@
 |------------------- NPC tank
 :dtank | adr -- adr
 	dup >a
+	
+	a> 'tanks p.nnow | nro
+	32
+	a> .x @ int.  | x 
+	a> .y @ int.  | y
+	h2d+!
+	
 	a> .io @
 	$1 and? ( 0.01 turn )
 	$2 and? ( -0.01 turn )
@@ -164,6 +187,8 @@
 	20 randmax 0? ( $1f randmax a> .io ! ) drop
 	drop
 	drawspr	
+	
+	
 	drop
 	;
 	
@@ -182,11 +207,14 @@
 	timer.
 	0 sdlcls
 	$ffff bcolor
-	16 32 bat "Tanks" bprint2 
-	
+	8 8 bat "Tanks" bprint2 
+
+	H2d.clear
 	'disp p.draw
 	'tanks p.draw
 	'fx p.draw
+
+	8 64 bat H2d.list "%d %h" bprint
 	
 	sdlredraw
 	sdlkey
@@ -234,6 +262,7 @@
 	400 'fx p.ini
 	100 'tanks p.ini
 	1000 'disp p.ini
+	1000 H2d.ini 
 	reset
 	'runscr SDLshow
 	SDLquit 

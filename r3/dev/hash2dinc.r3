@@ -36,7 +36,7 @@
 #matrix	
 #matlist
 
-##colist ##colist>		| list of collition (16)(16)
+#colist #colist>		| list of collition (16)(16)
 
 :hash | x y -- hash
 	5 >> 92837111 * swap 
@@ -251,7 +251,7 @@
 |	sdlx sdly hash dup "%h" bprint bcr
 |	1 << matrix + w@ viewobj
 
-	colist> colist - 3 >> "%d" bprint bcr
+	colist> colist - 2 >> "%d" bprint bcr
 	$ff00 sdlcolor
 	colist ( colist> <?
 		d@+ |"%h" bprint bcr
