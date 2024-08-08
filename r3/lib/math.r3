@@ -148,6 +148,24 @@
 	l1 l2 l3 l4 l5 l6 l7
 	$80000000 rot -
 	15 >> - ;
+	
+	
+::log2fix | x -- log
+	0? ( ; )
+	0 swap | y x
+	( $10000 <? 1 << swap $10000 - swap )
+	( $20000 >=? 1 >> swap $10000 + swap )
+	$8000 ( 1? swap | y z b
+		dup 16 >> *	| y b z
+		$20000 >=? ( 1 >> rot pick2 + rot rot )
+		swap 1 >> ) 2drop ;
+
+::lnfix |#INV_LOG2_10_Q1DOT31 $268826a1
+	log2fix $268826a1 31 *>> ;
+	
+::log10fix |#INV_LOG2_E_Q1DOT31  $58b90bfc
+	log2fix $58b90bfc 31 *>> ;	
+	
 
 :ex1 over $58b91 - +? ( rot drop swap 8 << ; ) drop ;
 :ex2 over $2c5c8 - +? ( rot drop swap 4 << ; ) drop ;
