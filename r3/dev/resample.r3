@@ -11,7 +11,6 @@
 |} Mix_Chunk;
 
 #chunk
-#chunk2
 
 #frec
 16.35 17.32 18.35 19.45 20.60 21.83 23.12 24.50 25.96 27.50 29.14 30.87 |o0
@@ -26,7 +25,6 @@
 
 #fracname "C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A0" "A#" "Bb" "B"
 
-	
 #off
 
 :viewave | adr --
@@ -36,25 +34,6 @@
 		sdlpoint
 		swap 1 + ) 2drop ;
 
-:changew | adr --
-	8 + @+ swap d@ 1 >> | adr len
-	( 1? 1 - swap
-		dup w@ 1 >> swap w!+
-		swap ) 2drop ;
-
-:fillwa | adr --
-	8 + @+ dup >a >b
-	d@ 3 >> | adr len
-	( 1? 1 - 
-		da@+ | read2
-		dup 16 >> $ffff and swap $ffff and + 1 >>
-		da@+ | read2
-		dup 16 >> $ffff and swap $ffff and + 1 >>
-		16 << or
-		db!+
-		) drop ;
-		
-
 :infowav | adr
 	d@+ "allocate %d" immLabel immdn
 	4 + | align
@@ -63,29 +42,53 @@
 	c@+ $ff and "vol %d" immLabel immdn immdn
 	drop
 	;
-		
+	
+:wavlen | chunk -- len
+	16 + d@ ;
+	
+|---------- copy and change length music chunk
 :interp | posscr possam -- possrc value
 	w@+ swap w@ 
 	pick2 $ffff and | v1 v0 p
 	rot pick2 - *. +
 	;
 	
-:changelen | lendes adrsrc adrdes --
-	>b >a b@+ a!+	| copy header
-	b@+ a> 16 + a!+ | lendes adrsrc
-	db@+ pick2 da!+ | lendes adrsrc lensrc
-	128 ca! 8 a+
-	swap >b | lendes lensrc ; a:adrdes b:adrsrc
-	16 << over / | lendes adv
-	0 rot		| adv 0 elndes 
-	1 >> ( 1? 1 - | adv posscr lendes
-		swap	| adv lendes posscr 
-		dup 16 >> 1 << b> + | adv lendes posscr SRCSAMPLE
-		interp |w@+ swap w@ + 1 >> | media
-		a> w!+ >a 
-		pick2 +  | adv lendes posscr 
-		swap
-		) 3drop ;
+:changelen | lendes adrdes adrsrc -- adrend
+	>b b@+ swap !+	| copy header; len adrsr
+	dup 16 + swap !+ | INI BUFFER
+	over swap d!+	| LEN WAV
+	128 swap c!+ 3 + | lendes adrdes
+	b@+				| lendes adrdes adrscr
+	db@				| lendes adrdes adrscr lensrc
+	swap >b			| lendes adrdes lensrc; b:scr
+	16 << pick2 /	| lendes adrdes adv
+	rot pick2 + 	| adrdes adv endadrdes
+	rot 0 swap		| adv endadrdes 0 adrdes
+	( pick2 <? swap	| adv enda nowa pos 
+		dup 16 >> 1 << b> + 
+		interp		| adv enda nowa pos v
+		rot w!+		| adv enda pos nowa'
+		swap pick3 + | adv enda nowa' pos' 
+		swap ) 2drop nip ;
+
+|------------------------------------------		
+#notes 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+:playnot | n --
+	3 << 'notes + @ sndplay ;
+	
+:makenotes
+	chunk wavlen 
+	12 3 * 3 << 'frec + @  | len fa ; c2 first note
+	'notes >a				| len fa note
+	chunk a!+
+	1 ( 24 <?				| len fa n
+		dup "generate %d note" .println
+		12 3 * over + 3 << 'frec + @ | len fa n fra
+		2over rot */ | len fa n largo | len fa frac */ -->largo
+		here a!+ 
+		here chunk changelen 'here !
+		1 + ) 3drop ;
 
 :main
 	immgui 	
@@ -95,37 +98,42 @@
 	0 0 immat
 	"resample wav" immlabelc immdn
 	chunk infowav
-	chunk2 infowav
-	
 
 	$ff00 sdlcolor
-	chunk viewave
-	
+	|chunk viewave
 	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( -1 chunk 0 -1 Mix_PlayChannelTimed )
-	<f2> =? ( -1 chunk2 0 -1 Mix_PlayChannelTimed )
+
+	<up> =? ( 64 'off +! ) <dn> =? ( -64 'off +! )
+	<q> =? ( 0 playnot ) <2> =? ( 1 playnot )
+	<w> =? ( 2 playnot ) <3> =? ( 3 playnot )
+	<e> =? ( 4 playnot ) 
+	<r> =? ( 5 playnot ) <5> =? ( 6 playnot ) 
+	<t> =? ( 7 playnot ) <6> =? ( 8 playnot )
+	<y> =? ( 9 playnot ) <7> =? ( 10 playnot )
+	<u> =? ( 11 playnot )
 	
-	<f3> =? ( chunk changew )
-	<f4> =? ( chunk fillwa )
-	<f5> =? ( $1bc00 chunk2 chunk changelen )
-	<f6> =? ( $3bc00 chunk2 chunk changelen )
-	<up> =? ( 40 'off +! )
-	<dn> =? ( -40 'off +! )
+	<z> =? ( 12 playnot ) <s> =? ( 13 playnot )
+	<x> =? ( 14 playnot ) <d> =? ( 15 playnot )
+	<c> =? ( 16 playnot )
+	<v> =? ( 17 playnot ) <g> =? ( 18 playnot )
+	<b> =? ( 19 playnot ) <h> =? ( 20 playnot )
+	<n> =? ( 21 playnot ) <j> =? ( 22 playnot )
+	<m> =? ( 23 playnot )
 	drop ;
 	
 :init
 	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
 	44100 $8010 1 1024 Mix_OpenAudio | minimal buffer for low latency
 	"media/snd/piano-c.mp3" mix_loadWAV 'chunk !
-	here 'chunk2 !
+	makenotes
 	;
 
 : 
-"Resample wav" 1024 600 SDLinit
-init
-'main SDLshow
-SDLquit 	
+	"Resample wav" 1024 600 SDLinit
+	init
+	'main SDLshow
+	SDLquit 	
 ;
