@@ -93,21 +93,14 @@
 |------------------------------------------
 #playn * 25
 
-:playsound | n adr v -- n adr v
-	pick2 3 << 'notes + @ sndplay 
-	2 pick2 1 - c! ;
-	
-:playkeys
-	'playn
-	0 ( 24 <? swap
-		c@+ 1 =? ( playsound ) drop 
-		swap 1 + ) 2drop ;
-	
 :playdn | n --
 	dup 'playn + c@ 1? ( 2drop ; ) drop
-	1 swap 'playn + c! ;
+	dup 3 << 'notes + @ -1 swap 0 -1 Mix_PlayChannelTimed 1 << 1 or 
+	swap 'playn + c! ;
 
 :playup | n --
+	dup 'playn + c@ 0? ( 2drop ; ) 
+	1 >> 100 Mix_FadeOutChannel | 100 ms for avoid clicks
 	0 swap 'playn + c! ;
 
 #keyw ( 0 2 4 5 7 9 11 12 14 16 17 19 21 23 	-1 )
@@ -175,7 +168,6 @@
 |	$ff00 sdlcolor chunk viewave
 	
 	drawkeys
-	playkeys
 	
 	SDLredraw
 	SDLkey
@@ -216,7 +208,9 @@
 :init
 	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
 	44100 $8010 1 1024 Mix_OpenAudio | minimal buffer for low latency
-	"media/snd/piano-c.mp3" mix_loadWAV 'chunk !
+	"media/snd/piano-c.mp3" 
+	"media/snd/DX7-Bass-c2.mp3" 
+	mix_loadWAV 'chunk !
 	makenotes
 	;
 

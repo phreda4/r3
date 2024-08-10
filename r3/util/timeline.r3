@@ -248,7 +248,7 @@
 	
 |-------------------- SOUND
 :evt.play | adr --
-	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed ;
+	-1 over 16 + @ 0 -1 Mix_PlayChannelTimed drop ;
 
 ::+sound | sonido inicio --
 	0 'evt.play 2swap >r swap r> +tline ;
