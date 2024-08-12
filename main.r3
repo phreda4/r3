@@ -225,21 +225,22 @@
 |MAC| "./r3mac %s/%s"
 	sprint 
 	sys
-	conadj
-	;
+	conadj ;
 
 :r3info
 |WIN| "r3 r3/editor/r3info.r3"
 |LIN| "./r3lin r3/editor/r3info.r3"
 |RPI| "./r3rpi r3/editor/r3info.r3"
-	sys ;
+	sys 
+	conadj ;
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
-	sys ;
+	sys 
+	conadj ;
 
 |--------------------------------
 :editfile
@@ -259,6 +260,7 @@
 |RPI| "./r3rpi r3/editor/map-edit.r3"
 |MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
+	conadj
 	;
 
 :editbmap
@@ -270,6 +272,7 @@
 |RPI| "./r3rpi r3/editor/bmap-edit.r3"
 |MAC| "./r3mac r3/editor/bmap-edit.r3"
 	sys
+	conadj
 	;
 	
 :f2edit
@@ -281,7 +284,6 @@
 	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
 	drop
-	conadj
 	;
 
 :r3d4
