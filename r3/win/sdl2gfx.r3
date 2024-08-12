@@ -255,6 +255,9 @@
 	here a> 'here ! 
 	;
 
+::sspritewh | adr -- h w
+	8 + d@+ 1 >> swap d@ 1 >> ;
+
 :settile | n adr -- adr
 	swap 3 << 16 + over +
 	@ dup 1 << $1fffe and f2fp | x1

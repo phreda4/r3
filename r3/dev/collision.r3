@@ -20,7 +20,6 @@
 :.zoom 4 ncell+ ;
 
 :.radio 6 ncell+ ;
-|:.hi 6 ncell+ ;
 :.vx 8 ncell+ ;
 :.vy 9 ncell+ ;
 :.va 10 ncell+ ;
@@ -58,7 +57,6 @@
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
 	rot dup SDLREct
 	;
-
 
 :hitx over .vx dup @ neg swap ! ;
 :hity over .vy dup @ neg swap ! ;
@@ -117,8 +115,7 @@
 	30 ( 1? 1 -
 		+randobj
 		) drop ;
-		
-	
+
 |------------------------------
 :main
 	$0 SDLcls
