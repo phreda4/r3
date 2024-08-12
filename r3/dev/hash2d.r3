@@ -111,7 +111,7 @@
 
 :nH2 | 'v r x y --
 	here >a ( da@+ 1? 
-		1 -	'arr p.nro | r x y adr
+		1 -	'arr p.adr | r x y adr
 		dup .x @ pick3 - dup *. | r x y adr XX
 		swap .y @ pick2 - dup *. + | | r x y D2
 		pick3 <? ( pick4 ex ) drop | nro : [a> 4 - d@ 1 -]
@@ -127,7 +127,7 @@
 	
 :nH2b | 'v r x y --
 	here >a ( da@+ 1? 
-		1 -	'arr p.nro  | r x y adr
+		1 -	'arr p.adr  | r x y adr
 		inbox
 		) nip 4drop ;
 	
@@ -179,7 +179,7 @@
 	
 |------------------------------
 :drawrect | nro -- 
-	'arr p.nro
+	'arr p.adr
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin

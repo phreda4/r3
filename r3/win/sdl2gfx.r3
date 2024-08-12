@@ -214,25 +214,22 @@
 ::SDLspriteZ | x y zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
-	fillfull
-	fillvertxy
-	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
-	;	
+	fillfull fillvertxy
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 ::SDLSpriteR | x y ang img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	fillfull
-	fillvertr
-	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
-	;
+	fillfull fillvertr
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 ::SDLspriteRZ | x y ang zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm *. 'xm ! ym *. 'ym ! 
-	fillfull
-	fillvertr
-	SDLrenderer r> 'vert 4 'index 6 SDL_RenderGeometry 
-	;
+	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
+	fillfull fillvertr
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 |----------------------	
 ::ssload | w h "file" -- ssprite
@@ -255,9 +252,6 @@
 	here a> 'here ! 
 	;
 
-::sspritewh | adr -- h w
-	8 + d@+ 1 >> swap d@ 1 >> ;
-
 :settile | n adr -- adr
 	swap 3 << 16 + over +
 	@ dup 1 << $1fffe and f2fp | x1
@@ -270,36 +264,33 @@
 	12 a+ over da!+ dup da!+
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
+
+::sspritewh | adr -- h w
+	8 + @ dup $ffffffff and swap 32 >>> ;
 	
 ::ssprite | x y n ssprite --
-	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
-	settile >r 
-	fillvertxy
-	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
-	;
+	dup sspritewh 1 >> 'ym ! 1 >> 'xm !
+	settile >r fillvertxy
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 ::sspriter | x y ang n ssprite --
-	dup 8 + d@+ 'xm ! d@ 'ym !
-	settile >r 
-	fillvertr
-	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
-	;
+	dup sspritewh 'ym ! 'xm !
+	settile >r fillvertr
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 ::sspritez | x y zoom n ssprite --
-	dup 8 + d@+ 1 >> 'xm ! d@ 1 >> 'ym !
-	settile >r 
-	dup xm *. 'xm ! ym *. 'ym ! 
-	fillvertxy
-	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
-	;
+	rot over sspritewh pick2 17 *>> 'ym ! 17 *>> 'xm ! | /2
+	settile >r fillvertxy
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 	
 ::sspriterz | x y ang zoom n ssprite --
-	dup 8 + d@+ 'xm ! d@ 'ym !
-	settile >r 
-	dup xm *. 'xm ! ym *. 'ym ! 
-	fillvertr
-	SDLrenderer r> @ 'vert 4 'index 6 SDL_RenderGeometry 
-	;	
+	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	settile >r fillvertr
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
 
 |.... time control
 #prevt

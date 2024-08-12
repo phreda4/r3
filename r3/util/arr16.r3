@@ -5,13 +5,13 @@
 | cnt 'l p.ini	| create list
 | 'l p.clear 	| remove all
 | 'l p.cnt 		| cnt
-| n 'l p.nro 	| adr from n
 | 've 'l p!+	| add exe and give adr for add parameters
 | 'l p!			| give adr (first)
 | 'l p.draw		| traverse exe every ( return 0 for delete )
 | 'l p.drawo	| traverse exe every ( return 0 for delete in order )
 | 'a 'l p.del	| delete 
-| 'a 'l p.nnow	| give nro
+| n 'l p.adr 	| nro to adr 
+| 'a 'l p.adr	| adr to nro
 | 'v 'l p.mapd	| exe v for every
 | 'v 'l p.map2	| exe v for every pair (triangle traverse)
 | c 'l p.sort	| sort for c column (1pass)
@@ -27,19 +27,19 @@
 	dup 8 + @ swap ! ;
 
 ::p.cnt | list -- cnt
-	@+ swap @ | last fist
-	- 7 >> ;
+	@+ swap @ - 7 >> ;
 
-::p.nro | nro list -- adr
+::p.adr | nro list -- adr
 	8 + @ swap 7 << + ;
 
+::p.nro | adr list -- nro
+	8 + @ - 7 >> ;
+
 ::p!+ | 'act list -- adr
-	dup >r @ !+
-	128 r> +! ;
+	dup >r @ !+ 128 r> +! ;
 
 ::p! | list -- adr
-	dup >r @
-	128 r> +! ;
+	dup >r @ 128 r> +! ;
 
 |---- borra desordenado (mas rapido)
 :delp | list end now -- list end- now-
@@ -70,10 +70,6 @@
 ::p.del | adr list --
 	>r r@ @ 128 - 16 move -128 r> +! ; | not mix
 |	dup @ 128 - swap ! ; | mix
-
-::p.nnow | adr list -- nro
-	8 + @ | adr first 
-	- 7 >> ;
 
 ::p.mapv | 'vector list --
 	@+ swap @

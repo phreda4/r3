@@ -195,7 +195,7 @@
 :printinfo | --
     nowrobot 0? ( drop ; )
 |	$ffffff 'ink !
-|	dup 'screen p.nnow 'robots p.nro @+ 'ink ! @ " %s " print cr
+|	dup 'screen p.nro 'robots p.adr @+ 'ink ! @ " %s " print cr
 	8 + @+ vm@
 	@+ 'bcolor !
 	@+ "x:%f " bprint @+ "y:%f " bprint bcr
@@ -252,7 +252,7 @@
 	;
 	
 :modedit
-	nr> 'robots p.nro
+	nr> 'robots p.adr
 	8 + @ 'codepath "%s%w.r3i" sprint
 	edload
 	editing		| edrun
@@ -272,7 +272,7 @@
 	;
 
 :delrobot
- 	nr> 'robots p.nro 'robots p.del
+ 	nr> 'robots p.adr 'robots p.del
 	nr> 'robots  p.cnt 0? ( 2drop ; )
 	1 - clamp0 min 'nr> !
 	;
@@ -280,7 +280,7 @@
 :drawinlist | n -- n
 |	'robots p.cnt >=? ( ; )
 |	dup "%d. " print
-	dup 'robots p.nro
+	dup 'robots p.adr
 	@+ 'immcolorbtn ! |bcolor |'ink !
 	@+ " %s " sprint [ over 'nr> ! ; ] swap immbtn 
 

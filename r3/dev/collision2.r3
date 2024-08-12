@@ -8,10 +8,12 @@
 ^r3/util/hash2d.r3
 
 #spr_ball
-#arr 0 0	| array
 
-| 0 1  2    3   4  5   6  7  8  9
-| x y ang zoom img rad h vx vy va
+#arr 0 0
+
+|---------- struct sprite
+| 1 2  3    4   5   6  7  8  9
+| x y ang zoom img rad vx vy va
 
 :.x 1 ncell+ ;
 :.y 2 ncell+ ;
@@ -23,12 +25,13 @@
 :.vy 8 ncell+ ;
 :.va 9 ncell+ ;
 
+|--------------------
 :drawrect | n --
-	'arr p.nro
+	'arr p.adr
 	dup .radio @
 	over .x @ int. over 1 + 1 >> - 		| radio xmin
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
-	rot dup SDLFRect
+	rot dup SDLRect
 	drop
 	;
 
@@ -41,6 +44,7 @@
 		$ffff and drawrect
 		swap ) 2drop ;
 
+|--------------------
 :hitx a> .vx dup @ neg swap ! ;
 :hity a> .vy dup @ neg swap ! ;
 
@@ -52,7 +56,7 @@
 	a> .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
 	a> .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
 	
-	a> 'arr p.nnow | nro
+	a> 'arr p.nro | nro
 	32
 	a> .x @ int.  | x 
 	a> .y @ int.  | y
@@ -103,7 +107,7 @@
 	;
 
 :inicio
-	"r3sdl" 800 600 SDLinit
+	"Collision" 1024 720 SDLinit
 	bfont1	
 	64 64 "media/img/ball.png" ssload 'spr_ball !
 	1000 'arr p.ini

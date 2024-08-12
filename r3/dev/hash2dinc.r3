@@ -116,7 +116,7 @@
 	dup .x @ int. 0 <? ( hitx ) sw >? ( hitx ) drop
 	dup .y @ int. 0 <? ( hity ) sh >? ( hity ) drop
 
-	dup 'arr p.nnow | nro
+	dup 'arr p.nro | nro
 	32 |dup .radio @
 	pick2 .x @ int. | x 
 	pick3 .y @ int. | y
@@ -150,7 +150,7 @@
 	32 << a> .a +! ;
 
 :drawspr | arr -- arr
-	dup 'arr p.nnow | nro
+	dup 'arr p.nro | nro
 	32
 	pick2 .x @ int.  | x 
 	pick3 .y @ int.  | y
@@ -200,7 +200,7 @@
 	
 |------------------------------
 :drawrect | nro -- 
-	'arr p.nro
+	'arr p.adr
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin
@@ -212,8 +212,8 @@
 	
 
 :drawcl	| o1 o2 --
-	'arr p.nro dup .x @ int. swap .y @ int.
-	rot 'arr p.nro dup .x @ int. swap .y @ int.
+	'arr p.adr dup .x @ int. swap .y @ int.
+	rot 'arr p.adr dup .x @ int. swap .y @ int.
 	sdlline
 	;
 

@@ -93,7 +93,7 @@
 	dup .vx @ over .x +!
 	dup .vy @ over .y +!
 	
-	dup 'disp p.nnow | nro
+	dup 'disp p.nro | nro
 	$1000 or | disp ini 200
 	8
 	pick2 .x @ int.  | x 
@@ -140,7 +140,7 @@
 :ptank | adr -- adr
 	dup >a
 	
-	a> 'tanks p.nnow | nro
+	a> 'tanks p.nro | nro
 	32
 	a> .x @ int.  | x 
 	a> .y @ int.  | y
@@ -171,7 +171,7 @@
 :dtank | adr -- adr
 	dup >a
 	
-	a> 'tanks p.nnow | nro
+	a> 'tanks p.nro | nro
 	32
 	a> .x @ int.  | x 
 	a> .y @ int.  | y
