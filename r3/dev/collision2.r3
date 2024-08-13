@@ -31,16 +31,16 @@
 	dup .radio @
 	over .x @ int. over 1 + 1 >> - 		| radio xmin
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
-	rot dup SDLRect
+	rot dup SDLfRect
 	drop
 	;
 	
+|**** not really good	
 :collision | p1 p2 -- p1 p2
 	over .x @ over .x @ - dup *. | (x1-x2)^2
 	pick2 .y @ pick2 .y @ - dup *. +
 	
-	pick2 dup .radio @ swap .zoom @ * 
-	pick2 dup .radio @ swap .zoom @ * + dup *.
+	pick2 .radio @ pick2 .radio @ + dup * 16 <<
 	
 	>=? ( drop ; ) sqrt. |2.0 swap -
 	0.02 *. >a 
@@ -97,8 +97,7 @@
 	a> .y @ 0 <? ( hity ) maxy >? ( maxy a> .y ! hity ) drop
 	
 	a> 'arr p.nro | nro
-	32
-	a> .x @ int. a> .y @ int. 
+	a> .radio @ a> .x @ int. a> .y @ int. 
 	h2d+!
 	
 	8 a+ 
@@ -112,7 +111,7 @@
 	a!+ 	| ang
 	dup a!+ | img zoom
 	swap dup a!+ | zoom img
-	sspritewh max *. a!+ | radio in pixel
+	sspritewh max 1 >> *. a!+ | radio in pixel
 |	0 0 0 a!+ a!+ a!+
 	0.9 randmax a!+ | vx
 	0.9 randmax a!+ | vy	

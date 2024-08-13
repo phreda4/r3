@@ -1,7 +1,6 @@
-| edit-code
-| PHREDA 2007
+| new edit code with imm
+| PHREDA 2024
 |---------------------------------------
-||MEM 128
 ^r3/win/console.r3
 ^r3/win/mconsole.r3
 
@@ -21,6 +20,12 @@
 
 #iniinc #nowinc
 #inidic #nowdic
+
+:.fullcon | adjust console
+	.getconsoleinfo
+	.alsb .showc .insc
+	evtmouse
+	;
 
 :dic+! | v --
 	nowdic + cntdef 1 - clamp0max 
@@ -46,7 +51,8 @@
 |RPI|	"./r3rpi "
 	,s 'srcname ,s ,eol
 	empty here sysnew | <<<<<<<<< new terminal
-	.reset .alsb ;
+	.fullcon
+	;
 
 :mkplain
 	.masb .reset .cls
@@ -58,7 +64,7 @@
 |LIN|	"./r3lin r3/d4/gen/plain.r3"
 |RPI|	"./r3rpi r3/d4/gen/plain.r3"
 	sys
-	;
+	.fullcon ;
 
 :compile
 	.masb .reset .cls
@@ -68,7 +74,7 @@
 |RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
-	;
+	.fullcon ;
 
 |-------------------------------------------
 #incnow
@@ -653,6 +659,8 @@
 	0 'statfile !
 	rows 1 - 'hcode !
 	cols 7 - 'wcode !
+	|modoimm | start in immm
+	modoedit
 	( exit 0? drop 
 		modoe 3 << 'modolist + @ ex
 		) drop ;
@@ -660,11 +668,8 @@
 |---- Mantiene estado del editor
 :ram
 	code-ram
-	modoedit
 	'srcname loadtxt
-	
 	fuente code-set
-|	loadinfo
 	mark 
 	;
 
@@ -672,10 +677,7 @@
 :
 	'srcname "mem/main.mem" load drop
 	ram
-	evtmouse
-	.getconsoleinfo
-	.alsb .showc .insc
+	.fullcon
 	runeditor
-	.masb
 | 'srcname savetxt |  save only main?
 	;

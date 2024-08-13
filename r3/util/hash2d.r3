@@ -39,31 +39,35 @@
 				
 ::H2d.clear
 	matrix -1 arraylen 2 >> 1 + fill	| fill hashtable with -1
-	H2dlist 'H2dlist> !
-	;
+	H2dlist 'H2dlist> ! ;
 	
 ::H2d.list	| -- 'adr cnt
-	H2dlist H2dlist> over - 2 >>
-	;
+	H2dlist H2dlist> over - 2 >> ;
 	
 #point  
-#cpoint
-#maxr 32
+#cpointx
+#cpointy
+#cpointr
+##checkmax 32	| check max in pixels
 #x1 #x2 #y1 #y2
 	
 :check | xr yr x y point --
 	1 + $ffff nand? ( drop ; ) 1 -
 	$ffff and dup 3 << matlist + @ 
-	dup 16 >> $7ffff and cpoint 16 >> $7ffff and - abs
-	over 35 >> $7ffff and cpoint 35 >> $7ffff and - abs max
-	maxr <? ( pick2 point or H2dlist> d!+ 'H2dlist> ! ) drop nip
+	dup 16 >> $7ffff and cpointy - abs
+	over 35 >> $7ffff and cpointx - abs max
+	over 54 >>> cpointr + 
+	<? ( pick2 point or H2dlist> d!+ 'H2dlist> ! ) drop nip
 	check ;
 
 :collect | xyrp xr yr 
-	over maxr - 5 >> 'x1 ! dup maxr - 5 >> 'y1 !
-	over maxr + 5 >> 'x2 ! dup maxr + 5 >> 'y2 !
+	over checkmax - 5 >> 'x1 ! dup checkmax - 5 >> 'y1 !
+	over checkmax + 5 >> 'x2 ! dup checkmax + 5 >> 'y2 !
 	pick4 16 << 'point !
-	pick2 'cpoint !
+	pick3 'cpointr !
+	pick2 dup 
+	16 >> $7ffff and 'cpointy !
+	35 >> $7ffff and 'cpointx !	
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
 			2dup hash2 
@@ -85,3 +89,6 @@
 	w!
 	;
 
+::h2d! | x y zoom nro sizepixel/2 -- x y zoom 
+|	400 200 2.0 2 8 
+	pick2 *. pick4 pick4 h2d+! ;

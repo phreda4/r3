@@ -38,6 +38,9 @@
 
 #colist #colist>		| list of collition (16)(16)
 
+::H2d.list	| -- 'adr cnt
+	colist colist> over - 2 >>
+	;
 :hash | x y -- hash
 	5 >> 92837111 * swap 
 	5 >> 689287499 * xor 
@@ -66,23 +69,32 @@
 	;
 	
 #point  
-#cpoint
+#cpointx
+#cpointy
+#cpointr
 #maxr 32
 #x1 #x2 #y1 #y2
 	
 :check | xr yr x y point --
 	1 + $ffff nand? ( drop ; ) 1 -
 	$ffff and dup 3 << matlist + @ 
-	dup 16 >> $7ffff and cpoint 16 >> $7ffff and - abs
-	over 35 >> $7ffff and cpoint 35 >> $7ffff and - abs max
-	maxr <? ( pick2 point or colist> d!+ 'colist> ! ) drop nip
+	dup 16 >> $7ffff and cpointy - abs
+	over 35 >> $7ffff and cpointx - abs max
+	over 54 >>> cpointr + 
+	|2dup "%d %d " .print
+	<? ( pick2 point or colist> d!+ 'colist> ! 
+		|"*" .println 
+		) drop nip
 	check ;
 
 :collect | xyrp xr yr 
 	over maxr - 5 >> 'x1 ! dup maxr - 5 >> 'y1 !
 	over maxr + 5 >> 'x2 ! dup maxr + 5 >> 'y2 !
 	pick4 16 << 'point !
-	pick2 'cpoint !
+	pick3 'cpointr !
+	pick2 dup 
+	16 >> $7ffff and 'cpointy !
+	35 >> $7ffff and 'cpointx !
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
 			2dup hash2 
@@ -286,6 +298,54 @@
 	drop
 	;
 
+|--------------- TEST2
+#x2 #y2
+
+:drawhit
+	0 0 bat
+	H2d.list
+	( 1? 1 - swap
+		d@+ 
+		dup 16 >>> "%d " bprint
+		$ffff and "%d " bprint
+		bcr
+		swap ) 2drop ;
+		
+:main2
+	$0 SDLcls
+	
+	H2d.clear
+	
+	300 200 1.0 
+	1 8 pick2 *. pick4 pick4 h2d+!
+	0 tssprite sspritez
+
+	400 200 2.0 
+	2 8 pick2 *. pick4 pick4 h2d+!
+	0 tssprite sspritez
+	
+	600 200 3.0 
+	3 8 pick2 *. pick4 pick4 h2d+!
+	0 tssprite sspritez
+
+	800 200 4.0 
+	4 8 pick2 *. pick4 pick4 h2d+!
+	0 tssprite sspritez
+	
+	x2 y2 2.0 
+	0 8 pick2 *. pick4 pick4 h2d+!
+	0 tssprite sspritez
+
+	drawhit
+
+	sdlx 'x2 !
+	sdly 'y2 !
+	SDLredraw
+	SDLkey
+	>esc< =? ( exit )
+	drop
+	;
+	
 :inicio
 	.cls
 	"hash2d" 1024 600 SDLinit
@@ -298,7 +358,8 @@
 	
 	100 H2d.ini
 	
-	'main SDLshow
+	|'main SDLshow
+	'main2 SDLshow
 	
 	SDLquit ;
 	
