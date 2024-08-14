@@ -1,7 +1,7 @@
 | RAYCASTING
 | From Lode's Computer Graphics Tutorial
 | https://lodev.org/cgtutor/raycasting.html
-| PHREDA 2020 (r3d4) translate
+| PHREDA 2020 (r3d4) translate to r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/pcfont.r3
 
@@ -39,7 +39,7 @@
 #planeX #planeY
 
 #texs
-#texn
+#ntex
 
 #rayDirX
 #rayDirY
@@ -82,8 +82,10 @@
 	posX $ffff not and posY $ffff not and
 	( 2dup maphit 0?
 		drop step )
-	8 << texs + 'texn !
+	$7 and 'ntex !
+|	8 << texs + 'texn !
 |	2 << 'colores + @ 'ink !
+|	drop
 	;
 
 :perpWall | mapx mapy --
@@ -108,16 +110,18 @@
 	;
 
 #y1
-#y2
 #altura
-#wallX
-#wallY
-#addY
 
-#srcrec [ 0 0 1 600 ]
+#srcrec [ 0 0 1 64 ]
 #desrec [ 0 0 1 600 ]
 
-			   
+:face
+	side 1? ( drop $7f $7f $7f ; ) drop 
+	$ff $ff $ff ;
+	
+:shadowface
+	texs face SDL_SetTextureColorMod ;
+	
 :drawline | x -- x
 	dup 17 << sw / 1.0 -
 	dup
@@ -131,39 +135,24 @@
 	perpWall 'perpWallDist !
 	sh 16 << perpWallDist
 	0? ( 1 + ) / 'altura !
-	0 'wallY !
-	sh 1 >> altura 1 >> 2dup
-	- -? ( dup neg $3f0000 * altura 0? ( 1 + ) / 'wallY ! )
-	clamp0 'y1 !
-	+ sh clampmax 'y2 !
 
-	calcWallX
-	10 >> $3f and 2 << texn + 4 + 'wallX !
-	$3f0000 altura 0? ( 1 + ) / 'addY !
+	sh 1 >> altura 1 >> - 'y1 !
 
 	'desrec >a
-	dup da!
-	'srcrec >a
-	dup $3f and
-	da!
-	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
-|	dup 2 << vframe + >a
-|	0
-|	( y1 <? 1 + $3f3f3f a! sw 2 << a+ )
-|	( y2 <? 1 +
-|		wallX wallY 16 >> 11 << + @
-|		side 1? ( swap 1 >> $7f7f7f and swap ) drop | oscurece
-|		a!
-|		addY 'wallY +!
-|		sw 2 << a+
-|		)
-|	( sh <? 1 + $0f0f3f a! sw 2 << a+ )
-|	drop
+	dup da!+ | xd
+	y1 da!+ 4 a+ altura da!
 	
+	ntex 6 << 
+	calcWallX 10 >> $3f and 	
+	+ 'srcrec d! | xs
+	
+	shadowface
+	
+	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
 	;
 
  :render
-	0 ( sw <?
+	0 ( sw <? 
 		drawline
 		1 + ) drop ;
 
@@ -214,11 +203,10 @@
 	render
 	mm 1? ( drawmap ) drop
 
-	0 0 pcat
 	$ffffff pccolor
+	0 0 pcat
 	"<f1> mapa" pcprint
 |	posx posy "%f %f " print dirX dirY "%f %f " print cr
-
 |	xypen texs sprite
 
 	SDLredraw
@@ -228,8 +216,8 @@
 	<le> =? ( -0.01 'vrot ! )
 	<ri> =? ( 0.01 'vrot ! )
 	>le< =? ( 0 'vrot ! ) >ri< =? ( 0 'vrot ! )
-	<up> =? ( 0.2 'vmov ! )
-	<dn> =? ( -0.2 'vmov ! )
+	<up> =? ( 0.1 'vmov ! )
+	<dn> =? ( -0.1 'vmov ! )
 	>up< =? ( 0 'vmov ! ) >dn< =? ( 0 'vmov ! )
 	>esc< =? ( exit )
 	drop
