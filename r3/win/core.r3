@@ -9,6 +9,9 @@
 ::ms | ms --
 	Sleep ;
 	
+::iniheap	
+	GetProcessHeap 'process-heap ! ;
+	
 ::allocate |( n -- a ior ) 
 	process-heap 0 rot HeapAlloc ;
 	
@@ -142,48 +145,46 @@
 	0 'fileatrib GetFileAttributesEx  ;
 	
 |struct STARTUPINFO
-|  cb		  dd ?,?
-|  lpReserved	  dq ?
-|  lpDesktop	  dq ?
-|  lpTitle	  dq ?
-|  dwX		  dd ?
-|  dwY		  dd ?
-|  dwXSize	  dd ?
-|  dwYSize	  dd ?
-|  dwXCountChars   dd ?
-|  dwYCountChars   dd ?
-|  dwFillAttribute dd ?
-|  dwFlags	  dd ?
-|  wShowWindow	  dw ?
-|  cbReserved2	  dw ?,?,?
-|  lpReserved2	  dq ?
-|  hStdInput	  dq ?
-|  hStdOutput	  dq ?
-|  hStdError	  dq ?
+|0  cb		  dd ?,?
+|1  lpReserved	  dq ?
+|2  lpDesktop	  dq ?
+|3  lpTitle	  dq ?
+|4  dwX		  dd ?  dwY		  dd ?
+|5  dwXSize	  dd ?  dwYSize	  dd ?
+|6  dwXCountChars   dd ? dwYCountChars   dd ?
+|7  dwFillAttribute dd ?  dwFlags	  dd ?
+|8  wShowWindow	  dw ? cbReserved2	  dw ?,?,?
+|9  lpReserved2	  dq ?
+|10  hStdInput	  dq ?
+|11  hStdOutput	  dq ?
+|12  hStdError	  dq ?
 
-##sinfo * 100
+##sinfo * 104
 
 |struct PROCESS_INFORMATION
-|  hProcess    dq ?
-|  hThread     dq ?
-|  dwProcessId dd ?
-| dwThreadId  dd ?
+|0  hProcess    dq ?
+|1  hThread     dq ?
+|2  dwProcessId dd ? dwThreadId  dd ?
 
 ##pinfo * 24
 
+:ininfo
+	'sinfo 0 16 fill | 104/8=13+3=16
+	104 'sinfo d!
+|	'pinfo 0 3 fill | 24/8=3 ^^ +3
+	;
+	
 ::sys | "" --
-	'sinfo 0 100 cfill
-	68 'sinfo d!
-	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
+	ininfo
+	0 swap 0 0 0 0 0 0 'sinfo 'pinfo CreateProcess drop
 	pinfo -1 WaitForSingleObject
 	;
 	
 |https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags	
 | $10 new console
 ::sysnew | "" --
-	'sinfo 0 100 cfill
-	68 'sinfo d!
-	0 swap 0 0 1 $10 0 0 'sinfo 'pinfo CreateProcess drop
+	ininfo	
+	0 swap 0 0 0 $10 0 0 'sinfo 'pinfo CreateProcess drop
 	pinfo -1 WaitForSingleObject
 	;
 	
@@ -191,6 +192,11 @@
 |https://learn.microsoft.com/es-mx/windows/win32/debug/creating-a-basic-debugger?redirectedfrom=MSDN
 |https://www.codeproject.com/Articles/43682/Writing-a-basic-Windows-debugger
 
-:
-	GetProcessHeap 'process-heap !
+|#DEBUG_ONLY_THIS_PROCESS $00000002
+|#DEBUG_PROCESS $00000001
+
+::sysdebug | "" -- proc
+	ininfo
+	0 swap 0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess 
+|	pinfo -1 WaitForSingleObject
 	;

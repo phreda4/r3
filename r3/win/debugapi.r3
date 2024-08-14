@@ -21,7 +21,6 @@
 #sys-DebugActiveProcess
 #sys-DebugActiveProcessStop
 #sys-CheckRemoteDebuggerPresent  
-|#sys-ResumeThread
   
 |::checklib
 |	'sys-IsDebuggerPresent ( 'sys-CheckRemoteDebuggerPresent <=? @+ "%h" .println ) drop ;
@@ -35,19 +34,6 @@
 ::DebugActiveProcess sys-DebugActiveProcess sys1 ;
 ::DebugActiveProcessStop sys-DebugActiveProcessStop sys1 ;
 ::CheckRemoteDebuggerPresent  sys-CheckRemoteDebuggerPresent sys2 ;
-|::ResumeThread sys-ResumeThread sys1 ;
-
-|#DEBUG_ONLY_THIS_PROCESS $00000002
-|#DEBUG_PROCESS $00000001
-
-::sysdebug | "" -- proc
-	'sinfo 0 100 cfill
-	68 'sinfo d!
-	'pinfo 0 24 cfill
-	0 swap
-	0 0 1 $1 0 0 'sinfo 'pinfo CreateProcess 
-|	pinfo -1 WaitForSingleObject
-	;
   
 |typedef struct _DEBUG_EVENT {
 |  DWORD dwDebugEventCode;
@@ -77,6 +63,5 @@
 	dup "DebugActiveProcess" getproc 'sys-DebugActiveProcess !
 	dup "DebugActiveProcessStop" getproc 'sys-DebugActiveProcessStop !
 	dup "CheckRemoteDebuggerPresent" getproc 'sys-CheckRemoteDebuggerPresent !
-|	dup "ResumeThread" getproc 'sys-ResumeThread !
 	drop
 	;
