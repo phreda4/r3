@@ -9,6 +9,8 @@
 | radio not used .. (24)(24)(16)
 | in 3d (16)(16)(16)(16) . with 128bits (1)(21)(21)(21)(16)
 |
+^r3/lib/mem.r3
+
 #arraylen
 #matrix	
 #matlist

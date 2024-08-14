@@ -77,15 +77,11 @@
 	deltaDistY 'sideDistY +!
 	stepY + 1 'side ! ;
 
-
 :dda | -- mapx mapy
 	posX $ffff not and posY $ffff not and
 	( 2dup maphit 0?
 		drop step )
 	$7 and 'ntex !
-|	8 << texs + 'texn !
-|	2 << 'colores + @ 'ink !
-|	drop
 	;
 
 :perpWall | mapx mapy --
@@ -102,7 +98,6 @@
 	rayDirX 0? ( ; ) drop
 	rayDirY 0? ( drop 1.0 ; )
 	1.0 swap /. abs ;
-
 
 :calcWallX
 	side 0? ( drop rayDirY perpWallDist *. posY + ; ) drop
@@ -133,21 +128,12 @@
 	calcDistY
 	dda | mapx mapy
 	perpWall 'perpWallDist !
-	sh 16 << perpWallDist
-	0? ( 1 + ) / 'altura !
-
+	sh 16 << perpWallDist 0? ( 1 + ) / 'altura !
 	sh 1 >> altura 1 >> - 'y1 !
 
-	'desrec >a
-	dup da!+ | xd
-	y1 da!+ 4 a+ altura da!
-	
-	ntex 6 << 
-	calcWallX 10 >> $3f and 	
-	+ 'srcrec d! | xs
-	
+	'desrec >a dup da!+ y1 da!+ 4 a+ altura da!
+	ntex 6 << calcWallX 10 >> $3f and + 'srcrec d! | xs
 	shadowface
-	
 	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
 	;
 
@@ -159,8 +145,7 @@
 |---------------------------------
 :drawcell | map y x --
 	rot c@+ 3 << 'colores + @ sdlcolor
-	rot rot
-	over 4 << over 4 << swap
+	rot rot over 4 << over 4 << swap
 	15 15 sdlFRect
 	;
 
@@ -179,8 +164,8 @@
 
 |---------------------------------
 :mover | speed --
-	dirX over *. posX + posy maphit 0? ( over dirX *. 'posX +! ) drop
-	posX over dirY *. posY + maphit 0? ( over dirY *. 'posY +! ) drop
+	dirX over 2 << *. posX + posy maphit 0? ( over dirX *. 'posX +! ) drop
+	posX over 2 << dirY *. posY + maphit 0? ( over dirY *. 'posY +! ) drop
 	drop
 	;
 
@@ -204,8 +189,7 @@
 	mm 1? ( drawmap ) drop
 
 	$ffffff pccolor
-	0 0 pcat
-	"<f1> mapa" pcprint
+	0 0 pcat "<f1> mapa" pcprint
 |	posx posy "%f %f " print dirX dirY "%f %f " print cr
 |	xypen texs sprite
 
@@ -228,10 +212,8 @@
 
 :main
 	"Raycaster" 800 600 SDLinit
-	
-	
+	pcfont
 	"media/img/wolftexturesobj.png" loadimg 'texs ! | 64x64x8
-
 	5.5 'posX ! 5.5 'posY ! 0 rota
 	'game SDLshow 
 	SDLquit ;

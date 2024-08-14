@@ -109,18 +109,18 @@
 	r3name
 	mark
 	here dup 'src ! | mem
-	'r3filename dup "load %s " .println
+	'r3filename dup " | %s " .print |ln
 	namevirtual	| mem fn
-	load here =? ( drop "no source code." .println empty ; )
+	load here =? ( drop .bred "no source code." .println empty ; )
 	0 swap c!+ 'here !
 	0 'error ! 0 'cnttokens ! 0 'cntdef !
 	'inc 'inc> !
 	src 
 	r3-stage-1 
-	error 1? ( 4drop "ERROR %s" .println ; ) drop
+	error 1? ( 4drop .bred "ERROR %s" .println ; ) drop
 |	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 	r3-stage-2 |drop
-	1? ( "ERROR %s" .println empty ; ) drop
+	1? ( .bred "ERROR %s" .println empty ; ) drop
 |	code> code - 2 >> "tokens:%d" .println
 |	r3-stage-3 | core.r3 fail!! (need inv)
 	r3-stage-4-full
@@ -134,6 +134,7 @@
 #foldern * 1024
 
 :nextfile | file --
+	dup FDIR 1? ( 2drop ; ) drop
 	FNAME
 	dup ".." = 1? ( 2drop ; ) drop
 	dup "." = 1? ( 2drop ; ) drop
@@ -146,6 +147,7 @@
 	
 |-------------	
 :nextfilelist | file --
+	dup FDIR 1? ( 2drop ; ) drop
 	FNAME
 	dup ".." = 1? ( 2drop ; ) drop
 	dup "." = 1? ( 2drop ; ) drop
@@ -166,10 +168,10 @@
 	mark "r3/d4/meta/mlibs.r3" savemem empty 
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
-		dup ">> %s" .println
+		dup ">> %s " .cr .println
 		dup folder
 		>>0 ) 2drop
-	"end" .println
+	.cr
 
 	mark
 	,cr
@@ -184,4 +186,4 @@
 	empty 
 	;
 
-: main ;
+: main "<enter> to continue." .print .input ;
