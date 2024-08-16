@@ -8,7 +8,11 @@
 
 ::ms | ms --
 	Sleep ;
+
+::msec | -- msec
+	GetTickCount ;
 	
+|************** not used	
 ::iniheap	
 	GetProcessHeap 'process-heap ! ;
 	
@@ -17,13 +21,10 @@
 	
 ::free |( a -- ior ) 
 	process-heap 0 rot HeapFree ;
-	
+
 ::resize |( a n -- a ior ) 
 	process-heap rot rot 0 rot HeapReAlloc ;
 
-::msec | -- msec
-	GetTickCount ;
-	
 |----------
 #sistime 0 0 | 16 bytes
 
@@ -170,8 +171,8 @@
 
 :ininfo
 	'sinfo 0 16 fill | 104/8=13+3=16
-	104 'sinfo d!
 |	'pinfo 0 3 fill | 24/8=3 ^^ +3
+	104 'sinfo d!
 	;
 	
 ::sys | "" --
@@ -195,8 +196,10 @@
 |#DEBUG_ONLY_THIS_PROCESS $00000002
 |#DEBUG_PROCESS $00000001
 
-::sysdebug | "" -- proc
+::sysdebug | "" -- 
 	ininfo
-	0 swap 0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess 
+	|0 swap 
+	0
+	0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess drop
 |	pinfo -1 WaitForSingleObject
 	;

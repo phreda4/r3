@@ -37,8 +37,7 @@
 |         // exceptions, remember to set the continuation 
 |         // status parameter (dwContinueStatus). This value 
 |         // is used by the ContinueDebugEvent function. 
-|      switch(DebugEv->u.Exception.ExceptionRecord.ExceptionCode)
-|            { 
+|      switch(DebugEv->u.Exception.ExceptionRecord.ExceptionCode) { 
 |               case EXCEPTION_ACCESS_VIOLATION: 
 |               // First chance: Pass this on to the system. 
 |               // Last chance: Display an appropriate error. 
@@ -112,7 +111,7 @@
 	$80000003 =? ( "%h" .println ) |#define EXCEPTION_BREAKPOINT ((NTSTATUS)0x80000003)
 	$80000004 =? ( "%h" .println ) |#define EXCEPTION_SINGLE_STEP ((NTSTATUS)0x80000004)
 	$40010005 =? ( "%h" .println ) |#define DBG_CONTROL_C ((NTSTATUS)0x40010005)
-	"%h" .println
+	"%h<<" .println
 	;
 
 :crethr 
@@ -150,7 +149,8 @@
 	7 =? ( drop unlodl ; ) |#define UNLOAD_DLL_DEBUG_EVENT 7
 	8 =? ( drop outdeb ; ) |#define OUTPUT_DEBUG_STRING_EVENT 8
 	9 =? ( drop ripeve ; ) |#define RIP_EVENT 9
-	drop ;
+	">>%h" .println
+	;
 	
 |DBG_CONTINUE $00010002
 |DBG_EXCEPTION_NOT_HANDLED $80010001
@@ -160,27 +160,18 @@
 
 |INFINITE 0xFFFFFFFF
 :deevent
-	'dbgevt 1000 WaitForDebugEvent drop
-	
-	'dbgevt d@ | DebugEv->dwDebugEventCode
-	eventswitch
-|	"%d)" .println
-	|'dbgevt ProcessDebugEvent |ProcessDebugEvent(&debug_event);  // User-defined function, not API
+	inkey $1B1001 =? ( drop ; ) drop
+	'dbgevt -1 WaitForDebugEvent 
+	0? ( drop deevent ; ) drop
+	'dbgevt d@ eventswitch
 	'pinfo 16 + d@+ swap d@ $00010002 ContinueDebugEvent |(debug_event.dwProcessId,debug_event.dwThreadId,DBG_CONTINUE);
-|	'dbgevt @+ "%h " .print @+ "%h " .print @+ "%h " .print @ "%h " .println
-	deevent
-	;
-|ContinueDebugEvent
+	deevent ;
+
 :main
 	.cls
 	"Test debug" .println
-	
-	"r3fasm.exe" 
-	sysdebug "%d=1" .println
-	
-	|'pinfo @+ "%h " .print @+ "%h " .print d@+ "%h " .print d@+ "%h " .println drop
+	"r3fasm.exe" sysdebug
 	deevent
-	.input ;
-:
-main
-;
+	;
+	
+: main ;
