@@ -60,14 +60,14 @@
 #TKdup $23
 #TKover $25
 #TKswap $29
-#TKand $35
-#TK+ $38
-#TK- $39
-#TK* $3A
-#TK<< $3C
-#TK>> $3D
-#TK>>> $3E
-#TK*>> $42
+#TKand $36
+#TK+ $3A
+#TK- $3B
+#TK* $3C
+#TK<< $3E
+#TK>> $3F
+#TK>>> $40
+#TK*>> $44
 
 |--- ajuste por signo
 :signadj!+ | --
@@ -215,7 +215,7 @@
 :iXOR
 	2stk 0? ( drop .XOR code<<cte ; ) drop
 	2code!+ .drop ;
-:iAND
+:iNAND
 	2stk 0? ( drop .NAND code<<cte ; ) drop
 	2code!+ .drop ;
 	
@@ -345,7 +345,7 @@
 	65 64 pick2 clzl - - cte!+ |30
 	TK>>> code!+ 	| >>>
 
-	TK+	code!+		| +
+	TK+ code!+		| +
 
 	63 over clzl - cte!+ 	| 2
 	TK>> code!+ 	| >>

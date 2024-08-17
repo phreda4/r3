@@ -366,7 +366,7 @@
 	$e =? ( 1 'cntdc +! copydeltaS )	| word y dir word
 	$d =? ( 1 'cntdv +! )
 	$f =? ( 1 'cntdv +! )				| var y dir var
-	$3c =? (  1 'flags ! )				| *
+	$3e =? (  1 'flags ! )				| * antes $3c
 	drop ;
 
 |--- info de variables
