@@ -68,6 +68,7 @@
 2 0 0 0		|SWAP   ab -- ba
 2 -1 0 0	|NIP   ab -- b
 3 0 0 0		|ROT	abc -- bca
+3 0 0 0		|-ROT	abc -- cab
 2 2 0 0		|2DUP   ab -- abab
 2 -2 0 0	|2DROP ab --
 3 -3 0 0	|3DROP abc --
@@ -79,8 +80,9 @@
 0 1 0 8		|R@      -- a R: a -- a
 
 2 -1 0 0	|AND	ab -- c
-2 -1 0 0	|OR    ab -- c
-2 -1 0 0	|XOR   ab -- c
+2 -1 0 0	|OR		ab -- c
+2 -1 0 0	|XOR	ab -- c
+2 -1 0 0	|NAND	ab -- c
 2 -1 0 0	|+		ab -- c
 2 -1 0 0	|-     ab -- c
 2 -1 0 0	|*     ab -- c

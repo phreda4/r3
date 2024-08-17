@@ -47,8 +47,8 @@
 ";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
 "<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP" | 26..
-"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP" |34..
-">R" "R>" "R@" "AND" "OR" "XOR" "+" "-" "*" "/" "<<" ">>" ">>>" |41..
+"ROT" "-ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP" |34..
+">R" "R>" "R@" "AND" "OR" "XOR" "NAND" "+" "-" "*" "/" "<<" ">>" ">>>" |41..
 "MOD" "/MOD" "*/" "*>>" "<</" "NOT" "NEG" "ABS" "SQRT" "CLZ" |54..
 "@" "C@" "W@" "D@" "@+" "C@+" "W@+" "D@+"
 "!" "C!" "W!" "D!" "!+" "C!+" "W!+" "D!+" 
@@ -193,78 +193,80 @@
 0 0 0 0		| )
 0 0 0 0		| [
 0 1 0 0		| ]
-1 -1 0 0	| EX  x/0 --
-1 0 0 0		|0? a -- a
-1 0 0 0		|1? a -- a
-1 0 0 0		|+? a -- a
-1 0 0 0		|-? a -- a
-2 -1 0 0	|<?  ab -- a
-2 -1 0 0	|>?  ab -- a
-2 -1 0 0	|=?  ab -- a
-2 -1 0 0	|>=? ab -- a
-2 -1 0 0	|<=? ab -- a
-2 -1 0 0	|<>? ab -- a
-2 -1 0 0	|and?  ab -- a
-2 -1 0 0	|nand? ab -- a
-3 -2 0 0	|BTW? abc -- a
-1  1 0 0	|DUP    a -- aa
-1 -1 0 0	|DROP  a --
-2 1 0 0		|OVER   ab -- aba
-3 1 0 0		|PICK2  abc -- abca
-4 1 0 0		|PICK3  abcd -- abcda
-5 1 0 0		|PICK4  abcde -- abcdea
-2 0 0 0		|SWAP   ab -- ba
-2 -1 0 0	|NIP   ab -- b
+1 -1 0 0	| EX	x/0 --
+1 0 0 0		|0?		a -- a
+1 0 0 0		|1?		a -- a
+1 0 0 0		|+?		a -- a
+1 0 0 0		|-?		a -- a
+2 -1 0 0	|<?		ab -- a
+2 -1 0 0	|>?		ab -- a
+2 -1 0 0	|=?		ab -- a
+2 -1 0 0	|>=?	ab -- a
+2 -1 0 0	|<=?	ab -- a
+2 -1 0 0	|<>?	ab -- a
+2 -1 0 0	|and?	ab -- a
+2 -1 0 0	|nand?	ab -- a
+3 -2 0 0	|BTW?	abc -- a
+1  1 0 0	|DUP	a -- aa
+1 -1 0 0	|DROP	a --
+2 1 0 0		|OVER	ab -- aba
+3 1 0 0		|PICK2	abc -- abca
+4 1 0 0		|PICK3	abcd -- abcda
+5 1 0 0		|PICK4	abcde -- abcdea
+2 0 0 0		|SWAP	ab -- ba
+2 -1 0 0	|NIP	ab -- b
 3 0 0 0		|ROT	abc -- bca
-2 2 0 0		|2DUP   ab -- abab
-2 -2 0 0	|2DROP ab --
-3 -3 0 0	|3DROP abc --
-4 -4 0 0	|4DROP abcd --
-4 2 0 0		|2OVER  abcd -- abcdab
-4 0 0 0		|2SWAP  abcd -- cdab
-1 -1 1 0	|>R    a -- R: -- a
-0 1 -1 0	|R>    -- a R: a --
-0 1 0 0		|R@      -- a R: a -- a
+3 0 0 0		|-ROT	abc -- cab
+2 2 0 0		|2DUP	ab -- abab
+2 -2 0 0	|2DROP	ab --
+3 -3 0 0	|3DROP	abc --
+4 -4 0 0	|4DROP	abcd --
+4 2 0 0		|2OVER	abcd -- abcdab
+4 0 0 0		|2SWAP	abcd -- cdab
+1 -1 1 0	|>R		a -- R: -- a
+0 1 -1 0	|R>		-- a R: a --
+0 1 0 0		|R@		-- a R: a -- a
 2 -1 0 0	|AND	ab -- c
-2 -1 0 0	|OR    ab -- c
-2 -1 0 0	|XOR   ab -- c
+2 -1 0 0	|OR		ab -- c
+2 -1 0 0	|XOR	ab -- c
+2 -1 0 0	|NAND	ab -- c
 2 -1 0 0	|+		ab -- c
-2 -1 0 0	|-     ab -- c
-2 -1 0 0	|*     ab -- c
-2 -1 0 0	|/     ab -- c
-2 -1 0 0	|<<    ab -- c
-2 -1 0 0	|>>    ab -- c
-2 -1 0 0	|>>>    ab -- c
-2 -1 0 0	|MOD    ab -- c
-2 0 0 0		|/MOD   ab -- cd
-3 -2 0 0	|*/    abc -- d
-3 -2 0 0	|*>>   abc -- d
+2 -1 0 0	|-		ab -- c
+2 -1 0 0	|*		ab -- c
+2 -1 0 0	|/		ab -- c
+2 -1 0 0	|<<		ab -- c
+2 -1 0 0	|>>		ab -- c
+2 -1 0 0	|>>>	ab -- c
+2 -1 0 0	|MOD	ab -- c
+2 0 0 0		|/MOD	ab -- cd
+3 -2 0 0	|*/		abc -- d
+3 -2 0 0	|*>>	abc -- d
 3 -2 0 0	|<</	abc -- d
-1 0 0 0		|NOT    a -- b
-1 0 0 0		|NEG    a -- b
-1 0 0 0		|ABS    a -- b
+1 0 0 0		|NOT	a -- b
+1 0 0 0		|NEG	a -- b
+1 0 0 0		|ABS	a -- b
 1 0 0 0		|SQRT	a -- b
 1 0 0 0		|CLZ	a -- b
-1 0 0 1		|@      a -- b
-1 0 0 1		|C@     a -- b
-1 0 0 1		|W@     a -- b
-1 0 0 1		|D@     a -- b
-1 1 0 1		|@+     a -- bc
-1 1 0 1		|C@+    a -- bc
-1 1 0 1		|W@+    a -- bc
-1 1 0 1		|D@+    a -- bc
-2 -2 0 1	|!     ab --
-2 -2 0 1	|C!    ab --
-2 -2 0 1	|W!    ab --
-2 -2 0 1	|D!    ab --
-2 -1 0 1	|!+    ab -- c
-2 -1 0 1	|C!+   ab -- c
-2 -1 0 1	|W!+   ab -- c
-2 -1 0 1	|D!+   ab -- c
-2 -2 0 1	|+!    ab --
-2 -2 0 1	|C+!   ab --
-2 -2 0 1	|W+!   ab --
-2 -2 0 1	|D+!   ab --
+1 0 0 1		|@		a -- b
+1 0 0 1		|C@		a -- b
+1 0 0 1		|W@		a -- b
+1 0 0 1		|D@		a -- b
+1 1 0 1		|@+		a -- bc
+1 1 0 1		|C@+	a -- bc
+1 1 0 1		|W@+	a -- bc
+1 1 0 1		|D@+	a -- bc
+2 -2 0 1	|!		ab --
+2 -2 0 1	|C!		ab --
+2 -2 0 1	|W!		ab --
+2 -2 0 1	|D!		ab --
+2 -1 0 1	|!+		ab -- c
+2 -1 0 1	|C!+	ab -- c
+2 -1 0 1	|W!+	ab -- c
+2 -1 0 1	|D!+	ab -- c
+2 -2 0 1	|+!		ab --
+2 -2 0 1	|C+!	ab --
+2 -2 0 1	|W+!	ab --
+2 -2 0 1	|D+!	ab --
 1 -1 0 2	|>A
 0 1 0 4		|A>
 1 -1 0 4	|A+

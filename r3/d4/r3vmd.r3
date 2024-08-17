@@ -56,6 +56,7 @@
 :.4DROP	NOS 24 - @ 'TOS ! -32 'NOS +! ;
 :.SWAP	NOS @ TOS NOS ! 'TOS ! ;
 :.ROT	TOS NOS 8 - @ 'TOS ! NOS @ NOS 8 - !+ ! ;
+:.-ROT	TOS NOS 8 - @+ swap @ 'TOS ! swap NOS 8 - !+ ! ;
 :.2SWAP	TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 	
 :.;		RTOS @ nip -8 'RTOS +! ;
@@ -83,6 +84,7 @@
 ::.AND	NOS @ TOS and .NIP 'TOS ! ;
 ::.OR	NOS @ TOS or .NIP 'TOS ! ;
 ::.XOR	NOS @ TOS xor .NIP 'TOS ! ;
+::.NAND	NOS @ TOS nand .NIP 'TOS ! ;
 ::.NOT	TOS not 'TOS ! ;
 ::.+	NOS @ TOS + .NIP 'TOS ! ;
 ::.-	NOS @ TOS - .NIP 'TOS ! ;
@@ -193,9 +195,10 @@
 .EX .0? .1? .+? .-? 
 .<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
 .DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
-.ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
+.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 .>R .R> .R@ 
-.AND .OR .XOR .+ .- .* ./ .<< .>> .>>> 
+.AND .OR .XOR .NAND 
+.+ .- .* ./ .<< .>> .>>> 
 .MOD ./MOD .*/ .*>> .<</ 
 .NOT .NEG .ABS .SQRT .CLZ 
 .@ .C@ .W@ .D@ 

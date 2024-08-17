@@ -208,6 +208,11 @@
 	'TOS cellA
 	"xor #1,#0" ,asm .drop ;
 
+:gNAND
+	NOS cellR
+	'TOS cellR
+	"not #0;and #1,#0" ,asm .drop ;
+
 :gNOT
 	'TOS cellR
 	"not #0" ,asm ;
@@ -766,9 +771,9 @@
 g; g( g) g[ g] gEX g0? g1? g+? g-? 
 g<? g>? g=? g>=? g<=? g<>? gA? gN? gB? 
 .DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
-.ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
+.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 g>R gR> gR@ 
-gAND gOR gXOR g+ g- g* g/ 
+gAND gOR gXOR gNAND g+ g- g* g/ 
 g<< g>> g>>> gMOD g/MOD g*/ g*>> g<</ 
 gNOT gNEG gABS gSQRT gCLZ 
 g@ gC@ gW@ gD@

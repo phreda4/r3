@@ -133,9 +133,11 @@
 ::.9DROP	NOS 32 - d@ 'TOS ! -36 'NOS +! ;
 ::.10DROP	NOS 36 - d@ 'TOS ! -40 'NOS +! ;
 
-::.SWAP     NOS d@ TOS NOS d! 'TOS ! ;
-::.ROT      TOS NOS 4 - d@ 'TOS ! NOS d@ NOS 4 - d!+ d! ;
-::.2SWAP    TOS NOS d@ NOS 4 - dup 4 - d@ NOS d! d@ 'TOS ! NOS 8 - d!+ d! ;
+::.SWAP		NOS d@ TOS NOS d! 'TOS ! ;
+::.ROT		TOS NOS 4 - d@ 'TOS ! NOS d@ NOS 4 - d!+ d! ;
+::.-ROT		TOS NOS 4 - d@+ swap d@ 'TOS ! swap NOS 4 - d!+ d! ;
+
+::.2SWAP	TOS NOS d@ NOS 4 - dup 4 - d@ NOS d! d@ 'TOS ! NOS 8 - d!+ d! ;
 
 ::.>R		4 'RTOS +! TOS RTOS d! .DROP ;
 ::.R>		.DUP RTOS dup d@ 'TOS ! 4 - 'RTOS d! ;
@@ -145,6 +147,7 @@
 ::.OR		vNOS vTOS or .NIP TOS.NRO! ;
 ::.XOR		vNOS vTOS xor .NIP TOS.NRO! ;
 ::.NOT		vTOS not TOS.NRO! ;
+::.NAND		vNOS vTOS nand .NIP TOS.NRO! ;
 ::.+		vNOS vTOS + .NIP TOS.NRO! ;
 ::.-		vNOS vTOS - .NIP TOS.NRO! ;
 ::.*		vNOS vTOS * .NIP TOS.NRO! ;

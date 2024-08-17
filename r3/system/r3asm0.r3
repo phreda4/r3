@@ -64,6 +64,12 @@
 	"mov [rbp],rax" ,ln
 	"mov rax,[rbp-8]" ,ln
 	"mov [rbp-8],rcx" ,ln ;
+:,-ROT
+	"mov rcx,[rbp-8]" ,ln
+	"mov [rbp-8],rax" ,ln
+	"mov rax,[rbp]" ,ln
+	"mov [rbp],rcx" ,ln ;
+	
 :,2DUP
 	"mov rcx,[rbp]" ,ln
 	"mov [rbp+8],rax" ,ln
@@ -271,6 +277,9 @@
 
 :gXOR   "xor rax,[rbp]" ,ln ,nip ;
 :oXOR	"xor rax," ,s ,TOS ,cr ;
+
+:gNAND	"not rax" ,ln 
+		"and rax,[rbp]" ,ln ,nip ;
 
 :gNOT	"not rax" ,ln ;
 
@@ -1073,7 +1082,7 @@
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oEX 0 0 0 0 o<? o>? o=? o>=? o<=? o<>?
 oAND? oNAND? 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 oAND oOR oXOR o+ o- o* o/ o<< o>> o>>> oMOD
+0 0 0 0 0 0 oAND oOR oXOR 0 o+ o- o* o/ o<< o>> o>>> oMOD
 o/MOD o*/ o*>> o<</ 0 0 0 0 0 
 o@ oC@ oW@ oD@ 
 o@+ oC@+ oW@+ oD@+ 
@@ -1186,7 +1195,7 @@ oLOADLIB oGETPROC
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 oEXv 0 0 0 0 o<? o>? o=? o>=? o<=? o<>?
 oAND? oNAND? 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-0 0 0 0 0 oAND oOR oXOR o+ o- o* o/ o<<v o>>v o>>>v oMOD
+0 0 0 0 0 0 oAND oOR oXOR 0 o+ o- o* o/ o<<v o>>v o>>>v oMOD
 o/MOD o*/ o*>>v o<</v 0 0 0 0 0 
 o@v oC@v oW@v oD@v 
 o@+v oC@+v oW@+v oD@+v 
@@ -1233,9 +1242,9 @@ o>B 0 oB+
 g; g( g) g[ g] gEX g0? g1? g+? g-?
 g<? g>? g=? g>=? g<=? g<>? gand? gnand? gBT?
 ,DUP ,DROP ,OVER ,PICK2 ,PICK3 ,PICK4 ,SWAP ,NIP
-,ROT ,2DUP ,2DROP ,3DROP ,4DROP ,2OVER ,2SWAP
+,ROT ,-ROT ,2DUP ,2DROP ,3DROP ,4DROP ,2OVER ,2SWAP
 g>R gR> gR@
-gAND gOR gXOR g+ g- g* g/
+gAND gOR gXOR gNAND g+ g- g* g/
 g<< g>> g>>> gMOD g/MOD g*/ g*>> g<</
 gNOT gNEG gABS gSQRT gCLZ
 g@ gC@ gW@ gD@

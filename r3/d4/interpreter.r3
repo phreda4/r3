@@ -48,8 +48,8 @@
 
 #inst 
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
-"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
-"AND" "OR" "XOR" 
+"ROT" "-ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
+"AND" "OR" "XOR" "NAND"
 "+" "-" "*" "/"
 "<<" ">>" ">>>"
 "MOD" "/MOD" "*/" "*>>" "<</"
@@ -58,8 +58,8 @@
 
 #insc 
 .dup .drop .over .pick2 .pick3 .pick4 .swap .nip
-.rot .2dup .2drop .3drop .4drop .2over .2swap 
-.and .or .xor
+.rot .-rot .2dup .2drop .3drop .4drop .2over .2swap 
+.and .or .xor .nand
 .+ .- .* ./
 .<< .>> .>>>
 .mod ./mod .*/ .*>> .<</

@@ -161,6 +161,7 @@
 :iSWAP	2code!+ .swap ;
 :iNIP	2code!+ .nip ;
 :iROT	2code!+ .rot ;
+:i-ROT	2code!+ .-rot ;
 :i2DUP	2code!+ .2dup ;
 :i2DROP	2code!+ .2drop ;
 :i3DROP	2code!+ .3drop ;
@@ -214,6 +215,10 @@
 :iXOR
 	2stk 0? ( drop .XOR code<<cte ; ) drop
 	2code!+ .drop ;
+:iAND
+	2stk 0? ( drop .NAND code<<cte ; ) drop
+	2code!+ .drop ;
+	
 :iNOT
 	1stk 0? ( drop .NOT code<cte ; ) drop
 	2code!+ ;
@@ -517,9 +522,9 @@
 i; i( i) i[ i] iEX i0? i1? i+? i-?
 i<? i>? i=? i>=? i<=? i<>? iand? inand? iBT?
 iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP
-iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP
+iROT i-ROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP
 i>R iR> iR@
-iAND iOR iXOR
+iAND iOR iXOR iNAND
 i+ i- i* i/
 i<< i>> i>>>
 iMOD i/MOD i*/ i*>> i<</
