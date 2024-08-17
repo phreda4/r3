@@ -99,7 +99,6 @@
 	SDLkey
 	>esc< =? ( exit )
 	drop
-
 	sdlb 0? ( drop ; ) drop
 	sdlx 16 << sdly 16 << 'p3 pxy!
 	;
@@ -114,7 +113,6 @@
 	'plist drawpoint
 	
 	'splist 0.0 0.04 'plist upd-spring
-	
 	key&mouse
 	SDLredraw ;
 

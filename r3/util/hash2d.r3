@@ -53,12 +53,19 @@
 ##checkmax 32	| check max in pixels
 #x1 #x2 #y1 #y2
 	
+	
+:gety | val --y
+	16 >> $7ffff and ; | 29 << 45 >>
+	
+:getx | val --x
+	35 >> $7ffff and ; | 10 << 45 >>
+	
 :check | xr yr x y point --
 	1 + $ffff nand? ( drop ; ) 1 -
 	$ffff and dup 3 << matlist + @ 
-	dup 16 >> $7ffff and cpointy - abs
-	over 35 >> $7ffff and cpointx - abs max
-	over 54 >>> cpointr + 
+	dup gety cpointy - abs
+	over getx cpointx - abs max
+	over 54 >>> cpointr + | getr
 	<? ( pick2 point or H2dlist> d!+ 'H2dlist> ! ) drop nip
 	check ;
 
@@ -68,8 +75,8 @@
 	pick4 16 << 'point !
 	pick3 'cpointr !
 	pick2 dup 
-	16 >> $7ffff and 'cpointy !
-	35 >> $7ffff and 'cpointx !	
+	gety 'cpointy !
+	getx 'cpointx !	
 	x1 ( x2 <=? 
 		y1 ( y2 <=? 
 			2dup hash2 

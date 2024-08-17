@@ -15,6 +15,9 @@
 ::2/ 1 >> ;
 ::2* 1 << ;
 
+|:-rot rot rot ;
+|:nand not and ;
+
 |---- fixed point 48.16
 ::*.u	| a b -- c ; all positive
 	16 *>> ;
