@@ -39,7 +39,7 @@
 	( 1? 1 - >r
 		pick2 pick2 bdot
 		dx + swap sy + swap
-		dx neg >? ( dy - rot sx + rot rot )
+		dx neg >? ( dy - rot sx + -rot )
 		r> ) 2drop
 	bdot ;
 
@@ -55,7 +55,7 @@
 	dup swap | err n
 	2over bdot
 	( 1 - 1? >r
-		dy - rot sx + rot rot
+		dy - rot sx + -rot
 		dy <? ( dx +
 				pick2 sx - pick2 bdot
 				swap sy + swap

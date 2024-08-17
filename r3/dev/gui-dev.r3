@@ -65,7 +65,7 @@
 	
 |--- icon
 ::immicon | nro x y --
-	icons rot rot tsdraw ;
+	icons -rot tsdraw ;
 	
 |--- win
 :winxy!

@@ -107,10 +107,10 @@
 	<a> =? ( control %1000 or 'control ! )
 	<w> =? ( control %1 or 'control ! )
 	<s> =? ( control %10 or 'control ! )
-	>d< =? ( control %100 not and 'control ! )
-	>a< =? ( control %1000 not and 'control ! )
-	>w< =? ( control %1 not and 'control ! )
-	>s< =? ( control %10 not and 'control ! )
+	>d< =? ( control %100 nand 'control ! )
+	>a< =? ( control %1000 nand 'control ! )
+	>w< =? ( control %1 nand 'control ! )
+	>s< =? ( control %10 nand 'control ! )
 	drop
 	;
 

@@ -188,7 +188,7 @@
 
 :t1
 	,sp ,bcyan ,black 
-	$f not and dic + 8 + @ ,sp ,mov ,sp ;
+	$f nand dic + 8 + @ ,sp ,mov ,sp ;
 	
 #tcomm t0 t1 t0 t0 t0 t0 t0 t0
 

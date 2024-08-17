@@ -316,7 +316,7 @@
 :trwor
 	over d@ $ff and
 	16 <>? ( drop ; ) drop
-	over 4 - dup d@ $ff not and 6 or swap ! | call tail call
+	over 4 - dup d@ $ff nand 6 or swap ! | call tail call
 	;
 
 :tr( | adr' tok -- adr' tok

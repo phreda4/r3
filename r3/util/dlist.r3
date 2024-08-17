@@ -31,7 +31,7 @@
 ::dc@- | list -- val
 	dup 8 + @ @ | fetch first
 	swap dup @+ swap @ | last first
-|	dup @ rot rot
+|	dup @ -rot
 	dup 8 + rot | first first+8 last
 	over - 3 >> move | dsc
 	-8 swap +!

@@ -24,7 +24,7 @@
 	0 ( rows <? 
 		0 ( cols <? 
 			rot 
-			check 1 + rot rot 
+			check 1 + -rot 
 			1 + ) drop
 		1 + ) 2drop 
 	arena arenan cols rows * cmove 

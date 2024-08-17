@@ -147,30 +147,30 @@
 	pick3 over + pick3 pick3 + map>
 	pick2 ty + tilesww * pick2 tx + + 
 	$fff and clevel 12 * <<
-	over @ $fff clevel 12 * << not and
+	over @ $fff clevel 12 * << nand
 	or swap !
 	;
 	
 :erasetile | x y --
 	map>
-	dup @ $fff clevel 12 * << not and swap ! ;
+	dup @ $fff clevel 12 * << nand swap ! ;
 		
 :modewall
 	map>
 	sdlb 1 and? ( drop dup @ $1000000000000 or swap ! ; ) drop
-	dup @ $1000000000000 not and swap !
+	dup @ $1000000000000 nand swap !
 	;
 
 :modeup
 	map>
 	sdlb 1 and? ( drop dup @ $2000000000000 or swap ! ; ) drop
-	dup @ $2000000000000 not and swap !
+	dup @ $2000000000000 nand swap !
 	;
 
 :modetr
 	map>
 	sdlb 1 and? ( drop dup @ $4000000000000 or swap ! ; ) drop
-	dup @ $4000000000000 not and swap !
+	dup @ $4000000000000 nand swap !
 	;
 
 :paint
@@ -208,9 +208,9 @@
 	'select1 'select2 onDnMoveA 
 	$7f007f00 SDLColorA
 	tilex1 tilex2 2dup min | x1 x2 x
-	mapsx - maptw * mapx + rot rot - abs | x w
+	mapsx - maptw * mapx + -rot - abs | x w
 	tiley1 tiley2 2dup min | x w y1 y2 y
-	mapsy - mapth * mapy + rot rot - abs | x w y h
+	mapsy - mapth * mapy + -rot - abs | x w y h
 	rot 1 + maptw * | x y h w
 	swap 1 + mapth * 
 	SDLFRect ;
@@ -220,7 +220,7 @@
 #rrtile
 
 :changetile | val -- nval
-	$fff clevel 12 * << not and | clear level
+	$fff clevel 12 * << nand | clear level
 	tilenow $fff and clevel 12 * << or
 	;
 

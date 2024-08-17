@@ -121,7 +121,7 @@
 			rot trim 
 			getfenro 
 			typech
-			, rot rot
+			, -rot
 			1 - ) drop
 		1 - ) drop ;
 

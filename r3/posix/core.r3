@@ -109,7 +109,7 @@
     0? ( 3drop ; )
     3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
-|	dup >r rot rot 'cntf 0 WriteFile
+|	dup >r -rot 'cntf 0 WriteFile
     libc-close drop 
     ;
 
@@ -127,7 +127,7 @@
     3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
 |	dup 0 0 2 SetFilePointer drop
-|	dup >r rot rot 'cntf 0 WriteFile
+|	dup >r -rot 'cntf 0 WriteFile
 |	r> swap 0? ( 2drop ; ) drop
 |	CloseHandle 
     ;

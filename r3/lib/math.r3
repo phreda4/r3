@@ -15,9 +15,6 @@
 ::2/ 1 >> ;
 ::2* 1 << ;
 
-|:-rot rot rot ;
-|:nand not and ;
-
 |---- fixed point 48.16
 ::*.u	| a b -- c ; all positive
 	16 *>> ;
@@ -92,7 +89,7 @@
 	8 >> ;
 
 ::average | x y -- v
-	2dup xor 1 >> rot rot and + ;
+	2dup xor 1 >> -rot and + ;
 
 ::min	| a b -- m
 	over - dup 63 >> and + ;
@@ -113,7 +110,7 @@
 	swap over - dup 63 >> and + dup neg 63 >> and ;
 
 ::between | v min max -- -(out)/+(in)
-	pick2 - rot rot - or ;
+	pick2 - -rot - or ;
 
 ::sqrt. | v -- r
 	dup 1.0 ( over <? + 1 >> 2dup 16 <</ ) drop nip ;	
@@ -160,7 +157,7 @@
 	( $20000 >=? 1 >> swap $10000 + swap )
 	$8000 ( 1? swap | y z b
 		dup 16 >> *	| y b z
-		$20000 >=? ( 1 >> rot pick2 + rot rot )
+		$20000 >=? ( 1 >> rot pick2 + -rot )
 		swap 1 >> ) 2drop ;
 
 ::lnfix |#INV_LOG2_10_Q1DOT31 $268826a1
@@ -205,7 +202,7 @@
 	1 swap | base r exp
 	( 1?
 		1 and? ( >r over * r> )
-		1 >> rot dup * rot rot )
+		1 >> rot dup * -rot )
 	drop nip
 	;
 

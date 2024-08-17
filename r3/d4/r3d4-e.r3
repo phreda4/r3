@@ -108,7 +108,7 @@
 |-------------------------------
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
-		13 =? ( rot 1 + rot rot ) drop ) drop ;
+		13 =? ( rot 1 + -rot ) drop ) drop ;
 		
 |... enter error mode
 |	fuente cerror + 'fuente> !
@@ -274,7 +274,7 @@
 	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
 	fuente> dup pick2  + swap | clip cnt 'f+ 'f
 	$fuente over - 1 + cmove>	| clip cnt
-	fuente> rot rot | f clip cnt
+	fuente> -rot | f clip cnt
 	dup '$fuente +!
 	cmove
 	clipboard> clipboard - 'fuente> +!
@@ -456,7 +456,7 @@
 	( swap 1? 1- swap >>cr ) drop | x c
 	swap 5 - clamp0 swap
 	( swap 1? 1- swap c@+
-		9 =? ( rot 2 - clamp0 rot rot )
+		9 =? ( rot 2 - clamp0 -rot )
 		13 =? ( 0 nip )
 		0? ( drop nip 1 - ; ) 
 		drop ) drop ;

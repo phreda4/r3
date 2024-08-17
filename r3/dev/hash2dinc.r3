@@ -107,7 +107,7 @@
 ::h2d+! | nro r x y -- 
 	$7ffff and dup 16 <<		| nro r x yr yrp
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
-	rot or rot rot swap			| nro r xyrp xr yr
+	rot or -rot swap			| nro r xyrp xr yr
 	collect	hash				| nro r xyrp hash
 	rot $3ff and 54 <<			| nro xyrp hash rp
 	rot or 						| nro hash rxyp --
@@ -182,7 +182,7 @@
 	$2 and? ( -0.01 turn )
 	$4 and? ( -0.4 motor )
 	$8 and? ( 0.4 motor )
-	$10 and? ( btnpad $10 not and 'btnpad ! )
+	$10 and? ( btnpad $10 nand 'btnpad ! )
 	drop
 	drawspr	
 	drop
@@ -290,10 +290,10 @@
 	<dn> =? ( btnpad %100 or 'btnpad ! )
 	<le> =? ( btnpad %10 or 'btnpad ! )
 	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 not and 'btnpad ! )
-	>dn< =? ( btnpad %100 not and 'btnpad ! )
-	>le< =? ( btnpad %10 not and 'btnpad ! )
-	>ri< =? ( btnpad %1 not and 'btnpad ! )
+	>up< =? ( btnpad %1000 nand 'btnpad ! )
+	>dn< =? ( btnpad %100 nand 'btnpad ! )
+	>le< =? ( btnpad %10 nand 'btnpad ! )
+	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )	
 	drop
 	;

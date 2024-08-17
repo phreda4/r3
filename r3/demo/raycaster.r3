@@ -78,7 +78,7 @@
 	stepY + 1 'side ! ;
 
 :dda | -- mapx mapy
-	posX $ffff not and posY $ffff not and
+	posX $ffff nand posY $ffff nand
 	( 2dup maphit 0?
 		drop step )
 	$7 and 'ntex !
@@ -145,7 +145,7 @@
 |---------------------------------
 :drawcell | map y x --
 	rot c@+ 3 << 'colores + @ sdlcolor
-	rot rot over 4 << over 4 << swap
+	-rot over 4 << over 4 << swap
 	15 15 sdlFRect
 	;
 

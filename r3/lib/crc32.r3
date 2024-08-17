@@ -40,13 +40,13 @@
     over xor $FF and 2 << 'CRCtable + d@ $ffffffff and swap 8 >>> xor ;
 
 ::crc32 | a n - u
-	-1 rot rot
+	-1 -rot
 	( 1? >r
 		c@+ rot swap (crc32)
 		swap r> 1 - ) 2drop not ;
 
 ::crc32n | a n p - u
-	not rot rot
+	not -rot
 	( 1? >r
 		c@+ rot swap (crc32)
 		swap r> 1 - ) 2drop not ;

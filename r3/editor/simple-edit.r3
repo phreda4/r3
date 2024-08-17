@@ -247,7 +247,7 @@
 	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
 	fuente> dup pick2  + swap | clip cnt 'f+ 'f
 	$fuente over - 1 + cmove>	| clip cnt
-	fuente> rot rot | f clip cnt
+	fuente> -rot | f clip cnt
 	dup '$fuente +!
 	cmove
 	clipboard> clipboard - 'fuente> +!
@@ -453,7 +453,7 @@
 :mmemit | adr x xa -- adr x xa
 	rot c@+
 	13 =? ( 0 nip )
-	0? ( drop 1 - rot rot sw + ; )
+	0? ( drop 1 - -rot sw + ; )
 	9 =? ( drop swap ccw 2 << + rot swap ; ) | 4*ccw is tab
 	drop swap ccw + rot swap ;
 
@@ -462,7 +462,7 @@
 	pantaini>
 	swap cch 1 <<			| x adr y ya
 	( over <?
-		cch + rot >>13 2 + rot rot ) 2drop
+		cch + rot >>13 2 + -rot ) 2drop
 	swap ccw 1 << dup 1 << + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! ;

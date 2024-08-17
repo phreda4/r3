@@ -44,13 +44,13 @@
 	sincos	| x y sin cos
 	pick3 over *. pick3 pick3 neg *. +
 	r> !+ >r
-	rot rot *. rot rot *. +
+	-rot *. -rot *. +
 	r> ! ;
 	
 ::v2dot | 'v1 'v2 -- dot
 	@+ swap @ | v1 v2x v2y
 	rot @+ swap @ | v2x v2y v1x v1y
-	rot *. rot rot *. + ;
+	rot *. -rot *. + ;
 
 ::v2perp | 'v1 'v2 --  ; v2 = perpendicular v1
 	@+ swap @ neg rot !+ ! ;

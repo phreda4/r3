@@ -155,7 +155,7 @@
 :setxy | adr dx dy
 	pick2 8 - @ 
 	rot over >X +
-	rot rot >Y + 32 << or
+	-rot >Y + 32 << or
 	over 8 - !
 	SDLx 'xa ! SDLy 'ya ! 
 	;

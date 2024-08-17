@@ -133,7 +133,7 @@
 	0 ( 20 <?
 		0 ( 3 <?
 			rot d@+ dup 'ink ! SDLColor
-			rot rot
+			-rot
         	over 4 << 41 + cwy +
 			over 4 << 7 + cwx + swap 14 14
 			2over 2over SDLFRect

@@ -66,7 +66,7 @@
 	'map 
 	0 ( 32 <? 
 		0 ( 32 <?
-			rot c@+ drawtile rot rot 
+			rot c@+ drawtile -rot 
 			1 + ) drop
 		1 + ) 2drop ;
 

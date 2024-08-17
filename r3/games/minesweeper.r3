@@ -73,7 +73,7 @@
 :clearcell | x y --
 	2dup ]map c@ 20 <>? ( 3drop ; ) drop
 	checkc 1? ( 
-		1 << rot rot ]map c!
+		1 << -rot ]map c!
 		; ) 
 	pick2 pick2 ]map c!
 	over 1 - 1 max over clearcell 
@@ -87,7 +87,7 @@
 :addcell | x y -- 
 	2dup ]map c@ 20 <>? ( 3drop ; ) drop
 	checkc 0? ( pick2 pick2 last> c!+ c!+ 'last> ! ) | expand if 0
-	1 << rot rot ]map c! 
+	1 << -rot ]map c! 
 	;
 	
 :markcell | x y --
@@ -110,7 +110,7 @@
 	SDLy 4 >> -? ( 2drop ; ) h >? ( 2drop ; )
 	clkbtn 1 >? ( drop marca ; ) drop
 	checkc 0? ( drop clearcell ; )
-	rot rot ]map 
+	-rot ]map 
 	dup c@ $1 and 
 	1? ( 1 'sb ! "You Loose !" 'state strcpy ) 
 	rot 1 << or 

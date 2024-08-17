@@ -21,7 +21,7 @@
 
 :ihline | xd yd xa --
 	pick2 - 0? ( drop vecs ex ; )
-	-? ( rot over + rot rot neg )
+	-? ( rot over + -rot neg )
 	( 1? 1 - >r
 		2dup vecs ex
 		swap 1 + swap
@@ -39,7 +39,7 @@
 	pick2 - 1 + >r			| xm ym xM  r:canty
 	pick2 - r@ 16 <</
 	rot 16 << $8000 +
-	rot rot r> 				|xm<<16 ym delta canty
+	-rot r> 				|xm<<16 ym delta canty
 	( 1? 1 - >r >r
 		over 16 >> over pick3 r@ + 16 >> ihline
 		1 + swap
@@ -63,7 +63,7 @@
 		2dup swap 1 - -? ( 2drop ; )
 		vecg ex cf <>? ( drop ; ) drop
 		rot >a 2dup	swap 1 -
-		a!+ a!+ a> rot rot
+		a!+ a!+ a> -rot
 		1 'sa ! ; ) drop
 	2dup swap 1 - vecg ex cf =? ( drop ; ) drop
 	0 'sa ! ;
@@ -73,7 +73,7 @@
 		2dup swap 1 + maxh >=? ( 2drop ; )
 		vecg ex cf <>? ( drop ; ) drop
 		rot >a 2dup swap 1 +
-		a!+ a!+ a> rot rot
+		a!+ a!+ a> -rot
 		1 'sb ! ; ) drop
 	2dup swap 1 + vecg ex cf =? ( drop ; ) drop
 	0 'sb ! ;
@@ -113,9 +113,9 @@
 :iniellipse
 	over dup * dup 1 <<		| a b c 2aa
 	swap dup >a 'dy ! 		| a b 2aa
-	rot rot over neg 1 << 1 +	| 2aa a b c
+	-rot over neg 1 << 1 +	| 2aa a b c
 	swap dup * dup 1 << 		| 2aa a c b 2bb
-	rot rot * dup a+ 'dx !	| 2aa a 2bb
+	-rot * dup a+ 'dx !	| 2aa a 2bb
 	1 + swap 1				| 2aa 2bb x y
 	pick3 'dy +! dy a+
 	;
@@ -130,8 +130,8 @@
 	xm pick2 - ym xm pick4 + ihline
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
-		dx >=? ( rot 1 - rot rot pick3 'dx +! dx a+ )
-		dy <=? ( rot rot qf 1 + rot pick4 'dy +! dy a+ )
+		dx >=? ( rot 1 - -rot pick3 'dx +! dx a+ )
+		dy <=? ( -rot qf 1 + rot pick4 'dy +! dy a+ )
 		drop
 		)
 	4drop ;
@@ -150,7 +150,7 @@
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1 - rot qfb rot pick3 'dx +! dx a+ )
-		dy <=? ( rot rot qfb 1 + rot pick4 'dy +! dy a+ )
+		dy <=? ( -rot qfb 1 + rot pick4 'dy +! dy a+ )
 		drop
 		)
 	4drop ;

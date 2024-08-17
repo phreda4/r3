@@ -133,7 +133,7 @@
 	
 |--- icon
 ::immicon | nro x y --
-	icons rot rot tsdraw ;
+	icons -rot tsdraw ;
 	
 ::immiconb | nro --
 	immcolortex icons tscolor 
@@ -510,7 +510,7 @@
 	winhot 0? ( drop ; )
 	dup @ winlist> 8 - dup @
 |	winlist> 8 - =? ( drop ; )
-	rot rot ! swap ! ;
+	-rot ! swap ! ;
 	
 ::immRedraw
 	'winlist ( winlist> <? dup 'winnow !

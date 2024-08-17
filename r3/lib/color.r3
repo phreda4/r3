@@ -56,7 +56,7 @@
 
 :h0 ;				|v, n, m
 :h1 >r swap r> ;	|n, v, m
-:h2 rot rot ;		|m, v, n
+:h2 -rot ;		|m, v, n
 :h3 swap rot ;		|m, n, v
 :h4 rot ;			|n, m, v
 :h5 swap ;			|v, m, n

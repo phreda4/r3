@@ -67,7 +67,7 @@
 		swap dup 8 >> $ff and 
 		swap $ff and 
 		$ff SDL_SetRenderDrawColor 
-		rot rot 
+		-rot 
 		sh pick2 0 pick3 'rf d!+ d!+ d!+ d!
 		SDLrenderer 'rf SDL_RenderFillRect
 		over + )

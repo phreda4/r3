@@ -10,7 +10,7 @@
 ##stderr
 
 ::type | str cnt --
-	stdout rot rot 0 0 WriteFile drop ;
+	stdout -rot 0 0 WriteFile drop ;
 
 |-----------------------------------------------	
 #crb ( 10 13 0 0 )

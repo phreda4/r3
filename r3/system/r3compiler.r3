@@ -62,7 +62,7 @@
 :no10place | adr
 	lerror 0? ( ; )
 	0 src ( pick2 <? c@+
-		10 <>? ( rot 1 + rot rot )
+		10 <>? ( rot 1 + -rot )
 		drop ) drop nip ;
 
 :savedebug

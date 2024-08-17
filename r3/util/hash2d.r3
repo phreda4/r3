@@ -88,7 +88,7 @@
 ::h2d+! | nro r x y -- 
 	$7ffff and dup 16 <<		| nro r x yr yrp
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
-	rot or rot rot swap			| nro r xyrp xr yr
+	rot or -rot swap			| nro r xyrp xr yr
 	collect	hash				| nro r xyrp hash
 	rot $3ff and 54 <<			| nro xyrp hash rp
 	rot or 						| nro hash rxyp --

@@ -149,7 +149,7 @@
 	deltaHidden 
 	numHidden ( 1? 1 - >r		| bias delta 
 		@+ lr *. dup pick3 +! 			| bias delta @delta
-		rot cell+ rot rot
+		rot cell+ -rot
 		inputLayer >a
 		numInputs ( 1? 1 -			| bias delta @delta num
 			a@+ pick2 *. b@ + b!+		| bias delta 
@@ -287,7 +287,7 @@
 	hiddenWeights 
 	0 ( numHidden <? 
 		0 ( numInputs <?
-			rot @+ "%f " .print rot rot
+			rot @+ "%f " .print -rot
 			1 + ) drop
 		.cr
 		1 + ) 2drop
@@ -295,7 +295,7 @@
 	outputWeights 
 	0 ( numOutputs <?
 		0 ( numHidden <? 
-			rot @+ "%f " .print rot rot		
+			rot @+ "%f " .print -rot		
 			1 + ) drop
 		.cr
 		1 + ) 2drop	;		

@@ -75,7 +75,7 @@
 	2dup -			| near far deltaz
 	pick2 pick2 + over /. 10 a]!	|mat[10] = (zFar + zNear) / deltaZ;
 	-1.0 11 a]! 					|mat[11] = -1;
-	rot rot *. 1 << swap /. 14 a]!	|mat[14] = (2 * zFar * zNear) / deltaZ;
+	-rot *. 1 << swap /. 14 a]!	|mat[14] = (2 * zFar * zNear) / deltaZ;
 	0 15 a]!						|mat[15] = 0;
 	;
 	
@@ -88,11 +88,11 @@
 ::mortho | r l t b f n --
 	mat> dup >a 'mati 16 move 
 	2dup - -2.0 over /. 10 a]!		| 	mat[10] = -2 / (farVal - nearVal);
-	rot rot + swap /. neg 14 a]!	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
+	-rot + swap /. neg 14 a]!	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
 	2dup - 2.0 over /. 5 a]!		| mat[5] = 2 / (top - bottom);
-	rot rot + swap /. neg 13 a]!	| mat[13] = -((top + bottom) / (top - bottom));
+	-rot + swap /. neg 13 a]!	| mat[13] = -((top + bottom) / (top - bottom));
 	2dup - 2.0 over /. a> !			| mat[0] = 2 / (right - left);
-	rot rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
+	-rot + swap /. neg 12 a]!	| mat[12] = -((right + left) / (right - left));
 	;
 	
 #fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
@@ -309,7 +309,7 @@
 	;
 
 ::makerot | x y z -- x' y' z'
-	rot rot | z x y
+	-rot | z x y
 	over cox *. over six *. +	| z x y x'
 	rot six *. rot cox *. - 	| z x' y'
 	swap rot 					| y' x' z
@@ -486,7 +486,7 @@
 	$ffff and swap $ffff and 16 << or swap $ffff and 32 << or ;
 
 ::+rota | ra rb -- rr
-	+ $100010001 not and ;
+	+ $100010001 nand ;
 
 |------ pack 3 vel in 63bits (21x3)
 ::pack21 | vx vy vz -- vp
@@ -495,5 +495,5 @@
 	$1fffff and 42 << or ;
 	
 ::+p21 | va vb -- vr
-	+ $40000200001 not and ;
+	+ $40000200001 nand ;
 

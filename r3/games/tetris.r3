@@ -158,7 +158,7 @@
 	'grid >a
 	0 ( $1400 <?
 		0 1 ( 11 <?
-			da@+ 1? ( rot 1 + rot rot ) drop
+			da@+ 1? ( rot 1 + -rot ) drop
 			1 + ) drop
 		10 =? ( removeline ) drop
 		$100 + ) drop

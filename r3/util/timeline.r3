@@ -274,7 +274,7 @@
 
 |-----------------------------
 :evt.on | adr -- adr
-	dup 16 + @ 8 + dup @ 1 not and swap ! ;
+	dup 16 + @ 8 + dup @ 1 nand swap ! ;
 
 ::+fx.on | sec --
 	>r 0 getscr 'evt.on r> +tline ;

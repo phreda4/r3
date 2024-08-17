@@ -151,7 +151,7 @@
 	$2 and? ( -0.01 turn )
 	$4 and? ( -0.4 motor )
 	$8 and? ( 0.4 motor )
-	$10 and? ( +disp btnpad $10 not and 'btnpad ! )
+	$10 and? ( +disp btnpad $10 nand 'btnpad ! )
 	tanima
 	drop
 	drawspr	
@@ -224,10 +224,10 @@
 	<dn> =? ( btnpad %100 or 'btnpad ! )
 	<le> =? ( btnpad %10 or 'btnpad ! )
 	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 not and 'btnpad ! )
-	>dn< =? ( btnpad %100 not and 'btnpad ! )
-	>le< =? ( btnpad %10 not and 'btnpad ! )
-	>ri< =? ( btnpad %1 not and 'btnpad ! )
+	>up< =? ( btnpad %1000 nand 'btnpad ! )
+	>dn< =? ( btnpad %100 nand 'btnpad ! )
+	>le< =? ( btnpad %10 nand 'btnpad ! )
+	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
 	<f1> =? ( tsprites 

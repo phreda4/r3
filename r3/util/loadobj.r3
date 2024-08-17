@@ -247,7 +247,7 @@
 ::cnt/
 	0 swap
 	( c@+ 13 >? 
-		$2f =? ( rot 1 + rot rot )
+		$2f =? ( rot 1 + -rot )
 		drop
 		) 2drop ;
 

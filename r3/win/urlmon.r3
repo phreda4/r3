@@ -11,11 +11,11 @@
 
 ::url2file | url file -- 
 	over DeleteUrlCacheEntry
-	0 rot rot 0 0 URLDownloadToFile
+	0 -rot 0 0 URLDownloadToFile
 	;
 
 ::url2filec | url file -- ; with cache
-	0 rot rot 0 0 URLDownloadToFile
+	0 -rot 0 0 URLDownloadToFile
 	;
 	
 |--------- BOOT	

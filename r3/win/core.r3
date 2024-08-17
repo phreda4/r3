@@ -23,7 +23,7 @@
 	process-heap 0 rot HeapFree ;
 
 ::resize |( a n -- a ior ) 
-	process-heap rot rot 0 rot HeapReAlloc ;
+	process-heap -rot 0 rot HeapReAlloc ;
 
 |----------
 #sistime 0 0 | 16 bytes
@@ -101,7 +101,7 @@
 ::save | 'from cnt "filename" -- 
 	$40000000 0 0 2 $8000000 0 CreateFile
 	-1 =? ( 3drop ; )
-	dup >r rot rot 'cntf 0 WriteFile
+	dup >r -rot 'cntf 0 WriteFile
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 	
@@ -109,7 +109,7 @@
 	$4 1 0 4 $80 0 CreateFile
 	-1 =? ( 3drop ; )
 	dup 0 0 2 SetFilePointer drop
-	dup >r rot rot 'cntf 0 WriteFile
+	dup >r -rot 'cntf 0 WriteFile
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 

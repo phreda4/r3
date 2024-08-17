@@ -47,7 +47,7 @@
 
 ::count | s1 -- s1 cnt ; version 3 - 8 bytes
 	0 over ( @+ dup $0101010101010101 -
-		swap not and $8080808080808080 nand? 
+		swap nand $8080808080808080 nand? 
 		drop swap 8 + swap )
 	$80 and? ( 2drop ; )
 	$8000 and? ( 2drop 1 + ; )
@@ -228,7 +228,7 @@
 ::only13 | adr -- 'adr ; remove 10..reeplace with 13
 	dup
 	( c@+ 1?
-		13 =? ( over c@	10 =? ( rot 1 + rot rot ) drop )
+		13 =? ( over c@	10 =? ( rot 1 + -rot ) drop )
 		10 =? ( drop c@+ 13 <>? ( drop 1 - 13 ) )
 		rot c!+ swap ) nip
 	swap c!+ ;

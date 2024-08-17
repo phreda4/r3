@@ -82,7 +82,7 @@
 ::project3d | x y z -- u v
 	transform 0? ( 3drop ox oy ; ) | x y z
 	rot xf pick2 */ ox + | y z x'
-	rot rot yf swap */ oy + ;
+	-rot yf swap */ oy + ;
 
 ::project3dz | x y z -- z x y
 	transform
@@ -105,12 +105,12 @@
 ::project | x y z -- u v
 	0? ( 3drop ox oy ; )
 	rot xf pick2 */ ox +
-	rot rot yf swap */ oy +
+	-rot yf swap */ oy +
 	;
 
 ::projectv | x y z -- u v
 	rot xf pick2 */ ox +
-	rot rot yf swap */ oy +
+	-rot yf swap */ oy +
 	;
 
 ::inscreen | -- x y

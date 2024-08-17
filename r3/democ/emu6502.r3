@@ -40,7 +40,7 @@
   reg-y 1 - $ff and dup dup 'reg-y ! 'flag-z ! $80 and 'flag-n !
   2 cycle+ ;
 :doinc | INC aa
-  reg-pc >rom c@ 'ram + dup c@ 1 + $FF and dup rot rot swap c! dup
+  reg-pc >rom c@ 'ram + dup c@ 1 + $FF and dup -rot swap c! dup
   'flag-z ! $80 and 'flag-n ! 1 reg-pc+ 3 cycle+ ;
 :doldy | LDY aa
   reg-pc >rom c@ dup dup 'reg-y ! 'flag-z ! $80 and 'flag-n !
