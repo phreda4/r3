@@ -497,7 +497,7 @@ tagnull tagnull tagnull tagnull tagnull tagnull tagnull
 	( taglist> <?
 |		dup "tag:%h" .println
 		d@+ dup $fff and
-		ylinea dup hcode + bt? ( drawtag )
+		ylinea dup hcode + in? ( drawtag )
 		2drop 4 + ) drop ;
 
 

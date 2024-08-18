@@ -79,7 +79,7 @@
 :.<>?	NOS @ TOS =? ( drop jmpr .DROP ; ) drop .DROP ;
 :.A?	NOS @ TOS nand? ( drop jmpr .DROP ; ) drop .DROP ;
 :.N?	NOS @ TOS and? ( drop jmpr .DROP ; ) drop .DROP ;
-:.B?	NOS 8 - @+ swap @ TOS bt? ( drop jmpr .2DROP ; ) drop .2DROP ;
+:.B?	NOS 8 - @+ swap @ TOS in? ( drop jmpr .2DROP ; ) drop .2DROP ;
 
 ::.AND	NOS @ TOS and .NIP 'TOS ! ;
 ::.OR	NOS @ TOS or .NIP 'TOS ! ;

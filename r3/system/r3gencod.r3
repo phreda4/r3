@@ -104,7 +104,7 @@
 	"; INLINE CTE" ,print ,cr
 	dic>tok @
 	d@ dup dup $ff and 7 -
-	0 8 bt? ( 3 << 'tcte + @ ex code!+ ; )
+	0 8 in? ( 3 << 'tcte + @ ex code!+ ; )
 
 |*************   #v1 #v2 ..if v1 is cte then crash!!
 |	"inline 0" slog
@@ -148,7 +148,7 @@
 	2code!+ .drop
 	gwhilejmp ;
 
-:iBT?
+:iIN?
 	2code!+ .2drop
 	gwhilejmp ;
 
@@ -520,7 +520,7 @@
 #vmc
 0 0 0 0 0 0 0 idec ihex idec idec istr iwor ivar idwor idvar
 i; i( i) i[ i] iEX i0? i1? i+? i-?
-i<? i>? i=? i>=? i<=? i<>? iand? inand? iBT?
+i<? i>? i=? i>=? i<=? i<>? iand? inand? iin?
 iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP
 iROT i-ROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP
 i>R iR> iR@

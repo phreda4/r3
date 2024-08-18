@@ -45,7 +45,7 @@
 | .lits .lit .word .wadr .var .vadr .str ...
 #r3base
 ";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"
-"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "IN?"
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP" | 26..
 "ROT" "-ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP" |34..
 ">R" "R>" "R@" "AND" "OR" "XOR" "NAND" "+" "-" "*" "/" "<<" ">>" ">>>" |41..

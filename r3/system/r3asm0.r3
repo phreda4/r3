@@ -255,7 +255,7 @@
 	"test rax," ,s ,TOS ,cr
 	?? "jnz _o%h" ,print ,cr ;
 
-:gBT?
+:gin?
 	"sub rbp,8*2" ,ln
 	"mov rbx,[rbp+8]" ,ln
 	"xchg rax,rbx" ,ln
@@ -1240,7 +1240,7 @@ o>B 0 oB+
 #vmc
 0 0 0 0 0 0 0 gdec ghex gdec gdec gstr gwor gvar gdwor gdvar
 g; g( g) g[ g] gEX g0? g1? g+? g-?
-g<? g>? g=? g>=? g<=? g<>? gand? gnand? gBT?
+g<? g>? g=? g>=? g<=? g<>? gand? gnand? gIN?
 ,DUP ,DROP ,OVER ,PICK2 ,PICK3 ,PICK4 ,SWAP ,NIP
 ,ROT ,-ROT ,2DUP ,2DROP ,3DROP ,4DROP ,2OVER ,2SWAP
 g>R gR> gR@

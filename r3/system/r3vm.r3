@@ -98,7 +98,7 @@
 :.<>?	NOS @ TOS =? ( drop jmpr .DROP ; ) drop .DROP ;
 :.A?	NOS @ TOS nand? ( drop jmpr .DROP ; ) drop .DROP ;
 :.N?	NOS @ TOS and? ( drop jmpr .DROP ; ) drop .DROP ;
-:.B?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr .2DROP ; ) drop .2DROP ;
+:.B?	NOS 8 - @ NOS @ TOS in? ( drop jmpr .2DROP ; ) drop .2DROP ;
 
 
 :.AND	NOS @ TOS and .NIP 'TOS ! ;
@@ -349,7 +349,7 @@
 	18 =? ( tr) )
 	19 =? ( tr[ )
 	20 =? ( tr] )
-	22 34 bt? ( transfcond )
+	22 34 in? ( transfcond )
 	drop ;
 
 |---------- sin incremental
@@ -410,7 +410,7 @@
 
 :transform2 | adr' -- adr'
 	d@+ $ff and
-	7 10 bt? ( transflit )
+	7 10 in? ( transflit )
 	11 =? ( trstr ) | str
 	drop ;
 
@@ -440,14 +440,14 @@
 |------- IMM CODE
 :transformimm
 	d@+ $ff and
-	7 10 bt? ( transflit )
+	7 10 in? ( transflit )
 	11 =? ( trstr ) | str
 |	12 =? ( trwor ) | call
 	17 =? ( tr( )
 	18 =? ( tr) )
 	19 =? ( tr[ )
 	20 =? ( tr] )
-	22 34 bt? ( transfcond )
+	22 34 in? ( transfcond )
 	drop ;
 
 ::immcode2run | adr --
@@ -473,9 +473,9 @@
 
 :getvarmem
 	d@+ $ff and
-	7 10 bt? ( memlit )
+	7 10 in? ( memlit )
 	11 =? ( memstr ) | str
-	12 15 bt? ( memwor )
+	12 15 in? ( memwor )
 	17 =? ( ',c 'gmem ! )	| (
 	18 =? ( ',q 'gmem ! )	| )
 	19 =? ( ', 'gmem ! )	| [

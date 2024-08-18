@@ -274,7 +274,7 @@
 
 ::cell?dword | 'cell --
 	$fff and
-	$207 $607 bt? ( 1 'needword ! )
+	$207 $607 in? ( 1 'needword ! )
 	$f and
 	4 =? ( 1 'needword ! )
 	drop ;
@@ -851,7 +851,7 @@
 
 ::cellM | 'cell -- ; mem or register
 	dup d@ $ff and
-	4 7 bt? ( 2drop ; )
+	4 7 in? ( 2drop ; )
 	drop
 	dup cell?dword
     cell2reg ;

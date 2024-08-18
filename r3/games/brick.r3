@@ -46,8 +46,8 @@
 	8 + >a a@+ SDLColor 
 	a@+ a@+	| x y 
 	2dup 60 20 SDLFRect
-	bx int. rot 10 - dup 60 + bt? ( -1 nip )
-	by int. rot 10 - dup 20 + bt? ( -1 nip ) 
+	bx int. rot 10 - dup 60 + in? ( -1 nip )
+	by int. rot 10 - dup 20 + in? ( -1 nip ) 
 	and -? ( drop 0 hity ; ) drop
 	;
 	

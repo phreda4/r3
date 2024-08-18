@@ -477,7 +477,7 @@
 
 | 18 = blue dark for select
 :inselect
-	inisel finsel bt? ( 18 ,bcolor ; )
+	inisel finsel in? ( 18 ,bcolor ; )
 	0 ,bcolor ;
 	
 :atselect

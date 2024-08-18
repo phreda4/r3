@@ -263,7 +263,7 @@
 :cond | atok' tok -- atok'
 	dup $ff and
 	$c <? ( 2drop ; ) | 0?..
-	$1f >? ( 2drop ; ) | ..bt?
+	$1f >? ( 2drop ; ) | ..in?
 	drop
 	dup 8 >> $ffffffff and 1? ( 2drop ; ) drop | no jump
 	tok> pick2 - 8 + $ffffffff and 8 << or | saltar a tok>

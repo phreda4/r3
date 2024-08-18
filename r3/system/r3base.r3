@@ -71,7 +71,7 @@
 #r3base
 ";" "(" ")" "[" "]"
 "EX" "0?" "1?" "+?" "-?"
-"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "BT?"
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "IN?"
 "DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
 "ROT" "-ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
 ">R" "R>" "R@"

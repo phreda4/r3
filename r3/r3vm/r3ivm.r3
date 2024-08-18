@@ -59,7 +59,7 @@
 :i<>?	NOS @ TOS =? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
 :iAND?	NOS @ TOS nand? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
 :iNAND?	NOS @ TOS and? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:iIN?	NOS 8 - @ NOS @ TOS bt? ( drop jmpr i2DROP ; ) drop i2DROP 2 + ;
+:iIN?	NOS 8 - @ NOS @ TOS in? ( drop jmpr i2DROP ; ) drop i2DROP 2 + ;
 
 :iAND	NOS @ TOS and iNIP 'TOS ! ;
 :iOR	NOS @ TOS or iNIP 'TOS ! ;
