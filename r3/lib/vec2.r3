@@ -1,5 +1,6 @@
 | vector 2d
 | PHREDA 2020
+| #v2 0 0 | x y
 |----------------
 ^r3/lib/math.r3
 
@@ -39,14 +40,12 @@
 	/. v2* ;
 
 ::v2rot | 'v bang --
-	swap dup >r
-	@+ swap @ rot
-	sincos	| x y sin cos
-	pick3 over *. pick3 pick3 neg *. +
-	r> !+ >r
-	-rot *. -rot *. +
-	r> ! ;
-	
+	sincos pick2 @ dup			| v sin cos x x
+	pick2 *. swap pick3 *.		| v sin cos xc xs
+	rot pick4 8 + @ *. - 		| v sin xc xscy
+	rot pick3 8 + @ *. rot +	| v xscy xcsy
+	swap rot !+ ! ;
+
 ::v2dot | 'v1 'v2 -- dot
 	@+ swap @ | v1 v2x v2y
 	rot @+ swap @ | v2x v2y v1x v1y

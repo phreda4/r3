@@ -214,17 +214,34 @@
 	evtmouse
 	;
 
+:checkerror
+	mark
+	here dup "mem/error.mem" load
+	over =? ( 2drop empty ; ) 
+	0 swap c!
+	.cr .bred .white 
+	" * ERROR * " .println
+	.reset
+	.println
+	.bblue .white
+	"<ESC> to continue..." .println
+	waitesc
+	empty
+	;
+	
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
 	.reset .cls
+	"mem/error.mem" delete
 	'path
-|WIN| "r3 ""%s/%s"""
+|WIN| "cmd /c r3 ""%s/%s"" 2>mem/error.mem"
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
-	sprint 
-	sys
+	sprint sys
+	checkerror
+
 	conadj ;
 
 :r3info
