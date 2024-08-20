@@ -39,11 +39,13 @@
 #angP
 #dirX #dirY
 #planeX #planeY
-#mm 2
+#invdet
+
+#mm 0
+
 |-------------- sprites
 #sprimg
 #spr 0 0
-
 
 |-------------- raycasting
 
@@ -111,7 +113,7 @@
 	;
 
 #altura
-#lines * 6400 | 800 * 8
+#lines * 8192 | 800 * 8 = 6400
 
 :line! | n altura tile x --
 	;
@@ -181,22 +183,21 @@
 
 #sprx
 #spry
-#invdet
+
 #trax 
 #traY
 #sprSX
 #sprH
 
-:drawsprite | x y
-	posy - 'spry !
-	posx - 'sprx !
-	1.0 planeX dirY *. dirX planeY *. - |0? ( 1+ ) 
-	/. 'invdet !
+|-------------- norml
+:drawsprite | x y --
+	posy - 'spry ! posx - 'sprx !
+	
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
-	trax tray 0? ( 1+ ) /. 1.0 + sw 2/ * 16 >> 
-	|? ( drop ; ) 
-	'sprSX !
+
+	trax tray 0? ( 1+ ) /. 1.0 + sw 2/ * 16 >> 'sprSX !
+	
 	sh 15 << traY 0? ( 1+ ) /. 5 >> | 64pix H
 	-? ( drop ; ) | offscreen
 	'sprH !
@@ -206,16 +207,11 @@
 
 |--------------------------------- experiment
 #texchar
-#srcrec [ 0 0 1 64 ]
-#desrec [ 0 0 1 600 ]
 
 :getpoint | x y -- x y
 	posy - 'spry !
 	posx - 'sprx !
-	
-	1.0 planeX dirY *. dirX planeY *. - |0? ( 1+ ) 
-	/. 'invdet !
-	
+
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
 	
@@ -224,11 +220,13 @@
 	32 <<
 	
 	sh 15 << tray |0? ( 1+ ) 
-	/. 16 >> -? ( 0 nip ) |'sprH !
+	/. 16 >> -? ( 0 nip ) |'sprH ! en pantalla
 	or
 	|sprSX 32 << sprH or 
 	;
 	
+:pointxh | v -- x h 
+	dup 32 >> swap $ffff and ;
 	
 #minx
 #maxx
@@ -255,35 +253,102 @@
 	minxo =? ( $ff0000 sdlcolor )
 	maxxo =? ( $ff sdlcolor )
 	drop
-	dup 32 >> swap $ffff and  | x h
-	0? ( 2drop ; )
+	pointxh 0? ( 2drop ; )
 	yhorizon 2dup + -rot swap -
 	pick2 swap
 	sdlline ;
+
+#srcrec [ 0 0 1 64 ]
+#desrec [ 0 0 1 100 ]
 	
-:drawbox | x y -- x y
-	'llist >a
-	over 0.25 + over 0.25 + getpoint 0 l!
-	over 0.25 - over 0.25 + getpoint 1 l+!
-	over 0.25 - over 0.25 - getpoint 2 l+!
-	over 0.25 + over 0.25 - getpoint 3 l+!
+#addh
+#addx
+#ff
+
+:draws1 | x2 h1 sx x1
+	dup 3 << 'lines + @ | zline
+	pick3 15 >> >? ( drop ; ) drop
+
+	'desrec >a 
+	dup da!+ |x
+	yhorizon pick3 16 >> - da!+ |y
+	4 a+
+	pick2 15 >> da!
 	
-	'llist 
-	@+ 0 drap
-	@+ 1 drap
-	@+ 2 drap
-	@ 3 drap
+	over 16 >> 
+	ff 32 * + 'srcrec d! 
+	
+	SDLrenderer texchar 'srcrec 'desrec SDL_RenderCopy
 	;
 	
 	
+:drawsprwall | o1 o2 of --
+	'ff !
+	pointxh rot pointxh	| x1 h1 x2 h2
+	pick2 - 16 << over pick4 - | -? ( 4drop ; )  | x1 h1 x2 hdif xdif
+	1 <? ( 4drop drop ; )
+	32.0 over / 'addx !	/ 'addh !			| x1 h1 x2
+	-rot 16 << 
+	0 
+	rot | x2 h1 sx x1 
+	( pick3 <=?
+		0 sw in? ( draws1 )
+		rot addh +
+		rot addx +
+		rot 1+ )
+	4drop ;
+		
+	
+:]llist
+	'llist swap 3 << + @ ;
+	
+
+#rota
+#rotx #roty
+
+	
+:drawbox | x y --
+	
+	|msec 5 << sincos 2 >> 'roty ! 2 >> 'rotx !
+	msec 4 << 'rota !
+	
+	'llist >a
+|	over 0.25 + over 0.25 + 
+	2dup rota 0.25 xy+polar | x y bangle r -- x y
+	getpoint $ffff nand? ( 3drop ; ) 0 l!
+|	over 0.25 - over 0.25 + 
+	2dup rota 0.25 - 0.25 xy+polar | x y bangle r -- x y
+	getpoint $ffff nand? ( 3drop ; ) 1 l+!
+|	over 0.25 - over 0.25 - 
+	2dup rota 0.5 - 0.25 xy+polar | x y bangle r -- x y	
+	getpoint $ffff nand? ( 3drop ; ) 2 l+!
+|	swap 0.25 + swap 0.25 - 
+	rota 0.75 - 0.25 xy+polar | x y bangle r -- x y	
+	getpoint $ffff nand? ( drop ; ) 3 l+!
+	
+	'llist @+ 0 drap @+ 1 drap @+ 2 drap @ 3 drap
+	
+	minxo dup 1+ $3 and | 1--2
+	'llist dup 			| 1 2 list list
+	rot 3 << + @		| 1 list list2
+	-rot swap 3 << + @	| list2 list1
+	minxo drawsprwall
+	
+	minxo 1+ $3 and dup 1+ $3 and | 2 -- 3
+	'llist dup 			| 1 2 list list
+	rot 3 << + @		| 1 list list2
+	-rot swap 3 << + @	| list2 list1
+	over 32 >> over 32 >> | x2 x1
+	<=? ( 3drop ; ) drop 
+	minxo 1+ $3 and drawsprwall
+	;
+	
 :persona
 	$ff00 sdlcolor
-	
-	
+
 	dup .x @ over .y @ 
-	drawbox
-	drawsprite
-	
+	drawbox	| box
+	|drawsprite | normal
 	
 	>a
 	mm 
@@ -358,9 +423,9 @@
 :rota
 	angP + dup 'angP !
 	sincos
-	2dup 'dirY ! 'dirX !
-	0.66 *. 'planeX !
-	neg 0.66 *. 'planeY !
+	dup 'dirY ! 0.66 *. 'planeX !
+	dup 'dirX ! neg 0.66 *. 'planeY !
+	1.0 planeX dirY *. dirX planeY *. - /. 'invdet !
 	;
 
 #vrot
@@ -372,10 +437,10 @@
 	mm 
 	1 and? ( drawmap ) 
 	2 and? ( drawradar ) 
+	4 and? ( drawdeep )
 	drop
 	objetos
 
-	drawdeep
 |	$ffffff pccolor
 |	0 0 pcat "<f1> mapa" pcprint
 |	posx posy "%f %f " print dirX dirY "%f %f " print cr
