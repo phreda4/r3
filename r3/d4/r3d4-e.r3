@@ -42,15 +42,31 @@
 	;
 
 |----------------------------------
+:checkerror
+	mark
+	here dup "mem/error.mem" load
+	over =? ( 2drop empty ; ) 
+	0 swap c!
+	.cr .bred .white 
+	" * ERROR * " .println
+	.reset
+	.println
+	.bblue .white
+	" <ESC> to continue... " .println
+	waitesc
+	empty
+	;
+	
 :runfile
 	savetxt
+	"mem/error.mem" delete
 	.masb .reset .cls
-	mark
-|WIN|	"r3 "
-|LIN|	"./r3lin "
-|RPI|	"./r3rpi "
-	,s 'srcname ,s ,eol
-	empty here sysnew | <<<<<<<<< new terminal
+	'srcname
+|WIN| "cmd /c r3 ""%s"" 2>mem/error.mem"	
+|LIN| "./r3lin ""%s"""
+|RPI| "./r3rpi ""%s"""
+	sprint sys
+	checkerror
 	.fullcon
 	;
 
@@ -60,9 +76,9 @@
 |WIN| "r3 r3/d4/r3plain.r3"
 	sys
 	.alsb
-|WIN|	"r3 r3/d4/gen/plain.r3"
-|LIN|	"./r3lin r3/d4/gen/plain.r3"
-|RPI|	"./r3rpi r3/d4/gen/plain.r3"
+|WIN| "r3 r3/d4/gen/plain.r3"
+|LIN| "./r3lin r3/d4/gen/plain.r3"
+|RPI| "./r3rpi r3/d4/gen/plain.r3"
 	sys
 	.fullcon ;
 
@@ -441,9 +457,9 @@
 	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
-	$3b =? ( mododeb )		| f1 - compiler/run
-|	$3c =? ( debugfile )	| f2 -
-|	$3d =? ( profiler )		| f3 -
+	$3b =? ( runfile )		| f1 - compiler/run
+	$3c =? ( mododeb )		| f2 -
+|	$3d =? ( debugfile )	| f3 -
 	$3e =? ( mkplain )		| f4 -
 	$3f =? ( compile )		| f5 -
 	drop ;

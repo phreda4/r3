@@ -263,7 +263,7 @@
 :editfile
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-	r3info
+	|r3info
 	|cerror 1? ( drop ; ) drop	
 	r3edit
 	;

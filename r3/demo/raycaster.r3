@@ -138,6 +138,8 @@
 	;
 
  :render
+ 	$5a5a5a sdlcolor
+	0 300 800 300 sdlfrect
 	0 ( sw <? 
 		drawline
 		1 + ) drop ;
@@ -145,8 +147,8 @@
 |---------------------------------
 :drawcell | map y x --
 	rot c@+ 3 << 'colores + @ sdlcolor
-	-rot over 4 << over 4 << swap
-	15 15 sdlFRect
+	-rot over 3 << over 3 << swap
+	8 8 sdlFRect
 	;
 
 :drawmap
@@ -157,9 +159,9 @@
 			1 + ) drop
 		1 + ) 2drop
 	$ffffff sdlcolor
-	posX 12 >> posY 12 >>
-	over dirX 12 >> + over dirY 12 >> + 2over sdlline
-	2dup swap planeX 12 >> + swap planeY 12 >> + sdlline
+	posX 13 >> posY 13 >>
+	over dirX 13 >> + over dirY 13 >> + 2over sdlline
+	2dup swap planeX 13 >> + swap planeY 13 >> + sdlline
 	;
 
 |---------------------------------
@@ -173,7 +175,7 @@
 
 :rota
 	angr + dup 'angr !
-	1.0 polar | bangle largo -- dx dy
+	sincos
 	2dup 'dirY ! 'dirX !
 	0.66 *. 'planeX !
 	neg 0.66 *. 'planeY !

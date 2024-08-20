@@ -112,7 +112,6 @@
 
 #altura
 #lines * 6400 | 800 * 8
-#nlineas * 6400
 
 :line! | n altura tile x --
 	;
@@ -153,6 +152,8 @@
 	
 	shadowface
 	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
+	
+	altura 'lines pick2 3 << + !
 	;
 
  :render
@@ -189,7 +190,8 @@
 :drawsprite | x y
 	posy - 'spry !
 	posx - 'sprx !
-	1.0 planeX dirY *. dirX planeY *. - 0? ( 1+ ) /. 'invdet !
+	1.0 planeX dirY *. dirX planeY *. - |0? ( 1+ ) 
+	/. 'invdet !
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
 	trax tray 0? ( 1+ ) /. 1.0 + sw 2/ * 16 >> 
@@ -207,19 +209,52 @@
 #srcrec [ 0 0 1 64 ]
 #desrec [ 0 0 1 600 ]
 
-
-
 :getpoint | x y -- x y
 	posy - 'spry !
 	posx - 'sprx !
-	1.0 planeX dirY *. dirX planeY *. - 0? ( 1+ ) /. 'invdet !
+	
+	1.0 planeX dirY *. dirX planeY *. - |0? ( 1+ ) 
+	/. 'invdet !
+	
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
-	trax tray 0? ( 1+ ) /. 1.0 + sw 2/ * 16 >> 'sprSX !
-	sh 15 << tray 0? ( 1+ ) /. 16 >> -? ( 0 nip ) 'sprH !
-	sprSX 32 << sprH or ;
 	
-:drap
+	trax tray |0? ( 1+ ) 
+	/. 1.0 + sw 2/ * 16 >> | 'sprSX !
+	32 <<
+	
+	sh 15 << tray |0? ( 1+ ) 
+	/. 16 >> -? ( 0 nip ) |'sprH !
+	or
+	|sprSX 32 << sprH or 
+	;
+	
+	
+#minx
+#maxx
+#minxo
+#maxxo
+
+#llist 0 0 0 0
+	
+:l! | pix nro --
+	over 32 >> 
+	dup 'minx ! 'maxx ! 
+	dup 'minxo ! 'maxxo !
+	a!+ ;
+	
+:l+! | pix nro 
+	over 32 >> 
+	minx <? ( dup 'minx ! over 'minxo ! ) 
+	maxx >? ( dup 'maxx ! over 'maxxo ! ) 
+	2drop 
+	a!+ ;
+
+:drap | pix n --
+	$ff00 sdlcolor
+	minxo =? ( $ff0000 sdlcolor )
+	maxxo =? ( $ff sdlcolor )
+	drop
 	dup 32 >> swap $ffff and  | x h
 	0? ( 2drop ; )
 	yhorizon 2dup + -rot swap -
@@ -227,10 +262,17 @@
 	sdlline ;
 	
 :drawbox | x y -- x y
-	over 0.25 + over 0.25 + getpoint drap
-	over 0.25 - over 0.25 + getpoint drap
-	over 0.25 - over 0.25 - getpoint drap
-	over 0.25 + over 0.25 - getpoint drap
+	'llist >a
+	over 0.25 + over 0.25 + getpoint 0 l!
+	over 0.25 - over 0.25 + getpoint 1 l+!
+	over 0.25 - over 0.25 - getpoint 2 l+!
+	over 0.25 + over 0.25 - getpoint 3 l+!
+	
+	'llist 
+	@+ 0 drap
+	@+ 1 drap
+	@+ 2 drap
+	@ 3 drap
 	;
 	
 	
@@ -270,6 +312,13 @@
 :objetos
 	'spr p.draw
 	;
+
+:drawdeep
+	'lines >a
+	0 ( 800 <?
+		dup 600 over 600 a@+ 2/ -
+		sdlline
+		1+ ) drop ;
 	
 |----------- mini mapa
 :drawcell | map y x --
@@ -308,7 +357,7 @@
 
 :rota
 	angP + dup 'angP !
-	1.0 polar | bangle largo -- dx dy
+	sincos
 	2dup 'dirY ! 'dirX !
 	0.66 *. 'planeX !
 	neg 0.66 *. 'planeY !
@@ -325,7 +374,8 @@
 	2 and? ( drawradar ) 
 	drop
 	objetos
-	
+
+	drawdeep
 |	$ffffff pccolor
 |	0 0 pcat "<f1> mapa" pcprint
 |	posx posy "%f %f " print dirX dirY "%f %f " print cr
@@ -342,6 +392,8 @@
 	<up> =? ( 0.1 'vmov ! )
 	<dn> =? ( -0.1 'vmov ! )
 	>up< =? ( 0 'vmov ! ) >dn< =? ( 0 'vmov ! )
+|	<a> =? ( )
+|	<d> =? ( )
 	
 	<w> =? ( -4 'yhorizon +! )
 	<s> =? ( 4 'yhorizon +! )
