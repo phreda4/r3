@@ -5,8 +5,8 @@
 #pl
 
 :xch | j i -- j i
-	over 1 - 4 << pl + 		| j i dj
-	over 1 - 4 << pl + >a	| j i dj di r:di
+	over 1- 4 << pl + 		| j i dj
+	over 1- 4 << pl + >a	| j i dj di r:di
 	a@ over @ 				| j i dj vi vj
 	a!+ swap !+				| j i dj+ r:di+
 	a@ over @
@@ -16,7 +16,7 @@
 :sort | len h i v j -- len h i
 	( pick3 >?
       	dup pick4 - 		| len h i v j j-h
-		dup 1 - 4 << pl + @ 	| len h i v j j-h list[j-h]
+		dup 1- 4 << pl + @ 	| len h i v j j-h list[j-h]
 		pick3 <=? ( 4drop ; )
 		drop xch nip )
 	2drop ;
@@ -26,9 +26,9 @@
 	'trylist
 	( d@+ 1? dup 			| len h i
 		( pick3 <?
-			dup 1 - 4 << pl + @	| list[i]=v
+			dup 1- 4 << pl + @	| list[i]=v
 			over 				| len h i v j
-			sort 1 + )
+			sort 1+ )
 		2drop )
 	3drop ;
 
@@ -36,7 +36,7 @@
 :sort | len h i v j -- len h i
 	( pick3 >?
       	dup pick4 - 		| len h i v j j-h
-		dup 1 - 4 << pl + 8 + @ 	| len h i v j j-h list[j-h]
+		dup 1- 4 << pl + 8 + @ 	| len h i v j j-h list[j-h]
 		pick3 <=? ( 4drop ; )
 		drop xch nip )
 	2drop ;
@@ -46,9 +46,36 @@
 	'trylist
 	( d@+ 1? dup 			| len ty h i
 		( pick3 <?
-			dup 1 - 4 << pl + 8 + @	| list[i]=v
+			dup 1- 4 << pl + 8 + @	| list[i]=v
 			over 				| len h i v j
-			sort 1 + )
+			sort 1+ )
+		2drop )
+	3drop ;
+
+|--------------------
+:xch1 | j i -- j i
+	over 1- 3 << pl + 		| j i dj
+	over 1- 3 << pl + >a	| j i dj di r:di
+	a@ over @ 				| j i dj vi vj
+	a! swap !				| j i dj+ r:di+
+	;
+
+:sort1 | len h i v j -- len h i
+	( pick3 >?
+      	dup pick4 - 		| len h i v j j-h
+		dup 1 - 3 << pl + @ 	| len h i v j j-h list[j-h]
+		pick3 <=? ( 4drop ; )
+		drop xch1 nip )
+	2drop ;
+
+::shellsort1 | len lista -- ; lista es dato|valor
+	'pl ! 
+	'trylist
+	( d@+ 1? dup 			| len ty h i
+		( pick3 <=?
+			dup 1- 3 << pl + @	| list[i]=v
+			over 				| len h i v j
+			sort1 1+ )
 		2drop )
 	3drop ;
 

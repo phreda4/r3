@@ -128,13 +128,13 @@
 	
 | http://www.quinapalus.com/efunc.html
 
-:l1 over dup 1 >> + +? ( rot drop swap $67cd - ; ) drop ;
-:l2 over dup 2 >> + +? ( rot drop swap $3920 - ; ) drop ;
-:l3 over dup 3 >> + +? ( rot drop swap $1e27 - ; ) drop ;
-:l4 over dup 4 >> + +? ( rot drop swap $f85 - ; ) drop ;
-:l5 over dup 5 >> + +? ( rot drop swap $7e1 - ; ) drop ;
-:l6 over dup 6 >> + +? ( rot drop swap $3f8 - ; ) drop ;
-:l7 over dup 7 >> + +? ( rot drop swap $1fe - ; ) drop ;
+:l1 over dup 1 >> + +? ( -rot nip $67cd - ; ) drop ;
+:l2 over dup 2 >> + +? ( -rot nip $3920 - ; ) drop ;
+:l3 over dup 3 >> + +? ( -rot nip $1e27 - ; ) drop ;
+:l4 over dup 4 >> + +? ( -rot nip $f85 - ; ) drop ;
+:l5 over dup 5 >> + +? ( -rot nip $7e1 - ; ) drop ;
+:l6 over dup 6 >> + +? ( -rot nip $3f8 - ; ) drop ;
+:l7 over dup 7 >> + +? ( -rot nip $1fe - ; ) drop ;
 
 ::ln. | x -- r
 	-? ( $80000000 nip ; )
@@ -167,17 +167,17 @@
 	log2fix $58b90bfc 31 *>> ;	
 	
 
-:ex1 over $58b91 - +? ( rot drop swap 8 << ; ) drop ;
-:ex2 over $2c5c8 - +? ( rot drop swap 4 << ; ) drop ;
-:ex3 over $162e4 - +? ( rot drop swap 2 << ; ) drop ;
-:ex4 over $b172 - +? ( rot drop swap 1 << ; ) drop ;
-:ex5 over $67cd - +? ( rot drop swap dup 1 >> + ; ) drop ;
-:ex6 over $3920 - +? ( rot drop swap dup 2 >> + ; ) drop ;
-:ex7 over $1e27 - +? ( rot drop swap dup 3 >> + ; ) drop ;
-:ex8 over $f85 - +? ( rot drop swap dup 4 >> + ; ) drop ;
-:ex9 over $7e1 - +? ( rot drop swap dup 5 >> + ; ) drop ;
-:exa over $3f8 - +? ( rot drop swap dup 6 >> + ; ) drop ;
-:exb over $1fe - +? ( rot drop swap dup 7 >> + ; ) drop ;
+:ex1 over $58b91 - +? ( -rot nip 8 << ; ) drop ;
+:ex2 over $2c5c8 - +? ( -rot nip 4 << ; ) drop ;
+:ex3 over $162e4 - +? ( -rot nip 2 << ; ) drop ;
+:ex4 over $b172 - +? ( -rot nip 1 << ; ) drop ;
+:ex5 over $67cd - +? ( -rot nip dup 1 >> + ; ) drop ;
+:ex6 over $3920 - +? ( -rot nip dup 2 >> + ; ) drop ;
+:ex7 over $1e27 - +? ( -rot nip dup 3 >> + ; ) drop ;
+:ex8 over $f85 - +? ( -rot nip dup 4 >> + ; ) drop ;
+:ex9 over $7e1 - +? ( -rot nip dup 5 >> + ; ) drop ;
+:exa over $3f8 - +? ( -rot nip dup 6 >> + ; ) drop ;
+:exb over $1fe - +? ( -rot nip dup 7 >> + ; ) drop ;
 
 :xp
 	swap -? ( $b1721 + swap 16 >> ; ) swap ;

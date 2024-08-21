@@ -49,7 +49,7 @@
 ::SDLRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
-
+	
 #ym #xm
 #dx #dy
 
@@ -172,6 +172,14 @@
 	rot 3 << rot 8 + + 
 	@ 'rec ! | ren txture rsrc
 	'rec 'rdes SDL_RenderCopy ;
+
+::tsbox | 'boxsrc n 'ts --
+	dup 8 + @ pick3 8 + ! | w h
+	| 'box n ts
+	16 + swap 3 << + @ swap ! ;
+	
+|'b 'ts+8+n<<3
+|'b n 'ts
 
 ::tsfree | ts --
 	@ SDL_DestroyTexture ;	

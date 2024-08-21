@@ -5,6 +5,7 @@
 ^r3/lib/vec2.r3
 ^r3/util/arr16.r3
 ^r3/util/pcfont.r3
+^r3/util/sort.r3
 
 #worldMap (
   4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 7 7 7 7 7 7 7 7
@@ -113,7 +114,7 @@
 	;
 
 #altura
-#lines * 8192 | 800 * 8 = 6400
+#linea * 8192 | 800 * 8 = 6400
 
 #srcrec [ 0 0 1 64 ]
 #desrec [ 0 0 1 600 ]
@@ -138,26 +139,39 @@
 	perpWall 'perpWallDist !
 	sh 16 << perpWallDist 0? ( 1 + ) / 'altura !
 
-	'desrec >a 
-	dup da!+
-	yhorizon altura 2/ - da!+ 
-	4 a+ 
-	altura da!
+	altura 48 <<
+	side 47 << or 
+	ntex 6 << calcWallX 10 >> $3f and + 12 << or
+	over or |x
+	'linea pick2 3 << + !
 	
-	ntex 6 << calcWallX 10 >> $3f and + 'srcrec d! | xs
+|	'desrec >a dup da!+ yhorizon altura 2/ - da!+ 4 a+ altura da!
+|	ntex 6 << calcWallX 10 >> $3f and + 'srcrec d! | xs
+|	shadowface
+|	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
 	
-	shadowface
-	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
-	
-	altura 'lines pick2 3 << + !
 	;
 
- :render
-	$5a5a5a sdlcolor
-	0 yhorizon 800 sh yhorizon - sdlfrect
-	0 ( sw <? 
-		drawline
-		1+ ) drop ;
+#xs
+
+:drawlv | l --
+	'desrec >a 
+	dup $fff and da!+ 
+	dup 48 >>
+	yhorizon over 2/ - da!+ 
+	4 a+ da!
+		
+	dup 12 >> $ffffff and  'srcrec d! | xs
+	47 >> $1 and 'side !
+	shadowface
+	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
+	;
+
+:drawlinea
+	'linea
+	0 ( sw <? swap
+		@+ drawlv
+		swap 1+ ) 2drop ;
 
 |---------- struct sprite
 | 1 2  3    4   5   6  7  8  9
@@ -183,8 +197,11 @@
 #sprSX
 #sprH
 
-	
+#listaspr * 8000
+#listaspr>
+
 :drawsprite | x y --
+|	0.5 +
 	posy - 'spry ! posx - 'sprx !
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
@@ -192,152 +209,71 @@
 	trax tray 0? ( 1+ ) 
 	/. 1.0 + sw 2/ * 16 >> 'sprSX !
 	
-	sh 15 << traY 0? ( 1+ ) /. 5 >> | 64pix H
+	sh 15 << traY 0? ( 1+ ) /. 16 >> |5 >> | 64pix H
 	-? ( drop ; ) | offscreen
 	'sprH !
-	sprSX yhorizon sprH 0 sprimg sspritez
+	
+	sprH 32 <<
+	sprSX $ffffffff and or
+	listaspr> !+ 'listaspr> !
+	
+|	sprSX yhorizon sprH 0 sprimg sspritez
 	;
 
-|--------------------------------- experiment
-#texchar
+:drawlistspr
+	'listaspr ( listaspr> <? @+ 
+		dup 32 >> swap 32 << 32 >> | sprh sprx
+		yhorizon rot 0 sprimg sspritez
+		) drop ; 
 
-:getpoint | x y -- xy
-	posy - 'spry ! posx - 'sprx !
-	dirY sprX *. dirX sprY *. - invdet *. 'trax !
-	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
+#fromlinea
+:drawtolinea | altura -- 
+	49 <<
+	fromlinea
+	( @+ pick2 <=?
+		drawlv
+		) drop
+	8 -
+	'fromlinea ! 
+	drop ;
 	
-	trax tray |0? ( 1+ ) 
-	/. 1.0 + sw 2/ * 16 >> | 'sprSX !
-	32 <<
+
+:drawmix
+	'linea 'fromlinea !
+	'listaspr ( listaspr> <? @+ 
+		dup 32 >> | sprh
+		dup drawtolinea
+		swap 32 << 32 >> | sprh sprx
+		yhorizon rot 11 << 0 sprimg sspritez || 11 =16-5 (32pixels)
+		) drop 
+
+	'linea 800 3 << +
+	fromlinea ( over <?
+		@+ drawlv ) 2drop
+	; 
 	
-	sh 15 << tray |0? ( 1+ ) 
-	/. 16 >> -? ( 0 nip ) |'sprH ! en pantalla
-	or
-	|sprSX 32 << sprH or 
+:pantalla
+	0 ( sw <? drawline 1+ ) drop 
+	sw 'linea shellsort1
+
+	'listaspr 'listaspr> !
+	'spr p.draw
+	'listaspr listaspr> over - 3 >> swap shellsort1
+	
+	$5a5a5a sdlcolor
+	0 yhorizon 800 sh yhorizon - sdlfrect
+	
+	drawmix
+	|drawlinea 
+	|drawlistspr
 	;
-	
-:pointxh | v -- x h 
-	dup 32 >> swap $ffff and ;
-	
-#minx
-#maxx
-#minxo
-#maxxo
 
-#llist 0 0 0 0
-	
-:l! | pix nro --
-	over 32 >> 
-	dup 'minx ! 'maxx ! 
-	dup 'minxo ! 'maxxo !
-	a!+ ;
-	
-:l+! | pix nro -- 
-	over 32 >> 
-	minx <? ( dup 'minx ! over 'minxo ! ) 
-	maxx >? ( dup 'maxx ! over 'maxxo ! ) 
-	2drop 
-	a!+ ;
-
-:drap | pix n --
-	$ff00 sdlcolor
-	minxo =? ( $ff0000 sdlcolor )
-	maxxo =? ( $ff sdlcolor )
-	drop
-	pointxh 0? ( 2drop ; )
-	yhorizon 2dup + -rot swap -
-	pick2 swap
-	1.0 planeX dirY *. dirX planeY *. - 0? ( 1+ ) /. 'invdet !	sdlline ;
-
-#srcrec [ 0 0 1 64 ]
-#desrec [ 0 0 1 100 ]
-	
-#addh
-#addx
-#ff
-
-
-:draws1 | x2 h1 sx x1
-	dup 3 << 'lines + @ | zline
-	pick3 15 >> >? ( drop ; ) drop
-
-	|over 16 >> | screenX
-	
-	
-	'desrec >a 
-	dup da!+ |x
-	yhorizon pick3 16 >> 
-	- da!+ |y
-	4 a+
-	pick2 15 >> 
-	da!
-	
-	over 16 >> 
-	ff 32 * + 'srcrec d! 
-	
-	SDLrenderer texchar 'srcrec 'desrec SDL_RenderCopy
-	;
-	
-	
-:drawsprwall | o1 o2 of --
-	'ff !
-	pointxh rot pointxh	| x1 h1 x2 h2
-	pick2 - 16 << over pick4 - | -? ( 4drop ; )  | x1 h1 x2 hdif xdif
-	1 <? ( 4drop drop ; )
-	32.0 over / 'addx !	/ 'addh !			| x1 h1 x2
-	-rot 16 << 
-	0 
-	rot | x2 h1 sx x1 
-	( pick3 <=?
-		0 sw in? ( draws1 )
-		rot addh +
-		rot addx +
-		rot 1+ )
-	4drop ;
-		
-	
-:]llist
-	'llist swap 3 << + @ ;
-	
-
-#rota
-	
-:drawbox | x y ang  --
-	'rota !
-	
-	'llist >a
-	2dup rota 0.25 xy+polar | x y bangle r -- x y
-	getpoint $ffff nand? ( 3drop ; ) 0 l!
-	2dup rota 0.25 - 0.25 xy+polar | x y bangle r -- x y
-	getpoint $ffff nand? ( 3drop ; ) 1 l+!
-	2dup rota 0.5 - 0.25 xy+polar | x y bangle r -- x y	
-	getpoint $ffff nand? ( 3drop ; ) 2 l+!
-	rota 0.75 - 0.25 xy+polar | x y bangle r -- x y	
-	getpoint $ffff nand? ( drop ; ) 3 l+!
-	
-|	'llist @+ 0 drap @+ 1 drap @+ 2 drap @ 3 drap
-	
-	minxo dup 1+ $3 and | 1--2
-	'llist dup 			| 1 2 list list
-	rot 3 << + @		| 1 list list2
-	-rot swap 3 << + @	| list2 list1
-	minxo drawsprwall
-	
-	minxo 1+ $3 and dup 1+ $3 and | 2 -- 3
-	'llist dup 			| 1 2 list list
-	rot 3 << + @		| 1 list list2
-	-rot swap 3 << + @	| list2 list1
-	over 32 >> over 32 >> | x2 x1
-	<=? ( 3drop ; ) drop 
-	minxo 1+ $3 and drawsprwall
-	;
 	
 :persona | a -- 
 	$ff00 sdlcolor
 
 	dup .x @ over .y @ 
-	msec 3 << drawbox	| box
-	|drawsprite | normal
+	drawsprite | normal
 	
 	>a
 	mm 
@@ -363,16 +299,7 @@
 	swap a!+ a!+
 	;
 	
-:objetos
-	'spr p.draw
-	;
 
-:drawdeep
-	'lines >a
-	0 ( 800 <?
-		dup 600 over 600 a@+ 2/ -
-		sdlline
-		1+ ) drop ;
 	
 |----------- mini mapa
 :drawcell | map y x --
@@ -422,13 +349,11 @@
 
 :game
 	$0 SDLcls
-	render
+	pantalla
 	mm 
 	1 and? ( drawmap ) 
 	2 and? ( drawradar ) 
-	4 and? ( drawdeep )
 	drop
-	objetos
 
 |	$ffffff pccolor
 |	0 0 pcat "<f1> mapa" pcprint
@@ -463,7 +388,6 @@
 	"Laberinto" 800 600 SDLinit
 	pcfont
 	"media/img/wolftexturesobj.png" loadimg 'texs ! | 64x64x8
-	"media/img/test-ray.png" loadimg 'texchar ! 	| 32x64x4 | frente\perf\atraz\perf
 	32 64 "media/img/test-ray.png" ssload 'sprimg !
 	100 'spr p.ini
 	
@@ -471,8 +395,8 @@
 	5.5 'posX ! 5.5 'posY ! 0 rota
 |	4.0 3.0 +persona
 	6.0 8.0 +persona
-|	5.5 5.0 +persona
-|	4.0 5.5 +persona
+	5.5 5.0 +persona
+	4.0 5.5 +persona
 
 	'game SDLshow 
 	SDLquit ;
