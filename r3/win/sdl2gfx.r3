@@ -177,9 +177,6 @@
 	dup 8 + @ pick3 8 + ! | w h
 	| 'box n ts
 	16 + swap 3 << + @ swap ! ;
-	
-|'b 'ts+8+n<<3
-|'b n 'ts
 
 ::tsfree | ts --
 	@ SDL_DestroyTexture ;	
@@ -304,12 +301,13 @@
 #prevt
 #deltatime
 
-::timer< msec 'prevt ! 0 'deltatime ! ;
-::timer. msec dup prevt - 'deltatime ! 'prevt ! ;
-::timer+ deltatime + ; | $ffffffff7fffffff and  ; | for ring counter
-::timer- deltatime - ; 
+::timer< msec 'prevt ! 0 'deltatime ! ; 			| reset timer
+::timer. msec dup prevt - 'deltatime ! 'prevt ! ;	| adv timer
+::timer+ deltatime + ; 								| add timer
+| $ffffffff7fffffff and  ; 	| for ring counter
+::timer- deltatime - ; 								| sub timer
 
-|.... animation v1
+|.... animation
 | fff ff fff ........
 | inicio(12) cnt(8) escala(12) time(32) (49 dias)
 |                      

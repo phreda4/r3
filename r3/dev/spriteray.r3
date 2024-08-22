@@ -337,7 +337,6 @@
 
 	dup .x @ over .y @ 
 	msec 3 << drawbox	| box
-	|drawsprite | normal
 	
 	>a
 	mm 

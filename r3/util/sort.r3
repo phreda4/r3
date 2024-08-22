@@ -1,6 +1,8 @@
 | ShellSort
 | PHREDA 2009
 |-----------------------------------------
+^r3/lib/math.r3
+
 #trylist [ 2391484 797161 265720 88573 29524 9841 3280 1093 364 121 40 13 4 1 0 ]
 #pl
 
@@ -25,7 +27,7 @@
 	'pl !
 	'trylist
 	( d@+ 1? dup 			| len h i
-		( pick3 <?
+		( pick3 <=?
 			dup 1- 4 << pl + @	| list[i]=v
 			over 				| len h i v j
 			sort 1+ )
@@ -105,7 +107,7 @@
 	'pl ! 1 +
 	'trylist
 	( d@+ 1? dup 			| len tl h i
-		( pick3 <? sort 1 + )
+		( pick3 <=? sort 1 + )
 		2drop )
 	3drop ;
 

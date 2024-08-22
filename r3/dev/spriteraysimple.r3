@@ -142,17 +142,14 @@
 	altura 48 <<
 	side 47 << or 
 	ntex 6 << calcWallX 10 >> $3f and + 12 << or
-	over or |x
+	over or | x
 	'linea pick2 3 << + !
 	
 |	'desrec >a dup da!+ yhorizon altura 2/ - da!+ 4 a+ altura da!
 |	ntex 6 << calcWallX 10 >> $3f and + 'srcrec d! | xs
 |	shadowface
 |	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
-	
 	;
-
-#xs
 
 :drawlv | l --
 	'desrec >a 
@@ -166,12 +163,6 @@
 	shadowface
 	SDLrenderer texs 'srcrec 'desrec SDL_RenderCopy
 	;
-
-:drawlinea
-	'linea
-	0 ( sw <? swap
-		@+ drawlv
-		swap 1+ ) 2drop ;
 
 |---------- struct sprite
 | 1 2  3    4   5   6  7  8  9
@@ -228,13 +219,10 @@
 
 #fromlinea
 :drawtolinea | altura -- 
-	49 <<
+	49 << | 2*
 	fromlinea
-	( @+ pick2 <=?
-		drawlv
-		) drop
-	8 -
-	'fromlinea ! 
+	( @+ pick2 <=? drawlv ) drop
+	8 - 'fromlinea ! 
 	drop ;
 	
 
@@ -246,10 +234,8 @@
 		swap 32 << 32 >> | sprh sprx
 		yhorizon rot 11 << 0 sprimg sspritez || 11 =16-5 (32pixels)
 		) drop 
-
-	'linea 800 3 << +
-	fromlinea ( over <?
-		@+ drawlv ) 2drop
+	'linea 800 3 << + | ultima
+	fromlinea ( over <? @+ drawlv ) 2drop
 	; 
 	
 :pantalla

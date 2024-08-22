@@ -109,6 +109,10 @@
 ::clamp0max | v max -- v
 	swap over - dup 63 >> and + dup neg 63 >> and ;
 
+::clamps16 | v -- (signed 16bits)v
+	-326768 32767 in? ( ; ) 
+	63 >> $7fff xor ;
+	
 ::between | v min max -- -(out)/+(in)
 	pick2 - -rot - or ;
 
