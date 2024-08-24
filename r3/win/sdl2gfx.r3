@@ -270,6 +270,12 @@
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
 
+::sstint | color --- ; with alpha!! AARRGGBB
+	'vert >a 8 a+ dup da!+ 16 a+ dup da!+ 16 a+ dup da!+ 16 a+ da! ;
+	
+::ssnotint 
+	$ffffffff sstint ;
+
 ::sspritewh | adr -- h w
 	8 + @ dup $ffffffff and swap 32 >>> ;
 	

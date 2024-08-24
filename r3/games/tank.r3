@@ -30,6 +30,7 @@
 :.vy 7 ncell+ ;
 :.end 8 ncell+ ;
 :.io 9 ncell+ ;
+:.color 10 ncell+ ;
 
 :drawspr | arr -- arr
 	dup 8 + >a
@@ -158,13 +159,13 @@
 	drop
 	;
 
-:+ptank | sheet ani zoom ang x y --
+:+ptank | color sheet ani zoom ang x y --
 	'ptank 'tanks p!+ >a
 	swap a!+ a!+	| x y 
 	32 << or a!+	| ang zoom
 	a!+ a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	0 a!			| end
+	0 a!+			| end
 	;
 
 |------------------- NPC tank
@@ -186,9 +187,9 @@
 	tanima
 	20 randmax 0? ( $1f randmax a> .io ! ) drop
 	drop
+	a> .color @ sstint | color
 	drawspr	
-	
-	
+	ssnotint | sin tint
 	drop
 	;
 	
@@ -199,7 +200,8 @@
 	a!+	a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
 	0 a!+			| end
-	0 a!			| io
+	0 a!+			| io
+	a! | color
 	;
 	
 |-------------------
@@ -230,7 +232,8 @@
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
-	<f1> =? ( tsprites 
+	<f1> =? ( rand | color
+		tsprites 
 		0 0 0 ICS>anim | init cnt scale -- 
 		2.0 1.0 randmax 
 		600.0 randmax 300.0 -
@@ -246,6 +249,7 @@
 	'tanks p.clear
 	'disp p.clear
 	
+
 	tsprites 
 	0 0 0 ICS>anim | init cnt scale -- 
 	2.0 0.0 
