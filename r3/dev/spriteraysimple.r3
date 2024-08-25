@@ -36,10 +36,12 @@
 
 #colores 0 $ff0000 $ff00 $ff $ffff00 $ffff $ff00ff $ffffffff $888888
 
-#posX #posY
 #angP
+#posX #posY
+
 #dirX #dirY
 #planeX #planeY
+
 #invdet
 
 #mm 0
@@ -187,22 +189,23 @@
 #listaspr * 8000
 #listaspr>
 
-:drawsprite | x y --
-|	0.5 +
+:drawsprite | a x y --
 	posy - 'spry ! posx - 'sprx !
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
 	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
 
 	trax tray 0? ( 1+ ) /. 1.0 + sw 2/ * 16 >> 'sprSX !
-	sh 15 << traY 0? ( 1+ ) /. 16 >> -? ( drop ; ) 'sprH !
+	sh 15 << traY 0? ( 1+ ) /. 16 >> -? ( 2drop ; ) 'sprH !
 	
-	sprH 32 << sprSX $ffffffff and or
+	angP - $ff00 and 24 <<
+	sprH 40 << or
+	sprSX $ffffffff and or
 	listaspr> !+ 'listaspr> !
 	;
 
 :drawlistspr
 	'listaspr ( listaspr> <? @+ 
-		dup 32 >> swap 32 << 32 >> | sprh sprx
+		dup 40 >> swap 32 << 32 >> | sprh sprx
 		yhorizon rot 0 sprimg sspritez
 		) drop ; 
 
@@ -210,7 +213,7 @@
 :drawtolinea | altura -- 
 	49 << | 2*
 	fromlinea
-	( @+ pick2 <=? drawlv ) drop
+	( @+ pick2 <? drawlv ) drop
 	8 - 'fromlinea ! 
 	drop ;
 	
@@ -223,66 +226,71 @@
 :drawmix
 	'linea 'fromlinea !
 	'listaspr ( listaspr> <? @+ 
-		dup 32 >> | sprh
+		dup 40 >> | v sprh
 		dup drawtolinea
-		swap 32 << 32 >> | sprh sprx
-		yhorizon rot 
-		oscurece
-		11 << 0 sprimg sspritez || 11 =16-5 (32pixels)
+		swap dup 32 << 32 >> -rot | sprx sprh v 
+		yhorizon -rot 	| sprx yhor ssprh v
+		swap oscurece 
+		dup 11 << swap 10 << + | 11 =16-5 (32pixels) 48=32+16
+		|swap 38 >> $3 and	| 4 sides ; 
+		swap 37 >> $7 and | 8 sides
+		sprimg sspritez 
 		) drop 
 	'linea 800 3 << + | ultima
 	fromlinea ( over <? @+ drawlv ) 2drop
 	; 
 	
 :pantalla
+	|....... walls
 	0 ( sw <? drawline 1+ ) drop 
-	sw 'linea shellsort1	| walls
+	sw 'linea shellsort1	
+	|....... sprites
 	'listaspr 'listaspr> !
 	'spr p.draw
-	'listaspr listaspr> over - 3 >> swap shellsort1 | sprites
-	yhorizon ( sh <? 	| floor
+	'listaspr listaspr> over - 3 >> swap shellsort1 
+	|....... floor
+	yhorizon ( sh <? 	
 		dup 3 >> 8to24 sdlcolor
 		0 over 800 2 sdlrect
 		2 + ) drop
-	
 	drawmix
 	;
 
+:personamapa
+	$ff00 sdlcolor
+	a> .x @ 13 >> 1 -
+	a> .y @ 13 >> 1 -
+	3 3 sdlrect ;
+	
+:personaredar
+	$ff00 sdlcolor
+	'v2dx a> .x v2=
+	'v2dx 'posx v2- | v2s=vper	
+	'v2dx angP neg 0.25 + v2rot
+	v2dx 12 >> 400 + 1 -
+	v2dy 12 >> 100 + 1 -
+	3 3 sdlrect ;
+
 	
 :persona | a -- 
-	$ff00 sdlcolor
-
-	dup .x @ over .y @ 
-	drawsprite | normal
-	
-	>a
-	mm 
-	1 and? ( |--- mapa
-		a> .x @ 13 >> 1 -
-		a> .y @ 13 >> 1 -
-		3 3 sdlrect
-		) 
-	2 and? ( |--- radar
-		'v2dx a> .x v2=
-		'v2dx 'posx v2- | v2s=vper	
-		'v2dx angP neg 0.25 + v2rot
-	
-		v2dx 12 >> 400 + 1 -
-		v2dy 12 >> 100 + 1 -
-		3 3 sdlrect
-		) 
+	dup .a @ over .x @ pick2 .y @ drawsprite 
+|	0.01 over .a +!
+|	>a mm 
+|	1 and? ( personamapa )
+|	2 and? ( personaradar ) 
 	drop	
 	;
 	
-:+persona | x y --
+:+persona | a x y --
 	'persona 'spr p!+ >a
 	swap a!+ a!+
+	a!+
 	;
 	
 |----------- mini mapa
 :drawcell | map y x --
 	rot c@+ 3 << 'colores + @ sdlcolor
-	-rot over 3 << over 3 << swap
+	-rot over 3 << over 3 << 
 	8 8 sdlFRect
 	;
 
@@ -294,9 +302,9 @@
 			1+ ) drop
 		1+ ) 2drop
 	$ffffff sdlcolor
-	posX 13 >> posY 13 >>
-	over dirX 13 >> + over dirY 13 >> + 2over sdlline
-	2dup swap planeX 13 >> + swap planeY 13 >> + sdlline
+	posy 13 >> posy 13 >>
+	over diry 13 >> + over dirx 13 >> + 2over sdlline
+	2dup swap planey 13 >> + swap planex 13 >> + sdlline
 	;
 
 :drawradar
@@ -325,7 +333,7 @@
 	sincos
 	dup 'dirY ! 0.66 *. 'planeX !
 	dup 'dirX ! neg 0.66 *. 'planeY !
-	1.0 planeX dirY *. dirX planeY *. - /. 'invdet !
+	1.0 planeX dirY *. dirX planeY *. - 0? ( 1.0 + ) /. 'invdet !
 	;
 
 #vrot
@@ -372,15 +380,18 @@
 	"Laberinto" 800 600 SDLinit
 	pcfont
 	"media/img/wolftexturesobj.png" loadimg 'texs ! | 64x64x8
-	32 64 "media/img/test-ray.png" ssload 'sprimg !
+	|32 64 "media/img/test-ray.png" ssload 'sprimg !
+	32 48 "media/img/blue_8direction_standing-Sheet.png" ssload 'sprimg !
 	100 'spr p.ini
 	
 	sh 2/ 'yhorizon !
+	
 	5.5 'posX ! 5.5 'posY ! 0 rota
-|	4.0 3.0 +persona
-	6.0 8.0 +persona
-	5.5 5.0 +persona
-	4.0 5.5 +persona
+	
+	0.000 4.0 3.0 +persona
+	0.250 6.0 8.0 +persona
+	0.125 5.5 5.0 +persona
+	0.700 4.0 5.5 +persona
 
 	'game SDLshow 
 	SDLquit ;
