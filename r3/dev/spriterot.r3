@@ -56,6 +56,16 @@
 		1+ ) drop
 	drop ;
 	
+#p0 0 0 
+
+#px 64 0 
+#py -4 60
+#pz 4 -60
+
+:drawarrow
+
+	;
+	
 :game
 	$0 SDLcls
 
