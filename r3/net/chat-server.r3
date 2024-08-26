@@ -38,7 +38,7 @@
 
 	maxpeople 1 + SDLNet_AllocSocketSet 'socketset !
 	
-    'serverIP 0 9999 SDLNet_ResolveHost
+    'serverIP "mipc" 9999 SDLNet_ResolveHost
 |printf("Server IP: %x, %d\n", serverIP.host, serverIP.port);
 	'serverip .ip .cr
 	
@@ -51,7 +51,7 @@
 	servsock SDLNet_TCP_Accept 'newsock !
 	lpeople 4 << 'people + >a 
 	newsock a!+
-	newsock SDLNet_TCP_GetPeerAddress @ a!
+	newsock 99999 @ a!
 	"new client" .println
 	showpeople
 	;

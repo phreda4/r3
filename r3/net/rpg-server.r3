@@ -58,7 +58,7 @@
 	0? ( "Error alloc" .println )
 	'socketset ! 
 	
-	'serverIP 0 GAME_PORT SDLNet_ResolveHost
+	'serverIP "mipc" GAME_PORT SDLNet_ResolveHost
 	serverIP .ip
 |	"Server IP: %h" .println
 	

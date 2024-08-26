@@ -34,6 +34,7 @@
 #sys-SDLNet_DelSocket
 #sys-SDLNet_CheckSockets
 #sys-SDLNet_FreeSocketSet
+#sys-SDLNet_GetError
 
     |Uint32 host;            /* 32-bit IPv4 host address */
     |Uint16 port;            /* 16-bit protocol port */
@@ -84,6 +85,8 @@
 ::SDLNet_DelSocket sys-SDLNet_DelSocket sys2 ; 
 ::SDLNet_CheckSockets sys-SDLNet_CheckSockets sys2 ; 
 ::SDLNet_FreeSocketSet sys-SDLNet_FreeSocketSet sys1 drop ; 
+::SDLNet_GetError sys-SDLNet_GetError sys0 ;
+
 
  
 |----- BOOT 
@@ -122,6 +125,7 @@
 	dup "SDLNet_DelSocket" getproc 'sys-SDLNet_DelSocket !
 	dup "SDLNet_CheckSockets" getproc 'sys-SDLNet_CheckSockets !
 	dup "SDLNet_FreeSocketSet" getproc 'sys-SDLNet_FreeSocketSet !
+	dup "SDLNet_GetError" getproc 'sys-SDLNet_GetError !
 	drop
 	;
 
