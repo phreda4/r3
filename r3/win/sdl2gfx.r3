@@ -215,6 +215,14 @@
 	xm neg ym rotxya! 12 a+
 	2drop ;
 
+::fillspritevert | x y x y x y x y --
+	'vert >a
+	swap i2fp da!+ i2fp da!+ 12 a+ 
+	swap i2fp da!+ i2fp da!+ 12 a+ 
+	swap i2fp da!+ i2fp da!+ 12 a+ 
+	swap i2fp da!+ i2fp da!  
+	;
+
 |-------------------------	
 ::SDLspriteZ | x y zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
