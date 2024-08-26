@@ -93,8 +93,8 @@
 	; 
 
 :perpWall | mapx mapy --
-    side 0? ( 2drop posX - 1.0 stepX - 2/ + rayDirX 0? ( 1.0 + ) /. ; ) drop nip
-	posY - 1.0 stepY - 2/ + rayDirY 0? ( 1.0 + ) /.
+    side 0? ( 2drop posX - 1.0 stepX - 2/ + rayDirX /. ; ) drop nip
+	posY - 1.0 stepY - 2/ + rayDirY /.
 	;
 
 :deltaX
@@ -204,15 +204,12 @@
 :getpoint | x y -- xy
 	posy - 'spry ! posx - 'sprx !
 	dirY sprX *. dirX sprY *. - invdet *. 'trax !
-	planeY neg sprX *. planeX sprY *. + invdet *. 'tray !
+	planeY neg sprX *. planeX sprY *. + invdet *. 
+	0.1 <? (  ; )
+	'tray !
 	
-	trax tray |0? ( 1+ ) 
-	/. 1.0 + sw 2/ * 16 >> | 'sprSX !
-	32 <<
-	
-	sh 15 << tray |0? ( 1+ ) 
-	/. 16 >> -? ( 0 nip ) |'sprH ! en pantalla
-	or
+	trax tray /. 1.0 + sw 2/ * 16 >> 32 <<
+	sh 15 << tray /. 16 >> or
 	|sprSX 32 << sprH or 
 	;
 	
@@ -261,9 +258,6 @@
 	dup 3 << 'lines + @ | zline
 	pick3 15 >> >? ( drop ; ) drop
 
-	|over 16 >> | screenX
-	
-	
 	'desrec >a 
 	dup da!+ |x
 	yhorizon pick3 16 >> 
@@ -277,7 +271,6 @@
 	
 	SDLrenderer texchar 'srcrec 'desrec SDL_RenderCopy
 	;
-	
 	
 :drawsprwall | o1 o2 of --
 	'ff !

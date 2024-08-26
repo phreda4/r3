@@ -489,7 +489,9 @@
 	;
 	
 ::immwin | 'win -- 0/1
-	dup @ $2 and? ( winnow 'winhot ! ) drop | all in top
+	dup @ 
+	$1 nand? ( 2drop 0 ; )
+	$2 and? ( winnow 'winhot ! ) drop | all in top
 	wintit
 	dup 8 + @+ winxy! @+ winwh! wintitle
 	@ 

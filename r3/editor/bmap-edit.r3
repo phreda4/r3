@@ -9,7 +9,6 @@
 
 #clevel 0
 #mlevel $ff
-#slevel 0
 #cmode 0
 
 #filename * 1024
@@ -64,6 +63,15 @@
 	SDLRenderer 'rdes SDL_RenderFillRect 
 	;
 	
+:allayer
+	over dlayer			| back
+	over 12 >> dlayer	| back2
+	over 24 >> dlayer	| front
+	over 36 >> dlayer	| front2
+	;
+
+:backall $888888 'tsimg tscolor allayer $ffffff 'tsimg tscolor ;
+
 |--------------	
 :mapx+! | dx --
 	mapsx + mapw mapsw - 2 + clamp0max 'mapsx ! ;
@@ -80,14 +88,14 @@
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ 
 	mlevel 
-	$1 and? ( over dlayer )			| back
-	$2 and? ( over 12 >> dlayer ) | back2
-	$4 and? ( over 24 >> dlayer ) | front
-	$8 and? ( over 36 >> dlayer ) | front2
-		
-	$10 and? ( $7fff0000 SDLColorA over 48 >> bitlayer ) | WALL
-	$20 and? ( $7f00ff00 SDLColorA over 49 >> bitlayer ) | up
-	$40 and? ( $7f0000ff SDLColorA over 50 >> bitlayer ) | TRIGGER
+	-1 =? ( allayer 2drop ; )
+	$1 and? ( backall over dlayer )			| back
+	$2 and? ( backall over 12 >> dlayer ) | back2
+	$4 and? ( backall over 24 >> dlayer ) | front
+	$8 and? ( backall over 36 >> dlayer ) | front2
+	$10 and? ( backall $7fff0000 SDLColorA over 48 >> bitlayer ) | WALL
+	$20 and? ( backall $7f00ff00 SDLColorA over 49 >> bitlayer ) | up
+	$40 and? ( backall $7f0000ff SDLColorA over 50 >> bitlayer ) | TRIGGER
 	2drop
 	;
 
@@ -174,7 +182,7 @@
 	;
 
 :paint
-	1 clevel << slevel and? ( drop ; ) drop | safe mark 
+	|1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
 	clevel 4 =? ( drop modewall ; ) drop	| draw wall
@@ -242,7 +250,7 @@
 	1 + addcellc ;
 	
 :filltile | --
-	1 clevel << slevel and? ( drop ; ) drop | safe mark 
+	|1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
 	2dup map> @ 
@@ -348,7 +356,7 @@
 	b! ;
 
 |---- tileset
-#wint 1 [ 0 300 512 512 ] "Tiles"
+#wintdlg 0 [ 180 32 512 512 ] "Tiles"
 
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
@@ -371,18 +379,30 @@
 	;
 	
 :wintiles
-	'wint immwin 0? ( drop ; ) drop
+	'wintdlg immwin 0? ( drop ; ) drop
 	curx cury ts_spr 0? ( 3drop ; ) @ SDLImage
-|	sdlb sdlx sdly "%d %d %d" sprint immLabel immcr
-|	
 	'chdn 'chmv dup guiMap
-	
 	$7f0000ff sdlcolorA	| cursor
 	curx tx tilew * + cury ty tileh * +
 	tw tilew * th tileh * 
 	SDLfRect
 	;
+	
+#bsrc 0 0
+#bdst 0 0
 
+:drawtilecursor | x y w h --
+	ts_spr 0? ( drop 4drop ; ) drop
+	$0 sdlcolor
+	pick3 pick3 pick3 pick3 sdlfrect
+	swap 2swap swap 'bdst d!+ d!+ d!+ d!
+	th tileh * tw tilew * ty tileh * tx tilew *
+	'bsrc d!+ d!+ d!+ d!
+	'bsrc 'bdst ts_spr @ SDLImagebb | box box img --
+	;
+
+	
+	
 |---- config
 #mapwn 
 #maphn
@@ -393,8 +413,8 @@
 	ts_spr 0? ( drop ; )
 	@ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
 	tileimgw tilew / 'tilesww !
-	tileimgw 4 + 'wint 16 + d!
-	tileimgh 28 + 'wint 20 + d!
+	tileimgw 4 + 'wintdlg 16 + d!
+	tileimgh 28 + 'wintdlg 20 + d!
 	mapw 'mapwn !
 	maph 'maphn !
 	tilew 'tilewn !
@@ -440,32 +460,29 @@
 	;
 
 |---- settings
-#winset 1 [ 0 2 180 400 ] "BMAP EDIT"
+#winset 1 [ 0 2 180 598 ] "BMAP EDIT"
 
 #nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Up" "Trigger"
 
 :colbtn 
-	clevel =? ( $3f00 ; ) $666666  ;
+	clevel =? ( $3f0000 ; ) $666666  ;
 	
 :icoview
 	1 pick2 << mlevel and? ( 112 nip ; ) 154 nip ;
 	
-:icosafe
-	1 pick2 << slevel and? ( 187 nip ; ) 165 nip ;
-	
 :layers
+	170 18 immbox
+	-1 colbtn nip 'immcolorbtn ! 
+	[ -1 'clevel ! -1 'mlevel ! ; ] "** ALL **" immbtn immln
 	'nlayer
 	0 ( 7 <? 
 		colbtn 'immcolorbtn !
-		90 18 immbox
-		[ dup 'clevel ! ; ] 
-		pick2 immbtn imm>>
-		20 18 immbox
-		$666666 'immcolorbtn !
-		[ 1 over << mlevel xor 'mlevel ! ; ] icoview immibtn imm>>
-		[ 1 over << slevel xor 'slevel ! ; ] icosafe immibtn imm>>
+		[ dup 'clevel ! 1 over <<  'mlevel ! ; ] pick2 immbtn |imm<<
+		|20 18 immbox
+|		$666666 'immcolorbtn !
+|		[ 1 over << mlevel xor 'mlevel ! ; ] icoview immibtn imm>>
 		immln
-		swap >>0 swap 1 + ) 2drop ;
+		swap >>0 swap 1 + ) 2drop immln ;
 
 		
 :winmain
@@ -499,7 +516,13 @@
 	60 18 immbox
 	[ recalc ; ] "RECALC" immbtn imm>>
 	[ resetmap ; ] "CLEAR" immbtn immcr
-
+	th tw "%d x %d" immlabel immcr
+	170 170 immbox
+	plxywh drawtilecursor
+	[ wintdlg 1 xor 'wintdlg ! ; ] 
+	|[ 'wintdlg immwin$ ; ]
+	immzone 
+	wintiles
 	;
 
 |----- MAIN
@@ -524,7 +547,6 @@
 	<w> =? ( mapup )
 	<s> =? ( mapdn )	
 
-|	<f2> =? ( 'wintiles immwin$ )
 	drop
 	;
 	
@@ -554,14 +576,14 @@
 	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm<<
 |	'getconfig 71 immibtn imm<<	
 |	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
-	|[ 'wintiles immwin$ ; ] 0 immibtn imm<<		
+	
 	imm<<	
 	115 'modefill btnmode 
 	15 'moderect btnmode 
 	192 'modeedit btnmode 
 	
 	winmain
-	wintiles
+	
 	;
 	
 :editor

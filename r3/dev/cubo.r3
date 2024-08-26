@@ -7,7 +7,7 @@
 ^r3/lib/3d.r3
 
 #sptree
-#spcar
+#sptank
 
 |-------------------------------
 #xcam 0 #ycam 0 #zcam 20.0
@@ -51,21 +51,27 @@
 #dx 1.0 #dy 1.0
 #layers 43
 
-:drawup
-	0 ( 43 <?
+:drawup | x y --
+	0 ( layers <?
 		pick2 int. pick2 int. pick2 sptree ssprite
 		rot dx + rot dy + rot 1+ ) drop ;
 
-:drawdn
-	42 ( 1?
+:drawdn | x y --
+	dy layers * + swap dx layers * + swap
+	layers ( 1?
 		pick2 int. pick2 int. pick2 sptree ssprite
-		rot dx + rot dy + rot 1- ) drop ;
-		
+		rot dx - rot dy - rot 1- ) drop ;
+
+#z
+
+:draworder
+	z +? ( drop drawdn ; ) drop drawup ;
+	
 :drawss
-	-1.0 -1.0 -1.0 project3d 
-	16 << 'y ! 16 << 'x !
-	-1.0 -1.0 1.0 project3d 
-	16 << y - 43 / 'dy ! 16 << x - 43 / 'dx !
+	-1.0 -1.0 -1.0 project3dz
+	16 << 'y ! 16 << 'x ! 'z !
+	-1.0 -1.0 1.0 project3dz
+	16 << y - 43 / 'dy ! 16 << x - 43 / 'dx ! neg 'z +!
 	
 	x y 
 	1.0 -1.0 -1.0 project3d 
@@ -75,7 +81,7 @@
 	
 	0 0 -1.0 project3d 
 	16 << swap 16 << swap
-	drawdn 
+	draworder
 	2drop
 	;
 	
@@ -118,7 +124,7 @@
 	"Sprite Rotation" 1024 600 SDLinit
 	pcfont
 	36 36 "media/stackspr/blue_tree.png" ssload 'sptree !
-	16 16 "media/stackspr/car.png" ssload 'spcar !
+	32 32 "media/stackspr/tank.png" ssload 'sptank !
 		
 	'main sdlshow 
 	SDLquit ;

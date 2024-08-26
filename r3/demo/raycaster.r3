@@ -3,7 +3,6 @@
 ^r3/win/sdl2gfx.r3
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
-^r3/lib/vec2.r3
 ^r3/util/pcfont.r3
 ^r3/util/sort.r3
 
