@@ -7,8 +7,7 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlfiledlg.r3
 
-#clevel 0
-#mlevel $ff
+#clevel -1
 #cmode 0
 
 #filename * 1024
@@ -64,10 +63,10 @@
 	;
 	
 :allayer
-	over dlayer			| back
-	over 12 >> dlayer	| back2
-	over 24 >> dlayer	| front
-	over 36 >> dlayer	| front2
+	dup dlayer			| back
+	dup 12 >> dlayer	| back2
+	dup 24 >> dlayer	| front
+	dup 36 >> dlayer	| front2
 	;
 
 :backall $888888 'tsimg tscolor allayer $ffffff 'tsimg tscolor ;
@@ -82,22 +81,23 @@
 
 |	     up from bk2 bk
 | $ffff fff f.ff fff fff	
+:l0 allayer ; 
+:l1 backall dup dlayer ; 
+:l2 backall dup 12 >> dlayer ;
+:l3 backall dup 24 >> dlayer ;
+:l4 backall dup 36 >> dlayer ;
+:l5 backall $7fff0000 SDLColorA dup 48 >> bitlayer ;
+:l6 backall $7f00ff00 SDLColorA dup 49 >> bitlayer ;
+:l7 backall $7f0000ff SDLColorA dup 50 >> bitlayer ;
+
+#viewlevel l0 l1 l2 l3 l4 l5 l6 l7
 
 :drawtile | y x -- 
 	mapsx over + -? ( drop ; ) mapw >=? ( drop ; )
 	mapsy pick3 + -? ( 2drop ; ) maph >=? ( 2drop ; ) 
 	map> @ 
-	mlevel 
-	-1 =? ( allayer 2drop ; )
-	$1 and? ( backall over dlayer )			| back
-	$2 and? ( backall over 12 >> dlayer ) | back2
-	$4 and? ( backall over 24 >> dlayer ) | front
-	$8 and? ( backall over 36 >> dlayer ) | front2
-	$10 and? ( backall $7fff0000 SDLColorA over 48 >> bitlayer ) | WALL
-	$20 and? ( backall $7f00ff00 SDLColorA over 49 >> bitlayer ) | up
-	$40 and? ( backall $7f0000ff SDLColorA over 50 >> bitlayer ) | TRIGGER
-	2drop
-	;
+	clevel 1+ 3 << 'viewlevel + @ ex
+	drop ;
 
 :setxy | y x --	
 	over mapth * |tileh * 
@@ -466,21 +466,15 @@
 
 :colbtn 
 	clevel =? ( $3f0000 ; ) $666666  ;
-	
-:icoview
-	1 pick2 << mlevel and? ( 112 nip ; ) 154 nip ;
-	
+
 :layers
 	170 18 immbox
 	-1 colbtn nip 'immcolorbtn ! 
-	[ -1 'clevel ! -1 'mlevel ! ; ] "** ALL **" immbtn immln
+	[ -1 'clevel ! ; ] "** ALL **" immbtn immln
 	'nlayer
 	0 ( 7 <? 
 		colbtn 'immcolorbtn !
-		[ dup 'clevel ! 1 over <<  'mlevel ! ; ] pick2 immbtn |imm<<
-		|20 18 immbox
-|		$666666 'immcolorbtn !
-|		[ 1 over << mlevel xor 'mlevel ! ; ] icoview immibtn imm>>
+		[ dup 'clevel ! ; ] pick2 immbtn |imm<<
 		immln
 		swap >>0 swap 1 + ) 2drop immln ;
 
