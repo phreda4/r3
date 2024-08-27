@@ -215,16 +215,24 @@
 	xm neg ym rotxya!
 	2drop ;
 
+|-------------- ISO
+##isx 0.87
+##isy 0.5
+##isz -1.0
 
-#idxx 0.87
-#idyx 0.5
-
+::xyz2iso | x y z -- x y
+	-rot
+	over isx *. over isx *. + | z x y x'
+	rot isy neg *. rot isy *. + | x' y'
+	rot + ;
+	
+	
 :rotxyiso! | x y x1 y1 -- x y
 	over dx * over dy * - | x y x1 y1 x'
 	rot dy * rot dx * +	| x y x' y'
-	over idxx *. over idxx *. +   | x y x' y' x''
+	over isx *. over isx *. +   | x y x' y' x''
 	17 >> pick4 + i2fp da!+
-	swap idyx neg *. swap idyx *. +   | x y 
+	swap isy neg *. swap isy *. +   | x y 
 	17 >> over + i2fp da!+ 
 	;	
 
@@ -239,12 +247,12 @@
 
 :fillvertisoy | dy --
 	'vert 4 + >a | y
-	da@ fp2f 16 >> over + i2fp da!+ 16 a+
-	da@ fp2f 16 >> over + i2fp da!+ 16 a+
-	da@ fp2f 16 >> over + i2fp da!+ 16 a+
-	da@ fp2f 16 >> over + i2fp da!+
+	da@ fp2f over + 16 >> i2fp da!+ 16 a+
+	da@ fp2f over + 16 >> i2fp da!+ 16 a+
+	da@ fp2f over + 16 >> i2fp da!+ 16 a+
+	da@ fp2f over + 16 >> i2fp da!+
 	drop ;
-	
+
 |-------------------------	
 ::SDLspriteZ | x y zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r

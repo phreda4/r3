@@ -302,5 +302,6 @@
 ::fp2f | fp -- fixed point
 	dup $7fffff and $800000 or
 	over 23 >> $ff and 134 - 
-	shift 
-	swap 63 >> - ;
+	shift swap 
+	$80000000 and? ( drop neg ; ) drop
+	;
