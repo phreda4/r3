@@ -47,6 +47,7 @@
 	here dup "mem/error.mem" load
 	over =? ( 2drop empty ; ) 
 	0 swap c!
+	
 	.cr .bred .white 
 	" * ERROR * " .println
 	.reset
@@ -145,66 +146,6 @@
 	;
 	
 |------------------------------
-#srcinc
-
-:>>13 | a -- a
-	( c@+ 1?
-		13 =? ( drop ; ) 
-		drop ) drop 1 - ;
-	
-:countlines | adr -- line
-	0 srcinc ( pick2 <=? 
-		>>13 swap 1 + swap ) 
-	drop nip ;
-	
-:infoword
-	dup 4 << 1 or | type 1 info word
-	swap 4 << dic + 
-	@ 40 >>> src + countlines 1 - 0 swap 
-	info!+ | tipo x y --
-	drop 
-	;
-:incgendoc | nro --
-	|.cls dup "inc:%d" .println
-	4 << 'inc + 8 + @+ 
-	dup $ffffffff and src + 'srcinc ! | src inic
-	swap 8 + @ | fist last
-	32 >> swap 32 >> |
-|	2dup "%d %d" .println
-	clearinfo
-	( over <?
-		dup infoword
-		1 + ) 2drop
-	infoend
-	|.cls linecomm ( linecomm> <? @+ "%h" .println ) drop .input
-	;
-	
-| statfile 0:no data 1:error 2:ok-allinfo
-:tokensrc
-	empty mark
-	fuente 'srcname r3loadmem
-	error 1? ( drop modoerror ; ) drop
-	2 'statfile ! 
-|	lidiset
-|	liinset
-|	$ffff 'here +!
-	resetvm
-	cursor2ip
-	
-	cntinc 1 - 'nowinc !
-	cntdef 1 - 'nowdic !
-
-	nowinc incgendoc
-|	mark
-|	'srcname ,s ,cr ,cr
-|	debugmemmap
-|	"r3/d4/gen/map.txt" savemem
-|	empty
-	;	
-	
-:tokensrc?
-	statfile 2 =? ( drop ; ) drop
-	tokensrc ;
 	
 :modoclear
 	0 'statfile ! 
@@ -219,7 +160,6 @@
 	;
 	
 :mododic
-	tokensrc?
 	rows 8 - 'hcode !	
 	0 dic+!
 	0 inc+!	
@@ -227,14 +167,13 @@
 	;
 	
 :modoimm
-	tokensrc?
 	rows 8 - 'hcode !
 	3 'modoe ! 
 	'pad immset
 	;
 
 :mododeb
-	tokensrc
+	|tokensrc
 	rows 8 - 'hcode !
 	2 'modoe ! 
 	'pad immset

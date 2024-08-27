@@ -188,7 +188,7 @@
 	8 a+ pick2 da!+ over da!+ over da!+
 	8 a+ pick2 da!+ dup da!+ over da!+
 	8 a+ pick2 da!+ dup da!+ dup da!+
-	8 a+ pick2 da!+ over da!+ dup da!+
+	8 a+ pick2 da!+ over da!+ dup da!
 	3drop ;
 	
 :fillvertxy | x y --
@@ -196,7 +196,7 @@
 	over xm - i2fp da!+ dup ym - i2fp da!+ 12 a+ 
 	over xm + i2fp da!+ dup ym - i2fp da!+ 12 a+
 	over xm + i2fp da!+ dup ym + i2fp da!+ 12 a+
-	swap xm - i2fp da!+ ym + i2fp da!+ 12 a+
+	swap xm - i2fp da!+ ym + i2fp da!+
 	;
 
 :rotxya! | x y x1 y1 -- x y
@@ -212,17 +212,39 @@
 	xm neg ym neg rotxya! 12 a+
 	xm ym neg rotxya! 12 a+
 	xm ym rotxya! 12 a+
-	xm neg ym rotxya! 12 a+
+	xm neg ym rotxya!
 	2drop ;
 
-::fillspritevert | x y x y x y x y --
-	'vert >a
-	swap i2fp da!+ i2fp da!+ 12 a+ 
-	swap i2fp da!+ i2fp da!+ 12 a+ 
-	swap i2fp da!+ i2fp da!+ 12 a+ 
-	swap i2fp da!+ i2fp da!  
-	;
 
+#idxx 0.87
+#idyx 0.5
+
+:rotxyiso! | x y x1 y1 -- x y
+	over dx * over dy * - | x y x1 y1 x'
+	rot dy * rot dx * +	| x y x' y'
+	over idxx *. over idxx *. +   | x y x' y' x''
+	17 >> pick4 + i2fp da!+
+	swap idyx neg *. swap idyx *. +   | x y 
+	17 >> over + i2fp da!+ 
+	;	
+
+:fillvertiso | x y ang --
+	sincos 'dx ! 'dy !
+	'vert >a
+	xm neg ym neg rotxyiso! 12 a+
+	xm ym neg rotxyiso! 12 a+
+	xm ym rotxyiso! 12 a+
+	xm neg ym rotxyiso!
+	2drop ;
+
+:fillvertisoy | dy --
+	'vert 4 + >a | y
+	da@ fp2f 16 >> over + i2fp da!+ 16 a+
+	da@ fp2f 16 >> over + i2fp da!+ 16 a+
+	da@ fp2f 16 >> over + i2fp da!+ 16 a+
+	da@ fp2f 16 >> over + i2fp da!+
+	drop ;
+	
 |-------------------------	
 ::SDLspriteZ | x y zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
@@ -310,6 +332,18 @@
 	settile >r fillvertr
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry ;
+	
+::sspriteiso | x y ang zoom n ssprite --
+	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	settile >r fillvertiso
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
+
+::sspriteniso | dy n ssprite --
+	settile >r fillvertisoy
+	SDLrenderer r> @ 'vert 4 'index 6 
+	SDL_RenderGeometry ;
+	
 
 |.... time control
 #prevt

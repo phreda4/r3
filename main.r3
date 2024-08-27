@@ -241,14 +241,6 @@
 |MAC| "./r3mac %s/%s"
 	sprint sys
 	checkerror
-
-	conadj ;
-
-:r3info
-|WIN| "r3 r3/editor/r3info.r3"
-|LIN| "./r3lin r3/editor/r3info.r3"
-|RPI| "./r3rpi r3/editor/r3info.r3"
-	sys 
 	conadj ;
 
 :r3edit
@@ -263,8 +255,6 @@
 :editfile
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-	|r3info
-	|cerror 1? ( drop ; ) drop	
 	r3edit
 	;
 
@@ -300,6 +290,8 @@
 	".map" =pos 1? ( 2drop editmap ; ) drop
 	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
+	| ".jpg"
+	| ".txt"
 	drop
 	;
 

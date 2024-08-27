@@ -175,68 +175,6 @@
 	inisel 0? ( drop back ; )
 	drop borrasel ;
 
-|---------- TAGS in code	
-| 00000000 00 xxx yyy
-|
-##linecomm 	| comentarios de linea
-##linecomm>
-#linecommnow 
-
-:t0
-	,sp ,bred ,white 
-	drop " << ERR " ,s ;
-
-:t1
-	,sp ,bcyan ,black 
-	$f nand dic + 8 + @ ,sp ,mov ,sp ;
-	
-#tcomm t0 t1 t0 t0 t0 t0 t0 t0
-
-:inicomm
-	linecomm | head 
-	( @+ $fff and ylinea <=? drop ) drop
-	8 - 'linecommnow ! ;
-	
-:,comm | line adr' -- line adr'
-	linecommnow @ $fff and 
-	pick2 ylinea + 
-	>? ( drop ; ) drop
-	linecommnow @+
-	dup 12 >> $fff and 1? ( dup xcode + 1 - ,col ) drop | 0=here
-	24 >> dup $7 and 3 << 'tcomm + @ ex
-	'linecommnow !
-	;
-
-|------
-::clearinfo
-	linecomm 'linecomm> ! ;
-
-:swapcomm | now -- now 
-	dup @+ swap @ | now @1 @2
-	pick2 !+ ! ;
-	
-:infosort | -- pos
-	linecomm> 8 - 
-	dup @ $fff and | y last
-	swap | ylast prev
-	( 8 - linecomm >=? | first
-		dup @ $fff and | ylast now ynow
-		pick2 <=? ( drop nip ; ) drop
-		swapcomm
-		) nip ;
-	
-::info!+ | tipo x y -- pos
-	$fff and swap $fff and 12 << or swap 24 << or
-	linecomm> !+ 'linecomm> ! 
-	infosort 
-	;
-	
-::infoend
-	$fff linecomm> !+ 'linecomm> ! ;
-
-::infodel | nro --
-	;
-
 |------ Color line
 #colornow 0
 
@@ -320,7 +258,6 @@
 	iniline
 	inselect
 	parseline
-	,comm
 	;
 
 :setpantafin
@@ -337,7 +274,6 @@
 	( pantaini> <? scrollup )
 	drop 
 	,reset
-	inicomm
 	pantaini>
 	0 ( hcode <?
 		1 ycode pick2 + ,at
@@ -413,9 +349,6 @@
 	dup 'undobuffer !
 	dup 'undobuffer> !
 	$3fff +         	| 16kb
-	dup 'linecomm !
-	dup	'linecomm> !
-	$3fff +				| 4096 linecomm
 	'here ! | -- FREE
 	;
 

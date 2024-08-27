@@ -62,7 +62,7 @@
 :GetComputerName
 	;
 	
-#compuname "mipc"
+#compuname "127.0.0.1"
 
 :server
 	"Starting server..." .println
