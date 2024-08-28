@@ -53,7 +53,7 @@
 ::vline | x y --
 	2dup rline 'ya ! 'xa ! ;
 
-|----
+|---------------
 #cf #cc
 #sa #sb
 #herel
@@ -100,13 +100,22 @@
 		fillline
  		) drop ;
 
+|---------------
 ::vrect | x1 y1 x2 y2 --
 	2over pick3 ihline
 	pick3 over pick3 ihline
 	2over 1 + pick2 1 - ivline
     2swap nip ivline ;
 
+:2sort over <? ( swap ) ;
+	
+::vfrect | x1 y1 x2 y2 --
+	rot 2sort over - | x1 x2 y1 h
+	( 1? 1- 
+		pick3 pick2 pick4 ihline
+		swap 1+ swap ) 4drop ;
 
+|---------------
 #ym #xm
 #dx #dy
 
