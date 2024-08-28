@@ -2,6 +2,7 @@
 | PHREDA 2024
 |-------------------------
 ^r3/lib/rand.r3
+^r3/lib/vdraw.r3
 ^r3/util/arr16.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/sdlbgui.r3
@@ -23,7 +24,8 @@
 #xscr #yscr
 	
 :xy2memx | x y -- mem
-	maxres2 * + 2 << now2mem + ;	
+	maxres2 * + nz + 2 << now2mem + ;	
+
 :xy2memy | x y -- mem
 	maxres * swap maxres2 * + 2 << now2mem + ;
 :xy2memz | x y -- mem
@@ -32,9 +34,9 @@
 #xymem 'xy2memz
 
 :adri | x y -- adr
-	swap 0 <? ( 2drop 0 ; ) maxres >? ( 2drop 0 ; )
-	swap 0 <? ( 2drop 0 ; ) maxres >? ( 2drop 0 ; )
-	xymem ;
+	swap 0 <? ( 2drop 0 ; ) maxres >=? ( 2drop 0 ; )
+	swap 0 <? ( 2drop 0 ; ) maxres >=? ( 2drop 0 ; )
+	xymem ex ;
 
 :pntset | x y --
 	adri 0? ( drop ; ) 
@@ -44,16 +46,18 @@
 	adri 0? ( ; ) d@ ;
 	
 |------------------- POINTS
+:posxy
+	sdlx xscr - 2 >> sdly yscr - 2 >> ;
+
 :draw0in
 	;
 
 :res0 ;
-:in0dn ; |inreset sdlx sdly >poly ;
+:in0dn posxy vop ; |inreset sdlx sdly >poly ;
 :in0move 
-	sdlx xscr - 2 >> 
-	sdly yscr - 2 >> 
-	xymem ex
-	$000000 swap d!
+	posxy vline
+|	xymem ex
+|	$000000 swap d!
 	|"%d %d" .println 
 	; |sdlx sdly +poly ;
 	
@@ -135,32 +139,51 @@
 #vx1 #vx2 #vy1 #vy2	
 #xwm #ywm #wwm #hwm
 
+:drawframe
+	over 1- over 1- wwm 2 + hwm 2 + sdlrect ;
+	
+:rulerx | n --
+	>r over r@ 2 << + 2 - over 8 - 4 6 sdlfrect
+	over r> 2 << + 2 - over hwm + 2 + 4 6 sdlfrect ;
+	
+:rulery | n --
+	>r
+	over 8 - over r@ 2 << + 2 - 6 4 sdlfrect
+	over wwm + 2 + over r> 2 << + 2 - 6 4 sdlfrect ;
+	
 :views
 	'xy2memx 'xymem !
 	vx1 xwm + vy1 ywm +
 	2dup 'yscr ! 'xscr !
-	|2dup vx2 pick2 - vy2 pick2 - sdlrect
+	$ff0000 sdlcolor drawframe
 	2dup wwm hwm guibox
 	moded @+ ex @+ swap @+ swap @ onMapA | 'dn 'move 'up --	
+	$ff sdlcolor nz rulerx
+	$ff00 sdlcolor ny rulery
 	showlayerx
 	
 	'xy2memy 'xymem !
-	vx2 xwm + vy1  ywm +
+	vx2 xwm + vy2  ywm +
 	2dup 'yscr ! 'xscr !
-	|2dup sw pick2 - vy2 pick2 - sdlrect
+	$ff00 sdlcolor drawframe
 	2dup wwm hwm guibox
 	moded @+ ex @+ swap @+ swap @ onMapA | 'dn 'move 'up --	
+	$ff0000 sdlcolor nx rulerx
+	$ff sdlcolor nz rulery
 	showlayery
 
 	'xy2memz 'xymem !
 	vx1 xwm + vy2 ywm +
 	2dup 'yscr ! 'xscr !
-	|2dup vx2 pick2 - sh pick2 - sdlrect
+	$ff sdlcolor drawframe
 	2dup wwm hwm guibox
 	moded @+ ex @+ swap @+ swap @ onMapA | 'dn 'move 'up --	
+	$ff0000 sdlcolor nx rulerx
+	$ff00 sdlcolor ny rulery
 	showlayerz
-	
-|	vx2 vy2 sw pick2 - sh pick2 - sdlrect | ISO
+
+	$888888 sdlcolor
+	vx2 vy1 sw pick2 - sh 2/ pick2 - sdlrect | ISO
 	;
 	
 :workarea
@@ -218,21 +241,27 @@
 |	inreset
 	
 	64 'mx ! 64 'my ! 64 'mz !	| size
-	0 'nx ! 0 'ny ! 0 'nz !		| layer now
+	31 'nx ! 31 'ny ! 31 'nz !		| layer now
 	resetv
 	
-	model ( here <? dup swap d!+ ) drop
+	|model ( here <? dup swap d!+ ) drop
 	;
 	
 |-------------------
 : |<<< BOOT <<<
 	"Stk-Edit" 1024 700 SDLinit |R | no resize
 	bfont1
+	
 	0 32 xydlgColor!
 	dlgColorIni
 	
+	'pntset vset!
+	'pntget vget!
+	maxres dup vsize!
+	
 	32 'ssheet p.ini
 	50 'obj p.ini
+	
 	| ---- MEM MAP ----
 	here dup 'model !
 	maxres dup dup * *
