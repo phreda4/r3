@@ -110,7 +110,7 @@
 	swap over - dup 63 >> and + dup neg 63 >> and ;
 
 ::clamps16 | v -- (signed 16bits)v
-	-326768 32767 in? ( ; ) 
+	-32768 32767 in? ( ; ) 
 	63 >> $7fff xor ;
 	
 ::between | v min max -- -(out)/+(in)
@@ -302,6 +302,11 @@
 ::fp2f | fp -- fixed point
 	dup $7fffff and $800000 or
 	over 23 >> $ff and 134 - 
-	shift swap 
-	$80000000 and? ( drop neg ; ) drop
-	;
+	shift swap -? ( drop neg ; ) drop ;
+
+|::fp2fu | fp -- fixed point
+|	dup $7fffff and $800000 or
+|	swap 23 >> $ff and 134 - 
+|	shift ;
+|::fp2f | fp -- fixed point
+|	-? ( fp2fu neg ; ) fp2fu ;

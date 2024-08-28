@@ -215,44 +215,6 @@
 	xm neg ym rotxya!
 	2drop ;
 
-|-------------- ISO
-##isx 0.87
-##isy 0.5
-##isz -1.0
-
-::xyz2iso | x y z -- x y
-	-rot
-	over isx *. over isx *. + | z x y x'
-	rot isy neg *. rot isy *. + | x' y'
-	rot + ;
-	
-	
-:rotxyiso! | x y x1 y1 -- x y
-	over dx * over dy * - | x y x1 y1 x'
-	rot dy * rot dx * +	| x y x' y'
-	over isx *. over isx *. +   | x y x' y' x''
-	17 >> pick4 + i2fp da!+
-	swap isy neg *. swap isy *. +   | x y 
-	17 >> over + i2fp da!+ 
-	;	
-
-:fillvertiso | x y ang --
-	sincos 'dx ! 'dy !
-	'vert >a
-	xm neg ym neg rotxyiso! 12 a+
-	xm ym neg rotxyiso! 12 a+
-	xm ym rotxyiso! 12 a+
-	xm neg ym rotxyiso!
-	2drop ;
-
-:fillvertisoy | dy --
-	'vert 4 + >a | y
-	da@ fp2f over + 16 >> i2fp da!+ 16 a+
-	da@ fp2f over + 16 >> i2fp da!+ 16 a+
-	da@ fp2f over + 16 >> i2fp da!+ 16 a+
-	da@ fp2f over + 16 >> i2fp da!+
-	drop ;
-
 |-------------------------	
 ::SDLspriteZ | x y zoom img --
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
@@ -338,17 +300,6 @@
 ::sspriterz | x y ang zoom n ssprite --
 	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
 	settile >r fillvertr
-	SDLrenderer r> @ 'vert 4 'index 6 
-	SDL_RenderGeometry ;
-	
-::sspriteiso | x y ang zoom n ssprite --
-	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
-	settile >r fillvertiso
-	SDLrenderer r> @ 'vert 4 'index 6 
-	SDL_RenderGeometry ;
-
-::sspriteniso | dy n ssprite --
-	settile >r fillvertisoy
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry ;
 	

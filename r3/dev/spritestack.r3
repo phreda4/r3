@@ -1,6 +1,7 @@
 | sprites stack test
 | PHREDA 2024
 ^r3/win/sdl2gfx.r3
+^r3/win/sprstk.r3
 ^r3/util/pcfont.r3
 
 #sptree
@@ -68,7 +69,7 @@
 :grav
 	vz 'zcar +!
 	0.001 'vz +!
-	zcar +? ( 0 'zcar ! vz neg 'vz ! )
+	zcar +? ( vz neg 'vz ! )
 	drop
 	;
 	
