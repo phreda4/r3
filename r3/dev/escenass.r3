@@ -200,8 +200,6 @@
 	$ffff swap dy */ 'dy ! 
 	0 ( 1.0 dy - <?
 		0 ( 1.0 dx - <?
-|			dup pick2 over dx + over dy + | x1 y1 x2 y2
-|			swap 2swap swap f2fp da!+ f2fp da!+ f2fp da!+ f2fp da!+ 
 			dup f2fp da!+ 
 			over f2fp da!+ 
 			dup dx + f2fp da!+ 
@@ -209,12 +207,26 @@
 			dx + ) drop
 		dy + ) drop
 	 here 
-	 dup a> - 4 >> 1- 32 << over @ or over ! | altura
+	 a> over - 4 >> 1- 32 << over 8 + @ or over 8 + ! | altura
 	 a> 'here ! ;
 
 :settex | lev -- lev
 	dup 4 << 16 + ssp + 
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! ;
+
+::sswh | adr -- h w
+	8 + @ dup $ffff and swap 16 >> $ffff and ;
+	
+:isospr3 | x y a z lev 'ss --
+	dup 'ssp ! sswh	| x y a z lev w h
+	pick3 16 *>> 'ym !		| x y a z lev w 
+	pick2 16 *>> 'xm !		| x y a z lev
+	rot fillvertiso 		| x y z lev
+	swap 16 >> 0? ( 1+ ) swap			| x y zi lev
+	( 1? 1- settex 
+		2swap				| zi lev x y
+		pick3 ( 1? 1- >r renderlayer 1- r> ) drop
+		2swap ) 4drop ;
 
 |--------------
 :floor
@@ -231,30 +243,45 @@
 #spk
 #spka
 
+#spk1
+#spka1
+
+#zoom 4.0
 #a	
 	
 :game
 	$3a3a3a SDLcls
 	$ffffff pccolor
 	0 0 pcat "Sprite stack" pcprint pccr
-	spcara "%d" pcprint pccr
-	spka "%d" pcprint pccr
+	isy isx "iso %f %f : <ad ws>" pcprint pccr
+	zoom "%f" pcprint
 	
 	floor	
 	
 	| v1
-	100 300 a 6.0 spcara spcar isospr
-	350 300 a 6.0 spka spk isospr
+	100 200 a 6.0 spcara spcar isospr
+	400 200 a 6.0 spka spk isospr
 
 	| v2
-	300 500 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
-	750 500 a 4.0 spka spk isospr2
+	200 400 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
+	500 400 a 4.0 spka spk isospr2
+
+	| v3
+|	200 400 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
+	700 500 a zoom spka1 spk1 isospr3
 
 	0.002 'a +! 
 	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
+	<w> =? ( 0.1 'isy +! )
+	<s> =? ( -0.1 'isy +! )
+	<a> =? ( 0.1 'isx +! )
+	<d> =? ( -0.1 'isx +! )
+	
+	<up> =? ( 0.1 'zoom +! )
+	<dn> =? ( -0.1 'zoom +! )
 	drop
 	;
 
@@ -268,6 +295,10 @@
 	here
 	14 37 "media/stackspr/van.png" ssload 'spk !
 	here swap - 3 >> 2 - 'spka !
+
+	here
+	14 37 "media/stackspr/van.png" loadss 'spk1 !
+	here swap - 4 >> 1- 'spka1 !
 
 	fillfull
 	
