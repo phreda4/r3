@@ -3,7 +3,6 @@
 
 ^r3/win/sdl2gfx.r3	
 
-
 #vert [
 0 0 0 0 0
 0 0 0 0 0
@@ -28,7 +27,6 @@
 	8 a+ pick2 da!+ dup da!+ dup da!+
 	8 a+ pick2 da!+ over da!+ dup da!
 	3drop ;
-	
 
 |-------------- ISO
 #ym #xm
@@ -72,27 +70,6 @@
 	drop ;
 
 
-|----------------------	
-::ssload | w h "file" -- ssprite
-	loadimg
-	dup 0 0 'dx 'dy SDL_QueryTexture
-	here >a a!+ 		| texture
-	2dup 32 << or a!+	| wi hi
-	$ffff rot dx */ 'dx ! | $ffff = 0.99..
-	$ffff swap dy */ 'dy ! 
-	0 ( 1.0 dy - <?
-		0 ( 1.0 dx - <?
-			dup pick2 over dx + over dy + | x1 y1 x2 y2
-			$1fffe and 47 << 
-			swap $1fffe and 31 << or
-			swap $1fffe and 15 << or
-			swap $1fffe and 1 >> or
-			a!+
-			dx + ) drop
-		dy + ) drop
-	here a> 'here ! 
-	;
-
 :settile | n adr -- adr
 	swap 3 << 16 + over +
 	@ dup 1 << $1fffe and f2fp | x1
@@ -106,16 +83,6 @@
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
 
-::sstint | color --- ; with alpha!! AARRGGBB
-	'vert >a 8 a+ dup da!+ 16 a+ dup da!+ 16 a+ dup da!+ 16 a+ da! ;
-	
-::ssnotint 
-	$ffffffff sstint ;
-
-::sspritewh | adr -- h w
-	8 + @ dup $ffffffff and swap 32 >>> ;
-	
-	
 ::sspriteiso | x y ang zoom n ssprite --
 	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
 	settile >r fillvertiso
@@ -126,7 +93,6 @@
 	settile >r fillvertisoy
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry ;
-	
 
 
 : fillfull ;
