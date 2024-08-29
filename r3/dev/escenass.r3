@@ -190,31 +190,31 @@
 		pick3 ( 1? 1- >r renderlayer 1- r> ) drop
 		2swap ) 4drop ;
 
-|--------------
+|-------------- v3 ...
 ::loadss | w h "file" -- ssprite
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
-	2dup 32 << or a!+	| wi hi
-	|2dup 16 << or a!+	| wi hi
+	2dup 16 << or a!+	| wi hi
 	$ffff rot dx */ 'dx ! | $ffff = 0.99..
 	$ffff swap dy */ 'dy ! 
 	0 ( 1.0 dy - <?
 		0 ( 1.0 dx - <?
-			dup pick2 over dx + over dy + | x1 y1 x2 y2
-			$1fffe and 47 << 
-			| $1fffe and f2fp da!+ ...
-			swap $1fffe and 31 << or
-			swap $1fffe and 15 << or
-			swap $1fffe and 1 >> or
-			a!+
+|			dup pick2 over dx + over dy + | x1 y1 x2 y2
+|			swap 2swap swap f2fp da!+ f2fp da!+ f2fp da!+ f2fp da!+ 
+			dup f2fp da!+ 
+			over f2fp da!+ 
+			dup dx + f2fp da!+ 
+			over dy + f2fp da!+
 			dx + ) drop
 		dy + ) drop
-	| here 
-	| dup a> - 3 >> 2 - 32 << over @ or over ! | altura
-	| a> 'here !
-	here a> 'here ! 
-	;
+	 here 
+	 dup a> - 4 >> 1- 32 << over @ or over ! | altura
+	 a> 'here ! ;
+
+:settex | lev -- lev
+	dup 4 << 16 + ssp + 
+	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! ;
 
 |--------------
 :floor
