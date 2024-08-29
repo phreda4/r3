@@ -3,11 +3,6 @@
 ^r3/win/sdl2gfx.r3
 ^r3/util/pcfont.r3
 
-#mm
-#d1 0 
-#d2 0
-#d3
-#d4
 
 |------------- ISO
 ##isx 0.9 | 0.87
@@ -113,16 +108,29 @@
 		1? ) 3drop ;
 
 |--- v2
+#d1 0 
+#d2 0
+#d3
+#d4
 
+:gx+ 48 << 48 >> + ;
+:gy+ 32 << 48 >> + ;
 
-:rotxyiso | x y x1 y1 -- x y xd yd
+:drawbase | x y -
+	over d1 gx+ over d1 gy+ pick3 d2 gx+ pick3 d2 gy+ sdlline
+	over d2 gx+ over d2 gy+ pick3 d3 gx+ pick3 d3 gy+ sdlline
+	over d4 gx+ over d4 gy+ pick3 d3 gx+ pick3 d3 gy+ sdlline
+	over d1 gx+ over d1 gy+ pick3 d4 gx+ pick3 d4 gy+ sdlline
+	2drop ;
+	
+:rotxyiso | x1 y1 -- xd yd
 	over dx * over dy * -				| x y x1 y1 x'
 	rot dy * rot dx * +					| x y x' y'
 	over isx *. over isx *. + 17 >>		| x y x' y' x''
 	rot isy neg *. rot isy *. + 17 >>	| x y 
 	;	
 
-:fillvertiso | x y ang --
+:fillvertiso | ang --
 	sincos 'dx ! 'dy !
 	xm neg ym neg rotxyiso 
 	$ffff and 16 << swap $ffff and or 'd1 ! 
@@ -132,42 +140,81 @@
 	$ffff and 16 << swap $ffff and or 'd3 !
 	xm neg ym rotxyiso 
 	$ffff and 16 << swap $ffff and or 'd4 !
-	2drop ;
+	;
 
-:isospr2 | x y a z 'ss --
-	sspritewh | x y a z w h
-	pick2 16 *>> 'ym ! 16 *>> 'xm ! | x y a
-	fillvertiso | x y ang --
-	xm 32 << ym $ffffffff and or 'mm !
-	;
-	
-:gx+ 48 << 48 >> + ;
-:gy+ 32 << 48 >> + ;
+#cntv
+#cnti
+#ind
+#tx1 #tx2
+#ty1 #ty2
 
-:drawbase | x y -
-	over d1 gx+ over d1 gy+
-	pick3 d2 gx+ pick3 d2 gy+
-	sdlline
-	over d2 gx+ over d2 gy+
-	pick3 d3 gx+ pick3 d3 gy+
-	sdlline
-	over d4 gx+ over d4 gy+
-	pick3 d3 gx+ pick3 d3 gy+
-	sdlline
-	over d1 gx+ over d1 gy+
-	pick3 d4 gx+ pick3 d4 gy+
-	sdlline
-	2drop
-	;
+:gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
 	
-:debug	
-	mm dup 32 << 32 >> swap 32 >> "%d %d" pcprint pccr
-	d1 dup 48 << 48 >> swap 32 << 48 >> "%d %d" pcprint pccr
-	d2 dup 48 << 48 >> swap 32 << 48 >> "%d %d" pcprint pccr
-	d3 dup 48 << 48 >> swap 32 << 48 >> "%d %d" pcprint pccr
-	d4 dup 48 << 48 >> swap 32 << 48 >> "%d %d" pcprint pccr
+| posx posy color texx texy 
+
+#ssp
+
+:settex | lev -- lev
+	dup 3 << 16 + ssp + @
+	dup 1 << $1fffe and f2fp 'tx1 !
+	dup 15 >> $1fffe and f2fp 'ty1 !
+	dup 31 >> $1fffe and f2fp 'tx2 !
+	47 >> $1fffe and f2fp 'ty2 !
 	;
-	
+
+:renderlayer
+	here >a
+	d1 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty1 da!+
+	d2 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty1 da!+
+	d3 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty2 da!+
+	d4 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty2 da!+
+	4 'cntv ! | cntobj 2 << | *4
+	a> 'ind !
+	0 da!+ 1 da!+ 2 da!+ 2 da!+ 3 da!+ 0 da!+
+	6 'cnti ! | cntobj 1 << dup 1 << + | *6
+	SDLrenderer ssp @ here cntv ind cnti SDL_RenderGeometry 
+	;
+		
+:isospr2 | x y a z lev 'ss --
+	dup 'ssp ! sspritewh	| x y a z lev w h
+	pick3 16 *>> 'ym !		| x y a z lev w 
+	pick2 16 *>> 'xm !		| x y a z lev
+	rot fillvertiso 		| x y z lev
+	swap 0.9 + 16 >> swap			| x y zi lev
+	( 1? 1- settex 
+		2swap				| zi lev x y
+		pick3 ( 1? 1- >r renderlayer 1- r> ) drop
+		2swap ) 4drop ;
+
+|--------------
+::loadss | w h "file" -- ssprite
+	loadimg
+	dup 0 0 'dx 'dy SDL_QueryTexture
+	here >a a!+ 		| texture
+	2dup 32 << or a!+	| wi hi
+	|2dup 16 << or a!+	| wi hi
+	$ffff rot dx */ 'dx ! | $ffff = 0.99..
+	$ffff swap dy */ 'dy ! 
+	0 ( 1.0 dy - <?
+		0 ( 1.0 dx - <?
+			dup pick2 over dx + over dy + | x1 y1 x2 y2
+			$1fffe and 47 << 
+			| $1fffe and f2fp da!+ ...
+			swap $1fffe and 31 << or
+			swap $1fffe and 15 << or
+			swap $1fffe and 1 >> or
+			a!+
+			dx + ) drop
+		dy + ) drop
+	| here 
+	| dup a> - 3 >> 2 - 32 << over @ or over ! | altura
+	| a> 'here !
+	here a> 'here ! 
+	;
 
 |--------------
 :floor
@@ -192,7 +239,6 @@
 	0 0 pcat "Sprite stack" pcprint pccr
 	spcara "%d" pcprint pccr
 	spka "%d" pcprint pccr
-	debug
 	
 	floor	
 	
@@ -201,13 +247,10 @@
 	350 300 a 6.0 spka spk isospr
 
 	| v2
-	500 500 a 6.0 spcara spcar isospr
-	750 500 a 6.0 spka spk isospr
-	
-	0.002 'a +! 
+	300 500 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
+	750 500 a 4.0 spka spk isospr2
 
-	500 500 a 6.0 spcar isospr2
-	200 500 drawbase 
+	0.002 'a +! 
 	
 	SDLredraw
 	SDLkey
