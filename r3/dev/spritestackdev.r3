@@ -11,6 +11,7 @@
 ##isxo 512
 ##isyo 300
 
+|------- FLOOR
 ::xyz2iso | x y z -- x y
 	-rot
 	over isx *. over isx *. + | z x y x'
@@ -21,6 +22,14 @@
 	xyz2iso 
 	swap 12 >> isxo + 
 	swap 12 >> isyo + ;
+
+:floor
+	$ffffff sdlcolor
+	-5.0 ( 5.0 <?
+		-5.0 ( 5.0 <?
+			2dup 0 2iso sdlpoint
+			0.5 + ) drop
+		0.5 + ) drop ;
 
 |------- SSPRITE
 #ym #xm
@@ -83,7 +92,6 @@
 	12 a+ over da!+ dup da!+
 	12 a+ pick3 da!+ dup da!+
 	4drop ;
-
 	
 ::sspriteiso | x y ang zoom n ssprite --
 	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
@@ -96,8 +104,7 @@
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry ;
 	
-|..............
-|--- v1
+|---------- v1
 :isospr | x y a z lev 'ss --
 	pick2 neg pick2 pick2 
 	>r >r >r
@@ -107,7 +114,7 @@
 		pick2 over pick3 sspriteniso | dy n ssprite --
 		1? ) 3drop ;
 
-|--- v2
+|----------- v2
 #d1 0 
 #d2 0
 #d3
@@ -190,16 +197,16 @@
 		pick3 ( 1? 1- >r renderlayer 1- r> ) drop
 		2swap ) 4drop ;
 
-|-------------- v3 ...
+|-------------- v3 
 ::loadss | w h "file" -- ssprite
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
 	2dup 16 << or a!+	| wi hi
-	$ffff rot dx */ 'dx ! | $ffff = 0.99..
-	$ffff swap dy */ 'dy ! 
-	0 ( 1.0 dy - <?
-		0 ( 1.0 dx - <?
+	1.0 rot dx */ 'dx ! | $ffff = 0.99..
+	1.0 swap dy */ 'dy ! 
+	0 ( 1.0 dy - <=?
+		0 ( 1.0 dx - <=?
 			dup f2fp da!+ 
 			over f2fp da!+ 
 			dup dx + f2fp da!+ 
@@ -209,6 +216,7 @@
 	 here 
 	 a> over - 4 >> 1- 32 << over 8 + @ or over 8 + ! | altura
 	 a> 'here ! ;
+
 
 :settex | lev -- lev
 	dup 4 << 16 + ssp + 
@@ -228,23 +236,61 @@
 		pick3 ( 1? 1- >r renderlayer 1- r> ) drop
 		2swap ) 4drop ;
 
-|--------------
-:floor
-	$ffffff sdlcolor
-	-5.0 ( 5.0 <?
-		-5.0 ( 5.0 <?
-			2dup 0 2iso sdlpoint
-			0.5 + ) drop
-		0.5 + ) drop ;
+|--------------- v4
 
-#spcar
-#spcara
+#cntl 
+:makelayer
+	d1 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty1 da!+
+	d2 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty1 da!+
+	d3 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty2 da!+
+	d4 gyx pick3 + i2fp da!+ over + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty2 da!+
+	1 'cntl +!
+	;
+	
+|#indexm [ 0 1 2 2 3 0 ]
+	
+:makeindex
+	0 ( cntl <?
+		dup 2 << 
+		dup 0 + da!+ dup 1 + da!+ dup 2 + da!+
+		dup 2 + da!+ dup 3 + da!+ 0 + da!+
+		1+ ) drop ;
 
-#spk
-#spka
+:isospr4 | x y a z 'ss --
+	dup 'ssp ! 
+	8 + @ 
+	dup 32 >> swap 
+	dup $ffff and swap
+	16 >> $ffff and 
+	| lev w h
+	pick3 16 *>> 'ym !		| x y a z lev w 
+	pick2 16 *>> 'xm !		| x y a z lev
+	rot fillvertiso 		| x y z lev
+	swap 16 >> 0? ( 1+ ) swap			| x y zi lev
+	here >a 0 'cntl ! 
+	( 1? 1- settex 
+		2swap				| zi lev x y
+		pick3 ( 1? 1- >r makelayer 1- r> ) drop
+		2swap ) 4drop 
+	a> 'ind !
+	makeindex
+	SDLrenderer ssp @ here 
+	cntl 2 << | 4*
+	ind 
+	cntl 1 << dup 1 << + | 6*
+	SDL_RenderGeometry 
+	;
 
-#spk1
-#spka1
+|--------------- example
+#spcar #spcara
+#spk #spka
+#spk1 #spka1
+
+#spcasa #spcasa1
 
 #zoom 4.0
 #a	
@@ -257,19 +303,21 @@
 	zoom "%f" pcprint
 	
 	floor	
-	
-	| v1
-	100 200 a 6.0 spcara spcar isospr
-	400 200 a 6.0 spka spk isospr
 
 	| v2
-	200 400 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
-	500 400 a 4.0 spka spk isospr2
+|	200 300 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
+|	500 300 a 4.0 spka spk isospr2
 
 	| v3
-|	200 400 a 10.0 spcara spcar isospr2 | x y a z lev 'ss --
-	700 500 a zoom spka1 spk1 isospr3
+	|200 300 a 10.0 spcara1 spcar1 isospr3 | x y a z lev 'ss --
+	200 200 a zoom spka1 spk1 isospr3
+	700 200 a 5.0 spcasa1 spcasa isospr3
 
+
+	| v4
+	200 550 a neg zoom spk1 isospr4
+	700 550 a neg 5.0 spcasa isospr4
+	
 	0.002 'a +! 
 	
 	SDLredraw
@@ -288,7 +336,7 @@
 :main
 	"WORD SS" 1024 600 SDLinit
 	pcfont
-	here
+	here 
 	16 16 "media/stackspr/car.png" ssload 'spcar !
 	here swap - 3 >> 2 - 'spcara !
 	
@@ -300,8 +348,9 @@
 	14 37 "media/stackspr/van.png" loadss 'spk1 !
 	here swap - 4 >> 1- 'spka1 !
 
-	fillfull
-	
+	here
+	64 64 "media/stackspr/obj_house3.png" loadss 'spcasa !
+	here swap - 4 >> 1- 'spcasa1 !
 	
 	'game SDLshow 
 	SDLquit ;
