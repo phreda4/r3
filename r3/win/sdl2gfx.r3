@@ -242,8 +242,8 @@
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	here >a a!+ 		| texture
 	2dup 32 << or a!+	| wi hi
-	1.0 rot dx */ 'dx ! | $ffff = 0.99..
-	1.0 swap dy */ 'dy ! 
+	dy 16 <</ 'dy ! 
+	dx 16 <</ 'dx ! | $ffff = 0.99..
 	0 ( 1.0 dy - <=?
 		0 ( 1.0 dx - <=?
 			dup pick2 over dx + over dy + | x1 y1 x2 y2

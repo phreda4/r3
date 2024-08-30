@@ -38,24 +38,27 @@
 ::loadss | w h "file" -- ssprite
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
+	|dup 0 SDL_SetTextureScaleMode | not fix
 	here >a a!+ 		| texture
 	2dup 16 << or a!+	| wi hi
-	1.0 rot dx */ 'dx ! | $ffff = 0.99..
-	1.0 swap dy */ 'dy ! 
-	0 ( 1.0 dy - <=?
-		0 ( 1.0 dx - <=?
-			dup f2fp da!+ 
-			over f2fp da!+ 
+	dy 16 <</ swap dx 16 <</ | dy dx
+	1.0 dx 2 << / 'dx ! | center pixel 4/ ?? 2/ not good
+	1.0 dy 2 << / 'dy ! 
+	0 ( 1.0 pick3 - <=?
+		0 ( 1.0 pick3 - <=?
 			dup dx + f2fp da!+ 
-			over dy + f2fp da!+
-			dx + ) drop
-		dy + ) drop
-	 here 
-	 a> over - 4 >> 1- 32 << over 8 + @ or over 8 + ! | altura
-	 a> 'here ! ;
+			over dy + f2fp da!+ 
+			dup pick3 + dx - f2fp da!+ 
+			over pick4 + dy - f2fp da!+
+			pick2 + ) drop
+		pick2 + ) drop
+	here 
+	a> over - 4 >> 1- 32 << 
+	over 8 + @ or over 8 + ! | altura
+	a> 'here ! ;
+
 	 
 |------- SSPRITE
-
 #d1 #d2 #d3 #d4
 
 :rotxyiso | x1 y1 -- xd yd
@@ -94,13 +97,10 @@
 	47 >> $1fffe and f2fp 'ty2 !
 	;
 
-
 :settex | lev -- lev
 	dup 4 << 16 + ssp + 
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! ;
 
-::sswh | adr -- h w
-	8 + @ dup $ffff and swap 16 >> $ffff and ;
 	
 | posx posy color texx texy 
 :makelayer
@@ -116,12 +116,11 @@
 	;
 	
 |#indexm [ 0 1 2 2 3 0 ]
-	
 :makeindex
 	0 ( cntl <?
 		dup 2 << 
-		dup 0 + da!+ dup 1 + da!+ dup 2 + da!+
-		dup 2 + da!+ dup 3 + da!+ 0 + da!+
+		dup da!+ dup 1 + da!+ dup 2 + da!+
+		dup 2 + da!+ dup 3 + da!+ da!+
 		1+ ) drop ;
 
 |.................................
@@ -150,6 +149,20 @@
 	;
 	
 |--------------
+|---------------------------------
+#rec [ 262 450 200 100 ]
+
+:zoomsrc | x y  --
+	0 200 100 32 0 0 0 0 SDL_CreateRGBSurface  |
+	SDLrenderer 'rec
+	pick2 8 + @ d@ pick3 32 + @ pick4 24 + d@ | format | pixels | pitch
+	SDL_RenderReadPixels 
+	SDLrenderer over SDL_CreateTextureFromSurface | surf tex
+	swap SDL_FreeSurface
+	-rot 600 300 pick4 SDLImages
+	SDL_DestroyTexture
+	;	
+	
 
 #spcar 
 #spvan 
@@ -170,9 +183,10 @@
 	300 300 a 4.0 spvan isospr
 	700 500 a 5.0 sphouse isospr
 	300 500 a 6.0 spcar isospr
-
 	
 	0.002 'a +! 
+	
+|	0 0 zoomsrc
 	
 	SDLredraw
 	SDLkey
