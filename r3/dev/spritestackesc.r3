@@ -1,35 +1,74 @@
-| sprites stack inv
+| sprites stack escena
 | PHREDA 2024
+
+^r3/lib/gui.r3
+^r3/lib/3dgl.r3
 ^r3/win/sdl2gfx.r3
 ^r3/util/pcfont.r3
 
-
 |------------- ISO
-##isx 0.9 | 0.87
-##isy 0.2 | 0.5
-##isz -1.0
-##isxo 512
-##isyo 300
+#isang 0
+#isalt 1.0
 
-|------ FLOOR
+#isx1 0.87
+#isx2 0.87
+#isx3 0
+
+#isy1 0.5
+#isy2 -0.5
+#isy3 -1.0
+
 :xyz2iso | x y z -- x y
-	-rot
-	over isx *. over isx *. + | z x y x'
-	rot isy neg *. rot isy *. + | x' y'
-	rot + ;
+	pick2 isx1 *. pick2 isx2 *. + over isx3 *. +
+	swap isy3 *. rot isy2 *. + rot isy1 *. + 
+	;
+	
 
-:2iso
+##isxo ##isyo 
+
+:2iso | x y z -- x y 
 	xyz2iso 
 	swap 12 >> isxo + 
 	swap 12 >> isyo + ;
+	
+:resetcam
+	sw 2/ 'isxo !
+	sh 2/ 'isyo !
+	;
 
+:isocam
+	isang sincos 'isx1 ! isalt *. 'isy1 !
+	isang 0.25 + sincos 'isx2 ! isalt *. 'isy2 !
+	;
+
+	
+#xr 0 #yr 0
+
+:isocamrot
+	[ SDLx 'xr ! SDLy 'yr ! ; ] 
+	[	sdlx xr over - 0.001 * 'isang +! 'xr ! 
+		sdly dup yr - 0.001 * 'isalt +! 'yr ! 
+		isocam
+		; ] 
+	onDnMove 
+	;	
+
+|------ FLOOR
 :floor
 	$ffffff sdlcolor
-	-5.0 ( 5.0 <?
-		-5.0 ( 5.0 <?
+	-1.0 ( 1.0 <?
+		-1.0 ( 1.0 <?
 			2dup 0 2iso sdlpoint
-			0.5 + ) drop
-		0.5 + ) drop ;
+			0.1 + ) drop
+		0.1 + ) drop ;
+
+:floor2
+	$ffffff sdlcolor
+	-1.0 ( 1.0 <?
+		-1.0 ( 1.0 <?
+			2dup 1.0 2iso sdlpoint
+			0.1 + ) drop
+		0.1 + ) drop ;
 
 #ym #xm
 #dx #dy
@@ -64,8 +103,11 @@
 :rotxyiso | x1 y1 -- xd yd
 	over dx * over dy * -				| x y x1 y1 x'
 	rot dy * rot dx * +					| x y x' y'
-	over isx *. over isx *. + 17 >>		| x y x' y' x''
-	rot isy neg *. rot isy *. + 17 >>	| x y 
+	
+	0 xyz2iso 17 >> swap 17 >> swap
+|	over isx *. over isx *. + 17 >>		| x y x' y' x''
+|	rot isy neg *. rot isy *. + 17 >>	| x y 
+	
 	;	
 
 :fillvertiso | ang --
@@ -90,18 +132,9 @@
 :gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
 
 :settex | lev -- lev
-	dup 3 << 16 + ssp + @
-	dup 1 << $1fffe and f2fp 'tx1 !
-	dup 15 >> $1fffe and f2fp 'ty1 !
-	dup 31 >> $1fffe and f2fp 'tx2 !
-	47 >> $1fffe and f2fp 'ty2 !
-	;
-
-:settex | lev -- lev
 	dup 4 << 16 + ssp + 
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! ;
 
-	
 | posx posy color texx texy 
 :makelayer
 	d1 gyx pick3 + i2fp da!+ over + i2fp da!+ 
@@ -133,7 +166,8 @@
 	pick3 16 *>> 'ym !		| x y a z lev w 
 	pick2 16 *>> 'xm !		| x y a z lev
 	rot fillvertiso 		| x y z lev
-	swap 16 >> 0? ( 1+ ) swap			| x y zi lev
+	swap 16 >> | 0? ( 1+ ) 
+	swap			| x y zi lev ** not real scale
 	here >a 0 'cntl ! 
 	( 1? 1- settex 
 		2swap				| zi lev x y
@@ -171,43 +205,63 @@
 #zoom 4.0
 #a	
 	
+#xp -20.0 #yp 0.0 #zp 0.0 #ap 0
+#vxp 0 #vyp 0 #vap 0
+
+:adv | vel --
+	0? ( dup 'vxp ! 'vyp ! ; ) 
+	ap neg sincos pick2 *. 'vyp ! *. 'vxp !
+	;
+
+
 :game
+	gui
 	$3a3a3a SDLcls
 	$ffffff pccolor
-	0 0 pcat "Sprite stack" pcprint pccr
-	isy isx "iso %f %f : <ad ws>" pcprint pccr
-	zoom "%f" pcprint
+	0 0 pcat "Voxel Escene" pcprint pccr
+	vxp vyp "%f %f" pcprint pccr
 	
 	floor	
+	floor2
 	
-	300 300 a 4.0 spvan isospr
-	700 500 a 5.0 sphouse isospr
-	300 500 a 6.0 spcar isospr
+|	300 300 a 4.0 spvan isospr
+
+	xp yp 0.0 2iso ap 4.0 spcar isospr
+	-20.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
+	20.0 -6.0 10.0 2iso 0.25 4.0 spcar isospr
+	10.0 5.0 0.0 2iso a 4.0 sphouse isospr
 	
-	0.002 'a +! 
+	|0.002 'a +! 
 	
 |	0 0 zoomsrc
-	
+
+isocamrot
+		
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<w> =? ( 0.1 'isy +! )
-	<s> =? ( -0.1 'isy +! )
-	<a> =? ( 0.1 'isx +! )
-	<d> =? ( -0.1 'isx +! )
 	
-	<up> =? ( 0.1 'zoom +! )
-	<dn> =? ( -0.1 'zoom +! )
+	<le> =? ( -0.002 'vap ! )	>le< =? ( 0 'vap ! )
+	<ri> =? ( 0.002 'vap ! )	>ri< =? ( 0 'vap ! )
+	
+	<up> =? ( -0.5 adv ) >up< =? ( 0 adv )
+	<dn> =? ( 0.5 adv ) >dn< =? ( 0 adv )
+	
 	drop
+	vxp 'xp +!
+	vyp 'yp +!
+	vap 'ap +!
 	;
 
 :main
 	"WORD SS" 1024 600 SDLinit
 	pcfont
 
-	16 16 "media/stackspr/car.png" loadss 'spcar !
+	12 26 "media/stackspr/veh_mini1.png" loadss 'spcar !
 	14 37 "media/stackspr/van.png" loadss 'spvan !
-	64 64 "media/stackspr/obj_house3.png" loadss 'sphouse !
+	64 64 "media/stackspr/obj_house1.png" loadss 'sphouse !
+	
+	resetcam
 	
 	'game SDLshow 
 	SDLquit ;
