@@ -62,13 +62,6 @@
 			0.1 + ) drop
 		0.1 + ) drop ;
 
-:floor2
-	$ffffff sdlcolor
-	-1.0 ( 1.0 <?
-		-1.0 ( 1.0 <?
-			2dup 1.0 2iso sdlpoint
-			0.1 + ) drop
-		0.1 + ) drop ;
 
 #ym #xm
 #dx #dy
@@ -81,14 +74,12 @@
 	here >a a!+ 		| texture
 	2dup 16 << or a!+	| wi hi
 	dy 16 <</ swap dx 16 <</ | dy dx
-	1.0 dx 2 << / 'dx ! | center pixel 4/ ?? 2/ not good
-	1.0 dy 2 << / 'dy ! 
 	0 ( 1.0 pick3 - <=?
 		0 ( 1.0 pick3 - <=?
-			dup dx + f2fp da!+ 
-			over dy + f2fp da!+ 
-			dup pick3 + dx - f2fp da!+ 
-			over pick4 + dy - f2fp da!+
+			dup f2fp da!+ 
+			over f2fp da!+ 
+			dup pick3 + f2fp da!+ 
+			over pick4 + f2fp da!+		
 			pick2 + ) drop
 		pick2 + ) drop
 	here 
@@ -96,7 +87,6 @@
 	over 8 + @ or over 8 + ! | altura
 	a> 'here ! ;
 
-	 
 |------- SSPRITE
 #d1 #d2 #d3 #d4
 
@@ -175,16 +165,15 @@
 		2swap ) 4drop 
 	a> 'ind !
 	makeindex
-	SDLrenderer ssp @ here 
-	cntl 2 << | 4*
-	ind 
-	cntl 1 << dup 1 << + | 6*
+	SDLrenderer ssp @ 			| texture
+	here cntl 2 << 				| 4* vertex list
+	ind cntl 1 << dup 1 << + 	| 6* index list
 	SDL_RenderGeometry 
 	;
 	
 |--------------
-|---------------------------------
-#rec [ 262 450 200 100 ]
+
+#rec [ 262 250 200 100 ]
 
 :zoomsrc | x y  --
 	0 200 100 32 0 0 0 0 SDL_CreateRGBSurface  |
@@ -197,7 +186,7 @@
 	SDL_DestroyTexture
 	;	
 	
-
+|--------------
 #spcar 
 #spvan 
 #sphouse
@@ -213,29 +202,25 @@
 	ap neg sincos pick2 *. 'vyp ! *. 'vxp !
 	;
 
-
 :game
 	gui
+	isocamrot
+	
 	$3a3a3a SDLcls
 	$ffffff pccolor
 	0 0 pcat "Voxel Escene" pcprint pccr
-	vxp vyp "%f %f" pcprint pccr
+	isang isalt "%f %f" pcprint pccr
 	
 	floor	
-	floor2
 	
-|	300 300 a 4.0 spvan isospr
-
 	xp yp 0.0 2iso ap 4.0 spcar isospr
 	-20.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
-	20.0 -6.0 10.0 2iso 0.25 4.0 spcar isospr
+	20.0 -6.0 00.0 2iso 0.25 4.0 spcar isospr
 	10.0 5.0 0.0 2iso a 4.0 sphouse isospr
 	
-	|0.002 'a +! 
+	0.002 'a +! 
 	
-|	0 0 zoomsrc
-
-isocamrot
+	0 0 zoomsrc
 		
 	SDLredraw
 	SDLkey
