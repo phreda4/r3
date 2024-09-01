@@ -91,6 +91,9 @@
 	
 #x #y
 #wmin #hmin #wmax #hmax
+#newtex
+
+| simple..not calc
 :packbox
 	0 'x ! 0 'y !
 	0 'wmin ! 0 'hmin !
@@ -102,6 +105,20 @@
 		drop 
 		'wmin +!
 		1+ ) drop
+|	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
+|	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
+|	2 SDL_TEXTUREACCESS_TARGET     < Texture can be used as a render target
+| SDL_PIXELFORMAT_ARGB8888 16462004
+	SDLrenderer $16462004 2 wmax hmax SDL_CreateTexture 'newtex !
+	SDLrenderer newtex SDL_SetRenderTarget
+	newtex 0 SDL_SetTextureBlendMode | SDL_BLENDMODE_NONE
+	0 ( imgcnt <?
+		dup ]img .info @ 2xy
+		pick2 ]img .tex @ SDLImage | x y img --
+		dup ]img .tex @ SDL_DestroyTexture
+		1+ ) drop
+	SDLrenderer 0 SDL_SetRenderTarget	
+	newtex 1 SDL_SetTextureBlendMode | SDL_BLENDMODE_BLEND
 	;
 	
 :loadimgs
@@ -141,12 +158,7 @@
 		1+ ) drop
 	;
 
-:game
-	$3a3a3a SDLcls
-	$ffffff pccolor
-	0 0 pcat "Atlas generator - " pcprint 
-	imgcnt "%d images" pcprint pccr
-	hmax wmax "%d %d image max" pcprint
+:viewbox
 	$ff00 sdlcolor
 	0 ( imgcnt <?
 		|dup 8 << sdlcolor
@@ -158,7 +170,16 @@
 		swap 16 >> $ffff and 1 >>
 |		pick3 pick3 pick3 pick3 "%d %d %d %d" pcprint pccr
 		sdlrect
-		1+ ) drop		
+		1+ ) drop ;
+
+:game
+	$3a3a3a SDLcls
+	$ffffff pccolor
+	0 0 pcat "Atlas generator - " pcprint 
+	imgcnt "%d images" pcprint pccr
+	hmax wmax "%d %d image max" pcprint
+	|viewbox
+	10 10 newtex sdlimage
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )

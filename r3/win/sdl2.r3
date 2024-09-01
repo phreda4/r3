@@ -51,6 +51,7 @@
 #sys-SDL_RenderReadPixels
 #sys-SDL_RenderSetClipRect
 #sys-SDL_SetTextureScaleMode
+#sys-SDL_SetRenderTarget
 
 #sys-SDL_Delay
 #sys-SDL_PollEvent	
@@ -121,6 +122,8 @@
 ::SDL_RenderReadPixels sys-SDL_RenderReadPixels sys5 drop ;
 ::SDL_RenderSetClipRect sys-SDL_RenderSetClipRect sys2 drop ;
 ::SDL_SetTextureScaleMode sys-SDL_SetTextureScaleMode sys2 drop ;
+::SDL_SetRenderTarget sys-SDL_SetRenderTarget sys2 drop ;
+
 ::SDL_Delay sys-SDL_Delay sys1 drop ;
 ::SDL_PollEvent sys-SDL_PollEvent sys1 ; | &evt -- ok
 ::SDL_GetTicks sys-SDL_GetTicks sys0 ; | -- msec
@@ -332,6 +335,7 @@
 	dup "SDL_RenderSetClipRect" getproc 'sys-SDL_RenderSetClipRect	!
 	dup "SDL_RenderReadPixels" getproc 'sys-SDL_RenderReadPixels !
 	dup "SDL_SetTextureScaleMode" getproc 'sys-SDL_SetTextureScaleMode !
+	dup "SDL_SetRenderTarget" getproc 'sys-SDL_SetRenderTarget !
 	dup "SDL_Delay" getproc 'sys-SDL_Delay !
 	dup "SDL_PollEvent" getproc 'sys-SDL_PollEvent !
 	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !
