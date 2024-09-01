@@ -7,8 +7,8 @@
 ^r3/util/pcfont.r3
 
 |------------- ISO
-#isang 0
-#isalt 1.0
+#isang 0.22
+#isalt 0.28
 
 #isx1 0.87
 #isx2 0.87
@@ -30,16 +30,18 @@
 	xyz2iso 
 	swap 12 >> isxo + 
 	swap 12 >> isyo + ;
-	
-:resetcam
-	sw 2/ 'isxo !
-	sh 2/ 'isyo !
-	;
 
 :isocam
 	isang sincos 'isx1 ! isalt *. 'isy1 !
 	isang 0.25 + sincos 'isx2 ! isalt *. 'isy2 !
 	;
+	
+:resetcam
+	sw 2/ 'isxo !
+	sh 2/ 'isyo !
+	isocam
+	;
+
 
 	
 #xr 0 #yr 0
@@ -94,10 +96,9 @@
 	over dx * over dy * -				| x y x1 y1 x'
 	rot dy * rot dx * +					| x y x' y'
 	
-	0 xyz2iso 17 >> swap 17 >> swap
-|	over isx *. over isx *. + 17 >>		| x y x' y' x''
-|	rot isy neg *. rot isy *. + 17 >>	| x y 
-	
+	0 xyz2iso 
+	17 >> swap | scale !!
+	17 >> swap
 	;	
 
 :fillvertiso | ang --
@@ -126,7 +127,7 @@
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! ;
 
 | posx posy color texx texy 
-:makelayer
+:makelayer | x y -- x y
 	d1 gyx pick3 + i2fp da!+ over + i2fp da!+ 
 	$ffffffff da!+ tx1 da!+ ty1 da!+
 	d2 gyx pick3 + i2fp da!+ over + i2fp da!+ 
@@ -163,6 +164,71 @@
 		2swap				| zi lev x y
 		pick3 ( 1? 1- >r makelayer 1- r> ) drop
 		2swap ) 4drop 
+	a> 'ind !
+	makeindex
+	SDLrenderer ssp @ 			| texture
+	here cntl 2 << 				| 4* vertex list
+	ind cntl 1 << dup 1 << + 	| 6* index list
+	SDL_RenderGeometry 
+	;
+
+|----------- correct zoom
+
+:fillvertiso | xm ym --
+	over neg over neg rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd1 ! 
+	2dup neg rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd2 !
+	2dup rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd3 !
+	swap neg swap rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd4 !
+	;
+
+#z
+#dz
+	
+:settex | --
+	z 16 >> 4 << 16 + ssp + 
+	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! 
+	dz 'z +!
+	;
+	
+| posx posy color texx texy 
+:makelayer | x y lev -- x y lev
+	d1 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty1 da!+
+	d2 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty1 da!+
+	d3 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty2 da!+
+	d4 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty2 da!+
+	1 'cntl +!
+	;
+	
+	| x y lev 
+	
+::isospr5 | x y a z 'ss --
+	rot sincos 'dx ! 'dy !
+	dup 'ssp ! 				| x y z 'ss
+	8 + @ dup 32 >> swap
+	dup $ffff and swap
+	16 >> $ffff and		| x y z lev w h
+	swap pick3 16 *>> 		| x y z lev h xm
+	swap pick3 16 *>> 		| x y z lev xm ym
+	fillvertiso 		| x y z lev
+	1.0 pick2 /. neg 'dz !
+	dup 1 - 16 << 'z !
+	*. 					| x y reallev.
+	here >a 0 'cntl ! 
+	
+	( 1? 1-
+		settex
+		makelayer
+		swap 1- swap 
+		) 3drop
+		
 	a> 'ind !
 	makeindex
 	SDLrenderer ssp @ 			| texture
@@ -213,25 +279,30 @@
 	
 	floor	
 	
-	xp yp 0.0 2iso ap 4.0 spcar isospr
-	-20.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
-	20.0 -6.0 00.0 2iso 0.25 4.0 spcar isospr
-	10.0 5.0 0.0 2iso a 4.0 sphouse isospr
+	xp yp 0.0 2iso ap zoom spcar isospr5
+	-5.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
+	6.0 -6.0 00.0 2iso 0.25 4.0 spcar isospr
+	
+	20.0 15.0 0.0 2iso a zoom sphouse isospr
+	-20.0 -15.0 0.0 2iso a zoom sphouse isospr5
 	
 	0.002 'a +! 
 	
-	0 0 zoomsrc
+	
+|	0 0 zoomsrc
 		
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
 	
-	<le> =? ( -0.002 'vap ! )	>le< =? ( 0 'vap ! )
-	<ri> =? ( 0.002 'vap ! )	>ri< =? ( 0 'vap ! )
+	<le> =? ( 0.002 'vap ! )	>le< =? ( 0 'vap ! )
+	<ri> =? ( -0.002 'vap ! )	>ri< =? ( 0 'vap ! )
 	
 	<up> =? ( -0.5 adv ) >up< =? ( 0 adv )
 	<dn> =? ( 0.5 adv ) >dn< =? ( 0 adv )
 	
+	<w> =? ( 0.1 'zoom +! )
+	<s> =? ( -0.1 'zoom +! )
 	drop
 	vxp 'xp +!
 	vyp 'yp +!
