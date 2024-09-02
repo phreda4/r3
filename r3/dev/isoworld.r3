@@ -9,12 +9,21 @@
 ^r3/util/bfont.r3
 
 #spcar
+#spcar2
+#sptree
+#sptank
 
+#listspr 0 0
 #listobj 0 0
-#listfx 0 0
 
+|------ sprites
+:+spr
+	
+	;
+:atlaspr
+	;
+	
 |---------------------------------
-|disparo
 | x y z az ss
 | 1 2 3 4  5 
 :.x		1 ncell+ ;
@@ -59,9 +68,7 @@
 	0 sdlcls
 	
 	$ffffff bcolor
-	0 0 bat "Voxel Escene" bprint bcr
-	isang isalt "%f %f" bprint bcr
-	isyo isxo "%d %d" bprint bcr
+	0 0 bat "Voxel world" bprint bcr
 
 	'listobj p.draw
 
@@ -74,10 +81,17 @@
 :jugar 
 	resetcam
 	12 26 "media/stackspr/veh_mini1.png" loadss 'spcar !
-	'listfx p.clear
+	36 36 "media/stackspr/blue_tree.png" loadss 'sptree !
+	16 16 "media/stackspr/car.png" loadss 'spcar2 !
+	32 32 "media/stackspr/tank.png" loadss 'sptank !	
+	
+	'listspr p.clear
 	'listobj p.clear
 
-	spcar 0 4.0 0 0 0 +obj | isospr a z x y z --
+	spcar 0 4.0 -4.0 4.0 0  +obj | isospr a z x y z --
+	spcar2 0 4.0 4.0 4.0 0  +obj | isospr a z x y z --
+	sptree 0 4.0 -4.0 -4.0 0 +obj | isospr a z x y z --
+	sptank 0 4.0 4.0 -4.0 0 +obj | isospr a z x y z --
 	
 	'juego SDLShow 
 	;
@@ -87,7 +101,7 @@
 	"iso world" 1024 600 SDLinit
 	bfont1
 	
-	100 'listfx p.ini
+	50 'listspr p.ini
 	200 'listobj p.ini
 	jugar
 	SDLquit ;	
