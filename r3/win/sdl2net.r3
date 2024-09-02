@@ -54,7 +54,7 @@
 
 ::SDLNet_Init sys-SDLNet_Init sys0 drop ;
 ::SDLNet_Quit sys-SDLNet_Quit sys0 drop ; 
-::SDLNet_ResolveHost sys-SDLNet_ResolveHost sys3 drop ;
+::SDLNet_ResolveHost sys-SDLNet_ResolveHost sys3 ;
 ::SDLNet_ResolveIP sys-SDLNet_ResolveIP sys1 ;
 ::SDLNet_GetLocalAddresses sys-SDLNet_GetLocalAddresses sys2 ;
 ::SDLNet_TCP_OpenServer sys-SDLNet_TCP_OpenServer sys1 ; 
@@ -88,7 +88,6 @@
 ::SDLNet_GetError sys-SDLNet_GetError sys0 ;
 
 
- 
 |----- BOOT 
 :
 	"SDL2_net.DLL" loadlib

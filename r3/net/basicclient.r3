@@ -17,7 +17,7 @@
 	swap 8 >> $ff and
 	swap 2swap swap
 	"%d.%d.%d.%d" .print
-	d@ ":%d" .print
+	w@ ":%d" .print
 	;	
 
 #ip
@@ -41,10 +41,10 @@
 	
 :client
     "Starting client..." .println
-	'ip "127.0.0.1" 9999 SDLNet_ResolveHost 
+	'ip "192.168.56.1" 1234 SDLNet_ResolveHost 
 	-1 =? ( drop
 		SDLNet_GetError "SDLNet_ResolveHost: %s" .println
-		; )
+		; ) drop
 	'ip SDLNet_TCP_Open 
 	0? ( drop
 		SDLNet_GetError "SDLNet_TCP_Open: %s" .println
@@ -56,7 +56,7 @@
 	
 |-----------------	
 : 
-	0 SDL_Init
+	$ffff SDL_Init
 	SDLNet_Init
 	client
 	SDLNet_Quit

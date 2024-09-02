@@ -9,6 +9,10 @@
 	dup 8  >> $ff and swap
 	$ff and "%d.%d.%d.%d " .print
 	;
+:.port | nro --
+	dup 8 << $ff00 and 
+	swap 8 >> $ff and or 
+	;
 	
 :.iport | adr --
 	d@+ dup $ff and
@@ -17,7 +21,7 @@
 	swap 8 >> $ff and
 	swap 2swap swap
 	"%d.%d.%d.%d" .print
-	d@ ":%d" .print
+	w@ .port ":%d" .print
 	;	
 
 :.packet | adr --
@@ -29,60 +33,75 @@
 	@ .ip
 	;
 
-#server #client
-#ip
-#remoteip
+#server 
+#client
+#ip 0 
+#remoteip 0 
 #done 0
 #message * 1024
 #len 
 
 :recing
 |        /* read the buffer from client */
-	client message 1024 SDLNet_TCP_Recv
+	client 'message 1024 SDLNet_TCP_Recv
 	0? ( drop
 		SDLNet_GetError "SDLNet_TCP_Recv: %s" .println
 		; )
 	'len !
 |        /* print out the message */
 	0 'message len + c!
-	message "Received: %s" .println
-	
-	'message c@
-	$51 =? ( drop |Q
-		"Disconecting on a Q" .println
-		1 'done !
-		; )
-	$71 =? ( drop |q
-		"Disconecting on a q" .println
-		; )
-	drop
+	'message len "Rec:[%d] %s" .println
+
+	len 
+	1 =? (
+		'message c@
+		$51 =? ( 2drop |Q
+			"Disconecting on a Q" .println
+			1 'done !
+			; )
+		$71 =? ( 2drop |q
+			"Disconecting on a q" .println
+			; )
+		drop
+		) drop
 	recing ;
 	
 |-----------------	
-:GetComputerName
+:.iplocal
+	"cmd /c C:\\Windows\\System32\\ipconfig | findstr /i ""ipv4"" > mem\\local.ip" sys
+	here "mem\\local.ip" load 0 swap c!
+	here .println
 	;
 	
 #compuname "127.0.0.1"
+|#compuname "mipc"
 
-:server
+:runserver
 	"Starting server..." .println
-	'ip 'compuname 9999 SDLNet_ResolveHost
+	
+	'ip 0 1234 SDLNet_ResolveHost
+|	'ip 'compuname 1234 SDLNet_ResolveHost	
 	-1 =? ( drop
 		SDLNet_GetError "SDLNet_ResolveHost: %s" .println
-		; )
-	"IP:" .print ip .ip .cr
+		; ) drop
+|	"IP:" .print 'ip .iport	.cr
+	
+	'ip 4 + w@ .port "   Network Port. . . . . . . . . . . . . .: %d" .println
+	.iplocal
 	
 	'ip SDLNet_TCP_Open 
 	0? ( drop 
 		SDLNet_GetError "SDLNet_TCP_Open: %s" .println
 		; )
 	'server !
+	
 	( done 0? drop
+		"esperando..." .println
      | /* try to accept a connection */
 		( server SDLNet_TCP_Accept 0? drop 
-			100 sdl_delay )
+			10 sdl_delay )
 		'client !
-
+		"llego" .println
 |      /* get the clients IP and port number */
 		client SDLNet_TCP_GetPeerAddress 
 		0? ( drop 
@@ -91,16 +110,16 @@
 		'remoteip !
 |      /* print out the clients IP and port number */
 		"Accepted a connection from " .print
-		'remoteip .iport
+		'remoteip .iport .cr .cr
 		recing
 		)
 	client SDLNet_TCP_Close
 	;
 |-----------------	
 : 
-	0 SDL_Init
+	$ffff SDL_Init
 	SDLNet_Init
-	server
+	runserver
 	SDLNet_Quit
 	SDL_Quit
 	"server: bye bye" .println
