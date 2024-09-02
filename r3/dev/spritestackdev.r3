@@ -3,7 +3,6 @@
 ^r3/win/sdl2gfx.r3
 ^r3/util/pcfont.r3
 
-
 |------------- ISO
 ##isx 0.9 | 0.87
 ##isy 0.2 | 0.5

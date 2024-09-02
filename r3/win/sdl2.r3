@@ -282,6 +282,10 @@
 ::SDLredraw | -- 
 	SDLrenderer SDL_RenderPresent ;	
 	
+::sdlbreak | f12 contiue ESC end
+	SDLredraw
+	( SDLkey >f12< <>? >esc< <>? drop SDLupdate ) drop
+	;
 	
 |------- BOOT
 :
