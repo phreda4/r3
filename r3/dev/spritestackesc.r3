@@ -150,8 +150,6 @@
 	1 'cntl +!
 	;
 	
-	| x y lev 
-	
 ::isospr | x y a z 'ss --
 	rot sincos 'dx ! 'dy !
 	dup 'ssp ! 				| x y z 'ss
@@ -180,6 +178,34 @@
 	SDL_RenderGeometry 
 	;
 	
+#isolevel
+::isospr2 | x y a z 'ss --
+	rot sincos 'dx ! 'dy !
+	dup 'ssp ! 				| x y z 'ss
+	8 + @ dup 32 >> swap
+	dup $ffff and swap
+	16 >> $ffff and		| x y z lev w h
+	swap pick3 16 *>> 		| x y z lev h xm
+	swap pick3 16 *>> 		| x y z lev xm ym
+	fillvertiso 		| x y z lev
+	1.0 pick2 /. neg 'dz !
+	dup 1 - 16 << 'z !
+	*. 					| x y reallev.
+	here >a 0 'cntl ! 
+	
+	( 1? 1-
+		settex
+		isolevel =? ( makelayer  )
+		swap 1- swap 
+		) 3drop
+		
+	a> 'ind !
+	makeindex
+	SDLrenderer ssp @ 			| texture
+	here cntl 2 << 				| 4* vertex list
+	ind cntl 1 << dup 1 << + 	| 6* index list
+	SDL_RenderGeometry 
+	;	
 |--------------
 
 #rec [ 262 250 200 100 ]
@@ -219,20 +245,21 @@
 	$ffffff pccolor
 	0 0 pcat "Voxel Escene" pcprint pccr
 	isang isalt "%f %f" pcprint pccr
+	isolevel "%d" pcprint
 	
 	floor	
 	
 	xp yp 0.0 2iso ap zoom spcar isospr
-	-5.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
-	6.0 -6.0 00.0 2iso 0.25 4.0 spcar isospr
+|	-5.0 -6.0 0.0 2iso 0.75 4.0 spcar isospr
+|	6.0 -6.0 00.0 2iso 0.25 4.0 spcar isospr
 	
-	20.0 15.0 0.0 2iso a zoom sphouse isospr
-	-20.0 -15.0 0.0 2iso a zoom sphouse isospr
+	0 10.0 0.0 2iso a zoom sphouse isospr
+	0 -10.0 0.0 2iso a zoom sphouse isospr2
 	
 	0.002 'a +! 
 	
 	
-|	0 0 zoomsrc
+	|0 0 zoomsrc
 		
 	SDLredraw
 	SDLkey
@@ -246,6 +273,9 @@
 	
 	<w> =? ( 0.1 'zoom +! )
 	<s> =? ( -0.1 'zoom +! )
+	
+	<a> =? ( 1 'isolevel +! )
+	<d> =? ( -1 'isolevel +! )
 	drop
 	vxp 'xp +!
 	vyp 'yp +!

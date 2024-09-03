@@ -42,7 +42,19 @@
 	d@+ "status:  %d" .println
 	@ .ip
 	;
-
+	
+:.port | nro --
+	dup 8 << $ff00 and 
+	swap 8 >> $ff and or 
+	;
+	
+:.iplocal
+	"cmd /c C:\\Windows\\System32\\ipconfig | findstr /i ""ipv4"" > mem\\local.ip" sys
+	here "mem\\local.ip" load 0 swap c!
+	'ip 4 + w@ .port "   Network Port. . . . . . . . . . . . . .: %d" .println
+	here .println
+	;
+	
 |---------------------
 :initNET
 	SDLNet_Init
@@ -58,9 +70,8 @@
 	0? ( "Error alloc" .println )
 	'socketset ! 
 	
-	'serverIP "mipc" GAME_PORT SDLNet_ResolveHost
-	serverIP .ip
-|	"Server IP: %h" .println
+	'serverIP 0 GAME_PORT SDLNet_ResolveHost
+	.iplocal
 	
 	'serverIP SDLNet_TCP_Open 
 	0? ( "Error tcp open" .println )
