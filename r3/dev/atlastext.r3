@@ -10,71 +10,58 @@
 #ym #xm
 #dx #dy
 
-|--------- LOAD 
-::loadss | w h "file" -- ssprite
-	loadimg
-	dup 0 0 'dx 'dy SDL_QueryTexture
-	|dup 0 SDL_SetTextureScaleMode | not fix
-	here >a a!+ 		| texture
-	2dup 16 << or a!+	| wi hi
-	dy 16 <</ swap dx 16 <</ | dy dx
-	0 ( 1.0 pick3 - <=?
-		0 ( 1.0 pick3 - <=?
-			dup f2fp da!+ 
-			over f2fp da!+ 
-			dup pick3 + f2fp da!+ 
-			over pick4 + f2fp da!+		
-			pick2 + ) drop
-		pick2 + ) drop
-	here 
-	a> over - 4 >> 1- 32 << 
-	over 8 + @ or over 8 + ! | altura
-	a> 'here ! ;
 
-	
-|--------------
-#rec [ 262 250 200 100 ]
-
-:zoomsrc | x y  --
-	0 200 100 32 0 0 0 0 SDL_CreateRGBSurface  |
-	SDLrenderer 'rec
-	pick2 8 + @ d@ pick3 32 + @ pick4 24 + d@ | format | pixels | pitch
-	SDL_RenderReadPixels 
-	SDLrenderer over SDL_CreateTextureFromSurface | surf tex
-	swap SDL_FreeSurface
-	-rot 600 300 pick4 SDLImages
-	SDL_DestroyTexture
-	;	
-	
-|--------------
+|-------------- MEMM
 #imglist
 #imglist>
 #imgcnt
 #imgsort
-#dx #dy
 
 :+img | w h "file" -- 
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
-	a[ imglist> >a
+	a[ 
+	
+	imglist> >a
 	a!+ | texture
-	16 << or a!+ |layersize
-	dy 16 << dx or a!+ |imgsize
+	over over 16 << or dy 48 << or dx 32 << or a!+ |layersize
+	here a!+ |imgsize
 	0 a!+
-	a> 'imglist> ! ]a
+	a> 'imglist> ! 
+	|w h
+	here >a
+	8 a+	| cant
+	0 ( dy <? 
+		0 ( dx <? | w h y x
+			2dup da!+ da!+
+			pick3 + ) drop 
+		over + ) drop
+	2drop 
+	here a> over - 3 >> here !
+	a> 'here ! 
+	]a
 	;
+
+:countlistss | list -- list cnt
+	0 over ( c@+ 1? drop 
+		c@+ drop >>0 swap 1+ swap ) 2drop ;
 	
+:loadlistss | list --
+	a[ >a
+	( ca@+ 1? ca@+
+		a> "media/stackspr/%s.png" sprint +img
+		a> >>0 >a ) drop ]a ;
+		
 :.tex ;				| texture
-:.layer 1 ncell+ ;	| layer size
-:.size 2 ncell+ ;	| img size
-:.info 3 ncell+ ;	| new position
+:.layer	1 ncell+ ;	| layer size/img size
+:.mem	2 ncell+ ;	| mem descripcion
+:.info	3 ncell+ ;	| new position
 	
-:]img | n -- adr
-	5 << imglist + ;
-:]simg | n -- adr
-	3 << imgsort + @ $ffff and ]img ;
+:]img	5 << imglist + ;
+:]simg	3 << imgsort + @ $ffff and ]img ;
 	
 :2xy dup $ffff and swap 16 >> $ffff and ;
+:2ixy dup 32 >> $ffff and swap 48 >> $ffff and ;
 	
 	
 #x #y
@@ -87,11 +74,11 @@
 	0 'wmin ! 0 'hmin !
 	0 ( imgcnt <?
 		wmin hmin 16 << or over ]simg .info !
-		dup ]simg .size @ 2xy  | dx dy
+		dup ]simg .layer @ 2ixy  | dx dy
 		over wmin + wmax max 'wmax !
 		dup hmin + hmax max 'hmax !
 		drop 
-		1+ 'wmin +!
+		1+ 'wmin +! | borde
 		1+ ) drop
 |	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
 |	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
@@ -109,35 +96,43 @@
 	newtex 1 SDL_SetTextureBlendMode | SDL_BLENDMODE_BLEND
 	;
 	
-:loadlistss | list --
-	a[ >a
-	( ca@+ 1? ca@+
-		a> "media/stackspr/%s.png" sprint +img 
-		a> >>0 >a ) drop ]a ;
+
+		
+:genfile
+	;
 	
 :genatlas | list --
-	here dup 'imglist ! 'imglist> !
-	loadlistss
-	imglist> imglist - 5 >> 'imgcnt !
-	imglist> 'imgsort !	
+	countlistss dup 'imgcnt !
+	5 <<
+	here 
+	dup 'imglist ! 
+	dup 'imglist> !
+	+ 'here !
 	
+	loadlistss
+
+	here 'imgsort !	
 	imgsort >a
 	0 ( imgcnt <?
-		dup ]img .size @ neg 32 << over or  | neg=inversesort
+		dup ]img .layer @ $ffff000000000000 and neg over or  | neg=inversesort
 		a!+
 		1+ ) drop
-	imgcnt imgsort shellsort1
-	
-	packbox
-	
+	imgcnt imgsort shellsort1 | sort by height of image
+
 	|** debug
 	0 ( imgcnt <?
-		dup ]simg .size @ 2xy "%d %d : " .print
+		dup ]simg .layer @ dup 
+		2xy "%d %d : " .print
+		2ixy "%d %d : " .print
+		dup ]simg .mem @ "<%h>" .print
+		dup ]simg .mem @ @ " %d - " .print
 		dup ]simg .info @ 2xy "%d %d" .println
 		1+ ) drop
 	|** debug
 	
+	packbox
 	
+	genfile
 	;
 
 |--------- LOAD 
@@ -185,7 +180,7 @@
 	0 (	imgcnt <?
 		imgsort over 3 << + @ 
 		|"%h " pcprint pccr
-		$ffff and ]img .size @
+		$ffff and ]img .layer @
 		2xy "%d %d" pcprint pccr
 		1+ ) drop
 	;
@@ -197,7 +192,7 @@
 		dup ]img .info @ 
 		dup $ffff and 1 >>
 		swap 16 >> $ffff and 1 >>
-		pick2 ]img .size @
+		pick2 ]img .layer @
 		dup $ffff and 1 >>
 		swap 16 >> $ffff and 1 >>
 |		pick3 pick3 pick3 pick3 "%d %d %d %d" pcprint pccr
