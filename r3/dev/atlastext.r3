@@ -47,34 +47,27 @@
 	;	
 	
 |--------------
-#spcar 
-#spvan 
-#sphouse
-
 #imglist
 #imglist>
 #imgcnt
-
 #imgsort
-
 #dx #dy
 
-:+img | w h "file" -- adr
+:+img | w h "file" -- 
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
-	imglist> >a
+	a[ imglist> >a
 	a!+ | texture
 	16 << or a!+ |layersize
 	dy 16 << dx or a!+ |imgsize
 	0 a!+
-	a> 'imglist> !
-	a> 8 - 
+	a> 'imglist> ! ]a
 	;
 	
-:.tex ;
-:.layer 1 ncell+ ;
-:.size 2 ncell+ ;
-:.info 3 ncell+ ;
+:.tex ;				| texture
+:.layer 1 ncell+ ;	| layer size
+:.size 2 ncell+ ;	| img size
+:.info 3 ncell+ ;	| new position
 	
 :]img | n -- adr
 	5 << imglist + ;
@@ -83,11 +76,6 @@
 	
 :2xy dup $ffff and swap 16 >> $ffff and ;
 	
-#treebox
-#treebox>
-
-:+freebox |
-	treebox> !+ 'treebox> ! ;
 	
 #x #y
 #wmin #hmin #wmax #hmax
@@ -103,7 +91,7 @@
 		over wmin + wmax max 'wmax !
 		dup hmin + hmax max 'hmax !
 		drop 
-		'wmin +!
+		1+ 'wmin +!
 		1+ ) drop
 |	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
 |	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
@@ -121,24 +109,68 @@
 	newtex 1 SDL_SetTextureBlendMode | SDL_BLENDMODE_BLEND
 	;
 	
-:loadimgs
-	12 26 "media/stackspr/veh_mini1.png" +img 'spcar !
-	14 37 "media/stackspr/van.png" +img 'spvan !
-	64 64 "media/stackspr/obj_house1.png" +img 'sphouse !
+:loadlistss | list --
+	a[ >a
+	( ca@+ 1? ca@+
+		a> "media/stackspr/%s.png" sprint +img 
+		a> >>0 >a ) drop ]a ;
 	
+:genatlas | list --
+	here dup 'imglist ! 'imglist> !
+	loadlistss
 	imglist> imglist - 5 >> 'imgcnt !
-	
 	imglist> 'imgsort !	
+	
 	imgsort >a
 	0 ( imgcnt <?
 		dup ]img .size @ neg 32 << over or  | neg=inversesort
 		a!+
 		1+ ) drop
-	>a dup 'treebox ! 'treebox> !
 	imgcnt imgsort shellsort1
 	
 	packbox
+	
+	|** debug
+	0 ( imgcnt <?
+		dup ]simg .size @ 2xy "%d %d : " .print
+		dup ]simg .info @ 2xy "%d %d" .println
+		1+ ) drop
+	|** debug
+	
+	
 	;
+
+|--------- LOAD 
+::loadss | w h "file" -- ssprite
+	loadimg
+	dup 0 0 'dx 'dy SDL_QueryTexture
+	|dup 0 SDL_SetTextureScaleMode | not fix
+	
+	here >a a!+ 		| texture
+	2dup 16 << or a!+	| wi hi
+	dy 16 <</ swap dx 16 <</ | dy dx
+	0 ( 1.0 pick3 - <=?
+		0 ( 1.0 pick3 - <=?
+			dup f2fp da!+ 
+			over f2fp da!+ 
+			dup pick3 + f2fp da!+ 
+			over pick4 + f2fp da!+		
+			pick2 + ) drop
+		pick2 + ) drop
+	here 
+	a> over - 4 >> 1- 32 << 
+	over 8 + @ or over 8 + ! | altura
+	a> 'here ! ;
+
+| cntspr
+| spr1 spr2 .. sprn	
+| altura|w|h
+| altura{x1 y1 x2 y2}
+|  
+| altura|w|h
+| altura{x1 y1 x2 y2}
+|
+
 	
 :debugimglist
 	$ffff pccolor
@@ -178,25 +210,61 @@
 	0 0 pcat "Atlas generator - " pcprint 
 	imgcnt "%d images" pcprint pccr
 	hmax wmax "%d %d image max" pcprint
+	
 	|viewbox
-	10 10 newtex sdlimage
+	10 128 512 512 newtex sdlimages
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
 	drop
 	;
 
-:reset
-	here dup 'imglist ! 'imglist> !
+|--------------------------------------------
+#list1 
+( 8 8 ) "obj_tree1"
+( 8 8 ) "obj_tree1a"
+( 8 8 ) "obj_tree1b"
+( 8 8 ) "obj_tree1c"
+( 10 10 ) "obj_tree2"
+( 10 10 ) "obj_tree2a"
+( 10 10 ) "obj_tree2b"
+( 10 10 ) "obj_tree2c"
+( 10 10 ) "obj_tree3"
+( 6 6 ) "obj_tree4"
+( 26 9 ) "deer" | 27
+( 24 24 ) "T-Rex0" | 26
+( 24 24 ) "T-Rex1" | 26
+( 24 24 ) "T-Rex2" | 26
+( 24 24 ) "T-Rex3" | 26
+( 24 24 ) "T-Rex4" | 26
+( 24 24 ) "T-Rex5" | 26
+( 24 24 ) "T-Rex6" | 26
+( 24 24 ) "T-Rex7" | 26
+0
 
-	;
+#list2
+( 12 26 ) "veh_mini1" 
+( 14 37 ) "van" 
+( 36 36 ) "blue_tree"
+( 16 16 ) "car"
+( 10 10 ) "tank"
+0
+
+#list3
+( 64 64 ) "obj_house1" 
+( 64 64 ) "obj_house3" 
+( 64 64 ) "obj_house4" 
+( 64 64 ) "obj_house5" 
+( 64 64 ) "obj_house8" 
+( 64 64 ) "obj_house8c" 
+0
+
 	
 :main
 	"ATLAS GENERATOR" 1024 600 SDLinit
 	pcfont
 
-	reset
-	loadimgs
+	'list1 genatlas
 	
 	'game SDLshow 
 	SDLquit ;

@@ -203,3 +203,9 @@
 	0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess drop
 |	pinfo -1 WaitForSingleObject
 	;
+
+|--- copy and restore registers A B, to system?
+::a[ 	a> >r ;
+::]a	r> >a ;
+::b[ 	b> >r ;
+::]b	r> >b :

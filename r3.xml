@@ -28,7 +28,7 @@
             <Keywords name="Keywords2">:</Keywords>
             <Keywords name="Keywords3">&apos;</Keywords>
             <Keywords name="Keywords4">^</Keywords>
-            <Keywords name="Keywords5">[ ] ; ex dup drop swap over rot -rot nip pick2 pick3 pick4 2dup 2drop 3drop 4drop 2over 2swap &gt;r r&gt; r@ 0? 1? +? -? =? &lt;&gt;? &gt;? &lt;? &gt;=? &lt;=? and? nand? in? + - * / &lt;&lt; &gt;&gt; &gt;&gt;&gt; */ and or xor nand not neg mod /mod *&gt;&gt; &lt;&lt;/ abs sqrt clz @ c@ w@ d@ @+ c@+ w@+ d@+ ! c! w! d! !+ c!+ w!+ d!+ +! c+! w+! d+! &gt;a a&gt; a+ a@ a! a@+ a!+ ca@ ca! ca@ ca!+ da@ da! da@+ da!+ &gt;b b&gt; b+ b@ b! b@+ b!+ cb@ cb! cb@+ cb!+ db@ db! db@+ db!+ move move&gt; fill cmove cmove&gt; cfill dmove dmove&gt; dfill mem loadlib getproc sys0 sys1 sys2 sys3 sys4 sys5 sys6 sys7 sys8 sys9 sys10</Keywords>
+            <Keywords name="Keywords5">[ ] ; ex dup drop swap over rot -rot nip pick2 pick3 pick4 2dup 2drop 3drop 4drop 2over 2swap &gt;r r&gt; r@ 0? 1? +? -? =? &lt;&gt;? &gt;? &lt;? &gt;=? &lt;=? and? nand? in? + - * / &lt;&lt; &gt;&gt; &gt;&gt;&gt; */ and or xor nand not neg mod /mod *&gt;&gt; &lt;&lt;/ abs sqrt clz @ c@ w@ d@ @+ c@+ w@+ d@+ ! c! w! d! !+ c!+ w!+ d!+ +! c+! w+! d+! &gt;a a&gt; a+ a@ a! a@+ a!+ ca@ ca! ca@+ ca!+ da@ da! da@+ da!+ &gt;b b&gt; b+ b@ b! b@+ b!+ cb@ cb! cb@+ cb!+ db@ db! db@+ db!+ move move&gt; fill cmove cmove&gt; cfill dmove dmove&gt; dfill mem loadlib getproc sys0 sys1 sys2 sys3 sys4 sys5 sys6 sys7 sys8 sys9 sys10</Keywords>
             <Keywords name="Keywords6"></Keywords>
             <Keywords name="Keywords7"></Keywords>
             <Keywords name="Keywords8"></Keywords>

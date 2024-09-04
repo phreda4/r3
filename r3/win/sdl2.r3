@@ -240,8 +240,7 @@
 	SDL_windows 'sw 'sh SDL_GetWindowSize ;
 	
 ::SDLupdate
-	0 'SDLkey !
-	0 'SDLchar !
+	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 

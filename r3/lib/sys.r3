@@ -20,9 +20,4 @@
 ::blink | -- 0/1
 	msec $100 and ;
 
-|--- copy and restore registers A B, to system?
-::pushab | --
-	r> >a >r b> >r >r ;
-	
-::popba | --
-	r> r> >b r> >a >r ;
+

@@ -69,7 +69,7 @@
 	xm pick2 - ym pick2 + xm pick4 + over SDLLine  ;
 
 ::SDLFEllipse | rx ry x y --
-	a> >r
+	a[
 	inielipse
 	xm pick2 - ym xm pick4 + over SDLLine 
 	( swap 0 >? swap 		| 2aa 2bb x y
@@ -79,7 +79,7 @@
 		drop
 		)
 	4drop 
-	r> >a ;
+	]a ;
 	
 :borde | x y x
 	over SDLPoint SDLPoint ;
