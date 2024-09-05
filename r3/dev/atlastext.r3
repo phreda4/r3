@@ -21,12 +21,11 @@
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	a[ 
-	
-	imglist> >a
-	a!+ | texture
-	over over 16 << or dy 48 << or dx 32 << or a!+ |layersize
-	here a!+ |imgsize
-	0 a!+
+	imglist> >a	a!+ 		| texture
+	over over 16 << or 			|layersize
+	dy 48 << or dx 32 << or a!+ |imagesize
+	here a!+		| mem 
+	0 a!+			| future info 
 	a> 'imglist> ! 
 	|w h
 	here >a
@@ -37,7 +36,9 @@
 			pick3 + ) drop 
 		over + ) drop
 	2drop 
-	here a> over - 3 >> here !
+	here a> over - 3 >> 
+	dup "cnt:%d" .println
+	swap !
 	a> 'here ! 
 	]a
 	;
@@ -73,12 +74,13 @@
 	0 'x ! 0 'y !
 	0 'wmin ! 0 'hmin !
 	0 ( imgcnt <?
-		wmin hmin 16 << or over ]simg .info !
+		wmin hmin 16 << or over ]simg .info ! | save the border
 		dup ]simg .layer @ 2ixy  | dx dy
 		over wmin + wmax max 'wmax !
 		dup hmin + hmax max 'hmax !
 		drop 
 		1+ 'wmin +! | borde
+		|2 'hmin +!
 		1+ ) drop
 |	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
 |	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
@@ -95,10 +97,61 @@
 	SDLrenderer 0 SDL_SetRenderTarget	
 	newtex 1 SDL_SetTextureBlendMode | SDL_BLENDMODE_BLEND
 	;
-	
 
-		
+
+#fileatlas		
+| cntspr
+| spr1 spr2 .. sprn	
+| altura|w|h
+| altura{x1 y1 x2 y2}
+|  
+| altura|w|h
+| altura{x1 y1 x2 y2}
+|
+
+:genspr | n -- n ; a:adress
+	over a!+
+	over ]img .info @ a!+
+	;
+
 :genfile
+	here dup 'fileatlas !
+	imgcnt swap !+
+	dup imgcnt ncell+ >a | inicio spr1
+	0 ( imgcnt <? | adr nro
+		|dup "%d." .println
+		a> rot !+ | save adress
+		genspr 
+		swap 1+ ) 2drop ;
+		
+|-----------------
+:debugsp | adr --
+	@+ " %d " .print
+	@ 2xy "%d %d" .print
+	.cr
+	;
+	
+:debug2
+	fileatlas
+	@+ "cnt:%d" .println
+	0 ( imgcnt <? swap
+		dup "%h:" .print
+		@+ debugsp
+		swap 1+ ) drop ;
+	
+|--------------------------------------	
+
+:debug1
+	|** debug
+	0 ( imgcnt <?
+		dup ]simg .layer @ dup 
+		2xy "%d %d : " .print
+		2ixy "%d %d : " .print
+		dup ]simg .mem @ "<%h>" .print
+		dup ]simg .mem @ @ " %d - " .print
+		dup ]simg .info @ 2xy "%d %d" .println
+		1+ ) drop
+	|** debug
 	;
 	
 :genatlas | list --
@@ -118,21 +171,10 @@
 		a!+
 		1+ ) drop
 	imgcnt imgsort shellsort1 | sort by height of image
-
-	|** debug
-	0 ( imgcnt <?
-		dup ]simg .layer @ dup 
-		2xy "%d %d : " .print
-		2ixy "%d %d : " .print
-		dup ]simg .mem @ "<%h>" .print
-		dup ]simg .mem @ @ " %d - " .print
-		dup ]simg .info @ 2xy "%d %d" .println
-		1+ ) drop
-	|** debug
-	
 	packbox
-	
+debug1
 	genfile
+debug2
 	;
 
 |--------- LOAD 
@@ -157,14 +199,6 @@
 	over 8 + @ or over 8 + ! | altura
 	a> 'here ! ;
 
-| cntspr
-| spr1 spr2 .. sprn	
-| altura|w|h
-| altura{x1 y1 x2 y2}
-|  
-| altura|w|h
-| altura{x1 y1 x2 y2}
-|
 
 	
 :debugimglist
@@ -182,8 +216,7 @@
 		|"%h " pcprint pccr
 		$ffff and ]img .layer @
 		2xy "%d %d" pcprint pccr
-		1+ ) drop
-	;
+		1+ ) drop ;
 
 :viewbox
 	$ff00 sdlcolor
@@ -205,9 +238,11 @@
 	0 0 pcat "Atlas generator - " pcprint 
 	imgcnt "%d images" pcprint pccr
 	hmax wmax "%d %d image max" pcprint
-	
 	|viewbox
 	10 128 512 512 newtex sdlimages
+	
+	
+	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
@@ -242,7 +277,7 @@
 ( 14 37 ) "van" 
 ( 36 36 ) "blue_tree"
 ( 16 16 ) "car"
-( 10 10 ) "tank"
+( 32 32 ) "tank"
 0
 
 #list3
@@ -253,13 +288,12 @@
 ( 64 64 ) "obj_house8" 
 ( 64 64 ) "obj_house8c" 
 0
-
 	
 :main
 	"ATLAS GENERATOR" 1024 600 SDLinit
 	pcfont
 
-	'list1 genatlas
+	'list2 genatlas
 	
 	'game SDLshow 
 	SDLquit ;
