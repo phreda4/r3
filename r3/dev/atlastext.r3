@@ -10,7 +10,6 @@
 #ym #xm
 #dx #dy
 
-
 |-------------- MEMM
 #imglist
 #imglist>
@@ -37,7 +36,7 @@
 		over + ) drop
 	2drop 
 	here a> over - 2 >> 2 -
-	dup "cnt:%d" .println
+	|dup "cnt:%d" .println
 	swap !
 	a> 'here ! 
 	]a
@@ -72,7 +71,7 @@
 | simple..not calc
 :packbox
 	0 'x ! 0 'y !
-	0 'wmin ! 1 'hmin !
+	1 'wmin ! 1 'hmin ! | borde
 	0 ( imgcnt <?
 		wmin hmin 16 << or over ]simg .info ! | save the border
 		dup ]simg .layer @ 2ixy  | dx dy
@@ -140,17 +139,20 @@
 	imgcnt swap !+
 	dup imgcnt  ncell+ >a | inicio spr1
 	0 ( imgcnt <? | adr nro
+	
 		|dup "%d." .println
+		
 		a> rot !+ | save adress
 		genspr 
 		swap 1+ ) 2drop 
-	a> 'here ! ;
+	a> 16 + 'here ! ;
 		
 |-----------------
 :debugsp | adr --
 	@+ dup " %h " .print
 	32 >> | altura
 	0 ( over <? rot
+		@+ "%h:" .print @+ "%h " .print
 |d@+ fp2f "(%f " .print d@+ fp2f "%f " .print d@+ fp2f "%f " .print d@+ fp2f "%f) " .print
 
 |d@+ "(%d " .print d@+ "%d " .print d@+ "%d " .print d@+ "%d) " .print
@@ -164,7 +166,7 @@
 	fileatlas
 	@+ "cnt:%d" .println
 	0 ( imgcnt <? swap
-		dup "%h:" .print
+		2dup "%h: %d " .print
 		@+ debugsp
 		swap 1+ ) drop ;
 	
@@ -204,7 +206,7 @@
 	packbox
 |debug1
 	genfile
-debug2
+|debug2
 	;
 
 |------------- ISO
@@ -374,7 +376,7 @@ debug2
 #ang
 
 :game
-	$3a3a3a SDLcls
+	$0 SDLcls
 	$ffffff pccolor
 	0 0 pcat "Atlas generator - " pcprint 
 	imgcnt "%d images" pcprint pccr
@@ -387,8 +389,10 @@ debug2
 	700 200 ang 6.0 
 	msec 7 >> $7 and 10 +
 	isospr
-	700 500 ang 6.0
-	18 isospr
+	
+	700 500 ang neg  6.0
+	msec 7 >> $3 and 18 +
+	isospr
 	
 	SDLredraw
 	SDLkey
@@ -416,7 +420,10 @@ debug2
 ( 24 24 ) "T-Rex5" | 26
 ( 24 24 ) "T-Rex6" | 26
 ( 24 24 ) "T-Rex7" | 26
-( 26 9 ) "deer" | 27
+( 26 9 ) "deer0" | 27
+( 26 9 ) "deer1" | 27
+( 26 9 ) "deer2" | 27
+( 26 9 ) "deer3" | 27
 0
 
 #list2
