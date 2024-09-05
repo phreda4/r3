@@ -239,15 +239,18 @@
 	dup 16 >> or
 	1 +
 	;
+	
+::6* | n -- n*6
+	1 << dup 1 << + ;
 
-::6/ | n -- r
+::6/ | n -- n/6
 	dup 1 >> over 3 >> + | n q
 	dup 4 >> + dup 8 >> + dup 16 >> + 2 >> | n q
 	swap over  | q n q
 	dup 1 << + 1 << - | q n-q*6
 	2 + 3 >> + ;
 
-::6mod | n -- m
+::6mod | n -- n%6
 	dup 6/ dup 1 << + 1 << - ;
 
 ::10/mod | n -- r m
@@ -300,6 +303,7 @@
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
 ::fp2f | fp -- fixed point
+	0? ( ; )
 	dup $7fffff and $800000 or
 	over 23 >> $ff and 134 - 
 	shift swap -? ( drop neg ; ) drop ;
@@ -309,4 +313,5 @@
 |	swap 23 >> $ff and 134 - 
 |	shift ;
 |::fp2f | fp -- fixed point
+|	0? ( ; )
 |	-? ( fp2fu neg ; ) fp2fu ;

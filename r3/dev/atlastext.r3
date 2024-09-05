@@ -32,11 +32,11 @@
 	8 a+	| cant
 	0 ( dy <? 
 		0 ( dx <? | w h y x
-			2dup da!+ da!+
+			2dup 16 << or da!+ | x(16)/y(16)
 			pick3 + ) drop 
 		over + ) drop
 	2drop 
-	here a> over - 3 >> 
+	here a> over - 2 >> 2 -
 	dup "cnt:%d" .println
 	swap !
 	a> 'here ! 
@@ -44,8 +44,8 @@
 	;
 
 :countlistss | list -- list cnt
-	0 over ( c@+ 1? drop 
-		c@+ drop >>0 swap 1+ swap ) 2drop ;
+	0 over ( c@+ 1? drop c@+ drop 
+		>>0 swap 1+ swap ) 2drop ;
 	
 :loadlistss | list --
 	a[ >a
@@ -72,7 +72,7 @@
 | simple..not calc
 :packbox
 	0 'x ! 0 'y !
-	0 'wmin ! 0 'hmin !
+	0 'wmin ! 1 'hmin !
 	0 ( imgcnt <?
 		wmin hmin 16 << or over ]simg .info ! | save the border
 		dup ]simg .layer @ 2ixy  | dx dy
@@ -108,26 +108,55 @@
 | altura|w|h
 | altura{x1 y1 x2 y2}
 |
+#wsp #hsp
+#xsp #ysp 
 
-:genspr | n -- n ; a:adress
-	over a!+
-	over ]img .info @ a!+
+:x2fp | x -- xn
+	16 << wmax / f2fp ;
+	
+:y2fp | y -- yn
+	16 << hmax / f2fp ;
+	
+:genspr | n adr -- n adr ; a:dest
+	over ]img .info @ dup 16 >> 'ysp ! $ffff and 'xsp !
+	over ]img .mem @ dup 8 + >b @ 
+	pick2 ]img .layer @ $ffffffff and 
+	dup $ffff and 'wsp !
+	dup 16 >> 'hsp !
+	|xsp ysp wsp hsp "%dx%d %d %d" .println
+	over 32 << or a!+ | alt|w|h
+	0 ( over <?
+		db@+  | x y 
+		dup
+		dup 16 >> xsp + x2fp da!+
+		$ffff and ysp + y2fp da!+
+		dup 16 >> xsp + wsp + x2fp da!+
+		$ffff and ysp + hsp + y2fp da!+
+		1+ ) 2drop
 	;
-
+			
 :genfile
 	here dup 'fileatlas !
 	imgcnt swap !+
-	dup imgcnt ncell+ >a | inicio spr1
+	dup imgcnt  ncell+ >a | inicio spr1
 	0 ( imgcnt <? | adr nro
 		|dup "%d." .println
 		a> rot !+ | save adress
 		genspr 
-		swap 1+ ) 2drop ;
+		swap 1+ ) 2drop 
+	a> 'here ! ;
 		
 |-----------------
 :debugsp | adr --
-	@+ " %d " .print
-	@ 2xy "%d %d" .print
+	@+ dup " %h " .print
+	32 >> | altura
+	0 ( over <? rot
+|d@+ fp2f "(%f " .print d@+ fp2f "%f " .print d@+ fp2f "%f " .print d@+ fp2f "%f) " .print
+
+|d@+ "(%d " .print d@+ "%d " .print d@+ "%d " .print d@+ "%d) " .print
+
+		-rot 1+ ) 2drop
+	drop
 	.cr
 	;
 	
@@ -156,6 +185,7 @@
 	
 :genatlas | list --
 	countlistss dup 'imgcnt !
+	|dup "((%d))" .println
 	5 <<
 	here 
 	dup 'imglist ! 
@@ -172,35 +202,144 @@
 		1+ ) drop
 	imgcnt imgsort shellsort1 | sort by height of image
 	packbox
-debug1
+|debug1
 	genfile
 debug2
 	;
 
-|--------- LOAD 
-::loadss | w h "file" -- ssprite
-	loadimg
-	dup 0 0 'dx 'dy SDL_QueryTexture
-	|dup 0 SDL_SetTextureScaleMode | not fix
-	
-	here >a a!+ 		| texture
-	2dup 16 << or a!+	| wi hi
-	dy 16 <</ swap dx 16 <</ | dy dx
-	0 ( 1.0 pick3 - <=?
-		0 ( 1.0 pick3 - <=?
-			dup f2fp da!+ 
-			over f2fp da!+ 
-			dup pick3 + f2fp da!+ 
-			over pick4 + f2fp da!+		
-			pick2 + ) drop
-		pick2 + ) drop
-	here 
-	a> over - 4 >> 1- 32 << 
-	over 8 + @ or over 8 + ! | altura
-	a> 'here ! ;
+|------------- ISO
+#isang 0.22
+#isalt 0.28
 
+#isx1 0.87
+#isx2 0.87
+#isx3 0
 
+#isy1 0.5
+#isy2 -0.5
+#isy3 -1.0
+
+:xyz2iso | x y z -- x y
+	pick2 isx1 *. pick2 isx2 *. + over isx3 *. +
+	swap isy3 *. rot isy2 *. + rot isy1 *. + 
+	;
 	
+
+##isxo ##isyo 
+
+:2iso | x y z -- x y 
+	xyz2iso 
+	swap 12 >> isxo + 
+	swap 12 >> isyo + ;
+
+:isocam
+	isang sincos 'isx1 ! isalt *. 'isy1 !
+	isang 0.25 + sincos 'isx2 ! isalt *. 'isy2 !
+	;
+	
+:resetcam
+	sw 2/ 'isxo !
+	sh 2/ 'isyo !
+	isocam
+	;
+	
+|-------------------------
+#cntl 
+#ind
+#tx1 #tx2 #ty1 #ty2
+#d1 #d2 #d3 #d4
+#z #dz
+#ssp
+
+:rotxyiso | x1 y1 -- xd yd
+	over dx * over dy * -				| x y x1 y1 x'
+	rot dy * rot dx * +					| x y x' y'
+	
+	0 xyz2iso 
+	17 >> swap | scale !!
+	17 >> swap
+	;	
+
+|----------- correct zoom
+:fillvertiso | xm ym --
+	over neg over neg rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd1 ! 
+	2dup neg rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd2 !
+	2dup rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd3 !
+	swap neg swap rotxyiso 
+	$ffff and 16 << swap $ffff and or 'd4 !
+	;
+	
+:gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
+
+|#indexm [ 0 1 2 2 3 0 ]
+:makeindex
+	0 ( cntl <?
+		dup 2 << 
+		dup da!+ dup 1 + da!+ dup 2 + da!+
+		dup 2 + da!+ dup 3 + da!+ da!+
+		1+ ) drop ;
+		
+	
+:settex | --
+	z 16 >> 4 << ssp + 
+	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! 
+	dz 'z +!
+	;
+	
+| posx posy color texx texy 
+:makelayer | x y lev -- x y lev
+	d1 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty1 da!+
+	d2 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty1 da!+
+	d3 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx2 da!+ ty2 da!+
+	d4 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	$ffffffff da!+ tx1 da!+ ty2 da!+
+	1 'cntl +!
+	;
+	
+|  cntspr
+| spr1 spr2 .. sprn	
+| altura|w|h
+| altura{x1 y1 x2 y2}
+|  
+| altura|w|h
+| altura{x1 y1 x2 y2}	
+::isospr | x y a z n --
+	rot sincos 'dx ! 'dy !		| x y z n
+	1+ 3 << fileatlas + @	|
+	dup 8 + 'ssp ! 				| x y z 'ss
+	@ 
+	dup 32 >> swap
+	dup $ffff and swap
+	16 >> $ffff and		| x y z lev w h
+	swap pick3 16 *>> 		| x y z lev h xm
+	swap pick3 16 *>> 		| x y z lev xm ym
+	fillvertiso 		| x y z lev
+	1.0 pick2 /. neg 'dz !
+	dup 16 << 'z !
+	*. 					| x y reallev.
+	here >a 0 'cntl ! 
+
+	( 1? 1-
+		settex
+		makelayer
+		swap 1- swap 
+		) 3drop
+		
+	a> 'ind !
+	makeindex
+	SDLrenderer newtex 	| texture
+	here cntl 2 << 		| 4* vertex list
+	ind cntl 6* 		| 6* index list
+	SDL_RenderGeometry 
+	;
+	
+|-------------------------	
 :debugimglist
 	$ffff pccolor
 	imglist ( imglist> <? 
@@ -232,6 +371,8 @@ debug2
 		sdlrect
 		1+ ) drop ;
 
+#ang
+
 :game
 	$3a3a3a SDLcls
 	$ffffff pccolor
@@ -241,7 +382,13 @@ debug2
 	|viewbox
 	10 128 512 512 newtex sdlimages
 	
+	0.001 'ang +!
 	
+	700 200 ang 6.0 
+	msec 7 >> $7 and 10 +
+	isospr
+	700 500 ang 6.0
+	18 isospr
 	
 	SDLredraw
 	SDLkey
@@ -261,7 +408,6 @@ debug2
 ( 10 10 ) "obj_tree2c"
 ( 10 10 ) "obj_tree3"
 ( 6 6 ) "obj_tree4"
-( 26 9 ) "deer" | 27
 ( 24 24 ) "T-Rex0" | 26
 ( 24 24 ) "T-Rex1" | 26
 ( 24 24 ) "T-Rex2" | 26
@@ -270,6 +416,7 @@ debug2
 ( 24 24 ) "T-Rex5" | 26
 ( 24 24 ) "T-Rex6" | 26
 ( 24 24 ) "T-Rex7" | 26
+( 26 9 ) "deer" | 27
 0
 
 #list2
@@ -292,8 +439,8 @@ debug2
 :main
 	"ATLAS GENERATOR" 1024 600 SDLinit
 	pcfont
-
-	'list2 genatlas
+	'list1 genatlas
+	resetcam
 	
 	'game SDLshow 
 	SDLquit ;
