@@ -4,7 +4,7 @@
 | vaini | max --
 | vareset | -- 
 | ---start 1.0 seconds, go from 10 to 100 in 2.0 seconds with 1 penner function
-| +vanim | 100 10 1 2.0 1.0 -- 
+| +vanim | 'var 100 10 1 2.0 1.0 -- 
 | ---exe in 3.0 seconds (only one in one time!)
 | +vexe | 'exe 3.0 --
 | ---update 
@@ -18,11 +18,12 @@
 #prevt
 #timenow
 | time
-#timeline #timeline< #timeline> 
-| el timenow
+#timeline #timeline< 
+#timeline> 
+| list exe now 
 #exelist #exelist>
 | ini | fin | ease ms | 'VAR
-#exevar #exevar> | el
+#exevar #exevar> 
 
 ::vareset
 	0 'timenow ! 
@@ -63,10 +64,11 @@
 	( over
 		timeline> =? ( 'timeline< ! 2drop ; )
 		@ $ffffffff and >=? swap 
-		dup @ $ff00000000 and timenow or
+		dup @ $ffffffff nand timenow or
 		exelist> !+ 'exelist> !
 		8 + swap ) drop
-	'timeline< ! ;
+	'timeline< ! 
+	;
 
 |-----
 :delex | 'list var -- 'list | ..
@@ -82,7 +84,7 @@
 	swap 32 >> 5 << exevar +		| 'list T0 VAR
 	@+ 0? ( drop nip @ 'exepost ! delvec ; )
 	rot							| var X t0
-	1.0 pick2 $ffffffff and */		| var X t0 tmax
+	over $ffffffff and 16 <</		| var X t0 tmax
 	1.0 >=? ( 2drop delex ; )		| var X f x 	
 	swap 32 >> ease				| fn f->f
 	swap >a a@+ a@+ over - 
@@ -102,6 +104,7 @@
 	;	
 
 :+ev
+	| exevar< | primero libre
 	exevar> !+ !+ !+ !+ 'exevar> !
 	exevar> exevar - 5 >> 1 - ;
 
@@ -115,3 +118,4 @@
 	
 ::+vexe | 'vector start --
 	swap dup dup 0 +ev swap +tline ;
+	

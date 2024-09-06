@@ -113,6 +113,7 @@
 		>>line trim ) nip nip ;
 		
 ::cntdbrow | 'db -- cnt
+	0? ( ; )
 	>a
 	0 ( ca@+ 1?
 	 	$5e =? ( swap 1 + swap ) | ^
