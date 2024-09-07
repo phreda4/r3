@@ -1,12 +1,16 @@
 | 3dworld - no opengl
 | PHREDA 2023
 |-----
-^r3/win/isospr.r3
+
+
 ^r3/util/arr16.r3
 ^r3/util/varanim.r3
 ^r3/util/boxtext.r3
 ^r3/util/sdlgui.r3
 ^r3/util/bfont.r3
+
+|^r3/win/isospr.r3
+^r3/dev/isosprs.r3
 
 #spcar
 #spcar2
@@ -59,7 +63,6 @@
 	onDnMove 
 	;	
 	
-	
 |-------------------------------	
 :juego
 	gui
@@ -80,27 +83,61 @@
 	
 :jugar 
 	resetcam
-	12 26 "media/stackspr/veh_mini1.png" loadss 'spcar !
-	36 36 "media/stackspr/blue_tree.png" loadss 'sptree !
-	16 16 "media/stackspr/car.png" loadss 'spcar2 !
-	32 32 "media/stackspr/tank.png" loadss 'sptank !	
-	
+
 	'listspr p.clear
 	'listobj p.clear
 
-	spcar 0 4.0 -4.0 4.0 0  +obj | isospr a z x y z --
-	spcar2 0 4.0 4.0 4.0 0  +obj | isospr a z x y z --
-	sptree 0 4.0 -4.0 -4.0 0 +obj | isospr a z x y z --
-	sptank 0 4.0 4.0 -4.0 0 +obj | isospr a z x y z --
-	
+	0 ( 4 <?
+		0 ( 4 <? 
+			2dup 2 << + 
+			0 4.0 
+			pick4 10.0 * 15.0  -
+			pick4 10.0 * 15.0 -
+			0 +obj
+			1+ ) drop
+		1+ ) drop
+		
+
 	'juego SDLShow 
 	;
+	
+|--------------------------------------------
+#list1 
+( 8 8 ) "obj_tree1"
+( 8 8 ) "obj_tree1a"
+( 8 8 ) "obj_tree1b"
+( 8 8 ) "obj_tree1c"
+( 10 10 ) "obj_tree2"
+( 10 10 ) "obj_tree2a"
+( 10 10 ) "obj_tree2b"
+( 10 10 ) "obj_tree2c"
+( 10 10 ) "obj_tree3"
+( 6 6 ) "obj_tree4"
+( 12 26 ) "veh_mini1" 
+( 14 37 ) "van" 
+( 36 36 ) "blue_tree"
+( 16 16 ) "car"
+( 32 32 ) "tank"
+( 26 9 ) "deer0" | 27
+( 26 9 ) "deer1" | 27
+( 26 9 ) "deer2" | 27
+( 26 9 ) "deer3" | 27
+0
+
+#list3
+( 64 64 ) "obj_house1" 
+( 64 64 ) "obj_house3" 
+( 64 64 ) "obj_house4" 
+( 64 64 ) "obj_house5" 
+( 64 64 ) "obj_house8" 
+( 64 64 ) "obj_house8c" 
+0
 	
 |-------------------------------------
 :main
 	"iso world" 1024 600 SDLinit
 	bfont1
-	
+	'list1 genatlas
 	50 'listspr p.ini
 	200 'listobj p.ini
 	jugar

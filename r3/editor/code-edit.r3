@@ -200,6 +200,11 @@
 		13 =? ( rot 1 + -rot ) drop ) drop ;
 		
 :r3info
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+
 	rows 1 - 'hcode !
 	0 'outpad !
 	0 'cerror !
@@ -225,10 +230,6 @@
 
 :runfile
 	savetxt
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
 	r3info	
 	cerror 1? ( drop ; ) drop
 	.masb .reset .cls
@@ -251,7 +252,6 @@
 |RPI|	"./r3rpi r3/editor/r3debug.r3"
 	sys
 	"press <ESC> to continue" .write waitesc
-	r3info
 	;
 
 :mkplain
@@ -262,7 +262,6 @@
 |RPI| "./r3rpi r3/editor/r3plain.r3"
 	sys
 	.alsb
-	r3info
 	;
 
 :compile
@@ -273,7 +272,6 @@
 |RPI| "./r3rpi r3/system/r3compiler.r3"
 	sys
 	.alsb
-	r3info
 	;
 
 |-------------------------------------------
@@ -785,6 +783,12 @@
 |----------- principal
 :main
 	'name "mem/main.mem" load drop
+	
+|WIN|	"r3 r3/editor/r3info.r3"
+|LIN|	"./r3lin r3/editor/r3info.r3"
+|RPI|	"./r3rpi r3/editor/r3info.r3"
+	sys
+	
 	ram
 	evtmouse
 	.getconsoleinfo
