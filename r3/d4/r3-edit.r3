@@ -168,7 +168,7 @@
 	
 :modoimm
 	rows 8 - 'hcode !
-	3 'modoe ! 
+	4 'modoe ! 
 	'pad immset
 	;
 
@@ -397,7 +397,8 @@
 	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
 
 	$3b =? ( runfile )		| f1 - compiler/run
-	$3c =? ( mododeb )		| f2 -
+	$3c =? ( modoimm )		| f2 -
+	|$3c =? ( mododeb )		| f2 -
 |	$3d =? ( debugfile )	| f3 -
 	$3e =? ( mkplain )		| f4 -
 	$3f =? ( compile )		| f5 -
@@ -537,14 +538,18 @@
 |	vmclear
 |	vmrun
 	immclear
+	
 	;
 	
 :evkey | key -- key
 	evtkey
 	$1000 and? ( drop ; )	| upkey	
+	
 	$1B0001 =? ( modoedit 1 'escnow ! )
+	
 	immevkey 
-	$1c =? ( enterline )
+	$1c =? ( enterline ) | 13
+	$3c =? ( modoedit ) |f2
 	drop ;
 	
 :modoimmediate
@@ -555,10 +560,11 @@
 	cursorpos 
 	1 hcode 3 + ,at
 	,reset
-	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
-	"D) " ,s ,stack ,nl
+	regb rega "A:%d B:%d " ,print 
+	" | " ,s ,stack ,nl
 	"> " ,s ,immline 
 	,showc
+	
 	memsize type	| type buffer
 	empty			| free buffer
 	getevt

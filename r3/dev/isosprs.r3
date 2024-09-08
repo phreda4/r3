@@ -1,4 +1,6 @@
 | sprites atlas generator
+| sprite stack draw
+| sprite stcj scene
 | PHREDA 2024
 
 ^r3/lib/gui.r3
@@ -24,7 +26,7 @@
 	over over 16 << or 			|layersize
 	dy 48 << or dx 32 << or a!+ |imagesize
 	here a!+		| mem 
-	0 a!+			| future info 
+	0 a!+			| future info, image cnt
 	a> 'imglist> ! 
 	|w h
 	here >a
@@ -35,8 +37,7 @@
 			pick3 + ) drop 
 		over + ) drop
 	2drop 
-	here a> over - 2 >> 2 -
-	|dup "cnt:%d" .println
+	here a> over - 2 >> 2 - | image cnt
 	swap !
 	a> 'here ! 
 	]a
@@ -63,7 +64,6 @@
 	
 :2xy dup $ffff and swap 16 >> $ffff and ;
 :2ixy dup 32 >> $ffff and swap 48 >> $ffff and ;
-	
 	
 #x #y
 #wmin #hmin #wmax #hmax
@@ -123,7 +123,6 @@
 	pick2 ]img .layer @ $ffffffff and 
 	dup $ffff and 'wsp !
 	dup 16 >> 'hsp !
-	|xsp ysp wsp hsp "%dx%d %d %d" .println
 	over 32 << or a!+ | alt|w|h
 	0 ( over <?
 		db@+  | x y 
@@ -132,9 +131,8 @@
 		$ffff and ysp + y2fp da!+
 		dup 16 >> xsp + wsp + x2fp da!+
 		$ffff and ysp + hsp + y2fp da!+
-		1+ ) 2drop
-	;
-			
+		1+ ) 2drop ;
+
 :genfile
 	here dup 'fileatlas !
 	imgcnt swap !+
@@ -208,7 +206,7 @@
 #cntl 
 #ind
 #tx1 #tx2 #ty1 #ty2
-#d1 #d2 #d3 #d4
+#d01 #d23 
 #z #dz
 #ssp
 
@@ -221,20 +219,21 @@
 	17 >> swap
 	;	
 
-|----------- correct zoom
+|----------- ** zoom
+
 :fillvertiso | xm ym --
 	over neg over neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd1 ! 
+	$ffff and 16 << swap $ffff and or 'd01 ! 
 	2dup neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd2 !
+	$ffff and 16 << swap $ffff and or 
+	32 << d01 or 'd01 !
 	2dup rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd3 !
+	$ffff and 16 << swap $ffff and or 'd23 !
 	swap neg swap rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd4 !
+	$ffff and 16 << swap $ffff and or 
+	32 << d23 or 'd23 !
 	;
 	
-:gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
-
 |#indexm [ 0 1 2 2 3 0 ]
 :makeindex
 	0 ( cntl <?
@@ -242,23 +241,29 @@
 		dup da!+ dup 1 + da!+ dup 2 + da!+
 		dup 2 + da!+ dup 3 + da!+ da!+
 		1+ ) drop ;
-		
 	
 :settex | --
 	z 16 >> 4 << ssp + 
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! 
 	dz 'z +!
 	;
-	
+
+
 | posx posy color texx texy 
 :makelayer | x y lev -- x y lev
-	d1 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	d01 
+	dup 48 << 48 >> pick4 + i2fp da!+
+	dup 32 << 48 >> pick3 + i2fp da!+
 	$ffffffff da!+ tx1 da!+ ty1 da!+
-	d2 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	dup 16 << 48 >> pick4 + i2fp da!+
+	48 >> pick2 + i2fp da!+
 	$ffffffff da!+ tx2 da!+ ty1 da!+
-	d3 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	d23
+	dup 48 << 48 >> pick4 + i2fp da!+
+	dup 32 << 48 >> pick3 + i2fp da!+
 	$ffffffff da!+ tx2 da!+ ty2 da!+
-	d4 gyx pick4 + i2fp da!+ pick2 + i2fp da!+ 
+	dup 16 << 48 >> pick4 + i2fp da!+
+	48 >> pick2 + i2fp da!+
 	$ffffffff da!+ tx1 da!+ ty2 da!+
 	1 'cntl +!
 	;
@@ -334,10 +339,26 @@
 	|... ad to scenelist
 	;
 	
-
-|  
-| $ffffffff da!+ b@+ a!+
+| Z/DZ
+| ADRSPRI
+| Z0|X|Y|ELEV
+| BX1|BY1|BX2|BY2
+| BX3|BY3|BX4|BY4
 |
+:rendlayer
+	dup @ 	| DZ|Z
+	dup $ffffffff and dup pick2 32 >> + | a v z nz 
+	rot $ffffffff nand or				| a z nv
+	rot !+ 	| z adr
+	@+		| z adr sprite
+	rot 16 >> 4 << + | adr 
+	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 !  
+	@+ | z0 x y elev
+	swap @+ 'd01 ! @+ 'd23 !
+	;
+
+|
+|------------------------
 :fillsprite | adr -- adr+
 	@+
 	| x y z lev z dz
@@ -348,20 +369,19 @@
 	d@ 'ty2 ! 
 	dz 'z +!
 	
-	d1 gyx pick4 + i2fp da!+ 
-	pick2 + i2fp da!+ 
+	d01
+	dup 48 << 48 >> pick4 + i2fp da!+
+	dup 32 << 48 >> pick3 + i2fp da!+
 	$ffffffff da!+ tx1 da!+ ty1 da!+
-	
-	d2 gyx pick4 + i2fp da!+ 
-	pick2 + i2fp da!+ 
+	dup 16 << 48 >> pick4 + i2fp da!+
+	48 >> pick2 + i2fp da!+
 	$ffffffff da!+ tx2 da!+ ty1 da!+
-	
-	d3 gyx pick4 + i2fp da!+ 
-	pick2 + i2fp da!+ 
+	d23
+	dup 48 << 48 >> pick4 + i2fp da!+
+	dup 32 << 48 >> pick3 + i2fp da!+
 	$ffffffff da!+ tx2 da!+ ty2 da!+
-	
-	d4 gyx pick4 + i2fp da!+ 
-	pick2 + i2fp da!+ 
+	dup 16 << 48 >> pick4 + i2fp da!+
+	48 >> pick2 + i2fp da!+
 	$ffffffff da!+ tx1 da!+ ty2 da!+
 	1 'cntl +!
 	;

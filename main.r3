@@ -301,10 +301,10 @@
 	".r3" =pos 0? ( 2drop ; ) drop
 	'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-|WIN| "r3 r3/d4/r3d4-e.r3"
-|LIN| "./r3lin r3/d4/r3d4-e.r3"
-|RPI| "./r3rpi r3/d4/r3d4-e.r3"
-|MAC| "./r3mac r3/d4/r3d4-e.r3"
+|WIN| "r3 r3/d4/r3-edit.r3"
+|LIN| "./r3lin r3/d4/r3-edit.r3"
+|RPI| "./r3rpi r3/d4/r3-edit.r3"
+|MAC| "./r3mac r3/d4/r3-edit.r3"
 	sys 
 	conadj ;
 
