@@ -238,8 +238,8 @@
 :makeindex
 	0 ( cntl <?
 		dup 2 << 
-		dup da!+ dup 1 + da!+ dup 2 + da!+
-		dup 2 + da!+ dup 3 + da!+ da!+
+		dup da!+ dup 1 + da!+ dup 2 + dup 
+		da!+ da!+ dup 3 + da!+ da!+
 		1+ ) drop ;
 	
 :settex | --
@@ -366,9 +366,12 @@
 #maxz
 #vertex
 #index
-
+|................
+| call start scene
 ::isoscene
-	here 'scene !
+	mark
+	here dup 'scene ! 'scene> !
+	
 	0 'minz ! 
 	0 'maxz !
 	;
@@ -395,12 +398,10 @@
 		tx1 fp2f ty1 fp2f tx2 fp2f ty2 fp2f "- %f %f %f %f" .println
 	;
 	
-#tesi	
-
+|.............
+| call to add spr
 ::+isospr
-	here dup 'tesi !
-	>a
-
+	scene> >a
 	| x y a z n --
 	rot sincos 'dx ! 'dy !		| x y z n
 	1+ 3 << fileatlas + @	|
@@ -417,42 +418,32 @@
 	*. 					| x y reallev.
 	dup 52 << dz $3ffffff and 26 << or z or a!+
 	ssp a!+
-
 	d01
 	dup 48 << 48 >> pick4 + $ffff and >b
 	dup 32 << 48 >> pick3 + $ffff and 16 << b+
 	dup 16 << 48 >> pick4 + $ffff and 32 << b+
 	48 >> pick2 + $ffff and 48 << b+
 	b> a!+
-	
 	d23
 	dup 48 << 48 >> pick4 + $ffff and >b
 	dup 32 << 48 >> pick3 + $ffff and 16 << b+
 	dup 16 << 48 >> pick4 + $ffff and 32 << b+
 	48 >> pick2 + $ffff and 48 << b+
 	b> a!+
-	a> 'here !
-|	ssp "ssp:%h " .print
-|	dz z "z:%f dz:%f" .println
-|	d23 d01 "%h %h" .println
-	|... ad to scenelist
+	a> 'scene> ! |... add to scenelist
 	3drop
-	
-|	( here @ 52 >>> 1? drop
-|		here layershowrend drop
-|		) drop
 	;
 	
 
-| 42 26 <<
 | elev/Z/DZ	| fff | 3ffffff | 3ffffff ( 4096 / 1024.0 /1024.0) hasta 1024 texturas
 | ADRSPRI
 | BX1|BY1|BX2|BY2
 | BX3|BY3|BX4|BY4
 |
-:rendlayer | adr --
+:rendlayer | adr -- adr
 	dup @ 						| adr lev/DZ/Z
-	dup $3ffffff and dup pick2 12 << 38 >> +	| adr v v22v
+	dup $3ffffff and dup 
+	pick2 12 << 38 >> +	| adr v v22v
 	rot $3ffffff nand or $10000000000000 -
 	rot !+ 				| update z and level
 	@+ rot 16 >> 4 << + | texture
@@ -466,36 +457,27 @@
 	4 + -1 over w+! 
 	4 + -1 over w+! 
 	4 + -1 over w+!
-	drop
+	2 +
 	1 'cntl +!	
 	;
 
 |
 |------------------------
-:drawlayers
-|	minz ( maxz <?
-
-		scene ( scene> <?
-			rendlayer
-			) drop 
-
-|		1+ ) drop
-	;
-
-:testdraw
-	( tesi @ 52 >>> 1? drop
-		tesi rendlayer 
+:scenedraw
+	( scene @ 52 >>> 1? drop
+		scene 
+		rendlayer 
+		rendlayer 
+		drop
 		) drop ;
-	
+|...... 
+| call to end scene	
 ::isodraw
-	mark
-	here >a 
+	scene> >a 
 					|.... vertex
 	a> 'vertex ! 
 	0 'cntl ! 
-	
-	|drawlayers
-	testdraw
+	scenedraw
 					|.... index
 	a> 'index ! 
 	makeindex
@@ -505,5 +487,6 @@
 	vertex cntl 2 << 		| 4* vertex list
 	index cntl 6* 		| 6* index list
 	SDL_RenderGeometry 
+	
 	empty
 	;

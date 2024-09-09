@@ -65,22 +65,26 @@
 	
 |-------------------------------	
 :testscn
-.cls
+	.cls
+	
 	isoscene
-	"---v1---" .println
-	400 300 | x y
-	0.25 4.0 | a z
-	0		| obj
-	+isospr
+	
+	-5.0 -5.0 0 2iso
+	0.25 5.0 10 +isospr
+	
+	5.0 5.0 0 2iso
+	0.25 5.0 11 +isospr
+	
 	isodraw
 	
-	.cr
-	"---v0---" .println
-	400 300 | x y
-	0.25 0.5 | a z	
-	0		| obj
-	isosprshow
-	.cr
+
+|	.cr
+|	"---v0---" .println
+|	400 300 | x y
+|	0.25 0.5 | a z	
+|	1		| obj
+|	isosprshow
+|	.cr
 	;
 	
 :juego
