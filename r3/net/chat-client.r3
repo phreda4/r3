@@ -10,6 +10,8 @@
 #result
 #done 0
 
+#msg * 1024
+
 :.ip | adr --
 	d@+ dup $ff and
 	swap 8 >> dup $ff and
@@ -21,12 +23,13 @@
 	;
 	
 :SayHello
-	'pad >a
+	'msg >a
 	2 ca!+
-	ip @ a!+
+	'ip @ a!+
 	"Pepe" @ a!+
-|	memcpy(&hello[CHAT_HELLO_PORT], &myip->port, 2);
-	tcpsock 'pad len SDLNet_TCP_Send 'result !
+	tcpsock 'msg 18 SDLNet_TCP_Send 'result !
+	"enviado" .println
+	.input
 	;
 	
 :sendpad
@@ -40,17 +43,24 @@
 :clientmain
 	.cls
     "Starting client..." .println
-	'ip "127.0.0.1" 9999 SDLNet_ResolveHost drop
+	'ip "192.168.56.1" 9999 SDLNet_ResolveHost drop
 	'ip .ip .cr
-	'ip SDLNet_TCP_Open 'tcpsock !
+	'ip SDLNet_TCP_Open 
+	dup "open on %h" .println
+	'tcpsock !
 	SayHello
-	( done 0? drop
-		sendpad ) drop
+|	( done 0? drop
+|		sendpad ) drop
     tcpsock SDLNet_TCP_Close
 	;
 	
 : 	
-	0 SDL_Init  
+	$ffff SDL_Init  
 	SDLNet_Init 
+	
 	clientmain
+	
+	SDLNet_Quit
+	SDL_Quit
+	"CLIENT: bye." .println	
 	;

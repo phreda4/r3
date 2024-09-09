@@ -42,13 +42,11 @@
 #len 
 
 :recing
-|        /* read the buffer from client */
 	client 'message 1024 SDLNet_TCP_Recv
 	0? ( drop
 		SDLNet_GetError "SDLNet_TCP_Recv: %s" .println
 		; )
 	'len !
-|        /* print out the message */
 	0 'message len + c!
 	'message len "Rec:[%d] %s" .println
 
@@ -73,18 +71,14 @@
 	here .println
 	;
 	
-#compuname "127.0.0.1"
-|#compuname "mipc"
 
 :runserver
 	"Starting server..." .println
 	
 	'ip 0 1234 SDLNet_ResolveHost
-|	'ip 'compuname 1234 SDLNet_ResolveHost	
 	-1 =? ( drop
 		SDLNet_GetError "SDLNet_ResolveHost: %s" .println
 		; ) drop
-|	"IP:" .print 'ip .iport	.cr
 	
 	'ip 4 + w@ .port "   Network Port. . . . . . . . . . . . . .: %d" .println
 	.iplocal
@@ -97,18 +91,15 @@
 	
 	( done 0? drop
 		"esperando..." .println
-     | /* try to accept a connection */
-		( server SDLNet_TCP_Accept 0? drop 
+     	( server SDLNet_TCP_Accept 0? drop 
 			10 sdl_delay )
 		'client !
 		"llego" .println
-|      /* get the clients IP and port number */
 		client SDLNet_TCP_GetPeerAddress 
 		0? ( drop 
 			SDLNet_GetError "SDLNet_TCP_GetPeerAddress: %s" .println
 			; )
 		'remoteip !
-|      /* print out the clients IP and port number */
 		"Accepted a connection from " .print
 		'remoteip .iport .cr .cr
 		recing
@@ -123,6 +114,6 @@
 	SDLNet_Quit
 	SDL_Quit
 	"server: bye bye" .println
-	waitesc
+	|waitesc
 ;
 

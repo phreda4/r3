@@ -1,3 +1,4 @@
+
 ^r3/win/console.r3
 ^r3/win/sdl2.r3
 ^r3/win/sdl2net.r3
@@ -31,11 +32,11 @@
 	'message "sending: %s" .println
 	
 	tcpsock 'message count SDLNet_TCP_Send
-|        if (result < len)  printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
     drop
-	'message c@ tolow
-	$71 =? ( drop | q/Q
-		; )
+	'message 
+	count 1 >? ( 2drop loopcl ; ) drop
+	c@ tolow
+	$71 =? ( drop ; ) | q/Q
 	drop
 	loopcl ;
 	
