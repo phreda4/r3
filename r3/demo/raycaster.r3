@@ -285,15 +285,12 @@
 	SDLredraw
 	SDLkey
 
-	<le> =? ( -0.005 'vrot ! )
-	<ri> =? ( 0.005 'vrot ! )
-	>le< =? ( 0 'vrot ! ) >ri< =? ( 0 'vrot ! )
-	<up> =? ( 0.1 'vmov ! )
-	<dn> =? ( -0.1 'vmov ! )
-	>up< =? ( 0 'vmov ! ) >dn< =? ( 0 'vmov ! )
-	
-	<a> =? ( 0.02 'vesq ! ) >a< =? ( 0 'vesq ! )
-	<d> =? ( -0.02 'vesq ! ) >d< =? ( 0 'vesq ! )
+	<a> =? ( -0.005 'vrot ! ) >a< =? ( 0 'vrot ! )
+	<d> =? ( 0.005 'vrot ! ) >d< =? ( 0 'vrot ! ) 
+	<w> =? ( 0.1 'vmov ! ) >s< =? ( 0 'vmov ! )
+	<s> =? ( -0.1 'vmov ! ) >w< =? ( 0 'vmov ! )
+	<q> =? ( 0.02 'vesq ! ) >q< =? ( 0 'vesq ! )
+	<e> =? ( -0.02 'vesq ! ) >e< =? ( 0 'vesq ! )
 
 	>esc< =? ( exit )
 	drop

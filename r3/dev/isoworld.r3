@@ -64,6 +64,25 @@
 	;	
 	
 |-------------------------------	
+:testscn
+.cls
+	isoscene
+	"---v1---" .println
+	400 300 | x y
+	0.25 4.0 | a z
+	0		| obj
+	+isospr
+	isodraw
+	
+	.cr
+	"---v0---" .println
+	400 300 | x y
+	0.25 0.5 | a z	
+	0		| obj
+	isosprshow
+	.cr
+	;
+	
 :juego
 	gui
 	isocamrot
@@ -73,7 +92,9 @@
 	$ffffff bcolor
 	0 0 bat "Voxel world" bprint bcr
 
-	'listobj p.draw
+	|'listobj p.draw
+	
+	testscn
 
 	SDLredraw
 	SDLkey
@@ -81,12 +102,7 @@
 	drop
 	;	
 	
-:jugar 
-	resetcam
-
-	'listspr p.clear
-	'listobj p.clear
-
+:testuni
 	0 ( 4 <?
 		0 ( 4 <? 
 			2dup 2 << + 
@@ -96,7 +112,15 @@
 			0 +obj
 			1+ ) drop
 		1+ ) drop
-		
+	;
+	
+:jugar 
+	resetcam
+
+	'listspr p.clear
+	'listobj p.clear
+
+	testuni
 
 	'juego SDLShow 
 	;

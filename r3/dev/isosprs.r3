@@ -268,6 +268,9 @@
 	1 'cntl +!
 	;
 	
+|	'd01
+|	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx1 da!+ ty1 da!+
+
 |  cntspr
 | spr1 spr2 .. sprn	
 | altura|w|h
@@ -306,22 +309,28 @@
 	SDL_RenderGeometry 
 	;
 
-|------------------ DRAW ALL
-#scene 
-#scene>
-#minz
-#maxz
-#vertex
-#index
-
-::isoscene
-	here 'scene !
-	0 'minz ! 
-	0 'maxz !
+|****** DEBUG
+:makelayershow | x y lev -- x y lev
+	d01 
+	dup 48 << 48 >> pick4 + "%d " .print
+	dup 32 << 48 >> pick3 + "%d " .print
+|	$ffffffff da!+ tx1 da!+ ty1 da!+
+	dup 16 << 48 >> pick4 + "%d " .print
+	48 >> pick2 + "%d " .print
+|	$ffffffff da!+ tx2 da!+ ty1 da!+
+	d23
+	dup 48 << 48 >> pick4 + "%d " .print
+	dup 32 << 48 >> pick3 + "%d " .print
+|	$ffffffff da!+ tx2 da!+ ty2 da!+
+	dup 16 << 48 >> pick4 + "%d " .print
+	48 >> pick2 + "%d " .print
+|	$ffffffff da!+ tx1 da!+ ty2 da!+
+	1 'cntl +!
+	tx1 fp2f ty1 fp2f tx2 fp2f ty2 fp2f "- %f %f %f %f" .print
+	.cr
 	;
 
-::+isospr
-	| x y a z n --
+::isosprshow | x y a z n --
 	rot sincos 'dx ! 'dy !		| x y z n
 	1+ 3 << fileatlas + @	|
 	dup 8 + 'ssp ! 				| x y z 'ss
@@ -336,69 +345,157 @@
 	dup 16 << 'z !
 	*. 					| x y reallev.
 	
-	|... ad to scenelist
+	ssp "ssp:%h " .print
+	dz z "z:%f dz:%f" .println
+	d23 d01 "%h %h" .println
+	dup "lev %d" .println
+|	here >a 0 'cntl ! 
+
+
+	( 1? 1-
+		settex
+		makelayershow
+		swap 1- swap 
+		) 3drop
+		
 	;
-	
-| Z/DZ
-| ADRSPRI
-| Z0|X|Y|ELEV
-| BX1|BY1|BX2|BY2
-| BX3|BY3|BX4|BY4
-|
-:rendlayer
-	dup @ 	| DZ|Z
-	dup $ffffffff and dup pick2 32 >> + | a v z nz 
-	rot $ffffffff nand or				| a z nv
+|------------------ DRAW ALL
+#scene 
+#scene>
+#minz
+#maxz
+#vertex
+#index
+
+::isoscene
+	here 'scene !
+	0 'minz ! 
+	0 'maxz !
+	;
+
+:layershowrend
+	dup @ 						| adr lev/DZ/Z
+	dup 52 >> " lev:%d " .print
+	dup $3ffffff and dup pick2 12 << 38 >> +	| adr v v22v
+	rot $3ffffff nand or
+	$10000000000000 -
 	rot !+ 	| z adr
 	@+		| z adr sprite
 	rot 16 >> 4 << + | adr 
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 !  
-	@+ | z0 x y elev
-	swap @+ 'd01 ! @+ 'd23 !
+	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx1 da!+ ty1 da!+
+	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx2 da!+ ty1 da!+
+	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx2 da!+ ty2 da!+
+	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx1 da!+ ty2 da!+
+	16 - 2 + -1 over w+! | y-1
+	4 + -1 over w+!
+	4 + -1 over w+!
+	4 + -1 over w+!
+	1 'cntl +!	
+		tx1 fp2f ty1 fp2f tx2 fp2f ty2 fp2f "- %f %f %f %f" .println
+	;
+	
+#tesi	
+
+::+isospr
+	here dup 'tesi !
+	>a
+
+	| x y a z n --
+	rot sincos 'dx ! 'dy !		| x y z n
+	1+ 3 << fileatlas + @	|
+	dup 8 + 'ssp ! 				| x y z 'ss
+	@ 
+	dup 32 >> swap
+	dup $ffff and swap
+	16 >> $ffff and		| x y z lev w h
+	swap pick3 16 *>> 		| x y z lev h xm
+	swap pick3 16 *>> 		| x y z lev xm ym
+	fillvertiso 		| x y z lev
+	1.0 pick2 /. neg 'dz !
+	dup 16 << 'z !
+	*. 					| x y reallev.
+	dup 52 << dz $3ffffff and 26 << or z or a!+
+	ssp a!+
+
+	d01
+	dup 48 << 48 >> pick4 + $ffff and >b
+	dup 32 << 48 >> pick3 + $ffff and 16 << b+
+	dup 16 << 48 >> pick4 + $ffff and 32 << b+
+	48 >> pick2 + $ffff and 48 << b+
+	b> a!+
+	
+	d23
+	dup 48 << 48 >> pick4 + $ffff and >b
+	dup 32 << 48 >> pick3 + $ffff and 16 << b+
+	dup 16 << 48 >> pick4 + $ffff and 32 << b+
+	48 >> pick2 + $ffff and 48 << b+
+	b> a!+
+	a> 'here !
+|	ssp "ssp:%h " .print
+|	dz z "z:%f dz:%f" .println
+|	d23 d01 "%h %h" .println
+	|... ad to scenelist
+	3drop
+	
+|	( here @ 52 >>> 1? drop
+|		here layershowrend drop
+|		) drop
+	;
+	
+
+| 42 26 <<
+| elev/Z/DZ	| fff | 3ffffff | 3ffffff ( 4096 / 1024.0 /1024.0) hasta 1024 texturas
+| ADRSPRI
+| BX1|BY1|BX2|BY2
+| BX3|BY3|BX4|BY4
+|
+:rendlayer | adr --
+	dup @ 						| adr lev/DZ/Z
+	dup $3ffffff and dup pick2 12 << 38 >> +	| adr v v22v
+	rot $3ffffff nand or $10000000000000 -
+	rot !+ 				| update z and level
+	@+ rot 16 >> 4 << + | texture
+	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 !  
+	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx1 da!+ ty1 da!+
+	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx2 da!+ ty1 da!+
+	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx2 da!+ ty2 da!+
+	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx1 da!+ ty2 da!+
+	16 - 
+	2 + -1 over w+! 
+	4 + -1 over w+! 
+	4 + -1 over w+! 
+	4 + -1 over w+!
+	drop
+	1 'cntl +!	
 	;
 
 |
 |------------------------
-:fillsprite | adr -- adr+
-	@+
-	| x y z lev z dz
-	z 16 >> 4 << ssp + 
-	d@+ 'tx1 ! 
-	d@+ 'ty1 ! 
-	d@+ 'tx2 ! 
-	d@ 'ty2 ! 
-	dz 'z +!
-	
-	d01
-	dup 48 << 48 >> pick4 + i2fp da!+
-	dup 32 << 48 >> pick3 + i2fp da!+
-	$ffffffff da!+ tx1 da!+ ty1 da!+
-	dup 16 << 48 >> pick4 + i2fp da!+
-	48 >> pick2 + i2fp da!+
-	$ffffffff da!+ tx2 da!+ ty1 da!+
-	d23
-	dup 48 << 48 >> pick4 + i2fp da!+
-	dup 32 << 48 >> pick3 + i2fp da!+
-	$ffffffff da!+ tx2 da!+ ty2 da!+
-	dup 16 << 48 >> pick4 + i2fp da!+
-	48 >> pick2 + i2fp da!+
-	$ffffffff da!+ tx1 da!+ ty2 da!+
-	1 'cntl +!
+:drawlayers
+|	minz ( maxz <?
+
+		scene ( scene> <?
+			rendlayer
+			) drop 
+
+|		1+ ) drop
 	;
 
-:drawlayer
-	scene ( scene> <?
-		fillsprite
+:testdraw
+	( tesi @ 52 >>> 1? drop
+		tesi rendlayer 
 		) drop ;
 	
 ::isodraw
+	mark
 	here >a 
 					|.... vertex
 	a> 'vertex ! 
 	0 'cntl ! 
-	minz ( maxz <?
-		drawlayer
-		1+ ) drop
+	
+	|drawlayers
+	testdraw
 					|.... index
 	a> 'index ! 
 	makeindex
@@ -408,4 +505,5 @@
 	vertex cntl 2 << 		| 4* vertex list
 	index cntl 6* 		| 6* index list
 	SDL_RenderGeometry 
+	empty
 	;
