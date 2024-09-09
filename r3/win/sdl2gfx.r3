@@ -89,7 +89,7 @@
 	xm pick2 - ym pick2 + xm pick4 + borde ;
 
 ::SDLEllipse | rx ry x y --
-	a> >r
+	a[
     inielipse
 	xm pick2 - ym xm pick4 + borde
 	( swap 0 >? swap 		| 2aa 2bb x y
@@ -99,7 +99,7 @@
 		drop
 		)
 	4drop 
-	r> >a ;
+	]a ;
 	
 
 ::SDLTriangle | x y x y x y --
@@ -135,6 +135,7 @@
 ::tsload | w h filename -- ts
 	loadimg
 	dup 0 0 'xm 'ym SDL_QueryTexture
+	a[
 	here >a
 	a!+ | texture
 	2dup swap da!+ da!+ | w h 
@@ -145,6 +146,7 @@
 		over + ) drop
 	2drop 
 	here a> 'here ! 
+	]a
 	;
 
 ::tscolor | rrggbb 'ts --

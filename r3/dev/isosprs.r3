@@ -22,7 +22,7 @@
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
 	a[ 
-	imglist> >a	a!+ 		| texture
+	imglist> >a a!+ 		| texture
 	over over 16 << or 			|layersize
 	dy 48 << or dx 32 << or a!+ |imagesize
 	here a!+		| mem 

@@ -564,7 +564,7 @@
 	" | " ,s ,stack ,nl
 	"> " ,s ,immline 
 	,showc
-	
+
 	memsize type	| type buffer
 	empty			| free buffer
 	getevt
