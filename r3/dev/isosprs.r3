@@ -147,7 +147,6 @@
 |--------------------------------------	
 ::genatlas | list --
 	countlistss dup 'imgcnt !
-	|dup "((%d))" .println
 	5 <<
 	here 
 	dup 'imglist ! 
@@ -326,7 +325,7 @@
 
 ::isopos | x y z -- xs ys
 	list> list - 3 >> 
-	over 32 << or 
+	over $ffff nand or |16 << or ; remove decimal part
 	list> !+ 'list> !
 	2iso ;
 	
@@ -401,7 +400,10 @@
 	8 'list +!
 	;
 	
-:drawobj | list+1 objesc  -- list+1
+:drawobj | list+1 v -- list+1
+	$ffffffffffff0000 and? ( drop -$10000 over 8 - +! ; )
+|	dup 16 >> 1? ( 2drop -$10000 over 8 - +! ; ) drop
+	$ffff and 5 << scene + 
 	dup @ dup 52 >>> | adr obj obj@ lev
 	0? ( 3drop reml ; ) drop
 	rl ;
@@ -409,16 +411,13 @@
 :scenedraw
 	( list list> <? 	| inilist
 		( list> <?
-			@+ 
-			$ffff and 5 << scene + drawobj
+			@+ drawobj
 			) drop
 		) drop ;
 
 |...... 
 | call to end scene	
 ::isodraw
-	|list list> over - 3 >> shellsort1
-		
 	scene> >a 
 					|.... vertex
 	a> 'vertex ! 

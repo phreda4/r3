@@ -53,7 +53,7 @@
 :juego
 	gui
 	isocamrot
-	0 sdlcls
+	$3a00 sdlcls
 	
 	$ffffff bcolor
 	0 0 bat "Voxel world" bprint bcr
@@ -76,7 +76,8 @@
 			rand 4.0 
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
-			0 +obj
+			0 |4.0 randmax
+			+obj
 			1+ ) drop
 		1+ ) drop
 	;
