@@ -1,6 +1,6 @@
 | sprites atlas generator
 | sprite stack draw
-| sprite stcj scene
+| sprite stack scene
 | PHREDA 2024
 
 ^r3/lib/gui.r3
@@ -204,11 +204,17 @@
 	
 |-------------------------
 #cntl 
-#ind
 #tx1 #tx2 #ty1 #ty2
 #d01 #d23 
 #z #dz
 #ssp
+
+#list
+#list>
+#scene 
+#scene>
+#vertex
+#index
 
 :rotxyiso | x1 y1 -- xd yd
 	over dx * over dy * -				| x y x1 y1 x'
@@ -220,7 +226,6 @@
 	;	
 
 |----------- ** zoom
-
 :fillvertiso | xm ym --
 	over neg over neg rotxyiso 
 	$ffff and 16 << swap $ffff and or 'd01 ! 
@@ -248,7 +253,6 @@
 	dz 'z +!
 	;
 
-
 | posx posy color texx texy 
 :makelayer | x y lev -- x y lev
 	d01 
@@ -268,8 +272,6 @@
 	1 'cntl +!
 	;
 	
-|	'd01
-|	w@+ i2fp da!+ w@+ i2fp da!+ $ffffffff da!+ tx1 da!+ ty1 da!+
 
 |  cntspr
 | spr1 spr2 .. sprn	
@@ -301,108 +303,38 @@
 		swap 1- swap 
 		) 3drop
 		
-	a> 'ind !
+	a> 'index !
 	makeindex
 	SDLrenderer newtex 	| texture
 	here cntl 2 << 		| 4* vertex list
-	ind cntl 6* 		| 6* index list
+	index cntl 6* 		| 6* index list
 	SDL_RenderGeometry 
 	;
 
-|****** DEBUG
-:makelayershow | x y lev -- x y lev
-	d01 
-	dup 48 << 48 >> pick4 + "%d " .print
-	dup 32 << 48 >> pick3 + "%d " .print
-|	$ffffffff da!+ tx1 da!+ ty1 da!+
-	dup 16 << 48 >> pick4 + "%d " .print
-	48 >> pick2 + "%d " .print
-|	$ffffffff da!+ tx2 da!+ ty1 da!+
-	d23
-	dup 48 << 48 >> pick4 + "%d " .print
-	dup 32 << 48 >> pick3 + "%d " .print
-|	$ffffffff da!+ tx2 da!+ ty2 da!+
-	dup 16 << 48 >> pick4 + "%d " .print
-	48 >> pick2 + "%d " .print
-|	$ffffffff da!+ tx1 da!+ ty2 da!+
-	1 'cntl +!
-	tx1 fp2f ty1 fp2f tx2 fp2f ty2 fp2f "- %f %f %f %f" .print
-	.cr
-	;
-
-::isosprshow | x y a z n --
-	rot sincos 'dx ! 'dy !		| x y z n
-	1+ 3 << fileatlas + @	|
-	dup 8 + 'ssp ! 				| x y z 'ss
-	@ 
-	dup 32 >> swap
-	dup $ffff and swap
-	16 >> $ffff and		| x y z lev w h
-	swap pick3 16 *>> 		| x y z lev h xm
-	swap pick3 16 *>> 		| x y z lev xm ym
-	fillvertiso 		| x y z lev
-	1.0 pick2 /. neg 'dz !
-	dup 16 << 'z !
-	*. 					| x y reallev.
-	
-	ssp "ssp:%h " .print
-	dz z "z:%f dz:%f" .println
-	d23 d01 "%h %h" .println
-	dup "lev %d" .println
-|	here >a 0 'cntl ! 
-
-
-	( 1? 1-
-		settex
-		makelayershow
-		swap 1- swap 
-		) 3drop
-		
-	;
 |------------------ DRAW ALL
-#scene 
-#scene>
-#minz
-#maxz
-#vertex
-#index
+
 |................
 | call start scene
-::isoscene
+::isoscene | maxobj --
 	mark
-	here dup 'scene ! 'scene> !
-	
-	0 'minz ! 
-	0 'maxz !
+	here 
+	dup 'list ! dup 'list> ! 
+	swap 3 << +
+	dup 'scene ! 
+	'scene> !
 	;
 
-:layershowrend
-	dup @ 						| adr lev/DZ/Z
-	dup 52 >> " lev:%d " .print
-	dup $3ffffff and dup pick2 12 << 38 >> +	| adr v v22v
-	rot $3ffffff nand or
-	$10000000000000 -
-	rot !+ 	| z adr
-	@+		| z adr sprite
-	rot 16 >> 4 << + | adr 
-	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 !  
-	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx1 da!+ ty1 da!+
-	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx2 da!+ ty1 da!+
-	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx2 da!+ ty2 da!+
-	w@+ "%d " .print w@+ "%d " .print |$ffffffff da!+ tx1 da!+ ty2 da!+
-	16 - 2 + -1 over w+! | y-1
-	4 + -1 over w+!
-	4 + -1 over w+!
-	4 + -1 over w+!
-	1 'cntl +!	
-		tx1 fp2f ty1 fp2f tx2 fp2f ty2 fp2f "- %f %f %f %f" .println
-	;
+::isopos | x y z -- xs ys
+	list> list - 3 >> 
+	over 32 << or 
+	list> !+ 'list> !
+	2iso ;
 	
+| 1.0 1.0 0.0 0.32 2.0 0 +isospr
 |.............
 | call to add spr
-::+isospr
-	scene> >a
-	| x y a z n --
+::+isospr | x y a z n --
+	scene> >a 
 	rot sincos 'dx ! 'dy !		| x y z n
 	1+ 3 << fileatlas + @	|
 	dup 8 + 'ssp ! 				| x y z 'ss
@@ -440,8 +372,7 @@
 | BX1|BY1|BX2|BY2
 | BX3|BY3|BX4|BY4
 |
-:rendlayer | adr -- adr
-	dup @ 						| adr lev/DZ/Z
+:rl	| adr lev/DZ/Z --
 	dup $3ffffff and dup 
 	pick2 12 << 38 >> +	| adr v v22v
 	rot $3ffffff nand or $10000000000000 -
@@ -457,22 +388,37 @@
 	4 + -1 over w+! 
 	4 + -1 over w+! 
 	4 + -1 over w+!
-	2 +
+	drop
 	1 'cntl +!	
 	;
 
 |
 |------------------------
+:reml | list+1 -- list+1
+	list over 8 - 
+	dup @ pick2 @ 
+	rot ! swap !
+	8 'list +!
+	;
+	
+:drawobj | list+1 objesc  -- list+1
+	dup @ dup 52 >>> | adr obj obj@ lev
+	0? ( 3drop reml ; ) drop
+	rl ;
+	
 :scenedraw
-	( scene @ 52 >>> 1? drop
-		scene 
-		rendlayer 
-		rendlayer 
-		drop
+	( list list> <? 	| inilist
+		( list> <?
+			@+ 
+			$ffff and 5 << scene + drawobj
+			) drop
 		) drop ;
+
 |...... 
 | call to end scene	
 ::isodraw
+	|list list> over - 3 >> shellsort1
+		
 	scene> >a 
 					|.... vertex
 	a> 'vertex ! 

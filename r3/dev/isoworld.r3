@@ -2,7 +2,7 @@
 | PHREDA 2023
 |-----
 
-
+^r3/lib/rand.r3
 ^r3/util/arr16.r3
 ^r3/util/varanim.r3
 ^r3/util/boxtext.r3
@@ -12,21 +12,9 @@
 |^r3/win/isospr.r3
 ^r3/dev/isosprs.r3
 
-#spcar
-#spcar2
-#sptree
-#sptank
-
 #listspr 0 0
 #listobj 0 0
 
-|------ sprites
-:+spr
-	
-	;
-:atlaspr
-	;
-	
 |---------------------------------
 | x y z az ss
 | 1 2 3 4  5 
@@ -38,9 +26,9 @@
 
 :ispr | adr -- adr
 	>a
-	a> .x @ a> .y @ a> .z @ 2iso
+	a> .x @ a> .y @ a> .z @ isopos
 	a> .az @ dup $ffff and swap 16 >>
-	a> .ss @ isospr | x y a z 'ss --
+	a> .ss @ +isospr | x y a z 'ss --
 	;
 	
 :+obj | isospr a z x y z --
@@ -49,8 +37,6 @@
 	swap $ffff and swap 16 << or  a!+ | az
 	a!+
 	;
-	
-	
 	
 #xr 0 #yr 0
 
@@ -64,42 +50,18 @@
 	;	
 	
 |-------------------------------	
-:testscn
-	.cls
-	
-	isoscene
-	
-	-5.0 -5.0 0 2iso
-	0.25 5.0 10 +isospr
-	
-	5.0 5.0 0 2iso
-	0.25 5.0 11 +isospr
-	
-	isodraw
-	
-
-|	.cr
-|	"---v0---" .println
-|	400 300 | x y
-|	0.25 0.5 | a z	
-|	1		| obj
-|	isosprshow
-|	.cr
-	;
-	
 :juego
 	gui
 	isocamrot
-	
 	0 sdlcls
 	
 	$ffffff bcolor
 	0 0 bat "Voxel world" bprint bcr
-
-	|'listobj p.draw
 	
-	testscn
-
+	40 isoscene | max 40 objs
+	'listobj p.draw
+	isodraw
+	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
@@ -107,12 +69,13 @@
 	;	
 	
 :testuni
-	0 ( 4 <?
-		0 ( 4 <? 
-			2dup 2 << + 
-			0 4.0 
-			pick4 10.0 * 15.0  -
-			pick4 10.0 * 15.0 -
+	0 ( 6 <?
+		0 ( 6 <? 
+			|2dup 2 << + 
+			19 randmax
+			rand 4.0 
+			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
+			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			0 +obj
 			1+ ) drop
 		1+ ) drop
