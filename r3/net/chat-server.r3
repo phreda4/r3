@@ -19,7 +19,11 @@
 #maxpeople  10
 
 | socket(8) peer(8) name(8+8) (16 bytes)
-#people * 1024
+|static struct {
+|	TCPsocket sock;
+|	IPaddress peer;
+|	Uint8 name[16];
+#people * 1024 | n <<5
 #lpeople 0
 
 #socketset
@@ -42,11 +46,13 @@
 	;
 	
 :showpeople
-	0 ( lpeople <=?
+	0 ( lpeople <?
 		dup "%d." .print
-		dup 4 << 'people +
+		dup 5 << 'people +
 		@+ "%h " .print
-		@ "%h " .println
+		@+ "%h " .print
+		@+ "%h:" .print
+		@ "%h" .println
 |		8 + " name:%s " .println
 		1+ ) drop ;
 		
@@ -57,7 +63,7 @@
 	0? ( drop ; )
 	'newsock !
 	
-	lpeople 4 << 'people + >a 
+	lpeople 5 << 'people + >a 
 	newsock a!+
 	newsock SDLNet_TCP_GetPeerAddress @ a!
 	"New client" .println
@@ -74,46 +80,69 @@
 |---------------------------------------------- client
 | comm - sock(8) - peer(8) - data	
 #data * 1024	
+#datalen 
 
 :SendNew | a t --
 	swap
-	4 << 'people + >a
+	5 << 'people + >a
 	1 'data c! | add client
 	8 a+
 	a@+ 'data 1 + !
 	a@+ 'data 9 + ! | name?
-	4 << 'people + @ 'data 10 SDLNet_TCP_Send
+	5 << 'people + @ 'data 10 SDLNet_TCP_Send
 	;
 	
 :removeclient | nro sockeready -- nro sockeready	
 	"remove client" .println
 	;
 	
-:addclient | nro sockeready -- nro sockeready
-	"addclient client" .println
-	.input
-	'data 1 + @ 32 >> $ffff and
-	pick2 4 << 'people + 8 + 4 + w! | store port
+:debugdata
+	a[
+	'data >a
+	datalen ( 1?
+		ca@+ $ff and "%h " .print
+		1- ) drop 
+	]a ;
 	
-	'data 1 + 8 + @ .println
-	pick2 4 << 'people + 8 + 8 + ! | store name ( 8bytes)
-	
-	0 ( lpeople <?
+:comunica
+	0 ( lpeople <? 
 		pick2 over sendnew
-		1 + ) drop 
-	0 ( lpeople <?
+		1+ ) drop 
+	0 ( lpeople <? 	
 		dup pick3 sendnew
-		1 + ) drop 
+		1+ ) drop 
+	;
+		
+:addclient | nro sockeready -- nro sockeready
+	"Addclient client" .println
+	
+|	over 5 << 'people + 16 + >a
+|	'data 1 + 
+|	8 +
+|	@+ a!+ @ a! | name
+	
+|	'data 1 + 8 + @ .println
+|	pick2 5 << 'people + 8 + 8 + ! | store name ( 8bytes)
+	
+	| comunica
 	
 	1 'lpeople +!
 	showpeople	
 	;
+	
+:msgclient
+	0 'data datalen + c!
+	over "%d]" .print
+	'data 1+ .println
+	;
 		
 :HandleCliente | nro sockeready -- nro sockeready
-	over 4 << 'people + @ 'data 512 SDLNet_TCP_Recv
-	0 <=? ( drop removeclient ; ) drop
-|	'data .println
+	"hc??" .print
+	over 5 << 'people + @ 'data 512 SDLNet_TCP_Recv
+	0 <=? ( drop removeclient ; ) 'datalen !
+	datalen "recive len%d" .println
 	'data c@
+	1 =? ( drop msgclient ; )
 	2 =? ( drop addclient ; )
 	dup "error client in %d" .println
 	drop
@@ -123,18 +152,20 @@
 	"Waiting..." .println
 	"ESC - quit." .println
 	( inkey $1B1001 <>? drop
+		"." .print
 		socketset 100 SDLNet_CheckSockets
 		1? ( 
+			"<" .print
 			servsock 1? ( HandleServer ) drop
 			0 ( maxpeople <? 
-				'people over 4 << + @ 
+				'people over 5 << + @ 
 				1? ( HandleCliente ) drop
 				1+ ) drop
 			) drop
 		) drop ;
 
 :initnet
-	maxpeople 1 + SDLNet_AllocSocketSet 'socketset !
+	maxpeople 1+ SDLNet_AllocSocketSet 'socketset !
     'serverIP 0 9999 SDLNet_ResolveHost
 	-1 =? ( drop
 		SDLNet_GetError "SDLNet_ResolveHost: %s" .println
