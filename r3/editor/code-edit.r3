@@ -449,7 +449,7 @@
 	@+ swap 'linecommnow !
 	,sp
 	dup 12 32 + >> $ff and 
-	0? ( 2drop ,bred ,white "<< NOT USED >>" ,s prntcom ; ) drop
+	0? ( ,bred ,white " X " ,s ) drop
 	,black
 	buildinfo
 	prntcom
