@@ -212,11 +212,9 @@
 		swap dup 32 << 32 >> -rot | sprx sprh v 
 		yhorizon -rot 	| sprx yhor ssprh v
 		swap oscurece 
-		
 		dup 11 << swap 10 << + | 11 =16-5 (32pixels) 48=32+16
 		|swap 38 >> $3 and	| 4 sides ; 
 		swap 37 >> $7 and | 8 sides
-		
 		sprimg sspritez 
 		) drop 
 	'linea 800 3 << + | ultima

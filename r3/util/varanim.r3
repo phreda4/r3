@@ -5,8 +5,10 @@
 | vareset | -- 
 | ---start 1.0 seconds, go from 10 to 100 in 2.0 seconds with 1 penner function
 | +vanim | 'var 100 10 1 2.0 1.0 -- 
-| ---exe in 3.0 seconds (only one in one time!)
+| ---exe in 3.0 seconds 
 | +vexe | 'exe 3.0 --
+| +vvexe | v1 'exe 3.0 --
+| +vvvexe | v1 v2 'exe 3.0 --
 | ---update 
 | vupdate | --
 |
@@ -77,12 +79,10 @@
 	8 - exelist> 8 - dup 'exelist> !
 	@ over ! ;
 
-#exepost 
-	
 :execinterp | 'list var -- 'list
 	timenow over $ffffffff and -	| actual-inicio=t0
 	swap 32 >> 5 << exevar +		| 'list T0 VAR
-	@+ 0? ( drop nip @ 'exepost ! delvec ; )
+	@+ 0? ( drop nip @+ ex drop delvec ; )
 	rot							| var X t0
 	over $ffffffff and 16 <</		| var X t0 tmax
 	1.0 >=? ( 2drop delex ; )		| var X f x 	
@@ -90,14 +90,14 @@
 	swap >a a@+ a@+ over - 
 	rot *. + a@ !
 	;
+
+| adr1+
 	
 ::vupdate | --
 	msec dup prevt - swap 'prevt ! 'timenow +!
 	tictline
-	0 'exepost !
 	exelist 
 	( exelist> <? @+ execinterp ) drop 
-	exepost 1? ( ex ; ) drop
 	exelist exelist> <? ( drop ; ) drop
 	timeline< timeline> <? ( drop ; ) drop
 	vareset
@@ -118,4 +118,10 @@
 	
 ::+vexe | 'vector start --
 	swap dup dup 0 +ev swap +tline ;
+
+::+vvexe | v 'vector start --
+	swap rot over 0 +ev swap +tline ;
+
+::+vvvexe | v v 'vector start --
+	>r 0 +ev r> +tline ;
 	

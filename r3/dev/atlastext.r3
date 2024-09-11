@@ -73,11 +73,15 @@
 	0 'x ! 0 'y !
 	1 'wmin ! 1 'hmin ! | borde
 	0 ( imgcnt <?
-		wmin hmin 16 << or over ]simg .info ! | save the border
+	
+		wmin hmin 16 << or 
+		over ]simg .info ! | save the border
+		
 		dup ]simg .layer @ 2ixy  | dx dy
 		over wmin + wmax max 'wmax !
 		dup hmin + hmax max 'hmax !
 		drop 
+		
 		1+ 'wmin +! | borde
 		|2 'hmin +!
 		1+ ) drop
