@@ -215,7 +215,8 @@
 		dup 11 << swap 10 << + | 11 =16-5 (32pixels) 48=32+16
 		|swap 38 >> $3 and	| 4 sides ; 
 		swap 37 >> $7 and | 8 sides
-		sprimg sspritez 
+	 |msec 5 << -rot
+		sprimg sspritez  | r
 		) drop 
 	'linea 800 3 << + | ultima
 	fromlinea ( over <? @+ drawlv ) 2drop
@@ -240,7 +241,8 @@
 |-----------------------
 :persona | a -- 
 	dup .a @ over .x @ pick2 .y @ drawsprite 
-	0.01 over .a +! |rotate
+|	0.01 over .a +! |rotate
+|	0.005 over .x +!
 	drop	
 	;
 	
@@ -268,7 +270,7 @@
 	sincos
 	dup 'dirY ! 0.66 *. 'planeX !
 	dup 'dirX ! neg 0.66 *. 'planeY !
-	1.0 planeX dirY *. dirX planeY *. - |0? ( 1.0 + "f" .print ) 
+	1.0 planeX dirY *. dirX planeY *. - 
 	/. 'invdet !
 	;
 
@@ -283,12 +285,12 @@
 	SDLredraw
 	SDLkey
 
-	<a> =? ( -0.005 'vrot ! ) >a< =? ( 0 'vrot ! )
-	<d> =? ( 0.005 'vrot ! ) >d< =? ( 0 'vrot ! ) 
-	<w> =? ( 0.1 'vmov ! ) >s< =? ( 0 'vmov ! )
-	<s> =? ( -0.1 'vmov ! ) >w< =? ( 0 'vmov ! )
-	<q> =? ( 0.02 'vesq ! ) >q< =? ( 0 'vesq ! )
-	<e> =? ( -0.02 'vesq ! ) >e< =? ( 0 'vesq ! )
+	<le> =? ( -0.005 'vrot ! ) >le< =? ( 0 'vrot ! )
+	<ri> =? ( 0.005 'vrot ! ) >ri< =? ( 0 'vrot ! ) 
+	<up> =? ( 0.1 'vmov ! ) >up< =? ( 0 'vmov ! )
+	<dn> =? ( -0.1 'vmov ! ) >dn< =? ( 0 'vmov ! )
+	<a> =? ( 0.02 'vesq ! ) >a< =? ( 0 'vesq ! )
+	<d> =? ( -0.02 'vesq ! ) >d< =? ( 0 'vesq ! )
 
 	>esc< =? ( exit )
 	drop
@@ -299,7 +301,7 @@
 	;
 
 :main
-	"Laberinto" 800 600 SDLinit
+	"Ray casting" 800 600 SDLinit
 	pcfont
 	"media/img/wolftexturesobj.png" loadimg 'texs ! | 64x64x8
 	32 48 "media/img/blue_8direction_standing-Sheet.png" ssload 'sprimg !

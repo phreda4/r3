@@ -19,34 +19,66 @@
 |.... time control
 #prevt
 #timenow
-| time
-#timeline #timeline< 
-#timeline> 
-| list exe now 
-#exelist #exelist>
+| time		execute		end
+#timeline	#timeline<	#timeline> 
 | ini | fin | ease ms | 'VAR
-#exevar #exevar> 
+#exevar 
+#max
 
 ::vareset
 	0 'timenow ! 
 	msec 'prevt ! 
 	timeline dup 'timeline< ! 'timeline> ! 
-	exelist 'exelist> !
-	exevar 'exevar> !
+	exevar -1 max 2 << fill
 	;
 
-::vrew
-	0 'timenow ! 
-	timeline dup 'timeline< ! 'timeline> ! ;
-
 ::vaini | max --
+	dup 'max !
 	3 <<
 	here
 	dup 'timeline ! over +
-	dup 'exelist ! over +
 	dup 'exevar ! swap 2 << + 
 	'here !
 	vareset ;
+
+:tictline | ; add to execlist
+	timeline< timenow
+	( over
+		timeline> =? ( 'timeline< ! 2drop ; )
+		@ $ffffffff and >=? swap 
+		dup @ $ffffffff nand timenow or over !
+		8 + swap ) drop
+	'timeline< ! 
+	;
+
+|-----
+:remlast | 'list X -- 'list
+	8 + @+ swap @ !  | set fin
+:remlist | 'list -- 'list ; remove from lista
+	-1 over 8 - @ 32 >> 5 << exevar + !	| mark empty
+	dup 8 - over timeline> over - 3 >> move
+	-8 'timeline> +! -8 'timeline< +!
+	8 - ;
+	
+:execinterp | 'list var -- 'list
+	timenow over $ffffffff and -	| actual-inicio=t0	| 'l1 var tn
+	swap 32 >> 5 << exevar +		| 'list T0 VAR		| 'l1 tn ex
+	@+ 0? ( drop nip @+ ex drop remlist ; )				| l1 tn ex+ v .. l1
+	rot								| var X t0
+	over $ffffffff and 16 <</		| var X t0 tmax
+	1.0 >=? ( 2drop remlast ; )		| var X f x 	
+	swap 32 >> ease				| fn f->f
+	swap >a a@+ a@+ over - 
+	rot *. + a@ !
+	;
+
+::vupdate | --
+	msec dup prevt - swap 'prevt ! 'timenow +!
+	tictline
+	timeline ( timeline< <? @+ execinterp ) drop
+|	timeline< timeline> <? ( drop ; ) drop
+|	vareset
+	;	
 
 :searchless | time adr --time adr
 	( 8 - timeline >=?
@@ -61,59 +93,18 @@
 	rot 32 << rot or swap ! 
 	8 'timeline> +! ;
 
-:tictline
-	timeline< timenow
-	( over
-		timeline> =? ( 'timeline< ! 2drop ; )
-		@ $ffffffff and >=? swap 
-		dup @ $ffffffff nand timenow or
-		exelist> !+ 'exelist> !
-		8 + swap ) drop
-	'timeline< ! 
-	;
-
-|-----
-:delex | 'list var -- 'list | ..
-	8 + @+ swap @ !  | set fin
-:delvec | 'list -- 'list
-	8 - exelist> 8 - dup 'exelist> !
-	@ over ! ;
-
-:execinterp | 'list var -- 'list
-	timenow over $ffffffff and -	| actual-inicio=t0
-	swap 32 >> 5 << exevar +		| 'list T0 VAR
-	@+ 0? ( drop nip @+ ex drop delvec ; )
-	rot							| var X t0
-	over $ffffffff and 16 <</		| var X t0 tmax
-	1.0 >=? ( 2drop delex ; )		| var X f x 	
-	swap 32 >> ease				| fn f->f
-	swap >a a@+ a@+ over - 
-	rot *. + a@ !
-	;
-
-| adr1+
+:findempty | -- firstempty
+	exevar ( @+ -1 <>? drop 24 + ) drop 8 - ;
 	
-::vupdate | --
-	msec dup prevt - swap 'prevt ! 'timenow +!
-	tictline
-	exelist 
-	( exelist> <? @+ execinterp ) drop 
-	exelist exelist> <? ( drop ; ) drop
-	timeline< timeline> <? ( drop ; ) drop
-	vareset
-	;	
-
-:+ev
-	| exevar< | primero libre
-	exevar> !+ !+ !+ !+ 'exevar> !
-	exevar> exevar - 5 >> 1 - ;
+:+ev | a b c d -- n
+	findempty !+ !+ !+ !+ exevar - 5 >> 1- ;
 
 :addint | 'var ini fin ease dur. -- nro
 	1000 *. $ffffffff and	| duracion ms
 	swap $ff and 32 << or	| ease
 	+ev ;
 	
-::+vanim | 'ex start --
+::+vanim | 'var ini fin ease dur. start --
 	>r addint r> +tline ;
 	
 ::+vexe | 'vector start --
@@ -125,3 +116,4 @@
 ::+vvvexe | v v 'vector start --
 	>r 0 +ev r> +tline ;
 	
+
