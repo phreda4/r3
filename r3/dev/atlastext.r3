@@ -68,10 +68,33 @@
 #wmin #hmin #wmax #hmax
 #newtex
 
+#xfill #yfill 
+#wfill #hfill
+
+:fillbox
+	;
+	
+:addbox | n -- n
+	wmin hmin 16 << or 
+	over ]simg .info ! | save the border
+
+	dup ]simg .layer @ 2ixy  | dx dy
+	over wmin + wmax max 'wmax !
+	dup hmin + hmax max 'hmax !
+	| dx dy
+	wmin 'xfill ! 
+	hmin over + 1+ 'yfill !
+	'wfill !
+	hmax yfill - 'hfill !
+	;
+	
 | simple..not calc
 :packbox
 	0 'x ! 0 'y !
 	1 'wmin ! 1 'hmin ! | borde
+	
+	|0 ]simg .layer @ 2ixy nip nextpow2 'hmax !
+	
 	0 ( imgcnt <?
 	
 		wmin hmin 16 << or 
@@ -80,11 +103,13 @@
 		dup ]simg .layer @ 2ixy  | dx dy
 		over wmin + wmax max 'wmax !
 		dup hmin + hmax max 'hmax !
-		drop 
 		
+		| dx dy
+		drop   |2 'hmin +!
 		1+ 'wmin +! | borde
-		|2 'hmin +!
+		
 		1+ ) drop
+		
 |	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
 |	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
 |	2 SDL_TEXTUREACCESS_TARGET     < Texture can be used as a render target

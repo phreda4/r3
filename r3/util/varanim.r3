@@ -75,10 +75,8 @@
 ::vupdate | --
 	msec dup prevt - swap 'prevt ! 'timenow +!
 	tictline
-	timeline ( timeline< <? @+ execinterp ) drop
-|	timeline< timeline> <? ( drop ; ) drop
-|	vareset
-	;	
+	timeline ( timeline< <? 
+		@+ execinterp ) drop ;
 
 :searchless | time adr --time adr
 	( 8 - timeline >=?

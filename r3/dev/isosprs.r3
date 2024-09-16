@@ -48,11 +48,12 @@
 		>>0 swap 1+ swap ) 2drop ;
 
 |-----------------------------------
-::loadlistss | list --
+	
+::loadlss | 'path list -- ; 'path ="media/stackspr/%s.png"
 	a[ >a
 	( ca@+ 1? ca@+
-		a> "media/stackspr/%s.png" sprint +img
-		a> >>0 >a ) drop ]a ;
+		a> pick3 sprint +img
+		a> >>0 >a ) 2drop ]a ;		
 		
 :.tex ;				| texture
 :.layer	1 ncell+ ;	| layer size/img size
@@ -145,7 +146,7 @@
 		
 	
 |--------------------------------------	
-::genatlas | list --
+::gensatlas | path list --
 	countlistss dup 'imgcnt !
 	5 <<
 	here 
@@ -153,7 +154,7 @@
 	dup 'imglist> !
 	+ 'here !
 	
-	loadlistss
+	loadlss
 
 	here 'imgsort !	
 	imgsort >a
@@ -166,6 +167,8 @@
 	packbox
 	genfile
 	;
+
+
 
 |------------- ISO
 ##isang 0.22

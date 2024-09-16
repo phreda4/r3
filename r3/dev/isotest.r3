@@ -53,7 +53,7 @@
 :juego
 	gui
 	isocamrot
-	$3a00 sdlcls
+	$3a3a3a sdlcls
 	
 	$ffffff bcolor
 	0 0 bat "Voxel world" bprint bcr
@@ -72,8 +72,8 @@
 	0 ( 6 <?
 		0 ( 6 <? 
 			|2dup 2 << + 
-			19 randmax
-			rand 4.0 
+			8 randmax
+			rand 2.0 
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			0 |4.0 randmax
@@ -94,44 +94,27 @@
 	;
 	
 |--------------------------------------------
-#list1 
-( 8 8 ) "obj_tree1"
-( 8 8 ) "obj_tree1a"
-( 8 8 ) "obj_tree1b"
-( 8 8 ) "obj_tree1c"
-( 10 10 ) "obj_tree2"
-( 10 10 ) "obj_tree2a"
-( 10 10 ) "obj_tree2b"
-( 10 10 ) "obj_tree2c"
-( 10 10 ) "obj_tree3"
-( 6 6 ) "obj_tree4"
-( 12 26 ) "veh_mini1" 
-( 14 37 ) "van" 
-( 36 36 ) "blue_tree"
-( 16 16 ) "car"
-( 32 32 ) "tank"
-( 26 9 ) "deer0" | 27
-( 26 9 ) "deer1" | 27
-( 26 9 ) "deer2" | 27
-( 26 9 ) "deer3" | 27
+#listvox
+( 32 32 ) "bloque1"
+( 32 32 ) "bloque2"
+( 32 32  ) "clon1"
+( 32 32  ) "clon2"
+( 32 32  ) "clon3"
+( 32 32  ) "ovni31"
+( 32 32  ) "ovni32"
+( 32 32  ) "ovni33"
 0
 
-#list3
-( 64 64 ) "obj_house1" 
-( 64 64 ) "obj_house3" 
-( 64 64 ) "obj_house4" 
-( 64 64 ) "obj_house5" 
-( 64 64 ) "obj_house8" 
-( 64 64 ) "obj_house8c" 
-0
 	
 |-------------------------------------
 :main
 	"iso world" 1024 600 SDLinit
 	bfont1
-	"media/stackspr/%s.png" 'list1 gensatlas
+	"media/ss/%s.png" 'listvox gensatlas
+	
 	50 'listspr p.ini
 	200 'listobj p.ini
+	
 	jugar
 	SDLquit ;	
 	
