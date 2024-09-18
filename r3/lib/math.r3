@@ -32,6 +32,7 @@
 	$ffff + 16 >> ;
 
 ::int. 16 >> ;
+::fix. 16 << ;
 
 ::sign | v -- v s
 	dup 63 >> 1 or ;

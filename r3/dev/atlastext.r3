@@ -71,7 +71,8 @@
 #xfill #yfill 
 #wfill #hfill
 
-:fillbox
+:fillboxa | w h x y --
+
 	;
 	
 :addbox | n -- n
@@ -86,6 +87,7 @@
 	hmin over + 1+ 'yfill !
 	'wfill !
 	hmax yfill - 'hfill !
+	fillboxa
 	;
 	
 | simple..not calc
