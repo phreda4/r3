@@ -106,7 +106,6 @@
 :ms 1000 * libc-usleep drop ;
 
 
-
 |    tcgetattr(STDIN_FILENO, &oldt);newt = oldt; |   // Get the terminal settings for stdin
 |    newt.c_lflag &= ~(ICANON | ECHO); | 12+ |    // Disable canonical mode and echo
 |    tcsetattr(STDIN_FILENO, TCSANOW, &newt); |    // Set the new terminal settings
@@ -132,6 +131,9 @@
     reset-terminal-mode
     ;
 
+::waitesc
+	( getch $1B <>? drop ) drop ;
+
 ##pad * 256
 
 ::.input | --
@@ -139,5 +141,38 @@
 	( getch $a <>? 
 		.emit ) drop
 	0 swap c! ;
+
+#tv 0 0
+#fds * 128
+
+::kbhit
+    'tv 0 2 fill 
+    'fds 0 16 fill
+    1 'fds !
+    1 'fds 0 0 'tv libc-select ;
+
+|int kbhit() {
+|    struct timeval tv = { 0L, 0L };
+|    fd_set fds;
+|    FD_ZERO(&fds);FD_SET(0, &fds);
+|    return select(1, &fds, NULL, NULL, &tv) > 0;}
+
+::inkey
+    set-terminal-mode
+    kbhit 0? ( reset-terminal-mode ; ) drop
+    0 'ch ! 0 'ch 8 libc-read drop ch
+    reset-terminal-mode ;
+
+#ci 0 
+##rows 
+##cols
+
+::.getconsoleinfo 
+    1 $5413 'ci libc-ioctl | TIOCGWINSZ
+    ci 
+    dup 32 >>> 'cols !
+	dup 32 << 32 >>> 'rows !
+	;
+
 
 

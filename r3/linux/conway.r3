@@ -1,4 +1,4 @@
-|| Conway Game of Life
+| Conway Game of Life
 | PHREDA 2021
 ^r3/posix/console.r3
 ^r3/posix/mconsole.r3

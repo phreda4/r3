@@ -7,10 +7,11 @@
 :main
     .cls
     "test1" .println
+    ( inkey $1b <>?
+        1? ( dup "%h " .print )
+        drop ) drop
 
-    getch
-    .input | no corta con enter!!!
-
+    |.input | no corta con enter!!!
     ;
 
 : main ;

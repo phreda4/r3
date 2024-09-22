@@ -36,12 +36,11 @@
 #sys-fcntl 
 #sys-time
 #sys-localtime
-#sys-getchar
 #sys-tcgetattr
 #sys-tcsetattr
-#sys-execv
-#sys-execvp
-#sys-execvpe
+#sys-system
+#sys-select
+#sys-ioctl
 
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
@@ -76,14 +75,11 @@
 ::libc-fcntl sys-fcntl sys3 ;
 ::libc-time sys-time sys1 drop ;
 ::libc-localtime sys-localtime sys1 drop ;
-::libc-getchar sys-getchar sys0 ;
 ::libc-tcgetattr sys-tcgetattr sys2 ;
 ::libc-tcsetattr sys-tcsetattr sys3 ;
-
-::libc-execv sys-execv sys2 ;
-::libc-execvp sys-execvp sys2 ;
-::libc-execvpe sys-execvpe sys3 ;
-
+::libc-system sys-system sys1 ;
+::libc-select sys-select sys5 ;
+::libc-ioctl sys-ioctl sys3 ;
 :
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
@@ -123,15 +119,12 @@
 	dup "time" getproc 'sys-time !
 	dup "localtime" getproc 'sys-localtime !
 
-    dup "getchar" getproc 'sys-getchar !
-
     dup "tcgetattr" getproc 'sys-tcgetattr !
     dup "tcsetattr" getproc 'sys-tcsetattr !
 
-    dup "execv" getproc 'sys-execv !
-    dup "execvp" getproc 'sys-execvp !
-    dup "execvpe" getproc 'sys-execvpe !
-
+    dup "system" getproc 'sys-system !
+    dup "select" getproc 'sys-select !
+    dup "ioctl" getproc 'sys-ioctl !
 	drop 
     ;
 

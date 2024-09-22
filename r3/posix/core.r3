@@ -167,8 +167,5 @@ drop
 	
 
 ::sys | "" --
-     0 libc-execvp
-|	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
-|	pinfo -1 WaitForSingleObject
-	;
+    libc-system drop ;
 	
