@@ -165,16 +165,10 @@ drop
 |	0 'fileatrib GetFileAttributesEx  
     ;
 	
-#sinfo * 100
-#pinfo * 24
 
 ::sys | "" --
-	'sinfo 0 100 cfill
-	68 'sinfo d!
+     0 libc-execvp
 |	0 swap 0 0 1 0 0 0 'sinfo 'pinfo CreateProcess drop
 |	pinfo -1 WaitForSingleObject
 	;
 	
-:
-	|GetProcessHeap 'process-heap !
-	;

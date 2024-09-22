@@ -100,26 +100,12 @@
 	.emit ;
 	
 ::.printe | "" --
-|	sprint
+	sprint
 	( c@+ 1? emite ) 2drop ;
 
 :ms 1000 * libc-usleep drop ;
 
-|------------ input
-#ch
 
-::getch | 
-|   0 'ch 1 libc-read drop ch 
-    libc-getchar
-    ;
-
-##pad * 256
-
-::.input | --
-	'pad 
-	( getch $D001C <>? 
-		.emit ) drop
-	0 swap c! ;
 
 |    tcgetattr(STDIN_FILENO, &oldt);newt = oldt; |   // Get the terminal settings for stdin
 |    newt.c_lflag &= ~(ICANON | ECHO); | 12+ |    // Disable canonical mode and echo
@@ -137,5 +123,21 @@
     stermp 'sterm 12 + w!
     0 0 'sterm libc-tcsetattr drop ;
     
+|------------ input
+#ch
 
-: set-terminal-mode ;
+::getch | -- char
+    set-terminal-mode
+    0 'ch ! 0 'ch 8 libc-read drop ch 
+    reset-terminal-mode
+    ;
+
+##pad * 256
+
+::.input | --
+	'pad 
+	( getch $a <>? 
+		.emit ) drop
+	0 swap c! ;
+
+
