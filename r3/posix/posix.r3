@@ -36,6 +36,9 @@
 #sys-fcntl 
 #sys-time
 #sys-localtime
+#sys-getchar
+#sys-tcgetattr
+#sys-tcsetattr
 
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
@@ -70,6 +73,9 @@
 ::libc-fcntl sys-fcntl sys3 ;
 ::libc-time sys-time sys1 drop ;
 ::libc-localtime sys-localtime sys1 drop ;
+::libc-getchar sys-getchar sys0 ;
+::libc-tcgetattr sys-tcgetattr sys2 ;
+::libc-tcsetattr sys-tcsetattr sys3 ;
 
 :
 	"/lib/libc.so.6" loadlib
@@ -104,10 +110,17 @@
 	dup "opendir" getproc 'sys-opendir !
 	dup "closedir" getproc 'sys-closedir !
 	dup "readdir" getproc 'sys-readdir !
-|: .d_type ( a -- n ) 18 + c@ ;
-|: .d_name ( a -- z ) 19 + ;
+
 	dup "clock_gettime" getproc 'sys-clock_gettime !
 	dup "fcntl" getproc 'sys-fcntl ! 
 	dup "time" getproc 'sys-time !
 	dup "localtime" getproc 'sys-localtime !
-	drop ;
+
+    dup "getchar" getproc 'sys-getchar !
+
+    dup "tcgetattr" getproc 'sys-tcgetattr !
+    dup "tcsetattr" getproc 'sys-tcsetattr !
+
+	drop 
+    ;
+

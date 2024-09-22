@@ -14,7 +14,7 @@
 :posix-bye   0 libc-exit drop ;
 
 ::type | str cnt --
-	 1 -rot libc-write drop ;
+	 1 rot rot libc-write drop ;
 
 #crb ( 10 13 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
@@ -32,9 +32,9 @@
 
 ::.write count type ;
 	
-::.print count type ; | sprint!!
+::.print sprint count type ; 
 
-::.println count type .cr ; | sprint!!
+::.println sprint count type .cr ; 
 
 ::.home	"H" .[ ; | home
 ::.cls "H" .[ "J" .[ ; | cls 
@@ -95,7 +95,6 @@
 ##rows 
 ##cols
 
-
 :emite | char --
 	$5e =? ( drop 27 .emit ; ) | ^=escape
 	.emit ;
@@ -110,7 +109,9 @@
 #ch
 
 ::getch | 
-   0 'ch 1 libc-read ;
+|   0 'ch 1 libc-read drop ch 
+    libc-getchar
+    ;
 
 ##pad * 256
 
@@ -119,3 +120,22 @@
 	( getch $D001C <>? 
 		.emit ) drop
 	0 swap c! ;
+
+|    tcgetattr(STDIN_FILENO, &oldt);newt = oldt; |   // Get the terminal settings for stdin
+|    newt.c_lflag &= ~(ICANON | ECHO); | 12+ |    // Disable canonical mode and echo
+|    tcsetattr(STDIN_FILENO, TCSANOW, &newt); |    // Set the new terminal settings
+#sterm * 52 | NCC=32
+#stermp
+
+::set-terminal-mode
+    0 'sterm libc-tcgetattr drop
+    'sterm 12 + dup w@ dup 'stermp !
+    10 nand swap w! |~(ICANON | ECHO);
+    0 0 'sterm libc-tcsetattr drop ;
+
+::reset-terminal-mode
+    stermp 'sterm 12 + w!
+    0 0 'sterm libc-tcsetattr drop ;
+    
+
+: set-terminal-mode ;

@@ -66,18 +66,24 @@
 |	8 << or 8 << or
 	;
 
+|struct dirent {
+|    ino64_t d_ino;        // Inode number 0
+|    off64_t d_off;        // Offset to the next dirent 8
+|    unsigned short d_reclen; // Length of this record 16
+|    unsigned char d_type; // Type of file 18
+|    char d_name[];        // Filename (null-terminated) 19
+|};
+
 #dirp
-#dp
 
 ::ffirst | "path//*" -- fdd/0
-    dirp 1? ( dup libc-closedir drop ) drop
-    libc-opendir dup 'dirp !
-    1? ( libc-readdir ) dup 'dp !
-    ;
+    libc-opendir dup 'dirp ! 
+    0? ( ; ) 
+    libc-readdir ;
 
 ::fnext | -- fdd/0
-    dp 1? ( dirp libc-readdir ) dup 'dp ! 
-    ;
+    dirp 0? ( ; ) 
+    libc-readdir ;
 
 
 |        file=fopen((char*)TOS,"rb");
@@ -109,7 +115,7 @@
     0? ( 3drop ; )
     3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
-|	dup >r -rot 'cntf 0 WriteFile
+|	dup >r rot rot 'cntf 0 WriteFile
     libc-close drop 
     ;
 
@@ -127,7 +133,7 @@
     3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
 	-1 =? ( 3drop ; )
 |	dup 0 0 2 SetFilePointer drop
-|	dup >r -rot 'cntf 0 WriteFile
+|	dup >r rot rot 'cntf 0 WriteFile
 |	r> swap 0? ( 2drop ; ) drop
 |	CloseHandle 
     ;
