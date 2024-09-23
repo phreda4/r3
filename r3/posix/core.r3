@@ -85,70 +85,41 @@
     dirp 0? ( ; ) 
     libc-readdir ;
 
-
-|        file=fopen((char*)TOS,"rb");
-|        TOS=*NOS;NOS--;
-|        if (file==NULL) continue;
-|        do { op=fread((void*)TOS,sizeof(char),1024,file); TOS+=op; } while (op==1024);
-|        fclose(file);continue;
-	
 ::load | 'from "filename" -- 'to
     0? ( drop ; )
-    2 $1ff libc-open     | 0=O_RDONLY 2= O_RDWR   1ff = 777 
-    0? ( drop ; ) | adr FILE
-    swap 
-    ( 2dup $ffff libc-read +? + ) drop
+    0 libc-open -? ( drop ; ) | adr FILE
+    swap ( 2dup $ffff libc-read 1? + ) drop
     swap libc-close drop
     ;
  
-
-|    case SAVE: //SAVE: // 'from cnt "filename" --
-|        if (TOS==0||*NOS==0) { remove((char*)TOS);
-|		NOS-=2;TOS=*NOS;NOS--;continue; }
-|        file=fopen((char*)TOS,"wb");
-|        TOS=*NOS;NOS--;
-|        if (file==NULL) { NOS--;TOS=*NOS;NOS--;continue; }
-|        fwrite((void*)*NOS,sizeof(char),TOS,file);
-|        fclose(file);
-	
 ::save | 'from cnt "filename" --
     0? ( 3drop ; )
-    3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
-	-1 =? ( 3drop ; )
-|	dup >r rot rot 'cntf 0 WriteFile
-    libc-close drop 
+    1 libc-open -? ( 3drop ; )
+	dup >r
+	-rot libc-write drop
+    r> libc-close drop 
     ;
 
-|    case APPEND: //APPEND: // 'from cnt "filename" --
-|        if (TOS==0||*NOS==0) { NOS-=2;TOS=*NOS;NOS--;continue; }
-|        file=fopen((char*)TOS,"ab");
-|       TOS=*NOS;NOS--;
-|        if (file==NULL) { NOS--;TOS=*NOS;NOS--;continue; }
-|        fwrite((void*)*NOS,sizeof(char),TOS,file);
-|        fclose(file);
-|        NOS--;TOS=*NOS;NOS--;continue;
-	
 ::append | 'from cnt "filename" -- 
     0? ( 3drop ; )
-    3 $1ff libc-open     | 1=O_WRONLY?? 2= O_RDWR   1ff = 777 
-	-1 =? ( 3drop ; )
+    2 libc-open -? ( 3drop ; )
+
 |	dup 0 0 2 SetFilePointer drop
 |	dup >r rot rot 'cntf 0 WriteFile
 |	r> swap 0? ( 2drop ; ) drop
 |	CloseHandle 
+|    r> libc-close drop 
     ;
 
-::delete | "filename" --
-|	DeleteFile 
-drop 
-    ;
+::delete | "filename" -- 
+    libc-unlink drop ;
 	
 ::filexist | "file" -- 0=no
 |	GetFileAttributes $ffffffff xor 
     ;
 	
 | atrib creation access write size
-#fileatrib [ 0 ] 0 0 0 0
+#fileatrib 0 0 0 0 0
 	
 ::fileisize | -- size
 	'fileatrib 28 + @ 
@@ -162,7 +133,7 @@ drop
 	;	
 	
 ::fileinfo | "file" -- 0=not exist
-|	0 'fileatrib GetFileAttributesEx  
+    'fileatrib 'libc-stat
     ;
 	
 

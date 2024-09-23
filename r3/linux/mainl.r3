@@ -486,19 +486,17 @@
 |---------------------------------
 :main
 	rebuild
-|	.getconsoleinfo rows 1 - 'linesv !
-	loadm
+	.getconsoleinfo rows 1 - 'linesv !
+|	loadm
 
-|	.getconsoleinfo 
-|    .alsb 
+    .getconsoleinfo 
+    .alsb 
 
 	screen
 	( getch $1B <>? teclado ) drop | esc
 
-|	( getch $a <>? "%h" .println ) drop
-
-|   .reset .cls
-|	.masb	
+    .reset |.cls
+	.masb	
 	savem		
 	;
 
