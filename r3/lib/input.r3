@@ -2,8 +2,8 @@
 | PHREDA
 |-----------------------
 ^r3/util/bfont.r3
+^r3/lib/sdlkeys.r3
 ^r3/lib/gui.r3
-^r3/lib/sys.r3
 
 |--- Edita linea
 #cmax
@@ -42,6 +42,9 @@
 
 #modo 'lins
 
+:blink 
+	msec 4 >> $1 and ;
+	
 :cursor
 	blink 1? ( drop ; ) drop
 	modo 'lins =? ( drop pad> padi> - bcursori ; ) drop

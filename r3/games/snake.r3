@@ -4,7 +4,6 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/mem.r3
 ^r3/lib/rand.r3
-^r3/lib/sys.r3
 
 #gs 20	| box size
 #tcx 40 | arena size

@@ -6,7 +6,7 @@
 
 |LIN|^r3/posix/core.r3
 |LIN|^r3/posix/console.r3
-^r3/lib/key.r3
+^r3/lib/sdlkeys.r3
 
 #sys-SDL_Init 
 #sys-SDL_Quit 

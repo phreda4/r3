@@ -1,11 +1,11 @@
 | Obj Model Loader
 | PHREDA 2017
 |-----------------------------------
-^r3/lib/sys.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
-
 ^r3/lib/sdl2image.r3
+
+#path * 1024
 
 #textobj | textparse
 #textmtl
@@ -274,6 +274,19 @@
 	( trim parsecount >>cr 1? ) drop ;
 	
 |--------------------------------------------------	
+
+| extrat path from string, keep in path var
+
+::getpath | str -- str
+	'path over
+	( c@+ $ff and 32 >=?
+		rot c!+ swap ) 2drop
+	1 -
+	( dup c@ $2f <>? drop
+		1 - 'path <=? ( 0 'path ! drop ; )
+		) drop
+	0 swap 1 + c! ;
+	
 ::loadobj | "" -- mem
 	getpath
 	here dup 'textobj !

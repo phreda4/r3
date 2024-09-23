@@ -4,7 +4,7 @@
 ^r3/win/kernel32.r3
 ^r3/win/core.r3
 ^r3/win/console.r3
-^r3/lib/key.r3
+^r3/lib/sdlkeys.r3
 
 #sys-SDL_Init 
 #sys-SDL_Quit 
