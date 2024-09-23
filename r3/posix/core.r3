@@ -140,3 +140,9 @@
 ::sys | "" --
     libc-system drop ;
 	
+|--- copy and restore registers A B, to system?
+::a[ 	a> >r ;
+::]a	r> >a ;
+::b[ 	b> >r ;
+::]b	r> >b ;
+

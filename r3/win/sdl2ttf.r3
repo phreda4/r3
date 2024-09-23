@@ -37,7 +37,8 @@
  
 |----- BOOT 
 :
-	"SDL2_ttf.DLL" loadlib
+|WIN|	"SDL2_ttf.DLL" loadlib
+|LIN|	"libSDL2_ttf-2.0.so.0" loadlib	
 	dup "TTF_Init" getproc 'sys-TTF_Init !
 	dup "TTF_OpenFont" getproc 'sys-TTF_OpenFont !
 	dup "TTF_SetFontStyle" getproc 'sys-TTF_SetFontStyle !

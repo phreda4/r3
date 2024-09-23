@@ -288,7 +288,8 @@
 	
 |------- BOOT
 :
-	"SDL2.DLL" loadlib
+|WIN|	"SDL2.DLL" loadlib
+|LIN|   "libSDL2-2.0.so.0" loadlib	
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !
 	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
