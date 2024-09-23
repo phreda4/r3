@@ -1,8 +1,8 @@
 ^r3/lib/rand.r3
-^r3/win/sdl2.r3
-^r3/win/sdl2gl.r3
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2ttf.r3
+^r3/lib/sdl2.r3
+^r3/lib/sdl2gl.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2ttf.r3
 ^r3/opengl/shaderobj.r3
 
 | opengl Constant

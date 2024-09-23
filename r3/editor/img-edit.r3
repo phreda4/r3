@@ -1,7 +1,7 @@
 | Editor de imagenes
 | PHREDA 2020
 |--------------------------------------------------
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/util/bfont.r3
 ^r3/lib/gui.r3
 ^r3/lib/vdraw.r3

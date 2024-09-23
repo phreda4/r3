@@ -1,8 +1,8 @@
 | Clock
 | PHREDA 2022
 
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2poly.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2poly.r3
 
 #xc 400 #yc 300
 #csize 200

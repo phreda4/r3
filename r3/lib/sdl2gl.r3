@@ -1,6 +1,7 @@
-| glew32.dll
-|
-^r3/win/sdl2.r3
+| Access  opengl from SDL2
+| PHREDA 2024
+
+^r3/lib/sdl2.r3
 
 #sys-glCreateProgram
 #sys-glCreateShader

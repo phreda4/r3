@@ -1,6 +1,6 @@
 | SDL2_mixer.dll
-|
-^r3/win/sdl2.r3
+| PHREDA 2024
+^r3/lib/sdl2.r3
 
 #sys-Mix_Init
 #sys-Mix_Quit

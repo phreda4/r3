@@ -1,7 +1,7 @@
 | programa 3
 | puntos en pantalla
 
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/lib/rand.r3
 
 #puntos * $3fff 		| memoria para x,y de cada punto

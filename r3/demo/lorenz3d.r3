@@ -4,7 +4,7 @@
 | r3 PHREDA 2019,2021
 |-------------------------------------------
 ^r3/win/console.r3
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 
 ^r3/lib/3d.r3
 

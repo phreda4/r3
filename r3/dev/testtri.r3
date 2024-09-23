@@ -1,7 +1,7 @@
 | programa de triangulo
 | PHREDA 2021
 
-^r3/win/sdl2gfx.r3	
+^r3/lib/sdl2gfx.r3	
 
 |-------------------
 #dx1 0

@@ -4,8 +4,8 @@
 
 ^r3/lib/math.r3	
 
-^r3/win/sdl2gfx.r3	
-^r3/win/sdl2ttf.r3
+^r3/lib/sdl2gfx.r3	
+^r3/lib/sdl2ttf.r3
 
 #boxt 0 0 
 

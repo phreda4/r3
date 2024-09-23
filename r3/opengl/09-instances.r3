@@ -7,9 +7,9 @@
 ^r3/util/arr16.r3
 |^r3/lib/trace.r3
 
-^r3/win/sdl2.r3
-^r3/win/sdl2gl.r3
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2.r3
+^r3/lib/sdl2gl.r3
+^r3/lib/sdl2gfx.r3
 
 ^r3/opengl/shaderobjins.r3
 

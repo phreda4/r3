@@ -1,7 +1,7 @@
 | edit-code in sdl
 | PHREDA 2007,2023
 |---------------------------------------
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/util/bfont.r3
 ^r3/lib/gui.r3
 ^r3/lib/parse.r3

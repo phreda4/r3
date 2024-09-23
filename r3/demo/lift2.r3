@@ -2,7 +2,7 @@
 | simple state machine. no up-dn diference
 | PHREDA 2023
 
-^r3/win/sdl2.r3
+^r3/lib/sdl2.r3
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
 ^r3/util/dlist.r3

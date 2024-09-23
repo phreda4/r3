@@ -1,7 +1,7 @@
 | spring demo
 | PHREDA 2022
 ^r3/lib/math.r3
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/util/bfont.r3
 
 |--------- main words

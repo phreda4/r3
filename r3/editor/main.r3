@@ -2,7 +2,7 @@
 | PHREDA 2019
 |------------------------
 ^r3/win/console.r3
-^r3/win/mconsole.r3
+^r3/lib/mconsole.r3
 ^r3/editor/code-print.r3
 
 #reset 0
@@ -281,7 +281,7 @@
 |--------------------------------
 |===================================
 #newprg1 "| r3 sdl program
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 	
 :demo
 	0 SDLcls

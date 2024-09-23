@@ -1,6 +1,6 @@
 | Animation example
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2image.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2image.r3
 
 #tsguy	| dibujo
 #nroguy 12	| frame inicio

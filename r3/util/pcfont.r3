@@ -2,8 +2,8 @@
 | fuente de ancho fijo PC
 | PHREDA 2024
 |-----------------------------
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2image.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2image.r3
 
 #pfont 
 #op 0 0

@@ -53,7 +53,7 @@
 #sys-GetCommandLine
 #sys-GetConsoleWindow
 |#sys-GetConsoleCursorInfo
-#sys-showwindow
+|#sys-showwindow
 
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::FreeConsole sys-freeconsole sys0 drop ;
@@ -107,7 +107,7 @@
 ::GetCommandLine sys-GetCommandLine sys0 ;
 ::GetConsoleWindow sys-GetConsoleWindow sys0 ;
 |::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
-::ShowWindow sys-showwindow sys2 drop ;
+|::ShowWindow sys-showwindow sys2 drop ;
 
 |------- BOOT
 :
@@ -165,8 +165,8 @@
 	
 	dup "GetConsoleWindow" getproc 'sys-GetConsoleWindow !
 	drop
-	"USER32.DLL" loadlib 
-	dup "ShowWindow" getproc 'sys-showwindow !
-	drop	
+|	"USER32.DLL" loadlib 
+|	dup "ShowWindow" getproc 'sys-showwindow !
+|	drop	
 	;
 	

@@ -2,7 +2,7 @@
 | gui.r3 - PHREDA
 | Immediate mode gui for r3
 |------------------------------
-^r3/win/sdl2.r3
+^r3/lib/sdl2.r3
 
 |--- state
 ##hot	| activo actual

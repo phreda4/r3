@@ -1,7 +1,7 @@
 
 ^r3/win/console.r3
-^r3/win/sdl2.r3
-^r3/win/sdl2net.r3
+^r3/lib/sdl2.r3
+^r3/lib/sdl2net.r3
 
 |---------------------
 :.ip | nro --

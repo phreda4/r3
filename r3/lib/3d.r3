@@ -1,6 +1,6 @@
 | 3dmath - PHREDA
 |-------------------------
-^r3/win/sdl2.r3
+^r3/lib/sdl2.r3
 ^r3/lib/3dgl.r3
 
 ##xf ##yf

@@ -6,7 +6,7 @@
 ^r3/win/console.r3
 ^r3/lib/str.r3
 
-^r3/win/sdl2gl.r3
+^r3/lib/sdl2gl.r3
 ^r3/opengl/glfgui.r3
 
 #EX_IQM_MAGIC "INTERQUAKEMODEL"

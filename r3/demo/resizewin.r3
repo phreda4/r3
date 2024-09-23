@@ -1,7 +1,7 @@
 | Resize windows, change sw and sh
 | PHREDA 2024
 
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/util/bfont.r3
 
 :demo

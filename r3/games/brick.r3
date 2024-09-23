@@ -1,6 +1,6 @@
 | Brick Game
 | PHREDA
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/util/arr16.r3
 
 #px	350.0 #py 560.0

@@ -4,7 +4,7 @@
 ^r3/lib/math.r3
 ^r3/lib/parse.r3
 ^r3/win/console.r3
-^r3/win/mconsole.r3
+^r3/lib/mconsole.r3
 
 ##fuente  	| fuente editable
 ##fuente> 	| cursor

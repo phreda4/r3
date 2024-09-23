@@ -1,13 +1,9 @@
-|
-| linux example
-| usage:
-| chmod 777 ./r3lin
-| ./r3lin mainl.r3
-|
-
-^r3/posix/console.r3
-^r3/posix/mconsole.r3
-^r3/posix/core.r3
+| main filesystem
+| PHREDA 2019
+|------------------------
+^r3/win/console.r3
+^r3/lib/mconsole.r3
+^r3/editor/code-print.r3
 
 #reset 0
 #path * 1024
@@ -23,25 +19,16 @@
 #nivel
 #pagina
 #actual
-#linesv 20
+#linesv 15
+
+#source 0
 
 |--------------------------------
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|RPI| 11 +
-|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	;
-
-:FDIR? | adr -- 1/0
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	1 and ;
-
 :FINFO | adr -- adr info
-	dup FDIR? 0? ( 2 + ; ) drop 0 ;
+	dup FDIR 1? ( drop 0 ; ) drop
+	dup FNAME
+	".r3" =pos 1? ( 2drop 2 ; ) 2drop
+	3 ;
 
 :getname | nro -- ""
 	3 << 'files + @ 8 >> 'filen + ;
@@ -90,8 +77,8 @@
 	;
 
 :reload
-    'path ffirst 0? ( drop ; ) 
-    ( fileadd fnext 1? ) drop
+	'path "%s//*" sprint
+	ffirst ( fileadd fnext 1? ) drop
 	files> 'files - 3 >> 'nfiles !
 	;
 
@@ -174,9 +161,16 @@
 	actual dup getlvl makepath
 	actual getinfo 1 >? ( remlastpath ) drop
 	actual
-	dup getinfo $3 and 2 <? ( 2drop "" 'name strcpy ; ) drop
+	dup getinfo $3 and 
+	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
+	3 =? ( drop getname 'name strcpy 0 'source ! ; ) 
+	drop
 	getname 'name strcpy
-	;
+	here $ffff + dup 'source ! 
+	'name 'path "%s/%s" sprint load 
+	0 swap ! 
+	;	
+	
 
 |---------------------
 :traverse | adr -- adrname
@@ -214,41 +208,53 @@
 	0 swap c! ;
 
 |--------------------------------
+:conadj | adjust console
+	.getconsoleinfo
+	.alsb .showc .insc
+	evtmouse
+	;
+
+:checkerror
+	mark
+	here dup "mem/error.mem" load
+	over =? ( 2drop empty ; ) 
+	0 swap c!
+	.cr .bred .white 
+	" * ERROR * " .println
+	.reset
+	.println
+	.bblue .white
+	"<ESC> to continue..." .println
+	waitesc
+	empty
+	;
+	
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
-	
+	.reset .cls
+	"mem/error.mem" delete
 	'path
-|WIN| "r3 ""%s/%s"""
+|WIN| "cmd /c r3 ""%s/%s"" 2>mem/error.mem"
 |LIN| "./r3lin ""%s/%s"""
 |RPI| "./r3rpi ""%s/%s"""
 |MAC| "./r3mac %s/%s"
-	sprint 
-	.reset .masb	
-	sys
-	.alsb
-	;
-
-:r3info
-|WIN| "r3 r3/editor/r3info.r3"
-|LIN| "./r3lin r3/editor/r3info.r3"
-|RPI| "./r3rpi r3/editor/r3info.r3"
-	sys ;
+	sprint sys
+	checkerror
+	conadj ;
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
 |LIN| "./r3lin r3/editor/code-edit.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
-	sys ;
-	
+	sys 
+	conadj ;
+
 |--------------------------------
 :editfile
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-	
-	r3info
-	|cerror 1? ( drop ; ) drop	
 	r3edit
 	;
 
@@ -261,22 +267,51 @@
 |RPI| "./r3rpi r3/editor/map-edit.r3"
 |MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
+	conadj
+	;
+
+:editbmap
+	actual getname 'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/bmapedit.mem" save
+
+|WIN| "r3 r3/editor/bmap-edit.r3"
+|LIN| "./r3lin r3/editor/bmap-edit.r3"
+|RPI| "./r3rpi r3/editor/bmap-edit.r3"
+|MAC| "./r3mac r3/editor/bmap-edit.r3"
+	sys
+	conadj
 	;
 	
 :f2edit
 	actual -? ( drop ; )
-	getinfo $3 and 2 <>? ( drop ; ) drop
-	actual getname 
+	|getinfo $3 and 2 <>? ( drop ; ) drop
+	getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop
+	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
+	| ".jpg"
+	| ".txt"
 	drop
 	;
-	
+
+:r3d4
+	actual -? ( drop ; )
+	getname 
+	".r3" =pos 0? ( 2drop ; ) drop
+	'path "%s/%s" sprint 'name strcpy
+	'name 1024 "mem/main.mem" save
+|WIN| "r3 r3/d4/r3-edit.r3"
+|LIN| "./r3lin r3/d4/r3-edit.r3"
+|RPI| "./r3rpi r3/d4/r3-edit.r3"
+|MAC| "./r3mac r3/d4/r3-edit.r3"
+	sys 
+	conadj ;
+
 |--------------------------------
 |===================================
 #newprg1 "| r3 sdl program
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 	
 :demo
 	0 SDLcls
@@ -313,9 +348,9 @@
 |RPI| "./r3rpi r3/editor/map-edit.r3"
 |MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
-
 	rebuild
 	loadm
+	conadj
 	;
 
 	
@@ -404,20 +439,20 @@
 	>=? ( dup linesv - 1 + 'pagina ! ) drop
 	setactual ;
 
-
 |--------------------------------
 #filecolor 1 2 3 4 
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+    dup getinfo $3 and
+	3 << 'filecolor + @ ,fc 
 	;
 
 :printfn | n --
 	,sp
 	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+- ." + c@ ,c
-	,sp getname ,s ,sp
+	dup getinfo $3 and "+-  " + c@ ,c ,sp 
+	getname ,s ,sp
 	;
 
 :drawl | n --
@@ -425,13 +460,19 @@
 	
 :drawtree
 	1 2 ,at
-	0  ( linesv <?
+	0 ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
 		,reset
     	drawl 
 		1 + ) drop ;
 
+:drawsrc	
+	source 0? ( drop ; ) drop
+	235 ,bc 
+	40 2 linesv cols 41 - source code-print
+	;
+	
 :screen
 	mark
 	,hidec
@@ -439,51 +480,69 @@
 	1 1 ,at	" r3 " ,s
 	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	drawtree
-	
+	drawsrc
 	,bblue ,white	
 	0 linesv 2 + ,at 
-	'name 'path " %s/%s  " ,print ,eline 
-	0 actual pagina - 2 + ,at
-	,showc
+	'name 'path " %s/%s  " ,print ,eline
+	,showc 
 	memsize type	| type buffer
 	empty			| free buffer	
 	;
 
-:teclado
-    dup "%h" .println
-|    $a =? ( fenter screen ) |$D001C 
+|-------------------------------------
+#exit 0
+
+:evkey	
+	evtkey
+	$1B1001 =? ( 1 'exit ! ) | esc
+	$D001C =? ( fenter )
 	
-	$48 =? ( fup screen ) | up
-	$50 =? ( fdn screen ) | dn
-	$49 =? ( fpgup screen )
-	$51 =? ( fpgdn screen )
-	$47 =? ( fhome screen )
-	$4f =? ( fend screen )
+	$48 =? ( fup ) | up
+	$50 =? ( fdn ) | dn
+	$49 =? ( fpgup )
+	$51 =? ( fpgdn )
+	$47 =? ( fhome )
+	$4f =? ( fend )
 	
-	$3b =? ( fenter screen )
-	$3c =? ( f2edit screen ) |editfile screen )
-	$3d =? ( newfile screen )
-	|$3e =? ( newfolder screen ) | f4 - new folder
+	$3b =? ( fenter )
+	$3c =? ( f2edit )
+	$3d =? ( newfile )
+	|$3e =? ( newfolder ) | f4 - new folder
+	$3F =? ( r3d4 ) | F5 - NEW VERSION
+	
 	drop 
 	;
 
+:evmouse
+	evtmb 0? ( drop ; ) drop	
+	evtmxy swap
+	40 >? ( 2drop f2edit ; ) drop
+	1- pagina +
+	actual =? ( drop fenter ; )
+	'actual !
+	setactual 
+	;
+	
+:evsize	
+	.getconsoleinfo
+	rows 1 - 'linesv !
+	;
+	
 |---------------------------------
 :main
 	rebuild
-|	.getconsoleinfo rows 1 - 'linesv !
-|	loadm
-
-|	.getconsoleinfo 
-|    .alsb 
-
-	screen
-|	( getch $1B1001 <>? teclado ) drop
-|	( getch $1B <>? teclado ) drop
-	( getch $a <>? "%h" .println ) drop
-|   .reset .cls
-|	.masb	
-|	savem		
+	loadm
+	( exit 0? drop
+		screen
+		getevt
+		$1 =? ( evkey )
+		$2 =? ( evmouse )
+		$4 =? ( evsize )
+		drop ) drop
+	savem 
 	;
 
-: main reset-terminal-mode ;
-
+: |<<<<<<<<<<<<<<< BOOT
+conadj evsize
+main 
+.masb ;

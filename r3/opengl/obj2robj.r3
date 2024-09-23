@@ -3,7 +3,7 @@
 |-----------------------------------
 |MEM 512
 ^r3/win/console.r3
-^r3/win/SDL2gfx.r3
+^r3/lib/sdl2gfx.r3
 
 ^r3/lib/3d.r3
 ^r3/lib/gui.r3

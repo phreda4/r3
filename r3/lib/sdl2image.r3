@@ -1,6 +1,6 @@
 | SDL2_image.dll
 |
-^r3/win/sdl2.r3
+^r3/lib/sdl2.r3
 
 #sys-IMG_Init
 #sys-IMG_Load

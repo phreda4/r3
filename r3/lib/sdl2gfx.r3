@@ -1,9 +1,8 @@
 | SDL2 basic graphics 
 | PHREDA 2022
 
-^r3/win/core.r3
-^r3/win/sdl2.r3
-^r3/win/sdl2image.r3	
+^r3/lib/sdl2.r3
+^r3/lib/sdl2image.r3	
 
 #rec [ 0 0 0 0 ] | aux rect
 

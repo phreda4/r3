@@ -1,8 +1,8 @@
 | Simple Piano
 | PHREDA 2024
 |
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2mixer.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2mixer.r3
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
 

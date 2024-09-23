@@ -1,7 +1,7 @@
 | SDL2 basic graphics 
 | PHREDA 2022
 
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 
 |--- convex polygon
 #segs * 8192	| mem polys | 1024

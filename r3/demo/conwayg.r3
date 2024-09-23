@@ -1,7 +1,7 @@
 | Conway Game of Life Graphics
 | PHREDA 2021
 
-^r3/win/sdl2gfx.r3	
+^r3/lib/sdl2gfx.r3	
 ^r3/lib/sys.r3
 ^r3/lib/mem.r3
 ^r3/lib/rand.r3

@@ -4,8 +4,8 @@
 |	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
 |
 |-----------------------------
-^r3/win/sdl2gfx.r3
-^r3/win/sdl2ttf.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2ttf.r3
 
 #textbox [ 0 0 0 0 ]
 

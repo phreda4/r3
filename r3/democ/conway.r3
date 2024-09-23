@@ -1,7 +1,7 @@
 || Conway Game of Life
 | PHREDA 2021
 ^r3/win/console.r3
-^r3/win/mconsole.r3
+^r3/lib/mconsole.r3
 ^r3/lib/rand.r3
 
 #arena 

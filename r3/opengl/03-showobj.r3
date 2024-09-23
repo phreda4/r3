@@ -4,8 +4,8 @@
 ^r3/lib/3dgl.r3
 ^r3/lib/gui.r3
 
-^r3/win/sdl2.r3
-^r3/win/sdl2gl.r3
+^r3/lib/sdl2.r3
+^r3/lib/sdl2gl.r3
 
 ^r3/util/loadobj.r3
 

@@ -3,7 +3,7 @@
 | PHREDA 2023
 
 ^r3/lib/gui.r3
-^r3/win/sdl2gfx.r3
+^r3/lib/sdl2gfx.r3
 ^r3/lib/input.r3
 
 #winx 0 #winy 0

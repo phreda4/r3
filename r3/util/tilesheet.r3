@@ -2,8 +2,8 @@
 | PHREDA 2021
 ^r3/lib/mem.r3
 ^r3/lib/math.r3
-^r3/win/sdl2image.r3
-^r3/win/sdl2gfx.r3	
+^r3/lib/sdl2image.r3
+^r3/lib/sdl2gfx.r3	
 
 |--------------------------------
 #mapm #mapt

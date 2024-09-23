@@ -1,7 +1,7 @@
 | OpenGL example - first example without shaders
 | PHREDA 2023
-^r3/win/sdl2.r3
-^r3/win/sdl2gl.r3
+^r3/lib/sdl2.r3
+^r3/lib/sdl2gl.r3
 
 #window
 #context
