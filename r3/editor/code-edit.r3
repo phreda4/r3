@@ -637,29 +637,29 @@
 
 	$ff0000 and? ( vchar ; ) 
 	
-	$53 =? ( kdel )
-	$48 =? ( karriba ) 
-	$50 =? ( kabajo )
-	$4d =? ( kder ) 
-	$4b =? ( kizq )
-	$47 =? ( khome ) 
-	$4f =? ( kend )
-	$49 =? ( kpgup ) 
-	$51 =? ( kpgdn )
+	[DEL] =? ( kdel )
+	[UP] =? ( karriba ) 
+	[DN] =? ( kabajo )
+	[RI] =? ( kder ) 
+	[LE] =? ( kizq )
+	[HOME] =? ( khome ) 
+	[END] =? ( kend )
+	[PGUP] =? ( kpgup ) 
+	[PGDN] =? ( kpgdn )
 	
-	$52 =? (  modo | ins
+	[INS] =? (  modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
-	$1d =? ( controlon ) 
+	[CTRL] =? ( controlon ) 
 	
-	$2a =? ( 1 'mshift ! ) $102a =? ( 0 'mshift ! ) | shift der
-	$36 =? ( 1 'mshift ! ) $1036 =? ( 0 'mshift ! ) | shift izq 
+	[SHIFTR] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift der
+	[SHIFTL] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift izq 
 
-	$3b =? ( runfile )
-	$3c =? ( debugfile )
-|	$3d =? ( profiler )
-	$3e =? ( mkplain )
-	$3f =? ( compile )
+	[F1] =? ( runfile )
+	[F2] =? ( debugfile )
+|	[F3] =? ( profiler )
+	[F4] =? ( mkplain )
+	[F5] =? ( compile )
 	
 	drop
 	;
@@ -711,7 +711,7 @@
 
 :evkey	
 	evtkey
-	$1B1001 =? ( 1 'exit ! )
+	]ESC[ =? ( 1 'exit ! )
 	teclado ;
 	
 ::>>cr | adr -- adr'

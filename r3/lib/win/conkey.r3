@@ -18,8 +18,8 @@
 ##[INS]		$52
 ##[CTRL]	$1d ##]CTRL[	$101d
 	
-##[SHIFTR]	$2a
-##[SHIFTL]	$36
+##[SHIFTR]	$2a ##]SHIFTR[	$102a
+##[SHIFTL]	$36 ##]SHIFTL[	$1036
 
 ##[F1]	$3b
 ##[F2]	$3c

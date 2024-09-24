@@ -13,12 +13,12 @@
 :4/ 2 >> ;
 :4* 2 << ;
 
-::now2jul | -- jul
-	date 
-	dup $ff and swap 		| d
-	dup 8 >> $ff and swap	| m
-	16 >> $ffff and 		| y
-|...	
+|::now2jul | -- jul |...	
+|	date 
+|	dup $ff and swap 		| d
+|	dup 8 >> $ff and swap	| m
+|	16 >> $ffff and 		| y
+
 ::date2jul | d m y -- jul 
 	4800 + swap dup 14 - 12 / dup >r rot + >r        
 	r@ 1461 * 4/ r> 100 + 100 / 3 * 4/ -

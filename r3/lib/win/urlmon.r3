@@ -1,10 +1,10 @@
 | winhttp
 | PHREDA 2022
 |
-^r3/win/inet.r3
+^r3/lib/win/inet.r3
+
 #sys-URLDownloadToFile
 #sys-URLOpenBlockingStreamA
-
 
 ::URLDownloadToFile sys-URLDownloadToFile sys5 ;
 ::URLOpenBlockingStreamA sys-URLOpenBlockingStreamA	sys5 ;
@@ -23,7 +23,6 @@
 	"URLMON.DLL" loadlib 
 	dup "URLDownloadToFileA" getproc 'sys-URLDownloadToFile !
 	dup "URLOpenBlockingStreamA" getproc 'sys-URLOpenBlockingStreamA !
-
 	drop 
 	;
 	

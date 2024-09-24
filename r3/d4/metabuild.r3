@@ -130,7 +130,10 @@
 	;
 
 |----------------------------
-#folders "r3/lib" "r3/util" "r3/win" 0
+#folders "r3/lib" "r3/util" 
+|WIN|"r3/lib/win"
+|LIN|"r3/lib/posix"
+ 0
 #foldern * 1024
 
 :nextfile | file --
