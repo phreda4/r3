@@ -42,6 +42,7 @@
 #sys-select
 #sys-ioctl
 #sys-stat
+#sys-access
 
 ::libc-open sys-open sys2 ;
 ::libc-creat sys-creat sys2 ;
@@ -82,7 +83,7 @@
 ::libc-select sys-select sys5 ;
 ::libc-ioctl sys-ioctl sys3 ;
 ::libc-stat sys-stat sys2 ;
-
+::libc-access sys-access sys2 ;
 :
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
@@ -129,6 +130,7 @@
     dup "select" getproc 'sys-select !
     dup "ioctl" getproc 'sys-ioctl !
     dup "stat" getproc 'sys-stat !
+    dup "access" getproc 'sys-access !
 	drop 
     ;
 

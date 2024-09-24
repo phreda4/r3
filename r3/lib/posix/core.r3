@@ -3,26 +3,30 @@
 
 ^r3/lib/posix/posix.r3
 ^r3/lib/str.r3
-	
+
 #process-heap
 
 ::ms | ms --
 	1000 * libc-usleep drop ;
-	
+
 ::allocate |( n -- a ior ) 
-    libc-malloc dup  ;
-   
+	libc-malloc dup  ;
+
 ::free |( a -- ior )
-    libc-free drop 0 ; 
+	libc-free drop 0 ; 
 
 ::resize |( a n -- a ior ) 
 	libc-realloc dup 0 ;
 
 |4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
+
+:1000000/
+	$431be83 32 *>> ;
+
 ::msec | -- msec
 	4 'te libc-clock_gettime drop
-	'te @+ 1000 * swap @ 1000000 / + ;
+	'te @+ 1000 * swap @ 1000000/ + ;
 
 |struct tm {
 |   int tm_sec;         /* seconds,  range 0 to 59          */ 0
@@ -35,19 +39,19 @@
 |   int tm_yday;        /* day in the year, range 0 to 365  */ 28
 |   int tm_isdst;       /* daylight saving time             */ 32
 #sit 0
-	
+
 ::time | -- hms
 	0 libc-time 'sit !
-	'sit libc-localtime 'sit !
-	'sit 
+	'sit libc-localtime |'sit !
+	|'sit 
 	dup 8 + d@ 16 <<
 	over 4 + d@ 8 << or
 	swap d@ or ;
 
 ::date | -- ymd
 	0 libc-time 'sit !
-	'sit libc-localtime 'sit !
-	'sit 
+	'sit libc-localtime |'sit !
+	|'sit 
 	dup 20 + d@ 1900 + 16 <<
 	over 16 + d@ 1+ 8 << or
 	swap 12 + d@ or ;
@@ -73,54 +77,53 @@
 |RPI| 10 + c@ 2 >>
 |MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
 	1 and ;
-	
+
 ::FSIZE
 	32 + d@ 10 >> ; | in kb	
-	
+
 #dirp
 
 ::ffirst | "path//*" -- fdd/0
-    libc-opendir dup 'dirp ! 
-    0? ( ; ) 
-    libc-readdir ;
+	libc-opendir dup 'dirp ! 
+	0? ( ; ) 
+	libc-readdir ;
 
 ::fnext | -- fdd/0
-    dirp 0? ( ; ) 
-    libc-readdir ;
+	dirp 0? ( ; ) 
+	libc-readdir ;
 
 ::load | 'from "filename" -- 'to
-    0? ( drop ; )
-    0 libc-open -? ( drop ; ) | adr FILE
-    swap ( 2dup $ffff libc-read 1? + ) drop
-    swap libc-close drop
-    ;
- 
+	0? ( drop ; )
+	0 libc-open -? ( drop ; ) | adr FILE
+	swap ( 2dup $ffff libc-read 1? + ) drop
+	swap libc-close drop
+	;
+
 ::save | 'from cnt "filename" --
-    0? ( 3drop ; )
-    1 libc-open -? ( 3drop ; )
+	0? ( 3drop ; )
+	1 libc-open -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
-    r> libc-close drop 
-    ;
+	r> libc-close drop 
+	;
 
 ::append | 'from cnt "filename" -- 
-    0? ( 3drop ; )
-    2 libc-open -? ( 3drop ; )
+	0? ( 3drop ; )
+	2 libc-open -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
-    r> libc-close drop 
-    ;
+	r> libc-close drop 
+	;
 
 ::delete | "filename" -- 
-    libc-unlink drop ;
-	
+	libc-unlink drop ;
+
 ::filexist | "file" -- 0=no
-|	GetFileAttributes $ffffffff xor 
-    ;
-	
+	0 libc-access not ;
+
 | atrib creation access write size
 #fileatrib 0 0 0 0 0
-	
+
 ::fileisize | -- size
 	'fileatrib 28 + @ 
 	dup 32 >> swap 32 << or ;
@@ -129,15 +132,14 @@
 	'fileatrib 20 + @
 	86400000000 / | segundos>days
 	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10 /	
-	;	
+	10 /
+	;
 	
 ::fileinfo | "file" -- 0=not exist
-    'fileatrib libc-stat
-    ;
+	'fileatrib libc-stat ;
 	
 ::sys | "" --
-    libc-system drop ;
+	libc-system drop ;
 	
 |--- copy and restore registers A B, to system?
 ::a[ 	a> >r ;
