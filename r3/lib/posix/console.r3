@@ -1,9 +1,9 @@
 | console words linux
 | PHREDA 2022
 
-^r3/posix/posix.r3
-^r3/posix/mem.r3
+^r3/lib/mem.r3
 ^r3/lib/str.r3
+^r3/posix/conkey.r3
 
 #kb 0
 

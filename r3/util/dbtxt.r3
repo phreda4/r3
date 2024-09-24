@@ -6,7 +6,7 @@
 | field 1|field 2|..|field 3^
 |
 |
-^r3/win/console.r3
+^r3/lib/win/console.r3
 
 ##rowdb
 #flds * 512

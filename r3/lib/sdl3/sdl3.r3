@@ -1,9 +1,9 @@
 | SDL3.dll
 | IMHO adding float parameters is not a good idea 
 | pause this dev
-^r3/win/kernel32.r3
-^r3/win/core.r3
-^r3/win/console.r3
+^r3/lib/win/kernel32.r3
+^r3/lib/win/core.r3
+^r3/lib/console.r3
 ^r3/lib/sdlkeys.r3
 
 #sys-SDL_Init 

@@ -1,5 +1,5 @@
 | print palindrome numbers
-^r3/win/console.r3
+^r3/lib/console.r3
 
 :testp | nro - 0 is palindrome
 	0 over ( 10 /mod rot 10 * + swap 1? ) drop - ;

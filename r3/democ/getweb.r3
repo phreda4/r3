@@ -1,8 +1,8 @@
 | Test WININET
 | PHREDA 2021
 
-^r3/win/inet.r3
-^r3/win/console.r3
+^r3/lib/win/inet.r3
+^r3/lib/console.r3
 
 #cnt
 

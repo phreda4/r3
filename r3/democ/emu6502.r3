@@ -3,7 +3,7 @@
 |  2kB RAM at 0000-07FF, mirrored throughout 0800-7FFF
 | 16kB ROM at 8000-BFFF, mirrored at C000
 
-^r3/win/console.r3
+^r3/lib/console.r3
 
 #ram * 2048 :>ram $7FF and 'ram + ;
 #rom * 16384 :>rom $3FFF and 'rom + ;

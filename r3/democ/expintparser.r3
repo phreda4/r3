@@ -2,7 +2,7 @@
 | from https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html
 | PHREDA 2020
 |-----------
-^r3/win/console.r3
+^r3/lib/console.r3
 
 :10* | %1010
 	1 << dup 2 << + ;

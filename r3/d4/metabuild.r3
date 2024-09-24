@@ -23,7 +23,7 @@
 | #call seed8 rand8 seed rand rerand randmax rnd rndmax rnd128 0
 | ##lib_rand.r3 'name 'words 'info 'call
 |
-^r3/win/console.r3
+^r3/lib/console.r3
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3

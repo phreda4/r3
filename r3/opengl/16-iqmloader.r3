@@ -3,7 +3,7 @@
 
 |MEM 64
 
-^r3/win/console.r3
+^r3/lib/win/console.r3
 ^r3/lib/str.r3
 
 ^r3/lib/sdl2gl.r3

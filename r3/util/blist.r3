@@ -1,6 +1,6 @@
 | LIST BYTE
 |--- 
-^r3/win/console.r3
+^r3/lib/win/console.r3
 
 ::blistdel | 'list 'from --
 	dup 1 + pick2 @ cmove

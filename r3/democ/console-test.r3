@@ -1,6 +1,6 @@
 | console events in win
 | PHREDA 2022
-^r3/win/console.r3
+^r3/lib/console.r3
 
 |typedef struct _INPUT_RECORD {
 |  WORD  EventType;

@@ -1,6 +1,6 @@
 | debugapi.h 
 | PHREDA 2024
-^r3/win/core.r3
+^r3/lib/win/core.r3
 
 |  WINBOOL IsDebuggerPresent (VOID);
 |  VOID OutputDebugStringA (LPCSTR lpOutputString);

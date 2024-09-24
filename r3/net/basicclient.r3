@@ -1,5 +1,5 @@
 
-^r3/win/console.r3
+^r3/lib/win/console.r3
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2net.r3
 

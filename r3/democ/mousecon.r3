@@ -1,8 +1,7 @@
 | test mouse
 | PHREDA 2023
 ^r3/lib/rand.r3
-^r3/win/console.r3
-^r3/win/kernel32.r3
+^r3/lib/console.r3
 
 #conw 113 
 #conh 28 

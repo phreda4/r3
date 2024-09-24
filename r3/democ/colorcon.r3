@@ -1,6 +1,6 @@
 | print console colors
 | PHREDA 2021
-^r3/win/console.r3
+^r3/lib/console.r3
 
 : .cls
 	0 ( 11 <? 

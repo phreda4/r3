@@ -1,7 +1,7 @@
 | print random numbers
 | PHREDA 2021
 
-^r3/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/rand.r3
 
 #array * 160 | 20 * 8bytes

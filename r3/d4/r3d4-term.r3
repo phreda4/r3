@@ -2,7 +2,7 @@
 | PHREDA 2024
 | IDE 4 r3
 |-----------------
-^r3/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
 
 ^r3/d4/r3view.r3

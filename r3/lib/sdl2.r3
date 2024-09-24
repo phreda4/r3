@@ -1,11 +1,10 @@
 | SDL2.dll
 | PHREDA 2024
 
-|WIN|^r3/win/core.r3
-|WIN|^r3/win/console.r3
+|WIN|^r3/lib/win/core.r3
+|LIN|^r3/lib/posix/core.r3
 
-|LIN|^r3/posix/core.r3
-|LIN|^r3/posix/console.r3
+^r3/lib/console.r3
 ^r3/lib/sdlkeys.r3
 
 #sys-SDL_Init 

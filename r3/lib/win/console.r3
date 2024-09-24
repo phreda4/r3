@@ -1,9 +1,9 @@
 | console words
 | PHREDA 2021
 
-^r3/win/core.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
+^r3/lib/win/conkey.r3
 
 ##stdin 
 ##stdout
