@@ -2,7 +2,7 @@
 | PHREDA 2023
 |-----------------------------------
 |MEM 512
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/3dgl.r3
 

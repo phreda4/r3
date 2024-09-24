@@ -1,7 +1,7 @@
 | title & credit
 | PHREDA 2023
 |
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/sdlgui.r3
 ^r3/util/varanim.r3

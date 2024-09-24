@@ -2,7 +2,7 @@
 | PHREDA 2023
 
 ^r3/system/meta/refelibs.r3
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 
 :?word | adr 'dicc -- nro/-1
 	0 swap			| adr 0 'r3base

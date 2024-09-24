@@ -74,8 +74,8 @@
 ::libc-readdir sys-readdir sys1 ;
 ::libc-clock_gettime sys-clock_gettime sys2 ;
 ::libc-fcntl sys-fcntl sys3 ;
-::libc-time sys-time sys1 drop ;
-::libc-localtime sys-localtime sys1 drop ;
+::libc-time sys-time sys1 ;
+::libc-localtime sys-localtime sys1 ;
 ::libc-tcgetattr sys-tcgetattr sys2 ;
 ::libc-tcsetattr sys-tcsetattr sys3 ;
 ::libc-system sys-system sys1 ;

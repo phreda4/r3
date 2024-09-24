@@ -1,7 +1,7 @@
 | main filesystem
 | PHREDA 2019
 |------------------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
 ^r3/editor/code-print.r3
 
@@ -77,7 +77,8 @@
 	;
 
 :reload
-	'path "%s//*" sprint
+	'path 
+|WIN|	"%s//*" sprint
 	ffirst ( fileadd fnext 1? ) drop
 	files> 'files - 3 >> 'nfiles !
 	;
@@ -211,7 +212,7 @@
 :conadj | adjust console
 	.getconsoleinfo
 	.alsb .showc .insc
-	evtmouse
+|WIN|	evtmouse	
 	;
 
 :checkerror
@@ -493,23 +494,24 @@
 #exit 0
 
 :evkey	
-	evtkey
-	$1B1001 =? ( 1 'exit ! ) | esc
-	$D001C =? ( fenter )
+|WIN|	evtkey
+|LIN|   getch
+	]ESC[ =? ( 1 'exit ! ) | esc
+	[ENTER] =? ( fenter )
+
+	[UP] =? ( fup ) | up
+	[DN] =? ( fdn ) | dn
+	[PGUP] =? ( fpgup )
+	[PGDN] =? ( fpgdn )
+	[HOME] =? ( fhome )
+	[END] =? ( fend )
 	
-	$48 =? ( fup ) | up
-	$50 =? ( fdn ) | dn
-	$49 =? ( fpgup )
-	$51 =? ( fpgdn )
-	$47 =? ( fhome )
-	$4f =? ( fend )
-	
-	$3b =? ( fenter )
-	$3c =? ( f2edit )
-	$3d =? ( newfile )
-	|$3e =? ( newfolder ) | f4 - new folder
-	$3F =? ( r3d4 ) | F5 - NEW VERSION
-	
+	[F1] =? ( fenter )
+	[F2] =? ( f2edit )
+	[F3] =? ( newfile )
+	|[F4] =? ( newfolder ) | f4 - new folder
+	[F5] =? ( r3d4 ) | F5 - NEW VERSION
+
 	drop 
 	;
 

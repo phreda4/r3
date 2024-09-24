@@ -3,7 +3,7 @@
 
 ^r3/lib/mem.r3
 ^r3/lib/str.r3
-^r3/posix/conkey.r3
+^r3/lib/posix/conkey.r3
 
 #kb 0
 
@@ -91,10 +91,6 @@
 ::.ovec "0 q" .[ ;
 ::.insc "5 q" .[ ;
 
-##consoleinfo 0 0 0
-##rows 
-##cols
-
 :emite | char --
 	$5e =? ( drop 27 .emit ; ) | ^=escape
 	.emit ;
@@ -170,8 +166,8 @@
 ::.getconsoleinfo 
     1 $5413 'ci libc-ioctl | TIOCGWINSZ
     ci 
-    dup 32 >>> 'cols !
-	dup 32 << 32 >>> 'rows !
+    dup 16 >> $ffff and 'cols !
+	$ffff and 'rows !
 	;
 
 

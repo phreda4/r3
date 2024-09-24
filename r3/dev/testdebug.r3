@@ -1,7 +1,7 @@
 | WIN DEBUGGER
 | PHREDA 2024
 |
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/win/debugapi.r3
 
 #proc

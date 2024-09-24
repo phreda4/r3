@@ -1,7 +1,7 @@
 | edit-code
 | PHREDA 2007
 |---------------------------------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
 ^r3/lib/math.r3
 ^r3/lib/mem.r3

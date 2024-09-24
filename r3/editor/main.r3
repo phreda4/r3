@@ -1,7 +1,7 @@
 | main filesystem
 | PHREDA 2019
 |------------------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
 ^r3/editor/code-print.r3
 

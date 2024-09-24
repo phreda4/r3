@@ -1,7 +1,7 @@
 | SO core words
 | PHREDA 2021
 
-^r3/posix/posix.r3
+^r3/lib/posix/posix.r3
 ^r3/lib/str.r3
 	
 #process-heap
@@ -21,50 +21,36 @@
 |4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
 ::msec | -- msec
-   'te 4 libc-clock_gettime drop
-   'te @+ 1000 * swap @ 1000000 / + ;
+	4 'te libc-clock_gettime drop
+	'te @+ 1000 * swap @ 1000000 / + ;
 
 |struct tm {
-|   int tm_sec;         /* seconds,  range 0 to 59          */
-|   int tm_min;         /* minutes, range 0 to 59           */
-|   int tm_hour;        /* hours, range 0 to 23             */
-|   int tm_mday;        /* day of the month, range 1 to 31  */
-|   int tm_mon;         /* month, range 0 to 11             */
-|   int tm_year;        /* The number of years since 1900   */
-|   int tm_wday;        /* day of the week, range 0 to 6    */
-|   int tm_yday;        /* day in the year, range 0 to 365  */
-|   int tm_isdst;       /* daylight saving time             */	
+|   int tm_sec;         /* seconds,  range 0 to 59          */ 0
+|   int tm_min;         /* minutes, range 0 to 59           */ 4
+|   int tm_hour;        /* hours, range 0 to 23             */ 8
+|   int tm_mday;        /* day of the month, range 1 to 31  */ 12
+|   int tm_mon;         /* month, range 0 to 11             */ 16
+|   int tm_year;        /* The number of years since 1900   */ 20
+|   int tm_wday;        /* day of the week, range 0 to 6    */ 24
+|   int tm_yday;        /* day in the year, range 0 to 365  */ 28
+|   int tm_isdst;       /* daylight saving time             */ 32
 #sit 0
 	
-
 ::time | -- hms
-    'sit libc-time
-    'sit libc-localtime 'sit !
+	0 libc-time 'sit !
+	'sit libc-localtime 'sit !
+	'sit 
+	dup 8 + d@ 16 <<
+	over 4 + d@ 8 << or
+	swap d@ or ;
 
-|		time(&sit);sitime=localtime(&sit);
-|		NOS++;*NOS=TOS;TOS=(sitime->tm_hour<<16)|(sitime->tm_min<<8)|sitime->tm_sec;continue;	
-
-|	'sistime 8 + @
-|	dup 32 >> $ffff and 
-|	over 16 >> $ffff and 
-|	rot $ffff and
-|	8 << or 8 << or 
-	;
-
-	
 ::date | -- ymd
-    'sit libc-time
-    'sit libc-localtime 'sit !
-
-|		time(&sit);sitime=localtime(&sit);
-|		NOS++;*NOS=TOS;TOS=(sitime->tm_year+1900)<<16|(sitime->tm_mon+1)<<8|sitime->tm_mday;continue;
-
-|	'sistime @
-|	dup 48 >> $ffff and 
-|	over 16 >> $ffff and
-|	rot $ffff and
-|	8 << or 8 << or
-	;
+	0 libc-time 'sit !
+	'sit libc-localtime 'sit !
+	'sit 
+	dup 20 + d@ 1900 + 16 <<
+	over 16 + d@ 1+ 8 << or
+	swap 12 + d@ or ;
 
 |struct dirent {
 |    ino64_t d_ino;        // Inode number 0
@@ -74,6 +60,23 @@
 |    char d_name[];        // Filename (null-terminated) 19
 |};
 
+::FNAME | adr -- adrname
+|WIN| 44 +
+|LIN| 19 +
+|RPI| 11 +
+|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
+	;
+
+::FDIR | adr -- 1/0
+|WIN| @ 4 >>
+|LIN| 18 + c@ 2 >>
+|RPI| 10 + c@ 2 >>
+|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
+	1 and ;
+	
+::FSIZE
+	32 + d@ 10 >> ; | in kb	
+	
 #dirp
 
 ::ffirst | "path//*" -- fdd/0
@@ -103,12 +106,9 @@
 ::append | 'from cnt "filename" -- 
     0? ( 3drop ; )
     2 libc-open -? ( 3drop ; )
-
-|	dup 0 0 2 SetFilePointer drop
-|	dup >r rot rot 'cntf 0 WriteFile
-|	r> swap 0? ( 2drop ; ) drop
-|	CloseHandle 
-|    r> libc-close drop 
+	dup >r
+	-rot libc-write drop
+    r> libc-close drop 
     ;
 
 ::delete | "filename" -- 
@@ -133,10 +133,9 @@
 	;	
 	
 ::fileinfo | "file" -- 0=not exist
-    'fileatrib 'libc-stat
+    'fileatrib libc-stat
     ;
 	
-
 ::sys | "" --
     libc-system drop ;
 	

@@ -1,7 +1,7 @@
 | r3 compiler
 | PHREDA 2019
 |------------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3

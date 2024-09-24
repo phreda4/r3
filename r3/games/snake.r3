@@ -1,6 +1,6 @@
 | simple snake game
 | PHREDA 2020
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/mem.r3
 ^r3/lib/rand.r3

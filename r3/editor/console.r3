@@ -1,7 +1,7 @@
 | console r3
 | PHREDA 2021
 
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 
 #.bye 0
 

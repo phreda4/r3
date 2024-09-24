@@ -2,7 +2,7 @@
 | map with 64bits per cell
 | info|tile|tile|tile..
 |------------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/sdlgui.r3
 ^r3/util/sdlfiledlg.r3

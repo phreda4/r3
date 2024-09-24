@@ -1,13 +1,12 @@
-|
-| linux example
+| linux browse files
 | usage:
 | chmod 777 ./r3lin
 | ./r3lin mainl.r3
-|
+| PHREDA
 
-^r3/posix/console.r3
-^r3/posix/core.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
+^r3/editor/code-print.r3
 
 #reset 0
 #path * 1024
@@ -26,22 +25,9 @@
 #linesv 20
 
 |--------------------------------
-:FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|RPI| 11 +
-|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	;
-
-:FDIR? | adr -- 1/0
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	1 and ;
 
 :FINFO | adr -- adr info
-	dup FDIR? 0? ( 2 + ; ) drop 0 ;
+	dup FDIR 0? ( 2 + ; ) drop 0 ;
 
 :getname | nro -- ""
 	3 << 'files + @ 8 >> 'filen + ;
@@ -442,7 +428,7 @@
 	
 :drawtree
 	1 2 ,at
-	0  ( linesv <?
+	0 ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
 		,reset
@@ -454,7 +440,10 @@
 	,hidec
 	,reset ,cls ,bblue 
 	1 1 ,at	" r3 " ,s
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe 
+inesv "%d" ,print
+ols " %d" ,print
+   ,eline
 	drawtree
 	
 	,bblue ,white	
@@ -486,7 +475,7 @@
 |---------------------------------
 :main
 	rebuild
-	.getconsoleinfo rows 1 - 'linesv !
+	.getconsoleinfo rows 2 - 'linesv !
 |	loadm
 
     .getconsoleinfo 
@@ -501,4 +490,3 @@
 	;
 
 : main ;
-

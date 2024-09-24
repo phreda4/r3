@@ -7,7 +7,7 @@
 | + remove unused words
 | + translate noname definitions
 |-----------------
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt.r3
 

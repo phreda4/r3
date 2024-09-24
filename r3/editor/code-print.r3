@@ -1,9 +1,10 @@
+| pprint code
+| PHREDA
+
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
-^r3/lib/win/console.r3
+^r3/lib/console.r3
 ^r3/lib/mconsole.r3
-
-
 
 |------ Color line
 #colornow 0
