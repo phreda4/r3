@@ -21,12 +21,9 @@
 |4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
 
-:1000000/
-	$431be83 32 *>> ;
-
 ::msec | -- msec
 	4 'te libc-clock_gettime drop
-	'te @+ 1000 * swap @ 1000000/ + ;
+	'te @+ 1000 * swap @ 1000000 / + ;
 
 |struct tm {
 |   int tm_sec;         /* seconds,  range 0 to 59          */ 0
@@ -92,16 +89,25 @@
 	dirp 0? ( ; ) 
 	libc-readdir ;
 
+|0 constant O_RDONLY octal
+|1 constant O_WRONLY
+|2 constant O_RDWR
+|100 constant O_CREAT $40
+|200 constant O_TRUNC $80
+|2000 constant O_APPEND $400
+|4000 constant O_NONBLOCK $800
+| 077 octal $1ff
+
 ::load | 'from "filename" -- 'to
 	0? ( drop ; )
-	0 libc-open -? ( drop ; ) | adr FILE
+	$0 0 libc-open -? ( drop ; ) | adr FILE
 	swap ( 2dup $ffff libc-read 1? + ) drop
 	swap libc-close drop
 	;
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	1 libc-open -? ( 3drop ; )
+	$C1 $1ff libc-open -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -109,7 +115,7 @@
 
 ::append | 'from cnt "filename" -- 
 	0? ( 3drop ; )
-	2 libc-open -? ( 3drop ; )
+	$441 $1ff libc-open -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 

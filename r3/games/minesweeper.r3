@@ -153,7 +153,7 @@
 	msec time rerand
 	"Minesweeper" 800 600 SDLinit
 	16 16 "media/img/mines.png" ssload 'sprites !
-	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
 	reset1
 	'game SDLshow
 	SDLquit 

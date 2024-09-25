@@ -261,7 +261,7 @@
 	"r3 robots" 1024 600 SDLinit
 	bfont1
 	
-	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
+	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	16 16 "media/img/tank.png" ssload 'tsprites !
 	400 'fx p.ini
 	100 'tanks p.ini

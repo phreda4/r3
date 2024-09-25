@@ -3,7 +3,7 @@
 | PHREDA 2017,2021
 |-----------------------------------
 ^r3/lib/console.r3
-^r3/lib/SDL2gfx.r3
+^r3/lib/sdl2gfx.r3
 
 ^r3/lib/3d.r3
 ^r3/util/loadobj.r3
@@ -79,7 +79,7 @@
 
 :memory
 	mark
-	"media/obj/mario/mario.obj"
+	"media/obj/Mario/Mario.obj"
 	loadobj 'model !
 	objminmax
 	objcentra

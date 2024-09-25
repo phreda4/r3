@@ -242,7 +242,7 @@
 :
 	msec time rerand
 	"Tetris" 800 600 SDLinit
-	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
 	reset
 	'game SDLshow
 	SDLquit 

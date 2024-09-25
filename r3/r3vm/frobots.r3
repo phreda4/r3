@@ -340,7 +340,7 @@
 
 : |<<< BOOT <<<
 	"r3 robots" 1024 600 SDLinit
-	"media/ttf/roboto-bold.TTF" 20 TTF_OpenFont immSDL
+	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	
 	16 16 "media/img/tank.png" ssload 'tsprites !
 

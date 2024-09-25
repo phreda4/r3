@@ -107,7 +107,7 @@
 :	
 	msec time rerand
 	"Floodit!" 800 600 SDLinit
-	"media/ttf/ProggyClean.TTF" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
 	reset1
 	'game SDLshow
 	SDLquit 

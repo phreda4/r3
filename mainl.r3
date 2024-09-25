@@ -413,7 +413,7 @@
 
 :colorfile | n -- n
 	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and 3 << 'filecolor + @ ,fc 
+	dup getinfo $3 and 3 << 'filecolor + @ ,fc 
 	;
 
 :printfn | n --
@@ -432,7 +432,7 @@
 		dup pagina +
 		nfiles >=? ( 2drop ; )
 		,reset
-    	drawl 
+		drawl 
 		1 + ) drop ;
 
 :screen
@@ -440,10 +440,7 @@
 	,hidec
 	,reset ,cls ,bblue 
 	1 1 ,at	" r3 " ,s
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe 
-inesv "%d" ,print
-ols " %d" ,print
-   ,eline
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
 	drawtree
 	
 	,bblue ,white	
@@ -476,15 +473,15 @@ ols " %d" ,print
 :main
 	rebuild
 	.getconsoleinfo rows 2 - 'linesv !
-|	loadm
+	loadm
 
-    .getconsoleinfo 
-    .alsb 
+	.getconsoleinfo 
+	.alsb 
 
 	screen
 	( getch $1B <>? teclado ) drop | esc
 
-    .reset |.cls
+	.reset |.cls
 	.masb	
 	savem		
 	;
