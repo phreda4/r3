@@ -39,16 +39,14 @@
 
 ::time | -- hms
 	0 libc-time 'sit !
-	'sit libc-localtime |'sit !
-	|'sit 
+	'sit libc-localtime 
 	dup 8 + d@ 16 <<
 	over 4 + d@ 8 << or
 	swap d@ or ;
 
 ::date | -- ymd
 	0 libc-time 'sit !
-	'sit libc-localtime |'sit !
-	|'sit 
+	'sit libc-localtime 
 	dup 20 + d@ 1900 + 16 <<
 	over 16 + d@ 1+ 8 << or
 	swap 12 + d@ or ;
@@ -98,16 +96,18 @@
 |4000 constant O_NONBLOCK $800
 | 077 octal $1ff
 
+:32>64 32 << 32 >> ;
+	
 ::load | 'from "filename" -- 'to
 	0? ( drop ; )
-	$0 0 libc-open -? ( drop ; ) | adr FILE
+	$0 0 libc-open 32>64 -? ( drop ; ) | adr FILE
 	swap ( 2dup $ffff libc-read 1? + ) drop
 	swap libc-close drop
 	;
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	$C1 $1ff libc-open -? ( 3drop ; )
+	$C1 $1ff libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -115,7 +115,7 @@
 
 ::append | 'from cnt "filename" -- 
 	0? ( 3drop ; )
-	$441 $1ff libc-open -? ( 3drop ; )
+	$441 $1ff libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 

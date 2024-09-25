@@ -44,7 +44,7 @@
 #sys-stat
 #sys-access
 
-::libc-open sys-open sys2 ;
+::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
 ::libc-close sys-close sys1 ;
 ::libc-read sys-read sys3 ;
