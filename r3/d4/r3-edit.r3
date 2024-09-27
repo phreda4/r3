@@ -499,13 +499,13 @@
 	$1B0001 =? ( modoedit 1 'escnow ! )
 	$1000 and? ( drop ; )	| upkey
 	$ff and	
-	$48 =? ( -1 dic+! )		| up
-	$50 =? ( 1 dic+! )		| dn
-	$49 =? ( -1 inc+! )		| pgup
-	$51 =? ( 1 inc+! )		| pgdn
+	[up] =? ( -1 dic+! )		| up
+	[dn] =? ( 1 dic+! )		| dn
+	[pgup] =? ( -1 inc+! )		| pgup
+	[pgdn] =? ( 1 inc+! )		| pgdn
 	
-	$3b =? ( nowinc pushcode modoedit ) | f1
-	$3c =? ( popcode )
+	[f1] =? ( nowinc pushcode modoedit ) | f1
+	[f2] =? ( popcode )
 	drop ;
 
 	
@@ -549,7 +549,7 @@
 	
 	immevkey 
 	$1c =? ( enterline ) | 13
-	$3c =? ( modoedit ) |f2
+	[f2] =? ( modoedit ) |f2
 	drop ;
 	
 :modoimmediate
@@ -585,8 +585,8 @@
 	$1B0001 =? ( modoedit 1 'escnow ! )
 	immevkey 
 |	$1c =? ( enterline )
-	$3b =? ( stepvm cursor2ip ) |f1
-	$3c =? ( stepvmn cursor2ip ) |f2
+	[f1] =? ( stepvm cursor2ip ) |f1
+	[f2] =? ( stepvmn cursor2ip ) |f2
 	
 	
 	drop ;

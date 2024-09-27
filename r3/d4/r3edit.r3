@@ -310,16 +310,16 @@
 	modo ex ;
 
 ::code-vkey | key -- key ; only view key
-	$48 =? ( kup ) $50 =? ( kdn )
-	$4d =? ( kri ) $4b =? ( kle )
-	$47 =? ( khome ) $4f =? ( kend )
-	$49 =? ( kpgup ) $51 =? ( kpgdn )	
+	[UP] =? ( kup ) [DN] =? ( kdn )
+	[RI] =? ( kri ) [LE] =? ( kle )
+	[HOME] =? ( khome ) [END] =? ( kend )
+	[PGDN] =? ( kpgup ) [PGUP] =? ( kpgdn )	
 	;
 
 ::code-key | key -- key
 	$ff0000 and? ( dup vchar ; ) 
-	$53 =? ( kdel )
-	$52 =? (  modo | ins
+	[DEL] =? ( kdel )
+	[INS] =? (  modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )	
 	code-vkey

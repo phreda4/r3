@@ -1,8 +1,8 @@
 | Señal de ajuste
 | PHREDA 2020
 
-^r3/lib/SDL2gfx.r3
-^r3/lib/SDL2ttf.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/sdl2ttf.r3
 ^r3/lib/mem.r3
 
 |---- datetime
