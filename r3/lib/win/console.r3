@@ -132,8 +132,8 @@
 |typedef struct _MOUSE_EVENT_RECORD {
 |  COORD dwMousePosition;	| 2
 |  DWORD dwButtonState;		| 6
-|  DWORD dwControlKeyState;
-|  DWORD dwEventFlags;
+|  DWORD dwControlKeyState;	| 10
+|  DWORD dwEventFlags;		| 14
 
 |typedef struct _WINDOW_BUFFER_SIZE_RECORD {
 |  COORD dwSize;
@@ -184,6 +184,18 @@
 	
 ::evtmb | -- b
 	'eventBuffer 8 + d@ ;
+	
+::evtmw
+	'eventBuffer 8 + d@ 23 >> 1 or ;
+	
+::evtm | -- evt
+	'eventBuffer 16 + d@ ;
+	
+|MOUSE_MOVED 0x0001
+|DOUBLE_CLICK 0x0002	
+|MOUSE_WHEELED 0x0004
+|MOUSE_HWHEELED 0x0008
+
 	
 ::getevt | -- typevent | wait event
 	stdin 'eventBuffer 1 'nr ReadConsoleInput |(rHnd, eventBuffer, numEvents, &numEventsRead);

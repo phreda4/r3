@@ -473,7 +473,7 @@
 	235 ,bc 
 	40 2 linesv cols 41 - source code-print
 	;
-	
+
 :screen
 	mark
 	,hidec
@@ -515,7 +515,17 @@
 	drop 
 	;
 
+:evwmouse 
+	evtmw pagina +
+	clamp0 nfiles 1- min 
+	'pagina !
+	;
+	
 :evmouse
+	evtm
+	1 =? ( drop ; ) | move 
+	4 =? ( drop evwmouse ; )
+	drop
 	evtmb 0? ( drop ; ) drop	
 	evtmxy swap
 	40 >? ( 2drop f2edit ; ) drop

@@ -108,16 +108,27 @@
 	fuente> >>13  1 + 'fuente> !
 	selecc ;
 
-:scrollup | 'fuente -- 'fuente
-	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
+:scrollup | 'fuente -- 'fuente	
+	pantaini> 1- <<13 1- <<13 1+ 
+	fuente <=? ( drop ; )
+	'pantaini> !
 	ylinea 1? ( 1 - ) 'ylinea !
 	selecc ;
 
 :scrolldw
+	pantafin> >>13 2 + 
+	$fuente >=? ( drop ; ) 
+	'pantafin> !
 	pantaini> >>13 2 + 'pantaini> !
-	pantafin> >>13 2 + 'pantafin> !
 	1 'ylinea +!
 	selecc ;
+
+:fixcur
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	'fuente> !
+	;
 
 :karriba
 	fuente> fuente =? ( drop ; )
@@ -553,10 +564,10 @@
 	
 |..............................
 :drawcode
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop 
+|	fuente>
+|	( pantafin> >? scrolldw )
+|	( pantaini> <? scrollup )
+|	drop 
 
 	,reset
 	inicomm
@@ -635,7 +646,7 @@
 :teclado
 	panelcontrol 1? ( drop controlkey ; ) drop
 
-	$ff0000 and? ( vchar ; ) 
+	$ff0000 and? ( vchar fixcur ; ) 
 	
 	[DEL] =? ( kdel )
 	[UP] =? ( karriba ) 
@@ -662,6 +673,7 @@
 	[F5] =? ( compile )
 	
 	drop
+	fixcur
 	;
 
 
@@ -727,8 +739,18 @@
 		13 =? ( 0 nip )
 		0? ( drop nip 1 - ; ) 
 		drop ) drop ;
-		
+
+			
+:evwmouse 
+	evtmw 
+	-? ( drop scrolldw scrolldw ; ) drop
+	scrollup scrollup ;
+
 :evmouse
+	evtm
+	1 =? ( drop ; ) | move 
+	4 =? ( drop evwmouse ; )
+	drop
 	evtmb $0 =? ( drop ; ) drop 
 	evtmxy
 	1 <? ( 2drop ; )
