@@ -1,39 +1,47 @@
 | KEYCODES for POSIX
 | PHREDA 2024
 
+##[ESC]     $1b
 ##]ESC[		$1B
 ##[ENTER]	$a 
+##[TAB]     $9
 
-##[DEL]		$53
+##[BACK]    $7f
+##[DEL]		$7E335B1B
 ##[UP]		$415b1b
 ##[DN]		$425b1b 
-##[RI]		$4d
-##[LE]		$4b
+##[RI]		$435B1B
+##[LE]		$445B1B
 
 ##[PGUP]	$7e355b1b
 ##[PGDN]	$7e365b1b
 ##[HOME]	$485b1b
 ##[END]		$465b1b
 	
-##[INS]		$52
-##[CTRL]	$1d ##]CTRL[	$101d
-	
-##[SHIFTR]	$2a
-##[SHIFTL]	$36
+##[INS]		$7E325B1B
+
+|##[CTRL]	$1d ##]CTRL[	$101d
+|##[SHIFTR]	$2a ##[SHIFTL]	$36
 
 ##[F1]	$504f1b
 ##[F2]	$514f1b
 ##[F3]	$524f1b
 ##[F4]	$534f1b
-##[F5]	$3F
+##[F5]	$7E34315B1B
+##[F6]	$7E37315B1B
+##[F7]	$7E38315B1B
+##[F8]	$7E39315B1B
+##[F9]	$7E30325B1B
 
-|	$2d =? ( controlx )		| x-cut
-|	$2e =? ( controlc )		| c-copy
-|	$2f =? ( controlv )		| v-paste
-|	$12 =? ( controle ) | E-Edit
-|	$23 =? ( controlh ) | H-Help
-|	$2c =? ( controlz ) | Z-Undo
-|	$20 =? ( controld ) | D-Def
-|	$31 =? ( controln ) | N-New
-|	$32 =? ( controlm ) | M-Mode
-|	$21 =? ( findmodekey )	| f-find
+##[CTRLx] $18
+|##[CTRLc] $17 | ??
+##[CTRLv] $16
+##[CTRLe] $5
+##[CTRLf] $6
+##[CTRLh] $8
+|##[CTRLz] $0 | ??**
+##[CTRLd] $4
+##[CTRLn] $e
+|##[CTRLm] $a |<--!!! enter
+
+

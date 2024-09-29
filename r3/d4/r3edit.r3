@@ -301,9 +301,9 @@
 	;
 	
 :vchar | char --  ; visible char
-	$1000 and? ( drop ; )
-	16 >> $ff and
-	8 =? ( drop kback ; )
+|WIN|	$1000 and? ( drop ; )
+|WIN|	16 >> $ff and
+	[BACK] =? ( drop kback ; )
 	9 =? ( modo ex ; )
 	13 =? ( modo ex ; )
 	32 <? ( drop ; )
@@ -316,8 +316,10 @@
 	[PGDN] =? ( kpgup ) [PGUP] =? ( kpgdn )	
 	;
 
-::code-key | key -- key
-	$ff0000 and? ( dup vchar ; ) 
+::code-key | key -- key   
+|WIN|	$ff0000 and? ( dup vchar ; ) 
+|LIN|   $20 $7e in? ( modo ex ; )
+|LIN|	[BACK] =? ( drop kback ; ) 9 =? ( modo ex ; ) 13 =? ( modo ex ; )
 	[DEL] =? ( kdel )
 	[INS] =? (  modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )

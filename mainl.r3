@@ -240,7 +240,7 @@
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/editor/code-edit.r3"
+|LIN| "./r3lin r3/d4/r3-editl.r3"
 |RPI| "./r3rpi r3/editor/code-edit.r3"
 |MAC| "./r3mac r3/editor/code-edit.r3"
 	sys ;
