@@ -237,18 +237,14 @@
 	"mem/error.mem" delete
 	'path
 |WIN| "cmd /c r3 ""%s/%s"" 2>mem/error.mem"
-|LIN| "./r3lin ""%s/%s"""
-|RPI| "./r3rpi ""%s/%s"""
-|MAC| "./r3mac %s/%s"
+|LIN| "./r3lin ""%s/%s"" 2>mem/error.mem"
 	sprint sys
 	checkerror
 	conadj ;
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/editor/code-edit.r3"
-|RPI| "./r3rpi r3/editor/code-edit.r3"
-|MAC| "./r3mac r3/editor/code-edit.r3"
+|LIN| "./r3lin r3/d4/d4-coded.r3"
 	sys 
 	conadj ;
 
@@ -265,8 +261,6 @@
 
 |WIN| "r3 r3/editor/map-edit.r3"
 |LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
 	conadj
 	;
@@ -277,8 +271,6 @@
 
 |WIN| "r3 r3/editor/bmap-edit.r3"
 |LIN| "./r3lin r3/editor/bmap-edit.r3"
-|RPI| "./r3rpi r3/editor/bmap-edit.r3"
-|MAC| "./r3mac r3/editor/bmap-edit.r3"
 	sys
 	conadj
 	;
@@ -302,10 +294,8 @@
 	".r3" =pos 0? ( 2drop ; ) drop
 	'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-|WIN| "r3 r3/d4/r3-edit.r3"
-|LIN| "./r3lin r3/d4/r3-edit.r3"
-|RPI| "./r3rpi r3/d4/r3-edit.r3"
-|MAC| "./r3mac r3/d4/r3-edit.r3"
+|WIN| "r3 r3/d4/d4-coded.r3"
+|LIN| "./r3lin r3/d4/d4-coded.r3"
 	sys 
 	conadj ;
 

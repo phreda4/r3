@@ -89,8 +89,8 @@
 
 |---------------
 ::scrollup | 'fuente -- 'fuente
-	pantaini> 1- <<13 1- <<13 1+ 
-	fuente <=? ( drop ; )
+	pantaini> 2 - <<13 1+
+	fuente <=? ( fuente nip )
 	'pantaini> !
 	;
 

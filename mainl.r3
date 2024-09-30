@@ -181,7 +181,7 @@
 	0 'path !
 	traverse
 	actual getactual nip
-	pagina linesv + 1 - >=? ( dup linesv - 1 + 'pagina ! )
+	pagina linesv + 1- >=? ( dup linesv - 1+ 'pagina ! )
 	'actual !
 	drop
 	setactual
@@ -225,8 +225,6 @@
 	'path
 |WIN| "cmd /c r3 ""%s/%s"" 2>mem/error.mem"
 |LIN| "./r3lin ""%s/%s"" 2>mem/error.mem"
-|RPI| "./r3rpi ""%s/%s"" 2>mem/error.mem"
-|MAC| "./r3mac ""%s/%s"" 2>mem/error.mem"
 	sprint sys 
     checkerror
 	.alsb
@@ -235,14 +233,11 @@
 :r3info
 |WIN| "r3 r3/editor/r3info.r3"
 |LIN| "./r3lin r3/editor/r3info.r3"
-|RPI| "./r3rpi r3/editor/r3info.r3"
 	sys ;
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/d4/r3-editl.r3"
-|RPI| "./r3rpi r3/editor/code-edit.r3"
-|MAC| "./r3mac r3/editor/code-edit.r3"
+|LIN| "./r3lin r3/d4/d4-coded.r3"
 	sys ;
 	
 |--------------------------------
@@ -261,8 +256,6 @@
 
 |WIN| "r3 r3/editor/map-edit.r3"
 |LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
 	;
 	
@@ -313,8 +306,6 @@
 
 |WIN| "r3 r3/editor/map-edit.r3"
 |LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
 	sys
 
 	rebuild
@@ -453,19 +444,19 @@
 	;
 
 :teclado
-    $a =? ( fenter screen ) |$D001C 
+    [ENTER] =? ( fenter screen ) 
 	
-	$415b1b =? ( fup screen ) | up
-	$425b1b =? ( fdn screen ) | dn
-	$7e355b1b =? ( fpgup screen )
-	$7e365b1b =? ( fpgdn screen )
-	$485b1b =? ( fhome screen )
-	$465b1b =? ( fend screen )
+	[UP] =? ( fup screen ) | up
+	[DN] =? ( fdn screen ) | dn
+	[PGUP] =? ( fpgup screen )
+	[PGDN] =? ( fpgdn screen )
+	[HOME] =? ( fhome screen )
+	[END] =? ( fend screen )
 	
-	$504f1b =? ( fenter screen )
-	$514f1b =? ( f2edit screen ) |editfile screen )
-	$524f1b =? ( newfile screen )
-	|$534f1b =? ( newfolder screen ) | f4 - new folder
+	[f1] =? ( fenter screen )
+	[f2] =? ( f2edit screen ) |editfile screen )
+	[f3] =? ( newfile screen )
+	|[f4] =? ( newfolder screen ) | f4 - new folder
 	drop 
 	;
 
@@ -479,7 +470,7 @@
 	.alsb 
 
 	screen
-	( getch $1B <>? teclado ) drop | esc
+	( getch [esc] <>? teclado ) drop | esc
 
 	.reset |.cls
 	.masb	
