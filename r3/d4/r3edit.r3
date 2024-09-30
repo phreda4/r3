@@ -35,7 +35,7 @@
 
 |----- edicion
 ::lins  | c --
-	fuente> dup 1 - $fuente over - 1 + cmove>
+	fuente> dup 1- $fuente over - 1+ cmove>
 	1 '$fuente +!
 :lover | c --
 	fuente> c!+ dup 'fuente> !
@@ -67,7 +67,7 @@
 :>>13 | a -- a
 	( $fuente <?
 		dup c@
-		13 =? ( drop 1- ; ) | quitar el 1 -
+		13 =? ( drop 1- ; ) | quitar el 1-
 		drop 1+ )
 	drop $fuente 2 - ;
 
@@ -87,6 +87,7 @@
 :kend
 	fuente> >>13 1+ 'fuente> ! ;
 
+|---------------
 ::scrollup | 'fuente -- 'fuente
 	pantaini> 1- <<13 1- <<13 1+ 
 	fuente <=? ( drop ; )
@@ -108,23 +109,23 @@
 	( pantaini> <? scrollup )
 	'fuente> !
 	;
-
+	
+|---------------
+:iline | a -- ca ia
+	dup 1- <<13 swap over - ;
+	
 :kup
 	fuente> fuente =? ( drop ; )
-	dup 1- <<13		| cur inili
-	swap over - swap	| cnt cur
-	dup 1- <<13		| cnt cur cura
-	swap over - 		| cnt cura cur-cura
+	iline swap iline
 	rot min + fuente max
 	'fuente> ! ;
 
 :kdn
 	fuente> $fuente >=? ( drop ; )
-	dup 1- <<13 | cur inilinea
-	over swap - swap | cnt cursor
-	>>13 1+    | cnt cura
-	dup 1+ >>13 1+ 	| cnt cura curb
-	over - rot min +
+	dup 1- <<13 over swap - 
+	swap | cnt cursor
+	>>13 1+ dup 1+ >>13 1+ 	| cnt cura curb
+	over - rot min + 
 	'fuente> ! ;
 
 :kri
@@ -198,9 +199,9 @@
 
 :iniline
 	xlinea wcolor
-	( 1? 1 - swap
-		c@+ 0? ( drop nip 1 - ; )
-		13 =? ( drop nip 1 - ; )
+	( 1? 1- swap
+		c@+ 0? ( drop nip 1- ; )
+		13 =? ( drop nip 1- ; )
 		9 =? ( wcolor )
 		32 =? ( wcolor )
 		drop swap ) drop ;
@@ -213,13 +214,13 @@
 	( atselect c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
-			,c swap 1 + swap )
+			,c swap 1+ swap )
 		13 <>?
-		,ct ) drop 1 - 0 ;
+		,ct ) drop 1- 0 ;
 	
 :endline
 	,c ( atselect c@+ 1? 13 <>? ,ct )	
-	1? ( drop ; ) drop 1 - ;
+	1? ( drop ; ) drop 1- ;
 	
 :parseline 
 	,tcolor
@@ -232,17 +233,17 @@
 		,c
 		) 
 	1? ( drop ; ) drop
-	1 - ;
+	1- ;
 
 |... no color line	
 :parselinenc
 	( atselect c@+ 1? 13 <>? ,c ) 
 	1? ( drop ; ) drop
-	1 - ;
+	1- ;
 
 |..............................
 :linenro | lin -- lin
-	over ylinea + 1 + .d 3 .r. ,s 32 ,c ; 
+	over ylinea + 1+ .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
 	"^[0m^[37m " ,printe	| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
@@ -256,9 +257,9 @@
 :setpantafin
 	pantaini>
 	0 ( hcode <?
-		swap >>cr 1 + swap
-		1 + ) drop
-	$fuente <? ( 1 - ) 'pantafin> ! ;
+		swap >>cr 1+ swap
+		1+ ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
 	
 |..............................
 ::code-draw
@@ -267,8 +268,8 @@
 	0 ( hcode <?
 		1 ycode pick2 + ,at
 		drawline
-		swap 1 + ) drop
-	$fuente <? ( 1 - ) 'pantafin> ! ;
+		swap 1+ ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
@@ -281,7 +282,7 @@
 	| hscroll
 	xcursor
 	xlinea <? ( dup 'xlinea ! )
-	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1+ 'xlinea ! )
 	drop 
 	,reset
 	ycode ylinea - ycursor + | y
@@ -290,8 +291,7 @@
 	;
 	
 :vchar | char --  ; visible char
-|WIN|	$1000 and? ( drop ; )
-|WIN|	16 >> $ff and
+	16 >> $ff and
 	[BACK] =? ( drop kback ; )
 	9 =? ( modo ex ; )
 	13 =? ( modo ex ; )
@@ -304,10 +304,14 @@
 	drop 'lins 'modo ! .insc ;
 	
 ::code-key | key -- key
+|WIN|	$1000 and? ( ; )
 	selecc
 |WIN|	$ff0000 and? ( dup vchar fixcur selecc ; ) 
-|LIN|	$20 $7e in? ( modo ex fixcur selecc ; )
-|LIN|	[BACK] =? ( drop kback fixcur selecc ; ) 9 =? ( modo ex fixcur selecc ; ) 13 =? ( modo ex fixcur selecc ; )
+
+|LIN|	$20 $7e in? ( dup modo ex )
+|LIN|	9 =? ( dup modo ex ) 
+|LIN|	13 =? ( dup modo ex )
+|LIN|	[BACK] =? ( kback ) 
 	[DEL] =? ( kdel )
 	[INS] =? ( inskey )	
 	[UP] =? ( kup ) [DN] =? ( kdn )
@@ -351,8 +355,8 @@
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
 	
 ::loadtxt | name -- ; cargar texto
-	fuente swap load 0 swap c!
-	fuente only13 1 - '$fuente !	|-- queda solo cr al fin de linea
+	fuente swap load 0 13 rot c!+ c!
+	fuente only13 1- '$fuente !	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> ! simplehash 'hashfile !
 	;
 

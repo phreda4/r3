@@ -11,9 +11,6 @@
 #path * 1024
 #srcname * 1024
 
-|----- scratchpad
-#outpad * 2048
-
 #statfile 0 | 0:no info 1:error 2:info
 
 #iniinc #nowinc
@@ -26,16 +23,16 @@
 	;
 
 :dic+! | v --
-	nowdic + cntdef 1 - clamp0max 
+	nowdic + cntdef 1- clamp0max 
 	inidic <? ( dup 'inidic ! )
-	inidic hcode + 1 - >=? ( dup hcode - 1 + 'inidic ! ) 
+	inidic hcode + 1- >=? ( dup hcode - 1+ 'inidic ! ) 
 	'nowdic !
 	;
 
 :inc+! | v --
-	nowinc + cntinc 1 - clamp0max 
+	nowinc + cntinc 1- clamp0max 
 	iniinc <? ( dup 'iniinc ! )
-	iniinc hcode + 1 - >=? ( dup hcode - 1 + 'iniinc ! ) 
+	iniinc hcode + 1- >=? ( dup hcode - 1+ 'iniinc ! ) 
 	'nowinc !
 	;
 
@@ -123,13 +120,13 @@
 |-------------------------------
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
-		13 =? ( rot 1 + -rot ) drop ) drop ;
+		13 =? ( rot 1+ -rot ) drop ) drop ;
 		
 |... enter error mode
 |	fuente cerror + 'fuente> !
 |	linetocursor 'lerror !
 |	here >>cr 0 swap c!
-|	fuente> lerror 1 + here
+|	fuente> lerror 1+ here
 |	" %s in line %d (%w)" sprint 'outpad strcpy
 	
 :modoerror
@@ -144,13 +141,6 @@
 	;
 	
 |------------------------------
-	
-:modoclear
-	0 'statfile ! 
-	;
-	
-|----------------------
-	
 |-------------
 | Edit CtrE
 |-------------
@@ -160,24 +150,16 @@
 		drop )
 	nip ;
 
-:editvalid | adr -- adr 1/0
-    "ico" =pre 1? ( ; ) drop
-    "bmr" =pre 1? ( ; ) drop
-    "vsp" =pre 1? ( ; ) drop
-    "spr" =pre
-	;
-
 #ncar
 :controle
 	savetxt
-	fuente> ( dup 1 - c@ $ff and 32 >? drop 1 - ) drop | busca comienzo
+	fuente> ( dup 1- c@ $ff and 32 >? drop 1- ) drop | busca comienzo
 	dup c@
 	$5E <>? ( 2drop ; ) | no es ^
 	drop
 	dup fuente - 'ncar !
 	dup 2 + posfijo? 0? ( 2drop ; )
-	editvalid 0? ( 3drop ; ) drop
-	swap 1 + | ext name
+	swap 1+ | ext name
 	mark
 	dup c@ 46 =? ( swap 2 + 'path ,s ) drop
 	,word
@@ -200,7 +182,7 @@
 :controlv | paste
 	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
 	fuente> dup pick2  + swap | clip cnt 'f+ 'f
-	$fuente over - 1 + cmove>	| clip cnt
+	$fuente over - 1+ cmove>	| clip cnt
 	fuente> -rot | f clip cnt
 	dup '$fuente +!
 	cmove
@@ -211,8 +193,8 @@
 :controlz | undo
 	undobuffer>
 	undobuffer =? ( drop ; )
-	1 - dup c@
-	9 =? ( drop 1 - dup c@ [ -1 'fuente> +! ; ] >r )
+	1- dup c@
+	9 =? ( drop 1- dup c@ [ -1 'fuente> +! ; ] >r )
 	lins 'undobuffer> ! ;
 
 |-------------
@@ -231,26 +213,26 @@
 	dup c@ $ff and
 	0? ( 2drop ; )
 	toupp
-	fuente> 1 - | adr 1c act
+	fuente> 1- | adr 1c act
 	( fuente >?
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1 - ) 3drop ;
+		drop 1- ) 3drop ;
 
 :findnext | -- ;find next
 	'pad
 	dup c@ $ff and
 	0? ( drop ; )
 	toupp
-	fuente> 1 + | adr 1c act
+	fuente> 1+ | adr 1c act
 	( $fuente <?
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1 + ) 3drop ;
+		drop 1+ ) 3drop ;
 
 :cursorwstart | -- pos>
 	fuente> 
 	dup c@ $ff and 32 <=? ( drop trim ; ) drop 
 	( fuente =? ( ; )
-		dup 1 - c@ $ff and 32 >? drop 1 - ) drop | busca comienzo
+		dup 1- c@ $ff and 32 >? drop 1- ) drop | busca comienzo
 	;
 	
 | current word to search
@@ -281,7 +263,7 @@
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	1 hcode 1 + .at .eline
+	1 hcode 1+ .at .eline
 	" > " .write .input
 	findnext
 	;
@@ -352,7 +334,7 @@
 	drop
 	;
 
-:evkey	
+:evkey
 	evtkey
 	$1B1001 =? ( 1 'exit ! )
 	panelcontrol 1? ( drop controlkey ; ) drop
@@ -373,7 +355,7 @@
 	drop ;
 	
 ::>>cr | adr -- adr'
-	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1 - ;
+	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
 	
 :xycursor | x y -- cursor
 	pantaini> | x y c
@@ -382,7 +364,7 @@
 	( swap 1? 1- swap c@+
 		9 =? ( rot 2 - clamp0 -rot )
 		13 =? ( 0 nip )
-		0? ( drop nip 1 - ; ) 
+		0? ( drop nip 1- ; ) 
 		drop ) drop ;
 		
 :evwmouse 
@@ -397,12 +379,12 @@
 	drop
 	evtmb $0 =? ( drop ; ) drop 
 	evtmxy 1 <? ( 2drop ; )
-	1 - xycursor 'fuente> ! 
+	1- xycursor 'fuente> ! 
 	;
 	
 :evsize	
 	.getconsoleinfo
-	rows 1 - 'hcode !
+	rows 1- 'hcode !
 	cols 7 - 'wcode !
 	;
 
@@ -425,7 +407,7 @@
 :runeditor
 	0 'statfile !
 	cols 7 - 'wcode !
-	rows 1 - 'hcode !
+	rows 1- 'hcode !
 	( exit 0? drop 
 		modoeditor
 		) drop ;
