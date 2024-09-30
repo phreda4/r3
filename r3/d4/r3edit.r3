@@ -69,7 +69,7 @@
 		dup c@
 		13 =? ( drop 1- ; ) | quitar el 1-
 		drop 1+ )
-	drop $fuente 2 - ;
+	2 - ;
 
 #1sel #2sel
 
@@ -92,7 +92,6 @@
 	pantaini> 1- <<13 1- <<13 1+ 
 	fuente <=? ( drop ; )
 	'pantaini> !
-	ylinea 1? ( 1- ) 'ylinea !
 	;
 
 ::scrolldw
@@ -100,14 +99,25 @@
 	$fuente >=? ( drop ; ) 
 	'pantafin> !
 	pantaini> >>13 2 + 'pantaini> !
-	1 'ylinea +!
+	;
+
+:setpantafin
+	pantaini>
+	hcode ( 1? swap >>13 1+ swap 1- ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
+	
+:setpantaini
+	pantafin>
+	hcode ( 1? swap 2 - <<13 1+ swap 1- ) drop
+	fuente <? ( fuente nip )
+	'pantaini> !
 	;
 
 :fixcur
 	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	'fuente> !
+	pantaini> <? ( <<13 1+ 'pantaini> ! setpantafin ; )
+	pantafin> >? ( >>13 2 + 'pantafin> ! setpantaini ; )
+	drop
 	;
 	
 |---------------
@@ -254,13 +264,6 @@
 	parseline
 	;
 
-:setpantafin
-	pantaini>
-	0 ( hcode <?
-		swap >>cr 1+ swap
-		1+ ) drop
-	$fuente <? ( 1- ) 'pantafin> ! ;
-	
 |..............................
 ::code-draw
 	,reset
@@ -276,14 +279,31 @@
 	9 =? ( drop 3 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
-::cursorpos
-	ylinea 'ycursor ! 0 'xcursor !
-	pantaini> ( fuente> <? c@+ emitcur ) drop
+#cacheyl
+#cachepi
+
+:getcacheini |  -- pantanini>
+	pantaini> cachepi =? ( cacheyl 'ylinea ! ; ) drop
+	0 'ylinea !
+	fuente 
+	( pantaini> <? c@+ 13 =? ( 1 'ylinea +! ) drop ) 
+	dup 'cachepi !
+	ylinea 'cacheyl !
+	;
+	
+::cursorcalc
+	0 'xcursor !
+	getcacheini
+	
+	ylinea 'ycursor !
+	( fuente> <? c@+ emitcur ) drop
 	| hscroll
 	xcursor
 	xlinea <? ( dup 'xlinea ! )
 	xlinea wcode + >=? ( dup wcode - 1+ 'xlinea ! )
-	drop 
+	drop ;
+
+::cursorpos
 	,reset
 	ycode ylinea - ycursor + | y
 	xcode 5 - over ,at $3e ,c			| >
@@ -326,12 +346,12 @@
 	dup 'fuente !
 	dup 'fuente> !
 	count + '$fuente !
-|	0 'xlinea ! 0 'ylinea !
+	0 'xlinea ! 0 'ylinea !
 	setpantafin
 	;
 	
 ::,xycursor
-	ycursor xcursor " %d:%d " ,print ;
+	ycursor 1+ xcursor 1+ " %d:%d " ,print ;
 	
 ::code-ram
 	here	| --- RAM

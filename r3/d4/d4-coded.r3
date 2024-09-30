@@ -390,9 +390,11 @@
 
 :modoeditor
 	mark			| buffer in freemem
+	cursorcalc
 	,hidec ,reset ,cls
 	topbar code-draw botbar
-	cursorpos ,showc
+	cursorpos 
+	,showc
 	memsize type	| type buffer
 	empty			| free buffer
 	

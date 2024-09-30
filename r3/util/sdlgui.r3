@@ -166,6 +166,13 @@
 	imm.
 	onClick ;
 
+::immebtn | 'click "" --
+	ttsize drop 'boxw !
+	plgui
+	[ immcolorbtn ttcolor ; ] guiI
+	imm.
+	onClick ;
+
 ::immzone | 'click --
 	plgui onClick ;
 
