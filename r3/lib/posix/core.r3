@@ -21,9 +21,12 @@
 |4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
 
+:1000000/
+	$8637c $27 *>> ;
+
 ::msec | -- msec
 	4 'te libc-clock_gettime drop
-	'te @+ 1000 * swap @ 1000000 / + ;
+	'te @+ 1000 * swap @ 1000000/ + ;
 
 |struct tm {
 |   int tm_sec;         /* seconds,  range 0 to 59          */ 0

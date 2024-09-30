@@ -47,28 +47,28 @@
 
 :back
 	fuente> fuente <=? ( drop ; )
-	dup 1 - c@ undobuffer> c!+ 'undobuffer> !
-	dup 1 - swap $fuente over - 1 + cmove
+	dup 1- c@ undobuffer> c!+ 'undobuffer> !
+	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +!
 	-1 'fuente> +! ;
 
 :del
 	fuente>	$fuente >=? ( drop ; )
-    1 + fuente <=? ( drop ; )
-	9 over 1 - c@ undobuffer> c!+ c!+ 'undobuffer> !
-	dup 1 - swap $fuente over - 1 + cmove
+    1+ fuente <=? ( drop ; )
+	9 over 1- c@ undobuffer> c!+ c!+ 'undobuffer> !
+	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +! ;
 
 :<<13 | a -- a
 	( fuente >=?
 		dup c@ 13 =? ( drop ; )
-		drop 1 - ) ;
+		drop 1- ) ;
 
 :>>13 | a -- a
 	( $fuente <?
 		dup c@
-		13 =? ( drop 1 - ; ) | quitar el 1 -
-		drop 1 + )
+		13 =? ( drop 1- ; ) | quitar el 1 -
+		drop 1+ )
 	drop $fuente 2 - ;
 
 #1sel #2sel
@@ -82,69 +82,62 @@
 	;
 
 :khome
-	selecc
-	fuente> 1 - <<13 1 + 'fuente> !
-	selecc ;
+	fuente> 1- <<13 1+ 'fuente> ! ;
 
 :kend
-	selecc
-	fuente> >>13  1 + 'fuente> !
-	selecc ;
+	fuente> >>13 1+ 'fuente> ! ;
 
-:scrollup | 'fuente -- 'fuente
-	pantaini> 1 - <<13 1 - <<13  1 + 'pantaini> !
-	ylinea 1? ( 1 - ) 'ylinea !
-	selecc ;
+::scrollup | 'fuente -- 'fuente
+	pantaini> 1- <<13 1- <<13 1+ 
+	fuente <=? ( drop ; )
+	'pantaini> !
+	ylinea 1? ( 1- ) 'ylinea !
+	;
 
-:scrolldw
+::scrolldw
+	pantafin> >>13 2 + 
+	$fuente >=? ( drop ; ) 
+	'pantafin> !
 	pantaini> >>13 2 + 'pantaini> !
-	pantafin> >>13 2 + 'pantafin> !
 	1 'ylinea +!
-	selecc ;
+	;
+
+:fixcur
+	fuente>
+	( pantafin> >? scrolldw )
+	( pantaini> <? scrollup )
+	'fuente> !
+	;
 
 :kup
 	fuente> fuente =? ( drop ; )
-	selecc
-	dup 1 - <<13		| cur inili
+	dup 1- <<13		| cur inili
 	swap over - swap	| cnt cur
-	dup 1 - <<13		| cnt cur cura
+	dup 1- <<13		| cnt cur cura
 	swap over - 		| cnt cura cur-cura
 	rot min + fuente max
-	'fuente> !
-	selecc ;
+	'fuente> ! ;
 
 :kdn
 	fuente> $fuente >=? ( drop ; )
-	selecc
-	dup 1 - <<13 | cur inilinea
+	dup 1- <<13 | cur inilinea
 	over swap - swap | cnt cursor
-	>>13 1 +    | cnt cura
-	dup 1 + >>13 1 + 	| cnt cura curb
+	>>13 1+    | cnt cura
+	dup 1+ >>13 1+ 	| cnt cura curb
 	over - rot min +
-	'fuente> !
-	selecc ;
+	'fuente> ! ;
 
 :kri
-	selecc
-	fuente> $fuente <?
-	( 1 + 'fuente> ! selecc ; ) drop
-	;
+	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
 
 :kle
-	selecc
-	fuente> fuente >?
-	( 1 - 'fuente> ! selecc ; ) drop
-	;
+	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
 
 :kpgup
-	selecc
-	20 ( 1? 1 - kup ) drop
-	selecc ;
+	20 ( 1? 1- kup ) drop ;
 
 :kpgdn
-	selecc
-	20 ( 1? 1 - kdn ) drop
-	selecc ;
+	20 ( 1? 1- kdn ) drop ;
 
 |-------------------------------------------
 ::copysel
@@ -269,10 +262,6 @@
 	
 |..............................
 ::code-draw
-	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	drop 
 	,reset
 	pantaini>
 	0 ( hcode <?
@@ -309,22 +298,23 @@
 	32 <? ( drop ; )
 	modo ex ;
 
-::code-vkey | key -- key ; only view key
+:inskey
+	modo | ins
+	'lins =? ( drop 'lover 'modo ! .ovec ; )
+	drop 'lins 'modo ! .insc ;
+	
+::code-key | key -- key
+	selecc
+|WIN|	$ff0000 and? ( dup vchar fixcur selecc ; ) 
+|LIN|	$20 $7e in? ( modo ex fixcur selecc ; )
+|LIN|	[BACK] =? ( drop kback fixcur selecc ; ) 9 =? ( modo ex fixcur selecc ; ) 13 =? ( modo ex fixcur selecc ; )
+	[DEL] =? ( kdel )
+	[INS] =? ( inskey )	
 	[UP] =? ( kup ) [DN] =? ( kdn )
 	[RI] =? ( kri ) [LE] =? ( kle )
 	[HOME] =? ( khome ) [END] =? ( kend )
-	[PGDN] =? ( kpgup ) [PGUP] =? ( kpgdn )	
-	;
-
-::code-key | key -- key   
-|WIN|	$ff0000 and? ( dup vchar ; ) 
-|LIN|   $20 $7e in? ( modo ex ; )
-|LIN|	[BACK] =? ( drop kback ; ) 9 =? ( modo ex ; ) 13 =? ( modo ex ; )
-	[DEL] =? ( kdel )
-	[INS] =? (  modo | ins
-			'lins =? ( drop 'lover 'modo ! .ovec ; )
-			drop 'lins 'modo ! .insc )	
-	code-vkey
+	[PGUP] =? ( kpgup ) [PGDN] =? ( kpgdn )	
+	fixcur selecc
 	;
 
 ::code-set | src --

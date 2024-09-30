@@ -112,7 +112,7 @@
 	pantaini> 1- <<13 1- <<13 1+ 
 	fuente <=? ( drop ; )
 	'pantaini> !
-	ylinea 1? ( 1 - ) 'ylinea !
+	ylinea 1? ( 1- ) 'ylinea !
 	selecc ;
 
 :scrolldw

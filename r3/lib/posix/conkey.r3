@@ -44,4 +44,5 @@
 ##[CTRLn] $e
 |##[CTRLm] $a |<--!!! enter
 
+::k2ascii	;
 
