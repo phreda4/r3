@@ -1,10 +1,10 @@
 | r3d4 sdl debbuger
 | PHREDA 2024
 |
-
-^r3/util/sdlgui.r3
 ^r3/lib/sdl2gfx.r3
-^r3/lib/sdledit.r3
+
+^r3/util/sdlbgui.r3
+^r3/util/sdledit.r3
 
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
@@ -72,7 +72,9 @@
 	immLabel ;
 	
 :wintokensa
-	'winsettoka immwin 0? ( drop ; ) drop
+
+|	'winsettoka immwin 0? ( drop ; ) drop
+	600 0 immwinxy
 
 	anaword 4 << dic + dup
 	nameword immLabel immln
@@ -134,7 +136,9 @@
 	;
 	
 :winwords
-	'winsetwor immwin 0? ( drop ; ) drop
+|	'winsetwor immwin 0? ( drop ; ) drop
+	940 200 immwinxy
+	
 	316 18 immbox
 	lidilines dup immListBox
 	'clicklistw onClick	
@@ -189,7 +193,8 @@
 	;	
 	
 :wininclude
-	'winsetinc immwin 0? ( drop ; ) drop
+	|'winsetinc immwin 0? ( drop ; ) drop
+	940 0 immwinxy
 	290 18 immbox
 	liinlines dup immListBox
 	'clicklisti onClick	
@@ -215,11 +220,12 @@
 	40 >> src + "%w" immLabel
 	;
 		
-#winsettok 1 [ 500 440 190 270 ] "TOKENS"
+|#winsettok 1 [ 500 440 190 270 ] "TOKENS"
 	
 :wintokens
-	'winsettok immwin 0? ( drop ; ) drop
-
+|	'winsettok immwin 0? ( drop ; ) drop
+	500 440 immwinxy
+	
 	<<ip 1? ( 
 		dup tok - 3 >>
 		7 - clamp0 'initok !
@@ -267,8 +273,6 @@
 	;		
 		
 |---------------- MENU
-#winsetcon 1 [ 8 516 700 200 ] "R3d4"
-
 :dstack	
 	mark
 	"D:" ,s
@@ -291,23 +295,23 @@
 #pad * 512	
 
 :winconsole	
-	'winsetcon immwin 0? ( drop ; ) drop
+	$666666 sdlcolor
+	0 516 700 200 SDLFrect
+	
+	8 516 immwinxy
 	80 20 immbox
 	$7f 'immcolorbtn !
 	'play "PLAY" immbtn imm>>
 	$7f0000 'immcolorbtn !
 	'exit "EXIT" immbtn  imm>> | winclose
-	<<ip |tok - 3 >> 
-	"IP:%h" immLabel
 	immln
 	790 20 immbox
-	regb rega "A:%h B:%h" immLabel immln
-	
+	<<ip |tok - 3 >> 
+	regb rega "IP:%h A:%h B:%h" immLabel immln
 	dstack immln
 	rstack immln
-|	'pad 256 immInputLine
+	'pad 128 immInputLine
 	;
-	
 
 |---------------- TOOLBAR
 :keysrc
@@ -336,12 +340,11 @@
 	edshow	
 
 	winconsole
-	modo 1? (
-		wininclude
-		winwords
-		wintokens
-		wintokensa
-		) drop
+	wininclude
+	winwords
+	wintokens
+	
+	|wintokensa
 	
 	keyboard
 	SDLredraw
@@ -352,13 +355,10 @@
 |-----------------------------	
 :	
 	"R3d4" 1280 720 SDLinit
-	
-	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont 
-	dup ttfont immSDL
-	
 	bfont1
-	0 0 90 30 edwin
+	1 1 60 30 edwin
 	edram 
+	
 |	'filename "mem/main.mem" load drop
 |	"r3/test/testasm.r3"
 	"r3/opengl/16-iqmloader.r3" 

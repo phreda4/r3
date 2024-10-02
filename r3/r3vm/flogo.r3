@@ -6,7 +6,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/rand.r3
 ^r3/util/sdlgui.r3
-^r3/lib/sdledit.r3
+^r3/util/sdledit.r3
 
 ^./r3ivm.r3
 ^./r3itok.r3
