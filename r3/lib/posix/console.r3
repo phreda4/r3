@@ -119,11 +119,11 @@
     0 0 'sterm libc-tcsetattr drop ;
     
 |------------ input
-#ch
+##ch 0 0
 
 ::getch | -- char
     set-terminal-mode
-    0 'ch ! 0 'ch 8 libc-read drop ch 
+    0 'ch ! 0 'ch 16 libc-read drop ch 
     reset-terminal-mode
     ;
 
@@ -156,7 +156,7 @@
 ::inkey
     set-terminal-mode
     kbhit 0? ( reset-terminal-mode ; ) drop
-    0 'ch ! 0 'ch 8 libc-read drop ch
+    0 'ch ! 0 'ch 16 libc-read drop ch
     reset-terminal-mode ;
 
 #ci 0 
