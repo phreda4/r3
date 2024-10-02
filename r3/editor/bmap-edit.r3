@@ -231,9 +231,13 @@
 	$fff clevel 12 * << nand | clear level
 	tilenow $fff and clevel 12 * << or
 	;
-
+	
+:maskgetile | val -- levelval | only the level
+	$fff clevel 12 * << and
+	;
+	
 :addcell | x y -- 
-	2dup map> @ rrtile <>? ( 3drop ; ) drop
+	2dup map> @ maskgetile rrtile <>? ( 3drop ; ) drop
 	2dup swap last> w!+ w!+ 'last> !
 	map> dup @ changetile swap !
 	;
@@ -254,6 +258,7 @@
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
 	2dup map> @ 
+	maskgetile | only the level
 	dup 'rrtile ! | tile to reeplace
 	dup changetile =? ( 3drop ; ) drop | only is diferent
 	here 'last> !

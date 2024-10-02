@@ -72,18 +72,10 @@
 	hfind FindClose ;
 
 ::FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|RPI| 11 +
-|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	;
+	44 + ;
 
 ::FDIR | adr -- 1/0
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	1 and ;
+	@ 4 >> 1 and ;
 	
 ::FSIZE
 	32 + d@ 10 >> ; | in kb	
