@@ -325,12 +325,16 @@
 	'lover modo	=? ( bbox drop ; ) drop
 	bfbox ;
 	
+:btab 
+	inisel >=? ( finsel <=? ( $566C86 SDLColor 4 bfcemit ) )
+	3 bnsp ; 
+	
 :drawline
 	iniline
 	( showcursor
 		c@+ 1?
 		13 =? ( drop ; )
-		9 =? ( wcolor drop 3 bnsp 32 )
+		9 =? ( drop btab 32 wcolor )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
 		bemit
@@ -374,12 +378,12 @@
 
 :cursormouse
 	SDLx xcode wp * - 
-	SDLy ycode 1- hp * - | upper info bar
+	SDLy ycode hp * -
 	pantaini>
-	swap hp 1 <<			| x adr y ya
+	swap hp 2*			| x adr y ya
 	( over <?
 		hp + rot >>13 2 + -rot ) 2drop
-	swap wp 1 << dup 1 << + | adr x xa
+	swap wp 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! ;
 
@@ -583,6 +587,7 @@
 	( 1? 1- scrollup ) drop ;
 	
 ::edshow
+
 	xcode ycode wcode hcode bsrcsize guiBox
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 
@@ -594,7 +599,8 @@
 	2 =? ( findmodekey )
 	3 =? ( errmodekey )
 	4 =? ( viewmodekey )
-	drop ;
+	drop 
+	;
 	
 :editando
 	0 SDLcls edshow SDLredraw ;

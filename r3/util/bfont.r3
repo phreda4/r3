@@ -53,6 +53,11 @@
 	dp 'rec !+ !
 	SDLRenderer 'rec SDL_RenderFillRect ;
 
+::bfcemit | cnt -- 
+	wp * hp 32 << or
+	dp 'rec !+ !
+	SDLRenderer 'rec SDL_RenderFillRect ;
+
 ::bemit | ascii --
 	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
 	SDLrenderer pfont 'op 'dp SDL_RenderCopy

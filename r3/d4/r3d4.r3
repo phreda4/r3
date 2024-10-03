@@ -336,8 +336,9 @@
 
 |-----------------------------	
 :main
-	0 SDLcls immgui 
-	edshow	
+	0 SDLcls 
+	immgui 
+	edshow
 
 	winconsole
 	wininclude
