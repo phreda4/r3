@@ -368,7 +368,7 @@
 :controlon	1 'panelcontrol ! ;
 :controloff 0 'panelcontrol ! ;
 
-|--- sobre pantalla
+|--------------- MOUSE
 :mmemit | adr x xa -- adr x xa
 	rot c@+
 	13 =? ( 0 nip )
@@ -386,7 +386,13 @@
 	swap wp 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! ;
+	
+#tclick
 
+:dclick 
+	"double click" .println
+	;
+	
 :dns
 	cursormouse
 	fuente> '1sel ! ;
@@ -397,9 +403,15 @@
 	'finsel ! 'inisel ! ;
 
 :ups
+	msec dup tclick - 400 <? ( dclick ) drop 'tclick !
 	cursormouse
 	fuente> 1sel over <? ( swap )
 	'finsel ! 'inisel ! ;
+	
+:evwmouse 
+	SDLw 0? ( drop ; )
+	-? ( ( 1? 1+ scrolldw scrolldw ) drop ; )
+	( 1? 1- scrollup scrollup ) drop ;	
 
 |---------- manejo de teclado
 :buscapad
@@ -575,17 +587,11 @@
 ::edsave | --
 	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
 	mark	| guarda texto
-	fuente ( c@+ 1?
-		13 =? ( ,c 10 ) ,c ) 2drop
+	fuente ( c@+ 1? 13 =? ( ,c 10 ) ,c ) 2drop
 	'edfilename savemem
 	empty ;
 
 |-------------------------------------
-:evwmouse 
-	SDLw 0? ( drop ; )
-	-? ( ( 1? 1+ scrolldw ) drop ; )
-	( 1? 1- scrollup ) drop ;
-	
 ::edshow
 
 	xcode ycode wcode hcode bsrcsize guiBox

@@ -357,7 +357,7 @@
 :	
 	"R3d4" 1280 720 SDLinit
 	bfont1
-	1 1 60 30 edwin
+	2 4 50 20 edwin
 	edram 
 	
 |	'filename "mem/main.mem" load drop
