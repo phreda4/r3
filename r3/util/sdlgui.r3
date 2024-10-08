@@ -147,30 +147,34 @@
 |--- widget	
 ::immbtn | 'click "" --
 	plgui
-	immcolorbtn [ $808080 xor ; ] guiI SDLColor
+	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI SDLColor
 	plxywh SDLFRect
 	immlabelc
+	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
-
+	
 ::immibtn | 'click nro --
 	plgui
-	immcolorbtn [ $808080 xor ; ] guiI SDLColor
+	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI SDLColor
 	plxywh SDLFRect
 	immiconb
+	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
 
 ::immtbtn | 'click "" --
 	ttsize drop 'boxw !
 	plgui
-	[ immcolorbtn SDLColor plxywh SDLFRect ; ] guiI
+	[ immcolorbtn SDLColor plxywh SDLFRect 2 2 immat+ ; ] guiI
 	imm.
+	[ -2 -2 immat+ ; ] guiI
 	onClick ;
 
 ::immebtn | 'click "" --
 	ttsize drop 'boxw !
 	plgui
-	[ immcolorbtn ttcolor ; ] guiI
-	imm.
+	[ 2 2 immat+ ; ] guiI
+	immlabelc
+	[ -2 -2 immat+ ; ] guiI
 	onClick ;
 
 ::immzone | 'click --

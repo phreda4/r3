@@ -2,7 +2,7 @@
 | PHREDA 2020
 |------------------
 ^r3/lib/console.r3
-^r3/win/mconsole.r3
+^r3/lib/mconsole.r3
 
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
