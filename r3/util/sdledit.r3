@@ -8,10 +8,7 @@
 ^r3/util/bfont.r3
 
 | size win
-#xcode 1 
-#ycode 3
-#wcode 40 
-#hcode 20
+#xcode 1 #ycode 3 #wcode 40 #hcode 20
 
 | color 
 #colb0 $1f1f1f |sdlcolor | backcode
@@ -26,7 +23,6 @@
 #colf5 $73EFF7 |:col_adr $73EFF7 bcolor ;
 #colf6 $A7F070 |:col_nor $A7F070 bcolor ;
 #colf7 $ffff00 |:col_nro $ffff00 bcolor ;
-
 
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
@@ -53,7 +49,6 @@
 #findpad * 64 |----- find text
 
 #mshift
-##edmode 0
 
 |----- edicion
 :lins  | c --
@@ -164,15 +159,6 @@
 :kizq	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
 :kpgup	hcode 1- ( 1? 1- karriba ) drop ;
 :kpgdn	hcode 1- ( 1? 1- kabajo ) drop ;
-
-|----------------------------------
-:mode!edit
-	0 'edmode ! ;
-:mode!find
-	2 'edmode ! ;
-:mode!error
-	3 'edmode ! ;
-
 
 |----------------------------------
 :copysel
@@ -330,21 +316,13 @@
 		$22 =? ( strcol )
 		drop swap ) drop ;
 
-:showcursor
-	inisel >=? ( finsel <=? ( colb2 SDLColor bfbox ) )
-	fuente> <>? ( ; )
-	msec $100 and? ( drop ; ) drop
-	$ffffff SDLColor 
-	'lover modo	=? ( bbox drop ; ) drop
-	bfbox ;
-	
 :btab 
-	inisel >=? ( finsel <=? ( colb2 SDLColor 4 bfcemit ) )
+	|inisel >=? ( finsel <=? ( colb2 SDLColor 4 bfcemit ) )
 	3 bnsp ; 
 	
 :drawline
 	iniline
-	( showcursor
+	( |showcursor
 		c@+ 1?
 		13 =? ( drop ; )
 		9 =? ( drop btab 32 wcolor )
@@ -359,12 +337,6 @@
 	dup ylinea + 1+ .d 4 .r. bemits ;
 
 ::edcodedraw
-	colb0 sdlcolor 
-	xcode ycode wcode hcode bfillline
-	
-	colb1 sdlcolor
-	xcode ycursor ylinea - ycode + wcode 1 bfillline
-	
 	pantaini>
 	0 ( hcode <?
 		xcode ycode pick2 + gotoxy
@@ -374,7 +346,12 @@
 		swap 1+ ) drop
 	$fuente <? ( 1- ) 'pantafin> !
 	;
-
+	
+::edfill
+	colb0 sdlcolor 
+	xcode ycode wcode hcode bfillline
+	;
+	
 |-------------- panel control
 #panelcontrol
 
@@ -398,7 +375,8 @@
 		hp + rot >>13 2 + -rot ) 2drop
 	swap wp 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
-	'fuente> ! ;
+	'fuente> ! 
+	fixcur ;
 	
 #tclick
 
@@ -427,30 +405,10 @@
 	( 1? 1- scrollup scrollup ) drop ;	
 
 |---------- manejo de teclado
-:buscapad
-	fuente 'findpad findstri
-	0? ( drop ; ) 'fuente> ! ;
-
-:findmodekey
-	0 hcode 1+ gotoxy
-	$0000AE SDLColor
-	rows hcode - 1- bfillline
-
-	$ffffff bcolor
-	" > " bemits
-|	'buscapad 'findpad 31 inputex
-
-	SDLkey
-    <ret> =? ( mode!edit )
-|	>esc< =? ( mode!edit )
-	>ctrl< =? ( controloff )
-    drop
-	;
-
 :controlkey
 	SDLkey
 	>ctrl< =? ( controloff )
-	<f> =? ( mode!find )
+|	<f> =? ( mode!find )
 	<x> =? ( controlx )
 	<c> =? ( controlc )
 	<v> =? ( controlv )
@@ -521,53 +479,6 @@
 	cursorpos
 	;
 	
-:viewmodekey
-	SDLkey 0? ( drop ; )
-|	>esc< =? ( exit )
-	<up> =? ( karriba ) <dn> =? ( kabajo )
-	<ri> =? ( kder ) <le> =? ( kizq )
-	<home> =? ( khome ) <end> =? ( kend )
-	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
-	drop
-	;
-
-:errmodekey |*******
-	$AE0000 SDLColor
-	xcode ycode hcode + 1+ wcode 1 bfillline
-	xcode ycode hcode + 1+ gotoxy
-	|$ffffff bcolor ederror "%w" sprint bemits
-	editmodekey
-	;
-
-:btnf | "" "fx" --
-	bsp
-	$ff0000 bcolor bfillemit
-	$ffffff bcolor bemits
-	$ff00 bcolor bemits
-	;
-
-:barrac | control+
-	$747474 SDLColor
-	xcode ycode hcode + wcode 1 bfillline
-	xcode ycode hcode + gotoxy
-	" Ctrl-" bemits
-	"Cut" "X" btnf
-	"opy" "C" btnf
-	"Paste" "V" btnf
-	"ind" "F" btnf
-	'findpad
-	dup c@ 0? ( 2drop ; ) drop
-	$ffffff bcolor
-	" [%s]" bprint ;
-
-
-:printmode
-	edmode
-	0? ( $ffffff bcolor " EDIT " bemits )
-	2 =? ( $7f7f00 bcolor " FIND " bemits )
-	3 =? ( $7f0000 bcolor " ERROR " bemits )
-	4 =? ( $00ff00 bcolor " DEBUG " bemits )
-	drop ;
 	
 ::edtoolbar
 	$747474 SDLColor
@@ -581,7 +492,7 @@
 	
 |	xcode ycode 1- wcode 1 bfillline
 |	xcode ycode hcode + gotoxy
-	panelcontrol 1? ( drop barrac ; ) drop
+|	panelcontrol 1? ( drop barrac ; ) drop
 	;
 
 |------------------------------------------------
@@ -605,37 +516,53 @@
 	empty ;
 
 |-------------------------------------
-::edshow
+#sx1 #sy1 #sx2 #sy2
+	
+:selectfill
+	sx1 wp * sy1 hp * sx2 wp * over - hp SDLFrect ;
+	
+:edselshow
+	inisel 0? ( drop ; )
+	pantafin> >? ( drop ; )
+	
+	colb2 SDLColor
+	xcode 5 + 'sx1 !
+	ycode 'sy1 ! 
+	( pantaini> <? c@+ 13 =? ( 1 'sy1 +! ) drop ) 
+	
+	sx1 'sx2 !
+	( pantafin> <? finsel <? c@+
+		13 =? ( selectfill 1 'sy1 +! xcode 5 + dup 'sx1 ! 'sx2 ! )
+		9 =? ( 3 'sx2 +! )
+		drop
+		1 'sx2 +!
+		) drop
+	selectfill
+	;
 
-	xcode ycode wcode hcode bsrcsize guiBox
+
+::edfocus
+	xcode ycode wcode hcode bsrcsize 
+	$ffffff sdlcolor
+	2over 2over sdlRect 
+	guiBox
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 
-	edcodedraw
-	|edtoolbar
-
-	edmode
-	0? ( editmodekey )
-	2 =? ( findmodekey )
-	3 =? ( errmodekey )
-	4 =? ( viewmodekey )
-	drop 
+	editmodekey
+	
+	colb1 $7f000000 or sdlcolorA
+	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
+	
+	edselshow
+	
+	msec $100 and? ( drop ; ) drop
+	xcode 5 + ycursor ylinea - ycode + gotoxy
+	$ffffff SDLColor 
+	'lover modo	=? ( xcursor bcursor drop ; ) drop
+	xcursor bcursori
 	;
 	
-:editando
-	0 SDLcls edshow SDLredraw ;
-
 |----------- principal
-::edreset
-	0 'xlinea !
-	0 'ylinea !
-	mode!edit
-	;
-	
-::edrun
-	edreset
-	'editando SDLshow
-	;
-
 ::edram
 	here	| --- RAM
 	dup 'fuente !

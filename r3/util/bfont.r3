@@ -141,6 +141,12 @@
 ::bcursori | n --
 	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> SDLFRect ;
 
+::bcursor2 | n --
+	wp 2* * bpos swap rot + swap wp 2* hp 2* SDLFRect ;
+
+::bcursori2 | n --
+	wp 2* * bpos swap rot + swap hp dup 2/ + + wp 2* hp 2/ SDLFRect ;
+
 ::bfont1	
 	8 16 "media/img/VGA8x16.png" bmfont	;	
 	

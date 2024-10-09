@@ -11,6 +11,7 @@
 ^r3/d4/r3opt.r3
 
 #modo 0
+#panel 0
 
 |--------------- SOURCE	
 :cursor2ip
@@ -248,7 +249,7 @@
 	'modo !	;
 		
 :errormode
-	3 'edmode ! | no edit src
+|	3 'edmode ! | no edit src
 |	lerror 'ederror !
 	;
 	
@@ -256,7 +257,7 @@
 	empty mark
 	fuente 'edfilename r3loadmem
 	error 1? ( drop errormode ; ) drop
-	4 'edmode ! | no edit src
+|	4 'edmode ! | no edit src
 	1 modo! 
 	lidiset
 	liinset
@@ -272,7 +273,7 @@
 	empty
 	;		
 		
-|---------------- MENU
+|---------------- CONSOLE
 :dstack	
 	mark
 	"D:" ,s
@@ -291,79 +292,126 @@
 	empty
 	here bprint bcr
 	; 
-	
-#pad * 512	
 
-:winconsole
-	$ffffff bcolor
+#pad * 512	
 	
-	0 34 gotoxy
-	">" bprint2 bcr bcr
+#cmax
+#padi>	| inicio
+#pad>	| cursor
+#padf>	| fin
+#cmodo
+
+:lins  | c -- ;
+	padf> padi> - cmax >=? ( 2drop ; ) drop
+	pad> dup 1 - padf> over - 1 + cmove> 1 'padf> +!
+:lover | c -- ;
+	pad> c!+ dup 'pad> !
+	padf> >? (
+		dup padi> - cmax >=? ( swap 1 - swap -1 'pad> +! ) drop
+		dup 'padf> ! ) drop
+:0lin 0 padf> c! ;
+:kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
+:kback pad> padi> <=? ( drop ; ) dup 1 - swap padf> over - 1 + cmove -1 'padf> +! -1 'pad> +! ;
+:kder pad> padf> <? ( 1 + ) 'pad> ! ;
+:kizq pad> padi> >? ( 1 - ) 'pad> ! ;
+	
+:chmode
+	cmodo 'lins =? ( drop 'lover 'cmodo ! ; )
+	drop 'lins 'cmodo ! ;	
+	
+:cursor
+	msec $100 and? ( drop ; ) drop
+	cmodo 'lins =? ( drop pad> padi> - bcursori2 ; ) drop
+	pad> padi> - bcursor2
+	;	
+
+#xcon 1 
+#ycon 3
+#wcon 40 
+#hcon 
+
+:conreset
+	511 'cmax !
+	'pad dup 'padi> !
+	( c@+ 1? drop ) drop 1 -
+	dup 'pad> ! 'padf> !
+	'lins 'cmodo !	
+	;
+	
+:conwin
+	'hcon ! 'wcon ! 'ycon ! 'xcon ! ;
+	
+:consoledraw
+	$ffffff bcolor
+	xcon ycon gotoxy
+
+	">" bprint2 
+	panel 1 =? ( cursor ) drop
+	'pad bprint2 
+	bcr bcr
 	
 	<<ip |tok - 3 >> 
 	regb rega "IP:%h A:%h B:%h" bprint bcr
 	dstack 
 |	rstack 
-;
-
-|---------------- TOOLBAR
-:keysrc
-	SDLkey
-	>esc< =? ( exit  )
-	<f1> =? ( play )
-	drop 
 	;
-	
-:keydbg
-	SDLkey
-	>esc< =? ( 0 modo! 0 'edmode ! )
-	<f1> =? ( stepvm cursor2ip )
-	<f2> =? ( stepvmn cursor2ip )
-	drop 
-	;
-	
-#keyb 'keysrc 'keydbg
-	
-:keyboard
-	modo 3 << 'keyb + @ ex ;
 
-
-|------ EDITOR
-
-:weditor
-	edshow
-	;
-:wimm
+:confocus
+	xcon ycon wcon hcon bsrcsize 
+	$ffffff sdlcolor
+	2over 2over sdlRect 
+	guiBox
+	SDLchar 1? ( cmodo ex ; ) drop
+	sdlkey
+	<ins> =? ( chmode )
+	<le> =? ( kizq ) <ri> =? ( kder )
+	<back> =? ( kback ) <del> =? ( kdel )
+	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )	
+	drop
 	;
 
 |-----------------------------
+
+#focuslist 'edfocus 'confocus
+
 :main
 	0 SDLcls 
 	immgui 
-
-	
-	
-	edshow
-
-	winconsole
+	edfill
+	panel 3 << 'focuslist + @ ex
+	edcodedraw
+	consoledraw
 	
 |	wininclude
 |	winwords
 |	wintokens
-	
-	|wintokensa
-	
-	keyboard
+|wintokensa
+
 	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+	<f1> =? ( 0 'panel ! ) 
+	<f2> =? ( 1 'panel ! ) 
+	drop
 	;
 
+#colsrc
+#rowsrc
+:layout
+	sw wp / 'colsrc !
+	sh hp / 'rowsrc !
+	
+	0 2 60 30 edwin
+	0 32 60 rowsrc 32 - conwin
+	conreset
+	;
+	
 |-----------------------------
 |-----------------------------
 |-----------------------------	
 :	
 	"R3d4" 1280 720 SDLinit
 	bfont1
-	0 2 60 30 edwin
 	edram 
 	
 |	'filename "mem/main.mem" load drop
@@ -374,7 +422,8 @@
 	'filename edload
 	deferwi | for opt
 	mark |  for redoing tokens
+	
+	layout
 	'main SDLshow
-
 	SDLquit 
 	;
