@@ -564,11 +564,6 @@
 	
 |..............................
 :drawcode
-|	fuente>
-|	( pantafin> >? scrolldw )
-|	( pantaini> <? scrollup )
-|	drop 
-
 	,reset
 	inicomm
 	pantaini>

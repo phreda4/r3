@@ -7,9 +7,26 @@
 
 ^r3/util/bfont.r3
 
-| ventana de texto
-#xcode 1 #ycode 3
-#wcode 40 #hcode 20
+| size win
+#xcode 1 
+#ycode 3
+#wcode 40 
+#hcode 20
+
+| color 
+#colb0 $1f1f1f |sdlcolor | backcode
+#colb1 $000000 |sdlcolor | backnowline
+#colb2 $585858 |SDLColor | backselect
+
+#colf0 $EF7D57 |:col_inc $EF7D57 bcolor ;
+#colf1 $667C96 |:col_com $667C96 bcolor ;
+#colf2 $ff0000 |:col_cod $ff0000 bcolor ;
+#colf3 $ff00ff |:col_dat $ff00ff bcolor ;
+#colf4 $ffffff |:col_str $ffffff bcolor ;
+#colf5 $73EFF7 |:col_adr $73EFF7 bcolor ;
+#colf6 $A7F070 |:col_nor $A7F070 bcolor ;
+#colf7 $ffff00 |:col_nro $ffff00 bcolor ;
+
 
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
@@ -94,11 +111,15 @@
 	fuente> >>13 1+ 'fuente> ! ;
 
 :scrollup | 'fuente -- 'fuente
-	pantaini> 1- <<13 1- <<13  1+ 'pantaini> ! ;
+	pantaini> 1- <<13 1- <<13 1+ 
+	fuente <=? ( drop ; )
+	'pantaini> ! ;
 
 :scrolldw
+	pantafin> >>13 2 + 
+	$fuente >=? ( drop ; ) 
+	'pantafin> !
 	pantaini> >>13 2 + 'pantaini> !
-	pantafin> >>13 2 + 'pantafin> !
 	;
 	
 :setpantafin
@@ -139,18 +160,10 @@
 	rot min +
 	'fuente> ! ;
 
-:kder
-	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
-
-:kizq
-	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
-
-:kpgup
-	20 ( 1? 1- karriba ) drop ;
-
-:kpgdn
-	20 ( 1? 1- kabajo ) drop ;
-
+:kder	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
+:kizq	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
+:kpgup	hcode 1- ( 1? 1- karriba ) drop ;
+:kpgdn	hcode 1- ( 1? 1- kabajo ) drop ;
 
 |----------------------------------
 :mode!edit
@@ -318,7 +331,7 @@
 		drop swap ) drop ;
 
 :showcursor
-	inisel >=? ( finsel <=? ( $566C86 SDLColor bfbox ) )
+	inisel >=? ( finsel <=? ( colb2 SDLColor bfbox ) )
 	fuente> <>? ( ; )
 	msec $100 and? ( drop ; ) drop
 	$ffffff SDLColor 
@@ -326,7 +339,7 @@
 	bfbox ;
 	
 :btab 
-	inisel >=? ( finsel <=? ( $566C86 SDLColor 4 bfcemit ) )
+	inisel >=? ( finsel <=? ( colb2 SDLColor 4 bfcemit ) )
 	3 bnsp ; 
 	
 :drawline
@@ -346,15 +359,15 @@
 	dup ylinea + 1+ .d 4 .r. bemits ;
 
 ::edcodedraw
-	$333C57 sdlcolor 
-	xcode 5 + ycode 
-	wcode 5 - hcode 1+ bfillline
-	$566C86 sdlcolor 
-	xcode ycode 
-	5 hcode 1+ bfillline	
+	colb0 sdlcolor 
+	xcode ycode wcode hcode bfillline
+	
+	colb1 sdlcolor
+	xcode ycursor ylinea - ycode + wcode 1 bfillline
+	
 	pantaini>
 	0 ( hcode <?
-		xcode ycode pick2 + 1+ gotoxy
+		xcode ycode pick2 + gotoxy
 		linenro
 		xcode 5 + gotox
 		swap drawline
@@ -598,7 +611,7 @@
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 
 	edcodedraw
-	edtoolbar
+	|edtoolbar
 
 	edmode
 	0? ( editmodekey )

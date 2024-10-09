@@ -280,7 +280,7 @@
 	'PSP NOS <=? ( TOS "%d " ,print ) drop 
 	,eol
 	empty
-	here immLabel
+	here bprint bcr
 	; 
 
 :rstack	
@@ -289,29 +289,22 @@
 	'RSP 8 + ( RTOS <=? @+ "%h " ,print 	) drop 
 	,eol
 	empty
-	here immLabel
+	here bprint bcr
 	; 
 	
 #pad * 512	
 
-:winconsole	
-	$666666 sdlcolor
-	0 516 700 200 SDLFrect
+:winconsole
+	$ffffff bcolor
 	
-	8 516 immwinxy
-	80 20 immbox
-	$7f 'immcolorbtn !
-	'play "PLAY" immbtn imm>>
-	$7f0000 'immcolorbtn !
-	'exit "EXIT" immbtn  imm>> | winclose
-	immln
-	790 20 immbox
+	0 34 gotoxy
+	">" bprint2 bcr bcr
+	
 	<<ip |tok - 3 >> 
-	regb rega "IP:%h A:%h B:%h" immLabel immln
-	dstack immln
-	rstack immln
-	'pad 128 immInputLine
-	;
+	regb rega "IP:%h A:%h B:%h" bprint bcr
+	dstack 
+|	rstack 
+;
 
 |---------------- TOOLBAR
 :keysrc
@@ -334,16 +327,29 @@
 :keyboard
 	modo 3 << 'keyb + @ ex ;
 
-|-----------------------------	
+
+|------ EDITOR
+
+:weditor
+	edshow
+	;
+:wimm
+	;
+
+|-----------------------------
 :main
 	0 SDLcls 
 	immgui 
+
+	
+	
 	edshow
 
 	winconsole
-	wininclude
-	winwords
-	wintokens
+	
+|	wininclude
+|	winwords
+|	wintokens
 	
 	|wintokensa
 	
@@ -357,7 +363,7 @@
 :	
 	"R3d4" 1280 720 SDLinit
 	bfont1
-	2 4 50 20 edwin
+	0 2 60 30 edwin
 	edram 
 	
 |	'filename "mem/main.mem" load drop
