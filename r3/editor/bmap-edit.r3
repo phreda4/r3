@@ -483,6 +483,18 @@
 		immln
 		swap >>0 swap 1 + ) 2drop immln ;
 
+#maskc
+
+
+:clearlayer 
+	clevel -? ( drop ; ) 
+	4 <? ( $fff over 12 * << not 'maskc ! )
+	3 >? ( $1 over 4 - 48 + << not 'maskc ! )
+	drop
+	mapmem >a
+	mapw maph * ( 1? 1 -
+		a@ maskc and a!+
+		) drop ;
 		
 :winmain
 	'winset immwins 0? ( drop ; ) drop
@@ -511,10 +523,10 @@
 	"Map:" imm.
 	'mapwn immInputInt imm>> ":" imm. 
 	'maphn immInputInt immcr
-	immcr
-	60 18 immbox
-	[ recalc ; ] "RECALC" immbtn imm>>
-	[ resetmap ; ] "CLEAR" immbtn immcr
+		80 18 immbox
+	[ recalc ; ] "Recalc" immbtn immcr
+	[ clearlayer ; ] "Clear layer" immbtn imm>>
+	[ resetmap ; ] "Reset" immbtn immcr
 	th tw "%d x %d" immlabel immcr
 	170 170 immbox
 	plxywh drawtilecursor
