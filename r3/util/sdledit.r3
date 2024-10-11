@@ -516,26 +516,30 @@
 	empty ;
 
 |-------------------------------------
-#sx1 #sy1 #sx2 #sy2
+#sx1 #sy1 #sw1 
 	
 :selectfill
-	sx1 wp * sy1 hp * sx2 wp * over - hp SDLFrect ;
+	sx1 xcode + 5 + sy1 ycode + sw1 xcode - 5 - 1 bfillline ;
 	
 :edselshow
 	inisel 0? ( drop ; )
 	pantafin> >? ( drop ; )
 	
 	colb2 SDLColor
-	xcode 5 + 'sx1 !
-	ycode 'sy1 ! 
-	( pantaini> <? c@+ 13 =? ( 1 'sy1 +! ) drop ) 
-	
-	sx1 'sx2 !
+	pantaini> <? ( pantaini> nip )
+	0 'sx1 ! 0 'sy1 ! 
+	( pantaini> <? c@+ 
+		13 =? ( 1 'sy1 +! 0 'sx1 ! ) 
+		9 =? ( 3 'sx1 +! )
+		drop 
+		1 'sx1 +!
+		) 
+	sx1 'sw1 !
 	( pantafin> <? finsel <? c@+
-		13 =? ( selectfill 1 'sy1 +! xcode 5 + dup 'sx1 ! 'sx2 ! )
-		9 =? ( 3 'sx2 +! )
+		13 =? ( wcode 'sw1 ! selectfill 1 'sy1 +! 0 dup 'sx1 ! 'sw1 ! )
+		9 =? ( 3 'sw1 +! )
 		drop
-		1 'sx2 +!
+		1 'sw1 +!
 		) drop
 	selectfill
 	;

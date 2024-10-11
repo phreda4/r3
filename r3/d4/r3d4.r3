@@ -401,8 +401,8 @@
 	sw wp / 'colsrc !
 	sh hp / 'rowsrc !
 	
-	0 2 60 30 edwin
-	0 32 60 rowsrc 32 - conwin
+	0 2 65 30 edwin
+	0 32 65 rowsrc 32 - conwin
 	conreset
 	;
 	
