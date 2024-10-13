@@ -316,16 +316,11 @@
 		$22 =? ( strcol )
 		drop swap ) drop ;
 
-:btab 
-	|inisel >=? ( finsel <=? ( colb2 SDLColor 4 bfcemit ) )
-	3 bnsp ; 
-	
 :drawline
 	iniline
-	( |showcursor
-		c@+ 1?
+	( c@+ 1?
 		13 =? ( drop ; )
-		9 =? ( drop btab 32 wcolor )
+		9 =? ( drop 3 bnsp 32 wcolor )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
 		bemit
@@ -367,12 +362,11 @@
 	drop swap wp + rot swap ;
 
 :cursormouse
-	SDLx xcode wp * - 
-	SDLy ycode hp * -
+	SDLx xcode wp * - | xmouse
 	pantaini>
-	swap hp 2*			| x adr y ya
-	( over <?
-		hp + rot >>13 2 + -rot ) 2drop
+	SDLy
+	ycode 1+ hp * 
+	( over <? hp + rot >>13 2 + -rot ) 2drop
 	swap wp 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
@@ -381,7 +375,12 @@
 #tclick
 
 :dclick 
-	"double click" .println
+	fuente>
+	( dup c@ $ff and 32 >? drop 1- ) drop
+	1+ dup 'inisel ! 
+	( c@+ $ff and 32 >? drop ) drop
+	2 - 'finsel !
+	|"double click" .println
 	;
 	
 :dns
@@ -394,9 +393,11 @@
 	'finsel ! 'inisel ! ;
 
 :ups
-	msec dup tclick - 400 <? ( dclick ) drop 'tclick !
+	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
 	cursormouse
-	fuente> 1sel over <? ( swap )
+	fuente> 1sel 
+	over =?  ( 2drop 0 'inisel ! ; )
+	over <? ( swap )
 	'finsel ! 'inisel ! ;
 	
 :evwmouse 
@@ -495,6 +496,84 @@
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;
 
+|-------------------------------------
+#sx1 #sy1 #sw1 
+	
+:selectfill
+	sx1 xcode + 5 + sy1 ycode + sw1 xcode - 1 bfillline ;
+	
+:edselshow
+	inisel 0? ( drop ; )
+	pantafin> >? ( drop ; ) drop
+	colb2 SDLColor
+	0 'sx1 ! 0 'sy1 ! 
+	pantaini> 
+	( inisel <? c@+ 
+		13 =? ( 1 'sy1 +! 0 'sx1 ! )
+		9 =? ( 3 'sx1 +! )
+		drop 
+		1 'sx1 +!
+		) 
+	0 'sw1 !
+	( pantafin> <? finsel <? c@+
+		13 =? ( wcode sx1 - 5 - 'sw1 ! selectfill 1 'sy1 +! 0 'sx1 ! -1 'sw1 ! )
+		9 =? ( 3 'sw1 +! )
+		drop
+		1 'sw1 +!
+		) drop
+	|pantafin> <? ( wcode sx1 - 5 - 'sw1 ! )
+	selectfill
+	;
+
+:edlinecursor
+	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
+	cursorpos
+	colb1 sdlcolor
+	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
+	msec $100 and? ( drop ; ) drop
+	xcode 5 + ycursor ylinea - ycode + gotoxy
+	$ffffff SDLColor 
+	'lover modo	=? ( xcursor bcursor drop ; ) drop
+	xcursor bcursori
+	;
+	
+::edfocus
+	xcode ycode wcode hcode bsrcsize 
+	$ffffff sdlcolor
+	2over 2over sdlRect 
+	guiBox
+	'dns 'mos 'ups guiMap |------ mouse
+	evwmouse 
+	editmodekey
+	
+	edlinecursor
+	edselshow
+	;
+	
+|----------- principal
+::edram
+	here	| --- RAM
+	dup 'fuente !
+	dup 'fuente> !
+	dup '$fuente !
+	dup 'pantaini> !
+	$ffff +			| 64kb texto
+	dup 'clipboard !
+	dup 'clipboard> !
+	$3fff +			| 16KB
+	dup 'undobuffer !
+	dup 'undobuffer> !
+	$1fff +			| 8kb
+	'here !			| -- FREE
+	0 here !
+	mark
+	;
+
+::edwin | x y w h --
+	'hcode ! 'wcode !
+	'ycode ! 'xcode !
+	;
+
 |------------------------------------------------
 #hashfile
 :simplehash | adr -- hash
@@ -514,79 +593,3 @@
 	fuente ( c@+ 1? 13 =? ( ,c 10 ) ,c ) 2drop
 	'edfilename savemem
 	empty ;
-
-|-------------------------------------
-#sx1 #sy1 #sw1 
-	
-:selectfill
-	sx1 xcode + 5 + sy1 ycode + sw1 xcode - 5 - 1 bfillline ;
-	
-:edselshow
-	inisel 0? ( drop ; )
-	pantafin> >? ( drop ; )
-	
-	colb2 SDLColor
-	pantaini> <? ( pantaini> nip )
-	0 'sx1 ! 0 'sy1 ! 
-	( pantaini> <? c@+ 
-		13 =? ( 1 'sy1 +! 0 'sx1 ! ) 
-		9 =? ( 3 'sx1 +! )
-		drop 
-		1 'sx1 +!
-		) 
-	sx1 'sw1 !
-	( pantafin> <? finsel <? c@+
-		13 =? ( wcode 'sw1 ! selectfill 1 'sy1 +! 0 dup 'sx1 ! 'sw1 ! )
-		9 =? ( 3 'sw1 +! )
-		drop
-		1 'sw1 +!
-		) drop
-	selectfill
-	;
-
-
-::edfocus
-	xcode ycode wcode hcode bsrcsize 
-	$ffffff sdlcolor
-	2over 2over sdlRect 
-	guiBox
-	'dns 'mos 'ups guiMap |------ mouse
-	evwmouse 
-	editmodekey
-	
-	colb1 $7f000000 or sdlcolorA
-	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
-	
-	edselshow
-	
-	msec $100 and? ( drop ; ) drop
-	xcode 5 + ycursor ylinea - ycode + gotoxy
-	$ffffff SDLColor 
-	'lover modo	=? ( xcursor bcursor drop ; ) drop
-	xcursor bcursori
-	;
-	
-|----------- principal
-::edram
-	here	| --- RAM
-	dup 'fuente !
-	dup 'fuente> !
-	dup '$fuente !
-	dup 'pantaini> !
-	$ffff +			| 64kb texto
-	dup 'clipboard !
-	dup 'clipboard> !
-	$3fff +				| 16KB
-	dup 'undobuffer !
-	dup 'undobuffer> !
-	$1fff +         	| 8kb
-	'here  ! | -- FREE
-	0 here !
-	mark
-	;
-
-::edwin | x y w h --
-	'hcode ! 'wcode !
-	'ycode ! 'xcode !
-	;
-

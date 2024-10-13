@@ -60,41 +60,41 @@
 
 :genlib
 	mark
-	"^" ,s 'r3filename ,s ,cr
+	"^" ,s 'r3filename ,s ,nl
 	"#name """ ,s 'r3filename ,s """" ,s
-	,cr
+	,nl
 	"#words " ,s
 	dicc< ( dicc> <? dup gname 32 + ) drop " 0" ,s 
-	,cr
+	,nl
 	"#calls " ,s
 	dicc< ( dicc> <? dup gvector 32 + ) drop 
-	,cr
+	,nl
 	"#info (" ,s
 	dicc< ( dicc> <? dup ginfo 32 + ) drop 
 	" )" ,s 
-	,cr
+	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'calls 'info" ,s 
-	,cr
+	,nl
 	"r3/d4/meta/metalibs.r3" appendmem
 	empty ;
 
 :genlibnocall
 	mark
-|	"^" ,s 'r3filename ,s ,cr
+|	"^" ,s 'r3filename ,s ,nl
 	"#name """ ,s 'r3filename ,s """" ,s
-	,cr
+	,nl
 	"#words " ,s
 	dicc< ( dicc> <? dup gname 32 + ) drop " 0" ,s 
-	,cr
+	,nl
 |	"#calls " ,s
 |	dicc< ( dicc> <? dup gvector 32 + ) drop 
-|	,cr
+|	,nl
 	"#info (" ,s
 	dicc< ( dicc> <? dup ginfo 32 + ) drop 
 	" )" ,s 
-	,cr
+	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'info" ,s 
-	,cr
+	,nl
 	"r3/d4/meta/mlibs.r3" appendmem
 	empty ;
 
@@ -177,13 +177,13 @@
 	.cr
 
 	mark
-	,cr
+	,nl
 	"##liblist" ,s 
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
 		dup folderlist
 		>>0 ) 2drop
-	" 0" ,s ,cr
+	" 0" ,s ,nl
 	"r3/d4/meta/metalibs.r3" appendmem		
 	"r3/d4/meta/mlibs.r3" appendmem		
 	empty 
