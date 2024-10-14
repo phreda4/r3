@@ -374,6 +374,8 @@
 
 #focuslist 'edfocus 'confocus
 
+#pad2 * 1024
+
 :main
 	0 SDLcls 
 	immgui 
@@ -387,6 +389,13 @@
 |	wintokens
 |wintokensa
 
+	70 10 gotoxy
+	
+	'pad2 >a
+	inisel 1? ( ( finsel <=? c@+ ca!+ ) ) drop
+	0 ca!+
+	
+	'pad2 bprint2
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )

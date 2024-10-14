@@ -33,8 +33,8 @@
 #pantaini>	| comienzo de pantalla
 #pantafin>	| fin de pantalla
 
-#inisel		| inicio seleccion
-#finsel		| fin seleccion
+##inisel		| inicio seleccion
+##finsel		| fin seleccion
 
 ##fuente  	| fuente editable
 ##fuente> 	| cursor
@@ -500,28 +500,36 @@
 #sx1 #sy1 #sw1 
 	
 :selectfill
-	sx1 xcode + 5 + sy1 ycode + sw1 xcode - 1 bfillline ;
+	sx1 xcode + 5 + sy1 sw1 xcode - 1+ 1 bfillline ;
 	
-:edselshow
-	inisel 0? ( drop ; )
-	pantafin> >? ( drop ; ) drop
-	colb2 SDLColor
-	0 'sx1 ! 0 'sy1 ! 
+:startsel
+	0 'sx1 ! ycode 'sy1 ! 
 	pantaini> 
+	inisel >=? ( ; )
 	( inisel <? c@+ 
 		13 =? ( 1 'sy1 +! 0 'sx1 ! )
 		9 =? ( 3 'sx1 +! )
 		drop 
 		1 'sx1 +!
 		) 
+	-1 'sx1 +! 
+	;
+	
+	
+:edselshow
+	inisel 0? ( drop ; )
+	pantafin> >? ( drop ; ) drop
+	colb2 SDLColor
+	startsel
 	0 'sw1 !
 	( pantafin> <? finsel <? c@+
-		13 =? ( wcode sx1 - 5 - 'sw1 ! selectfill 1 'sy1 +! 0 'sx1 ! -1 'sw1 ! )
+		13 =? ( wcode sx1 - 6 - 'sw1 ! selectfill 1 'sy1 +! 0 'sx1 ! -1 'sw1 ! )
 		9 =? ( 3 'sw1 +! )
 		drop
 		1 'sw1 +!
-		) drop
-	|pantafin> <? ( wcode sx1 - 5 - 'sw1 ! )
+		) 
+	finsel <? ( wcode sx1 - 6 - 'sw1 ! )
+	drop
 	selectfill
 	;
 
