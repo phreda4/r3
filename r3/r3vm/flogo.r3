@@ -177,6 +177,14 @@
 	;
 
 |-------------------
+
+:editando
+	0 SDLcls edfocus SDLredraw ;
+
+::edrun
+	'editando SDLshow
+	;
+	
 :modedit
 	"scratch" filename
 	edload

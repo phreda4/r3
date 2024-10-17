@@ -72,9 +72,7 @@
 	tokenstr
 	immLabel ;
 	
-:wintokensa
-
-|	'winsettoka immwin 0? ( drop ; ) drop
+:dbgfocus
 	600 0 immwinxy
 
 	anaword 4 << dic + dup
@@ -136,10 +134,9 @@
 	r> imm>cur
 	;
 	
-:winwords
-|	'winsetwor immwin 0? ( drop ; ) drop
+:wordfocus
+
 	940 200 immwinxy
-	
 	316 18 immbox
 	lidilines dup immListBox
 	'clicklistw onClick	
@@ -148,7 +145,9 @@
 		colorlistw immback printlinew
 		1 + ) 2drop	
 	listscroll immln
+	
 	;
+
 
 |--------------- INCLUDES
 #liincnt
@@ -224,7 +223,6 @@
 |#winsettok 1 [ 500 440 190 270 ] "TOKENS"
 	
 :wintokens
-|	'winsettok immwin 0? ( drop ; ) drop
 	500 440 immwinxy
 	
 	<<ip 1? ( 
@@ -372,7 +370,7 @@
 
 |-----------------------------
 
-#focuslist 'edfocus 'confocus
+#focuslist 'edfocus 'confocus 'wordfocus 'dbgfocus
 
 #pad2 * 1024
 
@@ -383,24 +381,20 @@
 	panel 3 << 'focuslist + @ ex
 	edcodedraw
 	consoledraw
+	listwdraw
 	
-|	wininclude
-|	winwords
-|	wintokens
-|wintokensa
-
-	70 10 gotoxy
+|	70 10 gotoxy
+|	'pad2 >a
+|	inisel 1? ( ( finsel <=? c@+ ca!+ ) ) drop
+|	0 ca!+
+|	'pad2 bprint2
 	
-	'pad2 >a
-	inisel 1? ( ( finsel <=? c@+ ca!+ ) ) drop
-	0 ca!+
 	
-	'pad2 bprint2
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( 0 'panel ! ) 
-	<f2> =? ( 1 'panel ! ) 
+	<f1> =? ( panel 1+ $3 and 'panel ! ) 
+	<f2> =? ( play ) 
 	drop
 	;
 

@@ -237,9 +237,10 @@
 	;
 
 |-------------------
+	
 :modediting
 	0 SDLcls 
-	edshow 
+	edfocus 
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
@@ -247,7 +248,6 @@
 	;
 	
 :editing
-	edreset
 	'modediting sdlShow
 	;
 	

@@ -61,16 +61,19 @@
 	dup sin swap cos ;
 
 ::xy+polar | x y bangle r -- x y
-	>r sincos r@ 16 *>> rot + swap r> 16 *>> rot + swap  ;
+	>r sincos r@ 16 *>> rot + swap r> 16 *>> rot + swap ;
+	
+::xy+polar2 | x y r ang -- x y
+	sincos pick2 *.u -rot *.u -rot + -rot + swap ;	
 
 ::ar>xy | xc yc bangle r -- xc yc x y
-	>r sincos r@ 16 *>> pick2 + swap r> 16 *>> pick3 + swap  ;
+	>r sincos r@ 16 *>> pick2 + swap r> 16 *>> pick3 + swap ;
 
 ::polar | bangle largo -- dx dy
 	>r sincos r@ 16 *>> swap r> 16 *>> swap ;
 
 ::polar2 | largo bangle  -- dx dy
-	sincos pick2 16 *>> >r 16 *>> r> ;
+	sincos pick2 *.u -rot *.u swap ;
 
 :iatan2p
 	+? ( 2dup + >r swap - >r 0.125 0.125 r> r> ; )

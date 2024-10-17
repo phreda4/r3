@@ -558,6 +558,7 @@
 	edselshow
 	;
 	
+
 |----------- principal
 ::edram
 	here	| --- RAM

@@ -62,7 +62,7 @@
 :main
 	"title scroll" 1024 600 SDLinit	
 
-	"media/ttf/roboto-medium.ttf" 48 TTF_OpenFont ttfont
+	"media/ttf/Roboto-Medium.ttf" 48 TTF_OpenFont ttfont
 	$7f vaini
 	animc
 	hlinea neg 'nlinea !
