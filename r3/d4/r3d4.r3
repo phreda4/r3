@@ -135,7 +135,6 @@
 	;
 	
 :wordfocus
-
 	940 200 immwinxy
 	316 18 immbox
 	lidilines dup immListBox
@@ -148,7 +147,9 @@
 	
 	;
 
-
+:listwdraw
+	;
+	
 |--------------- INCLUDES
 #liincnt
 #liinnow
@@ -353,7 +354,11 @@
 	dstack 
 |	rstack 
 	;
-
+	
+:conexec
+	0 'pad ! conreset
+	;
+	
 :confocus
 	xcon ycon wcon hcon bsrcsize 
 	$ffffff sdlcolor
@@ -361,6 +366,7 @@
 	guiBox
 	SDLchar 1? ( cmodo ex ; ) drop
 	sdlkey
+	<ret> =? ( conexec )
 	<ins> =? ( chmode )
 	<le> =? ( kizq ) <ri> =? ( kder )
 	<back> =? ( kback ) <del> =? ( kdel )

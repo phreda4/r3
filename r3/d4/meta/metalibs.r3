@@ -54,9 +54,9 @@
 #r3_lib_jul.r3 'name 'words 'calls 'info
 ^r3/lib/math.r3
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "sqrt." "clzl" "ln." "log2fix" "lnfix" "log10fix" "exp." "cubicpulse" "pow" "pow." "root." "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" 0
-#calls  'cell 'cell+ 'ncell+ '1+ '1- '2/ '2* '*.u '*. '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'sqrt. 'clzl 'ln. 'log2fix 'lnfix 'log10fix 'exp. 'cubicpulse 'pow 'pow. 'root. 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '10/mod '100/ '10/ '1000000* '100000* '10000* '1000* '100* '10* 'i2fp 'f2fp 'fp2f
-#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "sqrt." "clzl" "ln." "log2fix" "lnfix" "log10fix" "exp." "cubicpulse" "pow" "pow." "root." "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" 0
+#calls  'cell 'cell+ 'ncell+ '1+ '1- '2/ '2* '*.u '*. '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'sqrt. 'clzl 'ln. 'log2fix 'lnfix 'log10fix 'exp. 'cubicpulse 'pow 'pow. 'root. 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '10/mod '100/ '10/ '1000000* '100000* '10000* '1000* '100* '10* 'i2fp 'f2fp 'fp2f
+#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'calls 'info
 ^r3/lib/mconsole.r3
 #name "r3/lib/mconsole.r3"
@@ -264,9 +264,9 @@
 #r3_util_sdlbgui.r3 'name 'words 'calls 'info
 ^r3/util/sdledit.r3
 #name "r3/util/sdledit.r3"
-#words  "ycursor" "xcursor" "edfilename" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edram" "edwin" "edload" "edsave" 0
-#calls  'ycursor 'xcursor 'edfilename 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edram 'edwin 'edload 'edsave
-#info ( $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $4C $1F $0 )
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edram" "edwin" "edload" "edsave" 0
+#calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edram 'edwin 'edload 'edsave
+#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $4C $1F $0 )
 #r3_util_sdledit.r3 'name 'words 'calls 'info
 ^r3/util/sdlfiledlg.r3
 #name "r3/util/sdlfiledlg.r3"

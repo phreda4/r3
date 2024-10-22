@@ -36,7 +36,6 @@
 	tt. ;
 	
 :animc
-	vareset
 	'ys yh neg 0 23 1.0 0 +vanim
 	[ nlinea 1 + clinea >=? ( hlinea neg nip ) 'nlinea ! animc ; ] 1.0 +vexe
 	0 'ys ! 

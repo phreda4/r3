@@ -35,8 +35,8 @@
 #info ( $3E $12 $3E $10 $3E $10 )
 #r3_lib_jul.r3 'name 'words 'info
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "sqrt." "clzl" "ln." "log2fix" "lnfix" "log10fix" "exp." "cubicpulse" "pow" "pow." "root." "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" 0
-#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "sqrt." "clzl" "ln." "log2fix" "lnfix" "log10fix" "exp." "cubicpulse" "pow" "pow." "root." "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" 0
+#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'info
 #name "r3/lib/mconsole.r3"
 #words  ",sp" ",nsp" ",esc" ",[" ",fcolor" ",bcolor" ",eline" ",home" ",cls" ",at" ",col" ",eline" ",fc" ",bc" ",Black" ",Red" ",Green" ",Yellow" ",Blue" ",Magenta" ",Cyan" ",White" ",Blackl" ",Redl" ",Greenl" ",Yellowl" ",Bluel" ",Magental" ",Cyanl" ",Whitel" ",BBlack" ",BRed" ",BGreen" ",BYellow" ",BBlue" ",BMagenta" ",BCyan" ",BWhite" ",BBlackl" ",BRedl" ",BGreenl" ",BYellowl" ",BBluel" ",BMagental" ",BCyanl" ",BWhitel" ",Bold" ",Under" ",Rever" ",Reset" ",alsb" ",masb" ",showc" ",hidec" ",ovec" ",insc" ",savec" ",restc" ",print" ",println" ",printe" ",type" 0
@@ -175,8 +175,8 @@
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $0 $2E $2E $2E $2E $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $1F $3D $3D $2E $3D $2E $1F $2E $1F $10 )
 #r3_util_sdlbgui.r3 'name 'words 'info
 #name "r3/util/sdledit.r3"
-#words  "ycursor" "xcursor" "edfilename" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edram" "edwin" "edload" "edsave" 0
-#info ( $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $4C $1F $0 )
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edram" "edwin" "edload" "edsave" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $4C $1F $0 )
 #r3_util_sdledit.r3 'name 'words 'info
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
