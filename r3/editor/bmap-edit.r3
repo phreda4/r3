@@ -185,9 +185,11 @@
 	|1 clevel << slevel and? ( drop ; ) drop | safe mark 
 	sdlx sdly scr2view | xm ym
 	2dup or -? ( 3drop ; ) drop | out of map
-	clevel 4 =? ( drop modewall ; ) drop	| draw wall
-	clevel 5 =? ( drop modeup ; ) drop	| draw up
-	clevel 6 =? ( drop modetr ; ) drop	| draw up
+	clevel 
+	4 =? ( drop modewall ; )	| draw wall
+	5 =? ( drop modeup ; )		| draw up
+	6 =? ( drop modetr ; )		| draw up
+	drop
 	sdlb 1 nand? ( drop erasetile ; ) drop
 	0 ( th <? 
 		0 ( tw <?  | xm ym h w
@@ -228,12 +230,15 @@
 #rrtile
 
 :changetile | val -- nval
+	clevel 3 >? ( 12 4 * 4 - + $1 swap << or ; ) drop
 	$fff clevel 12 * << nand | clear level
 	tilenow $fff and clevel 12 * << or
 	;
 	
 :maskgetile | val -- levelval | only the level
-	$fff clevel 12 * << and
+	clevel 
+	3 >? ( 12 4 * 4 - + $1 swap << and ; ) 
+	$fff swap 12 * << and
 	;
 	
 :addcell | x y -- 
