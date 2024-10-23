@@ -29,7 +29,7 @@
 #inisel		| inicio seleccion
 #finsel		| fin seleccion
 
-#fuente  	| fuente editable
+#fuente		| fuente editable
 #fuente> 	| cursor
 #$fuente	| fin de texto
 
@@ -51,8 +51,8 @@
 #cerror 0
 
 |----- edicion
-:lins  | c --
-	fuente> dup 1 - $fuente over - 1 + cmove>
+:lins | c --
+	fuente> dup 1- $fuente over - 1+ cmove>
 	1 '$fuente +!
 :lover | c --
 	fuente> c!+ dup 'fuente> !
@@ -64,29 +64,28 @@
 
 :back
 	fuente> fuente <=? ( drop ; )
-	dup 1 - c@ undobuffer> c!+ 'undobuffer> !
-	dup 1 - swap $fuente over - 1 + cmove
+	dup 1- c@ undobuffer> c!+ 'undobuffer> !
+	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +!
 	-1 'fuente> +! ;
 
 :del
 	fuente>	$fuente >=? ( drop ; )
-    1 + fuente <=? ( drop ; )
-	9 over 1 - c@ undobuffer> c!+ c!+ 'undobuffer> !
-	dup 1 - swap $fuente over - 1 + cmove
+	1+ fuente <=? ( drop ; )
+	9 over 1- c@ undobuffer> c!+ c!+ 'undobuffer> !
+	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +! ;
 
 :<<13 | a -- a
 	( fuente >=?
 		dup c@ 13 =? ( drop ; )
-		drop 1 - ) ;
+		drop 1- ) ;
 
 :>>13 | a -- a
 	( $fuente <?
 		dup c@
-		13 =? ( drop 1 - ; ) | quitar el 1 -
-		drop 1 + )
-	drop $fuente 2 - ;
+		13 =? ( drop 1- ; ) | quitar el 1 -
+		drop 1+ ) 2 - ;
 
 #1sel #2sel
 
@@ -100,19 +99,18 @@
 
 :khome
 	selecc
-	fuente> 1 - <<13 1 + 'fuente> !
+	fuente> 1- <<13 1+ 'fuente> !
 	selecc ;
 
 :kend
 	selecc
-	fuente> >>13  1 + 'fuente> !
+	fuente> >>13 1+ 'fuente> !
 	selecc ;
 
 :scrollup | 'fuente -- 'fuente	
 	pantaini> 1- <<13 1- <<13 1+ 
 	fuente <=? ( drop ; )
 	'pantaini> !
-	ylinea 1? ( 1- ) 'ylinea !
 	selecc ;
 
 :scrolldw
@@ -120,22 +118,35 @@
 	$fuente >=? ( drop ; ) 
 	'pantafin> !
 	pantaini> >>13 2 + 'pantaini> !
-	1 'ylinea +!
 	selecc ;
+
+::setpantafin
+	pantaini>
+	hcode ( 1? swap >>13 1+ swap 1- ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
+	
+:setpantaini
+	pantafin>
+	hcode ( 1? swap 2 - <<13 1+ swap 1- ) drop
+	fuente <? ( fuente nip )
+	'pantaini> !
+	;
+	
+
 
 :fixcur
 	fuente>
-	( pantafin> >? scrolldw )
-	( pantaini> <? scrollup )
-	'fuente> !
+	pantaini> <? ( <<13 1+ 'pantaini> ! setpantafin ; )
+	pantafin> >? ( >>13 2 + 'pantafin> ! setpantaini ; )
+	drop
 	;
 
 :karriba
 	fuente> fuente =? ( drop ; )
 	selecc
-	dup 1 - <<13		| cur inili
+	dup 1- <<13		| cur inili
 	swap over - swap	| cnt cur
-	dup 1 - <<13			| cnt cur cura
+	dup 1- <<13			| cnt cur cura
 	swap over - 		| cnt cura cur-cura
 	rot min + fuente max
 	'fuente> !
@@ -144,36 +155,32 @@
 :kabajo
 	fuente> $fuente >=? ( drop ; )
 	selecc
-	dup 1 - <<13 | cur inilinea
+	dup 1- <<13 | cur inilinea
 	over swap - swap | cnt cursor
-	>>13 1 +    | cnt cura
-	dup 1 + >>13 1 + 	| cnt cura curb
+	>>13 1+		| cnt cura
+	dup 1+ >>13 1+ 	| cnt cura curb
 	over - rot min +
 	'fuente> !
 	selecc ;
 
 :kder
 	selecc
-	fuente> $fuente <?
-	( 1 + 'fuente> ! selecc ; ) drop
+	fuente> $fuente <? ( 1+ 'fuente> ! selecc ; ) drop
 	;
 
 :kizq
 	selecc
-	fuente> fuente >?
-	( 1 - 'fuente> ! selecc ; ) drop
+	fuente> fuente >? ( 1- 'fuente> ! selecc ; ) drop
 	;
 
 :kpgup
 	selecc
-	20 ( 1?
-		1 - karriba ) drop
+	hcode ( 1? 1- karriba ) drop
 	selecc ;
 
 :kpgdn
 	selecc
-	20 ( 1?
-		1 - kabajo ) drop
+	hcode ( 1? 1- kabajo ) drop
 	selecc ;
 
 |------------------------------------------------
@@ -185,7 +192,7 @@
 :loadtxt | -- ; cargar texto
 	fuente 'name 
 	load 0 swap c!
-	fuente only13 1 - '$fuente !	|-- queda solo cr al fin de linea
+	fuente only13 1- '$fuente !	|-- queda solo cr al fin de linea
 	fuente dup 'pantaini> ! simplehash 'hashfile !
 	;
 
@@ -208,7 +215,7 @@
 
 :linetocursor | -- ines
 	0 fuente ( fuente> <? c@+
-		13 =? ( rot 1 + -rot ) drop ) drop ;
+		13 =? ( rot 1+ -rot ) drop ) drop ;
 		
 :r3info
 |WIN|	"r3 r3/editor/r3info.r3"
@@ -216,7 +223,7 @@
 |RPI|	"./r3rpi r3/editor/r3info.r3"
 	sys
 
-	rows 1 - 'hcode !
+	rows 1- 'hcode !
 	0 'outpad !
 	0 'cerror !
 	
@@ -232,7 +239,7 @@
 	fuente cerror + 'fuente> !
 	linetocursor 'lerror !
 	here >>cr 0 swap c!
-	fuente> lerror 1 + here
+	fuente> lerror 1+ here
 	" %s in line %d (%w)" sprint 'outpad strcpy
 	
 	rows 2 - 'hcode !
@@ -324,23 +331,23 @@
 	nip ;
 
 :editvalid | adr -- adr 1/0
-    "ico" =pre 1? ( ; ) drop
-    "bmr" =pre 1? ( ; ) drop
-    "vsp" =pre 1? ( ; ) drop
-    "spr" =pre
+	"ico" =pre 1? ( ; ) drop
+	"bmr" =pre 1? ( ; ) drop
+	"vsp" =pre 1? ( ; ) drop
+	"spr" =pre
 	;
 
 #ncar
 :controle
 	savetxt
-	fuente> ( dup 1 - c@ $ff and 32 >? drop 1 - ) drop | busca comienzo
+	fuente> ( dup 1- c@ $ff and 32 >? drop 1- ) drop | busca comienzo
 	dup c@
 	$5E <>? ( 2drop ; ) | no es ^
 	drop
 	dup fuente - 'ncar !
 	dup 2 + posfijo? 0? ( 2drop ; )
 	editvalid 0? ( 3drop ; ) drop
-	swap 1 + | ext name
+	swap 1+ | ext name
 	mark
 	dup c@ 46 =? ( swap 2 + 'path ,s ) drop
 	,word
@@ -362,8 +369,8 @@
 |-------------
 :controlv | paste
 	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
-	fuente> dup pick2  + swap | clip cnt 'f+ 'f
-	$fuente over - 1 + cmove>	| clip cnt
+	fuente> dup pick2 + swap | clip cnt 'f+ 'f
+	$fuente over - 1+ cmove>	| clip cnt
 	fuente> -rot | f clip cnt
 	dup '$fuente +!
 	cmove
@@ -374,8 +381,8 @@
 :controlz | undo
 	undobuffer>
 	undobuffer =? ( drop ; )
-	1 - dup c@
-	9 =? ( drop 1 - dup c@ [ -1 'fuente> +! ; ] >r )
+	1- dup c@
+	9 =? ( drop 1- dup c@ [ -1 'fuente> +! ; ] >r )
 	lins 'undobuffer> ! ;
 
 |-------------
@@ -394,34 +401,34 @@
 	dup c@ $ff and
 	0? ( 2drop ; )
 	toupp
-	fuente> 1 - | adr 1c act
+	fuente> 1- | adr 1c act
 	( fuente >?
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1 - ) 3drop ;
+		drop 1- ) 3drop ;
 
 :controls | -- ;find next
 	'pad
 	dup c@ $ff and
 	0? ( drop ; )
 	toupp
-	fuente> 1 + | adr 1c act
+	fuente> 1+ | adr 1c act
 	( $fuente <?
 		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1 + ) 3drop ;
+		drop 1+ ) 3drop ;
 
 |-------------
 :controld | buscar definicion
 	;
 
-:controln  | new
+:controln | new
 	| si no existe esta definicion
 	| ir justo antes de la definicion
-	| agregar palabra :new  ;
+	| agregar palabra :new ;
 	;
 
 |---------- TAGS in code	
 :,ncar | n -- 
-	97 ( swap 1? 1 - swap dup ,c 1 + ) 2drop ;
+	97 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
 
 :buildinfo | infmov --
 	,bcyan 
@@ -430,9 +437,9 @@
 	over 55 << 59 >> + | deltaD
 	,ncar ,sp 
 	,reset ,sp ,bcyan ,black
-	$1000000000 and? ( ";"  ,s	)	| multiple
+	$1000000000 and? ( ";" ,s )	| multiple
 	$2000000000 and? ( "R" ,s )		| recurse
-	$8000000000 nand? ( "."  ,s	)	| no ;
+	$8000000000 nand? ( "." ,s )	| no ;
 	drop
 	;
 
@@ -478,7 +485,7 @@
 	$3A =? ( drop 9 'colornow ! ; )	| $3a :  Definicion
 	$23 =? ( drop 13 'colornow ! ; )	| $23 #  Variable
 	$27 =? ( drop 14 'colornow ! ; )	| $27 ' Direccion
-    drop
+	drop
 	over isNro 1? ( drop 11 'colornow ! ; ) 
 	drop 10 'colornow ! ;
 
@@ -496,9 +503,9 @@
 
 :iniline
 	xlinea wcolor
-	( 1? 1 - swap
-		c@+ 0? ( drop nip 1 - ; )
-		13 =? ( drop nip 1 - ; )
+	( 1? 1- swap
+		c@+ 0? ( drop nip 1- ; )
+		13 =? ( drop nip 1- ; )
 		9 =? ( wcolor )
 		32 =? ( wcolor )
 		drop swap ) drop ;
@@ -511,17 +518,17 @@
 	( atselect c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
-			,c swap 1 + swap )
+			,c swap 1+ swap )
 		13 <>?
-		,ct ) drop 1 - 0 ;
+		,ct ) drop 1- 0 ;
 	
 :endline
 	,c ( atselect c@+ 1? 13 <>? ,ct )	
-	1? ( drop ; ) drop 1 - ;
+	1? ( drop ; ) drop 1- ;
 	
 :parseline 
 	,tcolor
-	( atselect c@+ 1? 13 <>?  | 0 o 13 sale
+	( atselect c@+ 1? 13 <>? | 0 o 13 sale
 		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
@@ -530,20 +537,20 @@
 		,c
 		) 
 	1? ( drop ; ) drop
-	1 - ;
+	1- ;
 
 |... no color line	
 :parselinenc
 	( atselect c@+ 1? 13 <>? ,c ) 
 	1? ( drop ; ) drop
-	1 - ;
+	1- ;
 
 |..............................
 :linenow
 	ycursor =? ( $3e ,c ; ) 32 ,c ;
 	
 :linenro | lin -- lin
-	over ylinea + linenow 1 + .d 3 .r. ,s 32 ,c ; 
+	over ylinea + linenow 1+ .d 3 .r. ,s 32 ,c ; 
 
 :drawline | adr line -- line adr'
 	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
@@ -558,9 +565,9 @@
 :setpantafin
 	pantaini>
 	0 ( hcode <?
-		swap >>cr 1 + swap
-		1 + ) drop
-	$fuente <? ( 1 - ) 'pantafin> ! ;
+		swap >>cr 1+ swap
+		1+ ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
 	
 |..............................
 :drawcode
@@ -570,24 +577,35 @@
 	0 ( hcode <?
 		1 ycode pick2 + ,at
 		drawline
-		swap 1 + ) drop
-	$fuente <? ( 1 - ) 'pantafin> ! ;
+		swap 1+ ) drop
+	$fuente <? ( 1- ) 'pantafin> ! ;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
 	9 =? ( drop 3 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
+#cacheyl
+#cachepi
+
+:getcacheini |  -- pantanini>
+	pantaini> cachepi =? ( cacheyl 'ylinea ! ; ) drop
+	0 'ylinea !
+	fuente 
+	( pantaini> <? c@+ 13 =? ( 1 'ylinea +! ) drop ) 
+	dup 'cachepi !
+	ylinea 'cacheyl !
+	;	
+	
 :cursorpos
-	ylinea 'ycursor ! 0 'xcursor !
-	pantaini> ( fuente> <? c@+ emitcur ) drop
-	| hscroll
+	0 'xcursor !
+	getcacheini
+	ylinea 'ycursor !
+	( fuente> <? c@+ emitcur ) drop 
 	xcursor
 	xlinea <? ( dup 'xlinea ! )
-	xlinea wcode + >=? ( dup wcode - 1 + 'xlinea ! )
+	xlinea wcode + >=? ( dup wcode - 1+ 'xlinea ! )
 	drop 
-	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + ,at 
 	;
 	
 |-------------- panel control
@@ -602,7 +620,7 @@
 	0? ( drop ; ) 'fuente> ! ;
 
 :findmodekey
-	1 hcode 1 + .at  .eline
+	1 hcode 1+ .at .eline
 	" > " .write .input 
 	controls
 	;
@@ -653,7 +671,7 @@
 	[PGUP] =? ( kpgup ) 
 	[PGDN] =? ( kpgdn )
 	
-	[INS] =? (  modo | ins
+	[INS] =? ( modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
 	[CTRL] =? ( controlon ) 
@@ -703,13 +721,16 @@
 :pantalla	
 	mark			| buffer in freemem
 	,hidec ,reset ,cls
+	cursorpos
 	
 	topbar
 	drawcode
 	fotbar
 	
-	cursorpos
+	xcode xlinea - xcursor +
+	ycode ylinea - ycursor + ,at 
 	,showc
+	
 	memsize type	| type buffer
 	empty			| free buffer
 	;
@@ -722,7 +743,7 @@
 	teclado ;
 	
 ::>>cr | adr -- adr'
-	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1 - ;
+	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
 	
 :xycursor | x y -- cursor
 	pantaini> | x y c
@@ -732,7 +753,7 @@
 		c@+ 
 		9 =? ( rot 2 - clamp0 -rot )
 		13 =? ( 0 nip )
-		0? ( drop nip 1 - ; ) 
+		0? ( drop nip 1- ; ) 
 		drop ) drop ;
 
 			
@@ -749,20 +770,20 @@
 	evtmb $0 =? ( drop ; ) drop 
 	evtmxy
 	1 <? ( 2drop ; )
-	1 - xycursor
+	1- xycursor
 	'fuente> ! 
 	;
 
 
 :evsize	
 	.getconsoleinfo
-	rows 1 - 'hcode !
+	rows 1- 'hcode !
 	cols 7 - 'wcode !
 	;
 	
 :editor
 	setpantafin
-	rows 1 - 'hcode !
+	rows 1- 'hcode !
 	cols 7 - 'wcode !
 	0 'xlinea !
 	.showc .insc
@@ -786,11 +807,11 @@
 	$3fff +				| 16KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
-	$ffff +         	| 64kb
+	$ffff +				| 64kb
 	dup 'linecomm !
 	dup	'linecomm> !
 	$3fff +				| 4096 linecomm
-	'here  ! | -- FREE
+	'here ! | -- FREE
 	mark 
 
 	loadtxt
