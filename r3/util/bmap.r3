@@ -193,6 +193,11 @@
 	34 'mapsw ! 22 'mapsh !	
 	;
 
+::bmap2xy | x y -- x y
+	swap tilew * fix. swap tileh * fix. ;
+::whbmap | -- w h
+	mapw maph ;
+	
 ::xyinmap@ | x y -- map
 	16 >> mapth / swap 16 >> maptw / swap map> @ ;
 	
