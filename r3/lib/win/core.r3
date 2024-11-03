@@ -196,14 +196,5 @@
 |	pinfo -1 WaitForSingleObject
 	;
 
-|--- copy and restore registers A B, to system? work because the inliner!!!
-::a[ 	a> >r ;
-::]a	r> >a ;
-::b[ 	b> >r ;
-::]b	r> >b ;
 
-| to compiler for now
-|#aa #bb
-|::a[ 	a> 'aa ! ; ::]a	aa >a ;
-|::b[ 	b> 'bb ! ; ::]b	bb >b ;
 

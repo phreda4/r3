@@ -55,6 +55,7 @@
 "+!" "C+!" "W+!" "D+!" 
 ">A" "A>" "A+" "A@" "A!" "A@+" "A!+" "CA@" "CA!" "CA@+" "CA!+" "DA@" "DA!" "DA@+" "DA!+"
 ">B" "B>" "B+" "B@" "B!" "B@+" "B!+" "CB@" "CB!" "CB@+" "CB!+" "DB@" "DB!" "DB@+" "DB!+" 
+"AB[" "]BA"
 "MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL" "DMOVE" "DMOVE>" "DFILL" 
 "MEM" "LOADLIB" "GETPROC"
 "SYS0" "SYS1" "SYS2" "SYS3" "SYS4" "SYS5" "SYS6" "SYS7" "SYS8" "SYS9" "SYS10" ( 0 )
@@ -297,6 +298,8 @@
 1 -1 0 $11	|dB!
 0 1 0 $11	|dB@+
 1 -1 0 $11	|dB!+
+0 0 2 0		|AB[		R: -- AB
+0 0 -2 0	|]BA		R: BA --
 3 -3 0 1	|MOVE  abc --
 3 -3 0 1	|MOVE> abc --
 3 -3 0 1	|FILL abc --

@@ -128,6 +128,9 @@
 :.R>	.DUP RTOS dup @ 'TOS ! 8 - 'RTOS ! ;
 :.R@	.DUP RTOS @ 'TOS ! ;
 
+:.AB[ 	8 'RTOS +! REGA RTOS ! 8 'RTOS +! REGB RTOS ! ;
+:.]BA	RTOS @ 'REGB ! -8 'RTOS +! RTOS @ 'REGA ! -8 'RTOS +! ;
+
 |--- REGA
 :.>A	TOS 'REGA ! .DROP ;
 :.A>	'REGA @ PUSH.NRO ;
@@ -236,6 +239,7 @@
 .B@ .B! .B@+ .B!+ 
 .cB@ .cB! .cB@+ .cB!+ 
 .dB@ .dB! .dB@+ .dB!+ 
+.AB[ .]BA
 .MOVE .MOVE> .FILL 
 .CMOVE .CMOVE> .CFILL 
 .DMOVE .DMOVE> .DFILL 

@@ -173,6 +173,9 @@
 :iR> .dup 2code!+ ;
 :iR@ .dup 2code!+ ;
 
+:iAB[ 2code!+ ;
+:i]BA 2code!+ ;
+	
 :1stk | --1/0 ok
 	bcode> 4 -
 	'bcode <? ( -1 nip ; )
@@ -542,6 +545,7 @@ i>B iB> iB+
 iB@ iB! iB@+ iB!+
 iCB@ iCB! iCB@+ iCB!+
 iDB@ iDB! iDB@+ iDB!+
+iAB[ i]BA
 iMOVE iMOVE> iFILL
 iCMOVE iCMOVE> iCFILL
 iDMOVE iDMOVE> iDFILL

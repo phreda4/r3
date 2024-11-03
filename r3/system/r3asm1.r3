@@ -514,7 +514,12 @@
 	'TOS cellI
 	"mov qword[rdi],#0;add rdi,8" ,asm .drop ;
 
-
+:gab[
+	"push r14;push r15" ,asm ;
+	
+:g]ba
+	"pop r15;pop r14" ,asm ;
+	
 :gDMOVE
 	"mov rcx,rax" ,ln
 	"movsxd rsi,dword[rbp]" ,ln
@@ -789,6 +794,7 @@ g>B gB> gB+
 gB@ gB! gB@+ gB!+
 gCB@ gCB! gCB@+ gCB!+
 gDB@ gDB! gDB@+ gDB!+
+gab[ g]ba
 gMOVE gMOVE> gFILL
 gCMOVE gCMOVE> gCFILL
 gDMOVE gDMOVE> gDFILL

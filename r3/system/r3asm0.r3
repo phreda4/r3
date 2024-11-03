@@ -778,6 +778,15 @@
 :oCB!+	"mov byte[r15]," ,s ,TOSB ,cr "add r15,1" ,ln ;
 :oCB!+v	varget "mov byte[r15],bl" ,ln "add r15,1" ,ln ;
 
+:gab[
+	"push r14" ,ln
+	"push r15" ,ln
+	;
+	
+:g]ba
+	"pop r15" ,ln
+	"pop r14" ,ln
+	;
 
 :gDMOVE
 	"mov rcx,rax" ,ln
@@ -1097,6 +1106,7 @@ o>B 0 oB+
 0 oB! 0 oB!+ 
 0 oCB! 0 oCB!+ 
 0 oDB! 0 oDB!+ 
+0 0
 0 0 0 
 0 0 0 
 0 0 0 
@@ -1210,6 +1220,7 @@ o>B 0 oB+
 0 oB!v 0 oB!+v 
 0 oCB!v 0 oCB!+v 
 0 oDB!v 0 oDB!+v 
+0 0
 0 0 0 
 0 0 0 
 0 0 0 
@@ -1260,6 +1271,7 @@ g>B gB> gB+
 gB@ gB! gB@+ gB!+
 gCB@ gCB! gCB@+ gCB!+
 gDB@ gDB! gDB@+ gDB!+
+gab[ g]ba
 gMOVE gMOVE> gFILL
 gCMOVE gCMOVE> gCFILL
 gDMOVE gDMOVE> gDFILL

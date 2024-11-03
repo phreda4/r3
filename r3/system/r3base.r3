@@ -93,6 +93,7 @@
 "B@" "B!" "B@+" "B!+" 
 "CB@" "CB!" "CB@+" "CB!+"
 "DB@" "DB!" "DB@+" "DB!+" 
+"AB[" "]BA"
 "MOVE" "MOVE>" "FILL"
 "CMOVE" "CMOVE>" "CFILL" 
 "DMOVE" "DMOVE>" "DFILL" 

@@ -21,7 +21,7 @@
 :+img | w h "file" -- 
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
-	a[ 
+	ab[ 
 	imglist> >a a!+ 		| texture
 	over over 16 << or 			|layersize
 	dy 48 << or dx 32 << or a!+ |imagesize
@@ -40,7 +40,7 @@
 	here a> over - 2 >> 2 - | image cnt
 	swap !
 	a> 'here ! 
-	]a
+	]ba
 	;
 
 :countlistss | list -- list cnt

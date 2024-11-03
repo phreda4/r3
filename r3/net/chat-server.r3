@@ -97,12 +97,12 @@
 	;
 	
 :debugdata
-	a[
+	ab[
 	'data >a
 	datalen ( 1?
 		ca@+ $ff and "%h " .print
 		1- ) drop 
-	]a ;
+	]ba ;
 	
 :comunica
 	0 ( lpeople <? 
