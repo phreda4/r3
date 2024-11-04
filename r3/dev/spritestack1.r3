@@ -195,7 +195,7 @@
 	
 	( 1? 1-
 		settex
-		isolevel =? ( makelayer  )
+		z 16 >> isolevel =? ( makelayer  ) drop
 		swap 1- swap 
 		) 3drop
 		
@@ -245,7 +245,7 @@
 	$ffffff pccolor
 	0 0 pcat "Voxel Escene" pcprint pccr
 	isang isalt "%f %f" pcprint pccr
-	isolevel "%d" pcprint
+	isolevel "layer: %d" pcprint
 	
 	floor	
 	

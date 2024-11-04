@@ -47,10 +47,10 @@
 		>>0 swap 1+ swap ) 2drop ;
 	
 :loadlistss | list --
-	a[ >a
+	ab[ >a
 	( ca@+ 1? ca@+
 		a> "media/stackspr/%s.png" sprint +img
-		a> >>0 >a ) drop ]a ;
+		a> >>0 >a ) drop ]ba ;
 		
 :.tex ;				| texture
 :.layer	1 ncell+ ;	| layer size/img size

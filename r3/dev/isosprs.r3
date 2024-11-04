@@ -50,10 +50,10 @@
 |-----------------------------------
 	
 ::loadlss | 'path list -- ; 'path ="media/stackspr/%s.png"
-	a[ >a
+	ab[ >a
 	( ca@+ 1? ca@+
 		a> pick3 sprint +img
-		a> >>0 >a ) 2drop ]a ;		
+		a> >>0 >a ) 2drop ]ba ;		
 		
 :.tex ;				| texture
 :.layer	1 ncell+ ;	| layer size/img size
