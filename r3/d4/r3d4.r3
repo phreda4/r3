@@ -264,7 +264,6 @@
 	$ffff 'here +!
 	resetvm
 	cursor2ip
-	
 	mark
 	'filename ,s ,cr ,cr
 	debugmemmap

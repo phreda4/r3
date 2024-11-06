@@ -575,6 +575,7 @@
 
 :anacode | dic --
 	|dup @ dic>name "%w" .println
+	
 	resetinfo
 	dup toklen ( 1? 1 - swap
 		@+ tokeninfo 
@@ -604,6 +605,7 @@
 	0 ( cntdef <?
 	|dup "%d" .println 
 		dup nro>dic 
+	|	dup @ dic>name "%w" .println
 		StaticStackAnalisis
 		1 + ) drop ;
 	
@@ -611,7 +613,6 @@
 ::r3loadmem | mem 'filename --
 |-------------------------------------------
 	0 0 error!
-	
 	dup 'filename strcpy
 	'r3path strpath
 	'src !

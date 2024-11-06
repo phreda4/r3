@@ -192,9 +192,9 @@
 #r3_util_blist.r3 'name 'words 'calls 'info
 ^r3/util/bmap.r3
 #name "r3/util/bmap.r3"
-#words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "xyinmap@" "xytrigger" 0
-#calls  'bsprdraw 'inisprite '+sprite 'drawmaps 'loadmap 'xyinmap@ 'xytrigger
-#info ( $80 $0 $3D $2E $10 $2F $20 )
+#words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "bmap2xy" "whbmap" "xyinmap@" "xytrigger" 0
+#calls  'bsprdraw 'inisprite '+sprite 'drawmaps 'loadmap 'bmap2xy 'whbmap 'xyinmap@ 'xytrigger
+#info ( $80 $0 $3D $2E $10 $20 $2 $2F $20 )
 #r3_util_bmap.r3 'name 'words 'calls 'info
 ^r3/util/boxtext.r3
 #name "r3/util/boxtext.r3"
@@ -330,9 +330,9 @@
 #r3_lib_win_console.r3 'name 'words 'calls 'info
 ^r3/lib/win/core.r3
 #name "r3/lib/win/core.r3"
-#words  "ms" "msec" "iniheap" "allocate" "free" "resize" "time" "date" "ffirst" "fnext" "FNAME" "FDIR" "FSIZE" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" "a[" "]a" "b[" "]b" 0
-#calls  'ms 'msec 'iniheap 'allocate 'free 'resize 'time 'date 'ffirst 'fnext 'FNAME 'FDIR 'FSIZE 'load 'save 'append 'delete 'filexist 'fileisize 'fileijul 'fileinfo 'sinfo 'pinfo 'sys 'sysnew 'sysdebug 'a[ ']a 'b[ ']b
-#info ( $1F $1 $0 $1F $1F $2E $1 $1 $10 $1 $10 $10 $10 $2F $3D $3D $1F $10 $1 $1 $0 $80 $80 $10 $10 $1F $0 $0 $0 $0 )
+#words  "ms" "msec" "iniheap" "allocate" "free" "resize" "time" "date" "ffirst" "fnext" "FNAME" "FDIR" "FSIZE" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
+#calls  'ms 'msec 'iniheap 'allocate 'free 'resize 'time 'date 'ffirst 'fnext 'FNAME 'FDIR 'FSIZE 'load 'save 'append 'delete 'filexist 'fileisize 'fileijul 'fileinfo 'sinfo 'pinfo 'sys 'sysnew 'sysdebug
+#info ( $1F $1 $0 $1F $1F $2E $1 $1 $10 $1 $10 $10 $10 $2F $3D $3D $1F $10 $1 $1 $0 $80 $80 $10 $10 $1F )
 #r3_lib_win_core.r3 'name 'words 'calls 'info
 ^r3/lib/win/debugapi.r3
 #name "r3/lib/win/debugapi.r3"

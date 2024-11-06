@@ -127,8 +127,8 @@
 #info ( $2E $2E $2E $10 $20 )
 #r3_util_blist.r3 'name 'words 'info
 #name "r3/util/bmap.r3"
-#words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "xyinmap@" "xytrigger" 0
-#info ( $80 $0 $3D $2E $10 $2F $20 )
+#words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "bmap2xy" "whbmap" "xyinmap@" "xytrigger" 0
+#info ( $80 $0 $3D $2E $10 $20 $2 $2F $20 )
 #r3_util_bmap.r3 'name 'words 'info
 #name "r3/util/boxtext.r3"
 #words  "xywh64" "w%" "h%" "xywh%64" "xy%64" "64box" "textline" "textbox." "textbox" "textboxb" "textboxo" "textboxh" 0
@@ -219,8 +219,8 @@
 #info ( $80 $80 $80 $2E $0 $0 $1F $1F $1F $1F $1F $1F $0 $0 $2E $0 $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $80 $80 $80 $0 $1 $1 $0 $1 $2 $1 $1 $1 $1 $1 $80 $2 $0 $1 $1F $0 $0 )
 #r3_lib_win_console.r3 'name 'words 'info
 #name "r3/lib/win/core.r3"
-#words  "ms" "msec" "iniheap" "allocate" "free" "resize" "time" "date" "ffirst" "fnext" "FNAME" "FDIR" "FSIZE" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" "a[" "]a" "b[" "]b" 0
-#info ( $1F $1 $0 $1F $1F $2E $1 $1 $10 $1 $10 $10 $10 $2F $3D $3D $1F $10 $1 $1 $0 $80 $80 $10 $10 $1F $0 $0 $0 $0 )
+#words  "ms" "msec" "iniheap" "allocate" "free" "resize" "time" "date" "ffirst" "fnext" "FNAME" "FDIR" "FSIZE" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
+#info ( $1F $1 $0 $1F $1F $2E $1 $1 $10 $1 $10 $10 $10 $2F $3D $3D $1F $10 $1 $1 $0 $80 $80 $10 $10 $1F )
 #r3_lib_win_core.r3 'name 'words 'info
 #name "r3/lib/win/debugapi.r3"
 #words  "IsDebuggerPresent" "OutputDebugStringA" "OutputDebugStringW" "DebugBreak" "ContinueDebugEvent" "WaitForDebugEvent" "DebugActiveProcess" "DebugActiveProcessStop" "CheckRemoteDebuggerPresent" 0
