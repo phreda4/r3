@@ -70,10 +70,8 @@
 ::loadss | w h "file" -- ssprite
 	loadimg
 	dup 0 0 'dx 'dy SDL_QueryTexture
-	|dup 0 SDL_SetTextureScaleMode | not fix
-	
-	here >a a!+ 		| texture
-	2dup 16 << or a!+	| wi hi
+	here >a a!+ 			| texture
+	2dup 16 << or a!+		| wi hi
 	dy 16 <</ swap dx 16 <</ | dy dx
 	0 ( 1.0 pick3 - <=?
 		0 ( 1.0 pick3 - <=?
@@ -95,30 +93,25 @@
 :rotxyiso | x1 y1 -- xd yd
 	over dx * over dy * -				| x y x1 y1 x'
 	rot dy * rot dx * +					| x y x' y'
-	
 	0 xyz2iso 
 	17 >> swap | scale !!
 	17 >> swap
 	;	
 
 |----------- correct zoom
+:pack16	$ffff and 16 << swap $ffff and or ;
+
 :fillvertiso | xm ym --
-	over neg over neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd1 ! 
-	2dup neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd2 !
-	2dup rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd3 !
-	swap neg swap rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd4 !
+	over neg over neg rotxyiso pack16 'd1 ! 
+	2dup neg rotxyiso pack16 'd2 !
+	2dup rotxyiso pack16 'd3 !
+	swap neg swap rotxyiso pack16 'd4 !
 	;
 
 #tx1 #tx2
 #ty1 #ty2
 #cntl 
 #ind
-
-:gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
 
 |#indexm [ 0 1 2 2 3 0 ]
 :makeindex
@@ -136,6 +129,8 @@
 	d@+ 'tx1 ! d@+ 'ty1 ! d@+ 'tx2 ! d@ 'ty2 ! 
 	dz 'z +!
 	;
+
+:gyx dup 32 << 48 >> swap 48 << 48 >> ; | y x
 	
 | posx posy color texx texy 
 :makelayer | x y lev -- x y lev
@@ -184,10 +179,10 @@
 	dup 'ssp ! 				| x y z 'ss
 	8 + @ dup 32 >> swap
 	dup $ffff and swap
-	16 >> $ffff and		| x y z lev w h
+	16 >> $ffff and			| x y z lev w h
 	swap pick3 16 *>> 		| x y z lev h xm
 	swap pick3 16 *>> 		| x y z lev xm ym
-	fillvertiso 		| x y z lev
+	fillvertiso 			| x y z lev
 	1.0 pick2 /. neg 'dz !
 	dup 1 - 16 << 'z !
 	*. 					| x y reallev.
@@ -195,7 +190,7 @@
 	
 	( 1? 1-
 		settex
-		z 16 >> isolevel =? ( makelayer  ) drop
+		z int. isolevel =? ( makelayer  ) drop
 		swap 1- swap 
 		) 3drop
 		
@@ -256,7 +251,7 @@
 	0 10.0 0.0 2iso a zoom sphouse isospr
 	0 -10.0 0.0 2iso a zoom sphouse isospr2
 	
-	0.002 'a +! 
+	0.001 'a +! 
 	
 	
 	|0 0 zoomsrc

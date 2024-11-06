@@ -190,7 +190,7 @@
 	maptw mapth 32 << or 'boxdst 8 + !	| size dst
 	tilew tileh 32 << or 'boxsrc 8 + ! 	| size src w h 
 	tileset @+ 'tsimg ! 8 + 'tsmap !
-	34 'mapsw ! 22 'mapsh !	
+	34 'mapsw ! 23 'mapsh !	| conf?
 	;
 
 ::bmap2xy | x y -- x y

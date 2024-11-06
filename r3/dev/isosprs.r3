@@ -83,10 +83,6 @@
 		1+ 'wmin +! | borde
 		|2 'hmin +!
 		1+ ) drop
-|	0 SDL_TEXTUREACCESS_STATIC,    < Changes rarely, not lockable 
-|	1 SDL_TEXTUREACCESS_STREAMING, < Changes frequently, lockable
-|	2 SDL_TEXTUREACCESS_TARGET     < Texture can be used as a render target
-| SDL_PIXELFORMAT_ARGB8888 16462004
 	SDLrenderer $16462004 2 wmax hmax SDL_CreateTexture 'newtex !
 	SDLrenderer newtex SDL_SetRenderTarget
 	newtex 0 SDL_SetTextureBlendMode | SDL_BLENDMODE_NONE
@@ -168,8 +164,6 @@
 	genfile
 	;
 
-
-
 |------------- ISO
 ##isang 0.22
 ##isalt 0.28
@@ -228,17 +222,13 @@
 	;	
 
 |----------- ** zoom
+:pack16	$ffff and 16 << swap $ffff and or ;
+
 :fillvertiso | xm ym --
-	over neg over neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd01 ! 
-	2dup neg rotxyiso 
-	$ffff and 16 << swap $ffff and or 
-	32 << d01 or 'd01 !
-	2dup rotxyiso 
-	$ffff and 16 << swap $ffff and or 'd23 !
-	swap neg swap rotxyiso 
-	$ffff and 16 << swap $ffff and or 
-	32 << d23 or 'd23 !
+	over neg over neg rotxyiso pack16 'd01 ! 
+	2dup neg rotxyiso pack16 32 << d01 or 'd01 !
+	2dup rotxyiso pack16 'd23 !
+	swap neg swap rotxyiso pack16 32 << d23 or 'd23 !
 	;
 	
 |#indexm [ 0 1 2 2 3 0 ]
@@ -436,5 +426,6 @@
 	index cntl 6* 		| 6* index list
 	SDL_RenderGeometry 
 	
+	|a> scene> - a> scene - "%d %d" .println |size in bytes
 	empty
 	;
