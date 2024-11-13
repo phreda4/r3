@@ -1,5 +1,5 @@
 | 3dworld - no opengl
-| PHREDA 2023
+| PHREDA 2024
 |-----
 
 ^r3/lib/rand.r3
@@ -71,9 +71,9 @@
 :testuni
 	0 ( 6 <?
 		0 ( 6 <? 
-			|2dup 2 << + 
-			8 randmax
-			rand 2.0 
+			6 randmax
+			rand 
+			2.0 
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
 			0 |4.0 randmax
@@ -95,14 +95,12 @@
 	
 |--------------------------------------------
 #listvox
-( 32 32 ) "bloque1"
-( 32 32 ) "bloque2"
-( 32 32  ) "clon1"
-( 32 32  ) "clon2"
-( 32 32  ) "clon3"
-( 32 32  ) "ovni31"
-( 32 32  ) "ovni32"
-( 32 32  ) "ovni33"
+( 32 32 ) "clon1"
+( 32 32 ) "clon2"
+( 32 32 ) "clon3"
+( 32 32 ) "ovni31"
+( 32 32 ) "ovni32"
+( 32 32 ) "ovni33"
 0
 
 	

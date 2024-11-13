@@ -240,7 +240,9 @@
 	
 :modediting
 	0 SDLcls 
+	edfill
 	edfocus 
+	edcodedraw
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )

@@ -71,12 +71,12 @@
 :testuni
 	0 ( 6 <?
 		0 ( 6 <? 
-			|2dup 2 << + 
-			19 randmax
-			rand 4.0 
-			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
-			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +
-			0 |4.0 randmax
+			19 randmax	| object
+			rand 		| angle
+			4.0 		| zoom
+			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - +	| x
+			pick4 10.0 * 25.0 - 8.0 randmax 4.0 - + | y
+			0 |4.0 randmax | z
 			+obj
 			1+ ) drop
 		1+ ) drop

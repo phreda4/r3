@@ -548,7 +548,7 @@
 ::edfocus
 	xcode ycode wcode hcode bsrcsize 
 	$ffffff sdlcolor
-	2over 2over sdlRect 
+	2over 1- 2over 1+ sdlRect 
 	guiBox
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 

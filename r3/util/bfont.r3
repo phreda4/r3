@@ -118,9 +118,18 @@
 	hp * swap wp * swap bat ;
 ::gotox | x --
 	wp * 'dp d! ;
+	
 ::bcr
 	0 'dp d!
 	hp 'dp 4 + d+! ;
+::bcr2
+	0 'dp d!
+	hp 2* 'dp 4 + d+! ;
+::bcrz | size --
+	0 'dp d!
+	hp 16 *>> 'dp 4 + d+! ;
+
+
 ::bsp
 	wp 'dp d+! ;
 ::bnsp | n --
@@ -146,6 +155,7 @@
 
 ::bcursori2 | n --
 	wp 2* * bpos swap rot + swap hp dup 2/ + + wp 2* hp 2/ SDLFRect ;
+	
 
 ::bfont1	
 	8 16 "media/img/VGA8x16.png" bmfont	;	
