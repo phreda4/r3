@@ -21,8 +21,7 @@
 	ca@+ dup 3 << 'colors + @ sdlColor
 	-rot
 	postile 62 dup SDLFrect
-	rot
-	0? ( drop ; ) 
+	rot 0? ( drop ; ) 
 	-rot
 	$000000 ttcolor
 	postile	8 + swap 8 + swap ttat
@@ -42,79 +41,33 @@
 	( 16 randmax 'map + dup c@ 1? 2drop ) drop
 	1 swap c! ;
 	
-	
-|---- v 0	
-#mx 1 #my 0
-#another
+#l0 0 #l1 0 #l2 0 0
 
-:check | x y -- x y 
-	2dup ]map c@ 1? ( drop ; ) drop
-	over mx + -? ( drop ; ) 3 >? ( drop ; )
-	over my + -? ( 2drop ; ) 3 >? ( 2drop ; )
-	]map dup c@ 0? ( 2drop ; ) 
-	pick3 pick3 ]map c!
-	0 swap c!
-	1 'another !	
-	;
-
-:fall | mx my --
-	'my ! 'mx !  
-:rfall	
-	0 'another !
-	0 ( 4 <?
-		0 ( 4 <?
-			check
-			1+ ) drop
-		1+ ) drop 
-	another 1? ( drop rfall ; ) drop ;
-
-:up	1 0 fall newn ;
-:dn	-1 0 fall newn ;
-:le	0 1 fall newn ;
-:ri	0 -1 fall newn ;
-
-|-----------------------------------
-#line 0 0 0 0
-
-:]line | n -- adr
-	3 << 'line + @ ;
+:add
+	1+ 1 over << 'score +! 	| ....
+:down
+	0 pick2 @ c! swap 8 + @ c! ;
 	
-:ldn | v n --
-	3 << 'line + @+ 0 swap c! @ c! ;
-
-:l+ | v n -- v
-	1 pick2 1+ << 'score +!
-	3 << 'line + @+ 0 swap c! @ over 1+ swap c! ;
-	
-:ck2
-	2 ]line c@ 0? ( drop ; )
-	3 ]line c@ 0? ( drop 2 ldn ; ) 
-	=? ( 2 l+ ) drop ;
-	
-:ck1
-	1 ]line c@ 0? ( drop ; )
-	2 ]line c@ 0? ( drop 1 ldn ; )
-	=? ( 1 l+ ) drop ;
-	
-:ck0
-	0 ]line c@ 0? ( drop ; )
-	1 ]line c@ 0? ( drop 0 ldn ; )
-	=? ( 0 l+ ) drop ;	
-	
+:ck | adr -- 
+	dup @ 
+	c@ 0? ( 2drop ; )				| adr c1
+	over 8 + @ 
+	c@ 0? ( drop down ; ) 			| adr c1 c2
+	=? ( add ; ) 2drop ;
 
 :fall | delta ini --
-	'line >a
+	'l0 >a
 	4 ( 1? swap 
 		dup 'map + a!+
 		pick2 + swap 1- ) 3drop 
-	ck2 
-	ck1 ck2 
-	ck0 ck1 ck2
+	'l2 ck
+	'l1 ck 'l2 ck
+	'l0 ck 'l1 ck 'l2 ck
 	;
 	
 :le	
 	12 ( 16 <? 
-		-4 over lcopy
+		-4 over fall
 		1+ ) drop 	
 	newn ;
 :ri
@@ -133,7 +86,6 @@
 		4 + ) drop
 	newn ;
 
-	
 :reset
 	'map 0 16 cfill 
 	newn newn 
