@@ -176,7 +176,7 @@
 	"Sokoban" 1024 600 SDLinit
 	64 64 "media\img\sokoban_tilesheet.png" ssload 'sprites !
 	ttf_init
-	"media/ttf/Roboto-Medium.ttf" 32 TTF_OpenFont  ttfont
+	"media/ttf/Roboto-Medium.ttf" 32 TTF_OpenFont ttfont!
 	here 'undo. !
 	0 loadlevel
 	'game SDLshow

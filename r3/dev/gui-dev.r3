@@ -270,8 +270,8 @@
 	ttf_init	
 |	"media/ttf/ProggyClean.ttf" 
 	"media/ttf/Roboto-Medium.ttf" 
-	16 TTF_OpenFont 'font !	
-	font ttfont
+	16 TTF_OpenFont 
+	dup 'font !	ttfont!
 	24 21 "media/img/icong16.png" tsload 'icons !
 |	bfont1
 	

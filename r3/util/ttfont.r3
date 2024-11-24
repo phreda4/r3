@@ -45,7 +45,7 @@
 	over 16 >> $ff and or 
 	swap $ff00 and or 'ttink ! ;
 	
-::ttfont | font --
+::ttfont! | font --
 	'ttfon ! ;
 	
 ::tt. | "" --
