@@ -51,7 +51,7 @@
 ::immat 'cury ! 'curx ! ;
 ::immat+ 'cury +! 'curx +! ;
 ::immbox 'boxh ! 'boxw ! ;
-::immfont! dup 'immfont ! ttfont "A" ttsize 'immfontsh ! drop ;
+::immfont! dup 'immfont ! ttfont! "A" ttsize 'immfontsh ! drop ;
 ::immpad! 'pady ! 'padx ! ;
 
 |----------------------	
