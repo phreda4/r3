@@ -51,17 +51,19 @@
 #l0 0 #l1 0 #l2 0 0
 
 :add
-	1+ 1 over << 'score +! 	| ....
+	1+ 1 over << 'score +! 	
 	11 =? ( win )
+	0 				| ....
 :down
-	0 pick2 @ c! swap 8 + @ c! ;
+	pick2 @ c! swap 8 + @ c! ;
 	
 :ck | adr -- 
 	dup @ 
-	c@ 0? ( 2drop ; )				| adr c1
+	c@ 0? ( 2drop ; )		| adr c1
 	over 8 + @ 
-	c@ 0? ( drop down ; ) 			| adr c1 c2
-	=? ( add ; ) 2drop ;
+	c@ 0? ( down ; ) 		| adr c1 c2
+	=? ( add ; ) 
+	2drop ;
 
 :fall | delta ini --
 	'l0 >a
@@ -125,14 +127,11 @@
 	<dn> =? ( dn )
 	<le> =? ( le )
 	<ri> =? ( ri )
-	<f1> =? ( newn )
 	drop
 	;
 	
 :
 	"2048" 800 600 SDLinit
-	SDLrenderer 800 600 SDL_RenderSetLogicalSize | fullscreen
-	
 	"media/ttf/Roboto-Medium.ttf" 24 ttf_OpenFont ttfont!
 	reset
 	'play sdlshow
