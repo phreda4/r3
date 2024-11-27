@@ -119,8 +119,8 @@
 #info ( $2E $1F $2F $10 $1F $1F $2F $10 $10 $2E $2E $2E $2E $4C $4C )
 #r3_util_arr8.r3 'name 'words 'info
 #name "r3/util/bfont.r3"
-#words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
-#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $0 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $2 $2 $4 $1F $1F $1F $1F $0 $0 )
+#words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
+#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $0 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $2 $2 $4 $1F $1F $1F $1F $0 $0 )
 #r3_util_bfont.r3 'name 'words 'info
 #name "r3/util/blist.r3"
 #words  "blistdel" "blist!" "blist-" "blist@" "blist?" 0
@@ -203,7 +203,7 @@
 #info ( $80 $80 $80 $80 $80 $0 $0 $1F $1F $11 $11 $13 $2E $2E $2E $2E $3D $4C $5B $5B $2E $2E $2E $1 $1F $1F $10 $5B $6A $0 $2E $10 $5B $10 $0 $0 $0 )
 #r3_util_timeline.r3 'name 'words 'info
 #name "r3/util/ttfont.r3"
-#words  "ttx" "tty" "ttcolor" "ttfont" "tt." "ttat" "+ttat" "ttsize" "ttprint" "ttcursor" "ttcursori" "ttrect" 0
+#words  "ttx" "tty" "ttcolor" "ttfont!" "tt." "ttat" "+ttat" "ttsize" "ttprint" "ttcursor" "ttcursori" "ttrect" 0
 #info ( $80 $80 $1F $1F $1F $2E $2E $12 $1F $2F $2F $4 )
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/varanim.r3"

@@ -8,6 +8,7 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdledit.r3
 
+
 | scratchjr
 | eventos/movimiento/apariencia/sonido/control/fin
 |
@@ -58,11 +59,15 @@
 	;
 	
 #skx 200 #sky 100
-#skcnt 4
+#skview 4
+#skcnt 6
 #sktok * 128	
 
+:dcell
+	;
+	
 :mstack
-	skcnt ( 1?
+	skview ( 1? 
 		1- ) drop ;
 	
 #cox 20 #coy 300
@@ -70,9 +75,11 @@
 #copad> 'copad
 
 :mconsole
-	$ffffff ttcolor
-	cox coy ttat
-	'copad tt.
+|	$ffffff ttcolor
+|	cox coy ttat
+|	'copad tt.
+	cox coy immat
+	'copad 64 input
 	;
 	
 :menu

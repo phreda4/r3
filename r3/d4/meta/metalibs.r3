@@ -180,9 +180,9 @@
 #r3_util_arr8.r3 'name 'words 'calls 'info
 ^r3/util/bfont.r3
 #name "r3/util/bfont.r3"
-#words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
-#calls  'wp 'hp 'bmfont 'bcolor 'bfbox 'bbox 'bbox2 'bfillline 'bsrcsize 'bfillemit 'bfcemit 'bemit 'bprint 'bemits 'bprintd 'bemitsd 'bprint2 'bemits2 'bprintz 'bemitsz 'bat 'ccx 'ccy 'gotoxy 'gotox 'bcr 'bsp 'bnsp 'bsize 'bpos 'brect 'bcursor 'bcursori 'bcursor2 'bcursori2 'bfont1 'bfont2
-#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $0 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $2 $2 $4 $1F $1F $1F $1F $0 $0 )
+#words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
+#calls  'wp 'hp 'bmfont 'bcolor 'bfbox 'bbox 'bbox2 'bfillline 'bsrcsize 'bfillemit 'bfcemit 'bemit 'bprint 'bemits 'bprintd 'bemitsd 'bprint2 'bemits2 'bprintz 'bemitsz 'bat 'ccx 'ccy 'gotoxy 'gotox 'bcr 'bcr2 'bcrz 'bsp 'bnsp 'bsize 'bpos 'brect 'bcursor 'bcursori 'bcursor2 'bcursori2 'bfont1 'bfont2
+#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $0 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $2 $2 $4 $1F $1F $1F $1F $0 $0 )
 #r3_util_bfont.r3 'name 'words 'calls 'info
 ^r3/util/blist.r3
 #name "r3/util/blist.r3"
@@ -306,8 +306,8 @@
 #r3_util_timeline.r3 'name 'words 'calls 'info
 ^r3/util/ttfont.r3
 #name "r3/util/ttfont.r3"
-#words  "ttx" "tty" "ttcolor" "ttfont" "tt." "ttat" "+ttat" "ttsize" "ttprint" "ttcursor" "ttcursori" "ttrect" 0
-#calls  'ttx 'tty 'ttcolor 'ttfont 'tt. 'ttat '+ttat 'ttsize 'ttprint 'ttcursor 'ttcursori 'ttrect
+#words  "ttx" "tty" "ttcolor" "ttfont!" "tt." "ttat" "+ttat" "ttsize" "ttprint" "ttcursor" "ttcursori" "ttrect" 0
+#calls  'ttx 'tty 'ttcolor 'ttfont! 'tt. 'ttat '+ttat 'ttsize 'ttprint 'ttcursor 'ttcursori 'ttrect
 #info ( $80 $80 $1F $1F $1F $2E $2E $12 $1F $2F $2F $4 )
 #r3_util_ttfont.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
