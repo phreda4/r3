@@ -25,13 +25,13 @@
 	
 :drawtile
 	|postile 64 dup sdlRect
-	a@+ $f and 0? ( drop ; ) >r
+	a@+ $ff and 0? ( drop ; ) >r
 	posspr 2.0 r> 1- imgspr sspritez
 	;
 	
 :mapdraw
-	$333333 sdlcolor
-	0 0 postile mw 5 << mh 5 << SDLFrect 2drop
+|	$333333 sdlcolor
+|	0 0 postile mw 5 << mh 5 << SDLFrect 2drop
 	
 	'marena >a
 	0 ( mh <? 
@@ -43,7 +43,9 @@
 :buildmap
 	'marena >a
 	mw mh * ( 1?
-		5 randmax a!+
+		40 randmax 
+		20 >? ( 0 nip )
+		a!+
 		1- ) drop ;
 	
 #btnpad
@@ -92,16 +94,26 @@
 	a!				| last
 	;
 
+:player
+	600 msec 5 >> $ff and + 
+	300 4.0 msec 7 >> $1 and 7 + imgspr sspritez
+
+	1000 msec 5 >> $ff and - 
+	400 4.0 msec 7 >> $1 and 9 + imgspr sspritez
+
+	;
+	
 |-------------------
 :runscr
 	timer.
 	immgui
-	0 sdlcls
+	$222222 sdlcls
 	$ffff bcolor
 	8 8 bat "MatArena" bprint2 
 
 	mapdraw
- 
+	player
+	
 	'fx p.draw
 
 	sdlredraw
@@ -117,7 +129,7 @@
 	>le< =? ( btnpad %10 nand 'btnpad ! )
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
-	
+	<f1> =? ( buildmap )
 	drop ;
 
 :reset
