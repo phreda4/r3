@@ -5,13 +5,13 @@
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
+^r3/util/sdlbgui.r3
 
 #imgspr
 #fx 0 0 
 
 #mvx 8 #mvy 64
-#mw 16 #mh 16
+#mw 16 #mh 12
 #marena * 8192
 
 :postile | y x -- y x xs ys
@@ -100,7 +100,14 @@
 
 	1000 msec 5 >> $ff and - 
 	400 4.0 msec 7 >> $1 and 9 + imgspr sspritez
-
+	;
+	
+#pad * 256
+	
+:mconsole	
+	8 500 immat
+	1000 32 immbox
+	'pad 128 immInputLine2
 	;
 	
 |-------------------
@@ -112,9 +119,10 @@
 	8 8 bat "MatArena" bprint2 
 
 	mapdraw
-	player
-	
 	'fx p.draw
+	player
+	mconsole
+	
 
 	sdlredraw
 	sdlkey
@@ -141,7 +149,7 @@
 	"r3 marena" 1024 600 SDLinit
 	bfont1
 	
-	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
+	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	16 16 "r3/r3vm/img/rcode.png" ssload 'imgspr !
 	400 'fx p.ini
 	reset

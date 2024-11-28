@@ -204,8 +204,17 @@
 	a! | color
 	;
 	
+#pad * 256	
+
+:mconsole	
+	8 500 immat
+	1000 32 immbox
+	'pad 128 immInputLine
+	;
+	
 |-------------------
 :runscr
+	immgui
 	timer.
 	0 sdlcls
 	$ffff bcolor
@@ -216,7 +225,9 @@
 	'tanks p.draw
 	'fx p.draw
 
-	8 64 bat H2d.list "%d %h" bprint
+	|8 64 bat H2d.list "%d %h" bprint
+	
+	mconsole
 	
 	sdlredraw
 	sdlkey

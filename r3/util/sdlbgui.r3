@@ -285,8 +285,14 @@
 :cursor | 'var max
 	msec $100 and? ( drop ; ) drop
 	$a0a0a0 SDLColor
-	modo 'lins =? ( drop padi> pad> bcursor drop ; ) drop
-	padi> pad> bcursori drop ;
+	modo 'lins =? ( drop pad> padi> - bcursor ; ) drop
+	pad> padi> - bcursori ;
+
+:cursor2 | 'var max
+	msec $100 and? ( drop ; ) drop
+	$a0a0a0 SDLColor
+	modo 'lins =? ( drop pad> padi> - bcursor2 ; ) drop
+	pad> padi> - bcursori2 ;
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
@@ -302,10 +308,8 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
-	$ffffff SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
-
-	cursor 
+|	$ffffff SDLColor
+|	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
 	SDLchar 1? ( modo ex ; ) drop
 	SDLkey 0? ( drop ; )
 	<ins> =? ( chmode )
@@ -319,22 +323,34 @@
 	drop
 	;
 
-
 |************************************
 ::immInputLine | 'buff max --
 	plgui
-	$222222 SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+|	$222222 SDLColor
+|	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
 |	boxh 16 - 1 >> + bat
 |	$7f7f7f [ $ffffff nip ; ] guiI glcolor
 	curx padx + 
 	boxh 16 - 1 >> cury + pady + 
 	bat 
-	'proinputa 'iniinput w/foco
+	[ cursor proinputa ; ] 'iniinput w/foco
 	'clickfoco onClick
-	$ffffff bcolor
 	drop
-	bprint ;
+	$ffffff bcolor bprint ;
+
+::immInputLine2 | 'buff max --
+	plgui
+|	$222222 SDLColor
+|	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+|	boxh 16 - 1 >> + bat
+|	$7f7f7f [ $ffffff nip ; ] guiI glcolor
+	curx padx + 
+	boxh 32 - 1 >> cury + pady + 
+	bat 
+	[ cursor2 proinputa ; ] 'iniinput w/foco
+	'clickfoco onClick
+	drop
+	$ffffff bcolor bprint2 ;
 
 
 |----- ENTERO
@@ -346,9 +362,9 @@
 	$30 - cmax @ 10 * + cmax ! ;
 
 :proinputi
-	$ffffff SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
-	|1 cursor drop
+|	$ffffff SDLColor
+|	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+|	1 cursor 
 	knro
 	sdlkey
 	<back> =? ( cmax @ 10 / cmax ! )
@@ -361,8 +377,8 @@
 |************************************
 ::immInputInt | 'var --
 	plgui
-	$222222 SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+|	$222222 SDLColor
+|	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
 	curx padx + 
 	boxh 16 - 1 >> cury + pady + 
 	bat 
