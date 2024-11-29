@@ -126,7 +126,8 @@
 	xy+polar | x y bangle r -- x y
 	+disparo
 	;
-
+	
+|------------------------
 :motor | m --
  	a> .a @ 32 >> neg 0.5 + swap polar 
 	a> .y +! a> .x +! ;
@@ -134,6 +135,12 @@
 :turn | a --
 	32 << a> .a +! ;
 
+:shoot | --
+	;
+
+:scan | --
+	;
+|--------------------------
 :tanima | btn -- btn
 	$f and? ( a> .ani dup @ 0 2 $ff vICS>anim swap ! ; )
 	a> .ani dup @ 0 0 0 vICS>anim swap ! ;
@@ -243,7 +250,7 @@
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
-	<f1> =? ( rand | color
+	<f1> =? ( rand $ff000000 or | color
 		tsprites 
 		0 0 0 ICS>anim | init cnt scale -- 
 		2.0 1.0 randmax 

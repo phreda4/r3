@@ -10,6 +10,11 @@
 #imgspr
 #fx 0 0 
 
+
+#mzoom 2.0
+#mrot 0.0
+#mcx 512 #mcy 300
+
 #mvx 8 #mvy 64
 #mw 16 #mh 12
 #marena * 8192
@@ -30,21 +35,19 @@
 	;
 	
 :mapdraw
-|	$333333 sdlcolor
-|	0 0 postile mw 5 << mh 5 << SDLFrect 2drop
-	
 	'marena >a
 	0 ( mh <? 
 		0 ( mw <? 
 			drawtile
 			1+ ) drop
 		1+ ) drop ;
-	
+
+|--------------------------	
 :buildmap
 	'marena >a
 	mw mh * ( 1?
 		40 randmax 
-		20 >? ( 0 nip )
+		22 >? ( 0 nip )
 		a!+
 		1- ) drop ;
 	
@@ -94,14 +97,38 @@
 	a!				| last
 	;
 
-:player
-	600 msec 5 >> $ff and + 
-	300 4.0 msec 7 >> $1 and 7 + imgspr sspritez
+#xp 600 #yp 300
+#dp 0
 
-	1000 msec 5 >> $ff and - 
-	400 4.0 msec 7 >> $1 and 9 + imgspr sspritez
+:player
+	xp yp 4.0
+	dp 2* 7 +
+	msec 7 >> $1 and +
+	imgspr sspritez
 	;
 	
+|----------	
+#penergy
+#pcarry
+
+:istep | step --
+	;
+:iturn | a --
+	;
+:iup 
+:idn
+:ile
+:iri
+	;
+:iscan | -- n
+	;
+:iget | --
+	;
+:iput | --
+	;
+
+	
+|-------------------------------	
 #pad * 256
 	
 :mconsole	
@@ -128,10 +155,10 @@
 	sdlkey
 	>esc< =? ( exit )
 	| ---- player control	
-	<up> =? ( btnpad %1000 or 'btnpad ! )
-	<dn> =? ( btnpad %100 or 'btnpad ! )
-	<le> =? ( btnpad %10 or 'btnpad ! )
-	<ri> =? ( btnpad %1 or 'btnpad ! )
+	<up> =? ( btnpad %1000 or 'btnpad ! 2 'dp ! )
+	<dn> =? ( btnpad %100 or 'btnpad ! 3 'dp ! )
+	<le> =? ( btnpad %10 or 'btnpad ! 1 'dp ! )
+	<ri> =? ( btnpad %1 or 'btnpad ! 0 'dp ! )
 	>up< =? ( btnpad %1000 nand 'btnpad ! )
 	>dn< =? ( btnpad %100 nand 'btnpad ! )
 	>le< =? ( btnpad %10 nand 'btnpad ! )
