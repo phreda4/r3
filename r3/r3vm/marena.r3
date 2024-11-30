@@ -7,31 +7,55 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/sdlbgui.r3
 
+^r3/r3vm/r3ivm.r3
+^r3/r3vm/r3itok.r3
+^r3/r3vm/r3iprint.r3
+
+#cpuplayer
+
 #imgspr
 #fx 0 0 
 
+#level0 (
+17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  5  0  0  6  0  0  7  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  4  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+03 03 03 03 03 03 03 03 03 03 03 03 03 03 03 03
+)
 
-#mzoom 2.0
 #mrot 0.0
-#mcx 512 #mcy 300
+#tzoom 2.0
+#tsize 16 
+#tmul
 
 #mvx 8 #mvy 64
 #mw 16 #mh 12
 #marena * 8192
 
+:calc tsize tzoom *. 'tmul ! ;
+
 :postile | y x -- y x xs ys
-	dup 5 << mvx +
-	pick2 5 << mvy +
+	dup tmul * mvx +
+	pick2 tmul * mvy +
 	;
-:posspr | y x -- y x xs ys
-	dup 5 << mvx + 16 +
-	pick2 5 << mvy + 16 +
+	
+:posspr | x y -- xs ys
+	swap tmul * mvx + tmul 2/ +
+	swap tmul * mvy + tmul 2/ +
 	;
 	
 :drawtile
-	|postile 64 dup sdlRect
+	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
-	posspr 2.0 r> 1- imgspr sspritez
+	2dup swap posspr tzoom r> 1- imgspr sspritez
 	;
 	
 :mapdraw
@@ -49,6 +73,13 @@
 		40 randmax 
 		22 >? ( 0 nip )
 		a!+
+		1- ) drop ;
+	
+:cpylevel | 'l --
+	>b
+	'marena >a
+	mw mh * ( 1?
+		cb@+ a!+
 		1- ) drop ;
 	
 #btnpad
@@ -97,28 +128,24 @@
 	a!				| last
 	;
 
-#xp 600 #yp 300
-#dp 0
+|----------	
+#xp 1 #yp 1 | position
+#dp 0	| direction
+#ap 0 	| anima
+#penergy
+#pcarry
 
 :player
-	xp yp 4.0
+	xp yp posspr
+	tzoom
 	dp 2* 7 +
 	msec 7 >> $1 and +
 	imgspr sspritez
 	;
 	
-|----------	
-#penergy
-#pcarry
-
 :istep | step --
 	;
 :iturn | a --
-	;
-:iup 
-:idn
-:ile
-:iri
 	;
 :iscan | -- n
 	;
@@ -126,7 +153,20 @@
 	;
 :iput | --
 	;
+:ibye
+	exit ;
+	
+|#wsys "BYE" "shoot" "turn" "adv" "stop"
+#wsysdic $23EA6 $34A70C35 $D76CEF $22977 $D35C31 0
+#xsys 'ibye 'istep 'iturn 'iscan 'iget 'iput 0	
 
+:inicpu
+	'wsysdic syswor!
+	'xsys vecsys!
+	mark
+	$fff vmcpu 'cpuplayer !
+
+	;
 	
 |-------------------------------	
 #pad * 256
@@ -135,6 +175,33 @@
 	8 500 immat
 	1000 32 immbox
 	'pad 128 immInputLine2
+	
+	||$ffffff ttcolor
+	8 532 bat
+	"< " bprint2
+	vmdeep 0? ( drop ; ) 
+	code 8 +
+	( swap 1 - 1? swap
+		@+ "%d " bprint2 
+		) 2drop 
+	TOS "%d " bprint2
+	;
+	
+#immcode	
+#lerror
+:exec	
+	cpuplayer vm@ r3reset
+	
+	CODE> 'immcode !
+	'pad r3i2token 'lerror !
+	
+	0 'pad !
+	refreshfoco
+	;
+	
+:debug	
+	10 560 bat
+	lerror "err: %d" bprint
 	;
 	
 |-------------------
@@ -149,38 +216,46 @@
 	'fx p.draw
 	player
 	mconsole
-	
+	debug
 
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
+	<ret> =? ( exec )
 	| ---- player control	
-	<up> =? ( btnpad %1000 or 'btnpad ! 2 'dp ! )
-	<dn> =? ( btnpad %100 or 'btnpad ! 3 'dp ! )
-	<le> =? ( btnpad %10 or 'btnpad ! 1 'dp ! )
-	<ri> =? ( btnpad %1 or 'btnpad ! 0 'dp ! )
+	<up> =? ( btnpad %1000 or 'btnpad ! 2 'dp ! -1 'yp +! )
+	<dn> =? ( btnpad %100 or 'btnpad ! 3 'dp ! 1 'yp +! )
+	<le> =? ( btnpad %10 or 'btnpad ! 1 'dp ! -1 'xp +! )
+	<ri> =? ( btnpad %1 or 'btnpad ! 0 'dp ! 1 'xp +! )
 	>up< =? ( btnpad %1000 nand 'btnpad ! )
 	>dn< =? ( btnpad %100 nand 'btnpad ! )
 	>le< =? ( btnpad %10 nand 'btnpad ! )
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
-	<f1> =? ( buildmap )
+	<f1> =? ( vmdeep vmpush )
 	drop ;
 
 :reset
 	'fx p.clear
 	;
 	
+
+	
 |-------------------
 : |<<< BOOT <<<
 	"r3 marena" 1024 600 SDLinit
 	bfont1
 	
-	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
-	16 16 "r3/r3vm/img/rcode.png" ssload 'imgspr !
+	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
+	calc
 	400 'fx p.ini
 	reset
-	buildmap
+	
+	inicpu
+	
+	|buildmap
+	'level0 cpylevel
+	
 	'runscr SDLshow
 	SDLquit 
 	;

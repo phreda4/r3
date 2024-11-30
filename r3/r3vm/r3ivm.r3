@@ -204,4 +204,5 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	dup 'code> !
 	rot + 'here !
 	dup vm!
+	vmreset
 	;
