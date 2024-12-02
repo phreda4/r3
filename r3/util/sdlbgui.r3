@@ -9,7 +9,7 @@
 #winx 0 #winy 0
 #winw 10 #winh 10
 
-#padx 2 #pady 2
+##padx 2 ##pady 2
 ##curx 10 ##cury 10
 ##boxw 100 ##boxh 20
 
@@ -44,7 +44,7 @@
 	winx padx + 'curx ! boxh 'cury +! ;	
 	
 |--- place
-:plgui
+::plgui
 	curx padx + cury pady + boxw boxh guiBox ;
 
 ::plxywh

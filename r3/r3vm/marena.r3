@@ -150,8 +150,9 @@
 :iscan | -- n
 	;
 :iget | --
-	;
+	4 vmpush ;
 :iput | --
+	3 vmpush
 	;
 :ibye
 	exit ;
@@ -163,13 +164,24 @@
 :inicpu
 	'wsysdic syswor!
 	'xsys vecsys!
-	mark
 	$fff vmcpu 'cpuplayer !
-
 	;
-	
+
 |-------------------------------	
 #pad * 256
+
+#lerror
+
+:immex	
+	r3reset
+	'pad r3i2token drop 'lerror !
+	0 'pad !
+	refreshfoco
+	code> ( icode> <? 
+	| vmcheck
+		vmstep ) drop
+	;
+
 	
 :mconsole	
 	8 500 immat
@@ -187,21 +199,11 @@
 	TOS "%d " bprint2
 	;
 	
-#immcode	
-#lerror
-:exec	
-	cpuplayer vm@ r3reset
-	
-	CODE> 'immcode !
-	'pad r3i2token 'lerror !
-	
-	0 'pad !
-	refreshfoco
-	;
 	
 :debug	
 	10 560 bat
-	lerror "err: %d" bprint
+	lerror 1? ( dup bprint ) drop
+	|"err: %d" bprint
 	;
 	
 |-------------------
@@ -221,7 +223,7 @@
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<ret> =? ( exec )
+	<ret> =? ( immex )
 	| ---- player control	
 	<up> =? ( btnpad %1000 or 'btnpad ! 2 'dp ! -1 'yp +! )
 	<dn> =? ( btnpad %100 or 'btnpad ! 3 'dp ! 1 'yp +! )
@@ -232,14 +234,12 @@
 	>le< =? ( btnpad %10 nand 'btnpad ! )
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
 	<esp> =? ( btnpad $10 or 'btnpad ! )
-	<f1> =? ( vmdeep vmpush )
 	drop ;
 
 :reset
 	'fx p.clear
 	;
 	
-
 	
 |-------------------
 : |<<< BOOT <<<

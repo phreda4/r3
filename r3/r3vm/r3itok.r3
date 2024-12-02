@@ -309,6 +309,9 @@ $9EAB6D $92EC37 $24BB0DDF $249EAB6D 0
 	'lastdicc> !
 	0 'state ! ;
 
+::vmip
+	lastdicc> code - 8 + 'ip ! | ultima definicion
+	;
 
 ::vmload | 'vm "" --
 	over vm@
