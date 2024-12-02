@@ -77,22 +77,13 @@
 
 #cdx 20 #cdy 100
 #cdcnt 0
-#cdtok |$1 $f01 
-* 1024
+#cdtok * 1024
 
-::cprint2 | "" --
+:cprint2 | "" --
 	bsize 
 	boxw rot - 2 >> curx + 
 	boxh rot - 2 >> cury +
 	bat bprint2 ;
-
-
-:codecell | x y --
-	64 pick2 - 16 pick2 -
-	$7f sdlcolor
-	2dup 128 64 sdlfrect
-	
-	;
 
 |-------
 #tokstr
@@ -112,119 +103,86 @@
 	ex ;
 	
 |------ CODE
-#xc #yc	#sc 0
-#xi #yi	#si 0
+#xi #yi	
+#si 0
 #stri * 32
-#codi
 #nowins -1
 
-:incode dup 'nowins ! ;
-	
-:insertins
-	nowins -? ( drop ; ) 
-	3 << 'cdtok + 
-	dup dup 8 + swap cdcnt move> |dsc
-	si 8 << 1 or swap !
-	1 'cdcnt +!
-	;
-	
-:linecode	
-	32 32 immbox
-	dup 1+ "%d" cprint2 imm>>
-	128 32 immbox
-	a@+ tok>str cprint2
-	plgui
-	'incode guiI
-	;
-
-:mcodein	
-	[ -1 'nowins ! ; ] guiO
-	'cdtok >a
-	0 ( cdcnt <=?
-		nowins =? ( 0 8 immat+ )
-		linecode
-		immcr
-		1+ ) drop 
-	;
-
-:movc
-	sdlx xa - 'xc +! 
-	sdly ya - 'yc +! 
-:setc
-	sdlx 'xa ! sdly 'ya ! ;
-	
-:dnCode
-	a> 8 - @ tok>str 'stri strcpy
-	'stri 'sc ! curx 'xc ! cury 'yc ! setc ;
-:moveCode
-	movc ;
-
-:upCode
-	0 'sc ! ;
-
-:linecode
-	32 32 immbox
-	dup 1+ "%d" cprint2 imm>>
-	128 32 immbox
-	plgui
-	immcolorbtn SDLColor
-	plxywh SDLRect
-	a@+ tok>str cprint2
-	'dnCode
-	'moveCode
-	'upCode
-	onMapA ;	
-	
-:mcode
-	cdx cdy immwinxy
-	160 320 immbox
-	plgui 
-	$444444 sdlcolor plxywh SDLFRect	
-	si sc or 1? ( drop mcodein ; ) drop
-	'cdtok >a
-	0 ( cdcnt <?
-		linecode
-		immcr
-		1+ ) drop
-	;
-
-:showcode
-	sc 0? ( drop ; )
+:showins
+	si 0? ( drop ; ) drop
 	$666666 sdlcolor
-	xc yc 128 32 sdlfrect
+	xi yi 128 32 sdlfrect
 	$ffffff bcolor
-	xc 8 + yc bat bprint2
+	xi 8 + yi bat 
+	'stri bprint2
 	;
-	
-|------ INST
-:movi
-	sdlx xa - 'xi +! 
-	sdly ya - 'yi +! 
+
+|------ CODE
+:saseti
+	curx 'xi ! cury 'yi ! 
 :seti
 	sdlx 'xa ! sdly 'ya ! ;
 
 :dnins
-	dup 'si !
-	curx 'xi ! cury 'yi ! seti ;
-:moveins
-	movi ;
-:upins
-	insertins 0 'si ! ;
+	dup 'stri strcpy
+	over 'si !
+	saseti ;
 	
-:showins
-	si 0? ( drop ; )
-	$666666 sdlcolor
-	xi yi 128 32 sdlfrect
-	$ffffff bcolor
-	xi 8 + yi bat bprint2
+:dnCode
+	cdcnt 0? ( drop ; ) drop
+	a> 8 - @ dup 'si !
+	0? ( drop ; )
+	tok>str 'stri strcpy
+	a> dup 8 - swap cdcnt move
+	-1 'cdcnt +!
+	saseti ;
+
+:moveins
+	sdlx xa - 'xi +! 
+	sdly ya - 'yi +! 
+	seti ;
+
+:insertins
+	si 0? ( drop ; ) drop
+	nowins -? ( drop ; ) 
+	3 << 'cdtok + 
+	dup dup 8 + swap cdcnt move> |dsc
+	si 8 << 1 or swap !	
+	0 'si !
+	1 'cdcnt +!
 	;
 	
-::cprint2 | "" --
-	bsize 
-	boxw rot - 2 >> curx + 
-	boxh rot - 2 >> cury +
-	bat bprint2 ;
+:upins
+	insertins 0 'si ! ;
+
+:linecode
+	32 32 immbox
+	dup 1+ "%d" cprint2 imm>>
+	180 32 immbox
+	plgui
+	[ dup 'nowins ! $222222 sdlcolor plxywh SDLFRect ; ] guiI
+	a@+ tok>str cprint2
 	
+	
+	'dnCode
+	'moveins
+	'upins
+	onMapA ;	
+	
+:mcode
+	cdx cdy immwinxy
+	192 320 immbox
+	plgui 
+	$444444 sdlcolor plxywh SDLFRect	
+	[ -1 'nowins ! ; ] guiO
+	$ffffff bcolor
+	'cdtok >a
+	0 ( cdcnt <=?
+		linecode
+		immcr
+		1+ ) drop ;
+	
+|------ INST
 :orden | "" -- ""
 	plgui
 	immcolorbtn SDLColor
@@ -254,25 +212,13 @@
 	;
 	
 :mstack
-	8 400 bat
+	16 500 bat
 	vmdeep 0? ( drop ; ) 
 	code 8 +
 	( swap 1 - 1? swap
 		@+ "%d " bprint2 
 		) 2drop 
 	TOS "%d " bprint2
-	;
-	
-#cox 20 #coy 300
-#copad "> " * 512
-#copad> 'copad
-
-:mconsole
-|	$ffffff ttcolor
-|	cox coy ttat
-|	'copad tt.
-	cox coy immat
-	'copad 64 input
 	;
 	
 :menu
@@ -289,18 +235,15 @@
 	mcode
 	mstack
 	showins
-	showcode
-	
+		
 |	mconsole
 
 	'code p8.draw
 	'inst p8.draw
 
-	
 	SDLredraw 
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( " 0 ( 4 <?" 100 sdlx sdly +co )
 	drop
 	;
 
@@ -313,7 +256,7 @@
 	200 'code p8.ini
 	50 'inst p8.ini	
 	
-		r3reset
+	r3reset
 	modmenu
 	SDLquit 
 	;
