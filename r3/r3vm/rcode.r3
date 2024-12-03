@@ -3,13 +3,13 @@
 |-------------------------
 
 ^r3/lib/rand.r3
-^r3/util/arr8.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/sdlbgui.r3
+^r3/util/varanim.r3
 
 ^r3/r3vm/r3ivm.r3
-^r3/r3vm/r3itok.r3
-^r3/r3vm/r3iprint.r3
+|^r3/r3vm/r3itok.r3
+|^r3/r3vm/r3iprint.r3
 
 | scratchjr
 | eventos/movimiento/apariencia/sonido/control/fin
@@ -17,22 +17,20 @@
 | scratch
 | movimiento/apariencia/sonido/eventos/control/sensor/operadores/variables/bloques
 
+|#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
+|#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
+#words " Up" " Down" " Left" " Right"  " Jump" " Push" 0
 
-#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
-#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
-#words "Up " "Down" "Left" "Right"  "Jump" "Push" 0
-
-#xa #ya
-#cdx 20 #cdy 64
+#cdx 64 #cdy 64
 #cdcnt 0
 #cdmax 128 
 #cdtok * 1024
 
+#cdcur 'cdtok
+#cdspeed 1.0
+
 :cprint2 | "" --
-	bsize 
-	boxw rot - 2 >> curx + 
-	boxh rot - 2 >> cury +
-	bat bprint2 ;
+	curx padx + cury pady + bat bprint2 ;
 
 |-------
 #tokstr
@@ -55,15 +53,13 @@
 	'words swap ( 1? 1- swap >>0 swap ) drop ;
 	
 |------ CODE
-#xi #yi	
-#si -1
-#stri * 32
+#xi #yi	#si -1 #stri * 32
 
 #nowins -1
 
 :showins
 	si -? ( drop ; ) drop
-	$666666 sdlcolor
+	$555555 sdlcolor
 	xi yi 128 32 sdlfrect
 	$ffffff bcolor
 	xi 8 + yi bat 
@@ -71,6 +67,7 @@
 	;
 
 |------ CODE
+#xa #ya
 :saseti
 	curx 'xi ! cury 'yi ! |...
 :seti
@@ -106,15 +103,25 @@
 	;
 	
 :incell
-	over 'nowins ! $222222 sdlcolor plxywh SDLFRect ;
+	over 'nowins ! 
+	$333333 sdlcolor 
+	plxywh SDLFRect 
+	;
+	
+:codeprint
+	nowins =? ( ; )
+	cdcnt =? ( nowins -? ( drop ; ) drop )
+	a@+ tok>str cprint2 ;
 	
 :linecode
-	32 32 immbox
-	dup 1+ "%d" cprint2 imm>>
-	180 32 immbox
+	$333333 bcolor
+	curx 32 - cury pady + bat
+	dup 1+ "%d" bprint2
+	$ffffff bcolor
+	224 32 immbox
 	plgui
 	si +? ( 'incell guiI ) drop
-	nowins <>? ( cdcnt <? ( a@+ tok>str cprint2 ) )
+	codeprint
 	'dnCode 'moveins 'upins onMapA ;	
 	
 :mcode
@@ -133,23 +140,50 @@
 |------ INST
 :orden | "" -- ""
 	plgui
-	immcolorbtn SDLColor
-	plxywh SDLRect
+	$444444 SDLColor
+	plxywh SDLFRect
 	dup cprint2
-	
 	'dnIns 'moveIns 'upIns onMapA ;	
 	
 :mpaleta
-	128 32 immbox
 	300 64 immat
+	128 32 immbox
 	0 'words 
 	( dup c@ 1? drop
 		orden immdn
 		>>0 swap 1+ swap ) 3drop ;
-		
-|------------------------------------
+
+
+|------ PLAYCODE
+:linecursor
+	cdcur <>? ( $333333 bcolor ; ) 
+	curx 48 - cury pady + bat
+	$eeeeee bcolor ">" bprint2 
+	;
 	
-#skx 200 #sky 100
+:linecode
+	linecursor
+	curx 32 - cury pady + bat
+	dup 1+ "%d" bprint2
+	$ffffff bcolor
+	224 32 immbox
+	plgui
+	a@+ tok>str cprint2 ;	
+	
+:pcode
+	cdx cdy immwinxy
+	224 384 immbox
+	plgui 
+	$444444 sdlcolor plxywh SDLFRect	
+	$ffffff bcolor
+	'cdtok >a
+	0 ( cdcnt <?
+		linecode
+		immcr
+		1+ ) drop ;
+
+|------ STACK
+#skx 300 #sky 100
 #skview 4
 #skcnt 6
 #sktok * 128	
@@ -158,7 +192,7 @@
 	;
 	
 :mstack
-	16 500 bat
+	skx sky bat
 	vmdeep 0? ( drop ; ) 
 	code 8 +
 	( swap 1 - 1? swap
@@ -166,8 +200,44 @@
 		) 2drop 
 	TOS "%d " bprint2
 	;
+
+|-----------------------------
+:editando
+	mpaleta
+	mcode
+	showins
 	
+	|200 4 bat cdcnt si nowins "now:%d si:%d cnt:%d" bprint2
+	;
+
+|-----------------------------
+:vmstep
+	cdcur 
+	dup 3 << 'cdtok + @ "%d" .println
+	1+ dup 'cdcur !
+	cdcnt <? ( 'vmstep 1.0 +vexe ) drop
+	;
+	
+:ejecutando
+	pcode
+	mstack
+	;
+	
+|-----------------------------	
+#estado 'editando		
+	
+:iplay
+	0 'cdcur !
+	'ejecutando 'estado !
+	'vmstep 1.0 +vexe | 'exe 3.0 --
+	;
+
+:iedit
+	'editando 'estado !
+	;
+
 :menu
+	vupdate
 	0 sdlcls 
 	immgui
 	
@@ -175,15 +245,13 @@
 	60 24 immbox
 	4 4 immat
 	"r3Code" immlabelc immdn
-|	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn 
 
-	mpaleta
-	mcode
-	mstack
-	showins
-		
-	200 4 bat
-	cdcnt si nowins "now:%d si:%d cnt:%d" bprint2
+	'iplay "play" immbtn imm>>
+	'iedit "edit" immbtn imm>>
+	'iplay "clear" immbtn imm>>
+	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn
+ 	
+	estado ex
 
 	SDLredraw 
 	sdlkey
@@ -197,8 +265,8 @@
 : |<<< BOOT <<<
 	"r3code" 1024 600 SDLinit
 	bfont1
+	64 vaini
 	
-	r3reset
 	modmenu
 	SDLquit 
 	;
