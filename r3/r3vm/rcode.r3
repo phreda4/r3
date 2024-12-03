@@ -18,65 +18,14 @@
 | movimiento/apariencia/sonido/eventos/control/sensor/operadores/variables/bloques
 
 
-#code 0 0
-#inst 0 0
-
-|--- 8arr start in 0
-:.x 0 ncell+ ;
-:.y 1 ncell+ ;
-:.n 2 ncell+ ;
-:.str 3 ncell+ ;
-:.t 4 ncell+ ;
-:.v 5 ncell+ ;
-
-
-:guiRectS | adr -- adr
-	a> .x @ a> .y @ over a> .n @ + over 32 + guiRect ;
-	
-#xa #ya
-
-:mvcard
-	sdlx xa - a> .x +! 
-	sdly ya - a> .y +! 
-:setcard	
-	sdlx 'xa ! sdly 'ya ! ;
-	
-:dcode
-	>a
-	guiRectS
-	'setcard 'mvcard onDnMoveA	
-	$ff sdlcolor
-	a> .x @ a> .y @ | x y
-	2dup
-	a> .n @ 32 SDLfRect
-	bat
-	a> .str @ 1? ( dup bprint2 ) drop
-	;
-
-:+co | s n y x --
-	'dcode 'code p8!+ >a 
-	swap a!+ a!+	| x y 
-	a!+				| n
-	a!+
-	;
-	
-:dinst
-	;
-	
-:+in | n y x --
-	'dinst 'inst p8!+ >a 
-	swap a!+ a!+	| x y 
-	a!+				| n
-	;
-
-
-
 #grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
 #words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
+#words "Up " "Down" "Left" "Right"  "Jump" "Push" 0
 
-
-#cdx 20 #cdy 100
+#xa #ya
+#cdx 20 #cdy 64
 #cdcnt 0
+#cdmax 128 
 #cdtok * 1024
 
 :cprint2 | "" --
@@ -102,14 +51,18 @@
 	dup $7 and 3 << 'tokbig + @ 0? ( 2drop "" ; )
 	ex ;
 	
+:tok>str | tok -- ""
+	'words swap ( 1? 1- swap >>0 swap ) drop ;
+	
 |------ CODE
 #xi #yi	
-#si 0
+#si -1
 #stri * 32
+
 #nowins -1
 
 :showins
-	si 0? ( drop ; ) drop
+	si -? ( drop ; ) drop
 	$666666 sdlcolor
 	xi yi 128 32 sdlfrect
 	$ffffff bcolor
@@ -119,7 +72,7 @@
 
 |------ CODE
 :saseti
-	curx 'xi ! cury 'yi ! 
+	curx 'xi ! cury 'yi ! |...
 :seti
 	sdlx 'xa ! sdly 'ya ! ;
 
@@ -129,9 +82,8 @@
 	saseti ;
 	
 :dnCode
-	cdcnt 0? ( drop ; ) drop
+	cdcnt =? ( ; ) 
 	a> 8 - @ dup 'si !
-	0? ( drop ; )
 	tok>str 'stri strcpy
 	a> dup 8 - swap cdcnt move
 	-1 'cdcnt +!
@@ -142,36 +94,32 @@
 	sdly ya - 'yi +! 
 	seti ;
 
-:insertins
-	si 0? ( drop ; ) drop
-	nowins -? ( drop ; ) 
+:upins
+	si -? ( drop ; ) drop
+	nowins -? ( drop -1 'si ! ; ) 
 	3 << 'cdtok + 
 	dup dup 8 + swap cdcnt move> |dsc
-	si 8 << 1 or swap !	
-	0 'si !
+	si swap !
 	1 'cdcnt +!
+	-1 'nowins !
+	-1 'si !
 	;
 	
-:upins
-	insertins 0 'si ! ;
-
+:incell
+	over 'nowins ! $222222 sdlcolor plxywh SDLFRect ;
+	
 :linecode
 	32 32 immbox
 	dup 1+ "%d" cprint2 imm>>
 	180 32 immbox
 	plgui
-	[ dup 'nowins ! $222222 sdlcolor plxywh SDLFRect ; ] guiI
-	a@+ tok>str cprint2
-	
-	
-	'dnCode
-	'moveins
-	'upins
-	onMapA ;	
+	si +? ( 'incell guiI ) drop
+	nowins <>? ( cdcnt <? ( a@+ tok>str cprint2 ) )
+	'dnCode 'moveins 'upins onMapA ;	
 	
 :mcode
 	cdx cdy immwinxy
-	192 320 immbox
+	224 384 immbox
 	plgui 
 	$444444 sdlcolor plxywh SDLFRect	
 	[ -1 'nowins ! ; ] guiO
@@ -188,14 +136,12 @@
 	immcolorbtn SDLColor
 	plxywh SDLRect
 	dup cprint2
-	'dnIns
-	'moveIns
-	'upIns
-	onMapA ;	
+	
+	'dnIns 'moveIns 'upIns onMapA ;	
 	
 :mpaleta
 	128 32 immbox
-	500 64 immat
+	300 64 immat
 	0 'words 
 	( dup c@ 1? drop
 		orden immdn
@@ -236,10 +182,8 @@
 	mstack
 	showins
 		
-|	mconsole
-
-	'code p8.draw
-	'inst p8.draw
+	200 4 bat
+	cdcnt si nowins "now:%d si:%d cnt:%d" bprint2
 
 	SDLredraw 
 	sdlkey
@@ -253,8 +197,6 @@
 : |<<< BOOT <<<
 	"r3code" 1024 600 SDLinit
 	bfont1
-	200 'code p8.ini
-	50 'inst p8.ini	
 	
 	r3reset
 	modmenu
