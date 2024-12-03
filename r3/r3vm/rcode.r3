@@ -7,10 +7,96 @@
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
 
-^r3/r3vm/r3ivm.r3
-|^r3/r3vm/r3itok.r3
-|^r3/r3vm/r3iprint.r3
+#level0 (
+17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  5  0  0  6  0  0  7  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  4  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
+17  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+03 03 03 03 03 03 03 03 03 03 03 03 03 03 03 03
+)
 
+#imgspr
+
+#mrot 0.0
+#tzoom 2.0
+#tsize 16 
+#tmul
+
+#mvx 8 #mvy 64
+#mw 16 #mh 12
+#marena * 8192
+
+:calc tsize tzoom *. 'tmul ! ;
+
+:postile | y x -- y x xs ys
+	dup tmul * mvx +
+	pick2 tmul * mvy +
+	;
+	
+:posspr | x y -- xs ys
+	swap tmul * mvx + tmul 2/ +
+	swap tmul * mvy + tmul 2/ +
+	;
+	
+:drawtile
+	|$ffffff sdlcolor postile tmul dup sdlRect
+	a@+ $ff and 0? ( drop ; ) >r
+	2dup swap posspr tzoom r> 1- imgspr sspritez
+	;
+	
+:mapdraw | x y --
+	'mvy ! 'mvx !
+	'marena >a
+	0 ( mh <? 
+		0 ( mw <? 
+			drawtile
+			1+ ) drop
+		1+ ) drop ;
+
+:cpylevel | 'l --
+	>b
+	'marena >a
+	mw mh * ( 1?
+		cb@+ a!+
+		1- ) drop ;
+
+#xp 1 #yp 1 | position
+#dp 0	| direction
+#ap 0	| anima
+#penergy
+#pcarry
+
+:resetplayer
+	100 'penergy !
+	0 'pcarry ! 
+	1 'xp ! 1 'yp !
+	'level0 cpylevel
+	;
+
+:player
+	xp yp posspr
+	tzoom
+	dp 2* 7 +
+	msec 7 >> $1 and +
+	imgspr sspritez
+	;
+
+:iup 2 'dp ! -1 'yp +! ;
+:idn 3 'dp ! 1 'yp +! ;
+:ile 1 'dp ! -1 'xp +! ;
+:iri 0 'dp ! 1 'xp +!  ;
+:ijm 
+:ipu
+	;
+
+|-------------------------------------	
 | scratchjr
 | eventos/movimiento/apariencia/sonido/control/fin
 |
@@ -20,39 +106,26 @@
 |#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
 |#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
 #words " Up" " Down" " Left" " Right"  " Jump" " Push" 0
+#worde iup idn ile iri ijm ipu
 
 #cdx 64 #cdy 64
 #cdcnt 0
 #cdmax 128 
 #cdtok * 1024
 
-#cdcur 'cdtok
-#cdspeed 1.0
+#cdcur 0
+#cdspeed 0.5
 
 :cprint2 | "" --
 	curx padx + cury pady + bat bprint2 ;
 
-|-------
-#tokstr
-	
-:ilitd 8 >> "%d" sprint ;
-:ilith 8 >> "$%h" sprint ;
-:ilitb 8 >> "%%%b" sprint ;
-:iprim 8 >> $7f and 3 << 'tokstr + @ ;
-:isys 8 >> $7f and 3 << 'tokstr + @ ;
-:idic 8 >> $7f and 3 << 'tokstr + @ ;
-:iddic 8 >> $7f and 3 << 'tokstr + @ ;
-	
-#tokbig 0 ilitd ilith ilitb iprim isys idic iddic
-
-:tok>str | tok -- ""
-	dup $7 and 3 << 'tokbig + @ 0? ( 2drop "" ; )
-	ex ;
-	
 :tok>str | tok -- ""
 	'words swap ( 1? 1- swap >>0 swap ) drop ;
 	
-|------ CODE
+:tokexe	| tok --
+	3 << 'worde + @ 0? ( drop ; ) ex ;
+	
+|------ INSTRUCC
 #xi #yi	#si -1 #stri * 32
 
 #nowins -1
@@ -136,7 +209,7 @@
 		linecode
 		immcr
 		1+ ) drop ;
-	
+
 |------ INST
 :orden | "" -- ""
 	plgui
@@ -152,7 +225,6 @@
 	( dup c@ 1? drop
 		orden immdn
 		>>0 swap 1+ swap ) 3drop ;
-
 
 |------ PLAYCODE
 :linecursor
@@ -193,16 +265,19 @@
 	
 :mstack
 	skx sky bat
-	vmdeep 0? ( drop ; ) 
-	code 8 +
+|	vmdeep 0? ( drop ; ) 
+|	code 8 +
 	( swap 1 - 1? swap
-		@+ "%d " bprint2 
+|		@+ "%d " bprint2 
 		) 2drop 
-	TOS "%d " bprint2
+|	TOS "%d " bprint2
 	;
 
 |-----------------------------
 :editando
+	450 64 mapdraw
+	player
+	
 	mpaleta
 	mcode
 	showins
@@ -213,29 +288,38 @@
 |-----------------------------
 :vmstep
 	cdcur 
-	dup 3 << 'cdtok + @ "%d" .println
+	dup 3 << 'cdtok + @ tokexe
 	1+ dup 'cdcur !
-	cdcnt <? ( 'vmstep 1.0 +vexe ) drop
+	cdcnt <? ( 'vmstep cdspeed +vexe ) drop
 	;
 	
 :ejecutando
+	400 64 mapdraw
+	player
+	
 	pcode
-	mstack
+	|mstack
 	;
 	
 |-----------------------------	
 #estado 'editando		
 	
 :iplay
+	resetplayer
 	0 'cdcur !
 	'ejecutando 'estado !
-	'vmstep 1.0 +vexe | 'exe 3.0 --
+	cdcnt 0? ( drop ; ) drop
+	'vmstep cdspeed +vexe | 'exe 3.0 --
 	;
 
 :iedit
 	'editando 'estado !
 	;
 
+:iclear
+	0 'cdcnt !
+	;
+	
 :menu
 	vupdate
 	0 sdlcls 
@@ -248,7 +332,7 @@
 
 	'iplay "play" immbtn imm>>
 	'iedit "edit" immbtn imm>>
-	'iplay "clear" immbtn imm>>
+	'iclear "clear" immbtn imm>>
 	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn
  	
 	estado ex
@@ -266,6 +350,10 @@
 	"r3code" 1024 600 SDLinit
 	bfont1
 	64 vaini
+	
+	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
+	calc
+	resetplayer
 	
 	modmenu
 	SDLquit 
