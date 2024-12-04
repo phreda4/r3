@@ -7,6 +7,10 @@
 ^r3/util/sdlgui.r3
 ^r3/util/varanim.r3
 
+^r3/r3vm/rcodevm.r3
+
+#cpu
+
 #level0 (
 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
 17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
@@ -100,36 +104,14 @@
 |#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
 |#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
 
-| TOKEN
-| 00 - NONE
-| 01 - litd
-| 02 - LITH
-| 03 - litb
-| 04 
-#tokstr * 1024
-	
-:ilitd 32 >> "%d" sprint ;
-:ilith 32 >> "$%h" sprint ;
-:ilitb 32 >> "%%%b" sprint ;
-:iprim 32 >> $7f and 3 << 'tokstr + @ ;
-:isys 8 >> $7f and 3 << 'tokstr + @ ;
-:idic 8 >> $7f and 3 << 'tokstr + @ ;
-:iddic 8 >> $7f and 3 << 'tokstr + @ ;
-	
-#tokbig 0 ilitd ilith ilitb iprim isys idic iddic
-:tok>str | tok -- ""
-	dup $7 and 3 << 'tokbig + @ 0? ( 2drop "" ; )
-	ex ;
-
-
-#words "0" "()" "??" "" "Down" "Left" "Right"  "Jump" "Push" 0
+#words "123" """str""" "( )" " ?? " "STK" "+-*/" "@!" ":Word" "#Var" "|comm" 0
 #worde iup idn ile iri ijm ipu
 
 :tok>str | tok -- ""
 	'words swap ( 1? 1- swap >>0 swap ) drop ;
 	
-:tokexe	| tok --
-	3 << 'worde + @ 0? ( drop ; ) ex ;
+|:tokexe	| tok --
+|	3 << 'worde + @ 0? ( drop ; ) ex ;
 
 #cdx 64 #cdy 64
 #cdcnt 0
@@ -148,10 +130,10 @@
 :showins
 	si -? ( drop ; ) drop
 	$555555 sdlcolor
-	xi yi 128 32 sdlfrect
-	$ffffff bcolor
-	xi 8 + yi bat 
-	'stri bprint2
+	xi yi 128 22 sdlfrect
+	$ffffff ttcolor
+	xi 8 + yi ttat 
+	'stri ttprint
 	;
 
 |------ CODE
@@ -169,7 +151,7 @@
 :dnCode
 	cdcnt =? ( ; ) 
 	a> 8 - @ dup 'si !
-	tok>str 'stri strcpy
+	vmtokstr 'stri strcpy
 	a> dup 8 - swap cdcnt move
 	-1 'cdcnt +!
 	saseti ;
@@ -196,21 +178,23 @@
 	plxywh SDLFRect 
 	;
 	
+:cprint2 | "" --
+	curx padx + cury pady + ttat ttprint ;
+	
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ tok>str immlabel ;
+	a@+ vmtokstr cprint2 ;
 	
 :linecode
-	$333333 bcolor
-|	curx 32 - cury pady + bat
-|	dup 1+ "%d" bprint2
-	$ffffff bcolor
-	224 32 immbox
-	|plgui
-	codeprint
+	$333333 ttcolor
+	curx 32 - cury pady + ttat
+	dup 1+ "%d" ttprint
+	$ffffff ttcolor
+	224 22 immbox
+	plgui
 	si +? ( 'incell guiI ) drop
-	
+	codeprint
 	'dnCode 'moveins 'upins onMapA ;	
 	
 :mcode
@@ -219,7 +203,7 @@
 	plgui 
 	$444444 sdlcolor plxywh SDLFRect	
 	[ -1 'nowins ! ; ] guiO
-	$ffffff bcolor
+	$ffffff ttcolor
 	'cdtok >a
 	0 ( cdcnt <=?
 		linecode
@@ -236,7 +220,7 @@
 	
 :mpaleta
 	300 64 immat
-	128 32 immbox
+	128 22 immbox
 	0 'words 
 	( dup c@ 1? drop
 		orden immdn
@@ -244,26 +228,26 @@
 
 |------ PLAYCODE
 :linecursor
-	cdcur <>? ( $333333 bcolor ; ) 
+	cdcur <>? ( $333333 ttcolor ; ) 
 	curx 48 - cury pady + ttat
 	$eeeeee ttcolor ">" ttprint 
 	;
 	
 :linecode
 	linecursor
-	curx 32 - cury pady + bat
-	dup 1+ "%d" bprint2
-	$ffffff bcolor
-	224 32 immbox
+	curx 32 - cury pady + ttat
+	dup 1+ "%d" ttprint
+	$ffffff ttcolor
+	224 22 immbox
 	plgui
-	a@+ tok>str immlabel ;	
+	a@+ vmtokstr immlabel ;	
 	
 :pcode
 	cdx cdy immwinxy
 	224 384 immbox
 	plgui 
 	$444444 sdlcolor plxywh SDLFRect	
-	$ffffff bcolor
+	$ffffff ttcolor
 	'cdtok >a
 	0 ( cdcnt <?
 		linecode
@@ -271,7 +255,7 @@
 		1+ ) drop ;
 
 |------ STACK
-#skx 300 #sky 100
+#skx 64 #sky 500
 #skview 4
 #skcnt 6
 #sktok * 128	
@@ -281,12 +265,12 @@
 	
 :mstack
 	skx sky ttat
-|	vmdeep 0? ( drop ; ) 
-|	code 8 +
+	vmdeep 0? ( drop ; ) 
+	code 8 +
 	( swap 1 - 1? swap
-|		@+ "%d " ttprint
+		@+ " %d" ttprint
 		) 2drop 
-|	TOS "%d " ttprint
+	TOS " %d" ttprint
 	;
 
 |-----------------------------
@@ -297,16 +281,16 @@
 	mpaleta
 	mcode
 	showins
-	
-	|200 4 bat cdcnt si nowins "now:%d si:%d cnt:%d" bprint2
 	;
 
 |-----------------------------
-:vmstep
+	
+:stepvm
 	cdcur 
-	dup 3 << 'cdtok + @ tokexe
+	dup 3 << 'cdtok + vmstep | ****
+	drop
 	1+ dup 'cdcur !
-	cdcnt <? ( 'vmstep cdspeed +vexe ) drop
+	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
 	;
 	
 :ejecutando
@@ -314,7 +298,7 @@
 	player
 	
 	pcode
-	|mstack
+	mstack
 	;
 	
 |-----------------------------	
@@ -325,7 +309,7 @@
 	0 'cdcur !
 	'ejecutando 'estado !
 	cdcnt 0? ( drop ; ) drop
-	'vmstep cdspeed +vexe | 'exe 3.0 --
+	'stepvm cdspeed +vexe | 'exe 3.0 --
 	;
 
 :iedit
@@ -342,7 +326,7 @@
 	immgui
 	
 	$ff 'immcolorbtn !
-	60 24 immbox
+	60 22 immbox
 	4 4 immat
 	"r3Code" immlabelc immdn
 
@@ -370,6 +354,19 @@
 	
 	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
 	calc
+	
+	vmcalc
+	$ff vmcpu 'cpu !
+	
+	|------- test
+	5 'cdcnt !
+	'cdtok >a
+	$ff00000000 a!+
+	$7f00000001 a!+
+	$f00000002 a!+
+	75 a!+
+	76 a!+
+	
 	resetplayer
 	
 	modmenu
