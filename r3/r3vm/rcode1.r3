@@ -1,10 +1,10 @@
-| rcode
+| rcode nivel 1
 | PHREDA 2024
 |-------------------------
 
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlbgui.r3
+^r3/util/sdlgui.r3
 ^r3/util/varanim.r3
 
 #level0 (
@@ -35,11 +35,6 @@
 
 :calc tsize tzoom *. 'tmul ! ;
 
-:postile | y x -- y x xs ys
-	dup tmul * mvx +
-	pick2 tmul * mvy +
-	;
-	
 :posspr | x y -- xs ys
 	swap tmul * mvx + tmul 2/ +
 	swap tmul * mvy + tmul 2/ +
@@ -97,16 +92,44 @@
 	;
 
 |-------------------------------------	
-| scratchjr
-| eventos/movimiento/apariencia/sonido/control/fin
+| scrjr:	eventos/movimiento/apariencia/sonido/control/fin
+| scratch:	movimiento/apariencia/sonido/eventos/control/sensor/operadores/variables/bloques
 |
-| scratch
-| movimiento/apariencia/sonido/eventos/control/sensor/operadores/variables/bloques
+| LIT/()/??/STK/OPER/VAR/WORD MOV-DRAW-SOUND SENSOR-KEY-MOUSE
 
 |#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
 |#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
-#words " Up" " Down" " Left" " Right"  " Jump" " Push" 0
+
+| TOKEN
+| 00 - NONE
+| 01 - litd
+| 02 - LITH
+| 03 - litb
+| 04 
+#tokstr * 1024
+	
+:ilitd 32 >> "%d" sprint ;
+:ilith 32 >> "$%h" sprint ;
+:ilitb 32 >> "%%%b" sprint ;
+:iprim 32 >> $7f and 3 << 'tokstr + @ ;
+:isys 8 >> $7f and 3 << 'tokstr + @ ;
+:idic 8 >> $7f and 3 << 'tokstr + @ ;
+:iddic 8 >> $7f and 3 << 'tokstr + @ ;
+	
+#tokbig 0 ilitd ilith ilitb iprim isys idic iddic
+:tok>str | tok -- ""
+	dup $7 and 3 << 'tokbig + @ 0? ( 2drop "" ; )
+	ex ;
+
+
+#words "0" "()" "??" "" "Down" "Left" "Right"  "Jump" "Push" 0
 #worde iup idn ile iri ijm ipu
+
+:tok>str | tok -- ""
+	'words swap ( 1? 1- swap >>0 swap ) drop ;
+	
+:tokexe	| tok --
+	3 << 'worde + @ 0? ( drop ; ) ex ;
 
 #cdx 64 #cdy 64
 #cdcnt 0
@@ -116,14 +139,6 @@
 #cdcur 0
 #cdspeed 0.5
 
-:cprint2 | "" --
-	curx padx + cury pady + bat bprint2 ;
-
-:tok>str | tok -- ""
-	'words swap ( 1? 1- swap >>0 swap ) drop ;
-	
-:tokexe	| tok --
-	3 << 'worde + @ 0? ( drop ; ) ex ;
 	
 |------ INSTRUCC
 #xi #yi	#si -1 #stri * 32
@@ -184,17 +199,18 @@
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ tok>str cprint2 ;
+	a@+ tok>str immlabel ;
 	
 :linecode
 	$333333 bcolor
-	curx 32 - cury pady + bat
-	dup 1+ "%d" bprint2
+|	curx 32 - cury pady + bat
+|	dup 1+ "%d" bprint2
 	$ffffff bcolor
 	224 32 immbox
-	plgui
-	si +? ( 'incell guiI ) drop
+	|plgui
 	codeprint
+	si +? ( 'incell guiI ) drop
+	
 	'dnCode 'moveins 'upins onMapA ;	
 	
 :mcode
@@ -215,7 +231,7 @@
 	plgui
 	$444444 SDLColor
 	plxywh SDLFRect
-	dup cprint2
+	dup immlabel
 	'dnIns 'moveIns 'upIns onMapA ;	
 	
 :mpaleta
@@ -229,8 +245,8 @@
 |------ PLAYCODE
 :linecursor
 	cdcur <>? ( $333333 bcolor ; ) 
-	curx 48 - cury pady + bat
-	$eeeeee bcolor ">" bprint2 
+	curx 48 - cury pady + ttat
+	$eeeeee ttcolor ">" ttprint 
 	;
 	
 :linecode
@@ -240,7 +256,7 @@
 	$ffffff bcolor
 	224 32 immbox
 	plgui
-	a@+ tok>str cprint2 ;	
+	a@+ tok>str immlabel ;	
 	
 :pcode
 	cdx cdy immwinxy
@@ -264,13 +280,13 @@
 	;
 	
 :mstack
-	skx sky bat
+	skx sky ttat
 |	vmdeep 0? ( drop ; ) 
 |	code 8 +
 	( swap 1 - 1? swap
-|		@+ "%d " bprint2 
+|		@+ "%d " ttprint
 		) 2drop 
-|	TOS "%d " bprint2
+|	TOS "%d " ttprint
 	;
 
 |-----------------------------
@@ -348,7 +364,8 @@
 
 : |<<< BOOT <<<
 	"r3code" 1024 600 SDLinit
-	bfont1
+	|bfont1
+	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	64 vaini
 	
 	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !

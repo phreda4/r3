@@ -109,9 +109,9 @@
 
 	
 ::bat | x y --
-	32 << or 'dp ! ;	
+	swap $ffffffff and swap 32 << or 'dp ! ;	
 
-::ccx dp $ffffffff and ;
+::ccx dp 32 << 32 >> ;
 ::ccy dp 32 >> ;
 
 ::gotoxy | x y --
