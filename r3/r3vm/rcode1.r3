@@ -101,38 +101,12 @@
 |
 | LIT/()/??/STK/OPER/VAR/WORD MOV-DRAW-SOUND SENSOR-KEY-MOUSE
 
-|#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
-|#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
-
-|iLITd iLITh iLITb iLITs 
-|iCOM iWORD iAWORD iVAR iAVAR |0-8
-|i; 
-|i( i) i[ i] 
-|iEX 
-|i0? i1? i+? i-? 
-|i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? 
-|iIN? 	|9-27
-
-|iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	|28-35
-|iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	|36-42
-
-|i@ iC@ i@+ iC@+ i! iC! i!+ iC!+ i+! iC+! 		|43-52
-
-|i>A iA> iA@ iA! iA+ iA@+ iA!+ 					|53-59
-|i>B iB> iB@ iB! iB+ iB@+ iB!+ 					|60-66
-
-|iNOT iNEG iABS iSQRT iCLZ						|67-71
-|iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
-|i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
-
-|iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
-
 #cdx 64 #cdy 64
 #cdcnt 0
 #cdmax 128 
 #cdtok * 1024
+#cdtok> 'cdtok
 
-#cdcur 0
 #cdspeed 0.5
 
 	
@@ -151,7 +125,35 @@
 	;
 
 |------ CODE
+| cdtok....(cdcnt)
 #lev
+#while
+#terror
+
+:error
+	1 'terror !
+	;
+	
+:is?? | adr token -- adr token
+	a> pick2 - 32 << 	| adr tok dist
+	pick2 @ $ffff and or 
+	pick2 !
+	1 'while !
+	;
+	
+:patch?? | now -- now
+	0 'while !
+	a> 8 - 		| adr
+	( dup @ lev 8 << 10 or <>?		| adr token
+		$ffff <? ( $ff and 15 27 in? ( is?? ) )
+		drop 8 - 
+		) drop | now adr(10)
+	while 1? ( drop a> - 32 << 11 or a> 8 - ! ; ) drop
+	8 - 
+	dup @ $ff and 15 <? ( error ; ) 27 >? ( error ; ) drop
+	dup @ $ffff and over a> - 32 << or swap !
+	;
+	
 :processlevel
 	0 'lev ! 
 	'cdtok >a
@@ -159,7 +161,7 @@
 		a@ dup $7f and 
 		10 =? ( 1 'lev +! )
 		swap $ff00 nand lev 8 << or a!+
-		11 =? ( -1 'lev +! )
+		11 =? ( patch?? -1 'lev +! )
 		drop
 		1+ ) drop ;
 
@@ -289,7 +291,8 @@
 	128 22 immbox
 	'value immInputInt
 	'dnNro 'moveIns 'upIns onMapA 
-	immcr immcr
+	immcr immcr ;
+:keypad	
 	32 22 immbox	
 	[ 7 kv ; ] "7" immbtn imm>> [ 8 kv ; ] "8" immbtn imm>> [ 9 kv ; ] "9" immbtn immcr
 	[ 4 kv ; ] "4" immbtn imm>> [ 5 kv ; ] "5" immbtn imm>> [ 6 kv ; ] "6" immbtn immcr
@@ -368,8 +371,11 @@
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ dup 8 >> $ff and 'lev !
-	vmtokstr cprint2 ;
+	a@+ dup
+	dup 8 >> $ff and 'lev !
+	vmtokstr cprint2 
+	"     %h" ttprint
+	;
 	
 :linecode
 	$333333 ttcolor
@@ -397,6 +403,9 @@
 
 
 |------ PLAYCODE
+:cdcur
+	cdtok> 'cdtok - 3 >> ;
+	
 :linecursor
 	cdcur <>? ( $333333 ttcolor ; ) 
 	curx 48 - cury pady + ttat
@@ -457,10 +466,8 @@
 |-----------------------------
 	
 :stepvm
-	cdcur 
-	dup 3 << 'cdtok + vmstep | ****
-	drop
-	1+ dup 'cdcur !
+	cdtok> vmstep 'cdtok> !
+	cdtok> 'cdtok - 3 >> 
 	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
 	;
 	
@@ -477,9 +484,9 @@
 	
 :iplay
 	resetplayer
-	0 'cdcur !
 	'ejecutando 'estado !
 	cdcnt 0? ( drop ; ) drop
+	'cdtok 'cdtok> !
 	'stepvm cdspeed +vexe | 'exe 3.0 --
 	;
 
@@ -511,6 +518,7 @@
 	SDLredraw 
 	sdlkey
 	>esc< =? ( exit )
+	<f1> =? ( processlevel )
 	drop
 	;
 
@@ -529,13 +537,14 @@
 	$ff vmcpu 'cpu !
 	
 	|------- test
-	5 'cdcnt !
+	6 'cdcnt !
 	'cdtok >a
-	$100000002 a!+
-	$200000001 a!+
 	$300000000 a!+
-	75 a!+
-	76 a!+
+	$10a a!+
+	$110 a!+
+	$100000100 a!+
+	$14c a!+
+	$10b a!+
 	
 	resetplayer
 	

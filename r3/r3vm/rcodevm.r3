@@ -39,10 +39,12 @@
 :i2SWAP		TOS NOS @ NOS 8 - dup 8 - @ NOS ! @ 'TOS ! NOS 16 - !+ ! ;
 
 :pushinro	iDUP 'TOS ! ;
-:jmpr		+ ;
+:atoken		dup 8 - @ ;
+
+:jmpr		atoken 32 >> + ;
 
 :i;		drop RTOS @ 8 'RTOS +! ;
-:i(		;
+:i(		"(" .println  ;
 :i)		jmpr ;
 :i[		jmpr ;
 :i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
@@ -137,10 +139,11 @@
 
 :iMEM	mem pushinro ;
 
+
 :iLITd :iLITh :iLITb
-	dup 8 - @ iDUP 'TOS ! ;
 :iLITs
-	dup 8 - @ pushinro ;
+	"lit" .println
+	iDUP atoken 'TOS ! ;
 :iCOM	;
 :iWORD	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
@@ -172,12 +175,6 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	code 8 - 'NOS ! 0 'TOS !
 	code 512 7 3 << + + 0 over ! 'RTOS ! | 512+8*8-8 
 	;
-
-::vecsys! 'exsys ! ;
-
-
-::vmdeep | -- stack
-	NOS code - 3 >> 1 + ;
 
 ::vmpop | -- t
 	TOS
@@ -235,11 +232,15 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	dup $7f and 
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
-	
+
+::vmdeep | -- stack
+	NOS code - 3 >> 1 + ;
+
+::vmcell | tok -- ""
+	dup $f and 3 << 'tokbig + @ ex ;
+
+
 : | init
 	'tokname >a
 	'toknames ( dup c@ 1? drop
 		dup a!+ >>0 ) 2drop ;
-		
-::vmcell | tok -- ""
-	dup $f and 3 << 'tokbig + @ ex ;
