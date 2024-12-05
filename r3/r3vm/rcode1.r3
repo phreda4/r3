@@ -144,13 +144,45 @@
 :showins
 	si -? ( drop ; ) drop
 	$555555 sdlcolor
-	xi yi 128 22 sdlfrect
+	xi yi 64 22 sdlfrect
 	$ffffff ttcolor
 	xi 8 + yi ttat 
-	'stri ttprint
+	'stri tt.
 	;
 
 |------ CODE
+#lev
+:processlevel
+	0 'lev ! 
+	'cdtok >a
+	0 ( cdcnt <?
+		a@ dup $7f and 
+		10 =? ( 1 'lev +! )
+		swap $ff00 nand lev 8 << or a!+
+		11 =? ( -1 'lev +! )
+		drop
+		1+ ) drop ;
+
+:checkl
+	a> 8 - @ $7f and
+	10 <? ( drop ; ) 11 >? ( drop ; ) drop
+	a> dup 8 - swap cdcnt move> |dsc
+	;
+	
+:removelev | --
+	si dup $7f and 
+	10 <? ( 2drop ; ) 11 >? ( 2drop ; ) drop
+	8 >> $ff and 'lev !
+	'cdtok >a
+	0 ( cdcnt <?
+		a@+ 8 >> $ff and 
+		lev =? ( checkl )
+		drop
+		1+ ) drop 
+	processlevel		
+	;
+	
+|----------------------
 #xa #ya
 :saseti
 	curx 'xi ! cury 'yi ! |...
@@ -175,15 +207,31 @@
 	sdly ya - 'yi +! 
 	seti ;
 
-:upins
-	si -? ( drop ; ) drop
+:ins()
 	nowins -? ( drop -1 'si ! ; ) 
+	3 << 'cdtok + 
+	dup dup 16 + swap cdcnt move> |dsc
+	11 10 rot !+ ! | + ( )
+	2 'cdcnt +!
+	-1 'nowins !
+	-1 'si !
+	processlevel
+	;
+	
+:upins
+	si -? ( drop ; ) 
+	255 =? ( drop ins() ; ) 
+	drop
+	nowins -? ( drop 
+		removelev 
+		-1 'si ! ; ) 
 	3 << 'cdtok + 
 	dup dup 8 + swap cdcnt move> |dsc
 	si swap !
 	1 'cdcnt +!
 	-1 'nowins !
 	-1 'si !
+	processlevel
 	;
 
 |------ INST
@@ -205,18 +253,109 @@
 		orden immdn
 		>>0 swap 1+ swap ) 3drop ;
 	
-:dragword
+:dragword | tok "" --
+	plgui
+	$7f00 SDLColor
+	plxywh SDLFRect
+	dup immlabelc
 	'dnIns 'moveIns 'upIns onMapA 
+	2drop 
 	;
 
+#value
+#base 0
+#bases " %d" " %h" " %b"
+#basep " $%"
+:dnNro
+	value 
+	base 2 << 'bases +
+	sprint 'stri strcpy
+	base 'basep + c@ 'stri c!
+	value 32 << base or 'si !
+	saseti ;
+	
+:kv	value 10 * + 'value ! ;
+	
+:kcol base =? ( $7f7f7f ; ) $7f7f ;
+	
+:kbase | "" n --
+	kcol 'immcolorbtn ! 
+	[ dup 'base ! ; ] rot immbtn 
+	drop ;
+	
+:nroins
+	$7f 'immcolorbtn ! 
+	300 64 immwinxy
+	128 22 immbox
+	'value immInputInt
+	'dnNro 'moveIns 'upIns onMapA 
+	immcr immcr
+	32 22 immbox	
+	[ 7 kv ; ] "7" immbtn imm>> [ 8 kv ; ] "8" immbtn imm>> [ 9 kv ; ] "9" immbtn immcr
+	[ 4 kv ; ] "4" immbtn imm>> [ 5 kv ; ] "5" immbtn imm>> [ 6 kv ; ] "6" immbtn immcr
+	[ 1 kv ; ] "1" immbtn imm>> [ 2 kv ; ] "2" immbtn imm>> [ 3 kv ; ] "3" immbtn immcr
+	[ 0 kv ; ] "0" immbtn imm>> 
+	[ value 10 / 'value ! ; ] "<" immbtn imm>>
+	[ 0 'value ! ; ] "C" immbtn 
+	immcr immcr
+	"d" 0 kbase imm>> "h" 1 kbase imm>> "b" 2 kbase 
+	;
+
+#tins
+( 75 ) "+" ( 76 ) "-" ( 77 ) "*" ( 78 ) "/" 
+( 79 ) "mod" ( 72 ) "and" ( 73 ) "or" ( 74 ) "xor" 						
+( 67 ) "not" ( 68 ) "neg" ( 69 ) "abs" ( 70 ) "sqrt"
+( 80 ) "<<" ( 81 ) ">>" ( 83 ) "/mod" ( 84 ) "*/" 
+
+( 15 ) "0?" ( 16 ) "1?" ( 17 ) "+?" ( 18 ) "-?"				
+( 21 ) "=?" ( 24 ) "<>?" ( 25 ) "and?" ( 26 ) "nand?"
+( 19 ) "<?" ( 23 ) "<=?" ( 20 ) ">?" ( 22 ) ">=?" 
+
+( 28 ) "dup" ( 29 ) "drop" ( 30 ) "over" ( 35 ) "swap" 
+( 36 ) "nip" ( 37 ) "rot" ( 31 ) "pick2" ( 32 ) "pick3" 
+|"PICK4" "-ROT" "2DUP" "2DROP" 
+|"3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
+( 43 ) "@" ( 45 ) "@+" ( 77 ) "!" ( 79 ) "!+"
+|"c@" "c@+" "c!" "c!+" "c+!"
+( 51 ) "+!" ( 14 ) "ex" ( 9 ) ";" 
+( -1 ) 
+
+:nextdrag
+	1+ $3 nand? ( immcr ; ) imm>> ;
+	
+:word
+	immcr
+	$7f00 'immcolorbtn ! 
+	64 23 immbox
+	255 "( )" dragword imm>>
+	9 ";" dragword imm>>
+	1 "W" dragword imm>>
+	2 "V" dragword immcr
+|	"123" 
+|	"str"
+|	"com"
+	0 'tins
+	( c@+ +?
+		over dragword 
+		swap nextdrag
+		swap >>0
+		) 3drop
+	;
+	
 #pag
 :panelword
 	300 32 immat
 	128 22 immbox	
 	'pag "123|""str""|( )| ?? |STK| +-*/ | @! |comm" immCombo | 'val "op1|op2|op3" -- ; [op1  v]
+	imm>>
+	
+	
+	nroins
+	word
 	;
 	
 |---------------------------------	
+	
 :incell
 	over 'nowins ! 
 	$333333 sdlcolor 
@@ -224,12 +363,13 @@
 	;
 	
 :cprint2 | "" --
-	curx padx + cury pady + ttat ttprint ;
+	curx padx + lev 4 << + cury pady + ttat tt. ;
 	
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ vmtokstr cprint2 ;
+	a@+ dup 8 >> $ff and 'lev !
+	vmtokstr cprint2 ;
 	
 :linecode
 	$333333 ttcolor

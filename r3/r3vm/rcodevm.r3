@@ -204,16 +204,16 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	;
 
 #toknames 
-";" "(" ")" "[" "]" "EX" "0?" "1?" "+?" "-?"				|9-18
-"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "IN?"		|19-27
-"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"	|28-35
-"ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
-"@" "C@" "@+" "C@+" "!" "C!" "!+" "C!+" "+!" "C+!"			|43-52
+";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "in?"		|19-27
+"dup" "drop" "over" "pick2" "pick3" "pick4" "swap" "nip"	|28-35
+"rot" "2dup" "2drop" "3drop" "4drop" "2over" "2swap"		|36-42
+"@" "c@" "@+" "c@+" "!" "c!" "!+" "c!+" "+!" "c+!"			|43-52
 ">A" "A>" "A@" "A!" "A+" "A@+" "A!+"						|53-59
 ">B" "B>" "B@" "B!" "B+" "B@+" "B!+"						|60-66
-"NOT" "NEG" "ABS" "SQRT" "CLZ"								|67-71
-"AND" "OR" "XOR" "+" "-" "*" "/" "MOD"						|72-79
-"<<" ">>" ">>>" "/MOD" "*/" "*>>" "<</"						|80-86
+"not" "neg" "abs" "sqrt" "clz"								|67-71
+"and" "or" "xor" "+" "-" "*" "/" "mod"						|72-79
+"<<" ">>" ">>>" "/mod" "*/" "*>>" "<</"						|80-86
 "MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL"				|87-92
 0
 

@@ -54,7 +54,7 @@
 ::immbox 'boxh ! 'boxw ! ;
 ::immfont! dup 'immfont ! ttfont! "A" ttsize 'immfontsh ! drop ;
 ::immpad! 'pady ! 'padx ! ;
-::immwinxy 2dup 'winy ! 'winx ! immat ;
+::immwinxy 2dup 'winy ! 'winx ! pady + swap padx + swap immat ;
 
 |----------------------	
 ::imm>>
@@ -432,7 +432,8 @@
 	'proinputi 'iniinputi w/foco
 	'clickfoco onClick
 	$ffffff ttcolor
-	@ "%d" ttprint ;
+	@ "%d" ttprint 
+	;
 
 |----- windows
 :winxy!
