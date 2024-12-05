@@ -104,14 +104,28 @@
 |#grupos ":" "#" "ABC" "123" """str""" "oper" "mem" "stack" "contr" "comm" 
 |#words "0" "+" "DUP" "(??"  "??(" "STEP" "TURN" 0
 
-#words "123" """str""" "( )" " ?? " "STK" "+-*/" "@!" ":Word" "#Var" "|comm" 0
-#worde iup idn ile iri ijm ipu
+|iLITd iLITh iLITb iLITs 
+|iCOM iWORD iAWORD iVAR iAVAR |0-8
+|i; 
+|i( i) i[ i] 
+|iEX 
+|i0? i1? i+? i-? 
+|i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? 
+|iIN? 	|9-27
 
-:tok>str | tok -- ""
-	'words swap ( 1? 1- swap >>0 swap ) drop ;
-	
-|:tokexe	| tok --
-|	3 << 'worde + @ 0? ( drop ; ) ex ;
+|iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	|28-35
+|iROT i2DUP i2DROP i3DROP i4DROP i2OVER i2SWAP 	|36-42
+
+|i@ iC@ i@+ iC@+ i! iC! i!+ iC!+ i+! iC+! 		|43-52
+
+|i>A iA> iA@ iA! iA+ iA@+ iA!+ 					|53-59
+|i>B iB> iB@ iB! iB+ iB@+ iB!+ 					|60-66
+
+|iNOT iNEG iABS iSQRT iCLZ						|67-71
+|iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
+|i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
+
+|iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 
 #cdx 64 #cdy 64
 #cdcnt 0
@@ -171,7 +185,38 @@
 	-1 'nowins !
 	-1 'si !
 	;
+
+|------ INST
+
+#words "123" """str""" "( )" " ?? " "STK" "+-*/" "@!" "|com" 0
+
+:orden | "" -- ""
+	plgui
+	$444444 SDLColor
+	plxywh SDLFRect
+	dup immlabelc
+	;	
 	
+:mpaleta
+	300 64 immat
+	64 22 immbox
+	0 'words 
+	( dup c@ 1? drop
+		orden immdn
+		>>0 swap 1+ swap ) 3drop ;
+	
+:dragword
+	'dnIns 'moveIns 'upIns onMapA 
+	;
+
+#pag
+:panelword
+	300 32 immat
+	128 22 immbox	
+	'pag "123|""str""|( )| ?? |STK| +-*/ | @! |comm" immCombo | 'val "op1|op2|op3" -- ; [op1  v]
+	;
+	
+|---------------------------------	
 :incell
 	over 'nowins ! 
 	$333333 sdlcolor 
@@ -210,21 +255,6 @@
 		immcr
 		1+ ) drop ;
 
-|------ INST
-:orden | "" -- ""
-	plgui
-	$444444 SDLColor
-	plxywh SDLFRect
-	dup immlabel
-	'dnIns 'moveIns 'upIns onMapA ;	
-	
-:mpaleta
-	300 64 immat
-	128 22 immbox
-	0 'words 
-	( dup c@ 1? drop
-		orden immdn
-		>>0 swap 1+ swap ) 3drop ;
 
 |------ PLAYCODE
 :linecursor
@@ -268,17 +298,18 @@
 	vmdeep 0? ( drop ; ) 
 	code 8 +
 	( swap 1 - 1? swap
-		@+ " %d" ttprint
+		@+ vmcell "%s " ttprint
 		) 2drop 
-	TOS " %d" ttprint
+	TOS vmcell ttprint
 	;
 
 |-----------------------------
 :editando
-	450 64 mapdraw
+	500 64 mapdraw
 	player
 	
-	mpaleta
+	
+	panelword
 	mcode
 	showins
 	;
@@ -355,15 +386,14 @@
 	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
 	calc
 	
-	vmcalc
 	$ff vmcpu 'cpu !
 	
 	|------- test
 	5 'cdcnt !
 	'cdtok >a
-	$ff00000000 a!+
-	$7f00000001 a!+
-	$f00000002 a!+
+	$100000002 a!+
+	$200000001 a!+
+	$300000000 a!+
 	75 a!+
 	76 a!+
 	

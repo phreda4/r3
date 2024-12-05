@@ -48,41 +48,45 @@
 :i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
 :iEX	-8 'RTOS +! RTOS ! TOS code + 8 'NOS +! NOS @ 'TOS ! ;
 
-|--- COND
-:i0?	TOS 1? ( drop jmpr ; ) drop 2 + ;
-:i1?	TOS 0? ( drop jmpr ; ) drop 2 + ;
-:i+?	TOS -? ( drop jmpr ; ) drop 2 + ;
-:i-?	TOS +? ( drop jmpr ; ) drop 2 + ;
-:i=?	NOS @ TOS <>? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:i<?	NOS @ TOS >=? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:i>?	NOS @ TOS <=? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:i<=?	NOS @ TOS >? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:i>=?	NOS @ TOS <? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:i<>?	NOS @ TOS =? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:iAND?	NOS @ TOS nand? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:iNAND?	NOS @ TOS and? ( drop jmpr iDROP ; ) drop iDROP 2 + ;
-:iIN?	NOS 8 - @ NOS @ TOS in? ( drop jmpr i2DROP ; ) drop i2DROP 2 + ;
+:NOSTOS	NOS @ 32 >> TOS 32 >> ;
+:2NOTOS	NOS 8 - @ 32 >> NOS @ 32 >> TOS 32 >> ;
+:TOS!	32 << TOS $ffffffff AND or 'TOS ! ;
 
-:iAND	NOS @ TOS and iNIP 'TOS ! ;
-:iOR	NOS @ TOS or iNIP 'TOS ! ;
-:iXOR	NOS @ TOS xor iNIP 'TOS ! ;
-:iNOT	TOS not 'TOS ! ;
-:i+		NOS @ TOS + iNIP 'TOS ! ;
-:i-		NOS @ TOS - iNIP 'TOS ! ;
-:i*		NOS @ TOS * iNIP 'TOS ! ;
-:i/		NOS @ TOS / iNIP 'TOS ! ;
-:i*/	NOS 8 - @ NOS @ TOS */ i2NIP 'TOS ! ;
-:i*>>	NOS 8 - @ NOS @ TOS *>> i2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
-:i<</	NOS 8 - @ NOS @ TOS <</ i2NIP 'TOS ! ;  | need LSB (TOS is 32bits)
-:i/MOD	NOS @ TOS /mod 'TOS ! NOS ! ;
-:iMOD	NOS @ TOS mod iNIP 'TOS ! ;
-:iABS	TOS abs 'TOS ! ;
-:iNEG	TOS neg 'TOS ! ;
-:iCLZ	TOS clz 'TOS ! ;
-:iSQRT	TOS sqrt 'TOS ! ;
-:i<<	NOS @ TOS << iNIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:i>>	NOS @ TOS >> iNIP 'TOS ! ;     | need LSB (TOS is 32bits)
-:i>>>	NOS @ TOS >>> iNIP 'TOS ! ;    | need LSB (TOS is 32bits)
+|--- COND
+:i0?	TOS 32 >> 1? ( drop jmpr ; ) drop ;
+:i1?	TOS 32 >> 0? ( drop jmpr ; ) drop ;
+:i+?	TOS 32 >> -? ( drop jmpr ; ) drop ;
+:i-?	TOS 32 >> +? ( drop jmpr ; ) drop ;
+:i=?	NOSTOS <>? ( drop jmpr iDROP ; ) drop iDROP ;
+:i<?	NOSTOS >=? ( drop jmpr iDROP ; ) drop iDROP ;
+:i>?	NOSTOS <=? ( drop jmpr iDROP ; ) drop iDROP ;
+:i<=?	NOSTOS >? ( drop jmpr iDROP ; ) drop iDROP ;
+:i>=?	NOSTOS <? ( drop jmpr iDROP ; ) drop iDROP ;
+:i<>?	NOSTOS =? ( drop jmpr iDROP ; ) drop iDROP ;
+:iAND?	NOSTOS nand? ( drop jmpr iDROP ; ) drop iDROP ;
+:iNAND?	NOSTOS and? ( drop jmpr iDROP ; ) drop iDROP ;
+:iIN?	2NOTOS in? ( drop jmpr idrop ; ) drop idrop ;
+
+:iAND	NOSTOS and iNIP TOS! ;
+:iOR	NOSTOS or iNIP TOS! ;
+:iXOR	NOSTOS xor iNIP TOS! ;
+:iNOT	TOS 32 >> not TOS! ;
+:i+		NOSTOS + iNIP TOS! ;
+:i-		NOSTOS - iNIP TOS! ;
+:i*		NOSTOS * iNIP TOS! ;
+:i/		NOSTOS / iNIP TOS! ;
+:i*/	2NOTOS */ i2NIP TOS! ;
+:i*>>	2NOTOS *>> i2NIP TOS! ;  | need LSB (TOS is 32bits)
+:i<</	2NOTOS <</ i2NIP TOS! ;  | need LSB (TOS is 32bits)
+:i/MOD	NOSTOS /mod 'TOS ! NOS ! ;
+:iMOD	NOSTOS mod iNIP TOS! ;
+:iABS	TOS 32 >> abs TOS! ;
+:iNEG	TOS 32 >> neg TOS! ;
+:iCLZ	TOS 32 >> clz TOS! ;
+:iSQRT	TOS 32 >> sqrt TOS! ;
+:i<<	NOSTOS << iNIP TOS! ;     | need LSB (TOS is 32bits)
+:i>>	NOSTOS >> iNIP TOS! ;     | need LSB (TOS is 32bits)
+:i>>>	NOSTOS >>> iNIP TOS! ;    | need LSB (TOS is 32bits)
 
 |--- R
 :i>R	8 'RTOS +! TOS RTOS ! iDROP ;
@@ -134,10 +138,10 @@
 :iMEM	mem pushinro ;
 
 :iLITd :iLITh :iLITb
-	32 >> iDUP 'TOS ! ;
+	dup 8 - @ iDUP 'TOS ! ;
 :iLITs
-	32 >> pushinro ;
-:iCOM	drop ;
+	dup 8 - @ pushinro ;
+:iCOM	;
 :iWORD	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	8 'NOS +! TOS NOS ! d@+ code + d@ 'TOS ! ;	| 32 bits
@@ -159,7 +163,7 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 
 
 ::vmstep | ip -- ip'
-	@+ dup $7f and 3 << 'tokenx + @ ex ;
+	@+ $7f and 3 << 'tokenx + @ ex ;
 
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
@@ -232,7 +236,10 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
 	
-::vmcalc
+: | init
 	'tokname >a
 	'toknames ( dup c@ 1? drop
 		dup a!+ >>0 ) 2drop ;
+		
+::vmcell | tok -- ""
+	dup $f and 3 << 'tokbig + @ ex ;
