@@ -4,16 +4,11 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2image.r3	
 ^r3/lib/sdl2mixer.r3
-^r3/util/tilesheet.r3
 
 ^r3/lib/rand.r3
 
-
+#imgspr
 #snd_explosion
-
-#ts_explo
-#ts_lander
-
 
 #grd * 1024
 #fuel
@@ -94,12 +89,13 @@
 	py
 	-3 <? ( -3 'py ! 0 'pdy ! )
 	drop
-	adx ady or 1? ( -1 'fuel +! msec 3 >> $3 and nip ) 
-	ts_lander
-	px 16 >> py 16 >> 
-	tsdraw
-	;
 
+	px 16 >> py 16 >> 
+	1.0
+	adx ady or 1? ( -1 'fuel +! msec 3 >> $3 and nip ) 
+	imgspr
+	sspritez
+	;
 
 :ground
 	'grd >a
@@ -122,14 +118,15 @@
 	stars
 	ground
 
-	timee 16 >>
-	ts_explo
-	px 16 >> 22 - py 16 >> 32 -
-	tsdraw
+	px 16 >>  py 16 >> 
+	1.0
+	timee 16 >>	4 +
+	imgspr
+	sspritez
 	
 	SDLredraw
 	timee 0.2 + 
-	15.5 >? ( exit ) 
+	8.5 >? ( exit ) 
 	'timee ! 
 	;
 	
@@ -150,10 +147,9 @@
 	msec time rerand
 	"r3sdl" 800 600 SDLinit
 
-	20 23 "media/img/lander.png" tsload 'ts_lander !
-	64 64 "media/img/explo_64x64.png" tsload 'ts_explo !
+	20 23 "media/img/lander.png" ssload 'imgspr !
 
-	"media/snd/explode.mp3" Mix_LoadWAV 'snd_explosion !
+|	"media/snd/explode.mp3" Mix_LoadWAV 'snd_explosion !
 
 	reset
 	'game SDLshow
