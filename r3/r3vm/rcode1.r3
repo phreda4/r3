@@ -116,7 +116,7 @@
 #nowins -1
 
 :showins
-	si -? ( drop ; ) drop
+	si -1 =? ( drop ; ) drop
 	$555555 sdlcolor
 	xi yi 64 22 sdlfrect
 	$ffffff ttcolor
@@ -135,7 +135,7 @@
 	;
 	
 :is?? | adr token -- adr token
-	a> pick2 - 32 << 	| adr tok dist
+	a> pick2 - 8 - 32 << 	| adr tok dist
 	pick2 @ $ffff and or 
 	pick2 !
 	1 'while !
@@ -151,8 +151,12 @@
 	while 1? ( drop a> - 32 << 11 or a> 8 - ! ; ) drop
 	8 - 
 	dup @ $ff and 15 <? ( error ; ) 27 >? ( error ; ) drop
-	dup @ $ffff and over a> - 32 << or swap !
+	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
 	;
+	
+:clearlev
+	9 <? ( swap $ff00 nand ; )
+	swap $ff and ;
 	
 :processlevel
 	0 'lev ! 
@@ -160,11 +164,26 @@
 	0 ( cdcnt <?
 		a@ dup $7f and 
 		10 =? ( 1 'lev +! )
-		swap $ff00 nand lev 8 << or a!+
+		clearlev
+		lev 8 << or a!+
 		11 =? ( patch?? -1 'lev +! )
 		drop
 		1+ ) drop ;
+		
+:is??
+	swap 32 >> 0? ( error ) | ?? sin salto
+	;
+	
+:checkjmp
+	'cdtok >a
+	0 ( cdcnt <?
+		a@+ dup 
+		15 27 in? ( is?? )
+		2drop
+		1+ ) drop ;
+	
 
+|--------------------------
 :checkl
 	a> 8 - @ $7f and
 	10 <? ( drop ; ) 11 >? ( drop ; ) drop
@@ -221,8 +240,9 @@
 	;
 	
 :upins
-	si -? ( drop ; ) 
-	255 =? ( drop ins() ; ) 
+	si -1 =? ( drop ; ) 
+	255 =? ( drop 
+		ins() ; ) 
 	drop
 	nowins -? ( drop 
 		removelev 
@@ -384,7 +404,7 @@
 	$ffffff ttcolor
 	224 22 immbox
 	plgui
-	si +? ( 'incell guiI ) drop
+	si -1 <>? ( 'incell guiI ) drop
 	codeprint
 	'dnCode 'moveins 'upins onMapA ;	
 	
