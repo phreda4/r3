@@ -10,90 +10,7 @@
 ^r3/r3vm/rcodevm.r3
 
 #cpu
-
-#level0 (
-17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  5  0  0  6  0  0  7  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  4  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0 17
-17  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-03 03 03 03 03 03 03 03 03 03 03 03 03 03 03 03
-)
-
 #imgspr
-
-#mrot 0.0
-#tzoom 2.0
-#tsize 16 
-#tmul
-
-#mvx 8 #mvy 64
-#mw 16 #mh 12
-#marena * 8192
-
-:calc tsize tzoom *. 'tmul ! ;
-
-:posspr | x y -- xs ys
-	swap tmul * mvx + tmul 2/ +
-	swap tmul * mvy + tmul 2/ +
-	;
-	
-:drawtile
-	|$ffffff sdlcolor postile tmul dup sdlRect
-	a@+ $ff and 0? ( drop ; ) >r
-	2dup swap posspr tzoom r> 1- imgspr sspritez
-	;
-	
-:mapdraw | x y --
-	'mvy ! 'mvx !
-	'marena >a
-	0 ( mh <? 
-		0 ( mw <? 
-			drawtile
-			1+ ) drop
-		1+ ) drop ;
-
-:cpylevel | 'l --
-	>b
-	'marena >a
-	mw mh * ( 1?
-		cb@+ a!+
-		1- ) drop ;
-
-#xp 1 #yp 1 | position
-#dp 0	| direction
-#ap 0	| anima
-#penergy
-#pcarry
-
-:resetplayer
-	100 'penergy !
-	0 'pcarry ! 
-	1 'xp ! 1 'yp !
-	'level0 cpylevel
-	;
-
-:player
-	xp yp posspr
-	tzoom
-	dp 2* 7 +
-	msec 7 >> $1 and +
-	imgspr sspritez
-	;
-
-:iup 2 'dp ! -1 'yp +! ;
-:idn 3 'dp ! 1 'yp +! ;
-:ile 1 'dp ! -1 'xp +! ;
-:iri 0 'dp ! 1 'xp +!  ;
-:ijm 
-:ipu
-	;
 
 |-------------------------------------	
 | scrjr:	eventos/movimiento/apariencia/sonido/control/fin
@@ -148,7 +65,7 @@
 		$ffff <? ( $ff and 15 27 in? ( is?? ) )
 		drop 8 - 
 		) drop | now adr(10)
-	while 1? ( drop a> - 32 << 11 or a> 8 - ! ; ) drop
+	while 1? ( drop a> - 8 + 32 << 11 or a> 8 - ! ; ) drop
 	8 - 
 	dup @ $ff and 15 <? ( error ; ) 27 >? ( error ; ) drop
 	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
@@ -391,10 +308,10 @@
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ dup
+	a@+ |dup
 	dup 8 >> $ff and 'lev !
 	vmtokstr cprint2 
-	"     %h" ttprint
+	|"     %h" ttprint
 	;
 	
 :linecode
@@ -474,8 +391,7 @@
 
 |-----------------------------
 :editando
-	500 64 mapdraw
-	player
+|	player
 	
 	
 	panelword
@@ -492,8 +408,7 @@
 	;
 	
 :ejecutando
-	400 64 mapdraw
-	player
+|	player
 	
 	pcode
 	mstack
@@ -503,7 +418,7 @@
 #estado 'editando		
 	
 :iplay
-	resetplayer
+	|resetplayer
 	'ejecutando 'estado !
 	cdcnt 0? ( drop ; ) drop
 	'cdtok 'cdtok> !
@@ -551,10 +466,10 @@
 	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	64 vaini
 	
-	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
-	calc
+|	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
+|	calc
 	
-	$ff vmcpu 'cpu !
+	vmcpu 'cpu !
 	
 	|------- test
 	6 'cdcnt !
@@ -566,7 +481,7 @@
 	$14c a!+
 	$10b a!+
 	
-	resetplayer
+|	resetplayer
 	
 	modmenu
 	SDLquit 

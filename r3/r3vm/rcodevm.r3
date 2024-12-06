@@ -12,7 +12,7 @@
 ##CODE ##CODE>
 
 | 'code
-| stack (512) |##STACK * 512 | 64 cells 2 stack
+| stack (256) |##STACK * 256 | 32 cells 2 stack
 | tokens
 | 'code>
 | free
@@ -173,7 +173,7 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 
 ::vmreset
 	code 8 - 'NOS ! 0 'TOS !
-	code 512 7 3 << + + 0 over ! 'RTOS ! | 512+8*8-8 
+	code 256 7 3 << + + 0 over ! 'RTOS ! | 512+8*8-8 
 	;
 
 ::vmpop | -- t
@@ -189,13 +189,13 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 ::vm! | 'vm --	; store vm
 	'IP 8 move ;
 
-::vmcpu | ram -- 'adr
+::vmcpu | -- 'adr
 	here
 	8 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,CODE,CODE>
 	dup 'code !
-	512 +			| stacks  (64 stack cell)
+	256 +			| stacks  (32 stack cell)
 	dup 'code> !
-	rot + 'here !
+	'here !
 	dup vm!
 	vmreset
 	;
