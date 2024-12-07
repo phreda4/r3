@@ -44,7 +44,7 @@
 :jmpr		atoken 32 >> + ;
 
 :i;		drop RTOS @ 8 'RTOS +! ;
-:i(		"(" .println  ;
+:i(		;
 :i)		jmpr ;
 :i[		jmpr ;
 :i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
@@ -142,7 +142,6 @@
 
 :iLITd :iLITh :iLITb
 :iLITs
-	"lit" .println
 	iDUP atoken 'TOS ! ;
 :iCOM	;
 :iWORD	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
@@ -214,6 +213,22 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 "MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL"				|87-92
 0
 
+|iLITd iLITh iLITb iLITs iCOM iWORD iAWORD iVAR iAVAR |0-8
+#tokmov (
+$10 $10 $10 $10 0 0 $10 $10 $10
+0 0 0 0 0 $f1 $1 $1 $1 $1
+$f2 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $e3
+$11 $f1 $12 $13 $14 $15 $02 $f2
+$03 $24 $e2 $d3 $c4 $24 $04
+$01 $01 $11 $11 $e2 $e2 $f2 $f2 $e2 $e2
+$f1 $20 $10 $f1 $f1 $10 $f0
+$f1 $20 $10 $f1 $f1 $10 $f0
+$01 $01 $01 $01 $01
+$f2 $f2 $f2 $f2 $f2 $f2 $f2 $f2
+$f2 $f2 $f2 $02 $e3 $e3 $e3
+$d3 $d3 $d3 $d3 $d3 $d3
+0 )
+
 #tokname * 1024
 	
 :ilitd 32 >> "%d" sprint ;
@@ -232,6 +247,9 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 	dup $7f and 
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
+	
+::vmtokmov | tok -- usr
+	$7f and 'tokmov + c@ ;
 
 ::vmdeep | -- stack
 	NOS code - 3 >> 1 + ;

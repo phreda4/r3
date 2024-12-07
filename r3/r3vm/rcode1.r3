@@ -24,7 +24,7 @@
 #cdtok * 1024
 #cdtok> 'cdtok
 
-#cdspeed 0.5
+#cdspeed 0.2
 
 	
 |------ INSTRUCC
@@ -65,7 +65,7 @@
 		$ffff <? ( $ff and 15 27 in? ( is?? ) )
 		drop 8 - 
 		) drop | now adr(10)
-	while 1? ( drop a> - 8 + 32 << 11 or a> 8 - ! ; ) drop
+	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
 	8 - 
 	dup @ $ff and 15 <? ( error ; ) 27 >? ( error ; ) drop
 	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
@@ -75,11 +75,21 @@
 	9 <? ( swap $ff00 nand ; )
 	swap $ff and ;
 	
+#usod
+#deld
+	
 :processlevel
 	0 'lev ! 
+	0 'usod ! 0 'deld !
 	'cdtok >a
 	0 ( cdcnt <?
-		a@ dup $7f and 
+		a@ 
+		| calc mov stack
+		dup vmtokmov dup 
+		$f and deld swap - neg clamp0 usod max 'usod !
+		56 << 60 >> 'deld +!
+		| check level
+		dup $7f and 
 		10 =? ( 1 'lev +! )
 		clearlev
 		lev 8 << or a!+
@@ -127,7 +137,7 @@
 :seti
 	sdlx 'xa ! sdly 'ya ! ;
 
-:dnins
+:dnIns
 	dup 'stri strcpy
 	over 'si !
 	saseti ;
@@ -200,19 +210,19 @@
 	'dnIns 'moveIns 'upIns onMapA 
 	2drop 
 	;
-
+	
+|------------------
 #value
 #base 0
-#bases " %d" " %h" " %b"
-#basep " $%"
+#bases " %d" "$%h" "%%%b"
+
 :dnNro
 	value 
 	base 2 << 'bases +
 	sprint 'stri strcpy
-	base 'basep + c@ 'stri c!
 	value 32 << base or 'si !
 	saseti ;
-	
+
 :kv	value 10 * + 'value ! ;
 	
 :kcol base =? ( $7f7f7f ; ) $7f7f ;
@@ -224,11 +234,10 @@
 	
 :nroins
 	$7f 'immcolorbtn ! 
-	300 64 immwinxy
 	128 22 immbox
 	'value immInputInt
 	'dnNro 'moveIns 'upIns onMapA 
-	immcr immcr ;
+	immcr ;
 :keypad	
 	32 22 immbox	
 	[ 7 kv ; ] "7" immbtn imm>> [ 8 kv ; ] "8" immbtn imm>> [ 9 kv ; ] "9" immbtn immcr
@@ -240,7 +249,9 @@
 	immcr immcr
 	"d" 0 kbase imm>> "h" 1 kbase imm>> "b" 2 kbase 
 	;
+	
 
+|-------------------------	
 #tins
 ( 75 ) "+" ( 76 ) "-" ( 77 ) "*" ( 78 ) "/" 
 ( 79 ) "mod" ( 72 ) "and" ( 73 ) "or" ( 74 ) "xor" 						
@@ -257,7 +268,7 @@
 |"3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
 ( 43 ) "@" ( 45 ) "@+" ( 77 ) "!" ( 79 ) "!+"
 |"c@" "c@+" "c!" "c!+" "c+!"
-( 51 ) "+!" ( 14 ) "ex" ( 9 ) ";" 
+( 51 ) "+!" ( 14 ) "ex" 
 ( -1 ) 
 
 :nextdrag
@@ -268,9 +279,10 @@
 	$7f00 'immcolorbtn ! 
 	64 23 immbox
 	255 "( )" dragword imm>>
-	9 ";" dragword imm>>
-	1 "W" dragword imm>>
-	2 "V" dragword immcr
+
+	1 ":" dragword imm>>
+	2 "#" dragword imm>>
+	9 ";" dragword immcr
 |	"123" 
 |	"str"
 |	"com"
@@ -281,16 +293,20 @@
 		swap >>0
 		) 3drop
 	;
+
+
+#str * 256
+:strins
+	$7f 'immcolorbtn ! 
+	128 22 immbox
+	'str 256 immInputLine
+|	'dnNro 'moveIns 'upIns onMapA 
+	immcr ;
 	
-#pag
 :panelword
-	300 32 immat
-	128 22 immbox	
-	'pag "123|""str""|( )| ?? |STK| +-*/ | @! |comm" immCombo | 'val "op1|op2|op3" -- ; [op1  v]
-	imm>>
-	
-	
+	300 64 immwinxy
 	nroins
+	strins
 	word
 	;
 	
@@ -355,8 +371,8 @@
 	dup 1+ "%d" ttprint
 	$ffffff ttcolor
 	224 22 immbox
-	plgui
-	a@+ vmtokstr immlabel ;	
+	a@+ dup 8 >> $ff and 'lev !
+	vmtokstr cprint2 ;
 	
 :pcode
 	cdx cdy immwinxy
@@ -376,9 +392,6 @@
 #skcnt 6
 #sktok * 128	
 
-:dcell
-	;
-	
 :mstack
 	skx sky ttat
 	vmdeep 0? ( drop ; ) 
@@ -392,7 +405,6 @@
 |-----------------------------
 :editando
 |	player
-	
 	
 	panelword
 	mcode
@@ -446,7 +458,8 @@
 	'iplay "play" immbtn imm>>
 	'iedit "edit" immbtn imm>>
 	'iclear "clear" immbtn imm>>
-	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn
+	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
+	usod deld "d:%d u:%d" immLabel
  	
 	estado ex
 
@@ -480,7 +493,7 @@
 	$100000100 a!+
 	$14c a!+
 	$10b a!+
-	
+	processlevel
 |	resetplayer
 	
 	modmenu

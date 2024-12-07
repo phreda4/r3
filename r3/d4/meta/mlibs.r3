@@ -171,8 +171,8 @@
 #info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $90 $1F $1F $5C )
 #r3_util_penner.r3 'name 'words 'info
 #name "r3/util/sdlbgui.r3"
-#words  "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immat" "immat+" "immbox" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immListBox" "immback" "immblabel" "immbtn" "immtbtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwins" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $0 $2E $2E $2E $2E $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $1F $3D $3D $2E $3D $2E $1F $2E $1F $10 )
+#words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immat" "immat+" "immbox" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immListBox" "immback" "immblabel" "immbtn" "immtbtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputLine2" "immInputInt" "immwins" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $2E $2E $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $1F $3D $3D $2E $3D $2E $1F $2E $2E $1F $10 )
 #r3_util_sdlbgui.r3 'name 'words 'info
 #name "r3/util/sdledit.r3"
 #words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edram" "edwin" "edload" "edsave" 0
@@ -183,8 +183,8 @@
 #info ( $1F $0 $2E $2E $1 )
 #r3_util_sdlfiledlg.r3 'name 'words 'info
 #name "r3/util/sdlgui.r3"
-#words  "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "imm>>" "imm<<" "immdn" "immcr" "immln" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $3D $1F $1F $2E $2E $2E $2E $1F $3D $3D $2E $3D $2E $2E $2E $1F $1F $1F $0 $10 $4C $1F $0 $10 $0 )
+#words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $3D $1F $1F $2E $2E $2E $2E $1F $3D $3D $2E $3D $2E $2E $2E $1F $1F $1F $0 $10 $4C $1F $0 $10 $0 )
 #r3_util_sdlgui.r3 'name 'words 'info
 #name "r3/util/sort.r3"
 #words  "shellsort" "shellsort2" "shellsort1" "sortstr" 0
