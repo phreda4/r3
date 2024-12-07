@@ -67,7 +67,7 @@
 		) drop | now adr(10)
 	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
 	8 - 
-	dup @ $ff and 15 <? ( error ; ) 27 >? ( error ; ) drop
+	dup @ $ff and 15 <? ( error 2drop ; ) 27 >? ( error 2drop ; ) drop
 	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
 	;
 	
@@ -79,7 +79,7 @@
 #deld
 	
 :processlevel
-	0 'lev ! 
+	0 'lev ! 0 'terror !
 	0 'usod ! 0 'deld !
 	'cdtok >a
 	0 ( cdcnt <?
@@ -183,35 +183,8 @@
 	processlevel
 	;
 
-|------ INST
-
-#words "123" """str""" "( )" " ?? " "STK" "+-*/" "@!" "|com" 0
-
-:orden | "" -- ""
-	plgui
-	$444444 SDLColor
-	plxywh SDLFRect
-	dup immlabelc
-	;	
 	
-:mpaleta
-	300 64 immat
-	64 22 immbox
-	0 'words 
-	( dup c@ 1? drop
-		orden immdn
-		>>0 swap 1+ swap ) 3drop ;
-	
-:dragword | tok "" --
-	plgui
-	$7f00 SDLColor
-	plxywh SDLFRect
-	dup immlabelc
-	'dnIns 'moveIns 'upIns onMapA 
-	2drop 
-	;
-	
-|------------------
+|------- NUMBER
 #value
 #base 0
 #bases " %d" "$%h" "%%%b"
@@ -251,7 +224,7 @@
 	;
 	
 
-|-------------------------	
+|------- INSTRUCTION
 #tins
 ( 75 ) "+" ( 76 ) "-" ( 77 ) "*" ( 78 ) "/" 
 ( 79 ) "mod" ( 72 ) "and" ( 73 ) "or" ( 74 ) "xor" 						
@@ -268,21 +241,35 @@
 |"3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
 ( 43 ) "@" ( 45 ) "@+" ( 77 ) "!" ( 79 ) "!+"
 |"c@" "c@+" "c!" "c!+" "c+!"
-( 51 ) "+!" ( 14 ) "ex" 
+( 51 ) "+!" ( 14 ) "ex"  ( 9 ) ";"
 ( -1 ) 
+
+:dragword | tok "" --
+	plgui
+	plxywh SDLFRect
+	dup immlabelc
+	'dnIns 'moveIns 'upIns onMapA 
+	2drop 
+	;
 
 :nextdrag
 	1+ $3 nand? ( immcr ; ) imm>> ;
 	
 :word
 	immcr
-	$7f00 'immcolorbtn ! 
 	64 23 immbox
-	255 "( )" dragword imm>>
-
+	$7f0000 sdlcolor
 	1 ":" dragword imm>>
+	$7f007f sdlcolor
 	2 "#" dragword imm>>
-	9 ";" dragword immcr
+	$7f7f00 sdlcolor
+	255 "( )" dragword immcr
+	$7f7f sdlcolor
+	0 "Nro" dragword imm>>
+	0 "WORD" dragword imm>>
+	3 """""" dragword immcr
+	$7f00 sdlcolor
+
 |	"123" 
 |	"str"
 |	"com"
@@ -335,7 +322,7 @@
 	curx 32 - cury pady + ttat
 	dup 1+ "%d" ttprint
 	$ffffff ttcolor
-	224 22 immbox
+	160 22 immbox
 	plgui
 	si -1 <>? ( 'incell guiI ) drop
 	codeprint
@@ -343,7 +330,7 @@
 	
 :mcode
 	cdx cdy immwinxy
-	224 384 immbox
+	160 384 immbox
 	plgui 
 	$444444 sdlcolor plxywh SDLFRect	
 	[ -1 'nowins ! ; ] guiO
@@ -376,7 +363,7 @@
 	
 :pcode
 	cdx cdy immwinxy
-	224 384 immbox
+	160 384 immbox
 	plgui 
 	$444444 sdlcolor plxywh SDLFRect	
 	$ffffff ttcolor
@@ -430,6 +417,7 @@
 #estado 'editando		
 	
 :iplay
+	terror 1? ( drop ; ) drop
 	|resetplayer
 	'ejecutando 'estado !
 	cdcnt 0? ( drop ; ) drop
@@ -450,16 +438,20 @@
 	0 sdlcls 
 	immgui
 	
-	$ff 'immcolorbtn !
+	
 	60 22 immbox
 	4 4 immat
 	"r3Code" immlabelc immdn
-
+	
+	$ff 'immcolorbtn !
+	terror 1? ( $ff0000 'immcolorbtn ! ) drop
 	'iplay "play" immbtn imm>>
+	$ff00 'immcolorbtn !
 	'iedit "edit" immbtn imm>>
 	'iclear "clear" immbtn imm>>
 	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
-	usod deld "d:%d u:%d" immLabel
+	usod deld "d:%d u:%d" immLabel imm>>
+	terror "error:%d" immlabel
  	
 	estado ex
 
