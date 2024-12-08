@@ -2,23 +2,16 @@
 | PHREDA 2024
 ^r3/lib/mem.r3
 
-| TOKEN
-
-
-| IP,BOOT
-| TOS,NOS,RTOS,RA,RB
-| CODE CODE>
-##IP ##TOS ##NOS ##RTOS ##REGA ##REGB
-##CODE ##CODE>
+|------ VM
+#IP 			
+##TOS #NOS #RTOS 
+#REGA #REGB
+##STACK #CODE #DATA
 
 | 'code
 | stack (256) |##STACK * 256 | 32 cells 2 stack
 | tokens
 | 'code>
-| free
-| io
-#blok
-#exsys 0
 
 :iDUP		8 'NOS +! TOS NOS ! ;
 :iOVER		iDUP NOS 8 - @ 'TOS ! ;
@@ -170,34 +163,6 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
 
-::vmreset
-	code 8 - 'NOS ! 0 'TOS !
-	code 256 7 3 << + + 0 over ! 'RTOS ! | 512+8*8-8 
-	;
-
-::vmpop | -- t
-	TOS
-	NOS dup @ 'TOS ! 8 - 'NOS ! ;
-
-::vmpush | v --
-	8 'NOS +! TOS NOS !
-	'TOS ! ;
-
-::vm@ | 'vm --	; get vm current
-    'IP swap 8 move	;
-::vm! | 'vm --	; store vm
-	'IP 8 move ;
-
-::vmcpu | -- 'adr
-	here
-	8 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,CODE,CODE>
-	dup 'code !
-	256 +			| stacks  (32 stack cell)
-	dup 'code> !
-	'here !
-	dup vm!
-	vmreset
-	;
 
 #toknames 
 ";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
@@ -205,17 +170,17 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 "dup" "drop" "over" "pick2" "pick3" "pick4" "swap" "nip"	|28-35
 "rot" "2dup" "2drop" "3drop" "4drop" "2over" "2swap"		|36-42
 "@" "c@" "@+" "c@+" "!" "c!" "!+" "c!+" "+!" "c+!"			|43-52
-">A" "A>" "A@" "A!" "A+" "A@+" "A!+"						|53-59
-">B" "B>" "B@" "B!" "B+" "B@+" "B!+"						|60-66
+">a" "a>" "a@" "a!" "a+" "a@+" "a!+"						|53-59
+">b" "b>" "b@" "b!" "b+" "b@+" "b!+"						|60-66
 "not" "neg" "abs" "sqrt" "clz"								|67-71
 "and" "or" "xor" "+" "-" "*" "/" "mod"						|72-79
 "<<" ">>" ">>>" "/mod" "*/" "*>>" "<</"						|80-86
-"MOVE" "MOVE>" "FILL" "CMOVE" "CMOVE>" "CFILL"				|87-92
+"move" "move>" "fill" "cmove" "cmove>" "cfill"				|87-92
 0
 
-|iLITd iLITh iLITb iLITs iCOM iWORD iAWORD iVAR iAVAR |0-8
+|iLITd iLITh iLITb iLITs iLITf iWORD iAWORD iVAR iAVAR |0-8
 #tokmov (
-$10 $10 $10 $10 0 0 $10 $10 $10
+$10 $10 $10 $10 $10 -1 $10 $10 $10
 0 0 0 0 0 $f1 $1 $1 $1 $1
 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $e3
 $11 $f1 $12 $13 $14 $15 $02 $f2
@@ -235,13 +200,13 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilith 32 >> "$%h" sprint ;
 :ilitb 32 >> "%b" sprint ;
 :ilits 32 >> """%d""" sprint ;
-:icom 
+:ilitf 32 >> "%f" sprint ;
 :iword 
 :iaword 
 :ivar 
 :iavar "w%h" sprint ;
 	
-#tokbig ilitd ilith ilitb ilits icom iword iaword ivar iavar 
+#tokbig ilitd ilith ilitb ilits ilitf iword iaword ivar iavar 
 
 ::vmtokstr | tok -- ""
 	dup $7f and 
@@ -252,13 +217,118 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	$7f and 'tokmov + c@ ;
 
 ::vmdeep | -- stack
-	NOS code - 3 >> 1 + ;
+	NOS stack - 3 >> 1 + ;
 
 ::vmcell | tok -- ""
 	dup $f and 3 << 'tokbig + @ ex ;
 
+|--------------- IO
+::vmpop | -- t
+	TOS
+	NOS dup @ 'TOS ! 8 - 'NOS ! ;
 
-: | init
+::vmpush | v --
+	8 'NOS +! TOS NOS !
+	'TOS ! ;
+
+::vmio | 'words 'exwords 'skwords -- 
+	;
+
+|--------------- CPU
+::vmreset
+	stack 8 - 'NOS ! 0 'TOS !
+	stack 256 8 - + 0 over ! 'RTOS !  
+	code 'ip !
+	;
+
+::vm@ | 'vm --	; get vm current
+    'IP swap 9 move	;
+::vm! | 'vm --	; store vm
+	'IP 9 move ;
+
+|#IP 			
+|#TOS #NOS #RTOS 
+|#REGA #REGB
+|#STACK #CODE #DATA
+
+::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
+	here
+	dup
+	9 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
+	dup 'stack !
+	256 +			| stacks  (32 stack cell)
+	dup 'data !
+	rot 3 << +		| data space, variables
+	'here !
+	swap 'code !
+	vmreset
+	dup vm!			| store in vm
+	;
+	
+|--------------- CHECK CODE
+#lev
+#while
+##usod
+##deld
+##terror
+
+:error
+	1 'terror !
+	;
+	
+:is?? | adr token -- adr token
+	a> pick2 - 8 - 32 << 	| adr tok dist
+	pick2 @ $ffff and or 
+	pick2 !
+	1 'while !
+	;
+	
+:patch?? | now -- now
+	0 'while !
+	a> 8 - 		| adr
+	( dup @ lev 8 << 10 or <>?		| adr token
+		$ffff <? ( $ff and 15 27 in? ( is?? ) )
+		drop 8 - 
+		) drop | now adr(10)
+	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
+	8 - 
+	dup @ $ff and 15 <? ( error 2drop ; ) 27 >? ( error 2drop ; ) drop
+	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
+	;
+	
+:clearlev
+	9 <? ( swap $ff00 nand ; )
+	swap $ff and ;
+	
+::vmcheckcode | cnt 'adr --
+	0 'lev ! 0 'terror !
+	0 'usod ! 0 'deld !
+	>a
+	0 ( over <?
+		a@ 
+		| calc mov stack
+		dup vmtokmov dup 
+		$f and deld swap - neg clamp0 usod max 'usod !
+		56 << 60 >> 'deld +!
+		| check level
+		dup $7f and 
+		10 =? ( 1 'lev +! )
+		clearlev
+		lev 8 << or a!+
+		11 =? ( patch?? -1 'lev +! )
+		drop
+		1+ ) 2drop ;
+		
+::vmcheckjmp | cnt 'adr --
+	>a
+	0 ( over <?
+		a@+ dup 
+		$7f and 15 27 in? ( swap 32 >> 0? ( error ) )
+		2drop
+		1+ ) 2drop ;
+	
+| here 
+: |---------- init
 	'tokname >a
 	'toknames ( dup c@ 1? drop
 		dup a!+ >>0 ) 2drop ;

@@ -21,6 +21,7 @@
 #cdx 64 #cdy 64
 #cdcnt 0
 #cdmax 128 
+
 #cdtok * 1024
 #cdtok> 'cdtok
 
@@ -41,76 +42,15 @@
 	'stri tt.
 	;
 
-|------ CODE
-| cdtok....(cdcnt)
-#lev
-#while
-#terror
 
-:error
-	1 'terror !
+:processlevel	
+	cdcnt 'cdtok vmcheckcode 
+	cdcnt 'cdtok vmcheckjmp
 	;
-	
-:is?? | adr token -- adr token
-	a> pick2 - 8 - 32 << 	| adr tok dist
-	pick2 @ $ffff and or 
-	pick2 !
-	1 'while !
-	;
-	
-:patch?? | now -- now
-	0 'while !
-	a> 8 - 		| adr
-	( dup @ lev 8 << 10 or <>?		| adr token
-		$ffff <? ( $ff and 15 27 in? ( is?? ) )
-		drop 8 - 
-		) drop | now adr(10)
-	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
-	8 - 
-	dup @ $ff and 15 <? ( error 2drop ; ) 27 >? ( error 2drop ; ) drop
-	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
-	;
-	
-:clearlev
-	9 <? ( swap $ff00 nand ; )
-	swap $ff and ;
-	
-#usod
-#deld
-	
-:processlevel
-	0 'lev ! 0 'terror !
-	0 'usod ! 0 'deld !
-	'cdtok >a
-	0 ( cdcnt <?
-		a@ 
-		| calc mov stack
-		dup vmtokmov dup 
-		$f and deld swap - neg clamp0 usod max 'usod !
-		56 << 60 >> 'deld +!
-		| check level
-		dup $7f and 
-		10 =? ( 1 'lev +! )
-		clearlev
-		lev 8 << or a!+
-		11 =? ( patch?? -1 'lev +! )
-		drop
-		1+ ) drop ;
-		
-:is??
-	swap 32 >> 0? ( error ) | ?? sin salto
-	;
-	
-:checkjmp
-	'cdtok >a
-	0 ( cdcnt <?
-		a@+ dup 
-		15 27 in? ( is?? )
-		2drop
-		1+ ) drop ;
-	
 
 |--------------------------
+#lev
+
 :checkl
 	a> 8 - @ $7f and
 	10 <? ( drop ; ) 11 >? ( drop ; ) drop
@@ -129,6 +69,7 @@
 		1+ ) drop 
 	processlevel		
 	;
+	
 	
 |----------------------
 #xa #ya
@@ -376,13 +317,11 @@
 |------ STACK
 #skx 64 #sky 500
 #skview 4
-#skcnt 6
-#sktok * 128	
 
 :mstack
 	skx sky ttat
 	vmdeep 0? ( drop ; ) 
-	code 8 +
+	stack 8 +
 	( swap 1 - 1? swap
 		@+ vmcell "%s " ttprint
 		) 2drop 
@@ -401,7 +340,9 @@
 |-----------------------------
 	
 :stepvm
-	cdtok> vmstep 'cdtok> !
+	cdtok> 
+	0? ( drop ; ) 
+	vmstep 'cdtok> !
 	cdtok> 'cdtok - 3 >> 
 	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
 	;
@@ -418,10 +359,10 @@
 	
 :iplay
 	terror 1? ( drop ; ) drop
-	|resetplayer
 	'ejecutando 'estado !
 	cdcnt 0? ( drop ; ) drop
 	'cdtok 'cdtok> !
+	vmreset
 	'stepvm cdspeed +vexe | 'exe 3.0 --
 	;
 
@@ -443,13 +384,13 @@
 	4 4 immat
 	"r3Code" immlabelc immdn
 	
-	$ff 'immcolorbtn !
+	$7f 'immcolorbtn !
 	terror 1? ( $ff0000 'immcolorbtn ! ) drop
 	'iplay "play" immbtn imm>>
-	$ff00 'immcolorbtn !
+	$7f00 'immcolorbtn !
 	'iedit "edit" immbtn imm>>
 	'iclear "clear" immbtn imm>>
-	$ff0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
+	$7f0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
 	usod deld "d:%d u:%d" immLabel imm>>
 	terror "error:%d" immlabel
  	
@@ -474,10 +415,10 @@
 |	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
 |	calc
 	
-	vmcpu 'cpu !
+	'cdtok 4 vmcpu 'cpu !
 	
 	|------- test
-	6 'cdcnt !
+	7 'cdcnt !
 	'cdtok >a
 	$300000000 a!+
 	$10a a!+
@@ -485,6 +426,7 @@
 	$100000100 a!+
 	$14c a!+
 	$10b a!+
+	$09 a!+
 	processlevel
 |	resetplayer
 	
