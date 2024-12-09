@@ -12,11 +12,8 @@
 #cpu
 #imgspr
 
-|-------------------------------------	
-| scrjr:	eventos/movimiento/apariencia/sonido/control/fin
-| scratch:	movimiento/apariencia/sonido/eventos/control/sensor/operadores/variables/bloques
-|
-| LIT/()/??/STK/OPER/VAR/WORD MOV-DRAW-SOUND SENSOR-KEY-MOUSE
+|----------------------------------
+| LIT/()/??/STK/OPER/VAR/WORD
 
 #cdx 64 #cdy 64
 #cdcnt 0
@@ -27,7 +24,6 @@
 
 #cdspeed 0.2
 
-	
 |------ INSTRUCC
 #xi #yi	#si -1 #stri * 32
 
@@ -41,7 +37,6 @@
 	xi 8 + yi ttat 
 	'stri tt.
 	;
-
 
 :processlevel	
 	cdcnt 'cdtok vmcheckcode 
@@ -338,7 +333,6 @@
 	;
 
 |-----------------------------
-	
 :stepvm
 	cdtok> 
 	0? ( drop ; ) 
@@ -399,7 +393,7 @@
 	SDLredraw 
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( processlevel )
+
 	drop
 	;
 
@@ -411,9 +405,6 @@
 	|bfont1
 	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	64 vaini
-	
-|	tsize dup "r3/r3vm/img/rcode.png" ssload 'imgspr !
-|	calc
 	
 	'cdtok 4 vmcpu 'cpu !
 	
@@ -428,7 +419,6 @@
 	$10b a!+
 	$09 a!+
 	processlevel
-|	resetplayer
 	
 	modmenu
 	SDLquit 
