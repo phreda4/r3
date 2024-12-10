@@ -12,6 +12,10 @@
 #cpu
 #imgspr
 
+#dicc * $fff
+#dicc> 'dicc
+#str * $fff
+#str> 'str
 |----------------------------------
 | LIT/()/??/STK/OPER/VAR/WORD
 
@@ -66,6 +70,11 @@
 	;
 	
 	
+:definew
+	;
+	
+:definev
+	;
 |----------------------
 #xa #ya
 :saseti
@@ -194,16 +203,17 @@
 :word
 	immcr
 	64 23 immbox
-	$7f0000 sdlcolor
-	1 ":" dragword imm>>
-	$7f007f sdlcolor
-	2 "#" dragword imm>>
+	$7f0000 'immcolorbtn !
+	'definew ":" immbtn imm>>
+	$7f007f 'immcolorbtn !
+	'definev "#" immbtn imm>>
 	$7f7f00 sdlcolor
 	255 "( )" dragword immcr
 	$7f7f sdlcolor
 	0 "Nro" dragword imm>>
 	0 "WORD" dragword imm>>
-	3 """""" dragword immcr
+	$7f7f7f 'immcolorbtn !
+	3 """""" immbtn immcr
 	$7f00 sdlcolor
 
 |	"123" 
@@ -234,7 +244,6 @@
 	;
 	
 |---------------------------------	
-	
 :incell
 	over 'nowins ! 
 	$333333 sdlcolor 

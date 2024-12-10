@@ -153,7 +153,6 @@
 
 :xscan | resolution -- res
 	;
-
 :xcannon | range --
 	;
 :xdrive | speed --

@@ -51,27 +51,16 @@
 	
 #lev
 	
-:cprint2 | "" --
-	curx padx + lev 4 << + cury pady + bat bemits2 ;
 	
 :linecode
-	curx 32 - cury pady + bat
-	dup 1+ "%d" bprint2
-	$ffffff bcolor
-	224 22 immbox
 	a@+ dup 8 >> $ff and 'lev !
-	vmtokstr cprint2 ;
+	vmtokstr bemits2 bsp ;
 	
 :showcode
-	cdx cdy immwinxy
-	160 384 immbox
-	plgui 
-	$444444 sdlcolor plxywh SDLFRect	
-	$ffffff bcolor
+	2 64 bat
 	'cdtok >a
 	0 ( cdcnt <?
 		linecode
-		immcr
 		1+ ) drop ;
 		
 #pad * 1024	
