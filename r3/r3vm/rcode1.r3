@@ -211,7 +211,7 @@
 	255 "( )" dragword immcr
 	$7f7f sdlcolor
 	0 "Nro" dragword imm>>
-	0 "WORD" dragword imm>>
+|	0 "WORD" dragword imm>>
 	$7f7f7f 'immcolorbtn !
 	3 """""" immbtn immcr
 	$7f00 sdlcolor

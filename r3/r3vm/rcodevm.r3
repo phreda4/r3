@@ -143,7 +143,10 @@
 :iAVAR	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
 
 #tokenx
-iLITd iLITh iLITb iLITs iCOM iWORD iAWORD iVAR iAVAR |0-8
+iLITd iLITh iLITb iLITs 
+iCOM iWORD iAWORD iVAR iAVAR |0-8
+
+| isys
 i; i( i) i[ i] iEX i0? i1? i+? i-? 				|9-18
 i<? i>? i=? i>=? i<=? i<>? iAND? iNAND? iIN? 	|19-27
 iDUP iDROP iOVER iPICK2 iPICK3 iPICK4 iSWAP iNIP 	|28-35
@@ -326,9 +329,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		$7f and 15 27 in? ( swap 32 >> 0? ( error ) )
 		2drop
 		1+ ) 2drop ;
+
+::vmlistok | 'list 'str --
+	swap >a ( dup c@ 1? drop dup a!+ >>0 ) 2drop ;
 	
 | here 
 : |---------- init
-	'tokname >a
-	'toknames ( dup c@ 1? drop
-		dup a!+ >>0 ) 2drop ;
+	'tokname 'toknames vmlistok ;

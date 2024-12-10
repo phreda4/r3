@@ -1,12 +1,11 @@
-| frobots
+| arena war
 | PHREDA 2021-2024 (r3)
 |-------------------------
-
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/util/hash2d.r3
+^r3/r3vm/rcodevm.r3
 
 #tsprites 
 
@@ -16,7 +15,7 @@
 
 #viewpx #viewpy
 
-#btnpad
+##btnpad |  **
 
 | tank
 | x y ang anim ss vx vy ar io
@@ -211,55 +210,25 @@
 	a! | color
 	;
 	
-#pad * 256	
-
-:mconsole	
-	8 500 immat
-	1000 32 immbox
-	'pad 128 immInputLine
+::war.+rtank
+	rand $ff000000 or | color
+	tsprites 
+	0 0 0 ICS>anim | init cnt scale -- 
+	2.0 1.0 randmax 
+	600.0 randmax 300.0 -
+	400.0 randmax 200.0 -
+	+tank
 	;
-	
-|-------------------
-:runscr
-	immgui
-	timer.
-	0 sdlcls
-	$ffff bcolor
-	8 8 bat "Tanks" bprint2 
 
+
+::war.draw
 	H2d.clear
 	'disp p.draw
 	'tanks p.draw
 	'fx p.draw
-
-	|8 64 bat H2d.list "%d %h" bprint
+	;
 	
-	mconsole
-	
-	sdlredraw
-	sdlkey
-	>esc< =? ( exit )
-	| ---- player control	
-	<up> =? ( btnpad %1000 or 'btnpad ! )
-	<dn> =? ( btnpad %100 or 'btnpad ! )
-	<le> =? ( btnpad %10 or 'btnpad ! )
-	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 nand 'btnpad ! )
-	>dn< =? ( btnpad %100 nand 'btnpad ! )
-	>le< =? ( btnpad %10 nand 'btnpad ! )
-	>ri< =? ( btnpad %1 nand 'btnpad ! )
-	<esp> =? ( btnpad $10 or 'btnpad ! )
-	
-	<f1> =? ( rand $ff000000 or | color
-		tsprites 
-		0 0 0 ICS>anim | init cnt scale -- 
-		2.0 1.0 randmax 
-		600.0 randmax 300.0 -
-		400.0 randmax 200.0 -
-		+tank )
-	drop ;
-
-:reset
+::war.reset
 	sw 1 >> 'viewpx !
 	sh 1 >> 'viewpy !
 
@@ -267,25 +236,61 @@
 	'tanks p.clear
 	'disp p.clear
 	
-
 	tsprites 
 	0 0 0 ICS>anim | init cnt scale -- 
 	2.0 0.0 
 	0 0 +ptank 
 	;
+
+|------------------------
+|scan (degree,resolution):range
+:iscan
+	vmpop
+	vmpop
+	vmpush
+	;
+|cannon (degree,range):ok
+:ishoot
+	vmpop
+	vmpop
+	vmpush
+	;
+|drive (degree,speed)
+:idrive
+	vmpop
+	vmpop
+	;
+:idamage | -- d
+	vmpush ;
+:ispeed | -- s
+	vmpush ;
 	
-|-------------------
-: |<<< BOOT <<<
-	"r3 robots" 1024 600 SDLinit
-	bfont1
-	
-	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
+:ipos | -- x y 
+	vmpush vmpush ;
+:isin | ang -- sin
+	vmpop sin vmpush ;
+:icos | ang -- cos
+	vmpop cos vmpush ;
+:itan | ang -- tan
+	vmpop tan vmpush ;
+:itan2 | x y -- ang
+	vmpop vmpop swap atan2 vmpush ;
+:irand | max -- rand
+	vmpop randmax vmpush ;
+
+|------ IO interface
+##words "scan" "shoot" "drive" "damage"  "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
+##wordt * 88
+##worde	iscan ishoot idrive idamage ispeed ipos isin icos itan itan2 irand 
+##wordd ( $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 ) 
+
+::war.ini
 	16 16 "media/img/tank.png" ssload 'tsprites !
 	400 'fx p.ini
 	100 'tanks p.ini
 	1000 'disp p.ini
 	1000 H2d.ini 
-	reset
-	'runscr SDLshow
-	SDLquit 
+	
+	'wordt 'words vmlistok	
+	
 	;
