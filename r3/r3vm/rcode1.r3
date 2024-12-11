@@ -180,8 +180,8 @@
 ( 21 ) "=?" ( 24 ) "<>?" ( 25 ) "and?" ( 26 ) "nand?"
 ( 19 ) "<?" ( 23 ) "<=?" ( 20 ) ">?" ( 22 ) ">=?" 
 
-( 28 ) "dup" ( 29 ) "drop" ( 30 ) "over" ( 35 ) "swap" 
-( 36 ) "nip" ( 37 ) "rot" ( 31 ) "pick2" ( 32 ) "pick3" 
+( 28 ) "dup" ( 29 ) "drop" ( 30 ) "over" ( 34 ) "swap" 
+( 35 ) "nip" ( 36 ) "rot" ( 31 ) "pick2" ( 32 ) "pick3" 
 |"PICK4" "-ROT" "2DUP" "2DROP" 
 |"3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
 ( 43 ) "@" ( 45 ) "@+" ( 77 ) "!" ( 79 ) "!+"
@@ -355,12 +355,14 @@
 :stepvm
 	cdtok> 
 	0? ( drop ; ) 
-	vmstep 'cdtok> !
+	vmstepck 'cdtok> !
+	terror 1? ( drop -8 'cdtok> +! ; ) drop
 	cdtok> 'cdtok - 3 >> 
 	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
 	;
 	
 :ejecutando
+
 	300 64 mapdraw
 	player
 	
@@ -408,7 +410,12 @@
 	'iclear "clear" immbtn imm>>
 	$7f0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
 	usod deld "d:%d u:%d" immLabel imm>>
-	terror "error:%d" immlabel
+	
+	vmerror 1? ( 
+		$ff0000 'immcolortex !
+		dup "error: %s" immlabel
+		$ffffff 'immcolortex !
+		) drop
  	
 	estado ex
 

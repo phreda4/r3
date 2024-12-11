@@ -3,6 +3,8 @@
 ^r3/lib/mem.r3
 
 
+##terror | tipo error	
+
 #wordd | data stack
 #worde | vectors
 ##words | strings
@@ -167,16 +169,6 @@ iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
 i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
 iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 
-
-::vmstep | ip -- ip'
-	@+
-	$80 and? ( $7f and 3 << worde + @ ex ; ) 
-	$7f and 3 << 'tokenx + @ ex ;
-
-::vmrun | to ip -- ip'
-	( over <>? vmstep ) ;
-
-
 #toknames 
 ";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
 "<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "in?"		|19-27
@@ -227,18 +219,38 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
 	
-::vmtokmov | tok -- usr
-	$80 and? ( $7f and wordd + c@ ; ) 
-	$7f and 
-	
-	'tokmov + c@ ;
+::vmcell | tok -- ""
+	dup $f and 3 << 'tokbig + @ ex ;
 
 ::vmdeep | -- stack
 	NOS stack - 3 >> 1 + ;
 
-::vmcell | tok -- ""
-	dup $f and 3 << 'tokbig + @ ex ;
+::vmtokmov | tok -- usr
+	$80 and? ( $7f and wordd + c@ ; ) 
+	$7f and 'tokmov + c@ ;
 
+::vmchecktok
+	tokmov $f and
+	vmdeep >? ( 1 'terror ! )
+	drop
+	;
+
+::vmstep | ip -- ip'
+	@+
+	$80 and? ( $7f and 3 << worde + @ ex ; ) 
+	$7f and 3 << 'tokenx + @ ex ;
+
+::vmstepck | ip -- ip'
+	@+
+	dup vmtokmov $f and 
+	vmdeep >? ( 1 'terror ! 2drop ; ) 
+	drop
+	$80 and? ( $7f and 3 << worde + @ ex ; ) 
+	$7f and 3 << 'tokenx + @ ex ;
+
+::vmrun | to ip -- ip'
+	( over <>? vmstep ) ;
+	
 |--------------- IO
 ::vmpop | -- t
 	TOS
@@ -290,11 +302,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #while
 ##usod
 ##deld
-##terror
-
-:error
-	1 'terror !
-	;
 	
 :is?? | adr token -- adr token
 	a> pick2 - 8 - 32 << 	| adr tok dist
@@ -303,6 +310,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	1 'while !
 	;
 	
+:repeat	
+	drop 8 + a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ;
+	
 :patch?? | now -- now
 	0 'while !
 	a> 8 - 		| adr
@@ -310,9 +320,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		$ffff <? ( $ff and 15 27 in? ( is?? ) )
 		drop 8 - 
 		) drop | now adr(10)
+
 	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
 	8 - 
-	dup @ $ff and 15 <? ( error 2drop ; ) 27 >? ( error 2drop ; ) drop
+	dup @ $ff and 15 <? ( repeat ; ) 27 >? ( repeat ; ) drop | repeat	
 	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
 	;
 	
@@ -343,12 +354,25 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	>a
 	0 ( over <?
 		a@+ dup 
-		$7f and 15 27 in? ( swap 32 >> 0? ( error ) )
+		$7f and 15 27 in? ( swap 32 >> 0? ( 2 'terror ! ) )
 		2drop
 		1+ ) 2drop ;
 
 ::vmlistok | 'list 'str --
 	swap >a ( dup c@ 1? drop dup a!+ >>0 ) a! drop ;
+	
+#msgerror 
+"stack empty"		|1 
+"conditional alone"	|2
+"unbalanced stack"	|3
+"div by 0"			|4
+"no data adress"	|5
+"no code adress"	|6
+
+::vmerror | -- str
+	terror 0? ( ; )
+	1- 'msgerror 
+	( swap 1? 1- swap >>0 ) drop ;
 	
 | here 
 : |---------- init
