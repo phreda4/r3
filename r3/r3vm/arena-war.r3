@@ -113,7 +113,7 @@
 	tsprites b!+ |ss
 	swap polar 
 	b!+ b!+
-	1000 b!
+	1000 b! | dist
 	;
 
 |------------------- player tank
@@ -135,10 +135,12 @@
 	32 << a> .a +! ;
 
 :shoot | --
+	+disp
 	;
 
 :scan | --
 	;
+	
 |--------------------------
 :tanima | btn -- btn
 	$f and? ( a> .ani dup @ 0 2 $ff vICS>anim swap ! ; )
@@ -279,11 +281,17 @@
 	vmpop randmax vmpush ;
 
 |------ IO interface
-##words "scan" "shoot" "drive" "damage"  "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
 ##wordt * 88
+
+##words "scan" "shoot" "drive" "damage" "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
 ##worde	iscan ishoot idrive idamage ispeed ipos isin icos itan itan2 irand 
 ##wordd ( $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 ) 
 
+::WAR.ins0
+	'wordt 'words vmlistok 
+	'wordt 'worde 'wordd vmcpuio
+	;
+	
 ::war.ini
 	16 16 "media/img/tank.png" ssload 'tsprites !
 	400 'fx p.ini

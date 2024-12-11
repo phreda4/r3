@@ -7,7 +7,7 @@
 ^r3/util/sdlgui.r3
 ^r3/util/varanim.r3
 
-^r3/r3vm/rcodevm.r3
+^r3/r3vm/arena-map.r3
 
 #cpu
 #imgspr
@@ -224,8 +224,8 @@
 		over dragword 
 		swap nextdrag
 		swap >>0
-		) 3drop
-	;
+		) 3drop 
+	immcr ;
 
 
 #str * 256
@@ -236,11 +236,21 @@
 |	'dnNro 'moveIns 'upIns onMapA 
 	immcr ;
 	
+:wordi
+	$7f7f sdlcolor
+	0 words 
+	( @+ 1?
+		pick2 $80 or swap dragword 
+		swap nextdrag
+		swap
+		) 3drop ;
+	
 :panelword
 	300 64 immwinxy
 	nroins
 	strins
 	word
+	wordi
 	;
 	
 |---------------------------------	
@@ -351,7 +361,8 @@
 	;
 	
 :ejecutando
-|	player
+	300 64 mapdraw
+	player
 	
 	pcode
 	mstack
@@ -366,6 +377,8 @@
 	cdcnt 0? ( drop ; ) drop
 	'cdtok 'cdtok> !
 	vmreset
+	resetplayer
+	
 	'stepvm cdspeed +vexe | 'exe 3.0 --
 	;
 
@@ -414,6 +427,9 @@
 	|bfont1
 	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	64 vaini
+	
+	arena.ini
+	map-ins0
 	
 	'cdtok 4 vmcpu 'cpu !
 	

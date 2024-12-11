@@ -100,17 +100,29 @@
 ::ipu
 	;
 
-|------ IO interface
+|------ IO interface 0
+#wordt * 80
 
-##words "up" "down" "left" "right" "jump" "push" 0
+#words "up" "down" "left" "right" "jump" "push" 0
+#worde	iup idn ile iri ijm ipu
+#wordd ( $00 $00 $00 $00 $00 $00  ) 
 
-##wordt * 80
-##worde	iup idn ile iri ijm ipu
-##wordd ( $00 $00 $00 $00 $00 $00  ) 
+::map-ins0
+	'wordt 'words vmlistok 
+	'wordt 'worde 'wordd vmcpuio
+	;
+	
+|------ IO interface 1	
+#words "step" "check" "get" "put"  0
+#worde	iup idn ile iri ijm ipu
+#wordd ( $f1 $f1 $f1 $f1 $00 $00  ) 
+
+::map-ins1
+	'wordt 'words vmlistok 
+	'wordt 'worde 'wordd vmcpuio
+	;
 	
 ::arena.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !
-	
 	calc
-	'wordt 'words vmlistok 
 	;

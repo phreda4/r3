@@ -2,6 +2,14 @@
 | PHREDA 2024
 ^r3/lib/mem.r3
 
+
+#wordd | data stack
+#worde | vectors
+##words | strings
+
+#dicc * 1024
+#dicc>
+
 |------ VM
 #IP 			
 ##TOS #NOS #RTOS 
@@ -161,7 +169,9 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 
 
 ::vmstep | ip -- ip'
-	@+ $7f and 3 << 'tokenx + @ ex ;
+	@+
+	$80 and? ( $7f and 3 << worde + @ ex ; ) 
+	$7f and 3 << 'tokenx + @ ex ;
 
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
@@ -212,12 +222,16 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #tokbig ilitd ilith ilitb ilits ilitf iword iaword ivar iavar 
 
 ::vmtokstr | tok -- ""
+	$80 and? ( $7f and 3 << words + @ ; ) 
 	dup $7f and 
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
 	
 ::vmtokmov | tok -- usr
-	$7f and 'tokmov + c@ ;
+	$80 and? ( $7f and wordd + c@ ; ) 
+	$7f and 
+	
+	'tokmov + c@ ;
 
 ::vmdeep | -- stack
 	NOS stack - 3 >> 1 + ;
@@ -234,7 +248,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	8 'NOS +! TOS NOS !
 	'TOS ! ;
 
-::vmio | 'words 'exwords 'skwords -- 
+::vmcpuio | 'words 'exwords 'skwords -- 
+	'wordd ! | data stack
+	'worde ! | vectors
+	'words ! | strings
 	;
 
 |--------------- CPU
@@ -331,7 +348,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		1+ ) 2drop ;
 
 ::vmlistok | 'list 'str --
-	swap >a ( dup c@ 1? drop dup a!+ >>0 ) 2drop ;
+	swap >a ( dup c@ 1? drop dup a!+ >>0 ) a! drop ;
 	
 | here 
 : |---------- init
