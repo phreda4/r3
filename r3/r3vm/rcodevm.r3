@@ -14,7 +14,7 @@
 
 |------ VM
 #IP 			
-##TOS #NOS #RTOS 
+##TOS ##NOS #RTOS 
 #REGA #REGB
 ##STACK #CODE #DATA
 
@@ -312,8 +312,11 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	1 'while !
 	;
 	
-:repeat	
-	drop 8 + a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ;
+:loop
+	a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ;
+	
+:if
+	drop dup @ $ffff and a> pick2 - 8 - 32 << or swap ! ;
 	
 :patch?? | now -- now
 	0 'while !
@@ -322,12 +325,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		$ffff <? ( $ff and 15 27 in? ( is?? ) )
 		drop 8 - 
 		) drop | now adr(10)
-
-	while 1? ( drop a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ; ) drop
-	8 - 
-	dup @ $ff and 15 <? ( repeat ; ) 27 >? ( repeat ; ) drop | repeat	
-	dup @ $ffff and a> pick2 - 8 - 32 << or swap !
-	;
+	while 1? ( drop loop ; ) drop
+	8 - dup @ $ff and 15 27 in? ( if ; )
+	drop 8 + loop ;
 	
 :clearlev
 	9 <? ( swap $ff00 nand ; )

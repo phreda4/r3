@@ -16,10 +16,14 @@
 #dicc> 'dicc
 #str * $fff
 #str> 'str
+
+#defw
+#defv
+
 |----------------------------------
 | LIT/()/??/STK/OPER/VAR/WORD
 
-#cdx 64 #cdy 64
+#cdx 32 #cdy 64
 #cdcnt 0
 #cdmax 128 
 
@@ -27,6 +31,9 @@
 #cdtok> 'cdtok
 
 #cdspeed 0.2
+
+#skx 180 #sky 64
+#skview 4
 
 |------ INSTRUCC
 #xi #yi	#si -1 #stri * 32
@@ -224,36 +231,39 @@
 :codeprint
 	nowins =? ( ; )
 	cdcnt =? ( nowins -? ( drop ; ) drop )
-	a@+ |dup
-	dup 8 >> $ff and 'lev !
+	a@+ dup 8 >> $ff and 'lev !
 	vmtokstr cprint2 
-	|"     %h" ttprint
 	;
 	
 :linecode
-	$333333 ttcolor
+	$666666 ttcolor
 	curx 32 - cury pady + ttat
 	dup 1+ "%d" ttprint
 	$ffffff ttcolor
-	160 22 immbox
+	128 20 immbox
 	plgui
 	si -1 <>? ( 'incell guiI ) drop
 	codeprint
 	'dnCode 'moveins 'upins onMapA ;	
 	
 :mcode
-	cdx cdy immwinxy
-	160 384 immbox
-	plgui 
-	$444444 sdlcolor plxywh SDLFRect	
-	[ -1 'nowins ! ; ] guiO
+	$7f0000 sdlcolor
+	
+	cdx cdy 20 - 128 22 SDLFrect
 	$ffffff ttcolor
+	cdx cdy 22 - ttat ":main" ttemits 
+
+	cdx cdy immwinxy
+	128 384 immbox
+	plgui $444444 sdlcolor plxywh SDLFRect	
+	[ -1 'nowins ! ; ] guiO
+	
+	cdx cdy immwinxy
 	'cdtok >a
 	0 ( cdcnt <=?
 		linecode
 		immcr
 		1+ ) drop ;
-
 
 |------ PLAYCODE
 :cdcur
@@ -261,8 +271,8 @@
 	
 :linecursor
 	cdcur <>? ( $333333 ttcolor ; ) 
-	curx 48 - cury pady + ttat
-	$eeeeee ttcolor ">" ttprint 
+	curx 8 - cury pady + ttat
+	$eeeeee ttcolor ">" ttemits
 	;
 	
 :linecode
@@ -270,16 +280,19 @@
 	curx 32 - cury pady + ttat
 	dup 1+ "%d" ttprint
 	$ffffff ttcolor
-	224 22 immbox
+	224 20 immbox
 	a@+ dup 8 >> $ff and 'lev !
 	vmtokstr cprint2 ;
 	
 :pcode
-	cdx cdy immwinxy
-	160 384 immbox
-	plgui 
-	$444444 sdlcolor plxywh SDLFRect	
+	$7f0000 sdlcolor
+	cdx cdy 20 - 128 22 SDLFrect
 	$ffffff ttcolor
+	cdx cdy 22 - ttat ":main" ttemits 
+	
+	cdx cdy immwinxy
+	128 384 immbox
+	plgui $444444 sdlcolor plxywh SDLFRect	
 	'cdtok >a
 	0 ( cdcnt <?
 		linecode
@@ -287,26 +300,26 @@
 		1+ ) drop ;
 
 |------ STACK
-#skx 64 #sky 500
-#skview 4
 
-:mstack
-	skx sky ttat
-	vmdeep 0? ( drop ; ) 
-	stack 8 +
-	( swap 1 - 1? swap
-		@+ vmcell ttemits " " ttemits
-		) 2drop 
-	TOS vmcell ttemits
+:scell
+	$3f3f3f immback
+	vmcell immStrC 
+	immdn
 	;
+	
+:mstack
+	skx sky immwinxy
+	84 24 immbox
+	vmdeep 0? ( drop ; ) drop
+	TOS scell 
+	NOS ( stack >?
+		dup @ scell
+		8 - ) drop ;
 
 |-----------------------------
 :editando
-|	player
-	
 	300 64 immwinxy
 	ipanel
-
 	mcode
 	showins
 	;
@@ -322,10 +335,8 @@
 	;
 	
 :ejecutando
-
 	300 64 mapdraw
 	player
-	
 	pcode
 	mstack
 	;
@@ -350,6 +361,8 @@
 
 :iclear
 	0 'cdcnt !
+	'dicc 'dicc> !
+	'str 'str> !
 	;
 	
 :menu
@@ -358,9 +371,9 @@
 	immgui
 	
 	
-	60 22 immbox
+	64 22 immbox
 	4 4 immat
-	"r3Code" immlabelc immdn
+	"r3Code" immlabelc imm>>
 	
 	$7f 'immcolorbtn !
 	terror 1? ( $ff0000 'immcolorbtn ! ) drop

@@ -119,6 +119,11 @@
 	ttsize drop nip padx 1 << + 'curx +!
 	;
 	
+::immStrC | "" --
+	immcolortex ttColor
+	ttsize boxw rot - 1 >> curx + padx +
+	boxh rot - 1 >> cury + pady + 
+	ttat ttemits ;
 
 ::immListBox | lines --
 	boxh * curx cury rot boxw swap guiBox ;
