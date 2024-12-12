@@ -143,18 +143,19 @@
 :iMEM	mem pushinro ;
 
 
-:iLITd :iLITh :iLITb
-:iLITs
+:iLITd :iLITh :iLITb :iLITf	
 	iDUP atoken 'TOS ! ;
-:iCOM	;
+:iLITs
+	iDUP atoken 'TOS ! ;	
+
 :iWORD	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	8 'NOS +! TOS NOS ! d@+ code + d@ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
 
 #tokenx
-iLITd iLITh iLITb iLITs 
-iCOM iWORD iAWORD iVAR iAVAR |0-8
+iLITd iLITb iLITh iLITf iLITs 
+iWORD iAWORD iVAR iAVAR |0-8
 
 | isys
 i; i( i) i[ i] iEX i0? i1? i+? i-? 				|9-18
@@ -183,7 +184,7 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 "move" "move>" "fill" "cmove" "cmove>" "cfill"				|87-92
 0
 
-|iLITd iLITh iLITb iLITs iLITf iWORD iAWORD iVAR iAVAR |0-8
+|iLITd iLITb iLITh iLITf iLITs iWORD iAWORD iVAR iAVAR |0-8
 #tokmov (
 $10 $10 $10 $10 $10 -1 $10 $10 $10
 0 0 0 0 0 $f1 $1 $1 $1 $1
@@ -202,16 +203,17 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #tokname * 1024
 	
 :ilitd 32 >> "%d" sprint ;
+:ilitb 32 >> "%%%b" sprint ;
 :ilith 32 >> "$%h" sprint ;
-:ilitb 32 >> "%b" sprint ;
-:ilits 32 >> """%d""" sprint ;
 :ilitf 32 >> "%f" sprint ;
+:ilits 32 >> """%d""" sprint ;
+
 :iword 
 :iaword 
 :ivar 
 :iavar "w%h" sprint ;
 	
-#tokbig ilitd ilith ilitb ilits ilitf iword iaword ivar iavar 
+#tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
 ::vmtokstr | tok -- ""
 	$80 and? ( $7f and 3 << words + @ ; ) 

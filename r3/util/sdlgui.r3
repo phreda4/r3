@@ -115,7 +115,7 @@
 	immcolortex ttColor
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
-	ttat sprint dup tt.
+	ttat sprint dup ttemits
 	ttsize drop nip padx 1 << + 'curx +!
 	;
 	
@@ -393,7 +393,7 @@
 	'clickfoco onClick
 	$ffffff ttcolor
 	drop
-	ttprint ;
+	ttemits ;
 
 
 |----- ENTERO

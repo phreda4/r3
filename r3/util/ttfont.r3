@@ -48,8 +48,13 @@
 ::ttfont! | font --
 	'ttfon ! ;
 	
-::tt. | "" --
-	>r SDLrenderer ttink ttfon r> ttx tty RenderText ;
+::ttprint | "" --
+	sprint	
+::ttemits | "" --
+	SDLrenderer ttink ttfon pick3 ttx tty RenderText 
+	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	'textbox 8 + d@ 'ttx +! 
+	;
 	
 ::ttat | x y --
 	'tty ! 'ttx ! ;	
@@ -60,12 +65,7 @@
 ::ttsize | "" -- "" w h
 	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeText drop
 	'textbox 8 + d@+ swap d@ ;
-		
-::ttprint | "" --
-	sprint dup tt. 
-	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeText drop
-	'textbox 8 + d@ 'ttx +! ;
-	
+			
 #backc	
 :sizechar | -- w 
 	backc 0? ( drop 8 ; ) drop

@@ -336,7 +336,7 @@
 	[ cursor proinputa ; ] 'iniinput w/foco
 	'clickfoco onClick
 	drop
-	$ffffff bcolor bprint ;
+	$ffffff bcolor bemits ;
 
 ::immInputLine2 | 'buff max --
 	plgui
@@ -350,7 +350,7 @@
 	[ cursor2 proinputa ; ] 'iniinput w/foco
 	'clickfoco onClick
 	drop
-	$ffffff bcolor bprint2 ;
+	$ffffff bcolor bemits2 ;
 
 
 |----- ENTERO

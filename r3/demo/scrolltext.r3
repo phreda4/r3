@@ -33,7 +33,7 @@
 	yh swap - 1 >> pick4 + swap
 	1024 swap - 1 >> swap ttat
 	
-	tt. ;
+	ttemits ;
 	
 :animc
 	'ys yh neg 0 23 1.0 0 +vanim

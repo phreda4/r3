@@ -39,7 +39,7 @@
 	xi yi 64 22 sdlfrect
 	$ffffff ttcolor
 	xi 8 + yi ttat 
-	'stri tt.
+	'stri ttemits
 	;
 
 :processlevel	
@@ -128,45 +128,30 @@
 	processlevel
 	;
 
-	
-|------- NUMBER
-#value
-#base 0
-#bases " %d" "$%h" "%%%b"
+|---------------------------------
+#str * 128
+#base
 
-:dnNro
-	value 
-	base 2 << 'bases +
-	sprint 'stri strcpy
-	value 32 << base or 'si !
+:dnnro
+	1- 'base !
+	'str str>nro nip
+	32 << base or 'si !
 	saseti ;
 
-:kv	value 10 * + 'value ! ;
-	
-:kcol base =? ( $7f7f7f ; ) $7f7f ;
-	
-:kbase | "" n --
-	kcol 'immcolorbtn ! 
-	[ dup 'base ! ; ] rot immbtn 
-	drop ;
-	
-:nroins
-	$7f 'immcolorbtn ! 
-	128 22 immbox
-	'value immInputInt
-	'dnNro 'moveIns 'upIns onMapA 
-	immcr ;
-:keypad	
-	32 22 immbox	
-	[ 7 kv ; ] "7" immbtn imm>> [ 8 kv ; ] "8" immbtn imm>> [ 9 kv ; ] "9" immbtn immcr
-	[ 4 kv ; ] "4" immbtn imm>> [ 5 kv ; ] "5" immbtn imm>> [ 6 kv ; ] "6" immbtn immcr
-	[ 1 kv ; ] "1" immbtn imm>> [ 2 kv ; ] "2" immbtn imm>> [ 3 kv ; ] "3" immbtn immcr
-	[ 0 kv ; ] "0" immbtn imm>> 
-	[ value 10 / 'value ! ; ] "<" immbtn imm>>
-	[ 0 'value ! ; ] "C" immbtn 
-	immcr immcr
-	"d" 0 kbase imm>> "h" 1 kbase imm>> "b" 2 kbase 
+:dnstr
+	'str dup 'stri strcpy
+	isNro 1? ( dnnro ; ) drop
+	| cpy to str
+	0 32 << 4 or 'si !
+	saseti ;
 	;
+
+:strins
+	$7f 'immcolorbtn ! 
+	256 22 immbox
+	'str 127 immInputLine
+	'dnstr 'moveIns 'upIns onMapA 
+	immcr ;
 	
 
 |------- INSTRUCTION
@@ -184,9 +169,9 @@
 ( 35 ) "nip" ( 36 ) "rot" ( 31 ) "pick2" ( 32 ) "pick3" 
 |"PICK4" "-ROT" "2DUP" "2DROP" 
 |"3DROP" "4DROP" "2OVER" "2SWAP"		|36-42
-( 43 ) "@" ( 45 ) "@+" ( 77 ) "!" ( 79 ) "!+"
-|"c@" "c@+" "c!" "c!+" "c+!"
-( 51 ) "+!" ( 14 ) "ex"  ( 9 ) ";"
+( 43 ) "@" ( 45 ) "@+" ( 47 ) "!" ( 49 ) "!+"
+( 44 ) "c@" ( 46 ) "c@+" ( 48 ) "c!" ( 50 ) "c!+" 
+( 51 ) "+!" ( 52 ) "c+!" ( 14 ) "ex"  ( 9 ) ";"
 ( -1 ) 
 
 :dragword | tok "" --
@@ -200,8 +185,8 @@
 :nextdrag
 	1+ $3 nand? ( immcr ; ) imm>> ;
 	
-:word
-	immcr
+:ipanel
+	strins
 	64 23 immbox
 	$7f0000 'immcolorbtn !
 	'definew ":" immbtn imm>>
@@ -209,34 +194,14 @@
 	'definev "#" immbtn imm>>
 	$7f7f00 sdlcolor
 	255 "( )" dragword immcr
-	$7f7f sdlcolor
-	0 "Nro" dragword imm>>
-|	0 "WORD" dragword imm>>
-	$7f7f7f 'immcolorbtn !
-	3 """""" immbtn immcr
 	$7f00 sdlcolor
-
-|	"123" 
-|	"str"
-|	"com"
 	0 'tins
 	( c@+ +?
 		over dragword 
 		swap nextdrag
 		swap >>0
 		) 3drop 
-	immcr ;
-
-
-#str * 256
-:strins
-	$7f 'immcolorbtn ! 
-	128 22 immbox
-	'str 256 immInputLine
-|	'dnNro 'moveIns 'upIns onMapA 
-	immcr ;
-	
-:wordi
+	immcr 
 	$7f7f sdlcolor
 	0 words 
 	( @+ 1?
@@ -245,13 +210,6 @@
 		swap
 		) 3drop ;
 	
-:panelword
-	300 64 immwinxy
-	nroins
-	strins
-	word
-	wordi
-	;
 	
 |---------------------------------	
 :incell
@@ -261,7 +219,7 @@
 	;
 	
 :cprint2 | "" --
-	curx padx + lev 4 << + cury pady + ttat tt. ;
+	curx padx + lev 4 << + cury pady + ttat ttemits ;
 	
 :codeprint
 	nowins =? ( ; )
@@ -337,16 +295,18 @@
 	vmdeep 0? ( drop ; ) 
 	stack 8 +
 	( swap 1 - 1? swap
-		@+ vmcell "%s " ttprint
+		@+ vmcell ttemits " " ttemits
 		) 2drop 
-	TOS vmcell ttprint
+	TOS vmcell ttemits
 	;
 
 |-----------------------------
 :editando
 |	player
 	
-	panelword
+	300 64 immwinxy
+	ipanel
+
 	mcode
 	showins
 	;
