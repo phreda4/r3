@@ -7,7 +7,7 @@
 ^r3/util/hash2d.r3
 ^r3/r3vm/rcodevm.r3
 
-#tsprites 
+##imgspr
 
 #tanks 0 0
 #disp 0 0
@@ -67,7 +67,7 @@
 	32 << 2.0 or b!+	| ang zoom
 	10 4 $ff ICS>anim | init cnt scale
 	b!+ 
-	tsprites b!+	| anim sheet
+	imgspr b!+	| anim sheet
 	0 b!+ 0 b!+ 	| vx vy
 	13 b!			| vrz
 	;
@@ -75,10 +75,10 @@
 :+fxexplo | x y --
 	'fxobj 'fx p!+ >a
 	swap a!+ a!+	| x y 
-	2.0 a!+			| ang zoom
+	rand 32 << 2.0 or a!+			| ang zoom
 	15 6 $ff ICS>anim | init cnt scale
 	a!+ 
-	tsprites a!+	| anim sheet
+	imgspr a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
 	19 a!			| vrz
 	;
@@ -107,10 +107,10 @@
 	pick2 neg 0.5 + pick2 pick2 +fxdisp
 	'disparo 'disp p!+ >b
 	swap b!+ b!+ 
-	neg 0.25 + dup 32 << 2.0 or b!+	| angulo zoom
+	neg 0.25 + dup 0.25 + 32 << 2.0 or b!+	| angulo zoom
 	14 1 0 ICS>anim | init cnt scale
 	b!+ | ani
-	tsprites b!+ |ss
+	imgspr b!+ |ss
 	swap polar 
 	b!+ b!+
 	1000 b! | dist
@@ -214,7 +214,7 @@
 	
 ::war.+rtank
 	rand $ff000000 or | color
-	tsprites 
+	imgspr 
 	0 0 0 ICS>anim | init cnt scale -- 
 	2.0 1.0 randmax 
 	600.0 randmax 300.0 -
@@ -238,7 +238,7 @@
 	'tanks p.clear
 	'disp p.clear
 	
-	tsprites 
+	imgspr
 	0 0 0 ICS>anim | init cnt scale -- 
 	2.0 0.0 
 	0 0 +ptank 
@@ -293,7 +293,7 @@
 	;
 	
 ::war.ini
-	16 16 "media/img/tank.png" ssload 'tsprites !
+	16 16 "media/img/tank.png" ssload 'imgspr !
 	400 'fx p.ini
 	100 'tanks p.ini
 	1000 'disp p.ini

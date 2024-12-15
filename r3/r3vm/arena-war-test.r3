@@ -5,11 +5,23 @@
 ^r3/r3vm/arena-war.r3
 
 	
+:pasto	
+	12343 'seed8 !
+	16 ( sw <?
+		16 ( sh <?
+			2dup 2.0 rand8 4 >> $3 and 21 + imgspr sspritez
+		32 + ) drop
+	32 + ) drop	
+	;
+	
 |-------------------
 :runscr
 	immgui
 	timer.
 	0 sdlcls
+	
+	pasto
+	
 	$ffff bcolor
 	8 8 bat "Arena War" bprint2 
 
