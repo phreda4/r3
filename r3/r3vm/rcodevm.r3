@@ -18,6 +18,43 @@
 #REGA #REGB
 ##STACK #CODE #DATA
 
+
+|------ str 6bits
+:char6bit | char -- 6bitchar
+	$1f - dup $40 and 1 >> or $3f and ;
+
+::name2code | "" -- 32
+|	0 over 10 + c! | cut 10=64bits 5=32bits
+	0 ( swap c@+ 1? char6bit rot 6 << or ) 2drop ;
+
+::word2code | "" -- code
+	10 0 rot				| cnt acc adr     | 5 32bits 10 64bits
+	( c@+ $ff and
+		32 >?
+		char6bit
+		rot 6 << or		| cnt adr acc
+		rot 1-			| adr acc cnt
+		0? ( drop nip ; )
+		swap rot ) 2drop nip ;
+
+::makedicc | adr list -- adr'
+	swap >a
+	( dup c@ 1? drop
+		dup word2code a!+
+		>>0 ) 2drop
+	0 a!+ a> ;
+
+#buffer * 16
+
+:6bitchar | 6bc -- char
+	$3f and $1f + ;
+
+::code2name | nn -- buf
+	'buffer 15 + 0 over c! 1-
+	( swap 1? dup 6bitchar pick2 c! 6 >>>
+		swap 1- ) drop 1+ ;
+
+
 | 'code
 | stack (256) |##STACK * 256 | 32 cells 2 stack
 | tokens

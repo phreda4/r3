@@ -65,7 +65,7 @@
 	'fxobj 'fx p!+ >b
 	swap b!+ b!+	| x y 
 	32 << 2.0 or b!+	| ang zoom
-	10 4 $ff ICS>anim | init cnt scale
+	10 4 $7f ICS>anim | init cnt scale
 	b!+ 
 	imgspr b!+	| anim sheet
 	0 b!+ 0 b!+ 	| vx vy
@@ -76,7 +76,7 @@
 	'fxobj 'fx p!+ >a
 	swap a!+ a!+	| x y 
 	rand 32 << 2.0 or a!+			| ang zoom
-	15 6 $ff ICS>anim | init cnt scale
+	15 6 $7f ICS>anim | init cnt scale
 	a!+ 
 	imgspr a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
