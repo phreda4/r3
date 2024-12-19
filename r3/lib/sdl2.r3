@@ -76,6 +76,11 @@
 #sys-SDL_SetTextureAlphaMod
 #sys-SDL_SetHint
 
+#sys-SDL_OpenAudioDevice
+#sys-SDL_QueueAudio
+#sys-SDL_PauseAudioDevice
+#sys-SDL_CloseAudioDevice
+
 ::SDL_Init sys-SDL_Init sys1 drop ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
@@ -145,6 +150,11 @@
 
 ::SDL_GL_MakeCurrent sys-SDL_GL_MakeCurrent sys2 drop ; 
 ::SDL_SetHint sys-SDL_SetHint sys2 drop ; 
+
+::SDL_OpenAudioDevice sys-SDL_OpenAudioDevice sys5 ; 
+::SDL_QueueAudio sys-SDL_QueueAudio sys3 drop ;
+::SDL_PauseAudioDevice sys-SDL_PauseAudioDevice sys2 drop ;
+::SDL_CloseAudioDevice sys-SDL_CloseAudioDevice sys1 drop ;
 
 |----------------------------------------------------------
 	
@@ -357,6 +367,11 @@
 	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
 	dup "SDL_GL_LoadLibrary" getproc 'sys-SDL_GL_LoadLibrary !
 	dup "SDL_GL_GetProcAddress" getproc 'sys-SDL_GL_GetProcAddress !
-	
+
+	dup "SDL_OpenAudioDevice" getproc 'sys-SDL_OpenAudioDevice !
+	dup "SDL_QueueAudio" getproc 'sys-SDL_QueueAudio !
+	dup "SDL_PauseAudioDevice" getproc 'sys-SDL_PauseAudioDevice !
+	dup "SDL_CloseAudioDevice" getproc 'sys-SDL_CloseAudioDevice !
+
 	drop
 	;
