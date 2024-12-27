@@ -12,6 +12,7 @@
 | ---update 
 | vupdate | --
 |
+^r3/lib/console.r3
 ^r3/lib/mem.r3
 ^r3/util/penner.r3
 
@@ -59,17 +60,44 @@
 	-8 'timeline> +! -8 'timeline< +!
 	8 - ;
 	
+| adr -> ini fin var
+:inval | 1 64bit
+	>a a@+ a@+ over - b> *. + a@ ! ;
+	
+:inbox | 4 16bits
+	>a a@+ a@+ 
+	over 48 >> over 48 >> over - b> *. + 48 << -rot
+	over 16 << 48 >> over 16 << 48 >> over - b> *. + $ffff and 32 << -rot
+	over 32 << 48 >> over 32 << 48 >> over - b> *. + $ffff and 16 << -rot
+	swap 48 << 48 >> swap 48 << 48 >> over - b> *. + $ffff and 
+	or or or a@ ! ;
+	
+:inxy | 2 32bits
+	>a a@+ a@+ 
+	over 32 >> over 32 >> over - b> *. + 32 << -rot
+	swap 32 << 32 >> swap 32 << 32 >> over - b> *. + $ffffffff and 
+	or a@ ! ;
+	
+:incol | 4 8bits
+	>a a@+ a@+
+	over $ff000000 and over $ff000000 and over - b> *. +  $ff000000 and -rot
+	over $ff0000 and over $ff0000 and over - b> *. + $ff0000 and -rot
+	over $ff00 and over $ff00 and over - b> *. + $ff00 and -rot
+	swap $ff and swap $ff and over - b> *. + $ff and -rot
+	or or or a@ ! ;
+		
+#inlist inval inbox inxy incol
+
 :execinterp | 'list var -- 'list
 	timenow over $ffffffff and -	| actual-inicio=t0	| 'l1 var tn
-	swap 32 >> 5 << exevar +		| 'list T0 VAR		| 'l1 tn ex
+	over 48 >> $3 and 3 << 'inlist + @ >a |'interp !
+	swap 32 >> $ffff and 5 << exevar +		| 'list T0 VAR		| 'l1 tn ex
 	@+ 0? ( drop nip @+ ex drop remlist ; )				| l1 tn ex+ v .. l1
 	rot								| var X t0
 	over $ffffffff and 16 <</		| var X t0 tmax
-	1.0 >=? ( 2drop remlast ; )		| var X f x 	
+	$ffff >=? ( 2drop remlast ; )		| var X f x 	
 	swap 32 >> ease				| fn f->f
-	swap >a a@+ a@+ over - 
-	rot *. + a@ !
-	;
+	>b a> ex ;
 
 ::vupdate | --
 	msec dup prevt - swap 'prevt ! 'timenow +!
@@ -103,6 +131,15 @@
 	
 ::+vanim | 'var ini fin ease dur. start --
 	>r addint r> +tline ;
+
+::+vboxanim | 'var ini fin ease dur. start --
+	>r addint $10000 or r> +tline ;
+
+::+vxyanim | 'var ini fin ease dur. start --
+	>r addint $20000 or r> +tline ;
+
+::+vcolanim | 'var ini fin ease dur. start --
+	>r addint $30000 or r> +tline ;
 	
 ::+vexe | 'vector start --
 	swap dup dup 0 +ev swap +tline ;
