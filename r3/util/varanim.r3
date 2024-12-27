@@ -149,5 +149,35 @@
 
 ::+vvvexe | v v 'vector start --
 	>r 0 +ev r> +tline ;
+
+|-------------- pack / unpack
+::64xy | b -- x y 
+	dup 48 >> swap 16 << 48 >> ;
+	
+::64wh | b -- w h
+	dup 32 << 48 >> swap 48 << 48 >> ;
+	
+::64xywh | b -- x y w h
+	dup 48 >> swap dup 16 << 48 >> swap
+	dup 32 << 48 >> swap 48 << 48 >> ;
+	
+::xywh64 | x y w h -- b
+	$ffff and swap
+	$ffff and 16 << or swap
+	$ffff and 32 << or swap
+	$ffff and 48 << or ;
+
+::64box | b adr --
+	swap
+	dup 48 >> rot d!+
+	swap dup 16 << 48 >> rot d!+
+	swap dup 32 << 48 >> rot d!+
+	swap 48 << 48 >> swap d! ;		
+	
+::32xy | b -- x y 
+	dup 32 >> swap 32 << 32 >> ;
+	
+::xy32 | x y -- b
+	$ffffffff and swap 32 >> $ffffffff and or ;
 	
 
