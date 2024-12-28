@@ -3,6 +3,11 @@
 |-----------------------------------------
 ^r3/lib/math.r3
 
+::swapcolor | color -- swapcolor
+	dup 16 >> $ff and 
+	over 16 << $ff0000 and or
+	swap $ff00ff00 and or ;
+
 ::colavg | a b -- c
 	2dup xor $fefefefe and 1 >> >r or r> - ;
 

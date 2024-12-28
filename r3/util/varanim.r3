@@ -12,8 +12,8 @@
 | ---update 
 | vupdate | --
 |
-^r3/lib/console.r3
 ^r3/lib/mem.r3
+^r3/lib/color.r3
 ^r3/util/penner.r3
 
 |.... time control
@@ -62,7 +62,8 @@
 	
 | adr -> ini fin var
 :inval | 1 64bit
-	>a a@+ a@+ over - b> *. + a@ ! ;
+	>a a@+ a@+ 
+	over - b> *. + a@ ! ;
 	
 :inbox | 4 16bits
 	>a a@+ a@+ 
@@ -79,12 +80,8 @@
 	or a@ ! ;
 	
 :incol | 4 8bits
-	>a a@+ a@+
-	over $ff000000 and over $ff000000 and over - b> *. +  $ff000000 and -rot
-	over $ff0000 and over $ff0000 and over - b> *. + $ff0000 and -rot
-	over $ff00 and over $ff00 and over - b> *. + $ff00 and -rot
-	swap $ff and swap $ff and over - b> *. + $ff and -rot
-	or or or a@ ! ;
+	>a a@+ a@+ 
+	b> 8 >> $ff and colmix a@ ! ;
 		
 #inlist inval inbox inxy incol
 
