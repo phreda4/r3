@@ -37,12 +37,14 @@
 #sys-SDL_UnlockSurface
 #sys-SDL_BlitSurface
 #sys-SDL_SetSurfaceBlendMode
+#sys-SDL_FillRect
 #sys-SDL_FreeSurface
 #sys-SDL_LockTexture
 #sys-SDL_UnlockTexture
 #sys-SDL_RenderSetLogicalSize
 #sys-SDL_SetRenderDrawBlendMode
 #sys-SDL_SetTextureBlendMode
+#sys-SDL_SetSurfaceAlphaMod
 #sys-SDL_ConvertSurfaceFormat
 
 #sys-SDL_RenderDrawPoint
@@ -113,6 +115,9 @@
 ::SDL_UnlockSurface sys-SDL_UnlockSurface sys1 drop ;
 ::SDL_BlitSurface sys-SDL_BlitSurface sys4 drop ;
 ::SDL_SetSurfaceBlendMode sys-SDL_SetSurfaceBlendMode sys2 drop ;
+::SDL_SetSurfaceAlphaMod sys-SDL_SetSurfaceAlphaMod sys2 drop ;
+::SDL_FillRect sys-SDL_FillRect sys3 drop ;
+
 ::SDL_FreeSurface sys-SDL_FreeSurface sys1 drop ;
 ::SDL_LockTexture sys-SDL_LockTexture sys4 drop ;
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
@@ -335,7 +340,8 @@
 	dup "SDL_UnlockSurface" getproc 'sys-SDL_UnlockSurface !
 	dup "SDL_UpperBlit" getproc 'sys-SDL_BlitSurface !
 	dup "SDL_SetSurfaceBlendMode" getproc 'sys-SDL_SetSurfaceBlendMode !
-
+	dup "SDL_SetSurfaceAlphaMod" getproc 'sys-SDL_SetSurfaceAlphaMod !
+	dup "SDL_FillRect" getproc 'sys-SDL_FillRect !
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
 	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !

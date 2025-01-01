@@ -9,33 +9,6 @@
 
 #boxt 0 0 
 
-::xywh64 | x y w h -- 64b
-	$ffff and swap
-	$ffff and 16 << or swap
-	$ffff and 32 << or swap
-	$ffff and 48 << or ;
-
-::w% sw 16 *>> ;
-::h% sh 16 *>> ;
-
-::xywh%64 | x y w h -- 64b
-	h% $ffff and swap
-	w% $ffff and 16 << or swap
-	h% $ffff and 32 << or swap
-	w% $ffff and 48 << or ;
-	
-::xy%64 | x y -- 64b
-	h% $ffff and 32 << or swap
-	w% $ffff and 48 << or 
-	$ffffffff or ;
-
-::64box | b adr --
-	swap
-	dup 48 >> rot d!+
-	swap dup 16 << 48 >> rot d!+
-	swap dup 32 << 48 >> rot d!+
-	swap 48 << 48 >> swap d! ;	
-	
 #buffer * 4096
 #lines * 512
 #lines>
@@ -44,49 +17,22 @@
 
 #font
 #ink
-#inko
 #htotal
 #x #y
 #bbtext [ 0 0 0 0 ]
 #outline 2
 #dddest [ 2 2 1 1 ]
 
+#surface
+
+#rectt [ 0 0 100 40 ] 	
+
+
 :bbtextb | "text" --
-	font swap ink TTF_RenderUTF8_Blended | surface
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'bbtext SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-	
-:bbtexts | "text" ---
-	font swap ink inko TTF_RenderUTF8_shaded | surface
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'bbtext SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;	
+	font swap ink TTF_RenderUTF8_Blended
+	dup 0 surface 'bbtext SDL_BlitSurface
+	SDL_FreeSurface	;
 
-:bbtextbo | "text" --
-	font outline TTF_SetFontOutline
-	font over inko TTF_RenderUTF8_Blended >r | surface
-	
-	font 0 TTF_SetFontOutline
-	font swap ink TTF_RenderUTF8_Blended | surface
-	
-	dup 1 SDL_SetSurfaceBlendMode 
-|	'bbtext 8 + @ 'dddest 8 + !
-	dup 0 r@ 'dddest SDL_BlitSurface
-	SDL_FreeSurface
-	r>
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	dddest 1 << 'bbtext 8 + +!
-	SDLrenderer over 0 'bbtext SDL_RenderCopy	
-	dddest 1 << neg 'bbtext 8 + +!
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-
-
-#vbbtext 'bbtextb
-	
 :bbrect
 	SDLrenderer 'boxt SDL_RenderDrawRect ;
 
@@ -97,7 +43,7 @@
 	'font ! 'ink !
 	swap 'bbtext d!+ d!+
 	font pick2 rot dup 4 + TTF_SizeUTF8 drop
-	vbbtext ex ;
+	bbtextb ;
 	
 #lastsp
 
@@ -136,7 +82,7 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x 'bbtext d!+ d!+ !
-		@+ vbbtext ex
+		@+ bbtextb
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 		
@@ -145,7 +91,7 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
-		@+ vbbtext ex
+		@+ bbtextb
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 		
@@ -154,15 +100,14 @@
 	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
-		@+ vbbtext ex
+		@+ bbtextb
 		a> 8 - @ 32 >> 'y +!
 		) drop ;
 	
 | color OOc1c1c1c2c2c2	
 ::textbox. | $vh str box color font --
 	'font ! 
-	dup $ffffff and 'ink !
-	24 >> $ffffffff and 'inko !
+	$ffffff and 'ink !
 	'boxt 64box
 	splitlines	
 	0 'htotal !
@@ -181,12 +126,12 @@
 	
 |--- text blended with transparency	
 ::textbox | $vh str box color font --
-	'bbtextb 'vbbtext !
+|	'bbtextb 'vbbtext !
 	textbox. ;
 
 |--- text in box
 ::textboxb | $vh str box aacol1col2 font --
-	'bbtexts 'vbbtext !
+|	'bbtexts 'vbbtext !
 	textbox. ;
 	
 |--- text outline
@@ -195,7 +140,7 @@
 	dup dup 32 << or 'dddest !
 	'outline !
 	swap $ff000000000000 or swap
-	'bbtextbo 'vbbtext !
+|	'bbtextbo 'vbbtext !
 	textbox. ;
 	
 |--- calculate size
@@ -212,3 +157,42 @@
 		8 a+ ) drop
 	htotal ;
 	
+|||||||||||||||||||||||||||||||||||||||||||||||||||||
+:boxprint | x y "" color --- 
+	font -rot TTF_RenderUTF8_Blended
+	|dup 1 SDL_SetSurfaceBlendMode 
+	-rot swap 'rectt d!+ d!
+	dup 0 surface 'rectt SDL_BlitSurface
+	SDL_FreeSurface	
+	;
+
+
+::txbox | "str" vhcol 'box font -- texture
+	'font !
+	0 over 8 + d@+ swap d@ 32 
+	$ff0000 $ff00 $ff $ff000000
+	SDL_CreateRGBSurface
+	|dup $ff SDL_SetSurfaceAlphaMod
+	|dup 1 SDL_SetSurfaceBlendMode 
+	dup 0 $447f0000 SDL_FillRect
+	'surface !
+	
+	-rot | 'box "" col
+	
+|	font -rot TTF_RenderUTF8_Blended | font "" color -- surface
+	
+|	surf 1 SDL_SetSurfaceBlendMode 
+|	'bbtext 8 + @ 'dddest 8 + !
+
+|	dup 0 surf 0 |'dddest 
+|	SDL_BlitSurface
+|	SDL_FreeSurface	
+	0 0 2over $FFFFFF and $ff000000 or boxprint
+	10 10 "hola" $FF00ffff boxprint
+	2drop
+	
+	drop
+	SDLrenderer 1 SDL_SetRenderDrawBlendMode |(renderer, SDL_BLENDMODE_BLEND);
+	SDLrenderer surface SDL_CreateTextureFromSurface
+	surface SDL_FreeSurface
+	;
