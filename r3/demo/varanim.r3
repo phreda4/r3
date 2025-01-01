@@ -67,8 +67,15 @@
 	'acol $ff00 $ff00ff 0 1.0 1.0 +vcolanim
 	;
 
-
 #rtbox [ 0 0 324 180 ] |500 200 324 180 ]
+
+:drawtex | texture x y --
+	swap
+	pick2 0 0 'rtbox 8 + dup 4 + SDL_QueryTexture
+	'rtbox d!+ d!
+	$5a5a5a SDLColor SDLRenderer 'rtbox SDL_RenderDrawRect 
+	SDLrenderer over 0 'rtbox SDL_RenderCopy	
+	SDL_DestroyTexture ;
 
 :main
 	vupdate
@@ -80,28 +87,44 @@
 	8 8 ttat
 	abox "%h" ttprint
 	
-|	$11 "Playa de;las toninas"
-|	10 200 324 180 xywh64 
-|	$ffffff
-|	font1 
-|	textbox | $vh str box color font --
+	"Playa de;las toninas" 224 120 $0000000000ff0000 font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	10 50 drawtex
 
-|	$11 "Playa de;las toninas"
-|	210 200 324 180 xywh64 
-|	$2ffffff000000 
-|	font1 
-|	textboxo | $vh str box color font --
+	"Playa de;las toninas" 224 120 $010000000000ff00 font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	310 50 drawtex
+
+	"Playa de;las toninas" 224 120 $02000000000000ff font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	610 50 drawtex
+
+	"Playa de;las toninas" 224 120 $1000000000ff00ff font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	10 250 drawtex
+
+	"Playa de;las toninas" 224 120 $110000000000ffff font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	310 250 drawtex
+
+	"Playa de;las toninas" 224 120 $12000000000000ff font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	610 250 drawtex
 	
-	|-----------------
-	"Playa de;las toninas" $1100ffffff0000ff 
-	'rtbox 
-	font1 txbox 
+	"Playa de;las toninas" 224 120 $2000000000ffff00 font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	10 450 drawtex
 
-	200 500 'rtbox d!+ d!
-	SDLrenderer over 0 'rtbox SDL_RenderCopy	
-	SDL_DestroyTexture
+	"Playa de;las toninas" 224 120 $210000000000ff00 font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	310 450 drawtex
+
+	"Playa de;las toninas" 224 120 $220000000000ffff font1 
+	textbox | str w h $vh-col1-col2 font -- texture
+	610 450 drawtex
+	
 	|----------------
-	
+
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )
