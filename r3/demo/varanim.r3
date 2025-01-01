@@ -87,39 +87,39 @@
 	8 8 ttat
 	abox "%h" ttprint
 	
-	"Playa de;las toninas" 224 120 $0000000000ff0000 font1 
+	"Playa de;las toninas" 224 120 $00ff0000 font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	10 50 drawtex
 
-	"Playa de;las toninas" 224 120 $010000000000ff00 font1 
+	"Playa de;las toninas" 224 120 $0100ff00 font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	310 50 drawtex
 
-	"Playa de;las toninas" 224 120 $02000000000000ff font1 
+	"Playa de;las toninas" 224 120 $020000ff font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	610 50 drawtex
 
-	"Playa de;las toninas" 224 120 $1000000000ff00ff font1 
+	"Playa de;las toninas" 224 120 $10ff00ff font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	10 250 drawtex
 
-	"Playa de;las toninas" 224 120 $110000000000ffff font1 
+	"Playa de;las toninas" 224 120 $1100ffff font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	310 250 drawtex
 
-	"Playa de;las toninas" 224 120 $12000000000000ff font1 
+	"Playa de;las toninas" 224 120 $120000ff font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	610 250 drawtex
 	
-	"Playa de;las toninas" 224 120 $2000000000ffff00 font1 
+	"Playa de;las toninas" 224 120 $20ffff00 font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	10 450 drawtex
 
-	"Playa de;las toninas" 224 120 $210000000000ff00 font1 
+	"Playa de;las toninas" 224 120 $2100ff00 font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	310 450 drawtex
 
-	"Playa de;las toninas" 224 120 $220000000000ffff font1 
+	"Playa de;las toninas" 224 120 $2200ffff font1 
 	textbox | str w h $vh-col1-col2 font -- texture
 	610 450 drawtex
 	

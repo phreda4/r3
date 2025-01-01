@@ -1,6 +1,6 @@
-| textbox
+| textbox 2
 | fit text in a box, with SDL2 and SDL2ttf library
-| PHREDA 2021
+| PHREDA 2025
 
 ^r3/lib/math.r3	
 
@@ -89,6 +89,7 @@
 | ---- 
 :.textbox | str -- texture
 	splitlines	
+	ink dup $ffffff and $ff000000 or 'ink !
 	0 'htotal !
 	'boxlines >a
 	'lines ( lines> <?
@@ -96,7 +97,7 @@
 		a> 4 + d@ 'htotal +!
 		8 a+ ) drop
 	0 'y !
-	ink 56 >>
+	24 >>
 	%01 and? ( h htotal - 1 >> 'y ! )
 	%10 and? ( h htotal - 'y ! )
 	%010000 and? ( drop textc ; )
