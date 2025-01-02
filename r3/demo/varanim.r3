@@ -7,31 +7,6 @@
 |^r3/util/boxtext.r3
 ^r3/util/textb.r3
 
-|--------------------------------------
-::64xy | b -- x y 
-	dup 48 >> swap 16 << 48 >> ;
-	
-::64wh | b -- w h
-	dup 32 << 48 >> swap 48 << 48 >> ;
-	
-::64xywh | b -- x y w h
-	dup 48 >> swap dup 16 << 48 >> swap
-	dup 32 << 48 >> swap 48 << 48 >> ;
-	
-::xywh64 | x y w h -- b
-	$ffff and swap
-	$ffff and 16 << or swap
-	$ffff and 32 << or swap
-	$ffff and 48 << or ;
-
-::64box | b adr --
-	swap
-	dup 48 >> rot d!+
-	swap dup 16 << 48 >> rot d!+
-	swap dup 32 << 48 >> rot d!+
-	swap 48 << 48 >> swap d! ;		
-|--------------------------------------
-
 #font1
 #abox
 #acol $ff00ff
@@ -79,40 +54,31 @@
 	8 8 ttat
 	abox "%h" ttprint
 	
-	"Playa de;las toninas" 224 120 $10ff0000 font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $700fff000550f00f 224 120 font1 textbox 
 	10 50 drawtex
 
-	"Playa de;las toninas" 224 120 $0033001100ff00 font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $1f0f0 224 120 font1 textbox 
 	310 50 drawtex
 
-	"Playa de;las toninas" 224 120 $20000ff font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $2f0f0  224 120 font1 textbox 
 	610 50 drawtex
 
-	"Playa de;las toninas" 224 120 $4ff00ff font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $4f0f0  224 120 font1 textbox 
 	10 250 drawtex
 
-	"Playa de;las toninas" 224 120 $500ffff font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $5f0f0  224 120 font1 textbox 
 	310 250 drawtex
 
-	"Playa de;las toninas" 224 120 $60000ff font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $6f0f0  224 120 font1 textbox 
 	610 250 drawtex
 	
-	"Playa de;las toninas" 224 120 $8ffff00 font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $8f0f0  224 120 font1 textbox 
 	10 450 drawtex
 
-	"Playa de;las toninas" 224 120 $900ff00 font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $9f0f0  224 120 font1 textbox 
 	310 450 drawtex
 
-	"Playa de;las toninas" 224 120 $a00ffff font1 
-	textbox | str w h $vh-col1-col2 font -- texture
+	"Playa de;las toninas" $af0f0  224 120 font1 textbox 
 	610 450 drawtex
 	
 	|----------------

@@ -26,7 +26,7 @@
 	font swap ink TTF_RenderUTF8_Blended
 	dup 0 surface 'bbtext SDL_BlitSurface
 	SDL_FreeSurface	;
-
+	
 #lastsp
 
 :inwbox | c -- c
@@ -60,8 +60,6 @@
 
 |----------------------------------------------
 :textl
-	0 'x ! 
-	'boxlines >a	
 	'lines ( lines> <?
 		a@+ y x 'bbtext d!+ d!+ !
 		@+ printline
@@ -69,8 +67,7 @@
 		) drop ;
 		
 :textc
-	0 'x ! w 1 >> 'x +! | x=center
-	'boxlines >a	
+	w 1 >> 'x +! | x=center
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 33 >> - 'bbtext d!+ d!+ !
 		@+ printline
@@ -78,8 +75,7 @@
 		) drop ;
 		
 :textr
-	0 'x ! w 'x +! | x=last
-	'boxlines >a	
+	w 'x +! | x=last
 	'lines ( lines> <?
 		a@+ y x pick2 32 << 32 >> - 'bbtext d!+ d!+ !
 		@+ printline
@@ -87,27 +83,42 @@
 		) drop ;
 	
 | ---- 
-:.textbox | str -- texture
-	splitlines	
-	ink dup $ffffff and $ff000000 or 'ink !
+:printtext | flags -- flags
+	'boxlines >a	
+	$10000 and? ( h htotal - 1 >> 'y +! )
+	$20000 and? ( h htotal - 'y +! )
+	$40000 and? ( textc ; )
+	$80000 and? ( textr ; )
+	textl ;
+
+:.textbox | str flags --
+	swap splitlines	
 	0 'htotal !
 	'boxlines >a
 	'lines ( lines> <?
 		@+ font swap a> dup 4 + TTF_SizeUTF8 drop
 		a> 4 + d@ 'htotal +!
-		8 a+ ) drop
-	0 'y !
-	24 >>
-	$10 and? ( surface 0 pick2 8 >> $ff000000 or SDL_FillRect )
-	%01 and? ( h htotal - 1 >> 'y ! )
-	%10 and? ( h htotal - 'y ! )
-	%0100 and? ( drop textc ; )
-	%1000 and? ( drop textr ; )
-	drop textl ;
+		8 a+ ) drop	
+	surface 0 pick2 48 >> 4bcol SDL_FillRect
+	$f00000 and? ( 
+		font over 20 >> $f and TTF_SetFontOutline 
+		dup 32 >> 4bicol 'ink !
+		dup 24 >> $ff and over 20 >> $f and - dup 'x ! 'y !
+		printtext 
+		font 0 TTF_SetFontOutline 
+		)
+	dup 24 >> $ff and dup 'x ! 'y !
+	dup 4bicol 'ink !		
+	printtext
+	drop ;
 	
-::textbox | str w h $vh-col1-col2 font -- texture
-	'font ! 'ink ! 'h ! 'w !
-	0 w h 32 $ff0000 $ff00 $ff $ff000000 SDL_CreateRGBSurface 'surface !	
+| colb(4) colo(4) pad(2) flag(2) colf(4)	
+::textbox | str $colb-colo-ofvh-colf w h font -- texture
+	'font ! 
+	0 pick2 pick2 32 
+	$ff0000 $ff00 $ff $ff000000 
+	SDL_CreateRGBSurface 'surface !
+	pick2 24 >> $ff and 2* rot over - 'w ! - 'h !
 	ab[
 	.textbox
 	]ba 

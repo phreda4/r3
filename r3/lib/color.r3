@@ -208,3 +208,19 @@
 	dup $ff00 and 
 	over $ff and 16 << or 
 	swap 16 >> $ff and or ;	
+	
+|---- 4bytes color
+::4bcol | col -- color 
+	dup $f and dup 4 << or swap | ff col
+	dup $f0 and 4 << dup 4 << or swap
+	dup $f00 and 8 << dup 4 << or swap
+	$f000 and 12 << dup 4 << or 
+	or or or ;
+	
+::4bicol | col -- color 
+	dup $f and 16 << dup 4 << or swap | ff col
+	dup $f0 and 4 << dup 4 << or swap
+	dup $f00 and 8 >> dup 4 << or swap
+	$f000 and 12 << dup 4 << or 
+	or or or ;
+	
