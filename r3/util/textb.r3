@@ -98,10 +98,11 @@
 		8 a+ ) drop
 	0 'y !
 	24 >>
+	$10 and? ( surface 0 pick2 8 >> $ff000000 or SDL_FillRect )
 	%01 and? ( h htotal - 1 >> 'y ! )
 	%10 and? ( h htotal - 'y ! )
-	%010000 and? ( drop textc ; )
-	%100000 and? ( drop textr ; )
+	%0100 and? ( drop textc ; )
+	%1000 and? ( drop textr ; )
 	drop textl ;
 	
 ::textbox | str w h $vh-col1-col2 font -- texture
