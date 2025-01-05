@@ -318,6 +318,17 @@
 	SDL_RenderGeometry 
 	]ba ;
 	
+	
+::createSurf | w h -- surface
+	0 -rot 32 
+	$ff0000 $ff00 $ff $ff000000  | ARGB
+	SDL_CreateRGBSurface ;
+	
+::Surf>pix | surface -- surf pixels
+	dup 32 + @ ;	
+
+::Surf>wh | surface -- surf w h
+	dup 16 + d@ over  20 + d@ ;
 
 |.... time control
 #prevt
@@ -351,5 +362,6 @@
 	dup 32 >> $fff and * $ffff and
 	swap 44 >> $ff and 16 *>>
 	;
+
 
 : fillfull ;

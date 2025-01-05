@@ -124,5 +124,6 @@
 	]ba 
 	SDLrenderer surface SDL_CreateTextureFromSurface
 	surface SDL_FreeSurface
+	dup 1 SDL_SetTextureScaleMode
 	;
 	
