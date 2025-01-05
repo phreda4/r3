@@ -19,6 +19,7 @@
 |.... time control
 #prevt
 #timenow
+##deltatime
 | time		execute		end
 #timeline	#timeline<	#timeline> 
 | ini | fin | ease ms | 'VAR
@@ -97,7 +98,7 @@
 	>b a> ex ;
 
 ::vupdate | --
-	msec dup prevt - swap 'prevt ! 'timenow +!
+	msec dup prevt - swap 'prevt ! dup 'deltatime ! 'timenow +!
 	tictline
 	timeline ( timeline< <? 
 		@+ execinterp ) drop ;
@@ -164,6 +165,18 @@
 	$ffff and 32 << or swap
 	$ffff and 48 << or ;
 
+|--- for sprite
+::64xyrz | b -- x y r z
+	dup 48 >> swap dup 16 << 48 >> swap
+	dup 32 << 48 >> swap 48 << 48 >> 4 << ;
+	
+::xyrz64 | x y r z -- b
+	4 >> $ffff and swap
+	$ffff and 16 << or swap
+	$ffff and 32 << or swap
+	$ffff and 48 << or ;
+
+|--- for rect
 ::64box | b adr --
 	swap
 	dup 48 >> rot d!+
@@ -171,6 +184,7 @@
 	swap dup 32 << 48 >> rot d!+
 	swap 48 << 48 >> swap d! ;		
 	
+|--- for xy	
 ::32xy | b -- x y 
 	dup 32 >> swap 32 << 32 >> ;
 	
