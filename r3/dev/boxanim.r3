@@ -44,7 +44,7 @@
 	;
 	
 |		SDLrenderer a@+ 0 'box SDL_RenderCopy	
-|	>a a@+ 32xy a@+ 32xy a@ SDLspriteRZ | x y ang zoom img --	
+|	>a a@+ 32xy a@+ 32xy a@ spriteRZ | x y ang zoom img --	
 :drawbox | adr --
 	SDLrenderer over @ 0 pick3 1 ncell+ SDL_RenderCopy
 	;

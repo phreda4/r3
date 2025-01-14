@@ -217,7 +217,7 @@
 	2drop ;
 
 |-------------------------	
-::SDLspriteZ | x y zoom img --
+::spriteZ | x y zoom img --
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
@@ -226,7 +226,7 @@
 	SDL_RenderGeometry 
 	]ba ;
 
-::SDLSpriteR | x y ang img --
+::spriteR | x y ang img --
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	fillfull fillvertr
@@ -234,7 +234,7 @@
 	SDL_RenderGeometry 
 	]ba ;
 
-::SDLspriteRZ | x y ang zoom img --
+::spriteRZ | x y ang zoom img --
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 

@@ -74,7 +74,7 @@
 	
 	0 swap .state !
 	
-	8 + >a a@+ int. a@+ int. a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
+	8 + >a a@+ int. a@+ int. a@+ a@+ a@+ spriteRZ | x y ang zoom img --
 	;
 
 :+obj | img zoom ang y x --

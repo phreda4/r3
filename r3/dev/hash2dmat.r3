@@ -135,7 +135,7 @@
 	dup 8 + >a 
 	a@+ int. a@+ int.  | x y
 	over 3 >> over 3 >> hashCoord pick3 .hash ! | set hash
-	a@+ a@+ a@+ SDLspriteRZ | x y ang zoom img --
+	a@+ a@+ a@+ spriteRZ | x y ang zoom img --
 
 	drop
 	;

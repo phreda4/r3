@@ -3,7 +3,7 @@
 | PHREDA 2025
 
 ^r3/lib/math.r3	
-
+^r3/lib/color.r3	
 ^r3/lib/sdl2gfx.r3	
 ^r3/lib/sdl2ttf.r3
 

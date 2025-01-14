@@ -68,7 +68,7 @@
 	px int. xvp -
 	py int. yvp -
 	angle spr_car 
-	SDLspriteR | x y ang img --
+	spriteR | x y ang img --
 	;
 	
 :resetcar
