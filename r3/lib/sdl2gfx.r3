@@ -216,7 +216,16 @@
 	xm neg ym rotxya!
 	2drop ;
 
-|-------------------------	
+|-------------------------
+::sprite | x y img --
+	ab[
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	xm 2/ 'xm ! ym 2/ 'ym ! 
+	fillfull fillvertxy
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry 
+	]ba ;
+	
 ::spriteZ | x y zoom img --
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
