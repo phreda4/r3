@@ -68,6 +68,7 @@
 	vupdate
 	$0 SDLcls
 	panel
+	vanimdebug
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )
@@ -78,7 +79,7 @@
 	"View ease" 1024 600 SDLinit
 	"media/ttf/roboto-medium.ttf" 18 TTF_OpenFont 'font ! 
 	font immSDL	
-	$fff vaini
+	$ff vaini
 	anibox
 	'demo SDLshow
 	SDLquit

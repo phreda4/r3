@@ -57,7 +57,9 @@
 #spos
 #sposant
 
-#xp #yp #rs #zs 1.0
+#spos3
+#spos3ant
+#tex3
 
 :anima
 	'spos
@@ -72,6 +74,19 @@
 	1.0 0.5 +vboxanim 
 	
 	'anima 2.0 +vexe
+	;
+
+:anima2
+	'spos3
+	sw randmax 
+	sh randmax 
+	2.0 randmax 1.0 -
+	1.2 randmax 0.5 +
+	xyrz64
+	spos3ant
+	over 'spos3ant !
+	25 randmax
+	1.0 0.5 +vboxanim 
 	;
 	
 
@@ -96,12 +111,14 @@
 	'ttp $af0f0  224 120 font1 textbox 610 450 drawtex
 	
 	spos 64xyrz tex2 spriteRZ
-	
+	spos3 64xyrz tex3 spriteRZ
+
 	|----------------
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( anima1 )
+	<f2> =? ( anima2 )
 	drop ;
 	
 	
@@ -117,6 +134,7 @@
 	"Prueba de;texto" $f0000025f00f 224 120 font1 textbox 'tex !
 	
 	"Texto en;Sprite" $ffff0025f000 224 120 font1 textbox 'tex2 !
+	"Otro sprite" $7f00f0000025ffff 224 120 font1 textbox 'tex3 !
 
 	anima
 	

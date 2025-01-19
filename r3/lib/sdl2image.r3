@@ -29,13 +29,10 @@
 ::IMG_SaveJPG_RW sys-IMG_SaveJPG_RW sys4 drop ; |(SDL_Surface *surface, SDL_RWops *dst, int freedst, int quality);
 
 ::loadimg | "" -- texture
-	IMG_Load 0? ( ; )
-|	SDLrenderer swap IMG_LoadTexture ;
-	SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
+	SDLrenderer swap IMG_LoadTexture ;
 	
 ::unloadimg | adr --
-	0? ( drop ; ) 
-	SDL_DestroyTexture ;	
+	0? ( drop ; ) SDL_DestroyTexture ;	
 
 |----- BOOT	
 :

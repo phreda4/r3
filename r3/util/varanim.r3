@@ -98,10 +98,12 @@
 	>b a> ex ;
 
 ::vupdate | --
+	ab[
 	msec dup prevt - swap 'prevt ! dup 'deltatime ! 'timenow +!
 	tictline
 	timeline ( timeline< <? 
-		@+ execinterp ) drop ;
+		@+ execinterp ) drop 
+	]ba ;
 
 :searchless | time adr --time adr
 	( 8 - timeline >=?
@@ -190,5 +192,8 @@
 	
 ::xy32 | x y -- b
 	$ffffffff and swap 32 >> $ffffffff and or ;
-	
+
+::vanimdebug	
+	timeline timeline< over - 3 >> timeline> rot - 3 >> 
+	"%d %d" .println ;
 

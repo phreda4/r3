@@ -13,7 +13,7 @@
 #disp 0 0
 #fx 0 0
 
-#viewpx #viewpy
+##viewpx ##viewpy ##viewpz
 
 ##btnpad |  **
 
@@ -69,7 +69,7 @@
 	b!+ 
 	imgspr b!+	| anim sheet
 	0 b!+ 0 b!+ 	| vx vy
-	13 b!			| vrz
+	13 b!			| live
 	;
 	
 :+fxexplo | x y --
@@ -80,7 +80,7 @@
 	a!+ 
 	imgspr a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	19 a!			| vrz
+	19 a!			| live
 	;
 	
 |------------------- bomb
@@ -233,6 +233,7 @@
 ::war.reset
 	sw 1 >> 'viewpx !
 	sh 1 >> 'viewpy !
+	1.0 'viewpz !
 
 	'fx p.clear
 	'tanks p.clear
@@ -300,5 +301,6 @@
 	1000 H2d.ini 
 	
 	'wordt 'words vmlistok	
+	'wordt 'worde 'wordd vmcpuio
 	
 	;

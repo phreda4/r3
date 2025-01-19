@@ -77,6 +77,7 @@
 #sys-SDL_SetTextureColorMod
 #sys-SDL_SetTextureAlphaMod
 #sys-SDL_SetHint
+#sys-SDL_GetError
 
 #sys-SDL_OpenAudioDevice
 #sys-SDL_QueueAudio
@@ -155,6 +156,7 @@
 
 ::SDL_GL_MakeCurrent sys-SDL_GL_MakeCurrent sys2 drop ; 
 ::SDL_SetHint sys-SDL_SetHint sys2 drop ; 
+::SDL_GetError sys-SDL_GetError sys0 ;
 
 ::SDL_OpenAudioDevice sys-SDL_OpenAudioDevice sys5 ; 
 ::SDL_QueueAudio sys-SDL_QueueAudio sys3 drop ;
@@ -371,6 +373,7 @@
 	dup "SDL_GL_SwapWindow" getproc 'sys-SDL_GL_SwapWindow	!
 	dup "SDL_GL_MakeCurrent" getproc 'sys-SDL_GL_MakeCurrent ! 
 	dup "SDL_SetHint" getproc 'sys-SDL_SetHint !
+	dup "SDL_GetError" getproc 'sys-SDL_GetError !
 	dup "SDL_GL_LoadLibrary" getproc 'sys-SDL_GL_LoadLibrary !
 	dup "SDL_GL_GetProcAddress" getproc 'sys-SDL_GL_GetProcAddress !
 
