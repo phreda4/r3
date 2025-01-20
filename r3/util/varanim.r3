@@ -21,20 +21,20 @@
 #timenow
 ##deltatime
 | time		execute		end
-#timeline	#timeline<	#timeline> 
+##timeline	##timeline<	##timeline> 
 | ini | fin | ease ms | 'VAR
-#exevar 
-#max
+##exevar 
+#maxcnt
 
 ::vareset
 	0 'timenow ! 
 	msec 'prevt ! 
 	timeline dup 'timeline< ! 'timeline> ! 
-	exevar -1 max 2 << fill
+	exevar -1 maxcnt 2 << fill
 	;
 
 ::vaini | max --
-	dup 'max !
+	dup 'maxcnt !
 	3 <<
 	here
 	dup 'timeline ! over +
@@ -56,7 +56,7 @@
 :remlast | 'list X -- 'list
 	8 + @+ swap @ !  | set fin
 :remlist | 'list -- 'list ; remove from lista
-	-1 over 8 - @ 32 >> 5 << exevar + !	| mark empty
+	-1 over 8 - @ 32 >> $ffff and 5 << exevar + !	| mark empty
 	dup 8 - over timeline> over - 3 >> move
 	-8 'timeline> +! -8 'timeline< +!
 	8 - ;
@@ -193,7 +193,5 @@
 ::xy32 | x y -- b
 	$ffffffff and swap 32 >> $ffffffff and or ;
 
-::vanimdebug	
-	timeline timeline< over - 3 >> timeline> rot - 3 >> 
-	"%d %d" .println ;
-
+::vaempty
+	timeline> timeline - 3 >> ;
