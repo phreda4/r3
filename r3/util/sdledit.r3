@@ -11,8 +11,8 @@
 #xcode 1 #ycode 3 #wcode 40 #hcode 20
 
 | color 
-#colb0 $1f1f1f |sdlcolor | backcode
-#colb1 $000000 |sdlcolor | backnowline
+|#colb0 $1f1f1f |sdlcolor | backcode
+|#colb1 $000000 |sdlcolor | backnowline
 #colb2 $585858 |SDLColor | backselect
 
 #colf0 $EF7D57 |:col_inc $EF7D57 bcolor ;
@@ -343,7 +343,7 @@
 	;
 	
 ::edfill
-	colb0 sdlcolor 
+|	colb0 sdlcolor 
 	xcode ycode wcode hcode bfillline
 	;
 	
@@ -536,8 +536,8 @@
 :edlinecursor
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
 	cursorpos
-	colb1 sdlcolor
-	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
+|	colb1 sdlcolor
+|	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
 	xcode 5 + ycursor ylinea - ycode + gotoxy
 	$ffffff SDLColor 
@@ -547,8 +547,8 @@
 	
 ::edfocus
 	xcode ycode wcode hcode bsrcsize 
-	$ffffff sdlcolor
-	2over 1- 2over 1+ sdlRect 
+	|$ffffff sdlcolor
+	|2over 1- 2over 1+ sdlRect 
 	guiBox
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 

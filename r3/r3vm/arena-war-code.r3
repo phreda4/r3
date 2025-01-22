@@ -2,7 +2,13 @@
 | PHREDA 2024
 |-------------------------
 ^r3/util/sdlgui.r3
-^r3/r3vm/arena-war.r3
+^r3/util/sdledit.r3
+^r3/util/sdlbgui.r3
+^r3/util/varanim.r3
+
+^./arena-war.r3
+
+#codepath "r3/r3vm/robotcode/"
 
 #map * $ffff | 256x256
 #mapcx 128 #mapcy 128
@@ -24,8 +30,8 @@
 :mouse
 	'dns 'mos onDnMove 
 	SDLw 0? ( drop ; )
-	0.2 * viewpz +
-	0.5 max 5.0 min 'viewpz !
+	0.1 * viewpz +
+	0.2 max 6.0 min 'viewpz !
 	;
 	
 
@@ -65,9 +71,71 @@
 		32 + ) drop
 	32 + ) drop	
 	;
+
+|------------
+
+
+|-------------------
+:showeditor
+	$7f00007f sdlcolorA	| cursor
+	edfill
+	$ffffff sdlcolor
+	edfocus 		
+	edcodedraw
+	;
+	
+|-------------------
+#lerror
+
+:immex	
+|	r3reset
+|	'pad r3i2token drop 'lerror !
+	0 'pad !
+	refreshfoco
+|	code> ( icode> <? 
+	| vmcheck
+|		vmstep ) drop
+	;
+	
+:showstack
+	8 532 bat
+	" " bprint2
+	vmdeep 0? ( drop ; ) 
+	stack 8 +
+	( swap 1 - 1? swap
+		@+ "%d " bprint2 
+		) 2drop 
+	TOS "%d " bprint2
+	;
+	
+:showinput
+	$7f00007f sdlcolorA	| cursor
+	0 500 1024 600 SDLfRect
+
+	0 502 bat ">" bprint2
+	16 500 immat 1000 32 immbox
+	'pad 128 immInputLine2	
+	
+	$ffffff sdlcolor
+	sdlkey
+	<ret> =? ( immex )
+	<esp> =? ( immex )	
+	drop	
+	;		
+
+#modo 'showinput
+		
+#modos 'showinput 'showeditor
+#modon 0
+
+:changemodo
+	1 'modon +!
+	'modos modon $1 and 3 << + @ 'modo !
+	;
 	
 |-------------------
 :runscr
+	vupdate
 	immgui
 	mouse
 	timer.
@@ -76,10 +144,14 @@
 	|terreno
 	|viewmap
 	
-	$ffff bcolor 8 8 bat "Arena War" bprint2 bcr2
-	$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
+	$ffff bcolor 8 8 bat "Code Tank" bprint2 bcr2
+	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
 
 	war.draw
+	
+	modo ex
+|	showeditor
+|	showinput
 	
 	sdlredraw
 	sdlkey
@@ -96,17 +168,24 @@
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
 	|----
-	
-	<f1> =? ( war.+rtank )
+	<f1> =? ( changemodo )
+	<f2> =? ( war.+rtank )
 	drop ;
 
 	
 |-------------------
 : |<<< BOOT <<<
 	"r3 robots" 1024 600 SDLinit
+	SDLblend
+	64 vaini
+	
 	bfont1
 	
-	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
+| editor
+	1 4 40 24 edwin
+	edram
+	
+	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	war.ini
 	war.reset
 	fillmap

@@ -33,9 +33,10 @@
 
 :drawspr | arr -- arr
 	dup 8 + >a
-	a@+ int. viewpx + 
-	a@+ int. viewpy +	| x y
-	a@+ dup 32 >> swap $ffffffff and | rot zoom
+	a@+ viewpz *. int. viewpx + 
+	a@+ viewpz *. int. viewpy +	| x y
+	a@+ dup 32 >> swap | rot
+	$ffffffff and viewpz *. | zoom	 
 	a@ timer+ dup a!+ anim>n 			| n
 	a@+ sspriterz
 	;
