@@ -1,5 +1,5 @@
-| arena war test
-| PHREDA 2024
+| ar3na : tank ;
+| PHREDA 2025
 |-------------------------
 ^r3/util/sdlgui.r3
 ^r3/util/sdledit.r3
@@ -8,7 +8,7 @@
 
 ^./arena-war.r3
 
-#codepath "r3/r3vm/robotcode/"
+#codepath "r3/r3vm/codetank/"
 
 #map * $ffff | 256x256
 #mapcx 128 #mapcy 128
@@ -42,6 +42,14 @@
 	$ff and 8 << 
 	swap $ff and or 
 	'map + ;
+	
+	
+|:drawmap | arr -- arr
+|	a@+ viewpz *. int. viewpx + 
+|	a@+ viewpz *. int. viewpy +	| x y
+|	zoomm viewpz *. | zoom	 
+|	a@+ sspritez
+|	;
 	
 :map2pos
 	;
@@ -112,7 +120,7 @@
 	$7f00007f sdlcolorA	| cursor
 	0 500 1024 600 SDLfRect
 
-	0 502 bat ">" bprint2
+	0 502 bat ":" bprint2
 	16 500 immat 1000 32 immbox
 	'pad 128 immInputLine2	
 	

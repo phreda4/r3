@@ -247,30 +247,40 @@
 	;
 
 |------------------------
-|scan (degree,resolution):range
-:iscan
+| IO
+:ifire  | range --
 	vmpop
+	;
+	
+:igo | vel -- 
+	vmpop
+	;
+	
+:iturn | angle --	
+	vmpop
+	;
+
+:iscan | angle -- range
 	vmpop
 	vmpush
 	;
-|cannon (degree,range):ok
-:ishoot
-	vmpop
-	vmpop
-	vmpush
-	;
-|drive (degree,speed)
-:idrive
-	vmpop
-	vmpop
-	;
-:idamage | -- d
+	
+:ibatt | -- battery
 	vmpush ;
+
+:idamage
+	vmpush ;
+
+:idir | -- s
+	vmpush ;
+	
 :ispeed | -- s
 	vmpush ;
 	
 :ipos | -- x y 
-	vmpush vmpush ;
+	vmpush 
+	vmpush ;
+	
 :isin | ang -- sin
 	vmpop sin vmpush ;
 :icos | ang -- cos
@@ -283,17 +293,11 @@
 	vmpop randmax vmpush ;
 
 |------ IO interface
-##wordt * 88
-
-##words "scan" "shoot" "drive" "damage" "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
-##worde	iscan ishoot idrive idamage ispeed ipos isin icos itan itan2 irand 
+##wordt * 128 | 16 words
+##words "fire" "go" "turn" "scan" "batt" "damage" "dir" "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
+##worde	ifire igo iturn iscan ibatt idamage idir ispeed ipos isin icos itan itan2 irand 
 ##wordd ( $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 ) 
 
-::WAR.ins0
-	'wordt 'words vmlistok 
-	'wordt 'worde 'wordd vmcpuio
-	;
-	
 ::war.ini
 	16 16 "media/img/tank.png" ssload 'imgspr !
 	400 'fx p.ini
