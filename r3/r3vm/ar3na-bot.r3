@@ -4,35 +4,59 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
+^r3/util/textb.r3
 
 ^./arena-map.r3
 
 
-|-------------------
-#xo #yo
+#font
 
-:dns
-	sdlx 'xo ! sdly 'yo ! ;
+#cpu
 
-:mos
-	sdlx xo - 'viewpx +! 
-	sdly yo - 'viewpy +! 
-	dns ;
+#cdtok * 1024
+#cdtok> 'cdtok
+#cdcnt
 
-:mouse
-	'dns 'mos onDnMove 
-	SDLw 0? ( drop ; )
-	0.1 * viewpz +
-	0.2 max 6.0 min 'viewpz !
+#lev
+#cdspeed 0.2
+
+:linecode
+	a@+ dup 8 >> $ff and 'lev !
+	vmtokstr bemits2 bsp ;
+	
+:showcode
+	2 64 bat
+	'cdtok >a
+	0 ( cdcnt <?
+		linecode
+		1+ ) drop ;
+
+:processlevel	
+	cdcnt 'cdtok vmcheckcode 
+	cdcnt 'cdtok vmcheckjmp
+	;
+
+:stepvm
+	cdtok> 
+	0? ( drop ; ) 
+	vmstepck 'cdtok> !
+	terror 1? ( drop -8 'cdtok> +! ; ) drop
+	cdtok> 'cdtok - 3 >> 
+	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
+	;
+|-----------------------
+	
+#aitem
+	
+::item
+	-3 -3 posmap
+	viewpz
+	aitem anim>n
+	imgspr sspritez
+	
+	deltatime 'aitem +!
 	;
 	
-	
-#map * $ffff | 256x256
-#mapcx 128 #mapcy 128
-#maptx 32 #mapty 32
-
-#mapsx	512 #mapsy 300
-
 |-------------------
 #lerror
 
@@ -62,17 +86,15 @@
 	0 500 1024 600 SDLfRect
 	$ff0000 bcolor
 	0 502 bat ":" bprint2
-	16 500 immat 1000 32 immbox
+	32 500 immat 1000 32 immbox
 	'pad 128 immInputLine2	
 	;		
-
 
 |-------------------
 :runscr
 	vupdate
 	immgui
-	mouse
-	timer.
+	mouseview
 	0 sdlcls
 	
 	$ffff bcolor 8 8 bat "Ar3na Bot" bprint2 bcr2
@@ -81,7 +103,8 @@
 	$ffffff sdlcolor
 	draw.map
 	player
-		
+	item
+	
 	showinput
 	
 	sdlredraw
@@ -101,11 +124,16 @@
 	64 vaini
 	bfont1
 
-	
-	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
+|	'cdtok 32 vmcpu 'cpu !
+
+	"media/ttf/seguiemj.ttf" 20 TTF_OpenFont 'font !		
 	bot.ini
 	bot.reset
+	
+	
 	|fillmap
+	30 8 128 ICS>anim  | init cnt scale -- val
+	'aitem !
 	
 	'runscr SDLshow
 	SDLquit 

@@ -10,7 +10,7 @@
 	vupdate
 	0 sdlcls 
 	immgui
-	
+	mouseview
 	$ffff bcolor
 	8 8 bat "Arena MAP" bprint2 
 	

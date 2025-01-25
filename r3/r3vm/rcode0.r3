@@ -161,7 +161,8 @@
 
 |-----------------------------
 :editando
-	450 64 mapdraw
+	|450 64 mapdraw
+	draw.map
 	player
 	
 	mpaleta
@@ -178,7 +179,8 @@
 	;
 	
 :ejecutando
-	400 64 mapdraw
+	|400 64 mapdraw
+	draw.map
 	player
 	
 	pcode
@@ -231,7 +233,7 @@
 	bfont1
 	64 vaini
 	
-	arena.ini
+	bot.ini
 	resetplayer
 	
 	'menu sdlShow 

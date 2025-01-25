@@ -25,6 +25,7 @@
 
 ##viewpx ##viewpy ##viewpz
 
+	
 #tsize 16 
 #tmul
 
@@ -37,7 +38,7 @@
 	
 :calc tsize viewpz *. 'tmul ! ;
 
-:posspr | x y -- xs ys
+::posmap | x y -- xs ys
 	swap tmul * viewpx + tmul 2/ +
 	swap tmul * viewpy + tmul 2/ +
 	;
@@ -45,7 +46,7 @@
 :drawtile
 	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
-	2dup swap posspr viewpz r> 1- imgspr sspritez
+	2dup swap posmap viewpz r> 1- imgspr sspritez
 	;
 	
 ::draw.map | x y --
@@ -78,7 +79,7 @@
 	;
 
 ::player
-	xp yp posspr
+	xp yp posmap
 	viewpz
 	dp 3 * 
 	msec 7 >> abs 3 mod +
@@ -126,3 +127,22 @@
 	2.0 'viewpz !
 	calc
 	;
+
+#xo #yo
+
+:dns
+	sdlx 'xo ! sdly 'yo ! ;
+
+:mos
+	sdlx xo - 'viewpx +! 
+	sdly yo - 'viewpy +! 
+	dns ;
+
+::mouseview
+	'dns 'mos onDnMove 
+	SDLw 0? ( drop ; )
+	0.1 * viewpz +
+	0.2 max 6.0 min 'viewpz !
+	calc
+	;
+	

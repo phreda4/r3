@@ -335,7 +335,8 @@
 	;
 	
 :ejecutando
-	300 64 mapdraw
+	|300 64 mapdraw
+	draw.map |
 	player
 	pcode
 	mstack
@@ -408,8 +409,8 @@
 	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	64 vaini
 	
-	arena.ini
-	map-ins0
+	bot.ini
+	bot.reset
 	
 	'cdtok 4 vmcpu 'cpu !
 	
