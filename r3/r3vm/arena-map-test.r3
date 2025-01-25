@@ -14,7 +14,7 @@
 	$ffff bcolor
 	8 8 bat "Arena MAP" bprint2 
 	
-	200 64 mapdraw
+	draw.map
 	player
 
 	SDLredraw 
@@ -31,7 +31,7 @@
 	"r3mapa" 1024 600 SDLinit
 	bfont1
 	64 vaini
-	arena.ini	
+	bot.ini	
 	resetplayer
 	
 	'main sdlShow 

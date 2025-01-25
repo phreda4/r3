@@ -1,0 +1,14 @@
+*ESP
+Encuentra la cruz verde
+*ENG
+Find the green mark
+*MAP
+################
+#              #
+#              #
+#              #
+################
+*ITEMS
+0
+1
+

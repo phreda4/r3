@@ -23,33 +23,33 @@
 
 ##imgspr
 
-#mrot 0.0
-#tzoom 2.0
+##viewpx ##viewpy ##viewpz
+
 #tsize 16 
 #tmul
 
-#mvx 8 #mvy 64
+#mpx #mpy
 #mw 16 #mh 12
 #marena * 8192
 
 :]map | x y -- map
 	mw * + 3 << 'marena + @ ;
 	
-:calc tsize tzoom *. 'tmul ! ;
+:calc tsize viewpz *. 'tmul ! ;
 
 :posspr | x y -- xs ys
-	swap tmul * mvx + tmul 2/ +
-	swap tmul * mvy + tmul 2/ +
+	swap tmul * viewpx + tmul 2/ +
+	swap tmul * viewpy + tmul 2/ +
 	;
 	
 :drawtile
 	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
-	2dup swap posspr tzoom r> 1- imgspr sspritez
+	2dup swap posspr viewpz r> 1- imgspr sspritez
 	;
 	
-::mapdraw | x y --
-	'mvy ! 'mvx !
+::draw.map | x y --
+	|'mvy ! 'mvx !
 	'marena >a
 	0 ( mh <? 
 		0 ( mw <? 
@@ -79,9 +79,9 @@
 
 ::player
 	xp yp posspr
-	tzoom
-	dp 2* 
-	msec 7 >> $1 and +
+	viewpz
+	dp 3 * 
+	msec 7 >> abs 3 mod +
 	imgspr sspritez
 	;
 
@@ -100,29 +100,29 @@
 ::ipu
 	;
 
-|------ IO interface 0
+|------ IO interface 
+:istep 
+:icheck 
+:itake 
+:ileave
+	;
+
 #wordt * 80
+#words "step" "check" "take" "leave"  0
+#worde	istep icheck itake ileave
+#wordd ( $f1 $f1 $f1 $f1 $00 ) 
 
-#words "up" "down" "left" "right" "jump" "push" 0
-#worde	iup idn ile iri ijm ipu
-#wordd ( $00 $00 $00 $00 $00 $00  ) 
-
-::map-ins0
-	'wordt 'words vmlistok 
-	'wordt 'worde 'wordd vmcpuio
+::bot.reset
 	;
-	
-|------ IO interface 1	
-#words "step" "check" "get" "put"  0
-#worde	iup idn ile iri ijm ipu
-#wordd ( $f1 $f1 $f1 $f1 $00 $00  ) 
 
-::map-ins1
-	'wordt 'words vmlistok 
-	'wordt 'worde 'wordd vmcpuio
-	;
-	
-::arena.ini
+::bot.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !
+	
+	'wordt 'words vmlistok 
+	'wordt 'worde 'wordd vmcpuio
+
+	sw 2/ 'viewpx !
+	sh 2/ 'viewpy !
+	2.0 'viewpz !
 	calc
 	;

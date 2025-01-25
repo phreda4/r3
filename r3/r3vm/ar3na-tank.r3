@@ -1,8 +1,7 @@
-| ar3na : tank ;
+| ar3na tank 
 | PHREDA 2025
 |-------------------------
 ^r3/util/sdlgui.r3
-^r3/util/sdledit.r3
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
 
@@ -80,18 +79,6 @@
 	32 + ) drop	
 	;
 
-|------------
-
-
-|-------------------
-:showeditor
-	$7f00007f sdlcolorA	| cursor
-	edfill
-	$ffffff sdlcolor
-	edfocus 		
-	edcodedraw
-	;
-	
 |-------------------
 #lerror
 
@@ -119,28 +106,13 @@
 :showinput
 	$7f00007f sdlcolorA	| cursor
 	0 500 1024 600 SDLfRect
-
+	$ff0000 bcolor
 	0 502 bat ":" bprint2
 	16 500 immat 1000 32 immbox
 	'pad 128 immInputLine2	
-	
-	$ffffff sdlcolor
-	sdlkey
-	<ret> =? ( immex )
-	<esp> =? ( immex )	
-	drop	
 	;		
 
-#modo 'showinput
-		
-#modos 'showinput 'showeditor
-#modon 0
 
-:changemodo
-	1 'modon +!
-	'modos modon $1 and 3 << + @ 'modo !
-	;
-	
 |-------------------
 :runscr
 	vupdate
@@ -152,18 +124,17 @@
 	|terreno
 	|viewmap
 	
-	$ffff bcolor 8 8 bat "Code Tank" bprint2 bcr2
+	$ffff bcolor 8 8 bat "Ar3na Tank" bprint2 bcr2
 	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
 
 	war.draw
 	
-	modo ex
-|	showeditor
-|	showinput
+	showinput
 	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
+	<ret> =? ( immex )
 	| ---- player control	
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )
@@ -176,22 +147,17 @@
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
 	|----
-	<f1> =? ( changemodo )
+
 	<f2> =? ( war.+rtank )
 	drop ;
 
 	
 |-------------------
 : |<<< BOOT <<<
-	"r3 robots" 1024 600 SDLinit
+	"arena tank" 1024 600 SDLinit
 	SDLblend
 	64 vaini
-	
 	bfont1
-	
-| editor
-	1 4 40 24 edwin
-	edram
 	
 	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	war.ini
