@@ -7,6 +7,7 @@
 ^r3/util/textb.r3
 
 ^./arena-map.r3
+^./rcodevm.r3
 
 
 #font
@@ -20,16 +21,17 @@
 #lev
 #cdspeed 0.2
 
-:linecode
-	a@+ dup 8 >> $ff and 'lev !
+:linecode | adr -- adr
+	cdtok> =? ( ">" bemits2 )
+	@+ dup 8 >> $ff and 'lev !
 	vmtokstr bemits2 bsp ;
 	
 :showcode
 	2 64 bat
-	'cdtok >a
-	0 ( cdcnt <?
+	'cdtok
+	0 ( cdcnt <? swap 
 		linecode
-		1+ ) drop ;
+		swap 1+ ) 2drop ;
 
 :processlevel	
 	cdcnt 'cdtok vmcheckcode 
@@ -37,13 +39,17 @@
 	;
 
 :stepvm
-	cdtok> 
-	0? ( drop ; ) 
+	cdtok> 0? ( drop ; ) 
 	vmstepck 'cdtok> !
-	terror 1? ( drop -8 'cdtok> +! ; ) drop
-	cdtok> 'cdtok - 3 >> 
-	cdcnt <? ( 'stepvm cdspeed +vexe ) drop
+	terror 1 >? ( drop -8 'cdtok> +! ; ) drop
 	;
+	
+:stepvma
+	stepvm
+	cdtok> 'cdtok - 3 >> 
+	cdcnt <? ( 'stepvma cdspeed +vexe ) drop
+	;
+	
 |-----------------------
 	
 #aitem
@@ -58,11 +64,21 @@
 	;
 	
 |-------------------
-#lerror
 
+:compilar
+	vmtokreset
+|	0 'cdcnt !
+|	'cdtok 'cdtok> !
+	'pad 'cdtok vmtokenizer 'cdtok> ! 
+
+	cdtok> 'cdtok - 3 >> 'cdcnt !
+	'cdtok 'cdtok> !
+	;
+	
 :immex	
 |	r3reset
 |	'pad r3i2token drop 'lerror !
+	compilar
 	0 'pad !
 	refreshfoco
 |	code> ( icode> <? 
@@ -76,10 +92,11 @@
 	vmdeep 0? ( drop ; ) 
 	stack 8 +
 	( swap 1 - 1? swap
-		@+ "%d " bprint2 
+		@+ vmcell "%s " bprint2 
 		) 2drop 
-	TOS "%d " bprint2
+	TOS vmcell "%s " bprint2
 	;
+	
 	
 :showinput
 	$7f00007f sdlcolorA	| cursor
@@ -99,7 +116,9 @@
 	
 	$ffff bcolor 8 8 bat "Ar3na Bot" bprint2 bcr2
 	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
-
+	showcode
+	showstack
+	
 	$ffffff sdlcolor
 	draw.map
 	player
@@ -113,7 +132,7 @@
 	<ret> =? ( immex )
 	
 	|----
-|	<f1> =? ( changemodo )
+	<f1> =? ( stepvm )
 	drop ;
 
 	
@@ -121,17 +140,26 @@
 : |<<< BOOT <<<
 	"arena tank" 1024 600 SDLinit
 	SDLblend
-	64 vaini
-	bfont1
-
-|	'cdtok 32 vmcpu 'cpu !
-
 	"media/ttf/seguiemj.ttf" 20 TTF_OpenFont 'font !		
+	bfont1
+	64 vaini
+	
 	bot.ini
 	bot.reset
+	'cdtok 8 vmcpu 'cpu ! | 8 variables
+
+	|------- test
+	7 'cdcnt !
+	'cdtok >a
+	$300000000 a!+
+	$10a a!+
+	$110 a!+
+	$100000100 a!+
+	$14c a!+
+	$10b a!+
+	$09 a!+
+	processlevel	
 	
-	
-	|fillmap
 	30 8 128 ICS>anim  | init cnt scale -- val
 	'aitem !
 	

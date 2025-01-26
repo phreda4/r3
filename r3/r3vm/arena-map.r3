@@ -118,10 +118,8 @@
 
 ::bot.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !
-	
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
-
 	sw 2/ 'viewpx !
 	sh 2/ 'viewpy !
 	2.0 'viewpz !

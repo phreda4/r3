@@ -1,59 +1,28 @@
 | rcode vm
 | PHREDA 2024
+|-----------------
 ^r3/lib/mem.r3
-
 
 ##terror | tipo error	
 
-#wordd | data stack
-#worde | vectors
-##words | strings
 
-#dicc * 1024
-#dicc>
+#wordd	| data stack
+#worde	| vectors
+##words	| strings
+
+#name * 8192 #name> 
+#dicc * 1024 #dicc>
+
+#code>	| pointer to code
+
+#state	| imm/compiling
+#tlevel	| tokenizer level
 
 |------ VM
 #IP 			
 ##TOS ##NOS #RTOS 
 #REGA #REGB
 ##STACK #CODE #DATA
-
-
-|------ str 6bits
-:char6bit | char -- 6bitchar
-	$1f - dup $40 and 1 >> or $3f and ;
-
-::name2code | "" -- 32
-|	0 over 10 + c! | cut 10=64bits 5=32bits
-	0 ( swap c@+ 1? char6bit rot 6 << or ) 2drop ;
-
-::word2code | "" -- code
-	10 0 rot				| cnt acc adr     | 5 32bits 10 64bits
-	( c@+ $ff and
-		32 >?
-		char6bit
-		rot 6 << or		| cnt adr acc
-		rot 1-			| adr acc cnt
-		0? ( drop nip ; )
-		swap rot ) 2drop nip ;
-
-::makedicc | adr list -- adr'
-	swap >a
-	( dup c@ 1? drop
-		dup word2code a!+
-		>>0 ) 2drop
-	0 a!+ a> ;
-
-#buffer * 16
-
-:6bitchar | 6bc -- char
-	$3f and $1f + ;
-
-::code2name | nn -- buf
-	'buffer 15 + 0 over c! 1-
-	( swap 1? dup 6bitchar pick2 c! 6 >>>
-		swap 1- ) drop 1+ ;
-
 
 | 'code
 | stack (256) |##STACK * 256 | 32 cells 2 stack
@@ -270,7 +239,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmchecktok
 	tokmov $f and
-	vmdeep >? ( 1 'terror ! )
+	vmdeep >? ( 6 'terror ! )
 	drop
 	;
 
@@ -282,7 +251,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmstepck | ip -- ip'
 	@+
 	dup vmtokmov $f and 
-	vmdeep >? ( 1 'terror ! 2drop ; ) 
+	vmdeep >? ( 6 'terror ! 2drop ; ) 
 	drop
 	$80 and? ( $7f and 3 << worde + @ ex ; ) 
 	$7f and 3 << 'tokenx + @ ex ;
@@ -324,7 +293,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
 	here
-	dup
+	dup				| code ram here here
 	9 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
 	dup 'stack !
 	256 +			| stacks  (32 stack cell)
@@ -335,6 +304,75 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	vmreset
 	dup vm!			| store in vm
 	;
+	
+|--------------- TOKENIZER
+#blk * 128
+#blk> 'blk
+:pushbl blk> d!+ 'blk> ! ;
+:popbl -4 'blk> d+! blk> d@ ;
+
+:,i		code> !+ 'code> ! ;
+
+:.lit | adr -- adr
+	state
+	2 =? ( drop str>anro ,i ; )
+	drop
+	str>anro
+	32 << 0 or ,i
+	| falta hex/bin/fix
+	;		| 32 bits
+
+:,ch
+	name> c!+ 'name> ! ;
+	
+:,cpystr | adr -- adr'
+	1 + ( c@+ 1? 34 =? ( drop
+			c@+ 34 <>? ( drop 1 - 0 ,ch ; ) ) ,ch ) drop 1 - 
+	0 ,ch ;
+
+
+:.com | adr -- adr'
+	>>cr ; | don't save comment
+
+:.str | adr -- adr'
+	state
+	2 =? ( drop ,cpystr ; )	| data .. en data ***
+	drop
+	name> 
+	32 <<
+	4 or | str
+	,i
+	;
+	
+:wrd2token | str -- str'
+	( dup c@ $ff and 33 <? 
+		0? ( drop 1 'terror ! ; ) drop 1 + )	| trim0
+|	over "%w<<" .println
+	$7c =? ( drop .com ; )	| $7c |	 Comentario
+|	$3A =? ( drop .def ; )	| $3a :  Definicion
+|	$23 =? ( drop .var ; )	| $23 #  Variable
+	$22 =? ( drop .str ; )	| $22 "	 Cadena
+	$27 =? ( drop 			| $27 ' Direccion
+|		dup 1 + ?word 1? ( .adr ; ) drop
+		3 'terror ! ; )
+	drop
+	dup isNro 1? ( drop .lit ; ) drop	| number
+|	dup ?core 1? ( .core ; ) drop		| core
+|	dup ?word 1? ( .word ; ) drop		| word
+|	dup ?sys 1? ( .sys ; ) drop
+ 	5 'terror ! ;
+
+::vmtokreset
+	'name 'name> !
+	'dicc 'dicc> !
+	;
+	
+::vmtokenizer | str code -- code' 
+	0 'terror !
+	'code> !
+	0 ( drop wrd2token
+		terror 0? ) 2drop
+	code> ;
 	
 |--------------- CHECK CODE
 #lev
@@ -393,7 +431,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	>a
 	0 ( over <?
 		a@+ dup 
-		$7f and 15 27 in? ( swap 32 >> 0? ( 2 'terror ! ) )
+		$7f and 15 27 in? ( swap 32 >> 0? ( 7 'terror ! ) )
 		2drop
 		1+ ) 2drop ;
 
@@ -401,12 +439,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	swap >a ( dup c@ 1? drop dup a!+ >>0 ) a! drop ;
 	
 #msgerror 
-"stack empty"		|1 
-"conditional alone"	|2
-"unbalanced stack"	|3
-"div by 0"			|4
-"no data adress"	|5
-"no code adress"	|6
+"Ok"
+"Block bad close"
+"Core word without adress"
+"Addr not exist"
+"Word not found"
+
+"stack empty"		|6
+"conditional alone"	|7
+"unbalanced stack"	|8
+"div by 0"			|9
+"no data adress"	|10
+"no code adress"	|11
 
 ::vmerror | -- str
 	terror 0? ( ; )
