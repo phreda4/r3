@@ -20,10 +20,10 @@
 	SDLredraw 
 	sdlkey
 	>esc< =? ( exit )
-	<up> =? ( iup )
-	<dn> =? ( idn )
-	<le> =? ( ile )
-	<ri> =? ( iri )
+	<up> =? ( 0 botstep )
+	<dn> =? ( 4 botstep  )
+	<le> =? ( 6 botstep  )
+	<ri> =? ( 2 botstep  )
 	drop
 	;
 

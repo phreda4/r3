@@ -9,6 +9,14 @@
 ^r3/util/varanim.r3
 ^r3/r3vm/arena-map.r3
 
+:iup 0 botstep ;
+:idn 4 botstep ;
+:ile 6 botstep ;
+:iri 2 botstep ;
+:ijm 
+:ipu
+	;
+
 |-------------------------------------	
 #words "Up" "Down" "Left" "Right"  "Jump" "Push" 0
 #worde iup idn ile iri ijm ipu

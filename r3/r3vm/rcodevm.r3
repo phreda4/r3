@@ -264,7 +264,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 |--------------- IO
 ::vmpop | -- t
-	TOS
+	TOS 
 	NOS dup @ 'TOS ! 8 - 'NOS ! ;
 
 ::vmpush | v --
@@ -459,8 +459,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	>>sp ;
 
 :.sys
-	>>sp ;
-	
 |	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
 	1- $80 or ,i 
 	>>sp ;

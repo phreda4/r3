@@ -77,13 +77,14 @@
 	1 'xp ! 1 'yp !
 	'level0 cpylevel
 	;
-
+	
 ::player
 	xp yp posmap
 	viewpz
-	dp 3 * 
-	msec 7 >> abs 3 mod +
+	ap anim>n
 	imgspr sspritez
+	
+	deltatime 'ap +!
 	;
 
 :movepl | dx dy --
@@ -93,19 +94,44 @@
 	'yp ! 'xp !
 	;
 	
-::iup 2 'dp ! 0 -1 movepl ;
-::idn 3 'dp ! 0 1 movepl ;
-::ile 1 'dp ! -1 0 movepl ;
-::iri 0 'dp ! 1 0 movepl ;
-::ijm 
-::ipu
-	;
-
 |------ IO interface 
+|	701 
+|	6 2
+|	543
+|
+#mdir ( 0 -1	1 -1	1 0		1 1		0 1		-1 1	-1 0	-1 -1 )
+#mani ( 6 3 3 3 9 0 0 0 )
+	
+::botstep
+	$7 and dup 
+	'mani + c@  3 128 ICS>anim 'ap ! | anima
+	2* 'mdir + c@+ swap c@ 	movepl	| dx dy
+	;
+	
 :istep 
+	vmpop 32 >> botstep ;
+	
 :icheck 
+	vmpop 32 >> 
+	$7 and 
+	2* 'mdir + c@+ swap c@ 	| dx dy
+	yp + swap xp + swap
+	]map 32 << 
+	vmpush
+	;
 :itake 
+	vmpop 32 >> 
+	$7 and 
+	2* 'mdir + c@+ swap c@ 	| dx dy
+	yp + swap xp + swap
+	2drop
+	;
 :ileave
+	vmpop 32 >> 
+	$7 and 
+	2* 'mdir + c@+ swap c@ 	| dx dy
+	yp + swap xp + swap
+	2drop
 	;
 
 #wordt * 80
@@ -114,6 +140,7 @@
 #wordd ( $f1 $f1 $f1 $f1 $00 ) 
 
 ::bot.reset
+	resetplayer
 	;
 
 ::bot.ini
@@ -128,6 +155,7 @@
 	calc
 	;
 
+|----- move view
 #xo #yo
 
 :dns
