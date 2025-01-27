@@ -9,29 +9,31 @@
 ^./arena-map.r3
 ^./rcodevm.r3
 
-
 #font
 
 #cpu
 
+|----- code
 #cdtok * 1024
 #cdtok> 'cdtok
+#cdnow>
 #cdcnt
 
 #lev
 #cdspeed 0.2
 
 :linecode | adr -- adr
-	cdtok> =? ( ">" bemits2 )
+	cdnow> =? ( ">" bemits )
 	@+ dup 8 >> $ff and 'lev !
-	vmtokstr bemits2 bsp ;
+	vmtokstr bemits bsp ;
 	
 :showcode
 	2 64 bat
 	'cdtok
 	0 ( cdcnt <? swap 
 		linecode
-		swap 1+ ) 2drop ;
+		swap 1+ ) 
+	2drop  ;
 
 :processlevel	
 	cdcnt 'cdtok vmcheckcode 
@@ -39,14 +41,14 @@
 	;
 
 :stepvm
-	cdtok> 0? ( drop ; ) 
-	vmstepck 'cdtok> !
-	terror 1 >? ( drop -8 'cdtok> +! ; ) drop
+	cdnow> 0? ( drop ; ) 
+	vmstepck 'cdnow> !
+	terror 1 >? ( drop -8 'cdnow> +! ; ) drop
 	;
 	
 :stepvma
 	stepvm
-	cdtok> 'cdtok - 3 >> 
+	cdnow> 'cdtok - 3 >> 
 	cdcnt <? ( 'stepvma cdspeed +vexe ) drop
 	;
 	
@@ -67,12 +69,10 @@
 
 :compilar
 	vmtokreset
-|	0 'cdcnt !
-|	'cdtok 'cdtok> !
 	'pad 'cdtok vmtokenizer 'cdtok> ! 
 
 	cdtok> 'cdtok - 3 >> 'cdcnt !
-	'cdtok 'cdtok> !
+	'cdtok 'cdnow> !
 	;
 	
 :immex	
@@ -158,11 +158,11 @@
 	$14c a!+
 	$10b a!+
 	$09 a!+
-	processlevel	
+	processlevel
 	
 	30 8 128 ICS>anim  | init cnt scale -- val
 	'aitem !
-	
+
 	'runscr SDLshow
 	SDLquit 
 	;

@@ -4,7 +4,8 @@
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
-^r3/r3vm/rcodevm.r3
+
+^./rcodevm.r3
 
 #level0 (
 22 21 21 21 21 21 21 21 21 21 21 21 21 21 21 22
@@ -24,7 +25,6 @@
 ##imgspr
 
 ##viewpx ##viewpy ##viewpz
-
 	
 #tsize 16 
 #tmul
@@ -118,8 +118,10 @@
 
 ::bot.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !
+
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
+
 	sw 2/ 'viewpx !
 	sh 2/ 'viewpy !
 	2.0 'viewpz !

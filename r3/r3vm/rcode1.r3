@@ -210,7 +210,7 @@
 		) 3drop 
 	immcr 
 	$7f7f sdlcolor
-	0 words 
+	0 syswords 
 	( @+ 1?
 		pick2 $80 or swap dragword 
 		swap nextdrag

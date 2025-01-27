@@ -5,16 +5,17 @@
 
 ##terror | tipo error	
 
-
-#wordd	| data stack
-#worde	| vectors
-##words	| strings
+##syswordd	| data stack
+##sysworde	| vectors
+##syswords	| strings
 
 #name * 8192 #name> 
 #dicc * 1024 #dicc>
+#lastdicc>
 
 #code>	| pointer to code
 
+#flagdata 
 #state	| imm/compiling
 #tlevel	| tokenizer level
 
@@ -190,6 +191,8 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 "move" "move>" "fill" "cmove" "cmove>" "cfill"				|87-92
 0
 
+#INTWORDS 9
+
 |iLITd iLITb iLITh iLITf iLITs iWORD iAWORD iVAR iAVAR |0-8
 #tokmov (
 $10 $10 $10 $10 $10 -1 $10 $10 $10
@@ -222,7 +225,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
 ::vmtokstr | tok -- ""
-	$80 and? ( $7f and 3 << words + @ ; ) 
+	$80 and? ( $7f and 3 << syswords + @ ; ) 
 	dup $7f and 
 	8 >? ( nip 9 - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
@@ -234,7 +237,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	NOS stack - 3 >> 1 + ;
 
 ::vmtokmov | tok -- usr
-	$80 and? ( $7f and wordd + c@ ; ) 
+	$80 and? ( $7f and syswordd + c@ ; ) 
 	$7f and 'tokmov + c@ ;
 
 ::vmchecktok
@@ -245,7 +248,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmstep | ip -- ip'
 	@+
-	$80 and? ( $7f and 3 << worde + @ ex ; ) 
+	$80 and? ( $7f and 3 << sysworde + @ ex ; ) 
 	$7f and 3 << 'tokenx + @ ex ;
 
 ::vmstepck | ip -- ip'
@@ -253,7 +256,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup vmtokmov $f and 
 	vmdeep >? ( 6 'terror ! 2drop ; ) 
 	drop
-	$80 and? ( $7f and 3 << worde + @ ex ; ) 
+	$80 and? ( $7f and 3 << sysworde + @ ex ; ) 
 	$7f and 3 << 'tokenx + @ ex ;
 
 ::vmrun | to ip -- ip'
@@ -269,9 +272,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	'TOS ! ;
 
 ::vmcpuio | 'words 'exwords 'skwords -- 
-	'wordd ! | data stack
-	'worde ! | vectors
-	'words ! | strings
+	'syswordd ! | data stack
+	'sysworde ! | vectors
+	'syswords ! | strings
 	;
 
 |--------------- CPU
@@ -313,6 +316,49 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :,i		code> !+ 'code> ! ;
 
+:patchend
+	lastdicc>
+	dup d@ flagdata or over d! 			| save flag (word,var0,var1,var2)
+	code> over - 8 -
+	0? ( 4 + 0 ,i )					| #x1 #x2 case
+	swap 4 +
+|	+! 									| for write one time..
+	dup d@ $ffff0000 and rot or swap d!	| for write many..
+	code> 'code> !
+	;
+
+:endef
+	tlevel 1? ( 2 'terror ! ) drop
+	'blk 'blk>  !
+	0 'tlevel !
+	state 0? ( drop ; )	drop
+	patchend ;
+
+:newentry | adr -- adr prev codename
+	endef
+	code> lastdicc> - 8 - -? ( 0 nip ) 16 <<
+	code> 'lastdicc> !
+	over 1 + ; |,cpyname ;
+
+:.def | adr -- adr' | :
+	newentry
+	,i ,i
+	1 'state !
+	>>sp
+	0 'flagdata ! 
+	;
+
+:.var | adr -- adr' | #
+	newentry
+|	$40000000 or | var flag
+	,i ,i
+	2 'state !
+	>>sp
+	$40000000 'flagdata !
+	trim "* " =pre 1? ( $c0000000 'flagdata ! ) drop
+	;
+
+
 :.lit | adr -- adr
 	state
 	2 =? ( drop str>anro ,i ; )
@@ -343,23 +389,98 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	4 or | str
 	,i
 	;
+
+:?dicc | adr dicc -- nro+1/0
+	swap over | dicc adr dicc
+	( @+ 1?
+		pick2 =w 1? ( drop rot - 3 >> nip ; )
+		drop ) 
+	4drop 0 ;
+
+:?core	'tokname ?dicc ;
+:?sys	syswords ?dicc ;
+	
+|---------------------------------
+:core;
+	code> 6 - c@ 6 =? ( 5 code> 6 - c! ) drop	| change CALL to JMP
+	tlevel 1? ( drop ; ) drop
+	0 'state !
+	patchend ;
+
+#iswhile
+
+:core(
+	1 'tlevel +!
+	code> pushbl ;
+
+
+:cond?? | adr t -- adr t
+	15 <? ( ; ) 27 >? ( ; )
+	over w@ 1? ( drop ; ) drop
+	code> pick2 -  pick2 w!
+	1 'iswhile ! ;
+
+:core) | tok -- tok
+	-1 'tlevel +!
+	0 'iswhile !
+	popbl dup
+	( code> <? @+ cond??  ) drop	| search ??
+	iswhile 1? ( drop code> - 2 - ,i ; ) drop	| patch WHILE
+|	dup 3 - c@	( ) drop                        | patch REPEAT
+	0 ,i										| patch IF
+	3 - code> over - 2 -
+	swap w!
+	;
+
+:core[
+	0 ,i
+	1 'tlevel +!
+	code> pushbl
+	;
+
+:core]
+	-1 'tlevel +!
+	popbl code> over -
+	dup ,i
+	swap 4 - w! ;
+	
+:.core	| nro --
+	state
+	2 =? ( drop 3 'terror ! ; )
+	drop
+	1-
+	dup INTWORDS + ,i
+	0? ( drop core; >>sp ; )
+	1 =? ( drop core( >>sp ; )
+	2 =? ( drop core) >>sp ; )
+	3 =? ( drop core[ >>sp ; )
+	4 =? ( drop core] >>sp ; )
+	18 >? ( drop >>sp ; )
+	>>sp ;
+
+:.sys
+	>>sp ;
+	
+|	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
+	1- $80 or ,i 
+	>>sp ;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
-		0? ( drop 1 'terror ! ; ) drop 1 + )	| trim0
-|	over "%w<<" .println
+		0? ( drop 1 'terror ! ; ) drop 1+ )	| trim0
+	over "%w<<" .println
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
-|	$3A =? ( drop .def ; )	| $3a :  Definicion
-|	$23 =? ( drop .var ; )	| $23 #  Variable
+	$3A =? ( drop .def ; )	| $3a :  Definicion
+	$23 =? ( drop .var ; )	| $23 #  Variable
 	$22 =? ( drop .str ; )	| $22 "	 Cadena
 	$27 =? ( drop 			| $27 ' Direccion
 |		dup 1 + ?word 1? ( .adr ; ) drop
 		3 'terror ! ; )
 	drop
 	dup isNro 1? ( drop .lit ; ) drop	| number
-|	dup ?core 1? ( .core ; ) drop		| core
+	dup ?core 1? ( .core ; ) drop		| core
 |	dup ?word 1? ( .word ; ) drop		| word
-|	dup ?sys 1? ( .sys ; ) drop
+	dup ?sys 1? ( .sys ; ) drop
  	5 'terror ! ;
 
 ::vmtokreset
