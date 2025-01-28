@@ -10,12 +10,15 @@
 ##syswords	| strings
 
 #name * 8192 #name> 
+
+| code> str var/word
 #dicc * 1024 #dicc>
-#lastdicc>
 
-#code>	| pointer to code
+#lastdic>
 
-#flagdata 
+#code:	| code ini
+#code>	| code now
+
 #state	| imm/compiling
 #tlevel	| tokenizer level
 
@@ -155,7 +158,7 @@
 :iLITs
 	iDUP atoken 'TOS ! ;	
 
-:iWORD	d@+ code + swap -8 'RTOS +! RTOS ! ; 	| 32 bits
+:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! "w" .println ; 	| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	8 'NOS +! TOS NOS ! d@+ code + d@ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
@@ -217,7 +220,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilitf 32 >> "%f" sprint ;
 :ilits 32 >> """%d""" sprint ;
 
-:iword 
+:iword 16 >> $ffff and 'name + ;
 :iaword 
 :ivar 
 :iavar "w%h" sprint ;
@@ -309,41 +312,48 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	;
 	
 |--------------- TOKENIZER
-#blk * 128
+#blk * 64
 #blk> 'blk
-:pushbl blk> d!+ 'blk> ! ;
+
+:pushbl blk> d!+ 'blk> ! ;	| *** store diff with code:
 :popbl -4 'blk> d+! blk> d@ ;
 
 :,i		code> !+ 'code> ! ;
+	
+:,cpystr | adr -- adr'
+	name> swap 1+
+	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 1- 0 rot c!+ 'name> ! ; ) ) rot c!+ swap ) drop 1- 
+	0 rot c!+ 'name> ! ;
 
+:,cpyname | adr -- adr'
+	name> swap
+	( c@+ $ff and 32 >? rot c!+ swap ) drop
+	0 rot c!+ 'name> ! ;
+	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
-	'blk 'blk>  !
+	'blk 'blk> !
 	0 'tlevel !
 	;
 
-:newentry | adr -- adr prev codename
+:newentry | adr -- 'adr
 	endef
-	code> lastdicc> - 8 - -? ( 0 nip ) 16 <<
-	code> 'lastdicc> !
-	over 1 + ; |,cpyname ;
+	code> code: - 32 << 
+	name> 'name - 16 << or
+	dicc> !+ 'dicc> !
+	,cpyname ;
 
 :.def | adr -- adr' | :
-	newentry
-	,i ,i
+	1+ newentry
 	1 'state !
-	>>sp
-	0 'flagdata ! 
 	;
 
 :.var | adr -- adr' | #
-	newentry
-|	$40000000 or | var flag
-	,i ,i
+	1+ newentry
 	2 'state !
-	>>sp
-	$40000000 'flagdata !
-	trim "* " =pre 1? ( $c0000000 'flagdata ! ) drop
+	$1
+	swap trim "* " =pre 1? ( rot $2 or -rot ) drop
+	swap dicc> 8 - +!	| store flag
 	;
 
 
@@ -356,15 +366,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	| falta hex/bin/fix
 	;		| 32 bits
 
-:,ch
-	name> c!+ 'name> ! ;
-	
-:,cpystr | adr -- adr'
-	1 + ( c@+ 1? 34 =? ( drop
-			c@+ 34 <>? ( drop 1 - 0 ,ch ; ) ) ,ch ) drop 1 - 
-	0 ,ch ;
-
-
 :.com | adr -- adr'
 	>>cr ; | don't save comment
 
@@ -372,9 +373,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	state
 	2 =? ( drop ,cpystr ; )	| data .. en data ***
 	drop
-	name> 
-	32 <<
-	4 or | str
+	name> swap ,cpystr swap
+	32 << 4 or | str
 	,i
 	;
 
@@ -389,11 +389,15 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :?sys	syswords ?dicc ;
 
 :?word | adr -- adr/0
-	lastdicc>	| code dicc
-	( dup d@ $3fffffff and
-		pick2 =? ( drop nip ; )
-		drop code 256 + >?
-		dup 4 + d@ 16 >>> 8 + - ) 2drop 0 ;
+	dicc>
+	( 8 - 'dicc >=?
+		dup @ 	| adr dic entry
+		16 >> $ffff and 'name + pick2 
+|		2dup "[%s=%s]" .println
+		=w
+|		dup "%d)" .println
+		1? ( drop nip "siii" .println ; )
+		drop ) drop 0 "end" .println ;
 	
 |---------------------------------
 :core;
@@ -453,28 +457,30 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :.sys
 |	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
-	1- $80 or ,i 
-	>>sp ;
+	1- $80 or ,i >>sp ;
 	
 :.word
 	state
-	2 =? ( drop 8 + ,i ; )		| data
+	2 =? ( drop @ ,i ; )		| data **
 	drop
-	dup @ $c0000000 and? ( drop 8 ,i 8 + code - ,i >>sp ; ) drop 	| var
-	6 ,i 8 + code - ,i >>sp ; 	| code
+	@ 
+	$1 and? ( 7 or ,i >>sp ; )  	| var
+	5 or ,i >>sp  					| code
 	;
 	
 :.adr
 	state
-	2 =? ( drop 8 + code - ,i ; )	| data
+	2 =? ( drop @ ,i ; )	| data **
 	drop
-	7 ,i 8 + code - ,i >>sp ;
+	@
+	$1 and? ( 8 or ,i >>sp ; )
+	6 or ,i >>sp 
 	;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
 		0? ( drop 1 'terror ! ; ) drop 1+ )	| trim0
-	over "%w<<" .println
+|	over "%w<<" .println
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
@@ -492,14 +498,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokreset
 	'name 'name> !
 	'dicc 'dicc> !
+	0 'lastdic> !
 	;
 	
 ::vmtokenizer | str code -- code' 
 	0 'terror !
-	'code> !
+	dup 'code: ! 'code> !
 	0 ( drop wrd2token
 		terror 0? ) 2drop
 	code> ;
+	
+::vmboot
+	dicc> 8 - @ 32 >> code: + ;
 	
 |--------------- CHECK CODE
 #lev
@@ -583,6 +593,25 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	terror 0? ( ; )
 	1- 'msgerror 
 	( swap 1? 1- swap >>0 ) drop ;
+
+|	endef
+|	name> name - 32 <<
+|	code> code: - 16 << or
+|	dicc> !+ 'dicc> !
+|	,cpyname ;
+::vmdicc
+	'dicc ( dicc> <?
+		@+ |"%h" .println 
+		dup $ff and "%h " .print
+		16 >> $ffff and 'name + "%s " .print
+		.cr
+		) drop
+	.cr		
+	code: ( code> <?
+		@+ vmtokstr .println
+		) drop
+	;
+	
 	
 | here 
 : |---------- init

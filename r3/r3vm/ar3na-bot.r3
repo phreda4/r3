@@ -5,6 +5,7 @@
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
+^r3/util/sdledit.r3
 
 ^./arena-map.r3
 ^./rcodevm.r3
@@ -41,16 +42,27 @@
 
 :stepvm
 	cdnow> 0? ( drop ; ) 
-	vmstepck 'cdnow> !
-	terror 1 >? ( drop -8 'cdnow> +! ; ) drop
+	|vmstepck 
+	vmstep
+	'cdnow> !
+|	terror 1 >? ( drop -8 'cdnow> +! ; ) drop
 	;
 	
 :stepvma
 	stepvm
-	cdnow> 'cdtok - 3 >> 
-	cdcnt <? ( 'stepvma cdspeed +vexe ) drop
+	cdnow> cdtok> <? ( 'stepvma cdspeed +vexe ) drop
+	|cdnow> 'cdtok - 3 >> cdcnt <? ( 'stepvma cdspeed +vexe ) drop
 	;
 	
+|-----------------------
+	
+:showeditor
+	$7f00007f sdlcolorA	| cursor
+	edfill
+	$ffffff sdlcolor
+	edfocus 		
+	edcodedraw
+	;	
 |-----------------------
 
 #aitem
@@ -71,6 +83,16 @@
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	'cdtok 'cdnow> !
+	processlevel
+	;
+
+:compilaredit
+	vmtokreset
+	fuente 'cdtok vmtokenizer 'cdtok> ! 
+	0 cdtok> !
+	cdtok> 'cdtok - 3 >> 'cdcnt !
+	vmboot |	'cdtok 
+	'cdnow> !
 	processlevel
 	;
 	
@@ -123,7 +145,8 @@
 	player
 	item
 	
-	showinput
+	showeditor
+	|showinput
 	
 	sdlredraw
 	sdlkey
@@ -131,7 +154,8 @@
 	<ret> =? ( immex )
 	
 	|----
-	<f1> =? ( stepvm )
+	<f1> =? ( compilaredit vmdicc )
+	<f2> =? ( stepvm ) | a
 	drop ;
 
 	
@@ -141,24 +165,20 @@
 	SDLblend
 	"media/ttf/seguiemj.ttf" 20 TTF_OpenFont 'font !		
 	bfont1
+
+| editor
+	1 6 40 24 edwin
+	edram
+	
 	64 vaini
 	
 	bot.ini
 	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
-	|------- test
-|	7 'cdcnt ! 'cdtok >a
-|	$300000000 a!+
-|	$10a a!+ $110 a!+
-|	$100000100 a!+
-|	$14c a!+ $10b a!+ $09 a!+
-|	processlevel
-|	'cdtok 'cdnow> !
-	
 	30 8 128 ICS>anim  | init cnt scale -- val
 	'aitem !
-
+	
 	'runscr SDLshow
 	SDLquit 
 	;

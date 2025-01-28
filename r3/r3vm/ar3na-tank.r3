@@ -4,6 +4,7 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
+^r3/util/sdledit.r3
 
 ^./arena-war.r3
 
