@@ -68,7 +68,7 @@
 :compilar
 	vmtokreset
 	'pad 'cdtok vmtokenizer 'cdtok> ! 
-	
+	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	'cdtok 'cdnow> !
 	processlevel
@@ -148,16 +148,13 @@
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
 	|------- test
-|	7 'cdcnt !
-|	'cdtok >a
+|	7 'cdcnt ! 'cdtok >a
 |	$300000000 a!+
-|	$10a a!+
-|	$110 a!+
+|	$10a a!+ $110 a!+
 |	$100000100 a!+
-|	$14c a!+
-|	$10b a!+
-|	$09 a!+
+|	$14c a!+ $10b a!+ $09 a!+
 |	processlevel
+|	'cdtok 'cdnow> !
 	
 	30 8 128 ICS>anim  | init cnt scale -- val
 	'aitem !

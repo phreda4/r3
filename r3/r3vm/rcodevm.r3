@@ -316,23 +316,11 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :,i		code> !+ 'code> ! ;
 
-:patchend
-	lastdicc>
-	dup d@ flagdata or over d! 			| save flag (word,var0,var1,var2)
-	code> over - 8 -
-	0? ( 4 + 0 ,i )					| #x1 #x2 case
-	swap 4 +
-|	+! 									| for write one time..
-	dup d@ $ffff0000 and rot or swap d!	| for write many..
-	code> 'code> !
-	;
-
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
 	'blk 'blk>  !
 	0 'tlevel !
-	state 0? ( drop ; )	drop
-	patchend ;
+	;
 
 :newentry | adr -- adr prev codename
 	endef
@@ -399,41 +387,46 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :?core	'tokname ?dicc ;
 :?sys	syswords ?dicc ;
+
+:?word | adr -- adr/0
+	lastdicc>	| code dicc
+	( dup d@ $3fffffff and
+		pick2 =? ( drop nip ; )
+		drop code 256 + >?
+		dup 4 + d@ 16 >>> 8 + - ) 2drop 0 ;
 	
 |---------------------------------
 :core;
-	code> 6 - c@ 6 =? ( 5 code> 6 - c! ) drop	| change CALL to JMP
 	tlevel 1? ( drop ; ) drop
 	0 'state !
-	patchend ;
+	;
 
 #iswhile
 
-:core(
+:core(  | --
 	1 'tlevel +!
 	code> pushbl ;
 
-
-:cond?? | adr t -- adr t
-	15 <? ( ; ) 27 >? ( ; )
-	over w@ 1? ( drop ; ) drop
-	code> pick2 -  pick2 w!
+:cond?? | adr t -- adr 
+	$ff00 nand							| remove level
+	15 <? ( drop ; ) 27 >? ( drop ; )	| cond without fix
+	drop
+	code> over - 32 << over 8 - +!
 	1 'iswhile ! ;
 
-:core) | tok -- tok
+:core) | --
 	-1 'tlevel +!
 	0 'iswhile !
 	popbl dup
 	( code> <? @+ cond??  ) drop	| search ??
-	iswhile 1? ( drop code> - 2 - ,i ; ) drop	| patch WHILE
-|	dup 3 - c@	( ) drop                        | patch REPEAT
-	0 ,i										| patch IF
-	3 - code> over - 2 -
-	swap w!
+	iswhile 1? ( drop				| patch WHILE
+		code> - 8 - 32 << code> 8 - +! 
+		; ) drop
+	|dup 8 - 	( ) drop				| patch REPEAT
+	code> over - 32 << swap +!			| path IF
 	;
 
 :core[
-	0 ,i
 	1 'tlevel +!
 	code> pushbl
 	;
@@ -441,8 +434,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :core]
 	-1 'tlevel +!
 	popbl code> over -
-	dup ,i
-	swap 4 - w! ;
+	32 << 12 or
+	swap ! ;
 	
 :.core	| nro --
 	state
@@ -455,13 +448,28 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	2 =? ( drop core) >>sp ; )
 	3 =? ( drop core[ >>sp ; )
 	4 =? ( drop core] >>sp ; )
-	18 >? ( drop >>sp ; )
-	>>sp ;
+	drop 
+	>>sp ; 
 
 :.sys
 |	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
 	1- $80 or ,i 
 	>>sp ;
+	
+:.word
+	state
+	2 =? ( drop 8 + ,i ; )		| data
+	drop
+	dup @ $c0000000 and? ( drop 8 ,i 8 + code - ,i >>sp ; ) drop 	| var
+	6 ,i 8 + code - ,i >>sp ; 	| code
+	;
+	
+:.adr
+	state
+	2 =? ( drop 8 + code - ,i ; )	| data
+	drop
+	7 ,i 8 + code - ,i >>sp ;
+	;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
@@ -472,12 +480,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	$23 =? ( drop .var ; )	| $23 #  Variable
 	$22 =? ( drop .str ; )	| $22 "	 Cadena
 	$27 =? ( drop 			| $27 ' Direccion
-|		dup 1 + ?word 1? ( .adr ; ) drop
+		dup 1 + ?word 1? ( .adr ; ) drop
 		3 'terror ! ; )
 	drop
 	dup isNro 1? ( drop .lit ; ) drop	| number
 	dup ?core 1? ( .core ; ) drop		| core
-|	dup ?word 1? ( .word ; ) drop		| word
+	dup ?word 1? ( .word ; ) drop		| word
 	dup ?sys 1? ( .sys ; ) drop
  	5 'terror ! ;
 
