@@ -152,16 +152,15 @@
 
 :iMEM	mem pushinro ;
 
-
 :iLITd :iLITh :iLITb :iLITf	
 	iDUP atoken 'TOS ! ;
 :iLITs
 	iDUP atoken 'TOS ! ;	
 
 :iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! "w" .println ; 	| 32 bits
-:iAWORD	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
-:iVAR	8 'NOS +! TOS NOS ! d@+ code + d@ 'TOS ! ;	| 32 bits
-:iAVAR	8 'NOS +! TOS NOS ! d@+ 'TOS ! ;	| 32 bits (iLIT)
+:iAWORD	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
+:iVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + @ 'TOS ! ;	| 32 bits
+:iAVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
 
 #tokenx
 iLITd iLITb iLITh iLITf iLITs 
@@ -221,9 +220,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilits 32 >> """%d""" sprint ;
 
 :iword 16 >> $ffff and 'name + ;
-:iaword 
-:ivar 
-:iavar "w%h" sprint ;
+:iaword 16 >> $ffff and 'name + "'%s" sprint ;
+:ivar 16 >> $ffff and 'name + ;
+:iavar 16 >> $ffff and 'name + "'%s" sprint ;
 	
 #tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
@@ -393,11 +392,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	( 8 - 'dicc >=?
 		dup @ 	| adr dic entry
 		16 >> $ffff and 'name + pick2 
-|		2dup "[%s=%s]" .println
-		=w
-|		dup "%d)" .println
-		1? ( drop nip "siii" .println ; )
-		drop ) drop 0 "end" .println ;
+		=w 1? ( drop nip ; )
+		drop ) drop 0 ;
 	
 |---------------------------------
 :core;
@@ -443,7 +439,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :.core	| nro --
 	state
-	2 =? ( drop 3 'terror ! ; )
+	2 =? ( 2drop 3 'terror ! ; )
 	drop
 	1-
 	dup INTWORDS + ,i
@@ -461,21 +457,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :.word
 	state
-	2 =? ( drop @ ,i ; )		| data **
+	2 =? ( drop @ ,i ; )	| data **
 	drop
-	@ 
-	$1 and? ( 7 or ,i >>sp ; )  	| var
-	5 or ,i >>sp  					| code
-	;
+	@ $1 and? ( 7 or ,i >>sp ; )  	| var
+	5 or ,i >>sp ; 					| code
 	
 :.adr
 	state
 	2 =? ( drop @ ,i ; )	| data **
 	drop
-	@
-	$1 and? ( 8 or ,i >>sp ; )
-	6 or ,i >>sp 
-	;
+	@ $ff nand
+	$1 and? ( 8 or ,i >>sp ; )	| var
+	6 or ,i >>sp ;					| code
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
@@ -594,11 +587,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	1- 'msgerror 
 	( swap 1? 1- swap >>0 ) drop ;
 
-|	endef
-|	name> name - 32 <<
-|	code> code: - 16 << or
-|	dicc> !+ 'dicc> !
-|	,cpyname ;
 ::vmdicc
 	'dicc ( dicc> <?
 		@+ |"%h" .println 

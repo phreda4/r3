@@ -97,8 +97,6 @@
 	;
 	
 :immex	
-|	r3reset
-|	'pad r3i2token drop 'lerror !
 	compilar
 	0 'pad !
 	refreshfoco
@@ -116,6 +114,8 @@
 		@+ vmcell "%s " bprint2 
 		) 2drop 
 	TOS vmcell "%s " bprint2
+	8 564 bat $ff0000 bcolor
+	vmerror 0? ( drop ; ) bprint2
 	;
 	
 	
@@ -136,7 +136,7 @@
 	0 sdlcls
 	
 	$ffff bcolor 8 8 bat "Ar3na Bot" bprint2 bcr2
-	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
+
 	showcode
 	showstack
 	
