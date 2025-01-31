@@ -423,7 +423,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		code> - 8 - 32 << code> 8 - +! 
 		; ) drop
 	|dup 8 - 	( ) drop				| patch REPEAT
-	code> over - 32 << swap +!			| path IF
+	code> over - 8 + 32 << swap 16 - +!			| path IF
+	
 	;
 
 :core[
@@ -495,10 +496,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	;
 	
 ::vmtokenizer | str code -- code' 
+
 	0 'terror !
 	dup 'code: ! 'code> !
 	0 ( drop wrd2token
 		terror 0? ) 2drop
+		
 	code> ;
 	
 ::vmboot
@@ -596,7 +599,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		) drop
 	.cr		
 	code: ( code> <?
-		@+ vmtokstr .println
+		@+ dup "%h " .print vmtokstr .println
 		) drop
 	;
 	

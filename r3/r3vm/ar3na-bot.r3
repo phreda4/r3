@@ -93,7 +93,12 @@
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	vmboot |	'cdtok 
 	'cdnow> !
-	processlevel
+	
+	vmdicc
+	
+|	processlevel
+	
+|	vmdicc
 	;
 	
 :immex	
@@ -129,6 +134,47 @@
 	;		
 
 |-------------------
+#script
+#script>
+#scrstate
+
+:dialogo
+	;
+	
+	
+:loadlevel | ""
+	here dup 'script ! 'script> !
+	here "r3/r3vm/levels/tuto.txt" load 0 swap c!
+	
+	;
+	
+|----------- color terminal
+
+#term * 4096
+	
+:plog | "" --
+	count 1+ | s c
+	'term dup pick2 + swap rot 4096 swap - cmove>
+	'term strcpy 
+	;	
+
+:chemit
+	;
+	
+:exemit |  str -- 
+	( c@+ 1?
+		bemit
+		) 2drop ;
+	
+:showterm
+	$7f00007f sdlcolorA	| cursor
+	60 8 * 16 512 240 SDLfRect	
+	$00ff00 bcolor
+	ab[
+	'term >a 15 ( 1? 60 over gotoxy a> dup exemit >>0 >a 1- ) drop
+	]ba
+	;	
+|-------------------
 :runscr
 	vupdate
 	immgui
@@ -148,14 +194,17 @@
 	showeditor
 	|showinput
 	
+	showterm
+	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
 	<ret> =? ( immex )
 	
 	|----
-	<f1> =? ( compilaredit vmdicc )
+	<f1> =? ( compilaredit )
 	<f2> =? ( stepvm ) | a
+	<f3> =? ( "test" plog )
 	drop ;
 
 	
