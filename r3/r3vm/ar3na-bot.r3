@@ -10,7 +10,6 @@
 ^./arena-map.r3
 ^./rcodevm.r3
 
-
 |----------- color terminal
 
 #term * 2048
@@ -92,14 +91,10 @@
 	edfocus 		
 	edcodedraw
 	;	
+
 |-----------------------
 
-
-	
-|-------------------
-
 :compilar
-	"compiling..." plog
 	vmtokreset
 	'pad 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
@@ -109,19 +104,14 @@
 	;
 
 :compilaredit
-	"compiling..." plog
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
-	vmboot |	'cdtok 
-	'cdnow> !
-	
-	vmdicc
-	
-|	processlevel
-	
+	vmboot 'cdnow> !
 |	vmdicc
+|processlevel
+|vmdicc
 	;
 	
 :immex	

@@ -2,6 +2,8 @@
 | PHREDA 2024
 |-----------------
 ^r3/lib/mem.r3
+^r3/lib/parse.r3
+^r3/lib/console.r3
 
 ##terror | tipo error	
 
@@ -157,7 +159,7 @@
 :iLITs
 	iDUP atoken 'TOS ! ;	
 
-:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! "w" .println ; 	| 32 bits
+:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! ; |"w" .println ; 	| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + @ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
@@ -297,9 +299,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 |#STACK #CODE #DATA
 
 ::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
-	here
-	dup				| code ram here here
-	9 3 << +	| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
+	here dup		| code ram here here
+	9 3 << +		| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
 	dup 'stack !
 	256 +			| stacks  (32 stack cell)
 	dup 'data !
@@ -310,16 +311,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup vm!			| store in vm
 	;
 	
-| c r
-| c r h	
-| c r h h hs
-
 |--------------- TOKENIZER
 #blk * 64
 #blk> 'blk
 
-:pushbl blk> d!+ 'blk> ! ;	| *** store diff with code:
-:popbl -4 'blk> d+! blk> d@ ;
+:pushbl code: - blk> w!+ 'blk> ! ;	| store diff with code:
+:popbl -2 'blk> +! blk> w@ code: + ;
 
 :,i		code> !+ 'code> ! ;
 	
@@ -397,7 +394,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		dup @ 	| adr dic entry
 		16 >> $ffff and 'name + pick2 
 		=w 1? ( drop nip ; )
-		drop ) drop 0 ;
+		drop ) 2drop 0 ;
 	
 |---------------------------------
 :core;
@@ -427,8 +424,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		code> - 8 - 32 << code> 8 - +! 
 		; ) drop
 	|dup 8 - 	( ) drop				| patch REPEAT
-	code> over - 8 + 32 << swap 16 - +!			| path IF
-	
+	code> over - 8 + 32 << swap 16 - +!	| path IF
 	;
 
 :core[
@@ -439,8 +435,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :core]
 	-1 'tlevel +!
 	popbl code> over -
-	32 << 12 or
-	swap ! ;
+	32 << 12 or swap ! ;
 	
 :.core	| nro --
 	state
@@ -478,7 +473,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
 		0? ( drop 1 'terror ! ; ) drop 1+ )	| trim0
-|	over "%w<<" .println
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable

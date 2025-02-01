@@ -176,7 +176,7 @@
 :movepl | dx dy --
 	yp + swap xp + swap
 	2dup
-	]map 1? ( 3drop ; ) drop
+	]map $ff00 and 8 >> 1? ( 3drop ; ) drop
 	'yp ! 'xp !
 	;
 	
