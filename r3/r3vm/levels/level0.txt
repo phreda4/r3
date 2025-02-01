@@ -1,9 +1,6 @@
-*ESP
-Encuentra la cruz verde
-*ENG
-Find the green mark
 *MAP
-################
+16 16
+#==============#
 #              #
 #              #
 #              #
@@ -18,8 +15,13 @@ Find the green mark
 #              #
 #              #
 #              #
-################
-*ITEMS
-0
-1
-
+================
+*ITEM
+0 4 8 0 0	| player
+1 12 8 22 0	| box
+2 10 2 30 8	| coin
+2 8 2 38 2 
+-1
+2 4 2 30 8	| coin
+2 6 2 30 8	| coin
+2 8 2 30 8	| coin

@@ -10,6 +10,35 @@
 ^./arena-map.r3
 ^./rcodevm.r3
 
+
+|----------- color terminal
+
+#term * 2048
+	
+:plog | "" --
+	count 1+ | s c
+	'term dup pick2 + swap rot 2048 swap - cmove>
+	'term strcpy 
+	;	
+
+:chemit
+	;
+	
+:exemit |  str -- 
+	( c@+ 1?
+		bemit
+		) 2drop ;
+	
+:showterm
+	$7f00007f sdlcolorA	| cursor
+	8 32 320 112 SDLfRect	
+	$00ff00 bcolor
+	ab[
+	'term >a 7 ( 1? 1 over 1+ gotoxy a> dup exemit >>0 >a 1- ) drop
+	]ba
+	;	
+	
+|------------	
 #font
 #cpu
 
@@ -65,19 +94,12 @@
 	;	
 |-----------------------
 
-#aitem
-::item
-	3 3 posmap
-	viewpz
-	aitem anim>n
-	imgspr sspritez
-	
-	deltatime 'aitem +!
-	;
+
 	
 |-------------------
 
 :compilar
+	"compiling..." plog
 	vmtokreset
 	'pad 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
@@ -87,6 +109,7 @@
 	;
 
 :compilaredit
+	"compiling..." plog
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
@@ -142,38 +165,14 @@
 	;
 	
 	
-:loadlevel | ""
+:loadlevel | "" --
+	"loading tutor..." plog
 	here dup 'script ! 'script> !
 	here "r3/r3vm/levels/tuto.txt" load 0 swap c!
 	
 	;
-	
-|----------- color terminal
 
-#term * 4096
-	
-:plog | "" --
-	count 1+ | s c
-	'term dup pick2 + swap rot 4096 swap - cmove>
-	'term strcpy 
-	;	
 
-:chemit
-	;
-	
-:exemit |  str -- 
-	( c@+ 1?
-		bemit
-		) 2drop ;
-	
-:showterm
-	$7f00007f sdlcolorA	| cursor
-	60 8 * 16 512 240 SDLfRect	
-	$00ff00 bcolor
-	ab[
-	'term >a 15 ( 1? 60 over gotoxy a> dup exemit >>0 >a 1- ) drop
-	]ba
-	;	
 |-------------------
 :runscr
 	vupdate
@@ -181,15 +180,15 @@
 	mouseview
 	0 sdlcls
 	
-	$ffff bcolor 8 8 bat "Ar3na Bot" bprint2 bcr2
+	$ffff bcolor 8 8 bat "Ar3na Code" bprint
 
 	showcode
 	showstack
 	
 	$ffffff sdlcolor
 	draw.map
-	player
-	item
+	draw.player
+	draw.items
 	
 	showeditor
 	|showinput
@@ -199,7 +198,7 @@
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<ret> =? ( immex )
+|	<ret> =? ( immex )
 	
 	|----
 	<f1> =? ( compilaredit )
@@ -214,19 +213,18 @@
 	SDLblend
 	"media/ttf/seguiemj.ttf" 20 TTF_OpenFont 'font !		
 	bfont1
-
-| editor
-	1 6 40 24 edwin
-	edram
-	
 	64 vaini
+	
+| editor
+	1 10 40 24 edwin
+	edram
 	
 	bot.ini
 	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
-
-	30 8 128 ICS>anim  | init cnt scale -- val
-	'aitem !
+		
+	"loading level..." plog
+	"r3/r3vm/levels/level0.txt" loadmap
 	
 	'runscr SDLshow
 	SDLquit 

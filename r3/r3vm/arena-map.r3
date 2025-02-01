@@ -4,23 +4,10 @@
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
+^r3/util/arr16.r3
+^r3/util/hash2d.r3
 
 ^./rcodevm.r3
-
-#level0 (
-22 21 21 21 21 21 21 21 21 21 21 21 21 21 21 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0  0  0 31  0  0 32  0  0 33  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 22
-22  0  0  0  0 34  0  0 35  0  0  0  0  0  0 22
-22  0  0  0  0  0  0  0  0  0  0  0  0  0  0 21
-22  0  0  0  0  0  0  0  0  0  0  0  0  0 27 27
-21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21
-)
 
 ##imgspr
 
@@ -29,28 +16,41 @@
 #tsize 16 
 #tmul
 
-#mpx #mpy
+| MAP
 #mw 16 #mh 12
-#marena * 8192
+#marena * $fff
+
+| ITEMS
+#items * $7ff
+#items> 'items
+
+#itemarr 0 0
+
+| PLAYER
+#xp 1 #yp 1 | position
+#dp 0	| direction
+#ap 0	| anima
+#penergy
+#pcarry
+
 
 :]map | x y -- map
 	mw * + 3 << 'marena + @ ;
 	
-:calc tsize viewpz *. 'tmul ! ;
+:calc tsize viewpz *. 2/ 'tmul ! ;
 
 ::posmap | x y -- xs ys
-	swap tmul * viewpx + tmul 2/ +
-	swap tmul * viewpy + tmul 2/ +
+	swap tmul * 2* viewpx + tmul +
+	swap tmul * 2* viewpy + tmul +
 	;
 	
 :drawtile
 	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
-	2dup swap posmap viewpz r> 1- imgspr sspritez
+	2dup swap posmap viewpz r> imgspr sspritez
 	;
 	
 ::draw.map | x y --
-	|'mvy ! 'mvx !
 	'marena >a
 	0 ( mh <? 
 		0 ( mw <? 
@@ -58,27 +58,113 @@
 			1+ ) drop
 		1+ ) drop ;
 
-:cpylevel | 'l --
-	>b
+|-------------------------------	
+:char2map
+	$20 =? ( drop $012 ; ) | 
+	$23 =? ( drop $10d ; ) | #
+	$3d =? ( drop $10c ; ) | =
+	;
+	
+:parsemap
+	trim str>nro 'mw ! trim str>nro 'mh ! 
+|	mh mw "map %d %d" .println
+	>>cr trim >b 
 	'marena >a
-	mw mh * ( 1?
-		cb@+ a!+
-		1- ) drop ;
+	mh ( 1? 1-
+		mw ( 1? 1-
+			cb@+ char2map a!+
+			) drop 
+		b> >>cr trim >b
+		) drop 
+	b> ;
+	
+|---------------------
+| ITEMS
+#aitem
 
-#xp 1 #yp 1 | position
-#dp 0	| direction
-#ap 0	| anima
-#penergy
-#pcarry
+::draw.items
+
+	'itemarr p.draw
+	
+|	3 3 posmap
+|	viewpz
+|	aitem anim>n
+|	imgspr sspritez
+	
+|	deltatime 'aitem +!
+	;
+
+
+|	30 8 128 ICS>anim  | init cnt scale -- val
+|	'aitem ! | moneda
+
+:drawitem
+	8 + >a
+	a@+ a@+
+	posmap
+	viewpz 
+	a@ dup deltatime + a!+ anim>n
+	imgspr sspritez
+	;
+
+:+item | a y x --
+	'drawitem 'itemarr p!+ >a
+	a!+ a!+ a!
+	;
+	
+:setitem | adr item
+	@+ 0? ( drop @ dup $ffff and 'xp ! 16 >> $ffff and 'yp ! ; )
+	drop @ 
+	dup 32 >> $ffff and over 48 >> $ffff and $7f ICS>anim
+	swap dup 16 >> $ffff and 
+	swap $ffff and  | a y x
+	+item
+	;
+		
+::resetlevel
+	'itemarr p.clear
+	'items ( items> <?
+		dup setitem
+		|dup @+ "%h " .print @ "%h" .println
+		2 3 << +
+		) drop .cr ;
+
+:item+! items> !+ 'items> ! ;
+
+:parseitem
+	trim dup c@ 0? ( nip ; ) drop
+	str>nro -? ( drop ; ) item+! | tipo
+	trim str>nro swap
+	trim str>nro 16 << rot or swap 
+	trim str>nro 32 << rot or swap 
+	trim str>nro 48 << rot or 
+	item+! | cnt frame y x
+	>>cr parseitem ;
+	
+:parseline | adr -- adr
+	0? ( ; )
+	trim dup c@ 0? ( nip ; ) drop
+|	dup "%w" .println
+	"*MAP" =pre 1? ( drop >>cr parsemap parseline ; ) drop 
+	"*ITEM" =pre 1? ( drop >>cr parseitem parseline ; ) drop 
+	>>cr parseline ;
+	
+::loadmap | "" --	
+	here swap load 0 swap c!
+	'items 'items> !
+	here parseline drop
+	resetlevel
+	;
+	
+|---------------------
 
 ::resetplayer
 	100 'penergy !
 	0 'pcarry ! 
 	1 'xp ! 1 'yp !
-	'level0 cpylevel
 	;
 	
-::player
+::draw.player
 	xp yp posmap
 	viewpz
 	ap anim>n
@@ -116,9 +202,10 @@
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
 	yp + swap xp + swap
-	]map 32 << 
+	]map $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
 	;
+	
 :itake 
 	vmpop 32 >> 
 	$7 and 
@@ -126,6 +213,7 @@
 	yp + swap xp + swap
 	2drop
 	;
+	
 :ileave
 	vmpop 32 >> 
 	$7 and 
@@ -149,11 +237,14 @@
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
 
-	sw 2/ 'viewpx !
-	sh 2/ 'viewpy !
+	400 'viewpx !
+	32 'viewpy !
 	2.0 'viewpz !
 	calc
+	
+	50 'itemarr p.ini
 	;
+	
 
 |----- move view
 #xo #yo

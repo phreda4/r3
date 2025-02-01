@@ -299,7 +299,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
 	here
 	dup				| code ram here here
-	9 3 << over +	| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
+	9 3 << +	| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
 	dup 'stack !
 	256 +			| stacks  (32 stack cell)
 	dup 'data !
@@ -310,6 +310,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup vm!			| store in vm
 	;
 	
+| c r
+| c r h	
+| c r h h hs
+
 |--------------- TOKENIZER
 #blk * 64
 #blk> 'blk
