@@ -64,7 +64,7 @@
 	2drop  ;
 
 :processlevel	
-	cdcnt 'cdtok vmcheckcode 
+|	cdcnt 'cdtok vmcheckcode 
 	cdcnt 'cdtok vmcheckjmp
 	;
 
@@ -78,6 +78,7 @@
 	
 :stepvma
 	stepvm
+	terror 1 >? ( drop ; ) drop
 	cdnow> cdtok> <? ( 'stepvma cdspeed +vexe ) drop
 	|cdnow> 'cdtok - 3 >> cdcnt <? ( 'stepvma cdspeed +vexe ) drop
 	;
@@ -109,7 +110,9 @@
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	vmboot 'cdnow> !
-|	vmdicc
+	
+	vmdicc
+
 |processlevel
 |vmdicc
 	;
@@ -192,7 +195,7 @@
 	
 	|----
 	<f1> =? ( compilaredit )
-	<f2> =? ( stepvm ) | a
+	<f2> =? ( stepvma ) 
 	<f3> =? ( "test" plog )
 	drop ;
 
@@ -216,6 +219,7 @@
 	"loading level..." plog
 	"r3/r3vm/levels/level0.txt" loadmap
 	
+	"r3/r3vm/code/test.r3" edload | "" --
 	'runscr SDLshow
 	SDLquit 
 	;

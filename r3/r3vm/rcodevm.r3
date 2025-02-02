@@ -11,12 +11,13 @@
 ##sysworde	| vectors
 ##syswords	| strings
 
-#name * 8192 #name> 
-
-| code> str var/word
-#dicc * 1024 #dicc>
+| code>(32) str(16) var/word(8)
+#dicc * 1024 
+#dicc>
 
 #lastdic>
+
+#src
 
 #code:	| code ini
 #code>	| code now
@@ -221,10 +222,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilitf 32 >> "%f" sprint ;
 :ilits 32 >> """%d""" sprint ;
 
-:iword 16 >> $ffff and 'name + ;
-:iaword 16 >> $ffff and 'name + "'%s" sprint ;
-:ivar 16 >> $ffff and 'name + ;
-:iavar 16 >> $ffff and 'name + "'%s" sprint ;
+:iword 16 >> $ffff and src + ;
+:iaword 16 >> $ffff and src + ;
+:ivar 16 >> $ffff and src + ;
+:iavar 16 >> $ffff and src +  ;
 	
 #tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
@@ -242,7 +243,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
-	$7f and 'tokmov + c@ ;
+	dup $7f and 
+	5 =? ( drop 8 >> $ff and ; ) | WORD 
+	nip 'tokmov + c@ ;
 
 ::vmchecktok
 	tokmov $f and
@@ -318,17 +321,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :pushbl code: - blk> w!+ 'blk> ! ;	| store diff with code:
 :popbl -2 'blk> +! blk> w@ code: + ;
 
-:,i		code> !+ 'code> ! ;
-	
-:,cpystr | adr -- adr'
-	name> swap 1+
-	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 1- 0 rot c!+ 'name> ! ; ) ) rot c!+ swap ) drop 1- 
-	0 rot c!+ 'name> ! ;
-
-:,cpyname | adr -- adr'
-	name> swap
-	( c@+ $ff and 32 >? rot c!+ swap ) drop
-	0 rot c!+ 'name> ! ;
+:,i	code> !+ 'code> ! ;
 	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
@@ -339,9 +332,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :newentry | adr -- 'adr
 	endef
 	code> code: - 32 << 
-	name> 'name - 16 << or
+	over src - 16 << or  
 	dicc> !+ 'dicc> !
-	,cpyname ;
+	>>sp ;
 
 :.def | adr -- adr' | :
 	1+ newentry
@@ -352,7 +345,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	1+ newentry
 	2 'state !
 	$1
-	swap trim "* " =pre 1? ( rot $2 or -rot ) drop
+|	swap trim "* " =pre 1? ( rot $2 or -rot ) drop
 	swap dicc> 8 - +!	| store flag
 	;
 
@@ -361,20 +354,21 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	state
 	2 =? ( drop str>anro ,i ; )
 	drop
-	str>anro
-	32 << 0 or ,i
+	dup str>anro 32 <<
+	rot src - 16 << or
+	,i
 	| falta hex/bin/fix
-	;		| 32 bits
+	;		
 
 :.com | adr -- adr'
 	>>cr ; | don't save comment
 
 :.str | adr -- adr'
 	state
-	2 =? ( drop ,cpystr ; )	| data .. en data ***
+	2 =? ( drop ; ) |,cpystr ; )	| data .. en data ***
 	drop
-	name> swap ,cpystr swap
-	32 << 4 or | str
+	dup src - 16 <<
+	4 or | str
 	,i
 	;
 
@@ -392,13 +386,42 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dicc>
 	( 8 - 'dicc >=?
 		dup @ 	| adr dic entry
-		16 >> $ffff and 'name + pick2 
+		16 >> $ffff and src + pick2 
+|		2dup "%w == %w" .println
 		=w 1? ( drop nip ; )
 		drop ) 2drop 0 ;
 	
 |---------------------------------
+#lev
+#usod
+#deld
+
+:checkword | --
+
+	0 'lev ! 0 'terror !
+	0 'usod ! 0 'deld !
+	
+	dicc> 8 - @ 32 >> code: +
+	( code> <? @+
+		| calc mov stack
+		dup vmtokmov dup 
+		$f and deld swap - neg clamp0 usod max 'usod !
+		56 << 60 >> 'deld +!
+		| check level
+		$7f and 
+		10 =? ( 1 'lev +! )
+		11 =? ( -1 'lev +! )
+		drop
+		) drop 
+	lev "lev:%d" .println		
+	usod "uso D:%d" .println
+	deld "delta D:%d" .println
+	
+	;
+
 :core;
 	tlevel 1? ( drop ; ) drop
+	checkword
 	0 'state !
 	;
 
@@ -409,7 +432,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	code> pushbl ;
 
 :cond?? | adr t -- adr 
-	$ff00 nand							| remove level
+	$ffffff00 nand						| remove src
 	15 <? ( drop ; ) 27 >? ( drop ; )	| cond without fix
 	drop
 	code> over - 32 << over 8 - +!
@@ -442,7 +465,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	2 =? ( 2drop 3 'terror ! ; )
 	drop
 	1-
-	dup INTWORDS + ,i
+	dup INTWORDS + 
+	pick2 src - 16 << or
+	,i
 	0? ( drop core; >>sp ; )
 	1 =? ( drop core( >>sp ; )
 	2 =? ( drop core) >>sp ; )
@@ -453,22 +478,33 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :.sys
 |	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
-	1- $80 or ,i >>sp ;
+	1- $80 or 
+	over src - 16 << or 
+	,i >>sp ;
 	
 :.word
 	state
 	2 =? ( drop @ ,i ; )	| data **
 	drop
-	@ $1 and? ( 7 or ,i >>sp ; )  	| var
-	5 or ,i >>sp ; 					| code
+	@ $ffff0000 nand
+	over src - 16 << or
+	$1 and? ( 
+		7 or 
+		,i >>sp ; )  	| var
+	5 or 
+	,i >>sp ; 			| code
 	
 :.adr
 	state
 	2 =? ( drop @ ,i ; )	| data **
 	drop
-	@ $ff nand
-	$1 and? ( 8 or ,i >>sp ; )	| var
-	6 or ,i >>sp ;					| code
+	@ $ffff0000 nand
+	over src - 16 << or
+	$1 and? ( 
+		8 or 
+		,i >>sp ; )		| var
+	6 or 
+	,i >>sp ;			| code
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
@@ -488,7 +524,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
  	5 'terror ! ;
 
 ::vmtokreset
-	'name 'name> !
 	'dicc 'dicc> !
 	0 'lastdic> !
 	;
@@ -497,6 +532,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 	0 'terror !
 	dup 'code: ! 'code> !
+	dup 'src !
 	0 ( drop wrd2token
 		terror 0? ) 2drop
 		
@@ -506,58 +542,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dicc> 8 - @ 32 >> code: + ;
 	
 |--------------- CHECK CODE
-#lev
-#while
-##usod
-##deld
-	
-:is?? | adr token -- adr token
-	a> pick2 - 8 - 32 << 	| adr tok dist
-	pick2 @ $ffff and or 
-	pick2 !
-	1 'while !
-	;
-	
-:loop
-	a> - 8 + 32 << lev 8 << or 11 or a> 8 - ! ;
-	
-:if
-	drop dup @ $ffff and a> pick2 - 8 - 32 << or swap ! ;
-	
-:patch?? | now -- now
-	0 'while !
-	a> 8 - 		| adr
-	( dup @ lev 8 << 10 or <>?		| adr token
-		$ffff <? ( $ff and 15 27 in? ( is?? ) )
-		drop 8 - 
-		) drop | now adr(10)
-	while 1? ( drop loop ; ) drop
-	8 - dup @ $ff and 15 27 in? ( if ; )
-	drop 8 + loop ;
-	
-:clearlev
-	9 <? ( swap $ff00 nand ; )
-	swap $ff and ;
-	
-::vmcheckcode | cnt 'adr --
-	0 'lev ! 0 'terror !
-	0 'usod ! 0 'deld !
-	>a
-	0 ( over <?
-		a@ 
-		| calc mov stack
-		dup vmtokmov dup 
-		$f and deld swap - neg clamp0 usod max 'usod !
-		56 << 60 >> 'deld +!
-		| check level
-		dup $7f and 
-		10 =? ( 1 'lev +! )
-		clearlev
-		lev 8 << or a!+
-		11 =? ( patch?? -1 'lev +! )
-		drop
-		1+ ) 2drop ;
-		
 ::vmcheckjmp | cnt 'adr --
 	>a
 	0 ( over <?
@@ -589,10 +573,11 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	( swap 1? 1- swap >>0 ) drop ;
 
 ::vmdicc
+	vmerror .println .cr
 	'dicc ( dicc> <?
 		@+ |"%h" .println 
 		dup $ff and "%h " .print
-		16 >> $ffff and 'name + "%s " .print
+		16 >> $ffff and code: + "%w " .print
 		.cr
 		) drop
 	.cr		
