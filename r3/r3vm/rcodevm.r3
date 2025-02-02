@@ -268,6 +268,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
+
+::vm2src | code --src
+	@ 16 >> $ffff and src + ;
 	
 |--------------- IO
 ::vmpop | -- t
@@ -540,6 +543,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 ::vmboot
 	dicc> 8 - @ 32 >> code: + ;
+	
+	
 	
 |--------------- CHECK CODE
 ::vmcheckjmp | cnt 'adr --

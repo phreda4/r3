@@ -558,6 +558,12 @@
 	edselshow
 	;
 	
+::edmark
+	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
+	cursorpos
+	xcode 5 + xcursor + 1 - ycursor ylinea - ycode + gotoxy
+	fuente> dup >>sp swap - 2 + bfcemit
+	;
 
 |----------- principal
 ::edram

@@ -40,6 +40,7 @@
 |------------	
 #font
 #cpu
+#state
 
 |----- code
 #cdtok * 1024
@@ -72,6 +73,7 @@
 	cdnow> 0? ( drop ; ) 
 	|vmstepck 
 	vmstep
+	1? ( dup vm2src 'fuente> ! )
 	'cdnow> !
 |	terror 1 >? ( drop -8 'cdnow> +! ; ) drop
 	;
@@ -84,48 +86,40 @@
 	;
 	
 |-----------------------
-	
 :showeditor
-	$7f00007f sdlcolorA	| cursor
+	$7f00007f sdlcolorA	
 	edfill
-	$ffffff sdlcolor
 	edfocus 		
 	edcodedraw
 	;	
+	
+:showruning
+	$7f00007f sdlcolorA	
+	edfill
+	$7f0000 sdlcolor
+	edmark
+	edcodedraw
+	;	
+
 
 |-----------------------
 
-:compilar
-	vmtokreset
-	'pad 'cdtok vmtokenizer 'cdtok> ! 
-	0 cdtok> !
-	cdtok> 'cdtok - 3 >> 'cdcnt !
-	'cdtok 'cdnow> !
-	processlevel
-	;
 
 :compilaredit
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
-	vmboot 'cdnow> !
+	vmboot 
+	1? ( dup vm2src 'fuente> ! )
+	'cdnow> !
 	
-	vmdicc
+	vmdicc | ** DEBUG
 
 |processlevel
 |vmdicc
 	;
-	
-:immex	
-	compilar
-	0 'pad !
-	refreshfoco
-|	code> ( icode> <? 
-	| vmcheck
-|		vmstep ) drop
-	;
-	
+
 :showstack
 	8 532 bat
 	" " bprint2
@@ -139,6 +133,24 @@
 	vmerror 0? ( drop ; ) bprint2
 	;
 	
+|------------- IMM
+:compilar
+	vmtokreset
+	'pad 'cdtok vmtokenizer 'cdtok> ! 
+	0 cdtok> !
+	cdtok> 'cdtok - 3 >> 'cdcnt !
+	'cdtok 'cdnow> !
+	processlevel
+	;
+	
+:immex	
+	compilar
+	0 'pad !
+	refreshfoco
+|	code> ( icode> <? 
+	| vmcheck
+|		vmstep ) drop
+	;
 	
 :showinput
 	$7f00007f sdlcolorA	| cursor
@@ -146,7 +158,10 @@
 	$ff0000 bcolor
 	0 502 bat ":" bprint2
 	32 500 immat 1000 32 immbox
-	'pad 128 immInputLine2	
+	'pad 128 immInputLine2
+	sdlkey
+	<ret> =? ( immex )
+	drop
 	;		
 
 |-------------------
@@ -157,7 +172,6 @@
 :dialogo
 	;
 	
-	
 :loadlevel | "" --
 	"loading tutor..." plog
 	here dup 'script ! 'script> !
@@ -165,7 +179,18 @@
 	
 	;
 
-
+:draw.code
+	showcode
+	
+	state 
+	0? ( drop showeditor ; )
+	drop
+	showruning
+	
+	|showinput
+	showstack
+	
+	;
 |-------------------
 :runscr
 	vupdate
@@ -174,31 +199,23 @@
 	0 sdlcls
 	
 	$ffff bcolor 8 8 bat "Ar3na Code" bprint
-
-	showcode
-	showstack
 	
-	$ffffff sdlcolor
+|	$ffffff sdlcolor
 	draw.map
 	draw.player
 	draw.items
-	
-	showeditor
-	|showinput
-	
+
+	draw.code
+
 	showterm
 	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-|	<ret> =? ( immex )
-	
-	|----
 	<f1> =? ( compilaredit )
-	<f2> =? ( stepvma ) 
-	<f3> =? ( "test" plog )
+	<f2> =? ( 1 'state ! stepvma ) 
+|	<f3> =? ( "test" plog )
 	drop ;
-
 	
 |-------------------
 : |<<< BOOT <<<
