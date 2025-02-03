@@ -557,13 +557,45 @@
 	edlinecursor
 	edselshow
 	;
+
+|----------- marcas
+| y|x|ini|cnt|colorf|colorb
+| ttco1co2wwhhxxyy
+| 8(t)12(col1)12(col2)8(w)8(h)8(x)8(y)
+#marcas * $fff
+#marcas> 'marcas
+
+::clearmark
+	'marcas 'marcas> ! 
+	$00f00fff05010303 marcas> !+ 'marcas> !
+	;
+	
+::ed+mark | pos --
+	;
 	
 ::edmark
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
 	cursorpos
-	xcode 5 + xcursor + 1 - ycursor ylinea - ycode + gotoxy
-	fuente> dup >>sp swap - 2 + bfcemit
+	xcode 5 + xcursor + ycursor ylinea - ycode + gotoxy
+	fuente> dup >>sp swap - bfcemit
 	;
+	
+:linemark | mark --
+	dup $ff and ylinea -
+	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
+	ycode + hp *  | y real
+	over 8 >> $ff and 
+	xcode + 5 + wp * | x real
+	swap rot | x y vv
+	dup 24 >> $ff and wp * | w
+	swap 16 >> $ff and hp * | h
+	sdlFRect
+	| dup 32 >> sdlcolor
+|	24 >> $ff and bfcemit
+	;
+	
+::showmark
+	'marcas ( marcas> <? @+ linemark ) drop ;
 
 |----------- principal
 ::edram
@@ -575,7 +607,7 @@
 	$ffff +			| 64kb texto
 	dup 'clipboard !
 	dup 'clipboard> !
-	$3fff +			| 16KB
+	$1fff +			| 8KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
 	$1fff +			| 8kb

@@ -15,8 +15,8 @@
 
 :dighex | c --  dig / -1
 	$3A <? ( $30 - ; )			| 0..9
+	tolow 
 	$60 >? ( $57 - $f >? ( drop -1 ) ; )			| a
-	$40 >? ( $37 - $f >? ( drop -1 ) ; )			| A
 	drop -1 ;
 
 ::str$>nro | adr -- adr' nro

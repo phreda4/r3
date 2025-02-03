@@ -6,6 +6,7 @@
 ^r3/lib/console.r3
 
 ##terror | tipo error	
+##serror | src error pos
 
 ##syswordd	| data stack
 ##sysworde	| vectors
@@ -401,8 +402,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :checkword | --
 
-	0 'lev ! 0 'terror !
-	0 'usod ! 0 'deld !
+	0 'lev ! 0 'usod ! 0 'deld !
 	
 	dicc> 8 - @ 32 >> code: +
 	( code> <? @+
@@ -447,7 +447,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	popbl dup
 	( code> <? @+ cond??  ) drop	| search ??
 	iswhile 1? ( drop				| patch WHILE
-		code> - 8 - 32 << code> 8 - +! 
+		code> - 32 << code> 8 - +! 
 		; ) drop
 	|dup 8 - 	( ) drop				| patch REPEAT
 	code> over - 8 + 32 << swap 16 - +!	| path IF
@@ -537,13 +537,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup 'code: ! 'code> !
 	dup 'src !
 	0 ( drop wrd2token
-		terror 0? ) 2drop
-		
+		terror 0? ) drop
+	'serror !
 	code> ;
 	
 ::vmboot
 	dicc> 8 - @ 32 >> code: + ;
-	
 	
 	
 |--------------- CHECK CODE

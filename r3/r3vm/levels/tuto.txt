@@ -1,68 +1,62 @@
-Aca control, hay alguien ahi?
-Ingrese su nombre por favor.
-Tipee su nombre y oprima <enter>
+The automatic system broke and only the %c1TERMINAL%c3 remains, 
+calm down, 
+I will explain how to manage the robot from the %c1TERMINAL%c3.
+Each COMMAND must be separated by spaces so that the robot can recognize it.
+If you enter NUMBERS, they will remain in the STACK.
+Try entering 3 numbers.
 *
-Bien.
-se rompio el sistema automatico y solo quedo la TERMINAL, calma, voy a explicarle como manejar el robot desde la TERMINAL.
-Cada COMANDO debe estar separado por espacios para que el robot lo pueda reconocer.
-Si ingresa NUMEROS, estos quedaran en el STACK.
-Pruebe ingresando 3 numeros.
+Right.
+to make calculations you have the commands + - * / remember to separate the commands with a space.
+check that you can add by typing: 2 2 +
+The + command takes 2 numbers from the STACK, adds them and saves the result.
 *
-Bien.
-para hacer calculos tiene las ordenes + - * / recuerde separar los comandos con espacio.
-compruebe que puede sumar tipeando: 2 2 +
-El comando + toma 2 numeros del STACK, los suma y guarda el resultado.
+Perfect.
+execute the drop COMMAND
+as you can see it removes the last number from the stack.
+you can also duplicate the number with the dup command.
 *
-Perfecto.
-ejecute el COMANDO drop
-como ve quita el ultimo numero de la pila.
-tambien puede dubplicar el numero con el comando dup.
-*
-Bien. 
-El COMANDO step, toma del STACK un numero y segun esta direccion avanza un paso, la direccion segun el numero corresponde a esta tabla.
+Good.
+The step COMMAND takes a number from the STACK and according to this direction it advances one step, the direction according to the number corresponds to this table.
 7 0 1
-6   2
-5 4 3 
-ingrese el comando 2 step para mover el robot un paso a la derecha.
+6 2
+5 4 3
+enter the command 2 step to move the robot one step to the right.
 *
-Muy bien, intente llegar a la x verde marcada en el mapa
+Very well, try to reach the green x marked on the map
 *
-Perfecto.
-A veces necesita repetir COMANDOS muchas veces, para esto vamos a utilizar BUCLES.
-Pruebe estos comandos
+Perfect.
+Sometimes you need to repeat COMMANDS many times, for this we are going to use LOOPS.
+Try these commands
 0 ( 10 <? 1 + ) drop
 *
-Los ( y ) encierrar un conjunto de comandos, uno de ellas es el CONDICIONAL, en este caso es <?
-El numero en el STACK se utiliza para contar la cantidad de repeticiones hasta que el condicional no se cumpla mas, en este caso la pregunta que hace es si el nro es MENOR a 10, o sea , mientras sea menor a 10 va a repetir los comando adentro de los parentesis.
-Una vez que termina el bloque, drop quita el numero del STACK.
-Los camandos encerrados entre ( y ) se van a repetir mientras se cumpla la condicion.
+The ( and ) enclose a set of commands, one of them is the CONDITIONAL, in this case it is <?
+The number in the STACK is used to count the number of repetitions until the conditional is no longer fulfilled, in this case the question it asks is if the number is LESS than 10, that is, as long as it is less than 10 it will repeat the commands inside the parentheses.
+Once the block ends, drop removes the number from the STACK.
+Commands enclosed between ( and ) will be repeated as long as the condition is met.
 *
-podemos aregar otras comandos dentro del BUCLE para que se repita
+We can add other commands inside the LOOP to repeat
 0 ( 10 <? 1 + 2 step ) drop
 *
-algunos otros condicionales son:
-=? esta orden compara los dos numeros del STACK, quita el primero y se cumple cuando los numeros son iguales
-<? >? comprueban si es menor o mayor
-algunos condicionales no quitan el numero de la pila, por ejemplo
-0? se cumple cuando el nro en el STACK es 0
-1? se cumple cuando el nro en el STACK no es 0
+Some other conditionals are:
+=? This command compares the two numbers in the STACK, removes the first one and is fulfilled when the numbers are equal
+<? >? Checks if it is less or greater
+Some conditionals do not remove the number from the stack, for example
+0? is fulfilled when the number in the STACK is 0
+1? is fulfilled when the number in the STACK is not 0
 *
-COMANDO check
+check COMMAND
 *
-condicional IF
+IF conditional
 *
-comando TAKE
-comando LEAVE
+TAKE command
+LEAVE command
 *
-define palabras
-* 
-define variables
+defines words
+*
+defines variables
 *
 STORE
 *
 !!!FETCH
 *
-fin tutorial
-
-
-
+end of tutorial

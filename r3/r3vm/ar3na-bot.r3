@@ -11,25 +11,50 @@
 ^./rcodevm.r3
 
 |----------- color terminal
-
 #term * 2048
+#termcolor 
+$0C0C0C | 0 black
+$0037DA | 1 blue
+$3A96DD | 2 cyan
+$13A10E | 3 green
+$881798 | 4 purple
+$C50F1F | 5 red
+$CCCCCC | 6 white
+$C19C00 | 7 yellow
+$767676 | 8 brightBlack
+$3B78FF | 9 brightBlue
+$61D6D6 | a brightCyan
+$16C60C | b brightGreen
+$B4009E | c brightPurple
+$E74856 | d brightRed
+$F2F2F2 | e brightWhite
+$F9F1A5 | f brightYellow
 	
 :plog | "" --
 	count 1+ | s c
 	'term dup pick2 + swap rot 2048 swap - cmove>
-	'term strcpy 
-	;	
+	'term strcpy ;	
 
-:chemit
-	;
+:dighex | c --  dig / 0
+	$3A <? ( $30 - ; ) tolow $60 >? ( $57 - $f >? ( 0 nip ) ; )	0 nip ;
+ 
+:chcolor | c --
+	3 << 'termcolor + @ bcolor ;
+
+:escape | e --
+	tolow
+	$63 =? ( drop c@+ dighex chcolor ; ) | %cn -- color
+	drop ; |%l -- line
+	
+:chemit | c --
+	$25 =? ( drop c@+ $25 <>? ( escape ; ) )
+	bemit ;
 	
 :exemit |  str -- 
-	( c@+ 1?
-		bemit
-		) 2drop ;
+	$b chcolor ( c@+ 1? chemit ) 2drop ;
 	
 :showterm
-	$7f00007f sdlcolorA	| cursor
+	$7f3f3f3f sdlcolorA	| cursor
 	8 32 320 112 SDLfRect	
 	$00ff00 bcolor
 	ab[
@@ -75,21 +100,24 @@
 	vmstep
 	1? ( dup vm2src 'fuente> ! )
 	'cdnow> !
-|	terror 1 >? ( drop -8 'cdnow> +! ; ) drop
 	;
 	
 :stepvma
-	stepvm
-	terror 1 >? ( drop ; ) drop
-	cdnow> cdtok> <? ( 'stepvma cdspeed +vexe ) drop
-	|cdnow> 'cdtok - 3 >> cdcnt <? ( 'stepvma cdspeed +vexe ) drop
+	cdnow> 0? ( drop ; ) 
+	|vmstepck 
+	vmstep
+	1? ( dup vm2src 'fuente> ! )
+	0? ( dup 'state ! ) 
+	'cdnow> !
+
+	terror 1 >? ( 2 'state ! ) drop
 	;
 	
 |-----------------------
 :showeditor
 	$7f00007f sdlcolorA	
 	edfill
-	edfocus 		
+	edfocus
 	edcodedraw
 	;	
 	
@@ -101,11 +129,24 @@
 	edcodedraw
 	;	
 
-
+:showerror
+	$7f00007f sdlcolorA	
+	edfill
+	$7f0000 sdlcolor
+	edmark
+	
+	showmark
+	
+	edfocus
+	edcodedraw
+	8 188 bat $ff0000 bcolor
+	vmerror 0? ( drop ; ) bprint2
+	
+	;
 |-----------------------
+:editcompilar
+	clearmark
 
-
-:compilaredit
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
@@ -114,10 +155,10 @@
 	1? ( dup vm2src 'fuente> ! )
 	'cdnow> !
 	
-	vmdicc | ** DEBUG
-
+|	vmdicc | ** DEBUG
 |processlevel
-|vmdicc
+	terror 1 >? ( drop 2 'state ! serror 'fuente> ! ; ) drop
+	1 'state ! stepvma
 	;
 
 :showstack
@@ -129,8 +170,6 @@
 		@+ vmcell "%s " bprint2 
 		) 2drop 
 	TOS vmcell "%s " bprint2
-	8 564 bat $ff0000 bcolor
-	vmerror 0? ( drop ; ) bprint2
 	;
 	
 |------------- IMM
@@ -174,23 +213,38 @@
 	
 :loadlevel | "" --
 	"loading tutor..." plog
-	here dup 'script ! 'script> !
-	here "r3/r3vm/levels/tuto.txt" load 0 swap c!
-	
+	here dup 'script ! dup 'script> !
+	swap load 
+	0 swap c!+ 'here ! 
+	0 'scrstate	!
 	;
 
+:addline
+	script> dup >>cr 0 swap c!
+	dup >>0 trim 'script> ! 
+|	"*w" =pre 1? ( ) 
+	plog
+	;
+	
+:runscript
+	scrstate
+	drop
+	;
+	
 :draw.code
-	showcode
+|	showcode
 	
 	state 
-	0? ( drop showeditor ; )
+	0? ( showeditor )
+	1 =? ( showruning )
+	2 =? ( showerror ) 
+	3 =? ( showinput )
 	drop
-	showruning
 	
-	|showinput
 	showstack
-	
 	;
+	
+#textitle
 |-------------------
 :runscr
 	vupdate
@@ -200,20 +254,22 @@
 	
 	$ffff bcolor 8 8 bat "Ar3na Code" bprint
 	
+|	100 100 textitle sprite
+	
 |	$ffffff sdlcolor
 	draw.map
 	draw.player
 	draw.items
-
 	draw.code
 
+	runscript
 	showterm
 	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( compilaredit )
-	<f2> =? ( 1 'state ! stepvma ) 
+	<f1> =? ( editcompilar )
+	<f2> =? ( addline ) 
 |	<f3> =? ( "test" plog )
 	drop ;
 	
@@ -221,22 +277,26 @@
 : |<<< BOOT <<<
 	"arena tank" 1024 600 SDLinit
 	SDLblend
-	"media/ttf/seguiemj.ttf" 20 TTF_OpenFont 'font !		
+	
+|	"media/ttf/Roboto-Medium.ttf" 30 TTF_OpenFont 'font !		
+|	"Code Ar3na" $ffff0025f000 200 80 font textbox 'textitle !	
+	
 	bfont1
 	64 vaini
 	
 | editor
-	1 10 40 24 edwin
+	1 14 40 20 edwin
 	edram
 	
 	bot.ini
 	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
-		
-	"loading level..." plog
-	"r3/r3vm/levels/level0.txt" loadmap
-	
+
 	"r3/r3vm/code/test.r3" edload | "" --
+	
+	"r3/r3vm/levels/level0.txt" loadmap
+	"r3/r3vm/levels/tuto.txt" loadlevel	
+	
 	'runscr SDLshow
 	SDLquit 
 	;
