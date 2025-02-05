@@ -1,25 +1,27 @@
 The automatic system broke and only the %c1TERMINAL%c3 remains, 
 calm down, 
-I will explain how to manage the robot from the %c1TERMINAL%c3.
-Each COMMAND must be separated by spaces so that the robot can recognize it.
-If you enter NUMBERS, they will remain in the STACK.
+I will explain how to manage the robot from the %c1TERMINAL%c3
+Each %c4COMMAND%c3 must be separated by spaces so that the robot can recognize it.
+If you enter %c5NUMBERS%c3, they push in the %c6STACK%c3
 Try entering 3 numbers.
 *
 Right.
 to make calculations you have the commands + - * / remember to separate the commands with a space.
-check that you can add by typing: 2 2 +
-The + command takes 2 numbers from the STACK, adds them and saves the result.
+check that you can add by typing: %ca2 2 +%c3
+The %c4+%c3 command takes 2 numbers from the %c6STACK%c3, adds them and saves the result.
 *
 Perfect.
-execute the drop COMMAND
+execute the drop %c4COMMAND%c3
 as you can see it removes the last number from the stack.
 you can also duplicate the number with the dup command.
 *
 Good.
 The step COMMAND takes a number from the STACK and according to this direction it advances one step, the direction according to the number corresponds to this table.
-7 0 1
-6 2
-5 4 3
+
+	7 0 1
+	6   2
+	5 4 3
+	
 enter the command 2 step to move the robot one step to the right.
 *
 Very well, try to reach the green x marked on the map
@@ -27,7 +29,7 @@ Very well, try to reach the green x marked on the map
 Perfect.
 Sometimes you need to repeat COMMANDS many times, for this we are going to use LOOPS.
 Try these commands
-0 ( 10 <? 1 + ) drop
+%c40 ( 10 <? 1 + ) drop%c3
 *
 The ( and ) enclose a set of commands, one of them is the CONDITIONAL, in this case it is <?
 The number in the STACK is used to count the number of repetitions until the conditional is no longer fulfilled, in this case the question it asks is if the number is LESS than 10, that is, as long as it is less than 10 it will repeat the commands inside the parentheses.
@@ -35,7 +37,7 @@ Once the block ends, drop removes the number from the STACK.
 Commands enclosed between ( and ) will be repeated as long as the condition is met.
 *
 We can add other commands inside the LOOP to repeat
-0 ( 10 <? 1 + 2 step ) drop
+%c40 ( 10 <? 1 + 2 step ) drop%c3
 *
 Some other conditionals are:
 =? This command compares the two numbers in the STACK, removes the first one and is fulfilled when the numbers are equal

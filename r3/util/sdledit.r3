@@ -317,6 +317,11 @@
 		drop swap ) drop ;
 
 :drawline
+	dup c@ 0? ( drop ; ) drop
+	$afafaf bcolor
+	
+	over ylinea + 1+ .d 4 .r. bemits bsp 
+
 	iniline
 	( c@+ 1?
 		13 =? ( drop ; )
@@ -327,25 +332,16 @@
 		) drop 1- ;
 
 |..............................
-:linenro | lin -- lin
-	$afafaf bcolor
-	dup ylinea + 1+ .d 4 .r. bemits ;
-
 ::edcodedraw
 	pantaini>
 	0 ( hcode <?
 		xcode ycode pick2 + gotoxy
-		linenro
-		xcode 5 + gotox
-		swap drawline
-		swap 1+ ) drop
+		swap drawline swap 1+ ) drop
 	$fuente <? ( 1- ) 'pantafin> !
 	;
 	
 ::edfill
-|	colb0 sdlcolor 
-	xcode ycode wcode hcode bfillline
-	;
+	xcode ycode wcode hcode bfillline ;
 	
 |-------------- panel control
 #panelcontrol
@@ -427,7 +423,7 @@
 	drop
 	;
 
-
+|--------------------------
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
 	9 =? ( drop 4 'xcursor +! ; )
@@ -451,6 +447,11 @@
 	ylinea 'ycursor !
 	( fuente> <? c@+ emitcur ) drop ;
 	
+:src2pos | src -- 
+	0 'xcursor ! 0 'ycursor !
+	fuente ( over <? c@+ emitcur ) 2drop ;
+	
+|--------------------------	
 :kins
 	modo
 	'lins =? ( 2drop 'lover 'modo ! ; )
@@ -562,41 +563,40 @@
 | y|x|ini|cnt|colorf|colorb
 | ttco1co2wwhhxxyy
 | 8(t)12(col1)12(col2)8(w)8(h)8(x)8(y)
-#marcas * $fff
+#marcas * $ff | 32 marcadores
 #marcas> 'marcas
 
-::clearmark
-	'marcas 'marcas> ! 
-	$00f00fff05010303 marcas> !+ 'marcas> !
-	;
-	
-::ed+mark | pos --
-	;
-	
-::edmark
-	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
-	cursorpos
-	xcode 5 + xcursor + ycursor ylinea - ycode + gotoxy
-	fuente> dup >>sp swap - bfcemit
-	;
-	
+::clearmark	'marcas 'marcas> ! ;
+::addmark	marcas> !+ 'marcas> ! ;
+
+::addsrcmark | src color --
+	32 << swap
+	dup >>sp over - 24 << 
+	swap src2pos
+	ycursor or 
+	xcursor 8 << or 
+	$010000 or	| h
+	or addmark ;
+
 :linemark | mark --
 	dup $ff and ylinea -
 	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
+	over >a
 	ycode + hp *  | y real
 	over 8 >> $ff and 
 	xcode + 5 + wp * | x real
 	swap rot | x y vv
 	dup 24 >> $ff and wp * | w
 	swap 16 >> $ff and hp * | h
-	sdlFRect
-	| dup 32 >> sdlcolor
-|	24 >> $ff and bfcemit
+	pick3 1- pick3 1- pick3 2 + pick3 2 +
+	a> 32 >> 4bcol sdlcolor sdlRect
+	a> 48 >> 4bcol sdlcolor sdlFRect
 	;
 	
 ::showmark
-	'marcas ( marcas> <? @+ linemark ) drop ;
+	ab[ 'marcas ( marcas> <? @+ linemark ) drop ]ba ;
 
+	
 |----------- principal
 ::edram
 	here	| --- RAM

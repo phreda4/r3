@@ -28,9 +28,9 @@
 
 |------ VM
 #IP 			
-##TOS ##NOS #RTOS 
+##TOS ##NOS ##RTOS 
 #REGA #REGB
-##STACK #CODE #DATA
+##STACK ##CODE ##DATA
 
 | 'code
 | stack (256) |##STACK * 256 | 32 cells 2 stack
@@ -62,8 +62,8 @@
 
 :i;		drop RTOS @ 8 'RTOS +! ;
 :i(		;
-:i)		jmpr ;
-:i[		jmpr ;
+:i)		:i[		
+	jmpr ;
 :i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
 :iEX	-8 'RTOS +! RTOS ! TOS code + 8 'NOS +! NOS @ 'TOS ! ;
 
@@ -156,9 +156,7 @@
 
 :iMEM	mem pushinro ;
 
-:iLITd :iLITh :iLITb :iLITf	
-	iDUP atoken 'TOS ! ;
-:iLITs
+:iLITd :iLITh :iLITb :iLITf	:iLITs
 	iDUP atoken 'TOS ! ;	
 
 :iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! ; |"w" .println ; 	| 32 bits
@@ -217,16 +215,23 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 #tokname * 1024
 	
+#auxstr * 8
+
+:strcpyn | src cnt dest -- 
+	>a ( 1? 1- swap c@+ 
+		34 =? ( 0 nip )
+		0? ( ca! 2drop ; ) ca!+ swap ) ca! drop ;
+	
 :ilitd 32 >> "%d" sprint ;
 :ilitb 32 >> "%%%b" sprint ;
 :ilith 32 >> "$%h" sprint ;
 :ilitf 32 >> "%f" sprint ;
-:ilits 32 >> """%d""" sprint ;
+:ilits 16 >> $ffff and src + 1+ 7 'auxstr strcpyn 'auxstr ; | *** a memoria data o code
 
 :iword 16 >> $ffff and src + ;
 :iaword 16 >> $ffff and src + ;
 :ivar 16 >> $ffff and src + ;
-:iavar 16 >> $ffff and src +  ;
+:iavar 16 >> $ffff and src + ;
 	
 #tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
@@ -372,8 +377,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	2 =? ( drop ; ) |,cpystr ; )	| data .. en data ***
 	drop
 	dup src - 16 <<
+|	over 1+ >>str pick2 - 32 << or | len string
 	4 or | str
 	,i
+	1+ >>str
 	;
 
 :?dicc | adr dicc -- nro+1/0
@@ -391,7 +398,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	( 8 - 'dicc >=?
 		dup @ 	| adr dic entry
 		16 >> $ffff and src + pick2 
-|		2dup "%w == %w" .println
 		=w 1? ( drop nip ; )
 		drop ) 2drop 0 ;
 	
@@ -401,30 +407,29 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #deld
 
 :checkword | --
-
 	0 'lev ! 0 'usod ! 0 'deld !
-	
 	dicc> 8 - @ 32 >> code: +
 	( code> <? @+
-		| calc mov stack
-		dup vmtokmov dup 
+		dup vmtokmov dup	| calc mov stack
 		$f and deld swap - neg clamp0 usod max 'usod !
 		56 << 60 >> 'deld +!
-		| check level
-		$7f and 
+		$7f and 			| check level
 		10 =? ( 1 'lev +! )
 		11 =? ( -1 'lev +! )
 		drop
 		) drop 
-	lev "lev:%d" .println		
-	usod "uso D:%d" .println
-	deld "delta D:%d" .println
-	
+|	lev "lev:%d" .println		
+|	usod "uso D:%d" .println
+|	deld "delta D:%d" .println
 	;
 
 :core;
 	tlevel 1? ( drop ; ) drop
 	checkword
+	
+	deld 4 << usod or $ff and 8 <<
+	dicc> 8 - +!	| stack delta-use
+	
 	0 'state !
 	;
 
@@ -480,7 +485,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	>>sp ; 
 
 :.sys
-|	state 1? ( 2drop "system words in definition" 'msgnosys 'error ! ; ) drop
 	1- $80 or 
 	over src - 16 << or 
 	,i >>sp ;
@@ -532,7 +536,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	;
 	
 ::vmtokenizer | str code -- code' 
-
 	0 'terror !
 	dup 'code: ! 'code> !
 	dup 'src !
@@ -544,6 +547,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmboot
 	dicc> 8 - @ 32 >> code: + ;
 	
+::vmcode2src
+	16 >> $ffff and src + ;
 	
 |--------------- CHECK CODE
 ::vmcheckjmp | cnt 'adr --

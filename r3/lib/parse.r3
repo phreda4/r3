@@ -9,15 +9,13 @@
 
 :signo | str -- str signo
 	dup c@
-	$2b =? ( drop 1 + 0 ; )	| + $2b
-	$2d =? ( drop 1 + 1 ; )	| - $2d
+	$2b =? ( drop 1+ 0 ; )	| + $2b
+	$2d =? ( drop 1+ 1 ; )	| - $2d
 	drop 0 ;
 
-:dighex | c --  dig / -1
-	$3A <? ( $30 - ; )			| 0..9
-	tolow 
-	$60 >? ( $57 - $f >? ( drop -1 ) ; )			| a
-	drop -1 ;
+:dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
+	$3A <? ( $30 - ; ) 
+	tolow $57 - $f >? ( neg ) ;
 
 ::str$>nro | adr -- adr' nro
 	0 ( swap c@+ $2f >?
@@ -27,21 +25,21 @@
 
 ::str%>nro | adr -- adr' nro
 	0 ( swap c@+ $2e >=?
-		$31 >? ( drop 1 - swap ; )
+		$31 >? ( drop 1- swap ; )
 		$30 - $1 and rot 1 << + )
 	drop 1 - swap ;
 
 ::str>nro | adr -- adr' nro ;1234 $12f %101 -12
 	signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) | caso + y - solos
-	swap  1? ( [ neg ; ] >r ) drop
-	$24 =? ( drop 1 + 16 'basen ! str$>nro ; )	| $ hexa $24
-	$25 =? ( drop 1 + 2 'basen ! str%>nro ; ) 	| % bin  $25
+	over c@ 33 <? ( 2drop 1- 0 ; ) | caso + y - solos
+	swap 1? ( [ neg ; ] >r ) drop
+	$24 =? ( drop 1+ 16 'basen ! str$>nro ; )	| $ hexa $24
+	$25 =? ( drop 1+ 2 'basen ! str%>nro ; ) 	| % bin  $25
 	drop 10 'basen !
 	0 ( swap c@+ $2f >? 	| 0 adr car
-		$39 >? ( drop 1 - swap ; )			| 0..9
+		$39 >? ( drop 1- swap ; )			| 0..9
 		$30 - rot 10* + )
-	drop 1 - swap ;
+	drop 1- swap ;
 
 ::?sint | adr -- adr' nro
 	signo swap
@@ -68,7 +66,7 @@
 	    $30 <? ( 4drop 0 ; )
 	    $39 >? ( 4drop 0 ; )
 	    $30 - swap 10* +
-		swap 1 + swap )
+		swap 1+ swap )
 	drop 1 =? ( parte0 0? ( 4drop 0 ; ) drop ) | casos -. y
 	rot >r
 	parte0
@@ -99,23 +97,23 @@
 ::getnro | adr -- adr' nro
 	trim
 	signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	over c@ 33 <? ( 2drop 1- 0 ; ) drop | caso + y - solos
 	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >? 	| 0 adr car
-		$39 >? ( drop 1 - swap ; )			| 0..9
+		$39 >? ( drop 1- swap ; )			| 0..9
 		$30 - rot 10* + swap )
 	drop swap ;
 
 ::str>fnro | adr -- adr fnro
 	0 'f !
 	trim signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	over c@ 33 <? ( 2drop 1- 0 ; ) drop | caso + y - solos
 	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >?	| 0 adr car
-		$39 >? ( drop 1 - swap ; )			| 0..9
+		$39 >? ( drop 1- swap ; )			| 0..9
 		$30 - rot 10* + swap )
 	$2e =? ( getfrac )
-	drop 1 - swap
+	drop 1- swap
 	16 << $10000 f
 	1 over ( 1 >? 10/ swap 10* swap ) drop
 	*/ $ffff and or
@@ -133,10 +131,10 @@
 ::getfenro | adr -- adr fnro
 	0 'f ! 0 'e !
 	trim signo
-	over c@ 33 <? ( 2drop 1 - 0 ; ) drop | caso + y - solos
+	over c@ 33 <? ( 2drop 1- 0 ; ) drop | caso + y - solos
 	1? ( [ neg ; ] >r ) drop
 	0 swap ( c@+ $2f >? 	| 0 adr car
-		$39 >? ( drop 1 - swap ; )			| 0..9
+		$39 >? ( drop 1- swap ; )			| 0..9
 		$30 - rot 10* + swap )
 	$2e =? ( getfrac gete )
 	drop 1 - swap

@@ -35,11 +35,11 @@ $F9F1A5 | f brightYellow
 	'term dup pick2 + swap rot 2048 swap - cmove>
 	'term strcpy ;	
 
-:dighex | c --  dig / 0
-	$3A <? ( $30 - ; ) tolow $60 >? ( $57 - $f >? ( 0 nip ) ; )	0 nip ;
+:dighex | c --  dig
+	$3A <? ( $30 - ; ) tolow $57 - ;
  
 :chcolor | c --
-	3 << 'termcolor + @ bcolor ;
+	$f and 3 << 'termcolor + @ bcolor ;
 
 :escape | e --
 	tolow
@@ -62,6 +62,33 @@ $F9F1A5 | f brightYellow
 	]ba
 	;	
 	
+#script
+#script>
+#scrstate
+
+:dialogo
+	;
+	
+:loadlevel | "" --
+	"loading tutor..." plog
+	here dup 'script ! dup 'script> !
+	swap load 
+	0 swap c!+ 'here ! 
+	0 'scrstate	!
+	;
+
+:addline
+	script> dup >>cr 0 swap c!
+	dup >>0 trim 'script> ! 
+|	"*w" =pre 1? ( ) 
+	plog
+	;
+	
+:runscript
+	scrstate
+	drop
+	;
+
 |------------	
 #font
 #cpu
@@ -104,45 +131,58 @@ $F9F1A5 | f brightYellow
 	
 :stepvma
 	cdnow> 0? ( drop ; ) 
-	|vmstepck 
-	vmstep
-	1? ( dup vm2src 'fuente> ! )
+	vmstepck 
+	|vmstep
+	terror 1 >? ( 2drop 
+		2 'state ! 
+		clearmark
+		fuente> $f00ffff addsrcmark 
+		; ) drop
+	
+	1? ( dup vm2src 'fuente> ! 'stepvma cdspeed +vexe )
 	0? ( dup 'state ! ) 
 	'cdnow> !
-
-	terror 1 >? ( 2 'state ! ) drop
 	;
 	
 |-----------------------
 :showeditor
-	$7f00007f sdlcolorA	
-	edfill
+	$007f00 sdlcolor 4 190 330 32 SDLFrect
+	$ffffff bcolor 1 12 gotoxy "CODE: EDIT" bprint2
+	$7f00007f sdlcolorA	edfill
 	edfocus
 	edcodedraw
+	| Help en MARK
+	|showmark
 	;	
 	
 :showruning
-	$7f00007f sdlcolorA	
-	edfill
-	$7f0000 sdlcolor
-	edmark
+	$007f7f sdlcolor 4 190 330 32 SDLFrect
+	$ffffff bcolor 1 12 gotoxy "CODE: RUN" bprint2
+
+	$7f00007f sdlcolorA	edfill
+	
+	clearmark
+	fuente> $00fffff addsrcmark
+	RTOS ( @+ 1?
+		8 - @ vmcode2src $00f0000 addsrcmark
+		) 2drop
+	showmark
+	
 	edcodedraw
 	;	
 
 :showerror
-	$7f00007f sdlcolorA	
-	edfill
+	$7f0000 sdlcolor 4 190 330 32 SDLFrect
+	$ffffff bcolor 1 12 gotoxy "CODE: " bprint2 vmerror bprint2
+	$7f00007f sdlcolorA	edfill
 	$7f0000 sdlcolor
-	edmark
-	
+
 	showmark
 	
 	edfocus
 	edcodedraw
-	8 188 bat $ff0000 bcolor
-	vmerror 0? ( drop ; ) bprint2
-	
 	;
+	
 |-----------------------
 :editcompilar
 	clearmark
@@ -151,14 +191,22 @@ $F9F1A5 | f brightYellow
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
-	vmboot 
-	1? ( dup vm2src 'fuente> ! )
-	'cdnow> !
 	
 |	vmdicc | ** DEBUG
 |processlevel
-	terror 1 >? ( drop 2 'state ! serror 'fuente> ! ; ) drop
-	1 'state ! stepvma
+	terror 1 >? ( drop 
+		2 'state ! 
+		serror 'fuente> ! 
+		clearmark
+		fuente> $f00ffff addsrcmark 
+		; ) drop
+
+	1 'state ! 
+	vmboot 
+	1? ( dup vm2src 'fuente> ! )
+	dup vm2src 'fuente> ! 
+	'cdnow> !
+	'stepvma cdspeed +vexe
 	;
 
 :showstack
@@ -167,9 +215,9 @@ $F9F1A5 | f brightYellow
 	vmdeep 0? ( drop ; ) 
 	stack 8 +
 	( swap 1 - 1? swap
-		@+ vmcell "%s " bprint2 
+		@+ vmcell bemits2 bsp bsp
 		) 2drop 
-	TOS vmcell "%s " bprint2
+	TOS vmcell bemits2 bsp bsp
 	;
 	
 |------------- IMM
@@ -203,36 +251,10 @@ $F9F1A5 | f brightYellow
 	drop
 	;		
 
-|-------------------
-#script
-#script>
-#scrstate
-
-:dialogo
-	;
-	
-:loadlevel | "" --
-	"loading tutor..." plog
-	here dup 'script ! dup 'script> !
-	swap load 
-	0 swap c!+ 'here ! 
-	0 'scrstate	!
-	;
-
-:addline
-	script> dup >>cr 0 swap c!
-	dup >>0 trim 'script> ! 
-|	"*w" =pre 1? ( ) 
-	plog
-	;
-	
-:runscript
-	scrstate
-	drop
-	;
 	
 :draw.code
 |	showcode
+	
 	
 	state 
 	0? ( showeditor )
@@ -245,6 +267,7 @@ $F9F1A5 | f brightYellow
 	;
 	
 #textitle
+
 |-------------------
 :runscr
 	vupdate
@@ -252,11 +275,10 @@ $F9F1A5 | f brightYellow
 	mouseview
 	0 sdlcls
 	
-	$ffff bcolor 8 8 bat "Ar3na Code" bprint
+	$ffff bcolor 8 0 bat "Ar3na Code" bprint2
 	
 |	100 100 textitle sprite
 	
-|	$ffffff sdlcolor
 	draw.map
 	draw.player
 	draw.items
@@ -296,6 +318,8 @@ $F9F1A5 | f brightYellow
 	
 	"r3/r3vm/levels/level0.txt" loadmap
 	"r3/r3vm/levels/tuto.txt" loadlevel	
+	
+	0 'state !
 	
 	'runscr SDLshow
 	SDLquit 

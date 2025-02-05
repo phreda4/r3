@@ -237,8 +237,8 @@
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
 
-	400 'viewpx !
-	32 'viewpy !
+	480 'viewpx !
+	200 'viewpy !
 	2.0 'viewpz !
 	calc
 	
