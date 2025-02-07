@@ -4,7 +4,8 @@
 ^r3/util/sdlgui.r3
 ^r3/util/sdlbgui.r3
 ^r3/util/varanim.r3
-^r3/util/textb.r3
+|^r3/util/textb.r3
+^r3/util/ttext.r3
 ^r3/util/sdledit.r3
 
 ^./arena-map.r3
@@ -275,7 +276,13 @@ $F9F1A5 | f brightYellow
 	mouseview
 	0 sdlcls
 	
-	$ffff bcolor 8 0 bat "Ar3na Code" bprint2
+	|$ffff bcolor 8 0 bat "Ar3na Code" bprint2
+	
+	1.5 tsize
+	3 tcol 2 2 tat " Ar3na" temits 
+	2.0 tsize
+	2 tcol " Code" temits
+	
 	
 |	100 100 textitle sprite
 	
@@ -299,6 +306,8 @@ $F9F1A5 | f brightYellow
 : |<<< BOOT <<<
 	"arena tank" 1024 600 SDLinit
 	SDLblend
+	
+	tini
 	
 |	"media/ttf/Roboto-Medium.ttf" 30 TTF_OpenFont 'font !		
 |	"Code Ar3na" $ffff0025f000 200 80 font textbox 'textitle !	

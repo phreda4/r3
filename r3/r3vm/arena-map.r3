@@ -5,7 +5,6 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
 ^r3/util/arr16.r3
-^r3/util/hash2d.r3
 
 ^./rcodevm.r3
 
@@ -60,9 +59,11 @@
 
 |-------------------------------	
 :char2map
-	$20 =? ( drop $012 ; ) | 
+	$20 =? ( drop $012 ; ) |  piso
 	$23 =? ( drop $10d ; ) | #
 	$3d =? ( drop $10c ; ) | =
+	$2e =? ( drop $200 ; ) | .
+	$3b =? ( drop $14 1 randmax + ; ) | ; pasto
 	;
 	
 :parsemap
@@ -162,6 +163,7 @@
 	100 'penergy !
 	0 'pcarry ! 
 	1 'xp ! 1 'yp !
+	3 3 128 ICS>anim 'ap ! | anima'ap !
 	;
 	
 ::draw.player
@@ -190,7 +192,7 @@
 	
 ::botstep
 	$7 and dup 
-	'mani + c@  3 128 ICS>anim 'ap ! | anima
+	'mani + c@ 3 128 ICS>anim 'ap ! | anima
 	2* 'mdir + c@+ swap c@ 	movepl	| dx dy
 	;
 	
@@ -221,11 +223,16 @@
 	yp + swap xp + swap
 	2drop
 	;
+	
+:irand
+	vmpop 32 >>
+	randmax
+	32 << vmpush ;
 
 #wordt * 80
-#words "step" "check" "take" "leave"  0
-#worde	istep icheck itake ileave
-#wordd ( $f1 $f1 $f1 $f1 $00 ) 
+#words "step" "check" "take" "leave" "rand" 0
+#worde	istep icheck itake ileave irand
+#wordd ( $f1 $f1 $f1 $f1 $00 $01 ) 
 
 ::bot.reset
 	resetplayer

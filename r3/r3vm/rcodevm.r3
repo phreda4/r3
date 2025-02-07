@@ -284,8 +284,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	NOS dup @ 'TOS ! 8 - 'NOS ! ;
 
 ::vmpush | v --
-	8 'NOS +! TOS NOS !
-	'TOS ! ;
+	8 'NOS +! TOS NOS ! 'TOS ! ;
 
 ::vmcpuio | 'words 'exwords 'skwords -- 
 	'syswordd ! | data stack
