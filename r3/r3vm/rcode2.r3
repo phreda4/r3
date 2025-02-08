@@ -105,7 +105,7 @@
 	'iplay "play" immbtn imm>>
 	$7f00 'immcolorbtn !
 	$7f0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
-	usod deld "d:%d u:%d" immLabel imm>>
+|	usod deld "d:%d u:%d" immLabel imm>>
 	terror "error:%d" immlabel
  
 	showcode 

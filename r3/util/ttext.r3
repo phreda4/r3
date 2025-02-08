@@ -5,24 +5,14 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2image.r3
 
-#termcolor 
-$0C0C0C | 0 black
-$0037DA | 1 blue
-$3A96DD | 2 cyan
-$13A10E | 3 green
-$881798 | 4 purple
-$C50F1F | 5 red
-$CCCCCC | 6 white
-$C19C00 | 7 yellow
-$767676 | 8 brightBlack
-$3B78FF | 9 brightBlue
-$61D6D6 | a brightCyan
-$16C60C | b brightGreen
-$B4009E | c brightPurple
-$E74856 | d brightRed
-$F2F2F2 | e brightWhite
-$F9F1A5 | f brightYellow
+#style0 [
+$0C0C0C $0037DA $3A96DD $13A10E | 0 black | 1 blue | 2 cyan | 3 green
+$881798 $C50F1F $CCCCCC $C19C00 | 4 purple | 5 red | 6 white | 7 yellow
+$767676 $3B78FF $61D6D6 $16C60C | 8 brightBlack | 9 brightBlue | a brightCyan | b brightGreen
+$B4009E $E74856 $F2F2F2 $F9F1A5 | c brightPurple | d brightRed | e brightWhite | f brightYellow
+]
 
+#termcolor 'style0
 #pfont 
 
 #wp #hp
@@ -32,11 +22,12 @@ $F9F1A5 | f brightYellow
 #dp 0 0
 
 ::trgb | c --
+	pfont swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
 ::tcol | c --
-	pfont swap $f and 3 << 'termcolor + @ trgb ;
+	$f and 2 << termcolor + d@ trgb ;
 	
 ::tfbox | --
 	SDLRenderer 'dp SDL_RenderFillRect ;

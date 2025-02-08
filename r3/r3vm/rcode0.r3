@@ -171,7 +171,7 @@
 :editando
 	|450 64 mapdraw
 	draw.map
-	player
+	draw.player
 	
 	mpaleta
 	mcode
@@ -189,7 +189,7 @@
 :ejecutando
 	|400 64 mapdraw
 	draw.map
-	player
+	draw.player
 	
 	pcode
 	;

@@ -50,8 +50,8 @@
 	;
 
 :processlevel	
-	cdcnt 'cdtok vmcheckcode 
-	cdcnt 'cdtok vmcheckjmp
+|	cdcnt 'cdtok vmcheckcode 
+|	cdcnt 'cdtok vmcheckjmp
 	;
 
 |--------------------------
@@ -337,7 +337,7 @@
 :ejecutando
 	|300 64 mapdraw
 	draw.map |
-	player
+	draw.player
 	pcode
 	mstack
 	;
@@ -383,7 +383,6 @@
 	'iedit "edit" immbtn imm>>
 	'iclear "clear" immbtn imm>>
 	$7f0000 'immcolorbtn ! 'exit "Exit" immbtn imm>>
-	usod deld "d:%d u:%d" immLabel imm>>
 	
 	vmerror 1? ( 
 		$ff0000 'immcolortex !
