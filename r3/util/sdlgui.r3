@@ -5,7 +5,7 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/util/ttfont.r3
-^r3/lib/input.r3
+|^r3/lib/input.r3
 
 #winx 10 #winy 10
 #winw 10 #winh 10

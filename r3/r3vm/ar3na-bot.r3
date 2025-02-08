@@ -1,14 +1,13 @@
 | ar3na bot 
 | PHREDA 2025
 |-------------------------
-^r3/util/sdlgui.r3
+^r3/lib/gui.r3
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
 ^./tedit.r3
 ^./arena-map.r3
 ^./rcodevm.r3
-
 
 #script
 #script>
@@ -53,12 +52,12 @@ drop
 #cdspeed 0.2
 
 :linecode | adr -- adr
-	cdnow> =? ( ">" bemits )
+	cdnow> =? ( ">" temits )
 	@+ dup 8 >> $ff and 'lev !
-	vmtokstr bemits bsp ;
+	vmtokstr temits tsp ;
 	
 :showcode
-	2 64 bat
+	2 64 tat
 	'cdtok
 	0 ( cdcnt <? swap 
 		linecode
@@ -96,7 +95,7 @@ drop
 |-----------------------
 :showeditor
 	$007f00 sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 12 txy "CODE: EDIT" tprint
+	$ffffff trgb 1 6 txy "CODE: EDIT" tprint
 	$7f00007f sdlcolorA	edfill
 	edfocus
 	edcodedraw
@@ -106,7 +105,7 @@ drop
 	
 :showruning
 	$007f7f sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 12 txy "CODE: RUN" tprint
+	$ffffff trgb 1 6 txy "CODE: RUN" tprint
 
 	$7f00007f sdlcolorA	edfill
 	
@@ -122,7 +121,7 @@ drop
 
 :showerror
 	$7f0000 sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 12 txy "CODE: " tprint vmerror tprint
+	$ffffff trgb 1 6 txy "CODE: " tprint vmerror tprint
 	$7f00007f sdlcolorA	edfill
 	$7f0000 sdlcolor
 
@@ -159,14 +158,14 @@ drop
 	;
 
 :showstack
-	8 532 bat
+	8 532 tat
 	" " tprint
 	vmdeep 0? ( drop ; ) 
 	stack 8 +
 	( swap 1 - 1? swap
-		@+ vmcell bemits2 bsp bsp
+		@+ vmcell temits tsp
 		) 2drop 
-	TOS vmcell bemits2 bsp bsp
+	TOS vmcell temits tsp
 	;
 	
 	
@@ -188,15 +187,12 @@ drop
 |-------------------
 :runscr
 	vupdate
-	immgui
+	gui
 	mouseview
 	0 sdlcls
-	
-	|$ffff trgb 8 0 bat "Ar3na Code" tprint
-	
+
 	2.0 tsize
-	3 tcol 2 2 tat " Ar3na" temits 
-	2 tcol " Code" temits
+	3 tcol 2 2 tat " Ar3na" temits 2 tcol " Code" temits
 	
 	
 |	100 100 textitle sprite
@@ -205,7 +201,7 @@ drop
 	draw.player
 	draw.items
 	
-	1.0 tsize	
+	2.0 tsize	
 	draw.code
 
 	runscript
@@ -225,7 +221,6 @@ drop
 	SDLblend
 	
 	tini
-	|bfont1
 	
 |	"media/ttf/Roboto-Medium.ttf" 30 TTF_OpenFont 'font !		
 |	"Code Ar3na" $ffff0025f000 200 80 font textbox 'textitle !	
@@ -233,7 +228,7 @@ drop
 	64 vaini
 	
 | editor
-	1 14 40 20 edwin
+	0 7 30 20 edwin
 	edram
 	
 	bot.ini

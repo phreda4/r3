@@ -5,18 +5,24 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2image.r3
 
-#style0 [
+#style0 [ | campbell
 $0C0C0C $0037DA $3A96DD $13A10E | 0 black | 1 blue | 2 cyan | 3 green
 $881798 $C50F1F $CCCCCC $C19C00 | 4 purple | 5 red | 6 white | 7 yellow
-$767676 $3B78FF $61D6D6 $16C60C | 8 brightBlack | 9 brightBlue | a brightCyan | b brightGreen
-$B4009E $E74856 $F2F2F2 $F9F1A5 | c brightPurple | d brightRed | e brightWhite | f brightYellow
-]
+$767676 $3B78FF $61D6D6 $16C60C | 8 brBlack | 9 brBlue | a brCyan | b brGreen
+$B4009E $E74856 $F2F2F2 $F9F1A5  ] | c brPurple | d brRed | e brWhite | f brYellow
+
+|"background": "#282c34", "foreground": "#dcdfe4", "cursor": "#313640"
+#style1 [ | one-half-dark
+$282c34 $e06c75 $98c379 $e5c07b
+$61afef $c678dd $56b6c2 $dcdfe4
+$282c34 $e06c75 $98c379 $e5c07b
+$61afef $c678dd $56b6c2 $dcdfe4 ]
 
 #termcolor 'style0
 #pfont 
 
 #wp #hp
-#advx #advy
+##advx ##advy
 
 #op 0 0
 #dp 0 0
@@ -74,10 +80,10 @@ $B4009E $E74856 $F2F2F2 $F9F1A5 | c brightPurple | d brightRed | e brightWhite |
 	tsize tpos 2swap ;
 	
 ::tcursor | n --
-	wp * bpos swap rot + swap wp hp SDLFRect ;
+	advx * tpos swap rot + swap advx advy SDLFRect ;
 
 ::tcursori | n --
-	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> SDLFRect ;
+	advx * tpos swap rot + swap advy dup 2 >> - + advx advy 2 >> SDLFRect ;
 
 ::tsize | zoom --
 	wp over 16 *>> dup 'advx ! 
@@ -86,8 +92,9 @@ $B4009E $E74856 $F2F2F2 $F9F1A5 | c brightPurple | d brightRed | e brightWhite |
 
 |---------- INI
 ::tini
- 	8 16 "media/img/VGA8x16.png" 
+ 	|8 16 "media/img/VGA8x16.png" 
 	|16 24 "media/img/font16x24.png" 
+	8 8 "media/img/atascii.png" 
 	loadimg 'pfont !
 	2dup 32 << or 'op 8 + !
 	'hp ! 'wp ! 
