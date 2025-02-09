@@ -91,11 +91,15 @@ $61afef $c678dd $56b6c2 $dcdfe4 ]
 	32 << or 'dp 8 + ! ;
 
 |---------- INI
-::tini
- 	|8 16 "media/img/VGA8x16.png" 
-	|16 24 "media/img/font16x24.png" 
-	8 8 "media/img/atascii.png" 
+::tfnt | size w h ""
 	loadimg 'pfont !
 	2dup 32 << or 'op 8 + !
 	'hp ! 'wp ! 
-	1.0 tsize ;	
+	tsize ;
+	
+::tini
+	1.0
+	|16 24 "media/img/font16x24.png" 
+ 	8 16 "media/img/VGA8x16.png" 
+	|8 8 "media/img/atascii.png" 
+	tfnt ;	

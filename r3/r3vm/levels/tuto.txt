@@ -1,5 +1,4 @@
-The automatic system broke and only the %c1TERMINAL%c3 remains, 
-calm down, 
+Hello.
 I will explain how to manage the robot from the %c1TERMINAL%c3
 Each %c4COMMAND%c3 must be separated by spaces so that the robot can recognize it.
 If you enter %c5NUMBERS%c3, they push in the %c6STACK%c3

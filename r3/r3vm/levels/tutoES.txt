@@ -1,3 +1,22 @@
+Hay controlar el robot, usando %c8COMANDOS%c6.
+Vamos a programarlo.
+Para esto, debes escribir el %c4CODIGO%c3.
+%.
+Esto es un ejemplo.
+%s
+: 2 step ;
+%s
+*:* este comando indica donde empieza a ejecutar.
+*2* apila un 2 
+*step* mueve el robot en la direccion del nro apilado.
+*;* termina
+Toque F1 para ejecutar el codigo
+%w1
+
+
+
+
+
 Se rompio el sistema automatico y solo quedo la TERMINAL, calma, voy a explicarle como manejar el robot desde la TERMINAL.
 Cada COMANDO debe estar separado por espacios para que el robot lo pueda reconocer.
 Si ingresa NUMEROS, estos quedaran en el STACK.

@@ -12,6 +12,11 @@
 #script
 #script>
 #scrstate
+#term * 8192
+#term> 'term 
+
+:teclr	'term 'term> ! ;
+:,te 	term> c!+ 'term> ! ;
 
 :dialogo
 	;
@@ -22,18 +27,70 @@
 	swap load 
 	0 swap c!+ 'here ! 
 	0 'scrstate	!
+	teclr
 	;
 
-:addline
-	script> dup >>cr 0 swap c!
-	dup >>0 trim 'script> ! 
-|	"*w" =pre 1? ( ) 
-|	plog
-drop
+
+|----
+#speed 
+
+:dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
+	$3A <? ( $30 - ; ) tolow $57 - ;
+
+:copysrc
+	>>cr trim
+	fuente >a
+	( c@+ $25 <>?
+		12 >? ( dup ca!+ ) drop
+		) drop
+	0 ca!+
+	fuente 'fuente> !
+	>>cr ;
+	
+:waitn	
+	;
+
+:cntr | script -- 'script
+	c@+
+|	$25 =? ( ,te ; ) | %%
+	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
+	$2e =? ( drop teclr trim ; )			| %. clear
+	$73 =? ( drop copysrc trim ; ) 		| %s..%s source
+	$77 =? ( drop >>sp waitn ; ) | %w1 espera
+	,te
 	;
 	
+:+t
+	$2c =? ( 0.4 'speed ! )	|,
+	$2e =? ( 0.8 'speed ! ) |.
+	$25 =? ( drop cntr ; )	|%
+	13 <? ( drop ; ) 
+	,te 
+	;
+	
+:addscript
+	0.05 'speed !
+	script> c@+ +t 'script> !
+	'addscript speed +vexe
+	;
+	
+|----	
+:te
+	12 =? ( drop c@+ tcol ; ) 
+	13 =? ( drop tcr ; )
+	temit ;
+	
+:scrterm
+	0 2 txy 'term ( term> <? c@+ te ) drop
+	msec $100 nand? ( drop ; ) drop
+	$a0 temit
+	;
 :runscript
-	scrstate
+	scrstate 
+	0 =? ( drop scrterm ; ) | terminal
+	| espera por run
+	| espera por resultado
+	
 	drop
 	;
 
@@ -94,9 +151,10 @@ drop
 	
 |-----------------------
 :showeditor
-	$007f00 sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 6 txy "CODE: EDIT" tprint
-	$7f00007f sdlcolorA	edfill
+	$007f00 sdlcolor 0 180 330 16 SDLFrect
+	$ffffff trgb 4 180 tat "CODE: EDIT" tprint
+	$7f00007f sdlcolorA	
+	xedit yedit wedit hedit sdlFRect
 	edfocus
 	edcodedraw
 	| Help en MARK
@@ -104,10 +162,11 @@ drop
 	;	
 	
 :showruning
-	$007f7f sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 6 txy "CODE: RUN" tprint
+	$007f7f sdlcolor 0 180 330 16 SDLFrect
+	$ffffff trgb 4 180 tat "CODE: RUN" tprint
 
-	$7f00007f sdlcolorA	edfill
+	$7f00007f sdlcolorA
+	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
 	fuente> $00fffff addsrcmark
@@ -120,10 +179,10 @@ drop
 	;	
 
 :showerror
-	$7f0000 sdlcolor 4 190 330 32 SDLFrect
-	$ffffff trgb 1 6 txy "CODE: " tprint vmerror tprint
-	$7f00007f sdlcolorA	edfill
-	$7f0000 sdlcolor
+	$7f0000 sdlcolor 0 180 330 16 SDLFrect
+	$ffffff trgb 4 180 tat "CODE: " tprint vmerror tprint
+	$7f00007f sdlcolorA
+	xedit yedit wedit hedit sdlFRect
 
 	showmark
 	
@@ -182,8 +241,26 @@ drop
 	showstack
 	;
 	
-#textitle
 
+:btnimg | x y n "" --
+	2over 128 24 guiBox
+	$7f00 [ $7f007f or ; ] guiI sdlcolor
+	2over 128 24 sdlfrect
+	2swap 4 + swap 4 + swap tat
+	$e tcol
+	temits
+	|2.0 swap |'1+ guiI 
+	onClick 
+	;
+	
+:botones
+	4 tcol
+	8 600 'exit "F1:Play" btnimg
+	148 600 'exit "F2:Step" btnimg
+	288 600 'exit "F3:Help" btnimg
+	428 600 'exit "ESC:Bye" btnimg	
+	;
+	
 |-------------------
 :runscr
 	vupdate
@@ -191,44 +268,41 @@ drop
 	mouseview
 	0 sdlcls
 
-	2.0 tsize
-	3 tcol 2 2 tat " Ar3na" temits 2 tcol " Code" temits
-	
-	
-|	100 100 textitle sprite
+	3.0 tsize
+	3 tcol 2 2 tat " Ar3na" temits 2 tcol " Code" temits tcr
 	
 	draw.map
 	draw.player
 	draw.items
 	
 	2.0 tsize	
+	|edtoolbar
 	draw.code
 
 	runscript
 	|showterm
 	
+	botones
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
 	<f1> =? ( editcompilar )
-	<f2> =? ( addline ) 
+	<f2> =? ( addscript ) 
 |	<f3> =? ( "test" plog )
 	drop ;
 	
 |-------------------
 : |<<< BOOT <<<
-	"arena tank" 1024 600 SDLinit
+	"arena tank" 1088 700 SDLinit
 	SDLblend
-	
-	tini
-	
+	2.0 8 8 "media/img/atascii.png" tfnt 
+
 |	"media/ttf/Roboto-Medium.ttf" 30 TTF_OpenFont 'font !		
-|	"Code Ar3na" $ffff0025f000 200 80 font textbox 'textitle !	
 		
 	64 vaini
 	
 | editor
-	0 7 30 20 edwin
+	0 200 480 360 edwin
 	edram
 	
 	bot.ini
@@ -238,7 +312,8 @@ drop
 	"r3/r3vm/code/test.r3" edload | "" --
 	
 	"r3/r3vm/levels/level0.txt" loadmap
-	"r3/r3vm/levels/tuto.txt" loadlevel	
+	
+	"r3/r3vm/levels/tutoes.txt" loadlevel	
 	
 	0 'state !
 	
