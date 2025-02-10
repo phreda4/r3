@@ -1,5 +1,7 @@
+Hi!.
 You need to control the robot, using %caCOMMANDS%c3.
 To do this, you need to type this %caCOMMANDS%c3, in the %c6CODE%c3.
+%a0
 %s
 
 : 2 step ;
@@ -7,10 +9,11 @@ To do this, you need to type this %caCOMMANDS%c3, in the %c6CODE%c3.
 %s
 Here each word is a %caCOMMAND%c3.
 %ca:%c3 indicates where to start executing.
-%ca2%c3 stacks a 2.
+%ca2%c3 push 2 in the stacks.
 %castep%c3 moves the robot in direction 2.
 %ca;%c3 ends.
-Press %i%cbF1%c3%i to execute the  %c6CODE%c3.
+
+Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 
 If you enter %c5NUMBERS%c3, they push in the %c6STACK%c3

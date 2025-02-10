@@ -412,7 +412,7 @@
 	
 
 ::edtoolbar
-	xedit yedit tat |printmode
+	xedit yedit hedit + tat |printmode
 	6 tcol 'edfilename " %s" tprint
 |	xcode wcode + 8 - ycode txy
 	tsp
@@ -470,7 +470,7 @@
 |	colb1 sdlcolor
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
-	xedit 4 + advx * 
+	xedit 4 advx * +
 	ycursor ylinea - advy * yedit + 
 	tat
 	$ffffff SDLColor 
@@ -571,3 +571,8 @@
 	fuente ( c@+ 1? 13 =? ( ,c 10 ) ,c ) 2drop
 	'edfilename savemem
 	empty ;
+
+::edset
+	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
+	fuente dup 'fuente> ! dup 'pantaini> ! simplehash 'hashfile !
+	;
