@@ -1,6 +1,18 @@
-Hello.
-I will explain how to manage the robot from the %c1TERMINAL%c3
-Each %c4COMMAND%c3 must be separated by spaces so that the robot can recognize it.
+You need to control the robot, using %caCOMMANDS%c3.
+To do this, you need to type this %caCOMMANDS%c3, in the %c6CODE%c3.
+%s
+
+: 2 step ;
+
+%s
+Here each word is a %caCOMMAND%c3.
+%ca:%c3 indicates where to start executing.
+%ca2%c3 stacks a 2.
+%castep%c3 moves the robot in direction 2.
+%ca;%c3 ends.
+Press %i%cbF1%c3%i to execute the  %c6CODE%c3.
+%w1
+
 If you enter %c5NUMBERS%c3, they push in the %c6STACK%c3
 Try entering 3 numbers.
 *

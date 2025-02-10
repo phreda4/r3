@@ -1,16 +1,15 @@
-Hay controlar el robot, usando %c8COMANDOS%c6.
-Vamos a programarlo.
+Hay que controlar el robot, usando %c8COMANDOS%c6.
 Para esto, debes escribir el %c4CODIGO%c3.
-%.
 Esto es un ejemplo.
 %s
 : 2 step ;
 %s
-*:* este comando indica donde empieza a ejecutar.
-*2* apila un 2 
-*step* mueve el robot en la direccion del nro apilado.
-*;* termina
-Toque F1 para ejecutar el codigo
+Aqui cada palabra es un COMANDO.
+*:* indica donde empieza a ejecutar.
+*2* apila un 2.
+*step* mueve el robot en la direccion 2.
+*;* termina.
+Apreta F1 para ejecutar el codigo
 %w1
 
 

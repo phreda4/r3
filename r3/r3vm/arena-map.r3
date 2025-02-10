@@ -11,12 +11,11 @@
 ##imgspr
 
 ##viewpx ##viewpy ##viewpz
-	
+##mapw 16 ##maph 12
 #tsize 16 
 #tmul
 
 | MAP
-#mw 16 #mh 12
 #marena * $fff
 
 | ITEMS
@@ -34,7 +33,7 @@
 
 
 :]map | x y -- map
-	mw * + 3 << 'marena + @ ;
+	mapw * + 3 << 'marena + @ ;
 	
 :calc tsize viewpz *. 2/ 'tmul ! ;
 
@@ -50,29 +49,29 @@
 	;
 	
 ::draw.map | x y --
+	calc
 	'marena >a
-	0 ( mh <? 
-		0 ( mw <? 
+	0 ( maph <? 
+		0 ( mapw <? 
 			drawtile
 			1+ ) drop
 		1+ ) drop ;
 
 |-------------------------------	
 :char2map
-	$20 =? ( drop $012 ; ) |  piso
-	$23 =? ( drop $10d ; ) | #
-	$3d =? ( drop $10c ; ) | =
-	$2e =? ( drop $200 ; ) | .
+	$20 =? ( drop $012 ; ) |  	piso
+	$23 =? ( drop $10d ; ) | #  pared
+	$3d =? ( drop $10c ; ) | =	pared ladrillo
+	$2e =? ( drop $200 ; ) | .	agujero
 	$3b =? ( drop $14 1 randmax + ; ) | ; pasto
 	;
 	
 :parsemap
-	trim str>nro 'mw ! trim str>nro 'mh ! 
-|	mh mw "map %d %d" .println
+	trim str>nro 'mapw ! trim str>nro 'maph ! 
 	>>cr trim >b 
 	'marena >a
-	mh ( 1? 1-
-		mw ( 1? 1-
+	maph ( 1? 1-
+		mapw ( 1? 1-
 			cb@+ char2map a!+
 			) drop 
 		b> >>cr trim >b
@@ -81,10 +80,7 @@
 	
 |---------------------
 | ITEMS
-#aitem
-
 ::draw.items
-
 	'itemarr p.draw
 	
 |	3 3 posmap
@@ -92,17 +88,11 @@
 |	aitem anim>n
 |	imgspr sspritez
 	
-|	deltatime 'aitem +!
 	;
-
-
-|	30 8 128 ICS>anim  | init cnt scale -- val
-|	'aitem ! | moneda
 
 :drawitem
 	8 + >a
-	a@+ a@+
-	posmap
+	a@+ a@+ posmap
 	viewpz 
 	a@ dup deltatime + a!+ anim>n
 	imgspr sspritez
@@ -122,13 +112,11 @@
 	+item
 	;
 		
-::resetlevel
+:resetlevel
 	'itemarr p.clear
 	'items ( items> <?
-		dup setitem
-		|dup @+ "%h " .print @ "%h" .println
-		2 3 << +
-		) drop .cr ;
+		dup setitem 2 3 << +
+		) drop ;
 
 :item+! items> !+ 'items> ! ;
 
@@ -154,16 +142,16 @@
 	here swap load 0 swap c!
 	'items 'items> !
 	here parseline drop
-	resetlevel
+	
 	;
 	
 |---------------------
-
 ::resetplayer
 	100 'penergy !
 	0 'pcarry ! 
 	1 'xp ! 1 'yp !
 	3 3 128 ICS>anim 'ap ! | anima'ap !
+	resetlevel
 	;
 	
 ::draw.player
@@ -245,9 +233,8 @@
 	'wordt 'worde 'wordd vmcpuio
 
 	480 'viewpx !
-	200 'viewpy !
+	300 'viewpy !
 	2.0 'viewpz !
-	calc
 	
 	50 'itemarr p.ini
 	;
@@ -269,6 +256,5 @@
 	SDLw 0? ( drop ; )
 	0.1 * viewpz +
 	0.2 max 6.0 min 'viewpz !
-	calc
 	;
 	

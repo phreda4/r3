@@ -68,7 +68,6 @@
 	vupdate
 	$0 SDLcls
 	panel
-	vanimdebug
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )

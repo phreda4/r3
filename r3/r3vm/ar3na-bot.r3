@@ -33,12 +33,13 @@
 
 |----
 #speed 
+#inwait
 
 :dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
 	$3A <? ( $30 - ; ) tolow $57 - ;
 
 :copysrc
-	>>cr trim
+	>>cr 2 +
 	fuente >a
 	( c@+ $25 <>?
 		12 >? ( dup ca!+ ) drop
@@ -47,7 +48,30 @@
 	fuente 'fuente> !
 	>>cr ;
 	
+:incode
+	'xedit 16 -500 26 0.5 0.0 +vanim
+	;
+	
+:outcode
+	'xedit -500 16 25 0.5 0.0 +vanim
+	;
+	
+:inmap
+|	'viewpz 2.0 0.0 26 0.5 0.0 +vanim 
+	'viewpx 
+	SW viewpz mapw 16 * *. - 32 -
+	1400 26 0.5 0.0 +vanim 
+	;
+	
+:outmap
+|	'viewpz 0.0 2.0 25 0.5 0.0 +vanim 
+	'viewpx 1400 
+	SW viewpz mapw 16 * *. - 32 -
+	25 0.5 0.0 +vanim 
+	;
+	
 :waitn	
+	1 'inwait !
 	;
 
 :cntr | script -- 'script
@@ -55,6 +79,7 @@
 |	$25 =? ( ,te ; ) | %%
 	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
 	$2e =? ( drop teclr trim ; )			| %. clear
+	$69 =? ( drop 11 ,te ; )				| %i invert
 	$73 =? ( drop copysrc trim ; ) 		| %s..%s source
 	$77 =? ( drop >>sp waitn ; ) | %w1 espera
 	,te
@@ -71,27 +96,36 @@
 :addscript
 	0.05 'speed !
 	script> c@+ +t 'script> !
+	
+	inwait 1? ( drop ; ) drop
 	'addscript speed +vexe
 	;
 	
 |----	
+#inv 0
 :te
+	11 =? ( drop $80 inv xor 'inv ! ; )
 	12 =? ( drop c@+ tcol ; ) 
-	13 =? ( drop tcr ; )
+	13 =? ( drop tcr tsp tsp ; )
+	inv or
 	temit ;
 	
-:scrterm
-	0 2 txy 'term ( term> <? c@+ te ) drop
-	msec $100 nand? ( drop ; ) drop
-	$a0 temit
-	;
 :runscript
+	
 	scrstate 
-	0 =? ( drop scrterm ; ) | terminal
+	|0 =? ( drop scrterm ; ) | terminal
+	|1 =? ( waitexec )
 	| espera por run
 	| espera por resultado
-	
 	drop
+	
+	$7f3f3f3f sdlcolorA	
+	8 32 sw 16 - 14 16 * sdlFRect
+	3 tcol 0 'inv !
+	2 2 txy 
+	'term ( term> <? c@+ te ) drop
+	msec $100 nand? ( drop ; ) drop
+	$a0 temit
 	;
 
 |------------	
@@ -150,21 +184,27 @@
 	;
 	
 |-----------------------
+:showread
+	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$ffffff trgb xedit yedit 16 - tat "    CODE:" tprint
+	$7f00003f sdlcolorA	
+	xedit yedit wedit hedit sdlFRect
+|	edfocus
+	edcodedraw
+	;
+
 :showeditor
-	$007f00 sdlcolor 0 180 330 16 SDLFrect
-	$ffffff trgb 4 180 tat "CODE: EDIT" tprint
+	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$ffffff trgb xedit yedit 16 - tat "    CODE: EDIT" tprint
 	$7f00007f sdlcolorA	
 	xedit yedit wedit hedit sdlFRect
 	edfocus
 	edcodedraw
-	| Help en MARK
-	|showmark
 	;	
 	
 :showruning
-	$007f7f sdlcolor 0 180 330 16 SDLFrect
-	$ffffff trgb 4 180 tat "CODE: RUN" tprint
-
+	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$ffffff trgb xedit yedit 16 - tat "    CODE: RUN" tprint
 	$7f00007f sdlcolorA
 	xedit yedit wedit hedit sdlFRect
 	
@@ -174,13 +214,12 @@
 		8 - @ vmcode2src $00f0000 addsrcmark
 		) 2drop
 	showmark
-	
 	edcodedraw
 	;	
 
 :showerror
-	$7f0000 sdlcolor 0 180 330 16 SDLFrect
-	$ffffff trgb 4 180 tat "CODE: " tprint vmerror tprint
+	$3f0000 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$ffffff trgb xedit yedit 16 - tat "    CODE: " tprint vmerror tprint
 	$7f00007f sdlcolorA
 	xedit yedit wedit hedit sdlFRect
 
@@ -193,6 +232,7 @@
 |-----------------------
 :editcompilar
 	clearmark
+	resetplayer
 
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
@@ -233,9 +273,10 @@
 	
 	
 	state 
-	0? ( showeditor )
-	1 =? ( showruning )
-	2 =? ( showerror ) 
+	0? ( showread )
+	1 =? ( showeditor )
+	2 =? ( showruning )
+	3 =? ( showerror ) 
 	drop
 	
 	showstack
@@ -255,21 +296,23 @@
 	
 :botones
 	4 tcol
-	8 600 'exit "F1:Play" btnimg
-	148 600 'exit "F2:Step" btnimg
-	288 600 'exit "F3:Help" btnimg
-	428 600 'exit "ESC:Bye" btnimg	
+	SH 32 -
+	8 over 'exit "F1:Play" btnimg
+	148 over 'exit "F2:Step" btnimg
+	288 over 'exit "F3:Help" btnimg
+	428 over 'exit "ESC:Bye" btnimg	
+	drop
 	;
 	
 |-------------------
-:runscr
+:jugar
 	vupdate
 	gui
 	mouseview
 	0 sdlcls
 
 	3.0 tsize
-	3 tcol 2 2 tat " Ar3na" temits 2 tcol " Code" temits tcr
+	$5 tcol 4 4 tat " Ar3na" temits $3 tcol "Code" temits tcr
 	
 	draw.map
 	draw.player
@@ -289,11 +332,34 @@
 	<f1> =? ( editcompilar )
 	<f2> =? ( addscript ) 
 |	<f3> =? ( "test" plog )
+	<f4> =? ( incode inmap )
+	<f5> =? ( outcode outmap )
+	drop ;
+	
+:juega
+	0 'state !
+	'jugar SDLshow
+	;
+		
+|-------------------
+:configura	
+	;
+	
+:menu
+	vupdate
+	gui
+	0 sdlcls
+	
+	sdlredraw
+	sdlkey
+	>esc< =? ( exit )
+	<f1> =? ( juega )
+	<f2> =? ( configura ) 
 	drop ;
 	
 |-------------------
 : |<<< BOOT <<<
-	"arena tank" 1088 700 SDLinit
+	"arena tank" 1366 768 SDLinit
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt 
 
@@ -302,21 +368,19 @@
 	64 vaini
 	
 | editor
-	0 200 480 360 edwin
+	16 300 480 360 edwin
 	edram
 	
 	bot.ini
 	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
-	"r3/r3vm/code/test.r3" edload | "" --
+	|"r3/r3vm/code/test.r3" edload | "" --
 	
 	"r3/r3vm/levels/level0.txt" loadmap
 	
-	"r3/r3vm/levels/tutoes.txt" loadlevel	
-	
-	0 'state !
-	
-	'runscr SDLshow
+	"r3/r3vm/levels/tuto.txt" loadlevel	
+
+	juega
 	SDLquit 
 	;
