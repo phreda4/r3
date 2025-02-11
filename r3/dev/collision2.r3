@@ -6,6 +6,7 @@
 ^r3/util/arr16.r3
 ^r3/util/sdlgui.r3
 ^r3/util/hash2d.r3
+^r3/util/bfont.r3
 
 #spr_ball
 

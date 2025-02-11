@@ -30,7 +30,7 @@
 
 |------------	
 #cpu
-#state
+#state | 0 - view | 1 - edit | 2 - run | 3 - error
 	
 #script
 #script>
@@ -42,7 +42,6 @@
 :,te 	term> c!+ 'term> ! ;
 
 :loadlevel | "" --
-|	"loading tutor..." plog
 	here dup 'script ! dup 'script> !
 	swap load 
 	0 swap c!+ 'here ! 
@@ -61,7 +60,7 @@
 	>>cr 2 +
 	fuente >a
 	( c@+ $25 <>?
-		12 >? ( dup ca!+ ) drop
+		10 <>? ( dup ca!+ ) drop
 		) drop
 	0 ca!+
 	edset
@@ -89,6 +88,12 @@
 	25 0.5 0.0 +vanim 
 	;
 	
+:endless	
+	outcode
+	outmap
+	'exit 2.0 +vexe
+	;
+	
 #anilist 'incode 'outcode 'inmap 'outmap
 	
 :anima
@@ -98,19 +103,19 @@
 	;
 	
 :waitn	
-	1 'inwait !
-	1 'state !
-	;
-
+	1 'inwait ! 1 'state ! ;
+	
 :cntr | script -- 'script
 	c@+
 |	$25 =? ( ,te ; ) | %%
 	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
 	$2e =? ( drop teclr trim ; )	| %. clear
 	$61 =? ( drop anima ; )			| %a1 animacion	
+	$65 =? ( drop endless ; ) 		| %e end
 	$69 =? ( drop 11 ,te ; )		| %i invert
 	$73 =? ( drop copysrc trim ; ) 	| %s..%s source
 	$77 =? ( drop >>sp waitn ; )	| %w1 espera
+	
 	,te
 	;
 	
@@ -129,6 +134,9 @@
 	inwait 1? ( drop ; ) drop
 	'addscript speed +vexe
 	;
+
+:nextn
+	0 'inwait ! 0 'state ! teclr addscript ;
 	
 :complete
 	( inwait 0? drop
@@ -146,8 +154,12 @@
 :cursor	
 	msec $100 nand? ( drop ; ) drop $a0 temit ;
 	
+:nextlesson
+	1200 200 'nextn " Next" $3f3f00 btnt
+	;
+		
 :runscript
-	
+	2.0 tsize
 	scrstate 
 	|0 =? ( drop scrterm ; ) | terminal
 	|1 =? ( waitexec )
@@ -159,9 +171,9 @@
 	8 32 sw 16 - 14 16 * sdlFRect
 	3 tcol 0 'inv !
 	2 3 txy 'term ( term> <? c@+ te ) drop
-	inwait 1? ( drop ; ) drop
+	inwait 1? ( drop nextlesson ; ) drop
 	cursor
-	1200 200 'complete "   >>" $3f00 btnt
+	1100 200 'complete "   >>" $3f00 btnt
 	;
 
 |----- code
@@ -210,25 +222,25 @@
 		; ) drop
 	
 	1? ( dup vm2src 'fuente> ! 'stepvma cdspeed +vexe )
-	0? ( dup 'state ! ) 
+	0? ( 1 'state ! ) 
 	'cdnow> !
 	;
 	
 |-----------------------
 :showread
 	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
-	$ffffff trgb xedit yedit 16 - tat "    CODE:" tprint
-	$7f00003f sdlcolorA	
-	xedit yedit wedit hedit sdlFRect
+	$ffffff trgb xedit 64 + yedit 16 - tat "CODE:" tprint
+	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	
 |	edfocus
 	edcodedraw
 	;
 
 :showeditor
 	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
-	$ffffff trgb xedit yedit 16 - tat "    CODE: EDIT" tprint
-	$7f00007f sdlcolorA	
-	xedit yedit wedit hedit sdlFRect
+	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: EDIT" tprint
+	$7f00007f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	
 	edfocus
 	edcodedraw
 	edtoolbar
@@ -236,29 +248,29 @@
 	
 :showruning
 	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
-	$ffffff trgb xedit yedit 16 - tat "    CODE: RUN" tprint
-	$7f00007f sdlcolorA
-	xedit yedit wedit hedit sdlFRect
+	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: RUN" tprint
+	$7f00007f sdlcolorA	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
-	fuente> $00fffff addsrcmark
+	fuente> $007ffff addsrcmark
 	RTOS ( @+ 1?
-		8 - @ vmcode2src $00f0000 addsrcmark
+		8 - @ vmcode2src $0070000 addsrcmark
 		) 2drop
 	showmark
 	edcodedraw
+	edtoolbar
 	;	
 
 :showerror
 	$3f0000 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
-	$ffffff trgb xedit yedit 16 - tat "    CODE: " tprint vmerror tprint
-	$7f00007f sdlcolorA
-	xedit yedit wedit hedit sdlFRect
+	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: " tprint vmerror tprint
+	$7f00007f sdlcolorA xedit yedit wedit hedit sdlFRect
 
 	showmark
 	
 	edfocus
 	edcodedraw
+	edtoolbar
 	;
 	
 |-----------------------
@@ -277,50 +289,55 @@
 		3 'state ! 
 		serror 'fuente> ! 
 		clearmark
-		fuente> $f00ffff addsrcmark 
+		fuente> $700ffff addsrcmark 
 		; ) drop
 	2 'state ! 
 	;
 	
 :play
+	state 2 =? ( drop ; ) drop
 	compilar
 	state 2 <>? ( drop ; ) drop
+	
 	vmboot 
-	1? ( dup vm2src 'fuente> ! )
+	|1? ( dup vm2src 'fuente> ! )
 	dup vm2src 'fuente> ! 
 	'cdnow> !
+	vmreset
 	'stepvma cdspeed +vexe
 	;
 	
 	
 :step
+	state 2 =? ( drop ; ) drop | stop?
 	state 1 =? ( compilar ) drop | **
 	state 2 <>? ( drop ; ) drop	
 	stepvma ;
+	
+:help
+	;
 	
 |------------ STACK
 
 #sty 
 
 :cellstack | cell --
-	$3f sdlcolor
-	512 sty 2 - 80 18 sdlfrect
+	$3f3f00 sdlcolor
+	512 sty 2 - 80 28 sdlfrect
 	520 sty tat vmcell temits
-	-20 'sty +!
+	-30 'sty +!
 	;
 	
+#statevec 'showread 'showeditor 'showruning 'showerror 
+
 :draw.code
-|	showcode
-	state 
-	0? ( showread )
-	1 =? ( showeditor )
-	2 =? ( showruning )
-	3 =? ( showerror ) 
-	drop
-	
+	2.0 tsize
+|-- showcode
+	state 3 << 'statevec + @ ex
+|-- show stack
 	vmdeep 0? ( drop ; ) 
-	
-	500 'sty !
+	3.0 tsize
+	633 'sty !
 	stack 8 +
 	( swap 1- 1? swap
 		@+ cellstack
@@ -330,11 +347,11 @@
 :botones
 	4 tcol
 	SH 32 -
-	8 over 'exit "F1:Play" $3f00 btnt
-	148 over 'exit "F2:Step" $3f00 btnt
-	288 over 'exit "F3:Help" $3f3f btnt
+	8 over 'play "F1:Play" $3f00 btnt
+	148 over 'step "F2:Step" $3f00 btnt
+	288 over 'help "F3:Help" $3f3f btnt
 	428 over 'exit "ESC:Bye" $3f0000 btnt	
-	600 over tat state "%d" tprint
+|	600 over tat state "%d" tprint
 	drop
 	;
 	
@@ -352,12 +369,9 @@
 	draw.player
 	draw.items
 	
-	2.0 tsize	
-	|edtoolbar
 	draw.code
 
 	runscript
-	|showterm
 	
 	botones
 	sdlredraw
@@ -365,9 +379,7 @@
 	>esc< =? ( exit )
 	<f1> =? ( play )
 	<f2> =? ( step ) 
-
-	<f4> =? ( incode inmap )
-	<f5> =? ( outcode outmap )
+	<f3> =? ( help ) 
 	drop ;
 	
 :juega
@@ -413,6 +425,10 @@
 | editor
 	16 300 480 360 edwin
 	edram
+
+	"r3/r3vm/levels/level0.txt" loadmap
+	
+	"r3/r3vm/levels/tuto.txt" loadlevel	
 	
 	bot.ini
 	bot.reset
@@ -420,9 +436,6 @@
 
 	|"r3/r3vm/code/test.r3" edload | "" --
 	
-	"r3/r3vm/levels/level0.txt" loadmap
-	
-	"r3/r3vm/levels/tuto.txt" loadlevel	
 
 	juega
 	|'menu sdlshow

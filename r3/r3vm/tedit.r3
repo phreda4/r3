@@ -264,7 +264,7 @@
 
 :drawline
 	dup c@ 0? ( drop ; ) drop
-	$afafaf trgb 
+	$3f3f3f trgb 
 	
 	over ylinea + 1+ .d 3 .r. temits tsp 
 
@@ -412,15 +412,14 @@
 	
 
 ::edtoolbar
+	$003f3f sdlcolor 
+	xedit yedit hedit + wedit advy SDLFrect
 	xedit yedit hedit + tat |printmode
 	6 tcol 'edfilename " %s" tprint
-|	xcode wcode + 8 - ycode txy
 	tsp
 	xcursor 1+ .d temits tsp
 	ycursor 1+ .d temits tsp
 	
-|	xcode ycode 1- wcode 1 bfillline
-|	xcode ycode hcode + txy
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;
 
