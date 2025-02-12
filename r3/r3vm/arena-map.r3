@@ -166,8 +166,8 @@
 
 :moveitem | 
 	pick2 $7 and 2* 'mdir + c@+ swap c@
-	a> 16 + +!
-	a> 8 + +!
+	| check if can
+	a> 16 + +! a> 8 + +!
 	;
 	
 #chk
@@ -175,7 +175,7 @@
 :checkin
 	pick4 over 8 + @ - pick4 pick2 16 + @ - or | 0= hit
 	1? ( drop ; ) drop
-	over 'chk !
+	dup 'chk !
 	;
 	
 ::checkitem | x y -- x y
@@ -183,7 +183,6 @@
 	'checkin 'itemarr p.mapv
 	chk -1 =? ( drop ; ) >a
 	moveitem
-	"hit" .println
 	;
 	
 :movepl | d dx dy --
@@ -191,14 +190,6 @@
 	2dup ]map $ff00 and 8 >> 1? ( 3drop ; ) drop
 	checkitem 
 	'yp ! 'xp !
-	;
-	
-#movp -1
-
-:stepmove
-	'items ( items> <?
-		dup setitem 2 3 << +
-		) drop 
 	;
 	
 ::botstep
