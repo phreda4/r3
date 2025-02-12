@@ -1,8 +1,9 @@
 | arena war test
 | PHREDA 2024
 |-------------------------
-^r3/util/sdlgui.r3
-^r3/r3vm/arena-war.r3
+^r3/lib/gui.r3
+^r3/util/ttext.r3
+^./arena-war.r3
 
 	
 :pasto	
@@ -16,14 +17,15 @@
 	
 |-------------------
 :runscr
-	immgui
+	gui
 	timer.
 	0 sdlcls
 	
 	pasto
 	
-	$ffff bcolor
-	8 8 bat "Arena War" bprint2 
+	3.0 tsize
+	$0 tcol 10 10 tat "Arena War" tprint
+	$2 tcol 8 8 tat "Arena War" tprint
 
 	war.draw
 	
@@ -48,9 +50,8 @@
 |-------------------
 : |<<< BOOT <<<
 	"r3 robots" 1024 600 SDLinit
-	bfont1
-	
-	"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
+	tini
+
 	war.ini
 	war.reset
 	'runscr SDLshow

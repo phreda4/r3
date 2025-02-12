@@ -401,7 +401,8 @@
 	mark
 	"r3/r3vm/levels/level0.txt" loadmap
 	"r3/r3vm/levels/tuto.txt" loadlevel	
-
+	clearmark
+	resetplayer
 	0 'state !
 	inmap -500 'xedit !
 	'addscript 2.0 +vexe
@@ -438,7 +439,7 @@
 	
 |-------------------
 : |<<< BOOT <<<
-	"arena tank" 1366 768 SDLinit
+	"Ar3na:Code" 1366 768 SDLinit
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini

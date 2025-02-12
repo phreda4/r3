@@ -25,7 +25,7 @@
 #itemarr 0 0
 
 | PLAYER
-#xp 1 #yp 1 | position
+##xp 1 ##yp 1 | position
 #dp 0	| direction
 #ap 0	| anima
 #penergy
@@ -81,14 +81,7 @@
 |---------------------
 | ITEMS
 ::draw.items
-	'itemarr p.draw
-	
-|	3 3 posmap
-|	viewpz
-|	aitem anim>n
-|	imgspr sspritez
-	
-	;
+	'itemarr p.draw ;
 
 :drawitem
 	8 + >a
@@ -112,12 +105,6 @@
 	+item
 	;
 		
-:resetlevel
-	'itemarr p.clear
-	'items ( items> <?
-		dup setitem 2 3 << +
-		) drop ;
-
 :item+! items> !+ 'items> ! ;
 
 :parseitem
@@ -142,16 +129,18 @@
 	here swap load 0 swap c!
 	'items 'items> !
 	here parseline drop
-	
 	;
 	
 |---------------------
 ::resetplayer
-	100 'penergy !
-	0 'pcarry ! 
-	1 'xp ! 1 'yp !
+	100 'penergy ! 0 'pcarry ! 
+	
 	3 3 128 ICS>anim 'ap ! | anima'ap !
-	resetlevel
+	
+	'itemarr p.clear
+	'items ( items> <?
+		dup setitem 2 3 << +
+		) drop ;
 	;
 	
 ::draw.player
@@ -163,13 +152,10 @@
 	deltatime 'ap +!
 	;
 
-:movepl | dx dy --
-	yp + swap xp + swap
-	2dup
-	]map $ff00 and 8 >> 1? ( 3drop ; ) drop
-	'yp ! 'xp !
-	;
-	
+
+:checkmap | dx dy -- map
+	yp + swap xp + swap ]map ;
+
 |------ IO interface 
 |	701 
 |	6 2
@@ -177,12 +163,51 @@
 |
 #mdir ( 0 -1	1 -1	1 0		1 1		0 1		-1 1	-1 0	-1 -1 )
 #mani ( 6 3 3 3 9 0 0 0 )
+
+:moveitem | 
+	pick2 $7 and 2* 'mdir + c@+ swap c@
+	a> 16 + +!
+	a> 8 + +!
+	;
+	
+#chk
+
+:checkin
+	pick4 over 8 + @ - pick4 pick2 16 + @ - or | 0= hit
+	1? ( drop ; ) drop
+	over 'chk !
+	;
+	
+::checkitem | x y -- x y
+	-1 'chk !
+	'checkin 'itemarr p.mapv
+	chk -1 =? ( drop ; ) >a
+	moveitem
+	"hit" .println
+	;
+	
+:movepl | d dx dy --
+	yp + swap xp + swap
+	2dup ]map $ff00 and 8 >> 1? ( 3drop ; ) drop
+	checkitem 
+	'yp ! 'xp !
+	;
+	
+#movp -1
+
+:stepmove
+	'items ( items> <?
+		dup setitem 2 3 << +
+		) drop 
+	;
 	
 ::botstep
-	$7 and dup 
+	dup $7 and dup 
 	'mani + c@ 3 128 ICS>anim 'ap ! | anima
-	2* 'mdir + c@+ swap c@ 	movepl	| dx dy
+	2* 'mdir + c@+ swap c@ movepl	| dx dy
+	drop
 	;
+
 	
 :istep 
 	vmpop 32 >> botstep ;
