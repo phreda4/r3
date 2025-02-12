@@ -14,7 +14,7 @@
 *ITEM
 0 4 5 0 0	| player
 1 8 5 22 0	| box
-1 11 5 29 0	| box
 -1
+1 11 5 29 0	| place
 2 10 2 30 8	| coin
 2 8 2 38 2 	| buble

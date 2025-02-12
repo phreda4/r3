@@ -1,13 +1,14 @@
 Hi!.
 You need to control the robot, using %caWORDS%c3.
 To do this, you need to type this %caWORDS%c3, in the %c6CODE%c3.
+Here each %caWORD%c3 has a meaning.
 %a0
 %s
 
 : 2 step ;
 
 %s
-Here each %caWORD%c3 has a meaning..
+
 %ca:%c3 indicates where to start executing.
 %ca2%c3 push 2 in the stacks.
 %castep%c3 moves the robot in direction 2.
@@ -15,7 +16,6 @@ Here each %caWORD%c3 has a meaning..
 
 Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
-
 If you enter %c7NUMBERS%c3, they push in the %c6STACK%c3
 Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
 
@@ -62,16 +62,16 @@ with this indication:
 %s
 %w1
 Sometimes you need to repeat %caWORDS%c3 many times, for this we are going to use LOOPS.
-Try these %caWORDS%c3
 
 %s
 
 : 0 ( 10 <? 1 + ) drop ;
 
 %s
-%caWORDS%c3 enclosed between ( and ) will be repeated as long as the condition is met.
+%caWORDS%c3 enclosed between %ca(%c3 and %ca)%c3 be a block of WORDS
 
-The CONDITIONAL in this case is %ca<?%c3, the number in the %c6STACK%c3 is used to count the repetitions 
+The CONDITIONAL in this case is %ca<?%c3, 
+the number in the %c6STACK%c3 is used to count the repetitions 
 WHILE the conditional is TRUE it will repeat the %caWORDS%c3 inside the parentheses.
 Once the block ends, %cadrop%c3 removes the number from the %c6STACK%c3.
 
@@ -88,7 +88,7 @@ We can add other %caWORDS%c3 inside the LOOP to repeat
 %s
 Some other conditionals are:
 
-%ca=?%c3 compares two numbers, removes the first one and is TRUE when the numbers are equal
+%ca=?%c3 compares two numbers, removes the first, TRUE when the numbers are equal
 %ca<? >?%c3 Checks if it is less or greater
 
 Some conditionals do not remove the number from the stack, for example
@@ -97,23 +97,42 @@ Some conditionals do not remove the number from the stack, for example
 %ca1?%c3 is TRUE when the number is not 0
 
 %w1
-*
-check COMMAND
-*
-IF conditional
+Another %caWORDS%c3 from robot is check, this %caWORDS%c3 take the direction of check and
+leave in %c6STACK%c3 the content of the map:
+0 - empty / 1 - wall / 2 - a box
+
+you can execute a %caWORDS%c3 only if a condition is TRUE put conditional %caWORDS%c3
+previus to the ( ) %caWORDS%c3.
+%s
+: 
+	0 ( 10 <?
+		2 check
+		0? ( 2 step )
+		drop
+		1 + ) drop ;
+		
+%s
+
+This code only advance if the next cell is empty;
+%w1
+You can define new %caWORDS%c3 using the prefix : in the %c6CODE%c3
+this can be usefull for make %c6CODE%c3 more clear and build thing
+
+%s
+
+:left 2 step ;
+
+:goleft
+	( 2 check 0 =? drop 
+		left ) drop ;
+		
+: goleft ;
+
+%s
+
+You need build a %c6STACK%c3 behavior for balance all %caWORDS%c3.
 
 %w1
-*
-defines %caWORDS%c3
 
-%w1
-%caWORDS%c3 variables
-
-%w1
-STORE
-*
-!!!FETCH
-%w1
-End of tutorial
-
+End of tutorial 1
 %e

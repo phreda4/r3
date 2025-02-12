@@ -283,7 +283,7 @@
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	
-|	vmdicc | ** DEBUG
+	|vmdicc | ** DEBUG
 |processlevel
 	terror 1 >? ( drop 
 		3 'state ! 
@@ -318,11 +318,9 @@
 	;
 	
 |------------ STACK
-
 #sty 
 
 :cellstack | cell --
-	$3f3f00 sdlcolor
 	512 sty 2 - 80 28 sdlfrect
 	520 sty tat vmcell temits
 	-30 'sty +!
@@ -335,9 +333,14 @@
 |-- showcode
 	state 3 << 'statevec + @ ex
 |-- show stack
+	xedit -? ( drop ; ) | not show without editor
+	wedit + 2 + 
+	660 110 16 sdlfrect
+	6 tcol
+	xedit wedit + 2 +
+	660 tat " Stack" temits
 	vmdeep 0? ( drop ; ) 
-	3.0 tsize
-	633 'sty !
+	3.0 tsize 633 'sty ! $3f3f00 sdlcolor
 	stack 8 +
 	( swap 1- 1? swap
 		@+ cellstack
@@ -383,10 +386,27 @@
 	drop ;
 	
 :juega
+	mark
+	"r3/r3vm/levels/level0.txt" loadmap
+	clearmark
+	resetplayer
+	
+	1 'state !
+	inmap incode
+	'jugar SDLshow
+	empty
+	;
+
+:tutor1
+	mark
+	"r3/r3vm/levels/level0.txt" loadmap
+	"r3/r3vm/levels/tuto.txt" loadlevel	
+
 	0 'state !
 	inmap -500 'xedit !
 	'addscript 2.0 +vexe
 	'jugar SDLshow
+	empty
 	;
 		
 |-------------------
@@ -404,7 +424,8 @@
 	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Code" temits tcr
 	
 	3.0 tsize	
-	32 100 'juega "Tutorial"  $3f00 btnt2
+	32 100 'tutor1 "Tutorial"  $3f00 btnt2
+	32 200 'juega "Free Play"  $3f00 btnt2
 	32 500 'options "Options" $3f btnt2
 	32 600 'exit "Exit" $3f0000 btnt2
 	
@@ -426,19 +447,16 @@
 	16 300 480 360 edwin
 	edram
 
-	"r3/r3vm/levels/level0.txt" loadmap
-	
-	"r3/r3vm/levels/tuto.txt" loadlevel	
 	
 	bot.ini
 	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
 	|"r3/r3vm/code/test.r3" edload | "" --
-	
 
-	juega
-	|'menu sdlshow
+	|juega
+	|tutor1
+	'menu sdlshow
 	
 	SDLquit 
 	;

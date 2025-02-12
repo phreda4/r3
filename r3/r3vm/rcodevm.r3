@@ -250,7 +250,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
 	dup $7f and 
-	5 =? ( drop 8 >> $ff and ; ) | WORD 
+	5 =? ( drop 8 >> $ff and drop 0 ; ) | WORD -- falta calcular *****
 	nip 'tokmov + c@ ;
 
 ::vmchecktok
@@ -405,6 +405,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #usod
 #deld
 
+|****** falta calcular bucles,multiple ; y cond
 :checkword | --
 	0 'lev ! 0 'usod ! 0 'deld !
 	dicc> 8 - @ 32 >> code: +
@@ -584,8 +585,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	vmerror .println .cr
 	'dicc ( dicc> <?
 		@+ |"%h" .println 
-		dup $ff and "%h " .print
-		16 >> $ffff and code: + "%w " .print
+		dup "%h " .print
+		16 >> $ffff and code: + "%w " .print		
 		.cr
 		) drop
 	.cr		
