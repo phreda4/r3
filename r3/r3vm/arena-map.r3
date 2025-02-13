@@ -32,6 +32,9 @@
 #pcarry
 
 
+:]m | x y -- map
+	mapw * + 3 << 'marena + ;
+
 :]map | x y -- map
 	mapw * + 3 << 'marena + @ ;
 	
@@ -164,42 +167,55 @@
 #mdir ( 0 -1	1 -1	1 0		1 1		0 1		-1 1	-1 0	-1 -1 )
 #mani ( 6 3 3 3 9 0 0 0 )
 
-:moveitem | 
-	pick2 $7 and 2* 'mdir + c@+ swap c@
-	| check if can
-	a> 16 + +! a> 8 + +!
-	;
-	
-#chk
+#dirx #diry
 
-:checkin
-	pick4 over 8 + @ - pick4 pick2 16 + @ - or | 0= hit
-	1? ( drop ; ) drop
-	dup 'chk !
+:dir2dxdy | dir -- dx dy
+	$7 and 2* 'mdir + c@+ 'dirx ! c@ 'diry ! ;
+
+:moveitem | d nx ny -- d nx ny 1/0
+	a> 8 + @ dirx +
+	a> 16 + @ diry + | nx ny
+	]map $ffff00 and 8 >> 1? ( ; ) drop 
+	dirx a> 8 + +!
+	diry a> 16 + +! 
+	0
 	;
-	
-::checkitem | x y -- x y
-	-1 'chk !
-	'checkin 'itemarr p.mapv
-	chk -1 =? ( drop ; ) >a
-	moveitem
-	;
-	
-:movepl | d dx dy --
-	yp + swap xp + swap
-	2dup ]map $ff00 and 8 >> 1? ( 3drop ; ) drop
-	checkitem 
+
+:realmove
 	'yp ! 'xp !
-	;
-	
-::botstep
-	dup $7 and dup 
 	'mani + c@ 3 128 ICS>anim 'ap ! | anima
-	2* 'mdir + c@+ swap c@ movepl	| dx dy
-	drop
 	;
-
 	
+:chainmove | d nx ny wall --
+	$ff and? ( 4drop ; ) | realwall
+	8 >> 1- 'itemarr p.adr >a | item
+	moveitem
+	1? ( 4drop ; ) drop
+	realmove
+	;
+	
+:botmove | d nx ny --
+	2dup ]map $ffff00 and 8 >> 1? ( chainmove ; ) drop 
+	realmove ;
+	
+| n 'l p.adr 	| nro to adr 
+| 'a 'l p.nro	| adr to nro
+
+:itemxy		dup 8 + @ over 16 + @ ;
+:seti		dup itemxy ]m swap 'itemarr p.nro 1+ 16 << over @ or swap ! ;
+:item2map	'seti 'itemarr p.mapv ;
+:clri		itemxy ]m dup @ $ffff and swap ! ;
+:itemCmap	'clri 'itemarr p.mapv ;
+	
+::botstep | dir --
+	dup dir2dxdy
+	item2map
+	xp dirx + yp diry + | dir nx ny
+	botmove	
+	itemCmap
+	;
+	
+|-------- WORDS	
 :istep 
 	vmpop 32 >> botstep ;
 	

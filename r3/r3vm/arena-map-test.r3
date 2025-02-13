@@ -26,7 +26,6 @@
 	<dn> =? ( 4 botstep )
 	<le> =? ( 6 botstep )
 	<ri> =? ( 2 botstep )
-	<f1> =? ( xp yp checkitem "%d" .println )
 	drop
 	;
 
