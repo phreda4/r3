@@ -250,7 +250,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
 	dup $7f and 
-	5 =? ( drop 8 >> $ff and drop 0 ; ) | WORD -- falta calcular *****
+	5 =? ( drop 8 >> $ff and ; )
+		|drop 0 ; ) | WORD -- falta calcular *****
 	nip 'tokmov + c@ ;
 
 ::vmchecktok
@@ -432,17 +433,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		dup vmtokmov dup	| calc mov stack
 		$f and deld swap - neg clamp0 usod max 'usod !
 		56 << 60 >> 'deld +!
-		$7f and 			| check level
+		$1ff and 			| check level
 		10 =? ( 1 'lev +! pushvar )
 		11 =? ( -1 'lev +! popvar ) | check IF prev=next
-		| while dropvar pushvar
-		
+		$10f $11b in? ( dropvar pushvar ) | while dropvar pushvar
 		drop
 		) drop 
 |	lev "lev:%d" .println		
 |	usod "uso D:%d" .println
 |	deld "delta D:%d" .println
 	;
+|";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
+|"<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "in?"		|19-27
 
 :core;
 	tlevel 1? ( drop ; ) drop
@@ -473,7 +475,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	popbl dup
 	( code> <? @+ cond??  ) drop	| search ??
 	iswhile 1? ( drop				| patch WHILE
-		code> - 32 << code> 8 - +! 
+		code> - 32 << $100 or code> 8 - +!  | marca while
 		; ) drop
 	|dup 8 - 	( ) drop				| patch REPEAT
 	code> over - 8 + 32 << swap 16 - +!	| path IF

@@ -387,7 +387,8 @@
 	16 64 480 640 edwin
 	"r3/r3vm/levels/level0.txt" loadmap	
 	clearscript
-	
+
+	"r3/r3vm/code/test.r3" edload | "" --	
 	resetplayer
 	1 'state !
 	inmap incode
@@ -448,7 +449,6 @@
 	bot.ini
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
-	|"r3/r3vm/code/test.r3" edload | "" --
 
 	|juega
 	|tutor1

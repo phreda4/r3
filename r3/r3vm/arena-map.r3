@@ -272,7 +272,7 @@
 #wordt * 80
 #words "step" "check" "take" "leave" "rand" 0
 #worde	istep icheck itake ileave irand
-#wordd ( $f1 $f1 $f1 $f1 $00 $01 ) 
+#wordd ( $f1 $01 $f1 $f1 $f1 $00 ) 
 
 ::bot.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !
@@ -281,8 +281,8 @@
 	'wordt 'worde 'wordd vmcpuio
 
 	480 'viewpx !
-	300 'viewpy !
-	2.0 'viewpz !
+	220 'viewpy !
+	3.0 'viewpz !
 	
 	50 'itemarr p.ini
 	;
