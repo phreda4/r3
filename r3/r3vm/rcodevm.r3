@@ -401,21 +401,42 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		drop ) 2drop 0 ;
 	
 |---------------------------------
+| static analisys
+#sana * 64
+#sana> 'sana
+
 #lev
-#usod
-#deld
+#usoD
+#delD
+
+:pushvar 
+	delD 8 << 
+	usoD $ff and or
+	sana> w!+ 'sana> ! ;	| store diff with code:
+	
+:popvar 
+	-2 'sana> +! sana> w@ 
+	dup $ff and 'usoD ! 
+	8 >> 'delD ! ;
+	
+:dropvar
+	sana> 'sana =? ( drop ; ) drop | error!!
+	-2 'sana> +! ;
 
 |****** falta calcular bucles,multiple ; y cond
 :checkword | --
 	0 'lev ! 0 'usod ! 0 'deld !
+	'sana 'sana> ! 
 	dicc> 8 - @ 32 >> code: +
 	( code> <? @+
 		dup vmtokmov dup	| calc mov stack
 		$f and deld swap - neg clamp0 usod max 'usod !
 		56 << 60 >> 'deld +!
 		$7f and 			| check level
-		10 =? ( 1 'lev +! )
-		11 =? ( -1 'lev +! )
+		10 =? ( 1 'lev +! pushvar )
+		11 =? ( -1 'lev +! popvar ) | check IF prev=next
+		| while dropvar pushvar
+		
 		drop
 		) drop 
 |	lev "lev:%d" .println		

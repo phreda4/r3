@@ -217,6 +217,7 @@
 		; ) drop
 	
 	1? ( dup vm2src 'fuente> ! 'stepvma cdspeed +vexe )
+	cdtok> >=? ( drop 0 ) | fuera de codigo
 	0? ( 1 'state ! ) 
 	'cdnow> !
 	;
@@ -278,7 +279,7 @@
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	
-	|vmdicc | ** DEBUG
+	vmdicc | ** DEBUG
 |processlevel
 	terror 1 >? ( drop 
 		3 'state ! 
