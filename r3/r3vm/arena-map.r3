@@ -35,8 +35,8 @@
 :]m | x y -- map
 	mapw * + 3 << 'marena + ;
 
-:]map | x y -- map
-	mapw * + 3 << 'marena + @ ;
+:]m@ | x y -- map
+	]m @ ;
 	
 :calc tsize viewpz *. 2/ 'tmul ! ;
 
@@ -89,19 +89,20 @@
 :drawitem
 	8 + >a
 	a@+ a@+ posmap
+|	2dup 16 + tat | **
 	viewpz 
 	a@ dup deltatime + a!+ anim>n
 	imgspr sspritez
+|	6 tcol a@+ "%h" tprint | **
 	;
 
-:+item | a y x --
+:+item | t a y x --
 	'drawitem 'itemarr p!+ >a
-	a!+ a!+ a!
-	;
+	a!+ a!+ a!+ a! ;
 	
 :setitem | adr item
 	@+ 0? ( drop @ dup $ffff and 'xp ! 16 >> $ffff and 'yp ! ; )
-	drop @ 
+	swap @ 
 	dup 32 >> $ffff and over 48 >> $ffff and $7f ICS>anim
 	swap dup 16 >> $ffff and 
 	swap $ffff and  | a y x
@@ -144,7 +145,6 @@
 	'items ( items> <?
 		dup setitem 2 3 << +
 		) drop ;
-	;
 	
 ::draw.player
 	xp yp posmap
@@ -154,10 +154,6 @@
 	
 	deltatime 'ap +!
 	;
-
-
-:checkmap | dx dy -- map
-	yp + swap xp + swap ]map ;
 
 |------ IO interface 
 |	701 
@@ -172,14 +168,29 @@
 :dir2dxdy | dir -- dx dy
 	$7 and 2* 'mdir + c@+ 'dirx ! c@ 'diry ! ;
 
+|--- type of item 
+
 :moveitem | d nx ny -- d nx ny 1/0
 	a> 8 + @ dirx +
 	a> 16 + @ diry + | nx ny
-	]map $ffff00 and 8 >> 1? ( ; ) drop 
+	]m@ $ffff00 and 8 >> 1? ( ; ) drop 
 	dirx a> 8 + +!
 	diry a> 16 + +! 
-	0
-	;
+	0 ;
+
+:overitem | d nx ny -- d nx ny 0
+	0 ;
+	
+:eatitem | d nx ny -- d nx ny 0
+	a> 'itemarr p.del
+	0 ;
+	
+:otheritem
+	0 ;
+	
+#typeitem 'moveitem 'overitem 'eatitem 'otheritem
+
+|---	
 
 :realmove
 	'yp ! 'xp !
@@ -189,30 +200,39 @@
 :chainmove | d nx ny wall --
 	$ff and? ( 4drop ; ) | realwall
 	8 >> 1- 'itemarr p.adr >a | item
-	moveitem
+	
+	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
+
 	1? ( 4drop ; ) drop
 	realmove
 	;
 	
 :botmove | d nx ny --
-	2dup ]map $ffff00 and 8 >> 1? ( chainmove ; ) drop 
+	2dup ]m@ $ffff00 and 8 >> 1? ( chainmove ; ) drop 
 	realmove ;
 	
+	
+|---- item in map	
 | n 'l p.adr 	| nro to adr 
 | 'a 'l p.nro	| adr to nro
 
-:itemxy		dup 8 + @ over 16 + @ ;
-:seti		dup itemxy ]m swap 'itemarr p.nro 1+ 16 << over @ or swap ! ;
-:item2map	'seti 'itemarr p.mapv ;
-:clri		itemxy ]m dup @ $ffff and swap ! ;
-:itemCmap	'clri 'itemarr p.mapv ;
+:itemxy	| item -- item x y
+	dup 1 ncell+ @ over 2 ncell+ @ ;
+	
+:seti | item --
+	dup 4 ncell+ @ 2 =? ( drop ; ) drop
+	dup itemxy ]m swap 
+	'itemarr p.nro 1+ 16 << over @ or swap ! ;
+	
+:item2map
+	'marena >a maph mapw * ( 1? 1- a@ $ffff and a!+ ) drop
+	'seti 'itemarr p.mapv ;
 	
 ::botstep | dir --
 	dup dir2dxdy
 	item2map
 	xp dirx + yp diry + | dir nx ny
 	botmove	
-	itemCmap
 	;
 	
 |-------- WORDS	
@@ -224,7 +244,7 @@
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
 	yp + swap xp + swap
-	]map $ff00 and 24 <<   | xx00 --> xx00000000
+	]m@ $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
 	;
 	
@@ -253,10 +273,6 @@
 #words "step" "check" "take" "leave" "rand" 0
 #worde	istep icheck itake ileave irand
 #wordd ( $f1 $f1 $f1 $f1 $00 $01 ) 
-
-::bot.reset
-	resetplayer
-	;
 
 ::bot.ini
 	tsize dup "media/img/arena-map.png" ssload 'imgspr !

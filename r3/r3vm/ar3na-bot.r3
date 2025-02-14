@@ -34,19 +34,21 @@
 	
 #script
 #script>
-#scrstate
 #term * 8192
 #term> 'term 
 
 :teclr	'term 'term> ! ;
 :,te 	term> c!+ 'term> ! ;
 
-:loadlevel | "" --
+:loadscript | "" --
 	here dup 'script ! dup 'script> !
 	swap load 
 	0 swap c!+ 'here ! 
-	0 'scrstate	!
 	teclr
+	;
+	
+:clearscript
+	here 0 over ! dup 'script ! 'script> !
 	;
 
 |----
@@ -159,17 +161,10 @@
 	;
 		
 :runscript
-	2.0 tsize
-	scrstate 
-	|0 =? ( drop scrterm ; ) | terminal
-	|1 =? ( waitexec )
-	| espera por run
-	| espera por resultado
-	drop
-	
+	script @ 0? ( drop ; ) drop
 	$7f3f3f3f sdlcolorA	
 	8 32 sw 16 - 14 16 * sdlFRect
-	3 tcol 0 'inv !
+	2.0 tsize 3 tcol 0 'inv !
 	2 3 txy 'term ( term> <? c@+ te ) drop
 	inwait 1? ( drop nextlesson ; ) drop
 	cursor
@@ -249,7 +244,7 @@
 :showruning
 	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
 	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: RUN" tprint
-	$7f00007f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
 	fuente> $007ffff addsrcmark
@@ -335,12 +330,15 @@
 |-- show stack
 	xedit -? ( drop ; ) | not show without editor
 	wedit + 2 + 
-	660 110 16 sdlfrect
+	yedit hedit + 
+	110 16 sdlfrect
 	6 tcol
 	xedit wedit + 2 +
-	660 tat " Stack" temits
+	yedit hedit + 
+	tat " Stack" temits
 	vmdeep 0? ( drop ; ) 
-	3.0 tsize 633 'sty ! $3f3f00 sdlcolor
+	3.0 tsize $3f3f00 sdlcolor
+	yedit hedit + 27 - 'sty ! 
 	stack 8 +
 	( swap 1- 1? swap
 		@+ cellstack
@@ -371,9 +369,7 @@
 	draw.map
 	draw.player
 	draw.items
-	
 	draw.code
-
 	runscript
 	
 	botones
@@ -385,34 +381,36 @@
 	<f3> =? ( help ) 
 	drop ;
 	
-:juega
+:freeplay
 	mark
-	"r3/r3vm/levels/level0.txt" loadmap
-	clearmark
-	resetplayer
+	16 64 480 640 edwin
+	"r3/r3vm/levels/level0.txt" loadmap	
+	clearscript
 	
+	resetplayer
 	1 'state !
 	inmap incode
 	'jugar SDLshow
+	vareset
 	empty
 	;
 
 :tutor1
 	mark
+	16 300 480 360 edwin
 	"r3/r3vm/levels/level0.txt" loadmap
-	"r3/r3vm/levels/tuto.txt" loadlevel	
-	clearmark
+	"r3/r3vm/levels/tuto.txt" loadscript	
+	
 	resetplayer
 	0 'state !
 	inmap -500 'xedit !
 	'addscript 2.0 +vexe
 	'jugar SDLshow
+	vareset
 	empty
 	;
 		
 |-------------------
-
-
 :options	
 	;
 	
@@ -426,14 +424,14 @@
 	
 	3.0 tsize	
 	32 100 'tutor1 "Tutorial"  $3f00 btnt2
-	32 200 'juega "Free Play"  $3f00 btnt2
+	32 200 'freeplay "Free Play"  $3f00 btnt2
 	32 500 'options "Options" $3f btnt2
 	32 600 'exit "Exit" $3f0000 btnt2
 	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( juega )
+	<f1> =? ( freeplay )
 	<f2> =? ( options ) 
 	drop ;
 	
@@ -443,14 +441,10 @@
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini
-	
 | editor
-	16 300 480 360 edwin
 	edram
 
-	
 	bot.ini
-	bot.reset
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
 	|"r3/r3vm/code/test.r3" edload | "" --
