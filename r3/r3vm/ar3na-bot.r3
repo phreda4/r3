@@ -279,8 +279,9 @@
 	0 cdtok> !
 	cdtok> 'cdtok - 3 >> 'cdcnt !
 	
-	vmdicc | ** DEBUG
+|	vmdicc | ** DEBUG
 |processlevel
+
 	terror 1 >? ( drop 
 		3 'state ! 
 		serror 'fuente> ! 

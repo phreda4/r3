@@ -159,7 +159,7 @@
 :iLITd :iLITh :iLITb :iLITf	:iLITs
 	iDUP atoken 'TOS ! ;	
 
-:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! ; |"w" .println ; 	| 32 bits
+:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! ;		| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
 :iVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + @ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + 'TOS ! ;	| 32 bits (iLIT)
@@ -228,10 +228,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilitf 32 >> "%f" sprint ;
 :ilits 16 >> $ffff and src + 1+ 7 'auxstr strcpyn 'auxstr ; | *** a memoria data o code
 
-:iword 16 >> $ffff and src + ;
-:iaword 16 >> $ffff and src + ;
-:ivar 16 >> $ffff and src + ;
-:iavar 16 >> $ffff and src + ;
+:iword 16 >> $ffff and src + "%w" sprint ;
+:iaword 16 >> $ffff and src + "'%w" sprint ;
+:ivar 16 >> $ffff and src + "%w" sprint ;
+:iavar 16 >> $ffff and src + "'%w" sprint ;
 	
 #tokbig ilitd ilitb ilith ilitf ilits iword iaword ivar iavar 
 
@@ -250,8 +250,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
 	dup $7f and 
-	5 =? ( drop 8 >> $ff and ; )
-		|drop 0 ; ) | WORD -- falta calcular *****
+	5 =? ( drop 8 >> $ff and ; ) | WORD
 	nip 'tokmov + c@ ;
 
 ::vmchecktok
@@ -448,9 +447,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :core;
 	tlevel 1? ( drop ; ) drop
+	
+|	dicc> 8 - @ 16 >> $ffff and src + "::%w " .println
+	
 	checkword
 	
-	deld 4 << usod or $ff and 8 <<
+	deld 4 << usod or $ff and 8 << |dup ">>%h<<" .println
 	dicc> 8 - +!	| stack delta-use
 	
 	0 'state !
@@ -466,7 +468,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	$ffffff00 nand						| remove src
 	15 <? ( drop ; ) 27 >? ( drop ; )	| cond without fix
 	drop
-	code> over - 32 << over 8 - +!
+	code> over - 32 << 
+	$100 or | mark while
+	over 8 - +!
 	1 'iswhile ! ;
 
 :core) | --
@@ -475,7 +479,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	popbl dup
 	( code> <? @+ cond??  ) drop	| search ??
 	iswhile 1? ( drop				| patch WHILE
-		code> - 32 << $100 or code> 8 - +!  | marca while
+		code> - 32 << code> 8 - +!  | marca while
 		; ) drop
 	|dup 8 - 	( ) drop				| patch REPEAT
 	code> over - 8 + 32 << swap 16 - +!	| path IF
@@ -609,7 +613,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	'dicc ( dicc> <?
 		@+ |"%h" .println 
 		dup "%h " .print
-		16 >> $ffff and code: + "%w " .print		
+		dup 16 >> $ffff and src + "%w " .print		
+		8 >> $ff and dup "(%h)" .print
+		dup $f and swap 56 << 60 >>  " d:%d u:%d" .print
 		.cr
 		) drop
 	.cr		
