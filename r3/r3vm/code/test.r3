@@ -1,10 +1,17 @@
+| example code
 
-:left 2 step ;
+:ri 2 step ;
+:dn 4 step ;
 
 :goleft
 	( 2 check 0 =? drop 
-		left ) drop ;
+		ri ) drop ;
 		
-: goleft ;
-
+:pushl | n --
+	( 1? 1 - ri ) drop ;
+	
+:	goleft 
+	3 pushl 
+	dn dn 
+	;
 	

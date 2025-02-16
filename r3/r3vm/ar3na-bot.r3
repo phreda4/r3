@@ -348,7 +348,7 @@
 	TOS cellstack ;
 	
 :botones
-	4 tcol
+	4 tcol 2.0 tsize
 	SH 32 -
 	8 over 'play "F1:Play" $3f00 btnt
 	148 over 'step "F2:Step" $3f00 btnt
@@ -374,6 +374,7 @@
 	draw.code
 	runscript
 	
+	
 	botones
 	sdlredraw
 	sdlkey
@@ -386,7 +387,7 @@
 :freeplay
 	mark
 	16 64 480 640 edwin
-	"r3/r3vm/levels/level0.txt" loadmap	
+	"r3/r3vm/levels/level1.txt" loadmap	
 	clearscript
 
 	"r3/r3vm/code/test.r3" edload | "" --	

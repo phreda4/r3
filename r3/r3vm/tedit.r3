@@ -415,10 +415,10 @@
 	$003f3f sdlcolor 
 	xedit yedit hedit + wedit advy SDLFrect
 	xedit yedit hedit + tat |printmode
-	6 tcol 'edfilename " %s" tprint
-	tsp
+	6 tcol tsp
 	xcursor 1+ .d temits tsp
 	ycursor 1+ .d temits tsp
+	|'edfilename " %s" tprint
 	
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;

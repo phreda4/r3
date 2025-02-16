@@ -18,15 +18,14 @@ Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 If you enter %c7NUMBERS%c3, they push in the %c6STACK%c3
 Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
-
-%ca+%c3 add two top %c7NUMBERS%c3 on %c6STACK%c3.
-%ca-%c3, %ca*%c3, %ca/%c3 can make subtration, multiply and division.
-
 %s
 
 : 1 2 3 * + 10 - ;
 
 %s
+
+%ca+%c3 add two top %c7NUMBERS%c3 on %c6STACK%c3.
+%ca-%c3, %ca*%c3, %ca/%c3 can make subtration, multiply and division.
 
 Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1

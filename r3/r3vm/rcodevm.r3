@@ -423,7 +423,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	sana> 'sana =? ( drop ; ) drop | error!!
 	-2 'sana> +! ;
 
-|****** falta calcular bucles,multiple ; y cond
+|****** falta calcular multiple ; 
+|";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
+|"<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "in?"		|19-27
 :checkword | --
 	0 'lev ! 0 'usod ! 0 'deld !
 	'sana 'sana> ! 
@@ -442,14 +444,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 |	usod "uso D:%d" .println
 |	deld "delta D:%d" .println
 	;
-|";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
-|"<?" ">?" "=?" ">=?" "<=?" "<>?" "and?" "nand?" "in?"		|19-27
 
 :core;
 	tlevel 1? ( drop ; ) drop
-	
 |	dicc> 8 - @ 16 >> $ffff and src + "::%w " .println
-	
 	checkword
 	
 	deld 4 << usod or $ff and 8 << |dup ">>%h<<" .println

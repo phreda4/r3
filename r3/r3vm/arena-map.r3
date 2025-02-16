@@ -30,6 +30,7 @@
 #ap 0	| anima
 #penergy
 #pcarry
+##pstate
 
 
 :]m | x y -- map
@@ -63,10 +64,11 @@
 |-------------------------------	
 :char2map
 	$20 =? ( drop $012 ; ) |  	piso
+	$3b =? ( drop $014 1 randmax + ; ) | ; pasto
 	$23 =? ( drop $10d ; ) | #  pared
 	$3d =? ( drop $10c ; ) | =	pared ladrillo
 	$2e =? ( drop $200 ; ) | .	agujero
-	$3b =? ( drop $14 1 randmax + ; ) | ; pasto
+	| $300 |
 	;
 	
 :parsemap
@@ -112,7 +114,9 @@
 :item+! items> !+ 'items> ! ;
 
 :parseitem
-	trim dup c@ 0? ( nip ; ) drop
+	trim dup c@ 
+	$2a =? ( drop ; ) |*
+	0? ( nip ; ) drop
 	str>nro -? ( drop ; ) item+! | tipo
 	trim str>nro swap
 	trim str>nro 16 << rot or swap 
@@ -121,12 +125,17 @@
 	item+! | cnt frame y x
 	>>cr parseitem ;
 	
+:parsescript	
+	;
+	
 :parseline | adr -- adr
 	0? ( ; )
 	trim dup c@ 0? ( nip ; ) drop
 |	dup "%w" .println
 	"*MAP" =pre 1? ( drop >>cr parsemap parseline ; ) drop 
 	"*ITEM" =pre 1? ( drop >>cr parseitem parseline ; ) drop 
+	"*SCRIPT" =pre 1? ( drop >>cr parsescript parseline ; ) drop
+	"*END" =pre 1? ( 2drop 0 ; ) drop
 	>>cr parseline ;
 	
 ::loadmap | "" --	
@@ -185,10 +194,10 @@
 	a> 'itemarr p.del
 	0 ;
 	
-:otheritem
+:winitem
 	0 ;
 	
-#typeitem 'moveitem 'overitem 'eatitem 'otheritem
+#typeitem 'moveitem 'overitem 'eatitem 'winitem
 
 |---	
 
@@ -198,9 +207,9 @@
 	;
 	
 :chainmove | d nx ny wall --
-	$ff and? ( 4drop ; ) | realwall
+	1 =? ( 4drop ; ) | realwall
 	8 >> 1- 'itemarr p.adr >a | item
-	
+
 	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
 
 	1? ( 4drop ; ) drop
@@ -221,11 +230,15 @@
 	
 :seti | item --
 	dup 4 ncell+ @ 2 =? ( drop ; ) drop
-	dup itemxy ]m swap 
-	'itemarr p.nro 1+ 16 << over @ or swap ! ;
+	dup itemxy ]m 						| item map
+	
+	over 'itemarr p.nro 1+ 16 << 		| item map nitem
+	rot 4 ncell+ @ 2 + 12 << or			| add item to map
+
+	over @ or swap ! ;
 	
 :item2map
-	'marena >a maph mapw * ( 1? 1- a@ $ffff and a!+ ) drop
+	'marena >a maph mapw * ( 1? 1- a@ $0fff and a!+ ) drop
 	'seti 'itemarr p.mapv ;
 	
 ::botstep | dir --
@@ -234,12 +247,13 @@
 	xp dirx + yp diry + | dir nx ny
 	botmove	
 	;
-	
+		
 |-------- WORDS	
 :istep 
 	vmpop 32 >> botstep ;
 	
-:icheck 
+:icheck
+	item2map
 	vmpop 32 >> 
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
