@@ -11,12 +11,17 @@ $881798 $C50F1F $CCCCCC $C19C00 | 4 purple | 5 red | 6 white | 7 yellow
 $767676 $3B78FF $61D6D6 $16C60C | 8 brBlack | 9 brBlue | a brCyan | b brGreen
 $B4009E $E74856 $F2F2F2 $F9F1A5  ] | c brPurple | d brRed | e brWhite | f brYellow
 
-|"background": "#282c34", "foreground": "#dcdfe4", "cursor": "#313640"
 #style1 [ | one-half-dark
 $282c34 $e06c75 $98c379 $e5c07b
 $61afef $c678dd $56b6c2 $dcdfe4
 $282c34 $e06c75 $98c379 $e5c07b
 $61afef $c678dd $56b6c2 $dcdfe4 ]
+
+#style2 [ | uchu
+$080a0d $0949ac $b56227 $2e943a
+$542690 $a30d30 $fdfdfd $b59944
+$878a8b $3984f2 $ff9f5b $64d970
+$915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
 #termcolor 'style0
 #pfont 
@@ -70,14 +75,14 @@ $61afef $c678dd $56b6c2 $dcdfe4 ]
 ::tnsp | n --
 	advx * 'dp d+! ;
 	
-::tsize | "" -- "" w h
+::tbox | "" -- "" w h
 	count advx * advy ;
  
 ::tpos | -- x y
 	dp dup $ffffff and swap 32 >> ;
 
 ::trect |  "" -- "" x y w h
-	tsize tpos 2swap ;
+	tbox tpos 2swap ;
 	
 ::tcursor | n --
 	advx * tpos swap rot + swap advx advy SDLFRect ;

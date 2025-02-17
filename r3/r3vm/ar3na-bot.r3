@@ -362,7 +362,6 @@
 :jugar
 	vupdate
 	gui
-	mouseview
 	0 sdlcls
 
 	3.0 tsize

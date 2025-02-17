@@ -3,8 +3,10 @@
 |-------------------------
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
+
 ^r3/util/varanim.r3
 ^r3/util/arr16.r3
+^r3/util/ttext.r3
 
 ^./rcodevm.r3
 
@@ -12,7 +14,7 @@
 
 ##viewpx ##viewpy ##viewpz
 ##mapw 16 ##maph 12
-#tsize 16 
+#tilesize 16 
 #tmul
 
 | MAP
@@ -39,8 +41,6 @@
 :]m@ | x y -- map
 	]m @ ;
 	
-:calc tsize viewpz *. 2/ 'tmul ! ;
-
 ::posmap | x y -- xs ys
 	swap tmul * 2* viewpx + tmul +
 	swap tmul * 2* viewpy + tmul +
@@ -49,11 +49,15 @@
 :drawtile
 	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
-	2dup swap posmap viewpz r> imgspr sspritez
+	2dup swap posmap 
+|	over 16 - over 16 - tat $a tcol | debug
+	viewpz r> imgspr sspritez
+|	a> 8 - @ "%h" tprint | debug
 	;
 	
 ::draw.map | x y --
-	calc
+|	1.0 tsize | debug
+	tilesize viewpz *. 2/ 'tmul ! | recalc
 	'marena >a
 	0 ( maph <? 
 		0 ( mapw <? 
@@ -62,17 +66,23 @@
 		1+ ) drop ;
 
 |-------------------------------	
+| map | type(8)|tile(8)
+| $0xx no pasa - pared
+| $1xx pasa - nada
+| $2xx pasa - cae
+| $3xx pasa - explota?
 :char2map
-	$20 =? ( drop $012 ; ) |  	piso
-	$3b =? ( drop $014 1 randmax + ; ) | ; pasto
-	$23 =? ( drop $10d ; ) | #  pared
-	$3d =? ( drop $10c ; ) | =	pared ladrillo
+	$23 =? ( drop $00d ; ) | #  pared
+	$3d =? ( drop $00c ; ) | =	pared ladrillo
+	$20 =? ( drop $112 ; ) |  	piso
+	$3b =? ( drop $114 1 randmax + ; ) | ; pasto
 	$2e =? ( drop $200 ; ) | .	agujero
 	| $300 |
 	;
 	
 :parsemap
-	trim str>nro 'mapw ! trim str>nro 'maph ! 
+	trim str>nro 'mapw ! 
+	trim str>nro 'maph ! 
 	>>cr trim >b 
 	'marena >a
 	maph ( 1? 1-
@@ -163,7 +173,7 @@
 	
 	deltatime 'ap +!
 	;
-
+	
 |------ IO interface 
 |	701 
 |	6 2
@@ -182,20 +192,23 @@
 :moveitem | d nx ny -- d nx ny 1/0
 	a> 8 + @ dirx +
 	a> 16 + @ diry + | nx ny
-	]m@ $ffff00 and 8 >> 1? ( ; ) drop 
+	]m@ 
+	$300 nand? ( 0 nip ; )		| wall
+	$ff0000 and? ( 0 nip ; )	| item
+	drop | tipo 0
 	dirx a> 8 + +!
 	diry a> 16 + +! 
-	0 ;
+	1 ;
 
 :overitem | d nx ny -- d nx ny 0
-	0 ;
+	1 ;
 	
 :eatitem | d nx ny -- d nx ny 0
 	a> 'itemarr p.del
-	0 ;
+	1 ;
 	
 :winitem
-	0 ;
+	1 ;
 	
 #typeitem 'moveitem 'overitem 'eatitem 'winitem
 
@@ -207,21 +220,21 @@
 	;
 	
 :chainmove | d nx ny wall --
-	1 =? ( 4drop ; ) | realwall
-	8 >> 1- 'itemarr p.adr >a | item
-
+	16 >> 1- 'itemarr p.adr >a		| item
 	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
-
-	1? ( 4drop ; ) drop
+	0? ( 4drop ; ) drop
 	realmove
 	;
 	
 :botmove | d nx ny --
-	2dup ]m@ $ffff00 and 8 >> 1? ( chainmove ; ) drop 
+	2dup ]m@
+	$300 nand? ( 4drop ; )			| wall
+	$ff0000 and? ( chainmove ; )	| item
+	drop 
 	realmove ;
 	
 	
-|---- item in map	
+|---- item to map	
 | n 'l p.adr 	| nro to adr 
 | 'a 'l p.nro	| adr to nro
 
@@ -229,8 +242,10 @@
 	dup 1 ncell+ @ over 2 ncell+ @ ;
 	
 :seti | item --
-	dup 4 ncell+ @ 2 =? ( drop ; ) drop
+	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
 	dup itemxy ]m 						| item map
+	
+|	dup @ $300 and $200 =? ( 2drop 'itemarr p.del ; ) drop | agujero
 	
 	over 'itemarr p.nro 1+ 16 << 		| item map nitem
 	rot 4 ncell+ @ 2 + 12 << or			| add item to map
@@ -240,20 +255,35 @@
 :item2map
 	'marena >a maph mapw * ( 1? 1- a@ $0fff and a!+ ) drop
 	'seti 'itemarr p.mapv ;
+
+:chki | item --
+	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
+	dup itemxy ]m 						| item map
+	@ $300 and $200 =? ( drop 'itemarr p.del ; ) 
+	2drop ;
+	
+:check2map
+	'chki 'itemarr p.mapv ;
+	
+|------------------	
 	
 ::botstep | dir --
 	dup dir2dxdy
 	item2map
 	xp dirx + yp diry + | dir nx ny
 	botmove	
+	check2map
 	;
 		
 |-------- WORDS	
+#moveplayer
+
 :istep 
-	vmpop 32 >> botstep ;
+	vmpop 32 >> 'moveplayer !
+	;
 	
 :icheck
-	item2map
+	item2map | to step
 	vmpop 32 >> 
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
@@ -289,7 +319,7 @@
 #wordd ( $f1 $01 $f1 $f1 $f1 $00 ) 
 
 ::bot.ini
-	tsize dup "media/img/arena-map.png" ssload 'imgspr !
+	tilesize dup "media/img/arena-map.png" ssload 'imgspr !
 
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
@@ -301,22 +331,16 @@
 	50 'itemarr p.ini
 	;
 	
-
-|----- move view
-#xo #yo
-
-:dns
-	sdlx 'xo ! sdly 'yo ! ;
-
-:mos
-	sdlx xo - 'viewpx +! 
-	sdly yo - 'viewpy +! 
-	dns ;
-
-::mouseview
-	'dns 'mos onDnMove 
-	SDLw 0? ( drop ; )
-	0.1 * viewpz +
-	0.2 max 6.0 min 'viewpz !
+:map.check	
 	;
+	
+::map.step
+	
+	moveplayer botstep 
+	map.check
+	0 'moveplayer !
+	item2map | to step
+	;
+
+
 	

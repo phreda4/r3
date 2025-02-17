@@ -6,6 +6,24 @@
 ^r3/util/ttext.r3
 ^./arena-map.r3
 	
+|----- move view
+#xo #yo
+
+:dns
+	sdlx 'xo ! sdly 'yo ! ;
+
+:mos
+	sdlx xo - 'viewpx +! 
+	sdly yo - 'viewpy +! 
+	dns ;
+
+::mouseview
+	'dns 'mos onDnMove 
+	SDLw 0? ( drop ; )
+	0.1 * viewpz +
+	0.2 max 6.0 min 'viewpz !
+	;
+	
 |-----------------------------	
 :main
 	vupdate
