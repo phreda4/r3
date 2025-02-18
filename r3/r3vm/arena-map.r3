@@ -13,10 +13,16 @@
 
 ##imgspr
 
+#xmap #ymap #wmap #hmap 
+
 ##viewpx ##viewpy ##viewpz
-##mapw 16 ##maph 12
+
+#mapw 16 #maph 12
 #tilesize 16 
 #tmul
+
+::%w sW 16 *>> ; 
+::%h sH 16 *>> ; 
 
 | MAP
 #marena * $fff
@@ -66,6 +72,12 @@
 			1+ ) drop
 		1+ ) drop ;
 
+::mapwin | x y w h --
+	'hmap ! 'wmap ! 'ymap ! 'xmap !
+	
+	
+	;
+	
 |-------------------------------	
 | map | type(8)|tile(8)
 | $0xx no pasa - pared
@@ -112,7 +124,7 @@
 :dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
 	$3A <? ( $30 - ; ) tolow $57 - ;
 
-:copysrc
+:copysrc | copy to edit
 	>>cr 2 +
 	fuente >a
 	( c@+ $25 <>?
@@ -163,7 +175,7 @@
 	
 :cntr | script -- 'script
 	c@+
-	
+	0? ( drop 1- ; )
 |	$25 =? ( ,te ; ) | %%
 	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
 	$2e =? ( drop teclr trim ; )	| %. clear
@@ -177,7 +189,7 @@
 	;
 	
 :+t
-	0? ( 2 'sstate ! ) 
+	0? ( 2 'sstate ! 1- ) 
 	$2c =? ( 0.4 'speed ! )	|,
 	$2e =? ( 0.8 'speed ! ) |.
 	$25 =? ( drop cntr ; )	|%
@@ -194,7 +206,9 @@
 	;
 
 ::nextchapter
-	0 'sstate ! teclr addscript ;
+	0 'sstate ! teclr 
+	addscript 
+	;
 	
 ::completechapter
 	( sstate 0? drop
@@ -247,18 +261,17 @@
 	
 :parseline | adr -- adr
 	trim dup c@ 0? ( drop ; ) drop
+|	dup "%w" .println
 	"*MAP" =pre 1? ( drop >>cr parsemap parseline ; ) drop 
 	"*ITEM" =pre 1? ( drop >>cr parseitem parseline ; ) drop 
 	"*SCRIPT" =pre 1? ( drop >>cr parsescript >>0 ; ) drop
 	>>cr parseline ;
 	
-::loadmap | "" --	
+::loadlevel | "" --	
 	'items 'items> !
 	0 dup 'script ! 'script> !
 	here swap load 0 swap c! 
 	here parseline 'here !
-	script 0? ( -1 'sstate ! drop ; ) 'sstate !
-	nextchapter
 	;
 	
 |---------------------

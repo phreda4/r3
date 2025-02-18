@@ -83,6 +83,22 @@
 	0? ( 1 'state ! ) 
 	'cdnow> !
 	;
+
+:stepvmas
+	cdnow> 0? ( drop ; ) 
+	vmstepck 
+	|vmstep
+	terror 1 >? ( 2drop 
+		3 'state ! 
+		clearmark
+		fuente> $f00ffff addsrcmark 
+		; ) drop
+	
+	1? ( dup vm2src 'fuente> ! )
+	cdtok> >=? ( drop 0 ) | fuera de codigo
+	0? ( 1 'state ! ) 
+	'cdnow> !
+	;
 	
 |-----------------------
 :showread
@@ -135,9 +151,6 @@
 	
 |-----------------------
 :compilar
-	clearmark
-	resetplayer
-
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
@@ -161,19 +174,23 @@
 	state 2 <>? ( drop ; ) drop
 	
 	vmboot 
-	|1? ( dup vm2src 'fuente> ! )
 	dup vm2src 'fuente> ! 
 	'cdnow> !
 	vmreset
+	resetplayer
 	'stepvma cdspeed +vexe
 	;
 	
 	
 :step
-	state 2 =? ( drop ; ) drop | stop?
-	state 1 =? ( compilar ) drop | **
-	state 2 <>? ( drop ; ) drop	
-	stepvma ;
+	state 2 =? ( drop stepvmas ; ) drop | stop?
+	resetplayer compilar
+	vmboot 
+	dup vm2src 'fuente> ! 
+	'cdnow> !
+	vmreset
+	resetplayer
+	 ;
 	
 :help
 	;
@@ -212,6 +229,11 @@
 	TOS cellstack ;
 
 |---- VIEW script
+#xterm #yterm #wterm #hterm
+
+:termwin
+	'hterm ! 'wterm ! 'yterm ! 'xterm ! ;
+	
 #inv 0
 
 :te
@@ -229,13 +251,16 @@
 :draw.script
 	sstate -? ( drop ; ) drop
 	$7f3f3f3f sdlcolorA	
-	8 32 sw 16 - 14 16 * sdlFRect
+	xterm yterm wterm hterm 
+	|8 32 sw 16 - 14 16 * 
+	sdlFRect
 	2.0 tsize 3 tcol 0 'inv !
 	2 3 txy 'term ( term> <? c@+ te ) drop
 	sstate 1? ( drop nextlesson ; ) drop
 	cursor
 	1100 200 'completechapter "   >>" $3f00 btnt
 	;
+	
 
 |-------------------	
 :botones
@@ -276,15 +301,15 @@
 	
 :freeplay
 	mark
-	"r3/r3vm/levels/level1.txt" loadmap	
-
-	"r3/r3vm/code/test.r3" edload | "" --	
-	16 64 480 640 edwin	
+	500 32 500 200 termwin
+	16 48 480 654 edwin	
+	
+	"r3/r3vm/levels/level1.txt" loadlevel	
+	500 262 500 200 mapwin
+		
+	"r3/r3vm/code/test0.r3" edload 
 	resetplayer
 	1 'state !
-	
-|	inmap incode
-
 	'jugar SDLshow
 	vareset
 	empty
@@ -292,15 +317,15 @@
 
 :tutor1
 	mark
-	"r3/r3vm/levels/tutor0.txt" loadmap
-	|"r3/r3vm/levels/tuto.txt" loadscript	
-
-	16 300 480 360 edwin	
+	16 32 1334 200 termwin
+	16 262 480 440 edwin	
+	
+	"r3/r3vm/levels/tutor0.txt" loadlevel
+	500 262 500 200 mapwin	
+	
+	|cleartext
 	resetplayer
 	1 'state !
-	
-|inmap -500 'xedit !
-
 	'jugar SDLshow
 	vareset
 	empty
@@ -341,8 +366,6 @@
 	bot.ini
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
-	|juega
-	|tutor1
 	'menu sdlshow
 	
 	SDLquit 

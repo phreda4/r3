@@ -55,12 +55,11 @@
 	"r3mapa" 1024 600 SDLinit
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	
-	"r3/r3vm/levels/level0.txt" loadmap
+	"r3/r3vm/levels/level0.txt" loadlevel
 	
 	64 vaini
 	edram
 	bot.ini	
-	trace
 
 	100 'viewpx !
 	50 'viewpy !

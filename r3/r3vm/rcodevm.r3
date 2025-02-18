@@ -238,7 +238,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokstr | tok -- ""
 	$80 and? ( $7f and 3 << syswords + @ ; ) 
 	dup $7f and 
-	8 >? ( nip 9 - 3 << 'tokname + @ ; )
+	INTWORDS >=? ( nip INTWORDS - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
 	
 ::vmcell | tok -- ""
@@ -352,9 +352,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :.var | adr -- adr' | #
 	1+ newentry
 	2 'state !
+	| store var in code
 	$1
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop
-	swap dicc> 8 - +!	| store flag
+	dicc> 8 - +!	| store flag
 	;
 
 
@@ -369,7 +370,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	;		
 
 :.com | adr -- adr'
-	>>cr ; | don't save comment
+	>>cr 
+	; | don't save comment
 
 :.str | adr -- adr'
 	state

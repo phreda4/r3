@@ -4,7 +4,7 @@
 :dn 4 step ;
 
 :goleft
-	( 2 check 0 =? drop 
+	( 2 check 1 =? drop 
 		ri ) drop ;
 		
 :pushl | n --
