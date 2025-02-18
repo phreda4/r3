@@ -1,6 +1,21 @@
-Hi!.
-You need to control the robot, using %caWORDS%c3.
-To do this, you need to type this %caWORDS%c3, in the %c6CODE%c3.
+*MAP
+16 9
+#==============#
+#              #
+#              #
+#              #
+#              #
+#              #
+#              #
+#              #
+================
+*ITEM
+0 4 4 0 0	| player
+2 10 4 29 2	| place
+1 7 4 22 0	| box
+*SCRIPT
+You can control the robot, using %caWORDS%c3.
+these %caWORDS%c3 are write in the %c6CODE%c3.
 Here each %caWORD%c3 has a meaning.
 %a0
 %s
@@ -9,15 +24,16 @@ Here each %caWORD%c3 has a meaning.
 
 %s
 
-%ca:%c3 indicates where to start executing.
-%ca2%c3 push 2 in the stacks.
-%castep%c3 moves the robot in direction 2.
-%ca;%c3 ends.
+%cd:%c3    indicates where to start executing.
+%cf2%c3    push 2 in the stacks.
+%cbstep%c3 moves the robot in direction 2.
+%cb;%c3    ends.
 
 Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 If you enter %c7NUMBERS%c3, they push in the %c6STACK%c3
 Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
+
 %s
 
 : 1 2 3 * + 10 - ;
@@ -31,10 +47,10 @@ Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 You can modify the stack with these %caWORDS%c3.
 
-%cadup%c3 duplicate the top of %c6STACK%c3.
-%cadrop%c3 remove top of %c6STACK%c3.
-%caswap%c3 swap the upper two %c7NUMBERS%c3.
-%caover%c3 duplicate the second of %c6STACK%c3.
+%cbdup%c3  duplicate the top of %c6STACK%c3.
+%cbdrop%c3 remove top of %c6STACK%c3.
+%cbswap%c3 swap the upper two %c7NUMBERS%c3.
+%cbover%c3 duplicate the second of %c6STACK%c3.
 
 %s
 
@@ -60,7 +76,8 @@ with this indication:
 
 %s
 %w1
-Sometimes you need to repeat %caWORDS%c3 many times, for this we are going to use LOOPS.
+Sometimes you need to repeat %caWORDS%c3 many times, 
+for this we are going to use LOOPS.
 
 %s
 
@@ -71,7 +88,7 @@ Sometimes you need to repeat %caWORDS%c3 many times, for this we are going to us
 
 The CONDITIONAL in this case is %ca<?%c3, 
 the number in the %c6STACK%c3 is used to count the repetitions 
-WHILE the conditional is TRUE it will repeat the %caWORDS%c3 inside the parentheses.
+WHILE the conditional is TRUE it will repeat the %caWORDS%c3 in brackets.
 Once the block ends, %cadrop%c3 removes the number from the %c6STACK%c3.
 
 Always need the stack be balanced.
@@ -87,8 +104,8 @@ We can add other %caWORDS%c3 inside the LOOP to repeat
 %s
 Some other conditionals are:
 
-%ca=?%c3 compares two numbers, removes the first, TRUE when the numbers are equal
-%ca<? >?%c3 Checks if it is less or greater
+%ca=?%c3     Compares two numbers, removes the first, TRUE when the numbers are equal
+%ca<? >?%c3  Checks if it is less or greater
 
 Some conditionals do not remove the number from the stack, for example
 

@@ -5,8 +5,9 @@
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
-^./tedit.r3
 ^./arena-map.r3
+
+^./tedit.r3
 ^./rcodevm.r3
 
 |---------
@@ -32,145 +33,6 @@
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
 	
-#script
-#script>
-#term * 8192
-#term> 'term 
-
-:teclr	'term 'term> ! ;
-:,te 	term> c!+ 'term> ! ;
-
-:loadscript | "" --
-	here dup 'script ! dup 'script> !
-	swap load 
-	0 swap c!+ 'here ! 
-	teclr
-	;
-	
-:clearscript
-	here 0 over ! dup 'script ! 'script> !
-	;
-
-|----
-#speed 
-#inwait
-
-:dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
-	$3A <? ( $30 - ; ) tolow $57 - ;
-
-:copysrc
-	>>cr 2 +
-	fuente >a
-	( c@+ $25 <>?
-		10 <>? ( dup ca!+ ) drop
-		) drop
-	0 ca!+
-	edset
-	>>cr ;
-	
-:incode
-	'xedit 16 -500 26 0.5 0.0 +vanim
-	;
-	
-:outcode
-	'xedit -500 16 25 0.5 0.0 +vanim
-	;
-	
-:inmap
-|	'viewpz 2.0 0.0 26 0.5 0.0 +vanim 
-	'viewpx 
-	SW viewpz mapw 16 * *. - 32 -
-	1400 26 0.5 0.0 +vanim 
-	;
-	
-:outmap
-|	'viewpz 0.0 2.0 25 0.5 0.0 +vanim 
-	'viewpx 1400 
-	SW viewpz mapw 16 * *. - 32 -
-	25 0.5 0.0 +vanim 
-	;
-	
-:endless	
-	outcode
-	outmap
-	'exit 2.0 +vexe
-	;
-	
-#anilist 'incode 'outcode 'inmap 'outmap
-	
-:anima
-	c@+ dighex
-	$3 and 3 << 'anilist + @ ex
-	>>cr
-	;
-	
-:waitn	
-	1 'inwait ! 1 'state ! ;
-	
-:cntr | script -- 'script
-	c@+
-|	$25 =? ( ,te ; ) | %%
-	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
-	$2e =? ( drop teclr trim ; )	| %. clear
-	$61 =? ( drop anima ; )			| %a1 animacion	
-	$65 =? ( drop endless ; ) 		| %e end
-	$69 =? ( drop 11 ,te ; )		| %i invert
-	$73 =? ( drop copysrc trim ; ) 	| %s..%s source
-	$77 =? ( drop >>sp waitn ; )	| %w1 espera
-	
-	,te
-	;
-	
-:+t
-	$2c =? ( 0.4 'speed ! )	|,
-	$2e =? ( 0.8 'speed ! ) |.
-	$25 =? ( drop cntr ; )	|%
-	13 <? ( drop ; ) 
-	,te 
-	;
-	
-:addscript
-	0.05 'speed !
-	script> c@+ +t 'script> !
-	
-	inwait 1? ( drop ; ) drop
-	'addscript speed +vexe
-	;
-
-:nextn
-	0 'inwait ! 0 'state ! teclr addscript ;
-	
-:complete
-	( inwait 0? drop
-		script> c@+ +t 'script> ! ) drop ;
-	
-|----	
-#inv 0
-:te
-	11 =? ( drop $80 inv xor 'inv ! ; )
-	12 =? ( drop c@+ tcol ; ) 
-	13 =? ( drop tcr tsp tsp ; )
-	inv or
-	temit ;
-	
-:cursor	
-	msec $100 nand? ( drop ; ) drop $a0 temit ;
-	
-:nextlesson
-	1200 200 'nextn " Next" $3f3f00 btnt
-	;
-		
-:runscript
-	script @ 0? ( drop ; ) drop
-	$7f3f3f3f sdlcolorA	
-	8 32 sw 16 - 14 16 * sdlFRect
-	2.0 tsize 3 tcol 0 'inv !
-	2 3 txy 'term ( term> <? c@+ te ) drop
-	inwait 1? ( drop nextlesson ; ) drop
-	cursor
-	1100 200 'complete "   >>" $3f00 btnt
-	;
-
 |----- code
 #cdtok * 1024
 #cdtok> 'cdtok
@@ -230,6 +92,7 @@
 	
 |	edfocus
 	edcodedraw
+	edtoolbar
 	;
 
 :showeditor
@@ -253,6 +116,7 @@
 		8 - @ vmcode2src $0070000 addsrcmark
 		) 2drop
 	showmark
+	
 	edcodedraw
 	edtoolbar
 	;	
@@ -346,7 +210,34 @@
 		@+ cellstack
 		) 2drop 
 	TOS cellstack ;
+
+|---- VIEW script
+#inv 0
+
+:te
+	11 =? ( drop $80 inv xor 'inv ! ; )
+	12 =? ( drop c@+ tcol ; ) 
+	13 =? ( drop tcr tsp tsp ; )
+	inv or temit ;
 	
+:cursor	
+	msec $100 nand? ( drop ; ) drop $a0 temit ;
+	
+:nextlesson
+	1200 200 'nextchapter " Next" $3f3f00 btnt ;
+		
+:draw.script
+	sstate -? ( drop ; ) drop
+	$7f3f3f3f sdlcolorA	
+	8 32 sw 16 - 14 16 * sdlFRect
+	2.0 tsize 3 tcol 0 'inv !
+	2 3 txy 'term ( term> <? c@+ te ) drop
+	sstate 1? ( drop nextlesson ; ) drop
+	cursor
+	1100 200 'completechapter "   >>" $3f00 btnt
+	;
+
+|-------------------	
 :botones
 	4 tcol 2.0 tsize
 	SH 32 -
@@ -358,7 +249,6 @@
 	drop
 	;
 	
-|-------------------
 :jugar
 	vupdate
 	gui
@@ -366,13 +256,14 @@
 
 	3.0 tsize
 	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Code" temits tcr
-	
+
 	draw.map
-	draw.player
 	draw.items
+	draw.player
+	map.step	
+
 	draw.code
-	runscript
-	
+	draw.script
 	
 	botones
 	sdlredraw
@@ -385,14 +276,15 @@
 	
 :freeplay
 	mark
-	16 64 480 640 edwin
 	"r3/r3vm/levels/level1.txt" loadmap	
-	clearscript
 
 	"r3/r3vm/code/test.r3" edload | "" --	
+	16 64 480 640 edwin	
 	resetplayer
 	1 'state !
-	inmap incode
+	
+|	inmap incode
+
 	'jugar SDLshow
 	vareset
 	empty
@@ -400,14 +292,15 @@
 
 :tutor1
 	mark
-	16 300 480 360 edwin
-	"r3/r3vm/levels/level0.txt" loadmap
-	"r3/r3vm/levels/tuto.txt" loadscript	
-	
+	"r3/r3vm/levels/tutor0.txt" loadmap
+	|"r3/r3vm/levels/tuto.txt" loadscript	
+
+	16 300 480 360 edwin	
 	resetplayer
-	0 'state !
-	inmap -500 'xedit !
-	'addscript 2.0 +vexe
+	1 'state !
+	
+|inmap -500 'xedit !
+
 	'jugar SDLshow
 	vareset
 	empty
@@ -444,12 +337,9 @@
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini
-| editor
-	edram
-
+	edram	| editor
 	bot.ini
 	'cdtok 8 vmcpu 'cpu ! | 8 variables
-
 
 	|juega
 	|tutor1

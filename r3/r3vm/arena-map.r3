@@ -8,6 +8,7 @@
 ^r3/util/arr16.r3
 ^r3/util/ttext.r3
 
+^./tedit.r3
 ^./rcodevm.r3
 
 ##imgspr
@@ -32,8 +33,8 @@
 #ap 0	| anima
 #penergy
 #pcarry
-##pstate
 
+##sstate
 
 :]m | x y -- map
 	mapw * + 3 << 'marena + ;
@@ -94,6 +95,112 @@
 	b> ;
 	
 |---------------------
+| SCRIPT
+
+#script
+#script>
+
+##term * 8192
+##term> 'term 
+
+:teclr	'term 'term> ! ;
+:,te 	term> c!+ 'term> ! ;
+	
+|----
+#speed 
+
+:dighex | c --  dig / -1 | :;<=>?@ ... Z[\]^_' ... 3456789
+	$3A <? ( $30 - ; ) tolow $57 - ;
+
+:copysrc
+	>>cr 2 +
+	fuente >a
+	( c@+ $25 <>?
+		10 <>? ( dup ca!+ ) drop
+		) drop
+	0 ca!+
+	edset
+	>>cr ;
+	
+:incode
+	'xedit 16 -500 26 0.5 0.0 +vanim
+	;
+	
+:outcode
+	'xedit -500 16 25 0.5 0.0 +vanim
+	;
+	
+:inmap
+|	'viewpz 2.0 0.0 26 0.5 0.0 +vanim 
+	'viewpx 
+	SW viewpz mapw 16 * *. - 32 -
+	1400 26 0.5 0.0 +vanim 
+	;
+	
+:outmap
+|	'viewpz 0.0 2.0 25 0.5 0.0 +vanim 
+	'viewpx 1400 
+	SW viewpz mapw 16 * *. - 32 -
+	25 0.5 0.0 +vanim 
+	;
+	
+:endless	
+	outcode
+	outmap
+	'exit 2.0 +vexe
+	;
+	
+#anilist 'incode 'outcode 'inmap 'outmap
+	
+:anima
+	c@+ dighex
+	$3 and 3 << 'anilist + @ ex
+	>>cr
+	;
+	
+:waitn	
+	1 'sstate ! ;
+	
+:cntr | script -- 'script
+	c@+
+	
+|	$25 =? ( ,te ; ) | %%
+	$63 =? ( drop 12 ,te c@+ dighex ,te ; )	| %c1 color
+	$2e =? ( drop teclr trim ; )	| %. clear
+	$61 =? ( drop anima ; )			| %a1 animacion	
+	$65 =? ( drop endless ; ) 		| %e end
+	$69 =? ( drop 11 ,te ; )		| %i invert
+	$73 =? ( drop copysrc trim ; ) 	| %s..%s source
+	$77 =? ( drop >>sp waitn ; )	| %w1 espera
+	
+	,te
+	;
+	
+:+t
+	0? ( 2 'sstate ! ) 
+	$2c =? ( 0.4 'speed ! )	|,
+	$2e =? ( 0.8 'speed ! ) |.
+	$25 =? ( drop cntr ; )	|%
+	13 <? ( drop ; ) 
+	,te 
+	;
+	
+:addscript
+	0.05 'speed !
+	script> c@+ +t 'script> !
+	
+	sstate 1? ( drop ; ) drop
+	'addscript speed +vexe
+	;
+
+::nextchapter
+	0 'sstate ! teclr addscript ;
+	
+::completechapter
+	( sstate 0? drop
+		script> c@+ +t 'script> ! ) drop ;
+
+|---------------------
 | ITEMS
 ::draw.items
 	'itemarr p.draw ;
@@ -126,7 +233,7 @@
 :parseitem
 	trim dup c@ 
 	$2a =? ( drop ; ) |*
-	0? ( nip ; ) drop
+	0? ( drop ; ) drop
 	str>nro -? ( drop ; ) item+! | tipo
 	trim str>nro swap
 	trim str>nro 16 << rot or swap 
@@ -136,22 +243,22 @@
 	>>cr parseitem ;
 	
 :parsescript	
-	;
+	dup 'script ! dup 'script> ! ;
 	
 :parseline | adr -- adr
-	0? ( ; )
-	trim dup c@ 0? ( nip ; ) drop
-|	dup "%w" .println
+	trim dup c@ 0? ( drop ; ) drop
 	"*MAP" =pre 1? ( drop >>cr parsemap parseline ; ) drop 
 	"*ITEM" =pre 1? ( drop >>cr parseitem parseline ; ) drop 
-	"*SCRIPT" =pre 1? ( drop >>cr parsescript parseline ; ) drop
-	"*END" =pre 1? ( 2drop 0 ; ) drop
+	"*SCRIPT" =pre 1? ( drop >>cr parsescript >>0 ; ) drop
 	>>cr parseline ;
 	
 ::loadmap | "" --	
-	here swap load 0 swap c!
 	'items 'items> !
-	here parseline drop
+	0 dup 'script ! 'script> !
+	here swap load 0 swap c! 
+	here parseline 'here !
+	script 0? ( -1 'sstate ! drop ; ) 'sstate !
+	nextchapter
 	;
 	
 |---------------------
@@ -173,66 +280,6 @@
 	
 	deltatime 'ap +!
 	;
-	
-|------ IO interface 
-|	701 
-|	6 2
-|	543
-|
-#mdir ( 0 -1	1 -1	1 0		1 1		0 1		-1 1	-1 0	-1 -1 )
-#mani ( 6 3 3 3 9 0 0 0 )
-
-#dirx #diry
-
-:dir2dxdy | dir -- dx dy
-	$7 and 2* 'mdir + c@+ 'dirx ! c@ 'diry ! ;
-
-|--- type of item 
-
-:moveitem | d nx ny -- d nx ny 1/0
-	a> 8 + @ dirx +
-	a> 16 + @ diry + | nx ny
-	]m@ 
-	$300 nand? ( 0 nip ; )		| wall
-	$ff0000 and? ( 0 nip ; )	| item
-	drop | tipo 0
-	dirx a> 8 + +!
-	diry a> 16 + +! 
-	1 ;
-
-:overitem | d nx ny -- d nx ny 0
-	1 ;
-	
-:eatitem | d nx ny -- d nx ny 0
-	a> 'itemarr p.del
-	1 ;
-	
-:winitem
-	1 ;
-	
-#typeitem 'moveitem 'overitem 'eatitem 'winitem
-
-|---	
-
-:realmove
-	'yp ! 'xp !
-	'mani + c@ 3 128 ICS>anim 'ap ! | anima
-	;
-	
-:chainmove | d nx ny wall --
-	16 >> 1- 'itemarr p.adr >a		| item
-	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
-	0? ( 4drop ; ) drop
-	realmove
-	;
-	
-:botmove | d nx ny --
-	2dup ]m@
-	$300 nand? ( 4drop ; )			| wall
-	$ff0000 and? ( chainmove ; )	| item
-	drop 
-	realmove ;
-	
 	
 |---- item to map	
 | n 'l p.adr 	| nro to adr 
@@ -256,34 +303,102 @@
 	'marena >a maph mapw * ( 1? 1- a@ $0fff and a!+ ) drop
 	'seti 'itemarr p.mapv ;
 
+|-----
 :chki | item --
 	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
-	dup itemxy ]m 						| item map
-	@ $300 and $200 =? ( drop 'itemarr p.del ; ) 
+	dup itemxy ]m@ 						| item map
+	$300 and $200 =? ( drop 'itemarr p.del ; ) 
 	2drop ;
 	
 :check2map
 	'chki 'itemarr p.mapv ;
+
+|----------------
+|	701 
+|	6 2
+|	543
+|
+#mdir ( 0 -1	1 -1	1 0		1 1		0 1		-1 1	-1 0	-1 -1 )
+#mani ( 6 3 3 3 9 0 0 0 )
+
+#dirx #diry
+
+:dir2dxdy | dir -- dx dy
+	$7 and 2* 'mdir + c@+ 'dirx ! c@ 'diry ! ;
+
+#moveplayer -1
+
+|--- type of item 
+:moveitem | d nx ny -- d nx ny 1/0
+	a> 8 + @ dirx +
+	a> 16 + @ diry + | nx ny
+	]m@ 
+	$300 nand? ( 0 nip ; )		| wall
+	$ff0000 and? ( 0 nip ; )	| item
+	drop | tipo 0
+	dirx a> 8 + +!
+	diry a> 16 + +! 
+	1 ;
+
+:overitem | d nx ny -- d nx ny 0
+	1 ;
 	
-|------------------	
+:eatitem | d nx ny -- d nx ny 0
+	a> 'itemarr p.del
+	1 ;
 	
-::botstep | dir --
+:winitem
+	1 ;
+	
+#typeitem 'moveitem 'overitem 'eatitem 'winitem
+
+:realmove
+	'yp ! 'xp !
+	'mani + c@ 3 128 ICS>anim 'ap ! | anima
+	;
+	
+:chainmove | d nx ny wall --
+	16 >> 1- 'itemarr p.adr >a		| item
+	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
+	0? ( 4drop ; ) drop
+	realmove
+	;
+	
+:botmove | d nx ny --
+	2dup ]m@
+	$300 nand? ( 4drop ; )			| wall
+	$ff0000 and? ( chainmove ; )	| item
+	drop 
+	realmove ;
+
+:botstep | dir --
 	dup dir2dxdy
 	item2map
 	xp dirx + yp diry + | dir nx ny
 	botmove	
 	check2map
 	;
-		
-|-------- WORDS	
-#moveplayer
+	
+::map.step
+	moveplayer +? (  
+		dup botstep 
+		-1 'moveplayer ! 
+		) drop
+	item2map | to step
+	xp yp ]m@ $300 and 
+	$200 <>? ( drop ; ) drop
+	| cae player
+	;
 
+::botstep | dir --
+	'moveplayer ! ;
+	
+|-------- WORDS	
 :istep 
 	vmpop 32 >> 'moveplayer !
 	;
 	
 :icheck
-	item2map | to step
 	vmpop 32 >> 
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
@@ -329,18 +444,4 @@
 	3.0 'viewpz !
 	
 	50 'itemarr p.ini
-	;
-	
-:map.check	
-	;
-	
-::map.step
-	
-	moveplayer botstep 
-	map.check
-	0 'moveplayer !
-	item2map | to step
-	;
-
-
-	
+	;	

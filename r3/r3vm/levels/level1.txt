@@ -16,6 +16,6 @@
 2 14 9 29 2	| place
 -1
 *SCRIPT
-You have to take the robot to the mark, without falling.
+Move the bot to the mark, 
+without falling!
 
-*END

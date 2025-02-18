@@ -2,8 +2,11 @@
 | basicos
 | PHREDA 2024
 |-------------------------
+^r3/lib/trace.r3
+
 ^r3/lib/gui.r3
 ^r3/util/ttext.r3
+
 ^./arena-map.r3
 	
 |----- move view
@@ -36,6 +39,7 @@
 	draw.map
 	draw.items
 	draw.player
+	map.step
 
 	SDLredraw 
 	sdlkey
@@ -49,11 +53,15 @@
 
 : |<<< BOOT <<<
 	"r3mapa" 1024 600 SDLinit
+	2.0 8 8 "media/img/atascii.png" tfnt 
+	
 	"r3/r3vm/levels/level0.txt" loadmap
 	
-	tini
 	64 vaini
+	edram
 	bot.ini	
+	trace
+
 	100 'viewpx !
 	50 'viewpy !
 	3.0 'viewpz !

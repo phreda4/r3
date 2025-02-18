@@ -6,7 +6,7 @@
 #              #
 #              #
 #              #
-#      .       #
+#              #
 #              #
 #              #
 #              #
@@ -15,7 +15,5 @@
 0 4 5 0 0	| player
 2 11 5 29 2	| place
 1 8 5 22 0	| box
-3 10 2 31 8	| coin
-3 10 7 27 0 | batt
-2 8 2 39 2 	| buble
-*END
+*SCRIPT
+Move the box to the mark.
