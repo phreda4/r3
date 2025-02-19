@@ -409,7 +409,7 @@
 	64 vaini
 	
 	bot.ini
-	bot.reset
+	resetplayer
 	
 	'cdtok 4 vmcpu 'cpu !
 	

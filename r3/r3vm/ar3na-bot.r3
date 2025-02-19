@@ -37,28 +37,8 @@
 #cdtok * 1024
 #cdtok> 'cdtok
 #cdnow>
-#cdcnt
 
-#lev
 #cdspeed 0.2
-
-:linecode | adr -- adr
-	cdnow> =? ( ">" temits )
-	@+ dup 8 >> $ff and 'lev !
-	vmtokstr temits tsp ;
-	
-:showcode
-	2 64 tat
-	'cdtok
-	0 ( cdcnt <? swap 
-		linecode
-		swap 1+ ) 
-	2drop  ;
-
-:processlevel	
-|	cdcnt 'cdtok vmcheckcode 
-	cdcnt 'cdtok vmcheckjmp
-	;
 
 :stepvm
 	cdnow> 0? ( drop ; ) 
@@ -77,11 +57,11 @@
 		clearmark
 		fuente> $f00ffff addsrcmark 
 		; ) drop
-	
-	1? ( dup vm2src 'fuente> ! 'stepvma cdspeed +vexe )
 	cdtok> >=? ( drop 0 ) | fuera de codigo
-	0? ( 1 'state ! ) 
+	0? ( 'cdnow> ! 1 'state ! ; ) | fin
+	dup vm2src 'fuente> ! 
 	'cdnow> !
+	'stepvma cdspeed +vexe 
 	;
 
 :stepvmas
@@ -93,10 +73,9 @@
 		clearmark
 		fuente> $f00ffff addsrcmark 
 		; ) drop
-	
-	1? ( dup vm2src 'fuente> ! )
 	cdtok> >=? ( drop 0 ) | fuera de codigo
-	0? ( 1 'state ! ) 
+	0? ( 'cdnow> ! 1 'state ! ; ) | fin
+	dup vm2src 'fuente> ! 
 	'cdnow> !
 	;
 	
@@ -150,17 +129,28 @@
 	;
 	
 |-----------------------
+:compila
+	mark
+	fuente vmtokenizer 'code !
+	terror 1 ? ( drop 
+		3 'state !
+		; ) drop
+	2 'state !
+	
+	8 'code vmcpu 'cpu ! | 8 variables
+	;
+
+
 :compilar
 	vmtokreset
 	fuente 'cdtok vmtokenizer 'cdtok> ! 
 	0 cdtok> !
-	cdtok> 'cdtok - 3 >> 'cdcnt !
 	
-|	vmdicc | ** DEBUG
-|processlevel
+	vmdicc | ** DEBUG
+|	|cdcnt 'cdtok vmcheckjmp
 
 	terror 1 >? ( drop 
-		3 'state ! 
+		3 'state !
 		serror 'fuente> ! 
 		clearmark
 		fuente> $700ffff addsrcmark 
@@ -168,7 +158,12 @@
 	2 'state ! 
 	;
 	
+	
+	
+	
 :play
+
+
 	state 2 =? ( drop ; ) drop
 	compilar
 	state 2 <>? ( drop ; ) drop
@@ -179,6 +174,7 @@
 	vmreset
 	resetplayer
 	'stepvma cdspeed +vexe
+	
 	;
 	
 	
@@ -199,8 +195,14 @@
 #sty 
 
 :cellstack | cell --
-	512 sty 2 - 80 28 sdlfrect
-	520 sty tat vmcell temits
+	vmcellcol 
+	tpal $00000 col50% | obscure
+	sdlcolor 
+	xedit wedit + 2 +
+	sty 2 - 
+	112 28 sdlfrect
+	xedit wedit + 2 +
+	sty tat vmcell temits
 	-30 'sty +!
 	;
 	
@@ -208,7 +210,6 @@
 
 :draw.code
 	2.0 tsize
-|-- showcode
 	state 3 << 'statevec + @ ex
 |-- show stack
 	xedit -? ( drop ; ) | not show without editor
@@ -220,7 +221,8 @@
 	yedit hedit + 
 	tat " Stack" temits
 	vmdeep 0? ( drop ; ) 
-	3.0 tsize $3f3f00 sdlcolor
+	|3.0 tsize 
+	$3f3f00 sdlcolor
 	yedit hedit + 27 - 'sty ! 
 	stack 8 +
 	( swap 1- 1? swap
@@ -301,7 +303,7 @@
 	
 :freeplay
 	mark
-	500 32 500 200 termwin
+	0.41 %w 32 0.58 %w 200 termwin
 	16 48 480 654 edwin	
 	
 	"r3/r3vm/levels/level1.txt" loadlevel	

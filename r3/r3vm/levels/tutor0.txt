@@ -98,7 +98,7 @@ We can add other %caWORDS%c3 inside the LOOP to repeat
 
 %s
 
-: 0 ( 10 <? 1 + 
+: 0 ( 5 <? 1 + 
 	2 step ) drop ;
 
 %s

@@ -37,8 +37,11 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
+::tpal | c -- rgb
+	$f and 2 << termcolor + d@ ;
+	
 ::tcol | c --
-	$f and 2 << termcolor + d@ trgb ;
+	tpal trgb ;
 	
 ::tfbox | --
 	SDLRenderer 'dp SDL_RenderFillRect ;

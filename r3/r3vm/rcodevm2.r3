@@ -12,10 +12,9 @@
 ##sysworde	| vectors
 ##syswords	| strings
 
-| code>(32) str(16) var/word(8)
-#dicc * 1024 
+| code>(32) str(16) var/word(8) 
+#dicc * 1024 | 128 entradas
 #dicc>
-
 #lastdic>
 
 #src
@@ -300,36 +299,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	'syswords ! | strings
 	;
 
-|--------- CPU
-::vmreset
-	stack 8 - 'NOS ! 0 'TOS !
-	stack 256 8 - + 0 over ! 'RTOS !  
-	code 'ip !
-	;
-
-::vm@ | 'vm --	; get vm current
-    'IP swap 9 move	;
-::vm! | 'vm --	; store vm
-	'IP 9 move ;
-
-|#IP 			
-|#TOS #NOS #RTOS 
-|#REGA #REGB
-|#STACK #CODE #DATA
-
-::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
-	here dup		| code ram here here
-	9 3 << +		| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
-	dup 'stack !
-	256 +			| stacks  (32 stack cell)
-	dup 'data !
-	rot 3 << +		| data space, variables
-	'here !
-	swap 'code !
-	vmreset
-	dup vm!			| store in vm
-	;
-	
 |--------- TOKENIZER / COMPILER
 #blk * 64
 #blk> 'blk
@@ -597,6 +566,37 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmlistok | 'list 'str --
 	swap >a ( dup c@ 1? drop dup a!+ >>0 ) a! drop ;
+
+|--------- CPU
+::vmreset
+	stack 8 - 'NOS ! 0 'TOS !
+	stack 256 8 - + 0 over ! 'RTOS !  
+	code 'ip !
+	;
+
+::vm@ | 'vm --	; get vm current
+    'IP swap 9 move	;
+::vm! | 'vm --	; store vm
+	'IP 9 move ;
+
+|#IP 			
+|#TOS #NOS #RTOS 
+|#REGA #REGB
+|#STACK #CODE #DATA
+
+::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
+	here dup		| code ram here here
+	9 3 << +		| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
+	dup 'stack !
+	256 +			| stacks  (32 stack cell)
+	dup 'data !
+	rot 3 << +		| data space, variables
+	'here !
+	swap 'code !
+	vmreset
+	dup vm!			| store in vm
+	;
+	
 	
 |--------- ERROR 	
 #msgerror 
