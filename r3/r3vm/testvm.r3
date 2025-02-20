@@ -4,8 +4,7 @@
 ^./rcodevm.r3
 
 |------------	
-#testcode "
-| follow maze
+#testcode "| follow maze
 
 #dir 0
 
@@ -58,20 +57,28 @@
 	drop
 	;
 
+:n ;
+	
+#wordt * 80
+#words "step" "check" "take" "leave" "rand" 0
+#worde n n n n
+#wordd ( $f1 $01 $f1 $f1 $f1 $00 ) 
 	
 |-------------------
 : |<<< BOOT <<<
 	
+	'wordt 'words vmlistok 	
+	'wordt 'worde 'wordd vmcpuio
+
 	'testcode 
 	vmcompile 
-	'serror ! 
 	'terror !
-	'code1 !
+	'serror !
 	.cr
-	vmdicc
+|	vmdicc
 
-	code1 vmcpu 'cpu1 !
-|	code1 vmcpu 'cpu2 !
+	vmcpu 'cpu1 !
+|	vmcpu 'cpu2 !
 	|vmreset vmdicc
 	vmdicc
 	

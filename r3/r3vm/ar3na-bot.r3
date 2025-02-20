@@ -32,7 +32,7 @@
 |------------	
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
-#cdspeed 0.2
+#cdspeed 0.1
 
 :stepvm
 	ip 0? ( drop ; ) 
@@ -132,11 +132,10 @@
 	
 	|fuente 'cdtok vmtokenizer 'cdtok> ! 
 	fuente vmcompile
-	'serror ! 
 	'terror !
-	'code1 !	
+	'serror ! 
 	
-	vmdicc | ** DEBUG
+	|vmdicc | ** DEBUG
 |	|cdcnt 'cdtok vmcheckjmp
 
 	terror 1 >? ( drop 
@@ -148,7 +147,7 @@
 		; ) drop
 	2 'state ! 
 	
-	|vmcpu 'cpu1 !	
+	vmcpu 'cpu1 !	
 	;
 
 :play

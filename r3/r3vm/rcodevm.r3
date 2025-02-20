@@ -324,7 +324,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :.var | adr -- adr' | #
 	1+ newentry
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop	
-|	$100 dicc> 8 - +!	| store flag
+	$100 dicc> 8 - +!	| store flag
 	2 'state !
 	;
 
@@ -489,7 +489,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
-	$100 nand? ( 7 or ,i >>sp ; )  	| var
+	$100 and? ( 7 or ,i >>sp ; )  	| var
 	5 or ,i >>sp ; 					| code
 	
 :.adr
@@ -498,15 +498,14 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
-	$100 nand? ( 8 or ,i >>sp ; )	| var
+	$100 and? ( 8 or ,i >>sp ; )	| var
 	6 or ,i >>sp ;					| code
 	
 :wrd2token | str -- str'
-	( dup c@ $ff and 33 <? 
+	( dup c@ $ff and 
+		33 <? 
 		0? ( drop 1 'terror ! ; ) drop 1+ )	| trim0
-		
-	dup "%w" .println .input
-	
+
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
@@ -522,27 +521,27 @@ $d3 $d3 $d3 $d3 $d3 $d3
  	5 'terror ! ;
 
 	
-::vmcompile | str -- code terror 'str
-	here 
-	0 over !+	| header
-	dup 'code ! dup 'code> !
-	$7fff + 	| 32 kb max code
-	dup 'data ! 'data> !
-	swap 		| code str
-	dup 'src !
+::vmcompile | str -- 'str terror 
+	here 						| s h
+	0 over !+					| s h c
+	dup 'code ! dup 'code> !	| s h c 
+	$7fff + 	| 32 kb max code  s h c+
+	dup 'data ! 'data> !		| s h 
+	swap dup 'src !				| h s
 	'dicc 'dicc> !
 	0 'terror !
-	( terror 0? drop wrd2token ) 
+	( terror 0? drop wrd2token ) | h s e
 			|... empty hole
-	code> data data> over - cmove | d s c
+	code> data data> over - cmove | move:d s c
 	data> data - code> + 'data> !
 	code> 'data !
-	data> 'here !
+	data> 'here !				| h s e
+	rot
 			|... write header | #data(32) #code(16) #boot(16)
-	data> data - 32 <<			| #data
-	code> code - 3 >> 16 << or	| #code
-	dicc> 8 - @ 35 >> or 		| #boot
-	pick3 ! | header
+	data> data - 32 <<			| h s e #data
+	code> code - 3 >> 16 << or	| h s e #code
+	dicc> 8 - @ 32 >> 3 >> or 	| #boot
+	swap ! | header
 	;
 	
 ::vmcode2src | tok -- src
@@ -576,10 +575,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	data 8 - 0 over ! 'RTOS !  
 
 	code 8 - @ | header
-	dup 32 >> 				|"data: %d" .println
+	dup 32 >> 				dup "data: %d" .println
 	
-	over 16 >> $ffff and	|"code: %d" .println
-	rot $ffff and 3 <<		|"boot: %d" .println	
+	over 16 >> $ffff and	dup "code: %d" .println
+	rot $ffff and 3 <<		dup "boot: %d" .println	
 	code + 'ip ! 			| boot -> ip
 	3 << code +			| cntdata startdata
 	data swap rot cmove		| copy var
@@ -597,7 +596,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 ::vmboot
 	code 8 - @ | header
-	$ffff and 3 <<		|"boot: %d" .println	
+	$ffff and 3 <<		dup "boot: %d" .println	
 	code + ;
 
 |--------- ERROR 	
