@@ -6,36 +6,24 @@
 ^r3/lib/console.r3
 
 ##terror | tipo error	
-##serror | src error pos
 
 ##syswordd	| data stack
 ##sysworde	| vectors
 ##syswords	| strings
 
-| code>(32) str(16) var/word(8)
-#dicc * 1024 
+| dicctionary
+| code>(32) str(16) var/word(8) 
+#dicc * 1024 | 128 entradas
 #dicc>
-
-#lastdic>
-
-#src
-
-#code:	| code ini
-#code>	| code now
 
 #state	| imm/compiling
 #tlevel	| tokenizer level
 
 |--------- VM
-#IP 			
+##IP 			
 ##TOS ##NOS ##RTOS 
 #REGA #REGB
-##STACK ##CODE ##DATA
-
-| 'code
-| stack (256) |##STACK * 256 | 32 cells 2 stack
-| tokens
-| 'code>
+##code ##data ##src
 
 :iDUP		8 'NOS +! TOS NOS ! ;
 :iOVER		iDUP NOS 8 - @ 'TOS ! ;
@@ -116,12 +104,10 @@
 :i>A	TOS 'REGA ! iDROP ;
 :iA>	'REGA @ PUSHiNRO ;
 :iA+	TOS 'REGA +! iDROP ;
-
 :iA@	REGA code + @ PUSHiNRO ;
 :iA!	TOS REGA code + ! iDROP ;
 :iA@+	REGA dup 8 + 'REGA ! code + @ PUSHiNRO ;
 :iA!+	TOS REGA dup 8 + 'REGA ! code + ! iDROP ;
-
 
 |--- REGB
 :i>B	TOS 'REGB ! iDROP ;
@@ -133,16 +119,16 @@
 :iB!+	TOS REGB dup 8 + 'REGB ! code + ! iDROP ;
 
 
-:i@		TOS code + d@ 'TOS ! ;
-:iC@	TOS code + c@ 'TOS ! ;
-:i@+    TOS code + d@+ 'TOS ! code - 8 'NOS +! NOS ! ;
-:iC@+	TOS code + c@+ 'TOS ! code - 8 'NOS +! NOS ! ;
-:i!		NOS @ TOS code + d! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:iC!	NOS @ TOS code + c! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:i!+	NOS @ TOS code + d!+ code - 'TOS ! -8 'NOS ! ;
-:iC!+	NOS @ TOS code + c!+ code - 'TOS ! -8 'NOS ! ;
-:i+!	NOS @ TOS code + d+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:iC+!	NOS @ TOS code + c+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:i@		TOS 32 >> data + @ 'TOS ! ;
+:iC@	TOS 32 >> data + c@ 'TOS ! ;
+:i@+    TOS 32 >> data + @+ 'TOS ! data - 8 'NOS +! NOS ! ;
+:iC@+	TOS 32 >> data + c@+ 'TOS ! data - 8 'NOS +! NOS ! ;
+:i!		NOS @ TOS 32 >> data + ! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC!	NOS @ TOS 32 >> data + c! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:i!+	NOS @ TOS 32 >> data + !+ data - 'TOS ! -8 'NOS ! ;
+:iC!+	NOS @ TOS 32 >> data + c!+ data - 'TOS ! -8 'NOS ! ;
+:i+!	NOS @ TOS 32 >> data + +! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC+!	NOS @ TOS 32 >> data + c+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
 
 :iMOVE		NOS 8 - @ NOS @ TOS move i3DROP ;
 :iMOVE>		NOS 8 - @ NOS @ TOS move> i3DROP ;
@@ -159,9 +145,9 @@
 :iLITd :iLITh :iLITb :iLITf	:iLITs
 	iDUP atoken 'TOS ! ;	
 
-:iWORD	atoken 32 >> code: + swap -8 'RTOS +! RTOS ! ;		| 32 bits
+:iWORD	atoken 32 >> code + swap -8 'RTOS +! RTOS ! ;		| 32 bits
 :iAWORD	8 'NOS +! TOS NOS ! atoken 'TOS ! ;	| 32 bits (iLIT)
-:iVAR	8 'NOS +! TOS NOS ! atoken 32 >> code: + @ 'TOS ! ;	| 32 bits
+:iVAR	8 'NOS +! TOS NOS ! atoken 32 >> data + @ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! atoken 'TOS ! ;	| 32 bits (iLIT)
 
 #tokenx
@@ -239,7 +225,6 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmtokstr | tok -- ""
 	$80 and? ( $7f and 3 << syswords + @ ; ) 
 	dup $7f and 
-	$7f =? ( 2drop "#" ; )
 	INTWORDS >=? ( nip INTWORDS - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
 	
@@ -252,9 +237,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup $f and 'tokcol + c@ ;
 
 |------ RUN
+::stack 
+	data 256 - ;
+	
 ::vmdeep | -- stack
-	NOS stack - 3 >> 1 + ;
-
+	NOS stack - 3 >> 1+ ;
+	
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
 	dup $7f and 
@@ -280,6 +268,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	$80 and? ( $7f and 3 << sysworde + @ ex ; ) 
 	$7f and 3 << 'tokenx + @ ex ;
 
+::vmstepip
+	ip vmstepck 'ip ! ;
+	
 ::vmrun | to ip -- ip'
 	( over <>? vmstep ) ;
 
@@ -300,44 +291,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	'syswords ! | strings
 	;
 
-|--------- CPU
-::vmreset
-	stack 8 - 'NOS ! 0 'TOS !
-	stack 256 8 - + 0 over ! 'RTOS !  
-	code 'ip !
-	;
-
-::vm@ | 'vm --	; get vm current
-    'IP swap 9 move	;
-::vm! | 'vm --	; store vm
-	'IP 9 move ;
-
-|#IP 			
-|#TOS #NOS #RTOS 
-|#REGA #REGB
-|#STACK #CODE #DATA
-
-::vmcpu | CODE RAM -- 'adr ; ram, cnt of vars
-	here dup		| code ram here here
-	9 3 << +		| IP,TOS,NOS,RTOS,RA,RB,STACK,CODE,DATA
-	dup 'stack !
-	256 +			| stacks  (32 stack cell)
-	dup 'data !
-	rot 3 << +		| data space, variables
-	'here !
-	swap 'code !
-	vmreset
-	dup vm!			| store in vm
-	;
-	
 |--------- TOKENIZER / COMPILER
+#code> 
+#data>
+
 #blk * 64
 #blk> 'blk
 
-:pushbl code: - blk> w!+ 'blk> ! ;	| store diff with code:
-:popbl -2 'blk> +! blk> w@ code: + ;
+:pushbl code - blk> w!+ 'blk> ! ;	| store diff with code
+:popbl -2 'blk> +! blk> w@ code + ;
 
-:,i	code> !+ 'code> ! ;
+:,i		code> !+ 'code> ! ;
+:,d		data> !+ 'data> ! ;
 	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
@@ -347,7 +312,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :newentry | adr -- 'adr
 	endef
-	code> code: - 32 << 
+	code> code - 32 << 
 	over src - 16 << or  
 	dicc> !+ 'dicc> !
 	>>sp ;
@@ -358,40 +323,35 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :.var | adr -- adr' | #
 	1+ newentry
-	2 'state !
-	$100
-	dicc> 8 - +!	| store flag
-	| store var in code
-	dup src - 16 <<
-	$7f or 
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop	
-	,i ;
+|	$100 dicc> 8 - +!	| store flag
+	2 'state !
+	;
 
 
-:.lit | adr -- adr
+:.lit | adr -- adr 	| falta hex/bin/fix
 	state
-	2 =? ( drop str>anro ,i ; )
+	2 =? ( drop 
+		dup str>anro 32 <<
+		rot src - 16 << or
+		,d ; )
 	drop
 	dup str>anro 32 <<
 	rot src - 16 << or
-	,i
-	| falta hex/bin/fix
-	;		
+	,i ;		
 
 :.com | adr -- adr'
-	>>cr 
-	; | don't save comment
+	>>cr ; | don't save comment
 
 :.str | adr -- adr'
 	state
-	2 =? ( drop ; ) |,cpystr ; )	| data .. en data ***
+	2 =? ( drop 
+		; ) |,cpystr ; )	| data .. en data ***
 	drop
 	dup src - 16 <<
 |	over 1+ >>str pick2 - 32 << or | len string
-	4 or | str
-	,i
-	1+ >>str
-	;
+	4 or ,i | str	
+	1+ >>str ;
 
 :?dicc | adr dicc -- nro+1/0
 	swap over | dicc adr dicc
@@ -423,7 +383,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :pushvar 
 	delD 8 << 
 	usoD $ff and or
-	sana> w!+ 'sana> ! ;	| store diff with code:
+	sana> w!+ 'sana> ! ;	| store diff with code
 	
 :popvar 
 	-2 'sana> +! sana> w@ 
@@ -440,7 +400,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :checkword | --
 	0 'lev ! 0 'usod ! 0 'deld !
 	'sana 'sana> ! 
-	dicc> 8 - @ 32 >> code: +
+	dicc> 8 - @ 32 >> code +
 	( code> <? @+
 		dup vmtokmov dup	| calc mov stack
 		$f and deld swap - neg clamp0 usod max 'usod !
@@ -451,9 +411,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		$10f $11b in? ( dropvar pushvar ) | while dropvar pushvar
 		drop
 		) drop 
-|	lev "lev:%d" .println		
-|	usod "uso D:%d" .println
-|	deld "delta D:%d" .println
+|	lev "lev:%d" .println usod "uso D:%d" .println deld "delta D:%d" .println
 	;
 
 :core;
@@ -527,31 +485,28 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :.word
 	state
-	2 =? ( drop @ ,i ; )	| data **
+	2 =? ( drop @ ,d ; )	| data **
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
-	$100 and? ( 
-		7 or 
-		,i >>sp ; )  	| var
-	5 or 
-	,i >>sp ; 			| code
+	$100 nand? ( 7 or ,i >>sp ; )  	| var
+	5 or ,i >>sp ; 					| code
 	
 :.adr
 	state
-	2 =? ( drop @ ,i ; )	| data **
+	2 =? ( drop @ ,d ; )	| data **
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
-	$100 and? ( 
-		8 or 
-		,i >>sp ; )		| var
-	6 or 
-	,i >>sp ;			| code
+	$100 nand? ( 8 or ,i >>sp ; )	| var
+	6 or ,i >>sp ;					| code
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 
 		0? ( drop 1 'terror ! ; ) drop 1+ )	| trim0
+		
+	dup "%w" .println .input
+	
 	$7c =? ( drop .com ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
@@ -566,24 +521,31 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup ?sys 1? ( .sys ; ) drop
  	5 'terror ! ;
 
-::vmtokreset
+	
+::vmcompile | str -- code terror 'str
+	here 
+	0 over !+	| header
+	dup 'code ! dup 'code> !
+	$7fff + 	| 32 kb max code
+	dup 'data ! 'data> !
+	swap 		| code str
+	dup 'src !
 	'dicc 'dicc> !
-	0 'lastdic> !
+	0 'terror !
+	( terror 0? drop wrd2token ) 
+			|... empty hole
+	code> data data> over - cmove | d s c
+	data> data - code> + 'data> !
+	code> 'data !
+	data> 'here !
+			|... write header | #data(32) #code(16) #boot(16)
+	data> data - 32 <<			| #data
+	code> code - 3 >> 16 << or	| #code
+	dicc> 8 - @ 35 >> or 		| #boot
+	pick3 ! | header
 	;
 	
-::vmtokenizer | str code -- code' 
-	0 'terror !
-	dup 'code: ! 'code> !
-	dup 'src !
-	0 ( drop wrd2token
-		terror 0? ) drop
-	'serror !
-	code> ;
-	
-::vmboot
-	dicc> 8 - @ 32 >> code: + ;
-	
-::vmcode2src
+::vmcode2src | tok -- src
 	16 >> $ffff and src + ;
 	
 |--------- CHECK CODE
@@ -597,7 +559,47 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 ::vmlistok | 'list 'str --
 	swap >a ( dup c@ 1? drop dup a!+ >>0 ) a! drop ;
+
+|--------- CPU
+|#IP #TOS #NOS #RTOS #REGA #REGB
+|#code #data #src
+
+::vm@ | 'vm --	; get vm current
+    'IP swap 9 move	;
 	
+::vm! | 'vm --	; store vm
+	'IP 9 move ; | d s c
+
+|--- reset cpu
+::vmreset
+	data 256 - 'NOS ! 0 'TOS !
+	data 8 - 0 over ! 'RTOS !  
+
+	code 8 - @ | header
+	dup 32 >> 				|"data: %d" .println
+	
+	over 16 >> $ffff and	|"code: %d" .println
+	rot $ffff and 3 <<		|"boot: %d" .println	
+	code + 'ip ! 			| boot -> ip
+	3 << code +			| cntdata startdata
+	data swap rot cmove		| copy var
+	;
+
+|--- create cpu
+::vmcpu | -- cpu
+	here 
+	dup vm!
+	9 ncell+ 256 + 
+	dup 'data !
+	vmreset
+	dup code 8 - @ 32 >> + 'here !
+	;
+	
+::vmboot
+	code 8 - @ | header
+	$ffff and 3 <<		|"boot: %d" .println	
+	code + ;
+
 |--------- ERROR 	
 #msgerror 
 "Ok"
@@ -619,19 +621,33 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	( swap 1? 1- swap >>0 ) drop ;
 
 ::vmdicc
-	vmerror .println .cr
+	"----------" .println
+	IP code - 3 >> TOS NOS RTOS "rtos:%h nos:%h tos:%h ip:%h | " .print 
+|REGA REGB
+	code data "d:%h c:%h | " .print
+	vmerror .println 
 	'dicc ( dicc> <?
 		@+ |"%h" .println 
 		dup "%h " .print
 		dup 16 >> $ffff and src + "%w " .print		
-		8 >> $ff and dup "(%h)" .print
+		8 >> $ff and |up "(%h)" .print
 		dup $f and swap 56 << 60 >>  " d:%d u:%d" .print
 		.cr
 		) drop
-	.cr		
-	code: ( code> <?
-		@+ dup "%h " .print vmtokstr .println
+	"----CODE----" .println
+	code ( code> <?
+		ip =? ( ">" .print )
+		@+ dup "[%h]" .print 
+		vmtokstr .print .sp
 		) drop
+	.cr
+	"----DATA----" .println
+	data 
+	4 ( 1? 1 - swap
+		@+ dup "%h " .print 
+		vmtokstr .print .sp
+		swap ) 2drop	
+	.cr		
 	;
 	
 |--------- INIT

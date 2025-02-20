@@ -1,108 +1,39 @@
 | testvm
 | PHREDA 2025
 |-------------------------
-^./rcodevm2.r3
+^./rcodevm.r3
 
 |------------	
 #testcode "
-#v1 2
-:cua dup * ;
+| follow maze
 
-: v1 cua ;
+#dir 0
+
+:rdir	
+	dir 2 - $7 and ; 
+	
+:adv 	
+	dir step ;
+	
+:checkr 
+	rdir check 
+	1 =? ( drop 
+		rdir 'dir ! adv ; )
+	drop
+	dir check 
+	1 =? ( drop
+		adv ; )
+	drop
+	2 'dir +! 
+	checkr ;
+	
+:run
+	100 ( 1? 1 -
+		checkr ) drop ;
+	
+: run ;
 "
 |------------	
-
-|------------	
-#cpu
-#state | 0 - view | 1 - edit | 2 - run | 3 - error
-	
-|----- code
-#cdtok * 1024
-#cdtok> 'cdtok
-#cdnow>
-
-#cdspeed 0.2
-
-:stepvm
-	cdnow> 0? ( drop ; ) 
-	|vmstepck 
-	vmstep
-|	1? ( dup vm2src 'fuente> ! )
-	'cdnow> !
-	;
-	
-:stepvmas
-	cdnow> 0? ( drop ; ) 
-	vmstepck 
-	|vmstep
-	terror 1 >? ( 2drop 
-		3 'state ! 
-		; ) drop
-	cdtok> >=? ( drop 0 ) | fuera de codigo
-	0? ( 'cdnow> ! 1 'state ! ; ) | fin
-|	dup vm2src 'fuente> ! 
-	'cdnow> !
-	;
-	
-:compila | str -- code/0
-	mark
-	vmtokenizer 'code !
-	terror 1 >? ( drop 
-		3 'state !
-		; ) drop
-	2 'state !
-	
-	8 'code vmcpu 'cpu ! | 8 variables
-	;
-
-
-:compilar | str --
-	vmtokreset
-	'cdtok vmtokenizer 'cdtok> ! 
-	0 cdtok> !
-	
-	vmdicc | ** DEBUG
-|	|cdcnt 'cdtok vmcheckjmp
-
-	terror 1 >? ( drop 
-		3 'state !
-|		serror 'fuente> ! 
-		; ) drop
-	2 'state ! 
-	;
-	
-	
-:play
-	state 2 =? ( drop ; ) drop
-	compilar
-	state 2 <>? ( drop ; ) drop
-	
-	vmboot 
-|	dup vm2src 'fuente> ! 
-	'cdnow> !
-	vmreset
-|	resetplayer
-|	'stepvma cdspeed +vexe
-	
-	;
-	
-	
-:step
-	state 2 =? ( drop stepvmas ; ) drop | stop?
-	|resetplayer 
-	compilar
-	vmboot 
-|	dup vm2src 'fuente> ! 
-	'cdnow> !
-	vmreset
-|	resetplayer
-	 ;
-	
-:help
-	;
-:vmcompila
-	;
-	
 |------------ STACK
 :drawstack
 	vmdeep 0? ( drop ; ) 
@@ -115,17 +46,48 @@
 #code1 #code2
 #cpu1 #cpu2 #cpu3 
 	
+#serror
+#terror
+
+:infocode
+	code1
+	@+ 
+	dup 32 >> "data: %d" .println
+	dup 16 >> $ffff and "code: %d" .println
+	$ffff and "boot: %d" .println
+	drop
+	;
+
+	
 |-------------------
 : |<<< BOOT <<<
-	"test vm" .println .cr
-|	'cdtok 8 vmcpu 'cpu ! | 8 variables
-|	'testcode vmcompila 'code1 !
-|	code1 vmcpu 'cpu1 !
 	
-|	'code1 vmdicc
+	'testcode 
+	vmcompile 
+	'serror ! 
+	'terror !
+	'code1 !
 	.cr
-|	cpu1 vmboot
-|	cpu1 vmstep
-	|vmdicc
-	.input
+	vmdicc
+
+	code1 vmcpu 'cpu1 !
+|	code1 vmcpu 'cpu2 !
+	|vmreset vmdicc
+	vmdicc
+	
+	( getch $1B1001 <>?
+		$1000 nand? (
+			vmstepip vmdicc
+			) 
+		drop
+		) drop 
+	
+|	cpu1 vm@
+|	vmreset vmstep
+|	cpu1 vm!
+	
+|	cpu2 vm@
+|	vmreset vmstep vmstep
+|	cpu2 vm!
+		
 	;

@@ -32,24 +32,18 @@
 |------------	
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
-	
-|----- code
-#cdtok * 1024
-#cdtok> 'cdtok
-#cdnow>
-
 #cdspeed 0.2
 
 :stepvm
-	cdnow> 0? ( drop ; ) 
+	ip 0? ( drop ; ) 
 	|vmstepck 
 	vmstep
 	1? ( dup vm2src 'fuente> ! )
-	'cdnow> !
+	'ip !
 	;
 	
 :stepvma
-	cdnow> 0? ( drop ; ) 
+	ip 0? ( drop ; ) 
 	vmstepck 
 	|vmstep
 	terror 1 >? ( 2drop 
@@ -57,15 +51,15 @@
 		clearmark
 		fuente> $f00ffff addsrcmark 
 		; ) drop
-	cdtok> >=? ( drop 0 ) | fuera de codigo
-	0? ( 'cdnow> ! 1 'state ! ; ) | fin
+	|cdtok> >=? ( drop 0 ) | fuera de codigo
+	0? ( 'ip ! 1 'state ! ; ) | fin
 	dup vm2src 'fuente> ! 
-	'cdnow> !
+	'ip !
 	'stepvma cdspeed +vexe 
 	;
 
 :stepvmas
-	cdnow> 0? ( drop ; ) 
+	ip 0? ( drop ; ) 
 	vmstepck 
 	|vmstep
 	terror 1 >? ( 2drop 
@@ -73,10 +67,10 @@
 		clearmark
 		fuente> $f00ffff addsrcmark 
 		; ) drop
-	cdtok> >=? ( drop 0 ) | fuera de codigo
-	0? ( 'cdnow> ! 1 'state ! ; ) | fin
+|	cdtok> >=? ( drop 0 ) | fuera de codigo
+	0? ( 'ip ! 1 'state ! ; ) | fin
 	dup vm2src 'fuente> ! 
-	'cdnow> !
+	'ip !
 	;
 	
 |-----------------------
@@ -128,23 +122,19 @@
 	edtoolbar
 	;
 	
-|-----------------------
-:compila
-	mark
-	fuente vmtokenizer 'code !
-	terror 1 ? ( drop 
-		3 'state !
-		; ) drop
-	2 'state !
+#serror
+#code1
+#cpu1
 	
-	8 'code vmcpu 'cpu ! | 8 variables
-	;
-
-
+|-----------------------
 :compilar
-	vmtokreset
-	fuente 'cdtok vmtokenizer 'cdtok> ! 
-	0 cdtok> !
+	empty mark
+	
+	|fuente 'cdtok vmtokenizer 'cdtok> ! 
+	fuente vmcompile
+	'serror ! 
+	'terror !
+	'code1 !	
 	
 	vmdicc | ** DEBUG
 |	|cdcnt 'cdtok vmcheckjmp
@@ -154,23 +144,21 @@
 		serror 'fuente> ! 
 		clearmark
 		fuente> $700ffff addsrcmark 
+		0 'cpu1 !
 		; ) drop
 	2 'state ! 
+	
+	|vmcpu 'cpu1 !	
 	;
-	
-	
-	
-	
+
 :play
-
-
 	state 2 =? ( drop ; ) drop
 	compilar
 	state 2 <>? ( drop ; ) drop
 	
 	vmboot 
 	dup vm2src 'fuente> ! 
-	'cdnow> !
+	'ip !
 	vmreset
 	resetplayer
 	'stepvma cdspeed +vexe
@@ -183,7 +171,7 @@
 	resetplayer compilar
 	vmboot 
 	dup vm2src 'fuente> ! 
-	'cdnow> !
+	'ip !
 	vmreset
 	resetplayer
 	 ;
@@ -212,6 +200,7 @@
 	2.0 tsize
 	state 3 << 'statevec + @ ex
 |-- show stack
+	cpu1 0? ( drop ; ) drop
 	xedit -? ( drop ; ) | not show without editor
 	wedit + 2 + 
 	yedit hedit + 
@@ -311,8 +300,12 @@
 		
 	"r3/r3vm/code/test0.r3" edload 
 	resetplayer
-	1 'state !
+	1 'state ! 0 'code1 ! 0 'cpu1 !
+	
+	mark
 	'jugar SDLshow
+	empty
+	
 	vareset
 	empty
 	;
@@ -327,8 +320,12 @@
 	
 	|cleartext
 	resetplayer
-	1 'state !
+	1 'state ! 0 'code1 ! 0 'cpu1 !
+	
+	mark	
 	'jugar SDLshow
+	empty
+	
 	vareset
 	empty
 	;
@@ -366,7 +363,6 @@
 	64 vaini
 	edram	| editor
 	bot.ini
-	'cdtok 8 vmcpu 'cpu ! | 8 variables
 
 	'menu sdlshow
 	
