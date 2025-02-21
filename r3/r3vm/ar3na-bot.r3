@@ -32,7 +32,7 @@
 |------------	
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
-#cdspeed 0.1
+#cdspeed 0.2
 
 :stepvm
 	ip 0? ( drop ; ) 
@@ -93,6 +93,22 @@
 	edcodedraw
 	edtoolbar
 	;	
+
+#vard * 1024
+
+:buildvars
+	ab[
+	'vard >a
+	data >b
+	code 8 - @ 32 >> 3 >>
+	( 1? 1- b@+ $ffffffff and a!+ ) a! 
+	]ba ;
+	
+:markvars
+	data >a
+	'vard ( @+ 1? |$ffffffff and
+		a@+ $ffffffff and or
+		vmcode2src $077ffff addsrcmark ) 2drop ;
 	
 :showruning
 	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
@@ -100,10 +116,13 @@
 	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
-	fuente> $007ffff addsrcmark
-	RTOS ( @+ 1?
-		8 - @ vmcode2src $0070000 addsrcmark
+	fuente> $007ffff addsrcmark | ip
+	RTOS ( @+ 1? 				| rstack
+		8 - @ vmcode2src $0070000 addsrcmark 
 		) 2drop
+	
+	markvars
+
 	showmark
 	
 	edcodedraw
@@ -128,52 +147,41 @@
 	
 |-----------------------
 :compilar
-	empty mark
+	empty mark 
+	fuente vmcompile | serror terror
 	
-	|fuente 'cdtok vmtokenizer 'cdtok> ! 
-	fuente vmcompile
-	'terror !
-	'serror ! 
-	
-	|vmdicc | ** DEBUG
-|	|cdcnt 'cdtok vmcheckjmp
+|	vmdicc | ** DEBUG
+|	cdcnt 'cdtok vmcheckjmp
 
-	terror 1 >? ( drop 
+	 1 >? ( 'terror !
+		'fuente> ! | serror
 		3 'state !
-		serror 'fuente> ! 
 		clearmark
 		fuente> $700ffff addsrcmark 
 		0 'cpu1 !
-		; ) drop
+		; ) 2drop
+
 	2 'state ! 
-	
 	vmcpu 'cpu1 !	
+	buildvars
 	;
 
 :play
 	state 2 =? ( drop ; ) drop
 	compilar
 	state 2 <>? ( drop ; ) drop
-	
-	vmboot 
-	dup vm2src 'fuente> ! 
-	'ip !
-	vmreset
+	ip vm2src 'fuente> ! 
 	resetplayer
 	'stepvma cdspeed +vexe
-	
-	;
-	
+	;	
 	
 :step
 	state 2 =? ( drop stepvmas ; ) drop | stop?
-	resetplayer compilar
-	vmboot 
-	dup vm2src 'fuente> ! 
-	'ip !
-	vmreset
+	resetplayer 
+	compilar	
+	ip vm2src 'fuente> ! 
 	resetplayer
-	 ;
+	;
 	
 :help
 	;
@@ -210,9 +218,9 @@
 	tat " Stack" temits
 	vmdeep 0? ( drop ; ) 
 	|3.0 tsize 
-	$3f3f00 sdlcolor
+	|$3f3f00 sdlcolor
 	yedit hedit + 27 - 'sty ! 
-	stack 8 +
+	stack 16 +
 	( swap 1- 1? swap
 		@+ cellstack
 		) 2drop 
@@ -236,7 +244,7 @@
 	msec $100 nand? ( drop ; ) drop $a0 temit ;
 	
 :nextlesson
-	1200 200 'nextchapter " Next" $3f3f00 btnt ;
+	1200 160 'nextchapter " Next" $3f3f00 btnt ;
 		
 :draw.script
 	sstate -? ( drop ; ) drop
@@ -245,32 +253,32 @@
 	|8 32 sw 16 - 14 16 * 
 	sdlFRect
 	2.0 tsize 3 tcol 0 'inv !
-	2 3 txy 'term ( term> <? c@+ te ) drop
+	2 1 txy 'term ( term> <? c@+ te ) drop
 	sstate 1? ( drop nextlesson ; ) drop
 	cursor
-	1100 200 'completechapter "   >>" $3f00 btnt
+	1100 160 'completechapter "   >>" $3f00 btnt
 	;
 	
 
 |-------------------	
 :botones
-	4 tcol 2.0 tsize
+	4 tcol 
+	3.0 tsize
 	SH 32 -
-	8 over 'play "F1:Play" $3f00 btnt
-	148 over 'step "F2:Step" $3f00 btnt
-	288 over 'help "F3:Help" $3f3f btnt
-	428 over 'exit "ESC:Bye" $3f0000 btnt	
+	12 over tat $5 tcol "Ar3na" temits 
+	$3 tcol "Code" temits 
+	2.0 tsize
+	308 over 'play "F1:Play" $3f00 btnt
+	448 over 'step "F2:Step" $3f00 btnt
+	588 over 'help "F3:Help" $3f3f btnt
+	728 over 'exit "ESC:Exit" $3f0000 btnt	
 |	600 over tat state "%d" tprint
 	drop
 	;
 	
 :jugar
 	vupdate
-	gui
-	0 sdlcls
-
-	3.0 tsize
-	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Code" temits tcr
+	gui 0 sdlcls
 
 	draw.map
 	draw.items
@@ -282,23 +290,26 @@
 	
 	botones
 	sdlredraw
+	
 	sdlkey
 	>esc< =? ( exit )
 	<f1> =? ( play )
 	<f2> =? ( step ) 
 	<f3> =? ( help ) 
-	drop ;
+	drop 
+	;
 	
 :freeplay
 	mark
-	0.41 %w 32 0.58 %w 200 termwin
+	0.4 %w 0.02 %h 0.58 %w 0.25 %h termwin
 	16 48 480 654 edwin	
 	
 	"r3/r3vm/levels/level1.txt" loadlevel	
-	500 262 500 200 mapwin
+	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 		
 	"r3/r3vm/code/test0.r3" edload 
 	resetplayer
+	map.step
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 	
 	mark
@@ -311,14 +322,15 @@
 
 :tutor1
 	mark
-	16 32 1334 200 termwin
+	0.01 %w 0.02 %h 0.98 %w 0.25 %h termwin
 	16 262 480 440 edwin	
 	
 	"r3/r3vm/levels/tutor0.txt" loadlevel
-	500 262 500 200 mapwin	
+	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 	
 	|cleartext
 	resetplayer
+	map.step
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 	
 	mark	

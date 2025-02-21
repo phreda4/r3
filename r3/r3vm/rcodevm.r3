@@ -241,7 +241,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	data 256 - ;
 	
 ::vmdeep | -- stack
-	NOS stack - 3 >> 1+ ;
+	NOS stack - 3 >> ;
 	
 ::vmtokmov | tok -- usr
 	$80 and? ( $7f and syswordd + c@ ; ) 
@@ -306,6 +306,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
+	| #v1 #v2
 	'blk 'blk> !
 	0 'tlevel !
 	;
@@ -381,14 +382,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #delD
 
 :pushvar 
-	delD 8 << 
-	usoD $ff and or
+	delD 8 << usoD $ff and or
 	sana> w!+ 'sana> ! ;	| store diff with code
 	
 :popvar 
 	-2 'sana> +! sana> w@ 
-	dup $ff and 'usoD ! 
-	8 >> 'delD ! ;
+	dup $ff and 'usoD ! 8 >> 'delD ! ;
 	
 :dropvar
 	sana> 'sana =? ( drop ; ) drop | error!!
@@ -575,10 +574,10 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	data 8 - 0 over ! 'RTOS !  
 
 	code 8 - @ | header
-	dup 32 >> 				dup "data: %d" .println
+	dup 32 >> 				|dup "data: %d" .println
 	
-	over 16 >> $ffff and	dup "code: %d" .println
-	rot $ffff and 3 <<		dup "boot: %d" .println	
+	over 16 >> $ffff and	|dup "code: %d" .println
+	rot $ffff and 3 <<		|dup "boot: %d" .println	
 	code + 'ip ! 			| boot -> ip
 	3 << code +			| cntdata startdata
 	data swap rot cmove		| copy var
@@ -596,7 +595,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 ::vmboot
 	code 8 - @ | header
-	$ffff and 3 <<		dup "boot: %d" .println	
+	$ffff and 3 <<		|dup "boot: %d" .println	
 	code + ;
 
 |--------- ERROR 	

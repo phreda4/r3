@@ -506,7 +506,7 @@
 	xcursor 8 << or 
 	$010000 or	| h
 	or addmark ;
-
+	
 :linemark | mark --
 	dup $ff and ylinea -
 	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
@@ -520,11 +520,11 @@
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol sdlcolor sdlRect
 	a> 48 >> 4bcol sdlcolor sdlFRect
+|	a> 56 >> 1? ( ) drop
 	;
 	
 ::showmark
 	ab[ 'marcas ( marcas> <? @+ linemark ) drop ]ba ;
-
 	
 |----------- principal
 ::edram

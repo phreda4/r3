@@ -17,7 +17,7 @@
 	1 =? ( drop
 		adv ; )
 	drop
-	2 'dir +! 
+	4 'dir +! 
 	checkr ;
 	
 :run

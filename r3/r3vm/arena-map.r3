@@ -70,12 +70,28 @@
 		0 ( mapw <? 
 			drawtile
 			1+ ) drop
-		1+ ) drop ;
+		1+ ) drop 
+		
+|	$ffffff sdlcolor
+|	xmap ymap wmap hmap sdlrect
+	;
 
 ::mapwin | x y w h --
 	'hmap ! 'wmap ! 'ymap ! 'xmap !
+
+	hmap 16 << maph tilesize * /
+	wmap 16 << mapw tilesize * /
+	min 'viewpz !
 	
+	wmap
+	mapw tilesize * viewpz *. 
+	- 2/ xmap + 'viewpx ! 
 	
+	hmap
+	maph tilesize * viewpz *. 
+	- 2/ ymap + 'viewpy !
+
+	|480 'viewpx ! 220 'viewpy ! 3.0 'viewpz !	
 	;
 	
 |-------------------------------	
@@ -272,6 +288,9 @@
 	0 dup 'script ! 'script> !
 	here swap load 0 swap c! 
 	here parseline 'here !
+	teclr | clear terminal
+	0 fuente !
+	edset	| clear code
 	;
 	
 |---------------------
@@ -452,9 +471,7 @@
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
 
-	480 'viewpx !
-	220 'viewpy !
-	3.0 'viewpz !
+	480 'viewpx ! 220 'viewpy ! 1.0 'viewpz !
 	
 	50 'itemarr p.ini
 	;	
