@@ -291,6 +291,7 @@
 	teclr | clear terminal
 	0 fuente !
 	edset	| clear code
+	'addscript 2.0 +vexe	| start in 2 sec
 	;
 	
 |---------------------

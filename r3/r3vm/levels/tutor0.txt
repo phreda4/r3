@@ -47,17 +47,19 @@ Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 You can modify the stack with these %caWORDS%c3.
 
+%s
+
+: 10 20 
+	swap 
+	drop 
+	1 over ;
+
+%s
+
 %cbdup%c3  duplicate the top of %c6STACK%c3.
 %cbdrop%c3 remove top of %c6STACK%c3.
 %cbswap%c3 swap the upper two %c7NUMBERS%c3.
 %cbover%c3 duplicate the second of %c6STACK%c3.
-
-%s
-
-: 10 20 swap 
-	drop 1 over ;
-
-%s
 
 Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1

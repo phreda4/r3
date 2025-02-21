@@ -233,11 +233,13 @@
 	'hterm ! 'wterm ! 'yterm ! 'xterm ! ;
 	
 #inv 0
+#tcx
+#tcy
 
 :te
 	11 =? ( drop $80 inv xor 'inv ! ; )
 	12 =? ( drop c@+ tcol ; ) 
-	13 =? ( drop tcr tsp tsp ; )
+	13 =? ( drop 16 'tcy +! tcx tcy tat ; )
 	inv or temit ;
 	
 :cursor	
@@ -253,7 +255,11 @@
 	|8 32 sw 16 - 14 16 * 
 	sdlFRect
 	2.0 tsize 3 tcol 0 'inv !
-	2 1 txy 'term ( term> <? c@+ te ) drop
+	xterm 8 + 'tcx ! yterm 8 + 'tcy !
+	|2 1 txy 
+	tcx tcy tat
+	
+	'term ( term> <? c@+ te ) drop
 	sstate 1? ( drop nextlesson ; ) drop
 	cursor
 	1100 160 'completechapter "   >>" $3f00 btnt
