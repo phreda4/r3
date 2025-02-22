@@ -33,13 +33,17 @@
 	0 sdlcls 
 	gui
 	mouseview
-	$1 tcol 2.0 tsize 
-	8 8 tat "Arena MAP" tprint
 	
 	draw.map
 	draw.items
 	draw.player
 	map.step
+
+	$1 tcol 2.0 tsize 
+	8 8 tat "Arena MAP " tprint
+	0 ( 8 <? 
+		dup bot.check 8 >> "%h " tprint
+		1+ ) drop
 
 	SDLredraw 
 	sdlkey
@@ -54,16 +58,14 @@
 : |<<< BOOT <<<
 	"r3mapa" 1024 600 SDLinit
 	2.0 8 8 "media/img/atascii.png" tfnt 
-	
-	"r3/r3vm/levels/level0.txt" loadlevel
-	
 	64 vaini
 	edram
 	bot.ini	
-
-	100 'viewpx !
-	50 'viewpy !
-	3.0 'viewpz !
+	
+	"r3/r3vm/levels/levels.txt" loadlevel
+	0 32 sw sh 32 - mapwin
+	
+	|100 'viewpx ! 50 'viewpy ! 3.0 'viewpz !
 	resetplayer
 	
 	'main sdlShow 

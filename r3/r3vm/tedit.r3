@@ -11,6 +11,8 @@
 ##xedit 0 ##yedit 0
 ##wedit 400 ##hedit 300
 
+#lnsize 3 | size line number
+
 |#xcode 1 #ycode 3 
 #wcode 40 #hcode 20
 
@@ -35,6 +37,7 @@
 
 #undobuffer |'undobuffer
 #undobuffer>
+
 
 #mshift
 
@@ -266,7 +269,7 @@
 	dup c@ 0? ( drop ; ) drop
 	$3f3f3f trgb 
 	
-	over ylinea + 1+ .d 3 .r. temits tsp 
+	over ylinea + 1+ .d lnsize 1- .r. temits tsp 
 
 	iniline
 	( c@+ 1?
@@ -305,7 +308,7 @@
 	pantaini>
 	SDLy yedit advy +
 	( over <? advy + rot >>13 2 + -rot ) 2drop
-	SDLx xedit advx 5 * + 
+	SDLx xedit advx lnsize * + 
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
@@ -427,7 +430,7 @@
 #sx1 #sy1 #sw1 
 	
 :selectfill
-	xedit sx1 4 + advx * +
+	xedit sx1 lnsize + advx * +
 	sy1
 	sw1 advx * 
 	advy sdlFrect ;
@@ -469,7 +472,7 @@
 |	colb1 sdlcolor
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
-	xedit 4 advx * +
+	xedit lnsize advx * +
 	ycursor ylinea - advy * yedit + 
 	tat
 	$ffffff SDLColor 
@@ -513,7 +516,7 @@
 	over >a
 	advy * yedit +   | y real
 	over 8 >> $ff and 
-	4 + advx * xedit +  | x real
+	lnsize + advx * xedit +  | x real
 	swap rot | x y vv
 	dup 24 >> $ff and advx * | w
 	swap 16 >> $ff and advy * | h

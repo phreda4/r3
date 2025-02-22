@@ -36,7 +36,15 @@ Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
 
 %s
 
-: 1 2 3 * + 10 - ;
+: 
+	1 
+	2 
+	3 
+	* 
+	+ 
+	10 
+	- 
+	;
 
 %s
 
@@ -52,7 +60,8 @@ You can modify the stack with these %caWORDS%c3.
 : 10 20 
 	swap 
 	drop 
-	1 over ;
+	1 over 
+	;
 
 %s
 
@@ -74,7 +83,11 @@ with this indication:
 
 %s
 
-: 2 step 3 step 4 step ;
+: 
+	2 step 
+	3 step 
+	4 step 
+	;
 
 %s
 %w1
@@ -83,7 +96,12 @@ for this we are going to use LOOPS.
 
 %s
 
-: 0 ( 10 <? 1 + ) drop ;
+: 
+	0 ( 
+		10 <? 
+		1 + 
+		) drop 
+	;
 
 %s
 %caWORDS%c3 enclosed between %ca(%c3 and %ca)%c3 be a block of WORDS
@@ -100,8 +118,13 @@ We can add other %caWORDS%c3 inside the LOOP to repeat
 
 %s
 
-: 0 ( 5 <? 1 + 
-	2 step ) drop ;
+: 
+	0 ( 
+		6 <? 
+		1 + 
+		2 step 
+		) drop 
+	;
 
 %s
 Some other conditionals are:
@@ -123,26 +146,51 @@ you can execute a %caWORDS%c3 only if a condition is TRUE put conditional %caWOR
 previus to the ( ) %caWORDS%c3.
 %s
 : 
-	0 ( 10 <?
+	0 ( 
+		6 <?
 		2 check
-		0? ( 2 step )
+		1? ( 2 step )
 		drop
-		1 + ) drop ;
+		1 + 
+		) drop
+	;
 		
 %s
 
 This code only advance if the next cell is empty;
 %w1
-You can define new %caWORDS%c3 using the prefix : in the %c6CODE%c3
+You can define new %caWORDS%c3 with the %cd:%c3 prefix,
+you can use the %caWORD%c3 defined from here.
 this can be usefull for make %c6CODE%c3 more clear and build thing
 
 %s
 
-:left 2 step ;
+:moveup | --
+	0 step ;
+
+: 
+	moveup 
+	moveup 
+	;
+
+%s
+Is usefull keep track about then stack movement.
+regisre this like a comment in the source code.
+
+for this, the prefix | yoo make a comment to the rest of line.
+this text don't see for the language at all
+%w1
+
+%s
+
+:left 
+	2 step ;
 
 :goleft
-	( 2 check 0 =? drop 
-		left ) drop ;
+	( 2 check 
+		1 =? drop 
+		left ) drop 
+	;
 		
 : goleft ;
 
@@ -151,6 +199,43 @@ this can be usefull for make %c6CODE%c3 more clear and build thing
 You need build a %c6STACK%c3 behavior for balance all %caWORDS%c3.
 
 %w1
+This new words defined by prefix %cd:%c3 is like new ACTIONS.
+You need define DATA to store states, this is called %ccVARIABLES%c3.
+The prefix are %cc#%c3, when you use this word, 
+the value in the %ccvar%c3 is pushed to stack.
 
-End of tutorial 1
+%s
+
+#var 3
+
+: 
+	var 
+	2 + 
+	;
+
+%s
+
+%w1
+For access to this memory you need the place where the data is store.
+the prefix %ca'%c3 give this adress, and is used for change the value in %ccvar%c3.
+
+
+%s
+
+#var 3
+
+: 
+	'var @
+	5 'var !
+	var
+	;
+
+%s
+
+the word ! store the value in the adress and the word @ fetch this value.
+but if you name the %ccvar%c3 is the same.
+
+%w1
+
+End of tutorial
 %e

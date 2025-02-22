@@ -25,7 +25,7 @@
 ::%h sH 16 *>> ; 
 
 | MAP
-#marena * $fff
+#marena * $ffff
 
 | ITEMS
 #items * $7ff
@@ -223,6 +223,7 @@
 
 ::nextchapter
 	0 'sstate ! teclr 
+	script> trim 'script> !
 	addscript 
 	;
 	
@@ -273,7 +274,7 @@
 	>>cr parseitem ;
 	
 :parsescript	
-	dup 'script ! dup 'script> ! ;
+	trim dup 'script ! dup 'script> ! ;
 	
 :parseline | adr -- adr
 	trim dup c@ 0? ( drop ; ) drop
@@ -298,7 +299,7 @@
 ::resetplayer
 	100 'penergy ! 0 'pcarry ! 
 	
-	3 3 128 ICS>anim 'ap ! | anima'ap !
+	3 0 128 ICS>anim 'ap ! | anima'ap !
 	
 	'itemarr p.clear
 	'items ( items> <?
@@ -439,6 +440,11 @@
 	]m@ $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
 	;
+
+::bot.check
+	$7 and 2* 'mdir + c@+ swap c@ 	| dx dy
+	yp + swap xp + swap
+	]m@	;
 	
 :itake 
 	vmpop 32 >> 
@@ -472,7 +478,7 @@
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
 
-	480 'viewpx ! 220 'viewpy ! 1.0 'viewpz !
+|	480 'viewpx ! 220 'viewpy ! 1.0 'viewpz !
 	
 	50 'itemarr p.ini
 	;	

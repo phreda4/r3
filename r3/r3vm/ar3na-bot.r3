@@ -334,7 +334,6 @@
 	"r3/r3vm/levels/tutor0.txt" loadlevel
 	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 	
-	|cleartext
 	resetplayer
 	map.step
 	1 'state ! 0 'code1 ! 0 'cpu1 !
@@ -346,7 +345,7 @@
 	vareset
 	empty
 	;
-		
+
 |-------------------
 :options	
 	;

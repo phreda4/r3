@@ -1,0 +1,56 @@
+
+prefix
+| comment
+: define action
+# define data
+' adress
+
+( ) block of words
+; end of word
+
+| aritmetic
++	| a b -- c	; add 
+-	| a b -- c	; substract
+*	| a b -- c	; multiply
+/	| a b -- c	; divide
+mod	| a b -- c	; modulo
+neg	| a -- b ; negate
+abs	| a -- b : absolute value
+sqrt | a -- b ; square root
+<<	| a b -- c ; binary left shift 
+>>	| a b -- c ; binary rigth shift 
+/mod
+*/
+| logic
+and	| a b -- c	; and
+or	| a b -- c	; or 
+xor	| a b -- c	; exclusive or
+not	| a -- b ; negate bit
+| conditional
+0?	| a -- a
+1?	| a -- a
++?	| a -- a
+-?	| a -- a
+=?	| a b -- a
+<>?	| a b -- a
+and?	| a b -- a
+nand	| a b -- a
+<?	| a b -- a
+<=?	| a b -- a
+>?	| a b -- a
+>=?	| a b -- a
+| stack operation
+dup		| a -- a a
+drop	| a -- 
+over	| a b -- a b a
+swap	| a b -- b a
+nip		| a b -- b
+rot		| a b c -- b c a
+pick2	| a b c -- a b c a
+pick3	| a b c d -- a b c d a
+| data memory
+! 		| a b -- 
++!		| a b -- 
+!+		| a b -- c
+@		| a -- b
+@+		| a -- b c
