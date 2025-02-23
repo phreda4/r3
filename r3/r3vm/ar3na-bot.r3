@@ -29,6 +29,84 @@
 	$e tcol temits	
 	onClick ;
 
+|----------- marcas
+| y|x|ini|cnt|colorf|colorb
+| ttco1co2wwhhxxyy
+| 8(t)12(col1)12(col2)8(w)8(h)8(x)8(y)
+#marcas * $ff | 32 marcadores
+#marcas> 'marcas
+
+#vard * 1024
+
+::clearmark	'marcas 'marcas> ! ;
+
+::addmark	marcas> !+ 'marcas> ! ;
+
+::addsrcmark | src color --
+	32 << swap
+	dup >>sp over - 24 << 
+	swap src2pos
+	ycursor or 
+	xcursor 8 << or 
+	$010000 or	| h
+	or addmark ;
+
+:linemark | mark --
+	dup $ff and ylinea -
+	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
+	over >a
+	advy * yedit +   | y real
+	over 8 >> $ff and 
+	lnsize + advx * xedit +  | x real
+	swap rot | x y vv
+	dup 24 >> $ff and advx * | w
+	swap 16 >> $ff and advy * | h
+	pick3 1- pick3 1- pick3 2 + pick3 2 +
+	a> 32 >> 4bcol sdlcolor sdlRect
+	a> 48 >> 4bcol sdlcolor sdlFRect
+	;
+
+:showmark
+	ab[ 'marcas ( marcas> <? @+ linemark ) drop ]ba ;
+
+|------------------
+::varplace | src -- val
+	src2pos
+	ycursor  
+	xcursor 8 << or 
+	;
+
+	
+:buildvars
+	ab[
+	'vard >a
+	data >b
+	code 8 - @ 32 >> 3 >>
+	( 1? 1-
+		b@+ varplace 
+		dup "%h" .println
+		a!+ 
+		) a!		 
+	]ba ;
+
+:linevar
+	dup $ff and ylinea -
+	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
+	over >a
+	advy * yedit +   | y real
+	over 8 >> $ff and 
+	lnsize + advx * xedit +  | x real
+	
+	swap rot tat 
+	"tt" tprint
+	2drop
+	;
+	
+:showvars
+	data >a 'vard ( @+ 1? linevar ) 2drop 
+	;
+
+		
 |------------	
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
@@ -94,21 +172,7 @@
 	edtoolbar
 	;	
 
-#vard * 1024
 
-:buildvars
-	ab[
-	'vard >a
-	data >b
-	code 8 - @ 32 >> 3 >>
-	( 1? 1- b@+ $ffffffff and a!+ ) a! 
-	]ba ;
-	
-:markvars
-	data >a
-	'vard ( @+ 1? |$ffffffff and
-		a@+ $ffffffff and or
-		vmcode2src $077ffff addsrcmark ) 2drop ;
 	
 :showruning
 	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
@@ -116,14 +180,13 @@
 	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
+	
 	fuente> $007ffff addsrcmark | ip
 	RTOS ( @+ 1? 				| rstack
 		8 - @ vmcode2src $0070000 addsrcmark 
 		) 2drop
-	
-	markvars
-
 	showmark
+	showvars	
 	
 	edcodedraw
 	edtoolbar
@@ -162,8 +225,10 @@
 		; ) 2drop
 
 	2 'state ! 
-	vmcpu 'cpu1 !	
+	vmcpu 'cpu1 !
+	
 	buildvars
+	
 	;
 
 :play
@@ -217,8 +282,6 @@
 	yedit hedit + 
 	tat " Stack" temits
 	vmdeep 0? ( drop ; ) 
-	|3.0 tsize 
-	|$3f3f00 sdlcolor
 	yedit hedit + 27 - 'sty ! 
 	stack 16 +
 	( swap 1- 1? swap

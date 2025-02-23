@@ -11,12 +11,12 @@
 ##xedit 0 ##yedit 0
 ##wedit 400 ##hedit 300
 
-#lnsize 3 | size line number
+##lnsize 3 | size line number
 
 |#xcode 1 #ycode 3 
-#wcode 40 #hcode 20
+#wcode 40 ##hcode 20
 
-#xlinea 0 #ylinea 0	| primera linea visible
+#xlinea 0 ##ylinea 0	| primera linea visible
 ##ycursor ##xcursor
 
 ##edfilename * 1024
@@ -380,7 +380,7 @@
 	ylinea 'ycursor !
 	( fuente> <? c@+ emitcur ) drop ;
 	
-:src2pos | src -- 
+::src2pos | src -- 
 	0 'xcursor ! 0 'ycursor !
 	fuente ( over <? c@+ emitcur ) 2drop ;
 	
@@ -491,44 +491,7 @@
 	edselshow
 	;
 
-|----------- marcas
-| y|x|ini|cnt|colorf|colorb
-| ttco1co2wwhhxxyy
-| 8(t)12(col1)12(col2)8(w)8(h)8(x)8(y)
-#marcas * $ff | 32 marcadores
-#marcas> 'marcas
 
-::clearmark	'marcas 'marcas> ! ;
-::addmark	marcas> !+ 'marcas> ! ;
-
-::addsrcmark | src color --
-	32 << swap
-	dup >>sp over - 24 << 
-	swap src2pos
-	ycursor or 
-	xcursor 8 << or 
-	$010000 or	| h
-	or addmark ;
-	
-:linemark | mark --
-	dup $ff and ylinea -
-	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
-	over >a
-	advy * yedit +   | y real
-	over 8 >> $ff and 
-	lnsize + advx * xedit +  | x real
-	swap rot | x y vv
-	dup 24 >> $ff and advx * | w
-	swap 16 >> $ff and advy * | h
-	pick3 1- pick3 1- pick3 2 + pick3 2 +
-	a> 32 >> 4bcol sdlcolor sdlRect
-	a> 48 >> 4bcol sdlcolor sdlFRect
-|	a> 56 >> 1? ( ) drop
-	;
-	
-::showmark
-	ab[ 'marcas ( marcas> <? @+ linemark ) drop ]ba ;
-	
 |----------- principal
 ::edram
 	here	| --- RAM

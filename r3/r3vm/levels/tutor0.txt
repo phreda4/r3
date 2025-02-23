@@ -216,10 +216,6 @@ the value in the %ccvar%c3 is pushed to stack.
 %s
 
 %w1
-For access to this memory you need the place where the data is store.
-the prefix %ca'%c3 give this adress, and is used for change the value in %ccvar%c3.
-
-
 %s
 
 #var 3
@@ -232,9 +228,30 @@ the prefix %ca'%c3 give this adress, and is used for change the value in %ccvar%
 
 %s
 
-the word ! store the value in the adress and the word @ fetch this value.
-but if you name the %ccvar%c3 is the same.
+For access to this memory you need the place where the data is store.
+the prefix %ca'%c3 give this adress, and is used for change the value in %ccvar%c3.
 
+the word ! store the value in the adress and the word @ fetch this value.
+but write %ccvar%c3 is the same behavior.
+
+%w1
+%s
+
+#var 10
+
+: 
+	var 
+	-1 'var +!
+	var
+	10 'var +! 
+	var
+	var 2 + 'var !
+	var
+	;
+
+%s
+You can use the word +! to add a number to the adress.
+  
 %w1
 
 End of tutorial

@@ -331,15 +331,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 
 :.lit | adr -- adr 	| falta hex/bin/fix
-	state
-	2 =? ( drop 
-		dup str>anro 32 <<
-		rot src - 16 << or
-		,d ; )
-	drop
 	dup str>anro 32 <<
 	rot src - 16 << or
-	,i ;		
+	state 2 =? ( drop ,d ; ) drop ,i ;		
 
 :.com | adr -- adr'
 	>>cr ; | don't save comment
