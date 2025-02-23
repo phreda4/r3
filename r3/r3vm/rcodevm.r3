@@ -231,7 +231,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmcell | tok -- ""
 	dup $f and 3 << 'tokbig + @ ex ;
 
-#tokcol ( $7 $7 $7 $7 $6 $d $5 $c $2 )
+#tokcol ( $f $f $f $f $e $d $5 $c $2 )
 
 ::vmcellcol	| tok -- tok col
 	dup $f and 'tokcol + c@ ;
@@ -306,7 +306,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
-	| #v1 #v2
+	
+|	dicc> @ 32 >> code> code - =? ( 
+|		over src - 16 <<  | #v1 #v2
+|		,d 
+|		) drop
+	
 	'blk 'blk> !
 	0 'tlevel !
 	;

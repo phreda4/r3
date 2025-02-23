@@ -76,15 +76,14 @@
 	xcursor 8 << or 
 	;
 
-	
 :buildvars
 	ab[
 	'vard >a
 	data >b
 	code 8 - @ 32 >> 3 >>
 	( 1? 1-
-		b@+ varplace 
-		dup "%h" .println
+		b@+
+		16 >> $ffff and fuente + varplace 
 		a!+ 
 		) a!		 
 	]ba ;
@@ -92,25 +91,27 @@
 :linevar
 	dup $ff and ylinea -
 	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
-	over >a
 	advy * yedit +   | y real
-	over 8 >> $ff and 
+	swap 8 >> $ff and 
 	lnsize + advx * xedit +  | x real
-	
-	swap rot tat 
-	"tt" tprint
-	2drop
+	swap tat
+	a@+ 
+
+	vmcellcol tcol
+	vmtokstr trect swap advx 2* + swap sdlfrect | cler 2 char more
+	temits
 	;
 	
 :showvars
-	data >a 'vard ( @+ 1? linevar ) 2drop 
+	$0 sdlcolor 
+	data >a 
+	'vard ( @+ 1? linevar ) 2drop 
 	;
 
-		
 |------------	
 #cpu
 #state | 0 - view | 1 - edit | 2 - run | 3 - error
-#cdspeed 0.2
+#cdspeed 0.1
 
 :stepvm
 	ip 0? ( drop ; ) 
@@ -171,8 +172,6 @@
 	edcodedraw
 	edtoolbar
 	;	
-
-
 	
 :showruning
 	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
@@ -186,9 +185,8 @@
 		8 - @ vmcode2src $0070000 addsrcmark 
 		) 2drop
 	showmark
-	showvars	
-	
 	edcodedraw
+	showvars	
 	edtoolbar
 	;	
 
@@ -255,7 +253,7 @@
 #sty 
 
 :cellstack | cell --
-	vmcellcol 
+	vmcellcol $7 and 
 	tpal $00000 col50% | obscure
 	sdlcolor 
 	xedit wedit + 2 +
