@@ -32,6 +32,7 @@
 #items> 'items
 
 #itemarr 0 0
+#fxarr 0 0
 
 | PLAYER
 ##xp 1 ##yp 1 | position
@@ -49,8 +50,8 @@
 	]m @ ;
 	
 ::posmap | x y -- xs ys
-	swap tmul * 2* viewpx + tmul +
-	swap tmul * 2* viewpy + tmul +
+	swap tmul * 2* viewpx +
+	swap tmul * 2* viewpy +
 	;
 	
 :drawtile
@@ -63,7 +64,6 @@
 	;
 	
 ::draw.map | x y --
-|	1.0 tsize | debug
 	tilesize viewpz *. 2/ 'tmul ! | recalc
 	'marena >a
 	0 ( maph <? 
@@ -75,7 +75,8 @@
 |	$ffffff sdlcolor
 |	xmap ymap wmap hmap sdlrect
 	;
-
+	
+	
 ::mapwin | x y w h --
 	'hmap ! 'wmap ! 'ymap ! 'xmap !
 
@@ -84,14 +85,16 @@
 	min 'viewpz !
 	
 	wmap
-	mapw tilesize * viewpz *. 
-	- 2/ xmap + 'viewpx ! 
+	mapw 1- tilesize * viewpz *. 
+	- 2/ xmap + 
+	tilesize viewpz *. 2/ +
+	'viewpx ! 
 	
 	hmap
-	maph tilesize * viewpz *. 
-	- 2/ ymap + 'viewpy !
-
-	|480 'viewpx ! 220 'viewpy ! 3.0 'viewpz !	
+	maph 1- tilesize * viewpz *. 
+	- 2/ ymap + 
+	tilesize viewpz *. 2/ + 
+	'viewpy !
 	;
 	
 |-------------------------------	
@@ -100,6 +103,9 @@
 | $1xx pasa - nada
 | $2xx pasa - cae
 | $3xx pasa - explota?
+|
+| 00xxxx -- iten nro
+
 :char2map
 	$23 =? ( drop $00d ; ) | #  pared
 	$3d =? ( drop $00c ; ) | =	pared ladrillo
@@ -231,10 +237,28 @@
 	( sstate 0? drop
 		script> c@+ +t 'script> ! ) drop ;
 
+|--------------------
+| FX
+:drawfx
+	8 + >a
+	a@+ a@+ posmap
+|	2dup 16 + tat | **
+	viewpz 
+	a@ dup deltatime + a!+ anim>n
+	imgspr sspritez
+|	6 tcol a@+ "%h" tprint | **
+	;
+
+:+fx | t a y x 
+	'drawfx 'fxarr p!+ >a
+	a!+ a!+ a!+ a! ;
+
 |---------------------
 | ITEMS
 ::draw.items
-	'itemarr p.draw ;
+	'itemarr p.draw 
+	'fxarr p.draw 
+	;
 
 :drawitem
 	8 + >a
@@ -372,6 +396,7 @@
 	drop | tipo 0
 	dirx a> 8 + +!
 	diry a> 16 + +! 
+	
 	1 ;
 
 :overitem | d nx ny -- d nx ny 0
@@ -478,7 +503,7 @@
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
 
-|	480 'viewpx ! 220 'viewpy ! 1.0 'viewpz !
-	
+
 	50 'itemarr p.ini
+	50 'fxarr p.ini
 	;	

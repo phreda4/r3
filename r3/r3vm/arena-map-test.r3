@@ -45,6 +45,7 @@
 		dup bot.check 8 >> "%h " tprint
 		1+ ) drop
 
+	
 	SDLredraw 
 	sdlkey
 	>esc< =? ( exit )
@@ -65,7 +66,6 @@
 	"r3/r3vm/levels/levels.txt" loadlevel
 	0 32 sw sh 32 - mapwin
 	
-	|100 'viewpx ! 50 'viewpy ! 3.0 'viewpz !
 	resetplayer
 	
 	'main sdlShow 
