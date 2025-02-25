@@ -53,6 +53,7 @@
 	<dn> =? ( 4 botstep )
 	<le> =? ( 6 botstep )
 	<ri> =? ( 2 botstep )
+	<esp> =?  ( xp yp xytest )
 	drop
 	;
 

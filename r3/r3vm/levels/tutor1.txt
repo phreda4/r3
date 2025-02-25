@@ -1,0 +1,79 @@
+*MAP
+16 9
+#==============#
+#              #
+#              #
+#              #
+#              #
+#              #
+#              #
+#              #
+================
+*ITEM
+0 4 4 0 0	| player
+2 10 4 29 2	| place
+1 7 4 22 0	| box
+*SCRIPT
+
+words for tank
+
+ fire 
+ go 
+ turn 
+ scan 
+ batt S
+ damage 
+ dir 
+ speed 
+ pos 
+ 
+Numbers in fixed point
+
+represent fractional par of unit
+
+1.0 
+
++ - is the same
+
+0.5 0.25 + 
+
+*. /. is for fixed point
+
+0.5 4.0 *.
+
+you can convert
+
+3 fix. -> 3.0
+
+3.3 int. -> 3
+
+you can mix operation
+
+2.0 34 * 	34 2.0 * 
+the result is fixed point
+
+4.5 3 /
+the result is fixed point
+3 4.5 /
+
+4.5 5 *.
+the result is int
+
+10.2 3 /.
+the result is int
+
+functions for trigonometri (for aim!!)
+
+sin cos tan tan2 
+
+word for randomize
+rand
+
+---------------------
+
+ fire go turn scan batt damage dir speed pos 
+ sin cos tan tan2 rand
+ *.
+ /. 
+ fix. 
+ int.

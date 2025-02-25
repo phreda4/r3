@@ -289,13 +289,26 @@
 	vmpop tan vmpush ;
 :itan2 | x y -- ang
 	vmpop vmpop swap atan2 vmpush ;
+
 :irand | max -- rand
 	vmpop randmax vmpush ;
 
+:i*.  
+	vmpop *. vmpush ;
+:i/. 
+	vmpop /. vmpush ;
+:ifix.
+	vmpop fix. vmpush ;
+:iint.
+	vmpop int. vmpush ;
+	
+
 |------ IO interface
-##wordt * 128 | 16 words
-##words "fire" "go" "turn" "scan" "batt" "damage" "dir" "speed" "pos" "sin" "cos" "tan" "tan2" "rand" 0
-##worde	ifire igo iturn iscan ibatt idamage idir ispeed ipos isin icos itan itan2 irand 
+##wordt * 256 | 32 words
+##words "fire" "go" "turn" "scan" "batt" "damage" "dir" "speed" "pos" 
+"sin" "cos" "tan" "tan2" "rand" "*." "/." "fix." "int." 0
+##worde	ifire igo iturn iscan ibatt idamage idir ispeed ipos 
+isin icos itan itan2 irand i*. i/. ifix. iint. 
 ##wordd ( $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 ) 
 
 ::war.ini

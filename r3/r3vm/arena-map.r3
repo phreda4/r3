@@ -241,17 +241,37 @@
 | FX
 :drawfx
 	8 + >a
-	a@+ a@+ posmap
-|	2dup 16 + tat | **
-	viewpz 
-	a@ dup deltatime + a!+ anim>n
-	imgspr sspritez
-|	6 tcol a@+ "%h" tprint | **
+	a@+ 64xyrz a@ dup deltatime + a!+ anim>n
+	imgspr sspriteRZ
+	a@+
+	a@ deltatime + dup a!
+	swap >=? ( drop 0 ; ) drop
 	;
 
-:+fx | t a y x 
-	'drawfx 'fxarr p!+ >a
-	a!+ a!+ a!+ a! ;
+:+fx | live anima zryx --
+	'drawfx 'fxarr p!+ >a a!+ a!+ 
+	1000 *.
+	a!+ 0 a! ;
+
+| box fall
+| player fall
+| check
+| move?
+
+::xytest | x y 
+	2.0 | live
+	30 8 $7f ICS>anim
+	2over
+	posmap 0 viewpz xyrz64 dup >r
+	+fx 
+	
+	2 + posmap 0.5 0.8 xyrz64 
+	r>
+	a> -3 ncell+ -rot
+	25 1.0 0
+	+vxyanim | 'var ini fin ease dur. start --
+	;
+
 
 |---------------------
 | ITEMS
@@ -502,7 +522,6 @@
 
 	'wordt 'words vmlistok 
 	'wordt 'worde 'wordd vmcpuio
-
 
 	50 'itemarr p.ini
 	50 'fxarr p.ini
