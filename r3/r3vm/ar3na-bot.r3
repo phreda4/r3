@@ -226,11 +226,10 @@
 	vmcpu 'cpu1 !
 	
 	buildvars
-	
 	;
 
 :play
-	state 2 =? ( drop ; ) drop
+	state 2 =? ( drop vareset ; ) drop
 	compilar
 	state 2 <>? ( drop ; ) drop
 	ip vm2src 'fuente> ! 

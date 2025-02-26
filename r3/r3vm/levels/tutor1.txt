@@ -17,15 +17,61 @@
 
 words for tank
 
- fire 
- go 
- turn 
- scan 
- batt S
- damage 
- dir 
- speed 
- pos 
+ fire	| range --
+ 
+fire a missile heading a specified range, the direction of fire is pointed by the tank.
+the cannon need to be reloaded, then you need wait sometimes.
+the range has a limit
+
+5.0 fire | fire the cannon to 5.0 distance
+ 
+ go		| speed -- 
+ 
+modify the motor to specified speed, 0 to stop tank, 1.0 to full speed.
+
+1.0 go | turn full speed
+ 
+ turn	| angle --
+
+turn the tank in certan angle, the speed is reduced when turning.
+
+0.25 turn | turn 90 degres to the right
+
+ scan	| angle -- range
+ 
+given an angle, scan search an enemy from pointer-angle to pointer+angle and return the nearest enemy range
+0 if no enemy in this angle.
+ 
+0.1 scan 				| scan 0.2 angle
+1.0 >? ( dup fire )		| fire if enemy is away more 1.0 distance
+drop	
+ 
+
+ batt	| -- bat
+
+stack the battery level fro 0 to 1.0
+
+ damage | -- dam
+
+stack the damage of tank.
+
+ dir	| -- dir
+ 
+stack the direction of tank, 0 is upper, 0.25 is rigth, 0.5 is down, 0.75 id left
+
+ speed	| -- speed
+
+stack the current speed of tank
+
+ pos	| -- x y 
+ 
+stack the x and y position of map
+
+
+rand | max -- r
+
+stack a random number for 0 to max value.
+
  
 Numbers in fixed point
 

@@ -170,11 +170,11 @@
 |--- for sprite
 ::64xyrz | b -- x y r z
 	dup 48 >> swap dup 16 << 48 >> swap
-	dup 32 << 48 >> swap 48 << 48 >> 4 << ;
+	dup 32 << 48 >> 2 << swap 48 << 48 >> 4 << ;
 	
 ::xyrz64 | x y r z -- b
 	4 >> $ffff and swap
-	$ffff and 16 << or swap
+	2 >> $ffff and 16 << or swap
 	$ffff and 32 << or swap
 	$ffff and 48 << or ;
 

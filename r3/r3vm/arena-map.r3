@@ -13,9 +13,9 @@
 
 ##imgspr
 
-#xmap #ymap #wmap #hmap 
-
 ##viewpx ##viewpy ##viewpz
+
+#xmap #ymap #wmap #hmap 
 
 #mapw 16 #maph 12
 #tilesize 16 
@@ -41,7 +41,6 @@
 #penergy
 #pcarry
 
-##sstate
 
 :]m | x y -- map
 	mapw * + 3 << 'marena + ;
@@ -130,6 +129,7 @@
 	
 |---------------------
 | SCRIPT
+##sstate
 
 #script
 #script>
@@ -259,17 +259,17 @@
 | move?
 
 ::xytest | x y 
-	2.0 | live
-	30 8 $7f ICS>anim
+	4.0 | live
+	31 8 $7f ICS>anim
 	2over
-	posmap 0 viewpz xyrz64 dup >r
+	1 - posmap 0 viewpz xyrz64 dup >r
 	+fx 
 	
-	2 + posmap 0.5 0.8 xyrz64 
+	1 + posmap 2.0 viewpz 2/ xyrz64 
 	r>
 	a> -3 ncell+ -rot
-	25 1.0 0
-	+vxyanim | 'var ini fin ease dur. start --
+	24 3.0 0
+	+vboxanim | 'var ini fin ease dur. start --
 	;
 
 
@@ -336,7 +336,7 @@
 	teclr | clear terminal
 	0 fuente !
 	edset	| clear code
-	'addscript 2.0 +vexe	| start in 2 sec
+	'addscript 1.0 +vexe	| start in 1 sec
 	;
 	
 |---------------------
@@ -366,8 +366,10 @@
 :itemxy	| item -- item x y
 	dup 1 ncell+ @ over 2 ncell+ @ ;
 	
-:seti | item --
-	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
+:item2m | item --
+	dup 4 ncell+ @ 
+	2 =? ( drop ; ) 
+	drop	| item sin cuerpo
 	dup itemxy ]m 						| item map
 	
 |	dup @ $300 and $200 =? ( 2drop 'itemarr p.del ; ) drop | agujero
@@ -378,14 +380,23 @@
 	over @ or swap ! ;
 	
 :item2map
-	'marena >a maph mapw * ( 1? 1- a@ $0fff and a!+ ) drop
-	'seti 'itemarr p.mapv ;
+	'marena >a maph mapw * 
+	( 1? 1- 
+		a@ $0fff and a!+ ) drop
+	'item2m 'itemarr p.mapv ;
 
 |-----
+:moveitem | item --
+	;
+	
+:fallitem | item --
+	'itemarr p.del
+	;
+	
 :chki | item --
 	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
 	dup itemxy ]m@ 						| item map
-	$300 and $200 =? ( drop 'itemarr p.del ; ) 
+	$300 and $200 =? ( drop fallitem ; ) | fall item
 	2drop ;
 	
 :check2map
@@ -412,11 +423,10 @@
 	a> 16 + @ diry + | nx ny
 	]m@ 
 	$300 nand? ( 0 nip ; )		| wall
-	$ff0000 and? ( 0 nip ; )	| item
+	$ff0000 and? ( 0 nip ; )	| item solid
 	drop | tipo 0
 	dirx a> 8 + +!
 	diry a> 16 + +! 
-	
 	1 ;
 
 :overitem | d nx ny -- d nx ny 0
@@ -431,7 +441,7 @@
 	
 #typeitem 'moveitem 'overitem 'eatitem 'winitem
 
-:realmove
+:realmove | x y --
 	'yp ! 'xp !
 	'mani + c@ 3 128 ICS>anim 'ap ! | anima
 	;
@@ -467,6 +477,7 @@
 	xp yp ]m@ $300 and 
 	$200 <>? ( drop ; ) drop
 	| cae player
+	
 	;
 
 ::botstep | dir --

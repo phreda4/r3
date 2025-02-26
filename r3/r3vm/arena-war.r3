@@ -268,13 +268,13 @@
 :ibatt | -- battery
 	vmpush ;
 
-:idamage
+:idamage | -- dam
 	vmpush ;
 
-:idir | -- s
+:idir | -- dir
 	vmpush ;
 	
-:ispeed | -- s
+:ispeed | -- speed
 	vmpush ;
 	
 :ipos | -- x y 
