@@ -233,16 +233,15 @@
 	compilar
 	state 2 <>? ( drop ; ) drop
 	ip vm2src 'fuente> ! 
-	resetplayer
+	reset.map
 	'stepvma cdspeed +vexe
 	;	
 	
 :step
 	state 2 =? ( drop stepvmas ; ) drop | stop?
-	resetplayer 
 	compilar	
 	ip vm2src 'fuente> ! 
-	resetplayer
+	reset.map
 	;
 	
 :help
@@ -347,9 +346,6 @@
 	gui 0 sdlcls
 
 	draw.map
-	draw.items
-	draw.player
-	map.step	
 
 	draw.code
 	draw.script
@@ -374,8 +370,7 @@
 	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 		
 	"r3/r3vm/code/test0.r3" edload 
-	resetplayer
-	map.step
+	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 	
 	mark
@@ -394,8 +389,7 @@
 	"r3/r3vm/levels/tutor0.txt" loadlevel
 	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 	
-	resetplayer
-	map.step
+	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 	
 	mark	
@@ -438,7 +432,7 @@
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini
 	edram	| editor
-	bot.ini
+	ini.map
 
 	'menu sdlshow
 	

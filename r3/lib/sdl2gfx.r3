@@ -371,6 +371,9 @@
 	dup 32 >> $fff and * $ffff and
 	swap 44 >> $ff and 16 *>>
 	;
+	
+::anim>stop | ani -- ani
+	$ff00000000000 nand ;
 
 
 : fillfull ;

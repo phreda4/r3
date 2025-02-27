@@ -132,7 +132,7 @@
 ::+vanim | 'var ini fin ease dur. start --
 	>r addint r> +tline ;
 
-::+vboxanim | 'var ini fin ease dur. start --
+::+vboxanim | 'var fin ini ease dur. start --
 	>r addint $10000 or r> +tline ;
 
 ::+vxyanim | 'var ini fin ease dur. start --

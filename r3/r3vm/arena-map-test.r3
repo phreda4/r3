@@ -35,9 +35,6 @@
 	mouseview
 	
 	draw.map
-	draw.items
-	draw.player
-	map.step
 
 	$1 tcol 2.0 tsize 
 	8 8 tat "Arena MAP " tprint
@@ -62,12 +59,11 @@
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini
 	edram
-	bot.ini	
+	ini.map
 	
 	"r3/r3vm/levels/levels.txt" loadlevel
 	0 32 sw sh 32 - mapwin
-	
-	resetplayer
+	reset.map
 	
 	'main sdlShow 
 	SDLquit 

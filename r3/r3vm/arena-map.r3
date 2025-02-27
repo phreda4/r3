@@ -35,12 +35,13 @@
 #fxarr 0 0
 
 | PLAYER
-##xp 1 ##yp 1 | position
+##xp 1 ##yp 1 | position in map
 #dp 0	| direction
 #ap 0	| anima
 #penergy
 #pcarry
 
+#playerxyrz
 
 :]m | x y -- map
 	mapw * + 3 << 'marena + ;
@@ -52,29 +53,29 @@
 	swap tmul * 2* viewpx +
 	swap tmul * 2* viewpy +
 	;
+
+:map264 | mapxy -- 64pos
+	dup $ffff and swap 16 >> $ffff and 
+	posmap 0 viewpz xyrz64 ;
+	
+:fall264 | mapxy -- 64pos
+	dup $ffff and swap 16 >> $ffff and 
+	posmap 0 0.0 xyrz64 ;
 	
 :drawtile
-	|$ffffff sdlcolor postile tmul dup sdlRect
 	a@+ $ff and 0? ( drop ; ) >r
 	2dup swap posmap 
-|	over 16 - over 16 - tat $a tcol | debug
 	viewpz r> imgspr sspritez
-|	a> 8 - @ "%h" tprint | debug
 	;
 	
-::draw.map | x y --
-	tilesize viewpz *. 2/ 'tmul ! | recalc
+:drawmap | x y --
 	'marena >a
 	0 ( maph <? 
 		0 ( mapw <? 
 			drawtile
 			1+ ) drop
-		1+ ) drop 
-		
-|	$ffffff sdlcolor
-|	xmap ymap wmap hmap sdlrect
-	;
-	
+		1+ ) drop ;
+
 	
 ::mapwin | x y w h --
 	'hmap ! 'wmap ! 'ymap ! 'xmap !
@@ -94,6 +95,8 @@
 	- 2/ ymap + 
 	tilesize viewpz *. 2/ + 
 	'viewpy !
+	
+	tilesize viewpz *. 2/ 'tmul ! | grid 2 screen
 	;
 	
 |-------------------------------	
@@ -269,41 +272,43 @@
 	r>
 	a> -3 ncell+ -rot
 	24 3.0 0
-	+vboxanim | 'var ini fin ease dur. start --
+	+vboxanim | 'var fin ini ease dur. start --
 	;
 
 
 |---------------------
 | ITEMS
-::draw.items
-	'itemarr p.draw 
-	'fxarr p.draw 
-	;
-
 :drawitem
-	8 + >a
-	a@+ a@+ posmap
-|	2dup 16 + tat | **
-	viewpz 
+	16 + >a
+	a@+ 64xyrz 
 	a@ dup deltatime + a!+ anim>n
-	imgspr sspritez
-|	6 tcol a@+ "%h" tprint | **
+	imgspr sspriterz
 	;
-
-:+item | t a y x --
+	
+:moveitemscr | ; a> item
+	a> 16 +		| var
+	a> 8 + @ map264	| fin
+	a> 16 + @ 	| ini
+	0 0.1 0
+	+vboxanim | 'var fin ini ease dur. start --	
+	;
+	
+:+item | t a mapxy --
 	'drawitem 'itemarr p!+ >a
-	a!+ a!+ a!+ a! ;
+	dup a!+ 
+	map264 | map>scr
+	a!+ a!+ a! ;
 	
 :setitem | adr item
 	@+ 0? ( drop @ dup $ffff and 'xp ! 16 >> $ffff and 'yp ! ; )
 	swap @ 
 	dup 32 >> $ffff and over 48 >> $ffff and $7f ICS>anim
-	swap dup 16 >> $ffff and 
-	swap $ffff and  | a y x
+	swap
 	+item
 	;
 		
-:item+! items> !+ 'items> ! ;
+:item+! 
+	items> !+ 'items> ! ;
 
 :parseitem
 	trim dup c@ 
@@ -339,32 +344,12 @@
 	'addscript 1.0 +vexe	| start in 1 sec
 	;
 	
-|---------------------
-::resetplayer
-	100 'penergy ! 0 'pcarry ! 
-	
-	3 0 128 ICS>anim 'ap ! | anima'ap !
-	
-	'itemarr p.clear
-	'items ( items> <?
-		dup setitem 2 3 << +
-		) drop ;
-	
-::draw.player
-	xp yp posmap
-	viewpz
-	ap anim>n
-	imgspr sspritez
-	
-	deltatime 'ap +!
-	;
 	
 |---- item to map	
-| n 'l p.adr 	| nro to adr 
-| 'a 'l p.nro	| adr to nro
-
 :itemxy	| item -- item x y
-	dup 1 ncell+ @ over 2 ncell+ @ ;
+	dup 1 ncell+ @ 
+	dup $ffff and 
+	swap 16 >> $ffff and ;
 	
 :item2m | item --
 	dup 4 ncell+ @ 
@@ -383,14 +368,25 @@
 	'marena >a maph mapw * 
 	( 1? 1- 
 		a@ $0fff and a!+ ) drop
-	'item2m 'itemarr p.mapv ;
+	'item2m 'itemarr p.mapv 
+	;
 
 |-----
-:moveitem | item --
-	;
-	
 :fallitem | item --
-	'itemarr p.del
+
+	dup 16 +		| var
+	over 8 + @ map264
+	pick2 16 + @ 	| ini
+	0 0.1 0
+	+vboxanim | 'var fin ini ease dur. start --	
+	
+	dup 16 +		| var
+	over 8 + @ fall264
+	pick2 8 + @ map264
+	0 0.5 0.1
+	+vboxanim  | 'var fin ini ease dur. start --	
+
+	2 swap 4 ncell+ ! | converto to nobody
 	;
 	
 :chki | item --
@@ -419,14 +415,23 @@
 
 |--- type of item 
 :moveitem | d nx ny -- d nx ny 1/0
-	a> 8 + @ dirx +
-	a> 16 + @ diry + | nx ny
+	a> 8 + @
+	dup $ffff and dirx +
+	swap 16 >> $ffff and diry +
 	]m@ 
 	$300 nand? ( 0 nip ; )		| wall
 	$ff0000 and? ( 0 nip ; )	| item solid
 	drop | tipo 0
-	dirx a> 8 + +!
-	diry a> 16 + +! 
+
+	a> 8 + 
+	dup @
+|	dup $ffff and dirx + $ffff and
+|	swap 16 >> $ffff and diry + $ffff and 16 << or
+	dup dirx + $ffff and
+	swap diry 16 << + $ffff0000 and or
+	swap !
+	moveitemscr
+	
 	1 ;
 
 :overitem | d nx ny -- d nx ny 0
@@ -441,9 +446,26 @@
 	
 #typeitem 'moveitem 'overitem 'eatitem 'winitem
 
+:checkfall
+	xp yp ]m@ $300 and 
+	$200 <>? ( drop ; ) drop
+	
+	| cae player
+	'playerxyrz
+	xp yp posmap 0 0 xyrz64 
+	playerxyrz
+	0 0.5 0
+	+vboxanim | 'var fin ini ease dur. start --	
+	;
+	
 :realmove | x y --
 	'yp ! 'xp !
-	'mani + c@ 3 128 ICS>anim 'ap ! | anima
+	'mani + c@ 3 $ff ICS>anim 'ap ! | anima
+	'playerxyrz
+	xp yp posmap 0 viewpz xyrz64 
+	playerxyrz
+	0 0.1 0 +vboxanim | 'var fin ini ease dur. start --	
+	[ ap anim>stop 'ap ! checkfall ; ] 0.1 +vexe | stop animation
 	;
 	
 :chainmove | d nx ny wall --
@@ -462,28 +484,22 @@
 
 :botstep | dir --
 	dup dir2dxdy
-	item2map
 	xp dirx + yp diry + | dir nx ny
 	botmove	
+	item2map
 	check2map
 	;
 	
-::map.step
+:map.step
 	moveplayer +? (  
 		dup botstep 
 		-1 'moveplayer ! 
 		) drop
-	item2map | to step
-	xp yp ]m@ $300 and 
-	$200 <>? ( drop ; ) drop
-	| cae player
-	
 	;
 
-::botstep | dir --
-	'moveplayer ! ;
-	
 |-------- WORDS	
+::botstep 'moveplayer ! ;
+
 :istep 
 	vmpop 32 >> 'moveplayer !
 	;
@@ -528,7 +544,36 @@
 #worde	istep icheck itake ileave irand
 #wordd ( $f1 $01 $f1 $f1 $f1 $00 ) 
 
-::bot.ini
+::draw.map
+	drawmap
+	
+	'itemarr p.draw 
+	'fxarr p.draw 
+
+	playerxyrz 64xyrz 
+	ap dup deltatime + 'ap ! 
+	anim>n
+	imgspr sspriteRZ
+
+	map.step
+	;
+
+::reset.map
+	100 'penergy ! 0 'pcarry ! 
+	
+	'fxarr p.clear
+	'itemarr p.clear
+	'items ( items> <?
+		dup setitem 2 3 << +
+		) drop 
+		
+	xp yp posmap
+	0 viewpz xyrz64 
+	'playerxyrz !
+	3 0 128 ICS>anim 'ap ! | anima'ap !	
+	;
+	
+::ini.map
 	tilesize dup "media/img/arena-map.png" ssload 'imgspr !
 
 	'wordt 'words vmlistok 
@@ -536,4 +581,5 @@
 
 	50 'itemarr p.ini
 	50 'fxarr p.ini
+	reset.map
 	;	
