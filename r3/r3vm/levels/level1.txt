@@ -13,7 +13,7 @@
 .............. .
 *ITEM
 0 1 1 0 0	| player
-2 14 10 29 2	| place
+2 14 10 49 0	| place
 -1
 *SCRIPT
 Move the bot to the mark, 

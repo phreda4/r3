@@ -400,7 +400,7 @@
 	empty
 	;
 
-|-------------------
+|------------------- MENU PRINCIPAL
 :options	
 	;
 	
@@ -425,8 +425,8 @@
 	<f2> =? ( options ) 
 	drop ;
 	
-|-------------------
-: |<<< BOOT <<<
+|------------------- <<< BOOT <<<
+: 
 	"Ar3na:Code" 1366 768 SDLinit
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt 

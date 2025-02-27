@@ -13,7 +13,7 @@
 ================
 *ITEM
 0 4 5 0 0	| player
-2 11 5 29 2	| place
+2 11 5 49 0	| place
 1 8 5 22 0	| box
 *SCRIPT
 Move the box to the mark.

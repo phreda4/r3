@@ -11,7 +11,7 @@
 ================
 *ITEM
 0 4 4 0 0	| player
-2 10 4 29 2	| place
+2 10 4 49 0	| place
 1 7 4 22 0	| box
 *SCRIPT
 You can control the robot, using %caWORDS%c3.

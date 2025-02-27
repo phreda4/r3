@@ -38,9 +38,7 @@
 
 	$1 tcol 2.0 tsize 
 	8 8 tat "Arena MAP " tprint
-	0 ( 8 <? 
-		dup bot.check 8 >> "%h " tprint
-		1+ ) drop
+	|0 ( 8 <? dup bot.check 8 >> "%h " tprint 1+ ) drop
 
 	
 	SDLredraw 

@@ -256,8 +256,19 @@
 	1000 *.
 	a!+ 0 a! ;
 
-| box fall
-| player fall
+:fxcheck | x y -- x y 
+	0.6 | live
+	29 2 $ff ICS>anim
+	2over posmap 0 viewpz xyrz64 
+	+fx 
+	
+|	a> -3 ncell+
+|	pick2 pick2 posmap 0 viewpz xyrz64 
+|	2over posmap 2.0 viewpz 2/ xyrz64 
+|	24 0.5 0
+|	+vboxanim | 'var fin ini ease dur. start --
+	;
+	
 | check
 | move?
 
@@ -509,15 +520,11 @@
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
 	yp + swap xp + swap
+	fxcheck
 	]m@ $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
 	;
 
-::bot.check
-	$7 and 2* 'mdir + c@+ swap c@ 	| dx dy
-	yp + swap xp + swap
-	]m@	;
-	
 :itake 
 	vmpop 32 >> 
 	$7 and 
@@ -570,6 +577,7 @@
 	xp yp posmap
 	0 viewpz xyrz64 
 	'playerxyrz !
+	
 	3 0 128 ICS>anim 'ap ! | anima'ap !	
 	;
 	
