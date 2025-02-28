@@ -266,7 +266,7 @@
 
 :draw.code
 	2.0 tsize
-	state 3 << 'statevec + @ ex
+	state $3 and 3 << 'statevec + @ ex
 |-- show stack
 	cpu1 0? ( drop ; ) drop
 	xedit -? ( drop ; ) | not show without editor
@@ -326,6 +326,38 @@
 	
 
 |-------------------	
+
+#infx 100
+#infy 100
+#padx 0
+#infs 0
+
+:cartelinfo
+	state $f0 nand? ( drop ; ) drop
+	4.0 tsize 
+	$c tcol
+	infx infy 500 100 sdlfrect
+	infx padx + infy 36 + tat
+	infs temits
+	;
+
+:infoshow | sec "" --
+	$10 'state !
+	count 8 4 * * 500 swap - 2/ 'padx !
+	'infs !
+	sw 500 - 2/ 'infx !
+	'infy 
+	sh 2/ 50 -
+	-100
+	20 0.4 0 +vanim
+	'infy
+	-100	
+	sh 2/ 50 -
+	21 0.4 1.7 +vanim
+
+	[ 1 'state ! ; ] 2.1 +vexe
+	;
+	
 :botones
 	4 tcol 
 	3.0 tsize
@@ -351,8 +383,10 @@
 	draw.script
 	
 	botones
-	sdlredraw
 	
+	cartelinfo
+	
+	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
 	<f1> =? ( play )
@@ -372,7 +406,8 @@
 	"r3/r3vm/code/test0.r3" edload 
 	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
-	
+
+	"-- go --" infoshow
 	mark
 	'jugar SDLshow
 	empty
@@ -402,6 +437,12 @@
 
 |------------------- MENU PRINCIPAL
 :options	
+	;
+	
+#cntmenu
+#menu * 1024	
+:levelmenu
+	332 
 	;
 	
 :menu

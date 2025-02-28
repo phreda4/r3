@@ -269,23 +269,6 @@
 |	+vboxanim | 'var fin ini ease dur. start --
 	;
 	
-| check
-| move?
-
-::xytest | x y 
-	4.0 | live
-	31 8 $7f ICS>anim
-	2over
-	1 - posmap 0 viewpz xyrz64 dup >r
-	+fx 
-	
-	1 + posmap 2.0 viewpz 2/ xyrz64 
-	r>
-	a> -3 ncell+ -rot
-	24 3.0 0
-	+vboxanim | 'var fin ini ease dur. start --
-	;
-
 
 |---------------------
 | ITEMS
@@ -352,6 +335,7 @@
 	teclr | clear terminal
 	0 fuente !
 	edset	| clear code
+	0 'sstate ! 
 	'addscript 1.0 +vexe	| start in 1 sec
 	;
 	
@@ -579,6 +563,7 @@
 	'playerxyrz !
 	
 	3 0 128 ICS>anim 'ap ! | anima'ap !	
+	
 	;
 	
 ::ini.map

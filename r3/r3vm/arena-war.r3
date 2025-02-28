@@ -2,10 +2,16 @@
 | PHREDA 2021-2024 (r3)
 |-------------------------
 ^r3/lib/rand.r3
-^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
+
+^r3/util/varanim.r3
+^r3/util/arr16.r3
+^r3/util/ttext.r3
 ^r3/util/hash2d.r3
-^r3/r3vm/rcodevm.r3
+
+^./tedit.r3
+^./rcodevm.r3
+
 
 ##imgspr
 
@@ -37,7 +43,7 @@
 	a@+ viewpz *. int. viewpy +	| x y
 	a@+ dup 32 >> swap | rot
 	$ffffffff and viewpz *. | zoom	 
-	a@ timer+ dup a!+ anim>n 			| n
+	a@ deltatime + dup a!+ anim>n 			| n
 	a@+ sspriterz
 	;
 
@@ -86,7 +92,7 @@
 	
 |------------------- bomb
 :disparo | adr --
-	dup .end dup @ timer- -? ( 
+	dup .end dup @ deltatime - -? ( 
 		2drop dup .x @ swap .y @ +fxexplo
 		0 ; ) swap !
 	drawspr

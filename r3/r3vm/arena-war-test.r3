@@ -17,8 +17,8 @@
 	
 |-------------------
 :runscr
+	vupdate
 	gui
-	timer.
 	0 sdlcls
 	
 	pasto

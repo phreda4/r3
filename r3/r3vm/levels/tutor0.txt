@@ -14,7 +14,7 @@
 2 10 4 49 0	| place
 1 7 4 22 0	| box
 *SCRIPT
-You can control the robot, using %caWORDS%c3.
+You control the robot using %caWORDS%c3.
 these %caWORDS%c3 are write in the %c6CODE%c3.
 Here each %caWORD%c3 has a meaning.
 %a0
@@ -52,13 +52,16 @@ Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
 %ca-%c3, %ca*%c3, %ca/%c3 can make subtration, multiply and division.
 
 Press %i%cbF1%c3%i to execute the %c6CODE%c3.
+Press %i%cbF2%c3%i to execute %caWORD%c3 by %caWORD%c3.
 %w1
 You can modify the stack with these %caWORDS%c3.
 
 %s
 
-: 10 20 
+: 
+	33 7 
 	swap 
+	dup
 	drop 
 	1 over 
 	;
@@ -70,7 +73,6 @@ You can modify the stack with these %caWORDS%c3.
 %cbswap%c3 swap the upper two %c7NUMBERS%c3.
 %cbover%c3 duplicate the second of %c6STACK%c3.
 
-Press %i%cbF1%c3%i to execute the %c6CODE%c3.
 %w1
 Some %caWORDS%c3 make the robot doing things.
 

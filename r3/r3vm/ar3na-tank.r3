@@ -1,12 +1,14 @@
 | ar3na tank 
 | PHREDA 2025
 |-------------------------
-^r3/util/sdlgui.r3
-^r3/util/sdlbgui.r3
+^r3/lib/gui.r3
 ^r3/util/varanim.r3
-^r3/util/sdledit.r3
+^r3/util/ttext.r3
 
 ^./arena-war.r3
+
+^./tedit.r3
+^./rcodevm.r3
 
 #codepath "r3/r3vm/codetank/"
 
@@ -16,6 +18,25 @@
 
 #mapsx	512 #mapsy 300
 
+|---------
+:btnt | x y v "" col --
+	pick4 pick4 128 24 guiBox
+	[ dup 2* or ; ] guiI sdlcolor
+	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
+	2over 128 24 sdlfrect
+	2swap 4 + swap 4 + swap tat
+	$e tcol temits	
+	onClick ;
+
+:btnt2 | x y v "" col --
+	pick4 pick4 256 48 guiBox
+	[ dup 2* or ; ] guiI sdlcolor
+	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
+	2over 256 48 sdlfrect
+	2swap 8 + swap 8 + swap tat
+	$e tcol temits	
+	onClick ;
+	
 |-------------------
 #xo #yo
 
@@ -94,38 +115,37 @@
 	;
 	
 :showstack
-	8 532 bat
-	" " bprint2
+	8 532 tat
+	" " tprint
 	vmdeep 0? ( drop ; ) 
 	stack 8 +
 	( swap 1 - 1? swap
-		@+ "%d " bprint2 
+		@+ "%d " tprint
 		) 2drop 
-	TOS "%d " bprint2
+	TOS "%d " tprint
 	;
 	
 :showinput
 	$7f00007f sdlcolorA	| cursor
 	0 500 1024 600 SDLfRect
-	$ff0000 bcolor
-	0 502 bat ":" bprint2
-	16 500 immat 1000 32 immbox
-	'pad 128 immInputLine2	
+	$ff0000 trgb
+	0 502 tat ":" tprint
+|	16 500 immat 1000 32 immbox
+|	'pad 128 immInputLine2	
 	;		
 
 
 |-------------------
 :runscr
 	vupdate
-	immgui
+	gui
 	mouse
-	timer.
 	0 sdlcls
 	
 	|terreno
 	|viewmap
 	
-	$ffff bcolor 8 8 bat "Ar3na Tank" bprint2 bcr2
+	$ffff trgb 8 8 tat "Ar3na Tank" tprint
 	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
 
 	war.draw
@@ -158,7 +178,6 @@
 	"arena tank" 1024 600 SDLinit
 	SDLblend
 	64 vaini
-	bfont1
 	
 	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
 	war.ini
