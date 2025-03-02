@@ -8,6 +8,7 @@
 
 #sys-accept
 #sys-socket
+#sys-bind
 #sys-listen
 #sys-closesocket
 #sys-shutdown
@@ -29,6 +30,7 @@
 
 ::accept sys-accept sys3 ;
 ::socket sys-socket sys3 ;
+::bind sys-bind sys3 ;
 ::listen sys-listen sys2 ;
 ::closesocket sys-closesocket sys1 drop ;
 ::shutdown sys-shutdown sys2 ; 
@@ -41,6 +43,7 @@
 	dup "WSAStartup" getproc 'sys-WSAStartup !
 	dup "WSACleanup" getproc 'sys-WSACleanup !
 	dup "accept" getproc 'sys-accept !
+	dup "bind" getproc 'sys-bind !
 	dup "socket" getproc 'sys-socket !
 	dup "listen" getproc 'sys-listen !
 	dup "closesocket" getproc 'sys-closesocket !
@@ -48,6 +51,6 @@
 	dup "send" getproc 'sys-send !
 	dup "recv" getproc 'sys-recv !
 	drop 
-	|'sys-WSAStartup	( 'sys-recv <? @+ over 'sys-WSAStartup - 3 >> "%d - %h" .println ) drop .input
+|	'sys-WSAStartup	( 'sys-recv <? @+ over 'sys-WSAStartup - 3 >> "%d - %h" .println ) drop .input
 	;
 	
