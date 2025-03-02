@@ -102,40 +102,6 @@
 	;
 
 |-------------------
-#lerror
-
-:immex	
-|	r3reset
-|	'pad r3i2token drop 'lerror !
-	0 'pad !
-	refreshfoco
-|	code> ( icode> <? 
-	| vmcheck
-|		vmstep ) drop
-	;
-	
-:showstack
-	8 532 tat
-	" " tprint
-	vmdeep 0? ( drop ; ) 
-	stack 8 +
-	( swap 1 - 1? swap
-		@+ "%d " tprint
-		) 2drop 
-	TOS "%d " tprint
-	;
-	
-:showinput
-	$7f00007f sdlcolorA	| cursor
-	0 500 1024 600 SDLfRect
-	$ff0000 trgb
-	0 502 tat ":" tprint
-|	16 500 immat 1000 32 immbox
-|	'pad 128 immInputLine2	
-	;		
-
-
-|-------------------
 :runscr
 	vupdate
 	gui
@@ -150,12 +116,11 @@
 
 	war.draw
 	
-	showinput
-	
+
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<ret> =? ( immex )
+
 	| ---- player control	
 	<up> =? ( btnpad %1000 or 'btnpad ! )
 	<dn> =? ( btnpad %100 or 'btnpad ! )

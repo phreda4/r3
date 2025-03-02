@@ -407,7 +407,7 @@
 	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 
-	"-- go --" infoshow
+|	"-- go --" infoshow
 	mark
 	'jugar SDLshow
 	empty
@@ -435,6 +435,29 @@
 	empty
 	;
 
+
+:game
+	mark
+	0.4 %w 0.02 %h 0.58 %w 0.25 %h termwin
+	16 48 480 654 edwin	
+	
+	"r3/r3vm/levels/level0.txt" loadlevel	
+	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
+		
+	|"r3/r3vm/code/test0.r3" edload 
+	reset.map
+	1 'state ! 0 'code1 ! 0 'cpu1 !
+
+	"-- go --" infoshow
+	mark
+	'jugar SDLshow
+	empty
+	
+	vareset
+	empty
+
+	;
+	
 |------------------- MENU PRINCIPAL
 :options	
 	;
@@ -455,7 +478,8 @@
 	
 	3.0 tsize	
 	32 100 'tutor1 "Tutorial"  $3f00 btnt2
-	32 200 'freeplay "Free Play"  $3f00 btnt2
+	32 200 'game "Game"  $3f00 btnt2
+	32 300 'freeplay "Free Play"  $3f00 btnt2
 	32 500 'options "Options" $3f btnt2
 	32 600 'exit "Exit" $3f0000 btnt2
 	
