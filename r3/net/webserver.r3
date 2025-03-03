@@ -68,7 +68,6 @@
 	"Received request:" .println
 	'buffer .println
   
-	
 	mark
     "HTTP/1.1 200 OK" ,print ,nl
 	"Content-Type: text/plain" ,print ,nl
@@ -77,9 +76,10 @@
 	,nl
 	"Hello, World!" ,print 
 	0 ,c
-
+	
+	client_socket memsize 0 send
 	empty
-    client_socket here count 0 send
+	
     client_socket closesocket
 	;
 	

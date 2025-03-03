@@ -19,6 +19,9 @@
 #disp 0 0
 #fx 0 0
 
+::%w sW 16 *>> ; 
+::%h sH 16 *>> ; 
+
 ##viewpx ##viewpy ##viewpz
 
 ##btnpad |  **
@@ -255,7 +258,8 @@
 |------------------------
 | IO
 :ifire  | range --
-	vmpop
+	vmpop drop
+	btnpad $10 or 'btnpad !
 	;
 	
 :igo | vel -- 
