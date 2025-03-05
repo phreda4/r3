@@ -1,6 +1,39 @@
 ^r3/lib/console.r3
 ^r3/lib/win/winsock.r3
 
+
+#MAX_BUFFER      1024
+
+#type
+     "htm"  "text/html" 
+     "html" "text/html" 
+     "scss" "text/x-scss" 
+     "css"  "text/css"    
+     "jpg"  "image/jpeg" 
+     "jpeg" "image/jpeg" 
+     "bmp"  "image/bmp"  
+     "gif"  "image/gif"  
+     "png"  "image/png"  
+     "js"  "application/x-javascript" 
+     "woff2" "font/woff2" 
+     "woff"  "font/woff"  
+     "ttf"   "font/ttf"   
+
+#HDR_URI_SZ      1024
+#HDR_METHOD_SZ   5
+#HDR_VERSION_SZ  10
+
+|    char version[HDR_VERSION_SZ];
+|    char method[HDR_METHOD_SZ];
+|    char uri[HDR_URI_SZ];
+
+|    char *saveptr = NULL, *data = strtok_r(buffer, " \r\n", &saveptr);
+ |   strcpy(hdr->method, data);
+  |  data = strtok_r(NULL, " \r\n", &saveptr);
+|    strcpy(hdr->uri, data);
+ |   data = strtok_r(NULL, " \r\n", &saveptr);
+  |  strcpy(hdr->version, data);
+
 |typedef struct WSAData {
 |    WORD           wVersion;
 |    WORD           wHighVersion;

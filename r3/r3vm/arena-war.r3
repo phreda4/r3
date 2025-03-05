@@ -25,6 +25,8 @@
 ##viewpx ##viewpy ##viewpz
 
 ##btnpad |  **
+##vel
+##
 
 | tank
 | x y ang anim ss vx vy ar io
@@ -255,62 +257,78 @@
 	0 0 +ptank 
 	;
 
+#xt #yt
+
+#tfire	| 0..100.0 metros
+#tload	| msec..0
+
+#tvel	| -32.0.. 32.0
+#tspeed	
+
+#tturn	| 0..1
+#tdir	| 0..1
+
+#tbatt	| 0..1
+#tdamage	| 0..1 
+
+
 |------------------------
 | IO
 :ifire  | range --
-	vmpop drop
+	vmpop 32 >> 'tfire !
 	btnpad $10 or 'btnpad !
 	;
 	
 :igo | vel -- 
-	vmpop
+	vmpop 32 >> 'tvel !
 	;
 	
 :iturn | angle --	
-	vmpop
+	vmpop 32 >> 'tturn !
 	;
 
 :iscan | angle -- range
-	vmpop
-	vmpush
+	vmpop 32 >>
+	|scan
+	32 << vmpush
 	;
 	
 :ibatt | -- battery
-	vmpush ;
+	tbatt 32 << vmpush ;
 
 :idamage | -- dam
-	vmpush ;
+	tdamage 32 << vmpush ;
 
 :idir | -- dir
-	vmpush ;
+	tdir 32 << vmpush ;
 	
 :ispeed | -- speed
-	vmpush ;
+	tspeed 32 << vmpush ;
 	
 :ipos | -- x y 
-	vmpush 
-	vmpush ;
+	xt 32 << vmpush 
+	yt 32 << vmpush ;
 	
 :isin | ang -- sin
-	vmpop sin vmpush ;
+	vmpop 32 >> sin 32 << vmpush ;
 :icos | ang -- cos
-	vmpop cos vmpush ;
+	vmpop 32 >> cos 32 << vmpush ;
 :itan | ang -- tan
-	vmpop tan vmpush ;
+	vmpop 32 >> tan 32 << vmpush ;
 :itan2 | x y -- ang
-	vmpop vmpop swap atan2 vmpush ;
+	vmpop 32 >> vmpop 32 >> swap atan2 32 << vmpush ;
 
 :irand | max -- rand
-	vmpop randmax vmpush ;
+	vmpop 32 >> randmax 32 << vmpush ;
 
 :i*.  
-	vmpop *. vmpush ;
+	vmpop 32 >> *. 32 << vmpush ;
 :i/. 
-	vmpop /. vmpush ;
+	vmpop 32 >> /. 32 << vmpush ;
 :ifix.
-	vmpop fix. vmpush ;
+	vmpop 32 >> fix. 32 << vmpush ;
 :iint.
-	vmpop int. vmpush ;
+	vmpop 32 >> int. 32 << vmpush ;
 	
 
 |------ IO interface
