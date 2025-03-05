@@ -185,7 +185,7 @@
 
 :cellstack | cell --
 	vmcellcol $7 and 
-	tpal $00000 col50% | obscure
+	tpal 2/ $7f7f7f and |$00000 col50% | obscure
 	sdlcolor 
 	xedit wedit + 2 +
 	sty 2 - 
@@ -206,9 +206,9 @@
 	yedit hedit + 
 	110 16 sdlfrect
 	6 tcol
-	xedit wedit + 2 +
+	xedit wedit + 3 +
 	yedit hedit + 
-	tat " Stack" temits
+	tat "Stack" temits
 	vmdeep 0? ( drop ; ) 
 	yedit hedit + 27 - 'sty ! 
 	stack -? ( 2drop ; )

@@ -36,9 +36,9 @@
 	
 	draw.map
 
-	$1 tcol 2.0 tsize 
+	$2 tcol 2.0 tsize 
 	8 8 tat "Arena MAP " tprint
-	|0 ( 8 <? dup bot.check 8 >> "%h " tprint 1+ ) drop
+	0 ( 8 <? dup bot.check 8 >> "%h " tprint 1+ ) drop
 
 	
 	SDLredraw 
@@ -48,7 +48,7 @@
 	<dn> =? ( 4 botstep )
 	<le> =? ( 6 botstep )
 	<ri> =? ( 2 botstep )
-	<esp> =?  ( xp yp xytest )
+|	<esp> =?  ( xp yp xytest )
 	drop
 	;
 

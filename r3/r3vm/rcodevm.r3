@@ -540,6 +540,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	code> code - 3 >> 16 << or	| h s e #code
 	dicc> 8 - @ 32 >> 3 >> or 	| #boot
 	swap ! | header
+	
+	dicc> 8 - @ 16 >> $ffff and src +
+	c@ 32 >? ( 12 'terror ! ) drop | last dicc is : boot
 	;
 	
 ::vmcode2src | tok -- src
@@ -611,6 +614,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 "div by 0"			|9
 "no data adress"	|10
 "no code adress"	|11
+
+"no boot word"		|12
 
 ::vmerror | -- str
 	terror 0? ( ; )

@@ -341,15 +341,29 @@
 	
 	
 |---- item to map	
+| back(8)nro(8)item(4)type(4)tile(8)
+
 :itemxy	| item -- item x y
 	dup 1 ncell+ @ 
 	dup $ffff and 
 	swap 16 >> $ffff and ;
 	
+:iteminv | item --
+
+	dup itemxy ]m 						| item map
+	
+|	dup @ $300 and $200 =? ( 2drop 'itemarr p.del ; ) drop | agujero
+	
+	|over 
+	swap 'itemarr p.nro 1+ 24 << 		| item map nitem
+	|swap 4 ncell+ @ 2 + 12 << or			| add item to map
+
+	over @ or swap ! ;
+	
 :item2m | item --
 	dup 4 ncell+ @ 
-	2 =? ( drop ; ) 
-	drop	| item sin cuerpo
+	2 =? ( drop iteminv ; ) | item sin cuerpo
+	drop	
 	dup itemxy ]m 						| item map
 	
 |	dup @ $300 and $200 =? ( 2drop 'itemarr p.del ; ) drop | agujero
@@ -507,6 +521,13 @@
 	fxcheck
 	]m@ $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
+	;
+
+::bot.check	
+	$7 and 
+	2* 'mdir + c@+ swap c@ 	| dx dy
+	yp + swap xp + swap
+	]m@ |$ff00 and    | xx00 --> xx00000000
 	;
 
 :itake 

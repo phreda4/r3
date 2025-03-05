@@ -139,6 +139,20 @@
 	;
 	
 |------------------------
+#xt #yt #dirt
+
+#tfire	| 0..100.0 metros
+#tfiret	| msec..0
+
+#tspeed	| -32.0.. 32.0
+#tspeedd	
+
+#tturn	| 0..1
+#tturnd	| 0..1
+
+#tbatt	| 0..1
+#tdama	| 0..1 
+
 :motor | m --
  	a> .a @ 32 >> neg 0.5 + swap polar 
 	a> .y +! a> .x +! ;
@@ -177,6 +191,10 @@
 	drop
 	drawspr	
 	drop
+	tfiret 0? ( drop ; ) 
+	deltatime - 
+	-? ( 0 nip ) 
+	'tfiret ! ; 
 	;
 
 :+ptank | color sheet ani zoom ang x y --
@@ -218,6 +236,7 @@
 	swap a!+ a!+	| x y 
 	32 << or a!+	| ang zoom
 	a!+	a!+			| anim sheet
+	
 	0 a!+ 0 a!+ 	| vx vy
 	0 a!+			| end
 	0 a!+			| io
@@ -257,57 +276,42 @@
 	0 0 +ptank 
 	;
 
-#xt #yt
-
-#tfire	| 0..100.0 metros
-#tload	| msec..0
-
-#tvel	| -32.0.. 32.0
-#tspeed	
-
-#tturn	| 0..1
-#tdir	| 0..1
-
-#tbatt	| 0..1
-#tdamage	| 0..1 
 
 
 |------------------------
 | IO
 :ifire  | range --
+	tfiret 1? ( drop ; ) drop
 	vmpop 32 >> 'tfire !
-	btnpad $10 or 'btnpad !
+		btnpad $10 or 'btnpad !
+	1000 'tfiret !
 	;
 	
 :igo | vel -- 
-	vmpop 32 >> 'tvel !
-	;
+	vmpop 32 >> 'tspeedd ! ;
 	
 :iturn | angle --	
-	vmpop 32 >> 'tturn !
-	;
+	vmpop 32 >> 'tturnd ! ;
 
 :iscan | angle -- range
 	vmpop 32 >>
 	|scan
-	32 << vmpush
-	;
+	32 << vmpush ;
 	
 :ibatt | -- battery
 	tbatt 32 << vmpush ;
 
 :idamage | -- dam
-	tdamage 32 << vmpush ;
+	tdama 32 << vmpush ;
 
 :idir | -- dir
-	tdir 32 << vmpush ;
+	dirt 32 << vmpush ;
 	
 :ispeed | -- speed
 	tspeed 32 << vmpush ;
 	
 :ipos | -- x y 
-	xt 32 << vmpush 
-	yt 32 << vmpush ;
+	xt 32 << vmpush yt 32 << vmpush ;
 	
 :isin | ang -- sin
 	vmpop 32 >> sin 32 << vmpush ;
@@ -320,7 +324,6 @@
 
 :irand | max -- rand
 	vmpop 32 >> randmax 32 << vmpush ;
-
 :i*.  
 	vmpop 32 >> *. 32 << vmpush ;
 :i/. 
