@@ -541,8 +541,12 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dicc> 8 - @ 32 >> 3 >> or 	| #boot
 	swap ! | header
 	
-	dicc> 8 - @ 16 >> $ffff and src +
-	c@ 32 >? ( 12 'terror ! ) drop | last dicc is : boot
+	1 >? ( ; ) | ya hay error
+	dicc> 
+	'dicc =? ( 2drop 12 dup 'terror ! ; ) | no dicc
+	8 - @ 16 >> $ffff and src +
+	c@ 32 >? ( 2drop 12 dup 'terror ! ; ) | last dicc is : boot
+	drop 
 	;
 	
 ::vmcode2src | tok -- src
@@ -604,7 +608,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #msgerror 
 "Ok"
 "Block bad close"
-"Core word without adress"
+"Core word without address"
 "Addr not exist"
 "Word not found"
 
@@ -612,8 +616,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 "conditional alone"	|7
 "unbalanced stack"	|8
 "div by 0"			|9
-"no data adress"	|10
-"no code adress"	|11
+"no data address"	|10
+"no code address"	|11
 
 "no boot word"		|12
 

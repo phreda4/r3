@@ -39,7 +39,6 @@
 :compilar
 	empty mark 
 	fuente vmcompile | serror terror
-	
 |	vmdicc | ** DEBUG
 |	cdcnt 'cdtok vmcheckjmp
 

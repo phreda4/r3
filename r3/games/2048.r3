@@ -50,11 +50,11 @@
 	
 #l0 0 #l1 0 #l2 0 0
 
-:add
+:add | adr c1 c2 --
 	1+ 1 over << 'score +! 	
 	11 =? ( win )
 	0 				| ....
-:down
+:down | adr c1 c2 --
 	pick2 @ c! swap 8 + @ c! ;
 	
 :ck | adr -- 
