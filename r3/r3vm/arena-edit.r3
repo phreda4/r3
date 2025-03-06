@@ -128,6 +128,39 @@
 	dup vm2src 'fuente> ! 
 	'ip !
 	;
+
+|------------ STACK
+#sty 
+
+:cellstack | cell --
+	vmcellcol $7 and 
+	tpal 2/ $7f7f7f and |$00000 col50% | obscure
+	sdlcolor 
+	xedit wedit + 2 +
+	sty 2 - 
+	112 28 sdlfrect
+	xedit wedit + 2 +
+	sty tat vmcell temits
+	-30 'sty +!
+	;
+	
+:draw.stack
+	xedit -? ( drop ; ) | not show without editor
+	wedit + 2 + 
+	yedit hedit + 
+	110 16 sdlfrect
+	6 tcol
+	xedit wedit + 3 +
+	yedit hedit + 
+	tat "Stack" temits
+	vmdeep 0? ( drop ; ) 
+	yedit hedit + 27 - 'sty ! 
+	stack -? ( 2drop ; ) 16 +
+	( swap 1- 1? swap
+		@+ cellstack
+		) 2drop 
+	TOS cellstack ;
+
 	
 |-----------------------
 :showread
@@ -147,6 +180,7 @@
 	
 	edfocus
 	edcodedraw
+	|draw.stack
 	edtoolbar
 	;	
 	
@@ -163,6 +197,7 @@
 		) 2drop
 	showmark
 	edcodedraw
+	draw.stack
 	showvars	
 	edtoolbar
 	;	
@@ -180,41 +215,11 @@
 	;
 	
 #serror
-|------------ STACK
-#sty 
 
-:cellstack | cell --
-	vmcellcol $7 and 
-	tpal 2/ $7f7f7f and |$00000 col50% | obscure
-	sdlcolor 
-	xedit wedit + 2 +
-	sty 2 - 
-	112 28 sdlfrect
-	xedit wedit + 2 +
-	sty tat vmcell temits
-	-30 'sty +!
-	;
 	
 #statevec 'showread 'showeditor 'showruning 'showerror 
 
 ::draw.code
 	2.0 tsize
-	state $3 and 3 << 'statevec + @ ex
-|-- show stack
-	xedit -? ( drop ; ) | not show without editor
-	wedit + 2 + 
-	yedit hedit + 
-	110 16 sdlfrect
-	6 tcol
-	xedit wedit + 3 +
-	yedit hedit + 
-	tat "Stack" temits
-	vmdeep 0? ( drop ; ) 
-	yedit hedit + 27 - 'sty ! 
-	stack -? ( 2drop ; )
-	16 +
-	( swap 1- 1? swap
-		@+ cellstack
-		) 2drop 
-	TOS cellstack ;
-
+	state $3 and 3 << 'statevec + @ ex ;
+	

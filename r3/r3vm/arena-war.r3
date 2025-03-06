@@ -33,14 +33,23 @@
 | 1 2 3   4    5  6  7  8  9
 :.x 1 ncell+ ;
 :.y 2 ncell+ ;
-:.a 3 ncell+ ;
+:.ang 3 ncell+ ;
 :.ani 4 ncell+ ;
 :.ss 5 ncell+ ;
+
 :.vx 6 ncell+ ;
 :.vy 7 ncell+ ;
 :.end 8 ncell+ ;
 :.io 9 ncell+ ;
 :.color 10 ncell+ ;
+
+:.tfire	6 ncell+ ; | fire range 0..100.0 
+:.tfiret 7 ncell+ ; | fire time msec..0
+:.tspeed 8 ncell+ ; | speed 		-32.0.. 32.0
+:.tspeedd 9 ncell+ ; | speed destino 	
+:.angd 10 ncell+ ; | ang destino 0..1
+:.tinf 11 ncell+ ; 	| battery/damage
+
 
 :drawspr | arr -- arr
 	dup 8 + >a
@@ -131,7 +140,7 @@
 |------------------- player tank
 :+disp | -- 
 	3.0	| vel
-	a> .a @ 32 >> neg 0.5 +
+	a> .ang @ 32 >> neg 0.5 +
 	a> .x @ a> .y @
 	pick2 32.0 
 	xy+polar | x y bangle r -- x y
@@ -154,11 +163,11 @@
 #tdama	| 0..1 
 
 :motor | m --
- 	a> .a @ 32 >> neg 0.5 + swap polar 
+ 	a> .ang @ 32 >> neg 0.5 + swap polar 
 	a> .y +! a> .x +! ;
 
 :turn | a --
-	32 << a> .a +! ;
+	32 << a> .ang +! ;
 
 :shoot | --
 	+disp

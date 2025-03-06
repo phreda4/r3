@@ -478,7 +478,7 @@
 	;
 	
 :chainmove | d nx ny wall --
-	16 >> 1- 'itemarr p.adr >a		| item
+	16 >> $ff and 1- 'itemarr p.adr >a		| n item
 	a> 4 ncell+ @ 1- $3 and 3 << 'typeitem + @ ex 
 	0? ( 4drop ; ) drop
 	realmove
