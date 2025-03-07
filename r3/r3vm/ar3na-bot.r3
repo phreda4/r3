@@ -170,12 +170,10 @@
 	gui 0 sdlcls
 
 	draw.map
-
 	draw.code
 	draw.script
 	
 	botones
-	
 	cartelinfo
 	
 	sdlredraw
@@ -240,7 +238,7 @@
 	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
 
-	"-- go --" infoshow
+	|"-- go --" infoshow
 	mark
 	'jugar SDLshow
 	empty

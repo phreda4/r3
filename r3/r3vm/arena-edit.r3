@@ -35,9 +35,9 @@
 	over >a
 	advy * yedit +   | y real
 	over 8 >> $ff and 
-	lnsize + advx * xedit +  | x real
+	lnsize + advx * xedit + 4 - | x real
 	swap rot | x y vv
-	dup 24 >> $ff and advx * | w
+	dup 24 >> $ff and advx * 8 + | w
 	swap 16 >> $ff and advy * | h
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol sdlcolor sdlRect

@@ -316,42 +316,47 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	0 'tlevel !
 	;
 
-:newentry | adr -- 'adr
-	endef
+:.def | adr -- adr' | :
+	1+ endef
 	code> code - 32 << 
 	over src - 16 << or  
 	dicc> !+ 'dicc> !
-	>>sp ;
-
-:.def | adr -- adr' | :
-	1+ newentry 
+	>>sp 
 	1 'state ! ;
 
 :.var | adr -- adr' | #
-	1+ newentry
+	1+ endef
+	data> data - 32 << 
+	over src - 16 << or  
+	$100 or dicc> !+ 'dicc> !
+	>>sp 
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop	
-	$100 dicc> 8 - +!	| store flag
-	2 'state !
-	;
+	2 'state ! ;
 
-
-:.lit | adr -- adr 	| falta hex/bin/fix
-	dup str>anro 32 <<
-	rot src - 16 << or
+:.lit | adr type -- adr 	| falta hex/bin/fix
+	1- >r 
+	dup str>anro 32 << 
+	rot src - 16 << or r> or
 	state 2 =? ( drop ,d ; ) drop ,i ;		
 
 :.com | adr -- adr'
 	>>cr ; | don't save comment
 
+|-- str
+:,ds | adr -- adr'	
+	1+ | "
+	data> ( swap c@+ 1?
+		34 =? ( drop c@+ 34 <>? ( drop 0 rot c!+ 'data> ! ; ) )
+		rot c!+ ) 
+	rot c!+ 'data> ! 
+	13 'terror ! ; | src --
+
 :.str | adr -- adr'
-	state
-	2 =? ( drop 
-		; ) |,cpystr ; )	| data .. en data ***
-	drop
+	state 2 =? ( drop ,ds ; ) drop
 	dup src - 16 <<
-|	over 1+ >>str pick2 - 32 << or | len string
-	4 or ,i | str	
-	1+ >>str ;
+	data> data - 32 << or
+	4 or ,i
+	,ds ;
 
 :?dicc | adr dicc -- nro+1/0
 	swap over | dicc adr dicc
@@ -512,9 +517,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 		dup 1 + ?word 1? ( .adr ; ) drop
 		3 'terror ! ; )
 	drop
-	dup isNro 1? ( drop .lit ; ) drop	| number
-	dup ?core 1? ( .core ; ) drop		| core
-	dup ?word 1? ( .word ; ) drop		| word
+	dup isNro 1? ( .lit ; ) drop	| number
+	dup ?core 1? ( .core ; ) drop	| core
+	dup ?word 1? ( .word ; ) drop	| word
 	dup ?sys 1? ( .sys ; ) drop
  	5 'terror ! ;
 
@@ -547,6 +552,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	8 - @ 16 >> $ffff and src +
 	c@ 32 >? ( 2drop 12 dup 'terror ! ; ) | last dicc is : boot
 	drop 
+	code> 8 - @ $ff and
+	9 <>? ( 2drop 14 dup 'terror ! ; ) | unfinish boot
+	drop
 	;
 	
 ::vmcode2src | tok -- src
@@ -620,6 +628,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 "no code address"	|11
 
 "no boot word"		|12
+"bad string"		|13
+"unfinish boot"		|14
 
 ::vmerror | -- str
 	terror 0? ( ; )
