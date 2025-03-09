@@ -78,14 +78,14 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 ::tnsp | n --
 	advx * 'dp d+! ;
 	
-::tbox | "" -- "" w h
+::tsbox | "" -- "" w h
 	count advx * advy ;
  
 ::tpos | -- x y
 	dp dup $ffffff and swap 32 >> ;
 
 ::trect |  "" -- "" x y w h
-	tbox tpos 2swap ;
+	tsbox tpos 2swap ;
 	
 ::tcursor | n --
 	advx * tpos swap rot + swap advx advy SDLFRect ;

@@ -20,9 +20,13 @@
 
 ::addmark	marcas> !+ 'marcas> ! ;
 
+:>>ww | adr -- adr'
+	dup c@ 34 =? ( drop 1+ >>str ; ) drop >>sp ;
+	
 ::addsrcmark | src color --
 	32 << swap
-	dup >>sp over - 24 << 
+	dup >>ww | can be str or word
+	over - 24 << 
 	swap src2pos
 	ycursor or 
 	xcursor 8 << or 
@@ -57,6 +61,7 @@
 ::buildvars
 	ab[
 	'vard >a
+	|** cambiar esto, en data ahora hay string tambien
 	data >b
 	code 8 - @ 32 >> 3 >>
 	( 1? 1-
@@ -64,6 +69,7 @@
 		16 >> $ffff and fuente + varplace 
 		a!+ 
 		) a!		 
+	
 	]ba ;
 
 :linevar
@@ -190,7 +196,6 @@
 	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
 	
 	clearmark
-	
 	fuente> $007ffff addsrcmark | ip
 	RTOS ( @+ 1? 				| rstack
 		8 - @ vmcode2src $0070000 addsrcmark 
@@ -198,7 +203,7 @@
 	showmark
 	edcodedraw
 	draw.stack
-	showvars	
+	showvars
 	edtoolbar
 	;	
 

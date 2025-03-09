@@ -40,17 +40,17 @@
 :newn
 	state 1? ( drop ; ) drop
 	1 'moves +!
-	( 16 randmax 'map + dup c@ 1? 2drop ) drop
+	( 16 randmax 'map + dup c@ 1? 2drop ) drop | search a random place
 	1 swap c! 
 	'map ( 'score <?
-		c@+ 0? ( 2drop ; ) drop
+		c@+ 0? ( 2drop ; ) drop		| any empty place?
 		) drop 
 	"Lose !" 'state strcpy 
 	;
 	
 #l0 0 #l1 0 #l2 0 0
 
-:add | adr c1 c2 --
+:add | adr c1 --
 	1+ 1 over << 'score +! 	
 	11 =? ( win )
 	0 				| ....

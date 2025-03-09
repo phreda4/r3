@@ -29,7 +29,6 @@
 	$e tcol temits	
 	onClick ;
 
-
 	
 #serror
 #code1
@@ -182,6 +181,8 @@
 	<f1> =? ( play )
 	<f2> =? ( step ) 
 	<f3> =? ( help ) 
+	
+	<f4> =? ( 2.0 700 300 "hola" +label ) 
 	drop 
 	;
 	

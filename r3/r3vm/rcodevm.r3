@@ -213,7 +213,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilitb 32 >> "%%%b" sprint ;
 :ilith 32 >> "$%h" sprint ;
 :ilitf 32 >> "%f" sprint ;
-:ilits 16 >> $ffff and src + 1+ 7 'auxstr strcpyn 'auxstr ; | *** a memoria data o code
+:ilits 
+	32 >> data +
+	7 'auxstr strcpyn 'auxstr ; 
 
 :iword |16 >> $ffff and src + "%w" sprint ;
 :iaword |16 >> $ffff and src + "%w" sprint ;

@@ -246,10 +246,8 @@
 	8 + >a
 	a@+ 64xyrz a@ dup deltatime + a!+ anim>n
 	imgspr sspriteRZ
-	a@+
-	a@ deltatime + dup a!
-	swap >=? ( drop 0 ; ) drop
-	;
+	a@+ a@ deltatime + dup a!	| livetime
+	swap >=? ( drop 0 ; ) drop ;
 
 :+fx | live anima zryx --
 	'drawfx 'fxarr p!+ >a a!+ a!+ 
@@ -268,7 +266,27 @@
 |	24 0.5 0
 |	+vboxanim | 'var fin ini ease dur. start --
 	;
+
+:drawlabel
+	8 + >a
+	a@+ 64xywh 
+	2over 2swap
+	$000000 sdlcolor sdlfrect
+	2 + swap 2 + swap tat 	
+	a@+ | string
+	6 tcol temits
 	
+	a@+ a@ deltatime + dup a! | livetime
+	swap >=? ( drop 0 ; ) drop ;
+	
+::+label | live x y "" --
+	'drawlabel 'fxarr p!+ >a 
+	tsbox 4 + -rot 4 + -rot
+	>r xywh64 a!+ 
+	r> a!+ 
+	1000 *.
+	a!+ 0 a! ;
+
 
 |---------------------
 | ITEMS
@@ -550,11 +568,18 @@
 	vmpop 32 >>
 	randmax
 	32 << vmpush ;
+	
+:isay
+	2.0
+	xp yp posmap 64 -
+	vmpop 32 >> data +
+	+label
+	;
 
 #wordt * 80
-#words "step" "check" "take" "leave" "rand" 0
-#worde	istep icheck itake ileave irand
-#wordd ( $f1 $01 $f1 $f1 $f1 $00 ) 
+#words "step" "check" "take" "leave" "rand" "say" 0
+#worde	istep icheck itake ileave irand isay
+#wordd ( $f1 $01 $f1 $f1 $f1 $f1 0 ) 
 
 ::draw.map
 	drawmap
