@@ -13,8 +13,8 @@
 
 | dicctionary
 | code>(32) str(16) var/word(8) 
-#dicc * 1024 | 128 entradas
-#dicc>
+##dicc * 1024 | 128 entradas
+##dicc>
 
 #state	| imm/compiling
 #tlevel	| tokenizer level

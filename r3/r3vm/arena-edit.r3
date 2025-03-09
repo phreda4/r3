@@ -54,22 +54,22 @@
 |------------------
 ::varplace | src -- val
 	src2pos
-	ycursor  
-	xcursor 8 << or 
+	ycursor xcursor 8 << or 
 	;
 
 ::buildvars
 	ab[
 	'vard >a
-	|** cambiar esto, en data ahora hay string tambien
-	data >b
-	code 8 - @ 32 >> 3 >>
-	( 1? 1-
-		b@+
-		16 >> $ffff and fuente + varplace 
-		a!+ 
-		) a!		 
-	
+	'dicc ( dicc> <?
+		@+ $100 and? (
+|			dup 32 >> data +
+			dup 16 >> $ffff and fuente + 
+			>>sp 1+ |trim
+			varplace 
+			a!+
+			) drop
+		) drop
+	0 a!
 	]ba ;
 
 :linevar
