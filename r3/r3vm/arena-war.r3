@@ -124,7 +124,7 @@
 	drop
 	;
 
-:+disparo | vel ang x y --
+:+disparo | dist vel ang x y --
 	pick2 neg 0.5 + pick2 pick2 +fxdisp
 	'disparo 'disp p!+ >b
 	swap b!+ b!+ 
@@ -134,11 +134,11 @@
 	imgspr b!+ |ss
 	swap polar 
 	b!+ b!+
-	1000 b! | dist
+	b! | dist
 	;
 
 |------------------- player tank
-:+disp | -- 
+:+disp | dist -- 
 	3.0	| vel
 	a> .ang @ 32 >> neg 0.5 +
 	a> .x @ a> .y @
@@ -180,6 +180,43 @@
 :tanima | btn -- btn
 	$f and? ( a> .ani dup @ 0 2 $ff vICS>anim swap ! ; )
 	a> .ani dup @ 0 0 0 vICS>anim swap ! ;
+
+|:.x 1 ncell+ ;
+|:.y 2 ncell+ ;
+|:.ang 3 ncell+ ;
+|:.ani 4 ncell+ ;
+|:.ss 5 ncell+ ;
+|:.tfire	6 ncell+ ; | fire range 0..100.0 
+|:.tfiret 7 ncell+ ; | fire time msec..0
+|:.tspeed 8 ncell+ ; | speed 		-32.0.. 32.0
+|:.tspeedd 9 ncell+ ; | speed destino 	
+|:.angd 10 ncell+ ; | ang destino 0..1
+|:.tinf 11 ncell+ ; 	| battery/damage	
+
+#chspeed 0.1
+#chang 0.1
+
+:calctank
+| turn
+	a> .angd @ a> .ang @ - 
+	1? ( | cambiar rotacion
+		chang deltatime * *. a> .ang +!
+		) drop
+| speed	
+	a> .tspeedd @ a> .tspeed @ - 
+	1? ( | cambiar velocidad
+		chspeed deltatime * *. a> .tspeed +!
+		) drop	
+| motor	
+	a> .tspeed @ 
+	1? ( | motor encendido
+		a> .ang @ 32 >> neg 0.5 +
+		over polar 
+		a> .y +! a> .x +! 
+		) drop
+| fire time
+	a> .tfiret dup @ 0? ( 2drop ; ) 
+	deltatime - 0 max swap ! ; 
 	
 :ptank | adr -- adr
 	dup >a
@@ -195,15 +232,14 @@
 	$2 and? ( -0.01 turn )
 	$4 and? ( -0.4 motor )
 	$8 and? ( 0.4 motor )
-	$10 and? ( +disp btnpad $10 nand 'btnpad ! )
+	$10 and? ( 500 +disp btnpad $10 nand 'btnpad ! )
 	tanima
 	drop
+	
+	|calctank
+	
 	drawspr	
 	drop
-	tfiret 0? ( drop ; ) 
-	deltatime - 
-	-? ( 0 nip ) 
-	'tfiret ! ; 
 	;
 
 :+ptank | color sheet ani zoom ang x y --
@@ -230,7 +266,7 @@
 	$2 and? ( -0.01 turn )
 	$4 and? ( -0.4 motor )
 	$8 and? ( 0.4 motor )
-	$10 and? ( +disp a> .io dup @ $f and swap ! )
+	$10 and? ( 500 +disp a> .io dup @ $f and swap ! )
 	tanima
 	20 randmax 0? ( $1f randmax a> .io ! ) drop
 	drop

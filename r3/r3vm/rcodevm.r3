@@ -202,7 +202,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 #tokname * 1024
 	
 |--------- token 2 string	
-#auxstr * 8
+#auxstr * 16
 
 :strcpyn | src cnt dest -- 
 	>a ( 1? 1- swap c@+ 
@@ -213,9 +213,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :ilitb 32 >> "%%%b" sprint ;
 :ilith 32 >> "$%h" sprint ;
 :ilitf 32 >> "%f" sprint ;
-:ilits 
-	32 >> data +
-	7 'auxstr strcpyn 'auxstr ; 
+
+:ilits 32 >> data + 7 'auxstr strcpyn 'auxstr ; | limit in str
 
 :iword |16 >> $ffff and src + "%w" sprint ;
 :iaword |16 >> $ffff and src + "%w" sprint ;
@@ -229,6 +228,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	dup $7f and 
 	INTWORDS >=? ( nip INTWORDS - 3 << 'tokname + @ ; )
 	3 << 'tokbig + @ ex ;
+
+|---------- full
+:ilitsf 32 >> data + ; 
+
+#tokbigf ilitd ilitb ilith ilitf ilitsf iword iaword ivar iavar
+
+::vmtokstrf | tok -- ""
+	$80 and? ( $7f and 3 << syswords + @ ; ) 
+	dup $7f and 
+	INTWORDS >=? ( nip INTWORDS - 3 << 'tokname + @ ; )
+	3 << 'tokbigf + @ ex ;
+	
 	
 ::vmcell | tok -- ""
 	dup $f and 3 << 'tokbig + @ ex ;

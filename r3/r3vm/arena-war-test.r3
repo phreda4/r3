@@ -44,6 +44,8 @@
 	<esp> =? ( btnpad $10 or 'btnpad ! )
 	
 	<f1> =? ( war.+rtank )
+	
+	|<f2> =? ( )
 	drop ;
 
 	

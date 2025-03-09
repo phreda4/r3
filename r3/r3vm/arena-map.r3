@@ -106,14 +106,16 @@
 | $2xx pasa - cae
 | $3xx pasa - explota?
 |
-| 00xxxx -- iten nro
+| xx00xxxx -- item nro
+| 00xxxxxx -- item sin cuerpo
 
 :char2map
-	$23 =? ( drop $00d ; ) | #  pared
-	$3d =? ( drop $00c ; ) | =	pared ladrillo
-	$20 =? ( drop $112 ; ) |  	piso
-	$3b =? ( drop $114 1 randmax + ; ) | ; pasto
-	$2e =? ( drop $200 ; ) | .	agujero
+	$23 =? ( drop $00d ; ) 				| #  pared
+	$3d =? ( drop $00c ; ) 				| =	pared ladrillo
+	$20 =? ( drop $133 4 randmax + ; )	|  	piso
+	$5f =? ( drop $112 ; )				| _ baldosa
+	$2c =? ( drop $114 1 randmax + ; )	| , pasto
+	$2e =? ( drop $200 ; )				| .	agujero
 	| $300 |
 	;
 	
@@ -251,15 +253,14 @@
 
 :+fx | live anima zryx --
 	'drawfx 'fxarr p!+ >a a!+ a!+ 
-	1000 *.
-	a!+ 0 a! ;
+	1000 *. a!+ 0 a! ;
 
-:fxcheck | x y -- x y 
+:+fxcheck | x y -- x y 
 	0.6 | live
 	29 2 $ff ICS>anim
 	2over posmap 0 viewpz xyrz64 
 	+fx 
-	
+|.. animation	
 |	a> -3 ncell+
 |	pick2 pick2 posmap 0 viewpz xyrz64 
 |	2over posmap 2.0 viewpz 2/ xyrz64 
@@ -273,19 +274,31 @@
 	2over 2swap
 	$000000 sdlcolor sdlfrect
 	2 + swap 2 + swap tat 	
-	a@+ | string
-	6 tcol temits
 	
-	a@+ a@ deltatime + dup a! | livetime
-	swap >=? ( drop 0 ; ) drop ;
+	a@+ a@ deltatime + dup a!+ | livetime
+	swap >=? ( drop 0 ; ) drop 
+	
+	a> | string in array!!
+	6 tcol temits
+	;
 	
 ::+label | live x y "" --
 	'drawlabel 'fxarr p!+ >a 
-	tsbox 4 + -rot 4 + -rot
-	>r xywh64 a!+ 
-	r> a!+ 
-	1000 *.
-	a!+ 0 a! ;
+	tsbox 4 + -rot 4 + -rot 
+	>r | x y w h
+	2swap 48 - swap pick3 2/ - swap 2swap | center
+	xywh64 a!+ 
+	1000 *. a!+ 0 a!+ | timelive
+	r> a> strcpy | string in array!!
+|.. animation
+|	-3 3 << a+
+|	a> 
+|	a@ 64xywh rot 32 - -rot xywh64 
+|	a@ 
+|	2 0.8 0
+|	+vboxanim | 'var fin ini ease dur. start --
+
+	;
 
 
 |---------------------
@@ -536,7 +549,7 @@
 	$7 and 
 	2* 'mdir + c@+ swap c@ 	| dx dy
 	yp + swap xp + swap
-	fxcheck
+	+fxcheck
 	]m@ $ff00 and 24 <<   | xx00 --> xx00000000
 	vmpush
 	;
@@ -571,27 +584,27 @@
 	
 :isay
 	2.0
-	xp yp posmap 64 -
-	vmpop 32 >> data +
-	+label
-	;
+	xp yp posmap
+	vmpop vmtokstrf 
+	+label ;
 
 #wordt * 80
 #words "step" "check" "take" "leave" "rand" "say" 0
-#worde	istep icheck itake ileave irand isay
+#worde	istep icheck itake ileave irand isay 
 #wordd ( $f1 $01 $f1 $f1 $f1 $f1 0 ) 
 
 ::draw.map
 	drawmap
 	
 	'itemarr p.draw 
-	'fxarr p.draw 
 
 	playerxyrz 64xyrz 
 	ap dup deltatime + 'ap ! 
 	anim>n
 	imgspr sspriteRZ
 
+	'fxarr p.draw 
+	
 	map.step
 	;
 
