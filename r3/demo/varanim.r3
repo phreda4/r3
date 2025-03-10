@@ -110,8 +110,8 @@
 	'ttp $9f0f0  224 120 font1 textbox 310 450 drawtex
 	'ttp $af0f0  224 120 font1 textbox 610 450 drawtex
 	
-	spos 64xyrz tex2 spriteRZ
-	spos3 64xyrz tex3 spriteRZ
+	spos 64xyrz tex2 spriteHRZ
+	spos3 64xyrz tex3 spriteVRZ
 
 	|----------------
 	SDLredraw	
@@ -133,7 +133,7 @@
 	
 	"Prueba de;texto" $f0000025f00f 224 120 font1 textbox 'tex !
 	
-	"Texto en;Sprite" $ffff0025f000 224 120 font1 textbox 'tex2 !
+	"Texto en;Sprite" $70f0ffff0025f000 224 120 font1 textbox 'tex2 !
 	"Otro sprite" $7f00f0000025ffff 224 120 font1 textbox 'tex3 !
 
 	anima

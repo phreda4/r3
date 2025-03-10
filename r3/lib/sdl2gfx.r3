@@ -216,6 +216,39 @@
 	xm neg ym rotxya!
 	2drop ;
 
+:fillvertrv | x y ang --
+	sincos xm * 16 >> 'dx ! ym * 18 >> 'dy !
+	'vert >a
+	over dx + i2fp da!+
+	dy over + ym - i2fp da!+ 12 a+
+	
+	over dx - i2fp da!+
+	dy neg over + ym - i2fp da!+ 12 a+
+
+	over dx - i2fp da!+
+	dy over + ym + i2fp da!+ 12 a+
+
+	over dx + i2fp da!+
+	dy neg over + ym + i2fp da!+ 12 a+
+
+	2drop ;
+
+:fillvertrh | x y ang --
+	sincos xm * 18 >> 'dx ! ym * 16 >> 'dy !
+	'vert >a
+	dx pick2 + xm - i2fp da!+
+	dy over + i2fp da!+ 12 a+
+	
+	over dx - xm - i2fp da!+
+	dy neg over + i2fp da!+ 12 a+
+
+	over dx neg - xm + i2fp da!+
+	dy neg over + i2fp da!+ 12 a+
+
+	dx neg pick2 + xm + i2fp da!+
+	dy over + i2fp da!+ 12 a+
+	2drop ;
+
 |-------------------------
 ::sprite | x y img --
 	ab[
@@ -248,6 +281,24 @@
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
 	fillfull fillvertr
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry 
+	]ba ;
+
+::spriteVRZ | x y ang zoom img --
+	ab[
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
+	fillfull fillvertrv
+	SDLrenderer r> 'vert 4 'index 6 
+	SDL_RenderGeometry 
+	]ba ;
+
+::spriteHRZ | x y ang zoom img --
+	ab[
+	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
+	fillfull fillvertrh
 	SDLrenderer r> 'vert 4 'index 6 
 	SDL_RenderGeometry 
 	]ba ;
