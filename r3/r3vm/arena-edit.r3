@@ -94,7 +94,7 @@
 
 |------------	
 ##state | 0 - view | 1 - edit | 2 - run | 3 - error
-#cdspeed 0.1
+#cdspeed 0.2
 
 ::stepvm
 	ip 0? ( drop ; ) 

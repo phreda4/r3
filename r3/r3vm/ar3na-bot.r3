@@ -117,7 +117,6 @@
 	
 
 |-------------------	
-
 #infx 100
 #infy 100
 #padx 0
@@ -137,10 +136,12 @@
 	count 8 4 * * 500 swap - 2/ 'padx !
 	'infs !
 	sw 500 - 2/ 'infx !
+	
 	'infy 
 	sh 2/ 50 -
 	-100
 	20 0.4 0 +vanim
+	
 	'infy
 	-100	
 	sh 2/ 50 -
@@ -149,6 +150,7 @@
 	[ 1 'state ! ; ] 2.1 +vexe
 	;
 	
+|---------- jugar
 :botones
 	4 tcol 
 	3.0 tsize
@@ -186,6 +188,7 @@
 	drop 
 	;
 	
+|-----------------------
 :freeplay
 	mark
 	0.4 %w 0.02 %h 0.58 %w 0.25 %h termwin
@@ -256,7 +259,6 @@
 #cntmenu
 #menu * 1024	
 :levelmenu
-	332 
 	;
 	
 :menu

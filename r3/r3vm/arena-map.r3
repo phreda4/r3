@@ -41,6 +41,9 @@
 #penergy
 #pcarry
 
+##tilewin -1
+##statemap 0 | 0-play 1-win 2-fail
+
 #playerxyrz
 
 :]m | x y -- map
@@ -432,7 +435,8 @@
 :chki | item --
 	dup 4 ncell+ @ 2 =? ( drop ; ) drop	| item sin cuerpo
 	dup itemxy ]m@ 						| item map
-	$300 and $200 =? ( drop fallitem ; ) | fall item
+	8 >> tilewin =? ( 1 'statemap ! ) 
+	$3 and $2 =? ( drop fallitem ; ) | fall item
 	2drop ;
 	
 :check2map
@@ -496,6 +500,7 @@
 	playerxyrz
 	0 0.5 0
 	+vboxanim | 'var fin ini ease dur. start --	
+	2 'statemap ! | fail
 	;
 	
 :realmove | x y --

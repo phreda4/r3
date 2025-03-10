@@ -39,6 +39,7 @@
 	$2 tcol 2.0 tsize 
 	8 8 tat "Arena MAP " tprint
 	0 ( 8 <? dup bot.check 8 >> "%h " tprint 1+ ) drop
+	8 32 tat statemap "%d" tprint
 
 	
 	SDLredraw 
@@ -62,6 +63,7 @@
 	"r3/r3vm/levels/levels.txt" loadlevel
 	0 32 sw sh 32 - mapwin
 	reset.map
+	$10231 'tilewin !
 	
 	'main sdlShow 
 	SDLquit 
