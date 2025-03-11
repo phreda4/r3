@@ -11,9 +11,11 @@
 0 0 0 0 0
 0 0 0 0 0
 0 0 0 0 0
+0 0 0 0 0
 ]
 
 #index [ 0 1 2 2 3 0 ]
+#index2 [ 0 1 4 1 2 4 2 3 4 3 0 4 ]
 
 :rgb24 | rgb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
@@ -216,37 +218,37 @@
 	xm neg ym rotxya!
 	2drop ;
 
+:fillfull2
+	'vert >a 
+	$ffffffff 0 $3f800000 |1.0 f2fp 
+	8 a+ pick2 da!+ over da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ over da!+
+	8 a+ pick2 da!+ dup da!+ dup da!+
+	8 a+ pick2 da!+ over da!+ dup da!+
+	2drop 0.5 f2fp
+	8 a+ over da!+ dup da!+ dup da!+
+	2drop 
+	;
+
 :fillvertrv | x y ang --
 	sincos xm * 16 >> 'dx ! ym * 18 >> 'dy !
 	'vert >a
-	over dx + i2fp da!+
-	dy over + ym - i2fp da!+ 12 a+
-	
-	over dx - i2fp da!+
-	dy neg over + ym - i2fp da!+ 12 a+
-
-	over dx - i2fp da!+
-	dy over + ym + i2fp da!+ 12 a+
-
-	over dx + i2fp da!+
-	dy neg over + ym + i2fp da!+ 12 a+
-
+	over dx + i2fp da!+ dy over + ym - i2fp da!+ 12 a+
+	over dx - i2fp da!+ dup dy - ym - i2fp da!+ 12 a+
+	over dx - i2fp da!+ dup dy + ym + i2fp da!+ 12 a+
+	over dx + i2fp da!+ dup dy - ym + i2fp da!+ 12 a+
+	over i2fp da!+ dup i2fp da!+ 12 a+
 	2drop ;
+
 
 :fillvertrh | x y ang --
 	sincos xm * 18 >> 'dx ! ym * 16 >> 'dy !
 	'vert >a
-	dx pick2 + xm - i2fp da!+
-	dy over + i2fp da!+ 12 a+
-	
-	over dx - xm - i2fp da!+
-	dy neg over + i2fp da!+ 12 a+
-
-	over dx neg - xm + i2fp da!+
-	dy neg over + i2fp da!+ 12 a+
-
-	dx neg pick2 + xm + i2fp da!+
-	dy over + i2fp da!+ 12 a+
+	over dx - xm - i2fp da!+ dup dy - i2fp da!+ 12 a+
+	over dx + xm + i2fp da!+ dup dy - i2fp da!+ 12 a+
+	over dx - xm + i2fp da!+ dup dy + i2fp da!+ 12 a+	
+	over dx + xm - i2fp da!+ dup dy + i2fp da!+ 12 a+
+	over i2fp da!+ dup i2fp da!+ 12 a+
 	2drop ;
 
 |-------------------------
@@ -289,8 +291,8 @@
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
-	fillfull fillvertrv
-	SDLrenderer r> 'vert 4 'index 6 
+	fillfull2 fillvertrv
+	SDLrenderer r> 'vert 5 'index2 12
 	SDL_RenderGeometry 
 	]ba ;
 
@@ -298,8 +300,8 @@
 	ab[
 	dup 0 0 'xm 'ym SDL_QueryTexture >r
 	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
-	fillfull fillvertrh
-	SDLrenderer r> 'vert 4 'index 6 
+	fillfull2 fillvertrh
+	SDLrenderer r> 'vert 5 'index2 12
 	SDL_RenderGeometry 
 	]ba ;
 
