@@ -143,7 +143,7 @@
 	'obj 'arr p!+ >a
 	a!+ a!+ a!+ a!+ 
 	dup a!+ | img
-	SDLimagewh max a!+
+	SDLTexwh max a!+
 	8 a+
 	|0 0 0 a!+ a!+ a!+
 	0.2 randmax 0.1 - a!+ | vx

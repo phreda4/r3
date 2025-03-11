@@ -163,6 +163,7 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ::SDLupdate | --
 ::SDLclick | 'event --
 ::SDLredraw | -- 
+::SDLTexwh | img -- w h
 
 ::exit | --
 ::SDLshow | 'word --
@@ -182,7 +183,6 @@ This can be used for connect with the windows api or others DLL, like SDL2.
 ::SDLFEllipse | rx ry x y --
 ::SDLEllipse | rx ry x y --
 ::SDLTriangle | x y x y x y --
-::SDLimagewh | img -- w h
 ::SDLImage | x y img --		
 ::SDLImages | x y w h img --
 ::SDLImageb | box img --

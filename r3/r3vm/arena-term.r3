@@ -30,7 +30,8 @@
 	>>cr 2 +
 	fuente >a
 	( c@+ $25 <>?
-		10 <>? ( dup ca!+ ) drop
+		|10 <>? ( dup ca!+ ) drop
+		ca!+
 		) drop
 	0 ca!+
 	edset
@@ -95,6 +96,7 @@
 	$2c =? ( 0.4 'speed ! )	|,
 	$2e =? ( 0.8 'speed ! ) |.
 	$25 =? ( drop cntr ; )	|%
+	10 =? ( 3 + )
 	13 <? ( drop ; ) 
 	,te 
 	;

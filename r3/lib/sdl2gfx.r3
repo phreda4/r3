@@ -58,10 +58,10 @@
 	'ym ! 'xm !
 	over dup * dup 1 <<		| a b c 2aa
 	swap dup >a 'dy ! 		| a b 2aa
-	-rot over neg 1 << 1 +	| 2aa a b c
+	-rot over neg 1 << 1+	| 2aa a b c
 	swap dup * dup 1 << 		| 2aa a c b 2bb
 	-rot * dup a+ 'dx !	| 2aa a 2bb
-	1 + swap 1				| 2aa 2bb x y
+	1+ swap 1				| 2aa 2bb x y
 	pick3 'dy +! dy a+
 	;
 
@@ -75,8 +75,8 @@
 	xm pick2 - ym xm pick4 + over SDLLine 
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
-		dx >=? ( rot 1 - -rot pick3 'dx +! dx a+ )
-		dy <=? ( -rot qf 1 + rot pick4 'dy +! dy a+ )
+		dx >=? ( rot 1- -rot pick3 'dx +! dx a+ )
+		dy <=? ( -rot qf 1+ rot pick4 'dy +! dy a+ )
 		drop
 		)
 	4drop 
@@ -95,8 +95,8 @@
 	xm pick2 - ym xm pick4 + borde
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
-		dx >=? ( rot 1 - rot qfb rot pick3 'dx +! dx a+ )
-		dy <=? ( -rot qfb 1 + rot pick4 'dy +! dy a+ )
+		dx >=? ( rot 1- rot qfb rot pick3 'dx +! dx a+ )
+		dy <=? ( -rot qfb 1+ rot pick4 'dy +! dy a+ )
 		drop
 		)
 	4drop 
@@ -104,7 +104,7 @@
 	
 
 ::SDLTriangle | x y x y x y --
-	SDLrenderer 'rec dup 1 + dup 1 + dup 1 + SDL_GetRenderDrawColor
+	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
 	'vert >a
 	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
 	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
@@ -113,11 +113,8 @@
 	;
 
 |-------------------
-::SDLimagewh | img -- w h
-	0 0 'xm 'ym SDL_QueryTexture xm ym ;
-
 ::SDLImage | x y img --		
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
+	dup SDLTexwh 'ym ! 'xm ! >r
 	swap 'rec d!+ d!+ ym xm rot d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
@@ -135,7 +132,7 @@
 |------------------- TILESET	
 ::tsload | w h filename -- ts
 	loadimg
-	dup 0 0 'xm 'ym SDL_QueryTexture
+	dup SDLTexwh 'ym ! 'xm ! 
 	ab[
 	here >a
 	a!+ | texture
@@ -187,7 +184,7 @@
 |-------------------	
 :fillfull
 	'vert >a 
-	$ffffffff 0 $3f800000 |1.0 f2fp 
+	-1 0 $3f800000 |1.0 f2fp 
 	8 a+ pick2 da!+ over da!+ over da!+
 	8 a+ pick2 da!+ dup da!+ over da!+
 	8 a+ pick2 da!+ dup da!+ dup da!+
@@ -218,97 +215,67 @@
 	xm neg ym rotxya!
 	2drop ;
 
-:fillfull2
-	'vert >a 
-	$ffffffff 0 $3f800000 |1.0 f2fp 
-	8 a+ pick2 da!+ over da!+ over da!+
-	8 a+ pick2 da!+ dup da!+ over da!+
-	8 a+ pick2 da!+ dup da!+ dup da!+
-	8 a+ pick2 da!+ over da!+ dup da!+
-	2drop 0.5 f2fp
-	8 a+ over da!+ dup da!+ dup da!+
-	2drop 
-	;
-
 :fillvertrv | x y ang --
 	sincos xm * 16 >> 'dx ! ym * 18 >> 'dy !
 	'vert >a
-	over dx + i2fp da!+ dy over + ym - i2fp da!+ 12 a+
-	over dx - i2fp da!+ dup dy - ym - i2fp da!+ 12 a+
-	over dx - i2fp da!+ dup dy + ym + i2fp da!+ 12 a+
-	over dx + i2fp da!+ dup dy - ym + i2fp da!+ 12 a+
-	over i2fp da!+ dup i2fp da!+ 12 a+
-	2drop ;
-
+	over dx + i2fp da!+ dup dy + ym - i2fp da!+ -1 da!+ 0 da!+ 0 da!+ 
+	over dx - i2fp da!+ dup dy - ym - i2fp da!+ -1 da!+ $3f800000 da!+ 0 da!+ 
+	over dx - i2fp da!+ dup dy + ym + i2fp da!+ -1 da!+ $3f800000 dup da!+ da!+ 
+	over dx + i2fp da!+ dup dy - ym + i2fp da!+ -1 da!+ 0 da!+ $3f800000 da!+ 
+	swap i2fp da!+ i2fp da!+ -1 da!+ 0.5 f2fp dup da!+ da!
+	;
 
 :fillvertrh | x y ang --
 	sincos xm * 18 >> 'dx ! ym * 16 >> 'dy !
 	'vert >a
-	over dx - xm - i2fp da!+ dup dy - i2fp da!+ 12 a+
-	over dx + xm + i2fp da!+ dup dy - i2fp da!+ 12 a+
-	over dx - xm + i2fp da!+ dup dy + i2fp da!+ 12 a+	
-	over dx + xm - i2fp da!+ dup dy + i2fp da!+ 12 a+
-	over i2fp da!+ dup i2fp da!+ 12 a+
-	2drop ;
+	over dx - xm - i2fp da!+ dup dy - i2fp da!+ -1 da!+ 0 da!+ 0 da!+ 
+	over dx + xm + i2fp da!+ dup dy - i2fp da!+ -1 da!+ $3f800000 da!+ 0 da!+ 
+	over dx - xm + i2fp da!+ dup dy + i2fp da!+ -1 da!+ $3f800000 dup da!+ da!+ 
+	over dx + xm - i2fp da!+ dup dy + i2fp da!+ -1 da!+ 0 da!+ $3f800000 da!+ 
+	swap i2fp da!+ i2fp da!+ -1 da!+ 0.5 f2fp dup da!+ da!
+	;
 
 |-------------------------
 ::sprite | x y img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	xm 2/ 'xm ! ym 2/ 'ym ! 
-	fillfull fillvertxy
+	dup >r SDLTexwh 2/ 'ym ! 2/ 'xm !
+	ab[ fillfull fillvertxy ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 	
 ::spriteZ | x y zoom img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm 17 *>> 'xm ! ym 17 *>> 'ym ! 
-	fillfull fillvertxy
+	dup >r SDLTexwh pick2 17 *>> 'ym ! 17 *>> 'xm !
+	ab[ fillfull fillvertxy ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 
 ::spriteR | x y ang img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	fillfull fillvertr
+	dup >r SDLTexwh 'ym ! 'xm !
+	ab[ fillfull fillvertr ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 
 ::spriteRZ | x y ang zoom img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
-	fillfull fillvertr
+	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	ab[ fillfull fillvertr ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 
 ::spriteVRZ | x y ang zoom img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
-	fillfull2 fillvertrv
+	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	ab[ fillvertrv ]ba 
 	SDLrenderer r> 'vert 5 'index2 12
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 
 ::spriteHRZ | x y ang zoom img --
-	ab[
-	dup 0 0 'xm 'ym SDL_QueryTexture >r
-	dup xm 16 *>> 'xm ! ym 16 *>> 'ym ! 
-	fillfull2 fillvertrh
+	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	ab[ fillvertrh ]ba
 	SDLrenderer r> 'vert 5 'index2 12
-	SDL_RenderGeometry 
-	]ba ;
+	SDL_RenderGeometry ;
 
 |----------------------	
 ::ssload | w h "file" -- ssprite
 	loadimg
-	dup 0 0 'dx 'dy SDL_QueryTexture
+	dup SDLTexwh 'dy ! 'dx !
 	here >a a!+ 		| texture
 	2dup 32 << or a!+	| wi hi
 	dy 16 <</ 'dy ! 
@@ -390,7 +357,7 @@
 	dup 32 + @ ;	
 
 ::Surf>wh | surface -- surf w h
-	dup 16 + d@ over  20 + d@ ;
+	dup 16 + d@ over 20 + d@ ;
 
 |.... time control
 #prevt

@@ -158,7 +158,8 @@
 	>>cr 2 +
 	fuente >a
 	( c@+ $25 <>?
-		10 <>? ( dup ca!+ ) drop
+		|10 <>? ( dup ca!+ ) drop
+		ca!+
 		) drop
 	0 ca!+
 	edset

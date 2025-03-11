@@ -304,7 +304,11 @@
 	SDLredraw
 	( SDLkey >f12< <>? >esc< <>? drop SDLupdate ) drop
 	;
-	
+
+| tex 0 0 'xm 'ym SDL_QueryTexture		
+::SDLTexwh | tex -- w h
+	16 + d@+ swap d@ ;
+		
 |------- BOOT
 :
 |WIN|	"SDL2.DLL" loadlib
