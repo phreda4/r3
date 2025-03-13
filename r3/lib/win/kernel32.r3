@@ -53,7 +53,10 @@
 #sys-GetCommandLine
 #sys-GetConsoleWindow
 |#sys-GetConsoleCursorInfo
-|#sys-showwindow
+
+#sys-SetDllDirectory
+#sys-SetCurrentDirectory
+#sys-GetCurrentDirectory
 
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::FreeConsole sys-freeconsole sys0 drop ;
@@ -106,8 +109,11 @@
 
 ::GetCommandLine sys-GetCommandLine sys0 ;
 ::GetConsoleWindow sys-GetConsoleWindow sys0 ;
+::SetDllDirectory sys-SetDllDirectory sys1 drop ;
+::SetCurrentDirectory sys-SetCurrentDirectory sys1 drop ;
+::GetCurrentDirectory sys-GetCurrentDirectory sys2 drop ;
+
 |::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
-|::ShowWindow sys-showwindow sys2 drop ;
 
 |------- BOOT
 :
@@ -164,9 +170,10 @@
 	dup "SetConsoleWindowInfo" getproc 'sys-SetConsoleWindowInfo !
 	
 	dup "GetConsoleWindow" getproc 'sys-GetConsoleWindow !
+	dup "SetDllDirectoryA" getproc 'sys-SetDllDirectory !
+	dup "SetCurrentDirectory" getproc 'sys-SetCurrentDirectory !
+	dup "GetCurrentDirectory" getproc 'sys-GetCurrentDirectory !
+
 	drop
-|	"USER32.DLL" loadlib 
-|	dup "ShowWindow" getproc 'sys-showwindow !
-|	drop	
 	;
 	

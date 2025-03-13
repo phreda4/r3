@@ -29,13 +29,18 @@
 ::IMG_SaveJPG_RW sys-IMG_SaveJPG_RW sys4 drop ; |(SDL_Surface *surface, SDL_RWops *dst, int freedst, int quality);
 
 ::loadimg | "" -- texture
-	SDLrenderer swap IMG_LoadTexture ;
+	IMG_Load 0? ( ; )
+|	SDLrenderer swap IMG_LoadTexture ;
+	SDLrenderer over SDL_CreateTextureFromSurface swap SDL_FreeSurface ;
 	
 ::unloadimg | adr --
-	0? ( drop ; ) SDL_DestroyTexture ;	
+	0? ( drop ; ) 
+	SDL_DestroyTexture ;	
 
 |----- BOOT	
-:
+: 
+
+|WIN|	".\\dll" SetDllDirectory
 |WIN|	"SDL2_image.DLL" loadlib
 |LIN|	"libSDL2_image-2.0.so.0" loadlib	
 	dup "IMG_Load" getproc 'sys-IMG_Load !
@@ -51,7 +56,7 @@
 	dup "IMG_SaveJPG" getproc 'sys-IMG_SaveJPG !
 	dup "IMG_SaveJPG_RW" getproc 'sys-IMG_SaveJPG_RW !
 	drop
-	
+|WIN|	"" SetDllDirectory	
 	$3 IMG_Init
 	;
 
