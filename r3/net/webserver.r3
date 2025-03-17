@@ -73,6 +73,10 @@
 :http_internal_server_error
 	hversion ,s " 500 Internal Server Error" ,s ,nl ,nl ;
 
+:http_relocate
+	hversion ,s " 302 Found" ,s ,nl
+	"Location: " ,s "../index.html" ,s ,nl ,nl ;
+	
 |--------------------- request
 :>>field | adr -- adr'
 	>>sp dup 1+ 0 rot c! ;
@@ -101,6 +105,15 @@
 	parseline
 	'hbody !
 	;
+	
+:$get[ | name -- value
+	huri 
+	;
+	
+:$post[ | name -- value
+	hbody
+	;	
+	
 |--------------------------
 #filename * 1024
 #filemime * 32
@@ -124,12 +137,18 @@
 	".ttf"	=lpos 1? ( "font/ttf" 'filemime strcpy ; ) drop
 	;
 	
+:remove? | ladr -- ladr
+	dup ( 'filename =? ( drop ; )
+		dup c@ $3f <>? drop 1- ) drop |?
+	nip	
+	0 over c! ;
+	
 :fileURL
 	'basedir 'filename strcpyl 1-	| base
 	huri swap strcpyl 1-			| filename
+	remove?
 	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap ) drop
 	mimeURL
-
 	'filemime 'filename "file: %s mime: %s" .println
 	;
 	
@@ -146,8 +165,10 @@
 	
 	mark
 	here 'filename load 'here !
-	sizemem | len body
 	
+	| tamplate and exec
+	
+	sizemem | len body
 	mark
 	hversion ,s " 200 OK" ,s ,nl
 	"Content-Type: " ,s 'filemime ,s ,nl 
@@ -162,10 +183,10 @@
 |--------------------------	
 :dumpreq
 	"-------------------" .println
-	hmethod .print " | " .print huri .print " | " .print hversion .print " | " .print
-	hhost .print " | " .print hreferer .print " | " .print hcookie .println
+	hmethod .print "|" .print huri .print "|" .print hversion .print "|" .print
+	hhost .print "|" .print hreferer .print "|" .print hcookie .println
 	"-------------------" .println	
-	|hbody .println "-------------------" .println
+	hbody .println "-------------------" .println
 	;
 		
 :handlerequest
