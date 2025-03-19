@@ -106,12 +106,58 @@
 	'hbody !
 	;
 	
-:$get[ | name -- value
-	huri 
-	;
+|-------------------------- parse vars
+| = $3d
+| & $26
+|
+:char>6 | char -- 6bitchar
+	$1f - dup $40 and 1 >> or $3f and ;
+
+:6>char | 6bc -- char
+	$3f and $1f + ;
 	
-:$post[ | name -- value
-	hbody
+:parsen | -- vv | a->string
+	0 ( ca@+ 1?
+		$3d =? ( drop ; )
+		char>6 swap 6 << or
+		) nip ;
+
+:dighex | c -- dig 
+	$3A <? ( $30 - ; ) tolow $57 - ;
+
+:parsev	| -- vv
+	a> >b
+	( ca@+ 1?
+		$26 =? ( drop 0 cb!+ ; ) | =
+		$25 =? ( drop ca@+ dighex 4 << ca@+ dighex or ) | %ff
+		cb!+
+		) cb!+ ;
+	
+|.. put in list name,value, last name=0	
+|.. here body arrayvar 'here ! 
+::arrayvar | 'list str -- 'list+
+	>a 
+	( parsen 1?
+		swap !+ a> swap !+
+		parsev )
+	swap !+ ;
+
+|.. here "val1" searchvar .println
+::searchvar | 'list str -- str/0
+	>a parsen swap
+	( @+ 1?
+		over =? ( drop @ ; ) 
+		drop 8 + 
+		) nip ;
+	
+#varget
+#varpost
+
+:getvars | -- 
+	here 
+	dup 'varget ! huri arrayvar
+	dup 'varpost ! hbody arrayvar
+	'here !
 	;	
 	
 |--------------------------
@@ -190,14 +236,18 @@
 	;
 		
 :handlerequest
+	mark
 	client_socket 'buffer 1024 0 recv | 'bytesrec !
 	0 'buffer rot + c!
 	
 	parseheader
-	dumpreq
+dumpreq
+	getvars
+	
 	sendresponse
 	
     client_socket closesocket
+	empty
 	;
 	
 |---------------	
