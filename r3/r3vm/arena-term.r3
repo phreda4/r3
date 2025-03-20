@@ -7,18 +7,20 @@
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
+^./arena-edit.r3
+
 |---------------------
 | SCRIPT
 ##sstate
 
-#script
-#script>
+##script
+##script>
 
 ##term * 8192
 ##term> 'term 
 
-:teclr	'term 'term> ! ;
-:,te 	term> c!+ 'term> ! ;
+::teclr	'term 'term> ! ;
+::,te 	term> c!+ 'term> ! ;
 	
 |----
 #speed 
@@ -38,25 +40,25 @@
 	>>cr ;
 	
 :incode
-	'xedit 16 -500 26 0.5 0.0 +vanim
+|	'xedit 16 -500 26 0.5 0.0 +vanim
 	;
 	
 :outcode
-	'xedit -500 16 25 0.5 0.0 +vanim
+|	'xedit -500 16 25 0.5 0.0 +vanim
 	;
 	
 :inmap
 |	'viewpz 2.0 0.0 26 0.5 0.0 +vanim 
-	'viewpx 
-	SW viewpz mapw 16 * *. - 32 -
-	1400 26 0.5 0.0 +vanim 
+|	'viewpx 
+|	SW viewpz mapw 16 * *. - 32 -
+|	1400 26 0.5 0.0 +vanim 
 	;
 	
 :outmap
 |	'viewpz 0.0 2.0 25 0.5 0.0 +vanim 
-	'viewpx 1400 
-	SW viewpz mapw 16 * *. - 32 -
-	25 0.5 0.0 +vanim 
+|	'viewpx 1400 
+|	SW viewpz mapw 16 * *. - 32 -
+|	25 0.5 0.0 +vanim 
 	;
 	
 :endless	
@@ -93,16 +95,16 @@
 	
 :+t
 	0? ( 2 'sstate ! 1- ) 
-	$2c =? ( 0.4 'speed ! )	|,
-	$2e =? ( 0.8 'speed ! ) |.
+	$2c =? ( 0.3 'speed ! )	|,
+	$2e =? ( 0.7 'speed ! ) |.
 	$25 =? ( drop cntr ; )	|%
 	10 =? ( 3 + )
 	13 <? ( drop ; ) 
 	,te 
 	;
 	
-:addscript
-	0.05 'speed !
+::addscript
+	0.03 'speed !
 	script> c@+ +t 'script> !
 	
 	sstate 1? ( drop ; ) drop
@@ -118,40 +120,3 @@
 ::completechapter
 	( sstate 0? drop
 		script> c@+ +t 'script> ! ) drop ;
-
-|---- VIEW script
-#xterm #yterm #wterm #hterm
-
-:termwin
-	'hterm ! 'wterm ! 'yterm ! 'xterm ! ;
-	
-#inv 0
-#tcx
-#tcy
-
-:te
-	11 =? ( drop $80 inv xor 'inv ! ; )
-	12 =? ( drop c@+ tcol ; ) 
-	13 =? ( drop 16 'tcy +! tcx tcy tat ; )
-	inv or temit ;
-	
-:cursor	
-	msec $100 nand? ( drop ; ) drop $a0 temit ;
-	
-:nextlesson
-	1200 160 'nextchapter " Next" $3f3f00 btnt ;
-		
-::draw.script
-	sstate -? ( drop ; ) drop
-	$7f3f3f3f sdlcolorA	
-	xterm yterm wterm hterm sdlFRect
-	2.0 tsize 3 tcol 0 'inv !
-	xterm 8 + 'tcx ! yterm 8 + 'tcy !
-	tcx tcy tat
-	
-	'term ( term> <? c@+ te ) drop
-	sstate 1? ( drop nextlesson ; ) drop
-	cursor
-	1100 160 'completechapter "   >>" $3f00 btnt
-	;
-	

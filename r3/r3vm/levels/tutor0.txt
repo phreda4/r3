@@ -17,7 +17,6 @@
 You control the robot using %caWORDS%c3.
 these %caWORDS%c3 are write in the %c6CODE%c3.
 Here each %caWORD%c3 has a meaning.
-%a0
 %s
 
 : 2 step ;
@@ -37,13 +36,9 @@ Some %caWORDS%c3 take this %c7NUMBERS%c3, do things and can back the result.
 %s
 
 : 
-	1 
-	2 
-	3 
-	* 
-	+ 
-	10 
-	- 
+	1 2 3 
+	* + 
+	10 - 
 	;
 
 %s
@@ -59,10 +54,8 @@ You can modify the stack with these %caWORDS%c3.
 %s
 
 : 
-	33 7 
-	swap 
-	dup
-	drop 
+	33 7 swap 
+	dup drop 
 	1 over 
 	;
 
@@ -99,8 +92,7 @@ for this we are going to use LOOPS.
 %s
 
 : 
-	0 ( 
-		10 <? 
+	0 ( 5 <? 
 		1 + 
 		) drop 
 	;
@@ -121,10 +113,9 @@ We can add other %caWORDS%c3 inside the LOOP to repeat
 %s
 
 : 
-	0 ( 
-		6 <? 
-		1 + 
+	0 ( 8 <? 
 		2 step 
+		1 + 
 		) drop 
 	;
 
@@ -140,6 +131,23 @@ Some conditionals do not remove the number from the stack, for example
 %ca1?%c3 is TRUE when the number is not 0
 
 %w1
+You can try all direction usign dup for not loose the number in the LOOP.
+
+%s
+
+: 
+	0 ( 8 <? 
+		dup step 
+		1 + 
+		) drop 
+	;
+
+%s
+
+try the same same code deleting the DUP word.
+You always need balance the stack.
+
+%w1
 Another %caWORDS%c3 from robot is check, this %caWORDS%c3 take the direction of check and
 leave in %c6STACK%c3 the content of the map:
 0 - empty / 1 - wall / 2 - a box
@@ -147,9 +155,9 @@ leave in %c6STACK%c3 the content of the map:
 you can execute a %caWORDS%c3 only if a condition is TRUE put conditional %caWORDS%c3
 previus to the ( ) %caWORDS%c3.
 %s
+
 : 
-	0 ( 
-		6 <?
+	0 ( 6 <?
 		2 check
 		1? ( 2 step )
 		drop
@@ -185,20 +193,41 @@ this text don't see for the language at all
 
 %s
 
-:left 
+:right
 	2 step ;
 
-:goleft
+:goright
 	( 2 check 
 		1 =? drop 
-		left ) drop 
+		right ) drop 
 	;
 		
-: goleft ;
+: goright ;
 
 %s
 
 You need build a %c6STACK%c3 behavior for balance all %caWORDS%c3.
+
+%w1
+The word RAND get the value in stack and generate a random number
+between 0 and this value minus 1.
+the word SAY take the valuen in stack and show in the boot place.
+
+%s
+
+: 
+	0 ( 8 <? 
+		8 rand 
+		dup step 
+		say
+		1 + 
+		) drop 
+	;
+
+%s
+
+try the same same code deleting the DUP word.
+You always need balance the stack.
 
 %w1
 This new words defined by prefix %cd:%c3 is like new ACTIONS.

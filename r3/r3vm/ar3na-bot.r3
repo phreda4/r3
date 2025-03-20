@@ -7,6 +7,7 @@
 
 ^./arena-map.r3
 ^./arena-edit.r3
+^./arena-term.r3
 
 ^./rcodevm.r3
 
