@@ -261,6 +261,7 @@
 	'items 'items> !
 	0 dup 'script ! 'script> !
 	here swap load 0 swap c! 
+	here only13 0 swap c!
 	here parseline 'here !
 	teclr | clear terminal
 	0 fuente !

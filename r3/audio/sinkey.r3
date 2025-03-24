@@ -5,6 +5,8 @@
 ^r3/lib/sdl2mixer.r3
 ^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
+^r3/util/varanim.r3
+^r3/util/ttext.r3
 
 
 #audio_device |SDL_AudioDeviceID 
@@ -13,28 +15,56 @@
 :setaudio 
 44100 'audio_spec 0 + d! |freq: Offset 0 bytes
 $8010 'audio_spec 4 + w! |format: Offset 4 bytes
-1 'audio_spec 6 + c! |channels: Offset 6 bytes
+2 'audio_spec 6 + c! |channels: Offset 6 bytes
 |'audio_spec 7 + c! |silence: Offset 7 bytes
-1024 'audio_spec 8 + w! |samples: Offset 8 bytes
+2048 'audio_spec 8 + w! |samples: Offset 8 bytes
 |'audio_spec 10 + w! |padding: Offset 10 bytes
 |'audio_spec 12 + d! |size: Offset 12 bytes
 0 'audio_spec 16 + ! |callback: Offset 16 bytes
 |'audio_spec 24 + ! |userdata: Offset 24 bytes	
 	;
 	
-#buffer * $ffff
+#buffer * 8192
 
 :iniaudio
  	setaudio 
 	0 0 'audio_spec 0 0 SDL_OpenAudioDevice 'audio_device !
+	audio_device 0 SDL_PauseAudioDevice
 	;	
 
-:play
-	'buffer >a 0 ( $1fff <? rand da!+ 1+ ) drop
+:drawbuffer
+	$ffffff sdlcolor
+	'buffer >a 
+	0 ( 1024 <? 1+
+		da@+ 
+		over over $ffff and 9 >> 300 + SDLPoint
+		over swap 16 >> $ffff and 9 >> 440 + SDLPoint
+		) drop ;
 
-    audio_device 'buffer 8192 SDL_QueueAudio
-	audio_device 0 SDL_PauseAudioDevice
-	;
+#key
+#phase	
+#freq
+
+:play
+	audio_device 'buffer 8192 SDL_QueueAudio ;
+	
+:noise
+	'buffer >a 
+	2048 ( 1? 1-
+		rand 
+		da!+ ) drop
+	play ;
+	
+:sine
+	'buffer >a 
+	phase
+	2048 ( 1? 1- swap 
+		freq +
+		dup sin 1.0 + 1 >> | volumen
+		$ffff and 1 >> dup 16 << or
+		da!+ swap ) drop
+	'phase !
+	play ;
 	
 |------------------------------------------
 #playn * 25
@@ -42,6 +72,8 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 :playdn | n --
 	dup 'playn + c@ 1? ( 2drop ; ) drop
 	
+	dup 0.0015 * 'freq !
+	sine
 |	dup 3 << 'notes + @ -1 swap 0 -1 Mix_PlayChannelTimed 
 	1 
 	1 << 1 or  swap 'playn + c! ;
@@ -53,6 +85,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	
 	0 swap 'playn + c! ;
 
+|---------------------------------------------------
 #keyw ( 0 2 4 5 7 9 11 12 14 16 17 19 21 23 	-1 )
 #keyb (  1 3 0 6 8 10 0  13 15 0  18 20 22 		-1 )
 	
@@ -72,7 +105,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	0? ( drop ; )
 	colork sdlcolor
 	over 'keyb - 
-	5 << 116 + 100
+	5 << 16 + 120
 	2dup 30 50 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -94,7 +127,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 :wkey | n --
 	colork sdlcolor
 	over 'keyw -
-	5 << 100 + 100
+	5 << 0 + 120
 	2dup 32 100 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -108,9 +141,15 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 
 |-------------------------------------------
 :main
+	vupdate
 	$0 SDLcls
+	2.0 tsize $6 tcol 
+	10 10 tat "Synte" tprint tcr	
+	1.0 tsize $3 tcol 
+	audio_device SDL_GetQueuedAudioSize "%d" tprint
 	
 	drawkeys
+	drawbuffer	
 	
 	SDLredraw
 	SDLkey
@@ -152,6 +191,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	
 : 
 	"generate buffer" 1024 600 SDLinit
+	tini
 	
 	iniaudio
 
