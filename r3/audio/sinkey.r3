@@ -24,6 +24,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 |'audio_spec 24 + ! |userdata: Offset 24 bytes	
 	;
 	
+#wave1 * 8192
 #buffer * 8192
 
 :iniaudio
@@ -45,26 +46,33 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 #phase	
 #freq
 
-:play
-	audio_device 'buffer 8192 SDL_QueueAudio ;
-	
 :noise
-	'buffer >a 
+	'wave1 >a 
 	2048 ( 1? 1-
 		rand 
-		da!+ ) drop
-	play ;
+		da!+ ) drop ;
 	
 :sine
-	'buffer >a 
+	'wave1 >a 
 	phase
 	2048 ( 1? 1- swap 
 		freq +
 		dup sin 1.0 + 1 >> | volumen
-		$ffff and 1 >> dup 16 << or
+
 		da!+ swap ) drop
-	'phase !
-	play ;
+	'phase ! ;
+	
+	
+:render
+	'wave1 >a
+	'buffer >b
+	2048 ( 1? 1-
+		da@+ 
+		$ffff and dup 16 << or		
+		db!+ ) drop
+		
+	audio_device 'buffer 8192 SDL_QueueAudio ;
+	;
 	
 |------------------------------------------
 #playn * 25
@@ -74,6 +82,7 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	
 	dup 0.0015 * 'freq !
 	sine
+	render
 |	dup 3 << 'notes + @ -1 swap 0 -1 Mix_PlayChannelTimed 
 	1 
 	1 << 1 or  swap 'playn + c! ;
@@ -185,7 +194,6 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	>b< =? ( 19 playup ) >h< =? ( 20 playup )
 	>n< =? ( 21 playup ) >j< =? ( 22 playup )
 	>m< =? ( 23 playup )
-	<f1> =? ( play )
 	drop ;
 	
 	
