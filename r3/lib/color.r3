@@ -20,16 +20,18 @@
 ::col33%  | c1 c2 -- c
 	$555555 and swap $aaaaaa and or ;
 
-::colmix | c1 c2 m -- c
-	pick2 $ff00ff and
-	pick2 $ff00ff and
-	over - pick2 * 8 >> +
-	$ff00ff and >r
-	rot $ff00ff00 and
-	rot $ff00ff00 and
-	over - rot * 8 >> +
-	$ff00ff00 and r> or ;
-
+::colmix | c1 c2 a -- c 
+	rot dup 24 << or $ff00ff00ff and
+	rot dup 24 << or $ff00ff00ff and
+	over - rot * 8 >> + $ff00ff00ff and
+	dup 24 >> or ;
+	
+::colmix4 | c1 c2 a -- c 
+	rot dup 12 << or $f0f0f and
+	rot dup 12 << or $f0f0f and
+	over - rot 4 >> * 4 >> + $f0f0f and
+	dup 12 >> or ;
+	
 |--- diferencia de color
 ::diffrgb2 | a b -- v
 	over 16 >> over 16 >> - abs | a b a1
@@ -53,7 +55,7 @@
 
 ::yuv32 | yuv -- col
 	pick2 16 - 76283 * pick2 128 - 132252 * + 16 >> bound >r
-	pick2 16 - 76283 * pick2 128 - 25624 *  - pick2 128 - 53281 * - 16 >> bound 8 << $ff00 and >r
+	pick2 16 - 76283 * pick2 128 - 25624 * - pick2 128 - 53281 * - 16 >> bound 8 << $ff00 and >r
 	nip 128 - 104595 * swap 16 - 76283 * + 16 >> bound 16 << $ff0000 and r> or r> or ;
 
 | hsv 1.0 1.0 1.0 --> rgb
@@ -61,7 +63,7 @@
 
 :h0 ;				|v, n, m
 :h1 >r swap r> ;	|n, v, m
-:h2 -rot ;		|m, v, n
+:h2 -rot ;			|m, v, n
 :h3 swap rot ;		|m, n, v
 :h4 rot ;			|n, m, v
 :h5 swap ;			|v, m, n
@@ -224,3 +226,4 @@
 	$f000 and 12 << dup 4 << or 
 	or or or ;
 	
+

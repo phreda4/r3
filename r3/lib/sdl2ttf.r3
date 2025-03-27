@@ -1,6 +1,9 @@
 | SDL2_ttf.dll
 | PHREDA 2024
 
+|WIN|^r3/lib/win/core.r3
+|LIN|^r3/lib/posix/core.r3
+
 #sys-TTF_Init
 #sys-TTF_OpenFont
 #sys-TTF_SetFontSize 
