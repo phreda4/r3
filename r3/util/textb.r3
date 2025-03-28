@@ -108,7 +108,7 @@
 		font 0 TTF_SetFontOutline 
 		)
 	dup 24 >> $ff and dup 'x ! 'y !
-	dup 4bicol 'ink !		
+	dup 4bicol 'ink !
 	printtext
 	drop ;
 	
@@ -119,9 +119,7 @@
 	$ff0000 $ff00 $ff $ff000000 
 	SDL_CreateRGBSurface 'surface !
 	pick2 24 >> $ff and 2* rot over - 'w ! - 'h !
-	ab[
-	.textbox
-	]ba 
+	ab[ .textbox ]ba 
 	SDLrenderer surface SDL_CreateTextureFromSurface
 	surface SDL_FreeSurface
 	dup 1 SDL_SetTextureScaleMode
