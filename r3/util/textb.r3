@@ -8,14 +8,12 @@
 ^r3/lib/sdl2ttf.r3
 
 #buffer * 4096
+#buffer>
 #lines * 512
 #lines>
 #boxlines * 512
-#clines
-
 #font
 #ink
-
 #htotal
 #x #y #w #h
 #bbtext [ 0 0 0 0 ]
@@ -26,37 +24,43 @@
 	font swap ink TTF_RenderUTF8_Blended
 	dup 0 surface 'bbtext SDL_BlitSurface
 	SDL_FreeSurface	;
-	
-#lastsp
 
-:inwbox | c -- c
-	0 ca!
-	0 'x ! 0 'y ! | store 32, clear sign
-	font b> 8 - @ 'x 'y TTF_SizeUTF8 drop
-	x w | wsize wbox
-	<=? ( drop a> 'lastsp ! ; ) drop
-	0 lastsp c!+ b!+ 
-	a> 'lastsp !
+|--- split lines
+:emit
+	$3b =? ( 0 nip ; ) | ;
+	13 =? ( drop c@ 10 =? ( swap 1+ swap ) drop 0 ; )
+	10 =? ( drop c@ 13 =? ( swap 1+ swap ) drop 0 ; )
 	;
 	
-:emit
-	13 =? ( over c@ 10 =? ( 2drop ; ) inwbox 0 ca!+ a> b!+ 2drop ; )
-	10 =? ( inwbox 0 ca!+ a> b!+ drop ; )
-	$3b =? ( inwbox 0 ca!+ a> b!+ drop ; ) | ;
-	32 =? ( inwbox )
-	ca!+ ;
+:marklines
+	'buffer >a 
+	( c@+ 1? emit ca!+ ) 
+	emit ca!+ a> 'buffer> ! 
+	drop ;
 	
-:lastline
-	a> 2 - c@ 0? ( drop b> 16 - ; ) drop
-	b> 8 - ;
+:<<sp | stro str -- str'
+	swap over
+	( over <? ( 2drop ; ) 
+		dup c@ $ff and 32 >? 
+		drop 1- ) drop nip nip ;
+
+#rw #rc
+:testw | str -- str
+	font over w 'rw 'rc TTF_MeasureUTF8
+	count rc swap 
+	>=? ( drop ; ) | str corte
+	over b!+
+	over + <<sp
+	0 swap c!+
+	testw ;
 	
-:splitlines | "" --
+:splitlines
+	marklines
 	'lines >b
-	'buffer dup >a b!+ 
-	( c@+ 1? emit ) 
-	inwbox ca!+ 0 ca! a> b!+
-	drop 
-	lastline 'lines> ! ;
+	'buffer ( buffer> <?
+		testw dup b!+ >>0
+		) drop
+	b> 'lines> ! ;
 
 |----------------------------------------------
 :textl

@@ -54,8 +54,9 @@
 	"media/ttf/roboto-medium.ttf" 20 TTF_OpenFont 'font ! 
 	$ff vaini
 
-	"View EASE number" $ffff0025f000 400 20 font textbox 'titulo !
+	
 	inipanel
+	"View EASE number" $ffff0025f000 200 80 font textbox 'titulo !
 	anima
 			
 	'demo SDLshow

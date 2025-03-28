@@ -131,7 +131,7 @@
 	600 200 380 140 xywh64 
 	'abox !
 	
-	"Prueba de;texto" $f0000025f00f 224 120 font1 textbox 'tex !
+	"Prueba de texto con un ancho largo" $f0000025f00f 224 120 font1 textbox 'tex !
 	
 	"Texto en;Sprite" $70f0ffff0025f000 224 120 font1 textbox 'tex2 !
 	"Otro sprite;mas aca" $7f00f0000025ffff 224 120 font1 textbox 'tex3 !
