@@ -28,8 +28,8 @@
 |--- split lines
 :emit
 	$3b =? ( 0 nip ; ) | ;
-	13 =? ( drop c@ 10 =? ( swap 1+ swap ) drop 0 ; )
-	10 =? ( drop c@ 13 =? ( swap 1+ swap ) drop 0 ; )
+	13 =? ( drop dup c@ 10 =? ( swap 1+ swap ) drop 0 ; )
+	10 =? ( drop dup c@ 13 =? ( swap 1+ swap ) drop 0 ; )
 	;
 	
 :marklines
@@ -47,7 +47,7 @@
 #rw #rc
 :testw | str -- str
 	font over w 'rw 'rc TTF_MeasureUTF8
-	count rc swap 
+	utf8count rc swap 
 	>=? ( drop ; ) | str corte
 	over b!+
 	over + <<sp

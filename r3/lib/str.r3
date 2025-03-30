@@ -58,6 +58,11 @@
 	$80000000000000 and? ( 2drop 6 + ; )	
 	2drop 7 + ;
 	
+::utf8count | str -- str count
+	0 over ( c@+ 1? $c0 and 
+		$80 <>? ( rot 1+ -rot )
+		drop ) 2drop ;
+		
 ::= | s1 s2 -- 1/0
 	( swap c@+ 1?
 		toupp rot c@+ toupp rot -
