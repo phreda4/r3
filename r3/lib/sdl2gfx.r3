@@ -191,6 +191,7 @@
 	8 a+ pick2 da!+ over da!+ dup da!
 	3drop ;
 	
+	
 :fillvertxy | x y --
 	'vert >a
 	over xm - i2fp da!+ dup ym - i2fp da!+ 12 a+ 
@@ -347,7 +348,6 @@
 	SDL_RenderGeometry 
 	]ba ;
 	
-	
 ::createSurf | w h -- surface
 	0 -rot 32 
 	$ff0000 $ff00 $ff $ff000000  | ARGB
@@ -358,6 +358,19 @@
 
 ::Surf>wh | surface -- surf w h
 	dup 16 + d@ over 20 + d@ ;
+
+|------ compose texture
+#comptex
+	
+::texIni | w h --	
+| $16362004 |ARGB
+	>r >r SDLrenderer $16462004 2 r> r> SDL_CreateTexture 
+	dup 'comptex !
+	SDLrenderer swap SDL_SetRenderTarget ;
+	
+::texEnd | -- texture
+	SDLrenderer 0 SDL_SetRenderTarget
+	comptex	;
 
 |.... time control
 #prevt
@@ -394,6 +407,6 @@
 	
 ::anim>stop | ani -- ani
 	$ff00000000000 nand ;
-
-
+	
 : fillfull ;
+

@@ -9,7 +9,7 @@
 	swap $ff00ff00 and or ;
 
 ::colavg | a b -- c
-	2dup xor $fefefefe and 1 >> >r or r> - ;
+	2dup or -rot xor $fefefefe and 1 >> - ;
 
 ::col50% | c1 c2 -- c
 	$fefefe and swap $fefefe and + 1 >> ;
