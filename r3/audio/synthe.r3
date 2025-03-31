@@ -9,38 +9,53 @@
 ^r3/util/ttext.r3
 
 
+|-----------------------------------------
 #audio_device |SDL_AudioDeviceID 
 #audio_spec * 32
 
-:setaudio 
-44100 'audio_spec 0 + d! |freq: Offset 0 bytes
-$8010 'audio_spec 4 + w! |format: Offset 4 bytes
-2 'audio_spec 6 + c! |channels: Offset 6 bytes
-|'audio_spec 7 + c! |silence: Offset 7 bytes
-2048 'audio_spec 8 + w! |samples: Offset 8 bytes
-|'audio_spec 10 + w! |padding: Offset 10 bytes
-|'audio_spec 12 + d! |size: Offset 12 bytes
-0 'audio_spec 16 + ! |callback: Offset 16 bytes
-|'audio_spec 24 + ! |userdata: Offset 24 bytes	
-	;
-	
-#wave1 * 8192
-#buffer * 8192
-
 :iniaudio
- 	setaudio 
+	44100 'audio_spec 0 + d! |freq: Offset 0 bytes
+	$8010 'audio_spec 4 + w! |format: Offset 4 bytes
+	2 'audio_spec 6 + c! |channels: Offset 6 bytes
+	|'audio_spec 7 + c! |silence: Offset 7 bytes
+	2048 'audio_spec 8 + w! |samples: Offset 8 bytes
+	|'audio_spec 10 + w! |padding: Offset 10 bytes
+	|'audio_spec 12 + d! |size: Offset 12 bytes
+	0 'audio_spec 16 + ! |callback: Offset 16 bytes
+	|'audio_spec 24 + ! |userdata: Offset 24 bytes	
+
 	0 0 'audio_spec 0 0 SDL_OpenAudioDevice 'audio_device !
 	audio_device 0 SDL_PauseAudioDevice
 	;	
 
+|-----------------------------------------
+#ibuffer * $1fff | 2048 * 2 (channel) * 2(16bits)
+
 :drawbuffer
 	$ffffff sdlcolor
-	'buffer >a 
+	'ibuffer >a 
 	0 ( 1024 <? 1+
 		da@+ 
 		over over $ffff and 9 >> 300 + SDLPoint
 		over swap 16 >> $ffff and 9 >> 440 + SDLPoint
 		) drop ;
+
+#mbuffer * $3fff | 2048 * 4 * 2
+
+:renderbuffer
+	'mbuffer >a
+	'ibuffer >b
+	2048 ( 1? 1- 
+		da@+ 8 >> $ffff and 
+		da@+ 8 >> $ffff and
+		16 << or db!+
+		) drop 
+	audio_device 'ibuffer 8192 SDL_QueueAudio ;
+
+
+
+
+#wave1 * 8192
 
 #key
 #phase	
@@ -65,17 +80,36 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	
 :render
 	'wave1 >a
-	'buffer >b
+	'ibuffer >b
 	2048 ( 1? 1-
 		da@+ 
 		$ffff and dup 16 << or		
 		db!+ ) drop
 		
-	audio_device 'buffer 8192 SDL_QueueAudio ;
+	audio_device 'ibuffer 8192 SDL_QueueAudio ;
+	;
+
+|---------------------------------------
+| lane
+|	float           vol;
+|	float           vol_left;
+|	float           vol_right;
+|	float phase;
+|	frequency frequency;
+|	float wavelength;
+|	float sample_hold_last;
+|	uint8_t sample_hold_index;
+|	float attack_rate;
+|	float decay_rate;
+|	float sustain_level;
+|	float release_rate;
+
+:runsynthe	
 	;
 	
 |------------------------------------------
-#playn * 25
+#playi * 800	| info
+#playn * 100	| off/on
 
 :playdn | n --
 	dup 'playn + c@ 1? ( 2drop ; ) drop
@@ -83,14 +117,11 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	dup 0.0015 * 'freq !
 	sine
 	render
-|	dup 3 << 'notes + @ -1 swap 0 -1 Mix_PlayChannelTimed 
-	1 
-	1 << 1 or  swap 'playn + c! ;
+
+	1 swap 'playn + c! ;
 
 :playup | n --
-	dup 'playn + c@ 0? ( 2drop ; ) 
-|	1 >> 100 Mix_FadeOutChannel | 100 ms for avoid clicks
-	drop
+	dup 'playn + c@ 0? ( 2drop ; ) drop
 	
 	0 swap 'playn + c! ;
 
@@ -149,36 +180,8 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	;
 
 |-------------------------------------------
-:main
-	vupdate
-	$0 SDLcls
-	2.0 tsize $6 tcol 
-	10 10 tat "Synte" tprint tcr	
-	1.0 tsize $3 tcol 
-	audio_device SDL_GetQueuedAudioSize "%d" tprint
-	
-	drawkeys
-	drawbuffer	
-	
-	SDLredraw
-	SDLkey
+:upkeys
 	>esc< =? ( exit )
-	<q> =? ( 0 playdn ) <2> =? ( 1 playdn )
-	<w> =? ( 2 playdn ) <3> =? ( 3 playdn )
-	<e> =? ( 4 playdn ) 
-	<r> =? ( 5 playdn ) <5> =? ( 6 playdn ) 
-	<t> =? ( 7 playdn ) <6> =? ( 8 playdn )
-	<y> =? ( 9 playdn ) <7> =? ( 10 playdn )
-	<u> =? ( 11 playdn )
-	
-	<z> =? ( 12 playdn ) <s> =? ( 13 playdn )
-	<x> =? ( 14 playdn ) <d> =? ( 15 playdn )
-	<c> =? ( 16 playdn )
-	<v> =? ( 17 playdn ) <g> =? ( 18 playdn )
-	<b> =? ( 19 playdn ) <h> =? ( 20 playdn )
-	<n> =? ( 21 playdn ) <j> =? ( 22 playdn )
-	<m> =? ( 23 playdn )
-
 	>q< =? ( 0 playup ) >2< =? ( 1 playup )
 	>w< =? ( 2 playup ) >3< =? ( 3 playup )
 	>e< =? ( 4 playup ) 
@@ -194,13 +197,50 @@ $8010 'audio_spec 4 + w! |format: Offset 4 bytes
 	>b< =? ( 19 playup ) >h< =? ( 20 playup )
 	>n< =? ( 21 playup ) >j< =? ( 22 playup )
 	>m< =? ( 23 playup )
-	drop ;
+	drop
+	;
 	
+:teclado
+	SDLkey 0? ( drop ; )
+	$1000 and? ( upkeys ; ) 
+	<q> =? ( 0 playdn ) <2> =? ( 1 playdn )
+	<w> =? ( 2 playdn ) <3> =? ( 3 playdn )
+	<e> =? ( 4 playdn ) 
+	<r> =? ( 5 playdn ) <5> =? ( 6 playdn ) 
+	<t> =? ( 7 playdn ) <6> =? ( 8 playdn )
+	<y> =? ( 9 playdn ) <7> =? ( 10 playdn )
+	<u> =? ( 11 playdn )
+	
+	<z> =? ( 12 playdn ) <s> =? ( 13 playdn )
+	<x> =? ( 14 playdn ) <d> =? ( 15 playdn )
+	<c> =? ( 16 playdn )
+	<v> =? ( 17 playdn ) <g> =? ( 18 playdn )
+	<b> =? ( 19 playdn ) <h> =? ( 20 playdn )
+	<n> =? ( 21 playdn ) <j> =? ( 22 playdn )
+	<m> =? ( 23 playdn )
+	drop
+	;
+	
+:main
+	vupdate
+	$0 SDLcls
+	2.0 tsize $6 tcol 
+	10 10 tat "R3Synte" tprint tcr	
+	1.0 tsize $3 tcol 
+|	audio_device SDL_GetQueuedAudioSize "%d" tprint
+	
+	drawkeys
+	drawbuffer	
+
+	runsynthe	
+	
+	SDLredraw
+	teclado
+	;
 	
 : 
-	"generate buffer" 1024 600 SDLinit
+	"R3sythe" 1024 600 SDLinit
 	tini
-	
 	iniaudio
 
 	'main SDLshow
