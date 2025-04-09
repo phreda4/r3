@@ -19,26 +19,28 @@
 #sys-TTF_RenderUTF8_Shaded
 #sys-TTF_RenderText_Blended
 #sys-TTF_RenderUTF8_Blended
+#sys-TTF_RenderUTF8_Blended_Wrapped
 #sys-TTF_CloseFont
 #sys-TTF_Quit
 
 ::TTF_Init sys-TTF_Init sys0 drop ;
-::TTF_OpenFont sys-TTF_OpenFont sys2 ; |TTF_Font * TTF_OpenFont( char *file, int ptsize);
-::TTF_SetFontStyle sys-TTF_SetFontStyle sys2 drop ; |void  TTF_SetFontStyle(TTF_Font *font, int style);
-::TTF_SetFontOutline sys-TTF_SetFontOutline sys2 drop ; |void  TTF_SetFontOutline(TTF_Font *font, int outline);
-::TTF_SetFontSize sys-TTF_SetFontSize sys2 ; |  int  TTF_SetFontSize(TTF_Font *font, int ptsize);
-::TTF_SetFontSDF sys-TTF_SetFontSDF sys2 ; | int TTF_SetFontSDF(TTF_Font *font, SDL_bool on_off);
-::TTF_SizeText sys-TTF_SizeText sys4 ; |int  TTF_SizeText(TTF_Font *font,  char *text, int *w, int *h);
-::TTF_SizeUTF8 sys-TTF_SizeUTF8 sys4 ; |int  TTF_SizeUTF8(TTF_Font *font,  char *text, int *w, int *h);
-::TTF_MeasureUTF8 sys-TTF_MeasureUTF8 sys5 drop ; |int TTF_MeasureUTF8(TTF_Font *font, const char *text, int measure_width, int *extent, int *count);
-::TTF_RenderText_Solid sys-TTF_RenderText_Solid sys3 ; |surface TTF_RenderText_Solid(TTF_Font *font, char *text, SDL_Color fg);
-::TTF_RenderUTF8_Solid sys-TTF_RenderUTF8_Solid sys3 ; |surface TTF_RenderUTF8_Solid(TTF_Font *font, char *text, SDL_Color fg);
-::TTF_RenderText_Shaded sys-TTF_RenderText_Shaded sys4 ; |surface TTF_RenderText_Shaded(TTF_Font *font, char *text, SDL_Color fg, SDL_Color bg);
-::TTF_RenderUTF8_Shaded sys-TTF_RenderUTF8_Shaded sys4 ; |surface TTF_RenderUTF8_Shaded(TTF_Font *font, char *text, SDL_Color fg, SDL_Color bg);
-::TTF_RenderText_Blended sys-TTF_RenderText_Blended sys3 ; |surface TTF_RenderText_Blended(TTF_Font *font, char *text, SDL_Color fg);
-::TTF_RenderUTF8_Blended sys-TTF_RenderUTF8_Blended sys3 ; |surface TTF_RenderUTF8_Blended(TTF_Font *font, char *text, SDL_Color fg);
-::TTF_CloseFont sys-TTF_CloseFont sys1 drop ; |void TTF_CloseFont(TTF_Font *font);
-::TTF_Quit sys-TTF_Quit sys0 drop ; |void TTF_Quit(void);
+::TTF_OpenFont sys-TTF_OpenFont sys2 ; |TTF_Font * ( char *file, int ptsize);
+::TTF_SetFontStyle sys-TTF_SetFontStyle sys2 drop ; |void ( *font, int style);
+::TTF_SetFontOutline sys-TTF_SetFontOutline sys2 drop ; |void ( *font, int outline);
+::TTF_SetFontSize sys-TTF_SetFontSize sys2 ; |  int ( *font, int ptsize);
+::TTF_SetFontSDF sys-TTF_SetFontSDF sys2 ; | int ( *font, SDL_bool on_off);
+::TTF_SizeText sys-TTF_SizeText sys4 ; |int  ( *font,  char *, int *w, int *h);
+::TTF_SizeUTF8 sys-TTF_SizeUTF8 sys4 ; |int  ( *font,  char *, int *w, int *h);
+::TTF_MeasureUTF8 sys-TTF_MeasureUTF8 sys5 drop ; |int (*font, char *,measure_width,*extent,*count);
+::TTF_RenderText_Solid sys-TTF_RenderText_Solid sys3 ; |surface ( *font, char *, SDL_Color fg);
+::TTF_RenderUTF8_Solid sys-TTF_RenderUTF8_Solid sys3 ; |surface ( *font, char *, SDL_Color fg);
+::TTF_RenderText_Shaded sys-TTF_RenderText_Shaded sys4 ; |surface (*font,char *, SDL_Color fg, SDL_Color bg)
+::TTF_RenderUTF8_Shaded sys-TTF_RenderUTF8_Shaded sys4 ; |surface (*font,char *, SDL_Color fg, SDL_Color bg)
+::TTF_RenderText_Blended sys-TTF_RenderText_Blended sys3 ; |surface ( *font, char *, SDL_Color fg);
+::TTF_RenderUTF8_Blended sys-TTF_RenderUTF8_Blended sys3 ; |surface ( *font, char *, SDL_Color fg);
+::TTF_RenderUTF8_Blended_Wrapped sys-TTF_RenderUTF8_Blended_Wrapped sys4 ; | font str color width -- surface
+::TTF_CloseFont sys-TTF_CloseFont sys1 drop ; |void ( *font);
+::TTF_Quit sys-TTF_Quit sys0 drop ; |void (void);
  
 |----- BOOT 
 :
@@ -60,6 +62,7 @@
 	dup "TTF_RenderUTF8_Shaded" getproc 'sys-TTF_RenderUTF8_Shaded !
 	dup "TTF_RenderText_Blended" getproc 'sys-TTF_RenderText_Blended !
 	dup "TTF_RenderUTF8_Blended" getproc 'sys-TTF_RenderUTF8_Blended !
+	dup "TTF_RenderUTF8_Blended_Wrapped" getproc 'sys-TTF_RenderUTF8_Blended_Wrapped !
 	dup "TTF_CloseFont" getproc 'sys-TTF_CloseFont !
 	dup "TTF_Quit" getproc 'sys-TTF_Quit !
 	drop

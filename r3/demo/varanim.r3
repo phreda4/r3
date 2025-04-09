@@ -110,8 +110,8 @@
 	'ttp $9f0f0  224 120 font1 textbox 310 450 drawtex
 	'ttp $af0f0  224 120 font1 textbox 610 450 drawtex
 	
-	spos 64xyrz tex2 spriteHRZ
-	spos3 64xyrz tex3 spriteVRZ
+	spos 64xyrz tex2 spriteRZ
+	spos3 64xyrz tex3 spriteRZ
 
 	|----------------
 	SDLredraw	
