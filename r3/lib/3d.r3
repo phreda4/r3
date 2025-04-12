@@ -198,3 +198,34 @@
 	a@ a> 8 + @ | s c a b
 	pick2 pick2 *. pick4 neg pick2 *. + a!+
 	rot *. >r *. r> + a! ;
+
+
+|------------- divisionless
+| version r4
+| debe haber una forma de optimizar esto mas
+
+|::3dini
+|	1024 sw - 1 >> neg 'ox !
+|	1024 sh - 1 >> neg 'oy !
+|	matini ;
+
+|| 10 bit projection
+|:c10 | x z -- x'
+|	1 >> 0 swap over | x 0 z 0
+|	pick3 >? ( over - rot )( over + rot 512 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 256 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 128 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 64 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 32 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 16 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 8 + ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 4+ ) rot 1 >> rot
+|	pick3 >? ( over - rot )( over + rot 2 + ) rot 1 >> rot
+|	pick3 >? ( 2drop )( 2drop 1 + )
+|	nip ;
+
+|::3dproject | x y z -- x y
+|	rot over c10 ox + rot rot c10 oy + ;
+
+|::3dproj | x y z -- x y
+|	rot over c10 rot rot c10 ;

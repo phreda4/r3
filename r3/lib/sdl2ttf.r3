@@ -10,6 +10,8 @@
 #sys-TTF_SetFontSDF
 #sys-TTF_SetFontStyle
 #sys-TTF_SetFontOutline
+#sys-TTF_SetFontLineSkip
+#sys-TTF_SetFontWrappedAlign
 #sys-TTF_SizeText
 #sys-TTF_SizeUTF8
 #sys-TTF_MeasureUTF8
@@ -27,6 +29,8 @@
 ::TTF_OpenFont sys-TTF_OpenFont sys2 ; |TTF_Font * ( char *file, int ptsize);
 ::TTF_SetFontStyle sys-TTF_SetFontStyle sys2 drop ; |void ( *font, int style);
 ::TTF_SetFontOutline sys-TTF_SetFontOutline sys2 drop ; |void ( *font, int outline);
+::TTF_SetFontLineSkip sys-TTF_SetFontLineSkip sys2 drop ; |(TTF_Font *font, int lineskip);
+::TTF_SetFontWrappedAlign sys-TTF_SetFontWrappedAlign sys2 drop ; |(TTF_Font *font, int align);
 ::TTF_SetFontSize sys-TTF_SetFontSize sys2 ; |  int ( *font, int ptsize);
 ::TTF_SetFontSDF sys-TTF_SetFontSDF sys2 ; | int ( *font, SDL_bool on_off);
 ::TTF_SizeText sys-TTF_SizeText sys4 ; |int  ( *font,  char *, int *w, int *h);
@@ -51,6 +55,8 @@
 	dup "TTF_OpenFont" getproc 'sys-TTF_OpenFont !
 	dup "TTF_SetFontStyle" getproc 'sys-TTF_SetFontStyle !
 	dup "TTF_SetFontOutline" getproc 'sys-TTF_SetFontOutline !
+	dup "TTF_SetFontLineSkip" getproc 'sys-TTF_SetFontLineSkip !
+	dup "TTF_SetFontWrappedAlign" getproc 'sys-TTF_SetFontWrappedAlign !
 	dup "TTF_SetFontSize" getproc 'sys-TTF_SetFontSize !
 	dup "TTF_SetFontSDF" getproc 'sys-TTF_SetFontSDF !
 	dup "TTF_SizeText" getproc 'sys-TTF_SizeText !
