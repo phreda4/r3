@@ -64,6 +64,7 @@
 |#sys-SDL_StopTextInput
 
 #sys-SDL_RWFromFile
+#sys-SDL_RWclose
 
 #sys-SDL_GL_SetAttribute
 #sys-SDL_GL_CreateContext
@@ -146,6 +147,7 @@
 |::SDL_StopTextInput sys-SDL_StopTextInput sys0 drop ;
 
 ::SDL_RWFromFile sys-SDL_RWFromFile sys2 ;
+::SDL_RWclose sys-SDL_RWclose sys1 drop ;
 
 ::SDL_GL_SetAttribute sys-SDL_GL_SetAttribute sys2 drop ;
 ::SDL_GL_CreateContext sys-SDL_GL_CreateContext sys1 ;
@@ -372,6 +374,7 @@
 	dup "SDL_GetTicks" getproc 'sys-SDL_GetTicks !
 	
 	dup "SDL_RWFromFile" getproc 'sys-SDL_RWFromFile !
+	dup "SDL_RWclose" getproc 'sys-SDL_RWclose !
 	
 	dup "SDL_GL_SetAttribute" getproc 'sys-SDL_GL_SetAttribute !
 	dup "SDL_GL_CreateContext" getproc 'sys-SDL_GL_CreateContext !

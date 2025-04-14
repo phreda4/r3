@@ -33,6 +33,14 @@
 	
 ::unloadimg | adr --
 	SDL_DestroyTexture ;	
+	
+::loadsvg | w h "" -- tex
+	"r" SDL_RWFromFile | w h rw
+	dup 2swap IMG_LoadSizedSVG_RW | rw surface
+	swap SDL_RWclose
+	SDLrenderer over SDL_CreateTextureFromSurface 
+	swap SDL_FreeSurface 
+	;	
 
 |----- BOOT	
 : 

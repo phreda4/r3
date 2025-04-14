@@ -46,16 +46,29 @@
 	project db!+ db!+
 	;
 
-:getn | n --
-	3 << 'rotsum + d@+ swap d@
+:getn | n -- u v
+	3 << 'rotsum + d@+ swap d@ ;
+	
+:setn | u v --
 	i2fp da!+ i2fp da!+ facecolor da!+ 8 a+ ;
-
+	
 :cara
 	'vert >a
-	dup $7 and getn
-	4 >> dup $7 and getn
-	4 >> dup $7 and getn
-	4 >> dup $7 and getn
+	dup $7 and getn 
+	2dup 'y0 ! 'x0 !
+	setn
+	4 >> dup $7 and getn 
+	2dup y0 - 'y1 ! x0 - 'x1 !
+	setn
+	4 >> dup $7 and getn 
+	2dup y0 - 'y2 ! x0 - 'x2 !
+	
+	x1 y2 * y1 x2 * -
+	|x1 x0 - y2 y0 - * y1 y0 - x2 x0 - * - 
+	+? ( 3drop 8 >> ; ) drop | CCW?
+
+	setn
+	4 >> dup $7 and getn setn
 	4 >>
 	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry 
 	;
@@ -68,8 +81,7 @@ $015446204576 $401551377645 $732662046457 $732675137645
 	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 63 >> $1 and
 	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 63 >> $2 and or
 	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $4 and or
-	$7 xor | mask
-	3 << 'caras + @ 
+	$7 xor 3 << 'caras + @ 
 	cara aclara cara aclara cara 
 	drop ;
 
