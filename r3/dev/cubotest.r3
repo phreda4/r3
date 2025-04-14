@@ -104,9 +104,11 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	2 << 'paleta + d@ 'facecolor !
 	dup imask xor
 	mpush
+| 8*8*8	
 |	dup $7 and 16 << 3.5 -
 |	over 3 >> $7 and 16 << 3.5 -
 |	rot 6 >> $7 and 16 << 3.5 -
+
 	dup $f and 16 << 7.5 -
 	over 4 >> $f and 16 << 7.5 -
 	rot 8 >> $f and 16 << 7.5 -
@@ -124,6 +126,7 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	-1.0 1.0 1.0 transform 'z4 ! 'y4 ! 'x4 !
 	0 0 0 transform 'z7 ! 'y7 ! 'x7 !
 	
+| 8*8*8	
 |	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 63 >> $7 and 6 << 
 |	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 63 >> $7 and 3 << or
 |	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $7 and or
@@ -137,14 +140,14 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	'imask !
 	mpop
 	
-	0 ( $fff <=? | xx yy zz | 1ff
+	0 ( $fff <=? | xx yy zz | 8=1ff
 		dup imask xor  | invert mask
 		'voxels + c@ drawv
 		1+ ) drop ;
 		
 :randvoxel
 	'voxels >a 
-	$fff ( 1? 
+	$fff ( 1? | 8=1ff
 		64 randmax
 		15 >? ( 0 nip )
 		ca!+ 
