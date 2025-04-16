@@ -5,6 +5,8 @@
 ^r3/lib/3d.r3
 ^r3/lib/rand.r3
 ^r3/util/pcfont.r3
+^r3/util/sortradix.r3
+^r3/util/sort.r3
 
 |------------------------------
 #xcam 0 #ycam 0 #zcam 40.0
@@ -96,47 +98,55 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
 #voxels * $ffff
 
+|-------------- v1 without sort
 #imask
-	
-#n1 #n2 #n3
-:o1
+
+:o1 |123
 	;
-:o2
+:o2 |132
+	dup 4 << $f0 and over 4 >> $f and or swap $f00 and or ;
+:o3 |213
 	dup 4 << $f00 and over 4 >> $f0 and or swap $f and or ;
-:o3
+:o4 |231
+	dup 8 >> $f and swap 4 << $ff0 and or ;
+:o5 |312
+	dup 8 << $f00 and swap 4 >> $ff and or ;
+:o6 |321
 	dup 8 >> $f and over 8 << $f00 and or swap $f0 and or ;
 	
+
 #nn	
 #oo 'o1
+
+:testkey
+	<f2> =? ( 'o1 'oo ! )
+	<f3> =? ( 'o2 'oo ! )
+	<f4> =? ( 'o3 'oo ! )
+	<f5> =? ( 'o4 'oo ! )
+	<f6> =? ( 'o5 'oo ! )
+	<f7> =? ( 'o6 'oo ! )
+	;
+	
+:xyz2tran | n - x y z
+	dup $f and 16 << 7.5 -
+	over 4 >> $f and 16 << 7.5 -
+	rot 8 >> $f and 16 << 7.5 -
+	;
+| 8*8*8	
+|	dup $7 and 16 << 3.5 -
+|	over 3 >> $7 and 16 << 3.5 -
+|	rot 6 >> $7 and 16 << 3.5 -
+
 
 :drawv | adr v -- adr
 	$f and 0? ( drop ; ) 
 	2 << 'paleta + d@ 'facecolor !
 	dup imask xor oo ex 
 	mpush
-| 8*8*8	
-|	dup $7 and 16 << 3.5 -
-|	over 3 >> $7 and 16 << 3.5 -
-|	rot 6 >> $7 and 16 << 3.5 -
-
-	dup $f and 16 << 7.5 -
-	over 4 >> $f and 16 << 7.5 -
-	rot 8 >> $f and 16 << 7.5 -
-
-	mtransi
+	xyz2tran mtransi
 	fillcube drawc 
 	mpop
 	;
-	
-:coormax
-	x0 y0 z0
-	pick2 pick2 pick2 min min
-	swap =? ( 'o3 'oo ! 3drop ; )
-	swap =? ( 'o2 'oo ! 2drop ; )
-	2drop
-	'o1 'oo !
-	;
-	
 	
 :drawv1
 	mpush
@@ -152,31 +162,58 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 |	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $7 and or
 |	$1ff xor
 
-	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 
-	dup abs 'n1 ! 
-	63 >> $f and 8 << 
-	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 
-	dup abs 'n2 ! 
-	63 >> $f and 4 << or
-	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 
-	dup abs 'n3 ! 
-	63 >> $f and or
+	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 63 >> $f and 8 << 
+	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 63 >> $f and 4 << or
+	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $f and or
 	$fff xor
-
 	'imask !
 	mpop
-	
-|coormax	
-	
+
 	0 ( $fff <=? | xx yy zz | 8=1ff
 		dup imask xor oo ex   | invert mask
 		'voxels + c@ drawv
 		1+ ) drop ;
+
+|------ version 2 with sort
+#here>
+
+:+voxel | adr vox --
+	over xyz2tran 
+	transform 
+	dup * swap dup * + swap dup * + | real distance 
+	|abs swap abs + swap abs + | manhatan distance
+	neg $ffff nand or
+	over 4 << or
+	dup b!+	
+	;
+	
+:dvoxel | va --
+	dup $f and 2 << 'paleta + d@ 'facecolor !
+	mpush
+	4 >> $fff and xyz2tran mtransi
+	fillcube drawc 
+	mpop
+	;
+	
+:drawv2
+	here >b
+	0 ( $fff <=? | xx yy zz | 8=1ff
+		dup 'voxels + c@ 
+		1? ( +voxel ) 
+		drop 1+ ) drop 
+	b> 'here> !
+	
+	here here> over - 3 >> swap
+	shellsort1
+	
+	here ( here> <?
+		@+ dvoxel
+		) drop ;
 		
 :randvoxel
 	'voxels >a 
-	$fff ( 1? | 8=1ff
-		64 randmax
+	$1000 ( 1? | 8=1ff
+		256 randmax 
 		15 >? ( 0 nip )
 		ca!+ 
 		1- ) drop ;
@@ -197,11 +234,6 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	$ffffff pccolor
 	0 0 pcat
 	"cube" pcprint pccr
-	imask $888 and "%h" pcprint pccr
-	n1 "%d" pcprint pccr
-	n2 "%d" pcprint pccr
-	n3 "%d" pcprint pccr
-	
 	
 	freelook
 
@@ -209,16 +241,14 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	xr mrotx yr mroty 
 	xcam ycam zcam mtrans
 
-	drawv1
+	|drawv1
+	drawv2
 	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( randvoxel )
-	<f2> =? ( 'o1 'oo ! )
-	<f3> =? ( 'o2 'oo ! )
-	<f4> =? ( 'o3 'oo ! )
-	
+	|testkey	
 	drop 
 	;
 

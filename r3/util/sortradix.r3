@@ -54,3 +54,14 @@
 	here 'getvalue8 radix8bitd
 	swap 'getvalue0 radix8bitd
 	3drop ;
+
+::radixsort64 | cnt '2array --
+	here 'getvalue56 radix8bitd
+	swap 'getvalue48 radix8bitd
+	swap 'getvalue40 radix8bitd
+	swap 'getvalue32 radix8bitd
+	swap 'getvalue24 radix8bitd
+	swap 'getvalue16 radix8bitd
+	swap 'getvalue8 radix8bitd
+	swap 'getvalue0 radix8bitd
+	3drop ;
