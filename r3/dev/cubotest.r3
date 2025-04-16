@@ -7,7 +7,7 @@
 ^r3/util/pcfont.r3
 
 |------------------------------
-#xcam 0 #ycam 0 #zcam 30.0
+#xcam 0 #ycam 0 #zcam 40.0
 #xr #yr
 
 #rotsum * 64
@@ -94,15 +94,25 @@ $542690 $a30d30 $fdfdfd $b59944
 $878a8b $3984f2 $ff9f5b $64d970
 $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
-#voxels * 4096
-#voxelso * 4096
+#voxels * $ffff
 
 #imask
 	
+#n1 #n2 #n3
+:o1
+	;
+:o2
+	dup 4 << $f00 and over 4 >> $f0 and or swap $f and or ;
+:o3
+	dup 8 >> $f and over 8 << $f00 and or swap $f0 and or ;
+	
+#nn	
+#oo 'o1
+
 :drawv | adr v -- adr
 	$f and 0? ( drop ; ) 
 	2 << 'paleta + d@ 'facecolor !
-	dup imask xor
+	dup imask xor oo ex 
 	mpush
 | 8*8*8	
 |	dup $7 and 16 << 3.5 -
@@ -117,7 +127,17 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	fillcube drawc 
 	mpop
 	;
-		
+	
+:coormax
+	x0 y0 z0
+	pick2 pick2 pick2 min min
+	swap =? ( 'o3 'oo ! 3drop ; )
+	swap =? ( 'o2 'oo ! 2drop ; )
+	2drop
+	'o1 'oo !
+	;
+	
+	
 :drawv1
 	mpush
 	 1.0 1.0 1.0 transform 'z0 ! 'y0 ! 'x0 !
@@ -132,16 +152,24 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 |	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $7 and or
 |	$1ff xor
 
-	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 63 >> $f and 8 << 
-	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 63 >> $f and 4 << or
-	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $f and or
+	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 
+	dup abs 'n1 ! 
+	63 >> $f and 8 << 
+	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 
+	dup abs 'n2 ! 
+	63 >> $f and 4 << or
+	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 
+	dup abs 'n3 ! 
+	63 >> $f and or
 	$fff xor
 
 	'imask !
 	mpop
 	
+|coormax	
+	
 	0 ( $fff <=? | xx yy zz | 8=1ff
-		dup imask xor  | invert mask
+		dup imask xor oo ex   | invert mask
 		'voxels + c@ drawv
 		1+ ) drop ;
 		
@@ -156,10 +184,11 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 |------------------------------	
 :freelook
 	sdlb 0? ( drop ; ) drop
-	SDLx SDLy
+	SDLx SDLy	
 	sh 1 >> - 7 << swap
 	sw 1 >> - neg 7 << swap
-	neg 'xr ! 'yr ! ;
+	neg 'xr ! 'yr ! 
+	;
 
 :main
 	0 sdlcls
@@ -168,6 +197,11 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	$ffffff pccolor
 	0 0 pcat
 	"cube" pcprint pccr
+	imask $888 and "%h" pcprint pccr
+	n1 "%d" pcprint pccr
+	n2 "%d" pcprint pccr
+	n3 "%d" pcprint pccr
+	
 	
 	freelook
 
@@ -181,6 +215,10 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( randvoxel )
+	<f2> =? ( 'o1 'oo ! )
+	<f3> =? ( 'o2 'oo ! )
+	<f4> =? ( 'o3 'oo ! )
+	
 	drop 
 	;
 
