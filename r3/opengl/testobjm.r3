@@ -36,7 +36,7 @@
 :initvec
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
+|	-20.0 20.0 -20.0 20.0 -20.0 20.0 mortho
 	'fprojection mcpyf	| perspective matrix
 	'pEye 'pTo 'pUp mlookat 'fview mcpyf	| eyemat
 	

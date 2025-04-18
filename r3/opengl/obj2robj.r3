@@ -485,7 +485,8 @@
 |	"media/obj/raceCarRed.obj"	
 |	"media/obj/lolo/tinker.obj"
 |	"media/obj/tinker.obj"
-	"media/obj/basicCharacter.obj"
+|	"media/obj/basicCharacter.obj"
+	"media/obj/cubo1.obj"
 	useobj
 	'main SDLshow 
 	SDLquit

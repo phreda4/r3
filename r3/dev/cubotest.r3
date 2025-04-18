@@ -173,6 +173,49 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		dup imask xor oo ex   | invert mask
 		'voxels + c@ drawv
 		1+ ) drop ;
+		
+		
+|--- 3D x y z . 10 bits
+:m1 | x -- v
+	$f and
+	dup 4 << or $c3 and
+	dup 2 << or $249 and ;
+
+:morton3d | xyz -- Z
+	dup m1
+	over 4 >> m1 1 << or
+	swap 8 >> m1 2 << or ;
+
+:drawv | adr v -- adr
+	$f and 0? ( drop ; ) 
+	2 << 'paleta + d@ 'facecolor !
+	dup imask xor
+	morton3d
+	mpush
+	xyz2tran mtransi
+	fillcube drawc 
+	mpop
+	;
+
+:drawv3
+	mpush
+	 1.0 1.0 1.0 transform 'z0 ! 'y0 ! 'x0 !
+	1.0 1.0 -1.0 transform 'z1 ! 'y1 ! 'x1 !
+	1.0 -1.0 1.0 transform 'z2 ! 'y2 ! 'x2 !
+	-1.0 1.0 1.0 transform 'z4 ! 'y4 ! 'x4 !
+	0 0 0 transform 'z7 ! 'y7 ! 'x7 !
+	x0 x1 - x7 * y0 y1 - y7 * + z0 z1 - z7 * + 63 >> $f and 8 << 
+	x0 x2 - x7 * y0 y2 - y7 * + z0 z2 - z7 * + 63 >> $f and 4 << or
+	x0 x4 - x7 * y0 y4 - y7 * + z0 z4 - z7 * + 63 >> $f and or
+	$fff xor
+	'imask !
+	mpop
+
+	0 ( $fff <=? | xx yy zz | 8=1ff
+		dup imask xor    | invert mask
+		morton3d
+		'voxels + c@ drawv
+		1+ ) drop ;
 
 |------ version 2 with sort
 #here>
@@ -213,7 +256,8 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 :randvoxel
 	'voxels >a 
 	$1000 ( 1? | 8=1ff
-		256 randmax 
+		|256 randmax 
+		14 randmax 1+
 		15 >? ( 0 nip )
 		ca!+ 
 		1- ) drop ;
@@ -226,6 +270,7 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	sw 1 >> - neg 7 << swap
 	neg 'xr ! 'yr ! 
 	;
+
 
 :main
 	0 sdlcls
@@ -241,8 +286,9 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	xr mrotx yr mroty 
 	xcam ycam zcam mtrans
 
-	|drawv1
-	drawv2
+	drawv1
+	|drawv2
+	|drawv3
 	
 	SDLredraw
 	SDLkey
