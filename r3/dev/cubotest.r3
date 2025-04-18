@@ -5,7 +5,7 @@
 ^r3/lib/3d.r3
 ^r3/lib/rand.r3
 ^r3/util/pcfont.r3
-^r3/util/sortradix.r3
+^r3/util/sortradixm.r3
 ^r3/util/sort.r3
 
 |------------------------------
@@ -218,19 +218,18 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		1+ ) drop ;
 
 |------ version 2 with sort
-#here>
-
-:+voxel | adr vox --
+:+voxel | adr vox -- ; add to voxel list
 	over xyz2tran 
 	transform 
-	dup * swap dup * + swap dup * + | real distance 
+	dup * swap dup * + swap dup * +  | real distance 
 	|abs swap abs + swap abs + | manhatan distance
-	neg $ffff nand or
-	over 4 << or
+|	dup * swap abs + swap abs +
+	neg 16 >>
+	$ffff nand or over 4 << or | add pos and color
 	dup b!+	
 	;
 	
-:dvoxel | va --
+:dvoxel | va -- ; draw voxel
 	dup $f and 2 << 'paleta + d@ 'facecolor !
 	mpush
 	4 >> $fff and xyz2tran mtransi
@@ -244,14 +243,10 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		dup 'voxels + c@ 
 		1? ( +voxel ) 
 		drop 1+ ) drop 
-	b> 'here> !
-	
-	here here> over - 3 >> swap
-	shellsort1
-	
-	here ( here> <?
-		@+ dvoxel
-		) drop ;
+	0 b!
+	here b> over - 3 >> swap shellsort1
+	here ( @+ 1? dvoxel ) 2drop
+	;
 		
 :randvoxel
 	'voxels >a 
@@ -286,8 +281,8 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	xr mrotx yr mroty 
 	xcam ycam zcam mtrans
 
-	drawv1
-	|drawv2
+	|drawv1
+	drawv2
 	|drawv3
 	
 	SDLredraw
