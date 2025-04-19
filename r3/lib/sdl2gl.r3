@@ -16,9 +16,14 @@
 #sys-glBindBuffer
 #sys-glBindRenderbuffer
 #sys-glBufferData
+#sys-glBufferSubData
 
 #sys-glMapBuffer
 #sys-glUnmapBuffer
+
+#sys-glGetUniformBlockIndex
+#sys-glUniformBlockBinding
+#sys-glBindBufferBase
 
 #sys-glUseProgram
 #sys-glValidateProgram
@@ -53,7 +58,6 @@
 
 #sys-glViewport
 #sys-glVertexPointer
-
 
 #sys-glClear
 #sys-glDrawElements
@@ -114,9 +118,12 @@
 ::glBindBuffer sys-glBindBuffer sys2 drop ;
 ::glBindRenderbuffer sys-glBindRenderbuffer sys2 drop ;
 ::glBufferData sys-glBufferData sys4 drop ;
-
+::glBufferSubData sys-glBufferSubData sys4 drop ;
 ::glMapBuffer sys-glMapBuffer sys2 ;
 ::glUnmapBuffer sys-glUnmapBuffer sys1 drop ;
+::glGetUniformBlockIndex sys-glGetUniformBlockIndex sys2 ;
+::glUniformBlockBinding sys-glUniformBlockBinding sys3 drop ;
+::glBindBufferBase sys-glBindBufferBase sys3 drop ;
 
 ::glClear sys-glClear sys1 drop ;
 ::glUseProgram sys-glUseProgram sys1 drop ;
@@ -270,11 +277,15 @@
 	"glBindBuffer" SDL_GL_GetProcAddress 'sys-glBindBuffer !
 	"glBindRenderbuffer" SDL_GL_GetProcAddress 'sys-glBindRenderbuffer !
 	"glBufferData" SDL_GL_GetProcAddress 'sys-glBufferData !
+	"glBufferSubData" SDL_GL_GetProcAddress 'sys-glBufferSubData !
 	"glVertexAttribPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribPointer !
 	"glVertexAttribIPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribIPointer !	
 	"glMapBuffer" SDL_GL_GetProcAddress 'sys-glMapBuffer !
 	"glUnmapBuffer" SDL_GL_GetProcAddress 'sys-glUnmapBuffer !
-	
+
+	"glGetUniformBlockIndex" SDL_GL_GetProcAddress 'sys-glGetUniformBlockIndex !
+	"glUniformBlockBinding" SDL_GL_GetProcAddress 'sys-glUniformBlockBinding !
+	"glBindBufferBase" SDL_GL_GetProcAddress 'sys-glBindBufferBase !
 	
 	"glGenVertexArrays" SDL_GL_GetProcAddress 'sys-glGenVertexArrays !
 	"glBindVertexArray" SDL_GL_GetProcAddress 'sys-glBindVertexArray !
