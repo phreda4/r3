@@ -6,20 +6,12 @@
 ^r3/lib/rand.r3
 
 #voxels * 4096
-#voxels2 * 4096
 
 :genrandcolor
 	'voxels >a 16 16 * 16 * ( 1? 1- 
 		$7f randmax 
 		15 >? ( 0 nip )
 		ca!+ ) drop ;
-
-:genrandcolor2
-	'voxels2 >a 16 16 * 16 * ( 1? 1- 
-		$7f randmax 
-		15 >? ( 0 nip )
-		ca!+ ) drop ;
-
 
 |----------- data	
 #cubeVertices [
@@ -266,9 +258,6 @@ void main() {
 	;
 
 :renderviews
-	|..................
-	sw 2/ 0 over sh 2/ glviewport
-	
 	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
 	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels glBufferSubData
 	
@@ -279,18 +268,6 @@ void main() {
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
 	0 glBindVertexArray
 	
-	|..................
-	sw 2/ sh 2/ 2dup glviewport
-	
-	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
-	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels2 glBufferSubData
-	
-	shaderProgram glUseProgram
-	IDprojection 1 0 'fprojection glUniformMatrix4fv 
-	IDview 1 0 'fview glUniformMatrix4fv 
-	VAO glBindVertexArray
-	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
-	0 glBindVertexArray
 	;
 
 |------ vista
@@ -315,7 +292,6 @@ void main() {
 	<up> =? ( -0.1 'eyed +! eyecam )
 	<dn> =? ( 0.1 'eyed +! eyecam )	
 	<f1> =? ( genrandcolor )
-	<f2> =? ( genrandcolor2 )
 	drop ;	
 	;
 	

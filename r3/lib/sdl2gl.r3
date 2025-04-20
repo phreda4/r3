@@ -17,6 +17,7 @@
 #sys-glBindRenderbuffer
 #sys-glBufferData
 #sys-glBufferSubData
+#sys-glGetTexImage
 
 #sys-glMapBuffer
 #sys-glUnmapBuffer
@@ -121,6 +122,8 @@
 ::glBindRenderbuffer sys-glBindRenderbuffer sys2 drop ;
 ::glBufferData sys-glBufferData sys4 drop ;
 ::glBufferSubData sys-glBufferSubData sys4 drop ;
+::glGetTexImage sys-glGetTexImage sys5 drop ;
+
 ::glMapBuffer sys-glMapBuffer sys2 ;
 ::glUnmapBuffer sys-glUnmapBuffer sys1 drop ;
 ::glGetUniformBlockIndex sys-glGetUniformBlockIndex sys2 ;
@@ -282,6 +285,7 @@
 	"glBindBuffer" SDL_GL_GetProcAddress 'sys-glBindBuffer !
 	"glBindRenderbuffer" SDL_GL_GetProcAddress 'sys-glBindRenderbuffer !
 	"glBufferData" SDL_GL_GetProcAddress 'sys-glBufferData !
+	"glGetTexImage" SDL_GL_GetProcAddress 'sys-glGetTexImage !
 	"glBufferSubData" SDL_GL_GetProcAddress 'sys-glBufferSubData !
 	"glVertexAttribPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribPointer !
 	"glVertexAttribIPointer" SDL_GL_GetProcAddress 'sys-glVertexAttribIPointer !	
@@ -343,6 +347,27 @@
 	InitGLAPI
 	;
 
+::SDLinitSGL | "titulo" w h --
+	5 1 SDL_GL_SetAttribute		|SDL_GL_DOUBLEBUFFER, 1);
+	13 1 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLEBUFFERS, 1);
+	14 8 SDL_GL_SetAttribute	|SDL_GL_MULTISAMPLESAMPLES, 8);
+    17 4 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MAJOR_VERSION
+    18 6 SDL_GL_SetAttribute |SDL_GL_CONTEXT_MINOR_VERSION
+	20 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);	
+	21 2 SDL_GL_SetAttribute |SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
+|	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+|	"SDL_RENDER_SCALE_QUALITY" "1" SDL_SetHint	
+	'sh ! 'sw !
+	$3231 SDL_init 
+	$1FFF0000 dup sw sh $6 SDL_CreateWindow dup 'SDL_windows ! 
+	dup SDL_GL_CreateContext 'SDL_context !
+	1 SDL_GL_SetSwapInterval	
+	dup -1 0 SDL_CreateRenderer 'SDLrenderer !
+	SDL_RaiseWindow
+	InitGLAPI
+	;
+
+
 ::SDLGLcls
 	$4100 glClear | color+depth
 	;
@@ -350,7 +375,7 @@
 ::SDLGLupdate
 	SDL_windows SDL_GL_SwapWindow ;
 	
-::SDLquit
+::SDLglquit
 	SDL_context SDL_Gl_DeleteContext
 	SDL_windows SDL_DestroyWindow 
 	SDL_Quit ;		
