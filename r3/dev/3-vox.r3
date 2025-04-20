@@ -5,25 +5,34 @@
 ^r3/lib/3dgl.r3
 ^r3/lib/rand.r3
 
+#voxels * 4096
+#voxels2 * 4096
+
+:genrandcolor
+	'voxels >a 16 16 * 16 * ( 1? 1- 
+		$7f randmax 
+		15 >? ( 0 nip )
+		ca!+ ) drop ;
+
+:genrandcolor2
+	'voxels2 >a 16 16 * 16 * ( 1? 1- 
+		$7f randmax 
+		15 >? ( 0 nip )
+		ca!+ ) drop ;
+
+
 |----------- data	
 #cubeVertices [
-    -0.5 -0.5 -0.5
-     0.5 -0.5 -0.5
-     0.5  0.5 -0.5
-    -0.5  0.5 -0.5
-    -0.5 -0.5  0.5
-     0.5 -0.5  0.5
-     0.5  0.5  0.5
-    -0.5  0.5  0.5
+-0.5 -0.5 -0.5	 0.5 -0.5 -0.5
+ 0.5  0.5 -0.5	-0.5  0.5 -0.5
+-0.5 -0.5  0.5	 0.5 -0.5  0.5
+ 0.5  0.5  0.5	-0.5  0.5  0.5
 ]
 
 #cubeIndices [
-    0 1 2 2 3 0
-    4 5 6 6 7 4
-    0 1 5 5 4 0
-    2 3 7 7 6 2
-    0 3 7 7 4 0
-    1 2 6 6 5 1
+0 3 1 3 2 1		1 2 5 2 6 5 
+5 6 4 6 7 4		4 7 0 7 3 0
+3 7 2 7 6 2		4 0 5 0 1 5
 ]
 
 |--------------------
@@ -52,6 +61,7 @@
 #IDview
 #fview * 64
 	
+|-------------------------------------
 #IDpaleta	
 #fpaleta * 192 | 16*3*4
 
@@ -75,10 +85,11 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		"colpal.txt" savemem
 	empty
 	;
+|-------------------------------------
 
 #shaderProgram
 
-#eyed 8.0
+#eyed 20.0
 	
 #pEye 0.0 0.0 12.0
 #pTo 0 0 0
@@ -90,25 +101,15 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 :eyecam
 	rx 'pEye 8 + !
 	ry sincos eyed *. swap eyed *. 'pEye !+ 8 + !
-	'pEye 'pTo 'pUp mlookat 'fview mcpyf ;
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf 
+	
+	;
 	
 :2float | cnt mem --
 	>a ( 1? 1- da@ f2fp da!+ ) drop ;
 
 #VAO #VBO #EBO
-#PalVBO
 #TypeVBO
-
-#voxels 
-( 0 2 1 0  3 0 4 5  6 0 7 0  0 0 10 0
-  0 4 1 0  1 0 5 1  1 0 1 0  0 3 1 0
-  0 5 1 0  1 0 6 1  1 0 1 0  0 9 9 0
-  0 5 1 0  1 0 1 1  0 0 0 0  0 9 0  0 )
-  
-|* $ffff |[CUBE_SIZE * CUBE_SIZE * CUBE_SIZE * 3];
-
-:genrandcolor
-	'voxels >a 4 4 * 4 * ( 1? 1- $f randmax ca!+ ) drop ;
 
 |---------------------------		
 #vertexShader
@@ -119,7 +120,7 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in float aType; // int no funciona !!
 
 out vec3 fragPos;
-out vec3 normal;
+flat out vec3 normal;
 out vec3 fragColor;
 
 uniform mat4 view;
@@ -140,15 +141,14 @@ void main() {
 		}
 
     // Cálculo de posición en un cubo de cubos 4x4x4
-    int x = gl_InstanceID%4;
-    int y = (gl_InstanceID/4)%4;
-    int z = (gl_InstanceID/16);
+    int x = gl_InstanceID%16;
+    int y = (gl_InstanceID/16)%16;
+    int z = (gl_InstanceID/(16*16));
 
 	fragColor = pal[int(aType)%16];
 	
-    vec3 instanceOffset = vec3(-1.8,-1.8,-1.8)+vec3(x, y, z)*1.2;
+    vec3 instanceOffset = vec3(-8.8,-8.8,-8.8)+vec3(x, y, z)*1.1; // (16*1.1)/2
 
-    // Posición final del vértice
     fragPos = aPos + instanceOffset;
     normal = normalize(aPos); // Normales para sombreado
     gl_Position = projection * view * vec4(fragPos, 1.0);
@@ -156,25 +156,19 @@ void main() {
 
 #fragmentShaderSource "#version 330 core
 in vec3 fragPos;
-in vec3 normal;
+flat in vec3 normal;
 in vec3 fragColor;
 
 out vec4 color;
 
-uniform vec3 lightDir = normalize(vec3(1.0, 0.0, 0.5));
+uniform vec3 lightDir = normalize(vec3(1.0, 0.2, 1.3));
 
 void main() {
-    // Sombreado basado en iluminación Phong
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 litColor = fragColor * diff+ fragColor*0.6;
+	float diff2 = max(dot(normal, -lightDir), 0.0)*0.2;
+    vec3 litColor = vec3(0.8,0.8,0.8)*diff2 + fragColor*diff + fragColor*0.6;
 
-    // Bordes redondeados: determinar si el fragmento está dentro de un radio
-    float radius = 0.5; // Radio del borde
-    float dist = length(fragPos - floor(fragPos)); // Distancia al centro
-    float sm1 = smoothstep(radius - 0.05, radius + 0.05, dist);
-
-    // Color final con bordes suavizados
-    color = vec4(litColor, sm1);
+    color = vec4(litColor, 1.0);
 	}"
 
 #vs 'vertexShaderSource
@@ -228,20 +222,15 @@ void main() {
 |--------- VARS
 	dup "projection" glGetUniformLocation 'IDprojection !
 	dup "view" glGetUniformLocation 'IDview !
-
-|	dup "palette" glGetUniformLocation 'IDpaleta !	
-|	dup "aType" glGetAttribLocation 'IDtype !
-	
 	'shaderProgram !
-	
+
 	vertexShader glDeleteShader
 	fragmentShader glDeleteShader
-	
 	;
 
 :progshader
 	|genrandcolor
-	fillpaleta
+	|fillpaleta
 	8 3 * 'cubeVertices 2float
 
     1 'VAO glGenVertexArrays
@@ -260,9 +249,8 @@ void main() {
 	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
 	0 glEnableVertexAttribArray
 	
-
 	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
-	GL_ARRAY_BUFFER 4 4 * 4 * 'voxels GL_STATIC_DRAW glBufferData
+	GL_ARRAY_BUFFER 16 16 * 16 * 'voxels GL_STATIC_DRAW glBufferData
 	1 1 GL_UNSIGNED_BYTE GL_FALSE 1 0 glVertexAttribPointer | ??? pasa como float!!!
 	1 glEnableVertexAttribArray
     1 1 glVertexAttribDivisor
@@ -272,29 +260,38 @@ void main() {
 	
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
-|	-20.0 20.0 -20.0 20.0 -20.0 20.0 mortho
+|	-40.0 40.0 -40.0 40.0 -40.0 40.0 mortho
 	'fprojection mcpyf 
 	eyecam				| eyemat	
 	;
 
-:newcolors
-	genrandcolor
+:renderviews
+	|..................
+	sw 2/ 0 over sh 2/ glviewport
+	
 	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
-	GL_ARRAY_BUFFER 0 4 4 * 4 * 'voxels glBufferSubData
-	;
-
-:render
+	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels glBufferSubData
+	
 	shaderProgram glUseProgram
 	IDprojection 1 0 'fprojection glUniformMatrix4fv 
 	IDview 1 0 'fview glUniformMatrix4fv 
-	
-|	IDpaleta 16 'fpaleta glUniform3fv 
-	
 	VAO glBindVertexArray
-	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 64 glDrawElementsInstanced
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
+	0 glBindVertexArray
+	
+	|..................
+	sw 2/ sh 2/ 2dup glviewport
+	
+	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
+	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels2 glBufferSubData
+	
+	shaderProgram glUseProgram
+	IDprojection 1 0 'fprojection glUniformMatrix4fv 
+	IDview 1 0 'fview glUniformMatrix4fv 
+	VAO glBindVertexArray
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
 	0 glBindVertexArray
 	;
-
 
 |------ vista
 :dnlook
@@ -302,7 +299,7 @@ void main() {
 
 :movelook
 	SDLx SDLy
-	ym over 'ym ! - neg 12 << 'rx +!
+	ym over 'ym ! - neg 14 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  
 	eyecam
 	;
@@ -311,13 +308,14 @@ void main() {
 	gui
 	'dnlook 'movelook onDnMove	
 	SDLGLcls
-	render
+	renderviews
 	SDLGLupdate
 	SDLkey
 	>esc< =? ( exit ) 
 	<up> =? ( -0.1 'eyed +! eyecam )
 	<dn> =? ( 0.1 'eyed +! eyecam )	
-	<esp> =? ( newcolors )
+	<f1> =? ( genrandcolor )
+	<f2> =? ( genrandcolor2 )
 	drop ;	
 	;
 	
@@ -327,7 +325,7 @@ void main() {
 	"voxel gl" 1024 600 SDLinitGL
 	glInfo
 	GL_DEPTH_TEST glEnable 
-	|GL_CULL_FACE glEnable	
+	GL_CULL_FACE glEnable	
 	GL_LESS glDepthFunc 
 	;	
 	

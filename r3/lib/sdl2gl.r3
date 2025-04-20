@@ -57,6 +57,8 @@
 #sys-glDeleteVertexArrays
 
 #sys-glViewport
+#sys-glScissor
+
 #sys-glVertexPointer
 
 #sys-glClear
@@ -165,6 +167,7 @@
 ::glGetError sys-glGetError sys0 ; 
 ::glGetString sys-glGetString sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
+::glScissor sys-glScissor sys4 drop ;
 ::glVertexPointer sys-glVertexPointer sys4 drop ;
 
 ::glBegin sys-glBegin sys1 drop ;
@@ -263,6 +266,8 @@
 	"glDisable" SDL_GL_GetProcAddress 'sys-glDisable !	
 	"glBlendFunc" SDL_GL_GetProcAddress 'sys-glBlendFunc !	
 	"glViewport" SDL_GL_GetProcAddress 'sys-glViewport !
+	"glScissor" SDL_GL_GetProcAddress 'sys-glScissor !
+	
 	"glDepthFunc" SDL_GL_GetProcAddress 'sys-glDepthFunc !
 	
 | Shader
