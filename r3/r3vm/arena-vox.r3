@@ -54,14 +54,19 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		pick4 ex ca!+
 		1+ ) 2drop ;
 
+|===== test
 
 :test1 | x y z -- c
 	drop
-	4 =? ( nip ; )
+	7 =? ( drop ; )
 	drop
-	5 =? ( ; ) 
+	7 =? ( ; ) 
 	drop 0 ;
 	
+:test1
+	+ 7 -
+	7 =? ( drop ; )
+	2drop 0 ;
 	
 |-------------------------------------
 #GL_DEPTH_TEST $0B71
@@ -94,7 +99,7 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in float aType; // int no funciona !!
 
 out vec3 fragPos;
-flat out vec3 normal;
+out vec3 normal;
 out vec3 fragColor;
 
 uniform mat4 view;
@@ -114,7 +119,6 @@ void main() {
 		return;
 		}
 
-    // Cálculo de posición en un cubo de cubos 4x4x4
     int x = gl_InstanceID&0xf;
     int y = (gl_InstanceID>>4)&0xf;
     int z = (gl_InstanceID>>8)&0xf;
@@ -122,7 +126,7 @@ void main() {
 	fragColor = pal[int(aType)&0xf];
 	
     //vec3 instanceOffset = vec3(-8.8,-8.8,-8.8)+vec3(x, y, z)*1.1; // (16*1.1)/2
-	vec3 instanceOffset = vec3(-8.0,-8.0,-8.0)+vec3(x, y, z)*1.0; // (16*1.1)/2
+	vec3 instanceOffset = vec3(-8.4,-8.4,-8.4)+vec3(x, y, z)*1.05; // (16*1.1)/2
 
     fragPos = aPos + instanceOffset;
     normal = normalize(aPos); // Normales para sombreado
@@ -131,17 +135,17 @@ void main() {
 |-----------------------------------------------------------------------
 #fragmentShaderSource "#version 330 core
 in vec3 fragPos;
-flat in vec3 normal;
+in vec3 normal;
 in vec3 fragColor;
 
 out vec4 color;
 
-uniform vec3 lightDir = normalize(vec3(1.0, 0.2, 1.3));
+uniform vec3 lightDir = normalize(vec3(1.0, 0.5, 1.5));
 
 void main() {
     float diff = max(dot(normal, lightDir), 0.0);
 	float diff2 = max(dot(normal, -lightDir), 0.0)*0.2;
-    vec3 litColor = vec3(0.8,0.8,0.8)*diff2 + fragColor*diff + fragColor*0.6;
+    vec3 litColor = vec3(0.7)*diff2 + fragColor*diff + fragColor*0.6;
 
     color = vec4(litColor, 1.0);
 	}"
@@ -202,7 +206,7 @@ void main() {
 #textureColorbuffer
 #rbo
 
-:vieww 500 ;	:viewh 250 ;
+:vieww 400 ;	:viewh 300 ;
 
 :GL_TEXTURE_MIN_FILTER $2801 ;
 :GL_LINEAR $2601 ;
@@ -300,6 +304,24 @@ void main() {
 	'stepvma 0.1 +vexe
 	;	
 	
+:runplay
+	state 2 =? ( drop vareset ; ) drop
+	compilar
+	state 2 <>? ( drop ; ) drop
+	
+	'voxels2
+	0 ( $1000 <?
+		vareset
+		dup $f and 32 << vmpush
+		dup 4 >> $f and 32 << vmpush
+		dup 8 >> $f and 32 << vmpush
+		vmrun
+		vmpop 32 >>
+		rot c!+
+		swap
+		1+ ) 2drop 
+	;
+	
 :step
 	state 2 =? ( drop stepvmas ; ) drop | stop?
 	compilar	
@@ -355,11 +377,15 @@ void main() {
 	;
 	
 :drawvox	
-	50 600 'screenv d!+ d!
-	'vista1 'screenv glviewport SDLImagebb | box box img --
-	300 600 'screenv d!+ d!
-	'vista2 'screenv glviewport SDLImagebb | box box img --
-|	500 300 glviewport sprite
+	0 580 'screenv d!+ d!
+	$333333 sdlcolor
+	SDLRenderer 'screenv SDL_RenderFillRect 
+	SDLrenderer glviewport 'vista1 'screenv SDL_RenderCopy
+
+	300 580 'screenv d!+ d!
+	$000033 sdlcolor
+	SDLRenderer 'screenv SDL_RenderFillRect 
+	SDLrenderer glviewport 'vista2 'screenv SDL_RenderCopy
 	;
 	
 :runscr
@@ -373,10 +399,7 @@ void main() {
 	drawvox
 	
 	|... paleta
-	0 ( 15 <?
-		dup 2 << 'paleta + d@ sdlcolor
-		dup 5 << 500 + 560 32 32 sdlfrect
-		1+ ) drop
+	|0 ( 15 <? dup 2 << 'paleta + d@ sdlcolor dup 5 << 500 + 560 32 32 sdlfrect 1+ ) drop
 		
 	sdlkey
 	>esc< =? ( exit )
@@ -387,6 +410,7 @@ void main() {
 	<f4> =? ( genrandcolor2 redoingviewport )
 
 	<f5> =? ( 'test1 buildvox redoingviewport )
+	<f6> =? ( runplay redoingviewport )
 	
 	<up> =? ( -0.1 'eyed +! eyecam redoingviewport )
 	<dn> =? ( 0.1 'eyed +! eyecam redoingviewport )	
