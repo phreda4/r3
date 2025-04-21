@@ -5,33 +5,8 @@
 ^r3/lib/3dgl.r3
 ^r3/lib/rand.r3
 
-^r3/r3vm/voxelgl.r3
-
-^r3/util/varanim.r3
-^r3/util/ttext.r3
-
-^./arena-edit.r3
-^./tedit.r3
-^./rcodevm.r3
-
-#codepath "r3/r3vm/codecube/"
-
-|-------------------------------------
-#IDprojection
-#fprojection * 64
-
-#IDview
-#fview * 64
-
-|----------------------------------------------------------
 #voxels * 4096
 #voxels2 * 4096
-
-#paleta [ | uchu
-$080a0d $0949ac $b56227 $2e943a
-$542690 $a30d30 $fdfdfd $b59944
-$878a8b $3984f2 $ff9f5b $64d970
-$915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
 :genrandcolor
 	'voxels >a 16 16 * 16 * ( 1? 1- 
@@ -44,30 +19,23 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		$7f randmax 
 		15 >? ( 0 nip )
 		ca!+ ) drop ;
-		
-:buildvox | vec --
-	'voxels >a
-	0 ( $1000 <?
-		dup 8 >> $f and 
-		over 4 >> $f and 
-		pick2 $f and 
-		pick4 ex ca!+
-		1+ ) 2drop ;
 
 
-:test1 | x y z -- c
-	drop
-	4 =? ( nip ; )
-	drop
-	5 =? ( ; ) 
-	drop 0 ;
-	
-	
-|-------------------------------------
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
+|----------- data	
+#cubeVertices [
+-0.5 -0.5 -0.5	 0.5 -0.5 -0.5
+ 0.5  0.5 -0.5	-0.5  0.5 -0.5
+-0.5 -0.5  0.5	 0.5 -0.5  0.5
+ 0.5  0.5  0.5	-0.5  0.5  0.5
+]
 
+#cubeIndices [
+0 3 1 3 2 1		1 2 5 2 6 5 
+5 6 4 6 7 4		4 7 0 7 3 0
+3 7 2 7 6 2		4 0 5 0 1 5
+]
+
+|--------------------
 #GL_ARRAY_BUFFER $8892
 #GL_UNIFORM_BUFFER $8A11
 #GL_STATIC_DRAW $88E4
@@ -88,7 +56,63 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 #GL_FRAMEBUFFER $8D40
 #GL_TEXTURE_2D $0DE1
 
-|-----------------------------------------------------------------------
+|-------------------------------------
+#IDprojection
+#fprojection * 64
+
+#IDview
+#fview * 64
+	
+|-------------------------------------
+#IDpaleta	
+#fpaleta * 192 | 16*3*4
+
+#paleta [ | uchu
+$080a0d $0949ac $b56227 $2e943a
+$542690 $a30d30 $fdfdfd $b59944
+$878a8b $3984f2 $ff9f5b $64d970
+$915ad3 $ea3c65 $cbcdcd $fedf7b ]
+
+:fillpaleta
+	mark
+	'paleta >a
+	'fpaleta >b
+	16 ( 1? 1-
+		da@+ 
+		dup 16 >> $ff and 1.0 $ff */ dup "vec3(%f," ,print f2fp db!+
+		dup 8 >> $ff and 1.0 $ff */ dup "%f," ,print f2fp db!+
+		$ff and 1.0 $ff */ dup "%f)" ,print f2fp db!+
+		,cr
+		) drop 
+		"colpal.txt" savemem
+	empty
+	;
+|-------------------------------------
+
+#shaderProgram
+
+#eyed 20.0
+	
+#pEye 0.0 0.0 12.0
+#pTo 0 0 0
+#pUp 0 1.0 0
+
+#xm #ym
+#rx #ry
+
+:eyecam
+	rx 'pEye 8 + !
+	ry sincos eyed *. swap eyed *. 'pEye !+ 8 + !
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf 
+	;
+	
+:2float | cnt mem --
+	>a ( 1? 1- da@ f2fp da!+ ) drop ;
+
+#VAO #VBO #EBO
+#TypeVBO
+
+|---------------------------		
 #vertexShaderSource "#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in float aType; // int no funciona !!
@@ -121,14 +145,13 @@ void main() {
 
 	fragColor = pal[int(aType)&0xf];
 	
-    //vec3 instanceOffset = vec3(-8.8,-8.8,-8.8)+vec3(x, y, z)*1.1; // (16*1.1)/2
-	vec3 instanceOffset = vec3(-8.0,-8.0,-8.0)+vec3(x, y, z)*1.0; // (16*1.1)/2
+    vec3 instanceOffset = vec3(-8.8,-8.8,-8.8)+vec3(x, y, z)*1.1; // (16*1.1)/2
 
     fragPos = aPos + instanceOffset;
     normal = normalize(aPos); // Normales para sombreado
     gl_Position = projection * view * vec4(fragPos, 1.0);
 	}"
-|-----------------------------------------------------------------------
+
 #fragmentShaderSource "#version 330 core
 in vec3 fragPos;
 flat in vec3 normal;
@@ -145,15 +168,61 @@ void main() {
 
     color = vec4(litColor, 1.0);
 	}"
-|-----------------------------------------------------------------------
 
-#shaderProgram
-#VAO #VBO #EBO
-#TypeVBO
 
-|----------- data	
-#cubeVertices [ -0.5 -0.5 -0.5	 0.5 -0.5 -0.5	 0.5  0.5 -0.5	-0.5  0.5 -0.5	-0.5 -0.5  0.5	 0.5 -0.5  0.5	 0.5  0.5  0.5	-0.5  0.5  0.5 ]
-#cubeIndices [ 0 3 1 3 2 1		1 2 5 2 6 5		5 6 4 6 7 4		4 7 0 7 3 0		3 7 2 7 6 2		4 0 5 0 1 5 ]
+#GL_COMPILE_STATUS $8B81
+#GL_LINK_STATUS $8B82
+#GL_FRAGMENT_SHADER $8B30
+#GL_VERTEX_SHADER $8B31
+
+#GL_DEPTH_TEST $0B71
+#GL_LESS $0201
+#GL_CULL_FACE $0B44
+
+#vertexShader
+#fragmentShader
+#t
+
+:shCheckErr | ss --
+	dup GL_COMPILE_STATUS 't glGetShaderiv
+	t 1? ( 2drop ; ) drop
+	512 0 here glGetShaderInfoLog
+	here .println ;
+	
+:prCheckErr | ss --
+	dup GL_LINK_STATUS 't glGetProgramiv
+	t 1? ( 2drop ; ) drop
+	512 't here glGetProgramInfoLog
+	here .println ;
+	
+:inishader | fragment vertex -- idshader
+	't !
+	GL_VERTEX_SHADER glCreateShader dup 
+	dup 1 't 0 glShaderSource
+	dup glCompileShader 
+	dup GL_COMPILE_STATUS 't glGetShaderiv 
+	t 0? ( 2drop shCheckErr 0 ; ) drop
+	'vertexShader !
+
+	swap 't !
+	GL_FRAGMENT_SHADER glCreateShader dup
+	dup 1 't 0 glShaderSource
+	dup glCompileShader
+	dup GL_COMPILE_STATUS 't glGetShaderiv 
+	t 0? ( drop shCheckErr 0 ; ) drop
+	'fragmentShader ! 
+
+	glCreateProgram 
+	dup vertexShader glAttachShader
+	dup fragmentShader glAttachShader
+	dup glLinkProgram 
+	dup glValidateProgram
+	dup GL_LINK_STATUS 't glGetProgramiv 
+	t 0? ( drop prCheckErr 0 ; ) drop
+	
+	vertexShader glDeleteShader
+	fragmentShader glDeleteShader
+	;
 
 :progshader
 	'fragmentShaderSource 
@@ -164,8 +233,8 @@ void main() {
 	0? ( drop .input ; )
 	'shaderProgram !
 	
-|	genrandcolor
-|	genrandcolor2
+	genrandcolor
+	genrandcolor2
 	|fillpaleta
 	
 	8 3 * 'cubeVertices 2float
@@ -173,21 +242,26 @@ void main() {
     1 'VAO glGenVertexArrays
     1 'VBO glGenBuffers
     1 'EBO glGenBuffers
+	
 	1 'typeVBO glGenBuffers
 	
     VAO glBindVertexArray
 
 	GL_ARRAY_BUFFER VBO glBindBuffer			| vertices
 	GL_ARRAY_BUFFER 8 3 * 4 * 'cubeVertices GL_STATIC_DRAW glBufferData
+
 	GL_ELEMENT_ARRAY_BUFFER EBO glBindBuffer	| indices
 	GL_ELEMENT_ARRAY_BUFFER 6 6 * 4 * 'cubeIndices GL_STATIC_DRAW glBufferData
+
 	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
 	0 glEnableVertexAttribArray
+	
 	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
 	GL_ARRAY_BUFFER 16 16 * 16 * 'voxels GL_STATIC_DRAW glBufferData
 	1 1 GL_UNSIGNED_BYTE GL_FALSE 1 0 glVertexAttribPointer | ??? pasa como float!!!
 	1 glEnableVertexAttribArray
     1 1 glVertexAttribDivisor
+
 	GL_ARRAY_BUFFER 0 glBindBuffer
 	0 glBindVertexArray
 	
@@ -195,142 +269,112 @@ void main() {
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
 |	-40.0 40.0 -40.0 40.0 -40.0 40.0 mortho
 	'fprojection mcpyf 
-	;
-
-|----------------------------------------------------------
-#framebuffer
-#textureColorbuffer
-#rbo
-
-:vieww 500 ;	:viewh 250 ;
-
-:GL_TEXTURE_MIN_FILTER $2801 ;
-:GL_LINEAR $2601 ;
-:GL_TEXTURE_MAG_FILTER $2800 ;
-:GL_COLOR_ATTACHMENT0 $8CE0 ;
-:GL_RENDERBUFFER $8D41 ;
-:GL_DEPTH24_STENCIL8 $88F0 ;
-:GL_DEPTH_STENCIL_ATTACHMENT $821A ;
-
-:GL_RGBA $1908 ;
-
-:SetupFramebuffer
-	1 'framebuffer glGenFramebuffers
-	GL_FRAMEBUFFER framebuffer glBindFramebuffer
-	1 'textureColorbuffer glGenTextures
-	GL_TEXTURE_2D textureColorbuffer glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA vieww 2* viewh 0 GL_RGBA GL_UNSIGNED_BYTE 0 glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D 0 glBindTexture
-	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D textureColorbuffer 0 glFramebufferTexture2D
-	1 'rbo glGenRenderbuffers
-	GL_RENDERBUFFER rbo glBindRenderbuffer
-	GL_RENDERBUFFER GL_DEPTH24_STENCIL8 vieww 2* viewh glRenderbufferStorage
-	GL_FRAMEBUFFER GL_DEPTH_STENCIL_ATTACHMENT GL_RENDERBUFFER rbo glFramebufferRenderbuffer
-	GL_FRAMEBUFFER 0 glBindFramebuffer
+	eyecam				| eyemat	
 	;
 
 :renderviews
-	GL_FRAMEBUFFER framebuffer glBindFramebuffer
-|<<<<<<<<<<<<<<<<<<<<
-	SDLGLcls
+	|..................
+	sw 2/ 0 over sh 2/ glviewport
+	
+	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
+	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels glBufferSubData
+	
 	shaderProgram glUseProgram
 	IDprojection 1 0 'fprojection glUniformMatrix4fv 
 	IDview 1 0 'fview glUniformMatrix4fv 
 	VAO glBindVertexArray
-	|..................
-	0 0 vieww viewh glViewport
-	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
-	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels glBufferSubData
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
+	0 glBindVertexArray
+	
 	|..................
-	vieww 0 vieww viewh glViewport
+	sw 2/ sh 2/ 2dup glviewport
+	
 	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
 	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels2 glBufferSubData
-	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
 	
+	shaderProgram glUseProgram
+	IDprojection 1 0 'fprojection glUniformMatrix4fv 
+	IDview 1 0 'fview glUniformMatrix4fv 
+	VAO glBindVertexArray
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
 	0 glBindVertexArray
+	;
+
+
+#framebuffer
+#textureColorbuffer
+#rbo
+
+#GL_TEXTURE_MIN_FILTER $2801
+#GL_LINEAR $2601
+#GL_TEXTURE_MAG_FILTER $2800
+#GL_COLOR_ATTACHMENT0 $8CE0
+#GL_RENDERBUFFER $8D41
+#GL_DEPTH24_STENCIL8 $88F0
+#GL_DEPTH_STENCIL_ATTACHMENT $821A
+
+#GL_RGB8 $8051
+#GL_RGBA $1908
+
+:SetupFramebuffer
+	1 'framebuffer glGenFramebuffers
+	GL_FRAMEBUFFER framebuffer glBindFramebuffer
+
+	1 'textureColorbuffer glGenTextures
+	GL_TEXTURE_2D textureColorbuffer glBindTexture
+	GL_TEXTURE_2D 0 GL_RGBA 640 480 0 
+	GL_RGBA
+	|GL_ARGB
+	GL_UNSIGNED_BYTE 0 glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
+	GL_TEXTURE_2D 0 glBindTexture
+
+	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D textureColorbuffer 0 glFramebufferTexture2D
+
+	1 'rbo glGenRenderbuffers
+	GL_RENDERBUFFER rbo glBindRenderbuffer
+	GL_RENDERBUFFER GL_DEPTH24_STENCIL8 640 480 glRenderbufferStorage
+	GL_FRAMEBUFFER GL_DEPTH_STENCIL_ATTACHMENT GL_RENDERBUFFER rbo glFramebufferRenderbuffer
+|    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        |std::cerr << "Error: Framebuffer incompleto\n";
+|    }
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	;
+
+:RenderToFramebuffer
+	GL_FRAMEBUFFER framebuffer glBindFramebuffer
+	0 0 640 480 glViewport
+|<<<<<<<<<<<<<<<<<<<<
+	SDLGLcls
+	
+	GL_ARRAY_BUFFER typeVBO glBindBuffer		| typos
+	GL_ARRAY_BUFFER 0 16 16 * 16 * 'voxels glBufferSubData
+	
+	shaderProgram glUseProgram
+	IDprojection 1 0 'fprojection glUniformMatrix4fv 
+	IDview 1 0 'fview glUniformMatrix4fv 
+	VAO glBindVertexArray
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 16 16 * 16 * glDrawElementsInstanced
+	0 glBindVertexArray
+	
+	SDLGLupdate
 |<<<<<<<<<<<<<<<<<<<<
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	;
+
+#SDL_PIXELFORMAT_ARGB32 $16362004
 
 :CreateSDLTextureFromOpenGL | -- texture
 	GL_TEXTURE_2D textureColorbuffer glBindTexture
 	GL_TEXTURE_2D 0 GL_RGBA GL_UNSIGNED_BYTE here glGetTexImage
 	GL_TEXTURE_2D 0 glBindTexture
-	here vieww 2* vieww 32 vieww 3 << $16362004 SDL_CreateRGBSurfaceWithFormatFrom |#SDL_PIXELFORMAT_ARGB32 $16362004
+	here 640 480 32 640 2 << SDL_PIXELFORMAT_ARGB32
+	SDL_CreateRGBSurfaceWithFormatFrom
 	SDLrenderer over SDL_CreateTextureFromSurface
 	swap SDL_FreeSurface
 	;
 
-|--------------------------------------------
-#serror
-#code1
-#cpu1
-	
-|-----------------------
-:compilar
-	empty mark 
-	fuente vmcompile | serror terror
-	
-|	vmdicc | ** DEBUG
-|	cdcnt 'cdtok vmcheckjmp
-
-	 1 >? ( 'terror !
-		'fuente> ! | serror
-		3 'state !
-		clearmark
-		fuente> $700ffff addsrcmark 
-		0 'cpu1 !
-		; ) 2drop
-
-	2 'state ! 
-	vmcpu 'cpu1 !
-	
-	buildvars
-	;
-
-:play
-	state 2 =? ( drop vareset ; ) drop
-	compilar
-	state 2 <>? ( drop ; ) drop
-	ip vm2src 'fuente> ! 
-|	reset.map
-	'stepvma 0.1 +vexe
-	;	
-	
-:step
-	state 2 =? ( drop stepvmas ; ) drop | stop?
-	compilar	
-	ip vm2src 'fuente> ! 
-|	reset.map
-	;
-|-------------------------------------------------
-#eyed 20.0
-	
-#pEye 0.0 0.0 12.0
-#pTo 0 0 0
-#pUp 0 1.0 0
-
-#xm #ym
-#rx #ry
-
-:eyecam
-	rx 'pEye 8 + !
-	ry sincos eyed *. swap eyed *. 'pEye !+ 8 + !
-	'pEye 'pTo 'pUp mlookat 'fview mcpyf 
-	;
-
-#glviewport
-
-:redoingviewport
-	eyecam
-	glviewport SDl_DestroyTexture
-    renderviews
-	CreateSDLTextureFromOpenGL 'glviewport !	
-	;
-	
 |------ vista
 :dnlook
 	SDLx SDLy 'ym ! 'xm ! ;
@@ -339,81 +383,39 @@ void main() {
 	SDLx SDLy
 	ym over 'ym ! - neg 14 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  
-	redoingviewport
+	eyecam
 	;
+
+:main
+	gui
+	'dnlook 'movelook onDnMove	
 	
-#vista1 [ 0 0 0 0 ]
-#vista2 [ 0 0 0 0 ]
-#screenv [ 0 0 0 0 ]	
+|	SDLGLcls
+|	renderviews
+|	SDLGLupdate
+
 	
-:inivox
-	viewh vieww 
-	2dup 'vista1 8 + d!+ d!
-	2dup dup 'vista2 d!
-	'vista2 8 + d!+ d!
-	'screenv 8 + d!+ d!
-	;
-	
-:drawvox	
-	50 600 'screenv d!+ d!
-	'vista1 'screenv glviewport SDLImagebb | box box img --
-	300 600 'screenv d!+ d!
-	'vista2 'screenv glviewport SDLImagebb | box box img --
-|	500 300 glviewport sprite
-	;
-	
-:runscr
-	vupdate gui	
-	'dnlook 'movelook onDnMove
 	0 sdlcls
+	$ff00 sdlcolor
+	200 150 400 200 SDLFEllipse
 
-	0 0 tat $5 tcol "Cube" temits $3 tcol " Code" temits 
+    RenderToFramebuffer
+	CreateSDLTextureFromOpenGL
+	600 300 pick2 sprite
+    SDl_DestroyTexture
 
-	draw.code	
-	drawvox
 	
-	|... paleta
-	0 ( 15 <?
-		dup 2 << 'paleta + d@ sdlcolor
-		dup 5 << 500 + 560 32 32 sdlfrect
-		1+ ) drop
-		
-	sdlkey
-	>esc< =? ( exit )
-	<f1> =? ( play )
-	<f2> =? ( step ) 
-
-	<f3> =? ( genrandcolor redoingviewport )
-	<f4> =? ( genrandcolor2 redoingviewport )
-
-	<f5> =? ( 'test1 buildvox redoingviewport )
-	
-	<up> =? ( -0.1 'eyed +! eyecam redoingviewport )
-	<dn> =? ( 0.1 'eyed +! eyecam redoingviewport )	
-
-	drop 
-	SDLGLupdate
 	SDLredraw
-	;
-
 	
-:game
-	mark
-	0 32 440 540 edwin	
-|	"r3/r3vm/levels/level0.txt" loadlevel	
-|	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
-		
-|	reset.map
-	1 'state ! 0 'code1 ! 0 'cpu1 !
-
-	|"-- go --" infoshow
-	mark
-	'runscr SDLshow
-	empty
-	
-	vareset
-	empty	
+	SDLkey
+	>esc< =? ( exit ) 
+	<up> =? ( -0.1 'eyed +! eyecam )
+	<dn> =? ( 0.1 'eyed +! eyecam )	
+	<f1> =? ( genrandcolor )
+	<f2> =? ( genrandcolor2 )
+	drop ;	
 	;
+	
 	
 |-----------------
 :glinit
@@ -433,12 +435,6 @@ void main() {
 	glinit
 	progshader
 	SetupFramebuffer
-	redoingviewport
-	inivox
-	
-	2.0 8 8 "media/img/atascii.png" tfnt 
-	64 vaini
-	edram	| editor
-	game
+	'main SDLshow
 	glend 
 	;	
