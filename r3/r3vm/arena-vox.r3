@@ -292,9 +292,10 @@ void main() {
 	2 'state ! 
 	vmcpu 'cpu1 !
 	
-	buildvars
+|	buildvars
 	;
-
+	
+|----------------------------------------
 :play
 	state 2 =? ( drop vareset ; ) drop
 	compilar
@@ -304,23 +305,6 @@ void main() {
 	'stepvma 0.1 +vexe
 	;	
 	
-:runplay
-	state 2 =? ( drop vareset ; ) drop
-	compilar
-	state 2 <>? ( drop ; ) drop
-	
-	'voxels2
-	0 ( $1000 <?
-		vareset
-		dup $f and 32 << vmpush
-		dup 4 >> $f and 32 << vmpush
-		dup 8 >> $f and 32 << vmpush
-		vmrun
-		vmpop 32 >>
-		rot c!+
-		swap
-		1+ ) 2drop 
-	;
 	
 :step
 	state 2 =? ( drop stepvmas ; ) drop | stop?
@@ -328,8 +312,31 @@ void main() {
 	ip vm2src 'fuente> ! 
 |	reset.map
 	;
+	
+|----------------------------------------
+:runvox
+	vmreset
+	dup $f and 32 << vmpush
+	dup 4 >> $f and 32 << vmpush
+	dup 8 >> $f and 32 << vmpush
+	ip ( vmstepck 1? ) drop 
+	vmpop 32 >>		
+	;
+	
+:runplay
+	state 2 =? ( drop vareset ; ) drop
+	compilar
+	state 2 <>? ( drop ; ) drop
+	'voxels2
+	0 ( $1000 <?
+		runvox
+		rot c!+
+		swap 1+ ) 2drop 
+	1 'state ! 		
+	;
+	
 |-------------------------------------------------
-#eyed 20.0
+#eyed 18.0
 	
 #pEye 0.0 0.0 12.0
 #pTo 0 0 0
@@ -403,18 +410,7 @@ void main() {
 		
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( play )
-	<f2> =? ( step ) 
-
-	<f3> =? ( genrandcolor redoingviewport )
-	<f4> =? ( genrandcolor2 redoingviewport )
-
-	<f5> =? ( 'test1 buildvox redoingviewport )
-	<f6> =? ( runplay redoingviewport )
-	
-	<up> =? ( -0.1 'eyed +! eyecam redoingviewport )
-	<dn> =? ( 0.1 'eyed +! eyecam redoingviewport )	
-
+	<f1> =? ( runplay redoingviewport )
 	drop 
 	SDLGLupdate
 	SDLredraw
@@ -441,7 +437,8 @@ void main() {
 	
 |-----------------
 :glinit
-	"voxel gl" 1024 600 SDLinitSGL
+	"Arena Vox" 1024 600 SDLinitSGL
+	SDLblend
 	glInfo
 	GL_DEPTH_TEST glEnable 
 	GL_CULL_FACE glEnable	
