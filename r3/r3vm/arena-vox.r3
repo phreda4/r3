@@ -17,11 +17,19 @@
 #codepath "r3/r3vm/codecube/"
 
 |-------------------------------------
+|#eyed 18.0
+#pEye 0.0 0.0 18.0
+#pTo 0 0 0
+#pUp 0 1.0 0
+
 #IDprojection
 #fprojection * 64
 
 #IDview
 #fview * 64
+
+#IDmodel
+#fmodel * 64
 
 |----------------------------------------------------------
 #voxels * 4096
@@ -39,13 +47,7 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		15 >? ( 0 nip )
 		ca!+ ) drop ;
 
-:genrandcolor2
-	'voxels2 >a 16 16 * 16 * ( 1? 1- 
-		$7f randmax 
-		15 >? ( 0 nip )
-		ca!+ ) drop ;
-		
-:buildvox | vec --
+:buildvox1 | vec --
 	'voxels >a
 	0 ( $1000 <?
 		dup 8 >> $f and 
@@ -54,20 +56,25 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 		pick4 ex ca!+
 		1+ ) 2drop ;
 
-|===== test
+:simple1
+	0? ( 3drop 1 ; ) drop 
+	0? ( 2drop 2 ; ) drop 
+	0? ( drop 3 ; ) drop 
+	0 ;
+	
+	
+:buildvox2 | vec --
+	'voxels2 >a
+	0 ( $1000 <?
+		dup 8 >> $f and 
+		over 4 >> $f and 
+		pick2 $f and 
+		pick4 ex ca!+
+		1+ ) 2drop ;
+		
+:emptyvox
+	3drop 0 ;
 
-:test1 | x y z -- c
-	drop
-	7 =? ( drop ; )
-	drop
-	7 =? ( ; ) 
-	drop 0 ;
-	
-:test1
-	+ 7 -
-	7 =? ( drop ; )
-	2drop 0 ;
-	
 |-------------------------------------
 #GL_DEPTH_TEST $0B71
 #GL_LESS $0201
@@ -102,6 +109,7 @@ out vec3 fragPos;
 out vec3 normal;
 out vec3 fragColor;
 
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 //uniform vec3 palette[16];
@@ -130,7 +138,7 @@ void main() {
 
     fragPos = aPos + instanceOffset;
     normal = normalize(aPos); // Normales para sombreado
-    gl_Position = projection * view * vec4(fragPos, 1.0);
+    gl_Position = projection * view * model * vec4(fragPos, 1.0);
 	}"
 |-----------------------------------------------------------------------
 #fragmentShaderSource "#version 330 core
@@ -156,8 +164,14 @@ void main() {
 #TypeVBO
 
 |----------- data	
-#cubeVertices [ -0.5 -0.5 -0.5	 0.5 -0.5 -0.5	 0.5  0.5 -0.5	-0.5  0.5 -0.5	-0.5 -0.5  0.5	 0.5 -0.5  0.5	 0.5  0.5  0.5	-0.5  0.5  0.5 ]
-#cubeIndices [ 0 3 1 3 2 1		1 2 5 2 6 5		5 6 4 6 7 4		4 7 0 7 3 0		3 7 2 7 6 2		4 0 5 0 1 5 ]
+#cubeVertices [ 
+-0.5 -0.5 -0.5	 0.5 -0.5 -0.5	 0.5  0.5 -0.5	-0.5  0.5 -0.5	
+-0.5 -0.5  0.5	 0.5 -0.5  0.5	 0.5  0.5  0.5	-0.5  0.5  0.5 
+]
+#cubeIndices [ 
+0 3 1 3 2 1		1 2 5 2 6 5		5 6 4 6 7 4		
+4 7 0 7 3 0		3 7 2 7 6 2		4 0 5 0 1 5 
+]
 
 :progshader
 	'fragmentShaderSource 
@@ -165,6 +179,7 @@ void main() {
 	inishader
 	dup "projection" glGetUniformLocation 'IDprojection !
 	dup "view" glGetUniformLocation 'IDview !
+	dup "model" glGetUniformLocation 'IDmodel !
 	0? ( drop .input ; )
 	'shaderProgram !
 	
@@ -197,8 +212,12 @@ void main() {
 	
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
-|	-40.0 40.0 -40.0 40.0 -40.0 40.0 mortho
+	|-18.0 18.0 -18.0 18.0 -40.0 40.0 mortho
 	'fprojection mcpyf 
+	
+|	rx 'pEye 8 + !
+|	ry sincos eyed *. swap eyed *. 'pEye !+ 8 + !
+	'pEye 'pTo 'pUp mlookat 'fview mcpyf 	
 	;
 
 |----------------------------------------------------------
@@ -242,6 +261,7 @@ void main() {
 	shaderProgram glUseProgram
 	IDprojection 1 0 'fprojection glUniformMatrix4fv 
 	IDview 1 0 'fview glUniformMatrix4fv 
+	IDmodel 1 0 'fmodel glUniformMatrix4fv 
 	VAO glBindVertexArray
 	|..................
 	0 0 vieww viewh glViewport
@@ -291,7 +311,7 @@ void main() {
 
 	2 'state ! 
 	vmcpu 'cpu1 !
-	
+	0 'terror !
 |	buildvars
 	;
 	
@@ -319,7 +339,9 @@ void main() {
 	dup $f and 32 << vmpush
 	dup 4 >> $f and 32 << vmpush
 	dup 8 >> $f and 32 << vmpush
-	ip ( vmstepck 1? ) drop 
+	ip ( vmstepck 1? 	
+		terror 1? ( 2drop ; ) drop
+		) drop 
 	vmpop 32 >>		
 	;
 	
@@ -330,25 +352,25 @@ void main() {
 	'voxels2
 	0 ( $1000 <?
 		runvox
+		terror 1? ( 3drop			
+			clearmark
+			ip vm2src 'fuente> ! 
+			fuente> $700ffff addsrcmark 
+			3 'state !
+			; ) drop
 		rot c!+
 		swap 1+ ) 2drop 
 	1 'state ! 		
 	;
 	
 |-------------------------------------------------
-#eyed 18.0
-	
-#pEye 0.0 0.0 12.0
-#pTo 0 0 0
-#pUp 0 1.0 0
 
-#xm #ym
 #rx #ry
 
 :eyecam
-	rx 'pEye 8 + !
-	ry sincos eyed *. swap eyed *. 'pEye !+ 8 + !
-	'pEye 'pTo 'pUp mlookat 'fview mcpyf 
+	matini
+	rx ry 0 mrot
+	'fmodel mcpyf
 	;
 
 #glviewport
@@ -361,13 +383,15 @@ void main() {
 	;
 	
 |------ vista
+#xm #ym
+
 :dnlook
 	SDLx SDLy 'ym ! 'xm ! ;
 
 :movelook
 	SDLx SDLy
-	ym over 'ym ! - neg 14 << 'rx +!
-	xm over 'xm ! - 7 << neg 'ry +!  
+	ym over 'ym ! - 7 << neg 'rx +!
+	xm over 'xm ! - 7 << 'ry +!  
 	redoingviewport
 	;
 	
@@ -416,6 +440,15 @@ void main() {
 	SDLredraw
 	;
 
+|-----------------------
+#startcode
+": | x y z 
+
+	; | color
+"
+	
+:copycode | "" --
+	fuente strcpy edset ;
 	
 :game
 	mark
@@ -425,8 +458,18 @@ void main() {
 		
 |	reset.map
 	1 'state ! 0 'code1 ! 0 'cpu1 !
-
+	
+|	genrandcolor
+	'simple1 buildvox1
+	'emptyvox buildvox2
+	
+	'startcode copycode
+	fuente 11 + 'fuente> !
+	
+	redoingviewport
+	
 	|"-- go --" infoshow
+	
 	mark
 	'runscr SDLshow
 	empty

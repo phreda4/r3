@@ -52,7 +52,7 @@
 
 	2 'state ! 
 	vmcpu 'cpu1 !
-	
+	0 'terror !
 	buildvars
 	;
 

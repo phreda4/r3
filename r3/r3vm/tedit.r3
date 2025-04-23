@@ -274,7 +274,7 @@
 	iniline
 	( c@+ 1?
 		13 =? ( drop ; )
-		9 =? ( drop 3 tnsp 32 wcolor )
+		9 =? ( drop tsp 32 wcolor )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
 		temit
@@ -301,7 +301,7 @@
 :mmemit | adr x xa -- adr x xa
 	rot c@+
 	13 =? ( 0 nip ) 0? ( drop 1- -rot sw + ; )
-	9 =? ( drop swap advx 2 << + rot swap ; ) | 4*ccw is tab
+	9 =? ( drop swap advx 2* + rot swap ; ) | 2*ccw is tab
 	drop swap advx + rot swap ;
 
 :cursormouse
@@ -359,7 +359,7 @@
 |--------------------------
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 4 'xcursor +! ; )
+	9 =? ( drop 2 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
 #cacheyl
@@ -441,7 +441,7 @@
 	inisel >=? ( ; )
 	( inisel <? c@+ 
 		13 =? ( advy 'sy1 +! 0 'sx1 ! )
-		9 =? ( 3 'sx1 +! )
+		9 =? ( 1 'sx1 +! )
 		drop 
 		1 'sx1 +!
 		) 
@@ -457,7 +457,7 @@
 	0 'sw1 !
 	( pantafin> <? finsel <? c@+
 		13 =? ( wcode sx1 - 6 - 'sw1 ! selectfill advy 'sy1 +! 0 'sx1 ! -1 'sw1 ! )
-		9 =? ( 3 'sw1 +! )
+		9 =? ( 1 'sw1 +! )
 		drop
 		1 'sw1 +!
 		) 

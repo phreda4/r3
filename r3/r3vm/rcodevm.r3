@@ -81,12 +81,12 @@
 :i+		NOSTOS + iNIP TOS! ;
 :i-		NOSTOS - iNIP TOS! ;
 :i*		NOSTOS * iNIP TOS! ;
-:i/		NOSTOS / iNIP TOS! ;
-:i*/	2NOTOS */ i2NIP TOS! ;
+:i/		NOSTOS 1? ( / iNIP TOS! ; ) 2drop 9 'terror ! ; | div0 error
+:i*/	2NOTOS 1? ( */ i2NIP TOS! ; ) 3drop 9 'terror ! ; | div0 error
 :i*>>	2NOTOS *>> i2NIP TOS! ;  | need LSB (TOS is 32bits)
-:i<</	2NOTOS <</ i2NIP TOS! ;  | need LSB (TOS is 32bits)
-:i/MOD	NOSTOS /mod 'TOS ! NOS ! ;
-:iMOD	NOSTOS mod iNIP TOS! ;
+:i<</	2NOTOS 1? ( <</ i2NIP TOS! ; ) 3drop 9 'terror ! ; | need LSB (TOS is 32bits)
+:i/MOD	NOSTOS 1? ( /mod 'TOS ! NOS ! ; ) 2drop 9 'terror ! ;
+:iMOD	NOSTOS 1? ( mod iNIP TOS! ; ) 2drop 9 'terror ! ;
 :iABS	TOS 32 >> abs TOS! ;
 :iNEG	TOS 32 >> neg TOS! ;
 :iCLZ	TOS 32 >> clz TOS! ;
