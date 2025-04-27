@@ -122,7 +122,8 @@ vec3(0.5686,0.3529,0.8274),vec3(0.9176,0.2352,0.3960),vec3(0.7960,0.8039,0.8039)
 );
 
 void main() {
-	if (aType==0.0) { // no draw
+	int t=int(aType)&0xf;
+	if (t==0) { // no draw
 		gl_Position = vec4(0.0, 0.0, 0.0, 0.0);
 		return;
 		}
@@ -131,10 +132,11 @@ void main() {
     int y = (gl_InstanceID>>4)&0xf;
     int z = (gl_InstanceID>>8)&0xf;
 
-	fragColor = pal[int(aType)&0xf];
+	fragColor = pal[t];
 	
     //vec3 instanceOffset = vec3(-8.8,-8.8,-8.8)+vec3(x, y, z)*1.1; // (16*1.1)/2
-	vec3 instanceOffset = vec3(-8.4,-8.4,-8.4)+vec3(x, y, z)*1.05; // (16*1.1)/2
+	//vec3 instanceOffset = vec3(-8.4,-8.4,-8.4)+vec3(x, y, z)*1.05; // (16*1.1)/2
+	vec3 instanceOffset = vec3(-8.0,-8.0,-8.0)+vec3(x, y, z)*1.0; // (16*1.0)/2
 
     fragPos = aPos + instanceOffset;
     normal = normalize(aPos); // Normales para sombreado
@@ -288,6 +290,16 @@ void main() {
 	swap SDL_FreeSurface
 	;
 
+:irand
+	vmpop 32 >>
+	randmax
+	32 << vmpush ;
+
+#wordt * 80
+#words "rand" 0
+#worde	irand
+#wordd ( $f1 0 ) 
+
 |--------------------------------------------
 #serror
 #code1
@@ -297,7 +309,6 @@ void main() {
 :compilar
 	empty mark 
 	fuente vmcompile | serror terror
-	
 |	vmdicc | ** DEBUG
 |	cdcnt 'cdtok vmcheckjmp
 
@@ -408,12 +419,12 @@ void main() {
 	;
 	
 :drawvox	
-	0 580 'screenv d!+ d!
+	0 620 'screenv d!+ d!
 	$333333 sdlcolor
 	SDLRenderer 'screenv SDL_RenderFillRect 
 	SDLrenderer glviewport 'vista1 'screenv SDL_RenderCopy
 
-	300 580 'screenv d!+ d!
+	300 620 'screenv d!+ d!
 	$000033 sdlcolor
 	SDLRenderer 'screenv SDL_RenderFillRect 
 	SDLrenderer glviewport 'vista2 'screenv SDL_RenderCopy
@@ -452,7 +463,7 @@ void main() {
 	
 :game
 	mark
-	0 32 440 540 edwin	
+	160 32 440 540 edwin	
 |	"r3/r3vm/levels/level0.txt" loadlevel	
 |	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
 		
@@ -503,6 +514,10 @@ void main() {
 	2.0 8 8 "media/img/atascii.png" tfnt 
 	64 vaini
 	edram	| editor
+	
+	'wordt 'words vmlistok 
+	'wordt 'worde 'wordd vmcpuio
+	
 	game
 	glend 
 	;	
