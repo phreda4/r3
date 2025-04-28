@@ -290,15 +290,28 @@ void main() {
 	swap SDL_FreeSurface
 	;
 
+|--------------------------------------------
+#timev
+
+:ix 
+	over $f and 32 << vmpush ;
+:iy
+	over 4 >> $f and 32 << vmpush ;
+:iz 
+	over 8 >> $f and $f and 32 << vmpush ;
+:it
+	timev 32 << vmpush ;
 :irand
-	vmpop 32 >>
-	randmax
-	32 << vmpush ;
+	vmpop 32 >> randmax 32 << vmpush ;
+:imin
+	vmpop 32 >> vmpop 32 >> min 32 << vmpush ;
+:imax
+	vmpop 32 >> vmpop 32 >> max 32 << vmpush ;
 
 #wordt * 80
-#words "rand" 0
-#worde	irand
-#wordd ( $f1 0 ) 
+#words "rand" "x" "y" "z" "t" "min" "max" 0
+#worde	irand ix iy iz it imin imax
+#wordd ( $f1 $01 $01 $01 $01 $e1 $e1 0 )  
 
 |--------------------------------------------
 #serror
@@ -307,6 +320,8 @@ void main() {
 	
 |-----------------------
 :compilar
+	msec 7 >> $f and 'timev ! |!!!!
+	
 	empty mark 
 	fuente vmcompile | serror terror
 |	vmdicc | ** DEBUG

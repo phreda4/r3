@@ -18,9 +18,9 @@
             <Keywords name="Folders in code1, open">(</Keywords>
             <Keywords name="Folders in code1, middle"></Keywords>
             <Keywords name="Folders in code1, close">)</Keywords>
-            <Keywords name="Folders in code2, open"></Keywords>
+            <Keywords name="Folders in code2, open">[</Keywords>
             <Keywords name="Folders in code2, middle"></Keywords>
-            <Keywords name="Folders in code2, close"></Keywords>
+            <Keywords name="Folders in code2, close">]</Keywords>
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
@@ -28,8 +28,8 @@
             <Keywords name="Keywords2">:</Keywords>
             <Keywords name="Keywords3">&apos;</Keywords>
             <Keywords name="Keywords4">^</Keywords>
-            <Keywords name="Keywords5">[ ] ; ex dup drop swap over rot -rot nip pick2 pick3 pick4 2dup 2drop 3drop 4drop 2over 2swap &gt;r r&gt; r@ 0? 1? +? -? =? &lt;&gt;? &gt;? &lt;? &gt;=? &lt;=? and? nand? in? + - * / &lt;&lt; &gt;&gt; &gt;&gt;&gt; */ and or xor nand not neg mod /mod *&gt;&gt; &lt;&lt;/ abs sqrt clz @ c@ w@ d@ @+ c@+ w@+ d@+ ! c! w! d! !+ c!+ w!+ d!+ +! c+! w+! d+! &gt;a a&gt; a+ a@ a! a@+ a!+ ca@ ca! ca@+ ca!+ da@ da! da@+ da!+ &gt;b b&gt; b+ b@ b! b@+ b!+ cb@ cb! cb@+ cb!+ db@ db! db@+ db!+ move move&gt; fill cmove cmove&gt; cfill dmove dmove&gt; dfill mem loadlib getproc sys0 sys1 sys2 sys3 sys4 sys5 sys6 sys7 sys8 sys9 sys10</Keywords>
-            <Keywords name="Keywords6"></Keywords>
+            <Keywords name="Keywords5"> ; ex dup drop swap over rot -rot nip pick2 pick3 pick4 2dup 2drop 3drop 4drop 2over 2swap &gt;r r&gt; r@  + - * / &lt;&lt; &gt;&gt; &gt;&gt;&gt; */ and or xor nand not neg mod /mod *&gt;&gt; &lt;&lt;/ abs sqrt clz @ c@ w@ d@ @+ c@+ w@+ d@+ ! c! w! d! !+ c!+ w!+ d!+ +! c+! w+! d+! &gt;a a&gt; a+ a@ a! a@+ a!+ ca@ ca! ca@+ ca!+ da@ da! da@+ da!+ &gt;b b&gt; b+ b@ b! b@+ b!+ cb@ cb! cb@+ cb!+ db@ db! db@+ db!+ move move&gt; fill cmove cmove&gt; cfill dmove dmove&gt; dfill mem loadlib getproc sys0 sys1 sys2 sys3 sys4 sys5 sys6 sys7 sys8 sys9 sys10</Keywords>
+            <Keywords name="Keywords6">0? 1? +? -? =? &lt;&gt;? &gt;? &lt;? &gt;=? &lt;=? and? nand? in? </Keywords>
             <Keywords name="Keywords7"></Keywords>
             <Keywords name="Keywords8"></Keywords>
             <Keywords name="Delimiters">00&quot; 01 02&quot; 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23</Keywords>
@@ -44,12 +44,12 @@
             <WordsStyle name="KEYWORDS3" fgColor="00FFFF" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS4" fgColor="FFFF80" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS5" fgColor="FF8040" bgColor="FFFFFF" colorStyle="1" fontStyle="0" nesting="0" />
-            <WordsStyle name="KEYWORDS6" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
+            <WordsStyle name="KEYWORDS6" fgColor="00FFFF" bgColor="FFFFFF" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS7" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS8" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
             <WordsStyle name="OPERATORS" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
-            <WordsStyle name="FOLDER IN CODE1" fgColor="FF8040" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
-            <WordsStyle name="FOLDER IN CODE2" fgColor="000000" bgColor="808080" fontStyle="0" nesting="0" />
+            <WordsStyle name="FOLDER IN CODE1" fgColor="00FFFF" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
+            <WordsStyle name="FOLDER IN CODE2" fgColor="0080C0" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="FOLDER IN COMMENT" fgColor="000000" bgColor="808080" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="DELIMITERS1" fgColor="FFFFFF" bgColor="FFFFFF" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="DELIMITERS2" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
