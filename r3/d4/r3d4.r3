@@ -424,7 +424,7 @@
 	
 |	'filename "mem/main.mem" load drop
 |	"r3/test/testasm.r3"
-	"r3/opengl/16-iqmloader.r3" 
+	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy
 	
 	'filename edload
