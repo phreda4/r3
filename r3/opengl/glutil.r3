@@ -57,10 +57,8 @@
 | @S..@
 | @g..@
 | @v..@
-::loadShader | "shader" -- idprogram
-	here dup rot
-	dup .println
-	LOAD over =? ( 2drop "Not shader found" .println 0 ; ) 0 swap c!
+
+::loadShaderv | "shader" -- idprogram
 	0 'f ! 0 'g ! 0 'v !
 	( 64 findchar 1? |"@" findstr 
 		typeshader ) drop
@@ -81,6 +79,13 @@
 	v glDeleteShader
 	f glDeleteShader
 	g glDeleteShader
+	;
+	
+::loadShader | "shader" -- idprogram
+	here dup rot
+	dup .println
+	LOAD over =? ( 2drop "Not shader found" .println 0 ; ) 0 swap c!
+	loadShaderV
 	;
 
 ::shadera!i | int shader "name"  --

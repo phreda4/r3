@@ -55,6 +55,7 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
 
 #VAO #VBO #EBO
 #fontTextureID
+#fontTexture
 #consoleVBO
 
 |---------------------------		
@@ -63,35 +64,37 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
 
 #vertexShaderSource "#version 330 core
 layout (location = 0) in vec2 aPos;       // Posiciones del quad (local)
-layout (location = 1) in vec2 aTexCoord; // Coordenadas UV del quad
-layout (location = 2) in vec3 instanceData; // Datos de la instancia: (nroCaracter, x, y)
+layout (location = 1) in float cell; // Datos de la instancia: (nroCaracter, x, y)
+
+out vec3 fragPos;
+out vec3 fragColor;
 
 out vec2 TexCoord;
 
-uniform vec2 scale; // Escala global para caracteres
+uniform vec2 scale=vec2(1.0,1.0); // Escala global para caracteres
 
 void main() {
-    int charIndex = int(instanceData.x); // Índice del carácter
-    float xOffset = instanceData.y;     // X de la posición
-    float yOffset = instanceData.z;     // Y de la posición
+	int bchar=int(cell);
+    
+	int xpos=gl_InstanceID % 80;
+	int ypos=(gl_InstanceID / 80) % 50;
 
-    // Calculamos las coordenadas UV
-    float u = (charIndex % 16) / 16.0;  // Columna del carácter
-    float v = (charIndex / 16) / 16.0;  // Fila del carácter
-    float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
+    float uStep = 1.0 / 8.0;           // Ancho de un carácter en UV
     float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
 
-    TexCoord = vec2(aTexCoord.x * uStep + u, aTexCoord.y * vStep + v);
+    int charIndex = bchar&0xff; // Índice del carácter
+	
+	float u = (charIndex&0xf)*uStep;
+    float v = ((charIndex>>4)&0xf)*vStep;
 
-    // Calculamos la posición del vértice en pantalla
-    gl_Position = vec4(aPos * scale + vec2(xOffset, yOffset), 0.0, 1.0);
+    TexCoord = vec2(u,v);
+	fragColor = vec3(1.0,1.0,1.0);
+    gl_Position = vec4(aPos+vec2(xpos, ypos), 0.0, 1.0);
 }"
 
 #fragmentShaderSource "#version 330 core
-out vec4 FragColor;
-
 in vec2 TexCoord;
-
+out vec4 FragColor;
 uniform sampler2D fontTexture;
 
 void main() {
@@ -153,9 +156,58 @@ void main() {
 
 |	dup "projection" glGetUniformLocation 'IDprojection !
 |	dup "view" glGetUniformLocation 'IDview !
+	dup "fontTexture" glGetUniformLocation 'fontTextureID ! 
 	'shaderProgram !
 	;
+	
+|--------------------------------
+#surface
+##glimgw
+##glimgh
 
+##GL_TEXTURE $1702
+##GL_TEXTURE0 $84C0
+##GL_TEXTURE_2D $0DE1
+##GL_TEXTURE_2D_ARRAY $8C1A
+##GL_TEXTURE_3D $806F
+
+#GL_TEXTURE_MAG_FILTER $2800
+#GL_TEXTURE_MIN_FILTER $2801
+#GL_LINEAR $2601
+#GL_NEAREST $2600
+#GL_NEAREST_MIPMAP_LINEAR $2702
+#GL_NEAREST_MIPMAP_NEAREST $2700
+#GL_TEXTURE_WRAP_R $8072
+#GL_TEXTURE_WRAP_S $2802
+#GL_TEXTURE_WRAP_T $2803
+
+#GL_RED $1903
+#GL_RGB $1907
+#GL_RGBA $1908
+#GL_UNSIGNED_BYTE $1401
+#GL_CLAMP_TO_EDGE $812F	
+
+:Surface->w surface 16 + d@ ;
+:Surface->h surface 20 + d@ ;
+:Surface->p surface 24 + d@ ;
+:Surface->pixels surface 32 + @ ;
+:GLBPP 
+	surface 8 + @ 16 + c@
+	32 =? ( drop GL_RGBA ; ) 
+	24 =? ( drop GL_RGB ; )
+	drop GL_RED ;
+
+::glImgFnt | "" -- t
+	1 't glGenTextures
+    GL_TEXTURE_2D t glBindTexture IMG_Load 'Surface !
+	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
+	Surface SDL_FreeSurface
+	t ;	
+	
 :progshader
     1 'VAO glGenVertexArrays
     1 'VBO glGenBuffers
@@ -169,24 +221,25 @@ void main() {
     0 2 GL_FLOAT GL_FALSE 4 4 * 0 glVertexAttribPointer
     0 glEnableVertexAttribArray
 	
-|// Coordenadas UV
-    1 2 GL_FLOAT GL_FALSE 4 4 * 4 2 * glVertexAttribPointer
-    1 glEnableVertexAttribArray
-
 	1 'consoleVBO glGenBuffers
 	GL_ARRAY_BUFFER consoleVBO glBindBuffer		| typos
 	
-|	GL_ARRAY_BUFFER $1fff 'console GL_STATIC_DRAW glBufferData
+	GL_ARRAY_BUFFER $3fff 'console GL_STATIC_DRAW glBufferData
 	
-	2 4 GL_INT GL_FALSE 4 0 glVertexAttribPointer | ??? pasa como float!!!
-	2 glEnableVertexAttribArray
-    2 1 glVertexAttribDivisor
+	1 4 GL_INT GL_FALSE 4 0 glVertexAttribPointer | ??? pasa como float!!!
+	1 glEnableVertexAttribArray
+    1 1 glVertexAttribDivisor
 
 	GL_ARRAY_BUFFER 0 glBindBuffer
 	0 glBindVertexArray
+	
+	
+	"media/img/VGA8x16.png" glImgFnt 'fontTexture !	
 	;
 
 :renderviews
+
+	
 	GL_ARRAY_BUFFER consoleVBO glBindBuffer		| typos
 	GL_ARRAY_BUFFER $3fff 'console GL_DYNAMIC_DRAW glBufferData
 	
