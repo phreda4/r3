@@ -21,6 +21,7 @@
 #GL_ELEMENT_ARRAY_BUFFER $8893
 
 #GL_STATIC_DRAW $88E4
+#GL_DYNAMIC_DRAW $88E8
 #GL_FLOAT $1406
 #GL_UNSIGNED_SHORT $1403
 
@@ -42,133 +43,137 @@
 :memfloat | cnt place --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 	
-#fontshader	
-#fontTexture 
-#fcolor [ 1.0 0.0 0.0 1.0 ]
-#fwintext * 64
-
-#xt 0 #yt 0 
-#wt 0 #ht 0 
-#xs 0 #ys 0
-#ws 8.0 #hs 16.0 
+#fontTexture |  // ID de la textura de la fuente
+#VAO #VBO #instanceVBO |; // Buffers para instancias
+#shaderProgram |;  // Programa de shaders
 
 #shader "
 @vertex--------------------------
 #version 330 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 uvIn;
-layout (location = 2) in float acon; 
+layout (location = 0) in vec2 aPos;       // Posiciones del quad (local)
+layout (location = 1) in vec2 aTexCoord; // Coordenadas UV del quad
+layout (location = 2) in vec3 instanceData; // Datos de la instancia: (nroCaracter, x, y)
 
-out vec2 uv;
+out vec2 TexCoord;
 
-uniform mat4 projection;
+uniform vec2 scale=vec2(1.0,1.0); // Escala global para caracteres
 
-void main()
-{
-	gl_Position = projection * vec4(aPos.x, aPos.y, 0.0, 1.0);
-	uv = uvIn;
+void main() {
+    int charIndex = int(instanceData.x); // Índice del carácter
+    float xOffset = instanceData.y;     // X de la posición
+    float yOffset = instanceData.z;     // Y de la posición
+
+    // Calculamos las coordenadas UV
+    float u = (charIndex % 16) / 16.0;  // Columna del carácter
+    float v = (charIndex / 16) / 16.0;  // Fila del carácter
+    float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
+    float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
+
+    TexCoord = vec2(aTexCoord.x * uStep + u, aTexCoord.y * vStep + v);
+
+    // Calculamos la posición del vértice en pantalla
+    gl_Position = vec4(aPos * scale + vec2(xOffset, yOffset), 0.0, 1.0);
 }
 @fragment-----------------------
 #version 330 core
-in vec2 uv;
-uniform sampler2D u_FontTexture;
-uniform vec4 fgColor;
 out vec4 FragColor;
+in vec2 TexCoord;
+uniform sampler2D fontTexture;
 
-void main()
-{
-	FragColor =  fgColor * texture(u_FontTexture, uv);
+void main() {
+    FragColor = texture(fontTexture, TexCoord);
 }
 @-------------------------------
 "
 
+|----------- data	
+|// Posiciones     // Coordenadas UV
+#vertices [
+0 			0 			0 			$3f800000	| Inf Izq
+$3f800000 	0 			$3f800000 	$3f800000	| inf Der
+$3f800000 	$3f800000 	$3f800000 	0			| Sup Der
+0 			$3f800000 	0 			0			| sup Izq
+]
+
 :initshaders
-	4 'fcolor memfloat	
-	800.0 0 0 600.0 1.0 0 mortho
-	'fwintext mcpyf
+|	4 'fcolor memfloat	
+|	800.0 0 0 600.0 1.0 0 mortho
+|	'fwintext mcpyf
 	
-	'shader	loadShaderv 'fontshader !
+	'shader	loadShaderv 'shaderProgram !
 	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
-	
-	1.0 4 >> dup 'wt ! 'ht ! 
+
+    1 'VAO glGenVertexArrays
+    1 'VBO glGenBuffers
+
+    VAO glBindVertexArray
+
+    GL_ARRAY_BUFFER VBO glBindBuffer
+	GL_ARRAY_BUFFER 4 4 * 4 * 'vertices GL_STATIC_DRAW glBufferData
+
+    |// Posiciones
+    0 2 GL_FLOAT GL_FALSE 4 4 *  0 glVertexAttribPointer
+    0 glEnableVertexAttribArray
+
+    |// Coordenadas UV
+    1 2 GL_FLOAT GL_FALSE 4 4 * 2 4 * glVertexAttribPointer
+    1 glEnableVertexAttribArray
+
+    |// Configuramos un VBO para instancias
+    1 'instanceVBO glGenBuffers
+    GL_ARRAY_BUFFER instanceVBO glBindBuffer
+
+    |// Atributo para datos de la instancia
+    2 3 GL_FLOAT GL_FALSE 3 4 * 0 glVertexAttribPointer
+    2 glEnableVertexAttribArray
+    2 1 glVertexAttribDivisor
+    0 glBindVertexArray
+
 	;
 
 |---------------------------------------
-#vt
-#bt
+#mems
 
-:fp, f2fp , ;
+:drawstring | x y str --
+	here dup 'mems ! >a
+	( c@+ 1?
+		i2fp da!+
+		pick2 i2fp da!+
+		over i2fp da!+
+		rot 8 + -rot
+		) 2drop
+	a> mems - 'mems !
 
-:textcolor | fc --
-	'fcolor >a  
-	dup $ff0000 and 255 / f2fp da!+ 
-	dup 8 << $ff0000 and 255 / f2fp da!+ 
-	16 << $ff0000 and 255 / f2fp da! 
-	;
-	
-:gchar | char --
-	dup $f and wt * 'xt ! | x1
-	4 >> $f and ht * 'yt ! | y1
+    |// Actualizamos el VBO de instancias
+    GL_ARRAY_BUFFER instanceVBO glBindBuffer
+    GL_ARRAY_BUFFER mems here GL_DYNAMIC_DRAW glBufferData
 
-	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys fp, 		xt wt + fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
-	
-	xs fp, ys fp, 			xt fp, yt fp,
-	xs ws + fp, ys hs + fp, xt wt + fp, yt ht + fp,
-	xs fp, ys hs + fp, 		xt fp, yt ht + fp,
-	
-	8.0 'xs +!
-	;
-	
-:text | "" x y --
-	'ys ! 'xs !
-	fontshader glUseProgram
-	0 fontshader "u_FontTexture" shader!i
-	'fcolor fontshader "fgColor" shader!v4
-	'fwintext fontshader "projection" shader!m4
-	
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D fontTexture glBindTexture
-	
-	1 'vt glGenVertexArrays
-	1 'bt glGenBuffers
-	vt glBindVertexArray
-	GL_ARRAY_BUFFER bt glBindBuffer
-	
-	here mark
-	swap ( c@+ 1? gchar ) 2drop
-	here swap - empty | size
-	
-	GL_BLEND glEnable
-	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
-	0 0 800 600 glViewport
-	 
-	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
-	0 glEnableVertexAttribArray 0 3 GL_FLOAT GL_FALSE 4 2 << 0 glVertexAttribPointer
-	1 glEnableVertexAttribArray 1 2 GL_FLOAT GL_FALSE 4 2 << 2 2 << glVertexAttribPointer
-	GL_TRIANGLES 0 rot 4 >> glDrawArrays | 16 bytes per vertex
-	0 glBindVertexArray
-	1 'vt glDeleteVertexArrays
-	1 'bt glDeleteBuffers	
-	;
-	
-:text2
+    |// Dibujamos las instancias
+    shaderProgram glUseProgram
+    GL_TEXTURE_2D fontTexture glBindTexture
+	VAO glBindVertexArray
+
+    |glUniform2f(glGetUniformLocation(shaderProgram, "scale"), scale * CHAR_WIDTH, scale * CHAR_HEIGHT);
+    GL_TRIANGLE_FAN 0 4 12 glDrawArraysInstanced
+
+    0 glBindVertexArray
+    0 glUseProgram
+	2drop
 	;
 
 |--------------	
 :main
 	$4100 glClear | color+depth
-
-	$ffffff textcolor
-	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
 	
-	$ff textcolor
-	msec "%h" sprint 0.0 16.0 text
-	$ff00 textcolor
-	"Bitmap FONT" 0.0 32.0 text
+	10 10 "Hol a todos " drawstring
+|	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
 	
-	SDL_windows SDL_GL_SwapWindow
+|	$ff textcolor
+|	msec "%h" sprint 0.0 16.0 text
+|	$ff00 textcolor
+|	"Bitmap FONT" 0.0 32.0 text
+	
+	SDLGLupdate
 	SDLkey
 	>esc< =? ( exit ) 	
 	drop ;	

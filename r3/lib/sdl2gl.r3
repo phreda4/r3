@@ -67,6 +67,7 @@
 #sys-glDrawElementsInstanced
 |#sys-glDrawRangeElements
 #sys-glDrawArrays
+#sys-glDrawArraysInstanced
 #sys-glGenTextures
 
 #sys-glGetError
@@ -139,6 +140,9 @@
 ::glDrawElements sys-glDrawElements sys4 drop ;
 ::glDrawElementsInstanced sys-glDrawElementsInstanced sys5 drop ;
 |::glDrawRangeElements sys-glDrawRangeElements sys6 drop ;
+::glDrawArrays sys-glDrawArrays sys3 drop ;
+::glDrawArraysInstanced sys-glDrawArraysInstanced sys4 drop ;
+
 ::glDisableVertexAttribArray sys-glDisableVertexAttribArray sys1 drop ;
 ::glDeleteProgram sys-glDeleteProgram sys1 drop ;
 ::glIsProgram sys-glIsProgram sys1 ;
@@ -166,7 +170,7 @@
 ::glDeleteBuffers sys-glDeleteBuffers sys2 drop ;
 ::glDeleteVertexArrays sys-glDeleteVertexArrays sys2 drop ;
 
-::glDrawArrays sys-glDrawArrays sys3 drop ;
+
 ::glGetError sys-glGetError sys0 ; 
 ::glGetString sys-glGetString sys1 ;
 ::glViewport sys-glViewport sys4 drop ;
@@ -254,11 +258,12 @@
 
 	"glVertexPointer" SDL_GL_GetProcAddress 'sys-glVertexPointer !
 
-	"glDrawArrays" SDL_GL_GetProcAddress 'sys-glDrawArrays !
 	"glClear" SDL_GL_GetProcAddress 'sys-glClear !
 	"glDrawElements" SDL_GL_GetProcAddress 'sys-glDrawElements !	
 	"glDrawElementsInstanced" SDL_GL_GetProcAddress 'sys-glDrawElementsInstanced !
 |	"glDrawRangeElements" SDL_GL_GetProcAddress 'sys-glDrawRangeElements !
+	"glDrawArrays" SDL_GL_GetProcAddress 'sys-glDrawArrays !
+	"glDrawArraysInstanced" SDL_GL_GetProcAddress 'sys-glDrawArraysInstanced !
 	"glGenTextures" SDL_GL_GetProcAddress 'sys-glGenTextures !
 	"glBindTexture" SDL_GL_GetProcAddress 'sys-glBindTexture !
 	"glTexImage2D" SDL_GL_GetProcAddress 'sys-glTexImage2D !	

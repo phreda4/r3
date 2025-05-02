@@ -1,4 +1,3 @@
-|MEM 128
 ^r3/lib/gui.r3
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
@@ -10,7 +9,7 @@
 
 :genrandcolor
 	voxels >a $3ffff ( 1? 1- 
-		$fff randmax
+		$7ff randmax
 		$ff >? ( 0 nip )
 		ca!+ ) drop ;
 
