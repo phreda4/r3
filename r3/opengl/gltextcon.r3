@@ -24,6 +24,7 @@
 #GL_DYNAMIC_DRAW $88E8
 #GL_FLOAT $1406
 #GL_UNSIGNED_SHORT $1403
+#GL_INT $1404
 
 #GL_TRIANGLE_FAN $0006
 #GL_TRIANGLE_STRIP $0005
@@ -52,24 +53,29 @@
 #version 330 core
 layout (location = 0) in vec2 aPos;       // Posiciones del quad (local)
 layout (location = 1) in vec2 aTexCoord; // Coordenadas UV del quad
-layout (location = 2) in vec3 instanceData; // Datos de la instancia: (nroCaracter, x, y)
+layout (location = 2) in float instanceData; // Datos de la instancia: (nroCaracter, x, y)
 
 out vec2 TexCoord;
+out vec4 fgColor;
 
-uniform vec2 scale=vec2(1.0,1.0); // Escala global para caracteres
+uniform mat4 projection;
+uniform vec2 scale=vec2(0.1,0.1); // Escala global para caracteres
 
 void main() {
-    int charIndex = int(instanceData.x); // Índice del carácter
-    float xOffset = instanceData.y;     // X de la posición
-    float yOffset = instanceData.z;     // Y de la posición
+    int ind=int(instanceData); // Índice del carácter
+	int charIndex=(ind&0xff);
 
+	fgColor = vec4(((ind>>16)&0xf)*1.0/15,((ind>>12)&0xf)*1.0/15,((ind>>8)&0xf)*1.0/15,1.0);
+	
     // Calculamos las coordenadas UV
     float u = (charIndex % 16) / 16.0;  // Columna del carácter
     float v = (charIndex / 16) / 16.0;  // Fila del carácter
     float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
     float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
-
-    TexCoord = vec2(aTexCoord.x * uStep + u, aTexCoord.y * vStep + v);
+	TexCoord = vec2(aTexCoord.x*uStep+u,aTexCoord.y*vStep+v);
+	
+    float xOffset = (gl_InstanceID%80)*0.1 ;     // X de la posición
+    float yOffset = ((gl_InstanceID/80)%50)*0.1;     // Y de la posición
 
     // Calculamos la posición del vértice en pantalla
     gl_Position = vec4(aPos * scale + vec2(xOffset, yOffset), 0.0, 1.0);
@@ -78,10 +84,11 @@ void main() {
 #version 330 core
 out vec4 FragColor;
 in vec2 TexCoord;
+in vec4 fgColor;
 uniform sampler2D fontTexture;
 
 void main() {
-    FragColor = texture(fontTexture, TexCoord);
+    FragColor = fgColor*texture(fontTexture, TexCoord); 
 }
 @-------------------------------
 "
@@ -95,11 +102,9 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
 0 			$3f800000 	0 			0			| sup Izq
 ]
 
+#fwintext * 64
+
 :initshaders
-|	4 'fcolor memfloat	
-|	800.0 0 0 600.0 1.0 0 mortho
-|	'fwintext mcpyf
-	
 	'shader	loadShaderv 'shaderProgram !
 	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
 
@@ -124,29 +129,37 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
     GL_ARRAY_BUFFER instanceVBO glBindBuffer
 
     |// Atributo para datos de la instancia
-    2 3 GL_FLOAT GL_FALSE 3 4 * 0 glVertexAttribPointer
+    2 1 GL_INT GL_FALSE 4 0 glVertexAttribPointer
     2 glEnableVertexAttribArray
     2 1 glVertexAttribDivisor
     0 glBindVertexArray
 
+|	4 'fcolor memfloat	
+	800.0 0 0 600.0 1.0 0 mortho
+	'fwintext mcpyf
+
+	'fwintext shaderProgram "projection" shader!m4
 	;
 
 |---------------------------------------
-#mems
+| ...f ffcc
 
-:drawstring | x y str --
-	here dup 'mems ! >a
-	( c@+ 1?
-		i2fp da!+
-		pick2 i2fp da!+
-		over i2fp da!+
-		rot 8 + -rot
-		) 2drop
-	a> mems - 'mems !
+#console * $3fff
+
+:draws
+	'console >a
+	( c@+ 1? 
+		$ff 8 << or 
+		da!+ ) 2drop ;
+		
+:drawconsole
+	0 0 800 600 glViewport
+	GL_BLEND glEnable
+	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 
     |// Actualizamos el VBO de instancias
     GL_ARRAY_BUFFER instanceVBO glBindBuffer
-    GL_ARRAY_BUFFER mems here GL_DYNAMIC_DRAW glBufferData
+    GL_ARRAY_BUFFER $3fff 'console GL_DYNAMIC_DRAW glBufferData
 
     |// Dibujamos las instancias
     shaderProgram glUseProgram
@@ -154,24 +167,24 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
 	VAO glBindVertexArray
 
     |glUniform2f(glGetUniformLocation(shaderProgram, "scale"), scale * CHAR_WIDTH, scale * CHAR_HEIGHT);
-    GL_TRIANGLE_FAN 0 4 12 glDrawArraysInstanced
+    GL_TRIANGLE_FAN 0 4 $fff glDrawArraysInstanced
 
     0 glBindVertexArray
     0 glUseProgram
-	2drop
 	;
 
 |--------------	
 :main
 	$4100 glClear | color+depth
 	
-	10 10 "Hol a todos " drawstring
+	|"Hol a todos " drawstring
 |	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
 	
 |	$ff textcolor
 |	msec "%h" sprint 0.0 16.0 text
 |	$ff00 textcolor
 |	"Bitmap FONT" 0.0 32.0 text
+	drawconsole
 	
 	SDLGLupdate
 	SDLkey
@@ -194,6 +207,7 @@ $3f800000 	$3f800000 	$3f800000 	0			| Sup Der
 	"<esc> - Exit" .println
 	.cr
 
+	"Hola dsad  hgdsjfhgdjsh gfjdshg fjhdgs jfhgd sjfh gdjshg fjhdsg fjhdsgjshg fjdhgs jfh gdsjfg jdshgfjhdgs jhgfjdshg fjhdsgf jhdsg " draws
 	'main SDLshow
 	SDL_Quit 
 	;	
