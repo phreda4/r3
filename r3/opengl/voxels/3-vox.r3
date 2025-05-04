@@ -251,7 +251,7 @@ void main() {
 	0 glBindVertexArray
 	
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
+	0.5 500.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
 |	-40.0 40.0 -40.0 40.0 -40.0 40.0 mortho
 	'fprojection mcpyf 
 	eyecam				| eyemat	

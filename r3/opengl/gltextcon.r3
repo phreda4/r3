@@ -1,13 +1,8 @@
-| OpenGL example
-| PHREDA 2023
-|MEM 64
+| OpenGL console example
+| PHREDA 2025
+
 ^r3/lib/3dgl.r3
 ^r3/lib/rand.r3
-^r3/lib/gui.r3
-^r3/util/arr16.r3
-^r3/lib/trace.r3
-
-^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 
 ^r3/opengl/glutil.r3
@@ -40,58 +35,62 @@
 #GL_ONE_MINUS_SRC_ALPHA $0303
 
 |-------------------------------------
-
-:memfloat | cnt place --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
-	
 #fontTexture |  // ID de la textura de la fuente
 #VAO #VBO #instanceVBO |; // Buffers para instancias
 #shaderProgram |;  // Programa de shaders
 
 #shader "
-@vertex--------------------------
+@vertex-----------------
 #version 330 core
 
 const int CW = 100; // 800/8
 const int CH = 37;	// 600/16
 
-layout (location = 0) in vec2 aPos;       // Posiciones del quad (local)
-layout (location = 1) in vec2 aTexCoord; // Coordenadas UV del quad
-layout (location = 2) in float instanceData; // Datos de la instancia: (nroCaracter, x, y)
+const float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
+const float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
+
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in float instanceData;
 
 out vec2 TexCoord;
-out vec4 fgColor;
+flat out vec4 fgColor;
 
 uniform mat4 projection;
 
 void main() {
-    int ind=int(instanceData); // Índice del carácter
+    int ind=int(instanceData);
 	int charIndex=(ind&0xff);
 
-	fgColor = vec4(((ind>>16)&0xf)*1.0/15,((ind>>12)&0xf)*1.0/15,((ind>>8)&0xf)*1.0/15,1.0);
+	fgColor = vec4(
+		((ind>>16)&0xf)*1.0/15, // r
+		((ind>>12)&0xf)*1.0/15,	// g
+		((ind>>8)&0xf)*1.0/15,	// b
+		((ind>>20)&1)*1.0 		// bit 20 inverso
+		);
 	
     float u = (charIndex % 16) / 16.0;  // Columna del carácter
     float v = (charIndex / 16) / 16.0;  // Fila del carácter
-    float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
-    float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
 	TexCoord = vec2(aTexCoord.x*uStep+u,aTexCoord.y*vStep+v);
 	
     float xOff = (gl_InstanceID%CW)*8.0 ;     // X de la posición
     float yOff = ((gl_InstanceID/CW)%CH)*16.0;     // Y de la posición
 	
-	gl_Position = projection *  vec4(aPos.x+xOff, aPos.y+yOff, 0.0, 1.0);
+	gl_Position = projection * vec4(aPos.x+xOff, aPos.y+yOff, 0.0, 1.0);
 }
-@fragment-----------------------
+@fragment---------------
 #version 330 core
 out vec4 FragColor;
 in vec2 TexCoord;
-in vec4 fgColor;
+flat in vec4 fgColor;
 uniform sampler2D fontTexture;
 
 void main() {
-    FragColor = fgColor*texture(fontTexture, TexCoord); 
+	vec4 colt=texture(fontTexture, TexCoord); 
+	if (fgColor.a==1.0) { colt.a=1.0-colt.a; } // inverso
+	FragColor =vec4(fgColor.r,fgColor.g,fgColor.b,colt.a);
 }
-@-------------------------------
+@-----------------------
 "
 
 |----------- data	
@@ -143,24 +142,29 @@ void main() {
 	;
 
 |---------------------------------------
-| ...f ffcc
+| ...(i)f ffcc
 
 #console * $3fff
+#atr $fff
+#con> 'console	
 
-:draws
-	'console >a
-	( c@+ 1? 
-		$ff 8 << or 
-		da!+ ) 2drop ;
+:gat | x y --
+	100 * + 2 << 'console + 'con> ! ;
 	
-#c> 'console	
-:randt		
-	100 37 * randmax 2 << 'console + 'c> !
-	16 ( 1? 1-
-		$ffffff randmax c> d!+ 'c> !
-		) drop ;
-	;
-		
+:gwrite | str --
+	con>
+	( swap c@+ 1? 
+		atr 8 << or rot d!+ 
+		) 2drop 
+	'con> ! ;
+	
+:gprint | ... str --
+	sprint gwrite ;
+	
+:gcls | --
+	'console 0 100 37 * dfill ;
+
+|---------------
 :drawconsole
 	0 0 800 600 glViewport
 	GL_BLEND glEnable
@@ -179,24 +183,18 @@ void main() {
 |--------------	
 :main
 	$4100 glClear | color+depth
+
+	$1f0f 'atr ! 2 2 gat msec "%h" gprint
 	
-	|"Hol a todos " drawstring
-|	"Hola Forth/r3 - OpenGL" 0.0 0.0 text
-	
-|	$ff textcolor
-|	msec "%h" sprint 0.0 16.0 text
-|	$ff00 textcolor
-|	"Bitmap FONT" 0.0 32.0 text
 	drawconsole
 	
 	SDLGLupdate
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( randt )
 	drop ;	
-	
-|----------- BOOT
-:
+
+: |<<<<<<<< BOOT
+
 	"test opengl" 800 600 SDLinitGL
 	
 	GL_DEPTH_TEST glEnable 
@@ -210,8 +208,14 @@ void main() {
 	.cr 
 	"<esc> - Exit" .println
 	.cr
-
-	"Hola dsad  hgdsjfhgdjsh gfjdshg fjhdgs jfhgd sjfh gdjshg fjhdsg fjhdsgjshg fjdhgs jfh gdsjfg jdshgfjhdgs jhgfjdshg fjhdsgf jhdsg " draws
+|.................
+	gcls
+	$fff 'atr !
+	0 0 gat "Hola Forth/r3 - OpenGL" gwrite
+	
+	$ff0 'atr !
+	0 4 gat	"Bitmap FONT" gwrite
+|.................
 	'main SDLshow
 	SDL_Quit 
 	;	

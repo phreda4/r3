@@ -183,6 +183,9 @@
 	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE 'cc glTexImage2D
 	t ;
 
+::memfloat | cnt place --
+	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+
 |-----------
 #GL_ARRAY_BUFFER $8892
 #GL_STATIC_DRAW $88E4
@@ -235,9 +238,6 @@
 	-1.0  1.0 -1.0  0.0  1.0  0.0 0.0 1.0 | top-left
 	-1.0  1.0  1.0  0.0  1.0  0.0 0.0 0.0  | bottom-left        
 	]
-	
-:memfloat | cnt place --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 	
 ::initcube
 	1 'cubeVAO glGenVertexArrays

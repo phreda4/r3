@@ -9,7 +9,7 @@
 
 :genrandcolor
 	voxels >a $3ffff ( 1? 1- 
-		$7ff randmax
+		$3ff randmax
 		$ff >? ( 0 nip )
 		ca!+ ) drop ;
 
@@ -218,7 +218,7 @@ void main() {
 	0 glBindVertexArray
 	
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
+	0.9 500.0 0.9 3.0 4.0 /. mperspective	| perspective matrix
 |	-40.0 40.0 -40.0 40.0 -40.0 40.0 mortho
 	'fprojection mcpyf 
 	eyecam				| eyemat	
