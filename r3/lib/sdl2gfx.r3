@@ -11,11 +11,9 @@
 0 0 0 0 0
 0 0 0 0 0
 0 0 0 0 0
-0 0 0 0 0
 ]
 
 #index [ 0 1 2 2 3 0 ]
-#index2 [ 0 1 4 1 2 4 2 3 4 3 0 4 ]
 
 :rgb24 | rgb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap $ff and ;
@@ -216,26 +214,6 @@
 	xm neg ym rotxya!
 	2drop ;
 
-:fillvertrv | x y ang --
-	sincos xm * 16 >> 'dx ! ym * 18 >> 'dy !
-	'vert >a
-	over dx + i2fp da!+ dup dy + ym - i2fp da!+ -1 da!+ 0 da!+ 0 da!+ 
-	over dx - i2fp da!+ dup dy - ym - i2fp da!+ -1 da!+ $3f800000 da!+ 0 da!+ 
-	over dx - i2fp da!+ dup dy + ym + i2fp da!+ -1 da!+ $3f800000 dup da!+ da!+ 
-	over dx + i2fp da!+ dup dy - ym + i2fp da!+ -1 da!+ 0 da!+ $3f800000 da!+ 
-	swap i2fp da!+ i2fp da!+ -1 da!+ 0.5 f2fp dup da!+ da!
-	;
-
-:fillvertrh | x y ang --
-	sincos xm * 18 >> 'dx ! ym * 16 >> 'dy !
-	'vert >a
-	over dx - xm - i2fp da!+ dup dy - i2fp da!+ -1 da!+ 0 da!+ 0 da!+ 
-	over dx + xm + i2fp da!+ dup dy - i2fp da!+ -1 da!+ $3f800000 da!+ 0 da!+ 
-	over dx - xm + i2fp da!+ dup dy + i2fp da!+ -1 da!+ $3f800000 dup da!+ da!+ 
-	over dx + xm - i2fp da!+ dup dy + i2fp da!+ -1 da!+ 0 da!+ $3f800000 da!+ 
-	swap i2fp da!+ i2fp da!+ -1 da!+ 0.5 f2fp dup da!+ da!
-	;
-
 |-------------------------
 ::sprite | x y img --
 	dup >r SDLTexwh 2/ 'ym ! 2/ 'xm !
@@ -259,18 +237,6 @@
 	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
 	ab[ fillfull fillvertr ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
-	SDL_RenderGeometry ;
-
-::spriteVRZ | x y ang zoom img --
-	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
-	ab[ fillvertrv ]ba 
-	SDLrenderer r> 'vert 5 'index2 12
-	SDL_RenderGeometry ;
-
-::spriteHRZ | x y ang zoom img --
-	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
-	ab[ fillvertrh ]ba
-	SDLrenderer r> 'vert 5 'index2 12
 	SDL_RenderGeometry ;
 
 |----------------------	
