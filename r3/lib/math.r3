@@ -269,6 +269,8 @@
 	10/mod drop
 ::10/ | n -- r
 	10/mod drop ;
+	
+|::10/ $1999a 20 *>> ;
 
 ::1000000*	1 << dup 2 << +
 ::100000*	1 << dup 2 << +
@@ -284,26 +286,22 @@
 |--- integer to floating point
 ::i2fp | i -- fp
 	0? ( ; )
-	dup 63 >> swap	| sign i
-	over + over xor | sign abs(i) 
+	dup 63 >> $80000000 and 
+	swap abs		| sign abs(i)
 	dup clz 8 - 	| s i shift
-	swap over shift 	| s shift i
+	swap over shift	| s shift i
 	150 rot - 23 << | s i m
-	swap $7fffff and or 
-	swap $80000000 and or 
-	;
+	swap $7fffff and or or ;
 
 |--- fixed point to floating point	
 ::f2fp | f.p -- fp
 	0? ( ; )
-	dup 63 >> swap	| sign i
-	over + over xor | sign abs(i) 
+	dup 63 >> $80000000 and 
+	swap abs		| sign abs(i)
 	dup clz 8 - 	| s i shift
-	swap over shift 	| v s shift i
+	swap over shift	| v s shift i
 	134 rot - 23 << | s i m | 16 - (fractional part)
-	swap $7fffff and or 
-	swap $80000000 and or 
-	;
+	swap $7fffff and or or ;
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
 ::fp2f | fp -- fixed point
