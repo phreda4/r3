@@ -459,7 +459,7 @@
 
 :initvec
 	matini
-	0.1 1000.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
+	0.5 500.0 0.9 3.0 4.0 /. mperspective 'fprojection mcpyf	| perspective matrix
 	eyecam		| eyemat
 	'fmodel midf
 	;

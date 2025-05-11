@@ -48,3 +48,28 @@
 	over xor
 	swap 26 >> xor
 	dup 'state1 ! ;
+
+
+|https://github.com/danielcota/LoopMix128
+
+#fast_loop $DEADBEEF12345678
+#slow_loop $ABCDEF0123456789
+#mix $123456789ABCDEF
+
+:GR $9e3779b97f4a7c15 ;
+
+:rotLeft5 | x k -- v 
+	dup 5 << swap 64 5 - >>> or ;
+	
+:rotLeft47 | x k -- v 
+	dup 47 << swap 64 47 - >>> or ;
+
+| LoopMix128 generator function
+:loopMix128
+	mix fast_loop + GR *
+	
+	fast_loop 0? ( GR 'slow_loop +! mix slow_loop xor 'mix ! ) drop
+
+	mix rotLeft5 fast_loop + 'mix !
+	fast_loop rotLeft47 GR + 'fast_loop !
+	;
