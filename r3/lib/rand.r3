@@ -65,7 +65,7 @@
 	dup 47 << swap 64 47 - >>> or ;
 
 | LoopMix128 generator function
-:loopMix128
+::loopMix128 | -- rand
 	mix fast_loop + GR *
 	
 	fast_loop 0? ( GR 'slow_loop +! mix slow_loop xor 'mix ! ) drop
