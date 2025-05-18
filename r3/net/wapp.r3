@@ -1,18 +1,13 @@
 ^r3/lib/console.r3
 ^r3/lib/win/winsock.r3
 
-#basefolder
-
-#MAX_BUFFER      1024
 #WSAData * 512
 
 #AF_INET 2
 #SOCK_STREAM 1
 #IPPROTO_TCP 6
 
-#PORT 8080
-#BUFFER_SIZE 1024
-#SESSION_ID_LENGTH 33
+#PORT 80
 
 #server_socket
 #server_addr 0 0
@@ -203,12 +198,11 @@
 	
 |--------------------------	
 :dumpreq
-	client_addr "from: %h" .println
-	"-------------------" .println
+	client_addr "-------from: %h" .println
 	hmethod .print "|" .print huri .print "|" .print hversion .print "|" .print
 	hhost .print "|" .print hreferer .print "|" .print hcookie .println
-	"-------------------" .println	
-	hbody .println "-------------------" .println
+	hbody .println 
+	"-------------------" .println
 	;
 		
 |struct sockaddr_in {

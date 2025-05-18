@@ -7,6 +7,7 @@
 #sys-WSACleanup
 
 #sys-accept
+#sys-select
 #sys-socket
 #sys-bind
 #sys-listen
@@ -14,6 +15,8 @@
 #sys-shutdown
 #sys-send
 #sys-recv
+#sys-getaddrinfo
+#sys-ioctlsocket
 
 |typedef struct WSAData {
 |    WORD           wVersion;
@@ -29,6 +32,7 @@
 ::WSACleanup sys-WSACleanup sys0 drop ;
 
 ::accept sys-accept sys3 ;
+::select sys-select sys5 ;
 ::socket sys-socket sys3 ;
 ::bind sys-bind sys3 ;
 ::listen sys-listen sys2 ;
@@ -36,13 +40,16 @@
 ::shutdown sys-shutdown sys2 ; 
 ::send sys-send sys4 drop ;
 ::recv sys-recv sys4 ;
- 
+::getaddrinfo sys-getaddrinfo sys4 ;
+::ioctlsocket sys-ioctlsocket sys3 ;
+
 |--------- BOOT	
 : 
 	"WS2_32.DLL" loadlib 
 	dup "WSAStartup" getproc 'sys-WSAStartup !
 	dup "WSACleanup" getproc 'sys-WSACleanup !
 	dup "accept" getproc 'sys-accept !
+	dup "select" getproc 'sys-select !
 	dup "bind" getproc 'sys-bind !
 	dup "socket" getproc 'sys-socket !
 	dup "listen" getproc 'sys-listen !
@@ -50,6 +57,8 @@
 	dup "shutdown" getproc 'sys-shutdown !
 	dup "send" getproc 'sys-send !
 	dup "recv" getproc 'sys-recv !
+	dup "getaddrinfo" getproc 'sys-getaddrinfo !
+	dup "ioctlsocket" getproc 'sys-ioctlsocket !
 	drop 
 |	'sys-WSAStartup	( 'sys-recv <? @+ over 'sys-WSAStartup - 3 >> "%d - %h" .println ) drop .input
 	;
