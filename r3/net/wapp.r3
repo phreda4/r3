@@ -73,6 +73,7 @@
 	>>cr trim | request headers
 	"" dup 'hhost ! dup 'hreferer ! dup 'hcookie ! 'hbody !
 	parseline
+	>>cr
 	'hbody !
 	;
 	
@@ -151,6 +152,7 @@
 	".woff2" =lpos 1? ( "font/woff2" 'filemime strcpy ; ) drop
 	".woff"	=lpos 1? ( "font/woff" 'filemime strcpy ; ) drop
 	".ttf"	=lpos 1? ( "font/ttf" 'filemime strcpy ; ) drop
+	".app"	=lpos 1? ( 0 'filemime ! ; ) drop | interna
 	;
 	
 :remove? | ladr -- ladr
@@ -165,7 +167,7 @@
 	remove?
 	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap ) drop
 	mimeURL
-	'filemime 'filename "file: %s mime: %s" .println
+	|'filemime 'filename "file: %s mime: %s" .println
 	;
 	
 :http_not_found
@@ -175,14 +177,40 @@
 	empty
 	;
 	
+|----------------------------------------	
+:loadfile
+	here swap load 'here ! ;
+	
+:app
+	mark
+
+|	"www/head.app" loadfile
+	"www/navbar.app" loadfile
+|	"resultado{2{4^" ,s
+|	here 'filename load 'here !
+	
+	| tamplate and exec
+	
+	sizemem | len body
+	mark
+	hversion ,s " 200 OK" ,s ,nl
+	"Content-Type: text/html" ,s ,nl | siempre html
+	"Content-Length: " ,s ,d ,nl ,nl | len body
+	client_socket memsize 0 send
+	empty
+	
+	client_socket memsize 0 send
+	empty
+	;
+	
+	
 :sendresponse	
 	fileURL
+	filemime 0? ( drop app ; ) drop
 	'filename filexist 0? ( drop http_not_found ; ) drop
 	
 	mark
 	here 'filename load 'here !
-	
-	| tamplate and exec
 	
 	sizemem | len body
 	mark
@@ -199,27 +227,25 @@
 |--------------------------	
 :dumpreq
 	client_addr "-------from: %h" .println
-	hmethod .print "|" .print huri .print "|" .print hversion .print "|" .print
-	hhost .print "|" .print hreferer .print "|" .print hcookie .println
-	hbody .println 
+	
+	huri .print "|" .print hmethod .print "|" .print
+	|hversion .print "|" .print
+	|hhost .print "|" .print 
+	hreferer .print "|" .print 
+	hcookie .print "|" .print 
+	hbody .print
 	"-------------------" .println
 	;
-		
-|struct sockaddr_in {
-|    short sin_family;         // Offset: 0, Size: 2 bytes
-|    unsigned short sin_port;  // Offset: 2, Size: 2 bytes
-|    struct in_addr sin_addr;  // Offset: 4, Size: 4 bytes
-|    char sin_zero[8];         // Offset: 8, Size: 8 bytes
-		
+
+|----------------------------------------			
 :handlerequest
 	mark
 	client_socket 'buffer 1024 0 recv | 'bytesrec !
 	0 'buffer rot + c!
 	
 	parseheader
-dumpreq
+	dumpreq
 	getvars
-	
 	sendresponse
 	
     client_socket closesocket
