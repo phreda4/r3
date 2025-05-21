@@ -74,7 +74,9 @@
 	"" dup 'hhost ! dup 'hreferer ! dup 'hcookie ! 'hbody !
 	parseline
 	>>cr
-	'hbody !
+	trim
+	dup 'hbody !
+	( c@+ $ff and 31 >? drop ) drop 0 swap 1- c!
 	;
 	
 |-------------------------- parse vars
@@ -86,6 +88,14 @@
 
 :6>char | 6bc -- char
 	$3f and $1f + ;
+
+#appn
+
+:name2q | str -- v
+	0 ( swap c@+ 
+		$2e <>? 31 >?
+		char>6 rot 6 << or
+		) 2drop ;
 	
 :parsen | -- vv | a->string
 	0 ( ca@+ 1?
@@ -130,7 +140,7 @@
 	dup 'varpost ! hbody arrayvar
 	'here !
 	;	
-	
+
 |--------------------------
 #filename * 1024
 #filemime * 32
@@ -138,21 +148,23 @@
 	
 :mimeURL | strl -- strl
 	"text/html" 'filemime strcpy 
-	".css"	=lpos 1? ( "text/css" 'filemime strcpy ; ) drop
-	".scss" =lpos 1? ( "text/x-scss" 'filemime strcpy ; ) drop
-	".css"	=lpos 1? ( "text/css" 'filemime strcpy ; ) drop
-	".php"	=lpos 1? ( "text/plain" 'filemime strcpy ; ) drop
-	".txt"	=lpos 1? ( "text/plain" 'filemime strcpy ; ) drop
-	".jpg"	=lpos 1? ( "image/jpeg" 'filemime strcpy ; ) drop
-	".jpeg" =lpos 1? ( "image/jpeg" 'filemime strcpy ; ) drop
-	".bmp"	=lpos 1? ( "image/bmp" 'filemime strcpy ; ) drop
-	".gif"	=lpos 1? ( "image/gif" 'filemime strcpy ; ) drop
-	".png"	=lpos 1? ( "image/png" 'filemime strcpy ; ) drop
-	".js"	=lpos 1? ( "application/js" 'filemime strcpy ; ) drop
-	".woff2" =lpos 1? ( "font/woff2" 'filemime strcpy ; ) drop
-	".woff"	=lpos 1? ( "font/woff" 'filemime strcpy ; ) drop
-	".ttf"	=lpos 1? ( "font/ttf" 'filemime strcpy ; ) drop
-	".app"	=lpos 1? ( 0 'filemime ! ; ) drop | interna
+	".css"	=lpos 1? ( drop "text/css" 'filemime strcpy ; ) drop
+	".scss" =lpos 1? ( drop "text/x-scss" 'filemime strcpy ; ) drop
+	".css"	=lpos 1? ( drop "text/css" 'filemime strcpy ; ) drop
+	".php"	=lpos 1? ( drop "text/plain" 'filemime strcpy ; ) drop
+	".txt"	=lpos 1? ( drop "text/plain" 'filemime strcpy ; ) drop
+	".jpg"	=lpos 1? ( drop "image/jpeg" 'filemime strcpy ; ) drop
+	".jpeg" =lpos 1? ( drop "image/jpeg" 'filemime strcpy ; ) drop
+	".bmp"	=lpos 1? ( drop "image/bmp" 'filemime strcpy ; ) drop
+	".gif"	=lpos 1? ( drop "image/gif" 'filemime strcpy ; ) drop
+	".png"	=lpos 1? ( drop "image/png" 'filemime strcpy ; ) drop
+	".js"	=lpos 1? ( drop "application/js" 'filemime strcpy ; ) drop
+	".woff2" =lpos 1? ( drop "font/woff2" 'filemime strcpy ; ) drop
+	".woff"	=lpos 1? ( drop "font/woff" 'filemime strcpy ; ) drop
+	".ttf"	=lpos 1? ( drop "font/ttf" 'filemime strcpy ; ) drop
+	".app"	=lpos 1? ( drop 
+|		huri 1+ "app:%s" .println 
+		huri 1+ name2q 'appn ! 0 'filemime ! ; ) drop | interna
 	;
 	
 :remove? | ladr -- ladr
@@ -167,7 +179,7 @@
 	remove?
 	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap ) drop
 	mimeURL
-	|'filemime 'filename "file: %s mime: %s" .println
+|'filemime 'filename "file: %s mime: %s" .println
 	;
 	
 :http_not_found
@@ -176,42 +188,90 @@
 	client_socket memsize 0 send
 	empty
 	;
-	
-|----------------------------------------	
+
+|---------- APP
 :loadfile
 	here swap load 'here ! ;
-	
-:app
-	mark
 
-|	"www/head.app" loadfile
-	"www/navbar.app" loadfile
-|	"resultado{2{4^" ,s
-|	here 'filename load 'here !
-	
-	| tamplate and exec
-	
+:sendokplain
 	sizemem | len body
 	mark
 	hversion ,s " 200 OK" ,s ,nl
-	"Content-Type: text/html" ,s ,nl | siempre html
-	"Content-Length: " ,s ,d ,nl ,nl | len body
+	"Content-Type: text/plain" ,s ,nl
+	"Content-Length: " ,s ,d ,nl ,nl
 	client_socket memsize 0 send
 	empty
-	
 	client_socket memsize 0 send
+	;
+	
+|--------- DB
+:dbselect
+	;
+:dbinsert
+	;
+:dbupdate
+	;
+:dbdelete
+	;
+|--------- FILES
+:fileadd | fn --fn
+	dup FNAME 
+	dup ".." = 1? ( 3drop ; ) drop
+	dup "." = 1? ( 3drop ; ) drop
+	,s "|" ,s
+	FDIR ,h "^" ,s
+	;
+		
+:filedir
+	mark
+	hbody ffirst 
+	( 1? fileadd fnext ) drop	
+	sendokplain
 	empty
 	;
 	
+:makedir
+	;
 	
-:sendresponse	
-	fileURL
-	filemime 0? ( drop app ; ) drop
-	'filename filexist 0? ( drop http_not_found ; ) drop
+:removedir
+	;
+
+:filesave
+	;
+:fileload
+	;
 	
-	mark
-	here 'filename load 'here !
+|----------
+#nstaten * 1024
+#nstatex 
+'filedir 'makedir 'removedir  	
+'dbselect 'dbinsert 'dbupdate 'dbdelete
+0
+#nstates 
+"filedir" "makedir" "removedir" 
+"dbselect" "dbinsert" "dbupdate" "dbdelete"
+0
+
+:buildnames
+	'nstaten >a
+	'nstates ( 
+		dup c@ 1? drop
+		dup name2q a!+
+		>>0 ) 2drop
+	0 a! ;
 	
+:execstate
+	'nstaten ( @+ 
+		0? ( 2drop "no app" .println ; )
+		appn 
+|		2dup "%h %h" .println
+		<>? drop ) drop
+	'nstaten - 8 -
+	'nstatex + @ ex
+	;
+	
+|----------------------------------------	
+:sendOK
 	sizemem | len body
 	mark
 	hversion ,s " 200 OK" ,s ,nl
@@ -219,22 +279,33 @@
 	"Content-Length: " ,s ,d ,nl ,nl | len body
 	client_socket memsize 0 send
 	empty
-	
 	client_socket memsize 0 send
+	;
+	
+:sendresponse	
+	fileURL
+	filemime 0? ( drop 
+		|test 
+		execstate
+		; ) drop
+	'filename filexist 0? ( drop http_not_found ; ) drop
+	
+	mark
+	here 'filename load 'here !	
+	sendOK
 	empty
 	;
 	
 |--------------------------	
 :dumpreq
-	client_addr "-------from: %h" .println
+	client_addr "[%h] <<<< " .println
 	
 	huri .print "|" .print hmethod .print "|" .print
 	|hversion .print "|" .print
 	|hhost .print "|" .print 
 	hreferer .print "|" .print 
 	hcookie .print "|" .print 
-	hbody .print
-	"-------------------" .println
+	hbody .println
 	;
 
 |----------------------------------------			
@@ -287,6 +358,7 @@
 	
 : |<<<<< BOOT <<<<<<<
 	serverini
+	buildnames
 	webserver
 	serverend
 	;

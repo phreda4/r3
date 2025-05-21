@@ -337,7 +337,11 @@
 ::texEnd | -- texture
 	SDLrenderer 0 SDL_SetRenderTarget
 	comptex	;
-
+	
+::texEndAlpha
+	texEnd
+	dup 1 SDL_SetTextureBlendMode ;
+	
 |.... time control
 #prevt
 #deltatime
