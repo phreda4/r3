@@ -23,6 +23,7 @@
 #sys-WaitForSingleObject 
 #sys-GetLastError
 #sys-CreateFile
+#sys-CreateDirectory
 #sys-CloseHandle
 #sys-FlushFileBuffers
 #sys-DeleteFile
@@ -81,6 +82,7 @@
 ::WaitForSingleObject sys-WaitForSingleObject sys2 ;
 ::GetLastError sys-GetLastError sys0 ;
 ::CreateFile sys-CreateFile sys7 ;
+::CreateDirectory sys-CreateDirectory sys2 ;
 ::CloseHandle sys-CloseHandle sys1 drop ;
 ::FlushFileBuffers sys-FlushFileBuffers sys1 ;
 ::DeleteFile sys-DeleteFile sys1 ;
@@ -141,6 +143,7 @@
 	dup "WaitForSingleObject" getproc 'sys-WaitForSingleObject ! 
 	dup "GetLastError" getproc 'sys-GetLastError ! 
 	dup "CreateFileA" getproc 'sys-CreateFile ! 
+	dup "CreateDirectoryA" getproc 'sys-CreateDirectory !
 	dup "CloseHandle" getproc 'sys-CloseHandle !
 	dup "FlushFileBuffers" getproc 'sys-FlushFileBuffers !
 	dup "DeleteFileA" getproc 'sys-DeleteFile !

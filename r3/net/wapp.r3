@@ -231,14 +231,25 @@
 	;
 	
 :makedir
+	hbody 0 CreateDirectory drop
+	mark
+|	"ok" ,s
+	sendokplain
+	empty
 	;
 	
 :removedir
+	"remdir [" .print hbody .println
+	"ok" ,s
 	;
 
 :filesave
+	"filesave" .println
+	hbody .println
 	;
 :fileload
+	"fileload" .println
+	hbody .println
 	;
 	
 |----------
