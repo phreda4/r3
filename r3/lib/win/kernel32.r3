@@ -27,6 +27,7 @@
 #sys-CloseHandle
 #sys-FlushFileBuffers
 #sys-DeleteFile
+#sys-RemoveDirectory
 #sys-MoveFile
 #sys-SetFilePointer
 #sys-SetEndOfFile
@@ -86,6 +87,7 @@
 ::CloseHandle sys-CloseHandle sys1 drop ;
 ::FlushFileBuffers sys-FlushFileBuffers sys1 ;
 ::DeleteFile sys-DeleteFile sys1 ;
+::RemoveDirectory sys-RemoveDirectory sys1 ;
 ::MoveFile sys-MoveFile sys2 ;
 ::SetFilePointer sys-SetFilePointer sys4 ;
 ::SetEndOfFile sys-SetEndOfFile sys1 ;
@@ -147,6 +149,7 @@
 	dup "CloseHandle" getproc 'sys-CloseHandle !
 	dup "FlushFileBuffers" getproc 'sys-FlushFileBuffers !
 	dup "DeleteFileA" getproc 'sys-DeleteFile !
+	dup "RemoveDirectoryA" getproc 'sys-RemoveDirectory !
 	dup "MoveFileA" getproc 'sys-MoveFile !
 	dup "SetFilePointer" getproc 'sys-SetFilePointer !
 	dup "SetEndOfFile" getproc 'sys-SetEndOfFile !

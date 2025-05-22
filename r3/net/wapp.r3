@@ -17,8 +17,6 @@
 #client_size 16
 
 |---------------------
-#buffer * 1024
-
 #ctypetext "Content-Type: text/plain"
 #ctypehtml "Content-Type: text/html"
 
@@ -65,8 +63,7 @@
 	>>cr 2 + |dup "%l" .println
 	parseline ;
 	
-:parseheader
-	'buffer | request line
+:parseheader | mem --
 	dup 'hmethod ! >>field 
 	dup 'huri ! >>field
 	dup 'hversion ! >>field
@@ -147,24 +144,28 @@
 #basedir "www"
 	
 :mimeURL | strl -- strl
-	"text/html" 'filemime strcpy 
+|	".html"	=lpos 1? ( drop "text/html" 'filemime strcpy ; ) drop
+|	".htm"	=lpos 1? ( drop "text/html" 'filemime strcpy ; ) drop
+	".app"	=lpos 1? ( drop huri 1+ name2q 'appn ! 0 'filemime ! ; ) drop | interna	
 	".css"	=lpos 1? ( drop "text/css" 'filemime strcpy ; ) drop
 	".scss" =lpos 1? ( drop "text/x-scss" 'filemime strcpy ; ) drop
-	".css"	=lpos 1? ( drop "text/css" 'filemime strcpy ; ) drop
-	".php"	=lpos 1? ( drop "text/plain" 'filemime strcpy ; ) drop
 	".txt"	=lpos 1? ( drop "text/plain" 'filemime strcpy ; ) drop
 	".jpg"	=lpos 1? ( drop "image/jpeg" 'filemime strcpy ; ) drop
 	".jpeg" =lpos 1? ( drop "image/jpeg" 'filemime strcpy ; ) drop
 	".bmp"	=lpos 1? ( drop "image/bmp" 'filemime strcpy ; ) drop
 	".gif"	=lpos 1? ( drop "image/gif" 'filemime strcpy ; ) drop
 	".png"	=lpos 1? ( drop "image/png" 'filemime strcpy ; ) drop
+	".ico"	=lpos 1? ( drop "image/x-icon" 'filemime strcpy ; ) drop	
+	".mp4"	=lpos 1? ( drop "video/mp4" 'filemime strcpy ; ) drop
+	".m4v"	=lpos 1? ( drop "video/mp4" 'filemime strcpy ; ) drop
 	".js"	=lpos 1? ( drop "application/js" 'filemime strcpy ; ) drop
+	".json"	=lpos 1? ( drop "application/json" 'filemime strcpy ; ) drop
+	".pdf"	=lpos 1? ( drop "application/pdf" 'filemime strcpy ; ) drop	
 	".woff2" =lpos 1? ( drop "font/woff2" 'filemime strcpy ; ) drop
 	".woff"	=lpos 1? ( drop "font/woff" 'filemime strcpy ; ) drop
 	".ttf"	=lpos 1? ( drop "font/ttf" 'filemime strcpy ; ) drop
-	".app"	=lpos 1? ( drop 
-|		huri 1+ "app:%s" .println 
-		huri 1+ name2q 'appn ! 0 'filemime ! ; ) drop | interna
+	"text/html" 'filemime strcpy 
+	|"application/octet-stream" 'filemime strcpy 
 	;
 	
 :remove? | ladr -- ladr
@@ -177,7 +178,7 @@
 	'basedir 'filename strcpyl 1-	| base
 	huri swap strcpyl 1-			| filename
 	remove?
-	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap ) drop
+	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap "hh" .println ) drop
 	mimeURL
 |'filemime 'filename "file: %s mime: %s" .println
 	;
@@ -204,63 +205,66 @@
 	client_socket memsize 0 send
 	;
 	
-|--------- DB
-:dbselect
-	;
-:dbinsert
-	;
-:dbupdate
-	;
-:dbdelete
-	;
 |--------- FILES
+:getname | str -- name str 
+	dup ( c@+ 1? $7e <>? drop ) drop | name str
+	0 over 1- c! ;
+	
+:dbload
+	mark
+	here hbody load 0 swap c!+ 'here !
+	sendokplain empty ;
+
+:dbsave
+	mark
+	hbody getname | name str
+	count rot save |::save | 'from cnt "filename" -- 	
+	"ok" ,s sendokplain empty ;
+
+:dbremove
+	mark
+	hbody delete
+	"ok" ,s sendokplain empty ;
+	
 :fileadd | fn --fn
 	dup FNAME 
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
 	,s "|" ,s
-	FDIR ,h "^" ,s
-	;
+	FDIR ,h "^" ,s ;
 		
 :filedir
 	mark
 	hbody ffirst 
 	( 1? fileadd fnext ) drop	
-	sendokplain
-	empty
-	;
+	sendokplain empty ;
 	
 :makedir
 	hbody 0 CreateDirectory drop
-	mark
-|	"ok" ,s
-	sendokplain
-	empty
-	;
+	mark sendokplain empty ;
 	
 :removedir
-	"remdir [" .print hbody .println
-	"ok" ,s
-	;
+	hbody RemoveDirectory drop
+	mark sendokplain empty ;
 
-:filesave
-	"filesave" .println
-	hbody .println
+|-----	APP
+:checkprog
 	;
-:fileload
-	"fileload" .println
-	hbody .println
+	
+:genprog
 	;
 	
 |----------
-#nstaten * 1024
+#nstaten * 256
 #nstatex 
 'filedir 'makedir 'removedir  	
-'dbselect 'dbinsert 'dbupdate 'dbdelete
+'dbload 'dbsave 'dbremove
+'checkprog 'genprog
 0
 #nstates 
 "filedir" "makedir" "removedir" 
-"dbselect" "dbinsert" "dbupdate" "dbdelete"
+"dbload" "dbsave" "dbremove"
+"checkprog" "genprog"
 0
 
 :buildnames
@@ -272,14 +276,10 @@
 	0 a! ;
 	
 :execstate
-	'nstaten ( @+ 
-		0? ( 2drop "no app" .println ; )
-		appn 
-|		2dup "%h %h" .println
-		<>? drop ) drop
+	'nstaten ( @+ 0? ( 2drop "no app" .println ; )
+		appn <>? drop ) drop
 	'nstaten - 8 -
-	'nstatex + @ ex
-	;
+	'nstatex + @ ex ;
 	
 |----------------------------------------	
 :sendOK
@@ -295,37 +295,32 @@
 	
 :sendresponse	
 	fileURL
-	filemime 0? ( drop 
-		|test 
-		execstate
-		; ) drop
+	filemime 0? ( drop execstate ; ) drop
 	'filename filexist 0? ( drop http_not_found ; ) drop
-	
 	mark
 	here 'filename load 'here !	
-	sendOK
-	empty
-	;
+	sendOK empty ;
 	
 |--------------------------	
 :dumpreq
 	client_addr "[%h] <<<< " .println
-	
 	huri .print "|" .print hmethod .print "|" .print
 	|hversion .print "|" .print
 	|hhost .print "|" .print 
-	hreferer .print "|" .print 
+	|hreferer .print "|" .print 
 	hcookie .print "|" .print 
-	hbody .println
+	|hbody .print
+	.cr
 	;
 
 |----------------------------------------			
 :handlerequest
 	mark
-	client_socket 'buffer 1024 0 recv | 'bytesrec !
-	0 'buffer rot + c!
-	
+	here
+	client_socket over $ffff 0 recv | 'bytesrec !
+	over + 0 swap c!+ 'here !
 	parseheader
+	
 	dumpreq
 	getvars
 	sendresponse
