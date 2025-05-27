@@ -207,12 +207,12 @@
 	
 |--------- FILES
 :getname | str -- name str 
-	dup ( c@+ 1? $7e <>? drop ) drop | name str
+	dup ( c@+ 1? $7e <>? drop ) drop | name~str
 	0 over 1- c! ;
 	
 :dbload
 	mark
-	here hbody load 0 swap c!+ 'here !
+	here hbody load 'here !
 	sendokplain empty ;
 
 :dbsave
@@ -262,8 +262,8 @@
 'checkprog 'genprog
 0
 #nstates 
-"filedir" "makedir" "removedir" 
-"dbload" "dbsave" "dbremove"
+"dir" "makedir" "remdir" 
+"load" "save" "remove"
 "checkprog" "genprog"
 0
 
