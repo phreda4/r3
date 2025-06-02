@@ -34,6 +34,8 @@
 #sys-GetFileAttributes
 #sys-GetFileAttributesEx
 #sys-GetFileSize
+#sys-FileTimeToSystemTime
+#sys-SystemTimeToTzSpecificLocalTime
 
 #sys-GetProcessHeap
 #sys-HeapAlloc
@@ -94,6 +96,8 @@
 ::GetFileAttributes sys-GetFileAttributes sys1 ;
 ::GetFileAttributesEx sys-GetFileAttributesex sys3 ;
 ::GetFileSize sys-GetFileSize sys2 ;
+::FileTimeToSystemTime sys-FileTimeToSystemTime sys2 drop ;
+::SystemTimeToTzSpecificLocalTime sys-SystemTimeToTzSpecificLocalTime sys3 drop ;
 
 ::GetProcessHeap sys-GetProcessHeap sys0 ;
 ::HeapAlloc sys-HeapAlloc sys3 drop ;
@@ -156,6 +160,8 @@
 	dup "GetFileAttributesA" getproc 'sys-GetFileAttributes !
 	dup "GetFileAttributesExA" getproc 'sys-GetFileAttributesEx !
 	dup "GetFileSize" getproc 'sys-GetFileSize !
+	dup "FileTimeToSystemTime" getproc 'sys-FileTimeToSystemTime !
+	dup "SystemTimeToTzSpecificLocalTime" getproc 'sys-SystemTimeToTzSpecificLocalTime !
 
 	dup "GetProcessHeap" getproc 'sys-GetProcessHeap !
 	dup "HeapAlloc" getproc 'sys-HeapAlloc !

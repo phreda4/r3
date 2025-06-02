@@ -17,7 +17,7 @@
 |	tfont 1 TTF_SetFontStyle
 	
 	"Boton de prueba" 
-	$4666f0000025ffff 
+	$4666f0000005ffff 
 	0.3 %w 0.2 %h
 	tfont textbox 
 	'tcartel !
@@ -41,7 +41,7 @@
 	
 :main
 	"r3app" 1024 600 SDLinitR
-	"media/ttf/Roboto-Medium.ttf" 28 TTF_OpenFont 'tfont !
+	"media/ttf/Roboto-Medium.ttf" 8 TTF_OpenFont 'tfont !
 	'demo SDLshow
 	SDLquit ;	
 	

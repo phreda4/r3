@@ -231,7 +231,19 @@
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
 	,s "|" ,s
-	FDIR ,h "^" ,s ;
+	dup FDIR ,h "|" ,s
+	dup FSIZEF ,d "|" ,s | size
+	FDATETIME 
+	dup 32 >> $ffff and 
+	over 16 >> $ffff and 
+	rot $ffff and 
+	,d ":" ,s ,d ":" ,s ,d " " ,s
+	dup 48 >> $ffff and 
+	over 16 >> $ffff and
+	rot $ffff and
+	,d "-" ,s ,d "-" ,s ,d 
+	"|" ,s | date
+	"^" ,s ;
 		
 :filedir
 	mark

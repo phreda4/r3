@@ -217,6 +217,7 @@
 |-------------------------
 ::sprite | x y img --
 	dup >r SDLTexwh 2/ 'ym ! 2/ 'xm !
+	|dup >r SDLTexwh 1+ 2/ 'ym ! 1+ 2/ 'xm ! | for not loss a line
 	ab[ fillfull fillvertxy ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
 	SDL_RenderGeometry ;

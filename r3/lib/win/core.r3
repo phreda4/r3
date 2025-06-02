@@ -80,6 +80,25 @@
 ::FSIZE
 	32 + d@ 10 >> ; | in kb	
 	
+::FSIZEF | -- size
+	28 + @ dup 32 >> swap 32 << or ; | bytes
+
+#fulltime 0 0
+#convtime 0 0
+
+|  WORD wYear;
+|  WORD wMonth;
+|  WORD wDayOfWeek;
+|  WORD wDay;
+|  WORD wHour;
+|  WORD wMinute;
+|  WORD wSecond;
+|  WORD wMilliseconds;
+::FDATETIME | -- YMdD hmsm
+	4 + 'fulltime FileTimeToSystemTime
+	0 'fulltime 'convtime SystemTimeToTzSpecificLocalTime
+	'convtime @+ swap @ ;	
+	
 #cntf
 	
 ::load | 'from "filename" -- 'to
@@ -124,15 +143,13 @@
 #fileatrib [ 0 ] 0 0 0 0
 	
 ::fileisize | -- size
-	'fileatrib 28 + @ 
-	dup 32 >> swap 32 << or ;
+	'fileatrib 28 + @ dup 32 >> swap 32 << or ;
 
 ::fileijul | -- jul
 	'fileatrib 20 + @
 	86400000000 / | segundos>days
 	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10 /	
-	;	
+	10 / ;	
 	
 ::fileinfo | "file" -- 0=not exist
 	0 'fileatrib GetFileAttributesEx  ;
