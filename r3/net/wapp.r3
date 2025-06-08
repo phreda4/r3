@@ -230,18 +230,14 @@
 	dup FNAME 
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s "|" ,s
-	dup FDIR ,h "|" ,s
+	,s "|" ,s | NAME
+	dup FDIR ,h "|" ,s | file/dir
 	dup FSIZEF ,d "|" ,s | size
-	FDATETIME 
-	dup 32 >> $ffff and 
-	over 16 >> $ffff and 
-	rot $ffff and 
-	,d ":" ,s ,d ":" ,s ,d " " ,s
-	dup 48 >> $ffff and 
-	over 16 >> $ffff and
-	rot $ffff and
-	,d "-" ,s ,d "-" ,s ,d 
+	FWRITEDT 
+	@+
+	dup date.y ,d "-" ,s dup date.m ,d "-" ,s date.d ,d " " ,s
+	@
+	dup time.h ,d ":" ,s dup time.m ,d ":" ,s time.s ,d
 	"|" ,s | date
 	"^" ,s ;
 		

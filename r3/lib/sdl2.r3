@@ -8,6 +8,7 @@
 ^r3/lib/sdlkeys.r3
 
 #sys-SDL_Init 
+#sys-SDL_GetCurrentDisplayMode
 #sys-SDL_Quit 
 #sys-SDL_GetNumVideoDisplays 
 #sys-SDL_CreateWindow 
@@ -88,6 +89,7 @@
 #sys-SDL_CloseAudioDevice
 
 ::SDL_Init sys-SDL_Init sys1 drop ;
+::SDL_GetCurrentDisplayMode sys-SDL_GetCurrentDisplayMode sys2 drop ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
 ::SDL_GetNumVideoDisplays sys-SDL_GetNumVideoDisplays sys0 ;
 ::SDL_CreateWindow sys-SDL_CreateWindow sys6 ;
@@ -219,6 +221,24 @@
 	SDL_windows SDL_RaiseWindow
 	;
 
+|typedef struct SDL_DisplayMode {
+|    Uint32 format;        /**< formato de píxeles */
+|    int w;                /**< ancho, en coordenadas de pantalla */
+|    int h;                /**< alto, en coordenadas de pantalla */
+|    int refresh_rate;     /**< frecuencia de actualización (o cero para no especificado) */
+|    void *driverdata;     /**< datos específicos del controlador, inicializar a 0 */
+|
+#dm 0 0 0
+
+::SDLfullw | "titulo" display --
+	$3231 SDL_init 
+	dup 'dm SDL_GetCurrentDisplayMode
+	'dm 4 + d@+ 'sw ! d@ 'sh ! 
+	$2fff0000 or dup | display nro
+	sw sh $10 SDL_CreateWindow dup 'SDL_windows !
+	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	;
+	
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
 	
@@ -321,6 +341,7 @@
 |WIN|	"SDL2.DLL" loadlib
 |LIN|   "libSDL2-2.0.so.0" loadlib	
 	dup "SDL_Init" getproc 'sys-SDL_Init !
+	dup "SDL_GetCurrentDisplayMode" getproc 'sys-SDL_GetCurrentDisplayMode !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !
 	dup "SDL_GetNumVideoDisplays" getproc 'sys-SDL_GetNumVideoDisplays !
 	dup "SDL_CreateWindow" getproc 'sys-SDL_CreateWindow !

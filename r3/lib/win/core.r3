@@ -77,14 +77,27 @@
 ::FDIR | adr -- 1/0
 	@ 4 >> 1 and ;
 	
-::FSIZE
+::FSIZE | adr -- sizekb
 	32 + d@ 10 >> ; | in kb	
 	
-::FSIZEF | -- size
+::FSIZEF | adr -- sizebytes
 	28 + @ dup 32 >> swap 32 << or ; | bytes
 
-#fulltime 0 0
-#convtime 0 0
+#aux 0 0 | for time and file
+
+::filetimeD | 'FILETIME -- 'timedate
+	'aux FileTimeToSystemTime
+	0 'aux 'sistime SystemTimeToTzSpecificLocalTime
+	'sistime ;		
+
+::FCREADT | adr -- 'timedate | creation date
+	4 + filetimeD ;	
+
+::FLASTDT | adr -- 'timedate  | last acces date
+	12 + filetimeD ;	
+
+::FWRITEDT | adr -- 'timedate | last write date
+	20 + filetimeD ;	
 
 |  WORD wYear;
 |  WORD wMonth;
@@ -94,25 +107,24 @@
 |  WORD wMinute;
 |  WORD wSecond;
 |  WORD wMilliseconds;
-::FDATETIME | -- YMdD hmsm
-	4 + 'fulltime FileTimeToSystemTime
-	0 'fulltime 'convtime SystemTimeToTzSpecificLocalTime
-	'convtime @+ swap @ ;	
-	
-#cntf
-	
+
+::date.d ::time.ms 48 >> $ffff and ;
+::date.dw ::time.s 32 >> $ffff and ;
+::date.m ::time.m 16 >> $ffff and ;
+::date.y ::time.h $ffff and ;
+
 ::load | 'from "filename" -- 'to
 	$80000000 1 0 3 $8000000 0 CreateFile
 	-1 =? ( drop ; ) swap
-|	0 'cntf ! | uso dword! sure 0, when trash in mem..trouble
-	( 2dup $ffff 'cntf 0 ReadFile drop
-		cntf + cntf 1? drop ) drop
+|	0 'aux ! | uso dword! sure 0, when trash in mem..trouble
+	( 2dup $ffff 'aux 0 ReadFile drop
+		aux + aux 1? drop ) drop
 	swap CloseHandle ;
 	
 ::save | 'from cnt "filename" -- 
 	$40000000 0 0 2 $8000000 0 CreateFile
 	-1 =? ( 3drop ; )
-	dup >r -rot 'cntf 0 WriteFile
+	dup >r -rot 'aux 0 WriteFile
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 	
@@ -120,7 +132,7 @@
 	$4 1 0 4 $80 0 CreateFile
 	-1 =? ( 3drop ; )
 	dup 0 0 2 SetFilePointer drop
-	dup >r -rot 'cntf 0 WriteFile
+	dup >r -rot 'aux 0 WriteFile
 	r> swap 0? ( 2drop ; ) drop
 	CloseHandle ;
 
@@ -140,7 +152,7 @@
 |} WIN32_FILE_ATTRIBUTE_DATA;
 
 | atrib creation access write size
-#fileatrib [ 0 ] 0 0 0 0
+#fileatrib 0 0 0 0 0
 	
 ::fileisize | -- size
 	'fileatrib 28 + @ dup 32 >> swap 32 << or ;
@@ -154,6 +166,10 @@
 ::fileinfo | "file" -- 0=not exist
 	0 'fileatrib GetFileAttributesEx  ;
 	
+::filecreatetime	'fileatrib 4 + ;
+::filelastactime	'fileatrib 12 + ;
+::filelastwrtime	'fileatrib 20 + ;
+
 |struct STARTUPINFO
 |0  cb		  dd ?,?
 |1  lpReserved	  dq ?

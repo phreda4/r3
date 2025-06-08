@@ -383,7 +383,7 @@
 	0 SDLcls 
 	immgui 
 	edfill
-	panel 3 << 'focuslist + @ ex
+	panel $3 and 3 << 'focuslist + @ ex
 	edcodedraw
 	consoledraw
 	listwdraw
@@ -418,7 +418,10 @@
 |-----------------------------
 |-----------------------------	
 :	
-	"R3d4" 1280 720 SDLinit
+	.cls
+	"R3d4 IDE" .println
+	
+	"R3d4" 0 SDLfullw | full windows | "R3d4" 1280 720 SDLinit
 	bfont1
 	edram 
 	
