@@ -64,7 +64,6 @@
 	parseline ;
 	
 :parseheader | mem --
-	"parse <" .print
 	dup 'hmethod ! >>field 
 	dup 'huri ! >>field
 	dup 'hversion ! >>field
@@ -75,7 +74,6 @@
 	trim
 	dup 'hbody !
 	( c@+ $ff and 31 >? drop ) drop 0 swap 1- c!
-	"> parse" .println
 	;
 	
 |-------------------------- parse vars
@@ -134,12 +132,10 @@
 #varpost
 
 :getvars | -- 
-	"vars <" .print
 	here 
 	dup 'varget ! huri arrayvar
 	dup 'varpost ! hbody arrayvar
 	'here !
-	"> vars" .println
 	;	
 
 |--------------------------
@@ -182,7 +178,7 @@
 	'basedir 'filename strcpyl 1-	| base
 	huri swap strcpyl 1-			| filename
 	remove?
-	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap "hh" .println ) drop
+	dup 1- c@ $2f =? ( "index.html" rot strcpyl swap ) drop
 	mimeURL
 |'filemime 'filename "file: %s mime: %s" .println
 	;
@@ -304,20 +300,15 @@
 	client_socket memsize 0 send
 	empty
 	client_socket memsize 0 send
-	"send" .println
 	;
 	
 :sendresponse
-	"resp <" .print
 	fileURL
-	"url " .print
 	filemime 0? ( drop execstate ; ) drop
-	"mime " .print
 	'filename filexist 0? ( drop http_not_found ; ) drop
-	"st " .print
 	mark
 	here 'filename load 'here !	
-	'filename " load %s " .print
+|	'filename " load %s " .print
 	sendOK empty ;
 	
 |--------------------------	
@@ -343,7 +334,7 @@
 	dumpreq
 	getvars
 	sendresponse
-	"> resp" .println
+|	"> resp" .println
     client_socket closesocket
 	empty
 	;

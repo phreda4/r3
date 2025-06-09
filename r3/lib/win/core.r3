@@ -116,7 +116,7 @@
 ::load | 'from "filename" -- 'to
 	$80000000 1 0 3 $8000000 0 CreateFile
 	-1 =? ( drop ; ) swap
-|	0 'aux ! | uso dword! sure 0, when trash in mem..trouble
+	0 'aux ! | uso dword! sure 0, when trash in mem..trouble
 	( 2dup $ffff 'aux 0 ReadFile drop
 		aux + aux 1? drop ) drop
 	swap CloseHandle ;
