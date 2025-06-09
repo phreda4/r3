@@ -64,6 +64,7 @@
 	parseline ;
 	
 :parseheader | mem --
+	"parse <" .print
 	dup 'hmethod ! >>field 
 	dup 'huri ! >>field
 	dup 'hversion ! >>field
@@ -74,6 +75,7 @@
 	trim
 	dup 'hbody !
 	( c@+ $ff and 31 >? drop ) drop 0 swap 1- c!
+	"> parse" .println
 	;
 	
 |-------------------------- parse vars
@@ -132,10 +134,12 @@
 #varpost
 
 :getvars | -- 
+	"vars <" .print
 	here 
 	dup 'varget ! huri arrayvar
 	dup 'varpost ! hbody arrayvar
 	'here !
+	"> vars" .println
 	;	
 
 |--------------------------
@@ -226,6 +230,9 @@
 	hbody delete
 	"ok" ,s sendokplain empty ;
 	
+:,2d
+	10 <? ( "0" ,s ) ,d ;
+	
 :fileadd | fn --fn
 	dup FNAME 
 	dup ".." = 1? ( 3drop ; ) drop
@@ -234,10 +241,8 @@
 	dup FDIR ,h "|" ,s | file/dir
 	dup FSIZEF ,d "|" ,s | size
 	FWRITEDT 
-	@+
-	dup date.y ,d "-" ,s dup date.m ,d "-" ,s date.d ,d " " ,s
-	@
-	dup time.h ,d ":" ,s dup time.m ,d ":" ,s time.s ,d
+	@+	dup date.y ,d "-" ,s dup date.m ,2d "-" ,s date.d ,2d " " ,s
+	@	dup time.h ,2d ":" ,s dup time.m ,2d ":" ,s time.s ,2d
 	"|" ,s | date
 	"^" ,s ;
 		
@@ -299,19 +304,25 @@
 	client_socket memsize 0 send
 	empty
 	client_socket memsize 0 send
+	"send" .println
 	;
 	
-:sendresponse	
+:sendresponse
+	"resp <" .print
 	fileURL
+	"url " .print
 	filemime 0? ( drop execstate ; ) drop
+	"mime " .print
 	'filename filexist 0? ( drop http_not_found ; ) drop
+	"st " .print
 	mark
 	here 'filename load 'here !	
+	'filename " load %s " .print
 	sendOK empty ;
 	
 |--------------------------	
 :dumpreq
-	client_addr "[%h] <<<< " .println
+|	client_addr "[%h] <<<< " .println
 	huri .print "|" .print hmethod .print "|" .print
 	|hversion .print "|" .print
 	|hhost .print "|" .print 
@@ -332,7 +343,7 @@
 	dumpreq
 	getvars
 	sendresponse
-	
+	"> resp" .println
     client_socket closesocket
 	empty
 	;

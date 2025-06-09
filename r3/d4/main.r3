@@ -74,18 +74,15 @@
 	0 0 txy
 	memfiles 
 	( @+ 1?
-		dup 32 >> 
-		"%d " tprint
-		dup 24 >> $ff and 
-		"%d " tprint
+		|dup 32 >> "%d " tprint | size
+		|dup 24 >> $ff and "%d " tprint | type
 		$ffffff and
 		swap @+
-		64>dtf temits
-		|"%h " tprint
+		|64>dtf temits | DT
+		drop
 		dup temits
-		+
 		tcr
-		) 2drop ;
+		+ ) 2drop ;
 |------------------------	
 #font
 #ttitle
