@@ -40,11 +40,51 @@
 
 :64>dtc | dt64 -- "y-m-d h:m:s"
 	;
-	
+
+|--------------------------------	
+#dirini
+#dirnow
+
+#fileini
+#filenow
+
+#memdirs
+#memdirs>
+
 #memfiles
 #memfiles>
 #link
-
+	
+:+dir
+	dup FNAME
+	dup ".." = 1? ( 3drop ; ) drop
+	dup "." = 1? ( 3drop ; ) drop
+	over FDIR 0? ( 3drop ; ) drop
+	a> 'link !		|  f name
+	over FSIZEF 32 <<
+	|pick2 FDIR 24 << or 
+	a!+
+	over FWRITEDT dt>64 a!+
+	a> strcpyl dup 
+	a> - link +! | save link 
+	>a
+	drop ;
+	
+:adddir | path --
+	ffirst ( 
+		|dup FDIR 1? ( adddir ) drop
+		+dir
+		fnext 1? ) drop  ;
+	
+:rebuildir
+	here dup 'memdirs ! >a 
+	'basepath
+|WIN|	"%s//*" sprint
+	adddir
+	a> dup 'memdirs> ! 0 over !
+	'here !
+	;
+	
 :+file | f --
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
@@ -65,11 +105,15 @@
 |WIN|	"%s//*" sprint
 	ffirst ( +file
 		fnext 1? ) drop 
-	0 a!+		
-	a> dup 'here ! 
-	'memfiles> !
+	a> dup 'memfiles> ! 0 over !
+	'here !
 	;
 
+
+:filedirs
+	40 0 txy
+	;
+	
 :filelist
 	0 0 txy
 	memfiles 
@@ -95,6 +139,7 @@
 	0 SDLcls 
 	sw 2/ sh 2/ ttitle sprite
 	
+	filedirs
 	filelist
 	SDLredraw
 	sdlkey
