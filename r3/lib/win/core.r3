@@ -228,6 +228,3 @@
 	0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess drop
 |	pinfo -1 WaitForSingleObject
 	;
-
-
-

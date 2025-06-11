@@ -229,21 +229,24 @@
 :,2d
 	10 <? ( "0" ,s ) ,d ;
 	
+:DT2str
+	@+	dup date.y ,d "-" ,s dup date.m ,2d "-" ,s date.d ,2d " " ,s
+	@	dup time.h ,2d ":" ,s dup time.m ,2d ":" ,s time.s ,2d ;
+	
 :fileadd | fn --fn
 	dup FNAME 
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s "|" ,s | NAME
-	dup FDIR ,h "|" ,s | file/dir
-	dup FSIZEF ,d "|" ,s | size
-	FWRITEDT 
-	@+	dup date.y ,d "-" ,s dup date.m ,2d "-" ,s date.d ,2d " " ,s
-	@	dup time.h ,2d ":" ,s dup time.m ,2d ":" ,s time.s ,2d
-	"|" ,s | date
+	,s "{" ,s | NAME
+	dup FDIR ,h "{" ,s | file/dir
+	dup FSIZEF ,d "{" ,s | size
+	dup FWRITEDT DT2str "{" ,s | dt last write
+	dup FCREADT DT2str "{" ,s | dt create
 	"^" ,s ;
 		
 :filedir
 	mark
+	"name{type{size{dtwrite{dtcreate{^" ,s
 	hbody ffirst 
 	( 1? fileadd fnext ) drop	
 	sendokplain empty ;
