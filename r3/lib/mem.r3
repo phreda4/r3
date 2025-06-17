@@ -54,7 +54,8 @@
 ::,line here swap
 	( c@+ 1?
 		10 =? ( 3 + ) 13 =? ( 2drop 'here ! ; )
-		rot c!+ swap ) 2drop 'here ! ;
+		rot c!+ swap ) 2drop 'here ! ;		
+::,2d 10 <? ( "0" ,s )
 ::,d .d ,s ;
 ::,h .h ,s ;
 ::,b .b ,s ;

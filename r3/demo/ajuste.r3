@@ -6,9 +6,6 @@
 ^r3/lib/mem.r3
 
 |---- datetime
-:,2d
-	10 <? ( "0" ,s ) ,d ;
-		
 :,time
 	time
 	dup 16 >> $ff and ,d ":" ,s

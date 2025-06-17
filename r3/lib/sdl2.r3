@@ -334,6 +334,8 @@
 | tex 0 0 'xm 'ym SDL_QueryTexture		
 ::SDLTexwh | tex -- w h
 	16 + d@+ swap d@ ;
+	
+::%w SW 16 *>> ; ::%h SH 16 *>> ; 	
 		
 |------- BOOT
 :

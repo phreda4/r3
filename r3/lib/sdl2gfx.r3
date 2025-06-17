@@ -100,7 +100,6 @@
 	4drop 
 	]ba ;
 	
-
 ::SDLTriangle | x y x y x y --
 	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
 	'vert >a
@@ -339,7 +338,7 @@
 	SDLrenderer 0 SDL_SetRenderTarget
 	comptex	;
 	
-::texEndAlpha
+::texEndAlpha | -- texture
 	texEnd
 	dup 1 SDL_SetTextureBlendMode ;
 	
@@ -380,4 +379,3 @@
 	$ff00000000000 nand ;
 	
 : fillfull ;
-

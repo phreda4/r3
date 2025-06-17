@@ -28,6 +28,27 @@
 #hcookie
 #hbody
 
+|---------------------
+::,time
+	time
+	dup 16 >> $ff and ,d ":" ,s
+	dup 8 >> $ff and ,2d ":" ,s
+	$ff and ,2d ;
+
+::,date
+	date
+	dup $ff and ,d "/" ,s
+	dup 8 >> $ff and ,d "/" ,s
+	16 >> $ffff and ,d ;
+	
+:slog | str --
+	mark
+	,date 32 ,c ,time 32 ,c
+	,s
+	13 ,c 10 ,c 0 ,c
+	empty
+	here count "wapp.log" append ;
+	
 |--------------------- response
 :http_bad_request
 	hversion ,s " 400 Bad Request" ,s ,nl ,nl ;
@@ -226,9 +247,6 @@
 	hbody delete
 	"ok" ,s sendokplain empty ;
 	
-:,2d
-	10 <? ( "0" ,s ) ,d ;
-	
 :DT2str
 	@+	dup date.y ,d "-" ,s dup date.m ,2d "-" ,s date.d ,2d " " ,s
 	@	dup time.h ,2d ":" ,s dup time.m ,2d ":" ,s time.s ,2d ;
@@ -332,6 +350,9 @@
 	here
 	client_socket over $ffff 0 recv | 'bytesrec !
 	over + 0 swap c!+ 'here !
+	
+	dup slog
+	
 	parseheader
 	
 	dumpreq
@@ -369,6 +390,7 @@
 	-? ( "error %d" .println server_socket closesocket WSACleanup ; ) drop
 	
 	PORT "App port:%d" .println
+	"******" slog
 	;
 	
 :serverend	

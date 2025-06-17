@@ -315,14 +315,14 @@ $d3 $d3 $d3 $d3 $d3 $d3
 :popbl -2 'blk> +! blk> w@ code + ;
 
 :,i		code> !+ 'code> ! ;
-:,d		data> !+ 'data> ! ;
+:,m		data> !+ 'data> ! ;
 	
 :endef
 	tlevel 1? ( 2 'terror ! ) drop
 	
 |	dicc> @ 32 >> code> code - =? ( 
 |		over src - 16 <<  | #v1 #v2
-|		,d 
+|		,m
 |		) drop
 	
 	'blk 'blk> !
@@ -350,7 +350,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	1- >r 
 	dup str>anro 32 << 
 	rot src - 16 << or r> or
-	state 2 =? ( drop ,d ; ) drop ,i ;		
+	state 2 =? ( drop ,m ; ) drop ,i ;		
 
 :.com | adr -- adr'
 	>>cr ; | don't save comment
@@ -501,7 +501,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :.word
 	state
-	2 =? ( drop @ ,d ; )	| data **
+	2 =? ( drop @ ,m ; )	| data **
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
@@ -510,7 +510,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	
 :.adr
 	state
-	2 =? ( drop @ ,d ; )	| data **
+	2 =? ( drop @ ,m ; )	| data **
 	drop
 	@ $ffff0000 nand
 	over src - 16 << or
