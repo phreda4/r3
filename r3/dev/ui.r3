@@ -5,16 +5,13 @@
 ^r3/lib/sdl2gfx.r3
 
 ^r3/util/textb.r3
-|^r3/util/ttext.r3
-
 
 ##uifont
 ##uifcol $ffffff
 
-#xl #yl #wl #hl 
-
 #padx #pady	#marx #mary
-#curx #cury #curw #curh
+#xl #yl #wl #hl 		| layer to put widget
+#curx #cury #curw #curh	| actual widget
 
 #recbox 0 0
 
@@ -28,6 +25,7 @@
 	uifont over 'curw 'curh TTF_SizeUTF8 drop ;
 	
 :ttemitl | "text" --
+	dup c@ 0? ( 2drop ; ) drop
 	uifont swap uifcol TTF_RenderUTF8_Blended
 	Surf>wh swap | suf h w
 	cury pady + curx padx + 'recbox d!+ d!+ d!+ d!
@@ -59,6 +57,8 @@
 ::uiBox | w h --
 	'curh ! 'curw ! ;
 
+|----- flow
+
 :flow<	curw neg 'curx +! ;
 :flow^	curh neg 'cury +! ;
 
@@ -73,19 +73,29 @@
 ::uiv 'flowv 'flownext ! ;
 ::ui^ 'flow^ 'flownext ! ;
 
+::uiNext | -- ; next
+	flownext ex ;
 
+|----- draw
+::uiRectW | color --
+	SDLcolor
+	xl yl wl hl SDLRect ;
+	
 ::uiFill | color --
 	SDLcolor
 	curx cury curw curh SDLFRect ;
 	
-::uiNext | -- ; next
-	flownext ex ;
+::uiLine
+	SDLcolor
+	xl 4 + cury 3 + wl 8 - 2 SDLRect
+	8 'cury +! ;
 	
+|----- Widget	
 ::uiLabel | "" --
 	ttemitl uiNext ;
-::uiLabec | "" --
+::uiLabelc | "" --
 	ttemitc uiNext ;
-::uiLaber | "" --
+::uiLabelr | "" --
 	ttemitr uiNext ;
 ::uitlabel
 	ttemitsize 
@@ -104,7 +114,7 @@
 	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
 	ttemitc onClick uiNext ;	
 	
-|----------------------
+|----- list mem (intern)
 #cntlist
 #indlist
 
@@ -118,7 +128,7 @@
 :nindx | n -- str
 	3 << indlist + @ ;
 
-	
+|----- more widget
 ::uiCombo | 'var 'list --
 	mark makeindx
 	curx cury curw curh guiBox
@@ -138,35 +148,33 @@
 	empty ;	
 
 	
-:ir
-	over @ and? ( "(o)" ; ) "( )" ;
+:ic	over @ 1 pick2 << and? ( drop "[x]" ; ) drop "[ ]" ;
 	
-:iradio | 'var n -- 'var n
+:icheck | 'var n -- 'var n
 	curx cury curw curh guiBox
-	[ 1 over << pick2 @ xor over ! ; ] onClick
-	ir a@+ swap "%s %s" sprint uiLabel
-	;
+	[ 1 over << pick2 @ xor pick2 ! ; ] onClick
+	ic a@+ swap "%s %s" sprint uiLabel ;
 		
+::uiCheck
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? icheck 1+ ) 2drop
+	empty ;	
+
+
+:ir over @ =? ( "(o)" ; ) "( )" ;
+
+:iradio | 'var n --
+	curx cury curw curh guiBox
+	[ 2dup swap ! ; ] onClick
+	ir a@+ swap "%s %s" sprint uiLabel ;
+
 ::uiRadio
 	mark makeindx
 	indlist >a
 	0 ( cntlist <? iradio 1+ ) 2drop
 	empty ;	
 
-:ic
-	over @ =? ( "[X]" ; ) "[ ]" ;
-
-:icheck | 'var n --
-	curx cury curw curh guiBox
-	[ 2dup swap ! ; ] onClick
-	ic a@+ swap "%s %s" sprint uiLabel
-	;
-
-::uiCheck
-	mark makeindx
-	indlist >a
-	0 ( cntlist <? icheck 1+ ) 2drop
-	empty ;	
 
 ::uiTable
 	;
@@ -283,43 +291,14 @@
 
 |	'clickfoco onClick
 	drop
-	ttemitl 
+	ttemitl
 	uiNext ;	
 
-|--------------------------------------
-
-
-:pathpanel
-	ui>
-	uifont 18 TTF_SetFontSize
-	48 4 512 300 uiWin
-	256 22 uiBox
-	'exit "r3" uitbtn
-	"/" uitlabel
-	'exit "juegos" uitbtn
-	"/" uitlabel
-	'exit "2025" uitbtn
-	;
-
-:dirpanel
-	uiv
-	uifont 18 TTF_SetFontSize
-	48 32 256 300 uiWin
-	256 22 uiBox
-	10 ( 1?
-		dup "-%d-" sprint uiLabel
-		1- ) drop
-	;
+|-------- example
+#pad "hola" * 1024
 	
-#pad * 1024
-		
-:namepanel
-	32 500 512 24 uiWin
-	512 24 uiBox
-	'pad 1024 uiInputLine | 'buff max --
-	;
-|--------------------------------------
 #listex "uno" "dos" "tres" 0
+
 #treeex
 "+uno"
 " .aaa"
@@ -333,22 +312,44 @@
 
 #vc
 #vt
+#vh
+#vr
 
 :main
 	0 SDLcls gui
-|	sw 2/ sh 2/ ttitle sprite
+	uifont 18 TTF_SetFontSize
 	
-	pathpanel
-	dirpanel
-|	namepanel
-	
+	ui>
+	48 4 512 22 uiWin
+	$ffffff uiRectW
+	256 22 uiBox
+	'exit "r3" uitbtn
+	"/" uitlabel
+	'exit "juegos" uitbtn
+	"/" uitlabel
+	'exit "2025" uitbtn
+
 	uiv
+	48 32 256 300 uiWin
+	$ffffff uiRectW
+	256 22 uiBox
+	"* Widget *" uiLabelc
+	'vt 'treeex uiList
+	$444444 uiLine
+	|'vt 'treeex uiTree
+
+	
 	600 32 512 300 uiWin
+	$888888 uiRectW
 	256 24 uibox
 	'vc 'listex uiCombo | 'var 'list --
-
-	'vt 'treeex uiList
-	|'vt 'treeex uiTree
+	$444444 uiLine
+	'vh 'listex uiCheck
+	$444444 uiLine
+	'vr 'listex uiRadio
+	$444444 uiLine
+	'pad 512 uiInputLine
+	$444444 uiLine
 	
 	SDLredraw
 	sdlkey
