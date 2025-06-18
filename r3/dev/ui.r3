@@ -128,21 +128,46 @@
 
 ::uiList | 'var 'list --
 	mark makeindx
-	curx cury curw curh guiBox
+	curx cury curw hl guiBox
 	[ sdly cury - curh / over ! ; ] onClick
 	indlist >a
 	0 ( cntlist <?
-		over @ =? ( $ff00 sdlcolor )
+		over @ =? ( $7f uiFill )
 		a@+ uiLabel
-		1+ ) drop
-	empty
-	drop
-	;	
+		1+ ) 2drop
+	empty ;	
+
 	
+:ir
+	over @ and? ( "(o)" ; ) "( )" ;
+	
+:iradio | 'var n -- 'var n
+	curx cury curw curh guiBox
+	[ 1 over << pick2 @ xor over ! ; ] onClick
+	ir a@+ swap "%s %s" sprint uiLabel
+	;
+		
 ::uiRadio
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? iradio 1+ ) 2drop
+	empty ;	
+
+:ic
+	over @ =? ( "[X]" ; ) "[ ]" ;
+
+:icheck | 'var n --
+	curx cury curw curh guiBox
+	[ 2dup swap ! ; ] onClick
+	ic a@+ swap "%s %s" sprint uiLabel
 	;
+
 ::uiCheck
-	;
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? icheck 1+ ) 2drop
+	empty ;	
+
 ::uiTable
 	;
 ::uiTree
