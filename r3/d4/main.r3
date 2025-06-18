@@ -6,95 +6,11 @@
 
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
-^r3/util/ttext.r3
+|^r3/util/ttext.r3
 
-|-----------------------------
-|autolayout
-#font
-#fontcol $ffffff
-
-#xl #yl #wl #hl 
-
-#padx #pady	#marx #mary
-#curx #cury #curw #curh
-
-#recbox 0 0
-
-:tt>
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'recbox SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-
-:ttemitl | "text" --
-	font swap fontcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
-	cury pady + curx padx + 'recbox d!+ d!+ d!+ d!
-	tt> ;
-
-:ttemitc | "text" --
-	font swap fontcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
-	curh 2/ pick2 2/ - cury +
-	curw 2/ pick2 2/ - curx +
-	'recbox d!+ d!+ d!+ d!
-	tt> ;
-
-:ttemitr | "text" --
-	font swap fontcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
-	cury pady + curw curx + pick2 - 'recbox d!+ d!+ d!+ d!
-	tt> ;
-
-::uiWin | x y w h --
-	'hl ! 'wl ! 2dup 'yl ! 'xl ! 'cury ! 'curx ! ;
-
-::uiCols | cols --
-	wl swap /mod 'marx ! 'curw ! ;
-
-::uiRows | rows --
-	hl swap /mod 'mary ! 'curh ! ;
-
-::uiBox | w h --
-	'curh ! 'curw ! ;
-
-:flow<	curw neg 'curx +! ;
-:flow^	curh neg 'cury +! ;
-
-:flowv	curh 'cury +! ;
-:flowcr xl 'curx ! flowv ;
-:flow>	curx curw + xl wl + >? ( drop flowcr ; ) 'curx ! ;
-
-#flownext 'flowv
-
-::ui> 'flow> 'flownext ! ;
-::ui< 'flow< 'flownext ! ;
-::uiv 'flowv 'flownext ! ;
-::ui^ 'flow^ 'flownext ! ;
-
-
-::uiFill | color --
-	SDLcolor
-	curx cury curw curh SDLFRect ;
-	
-::uiNext | -- ; next
-	flownext ex ;
-	
-::uiLabel | "" --
-	ttemitl uiNext ;
-::uiLabec | "" --
-	ttemitc uiNext ;
-::uiLaber | "" --
-	ttemitr uiNext ;
-	
-::uiBtn | v "" --
-	curx cury curw curh guiBox
-	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
-	ttemitc onClick uiNext ;	
-
+^r3/dev/ui.r3
 	
 |------------------------	
-#basepath "r3"
 
 | type name size datetime
 |satetime 
@@ -126,6 +42,9 @@
 	;
 
 |--------------------------------	
+#basepath "r3"
+#fullpath * 1024
+
 #dirini
 #dirnow
 
@@ -138,6 +57,7 @@
 #memfiles
 #memfiles>
 #link
+
 	
 :+dir
 	dup FNAME
@@ -167,6 +87,55 @@
 	adddir
 	0 a> !+ dup 'memdirs> ! 'here !
 	;
+
+|-----------------------
+#stkd * 1024
+#stkd> 'stkd
+#lvl 0
+#memfile
+
+:+dir
+	dup FNAME
+	dup ".." = 1? ( 3drop ; ) drop
+	dup "." = 1? ( 3drop ; ) drop
+	over FDIR 0? ( 3drop ; ) drop
+	a> 'link !		|  f name
+	|over FSIZEF 32 <<
+	0 | no size for dir
+	|pick2 FDIR 24 << or 
+	a!+
+	over FWRITEDT dt>64 a!+
+	a> strcpyl dup 
+	
+	a> .println
+	a> stkd> !+ 'stkd> !
+	
+	a> - link +! | save link 
+	>a
+	drop ;
+
+:adddirs
+	1 'lvl +!
+	'basepath
+|WIN|	"%s//*" sprint
+	ffirst ( 
+		+dir
+		fnext 1? ) drop 
+	0 a!+ .cr ;	
+	
+:traversedirs
+	here dup 'memfile ! >a
+	'stkd 'stkd> !
+	'basepath stkd> !+ 'stkd> !
+	'basepath 'fullpath strcpy
+	0 'lvl !
+	( stkd> 'stkd >?
+		dup .println
+		adddirs
+		-8 'stkd> +! ) drop
+	;
+
+|-------------------	
 	
 :+file | f --
 	dup FNAME
@@ -207,58 +176,60 @@
 		tcr
 		+ ) 2drop ;
 ||||||||||||||||
-#str "›˅˃ˇ▶▼>V"
-		
+
+:pathpanel
+	ui>
+	uifont 18 TTF_SetFontSize
+	48 4 512 300 uiWin
+	256 22 uiBox
+	'exit "r3" uitbtn
+	"/" uitlabel
+	'exit "juegos" uitbtn
+	"/" uitlabel
+	'exit "2025" uitbtn
+	;
+
 :dirpanel
-	font 18 TTF_SetFontSize
+	uiv
+	uifont 18 TTF_SetFontSize
 	48 32 256 300 uiWin
 	256 22 uiBox
 	memdirs 
 	( @+ 1?
 		$ffffff and
 		swap 8 + dup uilabel
-		+ ) 2drop 
-		'str uilabec
-	
-|	$00ff00 uiFill
-|	'exit "unis" uiBtn
-	
-|	$007f00 uiFill
-|	"coso" uiLabel
-|	$003f00 uiFill
-|	"dos" uiLabel
-|	$001f00 uiFill
-|	"tres" uiLabel
-	;
+		+ ) 2drop ;
 	
 :filpanel
-	font 18 TTF_SetFontSize
+	uiv
+	uifont 18 TTF_SetFontSize
 	304 32 256 300 uiWin
 	256 22 uiBox
 	memfiles 
 	( @+ 1?
 		$ffffff and
 		swap 8 + dup uilabel
-		+ ) 2drop 
+		+ ) 2drop  ;
 
-	;
-|------------------------	
-#ttitle
-
-:sizefont
+#pad "hola" * 1024
+		
+:namepanel
+	32 500 512 24 uiWin
+	512 24 uiBox
+	'pad 1024 uiInputLine | 'buff max --
 	;
 	
-:paneles
-	;
 |-----------------------------
+
 :main
 	0 SDLcls gui
-	sw 2/ sh 2/ ttitle sprite
+|	sw 2/ sh 2/ ttitle sprite
 	
 |	filelist
-	
+	pathpanel
 	dirpanel
 	filpanel
+	namepanel
 	
 	SDLredraw
 	sdlkey
@@ -269,18 +240,20 @@
 |-----------------------------
 |-----------------------------	
 :	
-	.cls
-	"R3d4 IDE" .println
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'font !
-	tini
+	"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'uifont !
+|	tini
 	
 	mark
 	rebuildir
 	rebuild
+
+.cls
+"R3d4 IDE" .println
+|traversedirs
 	
-	"r3/forth IDE" $5ffff 300 200 font textbox 'ttitle !
+|	"r3/forth IDE" $5ffff 300 200 font textbox 'ttitle !
 	
 	'main SDLshow
 	SDLquit 
