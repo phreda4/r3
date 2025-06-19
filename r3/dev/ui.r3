@@ -9,8 +9,9 @@
 ##uifont
 ##uifcol $ffffff
 
-#padx #pady	#marx #mary
+
 #xl #yl #wl #hl 		| layer to put widget
+#padx #pady	#advx #advy #marx #mary
 #curx #cury #curw #curh	| actual widget
 
 #recbox 0 0
@@ -45,50 +46,58 @@
 	cury pady + curw curx + pick2 - 'recbox d!+ d!+ d!+ d!
 	tt> ;
 
+|----- zone
+::uiFull
+	0 0 sw sh
 ::uiWin | x y w h --
-	'hl ! 'wl ! 2dup 'yl ! 'xl ! 'cury ! 'curx ! ;
+	'hl ! 'wl ! 'yl ! 'xl ! ;
 
-::uiCols | cols --
-	wl swap /mod 'marx ! 'curw ! ;
-
-::uiRows | rows --
-	hl swap /mod 'mary ! 'curh ! ;
+::uiGrid | cols rows --
+	hl swap /mod 2/ 'mary ! 'advy !
+	wl swap /mod 2/ 'marx ! 'advx ! ;
 
 ::uiBox | w h --
-	'curh ! 'curw ! ;
-
+	dup 'advy ! pady 2* - 'curh !
+	dup 'advx ! padx 2* - 'curw !
+	;
+	
 |----- flow
+::uihome
+	xl marx + padx + 'curx ! 
+	advx padx 2* - 'curw !
+	yl mary + pady + 'cury !
+	advy pady 2* - 'curh !
+	;
+	
+::uiAt | x y --
+	advy * mary + 'curx !
+	advy pady 2* - 'curh !
+	advx * mary + 'curx !
+	advx padx 2* - 'curw !
+	;
 
-:flow<	curw neg 'curx +! ;
-:flow^	curh neg 'cury +! ;
+::uicr
+	xl marx + padx + 'curx ! 
+::uidn	
+	advy 'cury +! ;
 
-:flowv	curh 'cury +! ;
-:flowcr xl 'curx ! flowv ;
-:flow>	curx curw + xl wl + >? ( drop flowcr ; ) 'curx ! ;
+::uiNext 
+	curx advx + xl wl + >? ( drop uicr ; ) 'curx ! ;
 
-#flownext 'flowv
-
-::ui> 'flow> 'flownext ! ;
-::ui< 'flow< 'flownext ! ;
-::uiv 'flowv 'flownext ! ;
-::ui^ 'flow^ 'flownext ! ;
-
-::uiNext | -- ; next
-	flownext ex ;
+:guiZone 
+	curx cury curw curh guiBox ;
 
 |----- draw
-::uiRectW | color --
-	SDLcolor
+::uiRectW 
 	xl yl wl hl SDLRect ;
 	
-::uiFill | color --
-	SDLcolor
+::uiFill
 	curx cury curw curh SDLFRect ;
 	
 ::uiLine
-	SDLcolor
 	xl 4 + cury 3 + wl 8 - 2 SDLRect
 	8 'cury +! ;
+	
 	
 |----- Widget	
 ::uiLabel | "" --
@@ -99,21 +108,27 @@
 	ttemitr uiNext ;
 ::uitlabel
 	ttemitsize 
-	padx 2* 4 + 'curw +!	
-	ttemitc uiNext ;
+	4 'curw +!	
+	ttemitc 
+	curw 'curx +!	
+	;
 	
 ::uiBtn | v "" --
-	curx cury curw curh guiBox
+	guiZone
 	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
 	ttemitc onClick uiNext ;	
 	
+#auxw	
 ::uiTBtn | v "" -- ; width from text
 	ttemitsize 
-	padx 2* 4 + 'curw +!
-	curx cury curw curh guiBox
+	4 'curw +!
+	curx cury curw curh guiBox 
 	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
-	ttemitc onClick uiNext ;	
-	
+	ttemitc onClick 
+	curw 'curx +!
+	;	
+
+
 |----- list mem (intern)
 #cntlist
 #indlist
@@ -131,7 +146,7 @@
 |----- more widget
 ::uiCombo | 'var 'list --
 	mark makeindx
-	curx cury curw curh guiBox
+	guiZone
 	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
 	@ nindx uiLabel
 	empty ;
@@ -142,7 +157,7 @@
 	[ sdly cury - curh / over ! ; ] onClick
 	indlist >a
 	0 ( cntlist <?
-		over @ =? ( $7f uiFill )
+		over @ =? ( $7f sdlcolor uiFill )
 		a@+ uiLabel
 		1+ ) 2drop
 	empty ;	
@@ -151,7 +166,7 @@
 :ic	over @ 1 pick2 << and? ( drop "[x]" ; ) drop "[ ]" ;
 	
 :icheck | 'var n -- 'var n
-	curx cury curw curh guiBox
+	guiZone
 	[ 1 over << pick2 @ xor pick2 ! ; ] onClick
 	ic a@+ swap "%s %s" sprint uiLabel ;
 		
@@ -165,7 +180,7 @@
 :ir over @ =? ( "(o)" ; ) "( )" ;
 
 :iradio | 'var n --
-	curx cury curw curh guiBox
+	guiZone
 	[ 2dup swap ! ; ] onClick
 	ir a@+ swap "%s %s" sprint uiLabel ;
 
@@ -286,16 +301,16 @@
 	;
 
 ::uiInputLine | 'buff max --
-	curx cury curw curh guiBox
+	guiZone
 	'proinputa 'iniinput w/foco
 
-|	'clickfoco onClick
+	'clickfoco onClick
 	drop
 	ttemitl
 	uiNext ;	
 
 |-------- example
-#pad "hola" * 1024
+#pad * 1024
 	
 #listex "uno" "dos" "tres" 0
 
@@ -317,39 +332,55 @@
 
 :main
 	0 SDLcls gui
-	uifont 18 TTF_SetFontSize
 	
-	ui>
+	2 'padx ! 2 'pady !
+	uiFull
+|	1 10 uiGrid
+|	uiHome
+
 	48 4 512 22 uiWin
-	$ffffff uiRectW
-	256 22 uiBox
+|	$ffffff sdlcolor uiRectW
+	256 22 uiBox uiHome
+
 	'exit "r3" uitbtn
 	"/" uitlabel
 	'exit "juegos" uitbtn
 	"/" uitlabel
 	'exit "2025" uitbtn
 
-	uiv
+|	6 10 uiGrid
+
 	48 32 256 300 uiWin
-	$ffffff uiRectW
-	256 22 uiBox
+|	uiRectW
+	128 28 uibox
+	uiHome
+	
+	'exit "btn1"  uiBtn
+	'exit "btn2"  uiBtn
+	uicr
+
+	256 26 uiBox
 	"* Widget *" uiLabelc
+	uicr
 	'vt 'treeex uiList
-	$444444 uiLine
+	$444444 sdlcolor
+	uiLine
 	|'vt 'treeex uiTree
 
 	
-	600 32 512 300 uiWin
-	$888888 uiRectW
-	256 24 uibox
+	308 32 512 300 uiWin
+|	$888888 sdlcolor uiRectW
+	256 26 uibox
+	uiHome
+	
 	'vc 'listex uiCombo | 'var 'list --
-	$444444 uiLine
+	$444444 sdlcolor uiLine uicr
 	'vh 'listex uiCheck
-	$444444 uiLine
+	$444444 sdlcolor uiLine uicr
 	'vr 'listex uiRadio
-	$444444 uiLine
+	$444444 sdlcolor uiLine uicr
 	'pad 512 uiInputLine
-	$444444 uiLine
+	$444444 sdlcolor uiLine uicr
 	
 	SDLredraw
 	sdlkey
@@ -362,6 +393,7 @@
 	|"R3d4" 0 SDLfullw | full windows | 
 	"UI" 1280 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'uifont !
+	uifont 18 TTF_SetFontSize
 	
 	'main SDLshow
 	SDLquit 
