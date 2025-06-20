@@ -6,88 +6,118 @@
 
 ^r3/util/textb.r3
 
+#uicons
 ##uifont
+##uifonts
 ##uifcol $ffffff
 
+#xl #yl #wl #hl		| 
+#padx #pady	
+#curx #cury 
+#curw #curh	| actual widget
 
-#xl #yl #wl #hl 		| layer to put widget
-#padx #pady	#advx #advy #marx #mary
-#curx #cury #curw #curh	| actual widget
+#copy 0 0 0 0
+:ccopy
+	curh curw cury curx 'copy !+ !+ !+ ! ;
+:cback
+	'copy @+ 'curx ! @+ 'cury ! @+ 'curw ! @ 'curh ! ;
 
 #recbox 0 0
 
+:tt<
+	uifont swap uifcol TTF_RenderUTF8_Blended
+	Surf>wh swap ; | suf h w
+	
 :tt>
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'recbox SDL_RenderCopy	
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
 
-:ttemitsize | "" -- "" ; cursor
-	uifont over 'curw 'curh TTF_SizeUTF8 drop ;
-	
 :ttemitl | "text" --
 	dup c@ 0? ( 2drop ; ) drop
-	uifont swap uifcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
-	cury pady + curx padx + 'recbox d!+ d!+ d!+ d!
+	tt<
+	cury curx 'recbox d!+ d!+ d!+ d!
 	tt> ;
 
 :ttemitc | "text" --
-	uifont swap uifcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
+	dup c@ 0? ( 2drop ; ) drop
+	tt<
 	curh 2/ pick2 2/ - cury +
 	curw 2/ pick2 2/ - curx +
 	'recbox d!+ d!+ d!+ d!
 	tt> ;
 
 :ttemitr | "text" --
-	uifont swap uifcol TTF_RenderUTF8_Blended
-	Surf>wh swap | suf h w
-	cury pady + curw curx + pick2 - 'recbox d!+ d!+ d!+ d!
+	dup c@ 0? ( 2drop ; ) drop
+	tt<
+	cury curw curx + pick2 - 
+	'recbox d!+ d!+ d!+ d!
 	tt> ;
 
+#ttw #tth
+:ttsize | "" -- "" 
+	uifont over 'ttw 'tth TTF_SizeUTF8 drop ;
+	
+#backc
+:sizechar | -- 
+	backc 0? ( drop 8 'ttw ! ; ) drop
+	'backc ttsize drop ;
+	
+::ttcursor | str strcur -- str
+	dup c@ 'backc c! 0 over c!		| set end
+	swap ttsize  | strcur str 
+	curx ttw + cury sizechar ttw tth
+	SDLFrect
+	backc rot c! ;
+
+::ttcursori | str strcur -- str
+	dup c@ 'backc c! 0 over c!	| set end
+	swap ttsize  | strcur str
+	curx ttw + cury tth + 4 - sizechar ttw 4
+	sdlFrect
+	backc rot c! ;
+
+::uiFontSize | size --
+	uifont over TTF_SetFontSize
+	4 + 'uiFonts ! ;
+
 |----- zone
-::uiFull
-	0 0 sw sh
-::uiWin | x y w h --
-	'hl ! 'wl ! 'yl ! 'xl ! ;
-
-::uiGrid | cols rows --
-	hl swap /mod 2/ 'mary ! 'advy !
-	wl swap /mod 2/ 'marx ! 'advx ! ;
-
-::uiBox | w h --
-	dup 'advy ! pady 2* - 'curh !
-	dup 'advx ! padx 2* - 'curw !
-	;
-	
-|----- flow
-::uihome
-	xl marx + padx + 'curx ! 
-	advx padx 2* - 'curw !
-	yl mary + pady + 'cury !
-	advy pady 2* - 'curh !
-	;
-	
-::uiAt | x y --
-	advy * mary + 'curx !
-	advy pady 2* - 'curh !
-	advx * mary + 'curx !
-	advx padx 2* - 'curw !
-	;
+#xend
 
 ::uicr
-	xl marx + padx + 'curx ! 
+	xl padx + 'curx ! 
 ::uidn	
-	advy 'cury +! ;
+	hl 'cury +! ;
+::uiri
+	curx wl + xend >? ( drop uicr ; ) 'curx ! ;
+	
+#vflex 'uiri
 
-::uiNext 
-	curx advx + xl wl + >? ( drop uicr ; ) 'curx ! ;
+::uiH	'uiri 'vflex ! ;	| << horizontal flow
+::uiV	'uidn 'vflex ! ;	| << vertical flow
 
+:ui..	vflex ex ;
+
+::uiHome
+	sw 'xend ! uiH
+	0 0 
+::uixy
+	dup 'yl ! pady + 'cury ! 
+	dup 'xl ! padx + 'curx ! ;
+::uiPad
+	dup 'pady ! yl + 'cury !
+	dup 'padx ! xl + 'curx ! ;
+::uiBox | w h --
+	dup 'hl ! pady 2* - 'curh !
+	dup 'wl ! padx 2* - 'curw ! ;
+::uiEndx | xend
+	'xend ! ;
+	
 :guiZone 
 	curx cury curw curh guiBox ;
 
-|----- draw
+|----- draw/fill
 ::uiRectW 
 	xl yl wl hl SDLRect ;
 	
@@ -95,39 +125,46 @@
 	curx cury curw curh SDLFRect ;
 	
 ::uiLine
-	xl 4 + cury 3 + wl 8 - 2 SDLRect
-	8 'cury +! ;
+	curx cury 1 + curw 2 SDLRect
+	pady 7 + 'cury +! ;
 	
+|----- icon
+::uiconxy | x y nro --
+	uicons ssprite ;
+	
+::uicon | nro --
+	curx 14 + cury curh 2/ +
+	rot uicons ssprite 
+	26 'curx +! ;
 	
 |----- Widget	
 ::uiLabel | "" --
-	ttemitl uiNext ;
+	ttemitl ui.. ;
 ::uiLabelc | "" --
-	ttemitc uiNext ;
+	ttemitc ui.. ;
 ::uiLabelr | "" --
-	ttemitr uiNext ;
+	ttemitr ui.. ;
+	
 ::uitlabel
-	ttemitsize 
-	4 'curw +!	
+	ttsize ttw 4 + 'curw !	
 	ttemitc 
 	curw 'curx +!	
 	;
 	
 ::uiBtn | v "" --
 	guiZone
-	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
-	ttemitc onClick uiNext ;	
+	$666666 [ $ffffff nip ; ] guiI 
+	sdlcolor curx cury curw curh sdlRect
+|	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
+	ttemitc onClick ui.. ;	
 	
-#auxw	
 ::uiTBtn | v "" -- ; width from text
-	ttemitsize 
-	4 'curw +!
-	curx cury curw curh guiBox 
+	ttsize ttw 4 + 'curw !
+	guiZone
 	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
 	ttemitc onClick 
 	curw 'curx +!
 	;	
-
 
 |----- list mem (intern)
 #cntlist
@@ -143,32 +180,37 @@
 :nindx | n -- str
 	3 << indlist + @ ;
 
-|----- more widget
+|----- COMBO
 ::uiCombo | 'var 'list --
 	mark makeindx
 	guiZone
 	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
+	curx curw + 14 - cury curh 2/ + 146 uiconxy
 	@ nindx uiLabel
 	empty ;
 
-::uiList | 'var 'list --
+:ilist | 'var n -- 'var n
+	guiZone
+	[ 2dup swap ! ; ] onClick
+	over @ =? ( $7f sdlcolor uiFill )
+	a@+ uiLabel ;
+		
+::uiList
 	mark makeindx
-	curx cury curw hl guiBox
-	[ sdly cury - curh / over ! ; ] onClick
 	indlist >a
-	0 ( cntlist <?
-		over @ =? ( $7f sdlcolor uiFill )
-		a@+ uiLabel
-		1+ ) 2drop
+	0 ( cntlist <? ilist 1+ ) 2drop
 	empty ;	
 
-	
-:ic	over @ 1 pick2 << and? ( drop "[x]" ; ) drop "[ ]" ;
+|----- CHECK
+:ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
+	and? ( drop 57 ; ) drop 58 ;
 	
 :icheck | 'var n -- 'var n
 	guiZone
 	[ 1 over << pick2 @ xor pick2 ! ; ] onClick
-	ic a@+ swap "%s %s" sprint uiLabel ;
+	ccopy
+	ic uicon a@+ uiTLabel 
+	cback ui.. ;
 		
 ::uiCheck
 	mark makeindx
@@ -176,13 +218,16 @@
 	0 ( cntlist <? icheck 1+ ) 2drop
 	empty ;	
 
-
-:ir over @ =? ( "(o)" ; ) "( )" ;
+|----- RADIO
+:ir over @ |=? ( "(o)" ; ) "( )" ;
+	=? ( 226 ; ) 228 ;
 
 :iradio | 'var n --
 	guiZone
 	[ 2dup swap ! ; ] onClick
-	ir a@+ swap "%s %s" sprint uiLabel ;
+	ccopy
+	ir uicon a@+ uitlabel 
+	cback ui.. ;
 
 ::uiRadio
 	mark makeindx
@@ -190,7 +235,40 @@
 	0 ( cntlist <? iradio 1+ ) 2drop
 	empty ;	
 
+|---- Horizontal slide
+:slideh | 0.0 1.0 'value --
+	sdlx curx - curw clamp0max 
+	2over swap - | Fw
+	curw */ pick3 +
+	over ! ;
+	
+:slideshow | 0.0 1.0 'value --
+	$7f SDLColor
+	curx cury curw curh SDLFRect
+	$3f3fff [ $7f7fff nip ; ] guiI SDLColor
+	dup @ pick3 - 
+	curw 8 - pick4 pick4 swap - */ 
+	curx 1 + +
+	cury 2 + 
+	6 
+	curh 4 - 
+	SDLFRect ;
+	
+::uiSliderf | 0.0 1.0 'value --
+	guiZone
+	'slideh dup onDnMoveA | 'dn 'move --	
+	slideshow
+	@ .f2 uiLabelC
+	2drop ;
 
+::uiSlideri | 0 255 'value --
+	guiZone
+	'slideh dup onDnMoveA | 'dn 'move --	
+	slideshow	
+	@ .d uiLabelC
+	2drop ;	
+
+|-----
 ::uiTable
 	;
 ::uiTree
@@ -229,40 +307,6 @@
 
 #modo 'lins
 
-#textbox 0 0
-
-::ttsize | "" -- "" w h
-	uifont over 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
-	'textbox 8 + d@+ swap d@ ;
-			
-#backc	
-:sizechar | -- w 
-	backc 0? ( drop 8 ; ) drop
-	uifont 'backc 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
-	'textbox 8 + d@ ;
-	
-::ttcursor | str strcur -- str
-	dup c@ 'backc c! | str strcur
-	0 over c!		| set end
-	swap ttsize  | strcur str w h
-	curx rot + cury rot 
-	sizechar
-	swap SDLFrect
-	backc rot c!
-	;
-
-::ttcursori | str strcur -- str
-	dup c@ 'backc c! | str strcur
-	0 over c!		| set end
-	swap ttsize  | strcur str w h
-	curx rot + cury rot 
-	sizechar | x y h w
-	rot 	| x h w y
-	rot + 2 -	| x w y+h
-	swap 2 sdlFrect
-	backc rot c!
-	;
-
 :cursor | 'var max
 	msec $100 and? ( drop ; ) drop
 	$a0a0a0 SDLColor
@@ -271,9 +315,9 @@
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
-	pick2 1 - 'cmax !
+	pick2 1- 'cmax !
 	pick3 dup 'padi> !
-	( c@+ 1? drop ) drop 1 -
+	( c@+ 1? drop ) drop 1-
 	dup 'pad> ! 'padf> !
 	'lins 'modo !
 	;
@@ -303,11 +347,10 @@
 ::uiInputLine | 'buff max --
 	guiZone
 	'proinputa 'iniinput w/foco
-
 	'clickfoco onClick
 	drop
 	ttemitl
-	uiNext ;	
+	ui.. ;	
 
 |-------- example
 #pad * 1024
@@ -329,59 +372,54 @@
 #vt
 #vh
 #vr
+#si #sf
 
+:ui----
+	$444444 sdlcolor uiLine ;
+	
 :main
 	0 SDLcls gui
-	
-	2 'padx ! 2 'pady !
-	uiFull
-|	1 10 uiGrid
-|	uiHome
 
-	48 4 512 22 uiWin
-|	$ffffff sdlcolor uiRectW
-	256 22 uiBox uiHome
+	uiHome 
+	3 4 uiPad
+	48 4 uiXy |	$ffffff sdlcolor uiRectW
+	256 uiFonts 16 + uiBox 
 
-	'exit "r3" uitbtn
-	"/" uitlabel
-	'exit "juegos" uitbtn
-	"/" uitlabel
+	'exit "r3" uitbtn "/" uitlabel
+	'exit "juegos" uitbtn "/" uitlabel
 	'exit "2025" uitbtn
 
-|	6 10 uiGrid
-
-	48 32 256 300 uiWin
-|	uiRectW
-	128 28 uibox
-	uiHome
+	48 uiFontS 16 + uiXy |	uiRectW
+	128 uiFonts 8 + uiBox
 	
-	'exit "btn1"  uiBtn
-	'exit "btn2"  uiBtn
+	'exit "btn1"  uiBtn 
+	'exit "btn2"  uiBtn 
 	uicr
 
-	256 26 uiBox
+	uiV | vertical
+	256 uiFonts 8 + uiBox
 	"* Widget *" uiLabelc
-	uicr
+
 	'vt 'treeex uiList
-	$444444 sdlcolor
-	uiLine
+	ui----
 	|'vt 'treeex uiTree
 
 	
-	308 32 512 300 uiWin
-|	$888888 sdlcolor uiRectW
-	256 26 uibox
-	uiHome
-	
+	308 uiFontS 16 + uiXy |	$888888 sdlcolor uiRectW
+	256 uiFonts 8 + uiBox
+	|ui-
 	'vc 'listex uiCombo | 'var 'list --
-	$444444 sdlcolor uiLine uicr
+	ui----
 	'vh 'listex uiCheck
-	$444444 sdlcolor uiLine uicr
+	ui----
 	'vr 'listex uiRadio
-	$444444 sdlcolor uiLine uicr
+	ui----
 	'pad 512 uiInputLine
-	$444444 sdlcolor uiLine uicr
-	
+	ui----
+	0 255 'si uiSlideri
+	ui----
+	-1.0 1.0 'sf uiSliderf
+	ui----
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
@@ -392,9 +430,10 @@
 	"R3d4 UI" .println
 	|"R3d4" 0 SDLfullw | full windows | 
 	"UI" 1280 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'uifont !
-	uifont 18 TTF_SetFontSize
-	
+	"media/ttf/Roboto-bold.ttf" 16 TTF_OpenFont 'uifont !
+	24 21 "media/img/icong16.png" ssload 'uicons !
+	20 uifontsize
+
 	'main SDLshow
 	SDLquit 
 	;
