@@ -9,7 +9,9 @@
 #uicons
 ##uifont
 ##uifonts
+
 ##uifcol $ffffff
+
 
 #xl #yl #wl #hl		| 
 #padx #pady	
@@ -178,6 +180,7 @@
 	'here ! ;
 	
 :nindx | n -- str
+	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
 |----- COMBO
@@ -188,18 +191,6 @@
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
 	@ nindx uiLabel
 	empty ;
-
-:ilist | 'var n -- 'var n
-	guiZone
-	[ 2dup swap ! ; ] onClick
-	over @ =? ( $7f sdlcolor uiFill )
-	a@+ uiLabel ;
-		
-::uiList
-	mark makeindx
-	indlist >a
-	0 ( cntlist <? ilist 1+ ) 2drop
-	empty ;	
 
 |----- CHECK
 :ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
@@ -268,10 +259,70 @@
 	@ .d uiLabelC
 	2drop ;	
 
+|----- LIST
+| #vlist 0 0 
+
+:ilist | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( $7f sdlcolor uiFill )
+	nindx ttemitl 
+	curh 'cury +! ;
+		
+:clist
+	cntlist <? ( sdlx curx - curw 20 - >? ( drop ; ) drop )
+	sdly cury - curh / pick2 ! ;
+
+:slidev
+|	sdly backc -
+	
+|	2over swap - | Fw
+|	boxw */ pick3 +
+|	over ! ;
+	;
+	
+:cscroll
+	cntlist >=? ( ; ) 
+	curx curw + 20 - backc
+	20 cury backc - 
+	|2over 2over sdlRect
+	guiBox 
+	'slidev dup onDnMoveA 
+	$4444ff sdlcolor
+	curx curw + 20 - backc 10 +
+	20 20 sdlFrect
+	;
+	
+::uiList | 'var cntlines list --
+	mark makeindx
+	curx cury dup 'backc ! 
+	curw pick3 curh * guiBox 
+	'clist onclick
+	0 ( over <? ilist 1+ ) drop
+	cscroll
+	2drop
+	pady 'cury +!
+	empty ;	
+
+|----- TREE
+:itree | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( $7f sdlcolor uiFill )
+	nindx ttemitl 
+	curh 'cury +! ;
+
+::uiTree
+	mark makeindx
+	curx cury dup 'backc ! 
+	curw pick3 curh * guiBox 
+	'clist onclick
+	0 ( over <? itree 1+ ) drop
+	2drop
+	pady 'cury +!
+	empty ;	
+	;
+
 |-----
 ::uiTable
-	;
-::uiTree
 	;
 ::uiTab
 	;
@@ -355,7 +406,7 @@
 |-------- example
 #pad * 1024
 	
-#listex "uno" "dos" "tres" 0
+#listex "uno" "dos" "tres" "cuatro" 0
 
 #treeex
 "+uno"
@@ -373,6 +424,8 @@
 #vh
 #vr
 #si #sf
+
+#listi 0 0
 
 :ui----
 	$444444 sdlcolor uiLine ;
@@ -400,7 +453,7 @@
 	256 uiFonts 8 + uiBox
 	"* Widget *" uiLabelc
 
-	'vt 'treeex uiList
+	'listi 5 'treeex uiList | 8
 	ui----
 	|'vt 'treeex uiTree
 
@@ -432,7 +485,7 @@
 	"UI" 1280 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 16 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
-	20 uifontsize
+	18 uifontsize
 
 	'main SDLshow
 	SDLquit 
