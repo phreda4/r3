@@ -269,28 +269,29 @@
 	curh 'cury +! ;
 		
 :clist
-	cntlist <? ( sdlx curx - curw 20 - >? ( drop ; ) drop )
-	sdly cury - curh / pick2 ! ;
+	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
+	sdly cury - curh / pick2 dup 8 + @ rot + swap ! ;
 
-:slidev
-|	sdly backc -
+:slidev | 'var max rec --
+	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
+	over cury backc - */ pick3 8 + ! ;
 	
-|	2over swap - | Fw
-|	boxw */ pick3 +
-|	over ! ;
-	;
-	
-:cscroll
+:cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
-	curx curw + 20 - backc
-	20 cury backc - 
-	|2over 2over sdlRect
+	curx curw + 16 - backc
+	16 cury backc - |2over 2over sdlRect
 	guiBox 
+	cntlist over - 1+	| maxi
 	'slidev dup onDnMoveA 
-	$4444ff sdlcolor
-	curx curw + 20 - backc 10 +
-	20 20 sdlFrect
-	;
+	
+	$444444 sdlcolor
+	curx curw + 16 -		| 'var max maxi x 
+	pick3 8 + @ 			| 'var max maxi x ini
+	cury backc - pick3 / 	| 'var max maxi x ini hp
+	swap over *	backc +		| 'var max maxi x hp ini*hp
+	16 rot
+	sdlFrect	
+	drop ;
 	
 ::uiList | 'var cntlines list --
 	mark makeindx
@@ -307,7 +308,9 @@
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( $7f sdlcolor uiFill )
+	
 	nindx ttemitl 
+	
 	curh 'cury +! ;
 
 ::uiTree
@@ -452,7 +455,7 @@
 	uiV | vertical
 	256 uiFonts 8 + uiBox
 	"* Widget *" uiLabelc
-
+	ui----
 	'listi 5 'treeex uiList | 8
 	ui----
 	|'vt 'treeex uiTree
