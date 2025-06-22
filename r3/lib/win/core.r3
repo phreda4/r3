@@ -48,6 +48,7 @@
 	
 #fdd * 512
 #hfind 
+
 |struct WIN32_FIND_DATAA
 |  dwFileAttributes   dd ? 0
 |  ftCreationTime     FILETIME 4
@@ -59,6 +60,7 @@
 |  dwReserved1	     dd ? 40
 |  cFileName	     db MAX_PATH dup (?) 44
 |  cAlternateFileName db 14 dup (?)
+::findata	'fdd ;
 
 ::ffirst | "path//*" -- fdd/0
 	'fdd FindFirstFile

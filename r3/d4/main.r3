@@ -58,35 +58,51 @@
 #memfiles>
 #link
 
+|8k names
+#memdirs * $ffff
+#memdirs>
 	
+#filen 
+#filen>
+
+#lvl 0
+
 :+dir
+	dup FDIR 0? ( 2drop ; ) drop
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	over FDIR 0? ( 3drop ; ) drop
-	a> 'link !		|  f name
-	over FSIZEF 32 <<
-	|pick2 FDIR 24 << or 
-	a!+
-	over FWRITEDT dt>64 a!+
-	a> strcpyl dup 
-	a> - link +! | save link 
-	>a
-	drop ;
+	here filen - 
+	lvl 24 << or
+	memdirs> !+ 'memdirs> !
+	,s 0 ,c ;
 	
 :adddir | path --
-	ffirst ( 
-		|dup FDIR 1? ( adddir ) drop
-		+dir
-		fnext 1? ) drop  ;
-	
+	ffirst ( +dir fnext 1? ) drop  ;
+		
 :rebuildir
-	here dup 'memdirs ! >a 
+	here 'filen ! 
+	'memdirs 'memdirs> !
 	'basepath
 |WIN|	"%s//*" sprint
 	adddir
-	0 a> !+ dup 'memdirs> ! 'here !
+	0 memdirs> !+ 'memdirs> !
+	
+	'memdirs ( memdirs> <? 
+		dup @
+		|0? ( 1 'lvl +! )
+		dup $ffffff and filen +
+		swap !+
+		) drop
 	;
+	
+:pdir
+	0? ( drop "-----" .println ; )
+	$ffffff and filen + .println ;
+	
+:printdir
+	'memdirs
+	( memdirs> <? @+ pdir ) drop ;
 
 |-----------------------
 #stkd * 1024
@@ -161,26 +177,8 @@
 	;
 
 
-||||||||||||||||
-:filelist
-	0 0 txy
-	memfiles 
-	( @+ 1?
-		|dup 32 >> "%d " tprint | size
-		|dup 24 >> $ff and "%d " tprint | type
-		$ffffff and
-		swap @+
-		|64>dtf temits | DT
-		drop
-		dup temits
-		tcr
-		+ ) 2drop ;
-||||||||||||||||
-
 :pathpanel
-	ui>
-	uifont 18 TTF_SetFontSize
-	48 4 512 300 uiWin
+	48 4 uiXy
 	256 22 uiBox
 	'exit "r3" uitbtn
 	"/" uitlabel
@@ -190,9 +188,7 @@
 	;
 
 :dirpanel
-	uiv
-	uifont 18 TTF_SetFontSize
-	48 32 256 300 uiWin
+	48 32 uiXy
 	256 22 uiBox
 	memdirs 
 	( @+ 1?
@@ -201,9 +197,7 @@
 		+ ) 2drop ;
 	
 :filpanel
-	uiv
-	uifont 18 TTF_SetFontSize
-	304 32 256 300 uiWin
+	304 32 uiXy 
 	256 22 uiBox
 	memfiles 
 	( @+ 1?
@@ -214,7 +208,7 @@
 #pad "hola" * 1024
 		
 :namepanel
-	32 500 512 24 uiWin
+	32 500 uiXy
 	512 24 uiBox
 	'pad 1024 uiInputLine | 'buff max --
 	;
@@ -223,10 +217,14 @@
 
 :main
 	0 SDLcls gui
+	uiHome
+	3 4 uiPad
 |	sw 2/ sh 2/ ttitle sprite
 	
 |	filelist
 	pathpanel
+	
+	uiV
 	dirpanel
 	filpanel
 	namepanel
@@ -237,24 +235,36 @@
 	drop
 	;
 	
+#diskdirs
 |-----------------------------
 |-----------------------------	
 :	
-	|"R3d4" 0 SDLfullw | full windows | 
-	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'uifont !
-|	tini
-	
-	mark
-	rebuildir
-	rebuild
+	.cls
+	"R3d4 IDE" .println
 
-.cls
-"R3d4 IDE" .println
+	|"R3d4" 0 SDLfullw | full windows | 
+	|"R3d4" 1280 720 SDLinit
+	|"media/ttf/Roboto-bold.ttf" 24 TTF_OpenFont 'uifont !
+|	tini
+	|18 uifontsize
+
+	mark
+	here 'diskdirs !
+	"r3" uiScanDir
+	
+|	mark
+|	rebuildir
+|	printdir
+
+	
+	|rebuild
+
 |traversedirs
 	
 |	"r3/forth IDE" $5ffff 300 200 font textbox 'ttitle !
 	
-	'main SDLshow
-	SDLquit 
+	|'main SDLshow
+	|SDLquit 
+	
+	waitesc
 	;

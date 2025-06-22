@@ -182,6 +182,33 @@
 :nindx | n -- str
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
+	
+|  $3f level	
+|	0< $00=skip/$80=draw
+|	1
+
+#lvl	
+	
+:getval	| adr c@ ; a
+	$3f and 
+	lvl <=? ( 'lvl ! ; ) 
+	a> 8 - @ c@ $80 and? ( drop 'lvl ! ; ) | draw
+	2drop
+	( >>0 dup c@ 1? 
+		$3f and lvl >? drop )
+	drop ;
+	
+:maketree |
+	0 'lvl !
+	here dup 'indlist ! >a
+	( dup a!+ >>0
+		dup c@ 1? 
+		getval
+		) 2drop
+	a> 8 - @ c@ 0? ( -8 a+ ) drop
+	a> dup here - 3 >> 'cntlist !
+	'here ! ;
+	
 
 |----- COMBO
 ::uiCombo | 'var 'list --
@@ -268,7 +295,7 @@
 	nindx ttemitl 
 	curh 'cury +! ;
 		
-:clist
+:cklist
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
 	sdly cury - curh / pick2 dup 8 + @ rot + swap ! ;
 
@@ -297,7 +324,7 @@
 	mark makeindx
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	'clist onclick
+	'cklist onclick
 	0 ( over <? ilist 1+ ) drop
 	cscroll
 	2drop
@@ -305,24 +332,82 @@
 	empty ;	
 
 |----- TREE
+| #vtree 0 0
+
+:cktree
+	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
+	sdly cury - curh / pick2 dup 8 + @ rot + 
+	dup rot !
+	|sdlx curx - 16 >? ( drop ; ) drop
+	3 << indlist + @ 
+	dup c@ $80 xor swap c!
+	;
+	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( $7f sdlcolor uiFill )
-	
-	nindx ttemitl 
-	
+	nindx 
+	c@+ 0? ( 2drop curh 'cury +! ; )
+	curx 'ttw !
+	$3f and 4 << 'curx +!
+	ttemitl 
+	ttw 'curx !
 	curh 'cury +! ;
 
-::uiTree
-	mark makeindx
+::uiTree | 'var cntlines list --
+	mark |makeindx
+	maketree
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	'clist onclick
+	'cktree onclick
 	0 ( over <? itree 1+ ) drop
+	cscroll
 	2drop
 	pady 'cury +!
 	empty ;	
 	;
+
+|------ folders for tree
+#stckhdd>
+#basepath * 1024
+
+#l1 0 #l2 0 
+:backdir | -- ;  2 '/' !!
+	0 'l1 !
+	'basepath ( c@+ 1? 
+		$2f =? ( l1 'l2 ! over 'l1 ! )
+		drop ) 2drop
+	0 l2 1? ( c! ; ) 2drop ;	
+
+:pushdd | --
+	stckhdd> findata 520 cmove |dsc
+	520 'stckhdd> +! ;
+	
+:pophdd
+	-520 'stckhdd> +!
+	findata stckhdd> 520 cmove ;
+
+:scand | level "" --
+	'basepath strcat "/" 'basepath strcat
+	'basepath 
+	|WIN|	"%s/*" sprint
+	ffirst drop fnext drop 
+	( fnext 1?
+		dup fdir 1? (
+			pushdd
+|			pick2 64 + .emit over fname .write .cr
+			pick2 64 + ,c over fname ,s 0 ,c
+			pick2 1+ pick2 fname scand
+			pophdd
+			) 2drop
+		) 2drop 	
+	backdir
+	;
+
+::uiScanDir | "" --
+	0 'basepath !
+	here $ffff + 'stckhdd> ! 
+	0 swap scand 0 , ;
 
 |-----
 ::uiTable
@@ -330,7 +415,7 @@
 ::uiTab
 	;
 	
-	
+
 |--- Edita linea
 #cmax
 #padi>	| inicio
@@ -382,8 +467,7 @@
 
 :proinputa | --
 	$ffffff SDLColor
-	curx cury curw curh sdlRect
-
+|	curx cury curw curh sdlRect
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
 	SDLkey 0? ( drop ; )
@@ -406,20 +490,28 @@
 	ttemitl
 	ui.. ;	
 
+::uiText
+	;
+::uiEdit
+	;
+
 |-------- example
 #pad * 1024
 	
 #listex "uno" "dos" "tres" "cuatro" 0
 
 #treeex
-"+uno"
-" .aaa"
-" .bbb"
-".dos"
-".tres"
-"+listado"
-" .uno"
-" .dos"
+"@uno"
+"Aaaa"
+"Abbb"
+"Blksdhfl"
+"Blksdhfl"
+"Axnb"
+"@dos"
+"@tres"
+"@listado"
+"Auno"
+"Ados"
 0
 
 #vc
@@ -428,9 +520,12 @@
 #vr
 #si #sf
 
-#listi 0 0
+#vlist 0 0
+#vtree 0 0
 
-:ui----
+#folders 0
+
+:ui--
 	$444444 sdlcolor uiLine ;
 	
 :main
@@ -455,27 +550,28 @@
 	uiV | vertical
 	256 uiFonts 8 + uiBox
 	"* Widget *" uiLabelc
-	ui----
-	'listi 5 'treeex uiList | 8
-	ui----
-	|'vt 'treeex uiTree
+	ui--
+	'vlist 4 'listex uiList | 8
+	ui--
+	'vtree 9 folders |'treeex 
+	uiTree
+	ui--
 
-	
 	308 uiFontS 16 + uiXy |	$888888 sdlcolor uiRectW
 	256 uiFonts 8 + uiBox
-	|ui-
 	'vc 'listex uiCombo | 'var 'list --
-	ui----
+	ui--
 	'vh 'listex uiCheck
-	ui----
+	ui--
 	'vr 'listex uiRadio
-	ui----
+	ui--
 	'pad 512 uiInputLine
-	ui----
+	ui--
 	0 255 'si uiSlideri
-	ui----
+	ui--
 	-1.0 1.0 'sf uiSliderf
-	ui----
+	ui--
+	
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
@@ -489,6 +585,9 @@
 	"media/ttf/Roboto-bold.ttf" 16 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	18 uifontsize
+
+	here 'folders !
+	"r3" uiScanDir
 
 	'main SDLshow
 	SDLquit 
