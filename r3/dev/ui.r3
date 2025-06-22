@@ -137,7 +137,9 @@
 ::uicon | nro --
 	curx 14 + cury curh 2/ +
 	rot uicons ssprite 
+::uicone
 	26 'curx +! ;
+
 	
 |----- Widget	
 ::uiLabel | "" --
@@ -190,12 +192,14 @@
 #lvl	
 	
 :getval	| adr c@ ; a
-	$3f and 
+	$1f and 
 	lvl <=? ( 'lvl ! ; ) 
-	a> 8 - @ c@ $80 and? ( drop 'lvl ! ; ) | draw
+	a> 8 - @ dup 				
+	c@ $20 or over c!
+	c@ $80 and? ( drop 'lvl ! ; ) | draw
 	2drop
 	( >>0 dup c@ 1? 
-		$3f and lvl >? drop )
+		$1f and lvl >? drop )
 	drop ;
 	
 :maketree |
@@ -205,11 +209,10 @@
 		dup c@ 1? 
 		getval
 		) 2drop
-	a> 8 - @ c@ 0? ( -8 a+ ) drop
+	|a> 8 - @ dup c@ $df and swap c! 
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 	
-
 |----- COMBO
 ::uiCombo | 'var 'list --
 	mark makeindx
@@ -310,7 +313,6 @@
 	guiBox 
 	cntlist over - 1+	| maxi
 	'slidev dup onDnMoveA 
-	
 	$444444 sdlcolor
 	curx curw + 16 -		| 'var max maxi x 
 	pick3 8 + @ 			| 'var max maxi x ini
@@ -342,14 +344,20 @@
 	3 << indlist + @ 
 	dup c@ $80 xor swap c!
 	;
+
+:iicon | n -- 
+	$20 nand? ( drop uicone ; )
+	7 >> 1 and 1 xor 36 + uicon ; 
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( $7f sdlcolor uiFill )
+|	iicon
 	nindx 
 	c@+ 0? ( 2drop curh 'cury +! ; )
 	curx 'ttw !
-	$3f and 4 << 'curx +!
+	dup $1f and 4 << 'curx +!
+	iicon 
 	ttemitl 
 	ttw 'curx !
 	curh 'cury +! ;
@@ -357,6 +365,7 @@
 ::uiTree | 'var cntlines list --
 	mark |makeindx
 	maketree
+	|cntlist pick2 8 + @ <=? ( dup 1- pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
 	'cktree onclick
@@ -502,16 +511,13 @@
 
 #treeex
 "@uno"
-"Aaaa"
-"Abbb"
-"Blksdhfl"
-"Blksdhfl"
-"Axnb"
+	"Aaaa" "Abbb"
+		"Blksdhfl" "Blksdhfl"
+	"Axnb"
 "@dos"
 "@tres"
 "@listado"
-"Auno"
-"Ados"
+	"Auno" "Ados"
 0
 
 #vc
@@ -553,9 +559,9 @@
 	ui--
 	'vlist 4 'listex uiList | 8
 	ui--
-	'vtree 9 folders |'treeex 
-	uiTree
+	'vtree 9 folders uiTree
 	ui--
+|	'vtree 9 'treeex uiTree
 
 	308 uiFontS 16 + uiXy |	$888888 sdlcolor uiRectW
 	256 uiFonts 8 + uiBox
