@@ -7,8 +7,6 @@
 ^r3/util/textb.r3
 
 ##uicons
-##uifont
-##uifonts	| size font
 
 |$878787ff | DEFAULT_BORDER_COLOR_NORMAL 
 |$2c2c2cff | DEFAULT_BASE_COLOR_NORMAL 
@@ -58,6 +56,11 @@
 
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;
+	
+|---- FONT	
+
+##uifont
+##uifonts	| size font
 
 :tt< | "" -- surf h w
 	uifont swap uicfnt TTF_RenderUTF8_Blended
@@ -113,15 +116,39 @@
 	uifont over TTF_SetFontSize
 	4 + 'uiFonts ! ;
 
-|----- zone
-#xend #yend
+|----- draw/fill
+::uiRectW 	xl yl wl hl SDLRect ;
+::uiFillW	xl yl wl hl SDLFRect ;
+::uiRect	curx cury curw curh SDLFRect ;
+::uiFill	curx cury curw curh SDLFRect ;
+	
+::uiTitleF
+	xl cury pady - wl curh pady 2* + sdlFrect ;
+	
+::uiTitle	| str --
+	dup c@ 0? ( 2drop ; ) drop
+	tt<
+	cury 
+	wl 2/ pick2 2/ - xl +
+	recbox! tt> 
+	curh pady 2* + 'cury +! ;
 
+::uiLineH
+	curx cury 1 + curw 2 SDLRect
+	pady 7 + 'cury +! ;
+	
+::uiLineV
+	curx curw 2/ + 1- cury 1+ 2 curh 2 - SDLRect ;
+
+|----- zone
 ::uicr
 	xl padx + 'curx ! 
 ::uidn	
-	hl 'cury +! ;
+	curh pady 2* +  'cury +! ;
 ::uiri
-	curx wl + xend >? ( drop uicr ; ) 'curx ! ;
+	curx curw + padx 2* + | new x
+	xl wl + 
+	>? ( drop uicr ; ) 'curx ! ;
 	
 #vflex 'uiri
 
@@ -130,34 +157,35 @@
 
 :ui..	vflex ex ;
 
-::uiHome
-	sw 'xend ! uiH
-	0 0 
-::uixy
+::uiPad | padx pady --
+	'pady ! 'padx ! ;
+	
+::uixy | x y --
 	dup 'yl ! pady + 'cury ! 
 	dup 'xl ! padx + 'curx ! ;
-::uiPad
-	dup 'pady ! yl + 'cury !
-	dup 'padx ! xl + 'curx ! ;
+
+::uiSize | w h --
+	'hl ! 'wl ! ;
+
 ::uiBox | w h --
-	dup 'hl ! pady 2* - 'curh !
-	dup 'wl ! padx 2* - 'curw ! ;
-::uiEndx | xend yend --
-	'yend ! 'xend ! ;
+	pady 2* - 'curh !
+	padx 2* - 'curw ! ;
+
+::uiGrid | c r --
+	hl swap / pady 2* - 'curh ! 
+	wl swap / padx 2* - 'curw ! ;
+	
+::uiHome
+	uiH
+	sw 'wl ! sh 'hl !
+	0 0 uixy ;
 	
 :guiZone 
-	curx cury curw curh guiBox ;
+	curx cury curw curh guiBox 
+	
+	| over
+	;
 
-|----- draw/fill
-::uiRectW 
-	xl yl wl hl SDLRect ;
-	
-::uiFill
-	curx cury curw curh SDLFRect ;
-	
-::uiLine
-	curx cury 1 + curw 2 SDLRect
-	pady 7 + 'cury +! ;
 	
 |----- icon
 ::uiconxy | x y nro --
@@ -166,9 +194,8 @@
 ::uicon | nro --
 	curx 14 + cury curh 2/ +
 	rot uicons ssprite 
-::uicone
+::uicone | -- ; empty icon
 	26 'curx +! ;
-
 	
 |----- Widget	
 ::uiLabel | "" --
@@ -186,15 +213,15 @@
 	
 ::uiBtn | v "" --
 	guiZone
-	$666666 [ $ffffff nip ; ] guiI 
-	sdlcolor curx cury curw curh sdlRect
-|	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
+	$66 [ $ff nip ; ] guiI 
+	sdlcolor uiRect
+|	[ $ffffff sdlcolor uiRect ; ] guiI 
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
 	ttsize ttw 4 + 'curw !
 	guiZone
-	[ $ffffff sdlcolor curx cury curw curh sdlRect ; ] guiI 
+	[ $ffffff sdlcolor uiRect ; ] guiI 
 	ttemitc onClick 
 	curw 'curx +!
 	;	
@@ -214,8 +241,7 @@
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
-#lvl	
-|  $1f:level $20:have_more $80:is_open	
+#lvl	|  $1f:level $20:have_more $80:is_open	
 :getval	| adr c@ ; a
 	$1f and 
 	lvl <=? ( 'lvl ! ; ) 
@@ -302,8 +328,7 @@
 	over ! ;
 	
 :slideshow | 0.0 1.0 'value --
-	$7f SDLColor
-	curx cury curw curh SDLFRect
+	$7f SDLColor uiFill
 	$3f3fff [ $7f7fff nip ; ] guiI SDLColor
 	dup @ pick3 - 
 	curw 8 - pick4 pick4 swap - */ 
@@ -382,8 +407,7 @@
 	dup rot !
 	|sdlx curx - 16 >? ( drop ; ) drop
 	3 << indlist + @ 
-	dup c@ $80 xor swap c!
-	;
+	dup c@ $80 xor swap c! ;
 
 :iicon | n -- 
 	$20 nand? ( drop uicone ; )
@@ -521,8 +545,7 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
-	$ffffff SDLColor
-|	curx cury curw curh sdlRect
+	$ffffff SDLColor |	uiRect
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
 	SDLkey 0? ( drop ; )
@@ -542,8 +565,7 @@
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
 	drop
-	ttemitl
-	ui.. ;	
+	ttemitl ui.. ;	
 
 ::uiText
 	;
@@ -578,19 +600,40 @@
 #folders 0
 
 :ui--
-	$444444 sdlcolor uiLine ;
+	$444444 sdlcolor uiLineH ;
+
+:testtab
+	580 4 uiXy 500 60 uiSize
+	4 2 uiGrid
+
+	
+	$3F00 SDLCOLOR uiFillW
+	
+	$3f sdlcolor uiTitleF
+	"Tabs" uiTitle
+	$ffffff SDLCOLOR uiRectW
+
+	$7f00 sdlcolor uiFill
+	$7f sdlcolor uiRect
+	
+	$ffffff SDLCOLOR 	
+	'vlist 'listex uiTab
+	;
 	
 :main
 	0 SDLcls gui
 
 	uiHome 
 	3 4 uiPad
+
+	testTab
+
 	48 4 uiXy |	$ffffff sdlcolor uiRectW
 	256 uiFonts 16 + uiBox 
-
 	'exit "r3" uitbtn "/" uitlabel
 	'exit "juegos" uitbtn "/" uitlabel
 	'exit "2025" uitbtn
+	
 
 	48 uiFontS 16 + uiXy |	uiRectW
 	128 uiFonts 8 + uiBox
@@ -645,4 +688,4 @@
 	SDLquit 
 	;
 
-|: t ;
+: t ;

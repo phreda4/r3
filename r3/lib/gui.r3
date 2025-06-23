@@ -126,10 +126,10 @@
 | manejo de foco (teclado)
 
 ::nextfoco
-	foco 1 + idl >? ( 0 nip ) 'foco ! ;
+	foco 1+ idl >? ( 0 nip ) 'foco ! ;
 
 ::prevfoco
-	foco 1 - 0 <=? ( idl nip ) 'foco ! ;
+	foco 1- 0 <=? ( idl nip ) 'foco ! ;
 
 ::setfoco | nro --
 	'foco ! -1 'foconow ! ;
@@ -142,30 +142,30 @@
 	idf foco =? ( drop ; ) 'foco ! ;
 
 ::clickfoco1
-	idf 1 + 'foco ! -1 'foconow ! ;
+	idf 1+ 'foco ! -1 'foconow ! ;
 
 ::refreshfoco
 	-1 'foconow ! 0 'foco ! ;
 
 ::w/foco | 'in 'start --
-	idf 1 +
+	idf 1+
 	foco 0? ( drop dup dup 'foco ! ) | quitar?
 	<>? ( 'idf ! 2drop ; )
 	foconow <>? ( dup 'foconow ! swap ex 'idf ! drop ; )
 	nip 'idf ! ex ;
 
 ::focovoid | --
-	idf 1 +
+	idf 1+
 	foco 0? ( drop dup dup 'foco ! ) | quitar?
 	<>? ( 'idf ! ; )
 	foconow <>? ( dup 'foconow ! )
 	'idf ! ;
 
 ::esfoco? | -- 0/1
-	idf 1 + foconow - not ;
+	idf 1+ foconow - not ;
 
 ::in/foco | 'in --
-	idf 1 +
+	idf 1+
 	foco 0? ( drop dup dup 'foco ! )
 	<>? ( 'idf ! drop ; )
 	'idf !
@@ -173,7 +173,7 @@
 
  | no puedo retroceder! (idea: separa id for text input)
 ::lostfoco | 'acc --
-	idf 1 + foco <>? ( 'idf ! drop ; ) 'idf !
+	idf 1+ foco <>? ( 'idf ! drop ; ) 'idf !
 	ex
 	nextfoco
 	;
