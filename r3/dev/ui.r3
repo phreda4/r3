@@ -6,7 +6,7 @@
 
 ^r3/util/textb.r3
 
-#uicons
+##uicons
 ##uifont
 ##uifonts
 
@@ -181,16 +181,12 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 	
-:nindx | n -- str
+::nindx | n -- str
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
-	
-|  $3f level	
-|	0< $00=skip/$80=draw
-|	1
 
 #lvl	
-	
+|  $1f:level $20:have_more $80:is_open	
 :getval	| adr c@ ; a
 	$1f and 
 	lvl <=? ( 'lvl ! ; ) 
@@ -212,7 +208,7 @@
 	|a> 8 - @ dup c@ $df and swap c! 
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
-	
+
 |----- COMBO
 ::uiCombo | 'var 'list --
 	mark makeindx
@@ -233,7 +229,7 @@
 	ic uicon a@+ uiTLabel 
 	cback ui.. ;
 		
-::uiCheck
+::uiCheck | 'var 'list --
 	mark makeindx
 	indlist >a
 	0 ( cntlist <? icheck 1+ ) 2drop
@@ -250,7 +246,7 @@
 	ir uicon a@+ uitlabel 
 	cback ui.. ;
 
-::uiRadio
+::uiRadio | 'var 'list --
 	mark makeindx
 	indlist >a
 	0 ( cntlist <? iradio 1+ ) 2drop
@@ -300,7 +296,8 @@
 		
 :cklist
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
-	sdly cury - curh / pick2 dup 8 + @ rot + swap ! ;
+	sdly cury - curh / pick2 dup 8 + @ rot + 
+	cntlist 1- clampmax swap ! ;
 
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
@@ -352,20 +349,18 @@
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( $7f sdlcolor uiFill )
-|	iicon
 	nindx 
 	c@+ 0? ( 2drop curh 'cury +! ; )
 	curx 'ttw !
 	dup $1f and 4 << 'curx +!
-	iicon 
-	ttemitl 
+	iicon ttemitl 
 	ttw 'curx !
 	curh 'cury +! ;
 
 ::uiTree | 'var cntlines list --
 	mark |makeindx
 	maketree
-	|cntlist pick2 8 + @ <=? ( dup 1- pick3 8 + ! ) drop
+	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
 	'cktree onclick
@@ -374,8 +369,19 @@
 	2drop
 	pady 'cury +!
 	empty ;	
-	;
-
+	
+::uiTreePath | n -- str
+	here 1024 + dup >b >a
+	mark
+	( dup nindx c@+ $1f and 
+		swap a!+ 1? 'lvl ! 
+		( 1- dup nindx c@ $1f and 
+			lvl >=? drop ) drop
+		) 2drop
+	a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop
+	0 ,c
+	empty here ;
+	
 |------ folders for tree
 #stckhdd>
 #basepath * 1024
@@ -399,7 +405,7 @@
 :scand | level "" --
 	'basepath strcat "/" 'basepath strcat
 	'basepath 
-	|WIN|	"%s/*" sprint
+|WIN| "%s/*" sprint
 	ffirst drop fnext drop 
 	( fnext 1?
 		dup fdir 1? (
@@ -410,8 +416,7 @@
 			pophdd
 			) 2drop
 		) 2drop 	
-	backdir
-	;
+	backdir ;
 
 ::uiScanDir | "" --
 	0 'basepath !
@@ -436,9 +441,9 @@
 	pad> dup 1- padf> over - 1+ cmove> 1 'padf> +!
 :lover | c -- ;
 	pad> c!+ dup 'pad> !
-	padf> >? (
-		dup padi> - cmax >=? ( swap 1 - swap -1 'pad> +! ) drop
-		dup 'padf> ! ) drop
+	padf> <=? ( drop ; )
+	dup padi> - cmax >=? ( swap 1- swap -1 'pad> +! ) drop
+	'padf> ! ;
 :0lin 0 padf> c! ;
 :kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
 :kback pad> padi> <=? ( drop ; ) dup 1- swap padf> over - 1+ cmove -1 'padf> +! -1 'pad> +! ;
@@ -599,4 +604,4 @@
 	SDLquit 
 	;
 
-: t ;
+|: t ;
