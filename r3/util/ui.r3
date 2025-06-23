@@ -177,10 +177,10 @@
 	hl swap / pady 2* - 'curh ! 
 	wl swap / padx 2* - 'curw ! ;
 	
-::uiHome
-	uiH
+::uiStart
+	gui
 	sw 'wl ! sh 'hl !
-	0 0 uixy ;
+	0 0 uixy uiH ;
 	
 :guiZone 
 	curx cury curw curh guiBox ;
