@@ -8,15 +8,45 @@
 
 ##uicons
 ##uifont
-##uifonts
+##uifonts	| size font
 
-##uifcol $ffffff
+|$878787ff | DEFAULT_BORDER_COLOR_NORMAL 
+|$2c2c2cff | DEFAULT_BASE_COLOR_NORMAL 
+|$c3c3c3ff | DEFAULT_TEXT_COLOR_NORMAL 
 
+|$e1e1e1ff | DEFAULT_BORDER_COLOR_FOCUSED 
+|$848484ff | DEFAULT_BASE_COLOR_FOCUSED 
+|$181818ff | DEFAULT_TEXT_COLOR_FOCUSED 
+|$f7f7f7ff | LABEL_TEXT_COLOR_FOCUSED 
+|$b0b0b0ff | SLIDER_TEXT_COLOR_FOCUSED 
+|$848484ff | PROGRESSBAR_TEXT_COLOR_FOCUSED 
+|$f5f5f5ff | TEXTBOX_TEXT_COLOR_FOCUSED 
+|$f6f6f6ff | VALUEBOX_TEXT_COLOR_FOCUSED 
 
-#xl #yl #wl #hl		| 
+|$000000ff | DEFAULT_BORDER_COLOR_PRESSED 
+|$efefefff | DEFAULT_BASE_COLOR_PRESSED 
+|$202020ff | DEFAULT_TEXT_COLOR_PRESSED 
+|$898989ff | LABEL_TEXT_COLOR_PRESSED 
+
+|$6a6a6aff | DEFAULT_BORDER_COLOR_DISABLED 
+|$818181ff | DEFAULT_BASE_COLOR_DISABLED 
+|$606060ff | DEFAULT_TEXT_COLOR_DISABLED 
+
+|$00000010 | DEFAULT_TEXT_SIZE 
+|$00000000 | DEFAULT_TEXT_SPACING 
+|$9d9d9dff | DEFAULT_LINE_COLOR 
+|$3c3c3cff | DEFAULT_BACKGROUND_COLOR 
+|$00000018 | DEFAULT_TEXT_LINE_SPACING 
+
+##uicfnt $ffffff	| font color
+##uicbak $444444	| back color
+##uicbor $878787	| border color
+##uicfil $000087	| fill color
+
+#xl #yl #wl #hl
 #padx #pady	
-#curx #cury 
-#curw #curh	| actual widget
+#curx #cury | cursorxy
+#curw #curh	| cursorwh
 
 #copy 0 0 0 0
 :ccopy
@@ -26,11 +56,14 @@
 
 #recbox 0 0
 
-:tt<
-	uifont swap uifcol TTF_RenderUTF8_Blended
-	Surf>wh swap ; | suf h w
+:recbox! | h w y x --
+	'recbox d!+ d!+ d!+ d! ;
+
+:tt< | "" -- surf h w
+	uifont swap uicfnt TTF_RenderUTF8_Blended
+	Surf>wh swap ;
 	
-:tt>
+:tt> | surf --
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'recbox SDL_RenderCopy	
 	SDL_DestroyTexture
@@ -38,24 +71,20 @@
 
 :ttemitl | "text" --
 	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	cury curx 'recbox d!+ d!+ d!+ d!
-	tt> ;
+	tt< cury curx recbox! tt> ;
 
 :ttemitc | "text" --
 	dup c@ 0? ( 2drop ; ) drop
 	tt<
 	curh 2/ pick2 2/ - cury +
 	curw 2/ pick2 2/ - curx +
-	'recbox d!+ d!+ d!+ d!
-	tt> ;
+	recbox! tt> ;
 
 :ttemitr | "text" --
 	dup c@ 0? ( 2drop ; ) drop
 	tt<
 	cury curw curx + pick2 - 
-	'recbox d!+ d!+ d!+ d!
-	tt> ;
+	recbox! tt> ;
 
 #ttw #tth
 :ttsize | "" -- "" 
@@ -85,7 +114,7 @@
 	4 + 'uiFonts ! ;
 
 |----- zone
-#xend
+#xend #yend
 
 ::uicr
 	xl padx + 'curx ! 
@@ -113,8 +142,8 @@
 ::uiBox | w h --
 	dup 'hl ! pady 2* - 'curh !
 	dup 'wl ! padx 2* - 'curw ! ;
-::uiEndx | xend
-	'xend ! ;
+::uiEndx | xend yend --
+	'yend ! 'xend ! ;
 	
 :guiZone 
 	curx cury curw curh guiBox ;
@@ -252,6 +281,19 @@
 	0 ( cntlist <? iradio 1+ ) 2drop
 	empty ;	
 
+|----- TAB
+:itab | 'var n --
+	guiZone
+	[ 2dup swap ! ; ] onClick
+	over @ =? ( curx cury curh pady - + curw pady sdlFRect )
+	a@+ uilabelc ;
+
+::uiTab | 'var 'list --
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? itab 1+ ) 2drop
+	empty ;	
+
 |---- Horizontal slide
 :slideh | 0.0 1.0 'value --
 	sdlx curx - curw clamp0max 
@@ -336,6 +378,7 @@
 :cktree
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
 	sdly cury - curh / pick2 dup 8 + @ rot + 
+	cntlist 1- clampmax 
 	dup rot !
 	|sdlx curx - 16 >? ( drop ; ) drop
 	3 << indlist + @ 
@@ -358,8 +401,7 @@
 	curh 'cury +! ;
 
 ::uiTree | 'var cntlines list --
-	mark |makeindx
-	maketree
+	mark maketree
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
@@ -426,8 +468,7 @@
 |-----
 ::uiTable
 	;
-::uiTab
-	;
+	
 	
 
 |--- Edita linea

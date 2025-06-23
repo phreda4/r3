@@ -33,7 +33,7 @@
 	dup 44 >> $f and ,2d "-" ,s
 	dup 48 >> $ffff and ,d " " ,s
 	dup 24 >> $ff and ,2d ":" ,s
-	16 >> $ff and ,2d " " ,s
+	16 >> $ff and ,2d
 	;
 
 :64>dtc | dt64 -- "y-m-d h:m:s"
@@ -87,8 +87,8 @@
 |	dup ".." = 1? ( 3drop ; ) drop
 |	dup "." = 1? ( 3drop ; ) drop
 	,s " " ,s  
-	dup FSIZEF 12 >> ,d " Kb" ,s
-|	dup FDIR 24 << or a!+
+|	dup FSIZEF 12 >> ,d " Kb" ,s
+|	dup FDIR ,d
 	|dup FWRITEDT dt>64 ,64>dtf
 	drop 
 	0 ,c ;
@@ -120,7 +120,7 @@
 	
 :filpanel
 	304 32 uiXy 
-	480 30 uiBox
+	400 30 uiBox
 	'filenow 20 files uiList
 	filenow filechg =? ( drop ; ) 'filechg !
 	;
@@ -133,17 +133,22 @@
 	'pad 1024 uiInputLine | 'buff max --
 	;
 	
+#tabs "1" "2" "3" 0
+#tabnow	
 |-----------------------------
-
 :main
 	0 SDLcls gui
 	uiHome
 	3 4 uiPad
-	pathpanel
 	
+	pathpanel
 	uiV
-	dirpanel
-	filpanel
+	dirpanel filpanel
+	
+	uiH
+	32 480 uiXy
+	80 24 uibox
+	'tabnow	'tabs uiTab
 	namepanel
 	
 	SDLredraw
@@ -152,7 +157,6 @@
 	drop
 	;
 	
-
 |-----------------------------
 |-----------------------------	
 :	
@@ -164,7 +168,7 @@
 
 	mark
 	here 'diskdirs !
-	"r3" uiScanDir
+	'basepath uiScanDir
 	mark
 |	rebuild
 	
