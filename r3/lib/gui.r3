@@ -24,6 +24,7 @@
 #inm | mouse in rect?
 
 ::guiIn	| b x y --
+	1 'id +!
 	yr2 over - swap yr1 - or swap	
 	xr2 over - swap xr1 - or or
 	63 >> not 						| x y -- -1/0
@@ -46,7 +47,6 @@
 
 |-- boton
 ::onClick | 'click --
-	1 'id +!
 	inm 0? ( 2drop ; ) drop
 	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 
 	'clkbtn !
@@ -55,7 +55,6 @@
 
 |-- move
 ::onMove | 'move --
-	1 'id +!
 	SDLb 0? ( 2drop ; ) drop
 	inm 0? ( 2drop ; ) drop
 	id dup 'hot !
@@ -64,7 +63,6 @@
 
 |-- dnmove
 ::onDnMove | 'dn 'move --	
-	1 'id +!
 	SDLb 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
 	inm 0? ( 3drop ; ) drop
@@ -73,7 +71,6 @@
 	drop nip ex ;	
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
-	1 'id +!
 	SDLb 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
 	inm 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
@@ -82,7 +79,6 @@
 	drop nip ex ;
 
 ::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
-	1 'id +!
 	SDLb 0? ( hotnow id =? ( 2drop nip nip ex ; ) nip 4drop ; ) drop
 	hotnow 1? ( id <>? ( 4drop ; ) ) drop | solo 1
 	inm 0? ( id hotnow =? ( 'hot ! 2drop nip ex ; ) nip 4drop ; ) drop
@@ -92,7 +88,6 @@
 
 |-- mapa
 ::guiMap | 'dn 'move 'up --
-	1 'id +!
 	inm 0? ( 4drop ; ) drop
 	SDlb 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
 	id dup 'hot !
@@ -100,7 +95,6 @@
 	2drop nip ex ;
 
 ::guiDraw | 'move 'up --
-	1 'id +!
 	inm 0? ( 3drop ; ) drop
 	SDLb 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
@@ -108,7 +102,6 @@
 	2drop ex ;
 
 ::guiEmpty | --		; si toca esta zona no hay interaccion
-	1 'id +!
 	inm 1? ( id 'hotnow ! )
 	drop ;
 

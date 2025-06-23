@@ -88,7 +88,7 @@
 	tt<
 	cury curw curx + pick2 - 
 	recbox! tt> ;
-
+	
 #ttw #tth
 :ttsize | "" -- "" 
 	uifont over 'ttw 'tth TTF_SizeUTF8 drop ;
@@ -125,12 +125,10 @@
 ::uiTitleF
 	xl cury pady - wl curh pady 2* + sdlFrect ;
 	
-::uiTitle	| str --
-	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	cury 
-	wl 2/ pick2 2/ - xl +
-	recbox! tt> 
+::uiTitle | str --
+	curw wl 'curw ! 'wl !
+	ttemitc
+	curw wl 'curw ! 'wl !
 	curh pady 2* + 'cury +! ;
 
 ::uiLineH
@@ -149,6 +147,10 @@
 	curx curw + padx 2* + | new x
 	xl wl + 
 	>? ( drop uicr ; ) 'curx ! ;
+::ui>>
+	xl wl + curw - padx 2* - 'curx ! ;
+::ui<
+	curw padx 2* + neg 'curx +! ;
 	
 #vflex 'uiri
 
@@ -181,11 +183,7 @@
 	0 0 uixy ;
 	
 :guiZone 
-	curx cury curw curh guiBox 
-	
-	| over
-	;
-
+	curx cury curw curh guiBox ;
 	
 |----- icon
 ::uiconxy | x y nro --
@@ -331,8 +329,7 @@
 	$7f SDLColor uiFill
 	$3f3fff [ $7f7fff nip ; ] guiI SDLColor
 	dup @ pick3 - 
-	curw 8 - pick4 pick4 swap - */ 
-	curx 1 + +
+	curw 8 - pick4 pick4 swap - */ curx 1+ +
 	cury 2 + 
 	6 
 	curh 4 - 
@@ -405,7 +402,7 @@
 	sdly cury - curh / pick2 dup 8 + @ rot + 
 	cntlist 1- clampmax 
 	dup rot !
-	|sdlx curx - 16 >? ( drop ; ) drop
+	|sdlx curx - 16 >? ( 2drop ; ) drop
 	3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 
@@ -571,121 +568,3 @@
 	;
 ::uiEdit
 	;
-
-|-------- example
-#pad * 1024
-	
-#listex "uno" "dos" "tres" "cuatro" 0
-
-#treeex
-"@uno"
-	"Aaaa" "Abbb"
-		"Blksdhfl" "Blksdhfl"
-	"Axnb"
-"@dos"
-"@tres"
-"@listado"
-	"Auno" "Ados"
-0
-
-#vc
-#vt
-#vh
-#vr
-#si #sf
-
-#vlist 0 0
-#vtree 0 0
-
-#folders 0
-
-:ui--
-	$444444 sdlcolor uiLineH ;
-
-:testtab
-	580 4 uiXy 500 60 uiSize
-	4 2 uiGrid
-
-	
-	$3F00 SDLCOLOR uiFillW
-	
-	$3f sdlcolor uiTitleF
-	"Tabs" uiTitle
-	$ffffff SDLCOLOR uiRectW
-
-	$7f00 sdlcolor uiFill
-	$7f sdlcolor uiRect
-	
-	$ffffff SDLCOLOR 	
-	'vlist 'listex uiTab
-	;
-	
-:main
-	0 SDLcls gui
-
-	uiHome 
-	3 4 uiPad
-
-	testTab
-
-	48 4 uiXy |	$ffffff sdlcolor uiRectW
-	256 uiFonts 16 + uiBox 
-	'exit "r3" uitbtn "/" uitlabel
-	'exit "juegos" uitbtn "/" uitlabel
-	'exit "2025" uitbtn
-	
-
-	48 uiFontS 16 + uiXy |	uiRectW
-	128 uiFonts 8 + uiBox
-	
-	'exit "btn1"  uiBtn 
-	'exit "btn2"  uiBtn 
-	uicr
-
-	uiV | vertical
-	256 uiFonts 8 + uiBox
-	"* Widget *" uiLabelc
-	ui--
-	'vlist 4 'listex uiList | 8
-	ui--
-	'vtree 9 folders uiTree
-	ui--
-|	'vtree 9 'treeex uiTree
-
-	308 uiFontS 16 + uiXy |	$888888 sdlcolor uiRectW
-	256 uiFonts 8 + uiBox
-	'vc 'listex uiCombo | 'var 'list --
-	ui--
-	'vh 'listex uiCheck
-	ui--
-	'vr 'listex uiRadio
-	ui--
-	'pad 512 uiInputLine
-	ui--
-	0 255 'si uiSlideri
-	ui--
-	-1.0 1.0 'sf uiSliderf
-	ui--
-	
-	SDLredraw
-	sdlkey
-	>esc< =? ( exit )
-	drop
-	;
-	
-:t	
-	"R3d4 UI" .println
-	|"R3d4" 0 SDLfullw | full windows | 
-	"UI" 1280 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 16 TTF_OpenFont 'uifont !
-	24 21 "media/img/icong16.png" ssload 'uicons !
-	18 uifontsize
-
-	here 'folders !
-	"r3" uiScanDir
-
-	'main SDLshow
-	SDLquit 
-	;
-
-: t ;
