@@ -40,13 +40,13 @@
 :test
 
 
-	48 4 uiXy |	$ffffff sdlcolor uiRectW
+	48 4 500 20 uiWin |	$ffffff sdlcolor uiRectW
 	256 uiFonts 16 + uiBox 
 	'exit "r3" uitbtn "/" uitlabel
 	'exit "juegos" uitbtn "/" uitlabel
 	'exit "2025" uitbtn
 	
-	48 uiFontS 16 + uiXy |	uiRectW
+	48 uiFontS 16 + 500 20 uiWin |	uiRectW
 	128 uiFonts 8 + uiBox
 	
 	'exit "btn1"  uiBtn 
@@ -63,7 +63,7 @@
 	ui--
 |	'vtree 9 'treeex uiTree
 
-	308 uiFontS 16 + uiXy |	$888888 sdlcolor uiRectW
+	308 uiFontS 16 + 400 300 uiWin |	$888888 sdlcolor uiRectW
 	256 uiFonts 8 + uiBox
 	'vc 'listex uiCombo | 'var 'list --
 	ui--
@@ -88,7 +88,7 @@
 	uiStart
 	3 4 uiPad
 
-	580 4 uiXy 500 60 uiSize
+	580 4 1000 60 uiwin
 	4 2 uiGrid
 	$3F00 SDLCOLOR uiFillW
 |	$3f sdlcolor uiTitleF

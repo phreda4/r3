@@ -118,7 +118,7 @@
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
-::uiRect	curx cury curw curh SDLFRect ;
+::uiRect	curx cury curw curh SDLRect ;
 ::uiFill	curx cury curw curh SDLFRect ;
 	
 ::uiTitleF
@@ -136,6 +136,12 @@
 	
 ::uiLineV
 	curx curw 2/ + 1- cury 1+ 2 curh 2 - SDLRect ;
+	
+::uiLineWH
+	xl cury curh + pady + wl 1 sdlrect
+	;
+::uiLineWV
+	;
 
 |----- zone
 ::uicr
@@ -160,26 +166,30 @@
 
 ::uiPad | padx pady --
 	'pady ! 'padx ! ;
+
+::uiWin | x1 y1 x2 y2 --
+	pick2 - 'hl ! pick2 - 'wl ! 
+	'yl ! 'xl ! ;
 	
 ::uixy | x y --
-	dup 'yl ! pady + 'cury ! 
-	dup 'xl ! padx + 'curx ! ;
-
-::uiSize | w h --
-	'hl ! 'wl ! ;
+	pady + 'cury ! padx + 'curx ! ;
 
 ::uiBox | w h --
-	pady 2* - 'curh !
-	padx 2* - 'curw ! ;
+	pady 2* - 'curh ! padx 2* - 'curw ! ;
+
+::uiGAt | x y --
+	curh pady 2* + * pady + yl + 'cury !
+	curw padx 2* + * padx + xl + 'curx ! 
+	;
 
 ::uiGrid | c r --
 	hl swap / pady 2* - 'curh ! 
-	wl swap / padx 2* - 'curw ! ;
+	wl swap / padx 2* - 'curw ! 
+	0 0 uiGat ;
 	
 ::uiStart
-	gui
-	sw 'wl ! sh 'hl !
-	0 0 uixy uiH ;
+	gui uiH
+	0 0 sw sh uiWin ;
 	
 :guiZone 
 	curx cury curw curh guiBox ;
@@ -308,7 +318,7 @@
 :itab | 'var n --
 	guiZone
 	[ 2dup swap ! ; ] onClick
-	over @ =? ( curx cury curh pady - + curw pady sdlFRect )
+	over @ =? ( curx cury curh pady 2/ - + curw pady 2/ sdlFRect )
 	a@+ uilabelc ;
 
 ::uiTab | 'var 'list --
