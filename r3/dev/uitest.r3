@@ -3,13 +3,11 @@
 |
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-
-^r3/util/varanim.r3
 ^r3/util/textb.r3
-|^r3/util/ttext.r3
-
 ^r3/util/ui.r3
+^r3/util/sdledit.r3
 	
+#filename * 1024
 #pad * 1024
 		
 #listex "uno" "dos" "tres" "cuatro" 0
@@ -104,12 +102,18 @@
 	
 |	test
 	
+	edfocus
+	edcodedraw
+	
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
 	drop
 	;
 	
+:layout
+	
+	;	
 |-----------------------------
 |-----------------------------	
 :	
@@ -118,6 +122,15 @@
 	"media/ttf/Roboto-bold.ttf" 8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	18 uifontsize
+	
+	bfont1
+	edram 
+	0 2 65 30 edwin
+	
+	"r3/opengl/voxels/3-vox.r3" 
+	'filename strcpy
+	'filename edload	
+	
 	'main SDLshow
 	SDLquit 
 	;

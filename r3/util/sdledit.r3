@@ -31,7 +31,6 @@
 ##edfilename * 1024
 
 #pantaini>	| comienzo de pantalla
-#pantaini>	| comienzo de pantalla
 #pantafin>	| fin de pantalla
 
 ##inisel		| inicio seleccion
@@ -549,8 +548,10 @@
 	
 ::edfocus
 	xcode ycode wcode hcode bsrcsize 
-	|$ffffff sdlcolor
-	|2over 1- 2over 1+ sdlRect 
+	
+	$ffffff sdlcolor 
+	2over 1- 2over 1+ sdlRect 
+	
 	guiBox
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 

@@ -3,7 +3,6 @@
 
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-
 ^r3/util/textb.r3
 
 ##uicons
@@ -102,7 +101,7 @@
 	dup c@ 'backc c! 0 over c!		| set end
 	swap ttsize  | strcur str 
 	curx ttw + cury sizechar ttw tth
-	SDLFrect
+	sdlFrect
 	backc rot c! ;
 
 ::ttcursori | str strcur -- str

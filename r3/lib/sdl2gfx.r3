@@ -321,9 +321,12 @@
 	
 ::Surf>pix | surface -- surf pixels
 	dup 32 + @ ;	
+	
+::Surf>wha
+	dup 16 + ;
 
 ::Surf>wh | surface -- surf w h
-	dup 16 + d@ over 20 + d@ ;
+	dup 16 + d@+ swap d@ ;
 
 |------ compose texture
 #comptex
