@@ -70,8 +70,8 @@
 	;
 
 :qf
-	xm pick2 - ym pick2 - xm pick4 + over SDLLine 
-	xm pick2 - ym pick2 + xm pick4 + over SDLLine  ;
+	xm pick2 - ym pick2 - xm pick4 + SDLLineH 
+	xm pick2 - ym pick2 + xm pick4 + SDLLineH  ;
 
 ::SDLFEllipse | rx ry x y --
 	ab[
