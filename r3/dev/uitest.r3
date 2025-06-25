@@ -100,6 +100,7 @@
 	$ffffff SDLCOLOR 	
 	'vlist 'listex uiTab
 	
+	'vlist 4 'listex uiList | 8
 |	test
 	
 	edfocus

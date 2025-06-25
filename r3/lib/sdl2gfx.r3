@@ -39,7 +39,13 @@
 	vert $ffffff and ;
 
 ::SDLLine | x y x y --	
-	>r >r >r >r SDLRenderer r> r> r> r> SDL_RenderDrawLine ;
+	>r >r SDLRenderer -rot r> r> SDL_RenderDrawLine ;
+	
+::SDLLineH | x y x --	
+	SDLRenderer swap 2swap swap over SDL_RenderDrawLine ;
+
+::SDLLineV | x y y --	
+	SDLRenderer swap 2swap rot pick2 swap SDL_RenderDrawLine ;
 
 ::SDLFRect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!

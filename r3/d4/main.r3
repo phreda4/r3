@@ -6,12 +6,11 @@
 
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
-|^r3/util/ttext.r3
 
 ^r3/util/ui.r3
+^r3/util/sdledit.r3
 	
 |------------------------	
-
 | type name size datetime
 |satetime 
 | YYYY MwDD HHMM SSmm (mm>>2)
@@ -48,6 +47,7 @@
 #filenow 0 0
 #filechg -1
 
+#filename * 1024
 |----- boxpath
 #basepath "r3/"
 #fullpath * 1024
@@ -66,6 +66,7 @@
 	;
 
 :boxpath
+	" :" uiTLabel
 	'fullpath 
 	( dup c@ 1? drop
 		dup scan/ | adr .
@@ -75,11 +76,6 @@
 		"/" uitlabel
 		) 2drop ;	
 		
-:pathpanel
-	48 4 uiXy
-	256 30 uiBox
-	boxpath
-	;
 	
 |----- Files
 :+file | f --
@@ -106,31 +102,41 @@
 #filechg -1
 
 #fp * 1024
-|-------
-:dirpanel
-	48 32 uiXy
-	256 30 uiBox
-	'dirnow 20 diskdirs uiTree
-	dirnow dirchg =? ( drop ; ) dup 'dirchg !
-	uiTreePath
-	'basepath 'fullpath strcpyl 1- strcpy
-	file2list
-	0 0 'filenow !+ !
-	;
 	
-:filpanel
-	304 32 uiXy 
-	400 30 uiBox
-	'filenow 20 files uiList
-	filenow filechg =? ( drop ; ) 'filechg !
-	;
 
 #pad * 1024
 		
-:namepanel
-	32 500 uiXy
-	512 24 uiBox
+:Fileselect
+
+	0.01 %w 0.15 %h 0.35 %w 0.05 %h uiWin
+	1 1 uiGrid uiV
+	$44 sdlcolor uiFillW
+	boxpath
+
+	0.01 %w 0.2 %h 0.15 %w 0.7 %h uiWin
+	1 20 uiGrid uiV
+	$444444 sdlcolor uiFillW
+	'dirnow 24 diskdirs uiTree
+	dirnow dirchg <>? ( dup 'dirchg ! 
+		dup uiTreePath
+		'basepath 'fullpath strcpyl 1- strcpy
+		file2list
+		0 0 'filenow !+ !
+		) drop
+
+	0.16 %w 0.2 %h 0.2 %w 0.7 %h uiWin
+	1 20 uiGrid uiV
+	$4444 sdlcolor uiFillW
+	'filenow 24 files uiList
+	filenow filechg <>? ( dup 'filechg ! 
+	
+		) drop
+	
+	0.01 %w 0.9 %h 0.35 %w 0.05 %h uiWin
+	1 1 uiGrid uiV
+	$44 sdlcolor uiFillW
 	'pad 1024 uiInputLine | 'buff max --
+	
 	;
 
 	
@@ -139,18 +145,14 @@
 |-----------------------------
 :main
 	0 SDLcls 
+	3 2 uiPad
 	uiStart
-	3 4 uiPad
-	
-	pathpanel
-	uiV
-	dirpanel filpanel
-	
-	uiH
-	32 480 uiXy
-	80 24 uibox
-	'tabnow	'tabs uiTab
-	namepanel
+
+	fileselect	
+
+|	'tabnow	'tabs uiTab
+	edfocus
+	edcodedraw
 	
 	SDLredraw
 	sdlkey
@@ -163,10 +165,20 @@
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 8 TTF_OpenFont 'uifont !
+	"media/ttf/Roboto-regular.ttf" 
+	|"media/ttf/ProggyClean.ttf" 
+	8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
-	18 uifontsize
+	16 uifontsize
 
+	bfont1
+	edram 
+	60 4 80 40 edwin
+
+	"r3/opengl/voxels/3-vox.r3" 
+	'filename strcpy
+	'filename edload	
+	
 	mark
 	here 'diskdirs !
 	'basepath uiScanDir

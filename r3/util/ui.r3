@@ -138,10 +138,24 @@
 	curx curw 2/ + 1- cury 1+ 2 curh 2 - SDLRect ;
 	
 ::uiLineWH
-	xl cury curh + pady + wl 1 sdlrect
-	;
-::uiLineWV
-	;
+	xl cury curh + pady + wl 1 sdlrect ;
+	
+::uiGridBV
+	padx 2* curw +
+	0 ( wl pick2 2* - <=?
+		over +
+		dup xl + yl hl over + SDLLineV
+		) 2drop ;
+		
+::uiGridBH
+	pady 2* curh +
+	0 ( hl pick2 2* - <=?
+		over +
+		xl over yl + over wl + SDLLineH
+		) 2drop ;
+	
+::uiGrid# 
+	uiGridBH uiGridBV ;
 
 |----- zone
 ::uicr
@@ -167,9 +181,11 @@
 ::uiPad | padx pady --
 	'pady ! 'padx ! ;
 
-::uiWin | x1 y1 x2 y2 --
-	pick2 - 'hl ! pick2 - 'wl ! 
-	'yl ! 'xl ! ;
+::uiWinBox | x y x2 y2 --
+	pick2 - 'hl ! pick2 - 'wl ! 'yl ! 'xl ! ;
+
+::uiWin | x y w h --
+	'hl ! 'wl ! 'yl ! 'xl ! ;
 	
 ::uixy | x y --
 	pady + 'cury ! padx + 'curx ! ;
