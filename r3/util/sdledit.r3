@@ -547,16 +547,13 @@
 	;
 	
 ::edfocus
-	xcode ycode wcode hcode bsrcsize 
-	
+	xcode ycode wcode hcode bsrcsize guiBox
+	guin? 0? ( drop ; ) drop
 	$ffffff sdlcolor 
-	2over 1- 2over 1+ sdlRect 
-	
-	guiBox
+	xcode ycode wcode hcode bsrcsize sdlRect 
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 
 	editmodekey
-	
 	edlinecursor
 	edselshow
 	;

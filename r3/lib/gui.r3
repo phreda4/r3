@@ -21,14 +21,14 @@
 ##xr1 ##yr1
 ##xr2 ##yr2
 
-#inm | mouse in rect?
+##guin? | mouse in rect?
 
-::guiIn	| b x y --
+:guiIn	| b x y --
 	1 'id +!
 	yr2 over - swap yr1 - or swap	
 	xr2 over - swap xr1 - or or
 	63 >> not 						| x y -- -1/0
-	'inm ! ;
+	'guin? ! ;
 
 ::guiBox | x1 y1 w h --
 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
@@ -47,7 +47,7 @@
 
 |-- boton
 ::onClick | 'click --
-	inm 0? ( 2drop ; ) drop
+	guin? 0? ( 2drop ; ) drop
 	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 
 	'clkbtn !
 	drop
@@ -56,7 +56,7 @@
 |-- move
 ::onMove | 'move --
 	SDLb 0? ( 2drop ; ) drop
-	inm 0? ( 2drop ; ) drop
+	guin? 0? ( 2drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ; ) drop
 	ex ;
@@ -65,7 +65,7 @@
 ::onDnMove | 'dn 'move --	
 	SDLb 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
-	inm 0? ( 3drop ; ) drop
+	guin? 0? ( 3drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
 	drop nip ex ;	
@@ -73,7 +73,7 @@
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
 	SDLb 0? ( 3drop ; ) drop
 	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
-	inm 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
+	guin? 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 2drop ex ; )
 	drop nip ex ;
@@ -81,39 +81,39 @@
 ::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
 	SDLb 0? ( hotnow id =? ( 2drop nip nip ex ; ) nip 4drop ; ) drop
 	hotnow 1? ( id <>? ( 4drop ; ) ) drop | solo 1
-	inm 0? ( id hotnow =? ( 'hot ! 2drop nip ex ; ) nip 4drop ; ) drop
+	guin? 0? ( id hotnow =? ( 'hot ! 2drop nip ex ; ) nip 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ex ; )
 	2drop nip ex ;
 
 |-- mapa
 ::guiMap | 'dn 'move 'up --
-	inm 0? ( 4drop ; ) drop
+	guin? 0? ( 4drop ; ) drop
 	SDlb 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ex ; )
 	2drop nip ex ;
 
 ::guiDraw | 'move 'up --
-	inm 0? ( 3drop ; ) drop
+	guin? 0? ( 3drop ; ) drop
 	SDLb 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
 	id dup 'hot !
 	hotnow <>? ( 3drop ; )
 	2drop ex ;
 
 ::guiEmpty | --		; si toca esta zona no hay interaccion
-	inm 1? ( id 'hotnow ! )
+	guin? 1? ( id 'hotnow ! )
 	drop ;
 
 |----- test adentro/afuera
 ::guiI | 'vector --
-	inm 0? ( 2drop ; ) drop ex ;
+	guin? 0? ( 2drop ; ) drop ex ;
 
 ::guiO | 'vector --
-	inm 1? ( 2drop ; ) drop ex ;
+	guin? 1? ( 2drop ; ) drop ex ;
 
 ::guiIO | 'vi 'vo --
-	inm 1? ( 2drop ex ; ) drop nip ex ;
+	guin? 1? ( 2drop ex ; ) drop nip ex ;
 
 |---------------------------------------------------
 | manejo de foco (teclado)

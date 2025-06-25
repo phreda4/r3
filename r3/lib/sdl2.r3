@@ -88,6 +88,11 @@
 #sys-SDL_PauseAudioDevice
 #sys-SDL_CloseAudioDevice
 
+#sys-SDL_GetClipboardText
+#sys-SDL_HasClipboardText
+#sys-SDL_SetClipboardText
+#sys-SDL_free
+
 ::SDL_Init sys-SDL_Init sys1 drop ;
 ::SDL_GetCurrentDisplayMode sys-SDL_GetCurrentDisplayMode sys2 drop ;
 ::SDL_Quit sys-SDL_Quit sys0 drop ;
@@ -170,6 +175,16 @@
 ::SDL_GetQueuedAudioSize sys-SDL_GetQueuedAudioSize sys1 ;
 ::SDL_PauseAudioDevice sys-SDL_PauseAudioDevice sys2 drop ;
 ::SDL_CloseAudioDevice sys-SDL_CloseAudioDevice sys1 drop ;
+
+::SDL_GetClipboardText sys-SDL_GetClipboardText sys0 ;
+::SDL_HasClipboardText sys-SDL_HasClipboardText sys0 ;
+::SDL_SetClipboardText sys-SDL_SetClipboardText sys1 ;
+::SDL_free sys-SDL_free sys1 drop ;
+
+#sys-
+#sys-
+#sys-
+#sys-SDL_free
 
 |----------------------------------------------------------
 	
@@ -418,6 +433,11 @@
 	dup "SDL_GetQueuedAudioSize" getproc 'sys-SDL_GetQueuedAudioSize !
 	dup "SDL_PauseAudioDevice" getproc 'sys-SDL_PauseAudioDevice !
 	dup "SDL_CloseAudioDevice" getproc 'sys-SDL_CloseAudioDevice !
+
+	dup "SDL_GetClipboardText" getproc 'sys-SDL_GetClipboardText !
+	dup "SDL_HasClipboardText" getproc 'sys-SDL_HasClipboardText !
+	dup "SDL_SetClipboardText" getproc 'sys-SDL_SetClipboardText !
+	dup "SDL_free" getproc 'sys-SDL_free !
 
 	drop
 |WIN|	"" SetDllDirectory	

@@ -70,7 +70,6 @@
 :drawline
 	0 sdlcls
 	gui		
-	SDLx SDLy guiIn
 	'pendn 'penmv 'pencopy guiMap
 	anidraw
 	alinedraw
