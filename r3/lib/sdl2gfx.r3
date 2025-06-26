@@ -87,11 +87,11 @@
 	]ba ;
 	
 :borde | x y x
-	over 32 << or b!+ 32 << or b!+ ;
+	over or b!+ or b!+ ;
 
 :qfb
-	xm pick2 - ym pick2 - xm pick4 + borde
-	xm pick2 - ym pick2 + xm pick4 + borde ;
+	xm pick2 - ym pick2 - 32 << xm pick4 + borde
+	xm pick2 - ym pick2 + 32 << xm pick4 + borde ;
 
 ::SDLEllipse | rx ry x y --
 	ab[

@@ -7,39 +7,16 @@
 
 ##uicons
 
-|$878787ff | DEFAULT_BORDER_COLOR_NORMAL 
-|$2c2c2cff | DEFAULT_BASE_COLOR_NORMAL 
-|$c3c3c3ff | DEFAULT_TEXT_COLOR_NORMAL 
+##cifil $ff1F2229ff14161A	| over|normal -- color fill
+##cisel $ff1967D2ff393F4C	| over|normal -- color select
+##cifoc $1111ff				| foco -- borde
+##cifnt $ffffff		| fuente -- color
 
-|$e1e1e1ff | DEFAULT_BORDER_COLOR_FOCUSED 
-|$848484ff | DEFAULT_BASE_COLOR_FOCUSED 
-|$181818ff | DEFAULT_TEXT_COLOR_FOCUSED 
-|$f7f7f7ff | LABEL_TEXT_COLOR_FOCUSED 
-|$b0b0b0ff | SLIDER_TEXT_COLOR_FOCUSED 
-|$848484ff | PROGRESSBAR_TEXT_COLOR_FOCUSED 
-|$f5f5f5ff | TEXTBOX_TEXT_COLOR_FOCUSED 
-|$f6f6f6ff | VALUEBOX_TEXT_COLOR_FOCUSED 
-
-|$000000ff | DEFAULT_BORDER_COLOR_PRESSED 
-|$efefefff | DEFAULT_BASE_COLOR_PRESSED 
-|$202020ff | DEFAULT_TEXT_COLOR_PRESSED 
-|$898989ff | LABEL_TEXT_COLOR_PRESSED 
-
-|$6a6a6aff | DEFAULT_BORDER_COLOR_DISABLED 
-|$818181ff | DEFAULT_BASE_COLOR_DISABLED 
-|$606060ff | DEFAULT_TEXT_COLOR_DISABLED 
-
-|$00000010 | DEFAULT_TEXT_SIZE 
-|$00000000 | DEFAULT_TEXT_SPACING 
-|$9d9d9dff | DEFAULT_LINE_COLOR 
-|$3c3c3cff | DEFAULT_BACKGROUND_COLOR 
-|$00000018 | DEFAULT_TEXT_LINE_SPACING 
-
-##uicfnt $ffffff	| font color
-##uicbak $444444	| back color
-##uicbor $878787	| border color
-##uicfil $000087	| fill color
-
+:overfil
+	cifil guin? 32 and >> sdlcolor ;
+:oversel	
+	cisel guin? 32 and >> sdlcolor ;
+	
 #xl #yl #wl #hl
 #padx #pady	
 #curx #cury | cursorxy
@@ -62,7 +39,7 @@
 ##uifonts	| size font
 
 :tt< | "" -- surf h w
-	uifont swap uicfnt TTF_RenderUTF8_Blended
+	uifont swap cifnt TTF_RenderUTF8_Blended
 	Surf>wh swap ;
 	
 :tt> | surf --
@@ -73,19 +50,22 @@
 
 :ttemitl | "text" --
 	dup c@ 0? ( 2drop ; ) drop
-	tt< cury curx recbox! tt> ;
+	tt< 
+	curh pick2 - 2/ cury +
+	curx recbox! tt> ;
 
 :ttemitc | "text" --
 	dup c@ 0? ( 2drop ; ) drop
 	tt<
-	curh 2/ pick2 2/ - cury +
-	curw 2/ pick2 2/ - curx +
+	curh pick2 - 2/ cury +
+	curw pick2 - 2/ curx +
 	recbox! tt> ;
 
 :ttemitr | "text" --
 	dup c@ 0? ( 2drop ; ) drop
 	tt<
-	cury curw curx + pick2 - 
+	curh pick2 - 2/ cury +
+	curw curx + pick2 - 
 	recbox! tt> ;
 	
 #ttw #tth
@@ -118,9 +98,18 @@
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
+::uiRRectW 	wl hl min 2 >> xl yl wl hl SDLRound ;
+::uiRFillW	wl hl min 2 >> xl yl wl hl SDLFRound ;
+::uiCRectW 	wl hl min 2/ xl yl wl hl SDLRound ;
+::uiCFillW	wl hl min 2/ xl yl wl hl SDLFRound ;
+
 ::uiRect	curx cury curw curh SDLRect ;
 ::uiFill	curx cury curw curh SDLFRect ;
-	
+::uiRRect	curw curh min 2 >> curx cury curw curh SDLRound ;
+::uiRFill	curw curh min 2 >> curx cury curw curh SDLFRound ;
+::uiCRect	curw curh min 2/ curx cury curw curh SDLRound ;
+::uiCFill	curw curh min 2/ curx cury curw curh SDLFRound ;
+
 ::uiTitleF
 	xl cury pady - wl curh pady 2* + sdlFrect ;
 	
@@ -236,15 +225,23 @@
 	
 ::uiBtn | v "" --
 	guiZone
-	$66 [ $ff nip ; ] guiI 
-	sdlcolor uiRect
-|	[ $ffffff sdlcolor uiRect ; ] guiI 
+	overfil uiFill
+	ttemitc onClick ui.. ;	
+
+::uiRBtn | v "" --
+	guiZone
+	overfil uiRFill
+	ttemitc onClick ui.. ;	
+
+::uiCBtn | v "" --
+	guiZone
+	overfil uiCFill
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
 	ttsize ttw 4 + 'curw !
 	guiZone
-	[ $ffffff sdlcolor uiRect ; ] guiI 
+	overfil uiFill
 	ttemitc onClick 
 	curw 'curx +!
 	;	
@@ -400,18 +397,24 @@
 	cntlist over - 1+	| maxi
 	'slidev dup onDnMoveA 
 	$444444 sdlcolor
+
 	curx curw + 16 -		| 'var max maxi x 
 	pick3 8 + @ 			| 'var max maxi x ini
 	cury backc - pick3 / 	| 'var max maxi x ini hp
 	swap over *	backc +		| 'var max maxi x hp ini*hp
-	16 rot
-	sdlFrect	
+	15 rot
+	>r >r 5 -rot r> r>
+	sdlFRound	
 	drop ;
 	
+:uiFillL	
+	curx cury curw pick3 curh * SDLFRect ;
+
 ::uiList | 'var cntlines list --
 	mark makeindx
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
+	overfil uiFillL
 	'cklist onclick
 	0 ( over <? ilist 1+ ) drop
 	cscroll
@@ -451,6 +454,7 @@
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
+	overfil uiFillL
 	'cktree onclick
 	0 ( over <? itree 1+ ) drop
 	cscroll
@@ -584,6 +588,7 @@
 
 ::uiInputLine | 'buff max --
 	guiZone
+	overfil uiFill
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
 	drop

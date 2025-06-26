@@ -45,7 +45,7 @@
 	3 4 uiPad
 	0.45 %w 0.1 %h 0.5 %w 0.5 %h uiWin
 	4 12 uiGrid uiH
-	$1F sdlcolor uiFillW |	$3f sdlcolor uiTitleF
+	$7f7f7f sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect
 	$ffffff sdlcolor 	
 	'vlist 'tablist uiTab
@@ -60,7 +60,10 @@
 	
 	1 2 uiGAt
 	'exit "btn1"  uiBtn 
-	'exit "btn2"  uiBtn 
+	'exit "btn2"  uiRBtn 
+	'exit "btn3"  uiCBtn 
+	'exit "btn4"  uiBtn 
+	
 	ui--
 	'vh 'tablist uiCheck
 	
