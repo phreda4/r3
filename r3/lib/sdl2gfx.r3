@@ -87,7 +87,7 @@
 	]ba ;
 	
 :borde | x y x
-	over SDLPoint SDLPoint ;
+	over 32 << or b!+ 32 << or b!+ ;
 
 :qfb
 	xm pick2 - ym pick2 - xm pick4 + borde
@@ -96,15 +96,17 @@
 ::SDLEllipse | rx ry x y --
 	ab[
     inielipse
+	here >b
 	xm pick2 - ym xm pick4 + borde
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1- rot qfb rot pick3 'dx +! dx a+ )
 		dy <=? ( -rot qfb 1+ rot pick4 'dy +! dy a+ )
 		drop
-		)
-	4drop 
+		) 4drop 
+	SDLrenderer here b> over - 3 >> SDL_RenderDrawPoints 
 	]ba ;
+	
 	
 ::SDLTriangle | x y x y x y --
 	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
@@ -112,8 +114,7 @@
 	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
 	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
 	swap i2fp da!+ i2fp da!+ rec da!+ 
-	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
-	;
+	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry  ;
 	
 
 :8points
