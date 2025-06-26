@@ -140,15 +140,14 @@
 	SDLfRect ;
 
 
+:2points | x y x --
+	over or a!+ or a!+ ;
+	
 :8points
-	xm dx + over +	ym dy + pick3 + 32 << or a!+
-	xm dx + over +	ym pick3 - 32 << or a!+
-	xm over - 		ym dy + pick3 + 32 << or a!+
-	xm over - 		ym pick3 - 32 << or a!+
-	xm dx + pick2 + ym dy + pick2 + 32 << or a!+
-	xm dx + pick2 + ym pick2 - 32 << or a!+	
-	xm pick2 - 		ym dy + pick2 + 32 << or a!+
-	xm pick2 - 		ym pick2 - 32 << or a!+ ;
+	xm dx + over + ym dy + pick3 + 32 << xm pick3 - 2points
+	xm dx + over + ym pick3 - 32 << xm pick3 - 2points
+	xm dx + pick2 + ym dy + pick2 + 32 << xm pick4 - 2points
+	xm dx + pick2 + ym pick2 - 32 << xm pick4 - 2points ;
 	
 :stepd
 	b> -? ( over 2 << 6 + + >b ; )
@@ -160,7 +159,7 @@
 	1- pick3 2* - 'dx !
 	pick2 pick2 + over dx pick2 + SDLLineH
 	pick2 pick2 + over dy + pick4 2* + dx pick2 + SDLLineH
-	over over pick4 + dy over + SDLLineV
+	2dup pick4 + dy over + SDLLineV
 	over dx + pick3 2* + over pick4 + dy over + SDLLineV	
 	pick2 + 'ym ! over + 'xm !
 	ab[
@@ -168,8 +167,7 @@
 	here >a
 	0 ( 8points over <=? stepd 1+ ) 2drop 
 	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 
-	]ba
-	;
+	]ba ;
 
 |-------------------
 ::SDLImage | x y img --		
@@ -203,8 +201,7 @@
 		over + ) drop
 	2drop 
 	here a> 'here ! 
-	]ba
-	;
+	]ba ;
 
 ::tscolor | rrggbb 'ts --
 	@ swap rgb24 SDL_SetTextureColorMod	;
@@ -277,14 +274,14 @@
 
 |-------------------------
 ::sprite | x y img --
-	dup >r SDLTexwh 2/ 'ym ! 2/ 'xm !
-	|dup >r SDLTexwh 1+ 2/ 'ym ! 1+ 2/ 'xm ! | for not loss a line
+	|dup >r SDLTexwh 2/ 'ym ! 2/ 'xm !
+	dup >r SDLTexwh 1+ 2/ 'ym ! 1+ 2/ 'xm ! | for not loss a line
 	ab[ fillfull fillvertxy ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
 	SDL_RenderGeometry ;
 	
 ::spriteZ | x y zoom img --
-	dup >r SDLTexwh pick2 17 *>> 'ym ! 17 *>> 'xm !
+	dup >r SDLTexwh 1+ pick2 17 *>> 'ym ! 1+ 17 *>> 'xm !
 	ab[ fillfull fillvertxy ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
 	SDL_RenderGeometry ;
@@ -296,7 +293,7 @@
 	SDL_RenderGeometry ;
 
 ::spriteRZ | x y ang zoom img --
-	dup >r SDLTexwh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	dup >r SDLTexwh 1+ pick2 16 *>> 'ym ! 1+ 16 *>> 'xm !
 	ab[ fillfull fillvertr ]ba 
 	SDLrenderer r> 'vert 4 'index 6 
 	SDL_RenderGeometry ;
@@ -346,7 +343,7 @@
 	
 ::ssprite | x y n ssprite --
 	ab[
-	dup sspritewh 1 >> 'ym ! 1 >> 'xm !
+	dup sspritewh 1+ 2/ 'ym ! 1+ 2/ 'xm !
 	settile >r fillvertxy
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry 
@@ -362,7 +359,7 @@
 
 ::sspritez | x y zoom n ssprite --
 	ab[
-	rot over sspritewh pick2 17 *>> 'ym ! 17 *>> 'xm ! | /2
+	rot over sspritewh 1+ pick2 17 *>> 'ym ! 1+ 17 *>> 'xm ! | /2
 	settile >r fillvertxy
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry 
@@ -370,7 +367,7 @@
 	
 ::sspriterz | x y ang zoom n ssprite --
 	ab[	
-	rot over sspritewh pick2 16 *>> 'ym ! 16 *>> 'xm !
+	rot over sspritewh 1+ pick2 16 *>> 'ym ! 1+ 16 *>> 'xm !
 	settile >r fillvertr
 	SDLrenderer r> @ 'vert 4 'index 6 
 	SDL_RenderGeometry 
