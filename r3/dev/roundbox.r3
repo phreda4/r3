@@ -1,71 +1,70 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/rand.r3
 
-#yc #xc
-#d #y #x
+#yc #xc #d 
 
-:points
-	xc over + yc y + SDLPoint
-	xc over - yc y + SDLPoint
-	xc over + yc y - SDLPoint
-	xc over - yc y - SDLPoint
-	xc y + yc pick2 + SDLPoint
-	xc y - yc pick2 + SDLPoint
-	xc y + yc pick2 - SDLPoint
-	xc y - yc pick2 - SDLPoint
+:rect 
+	xc over - yc pick3 + xc pick3 + sdlLineH
+	xc over - yc pick3 - xc pick3 + sdlLineH
+	xc pick2 + yc pick2 - yc pick3 + sdlLineV
+	xc pick2 - yc pick2 - yc pick3 + sdlLineV
 	;
 	
-:stepd	
-	d 0 >? ( -1 'y +! over y - 2 << 10 + + dup 'd ! )
-	over 2 << 6 + + 'd ! ;
+:stepd	| y x -- y x
+	d -? ( over 2 << 6 + + 'd ! ; )
+	over pick3 - 2 << 10 + + 'd ! 
+	swap 1- swap rect ;
 	
 :circle | r x y --
 	'yc ! 'xc !
 	3 over 2* - 'd !
-	'y !
-	0 points
-	( y <=?
-		stepd 1+ points
-		) drop ;
-	
-#ym #xm
-#dx #dy
+	0 ( over <=? stepd 1+ ) 2drop ;
 
-:inicircle | rx ry x y --
-	'ym ! 'xm !				| rx ry
-	over dup * dup 1 <<		| rx ry rxrx 2rxry
-	swap dup >a 'dy ! 		| rx ry 2rxry  ; a:dy:rxrx
-	-rot over neg 1 << 1+	| 2rxrx rx ry -2rx+1
-	swap dup * dup 1 << 	| 2rxrx rx -2rx+1 ryry 2ryry
-	-rot * dup a+ 'dx !		| 2rxrx rx 2ryry ; -2rx+1*ryry ; a+ dx
-	1+ swap 1				| 2rxrx 2ryry+1 rx 1
-	pick3 'dy +! dy a+
-	;
+|-------------------------------------------	
+#wb #hb
+:rect 
+	xc over - yc pick3 - xc wb + pick3 + sdlLineH
+	xc over - yc hb + pick3 + xc wb + pick3 + sdlLineH
+	xc pick2 - yc pick2 - yc hb + pick3 + sdlLineV
+	xc wb + pick2 + yc pick2 - yc hb + pick3 + sdlLineV	 ;
 
-:qf
-	xm pick2 - ym pick2 - xm pick4 + SDLLineH 
-	xm pick2 - ym pick2 + xm pick4 + SDLLineH  ;
+:stepd
+	d -? ( over 2 << 6 + + 'd ! ; )
+	over pick3 - 2 << 10 + + 'd ! 
+	swap 1- swap rect ;
 
-::circle2 | rx ry x y --
-	inicircle
-	xm pick2 - ym xm pick4 + over SDLLine 
-	( swap 0 >? swap 		| 2aa 2bb x y
-		a> 1 <<
-		dx >=? ( rot 1- -rot pick3 'dx +! dx a+ )
-		dy <=? ( -rot qf 1+ rot pick4 'dy +! dy a+ )
-		drop
-		)
-	4drop ;	
+:frrect | r x y w h --
+	'hb ! 'wb !
+	pick2 + 'yc ! over + 'xc !
+	3 over 2* - 'd ! 
+	dup 2* neg dup 'hb +! 'wb +!
+	0 ( over <=? stepd 1+ ) drop 
+	xc over - yc pick2 -
+	rot 2*
+	wb over + hb rot +
+	SDLfRect ;
 	
 :main
 	0 sdlcls
 	
 	$ffffff sdlcolor
-	80 112 300 circle
-	60 312 300 circle
+	20 112 300 circle
+	30 312 300 circle
 	
-	80 80 512 300 circle2
-	80 60 812 300 circle2
+	$ff sdlcolor
+	msec 5 >> $3f and 400 200 200 200 frrect
+	
+|	$ffffff sdlcolor
+|	400 200 200 200 sdlrect
+	
+	$ff7f sdlcolor
+	20 700 200 100 200 frrect
+	
+	$ff00 sdlcolor
+	20 300 410 200 100 sdlfround
+	$ffffff sdlcolor
+	10 320 470 160 30 sdlfround
+	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )

@@ -76,7 +76,7 @@
 ::SDLFEllipse | rx ry x y --
 	ab[
 	inielipse
-	xm pick2 - ym xm pick4 + over SDLLine 
+	xm pick2 - ym xm pick4 + SDLLineH
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1- -rot pick3 'dx +! dx a+ )
@@ -114,6 +114,30 @@
 	swap i2fp da!+ i2fp da!+ rec da!+ 
 	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
 	;
+
+:rect 
+	xm over - ym pick3 - xm dx + pick3 + sdlLineH
+	xm over - ym dy + pick3 + xm dx + pick3 + sdlLineH
+	xm pick2 - ym pick2 - ym dy + pick3 + sdlLineV
+	xm dx + pick2 + ym pick2 - ym dy + pick3 + sdlLineV	 ;
+
+#d
+
+:stepd
+	d -? ( over 2 << 6 + + 'd ! ; )
+	over pick3 - 2 << 10 + + 'd ! 
+	swap 1- swap rect ;
+
+::SDLFRound | r x y w h --
+	'dy ! 'dx !
+	pick2 + 'ym ! over + 'xm !
+	3 over 2* - 'd ! 
+	dup 2* neg dup 'dy +! 'dx +!
+	0 ( over <=? stepd 1+ ) drop 
+	xm over - ym pick2 -
+	rot 2*
+	dx over + dy rot +
+	SDLfRect ;
 
 |-------------------
 ::SDLImage | x y img --		
