@@ -70,6 +70,34 @@
 	3 over 2* - 'd ! 
 	0 ( rect over <=? stepd 1+ ) 2drop ;
 
+:rect
+	xc wb + over +	yc hb + pick3 + 32 << or a!+
+	xc wb + over +	yc pick3 - 32 << or a!+
+	xc over - 		yc hb + pick3 + 32 << or a!+
+	xc over - 		yc pick3 - 32 << or a!+
+	xc wb + pick2 + yc hb + pick2 + 32 << or a!+
+	xc wb + pick2 + yc pick2 - 32 << or a!+
+	xc pick2 - 		yc hb + pick2 + 32 << or a!+
+	xc pick2 - 		yc pick2 - 32 << or a!+ ;
+	
+:stepd
+	d -? ( over 2 << 6 + + 'd ! ; )
+	over pick3 - 2 << 10 + + 'd ! 
+	swap 1- swap ;
+
+:rrect | r x y w h --
+	1- pick4 2* - 'hb ! 
+	1- pick3 2* - 'wb !
+	pick2 pick2 + over wb pick2 + SDLLineH
+	pick2 pick2 + over hb + pick4 2* + wb pick2 + SDLLineH
+	over over pick4 + hb over + SDLLineV
+	over wb + pick3 2* + over pick4 + hb over + SDLLineV
+	pick2 + 'yc ! over + 'xc !
+	3 over 2* - 'd ! 
+	here >a
+	0 ( rect over <=? stepd 1+ ) 2drop 
+	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints ;
+
 |-------------- V2, less vertex, more redraw
 :rect 
 	xc over - 		

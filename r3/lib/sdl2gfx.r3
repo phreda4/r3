@@ -114,19 +114,19 @@
 	swap i2fp da!+ i2fp da!+ rec da!+ 
 	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
 	;
+	
 
-:rect 
+:8points
 	xm over - ym pick3 - xm dx + pick3 + sdlLineH
 	xm over - ym dy + pick3 + xm dx + pick3 + sdlLineH
 	xm pick2 - ym pick2 - ym dy + pick3 + sdlLineV
 	xm dx + pick2 + ym pick2 - ym dy + pick3 + sdlLineV	 ;
 
 #d
-
 :stepd
 	d -? ( over 2 << 6 + + 'd ! ; )
 	over pick3 - 2 << 10 + + 'd ! 
-	rect swap 1- swap ;
+	8points swap 1- swap ;
 
 ::SDLFRound | r x y w h --
 	1- pick4 2* - 'dy ! 
@@ -138,21 +138,21 @@
 	rot 2* 1+ dx over + dy rot +
 	SDLfRect ;
 
-:rect
-	xm dx + over +	ym dy + pick3 + SDLPoint
-	xm dx + over +	ym pick3 - SDLPoint
-	xm over - 		ym dy + pick3 + SDLPoint
-	xm over - 		ym pick3 - SDLPoint
-	xm dx + pick2 + ym dy + pick2 + SDLPoint
-	xm dx + pick2 + ym pick2 - SDLPoint	
-	xm pick2 - 		ym dy + pick2 + SDLPoint
-	xm pick2 - 		ym pick2 - SDLPoint ;
+
+:8points
+	xm dx + over +	ym dy + pick3 + 32 << or a!+
+	xm dx + over +	ym pick3 - 32 << or a!+
+	xm over - 		ym dy + pick3 + 32 << or a!+
+	xm over - 		ym pick3 - 32 << or a!+
+	xm dx + pick2 + ym dy + pick2 + 32 << or a!+
+	xm dx + pick2 + ym pick2 - 32 << or a!+	
+	xm pick2 - 		ym dy + pick2 + 32 << or a!+
+	xm pick2 - 		ym pick2 - 32 << or a!+ ;
 	
 :stepd
-	d -? ( over 2 << 6 + + 'd ! ; )
-	over pick3 - 2 << 10 + + 'd ! 
+	b> -? ( over 2 << 6 + + >b ; )
+	over pick3 - 2 << 10 + + >b 
 	swap 1- swap ;
-
 
 ::SDLRound | r x y w h --
 	1- pick4 2* - 'dy ! 
@@ -162,8 +162,13 @@
 	over over pick4 + dy over + SDLLineV
 	over dx + pick3 2* + over pick4 + dy over + SDLLineV	
 	pick2 + 'ym ! over + 'xm !
-	3 over 2* - 'd ! 
-	0 ( rect over <=? stepd 1+ ) 2drop ;
+	ab[
+	3 over 2* - >b 
+	here >a
+	0 ( 8points over <=? stepd 1+ ) 2drop 
+	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 
+	]ba
+	;
 
 |-------------------
 ::SDLImage | x y img --		

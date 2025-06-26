@@ -50,6 +50,7 @@
 #sys-SDL_ConvertSurfaceFormat
 
 #sys-SDL_RenderDrawPoint
+#sys-SDL_RenderDrawPoints
 #sys-SDL_RenderDrawLine
 #sys-SDL_RenderDrawRect
 #sys-SDL_RenderFillRect
@@ -139,6 +140,7 @@
 ::SDL_ConvertSurfaceFormat sys-SDL_ConvertSurfaceFormat sys3 ;
 
 ::SDL_RenderDrawPoint sys-SDL_RenderDrawPoint sys3 drop ;
+::SDL_RenderDrawPoints sys-SDL_RenderDrawPoints sys3 drop ;
 ::SDL_RenderDrawLine sys-SDL_RenderDrawLine sys5 drop ;
 ::SDL_RenderDrawRect sys-SDL_RenderDrawRect sys2 drop ;
 ::SDL_RenderFillRect sys-SDL_RenderFillRect sys2 drop ;
@@ -402,6 +404,7 @@
 	dup "SDL_SetTextureBlendMode" getproc 'sys-SDL_SetTextureBlendMode !
 	dup "SDL_ConvertSurfaceFormat" getproc 'sys-SDL_ConvertSurfaceFormat !
 	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
+	dup "SDL_RenderDrawPoints" getproc 'sys-SDL_RenderDrawPoints !
 	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
 	dup "SDL_RenderDrawRect" getproc 'sys-SDL_RenderDrawRect !
 	dup "SDL_RenderFillRect" getproc 'sys-SDL_RenderFillRect !
