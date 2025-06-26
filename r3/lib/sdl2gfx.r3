@@ -126,18 +126,44 @@
 :stepd
 	d -? ( over 2 << 6 + + 'd ! ; )
 	over pick3 - 2 << 10 + + 'd ! 
-	swap 1- swap rect ;
+	rect swap 1- swap ;
 
 ::SDLFRound | r x y w h --
-	'dy ! 'dx !
+	1- pick4 2* - 'dy ! 
+	1- pick3 2* - 'dx !
 	pick2 + 'ym ! over + 'xm !
 	3 over 2* - 'd ! 
-	dup 2* neg dup 'dy +! 'dx +!
 	0 ( over <=? stepd 1+ ) drop 
 	xm over - ym pick2 -
-	rot 2*
-	dx over + dy rot +
+	rot 2* 1+ dx over + dy rot +
 	SDLfRect ;
+
+:rect
+	xm dx + over +	ym dy + pick3 + SDLPoint
+	xm dx + over +	ym pick3 - SDLPoint
+	xm over - 		ym dy + pick3 + SDLPoint
+	xm over - 		ym pick3 - SDLPoint
+	xm dx + pick2 + ym dy + pick2 + SDLPoint
+	xm dx + pick2 + ym pick2 - SDLPoint	
+	xm pick2 - 		ym dy + pick2 + SDLPoint
+	xm pick2 - 		ym pick2 - SDLPoint ;
+	
+:stepd
+	d -? ( over 2 << 6 + + 'd ! ; )
+	over pick3 - 2 << 10 + + 'd ! 
+	swap 1- swap ;
+
+
+::SDLRound | r x y w h --
+	1- pick4 2* - 'dy ! 
+	1- pick3 2* - 'dx !
+	pick2 pick2 + over dx pick2 + SDLLineH
+	pick2 pick2 + over dy + pick4 2* + dx pick2 + SDLLineH
+	over over pick4 + dy over + SDLLineV
+	over dx + pick3 2* + over pick4 + dy over + SDLLineV	
+	pick2 + 'ym ! over + 'xm !
+	3 over 2* - 'd ! 
+	0 ( rect over <=? stepd 1+ ) 2drop ;
 
 |-------------------
 ::SDLImage | x y img --		
