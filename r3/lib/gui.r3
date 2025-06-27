@@ -140,12 +140,16 @@
 ::refreshfoco
 	-1 'foconow ! 0 'foco ! ;
 
+##focus?
+
 ::w/foco | 'in 'start --
+	0 'focus? ! 
 	idf 1+
 	foco 0? ( drop dup dup 'foco ! ) | quitar?
 	<>? ( 'idf ! 2drop ; )
 	foconow <>? ( dup 'foconow ! swap ex 'idf ! drop ; )
-	nip 'idf ! ex ;
+	nip 'idf ! ex 
+	-1 'focus? ! ;
 
 ::focovoid | --
 	idf 1+
@@ -156,6 +160,8 @@
 
 ::esfoco? | -- 0/1
 	idf 1+ foconow - not ;
+	
+::focus	
 
 ::in/foco | 'in --
 	idf 1+

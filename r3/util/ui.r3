@@ -9,8 +9,15 @@
 
 ##cifil $ff1F2229ff14161A	| over|normal -- color fill
 ##cisel $ff1967D2ff393F4C	| over|normal -- color select
-##cifoc $1111ff				| foco -- borde
+##cifoc $4055F4		| foco -- borde
 ##cifnt $ffffff		| fuente -- color
+
+::stDang $ffff8099ff85001B 'cifil ! ;	| danger
+::stWarn $ffffBF29fff55D00 'cifil ! ;	| warning
+::stSucc $ff5BCD9Aff1F6546 'cifil ! ;	| success
+::stInfo $ff80D9FFff005D85 'cifil ! ;	| info
+::stLink $ff4258FFff000F85 'cifil ! ;	| link
+::stDark $ff393F4Cff14161A 'cifil ! ;	| dark
 
 :overfil
 	cifil guin? 32 and >> sdlcolor ;
@@ -348,8 +355,8 @@
 	over ! ;
 	
 :slideshow | 0.0 1.0 'value --
-	$7f SDLColor uiFill
-	$3f3fff [ $7f7fff nip ; ] guiI SDLColor
+	overfil uiFill
+	oversel
 	dup @ pick3 - 
 	curw 8 - pick4 pick4 swap - */ curx 1+ +
 	cury 2 + 
@@ -376,7 +383,7 @@
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-	pick3 @ =? ( $7f sdlcolor uiFill )
+	pick3 @ =? ( oversel uiFill )
 	nindx ttemitl 
 	curh 'cury +! ;
 		
@@ -396,14 +403,14 @@
 	guiBox 
 	cntlist over - 1+	| maxi
 	'slidev dup onDnMoveA 
-	$444444 sdlcolor
+	oversel |	$444444 sdlcolor
 
 	curx curw + 16 -		| 'var max maxi x 
 	pick3 8 + @ 			| 'var max maxi x ini
 	cury backc - pick3 / 	| 'var max maxi x ini hp
 	swap over *	backc +		| 'var max maxi x hp ini*hp
-	15 rot
-	>r >r 5 -rot r> r>
+	14 rot
+	>r >r 4 -rot r> r>
 	sdlFRound	
 	drop ;
 	
@@ -440,7 +447,7 @@
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-	pick3 @ =? ( $7f sdlcolor uiFill )
+	pick3 @ =? ( oversel uiFill )
 	nindx 
 	c@+ 0? ( 2drop curh 'cury +! ; )
 	curx 'ttw !
@@ -571,6 +578,8 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
+	cifoc sdlColor 
+	curx 1- cury 1- curw 2 + curh 2 + SDLRect 
 	$ffffff SDLColor |	uiRect
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
@@ -584,6 +593,7 @@
 |	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
 	drop
+	
 	;
 
 ::uiInputLine | 'buff max --

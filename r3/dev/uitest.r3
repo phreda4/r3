@@ -45,7 +45,7 @@
 	3 4 uiPad
 	0.45 %w 0.1 %h 0.5 %w 0.5 %h uiWin
 	4 12 uiGrid uiH
-	$7f7f7f sdlcolor uiFillW |	$3f sdlcolor uiTitleF
+	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect
 	$ffffff sdlcolor 	
 	'vlist 'tablist uiTab
@@ -53,19 +53,26 @@
 	0 2 uiGAt uiV
 	'vlist 4 'listex uiList | 8
 	ui--
-	0 255 'si uiSlideri
-	ui--
-	-1.0 1.0 'sf uiSliderf
+	'vh 'tablist uiCheck
 	
 	
 	1 2 uiGAt
+stDang 
 	'exit "btn1"  uiBtn 
+stWarn 
 	'exit "btn2"  uiRBtn 
-	'exit "btn3"  uiCBtn 
-	'exit "btn4"  uiBtn 
-	
+stSucc 
+'exit "btn3"  uiCBtn 
+stInfo 
+'exit "btn4"  uiBtn 
+stLink 
+'exit "btn4"  uiBtn 
+stDark 
+'exit "btn4"  uiBtn 
 	ui--
-	'vh 'tablist uiCheck
+	0 255 'si uiSlideri
+	ui--
+	-1.0 1.0 'sf uiSliderf
 	
 	2 2 uiGat
 	'vtree 8 'treeex uiTree
@@ -76,7 +83,7 @@
 	ui--
 
 	0.45 %w 0.6 %h 0.5 %w 0.1 %h uiWin
-	$3f sdlcolor uiFillW |	$3f sdlcolor uiTitleF
+	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	1 2 uiGrid uiV
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
