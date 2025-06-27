@@ -198,6 +198,11 @@
 	hl swap / pady 2* - 'curh ! 
 	wl swap / padx 2* - 'curw ! 
 	0 0 uiGat ;
+
+::uiGridA | c r -- ; adjust for fit
+	hl swap /mod dup 2/ 'yl +! neg 'hl +! pady 2* - 'curh ! 
+	wl swap /mod dup 2/ 'xl +! neg 'wl +! padx 2* - 'curw ! 
+	0 0 uiGat ;
 	
 ::uiStart
 	gui uiH
@@ -429,6 +434,9 @@
 	pady 'cury +!
 	empty ;	
 
+::uiListStr
+	nindx ;
+	
 |----- TREE
 | #vtree 0 0
 
