@@ -105,6 +105,9 @@
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
+::uiRectR   10 xl yl wl hl SDLRound ;
+::uiFillR	10 xl yl wl hl SDLFRound ;
+
 ::uiRRectW 	wl hl min 2 >> xl yl wl hl SDLRound ;
 ::uiRFillW	wl hl min 2 >> xl yl wl hl SDLFRound ;
 ::uiCRectW 	wl hl min 2/ xl yl wl hl SDLRound ;
