@@ -30,9 +30,7 @@
 |---------------
 :img 	
 	>a
-	a> .pos @ 64xyrz 
-	a> .tex @ 
-	spriterz
+	a> .pos @ 64xyrz a> .tex @ spriterz
 	;
 
 :+cosa | "" --
@@ -47,6 +45,48 @@
 	textbox a!+ | textura
 	;
 	
+:.cosa |
+	;
+
+|::textbox | str $colb-colo-ofvh-colf w h font -- texture
+#colb #colo #colf
+#bor #pad #align
+
+:paneltextb
+	0.02 %w 0.2 %h 0.4 %w 0.6 %h uiWin
+	$111111 sdlcolor uiFillR
+	18 uiFontSize
+	stDark
+
+	1 14 uiGrid uiV
+
+	"Label" uiLabel
+	'pad 512 uiInputLine
+	uicr
+	
+	5 14 uiGrid uiH
+	0 2 uiGat
+	0 15 'colf 3 + uiSlideri8
+	0 15 'colf 2 + uiSlideri8
+	0 15 'colf 1 + uiSlideri8
+	0 15 'colf uiSlideri8 
+	colf dup 4 << or sdlcolor uiFill
+|	colb "%h" sprint uiLabelc 
+	uicr
+	0 15 'colo 3 + uiSlideri8
+	0 15 'colo 2 + uiSlideri8
+	0 15 'colo 1 + uiSlideri8
+	0 15 'colo uiSlideri8 
+	colo dup 4 << or sdlcolor uiFill
+	uicr
+	0 15 'colb 3 + uiSlideri8
+	0 15 'colb 2 + uiSlideri8
+	0 15 'colb 1 + uiSlideri8
+	0 15 'colb uiSlideri8 
+	colb dup 4 << or sdlcolor uiFill
+	uicr
+
+	;
 |-----------------------------
 :main
 	0 SDLcls
@@ -54,9 +94,9 @@
 	uiStart
 	3 4 uiPad
 	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin
-	$161616 sdlcolor uiFillR
+	$222222 sdlcolor uiFillR
 
-	
+	38 uifontsize
 	10 10 uiGrid 
 	0 0 uiGAt stSucc 'exit "+" uiRBtn 
 	9 9 uiGAt stDang 'exit "Exit" uiRBtn 
@@ -65,6 +105,8 @@
 |	stInfo 'exit "btn4"  uiBtn 
 |	stLink 'exit "btn4"  uiBtn 
 |	stDark 'exit "btn4"  uiBtn 
+
+	paneltextb
 
 	'pages p.draw 
 
@@ -83,7 +125,7 @@
 	"media/ttf/Roboto-regular.ttf" 8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	
-	38 uifontsize
+	
 	
 	1024 vaini
 	1024 'pages p.ini

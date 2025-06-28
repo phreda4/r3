@@ -368,9 +368,7 @@
 	dup @ pick3 - 
 	curw 8 - pick4 pick4 swap - */ curx 1+ +
 	cury 2 + 
-	6 
-	curh 4 - 
-	SDLFRect ;
+	6 curh 4 - SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
 	guiZone
@@ -384,6 +382,28 @@
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow	
 	@ .d uiLabelC
+	2drop ;	
+
+|---- 8 bits
+:slideh8 | 0 255 'value --
+	sdlx curx - curw clamp0max 
+	2over swap - | Fw
+	curw */ pick3 +
+	over c! ;
+
+:slideshow8 | 0 255 'value --
+	overfil uiFill
+	oversel
+	dup c@ pick3 - 
+	curw 8 - pick4 pick4 swap - */ curx 1+ +
+	cury 2 + 
+	6 curh 4 - SDLFRect ;
+
+::uiSlideri8 | 0 255 'value --
+	guiZone
+	'slideh8 dup onDnMoveA | 'dn 'move --	
+	slideshow8
+	c@ .d uiLabelC
 	2drop ;	
 
 |----- LIST
