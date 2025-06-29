@@ -460,6 +460,24 @@
 ::uiListStr
 	nindx ;
 	
+|----- UIGridBtn
+:griblist
+	;
+	
+:glist	
+	;
+	
+::UIGridBtn | 'var 'list 4 4 --
+	mark makeindx
+	curx cury dup 'backc ! 
+	curw pick3 curh * guiBox
+	overfil uiFillL
+	'griblist onclick
+	0 ( over <? glist 1+ ) drop
+	pady 'cury +!
+	empty ;	
+	;
+	
 |----- TREE
 | #vtree 0 0
 

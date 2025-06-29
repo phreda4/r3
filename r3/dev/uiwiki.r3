@@ -4,6 +4,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 
+^r3/lib/rand.r3
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
 
@@ -18,6 +19,8 @@
 
 #pages 0 0
 
+#curx #cury #curz
+
 |--- objs
 :.pos 1 ncell+ ;
 :.vel 2 ncell+ ;
@@ -28,15 +31,13 @@
 :.str 7 ncell+ ;
 
 |---------------
-:img 	
-	>a
-	a> .pos @ 64xyrz a> .tex @ spriterz
+:img >a | adr -- adr/0
+	a> .pos @ 64xyrz 
+	a> .tex @ spriterz
 	;
 
-:+cosa | "" --
+:+cosa | "" xyrz64 --
 	'img 'pages p!+ >a
-	
-	0.5 %w 0.5 %h 0 1.0 xyrz64
 	a!+ | posicion
 	0 a!+ | velocidad
 	0 a!+ | animacion
@@ -44,22 +45,26 @@
 	uifont |dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001
 	textbox a!+ | textura
 	;
+
+:.chetex
+	a> .tex dup @ 1? ( SDL_DestroyTexture 0 over ! dup ) 2drop
 	
-:.cosa |
 	;
+	
+:+img | "filename" pos --
+	'img 'pages p!+ >a
+	a!+ | posicion
+	0 a!+ | velocidad
+	0 a!+ | animacion
+	loadimg a!+ | textura
+	;	
 
 |::textbox | str $colb-colo-ofvh-colf w h font -- texture
 #colb #colo #colf
 #bor #pad #align
 
 :paneltextb
-	0.02 %w 0.2 %h 0.4 %w 0.6 %h uiWin
-	$111111 sdlcolor uiFillR
-	18 uiFontSize
-	stDark
-
 	1 14 uiGrid uiV
-
 	"Label" uiLabel
 	'pad 512 uiInputLine
 	uicr
@@ -85,12 +90,36 @@
 	0 15 'colb uiSlideri8 
 	colb dup 4 << or sdlcolor uiFill
 	uicr
-
 	;
+
+#botonera "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "." " " 0
+
+#varbot 0 $0404
+
+:paneltex
+	1 14 uiGrid uiV
+	"Imagen" uiLabel 
+	'varbot 'botonera 4 4 UIGridBtn
+	
+	;
+
+#modo 'paneltextb 'paneltex
+#paneln	
+
+#btn
+
+:panel
+	0.02 %w 0.2 %h 0.3 %w 0.6 %h uiWin
+	$111111 sdlcolor uiFillR
+	18 uiFontSize
+	stDark
+
+	'modo paneln ncell+ @ ex
+	;
+	
 |-----------------------------
 :main
 	0 SDLcls
-	
 	uiStart
 	3 4 uiPad
 	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin
@@ -106,14 +135,24 @@
 |	stLink 'exit "btn4"  uiBtn 
 |	stDark 'exit "btn4"  uiBtn 
 
-	paneltextb
+	panel
 
 	'pages p.draw 
 
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( "cosa" +cosa )
+	<f1> =? ( 0 'paneln ! )
+	<f2> =? ( 1 'paneln ! )
+	<f5> =? ( 
+		"cosa" 
+		sw randmax sh randmax 0 1.0	xyrz64 
+		+cosa )
+	<f6> =? (
+		"media/img/wood.jpg"
+		sw randmax sh randmax 1.0 randmax 0.1 0.6 randmax +
+		xyrz64 
+		+img )
 	drop
 	;
 	
