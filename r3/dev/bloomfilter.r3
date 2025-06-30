@@ -1,5 +1,9 @@
+| Bloom Filter
+| PHREDA 2025
+|
 ^r3/lib/console.r3
 
+|---- hash
 :hash1 | "" -- 64hash
 	0 swap ( c@+ 1? rot 
 		31 * + 
@@ -16,12 +20,11 @@
 		rot + xor 
 		swap ) 2drop ;
 
-#bitset8 0 0 0 0 0 0 0 0 | 512 bits
-
+| total: $7 + $3f == $1fff (512 bits)
 :bitdres | 'bitset8 64hash -- mask 'bitset[]
 	1 over $3f and << 
-	-rot 6 >> $7 and + ;
-	
+	-rot $1fc0 and + ;
+
 :setbit | 'bitset8 64hash --
 	bitdres 
 	dup @ rot or swap ! ; | or!	
@@ -31,25 +34,37 @@
 	dup @ rot not and swap ! ; | nand!
 
 :getbit | 64hash -- 0/1
-	bitdres @ and 0? ( ; ) -1 nip ;
+	bitdres @ and ;
+
+|--- 8bit
+:bitdres8 | 'bitset8 64hash -- mask 'bitset[]
+	1 over $7 and << 
+	-rot $1ff8 and + ;
+
+:setbit8 | 'bitset8 64hash --
+	bitdres8 dup c@ rot or swap c! ; | orc!	
 	
+:getbit8 | 64hash -- 0/1
+	bitdres8 c@ and ;
+
+|--- API	
 ::boomInit | bf --
 	0 8 fill ;
 	
 ::boom+! | bf "str" --
-	|DUP "ADD:%S" .PRINTLN
+	DUP "ADD:%S" .PRINTLN
 	2dup hash1 setbit
 	2dup hash2 setbit
 	hash3 setbit ;
 	
 ::boom? | bf "" --
 |	DUP "check:%S" .PRINTLN
-	2dup hash1 getbit -rot
-	2dup hash2 getbit -rot
-	hash3 getbit and and ;
+	2dup hash1 getbit 0? ( nip nip ; ) drop
+	2dup hash2 getbit 0? ( nip nip ; ) drop
+	hash3 getbit 0? ( ; ) -1 nip ;
 	
-	
-#bloomf 0 0 0 0 0 0 0 0 | 512 bits	
+|--- TEST
+#bloomf 0 0 0 0 0 0 0 0 | 512 bits	* 64
 
 #teststr
 "apple"
@@ -60,14 +75,18 @@
 "apricot" | Not added (might cause a false positive)
 0
 
-|// --- Main Example ---
 :main
+	"Bloom Filter test case" .println
+	.cr
 	'bloomf 
 	dup boomInit
 	dup "apple" boom+!
 	dup "banana" boom+!
 	dup "orange" boom+!
+	|dup "kiwi" boom+!
 	drop
+	.cr
+	
 	'teststr ( dup c@ 1? drop
 		'bloomf over boom? "%d " .PRINT
 		dup .println

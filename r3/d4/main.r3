@@ -54,6 +54,17 @@
 #fullpath * 1024
 #cfold
 
+|---------
+#memcode
+#memcode>
+
+#info
+#info>
+
+:loadcodigo | --
+	'filename edload ;
+
+|------------------------
 :scan/ | "" -- adr/
 	( c@+ 1?
 		$5c =? ( $2c nip )
@@ -102,14 +113,11 @@
 #filenow 0 0
 #filechg -1
 
-#fp * 1024
-	
-
 #pad * 1024
 		
 :Fileselect
 	0.01 %w 0.15 %h 0.35 %w 0.8 %h uiWin
-	$444444 sdlcolor uiRFill10
+	$222222 sdlcolor uiRFill10
 	5 15 uiGrid uiH
 	
 	0 14 uiGat
@@ -119,13 +127,13 @@
 	'exit "Cancel" uiBtn
 	'exit "Delete" uiBtn
 	'exit "New" uiBtn
-	4 0 uiGat
-	stFWhit 	"FileSystem" uiLabelC
+	
+	4 0 uiGat stFWhit "FileSystem" uiLabelC
 	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin	
 |	1 15 uiGrid<win
 		1 2 uiGrid uiV 
 		stDark 
-		0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
+		|0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
 		0 0 uiGat uixBoxPath 
 |		uiWin>
 
@@ -147,10 +155,33 @@
 		'filenow 24 files uiList
 		filenow filechg <>? ( dup 'filechg ! 
 			|****	
+			dup uiListStr 'fullpath 'filename strcpyl 1- strcpy
+			loadcodigo
 		) drop
 |	uiWin>	
 	;
 
+:drawcode
+	fuente 0? ( drop ; ) 
+	|"%l" uiLabel
+	.println
+	|drop
+	;
+	
+:codigo
+	0.37 %w 0.1 %h 0.35 %w 0.85 %h uiWin
+	$222222 sdlcolor uiRFill10
+	5 15 uiGrid uiH
+	"cODIGO" uiLabel
+	fuente .h uiLabel
+	fuente 10 + c@ .h uiLabel
+	;
+:incodcod
+	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin
+	$222222 sdlcolor uiRFill10
+	5 15 uiGrid uiH
+	"+Info" uiLabel
+	;
 	
 #tabs "1" "2" "3" 0
 #tabnow	
@@ -161,7 +192,9 @@
 	uiStart
 
 	fileselect	
-
+	codigo
+	incodcod
+	
 |	'tabnow	'tabs uiTab
 
 |	edfocus
@@ -186,17 +219,16 @@
 
 	bfont1
 	edram 
-|	60 4 80 40 edwin
+	60 4 80 40 edwin
 
-|	"r3/opengl/voxels/3-vox.r3" 
-|	'filename strcpy
-|	'filename edload	
+	"r3/opengl/voxels/3-vox.r3" 
+	'filename strcpy
+	'filename edload	
 	
 	mark
 	here 'diskdirs !
 	'basepath uiScanDir
 	mark
-|	rebuild
 	
 	'main SDLshow
 	SDLquit 
