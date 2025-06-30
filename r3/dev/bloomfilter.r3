@@ -57,7 +57,7 @@
 	2dup hash2 setbit
 	hash3 setbit ;
 	
-::boom? | bf "" --
+::boom? | bf "" -- 0/-1
 |	DUP "check:%S" .PRINTLN
 	2dup hash1 getbit 0? ( nip nip ; ) drop
 	2dup hash2 getbit 0? ( nip nip ; ) drop
