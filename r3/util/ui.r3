@@ -308,7 +308,7 @@ $ffffffffffeaeaea
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 	
-::nindx | n -- str
+::uiNindx | n -- str
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
@@ -341,7 +341,7 @@ $ffffffffffeaeaea
 	guiZone
 	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
-	@ nindx uiLabel
+	@ uiNindx uiLabel
 	empty ;
 
 |----- CHECK
@@ -447,17 +447,27 @@ $ffffffffffeaeaea
 |----- LIST
 | #vlist 0 0 
 
+#overl
+
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( oversel uiFill )
-	nindx ttemitl 
+	overl =? ( overfil uiFill )
+	uiNindx ttemitl 
 	curh 'cury +! ;
-		
-:cklist
-	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
-	sdly cury - curh / pick2 dup 8 + @ rot + 
-	cntlist 1- clampmax swap ! ;
 
+:clist | 'var max --
+	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
+	overl pick2 ! ;
+	
+:chlist
+	-1 'overl !
+	guin? 0? ( drop ; ) drop
+	sdly cury - curh / pick2 8 + @ + 
+	cntlist 1- clampmax 'overl ! 
+	'clist onclick
+	;
+	
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
 	over cury backc - */ pick3 8 + ! ;
@@ -487,17 +497,14 @@ $ffffffffffeaeaea
 	mark makeindx
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	|overfil uiFillL
-	'cklist onclick
+	chlist
 	0 ( over <? ilist 1+ ) drop
 	cscroll
 	2drop
 	pady 'cury +!
 	empty ;	
 
-::uiListStr
-	nindx ;
-	
+
 |----- UIGridBtn
 :griblist
 	;
@@ -522,12 +529,18 @@ $ffffffffffeaeaea
 
 :cktree
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
-	sdly cury - curh / pick2 dup 8 + @ rot + 
-	cntlist 1- clampmax 
-	dup rot !
-	|sdlx curx - 16 >? ( 2drop ; ) drop
-	3 << indlist + @ 
+	overl pick2 @ <>? ( pick2 ! ; ) | click on select
+	pick2 !
+	overl 3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
+
+:chtree
+	-1 'overl !
+	guin? 0? ( drop ; ) drop
+	sdly cury - curh / pick2 8 + @ + 
+	cntlist 1- clampmax 'overl ! 
+	'cktree onclick
+	;
 
 :iicon | n -- 
 	$20 nand? ( drop uicone ; )
@@ -536,7 +549,8 @@ $ffffffffffeaeaea
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( oversel uiFill )
-	nindx 
+	overl =? ( overfil uiFill )
+	uiNindx 
 	c@+ 0? ( 2drop curh 'cury +! ; )
 	curx 'ttw !
 	dup $1f and 4 << 'curx +!
@@ -549,8 +563,7 @@ $ffffffffffeaeaea
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	|overfil uiFillL
-	'cktree onclick
+	chtree
 	0 ( over <? itree 1+ ) drop
 	cscroll
 	2drop
@@ -560,9 +573,9 @@ $ffffffffffeaeaea
 ::uiTreePath | n -- str
 	here 1024 + dup >b >a
 	mark
-	( dup nindx c@+ $1f and 
+	( dup uiNindx c@+ $1f and 
 		swap a!+ 1? 'lvl ! 
-		( 1- dup nindx c@ $1f and 
+		( 1- dup uiNindx c@ $1f and 
 			lvl >=? drop ) drop
 		) 2drop
 	a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop

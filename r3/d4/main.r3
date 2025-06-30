@@ -155,7 +155,7 @@
 		'filenow 24 files uiList
 		filenow filechg <>? ( dup 'filechg ! 
 			|****	
-			dup uiListStr 'fullpath 'filename strcpyl 1- strcpy
+			dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
 			loadcodigo
 		) drop
 |	uiWin>	
