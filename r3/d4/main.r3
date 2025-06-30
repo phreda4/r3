@@ -48,6 +48,7 @@
 #filechg -1
 
 #filename * 1024
+
 |----- boxpath
 #basepath "r3/"
 #fullpath * 1024
@@ -65,7 +66,7 @@
 	|cfold backfhere 
 	;
 
-:boxpath
+:uixBoxPath
 	" :" uiTLabel
 	'fullpath 
 	( dup c@ 1? drop
@@ -80,8 +81,8 @@
 |----- Files
 :+file | f --
 	dup FNAME
-|	dup ".." = 1? ( 3drop ; ) drop
-|	dup "." = 1? ( 3drop ; ) drop
+	dup ".." = 1? ( 3drop ; ) drop
+	dup "." = 1? ( 3drop ; ) drop
 	,s " " ,s  
 |	dup FSIZEF 12 >> ,d " Kb" ,s
 |	dup FDIR ,d
@@ -107,15 +108,30 @@
 #pad * 1024
 		
 :Fileselect
+	0.01 %w 0.15 %h 0.35 %w 0.8 %h uiWin
+	$444444 sdlcolor uiRFill10
+	5 15 uiGrid uiH
+	
+	0 14 uiGat
+	stLink
+	'exit "Load" uiBtn
+	'exit "Save" uiBtn
+	'exit "Cancel" uiBtn
+	'exit "Delete" uiBtn
+	'exit "New" uiBtn
+	4 0 uiGat
+	stFWhit 	"FileSystem" uiLabelC
+	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin	
+|	1 15 uiGrid<win
+		1 2 uiGrid uiV 
+		stDark 
+		0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
+		0 0 uiGat uixBoxPath 
+|		uiWin>
 
-	0.01 %w 0.15 %h 0.35 %w 0.05 %h uiWin
-	1 1 uiGrid uiV
-	$44 sdlcolor uiFillW
-	boxpath
-
-	0.01 %w 0.2 %h 0.15 %w 0.7 %h uiWin
-	1 20 uiGrid uiV
-	$444444 sdlcolor uiFillW
+	0.01 %w 0.25 %h 0.15 %w 0.7 %h uiWin
+	1 16 uiGrid uiV
+|	2 15 uiGrid<win
 	'dirnow 24 diskdirs uiTree
 	dirnow dirchg <>? ( dup 'dirchg ! 
 		dup uiTreePath
@@ -123,20 +139,16 @@
 		file2list
 		0 0 'filenow !+ !
 		) drop
-
-	0.16 %w 0.2 %h 0.2 %w 0.7 %h uiWin
-	1 20 uiGrid uiV
-	$4444 sdlcolor uiFillW
-	'filenow 24 files uiList
-	filenow filechg <>? ( dup 'filechg ! 
-	
+|	uiWin>
+		
+	0.16 %w 0.25 %h 0.2 %w 0.7 %h uiWin
+	1 16 uiGrid uiV
+|	2 15 uiGrid<win
+		'filenow 24 files uiList
+		filenow filechg <>? ( dup 'filechg ! 
+			|****	
 		) drop
-	
-	0.01 %w 0.9 %h 0.35 %w 0.05 %h uiWin
-	1 1 uiGrid uiV
-	$44 sdlcolor uiFillW
-	'pad 1024 uiInputLine | 'buff max --
-	
+|	uiWin>	
 	;
 
 	
@@ -145,14 +157,15 @@
 |-----------------------------
 :main
 	0 SDLcls 
-	3 2 uiPad
+	4 6 uiPad
 	uiStart
 
 	fileselect	
 
 |	'tabnow	'tabs uiTab
-	edfocus
-	edcodedraw
+
+|	edfocus
+|	edcodedraw
 	
 	SDLredraw
 	sdlkey
@@ -173,11 +186,11 @@
 
 	bfont1
 	edram 
-	60 4 80 40 edwin
+|	60 4 80 40 edwin
 
-	"r3/opengl/voxels/3-vox.r3" 
-	'filename strcpy
-	'filename edload	
+|	"r3/opengl/voxels/3-vox.r3" 
+|	'filename strcpy
+|	'filename edload	
 	
 	mark
 	here 'diskdirs !

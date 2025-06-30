@@ -7,10 +7,10 @@
 
 ##uicons
 
-##cifil $ff1F2229ff14161A	| over|normal -- color fill
-##cisel $ff1967D2ff393F4C	| over|normal -- color select
-##cifoc $4055F4		| foco -- borde
-##cifnt $ffffff		| fuente -- color
+#cifil $ff1F2229ff14161A	| over|normal -- color fill
+#cisel $ff1967D2ff393F4C	| over|normal -- color select
+#cifoc $4055F4		| foco -- borde
+#cifnt $ffffff		| fuente -- color
 
 ::stDang $ffff8099ff85001B 'cifil ! ;	| danger
 ::stWarn $ffffBF29fff55D00 'cifil ! ;	| warning
@@ -23,7 +23,29 @@
 	cifil guin? 32 and >> sdlcolor ;
 :oversel	
 	cisel guin? 32 and >> sdlcolor ;
-	
+
+::stFDang 
+$ff9980ffff1B0085
+'cifnt ! ;	| danger
+::stFWarn 
+$ff005Df5ff29BFff
+'cifnt ! ;	| warning
+::stFSucc 
+$ff46651Fff9ACD5B
+'cifnt ! ;	| success
+::stFInfo 
+$ff855D00ffFFD980
+'cifnt ! ;	| info
+::stFLink 
+$ff850F00ffFF5842
+'cifnt ! ;	| link
+::stFDark 
+$ff1A1614ff4C3F39
+'cifnt ! ;	| dark
+::stFWhit 
+$ffffffffffeaeaea 
+'cifnt ! ;	| whait
+
 #xl #yl #wl #hl
 #padx #pady	
 #curx #cury | cursorxy
@@ -105,13 +127,13 @@
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
-::uiRectR   10 xl yl wl hl SDLRound ;
-::uiFillR	10 xl yl wl hl SDLFRound ;
-
 ::uiRRectW 	wl hl min 2 >> xl yl wl hl SDLRound ;
 ::uiRFillW	wl hl min 2 >> xl yl wl hl SDLFRound ;
 ::uiCRectW 	wl hl min 2/ xl yl wl hl SDLRound ;
 ::uiCFillW	wl hl min 2/ xl yl wl hl SDLFRound ;
+
+::uiRRect10	10 xl yl wl hl SDLRound ;
+::uiRFill10	10 xl yl wl hl SDLFRound ;
 
 ::uiRect	curx cury curw curh SDLRect ;
 ::uiFill	curx cury curw curh SDLFRect ;
@@ -238,6 +260,20 @@
 	curw 'curx +!	
 	;
 	
+	
+|dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001	
+#des 0 0
+
+::uiMDText | 'var "" --
+	$f0000020ffff curw curh
+	uifont textbox 
+	curh curw cury curx 'des d!+ d!+ d!+ d!
+	SDLrenderer over 0 'des SDL_RenderCopy
+	SDL_DestroyTexture
+	ui.. ;
+
+
+|----- Botones	
 ::uiBtn | v "" --
 	guiZone
 	overfil uiFill
@@ -368,7 +404,9 @@
 	dup @ pick3 - 
 	curw 8 - pick4 pick4 swap - */ curx 1+ +
 	cury 2 + 
-	6 curh 4 - SDLFRect ;
+	6 
+	curh 4 - 
+	SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
 	guiZone
@@ -405,7 +443,7 @@
 	slideshow8
 	c@ .d uiLabelC
 	2drop ;	
-
+	
 |----- LIST
 | #vlist 0 0 
 
@@ -449,7 +487,7 @@
 	mark makeindx
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	overfil uiFillL
+	|overfil uiFillL
 	'cklist onclick
 	0 ( over <? ilist 1+ ) drop
 	cscroll
@@ -477,6 +515,7 @@
 	pady 'cury +!
 	empty ;	
 	;
+	
 	
 |----- TREE
 | #vtree 0 0
@@ -510,7 +549,7 @@
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	overfil uiFillL
+	|overfil uiFillL
 	'cktree onclick
 	0 ( over <? itree 1+ ) drop
 	cscroll

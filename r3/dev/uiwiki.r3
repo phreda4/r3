@@ -110,7 +110,7 @@
 
 :panel
 	0.02 %w 0.2 %h 0.3 %w 0.6 %h uiWin
-	$111111 sdlcolor uiFillR
+	$111111 sdlcolor uiRFill10
 	18 uiFontSize
 	stDark
 
@@ -123,7 +123,7 @@
 	uiStart
 	3 4 uiPad
 	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin
-	$222222 sdlcolor uiFillR
+	$222222 sdlcolor uiRFill10
 
 	38 uifontsize
 	10 10 uiGrid 
