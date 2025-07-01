@@ -460,11 +460,21 @@ $ffffffffffeaeaea
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
 	overl pick2 ! ;
 	
+:wwlist	| 'var max d -- 'var max d ; Wheel mouse
+	dup pick3 8 + 
+	dup @ rot + 
+	cntlist pick4 -
+	clamp0max
+	swap ! ;
+	
 :chlist
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
-	sdly cury - curh / pick2 8 + @ + 
-	cntlist 1- clampmax 'overl ! 
+	SDLw 1? ( wwlist ) drop
+	sdly cury - curh / 
+	pick2 8 + @ + 
+	cntlist 1- 
+	clampmax 'overl ! 
 	'clist onclick
 	;
 	
@@ -534,9 +544,11 @@ $ffffffffffeaeaea
 	overl 3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 
+
 :chtree
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
+	SDLw 1? ( wwlist ) drop
 	sdly cury - curh / pick2 8 + @ + 
 	cntlist 1- clampmax 'overl ! 
 	'cktree onclick
