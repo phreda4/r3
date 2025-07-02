@@ -462,6 +462,13 @@ $ffffffffffeaeaea
 
 #overl
 
+:wwlist	| 'var max d -- 'var max d ; Wheel mouseAdd commentMore actions
+	dup pick3 8 + 
+	dup @ rot + 
+	cntlist pick4 -
+	clamp0max
+	swap ! ;
+	
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( oversel uiFill )
@@ -476,8 +483,11 @@ $ffffffffffeaeaea
 :chlist
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
-	sdly cury - curh / pick2 8 + @ + 
-	cntlist 1- clampmax 'overl ! 
+	SDLw 1? ( wwlist ) drop
+	sdly cury - curh / 
+	pick2 8 + @ + 
+	cntlist 1- 
+	clampmax 'overl ! 
 	'clist onclick
 	;
 	
@@ -550,6 +560,7 @@ $ffffffffffeaeaea
 :chtree
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
+	SDLw 1? ( wwlist ) drop
 	sdly cury - curh / pick2 8 + @ + 
 	cntlist 1- clampmax 'overl ! 
 	'cktree onclick
