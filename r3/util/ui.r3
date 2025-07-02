@@ -179,6 +179,8 @@ $ffffffffffeaeaea
 	uiGridBH uiGridBV ;
 
 |----- zone
+
+
 ::uicr
 	xl padx + 'curx ! 
 ::uidn	
@@ -187,15 +189,19 @@ $ffffffffffeaeaea
 	curx curw + padx 2* + | new x
 	xl wl + 
 	>? ( drop uicr ; ) 'curx ! ;
-::ui>>
-	xl wl + curw - padx 2* - 'curx ! ;
-::ui<
-	curw padx 2* + neg 'curx +! ;
-	
+
 #vflex 'uiri
 
 ::uiH	'uiri 'vflex ! ;	| << horizontal flow
 ::uiV	'uidn 'vflex ! ;	| << vertical flow
+	
+::ui<
+	curw padx 2* + neg 'curx +! ;
+	
+::ui>>
+	xl wl + curw - padx 2* - 'curx ! 
+	'ui< 'vflex ! ;
+
 
 :ui..	vflex ex ;
 
@@ -254,11 +260,17 @@ $ffffffffffeaeaea
 ::uiLabelr | "" --
 	ttemitr ui.. ;
 	
-::uitlabel
+::uiTlabel
 	ttsize ttw 4 + 'curw !	
 	ttemitc 
 	curw 'curx +!	
 	;
+::uiLabelMini
+	dup c@ 0? ( 2drop ; ) drop
+	tt< cury curx recbox! tt> 
+	curh 'cury +!
+	;
+	
 	
 	
 |dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001	
@@ -339,6 +351,7 @@ $ffffffffffeaeaea
 ::uiCombo | 'var 'list --
 	mark makeindx
 	guiZone
+	overfil uiRFill
 	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
 	@ uiNindx uiLabel
@@ -460,21 +473,11 @@ $ffffffffffeaeaea
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
 	overl pick2 ! ;
 	
-:wwlist	| 'var max d -- 'var max d ; Wheel mouse
-	dup pick3 8 + 
-	dup @ rot + 
-	cntlist pick4 -
-	clamp0max
-	swap ! ;
-	
 :chlist
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
-	SDLw 1? ( wwlist ) drop
-	sdly cury - curh / 
-	pick2 8 + @ + 
-	cntlist 1- 
-	clampmax 'overl ! 
+	sdly cury - curh / pick2 8 + @ + 
+	cntlist 1- clampmax 'overl ! 
 	'clist onclick
 	;
 	
@@ -544,11 +547,9 @@ $ffffffffffeaeaea
 	overl 3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 
-
 :chtree
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
-	SDLw 1? ( wwlist ) drop
 	sdly cury - curh / pick2 8 + @ + 
 	cntlist 1- clampmax 'overl ! 
 	'cktree onclick

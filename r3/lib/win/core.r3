@@ -45,6 +45,10 @@
 	rot $ffff and
 	8 << or 8 << or
 	;
+
+::sysdate | -- 'dt
+	'sistime GetLocalTime
+	'sistime ;
 	
 #fdd * 512
 #hfind 

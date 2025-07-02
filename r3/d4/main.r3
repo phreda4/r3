@@ -10,34 +10,6 @@
 ^r3/util/ui.r3
 ^r3/util/sdledit.r3
 	
-|------------------------	
-| type name size datetime
-|satetime 
-| YYYY MwDD HHMM SSmm (mm>>2)
-:dt>64 | datetime -- dt64
-	@+
-	dup date.y 48 << 
-	over date.m 44 << or
-	over date.dw 40 << or
-	swap date.d 32 << or
-	swap @
-	dup time.h 24 << 
-	over time.m 16 << or
-	over time.s 8 << or
-	swap time.ms 2 >> $ff and or
-	or ;
-
-:,64>dtf | dt64 -- "d-m-y h:m"
-	dup 32 >> $ff and ,2d "-" ,s
-	dup 44 >> $f and ,2d "-" ,s
-	dup 48 >> $ffff and ,d " " ,s
-	dup 24 >> $ff and ,2d ":" ,s
-	16 >> $ff and ,2d
-	;
-
-:64>dtc | dt64 -- "y-m-d h:m:s"
-	;
-
 |--------------------------------	
 #diskdirs
 #dirnow 0 0
@@ -128,7 +100,7 @@
 	'exit "Delete" uiBtn
 	'exit "New" uiBtn
 	
-	4 0 uiGat stFWhit "FileSystem" uiLabelC
+	3 0 uiGat stFWhit "= FileSystem =" uiLabelC
 	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin	
 |	1 15 uiGrid<win
 		1 2 uiGrid uiV 
@@ -211,7 +183,8 @@
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-regular.ttf" 
+	"media/ttf/RobotoMono.ttf" 
+	|"media/ttf/Roboto-regular.ttf" 
 	|"media/ttf/ProggyClean.ttf" 
 	8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
