@@ -12,6 +12,7 @@
 #foconow	| activo teclado
 
 ##clkbtn
+
 |--- id
 #id		| id gui actual
 #idf	| id gui foco actual (teclado)
@@ -119,10 +120,10 @@
 | manejo de foco (teclado)
 
 ::nextfoco
-	foco 1+ idl >? ( 0 nip ) 'foco ! ;
+	foco 1+ idl >? ( 0 nip ) 'foco ! 0 'sdlkey ! -1 'foconow ! ;
 
 ::prevfoco
-	foco 1- 0 <=? ( idl nip ) 'foco ! ;
+	foco 1- 0 <=? ( idl nip ) 'foco ! 0 'sdlkey ! -1 'foconow ! ;
 
 ::setfoco | nro --
 	'foco ! -1 'foconow ! ;
@@ -140,16 +141,12 @@
 ::refreshfoco
 	-1 'foconow ! 0 'foco ! ;
 
-##focus?
-
 ::w/foco | 'in 'start --
-	0 'focus? ! 
 	idf 1+
 	foco 0? ( drop dup dup 'foco ! ) | quitar?
 	<>? ( 'idf ! 2drop ; )
 	foconow <>? ( dup 'foconow ! swap ex 'idf ! drop ; )
-	nip 'idf ! ex 
-	-1 'focus? ! ;
+	nip 'idf ! ex ;
 
 ::focovoid | --
 	idf 1+
@@ -160,15 +157,12 @@
 
 ::esfoco? | -- 0/1
 	idf 1+ foconow - not ;
-	
-::focus	
 
 ::in/foco | 'in --
 	idf 1+
 	foco 0? ( drop dup dup 'foco ! )
 	<>? ( 'idf ! drop ; )
-	'idf !
-	ex ;
+	'idf ! ex ;
 
  | no puedo retroceder! (idea: separa id for text input)
 ::lostfoco | 'acc --

@@ -4,6 +4,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/textb.r3
+^r3/util/datetime.r3
 
 ##uicons
 
@@ -19,32 +20,17 @@
 ::stLink $ff4258FFff000F85 'cifil ! ;	| link
 ::stDark $ff393F4Cff14161A 'cifil ! ;	| dark
 
-:overfil
-	cifil guin? 32 and >> sdlcolor ;
-:oversel	
-	cisel guin? 32 and >> sdlcolor ;
+:overfil cifil guin? 32 and >> sdlcolor ;
+:oversel cisel guin? 32 and >> sdlcolor ;
 
-::stFDang 
-$ff9980ffff1B0085
-'cifnt ! ;	| danger
-::stFWarn 
-$ff005Df5ff29BFff
-'cifnt ! ;	| warning
-::stFSucc 
-$ff46651Fff9ACD5B
-'cifnt ! ;	| success
-::stFInfo 
-$ff855D00ffFFD980
-'cifnt ! ;	| info
-::stFLink 
-$ff850F00ffFF5842
-'cifnt ! ;	| link
-::stFDark 
-$ff1A1614ff4C3F39
-'cifnt ! ;	| dark
-::stFWhit 
-$ffffffffffeaeaea 
-'cifnt ! ;	| whait
+::stFDang $ff9980ffff1B0085 'cifnt ! ;	| danger
+::stFWarn $ff005Df5ff29BFff 'cifnt ! ;	| warning
+::stFSucc $ff46651Fff9ACD5B 'cifnt ! ;	| success
+::stFInfo $ff855D00ffFFD980 'cifnt ! ;	| info
+::stFLink $ff850F00ffFF5842 'cifnt ! ;	| link
+::stFDark $ff1A1614ff4C3F39 'cifnt ! ;	| dark
+::stFWhit $ffffffffffeaeaea 'cifnt ! ;	| white
+::stfLigt $ffaaaaaaff888888 'cifnt ! ;	| white
 
 #xl #yl #wl #hl
 #padx #pady	
@@ -284,21 +270,44 @@ $ffffffffffeaeaea
 	SDL_DestroyTexture
 	ui.. ;
 
-
 |----- Botones	
+:focoBtn
+	cifoc sdlColor uiRect
+	sdlKey
+	>tab< =? ( nextfoco )
+	drop ;
+
+:focoRBtn
+	cifoc sdlColor uiRRect
+	sdlKey
+	>tab< =? ( nextfoco )
+	drop ;
+
+:focoCBtn
+	cifoc sdlColor uiCRect
+	sdlKey
+	>tab< =? ( nextfoco )
+	drop ;
+	
 ::uiBtn | v "" --
 	guiZone
 	overfil uiFill
+	'focoBtn in/foco 
+	'clickfoco onClick
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
 	guiZone
 	overfil uiRFill
+	'focoRBtn in/foco 
+	'clickfoco onClick	
 	ttemitc onClick ui.. ;	
 
 ::uiCBtn | v "" --
 	guiZone
 	overfil uiCFill
+	'focoCBtn in/foco 
+	'clickfoco onClick	
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
@@ -348,13 +357,27 @@ $ffffffffffeaeaea
 	'here ! ;
 
 |----- COMBO
+::focoCombo
+	cifoc sdlColor uiRRect
+	SDLkey |0? ( drop ; )
+|	<le> =? ( kizq ) <ri> =? ( kder )
+|	<back> =? ( kback ) <del> =? ( kdel )
+	>tab< =? ( nextfoco )
+	drop ;
+	
 ::uiCombo | 'var 'list --
 	mark makeindx
 	guiZone
 	overfil uiRFill
+	
+	'focoCombo in/foco 
+	'clickfoco onClick
+	
 	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
+	8 'curx +!
 	@ uiNindx uiLabel
+	-8 'curx +!
 	empty ;
 
 |----- CHECK
@@ -363,7 +386,8 @@ $ffffffffffeaeaea
 	
 :icheck | 'var n -- 'var n
 	guiZone
-	[ 1 over << pick2 @ xor pick2 ! ; ] onClick
+	'focoBtn in/foco 
+	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
 	ccopy
 	ic uicon a@+ uiTLabel 
 	cback ui.. ;
@@ -380,7 +404,8 @@ $ffffffffffeaeaea
 
 :iradio | 'var n --
 	guiZone
-	[ 2dup swap ! ; ] onClick
+	'focoBtn in/foco 
+	[ 2dup swap ! clickfoco ; ] onClick
 	ccopy
 	ir uicon a@+ uitlabel 
 	cback ui.. ;
@@ -425,6 +450,8 @@ $ffffffffffeaeaea
 	guiZone
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow
+	'focoBtn in/foco 
+	'clickfoco onClick	
 	@ .f2 uiLabelC
 	2drop ;
 
@@ -432,6 +459,8 @@ $ffffffffffeaeaea
 	guiZone
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow	
+	'focoBtn in/foco 
+	'clickfoco onClick		
 	@ .d uiLabelC
 	2drop ;	
 
@@ -452,6 +481,8 @@ $ffffffffffeaeaea
 
 ::uiSlideri8 | 0 255 'value --
 	guiZone
+	'focoBtn in/foco 
+	'clickfoco onClick	
 	'slideh8 dup onDnMoveA | 'dn 'move --	
 	slideshow8
 	c@ .d uiLabelC
@@ -509,17 +540,28 @@ $ffffffffffeaeaea
 	cury backc - pick3 / 	| 'var max maxi x ini hp
 	swap over *	backc +		| 'var max maxi x hp ini*hp
 	14 rot
-	>r >r 4 -rot r> r>
-	sdlFRound	
+	>r >r 5 -rot r> r>
+	$ffffff sdlcolor sdlRound	
+	|sdlFRound	
 	drop ;
 	
 :uiFillL	
 	curx cury curw pick3 curh * SDLFRect ;
 
+:focolist
+	cifoc sdlColor 
+	curx 1- cury 1- curw 2 + pick3 curh * 2 + sdlRect
+	sdlKey
+	>tab< =? ( nextfoco )
+	drop ;
+	;
+	
 ::uiList | 'var cntlines list --
 	mark makeindx
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
+	'focoList in/foco 
+	'clickfoco onClick
 	chlist
 	0 ( over <? ilist 1+ ) drop
 	cscroll
@@ -587,6 +629,10 @@ $ffffffffffeaeaea
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
+	
+	'focoList in/foco 
+	'clickfoco onClick
+	
 	chtree
 	0 ( over <? itree 1+ ) drop
 	cscroll
@@ -713,8 +759,9 @@ $ffffffffffeaeaea
 	<le> =? ( kizq ) <ri> =? ( kder )
 	<back> =? ( kback ) <del> =? ( kdel )
 	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
-	<tab> =? ( nextfoco )
-	<ret> =? ( nextfoco )
+	
+	>tab< =? ( nextfoco )
+	>ret< =? ( nextfoco )
 |	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
 	drop
@@ -733,3 +780,36 @@ $ffffffffffeaeaea
 	;
 ::uiEdit
 	;
+
+::uiDateTime | 'var --
+	guiZone
+	overfil uiRFill
+	[ cifoc sdlColor uiRRect ; ] in/foco 
+	'clickfoco onClick	
+	mark 
+	@ ,64>dtf 0 ,c
+	empty here ttemitc ui.. ;
+	
+::uiDate | 'var --
+	guiZone
+	overfil uiRFill
+	[ cifoc sdlColor uiRRect ; ] in/foco 
+	'clickfoco onClick	
+	mark
+	@ ,64>dtd 0 ,c
+	empty here ttemitc ui.. ;
+
+::uiTime | 'var --
+	guiZone
+	overfil uiRFill
+	[ cifoc sdlColor uiRRect ; ] in/foco 
+	'clickfoco onClick	
+	mark
+	@ ,64>dtt 0 ,c
+	empty here ttemitc ui.. ;
+
+|::uiCombolist | 'var cant 'list --
+|	uiList
+|	nip uiCombo | 'var 'list --
+|	;
+	
