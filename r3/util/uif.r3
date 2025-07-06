@@ -3,7 +3,9 @@
 
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/textb.r3
+|^r3/util/textb.r3
+^r3/util/ttext.r3
+
 ^r3/util/datetime.r3
 
 ##uicons
@@ -43,76 +45,62 @@
 :cback
 	'copy @+ 'curx ! @+ 'cury ! @+ 'curw ! @ 'curh ! ;
 
+|---------------	
 |---- FONT	
-#recbox 0 0
-
-:recbox! | h w y x --
-	'recbox d!+ d!+ d!+ d! ;	
-
 ##uifont
 
-:tt< | "" -- surf h w
-	uifont swap cifnt TTF_RenderUTF8_Blended
-	Surf>wh swap ;
-	
-:tt> | surf --
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'recbox SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-
 :ttemitl | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt< 
-	curh pick2 - 2/ cury +
-	curx recbox! tt> ;
+	tsbox | "" w h  
+	nip
+	curx
+	curh rot - 2/ cury +
+	tat temits ;
 
 :ttemitc | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	curh pick2 - 2/ cury +
-	curw pick2 - 2/ curx +
-	recbox! tt> ;
+	tsbox | "" w h  
+	curw rot - 2/ curx +
+	curh rot - 2/ cury +
+	tat temits ;
 
 :ttemitr | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	curh pick2 - 2/ cury +
-	curw curx + pick2 - 
-	recbox! tt> ;
+	tsbox | "" w h  
+	curw curx + rot -
+	curh rot - 2/ cury +
+	tat temits ;
+
+::uiLabelMini
+	curx cury tat temits
+	curh 'cury +! ;	
 	
 #ttw #tth
 :ttsize | "" -- "" 
-	uifont over 'ttw 'tth TTF_SizeUTF8 drop ;
-	
+	tsbox 'tth ! 'ttw ! ;
+
 #backc
 :sizechar | -- 
-	backc 0? ( drop 8 'ttw ! ; ) drop
-	'backc ttsize drop ;
+	advx ;
 	
 ::ttcursor | str strcur -- str
-	dup c@ 'backc c! 0 over c!		| set end
-	swap ttsize  | strcur str 
-	curx ttw + cury sizechar ttw tth
-	sdlFrect
-	backc rot c! ;
+	curx cury tat
+	over - tcursor ;
 
 ::ttcursori | str strcur -- str
-	dup c@ 'backc c! 0 over c!	| set end
-	swap ttsize  | strcur str
-	curx ttw + cury tth + 4 - sizechar ttw 4
-	sdlFrect
-	backc rot c! ;
+	curx cury tat
+	over - tcursori ;
 
 ::uiFontSize | size --
-	uifont swap TTF_SetFontSize ;
-
-::uiLabelMini
-	dup c@ 0? ( 2drop ; ) drop
-	tt< cury curx recbox! tt> 
-	curh 'cury +!
+	drop
+|	uifont over TTF_SetFontSize
+|	4 + 'uiFonts ! 
 	;
 	
+::uiInit	
+	0.8
+	16 32 "media/img/robotomm.png"
+	|16 32 "media/img/robotomm.png"
+	tfnt ;	
+
+|--------------------
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
@@ -254,7 +242,7 @@
 	ttemitc 
 	curw 'curx +!	
 	;
-
+	
 	
 |dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001	
 #des 0 0

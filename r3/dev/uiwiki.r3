@@ -163,13 +163,11 @@
 	"R3d4" 1280 720 SDLinit
 	"media/ttf/Roboto-regular.ttf" 8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
-	
-	
-	
+	0.6 16 32 "media/img/robotom.png" tfnt	
+		
 	1024 vaini
 	1024 'pages p.ini
 	
-	bfont1
 	edram 
 	0 2 65 30 edwin
 	

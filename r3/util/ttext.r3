@@ -24,7 +24,7 @@ $878a8b $3984f2 $ff9f5b $64d970
 $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
 #termcolor 'style0
-#pfont 
+#pfont
 
 #wp #hp
 ##advx ##advy
@@ -97,10 +97,17 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	wp over 16 *>> dup 'advx ! 
 	hp rot 16 *>> dup 'advy !
 	32 << or 'dp 8 + ! ;
+	
+::tsrcsize | x y w h -- x y w h
+	2swap advy * swap advx * swap 
+	2swap advy * swap advx * swap ;	
 
 |---------- INI
 ::tfnt | size w h ""
-	loadimg 'pfont !
+	loadimg 
+	dup 1 SDL_SetTextureBlendMode 
+	dup 1 SDL_SetTextureScaleMode
+	'pfont !
 	2dup 32 << or 'op 8 + !
 	'hp ! 'wp ! 
 	tsize ;
@@ -108,6 +115,8 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 ::tini
 	1.0
 	|16 24 "media/img/font16x24.png" 
- 	8 16 "media/img/VGA8x16.png" 
+| 	8 16 "media/img/VGA8x16.png" 
 	|8 8 "media/img/atascii.png" 
+	16 32 "media/img/robotom.png"
+	|16 32 "media/img/robotomm.png"
 	tfnt ;	

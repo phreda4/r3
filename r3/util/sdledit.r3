@@ -6,7 +6,8 @@
 ^r3/lib/parse.r3
 ^r3/lib/color.r3
 
-^r3/util/bfont.r3
+|^r3/util/bfont.r3
+^r3/util/ttext.r3
 
 | size win
 #xcode 1 #ycode 3 #wcode 40 #hcode 20
@@ -16,14 +17,14 @@
 |#colb1 $000000 |sdlcolor | backnowline
 #colb2 $585858 |SDLColor | backselect
 
-#colf0 $EF7D57 |:col_inc $EF7D57 bcolor ;
-#colf1 $667C96 |:col_com $667C96 bcolor ;
-#colf2 $ff0000 |:col_cod $ff0000 bcolor ;
-#colf3 $ff00ff |:col_dat $ff00ff bcolor ;
-#colf4 $ffffff |:col_str $ffffff bcolor ;
-#colf5 $73EFF7 |:col_adr $73EFF7 bcolor ;
-#colf6 $A7F070 |:col_nor $A7F070 bcolor ;
-#colf7 $ffff00 |:col_nro $ffff00 bcolor ;
+#colf0 $EF7D57 |:col_inc $EF7D57 trgb ;
+#colf1 $667C96 |:col_com $667C96 trgb ;
+#colf2 $ff0000 |:col_cod $ff0000 trgb ;
+#colf3 $ff00ff |:col_dat $ff00ff trgb ;
+#colf4 $ffffff |:col_str $ffffff trgb ;
+#colf5 $73EFF7 |:col_adr $73EFF7 trgb ;
+#colf6 $A7F070 |:col_nor $A7F070 trgb ;
+#colf7 $ffff00 |:col_nro $ffff00 trgb ;
 
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
@@ -268,14 +269,14 @@
 	;
 
 |------ Color line
-:col_inc $EF7D57 bcolor ;
-:col_com $667C96 bcolor ;
-:col_cod $ff0000 bcolor ;
-:col_dat $ff00ff bcolor ;
-:col_str $ffffff bcolor ;
-:col_adr $73EFF7 bcolor ;
-:col_nor $A7F070 bcolor ;
-:col_nro $ffff00 bcolor ;
+:col_inc $EF7D57 trgb ;
+:col_com $667C96 trgb ;
+:col_cod $ff0000 trgb ;
+:col_dat $ff00ff trgb ;
+:col_str $ffffff trgb ;
+:col_adr $73EFF7 trgb ;
+:col_nor $A7F070 trgb ;
+:col_nro $ffff00 trgb ;
 
 #mcolor
 
@@ -318,30 +319,32 @@
 
 :drawline
 	dup c@ 0? ( drop ; ) drop
-	$afafaf bcolor
+	$afafaf trgb
 	
-	over ylinea + 1+ .d 4 .r. bemits bsp 
+	over ylinea + 1+ .d 4 .r. temits tsp 
 
 	iniline
 	( c@+ 1?
 		13 =? ( drop ; )
-		9 =? ( drop 3 bnsp 32 wcolor )
+		9 =? ( drop 3 tnsp 32 wcolor )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
-		bemit
+		temit
 		) drop 1- ;
 
 |..............................
 ::edcodedraw
 	pantaini>
 	0 ( hcode <?
-		xcode ycode pick2 + gotoxy
+		xcode ycode pick2 + txy
 		swap drawline swap 1+ ) drop
 	$fuente <? ( 1- ) 'pantafin> !
 	;
 	
 ::edfill
-	xcode ycode wcode hcode bfillline ;
+	xcode advx * ycode advy *
+	wcode advx * hcode advy *
+	sdlFrect ;
 	
 |-------------- panel control
 #panelcontrol
@@ -354,16 +357,16 @@
 	rot c@+
 	13 =? ( 0 nip )
 	0? ( drop 1- -rot sw + ; )
-	9 =? ( drop swap wp 3 * + rot swap ; ) | 4*ccw is tab
-	drop swap wp + rot swap ;
+	9 =? ( drop swap advx 3 * + rot swap ; ) | 4*ccw is tab
+	drop swap advx + rot swap ;
 
 :cursormouse
-	SDLx xcode wp * - | xmouse
+	SDLx xcode advx * - | xmouse
 	pantaini>
 	SDLy
-	ycode 1+ hp * 
-	( over <? hp + rot >>13 2 + -rot ) 2drop
-	swap wp 2* dup 2* + | adr x xa
+	ycode 1+ advy * 
+	( over <? advy + rot >>13 2 + -rot ) 2drop
+	swap advx 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
@@ -484,13 +487,16 @@
 	
 ::edtoolbar
 	$747474 SDLColor
-	xcode ycode wcode 1 bfillline
-	xcode ycode gotoxy |printmode
-	$0 bcolor 'edfilename " %s" bprint
-	xcode wcode + 8 - gotox
-	$ffff bcolor bsp
-	xcursor 1+ .d bemits bsp
-	ycursor 1+ .d bemits bsp
+	xcode advx * ycode advy *
+	wcode advx * advy 
+	sdlFrect 
+	
+	xcode ycode txy |printmode
+	$0 trgb 'edfilename " %s" tprint
+	xcode wcode + 8 - tx
+	$ffff trgb tsp
+	xcursor 1+ .d temits tsp
+	ycursor 1+ .d temits tsp
 	
 |	xcode ycode 1- wcode 1 bfillline
 |	xcode ycode hcode + gotoxy
@@ -501,7 +507,11 @@
 #sx1 #sy1 #sw1 
 	
 :selectfill
-	sx1 xcode + 5 + sy1 sw1 xcode - 1+ 1 bfillline ;
+	sx1 xcode + 5 + advx * 
+	sy1 advy *
+	sw1 xcode - 1+ advx * 
+	advy 
+	sdlFrect ;
 	
 :startsel
 	0 'sx1 ! ycode 'sy1 ! 
@@ -540,17 +550,17 @@
 |	colb1 sdlcolor
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
-	xcode 5 + ycursor ylinea - ycode + gotoxy
+	xcode 5 + ycursor ylinea - ycode + txy
 	$ffffff SDLColor 
-	'lover modo	=? ( xcursor bcursor drop ; ) drop
-	xcursor bcursori
+	'lover modo	=? ( xcursor tcursor drop ; ) drop
+	xcursor tcursori
 	;
 	
 ::edfocus
-	xcode ycode wcode hcode bsrcsize guiBox
+	xcode ycode wcode hcode tsrcsize guiBox
 	guin? 0? ( drop ; ) drop
 	$ffffff sdlcolor 
-	xcode ycode wcode hcode bsrcsize sdlRect 
+	xcode ycode wcode hcode tsrcsize sdlRect 
 	'dns 'mos 'ups guiMap |------ mouse
 	evwmouse 
 	editmodekey
@@ -581,12 +591,12 @@
 	dup $ff and ylinea -
 	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
 	over >a
-	ycode + hp *  | y real
+	ycode + advy *  | y real
 	over 8 >> $ff and 
-	xcode + 5 + wp * | x real
+	xcode + 5 + advx * | x real
 	swap rot | x y vv
-	dup 24 >> $ff and wp * | w
-	swap 16 >> $ff and hp * | h
+	dup 24 >> $ff and advx * | w
+	swap 16 >> $ff and advy * | h
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol sdlcolor sdlRect
 	a> 48 >> 4bcol sdlcolor sdlFRect

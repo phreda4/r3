@@ -109,8 +109,9 @@ stDark
 	"media/ttf/Roboto-regular.ttf" 8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	18 uifontsize
+
+	0.6 16 32 "media/img/robotomm.png" tfnt	
 	
-	bfont1
 	edram 
 	0 2 65 30 edwin
 	

@@ -7,7 +7,7 @@
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
 
-^r3/util/ui.r3
+^r3/util/uif.r3
 ^r3/util/sdledit.r3
 	
 |--------------------------------	
@@ -93,7 +93,7 @@
 	5 15 uiGrid uiH
 	
 	0 14 uiGat
-	stLink
+	stLink $ffffff trgb
 	'exit "Load" uiBtn
 	'exit "Save" uiBtn
 	'exit "Cancel" uiBtn
@@ -133,15 +133,8 @@
 |	uiWin>	
 	;
 
-:drawcode
-	fuente 0? ( drop ; ) 
-	|"%l" uiLabel
-	.println
-	|drop
-	;
-	
 :codigo
-	0.37 %w 0.1 %h 0.35 %w 0.85 %h uiWin
+	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin
 	$222222 sdlcolor uiRFill10
 	5 15 uiGrid uiH
 	"cODIGO" uiLabel
@@ -162,15 +155,22 @@
 	0 SDLcls 
 	4 6 uiPad
 	uiStart
+	
+	1.5 tsize
+	1 0 txy
+	"R3d4" temits
+	0.6 tsize
 
-	fileselect	
+	fileselect
 	codigo
-	incodcod
+|	incodcod
 	
 |	'tabnow	'tabs uiTab
 
-|	edfocus
-|	edcodedraw
+	|0.4 tsize
+	|edfocus
+	edcodedraw
+	|0.6 tsize
 	
 	SDLredraw
 	sdlkey
@@ -183,16 +183,17 @@
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/RobotoMono.ttf" 
+	24 21 "media/img/icong16.png" ssload 'uicons !
+	
+|	"media/ttf/RobotoMono.ttf" 
 	|"media/ttf/Roboto-regular.ttf" 
 	|"media/ttf/ProggyClean.ttf" 
-	8 TTF_OpenFont 'uifont !
-	24 21 "media/img/icong16.png" ssload 'uicons !
-	16 uifontsize
-
-	bfont1
+|	8 TTF_OpenFont 'uifont !
+|	16 uifontsize
+	0.6 16 32 "media/img/robotomm.png" tfnt
+	
 	edram 
-	60 4 80 40 edwin
+	51 6 80 30 edwin
 
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy
