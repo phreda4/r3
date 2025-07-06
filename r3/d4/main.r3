@@ -100,7 +100,7 @@
 	'exit "Delete" uiBtn
 	'exit "New" uiBtn
 	
-	3 0 uiGat stFWhit "= FileSystem =" uiLabelC
+	|3 0 uiGat stFWhit "= FileSystem =" uiLabelC
 	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin	
 |	1 15 uiGrid<win
 		1 2 uiGrid uiV 
@@ -167,10 +167,10 @@
 	
 |	'tabnow	'tabs uiTab
 
-	|0.4 tsize
-	|edfocus
+	0.5 tsize
+	edfocus
 	edcodedraw
-	|0.6 tsize
+	0.6 tsize
 	
 	SDLredraw
 	sdlkey

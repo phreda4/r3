@@ -3,7 +3,7 @@
 
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-|^r3/util/textb.r3
+^r3/util/textb.r3
 ^r3/util/ttext.r3
 
 ^r3/util/datetime.r3
@@ -68,10 +68,6 @@
 	curh rot - 2/ cury +
 	tat temits ;
 
-::uiLabelMini
-	curx cury tat temits
-	curh 'cury +! ;	
-	
 #ttw #tth
 :ttsize | "" -- "" 
 	tsbox 'tth ! 'ttw ! ;
@@ -99,6 +95,10 @@
 	16 32 "media/img/robotomm.png"
 	|16 32 "media/img/robotomm.png"
 	tfnt ;	
+
+::uiLabelMini
+	curx cury tat temits
+	curh 'cury +! ;	
 
 |--------------------
 |----- draw/fill

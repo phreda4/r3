@@ -113,7 +113,7 @@ stDark
 	0.6 16 32 "media/img/robotomm.png" tfnt	
 	
 	edram 
-	0 2 65 30 edwin
+	8 32 400 500 edwin
 	
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy

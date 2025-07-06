@@ -61,6 +61,9 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	
 ::tat | x y --
 	swap $ffffffff and swap 32 << or 'dp ! ;	
+::tatx | x --
+	'dp d! ;
+	
 ::txy | x y --
 	advy * swap advx * swap tat ;
 ::tx | x --
