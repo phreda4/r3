@@ -78,7 +78,7 @@
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
-:fontemit | asci --
+::txemit | asci --
 	$80 and? ( drop c@+ $80 or ) 
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
@@ -89,19 +89,19 @@
 	'recdes 8 + d@ 'curx +! ;
 
 ::txemits | "" --
-	( c@+ 1? fontemit ) 2drop ;
+	( c@+ 1? txemit ) 2drop ;
 
 ::txrgb | c --
 	newTex swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
-:fw | car -- width
+::txcw | car -- width
 	$80 and? ( drop c@+ $80 or ) 
 	$ff and 3 << newTab + 2 + w@ ; 
 	
 ::txw | "" -- "" width
-	0 over ( c@+ 1? fw rot + swap ) 2drop ;
+	0 over ( c@+ 1? txcw rot + swap ) 2drop ;
 	
 ::txh | -- heigth
 	newTab 6 + w@ ;
@@ -117,7 +117,7 @@
 	'recbox !+ ! ;
 	
 :curpos | str cur -- 
-	swap ( over <? c@+ fw 'curx +! ) drop 
+	swap ( over <? c@+ txcw 'curx +! ) drop 
 	c@ 0? ( 32 or ) fontbox ;
 	
 ::txcur | str cur -- 

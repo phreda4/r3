@@ -4,7 +4,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/uit.r3
-^r3/util/sdledit.r3
+^r3/util/sdltedit.r3
 	
 #font1
 #font2
@@ -109,12 +109,10 @@ stDark
 	"R3d4" 1280 720 SDLinit
 	
 	24 21 "media/img/icong16.png" ssload 'uicons !
+	
 	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	font1 txfont
-	
 	"media/ttf/RobotoMono-Medium.ttf" 18 txload 'font2 !
-	font2 txfont
-	
+ 	
 	edram 
 	8 32 400 500 edwin
 	
