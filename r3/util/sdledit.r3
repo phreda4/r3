@@ -14,7 +14,7 @@
 | color 
 |#colb0 $1f1f1f |sdlcolor | backcode
 |#colb1 $000000 |sdlcolor | backnowline
-#colb2 $585858 |SDLColor | backselect
+#colb2 $333333 |SDLColor | backselect
 
 #colf0 $EF7D57 |:col_inc $EF7D57 trgb ;
 #colf1 $667C96 |:col_com $667C96 trgb ;
@@ -537,7 +537,7 @@
 		drop
 		advx 'sw1 +!
 		) 
-	finsel <? ( wcode sx1 - 6 - 'sw1 ! )
+	finsel <? ( wcode sx1 - 'sw1 ! )
 	drop
 	selectfill
 	;

@@ -19,6 +19,7 @@
 #fontchar * 4096
 #utf8 "áéíóúñÁÉÍÓÚ«»¿º×" 0 
 
+
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
 
@@ -68,10 +69,9 @@
 		'recbox 8 + d@ 'curx +!
 		swap ) 2drop
 	texEndAlpha 'newTex !	
-	uifont TTF_CloseFont
-	;
+	uifont TTF_CloseFont ;
 
-
+|------------------------------
 :asciiemit
 	$ff and 4 << 'fontchar + 
 	@+ dup rot @ 'recbox !+ ! 
@@ -80,24 +80,50 @@
 	'recdes 8 + d@ 'curx +! ;
 	
 :fontemit
-	32 128 in? ( 32 - asciiemit ; ) 
+	32 127 in? ( 32 - asciiemit ; ) 
 	drop c@+ asciiemit ; 
 
 :fstring | "" x y --
 	'cury ! 'curx !
 	( c@+ 1? fontemit ) 2drop ;
-		
+
+:txrgb | c --
+	newTex swap 
+	dup 16 >> $ff and over 8 >> $ff and rot $ff and
+	SDL_SetTextureColorMod ;
+	
+:fs
+	$ff and 4 << 'fontchar + d@ ;
+	
+:fw
+	32 127 in? ( 32 - fs ; ) 
+	drop c@+ fs ; 
+	
+:txwidth | "" -- "" width
+	0 over ( c@+ 1? fw rot + swap ) 2drop ;
+	
+:txheight | -- heigth
+	'fontchar 4 + d@ ;
+	
+:txcur | n --
+|	advx * tpos swap rot + swap advx advy SDLFRect 
+	;
+
+:txcuri | n --
+|	advx * tpos swap rot + swap advy dup 2 >> - + advx advy 2 >> SDLFRect 
+	;	
+|------------------------------		
 :game
 	$0 SDLcls
 	$ffffff sdlcolor
-|	9 9 514 256 sdlRect
-	|10 10 512 512 newtex sdlimages
+	
+|10 10 512 512 newtex sdlimages
 
-	newTex $00 $ff $ff SDL_SetTextureColorMod
+	$00ffff txrgb
 	":hola a ""coso"" todo el mundi ;" 10 10 fstring
-	newTex $ff $0 $ff SDL_SetTextureColorMod
+	$ff00ff txrgb
 	":hola i ;" 10 50 fstring
-	newTex 0 $ff $0 SDL_SetTextureColorMod
+	$00ff00 txrgb
 	"¿º×áéíóúñ«»ÁÉÍÓÚ" 10 90 fstring
 	
 	SDLredraw
@@ -106,12 +132,13 @@
 	drop
 	;
 
-	
 :main
 	"ATLAS FONT GENERATOR" 1024 600 SDLinit
-	
-	|	"media/ttf/RobotoMono.ttf" 
-	"media/ttf/Roboto-regular.ttf" 40 generate
+|	"media/ttf/ProggyClean.ttf" 
+	"media/ttf/roboto-bold.ttf" 
+|	"media/ttf/RobotoMono.ttf" 
+|	"media/ttf/Roboto-regular.ttf" 
+	32 generate
 	
 	'game SDLshow 
 	SDLquit ;
