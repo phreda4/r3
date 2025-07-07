@@ -165,8 +165,7 @@
 	inisel 0? ( drop ; )
 	clipboard swap
 	finsel over - pick2 over + 'clipboard> !
-	cmove
-	;
+	cmove ;
 
 :realdel
 	fuente>
@@ -542,29 +541,6 @@
 	drop
 	selectfill
 	;
-
-|..............................
-:emitsel1
-|	13 =? ( drop cr xcode xlinea - gotox ; )
-|	9 =? ( drop gtab ; )
-|	noemit ;
-
-:drawselect1
-|	inisel 0? ( drop ; )
-|	pantafin> >? ( drop ; )
-|	xcode xlinea - ycode gotoxy
-|	pantaini> ( over <? c@+ emitsel ) nip
-|	xseli ccy cch + dup >r op
-|	ccx ccy cch + pline
-|	ccx ccy pline xsele ccy pline
-|	( pantafin> <? finsel <? c@+ emitsel ) drop
-|	xsele ccy pline ccx ccy pline
-|	ccx ccy cch + pline
-|	xseli ccy cch + pline
-|	xseli r> pline
-|	col_select poli
-	;
-|..........................
 
 :edlinecursor
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
