@@ -193,7 +193,8 @@
 	0.6 16 32 "media/img/robotomm.png" tfnt
 	
 	edram 
-	51 6 80 30 edwin
+	0.37 %w 0.12 %h 0.6 %w 0.82 %h
+	edwin
 
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy
