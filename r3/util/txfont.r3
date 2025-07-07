@@ -1,22 +1,17 @@
-| font atlas generator
-| PHREDA 2024
+| font with atlas from TTF
+| PHREDA 2025
 
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2ttf.r3
 
-#ttfont
-
-#tsizex 512
-#tsizey 256
+#ttfont #tsizex #tsizey 
 
 #recbox 0 0
 #recdes 0 0 
 
 #curx #cury
-
-#newtex
-#newtab
+#newtex #newtab
 
 #utf8 "áéíóúñÁÉÍÓÚ«»¿×·" 0 
 
@@ -74,7 +69,8 @@
 	texEndAlpha 
 	dup 1 SDL_SetTextureBlendMode 
 	newTex !
-	ttfont TTF_CloseFont 
+	ttfont TTF_CloseFont
+	newTab 32 3 << + @ newTab !
 	newTex
 	;
 
@@ -108,7 +104,7 @@
 	0 over ( c@+ 1? fw rot + swap ) 2drop ;
 	
 ::txh | -- heigth
-	newTab 32 3 << + 2 + w@ ;
+	newTab 6 + w@ ;
 	
 ::txat | x y --
 	'cury ! 'curx ! ;
@@ -125,78 +121,18 @@
 	c@ 0? ( 32 or ) fontbox ;
 	
 ::txcur | str cur -- 
-	curx >r
+	|curx >r
 	curpos
 	SDLRenderer 'recbox SDL_RenderFillRect 
-	r> 'curx ! ;
+	|r> 'curx ! 
+	;
 	
 ::txcuri | str cur --
-	curx >r
+	|curx >r
 	curpos
 	'recbox 12 + d@ 2 >>  | h/4
 	dup 3 * 'recbox 4 + d+!	'recbox 12 + d!
 	SDLRenderer 'recbox SDL_RenderFillRect 
-	r> 'curx ! ;	
+	|r> 'curx ! 
+	;	
 	
-|------------------------------		
-#font1 0
-#font2 0
-#font3 0
-
-:game
-	$0 SDLcls
-	$ffffff sdlcolor
-
-
-	
-	font1 txfont
-	10 200 newtex sdlimage
-	
-	$00ffff txrgb
-	10 10 txat ":hola a ""coso"" todo el mundi ;" txemits
-	$ff00ff txrgb
-	10 50 txat ":hola i ;" txemits
-	'utf8 txemits
-
-	
-	font2 txfont
-	10 400 newtex sdlimage
-	$ffffff txrgb
-	'utf8 txemits
-	10 90 txat ":hola a ""coso"" todo el mundi ;" txemits
-
-	font3 txfont
-	500 10 newtex sdlimage
-	$ff0000 txrgb
-	"djhaskdjahsf kjdash fkjdha fkjahs dkfjh asdfk" txemits
-	'utf8 txemits
-
-
-	font1 txfont
-	$ff00 txrgb
-	10 110 txat
-	"esto is un cirv"
-	msec $80 and? ( 
-		$ff sdlcolor 
-		over dup msec 9 >> $f and + txcur 
-		) drop
-	txemits
-	
-	
-	SDLredraw
-	SDLkey
-	>esc< =? ( exit )
-	drop
-	;
-
-:main
-	"ATLAS FONT GENERATOR" 1024 600 SDLinit
-	
-	"media/ttf/RobotoMono-Medium.ttf" 20 txload 'font2 !
-	"media/ttf/ProggyClean.ttf" 16 txload 'font3 !
-	"media/ttf/Roboto-bold.ttf" 32 txload 'font1 !
-	
-	'game SDLshow 
-	SDLquit ;
-
-: main ;
