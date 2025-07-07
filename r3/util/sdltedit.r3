@@ -354,12 +354,11 @@
 
 |--------------- MOUSE
 :mmemit | adr x xa -- adr x xa
-	rot c@+
+	rot c@+				| x xa adr' c
 	13 =? ( 0 nip )
 	0? ( drop 1- -rot sw + ; )
-	9 =? ( drop swap 32 txcw 3 * + rot swap ; ) | 4*ccw is tab
-	|drop swap advx + rot swap ;
-	txcw rot + rot swap ;
+	txcw rot +			| x adr' xa'
+	rot swap ;
 
 :cursormouse
 	SDLx xcode - | xmouse
@@ -367,20 +366,19 @@
 	SDLy
 	ycode txh +
 	( over <? txh + rot >>13 2 + -rot ) 2drop
-	swap 32 txw 2* dup 2* + | adr x xa
+	swap 0 txcw 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
 	
 #tclick
 
-:dclick 
+:dclick |"double click" .println
 	fuente>
 	( dup c@ $ff and 32 >? drop 1- ) drop
 	1+ dup 'inisel ! 
 	( c@+ $ff and 32 >? drop ) drop
 	2 - 'finsel !
-	|"double click" .println
 	;
 	
 :dns
@@ -428,8 +426,10 @@
 	;
 
 |--------------------------
+#cursorlin
+
 :emitcur
-	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! dup 'cursorlin ! ; )
 	9 =? ( drop 4 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
@@ -449,6 +449,7 @@
 	0 'xcursor !
 	getcacheini
 	ylinea 'ycursor !
+	dup 'cursorlin !
 	( fuente> <? c@+ emitcur ) drop ;
 	
 :src2pos | src -- 
@@ -458,7 +459,7 @@
 |--------------------------	
 :kins
 	modo
-	'lins =? ( 2drop 'lover 'modo ! ; )
+	'lins =? ( drop 'lover 'modo ! ; )
 	drop 'lins 'modo ! ;
 	
 :editmodekey
@@ -552,23 +553,23 @@
 |	colb1 sdlcolor
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
-	xcode 5 32 txcw * + 
+	xcode 32 txcw 5 * +
 	ycode ycursor ylinea - txh * + 
 	txat
 	$ffffff SDLColor 
-	'lover modo	=? ( drop xcursor tcursor ; ) drop
-	xcursor tcursori
+	'lover modo	=? ( drop cursorlin fuente> txcur ; ) drop
+	cursorlin fuente> txcuri
 	;
 	
 ::edfocus
 	xcode ycode wcode hcode guiBox
 	guin? 0? ( drop ; ) drop
-	$ffffff sdlcolor 
+	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
 	'dns 'mos 'ups guiMap |------ mouse
-	evwmouse 
+	evwmouse
 	editmodekey
-	edlinecursor
+	edlinecursor |*
 	edselshow
 	;
 

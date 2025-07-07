@@ -5,12 +5,15 @@
 ^r3/lib/sdl2gfx.r3
 
 ^r3/util/varanim.r3
-^r3/util/textb.r3
 
-^r3/util/uif.r3
-^r3/util/sdledit.r3
+^r3/util/uit.r3
+^r3/util/sdltedit.r3
 	
 |--------------------------------	
+
+#font1
+#font2
+
 #diskdirs
 #dirnow 0 0
 #dirchg -1
@@ -93,7 +96,7 @@
 	5 15 uiGrid uiH
 	
 	0 14 uiGat
-	stLink $ffffff trgb
+	stLink $ffffff txrgb
 	'exit "Load" uiBtn
 	'exit "Save" uiBtn
 	'exit "Cancel" uiBtn
@@ -156,21 +159,19 @@
 	4 6 uiPad
 	uiStart
 	
-	1.5 tsize
-	1 0 txy
-	"R3d4" temits
-	0.6 tsize
+	font1 txfont
+	8 0 txat
+	"R3d4" txemits
 
+	font2 txfont
 	fileselect
 	codigo
 |	incodcod
 	
 |	'tabnow	'tabs uiTab
 
-	0.5 tsize
 	edfocus
 	edcodedraw
-	0.6 tsize
 	
 	SDLredraw
 	sdlkey
@@ -184,13 +185,9 @@
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
 	24 21 "media/img/icong16.png" ssload 'uicons !
-	
-|	"media/ttf/RobotoMono.ttf" 
-	|"media/ttf/Roboto-regular.ttf" 
-	|"media/ttf/ProggyClean.ttf" 
-|	8 TTF_OpenFont 'uifont !
-|	16 uifontsize
-	0.6 16 32 "media/img/robotomm.png" tfnt
+
+	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
+	"media/ttf/RobotoMono-Medium.ttf" 14 txload 'font2 !
 	
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h

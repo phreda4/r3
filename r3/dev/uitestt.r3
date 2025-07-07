@@ -93,8 +93,8 @@ stDark
 	ui--
 	
 	font2 txfont
-|	edfocus
-|	edcodedraw
+	edfocus
+	edcodedraw
 	
 	SDLredraw
 	sdlkey
@@ -111,10 +111,10 @@ stDark
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	
 	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	"media/ttf/RobotoMono-Medium.ttf" 18 txload 'font2 !
+	"media/ttf/RobotoMono-Medium.ttf" 14 txload 'font2 !
  	
 	edram 
-	8 32 400 500 edwin
+	8 32 550 550 edwin
 	
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy

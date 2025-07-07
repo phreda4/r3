@@ -70,7 +70,11 @@
 	dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont
-	newTab 32 3 << + @ newTab !
+	newTab 32 3 << + @	| width ESP
+	dup newTab !			| 0
+	dup newTab 13 3 << + !	| cr
+	dup $ffff0000 and 2 << swap $ffffffff0000ffff and or 
+	newTab 9 3 << + !	| tab
 	newTex
 	;
 
@@ -118,21 +122,17 @@
 	
 :curpos | str cur -- 
 	swap ( over <? c@+ txcw 'curx +! ) drop 
-	c@ 0? ( 32 or ) fontbox ;
+	c@ fontbox ;
 	
 ::txcur | str cur -- 
-	|curx >r
 	curpos
 	SDLRenderer 'recbox SDL_RenderFillRect 
-	|r> 'curx ! 
 	;
 	
 ::txcuri | str cur --
-	|curx >r
 	curpos
 	'recbox 12 + d@ 2 >>  | h/4
 	dup 3 * 'recbox 4 + d+!	'recbox 12 + d!
 	SDLRenderer 'recbox SDL_RenderFillRect 
-	|r> 'curx ! 
 	;	
 	
