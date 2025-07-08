@@ -7,10 +7,13 @@
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
-
 ^r3/util/arr16.r3
 ^r3/util/ui.r3
 ^r3/util/sdledit.r3
+	
+#font1
+#font2
+#uifont
 	
 #filename * 1024
 #pad * 1024
@@ -111,7 +114,7 @@
 :panel
 	0.02 %w 0.2 %h 0.3 %w 0.6 %h uiWin
 	$111111 sdlcolor uiRFill10
-	18 uiFontSize
+	font2 txfont
 	stDark
 
 	'modo paneln ncell+ @ ex
@@ -125,7 +128,7 @@
 	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin
 	$222222 sdlcolor uiRFill10
 
-	38 uifontsize
+	font1 txfont
 	10 10 uiGrid 
 	0 0 uiGAt stSucc 'exit "+" uiRBtn 
 	9 9 uiGAt stDang 'exit "Exit" uiRBtn 
@@ -161,15 +164,18 @@
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-regular.ttf" 8 TTF_OpenFont 'uifont !
 	24 21 "media/img/icong16.png" ssload 'uicons !
-	0.6 16 32 "media/img/robotom.png" tfnt	
-		
+
+	"media/ttf/Roboto-regular.ttf" 18 TTF_OpenFont 'uifont !
+
+	"media/ttf/Roboto-bold.ttf" 24 txload 'font1 !
+	"media/ttf/Roboto-Medium.ttf" 16 txload 'font2 !
+	
 	1024 vaini
 	1024 'pages p.ini
 	
 	edram 
-	0 2 65 30 edwin
+	0 2 400 300 edwin
 	
 |	"r3/opengl/voxels/3-vox.r3" 
 |	'filename strcpy 'filename edload	

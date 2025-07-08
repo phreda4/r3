@@ -18,7 +18,7 @@
 #newtex
 #newtab
 
-#utf8 "áéíóúñÁÉÍÓÚ«»¿×·" 0 
+#utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0 
 
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	

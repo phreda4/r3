@@ -6,8 +6,8 @@
 
 ^r3/util/varanim.r3
 
-^r3/util/uit.r3
-^r3/util/sdltedit.r3
+^r3/util/ui.r3
+^r3/util/sdledit.r3
 	
 |--------------------------------	
 
@@ -187,7 +187,7 @@
 	24 21 "media/img/icong16.png" ssload 'uicons !
 
 	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	"media/ttf/RobotoMono-Medium.ttf" 14 txload 'font2 !
+	"media/ttf/RobotoMono-bold.ttf" 14 txload 'font2 !
 	
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h

@@ -3,10 +3,12 @@
 |
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/textb.r3
 ^r3/util/ui.r3
 ^r3/util/sdledit.r3
 	
+#font1
+#font2
+
 #filename * 1024
 #pad * 1024
 #pad2 * 1024
@@ -41,6 +43,7 @@
 |-----------------------------
 :main
 	0 SDLcls
+	font1 txfont
 	uiStart
 	3 4 uiPad
 	0.45 %w 0.1 %h 0.5 %w 0.5 %h uiWin
@@ -89,6 +92,7 @@ stDark
 	'pad2 512 uiInputLine
 	ui--
 	
+	font2 txfont
 	edfocus
 	edcodedraw
 	
@@ -98,22 +102,19 @@ stDark
 	drop
 	;
 	
-:layout
-	
-	;	
 |-----------------------------
 |-----------------------------	
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	"media/ttf/Roboto-regular.ttf" 8 TTF_OpenFont 'uifont !
-	24 21 "media/img/icong16.png" ssload 'uicons !
-	18 uifontsize
-
-	0.6 16 32 "media/img/robotomm.png" tfnt	
 	
+	24 21 "media/img/icong16.png" ssload 'uicons !
+	
+	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
+	"media/ttf/RobotoMono-Medium.ttf" 14 txload 'font2 !
+ 	
 	edram 
-	8 32 400 500 edwin
+	8 32 550 550 edwin
 	
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy

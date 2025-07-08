@@ -1,4 +1,5 @@
 | font with atlas from TTF
+| pseudo utf-8
 | PHREDA 2025
 
 ^r3/lib/gui.r3
@@ -13,7 +14,7 @@
 #curx #cury
 #newtex #newtab
 
-#utf8 "áéíóúñÁÉÍÓÚ«»¿×·" 0 
+#utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0  
 
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
@@ -52,8 +53,8 @@
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
 	newTab 0 256 fill 0 'curx ! 0 'cury !				| CLEAR
-	tsizex tsizey texIni | w h --	
-	newTab 32 3 << +
+	tsizex tsizey texIni 	| w h --	
+	newTab 32 3 << +		| start in ascii 32
 	32 ( 128 <? 
 		dup 'estr c!+ 0 swap c!
 		fontemit
@@ -75,14 +76,13 @@
 	dup newTab 13 3 << + !	| cr
 	dup $ffff0000 and 2 << swap $ffffffff0000ffff and or 
 	newTab 9 3 << + !	| tab
-	newTex
-	;
+	newTex ;	| reuturn ini font
 
 |------------------------------
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
-::txemit | asci --
+::txemit | utf8' --
 	$80 and? ( drop c@+ $80 or ) 
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
@@ -113,7 +113,7 @@
 ::txat | x y --
 	'cury ! 'curx ! ;
 
-:fontbox | asci --
+:fontbox | utf8' --
 	$80 and? ( drop c@+ $80 or ) 
 	$ff and 3 << newTab + @ 
 	16 >> $ffff0000ffff and | wh
@@ -126,13 +126,13 @@
 	
 ::txcur | str cur -- 
 	curpos
-	SDLRenderer 'recbox SDL_RenderFillRect 
-	;
+	SDLRenderer 'recbox SDL_RenderFillRect ;
 	
 ::txcuri | str cur --
 	curpos
-	'recbox 12 + d@ 2 >>  | h/4
-	dup 3 * 'recbox 4 + d+!	'recbox 12 + d!
-	SDLRenderer 'recbox SDL_RenderFillRect 
-	;	
+	'recbox 12 + d@ 
+	dup 2 >> swap over - | h/4
+	'recbox 4 + d+!	'recbox 12 + d!
+	SDLRenderer 'recbox SDL_RenderFillRect ;	
+	
 	

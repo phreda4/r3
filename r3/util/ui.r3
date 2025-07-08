@@ -3,7 +3,8 @@
 
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/textb.r3
+^r3/util/txfont.r3
+
 ^r3/util/datetime.r3
 
 ##uicons
@@ -43,76 +44,42 @@
 :cback
 	'copy @+ 'curx ! @+ 'cury ! @+ 'curw ! @ 'curh ! ;
 
+|---------------	
 |---- FONT	
-#recbox 0 0
-
-:recbox! | h w y x --
-	'recbox d!+ d!+ d!+ d! ;	
-
-##uifont
-
-:tt< | "" -- surf h w
-	uifont swap cifnt TTF_RenderUTF8_Blended
-	Surf>wh swap ;
-	
-:tt> | surf --
-	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
-	SDLrenderer over 0 'recbox SDL_RenderCopy	
-	SDL_DestroyTexture
-	SDL_FreeSurface ;
-
 :ttemitl | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt< 
-	curh pick2 - 2/ cury +
-	curx recbox! tt> ;
+	curx
+	curh txh - 2/ cury +
+	txat txemits ;
 
 :ttemitc | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	curh pick2 - 2/ cury +
-	curw pick2 - 2/ curx +
-	recbox! tt> ;
+	txw txh | "" w h  
+	curw rot - 2/ curx +
+	curh rot - 2/ cury +
+	txat txemits ;
 
 :ttemitr | "text" --
-	dup c@ 0? ( 2drop ; ) drop
-	tt<
-	curh pick2 - 2/ cury +
-	curw curx + pick2 - 
-	recbox! tt> ;
-	
+	txw txh | "" w h  
+	curw curx + rot -
+	curh rot - 2/ cury +
+	txat txemits ;
+
 #ttw #tth
 :ttsize | "" -- "" 
-	uifont over 'ttw 'tth TTF_SizeUTF8 drop ;
-	
+	txh 'tth ! txw 'ttw ! ;
+
 #backc
-:sizechar | -- 
-	backc 0? ( drop 8 'ttw ! ; ) drop
-	'backc ttsize drop ;
 	
-::ttcursor | str strcur -- str
-	dup c@ 'backc c! 0 over c!		| set end
-	swap ttsize  | strcur str 
-	curx ttw + cury sizechar ttw tth
-	sdlFrect
-	backc rot c! ;
+::ttcursor | str strcur -- 
+	curx cury txat txcur ;
 
-::ttcursori | str strcur -- str
-	dup c@ 'backc c! 0 over c!	| set end
-	swap ttsize  | strcur str
-	curx ttw + cury tth + 4 - sizechar ttw 4
-	sdlFrect
-	backc rot c! ;
-
-::uiFontSize | size --
-	uifont swap TTF_SetFontSize ;
+::ttcursori | str strcur -- 
+	curx cury txat txcuri ;
 
 ::uiLabelMini
-	dup c@ 0? ( 2drop ; ) drop
-	tt< cury curx recbox! tt> 
-	curh 'cury +!
-	;
-	
+	curx cury txat txemits
+	curh 'cury +! ;	
+
+|--------------------
 |----- draw/fill
 ::uiRectW 	xl yl wl hl SDLRect ;
 ::uiFillW	xl yl wl hl SDLFRect ;
@@ -254,18 +221,19 @@
 	ttemitc 
 	curw 'curx +!	
 	;
-
+	
 	
 |dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001	
 #des 0 0
 
 ::uiMDText | 'var "" --
-	$f0000020ffff curw curh
-	uifont textbox 
-	curh curw cury curx 'des d!+ d!+ d!+ d!
-	SDLrenderer over 0 'des SDL_RenderCopy
-	SDL_DestroyTexture
-	ui.. ;
+	|$f0000020ffff curw curh
+	|uifont textbox 
+	|curh curw cury curx 'des d!+ d!+ d!+ d!
+	|SDLrenderer over 0 'des SDL_RenderCopy
+	|SDL_DestroyTexture
+	|ui.. 
+	;
 
 |----- Botones	
 :focoBtn
@@ -729,8 +697,8 @@
 :cursor | 'var max
 	msec $100 and? ( drop ; ) drop
 	$a0a0a0 SDLColor
-	modo 'lins =? ( drop padi> pad> ttcursor drop ; ) drop
-	padi> pad> ttcursori drop ;
+	modo 'lins =? ( drop padi> pad> ttcursor ; ) drop
+	padi> pad> ttcursori ;
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
@@ -771,6 +739,7 @@
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
 	drop
+	|curx cury txat
 	ttemitl ui.. ;	
 
 ::uiText

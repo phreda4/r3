@@ -6,10 +6,10 @@
 ^r3/lib/parse.r3
 ^r3/lib/color.r3
 
-^r3/util/ttext.r3
+^r3/util/txfont.r3
 
 | size win
-#xcode 1 #ycode 3 #wcode 40 #hcode 20
+#xcode #ycode #wcode #hcode 
 
 | color 
 |#colb0 $1f1f1f |sdlcolor | backcode
@@ -119,12 +119,12 @@
 	
 :setpantafin
 	pantaini>
-	hcode ( +? swap >>13 1+ swap advy - ) drop
+	hcode ( +? swap >>13 1+ swap txh - ) drop
 	$fuente <? ( 1- ) 'pantafin> ! ;
 	
 :setpantaini
 	pantafin>
-	hcode ( +? swap 2 - <<13 1+ swap advy - ) drop
+	hcode ( +? swap 2 - <<13 1+ swap txh - ) drop
 	fuente <? ( fuente nip )
 	'pantaini> !
 	;
@@ -157,8 +157,8 @@
 
 :kder	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
 :kizq	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
-:kpgup	hcode ( +? advy - karriba ) drop ;
-:kpgdn	hcode ( +? advy - kabajo ) drop ;
+:kpgup	hcode ( +? txh - karriba ) drop ;
+:kpgdn	hcode ( +? txh - kabajo ) drop ;
 
 |----------------------------------
 :copysel
@@ -267,14 +267,14 @@
 	;
 
 |------ Color line
-:col_inc $EF7D57 trgb ;
-:col_com $667C96 trgb ;
-:col_cod $ff0000 trgb ;
-:col_dat $ff00ff trgb ;
-:col_str $ffffff trgb ;
-:col_adr $73EFF7 trgb ;
-:col_nor $A7F070 trgb ;
-:col_nro $ffff00 trgb ;
+:col_inc $EF7D57 txrgb ;
+:col_com $667C96 txrgb ;
+:col_cod $ff0000 txrgb ;
+:col_dat $ff00ff txrgb ;
+:col_str $ffffff txrgb ;
+:col_adr $73EFF7 txrgb ;
+:col_nor $A7F070 txrgb ;
+:col_nro $ffff00 txrgb ;
 
 #mcolor
 
@@ -315,17 +315,20 @@
 		$22 =? ( strcol )
 		drop swap ) drop ;
 
+:txsp 32 txemit ;
+:txtab "   " txemits ;
+
 :drawline | src nline ylin -- src nline ylin
 	pick2 c@ 0? ( drop ; ) drop | linea vacia
-	$afafaf trgb
-	swap 1+ dup .d 4 .r. temits tsp | src ylin nline 
+	$afafaf txrgb
+	swap 1+ dup .d 4 .r. txemits txsp | src ylin nline 
 	rot iniline						| ylin nline src 
 	( c@+ 1?
 		13 =? ( drop swap rot ; )
-		9 =? ( drop 3 tnsp 32 wcolor )
+		9 =? ( drop txtab 32 wcolor )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
-		temit
+		txemit
 		) drop 1-  
 	swap rot ; | src nline ylin
 
@@ -334,9 +337,9 @@
 	pantaini>
 	ylinea
 	0 ( hcode <? | src nline ylin
-		xcode ycode pick2 + tat
+		xcode ycode pick2 + txat
 		drawline
-		advy + ) 2drop
+		txh + ) 2drop
 	$fuente <? ( 1- ) 'pantafin> !
 	;
 	
@@ -351,32 +354,31 @@
 
 |--------------- MOUSE
 :mmemit | adr x xa -- adr x xa
-	rot c@+
+	rot c@+				| x xa adr' c
 	13 =? ( 0 nip )
 	0? ( drop 1- -rot sw + ; )
-	9 =? ( drop swap advx 3 * + rot swap ; ) | 4*ccw is tab
-	drop swap advx + rot swap ;
+	txcw rot +			| x adr' xa'
+	rot swap ;
 
 :cursormouse
 	SDLx xcode - | xmouse
 	pantaini>
 	SDLy
-	ycode advy +
-	( over <? advy + rot >>13 2 + -rot ) 2drop
-	swap advx 2* dup 2* + | adr x xa
+	ycode txh +
+	( over <? txh + rot >>13 2 + -rot ) 2drop
+	swap 0 txcw 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
 	
 #tclick
 
-:dclick 
+:dclick |"double click" .println
 	fuente>
 	( dup c@ $ff and 32 >? drop 1- ) drop
 	1+ dup 'inisel ! 
 	( c@+ $ff and 32 >? drop ) drop
 	2 - 'finsel !
-	|"double click" .println
 	;
 	
 :dns
@@ -424,8 +426,10 @@
 	;
 
 |--------------------------
+#cursorlin
+
 :emitcur
-	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! dup 'cursorlin ! ; )
 	9 =? ( drop 4 'xcursor +! ; )
 	drop 1 'xcursor +! ;
 
@@ -445,6 +449,7 @@
 	0 'xcursor !
 	getcacheini
 	ylinea 'ycursor !
+	dup 'cursorlin !
 	( fuente> <? c@+ emitcur ) drop ;
 	
 :src2pos | src -- 
@@ -454,7 +459,7 @@
 |--------------------------	
 :kins
 	modo
-	'lins =? ( 2drop 'lover 'modo ! ; )
+	'lins =? ( drop 'lover 'modo ! ; )
 	drop 'lins 'modo ! ;
 	
 :editmodekey
@@ -484,14 +489,14 @@
 	
 ::edtoolbar
 	$747474 SDLColor
-	xcode ycode wcode advy sdlFrect 
+	xcode ycode wcode txh sdlFrect 
 	
-	xcode ycode tat |printmode
-	$0 trgb 'edfilename " %s" tprint
-	xcode wcode + advx 3 << - tatx
-	$ffff trgb tsp
-	xcursor 1+ .d temits tsp
-	ycursor 1+ .d temits tsp
+	xcode ycode txat |printmode
+	$0 txrgb 'edfilename " %s" sprint txemits
+	|xcode wcode + advx 3 << - txatx
+	$ffff txrgb txsp
+	xcursor 1+ .d txemits txsp
+	ycursor 1+ .d txemits txsp
 	
 |	xcode ycode 1- wcode 1 bfillline
 |	xcode ycode hcode + gotoxy
@@ -502,22 +507,22 @@
 #sx1 #sy1 #sw1 
 	
 :selectfill
-	sx1 sy1 sw1 advy sdlFrect ;
+	sx1 sy1 sw1 txh sdlFrect ;
 	
 :sx1ini
-	xcode advx 5 * + 'sx1 !  ;
+	xcode 32 txcw 5 * + 'sx1 !  ;
 	
 :startsel
 	sx1ini ycode 'sy1 ! 
 	pantaini> 
 	inisel >=? ( ; )
 	( inisel <? c@+ 
-		13 =? ( advy 'sy1 +! sx1ini )
-		9 =? ( 3 advx * 'sx1 +! )
+		13 =? ( txh 'sy1 +! sx1ini )
+		9 =? ( 32 txcw 3 * 'sx1 +! )
 		drop 
-		advx 'sx1 +!
+		32 txcw 'sx1 +!
 		) 
-	advx neg 'sx1 +! 
+	32 txcw neg 'sx1 +! 
 	;
 	
 	
@@ -530,12 +535,12 @@
 	( pantafin> <? finsel <? c@+
 		13 =? ( wcode sx1 - 'sw1 ! 
 				selectfill 
-				advy 'sy1 +! 
+				txh 'sy1 +! 
 				sx1ini
-				advx neg 'sw1 ! )
-		9 =? ( 3 advx * 'sw1 +! )
+				32 txcw neg 'sw1 ! )
+		9 =? ( 3 32 txcw * 'sw1 +! )
 		drop
-		advx 'sw1 +!
+		32 txcw 'sw1 +!
 		) 
 	finsel <? ( wcode sx1 - 'sw1 ! )
 	drop
@@ -548,23 +553,23 @@
 |	colb1 sdlcolor
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
-	xcode 5 advx * + 
-	ycode ycursor ylinea - advy * + 
-	tat
+	xcode 32 txcw 5 * +
+	ycode ycursor ylinea - txh * + 
+	txat
 	$ffffff SDLColor 
-	'lover modo	=? ( xcursor tcursor drop ; ) drop
-	xcursor tcursori
+	'lover modo	=? ( drop cursorlin fuente> txcur ; ) drop
+	cursorlin fuente> txcuri
 	;
 	
 ::edfocus
 	xcode ycode wcode hcode guiBox
 	guin? 0? ( drop ; ) drop
-	$ffffff sdlcolor 
+	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
 	'dns 'mos 'ups guiMap |------ mouse
-	evwmouse 
+	evwmouse
 	editmodekey
-	edlinecursor
+	edlinecursor |*
 	edselshow
 	;
 
@@ -591,12 +596,12 @@
 	dup $ff and ylinea -
 	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
 	over >a
-	advy * ycode +  | y real
+	txh * ycode +  | y real
 	over 8 >> $ff and 
-	xcode + 5 advx * + | x real
+	xcode + 5 32 txcw * + | x real
 	swap rot | x y vv
-	dup 24 >> $ff and advx * | w
-	swap 16 >> $ff and advy * | h
+	dup 24 >> $ff and 32 txcw * | w
+	swap 16 >> $ff and txh * | h
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol sdlcolor sdlRect
 	a> 48 >> 4bcol sdlcolor sdlFRect
@@ -616,7 +621,7 @@
 	$ffff +			| 64kb texto
 	dup 'clipboard !
 	dup 'clipboard> !
-	$1fff +			| 8KB
+	$fff +			| 4KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
 	$1fff +			| 8kb
@@ -626,9 +631,7 @@
 	;
 
 ::edwin | x y w h --
-	'hcode ! 'wcode !
-	'ycode ! 'xcode !
-	;
+	'hcode ! 'wcode ! 'ycode ! 'xcode ! ;
 
 |------------------------------------------------
 #hashfile
