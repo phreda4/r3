@@ -11,8 +11,8 @@
 
 #cifil $ff1F2229ff14161A	| over|normal -- color fill
 #cisel $ff1967D2ff393F4C	| over|normal -- color select
-#cifoc $4055F4		| foco -- borde
 #cifnt $ffffff		| fuente -- color
+#cifoc $4055F4		| foco -- borde
 
 ::stDang $ffff8099ff85001B 'cifil ! ;	| danger
 ::stWarn $ffffBF29fff55D00 'cifil ! ;	| warning
@@ -38,11 +38,27 @@
 #curx #cury | cursorxy
 #curw #curh	| cursorwh
 
-#copy 0 0 0 0
-:ccopy
-	curh curw cury curx 'copy !+ !+ !+ ! ;
-:cback
-	'copy @+ 'curx ! @+ 'cury ! @+ 'curw ! @ 'curh ! ;
+#topVar 0
+#topRect
+#topSty 0 0 0
+#topList
+	
+#poscopy 0 
+
+:cur>64 | -- c64
+	curh 16 << curw $ffff and or 16 << 
+	cury $ffff and or 16 << curx $ffff and or ;
+	
+:64>cur | c64 --
+	dup 48 << 48 >> 'curx ! 16 >>
+	dup 48 << 48 >> 'cury ! 16 >>
+	dup 48 << 48 >> 'curw ! 16 >>
+	48 << 48 >> 'curh ! ;
+
+:ccopy	cur>64 'poscopy ! ;
+:cback	poscopy 64>cur ;
+:topcpy	cur>64 'topRect ! 'topsty 'cifil 3 move ; |dsc
+:topbak	topRect 64>cur 'cifil 'topsty 3 move ;
 
 |---------------	
 |---- FONT	
@@ -136,7 +152,6 @@
 
 |----- zone
 
-
 ::uicr
 	xl padx + 'curx ! 
 ::uidn	
@@ -193,7 +208,8 @@
 	
 ::uiStart
 	gui uiH
-	0 0 sw sh uiWin ;
+	0 0 sw sh uiWin 
+	0 'topVar ! ;
 	
 :guiZone 
 	curx cury curw curh guiBox ;
@@ -239,19 +255,19 @@
 :focoBtn
 	cifoc sdlColor uiRect
 	sdlKey
-	>tab< =? ( nextfoco )
+	<tab> =? ( nextfoco )
 	drop ;
 
 :focoRBtn
 	cifoc sdlColor uiRRect
 	sdlKey
-	>tab< =? ( nextfoco )
+	<tab> =? ( nextfoco )
 	drop ;
 
 :focoCBtn
 	cifoc sdlColor uiCRect
 	sdlKey
-	>tab< =? ( nextfoco )
+	<tab> =? ( nextfoco )
 	drop ;
 	
 ::uiBtn | v "" --
@@ -322,35 +338,42 @@
 	'here ! ;
 
 |----- COMBO
-::focoCombo
+:focoCombo | 'var 'list --
+	curh 'cury +! topCpy curh neg 'cury +!
+	over 'topVar ! dup 'topList !
 	cifoc sdlColor uiRRect
-	SDLkey |0? ( drop ; )
-|	<le> =? ( kizq ) <ri> =? ( kder )
-|	<back> =? ( kback ) <del> =? ( kdel )
-	>tab< =? ( nextfoco )
-	drop ;
+	SDLkey
+	<tab> =? ( nextfoco )
+	drop 
+	;
 	
 ::uiCombo | 'var 'list --
-	mark makeindx
-	guiZone
-	overfil uiRFill
-	
+	guiZone overfil uiRFill
 	'focoCombo in/foco 
 	'clickfoco onClick
-	
-	[ dup @ 1+ cntlist >=? ( 0 nip ) over ! ; ] onClick	
+	mark makeindx	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
 	8 'curx +!
 	@ uiNindx uiLabel
 	-8 'curx +!
 	empty ;
 
+|:nexlst	dup @ 1+ cntlist >=? ( 0 nip ) over ! ;
+|:prelst	dup @ 1- -? ( cntlist 1- nip ) over ! ;
+|:focolst
+|	cifoc sdlColor uiRect
+|	sdlKey
+|	<le> =? ( drop nexlst ; ) 
+|	<ri> =? ( drop prelst ; )
+|	<tab> =? ( nextfoco )
+|	drop ;
+
 |----- CHECK
 :ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
 	and? ( drop 57 ; ) drop 58 ;
 	
 :icheck | 'var n -- 'var n
-	guiZone
+	guiZone 
 	'focoBtn in/foco 
 	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
 	ccopy
@@ -517,9 +540,8 @@
 	cifoc sdlColor 
 	curx 1- cury 1- curw 2 + pick3 curh * 2 + sdlRect
 	sdlKey
-	>tab< =? ( nextfoco )
+	<tab> =? ( nextfoco )
 	drop ;
-	;
 	
 ::uiList | 'var cntlines list --
 	mark makeindx
@@ -725,8 +747,8 @@
 	<back> =? ( kback ) <del> =? ( kdel )
 	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
 	
-	>tab< =? ( nextfoco )
-	>ret< =? ( nextfoco )
+	<tab> =? ( nextfoco )
+	<ret> =? ( nextfoco )
 |	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
 	drop
@@ -739,7 +761,6 @@
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
 	drop
-	|curx cury txat
 	ttemitl ui.. ;	
 
 ::uiText
@@ -747,10 +768,16 @@
 ::uiEdit
 	;
 
+:datetimefoco
+	cifoc sdlColor uiRRect
+	sdlkey
+	<tab> =? ( nextfoco )
+	drop ;
+	
 ::uiDateTime | 'var --
 	guiZone
 	overfil uiRFill
-	[ cifoc sdlColor uiRRect ; ] in/foco 
+	'datetimefoco in/foco 
 	'clickfoco onClick	
 	mark 
 	@ ,64>dtf 0 ,c
@@ -774,8 +801,35 @@
 	@ ,64>dtt 0 ,c
 	empty here ttemitc ui.. ;
 
-|::uiCombolist | 'var cant 'list --
-|	uiList
-|	nip uiCombo | 'var 'list --
-|	;
+|-------------------
+| lista para combo
+| datetime
+| date
+| time
+| menu (separa y niveles)
+
+:uiListL | 'var list --
+	mark makeindx
+	cntlist 6 min
+	overfil 
+	curx cury dup 'backc ! 
+	curw pick3 curh * 
+	2over 2over sdlFRect
+	guiBox 
+	'focoList in/foco 
+	'refreshfoco onClick
+	chlist
+	0 ( over <? ilist 1+ ) drop
+	cscroll
+	2drop
+	pady 'cury +!
+	empty ;	
+
+
+::uiEnd
+	topVar 0? ( drop ; ) 
+	topbak 
+	topList uiListL | 'var list --
+	;
+	
 	

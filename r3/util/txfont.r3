@@ -82,19 +82,6 @@
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
-::txemit | utf8' --
-	$80 and? ( drop c@+ $80 or ) 
-	$ff and 3 << newTab + @ 
-	dup 16 >> $ffff0000ffff and 
-	dup rot $ffff0000ffff and 
-	'recbox !+ ! 
-	cury 32 << curx or 'recdes !+ !
-	SDLrenderer newTex 'recbox 'recdes SDL_RenderCopy	
-	'recdes 8 + d@ 'curx +! ;
-
-::txemits | "" --
-	( c@+ 1? txemit ) 2drop ;
-
 ::txrgb | c --
 	newTex swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
@@ -112,6 +99,29 @@
 	
 ::txat | x y --
 	'cury ! 'curx ! ;
+
+::txemit | utf8' --
+	$80 and? ( drop c@+ $80 or ) 
+	$ff and 3 << newTab + @ 
+	dup 16 >> $ffff0000ffff and 
+	dup rot $ffff0000ffff and 
+	'recbox !+ ! 
+	cury 32 << curx or 'recdes !+ !
+	SDLrenderer newTex 'recbox 'recdes SDL_RenderCopy	
+	'recdes 8 + d@ 'curx +! ;
+
+::txemits | "" --
+	( c@+ 1? txemit ) 2drop ;
+
+::txemitr | "" --
+	txw neg 'curx +!
+	txemits ;
+	
+::txprint | .. "" --
+	sprint txemits ;
+
+::txprintr | .. "" --
+	sprint txemitr ;
 
 :fontbox | utf8' --
 	$80 and? ( drop c@+ $80 or ) 

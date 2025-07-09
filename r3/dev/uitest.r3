@@ -58,20 +58,13 @@
 	ui--
 	'vh 'tablist uiCheck
 	
-	
 	1 2 uiGAt
-stDang 
-	'exit "btn1"  uiBtn 
-stWarn 
-	'exit "btn2"  uiRBtn 
-stSucc 
-'exit "btn3"  uiCBtn 
-stInfo 
-'exit "btn4"  uiBtn 
-stLink 
-'exit "btn4"  uiBtn 
-stDark 
-'exit "btn4"  uiBtn 
+	stDang 'exit "btn1"  uiBtn 
+	stWarn 'exit "btn2"  uiRBtn 
+	stSucc 'exit "btn3"  uiCBtn 
+	stInfo 'exit "btn4"  uiBtn 
+	stLink 'exit "btn4"  uiBtn 
+	stDark 'exit "btn4"  uiBtn 
 	ui--
 	0 255 'si uiSlideri
 	ui--
@@ -111,7 +104,9 @@ stDark
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	
 	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	"media/ttf/RobotoMono-Medium.ttf" 14 txload 'font2 !
+	|"media/ttf/ProggyClean.ttf" 16
+	"media/ttf/RobotoMono-bold.ttf" 18 
+	txload 'font2 !
  	
 	edram 
 	8 32 550 550 edwin

@@ -16,15 +16,6 @@
 |#colb1 $000000 |sdlcolor | backnowline
 #colb2 $333333 |SDLColor | backselect
 
-#colf0 $EF7D57 |:col_inc $EF7D57 trgb ;
-#colf1 $667C96 |:col_com $667C96 trgb ;
-#colf2 $ff0000 |:col_cod $ff0000 trgb ;
-#colf3 $ff00ff |:col_dat $ff00ff trgb ;
-#colf4 $ffffff |:col_str $ffffff trgb ;
-#colf5 $73EFF7 |:col_adr $73EFF7 trgb ;
-#colf6 $A7F070 |:col_nor $A7F070 trgb ;
-#colf7 $ffff00 |:col_nro $ffff00 trgb ;
-
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
 
@@ -267,14 +258,24 @@
 	;
 
 |------ Color line
-:col_inc $EF7D57 txrgb ;
+| $332A3F txrgb ; | back
+:col_cod $C65B79 txrgb ; | rojo
+:col_dat $BC4FC6 txrgb ; | violeta
+:col_str $D2D7E1 txrgb ; | blanco
+:col_nor $5EB489 txrgb ; |verde
+:col_adr $0FA0CF txrgb ; | celeste
+:col_inc $BBB470 txrgb ; |amarillo
+:col_nro $C3B96E txrgb ; | amarillo
 :col_com $667C96 txrgb ;
-:col_cod $ff0000 txrgb ;
-:col_dat $ff00ff txrgb ;
-:col_str $ffffff txrgb ;
-:col_adr $73EFF7 txrgb ;
-:col_nor $A7F070 txrgb ;
-:col_nro $ffff00 txrgb ;
+
+|:col_inc $EF7D57 txrgb ;
+|:col_com $667C96 txrgb ;
+|:col_cod $ff0000 txrgb ;
+|:col_dat $ff00ff txrgb ;
+|:col_str $ffffff txrgb ;
+|:col_adr $73EFF7 txrgb ;
+|:col_nor $A7F070 txrgb ;
+|:col_nro $ffff00 txrgb ;
 
 #mcolor
 
@@ -492,7 +493,7 @@
 	xcode ycode wcode txh sdlFrect 
 	
 	xcode ycode txat |printmode
-	$0 txrgb 'edfilename " %s" sprint txemits
+	$0 txrgb 'edfilename " %s" txprint
 	|xcode wcode + advx 3 << - txatx
 	$ffff txrgb txsp
 	xcursor 1+ .d txemits txsp
@@ -614,21 +615,15 @@
 |----------- principal
 ::edram
 	here	| --- RAM
-	dup 'fuente !
-	dup 'fuente> !
-	dup '$fuente !
-	dup 'pantaini> !
+	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'pantaini> !
 	$ffff +			| 64kb texto
-	dup 'clipboard !
-	dup 'clipboard> !
+	dup 'clipboard ! dup 'clipboard> !
 	$fff +			| 4KB
-	dup 'undobuffer !
-	dup 'undobuffer> !
+	dup 'undobuffer ! dup 'undobuffer> !
 	$1fff +			| 8kb
 	'here !			| -- FREE
 	0 here !
-	mark
-	;
+	mark ;
 
 ::edwin | x y w h --
 	'hcode ! 'wcode ! 'ycode ! 'xcode ! ;

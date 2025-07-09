@@ -138,11 +138,11 @@
 
 :codigo
 	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin
-	$222222 sdlcolor uiRFill10
-	5 15 uiGrid uiH
-	"cODIGO" uiLabel
-	fuente .h uiLabel
-	fuente 10 + c@ .h uiLabel
+	$332A3F sdlcolor uiRFill10
+|	5 15 uiGrid uiH
+|	"cODIGO" uiLabel
+|	fuente .h uiLabel
+|	fuente 10 + c@ .h uiLabel
 	;
 :incodcod
 	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin
@@ -187,7 +187,7 @@
 	24 21 "media/img/icong16.png" ssload 'uicons !
 
 	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	"media/ttf/RobotoMono-bold.ttf" 14 txload 'font2 !
+	"media/ttf/RobotoMono-bold.ttf" 16 txload 'font2 !
 	
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h

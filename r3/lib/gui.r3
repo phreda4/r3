@@ -43,9 +43,9 @@
 ::gui
 	idf 'idl ! hot 'hotnow !
 	0 'id ! 0 'idf ! 0 'hot !
-	0 0 sw sh guiRect
+|	0 0 sw sh guiRect
 	;
-
+	
 |-- boton
 ::onClick | 'click --
 	guin? 0? ( 2drop ; ) drop
