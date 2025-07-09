@@ -107,9 +107,9 @@
 	fuente> >>13 1+ 'fuente> !
 	selecc ;
 
-:scrollup | 'fuente -- 'fuente	
-	pantaini> 1- <<13 1- <<13 1+ 
-	fuente <=? ( drop ; )
+:scrollup
+	pantaini> 2 - <<13 1+
+	fuente <? ( drop ; )
 	'pantaini> !
 	selecc ;
 

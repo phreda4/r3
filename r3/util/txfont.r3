@@ -68,7 +68,7 @@
 		'recbox 8 + d@ 'curx +!
 		) 2drop
 	texEndAlpha 
-	dup 1 SDL_SetTextureBlendMode 
+	|dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont
 	newTab 32 3 << + @	| width ESP

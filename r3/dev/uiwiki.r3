@@ -137,8 +137,8 @@
 |	stInfo 'exit "btn4"  uiBtn 
 |	stLink 'exit "btn4"  uiBtn 
 |	stDark 'exit "btn4"  uiBtn 
-
 	panel
+	uiEnd
 
 	'pages p.draw 
 

@@ -138,11 +138,15 @@
 
 :codigo
 	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin
-	$332A3F sdlcolor uiRFill10
+	$111111 sdlcolor uiRFill10
 |	5 15 uiGrid uiH
 |	"cODIGO" uiLabel
 |	fuente .h uiLabel
 |	fuente 10 + c@ .h uiLabel
+	edfocus
+	edcodedraw
+	edtoolbar
+
 	;
 :incodcod
 	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin
@@ -155,13 +159,14 @@
 #tabnow	
 |-----------------------------
 :main
-	0 SDLcls 
+	$55 SDLcls 
 	4 6 uiPad
 	uiStart
 	
 	font1 txfont
 	8 0 txat
-	"R3d4" txemits
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "d4" txemits
 
 	font2 txfont
 	fileselect
@@ -170,8 +175,7 @@
 	
 |	'tabnow	'tabs uiTab
 
-	edfocus
-	edcodedraw
+	uiEnd
 	
 	SDLredraw
 	sdlkey
@@ -186,8 +190,8 @@
 	"R3d4" 1280 720 SDLinit
 	24 21 "media/img/icong16.png" ssload 'uicons !
 
-	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
-	"media/ttf/RobotoMono-bold.ttf" 16 txload 'font2 !
+	"media/ttf/Roboto-bold.ttf" 28 txload 'font1 !
+	"media/ttf/RobotoMono-bold.ttf" 14 txload 'font2 !
 	
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h

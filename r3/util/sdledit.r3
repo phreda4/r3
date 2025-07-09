@@ -96,9 +96,9 @@
 :kend
 	fuente> >>13 1+ 'fuente> ! ;
 
-:scrollup | 'fuente -- 'fuente
-	pantaini> 1- <<13 1- <<13 1+ 
-	fuente <=? ( drop ; )
+:scrollup 
+	pantaini> 2 - <<13 1+ 
+	fuente <? ( drop ; )
 	'pantaini> ! ;
 
 :scrolldw
@@ -379,7 +379,7 @@
 	( dup c@ $ff and 32 >? drop 1- ) drop
 	1+ dup 'inisel ! 
 	( c@+ $ff and 32 >? drop ) drop
-	2 - 'finsel !
+	1- 'finsel !
 	;
 	
 :dns
@@ -468,7 +468,6 @@
 	SDLchar 1? ( modo ex fixcur ; ) drop
 
 	SDLkey 0? ( drop ; )
-|	>esc< =? ( exit )
 	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
 	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
 
@@ -480,27 +479,23 @@
 	<home> =? ( khome ) <end> =? ( kend )
 	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
 	<ins> =? ( kins )
-	<ret> =? (  13 modo ex )
-	<tab> =? (  9 modo ex )
+	<ret> =? ( 13 modo ex )
+	<tab> =? ( 9 modo ex )
 	fixcur selecc
 	drop
 	cursorpos
 	;
-	
-	
+
 ::edtoolbar
-	$747474 SDLColor
-	xcode ycode wcode txh sdlFrect 
-	
-	xcode ycode txat |printmode
-	$0 txrgb 'edfilename " %s" txprint
-	|xcode wcode + advx 3 << - txatx
-	$ffff txrgb txsp
+	$555555 SDLColor
+	xcode ycode txh - wcode txh sdlFrect 
+	$ffffff txrgb 
+	xcode ycode txh - txat |printmode
+	'edfilename " %s" txprint
+	": " txemits
 	xcursor 1+ .d txemits txsp
 	ycursor 1+ .d txemits txsp
-	
-|	xcode ycode 1- wcode 1 bfillline
-|	xcode ycode hcode + gotoxy
+|	inisel 0? ( drop ; ) ( finsel <? c@+ "%k" txprint ) drop
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;
 
@@ -519,14 +514,9 @@
 	inisel >=? ( ; )
 	( inisel <? c@+ 
 		13 =? ( txh 'sy1 +! sx1ini )
-		9 =? ( 32 txcw 3 * 'sx1 +! )
-		drop 
-		32 txcw 'sx1 +!
-		) 
-	32 txcw neg 'sx1 +! 
-	;
-	
-	
+		txcw 'sx1 +! ) 
+	32 txcw neg 'sx1 +! ;
+		
 :edselshow
 	inisel 0? ( drop ; )
 	pantafin> >? ( drop ; ) drop
@@ -534,25 +524,19 @@
 	startsel
 	0 'sw1 !
 	( pantafin> <? finsel <? c@+
-		13 =? ( wcode sx1 - 'sw1 ! 
+		13 =? ( wcode sx1 - xcode + 'sw1 ! 
 				selectfill 
-				txh 'sy1 +! 
-				sx1ini
+				txh 'sy1 +! sx1ini
 				32 txcw neg 'sw1 ! )
-		9 =? ( 3 32 txcw * 'sw1 +! )
-		drop
-		32 txcw 'sw1 +!
+		txcw 'sw1 +!
 		) 
 	finsel <? ( wcode sx1 - 'sw1 ! )
 	drop
-	selectfill
-	;
+	selectfill ;
 
 :edlinecursor
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
 	cursorpos
-|	colb1 sdlcolor
-|	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
 	xcode 32 txcw 5 * +
 	ycode ycursor ylinea - txh * + 
@@ -567,10 +551,10 @@
 	guin? 0? ( drop ; ) drop
 	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
-	'dns 'mos 'ups guiMap |------ mouse
+	'dns 'mos 'ups guiMap
 	evwmouse
 	editmodekey
-	edlinecursor |*
+	edlinecursor
 	edselshow
 	;
 

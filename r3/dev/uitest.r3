@@ -88,6 +88,7 @@
 	font2 txfont
 	edfocus
 	edcodedraw
+	uiEnd
 	
 	SDLredraw
 	sdlkey

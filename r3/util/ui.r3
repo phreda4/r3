@@ -58,7 +58,7 @@
 :ccopy	cur>64 'poscopy ! ;
 :cback	poscopy 64>cur ;
 :topcpy	cur>64 'topRect ! 'topsty 'cifil 3 move ; |dsc
-:topbak	topRect 64>cur 'cifil 'topsty 3 move ;
+:topbak	topRect 64>cur 'cifil 'topsty 3 move cifnt txrgb ;
 
 |---------------	
 |---- FONT	
