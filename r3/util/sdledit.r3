@@ -10,6 +10,7 @@
 
 | size win
 #xcode #ycode #wcode #hcode 
+#xcodel
 
 | color 
 |#colb0 $1f1f1f |sdlcolor | backcode
@@ -99,12 +100,14 @@
 :scrollup 
 	pantaini> 2 - <<13 1+ 
 	fuente <? ( drop ; )
-	'pantaini> ! ;
+	'pantaini> ! 
+	-1 'ylinea +! ;
 
 :scrolldw
 	pantafin> >>13 2 + 
 	$fuente >=? ( drop ; ) 
 	'pantafin> !
+	1 'ylinea +!
 	pantaini> >>13 2 + 'pantaini> !
 	;
 	
@@ -268,14 +271,14 @@
 :col_nro $C3B96E txrgb ; | amarillo
 :col_com $667C96 txrgb ;
 
-|:col_inc $EF7D57 txrgb ;
-|:col_com $667C96 txrgb ;
-|:col_cod $ff0000 txrgb ;
-|:col_dat $ff00ff txrgb ;
-|:col_str $ffffff txrgb ;
-|:col_adr $73EFF7 txrgb ;
-|:col_nor $A7F070 txrgb ;
-|:col_nro $ffff00 txrgb ;
+:col_inc $EF7D57 txrgb ;
+:col_com $667C96 txrgb ;
+:col_cod $ff0000 txrgb ;
+:col_dat $ff00ff txrgb ;
+:col_str $ffffff txrgb ;
+:col_adr $73EFF7 txrgb ;
+:col_nor $A7F070 txrgb ;
+:col_nro $ffff00 txrgb ;
 
 #mcolor
 
@@ -322,7 +325,8 @@
 :drawline | src nline ylin -- src nline ylin
 	pick2 c@ 0? ( drop ; ) drop | linea vacia
 	$afafaf txrgb
-	swap 1+ dup .d 4 .r. txemits txsp | src ylin nline 
+	swap 1+ dup .d 4 .r. txemits	| src ylin nline 
+	xcodel ycode pick3 + txat
 	rot iniline						| ylin nline src 
 	( c@+ 1?
 		13 =? ( drop swap rot ; )
@@ -505,15 +509,14 @@
 :selectfill
 	sx1 sy1 sw1 txh sdlFrect ;
 	
-:sx1ini
-	xcode 32 txcw 5 * + 'sx1 !  ;
-	
+
 :startsel
-	sx1ini ycode 'sy1 ! 
+	xcodel 'sx1 !
+	ycode 'sy1 ! 
 	pantaini> 
 	inisel >=? ( ; )
 	( inisel <? c@+ 
-		13 =? ( txh 'sy1 +! sx1ini )
+		13 =? ( txh 'sy1 +! xcodel 'sx1 ! )
 		txcw 'sx1 +! ) 
 	32 txcw neg 'sx1 +! ;
 		
@@ -526,7 +529,7 @@
 	( pantafin> <? finsel <? c@+
 		13 =? ( wcode sx1 - xcode + 'sw1 ! 
 				selectfill 
-				txh 'sy1 +! sx1ini
+				txh 'sy1 +! xcodel 'sx1 !
 				32 txcw neg 'sw1 ! )
 		txcw 'sw1 +!
 		) 
@@ -538,7 +541,7 @@
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
 	cursorpos
 	msec $100 and? ( drop ; ) drop
-	xcode 32 txcw 5 * +
+	xcodel
 	ycode ycursor ylinea - txh * + 
 	txat
 	$ffffff SDLColor 
@@ -610,7 +613,8 @@
 	mark ;
 
 ::edwin | x y w h --
-	'hcode ! 'wcode ! 'ycode ! 'xcode ! ;
+	'hcode ! 'wcode ! 'ycode ! 'xcode ! 
+	"00000" txw nip xcode + 'xcodel ! ;
 
 |------------------------------------------------
 #hashfile

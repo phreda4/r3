@@ -15,7 +15,7 @@
 		
 #tablist "A" "B" "C" "D" 0
 
-#listex "uno" "dos" "tres" "cuatro" "sdjh" "21739832" "dsjhds" 0
+#listex "uno" "dos" "tres" "cuatro" "cinco" 0
 
 #treeex
 "@uno" "Aaaa" "Abbb" "Blksdhfl" "Blksdhfl" "Axnb"
@@ -84,11 +84,11 @@
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
 	ui--
+	uiEnd
 	
 	font2 txfont
 	edfocus
 	edcodedraw
-	uiEnd
 	
 	SDLredraw
 	sdlkey

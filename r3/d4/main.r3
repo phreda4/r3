@@ -190,8 +190,11 @@
 	"R3d4" 1280 720 SDLinit
 	24 21 "media/img/icong16.png" ssload 'uicons !
 
-	"media/ttf/Roboto-bold.ttf" 28 txload 'font1 !
-	"media/ttf/RobotoMono-bold.ttf" 14 txload 'font2 !
+	"media/ttf/Roboto-bold.ttf" 28 
+	txload 'font1 !
+	"media/ttf/RobotoMono-bold.ttf" 14 
+	|"media/ttf/Roboto-bold.ttf" 18
+	txload 'font2 !
 	
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h
