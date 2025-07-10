@@ -516,19 +516,20 @@
 	
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
-	curx curw + 16 - backc
-	16 cury backc - |2over 2over sdlRect
+	guin? 0? ( drop ; ) drop
+	curx curw + 10 - backc
+	10 cury backc - |2over 2over sdlRect
 	guiBox 
 	cntlist over - 1+	| maxi
 	'slidev dup onDnMoveA 
 	oversel |	$444444 sdlcolor
 
-	curx curw + 16 -		| 'var max maxi x 
+	curx curw + 10 -		| 'var max maxi x 
 	pick3 8 + @ 			| 'var max maxi x ini
 	cury backc - pick3 / 	| 'var max maxi x ini hp
 	swap over *	backc +		| 'var max maxi x hp ini*hp
-	14 rot
-	>r >r 5 -rot r> r>
+	8 rot
+	>r >r 4 -rot r> r>
 	$ffffff sdlcolor sdlRound	
 	|sdlFRound	
 	drop ;
