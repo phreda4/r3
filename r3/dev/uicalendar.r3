@@ -121,36 +121,33 @@
 	;
 	
 |-----------------------------
+#vhora 0 0
+#lhora "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" 0
+
+#lms "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "50" "51" "52" "52" "53" "54" "55" "56" "57" "58" "59" 0
+#vmin 0 0
+#vseg 0 0
 :uiHMS
 	4 4 uiPad
-	0.4 %w 0.1 %h 0.1 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10
+	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
 	mark
-	hora ,2d ":" ,s
-	min ,2d ":" ,s
-	sec ,2d empty here uiLabelc
+	vhora ,2d " : " ,s
+	vmin ,2d " : " ,s
+	vseg ,2d 0 ,c 
+	empty here uiLabelc
 
+	2 2 uiPad
 	3 11 UIGridA uiH
-|	0 0 uigAt
-|	"Hora" uiLabelc
-|	"Min" uiLabelc
-|	"Sec" uiLabelc
 	0 1 uigAt uiV
-	"0" uiLabelC
-	0 ( 7 <? 
-		dup .d uiLabelC
-		1+ ) drop
-	"23" uiLabelC
-	
+	'vhora 11 'lhora uiList
 	1 1 uigAt uiV
-	0 ( 7 <? 
-		dup 10 + .d uiLabelC
-		1+ ) drop
+	'vmin 11 'lms uiList
 	2 1 uigAt uiV
-	0 ( 7 <? 
-		dup 10 + .d uiLabelC
-		1+ ) drop ;
+	'vseg 11 'lms uiList
+	
+	;
 		
 |-----------------------------
 |-----------------------------
