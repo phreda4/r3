@@ -546,20 +546,21 @@
 	txat
 	$ffffff SDLColor 
 	'lover modo	=? ( drop cursorlin fuente> txcur ; ) drop
-	cursorlin fuente> txcuri
-	;
+	cursorlin fuente> txcuri ;	
 	
-::edfocus
-	xcode ycode wcode hcode guiBox
-	guin? 0? ( drop ; ) drop
+:inedit
 	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
 	'dns 'mos 'ups guiMap
 	evwmouse
 	editmodekey
 	edlinecursor
-	edselshow
-	;
+	edselshow ;
+
+::edfocus
+	xcode ycode wcode hcode guiBox
+	'inedit in/foco 
+	'clickfoco onClick ;
 
 |----------- marcas
 | y|x|ini|cnt|colorf|colorb

@@ -46,15 +46,15 @@
 	font1 txfont
 	uiStart
 	3 4 uiPad
-	0.45 %w 0.1 %h 0.5 %w 0.5 %h uiWin
-	4 12 uiGrid uiH
+	0.45 %w 0.1 %h 0.5 %w 0.7 %h uiWin
+	4 16 uiGridA uiH
 	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect
 	$ffffff sdlcolor 	
 	'vlist 'tablist uiTab
 	
 	0 2 uiGAt uiV
-	'vlist 4 'listex uiList | 8
+	'vlist 3 'listex uiList | 8
 	ui--
 	'vh 'tablist uiCheck
 	
@@ -66,24 +66,29 @@
 	stLink 'exit "btn4"  uiBtn 
 	stDark 'exit "btn4"  uiBtn 
 	ui--
+	
+	2 2 uiGat
+	'vtree 5 'treeex uiTree
 	0 255 'si uiSlideri
 	ui--
 	-1.0 1.0 'sf uiSliderf
 	
-	2 2 uiGat
-	'vtree 8 'treeex uiTree
 	3 2 uiGat
 	'vc 'listex uiCombo | 'var 'list --
 	ui--
 	'vr 'tablist uiRadio
 	ui--
-
-	0.45 %w 0.6 %h 0.5 %w 0.1 %h uiWin
-	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
-	1 2 uiGrid uiV
+	
+	1 16 uiGridA uiV
+	0 9 uiGAt
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
-	ui--
+	
+	1 4 uiGridA uiV
+	0 3 uiGat
+	|'exit "hola" uiRbtn
+	|'vtable 5 'cols 'tabla1 uiTable<
+	
 	uiEnd
 	
 	font2 txfont

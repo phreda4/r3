@@ -20,6 +20,7 @@
 ::stInfo $ff80D9FFff005D85 'cifil ! ;	| info
 ::stLink $ff4258FFff000F85 'cifil ! ;	| link
 ::stDark $ff393F4Cff14161A 'cifil ! ;	| dark
+::stLigt $ffaaaaaaff888888 'cifil ! ;	| white
 
 :overfil cifil guin? 32 and >> sdlcolor ;
 :oversel cisel guin? 32 and >> sdlcolor ;

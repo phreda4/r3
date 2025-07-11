@@ -12,9 +12,6 @@
 #mes	6
 #dia	10
 #anio	2025
-#hora	8
-#min	0
-#sec	0
 
 #modocal 0
 #datejuln	| now
@@ -22,6 +19,9 @@
 #datejuli
 #datejulm
 #datejule
+
+#anio1
+#anio2
 
 :hoja! | anio mes dia ---
 	'dia ! 'mes ! 'anio !
@@ -35,9 +35,10 @@
 	42 + dup 'datejule !
 	( dup jul2date drop nip mes <>? drop 1- ) drop
 	1+ 'datejulm !
+	anio 7 - 'anio2 !
+	anio 10 / 10 * 50 - 'anio1 !
 	;
 	
-
 :clickd | 'jday -- 'jday
 	dup jul2date 'anio ! 'mes ! 'dia !
 	jhoja! ;
@@ -80,18 +81,28 @@
 		1+ ) drop ;
 	
 :clicka
-	dup anio + mes dia hoja! 
-	1 'modocal ! ;
+	dup mes dia hoja! 
+	|1 'modocal ! 
+	;
 	
 :panelanio
 	5 9 uiGridA 
 	0 2 uiGat
 	stDark
-	0 ( 25 <?
-		'clicka over anio + 
+	0 ( 5 <?
+		dup 10 * anio1 + 'clicka over .d uiRBtn drop
+		1+ ) drop
+	stInfo	
+	0 ( 15 <?
+		dup anio2 + 
+		anio =? ( stLink )
+		'clicka over .d uiRBtn
 		anio =? ( stInfo )
-		.d uiRBtn
-		anio =? ( stDark )
+		drop
+		1+ ) drop 
+	stDark		
+	0 ( 5 <?
+		dup 10 * anio1 60 + + 'clicka over .d uiRBtn drop
 		1+ ) drop ;
 
 :sethoy
@@ -121,12 +132,14 @@
 	;
 	
 |-----------------------------
-#vhora 0 0
-#lhora "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" 0
 
+#lhora "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" 0
 #lms "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "50" "51" "52" "52" "53" "54" "55" "56" "57" "58" "59" 0
+
+#vhora 0 0
 #vmin 0 0
 #vseg 0 0
+
 :uiHMS
 	4 4 uiPad
 	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10
@@ -139,14 +152,16 @@
 	empty here uiLabelc
 
 	2 2 uiPad
-	3 11 UIGridA uiH
-	0 1 uigAt uiV
-	'vhora 11 'lhora uiList
-	1 1 uigAt uiV
-	'vmin 11 'lms uiList
-	2 1 uigAt uiV
-	'vseg 11 'lms uiList
-	
+	3 11 UIGridA uiV 
+	vhora
+	0 1 uigAt 'vhora 11 'lhora uiList
+	vhora swap <>? ( dup 5 - 0 max 'vhora 8 + ! ) drop
+	vmin
+	1 1 uigAt 'vmin 11 'lms uiList
+	vmin swap <>? ( dup 5 - 0 max 'vmin 8 + ! ) drop
+	vseg
+	2 1 uigAt 'vseg 11 'lms uiList	
+	vseg swap <>? ( dup 5 - 0 max 'vseg 8 + ! ) drop
 	;
 		
 |-----------------------------
