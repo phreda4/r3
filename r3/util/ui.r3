@@ -34,33 +34,48 @@
 ::stFWhit $ffffffffffeaeaea 'cifnt ! ;	| white
 ::stfLigt $ffaaaaaaff888888 'cifnt ! ;	| white
 
-#xl #yl #wl #hl
 #padx #pady	
-#curx #cury | cursorxy
-#curw #curh	| cursorwh
+#winx #winy #winw #winh	| window
+#curx #cury #curw #curh	| cursorwh
 
-#topVar 0
+#wincopy 0 
+#poscopy 0 
+
 #topRect
+#topVar 0
 #topSty 0 0 0
 #topList
 	
-#poscopy 0 
-
-:cur>64 | -- c64
-	curh 16 << curw $ffff and or 16 << 
-	cury $ffff and or 16 << curx $ffff and or ;
+|----- backup dims
+:dims>64 | 'adr -- 64dim
+	@+ $ffff and 16 << 
+	swap @+ $ffff and rot or 16 << 
+	swap @+ $ffff and rot or 16 << 
+	swap @ $ffff and or ;
 	
-:64>cur | c64 --
-	dup 48 << 48 >> 'curx ! 16 >>
-	dup 48 << 48 >> 'cury ! 16 >>
-	dup 48 << 48 >> 'curw ! 16 >>
-	48 << 48 >> 'curh ! ;
+:64>dims | 'adr 64dim --	
+	dup 48 >> rot !+ swap 16 <<
+	dup 48 >> rot !+ swap 16 <<
+	dup 48 >> rot !+ swap 16 <<
+	48 >> swap ! ;
 
-:ccopy	cur>64 'poscopy ! ;
-:cback	poscopy 64>cur ;
-:topcpy	cur>64 'topRect ! 'topsty 'cifil 3 move ; |dsc
-:topbak	topRect 64>cur 'cifil 'topsty 3 move cifnt txrgb ;
+:topcpy
+	'curx dims>64 'topRect ! 
+	'topsty 'cifil 3 move ; |dsc
+:topbak	
+	'curx topRect 64>dims 
+	'cifil 'topsty 3 move cifnt txrgb ;
 
+:wincpy 
+	'winx dims>64 'wincopy !
+	'curx dims>64 'poscopy !
+	'topsty 'cifil 3 move ; |dsc
+	
+:winbak 
+	'curx poscopy 64>dims 
+	'winx wincopy 64>dims 
+	'cifil 'topsty 3 move cifnt txrgb ;
+	
 |---------------	
 |---- FONT	
 :ttemitl | "text" --
@@ -98,15 +113,15 @@
 
 |--------------------
 |----- draw/fill
-::uiRectW 	xl yl wl hl SDLRect ;
-::uiFillW	xl yl wl hl SDLFRect ;
-::uiRRectW 	wl hl min 2 >> xl yl wl hl SDLRound ;
-::uiRFillW	wl hl min 2 >> xl yl wl hl SDLFRound ;
-::uiCRectW 	wl hl min 2/ xl yl wl hl SDLRound ;
-::uiCFillW	wl hl min 2/ xl yl wl hl SDLFRound ;
+::uiRectW 	winx winy winw winh SDLRect ;
+::uiFillW	winx winy winw winh SDLFRect ;
+::uiRRectW 	winw winh min 2 >> winx winy winw winh SDLRound ;
+::uiRFillW	winw winh min 2 >> winx winy winw winh SDLFRound ;
+::uiCRectW 	winw winh min 2/ winx winy winw winh SDLRound ;
+::uiCFillW	winw winh min 2/ winx winy winw winh SDLFRound ;
 
-::uiRRect10	10 xl yl wl hl SDLRound ;
-::uiRFill10	10 xl yl wl hl SDLFRound ;
+::uiRRect10	10 winx winy winw winh SDLRound ;
+::uiRFill10	10 winx winy winw winh SDLFRound ;
 
 ::uiRect	curx cury curw curh SDLRect ;
 ::uiFill	curx cury curw curh SDLFRect ;
@@ -116,12 +131,12 @@
 ::uiCFill	curw curh min 2/ curx cury curw curh SDLFRound ;
 
 ::uiTitleF
-	xl cury pady - wl curh pady 2* + sdlFrect ;
+	winx cury pady - winw curh pady 2* + sdlFrect ;
 	
 ::uiTitle | str --
-	curw wl 'curw ! 'wl !
+	curw winw 'curw ! 'winw !
 	ttemitc
-	curw wl 'curw ! 'wl !
+	curw winw 'curw ! 'winw !
 	curh pady 2* + 'cury +! ;
 
 ::uiLineH
@@ -132,20 +147,20 @@
 	curx curw 2/ + 1- cury 1+ 2 curh 2 - SDLRect ;
 	
 ::uiLineWH
-	xl cury curh + pady + wl 1 sdlrect ;
+	winx cury curh + pady + winw 1 sdlrect ;
 	
 ::uiGridBV
 	padx 2* curw +
-	0 ( wl pick2 2* - <=?
+	0 ( winw pick2 2* - <=?
 		over +
-		dup xl + yl hl over + SDLLineV
+		dup winx + winy winh over + SDLLineV
 		) 2drop ;
 		
 ::uiGridBH
 	pady 2* curh +
-	0 ( hl pick2 2* - <=?
+	0 ( winh pick2 2* - <=?
 		over +
-		xl over yl + over wl + SDLLineH
+		winx over winy + over winw + SDLLineH
 		) 2drop ;
 	
 ::uiGrid# 
@@ -154,12 +169,12 @@
 |----- zone
 
 ::uicr
-	xl padx + 'curx ! 
+	winx padx + 'curx ! 
 ::uidn	
 	curh pady 2* +  'cury +! ;
 ::uiri
 	curx curw + padx 2* + | new x
-	xl wl + 
+	winx winw + 
 	>? ( drop uicr ; ) 'curx ! ;
 
 #vflex 'uiri
@@ -171,7 +186,7 @@
 	curw padx 2* + neg 'curx +! ;
 	
 ::ui>>
-	xl wl + curw - padx 2* - 'curx ! 
+	winx winw + curw - padx 2* - 'curx ! 
 	'ui< 'vflex ! ;
 
 
@@ -181,10 +196,10 @@
 	'pady ! 'padx ! ;
 
 ::uiWinBox | x y x2 y2 --
-	pick2 - 'hl ! pick2 - 'wl ! 'yl ! 'xl ! ;
+	pick2 - 'winh ! pick2 - 'winw ! 'winy ! 'winx ! ;
 
 ::uiWin | x y w h --
-	'hl ! 'wl ! 'yl ! 'xl ! ;
+	'winh ! 'winw ! 'winy ! 'winx ! ;
 	
 ::uixy | x y --
 	pady + 'cury ! padx + 'curx ! ;
@@ -193,18 +208,18 @@
 	pady 2* - 'curh ! padx 2* - 'curw ! ;
 
 ::uiGAt | x y --
-	curh pady 2* + * pady + yl + 'cury !
-	curw padx 2* + * padx + xl + 'curx ! 
+	curh pady 2* + * pady + winy + 'cury !
+	curw padx 2* + * padx + winx + 'curx ! 
 	;
 
 ::uiGrid | c r --
-	hl swap / pady 2* - 'curh ! 
-	wl swap / padx 2* - 'curw ! 
+	winh swap / pady 2* - 'curh ! 
+	winw swap / padx 2* - 'curw ! 
 	0 0 uiGat ;
 
 ::uiGridA | c r -- ; adjust for fit
-	hl swap /mod dup 2/ 'yl +! neg 'hl +! pady 2* - 'curh ! 
-	wl swap /mod dup 2/ 'xl +! neg 'wl +! padx 2* - 'curw ! 
+	winh swap /mod dup 2/ 'winy +! neg 'winh +! pady 2* - 'curh ! 
+	winw swap /mod dup 2/ 'winx +! neg 'winw +! padx 2* - 'curw ! 
 	0 0 uiGat ;
 	
 ::uiStart
@@ -220,10 +235,11 @@
 	uicons ssprite ;
 	
 ::uicon | nro --
-	curx 14 + cury curh 2/ +
+	txpos drop 14 +
+	cury curh 2/ +
 	rot uicons ssprite 
 ::uicone | -- ; empty icon
-	26 'curx +! ;
+	26 0 tx+at ;
 	
 |----- Widget	
 ::uiLabel | "" --
@@ -354,10 +370,10 @@
 	'clickfoco onClick
 	mark makeindx	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
-	8 'curx +!
-	@ uiNindx uiLabel
-	-8 'curx +!
-	empty ;
+	curx 8 + cury txat
+	@ uiNindx txemits
+	empty 
+	ui.. ;
 
 |:nexlst	dup @ 1+ cntlist >=? ( 0 nip ) over ! ;
 |:prelst	dup @ 1- -? ( cntlist 1- nip ) over ! ;
@@ -377,9 +393,9 @@
 	uiZone 
 	'focoBtn in/foco 
 	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
-	ccopy
-	ic uicon a@+ uiTLabel 
-	cback ui.. ;
+	curx curh txh - 2/ cury + txat 
+	ic uicon a@+ txemits
+	ui.. ;
 		
 ::uiCheck | 'var 'list --
 	mark makeindx
@@ -395,9 +411,9 @@
 	uiZone
 	'focoBtn in/foco 
 	[ 2dup swap ! clickfoco ; ] onClick
-	ccopy
-	ir uicon a@+ uitlabel 
-	cback ui.. ;
+	curx curh txh - 2/ cury + txat 
+	ir uicon a@+ txemits
+	ui.. ;
 
 ::uiRadio | 'var 'list --
 	mark makeindx
@@ -531,8 +547,7 @@
 	swap over *	backc +		| 'var max maxi x hp ini*hp
 	8 rot
 	>r >r 4 -rot r> r>
-	$ffffff sdlcolor sdlRound	
-	|sdlFRound	
+	$ffffff sdlcolor sdlfRound	
 	drop ;
 	
 :uiFillL	
@@ -607,10 +622,9 @@
 	overl =? ( overfil uiFill )
 	uiNindx 
 	c@+ 0? ( 2drop curh 'cury +! ; )
-	curx 'ttw !
-	dup $1f and 4 << 'curx +!
-	iicon ttemitl 
-	ttw 'curx !
+	dup $1f and 4 << curx +
+	curh txh - 2/ cury + 
+	txat iicon txemits 
 	curh 'cury +! ;
 
 ::uiTree | 'var cntlines list --
@@ -685,8 +699,7 @@
 |-----
 ::uiTable
 	;
-	
-	
+
 
 |--- Edita linea
 #cmax

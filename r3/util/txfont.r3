@@ -100,6 +100,12 @@
 ::txat | x y --
 	'cury ! 'curx ! ;
 
+::tx+at | x y --
+	'cury +! 'curx +! ;
+
+::txpos | -- x y 
+	curx cury ;
+	
 ::txemit | utf8' --
 	$80 and? ( drop c@+ $80 or ) 
 	$ff and 3 << newTab + @ 
