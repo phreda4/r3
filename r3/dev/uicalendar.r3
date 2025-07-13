@@ -143,6 +143,7 @@
 :uiHMS
 	4 4 uiPad
 	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10
+:uuuu		
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
 	mark
@@ -152,7 +153,7 @@
 	empty here uiLabelc
 
 	2 2 uiPad
-	3 11 UIGridA uiV 
+	3 12 UIGridA uiV 
 	vhora
 	0 1 uigAt 'vhora 11 'lhora uiList
 	vhora swap <>? ( dup 5 - 0 max 'vhora 8 + ! ) drop
@@ -165,6 +166,32 @@
 	;
 		
 |-----------------------------
+
+#px #py 	
+:movwin
+	sdlx dup px - swap 'px ! over 8 + d+!
+	sdly dup py - swap 'py ! over 12 + d+! ;
+	
+::uiPanel | adr --
+	dup @ 0? ( nip ; ) drop
+	dup 8 + >a da@+ da@+ da@+ da@+ uiWin
+	$222222 sdlcolor uiRFill10
+	1 20 uiGridA 0 0 uiGat 
+	uiZone a> uiTitle 
+	[ sdlx 'px ! sdly 'py ! ; ] 'movwin onDnMoveA
+	8 20 uiGridA 7 0 uiGat stDang
+	[ 0 over ! ; ] "X" uiCBtn
+	stDark
+	dup 8 + >a da@+ da@+ 20 + da@+ da@+ uiWin
+	;
+	
+#wincon 1 [ 700 30 300 400 ] "CONFIG"
+
+:winconfig
+	'wincon uiPanel 0? ( drop ; ) drop
+	[ 0 'wincon ! ; ] "ok" uiRBtn
+	uuuu
+	;
 |-----------------------------
 :main
 	0 SDLcls
@@ -174,6 +201,8 @@
 	uiDMY
 	uiHMS
 		
+	winconfig		
+	
 	uiEnd
 	
 	SDLredraw

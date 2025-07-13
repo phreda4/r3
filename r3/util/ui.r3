@@ -211,8 +211,8 @@
 	gui uiH
 	0 0 sw sh uiWin 
 	0 'topVar ! ;
-	
-:guiZone 
+
+::uiZone	
 	curx cury curw curh guiBox ;
 	
 |----- icon
@@ -272,21 +272,21 @@
 	drop ;
 	
 ::uiBtn | v "" --
-	guiZone
+	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
 	'clickfoco onClick
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
-	guiZone
+	uiZone
 	overfil uiRFill
 	'focoRBtn in/foco 
 	'clickfoco onClick	
 	ttemitc onClick ui.. ;	
 
 ::uiCBtn | v "" --
-	guiZone
+	uiZone
 	overfil uiCFill
 	'focoCBtn in/foco 
 	'clickfoco onClick	
@@ -294,7 +294,7 @@
 	
 ::uiTBtn | v "" -- ; width from text
 	ttsize ttw 4 + 'curw !
-	guiZone
+	uiZone
 	overfil uiFill
 	ttemitc onClick 
 	curw 'curx +!
@@ -349,7 +349,7 @@
 	;
 	
 ::uiCombo | 'var 'list --
-	guiZone overfil uiRFill
+	uiZone overfil uiRFill
 	'focoCombo in/foco 
 	'clickfoco onClick
 	mark makeindx	
@@ -374,7 +374,7 @@
 	and? ( drop 57 ; ) drop 58 ;
 	
 :icheck | 'var n -- 'var n
-	guiZone 
+	uiZone 
 	'focoBtn in/foco 
 	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
 	ccopy
@@ -392,7 +392,7 @@
 	=? ( 226 ; ) 228 ;
 
 :iradio | 'var n --
-	guiZone
+	uiZone
 	'focoBtn in/foco 
 	[ 2dup swap ! clickfoco ; ] onClick
 	ccopy
@@ -407,7 +407,7 @@
 
 |----- TAB
 :itab | 'var n --
-	guiZone
+	uiZone
 	[ 2dup swap ! ; ] onClick
 	over @ =? ( curx cury curh pady 2/ - + curw pady 2/ sdlFRect )
 	a@+ uilabelc ;
@@ -436,7 +436,7 @@
 	SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
-	guiZone
+	uiZone
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow
 	'focoBtn in/foco 
@@ -445,7 +445,7 @@
 	2drop ;
 
 ::uiSlideri | 0 255 'value --
-	guiZone
+	uiZone
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow	
 	'focoBtn in/foco 
@@ -469,7 +469,7 @@
 	6 curh 4 - SDLFRect ;
 
 ::uiSlideri8 | 0 255 'value --
-	guiZone
+	uiZone
 	'focoBtn in/foco 
 	'clickfoco onClick	
 	'slideh8 dup onDnMoveA | 'dn 'move --	
@@ -758,7 +758,7 @@
 	;
 
 ::uiInputLine | 'buff max --
-	guiZone
+	uiZone
 	overfil uiFill
 	'proinputa 'iniinput w/foco
 	'clickfoco onClick
@@ -777,7 +777,7 @@
 	drop ;
 	
 ::uiDateTime | 'var --
-	guiZone
+	uiZone
 	overfil uiRFill
 	'datetimefoco in/foco 
 	'clickfoco onClick	
@@ -786,7 +786,7 @@
 	empty here ttemitc ui.. ;
 	
 ::uiDate | 'var --
-	guiZone
+	uiZone
 	overfil uiRFill
 	[ cifoc sdlColor uiRRect ; ] in/foco 
 	'clickfoco onClick	
@@ -795,7 +795,7 @@
 	empty here ttemitc ui.. ;
 
 ::uiTime | 'var --
-	guiZone
+	uiZone
 	overfil uiRFill
 	[ cifoc sdlColor uiRRect ; ] in/foco 
 	'clickfoco onClick	
