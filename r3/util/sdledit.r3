@@ -504,12 +504,10 @@
 	;
 
 |-------------------------------------
-#sx1 #sy1 #sw1 
+#sx1 #sy1 
+#selxi #selyi
+#sw1 
 	
-:selectfill
-	sx1 sy1 sw1 txh sdlFrect ;
-	
-
 :startsel
 	xcodel 'sx1 !
 	ycode 'sy1 ! 
@@ -523,19 +521,26 @@
 :edselshow
 	inisel 0? ( drop ; )
 	pantafin> >? ( drop ; ) drop
-	colb2 SDLColor
 	startsel
+	sx1 'selxi ! sy1 'selyi !
 	0 'sw1 !
 	( pantafin> <? finsel <? c@+
 		13 =? ( wcode sx1 - xcode + 'sw1 ! 
-				selectfill 
 				txh 'sy1 +! xcodel 'sx1 !
 				32 txcw neg 'sw1 ! )
 		txcw 'sw1 +!
 		) 
 	finsel <? ( wcode sx1 - 'sw1 ! )
 	drop
-	selectfill ;
+	sw1 'sx1 +! 
+	
+	|....draw select
+	colb2 SDLColor
+	selxi selyi sy1 =? ( sx1 pick2 - txh sdlfrect ; ) 
+	xcode wcode + pick2 - txh sdlfrect
+	xcodel selyi txh + wcode xcodel xcode - - sy1 pick2 - sdlfrect
+	xcodel sy1 sx1 pick2 - txh sdlfrect
+	;
 
 :edlinecursor
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
