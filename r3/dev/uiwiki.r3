@@ -8,8 +8,9 @@
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
 ^r3/util/arr16.r3
+
 ^r3/util/ui.r3
-^r3/util/sdledit.r3
+^r3/util/uiedit.r3
 	
 #font1
 #font2

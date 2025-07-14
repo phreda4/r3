@@ -4,7 +4,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/ui.r3
-^r3/util/sdledit.r3
+^r3/util/uiedit.r3
 	
 #font1
 #font2

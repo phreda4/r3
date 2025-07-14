@@ -4,10 +4,12 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 
-^r3/util/varanim.r3
-
 ^r3/util/ui.r3
-^r3/util/sdledit.r3
+^r3/util/uiedit.r3
+
+^r3/d4/r3token.r3
+^r3/d4/r3vmd.r3
+^r3/d4/r3opt.r3
 	
 |--------------------------------	
 
