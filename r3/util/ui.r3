@@ -200,12 +200,6 @@
 ::uiWin! | x y w h --
 	'winh ! 'winw ! 'winy ! 'winx ! ;
 	
-::uixy | x y --
-	pady + 'cury ! padx + 'curx ! ;
-
-::uiBox | w h --
-	pady 2* - 'curh ! padx 2* - 'curw ! ;
-
 ::uiGAt | x y --
 	curh pady 2* + * pady + winy + 'cury !
 	curw padx 2* + * padx + winx + 'curx ! ;
@@ -561,6 +555,8 @@
 	curx 1- cury 1- curw 2 + pick3 curh * 2 + sdlRect
 	sdlKey
 	<tab> =? ( nextfoco )
+	<up> =? ( pick2 dup @ 1- clamp0 swap ! )
+	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
 	drop ;
 	
 ::uiList | 'var cntlines list --
