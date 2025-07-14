@@ -91,7 +91,7 @@
 #pad * 1024
 		
 :Fileselect
-	0.01 %w 0.15 %h 0.35 %w 0.8 %h uiWin
+	0.01 %w 0.15 %h 0.35 %w 0.8 %h uiWin!
 	$222222 sdlcolor uiRFill10
 	5 15 uiGrid uiH
 	
@@ -104,7 +104,7 @@
 	'exit "New" uiBtn
 	
 	|3 0 uiGat stFWhit "= FileSystem =" uiLabelC
-	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin	
+	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin!	
 |	1 15 uiGrid<win
 		1 2 uiGrid uiV 
 		stDark 
@@ -112,7 +112,7 @@
 		0 0 uiGat uixBoxPath 
 |		uiWin>
 
-	0.01 %w 0.25 %h 0.15 %w 0.7 %h uiWin
+	0.01 %w 0.25 %h 0.15 %w 0.7 %h uiWin!
 	1 16 uiGrid uiV
 |	2 15 uiGrid<win
 	'dirnow 24 diskdirs uiTree
@@ -124,7 +124,7 @@
 		) drop
 |	uiWin>
 		
-	0.16 %w 0.25 %h 0.2 %w 0.7 %h uiWin
+	0.16 %w 0.25 %h 0.2 %w 0.7 %h uiWin!
 	1 16 uiGrid uiV
 |	2 15 uiGrid<win
 		'filenow 24 files uiList
@@ -137,7 +137,7 @@
 	;
 
 :codigo
-	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin
+	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin!
 	$111111 sdlcolor uiRFill10
 |	5 15 uiGrid uiH
 |	"cODIGO" uiLabel
@@ -149,7 +149,7 @@
 
 	;
 :incodcod
-	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin
+	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin!
 	$222222 sdlcolor uiRFill10
 	5 15 uiGrid uiH
 	"+Info" uiLabel

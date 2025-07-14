@@ -38,8 +38,8 @@
 #winx #winy #winw #winh	| window
 #curx #cury #curw #curh	| cursorwh
 
-#wincopy 0 
-#poscopy 0 
+#winstack * 1024
+#winstack> 'winstack
 
 #topRect
 #topVar 0
@@ -66,15 +66,14 @@
 	'curx topRect 64>dims 
 	'cifil 'topsty 3 move cifnt txrgb ;
 
-:wincpy 
-	'winx dims>64 'wincopy !
-	'curx dims>64 'poscopy !
-	'topsty 'cifil 3 move ; |dsc
+::uiPush
+	'curx dims>64  |'winx dims>64 ..!+
+	winstack> !+ 'winstack> ! ; 
 	
-:winbak 
-	'curx poscopy 64>dims 
-	'winx wincopy 64>dims 
-	'cifil 'topsty 3 move cifnt txrgb ;
+::uiPop
+	-8 'winstack> +! 'curx winstack> @ 64>dims 
+|	-16 'winstack> +! @+ 'winx swap 64>dims @ 'curx swap 64>dims 
+	;
 	
 |---------------	
 |---- FONT	
@@ -195,10 +194,10 @@
 ::uiPad | padx pady --
 	'pady ! 'padx ! ;
 
-::uiWinBox | x y x2 y2 --
+::uiWinBox! | x y x2 y2 --
 	pick2 - 'winh ! pick2 - 'winw ! 'winy ! 'winx ! ;
 
-::uiWin | x y w h --
+::uiWin! | x y w h --
 	'winh ! 'winw ! 'winy ! 'winx ! ;
 	
 ::uixy | x y --
@@ -209,8 +208,11 @@
 
 ::uiGAt | x y --
 	curh pady 2* + * pady + winy + 'cury !
-	curw padx 2* + * padx + winx + 'curx ! 
-	;
+	curw padx 2* + * padx + winx + 'curx ! ;
+	
+::uiGTo | gw gh -- 
+	dup curh * swap 1- pady 2* * + 'curh !
+	dup curw * swap 1- padx 2* * + 'curw ! ;
 
 ::uiGrid | c r --
 	winh swap / pady 2* - 'curh ! 
@@ -224,11 +226,18 @@
 	
 ::uiStart
 	gui uiH
-	0 0 sw sh uiWin 
+	0 0 sw sh uiWin! 
+	| 'winstack 'winstack> !
 	0 'topVar ! ;
 
+::uiZone! | x y w h --
+	'curh ! 'curw ! 'cury ! 'curx ! ;
+	
 ::uiZone	
 	curx cury curw curh guiBox ;
+	
+::uiZone@ | -- x y w h 
+	curx cury curw curh ;
 	
 |----- icon
 ::uiconxy | x y nro --
@@ -268,24 +277,19 @@
 	|ui.. 
 	;
 
-|----- Botones	
+|----- Botones
+:kbBtn
+	sdlkey
+	<tab> =? ( nextfoco )
+	<ret> =? ( >r >r dup >r ex r> r> r> ) | click "" key -- click "" key
+	drop ;
+	
 :focoBtn
-	cifoc sdlColor uiRect
-	sdlKey
-	<tab> =? ( nextfoco )
-	drop ;
-
+	cifoc sdlColor uiRect kbBtn ;
 :focoRBtn
-	cifoc sdlColor uiRRect
-	sdlKey
-	<tab> =? ( nextfoco )
-	drop ;
-
+	cifoc sdlColor uiRRect kbBtn ;
 :focoCBtn
-	cifoc sdlColor uiCRect
-	sdlKey
-	<tab> =? ( nextfoco )
-	drop ;
+	cifoc sdlColor uiCRect kbBtn ;
 	
 ::uiBtn | v "" --
 	uiZone
@@ -350,7 +354,6 @@
 		dup c@ 1? 
 		getval
 		) 2drop
-	|a> 8 - @ dup c@ $df and swap c! 
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 

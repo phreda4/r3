@@ -46,7 +46,7 @@
 	font1 txfont
 	uiStart
 	3 4 uiPad
-	0.45 %w 0.1 %h 0.5 %w 0.7 %h uiWin
+	0.45 %w 0.1 %h 0.5 %w 0.7 %h uiWin!
 	4 16 uiGridA uiH
 	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect

@@ -112,7 +112,7 @@
 #btn
 
 :panel
-	0.02 %w 0.2 %h 0.3 %w 0.6 %h uiWin
+	0.02 %w 0.2 %h 0.3 %w 0.6 %h uiWin!
 	$111111 sdlcolor uiRFill10
 	font2 txfont
 	stDark
@@ -125,7 +125,7 @@
 	0 SDLcls
 	uiStart
 	3 4 uiPad
-	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin
+	0.1 %w 0.1 %h 0.8 %w 0.8 %h uiWin!
 	$222222 sdlcolor uiRFill10
 
 	font1 txfont

@@ -113,7 +113,7 @@
 
 :uiDMY	
 	4 4 uiPad
-	0.1 %w 0.1 %h 0.25 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10		
+	0.1 %w 0.1 %h 0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10		
 	1 9 UIGridA $444444 sdlcolor uiRFill	
 	0 0 uigAt stDark
 	" " uiTLabel
@@ -142,7 +142,7 @@
 
 :uiHMS
 	4 4 uiPad
-	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin $222222 sdlcolor uiRFill10
+	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10
 :uuuu		
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
@@ -174,7 +174,7 @@
 	
 ::uiPanel | adr --
 	dup @ 0? ( nip ; ) drop
-	dup 8 + >a da@+ da@+ da@+ da@+ uiWin
+	dup 8 + >a da@+ da@+ da@+ da@+ uiWin!
 	$222222 sdlcolor uiRFill10
 	1 20 uiGridA 0 0 uiGat 
 	uiZone a> uiTitle 
@@ -182,7 +182,7 @@
 	8 20 uiGridA 7 0 uiGat stDang
 	[ 0 over ! ; ] "X" uiCBtn
 	stDark
-	dup 8 + >a da@+ da@+ 20 + da@+ da@+ uiWin
+	dup 8 + >a da@+ da@+ 20 + da@+ da@+ uiWin!
 	;
 	
 #wincon 1 [ 700 30 300 400 ] "CONFIG"
