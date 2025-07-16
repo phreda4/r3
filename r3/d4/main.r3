@@ -5,6 +5,7 @@
 ^r3/lib/sdl2gfx.r3
 
 ^r3/util/ui.r3
+^r3/util/uifiles.r3
 ^r3/util/uiedit.r3
 
 ^r3/d4/r3token.r3
@@ -12,15 +13,12 @@
 ^r3/d4/r3opt.r3
 	
 |--------------------------------	
-
 #font1
 #font2
 
-#diskdirs
 #dirnow 0 0
 #dirchg -1
 
-#files
 #filenow 0 0
 #filechg -1
 
@@ -41,6 +39,34 @@
 :loadcodigo | --
 	'filename edload ;
 
+|------------------------
+		
+:errormode
+|	3 'edmode ! | no edit src
+|	lerror 'ederror !
+	error .print 
+	;
+	
+:play
+	empty mark
+	fuente 'filename r3loadmem
+
+	error 1? ( drop errormode ; ) drop
+|	4 'edmode ! | no edit src
+|	1 modo! 
+	|lidiset
+	|liinset
+	|inc> 'inc - 4 >> 1 - incset
+	$ffff 'here +!
+	resetvm
+	|cursor2ip
+	mark
+	'filename ,s ,cr ,cr
+	debugmemmap
+	"r3/d4/gen/map.txt" savemem
+	empty
+	;	
+	
 |------------------------
 :scan/ | "" -- adr/
 	( c@+ 1?
@@ -65,28 +91,7 @@
 		"/" uitlabel
 		) 2drop ;	
 		
-	
-|----- Files
-:+file | f --
-	dup FNAME
-	dup ".." = 1? ( 3drop ; ) drop
-	dup "." = 1? ( 3drop ; ) drop
-	,s " " ,s  
-|	dup FSIZEF 12 >> ,d " Kb" ,s
-|	dup FDIR ,d
-	|dup FWRITEDT dt>64 ,64>dtf
-	drop 
-	0 ,c ;
-	
-:file2list
-	empty mark
-	here 'files !
-	'fullpath
-|WIN|	"%s//*" sprint
-	ffirst ( +file
-		fnext 1? ) drop 
-	0 , ;
-	
+
 #filenow 0 0
 #filechg -1
 
@@ -98,48 +103,49 @@
 	5 15 uiGrid uiH
 	
 	0 14 uiGat
-	stLink $ffffff txrgb
-	'exit "Load" uiBtn
-	'exit "Save" uiBtn
-	'exit "Cancel" uiBtn
-	'exit "Delete" uiBtn
-	'exit "New" uiBtn
+	stInfo
+	'play "Run" uiRBtn
+	'exit "Debug" uiRBtn
+	'exit "Console" uiRBtn
+|	'exit "Delete" uiBtn
+	stDang
+	'exit "New" uiRBtn
 	
-	|3 0 uiGat stFWhit "= FileSystem =" uiLabelC
+	stDark 
 	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin!	
-|	1 15 uiGrid<win
-		1 2 uiGrid uiV 
-		stDark 
-		|0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
-		0 0 uiGat uixBoxPath 
-|		uiWin>
+	1 2 uiGrid uiV 
+	|0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
+	0 0 uiGat uixBoxPath 
 
 	0.01 %w 0.25 %h 0.15 %w 0.7 %h uiWin!
 	1 16 uiGrid uiV
-|	2 15 uiGrid<win
-	'dirnow 24 diskdirs uiTree
+	'dirnow 24 uiDirs uiTree
 	dirnow dirchg <>? ( dup 'dirchg ! 
 		dup uiTreePath
 		'basepath 'fullpath strcpyl 1- strcpy
-		file2list
-		0 0 'filenow !+ !
+		'fullpath uiGetFiles
+		0 0 'filenow !+ ! -1 'filechg !
 		) drop
-|	uiWin>
 		
 	0.16 %w 0.25 %h 0.2 %w 0.7 %h uiWin!
 	1 16 uiGrid uiV
-|	2 15 uiGrid<win
-		'filenow 24 files uiList
-		filenow filechg <>? ( dup 'filechg ! 
-			|****	
-			dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
-			loadcodigo
+	'filenow 24 uiFiles uiList
+	filenow filechg <>? ( dup 'filechg ! 
+		dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
+		loadcodigo
 		) drop
-|	uiWin>	
 	;
 
+#tabs "1" "2" "3" 0
+#tabnow	
+
 :codigo
-	0.37 %w 0.1 %h 0.6 %w 0.86 %h uiWin!
+|	0.37 %w 0.1 %h 0.6 %w 0.05 %h uiWin!
+|	5 1 uiGrid uiH
+|	incodcod
+|	'tabnow	'tabs uiTab
+
+	0.37 %w 0.1 %h 0.6 %w 0.85 %h uiWin!
 	$111111 sdlcolor uiRFill10
 |	5 15 uiGrid uiH
 |	"cODIGO" uiLabel
@@ -157,12 +163,11 @@
 	"+Info" uiLabel
 	;
 	
-#tabs "1" "2" "3" 0
-#tabnow	
 |-----------------------------
 :main
 	$55 SDLcls 
 	4 6 uiPad
+
 	uiStart
 	
 	font1 txfont
@@ -173,9 +178,6 @@
 	font2 txfont
 	fileselect
 	codigo
-|	incodcod
-	
-|	'tabnow	'tabs uiTab
 
 	uiEnd
 	
@@ -186,6 +188,57 @@
 	;
 	
 |-----------------------------
+#nameaux * 1024
+
+:>>/ | adr -- adr
+	( c@+ 1? $2f <>? drop ) drop 1- ;
+
+:genlevel | list 0 -- 
+	'filename 'basepath count nip + 
+	over ( 1? 1- swap >>/ swap ) drop
+	'nameaux >a swap 64 + ca!+
+	( c@+ 1? $2f <>? ca!+ ) 2drop
+	0 ca!+	|'nameaux .println
+	;
+	
+:searchtd | "" list -- list
+	0 >a
+	( dup c@ 1? drop
+		dup pick2 = 1? ( drop nip ; ) drop
+		1 a+
+		>>0 ) 3drop 0 ;
+	
+:loadm
+	'filename "mem/d4.mem" load
+	
+	|'dirnow
+|	"@" 'nameaux strcpy
+|	'fullpath 'basepath count nip + 
+|	'nameaux strcat
+|	"--aux:" .print	'nameaux .println
+|	"--full:" .print 'fullpath .println
+|	"--dir:" .println
+	
+|	'nameaux diskdirs
+|	0? ( drop ; )
+|	.println	
+		
+	|diskdirs 
+	0 genlevel
+	'nameaux uiDirs searchtd
+	$80 over c+!
+	12 'dirnow !
+	.println
+	
+	uiDirs ( dup c@ 1? drop
+		dup 'nameaux = 1? ( ">>" .print ) drop
+		dup .println		
+		>>0 ) 2drop
+	;
+
+:savem
+	'filename 1024 "mem/d4.mem" save ;
+	
 |-----------------------------	
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
@@ -201,16 +254,14 @@
 	edram 
 	0.37 %w 0.12 %h 0.6 %w 0.82 %h
 	edwin
-
-	"r3/opengl/voxels/3-vox.r3" 
-	'filename strcpy
-	'filename edload	
 	
 	mark
-	here 'diskdirs !
 	'basepath uiScanDir
-	mark
+	loadm
 	
+	mark
 	'main SDLshow
+	
+	|savem
 	SDLquit 
 	;

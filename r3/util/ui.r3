@@ -383,12 +383,19 @@
 |	drop ;
 
 |----- CHECK
+:focoCheck
+	cifoc sdlColor uiRect
+	sdlkey
+	<tab> =? ( nextfoco )
+	<ret> =? ( 1 pick2 << pick3 @ xor pick3 ! ) | 'var n key -- 'var n key
+	drop ;
+
 :ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
 	and? ( drop 57 ; ) drop 58 ;
 	
 :icheck | 'var n -- 'var n
 	uiZone 
-	'focoBtn in/foco 
+	'focoCheck in/foco 
 	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
 	curx curh txh - 2/ cury + txat 
 	ic uicon a@+ txemits
@@ -401,12 +408,19 @@
 	empty ;	
 
 |----- RADIO
+:focoRadio
+	cifoc sdlColor uiRect
+	sdlkey
+	<tab> =? ( nextfoco )
+	<ret> =? ( over pick3 ! ) | 'var n key -- 'var n key
+	drop ;
+
 :ir over @ |=? ( "(o)" ; ) "( )" ;
 	=? ( 226 ; ) 228 ;
 
 :iradio | 'var n --
 	uiZone
-	'focoBtn in/foco 
+	'focoRadio in/foco 
 	[ 2dup swap ! clickfoco ; ] onClick
 	curx curh txh - 2/ cury + txat 
 	ir uicon a@+ txemits
@@ -631,10 +645,8 @@
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
-	
 	'focoList in/foco 
-	'clickfoco onClick
-	
+	'clickfoco onClick	
 	chtree
 	0 ( over <? itree 1+ ) drop
 	cscroll
@@ -642,63 +654,9 @@
 	pady 'cury +!
 	empty ;	
 	
-::uiTreePath | n -- str
-	here 1024 + dup >b >a
-	mark
-	( dup uiNindx c@+ $1f and 
-		swap a!+ 1? 'lvl ! 
-		( 1- dup uiNindx c@ $1f and 
-			lvl >=? drop ) drop
-		) 2drop
-	a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop
-	0 ,c
-	empty here ;
-	
-|------ folders for tree
-#stckhdd>
-#basepath * 1024
-
-#l1 0 #l2 0 
-:backdir | -- ;  2 '/' !!
-	0 'l1 !
-	'basepath ( c@+ 1? 
-		$2f =? ( l1 'l2 ! over 'l1 ! )
-		drop ) 2drop
-	0 l2 1? ( c! ; ) 2drop ;	
-
-:pushdd | --
-	stckhdd> findata 520 cmove |dsc
-	520 'stckhdd> +! ;
-	
-:pophdd
-	-520 'stckhdd> +!
-	findata stckhdd> 520 cmove ;
-
-:scand | level "" --
-	'basepath strcat "/" 'basepath strcat
-	'basepath 
-|WIN| "%s/*" sprint
-	ffirst drop fnext drop 
-	( fnext 1?
-		dup fdir 1? (
-			pushdd
-|			pick2 64 + .emit over fname .write .cr
-			pick2 64 + ,c over fname ,s 0 ,c
-			pick2 1+ pick2 fname scand
-			pophdd
-			) 2drop
-		) 2drop 	
-	backdir ;
-
-::uiScanDir | "" --
-	0 'basepath !
-	here $ffff + 'stckhdd> ! 
-	0 swap scand 0 , ;
-
 |-----
 ::uiTable
 	;
-
 
 |--- Edita linea
 #cmax

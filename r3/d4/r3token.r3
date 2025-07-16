@@ -311,7 +311,7 @@
 	3 =? ( drop ',qv 'gmem ! >>sp ; )	| )
 	4 =? ( drop ',dv 'gmem ! >>sp ; )	| [
 	5 =? ( drop ',qv 'gmem ! >>sp ; )	| ]
-	43 =? ( drop ',tv 'gmem ! >>sp ; )	| *
+	45 =? ( drop ',tv 'gmem ! >>sp ; )	| *
 	drop
 	"base in var" error!
 	0
@@ -353,7 +353,9 @@
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
-|	over "%w " .print |** debug
+		
+	|over "%w " .print |** debug
+	
 	$5e =? ( drop >>cr ; )	| $5e ^  Include
 	$7c =? ( drop >>cr ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
@@ -384,12 +386,16 @@
 	'sst 'sst> !		| stack
 	0 'codeini !
 	'inc ( inc> <?		| every include
+
 |		dup @ "%w<<" .println
+
 		8 + dup @ 
 		dup dic> dic - 4 >> 32 << or pick2 ! | store first word in upper dword
 		src +
 		( wrd2token 1? ) drop 
-		|error 1? ( 2drop ; ) drop
+		
+		error 1? ( 2drop ; ) drop
+		
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		8 + ) drop 
 	callend
@@ -617,10 +623,12 @@
 	'r3path strpath
 	'src !
 	'inc 'inc> ! 
+	
 	'filename src includes drop | load includes
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
+	error 1? ( drop "error" .println ; ) drop
 |	cnttok cntdef "%d %d" .println	
 	tok> tok - 3 >> 'cnttok !	| real token use
 	dic> dic - 4 >> 'cntdef !	| real definition use
@@ -628,7 +636,7 @@
 |	cnttok cntdef "%d %d" .println
 	fmem> 'here !	| mark memory for vars
 	pass3			| calc tree calls
-	pass4
+|	pass4
 	;
 	
 |-------------------------------------------
