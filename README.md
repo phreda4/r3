@@ -1,5 +1,7 @@
 # R3 programming language
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/phreda4/r3)
+
 R3 is a concatenative language of the forth family, it takes elements of ColorForth. 
 Word colors are encoded by a prefix: in r3 this prefix is explicit.
 
