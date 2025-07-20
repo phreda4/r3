@@ -11,6 +11,7 @@
 #l1 0 #l2 0 
 
 ::uiTreePath | n -- str
+	ab[
 	here 1024 + dup >b >a
 	mark
 	( dup uiNindx c@+ $1f and 
@@ -20,7 +21,8 @@
 		) 2drop
 	a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop
 	0 ,c
-	empty here ;
+	empty here 
+	]ba ;
 	
 |------ folders for tree
 :backdir | -- ;  2 '/' !!
@@ -57,6 +59,7 @@
 	
 |----- Files
 :+file | f --
+	dup FDIR 1? ( 2drop ; ) drop | nodirs
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop

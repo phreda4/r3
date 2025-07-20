@@ -151,7 +151,7 @@
 |	"cODIGO" uiLabel
 |	fuente .h uiLabel
 |	fuente 10 + c@ .h uiLabel
-	edfocus
+	edfocusro
 	edcodedraw
 	edtoolbar
 
@@ -161,6 +161,23 @@
 	$222222 sdlcolor uiRFill10
 	5 15 uiGrid uiH
 	"+Info" uiLabel
+	;
+	
+|-----------------------------
+:compiler
+	;
+	
+:profiler
+	;
+	
+:debug
+	;
+	
+:editor
+	;
+:browser
+	;
+:pbrowser
 	;
 	
 |-----------------------------

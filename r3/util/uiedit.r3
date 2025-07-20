@@ -553,7 +553,7 @@
 	'lover modo	=? ( drop cursorlin fuente> txcur ; ) drop
 	cursorlin fuente> txcuri ;	
 	
-:inedit
+:inedit | write editor
 	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
 	'dns 'mos 'ups guiMap
@@ -566,6 +566,36 @@
 	xcode ycode wcode hcode guiBox
 	'inedit in/foco 
 	'clickfoco onClick ;
+
+|---- Read only
+:romodekey
+	panelcontrol 1? ( drop controlkey ; ) drop
+
+	SDLkey 0? ( drop ; )
+	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
+	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+
+	selecc
+	<up> =? ( karriba ) <dn> =? ( kabajo )
+	<ri> =? ( kder ) <le> =? ( kizq )
+	<home> =? ( khome ) <end> =? ( kend )
+	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
+	fixcur selecc
+	drop
+	cursorpos ;
+	
+:inro | readonly editor
+	'dns 'mos 'ups guiMap
+	evwmouse
+	romodekey
+	edlinecursor
+	edselshow ;
+	
+::edfocusro
+	xcode ycode wcode hcode guiBox
+	'inro in/foco 
+	'clickfoco onClick ;
+
 
 |----------- marcas
 | y|x|ini|cnt|colorf|colorb
