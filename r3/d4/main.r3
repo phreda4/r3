@@ -39,7 +39,148 @@
 :loadcodigo | --
 	'filename edload ;
 
+
+|--------------- SOURCE	
+:cursor2ip
+	<<ip 0? ( drop ; )
+	@ 40 >>> src + 'fuente> ! ;
+
+:codename | adr' info1 -- str
+	$2 and? ( $3a ,c ) $3a ,c 
+	40 >>> src + "%w | " ,print
+	@ ,mov |,movd
+	,eol empty here ;
+	
+:dataname | adr' info1 -- str
+	$2 and? ( $23 ,c ) $23 ,c 
+	40 >>> src + "%w" ,print
+	drop
+	,eol empty here ;
+	
+:nameword | dicadr -- str
+	mark @+ 1 and? ( dataname ; ) codename ;
+
 |------------------------
+
+|-----------------------------
+:compiler
+	;
+	
+:profiler
+	;
+
+|--------------- DICCIONARY
+#lidinow
+#lidiini
+#lidilines 20
+#lidiscroll
+#winsetwor 1 [ 940 200 340 390 ] "DICCIONARY"
+
+:lidiset
+	0 'lidinow !
+	0 'lidiini !
+	cntdef lidilines - 0 max 
+	'lidiscroll !
+	;
+	
+:dicword | nro --
+	4 << dic + nameword ;
+
+:printlinew
+	cntdef >=? ( drop uiDn ; )
+	dicword uiLabel uiDn ;
+	
+:clicklistw
+|	sdly cury - boxh / lidiini + 
+|	filenow =? ( linenter ; )
+|	dup 'lidinow !
+|	dup 'anaword !
+|	wordanalysis
+|	tokana> 'tokana - 3 >> 'cnttoka !
+	;
+	
+:colorlistw | n -- n c
+	lidinow =? ( $7f00 ; ) $3a3a3a ;
+
+:listscroll | n --
+	lidiscroll 0? ( 2drop ; ) 
+|	immcur> >r 
+	
+|	boxh rot *
+|	curx boxw + 2 + | pad?
+|	cury pick2 -
+|	rot boxh swap immcur
+
+|	0 swap 
+|	'lidiini immScrollv 
+|	r> imm>cur
+	;
+	
+:wordfocus
+|	940 200 immwinxy
+||	316 18 immbox
+|	lidilines dup immListBox
+|	'clicklistw onClick	
+|	0 ( over over >?  drop
+|		dup lidiini + |cntdef <? 
+|		colorlistw immback printlinew
+|		1 + ) 2drop	
+|	listscroll uiDn
+	
+	;
+	
+	
+:coderun
+	;
+	
+:codedit
+	;
+	
+:codenew
+	;
+
+|---------------------------------
+
+:debug
+	$55 SDLcls 
+	4 6 uiPad
+
+	uiStart
+	
+	font1 txfont
+	8 0 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "debug" txemits
+
+	font2 txfont
+	0.01 %w 0.05 %h 0.35 %w 0.05 %h uiWin!
+	5 1 uiGrid
+	0 0 uiGat uiH
+	stInfo
+	'exit "Run" uiRBtn
+	'exit "Step" uiRBtn
+|	'codedebug "Debug" uiRBtn
+|	'exit "Console" uiRBtn
+|	'exit "Delete" uiBtn
+|	ui>
+|	stDang
+|	'exit "New" uiRBtn
+		
+|	fileselect
+|	codigo
+
+	uiEnd
+	
+	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+|	<F1> =? ( coderun )
+|	<F2> =? ( codedit )
+|	<F3> =? ( codenew )
+	drop
+
+	;
+
 		
 :errormode
 |	3 'edmode ! | no edit src
@@ -47,7 +188,7 @@
 	error .print 
 	;
 	
-:play
+:codedebug
 	empty mark
 	fuente 'filename r3loadmem
 
@@ -65,8 +206,10 @@
 	debugmemmap
 	"r3/d4/gen/map.txt" savemem
 	empty
+	'debug sdlshow
 	;	
 	
+|------------------------	
 |------------------------
 :scan/ | "" -- adr/
 	( c@+ 1?
@@ -98,28 +241,19 @@
 #pad * 1024
 		
 :Fileselect
-	0.01 %w 0.15 %h 0.35 %w 0.8 %h uiWin!
+	0.01 %w 0.1 %h 0.35 %w 0.85 %h uiWin!
 	$222222 sdlcolor uiRFill10
-	5 15 uiGrid uiH
-	
-	0 14 uiGat
-	stInfo
-	'play "Run" uiRBtn
-	'exit "Debug" uiRBtn
-	'exit "Console" uiRBtn
-|	'exit "Delete" uiBtn
-	stDang
-	'exit "New" uiRBtn
+	2 20 uiGrid 
 	
 	stDark 
-	0.01 %w 0.15 %h 0.35 %w 0.1 %h uiWin!	
-	1 2 uiGrid uiV 
-	|0 1 uiGAt 'pad 1024 uiInputLine | 'buff max --
-	0 0 uiGat uixBoxPath 
-
-	0.01 %w 0.25 %h 0.15 %w 0.7 %h uiWin!
-	1 16 uiGrid uiV
-	'dirnow 24 uiDirs uiTree
+	uiPush
+	0 1 uiGAt 2 1 uiGto 
+	'pad 1024 uiInputLine | 'buff max --
+	0 0 uiGat 2 1 uiGto 
+	uixBoxPath 
+	uiPop
+	0 2 uiGAt uiV
+	'dirnow 30 uiDirs uiTree
 	dirnow dirchg <>? ( dup 'dirchg ! 
 		dup uiTreePath
 		'basepath 'fullpath strcpyl 1- strcpy
@@ -127,9 +261,8 @@
 		0 0 'filenow !+ ! -1 'filechg !
 		) drop
 		
-	0.16 %w 0.25 %h 0.2 %w 0.7 %h uiWin!
-	1 16 uiGrid uiV
-	'filenow 24 uiFiles uiList
+	1 2 uiGAt uiV
+	'filenow 30 uiFiles uiList
 	filenow filechg <>? ( dup 'filechg ! 
 		dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
 		loadcodigo
@@ -145,7 +278,7 @@
 |	incodcod
 |	'tabnow	'tabs uiTab
 
-	0.37 %w 0.1 %h 0.6 %w 0.85 %h uiWin!
+	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiWin!
 	$111111 sdlcolor uiRFill10
 |	5 15 uiGrid uiH
 |	"cODIGO" uiLabel
@@ -163,25 +296,8 @@
 	"+Info" uiLabel
 	;
 	
-|-----------------------------
-:compiler
-	;
-	
-:profiler
-	;
-	
-:debug
-	;
-	
-:editor
-	;
+|---------------------
 :browser
-	;
-:pbrowser
-	;
-	
-|-----------------------------
-:main
 	$55 SDLcls 
 	4 6 uiPad
 
@@ -193,6 +309,18 @@
 	$ff00 txrgb "d4" txemits
 
 	font2 txfont
+	0.01 %w 0.05 %h 0.35 %w 0.05 %h uiWin!
+	5 1 uiGrid
+	0 0 uiGat uiH
+	stInfo
+	'exit "Run" uiRBtn
+	'codedebug "Debug" uiRBtn
+|	'exit "Console" uiRBtn
+|	'exit "Delete" uiBtn
+
+	stDang
+	'exit "New" uiRBtn
+		
 	fileselect
 	codigo
 
@@ -201,6 +329,9 @@
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
+	<F1> =? ( coderun )
+	<F2> =? ( codedit )
+	<F3> =? ( codenew )
 	drop
 	;
 	
@@ -269,7 +400,7 @@
 	txload 'font2 !
 	
 	edram 
-	0.37 %w 0.12 %h 0.6 %w 0.82 %h
+	0.37 %w 0.08 %h 0.6 %w 0.85 %h
 	edwin
 	
 	mark
@@ -277,7 +408,7 @@
 	loadm
 	
 	mark
-	'main SDLshow
+	'browser SDLshow
 	
 	|savem
 	SDLquit 
