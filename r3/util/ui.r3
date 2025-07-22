@@ -199,6 +199,9 @@
 
 ::uiWin! | x y w h --
 	'winh ! 'winw ! 'winy ! 'winx ! ;
+
+::uiWin@ | x y w h --
+	winx winy winw winh ;
 	
 ::uiGAt | x y --
 	curh pady 2* + * pady + winy + 'cury !

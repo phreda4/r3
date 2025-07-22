@@ -133,59 +133,107 @@
 :coderun
 	;
 	
+|---------------------------------	
+:edit
+	$55 SDLcls 
+	
+	font2 txfont	
+	16 6 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "Edit" txemits
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
+	stInfo
+	'exit "F1 Help" uiRBtn
+|	'codedit "F2 Edit" uiRBtn
+|	'codedebug "F3 Debug" uiRBtn
+
+	0.05 %w 0.09 %h 0.8 %w 0.7 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	
+	uiWin@ edwin
+	edfocus
+	edcodedraw
+
+	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+	drop ;
+	
 :codedit
+	'edit sdlshow
 	;
 	
 :codenew
 	;
 
 |---------------------------------
+#tabs "1" "2" "3" 0
+#tabnow	
 
+:diccionario
+	0.6 %w 0.05 %h 0.39 %w 0.04 %h uiWin!
+	$111111 sdlcolor uiRFill10
+
+	;
+:memoria
+	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	;
+
+:includes
+	0.01 %w 0.05 %h 0.4 %w 0.04 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	5 1 uiGrid uiH
+|	'tabnow 'tabs uiTab
+	;
+
+:codigo
+	0.01 %w 0.09 %h 0.4 %w 0.7 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	uiWin@ edwin
+	edfocusro
+	edcodedraw
+	|edtoolbar
+	;
+	
 :debug
 	$55 SDLcls 
-	4 6 uiPad
 
-	uiStart
-	
-	font1 txfont
-	8 0 txat
+	font2 txfont	
+	16 6 txat
 	$ff0000 txrgb ":R3" txemits
 	$ff00 txrgb "debug" txemits
-
-	font2 txfont
-	0.01 %w 0.05 %h 0.35 %w 0.05 %h uiWin!
-	5 1 uiGrid
-	0 0 uiGat uiH
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
 	stInfo
 	'exit "Run" uiRBtn
 	'exit "Step" uiRBtn
-|	'codedebug "Debug" uiRBtn
-|	'exit "Console" uiRBtn
-|	'exit "Delete" uiBtn
-|	ui>
-|	stDang
-|	'exit "New" uiRBtn
-		
-|	fileselect
-|	codigo
+
+	codigo
+	includes
+|	diccionario
+|	memoria
 
 	uiEnd
 	
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
-|	<F1> =? ( coderun )
-|	<F2> =? ( codedit )
-|	<F3> =? ( codenew )
-	drop
-
-	;
+	drop ;
 
 		
 :errormode
 |	3 'edmode ! | no edit src
 |	lerror 'ederror !
 	error .print 
+	| goto edit mode
 	;
 	
 :codedebug
@@ -241,9 +289,9 @@
 #pad * 1024
 		
 :Fileselect
-	0.01 %w 0.1 %h 0.35 %w 0.85 %h uiWin!
+	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiWin!
 	$222222 sdlcolor uiRFill10
-	2 20 uiGrid 
+	2 22 uiGrid 
 	
 	stDark 
 	uiPush
@@ -253,7 +301,7 @@
 	uixBoxPath 
 	uiPop
 	0 2 uiGAt uiV
-	'dirnow 30 uiDirs uiTree
+	'dirnow 33 uiDirs uiTree
 	dirnow dirchg <>? ( dup 'dirchg ! 
 		dup uiTreePath
 		'basepath 'fullpath strcpyl 1- strcpy
@@ -262,33 +310,23 @@
 		) drop
 		
 	1 2 uiGAt uiV
-	'filenow 30 uiFiles uiList
+	'filenow 33 uiFiles uiList
 	filenow filechg <>? ( dup 'filechg ! 
 		dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
 		loadcodigo
 		) drop
 	;
 
-#tabs "1" "2" "3" 0
-#tabnow	
 
 :codigo
-|	0.37 %w 0.1 %h 0.6 %w 0.05 %h uiWin!
-|	5 1 uiGrid uiH
-|	incodcod
-|	'tabnow	'tabs uiTab
-
 	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiWin!
 	$111111 sdlcolor uiRFill10
-|	5 15 uiGrid uiH
-|	"cODIGO" uiLabel
-|	fuente .h uiLabel
-|	fuente 10 + c@ .h uiLabel
+	uiWin@ edwin	
 	edfocusro
 	edcodedraw
 	edtoolbar
-
 	;
+	
 :incodcod
 	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin!
 	$222222 sdlcolor uiRFill10
@@ -299,26 +337,24 @@
 |---------------------
 :browser
 	$55 SDLcls 
-	4 6 uiPad
-
-	uiStart
 	
-	font1 txfont
-	8 0 txat
+	font2 txfont	
+	16 6 txat
 	$ff0000 txrgb ":R3" txemits
 	$ff00 txrgb "d4" txemits
-
-	font2 txfont
-	0.01 %w 0.05 %h 0.35 %w 0.05 %h uiWin!
-	5 1 uiGrid
-	0 0 uiGat uiH
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
 	stInfo
-	'exit "Run" uiRBtn
-	'codedebug "Debug" uiRBtn
+	'coderun "F1 Run" uiRBtn
+	'codedit "F2 Edit" uiRBtn
+	'codedebug "F3 Debug" uiRBtn
 |	'exit "Console" uiRBtn
 |	'exit "Delete" uiBtn
 
-	stDang
+	stLink
 	'exit "New" uiRBtn
 		
 	fileselect
@@ -331,7 +367,8 @@
 	>esc< =? ( exit )
 	<F1> =? ( coderun )
 	<F2> =? ( codedit )
-	<F3> =? ( codenew )
+	<F3> =? ( codedebug )
+	<F4> =? ( codenew )
 	drop
 	;
 	
@@ -400,8 +437,7 @@
 	txload 'font2 !
 	
 	edram 
-	0.37 %w 0.08 %h 0.6 %w 0.85 %h
-	edwin
+|	0.37 %w 0.08 %h 0.6 %w 0.85 %h edwin
 	
 	mark
 	'basepath uiScanDir
