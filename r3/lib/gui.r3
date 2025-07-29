@@ -39,6 +39,8 @@
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
 	SDLx SDLy guiIn ;
 
+::guidnow | -- 0=yes
+	id hotnow - ;
 |---------
 ::gui
 	idf 'idl ! hot 'hotnow !

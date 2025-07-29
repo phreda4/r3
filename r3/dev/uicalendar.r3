@@ -81,9 +81,7 @@
 		1+ ) drop ;
 	
 :clicka
-	dup mes dia hoja! 
-	|1 'modocal ! 
-	;
+	dup mes dia hoja! ;
 	
 :panelanio
 	5 9 uiGridA 

@@ -116,84 +116,82 @@
 |	r> imm>cur
 	;
 	
-:wordfocus
-|	940 200 immwinxy
-||	316 18 immbox
-|	lidilines dup immListBox
-|	'clicklistw onClick	
-|	0 ( over over >?  drop
-|		dup lidiini + |cntdef <? 
-|		colorlistw immback printlinew
-|		1 + ) 2drop	
-|	listscroll uiDn
-	
-	;
 	
 	
 :coderun
 	;
 	
-|---------------------------------	
-:edit
-	$55 SDLcls 
-	
-	font2 txfont	
-	16 6 txat
-	$ff0000 txrgb ":R3" txemits
-	$ff00 txrgb "Edit" txemits
-	$ffffff txrgb
-	
-	uiStart 4 6 uiPad
-	14 22 uiGrid
-	1 0 uiGat uiH
-	stInfo
-	'exit "F1 Help" uiRBtn
-|	'codedit "F2 Edit" uiRBtn
-|	'codedebug "F3 Debug" uiRBtn
-
-	0.05 %w 0.09 %h 0.8 %w 0.7 %h uiWin!
-	$111111 sdlcolor uiRFill10
-	
-	uiWin@ edwin
-	edfocus
-	edcodedraw
-
-	SDLredraw
-	sdlkey
-	>esc< =? ( exit )
-	drop ;
-	
-:codedit
-	'edit sdlshow
-	;
-	
-:codenew
-	;
-
 |---------------------------------
-#tabs "1" "2" "3" 0
-#tabnow	
-
-:diccionario
-	0.6 %w 0.05 %h 0.39 %w 0.04 %h uiWin!
-	$111111 sdlcolor uiRFill10
-
-	;
 :memoria
 	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiWin!
 	$111111 sdlcolor uiRFill10
 	;
 
+|----- Includes
+:iteminc
+	cntinc >=? ( drop ; ) 
+	4 << 'inc + @ "%w" sprint uiLabel
+	;
+	
 :includes
-	0.01 %w 0.05 %h 0.4 %w 0.04 %h uiWin!
+	0.01 %w 0.07 %h 0.4 %w 0.03 %h uiWin!
 	$111111 sdlcolor uiRFill10
-	5 1 uiGrid uiH
-|	'tabnow 'tabs uiTab
+	8 1 uiGrid uiH
+	0 ( 8 <?
+		dup iteminc
+		1+ ) drop ;
+
+|----- Dicc
+:itemdef | n -- 
+	cntdef >=? ( drop ; ) 
+	4 << dic + nameword 
+	uiLabel
+	;
+	
+:diccionario
+	0.405 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	2 30 uiGridA uiV
+
+|	lidilines dup immListBox
+|	'clicklistw onClick	
+	0 ( 30 <?  
+		dup lidiini + |cntdef <? 
+		itemdef
+|		colorlistw immback printlinew
+		1+ ) drop	
+|	listscroll uiDn
 	;
 
-:codigo
-	0.01 %w 0.09 %h 0.4 %w 0.7 %h uiWin!
+|----- TOKENS
+#initok 0
+
+:showtok | nro
+	cnttok >=? ( drop ; )
+	3 << tok + @
+	
+|	"%h" immLabel imm>>
+|	dup $ff and
+|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+|	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
+|	drop
+	40 >> src + "%w" sprint	uiLabel
+	;
+	
+:tokens	
+	0.705 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
 	$111111 sdlcolor uiRFill10
+	2 30 uiGridA uiV
+	0 ( 30 <?
+		dup showtok
+		1+ ) drop
+	;
+
+|----- codigo	
+:codigo
+	0.005 %w 0.1 %h 0.39 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	
 	uiWin@ edwin
 	edfocusro
 	edcodedraw
@@ -218,7 +216,8 @@
 
 	codigo
 	includes
-|	diccionario
+	diccionario
+	tokens
 |	memoria
 
 	uiEnd
@@ -243,7 +242,7 @@
 	error 1? ( drop errormode ; ) drop
 |	4 'edmode ! | no edit src
 |	1 modo! 
-	|lidiset
+	lidiset
 	|liinset
 	|inc> 'inc - 4 >> 1 - incset
 	$ffff 'here +!
@@ -256,6 +255,45 @@
 	empty
 	'debug sdlshow
 	;	
+	
+|---------------------------------	
+:edit
+	$55 SDLcls 
+	
+	font2 txfont	
+	16 6 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "Edit" txemits
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
+	stInfo
+	'exit "F1 Help" uiRBtn
+|	'codedit "F2 Edit" uiRBtn
+	'codedebug "F3 Debug" uiRBtn
+
+	0.01 %w 0.1 %h 0.7 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	uiWin@ edwin
+	edfocus
+	edcodedraw
+
+	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+	<f3> =? ( codedebug ) 
+	drop ;
+	
+:codedit
+	'edit sdlshow
+	;
+	
+:codenew
+	;
+
+	
 	
 |------------------------	
 |------------------------
@@ -413,12 +451,13 @@
 	'nameaux uiDirs searchtd
 	$80 over c+!
 	12 'dirnow !
-	.println
+	|.println
+	drop
 	
-	uiDirs ( dup c@ 1? drop
-		dup 'nameaux = 1? ( ">>" .print ) drop
-		dup .println		
-		>>0 ) 2drop
+|	uiDirs ( dup c@ 1? drop
+|		dup 'nameaux = 1? ( ">>" .print ) drop
+|		dup .println		
+|		>>0 ) 2drop
 	;
 
 :savem

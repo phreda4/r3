@@ -94,21 +94,10 @@
 	curh rot - 2/ cury +
 	txat txemits ;
 
-#ttw #tth
-:ttsize | "" -- "" 
-	txh 'tth ! txw 'ttw ! ;
-
-#backc
-	
-::ttcursor | str strcur -- 
-	curx cury txat txcur ;
-
-::ttcursori | str strcur -- 
-	curx cury txat txcuri ;
-
 ::uiLabelMini
-	curx cury txat txemits
-	curh 'cury +! ;	
+	curx cury curh txh - 1- + txat txemits
+	curh 'cury +! 
+	;	
 
 |--------------------
 |----- draw/fill
@@ -199,9 +188,9 @@
 
 ::uiWin! | x y w h --
 	'winh ! 'winw ! 'winy ! 'winx ! ;
-
+	
 ::uiWin@ | x y w h --
-	winx winy winw winh ;
+	winx winy winw winh ;	
 	
 ::uiGAt | x y --
 	curh pady 2* + * pady + winy + 'cury !
@@ -256,7 +245,7 @@
 	ttemitr ui.. ;
 	
 ::uiTlabel
-	ttsize ttw 4 + 'curw !	
+	txw 4 + 'curw !	
 	ttemitc 
 	curw 'curx +!	
 	;
@@ -310,7 +299,7 @@
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
-	ttsize ttw 4 + 'curw !
+	txw 4 + 'curw !
 	uiZone
 	overfil uiFill
 	ttemitc onClick 
@@ -540,11 +529,13 @@
 	clampmax 'overl ! 
 	'clist onclick
 	;
-	
+
+#backc 
+		
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
 	over cury backc - */ pick3 8 + ! ;
-	
+
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
 	guin? 0? ( drop ; ) drop
@@ -694,8 +685,10 @@
 :cursor | 'var max
 	msec $100 and? ( drop ; ) drop
 	$a0a0a0 SDLColor
-	modo 'lins =? ( drop padi> pad> ttcursor ; ) drop
-	padi> pad> ttcursori ;
+	curx cury txat 
+	padi> pad> 
+	modo 'lins =? ( drop txcur ; ) drop
+	txcuri ;
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
