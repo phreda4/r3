@@ -82,6 +82,9 @@
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
+::txfont@ | -- font
+	newTab 8 - ;
+	
 ::txrgb | c --
 	newTex swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and

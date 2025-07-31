@@ -39,12 +39,14 @@
 #winstack * 1024
 #winstack> 'winstack
 
-##uilastwidget 0
+#uilastwidget 0
 
-#topRect
-#topVar 0
-#topSty 0 0 0
-#topList
+#uilastpos 0 
+#uilaststy 0 0 0 0
+#uiLastfont 0
+#uidata1 0 
+#uidata2 0 
+
 	
 |----- backup dims
 :dims>64 | 'adr -- 64dim
@@ -58,13 +60,6 @@
 	dup 48 >> rot !+ swap 16 <<
 	dup 48 >> rot !+ swap 16 <<
 	48 >> swap ! ;
-
-:topcpy
-	'curx dims>64 'topRect ! 
-	'topsty 'cifil 3 move ; |dsc
-:topbak	
-	'curx topRect 64>dims 
-	'cifil 'topsty 3 move cifnt txrgb ;
 
 ::uiPush
 	'curx dims>64 
@@ -220,7 +215,7 @@
 ::uiStart
 	gui uiH
 	0 0 sw sh uiWin! 
-	0 'uilastwidget !
+	0 'uiLastWidget !
 	;
 
 ::uiZone! | x y w h --
@@ -566,53 +561,56 @@
 	pady 'cury +!
 	empty ;	
 
-
 |----- COMBO
 
-
-:uiListL
-	topbak 
-	'curx topRect 64>dims 
-	'cifil 'topsty 3 move 
-	cifnt txrgb 
-
-	topVar topList uiListL
+::uisaveLast | 'vector --
+	'uiLastWidget !
+	'curx dims>64 'uilastpos !
+	'uilaststy 'cifil 3 move	|dsc style
+	txFont@ 'uiLastfont !		| font
 	;
-
-:combolist | 'var list --
+	
+:uiBacklast |--
+	'curx uilastpos 64>dims 
+	'cifil 'uilaststy 3 move 
+	uiLastfont txfont ;
+	
+:combolist | --
+	uidata1 uidata2 
 	mark makeindx
 	cntlist 6 min
 	overfil 
+	
 	curx cury dup 'backc ! 
 	curw pick3 curh * 
 	2over 2over sdlFRect
+	cifoc sdlColor 2over 2over sdlRect
 	guiBox 
-|	'focoList in/foco 
-	'refreshfoco onClick
+	
+	'clickfoco onClick
 	chlist
 	0 ( over <? ilist 1+ ) drop
 	cscroll
 	2drop
 	pady 'cury +!
 	empty ;	
-
-:focoCombo | 'var 'list --
-|	curh 'cury +! topCpy curh neg 'cury +!
-|	over 'topVar ! dup 'topList !
 	
+:iniCombo | 'var 'list -- 'var 'list 
 	cifoc sdlColor uiRRect
+	
+	2dup 'uidata2 ! 'uidata1 !
+	curh dup 'cury +! 
+	'combolist uisaveLast
+	neg 'cury +!
+	
 	SDLkey
 	<tab> =? ( nextfoco )
 	drop 
 	;
 	
-:iniCombo
-	'combolist 'uilastwidget !
-	;
-	
 ::uiCombo | 'var 'list --
 	uiZone overfil uiRFill
-	'focoCombo 'iniCombo w/foco
+	'iniCombo in/foco
 	'clickfoco onClick
 	mark makeindx	
 	curx curw + 14 - cury curh 2/ + 146 uiconxy
@@ -620,7 +618,6 @@
 	@ uiNindx txemits
 	empty 
 	ui.. ;
-
 
 |----- UIGridBtn
 :griblist
@@ -774,6 +771,7 @@
 
 ::uiText
 	;
+	
 ::uiEdit
 	;
 
@@ -785,7 +783,9 @@
 | menu (separa y niveles)
 
 ::uiEnd
-	uilastWidget 0? ( drop ; ) ex ;
+	uilastWidget 0? ( drop ; ) 
+	uiBacklast
+	ex ;
 	
 
 	

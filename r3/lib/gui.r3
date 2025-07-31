@@ -145,9 +145,9 @@
 
 ::w/foco | 'in 'start --
 	idf 1+
-	foco 0? ( drop dup dup 'foco ! ) | quitar?
+	foco 0? ( drop dup dup 'foco ! ) | quitar? dup 'foconow !
 	<>? ( 'idf ! 2drop ; )
-	foconow <>? ( dup 'foconow ! swap ex 'idf ! drop ; )
+	foconow <>? ( dup 'foconow ! 'idf ! nip ex ; )
 	nip 'idf ! ex ;
 
 ::focovoid | --
@@ -163,6 +163,7 @@
 ::in/foco | 'in --
 	idf 1+
 	foco 0? ( drop dup dup 'foco ! )
+	|foconow <>? ( dup 'foconow ! )
 	<>? ( 'idf ! drop ; )
 	'idf ! ex ;
 

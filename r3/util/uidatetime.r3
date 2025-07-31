@@ -44,7 +44,7 @@
 	mes $f and 44 << or
 	dia $ff and 32 << or
 	datevar @ $ffffffff nand or datevar !
-	0 'uilastWidget ! ;
+	;
 	
 :clickd | 'jday -- 'jday
 	dup jul2date 'anio ! 'mes ! 'dia !
@@ -139,14 +139,11 @@
 	'sethoy "Hoy" uiRBtn
 	ui>>
 	StSucc
-	[ 'exit ; ] "Aceptar" uiRBtn
+	'exitdlg "Aceptar" uiRBtn
 	;
 
 :datetimefoco
-|	curh 'cury +! topCpy curh neg 'cury +!
-|	over 'topVar ! dup 'topList !
-	
-	'uiDMY 'uilastwidget !
+	'uiDMY uisaveLast
 	
 	cifoc sdlColor uiRRect
 	sdlkey
