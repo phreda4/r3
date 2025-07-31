@@ -4,6 +4,7 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/ui.r3
+^r3/util/uiDatetime.r3
 ^r3/util/uiedit.r3
 	
 #font1
@@ -35,6 +36,8 @@
 
 #folders 0
 
+#vdatetime
+
 :ui--
 	$444444 sdlcolor uiLineH ;
 	
@@ -57,6 +60,8 @@
 	'vlist 3 'listex uiList | 8
 	ui--
 	'vh 'tablist uiCheck
+	ui--
+	'vdatetime uiDateTime
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 
@@ -79,8 +84,9 @@
 	'vr 'tablist uiRadio
 	ui--
 	
+	
 	1 16 uiGridA uiV
-	0 9 uiGAt
+	0 12 uiGAt
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
 	
@@ -89,11 +95,13 @@
 	|'exit "hola" uiRbtn
 	|'vtable 5 'cols 'tabla1 uiTable<
 	
-	uiEnd
+
 	
 	font2 txfont
 	edfocus
 	edcodedraw
+
+	uiEnd
 	
 	SDLredraw
 	sdlkey
@@ -109,7 +117,7 @@
 	
 	24 21 "media/img/icong16.png" ssload 'uicons !
 	
-	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
+	"media/ttf/Roboto-bold.ttf" 19 txload 'font1 !
 	|"media/ttf/ProggyClean.ttf" 16
 	"media/ttf/RobotoMono-bold.ttf" 18 
 	txload 'font2 !

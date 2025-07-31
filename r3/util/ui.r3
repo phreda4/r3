@@ -5,14 +5,12 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
 
-^r3/util/datetime.r3
-
 ##uicons
 
 #cifil $ff1F2229ff14161A	| over|normal -- color fill
 #cisel $ff1967D2ff393F4C	| over|normal -- color select
 #cifnt $ffffff		| fuente -- color
-#cifoc $4055F4		| foco -- borde
+##cifoc $4055F4		| foco -- borde
 
 ::stDang $ffff8099ff85001B 'cifil ! ;	| danger
 ::stWarn $ffffBF29fff55D00 'cifil ! ;	| warning
@@ -22,8 +20,8 @@
 ::stDark $ff393F4Cff14161A 'cifil ! ;	| dark
 ::stLigt $ffaaaaaaff888888 'cifil ! ;	| white
 
-:overfil cifil guin? 32 and >> sdlcolor ;
-:oversel cisel guin? 32 and >> sdlcolor ;
+::overfil cifil guin? 32 and >> sdlcolor ;
+::oversel cisel guin? 32 and >> sdlcolor ;
 
 ::stFDang $ff9980ffff1B0085 'cifnt ! ;	| danger
 ::stFWarn $ff005Df5ff29BFff 'cifnt ! ;	| warning
@@ -40,6 +38,8 @@
 
 #winstack * 1024
 #winstack> 'winstack
+
+##uilastwidget 0
 
 #topRect
 #topVar 0
@@ -67,28 +67,35 @@
 	'cifil 'topsty 3 move cifnt txrgb ;
 
 ::uiPush
-	'curx dims>64  |'winx dims>64 ..!+
+	'curx dims>64 
 	winstack> !+ 'winstack> ! ; 
 	
 ::uiPop
-	-8 'winstack> +! 'curx winstack> @ 64>dims 
-|	-16 'winstack> +! @+ 'winx swap 64>dims @ 'curx swap 64>dims 
-	;
+	-8 'winstack> +! 
+	'curx winstack> @ 64>dims ;
+	
+::uiPushA
+	'curx dims>64 'winx dims>64 
+	winstack> !+ !+ 'winstack> ! ; 
+
+::uiPopA	
+	-16 'winstack> +! 
+	'winstack> @+ 'winx swap 64>dims @ 'curx swap 64>dims ;
 	
 |---------------	
 |---- FONT	
-:ttemitl | "text" --
+::ttemitl | "text" --
 	curx
 	curh txh - 2/ cury +
 	txat txemits ;
 
-:ttemitc | "text" --
+::ttemitc | "text" --
 	txw txh | "" w h  
 	curw rot - 2/ curx +
 	curh rot - 2/ cury +
 	txat txemits ;
 
-:ttemitr | "text" --
+::ttemitr | "text" --
 	txw txh | "" w h  
 	curw curx + rot -
 	curh rot - 2/ cury +
@@ -178,7 +185,7 @@
 	'ui< 'vflex ! ;
 
 
-:ui..	vflex ex ;
+::ui..	vflex ex ;
 
 ::uiPad | padx pady --
 	'pady ! 'padx ! ;
@@ -213,8 +220,8 @@
 ::uiStart
 	gui uiH
 	0 0 sw sh uiWin! 
-	| 'winstack 'winstack> !
-	0 'topVar ! ;
+	0 'uilastwidget !
+	;
 
 ::uiZone! | x y w h --
 	'curh ! 'curw ! 'cury ! 'curx ! ;
@@ -342,27 +349,6 @@
 		) 2drop
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
-
-|----- COMBO
-:focoCombo | 'var 'list --
-	curh 'cury +! topCpy curh neg 'cury +!
-	over 'topVar ! dup 'topList !
-	cifoc sdlColor uiRRect
-	SDLkey
-	<tab> =? ( nextfoco )
-	drop 
-	;
-	
-::uiCombo | 'var 'list --
-	uiZone overfil uiRFill
-	'focoCombo in/foco 
-	'clickfoco onClick
-	mark makeindx	
-	curx curw + 14 - cury curh 2/ + 146 uiconxy
-	curx 8 + cury txat
-	@ uiNindx txemits
-	empty 
-	ui.. ;
 
 |:nexlst	dup @ 1+ cntlist >=? ( 0 nip ) over ! ;
 |:prelst	dup @ 1- -? ( cntlist 1- nip ) over ! ;
@@ -531,7 +517,7 @@
 	;
 
 #backc 
-		
+
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
 	over cury backc - */ pick3 8 + ! ;
@@ -579,6 +565,61 @@
 	2drop
 	pady 'cury +!
 	empty ;	
+
+
+|----- COMBO
+
+
+:uiListL
+	topbak 
+	'curx topRect 64>dims 
+	'cifil 'topsty 3 move 
+	cifnt txrgb 
+
+	topVar topList uiListL
+	;
+
+:combolist | 'var list --
+	mark makeindx
+	cntlist 6 min
+	overfil 
+	curx cury dup 'backc ! 
+	curw pick3 curh * 
+	2over 2over sdlFRect
+	guiBox 
+|	'focoList in/foco 
+	'refreshfoco onClick
+	chlist
+	0 ( over <? ilist 1+ ) drop
+	cscroll
+	2drop
+	pady 'cury +!
+	empty ;	
+
+:focoCombo | 'var 'list --
+|	curh 'cury +! topCpy curh neg 'cury +!
+|	over 'topVar ! dup 'topList !
+	
+	cifoc sdlColor uiRRect
+	SDLkey
+	<tab> =? ( nextfoco )
+	drop 
+	;
+	
+:iniCombo
+	'combolist 'uilastwidget !
+	;
+	
+::uiCombo | 'var 'list --
+	uiZone overfil uiRFill
+	'focoCombo 'iniCombo w/foco
+	'clickfoco onClick
+	mark makeindx	
+	curx curw + 14 - cury curh 2/ + 146 uiconxy
+	curx 8 + cury txat
+	@ uiNindx txemits
+	empty 
+	ui.. ;
 
 
 |----- UIGridBtn
@@ -736,39 +777,6 @@
 ::uiEdit
 	;
 
-:datetimefoco
-	cifoc sdlColor uiRRect
-	sdlkey
-	<tab> =? ( nextfoco )
-	drop ;
-	
-::uiDateTime | 'var --
-	uiZone
-	overfil uiRFill
-	'datetimefoco in/foco 
-	'clickfoco onClick	
-	mark 
-	@ ,64>dtf 0 ,c
-	empty here ttemitc ui.. ;
-	
-::uiDate | 'var --
-	uiZone
-	overfil uiRFill
-	[ cifoc sdlColor uiRRect ; ] in/foco 
-	'clickfoco onClick	
-	mark
-	@ ,64>dtd 0 ,c
-	empty here ttemitc ui.. ;
-
-::uiTime | 'var --
-	uiZone
-	overfil uiRFill
-	[ cifoc sdlColor uiRRect ; ] in/foco 
-	'clickfoco onClick	
-	mark
-	@ ,64>dtt 0 ,c
-	empty here ttemitc ui.. ;
-
 |-------------------
 | lista para combo
 | datetime
@@ -776,28 +784,8 @@
 | time
 | menu (separa y niveles)
 
-:uiListL | 'var list --
-	mark makeindx
-	cntlist 6 min
-	overfil 
-	curx cury dup 'backc ! 
-	curw pick3 curh * 
-	2over 2over sdlFRect
-	guiBox 
-	'focoList in/foco 
-	'refreshfoco onClick
-	chlist
-	0 ( over <? ilist 1+ ) drop
-	cscroll
-	2drop
-	pady 'cury +!
-	empty ;	
-
-
 ::uiEnd
-	topVar 0? ( drop ; ) 
-	topbak 
-	topList uiListL | 'var list --
-	;
+	uilastWidget 0? ( drop ; ) ex ;
 	
+
 	

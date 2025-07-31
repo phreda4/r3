@@ -51,7 +51,7 @@
 	stDark
 	'nadia 0 ( 7 <? swap
 		dup uiLabelC
-		>>0	swap 1+ ) 2drop
+		4 + swap 1+ ) 2drop
 	datejuli ( datejul <?
 		'clickd over jul2date 2drop .d uiCbtn
 		1+ )
