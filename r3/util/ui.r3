@@ -189,6 +189,7 @@
 	pick2 - 'winh ! pick2 - 'winw ! 'winy ! 'winx ! ;
 
 ::uiWin! | x y w h --
+	2over 2over guiBox
 	'winh ! 'winw ! 'winy ! 'winx ! ;
 	
 ::uiWin@ | x y w h --
@@ -283,21 +284,18 @@
 	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
-	'clickfoco onClick
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
 	uiZone
 	overfil uiRFill
 	'focoRBtn in/foco 
-	'clickfoco onClick	
 	ttemitc onClick ui.. ;	
 
 ::uiCBtn | v "" --
 	uiZone
 	overfil uiCFill
 	'focoCBtn in/foco 
-	'clickfoco onClick	
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
@@ -498,17 +496,8 @@
 
 :clist | 'var max --
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
-	overl pick2 ! ;
-	
-:chlist
-	-1 'overl !
-	guin? 0? ( drop ; ) drop
-	SDLw 1? ( wwlist ) drop
-	sdly cury - curh / 
-	pick2 8 + @ + 
-	cntlist 1- 
-	clampmax 'overl ! 
-	'clist onclick
+	overl pick2 ! 
+	clickfoco 
 	;
 
 #backc 
@@ -516,24 +505,48 @@
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
 	over cury backc - */ pick3 8 + ! ;
+	
+:chlist
+	-1 'overl !
+	guin? 0? ( drop ; ) drop
+	SDLw 1? ( wwlist ) drop
+	
+	cntlist <? (  
+		sdlb 1? (
+			sdlx curx curw + 10 - >=? ( 2drop
+				
+|				cntlist over - 1+ 
+|				slidev 
+|				"cc %d " .println		
+				; ) drop
+			) drop 
+		) 
+
+	sdly cury - curh / 
+	pick2 8 + @ + 
+	cntlist 1- 
+	clampmax 'overl ! 
+	'clist onclick
+	;
+
 
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
 	guin? 0? ( drop ; ) drop
+
 	curx curw + 10 - backc
 	10 cury backc - |2over 2over sdlRect
 	guiBox 
 	cntlist over - 1+	| maxi
-	'slidev dup onDnMoveA 
-	oversel |	$444444 sdlcolor
+	'slidev onMove
 
+	$ffffff sdlcolor 
 	curx curw + 10 -		| 'var max maxi x 
 	pick3 8 + @ 			| 'var max maxi x ini
 	cury backc - pick3 / 	| 'var max maxi x ini hp
 	swap over *	backc +		| 'var max maxi x hp ini*hp
 	8 rot
-	>r >r 4 -rot r> r>
-	$ffffff sdlcolor sdlfRound	
+	>r >r 4 -rot r> r> sdlfRound	
 	drop ;
 	
 :uiFillL	
@@ -553,7 +566,6 @@
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
 	'focoList in/foco 
-	'clickfoco onClick
 	chlist
 	0 ( over <? ilist 1+ ) drop
 	cscroll

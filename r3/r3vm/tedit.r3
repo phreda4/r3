@@ -483,7 +483,7 @@
 ::edfocus
 	xedit yedit wedit hedit guiBox
 
-	'dns 'mos 'ups guiMap |------ mouse
+	'dns 'mos 'ups onMap |------ mouse
 	evwmouse 
 	editmodekey
 	

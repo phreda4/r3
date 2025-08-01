@@ -94,13 +94,17 @@
 	0 3 uiGat
 	|'exit "hola" uiRbtn
 	|'vtable 5 'cols 'tabla1 uiTable<
-	
 
-	
 	font2 txfont
 	edfocus
 	edcodedraw
 
+|	0.4 %w 0.5 %h 0.3 %w 0.2 %h uiWin!
+|	$111111 sdlcolor uiFillW 
+|	3 3 uiGridA
+|	1 2 uiGAt
+|	[ "click" .println ; ] "boton" uiBtn
+	
 	uiEnd
 	
 	SDLredraw

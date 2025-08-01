@@ -70,7 +70,7 @@
 :drawline
 	0 sdlcls
 	gui		
-	'pendn 'penmv 'pencopy guiMap
+	'pendn 'penmv 'pencopy onMap
 	anidraw
 	alinedraw
 	SDLredraw

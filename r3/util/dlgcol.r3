@@ -104,7 +104,7 @@
 |	cwx 10 + cwy 154 + 50 20 SDLFRect
 	
 	cwx cwy 160 180 guiBox
-	guiEmpty
+	
 	;
 
 #ink

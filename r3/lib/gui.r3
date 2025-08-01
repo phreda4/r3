@@ -4,109 +4,100 @@
 |------------------------------
 ^r3/lib/sdl2.r3
 
+|--- region
+##xr1 ##yr1
+##xr2 ##yr2
+
 |--- state
-##hot	| activo actual
-#hotnow	| activo anterior
-#actnow | real activo 
-#foco	| activo teclado
-#foconow	| activo teclado
+#hot	| activo actual
+##hotnow	| activo anterior
+
+##foco	| activo teclado
+#foconow | activo teclado
 
 ##clkbtn
 
 |--- id
 #id		| id gui actual
 #idf	| id gui foco actual (teclado)
-#idl	| id foco ultimo
+#idl	| id foco ultim
 
-|--- region
-##xr1 ##yr1
-##xr2 ##yr2
+##guin? | mouse in rect? and last in touch
 
-##guin? | mouse in rect?
+##hotc	| btn in hot
 
-:guiIn	| b x y --
+::gui
+	idf 'idl ! hot 'hotnow ! 
+	0 'id ! 0 'idf ! 0 'hot !
+	;
+
+:guiIn	| --
 	1 'id +!
-	yr2 over - swap yr1 - or swap	
-	xr2 over - swap xr1 - or or
-	63 >> not 						| x y -- -1/0
-	'guin? ! ;
+	sdly yr1 <? ( drop 0 'guin? ! ; ) yr2 >? ( drop 0 'guin? ! ; ) drop
+	sdlx xr1 <? ( drop 0 'guin? ! ; ) xr2 >? ( drop 0 'guin? ! ; ) drop
 
+	id 
+	hotnow <>? ( 'hot ! 0 'guin? ! ; )
+	'hot ! 
+	-1 'guin? ! ;
+	
 ::guiBox | x1 y1 w h --
-	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
-	SDLx SDLy guiIn ;
+ 	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
+	guiIn ;
 
 ::guiRect | x1 y1 x2 y2 --
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
-	SDLx SDLy guiIn ;
+	guiIn ;
 
-::guidnow | -- 0=yes
-	id hotnow - ;
-|---------
-::gui
-	idf 'idl ! hot 'hotnow !
-	0 'id ! 0 'idf ! 0 'hot !
-|	0 0 sw sh guiRect
-	;
-	
-|-- boton
+|---- click up
 ::onClick | 'click --
 	guin? 0? ( 2drop ; ) drop
-	SDLb 0? ( id hotnow =? ( 2drop ex ; ) 3drop ; ) 
-	'clkbtn !
-	drop
-	id 'hot ! ;
+	sdlb 1? ( nip 'clkbtn ! id 'hotc ! ; ) drop
+	id hotc <>? ( 2drop ; ) drop
+	ex 0 'hotc ! 
+	;
 
-|-- move
+|---- move
 ::onMove | 'move --
-	SDLb 0? ( 2drop ; ) drop
 	guin? 0? ( 2drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 2drop ; ) drop
+	SDLb 0? ( 2drop ; ) drop
 	ex ;
 
-|-- dnmove
+|---- dn->move
 ::onDnMove | 'dn 'move --	
-	SDLb 0? ( 3drop ; ) drop
-	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
 	guin? 0? ( 3drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 2drop ex ; )
-	drop nip ex ;	
+	SDLb 0? ( 3drop ; ) drop
+	id 
+	hotc =? ( drop nip ex ; )
+	'hotc ! 
+	drop ex 
+	;	
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
+	guin? 0? ( 3drop ; ) drop
 	SDLb 0? ( 3drop ; ) drop
-	hotnow 1? ( id <>? ( 3drop ; ) ) drop | solo 1
-	guin? 0? ( id hotnow =? ( 'hot ! drop nip ex ; ) 4drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 2drop ex ; )
-	drop nip ex ;
+	id 
+	hotc =? ( drop nip ex ; )
+	'hotc ! 
+	drop ex
+	;
+
+|---- map dn->move->up
+::onMap | 'dn 'move 'up --
+	SDLb 0? ( id hotc =? ( 2drop nip nip ex ; ) nip 4drop ; ) 2drop
+	guin? 0? ( 3drop ; ) drop
+	id 
+	hotc =? ( drop nip ex ; )
+	'hotc ! 
+	drop ex ;
 
 ::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
-	SDLb 0? ( hotnow id =? ( 2drop nip nip ex ; ) nip 4drop ; ) drop
-	hotnow 1? ( id <>? ( 4drop ; ) ) drop | solo 1
-	guin? 0? ( id hotnow =? ( 'hot ! 2drop nip ex ; ) nip 4drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 3drop ex ; )
-	2drop nip ex ;
-
-|-- mapa
-::guiMap | 'dn 'move 'up --
-	guin? 0? ( 4drop ; ) drop
-	SDlb 0? ( id hotnow =? ( 2drop nip nip ex ; ) 4drop drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 3drop ex ; )
-	2drop nip ex ;
-
-::guiDraw | 'move 'up --
+	SDLb 0? ( id hotc =? ( 2drop nip nip ex ; ) nip 4drop ; ) 2drop
 	guin? 0? ( 3drop ; ) drop
-	SDLb 0? ( id hotnow =? ( 2drop nip ex ; ) 4drop ; ) drop
-	id dup 'hot !
-	hotnow <>? ( 3drop ; )
-	2drop ex ;
-
-::guiEmpty | --		; si toca esta zona no hay interaccion
-	guin? 1? ( id 'hotnow ! )
-	drop ;
+	id 
+	hotc =? ( drop nip ex ; )
+	'hotc ! 
+	drop ex ;
 
 |----- test adentro/afuera
 ::guiI | 'vector --

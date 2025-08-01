@@ -556,7 +556,7 @@
 :inedit | write editor
 	$7f sdlcolor 
 	xcode ycode wcode hcode sdlRect 
-	'dns 'mos 'ups guiMap
+	'dns 'mos 'ups onMap
 	evwmouse
 	editmodekey
 	edlinecursor
@@ -585,7 +585,7 @@
 	cursorpos ;
 	
 :inro | readonly editor
-	'dns 'mos 'ups guiMap
+	'dns 'mos 'ups onMap
 	evwmouse
 	romodekey
 	edlinecursor

@@ -123,8 +123,12 @@
 #mcall 'paneldia 'panelmes 'panelanio
 
 :uiDMY	
+	foco
 	4 4 uiPad
-	0.1 %w 0.1 %h 0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10		
+	|0.1 %w 0.1 %h 
+	uiZone@ 2drop
+	0.25 %h - swap 0.125 %w - swap
+	0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10	
 	1 9 UIGridA $444444 sdlcolor uiRFill	
 	0 0 uigAt uiH stDark
 	" " uiTLabel
@@ -139,7 +143,9 @@
 	'sethoy "Hoy" uiRBtn
 	ui>>
 	StSucc
+	'foco !
 	'exitdlg "Aceptar" uiRBtn
+	
 	;
 
 :datetimefoco

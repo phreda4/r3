@@ -374,7 +374,7 @@
 :msele
 	[ sdlx sdly 2dup 'my ! 'mx ! scr2view 'oy ! 'ox ! ; ] 
 	[ drawselect ; ] 
-	[  fillmap ; ] guiMap ;
+	[  fillmap ; ] onMap ;
 	
 	
 :mfill

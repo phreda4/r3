@@ -391,7 +391,7 @@
 :wintiles
 	'wintdlg immwin 0? ( drop ; ) drop
 	curx cury ts_spr 0? ( 3drop ; ) @ SDLImage
-	'chdn 'chmv dup guiMap
+	'chdn 'chmv dup onMap
 	$7f0000ff sdlcolorA	| cursor
 	curx tx tilew * + cury ty tileh * +
 	tw tilew * th tileh * 
