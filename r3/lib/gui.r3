@@ -88,7 +88,7 @@
 
 |---- map dn->move->up
 ::onMap | 'dn 'move 'up --
-	SDLb 0? ( id hotc =? ( 2drop nip nip ex ; ) nip 4drop ; ) 2drop
+	SDLb 0? ( id hotc =? ( 2drop nip nip ex -1 'hotc ! ; ) nip 4drop ; ) 2drop
 	guin? 0? ( 3drop ; ) drop
 	id 
 	hotc =? ( drop nip ex ; )
@@ -96,7 +96,7 @@
 	drop ex ;
 
 ::onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
-	SDLb 0? ( id hotc =? ( 2drop nip nip ex ; ) nip 4drop ; ) 2drop
+	SDLb 0? ( id hotc =? ( 2drop nip nip ex -1 'hotc ! ; ) nip 4drop ; ) 2drop
 	guin? 0? ( 3drop ; ) drop
 	id 
 	hotc =? ( drop nip ex ; )

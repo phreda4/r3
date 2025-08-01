@@ -123,11 +123,10 @@
 #mcall 'paneldia 'panelmes 'panelanio
 
 :uiDMY	
-	foco
+|	foco
 	4 4 uiPad
 	|0.1 %w 0.1 %h 
-	uiZone@ 2drop
-	0.25 %h - swap 0.125 %w - swap
+	uiZone@ 2drop 0.25 %h - swap 0.125 %w - swap
 	0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10	
 	1 9 UIGridA $444444 sdlcolor uiRFill	
 	0 0 uigAt uiH stDark
@@ -143,48 +142,53 @@
 	'sethoy "Hoy" uiRBtn
 	ui>>
 	StSucc
-	'foco !
+|	'foco !
 	'exitdlg "Aceptar" uiRBtn
-	
 	;
 
+|----
 :datetimefoco
 	'uiDMY uisaveLast
-	
 	cifoc sdlColor uiRRect
 	sdlkey
 	<tab> =? ( nextfoco )
 	drop 
 	;
 	
-:datetiemfocoini
+:datetimefocoini
 	dup 'datevar !
 	dup @ 0? ( drop sethoy ; ) set64 ;
 	
-|----	
 ::uiDateTime | 'var --
-	uiZone
-	overfil uiRFill
-	'datetimefoco 'datetiemfocoini w/foco
+	uiZone overfil uiRFill
 	'clickfoco onClick	
-	mark 
-	@ ,64>dtf 0 ,c
-	empty here ttemitc ui.. ;
+	'datetimefoco 'datetimefocoini w/foco
+	
+	mark @ ,64>dtf 0 ,c empty here ttemitc ui.. ;
+
+|----
+:datefoco
+	'uiDMY uisaveLast
+	cifoc sdlColor uiRRect
+	sdlkey
+	<tab> =? ( nextfoco )
+	drop 
+	;
+	
+:datefocoini
+	dup 'datevar !
+	dup @ 0? ( drop sethoy ; ) set64 ;
 	
 ::uiDate | 'var --
-	uiZone
-	overfil uiRFill
-	[ cifoc sdlColor uiRRect ; ] in/foco 
+	uiZone overfil uiRFill
 	'clickfoco onClick	
-	mark
-	@ ,64>dtd 0 ,c
-	empty here ttemitc ui.. ;
+	|'datefoco 'datefocoini w/foco
+	mark @ ,64>dtd 0 ,c	empty here ttemitc ui.. ;
 
+|----
 ::uiTime | 'var --
-	uiZone
-	overfil uiRFill
-	[ cifoc sdlColor uiRRect ; ] in/foco 
+	uiZone overfil uiRFill
 	'clickfoco onClick	
-	mark
-	@ ,64>dtt 0 ,c
-	empty here ttemitc ui.. ;	
+	[ cifoc sdlColor uiRRect ; ] in/foco 
+	
+	mark @ ,64>dtt 0 ,c empty here ttemitc ui.. ;	

@@ -70,6 +70,7 @@
 :drawline
 	0 sdlcls
 	gui		
+	0 0 sw sh guiRect
 	'pendn 'penmv 'pencopy onMap
 	anidraw
 	alinedraw

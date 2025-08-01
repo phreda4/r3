@@ -51,7 +51,7 @@
 	
 |-------------------------------	
 :juego
-	gui
+	gui 0 0 sw sh guiRect
 	isocamrot
 	$3a3a3a sdlcls
 	

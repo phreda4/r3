@@ -61,7 +61,7 @@
 	ui--
 	'vh 'tablist uiCheck
 	ui--
-	'vdatetime uiDateTime
+	'vdatetime uiDate
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 

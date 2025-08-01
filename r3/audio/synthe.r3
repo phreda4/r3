@@ -3,10 +3,12 @@
 |
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
-^r3/util/sdlgui.r3
+|^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
-^r3/util/ttext.r3
+^r3/util/txfont.r3
+
+#font1
 
 |-----------------------------------------
 #audio_device |SDL_AudioDeviceID 
@@ -123,9 +125,9 @@
 	audio_device SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | ya tiene
 
 	polinota> 'polinota =? ( drop ; ) | sin notas
-	'ibuffer 0 1024 fill |DVC
-	( over <?
-		) 2drop
+|	'ibuffer 0 1024 fill |DVC
+|	( over <?
+|		) 2drop
 		
 	audio_device 'ibuffer 8192 SDL_QueueAudio ;		
 	;
@@ -245,16 +247,16 @@
 	;
 	
 :main
-	vupdate
+	|vupdate
 	$0 SDLcls
-	2.0 tsize $6 tcol 
-	10 10 tat "R3Synte" tprint tcr	
-	1.0 tsize $3 tcol 
+	
+	10 10 txat "R3Synte" txprint
 	
 	drawkeys
 	drawbuffer	
 
-	runsynthe	
+|	runsynthe
+	render
 	
 	SDLredraw
 	teclado
@@ -262,7 +264,9 @@
 	
 : 
 	"R3sythe" 1024 600 SDLinit
-	tini
+	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 ! 
+	font1 txfont
+	
 	iniaudio
 
 	'main SDLshow
