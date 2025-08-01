@@ -36,9 +36,9 @@
 #r3_lib_crc32.r3 'name 'words 'calls 'info
 ^r3/lib/gui.r3
 #name "r3/lib/gui.r3"
-#words  "hot" "clkbtn" "xr1" "yr1" "xr2" "yr2" "guin?" "guiBox" "guiRect" "gui" "onClick" "onMove" "onDnMove" "onDnMoveA" "onMapA" "guiMap" "guiDraw" "guiEmpty" "guiI" "guiO" "guiIO" "nextfoco" "prevfoco" "setfoco" "clickfoco" "clickfoco1" "refreshfoco" "w/foco" "focovoid" "esfoco?" "in/foco" "lostfoco" 0
-#calls  'hot 'clkbtn 'xr1 'yr1 'xr2 'yr2 'guin? 'guiBox 'guiRect 'gui 'onClick 'onMove 'onDnMove 'onDnMoveA 'onMapA 'guiMap 'guiDraw 'guiEmpty 'guiI 'guiO 'guiIO 'nextfoco 'prevfoco 'setfoco 'clickfoco 'clickfoco1 'refreshfoco 'w/foco 'focovoid 'esfoco? 'in/foco 'lostfoco
-#info ( $80 $80 $80 $80 $80 $80 $80 $4C $4C $0 $1F $1F $2E $2E $3D $3D $2E $0 $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
+#words  "xr1" "yr1" "xr2" "yr2" "hotnow" "foco" "clkbtn" "guin?" "hotc" "gui" "guiBox" "guiPrev" "guiRect" "onClick" "onMove" "onDnMove" "onDnMoveA" "onMap" "onMapA" "guiI" "guiO" "guiIO" "nextfoco" "prevfoco" "setfoco" "clickfoco" "clickfoco1" "refreshfoco" "w/foco" "focovoid" "esfoco?" "in/foco" "lostfoco" 0
+#calls  'xr1 'yr1 'xr2 'yr2 'hotnow 'foco 'clkbtn 'guin? 'hotc 'gui 'guiBox 'guiPrev 'guiRect 'onClick 'onMove 'onDnMove 'onDnMoveA 'onMap 'onMapA 'guiI 'guiO 'guiIO 'nextfoco 'prevfoco 'setfoco 'clickfoco 'clickfoco1 'refreshfoco 'w/foco 'focovoid 'esfoco? 'in/foco 'lostfoco
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $4C $0 $4C $1F $1F $2E $2E $3D $3D $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
 #r3_lib_gui.r3 'name 'words 'calls 'info
 ^r3/lib/input.r3
 #name "r3/lib/input.r3"
@@ -280,12 +280,6 @@
 #calls  'padx 'pady 'curx 'cury 'boxw 'boxh 'immcolorwin 'immcolortwin 'immcolortex 'immcolorbtn 'immgui 'immat 'immat+ 'immbox 'immwinxy 'imm>> 'imm<< 'immdn 'immcr 'immln 'plgui 'plxywh 'immcur 'immcur> 'imm>cur 'immlabel 'immlabelc 'immlabelr 'imm. 'immListBox 'immback 'immblabel 'immbtn 'immtbtn 'immzone 'immSliderf 'immSlideri 'immCheck 'immScrollv 'immRadio 'immCombo 'immInputLine 'immInputLine2 'immInputInt 'immwins
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $2E $2E $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $1F $3D $3D $2E $3D $2E $1F $2E $2E $1F $10 )
 #r3_util_sdlbgui.r3 'name 'words 'calls 'info
-^r3/util/sdledit.r3
-#name "r3/util/sdledit.r3"
-#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edload" "edsave" 0
-#calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edload 'edsave
-#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $0 )
-#r3_util_sdledit.r3 'name 'words 'calls 'info
 ^r3/util/sdlfiledlg.r3
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
@@ -342,16 +336,34 @@
 #r3_util_ttfont.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"
-#words  "txload" "txfont" "txrgb" "txcw" "txw" "txh" "txat" "tx+at" "txpos" "txemit" "txemits" "txemitr" "txprint" "txprintr" "txcur" "txcuri" 0
-#calls  'txload 'txfont 'txrgb 'txcw 'txw 'txh 'txat 'tx+at 'txpos 'txemit 'txemits 'txemitr 'txprint 'txprintr 'txcur 'txcuri
-#info ( $2F $1F $1F $20 $11 $1 $2E $2E $2 $2F $1F $1F $1F $1F $2E $2E )
+#words  "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txh" "txat" "tx+at" "txpos" "txemit" "txemits" "txemitr" "txprint" "txprintr" "txcur" "txcuri" 0
+#calls  'txload 'txfont 'txfont@ 'txrgb 'txcw 'txw 'txh 'txat 'tx+at 'txpos 'txemit 'txemits 'txemitr 'txprint 'txprintr 'txcur 'txcuri
+#info ( $2F $1F $1 $1F $20 $11 $1 $2E $2E $2 $2F $1F $1F $1F $1F $2E $2E )
 #r3_util_txfont.r3 'name 'words 'calls 'info
 ^r3/util/ui.r3
 #name "r3/util/ui.r3"
-#words  "uicons" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "stFDang" "stFWarn" "stFSucc" "stFInfo" "stFLink" "stFDark" "stFWhit" "stfLigt" "uiPush" "uiPop" "ttcursor" "ttcursori" "uiLabelMini" "uiRectW" "uiFillW" "uiRRectW" "uiRFillW" "uiCRectW" "uiCFillW" "uiRRect10" "uiRFill10" "uiRect" "uiFill" "uiRRect" "uiRFill" "uiCRect" "uiCFill" "uiTitleF" "uiTitle" "uiLineH" "uiLineV" "uiLineWH" "uiGridBV" "uiGridBH" "uiGrid#" "uicr" "uidn" "uiri" "uiH" "uiV" "ui<" "ui>>" "uiPad" "uiWinBox!" "uiWin!" "uixy" "uiBox" "uiGAt" "uiGTo" "uiGrid" "uiGridA" "uiStart" "uiZone!" "uiZone" "uiZone@" "uiconxy" "uicon" "uicone" "uiLabel" "uiLabelc" "uiLabelr" "uiTlabel" "uiMDText" "uiBtn" "uiRBtn" "uiCBtn" "uiTBtn" "uiNindx" "uiCombo" "uiCheck" "uiRadio" "uiTab" "uiSliderf" "uiSlideri" "uiSlideri8" "uiList" "UIGridBtn" "uiTree" "uiTreePath" "uiScanDir" "uiTable" "uiInputLine" "uiText" "uiEdit" "uiDateTime" "uiDate" "uiTime" "uiEnd" 0
-#calls  'uicons 'stDang 'stWarn 'stSucc 'stInfo 'stLink 'stDark 'stLigt 'stFDang 'stFWarn 'stFSucc 'stFInfo 'stFLink 'stFDark 'stFWhit 'stfLigt 'uiPush 'uiPop 'ttcursor 'ttcursori 'uiLabelMini 'uiRectW 'uiFillW 'uiRRectW 'uiRFillW 'uiCRectW 'uiCFillW 'uiRRect10 'uiRFill10 'uiRect 'uiFill 'uiRRect 'uiRFill 'uiCRect 'uiCFill 'uiTitleF 'uiTitle 'uiLineH 'uiLineV 'uiLineWH 'uiGridBV 'uiGridBH 'uiGrid# 'uicr 'uidn 'uiri 'uiH 'uiV 'ui< 'ui>> 'uiPad 'uiWinBox! 'uiWin! 'uixy 'uiBox 'uiGAt 'uiGTo 'uiGrid 'uiGridA 'uiStart 'uiZone! 'uiZone 'uiZone@ 'uiconxy 'uicon 'uicone 'uiLabel 'uiLabelc 'uiLabelr 'uiTlabel 'uiMDText 'uiBtn 'uiRBtn 'uiCBtn 'uiTBtn 'uiNindx 'uiCombo 'uiCheck 'uiRadio 'uiTab 'uiSliderf 'uiSlideri 'uiSlideri8 'uiList 'UIGridBtn 'uiTree 'uiTreePath 'uiScanDir 'uiTable 'uiInputLine 'uiText 'uiEdit 'uiDateTime 'uiDate 'uiTime 'uiEnd
-#info ( $80 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $2E $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $2E $4C $4C $2E $2E $2E $2E $2E $2E $0 $4C $0 $4 $3D $1F $0 $1F $1F $1F $1F $0 $2E $2E $2E $2E $10 $2E $2E $2E $2E $3D $3D $3D $3D $2F $3D $10 $1F $0 $2E $0 $0 $1F $1F $1F $0 )
+#words  "uicons" "cifoc" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "overfil" "oversel" "stFDang" "stFWarn" "stFSucc" "stFInfo" "stFLink" "stFDark" "stFWhit" "stfLigt" "uiPush" "uiPop" "uiPushA" "uiPopA" "ttemitl" "ttemitc" "ttemitr" "uiLabelMini" "uiRectW" "uiFillW" "uiRRectW" "uiRFillW" "uiCRectW" "uiCFillW" "uiRRect10" "uiRFill10" "uiRect" "uiFill" "uiRRect" "uiRFill" "uiCRect" "uiCFill" "uiTitleF" "uiTitle" "uiLineH" "uiLineV" "uiLineWH" "uiGridBV" "uiGridBH" "uiGrid#" "uicr" "uidn" "uiri" "uiH" "uiV" "ui<" "ui>>" "ui.." "uiPad" "uiWinBox!" "uiWin!" "uiWin@" "uiGAt" "uiGTo" "uiGrid" "uiGridA" "uiStart" "uiZone!" "uiZone" "uiZone@" "uiconxy" "uicon" "uicone" "uiLabel" "uiLabelc" "uiLabelr" "uiTlabel" "uiMDText" "uiBtn" "uiRBtn" "uiCBtn" "uiTBtn" "uiNindx" "uiCheck" "uiRadio" "uiTab" "uiSliderf" "uiSlideri" "uiSlideri8" "uiList" "uisaveLast" "uiCombo" "UIGridBtn" "uiTree" "uiTable" "uiInputLine" "uiText" "uiEdit" "uiEnd" 0
+#calls  'uicons 'cifoc 'stDang 'stWarn 'stSucc 'stInfo 'stLink 'stDark 'stLigt 'overfil 'oversel 'stFDang 'stFWarn 'stFSucc 'stFInfo 'stFLink 'stFDark 'stFWhit 'stfLigt 'uiPush 'uiPop 'uiPushA 'uiPopA 'ttemitl 'ttemitc 'ttemitr 'uiLabelMini 'uiRectW 'uiFillW 'uiRRectW 'uiRFillW 'uiCRectW 'uiCFillW 'uiRRect10 'uiRFill10 'uiRect 'uiFill 'uiRRect 'uiRFill 'uiCRect 'uiCFill 'uiTitleF 'uiTitle 'uiLineH 'uiLineV 'uiLineWH 'uiGridBV 'uiGridBH 'uiGrid# 'uicr 'uidn 'uiri 'uiH 'uiV 'ui< 'ui>> 'ui.. 'uiPad 'uiWinBox! 'uiWin! 'uiWin@ 'uiGAt 'uiGTo 'uiGrid 'uiGridA 'uiStart 'uiZone! 'uiZone 'uiZone@ 'uiconxy 'uicon 'uicone 'uiLabel 'uiLabelc 'uiLabelr 'uiTlabel 'uiMDText 'uiBtn 'uiRBtn 'uiCBtn 'uiTBtn 'uiNindx 'uiCheck 'uiRadio 'uiTab 'uiSliderf 'uiSlideri 'uiSlideri8 'uiList 'uisaveLast 'uiCombo 'UIGridBtn 'uiTree 'uiTable 'uiInputLine 'uiText 'uiEdit 'uiEnd
+#info ( $80 $80 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $2E $4C $4C $4 $2E $2E $2E $2E $0 $4C $0 $4 $3D $1F $0 $1F $1F $1F $1F $0 $2E $2E $2E $2E $10 $2E $2E $2E $3D $3D $3D $3D $1F $2E $2F $3D $0 $2E $0 $0 $0 )
 #r3_util_ui.r3 'name 'words 'calls 'info
+^r3/util/uidatetime.r3
+#name "r3/util/uidatetime.r3"
+#words  "uiDateTime" "uiDate" "uiTime" 0
+#calls  'uiDateTime 'uiDate 'uiTime
+#info ( $1F $1F $1F )
+#r3_util_uidatetime.r3 'name 'words 'calls 'info
+^r3/util/uiedit.r3
+#name "r3/util/uiedit.r3"
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edload" "edsave" 0
+#calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edfocusro 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edload 'edsave
+#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $0 )
+#r3_util_uiedit.r3 'name 'words 'calls 'info
+^r3/util/uifiles.r3
+#name "r3/util/uifiles.r3"
+#words  "uiDirs" "uiFiles" "uiTreePath" "uiGetFiles" "uiScanDir" 0
+#calls  'uiDirs 'uiFiles 'uiTreePath 'uiGetFiles 'uiScanDir
+#info ( $80 $80 $10 $1F $2E )
+#r3_util_uifiles.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "vareset" "vaini" "vupdate" "+vanim" "+vboxanim" "+vxyanim" "+vcolanim" "+vexe" "+vvexe" "+vvvexe" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" 0
@@ -419,4 +431,4 @@
 #info ( $2F $0 $3E $5C $3E $3E $2F $1F $2F $4C $4D $4D $3E )
 #r3_lib_win_winsock.r3 'name 'words 'calls 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdledit.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_varanim.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0

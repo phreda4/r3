@@ -45,6 +45,9 @@
  	pick2 + 'yr2 ! pick2 + 'xr2 ! 'yr1 ! 'xr1 ! 
 	guiIn ;
 
+::guiPrev | -- ; same id 
+	-1 'id +! ;
+	
 ::guiRect | x1 y1 x2 y2 --
 	'yr2 ! 'xr2 ! 'yr1 ! 'xr1 ! 
 	guiIn ;
@@ -74,6 +77,7 @@
 	;	
 
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
+	id hotc =? ( sdlb 1? ( 2drop nip ex ; ) drop ) drop | no si captura otro
 	guin? 0? ( 3drop ; ) drop
 	SDLb 0? ( 3drop ; ) drop
 	id 

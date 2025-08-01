@@ -284,24 +284,28 @@
 	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
+	guiPrev 'clickfoco onClick
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
 	uiZone
 	overfil uiRFill
 	'focoRBtn in/foco 
+	guiPrev 'clickfoco onClick
 	ttemitc onClick ui.. ;	
 
 ::uiCBtn | v "" --
 	uiZone
 	overfil uiCFill
 	'focoCBtn in/foco 
+	guiPrev 'clickfoco onClick
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
 	txw 4 + 'curw !
 	uiZone
 	overfil uiFill
+	guiPrev 'clickfoco onClick
 	ttemitc onClick 
 	curw 'curx +!
 	;	
@@ -511,16 +515,16 @@
 	guin? 0? ( drop ; ) drop
 	SDLw 1? ( wwlist ) drop
 	
-	cntlist <? (  
-		sdlb 1? (
-			sdlx curx curw + 10 - >=? ( 2drop
+|	cntlist <? (  
+|		sdlb 1? (
+|			sdlx curx curw + 10 - >=? ( 2drop
 				
 |				cntlist over - 1+ 
 |				slidev 
 |				"cc %d " .println		
-				; ) drop
-			) drop 
-		) 
+|				; ) drop
+|			) drop 
+|		) 
 
 	sdly cury - curh / 
 	pick2 8 + @ + 
@@ -534,7 +538,9 @@
 	cntlist >=? ( ; ) 
 	guin? 0? ( drop ; ) drop
 
-	curx curw + 10 - backc
+	guiPrev
+	curx curw + 10 - 
+	backc
 	10 cury backc - |2over 2over sdlRect
 	guiBox 
 	cntlist over - 1+	| maxi
@@ -574,7 +580,6 @@
 	empty ;	
 
 |----- COMBO
-
 ::uisaveLast | 'vector --
 	'uiLastWidget !
 	'curx dims>64 'uilastpos !
@@ -599,7 +604,6 @@
 	cifoc sdlColor 2over 2over sdlRect
 	guiBox 
 	
-	'clickfoco onClick
 	chlist
 	0 ( over <? ilist 1+ ) drop
 	cscroll
@@ -658,7 +662,9 @@
 	overl pick2 @ <>? ( pick2 ! ; ) | click on select
 	pick2 !
 	overl 3 << indlist + @ 
-	dup c@ $80 xor swap c! ;
+	dup c@ $80 xor swap c! 
+	clickfoco
+	;
 
 :chtree
 	-1 'overl !
@@ -690,7 +696,6 @@
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox 
 	'focoList in/foco 
-	'clickfoco onClick	
 	chtree
 	0 ( over <? itree 1+ ) drop
 	cscroll
@@ -741,9 +746,9 @@
 	txcuri ;
 	
 |----- ALFANUMERICO
-:iniinput | 'var max IDF -- 'var max IDF
-	pick2 1- 'cmax !
-	pick3 dup 'padi> !
+:iniinput | 'var max -- 'var max
+	dup 1- 'cmax !
+	over dup 'padi> !
 	( c@+ 1? drop ) drop 1-
 	dup 'pad> ! 'padf> !
 	'lins 'modo !
@@ -788,7 +793,7 @@
 	;
 
 |-------------------
-| lista para combo
+| combo
 | datetime
 | date
 | time

@@ -354,9 +354,9 @@
 	
 |----- ALFANUMERICO
 :iniinput | 'var max IDF -- 'var max IDF
-	pick2 1 - 'cmax !
-	pick3 dup 'padi> !
-	( c@+ 1? drop ) drop 1 -
+	dup 1- 'cmax !
+	over dup 'padi> !
+	( c@+ 1? drop ) drop 1-
 	dup 'pad> ! 'padf> !
 	'lins 'modo !
 	;
@@ -403,7 +403,7 @@
 
 |----- ENTERO
 :iniinputi
-	pick2 'cmax ! ;
+	dup 'cmax ! ;
 
 :knro
 	SDLchar 0? ( drop ; ) $30 <? ( drop ; ) $39 >? ( drop ; )
