@@ -284,28 +284,28 @@
 	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
-	guiPrev 'clickfoco onClick
+|	'clickfoco onClick guiPrev 
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
 	uiZone
 	overfil uiRFill
 	'focoRBtn in/foco 
-	guiPrev 'clickfoco onClick
+	'clickfoco onClick guiPrev 
 	ttemitc onClick ui.. ;	
 
 ::uiCBtn | v "" --
 	uiZone
 	overfil uiCFill
 	'focoCBtn in/foco 
-	guiPrev 'clickfoco onClick
+	'clickfoco onClick guiPrev 
 	ttemitc onClick ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
 	txw 4 + 'curw !
 	uiZone
 	overfil uiFill
-	guiPrev 'clickfoco onClick
+	'clickfoco onClick guiPrev 
 	ttemitc onClick 
 	curw 'curx +!
 	;	

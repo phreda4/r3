@@ -37,6 +37,9 @@
 #folders 0
 
 #vdatetime
+#vdatetime2
+#vtime1
+#vtime2
 
 :ui--
 	$444444 sdlcolor uiLineH ;
@@ -58,10 +61,11 @@
 	
 	0 2 uiGAt uiV
 	'vlist 3 'listex uiList | 8
-	ui--
 	'vh 'tablist uiCheck
-	ui--
 	'vdatetime uiDate
+	'vdatetime2 uiDate
+	'vtime1 uiTime
+	'vtime2 uiTime
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 
@@ -86,7 +90,7 @@
 	
 	
 	1 16 uiGridA uiV
-	0 12 uiGAt
+	0 13 uiGAt
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
 	

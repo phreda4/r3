@@ -10,9 +10,10 @@
 
 |--- state
 #hot	| activo actual
-##hotnow	| activo anterior
+#hotnow	| activo anterior
+#hotc	| foco
 
-##foco	| activo teclado
+#foco	| activo teclado
 #foconow | activo teclado
 
 ##clkbtn
@@ -23,8 +24,6 @@
 #idl	| id foco ultim
 
 ##guin? | mouse in rect? and last in touch
-
-##hotc	| btn in hot
 
 ::gui
 	idf 'idl ! hot 'hotnow ! 

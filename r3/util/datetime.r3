@@ -116,9 +116,10 @@
 	dup 44 >> $f and ,2d "/" ,s
 	48 >> $ffff and ,d " " ,s ;
 
-::,64>dtt | dt64 -- "d/m/y h:m"
+::,64>dtt | dt64 -- "h:m:s"
 	dup 24 >> $ff and ,2d ":" ,s
-	16 >> $ff and ,2d ;
+	dup 16 >> $ff and ,2d ":" ,s
+	$ff and ,2d ;
 
 ::64>dtc | dt64 -- "y-m-d h:m:s"
 	dup 48 >> $ffff and ,d " " ,s
