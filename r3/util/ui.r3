@@ -514,25 +514,11 @@
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
 	SDLw 1? ( wwlist ) drop
-	
-|	cntlist <? (  
-|		sdlb 1? (
-|			sdlx curx curw + 10 - >=? ( 2drop
-				
-|				cntlist over - 1+ 
-|				slidev 
-|				"cc %d " .println		
-|				; ) drop
-|			) drop 
-|		) 
-
 	sdly cury - curh / 
 	pick2 8 + @ + 
 	cntlist 1- 
 	clampmax 'overl ! 
-	'clist onclick
-	;
-
+	'clist onclick ;
 
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 

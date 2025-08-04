@@ -124,7 +124,7 @@
 |---------------------------------
 :memoria
 	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	;
 
 |----- Includes
@@ -135,7 +135,7 @@
 	
 :includes
 	0.01 %w 0.07 %h 0.4 %w 0.03 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	8 1 uiGrid uiH
 	0 ( 8 <?
 		dup iteminc
@@ -150,7 +150,7 @@
 	
 :diccionario
 	0.405 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	2 30 uiGridA uiV
 
 |	lidilines dup immListBox
@@ -180,7 +180,7 @@
 	
 :tokens	
 	0.705 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	2 30 uiGridA uiV
 	0 ( 30 <?
 		dup showtok
@@ -190,7 +190,7 @@
 |----- codigo	
 :codigo
 	0.005 %w 0.1 %h 0.39 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	
 	uiWin@ edwin
 	edfocusro
@@ -328,7 +328,7 @@
 		
 :Fileselect
 	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiWin!
-	$222222 sdlcolor uiRFill10
+	$222222 sdlcolor uiFillW
 	2 22 uiGrid 
 	
 	stDark 
@@ -358,7 +358,7 @@
 
 :codigo
 	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiWin!
-	$111111 sdlcolor uiRFill10
+	$111111 sdlcolor uiFillW
 	uiWin@ edwin	
 	edfocusro
 	edcodedraw
@@ -367,7 +367,7 @@
 	
 :incodcod
 	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin!
-	$222222 sdlcolor uiRFill10
+	$222222 sdlcolor uiFillW
 	5 15 uiGrid uiH
 	"+Info" uiLabel
 	;

@@ -10,7 +10,6 @@
 #font1
 #font2
 
-#filename * 1024
 #pad * 1024
 #pad2 * 1024
 		
@@ -37,9 +36,10 @@
 #folders 0
 
 #vdatetime
-#vdatetime2
 #vtime1
-#vtime2
+
+#path "r3/"
+#filename * 1024
 
 :ui--
 	$444444 sdlcolor uiLineH ;
@@ -63,9 +63,7 @@
 	'vlist 3 'listex uiList | 8
 	'vh 'tablist uiCheck
 	'vdatetime uiDate
-	'vdatetime2 uiDate
 	'vtime1 uiTime
-	'vtime2 uiTime
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 
@@ -75,6 +73,7 @@
 	stLink 'exit "btn4"  uiBtn 
 	stDark 'exit "btn4"  uiBtn 
 	ui--
+	|'filename 'path uiFilename
 	
 	2 2 uiGat
 	'vtree 5 'treeex uiTree
