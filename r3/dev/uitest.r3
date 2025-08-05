@@ -73,7 +73,8 @@
 	stLink 'exit "btn4"  uiBtn 
 	stDark 'exit "btn4"  uiBtn 
 	ui--
-	|'filename 'path uiFilename
+	|'filename 'volume uiFilename
+	|'path 'volume uiPath
 	
 	2 2 uiGat
 	'vtree 5 'treeex uiTree

@@ -213,7 +213,7 @@
 
 |-------------------------------------
 :menu
-	vupdate gui 0 sdlcls
+	vupdate gui 0 0 sw sh guiRect 0 sdlcls
 	
 	|$7f3f3f3f sdlcolorA	200 200 200 600 sdlFRect
 	

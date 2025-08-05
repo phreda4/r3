@@ -13,15 +13,16 @@
 	stdout -rot 0 0 WriteFile drop ;
 
 |-----------------------------------------------	
-#crb ( 10 13 0 0 )
+#crb ( 10 13 )
+#cc ( 0 0 )
 #esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
 
 ::.cr 'crb 2 type ;
 ::.sp " " 1 type ;
-::.nsp ( 1? 1 - .sp ) drop ;
+::.nsp ( 1? 1- .sp ) drop ;
 
 ::.emit | nro
-	" " dup rot swap c! 1 type ;
+	'cc c! 'cc 1 type ;
 	
 ::.[ 'esc[ 2 + swap
 	( c@+ 1? rot c!+ swap ) 2drop

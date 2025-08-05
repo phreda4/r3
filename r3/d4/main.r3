@@ -134,8 +134,8 @@
 	;
 	
 :includes
-	0.01 %w 0.07 %h 0.4 %w 0.03 %h uiWin!
-	$111111 sdlcolor uiFillW
+	0.005 %w 0.07 %h 0.39 %w 0.03 %h uiWin!
+	$333333 sdlcolor uiFillW
 	8 1 uiGrid uiH
 	0 ( 8 <?
 		dup iteminc
@@ -434,6 +434,7 @@
 :loadm
 	'filename "mem/d4.mem" load
 	
+	'filename filexist 0? ( drop ; ) drop | si no existe
 	|'dirnow
 |	"@" 'nameaux strcpy
 |	'fullpath 'basepath count nip + 
@@ -472,7 +473,6 @@
 	"media/ttf/Roboto-bold.ttf" 28 
 	txload 'font1 !
 	"media/ttf/RobotoMono-bold.ttf" 14 
-	|"media/ttf/Roboto-bold.ttf" 18
 	txload 'font2 !
 	
 	edram 

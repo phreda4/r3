@@ -169,7 +169,7 @@
 	
 :jugar
 	vupdate
-	gui 0 sdlcls
+	gui 0 0 sw sh guiRect 0 sdlcls
 
 	draw.map
 	draw.code

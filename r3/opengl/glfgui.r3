@@ -218,7 +218,7 @@
 #winx 10 #winy 10
 
 ::glgui |
-	gui 
+	gui 0 0 sw sh guiRect
 	10 'curx ! 10 'cury !
 	
 	GL_DEPTH_TEST glDisable 

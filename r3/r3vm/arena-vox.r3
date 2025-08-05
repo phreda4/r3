@@ -446,7 +446,7 @@ void main() {
 	;
 	
 :runscr
-	vupdate gui	
+	vupdate gui	0 0 sw sh guiRect
 	'dnlook 'movelook onDnMove
 	0 sdlcls
 
