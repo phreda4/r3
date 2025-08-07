@@ -155,17 +155,12 @@
 	;
 
 |-----------------------------
-#lhora "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" 0
-#lms "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "50" "51" "52" "52" "53" "54" "55" "56" "57" "58" "59" 0
-
-#vhora 0 0
-#vmin 0 0
-#vseg 0 0
+#vhora 0 
+#vmin 0 
+#vseg 0 
 
 :sethms | H m s --
-	dup 5 - 0 max 'vseg 8 + ! 'vseg !
-	dup 5 - 0 max 'vmin 8 + ! 'vmin !
-	dup 5 - 0 max 'vhora 8 + ! 'vhora !	;
+	'vseg ! 'vmin ! 'vhora ! ;
 	
 :setnowhms
 	time dup 16 >> $ff and over 8 >> $ff and rot $ff and 
@@ -177,25 +172,19 @@
 
 :uiHMS
 	4 4 uiPad
-|	0.4 %w 0.1 %h 
-	uiZone@ 2drop 0.2 %h - swap 0.07 %w - swap
-	0.14 %w 0.4 %h uiWin! $222222 sdlcolor uiRFill10
+	uiZone@ 2drop 0.2 %h - |swap 0.07 %w - swap
+	0.1 %w 0.4 %h uiWin! $222222 sdlcolor uiRFill10
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
 	mark
 	vhora ,2d " : " ,s vmin ,2d " : " ,s vseg ,2d 0 ,c 
 	empty here uiLabelc
-	2 2 uiPad
-	3 11 UIGridA uiV 
-	vhora
-	0 1 uigAt 'vhora 11 'lhora uiList
-	vhora swap <>? ( dup 5 - 0 max 'vhora 8 + ! ) drop
-	vmin
-	1 1 uigAt 'vmin 11 'lms uiList
-	vmin swap <>? ( dup 5 - 0 max 'vmin 8 + ! ) drop
-	vseg
-	2 1 uigAt 'vseg 11 'lms uiList	
-	vseg swap <>? ( dup 5 - 0 max 'vseg 8 + ! ) drop
+
+	3 11 UIGridA uiH
+	0 1 uiGAt 1 10 uiGTo
+	0 24 'vhora uiVSlideri
+	0 59 'vmin uiVSlideri
+	0 59 'vseg uiVSlideri	
 	;
 		
 |----

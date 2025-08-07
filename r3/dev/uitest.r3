@@ -64,6 +64,8 @@
 	'vh 'tablist uiCheck
 	'vdatetime uiDate
 	'vtime1 uiTime
+	|'filename 'volume uiFilename
+	|'path 'volume uiPath
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 
@@ -73,16 +75,25 @@
 	stLink 'exit "btn4"  uiBtn 
 	stDark 'exit "btn4"  uiBtn 
 	ui--
-	|'filename 'volume uiFilename
-	|'path 'volume uiPath
+	'vtree 5 'treeex uiTree
 	
 	2 2 uiGat
-	'vtree 5 'treeex uiTree
+
 	0 255 'si uiSlideri
 	ui--
 	-1.0 1.0 'sf uiSliderf
+		uiPush
+	16 16 uiGridA uiH
+	uiPush 8 5 uiGat 1 6 uiGto
+	0 255 'si uiVSlideri
+	uiPop
+	uiPush 9 5 uiGat 2 6 uiGto
+	-1.0 1.0 'sf uiVSliderf
+	uiPop
+		uiPop
 	
-	3 2 uiGat
+	
+	3 2 uiGat uiV
 	'vc 'listex uiCombo | 'var 'list --
 	ui--
 	'vr 'tablist uiRadio

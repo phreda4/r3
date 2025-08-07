@@ -60,6 +60,14 @@
 	;
 
 |---- move
+::onMoveA | 'move --
+	id hotc =? ( sdlb 1? ( 2drop ex ; ) drop ) drop | no si captura otro
+	guin? 0? ( 2drop ; ) drop
+	SDLb 0? ( 2drop ; ) drop
+	ex 
+	id 'hotc ! 
+	;
+
 ::onMove | 'move --
 	guin? 0? ( 2drop ; ) drop
 	SDLb 0? ( 2drop ; ) drop

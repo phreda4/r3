@@ -141,7 +141,6 @@
 :uiHMS
 	4 4 uiPad
 	0.4 %w 0.1 %h 0.14 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10
-:uuuu		
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
 	mark
@@ -162,7 +161,23 @@
 	2 1 uigAt 'vseg 11 'lms uiList	
 	vseg swap <>? ( dup 5 - 0 max 'vseg 8 + ! ) drop
 	;
-		
+
+:uuuu		
+	1 11 UIGridA $444444 sdlcolor uiRFill
+	0 0 uigAt 
+	mark
+	vhora ,2d " : " ,s
+	vmin ,2d " : " ,s
+	vseg ,2d 0 ,c 
+	empty here uiLabelc
+
+	3 11 UIGridA uiH
+	0 1 uiGAt 1 9 uiGTo
+	0 24 'vhora uiVSlideri
+	0 59 'vmin uiVSlideri
+	0 59 'vseg uiVSlideri
+	;
+
 |-----------------------------
 
 #px #py 	
@@ -183,7 +198,7 @@
 	dup 8 + >a da@+ da@+ 20 + da@+ da@+ uiWin!
 	;
 	
-#wincon 1 [ 700 30 300 400 ] "CONFIG"
+#wincon 1 [ 700 30 100 400 ] "CONFIG"
 
 :winconfig
 	'wincon uiPanel 0? ( drop ; ) drop

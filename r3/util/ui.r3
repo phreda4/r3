@@ -433,13 +433,12 @@
 	dup @ pick3 - 
 	curw 8 - pick4 pick4 swap - */ curx 1+ +
 	cury 2 + 
-	6 
-	curh 4 - 
+	6 curh 4 - 
 	SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
 	uiZone
-	'slideh dup onDnMoveA | 'dn 'move --	
+	'slideh onMoveA | 'dn 'move --	
 	slideshow
 	'focoBtn in/foco 
 	'clickfoco onClick	
@@ -448,13 +447,47 @@
 
 ::uiSlideri | 0 255 'value --
 	uiZone
-	'slideh dup onDnMoveA | 'dn 'move --	
+	'slideh onMoveA | 'dn 'move --	
 	slideshow	
 	'focoBtn in/foco 
 	'clickfoco onClick		
 	@ .d uiLabelC
 	2drop ;	
 
+|---- 
+:slidev | 0.0 1.0 'value --
+	sdly cury - curh clamp0max 
+	2over swap - | Fw
+	curh */ pick3 +
+	over ! ;
+	
+:slideshowv | 0.0 1.0 'value --
+	overfil uiFill
+	oversel
+	dup @ pick3 - 
+	curh 8 - pick4 pick4 swap - */ cury 1+ +
+	curx 2 + swap
+	curw 4 - 6 
+	SDLFRect ;
+
+::uiVSliderf | 0.0 1.0 'value --
+	uiZone
+	'slidev onMoveA
+	slideshowv
+	'focoBtn in/foco 
+	'clickfoco onClick	
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiVSlideri | 0 255 'value --
+	uiZone
+	'slidev onMoveA
+	slideshowv	
+	'focoBtn in/foco 
+	'clickfoco onClick		
+	@ .d uiLabelC
+	2drop ;	
+	
 |---- 8 bits
 :slideh8 | 0 255 'value --
 	sdlx curx - curw clamp0max 
@@ -474,7 +507,7 @@
 	uiZone
 	'focoBtn in/foco 
 	'clickfoco onClick	
-	'slideh8 dup onDnMoveA | 'dn 'move --	
+	'slideh8 onMoveA
 	slideshow8
 	c@ .d uiLabelC
 	2drop ;	
