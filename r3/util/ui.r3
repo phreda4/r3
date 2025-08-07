@@ -511,6 +511,29 @@
 	slideshow8
 	c@ .d uiLabelC
 	2drop ;	
+
+:slidev8 | 0 255 'value --
+	sdly cury - curh clamp0max 
+	2over swap - | Fw
+	curh */ pick3 +
+	over c! ;
+
+:slideshow8 | 0 255 'value --
+	overfil uiFill
+	oversel
+	dup c@ pick3 - 
+	curh 8 - pick4 pick4 swap - */ cury 1+ +
+	curx 2 + swap
+	curw 4 - 6 SDLFRect ;
+
+::uiVSlideri8 | 0 255 'value --
+	uiZone
+	'focoBtn in/foco 
+	'clickfoco onClick	
+	'slidev8 onMoveA
+	slideshow8
+	c@ .d uiLabelC
+	2drop ;	
 	
 |----- LIST
 | #vlist 0 0 

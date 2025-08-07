@@ -155,36 +155,19 @@
 	;
 
 |-----------------------------
-#vhora 0 
-#vmin 0 
-#vseg 0 
-
-:sethms | H m s --
-	'vseg ! 'vmin ! 'vhora ! ;
-	
-:setnowhms
-	time dup 16 >> $ff and over 8 >> $ff and rot $ff and 
-	sethms ;
-	
-:set64hms | dtvar --
-	dup 24 >> $ff and over 16 >> $ff and rot 8 >> $ff and
-	sethms ;
-
 :uiHMS
 	4 4 uiPad
 	uiZone@ 2drop 0.2 %h - |swap 0.07 %w - swap
 	0.1 %w 0.4 %h uiWin! $222222 sdlcolor uiRFill10
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
-	mark
-	vhora ,2d " : " ,s vmin ,2d " : " ,s vseg ,2d 0 ,c 
-	empty here uiLabelc
+	mark datevar @ ,64>dtt 0 ,c empty here uiLabelc
 
 	3 11 UIGridA uiH
 	0 1 uiGAt 1 10 uiGTo
-	0 24 'vhora uiVSlideri
-	0 59 'vmin uiVSlideri
-	0 59 'vseg uiVSlideri	
+	0 24 datevar 3 + uiVSlideri8
+	0 59 datevar 2 + uiVSlideri8
+	0 59 datevar 1 + uiVSlideri8	
 	;
 		
 |----
@@ -197,7 +180,8 @@
 	
 :datetimefocoini
 	dup 'datevar !
-	dup @ 0? ( drop setnowhms ; ) set64hms ;
+	dup @ 0? ( drop setnowdmy ; ) set64dmy ;
+
 	
 ::uiDateTime | 'var --
 	uiZone overfil uiRFill
@@ -233,7 +217,8 @@
 	
 :timefocoini
 	dup 'datevar !
-	dup @ 0? ( drop setnowhms ; ) set64hms ;
+	dup @ 1? ( drop ; ) drop 
+	time 8 << over ! ;
 
 ::uiTime | 'var --
 	uiZone overfil uiRFill

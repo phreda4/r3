@@ -119,7 +119,7 @@
 ::,64>dtt | dt64 -- "h:m:s"
 	dup 24 >> $ff and ,2d ":" ,s
 	dup 16 >> $ff and ,2d ":" ,s
-	$ff and ,2d ;
+	8 >> $ff and ,2d ;
 
 ::64>dtc | dt64 -- "y-m-d h:m:s"
 	dup 48 >> $ffff and ,d " " ,s
