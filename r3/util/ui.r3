@@ -448,7 +448,33 @@
 ::uiSlideri | 0 255 'value --
 	uiZone
 	'slideh onMoveA | 'dn 'move --	
-	slideshow	
+	slideshow
+	'focoBtn in/foco
+	'clickfoco onClick		
+	@ .d uiLabelC
+	2drop ;	
+
+:progreshow | 0.0 1.0 'value --
+	overfil uiFill
+	oversel
+	dup @ pick3 - curw pick4 pick4 swap - */
+	curh
+	curx cury 2swap
+	SDLFRect ;
+
+::uiProgressf | 0.0 1.0 'value --
+	uiZone
+	'slideh onMoveA | 'dn 'move --	
+	progreshow
+	'focoBtn in/foco 
+	'clickfoco onClick	
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiProgressi | 0 255 'value --
+	uiZone
+	'slideh onMoveA | 'dn 'move --	
+	progreshow
 	'focoBtn in/foco 
 	'clickfoco onClick		
 	@ .d uiLabelC
@@ -483,6 +509,32 @@
 	uiZone
 	'slidev onMoveA
 	slideshowv	
+	'focoBtn in/foco 
+	'clickfoco onClick		
+	@ .d uiLabelC
+	2drop ;	
+
+:progreshowv | 0.0 1.0 'value --
+	overfil uiFill
+	oversel
+	dup @ pick3 - curh pick4 pick4 swap - */
+	curw swap
+	curx cury 2swap
+	SDLFRect ;
+
+::uiVProgressf | 0.0 1.0 'value --
+	uiZone
+	'slidev onMoveA
+	progreshowv
+	'focoBtn in/foco 
+	'clickfoco onClick	
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiVProgressi | 0 255 'value --
+	uiZone
+	'slidev onMoveA
+	progreshowv
 	'focoBtn in/foco 
 	'clickfoco onClick		
 	@ .d uiLabelC

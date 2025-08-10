@@ -90,6 +90,10 @@
 	uiPush 9 5 uiGat 2 6 uiGto
 	-1.0 1.0 'sf uiVSliderf
 	uiPop
+	uiPush 11 5 uiGat 1 6 uiGto
+	0 255 'si uiVProgressi
+	uiPop
+		
 		uiPop
 	
 	
@@ -98,7 +102,8 @@
 	ui--
 	'vr 'tablist uiRadio
 	ui--
-	
+	0.0 1.0 'sf uiProgressF
+	0 255 'si uiProgressI
 	
 	1 16 uiGridA uiV
 	0 13 uiGAt
