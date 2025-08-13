@@ -30,18 +30,20 @@ $f0c8 $f14a
 
 #utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0 
 
-#symbol "<>v^<>v^-x-x......"
-
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
 
+#txline
+
 :tt< | "" -- surf h w
 	ttfont swap $ffffff TTF_RenderUTF8_Blended
-	Surf>wh swap ;
+	Surf>wh dup txline max 'txline !
+	swap ;
 	
 :tt<u | "" -- surf h w
 	ttfonta swap $ffffff TTF_RenderUNICODE_Blended
-	Surf>wh swap ;
+	Surf>wh dup txline max 'txline !
+	swap ;
 	
 :tt> | surf --
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
@@ -53,7 +55,8 @@ $f0c8 $f14a
 
 :adv | h w --
 	curx over + tsizex <? ( drop ; ) drop
-	0 'curx ! over 'cury +! ;
+	0 'curx ! txline 'cury +! 
+	0 'txline ! ;
 	
 :fontemit | --
 	'estr tt< adv cury curx recbox! tt> ;
@@ -69,14 +72,12 @@ $f0c8 $f14a
 	
 :fontw!+ | w --
 	8 >> $ff and $80 or 
-	dup .d .println
 	3 << newTab +
 	reccomp swap ! ;
 
 :fontw!+u | w --
 	3 << newTab +
 	reccomp swap ! ;
-
 	
 ::txload | "font" size -- nfont
 	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over 4 - TTF_OpenFont 'ttfonta !
@@ -84,6 +85,7 @@ $f0c8 $f14a
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
 	newTab 0 256 fill 0 'curx ! 0 'cury !				| CLEAR
+	0 'txline !
 	tsizex tsizey texIni | w h --	
 	newTab 32 3 << +
 	32 ( 128 <? 
@@ -118,8 +120,13 @@ $f0c8 $f14a
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
+:decode
+	$80 nand? ( ; )
+	$40 and? ( drop c@+ $80 or ; )
+	$40 or ;
+	
 :fontemit | asci --
-	$80 and? ( drop c@+ $80 or ) 
+	decode
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
 	dup rot $ffff0000ffff and 
@@ -179,6 +186,8 @@ $f0c8 $f14a
 #font2 0
 #font3 0
 
+#prueba ( 128 129 130 131 132 133 134 135 136 0  )
+
 :game
 	$0 SDLcls
 	$ffffff sdlcolor
@@ -188,10 +197,12 @@ $f0c8 $f14a
 	
 	$00ffff txrgb
 	10 10 txat ":hola a ""coso"" todo el mundi ;" txemits
+	'prueba txemits
+	
 	$ff00ff txrgb
-	10 50 txat ":hola i ;‼┴" txemits
+	10 50 txat ":hola i ;" txemits
 	'utf8 txemits
-
+	'prueba txemits
 	
 	font2 txfont
 |	10 400 newtex sdlimage

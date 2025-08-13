@@ -7,6 +7,7 @@
 ^r3/lib/sdl2ttf.r3
 
 #ttfont #tsizex #tsizey 
+#ttfonta #txline
 
 #recbox 0 0
 #recdes 0 0 
@@ -15,17 +16,27 @@
 #newtex #newtab
 
 #utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0  
+| 		user image file camera calendar eye lupa check bars  xquis
+#fonta $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d 
+|fold fo-open <    >	v	  ^
+$f07b $f07c $f0d9 $f0da $f0d7 $f0d8 
+$f104 $f105 $f107 $f106
+$f111 $f058
+$f0c8 $f14a
+0
 
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
 
 :tt< | "" -- surf h w
 	ttfont swap $ffffff TTF_RenderUTF8_Blended
-	Surf>wh swap ;
+	Surf>wh dup txline max 'txline !
+	swap ;
 
 :tt<u | "" -- surf h w
 	ttfonta swap $ffffff TTF_RenderUNICODE_Blended
-	Surf>wh swap ;
+	Surf>wh dup txline max 'txline !
+	swap ;
 	
 :tt> | surf --
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
@@ -33,11 +44,12 @@
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
 	
-#estr 0	
+#estr 0	0
 
 :adv | h w --
 	curx over + tsizex <? ( drop ; ) drop
-	0 'curx ! over 'cury +! ;
+	0 'curx ! txline 'cury +! 
+	0 'txline ! ;
 	
 :fontemit | n --
 	'estr tt< adv cury curx recbox! tt> ;
@@ -54,8 +66,13 @@
 :fontw!+ | w --
 	8 >> $ff and $80 or 3 << newTab +
 	reccomp swap ! ;
+
+:fontw!+u | w --
+	3 << newTab +
+	reccomp swap ! ;	
 	
 ::txload | "font" size -- nfont
+	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over 4 - TTF_OpenFont 'ttfonta !
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
@@ -74,10 +91,18 @@
 		fontw!+
 		'recbox 8 + d@ 'curx +!
 		) 2drop
+	'fonta ( @+ 1?
+		'estr !+ 0 swap c!
+		fontemitu
+		dup 'fonta - 3 >> 191 + | 192..
+		fontw!+u
+		'recbox 8 + d@ 'curx +!
+		) 2drop		
 	texEndAlpha 
 	|dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont
+	ttfonta TTF_CloseFont
 	newTab 32 3 << + @	| width ESP
 	dup newTab !			| 0
 	dup newTab 13 3 << + !	| cr
@@ -86,6 +111,11 @@
 	newTex ;	| reuturn ini font
 
 |------------------------------
+:decode
+	$80 nand? ( ; )
+	$40 and? ( drop c@+ $80 or ; )
+	$40 or ;
+	
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
@@ -98,7 +128,7 @@
 	SDL_SetTextureColorMod ;
 	
 ::txcw | car -- width
-	$80 and? ( drop c@+ $80 or ) 
+	decode
 	$ff and 3 << newTab + 2 + w@ ; 
 	
 ::txw | "" -- "" width
@@ -117,7 +147,7 @@
 	curx cury ;
 	
 ::txemit | utf8' --
-	$80 and? ( drop c@+ $80 or ) 
+	decode
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
 	dup rot $ffff0000ffff and 
@@ -140,7 +170,7 @@
 	sprint txemitr ;
 
 :fontbox | utf8' --
-	$80 and? ( drop c@+ $80 or ) 
+	decode
 	$ff and 3 << newTab + @ 
 	16 >> $ffff0000ffff and | wh
 	cury 32 << curx or 
