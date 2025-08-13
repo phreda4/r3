@@ -276,31 +276,26 @@
 	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
-	'clickfoco onClick guiPrev 
-	ttemitc onClick ui.. ;	
+	ttemitc onClickFoco ui.. ;	
 
 ::uiRBtn | v "" --
 	uiZone
 	overfil uiRFill
 	'focoRBtn in/foco 
-	'clickfoco onClick guiPrev 
-	ttemitc onClick ui.. ;	
+	ttemitc onClickFoco ui.. ;	
 
 ::uiCBtn | v "" --
 	uiZone
 	overfil uiCFill
 	'focoCBtn in/foco 
-	'clickfoco onClick guiPrev 
-	ttemitc onClick ui.. ;	
+	ttemitc onClickFoco ui.. ;	
 	
 ::uiTBtn | v "" -- ; width from text
 	txw 4 + 'curw !
 	uiZone
 	overfil uiFill
-	'clickfoco onClick guiPrev 
-	ttemitc onClick 
-	curw 'curx +!
-	;	
+	ttemitc onClickFoco 
+	curw 'curx +! ;	
 
 |----- list mem (intern)
 #cntlist
@@ -363,7 +358,7 @@
 :icheck | 'var n -- 'var n
 	uiZone 
 	'focoCheck in/foco 
-	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
+	[ 1 over << pick2 @ xor pick2 ! ; ] onClickFoco
 	curx curh txh - 2/ cury + txat 
 	ic txicon 32 txemit a@+ txemits
 	ui.. ;
@@ -388,7 +383,7 @@
 :iradio | 'var n --
 	uiZone
 	'focoRadio in/foco 
-	[ 2dup swap ! clickfoco ; ] onClick
+	[ 2dup swap ! ; ] onClickFoco
 	curx curh txh - 2/ cury + txat 
 	ir txicon 32 txemit a@+ txemits
 	ui.. ;
@@ -600,9 +595,7 @@
 
 :clist | 'var max --
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
-	overl pick2 ! 
-	clickfoco 
-	;
+	overl pick2 ! ;
 
 #backc 
 
@@ -618,13 +611,14 @@
 	pick2 8 + @ + 
 	cntlist 1- 
 	clampmax 'overl ! 
-	'clist onclick ;
+	'clist onClickFoco ;
 
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
 	guin? 0? ( drop ; ) drop
 
-	guiPrev
+	guiPrev | guiBox 1'id+! >>
+	
 	curx curw + 10 - 
 	backc
 	10 cury backc - |2over 2over sdlRect
@@ -737,7 +731,7 @@
 	curx cury dup 'backc ! 
 	curw pick3 curh * guiBox
 	overfil uiFillL
-	'griblist onclick
+	'griblist onClickFoco
 	0 ( over <? glist 1+ ) drop
 	pady 'cury +!
 	empty ;	
@@ -752,9 +746,7 @@
 	overl pick2 @ <>? ( pick2 ! ; ) | click on select
 	pick2 !
 	overl 3 << indlist + @ 
-	dup c@ $80 xor swap c! 
-	clickfoco
-	;
+	dup c@ $80 xor swap c! ;
 
 :chtree
 	-1 'overl !
@@ -762,7 +754,7 @@
 	SDLw 1? ( wwlist ) drop
 	sdly cury - curh / pick2 8 + @ + 
 	cntlist 1- clampmax 'overl ! 
-	'cktree onclick
+	'cktree onClickFoco
 	;
 
 :iicon | n -- 

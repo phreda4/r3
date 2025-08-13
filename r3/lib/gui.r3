@@ -56,17 +56,22 @@
 	guin? 0? ( 2drop ; ) drop
 	sdlb 1? ( nip 'clkbtn ! id 'hotc ! ; ) drop
 	id hotc <>? ( 2drop ; ) drop
-	ex 0 'hotc ! 
-	;
+	ex 0 'hotc ! ;
 
+::onClickFoco
+	guin? 0? ( 2drop ; ) drop
+	sdlb 1? ( nip 'clkbtn ! id 'hotc ! ; ) drop
+	id hotc <>? ( 2drop ; ) drop
+	ex 0 'hotc ! 
+	idf foco =? ( drop ; ) 'foco ! ;
+	
 |---- move
 ::onMoveA | 'move --
 	id hotc =? ( sdlb 1? ( 2drop ex ; ) drop ) drop | no si captura otro
 	guin? 0? ( 2drop ; ) drop
 	SDLb 0? ( 2drop ; ) drop
 	ex 
-	id 'hotc ! 
-	;
+	id 'hotc ! ;
 
 ::onMove | 'move --
 	guin? 0? ( 2drop ; ) drop
