@@ -15,14 +15,15 @@
 #curx #cury
 #newtex #newtab
 
-#utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0  
-| 		user image file camera calendar eye lupa check bars  xquis
-#fonta $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d 
-|fold fo-open <    >	v	  ^
-$f07b $f07c $f0d9 $f0da $f0d7 $f0d8 
-$f104 $f105 $f107 $f106
+#utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿" 0  
+
+#fonta | 128..
+$f0d9 $f0da $f0d7 $f0d8 | < > v ^
+$f104 $f105 $f107 $f106 | < > v ^
 $f111 $f058
 $f0c8 $f14a
+|fold fo-open user image file camera calendar eye lupa check bars xquis
+$f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d 
 0
 
 :recbox! | h w y x --
@@ -72,7 +73,7 @@ $f0c8 $f14a
 	reccomp swap ! ;	
 	
 ::txload | "font" size -- nfont
-	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over 4 - TTF_OpenFont 'ttfonta !
+	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over TTF_OpenFont 'ttfonta !
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
@@ -94,7 +95,7 @@ $f0c8 $f14a
 	'fonta ( @+ 1?
 		'estr !+ 0 swap c!
 		fontemitu
-		dup 'fonta - 3 >> 191 + | 192..
+		dup 'fonta - 3 >> 191 + | 192.. 128..
 		fontw!+u
 		'recbox 8 + d@ 'curx +!
 		) 2drop		
@@ -114,7 +115,7 @@ $f0c8 $f14a
 :decode
 	$80 nand? ( ; )
 	$40 and? ( drop c@+ $80 or ; )
-	$40 or ;
+	$40 or ; | 128 >> 192
 	
 ::txfont | font --
 	dup @ 'newTex ! 8 + 'newTab ! ;
@@ -133,6 +134,10 @@ $f0c8 $f14a
 	
 ::txw | "" -- "" width
 	0 over ( c@+ 1? txcw rot + swap ) 2drop ;
+	
+::txch | car -- height
+	decode
+	$ff and 3 << newTab + 6 + w@ ;
 	
 ::txh | -- heigth
 	newTab 6 + w@ ;

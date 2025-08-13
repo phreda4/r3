@@ -229,7 +229,6 @@
 :	
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
-	24 21 "media/img/icong16.png" ssload 'uicons !
 	"media/ttf/Roboto-bold.ttf" 18 txload 'font1 !
 	
 	sethoy

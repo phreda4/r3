@@ -5,8 +5,6 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
 
-##uicons
-
 #cifil $ff1F2229ff14161A	| over|normal -- color fill
 #cisel $ff1967D2ff393F4C	| over|normal -- color select
 #cifnt $ffffff		| fuente -- color
@@ -228,17 +226,6 @@
 ::uiZone@ | -- x y w h 
 	curx cury curw curh ;
 	
-|----- icon
-::uiconxy | x y nro --
-	uicons ssprite ;
-	
-::uicon | nro --
-	txpos drop 14 +
-	cury curh 2/ +
-	rot uicons ssprite 
-::uicone | -- ; empty icon
-	26 0 tx+at ;
-	
 |----- Widget	
 ::uiLabel | "" --
 	ttemitl ui.. ;
@@ -246,13 +233,18 @@
 	ttemitc ui.. ;
 ::uiLabelr | "" --
 	ttemitr ui.. ;
+
+:txicon | char --
+	curh over txch - 2/  | char ny
+	0 over tx+at
+	swap txemit
+	0 swap neg tx+at ;
 	
 ::uiTlabel
 	txw 4 + 'curw !	
 	ttemitc 
 	curw 'curx +!	
-	;
-	
+	;	
 	
 |dup 0.1 %h TTF_SetFontSize dup %1 TTF_SetFontStyle | KUIB %0001	
 #des 0 0
@@ -366,14 +358,14 @@
 	drop ;
 
 :ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
-	and? ( drop 57 ; ) drop 58 ;
+	and? ( drop 139 ; ) drop 138 ;
 	
 :icheck | 'var n -- 'var n
 	uiZone 
 	'focoCheck in/foco 
 	[ 1 over << pick2 @ xor pick2 ! clickfoco ; ] onClick
 	curx curh txh - 2/ cury + txat 
-	ic uicon a@+ txemits
+	ic txicon 32 txemit a@+ txemits
 	ui.. ;
 		
 ::uiCheck | 'var 'list --
@@ -391,14 +383,14 @@
 	drop ;
 
 :ir over @ |=? ( "(o)" ; ) "( )" ;
-	=? ( 226 ; ) 228 ;
+	=? ( 137 ; ) 136 ;
 
 :iradio | 'var n --
 	uiZone
 	'focoRadio in/foco 
 	[ 2dup swap ! clickfoco ; ] onClick
 	curx curh txh - 2/ cury + txat 
-	ir uicon a@+ txemits
+	ir txicon 32 txemit a@+ txemits
 	ui.. ;
 
 ::uiRadio | 'var 'list --
@@ -727,9 +719,9 @@
 	'iniCombo in/foco
 	'clickfoco onClick
 	mark makeindx	
-	curx curw + 14 - cury curh 2/ + 146 uiconxy
 	curx 8 + cury txat
 	@ uiNindx txemits
+	curx curw + 16 - cury txat 130 txicon
 	empty 
 	ui.. ;
 
@@ -774,8 +766,8 @@
 	;
 
 :iicon | n -- 
-	$20 nand? ( drop uicone ; )
-	7 >> 1 and 1 xor 36 + uicon ; 
+	$20 nand? ( drop 32 txemit ; )
+	7 >> 1 and 129 + txicon  ; 
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
