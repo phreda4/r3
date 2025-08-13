@@ -284,7 +284,7 @@
 	uiZone
 	overfil uiFill
 	'focoBtn in/foco 
-|	'clickfoco onClick guiPrev 
+	'clickfoco onClick guiPrev 
 	ttemitc onClick ui.. ;	
 
 ::uiRBtn | v "" --
@@ -673,6 +673,10 @@
 	pady 'cury +!
 	empty ;	
 
+::uiListV | 'var ntlines vlist --
+
+	;
+	
 |----- COMBO
 ::uisaveLast | 'vector --
 	'uiLastWidget !

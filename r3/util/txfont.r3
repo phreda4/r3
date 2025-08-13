@@ -22,6 +22,10 @@
 :tt< | "" -- surf h w
 	ttfont swap $ffffff TTF_RenderUTF8_Blended
 	Surf>wh swap ;
+
+:tt<u | "" -- surf h w
+	ttfonta swap $ffffff TTF_RenderUNICODE_Blended
+	Surf>wh swap ;
 	
 :tt> | surf --
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
@@ -38,6 +42,9 @@
 :fontemit | n --
 	'estr tt< adv cury curx recbox! tt> ;
 
+:fontemitu 
+	'estr tt<u adv cury curx recbox! tt> ;
+	
 :reccomp
 	'recbox @+ swap @ 16 << or ;
 	

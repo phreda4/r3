@@ -6,6 +6,7 @@
 ^r3/lib/sdl2ttf.r3
 
 #ttfont
+#ttfonta
 
 #tsizex 512
 #tsizey 256
@@ -18,7 +19,18 @@
 #newtex
 #newtab
 
+| 		user image file camera calendar eye lupa check bars  xquis
+#fonta $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d 
+|fold fo-open <    >	v	  ^
+$f07b $f07c $f0d9 $f0da $f0d7 $f0d8 
+$f104 $f105 $f107 $f106
+$f111 $f058
+$f0c8 $f14a
+0
+
 #utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿×·" 0 
+
+#symbol "<>v^<>v^-x-x......"
 
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
@@ -27,21 +39,28 @@
 	ttfont swap $ffffff TTF_RenderUTF8_Blended
 	Surf>wh swap ;
 	
+:tt<u | "" -- surf h w
+	ttfonta swap $ffffff TTF_RenderUNICODE_Blended
+	Surf>wh swap ;
+	
 :tt> | surf --
 	SDLrenderer over SDL_CreateTextureFromSurface | surface texture
 	SDLrenderer over 0 'recbox SDL_RenderCopy	
 	SDL_DestroyTexture
 	SDL_FreeSurface ;
 	
-#estr 0	
+#estr 0	0
 
 :adv | h w --
 	curx over + tsizex <? ( drop ; ) drop
 	0 'curx ! over 'cury +! ;
 	
-:fontemit | n --
+:fontemit | --
 	'estr tt< adv cury curx recbox! tt> ;
 
+:fontemitu |--
+	'estr tt<u adv cury curx recbox! tt> ;
+	
 :reccomp
 	'recbox @+ swap @ 16 << or ;
 	
@@ -49,10 +68,18 @@
 	reccomp swap !+ ;
 	
 :fontw!+ | w --
-	8 >> $ff and $80 or 3 << newTab +
+	8 >> $ff and $80 or 
+	dup .d .println
+	3 << newTab +
 	reccomp swap ! ;
+
+:fontw!+u | w --
+	3 << newTab +
+	reccomp swap ! ;
+
 	
 ::txload | "font" size -- nfont
+	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over 4 - TTF_OpenFont 'ttfonta !
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
@@ -71,10 +98,19 @@
 		fontw!+
 		'recbox 8 + d@ 'curx +!
 		) 2drop
+	'fonta ( @+ 1? |$ffffff and
+		'estr !+ 0 swap c!
+		fontemitu
+		dup 'fonta - 3 >> 
+		191 + | 192..
+		fontw!+u
+		'recbox 8 + d@ 'curx +!
+		) 2drop
 	texEndAlpha 
 	dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont 
+	ttfonta TTF_CloseFont 
 	newTex
 	;
 
@@ -146,8 +182,6 @@
 :game
 	$0 SDLcls
 	$ffffff sdlcolor
-
-
 	
 	font1 txfont
 	10 200 newtex sdlimage
@@ -155,20 +189,20 @@
 	$00ffff txrgb
 	10 10 txat ":hola a ""coso"" todo el mundi ;" txemits
 	$ff00ff txrgb
-	10 50 txat ":hola i ;" txemits
+	10 50 txat ":hola i ;‼┴" txemits
 	'utf8 txemits
 
 	
 	font2 txfont
-	10 400 newtex sdlimage
+|	10 400 newtex sdlimage
 	$ffffff txrgb
 	'utf8 txemits
 	10 90 txat ":hola a ""coso"" todo el mundi ;" txemits
 
 	font3 txfont
-	500 10 newtex sdlimage
-	$ff0000 txrgb
-	"djhaskdjahsf kjdash fkjdha fkjahs dkfjh asdfk" txemits
+	|500 10 newtex sdlimage
+	$ffff00 txrgb
+	" djhaskdjahsf" txemits
 	'utf8 txemits
 
 

@@ -22,6 +22,7 @@
 #sys-TTF_RenderText_Blended
 #sys-TTF_RenderUTF8_Blended
 #sys-TTF_RenderUTF8_Blended_Wrapped
+#sys-TTF_RenderUNICODE_Blended
 #sys-TTF_CloseFont
 #sys-TTF_Quit
 
@@ -43,6 +44,7 @@
 ::TTF_RenderText_Blended sys-TTF_RenderText_Blended sys3 ; |surface ( *font, char *, SDL_Color fg);
 ::TTF_RenderUTF8_Blended sys-TTF_RenderUTF8_Blended sys3 ; |surface ( *font, char *, SDL_Color fg);
 ::TTF_RenderUTF8_Blended_Wrapped sys-TTF_RenderUTF8_Blended_Wrapped sys4 ; | font str color width -- surface
+::TTF_RenderUNICODE_Blended sys-TTF_RenderUNICODE_Blended sys3 ;
 ::TTF_CloseFont sys-TTF_CloseFont sys1 drop ; |void ( *font);
 ::TTF_Quit sys-TTF_Quit sys0 drop ; |void (void);
  
@@ -69,6 +71,7 @@
 	dup "TTF_RenderText_Blended" getproc 'sys-TTF_RenderText_Blended !
 	dup "TTF_RenderUTF8_Blended" getproc 'sys-TTF_RenderUTF8_Blended !
 	dup "TTF_RenderUTF8_Blended_Wrapped" getproc 'sys-TTF_RenderUTF8_Blended_Wrapped !
+	dup "TTF_RenderUNICODE_Blended" getproc 'sys-TTF_RenderUNICODE_Blended !
 	dup "TTF_CloseFont" getproc 'sys-TTF_CloseFont !
 	dup "TTF_Quit" getproc 'sys-TTF_Quit !
 	drop

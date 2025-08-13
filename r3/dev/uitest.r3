@@ -38,6 +38,7 @@
 #vdatetime
 #vtime1
 
+#folderdisk
 #path "r3/"
 #filename * 1024
 
@@ -52,8 +53,8 @@
 	font1 txfont
 	uiStart
 	3 4 uiPad
-	0.45 %w 0.1 %h 0.5 %w 0.7 %h uiWin!
-	4 16 uiGridA uiH
+	0.45 %w 0.05 %h 0.5 %w 0.9 %h uiWin!
+	4 22 uiGridA uiH
 	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect
 	$ffffff sdlcolor 	
@@ -83,14 +84,14 @@
 	ui--
 	-1.0 1.0 'sf uiSliderf
 		uiPush
-	16 16 uiGridA uiH
-	uiPush 8 5 uiGat 1 6 uiGto
+	16 22 uiGridA uiH
+	uiPush 8 5 uiGat 1 4 uiGto
 	0 255 'si uiVSlideri
 	uiPop
-	uiPush 9 5 uiGat 2 6 uiGto
+	uiPush 9 5 uiGat 2 4 uiGto
 	-1.0 1.0 'sf uiVSliderf
 	uiPop
-	uiPush 11 5 uiGat 1 6 uiGto
+	uiPush 11 5 uiGat 1 4 uiGto
 	0 255 'si uiVProgressi
 	uiPop
 		
@@ -105,15 +106,11 @@
 	0.0 1.0 'sf uiProgressF
 	0 255 'si uiProgressI
 	
-	1 16 uiGridA uiV
-	0 13 uiGAt
+	1 22 uiGridA uiV
+	0 20 uiGAt
 	'pad 512 uiInputLine
 	'pad2 512 uiInputLine
 	
-	1 4 uiGridA uiV
-	0 3 uiGat
-	|'exit "hola" uiRbtn
-	|'vtable 5 'cols 'tabla1 uiTable<
 
 	font2 txfont
 	edfocus

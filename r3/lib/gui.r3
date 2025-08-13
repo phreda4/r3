@@ -76,7 +76,7 @@
 |---- dn->move
 ::onDnMove | 'dn 'move --	
 	guin? 0? ( 3drop ; ) drop
-	SDLb 0? ( 3drop ; ) drop
+	SDLb 0? ( 3drop -1 'hotc ! ; ) drop
 	id 
 	hotc =? ( drop nip ex ; )
 	'hotc ! 
@@ -86,7 +86,7 @@
 ::onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
 	id hotc =? ( sdlb 1? ( 2drop nip ex ; ) drop ) drop | no si captura otro
 	guin? 0? ( 3drop ; ) drop
-	SDLb 0? ( 3drop ; ) drop
+	SDLb 0? ( 3drop -1 'hotc ! ; ) drop
 	id 
 	hotc =? ( drop nip ex ; )
 	'hotc ! 
