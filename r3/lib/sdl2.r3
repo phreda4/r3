@@ -33,6 +33,7 @@
 #sys-SDL_GetRenderDrawColor
 #sys-SDL_CreateTextureFromSurface
 #sys-SDL_CreateRGBSurfaceWithFormatFrom
+#sys-SDL_CreateRGBSurfaceWithFormat
 #sys-SDL_QueryTexture
 #sys-SDL_CreateRGBSurface 
 #sys-SDL_LockSurface
@@ -121,6 +122,7 @@
 ::SDL_RenderPresent sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface sys-SDL_CreateTextureFromSurface sys2 ;
 ::SDL_CreateRGBSurfaceWithFormatFrom sys-SDL_CreateRGBSurfaceWithFormatFrom sys6 ;
+::SDL_CreateRGBSurfaceWithFormat sys-SDL_CreateRGBSurfaceWithFormat sys5 ;
 ::SDL_SetRenderDrawColor sys-SDL_SetRenderDrawColor sys5 drop ; 
 ::SDL_GetRenderDrawColor sys-SDL_GetRenderDrawColor sys5 drop ; 
 ::SDL_CreateRGBSurface sys-SDL_CreateRGBSurface sys8 ;
@@ -182,11 +184,6 @@
 ::SDL_HasClipboardText sys-SDL_HasClipboardText sys0 ;
 ::SDL_SetClipboardText sys-SDL_SetClipboardText sys1 ;
 ::SDL_free sys-SDL_free sys1 drop ;
-
-#sys-
-#sys-
-#sys-
-#sys-SDL_free
 
 |----------------------------------------------------------
 	
@@ -384,6 +381,7 @@
 	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
 	dup "SDL_CreateRGBSurfaceWithFormatFrom" getproc 'sys-SDL_CreateRGBSurfaceWithFormatFrom !
+	dup "SDL_CreateRGBSurfaceWithFormat" getproc 'sys-SDL_CreateRGBSurfaceWithFormat !
 	dup "SDL_QueryTexture" getproc 'sys-SDL_QueryTexture !
 	dup "SDL_SetTextureColorMod" getproc 'sys-SDL_SetTextureColorMod !
 	dup "SDL_SetTextureAlphaMod" getproc 'sys-SDL_SetTextureAlphaMod !
