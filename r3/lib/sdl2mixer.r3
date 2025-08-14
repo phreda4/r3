@@ -20,6 +20,7 @@
 #sys-Mix_CloseAudio
 #sys-Mix_PlayingMusic
 #sys-Mix_Playing
+#sys-Mix_MasterVolume
 	
 ::Mix_Init sys-Mix_Init sys1 ;
 ::Mix_Quit sys-MIX_Quit sys0 drop ;
@@ -32,7 +33,7 @@
 ::Mix_PlayMusic sys-Mix_PlayMusic sys2 drop ;
 ::Mix_HaltMusic sys-Mix_HaltMusic sys0 drop ;
 ::Mix_FadeOutMusic sys-Mix_fadeOutMusic sys1 drop ;
-::Mix_VolumeMusic sys-Mix_VolumeMusic sys1 ;
+::Mix_VolumeMusic sys-Mix_VolumeMusic sys1 drop ;
 ::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
 ::Mix_Playing sys-Mix_Playing sys1 ;
 
@@ -40,6 +41,7 @@
 ::Mix_FreeMusic sys-Mix_FreeMusic sys1 drop ;
 ::Mix_OpenAudio sys-Mix_OpenAudio sys4 drop ;
 ::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
+::Mix_MasterVolume sys-Mix_MasterVolume sys1 drop ; 
 
 ::SNDInit
 	44100 $8010 2 4096 Mix_OpenAudio ;
@@ -79,6 +81,8 @@
 	
 	dup "Mix_PlayingMusic" getproc 'sys-Mix_PlayingMusic !
 	dup "Mix_Playing" getproc 'sys-Mix_Playing !
+	dup "Mix_MasterVolume" getproc 'sys-Mix_MasterVolume !
+		
 	drop
 |WIN|	"" SetDllDirectory	
 	SNDInit
