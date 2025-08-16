@@ -38,6 +38,12 @@
 #winstack> 'winstack
 
 #uilastwidget 0
+#uiLastfoco
+
+::uiExitWidget
+	uiLastfoco 'foco !
+	0 'uilastwidget ! 
+	;
 
 #uilastpos 0 
 #uilaststy 0 0 0 0
@@ -45,7 +51,6 @@
 #uidata1 0 
 #uidata2 0 
 
-	
 |----- backup dims
 :dims>64 | 'adr -- 64dim
 	@+ $ffff and 16 << 
@@ -214,7 +219,7 @@
 ::uiStart
 	gui uiH
 	0 0 sw sh uiWin! 
-	0 'uiLastWidget !
+	|0 'uiLastWidget !
 	;
 
 ::uiZone! | x y w h --
@@ -662,13 +667,16 @@
 ::uiListV | 'var ntlines vlist --
 
 	;
-	
-|----- COMBO
+
+|------- LAST WIDGET
 ::uisaveLast | 'vector --
 	'uiLastWidget !
 	'curx dims>64 'uilastpos !
 	'uilaststy 'cifil 3 move	|dsc style
-	txFont@ 'uiLastfont !		| font
+	txFont@ 'uiLastfont !		| font	
+|	foco "%d" .println
+	foco 1+ 'uiLastfoco !
+	idl 'foco !
 	;
 	
 :uiBacklast |--
@@ -676,6 +684,19 @@
 	'cifil 'uilaststy 3 move 
 	uiLastfont txfont ;
 	
+
+|----- COMBO
+:chlisto
+	-1 'overl !
+	guin? 0? ( drop ; ) drop
+	SDLw 1? ( wwlist ) drop
+	sdly cury - curh / 
+	pick2 8 + @ + 
+	cntlist 1- 
+	clampmax 'overl ! 
+	[ clist uiExitWidget ; ] onClick ;
+
+
 :combolist | --
 	uidata1 uidata2 
 	mark makeindx
@@ -688,7 +709,7 @@
 	cifoc sdlColor 2over 2over sdlRect
 	guiBox 
 	
-	chlist
+	chlisto
 	0 ( over <? ilist 1+ ) drop
 	cscroll
 	2drop
@@ -882,7 +903,10 @@
 | menu (separa y niveles)
 
 ::uiEnd
+	1 'idf +!
+|	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint\
 	uilastWidget 0? ( drop ; ) 
+	foco idf <? ( 2drop uiExitWidget ; ) drop
 	uiBacklast
 	ex ;
 	

@@ -45,7 +45,8 @@
 	dia $ff and 32 << or
 	|datevar @ $ffffffff nand or 
 	datevar !
-	refreshfoco
+	|refreshfoco
+	uiExitWidget
 	;
 	
 :clickd | 'jday -- 'jday
@@ -54,7 +55,7 @@
 
 :clickdn | 'jday -- 'jday
 	dup jul2date 'anio ! 'mes ! 'dia !
-	jhoja! exitdlg ;
+	jhoja! ; 
 	
 #nadia "Dom" "Lun" "Mar" "Mie" "Jue" "Vie" "Sab" 
 
@@ -136,7 +137,7 @@
 	4 4 uiPad
 	|0.1 %w 0.1 %h 
 	uiZone@ 2drop 0.25 %h - swap 0.125 %w - swap
-	0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10	
+	0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10 $ffffff sdlcolor uiRRect10	
 	1 9 UIGridA $444444 sdlcolor uiRFill	
 	0 0 uigAt uiH stDark
 	" " uiTLabel
@@ -158,10 +159,12 @@
 :uiHMS
 	4 4 uiPad
 	uiZone@ 2drop 0.2 %h - |swap 0.07 %w - swap
-	0.1 %w 0.4 %h uiWin! $222222 sdlcolor uiRFill10
+	0.1 %w 0.4 %h uiWin! 
+	$222222 sdlcolor uiRFill10 $ffffff sdlcolor uiRRect10
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 
-	mark datevar @ ,64>dtt 0 ,c empty here uiLabelc
+	'uiExitWidget
+	mark datevar @ ,64>dtt 0 ,c empty here uiRBtn
 
 	3 11 UIGridA uiH
 	0 1 uiGAt 1 10 uiGTo
@@ -181,7 +184,6 @@
 :datetimefocoini
 	dup 'datevar !
 	dup @ 0? ( drop setnowdmy ; ) set64dmy ;
-
 	
 ::uiDateTime | 'var --
 	uiZone overfil uiRFill

@@ -13,15 +13,15 @@
 #hotnow	| activo anterior
 #hotc	| foco
 
-#foco	| activo teclado
+##foco	| activo teclado
 #foconow | activo teclado
 
 ##clkbtn
 
 |--- id
 #id		| id gui actual
-#idf	| id gui foco actual (teclado)
-#idl	| id foco ultim
+##idf	| id gui foco actual (teclado)
+##idl	| id foco ultim
 
 ##guin? | mouse in rect? and last in touch
 
