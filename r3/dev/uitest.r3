@@ -5,7 +5,8 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/ui.r3
 ^r3/util/uiDatetime.r3
-^r3/util/uiedit.r3
+^r3/util/uiEdit.r3
+^r3/util/uiColor.r3
 	
 #font1
 #font2
@@ -47,6 +48,8 @@
 	
 #tabnow	
 
+#vcolor $00ff00
+
 |-----------------------------
 :main
 	0 SDLcls
@@ -60,6 +63,8 @@
 	$ffffff sdlcolor 	
 	'vlist 'tablist uiTab
 	
+
+	
 	0 2 uiGAt uiV
 	'vlist 3 'listex uiList | 8
 	'vh 'tablist uiCheck
@@ -67,6 +72,8 @@
 	'vtime1 uiTime
 	|'filename 'volume uiFilename
 	|'path 'volume uiPath
+
+	'vcolor uiColor | H
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 

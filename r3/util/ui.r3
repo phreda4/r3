@@ -32,7 +32,7 @@
 
 #padx #pady	
 #winx #winy #winw #winh	| window
-#curx #cury #curw #curh	| cursorwh
+##curx ##cury #curw #curh	| cursorwh
 
 #winstack * 1024
 #winstack> 'winstack
