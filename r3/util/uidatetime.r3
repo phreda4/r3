@@ -137,8 +137,8 @@
 	4 4 uiPad
 	|0.1 %w 0.1 %h 
 	uiZone@ 2drop 0.25 %h - swap 0.125 %w - swap
-	0.25 %w 0.5 %h uiWin! $222222 sdlcolor uiRFill10 $ffffff sdlcolor uiRRect10	
-	1 9 UIGridA $444444 sdlcolor uiRFill	
+	0.25 %w 0.5 %h uiWinFit! $222222 sdlcolor uiRFill10 $ffffff sdlcolor uiRRect10	
+	1 9 UIGridA |$444444 sdlcolor uiRFill	
 	0 0 uigAt uiH stDark
 	" " uiTLabel
 	datejuln 1+ 7 mod >dianame uiTLabel ", " uiTLabel
@@ -159,7 +159,7 @@
 :uiHMS
 	4 4 uiPad
 	uiZone@ 2drop 0.2 %h - |swap 0.07 %w - swap
-	0.1 %w 0.4 %h uiWin! 
+	0.1 %w 0.4 %h uiWinFit! 
 	$222222 sdlcolor uiRFill10 $ffffff sdlcolor uiRRect10
 	1 11 UIGridA $444444 sdlcolor uiRFill
 	0 0 uigAt 

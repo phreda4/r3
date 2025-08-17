@@ -38,12 +38,9 @@
 #winstack> 'winstack
 
 #uilastwidget 0
-#uiLastfoco
 
 ::uiExitWidget
-	uiLastfoco 'foco !
-	0 'uilastwidget ! 
-	;
+	-1 'foco ! 0 'uilastwidget ! ;
 
 #uilastpos 0 
 #uilaststy 0 0 0 0
@@ -194,6 +191,16 @@
 ::uiWin! | x y w h --
 	2over 2over guiBox
 	'winh ! 'winw ! 'winy ! 'winx ! ;
+
+:fitinwin | x y w h 
+	2swap 	| w h x y 
+	dup pick3 + sh - 0 max - 0 max swap
+	dup pick4 + sw - 0 max - 0 max swap
+	2swap ;
+	
+::uiWinFit! | x y w h --
+	fitinwin
+	uiWin! ;
 	
 ::uiWin@ | x y w h --
 	winx winy winw winh ;	
@@ -674,16 +681,12 @@
 	'curx dims>64 'uilastpos !
 	'uilaststy 'cifil 3 move	|dsc style
 	txFont@ 'uiLastfont !		| font	
-|	foco "%d" .println
-	foco 1+ 'uiLastfoco !
-	idl 'foco !
-	;
+	idl 'foco ! ;
 	
 :uiBacklast |--
 	'curx uilastpos 64>dims 
 	'cifil 'uilaststy 3 move 
 	uiLastfont txfont ;
-	
 
 |----- COMBO
 :chlisto
@@ -722,6 +725,7 @@
 	2dup 'uidata2 ! 'uidata1 !
 	curh dup 'cury +! 
 	'combolist uisaveLast
+	
 	neg 'cury +!
 	
 	SDLkey
@@ -896,12 +900,6 @@
 	;
 
 |-------------------
-| combo
-| datetime
-| date
-| time
-| menu (separa y niveles)
-
 ::uiEnd
 	1 'idf +!
 |	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint\

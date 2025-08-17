@@ -53,7 +53,7 @@
 	font1 txfont
 	uiStart
 	3 4 uiPad
-	0.45 %w 0.05 %h 0.5 %w 0.9 %h uiWin!
+	0.01 %w 0.05 %h 0.5 %w 0.9 %h uiWin!
 	4 22 uiGridA uiH
 	$222222 sdlcolor uiFillW |	$3f sdlcolor uiTitleF
 	"Tabs" uiTitle 		| $uiRectW uiFil uiRect
@@ -116,6 +116,7 @@
 	edfocus
 	edcodedraw
 
+
 |	0.4 %w 0.5 %h 0.3 %w 0.2 %h uiWin!
 |	$111111 sdlcolor uiFillW 
 |	3 3 uiGridA
@@ -142,7 +143,7 @@
 	txload 'font2 !
  	
 	edram 
-	8 32 550 550 edwin
+	0.5 %w 32 550 550 edwin
 	
 	"r3/opengl/voxels/3-vox.r3" 
 	'filename strcpy
