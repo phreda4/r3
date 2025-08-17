@@ -18,9 +18,9 @@
 #vx 0.0 #vy 0.0
 
 :jugador
-	msec 8 >> $3 and sprbird px 16 >> py 16 >> tsdraw
+	px int. py int. 2.0 msec 8 >> $3 and sprbird sspritez
 
-	py 16 >> sh >? ( -10.0 'vy ! ) drop
+	py int. sh >? ( -10.0 'vy ! ) drop
 	vy 'py +!
 	0.1 'vy +! 
 	;
@@ -42,8 +42,8 @@
 	800.0 'pxp2 ! 500 randmax 'pyp2 ! ;
 	
 :fondo	
-	pxp2 16 >> pyp2 drawpipe 
-	pxp 16 >> pyp drawpipe 
+	pxp2 int. pyp2 drawpipe 
+	pxp int. pyp drawpipe 
 	-2.4 'pxp +!
 	-2.4 'pxp2 +!
 	pxp -80.0 <? ( newpipe ) drop
@@ -65,7 +65,7 @@
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/pileline.png" loadimg 'sprpipe !
-	36 25 "media/img/bird.png" tsload 'sprbird !
+	36 25 "media/img/bird.png" ssload 'sprbird !
 
 	'juego SDLshow
 	

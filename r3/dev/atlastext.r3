@@ -80,7 +80,8 @@ $f0c8 $f14a
 	reccomp swap ! ;
 	
 ::txload | "font" size -- nfont
-	"media/ttf/Font Awesome 7 Free-Solid-900.otf" over 4 - TTF_OpenFont 'ttfonta !
+	"media/ttf/Font Awesome 7 Free-Solid-900.otf" 
+	over 4 - TTF_OpenFont 'ttfonta !
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM

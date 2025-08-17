@@ -132,7 +132,7 @@
 	
 :game
 	0 SDLcls
-	immgui 	
+	immgui 0 0 sw sh guibox 
 	drawmap
 	showbomb?	
 	'click onClick 
