@@ -7,6 +7,7 @@
 ^r3/util/uiDatetime.r3
 ^r3/util/uiEdit.r3
 ^r3/util/uiColor.r3
+^r3/util/uiFileDlg.r3
 	
 #font1
 #font2
@@ -42,6 +43,7 @@
 #folderdisk
 #path "r3/"
 #filename * 1024
+#vfilen "hola" * 1024
 
 :ui--
 	$444444 sdlcolor uiLineH ;
@@ -74,6 +76,7 @@
 	|'path 'volume uiPath
 
 	'vcolor uiColor | H
+	'vfilen uiFileName
 	
 	1 2 uiGAt
 	stDang 'exit "btn1"  uiBtn 
