@@ -102,10 +102,10 @@
 | & $26
 |
 :char>6 | char -- 6bitchar
-	$1f - dup $40 and 1 >> or $3f and ;
+	$20 - dup $40 and 1 >> or $3f and ;
 
 :6>char | 6bc -- char
-	$3f and $1f + ;
+	$3f and $20 + ;
 
 #appn
 
