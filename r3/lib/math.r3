@@ -319,3 +319,35 @@
 |::fp2f | fp -- fixed point
 |	0? ( ; )
 |	-? ( fp2fu neg ; ) fp2fu ;
+
+|--- byte 0..255 to normalize 0..1 float32
+:byte2float32N | byte -- float
+	$ff and 0? ( ; ) 
+	32 over clz -			| v msb
+	1 over << 1- rot and 	| msb frac
+	23 pick2 - <<			| msb mant
+	$7fffff and
+	swap 119 + 23 << | 8 - 127 +
+	or ;
+
+	
+|=--- float 40.24	
+:f2fp24 | f -- fp
+	0? ( ; )
+	dup 63 >> $80000000 and 
+	swap abs		| sign abs(i)
+	dup clz 8 - 	| s i shift
+	swap over shift	| v s shift i
+	134 rot 8 + - 23 << | s i m | 16 - (fractional part)
+	swap $7fffff and or or ;	
+	
+|--- floating point	to fixed point (32 bit but sign bit in 64)
+:fp2f24 | fp -- fixed point
+	0? ( ; )
+	dup $7fffff and $800000 or
+	over 23 >> $ff and 134 - 8 +
+	shift swap -? ( drop neg ; ) drop ;	
+	
+|:byte2float32N | v -- v
+|	$ff and $ff 24 <</ f2fp24 ;
+	

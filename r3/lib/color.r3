@@ -70,9 +70,9 @@
 #acch h0 h1 h2 h3 h4 h5
 
 ::hsv2rgb | h s v -- rgb32
-	1? ( 1 - ) $ffff and swap
+	1? ( 1- ) $ffff and swap
 	0? ( drop nip 8 >> dup 8 << dup 8 << or or ; ) | hvs
-	rot 1? ( 1 - ) $ffff and
+	rot 1? ( 1- ) $ffff and
 	dup 1 << + 1 <<	| 6*
 	dup 16 >> 	| vshH
 	1 nand? ( $ffff rot - swap ) | vsfH
