@@ -1,6 +1,7 @@
 | Color Select Dialog
 | PHREDA 2025
 |---------------
+^r3/lib/color.r3
 ^r3/util/ui.r3
 ^r3/util/txfont.r3
 

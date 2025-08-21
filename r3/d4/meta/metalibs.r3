@@ -36,9 +36,9 @@
 #r3_lib_crc32.r3 'name 'words 'calls 'info
 ^r3/lib/gui.r3
 #name "r3/lib/gui.r3"
-#words  "xr1" "yr1" "xr2" "yr2" "hotnow" "foco" "clkbtn" "guin?" "hotc" "gui" "guiBox" "guiPrev" "guiRect" "onClick" "onMove" "onDnMove" "onDnMoveA" "onMap" "onMapA" "guiI" "guiO" "guiIO" "nextfoco" "prevfoco" "setfoco" "clickfoco" "clickfoco1" "refreshfoco" "w/foco" "focovoid" "esfoco?" "in/foco" "lostfoco" 0
-#calls  'xr1 'yr1 'xr2 'yr2 'hotnow 'foco 'clkbtn 'guin? 'hotc 'gui 'guiBox 'guiPrev 'guiRect 'onClick 'onMove 'onDnMove 'onDnMoveA 'onMap 'onMapA 'guiI 'guiO 'guiIO 'nextfoco 'prevfoco 'setfoco 'clickfoco 'clickfoco1 'refreshfoco 'w/foco 'focovoid 'esfoco? 'in/foco 'lostfoco
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $4C $0 $4C $1F $1F $2E $2E $3D $3D $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
+#words  "xr1" "yr1" "xr2" "yr2" "foco" "clkbtn" "idf" "idl" "guin?" "gui" "guiBox" "guiPrev" "guiRect" "onClick" "onClickFoco" "onMoveA" "onMove" "onDnMove" "onDnMoveA" "onMap" "onMapA" "guiI" "guiO" "guiIO" "nextfoco" "prevfoco" "setfoco" "clickfoco" "clickfoco1" "refreshfoco" "w/foco" "focovoid" "esfoco?" "in/foco" "lostfoco" 0
+#calls  'xr1 'yr1 'xr2 'yr2 'foco 'clkbtn 'idf 'idl 'guin? 'gui 'guiBox 'guiPrev 'guiRect 'onClick 'onClickFoco 'onMoveA 'onMove 'onDnMove 'onDnMoveA 'onMap 'onMapA 'guiI 'guiO 'guiIO 'nextfoco 'prevfoco 'setfoco 'clickfoco 'clickfoco1 'refreshfoco 'w/foco 'focovoid 'esfoco? 'in/foco 'lostfoco
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $4C $0 $4C $1F $1F $1F $1F $2E $2E $3D $3D $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
 #r3_lib_gui.r3 'name 'words 'calls 'info
 ^r3/lib/input.r3
 #name "r3/lib/input.r3"
@@ -90,9 +90,9 @@
 #r3_lib_rand.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2.r3
 #name "r3/lib/sdl2.r3"
-#words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderCopyEx" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_RenderSetLogicalSize" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
-#calls  'SDL_Init 'SDL_GetCurrentDisplayMode 'SDL_Quit 'SDL_GetNumVideoDisplays 'SDL_CreateWindow 'SDL_SetWindowFullscreen 'SDL_RenderSetLogicalSize 'SDL_RaiseWindow 'SDL_GetWindowSize 'SDL_GetWindowSurface 'SDL_ShowCursor 'SDL_UpdateWindowSurface 'SDL_DestroyWindow 'SDL_CreateRenderer 'SDL_CreateTexture 'SDL_QueryTexture 'SDL_SetTextureColorMod 'SDL_SetTextureAlphaMod 'SDL_DestroyTexture 'SDL_DestroyRenderer 'SDL_UpdateTexture 'SDL_RenderClear 'SDL_RenderCopy 'SDL_RenderCopyEx 'SDL_RenderPresent 'SDL_CreateTextureFromSurface 'SDL_CreateRGBSurfaceWithFormatFrom 'SDL_SetRenderDrawColor 'SDL_GetRenderDrawColor 'SDL_CreateRGBSurface 'SDL_LockSurface 'SDL_UnlockSurface 'SDL_BlitSurface 'SDL_SetSurfaceBlendMode 'SDL_SetSurfaceAlphaMod 'SDL_FillRect 'SDL_FreeSurface 'SDL_LockTexture 'SDL_UnlockTexture 'SDL_RenderSetLogicalSize 'SDL_SetRenderDrawBlendMode 'SDL_SetTextureBlendMode 'SDL_ConvertSurfaceFormat 'SDL_RenderDrawPoint 'SDL_RenderDrawPoints 'SDL_RenderDrawLine 'SDL_RenderDrawRect 'SDL_RenderFillRect 'SDL_RenderGeometry 'SDL_RenderReadPixels 'SDL_RenderSetClipRect 'SDL_SetTextureScaleMode 'SDL_SetRenderTarget 'SDL_Delay 'SDL_PollEvent 'SDL_GetTicks 'SDL_RWFromFile 'SDL_RWclose 'SDL_GL_SetAttribute 'SDL_GL_CreateContext 'SDL_GL_DeleteContext 'SDL_GL_SetSwapInterval 'SDL_GL_SwapWindow 'SDL_GL_LoadLibrary 'SDL_GL_GetProcAddress 'SDL_GL_MakeCurrent 'SDL_SetHint 'SDL_GetError 'SDL_OpenAudioDevice 'SDL_QueueAudio 'SDL_GetQueuedAudioSize 'SDL_PauseAudioDevice 'SDL_CloseAudioDevice 'SDL_GetClipboardText 'SDL_HasClipboardText 'SDL_SetClipboardText 'SDL_free 'SDL_windows 'SDLrenderer 'sw 'sh 'SDLinit 'SDLmini 'SDLinitScr 'sdlinitR 'SDLfullw 'SDLfull 'SDLframebuffer 'SDLblend 'SDLquit 'SDLevent 'SDLkey 'SDLchar 'SDLx 'SDLy 'SDLb 'SDLw 'SDLupdate 'SDLClick '.exit 'SDLshow 'exit 'SDLredraw 'sdlbreak 'SDLTexwh '%w '%h
-#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $79 $1F $2F $6B $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $3D $2E $2E $3E $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $0 $1F $80 $1F $0 $0 $0 $11 $10 $10 )
+#words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderCopyEx" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_CreateRGBSurfaceWithFormat" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_RenderSetLogicalSize" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
+#calls  'SDL_Init 'SDL_GetCurrentDisplayMode 'SDL_Quit 'SDL_GetNumVideoDisplays 'SDL_CreateWindow 'SDL_SetWindowFullscreen 'SDL_RenderSetLogicalSize 'SDL_RaiseWindow 'SDL_GetWindowSize 'SDL_GetWindowSurface 'SDL_ShowCursor 'SDL_UpdateWindowSurface 'SDL_DestroyWindow 'SDL_CreateRenderer 'SDL_CreateTexture 'SDL_QueryTexture 'SDL_SetTextureColorMod 'SDL_SetTextureAlphaMod 'SDL_DestroyTexture 'SDL_DestroyRenderer 'SDL_UpdateTexture 'SDL_RenderClear 'SDL_RenderCopy 'SDL_RenderCopyEx 'SDL_RenderPresent 'SDL_CreateTextureFromSurface 'SDL_CreateRGBSurfaceWithFormatFrom 'SDL_CreateRGBSurfaceWithFormat 'SDL_SetRenderDrawColor 'SDL_GetRenderDrawColor 'SDL_CreateRGBSurface 'SDL_LockSurface 'SDL_UnlockSurface 'SDL_BlitSurface 'SDL_SetSurfaceBlendMode 'SDL_SetSurfaceAlphaMod 'SDL_FillRect 'SDL_FreeSurface 'SDL_LockTexture 'SDL_UnlockTexture 'SDL_RenderSetLogicalSize 'SDL_SetRenderDrawBlendMode 'SDL_SetTextureBlendMode 'SDL_ConvertSurfaceFormat 'SDL_RenderDrawPoint 'SDL_RenderDrawPoints 'SDL_RenderDrawLine 'SDL_RenderDrawRect 'SDL_RenderFillRect 'SDL_RenderGeometry 'SDL_RenderReadPixels 'SDL_RenderSetClipRect 'SDL_SetTextureScaleMode 'SDL_SetRenderTarget 'SDL_Delay 'SDL_PollEvent 'SDL_GetTicks 'SDL_RWFromFile 'SDL_RWclose 'SDL_GL_SetAttribute 'SDL_GL_CreateContext 'SDL_GL_DeleteContext 'SDL_GL_SetSwapInterval 'SDL_GL_SwapWindow 'SDL_GL_LoadLibrary 'SDL_GL_GetProcAddress 'SDL_GL_MakeCurrent 'SDL_SetHint 'SDL_GetError 'SDL_OpenAudioDevice 'SDL_QueueAudio 'SDL_GetQueuedAudioSize 'SDL_PauseAudioDevice 'SDL_CloseAudioDevice 'SDL_GetClipboardText 'SDL_HasClipboardText 'SDL_SetClipboardText 'SDL_free 'SDL_windows 'SDLrenderer 'sw 'sh 'SDLinit 'SDLmini 'SDLinitScr 'sdlinitR 'SDLfullw 'SDLfull 'SDLframebuffer 'SDLblend 'SDLquit 'SDLevent 'SDLkey 'SDLchar 'SDLx 'SDLy 'SDLb 'SDLw 'SDLupdate 'SDLClick '.exit 'SDLshow 'exit 'SDLredraw 'sdlbreak 'SDLTexwh '%w '%h
+#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $79 $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $3D $2E $2E $3E $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $0 $1F $80 $1F $0 $0 $0 $11 $10 $10 )
 #r3_lib_sdl2.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gfx.r3
 #name "r3/lib/sdl2gfx.r3"
@@ -114,9 +114,9 @@
 #r3_lib_sdl2image.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2mixer.r3
 #name "r3/lib/sdl2mixer.r3"
-#words  "Mix_Init" "Mix_Quit" "Mix_LoadWAV" "Mix_LoadMUS" "Mix_PlayChannelTimed" "Mix_HaltChannel" "Mix_FadeOutChannel" "Mix_PlayMusic" "Mix_HaltMusic" "Mix_FadeOutMusic" "Mix_VolumeMusic" "Mix_PlayingMusic" "Mix_Playing" "Mix_FreeChunk" "Mix_FreeMusic" "Mix_OpenAudio" "Mix_CloseAudio" "SNDInit" "SNDplay" "SNDplayn" "SNDQuit" 0
-#calls  'Mix_Init 'Mix_Quit 'Mix_LoadWAV 'Mix_LoadMUS 'Mix_PlayChannelTimed 'Mix_HaltChannel 'Mix_FadeOutChannel 'Mix_PlayMusic 'Mix_HaltMusic 'Mix_FadeOutMusic 'Mix_VolumeMusic 'Mix_PlayingMusic 'Mix_Playing 'Mix_FreeChunk 'Mix_FreeMusic 'Mix_OpenAudio 'Mix_CloseAudio 'SNDInit 'SNDplay 'SNDplayn 'SNDQuit
-#info ( $10 $0 $10 $10 $4D $1F $2E $2E $0 $1F $10 $1 $10 $1F $1F $4C $0 $0 $1F $2E $0 )
+#words  "Mix_Init" "Mix_Quit" "Mix_LoadWAV" "Mix_LoadMUS" "Mix_PlayChannelTimed" "Mix_HaltChannel" "Mix_FadeOutChannel" "Mix_PlayMusic" "Mix_HaltMusic" "Mix_FadeOutMusic" "Mix_VolumeMusic" "Mix_PlayingMusic" "Mix_Playing" "Mix_FreeChunk" "Mix_FreeMusic" "Mix_OpenAudio" "Mix_CloseAudio" "Mix_MasterVolume" "SNDInit" "SNDplay" "SNDplayn" "SNDQuit" 0
+#calls  'Mix_Init 'Mix_Quit 'Mix_LoadWAV 'Mix_LoadMUS 'Mix_PlayChannelTimed 'Mix_HaltChannel 'Mix_FadeOutChannel 'Mix_PlayMusic 'Mix_HaltMusic 'Mix_FadeOutMusic 'Mix_VolumeMusic 'Mix_PlayingMusic 'Mix_Playing 'Mix_FreeChunk 'Mix_FreeMusic 'Mix_OpenAudio 'Mix_CloseAudio 'Mix_MasterVolume 'SNDInit 'SNDplay 'SNDplayn 'SNDQuit
+#info ( $10 $0 $10 $10 $4D $1F $2E $2E $0 $1F $1F $1 $10 $1F $1F $4C $0 $1F $0 $1F $2E $0 )
 #r3_lib_sdl2mixer.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2net.r3
 #name "r3/lib/sdl2net.r3"
@@ -132,9 +132,9 @@
 #r3_lib_sdl2poly.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2ttf.r3
 #name "r3/lib/sdl2ttf.r3"
-#words  "TTF_Init" "TTF_OpenFont" "TTF_SetFontStyle" "TTF_SetFontOutline" "TTF_SetFontLineSkip" "TTF_SetFontWrappedAlign" "TTF_SetFontSize" "TTF_SetFontSDF" "TTF_SizeText" "TTF_SizeUTF8" "TTF_MeasureUTF8" "TTF_RenderText_Solid" "TTF_RenderUTF8_Solid" "TTF_RenderText_Shaded" "TTF_RenderUTF8_Shaded" "TTF_RenderText_Blended" "TTF_RenderUTF8_Blended" "TTF_RenderUTF8_Blended_Wrapped" "TTF_CloseFont" "TTF_Quit" 0
-#calls  'TTF_Init 'TTF_OpenFont 'TTF_SetFontStyle 'TTF_SetFontOutline 'TTF_SetFontLineSkip 'TTF_SetFontWrappedAlign 'TTF_SetFontSize 'TTF_SetFontSDF 'TTF_SizeText 'TTF_SizeUTF8 'TTF_MeasureUTF8 'TTF_RenderText_Solid 'TTF_RenderUTF8_Solid 'TTF_RenderText_Shaded 'TTF_RenderUTF8_Shaded 'TTF_RenderText_Blended 'TTF_RenderUTF8_Blended 'TTF_RenderUTF8_Blended_Wrapped 'TTF_CloseFont 'TTF_Quit
-#info ( $0 $2F $2E $2E $2E $2E $2E $2F $4D $4D $5B $3E $3E $4D $4D $3E $3E $4D $1F $0 )
+#words  "TTF_Init" "TTF_OpenFont" "TTF_SetFontStyle" "TTF_SetFontOutline" "TTF_SetFontLineSkip" "TTF_SetFontWrappedAlign" "TTF_SetFontSize" "TTF_SetFontSDF" "TTF_SizeText" "TTF_SizeUTF8" "TTF_MeasureUTF8" "TTF_RenderText_Solid" "TTF_RenderUTF8_Solid" "TTF_RenderText_Shaded" "TTF_RenderUTF8_Shaded" "TTF_RenderText_Blended" "TTF_RenderUTF8_Blended" "TTF_RenderUTF8_Blended_Wrapped" "TTF_RenderUNICODE_Blended" "TTF_CloseFont" "TTF_Quit" 0
+#calls  'TTF_Init 'TTF_OpenFont 'TTF_SetFontStyle 'TTF_SetFontOutline 'TTF_SetFontLineSkip 'TTF_SetFontWrappedAlign 'TTF_SetFontSize 'TTF_SetFontSDF 'TTF_SizeText 'TTF_SizeUTF8 'TTF_MeasureUTF8 'TTF_RenderText_Solid 'TTF_RenderUTF8_Solid 'TTF_RenderText_Shaded 'TTF_RenderUTF8_Shaded 'TTF_RenderText_Blended 'TTF_RenderUTF8_Blended 'TTF_RenderUTF8_Blended_Wrapped 'TTF_RenderUNICODE_Blended 'TTF_CloseFont 'TTF_Quit
+#info ( $0 $2F $2E $2E $2E $2E $2E $2F $4D $4D $5B $3E $3E $4D $4D $3E $3E $4D $3E $1F $0 )
 #r3_lib_sdl2ttf.r3 'name 'words 'calls 'info
 ^r3/lib/sdlkeys.r3
 #name "r3/lib/sdlkeys.r3"
@@ -328,6 +328,12 @@
 #calls  'endtimeline 'screen 'fx 'fxp 'timenow 'timeline.start 'timeline.clear '+restart '+stop '64xy '64wh '64xywh '64boxratio '+box '+img '+imgar '+txt '+tbox '+tboxb '+tboxo '+sound '+music '+event 'getscr '+fx.on '+fx.off 'evt.box '+fx.box '+ifx.box '+ifx.text '+ievent 'evt.color '+fx.color 'debugtimeline 'debugtlmem 'timeline.draw 'timeline.inimem
 #info ( $80 $80 $80 $80 $80 $0 $0 $1F $1F $11 $11 $13 $2E $2E $2E $2E $3D $4C $5B $5B $2E $2E $2E $1 $1F $1F $10 $5B $6A $0 $2E $10 $5B $10 $0 $0 $0 )
 #r3_util_timeline.r3 'name 'words 'calls 'info
+^r3/util/ttext.r3
+#name "r3/util/ttext.r3"
+#words  "advx" "advy" "trgb" "tpal" "tcol" "tfbox" "tbox" "temit" "tprint" "temits" "tat" "tatx" "txy" "tx" "tcx" "tcy" "tcr" "tsp" "tnsp" "tsbox" "tpos" "trect" "tcursor" "tcursori" "tsize" "tsrcsize" "tfnt" "tini" 0
+#calls  'advx 'advy 'trgb 'tpal 'tcol 'tfbox 'tbox 'temit 'tprint 'temits 'tat 'tatx 'txy 'tx 'tcx 'tcy 'tcr 'tsp 'tnsp 'tsbox 'tpos 'trect 'tcursor 'tcursori 'tsize 'tsrcsize 'tfnt 'tini
+#info ( $80 $80 $1F $10 $1F $0 $0 $1F $1F $1F $2E $1F $2E $1F $1 $1 $0 $0 $1F $2 $2 $4 $1F $1F $1F $40 $4C $0 )
+#r3_util_ttext.r3 'name 'words 'calls 'info
 ^r3/util/ttfont.r3
 #name "r3/util/ttfont.r3"
 #words  "ttx" "tty" "ttcolor" "ttfont!" "ttprint" "ttemits" "ttat" "+ttat" "ttsize" "ttcursor" "ttcursori" "ttrect" 0
@@ -336,16 +342,22 @@
 #r3_util_ttfont.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"
-#words  "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txh" "txat" "tx+at" "txpos" "txemit" "txemits" "txemitr" "txprint" "txprintr" "txcur" "txcuri" 0
-#calls  'txload 'txfont 'txfont@ 'txrgb 'txcw 'txw 'txh 'txat 'tx+at 'txpos 'txemit 'txemits 'txemitr 'txprint 'txprintr 'txcur 'txcuri
-#info ( $2F $1F $1 $1F $20 $11 $1 $2E $2E $2 $2F $1F $1F $1F $1F $2E $2E )
+#words  "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txpos" "txemit" "txemits" "txemitr" "txprint" "txprintr" "txcur" "txcuri" 0
+#calls  'txload 'txfont 'txfont@ 'txrgb 'txcw 'txw 'txch 'txh 'txat 'tx+at 'txpos 'txemit 'txemits 'txemitr 'txprint 'txprintr 'txcur 'txcuri
+#info ( $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $2 $1F $1F $1F $1F $1F $2E $2E )
 #r3_util_txfont.r3 'name 'words 'calls 'info
 ^r3/util/ui.r3
 #name "r3/util/ui.r3"
-#words  "uicons" "cifoc" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "overfil" "oversel" "stFDang" "stFWarn" "stFSucc" "stFInfo" "stFLink" "stFDark" "stFWhit" "stfLigt" "uiPush" "uiPop" "uiPushA" "uiPopA" "ttemitl" "ttemitc" "ttemitr" "uiLabelMini" "uiRectW" "uiFillW" "uiRRectW" "uiRFillW" "uiCRectW" "uiCFillW" "uiRRect10" "uiRFill10" "uiRect" "uiFill" "uiRRect" "uiRFill" "uiCRect" "uiCFill" "uiTitleF" "uiTitle" "uiLineH" "uiLineV" "uiLineWH" "uiGridBV" "uiGridBH" "uiGrid#" "uicr" "uidn" "uiri" "uiH" "uiV" "ui<" "ui>>" "ui.." "uiPad" "uiWinBox!" "uiWin!" "uiWin@" "uiGAt" "uiGTo" "uiGrid" "uiGridA" "uiStart" "uiZone!" "uiZone" "uiZone@" "uiconxy" "uicon" "uicone" "uiLabel" "uiLabelc" "uiLabelr" "uiTlabel" "uiMDText" "uiBtn" "uiRBtn" "uiCBtn" "uiTBtn" "uiNindx" "uiCheck" "uiRadio" "uiTab" "uiSliderf" "uiSlideri" "uiSlideri8" "uiList" "uisaveLast" "uiCombo" "UIGridBtn" "uiTree" "uiTable" "uiInputLine" "uiText" "uiEdit" "uiEnd" 0
-#calls  'uicons 'cifoc 'stDang 'stWarn 'stSucc 'stInfo 'stLink 'stDark 'stLigt 'overfil 'oversel 'stFDang 'stFWarn 'stFSucc 'stFInfo 'stFLink 'stFDark 'stFWhit 'stfLigt 'uiPush 'uiPop 'uiPushA 'uiPopA 'ttemitl 'ttemitc 'ttemitr 'uiLabelMini 'uiRectW 'uiFillW 'uiRRectW 'uiRFillW 'uiCRectW 'uiCFillW 'uiRRect10 'uiRFill10 'uiRect 'uiFill 'uiRRect 'uiRFill 'uiCRect 'uiCFill 'uiTitleF 'uiTitle 'uiLineH 'uiLineV 'uiLineWH 'uiGridBV 'uiGridBH 'uiGrid# 'uicr 'uidn 'uiri 'uiH 'uiV 'ui< 'ui>> 'ui.. 'uiPad 'uiWinBox! 'uiWin! 'uiWin@ 'uiGAt 'uiGTo 'uiGrid 'uiGridA 'uiStart 'uiZone! 'uiZone 'uiZone@ 'uiconxy 'uicon 'uicone 'uiLabel 'uiLabelc 'uiLabelr 'uiTlabel 'uiMDText 'uiBtn 'uiRBtn 'uiCBtn 'uiTBtn 'uiNindx 'uiCheck 'uiRadio 'uiTab 'uiSliderf 'uiSlideri 'uiSlideri8 'uiList 'uisaveLast 'uiCombo 'UIGridBtn 'uiTree 'uiTable 'uiInputLine 'uiText 'uiEdit 'uiEnd
-#info ( $80 $80 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $2E $4C $4C $4 $2E $2E $2E $2E $0 $4C $0 $4 $3D $1F $0 $1F $1F $1F $1F $0 $2E $2E $2E $2E $10 $2E $2E $2E $3D $3D $3D $3D $1F $2E $2F $3D $0 $2E $0 $0 $0 )
+#words  "cifoc" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "overfil" "oversel" "stFDang" "stFWarn" "stFSucc" "stFInfo" "stFLink" "stFDark" "stFWhit" "stfLigt" "curx" "cury" "uiExitWidget" "uiPush" "uiPop" "uiPushA" "uiPopA" "ttemitl" "ttemitc" "ttemitr" "uiLabelMini" "uiRectW" "uiFillW" "uiRRectW" "uiRFillW" "uiCRectW" "uiCFillW" "uiRRect10" "uiRFill10" "uiRect" "uiFill" "uiRRect" "uiRFill" "uiCRect" "uiCFill" "uiTitleF" "uiTitle" "uiLineH" "uiLineV" "uiLineWH" "uiGridBV" "uiGridBH" "uiGrid#" "uicr" "uidn" "uiri" "uiH" "uiV" "ui<" "ui>>" "ui.." "uiPad" "uiWinBox!" "uiWin!" "uiWinFit!" "uiWin@" "uiGAt" "uiGTo" "uiGrid" "uiGridA" "uiStart" "uiZone!" "uiZone" "uiZone@" "uiLabel" "uiLabelc" "uiLabelr" "uiTlabel" "uiMDText" "uiBtn" "uiRBtn" "uiCBtn" "uiTBtn" "uiNindx" "uiCheck" "uiRadio" "uiTab" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiVSliderf" "uiVSlideri" "uiVProgressf" "uiVProgressi" "uiSlideri8" "uiVSlideri8" "uiList" "uiListV" "uisaveLast" "uiCombo" "UIGridBtn" "uiTree" "uiTable" "uiInputLine" "uiText" "uiEdit" "uiEnd" 0
+#calls  'cifoc 'stDang 'stWarn 'stSucc 'stInfo 'stLink 'stDark 'stLigt 'overfil 'oversel 'stFDang 'stFWarn 'stFSucc 'stFInfo 'stFLink 'stFDark 'stFWhit 'stfLigt 'curx 'cury 'uiExitWidget 'uiPush 'uiPop 'uiPushA 'uiPopA 'ttemitl 'ttemitc 'ttemitr 'uiLabelMini 'uiRectW 'uiFillW 'uiRRectW 'uiRFillW 'uiCRectW 'uiCFillW 'uiRRect10 'uiRFill10 'uiRect 'uiFill 'uiRRect 'uiRFill 'uiCRect 'uiCFill 'uiTitleF 'uiTitle 'uiLineH 'uiLineV 'uiLineWH 'uiGridBV 'uiGridBH 'uiGrid# 'uicr 'uidn 'uiri 'uiH 'uiV 'ui< 'ui>> 'ui.. 'uiPad 'uiWinBox! 'uiWin! 'uiWinFit! 'uiWin@ 'uiGAt 'uiGTo 'uiGrid 'uiGridA 'uiStart 'uiZone! 'uiZone 'uiZone@ 'uiLabel 'uiLabelc 'uiLabelr 'uiTlabel 'uiMDText 'uiBtn 'uiRBtn 'uiCBtn 'uiTBtn 'uiNindx 'uiCheck 'uiRadio 'uiTab 'uiSliderf 'uiSlideri 'uiProgressf 'uiProgressi 'uiVSliderf 'uiVSlideri 'uiVProgressf 'uiVProgressi 'uiSlideri8 'uiVSlideri8 'uiList 'uiListV 'uisaveLast 'uiCombo 'UIGridBtn 'uiTree 'uiTable 'uiInputLine 'uiText 'uiEdit 'uiEnd
+#info ( $80 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $80 $80 $0 $0 $0 $0 $0 $1F $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $2E $4C $4C $4C $4 $2E $2E $2E $2E $0 $4C $0 $4 $1F $1F $1F $1F $0 $2E $2E $2E $2E $10 $2E $2E $2E $3D $3D $3D $3D $3D $3D $3D $3D $3D $3D $3D $0 $1F $2E $2F $3D $0 $2E $0 $0 $0 )
 #r3_util_ui.r3 'name 'words 'calls 'info
+^r3/util/uicolor.r3
+#name "r3/util/uicolor.r3"
+#words  "color!" "uiColor" "uiColorH" 0
+#calls  'color! 'uiColor 'uiColorH
+#info ( $1F $1F $1F )
+#r3_util_uicolor.r3 'name 'words 'calls 'info
 ^r3/util/uidatetime.r3
 #name "r3/util/uidatetime.r3"
 #words  "uiDateTime" "uiDate" "uiTime" 0
@@ -358,6 +370,12 @@
 #calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edfocusro 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edload 'edsave
 #info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $0 )
 #r3_util_uiedit.r3 'name 'words 'calls 'info
+^r3/util/uifiledlg.r3
+#name "r3/util/uifiledlg.r3"
+#words  "listfiles" "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
+#calls  'listfiles 'immfileload 'immfilesave 'fullfilename 'uiFileName
+#info ( $1 $1F $1F $1 $1F )
+#r3_util_uifiledlg.r3 'name 'words 'calls 'info
 ^r3/util/uifiles.r3
 #name "r3/util/uifiles.r3"
 #words  "uiDirs" "uiFiles" "uiTreePath" "uiGetFiles" "uiScanDir" 0
@@ -394,12 +412,24 @@
 #calls  'IsDebuggerPresent 'OutputDebugStringA 'OutputDebugStringW 'DebugBreak 'ContinueDebugEvent 'WaitForDebugEvent 'DebugActiveProcess 'DebugActiveProcessStop 'CheckRemoteDebuggerPresent
 #info ( $1 $1F $1F $0 $3E $2F $10 $10 $2F )
 #r3_lib_win_debugapi.r3 'name 'words 'calls 'info
+^r3/lib/win/espeak-ng.r3
+#name "r3/lib/win/espeak-ng.r3"
+#words  "espeak_Initialize" "espeak_SetVoiceByName" "espeak_TextToPhonemes" "espeak_Terminate" 0
+#calls  'espeak_Initialize 'espeak_SetVoiceByName 'espeak_TextToPhonemes 'espeak_Terminate
+#info ( $4D $10 $3E $1 )
+#r3_lib_win_espeak-ng.r3 'name 'words 'calls 'info
 ^r3/lib/win/ffm.r3
 #name "r3/lib/win/ffm.r3"
 #words  "FFM_init" "FFM_open" "FFM_redraw" "FFM_resize" "FFM_close" 0
 #calls  'FFM_init 'FFM_open 'FFM_redraw 'FFM_resize 'FFM_close
 #info ( $0 $3D $10 $2F $0 )
 #r3_lib_win_ffm.r3 'name 'words 'calls 'info
+^r3/lib/win/ffmapi.r3
+#name "r3/lib/win/ffmapi.r3"
+#words  "IniVideo" "LoadVideo" "VideoBox" "VideoPoly" "VideoFlag" "VideoTex" "PlayVideo" "StopVideo" "LOADING" "VID_NO_AUDIO" "VID_LOOP" "VID_WAIT" "VideoTime" "VideoSize" "vshow" "vshowZ" "vshowR" "vshowRZ" "FFM_open" "FFM_redraw" "FFM_close" 0
+#calls  'IniVideo 'LoadVideo 'VideoBox 'VideoPoly 'VideoFlag 'VideoTex 'PlayVideo 'StopVideo 'LOADING 'VID_NO_AUDIO 'VID_LOOP 'VID_WAIT 'VideoTime 'VideoSize 'vshow 'vshowZ 'vshowR 'vshowRZ 'FFM_open 'FFM_redraw 'FFM_close
+#info ( $1F $2F $2E $5B $10 $10 $1F $1F $80 $80 $80 $80 $10 $11 $3D $4C $4C $3D $10 $1 $0 )
+#r3_lib_win_ffmapi.r3 'name 'words 'calls 'info
 ^r3/lib/win/inet.r3
 #name "r3/lib/win/inet.r3"
 #words  "InternetOpen" "InternetOpenUrl" "InternetReadFile" "InternetCloseHandle" "DeleteUrlCacheEntry" "openurl" 0
@@ -431,4 +461,4 @@
 #info ( $2F $0 $3E $5C $3E $3E $2F $1F $2F $4C $4D $4D $3E )
 #r3_lib_win_winsock.r3 'name 'words 'calls 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uicolor.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiledlg.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_espeak-ng.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_onnx.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0

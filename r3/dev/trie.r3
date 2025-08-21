@@ -91,7 +91,7 @@
 	
 :printdebug
 	triemem >a
-	6 ( 1? 1-
+	nextnode ( 1? 1-
 		64 ( 1? 1- wa@+ pc ) drop .cr
 		) drop
 	.cr
@@ -110,11 +110,14 @@
 	0 'nextnode !
 	
 	"hola" insert
-    "holanda" insert
-    "hombre" insert
+	"hoja" insert
+	"peso" insert
+    "holan" insert
+    "homre" insert
     "perro" insert
-	printdebug	
 	
+	0 ( 64 <? dup 6>char .emit 1+ ) drop .cr
+	printdebug	
 
 	"hola" search "%d=1" .println
 	"hoj" search "%d=0" .println
@@ -122,7 +125,7 @@
 	"gat" searchpre "%d=0" .println
 
 	.cr
-|	0 ( 64 <? dup 6>char .emit 1+ ) drop .cr
+
 	
 	waitesc
 	;

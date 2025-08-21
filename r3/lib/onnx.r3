@@ -1,3 +1,8 @@
+| onnx 
+| PHREDA 2025
+
+^r3/lib/win/kernel32.r3
+
 #ortGetApiBase_p 0
 
 #ortSess_CPU_p 0
@@ -211,7 +216,7 @@
 #SessionOptionsAppendExecutionProvider_MIGraphX_p  ::OrtSessionOptionsAppendExecutionProvider_MIGraphX SessionOptionsAppendExecutionProvider_MIGraphX_p sys2 ;
 #AddExternalInitializers_p  ::OrtAddExternalInitializers AddExternalInitializers_p sys4 ;
 #CreateOpAttr_p  ::OrtCreateOpAttr CreateOpAttr_p sys5 ;
-#CreateOp_p  ::OrtCreateOp CreateOp_p sys10 ; |sys11 ;
+#CreateOp_p  ::OrtCreateOp CreateOp_p sys10 ; |sys11 ; |<<<<<<<<<<<<<<<<<<<
 #ReleaseOpAttr_p  ::OrtReleaseOpAttr ReleaseOpAttr_p sys1 ;
 #ReleaseOp_p  ::OrtReleaseOp ReleaseOp_p sys1 ;
 #SessionOptionsAppendExecutionProvider_p  ::OrtSessionOptionsAppendExecutionProvider SessionOptionsAppendExecutionProvider_p sys5 ;

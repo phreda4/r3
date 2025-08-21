@@ -1,5 +1,6 @@
 | libespeak-ng.dll
 | PHREDA 2025
+^r3/lib/win/kernel32.r3
 
 #espeak_Initialize_p		::espeak_Initialize espeak_Initialize_p sys4 ;
 #espeak_SetVoiceByName_p	::espeak_SetVoiceByName espeak_SetVoiceByName_p sys1 ;
