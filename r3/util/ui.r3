@@ -603,14 +603,26 @@
 	pick3 @ =? ( oversel uiFill )
 	overl =? ( overfil uiFill )
 	uiNindx ttemitl 
+::guiNextlist	
 	curh 'cury +! ;
 
 :clist | 'var max --
 	cntlist <? ( sdlx curx - curw 16 - >? ( drop ; ) drop )
 	overl pick2 ! ;
 
+|----
+#listh
 #backc 
 
+::GuiBoxlist | n --
+	curh * 'listh !
+	curx cury dup 'backc ! 
+	curw listh guiBox ;
+	
+::sdlBoxListY | -- n
+	sdly cury - curh / ;
+
+|----
 :slidev | 'var max rec --
 	sdly backc - cury backc - 1- clamp0max | 'v max rec (0..curh)
 	over cury backc - */ pick3 8 + ! ;
@@ -619,7 +631,7 @@
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
 	SDLw 1? ( wwlist ) drop
-	sdly cury - curh / 
+	sdlBoxListY
 	pick2 8 + @ + 
 	cntlist 1- 
 	clampmax 'overl ! 
@@ -647,12 +659,10 @@
 	>r >r 4 -rot r> r> sdlfRound	
 	drop ;
 	
-:uiFillL	
-	curx cury curw pick3 curh * SDLFRect ;
-
+|------ listbox
 :focolist
 	cifoc sdlColor 
-	curx 1- cury 1- curw 2 + pick3 curh * 2 + sdlRect
+	curx 1- cury 1- curw 2 + listh 2 + sdlRect
 	sdlKey
 	<tab> =? ( nextfoco )
 	<up> =? ( pick2 dup @ 1- clamp0 swap ! )
@@ -661,8 +671,9 @@
 	
 ::uiList | 'var cntlines list --
 	mark makeindx
-	curx cury dup 'backc ! 
-	curw pick3 curh * guiBox 
+	
+	dup guiBoxList
+	
 	'focoList in/foco 
 	chlist
 	0 ( over <? ilist 1+ ) drop
@@ -693,7 +704,7 @@
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
 	SDLw 1? ( wwlist ) drop
-	sdly cury - curh / 
+	sdlBoxListY
 	pick2 8 + @ + 
 	cntlist 1- 
 	clampmax 'overl ! 
@@ -707,7 +718,7 @@
 	overfil 
 	
 	curx cury dup 'backc ! 
-	curw pick3 curh * 
+	curw listh
 	2over 2over sdlFRect
 	cifoc sdlColor 2over 2over sdlRect
 	guiBox 
@@ -753,9 +764,11 @@
 	
 ::UIGridBtn | 'var 'list 4 4 --
 	mark makeindx
-	curx cury dup 'backc ! 
-	curw pick3 curh * guiBox
-	overfil uiFillL
+	
+	dup guiBoxlist
+	
+	overfil 
+	curx cury curw listh SDLFRect 
 	'griblist onClickFoco
 	0 ( over <? glist 1+ ) drop
 	pady 'cury +!
@@ -777,7 +790,8 @@
 	-1 'overl !
 	guin? 0? ( drop ; ) drop
 	SDLw 1? ( wwlist ) drop
-	sdly cury - curh / pick2 8 + @ + 
+	sdlBoxListY
+	pick2 8 + @ + 
 	cntlist 1- clampmax 'overl ! 
 	'cktree onClickFoco
 	;
@@ -800,8 +814,9 @@
 ::uiTree | 'var cntlines list --
 	mark maketree
 	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
-	curx cury dup 'backc ! 
-	curw pick3 curh * guiBox 
+	
+	dup guiBoxlist
+		
 	'focoList in/foco 
 	chtree
 	0 ( over <? itree 1+ ) drop

@@ -320,19 +320,8 @@
 |	0? ( ; )
 |	-? ( fp2fu neg ; ) fp2fu ;
 
-|--- byte 0..255 to normalize 0..1 float32
-:byte2float32N | byte -- float
-	$ff and 0? ( ; ) 
-	32 over clz -			| v msb
-	1 over << 1- rot and 	| msb frac
-	23 pick2 - <<			| msb mant
-	$7fffff and
-	swap 119 + 23 << | 8 - 127 +
-	or ;
-
-	
 |=--- float 40.24	
-:f2fp24 | f -- fp
+::f2fp24 | f -- fp
 	0? ( ; )
 	dup 63 >> $80000000 and 
 	swap abs		| sign abs(i)
@@ -342,7 +331,7 @@
 	swap $7fffff and or or ;	
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
-:fp2f24 | fp -- fixed point
+::fp2f24 | fp -- fixed point
 	0? ( ; )
 	dup $7fffff and $800000 or
 	over 23 >> $ff and 134 - 8 +
@@ -350,4 +339,29 @@
 	
 |:byte2float32N | v -- v
 |	$ff and $ff 24 <</ f2fp24 ;
+
+|--- byte 0..255 to normalize 0..1 float32
+::byte>float32N | byte -- float
+	$ff and 0? ( ; ) 
+	32 over clz -			| v msb
+	1 over << 1- rot and 	| msb frac
+	23 pick2 - <<			| msb mant
+	$7fffff and
+	swap 119 + 23 << | 8 - 127 +
+	or ;
 	
+|--- float32 to byte 0..255	
+::float32N>byte | f32 -- byte
+    $80000000 >=? ( drop 0 ; )		| negativos -> 0
+    $3f800000 >=? ( drop 255 ; )	| >= 1.0   -> 255
+    dup 23 >> $ff and				| extraer exp
+    0? ( nip ; ) swap 				| (exp f32)
+    $7fffff and $800000 or			| exp mant
+    127 rot - >>					| val = mant >> (127 - exp)
+    255 * $400000 + 23 >>			| redondeo
+    dup $ff >? ( drop $ff ) ;		| clamp
+	
+	
+:4dif | v1 v2 -- abs
+	- dup 15 >> $1000100010001 and 
+	$7fff * swap over xor swap - ;

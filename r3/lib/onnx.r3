@@ -6,7 +6,11 @@
 #ortGetApiBase_p 0
 
 #ortSess_CPU_p 0
+#ortSess_MDL_p 0
+#ortSess_tensorrt_p 0
+
 ::ortSess_CPU ortSess_CPU_p sys2 ;  | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
+::ortSess_MDL ortSess_MDL_p sys2 ;  | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
 
 #getVersionString_p
 ::OrtgetVersionString getVersionString_p sys0 ;
@@ -295,8 +299,10 @@
 	"onnxruntime.dll" loadlib
 	dup "OrtGetApiBase" getproc 'ortGetApiBase_p !
 	dup "OrtSessionOptionsAppendExecutionProvider_CPU" getproc 'ortSess_CPU_p !
+	dup "OrtSessionOptionsAppendExecutionProvider_MDL" getproc 'ortSess_MDL_p !
 	drop
 	"" SetDllDirectory
+	
 	
 	ortGetApiBase_p sys0 
 	@+ 'getApi !

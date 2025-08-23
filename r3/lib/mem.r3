@@ -6,9 +6,18 @@
 |LIN|^r3/lib/posix/core.r3
 
 |---- free memory
-
 ##here 0
 
+::align32 | mem -- mem
+	$1f + $1f nand ;
+
+::align16 | mem -- mem
+	$f + $f nand ;	
+
+::align8 | mem -- mem
+	$7 + $7 nand ;	
+	
+	
 #memmap * 512
 #memmap> 'memmap
 

@@ -68,11 +68,6 @@
 	$10000 and? ( drop 0 'filename ! ; )
 	.name 'filename strcpy ;
 	
-:clicklist
-|	sdly cury - boxh / fileini + 
-	filenow =? ( linenter ; )
-	dup 'filenow !
-	clicknfile ;
 
 :refile 
 	0 'fileini !
@@ -100,22 +95,32 @@
 	;
 
 
+:clicklist
+	sdlBoxListY fileini + 
+	filenow =? ( linenter ; )
+	dup 'filenow !
+	clicknfile ;
+
 :printline | n --
+	nfiles >=? ( drop ; )
+|	overl =? ( overfil uiFill )
+	filenow =? ( oversel uiFill )
 	]file | filename
-|	$10000 and? ( " /" immBLabel )
-|	$10000 nand? ( dup .size "%d KB" sprint immLabelR )
+	$10000 and? ( "/" ttemitr )
+	$10000 nand? ( dup .size "%d kb" sprint ttemitr )
 |	14 'curx +!
-	.name uiLabel 
+	.name ttemitl
+	guiNextlist
 	;
 	
-::listfiles | --
-	|dup immListBox
-	|'clicklist onClick	
-	0 ( 16 <?
-		dup fileini + nfiles <? 
-		printline
-		 1+ ) drop	
+:listfiles | --
+	dup guiBoxlist
+	'clicklist onClick	
+	0 ( over <?
+		dup fileini + printline
+		1+ ) drop
 	|listscroll 
+	drop
 	;
 
 |------------------------
@@ -134,6 +139,7 @@
 	;
 
 :uiBoxPath
+	uiPush
 	'path 
 	( dup c@ 1? drop
 		dup scan/ | adr .
@@ -142,6 +148,7 @@
 		$2f cfold c!+
 		"/" uitlabel
 		) 2drop
+	uiPop
 	ui.. ;			
 	
 #vecexec
@@ -157,7 +164,7 @@
 	0 0 uigAt 	
 	'filename 1024 uiInputLine 
 	uiBoxPath
-	listfiles
+	20 listfiles
 	4 20 UIGridA uiH
 	0 19 uigAt
 	[ 'filename filevar strcpy uiExitWidget ; ] "OK" uiRBtn

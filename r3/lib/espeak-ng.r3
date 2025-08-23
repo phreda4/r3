@@ -9,7 +9,7 @@
 
 : 
 	".\\dll" SetDllDirectory
-	"libespeak-ng.dll.dll" loadlib
+	"libespeak-ng.dll" loadlib
 	dup "espeak_Initialize" getproc 'espeak_Initialize_p !
 	dup "espeak_SetVoiceByName" getproc 'espeak_SetVoiceByName_p !
 	dup "espeak_TextToPhonemes" getproc 'espeak_TextToPhonemes_p !
