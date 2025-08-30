@@ -191,12 +191,10 @@
 	swap -? ( $b1721 + swap 16 >> ; ) swap ;
 
 ::exp. | x -- r
-	1.0 | x y
-	xp
+	1.0 xp | x y
 	ex1 ex2 ex3 ex4 ex5 ex6
 	ex7 ex8 ex9 exa exb
-	swap | y x
-	over 8 >> *. 8 >> + ;
+	swap over 8 >> 24 *>> + ;
 
 ::cubicpulse | c w x -- v ; iñigo Quilez
 	rot - abs | w x
