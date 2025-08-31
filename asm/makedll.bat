@@ -1,0 +1,2 @@
+fasm memavx.asm
+pause

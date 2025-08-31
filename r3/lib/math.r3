@@ -310,6 +310,12 @@
 	over 23 >> $ff and 134 - 
 	shift swap -? ( drop neg ; ) drop ;
 
+::fp2i | fp -- fixed point
+	0? ( ; )
+	dup $7fffff and $800000 or
+	over 23 >> $ff and 134 - 16 -
+	shift swap -? ( drop neg ; ) drop ;
+
 |::fp2fu | fp -- fixed point
 |	dup $7fffff and $800000 or
 |	swap 23 >> $ff and 134 - 

@@ -3,21 +3,26 @@
 
 
 #MFStartup_p ::MFStartup MFStartup_p sys2 ;
-#MFShutdown_p ::MFShutdown MFShutdown_p sys1 ;
+#MFShutdown_p ::MFShutdown MFShutdown_p sys1 drop ;
 #MFCreateMediaType_p ::MFCreateMediaType MFCreateMediaType_p sys1 ;
 
+#MFCreateAttributes_p ::MFCreateAttributes MFCreateAttributes_p sys2 ;
+
 #MFCreateSourceReaderFromURL_p ::MFCreateSourceReaderFromURL MFCreateSourceReaderFromURL_p sys3 ;
+#MFCreateSourceReaderFromMediaSource_p ::MFCreateSourceReaderFromMediaSource MFCreateSourceReaderFromMediaSource_p sys3 ;
 
 :inilib
     "mfplat.dll" loadlib
 	dup "MFStartup" getproc 'mfstartup_p !
 	dup "MFShutdown" getproc 'MFShutdown_p !
 	dup "MFCreateMediaType" getproc 'MFCreateMediaType_p !
+
+	dup "MFCreateAttributes" getproc 'MFCreateAttributes_p !
 	drop
-    "mf.dll" loadlib
-	drop
+|	"mf.dll" loadlib
     "mfreadwrite.dll" loadlib
 	dup "MFCreateSourceReaderFromURL" getproc 'MFCreateSourceReaderFromURL_p !
+	dup "MFCreateSourceReaderFromMediaSource" getproc 'MFCreateSourceReaderFromMediaSource_p !
 	drop
 	;
 	
@@ -25,7 +30,7 @@
 #pReader
 #ptype
 
-#setgui_p
+#setguid_p
 #release_p
 :release release_p sys1 drop ;
 
@@ -42,36 +47,53 @@
 #MF_MT_MAJOR_TYPE $4687F8C948EBA18E $8F6AF9C9740A11BF
 #MF_MT_SUBTYPE $471442E8F7E34C9A $8C2435D729CB4BB7
 #MFMediaType_Video $0010000073646976 $719B3800AA000080
-#MFVideoFormat_RGB32 $0010000000000016 $719B3800AA000080
+
+#IID_IMFSourceReader	( $48 $be $9b $7b $71 $a9 $e5 $48 $89 $9b $29 $00 $72 $70 $96 $6c )
+#CLSID_MFSourceReader	( $92 $b3 $46 $17 $00 $71 $b2 $47 $b3 $58 $15 $49 $48 $77 $ba $7a )
+#MFVideoFormat_RGB32	( $16 $00 $00 $00 $00 $00 $10 $00 $80 $00 $00 $aa $00 $38 $9b $71 )
 
 #setCurrentMediaType_p
 
-#MF_SOURCE_READER_FIRST_VIDEO_STREAM      $FFFFFFFC
+#MF_SOURCE_READER_ANY_STREAM          -1
+#MF_SOURCE_READER_FIRST_VIDEO_STREAM  -2
+
+#pAtributes
+#ppDevices 
+
+:listdev
+	'pAtributes 1 MFCreateAttributes drop
+	;
 
 
-:ini
+:mfstart
 	MF_VERSION 0 MFStartup 1? ( "error" .println ) drop
-	"capture://video"
+	|"capture://video"
 	|"device://video"
-	|"test.mp4" 
+	"test.mp4" 
 	towchar 0 'pReader MFCreateSourceReaderFromURL 1? ( "error" .println ) drop
+	
+|	0 0 'preader MFCreateSourceReaderFromMediaSource 1? ( "error" .println ) drop
 	
 	'ptype MFCreateMediaType 1? ( "error" .println ) drop
 	
-	pType @ 13 3 << + @ 'setgui_p !
+	pType @ 24 3 << + @ 'setguid_p ! | geminis=14..gpt=24
   
-	pType 'MF_MT_MAJOR_TYPE 'MFMediaType_Video setgui_p sys3 1? ( "error1" .println ) drop
-	pType 'MF_MT_SUBTYPE 'MFVideoFormat_RGB32 setgui_p sys3 1? ( "error2" .println ) drop
+	pType 'MF_MT_MAJOR_TYPE 'MFMediaType_Video setguid_p sys3 1? ( "error1" .println ) drop
+	pType 'MF_MT_SUBTYPE 'MFVideoFormat_RGB32 setguid_p sys3 1? ( "error2" .println ) drop
 	
-	pReader @ 8 3 << + @ 'setCurrentMediaType_p !
-	pReader @ 9 3 << + @ 'readSample_p !
+	pReader @ 6 3 << + @ 'setCurrentMediaType_p !
+	pReader @ 11 3 << + @ 'readSample_p !
 
 	pType @ 2 3 << + @ 'release_p !
 	
-	|pReader MF_SOURCE_READER_FIRST_VIDEO_STREAM 0 pType setCurrentMediaType_p sys4 1? ( "error3" .println ) drop
+	pReader MF_SOURCE_READER_FIRST_VIDEO_STREAM 0 pType setCurrentMediaType_p sys4 1? ( "error3" .println ) drop
 	|ptype release 
 	;
 
+:mfend
+	MFShutdown 
+	;
+	
 #streamIdx
 #flags
 #ts
@@ -87,7 +109,7 @@
 #curlen
 
 :getframe
-	pReader MF_SOURCE_READER_FIRST_VIDEO_STREAM 0 'streamIdx 'flags 'ts 'pSample readSample 1? ( "error" .println ) drop
+	pReader MF_SOURCE_READER_FIRST_VIDEO_STREAM 'streamIdx 'flags 'ts 'pSample readSample 1? ( "error" .println ) drop
 	pSample 10 3 << + 'convert_p !
 	
 	pSample 'pBuffer convert_p sys2 1? ( "error" .println ) drop
@@ -130,8 +152,10 @@
 	txfont 'font !
 	
 	SDLrenderer $16362004 2 640 480 SDL_CreateTexture 'texcam !
-	ini
+	mfstart
 	'main SDLshow
-	SDLquit 
+	SDLquit
+	mfend	
 	waitesc
 	;
+

@@ -1,0 +1,331 @@
+; DLL for avx emmory
+; PHREDA 2025
+;
+format PE64 DLL
+entry DllMain
+include 'include/win64a.inc'
+
+;--------------------------------------------------------------------
+section '.code' code readable writeable executable
+ 
+proc DllMain hinstDLL,fdwReason,lpvReserved
+	mov rax, TRUE
+	ret
+endp
+
+; -----------------------------------------------------------------------------
+; rgb32_to_planar_f32_avx2_aligned
+; Convierte N píxeles 0x00RRGGBB en 3 planos float32 normalizados (R,G,B)
+; Requisitos:
+;   - src y dst alineados a 32 bytes
+;   - N múltiplo de 8
+; Parámetros:
+;   RCX = src (uint32_t*)
+;   RDX = dst (float*)
+;   R8  = N   (# píxeles)
+; -----------------------------------------------------------------------------
+rgb32_to_planar_f32_avx2_aligned:
+    push rbp
+    mov rbp, rsp
+    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
+    ; Prologue
+    push    rbx
+    push    rsi
+    push    rdi
+
+    mov     rsi, rcx                ; src
+    mov     rdi, rdx                ; dst base
+    mov     rbx, r8                 ; N
+
+    ; calcular punteros a los 3 planos
+    lea     r9,  [rbx*4]            ; N*4 bytes
+    mov     rax, rdi                ; r_ptr
+    lea     rdx, [rdi + r9]         ; g_ptr
+    lea     r11, [rdi + r9*2]       ; b_ptr
+
+    ; cargar constantes
+    vbroadcastss ymm6, [norm_1_over_255_avx] ; 1/255
+    vmovdqa      ymm7, [mask_ff_dwords_avx] ; 0xFF por dword
+
+    ; N/8 bloques
+    mov     rcx, rbx
+    shr     rcx, 3                  ; cnt = N / 8 (bloques de 8 píxeles)
+
+.avx_loop:
+    vmovdqa ymm0, [rsi]             ; cargar 8 píxeles (32 bytes alineados)
+
+    ; --- canal B ---
+    vpand   ymm1, ymm0, ymm7
+    vcvtdq2ps ymm1, ymm1
+    vmulps  ymm1, ymm1, ymm6
+    vmovaps [r11], ymm1             ; guardar 8 floats
+    add     r11, 32
+
+    ; --- canal G ---
+    vpsrld  ymm2, ymm0, 8
+    vpand   ymm2, ymm2, ymm7
+    vcvtdq2ps ymm2, ymm2
+    vmulps  ymm2, ymm2, ymm6
+    vmovaps [rdx], ymm2
+    add     rdx, 32
+
+    ; --- canal R ---
+    vpsrld  ymm3, ymm0, 16
+    vpand   ymm3, ymm3, ymm7
+    vcvtdq2ps ymm3, ymm3
+    vmulps  ymm3, ymm3, ymm6
+    vmovaps [rax], ymm3
+    add     rax, 32
+
+    ; avanzar origen
+    add     rsi, 32
+    dec     rcx
+    jnz     .avx_loop
+
+    ; epílogo
+    vzeroupper
+    pop     rdi
+    pop     rsi
+    pop     rbx
+	
+    add rsp, 48
+    pop rbp	
+    ret
+
+; -----------------------------------------------------------------------------
+bgr32_to_planar_f32_avx2_aligned:
+    push rbp
+    mov rbp, rsp
+    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
+    ; Prologue
+    push    rbx
+    push    rsi
+    push    rdi
+
+    mov     rsi, rcx                ; src
+    mov     rdi, rdx                ; dst base
+    mov     rbx, r8                 ; N
+
+    ; calcular punteros a los 3 planos
+    lea     r9,  [rbx*4]            ; N*4 bytes
+    mov     rax, rdi                ; r_ptr
+    lea     rdx, [rdi + r9]         ; g_ptr
+    lea     r11, [rdi + r9*2]       ; b_ptr
+
+    ; cargar constantes
+    vbroadcastss ymm6, [norm_1_over_255_avx] ; 1/255
+    vmovdqa      ymm7, [mask_ff_dwords_avx] ; 0xFF por dword
+
+    ; N/8 bloques
+    mov     rcx, rbx
+    shr     rcx, 3                  ; cnt = N / 8 (bloques de 8 píxeles)
+
+.avx_loop:
+    vmovdqa ymm0, [rsi]             ; cargar 8 píxeles (32 bytes alineados)
+
+    ; --- canal B ---
+	vpsrld  ymm1, ymm0, 16
+    vpand   ymm1, ymm0, ymm7
+    vcvtdq2ps ymm1, ymm1
+    vmulps  ymm1, ymm1, ymm6
+    vmovaps [r11], ymm1             ; guardar 8 floats
+    add     r11, 32
+
+    ; --- canal G ---
+    vpsrld  ymm2, ymm0, 8
+    vpand   ymm2, ymm2, ymm7
+    vcvtdq2ps ymm2, ymm2
+    vmulps  ymm2, ymm2, ymm6
+    vmovaps [rdx], ymm2
+    add     rdx, 32
+
+    ; --- canal R ---
+    vpand   ymm3, ymm3, ymm7
+    vcvtdq2ps ymm3, ymm3
+    vmulps  ymm3, ymm3, ymm6
+    vmovaps [rax], ymm3
+    add     rax, 32
+
+    ; avanzar origen
+    add     rsi, 32
+    dec     rcx
+    jnz     .avx_loop
+
+    ; epílogo
+    vzeroupper
+    pop     rdi
+    pop     rsi
+    pop     rbx
+	
+    add rsp, 48
+    pop rbp	
+    ret
+
+; -----------------------------------------------------------------------------
+convert_rgb_to_float32:
+    push rbp
+    mov rbp, rsp
+    sub rsp, 48   
+
+    mov     rsi, rcx             ; src
+    mov     rdi, rdx             ; dst
+    mov     r9,  r8              ; count
+
+    ; xmm15 = 1/255
+    mov     eax,0x3B808081       ; 0.0039215689f
+    movd    xmm15,eax
+    shufps  xmm15,xmm15,0
+
+.loop:
+    test    r9,r9
+    jz      .done
+
+    ; Leer 4 bytes RGBA
+    mov     eax,[rsi]            ; EAX = 0xXXBBGGRR
+
+    ; Extraer R,G,B
+    mov     ecx,eax
+    and     ecx,0xFF             ; R
+    shr     eax,8
+    mov     edx,eax
+    and     edx,0xFF             ; G
+    shr     eax,8
+    and     eax,0xFF             ; B
+
+    ; Convertir y normalizar
+    cvtsi2ss xmm0,ecx
+    mulss   xmm0,xmm15
+    movss   [rdi],xmm0           ; R
+
+    cvtsi2ss xmm0,edx
+    mulss   xmm0,xmm15
+    movss   [rdi+4],xmm0         ; G
+
+    cvtsi2ss xmm0,eax
+    mulss   xmm0,xmm15
+    movss   [rdi+8],xmm0         ; B
+
+    ; avanzar
+    add     rsi,4                ; 4 bytes RGBA
+    add     rdi,12               ; 3 floats
+    dec     r9
+    jmp     .loop
+
+.done:
+    add rsp, 48
+    pop rbp	
+    ret
+
+; -----------------------------------------------------------------------------
+; void f32_to_q16_16(const float* src, int32_t* dst, size_t count)
+; RCX = src, RDX = dst, R8 = count
+; Convierte float32 -> Q16.16 (int32).
+; -----------------------------------------------------------------------------
+f32_to_q16_16:
+        sub     rsp, 40
+
+        mov     rax, r8
+        shr     rax, 3
+        jz      .tail
+
+        vbroadcastss ymm2, [scale_65536]  ; escala = 65536.0f
+
+.loop:
+        vmovups ymm0, [rcx]      ; cargar 8 floats (no alineado)
+        vmulps  ymm0, ymm0, ymm2
+        vcvtps2dq ymm1, ymm0
+        vmovdqu [rdx], ymm1      ; guardar 8 int32 (no alineado)
+        add     rcx, 32
+        add     rdx, 32
+        dec     rax
+        jnz     .loop
+
+.tail:
+        and     r8, 7
+        jz      .done
+
+        vbroadcastss xmm2, [scale_65536]
+
+.tail_loop:
+        vmovss  xmm0, [rcx]
+        vmulss  xmm0, xmm0, xmm2
+        cvtss2si eax, xmm0
+        mov     [rdx], eax
+        add     rcx, 4
+        add     rdx, 4
+        dec     r8
+        jnz     .tail_loop
+
+.done:
+        vzeroupper
+        add     rsp, 40
+        ret
+
+; -----------------------------------------------------------------------------
+; void q16_16_to_f32(const int32_t* src, float* dst, size_t count)
+; RCX = src, RDX = dst, R8 = count
+; Convierte Q16.16 -> float32.
+; -----------------------------------------------------------------------------
+q16_16_to_f32:
+        sub     rsp, 40
+
+        mov     rax, r8
+        shr     rax, 3
+        jz      .tail2
+
+        vbroadcastss ymm2, [inv_65536]    ; 1/65536.0f
+
+.loop2:
+        vmovdqu ymm0, [rcx]      ; cargar 8 int32 (no alineado)
+        vcvtdq2ps ymm1, ymm0
+        vmulps   ymm1, ymm1, ymm2
+        vmovups  [rdx], ymm1     ; guardar 8 floats (no alineado)
+        add      rcx, 32
+        add      rdx, 32
+        dec      rax
+        jnz      .loop2
+
+.tail2:
+        and     r8, 7
+        jz      .done2
+
+        vbroadcastss xmm2, [inv_65536]
+
+.tail_loop2:
+        mov     eax, [rcx]
+        movd    xmm0, eax
+        vcvtdq2ps xmm1, xmm0
+        vmulss   xmm1, xmm1, xmm2
+        vmovss   [rdx], xmm1
+        add      rcx, 4
+        add      rdx, 4
+        dec      r8
+        jnz      .tail_loop2
+
+.done2:
+        vzeroupper
+        add     rsp, 40
+        ret
+
+;--------------------------------------------------------------------
+section '.rdata' data readable
+
+align 32
+mask_ff_dwords_avx: dd 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+norm_1_over_255_avx dd 0.0039215686274509803
+scale_65536   dd 65536.0
+inv_65536     dd 0.0000152587890625    ; 1/65536
+
+section '.edata' export data readable
+
+	export 'memavx.dll',\
+	rgb32_to_planar_f32_avx2_aligned,'rgb32_to_planar_f32_avx2_aligned',\
+	bgr32_to_planar_f32_avx2_aligned,'bgr32_to_planar_f32_avx2_aligned',\
+	convert_rgb_to_float32,'convert_rgb_to_float32',\
+	f32_to_q16_16,'f32_to_q16_16',\
+	q16_16_to_f32,'q16_16_to_f32'
+	
+section '.reloc' fixups data readable discardable
+    if $=$$
+        dd 0,8
+    end if   
