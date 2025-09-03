@@ -50,8 +50,7 @@
  
 |----- BOOT 
 :
-|WIN|	".\\dll" SetDllDirectory
-|WIN|	"SDL2_ttf.DLL" loadlib
+|WIN|	"dll/SDL2_ttf.DLL" loadlib
 |LIN|	"libSDL2_ttf-2.0.so.0" loadlib	
 	dup "TTF_Init" getproc 'sys-TTF_Init !
 	dup "TTF_OpenFont" getproc 'sys-TTF_OpenFont !
@@ -75,7 +74,6 @@
 	dup "TTF_CloseFont" getproc 'sys-TTF_CloseFont !
 	dup "TTF_Quit" getproc 'sys-TTF_Quit !
 	drop
-|WIN|	"" SetDllDirectory		
 	ttf_init
 	;
 

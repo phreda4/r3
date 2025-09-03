@@ -17,8 +17,7 @@
 #TfLiteXNNPackDelegateCreate_p ::TfLiteXNNPackDelegateCreate TfLiteXNNPackDelegateCreate_p sys1 ;
 #TfLiteInterpreterOptionsAddDelegate_p ::TfLiteInterpreterOptionsAddDelegate TfLiteInterpreterOptionsAddDelegate_p sys2 ;
 : 
-	".\\dll" SetDllDirectory
-	"tensorflowlite_c.dll" loadlib
+	"dll/tensorflowlite_c.dll" loadlib
 dup "TfLiteModelCreateFromFile" getproc 'TfLiteModelCreateFromFile_p !
 dup "TfLiteInterpreterOptionsCreate" getproc 'TfLiteInterpreterOptionsCreate_p !
 dup "TfLiteInterpreterCreate" getproc 'TfLiteInterpreterCreate_p !
@@ -33,5 +32,4 @@ dup "TfLiteModelDelete" getproc 'TfLiteModelDelete_p !
 dup "TfLiteXNNPackDelegateCreate" getproc 'TfLiteXNNPackDelegateCreate_p !
 dup "TfLiteInterpreterOptionsAddDelegate" getproc 'TfLiteInterpreterOptionsAddDelegate_p !
 	drop
-	"" SetDllDirectory
 	;

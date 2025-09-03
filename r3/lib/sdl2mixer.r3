@@ -58,8 +58,7 @@
 	
 |------- BOOT
 :
-|WIN|	".\\dll" SetDllDirectory
-|WIN|	"SDL2_mixer.DLL" loadlib
+|WIN|	"dll/SDL2_mixer.DLL" loadlib
 |LIN|	"libSDL2_mixer-2.0.so.0" loadlib
 	dup "Mix_Init" getproc 'sys-Mix_Init !
 	dup "Mix_Quit" getproc 'sys-Mix_Quit !
@@ -84,6 +83,5 @@
 	dup "Mix_MasterVolume" getproc 'sys-Mix_MasterVolume !
 		
 	drop
-|WIN|	"" SetDllDirectory	
 	SNDInit
 	;

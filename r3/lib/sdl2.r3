@@ -353,8 +353,7 @@
 		
 |------- BOOT
 :
-|WIN|	".\\dll" SetDllDirectory
-|WIN|	"SDL2.DLL" loadlib
+|WIN|	"dll/SDL2.DLL" loadlib
 |LIN|   "libSDL2-2.0.so.0" loadlib	
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_GetCurrentDisplayMode" getproc 'sys-SDL_GetCurrentDisplayMode !
@@ -441,5 +440,4 @@
 	dup "SDL_free" getproc 'sys-SDL_free !
 
 	drop
-|WIN|	"" SetDllDirectory	
 	;

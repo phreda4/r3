@@ -295,13 +295,11 @@
 
 | Cargar bibliotecas
 : 
-	".\\dll" SetDllDirectory
-	"onnxruntime.dll" loadlib
+	"dll/onnxruntime.dll" loadlib
 	dup "OrtGetApiBase" getproc 'ortGetApiBase_p !
 	dup "OrtSessionOptionsAppendExecutionProvider_CPU" getproc 'ortSess_CPU_p !
 	dup "OrtSessionOptionsAppendExecutionProvider_MDL" getproc 'ortSess_MDL_p !
 	drop
-	"" SetDllDirectory
 	
 	
 	ortGetApiBase_p sys0 

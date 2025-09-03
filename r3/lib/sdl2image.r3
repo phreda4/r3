@@ -44,9 +44,7 @@
 
 |----- BOOT	
 : 
-
-|WIN|	".\\dll" SetDllDirectory
-|WIN|	"SDL2_image.DLL" loadlib
+|WIN|	"dll/SDL2_image.DLL" loadlib
 |LIN|	"libSDL2_image-2.0.so.0" loadlib	
 	dup "IMG_Load" getproc 'sys-IMG_Load !
 	dup "IMG_Init" getproc 'sys-IMG_Init !
@@ -61,7 +59,6 @@
 	dup "IMG_SaveJPG" getproc 'sys-IMG_SaveJPG !
 	dup "IMG_SaveJPG_RW" getproc 'sys-IMG_SaveJPG_RW !
 	drop
-|WIN|	"" SetDllDirectory	
-	$3 IMG_Init
+|	$3 IMG_Init
 	;
 

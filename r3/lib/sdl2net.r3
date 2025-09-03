@@ -93,8 +93,7 @@
 
 |----- BOOT 
 :
-|WIN|	".\\dll" SetDllDirectory
-|WIN|	"SDL2_net.DLL" loadlib
+|WIN|	"dll/SDL2_net.DLL" loadlib
 |LIN|	"libSDL2_net-2.0.so.0" loadlib	
 	dup "SDLNet_Init" getproc 'sys-SDLNet_Init !
 	dup "SDLNet_Quit" getproc 'sys-SDLNet_Quit !	
@@ -131,6 +130,5 @@
 	dup "SDLNet_FreeSocketSet" getproc 'sys-SDLNet_FreeSocketSet !
 	dup "SDLNet_GetError" getproc 'sys-SDLNet_GetError !
 	drop
-|WIN|	"" SetDllDirectory	
 	;
 
