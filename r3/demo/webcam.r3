@@ -77,14 +77,30 @@
 		1+ ) drop 
 	1? ( 'propc 'propv 17 move ) drop
 	;
+
+:defgui
+	$ffff =? ( 2drop ; ) drop
+	16 << 48 >> chgprop drop 
+	;
 	
 :setdef
-	'propi >b
+	'propv >a 'propi >b
 	0 ( 16 <?
-		b@+ 16 << 48 >> chgprop
-		drop
+		b@+ a@+ defgui
 		1+ ) drop 
 	getprop	;
+	
+:guilinea
+	a@ $ffff =? ( drop ; ) drop
+	dup uiLabelR
+	b@
+	dup 48 << 48 >> | min
+	swap 32 << 48 >> | max
+	a> uiSlideri
+|	dup 16 << 48 >> | default
+|	swap 48 >> | auto
+|	"%d %d" sprint uiLabelc	
+	;
 	
 :guipanel
 	uiStart
@@ -95,18 +111,10 @@
 	2 18 uiGridA uiH
 	0 1 uiGat
 	stdark
-	'propv >a
-	'propi >b
+	'propv >a 'propi >b
 	'proplist ( dup c@ 1? drop
-		dup uiLabelR
-		b@+
-		dup 48 << 48 >> | min
-		swap 32 << 48 >> | max
-		a> uiSlideri
-|		dup 16 << 48 >> | default
-|		swap 48 >> | auto
-|		"%d %d" sprint uiLabelc
-		8 a+
+		guilinea
+		8 a+ 8 b+
 		>>0 ) 2drop
 	stLink		
 	'setdef "Default" uiRBtn
