@@ -57,7 +57,7 @@
 	'propv >a	
 	'propi >b
 	0 ( 16 <? 
-		0 over 'val 'mi 'ma 'de 'au getCaptureProperty 
+		device over 'val 'mi 'ma 'de 'au getCaptureProperty 
 		val 32 << 32 >> a!+
 		mi $ffff and 
 		ma $ffff and 16 << or
@@ -68,8 +68,8 @@
 	'propc 'propv 17 move ; |dsc
 	
 :chgprop | n v -- n v
-	device pick2 pick2 0 setCaptureProperty drop
-	;
+	device pick2 pick2 0 setCaptureProperty ;
+	
 :changeprop	| -- 0/1
 	'propc >b 'propv >a
 	0 0 ( 16 <?
@@ -78,27 +78,43 @@
 	1? ( 'propc 'propv 17 move ) drop
 	;
 	
+:setdef
+	'propi >b
+	0 ( 16 <?
+		b@+ 16 << 48 >> chgprop
+		drop
+		1+ ) drop 
+	getprop	;
+	
 :guipanel
 	uiStart
 	3 2 uiPad
 	0.01 %w 0.05 %h 0.3 %w 0.6 %h uiWin!
-	3 18 uiGridA uiH
-|	"WEBCAM" uiLabelc
+	1 18 uiGridA uiV
+	"WEBCAM" uiLabelc
+	2 18 uiGridA uiH
+	0 1 uiGat
+	stdark
 	'propv >a
 	'propi >b
 	'proplist ( dup c@ 1? drop
 		dup uiLabelR
 		b@+
-		dup 48 << 48 >>
-		over 32 << 48 >>
-		|2dup "%d %d" sprint uiLabelc
+		dup 48 << 48 >> | min
+		swap 32 << 48 >> | max
 		a> uiSlideri
-		dup 16 << 48 >>
-		swap 48 >> "%d %d" sprint uiLabelc
+|		dup 16 << 48 >> | default
+|		swap 48 >> | auto
+|		"%d %d" sprint uiLabelc
 		8 a+
 		>>0 ) 2drop
+	stLink		
+	'setdef "Default" uiRBtn
+	stDang
+	'exit "Exit" uiRBtn
+	
 	uiEnd
-	|changeprop
+	changeprop
 	;
 	
 :main
@@ -125,7 +141,7 @@
 	1280 720 * 4 * 'here +!
 	device 'capture initCapture drop |"%d" .println
 	getprop
-	printp	
+|	printp	
 
 	device doCapture
 	'main sdlshow
