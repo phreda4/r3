@@ -1,24 +1,23 @@
 | memavx.dll
+| mem copy with AVX converting from/to float or Fixedpoint
+| f32:float p16:fixedpoint rgb:int32
 | PHREDA 2025
 ^r3/lib/win/kernel32.r3
 
-#rgb32_to_planar_f32_avx2_aligned_p
-::rgb32_to_planar_f32_avx2_aligned rgb32_to_planar_f32_avx2_aligned_p sys3 drop ;
-#bgr32_to_planar_f32_avx2_aligned_p
-::bgr32_to_planar_f32_avx2_aligned bgr32_to_planar_f32_avx2_aligned_p sys3 drop ;
-#convert_rgb_to_float32_p
-::convert_rgb_to_float32 convert_rgb_to_float32_p sys3 drop ;
-#f32_to_q16_16_p
-::f32_to_q16_16 f32_to_q16_16_p sys3 drop ;
-#q16_16_to_f32_p
-::q16_16_to_f32 q16_16_to_f32_p sys3 drop ;
+#memcpy_rgb3f_p ::memcpy_rgb3f memcpy_rgb3f_p sys3 drop ;
+#memcpy_bgr3f_p ::memcpy_bgr3f memcpy_bgr3f_p sys3 drop ;
+#memcpy_rgbf_p ::memcpy_rgbf memcpy_rgbf_p sys3 drop ;
+#memcpy_f32p16_p ::memcpy_f32p16 memcpy_f32p16_p sys3 drop ;
+#memcpy_p16f32_p ::memcpy_p16f32 memcpy_p16f32_p sys3 drop ;
+#memcpy_avx_p ::memcpy_avx memcpy_avx_p sys3 drop ;
 
 : 
 	"dll/memavx.dll" loadlib 
-	dup "rgb32_to_planar_f32_avx2_aligned" getproc 'rgb32_to_planar_f32_avx2_aligned_p !
-	dup "bgr32_to_planar_f32_avx2_aligned" getproc 'bgr32_to_planar_f32_avx2_aligned_p !
-	dup "convert_rgb_to_float32" getproc 'convert_rgb_to_float32_p !
-	dup "f32_to_q16_16" getproc 'f32_to_q16_16_p !
-	dup "q16_16_to_f32" getproc 'q16_16_to_f32_p !
+	dup "memcpy_rgb3f" getproc 'memcpy_rgb3f_p !
+	dup "memcpy_bgr3f" getproc 'memcpy_bgr3f_p !
+	dup "memcpy_rgbf" getproc 'memcpy_rgbf_p !
+	dup "memcpy_f32p16" getproc 'memcpy_f32p16_p !
+	dup "memcpy_p16f32" getproc 'memcpy_p16f32_p !
+	dup "memcpy_avx" getproc 'memcpy_avx_p !
 	drop
 	;
