@@ -316,6 +316,12 @@
 	over 23 >> $ff and 134 - 16 -
 	shift swap -? ( drop neg ; ) drop ;
 
+::fp16f | fp16 -- f
+	0? ( ; ) 
+	dup $3ff and $400 or
+	over 10 >> $1f and 15 - 
+	shift swap -? ( drop neg ; ) drop ;
+	
 |::fp2fu | fp -- fixed point
 |	dup $7fffff and $800000 or
 |	swap 23 >> $ff and 134 - 
@@ -364,7 +370,7 @@
     127 rot - >>					| val = mant >> (127 - exp)
     255 * $400000 + 23 >>			| redondeo
     dup $ff >? ( drop $ff ) ;		| clamp
-	
+
 	
 :4dif | v1 v2 -- abs
 	- dup 15 >> $1000100010001 and 

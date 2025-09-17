@@ -6,6 +6,7 @@
 ^r3/util/ui.r3
 ^r3/lib/escapi.r3
 ^r3/lib/rand.r3
+^r3/lib/memavx.r3
 
 #font
 |-------------------
@@ -17,7 +18,8 @@
 
 :setimg
 	texmem 0 'mpixel 'mpitch SDL_LockTexture
-	mpixel capture 1280 720 * 2/ move | dsc
+	|mpixel capture 1280 720 * 2/ move | dsc
+	mpixel capture 1280 720 * 2 << memcpy_avx
 	texmem SDL_UnlockTexture
 	device doCapture
 	;
@@ -106,8 +108,10 @@
 	uiStart
 	3 2 uiPad
 	0.01 %w 0.05 %h 0.3 %w 0.6 %h uiWin!
-	1 18 uiGridA uiV
+	3 18 uiGridA uiH
 	"WEBCAM" uiLabelc
+	stLink 'setdef "Default" uiRBtn
+	stDang 'exit "Exit" uiRBtn
 	2 18 uiGridA uiH
 	0 1 uiGat
 	stdark
@@ -116,10 +120,6 @@
 		guilinea
 		8 a+ 8 b+
 		>>0 ) 2drop
-	stLink		
-	'setdef "Default" uiRBtn
-	stDang
-	'exit "Exit" uiRBtn
 	
 	uiEnd
 	changeprop

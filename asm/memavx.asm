@@ -1,4 +1,4 @@
-; DLL for avx emmory
+; DLL for avx memmory moves
 ; PHREDA 2025
 ;
 format PE64 DLL
@@ -25,9 +25,9 @@ endp
 ;   R8  = N   (# píxeles)
 ; -----------------------------------------------------------------------------
 memcpy_rgb3f:
-    push rbp
-    mov rbp, rsp
-    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
+    ;push rbp
+    ;mov rbp, rsp
+ ;   sub rsp, 32    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
     ; Prologue
     push    rbx
     push    rsi
@@ -77,15 +77,15 @@ memcpy_rgb3f:
     pop     rdi
     pop     rsi
     pop     rbx
-    add rsp, 48
-    pop rbp	
+;    add rsp, 32
+    ;pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
 memcpy_bgr3f:
-    push rbp
-    mov rbp, rsp
-    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
+;    push rbp
+;    mov rbp, rsp
+;    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
     ; Prologue
     push    rbx
     push    rsi
@@ -135,15 +135,19 @@ memcpy_bgr3f:
     pop     rdi
     pop     rsi
     pop     rbx
-    add rsp, 48
-    pop rbp	
+;    add rsp, 48
+;    pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
 memcpy_rgbf:
-    push rbp
-    mov rbp, rsp
-    sub rsp, 48   
+    push    rbx
+    push    rsi
+    push    rdi
+
+;    push rbp
+;    mov rbp, rsp
+;    sub rsp, 48   
     mov     rsi, rcx             ; src
     mov     rdi, rdx             ; dst
     mov     r9,  r8              ; count
@@ -180,8 +184,12 @@ memcpy_rgbf:
     dec     r9
     jmp     .loop
 .done:
-    add rsp, 48
-    pop rbp	
+    pop     rdi
+    pop     rsi
+    pop     rbx
+
+;    add rsp, 48
+;    pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
@@ -190,7 +198,7 @@ memcpy_rgbf:
 ; Convierte float32 -> Q16.16 (int32).
 ; -----------------------------------------------------------------------------
 memcpy_f32p16:
-	sub     rsp, 40
+	;sub     rsp, 40
 	mov     rax, r8
 	shr     rax, 3
 	jz      .tail
@@ -219,7 +227,7 @@ memcpy_f32p16:
 	jnz     .tail_loop
 .done:
 	vzeroupper
-	add     rsp, 40
+	;add     rsp, 40
 	ret
 
 ; -----------------------------------------------------------------------------
