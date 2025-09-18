@@ -25,9 +25,6 @@ endp
 ;   R8  = N   (# píxeles)
 ; -----------------------------------------------------------------------------
 memcpy_rgb3f:
-    ;push rbp
-    ;mov rbp, rsp
- ;   sub rsp, 32    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
     ; Prologue
     push    rbx
     push    rsi
@@ -77,86 +74,185 @@ memcpy_rgb3f:
     pop     rdi
     pop     rsi
     pop     rbx
-;    add rsp, 32
-    ;pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
 memcpy_bgr3f:
-;    push rbp
-;    mov rbp, rsp
-;    sub rsp, 48    ; Reservar espacio para la "home" del registro y la alineación de 16 bytes
-    ; Prologue
     push    rbx
     push    rsi
     push    rdi
     mov     rsi, rcx                ; src
     mov     rdi, rdx                ; dst base
     mov     rbx, r8                 ; N
-    ; calcular punteros a los 3 planos
+    ; calcular punteros a los 3 planos  
     lea     r9,  [rbx*4]            ; N*4 bytes
-    mov     rax, rdi                ; r_ptr
+    mov     rax, rdi                ; b_ptr (BGR -> B primero)
     lea     rdx, [rdi + r9]         ; g_ptr
-    lea     r11, [rdi + r9*2]       ; b_ptr
+    lea     r11, [rdi + r9*2]       ; r_ptr (R último en BGR)
     ; cargar constantes
-    vbroadcastss ymm6, [norm_1_over_255_avx] ; 1/255
-    vmovdqa      ymm7, [mask_ff_dwords_avx] ; 0xFF por dword
+    vbroadcastss ymm6, [norm_1_over_255_avx]
+    vmovdqa      ymm7, [mask_ff_dwords_avx]
     ; N/8 bloques
     mov     rcx, rbx
-    shr     rcx, 3                  ; cnt = N / 8 (bloques de 8 píxeles)
+    shr     rcx, 3
 .avx_loop:
-    vmovdqa ymm0, [rsi]             ; cargar 8 píxeles (32 bytes alineados)
-    ; --- canal B ---
-	vpsrld  ymm1, ymm0, 16
-    vpand   ymm1, ymm0, ymm7
+    vmovdqa ymm0, [rsi]             ; cargar 8 píxeles
+    ; --- canal B (bits 0-7) ---
+    vpand   ymm1, ymm0, ymm7        ; Extraer B correctamente
     vcvtdq2ps ymm1, ymm1
     vmulps  ymm1, ymm1, ymm6
-    vmovaps [r11], ymm1             ; guardar 8 floats
-    add     r11, 32
-    ; --- canal G ---
+    vmovaps [rax], ymm1             ; B va al primer plano
+    add     rax, 32
+    ; --- canal G (bits 8-15) ---
     vpsrld  ymm2, ymm0, 8
     vpand   ymm2, ymm2, ymm7
     vcvtdq2ps ymm2, ymm2
     vmulps  ymm2, ymm2, ymm6
     vmovaps [rdx], ymm2
     add     rdx, 32
-    ; --- canal R ---
-    vpand   ymm3, ymm3, ymm7
+    ; --- canal R (bits 16-23) ---
+    vpsrld  ymm3, ymm0, 16          ; Corregido: inicializar ymm3
+    vpand   ymm3, ymm3, ymm7        ; Corregido: usar ymm3
     vcvtdq2ps ymm3, ymm3
     vmulps  ymm3, ymm3, ymm6
-    vmovaps [rax], ymm3
-    add     rax, 32
+    vmovaps [r11], ymm3             ; R va al último plano
+    add     r11, 32
     ; avanzar origen
     add     rsi, 32
     dec     rcx
     jnz     .avx_loop
-    ; epílogo
     vzeroupper
     pop     rdi
     pop     rsi
     pop     rbx
-;    add rsp, 48
-;    pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
 memcpy_rgbf:
+    push rbx
+    push rsi
+    push rdi
+    mov rsi, rcx            ; src
+    mov rdi, rdx            ; dst
+    mov r9, r8              ; count
+    ; Cargar constante 1/255.0 en XMM15
+    mov eax, 0x3B808081
+    movd xmm15, eax
+    shufps xmm15, xmm15, 0  ; broadcast
+    ; Procesar de a 4 píxeles usando XMM (más simple que YMM para intercalado)
+    cmp r9, 4
+    jb .scalar_loop
+.vector_loop:
+    cmp r9, 4
+    jb .scalar_loop
+    ; Cargar 4 píxeles (16 bytes)
+    movdqu xmm0, [rsi]      ; xmm0 = [P3|P2|P1|P0]
+    ; Procesar píxel por píxel dentro del registro
+    ; Píxel 0
+    movd eax, xmm0
+    mov ecx, eax
+    and ecx, 0xFF           ; B
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15
+    movss [rdi], xmm1
+    mov ecx, eax
+    shr ecx, 8
+    and ecx, 0xFF           ; G  
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15
+    movss [rdi+4], xmm1
+    shr eax, 16
+    and eax, 0xFF           ; R
+    cvtsi2ss xmm1, eax
+    mulss xmm1, xmm15
+    movss [rdi+8], xmm1
+    ; Píxel 1
+    psrldq xmm0, 4          ; shift right 4 bytes
+    movd eax, xmm0
+    mov ecx, eax
+    and ecx, 0xFF           ; B
+    cvtsi2ss xmm1, ecx  
+    mulss xmm1, xmm15
+    movss [rdi+12], xmm1
+    mov ecx, eax
+    shr ecx, 8
+    and ecx, 0xFF           ; G
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15  
+    movss [rdi+16], xmm1
+    shr eax, 16
+    and eax, 0xFF           ; R
+    cvtsi2ss xmm1, eax
+    mulss xmm1, xmm15
+    movss [rdi+20], xmm1
+    ; Píxel 2  
+    psrldq xmm0, 4
+    movd eax, xmm0
+    mov ecx, eax
+    and ecx, 0xFF           ; B
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15
+    movss [rdi+24], xmm1
+    mov ecx, eax  
+    shr ecx, 8
+    and ecx, 0xFF           ; G
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15
+    movss [rdi+28], xmm1
+    shr eax, 16
+    and eax, 0xFF           ; R
+    cvtsi2ss xmm1, eax
+    mulss xmm1, xmm15
+    movss [rdi+32], xmm1
+    ; Píxel 3
+    psrldq xmm0, 4
+    movd eax, xmm0
+    mov ecx, eax
+    and ecx, 0xFF           ; B
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15  
+    movss [rdi+36], xmm1
+    
+    mov ecx, eax
+    shr ecx, 8
+    and ecx, 0xFF           ; G
+    cvtsi2ss xmm1, ecx
+    mulss xmm1, xmm15
+    movss [rdi+40], xmm1
+    
+    shr eax, 16  
+    and eax, 0xFF           ; R
+    cvtsi2ss xmm1, eax
+    mulss xmm1, xmm15
+    movss [rdi+44], xmm1
+    
+    add rsi, 16             ; 4 píxeles
+    add rdi, 48             ; 4 * 12 bytes
+    sub r9, 4
+    jmp .vector_loop
+
+.scalar_loop:
+
+.done:
+    pop rdi
+    pop rsi
+    pop rbx  
+    ret
+	
+;|-----------	
+memcpy_rgbf_BASE:
     push    rbx
     push    rsi
     push    rdi
-
-;    push rbp
-;    mov rbp, rsp
-;    sub rsp, 48   
     mov     rsi, rcx             ; src
     mov     rdi, rdx             ; dst
-    mov     r9,  r8              ; count
+    ;mov     r9,  r8              ; count
     ; xmm15 = 1/255
     mov     eax,0x3B808081       ; 0.0039215689f
     movd    xmm15,eax
     shufps  xmm15,xmm15,0
 .loop:
-    test    r9,r9
+    test    r8,r8
     jz      .done
     ; Leer 4 bytes RGBA
     mov     eax,[rsi]            ; EAX = 0xXXBBGGRR
@@ -181,15 +277,12 @@ memcpy_rgbf:
     ; avanzar
     add     rsi,4                ; 4 bytes RGBA
     add     rdi,12               ; 3 floats
-    dec     r9
+    dec     r8
     jmp     .loop
 .done:
     pop     rdi
     pop     rsi
     pop     rbx
-
-;    add rsp, 48
-;    pop rbp	
     ret
 
 ; -----------------------------------------------------------------------------
@@ -273,7 +366,6 @@ memcpy_p16f32:
 ; RCX = dest (puntero al destino)
 ; RDX = src (puntero a la fuente)
 ; R8  = n (número de bytes a copiar)
-; Retorno: RCX (puntero al destino, según convención de memcpy)
 memcpy_avx:
 	push rbx
 	mov rax, rcx        ; Guardar el puntero de destino para retornarlo
@@ -282,7 +374,7 @@ memcpy_avx:
 	jz .done
     ; Comprobar si podemos usar AVX (copias de 32 bytes)
 	cmp r8, 32
-	jb .small_copy
+	jb .small_ini
     ; Bucle principal para copias grandes usando YMM (32 bytes por iteración)
 .large_copy:
 	vmovdqu ymm0, [rdx]     ; Cargar 32 bytes desde src
@@ -294,16 +386,46 @@ memcpy_avx:
 	jae .large_copy
     ; Manejar los bytes restantes (< 32 bytes)
 .small_copy:
-	cmp r8, 0
-	je .done
-    ; Copiar bytes restantes con un bucle más simple
-.byte_copy:
-	mov al, [rdx]
-	mov [rcx], al
-	inc rcx
-	inc rdx
-	dec r8
-	jnz .byte_copy
+    cmp r8, 0
+    je .done
+.small_ini:
+    ; Comprobar si hay al menos 16 bytes
+    cmp r8, 16
+    jb .check_8
+    movdqu xmm0, [rdx]      ; Cargar 16 bytes desde src
+    movdqu [rcx], xmm0      ; Escribir 16 bytes en dest
+    add rcx, 16
+    add rdx, 16
+    sub r8, 16
+.check_8:
+    cmp r8, 8
+    jb .check_4
+    mov rax, [rdx]          ; Cargar 8 bytes desde src
+    mov [rcx], rax          ; Escribir 8 bytes en dest
+    add rcx, 8
+    add rdx, 8
+    sub r8, 8
+.check_4:
+    cmp r8, 4
+    jb .check_2
+    mov eax, [rdx]          ; Cargar 4 bytes desde src
+    mov [rcx], eax          ; Escribir 4 bytes en dest
+    add rcx, 4
+    add rdx, 4
+    sub r8, 4
+.check_2:
+    cmp r8, 2
+    jb .check_1
+    mov ax, [rdx]           ; Cargar 2 bytes desde src
+    mov [rcx], ax           ; Escribir 2 bytes en dest
+    add rcx, 2
+    add rdx, 2
+    sub r8, 2
+.check_1:
+    cmp r8, 1
+    jb .done
+    mov al, [rdx]           ; Cargar 1 byte desde src
+    mov [rcx], al           ; Escribir 1 byte en dest.done:
 .done:
 	vzeroupper          ; Limpiar estado de registros YMM para evitar penalizaciones
 	pop rbx
@@ -312,7 +434,7 @@ memcpy_avx:
 ;--------------------------------------------------------------------
 section '.rdata' data readable
 
-align 32
+align 32	
 mask_ff_dwords_avx: dd 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
 norm_1_over_255_avx dd 0.0039215686274509803
 scale_65536   dd 65536.0

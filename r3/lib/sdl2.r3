@@ -44,7 +44,6 @@
 #sys-SDL_FreeSurface
 #sys-SDL_LockTexture
 #sys-SDL_UnlockTexture
-#sys-SDL_RenderSetLogicalSize
 #sys-SDL_SetRenderDrawBlendMode
 #sys-SDL_SetTextureBlendMode
 #sys-SDL_SetSurfaceAlphaMod
@@ -136,7 +135,6 @@
 ::SDL_FreeSurface sys-SDL_FreeSurface sys1 drop ;
 ::SDL_LockTexture sys-SDL_LockTexture sys4 drop ;
 ::SDL_UnlockTexture sys-SDL_UnlockTexture sys1 drop ;
-::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_SetRenderDrawBlendMode sys-SDL_SetRenderDrawBlendMode sys2 drop ;
 ::SDL_SetTextureBlendMode sys-SDL_SetTextureBlendMode sys2 drop ;
 ::SDL_ConvertSurfaceFormat sys-SDL_ConvertSurfaceFormat sys3 ;
@@ -396,7 +394,6 @@
 	dup "SDL_FreeSurface" getproc 'sys-SDL_FreeSurface !
 	dup "SDL_LockTexture" getproc 'sys-SDL_LockTexture !
 	dup "SDL_UnlockTexture" getproc 'sys-SDL_UnlockTexture !
-	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
 	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
 	dup "SDL_SetTextureBlendMode" getproc 'sys-SDL_SetTextureBlendMode !
 	dup "SDL_ConvertSurfaceFormat" getproc 'sys-SDL_ConvertSurfaceFormat !
