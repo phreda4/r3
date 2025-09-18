@@ -9,6 +9,8 @@ The size of cells is 64 bits, but you can access to memory in 8,16 or 32 bit siz
 
 R3 can load and call procedures from any dynamic library (.DLL in windows) the distro use SDL2 library for make games.
 
+[r3forth Manual](https://github.com/phreda4/r3/wiki/r4forth-Manual).
+
 ## WINDOWS
 Download the code of this repository, uncompress and execute r3.exe
 
@@ -23,7 +25,7 @@ with the keys you can navigate while see the code in the left side of the screen
 Edit with F2 or execute with F1 the code in this folder. When execute a code with F1 you can see in terminal the compilation
 
 ## LINUX
-Download the code of this repository, uncompress in a folder and make executable.
+you need sdl2 library installed in the system, Download the code of this repository, uncompress in a folder and make executable ./r3lin file.
 
 ```
 chmod 777 ./r3lin
@@ -35,17 +37,17 @@ now, you can run the system
 ./r3lin
 ```
 
-## Programs in the distributions
-
-## [WIKI](https://github.com/phreda4/r3/wiki/Welcome-to-the-r3-wiki!)
-
-## [How the language works](https://github.com/phreda4/r3/wiki/Mini-Manual-R3)
+***
 
 ## [More code to play](https://github.com/phreda4/r3-games)
 
 ## [Youtube Videos](https://www.youtube.com/@pablohreda)
 
 ## [History](https://github.com/phreda4/r3/wiki/History)
+
+## [WIKI](https://github.com/phreda4/r3/wiki/Welcome-to-the-r3-wiki!)
+
+## [How the language works](https://github.com/phreda4/r3/wiki/Mini-Manual-R3)
 
 The language use a virtual machine for work, this is the source code for this lang:
 https://github.com/phreda4/r3evm
