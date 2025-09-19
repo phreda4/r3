@@ -470,9 +470,9 @@
 	"R3d4" 1280 720 SDLinit
 
 	"media/ttf/Roboto-bold.ttf" 28 
-	txload 'font1 !
+	txloadwicon 'font1 !
 	"media/ttf/RobotoMono-bold.ttf" 14 
-	txload 'font2 !
+	txloadwicon 'font2 !
 	
 	edram 
 |	0.37 %w 0.08 %h 0.6 %w 0.85 %h edwin

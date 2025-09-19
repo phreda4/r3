@@ -147,10 +147,10 @@
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
 	
-	"media/ttf/Roboto-bold.ttf" 19 txload 'font1 !
+	"media/ttf/Roboto-bold.ttf" 19 txloadwicon 'font1 !
 	|"media/ttf/ProggyClean.ttf" 16
 	"media/ttf/RobotoMono-bold.ttf" 18 
-	txload 'font2 !
+	txloadwicon 'font2 !
  	
 	edram 
 	0.5 %w 32 550 550 edwin

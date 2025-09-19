@@ -168,8 +168,8 @@
 
 	"media/ttf/Roboto-regular.ttf" 18 TTF_OpenFont 'uifont !
 
-	"media/ttf/Roboto-bold.ttf" 24 txload 'font1 !
-	"media/ttf/Roboto-Medium.ttf" 16 txload 'font2 !
+	"media/ttf/Roboto-bold.ttf" 24 txloadwicon 'font1 !
+	"media/ttf/Roboto-Medium.ttf" 16 txloadwicon 'font2 !
 	
 	1024 vaini
 	1024 'pages p.ini

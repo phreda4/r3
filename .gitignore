@@ -17,3 +17,7 @@ r3/d4/gen/map.txt
 /r3/test
 /www
 /r3/juegoale
+onnx/hand_landmark_sparse_Nx3x224x224.onnx
+onnx/palm_detection_full_inf_post_192x192.onnx
+onnx/yolo11n-pose.onnx
+onnx/yolo12n.onnx
