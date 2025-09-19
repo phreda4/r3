@@ -494,7 +494,7 @@ a>             | push register A value
 1. **Memory Usage**: Calculate exact memory requirements
 2. **Performance**: Profile the flood-fill algorithm
 3. **Alternative Algorithms**: Implement iterative flood-fill
-4. **Error Handling**: Add bounds checking everywhere
+4. **Error Handling**: Add bounds checking everywhere (PHREDA say: NO!!!)
 
 ---
 
