@@ -25,9 +25,13 @@ with the keys you can navigate while see the code in the left side of the screen
 Edit with F2 or execute with F1 the code in this folder. When execute a code with F1 you can see in terminal the compilation
 
 ## LINUX
-you need sdl2 library installed in the system, Download the code of this repository, uncompress in a folder and make executable ./r3lin file.
+
+Download the code of this repository, uncompress in a folder
+You need sdl2 library installed in the system, 
+For install sdl2 and make ./r3lin executable
 
 ```
+sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
 chmod 777 ./r3lin
 ```
 
@@ -35,11 +39,6 @@ now, you can run the system
 
 ```
 ./r3lin
-```
-
-I try in pop_os!, for install sdl2:
-```
-sudo apt install libsdl2-dev
 ```
 
 ***
