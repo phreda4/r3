@@ -37,6 +37,11 @@ now, you can run the system
 ./r3lin
 ```
 
+I try in pop_os!, for install sdl2:
+```
+sudo apt install libsdl2-dev
+```
+
 ***
 
 ## [More code to play](https://github.com/phreda4/r3-games)
