@@ -17,6 +17,7 @@
 #sys-SDL_GetWindowSurface 
 #sys-SDL_RaiseWindow
 #sys-SDL_GetWindowSize
+#sys-SDL_SetWindowSize
 #sys-SDL_ShowCursor 
 #sys-SDL_UpdateWindowSurface 
 #sys-SDL_DestroyWindow 
@@ -103,6 +104,7 @@
 ::SDL_RenderSetLogicalSize sys-SDL_RenderSetLogicalSize sys3 drop ;
 ::SDL_RaiseWindow sys-SDL_RaiseWindow sys1 drop ;
 ::SDL_GetWindowSize sys-SDL_GetWindowSize sys3 drop ;
+::SDL_SetWindowSize sys-SDL_SetWindowSize sys3 drop ;
 ::SDL_GetWindowSurface sys-SDL_GetWindowSurface sys1 ;
 ::SDL_ShowCursor sys-SDL_ShowCursor sys1 drop ;
 ::SDL_UpdateWindowSurface sys-SDL_UpdateWindowSurface sys1 drop ;
@@ -293,15 +295,23 @@
 ##SDLchar
 ##SDLx ##SDLy ##SDLb ##SDLw
 
+
+#eventr	0
+
+::SDLeventR | 'vec --
+	'eventr ! ;
+
 :changews | change windowsize
-	SDL_windows 'sw 'sh SDL_GetWindowSize ;
+	SDL_windows 'sw 'sh SDL_GetWindowSize 
+	eventr 0? ( drop ; ) ex
+	;
 	
 ::SDLupdate
 	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !
 	10 SDL_delay
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
-		$200 =? ( drop changews  ; ) | WINDOWEVENT
+		$200 =? ( drop changews ; ) | WINDOWEVENT
 		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
 		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
 		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
@@ -362,9 +372,9 @@
 	dup "SDL_RenderSetLogicalSize" getproc 'sys-SDL_RenderSetLogicalSize !
 	dup "SDL_GetWindowSurface" getproc 'sys-SDL_GetWindowSurface !
 	dup "SDL_ShowCursor" getproc 'sys-SDL_ShowCursor !
-	
 	dup "SDL_RaiseWindow" getproc 'sys-SDL_RaiseWindow !
 	dup "SDL_GetWindowSize" getproc 'sys-SDL_GetWindowSize !
+	dup "SDL_SetWindowSize" getproc 'sys-SDL_SetWindowSize !
 	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
 	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
 	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !
