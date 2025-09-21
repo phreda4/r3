@@ -9,7 +9,7 @@ The size of cells is 64 bits, but you can access to memory in 8,16 or 32 bit siz
 
 R3 can load and call procedures from any dynamic library (.DLL in windows) the distro use SDL2 library for make games.
 
-[r3forth Manual](https://github.com/phreda4/r3/wiki/r4forth-Manual).
+[r3forth Manual](https://github.com/phreda4/r3/wiki/r3forth-Manual).
 
 ## WINDOWS
 Download the code of this repository, uncompress and execute r3.exe
