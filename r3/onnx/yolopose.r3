@@ -1,15 +1,9 @@
 | yolo11n-pose
 | PHREDA 2025
 
-^r3/lib/rand.r3
-^r3/lib/math.r3
-^r3/util/txfont.r3
-
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/onnx.r3
 ^r3/lib/memavx.r3
-
-#font
 
 #pixw #pixh #imgz 
 #rectd [ 0 0 0 0 ]

@@ -140,7 +140,7 @@
 :genbox | box --
 	|... build
 	dup 48 >>> sincos 'dx ! 'dy !
-	dup 32 >> $ffff and 3.0 *. 'val ! 
+	dup 32 >> $ffff and 2.9 *. 'val ! 
 	dup $ffff and swap 
 	16 >> $ffff and | x y 
 	ab[
@@ -337,10 +337,13 @@
 	
 	k2_x k0_x - k0_y k2_y - atan2 'rota !
 	box_x rota sin box_size *. 2/ + | centerx
+|	dup "%f " .print
 $ffff and 
 	box_y rota cos box_size *. 2/ - | centery
+|	dup "%f " .print
 $ffff and 16 << or 
 	box_size	| size
+|	dup "%f " .println
 $ffff and 32 << or 
 	rota		| rotation
 48 << or 
