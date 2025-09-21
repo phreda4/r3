@@ -380,12 +380,15 @@
 	
 ::Surf>pix | surface -- surf pixels
 	dup 32 + @ ;	
-	
+
 ::Surf>wha
 	dup 16 + ;
 
 ::Surf>wh | surface -- surf w h
 	dup 16 + d@+ swap d@ ;
+
+::Surf>pixpi | surface -- 'pixel pitch
+	dup 32 + @ swap 24 + d@ ;
 
 |------ compose texture
 #comptex
@@ -404,6 +407,20 @@
 	texEnd
 	dup 1 SDL_SetTextureBlendMode ;
 	
+	
+#tf #ta #tw #th #nt 
+
+::tex2static | t -- nt
+	dup 'tf 'ta 'tw 'th SDL_QueryTexture
+	0 tw th 0 tf SDL_CreateRGBSurfaceWithFormat 
+	SDLrenderer pick2 SDL_SetRenderTarget
+	SDLrenderer 0 tf pick3 Surf>pixpi SDL_RenderReadPixels
+	SDLrenderer 0 SDL_SetRenderTarget	
+	SDLrenderer over SDL_CreateTexturefromSurface  'nt !
+	SDL_FreeSurface
+	SDL_destroytexture
+	nt ;
+			
 |.... time control
 #prevt
 #deltatime

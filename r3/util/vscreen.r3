@@ -7,7 +7,8 @@
 #vscrz #vcenx #vceny
 #scl
 
-::vresize | nw nh --
+:vresize | --
+	sw sh 
 	2dup vscrh 16 <</ 
 	swap vscrw 16 <</ min
 	$100000000 over / 'scl !
@@ -19,8 +20,8 @@
 	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
 	dup 1 SDL_SetTextureScaleMode | 0 no blend
 	'vscrtex ! 
-	[ sw sh vresize ; ] SDLeventR
-	sw sh vresize ;
+	'vresize SDLeventR
+	vresize ;
 
 ::vini | --
 	SDLrenderer vscrtex SDL_SetRenderTarget	;
@@ -29,7 +30,8 @@
 	SDLrenderer 0 SDL_SetRenderTarget	
 |	SDLrenderer vscrtex 0 'vrect SDL_RenderCopy
 	vcenx vceny vscrz vscrtex spritez
-	SDLredraw ;	
+	SDLredraw
+	;	
 	
 ::vfree
 	vscrtex SDl_destroyTexture ;

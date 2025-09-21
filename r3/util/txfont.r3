@@ -86,6 +86,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		'recbox 8 + d@ 'curx +!
 		) 2drop ;
 	
+	
 ::txloadwicon | "font" size -- nfont
 	"media/ttf/Font Awesome 7 Free-Solid-900.otf"
 	over TTF_OpenFont 'ttfonta !
@@ -104,6 +105,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		'recbox 8 + d@ 'curx +!
 		) 2drop		
 	texEndAlpha 
+	tex2static
 	|dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont
@@ -115,6 +117,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTab 9 3 << + !	| tab
 	newTex ;	| reuturn ini font
 
+
 ::txload | "font" size -- nfont
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
@@ -124,6 +127,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTab 32 3 << +		| start in ascii 32
 	regularchar	
 	texEndAlpha 
+	tex2static
 	|dup 1 SDL_SetTextureBlendMode 
 	newTex !
 	ttfont TTF_CloseFont

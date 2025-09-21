@@ -15,11 +15,12 @@
 	"Resize Windows" bprint2
 	bcr bcr
 	sh sw "w:%d h:%d" bprint2
+
 	$ff00 sdlcolor
 	0 0 sdlx sdly SDLline
 	
-	10 100 txat "hola" txemits	
-	
+	$ff0000 txrgb
+	0 0 txat "hola" txemits	
 	8 8 sdlx sdly sdlellipse
 	vredraw
 	SDLkey
@@ -30,10 +31,10 @@
 :main
 	"r3sdl" 800 600 SDLinitR
 	320 240 vscreen 
-	bfont1 | pc font 8x16
 	
 	"media/ttf/Roboto-Medium.ttf" 30 txload 'font !
 	font txfont
+	bfont1 | pc font 8x16
 	
 	'demo SDLshow
 	SDLquit ;	
