@@ -49,6 +49,7 @@
 	0 swap 1 + c! ;
 	
 :load.inc | str -- str new ; incluye codigo
+	|dup ">>%l<<" .println ^lib.r |comm NO permitido
 	here over realfilename rtrim
 	dup filexist 0? ( nip
 			pick2 'lerror ! 

@@ -85,13 +85,15 @@
 		)
 	4drop 
 	]ba ;
-	
+
+
+|-----------------	
 :borde | x y x
-	over or b!+ or b!+ ;
+	over 32 << or b!+ 32 << or b!+ ;
 
 :qfb
-	xm pick2 - ym pick2 - 32 << xm pick4 + borde
-	xm pick2 - ym pick2 + 32 << xm pick4 + borde ;
+	xm pick2 - ym pick2 - xm pick4 + borde
+	xm pick2 - ym pick2 + xm pick4 + borde ;
 
 ::SDLEllipse | rx ry x y --
 	ab[
@@ -107,7 +109,7 @@
 	SDLrenderer here b> over - 3 >> SDL_RenderDrawPoints 
 	]ba ;
 	
-	
+|-----------------	
 ::SDLTriangle | x y x y x y --
 	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
 	'vert >a
@@ -116,7 +118,7 @@
 	swap i2fp da!+ i2fp da!+ rec da!+ 
 	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry  ;
 	
-
+|-----------------
 :8points
 	xm over - ym pick3 - xm dx + pick3 + sdlLineH
 	xm over - ym dy + pick3 + xm dx + pick3 + sdlLineH
@@ -168,6 +170,25 @@
 	0 ( 8points over <=? stepd 1+ ) 2drop 
 	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 
 	]ba ;
+	
+|-----------------
+:rect 
+	xm over - ym pick3 + xm pick3 + sdlLineH
+	xm over - ym pick3 - xm pick3 + sdlLineH
+	xm pick2 + ym pick2 - ym pick3 + sdlLineV
+	xm pick2 - ym pick2 - ym pick3 + sdlLineV
+	;
+	
+::SDLFCircle | r x y --
+	'ym ! 'xm !
+	ab[
+	3 over 2* - >b |'d !
+	0 ( rect over <=? stepd 1+ ) 
+	]ba
+	xm over - ym pick3 -
+	xm pick3 + pick2 -
+	ym pick4 + pick2 - sdlfrect
+	2drop ;
 
 |-------------------
 ::SDLImage | x y img --		
