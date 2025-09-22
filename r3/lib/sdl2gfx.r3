@@ -7,10 +7,8 @@
 #rec [ 0 0 0 0 ] | aux rect
 
 #vert [
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
+0 0 0 0 0	0 0 0 0 0
+0 0 0 0 0	0 0 0 0 0
 ]
 
 #index [ 0 1 2 2 3 0 ]
@@ -55,9 +53,12 @@
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
 	
+|--- AUX VARS	
 #ym #xm
 #dx #dy
+#d
 
+|-----------------
 :inielipse | x y --
 	'ym ! 'xm !
 	over dup * dup 1 <<		| a b c 2aa
@@ -89,11 +90,11 @@
 
 |-----------------	
 :borde | x y x
-	over 32 << or b!+ 32 << or b!+ ;
+	over or b!+ or b!+ ;
 
 :qfb
-	xm pick2 - ym pick2 - xm pick4 + borde
-	xm pick2 - ym pick2 + xm pick4 + borde ;
+	xm pick2 - ym pick2 - 32 << xm pick4 + borde
+	xm pick2 - ym pick2 + 32 << xm pick4 + borde ;
 
 ::SDLEllipse | rx ry x y --
 	ab[
@@ -125,7 +126,6 @@
 	xm pick2 - ym pick2 - ym dy + pick3 + sdlLineV
 	xm dx + pick2 + ym pick2 - ym dy + pick3 + sdlLineV	 ;
 
-#d
 :stepd
 	d -? ( over 2 << 6 + + 'd ! ; )
 	over pick3 - 2 << 10 + + 'd ! 
@@ -141,7 +141,7 @@
 	rot 2* 1+ dx over + dy rot +
 	SDLfRect ;
 
-
+|-----------------
 :2points | x y x --
 	over or a!+ or a!+ ;
 	
@@ -165,14 +165,13 @@
 	over dx + pick3 2* + over pick4 + dy over + SDLLineV	
 	pick2 + 'ym ! over + 'xm !
 	ab[
-	3 over 2* - >b 
-	here >a
+	3 over 2* - >b here >a
 	0 ( 8points over <=? stepd 1+ ) 2drop 
 	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 
 	]ba ;
 	
 |-----------------
-:rect 
+:rect
 	xm over - ym pick3 + xm pick3 + sdlLineH
 	xm over - ym pick3 - xm pick3 + sdlLineH
 	xm pick2 + ym pick2 - ym pick3 + sdlLineV
@@ -186,9 +185,23 @@
 	0 ( rect over <=? stepd 1+ ) 
 	]ba
 	xm over - ym pick3 -
-	xm pick3 + pick2 -
-	ym pick4 + pick2 - sdlfrect
-	2drop ;
+	2swap 2* swap 2*
+	sdlfrect ;
+
+|-----------------
+:8points
+	xm over + ym pick3 + 32 << xm pick3 - 2points
+	xm over + ym pick3 - 32 << xm pick3 - 2points
+	xm pick2 + ym pick2 + 32 << xm pick4 - 2points
+	xm pick2 + ym pick2 - 32 << xm pick4 - 2points ;
+	
+::SDLCircle | r x y --
+	'ym ! 'xm !
+	ab[
+	3 over 2* - >b here >a
+	0 ( 8points over <=? stepd 1+ ) 2drop
+	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 	
+	]ba ;
 
 |-------------------
 ::SDLImage | x y img --		
@@ -428,19 +441,14 @@
 	texEnd
 	dup 1 SDL_SetTextureBlendMode ;
 	
-	
-#tf #ta #tw #th #nt 
-
-::tex2static | t -- nt
-	dup 'tf 'ta 'tw 'th SDL_QueryTexture
-	0 tw th 0 tf SDL_CreateRGBSurfaceWithFormat 
+::tex2static | tex -- newtexture
+	dup 'xm 'ym 'dx 'dy SDL_QueryTexture | xm=format 
+	0 dx dy 0 xm SDL_CreateRGBSurfaceWithFormat 
 	SDLrenderer pick2 SDL_SetRenderTarget
-	SDLrenderer 0 tf pick3 Surf>pixpi SDL_RenderReadPixels
+	SDLrenderer 0 xm pick3 Surf>pixpi SDL_RenderReadPixels
 	SDLrenderer 0 SDL_SetRenderTarget	
-	SDLrenderer over SDL_CreateTexturefromSurface  'nt !
-	SDL_FreeSurface
-	SDL_destroytexture
-	nt ;
+	SDLrenderer over SDL_CreateTexturefromSurface | new texture
+	-rot SDL_FreeSurface SDL_destroytexture ;
 			
 |.... time control
 #prevt
