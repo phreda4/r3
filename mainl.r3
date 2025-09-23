@@ -237,7 +237,7 @@
 
 :r3edit
 |WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/d4/d4-coded.r3"
+|LIN| "./r3lin r3/editor/code-edit.r3"
 	sys ;
 	
 |--------------------------------

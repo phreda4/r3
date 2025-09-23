@@ -94,7 +94,7 @@
 |1 constant O_WRONLY
 |2 constant O_RDWR
 |100 constant O_CREAT $40
-|200 constant O_TRUNC $80
+|200 constant O_TRUNC $200
 |2000 constant O_APPEND $400
 |4000 constant O_NONBLOCK $800
 | 077 octal $1ff
@@ -110,7 +110,7 @@
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	$C1 $1ff libc-open 32>64 -? ( 3drop ; )
+	$241 $1ff libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
