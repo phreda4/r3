@@ -34,7 +34,7 @@
 
 :endline? | adr -- adr
 	endlin <? ( ; )
-	( c@+ 1? 13 <>? drop ) 
+	( c@+ 1? 13 <>? 10 <>? drop ) 
 	drop 1 -
 	;
 	
@@ -47,19 +47,19 @@
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
 			,c swap 1 + swap )
-		13 <>?
+		13 <>? 10 <>?
 		,ct ) drop 1 - 0 ;
 	
 	
 :endline
-	,c ( endline? c@+ 1? 13 <>? ,ct )	
+	,c ( endline? c@+ 1? 13 <>? 10 <>? ,ct )	
 	eline ;
 	
 :parseline 
 	0 wcolor drop
 	,tcolor
 	dup cntlin + 'endlin !
-	( endline? c@+ 1? 13 <>?  | 0 o 13 sale
+	( endline? c@+ 1? 13 <>? 10 <>?
 		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
