@@ -7,8 +7,6 @@
 ^r3/util/varanim.r3
 ^r3/util/txfont.r3
 
-#font1
-
 #ibuffer * $1fff | Visual buffer for waveform display
 #wave1 * 8192    | Temporary wave buffer
 
@@ -56,93 +54,71 @@
 
 
 #max_voices 16
-#voice_data * 512  | 16 voices * 32 bytes each
-#voice_pool * 16   | Pool of available voice indices
+#voice * 512  | 16 voices * 32 bytes each
+#voice> 'voice
 
+:resetvoice
+	'voice 'voice> ! ;
+	
+:newvoice | -- nv
+	voice> 'voice> >=? ( drop 0 ; )
+	32 'voice> +! ;
+	
+:delvoice | nv --
+	dup 32 + dup voice> - 3 >> move   | dsc
+	-32 'voice> +! ;
+	
 | ADSR Parameters (fixed point 16.16)
 #attack_time   0.1   | 100ms attack
 #decay_time    0.15  | 150ms decay  
 #sustain_level 0.7   | 70% sustain level
 #release_time  0.3   | 300ms release
 
-:voice_offset | voice_idx -- addr
-	5 << 'voice_data + ;
+:.voice_freq ;
+:.voice_phase 8 + ;
+:.voice_env_time  16 + ;
+:.voice_state 24 + ;
+:.voice_note 25 + ;
+:.voice_velocity 26 + ;
 
-:voice_freq | voice_idx -- addr
-	voice_offset ;
-
-:voice_phase | voice_idx -- addr  
-	voice_offset 8 + ;
-
-:voice_env_time | voice_idx -- addr
-	voice_offset 16 + ;
-
-:voice_state | voice_idx -- addr
-	voice_offset 24 + ;
-
-:voice_note | voice_idx -- addr
-	voice_offset 25 + ;
-
-:voice_velocity | voice_idx -- addr
-	voice_offset 26 + ;
-
-|-----------------------------------------
-| Voice Pool Management
-#voice_pool_count 0
-
-:init_voice_pool
-	max_voices 'voice_pool_count !
-	'voice_pool >a
-	max_voices ( 1? 1- 
-		dup da!+ 
-		) drop ;
-
-:alloc_voice | -- voice_idx|-1
-	voice_pool_count 0? ( 1- ; ) 1- dup 'voice_pool_count !
-	3 << 'voice_pool + @ ;
-
-:free_voice | voice_idx --
-	voice_pool_count 3 << 'voice_pool + !
-	1 'voice_pool_count +! ;
 
 |-----------------------------------------
 | ADSR Envelope Generator
 
 :calc_attack | voice_idx -- amplitude
-	dup voice_env_time @
+	dup .voice_env_time @
 	attack_time /. 
 	1.0 min
 	1.0 >=? ( 
-		swap 2 swap voice_state c! | Move to decay
-		0.0 swap voice_env_time !
+		swap 2 swap .voice_state c! | Move to decay
+		0.0 swap .voice_env_time !
 		) drop ;
 
 :calc_decay | voice_idx -- amplitude  
-	dup voice_env_time @
+	dup .voice_env_time @
 	decay_time /.
 	1.0 min
 	1.0 swap - sustain_level *. 
 	1.0 swap -
 	dup sustain_level <=? (
-		swap 3 swap voice_state c! | Move to sustain
+		swap 3 swap .voice_state c! | Move to sustain
 		) drop ;
 
 :calc_sustain | voice_idx -- amplitude
 	drop sustain_level ;
 
 :calc_release | voice_idx -- amplitude
-	dup voice_env_time @
-	release_time /.
-	1.0 min
+	dup .voice_env_time @
+	release_time /. 1.0 min
 	1.0 swap -
 	sustain_level *.
 	0.01 <=? ( | Almost silent
-		swap 0 swap voice_state c! | Turn off
-		swap free_voice 0.0
+		swap 0 swap .voice_state c! | Turn off
+		swap delvoice 0.0
 		) drop ;
 
 :calc_envelope | voice_idx -- amplitude(0.0-1.0)
-	dup voice_state c@
+	dup .voice_state c@
 	0? ( 2drop 0.0 ; ) | Off
 	1 =? ( calc_attack ; )
 	2 =? ( calc_decay ; ) 
@@ -168,7 +144,7 @@
 		sin | Generate sine wave (-1 to 1)
 		rot ) 2drop ;
 
-:limitsq
+:limsq
 	0.5 >? ( 1.0 nip ; ) -1.0 nip ; 
 	
 :generate_square | voice_idx freq phase_addr --
@@ -177,10 +153,10 @@
 		a@+ over + 
 		1.0 >=? ( 1.0 - ) | Wrap phase
 		dup a! | Store updated phase
-		limitsq | Square wave: >0.5 = high, else low
+		limsq | Square wave: >0.5 = high, else low
 		rot ) 2drop ;
 
-:limittr
+:limtr
 	0.5 <=? ( 4.0 *. 1.0 - ; ) | Rising edge: 0-0.5 -> -1 to 1
 	1.0 swap - 4.0 *. 1.0 - | Falling edge: 0.5-1 -> 1 to -1
 	;
@@ -191,7 +167,7 @@
 		a@+ over + 
 		1.0 >=? ( 1.0 - ) | Wrap phase
 		dup a! | Store updated phase
-		llimittr | Convert phase (0-1) to triangle (-1 to 1)
+		limtr | Convert phase (0-1) to triangle (-1 to 1)
 		rot ) 2drop ;
 
 :generate_sawtooth | voice_idx freq phase_addr --
@@ -206,7 +182,7 @@
 :generate_noise | voice_idx freq phase_addr --
 	drop 2drop | Noise doesn't need frequency or phase
 	2048 ( 1? 1-
-		2.0 randmax 1.0 -| Random value -1 to 1
+		2.0 randmax 1.0 - | Random value -1 to 1
 		rot ) drop ;
 
 | Wave generator dispatch table
@@ -214,8 +190,8 @@
 
 :generate_wave | voice_idx --
 	'wave1 >b | Output buffer
-	dup voice_freq @     | voice_idx freq
-	over voice_phase     | voice_idx freq phase_addr
+	dup .voice_freq @     | voice_idx freq
+	over .voice_phase     | voice_idx freq phase_addr
 	
 	| Call appropriate generator
 	wave_type 3 << 'wave_generators + @ ex | Call generator function
@@ -237,7 +213,7 @@
 	'mix_buffer 0 2048 dfill ;
 
 :mix_voice | voice_idx --
-	dup voice_state c@ 0? ( drop ; ) drop | Skip inactive voices
+	dup .voice_state c@ 0? ( drop ; ) drop | Skip inactive voices
 	
 	dup calc_envelope | voice_idx amplitude
 	0.01 <? ( drop ; ) | Skip nearly silent voices
@@ -257,6 +233,7 @@
 
 :render_all_voices
 	clear_mix_buffer
+	
 	max_voices ( 1? 1-
 		dup mix_voice
 		) drop
@@ -276,45 +253,43 @@
 |-----------------------------------------
 | Note Management
 :note_on | note velocity --
-	alloc_voice -1 =? ( 3drop ; ) | No free voices
-	dup >a | Save voice index
-	
-	| Set note and velocity
-	over a> voice_note c!
-	dup a> voice_velocity c!
-	
+	newvoice 0? ( 3drop ; ) | No free voices|
+	>a | Save voice index
+	dup a> .voice_velocity c!
+	dup a> .voice_note c!
 	| Set frequency from table
-	swap note>freq a> voice_freq !
-	
+	note>freq a> .voice_freq !
 	| Initialize envelope
-	0.0 a> voice_phase !
-	0.0 a> voice_env_time !
-	1 a> voice_state c! | Attack state
+	0.0 a> .voice_phase !
+	0.0 a> .voice_env_time !
+	1 a> .voice_state c! | Attack state
 	
-	drop ;
+	;
 
 :note_off | note --
 	| Find voice playing this note
-	max_voices ( 1? 1-
-		dup voice_note c@ over =? (
-			dup voice_state c@ 3 <=? ( | If not already releasing
-				0.0 over voice_env_time !
-				4 swap voice_state c! | Release state
-				) drop
-			) drop
-		) 2drop ;
+	"a" .println
+	'voice ( voice> <?
+		dup .voice_note c@ 
+		pick2 =? ( 2drop 
+			0.0 over .voice_env_time !
+			4 over .voice_state c!
+			2drop "a" .println ;	
+			)
+		drop
+		32 + ) 2drop 
+	"a" .println ;
 
 |-----------------------------------------
 | Update System
 :update_voices
-	max_voices ( 1? 1-
-		dup voice_state c@ 1? ( | Active voice
+	'voice ( voice> <?
+		dup .voice_state c@ 1? ( | Active voice
 			| Update envelope time
-			dup voice_env_time @
 			0.023 + | ~1/44100 * buffer_size for timing
-			over voice_env_time !
+			pick2 .voice_env_time +!
 			) drop
-		) drop ;
+		32 + ) drop ;
 
 :runsynthe	
 	audio_device SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
@@ -472,24 +447,19 @@
 	10 550 txat "Active Voices: " txprint
 	
 	| Count active voices
-	0 max_voices ( 1? 1-
-		over voice_state c@ 1? ( rot 1+ rot ) drop
-		) drop
-	
-	|"%d/%d" 
-	"%d" txprint
+	voice> 'voice - 5 >> "%d/16" txprint
 	
 	| Show voice details
-	200 550 txat "Voice States: " txprint
-	
-	0 ( max_voices <? 
-		dup voice_state c@ 1? ( 
-			250 530 txat
-			dup voice_note c@ 60 - | Convert back to key number
-			over voice_state c@
-			"[%d:%d]" txprint
-			) drop
-		1+ ) drop ;
+	550
+	200 over txat "Voice States: " txprint
+	'voice ( voice> <? 
+		swap 30 + swap
+		200 pick2 txat
+		dup .voice_note c@ 
+		over .voice_state c@
+		"[%d:%d]" txprint
+		32 + ) 2drop
+	;
 
 |-----------------------------------------
 | Main Loop
@@ -501,8 +471,8 @@
 	
 	draw_wave_selector
 	drawkeys
-	drawbuffer
-	|draw_voice_status
+|	drawbuffer
+	draw_voice_status
 	
 	|runsynthe
 	
@@ -513,11 +483,10 @@
 | Initialization and Entry Point
 : 
 	"R3 Polyphonic Synthesizer" 1024 600 SDLinit
-	"media/ttf/Roboto-bold.ttf" 20 txloadwicon 'font1 ! 
-	font1 txfont
+	"media/ttf/Roboto-bold.ttf" 20 txloadwicon txfont
 	
 	iniaudio
-	init_voice_pool
+	resetvoice
 	
 	'main SDLshow
 	SDLquit ;
