@@ -75,24 +75,23 @@
 #release_time  0.3   | 300ms release
 
 :.voice_freq ;
-:.voice_phase 8 + ;
-:.voice_env_time  16 + ;
-:.voice_state 24 + ;
-:.voice_note 25 + ;
-:.voice_velocity 26 + ;
-
+:.voice_phase		8 + ;
+:.voice_env_time	16 + ;
+:.voice_state		24 + ;
+:.voice_note		25 + ;
+:.voice_velocity	26 + ;
 
 |-----------------------------------------
 | ADSR Envelope Generator
 
-:calc_attack | voice_idx -- amplitude
+:calc_attack | voice -- amplitude
 	dup .voice_env_time @
 	attack_time /. 
 	1.0 min
-	1.0 >=? ( 
-		swap 2 swap .voice_state c! | Move to decay
-		0.0 swap .voice_env_time !
-		) drop ;
+	1.0 <? ( nip ; ) drop
+	2 over .voice_state c! | Move to decay
+	0.0 swap .voice_env_time !
+	;
 
 :calc_decay | voice_idx -- amplitude  
 	dup .voice_env_time @
@@ -100,9 +99,9 @@
 	1.0 min
 	1.0 swap - sustain_level *. 
 	1.0 swap -
-	dup sustain_level <=? (
-		swap 3 swap .voice_state c! | Move to sustain
-		) drop ;
+	sustain_level >? ( nip ; ) 
+	3 swap .voice_state c! | Move to sustain
+	;
 
 :calc_sustain | voice_idx -- amplitude
 	drop sustain_level ;
@@ -112,18 +111,17 @@
 	release_time /. 1.0 min
 	1.0 swap -
 	sustain_level *.
-	0.01 <=? ( | Almost silent
-		swap 0 swap .voice_state c! | Turn off
-		swap delvoice 0.0
-		) drop ;
+	0.01 >? ( nip ; ) drop
+	0 over .voice_state c! | Turn off
+	delvoice
+	0.0 ;
 
-:calc_envelope | voice_idx -- amplitude(0.0-1.0)
+:calc_envelope | voice -- amplitude(0.0-1.0)
 	dup .voice_state c@
-	0? ( 2drop 0.0 ; ) | Off
-	1 =? ( calc_attack ; )
-	2 =? ( calc_decay ; ) 
-	3 =? ( calc_sustain ; )
-	4 =? ( calc_release ; )
+	1 =? ( drop calc_attack ; )
+	2 =? ( drop calc_decay ; ) 
+	3 =? ( drop calc_sustain ; )
+	4 =? ( drop calc_release ; )
 	2drop 0.0 ; | Default
 
 |-----------------------------------------
@@ -137,8 +135,8 @@
 
 |-----------------------------------------
 | Wave Generation Functions
-:generate_sine | voice_idx freq phase_addr --
-	>a 2048 ( 1? 1-
+:generate_sine | voice_idx freq --
+	2048 ( 1? 1-
 		over sample_rate /. | freq_per_sample 
 		a@+ over + dup a! | Update and store phase
 		sin | Generate sine wave (-1 to 1)
@@ -147,8 +145,8 @@
 :limsq
 	0.5 >? ( 1.0 nip ; ) -1.0 nip ; 
 	
-:generate_square | voice_idx freq phase_addr --
-	>a 2048 ( 1? 1-
+:generate_square | voice_idx freq --
+	2048 ( 1? 1-
 		over sample_rate /. | freq_per_sample (0 to 1)
 		a@+ over + 
 		1.0 >=? ( 1.0 - ) | Wrap phase
@@ -161,8 +159,8 @@
 	1.0 swap - 4.0 *. 1.0 - | Falling edge: 0.5-1 -> 1 to -1
 	;
 	
-:generate_triangle | voice_idx freq phase_addr --
-	>a 2048 ( 1? 1-
+:generate_triangle | voice_idx freq --
+	2048 ( 1? 1-
 		over sample_rate /. | freq_per_sample
 		a@+ over + 
 		1.0 >=? ( 1.0 - ) | Wrap phase
@@ -170,8 +168,8 @@
 		limtr | Convert phase (0-1) to triangle (-1 to 1)
 		rot ) 2drop ;
 
-:generate_sawtooth | voice_idx freq phase_addr --
-	>a 2048 ( 1? 1-
+:generate_sawtooth | voice_idx freq --
+	2048 ( 1? 1-
 		over sample_rate /. | freq_per_sample
 		a@+ over + 
 		1.0 >=? ( 1.0 - ) | Wrap phase
@@ -188,21 +186,23 @@
 | Wave generator dispatch table
 #wave_generators 'generate_sine 'generate_square 'generate_triangle 'generate_sawtooth 'generate_noise
 
-:generate_wave | voice_idx --
+:generate_wave | voice --
 	'wave1 >b | Output buffer
 	dup .voice_freq @     | voice_idx freq
-	over .voice_phase     | voice_idx freq phase_addr
+	over .voice_phase @    | voice_idx freq phase_addr
 	
+	'wave1 >a
 	| Call appropriate generator
 	wave_type 3 << 'wave_generators + @ ex | Call generator function
 	
 	| Convert samples to 16-bit and store
-	'wave1 >a 
-	2048 ( 1? 1-
-		a@+ 1.0 + 0.5 *. | Convert -1,1 to 0,1
-		$ffff and     | Convert to 16-bit integer  
-		b> w!+ >b
-		) drop ;
+|	 
+|	2048 ( 1? 1-
+|		da@+ 1.0 + 0.5 *. | Convert -1,1 to 0,1
+|		$ffff and     | Convert to 16-bit integer  
+|		b> w!+ >b
+|		) drop 
+	;
 
 |-----------------------------------------
 | Polyphonic Audio Rendering
@@ -212,41 +212,42 @@
 :clear_mix_buffer
 	'mix_buffer 0 2048 dfill ;
 
-:mix_voice | voice_idx --
-	dup .voice_state c@ 0? ( drop ; ) drop | Skip inactive voices
+:mix_voice | voice --
+	dup .voice_state c@ 0? ( 2drop ; ) drop | Skip inactive voices
+
+drop ;	
+	dup calc_envelope | voice amplitude
+	0.01 <? ( 2drop ; ) | Skip nearly silent voices
 	
-	dup calc_envelope | voice_idx amplitude
-	0.01 <? ( drop ; ) | Skip nearly silent voices
+2drop ;
 	
-	dup >a | Save amplitude and voice index
+	
 	generate_wave | Generate wave data to wave1 buffer
-	
+
 	| Mix into main buffer with amplitude
-	'wave1 >b 'mix_buffer >a
-	a> | Get amplitude back
+	'wave1 >b 
+	'mix_buffer >a
 	2048 ( 1? 1-
-		b@+ $ffff and | Get sample  
-		over *. 16 >>   | Apply amplitude
-		da@+ + da!+     | Mix with existing
+		db@+ |$ffff and | Get sample  
+		|over *. 16 >>   | Apply amplitude
+		da@ + da!+     | Mix with existing
 		) 2drop
 	;
 
 :render_all_voices
+	'voice voice> =? ( drop ; ) 
 	clear_mix_buffer
-	
-	max_voices ( 1? 1-
+	( voice> <?
 		dup mix_voice
-		) drop
-	
+		32 + ) drop
 	| Convert 32-bit mix buffer to 16-bit output
 	'mix_buffer >a 'output_buffer >b
 	2048 ( 1? 1-
-		a@+ 
+		da@+ 
 		-32768 max 32767 min | Clamp to 16-bit range
 		dup 16 << or       | Duplicate to both channels
-		b!+
+		db!+
 		) drop
-	
 	| Send to audio device
 	audio_device 'output_buffer 8192 SDL_QueueAudio ;
 
@@ -255,7 +256,7 @@
 :note_on | note velocity --
 	newvoice 0? ( 3drop ; ) | No free voices|
 	>a | Save voice index
-	dup a> .voice_velocity c!
+	a> .voice_velocity c!
 	dup a> .voice_note c!
 	| Set frequency from table
 	note>freq a> .voice_freq !
@@ -263,22 +264,19 @@
 	0.0 a> .voice_phase !
 	0.0 a> .voice_env_time !
 	1 a> .voice_state c! | Attack state
-	
 	;
 
 :note_off | note --
 	| Find voice playing this note
-	"a" .println
 	'voice ( voice> <?
 		dup .voice_note c@ 
-		pick2 =? ( 2drop 
+		pick2 =? ( drop 
 			0.0 over .voice_env_time !
 			4 over .voice_state c!
-			2drop "a" .println ;	
+			2drop ;	
 			)
 		drop
-		32 + ) 2drop 
-	"a" .println ;
+		32 + ) 2drop ;
 
 |-----------------------------------------
 | Update System
@@ -286,20 +284,19 @@
 	'voice ( voice> <?
 		dup .voice_state c@ 1? ( | Active voice
 			| Update envelope time
-			0.023 + | ~1/44100 * buffer_size for timing
+			0.023  | ~1/44100 * buffer_size for timing
 			pick2 .voice_env_time +!
 			) drop
 		32 + ) drop ;
 
 :runsynthe	
 	audio_device SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
-	
 	update_voices
-	render_all_voices ;
+	render_all_voices
+	;
 
 |-----------------------------------------
 | Visual Components  
-
 
 :drawbuffer
 	$ffffff sdlcolor
@@ -369,10 +366,10 @@
 |-----------------------------------------
 | Wave Type Selection
 :next_wave_type
-	wave_type 1+ 5 >=? ( drop 0 ) 'wave_type ! ;
+	wave_type 1+ 4 >? ( drop 0 ) 'wave_type ! ;
 
 :prev_wave_type  
-	wave_type 0 <=? ( drop 5 ) 1- 'wave_type ! ;
+	wave_type 1- -? ( drop 4 ) 'wave_type ! ;
 
 :set_wave_type | type --
 	0 max 4 min 'wave_type ! ;
@@ -380,12 +377,12 @@
 |-----------------------------------------
 | Enhanced Keyboard Handling  
 :playdn | note --
-	dup 'playn + c@ 1? ( drop ; ) drop | Already pressed
+	dup 'playn + c@ 1? ( 2drop ; ) drop | Already pressed
 	dup 60 + 100 note_on | note + middle C, velocity 100
 	1 swap 'playn + c! ; | Mark as pressed
 
 :playup | note --
-	dup 'playn + c@ 0? ( drop ; ) drop | Not pressed
+	dup 'playn + c@ 0? ( 2drop ; ) drop | Not pressed
 	dup 60 + note_off  | note + middle C
 	0 swap 'playn + c! ; | Mark as released
 
@@ -450,16 +447,12 @@
 	voice> 'voice - 5 >> "%d/16" txprint
 	
 	| Show voice details
-	550
-	200 over txat "Voice States: " txprint
+	200 550 txat "Voice States: " txprint
 	'voice ( voice> <? 
-		swap 30 + swap
-		200 pick2 txat
 		dup .voice_note c@ 
 		over .voice_state c@
-		"[%d:%d]" txprint
-		32 + ) 2drop
-	;
+		"[%d:%d] " txprint
+		32 + ) drop ;
 
 |-----------------------------------------
 | Main Loop
@@ -471,10 +464,10 @@
 	
 	draw_wave_selector
 	drawkeys
-|	drawbuffer
+	drawbuffer
 	draw_voice_status
 	
-	|runsynthe
+	runsynthe
 	
 	SDLredraw
 	teclado ;
