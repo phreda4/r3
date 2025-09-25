@@ -4,10 +4,10 @@
 ^r3/lib/gui.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/ui.r3
-^r3/util/uiDatetime.r3
-^r3/util/uiEdit.r3
-^r3/util/uiColor.r3
-^r3/util/uiFileDlg.r3
+^r3/util/uidatetime.r3
+^r3/util/uiedit.r3
+^r3/util/uicolor.r3
+^r3/util/uifiledlg.r3
 	
 #font1
 #font2

@@ -131,7 +131,7 @@
 	libc-unlink drop ;
 
 ::filexist | "file" -- 0=no
-	0 libc-access not ;
+	0 libc-access $ffffffff xor ;
 
 | atrib creation access write size
 #fileatrib 0 0 0 0 0
