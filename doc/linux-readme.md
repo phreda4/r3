@@ -1,4 +1,3 @@
-# How to start using r3 under linux
 kiy 250923
 
 ## Intro
@@ -65,8 +64,19 @@ Unlike other Forths, **r3 has no REPL** (read-eval-print loop).
 So you have to try a simpler test to see that the VM itself is functional.
 If
 
+make a txt file call this 'test0.r3' with 
+
 ```
-./r3lin r3/r3vm/test0.r3
+^r3/lib/console.r3
+
+:
+"r3 vm working." .println 
+;
+```
+execute
+
+```
+./r3lin test0.r3
 ```
 produces something like
 
@@ -74,9 +84,7 @@ produces something like
 r3vm - PHREDA
 compile:r3/r3vm/test0.r3... ok.
 inc:11 - words:524 - code:14Kb - data:8Kb - free:10231Kb
-```
 
-```
 r3 vm working.
 ```
 then the VM should be ok.

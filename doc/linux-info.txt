@@ -1,5 +1,4 @@
-Documentation for linux development
------------------------------------
+## Documentation for linux development
 
 The comunication with the SO is made with this words:
 
@@ -22,7 +21,8 @@ call system API with 10 arguments (see inverse order)
 
 all the arguments are INTEGER, floating point not implemented!!
 
----------------------------------------------------------------
+---
+
 In file posix/posix.r3, the first LIBRARY for linux, from line 44 this code call when start the program
 
 :
