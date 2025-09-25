@@ -180,7 +180,7 @@
 	"R3d4" 1280 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 28 
 	txloadwicon 'font1 !
-	"media/ttf/RobotoMono-bold.ttf" 14 
+	"media/ttf/RobotoMono-Bold.ttf" 14 
 	txloadwicon 'font2 !
 
 	mark

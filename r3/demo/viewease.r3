@@ -76,7 +76,7 @@
 |--------------- INICIO ------------	
 : 
 	"View ease" 1024 600 SDLinit
-	"media/ttf/roboto-medium.ttf" 18 TTF_OpenFont 'font ! 
+	"media/ttf/Roboto-Medium.ttf" 18 TTF_OpenFont 'font ! 
 	font immSDL	
 	$ff vaini
 	anibox

@@ -149,7 +149,7 @@
 	
 	"media/ttf/Roboto-bold.ttf" 19 txloadwicon 'font1 !
 	|"media/ttf/ProggyClean.ttf" 16
-	"media/ttf/RobotoMono-bold.ttf" 18 
+	"media/ttf/RobotoMono-Bold.ttf" 18 
 	txloadwicon 'font2 !
  	
 	edram 

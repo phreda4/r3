@@ -127,7 +127,7 @@
 	
 : 
 	"test titles" 1024 600 SDLinit
-	"media/ttf/roboto-medium.ttf" 48 TTF_OpenFont dup 'font ! immSDL 
+	"media/ttf/Roboto-Medium.ttf" 48 TTF_OpenFont dup 'font ! immSDL 
 	$ff vaini
 	start
 	SDLquit

@@ -166,7 +166,7 @@
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
 
-	"media/ttf/Roboto-regular.ttf" 18 TTF_OpenFont 'uifont !
+	"media/ttf/Roboto-Regular.ttf" 18 TTF_OpenFont 'uifont !
 
 	"media/ttf/Roboto-bold.ttf" 24 txloadwicon 'font1 !
 	"media/ttf/Roboto-Medium.ttf" 16 txloadwicon 'font2 !

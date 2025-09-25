@@ -22,7 +22,7 @@
 #font
 
 :initfont
-	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
+	"media/ttf/Roboto-bold.ttf" 48 TTF_OpenFont 'font !
 	;
 
 #textbox [ 0 0 0 0 ]
