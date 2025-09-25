@@ -79,16 +79,19 @@
 ::FSIZE
 	32 + d@ 10 >> ; | in kb	
 
+#fdd
 #dirp
+
+::findata 'fdd ;
 
 ::ffirst | "path//*" -- fdd/0
 	libc-opendir dup 'dirp ! 
 	0? ( ; ) 
-	libc-readdir ;
+	libc-readdir dup 'fdd ! ;
 
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
-	libc-readdir ;
+	libc-readdir dup 'fdd ! ;
 
 |0 constant O_RDONLY octal
 |1 constant O_WRONLY
