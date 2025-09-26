@@ -917,7 +917,7 @@
 |-------------------
 ::uiEnd
 	1 'idf +!
-|	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint\
+|	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint
 	uilastWidget 0? ( drop ; ) 
 	foco idf <? ( 2drop uiExitWidget ; ) drop
 	uiBacklast

@@ -41,13 +41,35 @@
 	
 	;
 	
+| value | nota | time |estado	
 #value	
+
 ::ADSRI
 	0 'value ! ;
 
-::adsrn
+:att
+	swap 1.0 >=? ( 2drop 1.0 1 ; )
+	att_rate + swap ;
+:dec
+	swap sus_level <? ( 2drop sus_level 2 ; )
+	dec_rate - swap ;
+:sus
+	;
+:rel
+	swap 0 >? ( rel_rate - swap ; )
+	2drop 0 4 | delete
+	;
+	
+| state 0-attck 1-decay 2-susta 3-rele
+::adsrn | -- value
 	value
-	att_rate 'value +! 
+	dup 32 >> swap $7 and
+	0 =? ( att )
+	1 =? ( dec )
+	2 =? ( sus )
+	3 =? ( rel )
+	over 32 << or
+	'value !
 	;
 	
 :drawdebug

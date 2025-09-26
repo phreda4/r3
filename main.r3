@@ -554,9 +554,7 @@
 	rebuild
 |LIN|	.getconsoleinfo rows 2 - 'linesv !
 |LIN|	.alsb 
-|LIN|	screen
 	loadm
-	
 |WIN|	( exit 0? drop
 |WIN|		screen
 |WIN|		getevt
@@ -565,6 +563,7 @@
 |WIN|		$4 =? ( evsize )
 |WIN|		drop ) drop
 
+|LIN|	screen
 |LIN|	( getch [esc] <>? teclado ) drop | esc
 |LIN|	.reset |.cls
 |LIN|	.masb	

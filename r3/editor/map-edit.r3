@@ -457,7 +457,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	| SDLfull	
-	32 32 "r3\editor\mapeditor32.png" tsload 'sprgui !	
+	32 32 "r3/editor/mapeditor32.png" tsload 'sprgui !	
 	
 	'filemap "mem/mapedit.mem" load drop
 	loadmap

@@ -168,8 +168,8 @@
 	bfont1 
 	|SDLfull
 	
-	17 26 "media\img\scientist.png" tsload 'sprj !
-	"r3\games\rpgnivel.map" loadtilemap 'mapajuego !
+	17 26 "media/img/scientist.png" tsload 'sprj !
+	"r3/games/rpgnivel.map" loadtilemap 'mapajuego !
 	
 	'jugando SDLshow
 	SDLquit ;	
