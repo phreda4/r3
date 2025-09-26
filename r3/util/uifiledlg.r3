@@ -33,7 +33,9 @@
 :reload
 	files 'files> !
 	filen 'filen> !
-	'path "%s/*" sprint
+	'path 
+|WIN|
+	"%s/*" sprint
 	ffirst ( fileadd fnext 1? ) drop
 	files> files - 3 >> 'nfiles !
 	nfiles filelines - 0 max 'filescroll !
@@ -48,7 +50,7 @@
 :backfhere | fromhere --	
 	( 'path >?
 		dup c@ $2f =? ( drop 0 swap ! reload ; )
-		drop 1 - ) drop
+		drop 1- ) drop
 	reload ;
 
 :setfolder
@@ -75,9 +77,9 @@
 	0 ( nfiles <? 
 		dup ]file .name pick2 cmpstr 
 		0? ( drop nip 
-			filelines >? ( dup filelines - 1 + 'fileini ! )
+			filelines >? ( dup filelines - 1+ 'fileini ! )
 			'filenow ! ; ) drop 
-		1 + ) 2drop ;
+		1+ ) 2drop ;
 		
 
 :listscroll | n --
@@ -175,7 +177,7 @@
 :loadnames | filename --
 	dup 'path strpath
 	'path count nip + 
-	dup c@ $2f =? ( swap 1 + swap ) drop
+	dup c@ $2f =? ( swap 1+ swap ) drop
 	'filename strcpy
 	reload refile ;
 	

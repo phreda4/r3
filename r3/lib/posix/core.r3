@@ -54,6 +54,20 @@
 	over 16 + d@ 1+ 8 << or
 	swap 12 + d@ or ;
 
+::sysdate
+	0 libc-time 'sit !
+	'sit libc-localtime ;
+	
+   
+::date.d 12 + d@ ;
+::date.dw 24 + d@ ;
+::date.m 16 + d@ ;
+::date.y 20 + d@ 1900 + ;
+::time.ms 0 ;
+::time.s d@ ;
+::time.m 4 + d@ ;
+::time.h 8 + d@ ;   
+	
 |struct dirent {
 |    ino64_t d_ino;        // Inode number 0
 |    off64_t d_off;        // Offset to the next dirent 8
