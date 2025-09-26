@@ -254,8 +254,8 @@ and? nand?          | Logical operations for conditionals
 
 | Example
 $FF $0F and         | Result: $0F
-5 0 and?            | False (0)
-5 1 and?            | True (non-zero)
+5 0 and?            | False (0)  need block syntax, not alone!
+5 1 and?            | True (non-zero)  need block syntax, not alone!
 ```
 
 ### Fixed Point Math (48.16 format)
@@ -273,7 +273,7 @@ $FF $0F and         | Result: $0F
 ### Error Handling Pattern
 ```forth
 :safe-divide | a b -- result | 0 on error
-    0=? ( 2drop 0 ; )   | Check for division by zero
+    0? ( ; )   | Check for division by zero
     / ;                 | Safe to divide
 ```
 

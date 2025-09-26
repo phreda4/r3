@@ -35,17 +35,6 @@ Each library section includes:
 - **sdl2image.r3** - Image loading and manipulation
 - **sdl2mixer.r3** - Audio playback and mixing
 
-### Data Structure Libraries
-- **vec.r3** - Dynamic vectors/arrays
-- **list.r3** - Linked list operations
-- **hash.r3** - Hash table implementation
-
-### Utility Libraries
-- **file.r3** - File I/O operations
-- **rand.r3** - Random number generation
-- **time.r3** - Time and date functions
-- **net.r3** - Network operations
-
 ---
 
 ## Library Documentation
@@ -275,9 +264,7 @@ Provides graphics primitives and sprite rendering capabilities for SDL2, includi
 ### Stack Effect Notation
 - `--` separates input from output
 - Letters represent values (a, b, c, etc.)
-- `*` represents variable number of items
 - `|` adds comments about the values
-- `?` indicates conditional execution
 
 ### Memory Conventions
 - Words ending with `@` fetch from memory
@@ -285,22 +272,13 @@ Provides graphics primitives and sprite rendering capabilities for SDL2, includi
 - Words ending with `+` often increment pointers
 - Words starting with `.` often relate to output/display
 
-### Naming Conventions
-- Lowercase for most words
-- CamelCase for complex operations (e.g., `SDLinit`)
-- Prefixes indicate library domain (SDL, GL, etc.)
-- Suffixes indicate data size (c=byte, w=word, d=dword)
-
 ---
 
 ## Notes
 
 - Libraries maintain R3forth's stack-based philosophy
 - Most libraries avoid creating global state when possible
-- Performance-critical libraries may use inline assembly
 - Libraries are loaded once per program, even if included multiple times
-- Private words (defined with `::`) are not accessible outside the library
+- Private words (defined with single `:`) are not accessible outside the library
 
 ---
-
-*This documentation will be expanded as library implementations are provided*

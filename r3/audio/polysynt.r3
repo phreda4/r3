@@ -16,6 +16,48 @@
 #audio_spec * 32
 #sample_rate 44100
 
+#rel_rate
+#sus_level
+#dec_rate
+#att_rate
+
+:IMS2TICKS 	441.0 /. ;
+	
+::ADSR! | A D S R -- | ms ms level ms
+	1? ( IMS2TICKS ) 'rel_rate !
+	'sus_level !
+	1? ( IMS2TICKS ) 'dec_rate !
+	1? ( IMS2TICKS ) 'att_rate !
+	;
+	
+
+:debug1
+	0.1 0.15 0.7 0.3 ADSR!	
+	
+	att_rate "att:%f" .println
+	dec_rate "dec:%f" .println
+	sus_level "sus:%f" .println
+	rel_rate "rel:%f" .println
+	
+	;
+	
+#value	
+::ADSRI
+	0 'value ! ;
+
+::adsrn
+	value
+	att_rate 'value +! 
+	;
+	
+:drawdebug
+	$ffff00 sdlcolor
+	ADSRI
+	0 ( 1024 <? 1+
+		10 ( 1? 1- ADSRn drop ) drop
+		dup 300 ADSRn 255 *. - sdlpoint 
+		) drop ;
+		
 :iniaudio
 	sample_rate 'audio_spec 0 + d! |freq
 	$8010 'audio_spec 4 + w! |format: 16-bit signed
@@ -464,7 +506,9 @@ drop ;
 	
 	draw_wave_selector
 	drawkeys
-	drawbuffer
+|	drawbuffer
+
+ drawdebug
 	draw_voice_status
 	
 	runsynthe
@@ -477,6 +521,10 @@ drop ;
 : 
 	"R3 Polyphonic Synthesizer" 1024 600 SDLinit
 	"media/ttf/Roboto-bold.ttf" 20 txloadwicon txfont
+
+
+	
+	debug1
 	
 	iniaudio
 	resetvoice
