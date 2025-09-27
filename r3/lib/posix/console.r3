@@ -166,8 +166,8 @@
 ::.getconsoleinfo 
     1 $5413 'ci libc-ioctl | TIOCGWINSZ
     ci 
-    dup 16 >> $ffff and 'cols !
-	$ffff and 'rows !
+    dup 16 >> $ffff and 1- 'cols !
+	$ffff and 1- 'rows !
 	;
 
 

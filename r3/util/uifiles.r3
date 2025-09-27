@@ -33,12 +33,22 @@
 	0 l2 1? ( c! ; ) 2drop ;	
 
 :pushdd | --
-	stckhdd> findata 520 cmove |dsc
-	520 'stckhdd> +! ;
+	stckhdd> findata 
+|WIN|	520 
+|LIN|	8
+	cmove |dsc
+|WIN|	520 
+|LIN|	8
+	'stckhdd> +! ;
 	
 :pophdd
-	-520 'stckhdd> +!
-	findata stckhdd> 520 cmove ;
+|WIN|	-520 
+|LIN|	-8
+	'stckhdd> +!
+	findata stckhdd>
+|WIN|	520 
+|LIN|	8
+	cmove ;
 
 :dir.?
 	dup fname 

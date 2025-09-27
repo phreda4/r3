@@ -552,7 +552,7 @@
 |---------------------------------
 :main
 	rebuild
-|LIN|	.getconsoleinfo rows 2 - 'linesv !
+|LIN|	.getconsoleinfo rows 1- 'linesv !
 |LIN|	.alsb 
 	loadm
 |WIN|	( exit 0? drop
