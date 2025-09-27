@@ -34,8 +34,7 @@
 	files 'files> !
 	filen 'filen> !
 	'path 
-|WIN|
-	"%s/*" sprint
+|WIN|	"%s/*" sprint
 	ffirst ( fileadd fnext 1? ) drop
 	files> files - 3 >> 'nfiles !
 	nfiles filelines - 0 max 'filescroll !
