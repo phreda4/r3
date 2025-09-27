@@ -79,7 +79,7 @@
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s " " ,s  
+	,s |" " ,s
 |	dup FSIZEF 12 >> ,d " Kb" ,s
 |	dup FDIR ,d
 	|dup FWRITEDT dt>64 ,64>dtf
