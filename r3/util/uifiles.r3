@@ -33,27 +33,43 @@
 	0 l2 1? ( c! ; ) 2drop ;	
 
 :pushdd | --
-	stckhdd> findata 520 cmove |dsc
-	520 'stckhdd> +! ;
+	stckhdd> findata 
+|WIN|	520 
+|LIN|	8
+	cmove |dsc
+|WIN|	520 
+|LIN|	8
+	'stckhdd> +! ;
 	
 :pophdd
-	-520 'stckhdd> +!
-	findata stckhdd> 520 cmove ;
+|WIN|	-520 
+|LIN|	-8
+	'stckhdd> +!
+	findata stckhdd>
+|WIN|	520 
+|LIN|	8
+	cmove ;
 
+:dir.?
+	dup fname 
+	dup "." = 1? ( 2drop 0 ; ) drop
+	dup ".." = 1? ( 2drop 0 ; ) drop
+	drop
+	dup fdir ;
+	
 :scand | level "" --
 	'basepath strcat "/" 'basepath strcat
 	'basepath 
 |WIN| "%s/*" sprint
-	ffirst drop fnext drop 
-	( fnext 1?
-		dup fdir 1? (
-			pushdd
-|			pick2 64 + .emit over fname .write .cr
-			pick2 64 + ,c over fname ,s 0 ,c
-			pick2 1+ pick2 fname scand
-			pophdd
-			) 2drop
-		) 2drop 	
+	ffirst 0? ( drop ; ) |drop fnext drop 
+	( dir.? 1? (
+		pushdd
+|		pick2 64 + .emit over fname .write .cr
+		pick2 64 + ,c over fname ,s 0 ,c
+		pick2 1+ pick2 fname scand
+		pophdd
+		) 2drop
+	fnext 1? ) 2drop 	
 	backdir ;
 
 	
@@ -63,7 +79,7 @@
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s " " ,s  
+	,s |" " ,s
 |	dup FSIZEF 12 >> ,d " Kb" ,s
 |	dup FDIR ,d
 	|dup FWRITEDT dt>64 ,64>dtf

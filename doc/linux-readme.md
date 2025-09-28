@@ -95,9 +95,18 @@ Even `3 .` doesn't work.
 So to run a further test, you have to prepare a program file such as 
 $HOME/r3/test-r3lin.r3  containing
 
+make a txt file call this 'test0.r3' with 
+
 ```
-^r3/editor/code-print.r3
-: "r3lin works!" .println ;
+^r3/lib/console.r3
+
+: "r3lin works!" .println  ;
+```
+execute
+
+```
+./r3lin test0.r3
+
 ```
 
 The first line includes a library that defines `.println` 

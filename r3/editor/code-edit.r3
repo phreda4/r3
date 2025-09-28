@@ -198,11 +198,14 @@
 
 :savetxt | -- ; guarda texto
 	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
+	
 	mark	
 	fuente ( c@+ 1?
 		13 =? ( ,c 10 ) ,c ) 2drop
+		
 	'name savemem
-	empty ;
+	empty 
+	;
 
 |----------------------------------
 :loadinfo
@@ -648,18 +651,19 @@
 	;
 
 :vchar | char --  ; visible char
-	$1000 and? ( drop ; )
-	16 >> $ff and
-	8 =? ( drop kback ; )
+|WIN|	$1000 and? ( drop ; )
+|WIN|	16 >> $ff and
+|WIN|	8 =? ( drop kback ; )
+|LIN|	$7f =? ( drop kback ; )
 	9 =? ( modo ex ; )
 	13 =? ( clearinfo modo ex ; )
 	32 <? ( drop ; )
 	modo ex ;
 
 :teclado
-	panelcontrol 1? ( drop controlkey ; ) drop
-
-	$ff0000 and? ( vchar fixcur ; ) 
+|WIN|	panelcontrol 1? ( drop controlkey ; ) drop
+|WIN|	$ff0000 and? ( vchar fixcur ; ) 
+|LIN|	$80 <? ( vchar fixcur ; )
 	
 	[DEL] =? ( kdel )
 	[UP] =? ( karriba ) 
@@ -674,10 +678,10 @@
 	[INS] =? ( modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
-	[CTRL] =? ( controlon ) 
+|WIN|	[CTRL] =? ( controlon ) 
 	
-	[SHIFTR] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift der
-	[SHIFTL] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift izq 
+|WIN|	[SHIFTR] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift der
+|WIN|	[SHIFTL] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift izq 
 
 	[F1] =? ( runfile )
 	[F2] =? ( debugfile )
@@ -738,7 +742,8 @@
 #exit 0
 
 :evkey	
-	evtkey
+|WIN|	evtkey
+|LIN|	getch
 	]ESC[ =? ( 1 'exit ! )
 	teclado ;
 	
@@ -758,17 +763,17 @@
 
 			
 :evwmouse 
-	evtmw 
+|WIN|	evtmw 
 	-? ( drop scrolldw scrolldw ; ) drop
 	scrollup scrollup ;
 
 :evmouse
-	evtm
+|WIN|	evtm
 	1 =? ( drop ; ) | move 
 	4 =? ( drop evwmouse ; )
 	drop
-	evtmb $0 =? ( drop ; ) drop 
-	evtmxy
+|WIN|	evtmb $0 =? ( drop ; ) drop 
+|WIN|	evtmxy
 	1 <? ( 2drop ; )
 	1- xycursor
 	'fuente> ! 
@@ -789,11 +794,13 @@
 	.showc .insc
 	( exit 0? drop 
 		pantalla
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) drop ;
+|WIN|		getevt
+|WIN|		$1 =? ( evkey )
+|WIN|		$2 =? ( evmouse )
+|WIN|		$4 =? ( evsize )
+|WIN|		drop 
+|LIN|		evkey
+		) drop ;
 
 |---- Mantiene estado del editor
 :ram
@@ -828,7 +835,7 @@
 	sys
 	
 	ram
-	evtmouse
+|WIN|	evtmouse
 	.getconsoleinfo
 	.alsb 
 	editor 

@@ -51,7 +51,7 @@
 |--------------- INICIO ------------	
 : 
 	"View ease" 1024 600 SDLinit
-	"media/ttf/roboto-medium.ttf" 20 TTF_OpenFont 'font ! 
+	"media/ttf/Roboto-Medium.ttf" 20 TTF_OpenFont 'font ! 
 	$ff vaini
 
 	

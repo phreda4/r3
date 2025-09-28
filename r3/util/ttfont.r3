@@ -1,7 +1,7 @@
 | ttfont.r3 - PHREDA 2023
 |
 |	ttf_init
-|	"media/ttf/roboto-bold.ttf" 48 TTF_OpenFont 'font !
+|	"media/ttf/Roboto-bold.ttf" 48 TTF_OpenFont 'font !
 |
 |-----------------------------
 ^r3/lib/sdl2gfx.r3

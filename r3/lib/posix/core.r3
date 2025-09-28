@@ -54,6 +54,20 @@
 	over 16 + d@ 1+ 8 << or
 	swap 12 + d@ or ;
 
+::sysdate
+	0 libc-time 'sit !
+	'sit libc-localtime ;
+	
+   
+::date.d 12 + d@ ;
+::date.dw 24 + d@ ;
+::date.m 16 + d@ ;
+::date.y 20 + d@ 1900 + ;
+::time.ms 0 ;
+::time.s d@ ;
+::time.m 4 + d@ ;
+::time.h 8 + d@ ;   
+	
 |struct dirent {
 |    ino64_t d_ino;        // Inode number 0
 |    off64_t d_off;        // Offset to the next dirent 8
@@ -81,6 +95,8 @@
 
 #dirp
 
+::findata 'dirp ;
+
 ::ffirst | "path//*" -- fdd/0
 	libc-opendir dup 'dirp ! 
 	0? ( ; ) 
@@ -88,13 +104,15 @@
 
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
-	libc-readdir ;
+	libc-readdir 
+	1? ( ; ) 
+	dirp libc-closedir drop ;	
 
 |0 constant O_RDONLY octal
 |1 constant O_WRONLY
 |2 constant O_RDWR
 |100 constant O_CREAT $40
-|200 constant O_TRUNC $80
+|200 constant O_TRUNC $200
 |2000 constant O_APPEND $400
 |4000 constant O_NONBLOCK $800
 | 077 octal $1ff
@@ -110,7 +128,7 @@
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	$C1 $1ff libc-open 32>64 -? ( 3drop ; )
+	$241 $1ff libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -128,7 +146,7 @@
 	libc-unlink drop ;
 
 ::filexist | "file" -- 0=no
-	0 libc-access not ;
+	0 libc-access $ffffffff xor ;
 
 | atrib creation access write size
 #fileatrib 0 0 0 0 0

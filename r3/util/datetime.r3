@@ -61,7 +61,8 @@
 
 ::str_fullday | -- 'fullday
 	mark
-	sysdate @
+	sysdate 
+|WIN|	@
 	dup date.dw >dianame ,s ", " ,s
 	dup date.d ,d " " ,s
 	dup date.m >mesname ,s " " ,s
@@ -71,18 +72,20 @@
 
 ::str_hhmmss | -- 'hhmms
 	mark
-	sysdate 8 + @
+	sysdate 
+|WIN|	8 + @
 	dup time.h ,2d ":" ,s
 	dup time.m ,2d ":" ,s
 	time.s ,2d 0 ,c
 	empty here ;
 	
 ::dt2timesql | 'sysdate --
-	@+ 
+|WIN|	@+ 
 	dup date.y ,d "-" ,s 
 	dup date.m ,2d "-" ,s 
+|LIN| dup	
 	date.d ,2d " " ,s
-	@ 
+|WIN|	@ 
 	dup time.h ,2d ":" ,s 
 	dup time.m ,2d ":" ,s 
 	time.s ,2d ;
@@ -92,12 +95,15 @@
 |satetime 
 | YYYY MwDD HHMM SSmm (mm>>2)
 ::dt>64 | datetime -- dt64
-	@+
+|WIN|	@+
 	dup date.y 48 << 
 	over date.m 44 << or
 	over date.dw 40 << or
-	swap date.d 32 << or
-	swap @
+|WIN|	swap 
+|LIN|	over
+	date.d 32 << or
+	swap
+|WIN|	@
 	dup time.h 24 << 
 	over time.m 16 << or
 	over time.s 8 << or
