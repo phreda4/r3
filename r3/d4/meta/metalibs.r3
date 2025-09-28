@@ -120,9 +120,9 @@
 #r3_lib_sdl2.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gfx.r3
 #name "r3/lib/sdl2gfx.r3"
-#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "tex2static" "timer<" "timer." "timer+" "timer-" "ICS>anim" "vICS>anim" "anim>n" "anim>c" "anim>stop" 0
-#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'tex2static 'timer< 'timer. 'timer+ 'timer- 'ICS>anim 'vICS>anim 'anim>n 'anim>c 'anim>stop
-#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $10 $0 $0 $10 $10 $3E $4D $10 $10 $10 )
+#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLFCircle" "SDLCircle" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "tex2static" "timer<" "timer." "timer+" "timer-" "ICS>anim" "vICS>anim" "anim>n" "anim>c" "anim>stop" 0
+#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLFCircle 'SDLCircle 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'tex2static 'timer< 'timer. 'timer+ 'timer- 'ICS>anim 'vICS>anim 'anim>n 'anim>c 'anim>stop
+#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $10 $0 $0 $10 $10 $3E $4D $10 $10 $10 )
 #r3_lib_sdl2gfx.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gl.r3
 #name "r3/lib/sdl2gl.r3"
@@ -416,7 +416,7 @@
 #name "r3/util/uifiles.r3"
 #words  "uiDirs" "uiFiles" "uiTreePath" "uiGetFiles" "uiScanDir" 0
 #calls  'uiDirs 'uiFiles 'uiTreePath 'uiGetFiles 'uiScanDir
-#info ( $80 $80 $10 $1F $2E )
+#info ( $80 $80 $10 $1F $1F )
 #r3_util_uifiles.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
 #name "r3/util/varanim.r3"

@@ -94,8 +94,8 @@
 		1+ ) drop ;
 
 :keydic | key -- key
-	$49 =? ( -1 'inidic +! ) 
-	$51 =? ( 1 'inidic +! )
+	[up] =? ( -1 'inidic +! ) 
+	[dn] =? ( 1 'inidic +! )
 	;
 		
 |--------------- MEMORY
@@ -118,9 +118,9 @@
 	;
 
 :keysrc | key -- key
-	code-key 
-	$3b =? ( stepvm cursor2ip ) |f1
-	$3c =? ( stepvmn cursor2ip ) |f2
+	code-key
+	[f1] =? ( stepvm cursor2ip ) |f1
+	[f2] =? ( stepvmn cursor2ip ) |f2
 	;
 	
 |--------------- VARIABLE
@@ -159,7 +159,7 @@
 	
 :keytok
 |	$1B1001 =? ( 0 'nmode ! ) | >ESC<
-	$3b =? ( stepvm ) |f1
+	[f1] =? ( stepvm ) |f1
 |	$3c =? ( play2cursor playvm gotosrc ) |f2
 |	$3d =? ( mode!view codetoword ) | f3 word analisys
 	| $3e f4
@@ -167,8 +167,8 @@
 |	$40 =? ( stepvmn gotosrc )	| f6
 |	$41 =? ( setbp ) | f7
 |	$43 =? ( 1 statevars xor 'statevars ! ) | f9
-	$48 =? ( -1 'initok +! ) 
-	$50 =? ( 1 'initok +! )
+	[up] =? ( -1 'initok +! ) 
+	[dn] =? ( 1 'initok +! )
 	;
 
 |---------------------------------------------------
@@ -205,28 +205,28 @@
 	;
 
 
-:evkey	
-	evtkey 
-	$1B1001 =? ( 1 'exit ! )
-	$9000F =? ( changemode ) | tab
+:evsize	
+	.getconsoleinfo
+	rows 1 - 'hcode !
+	cols 8 - 'wcode !
+	;	
+
+:teclado
+	getch
+	]esc[ =? ( drop 1 'exit ! ; )
+	[tab] =? ( drop changemode ; ) | tab
 |	$1d =? ( controlon ) 
 	kmode ex 
 	drop ;
 
-:evmouse
-	evtmb $0 =? ( drop ; ) drop 
-|	evtmxy
-	;
-
-:evsize	
-	.getconsoleinfo
-	rows 1 - 'hcode !
-	cols 7 - 'wcode !
-	;	
+:bucle
+	( exit 0? drop 
+		screen
+		teclado	
+		) drop ;
 	
 |--------------------- BOOT
 : 	
-	evtmouse
 	evsize
 	.cls
 
@@ -243,13 +243,7 @@
 	cntdef 18 - 0 max 'inidic !
 	cnttok 18 - 0 max 'initok !
 	|.ovec 
-	( exit 0? drop 
-		screen
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) 
-	drop ;
+	bucle
+	;
 	
 	

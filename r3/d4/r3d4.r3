@@ -3,15 +3,41 @@
 |
 ^r3/lib/sdl2gfx.r3
 
-^r3/util/sdlbgui.r3
-^r3/util/sdledit.r3
+^r3/util/ui.r3
+^r3/util/uifiles.r3
+^r3/util/uiedit.r3
 
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
 ^r3/d4/r3opt.r3
+	
+|--------------------------------	
+#font1
+#font2
 
-#modo 0
-#panel 0
+#dirnow 0 0
+#dirchg -1
+
+#filenow 0 0
+#filechg -1
+
+#filename * 1024
+
+|----- boxpath
+#basepath "r3/"
+#fullpath * 1024
+#cfold
+
+|---------
+#memcode
+#memcode>
+
+#info
+#info>
+
+:loadcodigo | --
+	'filename edload ;
+
 
 |--------------- SOURCE	
 :cursor2ip
@@ -32,14 +58,13 @@
 	
 :nameword | dicadr -- str
 	mark @+ 1 and? ( dataname ; ) codename ;
-		
+
 |--------------- ANALYSIS
 #anaword
 #initoka 0
 #cnttoka 0
 
-
-#winsettoka 1 [ 600 0 360 500 ] "ANALYSIS"
+|#winsettoka 1 [ 600 0 360 500 ] "ANALYSIS"
 
 :infoword | adr -- str
 	mark
@@ -66,27 +91,15 @@
 	,eol empty here 
 	;
 
+|------------------------
 
-:showtoka | nro --
-	dup $ff and 6 =? ( 2drop """str""" immLabel ; ) drop
-	tokenstr
-	immLabel ;
+|-----------------------------
+:compiler
+	;
 	
-:dbgfocus
-	600 0 immwinxy
+:profiler
+	;
 
-	anaword 4 << dic + dup
-	nameword immLabel immln
-	infoword immlabel immln
-	immln
-|	immln
-	0 ( 20 <?
-		initoka over + 
-		cnttoka >=? ( 2drop ; )
-		3 << 'tokana + @ showtoka 
-		immln
-		1 + ) drop ;		
-	
 |--------------- DICCIONARY
 #lidinow
 #lidiini
@@ -105,16 +118,16 @@
 	4 << dic + nameword ;
 
 :printlinew
-	cntdef >=? ( drop immln ; )
-	dicword immBLabel immln ;
+	cntdef >=? ( drop uiDn ; )
+	dicword uiLabel uiDn ;
 	
 :clicklistw
-	sdly cury - boxh / lidiini + 
+|	sdly cury - boxh / lidiini + 
 |	filenow =? ( linenter ; )
-	dup 'lidinow !
-	dup 'anaword !
-	wordanalysis
-	tokana> 'tokana - 3 >> 'cnttoka !
+|	dup 'lidinow !
+|	dup 'anaword !
+|	wordanalysis
+|	tokana> 'tokana - 3 >> 'cnttoka !
 	;
 	
 :colorlistw | n -- n c
@@ -122,319 +135,384 @@
 
 :listscroll | n --
 	lidiscroll 0? ( 2drop ; ) 
-	immcur> >r 
+|	immcur> >r 
 	
-	boxh rot *
-	curx boxw + 2 + | pad?
-	cury pick2 -
-	rot boxh swap immcur
+|	boxh rot *
+|	curx boxw + 2 + | pad?
+|	cury pick2 -
+|	rot boxh swap immcur
 
-	0 swap 
-	'lidiini immScrollv 
-	r> imm>cur
+|	0 swap 
+|	'lidiini immScrollv 
+|	r> imm>cur
 	;
 	
-:wordfocus
-	940 200 immwinxy
-	316 18 immbox
-	lidilines dup immListBox
-	'clicklistw onClick	
-	0 ( over over >?  drop
+	
+	
+:coderun
+	;
+	
+|---------------------------------
+:memoria
+	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiWin!
+	$111111 sdlcolor uiFillW
+	;
+
+|----- Includes
+:iteminc
+	cntinc >=? ( drop ; ) 
+	4 << 'inc + @ "%w" sprint uiLabel
+	;
+	
+:includes
+	0.005 %w 0.07 %h 0.39 %w 0.03 %h uiWin!
+	$333333 sdlcolor uiFillW
+	8 1 uiGrid uiH
+	0 ( 8 <?
+		dup iteminc
+		1+ ) drop ;
+
+|----- Dicc
+:itemdef | n -- 
+	cntdef >=? ( drop ; ) 
+	4 << dic + nameword 
+	uiLabel
+	;
+	
+:diccionario
+	0.405 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiFillW
+	2 30 uiGridA uiV
+
+|	lidilines dup immListBox
+|	'clicklistw onClick	
+	0 ( 30 <?  
 		dup lidiini + |cntdef <? 
-		colorlistw immback printlinew
-		1 + ) 2drop	
-	listscroll immln
-	
+		itemdef
+|		colorlistw immback printlinew
+		1+ ) drop	
+|	listscroll uiDn
 	;
 
-:listwdraw
-	;
-	
-|--------------- INCLUDES
-#liincnt
-#liinnow
-#liinini
-#liinlines 8
-#liinscroll
-#winsetinc 1 [ 940 0 300 176 ] "INCLUDES"
-	
-:liinset
-	inc> 'inc - 4 >> 'liincnt !
-	0 'liinnow !
-	0 'liinini !
-	liincnt liinlines - 0 max 'liinscroll !
-	;
-	
-:incset | nroinc --
-	dup 'liinnow !
-	4 << 'inc + 8 + @
-	32 >> dup 'lidiini ! 'lidinow !	;
-	
-:colorlisti
-	liinnow =? ( $7f00 ; ) $3a3a3a ;
-		
-:clicklisti
-	sdly cury - boxh / liinini + incset ;
-	
-:printlinei	
-	liincnt >=? ( drop immln ; ) 
-	4 << 'inc + @ "%w" immBLabel immln ;
-	
-:listscroll | n --
-	liinscroll 0? ( 2drop ; ) 
-	immcur> >r 
-	
-	boxh rot *
-	curx boxw + 2 + | pad?
-	cury pick2 -
-	rot boxh swap immcur
-
-	0 swap 'liinini immScrollv 
-	r> imm>cur
-	;	
-	
-:wininclude
-	|'winsetinc immwin 0? ( drop ; ) drop
-	940 0 immwinxy
-	290 18 immbox
-	liinlines dup immListBox
-	'clicklisti onClick	
-	0 ( over over >? drop
-		dup liinini + |liincnt <? 
-		colorlisti immback 
-		printlinei
-		1 + ) 2drop	
-	listscroll immln ;
-	
-|--------------- TOKENS
+|----- TOKENS
 #initok 0
 
 :showtok | nro
-|	40 16 immbox
-|	dup $ffffff and 
+	cnttok >=? ( drop ; )
+	3 << tok + @
+	
 |	"%h" immLabel imm>>
-	180 16 immbox
-	dup $ff and
-	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
+|	dup $ff and
+|	1 =? ( drop 24 << 32 >> "%d" immLabel ; )				| lit
 |	6 =? ( drop 8 >> $ffffff and strm + mark 34 ,c ,s 34 ,c ,eol empty here immLabel ; ) 	| str
-	drop
-	40 >> src + "%w" immLabel
+|	drop
+	40 >> src + "%w" sprint	uiLabel
 	;
-		
-|#winsettok 1 [ 500 440 190 270 ] "TOKENS"
 	
-:wintokens
-	500 440 immwinxy
+:tokens	
+	0.705 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiFillW
+	2 30 uiGridA uiV
+	0 ( 30 <?
+		dup showtok
+		1+ ) drop
+	;
+
+|----- codigo	
+:codigo
+	0.005 %w 0.1 %h 0.39 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiFillW
 	
-	<<ip 1? ( 
-		dup tok - 3 >>
-		7 - clamp0 'initok !
-		) drop
+	uiWin@ edwin
+	edfocusro
+	edcodedraw
+	|edtoolbar
+	;
+	
+:debug
+	$55 SDLcls 
 
-	0 ( 14 <?
-		initok over + 
-		cnttok >=? ( 2drop ; )
-		3 << tok + 
-		<<ip =? ( 0 immback $ff00 'immcolortex ! )
-		dup @ showtok 
-		<<ip =? ( "< IP" immLabelR $ffffff 'immcolortex ! )
-		drop
-		immln
-		1 + ) drop ;
+	font2 txfont	
+	16 6 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "debug" txemits
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
+	stInfo
+	'exit "Run" uiRBtn
+	'exit "Step" uiRBtn
 
-|-----------------------------	
-|-----------------------------	
-:modo! | n --
-	'modo !	;
+	codigo
+	includes
+	diccionario
+	tokens
+|	memoria
+
+	uiEnd
+	
+	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+	drop ;
+
 		
 :errormode
 |	3 'edmode ! | no edit src
 |	lerror 'ederror !
+	error .print 
+	| goto edit mode
 	;
 	
-:play
+:codedebug
 	empty mark
-	fuente 'edfilename r3loadmem
+	fuente 'filename r3loadmem
+
 	error 1? ( drop errormode ; ) drop
 |	4 'edmode ! | no edit src
-	1 modo! 
+|	1 modo! 
 	lidiset
-	liinset
-	inc> 'inc - 4 >> 1 - incset
+	|liinset
+	|inc> 'inc - 4 >> 1 - incset
 	$ffff 'here +!
 	resetvm
-	cursor2ip
+	|cursor2ip
 	mark
 	'filename ,s ,cr ,cr
 	debugmemmap
 	"r3/d4/gen/map.txt" savemem
 	empty
-	;		
-		
-|---------------- CONSOLE
-:dstack	
-	mark
-	"D:" ,s
-	'PSP 8 + ( NOS <=? @+ "%d " ,print ) drop
-	'PSP NOS <=? ( TOS "%d " ,print ) drop 
-	,eol
-	empty
-	here bprint bcr
-	; 
-
-:rstack	
-	mark
-	"R:" ,s
-	'RSP 8 + ( RTOS <=? @+ "%h " ,print 	) drop 
-	,eol
-	empty
-	here bprint bcr
-	; 
-
-#pad * 512	
-	
-#cmax
-#padi>	| inicio
-#pad>	| cursor
-#padf>	| fin
-#cmodo
-
-:lins  | c -- ;
-	padf> padi> - cmax >=? ( 2drop ; ) drop
-	pad> dup 1 - padf> over - 1 + cmove> 1 'padf> +!
-:lover | c -- ;
-	pad> c!+ dup 'pad> !
-	padf> >? (
-		dup padi> - cmax >=? ( swap 1 - swap -1 'pad> +! ) drop
-		dup 'padf> ! ) drop
-:0lin 0 padf> c! ;
-:kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
-:kback pad> padi> <=? ( drop ; ) dup 1 - swap padf> over - 1 + cmove -1 'padf> +! -1 'pad> +! ;
-:kder pad> padf> <? ( 1 + ) 'pad> ! ;
-:kizq pad> padi> >? ( 1 - ) 'pad> ! ;
-	
-:chmode
-	cmodo 'lins =? ( drop 'lover 'cmodo ! ; )
-	drop 'lins 'cmodo ! ;	
-	
-:cursor
-	msec $100 and? ( drop ; ) drop
-	cmodo 'lins =? ( drop pad> padi> - bcursori2 ; ) drop
-	pad> padi> - bcursor2
+	'debug sdlshow
 	;	
-
-#xcon 1 
-#ycon 3
-#wcon 40 
-#hcon 
-
-:conreset
-	511 'cmax !
-	'pad dup 'padi> !
-	( c@+ 1? drop ) drop 1 -
-	dup 'pad> ! 'padf> !
-	'lins 'cmodo !	
-	;
 	
-:conwin
-	'hcon ! 'wcon ! 'ycon ! 'xcon ! ;
+|---------------------------------	
+:edit
+	$55 SDLcls 
 	
-:consoledraw
-	$ffffff bcolor
-	xcon ycon gotoxy
-
-	">" bprint2 
-	panel 1 =? ( cursor ) drop
-	'pad bprint2 
-	bcr bcr
+	font2 txfont	
+	16 6 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "Edit" txemits
+	$ffffff txrgb
 	
-	<<ip |tok - 3 >> 
-	regb rega "IP:%h A:%h B:%h" bprint bcr
-	dstack 
-|	rstack 
-	;
-	
-:conexec
-	0 'pad ! conreset
-	;
-	
-:confocus
-	xcon ycon wcon hcon bsrcsize 
-	$ffffff sdlcolor
-	2over 2over sdlRect 
-	guiBox
-	SDLchar 1? ( cmodo ex ; ) drop
-	sdlkey
-	<ret> =? ( conexec )
-	<ins> =? ( chmode )
-	<le> =? ( kizq ) <ri> =? ( kder )
-	<back> =? ( kback ) <del> =? ( kdel )
-	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )	
-	drop
-	;
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
+	stInfo
+	'exit "F1 Help" uiRBtn
+|	'codedit "F2 Edit" uiRBtn
+	'codedebug "F3 Debug" uiRBtn
 
-|-----------------------------
-
-#focuslist 'edfocus 'confocus 'wordfocus 'dbgfocus
-
-#pad2 * 1024
-
-:main
-	0 SDLcls 
-	immgui 
-	edfill
-	panel $3 and 3 << 'focuslist + @ ex
+	0.01 %w 0.1 %h 0.7 %w 0.8 %h uiWin!
+	$111111 sdlcolor uiRFill10
+	uiWin@ edwin
+	edfocus
 	edcodedraw
-	consoledraw
-	listwdraw
+
+	SDLredraw
+	sdlkey
+	>esc< =? ( exit )
+	<f3> =? ( codedebug ) 
+	drop ;
 	
-|	70 10 gotoxy
-|	'pad2 >a
-|	inisel 1? ( ( finsel <=? c@+ ca!+ ) ) drop
-|	0 ca!+
-|	'pad2 bprint2
+:codedit
+	'edit sdlshow
+	;
 	
+:codenew
+	;
+
+	
+	
+|------------------------	
+|------------------------
+:scan/ | "" -- adr/
+	( c@+ 1?
+		$5c =? ( $2c nip )
+		$2f =? ( drop 1- ; )
+		drop ) over c! | duplicate 0
+		1- ;
+		
+:clickf
+	$2f cfold c!
+	|cfold backfhere 
+	;
+
+:uixBoxPath
+	" :" uiTLabel
+	'fullpath 
+	( dup c@ 1? drop
+		dup scan/ | adr .
+		0 over c! 'cfold !
+		'clickf swap uitbtn
+		$2f cfold c!+
+		"/" uitlabel
+		) 2drop ;	
+		
+
+#filenow 0 0
+#filechg -1
+
+#pad * 1024
+		
+:Fileselect
+	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiWin!
+	$222222 sdlcolor uiFillW
+	2 22 uiGrid 
+	
+	stDark 
+	uiPush
+	0 1 uiGAt 2 1 uiGto 
+	'pad 1024 uiInputLine | 'buff max --
+	0 0 uiGat 2 1 uiGto 
+	uixBoxPath 
+	uiPop
+	0 2 uiGAt uiV
+	'dirnow 33 uiDirs uiTree
+	dirnow dirchg <>? ( dup 'dirchg ! 
+		dup uiTreePath
+		'basepath 'fullpath strcpyl 1- strcpy
+		'fullpath uiGetFiles
+		0 0 'filenow !+ ! -1 'filechg !
+		) drop
+		
+	1 2 uiGAt uiV
+	'filenow 33 uiFiles uiList
+	filenow filechg <>? ( dup 'filechg ! 
+		dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
+		loadcodigo
+		) drop
+	;
+
+
+:codigo
+	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiWin!
+	$111111 sdlcolor uiFillW
+	uiWin@ edwin	
+	edfocusro
+	edcodedraw
+	edtoolbar
+	;
+	
+:incodcod
+	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin!
+	$222222 sdlcolor uiFillW
+	5 15 uiGrid uiH
+	"+Info" uiLabel
+	;
+	
+|---------------------
+:browser
+	$55 SDLcls 
+	
+	font2 txfont	
+	16 6 txat
+	$ff0000 txrgb ":R3" txemits
+	$ff00 txrgb "d4" txemits
+	$ffffff txrgb
+	
+	uiStart 4 6 uiPad
+	14 22 uiGrid
+	1 0 uiGat uiH
+	stInfo
+	'coderun "F1 Run" uiRBtn
+	'codedit "F2 Edit" uiRBtn
+	'codedebug "F3 Debug" uiRBtn
+|	'exit "Console" uiRBtn
+|	'exit "Delete" uiBtn
+
+	stLink
+	'exit "New" uiRBtn
+		
+	fileselect
+	codigo
+
+	uiEnd
 	
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( panel 1+ $3 and 'panel ! ) 
-	<f2> =? ( play ) 
+	<F1> =? ( coderun )
+	<F2> =? ( codedit )
+	<F3> =? ( codedebug )
+	<F4> =? ( codenew )
 	drop
 	;
-
-#colsrc
-#rowsrc
-:layout
-	sw wp / 'colsrc !
-	sh hp / 'rowsrc !
 	
-	0 2 65 30 edwin
-	0 32 65 rowsrc 32 - conwin
-	conreset
+|-----------------------------
+#nameaux * 1024
+
+:>>/ | adr -- adr
+	( c@+ 1? $2f <>? drop ) drop 1- ;
+
+:genlevel | list 0 -- 
+	'filename 'basepath count nip + 
+	over ( 1? 1- swap >>/ swap ) drop
+	'nameaux >a swap 64 + ca!+
+	( c@+ 1? $2f <>? ca!+ ) 2drop
+	0 ca!+	|'nameaux .println
 	;
 	
-|-----------------------------
-|-----------------------------
+:searchtd | "" list -- list
+	0 >a
+	( dup c@ 1? drop
+		dup pick2 = 1? ( drop nip ; ) drop
+		1 a+
+		>>0 ) 3drop 0 ;
+	
+:loadm
+	'filename "mem/d4.mem" load
+	
+	'filename filexist 0? ( drop ; ) drop | si no existe
+	|'dirnow
+|	"@" 'nameaux strcpy
+|	'fullpath 'basepath count nip + 
+|	'nameaux strcat
+|	"--aux:" .print	'nameaux .println
+|	"--full:" .print 'fullpath .println
+|	"--dir:" .println
+	
+|	'nameaux diskdirs
+|	0? ( drop ; )
+|	.println	
+		
+	|diskdirs 
+	0 genlevel
+	'nameaux uiDirs searchtd
+	$80 over c+!
+	12 'dirnow !
+	|.println
+	drop
+	
+|	uiDirs ( dup c@ 1? drop
+|		dup 'nameaux = 1? ( ">>" .print ) drop
+|		dup .println		
+|		>>0 ) 2drop
+	;
+
+:savem
+	'filename 1024 "mem/d4.mem" save ;
+	
 |-----------------------------	
 :	
-	.cls
-	"R3d4 IDE" .println
+	|"R3d4" 0 SDLfullw | full windows | 
+	"R3d4" 1280 720 SDLinit
+
+	"media/ttf/Roboto-bold.ttf" 28 txloadwicon 'font1 !
+	"media/ttf/RobotoMono-Bold.ttf" 14 txloadwicon 'font2 !
 	
-	"R3d4" 0 SDLfullw | full windows | "R3d4" 1280 720 SDLinit
-	bfont1
 	edram 
+|	0.37 %w 0.08 %h 0.6 %w 0.85 %h edwin
 	
-|	'filename "mem/main.mem" load drop
-|	"r3/test/testasm.r3"
-	"r3/opengl/voxels/3-vox.r3" 
-	'filename strcpy
+	mark
+	'basepath uiScanDir
+	loadm
 	
-	'filename edload
-	deferwi | for opt
-	mark |  for redoing tokens
+	mark
+	'browser SDLshow
 	
-	layout
-	'main SDLshow
+	|savem
 	SDLquit 
 	;
