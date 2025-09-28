@@ -185,12 +185,10 @@
 
 |----------------------------------------
 ::code-key	
-	evtkey
-	$48 =? ( kup ) $50 =? ( kdn )
-	$4d =? ( kder ) $4b =? ( kizq )
-	$47 =? ( khome ) $4f =? ( kend )
-	$49 =? ( kpgup ) $51 =? ( kpgdn )	
-	drop
+	[up] =? ( kup ) [dn] =? ( kdn )
+	[ri] =? ( kder ) [le] =? ( kizq )
+	[home] =? ( khome ) [end] =? ( kend )
+	[pgup] =? ( kpgup ) [pgdn] =? ( kpgdn )	
 	;
 	
 
