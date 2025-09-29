@@ -1,4 +1,4 @@
-| console words windows - Enhanced and Consistent
+| console words windows
 | PHREDA 2021 - Updated 2025
 
 ^r3/lib/mem.r3
@@ -16,7 +16,7 @@
 
 #crb ( 10 13 )
 #cc ( 0 0 )
-#esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
+#esc[ ( $1b $5b 0 0 0 0 0 0 ) 0 0
 
 ::.cr 'crb 2 type ;
 ::.sp " " 1 type ;
@@ -101,10 +101,10 @@
 
 |------- RGB Colors (true color) -------
 ::.fgrgb | r g b --
-    "%d;%d;%dm" "38;2;" swap ,s ,s .[ ;
+    "38;2;%d;%d;%dm" sprint .[ ;
     
 ::.bgrgb | r g b --
-    "%d;%d;%dm" "48;2;" swap ,s ,s .[ ;
+    "48;2;%d;%d;%dm" sprint .[ ;
 
 |------- Text Attributes -------
 ::.Bold "1m" .[ ;
@@ -125,11 +125,9 @@
 |   SMALL_RECT srWindow;16.16.16.16
 |   COORD      dwMaximumWindowSize;16.16
 
-##consoleinfo 0 0 0
-##rows 
-##cols
-##prevrows 0
-##prevcols 0
+#consoleinfo 0 0 0
+##rows ##cols
+#prevrc 0
 
 ::.getconsoleinfo | --
     stdout 'consoleinfo GetConsoleScreenBufferInfo drop 
@@ -137,35 +135,17 @@
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
 
-::.getrows rows ; | -- rows
-::.getcols cols ; | -- cols
+::.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
 ##resized 0
 ##on-resize 0 | callback address
 
 ::.checksize | -- resized?
-    prevrows rows <>? ( 
-        rows 'prevrows !
-        cols 'prevcols !
-        .getconsoleinfo
-        1 'resized !
-        on-resize 0? ( drop 1 ; )
-        ex 1 ; 
-    ) drop
-    prevcols cols <>? ( 
-        rows 'prevrows !
-        cols 'prevcols !
-        .getconsoleinfo
-        1 'resized !
-        on-resize 0? ( drop 1 ; )
-        ex 1 ; 
-    ) drop
-    0 ;
-
-::.wasresized | -- flag
-    resized dup 0? ( ; ) drop
-    0 'resized ! 1 ;
+	.getconsoleinfo
+	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
+    1 'resized !
+    on-resize 1? ( dup ex ) drop 1 ; 
 
 ::.onresize | 'callback --
     'on-resize ! ;
@@ -207,17 +187,17 @@
     ( stdin 'eventBuffer 1 'nr ReadConsoleInput drop
       eventBuffer $ff and
       1 =? ( drop igetkey ; )
-      4 =? ( drop .getconsoleinfo 1 'resized ! ) | WINDOW_BUFFER_SIZE_EVENT
+      4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! ) | WINDOW_BUFFER_SIZE_EVENT
       drop
     ) ;
 
 ::inkey | -- key | 0 if no key pressed
-    stdin 'ne GetNumberOfConsoleInputEvents drop
-    ne 0? ( 0 ; )
-    stdin 'eventBuffer 1 'nr ReadConsoleInput drop
+    stdin 'ne GetNumberOfConsoleInputEvents 
+    ne 0? ( ; ) drop
+    stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
     1 =? ( drop igetkey ; )
-    4 =? ( drop .getconsoleinfo 1 'resized ! 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
+    4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
     drop 0 ;
 
 ::waitesc | -- | wait for ESC key
@@ -338,40 +318,29 @@
 ::.free | -- | free console
     FreeConsole drop ;
 
-| SetConsoleOutputCP declaration
-| BOOL WINAPI SetConsoleOutputCP(UINT wCodePage);
-#kernel32 0
-#SetConsoleOutputCP 0
-#SetConsoleCP 0
-
 ::init-console | -- | initialize console
-    AllocConsole drop
+    AllocConsole 
     -10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-    
+
     | Enable UTF-8 code page (65001)
-    "kernel32.dll" LOADLIB 'kernel32 !
-    kernel32 "SetConsoleOutputCP" GETPROC 'SetConsoleOutputCP !
-    kernel32 "SetConsoleCP" GETPROC 'SetConsoleCP !
-    
-    65001 SetConsoleOutputCP SYS1 drop | Output UTF-8
-    65001 SetConsoleCP SYS1 drop        | Input UTF-8
+    65001 SetConsoleOutputCP  | Output UTF-8
+    65001 SetConsoleCP | Input UTF-8
     
     | Set console modes for ANSI/VT sequences and window events
     stdin $18 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop
     
     .getconsoleinfo
-    rows 'prevrows !
-    cols 'prevcols ! ;
+    .getrc 'prevrc ! ;
 
 |------- Timing (for compatibility) -------
 ::msec | -- ms | milliseconds (approximation)
     GetTickCount ;
 
 ::ms | n -- | sleep n milliseconds
-    Sleep drop ;
+    Sleep ;
 
 |------- Entry Point -------
 : init-console ;

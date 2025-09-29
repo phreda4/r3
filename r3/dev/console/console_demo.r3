@@ -2,8 +2,6 @@
 | Works with both Linux and Windows console libraries
 | Demonstrates resize handling, colors, and input
 
-| Uncomment the appropriate library for your platform:
-
 |LIN| ^./lin-console.r3
 |WIN| ^./win-console.r3
 
@@ -16,38 +14,19 @@
 :exit | --
     0 'running ! ;
 	
-| Caracteres de línea compatibles (CP437/ANSI)
-:draw-frame
-    .home .Cyanl .Bold
-    0 0 .at $C9 .emit  | ╔
-    1 ( cols 1 - <? $CD .emit 1 + ) drop  | ═
-    $BB .emit  | ╗
-    
-    1 ( rows 1 - <?
-        dup 0 .at $BA .emit  | ║
-        dup cols 1 - .at $BA .emit
-        1 + ) drop
-    
-    0 rows 1 - .at $C8 .emit  | ╚
-    1 ( cols 1 - <? $CD .emit 1 + ) drop
-    $BC .emit  | ╝
-    .Reset ;
-	
 |------- Drawing Functions -------
 :draw-border | --
-    .home
-    .Cyanl .Bold
+    .home .Cyanl .Bold
     0 ( cols <? 
-        "═" .write 
-        1 + ) drop
+		dup 0 .at "═" .write 
+		dup rows .at "═" .write 
+        1+ ) drop
     
     1 ( rows <? 
-        dup 0 .at "║" .write
-        dup cols .at "║" .write
-        1 + ) drop
-    
-    rows cols .at "═" .write
-    
+        0 over .at "║" .write
+        cols over .at "║" .write
+        1+ ) drop
+ 
     0 0 .at "╔" .write
     cols 0 .at "╗" .write
     0 rows .at "╚" .write
@@ -81,43 +60,33 @@
     2 6 .at "Press ESC to exit" .write
     .Reset ;
 
+#box-colors .Whitel .Redl .Greenl .Bluel .Magental .Yellowl 
+	
 :draw-box | x y size --
-    >r >r >r
-    box-color
-    1 =? ( drop .Redl )
-    2 =? ( drop .Greenl )
-    3 =? ( drop .Bluel )
-    4 =? ( drop .Magental )
-    5 =? ( drop .Yellowl )
-    drop .Whitel
-    
-    r> r> r>
-    2dup .at
-    0 ( pick2 <? 
-        "█" .write
-        1 + ) drop
-    
-    1 ( pick2 <? 
-        2dup + swap .at
-        0 ( pick3 <? 
-            "█" .write
-            1 + ) drop
-        1 + ) 3drop
+	box-color 3 << 'box-colors + @ ex
+	-rot
+	0 ( pick3 <?
+		0 ( pick4 <?
+			pick3 pick2 +
+			pick3 pick2 + .at
+			"█" .write
+			1+ ) drop
+		1+ ) drop 
+	3drop
     .Reset ;
 
 :draw-boxes | --
-    boxes 0? ( drop ; )
-    
-    8 8 ( boxes <? 
-        dup 3 << dup 3 draw-box
-        1 + ) drop ;
+    0 ( boxes <? 
+        dup 1+ 2 << over 8 + 3 draw-box
+        1+ ) drop ;
 
 :draw-screen | --
     .cls
     draw-border
     draw-title
     draw-info
-    draw-boxes ;
+    draw-boxes 
+	;
 
 |------- Resize Handler -------
 :on-resize-event | --
@@ -126,59 +95,48 @@
 
 |------- Input Handler -------
 :handle-input | key --
-    $1B =? ( exit )           | ESC - exit program
+    [esc] =? ( exit )	| ESC - exit program
+	$1000 and? ( ; ) 	| up key
+	16 >> | ascii
     $2B =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key
     $2D =? ( boxes 1 - 0 max 'boxes ! draw-screen ; )  | - key
     $2b =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key (num)
     $2d =? ( boxes 1 - 0 max 'boxes ! draw-screen ; )  | - key (num)
     
     | Handle 'c' or 'C' for color change
-    $43 =? ( box-color 1 + 6 mod 'box-color ! draw-screen ; )
-    $63 =? ( box-color 1 + 6 mod 'box-color ! draw-screen ; )
-    
-    drop ;
+    $43 =? ( $20 or )
+    $63 =? ( box-color 1+ 6 mod 'box-color ! draw-screen ; )
+    ;
 
 |------- Animation Loop -------
 
 :main-loop | --
-    ( running 1?
+    ( running 1? drop
         | Check for resize
-        .checksize 1? ( drop draw-screen )
-        
+        .checksize 1? ( draw-screen ) drop
         | Check for keyboard input
-        inkey dup 1? ( handle-input )
-        drop
-        
+        inkey 1? ( handle-input )  drop
         | Small delay to reduce CPU usage
         10 ms
-    ) drop ;
+		) drop ;
 
 |------- Main Program -------
 :main | --
     | Initialize console
     init-console
-    
     | Set resize callback
     'on-resize-event .onresize
-    
     | Initial state
     3 'boxes !
     1 'box-color !
-    
     | Hide cursor for cleaner display
     .hidec
-    
     | Initial draw
     draw-screen
-    
     | Run main loop
     main-loop
-    
     | Cleanup
-    .showc
-    .cls
-    .home
-    .Reset
+    .showc .cls .home .Reset
     "Goodbye!" .println ;
 
 | Program entry point

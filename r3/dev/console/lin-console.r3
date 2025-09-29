@@ -23,15 +23,16 @@
 ::type | str cnt --
     1 rot rot libc-write drop ;
 
-#crb ( 10 13 0 0 )
-#esc[ ( $1b $5b 0 0 0 0 0 0 0 0 0 0 )
+#crb ( 10 13 )
+#cc ( 0 0 )
+#esc[ ( $1b $5b 0 0 0 0 0 0 ) 0 0
 
 ::.cr 'crb 2 type ;
 ::.sp " " 1 type ;
 ::.nsp ( 1? 1 - .sp ) drop ;
 
 ::.emit | char --
-    " " dup rot swap c! 1 type ;
+    'cc c! 'cc 1 type ;
 
 ::.[ 'esc[ 2 + swap
     ( c@+ 1? rot c!+ swap ) 2drop
@@ -109,10 +110,10 @@
 
 |------- RGB Colors (true color) -------
 ::.fgrgb | r g b --
-    "%d;%d;%dm" "38;2;" swap ,s ,s .[ ;
+    "38;2;%d;%d;%dm" sprint .[ ;
     
 ::.bgrgb | r g b --
-    "%d;%d;%dm" "48;2;" swap ,s ,s .[ ;
+    "48;2;%d;%d;%dm" sprint .[ ;
 
 |------- Text Attributes -------
 ::.Bold "1m" .[ ;
@@ -127,46 +128,26 @@
 
 |------- Console Information -------
 #ci 0 
-##rows 
-##cols
-##prevrows 0
-##prevcols 0
+##rows ##cols
+#prevrc 0
 
 ::.getconsoleinfo | --
     1 $5413 'ci libc-ioctl | TIOCGWINSZ
     ci dup 16 >> $ffff and 1 - 'cols !
     $ffff and 1 - 'rows ! ;
 
-::.getrows rows ; | -- rows
-::.getcols cols ; | -- cols
+::.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
 ##resized 0
 ##on-resize 0 | callback address
 
 ::.checksize | -- resized?
-    prevrows rows <>? ( 
-        rows 'prevrows !
-        cols 'prevcols !
-        .getconsoleinfo
-        1 'resized !
-        on-resize 0? ( drop 1 ; )
-        ex 1 ; 
-    ) drop
-    prevcols cols <>? ( 
-        rows 'prevrows !
-        cols 'prevcols !
-        .getconsoleinfo
-        1 'resized !
-        on-resize 0? ( drop 1 ; )
-        ex 1 ; 
-    ) drop
-    0 ;
-
-::.wasresized | -- flag
-    resized dup 0? ( ; ) drop
-    0 'resized ! 1 ;
-
+	.getconsoleinfo
+	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
+    1 'resized !
+    on-resize 1? ( dup ex ) drop 1 ; 
+	
 ::.onresize | 'callback --
     'on-resize ! ;
 
@@ -197,11 +178,11 @@
     'tv 0 2 fill 
     'fds 0 16 fill
     1 'fds !
-    1 'fds 0 0 'tv libc-select 0 >? ;
+    1 'fds 0 0 'tv libc-select ;
 
 ::inkey | -- key | 0 if no key
     set-terminal-mode
-    kbhit 0? ( reset-terminal-mode 0 ; ) drop
+    kbhit 0? ( reset-terminal-mode ; ) drop
     0 'ch ! 0 'ch 16 libc-read drop ch
     reset-terminal-mode ;
 
@@ -266,8 +247,7 @@
 ::init-console | --
     .enable-utf8
     .getconsoleinfo
-    rows 'prevrows !
-    cols 'prevcols !
+	.getrc 'prevrc ! 
     .enable-resize ;
 
 |------- Cleanup -------

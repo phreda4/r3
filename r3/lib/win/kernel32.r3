@@ -58,10 +58,14 @@
 #sys-GetConsoleWindow
 |#sys-GetConsoleCursorInfo
 
+#s-SetConsoleOutputCP 
+#s-SetConsoleCP 
+
 #sys-SetDllDirectory
 #sys-SetCurrentDirectory
 #sys-GetCurrentDirectory
 
+	
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::FreeConsole sys-freeconsole sys0 drop ;
 
@@ -120,6 +124,9 @@
 ::SetDllDirectory sys-SetDllDirectory sys1 drop ;
 ::SetCurrentDirectory sys-SetCurrentDirectory sys1 drop ;
 ::GetCurrentDirectory sys-GetCurrentDirectory sys2 drop ;
+
+::SetConsoleOutputCP s-SetConsoleOutputCP sys1 drop ;
+::SetConsoleCP s-SetConsoleCP sys1 drop ;
 
 |::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
 
@@ -185,6 +192,9 @@
 	dup "SetDllDirectoryA" getproc 'sys-SetDllDirectory !
 	dup "SetCurrentDirectory" getproc 'sys-SetCurrentDirectory !
 	dup "GetCurrentDirectory" getproc 'sys-GetCurrentDirectory !
+
+	dup "SetConsoleOutputCP" GETPROC 's-SetConsoleOutputCP !
+	dup "SetConsoleCP" GETPROC 's-SetConsoleCP !
 
 	drop
 	;
