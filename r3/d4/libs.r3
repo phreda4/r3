@@ -6,6 +6,7 @@
 ^r3/d4/meta/mlibs.r3
 
 
+|-----------------------------------
 :char>6 | char -- 6bitchar
 	$20 - dup $40 and 1 >> or $3f and ;
 
@@ -16,7 +17,7 @@
 		$fc0000000000000 and? ( nip ; )
 		swap ) 2drop 
 	( $fc0000000000000 nand? 	| fill with 0
-		6 << ) ;
+		6 << ) ;				| without this order is len, not alpha
 	
 :6>char | 6bc -- char
 	$3f and $20 + ;
@@ -35,9 +36,8 @@
 |#info ( $2F $0 $3E $5C $3E $3E $2F $1F $2F $4C $4D $4D $3E )
 |#r3_lib_win_winsock.r3 'name 'words 'info
 |##liblist 'r3_lib_3d.r3
-
-|------------------------------------------
-|name word list
+|-----------------------------------
+| name word list
 | compressname-infoword
 #namwlist
 #cntwlist
@@ -73,16 +73,17 @@
 	a> dup 'here !
 	namwlist - 4 >> dup 1- 'cntwlist !
 	namwlist shellsort | len+1 lista -- 
-	| resort big words >10 chars
+	| resort big words >10 chars ?
 	;
 
+|-----------------------------------
 
-:listrepe
+|...repetidas
+:listrepe 
 	namwlist >a
 	( a@ 1?
 		a> 16 + @ =? ( a> namwlist - 4 >> "%d " .print 
-		drop
-		16 a+
+		drop 16 a+
 		) 2drop ;
 	
 :.lib | n -- words
@@ -125,7 +126,7 @@
 
 :main
 	makelist
-listrepe	
+	|listrepe	
 	"r3libs" .println 
 	cntwlist "%d words" .println
 "---------------" .println	
