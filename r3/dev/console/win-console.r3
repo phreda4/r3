@@ -338,11 +338,25 @@
 ::.free | -- | free console
     FreeConsole drop ;
 
+| SetConsoleOutputCP declaration
+| BOOL WINAPI SetConsoleOutputCP(UINT wCodePage);
+#kernel32 0
+#SetConsoleOutputCP 0
+#SetConsoleCP 0
+
 ::init-console | -- | initialize console
     AllocConsole drop
     -10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
+    
+    | Enable UTF-8 code page (65001)
+    "kernel32.dll" LOADLIB 'kernel32 !
+    kernel32 "SetConsoleOutputCP" GETPROC 'SetConsoleOutputCP !
+    kernel32 "SetConsoleCP" GETPROC 'SetConsoleCP !
+    
+    65001 SetConsoleOutputCP SYS1 drop | Output UTF-8
+    65001 SetConsoleCP SYS1 drop        | Input UTF-8
     
     | Set console modes for ANSI/VT sequences and window events
     stdin $18 SetConsoleMode drop | Enable WINDOW_INPUT

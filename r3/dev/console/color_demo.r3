@@ -1,15 +1,10 @@
-:draw-page | --
-    current-page
-    0 =? ( drop show-basic-colors .flush ; )
-    1 =? ( drop show-attributes .flush ; )
-    2 =? ( drop show-256-colors ; )
-    3 =? (| Console Color Palette Demo
+| Console Color Palette Demo
 | Comprehensive demonstration of console color capabilities
 | Works with both Linux and Windows console libraries
 
 | Uncomment the appropriate library for your platform:
-| ^r3/lib/linux-console.r3  | For Linux
-| ^r3/lib/win-console.r3    | For Windows
+|LIN| ^./lin-console.r3
+|WIN| ^./win-console.r3
 
 |------- Display State -------
 #current-page 0
@@ -117,17 +112,17 @@
         dup .fc "███" .write
         1 + dup 8 =? ( drop .Reset 5 6 .at 8 )
     ) drop .Reset
-    .flush  | Flush after first section
+    |  | Flush after first section
     
     3 8 .at .Bold "216 Color Cube (16-231):" .write .Reset
     
     5 10 .at
     16 ( 232 <?
-        dup 16 - 36 mod 0? ( drop .flush .cr 5 over .at dup 16 + )
+        dup 16 - 36 mod 0? ( drop .cr 5 over .at dup 16 + )
         dup .fc "██" .write
         1 +
     ) drop .Reset
-    .flush
+    
     
     3 22 .at .Bold "Grayscale (232-255):" .write .Reset
     
@@ -136,7 +131,7 @@
         dup .fc "███" .write
         1 +
     ) drop .Reset
-    .flush
+    
     
     footer ;
 

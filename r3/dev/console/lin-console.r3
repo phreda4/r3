@@ -252,8 +252,19 @@
     "?1002l" .[ 
     "?1000l" .[ ;
 
+|------- UTF-8 Support -------
+::.enable-utf8 | --
+    | Set locale to UTF-8
+    "en_US.UTF-8" "LC_ALL" libc-setlocale drop
+    "en_US.UTF-8" "LC_CTYPE" libc-setlocale drop
+    
+    | Most modern Linux systems use UTF-8 by default
+    | This ensures it's explicitly set
+    ;
+
 |------- Initialization -------
 ::init-console | --
+    .enable-utf8
     .getconsoleinfo
     rows 'prevrows !
     cols 'prevcols !

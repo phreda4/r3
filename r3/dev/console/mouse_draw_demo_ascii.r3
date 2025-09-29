@@ -3,8 +3,14 @@
 | Works with both Linux and Windows console libraries
 
 | Uncomment the appropriate library for your platform:
-| ^r3/lib/linux-console.r3  | For Linux
-| ^r3/lib/win-console.r3    | For Windows
+|LIN| ^./lin-console.r3
+|WIN| ^./win-console.r3
+
+#running 1
+
+:exit
+    0 'running ! ;
+
 
 |------- Canvas State -------
 #canvas * 8192  | 128x64 canvas buffer (1 byte per cell)
@@ -226,11 +232,6 @@
     drop ;
 
 |------- Event Loop -------
-#running 1
-
-:exit
-    0 'running ! ;
-
 :main-loop | --
     ( running 1?
         | Check for resize
