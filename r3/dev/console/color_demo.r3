@@ -182,27 +182,19 @@
 
 |------- Page 5: Animated Demo -------
 :rainbow-char | n --
-    anim-frame + 360 mod
-    60 <? ( drop 255 0 0 ; )
-    120 <? ( drop 255 255 0 ; )
-    180 <? ( drop 0 255 0 ; )
-    240 <? ( drop 0 255 255 ; )
-    300 <? ( drop 0 0 255 ; )
+    anim-frame + 36 mod
+    6 <? ( drop 255 0 0 ; )
+    12 <? ( drop 255 255 0 ; )
+    18 <? ( drop 0 255 0 ; )
+    24 <? ( drop 0 255 255 ; )
+    30 <? ( drop 0 0 255 ; )
 	drop 255 0 255 ;
 
-:aframe
-	anim-frame 8 mod
-    0 =? ( drop 5 12 .at .Dim "●●●●●●●●" .write ; )
-    1 =? ( drop 5 12 .at .Reset "●●●●●●●●" .write ; )
-    2 =? ( drop 5 12 .at .Bold "●●●●●●●●" .write ; )
-    3 =? ( drop 5 12 .at .Bold .Redl "●●●●●●●●" .write ; )
-    4 =? ( drop 5 12 .at .Bold .Yellowl "●●●●●●●●" .write ; )
-    5 =? ( drop 5 12 .at .Bold "●●●●●●●●" .write ; )
-    6 =? ( drop 5 12 .at .Reset "●●●●●●●●" .write ; )
-    drop 
-	5 12 .at .Dim "●●●●●●●●" .write
-	;
-	
+#cframe  .Red .Yellow .Green .Cyan .Blue .Magenta .Redl .bluel
+
+:acframe
+	anim-frame $e and 2 << 'cframe + @ ex ;
+
 :show-animated | --
     .cls
     "Animated Color Effects" title-bar
@@ -213,25 +205,15 @@
     0 ( 60 <?
         dup rainbow-char .fgrgb "█" .write
         6 + ) drop 
+
 	.Reset
-    
     3 10 .at .Bold "Pulsing Text:" .write .Reset    
-    aframe
+    5 12 .at acframe 
+	anim-frame $1 and? ( "●●●●●●●●" .write ) drop
+	
     .Reset
-    
     3 15 .at .Bold "Color Cycle:" .write .Reset
-    
-    5 17 .at
-    anim-frame 7 mod
-    0 =? ( .Red )
-    1 =? ( .Yellow )
-    2 =? ( .Green )
-    3 =? ( .Cyan )
-    4 =? ( .Blue )
-    5 =? ( .Magenta )
-    6 =? ( .Red )
-    drop
-    "████████████████████████████" .write .Reset
+    5 17 .at acframe "████████████████████████████" .write .Reset
     
     footer ;
 
@@ -255,16 +237,14 @@
     0 'running ! ;
 
 :handle-key | key --
+	]esc[ =? ( exit ; )      | ESC
 	$1000 and? ( ; ) | upkey
 	16 >> |ascii
-    $1B =? ( exit ; )      | ESC
-    $20 =? ( next-page ; ) | SPACE
+	$20 =? ( next-page ; ) | SPACE
     ;
 
 :main-loop | --
     ( running 1? drop
-        | Check for resize
-        .checksize 1? ( draw-page ) drop
         | Check for input
         inkey 1? ( handle-key ) drop
         | Animation update (only on page 4)

@@ -88,14 +88,9 @@
 	.flush
 	;
 
-|------- Resize Handler -------
-:on-resize-event | --
-    | This gets called automatically when terminal is resized
-    draw-screen ;
-
 |------- Input Handler -------
 :handle-input | key --
-    [esc] =? ( exit )	| ESC - exit program
+    ]esc[ =? ( exit )	| ESC - exit program
 	$1000 and? ( ; ) 	| up key
 	16 >> | ascii
     $2B =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key
@@ -103,17 +98,14 @@
     $2b =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key (num)
     $2d =? ( boxes 1 - 0 max 'boxes ! draw-screen ; )  | - key (num)
     
-    | Handle 'c' or 'C' for color change
-    $43 =? ( $20 or )
+	$20 or | case
+    | Handle 'c' or 'C' for color change    
     $63 =? ( box-color 1+ 6 mod 'box-color ! draw-screen ; )
     ;
 
 |------- Animation Loop -------
-
 :main-loop | --
     ( running 1? drop
-        | Check for resize
-        .checksize 1? ( draw-screen ) drop
         | Check for keyboard input
         inkey 1? ( handle-input )  drop
         | Small delay to reduce CPU usage
@@ -123,7 +115,7 @@
 |------- Main Program -------
 :main | --
     | Set resize callback
-    'on-resize-event .onresize
+    [ draw-screen ; ] .onresize
     | Initial state
     3 'boxes !
     1 'box-color !

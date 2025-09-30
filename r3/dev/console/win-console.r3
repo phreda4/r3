@@ -35,14 +35,12 @@
 ::.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
-##resized 0
-##on-resize 0 | callback address
+#on-resize 0 | callback address
 
-::.checksize | -- resized?
+:.checksize | --
 	.getconsoleinfo
 	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
-    1 'resized !
-    on-resize 1? ( dup ex ) drop 1 ; 
+    on-resize 0? ( drop ; ) ex ; 
 
 ::.onresize | 'callback --
     'on-resize ! ;
@@ -97,9 +95,6 @@
     4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
     drop 0 ;
 
-::waitesc | -- | wait for ESC key
-    ( getch $1B1001 <>? drop ) drop ;
-
 |------- Extended Event Handling -------
 ::evtkey | -- key
     igetkey ;
@@ -131,7 +126,7 @@
 ::getevt | -- type | wait for any event
     stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
-    4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
+    4 =? ( .checksize ) | Handle resize event
     ;
 
 ::inevt | -- type | check for event (no wait)
@@ -139,7 +134,7 @@
     ne 0? ( ; ) drop
     stdin 'eventBuffer 1 'nr ReadConsoleInput
     eventBuffer $ff and
-    4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
+    4 =? ( .checksize ) | Handle resize event
     ;
 
 |------- Console Mode Management -------
@@ -177,9 +172,6 @@
     | Re-enable QUICK_EDIT_MODE for normal console behavior
     stdin $1F7 SetConsoleMode drop ;
 
-|------- Initialization and Cleanup -------
-::.free | -- | free console
-    FreeConsole ;
 
 |------- Timing (for compatibility) -------
 ::msec | -- ms | milliseconds (approximation)
@@ -188,8 +180,12 @@
 ::ms | n -- | sleep n milliseconds
     Sleep ;
 
-|------- Entry Point -------
-:	AllocConsole | initialize console
+|------- Cleanup -------
+::.free | -- | free console
+    FreeConsole ;
+
+|------- Initialization -------
+:	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE

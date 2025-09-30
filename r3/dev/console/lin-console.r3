@@ -83,21 +83,50 @@
     0 'ch ! 0 'ch 16 libc-read drop ch
     reset-terminal-mode ;
 
-::waitesc | -- | wait for ESC key
-    ( getch $1B <>? drop ) drop ;
+|------- Event System (Windows-compatible) -------
+#EVT_KEY 1
+#EVT_MOUSE 2
+#EVT_RESIZE 4
 
-|------- Timing -------
-::msec | -- ms | milliseconds since start
-    libc-clock 1000 * CLOCKS_PER_SEC / ;
+#mouse-y 
+#mouse-x 
+#mouse-btn 
+#mouse-w
+:mouse-sgr | -- button x y
+    | Formato: ESC[<button;x;yM o m
+	cc $ffffff and $3c5b1b <>? ( drop 0 ; ) drop
+    'cc 3 + | Skip ESC[
+    str>nro 'mouse-btn ! 1+ | Skip ;
+    str>nro 'mouse-x ! 1+ | Skip ;
+    str>nro 'mouse-y ! drop
+	EVT_MOUSE ;
 
-::ms | n -- | sleep n milliseconds
-    1000 * libc-usleep drop ;
+| Mouse not available in standard terminal
+::evtmxy mouse-x mouse-y  ;
+::evtmb mouse-btn ;
+::evtw mouse-w ;
+	
+::inevt | -- type | 0 if no event
+    | Check keyboard
+    inkey 0? (  | Check resize 
+		.checksize 1? ( EVT_RESIZE ; ) drop
+		; ) drop | No events
+	mouse-sgr 1? ( ; ) drop
+	EVT_KEY ; 
+	
+::getevt | -- type | wait for event
+    ( inevt 0? drop 10 ms ) ;
+
+::evtkey | -- key
+    inkey ;
+
+|------- Cursor Position Reading -------
+::getcursorpos | -- x y
+    "6n" .[ .readln 'pad 2 +
+    str>nro swap 1 + str>nro nip swap ;
+	
 
 |------- Mouse Support (extended) -------
-#mouse-x 0
-#mouse-y 0
-#mouse-buttons 0
-#mouse-event 0
 
 ::.enable-mouse | --
     "?1000h" .[ | enable mouse tracking
@@ -109,6 +138,13 @@
     "?1002l" .[ 
     "?1000l" .[ ;
 
+|------- Timing -------
+::msec | -- ms | milliseconds since start
+    libc-clock 1000 * CLOCKS_PER_SEC / ;
+
+::ms | n -- | sleep n milliseconds
+    1000 * libc-usleep drop ;
+
 |------- UTF-8 Support -------
 ::.enable-utf8 | --
     | Set locale to UTF-8
@@ -119,16 +155,13 @@
     | This ensures it's explicitly set
     ;
 
-|------- Initialization -------
-::init-console | --
-    .enable-utf8
-    .getconsoleinfo
-	.getrc 'prevrc ! 
-    .enable-resize ;
-
 |------- Cleanup -------
-::posix-bye | --
+::.free | --
     reset-terminal-mode
     0 libc-exit drop ;
 
-: init-console ;
+|------- Initialization -------
+:    .enable-utf8
+    .getconsoleinfo
+	.getrc 'prevrc ! 
+    .enable-resize ;

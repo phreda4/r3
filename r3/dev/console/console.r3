@@ -32,6 +32,16 @@
 ::.println sprintlnc .type ;
 ::.[ $1b .emit $5b .emit .write ;
 
+::.log .print .flush ;
+
+|------- Special Character Printing -------
+:emite | char --
+    $5e =? ( drop 27 .emit ; ) | ^=escape
+    .emit ;
+
+::.printe | "str" -- | print with ^=ESC
+    sprint ( c@+ 1? emite ) 2drop ;
+
 |------- Cursor Control -------
 ::.home "H" .[ ;
 ::.cls "H" .[ "J" .[ ;
@@ -99,8 +109,8 @@
 ::.bc "48;5;%dm" sprint .[ ; | 256 color background
 
 |------- RGB Colors (true color) | r g b --
-::.fgrgb "38;2;%d;%d;%dm" sprint .[ ;
-::.bgrgb "48;2;%d;%d;%dm" sprint .[ ;
+::.fgrgb swap rot "38;2;%d;%d;%dm" sprint .[ ;
+::.bgrgb swap rot "48;2;%d;%d;%dm" sprint .[ ;
 
 |------- Text Attributes -------
 ::.Bold "1m" .[ ;
@@ -113,13 +123,6 @@
 ::.Strike "9m" .[ ;
 ::.Reset "0m" .[ ;
 
-|------- Special Character Printing -------
-:emite | char --
-    $5e =? ( drop 27 .emit ; ) | ^=escape
-    .emit ;
-
-::.printe | "str" -- | print with ^=ESC
-    sprint ( c@+ 1? emite ) 2drop ;
 	
 |------- Line Input -------
 ##pad * 256
@@ -146,7 +149,7 @@
 ::.inputn | -- n | read number
     .input 'pad str>nro nip ;
 
-|------- Cursor Position Reading -------
-::getcursorpos | -- x y
-    "6n" .[ .readln 'pad 2 +
-    str>nro swap 1 + str>nro nip swap ;
+::waitesc | -- | wait for ESC key
+    ( getch $1B1001 <>? drop ) drop ;
+	
+
