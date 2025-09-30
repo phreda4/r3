@@ -238,8 +238,7 @@
 
 :handle-key | key --
 	]esc[ =? ( exit ; )      | ESC
-	$1000 and? ( ; ) | upkey
-	16 >> |ascii
+|WIN|	$1000 and? ( ; ) 16 >> |ascii
 	$20 =? ( next-page ; ) | SPACE
     ;
 

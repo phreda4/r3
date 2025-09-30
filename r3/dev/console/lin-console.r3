@@ -2,7 +2,7 @@
 | PHREDA 2022 - Updated 2025
 
 ^r3/lib/mem.r3
-^r3/lib/str.r3
+^r3/lib/parse.r3
 ^r3/lib/posix/conkey.r3
 
 |------- Terminal State Management -------
@@ -36,29 +36,25 @@
 ::.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
-##resized 0
 ##on-resize 0 | callback address
 
 ::.checksize | -- resized?
 	.getconsoleinfo
 	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
-    1 'resized !
     on-resize 1? ( dup ex ) drop 1 ; 
 	
 ::.onresize | 'callback --
     'on-resize ! ;
 
 |------- Signal Handler Setup (SIGWINCH) -------
-#sigwinch-handler 0
+|#sigwinch-handler 0
 
-:sigwinch-handler | sig --
-    drop
-    .getconsoleinfo
-    1 'resized ! ;
+|:sigwinch-handler | sig --
+    drop .getconsoleinfo ;
 
-::.enable-resize | --
-    'sigwinch-handler 'sigwinch-handler !
-    28 sigwinch-handler 0 libc-signal drop ; | SIGWINCH = 28
+|::.enable-resize | --
+|    'sigwinch-handler 'sigwinch-handler !
+|    28 sigwinch-handler 0 libc-signal drop ; | SIGWINCH = 28
 
 |------- Keyboard Input -------
 ##ch 0 0
@@ -88,17 +84,15 @@
 #EVT_MOUSE 2
 #EVT_RESIZE 4
 
-#mouse-y 
-#mouse-x 
-#mouse-btn 
-#mouse-w
-:mouse-sgr | -- button x y
-    | Formato: ESC[<button;x;yM o m
-	cc $ffffff and $3c5b1b <>? ( drop 0 ; ) drop
-    'cc 3 + | Skip ESC[
-    str>nro 'mouse-btn ! 1+ | Skip ;
-    str>nro 'mouse-x ! 1+ | Skip ;
-    str>nro 'mouse-y ! drop
+#mouse-y #mouse-x #mouse-btn #mouse-w
+
+| Formato: ESC[<button;x;yM o m
+:mouse-sgr | -- ev
+	ch $ffffff and $3c5b1b <>? ( drop 0 ; ) drop
+	'ch 3 + | Skip ESC[
+	str>nro 'mouse-btn ! 1+ | Skip ;
+	str>nro 'mouse-x ! 1+ | Skip ;
+	str>nro 'mouse-y ! drop | m/M
 	EVT_MOUSE ;
 
 | Mouse not available in standard terminal
@@ -107,29 +101,25 @@
 ::evtw mouse-w ;
 	
 ::inevt | -- type | 0 if no event
-    | Check keyboard
-    inkey 0? (  | Check resize 
-		.checksize 1? ( EVT_RESIZE ; ) drop
-		; ) drop | No events
+	inkey 0? (	| Check keyboard
+		.checksize 0? ( drop ; ) 2drop	| Check resize 
+		EVT_RESIZE 	; ) drop | No events
 	mouse-sgr 1? ( ; ) drop
 	EVT_KEY ; 
+
 	
 ::getevt | -- type | wait for event
     ( inevt 0? drop 10 ms ) ;
 
 ::evtkey | -- key
-    inkey ;
-
-|------- Cursor Position Reading -------
-::getcursorpos | -- x y
-    "6n" .[ .readln 'pad 2 +
-    str>nro swap 1 + str>nro nip swap ;
-	
+    ch ;
 
 |------- Mouse Support (extended) -------
+#sesc ( $1b $5b )
+:.[ sesc 2 type count type ;
 
 ::.enable-mouse | --
-    "?1000h" .[ | enable mouse tracking
+    "?1000h" .[ ; | enable mouse tracking
     "?1002h" .[ | enable button event tracking
     "?1006h" .[ ; | enable SGR extended mouse mode
 
@@ -138,9 +128,16 @@
     "?1002l" .[ 
     "?1000l" .[ ;
 
+|------- Cursor Position Reading -------
+|::getcursorpos | -- x y
+|    "6n" .[ .readln 'pad 2 +
+|    str>nro swap 1 + str>nro nip swap ;
+	
+
 |------- Timing -------
 ::msec | -- ms | milliseconds since start
-    libc-clock 1000 * CLOCKS_PER_SEC / ;
+|    libc-clock 1000 * CLOCKS_PER_SEC / 
+	;
 
 ::ms | n -- | sleep n milliseconds
     1000 * libc-usleep drop ;
@@ -148,8 +145,8 @@
 |------- UTF-8 Support -------
 ::.enable-utf8 | --
     | Set locale to UTF-8
-    "en_US.UTF-8" "LC_ALL" libc-setlocale drop
-    "en_US.UTF-8" "LC_CTYPE" libc-setlocale drop
+	"en_US.UTF-8" "LC_ALL" libc-setlocale drop
+	"en_US.UTF-8" "LC_CTYPE" libc-setlocale drop
     
     | Most modern Linux systems use UTF-8 by default
     | This ensures it's explicitly set
@@ -157,11 +154,14 @@
 
 |------- Cleanup -------
 ::.free | --
+|.disable-mouse
     reset-terminal-mode
     0 libc-exit drop ;
 
 |------- Initialization -------
-:    .enable-utf8
-    .getconsoleinfo
-	.getrc 'prevrc ! 
-    .enable-resize ;
+:	
+.enable-utf8
+.getconsoleinfo
+.getrc 'prevrc ! 
+|.enable-resize 
+;

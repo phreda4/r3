@@ -161,8 +161,7 @@
 |------- Keyboard Handling -------
 :handle-key | key --
 	]esc[ =? ( drop exit ; ) | ESC - exit
-	$1000 and? ( drop ; )
-	16 >>    
+|WIN|	$1000 and? ( drop ; ) 16 >>    
 | Numbers 1-9 - select brush
     $31 $39 in? ( 
 		$30 - 'current-brush ! 

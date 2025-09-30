@@ -43,6 +43,7 @@
 #sys-ioctl
 #sys-stat
 #sys-access
+#sys-setlocale
 
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
@@ -84,6 +85,8 @@
 ::libc-ioctl sys-ioctl sys3 ;
 ::libc-stat sys-stat sys2 ;
 ::libc-access sys-access sys2 ;
+::libc-setlocale sys-setlocale sys2 ;
+
 :
 	"/lib/libc.so.6" loadlib
 	dup "open" getproc 'sys-open ! 
@@ -131,6 +134,6 @@
     dup "ioctl" getproc 'sys-ioctl !
     dup "stat" getproc 'sys-stat !
     dup "access" getproc 'sys-access !
+    dup "setlocale" getproc 'sys-setlocale !
 	drop 
     ;
-
