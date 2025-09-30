@@ -1,4 +1,4 @@
-# R3forth Programming Guide for AI/Developers - Enhanced Edition
+# R3forth Programming Guide
 
 ## Overview
 
@@ -29,8 +29,8 @@ R3forth uses 8 prefixes to classify words explicitly:
 
 | Prefix | Purpose | Example | Description |
 |--------|---------|---------|-------------|
-| `|` | Comment | `| This is a comment` | Ignored, ends at line break |
-| `^` | Include | `^lib/console.r3` | Include external file |
+| `|` | Comment | `| This is a comment` | Ignored, to end of line  |
+| `^` | Include | `^lib/console.r3` | Include external file, to end of line|
 | `"` | String | `"Hello world"` | Text literal |
 | `:` | Code | `:square dup * ;` | Define executable word |
 | `#` | Data | `#counter 0` | Define variable |
@@ -74,13 +74,14 @@ var              | Same as 'var @ - pushes variable value
 
 ### Code Definition
 ```forth
-:square         | Define word named 'square'
+:square | x -- x*x        | Define word named 'square'
     dup * ;     | Duplicate top of stack and multiply
 
-:distance       | Calculate distance between two points
-    - dup *     | dx² 
-    swap - dup * | dy²
-    + sqrt ;    | √(dx² + dy²)
+:distance | x1 x2 y1 y2 -- dist      | Calculate distance between two points
+    - square	| dy² 
+    -rot 
+	- square	| dx²
+    + sqrt ;	| √(dx² + dy²)
 
 5 square        | Call square with 5 → result is 25
 ```
@@ -132,12 +133,8 @@ These test TOS (Top Of Stack) without removing it:
 **Critical Pattern**: The value remains on stack after the test:
 
 ```forth
-| WRONG - Value lost
-x 0? ( "Zero!" .print )
-| Stack now empty! x was consumed by block
-
-| CORRECT - Value preserved
-x 0? ( "Zero!" .print )
+x 
+0? ( "Zero!" .print )
 drop | Explicitly remove x when done
 ```
 
@@ -186,9 +183,9 @@ drop
 #### Pattern 1: Early Exit
 
 ```forth
-:validate | value -- result
-    0 <? ( "Error: negative" .print 0 ; )  | Exit early
-    100 >? ( "Error: too large" .print 0 ; )  | Exit early
+:validate | value -- result/0
+    0 <? ( "Error: negative" .print drop 0 ; )  | Exit early return 0
+    100 >? ( "Error: too large" .print drop 0 ; )  | Exit early return 0
     | Process valid value...
     process-value ;
 ```
@@ -200,9 +197,10 @@ drop
 ```forth
 :clamp | value min max -- clamped
     rot              | min max value
-    over <? ( 2drop ; )  | value < min? return min
-    swap over >? ( nip ; )  | value > max? return max
-    nip nip ;        | return value
+	over >? ( drop nip ; ) | ; return max
+	nip				| min value
+	over <? ( drop ; )		| ; return min
+	nip ;
 ```
 
 #### Pattern 3: State Testing
@@ -234,14 +232,13 @@ drop
 
 ### Loop Mechanics
 
-Loops in R3forth use conditionals **inside** code blocks. The pattern is:
+Loops in R3forth use conditionals **inside** code blocks. is a WHILE. The pattern is:
 
 ```
-( condition code-to-repeat )
+( condition code-to-repeat ) or
+( code-to-repeat condition ) or
+( code-to-repeat condition code-to-repeat ) or
 ```
-
-The condition is tested **before** each iteration. When false, loop exits.
-
 #### Pattern 1: Countdown (Preferred)
 
 ```forth
@@ -269,9 +266,11 @@ The condition is tested **before** each iteration. When false, loop exits.
 ```forth
 :print-squares | n --
     0 ( over <? 
-        dup dup * "%d² = %d" .print .cr
+        dup dup *
+		"%d² = %d" .print .cr
         1 + 
-    ) 2drop ;
+		) 
+	2drop ;
 
 5 print-squares
 ```
@@ -293,24 +292,26 @@ Cleanup: 2drop
 ```forth
 :find-zero | addr cnt -- addr|0
     ( 1? 1 -
-        over @ 0? ( swap drop 0 swap ; )
+        over @ 0? ( 2drop ; ) drop
         swap 8 + swap
-    ) 2drop 0 ;
+		) 
+	2drop 0 ;
 ```
 
-**Pattern**: Use `;` inside loop to exit early with specific return value.
+**Pattern**: Use `;` inside loop to exit early with specific return value. WARNING: take care of stack in condition for exit.
 
 #### Nested Loops
 
 ```forth
 :fill-2d | value rows cols --
-    0 ( pick3 <? | Outer loop: row counter
-        0 ( pick4 <? | Inner loop: col counter
+    0 ( pick2 <? | Outer loop: row counter
+        0 ( pick2 <? | Inner loop: col counter
             pick4 write-value | Use value from deep stack
             1 +
-        ) drop
+			) drop
         1 +
-    ) 3drop ;
+		) 
+	4drop ; | remove the counter too !!
 ```
 
 **Problem**: Deep stack access gets messy. **Solution**: Factor or use registers.
@@ -319,11 +320,15 @@ Cleanup: 2drop
 
 ```forth
 :sum-array | addr cnt -- sum
-    0 >r | Accumulator to return stack
-    ( 1? 1 -
-        swap @+ r> + >r swap
-    ) 2drop
-    r> ;
+    0 swap | addr acc cnt -- sum
+    ( 1? 1 - 
+		-rot		| cnt adr acc
+		swap @+		| cnt acc addr' value
+		rot +		| cnt addr' newacc
+		rot
+		) 
+	drop nip	| cnt
+    ;
 ```
 
 **Alternative with register**:
@@ -333,8 +338,20 @@ Cleanup: 2drop
     0 >a | Accumulator to register A
     ( 1? 1 -
         swap @+ a> + >a swap
-    ) 2drop
+		) 2drop
     a> ;
+```
+
+**Alternative with register for adress**:
+
+```forth
+:sum-array | addr cnt -- sum
+	swap >a
+    0
+    ( swap 1? 1 -
+        swap a@+ +
+		) drop
+    ;		| register A is dirt but you can embody in 'ab[' and ']ba' words
 ```
 
 ### Loop Anti-Patterns
@@ -343,18 +360,18 @@ Cleanup: 2drop
 
 ```forth
 | WRONG - Stack grows indefinitely
-:bad-loop
+:bad-loop | --
     0 ( 1000 <?
         dup | OOPS: Adding to stack each iteration
         1 +
-    ) ;
+		) ;
 ```
 
 #### Anti-Pattern 2: Missing Drop
 
 ```forth
 | WRONG - Leaves garbage on stack
-:bad-loop
+:bad-loop | -- 
     10 ( 1? 1 - process ) | Missing final drop!
     | Stack has 0 leftover
     ;
@@ -364,8 +381,7 @@ Cleanup: 2drop
 
 ```forth
 | WRONG - Condition outside loop
-10 <?
-    ( process 1 - ) | Loops forever!
+10 <? ( process 1 - ) | is not loop is a IF!
     
 | CORRECT - Condition inside loop
 10 ( 1? process 1 - ) drop
@@ -373,43 +389,7 @@ Cleanup: 2drop
 
 ### Advanced Conditional Techniques
 
-#### Technique 1: Logical AND/OR with Conditionals
-
-```forth
-| AND pattern - both conditions must be true
-:in-range | value min max -- flag
-    >r over >r | Save value and min
-    < r> r> swap > and ;
-
-| OR pattern - either condition true
-:out-of-range | value min max -- flag
-    >r over r> < swap r@ > or r> drop ;
-
-| Using conditional words directly
-:check-range | value --
-    dup 10 >? ( 20 <? ( "In range" .print ; ) )
-    "Out of range" .print ;
-```
-
-#### Technique 2: Computed Conditionals
-
-```forth
-:threshold-action | value threshold 'action --
-    >r over >? ( r> ex ; ) 
-    r> 2drop ;
-
-| Usage:
-sensor-value 100 'alert threshold-action
-```
-
-#### Technique 3: Conditional Value Production
-
-```forth
-:sign | n -- -1|0|1
-    dup 0 <? ( drop -1 ; )
-    0 >? ( drop 1 ; )
-    drop 0 ;
-```
+You need make boolean calc for convert multiple test in a number.
 
 ### Memory Traversal Patterns
 
@@ -417,8 +397,8 @@ sensor-value 100 'alert threshold-action
 
 ```forth
 "text" ( c@+ 1?
-    process-char
-) 2drop
+    process-char | process consume value
+	) 2drop
 | Leaves address+1 and 0, both dropped
 ```
 
@@ -426,17 +406,17 @@ sensor-value 100 'alert threshold-action
 
 ```forth
 'array count ( 1? 1 -
-    over @+ process
+    swap @+ process | process consume value
     swap
-) 2drop
+	) 2drop
 ```
 
 #### Pattern 3: Sentinel-Based
 
 ```forth
-'data ( @+ dup -1 <>?
+'data ( @+ -1 <>?
     process
-) 2drop
+	) 2drop
 ```
 
 ## Stack Discipline - Critical Rules
@@ -455,14 +435,14 @@ x 5 >? ( action )
 ### Rule 2: Loop Counters Must Be Cleaned
 
 ```forth
-count ( 1? 1 - process ) drop | MANDATORY drop
+count ( 1? 1 - process ) drop | MANDATORY drop or use this 0
 ```
 
 ### Rule 3: Early Exits Must Balance Stack
 
 ```forth
-:process | a b c --
-    rot 0? ( 2drop ; )  | Exit removes all 3 parameters
+:process | a b c -- p
+    rot 0? ( 2drop ; )  | Exit removes all 2 parameters, remain 1
     rot + * ;
 ```
 
@@ -479,7 +459,7 @@ x
 drop | final cleanup
 ```
 
-### Rule 5: Factor When Stack Gets Deep
+### Rule 5: Factor When Stack Gets Deep, not exist pick5 for this
 
 ```forth
 | Instead of:
@@ -514,17 +494,17 @@ c@ c! c@+ c!+   | Fetch/store 1 byte
 
 ### Memory Operations Example
 ```forth
-#buffer * 100   | Allocate 100 * 8 bytes
+#buffer * 80   | Allocate 80 bytes (10 qwords)
 
 | Fill buffer with values
 'buffer 10 ( 1? 1 -
-    over !+     | Store and increment
+	dup rot !+ | Store and increment addr
     swap
-) 2drop
+	) 2drop
 
 | Read buffer values  
 'buffer 10 ( 1? 1 -
-    over @+ .print
+    swap @+ "%d " .println
     swap
 ) 2drop
 ```
@@ -554,10 +534,10 @@ count           | Count characters in string (from lib)
 | Character-by-character processing
 "text" ( c@+ 1?
     process-char
-) 2drop
+	) 2drop
 
 | Formatted output
-x y "%d,%d" .print   | Print coordinates
+y x "%d,%d" .print   | Print coordinates
 ```
 
 ## Arithmetic and Logic
@@ -597,7 +577,7 @@ $FF $0F and         | Result: $0F
 ### Error Handling Pattern
 ```forth
 :safe-divide | a b -- result | 0 on error
-    0? ( 0 swap ; )   | Check for division by zero, return 0
+    0? ( nip ; )   | Check for division by zero, return 0
     / ;               | Safe to divide
 ```
 
@@ -618,7 +598,7 @@ $FF $0F and         | Result: $0F
 
 ### Buffer Management Pattern
 ```forth
-#buffer * 1000
+#buffer * 8000	| space for 1000 values
 #buffer> 'buffer    | Buffer pointer
 
 :add-item | item --
@@ -635,12 +615,22 @@ $FF $0F and         | Result: $0F
 ```forth
 #state 0
 
+:condition? | -- 0/1 for change cond
+| some code
+| 	.. ( drop 1 ; ) | change to state 1
+	-1 ; | not change
+	
 :state0 
-    condition? ( 1 'state ! ; )
+    condition? +? ( 'state ! ; ) drop
     handle-state0 ;
 
+:other-condition? | -- 0/1 for change cond
+| some code
+| 	.. ( drop 0 ; ) | change change to state 0
+	-1 ; | not change
+
 :state1
-    other-condition? ( 0 'state ! ; )  
+    other-condition? +? ( 'state ! ; ) drop
     handle-state1 ;
 
 #state-table 'state0 'state1
@@ -709,15 +699,15 @@ R3forth has no concept of local variables. All data is either:
 - Values on return stack (discouraged)
 
 ### File-Level Privacy
-Words defined with double prefixes are only accessible within their file:
+Words defined with single prefixes are only accessible within their file:
 ```forth
 | In mylib.r3:
-::internal-helper | Private to this file
+:internal-helper | Private to this file
     some-logic ;
 
-##private-data 100  | Private variable
+#private-data 100  | Private variable
 
-:public-interface   | Accessible when file is included
+::public-interface   | Accessible when file is included
     private-data internal-helper ;
 
 | In main program:
@@ -797,8 +787,8 @@ Stack balance is about managing data producers and consumers. The overall progra
 ### 4. Consistent Stack Comments
 ```forth
 :distance | x1 y1 x2 y2 -- distance
-    rot - dup *         | x1 y1 dx dx²
-    rot rot - dup *     | x1 dx² dy dy²  
+    rot - dup *         | x1 x2 dy²
+    rot rot - dup *     | dy² dx²  
     + sqrt ;            | distance
 ```
 
