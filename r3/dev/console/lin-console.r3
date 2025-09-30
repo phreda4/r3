@@ -33,15 +33,16 @@
     ci dup 16 >> $ffff and 1 - 'cols !
     $ffff and 1 - 'rows ! ;
 
-::.getrc rows 16 << cols or ;
+:.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
 ##on-resize 0 | callback address
 
-::.checksize | -- resized?
+::.checksize | -- 
+	on-resize 0? ( drop ; )
 	.getconsoleinfo
-	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
-    on-resize 1? ( dup ex ) drop 1 ; 
+	.getrc prevrc =? ( 2drop 0 ; ) 'prevrc !
+    ex ; 
 	
 ::.onresize | 'callback --
     'on-resize ! ;
@@ -50,7 +51,7 @@
 |#sigwinch-handler 0
 
 |:sigwinch-handler | sig --
-    drop .getconsoleinfo ;
+|    drop .getconsolei\nfo ;
 
 |::.enable-resize | --
 |    'sigwinch-handler 'sigwinch-handler !
@@ -82,7 +83,7 @@
 |------- Event System (Windows-compatible) -------
 #EVT_KEY 1
 #EVT_MOUSE 2
-#EVT_RESIZE 4
+|#EVT_RESIZE 4
 
 #mouse-y #mouse-x #mouse-btn #mouse-w
 
@@ -102,11 +103,10 @@
 	
 ::inevt | -- type | 0 if no event
 	inkey 0? (	| Check keyboard
-		.checksize 0? ( drop ; ) 2drop	| Check resize 
-		EVT_RESIZE 	; ) drop | No events
+		.checksize | Check resize 
+		; ) drop | No events
 	mouse-sgr 1? ( ; ) drop
 	EVT_KEY ; 
-
 	
 ::getevt | -- type | wait for event
     ( inevt 0? drop 10 ms ) ;
@@ -137,6 +137,7 @@
 |------- Timing -------
 ::msec | -- ms | milliseconds since start
 |    libc-clock 1000 * CLOCKS_PER_SEC / 
+	1
 	;
 
 ::ms | n -- | sleep n milliseconds
@@ -163,5 +164,4 @@
 .enable-utf8
 .getconsoleinfo
 .getrc 'prevrc ! 
-|.enable-resize 
 ;

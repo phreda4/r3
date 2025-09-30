@@ -32,23 +32,19 @@
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
 
-::.getrc rows 16 << cols or ;
+:.getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
 #on-resize 0 | callback address
 
 :.checksize | --
+	on-resize 0? ( drop ; ) 
 	.getconsoleinfo
-	.getrc prevrc =? ( drop 0 ; ) 'prevrc !
-    on-resize 0? ( drop ; ) ex ; 
+	.getrc prevrc =? ( 2drop 0 ; ) 'prevrc !
+    ex ; 
 
 ::.onresize | 'callback --
     'on-resize ! ;
-
-::.enable-resize | --
-    | Windows automatically detects resize through event system
-    | This is here for API compatibility
-    ;
 
 |------- Keyboard Input -------
 | Windows Console Input Format
@@ -82,7 +78,7 @@
     ( stdin 'eventBuffer 1 'nr ReadConsoleInput
       eventBuffer $ff and
       1 =? ( drop igetkey ; )
-      4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! ) | WINDOW_BUFFER_SIZE_EVENT
+      4 =? ( drop .checksize 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
       drop
     ) ;
 
@@ -92,7 +88,7 @@
     stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
     1 =? ( drop igetkey ; )
-    4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
+    4 =? ( drop .checksize 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
     drop 0 ;
 
 |------- Extended Event Handling -------
@@ -155,9 +151,6 @@
 | DISABLE_NEWLINE_AUTO_RETURN 0x0008
 | ENABLE_LVB_GRID_WORLDWIDE 0x0010
 
-#console-mode-in
-#console-mode-out
-
 ::evtmouse | -- | enable mouse input
     stdin $18 SetConsoleMode drop ;
 
@@ -171,7 +164,6 @@
 ::.disable-mouse | -- | disable mouse events and restore selection
     | Re-enable QUICK_EDIT_MODE for normal console behavior
     stdin $1F7 SetConsoleMode drop ;
-
 
 |------- Timing (for compatibility) -------
 ::msec | -- ms | milliseconds (approximation)
