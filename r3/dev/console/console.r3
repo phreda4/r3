@@ -8,8 +8,8 @@
 ^r3/lib/parse.r3
 
 |------- Output Buffer System -------
-##outbuf * 8192  | 8KB output buffer
-##outbuf> 'outbuf | Current position in buffer
+#outbuf * $ffff  | 64KB output buffer
+#outbuf> 'outbuf | Current position in buffer
 
 ::.flush | -- | Write buffer to stdout
     outbuf> 'outbuf - 0? ( drop ; )
@@ -122,7 +122,6 @@
 ::.Hidden "8m" .[ ;
 ::.Strike "9m" .[ ;
 ::.Reset "0m" .[ ;
-
 	
 |------- Line Input -------
 ##pad * 256
