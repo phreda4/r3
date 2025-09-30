@@ -1,4 +1,4 @@
-| box animator
+| texture from surface
 | PHREDA 2024
 
 ^r3/lib/sdl2gfx.r3
@@ -11,20 +11,6 @@
 #abox
 #acol $ff00ff
 #rec [ 0 0 0 0 ]
-
-:anima1
-	'abox 
-	10 10 80 40 xywh64 
-	600 200 380 140 xywh64 
-	0 1.0 0.0 +vboxanim
-	'abox 
-	600 200 380 140 xywh64 
-	10 10 80 40 xywh64 	
-	0 1.0 1.0 +vboxanim
-	
-	'acol $ff00ff $ff00 0 1.0 0.0 +vcolanim
-	'acol $ff00 $ff00ff 0 1.0 1.0 +vcolanim
-	;
 
 :addbox | x y w h --
 	swap 2swap swap
@@ -72,9 +58,8 @@
 	
 	
 : |-------------------------------------
-	"var anim" 1024 600 SDLinit	
+	"surface to texture" 1024 600 SDLinit	
 
-	$ff vaini
 	'main SDLShow
 
 	SDLquit ;	

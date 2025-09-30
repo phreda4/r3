@@ -9,8 +9,7 @@
 ^r3/util/sdlgui.r3
 ^r3/util/bfont.r3
 
-|^r3/win/isospr.r3
-^r3/dev/isosprs.r3
+^./isosprs.r3
 
 #listspr 0 0
 #listobj 0 0
