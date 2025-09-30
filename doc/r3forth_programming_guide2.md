@@ -1,4 +1,4 @@
-# R3forth Programming Guide for AI/Developers - Enhanced Edition
+# R3forth Programming Guide for AI/Developers
 
 ## Overview
 
@@ -112,390 +112,57 @@ over            | Stack: 5 3 4 3
 *               | Stack: 5 3 12
 ```
 
-## Control Flow - Deep Dive
+## Control Flow
 
-### Understanding Conditionals
-
-R3forth conditionals are **predicates that test and branch**, not traditional if-statements. They test the stack, leave values intact (or consume specific positions), and execute code blocks only when true.
-
-#### Stack-Only Conditionals (Non-Consuming)
-
-These test TOS (Top Of Stack) without removing it:
+### Conditionals
+R3forth uses conditional words with code blocks in parentheses:
 
 ```forth
-0?  | a -- a | True if a = 0
-1?  | a -- a | True if a ≠ 0  
-+?  | a -- a | True if a ≥ 0
--?  | a -- a | True if a < 0
-```
+| Stack-only conditionals (don't consume TOS)
+0?  | True if top of stack is 0
+1?  | True if top of stack is non-zero
++?  | True if top of stack is positive or zero
+-?  | True if top of stack is negative
 
-**Critical Pattern**: The value remains on stack after the test:
+| Comparison conditionals (consume second item)
+=?  | a b -- a | True if a equals b
+<?  | a b -- a | True if a less than b
+>?  | a b -- a | True if a greater than b
 
-```forth
-| WRONG - Value lost
-x 0? ( "Zero!" .print )
-| Stack now empty! x was consumed by block
-
-| CORRECT - Value preserved
-x 0? ( "Zero!" .print )
-drop | Explicitly remove x when done
-```
-
-**Chaining conditionals** works because value persists:
-
-```forth
-x 
-0? ( "Zero" .print )
-+? ( "Positive or zero" .print )
--? ( "Negative" .print )
-drop | Clean up once at end
-```
-
-#### Comparison Conditionals (Consuming NOS)
-
-These consume the **second** stack item (NOS), leaving the first (TOS):
-
-```forth
-=?   | a b -- a | True if a = b, consumes b
-<?   | a b -- a | True if a < b, consumes b
->?   | a b -- a | True if a > b, consumes b
-<=?  | a b -- a | True if a ≤ b, consumes b
->=?  | a b -- a | True if a ≥ b, consumes b
-<>?  | a b -- a | True if a ≠ b, consumes b
-```
-
-**Stack mechanics example**:
-
-```forth
-| Start: 5 10 (TOS=10, NOS=5)
-5 10 >? ( "10 > 5" .print )
-| After test: 10 (comparison consumed 5)
-| Block executes: true
-| After block: 10 (still on stack)
-drop | Remove remaining value
-
-| Multiple comparisons:
-x 5 >? ( 10 <? ( "Between 5 and 10" .print ) )
-| First test: x > 5? (consumes 5, leaves x)
-| Second test: x < 10? (consumes 10, leaves x)
+| Usage example
+x 5 >? ( "Greater than 5" .print )
+x 0 =? ( "Zero detected" .print ) | Note: can also use x 0? for zero check
 drop
 ```
 
-### Conditional Patterns and Pitfalls
-
-#### Pattern 1: Early Exit
-
+### Loops
+Loops use conditionals inside code blocks:
 ```forth
-:validate | value -- result
-    0 <? ( "Error: negative" .print 0 ; )  | Exit early
-    100 >? ( "Error: too large" .print 0 ; )  | Exit early
-    | Process valid value...
-    process-value ;
-```
+| Count from 1 to 10
+1 ( 10 <?
+    dup "%d " .print    | .print is from console library
+    1 + ) drop
 
-**Critical**: The `;` terminates the word immediately. Execution never continues past it.
+| Countdown pattern (preferred)
+10 ( 1? 1 -
+    dup "%d " .print
+) drop
 
-#### Pattern 2: Value Selection
-
-```forth
-:clamp | value min max -- clamped
-    rot              | min max value
-    over <? ( 2drop ; )  | value < min? return min
-    swap over >? ( nip ; )  | value > max? return max
-    nip nip ;        | return value
-```
-
-#### Pattern 3: State Testing
-
-```forth
-:check-state | state --
-    0 =? ( drop handle-idle ; )
-    1 =? ( drop handle-active ; )
-    2 =? ( drop handle-paused ; )
-    drop handle-unknown ;
-```
-
-**Note**: Each `=?` consumes the test value but leaves the original, so we must `drop` manually when taking action.
-
-#### Common Error: Forgetting Stack Balance
-
-```forth
-| WRONG - Stack pollution
-:bad-example | value --
-    5 >? ( "Greater" .print )
-    | PROBLEM: value still on stack!
-    ;
-
-| CORRECT - Clean stack
-:good-example | value --
-    5 >? ( "Greater" .print )
-    drop ;  | Remove value
-```
-
-### Loop Mechanics
-
-Loops in R3forth use conditionals **inside** code blocks. The pattern is:
-
-```
-( condition code-to-repeat )
-```
-
-The condition is tested **before** each iteration. When false, loop exits.
-
-#### Pattern 1: Countdown (Preferred)
-
-```forth
-10 ( 1? 1 - ) drop
-| Starts: 10
-| Iteration 1: 10 1? → true, subtract → 9
-| Iteration 2: 9 1? → true, subtract → 8
-| ...
-| Iteration 10: 1 1? → true, subtract → 0
-| Iteration 11: 0 1? → false, exit
-| Stack after: 0 (needs drop)
-```
-
-**Why preferred**: Zero is the natural terminator, and `1?` is fastest conditional.
-
-#### Pattern 2: Count Up with Comparison
-
-```forth
-0 ( 10 <? 1 + ) drop
-| Less efficient - comparison every iteration
-```
-
-#### Pattern 3: Controlled Iteration with Processing
-
-```forth
-:print-squares | n --
-    0 ( over <? 
-        dup dup * "%d² = %d" .print .cr
-        1 + 
-    ) 2drop ;
-
-5 print-squares
-```
-
-**Stack trace**:
-```
-Initial: 5 0
-Loop 1: 5 0 <? (true) → 0 0 * print → 5 1
-Loop 2: 5 1 <? (true) → 1 1 * print → 5 2
-...
-Loop 5: 5 5 <? (false) → exit with 5 5
-Cleanup: 2drop
-```
-
-### Critical Loop Patterns
-
-#### Loop with Early Exit
-
-```forth
-:find-zero | addr cnt -- addr|0
-    ( 1? 1 -
-        over @ 0? ( swap drop 0 swap ; )
-        swap 8 + swap
-    ) 2drop 0 ;
-```
-
-**Pattern**: Use `;` inside loop to exit early with specific return value.
-
-#### Nested Loops
-
-```forth
-:fill-2d | value rows cols --
-    0 ( pick3 <? | Outer loop: row counter
-        0 ( pick4 <? | Inner loop: col counter
-            pick4 write-value | Use value from deep stack
-            1 +
-        ) drop
-        1 +
-    ) 3drop ;
-```
-
-**Problem**: Deep stack access gets messy. **Solution**: Factor or use registers.
-
-#### Loop with Accumulator
-
-```forth
-:sum-array | addr cnt -- sum
-    0 >r | Accumulator to return stack
-    ( 1? 1 -
-        swap @+ r> + >r swap
-    ) 2drop
-    r> ;
-```
-
-**Alternative with register**:
-
-```forth
-:sum-array | addr cnt -- sum
-    0 >a | Accumulator to register A
-    ( 1? 1 -
-        swap @+ a> + >a swap
-    ) 2drop
-    a> ;
-```
-
-### Loop Anti-Patterns
-
-#### Anti-Pattern 1: Growing Stack
-
-```forth
-| WRONG - Stack grows indefinitely
-:bad-loop
-    0 ( 1000 <?
-        dup | OOPS: Adding to stack each iteration
-        1 +
-    ) ;
-```
-
-#### Anti-Pattern 2: Missing Drop
-
-```forth
-| WRONG - Leaves garbage on stack
-:bad-loop
-    10 ( 1? 1 - process ) | Missing final drop!
-    | Stack has 0 leftover
-    ;
-```
-
-#### Anti-Pattern 3: Incorrect Condition Placement
-
-```forth
-| WRONG - Condition outside loop
-10 <?
-    ( process 1 - ) | Loops forever!
-    
-| CORRECT - Condition inside loop
-10 ( 1? process 1 - ) drop
-```
-
-### Advanced Conditional Techniques
-
-#### Technique 1: Logical AND/OR with Conditionals
-
-```forth
-| AND pattern - both conditions must be true
-:in-range | value min max -- flag
-    >r over >r | Save value and min
-    < r> r> swap > and ;
-
-| OR pattern - either condition true
-:out-of-range | value min max -- flag
-    >r over r> < swap r@ > or r> drop ;
-
-| Using conditional words directly
-:check-range | value --
-    dup 10 >? ( 20 <? ( "In range" .print ; ) )
-    "Out of range" .print ;
-```
-
-#### Technique 2: Computed Conditionals
-
-```forth
-:threshold-action | value threshold 'action --
-    >r over >? ( r> ex ; ) 
-    r> 2drop ;
-
-| Usage:
-sensor-value 100 'alert threshold-action
-```
-
-#### Technique 3: Conditional Value Production
-
-```forth
-:sign | n -- -1|0|1
-    dup 0 <? ( drop -1 ; )
-    0 >? ( drop 1 ; )
-    drop 0 ;
-```
-
-### Memory Traversal Patterns
-
-#### Pattern 1: Null-Terminated Strings
-
-```forth
-"text" ( c@+ 1?
+| Memory traversal until zero
+'text ( c@+ 1?
     process-char
 ) 2drop
-| Leaves address+1 and 0, both dropped
 ```
 
-#### Pattern 2: Counted Structures
-
+### Early Exit Pattern
 ```forth
-'array count ( 1? 1 -
-    over @+ process
-    swap
-) 2drop
-```
-
-#### Pattern 3: Sentinel-Based
-
-```forth
-'data ( @+ dup -1 <>?
-    process
-) 2drop
-```
-
-## Stack Discipline - Critical Rules
-
-### Rule 1: Every Conditional Leaves Something
-
-Conditionals that don't execute still leave their test value:
-
-```forth
-x 5 >? ( action )
-| If false: x still on stack
-| If true: x still on stack after action
-| ALWAYS need: drop (or use value)
-```
-
-### Rule 2: Loop Counters Must Be Cleaned
-
-```forth
-count ( 1? 1 - process ) drop | MANDATORY drop
-```
-
-### Rule 3: Early Exits Must Balance Stack
-
-```forth
-:process | a b c --
-    rot 0? ( 2drop ; )  | Exit removes all 3 parameters
-    rot + * ;
-```
-
-### Rule 4: Nested Conditions Need Careful Tracking
-
-```forth
-| Each level changes stack depth
-x 
-10 >? (      | x
-    20 <? (  | x (20 consumed)
-        do-something
-    ) | x still here
-) | x still here
-drop | final cleanup
-```
-
-### Rule 5: Factor When Stack Gets Deep
-
-```forth
-| Instead of:
-:complex | a b c d e f --
-    pick4 pick3 ... | Unreadable
-
-| Do:
-:helper1 | a b c -- result
-    rot * + ;
-
-:helper2 | result d e f -- final
-    rot * swap - ;
-
-:complex | a b c d e f --
-    rot rot rot helper1
-    rot rot helper2 ;
+:find-item | array item -- index|-1
+    0 swap          | index array item
+    ( over @ 1?     | Check if array value exists
+        2dup =? ( 2drop ; )  | Found it, return index
+        swap 8 + swap        | Next array position
+        rot 1 + rot          | Increment index
+    ) 3drop -1 ;    | Not found
 ```
 
 ## Memory Management
@@ -541,6 +208,13 @@ AB[                 | Save current A and B registers
     A@+ process-element
 ) drop
 ]BA                 | Restore previous A and B values
+
+| Example: Array processing without conflicts
+'data1 >A
+AB[                 | Isolate register usage
+    'data2 >B       | Use both registers safely
+    process-data
+]BA                 | Restore original A value
 ```
 
 ## Text Processing
@@ -580,6 +254,8 @@ and? nand?          | Logical operations for conditionals
 
 | Example
 $FF $0F and         | Result: $0F
+5 0 and?            | False (0)  need block syntax, not alone!
+5 1 and?            | True (non-zero)  need block syntax, not alone!
 ```
 
 ### Fixed Point Math (48.16 format)
@@ -597,8 +273,8 @@ $FF $0F and         | Result: $0F
 ### Error Handling Pattern
 ```forth
 :safe-divide | a b -- result | 0 on error
-    0? ( 0 swap ; )   | Check for division by zero, return 0
-    / ;               | Safe to divide
+    0? ( ; )   | Check for division by zero
+    / ;                 | Safe to divide
 ```
 
 ### Jump Table Pattern
@@ -744,7 +420,7 @@ Words must be defined before use:
 ```
 
 ### Variable Usage Philosophy
-Variables can help solve complex algorithms initially, but the goal is to find stack-based solutions that avoid them:
+Variables can help solve complex algorithms initially, but the goal is to find stack-based solutions that avoid them. Variables pollute the execution model and should be temporary stepping stones:
 
 ```forth
 | Initial solution with variables:
@@ -766,10 +442,12 @@ Variables can help solve complex algorithms initially, but the goal is to find s
     rot * rot + / ; | Direct stack manipulation
 ```
 
-## Best Practices
+The language encourages finding pure stack-based algorithms rather than relying on variable storage.
 
 ### 1. Stack Balance - Data Flow Communication
-Stack balance is about managing data producers and consumers. The overall program execution should not leave the stack with overflow or underflow, and loops should not grow or shrink the stack indefinitely.
+Stack balance is about managing data producers and consumers. Words either produce values (push to stack), consume values (pop from stack), or both. Programming in R3forth means creating chains of words where producers and consumers are properly matched.
+
+The overall program execution should not leave the stack with overflow or underflow, and loops should not grow or shrink the stack indefinitely. However, intermediate states can be unbalanced - this is normal as parameters flow from one word to another:
 
 ```forth
 :area | width height -- area
@@ -778,13 +456,22 @@ Stack balance is about managing data producers and consumers. The overall progra
 :rectangle | width height x y --
     2swap area      | Intermediate unbalance: produces area value
     draw-rect ;     | Consumes area + coordinates
+
+5 10 area          | 5 and 10 consumed, area (50) produced
 ```
 
+The key is that each word's stack effect must be predictable and documented to enable proper composition.
+
 ### 2. Factor Early and Often
+Break complex operations into simple, reusable words:
 ```forth
 :draw-centered-text | text x y --
     over str-width 2 / -    | Adjust x for centering
     draw-text ;
+
+:draw-health-bar | health max-health x y --
+    2over 2over draw-bar-background
+    rot * swap / draw-bar-fill ;
 ```
 
 ### 3. Use Meaningful Names
@@ -803,35 +490,50 @@ Stack balance is about managing data producers and consumers. The overall progra
 ```
 
 ### 5. Avoid Deep Stack Operations
-When you need values buried in the stack, factor or use registers:
+R3forth limits deep stack access (no PICK5 or deeper). When you need values buried in the stack, consider factoring or changing parameter order:
 
 ```forth
+| Complex operation needing deep access:
+:complex-calc | a b c d e f -- result
+    pick4 pick3 * pick2 + / ;  | Hard to read, error-prone
+
 | Factor into logical steps:
 :calc-base | a b c -- base
     rot * + ;
+:apply-factors | base d e f -- result  
+    rot / ;
+:better-calc | a b c d e f -- result
+    rot rot rot calc-base    | Reorder parameters
+    rot rot apply-factors ;
 
-| Or use registers for deep values:
+| Alternative: Use registers for deep values
 :using-registers | a b c d e f -- result
-    >a >b           | Save deep values
+    >a >b           | Save deep values to registers
     calc-base       | Work with top values
     a> b> apply-factors ;
+
+| Or restructure the algorithm to avoid the problem:
+:restructured | f e d c b a -- result  
+    * + / ;      | Simply reverse parameter order
 ```
 
 ## Common Gotchas
 
 1. **Missing Spaces**: `5+` is one word, not `5 +`
-2. **Forgetting Drop After Conditionals**: Conditionals leave values on stack
+2. **words together**: It does not separate words with a space.
 3. **Stack Underflow**: Not enough values for operations
-4. **Unbalanced Loops**: Loops that grow/shrink stack indefinitely  
+4. **Unbalanced Stacks**: Loops that grow/shrink stack indefinitely  
 5. **Register Conflicts**: A/B registers shared between words
 6. **Memory Alignment**: Different sizes require different increment amounts
-7. **Early Exit Stack Mismatch**: All exit paths must leave same stack state
+
 
 ## File Structure
 
+Typical R3forth program structure:
 ```forth
 | comments and documentation
 ^lib/needed-library.r3
+^lib/another-library.r3
 
 | Data definitions
 #global-var1 0

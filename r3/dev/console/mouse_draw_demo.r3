@@ -3,13 +3,11 @@
 | Works with both Linux and Windows console libraries
 
 | Uncomment the appropriate library for your platform:
-|LIN| ^./lin-console.r3
-|WIN| ^./win-console.r3
+^./console.r3
 
 #running 1
 
-:exit
-    0 'running ! ;
+:exit 0 'running ! ;
 
 |------- Canvas State -------
 #canvas * 8192  | 128x64 canvas buffer (1 byte per cell)
@@ -27,20 +25,8 @@
 
 |------- Brush Definitions -------
 | Brush characters
-#brushes ( 
-    $2588  | 0: Full block █
-    $2593  | 1: Dark shade ▓
-    $2592  | 2: Medium shade ▒
-    $2591  | 3: Light shade ░
-    $2022  | 4: Bullet •
-    $25CF  | 5: Circle ●
-    $2B1B  | 6: Black square ⬛
-    $2B1C  | 7: White square ⬜
-    $2605  | 8: Star ★
-    $2764  | 9: Heart ❤
-)
-
-#brush-count 10
+#brushes " OoXx.*+-=@$"
+#brush-count 11
 
 |------- Color Palette -------
 :set-draw-color | color --
@@ -66,41 +52,36 @@
 :canvas-set | char x y --
     canvas-at c! ;
 
+:.canvchar
+	0? ( drop .sp ; ) 
+	dup 4 >> set-draw-color
+	$f and 'brushes + c@ .emit
+	;
+	
 :canvas-draw | --
-    2 2 .at
-    0 ( canvas-height <?
-        dup >r
-        0 ( canvas-width <?
-            dup over canvas-get
-            dup 0? ( 2drop " " .write ; )
-            
-            | Get color from high nibble
-            dup 4 >> set-draw-color
-            
-            | Get brush from low nibble
-            $0F and 3 << 'brushes + @ .emit
-            
-            1 +
-        ) drop
-        r> 1 +
-        .cr
-    ) drop
+    0 ( rows 4 - <?
+        2 over 2 + .at
+		0 over canvas-at >a
+        0 ( cols 4 - <?
+			ca@+ .canvchar
+            1+ ) drop
+        1+ ) drop
     .Reset ;
 
 |------- UI Functions -------
 :draw-frame | --
     .home .Cyanl .Bold
     0 0 .at "┌" .write
-    1 ( cols 1 - <? "─" .write 1 + ) drop
+    cols 2 - ( 1? "─" .write 1- ) drop
     "┐" .write
     
-    1 ( rows 1 - <?
-        dup 0 .at "│" .write
-        dup cols 1 - .at "│" .write
-        1 + ) drop
+    2 ( rows 1- <?
+        0 over .at "│" .write
+        cols over .at "│" .write
+        1+ ) drop
     
-    0 rows 1 - .at "└" .write
-    1 ( cols 1 - <? "─" .write 1 + ) drop
+    0 rows 1- .at "└" .write
+    cols 2 - ( 1? "─" .write 1- ) drop
     "┘" .write
     .Reset ;
 
@@ -116,7 +97,7 @@
     
     .Yellow "│ " .write
     .Yellowl .Bold "Mode: " .write
-    .Whitel drawing-mode 0? ( drop "DRAW" ; ) drop "ERASE"
+    .Whitel "ERASE" drawing-mode 0? ( 2drop "DRAW" dup ) drop 
     .write
     
     .Yellow " │" .write
@@ -133,12 +114,16 @@
     "Left Click: Draw  |  Right Click: Erase  |  Drag to draw continuous" .write
     .Reset ;
 
+:charmm
+    mouse-btn 
+	1 and? ( drop .Redl "+" ; ) 
+    2 and? ( drop .Bluel "×" ; ) 
+	drop
+    .Greenl "◆" ;	
+
 :draw-mouse-cursor | --
     mouse-x mouse-y .at
-    mouse-btn 1 and 1? ( .Redl "+" ; ) drop
-    mouse-btn 2 and 1? ( .Bluel "×" ; ) drop
-    .Greenl "◆"
-    .write .Reset ;
+    charmm .write .Reset ;
 
 :draw-screen | --
     .cls
@@ -146,12 +131,14 @@
     canvas-draw
     draw-toolbar
     draw-help
-    draw-mouse-cursor ;
+    draw-mouse-cursor 
+	.flush
+	;
 
 |------- Mouse Handling -------
 :process-mouse | --
     | Get mouse position (adjust for canvas offset)
-    evtmxy 2 - swap 2 - swap
+    evtmxy |2 - swap 2 - swap
     
     | Clamp to canvas bounds
     0 max canvas-height 1 - min 'mouse-y !
@@ -161,7 +148,7 @@
     evtmb 'mouse-btn !
     
     | Left button - draw
-    mouse-btn 1 and 1? (
+    mouse-btn 1 and? (
         drawing-mode 0? (
             | Draw mode
             current-color 4 << current-brush or
@@ -170,16 +157,16 @@
         ) drop
         
         | Check if entering draw mode
-        prev-btn 1 and 0? ( draw-screen ) drop
+        prev-btn 1 and? ( draw-screen ) drop
     ) drop
     
     | Right button - erase
-    mouse-btn 2 and 1? (
+    mouse-btn 2 and? (
         0 mouse-x mouse-y canvas-set
         draw-screen
         
         | Check if entering erase mode
-        prev-btn 2 and 0? ( draw-screen ) drop
+        prev-btn 2 and? ( draw-screen ) drop
     ) drop
     
     | Update previous button state
@@ -190,57 +177,56 @@
 
 |------- Keyboard Handling -------
 :handle-key | key --
-    | ESC - exit
-    $1B =? ( exit ; )
+    
+	$1000 and? ( drop ; )
+	16 >>
+    $1B =? ( drop exit ; ) | ESC - exit
     
     | Numbers 1-9 - select brush
-    dup $31 >=? ( 
-        dup $39 <=? (
-            $30 - 1 - 
-            dup 0 >=? (
-                dup brush-count <? (
+    $31 >=? ( 
+		$39 <=? (
+            $30 - 1- 
+            0 >=? (
+                brush-count <? (
                     'current-brush ! 
-                    draw-screen ;
-                ) drop
-            ) drop
-        ) drop
-    ) drop
+                    draw-screen 
+                ) 
+			drop ;
+            )		
+        ) 
+    ) 
     
+	$20 or | case insensitive
     | C/c - cycle color
-    dup $43 =? ( drop 1 ) swap
-    $63 =? (
-        current-color 1 + 8 mod 
-        dup 0? ( drop 1 )
+	$63 =? ( drop
+        current-color 1+ 8 mod 
+        0? ( drop 1 )
         'current-color !
         draw-screen ;
-    ) drop
-    
+		) 
     | M/m - toggle mode
-    dup $4D =? ( drop 1 ) swap
-    $6D =? (
+    $6D =? ( drop
         drawing-mode 1 xor 'drawing-mode !
         draw-screen ;
-    ) drop
-    
+		)     
     | SPACE - clear canvas
-    $20 =? (
+    $20 =? ( drop
         canvas-clear
         draw-screen ;
-    )
-    
+		)
     drop ;
 
 |------- Event Loop -------
 :main-loop | --
-    ( running 1?
+    ( running 1? drop
         | Check for resize
-        .checksize 1? ( drop draw-screen )
+        .checksize 1? ( draw-screen ) drop
         
         | Check for events
         inevt
-        dup 1 =? ( drop evtkey handle-key )  | Keyboard
-        dup 2 =? ( drop process-mouse )      | Mouse
-        dup 4 =? ( drop draw-screen )        | Resize
+        1 =? ( evtkey handle-key )  | Keyboard
+        2 =? ( process-mouse )      | Mouse
+        4 =? ( draw-screen )        | Resize
         drop
         
         | Small delay
@@ -258,44 +244,28 @@
 
 |------- Main Program -------
 :main
-    | Initialize console
-    init-console
-    
-    | Enable mouse support
     .enable-mouse
-    
-    | Set resize callback
     'on-resize-event .onresize
-    
-    | Initialize canvas
+	on-resize-event
     canvas-clear
-    
     | Initial state
     1 'current-brush !
     1 'current-color !
     0 'drawing-mode !
-    
     | Hide cursor for cleaner display
     .hidec
-    
     | Initial draw
     draw-screen
-    
     | Welcome message
     2 canvas-height 6 + .at
     .Greenl .Bold
     "Welcome! Use your mouse to draw. Try different brushes and colors!" .write
     .Reset
-    
     | Run main loop
     main-loop
-    
     | Cleanup
     .disable-mouse
-    .showc
-    .cls
-    .home
-    .Reset
+    .showc .cls .home .Reset
     "Thanks for drawing!" .println ;
 
 | Program entry point

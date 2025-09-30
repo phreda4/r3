@@ -2,7 +2,7 @@
 | PHREDA 2021 - Updated 2025
 
 ^r3/lib/mem.r3
-^r3/lib/parse.r3
+^r3/lib/str.r3
 ^r3/lib/win/conkey.r3
 
 |------- Console Handles -------
@@ -13,109 +13,6 @@
 |------- Basic Output -------
 ::type | str cnt --
     stdout -rot 0 0 WriteFile drop ;
-
-#crb ( 10 13 )
-#cc ( 0 0 )
-#esc[ ( $1b $5b 0 0 0 0 0 0 ) 0 0
-
-::.cr 'crb 2 type ;
-::.sp " " 1 type ;
-::.nsp ( 1? 1 - .sp ) drop ;
-
-::.emit | char --
-    'cc c! 'cc 1 type ;
-
-::.[ 'esc[ 2 + swap
-    ( c@+ 1? rot c!+ swap ) 2drop
-    'esc[ swap over - type ;
-
-::.write count type ;
-::.print sprintc type ;
-::.println sprintlnc type ;
-
-|------- Cursor Control -------
-::.home "H" .[ ;
-::.cls "H" .[ "J" .[ ;
-::.at "%d;%df" sprint .[ ; | x y --
-::.eline "K" .[ ; | erase line from cursor
-::.escreen "J" .[ ; | erase from cursor to end of screen
-::.eline0 "1K" .[ ; | erase from start of line to cursor
-::.escreenup "1J" .[ ; | erase from cursor to beginning
-
-::.showc "?25h" .[ ;
-::.hidec "?25l" .[ ;
-::.savec "s" .[ ; | save cursor position
-::.restorec "u" .[ ; | restore cursor position
-
-|------- Cursor Shapes -------
-::.ovec "0 q" .[ ; | default cursor
-::.insc "5 q" .[ ; | blinking bar
-::.blockc "2 q" .[ ; | steady block
-::.underc "4 q" .[ ; | steady underscore
-
-|------- Screen Buffer Control -------
-::.alsb "?1049h" .[ ; | alternate screen buffer
-::.masb "?1049l" .[ ; | main screen buffer
-
-|------- Foreground Colors -------
-::.Black "30m" .[ ;
-::.Red "31m" .[ ;
-::.Green "32m" .[ ;
-::.Yellow "33m" .[ ;
-::.Blue "34m" .[ ;
-::.Magenta "35m" .[ ;
-::.Cyan "36m" .[ ;
-::.White "37m" .[ ;
-
-::.Blackl "30;1m" .[ ;
-::.Redl "31;1m" .[ ;
-::.Greenl "32;1m" .[ ;
-::.Yellowl "33;1m" .[ ;
-::.Bluel "34;1m" .[ ;
-::.Magental "35;1m" .[ ;
-::.Cyanl "36;1m" .[ ;
-::.Whitel "37;1m" .[ ;
-
-::.fc "38;5;%dm" sprint .[ ; | 256 color foreground
-
-|------- Background Colors -------
-::.BBlack "40m" .[ ;
-::.BRed "41m" .[ ;
-::.BGreen "42m" .[ ;
-::.BYellow "43m" .[ ;
-::.BBlue "44m" .[ ;
-::.BMagenta "45m" .[ ;
-::.BCyan "46m" .[ ;
-::.BWhite "47m" .[ ;
-
-::.BBlackl "40;1m" .[ ;
-::.BRedl "41;1m" .[ ;
-::.BGreenl "42;1m" .[ ;
-::.BYellowl "43;1m" .[ ;
-::.BBluel "44;1m" .[ ;
-::.BMagental "45;1m" .[ ;
-::.BCyanl "46;1m" .[ ;
-::.BWhitel "47;1m" .[ ;
-
-::.bc "48;5;%dm" sprint .[ ; | 256 color background
-
-|------- RGB Colors (true color) -------
-::.fgrgb | r g b --
-    "38;2;%d;%d;%dm" sprint .[ ;
-    
-::.bgrgb | r g b --
-    "48;2;%d;%d;%dm" sprint .[ ;
-
-|------- Text Attributes -------
-::.Bold "1m" .[ ;
-::.Dim "2m" .[ ;
-::.Italic "3m" .[ ;
-::.Under "4m" .[ ;
-::.Blink "5m" .[ ;
-::.Rever "7m" .[ ;
-::.Hidden "8m" .[ ;
-::.Strike "9m" .[ ;
-::.Reset "0m" .[ ;
 
 |------- Console Information -------
 | CONSOLE_SCREEN_BUFFER_INFO structure:
@@ -184,7 +81,7 @@
     eventBuffer 20 >> xor ;
 
 ::getch | -- key | wait for key
-    ( stdin 'eventBuffer 1 'nr ReadConsoleInput drop
+    ( stdin 'eventBuffer 1 'nr ReadConsoleInput
       eventBuffer $ff and
       1 =? ( drop igetkey ; )
       4 =? ( drop .checksize 0 ; ) |.getconsoleinfo 1 'resized ! ) | WINDOW_BUFFER_SIZE_EVENT
@@ -232,57 +129,18 @@
 | MOUSE_HWHEELED 0x0008
 
 ::getevt | -- type | wait for any event
-    stdin 'eventBuffer 1 'nr ReadConsoleInput drop
+    stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
-    dup 4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
+    4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
     ;
 
 ::inevt | -- type | check for event (no wait)
-    stdin 'ne GetNumberOfConsoleInputEvents drop
-    ne 0? ( 0 ; )
-    stdin 'eventBuffer 1 'nr ReadConsoleInput drop
+    stdin 'ne GetNumberOfConsoleInputEvents 
+    ne 0? ( ; ) drop
+    stdin 'eventBuffer 1 'nr ReadConsoleInput
     eventBuffer $ff and
-    dup 4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
+    4 =? ( .getconsoleinfo 1 'resized ! ) | Handle resize event
     ;
-
-|------- Line Input -------
-##pad * 256
-
-:ink | char addr --
-    $1000 and? ( drop ; ) | ignore key release
-    16 >> $ff and swap c!+ ;
-
-:.readln | --
-    'pad ( inkey 1? ink ) swap c! ;
-
-::.input | -- | read line to pad
-    'pad 
-    ( getch $D001C <>? | wait for ENTER key
-        $1000 and? ( drop ; ) | ignore key release
-        16 >> 0? ( drop ; )
-        8 =? ( swap 
-            1 - 'pad <? ( 2drop 'pad ; )
-            swap .emit "1P" .[ ; )
-        dup .emit
-        swap c!+ ) drop
-    0 swap c! ;
-
-::.inputn | -- n | read number
-    .input 'pad str>nro nip ;
-
-|------- Cursor Position Reading -------
-::getcursorpos | -- x y
-    "6n" .[ .readln 'pad 2 +
-    str>nro swap 1 + str>nro nip swap ;
-
-|------- Special Character Printing -------
-:emite | char --
-    $5e =? ( drop 27 .emit ; ) | ^=escape
-    .emit ;
-
-::.printe | "str" -- | print with ^=ESC
-    sprint
-    ( c@+ 1? emite ) 2drop ;
 
 |------- Console Mode Management -------
 | Input Modes:
@@ -309,18 +167,30 @@
     stdin $18 SetConsoleMode drop ;
 
 ::.enable-mouse | -- | enable mouse events
-    stdin $1F7 SetConsoleMode drop ;
+    | ENABLE_EXTENDED_FLAGS (0x80) allows disabling QUICK_EDIT_MODE
+    | ENABLE_WINDOW_INPUT (0x08) + ENABLE_MOUSE_INPUT (0x10)
+    | ENABLE_VIRTUAL_TERMINAL_INPUT (0x200)
+    | Total: 0x80 | 0x08 | 0x10 | 0x200 = 0x298
+    stdin $298 SetConsoleMode drop ;
 
-::.disable-mouse | -- | disable mouse events
-    stdin $7 SetConsoleMode drop ;
+::.disable-mouse | -- | disable mouse events and restore selection
+    | Re-enable QUICK_EDIT_MODE for normal console behavior
+    stdin $1F7 SetConsoleMode drop ;
 
 |------- Initialization and Cleanup -------
 ::.free | -- | free console
-    FreeConsole drop ;
+    FreeConsole ;
 
-::init-console | -- | initialize console
-    AllocConsole 
-    -10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
+|------- Timing (for compatibility) -------
+::msec | -- ms | milliseconds (approximation)
+    GetTickCount ;
+
+::ms | n -- | sleep n milliseconds
+    Sleep ;
+
+|------- Entry Point -------
+:	AllocConsole | initialize console
+	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
 
@@ -333,14 +203,5 @@
     stdout $7 SetConsoleMode drop
     
     .getconsoleinfo
-    .getrc 'prevrc ! ;
-
-|------- Timing (for compatibility) -------
-::msec | -- ms | milliseconds (approximation)
-    GetTickCount ;
-
-::ms | n -- | sleep n milliseconds
-    Sleep ;
-
-|------- Entry Point -------
-: init-console ;
+    .getrc 'prevrc ! 
+	;

@@ -23,109 +23,6 @@
 ::type | str cnt --
     1 rot rot libc-write drop ;
 
-#crb ( 10 13 )
-#cc ( 0 0 )
-#esc[ ( $1b $5b 0 0 0 0 0 0 ) 0 0
-
-::.cr 'crb 2 type ;
-::.sp " " 1 type ;
-::.nsp ( 1? 1 - .sp ) drop ;
-
-::.emit | char --
-    'cc c! 'cc 1 type ;
-
-::.[ 'esc[ 2 + swap
-    ( c@+ 1? rot c!+ swap ) 2drop
-    'esc[ swap over - type ;
-
-::.write count type ;
-::.print sprint count type ;
-::.println sprint count type .cr ;
-
-|------- Cursor Control -------
-::.home "H" .[ ;
-::.cls "H" .[ "J" .[ ;
-::.at "%d;%df" sprint .[ ; | x y --
-::.eline "K" .[ ; | erase line from cursor
-::.escreen "J" .[ ; | erase from cursor to end of screen
-::.eline0 "1K" .[ ; | erase from start of line to cursor
-::.escreenup "1J" .[ ; | erase from cursor to beginning
-
-::.showc "?25h" .[ ;
-::.hidec "?25l" .[ ;
-::.savec "s" .[ ; | save cursor position
-::.restorec "u" .[ ; | restore cursor position
-
-|------- Cursor Shapes -------
-::.ovec "0 q" .[ ; | default cursor
-::.insc "5 q" .[ ; | blinking bar
-::.blockc "2 q" .[ ; | steady block
-::.underc "4 q" .[ ; | steady underscore
-
-|------- Screen Buffer Control -------
-::.alsb "?1049h" .[ ; | alternate screen buffer
-::.masb "?1049l" .[ ; | main screen buffer
-
-|------- Foreground Colors -------
-::.Black "30m" .[ ;
-::.Red "31m" .[ ;
-::.Green "32m" .[ ;
-::.Yellow "33m" .[ ;
-::.Blue "34m" .[ ;
-::.Magenta "35m" .[ ;
-::.Cyan "36m" .[ ;
-::.White "37m" .[ ;
-
-::.Blackl "30;1m" .[ ;
-::.Redl "31;1m" .[ ;
-::.Greenl "32;1m" .[ ;
-::.Yellowl "33;1m" .[ ;
-::.Bluel "34;1m" .[ ;
-::.Magental "35;1m" .[ ;
-::.Cyanl "36;1m" .[ ;
-::.Whitel "37;1m" .[ ;
-
-::.fc "38;5;%dm" sprint .[ ; | 256 color foreground
-
-|------- Background Colors -------
-::.BBlack "40m" .[ ;
-::.BRed "41m" .[ ;
-::.BGreen "42m" .[ ;
-::.BYellow "43m" .[ ;
-::.BBlue "44m" .[ ;
-::.BMagenta "45m" .[ ;
-::.BCyan "46m" .[ ;
-::.BWhite "47m" .[ ;
-
-::.BBlackl "40;1m" .[ ;
-::.BRedl "41;1m" .[ ;
-::.BGreenl "42;1m" .[ ;
-::.BYellowl "43;1m" .[ ;
-::.BBluel "44;1m" .[ ;
-::.BMagental "45;1m" .[ ;
-::.BCyanl "46;1m" .[ ;
-::.BWhitel "47;1m" .[ ;
-
-::.bc "48;5;%dm" sprint .[ ; | 256 color background
-
-|------- RGB Colors (true color) -------
-::.fgrgb | r g b --
-    "38;2;%d;%d;%dm" sprint .[ ;
-    
-::.bgrgb | r g b --
-    "48;2;%d;%d;%dm" sprint .[ ;
-
-|------- Text Attributes -------
-::.Bold "1m" .[ ;
-::.Dim "2m" .[ ;
-::.Italic "3m" .[ ;
-::.Under "4m" .[ ;
-::.Blink "5m" .[ ;
-::.Rever "7m" .[ ;
-::.Hidden "8m" .[ ;
-::.Strike "9m" .[ ;
-::.Reset "0m" .[ ;
-
 |------- Console Information -------
 #ci 0 
 ##rows ##cols
@@ -188,27 +85,6 @@
 
 ::waitesc | -- | wait for ESC key
     ( getch $1B <>? drop ) drop ;
-
-|------- Line Input -------
-##pad * 256
-
-::.input | -- | read line to pad
-    'pad 
-    ( getch $a <>? 
-        .emit ) drop
-    0 swap c! ;
-
-::.inputn | -- n | read number
-    .input 'pad str>nro nip ;
-
-|------- Special Character Printing -------
-:emite | char --
-    $5e =? ( drop 27 .emit ; ) | ^=escape
-    .emit ;
-
-::.printe | "str" -- | print with ^=ESC
-    sprint
-    ( c@+ 1? emite ) 2drop ;
 
 |------- Timing -------
 ::msec | -- ms | milliseconds since start

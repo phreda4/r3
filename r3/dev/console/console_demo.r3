@@ -2,8 +2,7 @@
 | Works with both Linux and Windows console libraries
 | Demonstrates resize handling, colors, and input
 
-|LIN| ^./lin-console.r3
-|WIN| ^./win-console.r3
+^./console.r3
 
 |------- Application State -------
 #boxes 0  | Number of boxes to draw
@@ -86,6 +85,7 @@
     draw-title
     draw-info
     draw-boxes 
+	.flush
 	;
 
 |------- Resize Handler -------
@@ -122,8 +122,6 @@
 
 |------- Main Program -------
 :main | --
-    | Initialize console
-    init-console
     | Set resize callback
     'on-resize-event .onresize
     | Initial state

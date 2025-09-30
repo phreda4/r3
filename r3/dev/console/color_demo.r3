@@ -2,9 +2,7 @@
 | Comprehensive demonstration of console color capabilities
 | Works with both Linux and Windows console libraries
 
-| Uncomment the appropriate library for your platform:
-|LIN| ^./lin-console.r3
-|WIN| ^./win-console.r3
+^./console.r3
 
 |------- Display State -------
 #current-page 0
@@ -25,7 +23,8 @@
     .BCyan .Black
     0 ( cols <? " " .write 1+ ) drop
     " [SPACE] Next Page  [ESC] Exit " rows 1 - center-text
-    .Reset ;
+    .Reset 
+	.flush ;
 
 |------- Page 1: Basic 8 Colors -------
 :show-basic-colors | --
@@ -283,8 +282,6 @@
 
 |------- Main Program -------
 :main
-    | Initialize console
-    init-console
     | Set resize callback
     'on-resize-event .onresize
     | Hide cursor
