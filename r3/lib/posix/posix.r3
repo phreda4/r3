@@ -78,11 +78,11 @@
 ::libc-fcntl sys-fcntl sys3 ;
 ::libc-time sys-time sys1 ;
 ::libc-localtime sys-localtime sys1 ;
-::libc-tcgetattr sys-tcgetattr sys2 ;
-::libc-tcsetattr sys-tcsetattr sys3 ;
+::libc-tcgetattr sys-tcgetattr sys2 drop ;
+::libc-tcsetattr sys-tcsetattr sys3 drop ;
 ::libc-system sys-system sys1 ;
 ::libc-select sys-select sys5 ;
-::libc-ioctl sys-ioctl sys3 ;
+::libc-ioctl sys-ioctl sys3 drop ;
 ::libc-stat sys-stat sys2 ;
 ::libc-access sys-access sys2 ;
 ::libc-setlocale sys-setlocale sys2 ;

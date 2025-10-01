@@ -40,7 +40,7 @@
 :.checksize | --
 	on-resize 0? ( drop ; ) 
 	.getconsoleinfo
-	.getrc prevrc =? ( 2drop 0 ; ) 'prevrc !
+	.getrc prevrc =? ( 2drop ; ) 'prevrc !
     ex ; 
 
 ::.onresize | 'callback --
@@ -164,13 +164,6 @@
 ::.disable-mouse | -- | disable mouse events and restore selection
     | Re-enable QUICK_EDIT_MODE for normal console behavior
     stdin $1F7 SetConsoleMode drop ;
-
-|------- Timing (for compatibility) -------
-::msec | -- ms | milliseconds (approximation)
-    GetTickCount ;
-
-::ms | n -- | sleep n milliseconds
-    Sleep ;
 
 |------- Cleanup -------
 ::.free | -- | free console

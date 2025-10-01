@@ -109,14 +109,14 @@
 #stermp
 
 ::set-terminal-mode
-    0 'sterm libc-tcgetattr drop
+    0 'sterm libc-tcgetattr 
     'sterm 12 + dup w@ dup 'stermp !
     10 nand swap w! |~(ICANON | ECHO);
-    0 0 'sterm libc-tcsetattr drop ;
+    0 0 'sterm libc-tcsetattr  ;
 
 ::reset-terminal-mode
     stermp 'sterm 12 + w!
-    0 0 'sterm libc-tcsetattr drop ;
+    0 0 'sterm libc-tcsetattr  ;
     
 |------------ input
 ##ch 0 0
