@@ -17,7 +17,6 @@
 |------- Drawing State -------
 #mouse-x 0
 #mouse-y 0
-#mouse-btn 0
 #prev-btn 0
 #current-brush 1
 #current-color 1
@@ -121,42 +120,26 @@
 
 |------- Mouse Handling -------
 :process-mouse | --
-    | Get mouse position (adjust for canvas offset)
-    evtmxy 2 - swap 2 - swap
-    
-    | Clamp to canvas bounds
-    0 max canvas-height 1- min 'mouse-y !
-    0 max canvas-width 1- min 'mouse-x !
-    
-    | Get button state
-    evtmb 'mouse-btn !
-    
-    | Left button - draw
-    mouse-btn 
-	1 and? (
-        drawing-mode 0? (
-            | Draw mode
+    evtmxy | Get mouse position 
+    2 - 0 max canvas-height 1- min 'mouse-y !
+    2 - 0 max canvas-width 1- min 'mouse-x ! | adjust and clamp to canvas bounds
+    evtmb		| Get button state
+	1 and? (	| Left button - draw
+        drawing-mode 0? ( | Draw mode
             current-color 4 << current-brush or
             mouse-x mouse-y canvas-set
             draw-screen
 			) drop
-        | Check if entering draw mode
-        prev-btn 1 and? ( draw-screen ) drop
+        prev-btn 1 and? ( draw-screen ) drop | Check if entering draw mode
 		) 
-    
-    | Right button - erase
-    2 and? (
+    2 and? (	| Right button - erase
         0 mouse-x mouse-y canvas-set
         draw-screen
-        | Check if entering erase mode
-        prev-btn 2 and? ( draw-screen ) drop
+        prev-btn 2 and? ( draw-screen ) drop | Check if entering erase mode
 		) 
- 
-    | Update previous button state
-    'prev-btn !
-    
-    | Redraw cursor if mouse moved
-    draw-mouse-cursor ;
+    'prev-btn !	    | Update previous button state
+    draw-mouse-cursor | Redraw cursor if mouse moved
+	;
 
 |------- Keyboard Handling -------
 :handle-key | key --
@@ -187,8 +170,6 @@
 |------- Event Loop -------
 :main-loop | --
     ( running 1? drop
-        | Check for resize
-|        .checksize 1? ( draw-screen ) drop
         | Check for events
         inevt
         1 =? ( evtkey handle-key )  | Keyboard
@@ -217,21 +198,15 @@
     1 'current-brush !
     1 'current-color !
     0 'drawing-mode !
-    | Hide cursor for cleaner display
     .hidec
-    | Initial draw
     draw-screen
-    | Welcome message
     2 canvas-height 6 + .at
     .Greenl .Bold
     "Welcome! Use your mouse to draw. Try different brushes and colors!" .write
     .Reset
-    | Run main loop
     main-loop
-    | Cleanup
     .disable-mouse
-    .showc .cls .home .Reset
-    "Thanks for drawing!" .println ;
+    .showc .Reset ;
 
 | Program entry point
-: main ;
+: .console main .free ;

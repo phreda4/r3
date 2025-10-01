@@ -105,28 +105,19 @@
 |------- Animation Loop -------
 :main-loop | --
     ( running 1? drop
-        | Check for keyboard input
         inkey 1? ( handle-input )  drop
-        | Small delay to reduce CPU usage
         10 ms
 		) drop ;
 
 |------- Main Program -------
 :main | --
-    | Set resize callback
-    [ draw-screen ; ] .onresize
-    | Initial state
+    'draw-screen .onresize
     3 'boxes !
     1 'box-color !
-    | Hide cursor for cleaner display
     .hidec
-    | Initial draw
     draw-screen
-    | Run main loop
     main-loop
-    | Cleanup
-    .showc .cls .home .Reset
-    "Goodbye!" .println ;
+    .showc .Reset ;
 
 | Program entry point
-: main ;
+: .console main .free ;

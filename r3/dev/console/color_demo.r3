@@ -261,17 +261,12 @@
 
 |------- Main Program -------
 :main
-    | Set resize callback
     'on-resize-event .onresize
-    | Hide cursor
     .hidec
-    | Show first page
     draw-page
-    | Run main loop
     main-loop
-    | Cleanup
-    .showc .cls .home .Reset
+    .showc .Reset
     "Color demo finished!" .println ;
 
 | Program entry point
-: main ;
+: .console main .free ;

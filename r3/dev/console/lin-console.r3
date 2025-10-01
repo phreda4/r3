@@ -41,8 +41,9 @@
 	0 2 flgs libc-fcntl drop 
 	;
 
-::.enable-mouse		"?1003h" .[ ;	
-::.disable-mouse	"?1003l" .[ ;
+| 1003 mode not work with up btn
+::.enable-mouse		"?1006h" .[ ;	
+::.disable-mouse	"?1006l" .[ ;
 	
 |------- Console Information -------
 #ci 0 
@@ -91,13 +92,36 @@
 ##evtmw
 
 ::evtmxy mouse-x mouse-y ;
+
+|--- mode 1006
+:dnbtn
+	$40 and? ( $1 and 2* 1- 'evtmw ! ; ) 
+	$3 and 1 swap <<
+	evtmb or 'evtmb ! ;
 	
+:upbtn
+	$40 and? ( $1 and 2* 1- 'evtmw ! ; ) 
+	$3 and 1 swap << not
+	evtmb and 'evtmb ! ;
+	
+| Formato: ESC[<button;x;yM o m
+:check6 | -- button x y
+	0 'evtmw !
+	'bufferin 3 +
+    getnro swap 1+ | Skip ;
+    getnro 'mouse-x ! 1+ | Skip ;
+    getnro 'mouse-y ! 
+	c@ | m 6d M 4d
+	$20 nand? ( drop dnbtn ; ) 
+	drop upbtn ;
+
+|--- mode 1003		
 :bitbtn
 	32 34 in? ( $3 and 1 swap << evtmb or 'evtmb ! ; )
 	$4 and? ( $3 and 1 swap << not evtmb and 'evtmb ! ; )
 	drop ;
 	
-:checkm | key -- key
+:check3 | key -- key
 	0 'evtmw !
 	'bufferin 3 +
 	c@+ 32 - 
@@ -107,11 +131,12 @@
 	c@+ 32 - 'mouse-x !
 	c@ 32 - 'mouse-y !
 	;
+|---
 	
 ::inevt | -- type | 0 if no event
 	buffin 0? ( .checksize ; ) 
 	3 >? (	bufferin $ffffff and
-		$4d5b1b =? ( 2drop checkm EVT_MOUSE ; ) 
+		$3c5b1b =? ( 2drop check6 EVT_MOUSE ; ) | 4d para 1003
 		drop ) drop
 	EVT_KEY ; 
 	
@@ -127,12 +152,12 @@
     0 libc-exit drop ;
 
 |------- Initialization -------
-:	
-set-terminal-mode
-.getconsoleinfo
-.getrc 'prevrc ! 
+::.console	
+	set-terminal-mode
+	.getconsoleinfo
+	.getrc 'prevrc ! 
 | Set locale to UTF-8
-"en_US.UTF-8" "LC_ALL" libc-setlocale drop
-"en_US.UTF-8" "LC_CTYPE" libc-setlocale drop
-
-;
+	"en_US.UTF-8" "LC_ALL" libc-setlocale drop
+	"en_US.UTF-8" "LC_CTYPE" libc-setlocale drop
+	;
+	

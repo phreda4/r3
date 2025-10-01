@@ -68,22 +68,18 @@
 
 |------- Main Program -------
 :main
-	setupESCAPI 1 <? ( "Unable to init ESCAPI" .log ) drop |'maxdevice !
+	setupESCAPI 1 <? ( "Unable to init ESCAPI" .fprint ) drop |'maxdevice !
 	0 'device !
 	here 'capture !
 	80 25 * 4 * 'here +!	| SIZE
 	device 'capture initCapture drop
-
 	device doCapture	
-	
-    .hidec .alsb
-	.cls .reset
+    .hidec .cls .reset
 	2 27 .at "WebCam ASCII DEMO | F1-24bit F2-8bit F3-B&N | ESC-Exit" .write
     main-loop
-	.masb
-    .showc .cls .home .Reset
-    "Color demo finished!" .log ;
+	.showc .reset
+    ;
 
 | Program entry point
-: main ;
+:  .console main .free ;
 

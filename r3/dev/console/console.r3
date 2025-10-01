@@ -32,7 +32,9 @@
 ::.println sprintlnc .type ;
 ::.[ $1b .emit $5b .emit .write ;
 
-::.log .print .flush ;
+::.fwrite .write .flush ;
+::.fprint .print .flush ;
+::.fprintln .println .flush ;
 
 |------- Special Character Printing -------
 :emite | char --
