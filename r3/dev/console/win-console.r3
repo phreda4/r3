@@ -102,7 +102,7 @@
 |   DWORD dwEventFlags;     | 14
 
 ::evtmxy | -- x y | mouse position
-    'eventBuffer 4 + w@+ swap w@ ;
+    'eventBuffer 4 + w@+ 1+ swap w@ 1+ ;
 
 ::evtmb | -- buttons | mouse button state
     'eventBuffer 8 + d@ ;

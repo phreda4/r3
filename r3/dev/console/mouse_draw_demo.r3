@@ -122,7 +122,7 @@
 |------- Mouse Handling -------
 :process-mouse | --
     | Get mouse position (adjust for canvas offset)
-    evtmxy 1- swap 1- swap
+    evtmxy 2 - swap 2 - swap
     
     | Clamp to canvas bounds
     0 max canvas-height 1- min 'mouse-y !

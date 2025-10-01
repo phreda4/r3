@@ -10,7 +10,7 @@
     1 -rot libc-write drop ;
 
 #sesc ( $1b $5b )
-:.[ sesc 2 type count type ;
+:.[ 'sesc 2 type count type ;
 
 |------- Terminal State Management -------
 #sterm * 64		| termios structure (NCC=32)
@@ -25,25 +25,25 @@
 
 ::set-terminal-mode | --
     0 'sterm libc-tcgetattr 
-	'sterm 'stermc 8 move | sdc 
+	'stermc 'sterm 8 move | dsc 
 	
 	0 3 0 libc-fcntl 'flgs !
-	0 2 flgs $800 or libc-fcntl drop | 
+	0 2 flgs $800 or libc-fcntl drop |
 
 	'sterm dup 
 	12 + dup d@ $A nand swap d! |&= ~(ICANON | ECHO); 
-    1 0 rot 20 + 5 + c!+ c!		| c_cc[VTIME] = 0; c_cc[VMIN] = 1;  
+    0 0 rot 20 + 5 + c!+ c!		| c_cc[VTIME] = 0; c_cc[VMIN] = 0;  
     0 0 'sterm libc-tcsetattr 
-	
-	"?1000h" .[ ; | enable mouse tracking
 	;
 
 ::reset-terminal-mode | --
-	"?1000l" .[ 
     0 0 'stermc libc-tcsetattr 
-	0 2 flgs libc-fcntl drop | 
+	0 2 flgs libc-fcntl drop 
 	;
 
+::.enable-mouse		"?1003h" .[ ;	
+::.disable-mouse	"?1003l" .[ ;
+	
 |------- Console Information -------
 #ci 0 
 ##rows ##cols
@@ -70,18 +70,7 @@
 
 |------- Keyboard Input -------
 #bufferin * 16
-#bufferlen
-#mouse-y #mouse-x #mouse-btn
 
-:checkm | key -- key
-	dup $ffffff and
-	$4d5b1b <>? ( drop ; ) drop
-	'bufferin 3 +
-	c@+ 'mouse-btn !
-	c@+ 'mouse-x !
-	c@ 'mouse-y !
-	;
-	
 :buffin | -- len
 	0 'bufferin 10 libc-read ;
 
@@ -97,15 +86,33 @@
 #EVT_MOUSE 2
 |#EVT_RESIZE 4
 
-| Mouse not available in standard terminal
-::evtmxy mouse-x mouse-y  ;
-::evtmb mouse-btn ;
+#mouse-y #mouse-x 
+##evtmb
+##evtmw
+
+::evtmxy mouse-x mouse-y ;
+	
+:bitbtn
+	32 34 in? ( $3 and 1 swap << evtmb or 'evtmb ! ; )
+	$4 and? ( $3 and 1 swap << not evtmb and 'evtmb ! ; )
+	drop ;
+	
+:checkm | key -- key
+	0 'evtmw !
+	'bufferin 3 +
+	c@+ 32 - 
+	$40 and? ( nip $1 and 2* 1- 'evtmw ! ; ) 
+|	bitbtn
+	$3 and 1 swap << 'evtmb !
+	c@+ 32 - 'mouse-x !
+	c@ 32 - 'mouse-y !
+	;
 	
 ::inevt | -- type | 0 if no event
-	inkey 0? (	| Check keyboard
-		.checksize | no event..Check resize 
-		; ) 
-	checkm
+	buffin 0? ( .checksize ; ) 
+	3 >? (	bufferin $ffffff and
+		$4d5b1b =? ( 2drop checkm EVT_MOUSE ; ) 
+		drop ) drop
 	EVT_KEY ; 
 	
 ::getevt | -- type | wait for event
