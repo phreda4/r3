@@ -76,11 +76,10 @@
 
 ::getch | -- key | wait for key
     ( stdin 'eventBuffer 1 'nr ReadConsoleInput
-      eventBuffer $ff and
-      1 =? ( drop igetkey ; )
-      4 =? ( drop .checksize 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
-      drop
-    ) ;
+      eventBuffer $ffff and 1 <>? 
+		4 =? ( .checksize )
+		drop ) drop
+	igetkey ;
 
 ::inkey | -- key | 0 if no key pressed
     stdin 'ne GetNumberOfConsoleInputEvents 
@@ -167,6 +166,7 @@
 
 |------- Cleanup -------
 ::.free | -- | free console
+	FlushConsoleInputBuffer
     FreeConsole ;
 
 |------- Initialization -------

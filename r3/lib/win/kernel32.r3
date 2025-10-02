@@ -84,7 +84,7 @@
 ::WriteConsoleOutput sys-WriteConsoleOutput sys5 drop ;
 ::GetNumberOfConsoleInputEvents sys-GetNumberOfConsoleInputEvents sys2 drop ;
 
-::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 ;
+::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 drop ;
 ::Sleep sys-Sleep sys1 drop ;
 ::WaitForSingleObject sys-WaitForSingleObject sys2 ;
 ::GetLastError sys-GetLastError sys0 ;

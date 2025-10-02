@@ -1,4 +1,5 @@
 ^./console.r3
+^./f8x8.r3
 
 :testkey
     getch
@@ -7,4 +8,10 @@
     testkey
     ;
 
-: .console testkey .free ;
+: .console 
+.cls .blue
+1 1 xat
+"Key Codes" xwrite .cr
+.white
+testkey 
+.free ;
