@@ -1,11 +1,19 @@
 ^./console.r3
 ^./f8x8.r3
 
-:testkey
+:testkey2
     getch
     [esc] =? ( drop ; )
     "%h" .fprintln
     testkey ;
+	
+:testkey
+	inevt	
+	1 =? ( evtkey [esc] =? ( 2drop ; ) "%h" .print .cr )
+	2 =? ( evtmb evtmxy " %d %d : %d" .print .cr )
+	drop 
+	 .flush
+	testkey ;
 	
 :main
 	.cls .blue

@@ -55,6 +55,8 @@
 
 ::.showc "?25h" .[ ;
 ::.hidec "?25l" .[ ;
+::.blc "?12h" .[ ;
+::.unblc "?12l" .[ ;
 ::.savec "s" .[ ; | save cursor position
 ::.restorec "u" .[ ; | restore cursor position
 

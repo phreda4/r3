@@ -144,7 +144,7 @@
 		xc yc pick2 + .at
 		ca@+ bigline
 		1+ ) drop 
-	8 'xc +! ;
+	7 'xc +! ;
 	
 :bprint
 	( c@+ 1? bigemit ) 2drop ;
@@ -199,7 +199,7 @@
 		xc yc pick2 + .at
 		swap bigline 16 >> swap
 		1+ ) 2drop 
-	8 'xc +! ;
+	7 'xc +! ;
 
 :xprint
 	( c@+ 1? bigemit ) 2drop ;
@@ -217,12 +217,9 @@
 	;
 |--------------- UTF-com
 #utfex "
- ─ │
- ┌ ┐ └ ┘
- ├ ┤ ┬ ┴ ┼
+ ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼
  ═ ║ ╔ ╗ ╚ ╝ ╬	
-█ ▌ ▀ ▄	
-░ ▒ ▓
+█ ▌ ▀ ▄	░ ▒ ▓
 ■ □ ▲ ▼ ● ○ — 
 "
 
@@ -230,11 +227,11 @@
 	makefit
 	.cls
 	2 2 bat .green
-	"R3forth big" bprint
-	2 12 bat .red
-	"R3forth text" xprint
-	.cr
-	.cr
+	"R3 big" bprint
+	2 10 bat .bred .white
+	"R3 text" xprint
+	.reset 
+	.cr	.cr
 	'utfex .write
 	
 	.flush

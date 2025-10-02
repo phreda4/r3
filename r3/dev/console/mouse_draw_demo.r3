@@ -17,10 +17,8 @@
 |------- Drawing State -------
 #mouse-x 0
 #mouse-y 0
-#prev-btn 0
 #current-brush 1
 #current-color 1
-#drawing-mode 0  | 0=draw, 1=erase
 
 |------- Brush Definitions -------
 | Brush characters
@@ -52,7 +50,7 @@
     0 ( canvas-height <?
         2 over 2 + .at
 		0 over canvas-at >a
-        0 ( canvas-width 1- <?
+        0 ( canvas-width <?
 			ca@+ .canvchar
             1+ ) drop
         1+ ) drop
@@ -62,22 +60,22 @@
 :draw-frame | --
     .home .Cyanl .Bold
     0 0 .at "┌" .write
-    canvas-width 1- ( 1? "─" .write 1- ) drop
+    canvas-width ( 1? "─" .write 1- ) drop
     "┐" .write
     
     2 ( canvas-height 2 + <?
         0 over .at "│" .write
-        canvas-width 1+ over .at "│" .write
+        canvas-width 2 + over .at "│" .write
         1+ ) drop
     
     0 canvas-height 2 + .at "└" .write
-    canvas-width 1- ( 1? "─" .write 1- ) drop
+    canvas-width ( 1? "─" .write 1- ) drop
     "┘" .write
     .Reset ;
 
 :draw-toolbar | --
     2 canvas-height 3 + .at
-    .Yellow "┤ " .write
+    .Yellow " " .write
     .Yellowl .Bold "Brush: " .write
     .Whitel current-brush "%d " .print
     
@@ -85,17 +83,12 @@
     .Yellowl .Bold "Color: " .write
     current-color set-draw-color "█ " .write
     
-    .Yellow "│ " .write
-    .Yellowl .Bold "Mode: " .write
-    .Whitel "ERASE" drawing-mode 0? ( 2drop "DRAW" dup ) drop 
-    .write
-    
     .Yellow " │" .write
     .Reset
     
     2 canvas-height 4 + .at
     .Cyan
-    "[1-9] Brush  [C] Color  [M] Mode  [SPACE] Clear  [ESC] Exit" .write
+    "[1-9] Brush  [C] Color  [SPACE] Clear  [ESC] Exit" .write
     .Reset ;
 
 :draw-help | --
@@ -124,20 +117,16 @@
     2 - 0 max canvas-height 1- min 'mouse-y !
     2 - 0 max canvas-width 1- min 'mouse-x ! | adjust and clamp to canvas bounds
     evtmb		| Get button state
-	1 and? (	| Left button - draw
-        drawing-mode 0? ( | Draw mode
-            current-color 4 << current-brush or
-            mouse-x mouse-y canvas-set
-            draw-screen
-			) drop
-        prev-btn 1 and? ( draw-screen ) drop | Check if entering draw mode
-		) 
+    1 and? (	| Left button - draw
+	current-color 4 << current-brush or
+	mouse-x mouse-y canvas-set
+	draw-screen
+	) 
     2 and? (	| Right button - erase
         0 mouse-x mouse-y canvas-set
         draw-screen
-        prev-btn 2 and? ( draw-screen ) drop | Check if entering erase mode
-		) 
-    'prev-btn !	    | Update previous button state
+  	) 
+	drop
     draw-mouse-cursor | Redraw cursor if mouse moved
 	;
 
@@ -157,10 +146,6 @@
         0? ( drop 1 )
         'current-color !
         draw-screen ; ) 
-| M/m - toggle mode
-    $6D =? ( drop
-        drawing-mode 1 xor 'drawing-mode !
-        draw-screen ; )     
 | SPACE - clear canvas
 	$20 =? ( drop
         canvas-clear
@@ -170,18 +155,15 @@
 |------- Event Loop -------
 :main-loop | --
     ( running 1? drop
-        | Check for events
-        inevt
+        inevt	| Check for events
         1 =? ( evtkey handle-key )  | Keyboard
         2 =? ( process-mouse )      | Mouse
-        4 =? ( draw-screen )        | Resize
         drop
-        10 ms | Small delay
+        1 ms | Small delay
     ) drop ;
 
 |------- Resize Handler -------
-:on-resize-event
-    | Recalculate canvas dimensions if needed
+:on-resize-event    | Recalculate canvas dimensions if needed
     cols 4 - 'canvas-width !
     rows 8 - 'canvas-height !
     canvas-width 0 max 120 min 'canvas-width !
@@ -190,23 +172,15 @@
 
 |------- Main Program -------
 :main
-    .enable-mouse
     'on-resize-event .onresize
 	on-resize-event
     canvas-clear
-    | Initial state
     1 'current-brush !
     1 'current-color !
-    0 'drawing-mode !
     .hidec
     draw-screen
-    2 canvas-height 6 + .at
-    .Greenl .Bold
-    "Welcome! Use your mouse to draw. Try different brushes and colors!" .write
-    .Reset
     main-loop
-    .disable-mouse
     .showc .Reset ;
 
 | Program entry point
-: .console main .free ;
+: .console .enable-mouse main .disable-mouse .free ;

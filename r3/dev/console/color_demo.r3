@@ -13,16 +13,15 @@
     swap count cols swap - 2/ rot .at .write ;
 
 :title-bar | "text" --
-    .home .BBlue .Whitel .Bold
-    0 ( cols <? " " .write 1+ ) drop
-    0 center-text
+    .home 
+	.BBlue .Whitel .Bold .eline 
+	1 center-text
     .Reset ;
 
 :footer | --
-    0 rows 1 - .at
-    .BCyan .Black
-    0 ( cols <? " " .write 1+ ) drop
-    " [SPACE] Next Page  [ESC] Exit " rows 1 - center-text
+    0 rows .at
+    .BCyan .Black .eline
+    " [SPACE] Next Page  [ESC] Exit " rows center-text
     .Reset 
 	.flush ;
 
@@ -120,8 +119,6 @@
     
     5 10 .at
     16 ( 232 <?
-        |dup 16 - 36 mod 
-|		0? ( drop .cr 5 over .at dup 16 + )
 		.cubeat
         dup .fc "██" .write
         1+ ) drop 

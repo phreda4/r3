@@ -26,10 +26,6 @@
 ::set-terminal-mode | --
     0 'sterm libc-tcgetattr 
 	'stermc 'sterm 8 move | dsc 
-	
-	0 3 0 libc-fcntl 'flgs !
-	0 2 flgs $800 or libc-fcntl drop |
-
 	'sterm dup 
 	12 + dup d@ $A nand swap d! |&= ~(ICANON | ECHO); 
     0 0 rot 20 + 5 + c!+ c!		| c_cc[VTIME] = 0; c_cc[VMIN] = 0;  
@@ -85,11 +81,7 @@
 
 ::inkey | -- key | 0 if no key
 	kbhit 0? ( ; ) drop
-	buffin 0? ( ; ) drop
-	bufferin ;
-	
-::inkey | -- key | 0 if no key
-	buffin 0? ( ; ) drop
+	buffin drop
 	bufferin ;
 
 |------- Event System (Windows-compatible) -------
@@ -125,27 +117,10 @@
 	$20 nand? ( drop dnbtn ; ) 
 	drop upbtn ;
 
-|--- mode 1003		
-:bitbtn
-	32 34 in? ( $3 and 1 swap << evtmb or 'evtmb ! ; )
-	$4 and? ( $3 and 1 swap << not evtmb and 'evtmb ! ; )
-	drop ;
-	
-:check3 | key -- key
-	0 'evtmw !
-	'bufferin 3 +
-	c@+ 32 - 
-	$40 and? ( nip $1 and 2* 1- 'evtmw ! ; ) 
-|	bitbtn
-	$3 and 1 swap << 'evtmb !
-	c@+ 32 - 'mouse-x !
-	c@ 32 - 'mouse-y !
-	;
-|---
-	
 ::inevt | -- type | 0 if no event
-	buffin 0? ( .checksize ; ) 
-	3 >? (	bufferin $ffffff and
+	kbhit 0? ( .checksize ; ) drop
+	buffin 
+	6 >? ( bufferin $ffffff and
 		$3c5b1b =? ( 2drop check6 EVT_MOUSE ; ) | 4d para 1003
 		drop ) drop
 	EVT_KEY ; 
