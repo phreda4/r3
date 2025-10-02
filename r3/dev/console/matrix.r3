@@ -3,7 +3,7 @@
 ^r3/lib/rand.r3
 ^./console.r3
 
-#column_age 
+#column
 
 :agecolor | age -- age color 
 	0? ( 46 ; )
@@ -12,43 +12,46 @@
 	10 <? ( 22 ; )
 	0 ;
 
-:drawc | col col_age row age --
-	pick3 pick2 1+ rows >? ( 2drop ; ) .at
+:drawc | col age n -- col age n
+	2dup + 
+	-? ( drop ; ) rows >? ( drop ; )
+	pick3 swap 1+ .at
 	agecolor .fc
-	1? ( 94 randmax nip )
-	32 + dup .emit ;
-		
+	dup 1? ( 94 randmax nip ) 32 + .emit ;
+
 :drawrow | age -- age
-	0 ( rows <? 
-		dup pick2 - | col col_age row age
-		0 10 in? ( drawc ) 
-		drop 
+	0 ( 10 <? 
+		drawc
 		1+ ) drop ;
 	
-:newcol
-	50 randmax 1? ( drop ; ) drop | 2%
-	drop 0 dup ca! ;
-	
 :drawscreen
-	column_age >a
+	column >a
 	0 ( cols <?
 		ca@ 
-		rows >? ( newcol )
+		rows >? ( drop 20 randmax 20 - )
 		drawrow
 		1+ ca!+
 		1+ ) drop ;
 		
 :main
-	.cls
+	.home
 	drawscreen
 	.flush
 	inkey [esc] =? ( drop ; ) drop
-	100 ms
+	50 ms
 	main ;
 
-: .console .hidec 
-here 'column_age !
-cols 'here +!
-column_age 100 cols cfill
+:reset
+	.cls
+	column >a
+	cols ( 1? 1-
+		rows randmax ca!+
+		) drop ;
+		
+: 
+.console .hidec
+here 'column !
+'reset .onresize
+reset
 main 
 .reset .free ;
