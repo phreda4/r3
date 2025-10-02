@@ -148,7 +148,8 @@
 	
 :bprint
 	( c@+ 1? bigemit ) 2drop ;
-|------------------
+	
+|------------------ convert data
 #fontsx
 
 | $8080 => $c000
@@ -214,20 +215,30 @@
 	"f8x8.r3" savemem
 	empty
 	;
-	
+|--------------- UTF-com
+#utfex "
+ ─ │
+ ┌ ┐ └ ┘
+ ├ ┤ ┬ ┴ ┼
+ ═ ║ ╔ ╗ ╚ ╝ ╬	
+█ ▌ ▀ ▄	
+░ ▒ ▓
+■ □ ▲ ▼ ● ○ — 
+"
+
 :main
 	makefit
 	.cls
 	2 2 bat .green
-	"AHola" bprint
-	.cr
-	.cr
+	"R3forth big" bprint
 	2 12 bat .red
-	"AHola" xprint
+	"R3forth text" xprint
 	.cr
+	.cr
+	'utfex .write
 	
 	.flush
-	|savefit | make converted data
+	|savefit | save file with converted data
 	waitesc
 	;
 	

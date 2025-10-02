@@ -151,6 +151,6 @@
     .input 'pad str>nro nip ;
 
 ::waitesc | -- | wait for ESC key
-    ( getch $1B1001 <>? drop ) drop ;
+    ( getch [esc] <>? drop ) drop ;
 	
 

@@ -42,17 +42,16 @@
 	;
 
 | 1003 mode not work with up btn
-::.enable-mouse		"?1006h" .[ ;	
-::.disable-mouse	"?1006l" .[ ;
+::.enable-mouse		"?1006h" .[ "?1002h" .[ ;	
+::.disable-mouse	"?1002l" .[ "?1006l" .[ ;
 	
 |------- Console Information -------
-#ci 0 
 ##rows ##cols
 #prevrc 0
 
 ::.getconsoleinfo | --
-    1 $5413 'ci libc-ioctl | TIOCGWINSZ
-    ci dup 16 >> $ffff and 1 - 'cols !
+    1 $5413 'flgs libc-ioctl | TIOCGWINSZ
+    flgs dup 16 >> $ffff and 1 - 'cols !
     $ffff and 1 - 'rows ! ;
 
 :.getrc rows 16 << cols or ;
@@ -73,11 +72,22 @@
 #bufferin * 16
 
 :buffin | -- len
-	0 'bufferin 10 libc-read ;
+	0 'bufferin 2dup ! 16 libc-read ;
 
 ::getch | -- char
 	( buffin 0? drop ) drop bufferin ;
 
+#tv 0 0
+#fds 0 0
+
+::kbhit
+	1 'fds 2dup ! 0 0 'tv libc-select ;
+
+::inkey | -- key | 0 if no key
+	kbhit 0? ( ; ) drop
+	buffin 0? ( ; ) drop
+	bufferin ;
+	
 ::inkey | -- key | 0 if no key
 	buffin 0? ( ; ) drop
 	bufferin ;

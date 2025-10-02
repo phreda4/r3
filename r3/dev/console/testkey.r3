@@ -5,13 +5,13 @@
     getch
     [esc] =? ( drop ; )
     "%h" .fprintln
-    testkey
-    ;
+    testkey ;
+	
+:main
+	.cls .blue
+	1 1 xat
+	"Key Codes" xwrite .cr
+	.white .flush
+	testkey ;
 
-: .console 
-.cls .blue
-1 1 xat
-"Key Codes" xwrite .cr
-.white
-testkey 
-.free ;
+: .console main .free ;
