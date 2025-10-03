@@ -1,4 +1,4 @@
-| use console buffer
+| use console buffer only win
 | PHREDA 2023
 
 ^r3/lib/console.r3

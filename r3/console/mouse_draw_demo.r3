@@ -98,10 +98,12 @@
     evtmb		| Get button state
 	1 and? (	| Left button - draw
 		current-color 4 << current-brush or ca!
-		draw-screen ) 
+		draw-screen 
+		) 
 	2 and? (	| Right button - erase
 		0 ca!
-		draw-screen ) 
+		draw-screen
+		) 
 	drop
     draw-mouse-cursor | Redraw cursor if mouse moved
 	;

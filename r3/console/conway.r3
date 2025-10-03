@@ -1,7 +1,6 @@
 | Conway Game of Life
 | PHREDA 2021
-^r3/lib/console.r3
-^r3/lib/mconsole.r3
+^./console.r3
 ^r3/lib/rand.r3
 
 #arena 
@@ -31,20 +30,18 @@
 	;
 	
 :cbox
-	1? ( ,rever ; ) ,reset ;
+	1? ( "█" .write ; ) " " .write ;
 
 :drawscreen
-	mark
-	,cls
+	.home
 	arena >a
 	0 ( rows <? 
 		0 ( cols <? 
-			ca@+ cbox drop ,sp
+			ca@+ cbox drop
 			1 + ) drop
-		,nl
+		.cr
 		1 + ) drop 
-	memsize type 
-	empty ;
+	.flush ;
 	
 :arenarand
 	arena >a
@@ -57,13 +54,14 @@
 :main
 	.cls
 	arenarand
-	( inkey $1B1001 <>? drop
+	( inkey [esc] <>? drop
 		drawscreen
 		evolve
+		20 ms
 		) drop ;
 
 : 
-	.getconsoleinfo
+	.console
 	here 1 + cols + 			| one more line for calc
 	dup 'arena !			| start of arena
 	rows cols * + dup 'arenan !	| copy of arena
@@ -71,4 +69,5 @@
 	.alsb .hidec		
 	main
 	.masb .showc
+	.free
 	;
