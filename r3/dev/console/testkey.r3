@@ -5,7 +5,7 @@
     getch
     [esc] =? ( drop ; )
     "%h" .fprintln
-    testkey ;
+    testkey2 ;
 	
 :testkey
 	inevt	

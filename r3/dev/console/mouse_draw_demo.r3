@@ -15,21 +15,13 @@
 #canvas-height 40
 
 |------- Drawing State -------
-#mouse-x 0
-#mouse-y 0
 #current-brush 1
 #current-color 1
 
 |------- Brush Definitions -------
-| Brush characters
-#brushes " @oXx.*+-=@$"
-#brush-count 11
+#b0 "█" #b1 "▓" #b2 "▒" #b3 "░" #b4 "■" #b5 "□" #b6 "▲" #b7 "▼" #b8 "●" #b9 "○"
 
-|------- Color Palette -------
-#dcolors .Whitel .Redl .Greenl .Bluel .Yellowl .Magental .Cyanl .Whitel
-
-:set-draw-color | color --
-	$7 and 3 << 'dcolors + @ ex ;
+#brushes b0 b1 b2 b3 b4 b5 b6 b7 b8 b9
 
 |------- Canvas Functions -------
 :canvas-clear | --
@@ -43,8 +35,8 @@
 
 :.canvchar
 	0? ( drop .sp ; ) 
-	dup 4 >> set-draw-color
-	$f and 'brushes + c@ .emit ;
+	dup 4 >> $f and .fc
+	$f and 1- 3 << 'brushes + @ .write ;
 	
 :canvas-draw | --
     0 ( canvas-height <?
@@ -56,50 +48,37 @@
         1+ ) drop
     .Reset ;
 
+:hline | cnt --
+	( 1? 1- "─" .write ) drop ;
+	
 |------- UI Functions -------
 :draw-frame | --
     .home .Cyanl .Bold
-    0 0 .at "┌" .write
-    canvas-width ( 1? "─" .write 1- ) drop
-    "┐" .write
-    
+    0 0 .at "┌" .write canvas-width hline "┐" .write
     2 ( canvas-height 2 + <?
         0 over .at "│" .write
         canvas-width 2 + over .at "│" .write
         1+ ) drop
-    
-    0 canvas-height 2 + .at "└" .write
-    canvas-width ( 1? "─" .write 1- ) drop
-    "┘" .write
+    0 canvas-height 2 + .at "└" .write canvas-width hline "┘" .write
     .Reset ;
 
 :draw-toolbar | --
     2 canvas-height 3 + .at
-    .Yellow " " .write
-    .Yellowl .Bold "Brush: " .write
-    .Whitel current-brush "%d " .print
-    
-    .Yellow "│ " .write
-    .Yellowl .Bold "Color: " .write
-    current-color set-draw-color "█ " .write
-    
-    .Yellow " │" .write
-    .Reset
-    
-    2 canvas-height 4 + .at
-    .Cyan
-    "[1-9] Brush  [C] Color  [SPACE] Clear  [ESC] Exit" .write
+    .Yellow "| " .write
+	current-color .fc
+    current-brush 1- 3 << 'brushes + @ dup .write .write 
+    .Yellow " │ " .write
+    .Cyan "[1-9] Brush  [C] Color  [SPACE] Clear  [ESC] Exit" .write
     .Reset ;
 
 :draw-help | --
-    2 canvas-height 5 + .at
+    2 canvas-height 4 + .at
     .Magenta
     "Left Click: Draw  |  Right Click: Erase  |  Drag to draw continuous" .write
     .Reset ;
 
 :draw-mouse-cursor | --
-    mouse-x 2 + mouse-y 2 +
-	.at .redl "+" .write .Reset ;
+	evtmxy .at .redl "+" .write .Reset ;
 
 :draw-screen | --
     .cls
@@ -108,24 +87,21 @@
     draw-toolbar
     draw-help
     draw-mouse-cursor 
-	.flush
-	;
+	.flush ;
 
 |------- Mouse Handling -------
 :process-mouse | --
     evtmxy | Get mouse position 
-    2 - 0 max canvas-height 1- min 'mouse-y !
-    2 - 0 max canvas-width 1- min 'mouse-x ! | adjust and clamp to canvas bounds
+    2 - 0 max canvas-height 1- min swap
+    2 - 0 max canvas-width 1- min swap
+	canvas-at >a
     evtmb		| Get button state
-    1 and? (	| Left button - draw
-	current-color 4 << current-brush or
-	mouse-x mouse-y canvas-set
-	draw-screen
-	) 
-    2 and? (	| Right button - erase
-        0 mouse-x mouse-y canvas-set
-        draw-screen
-  	) 
+	1 and? (	| Left button - draw
+		current-color 4 << current-brush or ca!
+		draw-screen ) 
+	2 and? (	| Right button - erase
+		0 ca!
+		draw-screen ) 
 	drop
     draw-mouse-cursor | Redraw cursor if mouse moved
 	;
@@ -134,20 +110,14 @@
 :handle-key | key --
 	]esc[ =? ( drop exit ; ) | ESC - exit
 |WIN|	$1000 and? ( drop ; ) 16 >>    
-| Numbers 1-9 - select brush
-    $31 $39 in? ( 
+	$31 $39 in? ( 	| Numbers 1-9 - select brush
 		$30 - 'current-brush ! 
 		draw-screen ; ) 
-    
 	$20 or | case insensitive
-| C/c - cycle color
-	$63 =? ( drop
-        current-color 1+ 8 mod 
-        0? ( drop 1 )
-        'current-color !
+	$63 =? ( drop	| C/c - cycle color
+		current-color 1+ $f and 'current-color !
         draw-screen ; ) 
-| SPACE - clear canvas
-	$20 =? ( drop
+	$20 =? ( drop	| SPACE - clear canvas
         canvas-clear
         draw-screen ; )
     drop ;
@@ -165,7 +135,7 @@
 |------- Resize Handler -------
 :on-resize-event    | Recalculate canvas dimensions if needed
     cols 4 - 'canvas-width !
-    rows 8 - 'canvas-height !
+    rows 5 - 'canvas-height !
     canvas-width 0 max 120 min 'canvas-width !
     canvas-height 0 max 40 min 'canvas-height !
     draw-screen ;

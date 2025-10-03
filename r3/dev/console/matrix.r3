@@ -6,11 +6,7 @@
 #column
 
 :agecolor | age -- age color 
-	0? ( 46 ; )
-	3 <? ( 40 ; )
-	6 <? ( 34 ; )
-	10 <? ( 22 ; )
-	0 ;
+	dup 2 >> 6 * 16 + ;
 
 :drawc | col age n -- col age n
 	2dup + 
@@ -20,7 +16,7 @@
 	dup 1? ( 94 randmax nip ) 32 + .emit ;
 
 :drawrow | age -- age
-	0 ( 10 <? 
+	0 ( 24 <? 
 		drawc
 		1+ ) drop ;
 	
@@ -28,7 +24,7 @@
 	column >a
 	0 ( cols <?
 		ca@ 
-		rows >? ( drop 20 randmax 20 - )
+		rows >? ( drop 10 randmax 10 - 24 - )
 		drawrow
 		1+ ca!+
 		1+ ) drop ;
@@ -45,7 +41,7 @@
 	.cls
 	column >a
 	cols ( 1? 1-
-		rows randmax ca!+
+		rows 24 + randmax 24 - ca!+
 		) drop ;
 		
 : 
