@@ -33,12 +33,12 @@
 :canvas-set | char x y --
     canvas-at c! ;
 
-:.canvchar
+:.canvchar 
 	0? ( drop .sp ; ) 
-	dup 4 >> $f and .fc
+	dup 4 >> $f and .fc | ; TODO: same continuos color don't set color
 	$f and 1- 3 << 'brushes + @ .write ;
 	
-:canvas-draw | --
+:canvas-draw | -- 
     0 ( canvas-height <?
         2 over 2 + .at
 		0 over canvas-at >a
@@ -109,20 +109,20 @@
 	;
 
 |------- Keyboard Handling -------
-:handle-key | key --
-	evtkey 
+:handle-key | --
+	evtkey 0? ( drop ; ) 
 	[esc] =? ( drop exit ; ) | ESC - exit
  
 	$31 $39 in? ( 	| Numbers 1-9 - select brush
 		$30 - 'current-brush ! 
 		draw-screen ; ) 
+	$20 =? ( drop	| SPACE - clear canvas
+        canvas-clear
+        draw-screen ; )
 	$20 or | case insensitive
 	$63 =? ( drop	| C/c - cycle color
 		current-color 1+ $f and 'current-color !
         draw-screen ; ) 
-	$20 =? ( drop	| SPACE - clear canvas
-        canvas-clear
-        draw-screen ; )
     drop ;
 
 |------- Event Loop -------
@@ -156,4 +156,4 @@
     .showc .Reset ;
 
 | Program entry point
-: .console .enable-mouse main .disable-mouse .free ;
+: .console main .free ;

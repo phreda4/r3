@@ -154,19 +154,17 @@
 | DISABLE_NEWLINE_AUTO_RETURN 0x0008
 | ENABLE_LVB_GRID_WORLDWIDE 0x0010
 
-::.enable-mouse | -- | enable mouse events
+|::.enable-mouse | -- | enable mouse events
     | ENABLE_EXTENDED_FLAGS (0x80) allows disabling QUICK_EDIT_MODE
     | ENABLE_WINDOW_INPUT (0x08) + ENABLE_MOUSE_INPUT (0x10)
     | ENABLE_VIRTUAL_TERMINAL_INPUT (0x200)
     | Total: 0x80 | 0x08 | 0x10 | 0x200 = 0x298
-    stdin $298 SetConsoleMode drop ;
-
-::.disable-mouse | -- | disable mouse events and restore selection
+|::.disable-mouse | -- | disable mouse events and restore selection
     | Re-enable QUICK_EDIT_MODE for normal console behavior
-    stdin $1F7 SetConsoleMode drop ;
 
 |------- Cleanup -------
 ::.free | -- | free console
+	stdin $1F7 SetConsoleMode drop 
 	FlushConsoleInputBuffer
     FreeConsole ;
 
@@ -182,7 +180,7 @@
     65001 SetConsoleCP | Input UTF-8
     
     | Set console modes for ANSI/VT sequences and window events
-    stdin $218 SetConsoleMode drop | Enable WINDOW_INPUT
+    stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop
     
     .getconsoleinfo

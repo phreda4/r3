@@ -52,7 +52,6 @@
     'outbuf> outbuf> - >? ( .flush )
 	outbuf> rot pick2 cmove
     outbuf> + 'outbuf> ! ;
-	
 ::.emit | char --
 	outbuf> 'outbuf> =? ( .flush 'outbuf nip ) c!+ 'outbuf> ! ;
 
@@ -63,6 +62,9 @@
 ::.print sprintc .type ;
 ::.println sprintlnc .type ;
 ::.[ $1b .emit $5b .emit .write ;
+
+::.rep | cnt  "car" -- 
+	count rot ( 1? 1- pick2 pick2 .type ) 3drop ;
 
 ::.fwrite .write .flush ;
 ::.fprint .print .flush ;
@@ -79,7 +81,8 @@
 |------- Cursor Control -------
 ::.home "H" .[ ;
 ::.cls "H" .[ "J" .[ ;
-::.at "%d;%df" sprint .[ ; | x y --
+::.at "%d;%dH" sprint .[ ; | x y -- | f
+::.col "%dG" sprint .[ ; | x -- columna
 ::.eline "K" .[ ; | erase line from cursor
 ::.escreen "J" .[ ; | erase from cursor to end of screen
 ::.eline0 "1K" .[ ; | erase from start of line to cursor

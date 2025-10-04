@@ -29,17 +29,15 @@
 	12 + dup d@ $A nand swap d! |&= ~(ICANON | ECHO); 
     0 0 rot 20 + 5 + c!+ c!		| c_cc[VTIME] = 0; c_cc[VMIN] = 0;  
     0 0 'sterm libc-tcsetattr 
+	"?1006h" .[ "?1002h" .[  | 1003 mode not work with up btn
 	;
 
 ::reset-terminal-mode | --
+	"?1002l" .[ "?1006l" .[ |:.disable-mouse	
     0 0 'stermc libc-tcsetattr 
 	0 2 flgs libc-fcntl drop 
 	;
 
-| 1003 mode not work with up btn
-::.enable-mouse		"?1006h" .[ "?1002h" .[ ;	
-::.disable-mouse	"?1002l" .[ "?1006l" .[ ;
-	
 |------- Console Information -------
 ##rows ##cols
 #prevrc 0
