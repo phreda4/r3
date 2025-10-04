@@ -1,6 +1,21 @@
 ^./console.r3
 ^./utfg.r3
 
+|--------------------------------	
+#filename "asciicam.r3"
+#path "r3/console"
+
+:run
+	'filename
+	'path
+|WIN| 	"cmd /c r3 ""%s/%s"" 2>mem/error2.mem"
+|LIN| 	"./r3lin ""%s/%s"" 2>mem/error.mem"
+	sprint 
+	sysnew
+	;
+
+	
+|--------------------------------	
 #.exit 0 :exit 1 '.exit ! ;
 
 :scrmain
@@ -8,13 +23,29 @@
 	2 1 xat
 	"R3" xwrite .bred "Forth" xwrite .cr
 
-	.bgreen 10 10 10 10 .box
-	16 15 .at "1234567890" .write
-	
-	.reset
-	18 14 6 4 .boxl
-	28 10 10 6 .boxd
-	
+	.reset 
+	23 5 40 20 .win
+	32 32 32 .bgrgb
+	.wfill 
+	.greenl
+	.wborded 4 .wmargin
+	.white
+	$00 "0" .wtitle 
+	$01 "1" .wtitle 
+	$02 "2" .wtitle 
+	$03 "3" .wtitle 
+	$04 "| coso |" .wtitle 
+	$05 "5" .wtitle 
+	$06 "6" .wtitle 
+
+	$04 "a" .wtitle 
+	$14 "b" .wtitle 
+	$24 "| 123 |" .wtitle 
+	$34 "d" .wtitle 
+	$44 "centro" .wtitle 
+	$54 "f" .wtitle 
+	$64 "g" .wtitle 
+
 	.reset .flush
 	;
 	
@@ -22,6 +53,7 @@
 	evtkey 
 	[esc] =? ( exit ) 
 	|1? ( dup "%h" .fprint .cr ) 
+	[f1] =? ( run ) 
 	drop ;
 	
 :hmouse
@@ -38,7 +70,8 @@
 		drop 
 		20 ms
 		) drop ;
-	
+
+|--------------------------------	
 :main
 	'scrmain .onresize
 	scrmain
