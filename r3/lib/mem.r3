@@ -2,11 +2,38 @@
 | Memory words
 
 ^r3/lib/str.r3
-|WIN|^r3/lib/win/core.r3
-|LIN|^r3/lib/posix/core.r3
 
 |---- free memory
 ##here 0
+
+|---- conv to mem
+::, here d!+ 'here ! ;
+::,c here c!+ 'here ! ;
+::,q here !+ 'here ! ;
+::,w here w!+ 'here ! ;
+::,s here swap
+	( c@+ 1? rot c!+ swap ) 2drop 'here ! ;
+::,word here swap
+	( c@+ $ff and 32 >? rot c!+ swap ) 2drop 'here ! ;
+::,line here swap
+	( c@+ 1?
+		10 =? ( 3 + ) 13 =? ( 2drop 'here ! ; )
+		rot c!+ swap ) 2drop 'here ! ;		
+::,2d 10 <? ( "0" ,s )
+::,d .d ,s ;
+::,h .h ,s ;
+::,b .b ,s ;
+::,f .f ,s ;
+::,ifp i2fp , ;
+::,ffp f2fp , ;
+
+::,cr 13 ,c ;
+::,eol 0 ,c ;
+::,sp 32 ,c ;
+::,nl $0a0d ,w ;
+
+|WIN|^r3/lib/win/core.r3
+|LIN|^r3/lib/posix/core.r3
 
 ::align32 | mem -- mem
 	$1f + $1f nand ;
@@ -16,7 +43,6 @@
 
 ::align8 | mem -- mem
 	$7 + $7 nand ;	
-	
 	
 #memmap * 512
 #memmap> 'memmap
@@ -50,32 +76,6 @@
 
 ::appendmem | "" --
 	memmap> 8 - @ here over - rot append ;
-
-|---- conv to mem
-::, here d!+ 'here ! ;
-::,c here c!+ 'here ! ;
-::,q here !+ 'here ! ;
-::,w here w!+ 'here ! ;
-::,s here swap
-	( c@+ 1? rot c!+ swap ) 2drop 'here ! ;
-::,word here swap
-	( c@+ $ff and 32 >? rot c!+ swap ) 2drop 'here ! ;
-::,line here swap
-	( c@+ 1?
-		10 =? ( 3 + ) 13 =? ( 2drop 'here ! ; )
-		rot c!+ swap ) 2drop 'here ! ;		
-::,2d 10 <? ( "0" ,s )
-::,d .d ,s ;
-::,h .h ,s ;
-::,b .b ,s ;
-::,f .f ,s ;
-::,ifp i2fp , ;
-::,ffp f2fp , ;
-
-::,cr 13 ,c ;
-::,eol 0 ,c ;
-::,sp 32 ,c ;
-::,nl 13 ,c 10 ,c ;
 
 |---- print to mem
 :c0	| 'p

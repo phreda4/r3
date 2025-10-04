@@ -2,8 +2,8 @@
 ^./utfg.r3
 
 |--------------------------------	
-#filename "asciicam.r3"
-#path "r3/console"
+#filename "mph-cam.r3"
+#path "r3/onnx"
 
 :run
 	'filename

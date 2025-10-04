@@ -1,8 +1,8 @@
 | SO core words
 | PHREDA 2021
 
-^r3/lib/posix/posix.r3
 ^r3/lib/str.r3
+^r3/lib/posix/posix.r3
 
 #process-heap
 
@@ -166,6 +166,11 @@
 	'fileatrib libc-stat ;
 	
 ::sys | "" --
+	libc-system drop ;
+	
+::sysnew | "" -- ; 
+	here
+	"gnome-terminal --wait -- bash -c " ,s 34 ,c swap ,s 34 ,c ,eol
 	libc-system drop ;
 	
 

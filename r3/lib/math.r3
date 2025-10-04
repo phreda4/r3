@@ -134,67 +134,45 @@
 	$8000000000000000 nand? ( swap 1 + swap )
 	drop ;	
 	
-| http://www.quinapalus.com/efunc.html
-
-:l1 over dup 1 >> + +? ( -rot nip $67cd - ; ) drop ;
-:l2 over dup 2 >> + +? ( -rot nip $3920 - ; ) drop ;
-:l3 over dup 3 >> + +? ( -rot nip $1e27 - ; ) drop ;
-:l4 over dup 4 >> + +? ( -rot nip $f85 - ; ) drop ;
-:l5 over dup 5 >> + +? ( -rot nip $7e1 - ; ) drop ;
-:l6 over dup 6 >> + +? ( -rot nip $3f8 - ; ) drop ;
-:l7 over dup 7 >> + +? ( -rot nip $1fe - ; ) drop ;
-
-::ln. | x -- r
-	-? ( $80000000 nip ; )
-	$a65af swap | y x
-	$8000 <? ( 16 << swap $b1721 - swap )
-	$800000 <? ( 8 << swap $58b91 - swap )
-	$8000000 <? ( 4 << swap $2c5c8 - swap )
-	$20000000 <? ( 2 << swap $162e4 - swap )
-	$40000000 <? ( 1 << swap $b172 - swap ) | y x
-	swap | x y
-	l1 l2 l3 l4 l5 l6 l7
-	$80000000 rot -
-	15 >> - ;
+::ln. |x -- r 
+	0 <=? ( drop -1 ; ) 
+	1.0 =? ( drop 0 ; ) 
+	0 swap | n m
+	( 2.0 >=? 2/ swap 1+ swap )
+	( 0.5 <? 2* swap 1- swap )
+	1.0 - dup 2.0 +	/. | n y
+	dup dup *.	| n y y2
+	8738	| n y y2 result
+	over *. 10082 +
+	over *. 11915 +
+	over *. 14563 +
+	over *. 18724 +
+	over *. 26214 +
+	over *. 43691 +
+	over *. 2.0 + | n y y2 result
+    nip *.			| n result
+	swap 45426 * +
+	;
 	
-	
-::log2fix | x -- log
-	0? ( ; )
-	0 swap | y x
-	( $10000 <? 1 << swap $10000 - swap )
-	( $20000 >=? 1 >> swap $10000 + swap )
-	$8000 ( 1? swap | y z b
-		dup 16 >> *	| y b z
-		$20000 >=? ( 1 >> rot pick2 + -rot )
-		swap 1 >> ) 2drop ;
-
-::lnfix |#INV_LOG2_10_Q1DOT31 $268826a1
-	log2fix $268826a1 31 *>> ;
-	
-::log10fix |#INV_LOG2_E_Q1DOT31  $58b90bfc
-	log2fix $58b90bfc 31 *>> ;	
-	
-
-:ex1 over $58b91 - +? ( -rot nip 8 << ; ) drop ;
-:ex2 over $2c5c8 - +? ( -rot nip 4 << ; ) drop ;
-:ex3 over $162e4 - +? ( -rot nip 2 << ; ) drop ;
-:ex4 over $b172 - +? ( -rot nip 1 << ; ) drop ;
-:ex5 over $67cd - +? ( -rot nip dup 1 >> + ; ) drop ;
-:ex6 over $3920 - +? ( -rot nip dup 2 >> + ; ) drop ;
-:ex7 over $1e27 - +? ( -rot nip dup 3 >> + ; ) drop ;
-:ex8 over $f85 - +? ( -rot nip dup 4 >> + ; ) drop ;
-:ex9 over $7e1 - +? ( -rot nip dup 5 >> + ; ) drop ;
-:exa over $3f8 - +? ( -rot nip dup 6 >> + ; ) drop ;
-:exb over $1fe - +? ( -rot nip dup 7 >> + ; ) drop ;
-
-:xp
-	swap -? ( $b1721 + swap 16 >> ; ) swap ;
-
 ::exp. | x -- r
-	1.0 xp | x y
-	ex1 ex2 ex3 ex4 ex5 ex6
-	ex7 ex8 ex9 exa exb
-	swap over 8 >> 24 *>> + ;
+	-1310720 <? ( drop 0 ; )
+	1310720 >? ( drop -1 ; ) | -inf
+	dup 94548 *. 0.5 + 16 >> 
+	| r = x - n*LN2 (optimizado) | x n
+	16 >> dup -rot	| n x n 
+	16 << 45426 * - 	| n r
+	91		| n r result ; 1/6!
+	over *. 546 +	| n r result
+	over *. 2731 +
+	over *. 10923 +
+	over *. 32768 +
+	over *. 1.0 +
+	over *. 1.0 + | n r result
+	nip swap
+	+? ( 47 >? ( 2drop -1 1 >>> ; ) << ; )
+	-16 <? ( 2drop 0 ; )
+	neg >> ;
+
 
 ::cubicpulse | c w x -- v ; iñigo Quilez
 	rot - abs | w x

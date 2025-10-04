@@ -1,8 +1,8 @@
 | SO core words
 | PHREDA 2021
 
-^r3/lib/win/kernel32.r3
 ^r3/lib/str.r3
+^r3/lib/win/kernel32.r3
 	
 #process-heap
 
