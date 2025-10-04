@@ -51,13 +51,19 @@
 ::.type | str cnt -- | Add to buffer
     'outbuf> outbuf> - >? ( .flush )
 	outbuf> rot pick2 cmove
-    outbuf> + 'outbuf> ! ;
+    'outbuf> +! ;
 ::.emit | char --
 	outbuf> 'outbuf> =? ( .flush 'outbuf nip ) c!+ 'outbuf> ! ;
 
 ::.cr 10 .emit 13 .emit ;
 ::.sp 32 .emit ;
-::.nsp ( 1? 1- .sp ) drop ;
+::.nsp | n -- ;..
+	32 swap 
+::.nch | char n -- ; WARNIG not multibyte
+	'outbuf> outbuf> - >? ( .flush )
+	outbuf> rot pick2 cfill | dvc
+	'outbuf> +! ;
+
 ::.write count .type ;
 ::.print sprintc .type ;
 ::.println sprintlnc .type ;

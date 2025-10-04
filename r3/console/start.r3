@@ -8,20 +8,19 @@
 :run
 	'filename
 	'path
-|WIN| 	"cmd /c r3 ""%s/%s"" 2>mem/error2.mem"
+|WIN| 	"cmd /c r3 ""%s/%s"" " |2>mem/error.mem"
 |LIN| 	"./r3lin ""%s/%s"" 2>mem/error.mem"
 	sprint 
-	sysnew
+	sysnew |sys
 	;
-
 	
 |--------------------------------	
 #.exit 0 :exit 1 '.exit ! ;
 
 :scrmain
-	.cls .bblue .white
+	.cls .green
 	2 1 xat
-	"R3" xwrite .bred "Forth" xwrite .cr
+	"R3" xwrite .red "Forth" xwrite .cr
 
 	.reset 
 	23 5 40 20 .win
@@ -46,8 +45,13 @@
 	$54 "f" .wtitle 
 	$64 "g" .wtitle 
 
+4 40 .at 
+"A" .write 1 .nsp "B" .write 2 .nsp "C" .write 3 .nsp "D" .write 33 4 .nch
 	.reset .flush
 	;
+	
+
+
 	
 :hkey
 	evtkey 
