@@ -3,7 +3,6 @@
 
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
-^r3/lib/posix/conkey.r3
 
 |------- Basic Output -------
 ::type | str cnt --

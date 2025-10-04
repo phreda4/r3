@@ -90,8 +90,7 @@
 
 |------- Input Handler -------
 :handle-input | key --
-    ]esc[ =? ( exit )	| ESC - exit program
-|WIN|	$1000 and? ( ; ) 16 >> | ascii
+    [esc] =? ( exit )	| ESC - exit program
     $2B =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key
     $2D =? ( boxes 1 - 0 max 'boxes ! draw-screen ; )  | - key
     $2b =? ( boxes 1 + 20 min 'boxes ! draw-screen ; ) | + key (num)

@@ -110,8 +110,9 @@
 
 |------- Keyboard Handling -------
 :handle-key | key --
-	]esc[ =? ( drop exit ; ) | ESC - exit
-|WIN|	$1000 and? ( drop ; ) 16 >>    
+	evtkey 
+	[esc] =? ( drop exit ; ) | ESC - exit
+ 
 	$31 $39 in? ( 	| Numbers 1-9 - select brush
 		$30 - 'current-brush ! 
 		draw-screen ; ) 
@@ -128,7 +129,7 @@
 :main-loop | --
     ( running 1? drop
         inevt	| Check for events
-        1 =? ( evtkey handle-key )  | Keyboard
+        1 =? ( handle-key )  | Keyboard
         2 =? ( process-mouse )      | Mouse
         drop
         1 ms | Small delay

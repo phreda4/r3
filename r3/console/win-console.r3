@@ -3,7 +3,6 @@
 
 ^r3/lib/mem.r3
 ^r3/lib/str.r3
-^r3/lib/win/conkey.r3
 
 |------- Console Handles -------
 ##stdin 
@@ -70,30 +69,35 @@
 #ne | number of events
 #nr | number read
 
-:igetkey | -- key
-    'eventBuffer 8 + @ 32 >> $1000 or 
-    eventBuffer 20 >> xor ;
-
+::evtkey | -- key
+	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
+	14 + c@ $1b <>? ( ; ) 
+	stdin 'eventBuffer 1 'nr PeekConsoleInput
+	nr 0? ( drop ; ) drop
+	56 <<
+	( stdin 'eventBuffer 1 'nr ReadConsoleInput
+		8 >> 'eventBuffer 14 + c@ 1?
+		56 << or ) drop
+	( $ff nand? 8 >> ) 
+	;
+	
 ::getch | -- key | wait for key
     ( stdin 'eventBuffer 1 'nr ReadConsoleInput
       eventBuffer $ffff and 1 <>? 
 		4 =? ( .checksize )
 		drop ) drop
-	igetkey ;
+	evtkey ;
 
 ::inkey | -- key | 0 if no key pressed
     stdin 'ne GetNumberOfConsoleInputEvents 
     ne 0? ( ; ) drop
     stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
-    1 =? ( drop igetkey ; )
+    1 =? ( drop evtkey ; )
     4 =? ( drop .checksize 0 ; ) | WINDOW_BUFFER_SIZE_EVENT
     drop 0 ;
 
 |------- Extended Event Handling -------
-::evtkey | -- key
-    igetkey ;
-
 | MOUSE_EVENT_RECORD:
 |   COORD dwMousePosition;  | 2
 |   DWORD dwButtonState;    | 6
@@ -150,9 +154,6 @@
 | DISABLE_NEWLINE_AUTO_RETURN 0x0008
 | ENABLE_LVB_GRID_WORLDWIDE 0x0010
 
-::evtmouse | -- | enable mouse input
-    stdin $18 SetConsoleMode drop ;
-
 ::.enable-mouse | -- | enable mouse events
     | ENABLE_EXTENDED_FLAGS (0x80) allows disabling QUICK_EDIT_MODE
     | ENABLE_WINDOW_INPUT (0x08) + ENABLE_MOUSE_INPUT (0x10)
@@ -181,7 +182,7 @@
     65001 SetConsoleCP | Input UTF-8
     
     | Set console modes for ANSI/VT sequences and window events
-    stdin $18 SetConsoleMode drop | Enable WINDOW_INPUT
+    stdin $218 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop
     
     .getconsoleinfo

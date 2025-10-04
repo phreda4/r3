@@ -9,10 +9,15 @@
 	
 :testkey
 	inevt	
-	1 =? ( evtkey [esc] =? ( 2drop ; ) "%h" .print .cr )
-	2 =? ( evtmb evtmxy " %d %d : %d" .print .cr )
+	1 =? ( 
+		evtkey [esc] =? ( 2drop ; ) 
+		1? ( dup "%h" .print .cr ) drop  | ignora ceros
+		)
+	|2 =? ( evtmb evtmxy " %d %d : %d" .print .cr )
 	drop 
-	 .flush
+	10 ms
+	.flush
+	 
 	testkey ;
 	
 :main
@@ -22,4 +27,8 @@
 	.white .flush
 	testkey ;
 
-: .console main .free ;
+: .console 
+|.enable-mouse 
+main 
+|.disable-mouse 
+.free ;

@@ -2,7 +2,6 @@
 | PHREDA 2024
 
 ##[ESC]     $1b
-##]ESC[		$1B
 ##[ENTER]	$a 
 ##[TAB]     $9
 

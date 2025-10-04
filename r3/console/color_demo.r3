@@ -234,8 +234,7 @@
     0 'running ! ;
 
 :handle-key | key --
-	]esc[ =? ( exit ; )      | ESC
-|WIN|	$1000 and? ( ; ) 16 >> |ascii
+	[esc] =? ( exit ; )      | ESC
 	$20 =? ( next-page ; ) | SPACE
     ;
 

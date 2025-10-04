@@ -53,7 +53,7 @@
 	device doCapture ;
 
 :handle-key | key --
-	]esc[ =? ( exit ; )      | ESC
+	[esc] =? ( exit ; )      | ESC
 	[f1] =? ( 'rgb2ascii 'conv ! )
 	[f2] =? ( 'cube2ascii 'conv ! )
 	[f3] =? ( 'lumi2ascii 'conv ! )
