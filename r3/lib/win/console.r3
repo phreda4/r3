@@ -172,7 +172,7 @@
 	drop 0 ;
 
 ::waitesc
-	( getch $1B1001 <>? drop ) drop ;
+	( getch ]esc[ <>? drop ) drop ;
 
 |---------------------	
 ::evtkey | -- key

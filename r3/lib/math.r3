@@ -120,11 +120,9 @@
 ::between | v min max -- -(out)/+(in)
 	pick2 - -rot - or ;
 
-::sqrt. | v -- r
-	dup 1.0 ( over <? + 1 >> 2dup 16 <</ ) drop nip ;	
 	
 | CLZ don't wrk on 64 bits!
-::clzl
+::clzl | x -- v
 	0 swap
 	$ffffffff00000000 nand? ( 32 << swap 32 + swap )
 	$ffff000000000000 nand? ( 16 << swap 16 + swap )
@@ -133,9 +131,24 @@
 	$c000000000000000 nand? ( 2 << swap 2 + swap )
 	$8000000000000000 nand? ( swap 1 + swap )
 	drop ;	
+
+::sqrt. | x -- r 
+	0 <=? ( drop 0 ; )
+	1.0 =? ( ; )
+	63 over clzl -	| x msb
+	16 + 2/			| shift
+	1 swap <<		| x guess
+	2dup /. + 2/
+	2dup /. + 2/
+	2dup /. + 2/
+	2dup /. + 2/
+	nip ;
+
+#inf+ $7fffffffffffffff
+#inf- $8000000000000001
 	
 ::ln. |x -- r 
-	0 <=? ( drop -1 ; ) 
+	0 <=? ( drop inf- ; ) 
 	1.0 =? ( drop 0 ; ) 
 	0 swap | n m
 	( 2.0 >=? 2/ swap 1+ swap )
@@ -151,12 +164,11 @@
 	over *. 43691 +
 	over *. 2.0 + | n y y2 result
     nip *.			| n result
-	swap 45426 * +
-	;
+	swap 45426 * + ;
 	
 ::exp. | x -- r
 	-1310720 <? ( drop 0 ; )
-	1310720 >? ( drop -1 ; ) | -inf
+	1310720 >? ( drop inf- ; )
 	dup 94548 *. 0.5 + 16 >> 
 	| r = x - n*LN2 (optimizado) | x n
 	16 >> dup -rot	| n x n 
@@ -169,10 +181,15 @@
 	over *. 1.0 +
 	over *. 1.0 + | n r result
 	nip swap
-	+? ( 47 >? ( 2drop -1 1 >>> ; ) << ; )
+	+? ( 47 >? ( 2drop inf+ ; ) << ; )
 	-16 <? ( 2drop 0 ; )
 	neg >> ;
 
+::pow. | base exp -- r
+	swap ln. *. exp. ;
+
+::root. | base root -- r
+	swap ln. swap /. exp. ;
 
 ::cubicpulse | c w x -- v ; iñigo Quilez
 	rot - abs | w x
@@ -189,13 +206,6 @@
 		1 >> rot dup * -rot )
 	drop nip
 	;
-
-::pow. | base exp -- r
-	swap ln. *. exp. ;
-
-::root. | base root -- r
-	swap ln. swap /. exp. ;
-
 
 ::bswap32 | v -- vs ; 32 bits
 	dup 8 >> $ff00ff and
