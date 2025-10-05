@@ -12,7 +12,7 @@
 #r3_lib_base64.r3 'name 'words 'info
 #name "r3/lib/color.r3"
 #words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmix4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
-#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $5E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
+#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $4E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'info
 #name "r3/lib/console.r3"
 #words  0
@@ -47,16 +47,16 @@
 #info ( $3E $12 $3E $10 $3E $10 )
 #r3_lib_jul.r3 'name 'words 'info
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "sqrt." "clzl" "ln." "log2fix" "lnfix" "log10fix" "exp." "cubicpulse" "pow" "pow." "root." "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "clzl" "sqrt." "ln." "exp." "pow." "root." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10/mod" "100/" "10/" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "i2fp" "f2fp" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
+#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $2F $2F $3E $2F $10 $10 $10 $10 $10 $10 $11 $0 $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'info
 #name "r3/lib/mconsole.r3"
 #words  ",sp" ",nsp" ",esc" ",[" ",fcolor" ",bcolor" ",eline" ",home" ",cls" ",at" ",col" ",eline" ",fc" ",bc" ",Black" ",Red" ",Green" ",Yellow" ",Blue" ",Magenta" ",Cyan" ",White" ",Blackl" ",Redl" ",Greenl" ",Yellowl" ",Bluel" ",Magental" ",Cyanl" ",Whitel" ",BBlack" ",BRed" ",BGreen" ",BYellow" ",BBlue" ",BMagenta" ",BCyan" ",BWhite" ",BBlackl" ",BRedl" ",BGreenl" ",BYellowl" ",BBluel" ",BMagental" ",BCyanl" ",BWhitel" ",Bold" ",Under" ",Rever" ",Reset" ",alsb" ",masb" ",showc" ",hidec" ",ovec" ",insc" ",savec" ",restc" ",print" ",println" ",printe" ",type" 0
 #info ( $0 $1F $0 $1F $1F $1F $0 $0 $0 $2E $1F $0 $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E )
 #r3_lib_mconsole.r3 'name 'words 'info
 #name "r3/lib/mem.r3"
-#words  "here" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",print" "sprint" "sprintln" "sprintc" "sprintlnc" 0
-#info ( $80 $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $11 $11 )
+#words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" "sprintc" "sprintlnc" 0
+#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $10 $10 $11 $11 )
 #r3_lib_mem.r3 'name 'words 'info
 #name "r3/lib/memavx.r3"
 #words  "memcpy_rgb3f" "memcpy_bgr3f" "memcpy_rgbf" "memcpy_f32p16" "memcpy_p16f32" "memcpy_avx" 0
@@ -287,8 +287,8 @@
 #info ( $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info
 #name "r3/lib/win/conkey.r3"
-#words  "[ESC]" "]ESC[" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[INS]" "[CTRL]" "]CTRL[" "[ALT]" "[SHIFTR]" "]SHIFTR[" "[SHIFTL]" "]SHIFTL[" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" "k2ascii" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 )
+#words  "[ESC]" "]ESC[" "[ENTER]" "[BACK]" "]BACK[" "[TAB]" "]TAB[" "[DEL]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[INS]" "[CTRL]" "]CTRL[" "[ALT]" "[SHIFTR]" "]SHIFTR[" "[SHIFTL]" "]SHIFTL[" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" "k2ascii" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 )
 #r3_lib_win_conkey.r3 'name 'words 'info
 #name "r3/lib/win/console.r3"
 #words  "stdin" "stdout" "stderr" "type" ".cr" ".sp" ".nsp" ".emit" ".[" ".write" ".print" ".println" ".home" ".cls" ".at" ".eline" ".fc" ".bc" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".Bold" ".Under" ".Rever" ".Reset" ".alsb" ".masb" ".showc" ".hidec" ".ovec" ".insc" "consoleinfo" "rows" "cols" ".getconsoleinfo" "getch" "inkey" "waitesc" "evtkey" "evtmxy" "evtmb" "evtmw" "evtm" "getevt" "inevt" "pad" "getcursorpos" ".input" ".inputn" ".printe" "evtmouse" ".free" 0
@@ -315,8 +315,8 @@
 #info ( $5C $6B $4C $1F $1F $3E )
 #r3_lib_win_inet.r3 'name 'words 'info
 #name "r3/lib/win/kernel32.r3"
-#words  "AllocConsole" "FreeConsole" "ExitProcess" "GetStdHandle" "SetStdHandle" "ReadFile" "WriteFile" "GetConsoleMode" "SetConsoleMode" "SetConsoleTitle" "PeekConsoleInput" "ReadConsoleInput" "WriteConsole" "WriteConsoleOutput" "GetNumberOfConsoleInputEvents" "FlushConsoleInputBuffer" "Sleep" "WaitForSingleObject" "GetLastError" "CreateFile" "CreateDirectory" "CloseHandle" "FlushFileBuffers" "DeleteFile" "RemoveDirectory" "MoveFile" "SetFilePointer" "SetEndOfFile" "GetFileAttributes" "GetFileAttributesEx" "GetFileSize" "FileTimeToSystemTime" "SystemTimeToTzSpecificLocalTime" "GetProcessHeap" "HeapAlloc" "HeapFree" "HeapReAlloc" "GetTickCount" "GetLocalTime" "FindFirstFile" "FindNextFile" "FindClose" "CreateProcess" "GetConsoleScreenBufferInfo" "SetConsoleScreenBufferSize" "SetConsoleWindowInfo" "GetCommandLine" "GetConsoleWindow" "SetDllDirectory" "SetCurrentDirectory" "GetCurrentDirectory" 0
-#info ( $0 $0 $10 $10 $2E $5C $5C $2F $2F $1F $4C $4C $5B $5B $2E $10 $1F $2F $1 $7A $2F $1F $10 $10 $10 $2F $4D $10 $10 $3E $2F $2E $3D $1 $3D $3D $4C $1 $1F $2F $2F $1F $27 $2F $2E $3D $1 $1 $1F $1F $2E )
+#words  "AllocConsole" "FreeConsole" "ExitProcess" "GetStdHandle" "SetStdHandle" "ReadFile" "WriteFile" "GetConsoleMode" "SetConsoleMode" "SetConsoleTitle" "PeekConsoleInput" "ReadConsoleInput" "WriteConsole" "WriteConsoleOutput" "GetNumberOfConsoleInputEvents" "FlushConsoleInputBuffer" "Sleep" "WaitForSingleObject" "GetLastError" "CreateFile" "CreateDirectory" "CloseHandle" "FlushFileBuffers" "DeleteFile" "RemoveDirectory" "MoveFile" "SetFilePointer" "SetEndOfFile" "GetFileAttributes" "GetFileAttributesEx" "GetFileSize" "FileTimeToSystemTime" "SystemTimeToTzSpecificLocalTime" "GetProcessHeap" "HeapAlloc" "HeapFree" "HeapReAlloc" "GetTickCount" "GetLocalTime" "FindFirstFile" "FindNextFile" "FindClose" "CreateProcess" "GetConsoleScreenBufferInfo" "SetConsoleScreenBufferSize" "SetConsoleWindowInfo" "GetCommandLine" "GetConsoleWindow" "SetDllDirectory" "SetCurrentDirectory" "GetCurrentDirectory" "SetConsoleOutputCP" "SetConsoleCP" 0
+#info ( $0 $0 $10 $10 $2E $5C $5C $2F $2F $1F $4C $4C $5B $5B $2E $1F $1F $2F $1 $7A $2F $1F $10 $10 $10 $2F $4D $10 $10 $3E $2F $2E $3D $1 $3D $3D $4C $1 $1F $2F $2F $1F $27 $2F $2E $3D $1 $1 $1F $1F $2E $1F $1F )
 #r3_lib_win_kernel32.r3 'name 'words 'info
 #name "r3/lib/win/urlmon.r3"
 #words  "URLDownloadToFile" "URLOpenBlockingStreamA" "url2file" "url2filec" 0

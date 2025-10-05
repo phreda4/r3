@@ -1,8 +1,7 @@
 ^r3/lib/console.r3
-^r3/lib/math.r3
 
 :main
-	-0.1 ( 5.0 <?
+	-1.0 ( 5.0 <?
 		dup "x:%f " .print
 		dup exp. "| exp:%f " .print
 		dup ln. "| ln:%f " .print

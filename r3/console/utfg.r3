@@ -38,7 +38,8 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	14 ( 1? 2dup >> $3 and bc 2 - ) drop ;
 	
 :bigemit | ascii --
-	32 - clamp0 $7f and 3 << 'f8x8 + @
+	$7f and 32 - clamp0 
+	3 << 'f8x8 + @
 	0 ( 4 <?
 		xc yc pick2 + .at
 		swap bigline 16 >> swap
@@ -96,7 +97,7 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	-rot .at "─" .rep ;
 	
 |--------------------------------	
-#wx #wy #ww #wh #wm
+#wx #wy #ww ##wh #wm
 
 ::.win 'wh ! 'ww ! 'wy ! 'wx ! ;
 ::.wmargin 'wm ! ;
@@ -138,8 +139,16 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 ::.wline | y --
 	wx 1+ swap wy + .at ww 2 - "─" .rep ;
 	
-::.wltext | place "" --
+#wsx #wsy	
+::.wstart	
+	wx wm + 'wsx ! 
+	wy wm + 'wsy !
 	;
 	
-::.wtext
-	;
+::.wtext | "" --
+	wsx wm + wsy .at
+	.write
+	1 'wsy +! ;
+	
+|::.wltext ;
+|::.wtext ;

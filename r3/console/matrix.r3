@@ -38,7 +38,7 @@
 	main ;
 
 :reset
-	.cls
+	.reset .cls
 	column >a
 	cols ( 1? 1-
 		rows 24 + randmax 24 - ca!+
