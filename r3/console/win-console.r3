@@ -125,7 +125,7 @@
 ::getevt | -- type | wait for any event
     stdin 'eventBuffer 1 'nr ReadConsoleInput 
     eventBuffer $ff and
-    4 =? ( .checksize ) | Handle resize event
+    4 =? ( .checksize 0 nip ) | Handle resize event
     ;
 
 ::inevt | -- type | check for event (no wait)
@@ -133,7 +133,7 @@
     ne 0? ( ; ) drop
     stdin 'eventBuffer 1 'nr ReadConsoleInput
     eventBuffer $ff and
-    4 =? ( .checksize ) | Handle resize event
+    4 =? ( .checksize 0 nip ) | Handle resize event
     ;
 
 |------- Console Mode Management -------

@@ -99,6 +99,11 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 |--------------------------------	
 #wx #wy #ww ##wh #wm
 
+::.inwin? | x y -- 0/-1
+	wy <? ( 2drop 0 ; ) wy - wh >? ( 2drop 0 ; ) drop
+	wx <? ( drop 0 ; ) wx - ww >? ( drop 0 ; ) drop
+	-1 ;
+
 ::.win 'wh ! 'ww ! 'wy ! 'wx ! ;
 ::.wmargin 'wm ! ;
 
@@ -149,6 +154,8 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	wsx wm + wsy .at
 	.write
 	1 'wsy +! ;
+::.wat@ | -- x y 
+	wsx wm + wsy ;
 	
 |::.wltext ;
 |::.wtext ;

@@ -1,11 +1,163 @@
 ^./console.r3
 ^./utfg.r3
 
-##uiDirs
-##uiFiles
+#.exit 0 
+::exit 1 '.exit ! ;
 
-#basepath * 1024
+#vecdraw
 
+#flag
+
+#id		| id 
+#idn	| id now 
+#idf	| id foco
+
+#wid
+#widn
+
+#keyin
+#info "ok" * 256
+
+::.tdebug
+	widn idf idn "id:%d idf:%d wid:%d " .print
+	keyin ">>%h<<" .print
+	'info .write
+	;
+	
+::inwin? | -- 1.2.3/0 ; dn-hold-up
+	1 'id +! 
+	evtmb 0? ( 
+		id idn <>? ( drop ; ) drop
+		-1 'idn !
+		drop 3 | up
+		; ) drop
+	evtmxy .inwin? 0? ( ; ) drop
+	id idn =? ( drop 2 ; ) | move
+	'idn ! 1 ; | dn
+
+:hkey
+	evtkey
+	[esc] =? ( exit ) 
+	|[tab] =? ( 1 'widn +! ) | cambia id y luego wid
+|	[f1] =? ( run ) 
+	'keyin ! ;
+	
+:hmouse
+	evtmb 
+	1? ( evtmxy .at "." .fwrite ) 
+	drop
+	;
+	
+::onTui | 'vector --
+	dup .onresize
+	dup ex
+	'vecdraw !
+	( .exit 0? drop
+		0 'keyin !
+		inevt	
+		1 =? ( hkey )
+|		2 =? ( hmouse )
+		1? ( 
+		
+		.hidec
+		vecdraw ex 
+		flag
+		1 and? ( .ovec .restorec .showc )
+		drop
+		
+		.flush 		
+			)
+		drop
+		) drop ;
+
+::tui
+	0 'flag !
+	idn id >? ( 0 'idn ! ) drop
+|	idf id >? ( 0 'idf ! ) drop
+	-1 'id !
+	widn wid >? ( 0 'widn ! ) drop
+	0 'wid ! ;
+	
+::tuWin | x y w h --
+	.win
+	wid widn =? ( .wborde ) 1+ 'wid !
+	;
+	
+::tuBtn | 'ev "" --
+	;
+	
+|--- Edita linea
+#cmax
+##padi>	| inicio
+#pad>	| cursor
+#padf>	| fin
+
+:lins  | c -- ;
+	padf> padi> - cmax >=? ( 2drop ; ) drop
+	pad> dup 1- padf> over - 1+ cmove> 1 'padf> +!
+:lover | c -- ;
+	pad> c!+ dup 'pad> !
+	padf> <=? ( drop ; )
+	dup padi> - cmax >=? ( swap 1- swap -1 'pad> +! ) drop
+	'padf> ! ;
+:0lin 0 padf> c! ;
+:kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
+:kback pad> padi> <=? ( drop ; ) dup 1- swap 
+	padf> over - 1+ cmove -1 'padf> +! -1 'pad> +! ;
+:kder pad> padf> <? ( 1+ ) 'pad> ! ;
+:kizq pad> padi> >? ( 1- ) 'pad> ! ;
+:kup
+	pad> ( padi> >?
+		1- dup c@ $ff and 32 <? ( drop 'pad> ! ; )
+		drop ) 'pad> ! ;
+:kdn
+	pad> ( c@+ 1?
+		$ff and 32 <? ( drop 'pad> ! ; )
+		drop ) drop 1- 'pad> ! ;
+
+#modo 'lins
+	
+|----- ALFANUMERICO
+:chmode
+	modo 'lins =? ( drop 'lover 'modo ! ; )
+	drop 'lins 'modo ! ;
+
+:kbInputLine | --
+	keyin 0? ( drop ; )	
+	32 126 in? ( modo ex ; ) 
+	[ins] =? ( chmode )
+	[le] =? ( kizq ) [ri] =? ( kder )
+	[back] =? ( kback ) [del] =? ( kdel )
+	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
+|	<tab> =? ( nextfoco ) <ret> =? ( nextfoco )
+|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	drop ;	
+
+:inInput | 'var max -- 'var max
+	dup 1- 'cmax !
+	over dup 'padi> !
+	( c@+ 1? drop ) drop 1-
+	dup 'pad> ! 'padf> !
+	'lins  'modo ! ;
+	
+::tuInputLine | 'buff max --
+	inwin?
+	1 =? ( >r inInput r> id 'idf ! ) | in
+|	2 =? ( ) | hold
+|	3 =? ( ) | up
+	2drop
+	id idf =? ( 
+		kbInputLine 
+		.wat@ swap 
+		pad> padi> - + | !! falta utf
+		swap .at .savec | cursor
+		1 'flag !		
+		) drop
+	.wtext
+	;
+	
+|--------------------------------	
+|--------------------------------	
 |----- list mem (intern)
 #cntlist
 #indlist
@@ -31,12 +183,14 @@
 |	overl =? ( overfil uiFill )
 	uiNindx .wtext .reset ;
 
-::tuiList | 'var cntlines list --
+::tuList | 'var cntlines list --
+	inwin? 1? ( id 'idn ! wid 1- 'widn ! ) drop
 	mark makeindx
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	2drop
-	empty ;	
+	empty 
+	1 'id +! ;	
 	
 |----- TREE
 | #vtree 0 0
@@ -77,20 +231,24 @@
 	mark ,iicon ,s ,eol empty
 	here .wtext .reset ;
 	
-::tuiTree | 'var cntlines list --
+::tuTree | 'var cntlines list --
+	inwin? 1? ( id 'idn ! wid 1- 'widn ! ) drop
 	mark maketree
 |	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 |	chtree
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	2drop
-	empty ;	
-
-
-
-
+	empty 
+	1 'id +! ;	
 
 |--------------------------------	
+|--------------------------------	
+##uiDirs
+##uiFiles
+
+#basepath * 1024
+
 #stckhdd>
 #l1 0 #l2 0 
 

@@ -70,9 +70,10 @@
 ::.cls "H" .[ "J" .[ ;
 ::.at "%d;%dH" sprint .[ ; | x y -- | f
 ::.col "%dG" sprint .[ ; | x -- columna
-::.eline "K" .[ ; | erase line from cursor
+::.eline "0K" .[ ; | erase line from cursor
+|::.eline0 "1K" .[ ; | erase from start of line to cursor
+::.ealine "2K" .[ ; | borrar linea actual
 ::.escreen "J" .[ ; | erase from cursor to end of screen
-::.eline0 "1K" .[ ; | erase from start of line to cursor
 ::.escreenup "1J" .[ ; | erase from cursor to beginning
 
 ::.showc "?25h" .[ ;

@@ -27,24 +27,25 @@
 	$1 " Dir " .wtitle
 	1 .wmargin
 	.wstart
-	'vfolder wh 2 - uiDirs tuiTree
+	'vfolder wh 2 - uiDirs tuTree
 	;
 :dirfile
-	31 5 cols 30 - rows 11 - .win .wborde
+	31 5 cols 30 - rows 11 - .win |.wborde
 	$1 " Files " .wtitle
 	1 .wmargin
 	.wstart
-	'vfile wh 2 - uiFiles tuiList
+	'vfile wh 2 - uiFiles tuList
 	;
 :dirpad
-	1 rows 6 - cols 6 .win .wborde
+	1 rows 6 - cols 6 .win |.wborde
 	$1 " Command " .wtitle
 	;
 	
 :scrmain
-	.reset .cls .green
+	.reset .cls 
 	2 1 xat
-	"R3" xwrite .red "Forth" xwrite .cr
+	.green "R3" xwrite 
+	|.White " matrix.r3" xwrite
 	.reset 
 	dirpanel
 	dirfile
@@ -101,15 +102,13 @@
 |-----------------------------------
 :main
 	"r3" scandir
-	|0 uiTreePath
-	|'basepath 'fullpath strcpyl 1- strcpy
 	"r3/audio" scanfiles
-
 	
 	'scrmain .onresize
 	scrmain
 	testkey ;
 
-: .console 
+: 
+.console 
 main 
 .free ;

@@ -1,7 +1,7 @@
 ^./console.r3
 ^r3/lib/escapi.r3
 
-#ascii64 "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
+#ascii64 "`.-',:_~;""^!*]/)(<>?1r+cl=|7YvLsx[it}JjzTC{fyVnIou2S3Few%5AHXkZ"
 
 #running 1
 

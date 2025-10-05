@@ -176,7 +176,7 @@ Programs consist of words (space-separated tokens). The language searches a dict
 
 | Prefix | Meaning | Example | Description |
 |--------|---------|---------|-------------|
-| `|` | Comment | `| This is a comment` | Not executed, ends at line end |
+| `\|` | Comment | `\| This is a comment` | Not executed, ends at line end |
 | `^` | Include | `^r3/lib/console.r3` | Include code from indicated file |
 | `"` | String | `"Hello"` | Define text string, ends with `"` |
 | `:` | Action | `:myword` | Define actions |
@@ -305,6 +305,7 @@ Each word can take and/or leave values on the data stack. As help to the program
 | `SWAP` | `a b -- b a` | Exchange top two items |
 | `DROP` | `a --` | Remove top of stack |
 | `ROT` | `a b c -- b c a` | Rotate three items |
+| `-ROT` | `a b c -- c a b` | Rotate inv three items |
 | `OVER` | `a b -- a b a` | Copy second to top |
 | `NIP` | `a b -- b` | Remove second item |
 | `PICK2` | `a b c -- a b c a` | Copy third item to top |
@@ -391,7 +392,7 @@ Some words PRODUCE numbers (like DUP duplicating the top of stack), others CONSU
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `NEG` | `a -- -a` | Negate value |
-| `ABS` | `a -- |a|` | Absolute value |
+| `ABS` | `a -- \|a\|` | Absolute value |
 | `SQRT` | `a -- b` | Square root (integer) |
 | `*/` | `a b c -- d` | d = a*b/c without bit loss |
 
@@ -407,6 +408,7 @@ The `*/` operation is particularly useful for scaling without overflow:
 | Word | Stack Effect | Example |
 |------|--------------|---------|
 | `AND` | `a b -- c` | `$ff $55 AND` → $55 |
+| `NAND` | `a b -- c` | `$ff $1 NAND` → $fe |
 | `OR` | `a b -- c` | `$2 $1 OR` → 3 |
 | `XOR` | `a b -- c` | `$3 2 XOR` → 1 |
 | `NOT` | `a -- b` | `0 NOT` → -1 (all bits set) |
