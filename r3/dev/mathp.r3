@@ -8,7 +8,7 @@
 		dup sqrt. "| sqrt:%f" .print
 		.cr
 		0.25 + ) drop
-	( getch ]esc[ <>? drop ) drop
+	waitesc
 	;
 	
 : .cls

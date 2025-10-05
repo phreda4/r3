@@ -169,8 +169,7 @@
 	libc-system drop ;
 	
 ::sysnew | "" -- ; 
-	here
-	"gnome-terminal --wait -- bash -c " ,s 34 ,c swap ,s 34 ,c ,eol
+	|here "gnome-terminal --wait -- bash -c " ,s 34 ,c swap ,s 34 ,c ,eol
 	libc-system drop ;
 	
 
