@@ -9,6 +9,7 @@
 #vfile 0 0
 #scratchpad "Prueba de texto" * 1024
 
+
 :dirpanel
 	.reset
 	1 5 30 rows 11 - tuwin |.win .wborde
@@ -18,9 +19,11 @@
 	;
 :dirfile
 	31 5 cols 30 - rows 11 - tuwin |.win |.wborde
-	$1 "[ Files ]" .wtitle
-	1 .wmargin .wstart
-	'vfile wh 2 - uiFiles tuList
+	1 .wmargin 
+	inwin? .bc .wfill
+	$1 "[ demo ]" .wtitle
+	
+	.reset
 	;
 
 :dirpad
@@ -43,6 +46,7 @@
 	.reset 
 	dirpanel
 	dirfile
+	
 	dirpad
 	.rever
 	1 rows .at 

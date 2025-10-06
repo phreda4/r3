@@ -29,8 +29,7 @@
 	evtmb 0? ( 
 		id idn <>? ( drop ; ) drop
 		-1 'idn !
-		drop 3 | up
-		; ) drop
+		drop 3 ; ) drop | up
 	evtmxy .inwin? 0? ( ; ) drop
 	id idn =? ( drop 2 ; ) | move
 	'idn ! 1 ; | dn
@@ -48,6 +47,14 @@
 	drop
 	;
 	
+:tredraw
+	.hidec
+	vecdraw ex 
+	flag
+	1 and? ( .ovec .restorec .showc )
+	drop
+	.flush ;
+	
 ::onTui | 'vector --
 	dup .onresize
 	dup ex
@@ -57,17 +64,10 @@
 		inevt	
 		1 =? ( hkey )
 |		2 =? ( hmouse )
-		1? ( 
-		
-		.hidec
-		vecdraw ex 
-		flag
-		1 and? ( .ovec .restorec .showc )
+|		1? ( )
 		drop
-		
-		.flush 		
-			)
-		drop
+		tredraw		
+		10 ms
 		) drop ;
 
 ::tui

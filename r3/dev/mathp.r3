@@ -12,7 +12,7 @@
 	aprox | exp y
 	0 0.5 rot | exp frac b y
 	16 ( 1? 1- >r
-		dup 16 *>>	| exp frac b yy
+		dup *. |16 *>>	| exp frac b yy
 		2.0 >=? ( 2/ rot pick2 + -rot )
 		swap 2/ swap
 		r> ) drop
@@ -83,15 +83,16 @@
 	;
 	
 :main
-	-1.0 ( 5.0 <?
+	-0.5 ( 5.0 <?
 		dup "x:%f " .print
 		dup exp. "| exp:%f " .print
 		dup ln. "| ln:%f " .print
 		dup sqrt. "| sqrt:%f" .print
 		dup sqrt2  " sqrt2:%f" .print
+		dup log2 " log2:%f " .print
 		.cr
 		0.25 + ) drop
-speed1		
+|speed1		
 |	calc1
 |	time2
 	waitesc

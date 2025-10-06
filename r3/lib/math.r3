@@ -119,18 +119,18 @@
 
 ::msbl | x -- v
 	0 swap
-	$100000000 >=? ( 32 >> swap 32 + swap )
-	$10000 >=? ( 16 >> swap 16 + swap )
-	$100 >=? ( 8 >> swap 8 + swap )
-	$10 >=? ( 4 >> swap 4 + swap )
-	$4 >=? ( 2 >> swap 2 + swap )
-	$2 >=? ( drop 1+ ; ) drop ;	
+	$ffffffff >? ( 32 >> swap 32 + swap )
+	$ffff >? ( 16 >> swap 16 + swap )
+	$ff >? ( 8 >> swap 8 + swap )
+	$7f >? ( 4 >> swap 4 + swap )
+	$3 >? ( 2 >> swap 2 + swap )
+	2/ + ;
 
 ::clzl | x -- v
 	63 swap msbl -	;
 
 ::sqrt. | x -- r 
-	0 <=? ( drop 0 ; ) 1.0 =? ( ; )
+	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
 	dup msbl 16 + 2/	| shift
 	1 swap <<			| x guess
 	2dup /. + 2/
@@ -143,7 +143,7 @@
 #inf- $8000000000000001
 	
 ::ln. |x -- r 
-	0 <=? ( drop inf- ; ) 
+	0 <=? ( inf- nip ; ) 
 	1.0 =? ( drop 0 ; ) 
 	0 swap | n m
 	( 2.0 >=? 2/ swap 1+ swap )
@@ -160,6 +160,23 @@
 	over *. 2.0 + | n y y2 result
     nip *.			| n result
 	swap 45426 * + ;
+
+:aprox | x exp -- exp y
+	0 >=? ( swap over >> ; ) 
+	swap over neg << ;
+	
+::log2. | x -- r ;(fixed48_16_t x) {
+	0 <=? ( 0 nip ; )
+	dup msbl 16 - | x exp
+	aprox | exp y
+	0 0.5 rot | exp frac b y
+	16 ( 1? 1- >r
+		dup 16 *>>	| exp frac b yy
+		2.0 >=? ( 2/ rot pick2 + -rot )
+		swap 2/ swap
+		r> ) drop
+	2drop
+	swap 16 << + ;
 	
 ::exp. | x -- r
 	-1310720 <? ( drop 0 ; )

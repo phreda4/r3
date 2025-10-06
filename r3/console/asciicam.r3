@@ -15,7 +15,10 @@
 	dup 16 >> $ff and 2* 
 	over 8 >> $ff and dup 2 << + +
 	swap $ff and + 3 >> | luma (2r+5g+b)/8
-	2 >> $3f and 'ascii64 + c@ .emit ;
+|	2 >> $3f and 		| 64
+|	4 >> $f and 2 <<	| 16
+	5 >> $f and 3 <<	| 8
+	'ascii64 + c@ .emit ;
 
 |24bits color
 :rgb2ascii | v -- v
