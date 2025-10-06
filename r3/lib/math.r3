@@ -34,7 +34,7 @@
 ::sign | v -- v s
 	dup 63 >> 1 or ;
 
-:sinp 
+:sinp
     $7fff and $4000 -
     dup dup 16 *>>
     dup 4846800 16 *>>
@@ -73,14 +73,13 @@
 	sincos pick2 *.u -rot *.u swap ;
 
 :iatan2 | |x| y -- bangle
-    +? ( 2dup + >r swap - 
-        $2000 r> */ $2000 - ; )
-    2dup - >r + 
-    $2000 r> */ $6000 - ;
-
+	swap
+	+? ( 2dup + 0? ( nip nip ; )
+	-rot swap - 0.125 rot */ 0.125 swap - ; )
+	2dup - 0? ( nip nip ; )
+	-rot + 0.125 rot */ 0.375 swap - ;
 ::atan2 | x y -- bangle
-    swap -? ( neg swap iatan2 neg ; )
-    swap iatan2 ;
+    swap -? ( neg iatan2 neg ; ) iatan2 ;
 
 ::distfast | dx dy -- dis
 	abs swap abs over <? ( swap ) | min max
