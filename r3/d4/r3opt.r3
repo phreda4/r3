@@ -244,17 +244,17 @@
 |>>>> 8 * --> 3 <<	
 :,*pot | tok tos --
 	nip ,<<
-	63 swap clzl - ,tlit
+	63 swap clz - ,tlit
 	TK<< ,t ;
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
 	nip ,<< TKdup ,t
-	64 swap clzl - 1 - ,tlit
+	64 swap clz - 1 - ,tlit
 	TK<< ,t TK+ ,t ;
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
 	nip ,<< TKdup ,t
-	64 swap clzl - ,tlit
+	64 swap clz - ,tlit
 	TK<< ,t TKswap ,t TK- ,t ;
 :,lit* 	
 	getTOS
@@ -314,7 +314,7 @@
 |>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
 :,/pot | tok tos --
 	nip ,<<
-	63 swap clzl - ,tlit
+	63 swap clz - ,tlit
 	TK>> ,t ,sigadj ;	
 	
 :,lit/

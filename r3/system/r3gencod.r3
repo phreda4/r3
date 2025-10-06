@@ -45,17 +45,6 @@
 	swap -? ( drop neg 'divm ! p 'divs ! ; ) drop
 	'divm ! p 'divs ! ;
 
-| CLZ don't wrk on 64 bits!
-:clzl
-	0 swap
-	$ffffffff00000000 nand? ( 32 << swap 32 + swap )
-	$ffff000000000000 nand? ( 16 << swap 16 + swap )
-	$ff00000000000000 nand? ( 8 << swap 8 + swap )
-	$f000000000000000 nand? ( 4 << swap 4 + swap )
-	$c000000000000000 nand? ( 2 << swap 2 + swap )
-	$8000000000000000 nand? ( swap 1 + swap )
-	drop ;
-
 |--------------------------
 #TKdup $23
 #TKover $25
@@ -239,14 +228,14 @@
 | 8 * --> 3 <<
 :*pot
 	code<<
-	63 swap clzl - cte!+
+	63 swap clz - cte!+
 	TK<< code!+ ;
 
 | 7 * --> dup 3 << swap -
 :*pot-1
 	code<<
 	TKdup code!+	| dup
-	64 swap clzl - cte!+
+	64 swap clz - cte!+
 	TK<<	code!+	| <<
 	TKswap	code!+	| swap
 	TK- code!+ | -
@@ -292,11 +281,11 @@
 	63 cte!+
 	TK>> code!+ | >>
 
-	65 64 pick2 clzl - - cte!+
+	65 64 pick2 clz - - cte!+
 	TK>>> code!+ | >>>
 
 	TK+	code!+	| +
-	63 swap clzl - cte!+ | 2
+	63 swap clz - cte!+ | 2
 	TK>> code!+ | >>
 	;
 
@@ -345,12 +334,12 @@
     63 cte!+ 		| 31
 	TK>> code!+ 	| >>
 
-	65 64 pick2 clzl - - cte!+ |30
+	65 64 pick2 clz - - cte!+ |30
 	TK>>> code!+ 	| >>>
 
 	TK+ code!+		| +
 
-	63 over clzl - cte!+ 	| 2
+	63 over clz - cte!+ 	| 2
 	TK>> code!+ 	| >>
 
 	TKswap code!+	| swap
@@ -358,7 +347,7 @@
 	63 cte!+ 		|31
 	TK>> code!+ 	| >>
 
-	65 64 pick2 clzl - - cte!+
+	65 64 pick2 clz - - cte!+
 	TK>>> code!+	| >>>
 
 	TKswap	code!+	| swap
@@ -408,7 +397,7 @@
 	TKdup code!+ 	| dup 31
 	63 cte!+
 	TK>> code!+ 	| >>
-	65 64 pick2 clzl - - cte!+
+	65 64 pick2 clz - - cte!+
 	TK>>> code!+	| >>>
 	TKswap	code!+	| swap
 	TKover	code!+	| over

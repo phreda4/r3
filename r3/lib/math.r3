@@ -117,21 +117,12 @@
 ::between | v min max -- -(out)/+(in)
 	pick2 - -rot - or ;
 
-::msbl | x -- v
-	0 swap
-	$ffffffff >? ( 32 >> swap 32 + swap )
-	$ffff >? ( 16 >> swap 16 + swap )
-	$ff >? ( 8 >> swap 8 + swap )
-	$f >? ( 4 >> swap 4 + swap )
-	$3 >? ( 2 >> swap 2 + swap )
-	2/ + ;
-
-::clzl | x -- v
-	63 swap msbl -	;
+::msb
+	63 swap clz - ;
 
 ::sqrt. | x -- r 
 	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
-	dup msbl 16 + 2/	| shift
+	dup msb 16 + 2/	| shift
 	1 swap <<			| x guess
 	2dup /. + 2/
 	2dup /. + 2/
@@ -161,13 +152,14 @@
     nip *.			| n result
 	swap 45426 * + ;
 
+
 :aprox | x exp -- exp y
 	0 >=? ( swap over >> ; ) 
 	swap over neg << ;
 	
 ::log2. | x -- r ;(fixed48_16_t x) {
-	0 <=? ( 0 nip ; )
-	dup msbl 16 - | x exp
+	0 <=? ( inf- nip ; )
+	dup msb 16 - | x exp
 	aprox | exp y
 	0 0.5 rot | exp frac b y
 	16 ( 1? 1- >r
@@ -177,6 +169,9 @@
 		r> ) drop
 	2drop
 	swap 16 << + ;
+	
+::log10.	log2. $352B5 /. ;
+::logn2.	log2. $17154 /. ;
 	
 ::exp. | x -- r
 	-1310720 <? ( drop 0 ; )
@@ -281,12 +276,15 @@
 :shift
 	-? ( neg >> ; ) << ;
 
+:clzd
+	clz 32 - ; |0 max ;
+
 |--- integer to floating point
 ::i2fp | i -- fp
 	0? ( ; )
 	dup 63 >> $80000000 and 
 	swap abs		| sign abs(i)
-	dup clz 8 - 	| s i shift
+	dup clzd 8 - 	| s i shift
 	swap over shift	| s shift i
 	150 rot - 23 << | s i m
 	swap $7fffff and or or ;
@@ -296,7 +294,7 @@
 	0? ( ; )
 	dup 63 >> $80000000 and 
 	swap abs		| sign abs(i)
-	dup clz 8 - 	| s i shift
+	dup clzd 8 - 	| s i shift
 	swap over shift	| v s shift i
 	134 rot - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or or ;
@@ -333,7 +331,7 @@
 	0? ( ; )
 	dup 63 >> $80000000 and 
 	swap abs		| sign abs(i)
-	dup clz 8 - 	| s i shift
+	dup clzd 8 - 	| s i shift
 	swap over shift	| v s shift i
 	134 rot 8 + - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or or ;	
@@ -351,7 +349,7 @@
 |--- byte 0..255 to normalize 0..1 float32
 ::byte>float32N | byte -- float
 	$ff and 0? ( ; ) 
-	32 over clz -			| v msb
+	32 over clzd -			| v msb
 	1 over << 1- rot and 	| msb frac
 	23 pick2 - <<			| msb mant
 	$7fffff and
