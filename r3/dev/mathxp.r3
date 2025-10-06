@@ -2,7 +2,7 @@
 | PHREDA 2025
 ^r3/lib/console.r3
 ^r3/lib/math.r3
-
+	
 |---- fixed point 32.32
 ::x*	| a b -- c
 	24 *>> dup 63 >> - ;

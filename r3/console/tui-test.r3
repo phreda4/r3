@@ -9,6 +9,8 @@
 #scratchpad "Prueba de texto" * 1024
 #help "" * 1024
 
+#text1 "text1" * 100
+#text2 "text2" * 100
 :dirpanel
 	.reset
 	1 5 30 rows 11 - tuwin |.win .wborde
@@ -20,9 +22,11 @@
 :dirfile
 	31 5 cols 30 - rows 11 - tuwin |.win |.wborde
 	1 .wmargin 
-	inwin? dup .bc 
-	3 << 32 + 6 7 3 .boxf .reset |.wfill
+|	inwin? dup .bc 3 << 32 + 6 7 3 .boxf .reset |.wfill
 	$1 "[ demo ]" .wtitle
+	 .wstart
+	'text1	200 tuInputline
+	'text2	200 tuInputline
 	.reset
 	;
 

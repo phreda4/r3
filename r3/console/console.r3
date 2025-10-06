@@ -7,7 +7,7 @@
 ^r3/lib/parse.r3
 
 | KEYCODES 
-::[ESC] $1b ; ::[ENTER] $a ; ::[BACK] $7f ;
+::[ESC] $1b ; ::[ENTER] $d ; ::[BACK] $7f ;
 ::[TAB] $9 ; ::[DEL] $7E335B1B ; ::[INS] $7E325B1B ;
 ::[UP] $415b1b ; ::[DN] $425b1b ; 
 ::[RI] $435B1B ; ::[LE] $445B1B ;

@@ -35,11 +35,11 @@
 	dup 63 >> 1 or ;
 
 :sinp 
-	$7fff and $4000 -
-   	dup dup 16 *>>
-	dup 4876210 16 *>>
-	2699161 - 16 *>>
-	411769 + 16 *>> ;
+    $7fff and $4000 -
+    dup dup 16 *>>
+    dup 4846800 16 *>>
+    2688000 - 16 *>>
+    404000 + 16 *>> ;	
 
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
@@ -47,12 +47,12 @@
 	$4000 + $8000 nand? ( sinp ; ) sinp neg ;
 
 ::tan | v -- f
-	$4000 +
-	$7fff and $4000 -
-	dup dup 16 *>>
-	dup 130457939 16 *>>
-	5161701 + 16 *>>
-	411769 + 16 *>> ;
+    $4000 +
+    $7fff and $4000 -
+    dup dup 16 *>>
+    dup 129890000 16 *>>
+    5078000 + 16 *>>
+    395600 + 16 *>> ;
 
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
@@ -72,16 +72,15 @@
 ::polar2 | largo bangle  -- dx dy
 	sincos pick2 *.u -rot *.u swap ;
 
-:iatan2p
-	+? ( 2dup + >r swap - >r 0.125 0.125 r> r> ; )
-	2dup - >r + >r 0.375 0.125 r> r> ;
-
 :iatan2 | |x| y -- bangle
-	iatan2p 0? ( nip nip nip ; ) */ - ;
+    +? ( 2dup + >r swap - 
+        $2000 r> */ $2000 - ; )
+    2dup - >r + 
+    $2000 r> */ $6000 - ;
 
 ::atan2 | x y -- bangle
-	swap -? ( neg swap iatan2 neg ; )
-	swap iatan2 ;
+    swap -? ( neg swap iatan2 neg ; )
+    swap iatan2 ;
 
 ::distfast | dx dy -- dis
 	abs swap abs over <? ( swap ) | min max
@@ -173,26 +172,21 @@
 ::log10.	log2. $352B5 /. ;
 ::logn2.	log2. $17154 /. ;
 	
-:ex1 over $58b91 - +? ( -rot nip 8 << ; ) drop ;
-:ex2 over $2c5c8 - +? ( -rot nip 4 << ; ) drop ;
-:ex3 over $162e4 - +? ( -rot nip 2 << ; ) drop ;
-:ex4 over $b172 - +? ( -rot nip 1 << ; ) drop ;
-:ex5 over $67cd - +? ( -rot nip dup 1 >> + ; ) drop ;
-:ex6 over $3920 - +? ( -rot nip dup 2 >> + ; ) drop ;
-:ex7 over $1e27 - +? ( -rot nip dup 3 >> + ; ) drop ;
-:ex8 over $f85 - +? ( -rot nip dup 4 >> + ; ) drop ;
-:ex9 over $7e1 - +? ( -rot nip dup 5 >> + ; ) drop ;
-:exa over $3f8 - +? ( -rot nip dup 6 >> + ; ) drop ;
-:exb over $1fe - +? ( -rot nip dup 7 >> + ; ) drop ;
-
-:xp
-	swap -? ( $b1721 + swap 16 >> ; ) swap ;
-
 ::exp. | x -- r
-	1.0 xp | x y
-	ex1 ex2 ex3 ex4 ex5 ex6
-	ex7 ex8 ex9 exa exb
-	swap over 32 *>> + ;	
+	1.0 swap xp | x y
+	-? ( $b1721 + swap 16 >> swap )
+	$58b91 >=? ( $58b91 - swap 8 << swap ) 
+	$2c5c8 >=? ( $2c5c8 - swap 4 << swap )
+	$162e4 >=? ( $162e4 - swap 2 << swap )
+	$b172 >=? ( $b172 - swap 1 << swap ) 
+	$67cd >=? ( $67cd - swap dup 1 >> + swap )
+	$3920 >=? ( $3920 - swap dup 2 >> + swap )
+	$1e27 >=? ( $1e27 - swap dup 3 >> + swap )
+	$f85 >=? ( $f85 - swap dup 4 >> + swap ) 
+	$7e1 >=? ( $7e1 - swap dup 5 >> + swap ) 
+	$3f8 >=? ( $3f8 - swap dup 6 >> + swap ) 
+	$1fe >=? ( $1fe - swap dup 7 >> + swap ) 
+	over 32 *>> + ;	
 
 ::pow. | base exp -- r
 	swap ln. *. exp. ;
@@ -230,13 +224,13 @@
 
 | next pow2
 ::nextpow2 | v -- p2
-	1 -
+	1-
 	dup 1 >> or
 	dup 2 >> or
 	dup 4 >> or
 	dup 8 >> or
 	dup 16 >> or
-	1 +
+	1+
 	;
 	
 ::6* | n -- n*6

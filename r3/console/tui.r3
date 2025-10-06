@@ -8,20 +8,21 @@
 
 #flag
 
-#id		| id 
-#idn	| id now 
+#id		| id actual
+#idn	| elegida
+
 #idf	| id foco
 
-#wid
-#widn
+#wid	| win actual
+#widn	| elegida
 
 ##uikey
 #info "ok" * 256
 
 ::.tdebug
-	widn idf idn "id:%d idf:%d wid:%d " .print
-	uikey ">>%h<<" .print
-	'info .write
+	widn idf idn "idn:%d idf:%d widn:%d " .print
+|	uikey ">>%h<<" .print
+|	'info .write
 	;
 	
 ::inwin? | -- 1.2.3/0 ; dn-hold-up
@@ -39,7 +40,8 @@
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
-	[tab] =? ( 1 'idf +! 1 'widn +! ) | cambia id y luego wid
+	[tab] =? ( 1 'idf +! ) | cambia id y luego wid
+	[shift+tab] =? ( -1 'idf +! ) | cambia id y luego wid
 	'uikey ! ;
 	
 :hmouse
@@ -72,10 +74,13 @@
 
 ::tui
 	0 'flag !
-	idn id >? ( 0 'idn ! ) drop
-	idf id >? ( 0 'idf ! ) drop
+	idn 
+	-? ( id 1- 'idn ! )
+	id >=? ( 0 'idn ! ) 
+	drop
+	idf id >=? ( 0 'idf ! ) drop
 	-1 'id !
-	widn wid >? ( 0 'widn ! ) drop
+	widn wid >=? ( 0 'widn ! ) drop
 	0 'wid ! ;
 	
 ::tuWin | x y w h --
@@ -178,17 +183,11 @@
 
 #overl
 
-:kbInputLine | --
+:kblist | --
 	uikey 0? ( drop ; )	
-	32 126 in? ( modo ex ; ) 
-	[ins] =? ( chmode )
-	[le] =? ( kizq ) [ri] =? ( kder )
-	[back] =? ( kback ) [del] =? ( kdel )
-	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
-|	<tab> =? ( nextfoco ) <ret> =? ( nextfoco )
-|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
+	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
 	drop ;	
-
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
@@ -197,14 +196,15 @@
 	uiNindx .wtext .reset ;
 
 ::tuList | 'var cntlines list --
-	inwin?
-	drop
 	mark makeindx
+	inwin?
+|	1 =? ( >r kblist r> )
+	drop
+	id idf =? ( >r kblist r> ) drop	
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	2drop
-	empty 
-	1 'id +! ;	
+	empty ;	
 	
 |----- TREE
 | #vtree 0 0
@@ -231,6 +231,17 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 
+:kbclick	
+	pick2 @ 3 << indlist + @ 
+	dup c@ $80 xor swap c! ;
+	
+:kbtree | --
+	uikey 0? ( drop ; )	
+	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
+	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
+	[enter] =? ( kbclick ) 
+	drop ;	
+
 #fold "▸" "▾"
 :,iicon | n -- 
 	$20 nand? ( drop 32 ,c ; )
@@ -248,13 +259,11 @@
 ::tuTree | 'var cntlines list --
 	inwin? drop
 	mark maketree
-|	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
-|	chtree
+	id idf =? ( >r kbtree r> ) drop	
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	2drop
-	empty 
-	1 'id +! ;	
+	empty ;	
 
 |--------------------------------	
 |--------------------------------	
