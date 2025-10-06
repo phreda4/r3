@@ -32,7 +32,9 @@
 		drop 3 ; ) drop | up
 	evtmxy .inwin? 0? ( ; ) drop
 	id idn =? ( drop 2 ; ) | move
-	'idn ! 1 ; | dn
+	dup 'idn ! 'idf ! 
+	wid 1- 'widn !
+	1 ; | dn
 
 :hkey
 	evtkey
@@ -42,9 +44,9 @@
 	'keyin ! ;
 	
 :hmouse
-	evtmb 
-	1? ( evtmxy .at "." .fwrite ) 
-	drop
+|	evtmb 
+|	1? ( evtmxy .at "." .fwrite ) 
+|	drop
 	;
 	
 :tredraw
@@ -73,7 +75,7 @@
 ::tui
 	0 'flag !
 	idn id >? ( 0 'idn ! ) drop
-|	idf id >? ( 0 'idf ! ) drop
+	idf id >? ( 0 'idf ! ) drop
 	-1 'id !
 	widn wid >? ( 0 'widn ! ) drop
 	0 'wid ! ;
@@ -142,7 +144,7 @@
 	
 ::tuInputLine | 'buff max --
 	inwin?
-	1 =? ( >r inInput r> id 'idf ! ) | in
+	1 =? ( >r inInput r> ) | in
 |	2 =? ( ) | hold
 |	3 =? ( ) | up
 	2drop
@@ -184,7 +186,8 @@
 	uiNindx .wtext .reset ;
 
 ::tuList | 'var cntlines list --
-	inwin? 1? ( id 'idn ! wid 1- 'widn ! ) drop
+	inwin?
+	drop
 	mark makeindx
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
@@ -232,7 +235,7 @@
 	here .wtext .reset ;
 	
 ::tuTree | 'var cntlines list --
-	inwin? 1? ( id 'idn ! wid 1- 'widn ! ) drop
+	inwin? drop
 	mark maketree
 |	cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 |	chtree

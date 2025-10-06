@@ -1,5 +1,6 @@
-^./console.r3
-^./utfg.r3
+| start program
+| PHREDA 2025
+|---------------
 ^./tui.r3
 
 |--------------------------------	
@@ -16,10 +17,9 @@
 	;
 	
 |--------------------------------	
-#.exit 0 :exit 1 '.exit ! ;
-
 #vfolder 0 0
 #vfile 0 0
+#scratchpad * 1024
 
 :dirpanel
 	.reset
@@ -39,74 +39,29 @@
 :dirpad
 	1 rows 6 - cols 6 .win |.wborde
 	$1 " Command " .wtitle
+	1 .wmargin .wstart
+	'scratchpad	1024 tuInputline	
 	;
 	
 :scrmain
 	.reset .cls 
 	2 1 xat
-	.green "R3" xwrite 
-	|.White " matrix.r3" xwrite
+	"[01R[023[03F[04o[05r[06t[07h" xwrite
 	.reset 
 	dirpanel
 	dirfile
 	dirpad
-	.rever
 	1 rows .at 
-	.eline " |ESC| ✕Exit |F1| ⏵Run |F2| ✍Edit |F3| 🔍Search |F4| ❔Help" .write .cr 
-	.eline
-	.flush
-	;
-
-:help
-	23 5 40 20 .win
-	32 32 32 .bgrgb
-	.wfill 
-	.greenl
-	.wborded 4 .wmargin
-	.white
-	$00 "0" .wtitle $01 "1" .wtitle $02 "2" .wtitle $03 "3" .wtitle 
-	$04 "| coso |" .wtitle 
-	$05 "5" .wtitle $06 "6" .wtitle 
-
-	$04 "a" .wtitle $14 "b" .wtitle 
-	$24 "| 123 |" .wtitle 
-	$34 "d" .wtitle 
-	$44 "centro" .wtitle 
-	$54 "f" .wtitle $64 "g" .wtitle 
-	;
-	
-	
-:hkey
-	evtkey 
-	[esc] =? ( exit ) 
-	[f1] =? ( run ) 
-	
-	drop ;
-	
-:hmouse
-	evtmb 
-	1? ( evtmxy .at "." .fwrite ) 
-	drop
-	;
-	
-:testkey
-	( .exit 0? drop
-		inevt	
-		1 =? ( hkey )
-		2 =? ( hmouse )
-		drop 
-		20 ms
-		) drop ;
-
+	" |ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write .cr 
+	.flush ;
 
 |-----------------------------------
 :main
 	"r3" scandir
 	"r3/audio" scanfiles
 	
-	'scrmain .onresize
-	scrmain
-	testkey ;
+	'scrmain onTui 
+	;
 
 : 
 .console 

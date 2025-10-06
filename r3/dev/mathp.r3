@@ -8,7 +8,11 @@
 	
 ::log2 | x -- r ;(fixed48_16_t x) {
 	0 <=? ( -1 nip ; )
-	dup msbl 16 - | x exp
+	dup msbl 
+	2dup "%h %h" .println
+	16 - | x exp
+	dup "%d" .println
+	12 16 - "%d" .println
 	aprox | exp y
 	0 0.5 rot | exp frac b y
 	16 ( 1? 1- >r
@@ -17,6 +21,7 @@
 		swap 2/ swap
 		r> ) drop
 	2drop
+	2dup "%h %h" .println
 	swap 16 << + ;
 
     
@@ -82,8 +87,8 @@
 	msec swap - "%d msec" .println
 	;
 	
-:main
-	-0.5 ( 5.0 <?
+:bucle
+	-0.5 ( 1.0 <?
 		dup "x:%f " .print
 		dup exp. "| exp:%f " .print
 		dup ln. "| ln:%f " .print
@@ -92,9 +97,13 @@
 		dup log2 " log2:%f " .print
 		.cr
 		0.25 + ) drop
+	;
+:main
+| bucle
 |speed1		
 |	calc1
 |	time2
+	0.25 log2 "result=%f" .println
 	waitesc
 	;
 	

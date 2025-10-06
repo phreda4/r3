@@ -35,7 +35,7 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 :bc 2 << 'tx + .write ;
 	
 :bigline | val -- val
-	14 ( 1? 2dup >> $3 and bc 2 - ) drop ;
+	16 ( 1? 2 - 2dup >> $3 and bc ) drop ;
 	
 :bigemit | ascii --
 	$7f and 32 - clamp0 
@@ -46,8 +46,16 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 		1+ ) 2drop 
 	7 'xc +! ;
 
+:xcol
+	$20 nand 63 >? ( 7 - ) $30 - $f and ;
+:escape
+	xcol .bc c@+ xcol .fc ;
+:xchar | char
+	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
+	bigemit ;
+| [02r[31o
 ::xwrite | str --
-	( c@+ 1? bigemit ) 2drop ;
+	( c@+ 1? xchar ) 2drop ;
 	
 ::xat
 	'yc ! 'xc ! ;

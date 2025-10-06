@@ -37,15 +37,15 @@ Repository: https://github.com/phreda4/r3
 10. [Variables and Memory](#variables-and-memory)
 11. [Text and Memory](#text-and-memory)
 12. [Registers A and B](#registers-a-and-b)
-
-13. [Return Stack](#return-stack)
-14. [Operating System Connection](#operating-system-connection)
-15. [Libraries](#libraries)
-16. [Complete Example: Simple Game](#complete-example-simple-game)
-17. [Debugging Guide](#debugging-guide)
-18. [Common Patterns](#common-patterns)
-19. [Performance Considerations](#performance-considerations)
-20. [Appendix 1 - Base Dictionary](#appendix-1---base-dictionary)
+13. [Memory Management in R3forth](#memory-management-in-r3forth)
+14. [Return Stack](#return-stack)
+15. [Operating System Connection](#operating-system-connection)
+16. [Libraries](#libraries)
+17. [Complete Example: Simple Game](#complete-example-simple-game)
+18. [Debugging Guide](#debugging-guide)
+19. [Common Patterns](#common-patterns)
+20. [Performance Considerations](#performance-considerations)
+21. [Appendix 1 - Base Dictionary](#appendix-1---base-dictionary)
 
 ---
 
@@ -2854,6 +2854,8 @@ Essential words in the R3 base dictionary:
 | `cB!+` | `a --` | Store byte at B and increment | +1 |
 | `dA!+` | `a --` | Store dword at A and increment | +4 |
 | `dB!+` | `a --` | Store dword at B and increment | +4 |
+| `AB[` | `--` | Store A and B in r-stack | - |
+| `]BA` | `--` | Restore B and A from r-stack | - |
 
 ### Memory Block Operations
 
@@ -2926,7 +2928,7 @@ This manual provides comprehensive coverage of R3forth programming concepts and 
 - Use deep stack operations (factor instead)
 - Optimize prematurely
 - Mix memory access sizes carelessly
-- Leave stack imbalanced
+- Leave stack imbalanced, if not needed !
 
 ### Resources
 

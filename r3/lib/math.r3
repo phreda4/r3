@@ -122,7 +122,7 @@
 	$ffffffff >? ( 32 >> swap 32 + swap )
 	$ffff >? ( 16 >> swap 16 + swap )
 	$ff >? ( 8 >> swap 8 + swap )
-	$7f >? ( 4 >> swap 4 + swap )
+	$f >? ( 4 >> swap 4 + swap )
 	$3 >? ( 2 >> swap 2 + swap )
 	2/ + ;
 

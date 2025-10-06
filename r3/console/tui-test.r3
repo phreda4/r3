@@ -1,14 +1,13 @@
 | TUI Example
 | PHREDA 2025
 
-^./console.r3
 ^./tui.r3
 
 |--------------------------------	
 #vfolder 0 0
 #vfile 0 0
 #scratchpad "Prueba de texto" * 1024
-
+#help "" * 1024
 
 :dirpanel
 	.reset
@@ -20,9 +19,9 @@
 :dirfile
 	31 5 cols 30 - rows 11 - tuwin |.win |.wborde
 	1 .wmargin 
-	inwin? .bc .wfill
+	inwin? dup .bc 
+	3 << 32 + 6 7 3 .boxf .reset |.wfill
 	$1 "[ demo ]" .wtitle
-	
 	.reset
 	;
 
@@ -38,28 +37,27 @@
 	
 	.reset .cls 
 	2 1 xat
-	.green "R3" xwrite 
+	"[01R[023[03F[04o[05r[06t[07h" xwrite  .reset
 	|.White " matrix.r3" xwrite
-	18 2 .at 2over 2over "%d %d %d %d" .print
-	18 3 .at .tdebug
-	|18 3 .at padi> 1? ( dup .write ) drop
+	58 2 .at 2over 2over "%d %d %d %d" .print
+	58 3 .at .tdebug
+	|48 3 .at padi> 1? ( dup .write ) drop
 	.reset 
 	dirpanel
 	dirfile
-	
 	dirpad
-	.rever
 	1 rows .at 
 	" |ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write .cr 
-	
+	'help .print
 	;
 	
 |-----------------------------------
 : 
 	.console |.tuistart
+	.cls
 	"r3" scandir
 	"r3/audio" scanfiles
-33
+	33
 	'main onTui 
 	.free 
 ;
