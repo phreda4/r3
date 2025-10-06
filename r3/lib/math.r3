@@ -173,7 +173,7 @@
 ::logn2.	log2. $17154 /. ;
 	
 ::exp. | x -- r
-	1.0 swap xp | x y
+	1.0 swap 
 	-? ( $b1721 + swap 16 >> swap )
 	$58b91 >=? ( $58b91 - swap 8 << swap ) 
 	$2c5c8 >=? ( $2c5c8 - swap 4 << swap )
