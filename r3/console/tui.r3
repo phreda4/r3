@@ -15,12 +15,12 @@
 #wid
 #widn
 
-#keyin
+##uikey
 #info "ok" * 256
 
 ::.tdebug
 	widn idf idn "id:%d idf:%d wid:%d " .print
-	keyin ">>%h<<" .print
+	uikey ">>%h<<" .print
 	'info .write
 	;
 	
@@ -39,9 +39,8 @@
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
-	|[tab] =? ( 1 'widn +! ) | cambia id y luego wid
-|	[f1] =? ( run ) 
-	'keyin ! ;
+	[tab] =? ( 1 'idf +! 1 'widn +! ) | cambia id y luego wid
+	'uikey ! ;
 	
 :hmouse
 |	evtmb 
@@ -62,13 +61,12 @@
 	dup ex
 	'vecdraw !
 	( .exit 0? drop
-		0 'keyin !
+		0 'uikey !
 		inevt	
 		1 =? ( hkey )
 |		2 =? ( hmouse )
-|		1? ( )
+		1? ( tredraw )
 		drop
-		tredraw		
 		10 ms
 		) drop ;
 
@@ -125,7 +123,7 @@
 	drop 'lins 'modo ! ;
 
 :kbInputLine | --
-	keyin 0? ( drop ; )	
+	uikey 0? ( drop ; )	
 	32 126 in? ( modo ex ; ) 
 	[ins] =? ( chmode )
 	[le] =? ( kizq ) [ri] =? ( kder )
@@ -179,6 +177,19 @@
 | #vlist 0 0 
 
 #overl
+
+:kbInputLine | --
+	uikey 0? ( drop ; )	
+	32 126 in? ( modo ex ; ) 
+	[ins] =? ( chmode )
+	[le] =? ( kizq ) [ri] =? ( kder )
+	[back] =? ( kback ) [del] =? ( kdel )
+	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
+|	<tab> =? ( nextfoco ) <ret> =? ( nextfoco )
+|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	drop ;	
+
+
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( .rever )

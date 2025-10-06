@@ -173,22 +173,26 @@
 ::log10.	log2. $352B5 /. ;
 ::logn2.	log2. $17154 /. ;
 	
+:ex1 over $58b91 - +? ( -rot nip 8 << ; ) drop ;
+:ex2 over $2c5c8 - +? ( -rot nip 4 << ; ) drop ;
+:ex3 over $162e4 - +? ( -rot nip 2 << ; ) drop ;
+:ex4 over $b172 - +? ( -rot nip 1 << ; ) drop ;
+:ex5 over $67cd - +? ( -rot nip dup 1 >> + ; ) drop ;
+:ex6 over $3920 - +? ( -rot nip dup 2 >> + ; ) drop ;
+:ex7 over $1e27 - +? ( -rot nip dup 3 >> + ; ) drop ;
+:ex8 over $f85 - +? ( -rot nip dup 4 >> + ; ) drop ;
+:ex9 over $7e1 - +? ( -rot nip dup 5 >> + ; ) drop ;
+:exa over $3f8 - +? ( -rot nip dup 6 >> + ; ) drop ;
+:exb over $1fe - +? ( -rot nip dup 7 >> + ; ) drop ;
+
+:xp
+	swap -? ( $b1721 + swap 16 >> ; ) swap ;
+
 ::exp. | x -- r
-	-1310720 <? ( drop 0 ; )
-	1310720 >? ( drop inf- ; )
-	dup 94548 *. 0.5 + 16 >> 
-	16 >> dup -rot	| n x n 
-	16 << 45426 * - 	| n r | r = x - n*LN2 (optimizado) 
-	91		| n r result ; 1/6!
-	over *. 546 +	| n r result
-	over *. 2731 +
-	over *. 10923 +
-	over *. 32768 +
-	over *. 1.0 +
-	over *. 1.0 + | n r result
-	nip swap
-	+? ( 47 >? ( 2drop inf+ ; ) << ; )
-	-16 <? ( 2drop 0 ; ) neg >> ;
+	1.0 xp | x y
+	ex1 ex2 ex3 ex4 ex5 ex6
+	ex7 ex8 ex9 exa exb
+	swap over 32 *>> + ;	
 
 ::pow. | base exp -- r
 	swap ln. *. exp. ;

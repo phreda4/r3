@@ -264,7 +264,7 @@
 
 :gCLZ
 	'TOS cellR
-	"bsr #0,#0;xor #0,31" ,asm ; | <<<< not 63!!
+	"bsr #0,#0;xor #0,63" ,asm ;
 
 :g<<
 	stk.RC

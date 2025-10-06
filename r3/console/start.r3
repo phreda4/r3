@@ -23,27 +23,28 @@
 
 :dirpanel
 	.reset
-	1 5 30 rows 11 - .win .wborde
+	1 5 30 rows 11 - tuwin
 	$1 " Dir " .wtitle
 	1 .wmargin
 	.wstart
 	'vfolder wh 2 - uiDirs tuTree
 	;
 :dirfile
-	31 5 cols 30 - rows 11 - .win |.wborde
+	31 5 cols 30 - rows 11 - tuwin
 	$1 " Files " .wtitle
 	1 .wmargin
 	.wstart
 	'vfile wh 2 - uiFiles tuList
 	;
 :dirpad
-	1 rows 6 - cols 6 .win |.wborde
+	1 rows 6 - cols 6 tuwin
 	$1 " Command " .wtitle
 	1 .wmargin .wstart
 	'scratchpad	1024 tuInputline	
 	;
 	
 :scrmain
+	tui	
 	.reset .cls 
 	2 1 xat
 	"[01R[023[03F[04o[05r[06t[07h" xwrite
@@ -51,8 +52,8 @@
 	dirpanel
 	dirfile
 	dirpad
-	1 rows .at 
-	" |ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write .cr 
+	2 rows .at 
+	"|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write .cr 
 	.flush ;
 
 |-----------------------------------

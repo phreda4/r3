@@ -357,7 +357,7 @@
 
 :gCLZ
 	"bsr rax,rax" ,ln
-	"xor rax,31" ,ln ; |<<< not 63!!
+	"xor rax,63" ,ln ;
 
 :g<<
 	"mov cl,al" ,ln

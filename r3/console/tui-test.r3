@@ -16,6 +16,7 @@
 	1 .wmargin .wstart
 	'vfolder wh 2 - uiDirs tuTree
 	;
+	
 :dirfile
 	31 5 cols 30 - rows 11 - tuwin |.win |.wborde
 	1 .wmargin 
@@ -33,15 +34,12 @@
 	;
 	
 :main
-	tui
-	
+	tui	
 	.reset .cls 
 	2 1 xat
 	"[01R[023[03F[04o[05r[06t[07h" xwrite  .reset
-	|.White " matrix.r3" xwrite
 	58 2 .at 2over 2over "%d %d %d %d" .print
 	58 3 .at .tdebug
-	|48 3 .at padi> 1? ( dup .write ) drop
 	.reset 
 	dirpanel
 	dirfile

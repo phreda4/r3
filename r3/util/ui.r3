@@ -5,7 +5,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
 
-#cifil $ff1F2229ff14161A	| over|normal -- color fill
+##cifil $ff1F2229ff14161A	| over|normal -- color fill
 #cisel $ff1967D2ff393F4C	| over|normal -- color select
 #cifnt $ffffff		| fuente -- color
 ##cifoc $4055F4		| foco -- borde
