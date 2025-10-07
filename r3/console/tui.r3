@@ -90,6 +90,7 @@
 	wida wid >? ( 0 'wida ! ) drop
 	0 'wid ! ;
 
+|-------------- EVENT
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
@@ -115,15 +116,16 @@
 	dup .onresize
 	dup ex
 	'vecdraw !
+	tuireset
 	( .exit 0? drop
 		0 'uikey !
 		inevt	
-		1 =? ( hkey )
-|		2 =? ( hmouse )
+		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tredraw )
 		drop
 		10 ms
-		) drop ;
+		) drop 
+	tuireset ;
 
 |---------------------	
 ::tuWin | x y w h --
@@ -132,6 +134,8 @@
 	;
 	
 ::tuBtn | 'ev "" --
+	
+	.wtext
 	;
 	
 |--- Edita linea

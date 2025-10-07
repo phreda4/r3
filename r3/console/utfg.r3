@@ -35,17 +35,16 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 :bigline | val -- val
 	16 ( 1? 2 - 2dup >> $3 and bc ) drop ;
 	
-#]nl "^[B^[8D" | dn8*le;
-#]nc "^[4A^[1D" | 4up7ri;
+:]nl "B" .[w "8D" .[w ; | dn8*le;
+:]nc "4A" .[w "1D" .[w ; | 4up7ri;
 	
 :bigemit | ascii --
 	$7f and 32 - clamp0 
 	3 << 'f8x8 + @
-	bigline 16 >> ']nl .writeE
-	bigline 16 >> ']nl .writeE
-	bigline 16 >> ']nl .writeE
-	bigline drop
-	']nc .writeE ;
+	bigline 16 >> ]nl 
+	bigline 16 >> ]nl
+	bigline 16 >> ]nl
+	bigline drop ]nc ;
 
 :xcol
 	$20 nand 63 >? ( 7 - ) $30 - $f and ;
@@ -107,11 +106,6 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 #wx #wy #ww ##wh #wm
 
 ::.inwin? | x y -- 0/-1
-	wy <? ( 2drop 0 ; ) wy - wh >? ( 2drop 0 ; ) drop
-	wx <? ( drop 0 ; ) wx - ww >? ( drop 0 ; ) drop
-	-1 ;
-	
-::.inbox? | x y -- 0/-1
 	wy - $ffff and wh >? ( 2drop 0 ; ) drop | limit 0--$ffff
 	wx - $ffff and ww >? ( drop 0 ; ) drop
 	-1 ;

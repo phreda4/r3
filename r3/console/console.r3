@@ -28,34 +28,37 @@
 | [ALT]+A  : 1b A
 
 |------- Output Buffer System -------
-#outbuf * $ffff  | 64KB output buffer
+#outbuf | output buffer
 #outbuf> 'outbuf | Current position in buffer
 
 ::.flush | -- | Write buffer to stdout
-    outbuf> 'outbuf - 0? ( drop ; )
-	'outbuf swap type
-    'outbuf 'outbuf> ! ;
+    outbuf> outbuf - 0? ( drop ; )
+	outbuf swap type
+    outbuf 'outbuf> ! ;
 
 ::.type | str cnt -- | Add to buffer
-    'outbuf> outbuf> - >? ( .flush )
+    outbuf> outbuf - over + $ffff >? ( .flush ) drop 
 	outbuf> rot pick2 cmove
     'outbuf> +! ;
 ::.emit | char --
-	outbuf> 'outbuf> =? ( .flush 'outbuf nip ) c!+ 'outbuf> ! ;
+	outbuf> outbuf $ffff + =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
 
 ::.cr 10 .emit 13 .emit ;
 ::.sp 32 .emit ;
 ::.nsp | n -- ;..
 	32 swap 
 ::.nch | char n -- ; WARNIG not multibyte
-	'outbuf> outbuf> - >? ( .flush )
+	outbuf> outbuf - over + $ffff >? ( .flush ) drop 
 	outbuf> rot pick2 cfill | dvc
 	'outbuf> +! ;
 
 ::.write count .type ;
 ::.print sprintc .type ;
 ::.println sprintlnc .type ;
-::.[ $1b .emit $5b .emit .write ;
+
+::.^[ $1b .emit $5b .emit ;
+::.[w .^[ .write ;
+::.[p .^[ .print ;
 
 ::.rep | cnt  "car" -- 
 	count rot ( 1? 1- pick2 pick2 .type ) 3drop ;
@@ -64,120 +67,118 @@
 ::.fprint .print .flush ;
 ::.fprintln .println .flush ;
 
-|------- Special Character Printing -------
-:emite | char --
-    $5e =? ( drop 27 .emit ; ) | ^=escape
-    .emit ;
-
-::.writee | "str" -- | print with ^=ESC
-    ( c@+ 1? emite ) 2drop ;
-
 |------- Cursor Control -------
-::.home "H" .[ ;
-::.cls "H" .[ "J" .[ ;
-::.at "%d;%dH" sprint .[ ; | x y -- | f
-::.col "%dG" sprint .[ ; | x -- columna
-::.eline "0K" .[ ; | erase line from cursor
-|::.eline0 "1K" .[ ; | erase from start of line to cursor
-::.ealine "2K" .[ ; | borrar linea actual
-::.escreen "J" .[ ; | erase from cursor to end of screen
-::.escreenup "1J" .[ ; | erase from cursor to beginning
+::.home "H" .[w ;
+::.cls "H" .[w "J" .[w ;
+::.at "%d;%dH" .[p ; | x y -- | f
+::.col "%dG" .[p ; | x -- columna
+::.eline "0K" .[w ; | erase line from cursor
+|::.eline0 "1K" .[w ; | erase from start of line to cursor
+::.ealine "2K" .[w ; | borrar linea actual
+::.escreen "J" .[w ; | erase from cursor to end of screen
+::.escreenup "1J" .[w ; | erase from cursor to beginning
 
-::.showc "?25h" .[ ;
-::.hidec "?25l" .[ ;
-::.blc "?12h" .[ ;
-::.unblc "?12l" .[ ;
-::.savec "s" .[ ; | save cursor position
-::.restorec "u" .[ ; | restore cursor position
+::.showc "?25h" .[w ;
+::.hidec "?25l" .[w ;
+::.blc "?12h" .[w ;
+::.unblc "?12l" .[w ;
+::.savec "s" .[w ; | save cursor position
+::.restorec "u" .[w ; | restore cursor position
 
 |------- Cursor Shapes -------
-::.ovec "0 q" .[ ; | default cursor
-::.insc "5 q" .[ ; | blinking bar
-::.blockc "2 q" .[ ; | steady block
-::.underc "4 q" .[ ; | steady underscore
+::.ovec "0 q" .[w ; | default cursor
+::.insc "5 q" .[w ; | blinking bar
+::.blockc "2 q" .[w ; | steady block
+::.underc "4 q" .[w ; | steady underscore
 
 |------- Screen Buffer Control -------
-::.alsb "?1049h" .[ ; | alternate screen buffer
-::.masb "?1049l" .[ ; | main screen buffer
+::.alsb "?1049h" .[w ; | alternate screen buffer
+::.masb "?1049l" .[w ; | main screen buffer
 
 |------- Foreground Colors -------
-::.Black "30m" .[ ;
-::.Red "31m" .[ ;
-::.Green "32m" .[ ;
-::.Yellow "33m" .[ ;
-::.Blue "34m" .[ ;
-::.Magenta "35m" .[ ;
-::.Cyan "36m" .[ ;
-::.White "37m" .[ ;
+::.Black "30m" .[w ;
+::.Red "31m" .[w ;
+::.Green "32m" .[w ;
+::.Yellow "33m" .[w ;
+::.Blue "34m" .[w ;
+::.Magenta "35m" .[w ;
+::.Cyan "36m" .[w ;
+::.White "37m" .[w ;
 
-::.Blackl "30;1m" .[ ;
-::.Redl "31;1m" .[ ;
-::.Greenl "32;1m" .[ ;
-::.Yellowl "33;1m" .[ ;
-::.Bluel "34;1m" .[ ;
-::.Magental "35;1m" .[ ;
-::.Cyanl "36;1m" .[ ;
-::.Whitel "37;1m" .[ ;
+::.Blackl "30;1m" .[w ;
+::.Redl "31;1m" .[w ;
+::.Greenl "32;1m" .[w ;
+::.Yellowl "33;1m" .[w ;
+::.Bluel "34;1m" .[w ;
+::.Magental "35;1m" .[w ;
+::.Cyanl "36;1m" .[w ;
+::.Whitel "37;1m" .[w ;
 
-::.fc "38;5;%dm" sprint .[ ; | 256 color foreground
+::.fc "38;5;%dm" .[p ; | 256 color foreground
 
 |------- Background Colors -------
-::.BBlack "40m" .[ ;
-::.BRed "41m" .[ ;
-::.BGreen "42m" .[ ;
-::.BYellow "43m" .[ ;
-::.BBlue "44m" .[ ;
-::.BMagenta "45m" .[ ;
-::.BCyan "46m" .[ ;
-::.BWhite "47m" .[ ;
+::.BBlack "40m" .[w ;
+::.BRed "41m" .[w ;
+::.BGreen "42m" .[w ;
+::.BYellow "43m" .[w ;
+::.BBlue "44m" .[w ;
+::.BMagenta "45m" .[w ;
+::.BCyan "46m" .[w ;
+::.BWhite "47m" .[w ;
 
-::.BBlackl "40;1m" .[ ;
-::.BRedl "41;1m" .[ ;
-::.BGreenl "42;1m" .[ ;
-::.BYellowl "43;1m" .[ ;
-::.BBluel "44;1m" .[ ;
-::.BMagental "45;1m" .[ ;
-::.BCyanl "46;1m" .[ ;
-::.BWhitel "47;1m" .[ ;
+::.BBlackl "40;1m" .[w ;
+::.BRedl "41;1m" .[w ;
+::.BGreenl "42;1m" .[w ;
+::.BYellowl "43;1m" .[w ;
+::.BBluel "44;1m" .[w ;
+::.BMagental "45;1m" .[w ;
+::.BCyanl "46;1m" .[w ;
+::.BWhitel "47;1m" .[w ;
 
-::.bc "48;5;%dm" sprint .[ ; | 256 color background
+::.bc "48;5;%dm" .[p ; | 256 color background
 
 |------- RGB Colors (true color) | r g b --
-::.fgrgb swap rot "38;2;%d;%d;%dm" sprint .[ ;
-::.bgrgb swap rot "48;2;%d;%d;%dm" sprint .[ ;
+::.fgrgb swap rot "38;2;%d;%d;%dm" .[p ;
+::.bgrgb swap rot "48;2;%d;%d;%dm" .[p ;
 
 |------- Text Attributes -------
-::.Bold "1m" .[ ;
-::.Dim "2m" .[ ;
-::.Italic "3m" .[ ;
-::.Under "4m" .[ ;
-::.Blink "5m" .[ ;
-::.Rever "7m" .[ ;
-::.Hidden "8m" .[ ;
-::.Strike "9m" .[ ;
-::.Reset "0m" .[ ;
+::.Bold "1m" .[w ;
+::.Dim "2m" .[w ;
+::.Italic "3m" .[w ;
+::.Under "4m" .[w ;
+::.Blink "5m" .[w ;
+::.Rever "7m" .[w ;
+::.Hidden "8m" .[w ;
+::.Strike "9m" .[w ;
+::.Reset "0m" .[w ;
 	
 |------- Line Input -------
-##pad * 256
+##pad 
 
 :.readln | --
-    'pad ( inkey 1? swap c!+ ) swap c! ;
+    pad ( inkey 1? swap c!+ ) swap c! ;
 
 ::.input | -- | read line to pad
-    'pad 
+    pad 
     ( getch $D <>? | wait for ENTER key
         0? ( drop ; )
         8 =? ( swap 
-            1 - 'pad <? ( 2drop 'pad ; )
-            swap .emit "1P" .[ ; )
+            1- pad <? ( 2drop pad ; )
+            swap .emit "1P" .[w ; )
         dup .emit
         swap c!+ ) drop
     0 swap c! ;
 
 ::.inputn | -- n | read number
-    .input 'pad str>nro nip ;
+    .input pad str>nro nip ;
 
 ::waitesc | -- | wait for ESC key
     ( getch [esc] <>? drop ) drop ;
 	
-
+: |||||||||||||||||||||||||||||
+	here 
+	dup 'outbuf ! $ffff +
+	dup 'pad ! 1024 +
+	'here !
+	outbuf 'outbuf> !
+;
