@@ -8,30 +8,28 @@
 	.reset
 	2 8 38 8 tuwin
 	$1 "1" .wtitle .wstart
-	|.wat@ 1+ swap 1+ swap .at
-	tuiw .bc
-	1 .wm
-	.wfill
-	.reset
+	tuiw .bc 1 .wm .wfill .reset
+	.wat@ 2 + swap 2 + swap .at tuif "%d" sprint xwrite
+	
 	;
 :w1 
 	12 18 38 8 tuwin
 	$1 "2" .wtitle .wstart
-	.wat@ 1+ swap 1+ swap .at
-	tuiw "%d " .print 
+	.wat@ 1+ swap 1+ swap .at tuiw "%d " .print 
+	.wat@ 2 + swap 2 + swap .at tuif "%d" sprint xwrite
 	;
 :w2	
 	22 28 38 8 tuwin
 	$1 "2" .wtitle .wstart
-	.wat@ 1+ swap 1+ swap .at
-	tuiw "%d " .print
+	.wat@ 1+ swap 1+ swap .at tuiw "%d " .print
+	.wat@ 2 + swap 2 + swap .at tuif "%d" sprint xwrite
 	;
 	
 :main
 	tui	
 	.reset .cls 
-	2 1 xat
-	"[01R[023[03F[04o[05r[06t[07h" xwrite  .reset
+	2 1 .at
+	"[01R[023[03F[04o[05r[06t[07h" xwrite .reset
 	58 2 .at 2over 2over "%d %d %d %d" .print
 	58 3 .at .tdebug
 	.reset 

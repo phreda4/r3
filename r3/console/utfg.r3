@@ -28,8 +28,6 @@ $50030007400200 $540303030300000 $1000CC030300000 $440333032300000
 $1010098018900000 $A901AB030300000 $1550090015D00000 $5400C00A4000A8 
 $4000C000C00080 $1500030001A02A00 $4400220 $0 
 
-#xc #yc
-
 |--- 3bytes utf-8 align to 4
 #tx " " ( 0 0 ) "▀" "▄" "█"	 | 3bytes utf-char
 :bc 2 << 'tx + .write ;
@@ -37,14 +35,17 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 :bigline | val -- val
 	16 ( 1? 2 - 2dup >> $3 and bc ) drop ;
 	
+#]nl "^[B^[8D" | dn8*le;
+#]nc "^[4A^[1D" | 4up7ri;
+	
 :bigemit | ascii --
 	$7f and 32 - clamp0 
 	3 << 'f8x8 + @
-	0 ( 4 <?
-		xc yc pick2 + .at
-		swap bigline 16 >> swap
-		1+ ) 2drop 
-	7 'xc +! ;
+	bigline 16 >> ']nl .writeE
+	bigline 16 >> ']nl .writeE
+	bigline 16 >> ']nl .writeE
+	bigline drop
+	']nc .writeE ;
 
 :xcol
 	$20 nand 63 >? ( 7 - ) $30 - $f and ;
@@ -57,8 +58,6 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 ::xwrite | str --
 	( c@+ 1? xchar ) 2drop ;
 	
-::xat
-	'yc ! 'xc ! ;
 
 ::.box | x y w h --
 	( 1? 1- >r

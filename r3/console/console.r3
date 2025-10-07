@@ -69,8 +69,8 @@
     $5e =? ( drop 27 .emit ; ) | ^=escape
     .emit ;
 
-::.printe | "str" -- | print with ^=ESC
-    sprint ( c@+ 1? emite ) 2drop ;
+::.writee | "str" -- | print with ^=ESC
+    ( c@+ 1? emite ) 2drop ;
 
 |------- Cursor Control -------
 ::.home "H" .[ ;
