@@ -111,9 +111,15 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	wy <? ( 2drop 0 ; ) wy - wh >? ( 2drop 0 ; ) drop
 	wx <? ( drop 0 ; ) wx - ww >? ( drop 0 ; ) drop
 	-1 ;
+	
+::.inbox? | x y -- 0/-1
+	wy - $ffff and wh >? ( 2drop 0 ; ) drop | limit 0--$ffff
+	wx - $ffff and ww >? ( drop 0 ; ) drop
+	-1 ;
 
 ::.win 'wh ! 'ww ! 'wy ! 'wx ! ;
 ::.wmargin 'wm ! ;
+::.wm dup 'wx +! dup 'wy +! 2* neg dup 'wh +! 'ww +! ;
 
 ::.wfill wx wy ww wh .boxf ;
 ::.wborde wx wy ww wh .boxl ;

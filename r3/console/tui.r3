@@ -6,36 +6,89 @@
 
 #vecdraw
 
-#flag
+#wflag	| widget flag
+#rflag	| render flag
 
-#id		| id actual
-#idn	| elegida
-
+#id		| now
+#idh	| hot
+#ida -1	| activa
+#idfa
 #idf	| id foco
 
-#wid	| win actual
-#widn	| elegida
+#wid	| panel now
+#wida	| panel activa
 
-##uikey
+##uikey	| tecla
+
 #info "ok" * 256
 
 ::.tdebug
-	widn idf idn "idn:%d idf:%d widn:%d " .print
+	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
 |	uikey ">>%h<<" .print
 |	'info .write
 	;
-	
+
+:tuireset
+	-1 'ida !
+	-1 'idfa !
+	0 'idf !
+	0 'wid !
+	;
+
 ::inwin? | -- 1.2.3/0 ; dn-hold-up
 	1 'id +! 
+	
 	evtmb 0? ( 
-		id idn <>? ( drop ; ) drop
-		-1 'idn !
+		id ida <>? ( drop ; ) drop
+		-1 'ida !
 		drop 3 ; ) drop | up
 	evtmxy .inwin? 0? ( ; ) drop
-	id idn =? ( drop 2 ; ) | move
-	dup 'idn ! 'idf ! 
-	wid 1- 'widn !
+	id ida =? ( drop 2 ; ) | move
+	dup 'ida ! 'idf ! 
+	wid 1- 'wida !
 	1 ; | dn
+
+| flag
+
+| 0 = normal
+| 1 = over (not all sytems)
+| 2 = in
+| 3 = active
+| 4 = active(outside)
+| 5 = out
+| 6 = click
+
+::tuiw | -- flag
+	1 'id +! 
+	ida 
+	-1 =? ( drop | !active
+		evtmxy .inwin? 0? ( ; ) drop	| out->0
+		evtmb 0? ( drop 1 ; ) drop		| over->1
+		id dup 'ida ! 'idf ! wid 1- 'wida ! 
+		2 ; )	| in->2
+	id =? ( drop | =active
+		evtmxy .inwin? 0? ( drop
+			evtmb 0? ( drop -1 'ida ! 5 ; ) drop	| out->5
+			4 ;	) drop						| active outside->4
+		evtmb 0? ( drop -1 'ida ! 6 ; ) drop		| click->6
+		3 ; ) 	 							| active->3
+	drop 0 ;
+
+::tuif | -- flag
+	id 
+	idf <>? ( drop 0 ; )
+	idfa <>? ( drop 1 ; ) | in 
+	drop 2 ; | stay
+	
+::tui
+	idf 
+	-? ( id 'idf ! )
+	id >? ( 0 'idf ! ) 
+	'idfa !
+	
+	-1 'id !
+	wida wid >? ( 0 'wida ! ) drop
+	0 'wid ! ;
 
 :hkey
 	evtkey
@@ -53,7 +106,7 @@
 :tredraw
 	.hidec
 	vecdraw ex 
-	flag
+	rflag
 	1 and? ( .ovec .restorec .showc )
 	drop
 	.flush ;
@@ -72,20 +125,10 @@
 		10 ms
 		) drop ;
 
-::tui
-	0 'flag !
-	idn 
-	-? ( id 1- 'idn ! )
-	id >=? ( 0 'idn ! ) 
-	drop
-	idf id >=? ( 0 'idf ! ) drop
-	-1 'id !
-	widn wid >=? ( 0 'widn ! ) drop
-	0 'wid ! ;
-	
+|---------------------	
 ::tuWin | x y w h --
 	.win
-	wid widn =? ( .wborde ) 1+ 'wid !
+	wid wida =? ( .wborde ) 1+ 'wid !
 	;
 	
 ::tuBtn | 'ev "" --
@@ -146,6 +189,7 @@
 	'lins  'modo ! ;
 	
 ::tuInputLine | 'buff max --
+|	widget? 
 	inwin?
 	1 =? ( >r inInput r> ) | in
 |	2 =? ( ) | hold
@@ -156,7 +200,7 @@
 		.wat@ swap 
 		pad> padi> - + | !! falta utf
 		swap .at .savec | cursor
-		1 'flag !		
+		1 'rflag !		| activate cursor
 		) drop
 	.wtext
 	;

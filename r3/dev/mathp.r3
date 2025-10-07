@@ -104,6 +104,11 @@
 |	calc1
 |	time2
 	
+|	0.5    ln.  "%f  gives -0.6782, correct = -0.69315" .println
+|	1.0    ln.  "%f  gives  0.0149, correct =  0" .println
+|	1.2345 ln.  "%f  gives  0.2922, correct =  0.21067" .println
+	1.0    exp. "%f  gives  2.6977, correct =  2.71828" .println
+	0.2922 exp. "%f  gives  1.3385, correct =  1.33937	" .println
 	waitesc
 	;
 	
