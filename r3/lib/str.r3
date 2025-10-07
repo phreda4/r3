@@ -192,7 +192,7 @@
 :.f!
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	1+ $2e over c! 1-
-	over abs 16 >>
+	over abs 16 >>>
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 

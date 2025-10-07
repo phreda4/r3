@@ -40,7 +40,6 @@
     dup 4846800 16 *>>
     2688000 - 16 *>>
     404000 + 16 *>> ;	
-
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
 ::sin | bangle -- r
@@ -82,10 +81,9 @@
     swap -? ( neg iatan2 neg ; ) iatan2 ;
 
 ::distfast | dx dy -- dis
-	abs swap abs over <? ( swap ) | min max
-	dup 8 << over 3 << + over 4 << - swap 1 << -
-	over 7 << + over 5 << - over 3 << + swap 1 << -
-	8 >> ;
+    abs swap abs over <? ( swap ) | min max
+    dup 3 >> -		| max*7/8 (max - max/8)
+    swap 1 >> + ;	| Calcular: max*7/8 + min/2
 
 ::average | x y -- v
 	2dup xor 1 >> -rot and + ;
@@ -206,8 +204,7 @@
 	( 1?
 		1 and? ( >r over * r> )
 		1 >> rot dup * -rot )
-	drop nip
-	;
+	drop nip ;
 
 ::bswap32 | v -- vs ; 32 bits
 	dup 8 >> $ff00ff and
@@ -233,31 +230,12 @@
 	;
 	
 ::6* | n -- n*6
-	1 << dup 1 << + ;
-
+	2* dup 2* + ;
 ::6/ | n -- n/6
-	dup 1 >> over 3 >> + | n q
-	dup 4 >> + dup 8 >> + dup 16 >> + 2 >> | n q
-	swap over  | q n q
-	dup 1 << + 1 << - | q n-q*6
-	2 + 3 >> + ;
-
+    $AAAAAAAB 33 *>> ;  | n × 0xAAAAAAAB >> 33
 ::6mod | n -- n%6
 	dup 6/ 6* - ;
 
-::10/mod | n -- r m
-	dup 1 >> over 2 >> + 		| n q
-	dup 4 >> + dup 8 >> + dup 16 >> + dup 32 >> + 3 >>	| n q
-	over over dup 2 << + 1 << - | n q rem
-	6 + 4 >> +					| n q
-	swap over dup 2 << + 1 << - | q rem
-	;
-
-::100/ | n -- r
-	10/mod drop
-::10/ | n -- r
-	10/mod drop ;
-	
 ::1000000*	1 << dup 2 << +
 ::100000*	1 << dup 2 << +
 ::10000*	1 << dup 2 << +
@@ -265,9 +243,13 @@
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 
-|::10/ $1999a 20 *>> ;
-|::10/ $199999999999999A 61 *>> ;
-|::10/mod dup 10/ swap over 10* - ;
+::10/mod | n -- q r
+    dup $CCCCCCCD 35 *>>	| q = (n * 0xCCCCCCCD) >> 35
+    swap over 10* - ;		| r = n - q*10	
+::100/ | n -- r
+	10/mod drop
+::10/ | n -- r
+	10/mod drop ;
 
 |- shift with sign
 :shift
