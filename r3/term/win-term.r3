@@ -1,10 +1,10 @@
-| console words windows
+| terminal words windows
 | PHREDA 2021 - Updated 2025
 
 ^r3/lib/mem.r3
 ^r3/lib/str.r3
 
-|------- Console Handles -------
+|-------terminal Handles -------
 ##stdin 
 ##stdout
 ##stderr
@@ -25,7 +25,7 @@
 ##rows ##cols
 #prevrc 0
 
-::.getconsoleinfo | --
+::.getterminfo | --
     stdout 'consoleinfo GetConsoleScreenBufferInfo drop 
     'consoleinfo 10 + @
     dup 32 >> $ffff and over $ffff and - 'cols !
@@ -38,7 +38,7 @@
 
 :.checksize | --
 	on-resize 0? ( drop ; ) 
-	.getconsoleinfo
+	.getterminfo
 	.getrc prevrc =? ( 2drop ; ) 'prevrc !
     ex ; 
 
@@ -169,7 +169,7 @@
     FreeConsole ;
 
 |------- Initialization -------
-::.console
+::.term
 	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
@@ -183,6 +183,6 @@
     stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop
     
-    .getconsoleinfo
+    .getterminfo
     .getrc 'prevrc ! 
 	;

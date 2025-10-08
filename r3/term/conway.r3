@@ -1,6 +1,6 @@
 | Conway Game of Life
 | PHREDA 2021
-^./console.r3
+^./term.r3
 ^r3/lib/rand.r3
 
 #arena 
@@ -61,7 +61,7 @@
 		) drop ;
 
 : 
-	.console
+	.term
 	here 1 + cols + 			| one more line for calc
 	dup 'arena !			| start of arena
 	rows cols * + dup 'arenan !	| copy of arena

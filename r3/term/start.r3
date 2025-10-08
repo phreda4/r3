@@ -5,7 +5,7 @@
 
 |--------------------------------	
 #filename "matrix.r3"
-#path "r3/console"
+#path "r3/term"
 
 :run
 	'filename
@@ -47,7 +47,7 @@
 	tui	
 	.reset .cls 
 	2 1 .at
-	"[01R[023[03F[04o[05r[06t[07h" xwrite
+	"[01R[023[03F[04o[05r[06t[07h" .xwrite
 	.reset 
 	dirpanel
 	dirfile
@@ -65,6 +65,6 @@
 	;
 
 : 
-.console 
+.term 
 main 
 .free ;

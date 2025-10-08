@@ -1,6 +1,6 @@
 | Utg Graphics
 | PHREDA 2025
-^./console.r3
+^./term.r3
 
 #f8x8 
 $0 $100010003000200 $4100820 $4102EB81D740820 
@@ -55,7 +55,7 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	bigemit ;
 	
 | big font, colors with [BF 
-::xwrite | str --
+::.xwrite | str --
 	( c@+ 1? xchar ) 2drop ;
 	
 #vl ( $e2 $94 $82 $1b $5b $42 $1b $5b $44 0 ) | |v<
@@ -103,7 +103,7 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 ::.hlined | w --
 	"═" .rep ;
 	
-|--------- panel
+|--- win
 #wx #wy #ww ##wh #wm
 
 ::.inwin? | x y -- 0/-1
@@ -152,9 +152,11 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 ::.wline | y --
 	wx 1+ swap wy + .at ww 2 - "─" .rep ;
 	
+|--- Element	
 #wsx #wsy	
 
 ::tuat 'wsy ! 'wsx ! ;
+
 ::.wstart	
 	wx wm + 'wsx ! 
 	wy wm + 'wsy !

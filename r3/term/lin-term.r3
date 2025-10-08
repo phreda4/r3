@@ -42,7 +42,7 @@
 ##rows ##cols
 #prevrc 0
 
-::.getconsoleinfo | --
+::.getterminfo | --
     1 $5413 'flgs libc-ioctl | TIOCGWINSZ
     flgs dup 16 >> $ffff and 1 - 'cols !
     $ffff and 1 - 'rows ! ;
@@ -54,7 +54,7 @@
 
 ::.checksize | -- 
 	on-resize 0? ( drop ; )
-	.getconsoleinfo
+	.getterminfo
 	.getrc prevrc =? ( 2drop ; ) 'prevrc !
     ex ; 
 	
@@ -134,9 +134,9 @@
     0 libc-exit drop ;
 
 |------- Initialization -------
-::.console	
+::.term	
 	set-terminal-mode
-	.getconsoleinfo
+	.getterminfo
 	.getrc 'prevrc ! 
 | Set locale to UTF-8
 	"en_US.UTF-8" "LC_ALL" libc-setlocale drop

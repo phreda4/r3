@@ -1,8 +1,8 @@
-| console words 
+| terminal words 
 | PHREDA 2021 - Updated 2025
 
-|LIN| ^./lin-console.r3
-|WIN| ^./win-console.r3
+|LIN| ^./lin-term.r3
+|WIN| ^./win-term.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 

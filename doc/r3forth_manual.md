@@ -351,6 +351,22 @@ Some words PRODUCE numbers (like DUP duplicating the top of stack), others CONSU
     drop ;              | Always works
 ```
 
+The stack is a short memory location and a way of passing numbers between words. Don't use the stack as a data structure; if you need a stack, build one.
+
+```forth
+#mystack * 800 | 100 cells
+#mystack> 'mystack
+
+::mypush  | v --
+	mystack> !+ 'mystack> ! ;
+	
+::mypop  | -- v
+	-8 'mystack> +! mystack> @ ;
+	
+::mydepth | -- d
+	mystack> 'mystack - 3 >> ; | 3 >> is 8 /
+```
+
 ---
 
 ## Arithmetic Operations

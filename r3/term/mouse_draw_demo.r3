@@ -1,9 +1,8 @@
-| Console Mouse Drawing Demo
+| terminal Mouse Drawing Demo
 | Cross-platform drawing application with mouse support
-| Works with both Linux and Windows console libraries
+| Works with both Linux and Windows terminal libraries
 
-| Uncomment the appropriate library for your platform:
-^./console.r3
+^./term.r3
 
 #running 1
 
@@ -156,4 +155,4 @@
     .showc .Reset ;
 
 | Program entry point
-: .console main .free ;
+: .term main .free ;

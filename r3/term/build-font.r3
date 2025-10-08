@@ -1,6 +1,7 @@
 | big 8x8 font
+| PHREDA 2025
 ^r3/lib/mem.r3
-^./console.r3
+^./term.r3
 
 #font8x8 (
 %00000000 %00000000 %00000000 %00000000 %00000000 %00000000 %00000000 %00000000 | 0
@@ -245,4 +246,4 @@
 	waitesc
 	;
 	
-: .console main .free ;
+: .term main .free ;

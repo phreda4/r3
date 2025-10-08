@@ -41,7 +41,7 @@
 	tui	
 	.reset .cls 
 	2 1 .at
-	"[01R[023[03F[04o[05r[06t[07h" xwrite  .reset
+	"[01R[023[03F[04o[05r[06t[07h" .xwrite .reset
 	58 2 .at 2over 2over "%d %d %d %d" .print
 	58 3 .at .tdebug
 	.reset 
@@ -55,7 +55,7 @@
 	
 |-----------------------------------
 : 
-	.console |.tuistart
+	.term |.tuistart
 	.cls
 	"r3" scandir
 	"r3/audio" scanfiles

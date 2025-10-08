@@ -1,4 +1,4 @@
-^./console.r3
+^./term.r3
 ^r3/lib/escapi.r3
 
 #ascii64 "`.-',:_~;""^!*]/)(<>?1r+cl=|7YvLsx[it}JjzTC{fyVnIou2S3Few%5AHXkZ"
@@ -84,5 +84,5 @@
     ;
 
 | Program entry point
-:  .console main .free ;
+:  .term main .free ;
 

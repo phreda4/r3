@@ -2,7 +2,7 @@
 | Comprehensive demonstration of console color capabilities
 | Works with both Linux and Windows console libraries
 
-^./console.r3
+^./term.r3
 
 |------- Display State -------
 #current-page 0
@@ -265,4 +265,4 @@
     "Color demo finished!" .println ;
 
 | Program entry point
-: .console main .free ;
+: .term main .free ;

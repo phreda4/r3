@@ -1,7 +1,7 @@
 | matrix effect
 | PHREDA 2025
 ^r3/lib/rand.r3
-^./console.r3
+^./term.r3
 
 #column
 
@@ -45,7 +45,7 @@
 		) drop ;
 		
 : 
-.console .hidec
+.term .hidec
 here 'column !
 'reset .onresize
 reset

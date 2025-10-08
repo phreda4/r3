@@ -1,4 +1,4 @@
-^./console.r3
+^./term.r3
 ^./utfg.r3
 
 #.exit 0 
@@ -49,7 +49,7 @@
 	-1 =? ( drop | !active
 		evtmxy .inwin? 0? ( ; ) drop	| out->0
 		evtmb 0? ( drop 1 ; ) drop		| over->1
-		id dup 'ida ! 'idf ! |wid 1- 'wida ! 
+		id dup 'ida ! 'idf !
 		2 ; )	| in->2
 	id =? ( drop | =active
 		evtmxy .inwin? 0? ( drop
@@ -71,9 +71,8 @@
 	-? ( id 'idf ! )
 	id >? ( 0 'idf ! ) 
 	drop
-	
 	-1 'id !
-	wida wid >? ( 0 'wida ! ) drop
+|	wida wid >? ( 0 'wida ! ) drop
 	0 'wid ! ;
 
 |-------------- EVENT
@@ -91,7 +90,7 @@
 	0 'rflag !
 	vecdraw ex 
 	rflag
-	1 and? ( .ovec .restorec .showc )
+	1 and? ( .restorec .showc )
 	drop
 	.flush ;
 	
@@ -104,7 +103,7 @@
 		0 'uikey !
 		inevt	
 		1 =? ( hkey ) |	2 =? ( hmouse )
-		1? ( tredraw )
+		1? ( tredraw ) | ?? animation
 		drop
 		10 ms
 		) drop 
@@ -154,8 +153,8 @@
 	
 |----- ALFANUMERICO
 :chmode
-	modo 'lins =? ( drop 'lover 'modo ! ; )
-	drop 'lins 'modo ! ;
+	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
+	drop 'lins 'modo ! .insc ;
 
 :kbInputLine | --
 	uikey 0? ( drop ; )	
