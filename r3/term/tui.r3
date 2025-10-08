@@ -11,9 +11,9 @@
 
 #id		| now
 #idh	| hot
-#ida -1	| activa
-#idfa
+#ida 	| activa
 #idf	| id foco
+#idfa 
 
 #wid	| panel now
 #wida	| panel activa
@@ -96,9 +96,9 @@
 	
 ::onTui | 'vector --
 	dup .onresize
-	dup ex
 	'vecdraw !
 	tuireset
+	tredraw
 	( .exit 0? drop
 		0 'uikey !
 		inevt	

@@ -33,9 +33,8 @@
 	1 5 cols 3 .win .wborde
 	$1 " Command " .wtitle
 	3 6 .at ">" .write 
-	4 6 tuat pad cols 4 - tuInputLine
+	5 6 tuat pad cols 5 - tuInputLine
 	
-
 	;
 	
 |-----------------------------------
