@@ -1,4 +1,4 @@
-| TUI debug
+| TUI 
 | PHREDA 2025
 ^./tui.r3
 
@@ -26,12 +26,16 @@
 :main
 	tui	
 	.reset .cls 
-	2 1 .at
-	"[01T[02est" xwrite 
-	.reset 58 3 .at .tdebug
-	w0 w1 w2
-	1 rows .at 
-	" |ESC| Exit" .write .cr 
+	1 rows .at "|ESC| Exit |F1| " .write
+	cols 7 8 * - 2/ 1 .at
+	"[01R[023[03f[04o[05r[06t[07h" xwrite 
+	
+	1 5 cols 3 .win .wborde
+	$1 " Command " .wtitle
+	3 6 .at ">" .write 
+	5 6 tuat pad cols 4 - tuInputLine
+	
+
 	;
 	
 |-----------------------------------

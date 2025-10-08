@@ -129,12 +129,17 @@
 #inf+ $7fffffffffffffff
 #inf- $8000000000000001
 	
+:reduce | n m 
+	63 over clz	- | n m shift
+	16 >? ( 16 - rot over + -rot >> ; )
+	15 <? ( 15 swap - rot over - -rot << ; )
+	drop ;
+	
 ::ln. |x -- r 
 	0 <=? ( inf- nip ; ) 
 	1.0 =? ( drop 0 ; ) 
 	0 swap | n m
-	( 2.0 >=? 2/ swap 1+ swap )
-	( 0.5 <? 2* swap 1- swap )
+	reduce
 	1.0 - dup 2.0 +	/. | n y
 	dup dup *.	| n y y2
 	8738	| n y y2 result
@@ -298,14 +303,6 @@
 	over 10 >> $1f and 15 - 
 	shift swap -? ( drop neg ; ) drop ;
 	
-|::fp2fu | fp -- fixed point
-|	dup $7fffff and $800000 or
-|	swap 23 >> $ff and 134 - 
-|	shift ;
-|::fp2f | fp -- fixed point
-|	0? ( ; )
-|	-? ( fp2fu neg ; ) fp2fu ;
-
 |=--- float 40.24	
 ::f2fp24 | f -- fp
 	0? ( ; )
@@ -347,7 +344,7 @@
     255 * $400000 + 23 >>			| redondeo
     dup $ff >? ( drop $ff ) ;		| clamp
 
-	
+|--- pack 4 words, get diference 	
 :4dif | v1 v2 -- abs
 	- dup 15 >> $1000100010001 and 
 	$7fff * swap over xor swap - ;

@@ -49,7 +49,7 @@
 	-1 =? ( drop | !active
 		evtmxy .inwin? 0? ( ; ) drop	| out->0
 		evtmb 0? ( drop 1 ; ) drop		| over->1
-		id dup 'ida ! 'idf ! wid 1- 'wida ! 
+		id dup 'ida ! 'idf ! |wid 1- 'wida ! 
 		2 ; )	| in->2
 	id =? ( drop | =active
 		evtmxy .inwin? 0? ( drop
@@ -84,11 +84,7 @@
 	[shift+tab] =? ( -1 'idf +! ) | cambia id y luego wid
 	'uikey ! ;
 	
-:hmouse
-|	evtmb 
-|	1? ( evtmxy .at "." .fwrite ) 
-|	drop
-	;
+|:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
 	
 :tredraw
 	.hidec
@@ -121,7 +117,6 @@
 	;
 	
 ::tuBtn | 'ev "" --
-	
 	.wtext
 	drop
 	;
@@ -216,8 +211,6 @@
 |----- LIST
 | #vlist 0 0 
 
-#overl
-
 :focList | --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
@@ -228,7 +221,6 @@
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( .rever )
-|	overl =? ( overfil uiFill )
 	uiNindx .wtext .reset ;
 
 ::tuList | 'var cntlines list --
@@ -277,15 +269,14 @@
 	[enter] =? ( kbclick ) 
 	drop ;	
 
-#fold "▸" "▾"
+#foldicon "▸" "▾"
 :,iicon | n -- 
 	$20 nand? ( drop 32 ,c ; )
-	7 >> 1 and 2 << 'fold + ,s ; 
+	7 >> 1 and 2 << 'foldicon + ,s ; 
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( .rever )
-|	overl =? ( overfil uiFill )
 	uiNindx c@+ 0? ( 2drop ; )
 	dup $1f and 2* .wmargin
 	mark ,iicon ,s ,eol empty

@@ -233,7 +233,13 @@
 	.reset 
 	.cr	.cr
 	'utfex .write
-	
+	mark
+	"│" ,s
+	27 ,c "[B" ,s 
+	27 ,c "[D" ,s
+	,eol
+	empty
+	here ( c@+ 1? $ff and "$%h " .print ) 2drop
 	.flush
 	|savefit | save file with converted data
 	waitesc

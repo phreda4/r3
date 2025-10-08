@@ -36,7 +36,7 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	16 ( 1? 2 - 2dup >> $3 and bc ) drop ;
 	
 :]nl "B" .[w "8D" .[w ; | dn8*le;
-:]nc "4A" .[w "1D" .[w ; | 4up7ri;
+:]nc "3A" .[w "D" .[w ; | 4upri;
 	
 :bigemit | ascii --
 	$7f and 32 - clamp0 
@@ -53,18 +53,14 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 :xchar | char
 	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
 	bigemit ;
-| [02r[31o
+	
+| big font, colors with [BF 
 ::xwrite | str --
 	( c@+ 1? xchar ) 2drop ;
 	
+#vl ( $e2 $94 $82 $1b $5b $42 $1b $5b $44 0 ) | |v<
+#vd	( $e2 $95 $91 $1b $5b $42 $1b $5b $44 0 ) | ||v<
 
-::.box | x y w h --
-	( 1? 1- >r
-		pick2 pick2 .at
-		dup ( 1? 1- " " .write ) drop
-		swap 1+ swap
-		r> ) 4drop ;
-		
 ::.boxl | x y w h --
 	2over .at
 	"┌" .write over 2 - "─" .rep "┐" .write
@@ -97,12 +93,17 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 		dup .nsp swap 1+ swap 
 		r> ) 4drop ;
 	
-::.vline | x y h --
-	( 1? 1- >r pick2 pick2 .at "│" .write 1+ r> ) 3drop ;
-::.hline | x y w --
-	-rot .at "─" .rep ;
+::.vline | h --
+	vl .rep ;
+::.hline | w --
+	"─" .rep ;
 	
-|--------------------------------	
+::.vlined | h --
+	vd .rep ;
+::.hlined | w --
+	"═" .rep ;
+	
+|--------- panel
 #wx #wy #ww ##wh #wm
 
 ::.inwin? | x y -- 0/-1
@@ -152,6 +153,8 @@ $4000C000C00080 $1500030001A02A00 $4400220 $0
 	wx 1+ swap wy + .at ww 2 - "─" .rep ;
 	
 #wsx #wsy	
+
+::tuat 'wsy ! 'wsx ! ;
 ::.wstart	
 	wx wm + 'wsx ! 
 	wy wm + 'wsy !
