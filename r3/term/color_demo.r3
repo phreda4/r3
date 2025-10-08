@@ -2,7 +2,7 @@
 | Comprehensive demonstration of console color capabilities
 | Works with both Linux and Windows console libraries
 
-^./term.r3
+^r3/lib/term.r3
 
 |------- Display State -------
 #current-page 0

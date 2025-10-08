@@ -1,8 +1,8 @@
 | terminal words 
 | PHREDA 2021 - Updated 2025
 
-|LIN| ^./lin-term.r3
-|WIN| ^./win-term.r3
+|LIN| ^r3/lib/posix/lin-term.r3
+|WIN| ^r3/lib/win/win-term.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 

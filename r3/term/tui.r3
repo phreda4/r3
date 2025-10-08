@@ -1,4 +1,4 @@
-^./term.r3
+^r3/lib/term.r3
 ^./utfg.r3
 
 #.exit 0 

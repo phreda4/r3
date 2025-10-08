@@ -1,6 +1,6 @@
 | Conway Game of Life
 | PHREDA 2021
-^./term.r3
+^r3/lib/term.r3
 ^r3/lib/rand.r3
 
 #arena 
