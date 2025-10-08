@@ -62,6 +62,20 @@
 	0 over ( c@+ 1? $c0 and 
 		$80 <>? ( rot 1+ -rot )
 		drop ) 2drop ;
+
+::utf8ncpy | str 'dst cnt  -- 'dst
+	ab[
+	swap >a swap >b | a=dst b=src
+	( 1? 1-
+		cb@+
+		$80 and? ( ca!+ cb@+ 
+			$80 and? ( $40 and? ( ca!+ cb@+ 
+				$80 and? ( $40 and? ( ca!+ cb@+ ) )
+				) )
+			)
+		ca!+ ) drop
+	a>
+	]ba ;
 		
 ::= | s1 s2 -- 1/0
 	( swap c@+ 1?

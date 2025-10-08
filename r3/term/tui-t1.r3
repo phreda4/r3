@@ -10,25 +10,11 @@
 	.wat@ 2 + swap 3 + swap .at tuif "%d" sprint .xwrite
 	.reset 
 	;
-:w1 
-	.reset 18 18 24 8 tuwin
-	$4 "dos" .wtitle .wstart
-	tuiw .bc 1 .wm .wfill .reset
-	.wat@ 2 + swap 3 + swap .at tuif "%d" sprint .xwrite
-	;
-:w2	
-	.reset 34 8 24 8 tuwin
-	$3 "tres" .wtitle .wstart
-	tuiw .bc 1 .wm .wfill .reset	
-	.wat@ 2 + swap 3 + swap .at tuif "%d" sprint .xwrite
-	;
 
-|----------- tables
-
-
-::utf8ncpy | str 'dst cnt  -- 'dst
+|---
+:utfmove | 'd 's c --
 	ab[
-	swap >a swap >b | a=dst b=src
+	swap >b swap >a | a=dst b=src
 	( 1? 1-
 		cb@+
 		$80 and? ( ca!+ cb@+ 
@@ -37,85 +23,57 @@
 				) )
 			)
 		ca!+ ) drop
-	a>
 	]ba ;
-
-::utf8cpy | cnt  --
-	( 1? 1-
-		cb@+
-		$80 and? ( ca!+ cb@+ 
-			$80 and? ( $40 and? ( ca!+ cb@+ 
-				$80 and? ( $40 and? ( ca!+ cb@+ ) )
-				) )
-			)
-		ca!+ ) drop ;
-
-:place | count flags -- lenout count lenin
-	$100000000 and? (  )
-	$200000000 and? ( )
-	$400000000 and? ( )
-	;
-| "uno|dos|tre" "cua|cinco|s"
-| JMMAAACCC
-:tab.col | modo+cnt str --
-	ab[
-	utf8count | flag str count
-	-rot >b | from
-	here >a | to
-	place | lenout count lenin
-	( 1? 1- 32 ca!+ ) drop
-	utf8cpy
-	( 1? 1- 32 ca!+ ) drop
-	0 ca!
-	]ba
-	here .write
-	;
 	
-| a> string	
+|----------- tables, no utf8
 :table.col | len just -- 
-	
 	here 32 pick3 cfill | dvc
 	0 here pick3 + c!
-dup "%d" .fprint waitesc
-	
 	0? ( drop | left
-		a> utf8count min
-		here a> rot cmove ; | dsc
-|		)
-|	1 =? ( drop 
-2dup "%d %d" .fprint waitesc
-	drop
-		a> utf8count over min | len count
-		- 2/ here +
-		a> rot
-		cmove ; 
-|		)
-	drop | right
-	a> utf8count over min | len strc
-	swap | count len
-	over - here +
-	a> rot
-	cmove | dsc
-	;
+		a> count rot min	| str count
+		here -rot cmove ; | dsc
+		)
+	1 =? ( drop | center
+		a> utf8count pick2 min | len str rcount
+		rot over - 2/ 
+		here + -rot cmove ;
+		) drop | right
+	a> count pick2 min | len strc
+	rot over -
+	here + -rot cmove ; | dsc
+
+#linedef "║"
+#tablesep 'linedef
+#tablenow
 	
 :table.head | 't --
-	"|" .write
+	dup 'tablenow !
+	ab[
+	tablesep .write
 	>a ( ca@+ 1? ca@+ 
 		table.col
-		here .write
+		here .write tablesep .write
 		a> >>0 >a
-		"|" .write
-		) drop ;
+		) drop 
+	]ba ;
 	
 :table.row | 'l --
-	drop
-	;
-:table.foot
-	;
+	mark ab[
+	here >a
+	tablenow >b
+	( c@+ 1? $7c =? ( 0 nip ) ,c ) ,c drop
+	tablesep .write
+	( cb@+ 1? cb@+
+		table.col
+		here .write tablesep .write
+		a> >>0 >a b> >>0 >b	
+		) drop
+	]ba empty ;
+	
 	
 |---------	
 #ttable1 ( 10 $0 ) "col1" ( 20 $1 ) "col2" ( 10 $2 ) "col3" 0
-#dtable1 "uno|uno|uno" "dos1|dos2|dos3" "cuatro|tres|dos" "diez|once|doce" "diecisite|dieciocho|veinti uno" 0
+#dtable1 "uno|uno|uno" "dos1|dos2|dos3" "cuatro|tres|dos" "diez oncemil|once|doce mil setecientos" "diecisite|dieciocho|veinti uno" 0
 
 :main
 	tui	
@@ -132,10 +90,12 @@ dup "%d" .fprint waitesc
 	.reset
 	3 10 cols 4 - rows 10 - .win .wborde
 	
-	4 11 .at
-	'ttable1 table.head
-	
-	'dtable1 table.row
+	1 11 .at
+	'ttable1 table.head .cr
+	'dtable1 
+	( dup c@ 1? drop
+		dup table.row .cr
+		>>0 ) 2drop
 	;
 	
 |-----------------------------------
