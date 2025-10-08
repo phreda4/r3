@@ -183,8 +183,11 @@
 	$7e1 >=? ( $7e1 - swap dup 5 >> + swap ) 
 	$3f8 >=? ( $3f8 - swap dup 6 >> + swap ) 
 	$1fe >=? ( $1fe - swap dup 7 >> + swap ) 
-	over 32 *>> + ;	
-
+    | Taylor orden 2: r × (1 + x(1 + x/2))
+    dup 17 >> 65536 +       | r x (1+x/2)    [3 ops]
+    16 *>> 65536 +          | r (1+x(1+x/2)) [2 ops]
+    16 *>> ;                | resultado      [1 op]
+	
 ::pow. | base exp -- r
 	swap ln. *. exp. ;
 
@@ -232,7 +235,7 @@
 ::6* | n -- n*6
 	2* dup 2* + ;
 ::6/ | n -- n/6
-    $AAAAAAAB 33 *>> ;  | n × 0xAAAAAAAB >> 33
+    $AAAAAAAAAAAAAAAA 66 *>> ; |$AAAAAAAB 33 *>> ;  | n × 0xAAAAAAAB >> 33
 ::6mod | n -- n%6
 	dup 6/ 6* - ;
 
@@ -243,13 +246,11 @@
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 
+::10/
+	$199999999999999A 64 *>> ;
+	
 ::10/mod | n -- q r
-    dup $CCCCCCCD 35 *>>	| q = (n * 0xCCCCCCCD) >> 35
-    swap over 10* - ;		| r = n - q*10	
-::100/ | n -- r
-	10/mod drop
-::10/ | n -- r
-	10/mod drop ;
+    dup 10/	swap over 10* - ;		| r = n - q*10	
 
 |- shift with sign
 :shift

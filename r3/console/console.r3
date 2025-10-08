@@ -30,6 +30,7 @@
 |------- Output Buffer System -------
 #outbuf | output buffer
 #outbuf> 'outbuf | Current position in buffer
+##pad 				| pd is end of outbuf
 
 ::.flush | -- | Write buffer to stdout
     outbuf> outbuf - 0? ( drop ; )
@@ -37,18 +38,18 @@
     outbuf 'outbuf> ! ;
 
 ::.type | str cnt -- | Add to buffer
-    outbuf> outbuf - over + $ffff >? ( .flush ) drop 
+    pad outbuf> - >? ( .flush ) 
 	outbuf> rot pick2 cmove
     'outbuf> +! ;
 ::.emit | char --
-	outbuf> outbuf $ffff + =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
+	outbuf> pad =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
 
 ::.cr 10 .emit 13 .emit ;
 ::.sp 32 .emit ;
 ::.nsp | n -- ;..
 	32 swap 
 ::.nch | char n -- ; WARNIG not multibyte
-	outbuf> outbuf - over + $ffff >? ( .flush ) drop 
+	pad outbuf> -  >? ( .flush )
 	outbuf> rot pick2 cfill | dvc
 	'outbuf> +! ;
 
@@ -153,7 +154,6 @@
 ::.Reset "0m" .[w ;
 	
 |------- Line Input -------
-##pad 
 
 :.readln | --
     pad ( inkey 1? swap c!+ ) swap c! ;
@@ -178,7 +178,7 @@
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! $ffff +
-	dup 'pad ! 1024 +
+	dup 'pad ! 1024 + | pad is end of buffer
 	'here !
 	outbuf 'outbuf> !
 ;

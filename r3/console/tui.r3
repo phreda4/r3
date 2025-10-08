@@ -35,21 +35,6 @@
 	0 'wid !
 	;
 
-::inwin? | -- 1.2.3/0 ; dn-hold-up
-	1 'id +! 
-	
-	evtmb 0? ( 
-		id ida <>? ( drop ; ) drop
-		-1 'ida !
-		drop 3 ; ) drop | up
-	evtmxy .inwin? 0? ( ; ) drop
-	id ida =? ( drop 2 ; ) | move
-	dup 'ida ! 'idf ! 
-	wid 1- 'wida !
-	1 ; | dn
-
-| flag
-
 | 0 = normal
 | 1 = over (not all sytems)
 | 2 = in
@@ -77,14 +62,15 @@
 ::tuif | -- flag
 	id 
 	idf <>? ( drop 0 ; )
-	idfa <>? ( drop 1 ; ) | in 
+	wid 1- 'wida ! 
+	idfa <>? ( 'idfa ! 1 ; ) | in 
 	drop 2 ; | stay
 	
 ::tui
 	idf 
 	-? ( id 'idf ! )
 	id >? ( 0 'idf ! ) 
-	'idfa !
+	drop
 	
 	-1 'id !
 	wida wid >? ( 0 'wida ! ) drop
@@ -106,6 +92,7 @@
 	
 :tredraw
 	.hidec
+	0 'rflag !
 	vecdraw ex 
 	rflag
 	1 and? ( .ovec .restorec .showc )
@@ -136,6 +123,7 @@
 ::tuBtn | 'ev "" --
 	
 	.wtext
+	drop
 	;
 	
 |--- Edita linea
@@ -191,22 +179,21 @@
 	( c@+ 1? drop ) drop 1-
 	dup 'pad> ! 'padf> !
 	'lins  'modo ! ;
+
+:tuInputfoco
+	tuif 0? ( drop ; )
+	1 =? ( drop inInput ; ) drop
+	kbInputLine 
+	.wat@ swap 
+	pad> padi> - + | !! falta utf
+	swap .at .savec | cursor
+	1 'rflag !		| activate cursor
+	;
 	
 ::tuInputLine | 'buff max --
-|	widget? 
-	inwin?
-	1 =? ( >r inInput r> ) | in
-|	2 =? ( ) | hold
-|	3 =? ( ) | up
-	2drop
-	id idf =? ( 
-		kbInputLine 
-		.wat@ swap 
-		pad> padi> - + | !! falta utf
-		swap .at .savec | cursor
-		1 'rflag !		| activate cursor
-		) drop
-	.wtext
+	tuiw drop
+	tuInputfoco
+	drop .wtext
 	;
 	
 |--------------------------------	
@@ -231,7 +218,8 @@
 
 #overl
 
-:kblist | --
+:focList | --
+	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
@@ -245,10 +233,8 @@
 
 ::tuList | 'var cntlines list --
 	mark makeindx
-	inwin?
-|	1 =? ( >r kblist r> )
-	drop
-	id idf =? ( >r kblist r> ) drop	
+	tuiw drop
+	focList
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	2drop
@@ -283,7 +269,8 @@
 	pick2 @ 3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 	
-:kbtree | --
+:focTree | --
+	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
@@ -305,9 +292,9 @@
 	here .wtext .reset ;
 	
 ::tuTree | 'var cntlines list --
-	inwin? drop
 	mark maketree
-	id idf =? ( >r kbtree r> ) drop	
+	tuiw drop
+	focTree	
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	2drop
