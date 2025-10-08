@@ -355,10 +355,10 @@
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s |" " ,s
-|	dup FSIZEF 12 >> ,d " Kb" ,s
+	,s "|" ,s
+	dup FSIZEF 12 >> ,d " Kb|e" ,s
 |	dup FDIR ,d
-	|dup FWRITEDT dt>64 ,64>dtf
+	|dup FWRITEDT dt>64 ,64>dtf 
 	drop 
 	0 ,c ;
 	
