@@ -57,7 +57,8 @@
 	$800000000000 and? ( 2drop 5 + ; )
 	$80000000000000 and? ( 2drop 6 + ; )	
 	2drop 7 + ;
-	
+
+|---- UTF-8	
 ::utf8count | str -- str count
 	0 over ( c@+ 1? $c0 and 
 		$80 <>? ( rot 1+ -rot )
@@ -76,7 +77,20 @@
 		ca!+ ) drop
 	a>
 	]ba ;
+	
+::utf8bytes | str cnt  -- str bytes
+	over | str cnt rec
+	( swap 1? 1- swap
+		c@+ 
+		$80 and? ( drop c@+ 
+			$80 and? ( $40 and? ( drop c@+ 
+				$80 and? ( $40 and? ( drop c@+ ) )
+					) )
+			) drop
+		 ) drop
+	over - ;	
 		
+|----- Compare	
 ::= | s1 s2 -- 1/0
 	( swap c@+ 1?
 		toupp rot c@+ toupp rot -
