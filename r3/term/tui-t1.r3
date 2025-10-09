@@ -42,6 +42,28 @@
 	rot over -
 	here + -rot cmove ; | dsc
 
+|-----------------------------
+::utf8count | str -- str count
+	0 over ( c@+ 1? $c0 and 
+		$80 <>? ( rot 1+ -rot )
+		drop ) 2drop ;
+
+::utf8ncpy | str 'dst cnt  -- 'dst
+	swap >a swap >b | a=dst b=src
+	( 1? 1-
+		cb@+
+		$80 and? ( ca!+ cb@+ 
+			$80 and? ( $40 and? ( ca!+ cb@+ 
+				$80 and? ( $40 and? ( ca!+ cb@+ ) )
+				) )
+			)
+		ca!+ ) drop
+	a>
+	;
+
+:table.col8
+	;
+
 #linedef "║"
 #tablesep 'linedef
 #tablenow
@@ -65,15 +87,30 @@
 	tablesep .write
 	( cb@+ 1? cb@+
 		table.col
-		here .write tablesep .write
+		here .write tablesep .write 
 		a> >>0 >a b> >>0 >b	
 		) drop
 	]ba empty ;
 	
 	
+:flfull ;
+:flSize 2drop ;	
 |---------	
 #ttable1 ( 10 $0 ) "col1" ( 20 $1 ) "col2" ( 10 $2 ) "col3" 0
 #dtable1 "uno|uno|uno" "dos1|dos2|dos3" "cuatro|tres|dos" "diez oncemil|once|doce mil setecientos" "diecisite|dieciocho|veinti uno" 0
+
+#vtable 'ttable1 'dtable1 0
+
+:tuTable | 'var --
+	drop
+	1 11 .at
+	5 .col 'ttable1 table.head .cr 
+	'dtable1 
+	( dup c@ 1? drop
+		5 .col dup table.row .cr 
+		>>0 ) 2drop
+	;
+
 
 :main
 	tui	
@@ -90,12 +127,13 @@
 	.reset
 	3 10 cols 4 - rows 10 - .win .wborde
 	
-	1 11 .at
-	'ttable1 table.head .cr
-	'dtable1 
-	( dup c@ 1? drop
-		dup table.row .cr
-		>>0 ) 2drop
+		
+	10 3 flSize
+	'exit "Salir" tuBtn
+
+	flFull
+	'vtable tuTable
+
 	;
 	
 |-----------------------------------

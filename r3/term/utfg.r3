@@ -152,8 +152,10 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 ::.hlined | w --
 	"═" .rep ;
 	
-|--- win
-#wx #wy #ww ##wh #wm
+|--- flex
+	
+#wx #wy #ww ##wh 
+#wm
 
 ::.inwin? | x y -- 0/-1
 	wy - $ffff and wh >? ( 2drop 0 ; ) drop | limit 0--$ffff
@@ -201,7 +203,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 ::.wline | y --
 	wx 1+ swap wy + .at ww 2 - "─" .rep ;
 	
-|--- Element	
+|--- Element
 #wsx #wsy	
 
 ::tuat 'wsy ! 'wsx ! ;

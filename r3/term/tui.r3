@@ -115,7 +115,19 @@
 	wid wida =? ( .wborde ) 1+ 'wid !
 	;
 	
+|--- Button	
+:kbBtn | 'ev "" -- 'ev ""
+	tuif 1 <? ( drop ; ) drop
+	uikey 0? ( drop ; )	
+	[enter] =? ( drop >r dup >r ex r> r> ; )
+	drop
+	;
+	
 ::tuBtn | 'ev "" --
+	tuiw 
+	dup .bc
+	drop
+	kbBtn
 	.wtext
 	drop
 	;
