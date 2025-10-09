@@ -52,11 +52,11 @@
 |------- Resize Detection -------
 #on-resize 0 | callback address
 
-::.checksize | -- 
-	on-resize 0? ( drop ; )
+:.checksize | -- evt
+	on-resize 0? ( ; )
 	.getterminfo
-	.getrc prevrc =? ( 2drop ; ) 'prevrc !
-    ex ; 
+	.getrc prevrc =? ( 2drop 0 ; ) 'prevrc !
+    ex 4 ; |#EVT_RESIZE 4
 	
 ::.onresize | 'callback -
     'on-resize ! ;
@@ -82,10 +82,6 @@
 	bufferin ;
 
 |------- Event System (Windows-compatible) -------
-#EVT_KEY 1
-#EVT_MOUSE 2
-|#EVT_RESIZE 4
-
 #mouse-y #mouse-x 
 ##evtmb
 ##evtmw
@@ -118,9 +114,9 @@
 	kbhit 0? ( .checksize ; ) drop
 	buffin 
 	6 >? ( bufferin $ffffff and
-		$3c5b1b =? ( 2drop check6 EVT_MOUSE ; ) | 4d para 1003
+		$3c5b1b =? ( 2drop check6 2 ; ) | #EVT_MOUSE 2
 		drop ) drop
-	EVT_KEY ; 
+	1 ; |#EVT_KEY 1
 	
 ::getevt | -- type | wait for event
     ( inevt 0? drop 10 ms ) ;

@@ -1,11 +1,11 @@
-| TUI Example
+| flex layout example
 | PHREDA 2025
 
 ^./tui.r3
 
 ##fx ##fy ##fw ##fh 
 
-#flstack * 40 | 5 niveles
+#flstack * 80 | 10 niveles
 #flstack> 'flstack
 
 :xywh>fl | x y w h -- v
@@ -26,8 +26,10 @@
 	dup 32 >> $ffff and 'fw !
 	48 >> $ffff and 'fh ! ;
 	
-::flxvalid? | -- 0=not ok
-	fx fy and fw and fh and ;
+::flxvalid? | -- 0= not valid
+	fw 1 <? ( drop 0 ; ) drop 
+	fh 1 <? ( drop 0 ; ) drop 
+	-1 ;
 	
 ::flx! | x y w h --
 	2over 'fy ! 'fx !
@@ -37,8 +39,8 @@
 ::flx | --
 	1 1 cols rows flx! ;
 	
-::flx@ | -- x y w h
-	flstack> 8 - @ fl>xywh ;
+|::flx@ | -- x y w h
+|	flstack> 8 - @ fl>xywh ;
 
 :flx+! flstack> 8 - dup @ $ffff and rot + $ffff and 
 	swap dup @ $ffff nand rot or swap ! ;
@@ -49,10 +51,12 @@
 :flh+! flstack> 8 - dup @ 48 >> $ffff and rot + $ffff and 48 <<
 	swap dup @ $ffffffffffff and rot or swap ! ;
 
-::flxpush fx fy fw fh xywh>fl flstack> !+ 'flstack> ! ;
-::flxpop	-8 'flstack> +! flstack> @ fl>now ;
-
-::flxFill flstack> 8 - @ fl>now ;
+::flxpush	
+	fx fy fw fh xywh>fl flstack> !+ 'flstack> ! ;
+::flxpop	
+	-8 'flstack> +! flstack> @ fl>now ;
+::flxFill 
+	flstack> 8 - @ fl>now ;
 
 | N=^ S=v E=> O=<
 ::flxN | lineas --
@@ -79,33 +83,36 @@
 	dup neg flw+! 
 	'fw ! ;
 	
-|--------------------------	
-	
+::fw% fw 16 *>> ;
+::fh% fh 16 *>> ;
+
+|--------------------------		
 :uiText | align "" --
 	2drop ;
 
+:uiboxd
+|	flxvalid? 0? ( drop ; ) drop
+	fx fy fw fh .boxd ;
+:uiboxl	
+|	flxvalid? 0? ( drop ; ) drop
+	fx fy fw fh .boxl ;
+	
 |--------------------------------	
 :main
 	tui	flx | full screen
 	.reset .cls
 	|fx fy fw fh .boxl | full screen
-	5 flxN
-	fx fy fw fh .boxd
-	3 flxN
-	fx fy fw fh .boxl
-	8 flxS
-	fx fy fw fh .boxd
-	10 flxO
-	fx fy fw fh .boxd
-	34 flxE
+	5 flxN uiboxd
+	3 flxN uiboxl	
+	8 flxS uiboxd
+	0.3 fw% flxO uiboxd
+	0.5 fw% flxE 
 	flxpush
-		4 flxN
-		fx fy fw fh .boxd
-		flxfill
-		fx fy fw fh .boxl
+		4 flxN 	uiboxd
+		flxfill uiboxl	
 	flxpop
 	flxFill
-	fx fy fw fh .boxl
+	uiboxl	
 	fx 1+ fy 1+ .at
 	fx fy fw fh "%d %d %d %d" .print
 	;
