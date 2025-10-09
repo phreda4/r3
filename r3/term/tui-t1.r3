@@ -24,6 +24,69 @@
 			)
 		ca!+ ) drop
 	]ba ;
+
+|---------------------------------------
+::utf8-count | str -- char bytes
+	0 0 rot
+	( c@+ 1?
+		$c0 and $80 <>? ( rot 1+ -rot ) drop
+		rot 1+ -rot
+		) 2drop ;
+
+::utf8-bytes | maxchar str -- bytes |(const char* str, int max_chars) {
+	>a
+	0 0 rot | bytes chars max
+	( over >? 
+		ca@+ 1? ( 3drop ; ) | all
+		$c0 and $80 <>? ( rot 1+ -rot ) drop
+		rot 1+ -rot
+		) 2drop 
+	-1 a+
+	ca@ $c0 and $80 =? ( drop
+		( ca@ $c0 and $80 =? drop 1- )
+		) drop ;
+
+
+|char* justify_string_utf8(const char* str, int width, Alignment align) 
+|{
+|    int char_count, byte_count;
+|    utf8_count(str, &char_count, &byte_count);
+|    int bytes_to_copy = byte_count;
+|    int effective_chars = char_count;
+	
+|    // Si el string es más largo que el ancho, truncar correctamente
+|    if (char_count > width) {
+|        bytes_to_copy = utf8_bytes_for_chars(str, width);
+|        effective_chars = width;
+|    }
+|    // Calcular espacios necesarios
+|    int spaces_needed = width - effective_chars;
+|    int total_bytes = bytes_to_copy + spaces_needed;
+    
+
+|    int left_spaces = 0;
+|    int right_spaces = spaces_needed;
+|    switch (align) {
+|        case LEFT:    left_spaces = 0;            right_spaces = spaces_needed;            break;
+|        case CENTER:  left_spaces = spaces_needed / 2;   right_spaces = spaces_needed - left_spaces;            break;
+|        case RIGHT:   left_spaces = spaces_needed;       right_spaces = 0;     break;
+|    // Construir el resultado de forma eficiente
+|    char* ptr = result;
+|    // Espacios a la izquierda
+|    if (left_spaces > 0) {
+|        memset(ptr, ' ', left_spaces);
+|        ptr += left_spaces;
+|    }
+|    // Copiar el string
+|    memcpy(ptr, str, bytes_to_copy);
+|    ptr += bytes_to_copy;
+|    // Espacios a la derecha
+|    if (right_spaces > 0) {
+|        memset(ptr, ' ', right_spaces);
+|        ptr += right_spaces;
+|    }
+|    *ptr = '\0';
+|    return result;
 	
 |----------- tables, no utf8
 :table.col | len just -- 
@@ -97,7 +160,7 @@
 :flSize 2drop ;	
 |---------	
 #ttable1 ( 10 $0 ) "col1" ( 20 $1 ) "col2" ( 10 $2 ) "col3" 0
-#dtable1 "uno|uno|uno" "dos1|dos2|dos3" "cuatro|tres|dos" "diez oncemil|once|doce mil setecientos" "diecisite|dieciocho|veinti uno" 0
+#dtable1 "uno|uno|uno" "dos1|señor español|dos3" "cuatro|tres|ñoño" "diez oncemil||doce mil setecientos" "diecisite|dieciocho|veinti uno" 0
 
 #vtable 'ttable1 'dtable1 0
 
