@@ -5,6 +5,11 @@
 
 ##fx ##fy ##fw ##fh 
 
+::flin? | x y -- 0/-1
+	fy - $ffff and fh >? ( 2drop 0 ; ) drop | limit 0--$ffff
+	fx - $ffff and fw >? ( drop 0 ; ) drop
+	-1 ;
+
 #flstack * 80 | 10 niveles
 #flstack> 'flstack
 
@@ -86,9 +91,12 @@
 ::fw% fw 16 *>> ;
 ::fh% fh 16 *>> ;
 
+::flpad | x y --
+	dup 'fy +! 2* neg 'fh +!
+	dup 'fx +! 2* neg 'fw +! ;
+	
+
 |--------------------------		
-:uiText | align "" --
-	2drop ;
 
 :uiboxd
 |	flxvalid? 0? ( drop ; ) drop
@@ -103,18 +111,19 @@
 	.reset .cls
 	|fx fy fw fh .boxl | full screen
 	5 flxN uiboxd
+	
 	3 flxN uiboxl	
 	8 flxS uiboxd
 	0.3 fw% flxO uiboxd
-	0.5 fw% flxE 
-	flxpush
+	
+	
+	28 flxE 
+		flxpush
 		4 flxN 	uiboxd
 		flxfill uiboxl	
-	flxpop
+		flxpop
 	flxFill
 	uiboxl	
-	fx 1+ fy 1+ .at
-	fx fy fw fh "%d %d %d %d" .print
 	;
 	
 |-----------------------------------

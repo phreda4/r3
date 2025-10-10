@@ -152,7 +152,6 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 ::.hlined | w --
 	"═" .rep ;
 	
-	
 |--- utf align | result in HERE
 :,nsp | n --
 	( 1? 1- 32 ,c ) drop ;
@@ -187,73 +186,68 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	here swap utf8ncpy 'here ! 
 	,eol empty ;	
 	
-|--- flex
-	
-#wx #wy #ww ##wh 
-#wm
+|---- format
+#talign 'calign
 
-::.inwin? | x y -- 0/-1
-	wy - $ffff and wh >? ( 2drop 0 ; ) drop | limit 0--$ffff
-	wx - $ffff and ww >? ( drop 0 ; ) drop
-	-1 ;
+::xleft 'lalign 'talign ! ;
+::xcenter 'calign 'talign ! ;
+::xright 'ralign 'talign ! ;
 
-::.win 'wh ! 'ww ! 'wy ! 'wx ! ;
-::.wmargin 'wm ! ;
-::.wm dup 'wx +! dup 'wy +! 2* neg dup 'wh +! 'ww +! ;
+::xwrite | w "str" --
+	talign ex here .write ;
+	
+::lwrite | w "str" --
+	lalign here .write ;
+::cwrite | w "str" --
+	calign here .write ;
+::rwrite | w "str" --
+	ralign here .write ;
 
-::.wfill wx wy ww wh .boxf ;
-::.wborde wx wy ww wh .boxl ;
-::.wborded wx wy ww wh .boxd ;
+|---- Text
+#strsplit
+#strsplit>
+#lines
 
-:x0 wx ;
-:x1 wx 1+ ;
-:x2 wx pick2 - ww + ;
-:x3 wx pick2 - 1- ww + ;
-:x4 wx ww pick3 - 2/ + ;
-:x5 wx wm + ;
-:x6 wx pick2 - wm - ww + ;
-#xpl x0 x1 x2 x3 x4 x5 x6 x0
-:y0 wy ;
-:y1 wy 1+ ;
-:y2 wy wh + 1- ;
-:y3 wy 2 - wh + ;
-:y4 wy wh 2/ + ;
-:y5 wy wm + ;
-:y6 wy wm - wh + 1- ;
-#ypl y0 y1 y2 y3 y4 y5 y6 y0
+:emit0
+	13 =? ( drop dup c@ 10 =? ( swap 1+ swap ) drop 0 ; )
+	10 =? ( drop dup c@ 13 =? ( swap 1+ swap ) drop 0 ; )
+	$3b =? ( 0 nip ) ;
+	
+:<<sp | stro str -- str'
+	swap over
+	( over <? ( 2drop ; ) 
+		dup c@ $ff and 32 >? 
+		drop 1- ) drop nip nip ;
 
-|$44 center
-:place | count place -- x y
-	dup $7 and 3 << 'xpl + @ ex
-	swap 4 >> $7 and 3 << 'ypl + @ ex
-	rot drop ;
+:testw | str -- str
+	pick4 >r utf8count 
+	r> swap >? ( drop ; ) | str count
+	over a!+ | newline
+	utf8bytes | str bytes
+	over + <<sp
+	0 swap c!+
+	testw ;
 	
-::.wtitle | place "" --
-	utf8count | place "" count
-	rot place .at .write ;
+:splitlines | str --
+	here dup >a 'strsplit ! 
+	( c@+ 1? emit0 ca!+ ) nip | put 0 in ; or cr
+	a> 'strsplit> !
+	ca!+ 
+	a> 'lines !
+	strsplit ( strsplit> <?
+		testw dup a!+ >>0
+		) drop
+	0 a!+
+	a> 'here ! ;	
 	
-::.wlinef | y --
-	wx swap wy + .at "├" .write ww 2 - "─" .rep "┤" .write ;
-	
-::.wline | y --
-	wx 1+ swap wy + .at ww 2 - "─" .rep ;
-	
-|--- Element
-#wsx #wsy	
-
-::tuat 'wsy ! 'wsx ! ;
-
-::.wstart	
-	wx wm + 'wsx ! 
-	wy wm + 'wsy !
-	;
-	
-::.wtext | "" --
-	wsx wm + wsy .at
-	.write
-	1 'wsy +! ;
-::.wat@ | -- x y 
-	wsx wm + wsy ;
-	
-|::.wltext ;
-|::.wtext ;
+::xText | w h x y "" --
+	mark ab[ 
+	splitlines 
+	rot drop | quita h
+	lines >a ( 
+		2dup .at
+		a@+ 1? pick3 swap xwrite 
+		1+
+		) drop
+	3drop
+	]ba empty ;
