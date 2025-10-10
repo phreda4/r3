@@ -2,16 +2,17 @@
 | PHREDA 2025
 |---------------
 ^./tui.r3
+^./filedirs.r3
 
 |--------------------------------	
-#filename "matrix.r3"
-#path "r3/term"
+#basepath "r3/"
+#fullpath * 1024
+#filename * 1024
 
 :run
-	'filename
-	'path
-|WIN| 	"cmd /c r3 ""%s/%s"" " |2>mem/error.mem"
-|LIN| 	"./r3lin ""%s/%s"" 2>mem/error.mem"
+	'fullpath
+|WIN| 	"cmd /c r3 ""%s"" " |2>mem/error.mem"
+|LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
 	sprint 
 	sysnew |sys
 	;
@@ -23,10 +24,17 @@
 #info * 64
 
 :changefiles
-	"changefiles" 'info strcpy
+	vfolder flTreePath
+	'basepath 'fullpath strcpyl 1- strcpy
+	'fullpath flGetFiles
 	;
+	
 :setfile	
-	"filenow" 'info strcpy
+	vfile uiNindx 
+	'fullpath 'filename strcpyl 1- 
+	flcpy
+	|loadcodigo	
+	'filename 'info strcpy
 	;
 :setcmd
 	"command" 'info strcpy
@@ -39,12 +47,14 @@
 	'vfolder uiDirs tuTree
 	tuX? 1? ( changefiles ) drop
 	;
+	
 :dirfile
 	tuwin $1 " Files " .wtitle
 	1 1 flpad xleft
 	'vfile uiFiles tuList
 	tuX? 1? ( setfile ) drop	
 	;
+	
 :dirpad
 	tuwin $1 " Command " .wtitle
 	1 1 flpad
@@ -59,7 +69,7 @@
 	.reset .cls 
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
-	.tdebug
+|	.tdebug
 
 	1 flxS
 	fx fy .at "|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write
@@ -73,8 +83,8 @@
 
 |-----------------------------------
 :main
-	"r3" scandir
-	"r3/audio" scanfiles
+	"r3" flScanDir
+	"r3/audio" FlGetFiles
 	'scrmain onTui 
 	;
 
