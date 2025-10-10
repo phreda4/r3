@@ -31,6 +31,7 @@
 ::,eol 0 ,c ;
 ::,sp 32 ,c ;
 ::,nl $0a0d ,w ;
+::,nsp here 32 pick2 cfill 'here +! ;
 
 |WIN|^r3/lib/win/core.r3
 |LIN|^r3/lib/posix/core.r3

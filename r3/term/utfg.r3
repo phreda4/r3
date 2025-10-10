@@ -153,9 +153,6 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	"═" .rep ;
 	
 |--- utf align | result in HERE
-:,nsp | n --
-	( 1? 1- 32 ,c ) drop ;
-
 ::lalign | cnt str -- 
 	mark
 	utf8count	| cnt str scount

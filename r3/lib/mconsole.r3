@@ -3,9 +3,6 @@
 | PHREDA 2021
 ^r3/lib/mem.r3
 
-::,sp 32 ,c ;
-::,nsp ( 1? 1 - ,sp ) drop ;
-
 ::,esc $1b ,c $5b ,c ;
 ::,[ ,esc ,s ;
 ::,fcolor ,esc "38;5;%dm" ,print ;

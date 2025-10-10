@@ -9,7 +9,7 @@
 	fx - $ffff and fw >? ( drop 0 ; ) drop
 	-1 ;
 
-#flstack * 80 | 10 niveles
+#flstack * 32 | 4 niveles
 #flstack> 'flstack
 
 :xywh>fl | x y w h -- v
@@ -63,13 +63,18 @@
 	flstack> 8 - @ fl>now ;
 
 | N=^ S=v E=> O=<
+| - is full minus the number
 ::flxN | lineas --
+	-? ( fh + )
 	flxFill dup fly+! dup neg flh+!	'fh ! ;
 ::flxS | lineas --
+	-? ( fh + )
 	flxFill dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
 ::flxE | cols --
+	-? ( fw + )
 	flxFill dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
 ::flxO | cols --
+	-? ( fw + )
 	flxFill dup flx+! dup neg flw+! 'fw ! ;
 	
 ::fw% fw 16 *>> ;
@@ -78,14 +83,12 @@
 ::flpad | x y --
 	dup 'fy +! 2* neg 'fh +!
 	dup 'fx +! 2* neg 'fw +! ;
+::flcr
+	.cr fx .col ;
 	
 |---- Events
-#.exit 0 
-::exit 1 '.exit ! ;
-
 #vecdraw
 
-#rflag	| render flag
 #id		| now
 #idh	| hot
 #ida 	| activa
@@ -94,18 +97,26 @@
 #wid	| panel now
 #wida	| panel activa
 
+#rflag	| exit|render|change
 ##uikey	| tecla
-
-::.tdebug
-	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
-	;
 
 :tuireset
 	-1 'ida !
 	-1 'idfa !
-	0 'idf !
 	0 'wid !
+	0 'rflag !
 	;
+
+::exit	rflag $4 or 'rflag ! ;
+::tuX?	rflag 2 and ;
+:tuX!	rflag 2 or 'rflag ! ;
+:tucl	rflag 2 nand 'rflag ! ;	
+
+::.tdebug
+	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
+	rflag "%d " .print
+	;
+
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -116,7 +127,7 @@
 | 6 = click
 
 ::tuiw | -- flag
-	1 'id +! 
+	1 'id +! tucl
 	ida 
 	-1 =? ( drop | !active
 		evtmxy flin? 0? ( ; ) drop	| out->0
@@ -158,9 +169,8 @@
 	
 |:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
 	
-:tredraw
+:tuiredraw
 	.hidec
-	0 'rflag !
 	vecdraw ex 
 	rflag
 	1 and? ( .restorec .showc )
@@ -171,16 +181,17 @@
 	dup .onresize
 	'vecdraw !
 	tuireset
-	tredraw
-	( .exit 0? drop
-		0 'uikey !
+	tuiredraw
+	( rflag $4 nand? drop
+		0 'uikey ! 0 'rflag !
 		inevt	
 		1 =? ( hkey ) |	2 =? ( hmouse )
-		1? ( tredraw ) | ?? animation
+		1? ( tuiredraw ) | ?? animation
 		drop
 		10 ms
 		) drop 
 	tuireset ;
+
 
 |---------------------	
 ::.wfill fx fy fw fh .boxf ;
@@ -278,6 +289,7 @@
 	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
 |	<tab> =? ( nextfoco ) <ret> =? ( nextfoco )
 |	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	[enter] =? ( tuX! )
 	drop ;	
 
 :inInput | 'var max -- 'var max
@@ -294,7 +306,7 @@
 	fx fy swap 
 	pad> padi> - + | !! falta utf
 	swap .at .savec | cursor
-	1 'rflag !		| activate cursor
+	rflag $1 or 'rflag !		| activate cursor
 	;
 	
 ::tuInputLine | 'buff max --
@@ -327,8 +339,8 @@
 :focList | --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
-	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
-	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
+	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
+	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
 	drop ;	
 
 :ilist | 'var max n  -- 'var max n
@@ -336,16 +348,16 @@
 	pick3 @ =? ( .rever )
 	uiNindx 
 	fx .col
-	fw swap xwrite .reset
-	.cr
+	fw swap xwrite .cr
+	.reset
 	;
 
 ::tuList | 'var list --
 	fx fy .at
 	mark makeindx
+	fh
 	tuiw drop
 	focList
-	fh
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	2drop
@@ -378,13 +390,14 @@
 
 :kbclick	
 	pick2 @ 3 << indlist + @ 
-	dup c@ $80 xor swap c! ;
+	dup c@ $80 xor swap c! 
+	tuX! ;
 	
 :focTree | --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
-	[up] =? ( pick2 dup @ 1- clamp0 swap ! )
-	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )
+	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
+	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
 	[enter] =? ( kbclick ) 
 	drop ;	
 
@@ -398,16 +411,15 @@
 	pick3 @ =? ( .rever )
 	uiNindx c@+ 0? ( 2drop ; )
 	fx .col
-	|dup $1f and 2* .wmargin
-	mark ,iicon ,s ,eol empty
-	fw here xwrite .reset .cr ;
+	mark dup $1f and 2* ,nsp ,iicon ,s ,eol empty
+	fw here xwrite .cr .reset ;
 	
 ::tuTree | 'var list --
 	fx fy .at
 	mark maketree
+	fh
 	tuiw drop
 	focTree	
-	fh
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	2drop
