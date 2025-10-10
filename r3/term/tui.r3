@@ -109,8 +109,9 @@
 
 ::exit	rflag $4 or 'rflag ! ;
 ::tuX?	rflag 2 and ;
-:tuX!	rflag 2 or 'rflag ! ;
 :tucl	rflag 2 nand 'rflag ! ;	
+:tuX!	rflag $2 or 'rflag ! ;
+::tuR!	rflag $8 or 'rflag ! ;
 
 ::.tdebug
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
@@ -163,8 +164,8 @@
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
-	[tab] =? ( 1 'idf +! ) | cambia id y luego wid
-	[shift+tab] =? ( -1 'idf +! ) | cambia id y luego wid
+	[tab] =? ( 1 'idf +! tuR! ) | cambia id y luego wid
+	[shift+tab] =? ( -1 'idf +! tuR! ) | cambia id y luego wid
 	'uikey ! ;
 	
 |:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
@@ -173,7 +174,8 @@
 	.hidec
 	vecdraw ex 
 	rflag
-	1 and? ( .restorec .showc )
+	$8 and? ( 0 'uikey ! vecdraw ex )
+	$1 and? ( .restorec .showc )
 	drop
 	.flush ;
 	
@@ -391,7 +393,7 @@
 :kbclick	
 	pick2 @ 3 << indlist + @ 
 	dup c@ $80 xor swap c! 
-	tuX! ;
+	tuX! tuR! ;
 	
 :focTree | --
 	tuif 0? ( drop ; ) drop

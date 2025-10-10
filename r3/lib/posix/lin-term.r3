@@ -111,11 +111,12 @@
 	drop upbtn ;
 
 ::inevt | -- type | 0 if no event
-	kbhit 0? ( .checksize ; ) drop
+	kbhit 0? ( drop .checksize ; ) drop
 	buffin 
-	6 >? ( bufferin $ffffff and
-		$3c5b1b =? ( 2drop check6 2 ; ) | #EVT_MOUSE 2
-		drop ) drop
+	6 >? ( drop 
+		bufferin $ffffff and
+		$3c5b1b =? ( drop check6 2 ; ) | #EVT_MOUSE 2
+		) drop
 	1 ; |#EVT_KEY 1
 	
 ::getevt | -- type | wait for event

@@ -90,7 +90,7 @@
 |MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
 	1 and ;
 
-::FSIZE
+::FSIZEF
 	32 + d@ 10 >> ; | in kb	
 
 #dirp

@@ -7,13 +7,21 @@
 ^r3/lib/parse.r3
 
 | KEYCODES 
-::[ESC] $1b ; ::[ENTER] $d ; ::[BACK] $7f ;
+::[ESC] $1b ; 
+::[ENTER] 
+|WIN| $d 
+|LIN| $a
+	; 
+::[BACK] $7f ;
 ::[TAB] $9 ; ::[DEL] $7E335B1B ; ::[INS] $7E325B1B ;
 ::[UP] $415b1b ; ::[DN] $425b1b ; 
 ::[RI] $435B1B ; ::[LE] $445B1B ;
 ::[PGUP] $7e355b1b ; ::[PGDN] $7e365b1b ; 
 ::[HOME] $485b1b ; ::[END] $465b1b ;
-::[SHIFT+TAB] $95a5b1B ;
+::[SHIFT+TAB] 
+|WIN| $95a5b1B 
+|LIN| $5a5b1b
+;
 ::[SHIFT+DEL] $7e323b335b1B ;
 ::[SHIFT+INS] $7E323b325B1B ;
 ::[SHIFT+UP] $41323b315b1b ; ::[SHIFT+DN] $42323b315b1b ;
