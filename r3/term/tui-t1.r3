@@ -12,38 +12,6 @@
 	;
 
 |---------------------------------------
-:,nsp | n --
-	( 1? 1- 32 ,c ) drop ;
-	
-:lalign | cnt str -- 
-	mark
-	utf8count	| cnt str scount
-	pick2 >? ( drop over ) 
-	swap		| cnt scnt str
-	here pick2 utf8ncpy 'here !
-	- ,nsp 
-	,eol empty ;
-	
-:calign | cnt str --
-	mark
-	utf8count	| cnt str scount
-	pick2 >? ( drop over )	| cnt str scount
-	rot over -				| str scount resto
-	-rot 					| resto str scount
-	pick2 1+ 2/				| resto str scount ini
-	,nsp
-	swap here rot utf8ncpy 'here ! | resto
-	2/ ,nsp 
-	,eol empty ;
-
-:ralign | cnt str --
-	mark
-	utf8count	| cnt str scount
-	pick2 >? ( drop over ) 
-	rot over - | str scount resto
-	,nsp
-	here swap utf8ncpy 'here ! 
-	,eol empty ;
 	
 :table.col | len just -- 
 	0? ( drop a> lalign ; ) 
