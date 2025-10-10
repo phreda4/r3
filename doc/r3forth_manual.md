@@ -2,24 +2,9 @@
 
 **A Concatenative Language Derived from ColorForth**
 
-*Pablo H. Reda - 2025*
-
-*English Translation and Corrections*
+*Pablo H. Reda*
 
 Repository: https://github.com/phreda4/r3
-
----
-
-## Quick Reference Guide
-
-- **Getting Started** → [Programming a Computer](#programming-a-computer)
-- **Language Basics** → [R3 Language](#r3-language)
-- **Stack Operations** → [Data Stack](#data-stack)
-- **Control Flow** → [Conditionals](#conditionals), [Repetition](#repetition)
-- **Memory & Variables** → [Variables and Memory](#variables-and-memory)
-- **Common Errors** → [Debugging Guide](#debugging-guide)
-- **Complete Examples** → [Simple Game](#complete-example-simple-game)
-- **Word Reference** → [Base Dictionary](#appendix-1---base-dictionary)
 
 ---
 
@@ -104,7 +89,7 @@ As DATA we need to represent places in memory where to store numbers, which can 
 
 - **QUANTITY**, for example: 3 lives
 - **ADDRESS or LOCATION**, for example: position 100 on the screen
-- **STATE**, for example: jumping or falling
+- **STATE**, for example: jumping as 1 or falling as 2, etc.
 
 As CODE we need to build ACTIONS.
 
@@ -168,7 +153,9 @@ Programs consist of words (space-separated tokens). The language searches a dict
 4. Known words → execute
 5. Unknown words → compilation error
 
-> **If you are a expert read this.** r3 is not like other forth, all the program is compiled and then execute, when say push to stack, te exac term is compile to push to stack and when say execute, the exac behavior is compile to execute the word.
+> **for experts** r3 is not like others forth, the whole program is compiled and then executed, when you say push to the stack, the exact term is compile to push to the stack, when you say execute, the exact behavior is compile to execute word.
+
+> **for not experts** Don't worry about internals !
 
 ### Prefix System
 
