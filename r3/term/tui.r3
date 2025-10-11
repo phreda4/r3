@@ -9,7 +9,7 @@
 	fx - $ffff and fw >? ( drop 0 ; ) drop
 	-1 ;
 
-#flstack * 64 | 4 niveles
+#flstack * 64 | 8 niveles
 #flstack> 'flstack
 
 :xywh>fl | x y w h -- v
@@ -18,17 +18,17 @@
 	swap $ffff and or 16 <<
 	swap $ffff and or ; | hhwwyyxx
 	
-:fl>xywh | v -- x y w h 
-	dup $ffff and swap
-	dup 16 >> $ffff and swap
-	dup 32 >> $ffff and swap
-	48 >> $ffff and ;
+|:fl>xywh | v -- x y w h 
+|	dup $ffff and swap
+|	dup 16 >> $ffff and swap
+|	dup 32 >> $ffff and swap
+|	48 >> $ffff and ;
+
+|::flx@ | -- x y w h
+|	flstack> 8 - @ fl>xywh ;
 	
 :fl>now | v --
-	dup $ffff and 'fx !
-	dup 16 >> $ffff and 'fy !
-	dup 32 >> $ffff and 'fw !
-	48 >> $ffff and 'fh ! ;
+	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
 	
 ::flxvalid? | -- 0= not valid
 	fw 1 <? ( drop 0 ; ) drop 
@@ -43,24 +43,17 @@
 ::flx | --
 	1 1 cols rows flx! ;
 	
-|::flx@ | -- x y w h
-|	flstack> 8 - @ fl>xywh ;
-
-:flx+! flstack> 8 - dup @ $ffff and rot + $ffff and 
-	swap dup @ $ffff nand rot or swap ! ;
-:fly+! flstack> 8 - dup @ 16 >> $ffff and rot + $ffff and 16 <<
-	swap dup @ $ffff0000 nand rot or swap ! ;
-:flw+! flstack> 8 - dup @ 32 >> $ffff and rot + $ffff and 32 <<
-	swap dup @ $ffff00000000 nand rot or swap ! ;
-:flh+! flstack> 8 - dup @ 48 >> $ffff and rot + $ffff and 48 <<
-	swap dup @ $ffffffffffff and rot or swap ! ;
+:flx+! flstack> 8 - dup w@ rot + clamp0 swap w! ;
+:fly+! flstack> 8 - 2 + dup w@ rot + clamp0 swap w! ;
+:flw+! flstack> 8 - 4 + dup w@ rot + clamp0 swap w! ;
+:flh+! flstack> 8 - 6 + dup w@ rot + clamp0 swap w! ;
 
 ::flxpush	
-	fx fy fw fh xywh>fl flstack> !+ 'flstack> ! ;
+	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
 ::flxpop	
-	-8 'flstack> +! flstack> @ fl>now ;
+	-8 'flstack> +! flstack> fl>now ;
 ::flxFill 
-	flstack> 8 - @ fl>now ;
+	flstack> 8 - fl>now ;
 
 | N=^ S=v E=> O=<
 | - is full minus the number
@@ -176,7 +169,6 @@
 	.hidec tui vecdraw ex ;
 	
 :tuiredraw
-	.cl
 	exvector
 	rflag
 	$8 and? ( 0 'uikey ! .cl exvector ) | redraw
@@ -195,7 +187,7 @@
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		10 sleep
+		10 ms
 		) drop 
 	tuireset ;
 
@@ -321,7 +313,8 @@
 	tuInputfoco
 	drop
 	fx fy .at	
-	fw swap lwrite
+	fw 2 <? ( 2drop ; ) 
+	swap lwrite
 	;
 	
 |--------------------------------	
@@ -339,16 +332,23 @@
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 |--------------------------------	
+:clicklist | 'var h -- 'var h
+	pick2 evtmxy nip fy - over 8 + @ + cntlist min swap ! tuX! ;
 	
 |----- LIST
 | #vlist 0 0 
 
-:focList | --
+:focList | 'var h --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
 	drop ;	
+
+:mouList | 'var h --
+	tuiw	| mouse
+	6 =? ( clicklist )
+	drop ;
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
@@ -363,7 +363,7 @@
 	fx fy .at
 	mark makeindx
 	fh
-	tuiw drop
+	mouList
 	focList
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
@@ -400,13 +400,18 @@
 	dup c@ $80 xor swap c! 
 	tuX! tuR! ;
 	
-:focTree | --
+:focTree | 'var h --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
 	[enter] =? ( kbclick ) 
 	drop ;	
+	
+:mouTree | 'var h --
+	tuiw	| mouse
+	6 =? ( clicklist kbclick )
+	drop ;
 
 #foldicon "▸" "▾"
 :,iicon | n -- 
@@ -425,8 +430,8 @@
 	fx fy .at
 	mark maketree
 	fh
-	tuiw drop
-	focTree	
+	mouTree
+	focTree	| focus
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	2drop

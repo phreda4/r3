@@ -13,6 +13,11 @@
 ::type | str cnt --
     stdout -rot 0 0 WriteFile drop ;
 
+##rows ##cols
+#eventBuffer * 32
+#ne | number of events
+#prevrc 0
+
 |------- Console Information -------
 | CONSOLE_SCREEN_BUFFER_INFO structure:
 |   COORD      dwSize; (16.16)
@@ -20,13 +25,7 @@
 |   WORD       wAttributes;16
 |   SMALL_RECT srWindow;16.16.16.16
 |   COORD      dwMaximumWindowSize;16.16
-
-##rows ##cols
-#eventBuffer * 512
-#ne | number of events
-#prevrc 0
-
-::.getterminfo | --
+:getterminfo | --
     stdout 'eventBuffer GetConsoleScreenBufferInfo drop 
     'eventBuffer 10 + @
     dup 32 >> $ffff and over $ffff and - 'cols !
@@ -40,11 +39,6 @@
 ::.onresize | 'callback --
     'on-resize ! ;
 
-:.checksize | --
-	.getterminfo
-	getrc prevrc =? ( drop ; ) 'prevrc !
-	on-resize 0? ( drop ; ) ex ; 
-	
 :eventsize
 	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
 	getrc prevrc =? ( drop ; ) 'prevrc !
@@ -79,7 +73,7 @@
 	
 ::inevt | -- type | check for event (no wait)
 	getEvent
-    4 =? ( ( getEvent 2 >? drop ) drop eventsize ; ) |.checksize ; ) | Handle resize event
+    4 =? ( ( getEvent 2 >? drop ) drop eventsize ; ) | Handle resize event
 	2 >? ( drop inevt ; ) ;
 
 ::getevt | -- type | wait for any event
@@ -152,19 +146,19 @@
 ::.reterm
     | Set console modes for ANSI/VT sequences and window events
     stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
-    stdout $7 SetConsoleMode drop
-	;
+    stdout $7 SetConsoleMode drop ;
 	
 ::.term
 	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-
+	
+	getterminfo getrc 'prevrc ! 
+	
+	.reterm
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
     65001 SetConsoleCP | Input UTF-8
-	.reterm
-    .getterminfo
-    getrc 'prevrc ! 
+    
 	;

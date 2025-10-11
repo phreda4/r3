@@ -83,7 +83,7 @@
 	
 	handlerequest
 	
-	10 sleep
+	10 ms
 	webserver
 	;
 

@@ -24,12 +24,12 @@
 	dup 16 >> $ffff and swap
 	dup 32 >> $ffff and swap
 	48 >> $ffff and ;
+
+|::flx@ | -- x y w h
+|	flstack> 8 - @ fl>xywh ;
 	
 :fl>now | v --
-	dup $ffff and 'fx !
-	dup 16 >> $ffff and 'fy !
-	dup 32 >> $ffff and 'fw !
-	48 >> $ffff and 'fh ! ;
+	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
 	
 ::flxvalid? | -- 0= not valid
 	fw 1 <? ( drop 0 ; ) drop 
@@ -44,24 +44,18 @@
 ::flx | --
 	1 1 cols rows flx! ;
 	
-|::flx@ | -- x y w h
-|	flstack> 8 - @ fl>xywh ;
 
-:flx+! flstack> 8 - dup @ $ffff and rot + $ffff and 
-	swap dup @ $ffff nand rot or swap ! ;
-:fly+! flstack> 8 - dup @ 16 >> $ffff and rot + $ffff and 16 <<
-	swap dup @ $ffff0000 nand rot or swap ! ;
-:flw+! flstack> 8 - dup @ 32 >> $ffff and rot + $ffff and 32 <<
-	swap dup @ $ffff00000000 nand rot or swap ! ;
-:flh+! flstack> 8 - dup @ 48 >> $ffff and rot + $ffff and 48 <<
-	swap dup @ $ffffffffffff and rot or swap ! ;
+:flx+! flstack> 8 - dup w@ rot + clamp0 swap w! ;
+:fly+! flstack> 8 - 2 + dup w@ rot + clamp0 swap w! ;
+:flw+! flstack> 8 - 4 + dup w@ rot + clamp0 swap w! ;
+:flh+! flstack> 8 - 6 + dup w@ rot + clamp0 swap w! ;
 
 ::flxpush	
 	fx fy fw fh xywh>fl flstack> !+ 'flstack> ! ;
 ::flxpop	
-	-8 'flstack> +! flstack> @ fl>now ;
+	-8 'flstack> +! flstack> fl>now ;
 ::flxFill 
-	flstack> 8 - @ fl>now ;
+	flstack> 8 - fl>now ;
 
 | N=^ S=v E=> O=<
 ::flxN | lineas --

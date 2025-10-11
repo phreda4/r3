@@ -95,7 +95,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
 	bigemit ;
 	
-| big font, colors with [BF 
+| big font zx, colors with [BF 
 ::.xwrite | str --
 	( c@+ 1? xchar ) 2drop ;
 
@@ -103,6 +103,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
 	bigemita ;
 
+| big font A, colors with [BF 
 ::.awrite | str --
 	( c@+ 1? achar ) 2drop ;
 	
@@ -111,6 +112,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 
 |-----------------------------------
 ::.boxl | x y w h --
+	3 <? ( 4drop ; ) swap
+	3 <? ( 4drop ; ) swap
 	2over .at
 	"┌" .write over 2 - "─" .rep "┐" .write
 	2swap 1+
@@ -123,6 +126,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	"└" .write 2 - "─" .rep "┘" .write ;
 
 ::.boxd | x y w h --
+	3 <? ( 4drop ; ) swap
+	3 <? ( 4drop ; ) swap
 	2over .at
 	"╔" .write over 2 - "═" .rep "╗" .write
 	2swap 1+
@@ -135,6 +140,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	"╚" .write 2 - "═" .rep "╝" .write ;
 	
 ::.boxf
+	3 <? ( 4drop ; ) swap
+	3 <? ( 4drop ; ) swap
 	( 1? 1- >r
 		pick2 pick2 .at
 		dup .nsp swap 1+ swap 
@@ -202,6 +209,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 #strsplit
 #strsplit>
 #lines
+#cntlines
 
 :emit0
 	13 =? ( drop dup c@ 10 =? ( swap 1+ swap ) drop 0 ; )
@@ -233,12 +241,16 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		testw dup a!+ >>0
 		) drop
 	0 a!+
-	a> 'here ! ;	
+	a> dup 'here ! 
+	lines - 3 >> 'cntlines !
+	;	
 	
 ::xText | w h x y "" --
 	mark ab[ 
 	splitlines 
-	rot drop | quita h
+	rot 	| w x y h
+	cntlines - 2/ + | v centre
+	|drop | quita h
 	lines >a ( 
 		2dup .at
 		a@+ 1? pick3 swap xwrite 

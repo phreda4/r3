@@ -144,7 +144,7 @@
 	'fileatrib 20 + @
 	86400000000 / | segundos>days
 	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10 /
+	10/
 	;
 	
 ::fileinfo | "file" -- 0=not exist

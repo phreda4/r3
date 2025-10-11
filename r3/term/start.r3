@@ -70,7 +70,8 @@
 	flcr
 	'info .write flcr
 	'fullpath .write flcr
-	'filename .write
+	'filename .write flcr
+	msec "%d" .print
 
 	;
 
