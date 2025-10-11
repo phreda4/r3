@@ -10,11 +10,14 @@
 #filename * 1024
 
 :run
+	.free
 	'fullpath
 |WIN| 	"cmd /c r3 ""%s"" " |2>mem/error.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
 	sprint 
-	sysnew |sys
+	sys
+	|sysnew |
+	.term
 	;
 	
 |--------------------------------	
@@ -23,12 +26,7 @@
 #scratchpad * 1024
 #info * 64
 
-:changefiles
-	vfolder flTreePath
-	'basepath 'fullpath strcpyl 1- strcpy
-	'fullpath flGetFiles
-	;
-	
+|------------
 :setfile	
 	vfile uiNindx 
 	'fullpath 'filename strcpyl 1- 
@@ -36,10 +34,21 @@
 	|loadcodigo	
 	'filename 'info strcpy
 	;
-:setcmd
-	"command" 'info strcpy
+
+:dirfile
+	tuwin $1 " Files " .wtitle
+	1 1 flpad xleft
+	'vfile uiFiles tuList
+	tuX? 1? ( setfile ) drop	
 	;
 
+|------------
+:changefiles
+	vfolder flTreePath
+	'basepath 'fullpath strcpyl 1- strcpy
+	'fullpath flGetFiles
+	;
+	
 :dirpanel
 	.reset
 	tuwin $1 " Dir " .wtitle
@@ -47,12 +56,11 @@
 	'vfolder uiDirs tuTree
 	tuX? 1? ( changefiles ) drop
 	;
-	
-:dirfile
-	tuwin $1 " Files " .wtitle
-	1 1 flpad xleft
-	'vfile uiFiles tuList
-	tuX? 1? ( setfile ) drop	
+
+|------------
+:setcmd
+	0 'scratchpad ! tuRefocus
+	"command" 'info strcpy
 	;
 	
 :dirpad
@@ -61,11 +69,14 @@
 	'scratchpad	1024 tuInputline
 	tuX? 1? ( setcmd ) drop	
 	flcr
-	'info .write
+	'info .write flcr
+	'fullpath .write flcr
+	'filename .write
+
 	;
-	
+
+|------------	
 :scrmain
-	tui	
 	.reset .cls 
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
@@ -83,8 +94,10 @@
 
 |-----------------------------------
 :main
-	"r3" flScanDir
-	"r3/audio" FlGetFiles
+	'basepath flScanDir
+	|setfile	
+	changefiles
+	|"r3/audio" FlGetFiles
 	'scrmain onTui 
 	;
 

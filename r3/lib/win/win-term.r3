@@ -20,8 +20,9 @@
 |   WORD       wAttributes;16
 |   SMALL_RECT srWindow;16.16.16.16
 |   COORD      dwMaximumWindowSize;16.16
-
+#eventBuffer 0 0 0 
 #consoleinfo 0 0 0
+#ne | number of events
 ##rows ##cols
 #prevrc 0
 
@@ -31,7 +32,7 @@
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
 
-:.getrc rows 16 << cols or ;
+:getrc rows 16 << cols or ;
 
 |------- Resize Detection -------
 #on-resize 0 | callback address
@@ -39,24 +40,16 @@
 :.checksize | --
 	on-resize 0? ( drop ; ) 
 	.getterminfo
-	.getrc prevrc =? ( 2drop ; ) 'prevrc !
+	getrc prevrc =? ( 2drop ; ) 'prevrc !
     ex ; 
 
 ::.onresize | 'callback --
     'on-resize ! ;
 
 |------- Keyboard Input -------
-| Windows Console Input Format
-| Key code format: $ccp0ss
-|   ss = scancode
-|   cc0000 = character code
-|   p000 = press(0) release(1)
-| Example: $1B1001 = ESC key release
-
 | INPUT_RECORD structure:
 |   WORD  EventType; (1=key, 2=mouse, 4=size, 8=menu, 10=focus)
 |   union of event data
-
 | KEY_EVENT_RECORD:
 |   BOOL  bKeyDown;        | WORD |2
 |   WORD  wRepeatCount;    | 4
@@ -64,38 +57,32 @@
 |   WORD  wVirtualScanCode;| 12
 |   WCHAR/CHAR UnicodeChar;| 14
 |   DWORD dwControlKeyState;
-
-#eventBuffer 0 0 0 0 0
-#ne | number of events
-#nr | number read
-
 ::evtkey | -- key
 	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
 	14 + c@ $1b <>? ( ; ) 
-	stdin 'eventBuffer 1 'nr PeekConsoleInput
-	nr 0? ( drop ; ) drop
-	56 <<
-	( stdin 'eventBuffer 1 'nr ReadConsoleInput
-		8 >> 'eventBuffer 14 + c@ 1?
-		56 << or ) drop
-	( $ff nand? 8 >> ) 
-	;
-	
-::getch | -- key | wait for key
-    ( stdin 'eventBuffer 1 'nr ReadConsoleInput
-      eventBuffer $ffff and 1 <>? 
-		4 =? ( .checksize )
-		drop ) drop
-	evtkey ;
+	56 << ( 8 >> 
+	    stdin 'ne GetNumberOfConsoleInputEvents 
+		ne 1? drop
+		stdin 'eventBuffer 1 'ne ReadConsoleInput
+		'eventBuffer 14 + c@ 1? 56 << or ) drop
+	( $ff nand? 8 >> ) ;
 
-::inkey | -- key | 0 if no key pressed
+::inevt | -- type | check for event (no wait)
     stdin 'ne GetNumberOfConsoleInputEvents 
     ne 0? ( ; ) drop
-    stdin 'eventBuffer 1 'nr ReadConsoleInput 
+    stdin 'eventBuffer 1 'ne ReadConsoleInput
     eventBuffer $ff and
-    1 =? ( drop evtkey ; )
-    4 =? ( .checksize ; ) | WINDOW_BUFFER_SIZE_EVENT
-    drop 0 ;
+    4 =? ( .checksize ) | Handle resize event
+    ;
+
+::getevt | -- type | wait for any event
+	( inevt 0? drop 10 sleep ) ;
+
+::inkey | -- key | 0 if no key pressed
+	inevt 1 =? ( drop evtkey ; ) drop 0 ;
+	
+::getch | -- key | wait for key
+    ( inkey 0? drop 10 sleep ) ;
 
 |------- Extended Event Handling -------
 | MOUSE_EVENT_RECORD:
@@ -103,6 +90,12 @@
 |   DWORD dwButtonState;    | 6
 |   DWORD dwControlKeyState;| 10
 |   DWORD dwEventFlags;     | 14
+
+| Mouse event flags:
+| MOUSE_MOVED 0x0001
+| DOUBLE_CLICK 0x0002    
+| MOUSE_WHEELED 0x0004
+| MOUSE_HWHEELED 0x0008
 
 ::evtmxy | -- x y | mouse position
     'eventBuffer 4 + w@+ 1+ swap w@ 1+ ;
@@ -115,26 +108,6 @@
 
 ::evtm | -- event | mouse event type
     'eventBuffer 16 + d@ ;
-
-| Mouse event flags:
-| MOUSE_MOVED 0x0001
-| DOUBLE_CLICK 0x0002    
-| MOUSE_WHEELED 0x0004
-| MOUSE_HWHEELED 0x0008
-
-::getevt | -- type | wait for any event
-    stdin 'eventBuffer 1 'nr ReadConsoleInput 
-    eventBuffer $ff and
-    4 =? ( .checksize ) | Handle resize event
-    ;
-
-::inevt | -- type | check for event (no wait)
-    stdin 'ne GetNumberOfConsoleInputEvents 
-    ne 0? ( ; ) drop
-    stdin 'eventBuffer 1 'nr ReadConsoleInput
-    eventBuffer $ff and
-    4 =? ( .checksize ) | Handle resize event
-    ;
 
 |------- Console Mode Management -------
 | Input Modes:
@@ -184,5 +157,5 @@
     stdout $7 SetConsoleMode drop
     
     .getterminfo
-    .getrc 'prevrc ! 
+    getrc 'prevrc ! 
 	;

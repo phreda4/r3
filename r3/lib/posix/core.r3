@@ -4,29 +4,14 @@
 ^r3/lib/str.r3
 ^r3/lib/posix/posix.r3
 
-#process-heap
-
 ::ms | ms --
-	1000 * libc-usleep drop ;
+	1000* libc-usleep drop ;
 
-::allocate |( n -- a ior ) 
-	libc-malloc dup  ;
-
-::free |( a -- ior )
-	libc-free drop 0 ; 
-
-::resize |( a n -- a ior ) 
-	libc-realloc dup 0 ;
-
-|4 constant CLOCK_MONOTONIC_RAW
 #te 0 0 
 
-:1000000/
-	$8637c $27 *>> ;
-
 ::msec | -- msec
-	4 'te libc-clock_gettime drop
-	'te @+ 1000 * swap @ 1000000/ + ;
+	4 'te libc-clock_gettime drop |4 constant CLOCK_MONOTONIC_RAW
+	'te @+ 1000* swap @ 1000000/ + ;
 
 |struct tm {
 |   int tm_sec;         /* seconds,  range 0 to 59          */ 0
@@ -61,7 +46,7 @@
    
 ::date.d 12 + d@ ;
 ::date.dw 24 + d@ ;
-::date.m 16 + d@ ;
+::date.m 16 + d@ 1+ ; | 1..12
 ::date.y 20 + d@ 1900 + ;
 ::time.ms 0 ;
 ::time.s d@ ;

@@ -107,7 +107,7 @@
 	
 |--------------------------------	
 :main
-	tui flx | full screen
+	flx | full screen
 	.reset .cls
 	|fx fy fw fh .boxl | full screen
 	5 flxN uiboxd

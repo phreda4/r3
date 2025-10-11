@@ -5,14 +5,31 @@
 :testkey
 	inevt	
 	1 =? ( 
-		evtkey [esc] =? ( 2drop ; ) 
-		1? ( dup "  %h" sprint .write .cr   ) drop  | ignora ceros
+		evtkey 
+		[esc] =? ( 2drop ; ) 
+		1? ( 
+			dup "  %h" sprint .write .cr
+			.flush
+			)
+		drop  | ignora ceros
 		)
-	|2 =? ( evtmb evtmxy " %d %d : %d" .print .cr )
-	1? ( .flush ) | only redraw with event
+	|1? ( dup "evt %d" .fprint )
 	drop 
 	10 ms
 	testkey ;
+
+
+:testkey1
+	inkey
+	1? ( 
+		dup "  %h" sprint .write .cr 
+		.flush
+		[esc] =? ( drop ; )	
+		) | ignora ceros
+	drop 
+	10 ms
+	testkey ;
+	
 	
 :main
 	.cls .blue

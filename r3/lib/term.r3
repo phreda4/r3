@@ -18,10 +18,7 @@
 ::[RI] $435B1B ; ::[LE] $445B1B ;
 ::[PGUP] $7e355b1b ; ::[PGDN] $7e365b1b ; 
 ::[HOME] $485b1b ; ::[END] $465b1b ;
-::[SHIFT+TAB] 
-|WIN| $95a5b1B 
-|LIN| $5a5b1b
-;
+::[SHIFT+TAB] $5a5b1b ;
 ::[SHIFT+DEL] $7e323b335b1B ;
 ::[SHIFT+INS] $7E323b325B1B ;
 ::[SHIFT+UP] $41323b315b1b ; ::[SHIFT+DN] $42323b315b1b ;
@@ -40,6 +37,8 @@
 #outbuf> 'outbuf | Current position in buffer
 ##pad 				| pd is end of outbuf
 
+::.cl outbuf 'outbuf> ! ;
+	
 ::.flush | -- | Write buffer to stdout
     outbuf> outbuf - 0? ( drop ; )
 	outbuf swap type

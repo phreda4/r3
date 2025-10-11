@@ -12,20 +12,6 @@
 ::msec | -- msec
 	GetTickCount ;
 	
-|************** not used	
-::iniheap	
-	GetProcessHeap 'process-heap ! ;
-	
-::allocate |( n -- a ior ) 
-	process-heap 0 rot HeapAlloc ;
-	
-::free |( a -- ior ) 
-	process-heap 0 rot HeapFree ;
-
-::resize |( a n -- a ior ) 
-	process-heap -rot 0 rot HeapReAlloc ;
-
-|----------
 #sistime 0 0 | 16 bytes
 
 ::time | -- hms

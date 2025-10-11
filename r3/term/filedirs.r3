@@ -1,3 +1,15 @@
+| GetFolders and Files from every folder
+| PHREDA 2025
+
+| reseve memory with
+|::flScanDir | "path" -- | only load one time!
+| load filenames with
+|::FlGetFiles | "path\file" -- | reload for every folder when need
+|
+|##uiDirs | list for tree widget
+|##uiFiles	| list for list widget
+|
+
 ^r3/lib/mem.r3
 ^./tui.r3
 
@@ -9,7 +21,6 @@
 
 #stckhdd>
 #l1 0 #l2 0 
-
 
 ::flcpy | 'file 'str --
 	( swap c@+ 1?
@@ -94,7 +105,7 @@
 	drop 
 	0 ,c ;
 	
-::FlGetFiles | filename -- | file2list
+::FlGetFiles | filename --
 	mark uiFiles 'here !
 |WIN|	"%s//*" sprint
 	ffirst ( +file fnext 1? ) drop 0 , 

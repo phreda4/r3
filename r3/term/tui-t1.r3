@@ -64,7 +64,6 @@
 
 
 :main
-	tui	
 	.reset .cls 
 	
 	4 flxN

@@ -143,6 +143,9 @@
 		3 ; ) 	 							| active->3
 	drop 0 ;
 
+::tuRefocus
+	-1 'idfa ! ;
+	
 ::tuif | -- flag
 	id 
 	idf <>? ( drop 0 ; )
@@ -169,13 +172,14 @@
 	'uikey ! ;
 	
 |:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
+:exvector
+	.hidec tui vecdraw ex ;
 	
 :tuiredraw
-	.hidec
-	vecdraw ex 
+	exvector
 	rflag
-	$8 and? ( 0 'uikey ! vecdraw ex )
-	$1 and? ( .restorec .showc )
+	$8 and? ( 0 'uikey ! .cl exvector ) | redraw
+	$1 and? ( .restorec .showc )	| with cursor
 	drop
 	.flush ;
 	
@@ -303,7 +307,7 @@
 
 :tuInputfoco
 	tuif 0? ( drop ; )
-	1 =? ( drop inInput ; ) drop
+	1 =? ( drop inInput dup ) drop
 	kbInputLine 
 	fx fy swap 
 	pad> padi> - + | !! falta utf
