@@ -103,6 +103,9 @@
 ::.alsb "?1049h" .[w ; | alternate screen buffer
 ::.masb "?1049l" .[w ; | main screen buffer
 
+::.scrolloff | rows --
+	"1;%dr" .[p ;
+::.scrollon	"r" .[w ;
 |------- Foreground Colors -------
 ::.Black "30m" .[w ;
 ::.Red "31m" .[w ;

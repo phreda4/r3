@@ -8,27 +8,28 @@
 		evtkey 
 		[esc] =? ( 2drop ; ) 
 		1? ( 
-			dup "  %h" sprint .write .cr
-			.flush
+			dup "%h " sprint .write .flush
 			)
 		drop  | ignora ceros
 		)
-	|1? ( dup "evt %d" .fprint )
+	4 =? ( cols rows "(%d:%d)" .print .flush )
+	1? ( dup "[%d]" .fprint )
 	drop 
 	10 ms
 	testkey ;
 
 
-:testkey1
+:testkey2
 	inkey
 	1? ( 
 		dup "  %h" sprint .write .cr 
-		.flush
 		[esc] =? ( drop ; )	
 		) | ignora ceros
 	drop 
+	.flush
 	10 ms
 	testkey ;
+	
 	
 	
 :main
@@ -38,5 +39,6 @@
 	testkey ;
 
 : .term 
+[ ; ] .onresize
 main 
 .free ;

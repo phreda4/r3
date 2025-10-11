@@ -9,7 +9,7 @@
 	fx - $ffff and fw >? ( drop 0 ; ) drop
 	-1 ;
 
-#flstack * 32 | 4 niveles
+#flstack * 64 | 4 niveles
 #flstack> 'flstack
 
 :xywh>fl | x y w h -- v
@@ -176,6 +176,7 @@
 	.hidec tui vecdraw ex ;
 	
 :tuiredraw
+	.cl
 	exvector
 	rflag
 	$8 and? ( 0 'uikey ! .cl exvector ) | redraw
@@ -190,11 +191,11 @@
 	tuiredraw
 	( rflag $4 nand? drop
 		0 'uikey ! 0 'rflag !
-		inevt	
+		inevt
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		10 ms
+		10 sleep
 		) drop 
 	tuireset ;
 

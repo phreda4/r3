@@ -10,15 +10,14 @@
 #filename * 1024
 
 :run
-	.free
-	'fullpath
-|WIN| 	"cmd /c r3 ""%s"" " |2>mem/error.mem"
+	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite  .cr .cr .cr .flush
+	|"mem/error.mem" delete
+	|'fullpath
+	'filename
+|WIN| 	"cmd /c r3 ""%s"" " | 2>mem/error.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
-	sprint 
-	sys
-	|sysnew |
-	.term
-	;
+	sprint sys
+	.reterm ;
 	
 |--------------------------------	
 #vfolder 0 0
@@ -90,6 +89,9 @@
 	flxFill		dirpad
 
 	.flush 
+	uikey
+	[f1] =? ( run )
+	drop
 	;
 
 |-----------------------------------
@@ -102,6 +104,6 @@
 	;
 
 : 
-.term 
+.term .alsb
 main 
-.free ;
+.masb .free ;

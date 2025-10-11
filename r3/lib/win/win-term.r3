@@ -20,15 +20,15 @@
 |   WORD       wAttributes;16
 |   SMALL_RECT srWindow;16.16.16.16
 |   COORD      dwMaximumWindowSize;16.16
-#eventBuffer 0 0 0 
-#consoleinfo 0 0 0
-#ne | number of events
+
 ##rows ##cols
+#eventBuffer * 512
+#ne | number of events
 #prevrc 0
 
 ::.getterminfo | --
-    stdout 'consoleinfo GetConsoleScreenBufferInfo drop 
-    'consoleinfo 10 + @
+    stdout 'eventBuffer GetConsoleScreenBufferInfo drop 
+    'eventBuffer 10 + @
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
 
@@ -37,14 +37,18 @@
 |------- Resize Detection -------
 #on-resize 0 | callback address
 
-:.checksize | --
-	on-resize 0? ( drop ; ) 
-	.getterminfo
-	getrc prevrc =? ( 2drop ; ) 'prevrc !
-    ex ; 
-
 ::.onresize | 'callback --
     'on-resize ! ;
+
+:.checksize | --
+	.getterminfo
+	getrc prevrc =? ( drop ; ) 'prevrc !
+	on-resize 0? ( drop ; ) ex ; 
+	
+:eventsize
+	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
+	getrc prevrc =? ( drop ; ) 'prevrc !
+	on-resize 0? ( drop ; ) ex ; 
 
 |------- Keyboard Input -------
 | INPUT_RECORD structure:
@@ -67,23 +71,26 @@
 		'eventBuffer 14 + c@ 1? 56 << or ) drop
 	( $ff nand? 8 >> ) ;
 
-::inevt | -- type | check for event (no wait)
-    stdin 'ne GetNumberOfConsoleInputEvents 
+:getEvent
+	stdin 'ne GetNumberOfConsoleInputEvents 
     ne 0? ( ; ) drop
     stdin 'eventBuffer 1 'ne ReadConsoleInput
-    eventBuffer $ff and
-    4 =? ( .checksize ) | Handle resize event
-    ;
+    eventBuffer $ffff and ;
+	
+::inevt | -- type | check for event (no wait)
+	getEvent
+    4 =? ( ( getEvent 2 >? drop ) drop eventsize ; ) |.checksize ; ) | Handle resize event
+	2 >? ( drop inevt ; ) ;
 
 ::getevt | -- type | wait for any event
-	( inevt 0? drop 10 sleep ) ;
+	( inevt 0? drop 10 ms ) ;
 
 ::inkey | -- key | 0 if no key pressed
 	inevt 1 =? ( drop evtkey ; ) drop 0 ;
 	
 ::getch | -- key | wait for key
-    ( inkey 0? drop 10 sleep ) ;
-
+    ( inkey 0? drop 10 ms ) ;
+	
 |------- Extended Event Handling -------
 | MOUSE_EVENT_RECORD:
 |   COORD dwMousePosition;  | 2
@@ -142,6 +149,12 @@
     FreeConsole ;
 
 |------- Initialization -------
+::.reterm
+    | Set console modes for ANSI/VT sequences and window events
+    stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
+    stdout $7 SetConsoleMode drop
+	;
+	
 ::.term
 	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
@@ -151,11 +164,7 @@
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
     65001 SetConsoleCP | Input UTF-8
-    
-    | Set console modes for ANSI/VT sequences and window events
-    stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
-    stdout $7 SetConsoleMode drop
-    
+	.reterm
     .getterminfo
     getrc 'prevrc ! 
 	;

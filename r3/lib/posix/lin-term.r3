@@ -131,8 +131,11 @@
     0 libc-exit drop ;
 
 |------- Initialization -------
+::.reterm
+	set-terminal-mode ;
+	
 ::.term	
-	set-terminal-mode
+	.reterm
 	.getterminfo
 	.getrc 'prevrc ! 
 | Set locale to UTF-8

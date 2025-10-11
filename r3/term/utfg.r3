@@ -119,9 +119,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		pick2 pick2 .at "│" .write 
 		pick2 over + 1- .col "│" .write 
 		swap 1+ swap r> ) drop 
-	pick2 pick2 .at
-	"└" .write 2 - "─" .rep "┘" .write
-	2drop ;
+	-rot .at
+	"└" .write 2 - "─" .rep "┘" .write ;
 
 ::.boxd | x y w h --
 	2over .at
@@ -132,9 +131,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		pick2 pick2 .at "║" .write 
 		pick2 over + 1- .col "║" .write 
 		swap 1+ swap r> ) drop 
-	pick2 pick2 .at
-	"╚" .write 2 - "═" .rep "╝" .write		
-	2drop ;
+	-rot .at
+	"╚" .write 2 - "═" .rep "╝" .write ;
 	
 ::.boxf
 	( 1? 1- >r

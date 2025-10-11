@@ -78,6 +78,7 @@
 	tuWin $1 " Command " .wtitle
 	2 1 flpad
 	pad fw 2 - tuInputLine
+	tuX? 1? ( 0 pad ! tuRefocus ) drop	
 	
 	16 flxO
 	tuwin $1 " Options " .wtitle
@@ -86,7 +87,13 @@
 	'exit "Salir" tuBtn | 'ev "" --
 	1 'fy +!
 	'exit "Coso" tuBtn | 'ev "" --
-		
+	10 flxS
+	.wborde
+	fx fy .at 
+	cols rows "%d %d" .print
+	
+	flxFill	
+	.wborded
 |	'exit "Salir" tuBtn
 
 |	flFull
@@ -96,7 +103,7 @@
 	
 |-----------------------------------
 : 
-	.term 
+	.term .alsb
 	'main onTui 
-	.free 
+	.masb .free 
 ;
