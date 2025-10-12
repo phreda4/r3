@@ -3,6 +3,7 @@
 |---------------
 ^./tui.r3
 ^./filedirs.r3
+^r3/lib/trace.r3
 
 |--------------------------------	
 #basepath "r3/"
@@ -10,14 +11,18 @@
 #filename * 1024
 
 :run
-	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite  .cr .cr .cr .flush
+	.cls 
+	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .flush
+	msec
 	|"mem/error.mem" delete
 	|'fullpath
 	'filename
 |WIN| 	"cmd /c r3 ""%s"" " | 2>mem/error.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
 	sprint sys
-	.reterm ;
+	.reterm 
+	msec swap - "%d ms" .fprint
+	;
 	
 |--------------------------------	
 #vfolder 0 0

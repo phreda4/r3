@@ -106,6 +106,9 @@
 	|fx fy fw fh .boxl | full screen
 	5 flxN uiboxd
 	
+	|.termsize fx fy .at inkey "%h" .print
+	|fx 1+ fy 1+ .at
+	
 	3 flxN uiboxl	
 	8 flxS uiboxd
 	0.3 fw% flxO uiboxd
@@ -118,6 +121,7 @@
 		flxpop
 	flxFill
 	uiboxl	
+	
 	;
 	
 |-----------------------------------

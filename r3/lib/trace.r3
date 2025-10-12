@@ -1,53 +1,82 @@
-^r3/lib/console.r3
+^r3/lib/term.r3
 
 ::trace | --
-	">> trace <<" .print
-	.input
-	;
+	.reset
+	"stack <<" .write
+	pick4 .d .write .sp
+	pick3 .d .write .sp 
+	pick2 .d .write .sp 
+	over .d .write .sp
+	dup .d .write .sp 
+	">>" .write .cr 
+	.flush waitkey ;
+	
+::traceh | --
+	.reset
+	"stack <<" .write
+	pick4 .h .write .sp
+	pick3 .h .write .sp 
+	pick2 .h .write .sp 
+	over .h .write .sp
+	dup .h .write .sp 
+	">>" .write .cr 
+	.flush waitkey ;
 
 ::memdump | adr cnt --
-	( 1? 1 - 
-		swap c@+ $ff and "%h " .print 
-		swap ) 2drop ;
+	.reset "memdump: " .write 
+	"ADR:" .write  over .h .write 
+	.cr
+	( 1? 1- 
+		swap c@+ $ff and .h .write .sp 
+		swap ) 2drop 
+	.cr
+	.flush waitkey ;
 
 ::memdumpc | adr cnt --
-	( 1? 1 - 
-		swap c@+ .emit
-		swap ) 2drop ;
+	.reset "memdump char:" .write .cr
+	( 1? 1- 
+		swap c@+ 32 <? ( $2e nip ) .emit
+		swap ) 2drop 
+	.cr
+	.flush waitkey ;
 
+|----- file log 
 ::clearlog
 	"filelog.txt" delete ;
 
 ::filelog | .. str --
 	sprint count "filelog.txt" append ;
 	
+|----- view memory	
 #memini
 
-:.dh
-	$f and $30 + $39 >? ( 7 + ) .emit ;
-	
-:.print2hex | nro --
-	dup 4 >> .dh .dh ;
-	
 :showmem
 	.cls
+	":Memmap: [esc]exit [up] [dn] [pgup] [pgdn] :" .write 
+	memini .h 8 .r. .write
+
+	.cr
+	cols "─" .rep .cr
 	memini 0
-	( 24 <? swap
-		dup "%h:" .print
-		dup 32 ( 1? 1 - swap c@+ .print2hex swap ) 2drop
-		": " .print
+	( rows 5 - <? swap
+		dup .h 8 .r. .write ": " .write
+		dup 32 ( 1? 1 - swap c@+ $ff and .h 2 .r. .write swap ) 2drop
+		": " .write
 		32 ( 1? 1 - swap c@+ 32 <? ( $2e nip ) .emit swap ) drop
 		.cr
-		swap 1 + ) 2drop ;
+		swap 1 + ) 2drop 
+	cols "─" .rep .cr		
+	.flush ;
 	
 ::memmap | inimem --
+	.reset 
 	'memini !
 	( showmem
-		getch $1B1001 <>? 
-		$48 =? ( -32 'memini +! ) 
-		$50 =? ( 32 'memini +! )
-		$49 =? ( -32 23 * 'memini +! ) 
-		$51 =? ( 32 23 * 'memini +! )		
+		getch [esc] <>? 
+		[up] =? ( -32 'memini +! ) 
+		[dn] =? ( 32 'memini +! )
+		[pgup] =? ( -32 23 * 'memini +! ) 
+		[pgdn] =? ( 32 23 * 'memini +! )		
 		drop ) drop ;
 
 #vmem
@@ -55,19 +84,23 @@
 	
 :showmem
 	.cls
+	cols "─" .rep .cr
 	memini 0
-	( 24 <? swap
+	( rows 5 - <? swap
 		pick2 ex .cr
-		swap 1 + ) 2drop ;
+		swap 1 + ) 2drop 
+	cols "─" .rep .cr		
+	.flush ;
 	 
 ::memmapv | 'v mem --
+	.reset 
 	'memini !
 	memini over ex memini - 'cntbytes !
 	( showmem
-		getch $1B1001 <>? 
-		$48 =? ( cntbytes neg 'memini +! ) 
-		$50 =? ( cntbytes 'memini +! )
-		$49 =? ( cntbytes -23 * 'memini +! ) 
-		$51 =? ( cntbytes 23 * 'memini +! )		
+		getch [esc] <>? 
+		[up] =? ( cntbytes neg 'memini +! ) 
+		[dn] =? ( cntbytes 'memini +! )
+		[pgup] =? ( cntbytes -23 * 'memini +! ) 
+		[pgdn] =? ( cntbytes 23 * 'memini +! )		
 		drop ) 2drop ;
 	

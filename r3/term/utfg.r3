@@ -1,4 +1,4 @@
-| Utg Graphics
+ | Utg Graphics
 | PHREDA 2025
 ^r3/lib/term.r3
 
@@ -106,11 +106,21 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 | big font A, colors with [BF 
 ::.awrite | str --
 	( c@+ 1? achar ) 2drop ;
-	
+
+|---- Draw lines
 #vl ( $e2 $94 $82 $1b $5b $42 $1b $5b $44 0 ) | |v<
 #vd	( $e2 $95 $91 $1b $5b $42 $1b $5b $44 0 ) | ||v<
 
-|-----------------------------------
+::.vline | h --
+	vl .rep ;
+::.hline | w --
+	"─" .rep ;
+	
+::.vlined | h --
+	vd .rep ;
+::.hlined | w --
+	"═" .rep ;
+
 ::.boxl | x y w h --
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
@@ -147,15 +157,6 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		dup .nsp swap 1+ swap 
 		r> ) 4drop ;
 	
-::.vline | h --
-	vl .rep ;
-::.hline | w --
-	"─" .rep ;
-	
-::.vlined | h --
-	vd .rep ;
-::.hlined | w --
-	"═" .rep ;
 	
 |--- utf align | result in HERE
 ::lalign | cnt str -- 

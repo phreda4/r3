@@ -35,7 +35,7 @@
 |------- Output Buffer System -------
 #outbuf | output buffer
 #outbuf> 'outbuf | Current position in buffer
-##pad 				| pd is end of outbuf
+#endbuf |  end of outbuf
 
 ::.cl outbuf 'outbuf> ! ;
 	
@@ -45,18 +45,18 @@
     outbuf 'outbuf> ! ;
 
 ::.type | str cnt -- | Add to buffer
-    pad outbuf> - >? ( .flush ) 
+    endbuf outbuf> - >? ( .flush ) 
 	outbuf> rot pick2 cmove
     'outbuf> +! ;
 ::.emit | char --
-	outbuf> pad =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
+	outbuf> endbuf =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
 
 ::.cr 10 .emit 13 .emit ;
 ::.sp 32 .emit ;
 ::.nsp | n -- ;..
 	32 swap 
 ::.nch | char n -- ; WARNIG not multibyte
-	pad outbuf> -  >? ( .flush )
+	endbuf outbuf> -  >? ( .flush )
 	outbuf> rot pick2 cfill | dvc
 	'outbuf> +! ;
 
@@ -71,6 +71,7 @@
 ::.rep | cnt  "car" -- 
 	count rot ( 1? 1- pick2 pick2 .type ) 3drop ;
 
+|--- automatic flush version
 ::.fwrite .write .flush ;
 ::.fprint .print .flush ;
 ::.fprintln .println .flush ;
@@ -162,33 +163,25 @@
 ::.Hidden "8m" .[w ;
 ::.Strike "9m" .[w ;
 ::.Reset "0m" .[w ;
+
+::.termsize
+	|"9999;9999H" .[w "6n" .[w
+	"18t" .[w
+	|here ( inkey 1? swap c!+ ) swap c!+	drop
+	;
+|	'buffin read
+|ESC [ 18 t → respuesta ESC [ 8 ; rows ; cols t	
+	;
 	
-|------- Line Input -------
-
-:.readln | --
-    pad ( inkey 1? swap c!+ ) swap c! ;
-
-::.input | -- | read line to pad
-    pad 
-    ( getch $D <>? | wait for ENTER key
-        0? ( drop ; )
-        8 =? ( swap 
-            1- pad <? ( 2drop pad ; )
-            swap .emit "1P" .[w ; )
-        dup .emit
-        swap c!+ ) drop
-    0 swap c! ;
-
-::.inputn | -- n | read number
-    .input pad str>nro nip ;
-
 ::waitesc | -- | wait for ESC key
-    ( getch [esc] <>? drop ) drop ;
+    ( getch [esc] <>? drop 10 ms ) drop ;
+
+::waitkey | -- | wait any key
+    ( getch 0? drop 10 ms ) drop ;
 	
 : |||||||||||||||||||||||||||||
 	here 
-	dup 'outbuf ! $ffff +
-	dup 'pad ! 1024 + | pad is end of buffer
-	'here !
-	outbuf 'outbuf> !
+	dup 'outbuf ! dup 'outbuf> !
+	$ffff +	| 64kb flush buffer (big!!)
+	dup 'endbuf ! 'here !
 ;
