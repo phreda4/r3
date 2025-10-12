@@ -2,7 +2,7 @@
 | PHREDA 2021 - Updated 2025
 
 ^r3/lib/mem.r3
-^r3/lib/str.r3
+^r3/lib/parse.r3
 
 |-------terminal Handles -------
 ##stdin 
@@ -30,6 +30,17 @@
     'eventBuffer 10 + @
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
+
+|#c1 ( $1b ) "[9999;9999H"
+|#c2 ( $1b ) "[6n"
+|:getterminfo2	| read size terminal with esc sequense
+|	'c1 count type 
+|	'c2 count type
+|	stdin 'eventBuffer 32 'ne 0 ReadConsole
+|	'eventBuffer 2 + 
+|    getnro 'rows ! 1+ | Skip ;
+|    getnro 'cols ! 
+|	drop ;
 
 :getrc rows 16 << cols or ;
 
@@ -138,13 +149,13 @@
 
 |------- Cleanup -------
 ::.free | -- | free console
-	stdin $1F7 SetConsoleMode drop 
+	stdin $7 SetConsoleMode drop 
+	stdout $3 SetConsoleMode drop 
 	FlushConsoleInputBuffer
     FreeConsole ;
 
 |------- Initialization -------
-::.reterm
-    | Set console modes for ANSI/VT sequences and window events
+::.reterm  | Set console modes for ANSI/VT sequences and window events
     stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop ;
 	
@@ -153,9 +164,9 @@
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-	
+	stdin $7 SetConsoleMode drop 
+	stdout $3 SetConsoleMode drop 
 	getterminfo getrc 'prevrc ! 
-	
 	.reterm
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8

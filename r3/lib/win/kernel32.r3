@@ -16,6 +16,7 @@
 #sys-PeekNamedPipe
 #sys-ReadConsoleInput
 #sys-WriteConsole
+#sys-ReadConsole
 #sys-WriteConsoleOutput
 #sys-FlushConsoleInputBuffer
 #sys-GetNumberOfConsoleInputEvents
@@ -83,6 +84,7 @@
 ::PeekNamedPipe sys-PeekNamedPipe sys6 drop ;
 ::ReadConsoleInput sys-ReadConsoleInput sys4 drop ;
 ::WriteConsole sys-WriteConsole sys5 drop ;
+::ReadConsole sys-ReadConsole sys5 drop ;
 ::WriteConsoleOutput sys-WriteConsoleOutput sys5 drop ;
 ::GetNumberOfConsoleInputEvents sys-GetNumberOfConsoleInputEvents sys2 drop ;
 
@@ -151,6 +153,7 @@
 	dup "PeekNamedPipe" getproc 'sys-PeekNamedPipe !
 	dup "ReadConsoleInputA" getproc 'sys-ReadConsoleInput !
 	dup "WriteConsole" getproc 'sys-WriteConsole !
+	dup "ReadConsoleA" getproc 'sys-ReadConsole !
 	dup "WriteConsoleOutputA" getproc 'sys-WriteConsoleOutput !
 	dup "GetNumberOfConsoleInputEvents" getproc 'sys-GetNumberOfConsoleInputEvents !
 	

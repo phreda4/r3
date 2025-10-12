@@ -90,13 +90,12 @@
 	dup 'fx +! 2* neg 'fw +! ;
 	
 
+
 |--------------------------		
 
 :uiboxd
-|	flxvalid? 0? ( drop ; ) drop
 	fx fy fw fh .boxd ;
 :uiboxl	
-|	flxvalid? 0? ( drop ; ) drop
 	fx fy fw fh .boxl ;
 	
 |--------------------------------	
@@ -107,7 +106,8 @@
 	5 flxN uiboxd
 	
 	|.termsize fx fy .at inkey "%h" .print
-	|fx 1+ fy 1+ .at
+	fx 1+ fy 1+ .at
+	rows cols "c:%d r:%d" .print .cr
 	
 	3 flxN uiboxl	
 	8 flxS uiboxd
