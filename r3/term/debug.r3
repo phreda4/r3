@@ -13,13 +13,13 @@
 	.reset 
 	"demo debug" .println .flush
 	1 2 3
-	trace | view stack here
+	<<trace | view stack here
 	*
-	trace | view stack here
+	<<trace | view stack here
 	+
-	trace | view stack here
+	<<trace | view stack here
 	"%d" .println
-	'var1 memmap | view memory from this var
+	'var1 <<memmap | view memory from this var
 	;
 	
 :

@@ -1,6 +1,6 @@
 ^r3/lib/term.r3
 
-::trace | --
+::<<trace | --
 	.reset
 	"stack <<" .write
 	pick4 .d .write .sp
@@ -11,7 +11,7 @@
 	">>" .write .cr 
 	.flush waitkey ;
 	
-::traceh | --
+::<<traceh | --
 	.reset
 	"stack <<" .write
 	pick4 .h .write .sp
@@ -22,7 +22,7 @@
 	">>" .write .cr 
 	.flush waitkey ;
 
-::memdump | adr cnt --
+::<<memdump | adr cnt --
 	.reset "memdump: " .write 
 	"ADR:" .write  over .h .write 
 	.cr
@@ -32,7 +32,7 @@
 	.cr
 	.flush waitkey ;
 
-::memdumpc | adr cnt --
+::<<memdumpc | adr cnt --
 	.reset "memdump char:" .write .cr
 	( 1? 1- 
 		swap c@+ 32 <? ( $2e nip ) .emit
@@ -49,6 +49,7 @@
 	
 |----- view memory	
 #memini
+#cntbytes
 
 :showmem
 	.cls
@@ -59,48 +60,25 @@
 	cols "─" .rep .cr
 	memini 0
 	( rows 5 - <? swap
-		dup .h 8 .r. .write ": " .write
-		dup 32 ( 1? 1 - swap c@+ $ff and .h 2 .r. .write swap ) 2drop
-		": " .write
-		32 ( 1? 1 - swap c@+ 32 <? ( $2e nip ) .emit swap ) drop
+		dup .h 8 .r. .write " : " .write
+		dup cntbytes ( 1? 1- swap c@+ $ff and .h 2 .r. .write swap ) 2drop
+		" : " .write
+		cntbytes ( 1? 1- swap c@+ 32 <? ( $2e nip ) .emit swap ) drop
 		.cr
-		swap 1 + ) 2drop 
+		swap 1+ ) 2drop 
 	cols "─" .rep .cr		
 	.flush ;
 	
-::memmap | inimem --
+::<<memmap | inimem --
 	.reset 
 	'memini !
-	( showmem
-		getch [esc] <>? 
-		[up] =? ( -32 'memini +! ) 
-		[dn] =? ( 32 'memini +! )
-		[pgup] =? ( -32 23 * 'memini +! ) 
-		[pgdn] =? ( 32 23 * 'memini +! )		
-		drop ) drop ;
-
-#vmem
-#cntbytes
-	
-:showmem
-	.cls
-	cols "─" .rep .cr
-	memini 0
-	( rows 5 - <? swap
-		pick2 ex .cr
-		swap 1 + ) 2drop 
-	cols "─" .rep .cr		
-	.flush ;
-	 
-::memmapv | 'v mem --
-	.reset 
-	'memini !
-	memini over ex memini - 'cntbytes !
+	cols 14 - 3 /
+	'cntbytes !
 	( showmem
 		getch [esc] <>? 
 		[up] =? ( cntbytes neg 'memini +! ) 
 		[dn] =? ( cntbytes 'memini +! )
-		[pgup] =? ( cntbytes -23 * 'memini +! ) 
-		[pgdn] =? ( cntbytes 23 * 'memini +! )		
-		drop ) 2drop ;
-	
+		[pgup] =? ( cntbytes neg rows 5 - * 'memini +! ) 
+		[pgdn] =? ( cntbytes rows 5 - * 'memini +! )		
+		drop ) drop ;
+

@@ -7,9 +7,7 @@
 	1 =? ( 
 		evtkey 
 		[esc] =? ( 2drop ; ) 
-		1? ( 
-			dup "%h " sprint .write .flush
-			)
+		1? ( dup "%h " sprint .write .flush	)
 		drop  | ignora ceros
 		)
 	4 =? ( cols rows "(%d:%d)" .print .flush )
@@ -17,7 +15,6 @@
 	drop 
 	10 ms
 	testkey ;
-
 
 :testkey2
 	inkey
@@ -30,11 +27,11 @@
 	10 ms
 	testkey ;
 	
-	
-	
 :main
-	.cls .blue
+	.bblack .cls .blue
 	1 1 .at "Key Codes" .xwrite .cr .cr .cr .cr
+	
+	3000000 1000000/ "%d" .println
 	.white .flush
 	testkey ;
 

@@ -12,7 +12,7 @@
 
 :run
 	.cls 
-	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .flush
+	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
 	msec
 	|"mem/error.mem" delete
 	|'fullpath

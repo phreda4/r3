@@ -62,6 +62,7 @@
 		>>0 ) 2drop
 	;
 
+#pad * 256
 
 :main
 	.reset .cls 
@@ -77,8 +78,8 @@
 	2 0 flpad 
 	tuWin $1 " Command " .wtitle
 	2 1 flpad
-	pad fw 2 - tuInputLine
-	tuX? 1? ( 0 pad ! tuRefocus ) drop	
+	'pad fw 2 - tuInputLine
+	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
 	16 flxO
 	tuwin $1 " Options " .wtitle
