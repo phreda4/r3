@@ -41,7 +41,7 @@
 
 :dirfile
 	tuwin $1 " Files " .wtitle
-	1 1 flpad xleft
+	1 1 flpad $00 xalign
 	'vfile uiFiles tuList
 	tuX? 1? ( setfile ) drop	
 	;
@@ -56,7 +56,7 @@
 :dirpanel
 	.reset
 	tuwin $1 " Dir " .wtitle
-	1 1 flpad  xleft
+	1 1 flpad $00 xalign
 	'vfolder uiDirs tuTree
 	tuX? 1? ( changefiles ) drop
 	;
@@ -69,7 +69,7 @@
 	
 :dirpad
 	tuwin $1 " Command " .wtitle
-	1 1 flpad
+	1 1 flpad $00 xalign
 	'scratchpad	1024 tuInputline
 	tuX? 1? ( setcmd ) drop	
 	flcr
@@ -110,6 +110,5 @@
 	;
 
 : 
-.term .alsb
 main 
-.masb .free ;
+.free ;

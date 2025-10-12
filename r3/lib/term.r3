@@ -95,10 +95,10 @@
 ::.restorec "u" .[w ; | restore cursor position
 
 |------- Cursor Shapes -------
-::.ovec "0 q" .[w ; | default cursor
-::.insc "5 q" .[w ; | blinking bar
-::.blockc "2 q" .[w ; | steady block
-::.underc "4 q" .[w ; | steady underscore
+::.ovec "0q" .[w ; | default cursor
+::.insc "5q" .[w ; | blinking bar
+::.blockc "2q" .[w ; | steady block
+::.underc "4q" .[w ; | steady underscore
 
 |------- Screen Buffer Control -------
 ::.alsb "?1049h" .[w ; | alternate screen buffer
@@ -164,15 +164,6 @@
 ::.Strike "9m" .[w ;
 ::.Reset "0m" .[w ;
 
-::.termsize
-	|"9999;9999H" .[w "6n" .[w
-	"18t" .[w
-	|here ( inkey 1? swap c!+ ) swap c!+	drop
-	;
-|	'buffin read
-|ESC [ 18 t → respuesta ESC [ 8 ; rows ; cols t	
-	;
-	
 ::waitesc | -- | wait for ESC key
     ( getch [esc] <>? drop 10 ms ) drop ;
 
@@ -184,4 +175,4 @@
 	dup 'outbuf ! dup 'outbuf> !
 	$ffff +	| 64kb flush buffer (big!!)
 	dup 'endbuf ! 'here !
-;
+	;

@@ -159,7 +159,7 @@
     stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
     stdout $7 SetConsoleMode drop ;
 	
-::.term
+: |:.term
 	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
@@ -171,5 +171,4 @@
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
     65001 SetConsoleCP | Input UTF-8
-    
 	;

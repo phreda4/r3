@@ -410,4 +410,4 @@
 	waitesc
 	;
 	
-: .term main .free ;
+: main .free ;

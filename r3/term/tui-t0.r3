@@ -42,6 +42,7 @@
 :flSize 2drop ;	
 |---------	
 #ttable1 ( 10 $0 ) "col1" ( 20 $1 ) "col2" ( 10 $2 ) "col3" 0
+#ttablecol ( 10 $0 20 $1 15 $2 0 0 ) 
 #dtable1 
  "uno|uno|uno"
  "dos1|señor español|dos3"
@@ -54,11 +55,11 @@
 
 :tuTable | 'var --
 	drop
-	1 11 .at
-	5 .col 'ttable1 table.head .cr 
+	fx fy .at
+	fx .col 'ttable1 table.head .cr 
 	'dtable1 
 	( dup c@ 1? drop
-		5 .col dup table.row .cr 
+		fx .col dup table.row .cr 
 		>>0 ) 2drop
 	;
 
@@ -94,11 +95,9 @@
 	cols rows "%d %d" .print
 	
 	flxFill	
-	.wborded
-|	'exit "Salir" tuBtn
-
-|	flFull
-|	'vtable tuTable
+	.wborde
+	1 1 flpad 
+	'vtable tuTable
 
 	;
 	

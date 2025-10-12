@@ -128,13 +128,14 @@
 |------- Cleanup -------
 ::.free | --
     reset-terminal-mode
-    0 libc-exit drop ;
+    |0 libc-exit drop 
+	;
 
 |------- Initialization -------
 ::.reterm
 	set-terminal-mode ;
 	
-::.term	
+: |:.term	
 	.reterm
 	.getterminfo
 	.getrc 'prevrc ! 

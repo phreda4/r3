@@ -7,8 +7,6 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
-^r3/lib/trace.r3
-
 | ventana de texto
 #xcode 6
 #ycode 2

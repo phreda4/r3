@@ -5,7 +5,6 @@
 ^r3/lib/rand.r3
 ^r3/lib/gui.r3
 ^r3/util/arr16.r3
-|^r3/lib/trace.r3
 
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3

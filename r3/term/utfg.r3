@@ -190,14 +190,6 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	,eol empty ;	
 	
 |---- format
-#talign 'calign
-
-::xleft 'lalign 'talign ! ;
-::xcenter 'calign 'talign ! ;
-::xright 'ralign 'talign ! ;
-
-::xwrite | w "str" --
-	talign ex here .write ;
 	
 ::lwrite | w "str" --
 	lalign here .write ;
@@ -245,13 +237,34 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	a> dup 'here ! 
 	lines - 3 >> 'cntlines !
 	;	
+
+:vtop	drop ;
+:vcen	cntlines - 2/ + ;
+:vbot	cntlines - ;
+
+#halign 'calign
+#valign 'vcen
+
+::xalign | $VH --
+	dup $3 and
+	0 =? ( 'lalign 'halign !  )
+	1 =? ( 'calign 'halign ! )
+	2 =? ( 'ralign 'halign ! )
+	drop
+	4 >> $3 and
+	0 =? ( 'vtop 'valign ! )
+	1 =? ( 'vcen 'valign ! )
+	2 =? ( 'vbot 'valign ! )
+	drop ;
+
+::xwrite | w "str" --
+	halign ex here .write ;
 	
 ::xText | w h x y "" --
 	mark ab[ 
 	splitlines 
 	rot 	| w x y h
-	cntlines - 2/ + | v centre
-	|drop | quita h
+	valign ex
 	lines >a ( 
 		2dup .at
 		a@+ 1? pick3 swap xwrite 

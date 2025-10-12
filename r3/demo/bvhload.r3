@@ -8,8 +8,6 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
-^r3/lib/trace.r3
-
 #bvhfile
 #$bvhfile
 

@@ -23,7 +23,6 @@
 	;
 	
 :
-.term 	| don't forget init terminal
 33	| say 33 for mark the stack
 main
 drop | remove 33

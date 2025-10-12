@@ -35,7 +35,7 @@
 	.white .flush
 	testkey ;
 
-: .term 
+:  
 [ ; ] .onresize
 main 
 .free ;

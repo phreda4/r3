@@ -2,8 +2,6 @@
 | basicos
 | PHREDA 2024
 |-------------------------
-^r3/lib/trace.r3
-
 ^r3/lib/gui.r3
 ^r3/util/ttext.r3
 

@@ -10,8 +10,6 @@
 ^r3/util/loadobj.r3
 ^r3/util/bfont.r3
 
-^r3/lib/trace.r3
-
 |----------
 #chsum
 #model

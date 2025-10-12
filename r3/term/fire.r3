@@ -80,7 +80,7 @@
 	buffer2 0 bufsize cfill ;
 
 :
-.term .hidec
+.hidec
 mark
 reset
 'reset .onresize

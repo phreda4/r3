@@ -286,7 +286,7 @@
 	-11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
 	-12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
 	
-	stdin 0 SetConsoleMode drop 
+	stdin $3 SetConsoleMode drop 
 	stdout $7 SetConsoleMode drop	
 	; 
 	

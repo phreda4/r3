@@ -155,4 +155,4 @@
     .showc .Reset ;
 
 | Program entry point
-: .term main .free ;
+: main .free ;

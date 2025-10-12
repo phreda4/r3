@@ -1678,7 +1678,6 @@ MARK
 
 | Allocate and use temporary data
 HERE 1000 + 'HERE !    | Allocate 1000 bytes
-HERE 500 - 'temp !     | Use some memory
 
 | ... do work with temporary memory ...
 
@@ -1744,7 +1743,6 @@ Here it's saved in a string constants memory area, separate from variables. What
 **Characteristics:**
 - Stored in separate string constant area
 - Returns address when executed
-- Cannot be modified
 - Shared if same string appears multiple times
 
 #### 2. When Defining Data
@@ -1827,7 +1825,7 @@ In this case, `lista` points to the beginning, but there's no array of addresses
 #text "This is a variable"
 
 :show-variable
-    text print ;                   | Address of 'text' variable
+    'text print ;                   | Address of 'text' variable
 ```
 
 ---
@@ -1845,7 +1843,6 @@ In this case, `lista` points to the beginning, but there's no array of addresses
 ┌─────────────────────────────────────┐
 │  STRING CONSTANTS (Code strings)    │
 │  - Strings defined in : definitions │
-│  - Read-only                        │
 └─────────────────────────────────────┘
 ┌─────────────────────────────────────┐
 │  VARIABLE MEMORY (Data)             │
@@ -1911,7 +1908,7 @@ In this case, `lista` points to the beginning, but there's no array of addresses
     EMPTY ;         | Release memory
 
 | Usage:
-1024 '[ process-data-with-buffer ] with-temp-buffer
+1024 'process-data-with-buffer with-temp-buffer
 ```
 
 ### Pattern: Memory Pool

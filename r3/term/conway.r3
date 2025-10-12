@@ -61,7 +61,6 @@
 		) drop ;
 
 : 
-	.term
 	here 1 + cols + 			| one more line for calc
 	dup 'arena !			| start of arena
 	rows cols * + dup 'arenan !	| copy of arena

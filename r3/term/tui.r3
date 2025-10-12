@@ -23,7 +23,6 @@
 |	dup 16 >> $ffff and swap
 |	dup 32 >> $ffff and swap
 |	48 >> $ffff and ;
-
 |::flx@ | -- x y w h
 |	flstack> 8 - @ fl>xywh ;
 	
@@ -76,6 +75,7 @@
 ::flpad | x y --
 	dup 'fy +! 2* neg 'fh +!
 	dup 'fx +! 2* neg 'fw +! ;
+	
 ::flcr
 	.cr fx .col ;
 	
@@ -94,23 +94,23 @@
 ##uikey	| tecla
 
 :tuireset
-	-1 'ida !
-	-1 'idfa !
-	0 'wid !
-	0 'rflag !
+	-1 'ida ! -1 'idfa !
+	0 'wid ! 0 'rflag !
 	;
 
-::exit	rflag $4 or 'rflag ! ;
-::tuX?	rflag 2 and ;
-:tucl	rflag 2 nand 'rflag ! ;	
-:tuX!	rflag $2 or 'rflag ! ;
-::tuR!	rflag $8 or 'rflag ! ;
+::exit	rflag $4 or 'rflag ! ; 
+
+:tucl	rflag $2 nand 'rflag ! ;	| exec action is for every widget
+:tuX!	rflag $2 or 'rflag ! ;	| exec action need (click or enter)
+::tuX?	rflag $2 and ;			| ask for acion
+
+:tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
+:tuTAB	rflag $10 or 'rflag ! ;	| no TAB for change focus
 
 ::.tdebug
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
 	rflag "%d " .print
 	;
-
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -157,11 +157,19 @@
 	0 'wid ! ;
 
 |-------------- EVENT
+:Focus>>
+	rflag $10 and? ( drop ; ) drop
+	1 'idf +! tuR! ;
+	
+:Focus<<
+	rflag $10 and? ( drop ; ) drop
+	-1 'idf +! tuR! ;
+	
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
-	[tab] =? ( 1 'idf +! tuR! ) | cambia id y luego wid
-	[shift+tab] =? ( -1 'idf +! tuR! ) | cambia id y luego wid
+	[tab] =? ( focus>> ) | cambia id y luego wid
+	[shift+tab] =? ( focus<< ) | cambia id y luego wid
 	'uikey ! ;
 	
 |:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
@@ -286,8 +294,7 @@
 	[le] =? ( kizq ) [ri] =? ( kder )
 	[back] =? ( kback ) [del] =? ( kdel )
 	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
-|	<tab> =? ( nextfoco ) <ret> =? ( nextfoco )
-|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	[dn] =? ( focus>> ) [up] =? ( focus<< )
 	[enter] =? ( tuX! )
 	drop ;	
 

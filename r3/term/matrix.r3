@@ -45,7 +45,7 @@
 		) drop ;
 		
 : 
-.term .hidec
+.hidec
 here 'column !
 'reset .onresize
 reset

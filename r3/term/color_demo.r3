@@ -265,4 +265,4 @@
     "Color demo finished!" .println ;
 
 | Program entry point
-: .term main .free ;
+: main .free ;

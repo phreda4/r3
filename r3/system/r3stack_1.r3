@@ -2,8 +2,6 @@
 | virtual stack
 | PHREDA
 |--------------------
-
-^r3/lib/trace.r3
 ^r3/system/r3base.r3
 
 |-------------- buffer code
