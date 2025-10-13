@@ -234,8 +234,8 @@
 
 	font2 txfont	
 	16 6 txat
-	$ff0000 txrgb ":R3" txemits
-	$ff00 txrgb "debug" txemits
+	$ff0000 txrgb ":R3" txwrite
+	$ff00 txrgb "debug" txwrite
 	$ffffff txrgb
 	
 	uiStart 4 6 uiPad
@@ -293,8 +293,8 @@
 	
 	font2 txfont	
 	16 6 txat
-	$ff0000 txrgb ":R3" txemits
-	$ff00 txrgb "Edit" txemits
+	$ff0000 txrgb ":R3" txwrite
+	$ff00 txrgb "Edit" txwrite
 	$ffffff txrgb
 	
 	uiStart 4 6 uiPad
@@ -409,8 +409,8 @@
 	
 	font2 txfont	
 	16 6 txat
-	$ff0000 txrgb ":R3" txemits
-	$ff00 txrgb "d4" txemits
+	$ff0000 txrgb ":R3" txwrite
+	$ff00 txrgb "d4" txwrite
 	$ffffff txrgb
 	
 	uiStart 4 6 uiPad

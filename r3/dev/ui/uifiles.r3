@@ -95,8 +95,8 @@
 	
 	font2 txfont	
 	16 6 txat
-	$ff0000 txrgb ":R3" txemits
-	$ff00 txrgb "d4" txemits
+	$ff0000 txrgb ":R3" txwrite
+	$ff00 txrgb "d4" txwrite
 	$ffffff txrgb
 	
 	uiStart 4 6 uiPad

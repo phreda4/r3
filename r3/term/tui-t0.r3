@@ -68,12 +68,8 @@
 :main
 	.reset .cls 
 	
-	4 flxN
-	fx fw 7 8 * - 2/ + fy .at
-	"[01R[023[03f[04o[05r[06t[07h" .awrite 
-
 	1 flxS
-	2 fy .at "|ESC| Exit |F1| " .write
+	2 fy .at "|ESC| Exit " .write
 	
 	3 flxN
 	2 0 flpad 
@@ -82,23 +78,26 @@
 	'pad fw 2 - tuInputLine
 	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
-	16 flxO
-	tuwin $1 " Options " .wtitle
-	1 1 flpad |1 b.hgrid
-	5 'fh !
-	'exit "Salir" tuBtn | 'ev "" --
-	1 'fy +!
-	'exit "Coso" tuBtn | 'ev "" --
-	10 flxS
-	.wborde
-	fx fy .at 
-	cols rows "%d %d" .print
+|	16 flxO
+|	tuwin $1 " Options " .wtitle
+|	1 1 flpad |1 b.hgrid
+|	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
+|	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
+	8 flxS
+	.wborde	fx fy .at cols rows "%d %d" .print
 	
-	flxFill	
+	15 flxN
 	.wborde
 	1 1 flpad 
 	'vtable tuTable
 
+	flxFill	
+	1 1 flpad
+"Texto muy largo
+y con varias lineas
+para ver como se comporta
+cuando cambia de tamanio"
+	$11 tuText
 	;
 	
 |-----------------------------------

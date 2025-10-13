@@ -320,12 +320,12 @@
 		drop swap ) drop ;
 
 :txsp 32 txemit ;
-:txtab "   " txemits ;
+:txtab "   " txwrite ;
 
 :drawline | src nline ylin -- src nline ylin
 	pick2 c@ 0? ( drop ; ) drop | linea vacia
 	$afafaf txrgb
-	swap 1+ dup .d 4 .r. txemits	| src ylin nline 
+	swap 1+ dup .d 4 .r. txwrite	| src ylin nline 
 	xcodel ycode pick3 + txat
 	rot iniline						| ylin nline src 
 	( c@+ 1?
@@ -496,9 +496,9 @@
 	$ffffff txrgb 
 	xcode ycode txh - txat |printmode
 	'edfilename " %s" txprint
-	": " txemits
-	xcursor 1+ .d txemits txsp
-	ycursor 1+ .d txemits txsp
+	": " txwrite
+	xcursor 1+ .d txwrite txsp
+	ycursor 1+ .d txwrite txsp
 |	inisel 0? ( drop ; ) ( finsel <? c@+ "%k" txprint ) drop
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;

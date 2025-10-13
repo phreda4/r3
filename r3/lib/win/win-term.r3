@@ -31,16 +31,16 @@
     dup 32 >> $ffff and over $ffff and - 'cols !
     dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
 
-|#c1 ( $1b ) "[9999;9999H"
-|#c2 ( $1b ) "[6n"
-|:getterminfo2	| read size terminal with esc sequense
-|	'c1 count type 
-|	'c2 count type
-|	stdin 'eventBuffer 32 'ne 0 ReadConsole
-|	'eventBuffer 2 + 
-|    getnro 'rows ! 1+ | Skip ;
-|    getnro 'cols ! 
-|	drop ;
+#c1 ( $1b ) "[9999;9999H"
+#c2 ( $1b ) "[6n"
+:getterminfo2	| read size terminal with esc sequense
+	'c1 count type 
+	'c2 count type
+	stdin 'eventBuffer 32 'ne 0 ReadConsole
+	'eventBuffer 2 + 
+	getnro 'rows ! 1+ | Skip ;
+	getnro 'cols ! 
+	drop ;
 
 :getrc rows 16 << cols or ;
 
@@ -48,7 +48,8 @@
 #on-resize 0 | callback address
 
 ::.onresize | 'callback --
-    'on-resize ! ;
+    'on-resize ! 
+	getterminfo2 ; | somthing the size is wrong at start
 
 :eventsize
 	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
@@ -166,8 +167,9 @@
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
 	stdin $7 SetConsoleMode drop 
 	stdout $3 SetConsoleMode drop 
-	getterminfo getrc 'prevrc ! 
+|	getterminfo getrc 'prevrc ! 
 	.reterm
+	getterminfo2 getrc 'prevrc ! 
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
     65001 SetConsoleCP | Input UTF-8

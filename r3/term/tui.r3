@@ -105,7 +105,8 @@
 ::tuX?	rflag $2 and ;			| ask for acion
 
 :tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
-:tuTAB	rflag $10 or 'rflag ! ;	| no TAB for change focus
+::tuTAB	rflag $10 or 'rflag ! ;	| no TAB for change focus
+::tuC!	rflag $1 or 'rflag ! ; | cursor ON
 
 ::.tdebug
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
@@ -312,7 +313,7 @@
 	fx fy swap 
 	pad> padi> - + | !! falta utf
 	swap .at .savec | cursor
-	rflag $1 or 'rflag !		| activate cursor
+	tuC!		| activate cursor
 	;
 	
 ::tuInputLine | 'buff max --
@@ -443,3 +444,6 @@
 |	cscroll
 	2drop
 	empty ;	
+
+::tuText | "" align --
+	xalign >r fw fh fx fy r> xText ;

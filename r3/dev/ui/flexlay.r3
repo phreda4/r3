@@ -5,14 +5,21 @@
 ^r3/util/txfont.r3
 
 |--- Layout
-##fx ##fy ##fw ##fh 
 #flFsize 18
+#fx #fy #fw #fh 
+#flpadx 0 #flpady 0
+#flcols 1 #flrows 1 #flcur 0
+#flcolm	1 #flrowm 1
+##cx ##cy ##cw ##ch | cursor
 
 ::flin? | x y -- 0/-1
-	fy - $ffff and fh >? ( 2drop 0 ; ) drop | limit 0--$ffff
-	fx - $ffff and fw >? ( drop 0 ; ) drop
+	cy - $ffff and ch >? ( 2drop 0 ; ) drop | limit 0--$ffff
+	cx - $ffff and cw >? ( drop 0 ; ) drop
 	-1 ;
 
+:setcursor
+	;
+	
 #flstack * 64 | 8 niveles
 #flstack> 'flstack
 
@@ -34,8 +41,8 @@
 	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
 	
 ::flxvalid? | -- 0= not valid
-	fw 1 <? ( drop 0 ; ) drop 
-	fh 1 <? ( drop 0 ; ) drop 
+	cw 1 <? ( drop 0 ; ) drop 
+	ch 1 <? ( drop 0 ; ) drop 
 	-1 ;
 	
 ::flx! | x y w h --
@@ -77,8 +84,23 @@
 ::fh% fh 16 *>> ;
 
 ::flpad | x y --
-	dup 'fy +! 2* neg 'fh +!
-	dup 'fx +! 2* neg 'fw +! ;
+	'flpady ! 'flpadx ! ;
+	
+::iAt | x y --
+	flrowm dup flpady 2* - 'ch !
+	* fy + flpady + 'cy !
+	flcolm dup flpadx 2* - 'cw !
+	* fx + flpadx + 'cx ! ;
+	
+::iTo | w h -- 
+	flrowm * flpady 2* - 'ch !
+	flcolm * flpadx 2* - 'cw ! ;
+
+::iGrid | c r -- ; adjust for fit
+	2dup 'flrows ! 'flcols ! 0 'flcur !
+	fh swap /mod dup 2/ 'fy +! neg 'fh +! 'flrowm !
+	fw swap /mod dup 2/ 'fx +! neg 'fw +! 'flcolm !
+	0 0 iAt ;
 	
 |::flcr	.cr fx .col ;
 
@@ -93,8 +115,12 @@
 	fh fw "w:%d h:%d" txprint
 	;
 	
+::flxText | "" align --
+	txalign >r fw fh fx fy r> txText ;	
+	
 |--------------------------------	
 #font1
+#ali
 
 |-----------------------------
 :main
@@ -131,10 +157,17 @@ $3f sdlcolor
 	flxFill
 $7f7f sdlcolor					
 	flrfill	
+"Texto muy largo
+y con varias lineas
+para ver como se comporta
+cuando cambia de tamanio"
+	ali flxText	
 
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
+	<f1> =? ( ali $1 + $33 and 'ali ! )
+	<f2> =? ( ali $10 + $33 and 'ali ! )
 	drop
 	;
 	

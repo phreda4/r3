@@ -82,22 +82,22 @@
 ::ttemitl | "text" --
 	curx
 	curh txh - 2/ cury +
-	txat txemits ;
+	txat txwrite ;
 
 ::ttemitc | "text" --
 	txw txh | "" w h  
 	curw rot - 2/ curx +
 	curh rot - 2/ cury +
-	txat txemits ;
+	txat txwrite ;
 
 ::ttemitr | "text" --
 	txw txh | "" w h  
 	curw curx + rot -
 	curh rot - 2/ cury +
-	txat txemits ;
+	txat txwrite ;
 
 ::uiLabelMini
-	curx cury curh txh - 1- + txat txemits
+	curx cury curh txh - 1- + txat txwrite
 	curh 'cury +! 
 	;	
 
@@ -372,7 +372,7 @@
 	'focoCheck in/foco 
 	[ 1 over << pick2 @ xor pick2 ! ; ] onClickFoco
 	curx curh txh - 2/ cury + txat 
-	ic txicon 32 txemit a@+ txemits
+	ic txicon 32 txemit a@+ txwrite
 	ui.. ;
 		
 ::uiCheck | 'var 'list --
@@ -397,7 +397,7 @@
 	'focoRadio in/foco 
 	[ 2dup swap ! ; ] onClickFoco
 	curx curh txh - 2/ cury + txat 
-	ir txicon 32 txemit a@+ txemits
+	ir txicon 32 txemit a@+ txwrite
 	ui.. ;
 
 ::uiRadio | 'var 'list --
@@ -750,7 +750,7 @@
 	'clickfoco onClick
 	mark makeindx	
 	curx 8 + cury txat
-	@ uiNindx txemits
+	@ uiNindx txwrite
 	curx curw + 16 - cury txat 130 txicon
 	empty 
 	ui.. ;
@@ -808,7 +808,7 @@
 	c@+ 0? ( 2drop curh 'cury +! ; )
 	dup $1f and 4 << curx +
 	curh txh - 2/ cury + 
-	txat iicon txemits 
+	txat iicon txwrite 
 	curh 'cury +! ;
 
 ::uiTree | 'var cntlines list --

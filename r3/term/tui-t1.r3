@@ -1,6 +1,7 @@
 | TUI 
 | PHREDA 2025
 ^./tui.r3
+^./tuiedit.r3
 
 |---------------------------------------
 :table.col | len just -- 
@@ -64,46 +65,44 @@
 
 #pad * 256
 
+:botones
+	16 flxO
+	tuwin $1 " Options " .wtitle
+	1 1 flpad |1 b.hgrid
+	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
+	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
+	;
 :main
 	.reset .cls 
-	
-	4 flxN
-	fx fw 7 8 * - 2/ + fy .at
-	"[01R[023[03f[04o[05r[06t[07h" .awrite 
+	|-----------
+	1 flxN
+	fx fy .at 
+	.rever .eline
+	" R3forth" .write
 
+	|-----------
 	1 flxS
-	2 fy .at "|ESC| Exit |F1| " .write
+	fx fy .at .eline " |ESC| Exit " .write
 	
-	3 flxN
-	2 0 flpad 
+	|-----------
+	.reset
+	3 flxS 1 0 flpad 
 	tuWin $1 " Command " .wtitle
 	2 1 flpad
 	'pad fw 2 - tuInputLine
 	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
-	16 flxO
-	tuwin $1 " Options " .wtitle
-	1 1 flpad |1 b.hgrid
-	5 'fh !
-	'exit "Salir" tuBtn | 'ev "" --
-	1 'fy +!
-	'exit "Coso" tuBtn | 'ev "" --
-	10 flxS
-	.wborde
-	fx fy .at 
-	cols rows "%d %d" .print
-	
+	|-----------
 	flxFill	
-	.wborded
-|	'exit "Salir" tuBtn
-
-|	flFull
-|	'vtable tuTable
+	tuWin $1 " Editor " .wtitle
+	1 1 flpad 
+	tuEditCode
 
 	;
 	
 |-----------------------------------
 : 
+	"main.r3" TuLoadCode
 	'main onTui 
 	.free 
 ;

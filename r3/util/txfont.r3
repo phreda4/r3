@@ -188,15 +188,15 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	SDLrenderer newTex 'recbox 'recdes SDL_RenderCopy	
 	'recdes 8 + d@ 'curx +! ;
 
-::txemits | "" --
+::txwrite | "" --
 	( c@+ 1? txemit ) 2drop ;
 
 ::txemitr | "" --
 	txw neg 'curx +!
-	txemits ;
+	txwrite ;
 	
 ::txprint | .. "" --
-	sprint txemits ;
+	sprint txwrite ;
 
 ::txprintr | .. "" --
 	sprint txemitr ;
@@ -224,3 +224,83 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	SDLRenderer 'recbox SDL_RenderFillRect ;	
 	
 	
+|---- Text
+#strsplit
+#strsplit>
+#lines
+#cntlines
+
+:emit0
+	13 =? ( drop dup c@ 10 =? ( swap 1+ swap ) drop 0 ; )
+	10 =? ( drop dup c@ 13 =? ( swap 1+ swap ) drop 0 ; )
+	$3b =? ( 0 nip ) ;
+	
+:<<sp | stro str -- str'
+	swap over
+	( over <? ( 2drop ; ) 
+		dup c@ $ff and 32 >? 
+		drop 1- ) drop nip nip ;
+
+:testw | str -- str
+	pick4 >r utf8count 
+	r> swap >? ( drop ; ) | str count
+	over a!+ | newline
+	utf8bytes | str bytes
+	over + <<sp
+	0 swap c!+
+	testw ;
+	
+:splitlines | str --
+	here dup >a 'strsplit ! 
+	( c@+ 1? emit0 ca!+ ) nip | put 0 in ; or cr
+	a> 'strsplit> !
+	ca!+ 
+	a> 'lines !
+	strsplit ( strsplit> <?
+		testw dup a!+ >>0
+		) drop
+	0 a!+
+	a> dup 'here ! 
+	lines - 3 >> 'cntlines !
+	;	
+
+::lwrite | w "str" --
+	nip txwrite ;
+::cwrite | w "str" --
+	txw rot swap - 2/ 0 tx+at
+	txwrite ;
+::rwrite | w "str" --
+	txw rot swap - 0 tx+at
+	txwrite ;
+	
+:vtop	drop ;
+:vcen	cntlines txh * - 2/ + txh 2/ + ;
+:vbot	cntlines 1- txh * - +  ;
+
+#halign 'cwrite
+#valign 'vcen
+
+::txalign | $VH --
+	dup $3 and
+	0 =? ( 'lwrite 'halign !  )
+	1 =? ( 'cwrite 'halign ! )
+	2 =? ( 'rwrite 'halign ! )
+	drop
+	4 >> $3 and
+	0 =? ( 'vtop 'valign ! )
+	1 =? ( 'vcen 'valign ! )
+	2 =? ( 'vbot 'valign ! )
+	drop ;
+
+::txText | w h x y "" --
+	mark ab[ 
+	splitlines 
+	rot 	| w x y h
+	valign ex
+	lines >a ( 
+		2dup txat
+		a@+ 1? 
+		pick3 swap halign ex 
+		txh + ) drop
+	3drop
+	]ba empty ;	

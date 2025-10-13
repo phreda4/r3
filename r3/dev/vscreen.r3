@@ -20,7 +20,7 @@
 	0 0 sdlx sdly SDLline
 	
 	$ff0000 txrgb
-	0 0 txat "hola" txemits	
+	0 0 txat "hola" txwrite	
 	8 8 sdlx sdly sdlellipse
 	vredraw
 	SDLkey
