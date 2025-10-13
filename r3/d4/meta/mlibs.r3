@@ -255,8 +255,8 @@
 #info ( $80 $80 $1F $1F $1F $1F $2E $2E $12 $2F $2F $4 )
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
-#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txpos" "txemit" "txemits" "txemitr" "txprint" "txprintr" "txcur" "txcuri" 0
-#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $2 $1F $1F $1F $1F $1F $2E $2E )
+#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" 0
+#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $2 $1F $1F $1F $1F $1F $2E $2E $2E $2E $2E $1F $4C )
 #r3_util_txfont.r3 'name 'words 'info
 #name "r3/util/ui.r3"
 #words  "cifil" "cifoc" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "overfil" "oversel" "stFDang" "stFWarn" "stFSucc" "stFInfo" "stFLink" "stFDark" "stFWhit" "stfLigt" "curx" "cury" "uiExitWidget" "uiPush" "uiPop" "uiPushA" "uiPopA" "ttemitl" "ttemitc" "ttemitr" "uiLabelMini" "uiRectW" "uiFillW" "uiRRectW" "uiRFillW" "uiCRectW" "uiCFillW" "uiRRect10" "uiRFill10" "uiRect" "uiFill" "uiRRect" "uiRFill" "uiCRect" "uiCFill" "uiTitleF" "uiTitle" "uiLineH" "uiLineV" "uiLineWH" "uiGridBV" "uiGridBH" "uiGrid#" "uicr" "uidn" "uiri" "uiH" "uiV" "ui<" "ui>>" "ui.." "uiPad" "uiWinBox!" "uiWin!" "uiWinFit!" "uiWin@" "uiGAt" "uiGTo" "uiGrid" "uiGridA" "uiStart" "uiZone!" "uiZone" "uiZone@" "uiLabel" "uiLabelc" "uiLabelr" "uiTlabel" "uiMDText" "uiBtn" "uiRBtn" "uiCBtn" "uiTBtn" "uiNindx" "uiCheck" "uiRadio" "uiTab" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiVSliderf" "uiVSlideri" "uiVProgressf" "uiVProgressi" "uiSlideri8" "uiVSlideri8" "guiNextlist" "GuiBoxlist" "sdlBoxListY" "uiList" "uiListV" "uisaveLast" "uiCombo" "UIGridBtn" "uiTree" "uiTable" "uiInputLine" "uiText" "uiEdit" "uiEnd" 0

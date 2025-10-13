@@ -77,7 +77,61 @@
 	;
 
 |-----------------------------------
+#r3base
+";" "(" ")" "[" "]"
+"EX" "0?" "1?" "+?" "-?"
+"<?" ">?" "=?" ">=?" "<=?" "<>?" "AND?" "NAND?" "IN?" | 18
+"DUP" "DROP" "OVER" "PICK2" "PICK3" "PICK4" "SWAP" "NIP"
+"ROT" "-ROT" "2DUP" "2DROP" "3DROP" "4DROP" "2OVER" "2SWAP"
+">R" "R>" "R@"
+"AND" "OR" "XOR" "NAND"
+"+" "-" "*" "/"
+"<<" ">>" ">>>"
+"MOD" "/MOD" "*/" "*>>" "<</"
+"NOT" "NEG" "ABS" "SQRT" "CLZ"
+"@" "C@" "W@" "D@"
+"@+" "C@+" "W@+" "D@+"
+"!" "C!" "W!" "D!"
+"!+" "C!+" "W!+" "D!+" |85 88
+"+!" "C+!" "W+!" "D+!" 
+">A" "A>" "A+" 
+"A@" "A!" "A@+" "A!+"
+"CA@" "CA!" "CA@+" "CA!+"
+"DA@" "DA!" "DA@+" "DA!+"
+">B" "B>" "B+"
+"B@" "B!" "B@+" "B!+" 
+"CB@" "CB!" "CB@+" "CB!+"
+"DB@" "DB!" "DB@+" "DB!+" 
+"AB[" "]BA"
+"MOVE" "MOVE>" "FILL"
+"CMOVE" "CMOVE>" "CFILL" 
+"DMOVE" "DMOVE>" "DFILL" 
+"MEM"
+"LOADLIB" "GETPROC"
+"SYS0" "SYS1" "SYS2" "SYS3" "SYS4" "SYS5" 
+"SYS6" "SYS7" "SYS8" "SYS9" "SYS10" 
+( 0 )
 
+#namblist 
+:makelistbase |  --
+	here dup 'namblist ! >a
+	'r3base
+	( dup c@ 1? drop
+		dup str>6 a!+ | str6
+		>>0	) 2drop 
+	a> 'here ! ;
+
+:basefind | str -- -1/base
+	dup str>6 
+	namblist >a
+	( a@ 1?
+		over =? ( 3drop
+			a> namblist - 3 >> 
+			; ) drop
+		8 a+
+		) 3drop 
+	-1 ;
+	
 |...repetidas
 :listrepe 
 	namwlist >a
@@ -109,7 +163,10 @@
 	
 |---------------------------------	
 :find
-	'pad wordfind -? ( drop "Not found" .println ; ) 
+	'pad basefind 
+	+? ( "palabra base %d" .println ; ) drop
+	'pad wordfind 
+	-? ( drop "Not found" .println ; ) 
 	4 << namwlist +
 	@+ 6>str .write
 	@ .wordinfo
@@ -126,6 +183,7 @@
 
 :main
 	makelist
+	makelistbase
 	|listrepe	
 	"r3libs" .println 
 	cntwlist "%d words" .println
