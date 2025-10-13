@@ -102,10 +102,9 @@
 
 :tucl	rflag $2 nand 'rflag ! ;	| exec action is for every widget
 :tuX!	rflag $2 or 'rflag ! ;	| exec action need (click or enter)
-::tuX?	rflag $2 and ;			| ask for acion
+::tuX?	rflag $2 and ;			| ask for acion (local)
 
 :tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
-::tuTAB	rflag $10 or 'rflag ! ;	| no TAB for change focus
 ::tuC!	rflag $1 or 'rflag ! ; | cursor ON
 
 ::.tdebug
@@ -154,23 +153,15 @@
 	id >? ( 0 'idf ! ) 
 	drop
 	-1 'id !
-|	wida wid >? ( 0 'wida ! ) drop
 	0 'wid ! ;
 
 |-------------- EVENT
-:Focus>>
-	rflag $10 and? ( drop ; ) drop
-	1 'idf +! tuR! ;
-	
-:Focus<<
-	rflag $10 and? ( drop ; ) drop
-	-1 'idf +! tuR! ;
+:Focus>> 1 'idf +! tuR! ; | cambia id y luego wid
+:Focus<< -1 'idf +! tuR! ;
 	
 :hkey
 	evtkey
 	[esc] =? ( exit ) 
-	[tab] =? ( focus>> ) | cambia id y luego wid
-	[shift+tab] =? ( focus<< ) | cambia id y luego wid
 	'uikey ! ;
 	
 |:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
@@ -196,7 +187,7 @@
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		10 ms
+		5 ms
 		) drop 
 	tuireset ;
 
@@ -241,6 +232,8 @@
 	tuif 1 <? ( drop ; ) drop
 	uikey 0? ( drop ; )	
 	[enter] =? ( drop >r dup >r ex r> r> ; )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
+	
 	drop ;
 	
 ::tuBtn | 'ev "" --
@@ -296,6 +289,8 @@
 	[back] =? ( kback ) [del] =? ( kdel )
 	[home] =? ( padi> 'pad> ! ) [end] =? ( padf> 'pad> ! )
 	[dn] =? ( focus>> ) [up] =? ( focus<< )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
+	
 	[enter] =? ( tuX! )
 	drop ;	
 
@@ -351,6 +346,7 @@
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 	
 	drop ;	
 
 :mouList | 'var h --
@@ -413,6 +409,7 @@
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
 	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
 	[enter] =? ( kbclick ) 
 	drop ;	
 	

@@ -1,7 +1,8 @@
 ^r3/lib/term.r3
+^r3/lib/trace.r3
 
 #hashfile 
-#filename * 1024
+##filename * 1024
 
 #xlinea 0
 #ylinea 0	| primera linea visible
@@ -152,37 +153,54 @@
 |-----------------
 #focoe	
 
-:colore
-|		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
-|		32 =? ( wcolor ,tcolor )
-|		$22 =? ( strword ) 		| $22 " string
-|		$5e =? ( endline ; )	| $5e ^  Include
-|		$7c =? ( endline ; )	| $7c |	 Comentario
-	;
+:codecolor | adr char -- adr char
+	over c@ 
+	33 <? ( drop ; )
+	$22 =? ( drop 7 .fc ; )		| $22 " string
+	$5e =? ( drop 3 .fc ; )		| $5e ^  Include
+	$7c =? ( drop 8 .fc ; )		| $7c |	 Comentario
+	$3A =? ( drop 9 .fc ; )		| $3a :  Definicion
+	$23 =? ( drop 13 .fc ; )	| $23 #  Variable
+	$27 =? ( drop 12 .fc ; )	| $27 ' Direccion
+	drop
+	over isNro 1? ( drop 11 .fc ; ) drop
+|	over isBlock 1? ( drop 4 .fc ; ) drop
+|	over isBase 1? ( drop 10 .fc ; ) drop
+	10 .fc ;
 	
-:setcursor | y adr
+:setcursor | y c adr
 	focoe 1? ( .savec ) drop
-	over ylinea + 1+ 'ycursor !
+	pick2 ylinea + 1+ 'ycursor !
 	;
 	
-:drawline | 
-	( fuente> =? ( setcursor )
-		c@+ 1? 13 <>? | 0 o 13 sale
-		.emit ) 
-	1? ( drop ; ) drop 1- ;
+:fillend | nlin cnt adr char -- nlin adr 	
+	drop swap .nsp ;
 	
+:drawline | nlin adr -- nlin adr
+	cols 6 - codecolor
+	( 1? 1- swap 
+		fuente> =? ( setcursor )
+		c@+ 
+		0? ( fillend 1- ; ) | end of text
+		9 =? ( rot 2 - -rot codecolor )
+		13 =? ( fillend ; )
+		32 =? ( codecolor ) 
+		.emit 
+		swap ) drop
+	( c@+ 13 <>? 
+		0? ( drop 1- ; ) | end of text
+		drop ) drop ;
+
 |-----------------
 :chmode
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
 	drop 'lins 'modo ! .insc ;
-	
 
 :EditFoco
 	tuif 0? ( 'focoe ! ; )
 	|1 =? ( drop inInput dup ) 
 	'focoe !
 	tuC!	| activate cursor
-	tuTAB	| no tab in main
 	uikey 0? ( drop ; )	
 	32 126 in? ( modo ex fixcur ; ) 
 	[tab] =? ( modo ex fixcur ; ) 
@@ -204,6 +222,7 @@
 	
 |---------------	
 :iniline
+	.reset
 	dup ylinea + 1+ 
 	ycursor =? ( .d 4 .r. .write ">" .write ; )
 	.d 4 .r. .write .sp ;
@@ -220,7 +239,6 @@
 	$fuente <? ( 1- ) 
 	'scrend> ! ;
 
-		
 |---------------	
 :
 	here
