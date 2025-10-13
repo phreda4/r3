@@ -1,5 +1,6 @@
-| r3d4 sdl debbuger
-| PHREDA 2024
+| gui v.3
+| 
+| PHREDA 2025
 |
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
@@ -12,16 +13,32 @@
 #flcolm	1 #flrowm 1
 ##cx ##cy ##cw ##ch | cursor
 
-::flin? | x y -- 0/-1
+:f2c
+	flpadx fw over 2* - 'cw ! fx + 'cx !
+	flpady fh over 2* - 'ch ! fy + 'cy !
+	;
+
+::unIn? | x y -- 0/-1
 	cy - $ffff and ch >? ( 2drop 0 ; ) drop | limit 0--$ffff
 	cx - $ffff and cw >? ( drop 0 ; ) drop
 	-1 ;
 
-:setcursor
-	;
+::uiw% fw 16 *>> ;
+::uih% fh 16 *>> ;
+
+::uiPading | x y --
+	'flpady ! 'flpadx ! ;
 	
 #flstack * 64 | 8 niveles
 #flstack> 'flstack
+
+:fl>now | v --
+	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
+	
+::uiValid? | -- 0= not valid
+	cw 1 <? ( drop 0 ; ) drop 
+	ch 1 <? ( drop 0 ; ) drop 
+	-1 ;
 
 :xywh>fl | x y w h -- v
 	$ffff and 16 <<
@@ -29,139 +46,151 @@
 	swap $ffff and or 16 <<
 	swap $ffff and or ; | hhwwyyxx
 	
-|:fl>xywh | v -- x y w h 
-|	dup $ffff and swap
-|	dup 16 >> $ffff and swap
-|	dup 32 >> $ffff and swap
-|	48 >> $ffff and ;
-|::flx@ | -- x y w h
-|	flstack> 8 - @ fl>xywh ;
+::uiBox | x y w h --
+	2over 'fy ! 'fx ! 2dup 'fh ! 'fw ! 
+	xywh>fl 'flstack !+ 'flstack> ! 
+	f2c ;
 	
-:fl>now | v --
-	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
-	
-::flxvalid? | -- 0= not valid
-	cw 1 <? ( drop 0 ; ) drop 
-	ch 1 <? ( drop 0 ; ) drop 
-	-1 ;
-	
-::flx! | x y w h --
-	2over 'fy ! 'fx !
-	2dup 'fh ! 'fw ! 
-	xywh>fl 'flstack !+ 'flstack> ! ;
-	
-::flx | --
-	0 0 sw sh flx! ;
+::uiFull | --
+	0 0 sw sh uiBox ;
 	
 :flx+! flstack> 8 - dup w@ rot + clamp0 swap w! ;
 :fly+! flstack> 8 - 2 + dup w@ rot + clamp0 swap w! ;
 :flw+! flstack> 8 - 4 + dup w@ rot + clamp0 swap w! ;
 :flh+! flstack> 8 - 6 + dup w@ rot + clamp0 swap w! ;
 	
-::flxpush	
-	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
-::flxpop	
-	-8 'flstack> +! flstack> fl>now ;
-::flxFill 
-	flstack> 8 - fl>now ;
+::uiPush	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
+::uiPop		-8 'flstack> +! flstack> fl>now f2c ;
+:uiGet		flstack> 8 - fl>now ;
+::uiRest	uiGet f2c ;
 
 | N=^ S=v E=> O=<
 | - is full minus the number
-::flxN | lineas --
-	-? ( fh + )
-	flxFill dup fly+! dup neg flh+!	'fh ! ;
-::flxS | lineas --
-	-? ( fh + )
-	flxFill dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
-::flxE | cols --
-	-? ( fw + )
-	flxFill dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
-::flxO | cols --
-	-? ( fw + )
-	flxFill dup flx+! dup neg flw+! 'fw ! ;
+::uiN | lineas --
+	-? ( fh + ) uiGet dup fly+! dup neg flh+!	'fh ! f2c ;
+::uiS | lineas --
+	-? ( fh + ) uiGet dup neg flh+! fh fy + over - 'fy ! 'fh ! f2c ;
+::uiE | cols --
+	-? ( fw + ) uiGet dup neg flw+! fw fx + over - 'fx ! 'fw ! f2c ;
+::uiO | cols --
+	-? ( fw + ) uiGet dup flx+! dup neg flw+! 'fw ! f2c ;
 	
-::fw% fw 16 *>> ;
-::fh% fh 16 *>> ;
-
-::flpad | x y --
-	'flpady ! 'flpadx ! ;
-	
-::iAt | x y --
+::uiAt | x y --
 	flrowm dup flpady 2* - 'ch !
 	* fy + flpady + 'cy !
 	flcolm dup flpadx 2* - 'cw !
 	* fx + flpadx + 'cx ! ;
 	
-::iTo | w h -- 
+::uiTo | w h -- 
 	flrowm * flpady 2* - 'ch !
 	flcolm * flpadx 2* - 'cw ! ;
 
-::iGrid | c r -- ; adjust for fit
+::uiGrid | c r -- ; adjust for fit
 	2dup 'flrows ! 'flcols ! 0 'flcur !
 	fh swap /mod dup 2/ 'fy +! neg 'fh +! 'flrowm !
 	fw swap /mod dup 2/ 'fx +! neg 'fw +! 'flcolm !
-	0 0 iAt ;
+	0 0 uiAt ;
+	
+::uiNext	
+::uiNextV
+	flcur 1+ 
+	flrows flcols * >? ( 0 nip )
+	dup 'flcur !
+	flcols /mod swap uiAt ;
+::uiNextH
+	flcur 1+
+	flrows flcols * >? ( 0 nip )
+	dup 'flcur !
+	flcols /mod uiAt ;
+|------------------------------
 	
 |::flcr	.cr fx .col ;
 
 ::flFontSize
 	;
 	
-::flrfill
-	8 fx 8 + fy 8 + fw 16 - fh 16 - SDLFRound 
-	fx 10 + fy 10 + txat
-	fy fx "x:%d y:%d" txprint
-	fx 10 + fy 26 + txat
-	fh fw "w:%d h:%d" txprint
+|---- draw
+
+::uiText | "" align --
+	txalign >r cw ch cx cy r> txText ;	
+	
+|---- widget	
+|--------------------------------	
+::uifill
+	8 cx cy cw ch SDLFRound 
+
+	ch cw cy cx "x:%d y:%d;w:%d h:%d"
+	sprint $11 uiText
 	;
 	
-::flxText | "" align --
-	txalign >r fw fh fx fy r> txText ;	
-	
-|--------------------------------	
+
 #font1
 #ali
 
+:tt
+"Texto muy largo
+y con varias lineas
+para ver como se comporta
+cuando cambia de tamanio"
+	ali uiText	
+	;
+
+:grillain
+	4 1 uiGrid
+	"1" $11 uiText
+	8 cx cy cw ch SDLRound 
+	uiNext
+	"2" $11 uiText
+	8 cx cy cw ch SDLRound 
+	uiNext
+	"3" $11 uiText
+	8 cx cy cw ch SDLRound 
+	uiNext
+	"4" $11 uiText
+	8 cx cy cw ch SDLRound 
+	tt
+	;
+
+	
 |-----------------------------
 :main
 	0 SDLcls
 	font1 txfont
 
-	flx
-|	10 10 txat "Flex layout" txprint
+	4 4 uiPading
+	uiFull
 
 $7f00 sdlcolor
-	5 32 * flxN 
-		flrfill
+	2 32 * uiN 
+		uifill
 
 $3f00 sdlcolor	
-	3 32 * flxN 
-		flrfill	
+	3 32 * uiN 
+		uifill
 		
 $7f0000 sdlcolor		
-	8 32 * flxS 
-		flrfill
+	3 32 * uiS 
+		uifill
 $3f0000 sdlcolor				
-	4 32 * flxO 
-		flrfill
+	4 32 * uiO 
+		uifill
 		
 $7f sdlcolor				
-	8 32 * flxE 
-		flxpush
-		4 32 * flxN 	
-			flrfill
+	8 32 * uiE 
+		uiPush
+		4 32 * uiN 	
+			uifill
 $3f sdlcolor							
-		flxfill 
-			flrfill	
-		flxpop
-	flxFill
+		uiRest
+			uifill
+		uiPop
+	uifill
+	
 $7f7f sdlcolor					
-	flrfill	
-"Texto muy largo
-y con varias lineas
-para ver como se comporta
-cuando cambia de tamanio"
-	ali flxText	
+	uiRest
+	
+	grillain
+
 
 	SDLredraw
 	sdlkey

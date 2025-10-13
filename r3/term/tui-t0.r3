@@ -83,10 +83,10 @@
 |	1 1 flpad |1 b.hgrid
 |	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
 |	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
-	8 flxS
+	6 flxS
 	.wborde	fx fy .at cols rows "%d %d" .print
 	
-	15 flxN
+	8 flxN
 	.wborde
 	1 1 flpad 
 	'vtable tuTable

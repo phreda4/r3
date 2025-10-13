@@ -43,12 +43,11 @@
 	0 libc-time 'sit !
 	'sit libc-localtime ;
 	
-   
 ::date.d 12 + d@ ;
 ::date.dw 24 + d@ ;
 ::date.m 16 + d@ 1+ ; | 1..12
 ::date.y 20 + d@ 1900 + ;
-::time.ms 0 ;
+::time.ms 0 ; | not exist!
 ::time.s d@ ;
 ::time.m 4 + d@ ;
 ::time.h 8 + d@ ;   
@@ -140,9 +139,12 @@
 	'fileatrib 28 + @ 
 	dup 32 >> swap 32 << or ;
 
+:86400000000/
+	$CC61A60 64 *>> ;
+	
 ::fileijul | -- jul
 	'fileatrib 20 + @
-	86400000000 / | segundos>days
+	86400000000/ | segundos>days
 	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
 	10/
 	;
@@ -157,4 +159,3 @@
 	|here "gnome-terminal --wait -- bash -c " ,s 34 ,c swap ,s 34 ,c ,eol
 	libc-system drop ;
 	
-

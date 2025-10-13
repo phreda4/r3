@@ -49,7 +49,7 @@
 
 ::.onresize | 'callback --
     'on-resize ! 
-	getterminfo2 ; | somthing the size is wrong at start
+	getterminfo2 ; | something the size is wrong at start
 
 :eventsize
 	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
@@ -165,8 +165,8 @@
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-	stdin $7 SetConsoleMode drop 
-	stdout $3 SetConsoleMode drop 
+|	stdin $7 SetConsoleMode drop 
+|	stdout $3 SetConsoleMode drop 
 |	getterminfo getrc 'prevrc ! 
 	.reterm
 	getterminfo2 getrc 'prevrc ! 
