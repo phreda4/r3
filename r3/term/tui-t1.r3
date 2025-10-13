@@ -91,14 +91,19 @@
 	2 1 flpad
 |	'pad fw 2 - tuInputLine
 |	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
+	|-----------
+	18 flxE tuWin
+	$1 "Info" .wtitle
+	|.bordel
 	
 	|-----------
-	flxFill	tuWin 
+	flxFill |	tuWin 
 	$1 " Editor " .wtitle
 	$4 'filename .wtitle
 	1 1 flpad 
 	tuEditCode
 
+	
 	;
 	
 |-----------------------------------

@@ -1,4 +1,4 @@
-^r3/lib/term.r3
+^./tui.r3
 ^r3/lib/trace.r3
 
 #hashfile 
@@ -152,13 +152,15 @@
 	
 |-----------------
 #focoe	
+#modoline
 
 :codecolor | adr char -- adr char
+	modoline 1? ( drop ; ) drop
 	over c@ 
 	33 <? ( drop ; )
 	$22 =? ( drop 7 .fc ; )		| $22 " string
-	$5e =? ( drop 3 .fc ; )		| $5e ^  Include
-	$7c =? ( drop 8 .fc ; )		| $7c |	 Comentario
+	$5e =? ( drop 3 .fc 1 'modoline ! ; )		| $5e ^  Include
+	$7c =? ( drop 8 .fc 1 'modoline ! ; )		| $7c |	 Comentario
 	$3A =? ( drop 9 .fc ; )		| $3a :  Definicion
 	$23 =? ( drop 13 .fc ; )	| $23 #  Variable
 	$27 =? ( drop 12 .fc ; )	| $27 ' Direccion
@@ -173,17 +175,18 @@
 	pick2 ylinea + 1+ 'ycursor !
 	;
 	
-:fillend | nlin cnt adr char -- nlin adr 	
-	drop swap .nsp ;
+:fillend | nlin cnt adr -- nlin adr 	
+	swap 1+ .nsp ;
 	
 :drawline | nlin adr -- nlin adr
-	cols 6 - codecolor
+	0 'modoline !
+	fw 5 - codecolor
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
 		c@+ 
-		0? ( fillend 1- ; ) | end of text
-		9 =? ( rot 2 - -rot codecolor )
-		13 =? ( fillend ; )
+		0? ( drop fillend 1- ; ) | end of text
+		9 =? ( drop swap 1- swap .sp 32 codecolor )
+		13 =? ( drop fillend ; )
 		32 =? ( codecolor ) 
 		.emit 
 		swap ) drop
@@ -218,18 +221,19 @@
 	[INS] =? ( chmode )	
 	drop 
 	fixcur ;		
-
 	
 |---------------	
 :iniline
-	.reset
+	.reset |.rever
+	235 .bc
 	dup ylinea + 1+ 
-	ycursor =? ( .d 4 .r. .write ">" .write ; )
+	ycursor =? ( 0 .bc .d 4 .r. .write ":" .write ; )
 	.d 4 .r. .write .sp ;
 
 ::tuEditCode 
 	tuiw drop
 	Editfoco
+	fw 8 <? ( drop ; ) drop
 	scrini>
 	0 ( fh <?
 		fx over fy + .at
