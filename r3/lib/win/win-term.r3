@@ -34,11 +34,13 @@
 #c1 ( $1b ) "[9999;9999H"
 #c2 ( $1b ) "[6n"
 :getterminfo2	| read size terminal with esc sequense
+	100 Sleep
 	'c1 count type 
 	'c2 count type
+	100 Sleep
 	stdin 'eventBuffer 32 'ne 0 ReadConsole
 	'eventBuffer 2 + 
-	getnro 'rows ! 1+ | Skip ;
+	getnro 1- 'rows ! 1+ | Skip ;
 	getnro 'cols ! 
 	drop ;
 
@@ -48,8 +50,7 @@
 #on-resize 0 | callback address
 
 ::.onresize | 'callback --
-    'on-resize ! 
-	getterminfo2 ; | something the size is wrong at start
+    'on-resize ! ; | something the size is wrong at start
 
 :eventsize
 	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
@@ -165,9 +166,9 @@
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-|	stdin $7 SetConsoleMode drop 
-|	stdout $3 SetConsoleMode drop 
-|	getterminfo getrc 'prevrc ! 
+	stdin $7 SetConsoleMode drop 
+	stdout $3 SetConsoleMode drop 
+	getterminfo
 	.reterm
 	getterminfo2 getrc 'prevrc ! 
     | Enable UTF-8 code page (65001)

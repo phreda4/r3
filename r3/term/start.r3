@@ -109,6 +109,4 @@
 	'scrmain onTui 
 	;
 
-: 
-main 
-.free ;
+: .alsb main .masb .free ;

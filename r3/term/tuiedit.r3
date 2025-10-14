@@ -244,7 +244,7 @@
 	.reset |.rever
 	dup ylinea + 1+ 
 	ycursor =? ( 0 .bc .d 4 .r. .write .sp ; ) |">" .write ; )
-	235 .bc	.d 4 .r. .write .sp ;
+	234 .bc	.d 4 .r. .write .sp ;
 
 ::tuEditCode 
 	EditMouse

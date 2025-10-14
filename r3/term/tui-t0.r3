@@ -102,6 +102,7 @@ cuando cambia de tamanio"
 	
 |-----------------------------------
 : 
+	.alsb 
 	'main onTui 
-	.free 
+	.masb .free 
 ;

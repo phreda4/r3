@@ -7,6 +7,7 @@
 
 |--- Layout
 #flFsize 18
+
 #fx #fy #fw #fh 
 #flpadx 0 #flpady 0
 #flcols 1 #flrows 1 #flcur 0
@@ -109,8 +110,16 @@
 #wid	| panel now
 #wida	| panel activa
 
-#rflag	| exit|render|change
-##uikey	| tecla
+#flag
+#keymd
+
+:flagClear 
+	0 'flag ! ;
+:flagEx!
+	flag 1 or 'flag ! ;
+::uiEx?
+	flag 1 and ;
+
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -125,7 +134,8 @@
 	-1 ;
 
 ::uiMouse | -- flag
-	1 'id +! |tucl limpia flags por widget
+	flagClear 
+	1 'id +! 
 	ida 
 	-1 =? ( drop | !active
 		uIn? 0? ( ; ) drop	| out->0
@@ -157,7 +167,12 @@
 	id >? ( 0 'idf ! ) 
 	drop
 	-1 'id !
-	0 'wid ! ;
+	0 'wid ! 
+	sdlkey
+	<shift> =? ( keymd 1 or 'keymd ! ) 
+	>shift< =? ( keymd 1 nand 'keymd ! ) 
+	drop
+	;
 
 ::uiRefocus
 	-1 'idfa ! ;
@@ -165,16 +180,43 @@
 ::uiFocus>> 1 'idf +! ; | cambia id y luego wid
 ::uiFocus<< -1 'idf +! ;
 
+:ui+c
+	dup 'cx +! dup 'cy +!
+	2* neg dup 'cw +! 'ch +! ;
+	
 |---- draw
+#recbox [ 0 0 0 0 ] | for sdl2
+
+:c2recbox ch cw cy cx 'recbox d!+ d!+ d!+ d! ;
+	
 ::uiFill	cx cy cw ch SDLFRect ;
 ::uiRect	cx cy cw ch SDLRect ;
 ::uiRFill	8 cx cy cw ch SDLFRound ;
 ::uiRRect	8 cx cy cw ch SDLRound ;
+::uiCRect	cw ch min 2/ cx cy cw ch SDLRound ;
+::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
 
+|---- widget	
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 	
-|---- widget	
+:kbBtn
+	sdlkey 
+	<ret> =? ( flagEx! )
+	drop ;
+	
+::uiBtn | 'click "" align --	
+	uiMouse
+	1 =? ( 2 ui+c )
+	uiFill
+	1 =? ( -2 ui+c )
+	6 =? ( flagEx! )
+	drop
+	uiFocus
+	1? ( $ffffff sdlcolor uiRect kbBtn )
+	drop
+	uiText
+	uiEx? 0? ( 2drop ; ) drop ex ;
 
 
 |--------------------------------	
@@ -255,7 +297,8 @@ cuando cambia de tamanio"
 	8 32 * uiE 
 	uiPush
 		4 32 * uiN 	
-			uiTest
+			|uiTest
+			'exit "Salir" $11 uiBtn
 |		$3f sdlcolor							
 |		uiRest
 	uiPop
@@ -272,7 +315,10 @@ cuando cambia de tamanio"
 	>esc< =? ( exit )
 	<f1> =? ( ali $1 + $33 and 'ali ! )
 	<f2> =? ( ali $10 + $33 and 'ali ! )
-	<tab> =? ( uiFocus>> )
+	<tab> =? ( keymd 
+		1 and? ( uiFocus<< )
+		1 nand? ( uiFocus>> )
+		drop )	
 	drop
 	;
 	

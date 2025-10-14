@@ -155,4 +155,4 @@
     .showc .Reset ;
 
 | Program entry point
-: main .free ;
+: .alsb main .masb .free ;

@@ -48,7 +48,9 @@
 	
 |-----------------------------------
 : 
+	.alsb 
 	"main.r3" TuLoadCode
+
 	'main onTui 
-	.free 
+	.masb .free 
 ;
