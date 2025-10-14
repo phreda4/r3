@@ -15,19 +15,13 @@
 
 :f2c
 	flpadx fw over 2* - 'cw ! fx + 'cx !
-	flpady fh over 2* - 'ch ! fy + 'cy !
-	;
+	flpady fh over 2* - 'ch ! fy + 'cy ! ;
 
-::unIn? | x y -- 0/-1
-	cy - $ffff and ch >? ( 2drop 0 ; ) drop | limit 0--$ffff
-	cx - $ffff and cw >? ( drop 0 ; ) drop
-	-1 ;
-
-::uiw% fw 16 *>> ;
-::uih% fh 16 *>> ;
+::%cw fw 16 *>> ;
+::%ch fh 16 *>> ;
 
 ::uiPading | x y --
-	'flpady ! 'flpadx ! ;
+	'flpady ! 'flpadx ! f2c ;
 	
 #flstack * 64 | 8 niveles
 #flstack> 'flstack
@@ -102,27 +96,117 @@
 	flrows flcols * >? ( 0 nip )
 	dup 'flcur !
 	flcols /mod uiAt ;
-|------------------------------
 	
-|::flcr	.cr fx .col ;
-
 ::flFontSize
 	;
 	
+|---- IMMGUI
+#id		| now
+#idh	| hot
+#ida 	| activa
+#idf	| id foco
+#idfa 
+#wid	| panel now
+#wida	| panel activa
+
+#rflag	| exit|render|change
+##uikey	| tecla
+
+| 0 = normal
+| 1 = over (not all sytems)
+| 2 = in
+| 3 = active
+| 4 = active(outside)
+| 5 = out
+| 6 = click
+:uIn? | x y -- 0/-1
+	sdlx cx - $ffff and cw >? ( drop 0 ; ) drop
+	sdly cy - $ffff and ch >? ( drop 0 ; ) drop 
+	-1 ;
+
+::uiMouse | -- flag
+	1 'id +! |tucl limpia flags por widget
+	ida 
+	-1 =? ( drop | !active
+		uIn? 0? ( ; ) drop	| out->0
+		sdlb 0? ( drop 1 ; ) drop		| over->1
+		id dup 'ida ! 'idf !
+		2 ; )	| in->2
+	id =? ( drop | =active
+		uIn? 0? ( drop
+			sdlb 0? ( drop -1 'ida ! 5 ; ) drop	| out->5
+			4 ;	) drop						| active outside->4
+		sdlb 0? ( drop -1 'ida ! 6 ; ) drop		| click->6
+		3 ; ) 	 							| active->3
+	drop 0 ;
+
+| 0 - No
+| 1 - Start focus
+| 2 - In focus
+::uiFocus | -- flag
+	id 
+	idf <>? ( drop 0 ; )
+	wid 1- 'wida ! 
+	idfa <>? ( 'idfa ! 1 ; ) | in 
+	drop 2 ; | stay
+	
+::uiStart
+	uiFull
+	idf 
+	-? ( id 'idf ! )
+	id >? ( 0 'idf ! ) 
+	drop
+	-1 'id !
+	0 'wid ! ;
+
+::uiRefocus
+	-1 'idfa ! ;
+
+::uiFocus>> 1 'idf +! ; | cambia id y luego wid
+::uiFocus<< -1 'idf +! ;
+
 |---- draw
+::uiFill	cx cy cw ch SDLFRect ;
+::uiRect	cx cy cw ch SDLRect ;
+::uiRFill	8 cx cy cw ch SDLFRound ;
+::uiRRect	8 cx cy cw ch SDLRound ;
 
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 	
 |---- widget	
+
+
 |--------------------------------	
 ::uifill
 	8 cx cy cw ch SDLFRound 
-
 	ch cw cy cx "x:%d y:%d;w:%d h:%d"
 	sprint $11 uiText
 	;
-	
+
+#colors [ $f $6f $8f $af $cf $df $ff ]
+:uiTest
+	uiMouse
+	dup 2 << 'colors + d@ sdlcolor
+	10 10 uiPading
+	uiRFill
+	4 4 uiPading
+	dup "%d" sprint $11 uiText
+	drop
+	uiFocus
+	1? ( $ffffff sdlcolor uiRrect )
+	drop
+	;
+
+:uiTest
+	uiMouse
+	dup 2 << 'colors + d@ $3f0000 or sdlcolor
+	uiRFill
+	drop
+	uiFocus
+	1? ( $ffffff sdlcolor uiRrect )
+	drop
+	;
 
 #font1
 #ali
@@ -136,19 +220,10 @@ cuando cambia de tamanio"
 	;
 
 :grillain
-	4 1 uiGrid
-	"1" $11 uiText
-	8 cx cy cw ch SDLRound 
-	uiNext
-	"2" $11 uiText
-	8 cx cy cw ch SDLRound 
-	uiNext
-	"3" $11 uiText
-	8 cx cy cw ch SDLRound 
-	uiNext
-	"4" $11 uiText
-	8 cx cy cw ch SDLRound 
-	tt
+	4 3 uiGrid
+	4 3 * ( 1? 1-
+		uiTest dup "%d" sprint $11 uiText
+		uiNext ) drop
 	;
 
 	
@@ -156,39 +231,39 @@ cuando cambia de tamanio"
 :main
 	0 SDLcls
 	font1 txfont
+	
+	uiStart
+	|0.1 %w 0.1 %h 0.5 %w 0.8 %h uiBox
+	2 2 uiPading
+	
+	$7f00 sdlcolor
+	0.1 %h uiN 
+		uiTest
 
-	4 4 uiPading
-	uiFull
-
-$7f00 sdlcolor
-	2 32 * uiN 
-		uifill
-
-$3f00 sdlcolor	
-	3 32 * uiN 
-		uifill
+	$3f00 sdlcolor	
+	0.1 %h uiN 
+		uiTest
 		
-$7f0000 sdlcolor		
+	$7f0000 sdlcolor		
 	3 32 * uiS 
-		uifill
-$3f0000 sdlcolor				
+		uiTest
+	$3f0000 sdlcolor				
 	4 32 * uiO 
-		uifill
+		uiTest
 		
-$7f sdlcolor				
+	$7f sdlcolor				
 	8 32 * uiE 
-		uiPush
+	uiPush
 		4 32 * uiN 	
-			uifill
-$3f sdlcolor							
-		uiRest
-			uifill
-		uiPop
-	uifill
+			uiTest
+|		$3f sdlcolor							
+|		uiRest
+	uiPop
 	
-$7f7f sdlcolor					
+		uiTest
+	
+	$7f7f sdlcolor					
 	uiRest
-	
 	grillain
 
 
@@ -197,6 +272,7 @@ $7f7f sdlcolor
 	>esc< =? ( exit )
 	<f1> =? ( ali $1 + $33 and 'ali ! )
 	<f2> =? ( ali $10 + $33 and 'ali ! )
+	<tab> =? ( uiFocus>> )
 	drop
 	;
 	
@@ -206,7 +282,7 @@ $7f7f sdlcolor
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinitR
 	
-	"media/ttf/Roboto-bold.ttf" 16 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 20 txloadwicon 'font1 !
  	20 flFontSize
 	
 	'main SDLshow
