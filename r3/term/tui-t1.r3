@@ -11,6 +11,20 @@
 	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
 	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
 	;
+	
+:side
+	|-----------
+	.reset
+	3 flxS 1 0 flpad 
+	tuWin $1 " Command " .wtitle
+	2 1 flpad
+	'pad fw 2 - tuInputLine
+	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
+	|-----------
+	cols 2 >> flxE tuWin
+	botones
+	;
+	
 :main
 	.reset .cls 
 	|-----------
@@ -25,20 +39,10 @@
 	
 	|-----------
 	.reset
-	3 flxS 1 0 flpad 
-	tuWin $1 " Command " .wtitle
-	2 1 flpad
-	'pad fw 2 - tuInputLine
-	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
-	|-----------
-	cols 2 >> flxE tuWin
-	botones
-	
-	|-----------
-	flxFill |	tuWin 
+	flxFill tuWin 
 |	$1 " Editor " .wtitle
-|	$4 'filename .wtitle
-|	1 1 flpad 
+	$4 'filename .wtitle
+	1 1 flpad 
 	tuEditCode
 	;
 	

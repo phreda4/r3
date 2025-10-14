@@ -104,7 +104,7 @@
 :tuX!	rflag $2 or 'rflag ! ;	| exec action need (click or enter)
 ::tuX?	rflag $2 and ;			| ask for acion (local)
 
-:tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
+::tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
 ::tuC!	rflag $1 or 'rflag ! ; | cursor ON
 
 ::.tdebug

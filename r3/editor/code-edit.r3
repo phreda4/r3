@@ -740,9 +740,9 @@
 #exit 0
 
 :evkey	
-|WIN|	evtkey
-|LIN|	getch
-	]ESC[ =? ( 1 'exit ! )
+|WIN|	evtkey ]ESC[ 
+|LIN|	getch [ESC]
+	=? ( 1 'exit ! )
 	teclado ;
 	
 ::>>cr | adr -- adr'
