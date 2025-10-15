@@ -90,7 +90,7 @@
 
 |--- mode 1006
 :dnbtn
-	$40 and? ( $1 and 2* 1- 'evtmw ! ; ) 
+	$40 and? ( $1 and 2* 1- neg 'evtmw ! ; ) 
 	$3 and 1 swap <<
 	evtmb or 'evtmb ! ;
 	

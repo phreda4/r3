@@ -58,27 +58,57 @@
 
 :>>13 | a -- a
 	( $fuente <?
-		dup c@ 13 =? ( drop 1- ; ) | quitar el 1 -
-		drop 1+ ) 2 - ;
+		dup c@ 13 =? ( drop ; )
+		drop 1+ ) 1- ;
 
 :khome	fuente> 1- <<13 1+ 'fuente> ! ;
-:kend	fuente> >>13 1+ 'fuente> ! ;
+:kend	fuente> >>13 'fuente> ! ;
 
-:setpantafin
-	scrini>
-	fh ( 1? swap >>13 1+ swap 1- ) drop
+|------- calc xy cursor
+:emitcur
+	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
+	9 =? ( drop 2 'xcursor +! ; )
+	drop 1 'xcursor +! ;
+
+#cacheyl
+#cachepi
+
+:getcacheini |  -- pantanini>
+	scrini> cachepi =? ( cacheyl 'ylinea ! ; ) drop
+	0 'ylinea !
+	fuente 
+	( scrini> <? c@+ 13 =? ( 1 'ylinea +! ) drop ) 
+	dup 'cachepi !
+	ylinea 'cacheyl !
+	;	
+	
+:cursorpos
+	0 'xcursor !
+	getcacheini
+	ylinea 'ycursor !
+	( fuente> <? c@+ emitcur ) drop 
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea fw + >=? ( dup fw - 1+ 'xlinea ! )
+	drop ;
+	
+|-----------
+:setpantafin | cursor --
+	1- <<13 1+ dup 'scrini> !
+	fh ( 1? swap >>13 swap 1- ) drop
 	$fuente <? ( 1- ) 'scrend> ! ;
 	
-:setpantaini
-	scrend>
+:setpantaini | cursor --
+	>>13 1+ dup 'scrend> ! 
 	fh ( 1? swap 2 - <<13 1+ swap 1- ) drop
 	fuente <? ( fuente nip ) 'scrini> !	;
 	
 :fixcur
 	fuente>
-	scrini> <? ( <<13 1+ 'scrini> ! -1 'ylinea +! setpantafin ; )
-	scrend> >? ( >>13 2 + 'scrend> ! 1 'ylinea +! setpantaini ; )
+	scrini> <? ( setpantafin ; )
+	scrend> >? ( setpantaini ; )
 	drop ;
+|-----------
 
 :karriba
 	fuente> fuente =? ( drop ; )
@@ -87,22 +117,36 @@
 	dup 1- <<13			| cnt cur cura
 	swap over - 		| cnt cura cur-cura
 	rot min + fuente max
-	'fuente> ! fixcur ;
+	'fuente> ! ;
 
 :kabajo
 	fuente> $fuente >=? ( drop ; )
 	dup 1- <<13 | cur inilinea
 	over swap - swap | cnt cursor
-	>>13 1+		| cnt cura
-	dup 1+ >>13 1+ 	| cnt cura curb
+	>>13		| cnt cura
+	dup 1+ >>13 	| cnt cura curb
 	over - rot min +
-	'fuente> ! fixcur ;
+	'fuente> ! ;
 
 :kder	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
 :kizq	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
-:kpgup	fh ( 1? 1- karriba ) drop ;
-:kpgdn	fh ( 1? 1- kabajo ) drop ;
+:kpgup	fh ( 1? 1- karriba fixcur ) drop ;
+:kpgdn	fh ( 1? 1- kabajo fixcur ) drop ;
 
+:scrollup | 'fuente -- 'fuente
+	scrini> 2 - <<13 1+ 
+	fuente <=? ( drop ; )
+	'scrini> ! ;
+
+:scrolldw
+	scrend> >>13 1+ 
+	$fuente >=? ( drop ; ) 'scrend> !
+	scrini> >>13 1+ 'scrini> ! ;
+	
+:evwmouse
+	-? ( ( 1? 1+ scrolldw scrolldw ) ; )
+	( 1? 1- scrollup scrollup ) ;	
+	
 |------------------------------------------------
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
@@ -151,7 +195,8 @@
 	
 :setcursor | y c adr
 	focoe 1? ( .savec ) drop
-	pick2 ylinea + 1+ 'ycursor ! ;
+	|pick2 ylinea + 1+ 'ycursor ! 
+	;
 	
 :fillend | nlin cnt adr -- nlin adr 	
 	swap 1+ .nsp ;
@@ -221,10 +266,11 @@
 	|1 =? ( startfocus ) 
 	'focoe !
 	tuC!	| activate cursor
+	evtmw 1? ( evwmouse cursorpos ) drop
 	uikey 0? ( drop ; )	
-	32 126 in? ( modo ex fixcur ; ) 
-	[tab] =? ( modo ex fixcur ; ) 
-	[enter] =? ( modo ex fixcur ; ) 
+	32 126 in? ( modo ex fixcur cursorpos ; ) 
+	[tab] =? ( modo ex fixcur cursorpos ; ) 
+	[enter] =? ( modo ex fixcur cursorpos ; ) 
 	[BACK] =? ( kback )
 	[DEL] =? ( kdel )
 	[UP] =? ( karriba ) 
@@ -237,14 +283,15 @@
 	[PGDN] =? ( kpgdn )
 	[INS] =? ( chmode )	
 	drop 
-	fixcur ;
+	fixcur 
+	cursorpos ;
 	
 |---------------	
 :iniline
 	.reset |.rever
-	dup ylinea + 1+ 
-	ycursor =? ( 0 .bc .d 4 .r. .write .sp ; ) |">" .write ; )
-	234 .bc	.d 4 .r. .write .sp ;
+	dup ylinea +  
+	ycursor =? ( 0 .bc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	234 .bc	1+ .d 4 .r. .write .sp ;
 
 ::tuEditCode 
 	EditMouse

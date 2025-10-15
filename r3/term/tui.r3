@@ -92,6 +92,7 @@
 
 #rflag	| exit|render|change
 ##uikey	| tecla
+|##uimouse | mouse
 
 :tuireset
 	-1 'ida ! -1 'idfa !
@@ -164,7 +165,10 @@
 	[esc] =? ( exit ) 
 	'uikey ! ;
 	
-|:hmouse evtmb 1? ( evtmxy .at "." .fwrite ) drop ;
+|:hmouse 
+	|evtmb 1? ( evtmxy .at "." .fwrite ) drop 
+|	evtmw 1? ( dup 32 << 'uimouse ! ) drop
+|	;
 :exvector
 	.hidec tui vecdraw ex ;
 	
@@ -182,9 +186,10 @@
 	tuireset
 	tuiredraw
 	( rflag $4 nand? drop
-		0 'uikey ! 0 'rflag !
+		0 'uikey ! 0 'rflag ! |0 'uimouse !
 		inevt
-		1 =? ( hkey ) |	2 =? ( hmouse )
+		1 =? ( hkey ) 
+|		2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
 		5 ms

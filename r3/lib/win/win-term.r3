@@ -118,6 +118,7 @@
     'eventBuffer 8 + d@ ;
 
 ::evtmw | -- wheel | mouse wheel delta
+	'eventBuffer 16 + c@ 4 <>? ( drop 0 ; ) drop
     'eventBuffer 8 + d@ 23 >> 1 or ;
 
 ::evtm | -- event | mouse event type
