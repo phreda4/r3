@@ -57,7 +57,7 @@
 		drop 1- ) ;
 
 :>>13 | a -- a
-	( $fuente <?
+	( $fuente <=?
 		dup c@ 13 =? ( drop ; )
 		drop 1+ ) 1- ;
 
@@ -96,7 +96,8 @@
 :setpantafin | cursor --
 	1- <<13 1+ dup 'scrini> !
 	fh ( 1? swap >>13 swap 1- ) drop
-	$fuente <? ( 1- ) 'scrend> ! ;
+	|$fuente <? ( 1- ) 
+	'scrend> ! ;
 	
 :setpantaini | cursor --
 	>>13 1+ dup 'scrend> ! 
@@ -105,6 +106,7 @@
 	
 :fixcur
 	fuente>
+	|$fuente =? ( 1 '$fuente +! )
 	scrini> <? ( setpantafin ; )
 	scrend> >? ( setpantaini ; )
 	drop ;
@@ -155,13 +157,8 @@
 	fuente 'filename 
 	load 0 swap c!
 	fuente only13 1- '$fuente !	|-- queda solo cr al fin de linea
-	fuente dup 'scrini> ! simplehash 'hashfile !
-	;
-
-|-----------------
-::TuLoadCode | "" --
-	'filename strcpy
-	loadtxt
+	fuente dup 'scrini> ! dup 'fuente> !
+	simplehash 'hashfile !
 	;
 
 :savetxt | -- ; guarda texto
@@ -173,7 +170,7 @@
 	empty 
 	;
 	
-|-----------------
+|---- draw text with colors
 #focoe	
 #modoline
 	
@@ -194,9 +191,7 @@
 	10 .fc ;
 	
 :setcursor | y c adr
-	focoe 1? ( .savec ) drop
-	|pick2 ylinea + 1+ 'ycursor ! 
-	;
+	focoe 1? ( .savec ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
 	swap 1+ .nsp ;
@@ -220,7 +215,7 @@
 	fw 5 - 
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
-		c@+ 0? ( drop fillend 1- ; ) | end of text
+		c@+ 0? ( drop fuente> =? ( setcursor ) ; ) |fillend ; ) | end of text
 		13 =? ( drop fillend ; )
 		cemit
 		swap ) drop
@@ -228,7 +223,26 @@
 		0? ( drop 1- ; ) | end of text
 		drop ) drop ;
 
-|-----------------
+:iniline
+	.reset |.rever
+	fx over fy + .at
+	dup ylinea +  
+	ycursor =? ( 0 .bc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	234 .bc	1+ .d 4 .r. .write .sp ;
+
+:drawlines
+	0 ( fh <?
+		iniline swap 
+		drawline
+		$fuente =? ( 
+			fuente> =? ( | cursor in last position
+				swap 1+ iniline 
+				setcursor ) 
+			drop ; ) | not draw more
+		swap 
+		1+ ) drop ;
+		
+|---- mouse & keys
 :cr.. | adr -- adr'
 	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
 	
@@ -256,7 +270,6 @@
 	6 =? ( clickMouse 'fuente> ! )
 	drop ;
 	
-|-----------------
 :chmode
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
 	drop 'lins 'modo ! .insc ;
@@ -286,25 +299,26 @@
 	fixcur 
 	cursorpos ;
 	
-|---------------	
-:iniline
-	.reset |.rever
-	dup ylinea +  
-	ycursor =? ( 0 .bc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
-	234 .bc	1+ .d 4 .r. .write .sp ;
-
+|---- MAIN words
 ::tuEditCode 
 	EditMouse
 	EditFoco
 	fw 8 <? ( drop ; ) drop
-	scrini>
-	0 ( fh <?
-		fx over fy + .at
-		iniline swap 
-		drawline swap 
-		1+ ) drop 
-	$fuente <? ( 1- ) 
-	'scrend> ! ;
+	scrini> drawlines 'scrend> ! ;
+
+::tudebug
+	ycursor 1+ xcursor 1+ " %d %d " sprint ;
+	
+::TuLoadCode | "" --
+	'filename strcpy
+	loadtxt
+	;
+
+::TuNewCode
+	"new.r3" 'filename strcpy
+	fuente dup '$fuente ! dup 'scrini> ! 'fuente> !
+	0 'hashfile !
+	;
 
 |---------------	
 :

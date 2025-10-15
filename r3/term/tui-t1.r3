@@ -42,6 +42,8 @@
 	flxFill tuWin 
 |	$1 " Editor " .wtitle
 	$4 'filename .wtitle
+	$1 
+	mark tudebug ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
 	;
@@ -49,7 +51,8 @@
 |-----------------------------------
 : 
 	.alsb 
-	"main.r3" TuLoadCode
+	|"main.r3" TuLoadCode
+	TuNewCode
 
 	'main onTui 
 	.masb .free 
