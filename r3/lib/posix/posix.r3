@@ -32,6 +32,8 @@
 #sys-opendir
 #sys-closedir
 #sys-readdir
+#sys-dirfd
+#sys-fstatat
 #sys-clock_gettime 
 #sys-fcntl 
 #sys-time
@@ -74,6 +76,8 @@
 ::libc-opendir sys-opendir sys1 ;
 ::libc-closedir sys-closedir sys1 ;
 ::libc-readdir sys-readdir sys1 ;
+::libc-dirfd sys-dirfd sys1 ;
+::libc-fstatat sys-fstatat sys4 ;
 ::libc-clock_gettime sys-clock_gettime sys2 ;
 ::libc-fcntl sys-fcntl sys3 ;
 ::libc-time sys-time sys1 ;
@@ -120,7 +124,8 @@
 	dup "opendir" getproc 'sys-opendir !
 	dup "closedir" getproc 'sys-closedir !
 	dup "readdir" getproc 'sys-readdir !
-
+	dup "fstatat" getproc 'sys-fstatat !
+	dup "dirfd" getproc 'sys-dirfd !
 	dup "clock_gettime" getproc 'sys-clock_gettime !
 	dup "fcntl" getproc 'sys-fcntl ! 
 	dup "time" getproc 'sys-time !

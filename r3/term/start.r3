@@ -76,13 +76,11 @@
 	'info .write flcr
 	'fullpath .write flcr
 	'filename .write flcr
-	msec "%d" .print
-
 	;
 
 |------------	
 :scrmain
-	.reset .cls 
+	.bblack .cls 
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 |	.tdebug

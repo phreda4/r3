@@ -69,11 +69,8 @@
 ::FDIR | adr -- 1/0
 	@ 4 >> 1 and ;
 	
-::FSIZE | adr -- sizekb
-	32 + d@ 10 >> ; | in kb	
-	
 ::FSIZEF | adr -- sizebytes
-	28 + @ dup 32 >> swap 32 << or ; | bytes
+	28 + d@+ 32 << swap d@ or ; | bytes
 
 #aux 0 0 | for time and file
 

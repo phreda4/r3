@@ -11,6 +11,7 @@
 |
 
 ^r3/lib/mem.r3
+^r3/util/datetime.r3
 ^./tui.r3
 
 |--------------------------------	
@@ -99,9 +100,11 @@
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
 	,s "|" ,s
-	dup FSIZEF 12 >> ,d " Kb" ,s
+|LIN| 	
+	dup FSIZEF $300 + 10 >> ,d " Kb" ,s
 |	dup FDIR ,d
-	|dup FWRITEDT dt>64 ,64>dtf 
+	"|" ,s
+	dup FWRITEDT dt>64 ,64>dtf 
 	drop 
 	0 ,c ;
 	

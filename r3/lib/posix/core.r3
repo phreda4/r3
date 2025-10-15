@@ -52,6 +52,10 @@
 ::time.m 4 + d@ ;
 ::time.h 8 + d@ ;   
 	
+#dirp
+#dirfd
+#st * 160 
+	
 |struct dirent {
 |    ino64_t d_ino;        // Inode number 0
 |    off64_t d_off;        // Offset to the next dirent 8
@@ -75,20 +79,29 @@
 	1 and ;
 
 ::FSIZEF
-	32 + d@ 10 >> ; | in kb	
+	drop 'st 48 + @ ;
 
-#dirp
+::FCREADT | adr -- 'timedate | creation date
+	drop 'st 88 + libc-localtime ;
+
+::FLASTDT | adr -- 'timedate  | last acces date
+	drop 'st 72 + libc-localtime ;
+
+::FWRITEDT | adr -- 'timedate | last write date
+	drop 'st 104 + libc-localtime ;
 
 ::findata 'dirp ;
 
 ::ffirst | "path//*" -- fdd/0
 	libc-opendir dup 'dirp ! 
 	0? ( ; ) 
+	dup libc-dirfd 'dirfd !
 	libc-readdir ;
 
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
 	libc-readdir 
+	dirfd over FNAME 'st 0 fstatat drop
 	1? ( ; ) 
 	dirp libc-closedir drop ;	
 

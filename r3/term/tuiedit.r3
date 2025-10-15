@@ -307,7 +307,7 @@
 	scrini> drawlines 'scrend> ! ;
 
 ::tudebug
-	ycursor 1+ xcursor 1+ " %d %d " sprint ;
+	ycursor 1+ xcursor 1+ " %d:%d " sprint ;
 	
 ::TuLoadCode | "" --
 	'filename strcpy

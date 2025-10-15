@@ -1,4 +1,5 @@
 ^r3/lib/term.r3
+^r3/lib/trace.r3
 ^./utfg.r3
 
 |--- Layout
@@ -86,6 +87,7 @@
 #idh	| hot
 #ida 	| activa
 #idf	| id foco
+#idfh	
 #idfa 
 #wid	| panel now
 #wida	| panel activa
@@ -112,7 +114,7 @@
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
 	rflag "%d " .print
 	;
-
+	
 | 0 = normal
 | 1 = over (not all sytems)
 | 2 = in
@@ -148,17 +150,16 @@
 	drop 2 ; | stay
 	
 ::tui
-	flx
-	idf 
-	-? ( id 'idf ! )
-	id >? ( 0 'idf ! ) 
-	drop
-	-1 'id !
-	0 'wid ! ;
+	idfh 
+	-? ( id nip )
+	id >? ( 0 nip ) 
+	dup 'idf ! 'idfh !
+	-1 'id ! 0 'wid ! 
+	flx ;
 
 |-------------- EVENT
-:Focus>> 1 'idf +! tuR! ; | cambia id y luego wid
-:Focus<< -1 'idf +! tuR! ;
+:Focus>> 1 'idfh +! tuR! ; |<<trace ; | cambia id y luego wid
+:Focus<< -1 'idfh +! tuR! ;
 	
 :hkey
 	evtkey
@@ -192,7 +193,7 @@
 |		2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		5 ms
+		10 ms
 		) drop 
 	tuireset ;
 
@@ -215,8 +216,8 @@
 :y2 fy fh + 1- ;
 :y3 fy 2 - fh + ;
 :y4 fy fh 2/ + ;
-:y5 fy fw + ;
-:y6 fy fw - fh + 1- ;
+:y5 fy fh + ;
+:y6 fy 2 - ;
 #ypl y0 y1 y2 y3 y4 y5 y6 y0
 
 |$44 center
@@ -236,19 +237,19 @@
 :kbBtn | 'ev "" -- 'ev ""
 	tuif 1 <? ( drop ; ) drop
 	uikey 0? ( drop ; )	
-	[enter] =? ( drop >r dup >r ex r> r> ; )
-	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
-	
+	[enter] =? ( tuX! )
+	[tab] =? ( focus>> ) 
+	[shift+tab] =? ( focus<< ) 
 	drop ;
 	
 ::tuBtn | 'ev "" --
+	.reset
 	tuiw 
 	dup .bc
 	drop
 	kbBtn
 	>r fw fh fx fy r> xText
-	drop
-	;
+	tuX? 0? ( 2drop ; ) drop ex ;
 	
 |--- Edita linea
 #cmax
@@ -449,3 +450,4 @@
 
 ::tuText | "" align --
 	xalign >r fw fh fx fy r> xText ;
+	

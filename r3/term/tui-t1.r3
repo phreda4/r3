@@ -42,8 +42,7 @@
 	flxFill tuWin 
 |	$1 " Editor " .wtitle
 	$4 'filename .wtitle
-	$1 
-	mark tudebug ,s ,eol empty here .wtitle
+	$23 mark tudebug ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
 	;

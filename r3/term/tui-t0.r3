@@ -78,11 +78,11 @@
 	'pad fw 2 - tuInputLine
 	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
-|	16 flxO
-|	tuwin $1 " Options " .wtitle
-|	1 1 flpad |1 b.hgrid
-|	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
-|	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
+	16 flxO
+	tuwin $1 " Options " .wtitle
+	1 1 flpad |1 b.hgrid
+	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
+	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
 	6 flxS
 	.wborde	fx fy .at cols rows "%d %d" .print
 	

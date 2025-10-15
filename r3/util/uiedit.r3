@@ -70,16 +70,13 @@
 
 :<<13 | a -- a
 	( fuente >=?
-		dup c@
-		13 =? ( drop ; )
+		dup c@ 13 =? ( drop ; )
 		drop 1- ) ;
 
 :>>13 | a -- a
 	( $fuente <?
-		dup c@
-		13 =? ( drop 1- ; ) | quitar el 1 -
-		drop 1+ )
-	2 - ;
+		dup c@ 13 =? ( drop ; ) | quitar el 1 -
+		drop 1+ ) 1- ;
 
 #1sel #2sel
 
@@ -95,40 +92,33 @@
 	fuente> 1- <<13 1+ 'fuente> ! ;
 
 :kend
-	fuente> >>13 1+ 'fuente> ! ;
+	fuente> >>13 'fuente> ! ;
 
 :scrollup 
 	pantaini> 2 - <<13 1+ 
-	fuente <? ( drop ; )
-	'pantaini> ! 
-	-1 'ylinea +! ;
+	fuente <? ( drop ; ) 'pantaini> ! ;
 
 :scrolldw
-	pantafin> >>13 2 + 
-	$fuente >=? ( drop ; ) 
-	'pantafin> !
-	1 'ylinea +!
-	pantaini> >>13 2 + 'pantaini> !
-	;
+	pantafin> >>13 1+ 
+	$fuente >=? ( drop ; ) 'pantafin> !
+	pantaini> >>13 1+ 'pantaini> ! 	;
 	
 :setpantafin
 	pantaini>
-	hcode ( +? swap >>13 1+ swap txh - ) drop
+	hcode ( +? swap >>13 swap txh - ) drop
 	$fuente <? ( 1- ) 'pantafin> ! ;
 	
 :setpantaini
 	pantafin>
 	hcode ( +? swap 2 - <<13 1+ swap txh - ) drop
 	fuente <? ( fuente nip )
-	'pantaini> !
-	;
+	'pantaini> ! ;
 
 :fixcur
 	fuente>
 	pantaini> <? ( <<13 1+ 'pantaini> ! setpantafin ; )
-	pantafin> >? ( >>13 2 + 'pantafin> ! setpantaini ; )
-	drop
-	;
+	pantafin> >? ( >>13 1+ 'pantafin> ! setpantaini ; )
+	drop ;
 	
 :karriba
 	fuente> fuente =? ( drop ; )
@@ -143,8 +133,8 @@
 	fuente> $fuente >=? ( drop ; )
 	dup 1- <<13 | cur inilinea
 	over swap - swap | cnt cursor
-	>>13 1+    | cnt cura
-	dup 1+ >>13 1+ 	| cnt cura curb
+	>>13     | cnt cura
+	dup 1+ >>13 	| cnt cura curb
 	over -
 	rot min +
 	'fuente> ! ;
@@ -370,7 +360,7 @@
 	pantaini>
 	SDLy
 	ycode txh +
-	( over <? txh + rot >>13 2 + -rot ) 2drop
+	( over <? txh + rot >>13 1+ -rot ) 2drop
 	swap 0 txcw 2* dup 2* + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
