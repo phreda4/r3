@@ -129,7 +129,7 @@
 	-1 =? ( drop | !active
 		evtmxy flin? 0? ( ; ) drop	| out->0
 		evtmb 0? ( drop 1 ; ) drop		| over->1
-		id dup 'ida ! 'idf !
+		id dup 'ida ! 'idfh !
 		2 ; )	| in->2
 	id =? ( drop | =active
 		evtmxy flin? 0? ( drop

@@ -283,7 +283,9 @@
 	uikey 0? ( drop ; )	
 	32 126 in? ( modo ex fixcur cursorpos ; ) 
 	[tab] =? ( modo ex fixcur cursorpos ; ) 
-	[enter] =? ( modo ex fixcur cursorpos ; ) 
+	[enter] =? ( 
+|LIN| drop $d | in linux [enter] is $a
+		modo ex fixcur cursorpos ; ) 
 	[BACK] =? ( kback )
 	[DEL] =? ( kdel )
 	[UP] =? ( karriba ) 

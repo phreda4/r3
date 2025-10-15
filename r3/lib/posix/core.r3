@@ -101,7 +101,7 @@
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
 	libc-readdir 
-	dirfd over FNAME 'st 0 fstatat drop
+	dirfd over FNAME 'st 0 libc-fstatat drop
 	1? ( ; ) 
 	dirp libc-closedir drop ;	
 
