@@ -106,6 +106,7 @@
 #idh	| hot
 #ida 	| activa
 #idf	| id foco
+#idfh
 #idfa 
 #wid	| panel now
 #wida	| panel activa
@@ -140,7 +141,7 @@
 	-1 =? ( drop | !active
 		uIn? 0? ( ; ) drop	| out->0
 		sdlb 0? ( drop 1 ; ) drop		| over->1
-		id dup 'ida ! 'idf !
+		id dup 'ida ! 'idfh !
 		2 ; )	| in->2
 	id =? ( drop | =active
 		uIn? 0? ( drop
@@ -162,10 +163,10 @@
 	
 ::uiStart
 	uiFull
-	idf 
-	-? ( id 'idf ! )
-	id >? ( 0 'idf ! ) 
-	drop
+	idfh 
+	-? ( id nip )
+	id >? ( 0 nip ) 
+	dup 'idf ! 'idfh !
 	-1 'id !
 	0 'wid ! 
 	sdlkey
@@ -177,8 +178,8 @@
 ::uiRefocus
 	-1 'idfa ! ;
 
-::uiFocus>> 1 'idf +! ; | cambia id y luego wid
-::uiFocus<< -1 'idf +! ;
+::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
+::uiFocus<< -1 'idfh +! ;
 
 :ui+c
 	dup 'cx +! dup 'cy +!
