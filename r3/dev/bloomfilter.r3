@@ -31,7 +31,7 @@
 	
 :clrbit | 64hash --
 	bitdres 
-	dup @ rot not and swap ! ; | nand!
+	dup @ rot nand swap ! ; | nand!
 
 :getbit | 64hash -- 0/1
 	bitdres @ and ;

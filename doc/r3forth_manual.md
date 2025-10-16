@@ -2257,6 +2257,8 @@ Sprites are parts of an image, drawn from the center of defined size.
 
 ## Debugging Guide
 
+** Warning, In developing **
+
 Debugging R3forth programs requires understanding stack state and execution flow.
 
 ### Common Error Messages
