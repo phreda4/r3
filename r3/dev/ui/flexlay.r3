@@ -102,17 +102,14 @@
 	;
 	
 |---- IMMGUI
-#id		| now
-#idh	| hot
-#ida 	| activa
-#idf	| id foco
-#idfh
-#idfa 
-#wid	| panel now
-#wida	| panel activa
+#id	#idh #ida 	| now hot active
+#idf #idfh #idfa | focus
+#wid #wida	| panel now active
+#mdrag #mdragh	| drag place
 
 #flag
 #keymd
+#uistate
 
 :flagClear 
 	0 'flag ! ;
@@ -121,6 +118,17 @@
 ::uiEx?
 	flag 1 and ;
 
+::uiStart
+	uiFull
+	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
+	idh 'ida ! -1 'id !
+	mdragh 'mdrag ! -1 'mdragh ! 
+	0 'wid ! 
+	sdlkey
+	<shift> =? ( keymd 1 or 'keymd ! ) 
+	>shift< =? ( keymd 1 nand 'keymd ! ) 
+	drop
+	;
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -134,121 +142,113 @@
 	sdly cy - $ffff and ch >? ( drop 0 ; ) drop 
 	-1 ;
 
-::uiMouse | -- flag
+:stMouse | -- state
 	flagClear 
 	1 'id +! 
-	ida 
-	-1 =? ( drop | !active
-		uIn? 0? ( ; ) drop	| out->0
-		sdlb 0? ( drop 1 ; ) drop		| over->1
-		id dup 'ida ! 'idfh !
-		2 ; )	| in->2
-	id =? ( drop | =active
-		uIn? 0? ( drop
-			sdlb 0? ( drop -1 'ida ! 5 ; ) drop	| out->5
-			4 ;	) drop						| active outside->4
-		sdlb 0? ( drop -1 'ida ! 6 ; ) drop		| click->6
-		3 ; ) 	 							| active->3
-	drop 0 ;
+	ida -1 =? ( drop 			| no active
+		uIn? 0? ( ; ) drop		| out->0
+		sdlb 0? ( drop 1 ; ) drop	| over->1
+		id dup 'idh ! 'idfh ! 2 ; )	| in->2
+	id <>? ( drop 0 ; ) drop	|	 active no this->0
+	uIn? 0? ( drop
+		sdlb 1? ( drop 4 ; ) drop	| active out->4
+		-1 'idh ! 5 ; ) drop		| out up->5
+	sdlb 1? ( drop 3 ; ) drop 		| active->3
+	-1 'idh ! 6 ; 					| click->6		
 
 | 0 - No
 | 1 - Start focus
 | 2 - In focus
-::uiFocus | -- flag
+:stFocus | -- flag
 	id 
 	idf <>? ( drop 0 ; )
 	wid 1- 'wida ! 
-	idfa <>? ( 'idfa ! 1 ; ) | in 
-	drop 2 ; | stay
+	idfa <>? ( 'idfa ! $10 ; ) | in 
+	drop $20 ; | stay
+
+|-- interactive box
+::uiBox
+	stMouse stFocus or 'uistate ! ;
 	
-::uiStart
-	uiFull
-	idfh 
-	-? ( id nip )
-	id >? ( 0 nip ) 
-	dup 'idf ! 'idfh !
-	-1 'id !
-	0 'wid ! 
-	sdlkey
-	<shift> =? ( keymd 1 or 'keymd ! ) 
-	>shift< =? ( keymd 1 nand 'keymd ! ) 
-	drop
-	;
+|-- place to go in drag (index n)	
+::uiBoxIn | n --
+	uIn? 0? ( 2drop ; ) drop 'mdragh ! ;
 
-::uiRefocus
-	-1 'idfa ! ;
+|-- interact	
+::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
+::uiSel		uiState $f and 3 <? ( 2drop ; ) drop ex ;  | 'v --
+::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
+::uiUp		uiState $f and 5 <? ( 2drop ; ) drop ex ;  | 'v --
 
+::uiFocusIn uiState $10 nand? ( 2drop ; ) drop ex ;
+::uiFocus 	uiState $20 nand? ( 2drop ; ) drop ex ;
+
+::uiRefocus	-1 'idfa ! ;
 ::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
 ::uiFocus<< -1 'idfh +! ;
 
+:ui+a
+	dup 'cx +! 'cy +! ;
 :ui+c
-	dup 'cx +! dup 'cy +!
+	dup ui+a
 	2* neg dup 'cw +! 'ch +! ;
 	
 |---- draw
 #recbox [ 0 0 0 0 ] | for sdl2
 
-:c2recbox ch cw cy cx 'recbox d!+ d!+ d!+ d! ;
+:c2recbox
+	ch cw cy cx 'recbox d!+ d!+ d!+ d! ;
 	
-::uiFill	cx cy cw ch SDLFRect ;
-::uiRect	cx cy cw ch SDLRect ;
-::uiRFill	8 cx cy cw ch SDLFRound ;
-::uiRRect	8 cx cy cw ch SDLRound ;
-::uiCRect	cw ch min 2/ cx cy cw ch SDLRound ;
-::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
+::uiFill
+	cx cy cw ch SDLFRect ;
+::uiRect
+	cx cy cw ch SDLRect ;
+::uiRFill | round --
+	cx cy cw ch SDLFRound ;
+::uiRRect | round --
+	cx cy cw ch SDLRound ;
+::uiCRect
+	cw ch min 2/ cx cy cw ch SDLRound ;
+::uiCFill
+	cw ch min 2/ cx cy cw ch SDLFRound ;
+::uiTexture	| texture --
+	c2recbox 'recbox swap SDLImageb ;
 
 |---- widget	
+
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 	
 :kbBtn
+	$ffffff sdlcolor 10 uiRrect 
 	sdlkey 
 	<ret> =? ( flagEx! )
 	drop ;
 	
 ::uiBtn | 'click "" align --	
-	uiMouse
-	1 =? ( 2 ui+c )
-	uiFill
-	1 =? ( -2 ui+c )
-	6 =? ( flagEx! )
-	drop
-	uiFocus
-	1? ( $ffffff sdlcolor uiRect kbBtn )
-	drop
+	uiBox
+	'flagex! uiClk
+	[ 4 ui+a ; ] uiSel 
+	10 uiRFill 
+	'kbBtn uiFocus
 	uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 
 |--------------------------------	
-::uifill
+
+:uiTest
+	uiBox
 	8 cx cy cw ch SDLFRound 
 	ch cw cy cx "x:%d y:%d;w:%d h:%d"
 	sprint $11 uiText
+	[ $ffffff sdlcolor 10 uiRrect ; ] uiFocus
 	;
 
-#colors [ $f $6f $8f $af $cf $df $ff ]
-:uiTest
-	uiMouse
-	dup 2 << 'colors + d@ sdlcolor
-	10 10 uiPading
-	uiRFill
-	4 4 uiPading
-	dup "%d" sprint $11 uiText
-	drop
-	uiFocus
-	1? ( $ffffff sdlcolor uiRrect )
-	drop
-	;
-
-:uiTest
-	uiMouse
-	dup 2 << 'colors + d@ $3f0000 or sdlcolor
-	uiRFill
-	drop
-	uiFocus
-	1? ( $ffffff sdlcolor uiRrect )
-	drop
+:uit2
+	uiCRect
+	ch cw cy cx "x:%d y:%d;w:%d h:%d"
+	sprint $11 uiText
 	;
 
 #font1
@@ -265,7 +265,7 @@ cuando cambia de tamanio"
 :grillain
 	4 3 uiGrid
 	4 3 * ( 1? 1-
-		uiTest dup "%d" sprint $11 uiText
+		uit2 dup "%d" sprint $11 uiText
 		uiNext ) drop
 	;
 
@@ -277,7 +277,7 @@ cuando cambia de tamanio"
 	
 	uiStart
 	|0.1 %w 0.1 %h 0.5 %w 0.8 %h uiBox
-	2 2 uiPading
+	4 4 uiPading
 	
 	$7f00 sdlcolor
 	0.1 %h uiN 
