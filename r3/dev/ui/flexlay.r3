@@ -148,8 +148,10 @@
 	ida -1 =? ( drop 			| no active
 		uIn? 0? ( ; ) drop		| out->0
 		sdlb 0? ( drop 1 ; ) drop	| over->1
-		id dup 'idh ! 'idfh ! 2 ; )	| in->2
-	id <>? ( drop 0 ; ) drop	|	 active no this->0
+		id 'idh ! -1 'idfh ! 1 ; )	| in->2(prev)
+	id <>? ( drop 0 ; ) 	|	 active no this->0
+	idfh <>? ( 'idfh ! 2 ; ) | in->2
+	drop
 	uIn? 0? ( drop
 		sdlb 1? ( drop 4 ; ) drop	| active out->4
 		-1 'idh ! 5 ; ) drop		| out up->5
@@ -167,7 +169,7 @@
 	drop $20 ; | stay
 
 |-- interactive box
-::uiBox
+::uiUser
 	stMouse stFocus or 'uistate ! ;
 	
 |-- place to go in drag (index n)	
@@ -226,7 +228,7 @@
 	drop ;
 	
 ::uiBtn | 'click "" align --	
-	uiBox
+	uiUser
 	'flagex! uiClk
 	[ 4 ui+a ; ] uiSel 
 	10 uiRFill 
@@ -234,11 +236,9 @@
 	uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
-
 |--------------------------------	
-
 :uiTest
-	uiBox
+	uiUser
 	8 cx cy cw ch SDLFRound 
 	ch cw cy cx "x:%d y:%d;w:%d h:%d"
 	sprint $11 uiText
@@ -269,31 +269,21 @@ cuando cambia de tamanio"
 		uiNext ) drop
 	;
 
-	
-|-----------------------------
-:main
-	0 SDLcls
-	font1 txfont
-	
-	uiStart
+:test1
 	|0.1 %w 0.1 %h 0.5 %w 0.8 %h uiBox
 	4 4 uiPading
-	
 	$7f00 sdlcolor
 	0.1 %h uiN 
 		uiTest
-
 	$3f00 sdlcolor	
 	0.1 %h uiN 
 		uiTest
-		
 	$7f0000 sdlcolor		
 	3 32 * uiS 
 		uiTest
 	$3f0000 sdlcolor				
 	4 32 * uiO 
 		uiTest
-		
 	$7f sdlcolor				
 	8 32 * uiE 
 	uiPush
@@ -303,14 +293,52 @@ cuando cambia de tamanio"
 |		$3f sdlcolor							
 |		uiRest
 	uiPop
-	
-		uiTest
-	
+	uiTest
 	$7f7f sdlcolor					
 	uiRest
 	grillain
+	;
 
+|---------------
+#cart "normal" "over" "in" "active" "active(outside)" "out" "click"
 
+#pad * 64
+:bbt
+	uiUser
+	8 uiRFill
+	'cart uistate $f and n>>0 
+	$11 uiText
+	0 'pad !
+	[ "dn " 'pad strcat ; ] uiDwn
+	[ "sel " 'pad strcat ; ] uiSel
+	[ "clk " 'pad strcat ; ] uiClk
+	[ "up " 'pad strcat ; ] uiUp	
+	'pad $00 uiText
+	;
+	
+	
+:test2
+	$7f0000 sdlcolor
+	50 50 200 100 uiBox
+	bbt
+	
+	$7f00 sdlcolor
+	100 120 200 100 uibox
+	bbt
+	
+	$7f sdlcolor
+	300 50 200 100 uiBox
+	bbt
+	;
+	
+|-----------------------------
+:main
+	0 SDLcls
+	font1 txfont
+	
+	uiStart
+	test2
+	50 sleep
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
