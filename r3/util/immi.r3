@@ -87,28 +87,27 @@
 	0 0 uiAt ;
 	
 ::uiNext	
-::uiNextV
 	flcur 1+ 
 	flrows flcols * >? ( 0 nip )
 	dup 'flcur !
 	flcols /mod swap uiAt ;
-::uiNextH
+	
+::uiNextV
 	flcur 1+
 	flrows flcols * >? ( 0 nip )
 	dup 'flcur !
 	flcols /mod uiAt ;
 	
-::flFontSize
-	;
-	
+
 |---- IMMGUI
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
 #wid #wida	| panel now active
-##mdrag #mdragh	| drag place
+##mdrag 	| drag place <<<
+#mdragh	
 
 #flag
-#keymd
+##keymd		| key modify <<<
 #uistate
 
 :flagClear 
@@ -195,7 +194,7 @@
 	dup ui+a
 	2* neg dup 'cw +! 'ch +! ;
 	
-|---- draw
+|---- Draw words 
 #recbox [ 0 0 0 0 ] | for sdl2
 
 :c2recbox
@@ -216,8 +215,30 @@
 ::uiTexture	| texture --
 	c2recbox 'recbox swap SDLImageb ;
 
-|---- widget	
+::uiLineGridV
+	fx flcolm +
+	flcols 1- ( 1? 1-
+		over fy fh over + sdlLineV
+		swap flcolm + swap ) 2drop ;
+		
+::uiLineGridH
+	fy flrowm +
+	flrows 1- ( 1? 1-
+		fx pick2 fw pick2 + sdlLineH
+		swap flrowm + swap ) 2drop ;
+	
+::uiLineGrid
+	uiLineGridH uiLineGridV ;
 
+|---- Style
+|  disable|focus|over|normal
+#colBac	| background
+#colFil | fill
+#colBor	| borde
+#colTxt | texto
+
+
+|---- widget	
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 	
@@ -235,3 +256,32 @@
 	'kbBtn uiFocus
 	uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
+
+|----- list mem (intern)
+#cntlist #indlist
+
+:makeindx | 'adr -- 
+	here dup 'indlist ! >a
+	( dup a!+ >>0
+		dup c@ 1? drop ) 2drop
+	a> dup here - 3 >> 'cntlist !
+	'here ! ;
+	
+::uiNindx | n -- str
+	cntlist >=? ( drop "" ; )
+	3 << indlist + @ ;
+
+
+:ilist
+	;
+	
+::uiList | 'var 'list --
+	mark makeindx
+	ch txh / | 'var cntlineas
+	|mouList
+	|focList
+	0 ( over <? ilist 1+ ) drop
+|	cscroll
+	2drop
+	empty ;	
+	

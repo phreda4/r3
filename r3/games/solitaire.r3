@@ -1,5 +1,5 @@
-| Cards
-| PHREDA 2023
+| Solitaire
+| PHREDA 2025
 ^r3/lib/rand.r3
 ^r3/util/immi.r3
 
@@ -233,14 +233,9 @@
 :game
 	uiStart
 	$6600 SDLcls
-
-	$ffffff txrgb
-	10 4 txat
-	"R3 Solitaire" txprint
-	|200 4 txat idh ida "a:%d h:%d" txprint |table "%h " txprint
-	|..... cards
-	$3f00 sdlcolor
+	$ffffff txrgb 10 4 txat "R3 Solitaire" txprint
 	
+	$3f00 sdlcolor
 	55 40 50 80 uiBox uiUser 8 uiRFill 
 	'clkstock uiClk
 	80.0 80.0 'stock drawpile
@@ -276,7 +271,6 @@
 	50 80 "media/img/cards.png" ssload 'sprites !
 	"media/ttf/roboto-bold.ttf" 24 txload dup txfont 'font !
 	resetgame
-	33
 	'game SDLshow
 	SDLquit 
 	;

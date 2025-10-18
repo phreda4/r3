@@ -92,19 +92,15 @@
 	fnext 1? ) 2drop 	
 	backdir ;
 
-	
 |----- Files
 :+file | f --
 	dup FDIR 1? ( 2drop ; ) drop | nodirs
 	dup FNAME
 	dup ".." = 1? ( 3drop ; ) drop
 	dup "." = 1? ( 3drop ; ) drop
-	,s "|" ,s
-|LIN| 	
-	dup FSIZEF $300 + 10 >> ,d " Kb" ,s
-|	dup FDIR ,d
-	"|" ,s
-	dup FWRITEDT dt>64 ,64>dtf 
+	,s 
+|	"|" ,s dup FSIZEF $300 + 10 >> ,d " Kb" ,s
+|	"|" ,s dup FWRITEDT dt>64 ,64>dtf 
 	drop 
 	0 ,c ;
 	
@@ -113,6 +109,32 @@
 |WIN|	"%s//*" sprint
 	ffirst ( +file fnext 1? ) drop 0 , 
 	empty ;
+	
+|----------------	
+:next/ | adr -- adr'
+	( c@+ 1?
+		$2f =? ( drop 0 swap 1- c!+ ; )
+		drop ) nip ;
+
+:searchd |  nro 'list -- 'list+ nro
+	( dup c@ 1? drop | nro 'list
+		dup a> ">>%s %s" .fprintln waitkey
+		
+		dup a> = 1? ( | nro 'list =?
+			drop swap ; ) drop
+		swap 1+ swap >>0 ) 
+	2drop -1 dup ;
+
+::flSearchDir | 'str -- n
+	next/ | r3/
+	0 uiDirs	| 'str nro 'list
+	rot 		| nro 'list 'str
+	( dup next/ 1? | nro 'list 'str 'str+
+		>r >a  	| nro 'list 
+		searchd | 'list nro
+		-? ( nip ; ) 
+		swap r>
+		) 3drop ;
 	
 ::flScanDir | "" --
 	here 'uiDirs !

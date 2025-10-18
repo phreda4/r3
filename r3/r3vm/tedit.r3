@@ -69,16 +69,13 @@
 
 :<<13 | a -- a
 	( fuente >=?
-		dup c@
-		13 =? ( drop ; )
+		dup c@ 13 =? ( drop ; )
 		drop 1- ) ;
 
 :>>13 | a -- a
 	( $fuente <?
-		dup c@
-		13 =? ( drop 1- ; ) | quitar el 1 -
-		drop 1+ )
-	2 - ;
+		dup c@ 13 =? ( drop ; ) 
+		drop 1+ ) 1- ;
 
 #1sel #2sel
 
@@ -94,7 +91,7 @@
 	fuente> 1- <<13 1+ 'fuente> ! ;
 
 :kend
-	fuente> >>13 1+ 'fuente> ! ;
+	fuente> >>13 'fuente> ! ;
 
 :scrollup | 'fuente -- 'fuente
 	pantaini> 1- <<13 1- <<13 1+ 
@@ -102,15 +99,15 @@
 	'pantaini> ! ;
 
 :scrolldw
-	pantafin> >>13 2 + 
+	pantafin> >>13 1+ 
 	$fuente >=? ( drop ; ) 
 	'pantafin> !
-	pantaini> >>13 2 + 'pantaini> !
+	pantaini> >>13 1+ 'pantaini> !
 	;
 	
 :setpantafin
 	pantaini>
-	hcode ( 1? swap >>13 1+ swap 1- ) drop
+	hcode ( 1? swap >>13 swap 1- ) drop
 	$fuente <? ( 1- ) 'pantafin> ! ;
 	
 :setpantaini
@@ -123,7 +120,7 @@
 :fixcur
 	fuente>
 	pantaini> <? ( <<13 1+ 'pantaini> ! setpantafin ; )
-	pantafin> >? ( >>13 2 + 'pantafin> ! setpantaini ; )
+	pantafin> >? ( >>13 1+ 'pantafin> ! setpantaini ; )
 	drop
 	;
 	
@@ -140,8 +137,7 @@
 	fuente> $fuente >=? ( drop ; )
 	dup 1- <<13 | cur inilinea
 	over swap - swap | cnt cursor
-	>>13 1+    | cnt cura
-	dup 1+ >>13 1+ 	| cnt cura curb
+	>>13 dup 1+ >>13  	| cnt cura curb
 	over -
 	rot min +
 	'fuente> ! ;
@@ -307,7 +303,7 @@
 :cursormouse
 	pantaini>
 	SDLy yedit advy +
-	( over <? advy + rot >>13 2 + -rot ) 2drop
+	( over <? advy + rot >>13 1+ -rot ) 2drop
 	SDLx xedit advx lnsize * + 
 	( over <? mmemit ) 2drop
 	'fuente> ! 

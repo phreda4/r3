@@ -10,6 +10,8 @@
 #fullpath * 1024
 #filename * 1024
 
+#nameaux * 1024
+
 :run
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
@@ -31,7 +33,7 @@
 #info * 64
 
 |------------
-:setfile	
+:setfile
 	vfile uiNindx 
 	'fullpath 'filename strcpyl 1- 
 	flcpy
@@ -71,8 +73,8 @@
 	tuwin $1 " Command " .wtitle
 	1 1 flpad $00 xalign
 	'scratchpad	1024 tuInputline
-	tuX? 1? ( setcmd ) drop	
-	flcr
+	tuX? 1? ( setcmd ) drop	flcr
+	'nameaux .write flcr
 	'info .write flcr
 	'fullpath .write flcr
 	'filename .write flcr
@@ -85,8 +87,9 @@
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 |	.tdebug
 
-	1 flxS
+	2 flxS
 	fx fy .at "|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write
+	
 	
 	30 flxO		dirpanel
 	-4 flxN		dirfile
@@ -98,13 +101,33 @@
 	drop
 	;
 
+|---------------------
+:next/ | adr -- adr'
+	( c@+ 1? $2f =? ( drop ; ) drop ) nip ;	
+	
+:removefile
+	'fullpath ( dup next/ 1? nip ) drop 0 swap c! ;
+
+:loadm
+	'nameaux "mem/menu.mem" load
+	'nameaux =? ( drop ; )
+	'nameaux dup c@ 0? ( 2drop ; ) drop
+	dup 'filename strcpy
+	'fullpath strcpy
+	removefile
+	
+	12 'vfolder !
+	'fullpath flGetFiles
+	;
+
 |-----------------------------------
+
 :main
 	'basepath flScanDir
-	|setfile	
-	changefiles
-	|"r3/audio" FlGetFiles
+	loadm
+|	changefiles
 	'scrmain onTui 
+	|savem
 	;
 
 : .alsb main .masb .free ;
