@@ -100,6 +100,7 @@
 | MOUSE_HWHEELED 0x0008
 
 :evnmouse
+	0 'evtmw !
 	'eventBuffer 16 + c@ 
 	1 =? ( drop 'eventBuffer 4 + w@+ 1+ 'evtmx !  w@ 1+ 'evtmy ! ; )
 	4 =? ( drop 'eventBuffer 8 + d@ 23 >> 1 or 'evtmw ! ; )
