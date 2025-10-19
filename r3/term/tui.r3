@@ -358,7 +358,11 @@
 :mouList | 'var h --
 	tuiw	| mouse
 	6 =? ( clicklist )
-	drop ;
+	drop 
+	evtmw | wheel
+|	1? ( )
+	drop
+	;
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
@@ -410,18 +414,35 @@
 	dup c@ $80 xor swap c! 
 	tuX! tuR! ;
 	
+:chini | 'var n key -- 'var n key
+	pick2 @+ swap @ | value page
+	|<<trace
+	over >? ( drop pick3 8 + ! ; ) 
+	pick3 +
+	over <=? ( drop pick2 - 1+ clamp0 pick3 8 + ! ; )
+	2drop ;
+	
+:chsel | 'var n key delta -- 'var n key
+	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
+	chini
+	tuX! ;
+	
 :focTree | 'var h --
 	tuif 0? ( drop ; ) drop
 	uikey 0? ( drop ; )	
-	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
-	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
+	[up] =? ( -1 chsel )
+	[dn] =? ( 1 chsel )
 	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
 	[enter] =? ( kbclick ) 
+	[pgdn] =? ( 1 pick3 8 + +! )
 	drop ;	
 	
 :mouTree | 'var h --
 	tuiw	| mouse
 	6 =? ( clicklist kbclick )
+	drop 
+	evtmw | wheel
+	1? ( dup pick3 8 + dup @ rot + clamp0 swap ! )
 	drop ;
 
 #foldicon "▸" "▾"
@@ -441,6 +462,8 @@
 	fx fy .at
 	mark maketree
 	fh
+	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
+	
 	mouTree
 	focTree	| focus
 	0 ( over <? itree 1+ ) drop

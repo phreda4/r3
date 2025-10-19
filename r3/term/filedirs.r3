@@ -144,3 +144,36 @@
 	here 'uiFiles !
 	$ffff + 'here +!
 	;
+|-------------
+:writefname | level fd -- level fd 1/0
+	dup fname 
+	dup "." = 1? ( 2drop 0 ; ) drop
+	dup ".." = 1? ( 2drop 0 ; ) drop
+	pick2 64 + ,c 
+	,s 
+	|
+	0 ,c
+	dup fdir ;
+	
+:scandf | level "" --
+	'basepath strcat "/" 'basepath strcat
+	'basepath 
+|WIN| "%s/*" sprint
+	ffirst 0? ( drop ; ) |drop fnext drop 
+	( writefname
+		1? ( pushdd
+|		pick2 64 + .emit over fname .write .cr
+|			pick2 64 + ,c over fname ,s 0 ,c
+			pick2 1+ pick2 fname scandf
+			pophdd 	)
+		2drop
+		fnext 1? ) 2drop 	
+	backdir ;
+
+
+::flScanFullDir | "" --
+	here 'uiDirs !
+	0 'basepath !
+	here $ffff + 'stckhdd> ! 
+	0 swap scandf 0 , 
+	;

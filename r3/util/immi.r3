@@ -188,6 +188,9 @@
 ::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
 ::uiFocus<< -1 'idfh +! ;
 
+:tabfocus
+	keymd 1 and? ( drop uiFocus>> ; ) drop uiFocus<< ;
+	
 :ui+a
 	dup 'cx +! 'cy +! ;
 :ui+c
@@ -232,29 +235,73 @@
 
 |---- Style
 |  disable|focus|over|normal
-#colBac	| background
-#colFil | fill
-#colBor	| borde
-#colTxt | texto
+#colBac	$333333 | background
+#colFil $00007f | fill
+#colBor	$888888 | borde
+#colTxt $aaaaaa | texto
+#colFoc $ffffff 
 
+:colBack
+	colBac sdlcolor ;
+:colFill
+	colFil sdlcolor ;
+:colBorde
+	colBor sdlcolor ;
+:colText
+	colTxt txrgb ;
+:colFocus
+	colFoc sdlcolor ;
 
 |---- widget	
+#ccx #ccy
+
+:ttwrite | "text" --
+	cx
+	ch txh - 2/ cy +
+	txat txwrite ;
+
+:ttwritec | "text" --
+	txw txh | "" w h  
+	cw rot - 2/ cx +
+	ch rot - 2/ cy +
+	txat txwrite ;
+
+:ttwriter | "text" --
+	txw txh | "" w h  
+	cw cx + rot -
+	ch rot - 2/ cy +
+	txat txwrite ;
+	
+	
+::uiLabel
+	ttwrite
+	;
+::uiLabelC
+	ttwritec
+	;
+::uiLabelR
+	ttwriter
+	;
+
+
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
+
 	
 :kbBtn
-	$ffffff sdlcolor 10 uiRrect 
+	colFocus 8 uiRrect 
 	sdlkey 
 	<ret> =? ( flagEx! )
+	<tab> =? ( tabfocus ) 
 	drop ;
 	
 ::uiBtn | 'click "" align --	
 	uiUser
 	'flagex! uiClk
 	[ 4 ui+a ; ] uiSel 
-	10 uiRFill 
+	colFill 10 uiRFill 
 	'kbBtn uiFocus
-	uiText
+	colText uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 |----- list mem (intern)
@@ -271,8 +318,12 @@
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
-
-:ilist
+|--------
+:ilist | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( colFill uiFill )
+	|overl =? ( colBack uiFill )
+	uiNindx ttwrite 
 	;
 	
 ::uiList | 'var 'list --
