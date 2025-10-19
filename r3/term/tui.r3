@@ -341,8 +341,11 @@
 	3 << indlist + @ ;
 	
 |---- CLICK
-:clicklist | 'var h -- 'var h
-	pick2 evtmxy nip fy - over 8 + @ + cntlist min swap ! tuX! ;
+:clicklist | 'var h e -- 'var h e
+	evtmy fy -
+	cntlist >=? ( drop ; )
+	pick3 8 + @ + cntlist min 
+	pick3 ! tuX! ;
 
 |---- WHEEL & SCROLL
 :calccs | 'var h -- 'v h size pos
@@ -351,7 +354,7 @@
 	pick2 dup * pick2 / 0? ( 1+ ) | 'var alto total offst siz
 	pick3 over -	| 'var alto total offst siz espacio
 	rot *			| 'var alto total siz espacio*off
-	rot pick3 - /	| 'var alto siz espacio*off/total
+	rot pick3 - 0? ( 1+ )  /	| 'var alto siz espacio*off/total
 	;
 
 #dnbk ( $e2 $96 $92 $1b $5b $42 $1b $5b $44	0 ) | bloque
@@ -490,6 +493,7 @@
 	2drop
 	empty ;	
 
+|---------------
 ::tuText | "" align --
 	xalign >r fw fh fx fy r> xText ;
 	

@@ -39,7 +39,7 @@
 	stdin 'eventBuffer 32 'ne 0 ReadConsole
 	'eventBuffer 2 + 
 	getnro 1- 'rows ! 1+ | Skip ;
-	getnro 'cols ! 
+	getnro 1- 'cols ! 
 	drop ;
 
 :getrc rows 16 << cols or ;
@@ -48,10 +48,11 @@
 #on-resize 0 | callback address
 
 ::.onresize | 'callback --
+	getterminfo2 
     'on-resize ! ; | something the size is wrong at start
 
 :eventsize
-	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! 
+	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! 
 	getrc prevrc =? ( drop ; ) 'prevrc !
 	on-resize 0? ( drop ; ) ex ; 
 
@@ -173,7 +174,7 @@
 |	stdout $3 SetConsoleMode drop 
 |	getterminfo
 	.reterm
-	getterminfo2 100 sleep getterminfo2 
+	getterminfo2 
 	getrc 'prevrc ! 
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8

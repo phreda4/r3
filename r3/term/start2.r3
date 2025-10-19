@@ -3,6 +3,8 @@
 |---------------
 ^./tui.r3
 ^./filedirs.r3
+^./tuiedit.r3
+
 ^r3/lib/trace.r3
 
 |--------------------------------	
@@ -48,11 +50,29 @@
 	tuX? 1? ( setfile ) drop	
 	;
 
+:paneleditor
+|	tuwin 
+|	.wborded
+	|$1 " CODE " .wtitle
+	|1 1 flpad 
+	tuEditCode
+|	tuReadCode
+	;
+	
 |------------
+:loadcode
+	'fullpath TuLoadCode
+	;
+	
 :changefiles
 	vfolder flTreePath
 	'basepath 'fullpath strcpyl 1- strcpy
-	'fullpath flGetFiles
+	'fullpath dup c@ 0? ( 2drop ; ) drop
+	count + 1- 0 swap c! | quita \
+	'fullpath 
+	".r3" =pos 1? ( loadcode ) 
+	2drop
+|	'fullpath flGetFiles
 	;
 	
 :dirpanel
@@ -60,7 +80,7 @@
 	tuwin $1 " Dir " .wtitle
 	1 1 flpad $00 xalign
 	'vfolder uiDirs tuTree
-|	tuX? 1? ( changefiles ) drop
+	tuX? 1? ( changefiles ) drop
 	;
 
 |------------
@@ -70,6 +90,7 @@
 	;
 	
 :dirpad
+	.reset
 	tuwin $1 " Command " .wtitle
 	1 1 flpad $00 xalign
 	'scratchpad	1024 tuInputline
@@ -83,17 +104,23 @@
 |------------	
 :scrmain
 	.bblack .cls 
+	|___________
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
-|	.tdebug
+	|.tdebug
+	2over 2over "%d %d %d %d" .print
 
+	|___________
 	2 flxS
 	fx fy .at "|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write
 	
-	
-	36 flxO		dirpanel
-	|-4 flxN		dirfile
-	flxFill		dirpad
+	|___________
+	38 flxO		dirpanel
+	|-4 flxS		dirfile
+	1 flxE
+	-4 flxN		paneleditor
+	flxFill		
+	dirpad
 
 	.flush 
 	uikey
@@ -124,9 +151,14 @@
 
 :main
 	'basepath flScanFullDir
+	
 	|uiDirs <<memmap
 |	loadm
 |	changefiles
+
+	TuNewCode
+	|"main.r3" TuLoadCode
+	33 
 	'scrmain onTui 
 	|savem
 	;

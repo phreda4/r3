@@ -215,7 +215,7 @@
 	fw 5 - 
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
-		c@+ 0? ( drop fuente> =? ( setcursor ) ; ) |fillend ; ) | end of text
+		c@+ 0? ( drop fuente> =? ( setcursor ) nip ; ) |fillend 1- ; ) | end of text
 		13 =? ( drop fillend ; )
 		cemit
 		swap ) drop
@@ -223,24 +223,23 @@
 		0? ( drop 1- ; ) | end of text
 		drop ) drop ;
 
-:iniline
+:iniline | adr lin -- adr lin 
 	.reset |.rever
 	fx over fy + .at
 	dup ylinea +  
-	ycursor =? ( 0 .bc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
-	234 .bc	1+ .d 4 .r. .write .sp ;
+	ycursor =? ( 233 .bc 7 .fc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	234 .bc	240 .fc 1+ .d 4 .r. .write .sp ;
 
-:drawlines
+:drawlines | ini -- end
 	0 ( fh <?
 		iniline swap 
 		drawline
-		$fuente =? ( 
+		$fuente =? ( | line adr
 			fuente> =? ( | cursor in last position
 				swap 1+ iniline 
-				setcursor ) 
-			drop ; ) | not draw more
-		swap 
-		1+ ) drop ;
+				setcursor drop ; ) 
+			nip ; ) | not draw more
+		swap 1+ ) drop ;
 		
 |---- mouse & keys
 :cr.. | adr -- adr'
@@ -308,6 +307,10 @@
 	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! ;
 
+::tuReadCode
+	fw 8 <? ( drop ; ) drop
+	scrini> drawlines 'scrend> ! ;
+	
 ::tudebug
 	ycursor 1+ xcursor 1+ " %d:%d " sprint ;
 	
