@@ -110,11 +110,13 @@
 ::tuR!	rflag $8 or 'rflag ! ;	| redraw again, some changes
 ::tuC!	rflag $1 or 'rflag ! ; | cursor ON
 
+|******************
 ::.tdebug
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
 	rflag "%d " .print
 	;
-	
+|******************	
+
 | 0 = normal
 | 1 = over (not all sytems)
 | 2 = in
@@ -122,7 +124,6 @@
 | 4 = active(outside)
 | 5 = out
 | 6 = click
-
 ::tuiw | -- flag
 	1 'id +! tucl
 	ida 
@@ -250,6 +251,187 @@
 	>r fw fh fx fy r> xText
 	tuX? 0? ( 2drop ; ) drop ex ;
 	
+	
+|--------------------------------	
+|---- write line
+#(xwrite) 'lwrite
+
+::xwrite!
+	'(xwrite) ! ;
+	
+::xwrite.reset
+	'lwrite '(xwrite) ! ;
+
+|---- list mem (intern)
+#cntlist #indlist
+	
+:makeindx | 'adr -- 
+	here dup 'indlist ! >a
+	( dup a!+ >>0
+		dup c@ 1? drop ) 2drop
+	a> dup here - 3 >> 'cntlist !
+	'here ! ;
+	
+::uiNindx | n -- str
+	cntlist >=? ( drop "" ; )
+	3 << indlist + @ ;
+	
+|---- CLICK
+:clicklist | 'var h e -- 'var h e
+	evtmy fy -
+	cntlist >=? ( drop ; )
+	pick3 8 + @ + cntlist min 
+	pick3 ! tuX! ;
+
+|---- WHEEL & SCROLL
+:calccs | 'var h -- 'v h size pos
+	cntlist over <=? ( drop 0 -1 ; )
+	pick2 8 + @ | offset
+	pick2 dup * pick2 / 0? ( 1+ ) | 'var alto total offst siz
+	pick3 over -	| 'var alto total offst siz espacio
+	rot *			| 'var alto total siz espacio*off
+	rot pick3 - /	| 'var alto siz espacio*off/total
+	;
+
+#dnbk ( $e2 $96 $92 $1b $5b $42 $1b $5b $44	0 ) | scroll char+dn+left
+
+:cscroll | 'var h --
+	calccs -? ( 2drop ; ) 
+	fx fw + 1-  fy rot + .at
+	1+ 'dnbk .rep ;
+	
+:chwheel | 'v h 
+	cntlist >=? ( ; ) 
+	evtmw 0? ( drop ; )  | 'v h w
+	pick2 8 + dup 		| 'v h w S S
+	@ rot + clamp0 
+	cntlist pick3 - 1- clampmax swap !
+	;
+		
+|----- LIST
+| #vlist 0 0 
+
+:focList | 'var h --
+	tuif 0? ( drop ; ) drop
+	chwheel
+	uikey 0? ( drop ; )	
+	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
+	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 	
+	drop ;	
+
+:mouList | 'var h --
+	tuiw	| mouse
+	6 =? ( clicklist )
+	drop ;
+
+:ilist | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( .rever )
+	uiNindx 
+	fx .col | color?
+	fw swap (xwrite) ex .cr
+	.reset 
+	;
+
+::tuList | 'var list --
+	fx fy .at
+	mark makeindx
+	fh
+	mouList
+	focList
+	0 ( over <? ilist 1+ ) drop
+	cscroll
+	2drop
+	empty ;	
+	
+|----- TREE
+| #vtree 0 0
+
+#lvl	|  $1f:level $20:have_more $80:is_open	
+:getval	| adr c@ ; a
+	$1f and 
+	lvl <=? ( 'lvl ! ; ) 
+	a> 8 - @ dup 				
+	c@ $20 or over c!
+	c@ $80 and? ( drop 'lvl ! ; ) | draw
+	2drop
+	( >>0 dup c@ 1? 
+		$1f and lvl >? drop )
+	drop ;
+	
+:maketree |
+	0 'lvl !
+	here dup 'indlist ! >a
+	( dup a!+ >>0
+		dup c@ 1? 
+		getval
+		) 2drop
+	a> dup here - 3 >> 'cntlist !
+	'here ! ;
+
+:kbclick	
+	pick2 @ 3 << indlist + @ 
+	dup c@ $80 xor swap c! 
+	tuX! tuR! ;
+	
+:chini | 'var n key -- 'var n key
+	pick2 @+ swap @ | value page
+	over >? ( drop pick3 8 + ! ; ) 
+	pick3 +
+	over <=? ( drop pick2 - 1+ clamp0 pick3 8 + ! ; )
+	2drop ;
+	
+:chsel | 'var n key delta -- 'var n key
+	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
+	chini
+	tuX! ;
+		
+:focTree | 'var h --
+	tuif 0? ( drop ; ) drop
+	chwheel
+	uikey 0? ( drop ; )	
+	[up] =? ( -1 chsel )
+	[dn] =? ( 1 chsel )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
+	[enter] =? ( kbclick ) 
+	[pgdn] =? ( 1 pick3 8 + +! )
+	drop ;	
+	
+:mouTree | 'var h --
+	tuiw	| mouse
+	6 =? ( clicklist kbclick )
+	drop ;
+
+#foldicon "▸" "▾"
+:,iicon | n -- 
+	$20 nand? ( drop 32 ,c ; )
+	7 >> 1 and 2 << 'foldicon + ,s ; 
+	
+:itree | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( .rever )
+	uiNindx c@+ 0? ( 2drop ; )
+	fx .col | color
+	mark dup $1f and 2* ,nsp ,iicon ,s ,eol empty
+	fw here (xwrite) ex .cr 
+	.reset ;
+	
+::tuTree | 'var list --
+	fx fy .at
+	mark maketree
+	fh
+	mouTree
+	focTree	| focus
+	0 ( over <? itree 1+ ) drop
+	cscroll
+	2drop
+	empty ;	
+
+|---- text
+::tuText | "" align --
+	xalign >r fw fh fx fy r> xText ;
+
 |--- Edita linea
 #cmax
 ##padi>	| inicio
@@ -325,175 +507,9 @@
 	swap lwrite
 	;
 	
-|--------------------------------	
-|----- list mem (intern)
-#cntlist #indlist
-
-:makeindx | 'adr -- 
-	here dup 'indlist ! >a
-	( dup a!+ >>0
-		dup c@ 1? drop ) 2drop
-	a> dup here - 3 >> 'cntlist !
-	'here ! ;
-	
-::uiNindx | n -- str
-	cntlist >=? ( drop "" ; )
-	3 << indlist + @ ;
-	
-|---- CLICK
-:clicklist | 'var h e -- 'var h e
-	evtmy fy -
-	cntlist >=? ( drop ; )
-	pick3 8 + @ + cntlist min 
-	pick3 ! tuX! ;
-
-|---- WHEEL & SCROLL
-:calccs | 'var h -- 'v h size pos
-	cntlist over <=? ( drop 0 -1 ; )
-	pick2 8 + @ | offset
-	pick2 dup * pick2 / 0? ( 1+ ) | 'var alto total offst siz
-	pick3 over -	| 'var alto total offst siz espacio
-	rot *			| 'var alto total siz espacio*off
-	rot pick3 - /	| 'var alto siz espacio*off/total
-	;
-
-#dnbk ( $e2 $96 $92 $1b $5b $42 $1b $5b $44	0 ) | scroll char+dn+left
-
-:cscroll | 'var h --
-	calccs -? ( 2drop ; ) 
-	fx fw + 1-  fy rot + .at
-	1+ 'dnbk .rep ;
-	
-:chwheel | 'v h 
-	cntlist >=? ( ; ) 
-	evtmw 0? ( drop ; )  | 'v h w
-	pick2 8 + dup 		| 'v h w S S
-	@ rot + clamp0 
-	cntlist pick3 - 1- clampmax swap !
-	;
-		
-|----- LIST
-| #vlist 0 0 
-
-:focList | 'var h --
-	tuif 0? ( drop ; ) drop
-	chwheel
-	uikey 0? ( drop ; )	
-	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
-	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
-	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 	
-	drop ;	
-
-:mouList | 'var h --
-	tuiw	| mouse
-	6 =? ( clicklist )
-	drop ;
-
-:ilist | 'var max n  -- 'var max n
-	pick2 8 + @ over +
-	pick3 @ =? ( .rever )
-	uiNindx 
-	fx .col | color?
-	fw swap xwrite .cr
-	.reset 
-	;
-
-::tuList | 'var list --
-	fx fy .at
-	mark makeindx
-	fh
-	mouList
-	focList
-	0 ( over <? ilist 1+ ) drop
-	cscroll
-	2drop
-	empty ;	
-	
-|----- TREE
-| #vtree 0 0
-
-#lvl	|  $1f:level $20:have_more $80:is_open	
-:getval	| adr c@ ; a
-	$1f and 
-	lvl <=? ( 'lvl ! ; ) 
-	a> 8 - @ dup 				
-	c@ $20 or over c!
-	c@ $80 and? ( drop 'lvl ! ; ) | draw
-	2drop
-	( >>0 dup c@ 1? 
-		$1f and lvl >? drop )
-	drop ;
-	
-:maketree |
-	0 'lvl !
-	here dup 'indlist ! >a
-	( dup a!+ >>0
-		dup c@ 1? 
-		getval
-		) 2drop
-	a> dup here - 3 >> 'cntlist !
-	'here ! ;
-
-
-:kbclick	
-	pick2 @ 3 << indlist + @ 
-	dup c@ $80 xor swap c! 
-	tuX! tuR! ;
-	
-:chini | 'var n key -- 'var n key
-	pick2 @+ swap @ | value page
-	over >? ( drop pick3 8 + ! ; ) 
-	pick3 +
-	over <=? ( drop pick2 - 1+ clamp0 pick3 8 + ! ; )
-	2drop ;
-	
-:chsel | 'var n key delta -- 'var n key
-	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
-	chini
-	tuX! ;
-		
-:focTree | 'var h --
-	tuif 0? ( drop ; ) drop
-	chwheel
-	uikey 0? ( drop ; )	
-	[up] =? ( -1 chsel )
-	[dn] =? ( 1 chsel )
-	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
-	[enter] =? ( kbclick ) 
-	[pgdn] =? ( 1 pick3 8 + +! )
-	drop ;	
-	
-:mouTree | 'var h --
-	tuiw	| mouse
-	6 =? ( clicklist kbclick )
-	drop ;
-
-#foldicon "▸" "▾"
-:,iicon | n -- 
-	$20 nand? ( drop 32 ,c ; )
-	7 >> 1 and 2 << 'foldicon + ,s ; 
-	
-:itree | 'var max n  -- 'var max n
-	pick2 8 + @ over +
-	pick3 @ =? ( .rever )
-	uiNindx c@+ 0? ( 2drop ; )
-	fx .col | color
-	mark dup $1f and 2* ,nsp ,iicon ,s ,eol empty
-	fw here xwrite .cr 
-	.reset ;
-	
-::tuTree | 'var list --
-	fx fy .at
-	mark maketree
-	fh
-	mouTree
-	focTree	| focus
-	0 ( over <? itree 1+ ) drop
-	cscroll
-	2drop
-	empty ;	
-
-|---------------
-::tuText | "" align --
-	xalign >r fw fh fx fy r> xText ;
+|--- check
+|--- radio
+|--- combo
+|--- slide
+|--- progress
 	

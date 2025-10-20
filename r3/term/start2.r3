@@ -17,69 +17,57 @@
 :run
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
-	msec
 	|"mem/error.mem" delete
-	|'fullpath
-	'filename
+	'fullpath
+	|'filename
 |WIN| 	"cmd /c r3 ""%s"" " | 2>mem/error.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
 	sprint sys
 	.reterm 
-	msec swap - "%d ms" .fprint
+	tuR!
 	;
 	
 |--------------------------------	
 #vfolder 0 0
-#vfile 0 0
 #scratchpad * 1024
 #info * 64
 
 |------------
-:setfile
-	vfile uiNindx 
-	'fullpath 'filename strcpyl 1- 
-	flcpy
-	|loadcodigo	
-	'filename 'info strcpy
-	;
-
-:dirfile
-	tuwin $1 " Files " .wtitle
-	1 1 flpad $00 xalign
-	'vfile uiFiles tuList
-	tuX? 1? ( setfile ) drop	
-	;
-
 :paneleditor
-|	tuwin 
+	tuwin 
 |	.wborded
-	|$1 " CODE " .wtitle
-	|1 1 flpad 
+	$1 " CODE " .wtitle
+	1 1 flpad 
 	tuEditCode
 |	tuReadCode
 	;
 	
 |------------
-:loadcode
-	'fullpath TuLoadCode
-	;
-	
 :changefiles
 	vfolder flTreePath
 	'basepath 'fullpath strcpyl 1- strcpy
-	'fullpath dup c@ 0? ( 2drop ; ) drop
-	count + 1- 0 swap c! | quita \
+	'fullpath c@ 0? ( drop ; ) drop |
 	'fullpath 
-	".r3" =pos 1? ( loadcode ) 
+	".r3" =pos 1? ( drop TuLoadCode ; ) 
 	2drop
-|	'fullpath flGetFiles
+	tuNewCode
 	;
+	
+:setcolor | str -- str
+	"/" =pos 1? ( drop 7 .fc ; ) drop
+	".r3" =pos 1? ( drop 11 .fc ; ) drop	
+	14 .fc ;
+	
+:filecolor	
+	setcolor lwrite ;
 	
 :dirpanel
 	.reset
+	'filecolor xwrite!
 	tuwin $1 " Dir " .wtitle
 	1 1 flpad $00 xalign
 	'vfolder uiDirs tuTree
+	xwrite.reset
 	tuX? 1? ( changefiles ) drop
 	;
 
@@ -92,13 +80,13 @@
 :dirpad
 	.reset
 	tuwin $1 " Command " .wtitle
-	1 1 flpad $00 xalign
+	|1 1 flpad $00 xalign
 	'scratchpad	1024 tuInputline
-	tuX? 1? ( setcmd ) drop	flcr
-	'nameaux .write flcr
-	'info .write flcr
-	'fullpath .write flcr
-	'filename .write flcr
+	tuX? 1? ( setcmd ) drop	
+|	'nameaux .write flcr
+|	'info .write flcr
+	flcr 'fullpath .write flcr
+|	'filename .write flcr
 	;
 
 |------------	
@@ -108,8 +96,8 @@
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug
-	2over 2over "%d %d %d %d" .print
-
+	2dup "%d %d " .print
+	vfolder "<<%d>>" .print
 	|___________
 	2 flxS
 	fx fy .at "|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write
@@ -129,22 +117,24 @@
 	;
 
 |---------------------
-:next/ | adr -- adr'
-	( c@+ 1? $2f =? ( drop ; ) drop ) nip ;	
-	
-:removefile
-	'fullpath ( dup next/ 1? nip ) drop 0 swap c! ;
-
 :loadm
 	'nameaux "mem/menu.mem" load
 	'nameaux =? ( drop ; )
 	'nameaux dup c@ 0? ( 2drop ; ) drop
 	dup 'filename strcpy
-	'fullpath strcpy
-	removefile
+	dup 'fullpath strcpy
+	|flOpenFullPath
+	drop
 	
-	12 'vfolder !
-	'fullpath flGetFiles
+|	traverse
+
+	
+|	actual getactual nip
+|	pagina linesv + 1- >=? ( dup linesv - 1+ 'pagina ! )
+|	'actual !
+|	drop
+|	setactual	
+	
 	;
 
 |-----------------------------------
@@ -152,14 +142,15 @@
 :main
 	'basepath flScanFullDir
 	
-	|uiDirs <<memmap
-|	loadm
+	TuNewCode
+	loadm
 |	changefiles
 
-	TuNewCode
+	
 	|"main.r3" TuLoadCode
 	33 
 	'scrmain onTui 
+	drop
 	|savem
 	;
 

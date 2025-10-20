@@ -222,7 +222,7 @@
 	fw 5 - 
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
-		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) |fillend 1- ; ) | end of text | nip 1- ; ) |<< not draw
+		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) 
 		13 =? ( drop fillend ; )
 		cemit
 		swap ) drop

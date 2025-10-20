@@ -38,7 +38,8 @@
 		( 1- dup uiNindx c@ $1f and 
 			l1 >=? drop ) drop
 		) 2drop
-	a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop
+	|a> 8 - ( b> >=? dup @ ,s  "/" ,s 8 - ) drop
+	a> 8 - ( b> >=? dup @ ,s  8 - ) drop
 	0 ,c
 	empty here 
 	]ba ;
@@ -149,11 +150,9 @@
 	dup fname 
 	dup "." = 1? ( 2drop 0 ; ) drop
 	dup ".." = 1? ( 2drop 0 ; ) drop
-	pick2 64 + ,c 
-	,s 
-	|
-	0 ,c
-	dup fdir ;
+	pick2 64 + ,c ,s 
+	dup fdir 1? ( "/" ,s )
+	0 ,c ;
 	
 :scandf | level "" --
 	'basepath strcat "/" 'basepath strcat
@@ -162,8 +161,6 @@
 	ffirst 0? ( drop ; ) |drop fnext drop 
 	( writefname
 		1? ( pushdd
-|		pick2 64 + .emit over fname .write .cr
-|			pick2 64 + ,c over fname ,s 0 ,c
 			pick2 1+ pick2 fname scandf
 			pophdd 	)
 		2drop
@@ -177,3 +174,47 @@
 	here $ffff + 'stckhdd> ! 
 	0 swap scandf 0 , 
 	;
+	
+	
+:searchdir | str --
+	mark
+	b> 64 + ,c dup ,s ,eol
+	empty
+	a> 
+	( dup c@ 1? drop
+		dup here = 1? ( drop ; ) drop
+		>>0 ) 
+	nip ;
+|		here = .println
+|	;
+	
+:traverse | adr -- adrname
+	ab[
+	uiDirs >a
+	0 >b
+	next/ 0? ( drop ; ) 
+	( dup next/ 1? swap
+		
+		dup searchdir
+		1? ( dup .println )
+|		actual getactual 'actual !
+|		expande
+		drop
+		1 b+
+		) drop 
+		
+	.println 
+	]ba
+	;
+	
+::flOpenFullPath | str --
+	traverse
+	.flush waitkey
+	;
+
+||	
+	|12 uiNindx dup c@ $80 xor swap c! 
+	|12 'vfolder !
+	
+|	uiDirs 12 n>>0 
+|	dup c@ $80 xor swap c!
