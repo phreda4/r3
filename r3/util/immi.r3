@@ -24,6 +24,7 @@
 ::uiPading | x y --
 	'flpady ! 'flpadx ! f2c ;
 	
+
 #flstack * 64 | 8 niveles
 #flstack> 'flstack
 
@@ -56,6 +57,7 @@
 	
 ::uiPush	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
 ::uiPop		-8 'flstack> +! flstack> fl>now f2c ;
+
 :uiGet		flstack> 8 - fl>now ;
 ::uiRest	uiGet f2c ;
 
@@ -253,8 +255,6 @@
 	colFoc sdlcolor ;
 
 |---- widget	
-#ccx #ccy
-
 :ttwrite | "text" --
 	cx
 	ch txh - 2/ cy +
@@ -272,24 +272,20 @@
 	ch rot - 2/ cy +
 	txat txwrite ;
 	
-	
 ::uiLabel
-	ttwrite
-	;
+	ttwrite	;
+	
 ::uiLabelC
-	ttwritec
-	;
+	ttwritec ;
+	
 ::uiLabelR
-	ttwriter
-	;
-
+	ttwriter ;
 
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 
 	
 :kbBtn
-	colFocus 8 uiRrect 
 	sdlkey 
 	<ret> =? ( flagEx! )
 	<tab> =? ( tabfocus ) 
@@ -299,8 +295,8 @@
 	uiUser
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill 10 uiRFill 
-	'kbBtn uiFocus
+	colFill 8 uiRFill 
+	[ kbBtn colFocus 8 uiRrect ; ] uiFocus
 	colText uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
 	
@@ -308,8 +304,26 @@
 	uiUser
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill 8 uiRFill 
-	'kbBtn uiFocus
+	colFill uiFill 
+	[ kbBtn colFocus uiRect ; ] uiFocus
+	colText uiLabelc
+	uiEx? 0? ( 2drop ; ) drop ex ;
+
+::uiRBtn | 'click "" --	
+	uiUser
+	'flagex! uiClk
+	[ 2 ui+a ; ] uiSel 
+	colFill 6 uiRFill 
+	[ kbBtn colFocus 6 uiRRect ; ] uiFocus
+	colText uiLabelc
+	uiEx? 0? ( 2drop ; ) drop ex ;
+
+::uiCBtn | 'click "" --	
+	uiUser
+	'flagex! uiClk
+	[ 2 ui+a ; ] uiSel 
+	colFill uiCFill 
+	[ kbBtn colFocus uiCRect ; ] uiFocus
 	colText uiLabelc
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
@@ -322,6 +336,7 @@
 	
 :slideshow | 0.0 1.0 'value --
 	colBack uiFill
+	[ kbBtn colFocus uiRect ; ] uiFocus
 	colFill
 	dup @ pick3 - 
 	cw 8 - pick4 pick4 swap - */ cx 1+ +
@@ -356,6 +371,7 @@
 	
 :slideshowv | 0.0 1.0 'value --
 	ColBack uiFill
+	[ kbBtn colFocus uiRect ; ] uiFocus	
 	ColFill
 	dup @ pick3 - 
 	ch 8 - pick4 pick4 swap - */ cy 1+ +
@@ -395,17 +411,23 @@
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
+#listx #listy
 |--------
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( colFill uiFill )
 	|overl =? ( colBack uiFill )
-	uiNindx ttwrite 
+	uiNindx 
+	listx listy txat txwrite 
+	txh 'listy +!
 	;
-	
+
 ::uiList | 'var 'list --
+	uiUser
 	mark makeindx
 	ch txh / | 'var cntlineas
+	cx 'listx !
+	cy 'listy !
 	|mouList
 	|focList
 	0 ( over <? ilist 1+ ) drop
