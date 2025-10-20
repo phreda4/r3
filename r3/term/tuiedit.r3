@@ -208,20 +208,6 @@
 	2 =? ( drop 9 =? ( tabchar ) .emit ; ) drop
 	$22 =? ( .emit 0 'modoline ! codecolor ; ) | ""
 	9 =? ( tabchar ) .emit ;
-	
-:drawline | nlin adr -- nlin adr
-	0 'modoline ! | string multilinea****
-	codecolor
-	fw 5 - 
-	( 1? 1- swap 
-		fuente> =? ( setcursor )
-		c@+ 0? ( drop fuente> =? ( setcursor ) nip ; ) |fillend 1- ; ) | end of text
-		13 =? ( drop fillend ; )
-		cemit
-		swap ) drop
-	( c@+ 13 <>? 
-		0? ( drop 1- ; ) | end of text
-		drop ) drop ;
 
 :iniline | adr lin -- adr lin 
 	.reset |.rever
@@ -229,15 +215,31 @@
 	dup ylinea +  
 	ycursor =? ( 233 .bc 7 .fc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
 	234 .bc	240 .fc 1+ .d 4 .r. .write .sp ;
+	
+:drawline | nlin adr -- nlin adr
+	0 'modoline ! | string multilinea****
+	codecolor
+	fw 5 - 
+	( 1? 1- swap 
+		fuente> =? ( setcursor )
+		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) |fillend 1- ; ) | end of text | nip 1- ; ) |<< not draw
+		13 =? ( drop fillend ; )
+		cemit
+		swap ) drop
+	( c@+ 13 <>? 
+		0? ( drop 1- ; ) | end of text
+		drop ) drop ;
 
+:lastline
+	dup 1- c@ 13 =? ( drop swap 1+ iniline setcursor drop ; ) drop
+	setcursor nip ;
+	
 :drawlines | ini -- end
 	0 ( fh <?
 		iniline swap 
 		drawline
 		$fuente =? ( | line adr
-			fuente> =? ( | cursor in last position
-				swap 1+ iniline 
-				setcursor drop ; ) 
+			fuente> =? ( lastline ; ) | cursor in last position
 			nip ; ) | not draw more
 		swap 1+ ) drop ;
 		

@@ -21,7 +21,7 @@
 :fileadd
 	dup FNAME "." = 1? ( 2drop ; ) drop
 	dup FDIR $1 and 16 << 
-	over FSIZE 17 << or
+	over FSIZEF 12 >> or
 	filen> filen - or 	| start string
 	files> !+ 'files> !
 	FNAME filen> strcpyl 'filen> ! ;

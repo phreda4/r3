@@ -198,6 +198,10 @@
 #words  "heap!" "heap@" "heapini" 0
 #info ( $2E $10 $2E )
 #r3_util_heap.r3 'name 'words 'info
+#name "r3/util/immi.r3"
+#words  "cx" "cy" "cw" "ch" "%cw" "%ch" "uiPading" "uiValid?" "uiBox" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "mdrag" "keymd" "uiEx?" "uiStart" "uiUser" "uiPlace" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiRefocus" "uiFocus>>" "uiFocus<<" "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTexture" "uiLineGridV" "uiLineGridH" "uiLineGrid" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "uiBtn" "uiNindx" "uiList" 0
+#info ( $80 $80 $80 $80 $10 $10 $2E $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $1 $0 $0 $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $0 $0 $0 $1F $1F $1F $2F $2E $10 $2E )
+#r3_util_immi.r3 'name 'words 'info
 #name "r3/util/loadobj.r3"
 #words  "verl" "nver" "facel" "nface" "norml" "texl" "ntex" "paral" "colorl" "ncolor" "]face" "]vert" "]norm" "]uv" ">>cr" "]Ka@" "]Kd@" "]Ks@" "]Ke@" "]Ns@" "]Ni@" "]d@" "]i@" "]Mkd@" "]MNs@" "]Mbp@" "cnt/" "getpath" "loadobj" "xmin" "ymin" "zmin" "xmax" "ymax" "zmax" "objminmax" "objmove" "objcentra" "objescala" "objescalax" "objescalay" "objescalaz" "objcube" 0
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $80 $80 $80 $80 $80 $80 $0 $3D $0 $2E $2E $2E $2E $1F )
@@ -299,8 +303,8 @@
 #info ( $80 $80 $80 $2E $0 $0 $1F $1F $1F $1F $1F $1F $0 $0 $2E $0 $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $80 $80 $80 $0 $1 $1 $0 $1 $2 $1 $1 $1 $1 $1 $80 $2 $0 $1 $1F $0 $0 )
 #r3_lib_win_console.r3 'name 'words 'info
 #name "r3/lib/win/core.r3"
-#words  "ms" "msec" "time" "date" "sysdate" "findata" "ffirst" "fnext" "FNAME" "FDIR" "FSIZE" "FSIZEF" "filetimeD" "FCREADT" "FLASTDT" "FWRITEDT" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
-#info ( $1F $1 $1 $1 $1 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $0 $10 $0 $10 $0 $10 $2F $3D $3D $1F $10 $1 $1 $0 $1 $1 $1 $80 $80 $10 $10 $1F )
+#words  "ms" "msec" "time" "date" "sysdate" "findata" "ffirst" "fnext" "FNAME" "FDIR" "FSIZEF" "filetimeD" "FCREADT" "FLASTDT" "FWRITEDT" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
+#info ( $1F $1 $1 $1 $1 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $0 $10 $0 $10 $0 $10 $0 $10 $2F $3D $3D $1F $10 $1 $1 $0 $1 $1 $1 $80 $80 $10 $10 $1F )
 #r3_lib_win_core.r3 'name 'words 'info
 #name "r3/lib/win/debugapi.r3"
 #words  "IsDebuggerPresent" "OutputDebugStringA" "OutputDebugStringW" "DebugBreak" "ContinueDebugEvent" "WaitForDebugEvent" "DebugActiveProcess" "DebugActiveProcessStop" "CheckRemoteDebuggerPresent" 0
@@ -327,8 +331,8 @@
 #info ( $5C $5C $2F $2F )
 #r3_lib_win_urlmon.r3 'name 'words 'info
 #name "r3/lib/win/win-term.r3"
-#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "inevt" "getevt" "inkey" "getch" "evtmxy" "evtmb" "evtmw" "evtm" ".free" ".reterm" 0
-#info ( $80 $80 $80 $2E $80 $80 $1F $1 $1 $1 $1 $1 $2 $1 $1 $1 $1F $0 )
+#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" "getch" ".free" ".reterm" 0
+#info ( $80 $80 $80 $2E $80 $80 $1F $1 $80 $80 $80 $80 $2 $1 $1 $1 $1 $1F $0 )
 #r3_lib_win_win-term.r3 'name 'words 'info
 #name "r3/lib/win/winhttp.r3"
 #words  "WinHttpOpen" "WinHttpConnect" "WinHttpOpenRequest" "WinHttpSendRequest" "WinHttpReceiveResponse" "WinHttpQueryDataAvailable" "WinHttpReadData" "WinHttpCloseHandle" "loadurl" 0
@@ -339,4 +343,4 @@
 #info ( $2F $0 $3E $5C $3E $3E $2F $1F $2F $4C $4D $4D $3E )
 #r3_lib_win_winsock.r3 'name 'words 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_term.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_float_table.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uicolor.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiledlg.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_term.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_float_table.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uicolor.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiledlg.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0

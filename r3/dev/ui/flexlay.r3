@@ -69,6 +69,25 @@ cuando cambia de tamanio"
 	grillain
 	;
 
+#vsl
+#vsl2
+
+:test3
+	100 100 900 500 uiBox
+	4 4 uiPading
+	$7f00 sdlcolor
+|	0.1 %h uiN 
+	0.3 %w uiO
+	2 20 uiGrid
+	"boto" uiLabelC uiNext 'exit "Salir" uiBtn uiNext
+	"Slider" uiLabelC uiNext -1.0 1.0 'vsl uiSliderf uiNext
+	"Slideri" uiLabelC uiNext 0 500 'vsl2 uiSlideri uiNext
+	
+	uiRest
+	18 2 uiGrid
+	-1.0 1.0 'vsl uiVSliderf uiNext
+	500 0 'vsl2 uiVSlideri uiNext
+	;
 |---------------
 #cart "normal" "over" "in" "active" "active(outside)" "out" "click"
 
@@ -107,8 +126,9 @@ cuando cambia de tamanio"
 	
 	uiStart
 	
-	test1
+	|test1
 	|test2
+	test3
 	
 	SDLredraw
 	sdlkey

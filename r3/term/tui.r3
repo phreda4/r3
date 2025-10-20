@@ -354,10 +354,10 @@
 	pick2 dup * pick2 / 0? ( 1+ ) | 'var alto total offst siz
 	pick3 over -	| 'var alto total offst siz espacio
 	rot *			| 'var alto total siz espacio*off
-	rot pick3 - 0? ( 1+ )  /	| 'var alto siz espacio*off/total
+	rot pick3 - /	| 'var alto siz espacio*off/total
 	;
 
-#dnbk ( $e2 $96 $92 $1b $5b $42 $1b $5b $44	0 ) | bloque
+#dnbk ( $e2 $96 $92 $1b $5b $42 $1b $5b $44	0 ) | scroll char+dn+left
 
 :cscroll | 'var h --
 	calccs -? ( 2drop ; ) 

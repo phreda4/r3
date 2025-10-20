@@ -295,15 +295,92 @@
 	<tab> =? ( tabfocus ) 
 	drop ;
 	
-::uiBtn | 'click "" align --	
+::uiTBtn | 'click "" align --	
 	uiUser
 	'flagex! uiClk
-	[ 4 ui+a ; ] uiSel 
+	[ 2 ui+a ; ] uiSel 
 	colFill 10 uiRFill 
 	'kbBtn uiFocus
 	colText uiText
 	uiEx? 0? ( 2drop ; ) drop ex ;
+	
+::uiBtn | 'click "" --	
+	uiUser
+	'flagex! uiClk
+	[ 2 ui+a ; ] uiSel 
+	colFill 8 uiRFill 
+	'kbBtn uiFocus
+	colText uiLabelc
+	uiEx? 0? ( 2drop ; ) drop ex ;
 
+|---- Horizontal slide
+:slideh | 0.0 1.0 'value --
+	sdlx cx - cw clamp0max 
+	2over swap - | Fw
+	cw */ pick3 +
+	over ! ;
+	
+:slideshow | 0.0 1.0 'value --
+	colBack uiFill
+	colFill
+	dup @ pick3 - 
+	cw 8 - pick4 pick4 swap - */ cx 1+ +
+	cy 2 + 
+	6 ch 4 - 
+	SDLFRect ;
+	
+::uiSliderf | 0.0 1.0 'value --
+	uiUser
+	'slideh uiSel | 'dn 'move --	
+	slideshow
+|	'focoBtn in/foco 
+|	'clickfoco onClick	
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiSlideri | 0 255 'value --
+	uiUser
+	'slideh uiSel | 'dn 'move --	
+	slideshow
+|	'focoBtn in/foco
+|	'clickfoco uiClk		
+	@ .d uiLabelC
+	2drop ;	
+	
+|---- Vertical slide
+:slidev | 0.0 1.0 'value --
+	sdly cy - ch clamp0max 
+	2over swap - | Fw
+	ch */ pick3 +
+	over ! ;
+	
+:slideshowv | 0.0 1.0 'value --
+	ColBack uiFill
+	ColFill
+	dup @ pick3 - 
+	ch 8 - pick4 pick4 swap - */ cy 1+ +
+	cx 2 + swap
+	cw 4 - 6 
+	SDLFRect ;
+
+::uiVSliderf | 0.0 1.0 'value --
+	uiUser
+	'slidev uiSel
+	slideshowv
+|	'focoBtn in/foco 
+|	'clickfoco onClick	
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiVSlideri | 0 255 'value --
+	uiUser
+	'slidev uiSel
+	slideshowv	
+|	'focoBtn in/foco 
+|	'clickfoco onClick		
+	@ .d uiLabelC
+	2drop ;		
+	
 |----- list mem (intern)
 #cntlist #indlist
 
