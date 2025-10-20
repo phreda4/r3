@@ -5,6 +5,58 @@
 
 #pad * 256
 
+#bx #by
+
+:nextl
+	1 'by +!
+	bx by .at ;
+	
+:nextc
+	-6 'by +!
+	20 'bx +!
+	bx by .at ;
+	
+:boxcr
+	dup 16 - 6 mod
+	0? ( nextl ) drop 
+	dup 16 - 36 mod
+	0? ( 15 .fc nextc )
+	18 =? ( 0 .fc )
+	drop
+	;
+	
+|------- Page 3: 256 Color Palette -------
+:show256 | --
+    .cls
+    0 ( 16 <?
+		0 =? ( 15 .fc )
+		1 =? ( 0 .fc )
+        dup .bc 
+		dup .d 3 .r. .write .sp
+        1+ ) drop 
+	
+	8 'by !
+	-18  'bx !
+	16 ( 232 <?
+		boxcr
+		124 =? ( 2 'bx ! 10 'by ! bx by .at )
+        dup .bc 
+		dup .d 3 .r. .write .sp	
+		1+ ) drop
+	
+    .cr .cr
+	15 .fc 4 .col
+    232 ( 256 <?
+		244 =? ( 0 .fc .cr 4 .col )
+        dup .bc 
+		dup .d 4 .r. .write .sp
+		1+ ) drop 
+	.cr
+	
+	.flush 
+	waitkey
+	;
+	
 :botones
 	tuwin $1 " Options " .wtitle
 	1 1 flpad |1 b.hgrid
@@ -45,6 +97,9 @@
 	$23 mark tudebug ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
+	uiKey
+	[f1] =? ( show256 )
+	drop
 	;
 	
 |-----------------------------------

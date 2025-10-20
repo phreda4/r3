@@ -182,8 +182,9 @@
 	empty
 	a> 
 	( dup c@ 1? drop
-		dup here = 1? ( drop ; ) drop
+		dup here = 1? ( dup >a drop ; ) drop
 		>>0 ) 
+	dup >a
 	nip ;
 |		here = .println
 |	;
@@ -194,7 +195,6 @@
 	0 >b
 	next/ 0? ( drop ; ) 
 	( dup next/ 1? swap
-		
 		dup searchdir
 		1? ( dup .println )
 |		actual getactual 'actual !
