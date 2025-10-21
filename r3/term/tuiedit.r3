@@ -9,6 +9,9 @@
 #ycursor
 #xcursor
 
+#inisel		| inicio seleccion
+#finsel		| fin seleccion
+
 #scrini>	| comienzo de pantalla
 #scrend>	| fin de pantalla
 
@@ -24,6 +27,20 @@
 
 #linecomm 	| comentarios de linea
 #linecomm>
+
+:inselect | adr -- adr
+	inisel finsel in? ( 18 .bc ; ) 0 .bc ;
+	
+:atselect | adr -- addr
+	inisel =? ( 18 .bc ; ) finsel =? ( 0 .bc ; ) ;
+
+#1sel #2sel
+
+:selecc	| agrega a la seleccion
+|	mshift 0? ( dup 'inisel ! 'finsel ! ; ) drop
+	inisel 0? ( fuente> '1sel ! ) drop
+	fuente> dup '2sel !
+	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
 
 |----- edicion
 :lins | c --
@@ -217,16 +234,18 @@
 	234 .bc	240 .fc 1+ .d 4 .r. .write .sp ;
 	
 :drawline | nlin adr -- nlin adr
+	inselect
 	0 'modoline ! | string multilinea****
 	codecolor
 	fw 5 - 
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
+		atselect
 		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) 
 		13 =? ( drop fillend ; )
 		cemit
 		swap ) drop
-	( c@+ 13 <>? 
+	( atselect c@+ 13 <>? 
 		0? ( drop 1- ; ) | end of text
 		drop ) drop ;
 
@@ -258,6 +277,33 @@
 		13 =? ( 0 nip )
 		0? ( drop nip 1- ; ) 
 		drop ) drop ;
+
+#tclick
+
+:dclick |"double click" .println
+	fuente>
+	( dup c@ $ff and 32 >? drop 1- ) drop
+	1+ dup 'inisel ! 
+	( c@+ $ff and 32 >? drop ) drop
+	1- 'finsel !
+	;
+	
+:dns
+	clickMouse
+	fuente> '1sel ! ;
+
+:mos
+	clickMouse
+	fuente> 1sel over <? ( swap )
+	'finsel ! 'inisel ! ;
+
+:ups
+	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
+	clickMouse
+	fuente> 1sel 
+	over =?  ( 2drop 0 'inisel ! ; )
+	over <? ( swap )
+	'finsel ! 'inisel ! ;
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -298,6 +344,17 @@
 	[PGUP] =? ( kpgup ) 
 	[PGDN] =? ( kpgdn )
 	[INS] =? ( chmode )	
+|[SHIFT+DEL] =? ( selecc
+|[SHIFT+INS] 
+	[SHIFT+UP] =? ( selecc karriba selecc )
+	[SHIFT+DN] =? ( selecc kabajo selecc )
+	[SHIFT+RI] =? ( selecc kder selecc )
+	[SHIFT+LE] =? ( selecc kizq selecc )
+	[SHIFT+PGUP] =? ( selecc kpgup selecc )
+	[SHIFT+PGDN] =? ( selecc kpgdn selecc )
+	[SHIFT+HOME] =? ( selecc khome selecc )
+	[SHIFT+END] =? ( selecc kend selecc )
+
 	drop 
 	fixcur 
 	cursorpos ;
