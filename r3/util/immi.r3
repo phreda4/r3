@@ -131,6 +131,37 @@
 	drop
 	;
 
+#uilastwidget 0
+#uilastpos 0 
+#uilaststy 0 0 0 0
+#uiLastfont 0
+#uidata1 0 
+#uidata2 0 
+
+::uiExitWidget
+	-1 'foco ! 0 'uilastwidget ! ;
+
+|------- LAST WIDGET
+::uisaveLast | 'vector --
+	'uiLastWidget !
+|	'cx dims>64 'uilastpos !
+|	'uilaststy 'cifil 3 move	|dsc style
+	txFont@ 'uiLastfont !		| font	
+	idl 'idfh ! ;
+	
+:uiBacklast |--
+|	'cx uilastpos 64>dims 
+|	'cifil 'uilaststy 3 move 
+	uiLastfont txfont ;
+	
+::uiEnd
+|	1 'idf +!
+|	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint
+	uilastWidget 0? ( drop ; ) 
+	foco idf <? ( 2drop uiExitWidget ; ) drop
+	uiBacklast
+	ex ;
+
 | 0 = normal
 | 1 = over (not all sytems)
 | 2 = in
@@ -190,8 +221,8 @@
 ::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
 ::uiFocus<< -1 'idfh +! ;
 
-:tabfocus
-	keymd 1 and? ( drop uiFocus>> ; ) drop uiFocus<< ;
+::tabfocus
+	keymd 1 and? ( drop uiFocus<< ; ) drop uiFocus>> ;
 	
 :ui+a
 	dup 'cx +! 'cy +! ;
@@ -237,10 +268,10 @@
 
 |---- Style
 |  disable|focus|over|normal
-#colBac	$333333 | background
-#colFil $00007f | fill
+#colBac	$222222 | background
+#colFil $0000af | fill
 #colBor	$888888 | borde
-#colTxt $aaaaaa | texto
+#colTxt $ffffff | texto
 #colFoc $ffffff 
 
 :colBack
@@ -284,7 +315,6 @@
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
 
-	
 :kbBtn
 	sdlkey 
 	<ret> =? ( flagEx! )
@@ -328,6 +358,15 @@
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 |---- Horizontal slide
+:kbSlide
+	sdlkey 
+	<tab> =? ( tabfocus ) 
+	<le> =? ( <dn> nip ) 
+	<dn> =? ( over dup @ 1- clamp0 swap ! )
+	<ri> =? ( <up> nip ) 
+	<up> =? ( over dup @ 1+ pick4 clampmax swap ! )	
+	drop ;
+
 :slideh | 0.0 1.0 'value --
 	sdlx cx - cw clamp0max 
 	2over swap - | Fw
@@ -336,7 +375,7 @@
 	
 :slideshow | 0.0 1.0 'value --
 	colBack uiFill
-	[ kbBtn colFocus uiRect ; ] uiFocus
+	[ kbSlide colFocus uiRect ; ] uiFocus
 	colFill
 	dup @ pick3 - 
 	cw 8 - pick4 pick4 swap - */ cx 1+ +
@@ -346,10 +385,8 @@
 	
 ::uiSliderf | 0.0 1.0 'value --
 	uiUser
-	'slideh uiSel | 'dn 'move --	
+	'slideh uiSel |
 	slideshow
-|	'focoBtn in/foco 
-|	'clickfoco onClick	
 	@ .f2 uiLabelC
 	2drop ;
 
@@ -357,8 +394,6 @@
 	uiUser
 	'slideh uiSel | 'dn 'move --	
 	slideshow
-|	'focoBtn in/foco
-|	'clickfoco uiClk		
 	@ .d uiLabelC
 	2drop ;	
 	
@@ -383,8 +418,6 @@
 	uiUser
 	'slidev uiSel
 	slideshowv
-|	'focoBtn in/foco 
-|	'clickfoco onClick	
 	@ .f2 uiLabelC
 	2drop ;
 
@@ -392,8 +425,6 @@
 	uiUser
 	'slidev uiSel
 	slideshowv	
-|	'focoBtn in/foco 
-|	'clickfoco onClick		
 	@ .d uiLabelC
 	2drop ;		
 	
@@ -411,27 +442,183 @@
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
-#listx #listy
+#lvl	|  $1f:level $20:have_more $80:is_open	
+:getval	| adr c@ ; a
+	$1f and 
+	lvl <=? ( 'lvl ! ; ) 
+	a> 8 - @ dup 				
+	c@ $20 or over c!
+	c@ $80 and? ( drop 'lvl ! ; ) | draw
+	2drop
+	( >>0 dup c@ 1? 
+		$1f and lvl >? drop )
+	drop ;
+	
+:maketree |
+	0 'lvl !
+	here dup 'indlist ! >a
+	( dup a!+ >>0
+		dup c@ 1? 
+		getval
+		) 2drop
+	a> dup here - 3 >> 'cntlist !
+	'here ! ;
+
 |--------
+#lx #ly
+
+:backline lx ly cw txh sdlFRect ;
+	
+:kbList
+	sdlkey 
+	<ret> =? ( flagEx! )
+	<tab> =? ( tabfocus ) 
+	<up> =? ( pick2 dup @ 1- clamp0 swap ! )
+	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )	
+	drop ;
+
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-	pick3 @ =? ( colFill uiFill )
+	pick3 @ =? ( colFill backline )
 	|overl =? ( colBack uiFill )
 	uiNindx 
-	listx listy txat txwrite 
-	txh 'listy +!
+	lx ly txat txwrite 
+	txh 'ly +!
 	;
 
 ::uiList | 'var 'list --
 	uiUser
 	mark makeindx
 	ch txh / | 'var cntlineas
-	cx 'listx !
-	cy 'listy !
-	|mouList
-	|focList
+	cx 'lx ! cy 'ly !
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
+	[ kblist colFocus uiRect ; ] uiFocus	
 	2drop
 	empty ;	
 	
+|----- TREE
+| #vtree 0 0
+
+:cktree
+	cntlist <? ( sdlx cx - cw 16 - >? ( drop ; ) drop )
+|	overl pick2 @ <>? ( pick2 ! ; ) | click on select
+	pick2 !
+|	overl 3 << indlist + @ 
+	dup c@ $80 xor swap c! ;
+
+:chtree
+	|-1 'overl !
+|	guin? 0? ( drop ; ) drop
+|	SDLw 1? ( wwlist ) drop
+|	sdlBoxListY
+	pick2 8 + @ + 
+|	cntlist 1- clampmax 'overl ! 
+|	'cktree onClickFoco
+	;
+
+:iicon | n -- 
+	$20 nand? ( drop 32 txemit ; )
+	7 >> 1 and 129 + txemit ; 
+	
+:itree | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( colFill backline )
+|	overl =? ( overfil uiFill )
+	uiNindx 
+	c@+ 0? ( 2drop ch 'cy +! ; )
+	dup $1f and 4 << lx + ly txat iicon txwrite 
+	txh 'ly +! ;
+
+::uiTree | 'var list --
+	uiUser
+	mark maketree
+	ch txh / | 'var cntlineas
+	cx 'lx ! cy 'ly !
+	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
+|	dup guiBoxlist		
+|	'focoList in/foco 
+|	chtree
+	0 ( over <? itree 1+ ) drop
+|	cscroll
+	[ kblist colFocus uiRect ; ] uiFocus	
+	2drop
+	empty ;	
+		
+|--- Edita linea
+#cmax
+#padi>	| inicio
+#pad>	| cursor
+#padf>	| fin
+
+:lins  | c -- ;
+	padf> padi> - cmax >=? ( 2drop ; ) drop
+	pad> dup 1- padf> over - 1+ cmove> 1 'padf> +!
+:lover | c -- ;
+	pad> c!+ dup 'pad> !
+	padf> <=? ( drop ; )
+	dup padi> - cmax >=? ( swap 1- swap -1 'pad> +! ) drop
+	'padf> ! ;
+:0lin 0 padf> c! ;
+:kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
+:kback pad> padi> <=? ( drop ; ) dup 1- swap padf> over - 1+ cmove -1 'padf> +! -1 'pad> +! ;
+:kder pad> padf> <? ( 1+ ) 'pad> ! ;
+:kizq pad> padi> >? ( 1- ) 'pad> ! ;
+:kup
+	pad> ( padi> >?
+		1- dup c@ $ff and 32 <? ( drop 'pad> ! ; )
+		drop ) 'pad> ! ;
+:kdn
+	pad> ( c@+ 1?
+		$ff and 32 <? ( drop 'pad> ! ; )
+		drop ) drop 1- 'pad> ! ;
+
+#modo 'lins
+
+:cursor | 'var max
+	msec $100 and? ( drop ; ) drop
+	$a0a0a0 SDLColor
+	cx cy txat 
+	padi> pad> 
+	modo 'lins =? ( drop txcur ; ) drop
+	txcuri ;
+	
+|----- ALFANUMERICO
+:iniinput | 'var max -- 'var max
+	dup 1- 'cmax !
+	over dup 'padi> !
+	( c@+ 1? drop ) drop 1-
+	dup 'pad> ! 'padf> !
+	'lins 'modo !
+	;
+
+:chmode
+	modo 'lins =? ( drop 'lover 'modo ! ; )
+	drop 'lins 'modo ! ;
+
+:proinputa | --
+	colFocus cx 1- cy 1- cw 2 + ch 2 + SDLRect 
+	$ffffff SDLColor |	uiRect
+	cursor 
+	SDLchar 1? ( modo ex ; ) drop
+	SDLkey 0? ( drop ; )
+	<ins> =? ( chmode )
+	<le> =? ( kizq ) <ri> =? ( kder )
+	<back> =? ( kback ) <del> =? ( kdel )
+	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
+	
+	<ret> =? ( flagEx! )
+	<tab> =? ( tabfocus ) 
+|	<dn> =? ( nextfoco ) <up> =? ( prevfoco )
+	drop
+	
+	;
+
+::uiInputLine | 'buff max --
+	uiUser
+	Colback uiFill
+	'iniinput uiFocusIn
+	'proinputa uiFocus 
+	drop
+	ttwrite uiNext ;	
+		

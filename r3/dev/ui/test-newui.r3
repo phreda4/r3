@@ -28,6 +28,7 @@
 
 |-----------------------------
 :test
+	uiStart
 	4 4 uiPading
 	$ffffff sdlcolor
 	0.1 %h uiN
@@ -36,7 +37,7 @@
 	"[esc]-Exit [f1/f2]-align" $11 uiText
 	
 	0.6 %w uiO
-	$222222 sdlcolor uiFill
+	$111111 sdlcolor uiFill
 	uiPush
 	0.05 %h uiN
 	"wid" $11 uiText
@@ -60,12 +61,20 @@
 	"----" uiLabelc uiNext
 	uiPop
 	0.15 %w uiO
+	'vtree 'treeex uiTree
 	
 	uiRest
 	
 	uiPop
 	uiRest
-	$444444 sdlcolor uiFill
+	0.1 %h uiN $444444 sdlcolor uiFill
+	1 2 uiGrid
+	'pad 64 uiInputLine
+	'pad2 64 uiInputLine
+	uiRest
+	"Hola" $11 uiText
+	
+	uiEnd
 	;
 	
 	
@@ -73,7 +82,6 @@
 :main
 	0 SDLcls
 	font1 txfont
-	uiStart
 	test
 	
 	SDLredraw
@@ -81,10 +89,7 @@
 	>esc< =? ( exit )
 	<f1> =? ( ali $1 + $33 and 'ali ! )
 	<f2> =? ( ali $10 + $33 and 'ali ! )
-	<tab> =? ( keymd 
-		1 and? ( uiFocus<< )
-		1 nand? ( uiFocus>> )
-		drop )	
+	|<tab> =? ( keymd 1 and? ( uiFocus<< ) 1 nand? ( uiFocus>> ) drop )	
 	drop
 	;
 	
