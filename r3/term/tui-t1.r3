@@ -105,8 +105,9 @@
 |-----------------------------------
 : 
 	.alsb 
-	|"main.r3" TuLoadCode
-	TuNewCode
+	
+	"main.r3" TuLoadCode
+	|TuNewCode
 
 	'main onTui 
 	.masb .free 

@@ -494,17 +494,20 @@
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	[ kblist colFocus uiRect ; ] uiFocus	
+	[ sdly cy - txh / cntlist 1- clampmax pick2 ! ; ] uiClk
 	2drop
 	empty ;	
 	
 |----- TREE
 | #vtree 0 0
 
-:cktree
-	cntlist <? ( sdlx cx - cw 16 - >? ( drop ; ) drop )
-|	overl pick2 @ <>? ( pick2 ! ; ) | click on select
-	pick2 !
-|	overl 3 << indlist + @ 
+:cktree | 'var cnt
+	sdly cy - txh / cntlist 1- clampmax 
+	pick2 @ <>? ( pick2 ! ; )
+	
+|	cntlist <? ( sdlx cx - cw 16 - >? ( drop ; ) drop )
+
+	3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 
 :chtree
@@ -512,7 +515,7 @@
 |	guin? 0? ( drop ; ) drop
 |	SDLw 1? ( wwlist ) drop
 |	sdlBoxListY
-	pick2 8 + @ + 
+|	pick2 8 + @ + 
 |	cntlist 1- clampmax 'overl ! 
 |	'cktree onClickFoco
 	;
@@ -536,12 +539,12 @@
 	ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
-|	dup guiBoxlist		
-|	'focoList in/foco 
+
 |	chtree
 	0 ( over <? itree 1+ ) drop
 |	cscroll
 	[ kblist colFocus uiRect ; ] uiFocus	
+	'cktree uiClk
 	2drop
 	empty ;	
 		

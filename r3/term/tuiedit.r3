@@ -36,12 +36,14 @@
 
 #1sel #2sel
 
-:selecc	| agrega a la seleccion
-|	mshift 0? ( dup 'inisel ! 'finsel ! ; ) drop
+:sela	| add to select 
 	inisel 0? ( fuente> '1sel ! ) drop
 	fuente> dup '2sel !
 	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
 
+:sele | empty select
+	0 dup 'inisel ! 'finsel ! ; 
+	
 |----- edicion
 :lins | c --
 	fuente> dup 1- $fuente over - 1+ cmove>
@@ -289,18 +291,17 @@
 	;
 	
 :dns
-	clickMouse
-	fuente> '1sel ! ;
+	clickMouse '1sel ! ;
 
 :mos
 	clickMouse
-	fuente> 1sel over <? ( swap )
+	1sel over <? ( swap )
 	'finsel ! 'inisel ! ;
 
 :ups
 	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
 	clickMouse
-	fuente> 1sel 
+	1sel 
 	over =?  ( 2drop 0 'inisel ! ; )
 	over <? ( swap )
 	'finsel ! 'inisel ! ;
@@ -314,7 +315,9 @@
 | 6 = click
 :EditMouse
 	tuiw 
-	6 =? ( clickMouse 'fuente> ! )
+	2 =? ( dns )
+	3 =? ( mos )
+	6 =? ( ups clickMouse 'fuente> ! )
 	drop ;
 	
 :chmode
@@ -331,30 +334,29 @@
 	32 126 in? ( modo ex fixcur cursorpos ; ) 
 	[tab] =? ( modo ex fixcur cursorpos ; ) 
 	[enter] =? ( 
-|LIN| drop $d | in linux [enter] is $a
+|LIN| $d nip | in linux [enter] is $a
 		modo ex fixcur cursorpos ; ) 
 	[BACK] =? ( kback )
 	[DEL] =? ( kdel )
-	[UP] =? ( karriba ) 
-	[DN] =? ( kabajo )
-	[RI] =? ( kder ) 
-	[LE] =? ( kizq )
-	[HOME] =? ( khome ) 
-	[END] =? ( kend )
-	[PGUP] =? ( kpgup ) 
-	[PGDN] =? ( kpgdn )
+	[UP] =? ( karriba sele ) 
+	[DN] =? ( kabajo sele )
+	[RI] =? ( kder sele ) 
+	[LE] =? ( kizq sele )
+	[HOME] =? ( khome sele ) 
+	[END] =? ( kend sele )
+	[PGUP] =? ( kpgup sele ) 
+	[PGDN] =? ( kpgdn sele )
 	[INS] =? ( chmode )	
-|[SHIFT+DEL] =? ( selecc
-|[SHIFT+INS] 
-	[SHIFT+UP] =? ( selecc karriba selecc )
-	[SHIFT+DN] =? ( selecc kabajo selecc )
-	[SHIFT+RI] =? ( selecc kder selecc )
-	[SHIFT+LE] =? ( selecc kizq selecc )
-	[SHIFT+PGUP] =? ( selecc kpgup selecc )
-	[SHIFT+PGDN] =? ( selecc kpgdn selecc )
-	[SHIFT+HOME] =? ( selecc khome selecc )
-	[SHIFT+END] =? ( selecc kend selecc )
-
+|[SHIFT+DEL] =? ( delword )
+|[SHIFT+INS] =? ( dupword )
+	[SHIFT+UP] =? ( sela karriba sela )
+	[SHIFT+DN] =? ( sela kabajo sela )
+	[SHIFT+RI] =? ( sela kder sela )
+	[SHIFT+LE] =? ( sela kizq sela )
+	[SHIFT+PGUP] =? ( sela kpgup sela )
+	[SHIFT+PGDN] =? ( sela kpgdn sela )
+	[SHIFT+HOME] =? ( sela khome sela )
+	[SHIFT+END] =? ( sela kend sela )
 	drop 
 	fixcur 
 	cursorpos ;
