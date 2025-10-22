@@ -112,31 +112,7 @@
 	empty ;
 	
 |----------------	
-:next/ | adr -- adr'
-	( c@+ 1?
-		$2f =? ( drop 0 swap 1- c!+ ; )
-		drop ) nip ;
 
-:searchd |  nro 'list -- 'list+ nro
-	( dup c@ 1? drop | nro 'list
-		dup a> ">>%s %s" .fprintln waitkey
-		
-		dup a> = 1? ( | nro 'list =?
-			drop swap ; ) drop
-		swap 1+ swap >>0 ) 
-	2drop -1 dup ;
-
-::flSearchDir | 'str -- n
-	next/ | r3/
-	0 uiDirs	| 'str nro 'list
-	rot 		| nro 'list 'str
-	( dup next/ 1? | nro 'list 'str 'str+
-		>r >a  	| nro 'list 
-		searchd | 'list nro
-		-? ( nip ; ) 
-		swap r>
-		) 3drop ;
-	
 ::flScanDir | "" --
 	here 'uiDirs !
 	0 'basepath !
@@ -175,46 +151,52 @@
 	0 swap scandf 0 , 
 	;
 	
-	
-:searchdir | str --
-	mark
-	b> 64 + ,c dup ,s ,eol
-	empty
-	a> 
-	( dup c@ 1? drop
-		dup here = 1? ( dup >a drop ; ) drop
-		>>0 ) 
-	dup >a
-	nip ;
-|		here = .println
-|	;
-	
-:traverse | adr -- adrname
-	ab[
-	uiDirs >a
-	0 >b
-	next/ 0? ( drop ; ) 
-	( dup next/ 1? swap
-		dup searchdir
-		1? ( dup .println )
-|		actual getactual 'actual !
-|		expande
-		drop
-		1 b+
-		) drop 
-		
-	.println 
-	]ba
-	;
-	
-::flOpenFullPath | str --
-	traverse
-	.flush waitkey
-	;
+|--------------	
+#lvl	|  $1f:level $20:have_more $80:is_open	
 
-||	
-	|12 uiNindx dup c@ $80 xor swap c! 
-	|12 'vfolder !
+:traverselevel	| adr -- adr
+	dup c@ 
+	$80 and? ( drop >>0 ; ) | open
+	$1f and 'lvl ! 
+	( >>0 dup c@ 1? 
+		$1f and lvl >? drop )
+	drop ;
 	
-|	uiDirs 12 n>>0 
-|	dup c@ $80 xor swap c!
+:searchtree | list --
+	0 'lvl ! 0 >b
+	uiDirs ( a> <? 
+		traverselevel
+		1 b+ ) drop
+	b> ;
+
+:findh | str -- ; a:uidir
+	a> ( dup c@ 1? drop
+		dup here = 1? ( drop >a drop ; ) drop
+		>>0 ) 
+	3drop 0 ;
+	
+:find/
+	mark b> 64 + ,c dup ,s "/" ,s ,eol empty
+	findh ;
+	
+:findl
+	mark b> 64 + ,c dup ,s ,eol	empty
+	findh ;
+
+:next/ | adr -- adr'
+	( c@+ 1?
+		$2f =? ( drop 0 swap 1- c!+ ; )
+		drop ) nip ;
+	
+::flOpenFullPath | str -- place ; open the folders
+	ab[
+	uiDirs >a 0 >b
+	next/ 0? ( ; ) 
+	( dup next/ 1? swap
+		dup find/ 0? ( nip nip ; ) drop
+		a> c@ $80 or a> c! | open dir
+		1 b+ ) drop 
+	findl drop | last name
+	searchtree
+	]ba ;
+

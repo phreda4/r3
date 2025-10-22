@@ -14,19 +14,53 @@
 
 #nameaux * 1024
 
-:run
+:runcheck
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
+	mark
+	here dup "mem/error.mem" load
+	over =? ( 2drop empty ; ) 
+	0 swap c!
+	.cr .bred .white 
+	" * ERROR * " .println
+	.reset
+	.println
+	.bblue .white
+	"<ESC> to continue..." .println
+	.flush waitesc
+	empty
+	;
+
+:filerun
+	| savename
+	| runcheck
 	|"mem/error.mem" delete
 	'fullpath
 	|'filename
-|WIN| 	"cmd /c r3 ""%s"" " | 2>mem/error.mem"
+|WIN| 	"cmd /c r3 ""%s"" " |2>mem/error.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
 	sprint sys
 	.reterm 
 	tuR!
 	;
 	
+:fileedit	
+	| savename
+|WIN| 	"r3 r3/term/r3ide.r3"
+|LIN| 	"./r3lin r3/term/r3ide.r3"
+	sys 
+	.reterm
+	tuR!
+	;
+	
+:filenew
+	;
+	
+:filesearch
+	;
+	
+:command
+	;
 |--------------------------------	
 #vfolder 0 0
 #scratchpad * 1024
@@ -50,8 +84,7 @@
 	'fullpath 
 	".r3" =pos 1? ( drop TuLoadCode ; ) 
 	2drop
-	tuNewCode
-	;
+	tuNewCode ;
 	
 :setcolor | str -- str
 	"/" =pos 1? ( drop 7 .fc ; ) drop
@@ -112,7 +145,10 @@
 
 	.flush 
 	uikey
-	[f1] =? ( run )
+	[f1] =? ( filerun )
+	[f2] =? ( fileedit )
+|	[f3] =? ( filesearch )
+|	[f4] =? ( help )
 	drop
 	;
 
@@ -123,34 +159,21 @@
 	'nameaux dup c@ 0? ( 2drop ; ) drop
 	dup 'filename strcpy
 	dup 'fullpath strcpy
-	|flOpenFullPath
-	drop
-	
-|	traverse
-
-	
-|	actual getactual nip
-|	pagina linesv + 1- >=? ( dup linesv - 1+ 'pagina ! )
-|	'actual !
-|	drop
-|	setactual	
-	
+	flOpenFullPath 'vfolder !
+	changefiles
 	;
 
 |-----------------------------------
-
 :main
 	'basepath flScanFullDir
 	
-	TuNewCode
+	TuNewCode 	|"main.r3" TuLoadCode
 	loadm
-|	changefiles
-
 	
-	|"main.r3" TuLoadCode
-	33 
+	33 | <<< debug
 	'scrmain onTui 
 	drop
+	
 	|savem
 	;
 
