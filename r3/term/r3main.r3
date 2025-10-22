@@ -10,10 +10,29 @@
 |--------------------------------	
 #basepath "r3/"
 #fullpath * 1024
-#filename * 1024
 
 #nameaux * 1024
 
+#vfolder 0 0
+#scratchpad * 1024
+#info * 64
+
+|---------------------
+:loadm
+	'nameaux "mem/menu.mem" load
+	'nameaux =? ( drop ; )
+	'nameaux dup c@ 0? ( 2drop ; ) drop
+	dup 'fullpath strcpy
+	flOpenFullPath 'vfolder !
+	'fullpath 
+	".r3" =pos 1? ( drop TuLoadCode ; ) 
+	2drop
+	tuNewCode ;	
+
+:savem
+	'fullpath 1024 "mem/menu.mem" save ;
+
+|---------------------------
 :runcheck
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
@@ -32,26 +51,23 @@
 	;
 
 :filerun
-	| savename
+	savem
 	| runcheck
-	|"mem/error.mem" delete
+	"mem/errorm.mem" delete
 	'fullpath
-	|'filename
-|WIN| 	"cmd /c r3 ""%s"" " |2>mem/error.mem"
-|LIN| 	"./r3lin ""%s"" 2>mem/error.mem"
+|WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
+|LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
 	sprint sys
 	.reterm 
-	tuR!
-	;
+	tuR! ;
 	
 :fileedit	
-	| savename
+	savem
 |WIN| 	"r3 r3/term/r3ide.r3"
 |LIN| 	"./r3lin r3/term/r3ide.r3"
 	sys 
 	.reterm
-	tuR!
-	;
+	tuR! ;
 	
 :filenew
 	;
@@ -62,18 +78,15 @@
 :command
 	;
 |--------------------------------	
-#vfolder 0 0
-#scratchpad * 1024
-#info * 64
 
 |------------
 :paneleditor
 	tuwin 
 |	.wborded
-	$1 " CODE " .wtitle
-	1 1 flpad 
-	tuEditCode
-|	tuReadCode
+|	$1 " CODE " .wtitle
+|	1 1 flpad 
+|	tuEditCode
+	tuReadCode
 	;
 	
 |------------
@@ -98,7 +111,7 @@
 	.reset
 	'filecolor xwrite!
 	tuwin $1 " Dir " .wtitle
-	1 1 flpad $00 xalign
+	1 1 flpad |$00 xalign
 	'vfolder uiDirs tuTree
 	xwrite.reset
 	tuX? 1? ( changefiles ) drop
@@ -116,10 +129,7 @@
 	|1 1 flpad $00 xalign
 	'scratchpad	1024 tuInputline
 	tuX? 1? ( setcmd ) drop	
-|	'nameaux .write flcr
-|	'info .write flcr
 	flcr 'fullpath .write flcr
-|	'filename .write flcr
 	;
 
 |------------	
@@ -133,7 +143,7 @@
 	vfolder "<<%d>>" .print
 	|___________
 	2 flxS
-	fx fy .at "|ESC| Exit |F1| Run |F2| Edit |F3| Search |F4| Help" .write
+	fx fy .at "|ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
 	
 	|___________
 	38 flxO		dirpanel
@@ -145,22 +155,12 @@
 
 	.flush 
 	uikey
+	[ENTER] =? ( filerun )
 	[f1] =? ( filerun )
 	[f2] =? ( fileedit )
 |	[f3] =? ( filesearch )
 |	[f4] =? ( help )
 	drop
-	;
-
-|---------------------
-:loadm
-	'nameaux "mem/menu.mem" load
-	'nameaux =? ( drop ; )
-	'nameaux dup c@ 0? ( 2drop ; ) drop
-	dup 'filename strcpy
-	dup 'fullpath strcpy
-	flOpenFullPath 'vfolder !
-	changefiles
 	;
 
 |-----------------------------------

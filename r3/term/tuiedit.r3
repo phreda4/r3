@@ -29,10 +29,11 @@
 #linecomm>
 
 :inselect | adr -- adr
-	inisel finsel in? ( 18 .bc ; ) 0 .bc ;
+	inisel finsel in? ( 18 .bc ) ;
 	
 :atselect | adr -- addr
-	inisel =? ( 18 .bc ; ) finsel =? ( 0 .bc ; ) ;
+	inisel =? ( 18 .bc ; ) 
+	finsel =? ( fuente> =? ( 233 .bc ; ) 235 .bc ) ;
 
 #1sel #2sel
 
@@ -127,10 +128,10 @@
 	fuente>
 	|$fuente =? ( 1 '$fuente +! )
 	scrini> <? ( setpantafin ; )
-	scrend> >? ( setpantaini ; )
+	scrend> >=? ( setpantaini ; )
 	drop ;
+	
 |-----------
-
 :karriba
 	fuente> fuente =? ( drop ; )
 	dup 1- <<13		| cur inili
@@ -233,7 +234,7 @@
 	fx over fy + .at
 	dup ylinea +  
 	ycursor =? ( 233 .bc 7 .fc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
-	234 .bc	240 .fc 1+ .d 4 .r. .write .sp ;
+	235 .bc 240 .fc 1+ .d 4 .r. .write .sp ;
 	
 :drawline | nlin adr -- nlin adr
 	inselect
@@ -377,11 +378,10 @@
 	
 ::TuLoadCode | "" --
 	'filename strcpy
-	loadtxt
-	;
+	loadtxt ;
 
 ::TuNewCode
-	"new.r3" 'filename strcpy
+	"r3/new.r3" 'filename strcpy
 	fuente dup '$fuente ! dup 'scrini> ! 'fuente> !
 	0 'hashfile !
 	;

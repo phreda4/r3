@@ -58,17 +58,13 @@
 | N=^ S=v E=> O=<
 | - is full minus the number
 ::flxN | lineas --
-	-? ( fh + )
-	flxFill dup fly+! dup neg flh+!	'fh ! ;
+	-? ( fh + ) flxFill dup fly+! dup neg flh+!	'fh ! ;
 ::flxS | lineas --
-	-? ( fh + )
-	flxFill dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
+	-? ( fh + ) flxFill dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
 ::flxE | cols --
-	-? ( fw + )
-	flxFill dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
+	-? ( fw + ) flxFill dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
 ::flxO | cols --
-	-? ( fw + )
-	flxFill dup flx+! dup neg flw+! 'fw ! ;
+	-? ( fw + ) flxFill dup flx+! dup neg flw+! 'fw ! ;
 	
 ::fw% fw 16 *>> ;
 ::fh% fh 16 *>> ;
@@ -220,7 +216,7 @@
 :y6 fy 2 - ;
 #ypl y0 y1 y2 y3 y4 y5 y6 y0
 
-|$44 center
+|$44 center*
 :place | count place -- x y
 	dup $7 and 3 << 'xpl + @ ex
 	swap 4 >> $7 and 3 << 'ypl + @ ex
@@ -307,12 +303,21 @@
 	@ rot + clamp0 
 	cntlist pick3 - 1- clampmax swap !
 	;
+
+:pageadj | 'var n key -- 'var n key
+	pick2 @+ swap @ | value page
+	over >? ( drop pick3 8 + ! ; ) 
+	pick3 +
+	over <=? ( drop pick2 - 1+ clamp0 pick3 8 + ! ; )
+	2drop ;
 		
 |----- LIST
 | #vlist 0 0 
 
 :focList | 'var h --
-	tuif 0? ( drop ; ) drop
+	tuif 0? ( drop ; ) 
+	1 =? ( pageadj )
+	drop
 	chwheel
 	uikey 0? ( drop ; )	
 	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
@@ -375,20 +380,15 @@
 	dup c@ $80 xor swap c! 
 	tuX! tuR! ;
 	
-:chini | 'var n key -- 'var n key
-	pick2 @+ swap @ | value page
-	over >? ( drop pick3 8 + ! ; ) 
-	pick3 +
-	over <=? ( drop pick2 - 1+ clamp0 pick3 8 + ! ; )
-	2drop ;
-	
 :chsel | 'var n key delta -- 'var n key
 	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
-	chini
+	pageadj
 	tuX! ;
 		
 :focTree | 'var h --
-	tuif 0? ( drop ; ) drop
+	tuif 0? ( drop ; ) 
+	1 =? ( pageadj )
+	drop
 	chwheel
 	uikey 0? ( drop ; )	
 	[up] =? ( -1 chsel )

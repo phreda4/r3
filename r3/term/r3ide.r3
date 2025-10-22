@@ -3,18 +3,19 @@
 ^./tui.r3
 ^./tuiedit.r3
 
+#filename * 1024
+
+#screenstate 
+
 #pad * 256
 
 #bx #by
 
 :nextl
-	1 'by +!
-	bx by .at ;
+	1 'by +! bx by .at ;
 	
 :nextc
-	-6 'by +!
-	20 'bx +!
-	bx by .at ;
+	-6 'by +! 20 'bx +! bx by .at ;
 	
 :boxcr
 	dup 16 - 6 mod
@@ -25,25 +26,20 @@
 	drop
 	;
 	
-|------- Page 3: 256 Color Palette -------
+|------- 256 Color Palette 
 :show256 | --
     .cls
     0 ( 16 <?
-		0 =? ( 15 .fc )
-		1 =? ( 0 .fc )
-        dup .bc 
-		dup .d 3 .r. .write .sp
+		0 =? ( 15 .fc ) 1 =? ( 0 .fc )
+        dup .bc dup .d 3 .r. .write .sp
         1+ ) drop 
-	
 	8 'by !
 	-18  'bx !
 	16 ( 232 <?
 		boxcr
 		124 =? ( 2 'bx ! 10 'by ! bx by .at )
-        dup .bc 
-		dup .d 3 .r. .write .sp	
+        dup .bc dup .d 3 .r. .write .sp	
 		1+ ) drop
-	
     .cr .cr
 	15 .fc 4 .col
     232 ( 256 <?
@@ -56,25 +52,14 @@
 	.flush 
 	waitkey
 	;
-	
-:botones
-	tuwin $1 " Options " .wtitle
-	1 1 flpad |1 b.hgrid
-	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
-	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
-	;
-	
-:side
-	|-----------
+
+|----	
+:scrmapa	
 	.reset
-	3 flxS 1 0 flpad 
-	tuWin $1 " Command " .wtitle
-	2 1 flpad
-	'pad fw 2 - tuInputLine
-	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
-	|-----------
-	cols 2 >> flxE tuWin
-	botones
+	20 flxE .wborde
+	|tuWin $1 " Map " .wtitle
+	0 1 flpad
+	
 	;
 	
 :main
@@ -83,30 +68,38 @@
 	1 flxN
 	fx fy .at 
 	.rever .eline
-	" R3forth" .write
+	" R3forth [" .write
+	'filename .write 
+	"] " .write
 
 	|-----------
 	1 flxS
-	fx fy .at .eline " |ESC| Exit " .write
-	
+	fx fy .at .eline " |ESC| Exit |F1| Run |F2| Debug " .write ||F3| Explore |F4| Profile |F5| Compile" .write
+
+	screenstate	
+	$1 and? ( scrmapa )
+	drop
 	|-----------
 	.reset
 	flxFill tuWin 
 |	$1 " Editor " .wtitle
-	$4 'filename .wtitle
+	|$4 'filename .wtitle
 	$23 mark tudebug ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
+	
+	
 	uiKey
 	[f1] =? ( show256 )
+	[f6] =? ( screenstate 1 xor 'screenstate ! )
 	drop
 	;
 	
 |-----------------------------------
 : 
 	.alsb 
-	
-	"main.r3" TuLoadCode
+	'filename "mem/menu.mem" load	
+	'filename TuLoadCode
 	|TuNewCode
 
 	'main onTui 
