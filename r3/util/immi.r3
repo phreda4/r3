@@ -529,7 +529,7 @@
 	pick3 @ =? ( colFill backline )
 |	overl =? ( overfil uiFill )
 	uiNindx 
-	c@+ 0? ( 2drop ch 'cy +! ; )
+	c@+ 0? ( 2drop ch 'ly +! ; )
 	dup $1f and 4 << lx + ly txat iicon txwrite 
 	txh 'ly +! ;
 
@@ -548,6 +548,67 @@
 	2drop
 	empty ;	
 		
+|----- COMBO
+#overl
+#backc
+#listh
+
+:chlisto
+	-1 'overl !
+	guin? 0? ( drop ; ) drop
+|	SDLw 1? ( wwlist ) drop
+	sdly cy - txh /
+	pick2 8 + @ + 
+	cntlist 1- 
+	clampmax 'overl ! 
+	[ |clist 
+	uiExitWidget ; ] uiClk ;
+
+
+:combolist | --
+	uidata1 uidata2 
+	mark makeindx
+	cntlist 6 min
+	colFill 
+	
+	cx cy dup 'backc ! 
+	cw ch 6 * 
+	2over 2over sdlFRect
+	colFoc
+	sdlRect
+	uiUser
+	
+	chlisto
+	0 ( over <? ilist 1+ ) drop
+|	cscroll
+	2drop
+	|pady 'cy +!
+	empty ;	
+	
+:iniCombo | 'var 'list -- 'var 'list 
+	colfoc uiRRect
+	
+	2dup 'uidata2 ! 'uidata1 !
+	ch dup 'cy +! 
+	'combolist uisaveLast
+	
+	neg 'cy +!
+	;
+	
+::uiCombo | 'var 'list --
+	uiUser
+	|uiZone overfil uiRFill
+|	'iniCombo in/foco
+|	'clickfoco onClick
+	[ kbBtn colFocus uiRect ; ] uiFocus
+
+	mark makeindx	
+	cx 8 + cy txat
+	@ uiNindx txwrite
+	cx cw + 16 - cy txat 130 txemit
+	empty  ;
+	
+
 |--- Edita linea
 #cmax
 #padi>	| inicio

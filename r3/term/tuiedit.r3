@@ -126,7 +126,6 @@
 	
 :fixcur
 	fuente>
-	|$fuente =? ( 1 '$fuente +! )
 	scrini> <? ( setpantafin ; )
 	scrend> >=? ( setpantaini ; )
 	drop ;
@@ -197,18 +196,18 @@
 :codecolor | adr -- adr
 	dup c@ 
 	33 <? ( drop ; )
-	$22 =? ( drop 7 .fc 3 'modoline ! ; )		| $22 " string
-	$5e =? ( drop 3 .fc 2 'modoline ! ; )		| $5e ^  Include
+	$22 =? ( drop 15 .fc 3 'modoline ! ; )		| $22 " string
+	$5e =? ( drop 11 .fc 2 'modoline ! ; )		| $5e ^  Include
 	$7c =? ( drop 8 .fc 2 'modoline ! ; )		| $7c |	 Comentario
-	$3A =? ( drop 9 .fc ; )		| $3a :  Definicion
-	$23 =? ( drop 13 .fc ; )	| $23 #  Variable
-	$27 =? ( drop 6 .fc ; )	| $27 ' Direccion
+	$3A =? ( drop 196 .fc ; )		| $3a :  Definicion
+	$23 =? ( drop 201 .fc ; )	| $23 #  Variable
+	$27 =? ( drop 50 .fc ; )	| $27 ' Direccion
 	drop
-	dup isNro 1? ( drop 11 .fc ; ) drop
+	dup isNro 1? ( drop 226 .fc ; ) drop
 |	dup isBase 
-|	1? ( 18 <? ( drop 12 .fc ; ) drop 10 .fc ; ) 
+|	1? ( 18 <? ( drop 20 .fc ; ) drop 214 .fc ; ) 
 |	drop
-	10 .fc ;
+	46 .fc ;
 	
 :setcursor | y c adr
 	focoe 1? ( .savec ) drop ;

@@ -64,7 +64,7 @@
 	'vtree 'treeex uiTree
 	
 	uiRest
-	
+	'vlist 'listex uiCombo
 	uiPop
 	uiRest
 	0.1 %h uiN $444444 sdlcolor uiFill

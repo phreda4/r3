@@ -1,4 +1,1 @@
-FILE:r3/term LINE:66 CHAR:1
-
-  66|	botones
-     	^- word not found
+El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso.
