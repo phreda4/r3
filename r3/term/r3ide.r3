@@ -56,10 +56,20 @@
 |----	
 :scrmapa	
 	.reset
-	20 flxE .wborde
+	26 flxE 
+	|240 .bc
+	fx fy .at fh .vline
+	|.wfill |.wborde
 	|tuWin $1 " Map " .wtitle
 	0 1 flpad
+	;
 	
+:scrcons	
+	.reset
+	8 flxS 
+	|242 .bc
+	.wfill |.wborde
+	fx fy .at fw .hline
 	;
 	
 :main
@@ -67,31 +77,42 @@
 	|-----------
 	1 flxN
 	fx fy .at 
-	.rever .eline
+	4 .bc  7 .fc
+	|.rever 
+	|.eline
+	
 	" R3forth [" .write
 	'filename .write 
 	"] " .write
+	tudebug .write
 
 	|-----------
-	1 flxS
-	fx fy .at .eline " |ESC| Exit |F1| Run |F2| Debug " .write ||F3| Explore |F4| Profile |F5| Compile" .write
-
 	screenstate	
-	$1 and? ( scrmapa )
+	$1 and? ( scrcons )
+	$2 and? ( scrmapa )
 	drop
+	
+	1 flxS
+	4 .bc  7 .fc
+	fx fy .at |.eline 
+	" |ESC| Exit |F1| Run |F2| Debug " .write ||F3| Explore |F4| Profile |F5| Compile" .write
+
+	
+	
 	|-----------
 	.reset
-	flxFill tuWin 
+	flxFill |tuWin 
 |	$1 " Editor " .wtitle
 	|$4 'filename .wtitle
-	$23 mark tudebug ,s ,eol empty here .wtitle
-	1 1 flpad 
+	|$23 mark tudebug ,s ,eol empty here .wtitle
+	|0 1 flpad 
 	tuEditCode
 	
 	
 	uiKey
 	[f1] =? ( show256 )
 	[f6] =? ( screenstate 1 xor 'screenstate ! )
+	[f7] =? ( screenstate 2 xor 'screenstate ! )
 	drop
 	;
 	

@@ -112,18 +112,18 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 #vd	( $e2 $95 $91 $1b $5b $42 $1b $5b $44 0 ) | ||v<
 
 ::.vline | h --
-	vl .rep ;
+	'vl .rep ;
 ::.hline | w --
 	"─" .rep ;
 	
 ::.vlined | h --
-	vd .rep ;
+	'vd .rep ;
 ::.hlined | w --
 	"═" .rep ;
 
 ::.boxl | x y w h --
-	3 <? ( 4drop ; ) swap
-	3 <? ( 4drop ; ) swap
+	2 <? ( 4drop ; ) swap
+	2 <? ( 4drop ; ) swap
 	2over .at
 	"┌" .write over 2 - "─" .rep "┐" .write
 	2swap 1+
@@ -136,8 +136,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	"└" .write 2 - "─" .rep "┘" .write ;
 
 ::.boxd | x y w h --
-	3 <? ( 4drop ; ) swap
-	3 <? ( 4drop ; ) swap
+	2 <? ( 4drop ; ) swap
+	2 <? ( 4drop ; ) swap
 	2over .at
 	"╔" .write over 2 - "═" .rep "╗" .write
 	2swap 1+
@@ -150,13 +150,12 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	"╚" .write 2 - "═" .rep "╝" .write ;
 	
 ::.boxf
-	3 <? ( 4drop ; ) swap
-	3 <? ( 4drop ; ) swap
+	1 <? ( 4drop ; ) swap
+	1 <? ( 4drop ; ) swap
 	( 1? 1- >r
 		pick2 pick2 .at
 		dup .nsp swap 1+ swap 
 		r> ) 4drop ;
-	
 	
 |--- utf align | result in HERE
 ::lalign | cnt str -- 
