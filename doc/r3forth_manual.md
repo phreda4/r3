@@ -280,7 +280,7 @@ Each word can take and/or leave values on the data stack. As help to the program
 
 :distance | x1 y1 x2 y2 -- dist
     rot - dup *         | x1 x2 dy²
-    rot rot - dup *     | dy² dx²  
+    -rot - dup *     | dy² dx²  
     + sqrt ;            | distance
 ```
 
@@ -758,7 +758,7 @@ Whether we need 0 in the loop determines if we put our code before or after the 
 0 ( 10 <? 1 +
     0 ( 10 <? 1 +
         rot @+ "%d " .print
-        rot rot
+        -rot
     ) drop
     .cr
 ) drop

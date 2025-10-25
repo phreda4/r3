@@ -213,15 +213,15 @@
 	drop $20 ; | stay
 
 |-- interactive box
-::uiUser
+::uiZone | -- ; Interaction is cx,cy,cw,th
 	txh 'chx !
 	stMouse stFocus or 'uistate ! ;
 
-::uiUserL | nlines --
+::uiZoneL | nlines -- ; Interaction is cx,cy,cw,th*lines
 	txh * 'chx !
 	stMouse stFocus or 'uistate ! ;
 
-::uiUserW | --
+::uiZoneW | --	; Interaction is cx,cy,cw,ch
 	ch 'chx !
 	stMouse stFocus or 'uistate ! ;
 	
@@ -311,7 +311,7 @@
 :colFocus
 	colFoc sdlcolor ;
 
-|---- widget	
+|---- helptext
 :ttwrite | "text" --
 	cx
 	|ch txh - 2/ cy +
@@ -329,6 +329,18 @@
 	|ch txh - 2/ cy +
 	cy txat txwrite ;
 	
+:txicon | char --
+	txh over txch - 2/  | char ny
+	0 over tx+at
+	swap txemit
+	0 swap neg tx+at ;
+	
+::uiTlabel
+	txw 4 + 'cw !	
+	ttwritec 
+	cw 'cx +! ;		
+	
+|---- widget		
 ::uiLabel
 	ttwrite	ui.. ;
 	
@@ -348,7 +360,7 @@
 	drop ;
 	
 ::uiTBtn | 'click "" align --	
-	uiUserW 
+	uiZoneW 
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
 	colFill 8 uilRFill 
@@ -358,7 +370,7 @@
 	uiEx? 0? ( 2drop ; ) drop ex ;
 	
 ::uiBtn | 'click "" --	
-	uiUser
+	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
 	colFill uilFill 
@@ -368,7 +380,7 @@
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 ::uiRBtn | 'click "" --	
-	uiUser
+	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
 	colFill 6 uiLRFill 
@@ -378,7 +390,7 @@
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 ::uiCBtn | 'click "" --	
-	uiUser
+	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
 	colFill uiLCFill 
@@ -414,14 +426,14 @@
 	SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
-	uiUser
+	uiZone
 	'slideh uiSel |
 	slideshow
 	@ .f2 uiLabelC
 	2drop ;
 
 ::uiSlideri | 0 255 'value --
-	uiUser
+	uiZone
 	'slideh uiSel | 'dn 'move --	
 	slideshow
 	@ .d uiLabelC
@@ -445,14 +457,14 @@
 	SDLFRect ;
 
 ::uiVSliderf | 0.0 1.0 'value --
-	uiUser
+	uiZone
 	'slidev uiSel
 	slideshowv
 	@ .f2 uiLabelC
 	2drop ;
 
 ::uiVSlideri | 0 255 'value --
-	uiUser
+	uiZone
 	'slidev uiSel
 	slideshowv	
 	@ .d uiLabelC
@@ -516,7 +528,7 @@
 	;
 
 ::uiList | 'var cntl 'list --
-	over uiUserL
+	over uiZoneL
 	mark makeindx
 	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
@@ -550,8 +562,8 @@
 	;
 
 :iicon | n -- 
-	$20 nand? ( drop 32 txemit ; )
-	7 >> 1 and 129 + txemit ; 
+	$20 nand? ( drop 32 txicon ; )
+	7 >> 1 and 129 + txicon ; 
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
@@ -563,7 +575,7 @@
 	txh 'ly +! ;
 
 ::uiTree | 'var cntl list --
-	over uiUserL
+	over uiZoneL
 	mark maketree
 	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
@@ -605,7 +617,7 @@
 	2over 2over sdlFRect
 	colFoc
 	sdlRect
-	uiUser
+	uiZone
 	
 	chlisto
 	0 ( over <? ilist 1+ ) drop
@@ -625,8 +637,7 @@
 	;
 	
 ::uiCombo | 'var 'list --
-	uiUser
-	|uiZone overfil uiRFill
+	uiZone 
 |	'iniCombo in/foco
 |	'clickfoco onClick
 	[ kbBtn colFocus uiLRect ; ] uiFocus
@@ -634,7 +645,7 @@
 	mark makeindx	
 	cx 8 + cy txat
 	@ uiNindx txwrite
-	cx cw + 16 - cy txat 130 txemit
+	cx cw + txh - cy txat 130 txicon
 	empty ui.. ;
 	
 
@@ -708,7 +719,7 @@
 	;
 
 ::uiInputLine | 'buff max --
-	uiUser
+	uiZone
 	Colback uiLFill
 	'iniinput uiFocusIn
 	'proinputa uiFocus 

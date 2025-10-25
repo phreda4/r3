@@ -220,7 +220,7 @@
 	ab[ >a
 	ca@+ ( 1? 	| x y M 
 		ca@+  
-		pick3 int. 25 - pick3 int. 40 - 50 80 uiBox uiUser
+		pick3 int. 25 - pick3 int. 40 - 50 80 uiBox uiZoneW
 		'ckTable uiClk
 		'upTable uiUp
 		'drgmove uiSel
@@ -236,24 +236,26 @@
 	$ffffff txrgb 10 4 txat "R3 Solitaire" txprint
 	
 	$3f00 sdlcolor
-	55 40 50 80 uiBox uiUser 8 uiRFill 
+	55 40 50 80 uiBox uiZoneW 8 uiRFill 
 	'clkstock uiClk
 	80.0 80.0 'stock drawpile
 
-	135 40 50 80 uiBox uiUser 8 uiRFill
+	135 40 50 80 uiBox uiZoneW 8 uiRFill
 	'dwnWaste uiDwn 
 	'drgmove uiSel
 	'upWaste uiUp
 	160.0 80.0 'waste drawpile
 	
 	0 ( 4 <?
-		dup over 100 * 325 + 40 50 80 uiBox uiUser uiPlace 8 uiRFill		
+		dup 100 * 325 + 40 50 80 uiBox uiZoneW 
+		dup uiPlace 8 uiRFill		
 		dup 100.0 * 350.0 + | X
 		80.0 | Y
 		pick2 ]foundation drawpile
 		1+ ) drop
 	0 ( 7 <?
-		dup 4 + over 100 * 75 + 160 50 400 uiBox uiUser uiPlace |8 miRfill
+		dup 100 * 75 + 160 50 400 uiBox uiZoneW 
+		dup 4 + uiPlace |8 miRfill
 		dup 100.0 * 100.0 +  | X
 		200.0 |y
 		pick2 ]table drawpilemouse
