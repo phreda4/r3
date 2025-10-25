@@ -93,7 +93,7 @@
 :changefiles
 	vfolder flTreePath
 	'basepath 'fullpath strcpyl 1- strcpy
-	'fullpath c@ 0? ( drop ; ) drop |
+	'fullpath c@ 0? ( drop tuNewCode ; ) drop |
 	'fullpath 
 	".r3" =pos 1? ( drop TuLoadCode ; ) 
 	2drop

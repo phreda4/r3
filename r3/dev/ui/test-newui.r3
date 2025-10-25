@@ -31,46 +31,52 @@
 	uiStart
 	4 4 uiPading
 	$ffffff sdlcolor
+	
 	0.1 %h uiN
 	"Widget Test " ali uiText
+	
 	0.1 %h uiS
 	"[esc]-Exit [f1/f2]-align" $11 uiText
 	
 	0.6 %w uiO
 	$111111 sdlcolor uiFill
+	
 	uiPush
 	0.05 %h uiN
 	"wid" $11 uiText
+	
 	uiRest
 	0.15 %w uiO
-	'vlist 'listex uiList | 8
+	'vlist 6 'listex uiList | 8
+	
 	0.15 %w uiO
 	uiPush
+	
 	0.5 %h uiN
-	2 2 uiPading
-	1 12 uiGrid
-	'exit "Boton" uiBtn uiNext
-	'exit "Boton" uiRBtn uiNext
-	'exit "Boton" uiCBtn uiNext
-	'exit "Boton" uiBtn uiNext
-	'exit "Boton" uiRBtn uiNext
-	'exit "Boton" uiCBtn uiNext
-	"----" uiLabelc uiNext
-	-1.0 1.0 'vsl uiSliderf uiNext
-	0 500 'vsl2 uiSlideri uiNext
-	"----" uiLabelc uiNext
+	'exit "Boton" uiBtn 
+	'exit "Boton" uiRBtn 
+	'exit "Boton" uiCBtn 
+	'exit "Boton" uiBtn 
+	'exit "Boton" uiRBtn 
+	'exit "Boton" uiCBtn 
+	ui--
+	-1.0 1.0 'vsl uiSliderf 
+	0 500 'vsl2 uiSlideri 
+	ui--
 	uiPop
+	
 	0.15 %w uiO
-	'vtree 'treeex uiTree
+	'vtree 6 'treeex uiTree
 	
 	uiRest
 	'vlist 'listex uiCombo
 	uiPop
+	
 	uiRest
-	0.1 %h uiN $444444 sdlcolor uiFill
-	1 2 uiGrid
+	0.1 %h uiN |$444444 sdlcolor uiFill
 	'pad 64 uiInputLine
 	'pad2 64 uiInputLine
+	
 	uiRest
 	"Hola" $11 uiText
 	

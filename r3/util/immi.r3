@@ -100,7 +100,17 @@
 	dup 'flcur !
 	flcols /mod uiAt ;
 	
-
+|---- text cursor
+::uil..
+	txh 'cy +! ;
+::ui..
+	txh flpady + 'cy +! ;
+	
+::ui--
+	cx cy 1+ cw 2 SDLRect
+	flpady 7 + 'cy +! ;
+	
+	
 |---- IMMGUI
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
@@ -169,9 +179,11 @@
 | 4 = active(outside)
 | 5 = out
 | 6 = click
+#chx
+
 :uIn? | x y -- 0/-1
 	sdlx cx - $ffff and cw >? ( drop 0 ; ) drop
-	sdly cy - $ffff and ch >? ( drop 0 ; ) drop 
+	sdly cy - $ffff and chx >? ( drop 0 ; ) drop 
 	-1 ;
 
 :stMouse | -- state
@@ -202,10 +214,20 @@
 
 |-- interactive box
 ::uiUser
+	txh 'chx !
+	stMouse stFocus or 'uistate ! ;
+
+::uiUserL | nlines --
+	txh * 'chx !
+	stMouse stFocus or 'uistate ! ;
+
+::uiUserW | --
+	ch 'chx !
 	stMouse stFocus or 'uistate ! ;
 	
 |-- place to go in drag (index n)	
 ::uiPlace | n --
+	ch 'chx !
 	uIn? 0? ( 2drop ; ) drop 'mdragh ! ;
 
 |-- interact	
@@ -235,21 +257,25 @@
 
 :c2recbox
 	ch cw cy cx 'recbox d!+ d!+ d!+ d! ;
+
+:cl2recbox
+	chx cw cy cx 'recbox d!+ d!+ d!+ d! ;
 	
-::uiFill
-	cx cy cw ch SDLFRect ;
-::uiRect
-	cx cy cw ch SDLRect ;
-::uiRFill | round --
-	cx cy cw ch SDLFRound ;
-::uiRRect | round --
-	cx cy cw ch SDLRound ;
-::uiCRect
-	cw ch min 2/ cx cy cw ch SDLRound ;
-::uiCFill
-	cw ch min 2/ cx cy cw ch SDLFRound ;
-::uiTexture	| texture --
-	c2recbox 'recbox swap SDLImageb ;
+::uiFill	cx cy cw ch SDLFRect ;
+::uiRect	cx cy cw ch SDLRect ;
+::uiRFill	cx cy cw ch SDLFRound ; | round --
+::uiRRect	cx cy cw ch SDLRound ; | round --
+::uiCRect	cw ch min 2/ cx cy cw ch SDLRound ;
+::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
+::uiTexture	c2recbox 'recbox swap SDLImageb ; | texture --
+
+::uilFill	cx cy cw chx SDLFRect ;
+::uilRect	cx cy cw chx SDLRect ;
+::uilRFill	cx cy cw chx SDLFRound ; | round --
+::uilRRect	cx cy cw chx SDLRound ; | round --
+::uilCRect	cw chx min 2/ cx cy cw chx SDLRound ;
+::uilCFill	cw chx min 2/ cx cy cw chx SDLFRound ;
+::uilTexture	cl2recbox 'recbox swap SDLImageb ; | texture --
 
 ::uiLineGridV
 	fx flcolm +
@@ -288,29 +314,29 @@
 |---- widget	
 :ttwrite | "text" --
 	cx
-	ch txh - 2/ cy +
-	txat txwrite ;
+	|ch txh - 2/ cy +
+	cy txat txwrite ;
 
 :ttwritec | "text" --
-	txw txh | "" w h  
-	cw rot - 2/ cx +
-	ch rot - 2/ cy +
-	txat txwrite ;
+	txw | "" w   
+	cw swap - 2/ cx +
+	|ch txh  - 2/ cy +
+	cy txat txwrite ;
 
 :ttwriter | "text" --
-	txw txh | "" w h  
-	cw cx + rot -
-	ch rot - 2/ cy +
-	txat txwrite ;
+	txw | "" w 
+	cw cx + swap -
+	|ch txh - 2/ cy +
+	cy txat txwrite ;
 	
 ::uiLabel
-	ttwrite	;
+	ttwrite	ui.. ;
 	
 ::uiLabelC
-	ttwritec ;
+	ttwritec ui.. ;
 	
 ::uiLabelR
-	ttwriter ;
+	ttwriter ui.. ;
 
 ::uiText | "" align --
 	txalign >r cw ch cx cy r> txText ;	
@@ -322,39 +348,43 @@
 	drop ;
 	
 ::uiTBtn | 'click "" align --	
-	uiUser
+	uiUserW 
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill 8 uiRFill 
+	colFill 8 uilRFill 
 	[ kbBtn colFocus 8 uiRrect ; ] uiFocus
 	colText uiText
+	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 	
 ::uiBtn | 'click "" --	
 	uiUser
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill uiFill 
-	[ kbBtn colFocus uiRect ; ] uiFocus
-	colText uiLabelc
+	colFill uilFill 
+	[ kbBtn colFocus uiLRect ; ] uiFocus
+	colText uiLabelC 
+	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 ::uiRBtn | 'click "" --	
 	uiUser
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill 6 uiRFill 
-	[ kbBtn colFocus 6 uiRRect ; ] uiFocus
-	colText uiLabelc
+	colFill 6 uiLRFill 
+	[ kbBtn colFocus 6 uiLRRect ; ] uiFocus
+	colText uiLabelc 
+	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 ::uiCBtn | 'click "" --	
 	uiUser
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
-	colFill uiCFill 
-	[ kbBtn colFocus uiCRect ; ] uiFocus
+	colFill uiLCFill 
+	[ kbBtn colFocus uiLCRect ; ] uiFocus
 	colText uiLabelc
+	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 |---- Horizontal slide
@@ -374,13 +404,13 @@
 	over ! ;
 	
 :slideshow | 0.0 1.0 'value --
-	colBack uiFill
-	[ kbSlide colFocus uiRect ; ] uiFocus
+	colBack uiLFill
+	[ kbSlide colFocus uiLRect ; ] uiFocus
 	colFill
 	dup @ pick3 - 
 	cw 8 - pick4 pick4 swap - */ cx 1+ +
 	cy 2 + 
-	6 ch 4 - 
+	6 txh 4 - 
 	SDLFRect ;
 	
 ::uiSliderf | 0.0 1.0 'value --
@@ -406,7 +436,7 @@
 	
 :slideshowv | 0.0 1.0 'value --
 	ColBack uiFill
-	[ kbBtn colFocus uiRect ; ] uiFocus	
+	[ kbBtn colFocus uiLRect ; ] uiFocus	
 	ColFill
 	dup @ pick3 - 
 	ch 8 - pick4 pick4 swap - */ cy 1+ +
@@ -482,18 +512,17 @@
 	pick3 @ =? ( colFill backline )
 	|overl =? ( colBack uiFill )
 	uiNindx 
-	lx ly txat txwrite 
-	txh 'ly +!
+	lx ly txat txwrite txh 'ly +!
 	;
 
-::uiList | 'var 'list --
-	uiUser
+::uiList | 'var cntl 'list --
+	over uiUserL
 	mark makeindx
-	ch txh / | 'var cntlineas
+	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
-	[ kblist colFocus uiRect ; ] uiFocus	
+	[ kblist colFocus uiLRect ; ] uiFocus	
 	[ sdly cy - txh / cntlist 1- clampmax pick2 ! ; ] uiClk
 	2drop
 	empty ;	
@@ -533,17 +562,17 @@
 	dup $1f and 4 << lx + ly txat iicon txwrite 
 	txh 'ly +! ;
 
-::uiTree | 'var list --
-	uiUser
+::uiTree | 'var cntl list --
+	over uiUserL
 	mark maketree
-	ch txh / | 'var cntlineas
+	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 
 |	chtree
 	0 ( over <? itree 1+ ) drop
 |	cscroll
-	[ kblist colFocus uiRect ; ] uiFocus	
+	[ kblist colFocus uiLRect ; ] uiFocus	
 	'cktree uiClk
 	2drop
 	empty ;	
@@ -600,13 +629,13 @@
 	|uiZone overfil uiRFill
 |	'iniCombo in/foco
 |	'clickfoco onClick
-	[ kbBtn colFocus uiRect ; ] uiFocus
+	[ kbBtn colFocus uiLRect ; ] uiFocus
 
 	mark makeindx	
 	cx 8 + cy txat
 	@ uiNindx txwrite
 	cx cw + 16 - cy txat 130 txemit
-	empty  ;
+	empty ui.. ;
 	
 
 |--- Edita linea
@@ -661,7 +690,7 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
-	colFocus cx 1- cy 1- cw 2 + ch 2 + SDLRect 
+	colFocus cx 1- cy 1- cw 2 + txh 2 + SDLRect 
 	$ffffff SDLColor |	uiRect
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
@@ -680,9 +709,9 @@
 
 ::uiInputLine | 'buff max --
 	uiUser
-	Colback uiFill
+	Colback uiLFill
 	'iniinput uiFocusIn
 	'proinputa uiFocus 
 	drop
-	ttwrite uiNext ;	
+	ttwrite ui.. ;	
 		

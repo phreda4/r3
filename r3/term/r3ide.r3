@@ -76,11 +76,11 @@
 	.reset .cls 
 	|-----------
 	1 flxN
-	fx fy .at 
+	
 	4 .bc  7 .fc
 	|.rever 
 	|.eline
-	
+	fx fy .at fw .nsp fx .col
 	" R3forth [" .write
 	'filename .write 
 	"] " .write
@@ -94,7 +94,8 @@
 	
 	1 flxS
 	4 .bc  7 .fc
-	fx fy .at |.eline 
+	fx fy .at fw .nsp fx .col
+	|.eline 
 	" |ESC| Exit |F1| Run |F2| Debug " .write ||F3| Explore |F4| Profile |F5| Compile" .write
 
 	
