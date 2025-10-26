@@ -1,5 +1,5 @@
 ^./tui.r3
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
 
 #hashfile 
 ##filename * 1024
@@ -15,18 +15,15 @@
 #scrini>	| comienzo de pantalla
 #scrend>	| fin de pantalla
 
-#fuente		| fuente editable
-#fuente> 	| cursor
-#$fuente	| fin de texto
+##fuente		| fuente editable
+##fuente> 	| cursor
+##$fuente	| fin de texto
 
 #clipboard	|'clipboard
 #clipboard>
 
 #undobuffer |'undobuffer
 #undobuffer>
-
-#linecomm 	| comentarios de linea
-#linecomm>
 
 :inselect | adr -- adr
 	inisel finsel in? ( 18 .bc ) ;
@@ -398,9 +395,6 @@
 	dup 'undobuffer !
 	dup 'undobuffer> !
 	$fff +				| 4kb
-	dup 'linecomm !
-	dup	'linecomm> !
-	$3fff +				| 4096 linecomm
 	'here ! | -- FREE
 	mark 
 ;

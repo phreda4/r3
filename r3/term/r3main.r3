@@ -37,7 +37,7 @@
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
 	mark
-	here dup "mem/error.mem" load
+	here dup "mem/errorm.mem" load
 	over =? ( 2drop empty ; ) 
 	0 swap c!
 	.cr .bred .white 
@@ -45,8 +45,8 @@
 	.reset
 	.println
 	.bblue .white
-	"<ESC> to continue..." .println
-	.flush waitesc
+	" Any key to continue... " .println
+	.flush waitkey
 	empty
 	;
 
@@ -59,6 +59,7 @@
 |LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
 	sprint sys
 	.reterm 
+	runcheck
 	tuR! ;
 	
 :fileedit	

@@ -1,52 +1,55 @@
 | TUI 
 | PHREDA 2025
-^./tui.r3
-^./tuiedit.r3
+^r3/term/tui.r3
+^r3/term/tuiedit.r3
 
 #filename * 1024
 #screenstate 
 #pad * 256
 
-|--- term color
-#bx #by
+#outpad * 1024
+#linecomm 	| comentarios de linea
+#linecomm>
+#cerror
+#lerror
 
-:nextl	1 'by +! bx by .at ;
-:nextc	-6 'by +! 20 'bx +! bx by .at ;
+|----------------------------------
+:loadinfo
+	linecomm "mem/infomap.db" load 
+	0 $fff rot !+ !+ 'linecomm> ! ;
 	
-:boxcr
-	dup 16 - 6 mod
-	0? ( nextl ) drop 
-	dup 16 - 36 mod
-	0? ( 15 .fc nextc )
-	18 =? ( 0 .fc )
-	drop
+:clearinfo
+	linecomm 8 +
+	0 $fff rot !+ !+ 'linecomm> ! ;
+
+:linetocursor | -- ines
+	0 fuente ( fuente> <? c@+
+		13 =? ( rot 1+ -rot ) drop ) drop ;
+		
+:r3info
+|WIN|	"r3 r3/d4/r3info.r3"
+|LIN|	"./r3lin r3/d4/r3info.r3"
+|RPI|	"./r3rpi r3/d4/r3info.r3"
+	sys
+
+	0 'cerror !
+	mark
+|... load file info.
+	here "mem/debuginfo.db" load 0 swap c!
+	here >>cr trim str>nro 'cerror ! drop
+	empty
+
+	loadinfo
+	cerror 0? ( drop ; ) drop
+|... enter error mode
+	fuente cerror + 'fuente> !
+	linetocursor 'lerror !
+	here >>cr 0 swap c!
+	fuente> lerror 1+ here
+	" %s in line %d (%w)" sprint 'outpad strcpy
+	
 	;
 	
-|------- 256 Color Palette 
-:show256 | --
-    .cls
-    0 ( 16 <?
-		0 =? ( 15 .fc ) 1 =? ( 0 .fc )
-        dup .bc dup .d 3 .r. .write .sp
-        1+ ) drop 
-	8 'by !
-	-18  'bx !
-	16 ( 232 <?
-		boxcr
-		124 =? ( 2 'bx ! 10 'by ! bx by .at )
-        dup .bc dup .d 3 .r. .write .sp	
-		1+ ) drop
-    .cr .cr
-	15 .fc 4 .col
-    232 ( 256 <?
-		244 =? ( 0 .fc .cr 4 .col )
-        dup .bc 
-		dup .d 4 .r. .write .sp
-		1+ ) drop 
-	.flush 
-	waitkey
-	;
-
 |---- screen
 :scrmapa	
 	.reset
@@ -91,9 +94,7 @@
 	fx fy .at fw .nsp fx .col
 	|.eline 
 	" |ESC| Exit |F1| Run |F2| Debug " .write ||F3| Explore |F4| Profile |F5| Compile" .write
-
-	
-	
+		
 	|-----------
 	.reset
 	flxFill |tuWin 
@@ -103,9 +104,8 @@
 	|0 1 flpad 
 	tuEditCode
 	
-	
 	uiKey
-	[f1] =? ( show256 )
+|	[f1] =? ( show256 )
 	[f6] =? ( screenstate 1 xor 'screenstate ! )
 	[f7] =? ( screenstate 2 xor 'screenstate ! )
 	drop

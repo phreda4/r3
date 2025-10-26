@@ -168,19 +168,19 @@
 |	evtmw 1? ( dup 32 << 'uimouse ! ) drop
 |	;
 :exvector
-	.hidec tui vecdraw ex ;
+	.cl .hidec tui vecdraw ex ;
 	
 :tuiredraw
 	exvector
 	rflag
-	$8 and? ( 0 'uikey ! .cl exvector ) | redraw
+	$8 and? ( 0 'uikey ! exvector ) | redraw
 	$1 and? ( .restorec .showc )	| with cursor
 	drop
 	.flush ;
 	
 ::onTui | 'vector --
-	dup .onresize
 	'vecdraw !
+	'exvector .onresize
 	tuireset
 	tuiredraw
 	( rflag $4 nand? drop
@@ -189,7 +189,7 @@
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		10 ms
+		5 ms
 		) drop 
 	tuireset ;
 

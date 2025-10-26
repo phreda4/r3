@@ -48,12 +48,13 @@
 #on-resize 0 | callback address
 
 ::.onresize | 'callback --
-	getterminfo2 
     'on-resize ! ; | something the size is wrong at start
 
-:eventsize
-	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! 
-	getrc prevrc =? ( drop ; ) 'prevrc !
+:sizecalc
+	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! ;
+	
+:sizeex
+	getrc prevrc =? ( drop ; ) 'prevrc ! 
 	on-resize 0? ( drop ; ) ex ; 
 
 |------- Keyboard Input -------
@@ -107,12 +108,17 @@
 	4 =? ( drop 'eventBuffer 8 + d@ 23 >> 1 or 'evtmw ! ; )
 	drop 'eventBuffer 8 + d@ 'evtmb ! ;
 
+:evtsize
+	( 4 =? ( sizecalc ) 
+		getEvent 2 >? drop | collect
+		) drop sizeex ;
+
 ::inevt | -- type | check for event (no wait)
 	getEvent
-    4 =? ( ( getEvent 2 >? drop ) drop eventsize ; ) | Handle resize event
+    4 =? ( evtsize ; ) | Handle resize event
 	2 >? ( drop inevt ; ) 
 	2 =? ( evnmouse )
-	;
+	;	
 
 ::getevt | -- type | wait for any event
 	( inevt 0? drop 10 ms ) ;
@@ -174,7 +180,7 @@
 |	stdout $3 SetConsoleMode drop 
 |	getterminfo
 	.reterm
-	getterminfo2 
+	getterminfo2
 	getrc 'prevrc ! 
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
