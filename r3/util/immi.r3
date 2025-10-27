@@ -6,8 +6,6 @@
 ^r3/util/txfont.r3
 
 |--- Layout
-#flFsize 18
-
 #fx #fy #fw #fh 
 #flpadx 0 #flpady 0
 #flcols 1 #flrows 1 #flcur 0
@@ -23,7 +21,6 @@
 
 ::uiPading | x y --
 	'flpady ! 'flpadx ! f2c ;
-	
 
 #flstack * 64 | 8 niveles
 #flstack> 'flstack
@@ -31,11 +28,6 @@
 :fl>now | v --
 	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
 	
-::uiValid? | -- 0= not valid
-	cw 1 <? ( drop 0 ; ) drop 
-	ch 1 <? ( drop 0 ; ) drop 
-	-1 ;
-
 :xywh>fl | x y w h -- v
 	$ffff and 16 <<
 	swap $ffff and or 16 <<
@@ -165,13 +157,13 @@
 	uiLastfont txfont ;
 	
 ::uiEnd
-|	1 'idf +!
 |	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint
 	uilastWidget 0? ( drop ; ) 
+	1 'idf +!	
 	foco idf <? ( 2drop uiExitWidget ; ) drop
 	uiBacklast
 	ex ;
-
+	
 | 0 = normal
 | 1 = over (not all sytems)
 | 2 = in
@@ -545,9 +537,7 @@
 :cktree | 'var cnt
 	sdly cy - txh / cntlist 1- clampmax 
 	pick2 @ <>? ( pick2 ! ; )
-	
 |	cntlist <? ( sdlx cx - cw 16 - >? ( drop ; ) drop )
-
 	3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
 
@@ -580,7 +570,6 @@
 	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
-
 |	chtree
 	0 ( over <? itree 1+ ) drop
 |	cscroll
@@ -630,18 +619,16 @@
 	colfoc uiRRect
 	
 	2dup 'uidata2 ! 'uidata1 !
+	
 	ch dup 'cy +! 
 	'combolist uisaveLast
-	
 	neg 'cy +!
 	;
 	
 ::uiCombo | 'var 'list --
 	uiZone 
-|	'iniCombo in/foco
-|	'clickfoco onClick
+	'iniCombo uiFocusIn
 	[ kbBtn colFocus uiLRect ; ] uiFocus
-
 	mark makeindx	
 	cx 8 + cy txat
 	@ uiNindx txwrite

@@ -48,12 +48,11 @@
 :filerun
 	fuente c@ 0? ( drop ; ) drop
 	savem
-	| runcheck
 	"mem/errorm.mem" delete
 	'fullpath
 |WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
-	sprint sys
+	sprint sys | run
 	.reterm 
 	runcheck
 	tuR! ;
@@ -130,7 +129,7 @@
 
 |	'scratchpad	1024 tuInputline
 |	tuX? 1? ( setcmd ) drop	
-	'fullpath .write flcr
+	'fullpath .write | flcr
 	;
 
 |------------	
@@ -142,7 +141,6 @@
 	|.tdebug
 	2dup " %d %d " .print
 	
-	|vfolder "<<%d>>" .print
 	|___________
 	1 flxS
 	fx fy .at " |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
@@ -164,7 +162,9 @@
 	[f1] =? ( filerun )
 	[f2] =? ( fileedit )
 |	[f3] =? ( filesearch )
-|	[f4] =? ( help )
+|	[f4] =? ( fileclon )
+|	[f5] =? ( filenew )
+|	[f10] =? ( help )
 	drop
 	;
 
