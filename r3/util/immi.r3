@@ -109,6 +109,7 @@
 #wid #wida	| panel now active
 ##mdrag 	| drag place <<<
 #mdragh	
+#idfl		| idf last
 
 #flag
 ##keymd		| key modify <<<
@@ -141,26 +142,33 @@
 #uidata2 0 
 
 ::uiExitWidget
-	-1 'foco ! 0 'uilastwidget ! ;
+	0 'uilastwidget ! ;
 
 |------- LAST WIDGET
-::uisaveLast | 'vector --
-	'uiLastWidget !
+::uiSaveLast | 'vector --
+	'uiLastWidget !	| save vector
+	| save pos
+	| save style
 |	'cx dims>64 'uilastpos !
 |	'uilaststy 'cifil 3 move	|dsc style
-	txFont@ 'uiLastfont !		| font	
-	idl 'idfh ! ;
+	txFont@ 'uiLastfont !		| save font	
+	 idfl 'idfa !
+	;
 	
 :uiBacklast |--
+	| pos style font
 |	'cx uilastpos 64>dims 
 |	'cifil 'uilaststy 3 move 
 	uiLastfont txfont ;
 	
 ::uiEnd
+	idf 1+ 'idfl !
 |	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint
 	uilastWidget 0? ( drop ; ) 
-	1 'idf +!	
-	foco idf <? ( 2drop uiExitWidget ; ) drop
+	|idf 'foco !
+|	"ewid" .println
+	idfa idfl <? ( 2drop uiExitWidget ; ) drop
+	"." .print
 	uiBacklast
 	ex ;
 	
@@ -585,7 +593,7 @@
 
 :chlisto
 	-1 'overl !
-	guin? 0? ( drop ; ) drop
+|	guin? 0? ( drop ; ) drop
 |	SDLw 1? ( wwlist ) drop
 	sdly cy - txh /
 	pick2 8 + @ + 
@@ -599,13 +607,10 @@
 	uidata1 uidata2 
 	mark makeindx
 	cntlist 6 min
-	colFill 
+	colFocus uiLRect
 	
 	cx cy dup 'backc ! 
-	cw ch 6 * 
-	2over 2over sdlFRect
-	colFoc
-	sdlRect
+	cw ch 6 * sdlRect
 	uiZone
 	
 	chlisto
@@ -615,20 +620,29 @@
 	|pady 'cy +!
 	empty ;	
 	
+:testc
+	$ff0000 sdlcolor
+	cx cy cw ch sdlRect ;
+	
 :iniCombo | 'var 'list -- 'var 'list 
-	colfoc uiRRect
 	
 	2dup 'uidata2 ! 'uidata1 !
 	
 	ch dup 'cy +! 
-	'combolist uisaveLast
+	'combolist 
+	|'testc 
+	uisaveLast
 	neg 'cy +!
+	"inicombo" .println
+	
 	;
 	
 ::uiCombo | 'var 'list --
 	uiZone 
+	
 	'iniCombo uiFocusIn
-	[ kbBtn colFocus uiLRect ; ] uiFocus
+	[ kblist colFocus uiLRect ; ] uiFocus
+	
 	mark makeindx	
 	cx 8 + cy txat
 	@ uiNindx txwrite

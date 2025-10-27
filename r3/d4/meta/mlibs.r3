@@ -198,10 +198,6 @@
 #words  "heap!" "heap@" "heapini" 0
 #info ( $2E $10 $2E )
 #r3_util_heap.r3 'name 'words 'info
-#name "r3/util/immi.r3"
-#words  "cx" "cy" "cw" "ch" "%cw" "%ch" "uiPading" "uiValid?" "uiBox" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "uil.." "ui.." "ui--" "mdrag" "keymd" "uiEx?" "uiStart" "uiExitWidget" "uisaveLast" "uiEnd" "uiZone" "uiZoneL" "uiZoneW" "uiPlace" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiRefocus" "uiFocus>>" "uiFocus<<" "tabfocus" "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTexture" "uilFill" "uilRect" "uilRFill" "uilRRect" "uilCRect" "uilCFill" "uilTexture" "uiLineGridV" "uiLineGridH" "uiLineGrid" "uiTlabel" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "uiTBtn" "uiBtn" "uiRBtn" "uiCBtn" "uiSliderf" "uiSlideri" "uiVSliderf" "uiVSlideri" "uiNindx" "uiList" "uiTree" "uiCombo" "uiInputLine" 0
-#info ( $80 $80 $80 $80 $10 $10 $2E $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $0 $0 $0 $80 $80 $1 $0 $0 $1F $0 $0 $1F $0 $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $0 $0 $1F $1F $0 $0 $1F $0 $0 $0 $1F $1F $1F $1F $2F $2E $2E $2E $2E $3D $3D $3D $3D $10 $3D $3D $2E $2E )
-#r3_util_immi.r3 'name 'words 'info
 #name "r3/util/loadobj.r3"
 #words  "verl" "nver" "facel" "nface" "norml" "texl" "ntex" "paral" "colorl" "ncolor" "]face" "]vert" "]norm" "]uv" ">>cr" "]Ka@" "]Kd@" "]Ks@" "]Ke@" "]Ns@" "]Ni@" "]d@" "]i@" "]Mkd@" "]MNs@" "]Mbp@" "cnt/" "getpath" "loadobj" "xmin" "ymin" "zmin" "xmax" "ymax" "zmax" "objminmax" "objmove" "objcentra" "objescala" "objescalax" "objescalay" "objescalaz" "objcube" 0
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $80 $80 $80 $80 $80 $80 $0 $3D $0 $2E $2E $2E $2E $1F )
@@ -304,7 +300,7 @@
 #r3_lib_win_console.r3 'name 'words 'info
 #name "r3/lib/win/core.r3"
 #words  "ms" "msec" "time" "date" "sysdate" "findata" "ffirst" "fnext" "FNAME" "FDIR" "FSIZEF" "filetimeD" "FCREADT" "FLASTDT" "FWRITEDT" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
-#info ( $1F $1 $1 $1 $1 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $0 $10 $0 $10 $0 $10 $0 $10 $2F $3D $3D $1F $10 $1 $1 $0 $1 $1 $1 $80 $80 $10 $10 $1F )
+#info ( $1F $1 $1 $1 $1 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $0 $10 $0 $10 $0 $10 $0 $10 $2F $3D $3D $1F $10 $1 $1 $0 $1 $1 $1 $80 $80 $1F $1F $1F )
 #r3_lib_win_core.r3 'name 'words 'info
 #name "r3/lib/win/debugapi.r3"
 #words  "IsDebuggerPresent" "OutputDebugStringA" "OutputDebugStringW" "DebugBreak" "ContinueDebugEvent" "WaitForDebugEvent" "DebugActiveProcess" "DebugActiveProcessStop" "CheckRemoteDebuggerPresent" 0
@@ -324,7 +320,7 @@
 #r3_lib_win_inet.r3 'name 'words 'info
 #name "r3/lib/win/kernel32.r3"
 #words  "AllocConsole" "FreeConsole" "ExitProcess" "GetStdHandle" "SetStdHandle" "ReadFile" "WriteFile" "GetConsoleMode" "SetConsoleMode" "SetConsoleTitle" "PeekConsoleInput" "PeekNamedPipe" "ReadConsoleInput" "WriteConsole" "ReadConsole" "WriteConsoleOutput" "GetNumberOfConsoleInputEvents" "FlushConsoleInputBuffer" "Sleep" "WaitForSingleObject" "GetLastError" "CreateFile" "CreateDirectory" "CloseHandle" "FlushFileBuffers" "DeleteFile" "RemoveDirectory" "MoveFile" "SetFilePointer" "SetEndOfFile" "GetFileAttributes" "GetFileAttributesEx" "GetFileSize" "FileTimeToSystemTime" "SystemTimeToTzSpecificLocalTime" "GetProcessHeap" "HeapAlloc" "HeapFree" "HeapReAlloc" "GetTickCount" "GetLocalTime" "FindFirstFile" "FindNextFile" "FindClose" "CreateProcess" "GetConsoleScreenBufferInfo" "SetConsoleScreenBufferSize" "SetConsoleWindowInfo" "GetCommandLine" "GetConsoleWindow" "SetDllDirectory" "SetCurrentDirectory" "GetCurrentDirectory" "SetConsoleOutputCP" "SetConsoleCP" 0
-#info ( $0 $0 $10 $10 $2E $5C $5C $2F $2F $1F $4C $6A $4C $5B $5B $5B $2E $1F $1F $2F $1 $7A $2F $1F $10 $10 $10 $2F $4D $10 $10 $3E $2F $2E $3D $1 $3D $3D $4C $1 $1F $2F $2F $1F $27 $2F $2E $3D $1 $1 $1F $1F $2E $1F $1F )
+#info ( $0 $0 $10 $10 $2E $5C $5C $2F $2F $1F $4C $6A $4C $5B $5B $5B $2E $1F $1F $2E $1 $7A $2F $1F $10 $10 $10 $2F $4D $10 $10 $3E $2F $2E $3D $1 $3D $3D $4C $1 $1F $2F $2F $1F $27 $2F $2E $3D $1 $1 $1F $1F $2E $1F $1F )
 #r3_lib_win_kernel32.r3 'name 'words 'info
 #name "r3/lib/win/urlmon.r3"
 #words  "URLDownloadToFile" "URLOpenBlockingStreamA" "url2file" "url2filec" 0
