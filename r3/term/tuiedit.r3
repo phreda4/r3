@@ -379,6 +379,7 @@
 ::TuNewCode
 	"r3/new.r3" 'filename strcpy
 	fuente dup '$fuente ! dup 'scrini> ! 'fuente> !
+	0 fuente !
 	0 'hashfile !
 	;
 

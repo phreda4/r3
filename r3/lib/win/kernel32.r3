@@ -90,7 +90,7 @@
 
 ::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 drop ;
 ::Sleep sys-Sleep sys1 drop ;
-::WaitForSingleObject sys-WaitForSingleObject sys2 ;
+::WaitForSingleObject sys-WaitForSingleObject sys2 drop ;
 ::GetLastError sys-GetLastError sys0 ;
 ::CreateFile sys-CreateFile sys7 ;
 ::CreateDirectory sys-CreateDirectory sys2 ;

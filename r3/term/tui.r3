@@ -198,6 +198,7 @@
 ::.wfill fx fy fw fh .boxf ;
 ::.wborde fx fy fw fh .boxl ;
 ::.wborded fx fy fw fh .boxd ;
+::.wbordec fx fy fw fh .boxc ;
 
 :x0 fx ;
 :x1 fx 1+ ;
@@ -227,7 +228,7 @@
 	rot place .at .write ;
 	
 ::tuWin | --
-	wid wida =? ( .wborde ) 1+ 'wid ! ;
+	wid wida =? ( .wbordec ) 1+ 'wid ! ;
 	
 |--- Button	
 :kbBtn | 'ev "" -- 'ev ""

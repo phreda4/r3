@@ -36,21 +36,17 @@
 :runcheck
 	.cls 
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
-	mark
 	here dup "mem/errorm.mem" load
-	over =? ( 2drop empty ; ) 
+	over =? ( 2drop ; ) 
 	0 swap c!
-	.cr .bred .white 
-	" * ERROR * " .println
-	.reset
-	.println
-	.bblue .white
-	" Any key to continue... " .println
-	.flush waitkey
-	empty
-	;
+	.cr .bred .white " * ERROR * " .write .cr
+	.reset .write .cr
+	.bblue .white " Any key to continue... " .write .cr
+	.flush 
+	waitkey ;
 
 :filerun
+	fuente c@ 0? ( drop ; ) drop
 	savem
 	| runcheck
 	"mem/errorm.mem" delete
@@ -63,6 +59,7 @@
 	tuR! ;
 	
 :fileedit	
+	fuente c@ 0? ( drop ; ) drop
 	savem
 |WIN| 	"r3 r3/term/r3ide.r3"
 |LIN| 	"./r3lin r3/term/r3ide.r3"
@@ -82,12 +79,13 @@
 
 |------------
 :paneleditor
-	tuwin 
-|	.wborded
+|	tuwin 
+|	.wbordec
 |	$1 " CODE " .wtitle
 |	1 1 flpad 
 |	tuEditCode
-	tuReadCode
+	fuente c@ 0? ( drop ; ) drop
+	tuReadCode 
 	;
 	
 |------------
@@ -125,12 +123,14 @@
 	;
 	
 :dirpad
-	.reset
-	tuwin $1 " Command " .wtitle
-	|1 1 flpad $00 xalign
-	'scratchpad	1024 tuInputline
-	tuX? 1? ( setcmd ) drop	
-	flcr 'fullpath .write flcr
+	.reset |	tuwin $1 " Command " .wtitle
+	.wbordec
+	1 1 flpad 
+	fx fy .at 
+
+|	'scratchpad	1024 tuInputline
+|	tuX? 1? ( setcmd ) drop	
+	'fullpath .write flcr
 	;
 
 |------------	
@@ -140,18 +140,22 @@
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug
-	2dup "%d %d " .print
-	vfolder "<<%d>>" .print
-	|___________
-	2 flxS
-	fx fy .at "|ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
+	2dup " %d %d " .print
 	
+	|vfolder "<<%d>>" .print
 	|___________
-	38 flxO		dirpanel
+	1 flxS
+	fx fy .at " |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
+	|___________
+	38 flxO
+	dirpanel
 	|-4 flxS		dirfile
-	1 flxE
-	-4 flxN		paneleditor
-	flxFill		
+	|___________
+	|1 flxE
+	-4 flxS
+	paneleditor
+	|___________
+	flxFill	
 	dirpad
 
 	.flush 
