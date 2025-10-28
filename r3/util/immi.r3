@@ -141,33 +141,47 @@
 #uidata1 0 
 #uidata2 0 
 
-::uiExitWidget
-	0 'uilastwidget ! ;
+:fitinwin | x y w h -- x y w h 
+	2swap 	| w h x y 
+	dup pick3 + sh - 0 max - 0 max swap
+	dup pick4 + sw - 0 max - 0 max swap
+	2swap ;
+
+:isavepos | x y w h -- 
+	'uilastpos w!+ w!+ w!+ w! ;
+	
+:iloadpos | --
+	'uilastpos w@+ 'ch ! w@+ 'cw ! w@+ 'cy ! w@ 'cx ! ;
+	
 
 |------- LAST WIDGET
-::uiSaveLast | 'vector --
+#idfs
+
+::uiExitWidget
+	idfs dup 'idfh ! 'idfa !
+	0 'uilastwidget ! ;
+
+::uiSaveLast | x y w h 'vector --
 	'uiLastWidget !	| save vector
-	| save pos
+	isavepos
 	| save style
 |	'cx dims>64 'uilastpos !
 |	'uilaststy 'cifil 3 move	|dsc style
 	txFont@ 'uiLastfont !		| save font	
+	idfa 'idfs !
 	idfl dup 'idfh ! 'idfa !
 	;
 	
 :uiBacklast |--
+	iloadpos
 	| pos style font
-|	'cx uilastpos 64>dims 
 |	'cifil 'uilaststy 3 move 
 	uiLastfont txfont ;
 	
 ::uiEnd
-	|1 'id +!
 	id 1+ 'idfl !
-|	110 10 txat idfl idfa idf idfh "idfh:%d idf:%d idfa:%d idfl:%d" txprint
 	uilastWidget 0? ( drop ; ) 
 	idfa idfl <? ( 2drop uiExitWidget ; ) drop
-	"." .print
 	uiBacklast
 	ex ;
 	
@@ -270,10 +284,10 @@
 ::uiTexture	c2recbox 'recbox swap SDLImageb ; | texture --
 
 ::uilFill	cx cy cw chx SDLFRect ;
-::uilRect	cx cy cw chx SDLRect ;
+::uilRect	cx 1- cy 1- cw 2 + chx 2 + SDLRect ;
 ::uilRFill	cx cy cw chx SDLFRound ; | round --
-::uilRRect	cx cy cw chx SDLRound ; | round --
-::uilCRect	cw chx min 2/ cx cy cw chx SDLRound ;
+::uilRRect	cx 1- cy 1- cw 2 + chx 2 + SDLRound ; | round --
+::uilCRect	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + SDLRound ;
 ::uilCFill	cw chx min 2/ cx cy cw chx SDLFRound ;
 ::uilTexture	cl2recbox 'recbox swap SDLImageb ; | texture --
 
@@ -293,27 +307,37 @@
 	uiLineGridH uiLineGridV ;
 
 |---- Style
+
 |  disable|focus|over|normal
 #colBac	$222222 | background
 #colFil $0000af | fill
-#colBor	$888888 | borde
 #colTxt $ffffff | texto
+
 #colFoc $ffffff 
+
+::stDang $ffff8099ff85001B 'colfil ! ;	| danger
+::stWarn $ffffBF29fff55D00 'colfil ! ;	| warning
+::stSucc $ff5BCD9Aff1F6546 'colfil ! ;	| success
+::stInfo $ff80D9FFff005D85 'colfil ! ;	| info
+::stLink $ff4258FFff000F85 'colfil ! ;	| link
+::stDark $ff393F4Cff14161A 'colfil ! ;	| dark
+::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
 
 :colBack
 	colBac sdlcolor ;
+	
 :colFill
 	colFil sdlcolor ;
-:colBorde
-	colBor sdlcolor ;
-:colText
-	colTxt txrgb ;
+	
 :colFocus
 	colFoc sdlcolor ;
+	
+:colText
+	colTxt txrgb ;
 
 |---- helptext
 :ttwrite | "text" --
-	cx
+	cx 
 	|ch txh - 2/ cy +
 	cy txat txwrite ;
 
@@ -336,11 +360,11 @@
 	0 swap neg tx+at ;
 	
 ::uiTlabel
-	txw 4 + 'cw !	
+	txw 4 + 'cw !
 	ttwritec 
-	cw 'cx +! ;		
+	cw 'cx +! ;
 	
-|---- widget		
+|---- widget
 ::uiLabel
 	ttwrite	ui.. ;
 	
@@ -575,7 +599,6 @@
 ::uiTree | 'var cntl list --
 	over uiZoneL
 	mark maketree
-	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
 |	chtree
@@ -587,46 +610,28 @@
 	empty ;	
 		
 |----- COMBO
-#overl
-#backc
-#listh
-
-:chlisto
-	-1 'overl !
-|	guin? 0? ( drop ; ) drop
-|	SDLw 1? ( wwlist ) drop
-	sdly cy - txh /
-	pick2 8 + @ + 
-	cntlist 1- 
-	clampmax 'overl ! 
-	[ |clist 
-	uiExitWidget ; ] uiClk ;
+:comboclk | 'var cnt -- 'var cnt
+	sdly cy - txh / cntlist 1- clampmax pick2 ! 
+	uiExitWidget ;
 
 :combolist | --
 	uidata1 uidata2 
 	mark makeindx
 	cntlist 6 min
+	dup uiZoneL
+	colBack uiLFill
 	colFocus uiLRect
-	
-	cx cy dup 'backc ! 
-	cw ch 6 * sdlRect
-	uiZone
-	
-	chlisto
+	'comboclk uiClk
+	cx 'lx ! cy 'ly !
 	0 ( over <? ilist 1+ ) drop
 |	cscroll
 	2drop
-	|pady 'cy +!
 	empty ;	
 	
 	
 :iniCombo | 'var 'list -- 'var 'list 
 	2dup 'uidata2 ! 'uidata1 !
-	
-|	cx cy txh +
-|	cw txh 6 *  savepos
-	'combolist uiSaveLast
-	;
+	cx cy cw ch 'combolist uiSaveLast ;
 	
 :kblistc	
 	colFocus uiLRect
@@ -637,7 +642,7 @@
 	uiZone 
 	'kblistc uiFocus
 	mark makeindx	
-	cx 8 + cy txat
+	cx cy txat
 	@ uiNindx txwrite
 	cx cw + txh - cy txat 130 txicon
 	empty ui.. ;

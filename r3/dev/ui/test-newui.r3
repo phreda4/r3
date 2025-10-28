@@ -53,13 +53,22 @@
 	uiPush
 	
 	0.5 %h uiN
+stDang 
+	
 	'exit "Boton" uiBtn 
+
+stWarn 
 	'exit "Boton" uiRBtn 
+stSucc 
 	'exit "Boton" uiCBtn 
+stInfo 
 	'exit "Boton" uiBtn 
+stLink 
 	'exit "Boton" uiRBtn 
+stDark 
 	'exit "Boton" uiCBtn 
 	ui--
+stLigt 
 	-1.0 1.0 'vsl uiSliderf 
 	0 500 'vsl2 uiSlideri 
 	ui--
