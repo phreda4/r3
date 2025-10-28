@@ -152,7 +152,7 @@
 |	'cx dims>64 'uilastpos !
 |	'uilaststy 'cifil 3 move	|dsc style
 	txFont@ 'uiLastfont !		| save font	
-	 idfl 'idfa !
+	idfl dup 'idfh ! 'idfa !
 	;
 	
 :uiBacklast |--
@@ -162,11 +162,10 @@
 	uiLastfont txfont ;
 	
 ::uiEnd
-	idf 1+ 'idfl !
-|	10 10 txat uilastfoco idl idf foco "foco:%d idf:%d idl:%d uilf:%d" txprint
+	|1 'id +!
+	id 1+ 'idfl !
+|	110 10 txat idfl idfa idf idfh "idfh:%d idf:%d idfa:%d idfl:%d" txprint
 	uilastWidget 0? ( drop ; ) 
-	|idf 'foco !
-|	"ewid" .println
 	idfa idfl <? ( 2drop uiExitWidget ; ) drop
 	"." .print
 	uiBacklast
@@ -185,16 +184,17 @@
 	sdlx cx - $ffff and cw >? ( drop 0 ; ) drop
 	sdly cy - $ffff and chx >? ( drop 0 ; ) drop 
 	-1 ;
-
+|#idfx 
 :stMouse | -- state
 	flagClear 
 	1 'id +! 
 	ida -1 =? ( drop 			| no active
 		uIn? 0? ( ; ) drop		| out->0
 		sdlb 0? ( drop 1 ; ) drop	| over->1
-		id 'idh ! -1 'idfh ! 1 ; )	| in->2(prev)
+|		id dup 'idh ! 'idfh ! -1 'idfx ! 1 ; )	| in->2(prev)
+		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
 	id <>? ( drop 0 ; ) 	|	 active no this->0
-	idfh <>? ( 'idfh ! 2 ; ) | in->2
+|	idfx <>? ( 'idfx ! 2 ; ) | in->2
 	drop
 	uIn? 0? ( drop
 		sdlb 1? ( drop 4 ; ) drop	| active out->4
@@ -602,7 +602,6 @@
 	[ |clist 
 	uiExitWidget ; ] uiClk ;
 
-
 :combolist | --
 	uidata1 uidata2 
 	mark makeindx
@@ -620,29 +619,23 @@
 	|pady 'cy +!
 	empty ;	
 	
-:testc
-	$ff0000 sdlcolor
-	cx cy cw ch sdlRect ;
 	
 :iniCombo | 'var 'list -- 'var 'list 
-	
 	2dup 'uidata2 ! 'uidata1 !
 	
-	ch dup 'cy +! 
-	'combolist 
-	|'testc 
-	uisaveLast
-	neg 'cy +!
-	"inicombo" .println
-	
+|	cx cy txh +
+|	cw txh 6 *  savepos
+	'combolist uiSaveLast
 	;
+	
+:kblistc	
+	colFocus uiLRect
+	'iniCombo uiClk 
+	kblist ;
 	
 ::uiCombo | 'var 'list --
 	uiZone 
-	
-	'iniCombo uiFocusIn
-	[ kblist colFocus uiLRect ; ] uiFocus
-	
+	'kblistc uiFocus
 	mark makeindx	
 	cx 8 + cy txat
 	@ uiNindx txwrite
