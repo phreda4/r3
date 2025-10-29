@@ -317,7 +317,7 @@
 ::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
 
 |--- fill widget
-::uilFill	
+::uilFill
 |	colBac sdlcolor 
 	cx cy cw chx SDLFRect ;
 ::uilRFill	
@@ -359,18 +359,18 @@
 	
 
 |---- helptext
-:ttwrite | "text" --
+::ttwrite | "text" --
 	cx 
 	|ch txh - 2/ cy +
 	cy txat txwrite ;
 
-:ttwritec | "text" --
+::ttwritec | "text" --
 	txw | "" w   
 	cw swap - 2/ cx +
 	|ch txh  - 2/ cy +
 	cy txat txwrite ;
 
-:ttwriter | "text" --
+::ttwriter | "text" --
 	txw | "" w 
 	cw cx + swap -
 	|ch txh - 2/ cy +
@@ -383,9 +383,7 @@
 	0 swap neg tx+at ;
 	
 ::uiTlabel
-	txw 4 + 'cw !
-	ttwritec 
-	cw 'cx +! ;
+	txw 4 + 'cw ! ttwritec cw 'cx +! ;
 	
 |---- widget
 ::uiLabel
@@ -405,6 +403,7 @@
 	<ret> =? ( flagEx! )
 	<tab> =? ( tabfocus ) 
 	drop ;
+
 	
 ::uiTBtn | 'click "" align --	
 	uiZoneW 
@@ -415,6 +414,16 @@
 	colText uiText
 	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
+
+::uiNBtn | v "" -- ; width from text
+	txw 4 + 'cw !
+	uiZone
+	'flagex! uiClk
+	colFill uilFill 
+	[ kbBtn colFocus uiLRect ; ] uiFocus
+	ttwritec
+	cw 'cx +! 
+	uiEx? 0? ( 2drop ; ) drop ex ;	
 	
 ::uiBtn | 'click "" --	
 	uiZone

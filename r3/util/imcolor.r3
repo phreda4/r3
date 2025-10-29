@@ -118,7 +118,7 @@ uiBackBox
 	uiZone 
 	'kbcolor uiFocus
 	dup @ sdlcolor uiRFill 
-	@ .h txwrite
+	@ .h ttwritec
 	ui.. ;
 	
 | boot	

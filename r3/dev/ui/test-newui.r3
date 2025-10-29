@@ -4,6 +4,7 @@
 ^r3/util/immi.r3
 ^r3/util/imedit.r3
 ^r3/util/imcolor.r3
+^r3/util/immdatetime.r3
 
 #font1
 #font2
@@ -33,6 +34,8 @@
 #vchk
 #vrad
 #vcolor $ff00
+#vdate
+#vtime
 
 |-----------------------------
 :test
@@ -60,7 +63,7 @@ stLink
 	'vlist 6 'listex uiList | 8
 	ui--
 	'vchk 'listch uiCheck
-|	'vdatetime uiDate
+	'vdate uiDate
 |	'vtime1 uiTime
 	'vcolor uiColor | H
 |	'vfilen uiFileName	
