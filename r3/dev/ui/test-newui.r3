@@ -21,10 +21,14 @@
 "@listado" "Auno" "Ados"
 0
 
+#listch "Opcion 1" "Opcion 2" "Opcion 3" 0
+
 #vsl
 #vsl2
 #vlist 0 0
 #vtree 0 0
+#vchk
+#vrad
 
 |-----------------------------
 :test
@@ -48,6 +52,12 @@
 	uiRest
 	0.15 %w uiO
 	'vlist 6 'listex uiList | 8
+	ui--
+	'vchk 'listch uiCheck
+|	'vdatetime uiDate
+|	'vtime1 uiTime
+|	'vcolor uiColor | H
+|	'vfilen uiFileName	
 	
 	0.15 %w uiO
 	uiPush
@@ -67,8 +77,8 @@ stLink
 	'exit "Boton" uiRBtn 
 stDark 
 	'exit "Boton" uiCBtn 
-	ui--
 stLigt 
+	ui--
 	-1.0 1.0 'vsl uiSliderf 
 	0 500 'vsl2 uiSlideri 
 	ui--
@@ -76,9 +86,14 @@ stLigt
 	
 	0.15 %w uiO
 	'vtree 6 'treeex uiTree
+	ui--	
+	'vrad 'listch uiRadio | 'var 'list --	
 	
 	uiRest
 	'vlist 'listex uiCombo
+	ui--
+	'pad 64 uiInputLine
+	
 	uiPop
 	
 	uiRest

@@ -92,17 +92,6 @@
 	dup 'flcur !
 	flcols /mod uiAt ;
 	
-|---- text cursor
-::uil..
-	txh 'cy +! ;
-::ui..
-	txh flpady + 'cy +! ;
-	
-::ui--
-	cx cy 1+ cw 2 SDLRect
-	flpady 7 + 'cy +! ;
-	
-	
 |---- IMMGUI
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
@@ -260,7 +249,7 @@
 
 ::tabfocus
 	keymd 1 and? ( drop uiFocus<< ; ) drop uiFocus>> ;
-	
+
 :ui+a
 	dup 'cx +! 'cy +! ;
 :ui+c
@@ -282,16 +271,9 @@
 ::uiRRect	cx cy cw ch SDLRound ; | round --
 ::uiCRect	cw ch min 2/ cx cy cw ch SDLRound ;
 ::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
-::uiTexture	c2recbox 'recbox swap SDLImageb ; | texture --
+::uiTex		c2recbox 'recbox swap SDLImageb ; | texture --
 
-::uilFill	cx cy cw chx SDLFRect ;
-::uilRect	cx 1- cy 1- cw 2 + chx 2 + SDLRect ;
-::uilRFill	cx cy cw chx SDLFRound ; | round --
-::uilRRect	cx 1- cy 1- cw 2 + chx 2 + SDLRound ; | round --
-::uilCRect	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + SDLRound ;
-::uilCFill	cw chx min 2/ cx cy cw chx SDLFRound ;
-::uilTexture	cl2recbox 'recbox swap SDLImageb ; | texture --
-
+|--- grid lines
 ::uiLineGridV
 	fx flcolm +
 	flcols 1- ( 1? 1-
@@ -310,9 +292,9 @@
 |---- Style
 
 |  disable|focus|over|normal
-#colBac	$222222 | background
-#colFil $0000af | fill
-#colTxt $ffffff | texto
+#colBac	$ff222222ff111111 | background
+#colFil $ff80D9FFff005D85 | fill
+#colTxt $ffffffffffffffff | texto
 
 #colFoc $ffffff 
 
@@ -323,6 +305,24 @@
 ::stLink $ff4258FFff000F85 'colfil ! ;	| link
 ::stDark $ff393F4Cff14161A 'colfil ! ;	| dark
 ::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
+
+|--- fill widget
+::uilFill	
+|	colBac sdlcolor 
+	cx cy cw chx SDLFRect ;
+::uilRFill	
+|	colBac sdlcolor 
+	cx cy cw chx SDLFRound ; | round --
+::uilCFill	
+|	colBac sdlcolor 
+	cw chx min 2/ cx cy cw chx SDLFRound ;
+::uilTex	
+	cl2recbox 'recbox swap SDLImageb ; | texture --
+
+|--- focus
+::uilRect	cx 1- cy 1- cw 2 + chx 2 + SDLRect ;
+::uilRRect	cx 1- cy 1- cw 2 + chx 2 + SDLRound ; | round --
+::uilCRect	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + SDLRound ;
 
 :colBack
 	colBac sdlcolor ;
@@ -335,6 +335,18 @@
 	
 :colText
 	colTxt txrgb ;
+
+|---- text cursor
+::uil..
+	txh 'cy +! ;
+::ui..
+	txh flpady + 'cy +! ;
+	
+::ui--
+	colFill
+	cx cy 1+ cw 2 SDLRect
+	flpady 7 + 'cy +! ;
+	
 
 |---- helptext
 :ttwrite | "text" --
@@ -531,6 +543,56 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 
+|----- CHECK
+:focoCheck
+	colFocus uiLRect 
+	sdlkey
+	<tab> =? ( tabfocus  )
+	<ret> =? ( 1 pick2 << pick3 @ xor pick3 ! ) | 'var n key -- 'var n key
+	drop ;
+
+:ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
+	and? ( drop 139 ; ) drop 138 ;
+	
+:icheck | 'var n -- 'var n
+	uiZone 
+	'focoCheck uiFocus 
+	[ 1 over << pick2 @ xor pick2 ! ; ] uiClk
+	cx cy txat 
+	ic txicon 32 txemit a@+ txwrite
+	ui.. ;
+		
+::uiCheck | 'var 'list --
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? icheck 1+ ) 2drop
+	empty ;	
+
+|----- RADIO
+:focoRadio
+	colFocus uiLRect 
+	sdlkey
+	<tab> =? ( tabfocus  )
+	<ret> =? ( over pick3 ! ) | 'var n key -- 'var n key
+	drop ;
+
+:ir over @ |=? ( "(o)" ; ) "( )" ;
+	=? ( 137 ; ) 136 ;
+
+:iradio | 'var n --
+	uiZone
+	'focoRadio uiFocus
+	[ 2dup swap ! ; ] uiClk
+	cx cy txat 
+	ir txicon 32 txemit a@+ txwrite
+	ui.. ;
+
+::uiRadio | 'var 'list --
+	mark makeindx
+	indlist >a
+	0 ( cntlist <? iradio 1+ ) 2drop
+	empty ;	
+	
 |--------
 #lx #ly
 
@@ -592,7 +654,8 @@
 	[ kblist colFocus uiLRect ; ] uiFocus	
 	'cklist uiClk
 	2drop
-	empty ;	
+	empty 
+	chx flpady + 'cy +! ;
 	
 |----- TREE
 | #vtree 0 0
@@ -622,14 +685,16 @@
 	mark maketree
 	cx 'lx ! cy 'ly !
 	0 ( over <? itree 1+ ) drop
-	[ kblist colFocus uiLRect ; ] uiFocus	
+	[ kblist colFocus uiLRect ; ] uiFocus
 	'cktree uiClk
 	2drop
-	empty ;	
-		
+	empty 
+	chx flpady + 'cy +! ;
+	
 |----- COMBO
 :comboclk | 'var cnt -- 'var cnt
-	sdly cy - txh / cntlist 1- clampmax pick2 ! 
+	cntlist <? ( sdlx cx - cw 12 - >? ( drop slidev ; ) drop )
+	sdly cy - txh / pick2 8 + @ + cntlist 1- clampmax pick2 !
 	uiExitWidget ;
 
 :combolist | --
@@ -639,10 +704,11 @@
 	dup uiZoneL
 	colBack uiLFill
 	colFocus uiLRect
-	'comboclk uiClk
 	cx 'lx ! cy 'ly !
 	0 ( over <? ilist 1+ ) drop
-|	cscroll
+	cscroll
+	kblist
+	'comboclk uiClk
 	2drop
 	empty ;	
 	
