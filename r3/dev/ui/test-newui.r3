@@ -12,7 +12,7 @@
 		
 #tablist "A" "B" "C" "D" 0
 
-#listex "uno" "dos" "tres" "cuatro" "cinco" 0
+#listex "uno" "dos" "tres" "cuatro" "cinco" "seis" "siete" "Ocho" 0
 
 #treeex
 "@uno" "Aaaa" "Abbb" "Blksdhfl" "Blksdhfl" "Axnb"

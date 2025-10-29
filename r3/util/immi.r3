@@ -245,6 +245,7 @@
 	uIn? 0? ( 2drop ; ) drop 'mdragh ! ;
 
 |-- interact	
+::uiOvr		uiState $f and 1 <>? ( 2drop ; ) drop ex ;  | 'v --
 ::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
 ::uiSel		uiState $f and 3 <? ( 2drop ; ) drop ex ;  | 'v --
 ::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
@@ -533,16 +534,48 @@
 |--------
 #lx #ly
 
-:backline lx ly cw txh sdlFRect ;
+:wwlist	| 'var max d -- 'var max d ; Wheel 
+	dup pick3 8 + 
+	dup @ rot + 
+	cntlist pick4 -
+	clamp0max
+	swap ! ;
+	
+:backline 
+	lx ly cw txh sdlFRect ;
+	
+:slidev | 'var max -- 'var max
+	cntlist over - 1+	| maxi
+	sdly cy - chx 1- clamp0max | 'v max rec (0..curh)
+	chx */ pick2 8 + ! ;
+
+:cscroll | 'var max -- 'var max
+	cntlist >=? ( ; ) 
+	$ffffff sdlcolor 
+	cntlist over - 1+	| maxi
+	cx cw + 10 -		| 'var max maxi x 
+	pick3 8 + @ 		| 'var max maxi x ini
+	chx pick3 / 	| 'var max maxi x ini hp
+	swap over *	cy +	| 'var max maxi x hp ini*hp
+	8 rot
+	>r >r 4 -rot r> r> sdlfRound	
+	drop ;
 	
 :kbList
+	SDLw 1? ( wwlist ) drop 
 	sdlkey 
 	<ret> =? ( flagEx! )
 	<tab> =? ( tabfocus ) 
 	<up> =? ( pick2 dup @ 1- clamp0 swap ! )
 	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )	
-	drop ;
+	drop 
+	cscroll ;
 
+:cklist | 'var max --
+	cntlist <? ( sdlx cx - cw 12 - >? ( drop slidev ; ) drop )
+	sdly cy - txh / pick2 8 + @ + cntlist 1- clampmax pick2 !
+	;
+	
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( colFill backline )
@@ -554,34 +587,22 @@
 ::uiList | 'var cntl 'list --
 	over uiZoneL
 	mark makeindx
-	|ch txh / | 'var cntlineas
 	cx 'lx ! cy 'ly !
 	0 ( over <? ilist 1+ ) drop
-|	cscroll
 	[ kblist colFocus uiLRect ; ] uiFocus	
-	[ sdly cy - txh / cntlist 1- clampmax pick2 ! ; ] uiClk
+	'cklist uiClk
 	2drop
 	empty ;	
 	
 |----- TREE
 | #vtree 0 0
 
-:cktree | 'var cnt
-	sdly cy - txh / cntlist 1- clampmax 
+:cktree | 'var cnt --
+	cntlist <? ( sdlx cx - cw 12 - >? ( drop slidev ; ) drop )
+	sdly cy - txh / pick2 8 + @ + cntlist 1- clampmax
 	pick2 @ <>? ( pick2 ! ; )
-|	cntlist <? ( sdlx cx - cw 16 - >? ( drop ; ) drop )
 	3 << indlist + @ 
 	dup c@ $80 xor swap c! ;
-
-:chtree
-	|-1 'overl !
-|	guin? 0? ( drop ; ) drop
-|	SDLw 1? ( wwlist ) drop
-|	sdlBoxListY
-|	pick2 8 + @ + 
-|	cntlist 1- clampmax 'overl ! 
-|	'cktree onClickFoco
-	;
 
 :iicon | n -- 
 	$20 nand? ( drop 32 txicon ; )
@@ -600,10 +621,7 @@
 	over uiZoneL
 	mark maketree
 	cx 'lx ! cy 'ly !
-	|cntlist over - clamp0 pick2 8 + @ <? ( dup pick3 8 + ! ) drop
-|	chtree
 	0 ( over <? itree 1+ ) drop
-|	cscroll
 	[ kblist colFocus uiLRect ; ] uiFocus	
 	'cktree uiClk
 	2drop
