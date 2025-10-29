@@ -2,8 +2,11 @@
 | PHREDA 2025
 |
 ^r3/util/immi.r3
+^r3/util/imedit.r3
+^r3/util/imcolor.r3
 
 #font1
+#font2
 
 #ali
 
@@ -29,9 +32,11 @@
 #vtree 0 0
 #vchk
 #vrad
+#vcolor $ff00
 
 |-----------------------------
 :test
+	font1 txfont
 	uiStart
 	4 4 uiPading
 	$ffffff sdlcolor
@@ -42,7 +47,7 @@
 	0.1 %h uiS
 	"[esc]-Exit [f1/f2]-align" $11 uiText
 	
-	0.6 %w uiO
+	0.5 %w uiO
 	$111111 sdlcolor uiFill
 	
 	uiPush
@@ -50,41 +55,34 @@
 	"wid" $11 uiText
 	
 	uiRest
-	0.15 %w uiO
+	0.11 %w uiO
+stLink 	
 	'vlist 6 'listex uiList | 8
 	ui--
 	'vchk 'listch uiCheck
 |	'vdatetime uiDate
 |	'vtime1 uiTime
-|	'vcolor uiColor | H
+	'vcolor uiColor | H
 |	'vfilen uiFileName	
 	
-	0.15 %w uiO
+	0.11 %w uiO
 	uiPush
 	
 	0.5 %h uiN
-stDang 
-	
-	'exit "Boton" uiBtn 
-
-stWarn 
-	'exit "Boton" uiRBtn 
-stSucc 
-	'exit "Boton" uiCBtn 
-stInfo 
-	'exit "Boton" uiBtn 
-stLink 
-	'exit "Boton" uiRBtn 
-stDark 
-	'exit "Boton" uiCBtn 
-stLigt 
+	stDang 'exit "Boton" uiBtn 
+	stWarn 'exit "Boton" uiRBtn 
+	stSucc 'exit "Boton" uiCBtn 
+	stInfo 'exit "Boton" uiBtn 
+	stLink 'exit "Boton" uiRBtn 
+	stDark 'exit "Boton" uiCBtn 
+	stLink 
 	ui--
 	-1.0 1.0 'vsl uiSliderf 
 	0 500 'vsl2 uiSlideri 
 	ui--
 	uiPop
 	
-	0.15 %w uiO
+	0.12 %w uiO
 	'vtree 6 'treeex uiTree
 	ui--	
 	'vrad 'listch uiRadio | 'var 'list --	
@@ -93,16 +91,17 @@ stLigt
 	'vlist 'listex uiCombo
 	ui--
 	'pad 64 uiInputLine
+	ui--
+	'pad2 64 uiInputLine
+	ui--
 	
 	uiPop
-	
+
 	uiRest
-	0.1 %h uiN |$444444 sdlcolor uiFill
-	'pad 64 uiInputLine
-	'pad2 64 uiInputLine
-	
-	uiRest
-	"Hola" $11 uiText
+	font2 txfont
+	edfocus
+	edcodedraw
+|	"Hola" $11 uiText
 	
 	uiEnd
 	;
@@ -111,7 +110,6 @@ stLigt
 |-----------------------------
 :main
 	0 SDLcls
-	font1 txfont
 	test
 	
 	SDLredraw
@@ -130,6 +128,12 @@ stLigt
 	"R3d4" 1280 720 SDLinitR
 	
 	"media/ttf/Roboto-bold.ttf" 20 txloadwicon 'font1 !
+	"media/ttf/RobotoMono-Bold.ttf" 16 txload 'font2 !
+ 	
+	edram 
+	0.5 %w 32 550 550 edwin | <<<****
+	
+	"r3/opengl/voxels/3-vox.r3" edload	
 	
 	'main SDLshow
 	SDLquit 

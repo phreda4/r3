@@ -39,6 +39,7 @@
 	xywh>fl 'flstack !+ 'flstack> ! 
 	f2c ;
 	
+	
 ::uiFull | --
 	0 0 sw sh uiBox ;
 	
@@ -120,8 +121,7 @@
 	sdlkey
 	<shift> =? ( keymd 1 or 'keymd ! ) 
 	>shift< =? ( keymd 1 nand 'keymd ! ) 
-	drop
-	;
+	drop ;
 
 #uilastwidget 0
 #uilastpos 0 
@@ -132,8 +132,8 @@
 
 :fitinwin | x y w h -- x y w h 
 	2swap 	| w h x y 
-	dup pick3 + sh - 0 max - 0 max swap
-	dup pick4 + sw - 0 max - 0 max swap
+	dup pick3 + sh - 0 max - 0 max swap | 1.0 %h
+	dup pick4 + sw - 0 max - 0 max swap | 1.0 %w
 	2swap ;
 
 :isavepos | x y w h -- 
@@ -227,6 +227,16 @@
 ::uiZoneW | --	; Interaction is cx,cy,cw,ch
 	ch 'chx !
 	stMouse stFocus or 'uistate ! ;
+	
+#auxbox
+::uiZoneBox | x y w h --
+	cx cy cw ch 'auxbox w!+ w!+ w!+ w!
+	dup 'ch ! 'chx ! 'cw ! 'cy ! 'cx !
+	stMouse stFocus or 'uistate ! ;
+	
+::uiBackBox
+	'auxbox w@+ 'ch ! w@+ 'cw ! w@+ 'cy ! w@ 'cx ! ;
+	
 	
 |-- place to go in drag (index n)	
 ::uiPlace | n --
