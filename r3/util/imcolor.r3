@@ -14,26 +14,24 @@
 #index [ 0 1 3 1 2 3 ] 
 #col128 * 512
 
+:coltex
+	c1w 2 << 'col128 + d@ bgr2rgb
+	'vert 7 2 << + d! ; | vertex color
+
 ::color! | color --
 	dup colorvar !
 	rgb2hsv | h s v
-	rot 
-	128 16 *>> 'c1w !
-	128 16 *>> 128 swap - 'c1y ! 
+	128 16 *>> 127 swap - 'c1y ! 
 	128 16 *>> 'c1x !
-	c1w 2 << 'col128 + d@ bgr2rgb
-	'vert 7 2 << + d! | vertex color
-	;
+	128 16 *>> 'c1w !
+	coltex ;
 	
 :setcolor | --
 	c1w 9 <<
 	c1x 9 <<
-	128 c1y - 9 <<
-	hsv2rgb 
-	colorvar ! 
-	c1w 2 << 'col128 + d@ bgr2rgb
-	'vert 7 2 << + d! | vertex color
-	;
+	127 c1y - 9 <<
+	hsv2rgb colorvar ! 
+	coltex ;
 	
 :selectColorPick
 	uiZone
@@ -46,22 +44,18 @@
 	
 	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry	
 	
-cx 140 + cy 5 + 12 128 uiZoneBox
-	[ SDLy cy - 5 - 128 clamp0max 'c1w ! setcolor ; ]
-	uiSel
-uiBackBox
+	cx 140 + cy 5 + 12 127 uiZoneBox
+	[ SDLy cy - 127 clamp0max 'c1w ! setcolor ; ] uiSel
+	uiBackBox
 	
-cx 5 + cy 5 + 128 128 uiZoneBox
-	[	SDLy cy - 5 - 128 clamp0max 'c1y ! 
-		SDLx cx - 5 - 128 clamp0max 'c1x ! 
-		setcolor ; ] 
-	uiSel
-uiBackBox
+	cx 5 + cy 5 + 127 127 uiZoneBox
+	[ SDLy cy - 127 clamp0max 'c1y ! 
+		SDLx cx - 127 clamp0max 'c1x ! setcolor ; ] uiSel
+	uiBackBox
 	
-cx 5 + cy 137 + 128 8 uiZoneBox
-	[ SDLx cx - 5 - 127 clamp0max 'c1a ! ; ]
-	uiSel
-uiBackBox
+	cx 5 + cy 137 + 127 8 uiZoneBox
+	[ SDLx cx - 127 clamp0max 'c1a ! ; ] uiSel
+	uiBackBox
 	
 	$0 SDLColor
 	cx 4 + cy 4 + 130 130 SDLRect
@@ -73,15 +67,14 @@ uiBackBox
 	cx 5 + cy 140 + 128 2 SDLRect
 	cx 5 + c1a + cy 137 + 2 8 SDLRect
 
-| 	cx 5 + cy 158 + bat
-|	colorvar @ $ffffffff and "$%h" sprint bprint
+ 	cx 64 + cy 150 + txat
+	colorvar @ $ffffffff and "$%h" txprint
 	colorvar @ SDLColor
 	cx 10 + cy 154 + 50 20 
-2over 2over uiZoneBox
-	SDLFRect
+	2over 2over SDLFRect
+	uiZoneBox
 	'uiExitWidget uiClk
-uiBackBox	
-	;
+	uiBackBox ;
 
 :fillcbox | -- ; fill vertex buffer
 	'vert >a
@@ -109,7 +102,6 @@ uiBackBox
 ::uiColor | 'var --
 	uiZone 
 	'kbcolor uiFocus
-|	'fcolorini uiFocusIn
 	@ sdlcolor 
 	4 cx cy cw txh SDLFRound 
 	ui.. ;

@@ -19,8 +19,8 @@
 
 ##edfilename * 1024
 
-#pantaini>	| comienzo de pantalla
-#pantafin>	| fin de pantalla
+#scrini>	| comienzo de pantalla
+#scrend>	| fin de pantalla
 
 ##inisel		| inicio seleccion
 ##finsel		| fin seleccion
@@ -92,29 +92,31 @@
 	fuente> >>13 'fuente> ! ;
 
 :scrollup 
-	pantaini> 2 - <<13 1+ 
-	fuente <? ( drop ; ) 'pantaini> ! ;
+	scrini> 2 - <<13 1+ 
+	fuente <? ( drop ; ) 'scrini> ! ;
 
 :scrolldw
-	pantafin> >>13 1+ 
-	$fuente >=? ( drop ; ) 'pantafin> !
-	pantaini> >>13 1+ 'pantaini> ! 	;
+	scrend> >>13 1+ 
+	$fuente >=? ( drop ; ) 'scrend> !
+	scrini> >>13 1+ 'scrini> ! 	;
 	
+|-----------	
 :setpantafin
-	pantaini>
+	1- <<13 1+ dup 'scrini> ! 
 	hcode ( +? swap >>13 swap txh - ) drop
-	$fuente <? ( 1- ) 'pantafin> ! ;
+	|$fuente <? ( 1- ) 
+	'scrend> ! ;
 	
 :setpantaini
-	pantafin>
+	>>13 1+ dup 'scrend> ! 
 	hcode ( +? swap 2 - <<13 1+ swap txh - ) drop
 	fuente <? ( fuente nip )
-	'pantaini> ! ;
+	'scrini> ! ;
 
 :fixcur
 	fuente>
-	pantaini> <? ( <<13 1+ 'pantaini> ! setpantafin ; )
-	pantafin> >? ( >>13 1+ 'pantafin> ! setpantaini ; )
+	scrini> <? ( setpantafin ; )
+	scrend> >=? ( setpantaini ; )
 	drop ;
 	
 :karriba
@@ -132,8 +134,7 @@
 	over swap - swap | cnt cursor
 	>>13     | cnt cura
 	dup 1+ >>13 	| cnt cura curb
-	over -
-	rot min +
+	over - rot min +
 	'fuente> ! ;
 
 :kder	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
@@ -326,13 +327,13 @@
 
 |..............................
 ::edcodedraw
-	pantaini>
+	scrini>
 	ylinea
-	0 ( hcode <? | src nline ylin
+	0 ( hcode <=? | src nline ylin
 		xcode ycode pick2 + txat
 		drawline
 		txh + ) 2drop
-	$fuente <? ( 1- ) 'pantafin> !
+	$fuente <? ( 1- ) 'scrend> !
 	;
 	
 ::edfill
@@ -354,7 +355,7 @@
 
 :cursormouse
 	SDLx xcode - | xmouse
-	pantaini>
+	scrini>
 	SDLy
 	ycode txh +
 	( over <? txh + rot >>13 1+ -rot ) 2drop
@@ -429,10 +430,10 @@
 #cachepi
 
 :getcacheini |  -- pantanini>
-	pantaini> cachepi =? ( cacheyl 'ylinea ! ; ) drop
+	scrini> cachepi =? ( cacheyl 'ylinea ! ; ) drop
 	0 'ylinea !
 	fuente 
-	( pantaini> <? c@+ 13 =? ( 1 'ylinea +! ) drop ) 
+	( scrini> <? c@+ 13 =? ( 1 'ylinea +! ) drop ) 
 	dup 'cachepi !
 	ylinea 'cacheyl !
 	;
@@ -498,7 +499,7 @@
 :startsel
 	xcodel 'sx1 !
 	ycode 'sy1 ! 
-	pantaini> 
+	scrini> 
 	inisel >=? ( ; )
 	( inisel <? c@+ 
 		13 =? ( txh 'sy1 +! xcodel 'sx1 ! )
@@ -507,11 +508,11 @@
 		
 :edselshow
 	inisel 0? ( drop ; )
-	pantafin> >? ( drop ; ) drop
+	scrend> >? ( drop ; ) drop
 	startsel
 	sx1 'selxi ! sy1 'selyi !
 	0 'sw1 !
-	( pantafin> <? finsel <? c@+
+	( scrend> <? finsel <? c@+
 		13 =? ( wcode sx1 - xcode + 'sw1 ! 
 				txh 'sy1 +! xcodel 'sx1 !
 				32 txcw neg 'sw1 ! )
@@ -530,7 +531,7 @@
 	;
 
 :edlinecursor
-	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
+	fuente> scrini> <? ( drop ; ) scrend> >? ( drop ; ) drop
 	cursorpos
 	msec $100 and? ( drop ; ) drop
 	xcodel
@@ -634,7 +635,7 @@
 |----------- principal
 ::edram
 	here	| --- RAM
-	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'pantaini> !
+	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'scrini> !
 	$ffff +			| 64kb texto
 	dup 'clipboard ! dup 'clipboard> !
 	$fff +			| 4KB
@@ -658,7 +659,7 @@
 	fuente 'edfilename |getpath
 	load 0 swap c!
 	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
-	fuente dup 'pantaini> ! simplehash 'hashfile !
+	fuente dup 'scrini> ! simplehash 'hashfile !
 	;
 
 ::edsave | --

@@ -210,7 +210,8 @@
 	focoe 1? ( .savec ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
-	swap 1+ .nsp ;
+	nip .eline ;
+	|swap 1+ .nsp ;
 
 :tabchar | adr 9 -- adr 32
 	drop swap 1- swap .sp 32 ;
