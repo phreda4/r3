@@ -62,7 +62,7 @@
 | hsv 1.0 1.0 1.0 --> rgb
 
 :h0 ;				|v, n, m
-:h1 >r swap r> ;	|n, v, m
+:h1 swap -rot ;		|n, v, m
 :h2 -rot ;			|m, v, n
 :h3 swap rot ;		|m, n, v
 :h4 rot ;			|n, m, v
@@ -93,20 +93,16 @@
 	vg =? ( vb vr - pick2 /. 2.0 + ; )
 	vr vg - pick2 /. 4.0 + ;
 
-::6/ | n -- n/6
-	$AAAAAAAAAAAAAAAB 65 *>> abs ;
-	
 ::rgb2hsv | argb -- h s v
-	dup 16 >> $ff and 1.0 255 */ 'vr !
-	dup 8 >> $ff and 1.0 255 */ 'vg !
-	$ff and 1.0 255 */ 'vb !
+	dup 8 >> $ff00 and 'vr !
+	dup $ff00 and 'vg !
+	$ff and 8 << 'vb !
 	vr vg min vb min
 	vr vg max vb max | min max
 	over =? ( 2drop 0 0 vr ; )
 	dup rot - swap | x max
 	getzone | x val h
-|	dup "%f " .print dup 6/ "%f " .print dup 6 / " /%f" .println
-	6/ -? ( 1.0 + )
+	6 / -? ( 1.0 + )
 	rot pick2 /.	| val h s
 	rot
 	;
