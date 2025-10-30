@@ -495,6 +495,30 @@
 	@ .d uiLabelC
 	2drop ;	
 	
+:progreshow | 0.0 1.0 'value --
+	colBack uiLFill
+	[ kbSlide colFocus uiLRect ; ] uiFocus	
+	colFill
+	dup @ pick3 - cw pick4 pick4 swap - */
+	txh
+	cx cy 2swap
+	SDLFRect ;
+
+::uiProgressf | 0.0 1.0 'value --
+	uiZone
+	'slideh uiSel | 'dn 'move --	
+	progreshow
+	@ .f2 uiLabelC
+	2drop ;
+
+::uiProgressi | 0 255 'value --
+	uiZone
+	'slideh uiSel | 'dn 'move --	
+	progreshow
+	@ .d uiLabelC
+	2drop ;	
+	
+	
 |---- Vertical slide
 :slidev | 0.0 1.0 'value --
 	sdly cy - ch clamp0max 

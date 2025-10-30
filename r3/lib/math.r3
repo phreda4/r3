@@ -242,7 +242,8 @@
 ::6* | n -- n*6
 	2* dup 2* + ;
 ::6/ | n -- n/6
-    $AAAAAAAAAAAAAAAA 66 *>> ; |$AAAAAAAB 33 *>> ;  | n × 0xAAAAAAAB >> 33
+	$AAAAAAAAAAAAAAAB 65 *>> abs ;
+ 
 ::6mod | n -- n%6
 	dup 6/ 6* - ;
 

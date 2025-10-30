@@ -82,6 +82,9 @@ stLink
 	ui--
 	-1.0 1.0 'vsl uiSliderf 
 	0 500 'vsl2 uiSlideri 
+	-1.0 1.0 'vsl uiProgressf 
+	0 500 'vsl2 uiProgressi 
+
 	ui--
 	uiPop
 	
