@@ -1,7 +1,7 @@
 | flex layout example
 | PHREDA 2025
 
-^./tui.r3
+^r3/util/tui.r3
 
 ##fx ##fy ##fw ##fh 
 
@@ -54,30 +54,30 @@
 	fx fy fw fh xywh>fl flstack> !+ 'flstack> ! ;
 ::flxpop	
 	-8 'flstack> +! flstack> fl>now ;
-::flxFill 
+::flxRest 
 	flstack> 8 - fl>now ;
 
 | N=^ S=v E=> O=<
 ::flxN | lineas --
-	flxFill
+	flxRest
 	dup fly+! 
 	dup neg flh+!
 	'fh ! ;
 	
 ::flxS | lineas --
-	flxFill
+	flxRest
 	dup neg flh+!
 	fh fy + over - 'fy ! 
 	'fh ! ;
 
 ::flxE | cols --
-	flxFill
+	flxRest
 	dup neg flw+!
 	fw fx + over - 'fx !
 	'fw ! ;
 	
 ::flxO | cols --
-	flxFill
+	flxRest
 	dup flx+!
 	dup neg flw+! 
 	'fw ! ;
@@ -117,9 +117,9 @@
 	28 flxE 
 		flxpush
 		4 flxN 	uiboxd
-		flxfill uiboxl	
+		flxRest uiboxl	
 		flxpop
-	flxFill
+	flxRest
 	uiboxl	
 	
 	;

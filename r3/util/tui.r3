@@ -1,6 +1,9 @@
+| Text User Inteface
+| PHREDA 2025
+|--------
 ^r3/lib/term.r3
-^r3/lib/trace.r3
-^./utfg.r3
+|^r3/lib/trace.r3
+^r3/util/utfg.r3
 
 |--- Layout
 ##fx ##fy ##fw ##fh 
@@ -52,19 +55,19 @@
 	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
 ::flxpop	
 	-8 'flstack> +! flstack> fl>now ;
-::flxFill 
+::flxRest 
 	flstack> 8 - fl>now ;
 
 | N=^ S=v E=> O=<
 | - is full minus the number
 ::flxN | lineas --
-	-? ( fh + ) flxFill dup fly+! dup neg flh+!	'fh ! ;
+	-? ( fh + ) flxRest dup fly+! dup neg flh+!	'fh ! ;
 ::flxS | lineas --
-	-? ( fh + ) flxFill dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
+	-? ( fh + ) flxRest dup neg flh+! fh fy + over - 'fy ! 'fh ! ;
 ::flxE | cols --
-	-? ( fw + ) flxFill dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
+	-? ( fw + ) flxRest dup neg flw+! fw fx + over - 'fx ! 'fw ! ;
 ::flxO | cols --
-	-? ( fw + ) flxFill dup flx+! dup neg flw+! 'fw ! ;
+	-? ( fw + ) flxRest dup flx+! dup neg flw+! 'fw ! ;
 	
 ::fw% fw 16 *>> ;
 ::fh% fh 16 *>> ;

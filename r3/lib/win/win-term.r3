@@ -51,7 +51,7 @@
     'on-resize ! ; | something the size is wrong at start
 
 :sizecalc
-	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! ;
+	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! ;
 	
 :sizeex
 	getrc prevrc =? ( drop ; ) 'prevrc ! 
@@ -176,11 +176,11 @@
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-|	stdin $7 SetConsoleMode drop 
-|	stdout $3 SetConsoleMode drop 
-|	getterminfo
+	stdin $7 SetConsoleMode drop 
+	stdout $3 SetConsoleMode drop 
+	getterminfo
 	.reterm
-	getterminfo2
+|	getterminfo2
 	getrc 'prevrc ! 
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8

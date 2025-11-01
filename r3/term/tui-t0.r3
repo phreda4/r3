@@ -1,6 +1,6 @@
 | TUI 
 | PHREDA 2025
-^./tui.r3
+^r3/util/tui.r3
 
 |---------------------------------------
 :table.col | len just -- 
@@ -91,7 +91,7 @@
 	1 1 flpad 
 	'vtable tuTable
 
-	flxFill	
+	flxRest	
 	1 1 flpad
 "Texto muy largo
 y con varias lineas

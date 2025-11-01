@@ -1,9 +1,10 @@
 | start program
 | PHREDA 2025
 |---------------
-^./tui.r3
+^r3/util/tui.r3
+^r3/util/tuiedit.r3
+
 ^./filedirs.r3
-^./tuiedit.r3
 
 ^r3/lib/trace.r3
 
@@ -53,17 +54,18 @@
 |WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
 |LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
 	sprint sys | run
-	.reterm 
+	.reterm .alsb .flush
 	runcheck
 	tuR! ;
 	
 :fileedit	
 	fuente c@ 0? ( drop ; ) drop
+	.masb .flush
 	savem
-|WIN| 	"r3 r3/term/r3ide.r3"
-|LIN| 	"./r3lin r3/term/r3ide.r3"
+|WIN| 	"r3 r3/d4/r3ide.r3"
+|LIN| 	"./r3lin r3/d4/r3ide.r3"
 	sys 
-	.reterm
+	.reterm .alsb .flush
 	tuR! ;
 	
 :filenew
@@ -153,7 +155,7 @@
 	-4 flxS
 	paneleditor
 	|___________
-	flxFill	
+	flxRest	
 	dirpad
 
 	.flush 

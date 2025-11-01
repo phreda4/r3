@@ -1,4 +1,4 @@
- | Utg Graphics
+| Utg Graphics
 | PHREDA 2025
 ^r3/lib/term.r3
 

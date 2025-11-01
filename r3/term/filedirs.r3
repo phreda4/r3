@@ -12,7 +12,7 @@
 
 ^r3/lib/mem.r3
 ^r3/util/datetime.r3
-^./tui.r3
+^r3/util/tui.r3
 
 |--------------------------------	
 ##uiDirs

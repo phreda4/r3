@@ -1,4 +1,7 @@
-^./tui.r3
+| Text Editor
+| PHREDA 2025
+
+^r3/util/tui.r3
 |^r3/lib/trace.r3
 
 #hashfile 
@@ -210,8 +213,8 @@
 	focoe 1? ( .savec ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
-	nip .eline ;
-	|swap 1+ .nsp ;
+	|nip .eline ;
+	swap 1+ .nsp ;
 
 :tabchar | adr 9 -- adr 32
 	drop swap 1- swap .sp 32 ;

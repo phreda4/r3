@@ -1,7 +1,7 @@
 | TUI 
 | PHREDA 2025
-^./tui.r3
-^./tuiedit.r3
+^r3/util/tui.r3
+^r3/util/tuiedit.r3
 
 #pad * 256
 
@@ -91,7 +91,7 @@
 	
 	|-----------
 	.reset
-	flxFill tuWin 
+	flxRest tuWin 
 |	$1 " Editor " .wtitle
 	$4 'filename .wtitle
 	$23 mark tudebug ,s ,eol empty here .wtitle

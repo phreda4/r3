@@ -1,6 +1,6 @@
 | PHREDA 2025
 ^r3/lib/term.r3
-^./utfg.r3
+^r3/util/utfg.r3
 
 :testkey
 	inevt	
