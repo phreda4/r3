@@ -43,8 +43,8 @@
 |---- graph	
 #xmin -0.1
 #xmax 4.0
-#ymin -3.0
-#ymax 3.0
+#ymin -2.0
+#ymax 2.1
 
 #stepx
 
@@ -53,10 +53,22 @@
 	
 :y>scr | y -- yscr
 	ymin - ch ymax ymin - */ ch swap - cy + ;
-		
-
 	
-
+:drawGrid
+	$444444 sdlcolor
+	xmin $ffff + $ffff nand
+	( xmax <?
+		dup x>scr cy 1 ch sdlrect
+		1.0 + ) drop
+	ymin $ffff + $ffff nand
+	( ymax <?
+		cx over y>scr cw 1 sdlrect
+		1.0 + ) drop
+		
+	$888888 sdlcolor
+	cx 0.0 y>scr cw 1 sdlrect
+	0.0 x>scr cy 1 ch sdlrect 
+	;
 	
 |--- draw
 #xp #yp
@@ -65,8 +77,7 @@
 
 :xfun | 'vec x -- 'vec x x' y'
 	dup x>scr
-	over pick3 ex y>scr 
-	cy max ch min ;
+	over pick3 ex y>scr ;
 	
 :drwfunc | vec --
 	xmax xmin - cw / 2* 'stepx !
@@ -123,113 +134,9 @@
 		stepx + ) 2drop 
 	0 lines> d! ;
 
-|----
-#f
 
-#ms
-#ls
-#qs
-#q2
-#ps
-#Z
-
-:2>scr | x y -- x x' y'
-	over x>scr
-	swap y>scr
-	cy max ch min 
-	;
-	
-:calculate | f -- 
-	'f ! 
-	xmax xmin - cw / 'stepx !
-	empty mark | reuse memory
-	here
-	dup 'ms ! cw 1+ 3 << +
-	dup 'ls ! cw 1+ 3 << +
-	dup 'qs ! cw 1+ 3 << +
-	dup 'ps ! cw 1+ 3 << +
-	'here !
-	
-|--- 1. Interpolar la tabla M para obtener la función m().
-	ms >a
-	xmin ( xmax <?
-		dup f ex a!+
-		stepx + ) drop
-
-|--- 2. Integrar m() para obtener la función l().
-	ls >a ms >b
-	0
-	xmin ( xmax <?
-		b@+	| ms[i]
-		b@ + | ms[i+1] 
-		stepx *. 2/. swap +
-		dup a!+
-		swap 
-		stepx + ) 2drop
-
-|--- 3. Integrar exp(-l()) para obtener q().
-|--- 4. Integrar q() para obtener Q().
-|--- 5. Integrar Q() para obtener un valor Z.
-	qs >a ls >b
-	0
-	xmin ( xmax <?
-		b@+ neg exp. 
-		b@ neg exp. + 
-		stepx *. 2/. swap +
-		dup a!+
-		swap 
-		stepx + ) drop
-	'Z !
-
-|--- 6. p() := q()/Z.
-	ps >a qs >b
-	0
-	xmin ( xmax <?
-		b@+ Z /. 
-		b@ Z /. + 
-		stepx *. 2/. swap +
-		dup a!+
-		swap 
-		stepx + ) 2drop
-|--- 7. Combinar p^-() del lado negativo y p^+() del lado positivo para obtener p() combinado.
-|--- 8. Realizar varias modificaciones de p() que impliquen transformaciones e integraciones. Compararlas con las modificaciones de otros p().	
-	
-	|--- gen graphics
-	lin.clear
-	$ff00ff ,color
-	ms >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ffff ,color
-	ls >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ffff00 ,color
-	qs >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ff00 ,color
-	ps >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-	
-	0 lines> d! ;		
-	;
-	
 |--------------------
-:axisx
-	cx 0.0 y>scr cw 1 sdlrect ;
-	
-:axisy
-	0.0 x>scr cy 1 ch sdlrect ;
 
-:drawGrid
-	axisx
-	axisy
-	;
 
 :main
 	$0 sdlcls
@@ -243,7 +150,10 @@
 	|__________
 	0.1 %w uiE
 	'exit "Exit" uiCBtn 
-	|__________		
+	"[F1]" uiLabel
+	"[F2]" uiLabel
+	"[F3]" uiLabel
+	|__________
 	uiRest
 	sfont txfont
 	
@@ -264,7 +174,6 @@
 	<f1> =? ( 'm_log $ff0000 ,func )
 	<f2> =? ( 'm_lgn $ff00 ,func )
 	<f3> =? ( 'm_sin $ff00 ,func )
-	<f4> =? ( 'm_log calculate ) 
 	drop
 	;
 	
