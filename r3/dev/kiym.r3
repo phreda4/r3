@@ -18,8 +18,7 @@
 	-? ( 0 nip ; ) 
 	dup *. 2/ ;
 
-:m_linear
-	;
+:m_linear	;
 
 :m_const
 	1.0 <=? ( ; ) 
@@ -39,7 +38,7 @@
 	
 |---- graph	
 #xmin -0.1
-#xmax 4.0
+#xmax 4.1
 #ymin -0.1
 #ymax 4.0
 
@@ -57,6 +56,7 @@
 	( xmax <?
 		dup x>scr cy 1 ch sdlrect
 		1.0 + ) drop
+		
 	ymin $ffff + $ffff nand
 	( ymax <?
 		cx over y>scr cw 1 sdlrect
@@ -86,16 +86,18 @@
 		) 2drop ;
 
 |---- function draw
+| 32bits 
+| sign = point
+| x(15bits) y(16bits)
 #lines		| store the lines precalc
 #lines>
 
 :32uv | b -- x y 
-	dup 15 >> $7fff and
-	swap $7fff and ;
+	dup 33 << 49 >>
+	swap 48 << 48 >> ;
 	
 :uv32 | x y -- b
-	$7fff and 
-	swap $7fff and 15 << or ;
+	$ffff and swap $7fff and 16 << or ;
 	
 :lin.clear
 	lines 'lines> ! 
@@ -140,7 +142,7 @@
 
 #f	
 
-#ms
+#fms
 #ls
 #qs
 #ps
@@ -153,20 +155,20 @@
 #cntxs
 
 :mktables | func -- 
+	empty mark | reuse memory
 	'f ! 
 	here 
 |--- 1. tabla	
-	dup 'ms ! >a
+	dup 'fms ! >a
 	xs_start ( xs_stop <?
 		dup f ex 
 |		dup "%f " .print
 		a!+ 
 		xs_step + ) drop 
 |	.cr
-	a> ms - 3 >> 1- 'cntxs !
+	a> fms - 3 >> 1- 'cntxs !
 |--- 2. Integrar m() para obtener la función l().
-	ms >b
-	a> 'ls ! 
+	fms >b a> 'ls ! 
 	0 
 |	dup "%f " .print
 	dup a!+
@@ -176,7 +178,7 @@
 |		dup "%f " .print
 		dup a!+
 		swap ) 2drop
-|	.cr
+|	.cr 
 |--- 3. Integrar exp(-l()) para obtener q().
 	ls >b a> 'qs !
 	cntxs ( 1? 1- 
@@ -193,8 +195,7 @@
 		b@+ b@ + xs_step *. 2/ 
 		rot +
 		swap ) drop
-|	.cr
-|	dup "Z:%f " .println
+|	.cr dup "Z:%f " .println
 	'Z !
 |--- 6. p() := q()/Z.
 	qs >b a> 'ps ! 
@@ -223,18 +224,15 @@
 |dup "%f " .print		
 		a!+ ) drop
 
-|#hs
-|.cr "hs" .println
-	ss >b 
-	a> 'hs !
+|#hs |.cr "hs" .println
+	ss >b a> 'hs !
 	ps
 	cntxs ( 1? 1- 
 		swap @+ b@+ /.
 |dup "%f " .print
 		a!+ swap ) 2drop
 		
-|#hA
-|.cr "HA" .println
+|#hA |.cr "HA" .println
 	hs >b a> 'ha !
 	0 
 	dup a!+
@@ -244,45 +242,35 @@
 |dup "%f " .print			
 		dup a!+
 		swap ) 2drop
-
+	a> 'here !
 	;
+
+|--- gen graphics
 
 :2>scr | x y -- x x' y'
 	over x>scr swap y>scr ;
 
-:func+ | table --
-	|$ff00ff ,color
-	ms >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-	;
-	
-:gengra	
-	|--- gen graphics
+:func+ | color table --	
+	>a ,color
+	xs_start a@+ 2>scr ,op
+	( xs_step + xs_stop <? 
+		a@+ 2>scr ,line ) 
+	drop ;
+
+:gengra
 	lin.clear
-	$ff00ff ,color
-	ms >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ffff ,color
-	ls >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ffff00 ,color
-	qs >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-
-	$ff00 ,color
-	ps >a
-	xmin a@+ 2>scr ,op
-	( stepx + xmax <? a@+ 2>scr ,line ) drop
-	
-	0 lines> d! ;		
+	$ff00ff fms func+
+	$00ffff ls func+
+	$ffff00 qs func+
+	$00ff00 ps func+
+	$ff0000 pa func+
+	$0000ff ss func+
+	$7f0000 hs func+
+	$007f00 hA func+
+	0 lines> d!
 	;
-	
+
+#funame * 64
 
 :main
 	$0 sdlcls
@@ -291,31 +279,30 @@
 	font txfont
 	|__________
 	0.05 %h uiN
-	"Function Plot" uiLabelC
-|	0 y>scr "%f" sprint uiLabel
-	|__________
-	0.1 %w uiE
-	'exit "Exit" uiCBtn 
+		uiPush
+		'funame "Function: %s" sprint uiLabelC
+		|__________
+		0.1 %w uiE
+		'exit "Exit" uiCBtn 
+		uiPop
 	|__________		
 	uiRest
 	sfont txfont
-	
-	
+
+	|uiFill
 	drawGrid
 	lin.draw
-|	$ffffff sdlcolor
-|	'm_log drwfunc
-	
-|	$ffff sdlcolor
-|	'm_recip drwfunc
-	
+
 	uiEnd
 	
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit ) 
-	<f1> =? ( 'm_log $ff0000 ,func )
-	<f2> =? ( 'm_lgn $ff00 ,func )
+	<f1> =? ( "linear" 'funame strcpy 'm_linear mktables gengra )
+	<f2> =? ( "log" 'funame strcpy 'm_log mktables gengra )
+	<f3> =? ( "const" 'funame strcpy 'm_const mktables gengra )
+	<f4> =? ( "recip" 'funame strcpy 'm_recip mktables gengra )
+	<f5> =? ( "lgn" 'funame strcpy 'm_lgn mktables gengra )
 	drop
 	;
 	
@@ -329,11 +316,7 @@
 	lin.clear	
 	mark
 	
-	'm_linear mktables
-|	'm_log mkxs
-|	'm_const mkxs
-|	'm_recip mkxs
-|	'm_lgn mkxs
-	
+|	'm_linear mktables
+
 	'main SDLshow
 	SDLquit ;	

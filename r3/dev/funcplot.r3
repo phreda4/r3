@@ -89,16 +89,18 @@
 		) 2drop ;
 
 |---- function draw
+| 32bits 
+| sign = point
+| x(15bits) y(16bits)
 #lines		| store the lines precalc
 #lines>
 
 :32uv | b -- x y 
-	dup 15 >> $7fff and
-	swap $7fff and ;
+	dup 33 << 64 15 - >>
+	swap 48 << 48 >> ;
 	
 :uv32 | x y -- b
-	$7fff and 
-	swap $7fff and 15 << or ;
+	$ffff and swap $7fff and 16 << or ;
 	
 :lin.clear
 	lines 'lines> ! 
@@ -134,10 +136,7 @@
 		stepx + ) 2drop 
 	0 lines> d! ;
 
-
 |--------------------
-
-
 :main
 	$0 sdlcls
 	uiStart
