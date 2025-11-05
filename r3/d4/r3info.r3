@@ -1,7 +1,7 @@
 | r3info with new tokenizer
 | PHREDA 2024
 |------------------
-^r3/lib/console.r3
+^r3/lib/term.r3
 ^r3/d4/r3token.r3
 
 #name * 1024
@@ -59,11 +59,11 @@
 	"mem/srcinfo.db" delete 
 	
 	.cls
-|	'filename "mem/main.mem" load drop
-	"r3/test/testasm.r3" 'filename strcpy
+	'filename "mem/main.mem" load drop
+|	"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename r3load
-	'filename .println
+|	'filename .println
 	error 1? ( dup saveerr ; ) drop
 	savemap
 	;

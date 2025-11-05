@@ -310,6 +310,12 @@
 #calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edfocusro 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edload 'edsave
 #info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $0 )
 #r3_util_imedit.r3 'name 'words 'calls 'info
+^r3/util/imfiledlg.r3
+#name "r3/util/imfiledlg.r3"
+#words  "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
+#calls  'immfileload 'immfilesave 'fullfilename 'uiFileName
+#info ( $1F $1F $1 $1F )
+#r3_util_imfiledlg.r3 'name 'words 'calls 'info
 ^r3/util/immdatetime.r3
 #name "r3/util/immdatetime.r3"
 #words  "uiDateTime" "uiDate" "uiTime" 0
@@ -406,6 +412,18 @@
 #calls  'ttx 'tty 'ttcolor 'ttfont! 'ttprint 'ttemits 'ttat '+ttat 'ttsize 'ttcursor 'ttcursori 'ttrect
 #info ( $80 $80 $1F $1F $1F $1F $2E $2E $12 $2F $2F $4 )
 #r3_util_ttfont.r3 'name 'words 'calls 'info
+^r3/util/tui.r3
+#name "r3/util/tui.r3"
+#words  "fx" "fy" "fw" "fh" "flin?" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "flcr" "uikey" "exit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuRefocus" "tuif" "tui" "onTui" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuBtn" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "tuTree" "tuText" "padi>" "tuInputLine" 0
+#calls  'fx 'fy 'fw 'fh 'flin? 'flxvalid? 'flx! 'flx 'flxpush 'flxpop 'flxRest 'flxN 'flxS 'flxE 'flxO 'fw% 'fh% 'flpad 'flcr 'uikey 'exit 'tuX? 'tuR! 'tuC! '.tdebug 'tuiw 'tuRefocus 'tuif 'tui 'onTui '.wfill '.wborde '.wborded '.wbordec '.wtitle 'tuWin 'tuBtn 'xwrite! 'xwrite.reset 'uiNindx 'tuList 'tuTree 'tuText 'padi> 'tuInputLine
+#info ( $80 $80 $80 $80 $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $0 $1 $0 $1F $0 $0 $0 $0 $2E $0 $1F $1F $0 $10 $2E $2E $2F $80 $2E )
+#r3_util_tui.r3 'name 'words 'calls 'info
+^r3/util/tuiedit.r3
+#name "r3/util/tuiedit.r3"
+#words  "filename" "fuente" "fuente>" "$fuente" "tuEditCode" "tuReadCode" "tudebug" "TuLoadCode" "TuNewCode" 0
+#calls  'filename 'fuente 'fuente> '$fuente 'tuEditCode 'tuReadCode 'tudebug 'TuLoadCode 'TuNewCode
+#info ( $80 $80 $80 $80 $0 $0 $1 $1F $0 )
+#r3_util_tuiedit.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"
 #words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" 0
@@ -448,6 +466,12 @@
 #calls  'uiDirs 'uiFiles 'uiTreePath 'uiGetFiles 'uiScanDir
 #info ( $80 $80 $10 $1F $1F )
 #r3_util_uifiles.r3 'name 'words 'calls 'info
+^r3/util/utfg.r3
+#name "r3/util/utfg.r3"
+#words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" 0
+#calls  '.xwrite '.awrite '.vline '.hline '.vlined '.hlined '.boxl '.boxc '.boxd '.boxf 'lalign 'calign 'ralign 'lwrite 'cwrite 'rwrite 'xalign 'xwrite 'xText
+#info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C )
+#r3_util_utfg.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "vareset" "vaini" "vupdate" "+vanim" "+vboxanim" "+vxyanim" "+vcolanim" "+vexe" "+vvexe" "+vvvexe" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" 0
@@ -533,4 +557,4 @@
 #info ( $2F $0 $3E $5C $3E $3E $2F $1F $2F $4C $4D $4D $3E )
 #r3_lib_win_winsock.r3 'name 'words 'calls 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_term.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_float_table.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uicolor.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiledlg.r3 'r3_util_uifiles.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_term.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_boxtext.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_float_table.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_timeline.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_ui.r3 'r3_util_uicolor.r3 'r3_util_uidatetime.r3 'r3_util_uiedit.r3 'r3_util_uifiledlg.r3 'r3_util_uifiles.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 0

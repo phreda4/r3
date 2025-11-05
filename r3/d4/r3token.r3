@@ -618,6 +618,7 @@
 |-------------------------------------------
 ::r3loadmem | mem 'filename --
 |-------------------------------------------
+	empty mark | reuse mem (need 1 mark)
 	0 0 error!
 	dup 'filename strcpy
 	'r3path strpath
@@ -628,7 +629,7 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
-	error 1? ( drop "error" .println ; ) drop
+	error 1? ( drop ; ) drop
 |	cnttok cntdef "%d %d" .println	
 	tok> tok - 3 >> 'cnttok !	| real token use
 	dic> dic - 4 >> 'cntdef !	| real definition use
