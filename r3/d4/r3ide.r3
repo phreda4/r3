@@ -2,6 +2,7 @@
 | PHREDA 2025
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
+^r3/lib/trace.r3
 
 ^r3/d4/r3token.r3
 
@@ -29,18 +30,45 @@
 	;
 
 |-------	
-|:StaticStackAnalisis
-|	dup @ 1 and? ( drop anadata ; ) drop anacode ;
-	
-:makelistwords
+:makelistwordsfull
 	here 'lwords !
 	0 ( cntdef <?
 		dup nro>dic 
 		@ dic>name "%w" ,print ,eol 
 		1+ ) drop 
 	,eol ;
-		
-		
+	
+|---- list words
+:makelistwords
+	here 'lwords !
+	0 ( cntdef <?
+		dup .h ,s ,eol
+		|nro>dic @ dic>name "%w" ,print ,eol 
+		1+ ) drop 
+	,eol ;
+
+:chooseword
+	dup dic - 4 >> .h ,s ,eol ;
+	
+:makelistwords
+	here 'lwords !
+	dic< ( dic> <? | solo codigo principal
+		chooseword
+		16 + ) drop
+	,eol ;
+
+:wcolor
+	1 and? ( 201 .fc ; ) 196 .fc ;
+	
+:xwrite.word | str --
+	mark
+	str$>nro nip
+	nro>dic @ wcolor
+	dic>name "%w" ,print ,eol 
+	empty
+	here lwrite ;
+	
+|---- list inc	
 :makelistinc
 	here 'lincs !
 	0 ( cntinc <? 
@@ -48,8 +76,14 @@
 		1+ ) drop
 	,eol ;
 	
+	
 :codeok
-	"Code OK%.fullinfo" 'msg strcpy
+	mark
+	'msg 'here !
+	cnttok cntdef cntinc "inc:%d words:%d tokens:%d" ,print
+	,eol
+	empty
+	
 	4 'screenstate !
 	makelistwords
 	makelistinc
@@ -85,8 +119,10 @@
 	
 	flxRest
 	tuWina $4 "Dicc" .wtitle 1 1 flpad 
-	'vwords lwords tuList | 'var list --
 	
+	'xwrite.word xwrite!
+	'vwords lwords tuList | 'var list --
+	xwrite.reset
 	flxpop
 	;
 	
@@ -108,22 +144,21 @@
 	'msg .print
 	;
 	
-:main
+:debugcode
+	;
+	
+:editcode
 	.reset .cls 
-	1 1 flpad
-	|-----------
 	1 flxN
 	
 	4 .bc  7 .fc
 	|.rever 
 	|.eline
 	fx fy .at fw .nsp fx .col
-	" R3forth [" .write
+	" R3forth EDIT [" .write
 	'filename .write 
 	"] " .write
 	|tudebug .write
-	here "%h" .print
-	
 
 	|-----------
 	screenstate	
@@ -153,11 +188,14 @@
 	drop
 	;
 	
+:main
+	editcode
+	;
 |-----------------------------------
 : 
 	.alsb 
-	|'filename "mem/menu.mem" load	
-	"r3/test/testasm.r3" 'filename strcpy
+	'filename "mem/menu.mem" load	
+	|"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename TuLoadCode
 	|TuNewCode

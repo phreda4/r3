@@ -19,15 +19,15 @@
 
 ::str$>nro | adr -- adr' nro
 	0 ( swap c@+ $2f >?
-		dighex -? ( drop 1 - swap ; )
+		dighex -? ( drop 1- swap ; )
 		rot 4 << + )
-	drop 1 - swap ;
+	drop 1- swap ;
 
 ::str%>nro | adr -- adr' nro
 	0 ( swap c@+ $2e >=?
 		$31 >? ( drop 1- swap ; )
 		$30 - $1 and rot 1 << + )
-	drop 1 - swap ;
+	drop 1- swap ;
 
 ::str>nro | adr -- adr' nro ;1234 $12f %101 -12
 	signo
@@ -137,13 +137,13 @@
 		$39 >? ( drop 1- swap ; )			| 0..9
 		$30 - rot 10* + swap )
 	$2e =? ( getfrac gete )
-	drop 1 - swap
+	drop 1- swap
 	16 << $10000 f
 	1 over ( 1 >? 10/ swap 10* swap ) drop
 	*/ $ffff and or
 	e 0? ( drop ; )
-	+? ( ( 1? 1 - swap 10* swap ) drop ; )
-	( 1? 1 + swap 10/ swap ) drop
+	+? ( ( 1? 1- swap 10* swap ) drop ; )
+	( 1? 1+ swap 10/ swap ) drop
 	;
 
 |----- test solo si es numero (sin calcular)
@@ -192,7 +192,7 @@
 	swap 0? ( nip ; )
 	( c@+ $ff and 31 >?
 		rot c!+ swap ) drop
-	1 - nip ;
+	1- nip ;
 
 ::scannro | adr 'nro -- adr'
 	over trim ?numero 0? ( 2drop ; ) drop
@@ -201,14 +201,14 @@
 ::scanc | c adr -- adr'/0
 	0? ( nip ; )
 	( c@+ 1?
-		pick2 =? ( drop nip 1 - ; )
+		pick2 =? ( drop nip 1- ; )
 		drop )
 	nip nip ;
 
 ::scann | adr "str" -- adr'
  	c@+ rot scanc
 	0? ( nip ; )
-	1 + swap | adr' "tr"
+	1+ swap | adr' "tr"
 	( c@+ 1?      | adr r t
 		rot c@+      | r t adr a
 		rot <>? ( 3drop 0 ; ) | r adr a
