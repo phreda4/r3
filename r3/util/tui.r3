@@ -246,8 +246,7 @@
 	[shift+tab] =? ( focus<< ) 
 	drop ;
 	
-::tuBtn | 'ev "" --
-	.reset
+::tuTBtn | 'ev "" --
 	tuiw 
 	dup .bc
 	drop
@@ -255,6 +254,13 @@
 	>r fw fh fx fy r> xText
 	tuX? 0? ( 2drop ; ) drop ex ;
 	
+::tuBtn	
+	tuiw dup .bc
+	drop
+	kbBtn
+	fx fy .at
+	fw swap calign here .write .reset 1 'fy +!
+	tuX? 0? ( 2drop ; ) drop ex ;
 	
 |--------------------------------	
 |---- write line
@@ -309,7 +315,7 @@
 	evtmw 0? ( drop ; )  | 'v h w
 	pick2 8 + dup 		| 'v h w S S
 	@ rot + clamp0 
-	cntlist pick3 - 1- clampmax swap !
+	cntlist pick3 - clampmax swap !
 	;
 
 :pageadj | 'var n key -- 'var n key
@@ -323,7 +329,7 @@
 | #vlist 0 0 
 
 :chsel | 'var n key delta -- 'var n key
-	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
+	pick3 dup @ rot + cntlist 1- clamp0max swap ! | 'v n k nv
 	pageadj
 	tuX! ;
 
@@ -333,9 +339,9 @@
 	drop
 	chwheel
 	uikey 0? ( drop ; )	
-	[up] =? ( -1 chsel )
-	[dn] =? ( 1 chsel )
+	[up] =? ( -1 chsel ) [dn] =? ( 1 chsel )
 	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 	
+	[pgup] =? ( over neg chsel ) [pgdn] =? ( over chsel )
 	drop ;	
 
 :mouList | 'var h --
@@ -388,9 +394,15 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 
+:chsel | 'var n key delta -- 'var n key
+	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv (2 -) !!
+	pageadj
+	tuX! ;
+
 :kbclick	
 	pick2 @ 3 << indlist + @ 
 	dup c@ $80 xor swap c! 
+|	0 chsel
 	tuX! tuR! ;
 	
 :focTree | 'var h --
@@ -399,11 +411,11 @@
 	drop
 	chwheel
 	uikey 0? ( drop ; )	
-	[up] =? ( -1 chsel )
-	[dn] =? ( 1 chsel )
+	[up] =? ( -1 chsel ) [dn] =? ( 1 chsel )
 	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 
 	[enter] =? ( kbclick ) 
-	[pgdn] =? ( 1 pick3 8 + +! )
+	[pgup] =? ( over neg chsel )
+	[pgdn] =? ( over chsel )
 	drop ;	
 	
 :mouTree | 'var h --

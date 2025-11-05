@@ -65,6 +65,9 @@
 
 #pad * 256
 
+#vlist 0 0 
+#llist
+
 :main
 	.reset .cls 
 	
@@ -79,10 +82,19 @@
 	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
 	16 flxO
+	flxpush
+	32 flxS
 	tuwin $1 " Options " .wtitle
-	1 1 flpad |1 b.hgrid
-	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
-	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
+	1 1 flpad 
+	5 'fh ! 
+	'exit "Salir" tuBtn | 'ev "" --
+	|1 'fy +! 
+	'exit "Coso" tuBtn | 'ev "" --
+	flxrest
+	tuwin $1 " List " .wtitle
+	1 1 flpad
+	'vlist llist tuList
+	flxpop
 	6 flxS
 	.wborde	fx fy .at cols rows "%d %d" .print
 	
@@ -102,6 +114,16 @@ cuando cambia de tamanio"
 	
 |-----------------------------------
 : 
+	here 'llist !
+	"1 uno" ,s ,eol
+	"2 uno" ,s ,eol
+	"3 uno" ,s ,eol
+	"4 uno" ,s ,eol
+	"5 uno" ,s ,eol
+	"6 uno" ,s ,eol
+	"7 uno" ,s ,eol
+	,eol
+	
 	.alsb 
 	'main onTui 
 	.masb .free 

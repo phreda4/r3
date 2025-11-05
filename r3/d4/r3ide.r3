@@ -78,11 +78,7 @@
 	.reset
 	30 flxE 
 	flxpush
-	|240 .bc
-	|fx fy .at fh .vline
-	|0 1 flpad
-	|.wfill |.wborde
-	|tuWina $1 " Map " .wtitle
+	
 	10 flxN
 	tuWina $4 "Includes" .wtitle 1 1 flpad 
 	'vincs lincs tuList

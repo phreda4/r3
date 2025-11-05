@@ -80,12 +80,10 @@
 
 |------------
 :paneleditor
-|	tuwin 
-|	.wbordec
-|	$1 " CODE " .wtitle
-|	1 1 flpad 
-|	tuEditCode
 	fuente c@ 0? ( drop ; ) drop
+	.wbordec
+	1 1 flpad 
+|	tuEditCode
 	tuReadCode 
 	;
 	
