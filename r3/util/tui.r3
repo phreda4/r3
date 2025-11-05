@@ -232,6 +232,10 @@
 	
 ::tuWin | --
 	wid wida =? ( .wbordec ) 1+ 'wid ! ;
+
+::tuWina | --
+	wid wida =? ( .Bold ) 1+ 'wid ! .wbordec ;
+
 	
 |--- Button	
 :kbBtn | 'ev "" -- 'ev ""
@@ -318,14 +322,19 @@
 |----- LIST
 | #vlist 0 0 
 
+:chsel | 'var n key delta -- 'var n key
+	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
+	pageadj
+	tuX! ;
+
 :focList | 'var h --
 	tuif 0? ( drop ; ) 
 	1 =? ( pageadj )
 	drop
 	chwheel
 	uikey 0? ( drop ; )	
-	[up] =? ( pick2 dup @ 1- clamp0 swap ! tuX! )
-	[dn] =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! tuX! )
+	[up] =? ( -1 chsel )
+	[dn] =? ( 1 chsel )
 	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< ) 	
 	drop ;	
 
@@ -384,11 +393,6 @@
 	dup c@ $80 xor swap c! 
 	tuX! tuR! ;
 	
-:chsel | 'var n key delta -- 'var n key
-	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv
-	pageadj
-	tuX! ;
-		
 :focTree | 'var h --
 	tuif 0? ( drop ; ) 
 	1 =? ( pageadj )

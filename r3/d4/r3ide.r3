@@ -15,16 +15,44 @@
 
 #msg * 1024
 
+#vwords 0 0
+#vincs 0 0
+
+#lwords
+#lincs
+
 :coderror | error --
 	'msg strcpy
 	lerror 'fuente> !
 
 	1 'screenstate !
 	;
+
+|-------	
+|:StaticStackAnalisis
+|	dup @ 1 and? ( drop anadata ; ) drop anacode ;
+	
+:makelistwords
+	here 'lwords !
+	0 ( cntdef <?
+		dup nro>dic 
+		@ dic>name "%w" ,print ,eol 
+		1+ ) drop 
+	,eol ;
+		
+		
+:makelistinc
+	here 'lincs !
+	0 ( cntinc <? 
+		dup 4 << 'inc + @ "%w" ,print ,eol
+		1+ ) drop
+	,eol ;
 	
 :codeok
 	"Code OK%.fullinfo" 'msg strcpy
-	2 'screenstate !
+	4 'screenstate !
+	makelistwords
+	makelistinc
 	;
 	
 |---  F1 RUN
@@ -46,14 +74,24 @@
 	;
 	
 |---- screen
-:scrmapa	
+:scrmapa
 	.reset
-	26 flxE 
+	30 flxE 
+	flxpush
 	|240 .bc
-	fx fy .at fh .vline
+	|fx fy .at fh .vline
+	|0 1 flpad
 	|.wfill |.wborde
-	|tuWin $1 " Map " .wtitle
-	0 1 flpad
+	|tuWina $1 " Map " .wtitle
+	10 flxN
+	tuWina $4 "Includes" .wtitle 1 1 flpad 
+	'vincs lincs tuList
+	
+	flxRest
+	tuWina $4 "Dicc" .wtitle 1 1 flpad 
+	'vwords lwords tuList | 'var list --
+	
+	flxpop
 	;
 	
 :screrr
@@ -102,16 +140,13 @@
 |	4 .bc  7 .fc fx fy .at fw .nsp fx .col 
 | |ESC| Exit |F1| Run |F2| Debug |F3| Explore |F4| Profile |F5| Compile" .write
 
-	
-	
 	|-----------
 	.reset
-	flxRest  tuWin 
+	flxRest tuWina 
 	$4 'filename .wtitle
 	$23 mark tudebug ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
-	
 	
 	uiKey
 	[f1] =? ( checkcode ) |show256 )

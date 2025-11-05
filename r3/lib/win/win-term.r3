@@ -51,7 +51,7 @@
     'on-resize ! ; | something the size is wrong at start
 
 :sizecalc
-	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! ;
+	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! ;
 	
 :sizeex
 	getrc prevrc =? ( drop ; ) 'prevrc ! 
@@ -128,10 +128,6 @@
 	
 ::getch | -- key | wait for key
     ( inkey 0? drop 10 ms ) ;
-	
-|------- Extended Event Handling -------
-
-
 
 |------- Console Mode Management -------
 | Input Modes:
