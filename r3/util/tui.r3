@@ -351,6 +351,7 @@
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
+	cntlist >=? ( drop ; ) 
 	pick3 @ =? ( .rever )
 	uiNindx 
 	fx .col | color?

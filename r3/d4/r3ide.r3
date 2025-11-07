@@ -8,6 +8,7 @@
 
 #filename * 1024
 
+#mode 0
 #screenstate 
 | 0 - editor only
 | $1 - msg error
@@ -15,6 +16,8 @@
 | $100 - list
 
 #msg * 1024
+#errline
+#errword * 64
 
 #vwords 0 0
 #vincs 0 0
@@ -22,10 +25,17 @@
 #lwords
 #lincs
 
+:cntlines
+	1 fuente 
+	( lerror <?
+		c@+ 13 =? ( rot 1+ -rot ) drop
+		) drop 'errline ! ;
+		
 :coderror | error --
 	'msg strcpy
+	lerror "%w" sprint 'errword strcpy
+	cntlines
 	lerror 'fuente> !
-
 	1 'screenstate !
 	;
 
@@ -96,6 +106,7 @@
 	
 	error 1? ( coderror ; ) drop 
 	codeok 
+	1 'mode !
 	;
 	
 |--- F2 DEBUG
@@ -105,6 +116,7 @@
 	
 	error 1? ( coderror ; ) drop
 	codeok
+	1 'mode !
 	;
 	
 |---- screen
@@ -113,12 +125,12 @@
 	30 flxE 
 	flxpush
 	
-	10 flxN
-	tuWina $4 "Includes" .wtitle 1 1 flpad 
+	8 flxN
+	tuWina $1 "Includes" .wtitle 1 1 flpad 
 	'vincs lincs tuList
 	
 	flxRest
-	tuWina $4 "Dicc" .wtitle 1 1 flpad 
+	tuWina $1 "Dicc" .wtitle 1 1 flpad 
 	
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
@@ -126,34 +138,66 @@
 	flxpop
 	;
 	
-:screrr
-	.7 .fc 1 .bc
-	2 flxS
-	|242 .bc
-	.wfill |.bordec
-	fx 1+ fy .at |fw .hline
-	'msg .print
-	;
 
 :scrmsg	
 	.reset
-	8 flxS
-	|242 .bc
-	|.wfill |.wborde
-	|fx fy .at fw .hline
+	8 flxS tuWina $1 "Imm" .wtitle |242 .bc
+	fx fy .at
 	'msg .print
 	;
-	
+
 :debugcode
+	.reset .cls 
+	1 flxN
+	
+	2 .bc 15 .fc
+	fx fy .at fw .nsp fx .col
+	" R3forth DEBUG [" .write
+	'filename .write 
+	"] " .write
+	|tudebug .write
+
+	scrmsg
+	scrmapa
+	
+|	1 flxS
+|	4 .bc  7 .fc fx fy .at fw .nsp fx .col 
+| |ESC| Exit |F1| Run |F2| Debug |F3| Explore |F4| Profile |F5| Compile" .write
+
+	|-----------
+	.reset
+	flxRest tuWina 
+	$4 'filename .wtitle
+	$23 mark tudebug ,s ,eol empty here .wtitle
+	1 1 flpad 
+	tuReadCode | 
+	
+	uiKey
+	[f1] =? ( 0 'mode ! ) |checkcode ) |show256 )
+|	[f2] =? ( debugcode ) |show256 )
+	
+|	[f6] =? ( screenstate 1 xor 'screenstate ! )
+|	[f7] =? ( screenstate 2 xor 'screenstate ! )
+	drop
+	;
+
+
+:screrr
+	.reset  
+	5 flxS .wfill
+	tuWina $1 " Error " .wtitle
+	1 1 flpad 	
+	fx fy .at 
+	'msg .write flcr
+	15 .fc 1 .bc 'errword .write flcr
+	.reset
+	errline "in line %d" .print
 	;
 	
 :editcode
 	.reset .cls 
 	1 flxN
-	
-	4 .bc  7 .fc
-	|.rever 
-	|.eline
+	4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
 	" R3forth EDIT [" .write
 	'filename .write 
@@ -163,8 +207,6 @@
 	|-----------
 	screenstate	
 	$1 and? ( screrr )
-	$2 and? ( scrmsg )
-	$4 and? ( scrmapa )
 	drop
 	
 |	1 flxS
@@ -188,14 +230,16 @@
 	drop
 	;
 	
+#listmode 'editcode 'debugcode	
 :main
-	editcode
+	mode 3 << 'listmode + @ ex
 	;
+	
 |-----------------------------------
 : 
 	.alsb 
-	'filename "mem/menu.mem" load	
-	|"r3/test/testasm.r3" 'filename strcpy
+	|'filename "mem/menu.mem" load	
+	"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename TuLoadCode
 	|TuNewCode
