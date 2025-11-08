@@ -47,6 +47,29 @@
 #sys-access
 #sys-setlocale
 
+#sys-socket
+#sys-bind
+#sys-listen
+#sys-accept
+#sys-connect
+#sys-send
+#sys-recv
+#sys-setsockopt
+#sys-inet_addr
+#sys-htons
+#sys-inet_aton
+#sys-inet_ntoa
+#sys-getaddrinfo
+#sys-freeaddrinfo
+#sys-gai_strerror
+#sys-gethostbyname
+#sys-gethostbyaddr
+#sys-getprotobyname
+#sys-getprotobynumber
+#sys-getservbyname
+#sys-getservbyport
+#sys-gethostname
+
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
 ::libc-close sys-close sys1 ;
@@ -90,6 +113,29 @@
 ::libc-stat sys-stat sys2 ;
 ::libc-access sys-access sys2 ;
 ::libc-setlocale sys-setlocale sys2 ;
+
+::libc-socket sys-socket sys3 ;
+::libc-bind sys-bind sys3 ;
+::libc-listen sys-listen sys2 ;
+::libc-accept sys-accept sys3 ;
+::libc-connect sys-connect sys3 ;
+::libc-send sys-send sys4 ;
+::libc-recv sys-recv sys4 ;
+::libc-setsockopt sys-setsockopt sys5 ;
+::libc-inet_addr sys-inet_addr sys1 ;
+::libc-htons sys-htons sys1 ;
+::libc-inet_aton sys-inet_aton sys2 ;
+::libc-inet_ntoa sys-inet_ntoa sys1 ;
+::libc-getaddrinfo sys-getaddrinfo sys4 ;
+::libc-freeaddrinfo sys-freeaddrinfo sys1 ;
+::libc-gai_strerror sys-gai_strerror sys1 ;
+::libc-gethostbyname sys-gethostbyname sys1 ;
+::libc-gethostbyaddr sys-gethostbyaddr sys3 ;
+::libc-getprotobyname sys-getprotobyname sys1 ;
+::libc-getprotobynumber sys-getprotobynumber sys1 ;
+::libc-getservbyname sys-getservbyname sys2 ;
+::libc-getservbyport sys-getservbyport sys2 ;
+::libc-gethostname sys-gethostname sys2 ;
 
 :
 	"/lib/libc.so.6" loadlib
@@ -140,5 +186,28 @@
     dup "stat" getproc 'sys-stat !
     dup "access" getproc 'sys-access !
     dup "setlocale" getproc 'sys-setlocale !
+
+	dup "socket" getproc 'sys-socket !
+	dup "bind" getproc 'sys-bind !
+	dup "listen" getproc 'sys-listen !
+	dup "accept" getproc 'sys-accept !
+	dup "connect" getproc 'sys-connect !
+	dup "send" getproc 'sys-send !
+	dup "recv" getproc 'sys-recv !
+	dup "setsockopt" getproc 'sys-setsockopt !
+	dup "inet_addr" getproc 'sys-inet_addr !
+	dup "htons" getproc 'sys-htons !
+	dup "inet_aton" getproc 'sys-inet_aton !
+	dup "inet_ntoa" getproc 'sys-inet_ntoa !
+	dup "getaddrinfo" getproc 'sys-getaddrinfo !
+	dup "freeaddrinfo" getproc 'sys-freeaddrinfo !
+	dup "gai_strerror" getproc 'sys-gai_strerror !
+	dup "gethostbyname" getproc 'sys-gethostbyname !
+	dup "gethostbyaddr" getproc 'sys-gethostbyaddr !
+	dup "getprotobyname" getproc 'sys-getprotobyname !
+	dup "getprotobynumber" getproc 'sys-getprotobynumber !
+	dup "getservbyname" getproc 'sys-getservbyname !
+	dup "getservbyport" getproc 'sys-getservbyport !
+	dup "gethostname" getproc 'sys-gethostname !	
 	drop 
     ;
