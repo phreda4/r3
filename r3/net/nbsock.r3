@@ -1,5 +1,7 @@
+| common socket library
+| PHREDA 2025
+^r3/lib/netsock.r3
 
-#WSAData * 512
 
 #AF_INET 2
 #SOCK_STREAM 1
@@ -20,18 +22,32 @@
 #rx_buf 4096
 #rx_len
 
-:init_winsock 
-  WSADATA wsa;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa)) {
-    fprintf(stderr, "WSAStartup error\n");
-    exit(1);
-  ;
+#WSAData * 512
 
-void cleanup_winsock(void) {
-#ifdef _WIN32
-  WSACleanup();
-#endif
-}
+:cleanup_winsock
+|WIN| WSACleanup
+	;
+
+:init_winsock 
+|WIN|	$0202 'WSAData WSAStartup 1? ( "error %d" .println ; ) drop
+
+	AF_INET SOCK_STREAM IPPROTO_TCP socket 
+	-? ( "error %d" .println cleanup_winsock ; )
+	'server_socket !
+
+    AF_INET 'server_addr w!
+	PORT dup 8 << swap 8 >> or	'server_addr 2 + w!
+	$0 'server_addr 4 + d! |INADDR_ANY
+
+	server_socket 'server_addr 16 bind 
+	-? ( "error %d" .println server_socket closesocket cleanup_winsock ; ) drop
+	
+	server_socket 1 listen
+	-? ( "error %d" .println server_socket closesocket cleanup_winsock ; ) drop
+	
+	PORT "App port:%d" .println
+	;
+
 
 int server_create(int port) {
   struct sockaddr_in addr;
