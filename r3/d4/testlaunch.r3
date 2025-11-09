@@ -2,49 +2,41 @@
 ^r3/lib/win/core.r3
 ^r3/lib/netsock.r3
 
+
+#server_socket
+
 #buflen 4096
 #buffer * 4096
 
-#sock
-:waitrec
-	|( sock buf len flags -- bytes_recv )
-	( sock 'buffer buflen 0 socket-recv 0? drop 
-		"." .fprint
-		50 ms ) | wait rec
-	"%d>>" .print
-	"recv:" .print
-	'buffer .println
-	.flush ;
+#client_socket
+#client_addr 0 0
+#client_size 16
 
-:servidor
-	9999 server-socket 'sock !
-	( waitrec
-	sock "OK" 3 0 socket-send |( sock data len flags -- bytes_sent )\
-	"%d<<" .println .flush 
-		)
-	socket-final ;
+:handlerequest
+	"cliente conectado" .fprintln
+	;
 	
-
-#sockc 
-:cliente
-	client-socket 'sockc !
-	9999 
-	socket-final ;
+:serverloop
+	server_socket 'client_addr 'client_size socket-accept
+|	dup "ok %d" .fprintln 
+	inkey [esc] =? ( 2drop ; ) drop
+	-? ( drop 100 ms serverloop ; ) 
+	'client_socket !
+	handlerequest
+	serverloop ;	
 	
-|	client_connect(9999);
-|	sock_send("Hola", 4);
-|	if (sock_recv() > 0) {
-|	printf("Respuesta: %s\n", get_conn()->rx_buf);
-|	}
-|	sock_close()
-|	;
-
 :main
-	"test" .println
-	"r3.exe r3/term/fire.r3" sysnew |sysnewin
+	"test" .fprintln
+	9999 server-socket 'server_socket !
+	server_socket "socket: %d" .fprintln
+	
+	"""../r3evm/r3d.exe"" r3/arco.r3" sysnew |sysnewin
 |servidor
+	serverloop
 	;
 	
 : 
+socket-ini
 main 
+socket-end
 ;

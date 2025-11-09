@@ -21,20 +21,27 @@
 | ============================================
 | Inicialización multiplataforma
 | ============================================
-|||WIN|#WSAData * 512
-
-:socket-init | Windows: inicializar Winsock2
+|typedef struct WSAData {
+|    WORD           wVersion;
+|    WORD           wHighVersion;
+|    unsigned short iMaxSockets;
+|	 unsigned short iMaxUdpDg;
+|    char           *lpVendorInfo;
+|    char           szDescription[256+1];
+|    char           szSystemStatus[128+1];
+|#WSAData * 512
+::socket-ini | Windows: inicializar Winsock2
 |WIN| $0202 here ws2-WSAStartup drop | 'WSAData
 	;
 
-:socket-cleanup | Windows: limpiar Winsock2
+::socket-end | Windows: limpiar Winsock2
 |WIN| ws2-WSACleanup drop
 	;
 
 | ============================================
 | Abstracción: crear socket
 | ============================================
-:socket-create |( family type protocol -- sock )
+::socket-create |( family type protocol -- sock )
 |WIN| ws2-socket
 |LIN| libc-socket 
 	;
@@ -42,17 +49,16 @@
 | ============================================
 | Abstracción: establecer no-bloqueante
 | ============================================
-:socket-set-nonblock |( sock -- result )
+::socket-set-nonblock |( sock -- result )
 |LIN| F_SETFL O_NONBLOCK libc-fcntl
-|WIN| FIONBIO_MODE ws2-ioctlsocket
+|WIN| 1 here ! $8004667E here ws2-ioctlsocket
 	;
 
 | ============================================
 | Abstracción: opciones de socket
 | ============================================
-:socket-set-reuseaddr |( sock -- result )
-	1 here ! | Preparar valor (1)
-	| setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int))
+::socket-set-reuseaddr |( sock -- result )
+	1 here ! | Preparar valor (1) 	| setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int))
 	SOL_SOCKET SO_REUSEADDR here 4 
 |WIN| ws2-setsockopt
 |LIN| libc-setsockopt
@@ -120,20 +126,42 @@
 | ============================================
 | Funciones de alto nivel
 | ============================================
+
+#IPPROTO_TCP 6
+|struct sockaddr_in {
+|    short sin_family;         // Offset: 0, Size: 2 bytes
+|    unsigned short sin_port;  // Offset: 2, Size: 2 bytes
+|    struct in_addr sin_addr;  // Offset: 4, Size: 4 bytes
+|    char sin_zero[8];         // Offset: 8, Size: 8 bytes
+|};
+
+#server_addr 0 0
+
+    |struct sockaddr_in direccion;
+    |direccion.sin_family = AF_INET;
+    |direccion.sin_port = htons(puerto);
+    |direccion.sin_addr.s_addr = INADDR_ANY;
+	
 ::server-socket |( port -- sock )
-	socket-init
+    AF_INET 'server_addr w!
+	dup 8 << swap 8 >> or	'server_addr 2 + w!
+	$0 						'server_addr 4 + d! |INADDR_ANY
+| 'server_addr dumpadr
+
 	AF_INET SOCK_STREAM 0 socket-create
+	dup 'server_addr 16 socket-bind drop
+	dup 1 socket-listen drop | MAXCON
 	dup socket-set-nonblock drop
-	dup socket-set-reuseaddr drop
+|	dup socket-set-reuseaddr drop	
 	;
+	
 
 ::client-socket |( -- sock )
-	socket-init
 	AF_INET SOCK_STREAM 0 socket-create
 	dup socket-set-nonblock drop
 	;
 
 ::socket-final |( sock -- )
 	socket-close drop
-	socket-cleanup
+|	socket-cleanup
 	;
