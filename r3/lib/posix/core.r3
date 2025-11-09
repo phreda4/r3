@@ -171,4 +171,48 @@
 ::sysnew | "" -- ; 
 	|here "gnome-terminal --wait -- bash -c " ,s 34 ,c swap ,s 34 ,c ,eol
 	libc-system drop ;
+
 	
+|Opción 1: Con xterm (más controlable)
+|#include <unistd.h>
+|#include <sys/wait.h>
+
+|void launch_emulator_in_terminal_linux() {
+|    pid_t pid = fork();
+|    if (pid == 0) {  // Child process
+|        execlp("xterm", "xterm", 
+|               "-title", "R3Forth Emulator",
+|               "-e", "./emulador_r3forth",
+|               NULL);
+|        exit(1);
+|    }
+|    // Parent continúa (el IDE)
+
+|Opción 2: Con gnome-terminal
+|cvoid launch_emulator_in_terminal_linux() {
+|    pid_t pid = fork();
+|    if (pid == 0) {
+|        execlp("gnome-terminal", "gnome-terminal",
+|               "--title=R3Forth Emulator",
+|               "--", "./emulador_r3forth",
+|               NULL);
+|        exit(1);
+|    }
+
+|Opción 4: Con PTY + script (más robusto, sin depender de emulador de terminal)
+|#include <pty.h>
+|#include <unistd.h>
+|#include <stdlib.h>
+|#include <sys/wait.h>
+
+|int launch_emulator_with_pty() {
+|    int master_fd;
+|    pid_t pid = forkpty(&master_fd, NULL, NULL, NULL);
+|    if (pid == 0) {        // Child: ejecuta emulador
+|        execlp("./emulador_r3forth", "emulador_r3forth", NULL);
+|        exit(1);
+|    }
+|    // Parent: retorna el file descriptor del master
+|    // Puedes leer/escribir en master_fd para comunicarte
+|    return master_fd;
+

@@ -199,11 +199,14 @@
 | $10 new console
 ::sysnew | "" --
 	ininfo	
+	|1 'sinfo $38 + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
+	|5 'sinfo $3c + w! |    si.wShowWindow = SW_SHOW;
+	
 	0 swap 0 0 0 $10 0 0 'sinfo 'pinfo CreateProcess drop
-	pinfo -1 WaitForSingleObject
+	|pinfo -1 WaitForSingleObject
+	'pinfo @+ CloseHandle @ CloseHandle | no wait
 	;
 	
-
 |https://learn.microsoft.com/es-mx/windows/win32/debug/creating-a-basic-debugger?redirectedfrom=MSDN
 |https://www.codeproject.com/Articles/43682/Writing-a-basic-Windows-debugger
 
@@ -212,8 +215,7 @@
 
 ::sysdebug | "" -- 
 	ininfo
-	|0 swap 
-	0
+	0 swap
 	0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess drop
 |	pinfo -1 WaitForSingleObject
 	;
