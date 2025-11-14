@@ -39,7 +39,36 @@
 :m_sin
 	dup sin swap 2* sin *. ;
 
+#coeff
+	0.99999
+	676.52037
+	-1259.13922
+	771.32343
+	-176.61503
+	12.50734
+	-0.13857
+	0.00001
 	
+:m_gamma | z -- v
+	0.5 <? (
+		1.0 over - m_gamma
+		swap |6.28318 *. 
+		sin *.
+		3.14159	swap /.
+		; )
+	1.0 -
+	'coeff >a
+	a@+ | z x
+	1 ( 8 <? | z x i 
+		a@+ pick3 pick2 fix. | z x i c z i
+		+ /. 					| z x i c/
+		rot + swap
+		1+ ) drop
+	over 7.5 + | z x t
+	rot 0.5 + over swap pow. | x t pow
+	swap neg exp. *. | x posw exp
+	*. 2.50663 *.
+	;	
 |---- graph	
 #xmin -0.1
 #xmax 4.0
@@ -173,6 +202,7 @@
 	<f1> =? ( 'm_log $ff0000 ,func )
 	<f2> =? ( 'm_lgn $ff00 ,func )
 	<f3> =? ( 'm_sin $ff00 ,func )
+	<f4> =? ( 'm_gamma $ff ,func )
 	drop
 	;
 	
