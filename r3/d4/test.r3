@@ -1,9 +1,13 @@
-^r3/lib/console.r3
+|^r3/lib/console.r3
 
-#var1 33
+#var1 3
 
+:tt
+	var1 + ;
 :
-2 1 over + *
-"hola" .print
-waitesc
+2 1 over + 
+tt
+
+|"hola" .print
+|waitesc
 ;
