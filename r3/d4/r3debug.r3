@@ -1,6 +1,8 @@
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
 
+| r3debug
+| PHREDA 2025
 ^r3/lib/term.r3
 ^r3/lib/win/core.r3
 ^r3/lib/netsock.r3
@@ -8,15 +10,59 @@
 #state 0
 #filename * 1024
 
+#cntdicc
+#boot
+#memc
+#memd
+
+#memcode
+#memdata
+
+#dstack * 1024
+#dstack>
+
+#rstack * 1024
+#rstack>
+
+#dicc
+#dicc>
+
+|fwrite(&cntdicc,sizeof(int),1,file);
+|fwrite(&boot,sizeof(int),1,file);
+|fwrite(&memc,sizeof(int),1,file);
+|fwrite(&memd,sizeof(int),1,file);
+|fwrite((void*)memcode,sizeof(int),memc,file);
+|fwrite((void*)memdata,1,memd,file);
+
+|for (int i=0;i<cntdicc;i++) {
+|	fword(file,dicc[i].nombre-1);	
+|	fprintf(file," %x",dicc[i].mem);	
+|	fprintf(file," %x\n",dicc[i].info);			
+
+:loadinfo
+	here dup "mem/r3code.mem" load 'here !
+	d@+ 'cntdicc !
+	d@+ 'boot !
+	d@+ 'memc !
+	d@+ 'memd !
+	dup 'memcode !
+	memc 2 << + 
+	'memdata !
+
+	here dup "mem/r3dicc.mem" load 'here !
+	'dicc !
+	;
+	
+
 #msg * 1024
+
 #server_socket
-
-#buflen 4096
-#buffer * 4096
-
 #client_socket
 #client_addr 0 0
 #client_size 16
+
+#buflen 4096
+#buffer * 4096
 
 :vmrec
 	client_socket 'buffer 'buflen 0 socket-recv
@@ -93,7 +139,7 @@
 	cols 2/ flxO 
 	flxpush
 	
-	8 flxN
+	12 flxN
 	tuWina $1 "Watch" .wtitle 1 1 flpad 
 |	'vincs lincs tuList
 	
@@ -109,35 +155,39 @@
 	;
 	
 
-:scrmsg	
+:scrMsg	
 	.reset
 	4 flxS tuWina $1 "Imm" .wtitle |242 .bc
 	fx fy .at
 	'msg .print
 	;
+	
+:scrtxcode
+	|tuWina $4 'filename .wtitle
+	|$23 mark tudebug ,s ,eol empty here .wtitle
+	|1 1 flpad 
+	|tuEditCode
+	tuReadCode | 
+	;
+	
+:scrtokens
 
+	;
 	
 :maindb
 	.reset .cls 
-	2 flxN
+	1 flxN
 	4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
 	" R3forth DEBUG [" .write
 	'filename .write 
 	"] " .write
-	client_socket "%h" .write
 
-	scrmsg
+	scrMsg
 	scrViews
 	
-	.reset
-	flxRest tuWina 
-	$4 'filename .wtitle
-	$23 mark tudebug ,s ,eol empty here .wtitle
-	1 1 flpad 
-	|tuEditCode
-	tuReadCode | 
-	
+	flxRest 
+	scrtxcode
 	
 	uiKey
 	|[esc] =? ( 1 'flags ! ) 
@@ -188,7 +238,8 @@
 	"r3/d4/test.r3" 'filename strcpy
 	
 	'filename TuLoadCode
-	|TuNewCode
+	
+	loadinfo
 	
 	mark
 	main
