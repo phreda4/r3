@@ -7,6 +7,8 @@
 ^r3/lib/win/core.r3
 ^r3/lib/netsock.r3
 
+^./infodebug.r3
+
 #state 0
 #filename * 1024
 
@@ -138,7 +140,9 @@
 |---- view dicc
 :viewdicc
 	txtdicc 
-	cntdicc ( 1? 1- swap
+	10 
+	cntdicc "%d" .println
+	( 1? 1- swap
 		dup "%w|" .print
 		>>sp
 		dup "%l|" .println
@@ -156,7 +160,7 @@
 	12 flxN
 	tuWina $1 "Watch" .wtitle 1 1 flpad 
 |	'vincs lincs tuList
-	viewdicc
+|	viewdicc
 	
 	flxRest
 	tuWina $1 "Stack" .wtitle 1 1 flpad 
@@ -194,7 +198,8 @@
 	fx fy .at
 	memcode >a
 	memc ( 1? 1-
-		da@+ $ffffffff and "%h " .print
+		da@+ .token "%s " .print
+		|$ffffffff and "%h " .print
 		) drop
 	;
 	
