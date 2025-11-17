@@ -39,6 +39,8 @@
 |	fprintf(file," %x",dicc[i].mem);	
 |	fprintf(file," %x\n",dicc[i].info);			
 
+#txtdicc
+
 :loadinfo
 	here dup "mem/r3code.mem" load 'here !
 	d@+ 'cntdicc !
@@ -50,7 +52,7 @@
 	'memdata !
 
 	here dup "mem/r3dicc.mem" load 'here !
-	'dicc !
+	'txtdicc !
 	;
 	
 
@@ -132,6 +134,18 @@
 		) drop 
 	"fin debug" .fprintln
 	;
+
+|---- view dicc
+:viewdicc
+	txtdicc 
+	cntdicc ( 1? 1- swap
+		dup "%w|" .print
+		>>sp
+		dup "%l|" .println
+		>>cr
+		swap ) 2drop
+	;
+	
 	
 |---- screen
 :scrViews
@@ -142,6 +156,7 @@
 	12 flxN
 	tuWina $1 "Watch" .wtitle 1 1 flpad 
 |	'vincs lincs tuList
+	viewdicc
 	
 	flxRest
 	tuWina $1 "Stack" .wtitle 1 1 flpad 
@@ -157,8 +172,11 @@
 
 :scrMsg	
 	.reset
-	4 flxS tuWina $1 "Imm" .wtitle |242 .bc
+	4 flxS |tuWina $1 "Imm" .wtitle |242 .bc
 	fx fy .at
+	cols .hline .cr
+	
+	'dstack ( dstack> <? @+ "%d " .print ) .cr
 	'msg .print
 	;
 	
@@ -166,14 +184,22 @@
 	|tuWina $4 'filename .wtitle
 	|$23 mark tudebug ,s ,eol empty here .wtitle
 	|1 1 flpad 
+	
 	|tuEditCode
-	tuReadCode | 
+	tuReadCode 
 	;
 	
+|---- view tokens	
 :scrtokens
-
+	fx fy .at
+	memcode >a
+	memc ( 1? 1-
+		da@+ $ffffffff and "%h " .print
+		) drop
 	;
 	
+
+|---- main	
 :maindb
 	.reset .cls 
 	1 flxN
@@ -187,7 +213,8 @@
 	scrViews
 	
 	flxRest 
-	scrtxcode
+	|scrtxcode
+	scrtokens
 	
 	uiKey
 	|[esc] =? ( 1 'flags ! ) 

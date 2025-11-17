@@ -2,11 +2,15 @@
 
 #var1 3
 
+:cua dup * ;
+
 :tt
-	var1 + ;
+	var1 + cua ;
+	
 :
 2 1 over + 
 tt
+cua 
 
 |"hola" .print
 |waitesc
