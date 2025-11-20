@@ -248,14 +248,21 @@
 	-? ( drop 100 ms connect ; ) 
 	'client_socket ! ;
 	
+	
 :main
 	9999 server-socket 'server_socket !
-|	server_socket "socket: %d" .fprintln
-	
+	"mem/r3dicc.mem" delete | "filename" --
+
 	'filename 
 	"cmd /c r3d ""%s""" sprint
 	sysnew 
 
+	"mem/r3dicc.mem"  
+	( dup filexist 0? drop 100 ms ) | wait info
+	2drop 
+	
+	loadinfo
+	
 	connect
 	client_socket 0? ( drop ; ) drop
 	vmrec
@@ -267,12 +274,11 @@
 	socket-ini
 	.alsb 
 	|'filename "mem/menu.mem" load	
-	"r3/d4/test.r3" 'filename strcpy
+	"r3/d4/test.r3" 
+	|"r3/d4/r3test.r3" 
+	'filename strcpy
 	
 	'filename TuLoadCode
-	
-	loadinfo
-	
 	mark
 	main
 	.masb .free 

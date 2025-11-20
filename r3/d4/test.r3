@@ -1,4 +1,4 @@
-|^r3/lib/console.r3
+^r3/lib/console.r3
 
 #var1 3
 
@@ -12,6 +12,6 @@
 tt
 cua 
 
-|"hola" .print
+"hola" .print
 |waitesc
 ;
