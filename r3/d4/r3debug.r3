@@ -36,12 +36,9 @@
 |fwrite((void*)memcode,sizeof(int),memc,file);
 |fwrite((void*)memdata,1,memd,file);
 
-|for (int i=0;i<cntdicc;i++) {
-|	fword(file,dicc[i].nombre-1);	
-|	fprintf(file," %x",dicc[i].mem);	
-|	fprintf(file," %x\n",dicc[i].info);			
+|v=(pos<<40)|(dicc[i].mem<<8)|dicc[i].info;
 
-#txtdicc
+#realdicc
 
 :loadinfo
 	here dup "mem/r3code.mem" load 'here !
@@ -54,9 +51,10 @@
 	'memdata !
 
 	here dup "mem/r3dicc.mem" load 'here !
-	'txtdicc !
+	'realdicc !
 	;
 	
+
 
 #msg * 1024
 
@@ -137,30 +135,62 @@
 	"fin debug" .fprintln
 	;
 
+#vincs 0 0
+#vwords 0 0
+#vtoken 0 0
+
+#lincs
+#lwords
+#ltokens
+
 |---- view dicc
-:viewdicc
-	txtdicc 
-	10 
-	cntdicc "%d" .println
-	( 1? 1- swap
-		dup "%w|" .print
-		>>sp
-		dup "%l|" .println
-		>>cr
-		swap ) 2drop
-	;
+:ndicc | n -- entry
+	3 << realdicc + @ ;
+:dicc>name | nd -- str
+	40 >> realdicc cntdicc 3 << + + ;
+	
+:wcolor
+	$10 nand? ( 201 .fc ":" ,s ; ) 196 .fc "#" ,s ;
+	
+:xwrite.word | str --
+	mark
+	str$>nro nip
+	cntdicc >=? ( drop "" ; ) 
+	ndicc wcolor
+	dicc>name ,s ,eol 
+	empty
+	here lwrite ;
+
+:makelistwords
+	here 'lwords !
+	0 ( cntdicc <?
+|	dic< ( dic> <? | solo codigo principal
+		|chooseword
+		dup .h ,s ,eol
+		1+ ) drop
+	,eol ;
+
+|---- token	
+	
+:ndicc>toklen | n -- tok len
+	|$10 and? ( to
+	dup 8 >> $ffffffff and 
+	;	
+	
+	
 	
 	
 |---- screen
 :scrViews
 	.reset
-	cols 2/ flxO 
+	cols 3 / flxO 
 	flxpush
 	
 	12 flxN
-	tuWina $1 "Watch" .wtitle 1 1 flpad 
-|	'vincs lincs tuList
-|	viewdicc
+	tuWina $1 "Dicc" .wtitle 1 1 flpad 
+	'xwrite.word xwrite!
+	'vwords lwords tuList | 'var list --
+	xwrite.reset
 	
 	flxRest
 	tuWina $1 "Stack" .wtitle 1 1 flpad 
@@ -194,11 +224,14 @@
 	;
 	
 |---- view tokens	
+	
 :scrtokens
 	fx fy .at
-	memcode >a
-	memc ( 1? 1-
-		da@+ .token "%s " .print
+	memcode 4 + >a
+|	|memc 
+	12
+	( 1? 1-
+		da@+ .token .write .sp
 		|$ffffffff and "%h " .print
 		) drop
 	;
@@ -262,7 +295,8 @@
 	2drop 
 	
 	loadinfo
-	
+	makelistwords
+
 	connect
 	client_socket 0? ( drop ; ) drop
 	vmrec
