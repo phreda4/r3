@@ -393,7 +393,7 @@
 	dup 'fuente !
 	dup 'fuente> !
 	dup '$fuente !
-	$ffff +			| 64kb texto
+	$3ffff +			| 256kb texto
 	dup 'clipboard !
 	dup 'clipboard> !
 	$fff +				| 4KB

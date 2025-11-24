@@ -1,6 +1,7 @@
 | net socket
 | PHREDA 2025
 
+^r3/lib/mem.r3
 |LIN|^r3/lib/posix/posix.r3
 |WIN|^r3/lib/win/ws2.r3
 
