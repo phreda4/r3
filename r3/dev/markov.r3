@@ -1,48 +1,65 @@
+| Markov Chain
+| PHREDA 2025
+
 ^r3/lib/term.r3
 
-#MAX_ITER 200
-#THRESHOLD 0.001
-
-#states 4
+#states 2
 #trans [
-0.1 0.3 0.4 0.2
-0.2 0.2 0.3 0.3
-0.4 0.1 0.3 0.2
-0.3 0.3 0.2 0.2
-]
+	0.7 0.3
+	0.2 0.8 
+	]
+#iniv [ 1 0 ]
 
-#pi * 32 |[N] = {SCALE/N, SCALE/N, SCALE/N, SCALE/N};
-#new_pi * 32 |[N];
+#v0 
+#v1
 #iter 
 
-|void matrix_vector_mult_shift(long long pi[N], long long new_pi[N]) {
-|mdif=0;
-|for (int j = 0; j < N; j++) {
-|	long sum = 0;
-|	for (int i = 0; i < N; i++) {
-|		sum += (pi[i] * P_shift_scaled[i][j]) >> 24; 
-|		}
-|	new_pi[j] = sum;
-|	ndif=abs(p[j]-sum);
-|	if (mdif<ndif) mdif=ndif;
-|	}
-:matmul | dst src -- diff
-	>a >b
-	0 states ( 1? 1-
+:printvec | v --
+	>a
+	states ( 1? 1-
+		da@+ "%f " .print
+		) drop 
+	.cr ;
+
+:matmul | src dst -- 
+	'trans >a
+	states ( 1? 1- | src dst n 
+		pick2 >b
+		0
+		states ( 1? 1-
+			da@ db@+ *. 
+			rot + swap
+			states 2 << a+
+			) drop | src dst n sum
+		states dup * 1- 2 << neg a+
+		rot d!+ | src n dst
+		swap ) 3drop ;
 		
-		) drop
-	;
+:vdif | v0 v1 -- dif
+	>a >b 0
+	states ( 1? 1- 
+		da@+ db@+ - abs | dif n dv
+		pick2 >? ( -rot swap )
+		drop ) drop ;
 	
-| Bucle de iteración (Método de Potencias)
-#MAX_ITER 100
+#MAX_ITER 200
+#THRESHOLD 0.0001
+
 :distribution
-	0.25 0.25 0.25 0.25 'pi d!+ d!+ d!+ d!
+	v0 1.0 states / states dfill |dvc
 	MAX_ITER ( 1? 1-
-		'new_pi 'pi matmul
+		v0 v1 matmul
+		v0 v1 vdif 
 		THRESHOLD <? ( 2drop ; ) drop
-		'new_pi 'pi 4 dmove |dsc
+		v0 v1 states dmove |dsc
 		) drop ;
 		
+:printvec | v --
+	>a
+	states ( 1? 1-
+		da@+ "%f " .print
+		) drop 
+	.cr ;
 
 |------------------------------
 #alias 
@@ -78,12 +95,18 @@
 :main
 	"markov chain" .fprintln
 	
-	'trans |printmat
-	makealias
+	'trans printmat
+|	'trans makealias
 	
-	here 'alias !
-	states dup * 2 << 'here +!
+	|---- MEMMAP ----
+	here 
+	dup 'alias ! states dup * 2 << +
+	dup 'v0 ! states 2 << +
+	dup 'v1 ! states 2 << +
+	'here !
 	
+	distribution
+	v0 printvec
 	
 	.flush waitkey
 	;
