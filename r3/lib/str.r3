@@ -220,18 +220,18 @@
 :.f!
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	1+ $2e over c! 1-
-	over abs 16 >>>
+	over abs 16 >>> 
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 
 ::.f | fix -- str
- 	mbuffi over	abs $ffff and 10000 16 *>> 10000 + .f! ;
+	mbuffi over	abs $ffff and 10001 16 *>> 10000 + .f! ;
 
 ::.f2 | fix -- str
- 	mbuffi over	abs $ffff and 100 16 *>> 100 + .f! ;
+	mbuffi over	abs $ffff and 101 16 *>> 100 + .f! ;
 
 ::.f1 | fix -- str
- 	mbuffi over abs $ffff and 10 16 *>> 10 + .f! ;
+	mbuffi over abs $ffff and 11 16 *>> 10 + .f! ;
 
 ::.r. | b nro -- b ; right spaces
 	'mbuff 64 + swap -

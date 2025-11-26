@@ -8,7 +8,14 @@
 	0.7 0.3
 	0.2 0.8 
 	]
-#iniv [ 1 0 ]
+
+#states 4
+#trans [
+0.2 0.2 0.2 0.4
+0.4 0.1 0.3 0.2
+0.7 0.1 0.1 0.1
+0.3 0.3 0.1 0.3
+]
 
 #v0 
 #v1
@@ -27,11 +34,11 @@
 		pick2 >b
 		0
 		states ( 1? 1-
-			da@ db@+ *. 
+			da@ db@+ *. 	| transpose matrix for da@+
 			rot + swap
-			states 2 << a+
+			states 2 << a+	| transpose matrix for remove line
 			) drop | src dst n sum
-		states dup * 1- 2 << neg a+
+		states dup * 1- 2 << neg a+ | transpose matrix for remove line
 		rot d!+ | src n dst
 		swap ) 3drop ;
 		
@@ -61,7 +68,7 @@
 		) drop 
 	.cr ;
 
-|------------------------------
+|---- step by step
 #alias 
 
 :makealiasv | 'trans 'alias -- 'alias
