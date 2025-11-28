@@ -101,8 +101,8 @@
 ::.underc "4q" .[w ; | steady underscore
 
 |------- Screen Buffer Control -------
-::.alsb "?1049h" .[w ; | alternate screen buffer
-::.masb "?1049l" .[w ; | main screen buffer
+::.alsb "?1049h" .[w .flush ; | alternate screen buffer
+::.masb "?1049l" .[w .flush ; | main screen buffer
 
 ::.scrolloff | rows --
 	"1;%dr" .[p ;

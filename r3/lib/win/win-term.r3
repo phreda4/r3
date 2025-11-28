@@ -51,7 +51,7 @@
     'on-resize ! ; | something the size is wrong at start
 
 :sizecalc
-	'eventBuffer 4 + w@+ 1- 'cols ! w@ 1- 'rows ! ;
+	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! ;
 	
 :sizeex
 	getrc prevrc =? ( drop ; ) 'prevrc ! 
