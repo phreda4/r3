@@ -40,14 +40,16 @@
 
 | Dibujar fuego en pantalla
 :drawfire
+	.home
 	buffer1 >a
 	0 ( rows <?
-		1 over 1+ .at
+|		1 over 1+ .at
 		0 ( cols <?
 			ca@+ $ff and
 			dup firecolor 1? ( dup .fc ) drop
 			5 >> $7 and " .*#@&$X" + c@ .emit
 			1+ ) drop
+		|.cr
 		1+ ) drop ;
 
 | Generar fuego en la base

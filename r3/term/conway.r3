@@ -7,11 +7,12 @@
 #arenan
 
 :check | adr -- adr 
-	dup cols - 1 - >a	
+	dup cols - 1- >a	
 	ca@+ ca@+ + ca@ + 
-	over 1 - >a	
+	over 1- >a	
 	ca@+ + 1 a+ ca@ +
-	over cols + 1 - >a	ca@+ + ca@+ + ca@ + 	| calc 
+	over cols + 1- >a	
+	ca@+ + ca@+ + ca@ + 	| calc 
 	3 =? ( drop 1 cb!+ ; )
 	2 <>? ( drop 0 cb!+ ; ) 
 	drop
@@ -23,24 +24,27 @@
 	0 ( rows <? 
 		0 ( cols <? 
 			rot 
-			check 1 + -rot 
-			1 + ) drop
-		1 + ) 2drop 
+			check 1+ -rot 
+			1+ ) drop
+		1+ ) 2drop 
 	arena arenan cols rows * cmove 
 	;
 	
 :cbox
 	1? ( "█" .write ; ) " " .write ;
 
+:drawline
+	0 ( cols <? 
+		ca@+ cbox drop
+		1+ ) drop ;
+
 :drawscreen
 	.home
 	arena >a
-	0 ( rows <? 
-		0 ( cols <? 
-			ca@+ cbox drop
-			1 + ) drop
-		.cr
-		1 + ) drop 
+	1 ( rows <? 
+		drawline .cr 
+		1+ ) drop 
+	drawline
 	.flush ;
 	
 :arenarand
@@ -48,8 +52,8 @@
 	0 ( rows <? 
 		0 ( cols <? 
 			rand 9 >> 1 and ca!+
-			1 + ) drop
-		1 + ) drop ;
+			1+ ) drop
+		1+ ) drop ;
 
 :main
 	.cls
