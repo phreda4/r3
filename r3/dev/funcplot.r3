@@ -38,7 +38,7 @@
 	
 :m_sin
 	dup sin swap 2* sin *. ;
-
+	
 #coeff
 	0.99999
 	676.52037
@@ -70,10 +70,10 @@
 	*. 2.50663 *.
 	;	
 |---- graph	
-#xmin -0.1
+#xmin -4.0
 #xmax 4.0
-#ymin -2.0
-#ymax 2.1
+#ymin -3.0
+#ymax 3.1
 
 #stepx
 
@@ -203,6 +203,8 @@
 	<f2> =? ( 'm_lgn $ff00 ,func )
 	<f3> =? ( 'm_sin $ff00 ,func )
 	<f4> =? ( 'm_gamma $ff ,func )
+	<f5> =? ( 'tanh $ffff ,func )
+	<f6> =? ( 'tanhv $ffff00 ,func )
 	drop
 	;
 	

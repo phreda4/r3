@@ -35,23 +35,41 @@
 	dup 63 >> 1 or ;
 
 :sinp
-    $7fff and $4000 -
-    dup dup 16 *>>
-    dup 4846800 16 *>>
-    2688000 - 16 *>>
-    404000 + 16 *>> ;	
+	$7fff and $4000 -
+	dup dup 16 *>>
+	dup 4846800 16 *>>
+	2688000 - 16 *>>
+	404000 + 16 *>> ;
+	
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
 ::sin | bangle -- r
 	$4000 + $8000 nand? ( sinp ; ) sinp neg ;
 
 ::tan | v -- f
-    $4000 +
-    $7fff and $4000 -
-    dup dup 16 *>>
-    dup 129890000 16 *>>
-    5078000 + 16 *>>
-    395600 + 16 *>> ;
+	$4000 +
+	$7fff and $4000 -
+	dup dup 16 *>>
+	dup 129890000 16 *>>
+	5078000 + 16 *>>
+	395600 + 16 *>> ;
+
+| Pade: tanh(x) ˜ x(27+x²)/(27+9x²)
+| error < 0.5%  |x| < 3
+:tanhp	
+	dup dup 16 *>>
+	dup 9 * 27.0 +
+	swap 27.0 +
+	swap 16 <</
+	16 *>>
+	;
+
+::tanh | v -- f
+	-? ( neg 
+		3.0 >? ( -1.0 nip ; )
+		tanhp neg ; )
+	3.0 >? ( 1.0 nip ; )
+	tanhp ;
 
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
