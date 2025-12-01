@@ -54,23 +54,6 @@
 	5078000 + 16 *>>
 	395600 + 16 *>> ;
 
-| Pade: tanh(x) ˜ x(27+x²)/(27+9x²)
-| error < 0.5%  |x| < 3
-:tanhp	
-	dup dup 16 *>>
-	dup 9 * 27.0 +
-	swap 27.0 +
-	swap 16 <</
-	16 *>>
-	;
-
-::tanh | v -- f
-	-? ( neg 
-		3.0 >? ( -1.0 nip ; )
-		tanhp neg ; )
-	3.0 >? ( 1.0 nip ; )
-	tanhp ;
-
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
 
@@ -210,7 +193,32 @@
     dup 17 >> 65536 +       | r x (1+x/2)    [3 ops]
     16 *>> 65536 +          | r (1+x(1+x/2)) [2 ops]
     16 *>> ;                | resultado      [1 op]
+
+:_tanh	
+	6.0 >=? ( 1.0 ; ) 0.0625 <? ( ; ) 
+	2* exp. dup 1.0 - swap 1.0 + /.  ;
+
+::tanh
+	-? ( neg _tanh neg ; ) _tanh ;
 	
+:gamma_stirling
+	0 swap | accx workx
+	( 7.0 <?
+		swap over ln. +
+		swap 1.0 + )
+	| accx work
+	dup 0.5 - over ln. *. 
+	| accx workx term1 
+	1.0 pick2 12 * /.	| 1 / (12 * x)  -> Corrección de primer orden
+	| acc workx term1 term3 | HALF_LN_2PI = 60223
+	60223 + rot + | accx term1 add
+	- swap -
+	;
+
+::gamma 
+	0 <=? ( 0 nip ; )
+	gamma_stirling exp. ;
+
 ::pow. | base exp -- r
 	swap ln. *. exp. ;
 
