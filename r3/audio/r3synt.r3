@@ -59,6 +59,33 @@
 
 #delay_buffer * $ffff
 
+:reset
+	0.4 'master_vol !
+	0.5 'cutoff !
+	2.0 'resonance !
+	'oscSin 'current_wave !
+	0.005 'detune !
+	0.5 'pulse_width !
+	2.0 'lfo_freq ! 0.0 'lfo_amount ! 0.0 'lfo_phase !
+	0 'delay_write_index ! 0.4 'delay_feedback ! 0.3 'delay_time_sec !
+	0.02 'attack_time ! 0.2 'decay_time ! 0.5 'sustain_level ! 0.4 'release_time !
+	0 'filter_mode ! 0.5 'filter_env_amount !
+	0.5 'osc_mix ! 0.5 'lfo2_freq ! 0.0 'lfo2_amount ! 0.0 'lfo2_phase !
+	0.0 'portamento_time !
+	0.0 'drive_amount !
+	0.5 'pan !
+	0.1 'unison_detune ! 1 'unison_voices !
+	2.0 'pitch_bend_range !
+	0.0 'mod_wheel_value !
+| SUB-OSCILLATOR
+	0.0 'sub_osc_level ! -1 'sub_osc_octave ! | Una octava abajo
+| SAMPLE & HOLD	
+	10.0 'sh_freq ! 0.0 'sh_phase ! 0.0 'sh_value ! 0.0 'sh_amount ! 0 'sh_target !
+
+	'delay_buffer 0 $ffff cfill
+	;
+
+
 | VOICE
 ::dcell+ 2 << + ;
 
@@ -114,36 +141,23 @@
 	audevice 0 SDL_PauseAudioDevice
 	;	
 
-:reset
-	0.4 'master_vol !
-	0.5 'cutoff !
-	2.0 'resonance !
-	'oscSin 'current_wave !
-	0.005 'detune !
-	0.5 'pulse_width !
-	2.0 'lfo_freq ! 0.0 'lfo_amount ! 0.0 'lfo_phase !
-	0 'delay_write_index ! 0.4 'delay_feedback ! 0.3 'delay_time_sec !
-	0.02 'attack_time ! 0.2 'decay_time ! 0.5 'sustain_level ! 0.4 'release_time !
-	0 'filter_mode ! 0.5 'filter_env_amount !
-	0.5 'osc_mix ! 0.5 'lfo2_freq ! 0.0 'lfo2_amount ! 0.0 'lfo2_phase !
-	0.0 'portamento_time !
-	0.0 'drive_amount !
-	0.5 'pan !
-	0.1 'unison_detune ! 1 'unison_voices !
-	2.0 'pitch_bend_range !
-	0.0 'mod_wheel_value !
-| SUB-OSCILLATOR
-	0.0 'sub_osc_level ! -1 'sub_osc_octave ! | Una octava abajo
-| SAMPLE & HOLD	
-	10.0 'sh_freq ! 0.0 'sh_phase ! 0.0 'sh_value ! 0.0 'sh_amount ! 0 'sh_target !
-
-	'delay_buffer 0 $ffff cfill
-	;
-	
-:process_voice | nvoice
+#osc1 #osc2	
+:process_voice | nvoice -- sample
 	16 4 * * 'voices +
-	dup v.state d@ 0? ( 2drop ; )
+	dup v.state d@ 0? ( nip ; ) drop
+	
+	dup v.phase1 dup d@ 
+	1 + 1.0 >? ( 1.0 - ) | $ffff and
+	dup rot d!
+	pulse_width current_wave ex 'osc1 !
+	
+	dup v.phase2 dup d@ 
+	10 + 1.0 >? ( 1.0 - )
+	dup rot d!
+	pulse_width current_wave ex 'osc2 !
+	
 	drop
+	osc1 osc2 +
 	;
 	
 	
@@ -167,6 +181,7 @@
 |        for (int v = 0; v < MAX_POLYPHONY; v++) {
 |            float velocity_factor = voices[v].velocity / 127.0f;
 			0 process_voice |(&voices[v], current_cutoff, current_pwm, lfo2_val, sh_mod_pitch, velocity_factor);
+			+
 |        }
 
         | 4. Delay
@@ -195,6 +210,8 @@
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )
+	<f1> =? ( 1 'voices d! )
+	<f2> =? ( 0 'voices d! )
 	drop 
 	qaudio ;
 	

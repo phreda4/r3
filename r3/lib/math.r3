@@ -75,7 +75,7 @@
 :iatan2 | |x| y -- bangle
 	swap
 	+? ( 2dup + 0? ( nip nip ; )
-	-rot swap - 0.125 rot */ 0.125 swap - ; )
+		-rot swap - 0.125 rot */ 0.125 swap - ; )
 	2dup - 0? ( nip nip ; )
 	-rot + 0.125 rot */ 0.375 swap - ;
 ::atan2 | x y -- bangle
@@ -198,10 +198,10 @@
 	6.0 >=? ( 1.0 ; ) 0.0625 <? ( ; ) 
 	2* exp. dup 1.0 - swap 1.0 + /.  ;
 
-::tanh
+::tanh.
 	-? ( neg _tanh neg ; ) _tanh ;
 	
-:gamma_stirling
+:gamma_stirling | v -- r
 	0 swap | accx workx
 	( 7.0 <?
 		swap over ln. +
@@ -209,16 +209,35 @@
 	| accx work
 	dup 0.5 - over ln. *. 
 	| accx workx term1 
-	1.0 pick2 12 * /.	| 1 / (12 * x)  -> Corrección de primer orden
+	1.0 pick2 12 * /.
 	| acc workx term1 term3 | HALF_LN_2PI = 60223
 	60223 + rot + | accx term1 add
 	- swap -
 	;
 
-::gamma 
-	0 <=? ( 0 nip ; )
+:-gamma | x -- r
+	$ffff nand? ( drop 0 ; )
+	1.0 swap | acc x
+	( 1.0 <? 
+		swap over *. 
+		swap 1.0 + ) | acc x
+	gamma_stirling |exp. | ??
+	swap /.
+	;
+
+::gamma. | x -- r
+	0 <=? ( -gamma ; ) |0 nip ; )
 	gamma_stirling exp. ;
 
+::beta. | x y -- r
+	0 <? ( 2drop 0 ; )
+	swap 0 <? ( 2drop 0 ; )
+	2dup + | y x x+y
+	rot gamma_stirling
+	rot gamma_stirling +
+	swap gamma_stirling -
+	exp. ;
+	
 ::pow. | base exp -- r
 	swap ln. *. exp. ;
 
@@ -273,12 +292,10 @@
 ::6mod | n -- n%6
 	dup 6/ 6* - ;
 
-::1000*		dup 10 << over 4 << - rot 3 << - ;
-	
-::1000000*	1000* 1000* ;
 ::100000*	1 << dup 2 << +
 ::10000*	1 << dup 2 << +
 ::1000*		dup 10 << over 4 << - swap 3 << - ;
+::1000000*	1000* 1000* ;
 ::100*		1 << dup 2 << +
 ::10*		1 << dup 2 << + ;
 

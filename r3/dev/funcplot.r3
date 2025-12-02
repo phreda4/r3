@@ -59,10 +59,10 @@
 	-? ( neg _softclip neg ; ) _softclip ;
 	
 |---- graph	
-#xmin -4.0
-#xmax 4.0
-#ymin -3.0
-#ymax 3.1
+#xmin -5.0
+#xmax 5.0
+#ymin -5.0
+#ymax 5.0
 
 #stepx
 
@@ -191,8 +191,8 @@
 	<f1> =? ( 'm_log $ff0000 ,func )
 	<f2> =? ( 'm_lgn $ff00 ,func )
 	<f3> =? ( 'm_sin $ff00 ,func )
-	<f4> =? ( 'gamma $ff ,func )
-	<f5> =? ( 'tanh $ffff ,func )
+	<f4> =? ( 'gamma. $ff ,func )
+	<f5> =? ( 'tanh. $ffff ,func )
 	<f6> =? ( 'soft_clip  $ffff00 ,func )
 	drop
 	;
