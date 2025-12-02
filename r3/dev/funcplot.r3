@@ -39,6 +39,25 @@
 :m_sin
 	dup sin swap 2* sin *. ;
 	
+|-- soft
+	
+:_softclip
+	0.8 <? ( 
+		dup dup 16 *>> over 16 *>> 
+		0.185 16 *>> - ; )
+	1.6 <? ( 0.8 -
+		dup dup 16 *>> 0.05625 16 *>> neg
+		swap 0.32599 16 *>> 0.70528 + + ; )
+	2.4 <? ( 1.6 -
+		dup dup 16 *>> 0.02281 16 *>> neg
+		swap 0.08625 16 *>> 0.92167 + + ; )
+	2.4 -
+	0.02722 16 *>> 0.98367 +
+	1.0 <? ( ; ) 1.0 nip ;
+	
+::soft_clip
+	-? ( neg _softclip neg ; ) _softclip ;
+	
 |---- graph	
 #xmin -4.0
 #xmax 4.0
@@ -174,7 +193,7 @@
 	<f3> =? ( 'm_sin $ff00 ,func )
 	<f4> =? ( 'gamma $ff ,func )
 	<f5> =? ( 'tanh $ffff ,func )
-	<f6> =? ( 'sin $ffff00 ,func )
+	<f6> =? ( 'soft_clip  $ffff00 ,func )
 	drop
 	;
 	
