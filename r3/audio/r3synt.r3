@@ -31,7 +31,7 @@
 :oscSin		drop 2* sin ;
 
 |-----------------------------------------
-| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE } EnvState
+| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE 
 | WAVE_SAW, WAVE_SQUARE, WAVE_TRIANGLE, WAVE_SINE } Waveform
 | FILTER_LP, FILTER_HP, FILTER_BP } FilterMode
 
@@ -141,6 +141,46 @@
 	audevice 0 SDL_PauseAudioDevice
 	;	
 
+| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE 
+
+#envlevel
+
+#vstate
+
+#attrate
+#decrate
+#relrate
+#suslevel
+
+:venvelope | --
+	vstate
+	1 =? ( drop | attack
+		envlevel attrate +
+		1.0 >=? (
+			1.0 nip
+			2 'vstate !
+			)
+		'envlevel !			
+		; )
+	2 =? ( drop | decay
+		envlevel decrate -
+		suslevel <=? (
+			suslevel nip
+			3 'vstate !
+			)
+		'envlevel !
+		; )
+	3 =? ( drop |sustain
+		; )
+	drop | release
+	envlevel relrate -
+	0 <=? ( 
+		0 nip 
+		0 'vstate !
+		)
+	'envlevel !
+	;
+	
 #osc1 #osc2	
 :process_voice | nvoice -- sample
 	16 4 * * 'voices +
@@ -201,11 +241,21 @@
 	audevice 'outbuffer 8192 SDL_QueueAudio ;
 	;
 	
-	
+:drawbuffer
+	$ffffff sdlcolor
+	'outbuffer >a 
+	0 ( 1024 <? 1+
+		da@+ 
+		over over $ffff and 9 >> 300 + SDLPoint
+		over swap 16 >> $ffff and 9 >> 440 + SDLPoint
+		) drop ;
+		
 |--------------------------------
 :main
 	$0 SDLcls
 	10 10 txat "R3Synth" txprint
+	
+	drawbuffer
 	
 	SDLredraw
 	sdlkey

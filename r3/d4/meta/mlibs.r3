@@ -12,7 +12,7 @@
 #r3_lib_base64.r3 'name 'words 'info
 #name "r3/lib/color.r3"
 #words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmix4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
-#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $4E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
+#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'info
 #name "r3/lib/console.r3"
 #words  0
@@ -47,8 +47,8 @@
 #info ( $3E $12 $3E $10 $3E $10 )
 #r3_lib_jul.r3 'name 'words 'info
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "sqrt." "ln." "log2." "log10." "logn2." "exp." "pow." "root." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "1000*" "1000000*" "100000*" "10000*" "1000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $0 $0 $10 $2F $2F $3E $2F $10 $10 $10 $10 $10 $10 $20 $0 $10 $10 $10 $10 $10 $10 $11 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.u" "*." "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "sqrt." "ln." "log2." "log10." "logn2." "exp." "tanh." "gamma." "beta." "pow." "root." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
+#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $0 $0 $10 $11 $10 $2F $2F $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'info
 #name "r3/lib/mconsole.r3"
 #words  ",esc" ",[" ",fcolor" ",bcolor" ",eline" ",home" ",cls" ",at" ",col" ",eline" ",fc" ",bc" ",Black" ",Red" ",Green" ",Yellow" ",Blue" ",Magenta" ",Cyan" ",White" ",Blackl" ",Redl" ",Greenl" ",Yellowl" ",Bluel" ",Magental" ",Cyanl" ",Whitel" ",BBlack" ",BRed" ",BGreen" ",BYellow" ",BBlue" ",BMagenta" ",BCyan" ",BWhite" ",BBlackl" ",BRedl" ",BGreenl" ",BYellowl" ",BBluel" ",BMagental" ",BCyanl" ",BWhitel" ",Bold" ",Under" ",Rever" ",Reset" ",alsb" ",masb" ",showc" ",hidec" ",ovec" ",insc" ",savec" ",restc" ",print" ",println" ",printe" ",type" 0
