@@ -97,31 +97,23 @@
 :v.phase2 5 dcell+ ; 
 :v.sub_phase 6 dcell+ ; 
 :v.env_level 7 dcell+ ; 
-:v.ATTACK 8 dcell+ ; 
-:v.DECAY 9 dcell+ ; 
-:v.SUSTAIN 10 dcell+ ; 
-:v.RELEASE 11 dcell+ ; 
-:v.pitch_bend 12 dcell+ ; 
-:v.mod_wheel 13 dcell+ ; 
 
-#voices * $1ff | 4 * 16 * 8 (voices)
+#max_voices 16
+
+#voice * $1ff | 4 * 8 * 16 (voices)
+#voice> 'voice
 
 :resetvoices
-	'voices
-	8 ( 1? 1- swap
-		0 over v.state d!
-		0.0 over v.phase1 d!
-		0.0 over v.phase2 d!
-		0.0 over v.sub_phase d!		
-		100 over v.velocity d!
-		0.0 over v.pitch_bend d!
-		0.0 over v.mod_wheel d!
-		0.0 over v.ATTACK d!
-		0.0 over v.DECAY d!
-		0.0 over v.SUSTAIN d!
-		0.0 over v.RELEASE d!
-		4 16 * +
-		swap ) 2drop ;
+	'voice 'voice> ! ;
+	
+:newvoice | -- nv
+	voice> 'voice> >=? ( drop 0 ; )
+	32 'voice> +! ;
+	
+:delvoice | nv --
+	dup 32 + dup voice> - 3 >> move   | dsc
+	-32 'voice> +! ;
+
 
 | Audio Configuration
 #audevice |SDL_AudioDeviceID 
@@ -182,21 +174,21 @@
 	;
 	
 #osc1 #osc2	
-:process_voice | nvoice -- sample
-	16 4 * * 'voices +
-	dup v.state d@ 0? ( nip ; ) drop
+
+:voicecalc | voice -- sample
+	>a
+	a> v.state d@ 0? ( nip ; ) drop
 	
-	dup v.phase1 dup d@ 
+	a> v.phase1 dup d@ 
 	1 + 1.0 >? ( 1.0 - ) | $ffff and
 	dup rot d!
 	pulse_width current_wave ex 'osc1 !
 	
-	dup v.phase2 dup d@ 
+	a> v.phase2 dup d@ 
 	10 + 1.0 >? ( 1.0 - )
 	dup rot d!
 	pulse_width current_wave ex 'osc2 !
 	
-	drop
 	osc1 osc2 +
 	;
 	
@@ -218,11 +210,10 @@
         | 3. voices
         
 		0 |float mix = 0.0f;
-|        for (int v = 0; v < MAX_POLYPHONY; v++) {
-|            float velocity_factor = voices[v].velocity / 127.0f;
-			0 process_voice |(&voices[v], current_cutoff, current_pwm, lfo2_val, sh_mod_pitch, velocity_factor);
-			+
-|        }
+		'voice ( voice> <?
+			dup voicecalc rot +
+			swap ) drop
+			|(&voices[v], current_cutoff, current_pwm, lfo2_val, sh_mod_pitch, velocity_factor);
 
         | 4. Delay
 |        float delayed_sample = process_delay(mix);
@@ -241,6 +232,50 @@
 	audevice 'outbuffer 8192 SDL_QueueAudio ;
 	;
 	
+|-----------------------------------------------------
+#freq_table
+  16.35   17.32   18.35   19.45   20.60   21.83   23.12   24.50   25.96   27.50   29.14   30.87 |C0-B0
+  32.70   34.65   36.71   38.89   41.20   43.65   46.25   49.00   51.91   55.00   58.27   61.74 |C1-B1
+  65.41   69.30   73.42   77.78   82.41   87.31   92.50   98.00  103.83  110.00  116.54  123.47 |C2-B2
+ 130.81  138.59  146.83  155.56  164.81  174.61  185.00  196.00  207.65  220.00  233.08  246.94 |C3-B3
+ 261.63  277.18  293.66  311.13  329.63  349.23  369.99  392.00  415.30  440.00  466.16  493.88 |C4-B4
+ 523.25  554.37  587.33  622.25  659.26  698.46  739.99  783.99  830.61  880.00  932.33  987.77 |C5-B5
+1046.50 1108.73 1174.66 1244.51 1318.51 1396.91 1479.98 1567.98 1661.22 1760.00 1864.66 1975.53 |C6-B6
+2093.00 2217.46 2349.32 2489.02 2637.02 2793.83 2959.96 3135.96 3322.44 3520.00 3729.31 3951.07 |C7-B7
+4186.01 4434.92 4698.64 4978.03 5274.00 5587.65 5919.91 6271.93 6644.88 7040.00 7458.62 7902.13 |8
+
+:note>freq | note -- freq
+	3 << 'freq_table + @ ;
+
+
+| Note Management
+:note_on | note velocity --
+	newvoice 0? ( 3drop ; ) | No free voices|
+	>a | Save voice index
+	1 a> v.state d! | Attack state
+	a> v.velocity d!
+	dup a> v.note_id d!
+	note>freq a> v.freq d!
+	0.0 a> v.phase1 d!
+	0.0 a> v.phase2 d!
+	0.0 a> v.sub_phase d!
+	0.0 a> v.env_level d!
+	;
+
+
+:note_off | note --
+	| Find voice playing this note
+	'voice ( voice> <?
+		dup v.note_id d@
+		pick2 =? ( drop 
+			4 over v.state d!
+			2drop ;	
+			)
+		drop
+		32 + ) 2drop ;
+
+
+|--------------------------------	
 :drawbuffer
 	$ffffff sdlcolor
 	'outbuffer >a 
@@ -250,20 +285,128 @@
 		over swap 16 >> $ffff and 9 >> 440 + SDLPoint
 		) drop ;
 		
+|-----------------------------------------
+| Keyboard Interface
+#keyw ( 0 2 4 5 7 9 11 12 14 16 17 19 21 23 	-1 )
+#keyb (  1 3 0 6 8 10 0  13 15 0  18 20 22 		-1 )
+#playn * 100 | Key press state for visual feedback
+
+:colork
+	dup 'playn + c@ 
+	0? ( $fefefe nip ; )
+	$7cd9e9 nip ;
+	
+:pressk | n x y --
+	pick2 'playn + c@ 
+	1? ( drop ; ) drop
+	$808080 sdlcolor
+	over 1 + over 96 +
+	30 4 sdlFRect ;
+
+:wkey | n --
+	colork sdlcolor
+	over 'keyw -
+	5 << 0 + 120
+	2dup 32 100 sdlFRect
+	pressk
+	$0 sdlcolor
+	32 100 sdlRect
+	drop ;
+
+:colork
+	dup 'playn + c@ 
+	0? ( $404040 nip ; )
+	$e4bed3 nip ;
+	
+:pressk | n x y --
+	pick2 'playn + c@ 
+	1? ( drop ; ) drop
+	$0 sdlcolor
+	over 1 + over 46 +
+	30 4 sdlFRect ;
+
+:bkey | n --
+	0? ( drop ; )
+	colork sdlcolor
+	over 'keyb - 
+	5 << 16 + 120
+	2dup 30 50 sdlFRect
+	pressk
+	$0 sdlcolor
+	30 50 sdlRect
+	drop ;
+
+:drawkeys
+	'keyw ( c@+ +? wkey ) 2drop
+	'keyb ( c@+ +? bkey ) 2drop
+	;
+		
+|-----------------------------------------
+:playdn | note --
+	dup 'playn + c@ 1? ( 2drop ; ) drop |
+	dup 60 + 100 note_on | note + middle C, velocity 100
+	1 swap 'playn + c! ; | Mark as pressed
+
+:playup | note --
+	dup 'playn + c@ 0? ( 2drop ; ) drop 
+	dup 60 + note_off  | note + middle C
+	0 swap 'playn + c! ; | Mark as released
+
+:upkeys
+	>esc< =? ( exit )
+	>q< =? ( 0 playup ) >2< =? ( 1 playup )
+	>w< =? ( 2 playup ) >3< =? ( 3 playup )
+	>e< =? ( 4 playup ) 
+	>r< =? ( 5 playup ) >5< =? ( 6 playup ) 
+	>t< =? ( 7 playup ) >6< =? ( 8 playup )
+	>y< =? ( 9 playup ) >7< =? ( 10 playup )
+	>u< =? ( 11 playup )
+	
+	>z< =? ( 12 playup ) >s< =? ( 13 playup )
+	>x< =? ( 14 playup ) >d< =? ( 15 playup )
+	>c< =? ( 16 playup )
+	>v< =? ( 17 playup ) >g< =? ( 18 playup )
+	>b< =? ( 19 playup ) >h< =? ( 20 playup )
+	>n< =? ( 21 playup ) >j< =? ( 22 playup )
+	>m< =? ( 23 playup )
+	drop ;
+	
+:keys
+	SDLkey 0? ( drop ; )
+	$1000 and? ( upkeys ; ) | Key release
+|	<f1> =? ( 0 set_wave_type ) <f2> =? ( 1 set_wave_type )
+|	<f3> =? ( 2 set_wave_type ) <f4> =? ( 3 set_wave_type )
+|	<f5> =? ( 4 set_wave_type )
+|	<le> =? ( prev_wave_type ) <ri> =? ( next_wave_type )
+	<q> =? ( 0 playdn ) <2> =? ( 1 playdn )
+	<w> =? ( 2 playdn ) <3> =? ( 3 playdn )
+	<e> =? ( 4 playdn ) 
+	<r> =? ( 5 playdn ) <5> =? ( 6 playdn ) 
+	<t> =? ( 7 playdn ) <6> =? ( 8 playdn )
+	<y> =? ( 9 playdn ) <7> =? ( 10 playdn )
+	<u> =? ( 11 playdn )
+	
+	<z> =? ( 12 playdn ) <s> =? ( 13 playdn )
+	<x> =? ( 14 playdn ) <d> =? ( 15 playdn )
+	<c> =? ( 16 playdn )
+	<v> =? ( 17 playdn ) <g> =? ( 18 playdn )
+	<b> =? ( 19 playdn ) <h> =? ( 20 playdn )
+	<n> =? ( 21 playdn ) <j> =? ( 22 playdn )
+	<m> =? ( 23 playdn )
+	drop ;
+		
 |--------------------------------
 :main
 	$0 SDLcls
 	10 10 txat "R3Synth" txprint
 	
 	drawbuffer
+	drawkeys
 	
 	SDLredraw
-	sdlkey
-	>esc< =? ( exit )
-	<f1> =? ( 1 'voices d! )
-	<f2> =? ( 0 'voices d! )
-	drop 
-	qaudio ;
+	keys
+	qaudio 
+	;
 	
 : |--------------------------------
 	"R3 Polyphonic Synthesizer" 1024 600 SDLinit

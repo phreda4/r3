@@ -119,6 +119,29 @@
 	1 'mode !
 	;
 	
+|--- F1 RUN in CHECK	
+:runcheck
+	.cls 
+	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
+	here dup "mem/errorm.mem" load
+	over =? ( 2drop ; ) 
+	0 swap c!
+	.cr .bred .white " * ERROR * " .write .cr
+	.reset .write .cr
+	.bblue .white " Any key to continue... " .write .cr
+	.flush 
+	waitkey ;	
+	
+:runcode
+	"mem/errorm.mem" delete
+	'filename
+|WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
+|LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
+	sprint sys | run
+	.reterm .alsb .flush
+	runcheck
+	tuR! ;
+	
 |---- screen
 :scrmapa
 	.reset
@@ -152,17 +175,18 @@
 	
 	2 .bc 15 .fc
 	fx fy .at fw .nsp fx .col
-	" R3forth DEBUG [" .write
+	" R3debug [" .write
 	'filename .write 
 	"] " .write
 	|tudebug .write
 
+	1 flxS
+	fx fy .at 
+	" |ESC| Exit |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
+	.write
+
 	scrmsg
 	scrmapa
-	
-|	1 flxS
-|	4 .bc  7 .fc fx fy .at fw .nsp fx .col 
-| |ESC| Exit |F1| Run |F2| Debug |F3| Explore |F4| Profile |F5| Compile" .write
 
 	|-----------
 	.reset
@@ -173,7 +197,7 @@
 	tuReadCode | 
 	
 	uiKey
-	[f1] =? ( 0 'mode ! ) |checkcode ) |show256 )
+	[f1] =? ( runcode ) |0 'mode ! ) |checkcode ) |show256 )
 |	[f2] =? ( debugcode ) |show256 )
 	
 |	[f6] =? ( screenstate 1 xor 'screenstate ! )
@@ -197,21 +221,22 @@
 :editcode
 	.reset .cls 
 	1 flxN
-	4 .bc 7 .fc
+	|4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
-	" R3forth EDIT [" .write
+	" R3edit [" .write
 	'filename .write 
 	"] " .write
 	|tudebug .write
+	
+	1 flxS
+	fx fy .at 
+	" |ESC| Exit |F1| Check |F2| Debug |F3| Check |F4| Profile |F5| Compile"
+	.write
 
 	|-----------
 	screenstate	
 	$1 and? ( screrr )
 	drop
-	
-|	1 flxS
-|	4 .bc  7 .fc fx fy .at fw .nsp fx .col 
-| |ESC| Exit |F1| Run |F2| Debug |F3| Explore |F4| Profile |F5| Compile" .write
 
 	|-----------
 	.reset
@@ -238,8 +263,8 @@
 |-----------------------------------
 : 
 	.alsb 
-	|'filename "mem/menu.mem" load	
-	"r3/test/testasm.r3" 'filename strcpy
+	'filename "mem/menu.mem" load	
+	|"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename TuLoadCode
 	|TuNewCode

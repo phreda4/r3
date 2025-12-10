@@ -297,17 +297,18 @@
 	drop
 	;
 
-:r3d4
+:fileeditnew
  	actual -? ( drop ; )
  	getname 
  	".r3" =pos 0? ( 2drop ; ) drop
  	'path "%s/%s" sprint 'name strcpy
- 	'name 1024 "mem/main.mem" save
- 	"r3 r3/d4/d4-coded.r3"
+ 	'name 1024 "mem/menu.mem" save
+|WIN| 	"r3 r3/d4/r3ide.r3"
+|LIN| 	"./r3lin r3/d4/r3ide.r3"
 	sys 
-|WIN| 	conadj 
+|WIN|	conadj 
 	;
-
+	
 |--------------------------------
 |===================================
 #newprg1 "| r3 sdl program
@@ -503,7 +504,7 @@
 |WIN| 	[F2] =? ( f2edit )
 |WIN| 	[F3] =? ( newfile )
 |WIN| 	|[F4] =? ( newfolder ) | f4 - new folder
-|WIN| 	[F5] =? ( r3d4 ) | F5 - NEW VERSION
+|WIN| 	[F5] =? ( fileeditnew ) | F5 - NEW VERSION
 |WIN| 	drop 
 |WIN| 	;
 

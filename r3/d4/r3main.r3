@@ -3,10 +3,9 @@
 |---------------
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
-
 ^r3/term/filedirs.r3
 
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
 
 |--------------------------------	
 #basepath "r3/"
