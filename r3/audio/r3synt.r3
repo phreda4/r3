@@ -68,7 +68,9 @@
 	0.5 'pulse_width !
 	2.0 'lfo_freq ! 0.0 'lfo_amount ! 0.0 'lfo_phase !
 	0 'delay_write_index ! 0.4 'delay_feedback ! 0.3 'delay_time_sec !
+	
 	0.02 'attack_time ! 0.2 'decay_time ! 0.5 'sustain_level ! 0.4 'release_time !
+	
 	0 'filter_mode ! 0.5 'filter_env_amount !
 	0.5 'osc_mix ! 0.5 'lfo2_freq ! 0.0 'lfo2_amount ! 0.0 'lfo2_phase !
 	0.0 'portamento_time !
@@ -114,7 +116,6 @@
 	dup 32 + dup voice> - 3 >> move   | dsc
 	-32 'voice> +! ;
 
-
 | Audio Configuration
 #audevice |SDL_AudioDeviceID 
 #auspec * 32
@@ -135,65 +136,72 @@
 
 | ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE 
 
-#envlevel
-
-#vstate
-
 #attrate
 #decrate
 #relrate
-#suslevel
 
-:venvelope | --
-	vstate
+#dt
+
+:cenvelope
+|	1.0 attack_time aurate * /. 'attrate !
+|	1.0 decay_time aurate * /. 'decrate !
+|	1.0 release_time aurate * /. 'relrate !
+	1.0 aurate / 'dt ! 
+	dt attack_time /. 'attrate !
+	dt decay_time /. 'decrate !
+	dt release_time /. 'relrate !
+	;
+	
+:venvelope | level state -- level
 	1 =? ( drop | attack
-		envlevel attrate +
+		attrate +
 		1.0 >=? (
 			1.0 nip
-			2 'vstate !
+			2 a> v.state d!
 			)
-		'envlevel !			
 		; )
 	2 =? ( drop | decay
-		envlevel decrate -
-		suslevel <=? (
-			suslevel nip
-			3 'vstate !
+		decrate -
+		sustain_level <=? (
+			sustain_level nip
+			3 a> v.state d!
 			)
-		'envlevel !
 		; )
-	3 =? ( drop |sustain
-		; )
+	3 =? ( drop ; ) |sustain
 	drop | release
-	envlevel relrate -
-	0 <=? ( 
-		0 nip 
-		0 'vstate !
-		)
-	'envlevel !
+	relrate -
+	0 >? ( ; )
+	0.0 nip 
+	0 a> v.state d!
 	;
 	
 #osc1 #osc2	
 
 :voicecalc | voice -- sample
+	dup d@ 0? ( swap delvoice ; ) drop | v.state=0
 	>a
-	a> v.state d@ 0? ( nip ; ) drop
 	
 	a> v.phase1 dup d@ 
-	1 + 1.0 >? ( 1.0 - ) | $ffff and
+	a> v.freq d@ dt *. 
+	+ 1.0 >? ( 1.0 - ) | $ffff and
 	dup rot d!
 	pulse_width current_wave ex 'osc1 !
 	
 	a> v.phase2 dup d@ 
-	10 + 1.0 >? ( 1.0 - )
+	a> v.freq d@ dt *. 0.3 *.
+	+ 1.0 >? ( 1.0 - ) | $ffff and
 	dup rot d!
 	pulse_width current_wave ex 'osc2 !
 	
 	osc1 osc2 +
+	
+	a> v.state d@
+	venvelope
 	;
 	
 	
 :genaudio
+	cenvelope
 	'outbuffer >b
 	2048 ( 1? 1-
         | 1. Sample & Hold
@@ -212,7 +220,7 @@
 		0 |float mix = 0.0f;
 		'voice ( voice> <?
 			dup voicecalc rot +
-			swap ) drop
+			swap 32 + ) drop
 			|(&voices[v], current_cutoff, current_pwm, lfo2_val, sh_mod_pitch, velocity_factor);
 
         | 4. Delay
@@ -221,7 +229,8 @@
 
         | 5. write
 
-		soft_clip -32768 max 32767 min | Clamp to 16-bit range
+		soft_clip 
+		-32768 max 32767 min | Clamp to 16-bit range
 		dup 16 << or       | Duplicate to both channels
 		db!+
 		) drop ;
@@ -233,7 +242,7 @@
 	;
 	
 |-----------------------------------------------------
-#freq_table
+#freq_table [
   16.35   17.32   18.35   19.45   20.60   21.83   23.12   24.50   25.96   27.50   29.14   30.87 |C0-B0
   32.70   34.65   36.71   38.89   41.20   43.65   46.25   49.00   51.91   55.00   58.27   61.74 |C1-B1
   65.41   69.30   73.42   77.78   82.41   87.31   92.50   98.00  103.83  110.00  116.54  123.47 |C2-B2
@@ -243,9 +252,10 @@
 1046.50 1108.73 1174.66 1244.51 1318.51 1396.91 1479.98 1567.98 1661.22 1760.00 1864.66 1975.53 |C6-B6
 2093.00 2217.46 2349.32 2489.02 2637.02 2793.83 2959.96 3135.96 3322.44 3520.00 3729.31 3951.07 |C7-B7
 4186.01 4434.92 4698.64 4978.03 5274.00 5587.65 5919.91 6271.93 6644.88 7040.00 7458.62 7902.13 |8
+]
 
 :note>freq | note -- freq
-	3 << 'freq_table + @ ;
+	2 << 'freq_table + d@ ;
 
 
 | Note Management
@@ -264,16 +274,13 @@
 
 
 :note_off | note --
-	| Find voice playing this note
-	'voice ( voice> <?
+	'voice ( voice> <? 	| Find voice playing this note
 		dup v.note_id d@
 		pick2 =? ( drop 
-			4 over v.state d!
-			2drop ;	
-			)
+			4 over v.state d! | state=release
+			2drop ;	)
 		drop
 		32 + ) 2drop ;
-
 
 |--------------------------------	
 :drawbuffer
@@ -344,12 +351,12 @@
 |-----------------------------------------
 :playdn | note --
 	dup 'playn + c@ 1? ( 2drop ; ) drop |
-	dup 60 + 100 note_on | note + middle C, velocity 100
+	dup 40 + 100 note_on | note + middle C, velocity 100
 	1 swap 'playn + c! ; | Mark as pressed
 
 :playup | note --
 	dup 'playn + c@ 0? ( 2drop ; ) drop 
-	dup 60 + note_off  | note + middle C
+	dup 40 + note_off  | note + middle C
 	0 swap 'playn + c! ; | Mark as released
 
 :upkeys
@@ -402,6 +409,11 @@
 	
 	drawbuffer
 	drawkeys
+
+	10 500 txat
+	'voice ( voice> <?
+		dup d@ "%d " txprint
+		32 + ) drop 
 	
 	SDLredraw
 	keys
