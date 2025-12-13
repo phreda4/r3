@@ -3,7 +3,9 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
+^r3/util/immi.r3
 
+#font1
 
 |--------------------------------
 :_softclip
@@ -19,6 +21,7 @@
 	2.4 -
 	0.02722 16 *>> 0.98367 +
 |	1.0 <? ( ; ) 1.0 nip 
+|	$ffff <? ( ; ) $ffff and
 	;
 	
 :soft_clip
@@ -38,14 +41,19 @@
 #cutoff
 #resonance
 #master_vol
+
 #current_wave 'oscSin | <<
 #detune
 #pulse_width
 #lfo_freq #lfo_amount #lfo_phase
+#lfo2_freq #lfo2_amount #lfo2_phase
+
 #delay_write_index #delay_feedback #delay_time_sec 
+
 #attack_time #decay_time #sustain_level #release_time
+
 #filter_mode #filter_env_amount
-#osc_mix #lfo2_freq #lfo2_amount #lfo2_phase
+#osc_mix 
 #portamento_time
 #drive_amount
 #pan
@@ -241,8 +249,8 @@
 		soft_clip | -1.0..1.00 
 		2/ 
 		-32768 max 32767 min | Clamp to 16-bit range
-		|$ffff and
-		
+
+		$ffff and
 		dup 16 << or       | Duplicate to both channels
 		db!+
 		) drop ;
@@ -299,10 +307,12 @@
 :drawbuffer
 	$ffffff sdlcolor
 	'outbuffer >a 
-	0 ( 1024 <? 1+
+	0 ( cw <? 1+
 		da@+ 
-		over over $7fff + 9 >> $7f and 300 + SDLPoint
-		over swap 16 >> $7fff + 9 >> $7f and 440 + SDLPoint
+		over cx +
+		over $7fff + 10 >> $3f and cy + ch 2/ - SDLPoint
+		over cx +
+		swap 16 >> $7fff + 10 >> $3f and cy + ch 2/ + SDLPoint
 		) drop ;
 		
 |-----------------------------------------
@@ -320,13 +330,13 @@
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
 	$808080 sdlcolor
-	over 1 + over 96 +
+	over 1+ cx + over 96 + cy +
 	30 4 sdlFRect ;
 
 :wkey | n --
 	colork sdlcolor
 	over 'keyw -
-	5 << 0 + 120
+	5 << cx + 120 cy +
 	2dup 32 100 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -342,14 +352,14 @@
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
 	$0 sdlcolor
-	over 1 + over 46 +
+	over 1+ cx + over 46 + cy +
 	30 4 sdlFRect ;
 
 :bkey | n --
 	0? ( drop ; )
 	colork sdlcolor
 	over 'keyb - 
-	5 << 16 + 120
+	5 << 16 + cx + 120 cy +
 	2dup 30 50 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -422,16 +432,92 @@
 |--------------------------------
 :main
 	$0 SDLcls
-	10 10 txat "R3Synth" txprint
+	font1 txfont
+	uiStart
+	4 4 uiPading
+	$ffffff sdlcolor
 	
-	drawbuffer
+	0.05 %h uiN "R3Synth " $11 uiText
+	
+	0.05 %h uiS "esc|Exit " $11 uiText
+	
+	0.2 %h uiS 
+	
+	uiPush
+	0.7 %w uiO 
 	drawkeys
-
-	10 500 txat
-	'voice ( voice> <?
-		dup d@ "%d " txprint
-		32 + ) drop 
 	
+	uiRest
+	drawbuffer
+	uiPop
+	
+	0.2 %w uiO 
+	uiPush
+	3 1 uiGrid 
+	"Volume" uiLabel	
+	"CutOFF" uiLabel
+	"Resonance" uiLabel
+	"Pulse W" uiLabel
+	"D.Time" uiLabel
+	"D.Feed" uiLabel
+	
+	1 0 uiAt 2 1 uiTo
+	0.0 1.0 'master_vol uiSliderf
+	
+	0.0 1.0 'cutoff uiSliderf
+	0.0 4.0 'resonance uiSliderf
+	0.1 0.9 'pulse_width uiSliderf
+	0.05 1.5 'delay_time_sec uiSliderf
+	0.0 0.95 'delay_feedback uiSliderf
+	uiPop
+	
+
+	0.2 %w uiO
+	uiPush
+	3 1 uiGrid 
+	"Attack" uiLabel
+	"Decay" uiLabel
+	"Sustain" uiLabel
+	"Release" uiLabel
+	1 0 uiAt 2 1 uiTo
+	0.001 2.0 'attack_time uiSliderf
+	0.0 1.0 'decay_time uiSliderf
+	0.0 1.0 'sustain_level uiSliderf
+	0.01 5.0 'release_time uiSliderf
+	uiPop
+	
+	0.2 %w uiO 
+	uiPush
+	3 1 uiGrid 
+	"" uiLabel
+	"Freq" uiLabel
+	"Amount" uiLabel
+	"Phase" uiLabel
+	"" uiLabel
+	"Freq" uiLabel
+	"Amount" uiLabel
+	"Phase" uiLabel
+	1 0 uiAt 2 1 uiTo
+	"LFO 1" uiLabel
+	0.0 1.0 'lfo_freq uiSliderf
+	0.0 1.0 'lfo_amount uiSliderf
+	0.0 1.0 'lfo_phase uiSliderf
+	"LFO 2" uiLabel
+	0.0 1.0 'lfo2_freq uiSliderf
+	0.0 1.0 'lfo2_amount uiSliderf
+	0.0 1.0 'lfo2_phase uiSliderf
+	uiPop
+
+	
+	0.2 %w uiO "o1" $11 uiText
+	0.2 %w uiO "o1" $11 uiText
+	
+	
+	
+
+	|10 500 txat 'voice ( voice> <? dup d@ "%d " txprint 32 + ) drop 
+	
+	uiEnd
 	SDLredraw
 	keys
 	qaudio 
@@ -439,7 +525,7 @@
 	
 : |--------------------------------
 	"R3 Polyphonic Synthesizer" 1024 600 SDLinit
-	"media/ttf/Roboto-bold.ttf" 20 txloadwicon txfont
+	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
 	iniaudio
 	reset
 	resetvoices
