@@ -18,7 +18,7 @@
 		swap 0.08625 16 *>> 0.92167 + + ; )
 	2.4 -
 	0.02722 16 *>> 0.98367 +
-	|1.0 <? ( ; ) 1.0 nip 
+|	1.0 <? ( ; ) 1.0 nip 
 	;
 	
 :soft_clip
@@ -113,8 +113,10 @@
 	32 'voice> +! ;
 	
 :delvoice | nv --
-	dup 32 + dup voice> - 3 >> move   | dsc
-	-32 'voice> +! ;
+	-32 'voice> +! 
+|	dup 32 + dup voice> - 3 >> move   | dsc
+	voice> 32 3 >> move
+	;
 
 | Audio Configuration
 #audevice |SDL_AudioDeviceID 
@@ -182,21 +184,31 @@
 	>a
 	
 	a> v.phase1 dup d@ 
-	a> v.freq d@ dt *. 
-	+ 1.0 >? ( 1.0 - ) | $ffff and
+	a> v.freq d@ dt *. +
+	
+	|1.0 >? ( 1.0 - ) | 
+	$ffff and
+	
 	dup rot d!
 	pulse_width current_wave ex 'osc1 !
 	
 	a> v.phase2 dup d@ 
-	a> v.freq d@ dt *. 0.3 *.
-	+ 1.0 >? ( 1.0 - ) | $ffff and
+	a> v.freq d@ dt *. 0.3 *. +
+	
+	|1.0 >? ( 1.0 - ) 
+	$ffff and 
+	
 	dup rot d!
 	pulse_width current_wave ex 'osc2 !
 	
-	osc1 osc2 +
-	
+	a> v.env_level dup d@
 	a> v.state d@
 	venvelope
+	dup rot d!
+	
+	osc1 osc2 +
+	*.
+	soft_clip
 	;
 	
 	
@@ -217,20 +229,20 @@
 
         | 3. voices
         
-		0 |float mix = 0.0f;
+		0 | mix
 		'voice ( voice> <?
-			dup voicecalc rot +
+			dup voicecalc rot + | mix+
 			swap 32 + ) drop
-			|(&voices[v], current_cutoff, current_pwm, lfo2_val, sh_mod_pitch, velocity_factor);
 
         | 4. Delay
 |        float delayed_sample = process_delay(mix);
 |        float final_output = mix + delayed_sample * 0.4f;
 
-        | 5. write
-
-		soft_clip 
+		soft_clip | -1.0..1.00 
+		2/ 
 		-32768 max 32767 min | Clamp to 16-bit range
+		|$ffff and
+		
 		dup 16 << or       | Duplicate to both channels
 		db!+
 		) drop ;
@@ -259,13 +271,14 @@
 
 
 | Note Management
-:note_on | note velocity --
+:note_on | noteid note velocity --
 	newvoice 0? ( 3drop ; ) | No free voices|
 	>a | Save voice index
 	1 a> v.state d! | Attack state
 	a> v.velocity d!
-	dup a> v.note_id d!
 	note>freq a> v.freq d!
+	a> v.note_id d!
+	
 	0.0 a> v.phase1 d!
 	0.0 a> v.phase2 d!
 	0.0 a> v.sub_phase d!
@@ -273,7 +286,7 @@
 	;
 
 
-:note_off | note --
+:note_off | noteid --
 	'voice ( voice> <? 	| Find voice playing this note
 		dup v.note_id d@
 		pick2 =? ( drop 
@@ -288,8 +301,8 @@
 	'outbuffer >a 
 	0 ( 1024 <? 1+
 		da@+ 
-		over over $ffff and 9 >> 300 + SDLPoint
-		over swap 16 >> $ffff and 9 >> 440 + SDLPoint
+		over over $7fff + 9 >> $7f and 300 + SDLPoint
+		over swap 16 >> $7fff + 9 >> $7f and 440 + SDLPoint
 		) drop ;
 		
 |-----------------------------------------
@@ -349,14 +362,18 @@
 	;
 		
 |-----------------------------------------
+#nnote 1
 :playdn | note --
-	dup 'playn + c@ 1? ( 2drop ; ) drop |
-	dup 40 + 100 note_on | note + middle C, velocity 100
-	1 swap 'playn + c! ; | Mark as pressed
+	dup 'playn + c@ 1? ( 2drop ; ) drop 
+	nnote 1+ $ff and 0? ( 1+ ) dup 'nnote !
+	
+	over 36 + 100 note_on | note velocity 100
+	
+	nnote swap 'playn + c! ; | Mark as pressed
 
 :playup | note --
-	dup 'playn + c@ 0? ( 2drop ; ) drop 
-	dup 40 + note_off  | note + middle C
+	dup 'playn + c@ 0? ( 2drop ; )
+	note_off  
 	0 swap 'playn + c! ; | Mark as released
 
 :upkeys

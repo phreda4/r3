@@ -195,6 +195,7 @@
 	flxRest
 	tuWina $1 "Stack" .wtitle 1 1 flpad 
 	
+	fx fy .at
 	infocode
 	
 |	'xwrite.word xwrite!
@@ -224,7 +225,6 @@
 	;
 	
 |---- view tokens	
-	
 :scrtokens
 	fx fy .at
 	memcode 4 + >a
@@ -246,6 +246,10 @@
 	" R3forth DEBUG [" .write
 	'filename .write 
 	"] " .write
+	
+	1 flxS
+	fx fy .at fw .nsp fx .col
+	" F1-step F2-over F3-out F4-stack F5-Play" .write
 
 	scrMsg
 	scrViews
@@ -260,7 +264,7 @@
 	[f2] =? ( 1 vmsend1 ) |"[f2] step over" .fprintln
 	[f3] =? ( 2 vmsend1 ) |"[f3] step out" .fprintln
 	[f4] =? ( 3 vmsend1 ) |"[f4] step stack" .fprintln
-	[f5] =? ( 4 vmsend1 ) |"[f5] continue" .fprintln
+	[f5] =? ( 4 vmsend1 ) |"[f5] Play" .fprintln
 	
 	[f7] =? ( 6 vmsend1 )	| end debug
 	
@@ -283,15 +287,19 @@
 	
 	
 :main
+	| start the server
 	9999 server-socket 'server_socket !
 	"mem/r3dicc.mem" delete | "filename" --
-
+	100 ms | wait 
+	
+	| start debug
 	'filename 
 	"cmd /c r3d ""%s""" sprint
 	sysnew 
 
+	| wait info
 	"mem/r3dicc.mem"  
-	( dup filexist 0? drop 100 ms ) | wait info
+	( dup filexist 0? drop 100 ms ) 
 	2drop 
 	
 	loadinfo
@@ -309,7 +317,7 @@
 	.alsb 
 	|'filename "mem/menu.mem" load	
 	"r3/d4/test.r3" 
-	|"r3/d4/r3test.r3" 
+|	"r3/audio/r3synt.r3" 
 	'filename strcpy
 	
 	'filename TuLoadCode
