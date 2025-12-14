@@ -283,6 +283,8 @@
 ::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
 ::uiTex		c2recbox 'recbox swap SDLImageb ; | texture --
 
+::uiWRRect	fx fy fw fh SDLRound ; | round --
+
 |--- grid lines
 ::uiLineGridV
 	fx flcolm +
@@ -738,7 +740,8 @@
 :comboclk | 'var cnt -- 'var cnt
 	cntlist <? ( sdlx cx - cw 12 - >? ( drop slidev ; ) drop )
 	sdly cy - txh / pick2 8 + @ + cntlist 1- clampmax pick2 !
-	uiExitWidget ;
+	uiExitWidget 
+	;
 
 :combolist | --
 	uidata1 uidata2 
@@ -763,7 +766,8 @@
 :kblistc	
 	colFocus uiLRect
 	'iniCombo uiClk 
-	kblist ;
+	kblist 
+	;
 	
 ::uiCombo | 'var 'list --
 	uiZone 
@@ -773,7 +777,7 @@
 	@ uiNindx txwrite
 	cx cw + txh - cy txat 130 txicon
 	empty ui.. ;
-	
+|'flagex! uiFocusIn	
 
 |--- Edita linea
 #cmax

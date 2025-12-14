@@ -21,7 +21,7 @@
 	2.4 -
 	0.02722 16 *>> 0.98367 +
 |	1.0 <? ( ; ) 1.0 nip 
-|	$ffff <? ( ; ) $ffff and
+	$ffff <? ( ; ) $ffff and
 	;
 	
 :soft_clip
@@ -29,33 +29,36 @@
 	
 | phase width -- val	
 :oscSaw		drop 2* 1.0 - ;
-:oscSqr		>? ( 1.0 ; ) -1.0 ; 
+:oscSqr		>? ( 1.0 nip ; ) -1.0 nip ; 
 :oscTri		drop 0.5 <? ( 2 << 1.0 - ; ) 3.0 swap 2 << - ;
 :oscSin		drop 2* sin ;
 
-|-----------------------------------------
-| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE 
-| WAVE_SAW, WAVE_SQUARE, WAVE_TRIANGLE, WAVE_SINE } Waveform
+#listwave "Saw" "Square" "Triangle" "Sin" 0
+#vecwave 'oscSaw 'oscSqr 'oscTri 'oscSin
+
+#vwave 0 0 
+#current_wave 'oscSqr | <<
+
 | FILTER_LP, FILTER_HP, FILTER_BP } FilterMode
+
+#master_vol
 
 #cutoff
 #resonance
-#master_vol
-
-#current_wave 'oscSin | <<
 #detune
 #pulse_width
+
 #lfo_freq #lfo_amount #lfo_phase
 #lfo2_freq #lfo2_amount #lfo2_phase
 
-#delay_write_index #delay_feedback #delay_time_sec 
+#drive_amount
 
 #attack_time #decay_time #sustain_level #release_time
 
 #filter_mode #filter_env_amount
 #osc_mix 
 #portamento_time
-#drive_amount
+
 #pan
 #unison_detune #unison_voices
 #pitch_bend_range
@@ -64,23 +67,28 @@
 #sub_osc_level #sub_osc_octave
 | SAMPLE & HOLD
 #sh_freq #sh_phase #sh_value #sh_amount #sh_target
+| DELAY
+#delay_write_index 
+#delay_feedback #delay_time_sec 
+#delay_buffer * $3ffff
 
-#delay_buffer * $ffff
-
-:reset
-	0.4 'master_vol !
+:resetsynte
+	'osctri 'current_wave !
+	
+	0.5 'master_vol !
 	0.5 'cutoff !
 	2.0 'resonance !
-	'oscSin 'current_wave !
 	0.005 'detune !
 	0.5 'pulse_width !
-	2.0 'lfo_freq ! 0.0 'lfo_amount ! 0.0 'lfo_phase !
-	0 'delay_write_index ! 0.4 'delay_feedback ! 0.3 'delay_time_sec !
 	
+	2.0 'lfo_freq ! 0.0 'lfo_amount ! 0.0 'lfo_phase !
+	0.5 'lfo2_freq ! 0.0 'lfo2_amount ! 0.0 'lfo2_phase !
+		
+| ADSR
 	0.02 'attack_time ! 0.2 'decay_time ! 0.5 'sustain_level ! 0.4 'release_time !
 	
 	0 'filter_mode ! 0.5 'filter_env_amount !
-	0.5 'osc_mix ! 0.5 'lfo2_freq ! 0.0 'lfo2_amount ! 0.0 'lfo2_phase !
+	0.5 'osc_mix ! 
 	0.0 'portamento_time !
 	0.0 'drive_amount !
 	0.5 'pan !
@@ -91,10 +99,11 @@
 	0.0 'sub_osc_level ! -1 'sub_osc_octave ! | Una octava abajo
 | SAMPLE & HOLD	
 	10.0 'sh_freq ! 0.0 'sh_phase ! 0.0 'sh_value ! 0.0 'sh_amount ! 0 'sh_target !
-
-	'delay_buffer 0 $ffff cfill
+|  DELAY	
+	0.4 'delay_feedback ! 0.2 'delay_time_sec !
+	0 'delay_write_index ! 
+	'delay_buffer 0 $ffff dfill
 	;
-
 
 | VOICE
 ::dcell+ 2 << + ;
@@ -108,7 +117,7 @@
 :v.sub_phase 6 dcell+ ; 
 :v.env_level 7 dcell+ ; 
 
-#max_voices 16
+|#max_voices 16
 
 #voice * $1ff | 4 * 8 * 16 (voices)
 #voice> 'voice
@@ -121,10 +130,7 @@
 	32 'voice> +! ;
 	
 :delvoice | nv --
-	-32 'voice> +! 
-|	dup 32 + dup voice> - 3 >> move   | dsc
-	voice> 32 3 >> move
-	;
+	-32 'voice> +! voice> 8 dmove ;
 
 | Audio Configuration
 #audevice |SDL_AudioDeviceID 
@@ -144,7 +150,6 @@
 	audevice 0 SDL_PauseAudioDevice
 	;	
 
-| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE 
 
 #attrate
 #decrate
@@ -152,30 +157,30 @@
 
 #dt
 
-:cenvelope
-|	1.0 attack_time aurate * /. 'attrate !
-|	1.0 decay_time aurate * /. 'decrate !
-|	1.0 release_time aurate * /. 'relrate !
+#delaysample
+
+:calcvar
 	1.0 aurate / 'dt ! 
-	dt attack_time /. 'attrate !
-	dt decay_time /. 'decrate !
-	dt release_time /. 'relrate !
+	dt attack_time /. 'attrate !	|	1.0 attack_time aurate * /. 'attrate !
+	dt decay_time /. 'decrate !		|	1.0 decay_time aurate * /. 'decrate !
+	dt release_time /. 'relrate !	|	1.0 release_time aurate * /. 'relrate !
+	delay_time_sec aurate *. $ffff and 'delaysample !
 	;
-	
+
+| ENV_IDLE, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE
+
 :venvelope | level state -- level
 	1 =? ( drop | attack
 		attrate +
-		1.0 >=? (
-			1.0 nip
-			2 a> v.state d!
-			)
+		1.0 <? ( ; )
+		1.0 nip
+		2 a> v.state d!
 		; )
 	2 =? ( drop | decay
 		decrate -
-		sustain_level <=? (
-			sustain_level nip
-			3 a> v.state d!
-			)
+		sustain_level >? ( ; )
+		sustain_level nip
+		3 a> v.state d!
 		; )
 	3 =? ( drop ; ) |sustain
 	drop | release
@@ -185,6 +190,21 @@
 	0 a> v.state d!
 	;
 	
+
+:moogfilter | input cutoff res buff mode -- val
+
+	;
+	
+:processdelay | in -- out
+	delay_write_index delaysample - 
+	$ffff and 2 << 'delay_buffer + d@ 
+	delay_feedback *. +
+	soft_clip
+	dup delay_write_index 2 << 'delay_buffer + d!
+	delay_write_index 1+ $ffff and 'delay_write_index !
+	;
+	
+
 #osc1 #osc2	
 
 :voicecalc | voice -- sample
@@ -193,35 +213,32 @@
 	
 	a> v.phase1 dup d@ 
 	a> v.freq d@ dt *. +
-	
-	|1.0 >? ( 1.0 - ) | 
-	$ffff and
+	$ffff and	|1.0 >? ( 1.0 - ) | 
 	
 	dup rot d!
 	pulse_width current_wave ex 'osc1 !
 	
 	a> v.phase2 dup d@ 
 	a> v.freq d@ dt *. 0.3 *. +
-	
-	|1.0 >? ( 1.0 - ) 
-	$ffff and 
+	$ffff and	|1.0 >? ( 1.0 - ) 
 	
 	dup rot d!
 	pulse_width current_wave ex 'osc2 !
+	
+	osc1 osc2 +
+	
+	soft_clip
 	
 	a> v.env_level dup d@
 	a> v.state d@
 	venvelope
 	dup rot d!
-	
-	osc1 osc2 +
 	*.
-	soft_clip
 	;
 	
 	
 :genaudio
-	cenvelope
+	calcvar
 	'outbuffer >b
 	2048 ( 1? 1-
         | 1. Sample & Hold
@@ -235,20 +252,16 @@
 |        float current_cutoff = clamp(params.cutoff + lfo_val * params.lfo_amount * 0.3f + sh_mod_filter, 0.05f, 0.95f);
 |        float current_pwm = clamp(params.pulse_width + sh_mod_pwm, 0.1f, 0.9f);
 
-        | 3. voices
-        
-		0 | mix
+		0 | mix voices
 		'voice ( voice> <?
 			dup voicecalc rot + | mix+
 			swap 32 + ) drop
 
-        | 4. Delay
-|        float delayed_sample = process_delay(mix);
-|        float final_output = mix + delayed_sample * 0.4f;
-
-		soft_clip | -1.0..1.00 
-		2/ 
-		-32768 max 32767 min | Clamp to 16-bit range
+		processdelay
+		
+		master_vol *.
+		|soft_clip | -1.0..1.00 
+		2/ -32768 max 32767 min | Clamp to 16-bit range
 
 		$ffff and
 		dup 16 << or       | Duplicate to both channels
@@ -310,7 +323,7 @@
 	0 ( cw <? 1+
 		da@+ 
 		over cx +
-		over $7fff + 10 >> $3f and cy + ch 2/ - SDLPoint
+		over $7fff + 10 >> $3f and cy + SDLPoint
 		over cx +
 		swap 16 >> $7fff + 10 >> $3f and cy + ch 2/ + SDLPoint
 		) drop ;
@@ -330,13 +343,13 @@
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
 	$808080 sdlcolor
-	over 1+ cx + over 96 + cy +
+	over 1+ over 96 +
 	30 4 sdlFRect ;
 
 :wkey | n --
 	colork sdlcolor
 	over 'keyw -
-	5 << cx + 120 cy +
+	5 << cx + cy
 	2dup 32 100 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -352,14 +365,14 @@
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
 	$0 sdlcolor
-	over 1+ cx + over 46 + cy +
+	over 1+ over 46 +
 	30 4 sdlFRect ;
 
 :bkey | n --
 	0? ( drop ; )
 	colork sdlcolor
 	over 'keyb - 
-	5 << 16 + cx + 120 cy +
+	5 << 16 + cx + cy 
 	2dup 30 50 sdlFRect
 	pressk
 	$0 sdlcolor
@@ -434,45 +447,52 @@
 	$0 SDLcls
 	font1 txfont
 	uiStart
-	4 4 uiPading
+	4 8 uiPading
 	$ffffff sdlcolor
 	
 	0.05 %h uiN "R3Synth " $11 uiText
 	
-	0.05 %h uiS "esc|Exit " $11 uiText
-	
-	0.2 %h uiS 
+	0.2 %h uiS
 	
 	uiPush
-	0.7 %w uiO 
+	0.6 %w uiO |4 uiWRRect
 	drawkeys
 	
-	uiRest
+	uiRest |4 uiWRRect
 	drawbuffer
 	uiPop
 	
-	0.2 %w uiO 
+	0.2 %w uiO 4 uiWRRect
 	uiPush
 	3 1 uiGrid 
+	"Wave" uiLabel
 	"Volume" uiLabel	
 	"CutOFF" uiLabel
 	"Resonance" uiLabel
 	"Pulse W" uiLabel
 	"D.Time" uiLabel
 	"D.Feed" uiLabel
+	"Distort" uiLabel
 	
 	1 0 uiAt 2 1 uiTo
+	'vwave 'listwave uiCombo
+|	uiEx? 1? ( vwave 3 << 'vecwave + @ 'current_wave ! ) drop
+
+	
 	0.0 1.0 'master_vol uiSliderf
 	
 	0.0 1.0 'cutoff uiSliderf
 	0.0 4.0 'resonance uiSliderf
 	0.1 0.9 'pulse_width uiSliderf
+	
 	0.05 1.5 'delay_time_sec uiSliderf
 	0.0 0.95 'delay_feedback uiSliderf
+	
+	0.0 1.0 'drive_amount uiSliderf
 	uiPop
 	
 
-	0.2 %w uiO
+	0.2 %w uiO 4 uiWRRect
 	uiPush
 	3 1 uiGrid 
 	"Attack" uiLabel
@@ -486,7 +506,7 @@
 	0.01 5.0 'release_time uiSliderf
 	uiPop
 	
-	0.2 %w uiO 
+	0.2 %w uiO 4 uiWRRect
 	uiPush
 	3 1 uiGrid 
 	"" uiLabel
@@ -499,22 +519,20 @@
 	"Phase" uiLabel
 	1 0 uiAt 2 1 uiTo
 	"LFO 1" uiLabel
-	0.0 1.0 'lfo_freq uiSliderf
+	0.0 2.0 'lfo_freq uiSliderf
 	0.0 1.0 'lfo_amount uiSliderf
 	0.0 1.0 'lfo_phase uiSliderf
 	"LFO 2" uiLabel
-	0.0 1.0 'lfo2_freq uiSliderf
+	0.0 2.0 'lfo2_freq uiSliderf
 	0.0 1.0 'lfo2_amount uiSliderf
 	0.0 1.0 'lfo2_phase uiSliderf
 	uiPop
 
 	
-	0.2 %w uiO "o1" $11 uiText
-	0.2 %w uiO "o1" $11 uiText
+	0.2 %w uiO |4 uiWRRect
 	
+	0.2 %w uiO |4 uiWRRect
 	
-	
-
 	|10 500 txat 'voice ( voice> <? dup d@ "%d " txprint 32 + ) drop 
 	
 	uiEnd
@@ -525,9 +543,9 @@
 	
 : |--------------------------------
 	"R3 Polyphonic Synthesizer" 1024 600 SDLinit
-	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 16 txloadwicon 'font1 !
 	iniaudio
-	reset
+	resetsynte
 	resetvoices
 	'main SDLshow
 	SDLquit ;
