@@ -462,7 +462,7 @@
 	drawbuffer
 	uiPop
 	
-	0.2 %w uiO 4 uiWRRect
+	0.2 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
 	"Wave" uiLabel
@@ -476,7 +476,7 @@
 	
 	1 0 uiAt 2 1 uiTo
 	'vwave 'listwave uiCombo
-|	uiEx? 1? ( vwave 3 << 'vecwave + @ 'current_wave ! ) drop
+	uiEx? 1? ( vwave 3 << 'vecwave + @ 'current_wave ! ) drop
 
 	
 	0.0 1.0 'master_vol uiSliderf
@@ -492,7 +492,7 @@
 	uiPop
 	
 
-	0.2 %w uiO 4 uiWRRect
+	0.2 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
 	"Attack" uiLabel
@@ -506,7 +506,7 @@
 	0.01 5.0 'release_time uiSliderf
 	uiPop
 	
-	0.2 %w uiO 4 uiWRRect
+	0.2 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
 	"" uiLabel

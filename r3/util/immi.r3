@@ -767,6 +767,7 @@
 	colFocus uiLRect
 	'iniCombo uiClk 
 	kblist 
+	idfs idfh =? ( -1 'idfs ! flagex! ) drop 
 	;
 	
 ::uiCombo | 'var 'list --
@@ -777,7 +778,6 @@
 	@ uiNindx txwrite
 	cx cw + txh - cy txat 130 txicon
 	empty ui.. ;
-|'flagex! uiFocusIn	
 
 |--- Edita linea
 #cmax
