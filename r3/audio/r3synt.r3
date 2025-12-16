@@ -40,6 +40,7 @@
 #current_wave 'oscSqr | <<
 
 | FILTER_LP, FILTER_HP, FILTER_BP } FilterMode
+#listtarg "Filter LP" "Filter HP" "Filter BP" 0
 
 #master_vol
 
@@ -66,7 +67,8 @@
 | SUB-OSCILLATOR
 #sub_osc_level #sub_osc_octave
 | SAMPLE & HOLD
-#sh_freq #sh_phase #sh_value #sh_amount #sh_target
+#sh_freq #sh_amount #sh_target
+#sh_phase #sh_value 
 | DELAY
 #delay_write_index 
 #delay_feedback #delay_time_sec 
@@ -499,11 +501,19 @@
 	"Decay" uiLabel
 	"Sustain" uiLabel
 	"Release" uiLabel
+	"" uiLabel
+	"Freq" uiLabel
+	"Amount" uiLabel
+	"Target" uiLabel
 	1 0 uiAt 2 1 uiTo
 	0.001 2.0 'attack_time uiSliderf
 	0.0 1.0 'decay_time uiSliderf
 	0.0 1.0 'sustain_level uiSliderf
 	0.01 5.0 'release_time uiSliderf
+	"Sample&Hold" uiLabel
+	0.01 100.0 'sh_freq uiSliderf
+	0.0 1.0 'sh_amount uiSliderf	
+	'sh_target 'listtarg uiCombo
 	uiPop
 	
 	0.2 %w uiO |4 uiWRRect

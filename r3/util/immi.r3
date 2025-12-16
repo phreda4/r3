@@ -562,6 +562,11 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 	
+:calcindx | 'adr -- 'adr
+	0 over ( dup c@ 1? drop
+		>>0 swap 1+ swap ) 2drop
+	'cntlist ! ;
+	
 ::uiNindx | n -- str
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
@@ -766,8 +771,9 @@
 :kblistc	
 	colFocus uiLRect
 	'iniCombo uiClk 
+	calcindx | for cntlist
 	kblist 
-	idfs idfh =? ( -1 'idfs ! flagex! ) drop 
+	idfs idfh =? ( -1 'idfs ! flagex! ) drop | ex when exit last widget
 	;
 	
 ::uiCombo | 'var 'list --
