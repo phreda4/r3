@@ -201,6 +201,26 @@
 ::tanh.
 	-? ( neg _tanh neg ; ) _tanh ;
 	
+:_softclip
+	0.8 <? ( 
+		dup dup 16 *>> over 16 *>> 
+		0.185 16 *>> - ; )
+	1.6 <? ( 0.8 -
+		dup dup 16 *>> 0.05625 16 *>> neg
+		swap 0.32599 16 *>> 0.70528 + + ; )
+	2.4 <? ( 1.6 -
+		dup dup 16 *>> 0.02281 16 *>> neg
+		swap 0.08625 16 *>> 0.92167 + + ; )
+	2.4 -
+	0.02722 16 *>> 0.98367 +
+|	1.0 <? ( ; ) 1.0 nip 
+|	$ffff <? ( ; ) $ffff and
+	;
+	
+::fastanh.
+	-? ( neg _softclip neg ; ) _softclip ;
+	
+	
 :gamma_stirling | v -- r
 	0 swap | accx workx
 	( 7.0 <?
