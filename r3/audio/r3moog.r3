@@ -8,8 +8,12 @@
 #font1
 
 | Osciladores
-#osc_waveforms1 #osc_waveforms2 #osc_waveforms3
-#osc_ranges1 #osc_ranges2 #osc_ranges3
+#osc_waveforms1 0 0
+#osc_ranges1 
+#osc_waveforms2 0 0
+#osc_ranges2 
+#osc_waveforms3 0 0
+#osc_ranges3
 #osc_detune
 | Mixer
 #osc_mix1 #osc_mix2 #osc_mix3
@@ -122,15 +126,13 @@
 	pick2 <? ( nip nip ; ) drop 
 	over >? ( nip ; ) drop ;
 	
-:moog_ladder_filter | input reso cutoff voice  -- val
-	>a
-	0 0.99 clamp
-	a> w.f_buff3 w@ 2 << rot *. | input cut feed
+:moog_ladder_filter | input curoff -- val
+	a> w.f_buff3 w@ 2 << resonance *. | input cut feed
 	rot swap - fastanh.			| cut val
-	a> w.f_buff0 w@ - over *. a> w.f_buff0 w+! |buf[0] += c * (in_val - buf[0]);
+	a> w.f_buff0 w@ - over *. a> w.f_buff0 w+! 
 	a> w.f_buff0 w@ a> w.f_buff1 w@ - over *. a> w.f_buff1 w+!
 	a> w.f_buff1 w@ a> w.f_buff2 w@ - over *. a> w.f_buff2 w+!
-	a> w.f_buff2 w@ a> w.f_buff3 w@ - over *. a> w.f_buff3 w+!
+	a> w.f_buff2 w@ a> w.f_buff3 w@ - *. a> w.f_buff3 w+!
 	a> w.f_buff3 w@
 	;
 
@@ -155,7 +157,7 @@
 	dt fil_release /. 'frelrt !
 	;
 
-:aenvelope | level -- level
+:aenvelope | -- 
 	a> b.amp_state c@
 	1 =? ( drop | attack
 		aattrt +
@@ -193,50 +195,75 @@
 	0 a> b.fil_state c! ;
 	
 
-
-:voicecalc | voice -- sample
-	dup d@ 0? ( swap delvoice ; ) drop | v.state=0
+|#lfo_val
+#mod_signal 
+	
+:mixVoice | voice -- sample
+	dup b.amp_state c@ 0? ( swap delvoice ; ) drop | v.state=0
 	>a
+	0
+	a> d.freq d@ 2.0 osc_ranges1 pow. *.
+	mod_signal 0.05 *. 1.0 + *.
+	dt *.
+	a> w.phase1 w+!
+	a> w.phase1 w@ osc_waveforms1 get_osc_sample
+	osc_mix1 *. +
+
+	a> d.freq d@ 2.0 osc_ranges2 pow. *.
+	osc_detune 1.0 + *.
+	mod_signal 0.05 *. 1.0 + *.
+	dt *.
+	a> w.phase2 w+!
+	a> w.phase2 w@ osc_waveforms2 get_osc_sample
+	osc_mix2 *. +
+
+	a> d.freq d@ 2.0 osc_ranges3 pow. *.
+	osc_detune 2/ neg 1.0 + *.
+	mod_signal 0.05 *. 1.0 + *.
+	dt *.
+	a> w.phase3 w+!
+	a> w.phase3 w@ osc_waveforms3 get_osc_sample
+	osc_mix3 *. +
 	
-	a> v.phase1 dup d@ 
-	a> v.freq d@ dt *. +
-	$ffff and	|1.0 >? ( 1.0 - ) | 
+	|$ffff randmax noise_mix *. +
 	
-	dup rot d!
-	pulse_width current_wave ex 'osc1 !
+	0.33 *.
+	a> w.amp_env w@ aenvelope a> w.amp_env w!
+	a> w.fil_env w@ fenvelope a> w.fil_env w!
 	
-	a> v.phase2 dup d@ 
-	a> v.freq d@ dt *. 0.3 *. +
-	$ffff and	|1.0 >? ( 1.0 - ) 
+	cutoff
+	a> w.fil_env w@ contour_amount *. 2/ +
+	mod_signal 2* +
+	0 0.99 clamp
+	|| input reso cutoff -- val
+	moog_ladder_filter
 	
-	dup rot d!
-	pulse_width current_wave ex 'osc2 !
+	a> w.amp_env w@  *.
+	a> d.vel d@ *.
 	
-	osc1 osc2 +
-	
-	soft_clip
-	
-	a> v.env_level dup d@
-	a> v.state d@
-	venvelope
-	dup rot d!
-	*.
 	;
-	
+
+#outbuffer * 8192 | Final output buffer (16-bit samples)
 	
 :genaudio
 	calcvar
 	'outbuffer >b
 	2048 ( 1? 1-
-
+	
+		lfo_phase lfo_rate dt *. +
+		$ffff and 
+		dup 'lfo_phase !
+		|'lfo_val !
+		mod_wheel *. mod_mix *. 'mod_signal !
+				
 		0 | mix voice
 		'voice ( voice> <?
-			dup voicecalc rot + | mix+
+			dup MixVoice rot + | mix+
 			swap 32 + ) drop
 
-		
-		master_vol *.
-		|fastanh. | -1.0..1.00 
+
+		master_volume *.
+		fastanh. | -1.0..1.00 
 		2/ -32768 max 32767 min | Clamp to 16-bit range
 
 		$ffff and
@@ -246,27 +273,34 @@
 	
 
 |----------------------
-| Note Management
-:note_on | noteid note velocity --
-	newvoice 0? ( 3drop ; ) | No free voices|
-	>a | Save voice index
-	1 a> v.state d! | Attack state
-	a> v.velocity d!
-	note>freq a> v.freq d!
-	a> v.note_id d!
-	
-	0.0 a> v.phase1 d!
-	0.0 a> v.phase2 d!
-	0.0 a> v.sub_phase d!
-	0.0 a> v.env_level d!
+
+:midi_to_freq | note -- freq
+	2.0 swap fix. 12 / pow.
+	440.0 *.
+	a440_tune *.
+	dup "%f" .println
 	;
 
+:note_on | noteid note velocity --
+	newvoice 0? ( 4drop ; ) | No free voices|
+	>a | Save voice index
+
+	a> d.vel d!
+	midi_to_freq a> d.freq d!
+	a> b.id c!
+
+	1 a> b.amp_state c!
+	1 a> b.fil_state c!
+	0 a> w.amp_env w!
+	0 a> w.fil_env w!
+	;
 
 :note_off | noteid --
 	'voice ( voice> <? 	| Find voice playing this note
-		dup v.note_id d@
+		dup b.id c@
 		pick2 =? ( drop 
-			4 over v.state d! | state=release
+			4 over b.amp_state c!
+			4 over b.fil_state c!
 			2drop ;	)
 		drop
 		32 + ) 2drop ;
@@ -345,7 +379,7 @@
 	dup 'playn + c@ 1? ( 2drop ; ) drop 
 	nnote 1+ $ff and 0? ( 1+ ) dup 'nnote !
 	
-	over 36 + 100 note_on | note velocity 100
+	over 1.0 note_on | note velocity 100
 	
 	nnote swap 'playn + c! ; | Mark as pressed
 
@@ -403,7 +437,7 @@
 #auspec * 32
 #aurate 44100
 	
-#outbuffer * 8192 | Final output buffer (16-bit samples)
+
 	
 :iniaudio
 	aurate 'auspec 0 + d! |freq
@@ -445,84 +479,98 @@
 	drawbuffer
 	uiPop
 	
-	0.2 %w uiO |4 uiWRRect
+	0.3 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
-	"Wave" uiLabel
-	"Volume" uiLabel	
-	"CutOFF" uiLabel
-	"Resonance" uiLabel
-	"Pulse W" uiLabel
-	"D.Time" uiLabel
-	"D.Feed" uiLabel
-	"Distort" uiLabel
-	
+	"OSC 1" uiLabel
+	"Range" uiLabel	
+	"Mix" uiLabel
+	"OSC 2" uiLabel
+	"Range" uiLabel	
+	"Mix" uiLabel
+	"OSC 3" uiLabel
+	"Range" uiLabel	
+	"Mix" uiLabel
+	"detune" uiLabel
+	"noise" uiLabel
 	1 0 uiAt 2 1 uiTo
-	'vwave 'listwave uiCombo
-	uiEx? 1? ( vwave 3 << 'vecwave + @ 'current_wave ! ) drop
-
 	
-	0.0 1.0 'master_vol uiSliderf
-	
-	0.0 1.0 'cutoff uiSliderf
-	0.0 4.0 'resonance uiSliderf
-	0.1 0.9 'pulse_width uiSliderf
-	
-	0.05 1.5 'delay_time_sec uiSliderf
-	0.0 0.95 'delay_feedback uiSliderf
-	
-	0.0 1.0 'drive_amount uiSliderf
+| Osciladores
+	'osc_waveforms1 'listwave uiCombo
+	0.0 1.0 'osc_ranges1 uiSliderf
+	0.0 1.0 'osc_mix1 uiSliderf	
+	'osc_waveforms2 'listwave uiCombo
+	0.0 1.0 'osc_ranges2 uiSliderf
+	0.0 1.0 'osc_mix2 uiSliderf
+	'osc_waveforms3 'listwave uiCombo
+	0.0 1.0 'osc_ranges3 uiSliderf
+	0.0 1.0 'osc_mix3 uiSliderf
+	0.0 1.0 'osc_detune uiSliderf
+	0.0 1.0 'noise_mix uiSliderf
 	uiPop
 	
 
-	0.2 %w uiO |4 uiWRRect
+	0.3 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
+	"Cutoff" uiLabel
+	"resonance" uiLabel
+	"Contour" uiLabel
+	"key" uiLabel
+	
 	"Attack" uiLabel
 	"Decay" uiLabel
 	"Sustain" uiLabel
 	"Release" uiLabel
-	"" uiLabel
-	"Freq" uiLabel
-	"Amount" uiLabel
-	"Target" uiLabel
+	
+	"Attack" uiLabel
+	"Decay" uiLabel
+	"Sustain" uiLabel
+	"Release" uiLabel
+	
 	1 0 uiAt 2 1 uiTo
-	0.001 2.0 'attack_time uiSliderf
-	0.0 1.0 'decay_time uiSliderf
-	0.0 1.0 'sustain_level uiSliderf
-	0.01 5.0 'release_time uiSliderf
-	"Sample&Hold" uiLabel
-	0.01 100.0 'sh_freq uiSliderf
-	0.0 1.0 'sh_amount uiSliderf	
-	'sh_target 'listtarg uiCombo
+
+| Filtro Moog
+	0.0 1.0 'cutoff uiSliderf
+	0.0 4.0 'resonance uiSliderf
+	0.0 1.0 'contour_amount uiSliderf
+	0.0 1.0 'keyboard_tracking uiSliderf
+| Envelopes
+	0.001 2.0 'amp_attack uiSliderf
+	0.0 1.0 'amp_decay uiSliderf
+	0.0 1.0 'amp_sustain uiSliderf
+	0.01 5.0 'amp_release uiSliderf
+
+	0.001 2.0 'fil_attack uiSliderf
+	0.0 1.0 'fil_decay uiSliderf
+	0.0 1.0 'fil_sustain uiSliderf
+	0.01 5.0 'fil_release uiSliderf
+
 	uiPop
 	
-	0.2 %w uiO |4 uiWRRect
+	0.3 %w uiO |4 uiWRRect
 	uiPush
 	3 1 uiGrid 
-	"" uiLabel
-	"Freq" uiLabel
-	"Amount" uiLabel
-	"Phase" uiLabel
-	"" uiLabel
-	"Freq" uiLabel
-	"Amount" uiLabel
-	"Phase" uiLabel
+
+	"Rate" uiLabel
+	|"Phase" uiLabel
+	"Wheel" uiLabel
+	"Mix" uiLabel
+	"Master" uiLabel
+	"Tune" uiLabel
 	1 0 uiAt 2 1 uiTo
-	"LFO 1" uiLabel
-	0.0 2.0 'lfo_freq uiSliderf
-	0.0 1.0 'lfo_amount uiSliderf
-	0.0 1.0 'lfo_phase uiSliderf
-	"LFO 2" uiLabel
-	0.0 2.0 'lfo2_freq uiSliderf
-	0.0 1.0 'lfo2_amount uiSliderf
-	0.0 1.0 'lfo2_phase uiSliderf
+| LFO
+	0.1 20.0 'lfo_rate uiSliderf
+|	0.0 1.0 'lfo_phase uiSliderf
+| Modulación
+	0.0 1.0 'mod_wheel uiSliderf
+	0.0 1.0 'mod_mix uiSliderf
+| Master
+	0.0 1.0 'master_volume uiSliderf
+	-1.0 1.0 'a440_tune uiSliderf
+
 	uiPop
 
-	
-	0.2 %w uiO |4 uiWRRect
-	
-	0.2 %w uiO |4 uiWRRect
 	
 	|10 500 txat 'voice ( voice> <? dup d@ "%d " txprint 32 + ) drop 
 	
