@@ -57,6 +57,17 @@
 	
 ::soft_clip
 	-? ( neg _softclip neg ; ) _softclip ;
+
+:fxlog2
+
+	;
+:fxexp2
+	;
+:pow.. |
+	0? ( 2drop 1.0 ; ) 
+	swap 0? ( nip ; ) | y x
+	fxlog2 *. fxexp2 ;
+	
 	
 |---- graph	
 #xmin -5.0
@@ -193,7 +204,8 @@
 	<f3> =? ( 'm_sin $ff00 ,func )
 	<f4> =? ( 'gamma. $ff ,func )
 	<f5> =? ( 'tanh. $ffff ,func )
-	<f6> =? ( 'soft_clip  $ffff00 ,func )
+	<f6> =? ( 'pow2. $ffff00 ,func )
+	
 	drop
 	;
 	

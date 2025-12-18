@@ -203,14 +203,14 @@
 	dup b.amp_state c@ 0? ( swap delvoice ; ) drop | v.state=0
 	>a
 	0
-	a> d.freq d@ 2.0 osc_ranges1 pow. *.
+	a> d.freq d@ osc_ranges1 pow2. *.
 	mod_signal 0.05 *. 1.0 + *.
 	dt *.
 	a> w.phase1 w+!
 	a> w.phase1 w@ osc_waveforms1 get_osc_sample
 	osc_mix1 *. +
 
-	a> d.freq d@ 2.0 osc_ranges2 pow. *.
+	a> d.freq d@ osc_ranges2 pow2. *.
 	osc_detune 1.0 + *.
 	mod_signal 0.05 *. 1.0 + *.
 	dt *.
@@ -218,7 +218,7 @@
 	a> w.phase2 w@ osc_waveforms2 get_osc_sample
 	osc_mix2 *. +
 
-	a> d.freq d@ 2.0 osc_ranges3 pow. *.
+	a> d.freq d@ osc_ranges3 pow2. *.
 	osc_detune 2/ neg 1.0 + *.
 	mod_signal 0.05 *. 1.0 + *.
 	dt *.
@@ -226,7 +226,7 @@
 	a> w.phase3 w@ osc_waveforms3 get_osc_sample
 	osc_mix3 *. +
 	
-	noise_mix randmax +
+|	noise_mix randmax +
 	
 	0.33 *.
 	a> w.amp_env w@ aenvelope a> w.amp_env w!
@@ -272,7 +272,7 @@
 |----------------------
 
 :midi_to_freq | note -- freq
-	2.0 swap fix. 12 / pow.
+	fix. 12 / pow2.
 	440.0 *.
 	a440_tune *.
 	;

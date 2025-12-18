@@ -261,6 +261,15 @@
 ::pow. | base exp -- r
 	swap ln. *. exp. ;
 
+::pow2. | (int64_t x) {
+	dup $ffff and
+	5089
+	over * 16 >> 14850 +
+	over * 16 >> 45600 +
+	* 16 >> 1.0 +
+	swap 16 >>
+	+? ( << ; ) neg >> ;
+	
 ::root. | base root -- r
 	swap ln. swap /. exp. ;
 
