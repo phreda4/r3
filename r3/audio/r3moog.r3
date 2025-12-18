@@ -40,8 +40,9 @@
 | VOICE
 | id as es x | xx | vel 
 | ph1 ph2 ph3 xx
-| ae fe xx [freq] 
-| b1 b2 b3 b4 
+| ae fe [freq] 
+| b1 b2 
+| b3 b4 
 :b.id	; | byte
 :b.amp_state 1 + ; |byte
 :b.fil_state 2 + ; |byte 
@@ -52,10 +53,10 @@
 :w.amp_env 16 + ; |word
 :w.fil_env 18 + ; |word
 :d.freq 20 + ; |dword
-:w.f_buff0 24 + ; |word*4
-:w.f_buff1 26 + ; |word*4
-:w.f_buff2 28 + ; |word*4
-:w.f_buff3 30 + ; |word*4
+:d.f_buff0 24 + ; |word*4
+:d.f_buff1 28 + ; |word*4
+:d.f_buff2 32 + ; |word*4
+:d.f_buff3 36 + ; |word*4
 	
 
 #voice * $fff
@@ -66,10 +67,10 @@
 	
 :newvoice | -- nv
 	voice> 'voice> >=? ( drop 0 ; )
-	32 'voice> +! ;
+	40 'voice> +! ;
 	
 :delvoice | nv --
-	-32 'voice> +! voice> 8 dmove ;
+	-40 'voice> +! voice> 5 move ;
 
 |--------------------------------
 :resetsynte
@@ -127,13 +128,13 @@
 	over >? ( nip ; ) drop ;
 	
 :moog_ladder_filter | input curoff -- val
-	a> w.f_buff3 w@ 2 << resonance *. | input cut feed
+	a> d.f_buff3 d@ 2 << resonance *. | input cut feed
 	rot swap - fastanh.			| cut val
-	a> w.f_buff0 w@ - over *. a> w.f_buff0 w+! 
-	a> w.f_buff0 w@ a> w.f_buff1 w@ - over *. a> w.f_buff1 w+!
-	a> w.f_buff1 w@ a> w.f_buff2 w@ - over *. a> w.f_buff2 w+!
-	a> w.f_buff2 w@ a> w.f_buff3 w@ - *. a> w.f_buff3 w+!
-	a> w.f_buff3 w@
+	a> d.f_buff0 d@ - over *. a> d.f_buff0 d+! 
+	a> d.f_buff0 d@ a> d.f_buff1 d@ - over *. a> d.f_buff1 d+!
+	a> d.f_buff1 d@ a> d.f_buff2 d@ - over *. a> d.f_buff2 d+!
+	a> d.f_buff2 d@ a> d.f_buff3 d@ - *. a> d.f_buff3 d+!
+	a> d.f_buff3 d@
 	;
 
 #aattrt
@@ -259,7 +260,7 @@
 		0 | mix voice
 		'voice ( voice> <?
 			dup MixVoice rot + | mix+
-			swap 32 + ) drop
+			swap 40 + ) drop
 
 
 		master_volume *.
@@ -303,7 +304,7 @@
 			4 over b.fil_state c!
 			2drop ;	)
 		drop
-		32 + ) 2drop ;
+		40 + ) 2drop ;
 
 |--------------------------------	
 :drawbuffer
@@ -375,18 +376,17 @@
 		
 |-----------------------------------------
 #nnote 1
+
 :playdn | note --
 	dup 'playn + c@ 1? ( 2drop ; ) drop 
 	nnote 1+ $ff and 0? ( 1+ ) dup 'nnote !
-	
-	over 1.0 note_on | note velocity 100
-	
-	nnote swap 'playn + c! ; | Mark as pressed
+	over 1.0 note_on
+	nnote swap 'playn + c! ;
 
 :playup | note --
 	dup 'playn + c@ 0? ( 2drop ; )
 	note_off  
-	0 swap 'playn + c! ; | Mark as released
+	0 swap 'playn + c! ;
 
 :upkeys
 	>esc< =? ( exit )
