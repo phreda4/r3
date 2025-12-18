@@ -283,7 +283,7 @@
 ::uiCFill	cw ch min 2/ cx cy cw ch SDLFRound ;
 ::uiTex		c2recbox 'recbox swap SDLImageb ; | texture --
 
-::uiWRRect	fx fy fw fh SDLRound ; | round --
+::uiWinBox fx fy fw fh ; | -- x y w h 
 
 |--- grid lines
 ::uiLineGridV

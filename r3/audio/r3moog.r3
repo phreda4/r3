@@ -4,6 +4,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
 ^r3/util/immi.r3
+^r3/lib/rand.r3
 
 #font1
 
@@ -107,11 +108,13 @@
 	0.0 'mod_wheel !
 	0.5 'mod_mix !
 | Master
-	0.4 'master_volume !
+	0.8 'master_volume !
 	1.0 'a440_tune !
 	;
 
 | phase -- val	
+#listwave "Saw" "Square" "Triangle" "Sin" 0
+
 :oscSaw		2* 1.0 - ;
 :oscSqr		0.5 >? ( 1.0 nip ; ) -1.0 nip ; 
 :oscTri		0.5 <? ( 2 << 1.0 - ; ) 3.0 swap 2 << - ;
@@ -127,7 +130,7 @@
 	pick2 <? ( nip nip ; ) drop 
 	over >? ( nip ; ) drop ;
 	
-:moog_ladder_filter | input curoff -- val
+:moog_ladder_filter | in curoff -- out
 	a> d.f_buff3 d@ 2 << resonance *. | input cut feed
 	rot swap - fastanh.			| cut val
 	a> d.f_buff0 d@ - over *. a> d.f_buff0 d+! 
@@ -145,9 +148,6 @@
 #frelrt
 
 #dt
-
-#listwave "Saw" "Square" "Triangle" "Sin" 0
-#vwave 0 0 
 
 :calcvar
 	dt amp_attack /. 'aattrt !
@@ -226,7 +226,7 @@
 	a> w.phase3 w@ osc_waveforms3 get_osc_sample
 	osc_mix3 *. +
 	
-	|$ffff randmax noise_mix *. +
+	noise_mix randmax +
 	
 	0.33 *.
 	a> w.amp_env w@ aenvelope a> w.amp_env w!
@@ -236,12 +236,10 @@
 	a> w.fil_env w@ contour_amount *. 2/ +
 	mod_signal 2* +
 	0 0.99 clamp
-	|| input reso cutoff -- val
-	moog_ladder_filter
+	moog_ladder_filter | in cutoff -- out
 	
 	a> w.amp_env w@  *.
 	a> d.vel d@ *.
-	
 	;
 
 #outbuffer * 8192 | Final output buffer (16-bit samples)
@@ -254,14 +252,12 @@
 		lfo_phase lfo_rate dt *. +
 		$ffff and 
 		dup 'lfo_phase !
-		|'lfo_val !
 		mod_wheel *. mod_mix *. 'mod_signal !
 				
 		0 | mix voice
 		'voice ( voice> <?
 			dup MixVoice rot + | mix+
 			swap 40 + ) drop
-
 
 		master_volume *.
 		fastanh. | -1.0..1.00 
@@ -279,7 +275,6 @@
 	2.0 swap fix. 12 / pow.
 	440.0 *.
 	a440_tune *.
-	dup "%f" .println
 	;
 
 :note_on | noteid note velocity --
@@ -311,7 +306,7 @@
 	$ffffff sdlcolor
 	'outbuffer >a 
 	0 ( cw <? 1+
-		da@+ 
+		da@+ 12 a+
 		over cx +
 		over $7fff + 10 >> $3f and cy + SDLPoint
 		over cx +
@@ -436,9 +431,7 @@
 #audevice |SDL_AudioDeviceID 
 #auspec * 32
 #aurate 44100
-	
 
-	
 :iniaudio
 	aurate 'auspec 0 + d! |freq
 	$8010 'auspec 4 + w! |format: 16-bit signed
@@ -467,19 +460,22 @@
 	4 8 uiPading
 	$ffffff sdlcolor
 	
-	0.05 %h uiN "R3Synth " $11 uiText
+	0.02 %h uiN 
 	
-	0.2 %h uiS
+	0.25 %h uiS
 	
 	uiPush
-	0.6 %w uiO |4 uiWRRect
+	0.5 %w uiO |4 uiWRRect
 	drawkeys
 	
 	uiRest |4 uiWRRect
 	drawbuffer
 	uiPop
 	
-	0.3 %w uiO |4 uiWRRect
+|------------------
+	0.02 %w uiO 
+	0.36 %w uiO 
+	$666666 sdlcolor 4 uiWinBox SDLFRound
 	uiPush
 	3 1 uiGrid 
 	"OSC 1" uiLabel
@@ -509,8 +505,10 @@
 	0.0 1.0 'noise_mix uiSliderf
 	uiPop
 	
-
-	0.3 %w uiO |4 uiWRRect
+|------------------
+	0.02 %w uiO 
+	0.36 %w uiO 
+	$666666 sdlcolor 4 uiWinBox SDLFRound
 	uiPush
 	3 1 uiGrid 
 	"Cutoff" uiLabel
@@ -545,34 +543,31 @@
 	0.0 1.0 'fil_decay uiSliderf
 	0.0 1.0 'fil_sustain uiSliderf
 	0.01 5.0 'fil_release uiSliderf
-
 	uiPop
-	
-	0.3 %w uiO |4 uiWRRect
+|------------------	
+	0.02 %w uiO
+	0.2 %w uiO |4 uiWRRect
+	$666666 sdlcolor 4 uiWinBox SDLFRound
 	uiPush
 	3 1 uiGrid 
 
 	"Rate" uiLabel
-	|"Phase" uiLabel
 	"Wheel" uiLabel
 	"Mix" uiLabel
+	"" uiLabel
 	"Master" uiLabel
 	"Tune" uiLabel
 	1 0 uiAt 2 1 uiTo
 | LFO
 	0.1 20.0 'lfo_rate uiSliderf
-|	0.0 1.0 'lfo_phase uiSliderf
 | Modulación
 	0.0 1.0 'mod_wheel uiSliderf
 	0.0 1.0 'mod_mix uiSliderf
+	"" uiLabel
 | Master
 	0.0 1.0 'master_volume uiSliderf
 	-1.0 1.0 'a440_tune uiSliderf
-
 	uiPop
-
-	
-	|10 500 txat 'voice ( voice> <? dup d@ "%d " txprint 32 + ) drop 
 	
 	uiEnd
 	SDLredraw
