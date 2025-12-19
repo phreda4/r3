@@ -4,7 +4,7 @@ A comprehensive mathematical library for R3Forth featuring fixed-point arithmeti
 
 ## Overview
 
-This library uses **48.16 fixed-point arithmetic** (48 bits integer, 16 bits fractional) for precise calculations. All angles are in **bangles** (0-65536 represents 0-360°).
+This library uses **48.16 fixed-point arithmetic** (48 bits integer, 16 bits fractional) for precise calculations. All angles are in **bangles** (0-1.0 represents 0-360°).
 
 ---
 

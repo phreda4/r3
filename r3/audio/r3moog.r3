@@ -7,6 +7,10 @@
 ^r3/lib/rand.r3
 
 #font1
+#aurate 44100
+#dt
+
+:dt>buf dt * 32 >> ;
 
 | Osciladores
 #osc_waveforms1 0 0
@@ -39,26 +43,28 @@
 
 
 | VOICE
-| id as es x | xx | vel 
+| id as es x |  vel 
 | ph1 ph2 ph3 xx
-| ae fe [freq] 
+| ae fe 
 | b1 b2 
 | b3 b4 
-:b.id	; | byte
-:b.amp_state 1 + ; |byte
-:b.fil_state 2 + ; |byte 
-:d.vel 4 + ; | dword
+| freq
+:c.id	; | byte
+:c.amp_state 1 + ; |byte
+:c.fil_state 2 + ; |byte 
+
+:d.vel 4 + ;
 :w.phase1 8 + ; |word
 :w.phase2 10 + ; |word
 :w.phase3 12 + ; |word
-:w.amp_env 16 + ; |word
-:w.fil_env 18 + ; |word
-:d.freq 20 + ; |dword
-:d.f_buff0 24 + ; |word*4
-:d.f_buff1 28 + ; |word*4
-:d.f_buff2 32 + ; |word*4
-:d.f_buff3 36 + ; |word*4
-	
+
+:d.amp_env 16 + ;
+:d.fil_env 20 + ;
+:d.f_buff0 24 + ;
+:d.f_buff1 28 + ;
+:d.f_buff2 32 + ;
+:d.f_buff3 36 + ;
+:d.freq 40 + ;
 
 #voice * $fff
 #voice> 'voice
@@ -68,10 +74,10 @@
 	
 :newvoice | -- nv
 	voice> 'voice> >=? ( drop 0 ; )
-	40 'voice> +! ;
+	48 'voice> +! ;
 	
 :delvoice | nv --
-	-40 'voice> +! voice> 5 move ;
+	-48 'voice> +! voice> 6 move ;
 
 |--------------------------------
 :resetsynte
@@ -116,9 +122,9 @@
 #listwave "Saw" "Square" "Triangle" "Sin" 0
 
 :oscSaw		2* 1.0 - ;
-:oscSqr		0.5 >? ( 1.0 nip ; ) -1.0 nip ; 
-:oscTri		0.5 <? ( 2 << 1.0 - ; ) 3.0 swap 2 << - ;
-:oscSin		2* sin ;
+:oscSqr		0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
+:oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
+:oscSin		sin ;
 
 #vecwave 'oscSaw 'oscSqr 'oscTri 'oscSin
 
@@ -147,100 +153,97 @@
 #fdecrt
 #frelrt
 
-#dt
-
 :calcvar
-	dt amp_attack /. 'aattrt !
-	dt amp_decay /. 'adecrt !
-	dt amp_release /. 'arelrt !
-	dt fil_attack /. 'fattrt !
-	dt fil_decay /. 'fdecrt !
-	dt fil_release /. 'frelrt !
+	dt amp_attack / 'aattrt !
+	dt amp_decay / 'adecrt !
+	dt amp_release / 'arelrt !
+	dt fil_attack / 'fattrt !
+	dt fil_decay / 'fdecrt !
+	dt fil_release / 'frelrt !
 	;
 
 :aenvelope | -- 
-	a> b.amp_state c@
+	a> c.amp_state c@
 	1 =? ( drop | attack
 		aattrt +
 		1.0 <? ( ; ) 1.0 nip
-		2 a> b.amp_state c!
+		2 a> c.amp_state c!
 		; )
 	2 =? ( drop | decay
 		adecrt -
 		amp_sustain >? ( ; ) amp_sustain nip
-		3 a> b.amp_state c!
+		3 a> c.amp_state c!
 		; )
 	3 =? ( drop ; ) |sustain
 	drop | release
 	arelrt -
 	0 >? ( ; ) 0.0 nip 
-	0 a> b.amp_state c! ;
+	0 a> c.amp_state c! ;
 	
 
 :fenvelope | level -- level
-	a> b.fil_state c@
+	a> c.fil_state c@
 	1 =? ( drop | attack
 		fattrt +
 		1.0 <? ( ; ) 1.0 nip
-		2 a> b.fil_state c!
+		2 a> c.fil_state c!
 		; )
 	2 =? ( drop | decay
 		fdecrt -
 		fil_sustain >? ( ; ) fil_sustain nip
-		3 a> b.fil_state c!
+		3 a> c.fil_state c!
 		; )
 	3 =? ( drop ; ) |sustain
 	drop | release
 	frelrt -
 	0 >? ( ; ) 0.0 nip 
-	0 a> b.fil_state c! ;
+	0 a> c.fil_state c! ;
 	
 
-|#lfo_val
 #mod_signal 
 	
-:mixVoice | voice -- sample
-	dup b.amp_state c@ 0? ( swap delvoice ; ) drop | v.state=0
-	>a
-	0
+:mixVoice | mix voice -- mix voice
+	dup c.amp_state c@ 0? ( drop dup delvoice 48 - ; ) drop | v.state=0
+	dup >a
+	
 	a> d.freq d@ osc_ranges1 pow2. *.
 	mod_signal 0.05 *. 1.0 + *.
-	dt *.
+	dt>buf
 	a> w.phase1 w+!
-	a> w.phase1 w@ osc_waveforms1 get_osc_sample
-	osc_mix1 *. +
+	a> w.phase1 w@ $ffff and osc_waveforms1 get_osc_sample
+	osc_mix1 *. 
 
 	a> d.freq d@ osc_ranges2 pow2. *.
 	osc_detune 1.0 + *.
 	mod_signal 0.05 *. 1.0 + *.
-	dt *.
+	dt>buf
 	a> w.phase2 w+!
-	a> w.phase2 w@ osc_waveforms2 get_osc_sample
+	a> w.phase2 w@ $ffff and osc_waveforms2 get_osc_sample
 	osc_mix2 *. +
 
 	a> d.freq d@ osc_ranges3 pow2. *.
 	osc_detune 2/ neg 1.0 + *.
 	mod_signal 0.05 *. 1.0 + *.
-	dt *.
+	dt>buf
 	a> w.phase3 w+!
-	a> w.phase3 w@ osc_waveforms3 get_osc_sample
+	a> w.phase3 w@ $ffff and osc_waveforms3 get_osc_sample
 	osc_mix3 *. +
 	
-|	noise_mix randmax +
+	noise_mix randmax +
 	
-	0.33 *.
-	a> w.amp_env w@ aenvelope a> w.amp_env w!
-	a> w.fil_env w@ fenvelope a> w.fil_env w!
+	a> d.fil_env w@ fenvelope a> d.fil_env d!
 	
 	cutoff
-	a> w.fil_env w@ contour_amount *. 2/ +
-	mod_signal 2* +
-	0 0.99 clamp
+	a> d.fil_env d@ contour_amount *. 2/ +
+	mod_signal 0.2 *. +
+	0 0.999 clamp
 	moog_ladder_filter | in cutoff -- out
 	
-	a> w.amp_env w@  *.
+	a> d.amp_env d@ aenvelope a> d.amp_env d!
+	
+	a> d.amp_env d@ *.
 	a> d.vel d@ *.
-	;
+	rot + swap ;
 
 #outbuffer * 8192 | Final output buffer (16-bit samples)
 	
@@ -249,15 +252,16 @@
 	'outbuffer >b
 	2048 ( 1? 1-
 	
-		lfo_phase lfo_rate dt *. +
+		lfo_phase lfo_rate dt>buf +
 		$ffff and 
 		dup 'lfo_phase !
-		mod_wheel *. mod_mix *. 'mod_signal !
+		sin mod_wheel *. mod_mix *. 
+		'mod_signal !
 				
 		0 | mix voice
 		'voice ( voice> <?
-			dup MixVoice rot + | mix+
-			swap 40 + ) drop
+			MixVoice 
+			48 + ) drop
 
 		master_volume *.
 		fastanh. | -1.0..1.00 
@@ -283,23 +287,23 @@
 
 	a> d.vel d!
 	midi_to_freq a> d.freq d!
-	a> b.id c!
+	a> c.id c!
 
-	1 a> b.amp_state c!
-	1 a> b.fil_state c!
-	0 a> w.amp_env w!
-	0 a> w.fil_env w!
+	1 a> c.amp_state c!
+	1 a> c.fil_state c!
+	0 a> d.amp_env d!
+	0 a> d.fil_env d!
 	;
 
 :note_off | noteid --
 	'voice ( voice> <? 	| Find voice playing this note
-		dup b.id c@
+		dup c.id c@
 		pick2 =? ( drop 
-			4 over b.amp_state c!
-			4 over b.fil_state c!
+			4 over c.amp_state c!
+			4 over c.fil_state c!
 			2drop ;	)
 		drop
-		40 + ) 2drop ;
+		48 + ) 2drop ;
 
 |--------------------------------	
 :drawbuffer
@@ -430,7 +434,6 @@
 | Audio Configuration
 #audevice |SDL_AudioDeviceID 
 #auspec * 32
-#aurate 44100
 
 :iniaudio
 	aurate 'auspec 0 + d! |freq
@@ -442,7 +445,7 @@
 	0 0 'auspec 0 0 SDL_OpenAudioDevice 'audevice !
 	audevice 0 SDL_PauseAudioDevice
 	
-	1.0 aurate / 'dt ! 
+	1.0 16 << aurate / 'dt ! 
 	;	
 
 :qaudio

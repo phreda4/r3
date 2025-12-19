@@ -552,11 +552,11 @@ All exported functions work the same on Windows and Linux:
 :menu
   draw-menu
   ( getch
-    $31 =? ( drop handle-option1 )
-    $32 =? ( drop handle-option2 )
-    $33 =? ( drop .cls ; )
+    $31 =? ( handle-option1 )
+    $32 =? ( handle-option2 )
+    $33 =? ( .cls )
     drop draw-menu
-  ) ;
+    ) ;
 ```
 
 ### Interactive Drawing
@@ -571,17 +571,18 @@ All exported functions work the same on Windows and Linux:
   .flush ;
 
 :handle-keys
-  getch
-  [UP] =? ( drop cury 1- 1 max 'cury ! draw-ui )
-  [DN] =? ( drop cury 1+ rows min 'cury ! draw-ui )
-  [LE] =? ( drop curx 1- 1 max 'curx ! draw-ui )
-  [RI] =? ( drop curx 1+ cols min 'curx ! draw-ui )
-  [ESC] =? ( drop .cls .showc ; )
-  drop draw-ui ;
+  [UP] =? ( cury 1- 1 max 'cury ! )
+  [DN] =? ( cury 1+ rows min 'cury ! )
+  [LE] =? ( curx 1- 1 max 'curx ! )
+  [RI] =? ( curx 1+ cols min 'curx ! )
+  draw-ui ;
 
 :main
   draw-ui
-  ( handle-keys ) ;
+  ( getch 
+    [ESC] <>?
+    handle-keys ) 
+  drop ;
 ```
 
 ### Mouse Interaction
@@ -593,13 +594,13 @@ All exported functions work the same on Windows and Linux:
   .flush
   
   ( inevt
-    1 =? ( drop getch [ESC] =? ( drop .cls .showc ; ) drop )
-    2 =? ( drop
+    1 =? ( getch [ESC] =? ( 2drop .cls .showc ; ) drop )
+    2 =? ( 
       evtmb 1 and? (  | Left button
         evtmxy .at .Blue "o" .type .flush
       ) drop
     )
-    4 =? ( drop 
+    4 =? ( 
       .cls
       1 1 .at "Resized!" .fprintln .flush
     )
@@ -709,7 +710,7 @@ All exported functions work the same on Windows and Linux:
 6. **Check event types before accessing data**
    ```r3forth
    inevt
-   2 =? ( drop evtmxy process-mouse )
+   2 =? ( evtmxy process-mouse )
    drop
    ```
 
