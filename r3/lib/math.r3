@@ -117,90 +117,63 @@
 ::msb
 	63 swap clz - ;
 
-::sqrt. | x -- r 
+:step | op res one r+o -- op res one
+	pick3 >? ( drop swap 2/ swap ; )
+	rot 2/ pick2 + | op one r+o nres
+	>r neg rot + r> | one nop nres
+	rot ;
+	
+::sqrt. | x -- r
 	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
-	dup msb 16 + 2/	| shift
-	1 swap <<			| x guess
-	2dup /. + 2/
-	2dup /. + 2/
-	2dup /. + 2/
-	2dup /. + 2/
-	nip ;
+	0 
+	1 63 pick3 clz - 1 nand <<
+	( 1? | op res one
+		2dup + | op res one r+o
+		step 2 >> )
+	drop nip 8 << ;
 
-#inf+ $7fffffffffffffff
-#inf- $8000000000000001
+:mcalc | x bitpos -- m
+	16 >? ( 16 - >> ; ) 16 swap - << ;
 	
-:reduce | n m 
-	63 over clz	- | n m shift
-	16 >? ( 16 - rot over + -rot >> ; )
-	15 <? ( 15 swap - rot over - -rot << ; )
-	drop ;
+::log2. | y -- r
+	0 <=? ( 0 nip ; ) 
+	63 over clz - 
+	dup 16 - 16 << | x bitpos integer
+	-rot | integer x bitpos
+	mcalc 1.0 - | int xnorm
+	19697
+	over * 16 >> 51259 -
+	over * 16 >> 97098 +
+	* 16 >> + ;
 	
-::ln. |x -- r 
-	0 <=? ( inf- nip ; ) 
-	1.0 =? ( drop 0 ; ) 
-	0 swap | n m
-	reduce
-	1.0 - dup 2.0 +	/. | n y
-	dup dup *.	| n y y2
-	8738	| n y y2 result
-	over *. 10082 +
-	over *. 11915 +
-	over *. 14563 +
-	over *. 18724 +
-	over *. 26214 +
-	over *. 43691 +
-	over *. 2.0 + | n y y2 result
-    nip *.			| n result
-	swap 45426 * + ;
+::pow2. | y -- r
+	dup $ffff and
+	5089
+	over * 16 >> 14850 +
+	over * 16 >> 45600 +
+	* 16 >> 1.0 +
+	swap 16 >>
+	+? ( << ; ) neg >> ;
 
+::pow. | x y -- r
+	|0? ( 2drop 1.0 ; ) 
+	swap 0? ( nip ; ) | y x
+	log2. *. pow2. ;
+	
+::root. | x n -- r
+	swap 0 <=? ( 2drop 0 ; )
+	log2. swap /. pow2. ;
 
-:aprox | x exp -- exp y
-	0 >=? ( swap over >> ; ) 
-	swap over neg << ;
+::ln.	log2. 45426 *. ;
+::exp.	94544 *. pow2. ;
 	
-::log2. | x -- r ;(fixed48_16_t x) {
-	0 <=? ( inf- nip ; )
-	dup msb 16 - | x exp
-	aprox | exp y
-	0 0.5 rot | exp frac b y
-	16 ( 1? 1- >r
-		dup 16 *>>	| exp frac b yy
-		2.0 >=? ( 2/ rot pick2 + -rot )
-		swap 2/ swap
-		r> ) drop
-	2drop
-	swap 16 << + ;
-	
-::log10.	log2. $352B5 /. ;
-::logn2.	log2. $17154 /. ;
-	
-::exp. | x -- r
-	1.0 swap 
-	-? ( $b1721 + swap 16 >> swap )
-	$58b91 >=? ( $58b91 - swap 8 << swap ) 
-	$2c5c8 >=? ( $2c5c8 - swap 4 << swap )
-	$162e4 >=? ( $162e4 - swap 2 << swap )
-	$b172 >=? ( $b172 - swap 1 << swap ) 
-	$67cd >=? ( $67cd - swap dup 1 >> + swap )
-	$3920 >=? ( $3920 - swap dup 2 >> + swap )
-	$1e27 >=? ( $1e27 - swap dup 3 >> + swap )
-	$f85 >=? ( $f85 - swap dup 4 >> + swap ) 
-	$7e1 >=? ( $7e1 - swap dup 5 >> + swap ) 
-	$3f8 >=? ( $3f8 - swap dup 6 >> + swap ) 
-	$1fe >=? ( $1fe - swap dup 7 >> + swap ) 
-    | Taylor orden 2: r × (1 + x(1 + x/2))
-    dup 17 >> 65536 +       | r x (1+x/2)    [3 ops]
-    16 *>> 65536 +          | r (1+x(1+x/2)) [2 ops]
-    16 *>> ;                | resultado      [1 op]
-
 :_tanh	
 	6.0 >=? ( 1.0 ; ) 0.0625 <? ( ; ) 
 	2* exp. dup 1.0 - swap 1.0 + /.  ;
 
 ::tanh.
 	-? ( neg _tanh neg ; ) _tanh ;
-	
+
 :_softclip
 	0.8 <? ( 
 		dup dup 16 *>> over 16 *>> 
@@ -258,20 +231,6 @@
 	swap gamma_stirling -
 	exp. ;
 	
-::pow. | base exp -- r
-	swap ln. *. exp. ;
-
-::pow2. | (int64_t x) {
-	dup $ffff and
-	5089
-	over * 16 >> 14850 +
-	over * 16 >> 45600 +
-	* 16 >> 1.0 +
-	swap 16 >>
-	+? ( << ; ) neg >> ;
-	
-::root. | base root -- r
-	swap ln. swap /. exp. ;
 
 ::cubicpulse | c w x -- v ; iñigo Quilez
 	rot - abs | w x
