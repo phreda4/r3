@@ -67,6 +67,9 @@
 
 #vlist 0 0 
 #llist
+#v1
+#v2
+#v3
 
 :main
 	.reset .cls 
@@ -81,7 +84,7 @@
 	'pad fw 2 - tuInputLine
 	tuX? 1? ( 0 'pad ! tuRefocus ) drop	
 	
-	16 flxO
+	20 flxO
 	flxpush
 	32 flxS
 	tuwin $1 " Options " .wtitle
@@ -89,7 +92,15 @@
 	5 'fh ! 
 	'exit "Salir" tuBtn | 'ev "" --
 	|1 'fy +! 
-	'exit "Coso" tuBtn | 'ev "" --
+	[ 1 'v3 +! ; ] "Coso" tuBtn | 'ev "" --
+	flcr
+	'v1 "op1" tuCheck
+	0 'v2 "opr1" tuRadio
+	1 'v2 "opr2" tuRadio
+	flcr
+	'v3 0 100 tuSlider
+	v3 tuProgress
+	
 	flxrest
 	tuwin $1 " List " .wtitle
 	1 1 flpad
