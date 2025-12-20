@@ -268,22 +268,29 @@
 	drop ;
 	
 ::tuTBtn | 'ev "" --
-	tuiw
-	dup .bc
+	tuiw dup .bc
+	6 =? ( tuX! )
 	drop
 	kbBtn
 	>r fw fh fx fy r> xText
 	tuX? 0? ( 2drop ; ) drop ex ;
 	
 ::tuBtn	
-	tuiw1
-	dup .bc
+	tuiw1 dup .bc
+	6 =? ( tuX! )
 	drop
 	kbBtn
 	fx fy .at
 	fw swap calign here .write 
 	.reset 1 'fy +!
 	tuX? 0? ( 2drop ; ) drop ex ;
+	
+::tuLabel | "" --
+	fw swap lwrite .reset flcr ;
+::tuLabelC | "" --
+	fw swap cwrite .reset flcr ;
+::tuLabelR | "" --
+	fw swap rwrite .reset flcr ;
 	
 |--------------------------------	
 |---- write line
@@ -566,8 +573,7 @@
 	tuif 0? ( 2drop ; ) drop
 	uikey 
 	[enter] =? ( over dup @ 1 xor swap ! tuX! tuR! )
-	[tab] =? ( focus>> )
-	[shift+tab] =? ( focus<< )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< )
 	2drop ;
   
 |--- radio
@@ -585,21 +591,18 @@
 	tuif 0? ( 3drop ; ) drop
 	uikey 
 	[enter] =? ( pick2 pick2 ! tuX! tuR! )
-	[tab] =? ( focus>> )
-	[shift+tab] =? ( focus<< )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< )
 	3drop ;
 
 |--- slide
-:calcw | min max -- min max 
-	;
-	
+
 ::tuSlider | 'var min max --
 	tuiw1
 	3 =? ( 3 + )
 	6 =? ( | Dragging
 		evtmx fx - pick2 pick4 - fw 1- */ pick3 +
 		pick4 !
-		tuR! )
+		tuR! tuX! )
 	drop
 	fx fy .at fw "─" .rep
 	rot @ | min max var

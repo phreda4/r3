@@ -9,7 +9,7 @@ This library provides:
 - **Box drawing** (lines, borders with various styles)
 - **Text alignment** (left, center, right with UTF-8 support)
 - **Text wrapping** and formatting in boxes
-- **Two font styles** (ZX Spectrum and blocky styles)
+- **Two font styles** (ZX Spectrum and Atari styles)
 - **Color escapes** for terminal output
 
 ---
@@ -25,6 +25,7 @@ Display ASCII characters as 4-line tall graphics using UTF-8 block characters (�
   "HELLO" .xwrite
   ```
   - Each character: 4 lines tall, 8 characters wide
+  - Zx Spectrum font style  
   - Uses half-block characters (▀▄█)
   - Moves cursor down automatically
 
@@ -32,7 +33,7 @@ Display ASCII characters as 4-line tall graphics using UTF-8 block characters (�
   ```r3forth
   "WORLD" .awrite
   ```
-  - Alternative font style
+  - Atari font style
   - Same height and behavior as `.xwrite`
 
 ### Color Escapes in Large Fonts
@@ -231,20 +232,20 @@ Convenience functions that align and write in one step:
   
   **Common combinations:**
   ```r3forth
-  $00 xalign  | Top-left
-  $01 xalign  | Top-center
-  $02 xalign  | Top-right
-  $04 xalign  | Middle-left
-  $05 xalign  | Middle-center (centered both ways)
-  $06 xalign  | Middle-right
-  $08 xalign  | Bottom-left
-  $09 xalign  | Bottom-center
-  $0A xalign  | Bottom-right
+  $0 xalign  | Top-left
+  $1 xalign  | Top-center
+  $2 xalign  | Top-right
+  $4 xalign  | Middle-left
+  $5 xalign  | Middle-center (centered both ways)
+  $6 xalign  | Middle-right
+  $8 xalign  | Bottom-left
+  $9 xalign  | Bottom-center
+  $A xalign  | Bottom-right
   ```
 
 - **`xwrite`** `( w "str" -- )` - Write with current alignment
   ```r3forth
-  $05 xalign  | Center
+  $5 xalign  | Center
   30 "Centered text" xwrite
   ```
 
@@ -280,7 +281,8 @@ Convenience functions that align and write in one step:
 ### Centered Dialog
 ```r3forth
 :show-dialog | "message" --
-  $05 xalign  | Center both ways
+  >r
+  $5 xalign  | Center both ways
   
   | Calculate position (center of screen)
   cols 2/ 30 -
@@ -290,7 +292,7 @@ Convenience functions that align and write in one step:
   2dup 60 10 .boxc
   
   | Draw text
-  60 10 rot 1+ rot 1+ rot xText
+  60 10 2swap r> xText
   
   .flush
   waitkey
@@ -325,9 +327,9 @@ Convenience functions that align and write in one step:
   5 2 70 20 .boxd
   
   7 3 .at .Bold "SYSTEM INFORMATION" .xwrite .Reset
-  7 8 .at 30 "CPU:" lwrite 40 .col "Intel i7" .write
-  7 9 .at 30 "Memory:" lwrite 40 .col "16GB" .write
-  7 10 .at 30 "OS:" lwrite 40 .col "Linux" .write
+  7 8 .at 30 "CPU:" lwrite 40 .col "z80" .write
+  7 9 .at 30 "Memory:" lwrite 40 .col "64kb" .write
+  7 10 .at 30 "OS:" lwrite 40 .col "CP/M" .write
   
   7 15 .at 66 "─" .rep
   7 16 .at .Dim "Press ESC to exit" .write .Reset
@@ -359,9 +361,9 @@ Press ESC to return."
   .home
   
   .Red
-  "[F0]                    " .xwrite
-  "[F0]   TETRIS GAME      " .xwrite
-  "[F0]                    " .xwrite
+  "[F0]                 " .xwrite
+  "[F0]   TETRIS GAME   " .xwrite
+  "[F0]                 " .xwrite
   .Reset
   
   1 13 .at
@@ -497,10 +499,10 @@ The library correctly handles UTF-8:
 ### Centered Message Box
 ```r3forth
 :msgbox | "text" --
-  $05 xalign
+  >r $05 xalign
   cols 2/ 20 - rows 2/ 3 -
   2dup 40 6 .boxc
-  40 4 rot 2 + rot 2 + rot xText
+  40 4 2swap r> xText
   .flush waitkey
   ;
 ```

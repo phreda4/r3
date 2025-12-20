@@ -8,7 +8,7 @@ This library provides:
 - **Layout system** with nested frames and automatic clipping
 - **Widget system** with focus management and event routing
 - **Input handling** (keyboard, mouse, wheel)
-- **Standard widgets** (buttons, lists, trees, input fields)
+- **Complete widget set** (buttons, lists, trees, input, check, radio, slider, progress)
 - **Event-driven architecture** with redraw optimization
 - **Modal loop** with automatic rendering
 
@@ -43,6 +43,7 @@ Widgets are automatically assigned sequential IDs starting from 0. The system tr
 - **`onTui`** `( 'render-callback -- )` - Start TUI main loop
   ```r3forth
   :my-ui
+    tui  | Reset at start
     | ... draw widgets here ...
     ;
   
@@ -55,7 +56,7 @@ Widgets are automatically assigned sequential IDs starting from 0. The system tr
 
 - **`exit`** - Exit TUI loop
   ```r3forth
-  uikey [esc] =? ( exit ; )
+  uikey [esc] =? ( exit )
   ```
 
 ### UI Reset
@@ -63,7 +64,7 @@ Widgets are automatically assigned sequential IDs starting from 0. The system tr
 - **`tui`** - Reset for new frame
   ```r3forth
   :my-ui
-    tui  | Reset state
+    tui  | Reset state and frame
     | ... draw widgets ...
     ;
   ```
@@ -141,6 +142,8 @@ Divide frame into regions (N=North, S=South, E=East, O=Oeste/West):
   ```r3forth
   flcr  | Move to start of next line in frame
   ```
+  - Increments fy by 1
+  - Moves to column fx
 
 - **`fw%`** `( percent -- columns )` - Calculate percentage of width
   ```r3forth
@@ -154,6 +157,11 @@ Divide frame into regions (N=North, S=South, E=East, O=Oeste/West):
   evtmx evtmy flin? 0? ( "Outside" print ; )
   ```
 
+- **`flin?1`** `( x y -- 1/0 )` - Check if point is in first line only
+  ```r3forth
+  evtmx evtmy flin?1  | Only tests Y >= fy (not Y < fy+fh)
+  ```
+
 - **`flxvalid?`** `( -- 1/0 )` - Check if frame is valid (w,h > 0)
 
 ---
@@ -165,30 +173,34 @@ Divide frame into regions (N=North, S=South, E=East, O=Oeste/West):
 Each widget returns a state value indicating interaction:
 
 - `0` = Normal (no interaction)
-- `1` = Over (mouse hover) - not always available
+- `1` = Over (mouse hover)
 - `2` = In (mouse button down inside)
 - `3` = Active (dragging inside)
 - `4` = Active outside (dragging but outside widget)
 - `5` = Out (mouse released outside after drag)
 - `6` = Click (mouse released inside)
 
-State transitions:
-```
-Normal(0) → Over(1) → In(2) → Active(3) ⇄ Active-Out(4)
-                                 ↓            ↓
-                               Click(6)    Out(5)
-```
 ### Widget Functions
 
-- **`tuiw`** `( -- state )` - Widget with mouse interaction
+- **`tuiw`** `( -- state )` - Widget with mouse interaction (full frame)
   ```r3forth
   tuiw
   6 =? ( "Clicked!" print )
   drop
   ```
+  - Tests entire frame area
   - Auto-increments widget ID
   - Tracks mouse state
   - Returns interaction state
+
+- **`tuiw1`** `( -- state )` - Widget with mouse interaction (single line)
+  ```r3forth
+  tuiw1  | Only tests first line of frame
+  6 =? ( "Clicked!" print )
+  drop
+  ```
+  - Tests only first row (fy)
+  - Useful for single-line widgets (buttons, inputs)
 
 - **`tuif`** `( -- state )` - Widget with focus (keyboard)
   ```r3forth
@@ -213,21 +225,44 @@ Normal(0) → Over(1) → In(2) → Active(3) ⇄ Active-Out(4)
 
 ### Buttons
 
-- **`tuBtn`** `( 'callback "text" -- )` - Standard button
+- **`tuBtn`** `( 'callback "text" -- )` - Standard button (single line)
   ```r3forth
-  :on-click "Button clicked!" print ;
+  :on-click "Button clicked!" print tuR! ;
   'on-click "Click Me" tuBtn
   ```
   - Centers text horizontally
+  - Single line height
   - Calls callback on click or Enter key
   - Focus with Tab/Shift+Tab
+  - Automatically increments fy
 
-- **`tuTBtn`** `( 'callback "text" -- )` - Text-box button
+- **`tuTBtn`** `( 'callback "text" -- )` - Text-box button (multi-line)
   ```r3forth
-  'save-action "Save File" tuTBtn
+  'save-action "Save\nFile" tuTBtn
   ```
   - Fills entire frame with text
+  - Multi-line support
   - Supports color codes in text
+  - Useful for larger buttons
+
+### Labels
+
+- **`tuLabel`** `( "text" -- )` - Left-aligned label
+  ```r3forth
+  "Username:" tuLabel
+  ```
+  - Single line
+  - Automatically increments fy
+
+- **`tuLabelC`** `( "text" -- )` - Center-aligned label
+  ```r3forth
+  "Title" tuLabelC
+  ```
+
+- **`tuLabelR`** `( "text" -- )` - Right-aligned label
+  ```r3forth
+  "123" tuLabelR  | Right-align numbers
+  ```
 
 ### Windows/Panels
 
@@ -238,6 +273,7 @@ Normal(0) → Over(1) → In(2) → Active(3) ⇄ Active-Out(4)
   ```
   - Highlights if active window
   - Auto-increments window ID
+  - Uses `.wbordec` (curved border)
 
 - **`tuWina`** - Draw window border with bold when active
   ```r3forth
@@ -283,6 +319,7 @@ Display scrollable lists with keyboard/mouse navigation.
   - Automatically scrolls
   - Mouse wheel support
   - Keyboard: Up/Down, PgUp/PgDn, Tab
+  - Shows scroll indicator
 
 ### List Controls
 
@@ -364,7 +401,7 @@ Single-line text input with editing.
 ### Input Controls
 
 **Editing:**
-- Type to insert characters
+- Type to insert characters (32-126)
 - `Backspace` - Delete before cursor
 - `Delete` - Delete at cursor
 - `←`/`→` - Move cursor
@@ -378,8 +415,194 @@ Single-line text input with editing.
 
 ### Input Modes
 
-- **Insert mode** (default): New characters inserted
-- **Overwrite mode**: New characters replace existing
+- **Insert mode** (default): Blinking bar cursor, characters inserted
+- **Overwrite mode**: Block cursor, characters replaced
+
+---
+
+## Check Box Widget
+
+Toggle checkbox with label.
+
+### Usage
+
+- **`tuCheck`** `( 'var "label" -- )` - Display checkbox
+  ```r3forth
+  #option 0  | 0=unchecked, 1=checked
+  
+  'option "Enable feature" tuCheck
+  ```
+  - Shows `[ ]` when unchecked
+  - Shows `[X]` when checked
+  - Click or Enter to toggle
+  - Sets `tuX?` when changed
+
+### Example
+
+```r3forth
+#save-backup 0
+#auto-save 1
+
+:options-ui
+  tui
+  10 5 40 10 flx!
+  tuWin
+  1 1 flpad
+  
+  2 flxN
+  'save-backup "Save backup copies" tuCheck
+  
+  flxRest 2 flxN
+  'auto-save "Auto-save every 5 min" tuCheck
+  ;
+```
+
+---
+
+## Radio Button Widget
+
+Mutually exclusive options.
+
+### Usage
+
+- **`tuRadio`** `( n 'var "label" -- )` - Display radio button
+  ```r3forth
+  #color 0  | Selected option (0, 1, or 2)
+  
+  0 'color "Red" tuRadio
+  1 'color "Green" tuRadio
+  2 'color "Blue" tuRadio
+  ```
+  - Shows `( )` when not selected
+  - Shows `(•)` when selected
+  - Click or Enter to select
+  - Deselects others automatically (same variable)
+  - Sets `tuX?` when changed
+
+### Example
+
+```r3forth
+#difficulty 1  | 0=Easy, 1=Normal, 2=Hard
+
+:settings-ui
+  tui
+  10 5 40 15 flx!
+  tuWin
+  1 1 flpad
+  
+  $01 "Difficulty" .wtitle
+  
+  2 flxN
+  0 'difficulty "Easy" tuRadio
+  
+  flxRest 2 flxN
+  1 'difficulty "Normal" tuRadio
+  
+  flxRest 2 flxN
+  2 'difficulty "Hard" tuRadio
+  ;
+```
+
+---
+
+## Slider Widget
+
+Horizontal slider for numeric input.
+
+### Usage
+
+- **`tuSlider`** `( 'var min max -- )` - Display slider
+  ```r3forth
+  #volume 50  | Current value (0-100)
+  
+  'volume 0 100 tuSlider
+  ```
+  - Shows horizontal line (─)
+  - Shows position marker (●)
+  - Click to jump to position
+  - Drag to adjust value
+  - Sets `tuX?` when changed
+  - Automatically increments fy
+
+### Example
+
+```r3forth
+#volume 75
+#brightness 50
+
+:settings-ui
+  tui
+  10 5 40 12 flx!
+  tuWin
+  1 1 flpad
+  
+  2 flxN
+  "Volume:" tuLabel
+  flxRest 2 flxN
+  'volume 0 100 tuSlider
+  
+  flxRest 2 flxN
+  "Brightness:" tuLabel
+  flxRest 2 flxN
+  'brightness 0 100 tuSlider
+  
+  | Show values
+  flxRest 2 flxN
+  volume "Volume: %d%%" sprint tuLabel
+  ;
+```
+
+---
+
+## Progress Bar Widget
+
+Display progress indicator.
+
+### Usage
+
+- **`tuProgress`** `( percent -- )` - Display progress bar
+  ```r3forth
+  50 tuProgress  | 50% complete
+  ```
+  - Shows filled bar (█ characters)
+  - Percent: 0-100 (auto-clamped)
+  - Fills frame width
+  - Automatically increments fy
+
+### Example
+
+```r3forth
+#progress 0
+
+:update-progress
+  progress 1+ 100 min 'progress !
+  tuR!  | Request redraw
+  ;
+
+:progress-ui
+  tui
+  
+  cols 2/ 20 - rows 2/ 3 -
+  40 8 flx!
+  tuWin
+  1 1 flpad
+  
+  $01 "Loading..." .wtitle
+  
+  2 flxN
+  
+  flxRest 2 flxN
+  progress tuProgress
+  
+  flxRest 2 flxN
+  progress "%d%% complete" sprint tuLabelC
+  ;
+
+:loading
+  0 'progress !
+  'progress-ui onTui
+  ;
+```
 
 ---
 
@@ -409,230 +632,133 @@ Single-line text input with editing.
 
 ---
 
-## Usage Examples
+## Complete Examples
 
-### Basic Application
-```r3forth
-:main-ui
-  tui  | Reset state
-  
-  flx  | Full screen
-  .wfill
-  
-  1 flxN  | Top row
-  $01 "My Application" .wtitle
-  
-  flxRest
-  1 flxS  | Bottom row
-  $04 "Press ESC to exit" .wtitle
-  ;
-
-'main-ui onTui
-```
-
-### Button Menu
-```r3forth
-:on-new "New file" print tuR! ;
-:on-open "Open file" print tuR! ;
-:on-save "Save file" print tuR! ;
-:on-quit exit ;
-
-:menu-ui
-  tui
-  
-  10 5 30 15 flx!
-  tuWin
-  1 1 flpad
-  
-  $01 "MENU" .wtitle
-  
-  2 flxN
-  'on-new "New" tuBtn
-  
-  flxRest 2 flxN
-  'on-open "Open" tuBtn
-  
-  flxRest 2 flxN
-  'on-save "Save" tuBtn
-  
-  flxRest 2 flxN
-  'on-quit "Quit" tuBtn
-  ;
-
-'menu-ui onTui
-```
-
-### List Example
-```r3forth
-#files "readme.txt\0main.r3\0lib.r3\0test.r3\0"
-#file-list 0 0
-
-:file-ui
-  tui
-  
-  10 5 40 15 flx!
-  tuWin
-  1 1 flpad
-  
-  $01 "Select File" .wtitle
-  
-  2 flxN  | Skip title
-  
-  flxRest
-  'file-list files tuList
-  
-  | Check selection
-  tuX? 1? (
-    file-list @ 3 << files + 
-    "Selected: %s" print tuR!
-  ) drop
-  ;
-
-'file-ui onTui
-```
-
-### Split Layout
-```r3forth
-:split-ui
-  tui
-  
-  flx
-  .wfill
-  
-  | Left panel
-  flxpush
-  50.0 fw% flxO  | Left 50%
-  .wborde
-  1 1 flpad
-  "Left Panel" 0 tuText
-  flxpop
-  
-  | Right panel  
-  50.0 fw% flxE  | Right 50%
-  .wborde
-  1 1 flpad
-  "Right Panel" 0 tuText
-  ;
-
-'split-ui onTui
-```
-
-### Tree Browser
-```r3forth
-#folders
-  ( 0 ) "Root\0"
-  ( $20 ) "Documents\0"
-  ( $A1 ) "  Work\0"
-  ( $A1 ) "  Personal\0"
-  ( $20 ) "Pictures\0"
-  ( $A1 ) "  2024\0"
-  ( $A1 ) "  2023\0"
-  0
-
-#tree-sel 0 0
-
-:tree-ui
-  tui
-  
-  10 5 50 20 flx!
-  tuWin
-  1 1 flpad
-  
-  $01 "Folder Browser" .wtitle
-  
-  2 flxN  | Title space
-  
-  flxRest
-  'tree-sel folders tuTree
-  ;
-
-'tree-ui onTui
-```
-
-### Form with Input
+### Form with All Widgets
 ```r3forth
 #username * 32
 #password * 32
+#remember 0
+#color 0
+#volume 50
+#progress 0
 
-:on-login
-  username "admin" = 1? (
-    "Login successful!" print tuR!
-  ) (
-    "Invalid credentials" print tuR!
-  ) drop ;
-
-:login-ui
+:form-ui
   tui
   
-  cols 2/ 20 - rows 2/ 5 -
-  40 12 flx!
+  10 5 60 25 flx!
+  tuWin
+  1 1 flpad
+  
+  $01 "REGISTRATION FORM" .wtitle
+  
+  | Username
+  2 flxN
+  "Username:" tuLabel
+  flxRest 2 flxN
+  'username 32 tuInputLine
+  
+  | Password
+  flxRest 2 flxN
+  "Password:" tuLabel
+  flxRest 2 flxN
+  'password 32 tuInputLine
+  
+  | Remember me
+  flxRest 2 flxN
+  'remember "Remember me" tuCheck
+  
+  | Color selection
+  flxRest 2 flxN
+  "Favorite color:" tuLabel
+  flxRest 2 flxN
+  0 'color "Red" tuRadio
+  flxRest 2 flxN
+  1 'color "Blue" tuRadio
+  flxRest 2 flxN
+  2 'color "Green" tuRadio
+  
+  | Volume slider
+  flxRest 2 flxN
+  "Volume:" tuLabel
+  flxRest 2 flxN
+  'volume 0 100 tuSlider
+  
+  | Progress
+  flxRest 2 flxN
+  progress tuProgress
+  
+  | Update progress for demo
+  progress 100 <? ( 1 'progress +! tuR! ) drop
+  ;
+
+'form-ui onTui
+```
+
+### Settings Panel
+```r3forth
+#vsync 1
+#aa 1
+#quality 1
+#music-vol 80
+#sfx-vol 60
+
+:settings
+  tui
+  
+  cols 2/ 30 - rows 2/ 12 -
+  60 24 flx!
   tuWina
   1 1 flpad
   
-  $01 "LOGIN" .wtitle
+  $01 "SETTINGS" .wtitle
   
-  2 flxN  | Title
+  | Graphics
+  2 flxN
+  .Bold "Graphics" tuLabel .Reset
   
-  flxRest 3 flxN
-  1 flxN
-  "Username:" 0 tuText
-  flxRest
-  'username 32 tuInputLine
+  flxRest 2 flxN
+  'vsync "V-Sync" tuCheck
   
-  flxRest 3 flxN
-  1 flxN
-  "Password:" 0 tuText
-  flxRest
-  'password 32 tuInputLine
+  flxRest 2 flxN
+  'aa "Anti-aliasing" tuCheck
   
+  flxRest 2 flxN
+  "Quality:" tuLabel
+  flxRest 2 flxN
+  0 'quality "Low" tuRadio
+  flxRest 2 flxN
+  1 'quality "Medium" tuRadio
+  flxRest 2 flxN
+  2 'quality "High" tuRadio
+  
+  | Audio
+  flxRest 2 flxN
+  .Bold "Audio" tuLabel .Reset
+  
+  flxRest 2 flxN
+  "Music volume:" tuLabel
+  flxRest 2 flxN
+  'music-vol 0 100 tuSlider
+  
+  flxRest 2 flxN
+  "SFX volume:" tuLabel
+  flxRest 2 flxN
+  'sfx-vol 0 100 tuSlider
+  
+  | Buttons
   flxRest -2 flxN
-  'on-login "Login" tuBtn
+  flxpush
+  50.0 fw% flxO
+  :on-save "Settings saved!" print tuR! ;
+  'on-save "Save" tuBtn
+  flxpop
+  50.0 fw% flxE
+  :on-cancel exit ;
+  'on-cancel "Cancel" tuBtn
   ;
 
-'login-ui onTui
-```
-
-### Complex Layout
-```r3forth
-:complex-ui
-  tui
-  
-  flx
-  .wfill
-  
-  | Header
-  flxpush
-  1 flxN
-  .wborde
-  $44 "Application Title" .wtitle
-  flxpop
-  
-  | Footer
-  flxpush
-  -1 flxS
-  .wborde
-  $44 "Status: Ready" .wtitle
-  flxpop
-  
-  | Main area (middle)
-  1 flxN -1 flxS
-  
-  | Left sidebar
-  flxpush
-  20 flxO
-  .wborde
-  1 1 flpad
-  "Sidebar" 0 tuText
-  flxpop
-  
-  | Right content
-  20 flxO
-  .wborde
-  1 1 flpad
-  "Main Content Area" 0 tuText
-  ;
-
-'complex-ui onTui
+'settings onTui
 ```
 
 ---
@@ -642,77 +768,35 @@ Single-line text input with editing.
 1. **Always call `tui` at start of render**
    ```r3forth
    :my-ui
-     tui  | Reset state
+     tui  | Reset state and frame
      | ... widgets ...
      ;
    ```
 
-2. **Use frame stack for nested layouts**
+2. **Use `tuiw1` for single-line widgets**
    ```r3forth
-   flxpush
-     | Inner layout
-   flxpop
+   tuBtn  | Uses tuiw1 internally
+   tuCheck  | Uses tuiw1 internally
    ```
 
-3. **Check `tuX?` for button actions**
+3. **Request redraw when state changes**
+   ```r3forth
+   value-changed? ( tuR! ; )
+   ```
+
+4. **Use appropriate widget**
+   - Buttons for actions
+   - Check for on/off options
+   - Radio for exclusive choices
+   - Slider for numeric ranges
+   - List for selections
+   - Progress for status
+
+5. **Handle `tuX?` for actions**
    ```r3forth
    'callback "Button" tuBtn
-   tuX? 1? ( | Action executed ) drop
+   tuX? 1? ( | Process action ) drop
    ```
-
-4. **Request redraw when state changes**
-   ```r3forth
-   data-changed? ( tuR! ; )
-   ```
-
-5. **Use appropriate widget for task**
-   - Lists for selections
-   - Trees for hierarchies
-   - Input fields for text entry
-   - Buttons for actions
-
-6. **Handle focus properly**
-   ```r3forth
-   tuif 1 =? ( | Just got focus ) drop
-   ```
-
----
-
-## Layout Patterns
-
-### Three-Column Layout
-```r3forth
-| Left
-flxpush 33.0 fw% flxO
-  | ... left content ...
-flxpop
-
-| Center
-flxpush 33.0 fw% flxO 33.0 fw% flxE
-  | ... center content ...
-flxpop
-
-| Right
-33.0 fw% flxE
-  | ... right content ...
-```
-
-### Header/Content/Footer
-```r3forth
-| Header
-flxpush 3 flxN
-  | ... header ...
-flxpop
-
-| Footer
-flxpush -3 flxS
-  | ... footer ...
-flxpop
-
-| Content (middle)
-3 flxN -3 flxS
-  | ... content ...
-```
 
 ---
 
@@ -720,11 +804,11 @@ flxpop
 
 - **Frame coordinates:** 1-based (1,1 is top-left)
 - **Widget IDs:** Auto-incremented, reset each frame
-- **Focus:** Only one widget has focus at a time
+- **Focus:** Only one widget has focus
 - **Active widget:** Only one can be clicked/dragged
-- **Redraw:** Automatic on events, manual with `tuR!`
+- **`tuiw` vs `tuiw1`:** Use `tuiw1` for single-line widgets
 - **Cursor:** Hidden by default, shown with `tuC!`
-- **ESC key:** Not handled automatically - implement in your UI
-- **Frame stack:** Maximum 8 levels deep
-- **List items:** Null-separated strings
-- **Tree flags:** First byte of each line
+- **All widgets increment fy** except containers
+- **Check/Radio:** Value is 0 or 1 (or index for radio)
+- **Slider:** Value clamped to min-max range
+- **Progress:** Percent auto-clamped 0-100
