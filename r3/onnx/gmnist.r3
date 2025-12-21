@@ -3,7 +3,7 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/vdraw.r3
-^r3/util/ui.r3
+^r3/util/immi.r3
 ^r3/lib/onnx.r3
 
 #output_data_f * 4096
@@ -100,8 +100,8 @@
 	vop ;
 
 :moved
-	sdlx 16 - 3 >> 27 >? ( drop ; )
-	sdly 16 - 3 >> 27 >? ( 2drop ; )
+	sdlx 16 - 3 >> $ffff and 27 >? ( drop ; )
+	sdly 16 - 3 >> $ffff and 27 >? ( 2drop ; )
 	vline ;	
 
 :upd
@@ -110,16 +110,20 @@
 :mainmnist	
 	0 sdlcls
 	drawgrid
-
-	16 dup 28 8 * dup 
-	2over 2over guiBox sdlRect
-	'dnd 'moved 'upd onMap
-
 	uiStart
-	4 2 uiPad
-	280 16 0.3 %w 0.6 %h uiWin!
-	$222222 sdlcolor uiFillW 
-	1 14 uiGridA uiV
+
+	0 0 uiPading
+	16 dup 28 8 * dup 
+	2over 2over uiZoneBox sdlRect 
+	
+	'dnd uiDwn
+	'moved uiSel
+	'upd uiClk
+	
+	4 2 uiPading
+	280 16 0.3 %w 0.6 %h uiBox
+	|$222222 sdlcolor uiFillW 
+	1 14 uiGrid
 	'output_data_f >a
 	0 ( 10 <?
 		da@+ over "%d : %f " sprint uiLabel
@@ -135,6 +139,7 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
+	<f1> =? ( rungrid )
 	drop ;
 		
 		
@@ -175,6 +180,7 @@
 	"Hello Word IA" 800 600 SDLinit
 	"media/ttf/Roboto-bold.ttf" 19 txload 'font1 !
 	font1 txfont
+
 	'setg vset!	
 	main
 	SDLquit	

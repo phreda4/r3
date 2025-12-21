@@ -3,9 +3,11 @@
 |
 ^r3/lib/sdl2gfx.r3
 
-^r3/util/ui.r3
-^r3/util/uifiles.r3
-^r3/util/uiedit.r3
+|^r3/util/ui.r3
+|^r3/util/uifiles.r3
+|^r3/util/uiedit.r3
+^r3/util/immi.r3
+^r3/util/imedit.r3
 
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
@@ -118,8 +120,8 @@
 	4 << dic + nameword ;
 
 :printlinew
-	cntdef >=? ( drop uiDn ; )
-	dicword uiLabel uiDn ;
+	cntdef >=? ( drop ; )
+	dicword uiLabel ;
 	
 :clicklistw
 |	sdly cury - boxh / lidiini + 
@@ -154,8 +156,8 @@
 	
 |---------------------------------
 :memoria
-	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiWin!
-	$111111 sdlcolor uiFillW
+	0.01 %w 0.8 %h 0.6 %w 0.19 %h uiBox
+	|$111111 sdlcolor uiFillW
 	;
 
 |----- Includes
@@ -165,9 +167,9 @@
 	;
 	
 :includes
-	0.005 %w 0.07 %h 0.39 %w 0.03 %h uiWin!
-	$333333 sdlcolor uiFillW
-	8 1 uiGrid uiH
+	0.005 %w 0.07 %h 0.39 %w 0.03 %h uiBox
+|	$333333 sdlcolor uiFillW
+	8 1 uiGrid
 	0 ( 8 <?
 		dup iteminc
 		1+ ) drop ;
@@ -180,9 +182,9 @@
 	;
 	
 :diccionario
-	0.405 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiFillW
-	2 30 uiGridA uiV
+	0.405 %w 0.1 %h 0.29 %w 0.8 %h uiBox
+	|$111111 sdlcolor uiFillW
+	2 30 uiGrid
 
 |	lidilines dup immListBox
 |	'clicklistw onClick	
@@ -210,9 +212,9 @@
 	;
 	
 :tokens	
-	0.705 %w 0.1 %h 0.29 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiFillW
-	2 30 uiGridA uiV
+	0.705 %w 0.1 %h 0.29 %w 0.8 %h uiBox
+	|$111111 sdlcolor uiFillW
+	2 30 uiGrid
 	0 ( 30 <?
 		dup showtok
 		1+ ) drop
@@ -220,10 +222,10 @@
 
 |----- codigo	
 :codigo
-	0.005 %w 0.1 %h 0.39 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiFillW
+	0.005 %w 0.1 %h 0.39 %w 0.8 %h uiBox
+	|$111111 sdlcolor uiFillW
 	
-	uiWin@ edwin
+|	uiWin@ edwin
 	edfocusro
 	edcodedraw
 	|edtoolbar
@@ -238,9 +240,9 @@
 	$ff00 txrgb "debug" txwrite
 	$ffffff txrgb
 	
-	uiStart 4 6 uiPad
+	uiStart 4 6 uiPading
 	14 22 uiGrid
-	1 0 uiGat uiH
+	1 0 uiat 
 	stInfo
 	'exit "Run" uiRBtn
 	'exit "Step" uiRBtn
@@ -297,17 +299,17 @@
 	$ff00 txrgb "Edit" txwrite
 	$ffffff txrgb
 	
-	uiStart 4 6 uiPad
+	uiStart 4 6 uiPading
 	14 22 uiGrid
-	1 0 uiGat uiH
+	1 0 uiat
 	stInfo
 	'exit "F1 Help" uiRBtn
 |	'codedit "F2 Edit" uiRBtn
 	'codedebug "F3 Debug" uiRBtn
 
-	0.01 %w 0.1 %h 0.7 %w 0.8 %h uiWin!
-	$111111 sdlcolor uiRFill10
-	uiWin@ edwin
+	0.01 %w 0.1 %h 0.7 %w 0.8 %h uiBox
+	|$111111 sdlcolor uiRFill10
+	|uiWin@ edwin
 	edfocus
 	edcodedraw
 
@@ -358,28 +360,28 @@
 #pad * 1024
 		
 :Fileselect
-	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiWin!
-	$222222 sdlcolor uiFillW
+	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiBox
+	|$222222 sdlcolor uiFillW
 	2 22 uiGrid 
 	
 	stDark 
 	uiPush
-	0 1 uiGAt 2 1 uiGto 
+	0 1 uiAt 2 1 uito 
 	'pad 1024 uiInputLine | 'buff max --
-	0 0 uiGat 2 1 uiGto 
+	0 0 uiat 2 1 uito 
 	uixBoxPath 
 	uiPop
-	0 2 uiGAt uiV
-	'dirnow 33 uiDirs uiTree
+	0 2 uiAt 
+	|'dirnow 33 uiDirs uiTree
 	dirnow dirchg <>? ( dup 'dirchg ! 
-		dup uiTreePath
+|		dup uiTreePath
 		'basepath 'fullpath strcpyl 1- strcpy
-		'fullpath uiGetFiles
+|		'fullpath uiGetFiles
 		0 0 'filenow !+ ! -1 'filechg !
 		) drop
 		
-	1 2 uiGAt uiV
-	'filenow 33 uiFiles uiList
+	1 2 uiAt 
+|	'filenow 33 uiFiles uiList
 	filenow filechg <>? ( dup 'filechg ! 
 		dup uiNindx 'fullpath 'filename strcpyl 1- strcpy
 		loadcodigo
@@ -388,18 +390,18 @@
 
 
 :codigo
-	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiWin!
-	$111111 sdlcolor uiFillW
-	uiWin@ edwin	
+	0.37 %w 0.05 %h 0.6 %w 0.9 %h uiBox
+|	$111111 sdlcolor uiFillW
+|	uiWin@ edwin	
 	edfocusro
 	edcodedraw
 	edtoolbar
 	;
 	
 :incodcod
-	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiWin!
-	$222222 sdlcolor uiFillW
-	5 15 uiGrid uiH
+	0.73 %w 0.1 %h 0.26 %w 0.85 %h uiBox
+|	$222222 sdlcolor uiFillW
+	5 15 uiGrid
 	"+Info" uiLabel
 	;
 	
@@ -413,9 +415,9 @@
 	$ff00 txrgb "d4" txwrite
 	$ffffff txrgb
 	
-	uiStart 4 6 uiPad
+	uiStart 4 6 uiPading
 	14 22 uiGrid
-	1 0 uiGat uiH
+	1 0 uiat 
 	stInfo
 	'coderun "F1 Run" uiRBtn
 	'codedit "F2 Edit" uiRBtn
@@ -480,7 +482,7 @@
 		
 	|diskdirs 
 	0 genlevel
-	'nameaux uiDirs searchtd
+|	'nameaux uiDirs searchtd
 	$80 over c+!
 	12 'dirnow !
 	|.println
@@ -507,7 +509,7 @@
 |	0.37 %w 0.08 %h 0.6 %w 0.85 %h edwin
 	
 	mark
-	'basepath uiScanDir
+|	'basepath uiScanDir
 	loadm
 	
 	mark

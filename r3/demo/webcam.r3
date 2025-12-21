@@ -3,7 +3,7 @@
 
 ^r3/lib/sdl2gfx.r3	
 ^r3/util/txfont.r3
-^r3/util/ui.r3
+^r3/util/immi.r3
 ^r3/lib/escapi.r3
 ^r3/lib/rand.r3
 ^r3/lib/memavx.r3
@@ -106,14 +106,14 @@
 	
 :guipanel
 	uiStart
-	3 2 uiPad
-	0.01 %w 0.05 %h 0.3 %w 0.6 %h uiWin!
-	3 18 uiGridA uiH
+	3 2 uiPading
+	0.01 %w 0.05 %h 0.3 %w 0.6 %h uiBox
+	3 18 uiGrid
 	"WEBCAM" uiLabelc
 	stLink 'setdef "Default" uiRBtn
 	stDang 'exit "Exit" uiRBtn
-	2 18 uiGridA uiH
-	0 1 uiGat
+	2 18 uiGrid
+	0 1 uiAt
 	stdark
 	'propv >a 'propi >b
 	'proplist ( dup c@ 1? drop

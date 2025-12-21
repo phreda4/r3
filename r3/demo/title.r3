@@ -5,7 +5,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/sdlgui.r3
 ^r3/util/varanim.r3
-^r3/util/boxtext.r3
+^r3/util/textb.r3
 ^r3/lib/color.r3
 
 #font
