@@ -49,6 +49,7 @@
 #sys-SDL_SetTextureBlendMode
 #sys-SDL_SetSurfaceAlphaMod
 #sys-SDL_ConvertSurfaceFormat
+#sys-SDL_UpdateYUVTexture
 
 #sys-SDL_RenderDrawPoint
 #sys-SDL_RenderDrawPoints
@@ -140,6 +141,7 @@
 ::SDL_SetRenderDrawBlendMode sys-SDL_SetRenderDrawBlendMode sys2 drop ;
 ::SDL_SetTextureBlendMode sys-SDL_SetTextureBlendMode sys2 drop ;
 ::SDL_ConvertSurfaceFormat sys-SDL_ConvertSurfaceFormat sys3 ;
+::SDL_UpdateYUVTexture sys-SDL_UpdateYUVTexture sys8 drop ;
 
 ::SDL_RenderDrawPoint sys-SDL_RenderDrawPoint sys3 drop ;
 ::SDL_RenderDrawPoints sys-SDL_RenderDrawPoints sys3 drop ;
@@ -407,6 +409,7 @@
 	dup "SDL_SetRenderDrawBlendMode" getproc 'sys-SDL_SetRenderDrawBlendMode !
 	dup "SDL_SetTextureBlendMode" getproc 'sys-SDL_SetTextureBlendMode !
 	dup "SDL_ConvertSurfaceFormat" getproc 'sys-SDL_ConvertSurfaceFormat !
+	dup "SDL_UpdateYUVTexture" getproc 'sys-SDL_UpdateYUVTexture !
 	dup "SDL_RenderDrawPoint" getproc 'sys-SDL_RenderDrawPoint !
 	dup "SDL_RenderDrawPoints" getproc 'sys-SDL_RenderDrawPoints !
 	dup "SDL_RenderDrawLine" getproc 'sys-SDL_RenderDrawLine !
