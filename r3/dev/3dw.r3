@@ -6,7 +6,6 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/arr16.r3
 ^r3/util/varanim.r3
-^r3/util/boxtext.r3
 ^r3/util/sdlgui.r3
 
 #listobj 0 0

@@ -265,7 +265,7 @@
 
 		master_volume *.
 		fastanh. | -1.0..1.00 
-		2/ -32768 max 32767 min | Clamp to 16-bit range
+		32767 *. |2/ -32768 max 32767 min | Clamp to 16-bit range
 
 		$ffff and
 		dup 16 << or       | Duplicate to both channels

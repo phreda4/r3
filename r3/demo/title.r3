@@ -58,16 +58,29 @@
 	'exit t +vexe 		
 	;
 	
+
+#rtbox [ 0 0 324 180 ] |500 200 324 180 ]
+
+:drawtex | texture x y --
+	swap
+	pick2 0 0 'rtbox 8 + dup 4 + SDL_QueryTexture
+	'rtbox d!+ d!
+	SDLrenderer over 0 'rtbox SDL_RenderCopy	
+	SDL_DestroyTexture ;
+	
+|'ttp $1f0f0 224 120 font1 textbox 310 50 drawtex
+	
 :titlestart
 	vupdate
 	$0 SDLcls
-	
-	$11 texto>
-	300 100 424 400 xywh64 
-	$ffffff $0 colm colmix
-	font 
-	textbox | $vh str box color font --
 
+	texto>
+	colm 4 >> $f xor dup 4 << over 8 << or or 
+	$5f000 or
+	424 400
+	font
+	textbox 300 100 drawtex
+		
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )
@@ -94,11 +107,11 @@
 	vupdate
 	$0 SDLcls
 	
-	$11 ta "animacion %d" sprint
-	100 yb 824 300 xywh64 
-	$0000ff $ffffff colm colmix
-	font 
-	textbox | $vh str box color font --
+	ta "animacion %d" sprint
+	$5ffff 
+	824 300
+	font
+	textbox 100 yb drawtex
 
 	immgui
 	412 400 immat

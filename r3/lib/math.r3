@@ -13,10 +13,13 @@
 ::2* 1 << ;
 
 |---- fixed point 48.16
-::*.u	| a b -- c ; all positive
+::*.s	| a b -- c ; small numbers 
+	* 16 >> ;
+
+::*.	| a b -- c 
 	16 *>> ;
 
-::*.	| a b -- c
+::*.f	| a b -- c ; full adjust
 	16 *>> dup 63 >> - ;
 
 ::/.	| a b -- c
@@ -36,10 +39,10 @@
 
 :sinp
 	$7fff and $4000 -
-	dup dup 16 *>>
-	dup 4846800 16 *>>
-	2688000 - 16 *>>
-	404000 + 16 *>> ;
+	dup dup *.
+	dup 4846800 *.
+	2688000 - *.
+	404000 + *. ;
 	
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
@@ -49,28 +52,28 @@
 ::tan | v -- f
 	$4000 +
 	$7fff and $4000 -
-	dup dup 16 *>>
-	dup 129890000 16 *>>
-	5078000 + 16 *>>
-	395600 + 16 *>> ;
+	dup dup *.
+	dup 129890000 *.
+	5078000 + *.
+	395600 + *. ;
 
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
 
 ::xy+polar | x y bangle r -- x y
-	>r sincos r@ 16 *>> rot + swap r> 16 *>> rot + swap ;
+	>r sincos r@ *. rot + swap r> *. rot + swap ;
 	
 ::xy+polar2 | x y r ang -- x y
-	sincos pick2 *.u -rot *.u -rot + -rot + swap ;	
+	sincos pick2 *. -rot *. -rot + -rot + swap ;	
 
 ::ar>xy | xc yc bangle r -- xc yc x y
-	>r sincos r@ 16 *>> pick2 + swap r> 16 *>> pick3 + swap ;
+	>r sincos r@ *. pick2 + swap r> *. pick3 + swap ;
 
 ::polar | bangle largo -- dx dy
-	>r sincos r@ 16 *>> swap r> 16 *>> swap ;
+	>r sincos r@ *. swap r> *. swap ;
 
 ::polar2 | largo bangle  -- dx dy
-	sincos pick2 *.u -rot *.u swap ;
+	sincos pick2 *. -rot *. swap ;
 
 :iatan2 | |x| y -- bangle
 	swap
