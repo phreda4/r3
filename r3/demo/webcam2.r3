@@ -23,18 +23,18 @@
 #tsize 0.6
 
 #mpixel #mpitch
-
-:setimgyuv
-	texmem 0 
-	camdata 1280 
-	over 1280 720 * + 640
-	over 1280 2/ 720 2/ * + 640
-	SDL_UpdateYUVTexture
-	;
+	
 :setimg	
 	texmem 0 'mpixel 'mpitch SDL_LockTexture
 	|mpixel capture 1280 720 * 2/ move | dsc
 	mpixel camdata 1280 720 * 3 * memcpy_avx
+	texmem SDL_UnlockTexture
+	;	
+
+:setimg2
+	texmem 0 'mpixel 'mpitch SDL_LockTexture
+	|mpixel capture 1280 720 * 2/ move | dsc
+	mpixel camdata 1280 720 * 2* memcpy_avx
 	texmem SDL_UnlockTexture
 	;	
 
@@ -140,7 +140,10 @@
 	guipanel		
 	sdlredraw
 	sdlkey >esc< =? ( exit ) drop
-	cam 'camdata webcam_capture 0? ( setimg ) drop
+	cam 'camdata webcam_capture 0? ( 
+		|setimg |RGB
+		setimg2 |YUV2
+		) drop
 	;
 
 
@@ -151,20 +154,18 @@
 	font txfont
 	
 	1280 720 0
-	WEBCAM_FMT_RGB24 
-	|WEBCAM_FMT_YUYV 
+	|WEBCAM_FMT_RGB24 
+	WEBCAM_FMT_YUYV 
 	webcam_open 
 	0? ( drop ; ) 'cam !
 
 	here 'camdata !
-	|1280 720 * 2* 'here +!
-	1280 720 * 3 * 'here +!
+	1280 720 * 2* 'here +! |YUV
+	|1280 720 * 3 * 'here +! |RGB24
 |	getprop
-	
-	 |SDL_PIXELFORMAT_YV12 0x32315659
-	 |rgb24 0x17101803u
-	sdlRenderer $32315659 1 1280 720 SDL_CreateTexture 'texmem !
-	sdlRenderer $17101803 1 1280 720 SDL_CreateTexture 'texmem !
+	 
+	sdlRenderer $32595559 1 1280 720 SDL_CreateTexture 'texmem ! |SDL_PIXELFORMAT_YUV2
+	|sdlRenderer $17101803 1 1280 720 SDL_CreateTexture 'texmem ! |rgb24 0x17101803u
 
 	'main sdlshow
 	SDLQuit

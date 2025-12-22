@@ -1,8 +1,7 @@
 ^r3/lib/term.r3
 ^r3/lib/webcam.r3
 
-#ascii64 "`.-',:_~;""^!*]/)(<>?1r+cl=|7YvLsx[it}JjzTC{fyVnIou2S3Few%5AHXkZ"
-#ns ".,-~:;!+*=#%$@"
+#ascii64 " .,-~:;!+=*x#%$@"
 
 #running 1
 
@@ -26,7 +25,8 @@
 	swap $ff and + 3 >> | luma (2r+5g+b)/8
 |	2 >> $3f and 		| 64
 |	4 >> $f and 2 <<	| 16
-	5 >> $f and 3 <<	| 8
+	5 >> $f and 	| 8
+	$f xor
 	'ascii64 + c@ .emit ;
 
 |24bits color
@@ -52,29 +52,17 @@
 		
 #conv 'cube2ascii
 #stepx #stepy
-#invarea
-#ar #ag #ab
-
-:acccol | y x -- y x rgb
-	0 'ar ! 0 'ag ! 0 'ab !
-	0 ( stepy 16 >> <?
-		pick2 stepy *. over + camw * pick2 stepx *. + 3 * 
-		camdata + >a
-		stepx 16 >> ( 1?
-			ca@+ $ff and 'ar +!
-			ca@+ $ff and 'ag +!
-			ca@+ $ff and 'ab +!
-			1- ) drop
-		1+ ) drop
-	ar invarea * 32 >> $ff and 16 <<
-	ag invarea * 32 >> $ff and 8 << or
-	ab invarea * 32 >> $ff and or
-	;
 	
+:acccol | y x
+	over stepy *. camw * 
+	over stepx *. + 3 * camdata + >a
+	ca@+ $ff and 16 <<
+	ca@+ $ff and 8 << or
+	ca@+ $ff and or
+	;
 
 :drawcam
 	.home .reset
-	camdata >a
 	0 ( scrh <?
 		0 ( scrw <?
 			acccol conv ex
@@ -130,10 +118,6 @@
 	
 	camw fix. scrw / 'stepx !
 	camh fix. scrh / 'stepy !
-	stepx stepy "%f %f" .cr .println .flush
-	
-	$100000000 stepx int. stepy int. * /. 'invarea !
-	invarea 16 >> "%f" .println
 	
 	.flush
 	here 
