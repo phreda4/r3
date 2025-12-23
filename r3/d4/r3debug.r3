@@ -255,8 +255,9 @@
 	scrViews
 	
 	flxRest 
-	|scrtxcode
-	scrtokens
+	
+	scrtxcode
+	|scrtokens
 	
 	uiKey
 	|[esc] =? ( 1 'flags ! ) 
