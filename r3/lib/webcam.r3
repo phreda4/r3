@@ -97,9 +97,13 @@
 
 :
 |WIN| "dll/webcam.dll" loadlib 
-|LIN| "/lib/libcam.so.6" loadlib
+|LIN| "/lib/libwebcam.so" loadlib
 	dup "webcam_list_devices" getproc 'webcam_list_devices_p !
 	dup "webcam_free_list" getproc 'webcam_free_list_p !
+	dup "webcam_query_capabilities" getproc 'webcam_query_capabilities_p !
+	dup "webcam_free_capabilities" getproc 'webcam_free_capabilities_p !
+	dup "webcam_find_best_format" getproc 'webcam_find_best_format_p !
+	
 	dup "webcam_open" getproc 'webcam_open_p !
 	dup "webcam_capture" getproc 'webcam_capture_p !
 	dup "webcam_release_frame" getproc 'webcam_release_frame_p !

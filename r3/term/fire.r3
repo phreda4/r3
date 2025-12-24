@@ -49,7 +49,7 @@
 			dup firecolor 1? ( dup .fc ) drop
 			5 >> $7 and " .*#@&$X" + c@ .emit
 			1+ ) drop
-		|.cr
+		.cr
 		1+ ) drop ;
 
 | Generar fuego en la base

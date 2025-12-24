@@ -19,21 +19,27 @@
 :exit 0 'running ! ;
 	
 | luma->char
-:lumi2ascii | v --
-	dup 16 >> $ff and 2* 
-	over 8 >> $ff and dup 2 << + +
-	swap $ff and + 3 >> | luma (2r+5g+b)/8
-|	2 >> $3f and 		| 64
-|	4 >> $f and 2 <<	| 16
-	5 >> $f and 	| 8
-	$f xor
+:lumi2ascii | adr --
+	c@ 5 >> $f and 
 	'ascii64 + c@ .emit ;
 
+#c #d #e
+:getrgb | adr -- adr rgb
+	dup d@ |y0 u y1 v
+	dup $ff and 16 - 'c !
+	dup 8 >> $ff and 128 - 'd !
+	24 >> $ff and 128 -  'e !
+	298 c * 309 e * + 128 + 8 >> $ff clamp0max 16 <<
+	298 c * 100 d * - 208 e * - 128 + 8 >> $ff clamp0max 8 << or
+	298 c * 516 d * + 128 + 8 >> $ff clamp0max or
+	;
+	
 |24bits color
 :rgb2ascii | v -- v
+	getrgb
 	dup 16 >> $ff and
 	over 8 >> $ff and
-	pick2 $ff and
+	rot $ff and
 	.fgrgb	| color
 	lumi2ascii ;
 
@@ -44,28 +50,27 @@
 
 |8bit color	
 :cube2ascii
+	getrgb
 	dup 16 >> $ff and 8>6 36 *
 	over 8 >> $ff and 8>6 6 * +
-	over $ff and 8>6 + 
+	swap $ff and 8>6 + 
 	16 + .fc
 	lumi2ascii ;
 		
+	
 #conv 'cube2ascii
 #stepx #stepy
 	
-:acccol | y x
+:]data | y x -- y x adr
 	over stepy *. camw * 
-	over stepx *. + 3 * camdata + >a
-	ca@+ $ff and 16 <<
-	ca@+ $ff and 8 << or
-	ca@+ $ff and or
+	over stepx *. + 2* camdata + 
 	;
-
+	
 :drawcam
 	.home .reset
 	0 ( scrh <?
 		0 ( scrw <?
-			acccol conv ex
+			]data conv ex
 			1+ ) drop
 		.cr
 		1+ ) drop
@@ -80,7 +85,10 @@
 	
 :main-loop | --
     ( running 1? drop
-		cam 'camdata webcam_capture 0? ( drawcam ) drop
+		cam 'camdata webcam_capture 0? ( 
+			drawcam 
+			cam webcam_release_frame 
+			) drop
 		inkey 1? ( handle-key ) drop
 		10 ms
     ) drop ;
@@ -107,10 +115,40 @@
 	.flush
 	;
 	
+#cap
+#format_names "RGB24" "RGB32" "YUYV" "YUV420" "MJPEG"
+
+:listcapa
+	0 webcam_query_capabilities 'cap !
+	
+    "Resoluciones soportadas:" .println
+	cap 12 +
+	d@+ "Max W:%d" .println
+	d@+ "Max H:%d" .println
+	d@+ "Min W:%d" .println
+	d@ "Min H:%d" .println
+    cap 8 + d@
+	dup "formatos: %d" .println
+	cap @ >a
+	0 ( over <?
+		da@+ 'format_names swap n>>0 "%s " .print
+		da@+ "w %d " .print
+		da@+ "h %d " .print
+		da@+ "fps:%d " .println
+		1+ ) 2drop
+		
+	cap webcam_free_capabilities
+	.flush
+	;
+
 :main
 	listadowc
-	640 480 idx WEBCAM_FMT_RGB24 webcam_open 
-	0? ( drop "NO camara" .flush waitkey ; ) 'cam !
+	listcapa
+	
+	640 480 idx
+	WEBCAM_FMT_YUYV
+	webcam_open 
+	0? ( drop "NO camara" .println .flush waitkey ; ) 'cam !
 	.flush
 	cam webcam_get_actual_height 'camh !
 	cam webcam_get_actual_width 'camw !
@@ -120,14 +158,10 @@
 	camh fix. scrh / 'stepy !
 	
 	.flush
-	here 
-	dup 'camdata ! 
-	camh camw * 3 *  +
-	'here !
-	
-    .hidec .cls .reset
+
+	.hidec .cls .reset
 	2 27 .at "WebCam ASCII DEMO | F1-24bit F2-8bit F3-B&N | ESC-Exit" .write
-    main-loop
+	main-loop
 	cam webcam_close
 	.showc .reset
     ;

@@ -4,44 +4,50 @@
 ^r3/lib/sdl2gfx.r3	
 ^r3/util/txfont.r3
 ^r3/util/immi.r3
-^r3/lib/escapi.r3
-^r3/lib/rand.r3
+^r3/lib/webcam.r3
 ^r3/lib/memavx.r3
 
 #font
 |-------------------
-#device
-#capture 0 [ 1280 720 ]
+
+#cam
+#camw #camh 
+
+#camdata
+0 | unsigned char *data;
+0 | int width; int height;
+0 | int size; WebcamPixelFormat format;
+0 | unsigned long timestamp_ms; 
+
 #texmem
 #tsize 0.6
-#mpixel #mpitch
 
-:setimg
+#mpixel #mpitch
+	
+:setimg	
 	texmem 0 'mpixel 'mpitch SDL_LockTexture
 	|mpixel capture 1280 720 * 2/ move | dsc
-	mpixel capture 1280 720 * 2 << memcpy_avx
+	mpixel camdata 1280 720 * 3 * memcpy_avx
 	texmem SDL_UnlockTexture
-	device doCapture
-	;
+	;	
+
+:setimg2
+	texmem 0 'mpixel 'mpitch SDL_LockTexture
+	|mpixel capture 1280 720 * 2/ move | dsc
+	mpixel camdata 1280 720 * 2* memcpy_avx
+	texmem SDL_UnlockTexture
+	;	
 
 #proplist
 "BRIGHTNESS"
 "CONTRAST"
-"HUE"
 "SATURATION"
-"SHARPNESS"
-"GAMMA"
-"COLORENABLE"
-"WHITEBALANCE"
-"BACKLIGHTCOMP"
-"GAIN"
-"PAN"
-"TILT"
-"ROLL"
-"ZOOM"
 "EXPOSURE"
-"IRIS" 0
-"FOCUS" 0
+"FOCUS" 
+"ZOOM"
+"GAIN"
+"SHARPNESS"
+0
 
 #propv * 136
 #propc * 136
@@ -50,7 +56,7 @@
 
 :printp
 	0 ( 16 <? 
-		0 over 'val 'mi 'ma 'de 'au getCaptureProperty 
+|		0 over 'val 'mi 'ma 'de 'au getCaptureProperty 
 		au de 32 << 32 >>  ma 32 << 32 >> mi 32 << 32 >> val 32 << 32 >> "v:%d min:%d max:%d def:%d auto:%d" .println
 		1+ ) drop
 	;
@@ -59,7 +65,7 @@
 	'propv >a	
 	'propi >b
 	0 ( 16 <? 
-		device over 'val 'mi 'ma 'de 'au getCaptureProperty 
+|		device over 'val 'mi 'ma 'de 'au getCaptureProperty 
 		val 32 << 32 >> a!+
 		mi $ffff and 
 		ma $ffff and 16 << or
@@ -70,7 +76,8 @@
 	'propc 'propv 17 move ; |dsc
 	
 :chgprop | n v -- n v
-	device pick2 pick2 0 setCaptureProperty ;
+	|device pick2 pick2 0 setCaptureProperty 
+	;
 	
 :changeprop	| -- 0/1
 	'propc >b 'propv >a
@@ -109,17 +116,24 @@
 	0.01 %w uiO
 	0.18 %w uiO
 	"WEBCAM" uiLabelc
+	'camdata 8 + 
+	d@+ "%d" sprint uiLabel
+	d@+ "%d" sprint uiLabel
+	d@+ "%d" sprint uiLabel
+	d@+ "%d" sprint uiLabel
+	d@+ "%d" sprint uiLabel
+	d@ "%d" sprint uiLabel
+	
 	stdark
-	'propv >a 'propi >b
-	'proplist ( dup c@ 1? drop
-		guilinea
-		8 a+ 8 b+
-		>>0 ) 2drop
+|	'propv >a 'propi >b
+|	'proplist ( dup c@ 1? drop
+|		guilinea
+|		8 a+ 8 b+
+|		>>0 ) 2drop
 	stLink 'setdef "Default" uiRBtn
 	stDang 'exit "Exit" uiRBtn
-	
 	uiEnd
-	changeprop
+|	changeprop
 	;
 	
 :main
@@ -128,7 +142,11 @@
 	guipanel		
 	sdlredraw
 	sdlkey >esc< =? ( exit ) drop
-	device isCaptureDone 1? ( setimg ) drop 
+	cam 'camdata webcam_capture 0? ( 
+		|setimg |RGB
+		setimg2 |YUV2
+		cam webcam_release_frame
+		) drop
 	;
 
 
@@ -138,17 +156,17 @@
 	"media/ttf/Roboto-bold.ttf" 16 txload 'font !
 	font txfont
 	
-	setupESCAPI 1 <? ( "Unable to init ESCAPI" .println ) drop |'maxdevice !
-	0 'device !
-	
-	1280 720 SDLframebuffer 'texmem !
-	here 'capture !
-	1280 720 * 4 * 'here +!
-	device 'capture initCapture drop |"%d" .println
-	getprop
-|	printp	
+	1280 720 0
+	|WEBCAM_FMT_RGB24 
+	WEBCAM_FMT_YUYV 
+	|WEBCAM_FMT_YUV420
+	webcam_open 
+	0? ( drop ; ) 'cam !
 
-	device doCapture
+
+	sdlRenderer $32595559 1 1280 720 SDL_CreateTexture 'texmem ! |SDL_PIXELFORMAT_YUV2
+	|sdlRenderer $17101803 1 1280 720 SDL_CreateTexture 'texmem ! |rgb24 0x17101803u
+
 	'main sdlshow
 	SDLQuit
 	;
