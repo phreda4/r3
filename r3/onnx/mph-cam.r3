@@ -4,7 +4,7 @@
 ^r3/util/varanim.r3
 ^r3/util/txfont.r3
 
-^r3/lib/escapi.r3
+^r3/lib/webcam.r3
 
 ^./mphands.r3
 
@@ -12,6 +12,14 @@
 
 |#cw 640 #ch 480
 #cw 1280 #ch 720
+
+#cam
+#camdata
+0 | unsigned char *data;
+0 | int width; int height;
+0 | int size; WebcamPixelFormat format;
+0 | unsigned long timestamp_ms; 
+
 #device
 |#capture 0 [ 640 480 ]
 #capture 0 [ 1280 720 ]
@@ -27,12 +35,12 @@
 
 :setimg
 	texmem 0 'mpixel 'mpitch SDL_LockTexture
-	|mpixel capture cw ch * 2/ move | dsc
-	mpixel capture 1280 720 * 2 << memcpy_avx	
+	|mpixel capture 1280 720 * 2/ move | dsc
+	mpixel camdata 1280 720 * 2* memcpy_avx
 	texmem SDL_UnlockTexture
-	device doCapture
 	texmem MPHands
-	;
+	
+	;		
 
 #viewflags
 :mainvideo
@@ -45,8 +53,11 @@
 	$4 and? ( 512 320 0.5 texmem spritez )
 	drop
 
-	device isCaptureDone 1? ( setimg ) drop 
-
+	cam 'camdata webcam_capture 0? ( 
+		setimg 
+		cam webcam_release_frame
+		) drop
+		
 	MPdrawhands
 	900 16 txat fps "%d fps" txprint
 	16 680 txat "F1-tex0 F2-tex0 F3-Cam" txprint
@@ -67,17 +78,13 @@
 	font txfont
 
 |--- webcam
-	setupESCAPI 1 <? ( "no webcam" .println ) drop |'maxdevice !
-	0 'device !
-	cw ch SDLframebuffer 'texmem !
-	
+	1280 720 0
+	WEBCAM_FMT_YUYV 
+	webcam_open 
+	0? ( drop "no webcam" .println ; ) 'cam !
+	sdlRenderer $32595559 1 1280 720 SDL_CreateTexture 'texmem ! |SDL_PIXELFORMAT_YUV2
 	texmem startMPHands
 	
-	here 'capture !
-	cw ch * 4 * 'here +!
-	device 'capture initCapture drop |"%d" .println
-	
-	device doCapture
 	'mainvideo SDLshow
 
 	freeMPHands	

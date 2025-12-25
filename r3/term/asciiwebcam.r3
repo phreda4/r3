@@ -20,7 +20,7 @@
 	
 | luma->char
 :lumi2ascii | adr --
-	c@ 5 >> $f and 
+	c@ 4 >> $f and 
 	'ascii64 + c@ .emit ;
 
 #c #d #e
