@@ -317,8 +317,8 @@
 	socket-ini
 	.alsb 
 	|'filename "mem/menu.mem" load	
-	"r3/d4/test.r3" 
-|	"r3/audio/r3synt.r3" 
+|	"r3/d4/test.r3" 
+	"r3/audio/parse.r3" 
 	'filename strcpy
 	
 	'filename TuLoadCode

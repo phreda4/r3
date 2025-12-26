@@ -9,116 +9,152 @@
 #stack * $ff
 #stack> 'stack
 
-:push stack> w!+ 'stack> ! ;
-:pop -1 'stack> +! 'stack> c@ ;
+:push stack> c!+ 'stack> ! ;
+:pop -1 'stack> +! stack> c@ $ff and ;
 
 #str$
-#lvl 
-#type
+#lvl
+#aseq
 #nseq
-#seq * 512
+
+#seq * 1024
 #seq> 'seq
 
-|delimiter ( ) < > [ ] { } 
-::>>spl | adr -- adr'	; next space or delimiter
+#rseq * 1024 
+
+|delimiter  ESP ( ) < > [ ] { } ,
+:isD? | char -- X/0
+	$ff and
+	$20 <=? ( 4 nip ; )
+	$28 =? ( 1 nip ; ) |$28 $29 ( )m
+	$29 =? ( 2 nip ; )
+	$3c =? ( 1 nip ; ) |$3c $3e < >m
+	$3e =? ( 2 nip ; )
+	$5b =? ( 1 nip ; ) |$5b $5d [ ]m
+	$5d =? ( 2 nip ; )
+	$7b =? ( 1 nip ; ) |$7b $7d { }m
+	$7d =? ( 2 nip ; )
+	$2c =? ( 3 nip ; ) | ,
+	0 nip ;
+
+::>>spl | adr -- adr'
 	( c@+ $ff and 32 >? 
-		$28 =? ( drop ; ) |$28 $29 ( )m
-		$29 =? ( drop 1- ; )
-		$3c =? ( drop ; ) |$3c $3e < >m
-		$3e =? ( drop 1- ; )
-		$5b =? ( drop ; ) |$5b $5d [ ]m
-		$5d =? ( drop 1- ; )
-		$7b =? ( drop ; ) |$7b $7d { }m
-		$7d =? ( drop 1- ; )
-		drop ) drop 1- ;
+		isD? 1? ( drop 1- ; ) drop
+		) drop 1- ;
+	
+:]seq | n -- adr
+	3 << 'rseq + ;
+	
+:seqnro
+	seq> 'seq - 2 >> ;
+	
+:]seqini! | n --
+	]seq dup @ seqnro or swap ! ;
+	
+:]seqend! | n --
+	]seq dup @ seqnro 12 << or swap ! ;
+	
+:newseq
+	1 'nseq +! 
+	nseq dup 'aseq ! 
+	]seq 0 swap ! ;
 	
 | ITEM 32bits
-| seq(4) type(4) lvl(4) str(12)
-:+item | adr char -- adr
-	|dup "%k" .println
-	drop
-	nseq 20 << 
-	type 16 << or
-	lvl 12 << or
-	over str$ - or
+| seq(12) lvl(8) str(12)
+:+item | adr  -- adr
+	aseq $fff and 20 << 
+	lvl $ff and 12 << or
+	over str$ - $fff and or
 	seq> d!+ 'seq> ! 
 	>>spl ;
 	
-:uplvl | newtype --
-	>r
-	+item
-	type push
-	r> 'type !
-	1 'nseq +!
+:uplvl | adr -- adr
+	newseq
+	aseq dup ]seqini! push
+	+item 1+
 	1 'lvl +! ;
 	
 :dnlvl | --
-	pop 'type !
+	pop 'aseq !
 	+item
+	aseq ]seqend!
 	-1 'lvl +! 
 	1+ >>spl 
-	dup c@ $ff and
-	0? ( drop ; ) 
-	$20 <=? ( drop ; )
-	drop
-	dup 1+ c@ 
-	0? ( drop ; ) 
-	drop
+	dup c@ isD? 1? ( drop ; ) drop
+	dup 1+ c@ isD? 1? ( drop ; ) drop
 	1- ;
 	
 :token
-	$28 =? ( 1 uplvl ; ) |$28 $29 ( )m
-	$29 =? ( dnlvl ; )
-	$3c =? ( 2 uplvl ; ) |$3c $3e < >m
-	$3e =? ( dnlvl ; )
-	$5b =? ( 3 uplvl ; ) |$5b $5d [ ]m
-	$5d =? ( dnlvl ; )
-	$7b =? ( 4 uplvl ; ) |$7b $7d { }m
-	$7d =? ( dnlvl ; )
-	+item ;
+	$28 =? ( drop uplvl ; ) |$28 $29 ( )m
+	$29 =? ( drop dnlvl ; )
+	$3c =? ( drop uplvl ; ) |$3c $3e < >m
+	$3e =? ( drop dnlvl ; )
+	$5b =? ( drop uplvl ; ) |$5b $5d [ ]m
+	$5d =? ( drop dnlvl ; )
+	$7b =? ( drop uplvl ; ) |$7b $7d { }m
+	$7d =? ( drop dnlvl ; )
+	$2c =? ( drop +item 1+ ; ) | newseq ; )
+	drop +item ;
 	
 :trimall | adr -- 'adr char
-	( dup c@ $ff and 
-		33 <? 0? ( ; ) drop 1+ ) ;
+	( dup c@ 0? ( ; )
+		$ff and 33 <? 
+		drop 1+ ) ;
 	
-:markseq | 'str -- cntnodos
-	'seq 'seq> ! 0 'lvl ! 0 'nseq !
+:markseq | 'str -- 
 	dup 'str$ !
+	'seq 'seq> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
+	aseq dup ]seqini! push
 	( trimall 1? 
+		|lvl nseq "%d %d " .print over "%w " .println getch drop
 		token
-		) 2drop ;
-		
-:printsec
-	'seq ( seq> <?
-		d@+ 
-		dup $fff and "str:%h " .print
-		dup 12 >> $f and "lvl:%d " .print
-		dup 16 >> $f and "t:%d " .print
-		20 >> $ff and "s:%d" .println
-		) drop ;
-	
-:pp | v lvl -- v lvl
-	over $fff and str$ + 
-	dup >>spl swap
-	( over <? c@+ .emit ) 2drop
+		) 2drop 
+	pop ]seqend!
+	;
+
+:pp | v -- 
+	$fff and str$ + 
+	dup >>spl 
+	over =? ( 1+ ) 
+	swap ( over <? c@+ .emit ) 2drop
 	" " .print
 	;
-	
-:printlvl | n --
+		
+:printsec
+	0
 	'seq ( seq> <?
+		swap dup "%d:" .print 1+ swap
 		d@+ 
-		dup 12 >> $f and pick3 =? ( pp ) 
-		2drop ) .cr
-	2drop ;
+		dup pp |$fff and "str:%h " .print	
+		dup 12 >> $ff and "lvl:%d " .print
+		20 >> $ff and "seq:%d " .print .cr
+		) 2drop ;
+	
+:printseq
+	'rseq >a
+	0 ( nseq <=? 
+		dup "%d: " .print
+		a@+ |"%h" .print
+		dup 12 >> $fff and
+		swap $fff and
+		( over <?
+			dup "%d " .print
+			1+ ) 2drop
+		.cr
+		1+ ) drop
+	;
 	
 #tests
-"[[g#2 g#3]*2 [e2 e3]*2]
-a b"
+"<
+[[g#2 g#3]*2 [e2 e3]*2]
+,
+[a b c]
+>"
 |"a b c "
-|"<a b c>"
-|"[a b c]"
-|"(a b c)"
-|"a b <c d e> [a c] (a b <a c>)"
+"<a b c>"
+"[a b c]"
+"(a b c)"
+"a b <c d e> [a c] (a b <a c>)"
 "inicio <nivel1 [nivel2 (nivel3)mod3]mod2>mod1 fin"
 |"  a   b    c  "
 |"a  <  b   c  >  d"
@@ -130,13 +166,18 @@ a b"
 |"[a]* [b]+" 
 |"((a)mod1)mod2"
 "<a <b>!>?"
+
+
 0
 
-:test
-	'tests .println .cr
-	'tests markseq
+:ej0
+	'tests 
+	count "len:%d" .println 
+	dup .println 
+	markseq
 	;
 	
+|-- real test	
 #mus1
 "<
 [e5 [b4 c5] d5 [c5 b4]]
@@ -159,21 +200,34 @@ a b"
 >"
 
 :ej1
-	'mus1 .println .cr
-	'mus1 markseq .cr
+	'mus1 
+	count "len:%d" .println 
+	dup .println 
+	markseq
 	;
 	
 :main
+	getch drop
 	.cls
 	"parse" .println
 	
-	test
-	|ej1
+	ej0 |0,1
+	
+	nseq "seq:%d" .println
+	seq> 'seq - 2 >> "ntok:%d" .println
 	
 	printsec .cr
-	0 printlvl
-	1 printlvl
-	2 printlvl
+	.cr
+	printseq .cr
+	
+|	"<A,B" .println
+|	"A=[C,D" .println
+|	"B=[a b c" .println
+|	"C=[g#2 g#3]*2" .println
+| 	"D=[e2 e3]*2" .println
+	|0 printlvl
+|	1 printlvl
+|	2 printlvl
 	
 	
 	;
