@@ -69,7 +69,7 @@
 :oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 :oscSin		sin ;
 
-#freq 110.0
+#freq 220.0
 #phaseo
 
 :genosc | -- val
@@ -77,7 +77,7 @@
 	freq dt>inc
 	+ $ffff and 
 	dup 'phaseo !
-	oscSin
+	oscTri
 	;
 
 #outbuffer * 8192 | Final output buffer (16-bit samples)
