@@ -1,6 +1,7 @@
 | parse tree 
 | PHREDA 2025
 
+^r3/lib/parse.r3
 ^r3/lib/console.r3
 
 #error
@@ -151,7 +152,47 @@
 		printlvl
 		1+ ) drop
 	;
+|----------------------------------
+#mult
+#divi
+#repl
+#weig
+#prob
+#eucl
+
+:pmod
+	$2a =? ( drop str>fnro 'mult ! ; ) |* :atof(++p);
+	$2f =? ( drop str>fnro 'divi ! ; ) |/ :atof(++p);
+	$21 =? ( drop str>fnro int. 'repl ! ; ) |!':atoi(++p);
+	$40 =? ( drop str>fnro 'weig ! ; ) |@':atof(++p);
+	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?':atof|0.5
+		| falta euclid
+		| error
+	drop ;
 	
+:parsemod | str -- 'str
+	0 'repl !
+	1.0 'mult !
+	1.0 'divi !
+	1.0 'weig !
+	1.0 'prob !
+	0 'eucl !
+	dup
+	( c@+ 1?
+		dup isD? 1? ( 2drop ; ) drop
+		pmod
+		) drop 1- ;
+
+:.ppw
+	mult "*%f " .print
+	divi "/%f " .print
+	repl "!%d " .print
+	weig "@%f " .print
+	prob "?%f " .println
+	|eucl "m:%f " .print
+	;
+
+|---------------------------------	
 #tests
 "<
 [[g#2 g#3]*2 [e2 e3]*2]
@@ -231,17 +272,11 @@
 	printsec .cr
 	.cr
 	printseq .cr
+	.cr
 	
-|	"<A,B" .println
-|	"A=[C,D" .println
-|	"B=[a b c" .println
-|	"C=[g#2 g#3]*2" .println
-| 	"D=[e2 e3]*2" .println
-	|0 printlvl
-|	1 printlvl
-|	2 printlvl
-	
-	
+	"!3*2.3/4.3@2?.3" dup .println
+	parsemod drop
+	.ppw
 	;
 
 :

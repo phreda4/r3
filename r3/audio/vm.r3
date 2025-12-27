@@ -142,8 +142,28 @@
 	4 << 1 or ,, ;
 
 
-| Símbolo | Nombre | Efecto | Ejemplo |
-|---------|--------|--------|---------|
+
+|Identidad: La nota misma (a#3)
+:getid | str -- str 0/nota
+	;
+|Velocidad/Repetición: *, /, !, @
+:getvel
+	;
+|Probabilidad: ?
+:getpro
+	;
+|Euclidiano: ( )
+:geteuc
+	;
+:getmodi
+	| *2 acelera
+	| /2 retrasa
+	| !2 repite
+	| ? probabilidad 0.5 ?.3
+	| :1 variante
+	| nro octava
+	;
+
 | `*n` | Multiplicación | Acelera n veces | `bd*2` |
 | `/n` | División | Ralentiza n veces | `bd/2` |
 | `!n` | Repetición | Repite n veces | `bd!3` |
@@ -155,18 +175,10 @@
 | `?` | Interrogación | Probabilidad 50% | `bd?` |
 | `~` | Tilde | Silencio | `bd ~ sd` |
 | `:n` | Dos puntos | Variante/índice | `bd:2` |
-
-:getmodi
-	| *2 acelera
-	| /2 retrasa
-	| !2 repite
-	| ? probabilidad 0.5 ?.3
-	| :1 variante
-	| nro octava
-	;
 	
 :getcell | str -- ncell
 	dup c@
+	
 	|.	| float
 	|0..9 | int/float
 	|a..g | nota
@@ -190,6 +202,11 @@
 |------------------------------------
 #t0 #t1
 
+#tstack * $ff
+#tstack>
+#rstack * $7f
+#rstack>
+
 :o0 |  0 OP_END \ HIDDEN xxxxxxx0
 	drop ;
 
@@ -197,6 +214,7 @@
 	4 >> "play:%h " .print
 	t0 t1 over - swap "t0:%f d:%f" .println
 	;
+	
 |  2 OP_SEQ,         // n, jump [ ]
 :o2	;
 |  3 OP_PAR,         // n, jump ,
@@ -226,6 +244,8 @@
 
 :eval
 	0 't0 ! 1.0 't1 !
+	'rstack 'rstack> !
+	'tstack 'tstack> !
 	'tokens 
 	( d@+ 1? 
 		dup $f and 3 << 'oplist + @ ex ) 
