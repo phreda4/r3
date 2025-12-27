@@ -110,27 +110,86 @@
 		) 2drop 
 	pop ]seqend!
 	;
+	
+|----------------------------------
+
+#mult
+#divi
+#repl
+#weig
+#prob
+#eucl
+
+:pmod
+	$2a =? ( drop str>fnro 'mult ! ; )	|* 
+	$2f =? ( drop str>fnro 'divi ! ; )	|/ 
+	$21 =? ( drop str>fnro int. 'repl ! ; ) |!
+	$40 =? ( drop str>fnro 'weig ! ; ) |@
+	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
+		| falta euclid
+		| falta `:n` | Dos puntos | Variante/índice | `bd:2` |
+		| error
+	drop 1+ ;
+	
+:parsemod | str -- 'str
+	1 'repl !
+	1.0 'mult !
+	1.0 'divi !
+	1.0 'weig !
+	1.0 'prob !
+	0 'eucl !
+	( c@+ 1?
+		dup isD? 1? ( 2drop 1- ; ) drop
+		pmod
+		) drop 1- ;
+
+:.ppw
+	repl "!%d " .print
+	mult "*%f " .print
+	divi "/%f " .print
+	weig "@%f " .print
+	prob "?%f " .println
+	|eucl "m:%f " .print
+	;
+
+#semitone ( 9 11 0 2 4 5 7 )
+
+:parsenote | str -- 'str note
+	c@+
+	$df and | uppcase+unsigned
+	$41 <? ( -1 nip ; )	$47 >? ( -1 nip ; ) | A..G
+	$41 - 'semitone + c@
+	over c@ | adr note char
+	$23 =? ( rot 1+ rot 1+ rot ) | #
+	$df and | uppcase+unsigned
+	$53 =? ( rot 1+ rot 1+ rot ) | s
+	$42 =? ( rot 1+ rot 1- rot ) | b
+	drop 
+	4 12 * + | octva 4
+	over c@ | adr note char
+	$30 >=? ( $39 <=? (  | 0..9
+		rot 1+ rot 
+		4 12 * -
+		pick2 $30 - 12 * +
+		rot
+		) )
+	drop 
+	swap parsemod swap 
+	;
+	
 |------------------------------------------------
 |  0 OP_END 
 |  1 OP_NOTE,        // note_id
-|  2 OP_SEQ,         // n, jump [ ]
-|  3 OP_PAR,         // n, jump ,
-|  4 OP_ALT,         // n, jump < >
-|  5 OP_REPEAT,      // count repita
+|  2 OP_SEQ,         // n, jump [ ] | `SEQ`        | Divide el frame en N partes  |
+|  3 OP_PAR,         // n, jump , | `PAR`        | Duplica el frame (no divide) |
+|  4 OP_ALT,         // n, jump < > | `ALT`        | Elige un frame completo      |
+|  5 OP_REPEAT,      // count repita | `REPEAT`     | Reusa el frame               |
 |  6 OP_EVERY,       // period elige por ciclo
 |  7 OP_CHANCE,      // prob (0..255)
-|  8 OP_TIME_SCALE,  // factor fp
-|  9 OP_TIME_SHIFT,  // offset fp
+|  8 OP_TIME_SCALE,  // factor fp | `TIME_SCALE` | Escala el frame              |
+|  9 OP_TIME_SHIFT,  // offset fp | `TIME_SHIFT` | Desplaza el frame            |
 |  10 OP_SEED,        // seed (random)
 |  11 OP_RET          // fin de bloque
-| Nodo         | Qué hace                     |
-| ------------ | ---------------------------- |
-| `SEQ`        | Divide el frame en N partes  |
-| `PAR`        | Duplica el frame (no divide) |
-| `ALT`        | Elige un frame completo      |
-| `REPEAT`     | Reusa el frame               |
-| `TIME_SCALE` | Escala el frame              |
-| `TIME_SHIFT` | Desplaza el frame            |
 
 #tokens * $fff
 #tokens> 'tokens
@@ -139,64 +198,62 @@
 	tokens> d!+ 'tokens> ! ;
 	
 :,note |
-	4 << 1 or ,, ;
-
-
-
-|Identidad: La nota misma (a#3)
-:getid | str -- str 0/nota
-	;
-|Velocidad/Repetición: *, /, !, @
-:getvel
-	;
-|Probabilidad: ?
-:getpro
-	;
-|Euclidiano: ( )
-:geteuc
-	;
-:getmodi
-	| *2 acelera
-	| /2 retrasa
-	| !2 repite
-	| ? probabilidad 0.5 ?.3
-	| :1 variante
-	| nro octava
+	4 << 1 or ,, 
+	| modificadores
 	;
 
-| `*n` | Multiplicación | Acelera n veces | `bd*2` |
-| `/n` | División | Ralentiza n veces | `bd/2` |
-| `!n` | Repetición | Repite n veces | `bd!3` |
-| `< >` | Ángulos | Alterna cada ciclo | `<bd sd>` |
-| `[ ]` | Corchetes | Sub-secuencia | `[bd hh]` |
-| `,` | Coma | Superpone | `bd, hh*4` |
-| `{ }` | Llaves | Polimetría | `{bd sd, kick}` |
-| `(n,m)` | Paréntesis | Euclidiano | `bd(3,8)` |
-| `?` | Interrogación | Probabilidad 50% | `bd?` |
-| `~` | Tilde | Silencio | `bd ~ sd` |
-| `:n` | Dos puntos | Variante/índice | `bd:2` |
+:,void | nota prob 0
+	0 1 or ,, 
+	;
 	
-:getcell | str -- ncell
+:,seq 
+:,alt
+:,poli
+
+:,seqe
+:,alte
+:,polie
+
+:,super
+	drop ;
+	
+:getcell | val str -- ncell
 	dup c@
+	| ~_ silencio
+	$5f =? ( drop ,void ; ) | _
+	$7e =? ( drop ,void ; ) | ~
 	
+	$5b =? ( drop ,seq ; ) |$5b $5d  [ subsecuencia
+	$5d =? ( drop ,seqe ; )
+	
+	$3c =? ( drop ,alt ; ) |$3c $3e  < alternancia
+	$3e =? ( drop ,alte ; )
+	
+|	$28 =? ( drop uplvl ; ) |$28 $29 ( )m (	** real para parametros en nota
+|	$29 =? ( drop dnlvl ; )
+
+	$7b =? ( drop ,poli ; ) |$7b $7d { }m { polimetria
+	$7d =? ( drop ,polie ; )
+	
+	$2c =? ( drop ,super ; )  | , superpone
 	|.	| float
 	|0..9 | int/float
-	|a..g | nota
-	| (	** real para parametros en nota
-	| < alternancia
-	| [ subsecuencia
-	| { polimetria
-	| , superpocision
-	| ~_ silencio
+	$df and | uppcase+unsigned
+	|A..G | nota
+	$41 <? ( drop ; ) $47 >? ( drop ; ) | A..G
+	drop
+	parsenote
+	,note
 	;
 	
 :compile
 	'seq ( seq> <?
 		d@+ 
-		dup $fff and str$ + getcell
-		"%h " .print
-		dup 12 >> $ff and "lvl:%d " .print
-		20 >> $ff and "seq:%d " .print .cr
+		|dup 
+		$fff and str$ + getcell
+|		"%h " .print
+|		dup 12 >> $ff and "lvl:%d " .print
+|		20 >> $ff and "seq:%d " .print .cr
 		) 2drop ;
 		
 |------------------------------------
@@ -235,6 +292,7 @@
 :oa	;
 |  11 OP_RET          // fin de bloque
 :ob	
+	;
 :oc	
 :od	
 :oe	

@@ -161,37 +161,64 @@
 #eucl
 
 :pmod
-	$2a =? ( drop str>fnro 'mult ! ; ) |* :atof(++p);
-	$2f =? ( drop str>fnro 'divi ! ; ) |/ :atof(++p);
-	$21 =? ( drop str>fnro int. 'repl ! ; ) |!':atoi(++p);
-	$40 =? ( drop str>fnro 'weig ! ; ) |@':atof(++p);
-	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?':atof|0.5
+	$2a =? ( drop str>fnro 'mult ! ; )	|* 
+	$2f =? ( drop str>fnro 'divi ! ; )	|/ 
+	$21 =? ( drop str>fnro int. 'repl ! ; ) |!
+	$40 =? ( drop str>fnro 'weig ! ; ) |@
+	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
 		| falta euclid
 		| error
-	drop ;
+	drop 1+ ;
 	
 :parsemod | str -- 'str
-	0 'repl !
+	1 'repl !
 	1.0 'mult !
 	1.0 'divi !
 	1.0 'weig !
 	1.0 'prob !
 	0 'eucl !
-	dup
 	( c@+ 1?
-		dup isD? 1? ( 2drop ; ) drop
+		dup isD? 1? ( 2drop 1- ; ) drop
 		pmod
 		) drop 1- ;
 
 :.ppw
+	repl "!%d " .print
 	mult "*%f " .print
 	divi "/%f " .print
-	repl "!%d " .print
 	weig "@%f " .print
 	prob "?%f " .println
 	|eucl "m:%f " .print
 	;
 
+#semitone ( 9 11 0 2 4 5 7 )
+
+:parsenote | str -- 'str note
+	c@+
+	$df and | uppcase+unsigned
+	$41 <? ( -1 nip ; )
+	$47 >? ( -1 nip ; )
+	$41 - 'semitone + c@
+	over c@ | adr note char
+	$23 =? ( rot 1+ rot 1+ rot ) | #
+	$df and | uppcase+unsigned
+	$53 =? ( rot 1+ rot 1+ rot ) | s
+	$42 =? ( rot 1+ rot 1- rot ) | b
+	drop 
+	4 12 * + | octva 4
+	over c@ | adr note char
+	$30 >=? ( $39 <=? ( 
+		rot 1+ rot 
+		4 12 * -
+		pick2 $30 - 12 * +
+		rot
+		) )
+	drop 
+	swap parsemod swap 
+	;
+	
+
+	
 |---------------------------------	
 #tests
 "<
@@ -274,8 +301,13 @@
 	printseq .cr
 	.cr
 	
-	"!3*2.3/4.3@2?.3" dup .println
-	parsemod drop
+	|"c4!3*2.3/4.3@2?.3" 
+	"g#2 g#3" 
+	
+	dup .println
+	parsenote 
+	"note: %d " .println
+	drop
 	.ppw
 	;
 
