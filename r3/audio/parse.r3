@@ -69,17 +69,18 @@
 	>>spl ;
 	
 :uplvl | adr -- adr
-	newseq
-	aseq dup ]seqini! push
 	+item 1+
+	aseq push
+	newseq
+	aseq ]seqini!
 	1 'lvl +! ;
 	
 :dnlvl | --
-	pop 'aseq !
-	+item
+	+item 1+
 	aseq ]seqend!
+	pop 'aseq !
 	-1 'lvl +! 
-	1+ >>spl 
+	>>spl 
 	dup c@ isD? 1? ( drop ; ) drop
 	dup 1+ c@ isD? 1? ( drop ; ) drop
 	1- ;
@@ -130,17 +131,24 @@
 		20 >> $ff and "seq:%d " .print .cr
 		) 2drop ;
 	
+	
+:printlvl | lv v -- lv
+	dup 12 >> $fff and 
+	swap $fff and
+	dup 2 << 'seq + >b
+	( over <?
+		db@+ 
+		dup 20 >> $ff and  | lv end now V vl
+		pick4 =? ( over pp ) 2drop
+		1+ ) 2drop 
+	.cr ;
+	
 :printseq
 	'rseq >a
-	0 ( nseq <=? 
+	0 ( nseq <=?
 		dup "%d: " .print
-		a@+ |"%h" .print
-		dup 12 >> $fff and
-		swap $fff and
-		( over <?
-			dup "%d " .print
-			1+ ) 2drop
-		.cr
+		a@+ 
+		printlvl
 		1+ ) drop
 	;
 	
@@ -150,11 +158,13 @@
 ,
 [a b c]
 >"
-|"a b c "
-"<a b c>"
-"[a b c]"
-"(a b c)"
 "a b <c d e> [a c] (a b <a c>)"
+"[a b c]"
+"<a b c>"
+"a b c "
+
+"(a b c)"
+
 "inicio <nivel1 [nivel2 (nivel3)mod3]mod2>mod1 fin"
 |"  a   b    c  "
 |"a  <  b   c  >  d"
@@ -167,7 +177,9 @@
 |"((a)mod1)mod2"
 "<a <b>!>?"
 
-
+"a <b [c> error" | Error de anidamiento
+"<a b" | Error de cierre faltante
+"a ) b" | Error de cierre huérfano
 0
 
 :ej0
@@ -211,7 +223,7 @@
 	.cls
 	"parse" .println
 	
-	ej0 |0,1
+	ej1 |0,1
 	
 	nseq "seq:%d" .println
 	seq> 'seq - 2 >> "ntok:%d" .println
