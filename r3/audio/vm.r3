@@ -61,7 +61,7 @@
 | seq(12) lvl(8) str(12)
 :+item | adr  -- adr
 	aseq $fff and 20 << 
-	lvl $ff and 12 << or
+|	lvl $ff and 12 << or
 	over str$ - $fff and or
 	seq> d!+ 'seq> ! 
 	>>spl ;
@@ -112,7 +112,6 @@
 	;
 	
 |----------------------------------
-
 #mult
 #divi
 #repl
@@ -152,7 +151,7 @@
 	|eucl "m:%f " .print
 	;
 
-#semitone ( 9 11 0 2 4 5 7 )
+#semitone ( 9 11 0 2 4 5 7 0 )
 
 :parsenote | str -- 'str note
 	c@+
@@ -184,6 +183,7 @@
 |  3 OP_PAR,         // n, jump , | `PAR`        | Duplica el frame (no divide) |
 |  4 OP_ALT,         // n, jump < > | `ALT`        | Elige un frame completo      |
 |  5 OP_REPEAT,      // count repita | `REPEAT`     | Reusa el frame               |
+
 |  6 OP_EVERY,       // period elige por ciclo
 |  7 OP_CHANCE,      // prob (0..255)
 |  8 OP_TIME_SCALE,  // factor fp | `TIME_SCALE` | Escala el frame              |
@@ -193,6 +193,7 @@
 
 #tokens * $fff
 #tokens> 'tokens
+#seqn
 
 :,,
 	tokens> d!+ 'tokens> ! ;
@@ -257,13 +258,29 @@
 		) 2drop ;
 		
 |------------------------------------
-#t0 #t1
-
+#t0 #t1 | top of tstack
 #tstack * $ff
 #tstack>
-#rstack * $7f
-#rstack>
 
+:tpush | --
+	t1 32 << t0 or tstack> !+ 'tstack> ! ;
+	
+:tpop | --
+	-8 'tstack> +! tstack> @ 
+	dup $ffffffff and 't0 !
+	32 >> $ffffffff and 't1 ! ;
+	
+#l		| top of lstack
+#lstack * $7f
+#lstack>
+
+:lpush | --
+	l lstack> !+ 'lstack> ! ;
+	
+:lpop | -- 
+	-8 'lstack> +! lstack> @ 'l ! ;
+
+| ip token -- ip	
 :o0 |  0 OP_END \ HIDDEN xxxxxxx0
 	drop ;
 
@@ -290,6 +307,8 @@
 :o9	;
 |  10 OP_SEED,        // seed (random)
 :oa	;
+
+
 |  11 OP_RET          // fin de bloque
 :ob	
 	;
@@ -302,10 +321,10 @@
 
 :eval
 	0 't0 ! 1.0 't1 !
-	'rstack 'rstack> !
+	'lstack 'lstack> !
 	'tstack 'tstack> !
-	'tokens 
-	( d@+ 1? 
+	'tokens | ip
+	( d@+ 1? |
 		dup $f and 3 << 'oplist + @ ex ) 
 	2drop ;
 
@@ -324,7 +343,7 @@
 		swap dup "%d:" .print 1+ swap
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
-		dup 12 >> $ff and "lvl:%d " .print
+|		dup 12 >> $ff and "lvl:%d " .print
 		20 >> $ff and "seq:%d " .print .cr
 		) 2drop ;
 
@@ -337,7 +356,7 @@
 "<
 [[g#2 g#3]*2 [e2 e3]*2]
 ,
-[a b c]
+[a b c]*2
 >"
 "<
 [e5 [b4 c5] d5 [c5 b4]]
@@ -378,7 +397,7 @@
 	
 	|compile
 	'tokens >a
-	$11 da!+
+	$11 da!+ | note
 	0 da!+
 	eval
 	;

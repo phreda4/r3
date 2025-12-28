@@ -90,16 +90,16 @@
 	
 #phases
 	
-:playsam | sample -- sample
+:playsam | mix sample -- mix sample
 	dup c.state c@ 0? ( drop dup delsample 48 - ; ) drop | state=0
 	dup >a
 
 	a> d.phase dup d@			| PHASE
 	1+ dup 
 	rot d!
-	a> d.len d@ >=? ( drop 0 a> c.state c! 0 ; )
+	a> d.len d@ >=? ( drop 0 a> c.state c! ; )
 	2 << 
-	a> q.sample @ + w@ 2.0 *. | w->0--1.0
+	a> q.sample @ + w@ 2* |2.0 *. | w->0--1.0
 
 	rot + swap ;
 
@@ -163,7 +163,7 @@
 	0 >? ( ; ) 0.0 nip 
 	0 a> c.state c! ;
 	
-:playosc | voice -- voice
+:playosc | mix voice -- mix voice
 	dup c.state c@ 0? ( drop dup delvoice 48 - ; ) drop | state=0
 	dup >a
 	
@@ -241,13 +241,12 @@
 			playsam
 			48 + ) drop
 
-
 		master_volume *.
 		fastanh. 
-		32767 *. 
+		32767 * 16 >> 
 
 		$ffff and
-		dup 16 << or       | Duplicate to both channels
+		dup 16 << or       | to stereo
 		db!+
 		) drop ;	
 
@@ -257,6 +256,7 @@
 	audevice 'outbuffer 8192 SDL_QueueAudio 
 	;
 
+|------------ keys
 #playn * 100 
 #nnote 1
 
@@ -292,7 +292,9 @@
 	<x> =? ( 3 keydn )
 	>x< =? ( 3 keyup )
 	<a> =? ( 0 sample1 samp_on )
-	>a< =? ( 0 samp_off )
+	|>a< =? ( 0 samp_off )
+	<s> =? ( 1 sample1 samp_on )
+	<d> =? ( 0 samp_off )
 	drop 
 	qaudio
 	;
