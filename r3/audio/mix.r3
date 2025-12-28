@@ -13,8 +13,6 @@
 
 :dt>inc dt * 32 >> ;
 
-|--------------------
-	
 :init
 	aurate $8010 2 1024 Mix_OpenAudio | minimal buffer for low latency
 
@@ -30,14 +28,56 @@
 	1.0 16 << aurate / 'dt ! 
 	;
 
+
+|-------------------------
+
+#voice * $fff
+#voice> 'voice
+#sample * $fff
+#sample> 'sample
+
+:resetvoices
+	'voice 'voice> ! 
+	'sample 'sample> ! ;
+
+| VOICE
+:c.id	;
+:c.state 1 + ;
+:c.wavef 2 + ;
+
+:d.vel 4 + ;
+:d.phase 8 + ; | inc|word
+
+:d.env 12 + ;
+:d.freq 40 + ;
+
+:newvoice | -- nv
+	voice> 'voice> >=? ( drop 0 ; )
+	48 'voice> +! ;
+	
+:delvoice | nv --
+	-48 'voice> +! voice> 6 move ;
+
+| SAMPLE
+|:c.id	;
+|:c.state 1 + ;
+|:c.wavef 2 + ;
+
+:d.len 4 + ;
+|:d.phase 8 + ; | inc|word
+
+:q.sample 16 + ;
+|:d.freq 40 + ;
+
+:newsample | -- nv
+	sample> 'sample> >=? ( drop 0 ; )
+	48 'sample> +! ;
+	
+:delsample | nv --
+	-48 'sample> +! sample> 6 move ;
+
 |---- SAMPLE
 #sample1	
-|typedef struct Mix_Chunk {
-|    int allocated;
-|    Uint8 *abuf; | +8
-|    Uint32 alen; | +16
-|    Uint8 volume;      
-|} Mix_Chunk;
 
 :infowav | adr --
 	d@+ "allocate %d" .println
@@ -50,86 +90,46 @@
 	
 #phases
 	
-:gensam | -- val
-	phases
-|	freq dt>inc
-|	+ $ffff and 
-	1+
-	
-	sample1 16 + d@ 2 >> >=? ( 0 nip )
-	dup 'phases !
+:playsam | sample -- sample
+	dup c.state c@ 0? ( drop dup delsample 48 - ; ) drop | state=0
+	dup >a
+
+	a> d.phase dup d@			| PHASE
+	1+ dup 
+	rot d!
+	a> d.len d@ >=? ( drop 0 a> c.state c! 0 ; )
 	2 << 
-	sample1 8 + @ +
-	w@ 2.0 *.
+	a> q.sample @ + w@ 2.0 *. | w->0--1.0
+
+	rot + swap ;
+
+:samp_on | id 'sample --
+	newsample 0? ( 3drop ; ) 
+	>a
+	dup 8 + @ a> q.sample !
+	16 + d@ 2 >> a> d.len !
+	a> c.id c!
+	
+	0 a> d.phase d!
+	1 a> c.state c!
 	;
 	
+:samp_off | id --
+	'sample ( sample> <? 	| Find voice playing this note
+		dup c.id c@
+		pick2 =? ( drop 
+			0 |4 
+			over c.state c!
+			2drop ;	)
+		drop
+		48 + ) 2drop ;
+
 |---- OSC
 :oscSaw		2* 1.0 - ;
 :oscSqr		0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
 :oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 :oscSin		sin ;
 
-#freq 220.0
-#phaseo
-
-:genosc | -- val
-	phaseo
-	freq dt>inc
-	+ $ffff and 
-	dup 'phaseo !
-	oscTri
-	;
-
-:gen_osc | phase -- val
-
-
-#outbuffer * 8192 | Final output buffer (16-bit samples)
-#master_volume 1.0
-
-:gAudio | genera audio
-	'outbuffer >b
-	2048 ( 1? 1-
-	
-		0
-		genosc 2/ +
-		gensam +
-
-		master_volume *.
-		fastanh. 
-		32767 *. 
-
-		$ffff and
-		dup 16 << or       | Duplicate to both channels
-		db!+
-		) drop ;	
-		
-|-------------------------
-| VOICE
-:c.id	;
-:c.state 1 + ;
-:c.wavef 2 + ;
-
-:d.vel 4 + ;
-:d.phase 8 + ; | inc|word
-
-:d.env 16 + ;
-:d.freq 40 + ;
-
-#voice * $fff
-#voice> 'voice
-
-:resetvoices
-	'voice 'voice> ! ;
-	
-:newvoice | -- nv
-	voice> 'voice> >=? ( drop 0 ; )
-	48 'voice> +! ;
-	
-:delvoice | nv --
-	-48 'voice> +! voice> 6 move ;
-
-|------------------------------------
-	
 #amp_attack 
 #amp_decay 
 #amp_sustain 
@@ -138,7 +138,6 @@
 #aattrt
 #adecrt
 #arelrt
-
 
 :calcvar
 	dt amp_attack / 'aattrt !
@@ -164,7 +163,7 @@
 	0 >? ( ; ) 0.0 nip 
 	0 a> c.state c! ;
 	
-:playvoice | voice -- voice
+:playosc | voice -- voice
 	dup c.state c@ 0? ( drop dup delvoice 48 - ; ) drop | state=0
 	dup >a
 	
@@ -214,25 +213,10 @@
 		drop
 		48 + ) 2drop ;
 		
-|-----------------------------------
-:genAudio | genera audio
-	'outbuffer >b
-	2048 ( 1? 1-
-	
-		0
-		'voice ( voice> <?
-			playvoice
-			48 + ) drop
+|---- MIX&GEN
 
-		master_volume *.
-		fastanh. 
-		32767 *. 
-
-		$ffff and
-		dup 16 << or       | Duplicate to both channels
-		db!+
-		) drop ;	
-
+#outbuffer * 8192 | Final output buffer (16-bit samples)
+#master_volume 1.0
 
 :drawbuffer
 	$ffffff sdlcolor
@@ -245,7 +229,27 @@
 		swap 16 >> $7fff + 10 >> $3f and 400 + SDLPoint
 		) drop ;	
 
-|-------------------------
+:genAudio | genera audio
+	'outbuffer >b
+	2048 ( 1? 1-
+	
+		0
+		'voice ( voice> <?
+			playosc
+			48 + ) drop
+		'sample ( sample> <?
+			playsam
+			48 + ) drop
+
+
+		master_volume *.
+		fastanh. 
+		32767 *. 
+
+		$ffff and
+		dup 16 << or       | Duplicate to both channels
+		db!+
+		) drop ;	
 
 :qaudio | Queue audio
 	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
@@ -283,11 +287,12 @@
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( seq )
-	<z> =? ( 0 keydn )
-	>z< =? ( 0 keyup )
-	<x> =? ( 1 keydn )
-	>x< =? ( 1 keyup )
-	
+	<z> =? ( 2 keydn )
+	>z< =? ( 2 keyup )
+	<x> =? ( 3 keydn )
+	>x< =? ( 3 keyup )
+	<a> =? ( 0 sample1 samp_on )
+	>a< =? ( 0 samp_off )
 	drop 
 	qaudio
 	;
