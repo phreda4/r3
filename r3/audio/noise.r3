@@ -1,54 +1,35 @@
-|---- pink noise
-#pinkc
-#pink * 32 | 16 words
+| noise
+| PHREDA 2025
 
-:npink
-	pinkc not clz
-	16 <? ( $ffff randmax over 2 << 'pink +! ) 
-	drop
-	'pink 
-	@+ dup 32 >> + dup 16 >> + swap
-	@ dup 32 >> + dup 16 >> + +
-	4 >> $ffff and
-	1 'pinkc +!
-	;
-
-:fpink
-	pinkc not clz
-	16 <? ( $ffff randmax over 2 << 'pink +! ) 
-	drop
-	'pink 
-	@+ dup 32 >> + dup 16 >> + swap
-	@ dup 32 >> + dup 16 >> + +
-	4 >> $ffff and $7fff - 2* 
-	1 'pinkc +!
-	;
+^r3/lib/math.r3
+^r3/lib/rand.r3
 
 |---- white noise
-:nwhite
-	$ffff randmax ;
-	
-:fwhite
+::fwhite
 	-1.0 1.0 randminmax ;
 	
+|---- pink noise
+#pinkc
+#pink 0 0 
+
+::fpink
+	$ffff randmax
+	pinkc not clz $7 and 2 << 'pink + w+!
+	'pink 
+	@+ dup 32 >> + dup 16 >> + swap
+	@ dup 32 >> + dup 16 >> + +
+	3 >> $ffff and $7fff - 2* 
+	1 'pinkc +!
+	;
+
 |----- brown noise	
 #browna
 	
-:nbrown
-	$ff randmax
-	browna +
-	32767 * 15 >> | dc drift
-	clamps16
-	dup 'browna !	
-	;
-	
-:fbrown
+::fbrown
 	browna 0.99 * 16 >>
-	-0.02 0.02 randminmax * 16 >>
-	1.0 >? ( 1.0 nip )
-	-1.0 <? ( -1.0 nip )
+	-0.02 0.02 randminmax +
+	|1.0 >? ( 1.0 nip ) -1.0 <? ( -1.0 nip )
+	clamps16
 	dup 'browna !
 	;
 	
-:u16>fp
-	$7fff - 2* ;

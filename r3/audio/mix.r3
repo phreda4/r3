@@ -5,6 +5,7 @@
 ^r3/util/immi.r3
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
+^./noise.r3
 
 #aurate 44100 |48000 |
 #audevice 
@@ -240,10 +241,13 @@
 		'sample ( sample> <?
 			playsam
 			48 + ) drop
-
+			
+		|fbrown +
+		|fpink +
+		
 		master_volume *.
 		fastanh. 
-		32767 * 16 >> 
+		2/ |32767 * 16 >> 
 
 		$ffff and
 		dup 16 << or       | to stereo

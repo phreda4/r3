@@ -7,8 +7,8 @@
 | ::imix
 
 | VOICES
-| ::play
-| ::stop
+| ::smplay
+| ::smstop
 | 
 | RUN
 | ::sminit
@@ -17,7 +17,7 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
-^r3/lib/rand.r3
+^./noise.r3
 
 #master_volume 1.0
 #dt
@@ -53,17 +53,55 @@
 :d.len 4 + ;
 :q.sample 16 + ;
 
+
+|---- OSC
+:oscSaw		2* 1.0 - ;
+:oscSqr		0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
+:oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
+:oscSin		sin ;
+
 :playsam
+	dup c.state c@ 0? ( drop dup delsample 48 - ; ) drop | state=0
+	dup >a
+
+	a> d.phase dup d@			| PHASE
+	1+ dup 
+	rot d!
+	a> d.len d@ >=? ( drop 0 a> c.state c! ; )
+	2 << 
+	a> q.sample @ + w@ 2* |2.0 *. | w->0--1.0
+	rot + swap ;
+	
 :playosc
+	dup c.state c@ 0? ( drop dup delvoice 48 - ; ) drop | state=0
+	dup >a
+	
+|	a> d.freq d@ dt>inc a> d.phase w+! a> d.phase w@ $ffff and 
+	a> d.phase dup d@			| PHASE
+	dup 16 >> $ffff and + $ffff and dup rot w! | write in W, read in D
+	
+	oscSin
+	
+	a> d.env d@		| ADSR general
+	aenvelope 
+	dup a> d.env d!
+	*. 
+|	a> d.vel d@ *.	| VOLUME
+	rot + swap ;
+	
 :playmix
 	;
 	
-:playnois
+:playwnoise 
+	drop swap fwhite + swap ;
+:playpnoise 
+	drop swap fpink + swap ;
+:playbnoise 
+	drop swap fbrown + swap ;
 	
 |------------------- INSTRUMENTS
 #instr * $fff
 #instr> 
-
 
 :ireset
 	'instr 'instr> ! ;
@@ -76,14 +114,29 @@
 	dup 8 + @ a!+
 	dup 16 + d@ 2 >> a!+
 	0 a!+
-	a> 'instr> !
-	;
+	0 a!+
+	a> 'instr> ! ;
 
-::iosc
+::iosc | osc --
 	instr> >a
-	'playosc !+
+	'playosc a!+
+	a!+
+	0 a!+
+	0 a!+
+	0 a!+
+	0 a!+
+	a> 'instr> ! ;
 	
-	;
+::inoise | noise --
+	instr> >a
+	a!+
+	0 a!+
+	0 a!+
+	0 a!+
+	0 a!+
+	0 a!+
+	a> 'instr> ! ;
+
 
 |------------------- RUN
 #aurate 44100 |48000 |
@@ -95,11 +148,11 @@
 ::sminit | -- ..
 	aurate $8010 2 1024 Mix_OpenAudio | minimal buffer for low latency
 
-	aurate 'auspec 0 + d! |freq
-	$8010 'auspec 4 + w! |format: 16-bit signed
-	2 'auspec 6 + c! |channels: stereo
-	2048 'auspec 8 + w! |samples: 2048 frame buffer
-	0 'auspec 16 + ! |callback: null (push mode)
+	aurate	'auspec 0 + d! |freq
+	$8010	'auspec 4 + w! |format: 16-bit signed
+	2		'auspec 6 + c! |channels: stereo
+	2048	'auspec 8 + w! |samples: 2048 frame buffer
+	0		'auspec 16 + ! |callback: null (push mode)
 
 	0 0 'auspec 0 0 SDL_OpenAudioDevice 'audevice !
 	audevice 0 SDL_PauseAudioDevice
@@ -122,9 +175,8 @@
 
 		master_volume *.
 		fastanh. 
-		32767 * 16 >> 
-
-		$ffff and
+		|32767 * 16 >> 
+		2/ $ffff and
 		dup 16 << or       | to stereo
 		db!+
 		) drop ;	
@@ -135,3 +187,10 @@
 	audevice 'outbuffer 8192 SDL_QueueAudio 
 	;
 	
+|------------------- VOICES
+| vol|note|instr
+::smplay | volumen nota instrumento -- id
+	;
+	
+::smstop | id --
+	;
