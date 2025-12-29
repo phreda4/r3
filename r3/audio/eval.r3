@@ -15,34 +15,16 @@
 #aseq
 #nseq
 
+| seq(12) str(12)
 #seq * 1024
 #seq> 'seq
 
+| type|cnt|end|start
 #rseq * 1024 
 
-|delimiter  ESP ( ) < > [ ] { } ,
-:isD? | char -- X/0
-	$ff and
-	$20 <=? ( 4 nip ; )
-	$28 =? ( 1 nip ; ) |$28 $29 ( )m
-	$29 =? ( 2 nip ; )
-	$3c =? ( 1 nip ; ) |$3c $3e < >m
-	$3e =? ( 2 nip ; )
-	$5b =? ( 1 nip ; ) |$5b $5d [ ]m
-	$5d =? ( 2 nip ; )
-	$7b =? ( 1 nip ; ) |$7b $7d { }m
-	$7d =? ( 2 nip ; )
-	$2c =? ( 3 nip ; ) | ,
-	0 nip ;
-
-::>>spl | adr -- adr'
-	( c@+ $ff and 32 >? 
-		isD? 1? ( drop 1- ; ) drop
-		) drop 1- ;
-	
 :]seq | n -- adr
 	3 << 'rseq + ;
-	
+
 :seqnro
 	seq> 'seq - 2 >> ;
 	
@@ -52,24 +34,52 @@
 :]seqend! | n --
 	]seq dup @ seqnro 12 << or swap ! ;
 	
-:newseq
+:]seq+!
+	]seq 1 24 << swap +! ;
+
+:newseq | type --
+	40 <<
 	1 'nseq +! 
 	nseq dup 'aseq ! 
-	]seq 0 swap ! ;
+	]seq ! ;
+
+
+|delimiter  ESP ( ) < > [ ] { } ,
+:isD? | char -- X/0
+	$ff and
+	$20 <=? ( 4 nip ; )
+	$28 =? ( 1 nip ; ) |$28 $29 ( )m
+	$29 =? ( 2 nip ; )
+	$3c =? ( 1 nip ; ) |$3c $3e < >m alterna
+	$3e =? ( 2 nip ; )
+	$5b =? ( 1 nip ; ) |$5b $5d [ ]m secuencia
+	$5d =? ( 2 nip ; )
+	$7b =? ( 1 nip ; ) |$7b $7d { }m mismo tiempo
+	$7d =? ( 2 nip ; )
+	$2c =? ( 3 nip ; ) | ,
+	0 nip ;
+
+::>>spl | adr -- adr'
+	( c@+ $ff and 32 >? 
+		isD? 1? ( drop 1- ; ) drop
+		) drop 1- ;
+
 	
 | ITEM 32bits
-| seq(12) lvl(8) str(12)
+| seq(12) str(12)
 :+item | adr  -- adr
-	aseq $fff and 20 << 
-|	lvl $ff and 12 << or
+	aseq 
+	dup ]seq+!		| suma uno a la seq
+	$fff and 12 << 
 	over str$ - $fff and or
-	seq> d!+ 'seq> ! 
+	seq> d!+ 'seq> !
 	>>spl ;
 	
-:uplvl | adr -- adr
+:uplvl | adr type -- adr
+	swap
 	+item 1+
 	aseq push
-	newseq
+	swap newseq
 	aseq ]seqini!
 	1 'lvl +! ;
 	
@@ -83,42 +93,49 @@
 	dup 1+ c@ isD? 1? ( drop ; ) drop
 	1- ;
 	
+:coma
+	|+item 
+	aseq ]seq
+	dup @ 
+	$2000000000 or | <> -> {}  | [] -> []
+	swap ! ;
+	
 :token
-	$28 =? ( drop uplvl ; ) |$28 $29 ( )m
-	$29 =? ( drop dnlvl ; )
-	$3c =? ( drop uplvl ; ) |$3c $3e < >m
+|	$28 =? ( drop 4 uplvl ; ) |$28 $29 ( )m
+|	$29 =? ( drop dnlvl ; )
+	$3c =? ( drop 1 uplvl ; ) |$3c $3e < >m
 	$3e =? ( drop dnlvl ; )
-	$5b =? ( drop uplvl ; ) |$5b $5d [ ]m
+	$5b =? ( drop 2 uplvl ; ) |$5b $5d [ ]m
 	$5d =? ( drop dnlvl ; )
-	$7b =? ( drop uplvl ; ) |$7b $7d { }m
+	$7b =? ( drop 3 uplvl ; ) |$7b $7d { }m
 	$7d =? ( drop dnlvl ; )
-	$2c =? ( drop +item 1+ ; ) | newseq ; )
+	$2c =? ( drop coma 1+ ; ) | convierte <> en {}
 	drop +item ;
 	
 :trimall | adr -- 'adr char
 	( dup c@ 0? ( ; )
 		$ff and 33 <? 
 		drop 1+ ) ;
-	
+
 :markseq | 'str -- 
 	dup 'str$ !
 	'seq 'seq> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
 	aseq dup ]seqini! push
-	( trimall 1? 
-		|lvl nseq "%d %d " .print over "%w " .println getch drop
-		token
-		) 2drop 
+	( trimall 1? token ) 2drop 
 	pop ]seqend!
 	;
 	
 |----------------------------------
+
+#vari
+#repl
+
+#prob
 #mult
 #divi
-#repl
 #weig
-#prob
 #eucl
-#vari
+
 
 :pmod
 	$2a =? ( drop str>fnro 'mult ! ; )		|* 
@@ -147,6 +164,7 @@
 	divi "/%f " .print
 	weig "@%f " .print
 	prob "?%f " .println
+	vari ":%d " .print
 	|eucl "m:%f " .print
 	;
 
@@ -175,19 +193,58 @@
 	drop 
 	swap parsemod swap 
 	;
-	
+
 |------------------------------------------------
+| SEQ  type cnt slt rep prob |  mul div weig |euc 
+| 1    2    7   15  8   8
+| NOTE midi vol var rep prob |  mul div weig |euc 
+| 1    7    8   8   8   8      (10) (10) (10) 2
+
+#tokens * $fff
+#tokens> 'tokens
+
+:,tok
+	tokens> !+ 'tokens> ! ;
 	
-:compile
-	'seq ( seq> <?
-		d@+ 
-		|dup 
-		$fff and str$ + getcell
-|		"%h " .print
-|		dup 12 >> $ff and "lvl:%d " .print
-|		20 >> $ff and "seq:%d " .print .cr
-		) 2drop ;
+| str --
+:,note |
+	parsenote nip
+	,tok
+	;
+:,seq | []
+	,tok
+	;
+:,alt | <>
+	,tok
+	;
+:,par | {}
+	,tok
+	;
+	
+
+|------------------------------------
+:compseq 
+	]seq @ $fff and str$ + dup c@
+	$3c =? ( drop ,alt ; ) |$3c $3e < >m
+	$5b =? ( drop ,seq ; ) |$5b $5d [ ]m
+	$7b =? ( drop ,par ; ) |$7b $7d { }m
+	drop 
+	,note ;
+	
+:getcell
+	dup $fff and str$ + getcell
+	12 >> $fff and "seq:%d " .print .cr	
+	;
 		
+:compile
+	'tokens 'tokens> !
+	0 ( nseq <=?
+		dup "%d:" .print
+		dup ]seq @ "%h" .println
+		|dup compseq
+		1+ ) drop
+	;
+	
 |------------------------------------
 #t0 #t1 | top of tstack
 #tstack * $ff
@@ -201,6 +258,7 @@
 	dup $ffffffff and 't0 !
 	32 >> $ffffffff and 't1 ! ;
 	
+
 #l		| top of lstack
 #lstack * $7f
 #lstack>
@@ -217,10 +275,11 @@
 	'tstack 'tstack> !
 	'tokens | ip
 	( d@+ 1? |
-		dup $f and 3 << 'oplist + @ ex ) 
+		|dup $f and 3 << 'oplist + @ ex 
+		) 
 	2drop ;
 
-|------------------------------------------------
+|------------------------------------
 :pp | v -- 
 	$fff and str$ + 
 	dup >>spl 
@@ -232,19 +291,19 @@
 :printsec
 	0
 	'seq ( seq> <?
-		swap dup "%d:" .print 1+ swap
+		swap dup "%h:" .print 1+ swap
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
 |		dup 12 >> $ff and "lvl:%d " .print
-		20 >> $ff and "seq:%d " .print .cr
+		12 >> $fff and "seq:%d " .print .cr
 		) 2drop ;
 
 
 #mus1
-"a"
-"b*2"
-"[a b c]"
-"a b <c d e> [a c] (a b <a c>)"
+|"a"
+|"b*2"
+|"[a b c]"
+"a b <c d e> [a c] [a b <a c>]"
 "<
 [[g#2 g#3]*2 [e2 e3]*2]
 ,
@@ -285,8 +344,8 @@
 	seq> 'seq - 2 >> "ntok:%d" .println
 	printsec .cr
 	
-	|compile
-	eval
+	compile
+	|eval
 	;
 
 
