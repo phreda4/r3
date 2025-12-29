@@ -174,9 +174,8 @@
 			48 + ) drop
 
 		master_volume *.
-		fastanh. 
-		|32767 * 16 >> 
-		2/ $ffff and
+		fastanh. 2/ $ffff and
+		
 		dup 16 << or       | to stereo
 		db!+
 		) drop ;	

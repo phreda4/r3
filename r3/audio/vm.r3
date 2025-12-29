@@ -118,25 +118,24 @@
 #weig
 #prob
 #eucl
+#vari
 
 :pmod
-	$2a =? ( drop str>fnro 'mult ! ; )	|* 
-	$2f =? ( drop str>fnro 'divi ! ; )	|/ 
-	$21 =? ( drop str>fnro int. 'repl ! ; ) |!
-	$40 =? ( drop str>fnro 'weig ! ; ) |@
+	$2a =? ( drop str>fnro 'mult ! ; )		|* 
+	$2f =? ( drop str>fnro 'divi ! ; )		|/ 
+	$21 =? ( drop str>fnro int. 'repl ! ; )	|!
+	$40 =? ( drop str>fnro 'weig ! ; )		|@
 	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
-		| falta euclid
-		| falta `:n` | Dos puntos | Variante/índice | `bd:2` |
-		| error
+	$3a =? ( drop str>fnro int. 'vari ! ; )	| : Variante/índice
+| falta euclid
+| error
 	drop 1+ ;
 	
 :parsemod | str -- 'str
 	1 'repl !
-	1.0 'mult !
-	1.0 'divi !
-	1.0 'weig !
-	1.0 'prob !
-	0 'eucl !
+	1.0 'mult ! 1.0 'divi !
+	1.0 'weig ! 1.0 'prob !
+	0 'eucl ! 0 'vari !
 	( c@+ 1?
 		dup isD? 1? ( 2drop 1- ; ) drop
 		pmod
@@ -166,86 +165,18 @@
 	drop 
 	4 12 * + | octva 4
 	over c@ | adr note char
-	$30 >=? ( $39 <=? (  | 0..9
+	|$30 >=? ( $39 <=? (  | 0..9
+	$30 $39 in? (
 		rot 1+ rot 
 		4 12 * -
 		pick2 $30 - 12 * +
 		rot
-		) )
+		) |)
 	drop 
 	swap parsemod swap 
 	;
 	
 |------------------------------------------------
-|  0 OP_END 
-|  1 OP_NOTE,        // note_id
-|  2 OP_SEQ,         // n, jump [ ] | `SEQ`        | Divide el frame en N partes  |
-|  3 OP_PAR,         // n, jump , | `PAR`        | Duplica el frame (no divide) |
-|  4 OP_ALT,         // n, jump < > | `ALT`        | Elige un frame completo      |
-|  5 OP_REPEAT,      // count repita | `REPEAT`     | Reusa el frame               |
-
-|  6 OP_EVERY,       // period elige por ciclo
-|  7 OP_CHANCE,      // prob (0..255)
-|  8 OP_TIME_SCALE,  // factor fp | `TIME_SCALE` | Escala el frame              |
-|  9 OP_TIME_SHIFT,  // offset fp | `TIME_SHIFT` | Desplaza el frame            |
-|  10 OP_SEED,        // seed (random)
-|  11 OP_RET          // fin de bloque
-
-#tokens * $fff
-#tokens> 'tokens
-#seqn
-
-:,,
-	tokens> d!+ 'tokens> ! ;
-	
-:,note |
-	4 << 1 or ,, 
-	| modificadores
-	;
-
-:,void | nota prob 0
-	0 1 or ,, 
-	;
-	
-:,seq 
-:,alt
-:,poli
-
-:,seqe
-:,alte
-:,polie
-
-:,super
-	drop ;
-	
-:getcell | val str -- ncell
-	dup c@
-	| ~_ silencio
-	$5f =? ( drop ,void ; ) | _
-	$7e =? ( drop ,void ; ) | ~
-	
-	$5b =? ( drop ,seq ; ) |$5b $5d  [ subsecuencia
-	$5d =? ( drop ,seqe ; )
-	
-	$3c =? ( drop ,alt ; ) |$3c $3e  < alternancia
-	$3e =? ( drop ,alte ; )
-	
-|	$28 =? ( drop uplvl ; ) |$28 $29 ( )m (	** real para parametros en nota
-|	$29 =? ( drop dnlvl ; )
-
-	$7b =? ( drop ,poli ; ) |$7b $7d { }m { polimetria
-	$7d =? ( drop ,polie ; )
-	
-	$2c =? ( drop ,super ; )  | , superpone
-	|.	| float
-	|0..9 | int/float
-	$df and | uppcase+unsigned
-	|A..G | nota
-	$41 <? ( drop ; ) $47 >? ( drop ; ) | A..G
-	drop
-	parsenote
-	,note
-	;
 	
 :compile
 	'seq ( seq> <?
@@ -279,45 +210,6 @@
 	
 :lpop | -- 
 	-8 'lstack> +! lstack> @ 'l ! ;
-
-| ip token -- ip	
-:o0 |  0 OP_END \ HIDDEN xxxxxxx0
-	drop ;
-
-:o1	|  1 OP_NOTE,        // note_id
-	4 >> "play:%h " .print
-	t0 t1 over - swap "t0:%f d:%f" .println
-	;
-	
-|  2 OP_SEQ,         // n, jump [ ]
-:o2	;
-|  3 OP_PAR,         // n, jump ,
-:o3	;
-|  4 OP_ALT,         // n, jump < >
-:o4	;
-|  5 OP_REPEAT,      // count repita
-:o5	;
-|  6 OP_EVERY,       // period elige por ciclo
-:o6	;
-|  7 OP_CHANCE,      // prob (0..255)
-:o7	;
-| 8 OP_TIME_SCALE,  // factor fp
-:o8	;
-|  9 OP_TIME_SHIFT,  // offset fp
-:o9	;
-|  10 OP_SEED,        // seed (random)
-:oa	;
-
-
-|  11 OP_RET          // fin de bloque
-:ob	
-	;
-:oc	
-:od	
-:oe	
-:of	drop ;
-
-#oplist o0 o1 o2 o3 o4 o5 o6 o7 o8 o9 oa ob oc od of	
 
 :eval
 	0 't0 ! 1.0 't1 !
@@ -378,8 +270,6 @@
 [[a1 a2]*4]
 >"
 
-:ej1
-	;
 	
 :main
 	getch drop
@@ -396,9 +286,6 @@
 	printsec .cr
 	
 	|compile
-	'tokens >a
-	$11 da!+ | note
-	0 da!+
 	eval
 	;
 

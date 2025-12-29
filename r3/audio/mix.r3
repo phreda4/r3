@@ -246,9 +246,8 @@
 		|fpink +
 		
 		master_volume *.
-		fastanh. 
-		2/ |32767 * 16 >> 
-
+		fastanh. 2/ |32767 * 16 >> 
+		
 		$ffff and
 		dup 16 << or       | to stereo
 		db!+

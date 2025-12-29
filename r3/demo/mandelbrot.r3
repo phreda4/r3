@@ -4,8 +4,6 @@
 ^r3/lib/console.r3	
 ^r3/lib/sdl2gfx.r3	
 
-^r3/lib/math.r3
-^r3/lib/str.r3
 
 #textbit
 #mpixel 
@@ -17,8 +15,6 @@
 	textbit 'srct 'mpixel 'mpitch SDL_LockTexture
 	mpixel vframe 800 600 * dmove 
 	textbit SDL_UnlockTexture
-	SDLrenderer textbit 0 'srct SDL_RenderCopy		
-	SDLrenderer SDL_RenderPresent
 	;
 	
 #xmax #ymax #xmin #ymin
@@ -53,8 +49,16 @@
 		800 ( 1? 1 - swap
 			mandel color da!+
 			swap ) drop
-		) drop ;
+		) drop 
+	renderbitmap ;
 
+:draw
+	SDLrenderer textbit 0 'srct SDL_RenderCopy	
+	SDLredraw
+	SDLkey
+	>esc< =? ( exit )
+	drop ;
+	
 :main
 	here 'vframe !
 	
@@ -68,12 +72,10 @@
 	2.0 'xmax ! 2.0 'ymax !
 	-3.0 'xmin ! -2.0 'ymin !
 	calcmandel
-	renderbitmap	
-
 	msec swap - " %d ms " .println
-	
-	.input
-	
+
+	'draw SDLshow 
+
 	SDLquit	
 	;
 
