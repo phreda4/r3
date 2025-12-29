@@ -16,9 +16,12 @@
 #nseq
 
 | seq(12) str(12)
-#seq * 1024
-#seq> 'seq
+#list * 1024
+#list> 'list
 
+:]list@ | n -- list@
+	2 << 'list + d@ ;
+	
 | type|cnt|end|start
 #rseq * 1024 
 
@@ -26,7 +29,7 @@
 	3 << 'rseq + ;
 
 :seqnro
-	seq> 'seq - 2 >> ;
+	list> 'list - 2 >> ;
 	
 :]seqini! | n --
 	]seq dup @ seqnro or swap ! ;
@@ -72,7 +75,7 @@
 	dup ]seq+!		| suma uno a la seq
 	$fff and 12 << 
 	over str$ - $fff and or
-	seq> d!+ 'seq> !
+	list> d!+ 'list> !
 	>>spl ;
 	
 :uplvl | adr type -- adr
@@ -119,23 +122,20 @@
 
 :markseq | 'str -- 
 	dup 'str$ !
-	'seq 'seq> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
+	'list 'list> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
 	aseq dup ]seqini! push
 	( trimall 1? token ) 2drop 
 	pop ]seqend!
 	;
 	
 |----------------------------------
-
 #vari
 #repl
-
 #prob
 #mult
 #divi
 #weig
 #eucl
-
 
 :pmod
 	$2a =? ( drop str>fnro 'mult ! ; )		|* 
@@ -148,15 +148,15 @@
 | error
 	drop 1+ ;
 	
-:parsemod | str -- 'str
+:parsemod | str -- 
 	1 'repl !
 	1.0 'mult ! 1.0 'divi !
 	1.0 'weig ! 1.0 'prob !
 	0 'eucl ! 0 'vari !
 	( c@+ 1?
-		dup isD? 1? ( 2drop 1- ; ) drop
+		dup isD? 1? ( 3drop ; ) drop
 		pmod
-		) drop 1- ;
+		) 2drop ;
 
 :.ppw
 	repl "!%d " .print
@@ -170,7 +170,7 @@
 
 #semitone ( 9 11 0 2 4 5 7 0 )
 
-:parsenote | str -- 'str note
+:parsenote | str -- note
 	c@+
 	$df and | uppcase+unsigned
 	$41 <? ( -1 nip ; )	$47 >? ( -1 nip ; ) | A..G
@@ -191,7 +191,7 @@
 		rot
 		) |)
 	drop 
-	swap parsemod swap 
+	swap parsemod
 	;
 
 |------------------------------------------------
@@ -206,78 +206,178 @@
 :,tok
 	tokens> !+ 'tokens> ! ;
 	
-| str --
-:,note |
-	parsenote nip
-	,tok
-	;
-:,seq | []
-	,tok
-	;
-:,alt | <>
-	,tok
-	;
-:,par | {}
-	,tok
+| TOKEN
+|type(2)	
+|midi(8)	|2
+|prob(8)	|10
+|rep(6)		|18
+
+:vars!or | v -- v
+	prob $ff 16 *>> $ff and 10 << or
+	repl $3f and 18 << or
+|vari
+|mult
+|divi
+|weig
 	;
 	
+| n end now str -- n end now 
+|vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+:,note 
+	parsenote $ff and 2 << | note
+	vars!or
+	,tok ;
+
+:sub | n end now str -- n end now 
+	drop
+	over ]list@
+	$fff and str$ +
+	1+ parsemod ;
+	
+:,seq | []
+	sub
+	1
+	vars!or	
+	,tok ;
+	
+:,alt | <>
+	sub
+	2 
+	vars!or	
+	,tok ;
+	
+:,par | {}
+	sub
+	3 
+	vars!or	
+	,tok ;
+|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
 
 |------------------------------------
-:compseq 
-	]seq @ $fff and str$ + dup c@
+:pp | v -- 
+	$fff and str$ + 
+	dup >>spl 
+	over =? ( 1+ ) 
+	swap ( over <? c@+ .emit ) 2drop
+	" " .print
+	;
+	
+:token? | n end now -- n end now
+	dup ]list@
+	dup 12 >> $fff and | n end now L ln
+	pick4 <>? ( 2drop ; ) drop |	pp ;
+	$fff and str$ + dup c@
 	$3c =? ( drop ,alt ; ) |$3c $3e < >m
+	$3e =? ( 2drop ; )
 	$5b =? ( drop ,seq ; ) |$5b $5d [ ]m
+	$5d =? ( 2drop ; )
 	$7b =? ( drop ,par ; ) |$7b $7d { }m
+	$7d =? ( 2drop ; )
 	drop 
 	,note ;
 	
-:getcell
-	dup $fff and str$ + getcell
-	12 >> $fff and "seq:%d " .print .cr	
+:compseq | n -- n
+	dup ]seq @
+	dup 12 >> $fff and
+	swap $fff and | n end start
+	( over <? token? 1+ ) 2drop
+|	.cr
 	;
-		
+	
 :compile
 	'tokens 'tokens> !
 	0 ( nseq <=?
-		dup "%d:" .print
-		dup ]seq @ "%h" .println
-		|dup compseq
+|		dup "%d:" .print
+|		dup ]seq @ "%h" .println
+		compseq
 		1+ ) drop
 	;
 	
 |------------------------------------
-#t0 #t1 | top of tstack
+|    Node* node;
+|    float start;
+|    float dur;
+|    int cycle;
+|    int current_child; // Para seguir el progreso en SEQs y PARs
+|    int current_rep;   // Para seguir el progreso de repeticiones !N
+
+| top of tstack
+#t0 
+#t1 
+#cycle
+#curchi
+#currep
+
 #tstack * $ff
 #tstack>
 
 :tpush | --
-	t1 32 << t0 or tstack> !+ 'tstack> ! ;
+	t0 $ffff and 
+	t1 $ffff and 16 << or
+	cycle $fff and 32 << or
+	curchi $ff and 48 << or
+	currep $ff and 56 << or
+	tstack> !+ 'tstack> ! ;
 	
 :tpop | --
 	-8 'tstack> +! tstack> @ 
-	dup $ffffffff and 't0 !
-	32 >> $ffffffff and 't1 ! ;
+	dup $ffff and 't0 !
+	dup 16 >> $ffff and 't1 ! 
+	dup 32 >> $fff and 'cycle !
+	dup 48 >> $ff and 'curchi !
+	56 >> $ff and 'currep !
+	;
 	
 
-#l		| top of lstack
-#lstack * $7f
-#lstack>
+|type(2)	
+|midi(8)	|2
+|prob(8)	|10
+|rep(6)		|18
 
-:lpush | --
-	l lstack> !+ 'lstack> ! ;
+:pmod
+	dup 2 >> $ff and "n:%d "  .print
+	dup 10 >> $ff and "?%d " .print
+	18 >> $3f and "!%d " .print
+	;
 	
-:lpop | -- 
-	-8 'lstack> +! lstack> @ 'l ! ;
+:note | v --
+	pmod
+	t1 t0 "(%f %f)" .println
+	;
+	
+:sec
+	"[]" .print
+	pmod .cr
+|	t1 t0 "(%f %f)" .print
+	;
+	
+:alt
+	"<>" .print
+	pmod .cr
+|	t1 t0 "(%f %f)" .print
+	;
+	
+:par
+	"{}" .print
+	pmod .cr
+|	t1 t0 "(%f %f)" .print
+	;
+	
+#tlist NOTE SEC ALT PAR
 
 :eval
-	0 't0 ! 1.0 't1 !
-	'lstack 'lstack> !
 	'tstack 'tstack> !
-	'tokens | ip
-	( d@+ 1? |
-		|dup $f and 3 << 'oplist + @ ex 
-		) 
-	2drop ;
+	|0.999 "%h" .println
+	0 't0 ! $ffff 't1 !
+	|cycle | extern
+	0 'curchi !
+	0 'currep !
+	tpush
+	'tokens ( tokens> <? |
+		@+ dup $3 and 3 << 'tlist + @ ex
+|		"%h " .print
+		) drop
+	;
 
 |------------------------------------
 :pp | v -- 
@@ -288,9 +388,9 @@
 	" " .print
 	;
 		
-:printsec
+:printlist
 	0
-	'seq ( seq> <?
+	'list ( list> <?
 		swap dup "%h:" .print 1+ swap
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
@@ -301,14 +401,10 @@
 
 #mus1
 |"a"
-|"b*2"
-|"[a b c]"
+|"b!2"
+"[a b? c]!2"
 "a b <c d e> [a c] [a b <a c>]"
-"<
-[[g#2 g#3]*2 [e2 e3]*2]
-,
-[a b c]*2
->"
+"< [[g#2 g#3]*2 [e2 e3]*2],[a b c]*2>"
 "<
 [e5 [b4 c5] d5 [c5 b4]]
 [a4 [a4 c5] e5 [d5 c5]]
@@ -341,11 +437,11 @@
 	markseq
 	
 	nseq "seq:%d" .println
-	seq> 'seq - 2 >> "ntok:%d" .println
-	printsec .cr
+	list> 'list - 2 >> "nlist:%d" .println
+	|printlist .cr
 	
 	compile
-	|eval
+	eval
 	;
 
 
