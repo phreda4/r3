@@ -5,14 +5,14 @@
 ^r3/lib/rand.r3
 
 |---- white noise
-::fwhite
+::wnoise
 	-1.0 1.0 randminmax ;
 	
 |---- pink noise
 #pinkc
 #pink 0 0 
 
-::fpink
+::pnoise
 	$ffff randmax
 	pinkc not clz $7 and 2 << 'pink + w+!
 	'pink 
@@ -25,7 +25,7 @@
 |----- brown noise	
 #browna
 	
-::fbrown
+::bnoise
 	browna 0.99 * 16 >>
 	-0.02 0.02 randminmax +
 	|1.0 >? ( 1.0 nip ) -1.0 <? ( -1.0 nip )

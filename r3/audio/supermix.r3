@@ -43,6 +43,7 @@
 | VOICE
 | siwv pp dd	0
 | aa rr eeee	8 / llll eeee
+
 | pppp ffff		16
 | *sample		24
 
@@ -52,7 +53,6 @@
 
 :c.state	a> ;
 :c.id		a> 1 + ;
-:c.wavef 	a> 2 + ;
 :c.vel		a> 3 + ;
 :d.time		a> 4 + ;
 
@@ -66,9 +66,10 @@
 :d.freq		a> 20 + ;
 
 :q.sample				| SAMPLE
-:d.dtime	a> 24 + ;	| duracion nota
+:d.dtime	a> 24 + ;	| OSC/NOISE
 
-
+:q.func		a> 32 + ;
+:q.vec		a> 40 + ;
 
 :newvoice | -- nv
 	voice> 'voice> >=? ( drop 0 ; )
@@ -77,16 +78,23 @@
 :delvoice | nv --
 	-48 'voice> +! voice> 6 move ;
 
-
+:delvoicea | --
+	-48 'voice> +! 
+	a> voice> 6 move 
+	-48 a+	;
 
 |---- OSC
+| time -- val
 ::oscSaw	2* 1.0 - ;
-::oscSqr	0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
+::oscSqr	0.5 >? ( -1.0 nip ; ) 1.0 nip ; 
+::oscPul1	0.1 >? ( -1.0 nip ; ) 1.0 nip ; 
+::oscPul2	0.25 >? ( -1.0 nip ; ) 1.0 nip ; 
 ::oscTri	$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 ::oscSin	sin ;
 
-
+|------
 :envelAR | state -- mix
+	1 d.time d+!
 	1 =? ( drop | attack
 		d.Evol d@ w.Adt w@ + 
 		1.0 <? ( ; ) 1.0 nip 
@@ -99,48 +107,36 @@
 	d.Evol d@ w.Rdt w@ -
 	0 >? ( ; ) 0.0 nip 
 	0 c.state c! ;
-	
 
 :playosc | vol voice -- vol voice
-	dup >a
-	1 d.time d+!
-	c.state c@ 
-	0? ( drop dup delvoice 48 - ; ) 
+	c.state c@ 0? ( delvoicea ; ) 
 
 	envelAR dup d.Evol d! | volumen por envelope	
-	d.phase dup d@ dup 16 >> $ffff and + dup rot w! $ffff and 
+	d.phase dup d@ 
+	dup 16 >> $ffff and + dup rot w! $ffff and 
+	q.func @ ex |oscSin | ciclo
 	
-	oscSin | ciclo
-	*. | senial * envelope
-|	d.vel d@ *.	| VOLUME
-	rot + swap ; | suma a mix
+	*. ; | senial * envelope
 
+:playnoise
+	c.state c@ 0? ( delvoicea ; ) 
 
+	envelAR dup d.Evol d! | volumen por envelope	
+	q.func @ ex | noise sin ciclo |	fbrown 
+	
+	*. ; | senial * envelope
 
 :playsam
-	dup >a
-	c.state c@ 
-	0? ( drop dup delvoice 48 - ; ) | state=0
-	envelAR | voice mixe
+	c.state c@ 0? ( delvoicea ; ) | state=0
 	
+	envelAR dup d.Evol d! | volumen por envelope	
 	
-	d.phase dup d@			| PHASE
-	1+ dup 
-	rot d!
-	d.len d@ >=? ( drop 0 c.state c! ; )
-	2 << 
-	q.sample @ + w@ 2* |2.0 *. | w->0--1.0
-	rot + swap ;
+	d.phase dup d@
+	1+ dup rot d! d.len d@ >=? ( drop 0 c.state c! ; )
+	2 << q.sample @ + w@ 2* |2.0 *. | w->0--1.0
+	*. ;
 	
 
-| suma voice voice+	
-::wnoise 
-	drop swap fwhite + swap ;
-::pnoise 
-	drop swap fpink + swap ;
-::bnoise 
-	drop swap fbrown + swap ;
-	
 |------------------- INSTRUMENTS
 | OSC/SAMPLE
 | AR (Attack-Release)
@@ -152,21 +148,29 @@
 #instr> 'instr
 
 :ninstr
-	instr> 'instr - 6 >> ;  | 8 data
+	instr> 'instr - 5 >> 1- ;  | 4 data
 :ireset
 	'instr 'instr> ! ;
 
-:iosc | osc -- n
+::iosc | at rel osc -- n
 	instr> >a
 	'playosc a!+
-	a!+
-	0 a!+
-	0 a!+
-	0 a!+
+	a!+ | func
+	32 << or a!+ | AR
 	0 a!+
 	a> 'instr> ! 
 	ninstr ;
-	
+
+
+::inoise | at rel noise -- n
+	instr> >a
+	'playnoise a!+
+	a!+
+	32 << or a!+ | AR
+	0 a!+
+	a> 'instr> ! 
+	ninstr ;
+
 ::isample | "" -- n
 	mix_loadWAV  
 	instr> >a
@@ -174,23 +178,8 @@
 	dup a!+
 	dup 8 + @ a!+
 	dup 16 + d@ 2 >> a!+
-	0 a!+
-	0 a!+
 	a> 'instr> !
 	ninstr ;
-
-	
-::inoise | noise -- n
-	instr> >a
-	a!+
-	0 a!+
-	0 a!+
-	0 a!+
-	0 a!+
-	0 a!+
-	a> 'instr> ! 
-	ninstr 
-	;
 
 
 |------------------- RUN
@@ -224,15 +213,14 @@
 :genAudio | genera audio
 	'outbuffer >b
 	2048 ( 1? 1-
-	
-		0
-		'voice ( voice> <?
-|			dup @+ ex
-			playosc
-			48 + ) drop
-|fbrown +
-| suma voice voice+
 
+		0	| mix
+		'voice ( voice> <? >a
+			q.vec @ ex |playosc 
+			| d.vel d@ *.	| VOLUME por voice
+			+ a> 48 + ) drop
+
+		2/ | shift 
 		master_volume *.
 		fastanh. 2/ $ffff and
 		
@@ -240,7 +228,6 @@
 		db!+
 		) drop ;	
 		
-
 
 ::smupdate | Queue audio
 	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
@@ -257,20 +244,26 @@
 | TONO (SAMPLE[shift]-OSC[gen])
 | DURACION
 
-#nowinst 
-#amp_attack 0.001
-#amp_release 0.1
+#ins_vector playosc
+#ins_wave oscSin |oscTri |'oscSin
+#ins_attack 0.001
+#ins_release 0.1
 
+::smi! | n --
+	5 << 'instr +
+	@+ 'ins_vector !
+	@+ 'ins_wave !
+	@+ 
+	dup 32 >> 'ins_release !
+	$ffffffff and 'ins_attack !
+	drop
+	;
+	
 ::fx
 ::control
 ::instr
 	;
 	
-::smplay | nota -- id
-	;
-::smstop | id --
-	;
-
 :midi_to_freq | note -- freq
 	fix. 12 / pow2. 440.0 *. ;
 
@@ -282,17 +275,36 @@
 	0 d.time d!
 	
 	midi_to_freq 
-	dup d.freq d!		| frecuencia
-	dt>inc 16 << 		| incremento por sample
+	dup d.freq d!	| frecuencia
+	dt>inc 16 << 	| incremento por sample
 	d.phase d!		| phase actual
+
+	ins_vector q.vec !
+	ins_wave q.func !
+	dt ins_attack / w.adt w!
+	dt ins_release / w.rdt w!
 	
-	dt amp_attack / w.adt w!
-	dt amp_release / w.rdt w!
-	
-	1 c.wavef c!
 	1 c.state c!
 	0 d.EVol d!
 	;
+
+#nnote 1
+
+::smplay | nota -- id
+	$7fffffff smplayd 
+	nnote 1+ $ff and 0? ( 1+ ) 
+	dup 'nnote !
+	dup c.id !
+	;
+	
+::smstop | id --
+	'voice ( voice> <? 	| Find voice playing this note
+		dup 1+
+		pick2 =? ( drop 
+			3 swap c!
+			drop ;	)
+		drop
+		48 + ) 2drop ;
 
 
 	

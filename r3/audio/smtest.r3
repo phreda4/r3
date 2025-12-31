@@ -43,8 +43,9 @@
 	<a> =? ( 0 keydn )
 	>a< =? ( 0 keyup )
 	<f1> =? ( 0 0.25 smplayd )
-	<f2> =? ( 1 0.25 smplayd )
-	<f3> =? ( 2 0.25 smplayd )
+	<f2> =? ( i0 smI! 1 0.25 smplayd )
+	<f3> =? ( i1 smI! 2 0.25 smplayd )
+	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
 	drop 
 	smupdate
 	;
@@ -53,10 +54,14 @@
 	"supermix" 1024 600 SDLinit
 	sminit
 	$fff vaini
-	
-|	"media/snd/piano-C.mp3" isample 'i0 !
-	|'oscSin iosc 'i1 !
-	'wnoise inoise 'i2 !
+
+
+	0.001 0.1 'oscSin iosc 'i0 !
+	|0.002 0.1 'oscSaw iosc 'i1 !
+	0.001 0.2 'bnoise inoise 'i1 !
+|	"media/snd/piano-C.mp3" isample 'i1 !
+|	'wnoise inoise 'i2 !
+	i0 smI!
 	
 	'main SDLshow
 	SDLquit 
