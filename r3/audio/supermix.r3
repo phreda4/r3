@@ -98,6 +98,11 @@
 	q.func @ ex | noise sin ciclo |	fbrown 
 	*. ; | senial * envelope
 
+:interpolate | scr sample -- value
+	w@+ swap 2 + w@	| src v0 v1 | 2 + stereo!
+	rot $ffff and 	| v1 v0 p
+	rot pick2 - *. + ;
+
 :playsam
 	c.state c@ 0? ( delvoicea ; ) | state=0
 	envelADSR dup 2/ w.vol w! | volumen por envelope	
@@ -105,11 +110,14 @@
 	d.dtime d@ >? ( 4 c.state c! )
 	d.fresam d@ *
 	d.lensam d@ 16 << >=? ( 2drop 0 c.state c! 0 ; )
-	| interpolacion falta
-	16 >>
-	2 << q.func @ + w@ 2* |2.0 *. | w->0--1.0
 	
-	*. ;
+| sin interpolacion
+|	16 >> 2 << q.func @ + w@ 
+
+| interpolacion 
+	dup 16 >> 2 << q.func @ + interpolate
+	
+	2* *. ; |2.0 *. | w->0--1.0
 
 |------------------- RUN
 #aurate 44100 |48000 |
@@ -256,7 +264,7 @@
 	ins_vector q.vec !
 	ins_wave q.func !
 	ins_ADSR w.adt ! | ADSR
-		ins_aux d.lensam d!
+	ins_aux d.lensam d!
 	
 	1 c.state c!
 	0 w.Vol w!
