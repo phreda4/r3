@@ -1,0 +1,176 @@
+| superMix con PITCH SHIFTING para samples
+| PHREDA 2025 + mejoras
+|-------------------
+
+| MODIFICACIONES PARA PITCH SHIFTING:
+| 1. d.phase ahora es punto fijo 16.16 para posiciones fraccionarias
+| 2. Interpolación lineal entre muestras
+| 3. Cálculo de incremento basado en frecuencia deseada
+
+|---- INTERPOLACIÓN LINEAL
+:lerp16 | sample1 sample2 frac16 -- interpolated
+	| frac16 es la parte fraccionaria en formato 16 bits (0-65535)
+	pick2 pick2 - | sample1 sample2 delta
+	pick2 16 *>> | sample1 sample2 delta*frac
+	rot + nip ; | sample1 + (delta*frac)
+
+|---- OBTENER MUESTRA INTERPOLADA (definida ANTES de usarla)
+:getsample1 | idx -- sample
+	| Obtener ambas muestras
+	dup 2 << q.sample @ + w@  | idx sample[idx]
+	swap 1+ 2 << q.sample @ + w@  | sample[idx] sample[idx+1]
+	
+	| Obtener parte fraccionaria de la fase
+	d.phase d@ $ffff and  | s1 s2 frac
+	
+	| Interpolar
+	lerp16 ;
+
+:getsample | idx -- sample
+	| Verificar si idx+1 está dentro del rango
+	dup 1+ d.len d@ <? ( drop getsample1 ; )
+	| Solo usar sample[idx]
+	2 << q.sample @ + w@ ;
+
+|---- REPRODUCTOR DE SAMPLES CON PITCH SHIFTING
+:playsam
+	c.state c@ 0? ( delvoicea ; ) | state=0 = voz libre
+	
+	| Calcular envolvente
+	envelAR dup d.Evol d! | volumen por envelope	
+	
+	| Leer posición actual (punto fijo 16.16)
+	d.phase dup d@
+	
+	| Calcular incremento basado en frecuencia
+	| inc = (freq_deseada / freq_sample) * 65536
+	d.freq d@           | phase freq_deseada
+	q.sample @ 12 + d@  | phase freq_des freq_sample
+	/. 65536.0 *.       | phase ratio*65536
+	fix +               | new_phase
+	
+	| Guardar nueva fase
+	dup rot d!          | new_phase
+	
+	| Convertir a índice de muestra (parte entera)
+	16 >>               | idx
+	
+	| Verificar fin del sample
+	dup d.len d@ >=? ( drop 0 c.state c! 0 ; )
+	
+	| Obtener muestra interpolada
+	getsample
+	
+	2*              | Convertir a rango -1.0 a 1.0
+	*. ;            | Aplicar envolvente
+
+
+|---- MODIFICACIÓN EN isample PARA ALMACENAR FRECUENCIA BASE
+::isample | "" -- n
+	mix_loadWAV  
+	instr> >a
+	'playsam a!+
+	dup a!+
+	dup 8 + @ a!+        | Frecuencia de muestreo del WAV
+	dup 16 + d@ 2 >> a!+ | Longitud en muestras
+	a> 'instr> !
+	ninstr ;
+
+
+|---- MODIFICACIÓN EN smplayd PARA CALCULAR FRECUENCIA CORRECTA
+::smplayd | note time --
+	newvoice 0? ( 3drop ; ) | No free voices|
+	>a | Save voice index
+
+	aurate *. d.dtime d! | tiempo en muestra para terminar
+	0 d.time d!
+	
+	| Convertir nota MIDI a frecuencia
+	midi_to_freq 
+	d.freq d!           | Guardar frecuencia deseada
+	
+	| Para samples, la fase inicial es 0 (punto fijo 16.16)
+	0 d.phase d!        | Phase inicial = 0
+	
+	| Configurar funciones
+	ins_vector q.vec !
+	ins_wave q.func !
+	dt ins_attack / w.adt w!
+	dt ins_release / w.rdt w!
+	
+	1 c.state c!
+	0 d.EVol d!
+	;
+
+
+|========================================
+| DOCUMENTACIÓN TÉCNICA
+|========================================
+
+| NOTAS SOBRE R3FORTH:
+| --------------------
+| - No hay ELSE en IF, se usa salida prematura con ;
+| - Comparaciones consumen solo TOS, no dos valores
+| - Evitar uso de >r r@ rdrop, usar pick/over/swap
+| - Usar palabras auxiliares para ramas complejas
+| - IMPORTANTE: Definir palabras ANTES de usarlas (orden matters)
+
+| FORMATO DE FASE PARA SAMPLES:
+| --------------------------------
+| Bits 31-16: Parte entera (índice de muestra)
+| Bits 15-0:  Parte fraccionaria (para interpolación)
+|
+| Ejemplo:
+|   0x00010000 = muestra 1, fracción 0.0
+|   0x00018000 = muestra 1, fracción 0.5
+|   0x0001FFFF = muestra 1, fracción 0.999
+
+| CÁLCULO DE INCREMENTO:
+| ----------------------
+| increment = (freq_target / freq_sample) * 65536
+|
+| Ejemplos:
+|   freq_target = 440 Hz (A4)
+|   freq_sample = 440 Hz
+|   → increment = 65536 (avanza 1 muestra por ciclo)
+|
+|   freq_target = 880 Hz (A5, octava arriba)
+|   freq_sample = 440 Hz
+|   → increment = 131072 (avanza 2 muestras por ciclo)
+|
+|   freq_target = 220 Hz (A3, octava abajo)
+|   freq_sample = 440 Hz
+|   → increment = 32768 (avanza 0.5 muestras por ciclo)
+
+| INTERPOLACIÓN LINEAL:
+| ---------------------
+| output = sample[i] + (sample[i+1] - sample[i]) * frac
+|
+| Ventajas:
+|   - Reduce aliasing en pitch shift
+|   - Suaviza transiciones entre muestras
+|   - Bajo costo computacional
+|
+| Limitaciones:
+|   - No es ideal para grandes cambios de pitch (>2 octavas)
+|   - Para mejor calidad, considerar interpolación cúbica
+
+| MEJORAS FUTURAS POSIBLES:
+| --------------------------
+| 1. Interpolación cúbica (hermite/catmull-rom)
+| 2. Anti-aliasing filters para pitch up
+| 3. Loop points para samples sostenidos
+| 4. Crossfade en loops
+| 5. Tabla de frecuencias precalculada por sample
+
+| ORDEN DE DEFINICIÓN EN R3:
+| ---------------------------
+| lerp16        (usada por getsample1)
+|   ↓
+| getsample1    (usada por getsample)
+|   ↓
+| getsample     (usada por playsam)
+|   ↓
+| playsam       (usada por isample)
+|   ↓
+| isample

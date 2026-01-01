@@ -132,7 +132,7 @@
 	envelAR dup d.Evol d! | volumen por envelope	
 	
 	d.phase dup d@
-	1+ dup rot d! d.len d@ >=? ( drop 0 c.state c! ; )
+	1+ dup rot d! d.len d@ >=? ( drop 0 c.state c! 0 ; )
 	2 << q.sample @ + w@ 2* |2.0 *. | w->0--1.0
 	*. ;
 	
