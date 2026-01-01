@@ -19,54 +19,35 @@
 ^r3/lib/sdl2mixer.r3
 ^./noise.r3
 
+^r3/lib/trace.r3
+
 #master_volume 1.0
 #dt
 
 |------------------- VOICES
 | unidad de sonido 
-
-| INSTRUMENTO
-| TIEMPO(NOW)
-| ATACK-RELEASE
-| TONO (SAMPLE[shift]-OSC[gen])
-| VOLUMEN
-| FX
-| PANEO
-
-
 #voice * $ffff
 #voice> 'voice
 
 :resetvoices
 	'voice 'voice> ! ;
 
-| VOICE
-| siwv pp dd	0
-| aa rr eeee	8 / llll eeee
+:c.state	a> ;		| state
+:c.id		a> 1 + ;	| id
+:w.Vol		a> 2 + ;	| Volumen (/2)
+:d.freq		a> 4 + ;
+:d.lensample a> 4 + ;
 
-| pppp ffff		16
-| *sample		24
+:w.Adt		a> 8 + ;	| ADSR
+:w.Ddt		a> 10 + ;	| 
+:w.Sdt		a> 12 + ;	| Volumen /2
+:w.Rdt		a> 14 + ;	| 
 
-| 32
-| 40
-| 48
+:d.phase	a> 16 + ;	| phase+dt...
+:d.phasedt	a> 20 + ;
 
-:c.state	a> ;
-:c.id		a> 1 + ;
-:c.vel		a> 3 + ;
-:d.time		a> 4 + ;
-
-:d.samlen				| SAMPLE
-:w.Adt		a> 8 + ;	| OSC
-:w.Rdt		a> 10 + ;	| OSC
-:d.len					| SAMPLE
-:d.EVol		a> 12 + ;	| OSC
-
-:d.phase	a> 16 + ;  |phase+dt...
-:d.freq		a> 20 + ;
-
-:q.sample				| SAMPLE
-:d.dtime	a> 24 + ;	| OSC/NOISE
+:d.time		a> 24 + ;	| time+dt
+:d.dtime	a> 28 + ;
 
 :q.func		a> 32 + ;
 :q.vec		a> 40 + ;
@@ -92,28 +73,31 @@
 ::oscTri	$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 ::oscSin	sin ;
 
-|------
-:envelAR | state -- mix
+:envelADSR | voice -- mix
 	1 d.time d+!
 	1 =? ( drop | attack
-		d.Evol d@ w.Adt w@ + 
+		w.vol w@ 2* w.Adt w@ + 
 		1.0 <? ( ; ) 1.0 nip 
 		2 c.state c!
 		; )
-	2 =? ( drop 
-		d.time d@ d.dtime d@ >? ( 3 c.state c! ) drop
-		d.Evol d@ ; ) |sustain
+	2 =? ( drop | decay
+		w.vol w@ 2* w.Ddt w@ -
+		w.Sdt w@ 2* >? ( ; ) w.Sdt w@ 2* nip
+		3 c.state c!
+		; )
+	3 =? ( drop 
+		d.time d@ d.dtime d@ >? ( 4 c.state c! ) drop
+		w.vol w@ 2* ; ) |sustain
 	drop | release
-	d.Evol d@ w.Rdt w@ -
+	w.vol w@ 2* w.Rdt w@ -
 	0 >? ( ; ) 0.0 nip 
 	0 c.state c! ;
 
 :playosc | vol voice -- vol voice
 	c.state c@ 0? ( delvoicea ; ) 
-
-	envelAR dup d.Evol d! | volumen por envelope	
-	d.phase dup d@ 
-	dup 16 >> $ffff and + dup rot w! $ffff and 
+	envelADSR dup 2/ w.vol w! | volumen por envelope	
+	d.phase dup @ 
+	dup 32 >> $ffff and + dup rot d! $ffff and 
 	q.func @ ex |oscSin | ciclo
 	
 	*. ; | senial * envelope
@@ -121,7 +105,7 @@
 :playnoise
 	c.state c@ 0? ( delvoicea ; ) 
 
-	envelAR dup d.Evol d! | volumen por envelope	
+	envelADSR dup 2/ w.vol w! | volumen por envelope	
 	q.func @ ex | noise sin ciclo |	fbrown 
 	
 	*. ; | senial * envelope
@@ -129,57 +113,15 @@
 :playsam
 	c.state c@ 0? ( delvoicea ; ) | state=0
 	
-	envelAR dup d.Evol d! | volumen por envelope	
+	envelADSR dup 2/ w.vol w! | volumen por envelope	
 	
-	d.phase dup d@
-	1+ dup rot d! d.len d@ >=? ( drop 0 c.state c! 0 ; )
-	2 << q.sample @ + w@ 2* |2.0 *. | w->0--1.0
+	d.phase dup @
+	1+ dup rot d!
+	$ffffffff and
+	d.lensample d@ >=? ( drop 0 c.state c! 0 ; )
+	2 << q.func @ + w@ 2* |2.0 *. | w->0--1.0
 	*. ;
 	
-
-|------------------- INSTRUMENTS
-| OSC/SAMPLE
-| AR (Attack-Release)
-| NOTAS?
-|
-| KIT
-| Lista de 
-#instr * $fff
-#instr> 'instr
-
-:ninstr
-	instr> 'instr - 5 >> 1- ;  | 4 data
-:ireset
-	'instr 'instr> ! ;
-
-::iosc | at rel osc -- n
-	instr> >a
-	'playosc a!+
-	a!+ | func
-	32 << or a!+ | AR
-	0 a!+
-	a> 'instr> ! 
-	ninstr ;
-
-
-::inoise | at rel noise -- n
-	instr> >a
-	'playnoise a!+
-	a!+
-	32 << or a!+ | AR
-	0 a!+
-	a> 'instr> ! 
-	ninstr ;
-
-::isample | "" -- n
-	mix_loadWAV  
-	instr> >a
-	'playsam a!+
-	dup a!+
-	dup 8 + @ a!+
-	dup 16 + d@ 2 >> a!+
-	a> 'instr> !
-	ninstr ;
 
 
 |------------------- RUN
@@ -226,7 +168,8 @@
 		
 		dup 16 << or       | to stereo
 		db!+
-		) drop ;	
+		) drop 
+	;	
 		
 
 ::smupdate | Queue audio
@@ -244,19 +187,73 @@
 | TONO (SAMPLE[shift]-OSC[gen])
 | DURACION
 
+|------------------- INSTRUMENTS
+| OSC/SAMPLE
+| AR (Attack-Release)
+| NOTAS?
+#instr * $fff
+#instr> 'instr
+
 #ins_vector playosc
 #ins_wave oscSin |oscTri |'oscSin
-#ins_attack 0.001
-#ins_release 0.1
+#ins_ADSR 0 
+#ins_aux
 
+| A:0.001 -> 16.0
+| D:0.001 -> 16.0
+| S: 0..1.0
+| R 0.001 -> 16.0
+::packADSR | A D S R -- v
+	dt swap 0? ( 1+ ) / $ffff and 0? ( 1+ )  16 <<	| rdt
+	swap 2/ $ffff and or 16 <<					| Sdt
+	dt rot 0? ( 1+ ) / $ffff and or 16 <<	| ddt
+	dt rot 0? ( 1+ ) / $ffff and 0? ( 1+ ) or		| adt
+	;
+
+|--- MAKE INSTRUMENT
+
+:ninstr
+	instr> 'instr - 5 >> 1- ;  | 4 data
+	
+:ireset
+	'instr 'instr> ! ;
+
+::iosc | ADSR osc -- n
+	instr> >a
+	'playosc a!+
+	a!+ | func
+	a!+ | ADSR
+	0 a!+
+	a> 'instr> ! 
+	ninstr ;
+
+
+::inoise | ADSR noise -- n
+	instr> >a
+	'playnoise a!+
+	a!+	| func
+	a!+ | ADSR
+	0 a!+
+	a> 'instr> ! 
+	ninstr ;
+
+::isample | ADSR "" -- n
+	instr> >a
+	'playsam a!+
+	mix_loadWAV 
+	dup 8 + @ a!+ 		| sample
+	swap a!+ 			| ADSR
+	16 + d@ 2 >> a!+	| len sample
+	a> 'instr> !
+	ninstr ;
+
+|---- SET INSTRUMENT
 ::smi! | n --
 	5 << 'instr +
 	@+ 'ins_vector !
 	@+ 'ins_wave !
-	@+ 
-	dup 32 >> 'ins_release !
-	$ffffffff and 'ins_attack !
-	drop
+	@+ 'ins_ADSR !
+	@ 'ins_aux !
 	;
 	
 ::fx
@@ -264,28 +261,31 @@
 ::instr
 	;
 	
+|---- PLAY INSTRUMENT
 :midi_to_freq | note -- freq
-	fix. 12 / pow2. 440.0 *. ;
+	fix. 69 - 12 / pow2. 440.0 *. ;
 
 ::smplayd | note time --
 	newvoice 0? ( 3drop ; ) | No free voices|
 	>a | Save voice index
 
-	aurate *. d.dtime d! | tiempo en muestra para terminar
-	0 d.time d!
+|	aurate *. d.dtime d!	| tiempo en muestra para terminar
+|	0 d.time d!				| tiempo de muestra actual
+	aurate *. 32 << 
+	d.dtime !
 	
 	midi_to_freq 
-	dup d.freq d!	| frecuencia
-	dt>inc 16 << 	| incremento por sample
-	d.phase d!		| phase actual
+	dup d.freq d!	| frecuencia ??para que
+	
+	dt>inc 32 << 	| incremento por sample
+	d.phase !		| phase actual+ dtphase
 
 	ins_vector q.vec !
 	ins_wave q.func !
-	dt ins_attack / w.adt w!
-	dt ins_release / w.rdt w!
-	
+	ins_ADSR w.adt ! | ADSR
+	ins_aux 1? ( dup d.lensample d! ) drop
 	1 c.state c!
-	0 d.EVol d!
+	0 w.Vol w!
 	;
 
 #nnote 1
@@ -301,7 +301,7 @@
 	'voice ( voice> <? 	| Find voice playing this note
 		dup 1+
 		pick2 =? ( drop 
-			3 swap c!
+			4 swap c!
 			drop ;	)
 		drop
 		48 + ) 2drop ;

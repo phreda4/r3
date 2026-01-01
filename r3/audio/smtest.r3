@@ -6,7 +6,7 @@
 
 ^./supermix.r3
 
-#i0 #i1 #i2
+^r3/lib/trace.r3
 
 :drawbuffer
 	$ffffff sdlcolor
@@ -31,7 +31,7 @@
 	0 over 'playn + c! 
 	smstop ;
 	
-#tk * 127
+#i0 #i1 #i2 #i3
 
 :main
 	vupdate
@@ -46,6 +46,7 @@
 	<f2> =? ( i0 smI! 1 0.25 smplayd )
 	<f3> =? ( i1 smI! 2 0.25 smplayd )
 	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd i2 smI! 0 0.6 smplayd )
+	<z> =? ( i3 smi! 0 1.0 smplayd )
 	drop 
 	smupdate
 	;
@@ -56,11 +57,10 @@
 	$fff vaini
 
 
-	0.001 0.1 'oscSin iosc 'i0 !
-	0.002 0.1 'oscSaw iosc 'i1 !
-	0.001 0.2 'bnoise inoise 'i2 !
-|	"media/snd/piano-C.mp3" isample 'i1 !
-|	'wnoise inoise 'i2 !
+	0.001 0.01 0.8 0.1 packADSR 'oscSin iosc 'i0 !
+	0.002 0.01 0.8 0.1 packADSR 'oscSaw iosc 'i1 !
+	0.001 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
+	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
 	i0 smI!
 	
 	'main SDLshow

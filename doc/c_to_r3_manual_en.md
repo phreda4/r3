@@ -54,7 +54,7 @@ a b + c *
 #var              | One cell (8 bytes), value 0
 #var 100          | One cell, value 100
 #var 10 20        | Two consecutive cells: 10, 20
-#buffer * 1000    | 1000 bytes (uninitialized buffer)
+#buffer * 1000    | 1000 bytes (zro buffer)
 ```
 
 ### Access Methods
@@ -125,10 +125,10 @@ R3 provides different operators depending on data size:
 ```r3
 | Read consecutive bytes
 #buffer * 100
-'buffer c@+    | Read byte at [0], leaves address [1]
-        c@+    | Read byte at [1], leaves address [2]
-        c@     | Read byte at [2]
-        3drop  | Clean stack
+'buffer c@+ swap   | Read byte at [0], leaves address [1]
+        c@+ swap   | Read byte at [1], leaves address [2]
+        c@  swap   | Read byte at [2]
+        4drop  | Clean stack: v1 v2 v3 adress
 ```
 
 ---
@@ -177,8 +177,8 @@ if (condition) {
 ```r3
 | R3forth - Early exit
 :myword
-    condition? ( drop branch1 ; )  | If true: execute and exit
-    branch2 ;                       | If false: continue here
+    condition? ( branch1 ; )  | If true: execute and exit
+    branch2 ;                 | If false: continue here
 ```
 
 Alternative with helper word:
@@ -188,7 +188,7 @@ Alternative with helper word:
     branch1 ;
 
 :myword
-    condition? ( drop true_branch ; )
+    condition? ( true_branch ; )
     branch2 ;
 ```
 
@@ -226,8 +226,8 @@ for (int i = 10; i > 0; i--) {
 
 ```r3
 | R3forth
-10 ( 1? 1-        | While != 0, decrement
-    dup process
+10 ( 1? 1-       | While != 0, decrement
+    process      | need dup if process consume (you choose)
 ) drop
 ```
 
@@ -260,7 +260,7 @@ while (condition()) {
 
 ```r3
 | R3forth
-( condition
+( condition 1? drop | need the word leave a 1 or 0 for while condition
     body
 ) drop
 ```
@@ -479,22 +479,22 @@ typedef struct {
 | Cell 1: value
 
 | Accessors
-:n.type     @ $ff and ;              | addr -- type
-:n.note     @ 8 >> $ff and ;         | addr -- note
-:n.value    1 << + ;                 | addr -- addr_value
+:n.type     @ $ff and ;           | addr -- type
+:n.note     @ 8 >> $ff and ;      | addr -- note
+:n.value    8 + ;                 | addr -- addr_value
 
 | Pack
-:pack_node  | type note value -- addr
-    here >r
-    rot rot 8 << or ,    | Pack type|note
-    ,                     | value
-    r> ;
+:pack_node  | type note value -- adr
+    here >a
+    rot rot 8 << or a!+    |  Pack type|note
+    a!+                     | value
+    here a> 'here ! ;       | start of node
 
 | Use
 0 60 100 pack_node 'mynode !
-mynode @ n.type    | → 0
-mynode @ n.note    | → 60
-mynode @ n.value @ | → 100
+mynode n.type    | → 0
+mynode n.note    | → 60
+mynode n.value @ | → 100
 ```
 
 ### Arrays
@@ -560,8 +560,8 @@ int safe_div(int a, int b) {
 ```r3
 | R3forth
 :safe_div | a b -- result
-    0? ( ; )    | If b=0, leave a and exit
-    / ;         | Otherwise, divide
+    0? ( nip ; )  | If b=0, leave a and exit
+    / ;           | Otherwise, divide
 ```
 
 ### Clamp/Bounds
@@ -578,8 +578,8 @@ int clamp(int val, int min, int max) {
 ```r3
 | R3forth
 :clamp | val min max -- clamped
-    rot over <? ( nip ; ) nip     | Check minimum
-    over >? ( drop ; ) nip ;       | Check maximum
+    rot over >? ( drop nip ; ) nip     | Check minimum
+    over <? ( drop ; ) nip ;       | Check maximum
 ```
 
 ### Process Array
@@ -641,9 +641,9 @@ int classify(int x) {
 ```r3
 | R3forth
 :classify | x -- class
-    dup 0 <? ( drop -1 ; )    | Negative
-    0? ( ; )                   | Zero
-    drop 1 ;                   | Positive
+    -? ( drop -1 ; )    | Negative
+    0? ( ; )            | Zero
+    drop 1 ;            | Positive
 ```
 
 ### Function with Local Variables
@@ -665,12 +665,6 @@ int calculate(int a, int b) {
 | R3forth - Option 2: With return stack
 :calculate | a b -- result
     >r 2 * r> + ;
-
-| R3forth - Option 3: With variables (less efficient)
-:calculate | a b -- result
-    'temp_b ! 2 * temp_b + ;
-#temp_b 0
-```
 
 ---
 
@@ -721,7 +715,7 @@ int main() {
 ^r3/lib/console.r3
 
 :fibonacci | n -- fib(n)
-    dup 1 <=? ( ; )              | If n≤1, return n
+    1 <=? ( ; )              | If n≤1, return n
     dup 1 - fibonacci            | fib(n-1)
     swap 2 - fibonacci           | fib(n-2)
     + ;                          | add
@@ -792,10 +786,10 @@ big_number 1000 1000000 */
 
 ```r3
 | ✗ INCORRECT (assumes +1)
-'buffer @+ @+ @+    | Reads at offsets 0, 8, 16 (not 0,1,2)
+'buffer @+ swap @+ swap @+    | Reads at offsets 0, 8, 16 (not 0,1,2)
 
 | ✓ CORRECT for consecutive bytes
-'buffer c@+ c@+ c@+  | Reads at offsets 0, 1, 2
+'buffer c@+ swap c@+ swap c@+  | Reads at offsets 0, 1, 2
 ```
 
 ---

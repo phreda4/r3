@@ -479,6 +479,7 @@ Complete reference of base dictionary and core libraries.
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
+| `here` | `--` | current free memory position |
 | `mark` | `--` | Mark current free memory position |
 | `empty` | `--` | Restore to last mark |
 | `align32` | `mem -- mem` | Align to 32-byte boundary |
@@ -554,7 +555,7 @@ Complete reference of base dictionary and core libraries.
 
 ## Library: core.r3
 
-**Operating system interface (Windows)**
+**Operating system interface (Windows-Linux)**
 
 ### Time Functions
 
@@ -621,7 +622,6 @@ Complete reference of base dictionary and core libraries.
 |------|--------------|-------------|
 | `sys` | `"" --` | Execute program and wait |
 | `sysnew` | `"" --` | Execute in new console |
-| `sysdebug` | `"" --` | Execute with debugger |
 
 ---
 
@@ -636,8 +636,8 @@ a b + c *       | Result: (a+b)*c
 
 ### Conditionals
 ```r3
-x 5 >? ( "Greater" print ) drop
-x 0? ( "Zero" print )
+x 5 >? ( "Greater" print )
+  0? ( "Zero" print )
   +? ( "Positive" print )
 drop
 ```
@@ -660,7 +660,7 @@ drop
 ```r3
 | Store and fetch
 100 'variable !
-variable @
+variable        | same 'variable @ 
 
 | Array traversal
 'array >a
@@ -672,8 +672,8 @@ variable @
 ### String Operations
 ```r3
 "hello" "world" strcpy
-"prefix" adr =pre
-"file.txt" ".txt" =pos
+"prefix" adr =pre 1? ( "yes" .print )
+"file.txt" ".txt" =pos 1? ( "yes" .print )
 ```
 
 ### Fixed-Point Math
@@ -687,14 +687,14 @@ variable @
 ```r3
 time msec rerand    | Initialize
 100 randmax         | 0-99
-10.0 randmax        | 0.0-9.999...
--5.0 5.0 randminmax | -5.0 to 5.0
+10.0 randmax        | 0.0-10.0)
+-5.0 5.0 randminmax | -5.0 to 5.0)
 ```
 
 ### File Operations
 ```r3
 | Load file
-'buffer "data.txt" load
+'buffer "data.txt" load | tos = end on 'buffer adr
 
 | Save file
 'buffer 1024 "output.txt" save

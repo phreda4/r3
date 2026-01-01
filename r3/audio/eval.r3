@@ -434,8 +434,7 @@ tpop
 	
 :eval
 	'tstack 'tstack> !
-	0 't0 ! 
-	$ffff 't1 !
+	0 't0 ! $ffff 't1 !
 	0 'cursor !
 	0 'idx !
 	0 'node !
@@ -461,7 +460,9 @@ tpop
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
 |		dup 12 >> $ff and "lvl:%d " .print
-		12 >> $fff and "seq:%d " .print .cr
+		dup 12 >> $fff and "seq:%d " .print 
+		24 >> $ff and "len:%d " .print
+		.cr
 		) 2drop ;
 
 
@@ -510,11 +511,13 @@ tpop
 	dup .println 
 	markseq
 	
-	nseq "seq:%d" .println
+	nseq "seq:%d " .print
 	list> 'list - 2 >> "nlist:%d" .println
+	compile
+	
 	printlist .cr
 	
-	compile
+	
 	printseq
 	|eval
 	;
