@@ -1,25 +1,12 @@
 | superMix
 | PHREDA 2025
 |-------------------
-| INSTRUMENTS
-| ::isample
-| ::iosc
-| ::imix
-
-| VOICES
-| ::smplay
-| ::smstop
-| 
-| RUN
-| ::sminit
-| ::smupdate
-| ::smreset
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
 ^./noise.r3
 
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
 
 #master_volume 1.0
 #dt
@@ -35,16 +22,15 @@
 :c.state	a> ;		| state
 :c.id		a> 1 + ;	| id
 :w.Vol		a> 2 + ;	| Volumen (/2)
-:d.freq		a> 4 + ;
-:d.lensample a> 4 + ;
+:d.freq		a> 4 + ;	| inc freq
 
 :w.Adt		a> 8 + ;	| ADSR
 :w.Ddt		a> 10 + ;	| 
 :w.Sdt		a> 12 + ;	| Volumen /2
 :w.Rdt		a> 14 + ;	| 
 
-:d.phase	a> 16 + ;	| phase+dt...
-:d.phasedt	a> 20 + ;
+:d.lensam	a> 16 + ;	| 
+:d.fresam	a> 20 + ;
 
 :d.time		a> 24 + ;	| time+dt
 :d.dtime	a> 28 + ;
@@ -86,7 +72,6 @@
 		3 c.state c!
 		; )
 	3 =? ( drop 
-		d.time d@ d.dtime d@ >? ( 4 c.state c! ) drop
 		w.vol w@ 2* ; ) |sustain
 	drop | release
 	w.vol w@ 2* w.Rdt w@ -
@@ -96,33 +81,35 @@
 :playosc | vol voice -- vol voice
 	c.state c@ 0? ( delvoicea ; ) 
 	envelADSR dup 2/ w.vol w! | volumen por envelope	
-	d.phase dup @ 
-	dup 32 >> $ffff and + dup rot d! $ffff and 
+	
+	d.time d@ 
+	d.dtime d@ >? ( 4 c.state c! )
+	d.freq d@ *. $ffff and
 	q.func @ ex |oscSin | ciclo
 	
 	*. ; | senial * envelope
 
 :playnoise
 	c.state c@ 0? ( delvoicea ; ) 
-
 	envelADSR dup 2/ w.vol w! | volumen por envelope	
+	d.time d@ 
+	d.dtime d@ >? ( 4 c.state c! )
+	drop
 	q.func @ ex | noise sin ciclo |	fbrown 
-	
 	*. ; | senial * envelope
 
 :playsam
 	c.state c@ 0? ( delvoicea ; ) | state=0
-	
 	envelADSR dup 2/ w.vol w! | volumen por envelope	
-	
-	d.phase dup @
-	1+ dup rot d!
-	$ffffffff and
-	d.lensample d@ >=? ( drop 0 c.state c! 0 ; )
+	d.time d@ 
+	d.dtime d@ >? ( 4 c.state c! )
+	d.fresam d@ *
+	d.lensam d@ 16 << >=? ( 2drop 0 c.state c! 0 ; )
+	| interpolacion falta
+	16 >>
 	2 << q.func @ + w@ 2* |2.0 *. | w->0--1.0
-	*. ;
 	
-
+	*. ;
 
 |------------------- RUN
 #aurate 44100 |48000 |
@@ -170,7 +157,7 @@
 		db!+
 		) drop 
 	;	
-		
+
 
 ::smupdate | Queue audio
 	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
@@ -178,19 +165,9 @@
 	audevice 'outbuffer 8192 SDL_QueueAudio 
 	;
 	
-|------------------- VOICES
-| INSTRUMENTO
-| TIEMPO(NOW)
-| c ATACK-RELEASE
-| c VOL c PAN
-| c FX
-| TONO (SAMPLE[shift]-OSC[gen])
-| DURACION
 
 |------------------- INSTRUMENTS
-| OSC/SAMPLE
-| AR (Attack-Release)
-| NOTAS?
+
 #instr * $fff
 #instr> 'instr
 
@@ -258,32 +235,29 @@
 	
 ::fx
 ::control
-::instr
-	;
 	
 |---- PLAY INSTRUMENT
 :midi_to_freq | note -- freq
 	fix. 69 - 12 / pow2. 440.0 *. ;
 
+|inc_sample=(fr_deseada<<32)/fr_base
+|inc_osc=(fr_desada<<32>/aurate
+
 ::smplayd | note time --
 	newvoice 0? ( 3drop ; ) | No free voices|
 	>a | Save voice index
 
-|	aurate *. d.dtime d!	| tiempo en muestra para terminar
-|	0 d.time d!				| tiempo de muestra actual
-	aurate *. 32 << 
-	d.dtime !
+	aurate *. 32 << d.time !
 	
-	midi_to_freq 
-	dup d.freq d!	| frecuencia ??para que
-	
-	dt>inc 32 << 	| incremento por sample
-	d.phase !		| phase actual+ dtphase
+	midi_to_freq 16 <<
+	dup 440.0 / d.fresam d! | para sample base 440
+	aurate / d.freq d!	| para oscilador
 
 	ins_vector q.vec !
 	ins_wave q.func !
 	ins_ADSR w.adt ! | ADSR
-	ins_aux 1? ( dup d.lensample d! ) drop
+		ins_aux d.lensam d!
+	
 	1 c.state c!
 	0 w.Vol w!
 	;
