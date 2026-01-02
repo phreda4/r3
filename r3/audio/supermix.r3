@@ -58,7 +58,28 @@
 ::oscPul2	0.25 >? ( -1.0 nip ; ) 1.0 nip ; 
 ::oscTri	$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 ::oscSin	sin ;
+::oscHSin	sin abs ;
+::oscSin2	sin dup *. ;
+::oscSin3	sin dup dup *. *. ;
+::oscSinF	2* 1.0 - dup *. 2* 1.0 - ;
+::oscSawRev	1.0 swap - 2* 1.0 - ;
+::oscTrap	0.25 <? ( 2 << ) 0.75 >? ( 2 << 4.0 - ) 2* 1.0 - ;
+::oscParab	dup *. 2* 1.0 - ;
 
+::oscFakeSuperSaw | phase -- v
+	dup 2* 1.0 - swap dup *. 2* 1.0 - + 2/ ;
+	
+::oscSuperSaw2P | phase -- v
+	2* 1.0 - dup 1.01 *. 2* 1.0 - + 2/ ;
+
+::oscSuperSaw3P | phase -- v
+	dup 2* 1.0 -
+	swap dup 0.99 *. 2* 1.0 - +
+	swap 1.01 *. 2* 1.0 - +
+	0.333 *. ;
+
+
+	
 :envelADSR | voice -- mix
 	1 d.time d+!
 	1 =? ( drop | attack
@@ -120,7 +141,7 @@
 	2* *. ; |2.0 *. | w->0--1.0
 
 |------------------- RUN
-#aurate 44100 |48000 |
+#aurate 48000 |44100 |
 #audevice 
 #auspec * 32
 
@@ -241,6 +262,9 @@
 	@ 'ins_aux !
 	;
 	
+::smASDR! | v i --
+	5 << 'instr + 16 + ! ;
+	
 ::fx
 ::control
 	
@@ -287,6 +311,4 @@
 			drop ;	)
 		drop
 		48 + ) 2drop ;
-
-
 	

@@ -233,8 +233,8 @@ EMPTY                    | Release
 **Clamp:**
 ```r3
 :clamp | val min max -- clamped
-    rot over <? ( nip ; ) nip
-    over >? ( drop ; ) nip ;
+    rot over >? ( drop nip ; ) nip     | Check minimum
+    over <? ( drop ; ) nip ;       | Check maximum
 ```
 
 **Switch/dispatch:**
