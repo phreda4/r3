@@ -45,10 +45,11 @@
 	<f1> =? ( 0 0.25 smplayd )
 	<f2> =? ( i0 smI! 1 0.25 smplayd )
 	<f3> =? ( i1 smI! 1 0.25 smplayd )
-	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd i2 smI! 0 0.6 smplayd )
+	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
 	<z> =? ( i3 smi! 0 1.0 smplayd )
 	<x> =? ( i3 smi! 1 1.0 smplayd )
 	<c> =? ( i3 smi! 2 1.0 smplayd )
+	<v> =? ( i2 smI! 2 1.0 smplayd )
 	drop 
 	smupdate
 	;
@@ -61,7 +62,7 @@
 
 	0.002 0.05 0.7 0.1 packADSR 'oscSinF iosc 'i0 !
 	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw2P iosc 'i1 !
-	0.001 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
+	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
 	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
 	i0 smI!
 	

@@ -18,7 +18,7 @@
 	'pink 
 	@+ dup 32 >> + dup 16 >> + swap
 	@ dup 32 >> + dup 16 >> + +
-	3 >> $ffff and $7fff - 2* 
+	3 >> $1fff and $fff - 2*
 	1 'pinkc +!
 	;
 
