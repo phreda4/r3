@@ -106,7 +106,7 @@
 :coma
 	|+item 
 	aseq ]seq
-	dup @ $8000000000 or swap ! ;
+	dup @ $4000000000 or swap ! ; | bit de polyfonia
 	
 :token
 |	$28 =? ( drop 4 uplvl ; ) |$28 $29 ( )m
@@ -129,7 +129,7 @@
 	dup 'str$ !
 	'list 'list> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
 	aseq dup ]seqini! push
-	+item
+	|+item
 	|trimall	isD? 0? ( 1 uplvl ) drop
 	
 	( trimall 1? token ) 2drop 
@@ -176,7 +176,7 @@
 :parsenote | str -- note
 	c@+
 	$df and | uppcase+unsigned
-	$41 <? ( -1 nip ; )	$47 >? ( -1 nip ; ) | A..G
+	$41 <? ( 2drop -1 ; )	$47 >? ( 2drop -1 ; ) | A..G
 	$41 - 'semitone + c@
 	over c@ | adr note char
 	$23 =? ( rot 1+ rot 1+ rot ) | #
@@ -216,24 +216,17 @@
 :t.vol		16 >> $ff and ;
 :t.var		24 >> $ff and ;
 
-:t.prob		32 >> $ff and 
-:t.scale	40 >> $fff and ; 
-:t.weigth	52 >> $fff and ;
+:t.prob		32 >> $ff and ;
+:t.scale	40 >> $fff and 8 << ; 
+:t.weigth	52 >> $fff and 8 << ;
 
-| TOKEN
-|type(4)	
-|midi(8)	|4
-|prob(8)	|12
-|rep(6)		|20
-|scale(16)	|26
-|weigt(16)	|42
 :.token | v -- v
 	dup t.type "%d)" .print
 	dup t.repeat "!%d " .print
 	dup t.note "n:%d "  .print
 	dup t.prob "?%d " .print
-	dup t.scale 8 << "*/%f " .print
-	dup t.weigth 8 <<  "@%f " .print
+	dup t.scale "*/%f " .print
+	dup t.weigth "@%f " .print
 	
 	dup t.type 0? ( drop ; ) drop
 	dup t.nk "[%d " .print
@@ -254,51 +247,40 @@
 
 :vars!or | v -- v
 	repl $1f and 3 << or
-	
-	prob $ff 16 *>> $ff and 23 << or
-	mult divi /. 8 >> $fff and 40 << or | scale
+	prob $ff 16 *>> $ff and 32 << or
+	mult divi 0? ( 1+ ) /. |<<< FIX
+	8 >> $fff and 40 << or | scale
 	weig 8 >> $fff and 56 << or
 	;
 
-| n end now str -- n end now 
-|vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 :,note 
-	| type=0
 	parsenote $ff and 8 << | note
 	vars!or
 	,tok 
 	;
 
-:sub | n end now str -- n end now 
-	drop
-	over ]list@ $fff and str$ + 
-	|dup "%s" .println
-	1+ parsemod 
-	
+:sub | n end now -- n end now 
+	over ]list@ $fff and str$ + 1+ parsemod 
+	|drop
 |	pick2 ]list@ 24 >> $ff and 4 <<
 	;
 
-|$5b =? ( drop 1 uplvl ; ) |$5b $5d [ ]m SEQ
-|$3c =? ( drop 2 uplvl ; ) |$3c $3e < >m ALT
-|$7b =? ( drop 3 uplvl ; ) |$7b $7d { }m POLY
 	
 :,seq | [] 
 	sub	
-	1 or vars!or	
+	1 vars!or 
 	,tok ;
 	
 :,alt | <>
 	sub 
-	2 or vars!or	
+	2 vars!or
 	,tok ;
 	
 :,par | {}
 	sub 
-	3 or vars!or	
+	3 vars!or
 	,tok ;
 	
-|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
-
 |------------------------------------
 :pp | v -- 
 	$fff and str$ + 
@@ -309,30 +291,41 @@
 	;
 	
 :token? | n end now -- n end now
-	dup ]list@
+	dup ]list@ 
 	dup 12 >> $fff and | n end now L ln
 	pick4 <>? ( 2drop ; ) drop | no this secuence
-	$fff and str$ + dup c@
-	$3c =? ( drop ,alt ; ) |$3c $3e < >m
+	$fff and str$ + 
+	dup c@
+	$3c =? ( 2drop ,alt ; ) |$3c $3e < >m
 	$3e =? ( 2drop ; )
-	$5b =? ( drop ,seq ; ) |$5b $5d [ ]m
+	$5b =? ( 2drop ,seq ; ) |$5b $5d [ ]m
 	$5d =? ( 2drop ; )
-	$7b =? ( drop ,par ; ) |$7b $7d { }m
+	$7b =? ( 2drop ,par ; ) |$7b $7d { }m
 	$7d =? ( 2drop ; )
-	drop 
-	,note ;
+	drop ,note ;
 	
 :compseq | n -- n
-	toknro 'tokenow !
-	toknro "(ahora:%d)" .print
+	|toknro 'tokenow ! toknro "(>>:%d)" .print
 	dup ]seq @
 	dup 12 >> $fff and
 	swap $fff and | n end start
-	( over <? token? 1+ ) 2drop
+	( over <? 
+		dup "(%d)" .print
+		token? 
+		1+ ) 2drop ;
+
+
+| type(4)|cnt(12)|end(12)|start(12)
+
+:PRINTSEC
+	dup ]seq @ 
+	dup 40 >> $ff and "t:%h " .print
+	dup 24 >> $fff and "%d " .print
+	dup 12 >> $fff and "[ %h " .print
+	$fff and "%h ]" .print
+	.cr
 	;
-
-| type|cnt|end|start
-
+	
 :compile
 	'tokens 'tokens> !
 	
@@ -340,17 +333,11 @@
 |	isD? 0? ( 1 ,tok ) drop | a b --> [a b]
 	
 	0 ( nseq <=?
-
-	dup ]seq @ 
-	dup 40 >> $ff and "t:%h " .print
-	dup 24 >> $fff and "%d " .print
-	dup 12 >> $fff and "[ %h " .print
-	$fff and "%h ]" .print
-	.cr
-		
-		compseq
+		dup "%d) " .print
+		compseq .cr
 		1+ ) drop ;
-	
+		
+|------------------------------------
 | top of tstack
 #t0 	
 #t1 
@@ -385,14 +372,12 @@
 :tcur+ | val
 	$ffff and 32 << tstack> 8 - +! ;
 	
-
 |------------------------------------
-
-	
 :note | v --
 	dup t.note "n:%d " .print
-	t0 "s:%f " .print
-	t.scale t1 *. "d:%f " .print
+	t0 "(%f " .print
+	t.scale t1 *. 
+	" %f )" .print
 	.cr
 	tpop
 	;
@@ -415,9 +400,12 @@
 |	pick2 totalw /.
 	dup tcur+
 	't1 !
+	
 	0 'cursor !
 	0 'idx !
-	tpush ;
+	|tpush 
+	tpop
+	;
 	
 | (f->dur * n->mod.scale) * (n)->mod.weight / n->total_weight);
 	 
@@ -438,11 +426,11 @@ tpop
 #tlist NOTE SEC ALT PAR 0 0 0 0 0 0 0 0 0 0 0 0
 
 :calcnodo 
-	node 4 << 'tokens + @
+	node 3 << 'tokens + @ |dup "%h" .println
 	idx 0? (
 		over t.prob $ff randmax <? ( 2drop tpop ; ) drop
 		) drop
-	dup $f and 3 << 'tlist + @ ex ;
+	dup $3 and 3 << 'tlist + @ ex ;
 	
 :eval
 	'tstack 'tstack> !
@@ -451,10 +439,37 @@ tpop
 	0 'idx !
 	0 'node !
 	tpush
-	
 	( 'tstack tstack> - 1? drop
 		calcnodo
 		) drop ;
+
+|------------------------------------------
+#mus1
+|"a b [a b] c"
+"[ a b [c d] e ]"
+|"b!2"
+|"[a b? c]*2"
+|"a b <c d e> [a c] [a b <a c>]"
+"< [[g#2 g#3]*2 [e2 e3]*2],[a b c]*2>"
+"<
+[e5 [b4 c5] d5 [c5 b4]]
+[a4 [a4 c5] e5 [d5 c5]]
+[b4 [~ c5] d5 e5]
+[c5 a4 a4 ~]
+[[~ d5] [~ f5] a5 [g5 f5]]
+[e5 [~ c5] e5 [d5 c5]]
+[b4 [b4 c5] d5 e5]
+[c5 a4 a4 ~]
+,
+[[e2 e3]*4]
+[[a2 a3]*4]
+[[g#2 g#3]*2 [e2 e3]*2]
+[a2 a3 a2 a3 a2 a3 b1 c2]
+[[d2 d3]*4]
+[[c2 c3]*4]
+[[b1 b2]*2 [e2 e3]*2]
+[[a1 a2]*4]
+>"
 
 |------------------------------------
 :pp | v -- 
@@ -496,35 +511,10 @@ tpop
 	'tokens ( tokens> <?
 		@+ 
 		.token
-		drop .cr |"%h " .print 
+		dup "| %h " .print 
+		drop .cr |
 		) drop ;
 		
-|------------------------------------------
-#mus1
-"a"
-|"b!2"
-|"[a b? c]*2"
-|"a b <c d e> [a c] [a b <a c>]"
-"< [[g#2 g#3]*2 [e2 e3]*2],[a b c]*2>"
-"<
-[e5 [b4 c5] d5 [c5 b4]]
-[a4 [a4 c5] e5 [d5 c5]]
-[b4 [~ c5] d5 e5]
-[c5 a4 a4 ~]
-[[~ d5] [~ f5] a5 [g5 f5]]
-[e5 [~ c5] e5 [d5 c5]]
-[b4 [b4 c5] d5 e5]
-[c5 a4 a4 ~]
-,
-[[e2 e3]*4]
-[[a2 a3]*4]
-[[g#2 g#3]*2 [e2 e3]*2]
-[a2 a3 a2 a3 a2 a3 b1 c2]
-[[d2 d3]*4]
-[[c2 c3]*4]
-[[b1 b2]*2 [e2 e3]*2]
-[[a1 a2]*4]
->"
 
 :testnote
 	parsenote "%d:" .print .ppw .cr ;
@@ -535,27 +525,22 @@ tpop
 :main
 	getch drop
 	.cls
-	"parse" .println
-	
-	'mus1 
-|	count "len:%d" .println 
-	dup .println 
+	"parse: " .print
+	'mus1 dup .println 
 	markseq .cr
 	
 	nseq "seq:%d " .print list> 'list - 2 >> "nlist:%d" .println .cr
-	
+	"----compile" .println
 	compile
-	
+	"----list" .println
 	printlist .cr
+	"----seq" .println
 	printseq .cr
+	"----tokens" .println
 	printoks
 	
-	
-|	"a" testnote
-|	"c:1!2/2?.2" testnote
-|	"]!2/2?.2" testseq
-
-	|eval
+	"---------------------eval" .println
+	eval
 	;
 
 
