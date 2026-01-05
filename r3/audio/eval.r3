@@ -138,7 +138,7 @@
 :pmod
 	$2a =? ( drop str>fnro 'mult ! ; )		|* 
 	$2f =? ( drop str>fnro 'divi ! ; )		|/ 
-	$21 =? ( drop str>fnro int. 'repl ! ; )	|! <<
+	$21 =? ( drop str>fnro int. 'repl ! ; )	|! 
 	$40 =? ( drop str>fnro 'weig ! ; )		|@
 	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
 	$3a =? ( drop str>fnro int. 'vari ! ; )	| : Variante/índice
@@ -199,11 +199,29 @@
 | TOKEN
 |type (3)
 |repeat (5)
-|note(8)	|nk:nrokids
-|vol(8)var(8)|fk:firstkid
+|note(8)	|nk:nrokids (in mem)
+|vol(8)var(8)|fk:firstkid (in mem)
 |mod->prob(8)
 |mod->scale(12)
 |mod->weight(12)
+
+#tokens * $fff
+#tokens> 'tokens
+#extok * $fff
+
+#tokenow
+
+:]token@ | n -- v
+	3 << 'tokens + @ ;
+
+:]extok | n -- v
+	3 << 'extok + ;
+
+:,tok
+	tokens> !+ 'tokens> ! ;
+
+:tok>ext | tok -- ext
+	'tokens - 'extok + ;
 
 :t.type		$3 and ;
 :t.repeat	3 >> $1f and ;
@@ -232,17 +250,7 @@
 	dup t.fk "%d]" .print
 	;
 	
-#tokens * $fff
-#tokens> 'tokens
-#tokensw * $fff
-#tokenow
 
-:]token@ | n -- v
-	3 << 'tokens + @ ;
-
-:,tok
-	tokens> !+ 'tokens> ! ;
-	
 :toknro
 	tokens> 'tokens - 3 >> ;
 
@@ -254,13 +262,15 @@
 	prob $ff 16 *>> $ff and 32 << or
 	mult divi 0? ( 1+ ) /. |<<< FIX
 	8 >> $fff and 40 << or | scale
-	weig 8 >> $fff and 56 << or
+	weig 8 >> $fff and 52 << or
 	;
 
 :,note 
 	parsenote $ff and 8 << | note
 	vars!or
 	,tok 
+	repl weig * 
+	tokens> 8 - tok>ext !
 	;
 
 :sub | n end now -- n end now 
@@ -272,13 +282,16 @@
 	;
 
 :,seq | [] 
-	sub	1 or ,tok ;
+	sub	1 or ,tok
+	0 tokens> 8 - tok>ext ! ;
 	
 :,alt | <>
-	sub 2 or ,tok ;
+	sub 2 or ,tok 
+	0 tokens> 8 - tok>ext ! ;
 	
 :,par | {}
-	sub 3 or ,tok ;
+	sub 3 or ,tok 
+	0 tokens> 8 - tok>ext ! ;
 	
 :,endlvl
 	2drop -$100 tokenow +! 
@@ -329,6 +342,29 @@
 		compseq 
 |		.cr
 		1+ ) drop ;
+
+| calc:
+| real cant| sum weigth 
+
+:sumakids
+	drop
+	dup @ t.nk | kids numbers
+	over 8 + tok>ext >a
+	0 >b
+	( 1? 1-
+		a@+ b+ 
+		) drop
+	b> "%f " .print
+	.cr
+	;
+	
+:extinfo
+	tokens>
+	( 8 - 'tokens >=?
+		dup @ $3 and
+		1? ( sumakids )
+		drop
+		) drop ;
 		
 |------------------------------------
 | top of tstack
@@ -400,7 +436,9 @@
 	1 'idk +! tstore
 	|---- new node
 	dup t.fk idk + 1- 'node ! 
+	
 	0 't0 ! 
+	
 	t1 over t.scale *. 
 	over t.weigth *.
 |	pick2 totalw /.
@@ -446,10 +484,10 @@
 
 |------------------------------------------
 #mus1
-|"a b c a" 
-"[a b c a]" 
+"a b c a" 
+|"[a b c a]" 
 |"a b [c d] e"
-"[ a b [c d] e ]"
+|"[ a b [c d] e ]"
 |"b!2"
 |"[a b? c]*2"
 |"a b <c d e> [a c] [a b <a c>]"
@@ -517,7 +555,9 @@
 		swap dup "%d: " .print 1+ swap
 		@+ 	.token
 		dup "| %h " .print 
-		drop .cr 
+		drop 
+		dup 8 - tok>ext @ "| %h" .print
+		.cr 
 		) 2drop ;
 		
 
@@ -543,7 +583,7 @@
 	printseq .cr
 	"----tokens" .println
 	printoks
-	
+	extinfo
 	"---------------------eval" .println
 	eval
 	;
