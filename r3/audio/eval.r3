@@ -207,6 +207,9 @@
 
 #tokens * $fff
 #tokens> 'tokens
+
+| EXT
+| (seq=acc) (nodo=inc)
 #extok * $fff
 
 #tokenow
@@ -223,7 +226,7 @@
 :tok>ext | tok -- ext
 	'tokens - 'extok + ;
 
-:t.type		$3 and ;
+:t.type		$7 and ;
 :t.repeat	3 >> $1f and ;
 
 :t.nk
@@ -237,15 +240,21 @@
 :t.scale	40 >> $fff and 8 << ; 
 :t.weigth	52 >> $fff and 8 << ;
 
+:n.acc@ | n -- v
+	]extok @ 24 >> $ffffff and  ;
+	
+:n.wsum@ | n -- v
+	]extok @ $ffffff and ;
+	
 :.token | v -- v
-	dup t.type "%d)" .print
+	dup t.type "%b " .print
 	dup t.repeat "!%d " .print
 	dup t.note "n:%d "  .print
 	dup t.prob "?%d " .print
 	dup t.scale "*/%f " .print
 	dup t.weigth "@%f " .print
 	
-	dup t.type 0? ( drop ; ) drop
+	dup t.type %100 nand? ( drop ; ) drop | nodes
 	dup t.nk "[%d " .print
 	dup t.fk "%d]" .print
 	;
@@ -265,37 +274,38 @@
 	weig 8 >> $fff and 52 << or
 	;
 
+:,tokx
+	0 tokens> tok>ext ! 
+	,tok ;
+	
 :,note 
 	parsenote $ff and 8 << | note
 	vars!or
-	,tok 
-	repl weig * 
-	tokens> 8 - tok>ext !
+	,tokx
 	;
 
 :sub | n end now -- n end now 
-	over 1- ]list@ 
-	$fff and str$ + 1+ parsemod | mod
+	over 2 - ]list@ 
+	$fff and str$ + 
+	|dup "?? %w" .println
+	1+ parsemod | mod
+	
 	dup 1+ ]list@ 12 >> $fff and | seq
 	16 <<
 	vars!or 
 	;
 
 :,seq | [] 
-	sub	1 or ,tok
-	0 tokens> 8 - tok>ext ! ;
+	sub	1 or ,tokx ;
 	
 :,alt | <>
-	sub 2 or ,tok 
-	0 tokens> 8 - tok>ext ! ;
+	sub 2 or ,tokx ;
 	
 :,par | {}
-	sub 3 or ,tok 
-	0 tokens> 8 - tok>ext ! ;
+	sub 3 or ,tokx ;
 	
 :,endlvl
-	2drop -$100 tokenow +! 
-	;
+	2drop -$100 tokenow +! ;
 
 |------------------------------------
 :token? | n end now -- n end now
@@ -321,7 +331,7 @@
 	tokens> 'tokenow ! 
 	tokens> 'tokens - 3 >> 1+ 16 << | token lvl
 	vars!or
-	1 or | []
+	%101 or | []>>
 	,tok | falta mods
 	dup ]seq @
 	dup 12 >> $fff and
@@ -346,25 +356,54 @@
 | calc:
 | real cant| sum weigth 
 
-:sumakids
+:sumkids | token tipo -- token tipo
 	drop
 	dup @ t.nk | kids numbers
 	over 8 + tok>ext >a
-	0 >b
-	( 1? 1-
-		a@+ b+ 
-		) drop
-	b> "%f " .print
-	.cr
+	0 >b ( 1? 1- a@+ 
+		b+ ) drop | sum
+	b> | suma todos
+|	dup "%f " .print .cr
+	over tok>ext ! | store sum
 	;
 	
 :extinfo
 	tokens>
 	( 8 - 'tokens >=?
-		dup @ $3 and
-		1? ( sumakids )
+		dup @ $7 and
+		%101 =? ( sumkids )
 		drop
 		) drop ;
+
+|	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
+|	dup t.weigth node n.wsum@ /. t1 *. 't1 !
+
+|	node n.wacc@ t1 *. 't0 +! 
+|	node n.wsum@ t1 *. 't1 !
+	
+	
+:sumkids | nod v -- nod v
+	dup t.nk 
+	pick2 8 + >a
+	0 >b 
+	( 1? 1-
+		a@+ dup t.repeat swap t.weigth * b+ 
+		) drop
+|	b> "%f " .print .cr | sum all w*repeat
+	b> 
+	pick2 tok>ext !
+	
+	dup t.nk 
+	pick2 8 + >a
+	( 1? 1-
+		a@+ t.weigth b> /. a> 8 - tok>ext ! | w sum / (no repeat)
+		) drop
+	;
+	
+:extinfo
+	'tokens ( tokens> <?
+		dup @ %100 and? ( sumkids ) drop
+		8 + ) drop ;
 		
 |------------------------------------
 | top of tstack
@@ -427,6 +466,10 @@
 	
 #totalw
 	
+|Node* c = n->kids[f->idx++];
+|float cdur = f->dur * (c->mod.weight / wsum);
+|float cstart = f->start + f->dur * (acc / wsum);
+
 :sec | value -- ; []
 	|dup "%h |" .print
 	rep over t.repeat |2dup "tr:%d sr:%d" .println
@@ -434,16 +477,15 @@
 	idk over t.nk |2dup "tk:%d sk:%d" .println
 	>=? ( 2drop 0 'idk ! 1 'rep +! tstore ; ) drop
 	1 'idk +! tstore
+	
 	|---- new node
-	dup t.fk idk + 1- 'node ! 
-	
-	0 't0 ! 
-	
-	t1 over t.scale *. 
-	over t.weigth *.
-|	pick2 totalw /.
-	't1 !
-	drop
+	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
+	dup t.weigth node n.wsum@ /. t1 *. 't1 !
+
+|	node n.wacc@ t1 *. 't0 +! 
+|	node n.wsum@ t1 *. 't1 !
+
+	t.fk idk + 1- 'node ! 
 	0 'rep ! 0 'idk ! | cont rep, cond childs	
 	tpush
 	;
@@ -484,9 +526,9 @@
 
 |------------------------------------------
 #mus1
-"a b c a" 
+|"a b c a" 
 |"[a b c a]" 
-|"a b [c d] e"
+"a? b@.5 [c d]?!3 e!2"
 |"[ a b [c d] e ]"
 |"b!2"
 |"[a b? c]*2"
@@ -550,13 +592,18 @@
 		.cr
 		1+ ) drop ;
 
+:.ext
+	;
+	
 :printoks
 	0 'tokens ( tokens> <?
 		swap dup "%d: " .print 1+ swap
 		@+ 	.token
 		dup "| %h " .print 
 		drop 
-		dup 8 - tok>ext @ "| %h" .print
+		dup 8 - tok>ext @ 
+|		dup .ext
+		"| %h" .print
 		.cr 
 		) 2drop ;
 		
@@ -582,10 +629,11 @@
 	"----seq" .println
 	printseq .cr
 	"----tokens" .println
-	printoks
 	extinfo
+	printoks
+	
 	"---------------------eval" .println
-	eval
+	|eval
 	;
 
 
