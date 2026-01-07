@@ -254,7 +254,7 @@
 	dup t.scale "*/%f " .print
 	dup t.weigth "@%f " .print
 	
-	dup t.type %100 nand? ( drop ; ) drop | nodes
+	dup t.type $3 and 0? ( drop ; ) drop | nodes
 	dup t.nk "[%d " .print
 	dup t.fk "%d]" .print
 	;
@@ -457,7 +457,8 @@
 :note | v --
 	dup t.note "n:%d " .print
 	t0 "(%f " .print
-	dup t.scale t1 *. 
+	|dup t.scale t1 *.  | scale en nodo
+	t1 
 	" %f )" .print
 	drop
 	.cr
@@ -482,10 +483,10 @@
 	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
 	dup t.weigth node n.wsum@ /. t1 *. 't1 !
 
+	t.fk idk + 1- 'node ! 
 |	node n.wacc@ t1 *. 't0 +! 
 |	node n.wsum@ t1 *. 't1 !
-
-	t.fk idk + 1- 'node ! 
+	
 	0 'rep ! 0 'idk ! | cont rep, cond childs	
 	tpush
 	;
@@ -528,7 +529,7 @@
 #mus1
 |"a b c a" 
 |"[a b c a]" 
-"a? b@.5 [c d]?!3 e!2"
+"a b [c d] e"
 |"[ a b [c d] e ]"
 |"b!2"
 |"[a b? c]*2"
@@ -602,8 +603,9 @@
 		dup "| %h " .print 
 		drop 
 		dup 8 - tok>ext @ 
-|		dup .ext
-		"| %h" .print
+		dup $ffffffff and "| %f" .print
+		32 >> $ffffffff and " %f" .print
+		
 		.cr 
 		) 2drop ;
 		
@@ -633,7 +635,7 @@
 	printoks
 	
 	"---------------------eval" .println
-	|eval
+	eval
 	;
 
 
