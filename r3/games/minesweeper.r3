@@ -39,17 +39,19 @@
 	8 + sprites ssprite ;
 	
 :drawmapr
-	1 ( w <=? 1 ( h <=? drawb 1 + ) drop 1 + ) drop ;
+	1 ( w <=? 1 ( h <=? drawb 1+ ) drop 1+ ) drop ;
 
 :win?
 	2dup ]map c@
-	23 =? ( 1 'sumw +! )
+	0? ( 2 + ) | empty open
+	2 and? ( 1 'sumw +! )
 	drop ;
 	
 :checkwin | -- 
 	0 'sumw !
-	1 ( w <=? 1 ( h <=? win? 1 + ) drop 1 + ) drop 
-	sumw bombs <>? ( drop ; ) drop
+	1 ( w <=? 1 ( h <=? win? 1+ ) drop 1+ ) drop 
+	w h * bombs - sumw 
+	<>? ( drop ; ) drop
 	1 'sb ! "You WiN !" 'state strcpy
 	;
 	
@@ -59,15 +61,15 @@
 		-1 ( 1 <=? 
 			pick3 pick2 + pick3 pick2 +
 			]map c@ $1 and a+
-			1 + ) drop
-		1 + ) drop 
+			1+ ) drop
+		1+ ) drop 
 	a> ;
 	
 :marca | x y --
 	]map dup c@ 
 	20 <? ( 2drop ; )
 	$2 xor swap c!
-	checkwin ;
+	;
 	
 |----------- recursive (overflow if big)
 :clearcell | x y --
@@ -76,10 +78,10 @@
 		1 << -rot ]map c!
 		; ) 
 	pick2 pick2 ]map c!
-	over 1 - 1 max over clearcell 
-	over 1 + w min over clearcell
-	over over 1 - 1 max clearcell
-	1 + h min clearcell ;
+	over 1- 1 max over clearcell 
+	over 1+ w min over clearcell
+	over over 1- 1 max clearcell
+	1+ h min clearcell ;
 
 |----------- list
 #last>
@@ -91,10 +93,10 @@
 	;
 	
 :markcell | x y --
-	over 1 - 1 max over addcell
-	over 1 + w min over addcell
-	over over 1 - 1 max addcell
-	1 + h min addcell ;
+	over 1- 1 max over addcell
+	over 1+ w min over addcell
+	over over 1- 1 max addcell
+	1+ h min addcell ;
 	
 :clearcell | x y --
 	here 'last> !
@@ -102,7 +104,8 @@
 	here ( last> <? 
 		c@+ swap c@+ rot 
 		markcell
-		) drop ;
+		) drop 
+	checkwin ;
 |-----------		
 
 :click
@@ -114,7 +117,8 @@
 	dup c@ $1 and 
 	1? ( 1 'sb ! "You Loose !" 'state strcpy ) 
 	rot 1 << or 
-	swap c!	;
+	swap c!	
+	checkwin ;
 
 :showbomb?	
 	sb 0? ( drop ; ) drop

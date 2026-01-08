@@ -285,24 +285,29 @@
 	;
 
 :sub | n end now -- n end now 
-	over 2 - ]list@ 
-	$fff and str$ + 
-	|dup "?? %w" .println
-	1+ parsemod | mod
+	over 2 - ]list@ $fff and str$ + | ]mod
+	1+ parsemod 
 	
-	dup 1+ ]list@ 12 >> $fff and | seq
+	dup 1+ ]list@ 12 >> $fff and | nro seq
 	16 <<
 	vars!or 
 	;
+	
+|---------------------	
 
-:,seq | [] 
+:,seq | []  | grabar salto
 	sub	1 or ,tokx ;
 	
-:,alt | <>
+:,alt | <>	| grabar salto
 	sub 2 or ,tokx ;
 	
-:,par | {}
+:,par | {}  | grabar salto
 	sub 3 or ,tokx ;
+	
+:,jmp
+	sub 
+
+|---------------------
 	
 :,endlvl
 	2drop -$100 tokenow +! ;
@@ -329,20 +334,26 @@
 	
 	resetvars
 	tokens> 'tokenow ! 
-	tokens> 'tokens - 3 >> 1+ 16 << | token lvl
-	vars!or
-	%101 or | []>>
-	,tok | falta mods
+
 	dup ]seq @
 	dup 12 >> $fff and
 	swap $fff and | n end start
+	
+	sub %101 or ,tokx
+	
 	( over <? 
 |		dup "(%d)" .print
 		token? 
 		1+ ) 2drop 
-	tokens> 8 - @ 
-	t.nk 0? ( -8 'tokens> +! )
-	drop
+		
+|	error 1? ( "error en expr" ) drop
+		
+|	tokens> 8 - @ 
+|	t.nk 0? ( -8 'tokens> +! ) | "a [b]" <- no deveria quitar [b] pero si "[[a b]]"!!
+|	drop
+	
+	|tokenow 'tokens - 3 >> 40 << | nro de token de seq 
+	|over ]seq +!
 	;
 
 :compile
@@ -355,25 +366,6 @@
 
 | calc:
 | real cant| sum weigth 
-
-:sumkids | token tipo -- token tipo
-	drop
-	dup @ t.nk | kids numbers
-	over 8 + tok>ext >a
-	0 >b ( 1? 1- a@+ 
-		b+ ) drop | sum
-	b> | suma todos
-|	dup "%f " .print .cr
-	over tok>ext ! | store sum
-	;
-	
-:extinfo
-	tokens>
-	( 8 - 'tokens >=?
-		dup @ $7 and
-		%101 =? ( sumkids )
-		drop
-		) drop ;
 
 |	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
 |	dup t.weigth node n.wsum@ /. t1 *. 't1 !
@@ -400,9 +392,17 @@
 		) drop
 	;
 	
+:setjmp	
+	%100 and? ( ; ) 
+	dup $3 and 0? ( drop ; ) 
+	;
+	
 :extinfo
 	'tokens ( tokens> <?
-		dup @ %100 and? ( sumkids ) drop
+		dup @ 
+		%100 and? ( sumkids ) 
+		setjmp
+		drop
 		8 + ) drop ;
 		
 |------------------------------------
@@ -503,6 +503,13 @@
 |	t1 t0 "(%f %f)" .print
 	tpop ;
 	
+:jmp | salta a una secuencia
+	| 'node !
+	| sec/alt/par
+	;
+	
+| NOTE/JMP
+	
 #tlist NOTE SEC ALT PAR 0 0 0 0 0 0 0 0 0 0 0 0
 
 :calcnodo 
@@ -529,7 +536,7 @@
 #mus1
 |"a b c a" 
 |"[a b c a]" 
-"a b [c d] e"
+"a b [c d a] e <e a>"
 |"[ a b [c d] e ]"
 |"b!2"
 |"[a b? c]*2"
@@ -582,7 +589,7 @@
 	0 ( nseq <=?
 		dup "%d: " .print
 		dup ]seq @
-		|dup 32 >> $fff and "token:%d " .print
+		dup 32 >> $fff and "tok:%h " .print
 		|dup 24 >> $ff and "cnt:%d " .print
 		|dup 24 >> $fff and "len:%d " .println
 		dup 12 >> $fff and
@@ -598,7 +605,7 @@
 	
 :printoks
 	0 'tokens ( tokens> <?
-		swap dup "%d: " .print 1+ swap
+		swap dup "%h: " .print 1+ swap
 		@+ 	.token
 		dup "| %h " .print 
 		drop 
@@ -635,7 +642,7 @@
 	printoks
 	
 	"---------------------eval" .println
-	eval
+|	eval
 	;
 
 
