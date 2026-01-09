@@ -11,6 +11,26 @@
 
 #font1
 
+
+|------------
+#kit909
+"909CX BD1" "909CX BD2" "909CX BD3"
+"909CX SN1" "909CX SN2" "909CX SN3" 
+"909CX CHH" "909CX CP1"
+"909CX CS1" "909CX CS2"
+"909CX FTH" "909CX FTL"
+"909CX HTH" "909CX HTL"
+"909CX MTH" "909CX MTL"
+"909CX OHH" "909CX PHH"
+"909CX RD2" "909CX RM1" 0
+|		dup "media/snd/909/%s.mp3" sprint 
+
+#kit808
+"808_2" "808_3" "808_4" "808_5" "808_6" "808_7"
+"808_C" "808_K" "808_O" "808_R" "808_S" 0
+|		dup "media/snd/808/%s.mp3" sprint 
+
+|-----------
 :drawbuffer
 	$ffffff sdlcolor
 	'outbuffer >a 

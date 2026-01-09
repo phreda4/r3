@@ -142,6 +142,8 @@
 	$40 =? ( drop str>fnro 'weig ! ; )		|@
 	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
 	$3a =? ( drop str>fnro int. 'vari ! ; )	| : Variante/índice
+	| <.1
+	| >.4
 | falta euclid
 | error
 	drop 1+ ;
@@ -241,10 +243,10 @@
 :t.weigth	52 >> $fff and 8 << ;
 
 :n.acc@ | n -- v
-	]extok @ 24 >> $ffffff and  ;
+	]extok @ 32 >> $ffffffff and  ;
 	
 :n.wsum@ | n -- v
-	]extok @ $ffffff and ;
+	]extok @ $ffffffff and ;
 	
 :.token | v -- v
 	dup t.type "%b " .print
@@ -265,6 +267,9 @@
 
 :tokenn+!
 	$100 tokenow +! ;
+
+#sumw
+#accw
 	
 :vars!or | v -- v
 	repl $1f and 3 << or
@@ -275,7 +280,10 @@
 	;
 
 :,tokx
-	0 tokens> tok>ext ! 
+	sumw weig + 'accw !
+	weig repl * 'sumw +!
+
+	accw tokens> tok>ext ! 
 	,tok ;
 	
 :,note 
@@ -293,8 +301,6 @@
 	vars!or 
 	;
 	
-|---------------------	
-
 :,seq | []  | grabar salto
 	sub	1 or ,tokx ;
 	
@@ -303,11 +309,6 @@
 	
 :,par | {}  | grabar salto
 	sub 3 or ,tokx ;
-	
-:,jmp
-	sub 
-
-|---------------------
 	
 :,endlvl
 	2drop -$100 tokenow +! ;
@@ -328,32 +329,40 @@
 	$7d =? ( ,endlvl ; )
 	drop ,note ;
 	
+	
 :compseq | n -- n
 	dup ]seq
-	dup @ toknro 32 << or swap !
-	
+	dup @ toknro 32 << or swap ! | nro token
+
+	0 'sumw ! 0 'accw !
 	resetvars
 	tokens> 'tokenow ! 
 
 	dup ]seq @
+|	dup 24 >> $ff and "%d<<" .println | tipo
+
 	dup 12 >> $fff and
 	swap $fff and | n end start
 	
-	sub %101 or ,tokx
+	sub 
+|	over ]seq @ 24 >> $ff and
+	%111 or 
+	,tok  |,tokx
 	
 	( over <? 
 |		dup "(%d)" .print
 		token? 
 		1+ ) 2drop 
 		
+	sumw accw "acc:%f sum:%f" .println
+		
+	sumw tokenow tok>ext ! 
 |	error 1? ( "error en expr" ) drop
 		
 |	tokens> 8 - @ 
 |	t.nk 0? ( -8 'tokens> +! ) | "a [b]" <- no deveria quitar [b] pero si "[[a b]]"!!
 |	drop
 	
-	|tokenow 'tokens - 3 >> 40 << | nro de token de seq 
-	|over ]seq +!
 	;
 
 :compile
@@ -372,39 +381,7 @@
 
 |	node n.wacc@ t1 *. 't0 +! 
 |	node n.wsum@ t1 *. 't1 !
-	
-	
-:sumkids | nod v -- nod v
-	dup t.nk 
-	pick2 8 + >a
-	0 >b 
-	( 1? 1-
-		a@+ dup t.repeat swap t.weigth * b+ 
-		) drop
-|	b> "%f " .print .cr | sum all w*repeat
-	b> 
-	pick2 tok>ext !
-	
-	dup t.nk 
-	pick2 8 + >a
-	( 1? 1-
-		a@+ t.weigth b> /. a> 8 - tok>ext ! | w sum / (no repeat)
-		) drop
-	;
-	
-:setjmp	
-	%100 and? ( ; ) 
-	dup $3 and 0? ( drop ; ) 
-	;
-	
-:extinfo
-	'tokens ( tokens> <?
-		dup @ 
-		%100 and? ( sumkids ) 
-		setjmp
-		drop
-		8 + ) drop ;
-		
+			
 |------------------------------------
 | top of tstack
 #t0 	
@@ -484,6 +461,7 @@
 	dup t.weigth node n.wsum@ /. t1 *. 't1 !
 
 	t.fk idk + 1- 'node ! 
+	
 |	node n.wacc@ t1 *. 't0 +! 
 |	node n.wsum@ t1 *. 't1 !
 	
@@ -531,12 +509,19 @@
 		calcnodo
 		) drop 
 	;
+	
+|------------------------------------------
+#cycleindex
+
+:receval | startdur node -- 
+
+	;
 
 |------------------------------------------
 #mus1
 |"a b c a" 
 |"[a b c a]" 
-"a b [c d a] e <e a>"
+"a!2@.5 b [c d a] e {e a}"
 |"[ a b [c d] e ]"
 |"b!2"
 |"[a b? c]*2"
@@ -633,16 +618,12 @@
 	nseq "seq:%d " .print list> 'list - 2 >> "nlist:%d" .println .cr
 	"----compile" .println
 	compile
-	"----list" .println
-	printlist .cr
-	"----seq" .println
-	printseq .cr
-	"----tokens" .println
-	extinfo
-	printoks
+|	"----list" .println printlist .cr
+	"----seq" .println printseq .cr
+	"----tokens" .println printoks
 	
 	"---------------------eval" .println
-|	eval
+	eval
 	;
 
 
