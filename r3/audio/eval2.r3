@@ -4,13 +4,12 @@
 ^r3/lib/console.r3
 ^r3/lib/rand.r3
 
-
 |--- word stack ---
 #stack * $ff
 #stack> 'stack
 
-:push stack> c!+ 'stack> ! ;
-:pop -1 'stack> +! stack> c@ $ff and ;
+:push stack> !+ 'stack> ! ;
+:pop -8 'stack> +! stack> @ ;
 
 #str$
 #lvl
@@ -73,11 +72,14 @@
 		) drop 1- ;
 
 	
+:]seq+!	]seq 1 24 << swap +! ;
+:]seq-!	]seq -1 24 << swap +! ;
+	
 | ITEM 32bits
 | seq(12) str(12)
 :+item | adr  -- adr
 	aseq 
-	|dup ]seq+!		| suma uno a la seq
+	dup ]seq+!		| suma uno a la seq
 	$fff and 12 << 
 	over str$ - $fff and or
 	list> d!+ 'list> !
@@ -93,7 +95,9 @@
 	
 :dnlvl | --
 	+item 1+
-	aseq ]seqend!
+	aseq 
+	dup ]seq-!
+	]seqend!
 	pop 'aseq !
 	-1 'lvl +! 
 	>>spl 
@@ -123,7 +127,7 @@
 		$ff and 33 <? 
 		drop 1+ ) ;
 
-:markseq | 'str -- 
+:pass1 | 'str -- 
 	dup 'str$ !
 	'list 'list> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
 	aseq dup ]seqini! push | first node..a b -> [a b]
@@ -131,6 +135,7 @@
 	pop ]seqend!
 	;
 	
+|----------------------------------
 |----------------------------------
 #vari #repl
 #prob #mult #divi #weig #eucl
@@ -145,10 +150,11 @@
 	| <.1
 	| >.4
 | falta euclid
+	|e2.3 o 
 | error
 	drop 1+ ;
 	
-:resetvars	
+:resetvars
 	1 'repl !
 	1.0 'mult ! 1.0 'divi !
 	1.0 'weig ! 1.0 'prob !
@@ -161,16 +167,6 @@
 		dup isD? 1? ( 3drop ; ) drop
 		pmod
 		) 2drop ;
-
-:.ppw
-	repl "!%d " .print
-	mult "*%f " .print
-	divi "/%f " .print
-	weig "@%f " .print
-	prob "?%f " .println
-	vari ":%d " .print
-	|eucl "m:%f " .print
-	;
 
 #semitone ( 9 11 0 2 4 5 7 0 )
 
@@ -202,7 +198,7 @@
 |type (3)
 |repeat (5)
 |note(8)		|nk:nrokids (in mem)
-|vol(8)var(8)	|fk:firstkid (in mem)
+|vol(8)var(8)	|fk:firstkid (in mem) (node)
 |mod->prob(8)
 |mod->scale(12)
 |mod->weight(12)
@@ -210,23 +206,10 @@
 #tokens * $fff
 #tokens> 'tokens
 
-| EXT
-| (seq=acc) (nodo=inc)
-#extok * $fff
-
 #tokenow
 
-:]token@ | n -- v
-	3 << 'tokens + @ ;
-
-:]extok | n -- v
-	3 << 'extok + ;
-
-:,tok
-	tokens> !+ 'tokens> ! ;
-
-:tok>ext | tok -- ext
-	'tokens - 'extok + ;
+:]token@ 3 << 'tokens + @ ;
+:,tok	tokens> !+ 'tokens> ! ;
 
 :t.type		$7 and ;
 :t.repeat	3 >> $1f and ;
@@ -243,12 +226,6 @@
 :t.weigth	52 >> $fff and 8 << ;
 
 
-:n.acc@ | n -- v
-	]extok @ 32 >> $ffffffff and  ;
-	
-:n.wsum@ | n -- v
-	]extok @ $ffffffff and ;
-	
 :.token | v -- v
 	dup t.type "%b " .print
 	dup t.repeat "!%d " .print
@@ -261,7 +238,6 @@
 	dup t.nk "[%d " .print
 	dup t.fk "%d]" .print
 	;
-	
 
 :toknro
 	tokens> 'tokens - 3 >> ;
@@ -269,9 +245,6 @@
 :tokenn+!
 	$100 tokenow +! ;
 
-#sumw
-#accw
-	
 :vars!or | v -- v
 	repl $1f and 3 << or
 	prob $ff 16 *>> $ff and 32 << or
@@ -280,18 +253,10 @@
 	weig 8 >> $fff and 52 << or
 	;
 
-:,tokx
-	sumw weig + 'accw !
-	weig repl * 'sumw +!
-
-	accw tokens> tok>ext ! 
-	,tok ;
-	
 :,note 
 	parsenote $ff and 8 << | note
 	vars!or
-	,tokx
-	;
+	,tok ;
 
 :sub | n end now -- n end now 
 	over 2 - ]list@ $fff and str$ + | ]mod
@@ -299,27 +264,31 @@
 	
 	dup 1+ ]list@ 12 >> $fff and | nro seq
 	16 <<
+	|pick3 $ff and 8 << or | nro seq
 	vars!or 
 	;
 	
-:,seq | []  | grabar salto
-	sub	1 or ,tokx ;
+:,seq
+	sub	1 or ,tok ;
 	
-:,alt | <>	| grabar salto
-	sub 2 or ,tokx ;
+:,alt 
+	sub 2 or ,tok ;
 	
-:,par | {}  | grabar salto
-	sub 3 or ,tokx ;
+:,par 
+	sub 3 or ,tok ;
 	
 :,endlvl
-	2drop -$100 tokenow +! ;
+	2drop |-$100 tokenow +! 
+	;
 
-|------------------------------------
 :token? | n end now -- n end now
 	dup ]list@ 
 	dup 12 >> $fff and | n end now L ln
 	pick4 <>? ( 2drop ; ) drop | no this secuence
+	
+	dup "(%h) " .print
 	tokenn+!
+	
 	$fff and str$ + 
 	dup c@
 	$3c =? ( 2drop ,alt ; ) |$3c $3e < >m
@@ -335,7 +304,6 @@
 	dup ]seq
 	dup @ toknro 32 << or swap ! | nro token
 
-	0 'sumw ! 0 'accw !
 	resetvars
 	tokens> 'tokenow ! 
 
@@ -344,179 +312,40 @@
 
 	dup 12 >> $fff and
 	swap $fff and | n end start
-	
-	sub 
-|	over ]seq @ 24 >> $ff and
-	%111 or 
-	,tok  |,tokx
-	
 	( over <? 
 |		dup "(%d)" .print
 		token? 
 		1+ ) 2drop 
 		
-	sumw accw "acc:%f sum:%f" .println
-		
-	sumw tokenow tok>ext ! 
 |	error 1? ( "error en expr" ) drop
-		
-|	tokens> 8 - @ 
-|	t.nk 0? ( -8 'tokens> +! ) | "a [b]" <- no deveria quitar [b] pero si "[[a b]]"!!
-|	drop
-	
+	.cr
 	;
-
-:compile
+	
+:pass2
 	'tokens 'tokens> !
 	0 ( nseq <=?
-|		dup "%d) " .print
+		dup "%d) " .print
 		compseq 
-|		.cr
+		.cr
 		1+ ) drop ;
-
-| calc:
-| real cant| sum weigth 
-
-|	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
-|	dup t.weigth node n.wsum@ /. t1 *. 't1 !
-
-|	node n.wacc@ t1 *. 't0 +! 
-|	node n.wsum@ t1 *. 't1 !
-			
-|------------------------------------
-| top of tstack
-#t0 	
-#t1 
-#node
-#rep
-#idk
-
-#totalw
-
-#tstack * $ff
-#tstack>
-
-:.tstack
-	'tstack ( tstack> <? @+ 
-		dup 48 >> $ff and "(n:%d)" .print
-		dup 56 >> $ff and "(idk:%d)" .print
-		"%h " .print ) drop 
-	"<top" .println ;
-	
-:tpush | --
-	t0 $ffff and 
-	t1 $ffff and 16 << or
-	rep $ff and 32 << or
-	node $ff and 48 << or
-	idk $ff and 56 << or
-	tstack> !+ 'tstack> !
-|	node idk "    tpush k:%d n:%d" .println 
+		
+:fix | adr' t -- 'adr t
 	;
-
-:tstore
-	t0 $ffff and 
-	t1 $ffff and 16 << or
-	rep $ff and 32 << or
-	node $ff and 48 << or
-	idk $ff and 56 << or
-	tstack> 8 - ! ;
 	
-:tpop | --
-	-8 'tstack> +! tstack> 8 - @ 
-	dup $ffff and 't0 !
-	dup 16 >> $ffff and 't1 ! 
-	dup 32 >> $ff and 'rep !
-	dup 48 >> $ff and 'node !
-	56 >> $ff and 'idk !
-|	node idk "    tpop k:%d n:%d" .println 
-	;
+:pass3
+	'tokens ( tokens> <?
+		@+ $7 and 1? ( fix ) drop
+		) drop ; 
+		
 
 |------------------------------------
 :note | v --
-	dup t.note "n:%d " .print
-	t0 "(%f " .print
-	|dup t.scale t1 *.  | scale en nodo
-	t1 
-	" %f )" .print
-	drop
-	.cr
-	tpop
-	;
+|	dup t.note "n:%d " .print t0 "(%f " .print t1 " %f )" .print
+	drop ;
 	
-#totalw
-	
-|Node* c = n->kids[f->idx++];
-|float cdur = f->dur * (c->mod.weight / wsum);
-|float cstart = f->start + f->dur * (acc / wsum);
-
-:sec | value -- ; []
-	|dup "%h |" .print
-	rep over t.repeat |2dup "tr:%d sr:%d" .println
-	>=? ( 2drop tpop ; ) drop
-	idk over t.nk |2dup "tk:%d sk:%d" .println
-	>=? ( 2drop 0 'idk ! 1 'rep +! tstore ; ) drop
-	1 'idk +! tstore
-	
-	|---- new node
-	node n.acc@ node n.wsum@ /. t1 *. 't0 +! 
-	dup t.weigth node n.wsum@ /. t1 *. 't1 !
-
-	t.fk idk + 1- 'node ! 
-	
-|	node n.wacc@ t1 *. 't0 +! 
-|	node n.wsum@ t1 *. 't1 !
-	
-	0 'rep ! 0 'idk ! | cont rep, cond childs	
-	tpush
-	;
-	
-| (f->dur * n->mod.scale) * (n)->mod.weight / n->total_weight);
-	 
-:alt
-	"<>" .print .token .cr
-|	t1 t0 "(%f %f)" .print
-	tpop ;
-	
-:par
-	"{}" .print .token .cr
-|	t1 t0 "(%f %f)" .print
-	tpop ;
-	
-:jmp | salta a una secuencia
-	| 'node !
-	| sec/alt/par
-	;
-	
-| NOTE/JMP
-	
-#tlist NOTE SEC ALT PAR 0 0 0 0 0 0 0 0 0 0 0 0
-
-:calcnodo 
-	node |dup "%h<<" .println
-	3 << 'tokens + @ 
-	
-|	idk 0? ( rep 0? (
-|		over t.prob $ff randmax <? ( 2drop tpop ; ) drop
-|		) drop ) drop
-
-	dup $3 and 3 << 'tlist + @ ex ;
-	
-:eval
-	'tstack 'tstack> !
-	0 't0 ! $ffff 't1 !
-	0 'node ! 0 'rep ! 0 'idk ! | cont rep, cond childs
-	tpush
-	( tstack> 'tstack - 1? drop
-		calcnodo
-		) drop 
-	;
 	
 |------------------------------------------
 #cycleindex
-
-:receval | startdur node -- 
-
-	;
 
 :printrec | node --
 	dup ( 1? 1- .sp ) drop ">" .print
@@ -526,34 +355,16 @@
 	
 |------------------------------------------
 #mus1
-"[a b c a]" 
+"[[b c c c ] a a ]" 
+"[b c] a" 
 "a b c a" 
 "[a b [c a]]" 
-|"a b [c d a] e {e a}"
-|"[ a b [c d] e ]"
-|"b!2"
-|"[a b? c]*2"
-|"a b <c d e> [a c] [a b <a c>]"
+"a b [c d a] e {e a}"
+"[ a b [c d] e ]"
+"b!2"
+"[a b? c]*2"
+"a b <c d e> [a c] [a b <a c>]"
 "< [[g#2 g#3]*2 [e2 e3]*2],[a b c]*2>"
-"<
-[e5 [b4 c5] d5 [c5 b4]]
-[a4 [a4 c5] e5 [d5 c5]]
-[b4 [~ c5] d5 e5]
-[c5 a4 a4 ~]
-[[~ d5] [~ f5] a5 [g5 f5]]
-[e5 [~ c5] e5 [d5 c5]]
-[b4 [b4 c5] d5 e5]
-[c5 a4 a4 ~]
-,
-[[e2 e3]*4]
-[[a2 a3]*4]
-[[g#2 g#3]*2 [e2 e3]*2]
-[a2 a3 a2 a3 a2 a3 b1 c2]
-[[d2 d3]*4]
-[[c2 c3]*4]
-[[b1 b2]*2 [e2 e3]*2]
-[[a1 a2]*4]
->"
 
 |------------------------------------
 :pp | v -- 
@@ -571,8 +382,11 @@
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
 |		dup 12 >> $ff and "lvl:%d " .print
-		dup 12 >> $fff and "seq:%d " .print 
-		24 >> $ff and "len:%d " .print
+
+|		dup 12 >> $fff and "seq:%d " .print 
+|		24 >> $ff and "len:%d " .print
+
+		"%h" .print
 		.cr
 		) 2drop ;
 
@@ -583,7 +397,7 @@
 		dup "%d: " .print
 		dup ]seq @
 		dup 32 >> $fff and "tok:%h " .print
-		|dup 24 >> $ff and "cnt:%d " .print
+		dup 24 >> $ff and "cnt:%d " .print
 		|dup 24 >> $fff and "len:%d " .println
 		dup 12 >> $fff and
 		swap $fff and | n end start
@@ -600,35 +414,36 @@
 		@+ 	.token
 		dup "| %h " .print 
 		drop 
-		dup 8 - tok>ext @ 
-		dup $ffffffff and "| %f" .print
-		32 >> $ffffffff and " %f" .print
-		
 		.cr 
 		) 2drop ;
 		
 
-:testnote
-	parsenote "%d:" .print .ppw .cr ;
-	
-:testseq
-	dup c@ "%k |" .print 1+ parsemod .ppw .cr ;
-	
+
 :main
 	getch drop
 	.cls
 	"parse: " .print
 	'mus1 dup .println 
-	markseq .cr
+	pass1 .cr
 	
-	nseq "seq:%d " .print list> 'list - 2 >> "nlist:%d" .println .cr
-	"----compile" .println
-	compile
-|	"----list" .println printlist .cr
-	"----seq" .println printseq .cr
+	"----list" .println 
+	printlist .cr
+	
+	"----pass2" .println 
+	pass2
+
+"----seq" .println printseq .cr
+
+	pass3
+	
+	"----printrec" .println
+	
+|	nseq "seq:%d " .print list> 'list - 2 >> "nlist:%d" .println .cr
+
+	
+	
+	
 	"----tokens" .println printoks
-	
-	"----eval" .println eval .cr
 	
 	"----printrec" .println
 	0 printrec 
