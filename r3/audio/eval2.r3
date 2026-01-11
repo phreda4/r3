@@ -43,8 +43,6 @@
 :]seqend! | n --
 	]seq dup @ listnro 12 << or swap ! ;
 	
-|:]seq+!	]seq 1 24 << swap +! ;
-
 :newseq | type --
 	24 <<
 	1 'nseq +! 
@@ -73,7 +71,7 @@
 
 	
 :]seq+!	]seq 1 24 << swap +! ;
-:]seq-!	]seq -1 24 << swap +! ;
+:]seq-!	]seq -2 24 << swap +! ; | ] +1 -2
 	
 | ITEM 32bits
 | seq(12) str(12)
@@ -150,7 +148,7 @@
 	| <.1
 	| >.4
 | falta euclid
-	|e2.3 o 
+	| %2.3 
 | error
 	drop 1+ ;
 	
@@ -159,6 +157,7 @@
 	1.0 'mult ! 1.0 'divi !
 	1.0 'weig ! 1.0 'prob !
 	0 'eucl ! 0 'vari !
+	| desp < > -1.0 .. 1.0
 	;
 	
 :parsemod | str -- 
@@ -193,6 +192,9 @@
 	swap parsemod
 	;
 
+|parse name/nro
+| .. "hh sd"  or  "1.0 2 3.0"
+
 |------------------------------------------------
 | TOKEN
 |type (3)
@@ -205,8 +207,6 @@
 
 #tokens * $fff
 #tokens> 'tokens
-
-#tokenow
 
 :]token@ 3 << 'tokens + @ ;
 :,tok	tokens> !+ 'tokens> ! ;
@@ -234,21 +234,18 @@
 	dup t.scale "*/%f " .print
 	dup t.weigth "@%f " .print
 	
-	dup t.type $3 and 0? ( drop ; ) drop | nodes
-	dup t.nk "[%d " .print
-	dup t.fk "%d]" .print
+	dup t.type $7 and 0? ( drop ; ) drop | nodes
+	dup t.nk "[n:%d " .print
+	dup t.fk "f:%d]" .print
 	;
 
 :toknro
 	tokens> 'tokens - 3 >> ;
 
-:tokenn+!
-	$100 tokenow +! ;
-
 :vars!or | v -- v
 	repl $1f and 3 << or
 	prob $ff 16 *>> $ff and 32 << or
-	mult divi 0? ( 1+ ) /. |<<< FIX
+	mult divi 0? ( 1.0 + ) /. |<<< FIX
 	8 >> $fff and 40 << or | scale
 	weig 8 >> $fff and 52 << or
 	;
@@ -260,76 +257,66 @@
 
 :sub | n end now -- n end now 
 	over 2 - ]list@ $fff and str$ + | ]mod
-	1+ parsemod 
-	
+	2 + 
+|	dup "%w//" .println
+	parsemod 
 	dup 1+ ]list@ 12 >> $fff and | nro seq
 	16 <<
 	|pick3 $ff and 8 << or | nro seq
 	vars!or 
 	;
 	
-:,seq
-	sub	1 or ,tok ;
+:,seq	sub	1 or ,tok ;
+:,alt	sub 2 or ,tok ;
+:,par	sub 3 or ,tok ;
 	
-:,alt 
-	sub 2 or ,tok ;
-	
-:,par 
-	sub 3 or ,tok ;
-	
-:,endlvl
-	2drop |-$100 tokenow +! 
-	;
-
 :token? | n end now -- n end now
 	dup ]list@ 
 	dup 12 >> $fff and | n end now L ln
-	pick4 <>? ( 2drop ; ) drop | no this secuence
-	
-	dup "(%h) " .print
-	tokenn+!
-	
+	pick4 <>? ( 2drop ; ) drop | no this secuence	
+|	dup "(%h) " .print
 	$fff and str$ + 
 	dup c@
 	$3c =? ( 2drop ,alt ; ) |$3c $3e < >m
-	$3e =? ( ,endlvl ; )
+	$3e =? ( 2drop ; )
 	$5b =? ( 2drop ,seq ; ) |$5b $5d [ ]m
-	$5d =? ( ,endlvl ; )
+	$5d =? ( 2drop ; )
 	$7b =? ( 2drop ,par ; ) |$7b $7d { }m
-	$7d =? ( ,endlvl ; )
+	$7d =? ( 2drop ; )
 	drop ,note ;
 	
 	
 :compseq | n -- n
 	dup ]seq
 	dup @ toknro 32 << or swap ! | nro token
-
-	resetvars
-	tokens> 'tokenow ! 
-
 	dup ]seq @
-|	dup 24 >> $ff and "%d<<" .println | tipo
-
 	dup 12 >> $fff and
 	swap $fff and | n end start
 	( over <? 
 |		dup "(%d)" .print
 		token? 
-		1+ ) 2drop 
-		
+		1+ ) 2drop 		
 |	error 1? ( "error en expr" ) drop
-	.cr
+|	.cr
 	;
 	
 :pass2
 	'tokens 'tokens> !
+	resetvars 1 vars!or ,tok | "a b" -> "[a b]"
 	0 ( nseq <=?
-		dup "%d) " .print
+|		dup "%d) " .print
 		compseq 
-		.cr
+|		.cr
 		1+ ) drop ;
 		
+|------- save first kid and count in token seq
 :fix | adr' t -- 'adr t
+	over 8 - dup @
+	dup t.fk ]seq @
+	dup 32 >> $fff and 16 <<
+	swap 24 >> $ff and 8 << or
+	swap $fffff00 nand or
+	swap !
 	;
 	
 :pass3
@@ -339,27 +326,60 @@
 		
 
 |------------------------------------
-:note | v --
-|	dup t.note "n:%d " .print t0 "(%f " .print t1 " %f )" .print
-	drop ;
-	
-	
+:.note | v --
+	t.note "note:%d " .println ;
+
+:printrec | node --
+	dup "%h)" .print
+	dup ]token@ | node token
+	dup $7 and | node token type
+	0? ( drop nip .note ; )
+	drop
+	dup t.fk swap t.nk | node fk nk
+	( 1? 1- swap
+|		dup "%h " .print
+		dup printrec
+		1+ swap ) 3drop
+	;
+
 |------------------------------------------
 #cycleindex
 
-:printrec | node --
-	dup ( 1? 1- .sp ) drop ">" .print
-	dup ]token@ .token
-	drop
+|push pop
+| nchild|nrep|node|start|dura|
+
+:note | fnode token dur iter
 	;
+	
+:eval | fnode --
+	dup 32 >>		| fnode node
+	]token@ 		| fnode token
+	pick2 $ffff and over t.scale /. | dur_iter
+	over t.repeat over *. 1+ | dur_iter total
+|	2dup "%d %f<<" .println
+	( 1? 
+|		pick2 $7 and
+|		0? ( )
+		
+|		dup "%d)" .print
+		1- ) 
+	4drop ;
+:eval |
+	0 push
+	$ffff push
+	( pop 1?
+		
+		) drop ;
 	
 |------------------------------------------
 #mus1
+|"[a]!2"
 "[[b c c c ] a a ]" 
-"[b c] a" 
-"a b c a" 
+|"[b c] a" 
+|"[a b c a]" 
+"[a b c a]" 
 "[a b [c a]]" 
-"a b [c d a] e {e a}"
+"c c [b b b] c {a a}"
 "[ a b [c d] e ]"
 "b!2"
 "[a b? c]*2"
@@ -376,8 +396,7 @@
 	;
 		
 :printlist
-	0
-	'list ( list> <?
+	0 'list ( list> <?
 		swap dup "%h:" .print 1+ swap
 		d@+ 
 		dup pp |$fff and "str:%h " .print	
@@ -407,7 +426,6 @@
 		.cr
 		1+ ) drop ;
 
-
 :printoks
 	0 'tokens ( tokens> <?
 		swap dup "%h: " .print 1+ swap
@@ -416,40 +434,28 @@
 		drop 
 		.cr 
 		) 2drop ;
-		
-
 
 :main
 	getch drop
 	.cls
 	"parse: " .print
 	'mus1 dup .println 
-	pass1 .cr
 	
+	pass1 .cr
 	"----list" .println 
 	printlist .cr
-	
 	"----pass2" .println 
 	pass2
-
-"----seq" .println printseq .cr
-
-	pass3
-	
-	"----printrec" .println
-	
-|	nseq "seq:%d " .print list> 'list - 2 >> "nlist:%d" .println .cr
-
-	
-	
-	
+	"----seq" .println printseq .cr
+	pass3	
 	"----tokens" .println printoks
 	
 	"----printrec" .println
-	0 printrec 
-	.cr
+	0 printrec .cr
+	
+	"----eval" .println
+	$ffff eval
 	;
-
 
 :
 main
