@@ -345,35 +345,71 @@
 |------------------------------------------
 #cycleindex
 
-|push pop
-| nchild|nrep|node|start|dura|
+#veval 0
 
-:note | fnode token dur iter
+:start+dur | v -- v
+	dup 16 >> over + $ffff and 16 << swap $ffff and or ;
+
+:note | fnode token start|dur 
+	dup 16 >> $ffff and "%f " .print
+	dup $ffff and "%f |" .print
+	over t.note "%d" .println
+	;
+
+:seq | fnode token start|dur
+	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
+	pick2 $ffff and over /	| duracion
+	pick3 $ffff0000 and or	| fnode token start|dur 1node cnt 
+	swap
+	( 1? >r					| fnode token start|dur child start|dur ; r:nchild
+		over 32 << over or | add node info
+		veval ex
+		
+		start+dur
+		
+		swap 1+ swap
+		r> 1- ) 3drop ;
+	
+:alt | fnode token start|dur
+
 	;
 	
-:eval | fnode --
-	dup 32 >>		| fnode node
-	]token@ 		| fnode token
-	pick2 $ffff and over t.scale /. | dur_iter
-	over t.repeat over *. 1+ | dur_iter total
-|	2dup "%d %f<<" .println
-	( 1? 
-|		pick2 $7 and
-|		0? ( )
-		
-|		dup "%d)" .print
-		1- ) 
-	4drop ;
-:eval |
-	0 push
-	$ffff push
-	( pop 1?
-		
-		) drop ;
+:poly | fnode token start|dur
+	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
+	( 1? >r					| fnode token start|dur child ; r:nchild
+		over 32 << over or | add node info
+		veval ex
+		swap 1+ swap
+		r> 1- ) 2drop ;
 	
+#listv	'note 'seq 'alt 'poly 0 0 0 0
+
+:eval | fnode --
+
+ 'eval 'veval ! | <<< 2main
+ 
+	dup 32 >> ]token@ 	| fnode token
+	
+	dup t.scale over t.repeat *.	| fnode token total
+|	dup "total:%d" .println
+	pick2 $ffff and over /			| fnode token total start|dur
+	pick3 $ffff0000 and or swap 	| fnode token start|dur total
+|	2dup "cnt:%d sd:%h" .println
+	( 1? >r			| fnode token start|dur
+		| prob
+|		over t.prob $ff randmax >? ( drop 
+|			over $7 and 3 << 'listv + @ ex 
+|			dup ) drop
+		over $7 and 3 << 'listv + @ ex		
+		start+dur
+		r> 1- ) 
+	4drop ;
+	
+| 'eval 'veval !
+
 |------------------------------------------
 #mus1
-|"[a]!2"
+"a b [c d] "
 "[[b c c c ] a a ]" 
 |"[b c] a" 
 |"[a b c a]" 
@@ -442,16 +478,13 @@
 	'mus1 dup .println 
 	
 	pass1 .cr
-	"----list" .println 
-	printlist .cr
-	"----pass2" .println 
-	pass2
+|	"----list" .println printlist .cr
+	"----pass2" .println pass2
 	"----seq" .println printseq .cr
 	pass3	
 	"----tokens" .println printoks
 	
-	"----printrec" .println
-	0 printrec .cr
+	|"----printrec" .println 0 printrec .cr
 	
 	"----eval" .println
 	$ffff eval
