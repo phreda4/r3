@@ -6,6 +6,7 @@
 ^r3/util/varanim.r3
 
 ^./supermix.r3
+^./eval.r3
 
 ^r3/lib/trace.r3
 
@@ -57,7 +58,25 @@
 
 #largo 250 | milliseconds
 #bpm 60
+#run 0
 
+#pad * 256
+
+	
+:cicle
+	run 0? ( drop ; ) drop
+	[ 0 0.25 smplayd ; ] 0.0 +vexe
+	[ 5 0.25 smplayd ; ] 0.5 +vexe
+	'cicle 1.0 +vexe
+	;
+
+:play
+	1 'run !
+	cicle ;
+	
+:stop
+	0 'run ! ;
+	
 |-----------------------------
 :gui
 	font1 txfont
@@ -74,14 +93,26 @@
 
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
+	
+	'play "Play" uiRBtn 
+	'stop "Stop" uiRBtn 
 	stDang 'exit "Exit" uiRBtn 
 	
 	0.1 %h uiN
+	uiPush
+	0.5 %w uiO
 	"[esc]-Exit [f1/f2]-align" $11 uiText
-	
-	
 	uiRest
 	drawbuffer
+	uiPop
+	
+	0.1 %h uiS
+
+	0.6 %w uiO
+	'pad 64 uiInputLine
+	
+	uiRest
+	"Voices" uiLabel
 	
 	uiEnd
 	;
@@ -96,7 +127,7 @@
 	>esc< =? ( exit )
 	<a> =? ( 0 keydn )
 	>a< =? ( 0 keyup )
-	<f1> =? ( 0 0.25 smplayd )
+	<f1> =? ( run 1 xor 'run ! )
 	<f2> =? ( i0 smI! 1 0.25 smplayd )
 	<f3> =? ( i1 smI! 1 0.25 smplayd )
 	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
