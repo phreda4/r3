@@ -462,16 +462,16 @@
 	sdlkey 
 	<tab> =? ( tabfocus ) 
 	<le> =? ( <dn> nip ) 
-	<dn> =? ( over dup @ 1- clamp0 swap ! )
+	<dn> =? ( over dup @ 1- clamp0 swap ! flagEx! )
 	<ri> =? ( <up> nip ) 
-	<up> =? ( over dup @ 1+ pick4 clampmax swap ! )	
+	<up> =? ( over dup @ 1+ pick4 clampmax swap ! flagEx! )	
 	drop ;
 
 :slideh | 0.0 1.0 'value --
 	sdlx cx - cw clamp0max 
 	2over swap - | Fw
 	cw */ pick3 +
-	over ! ;
+	over ! flagEx! ;
 	
 :slideshow | 0.0 1.0 'value --
 	colBack uiLFill
@@ -526,7 +526,7 @@
 	sdly cy - ch clamp0max 
 	2over swap - | Fw
 	ch */ pick3 +
-	over ! ;
+	over ! flagEx! ;
 	
 :slideshowv | 0.0 1.0 'value --
 	ColBack uiFill
@@ -598,7 +598,7 @@
 	colFocus uiLRect 
 	sdlkey
 	<tab> =? ( tabfocus  )
-	<ret> =? ( 1 pick2 << pick3 @ xor pick3 ! ) | 'var n key -- 'var n key
+	<ret> =? ( 1 pick2 << pick3 @ xor pick3 ! flagEx! ) | 'var n key -- 'var n key
 	drop ;
 
 :ic	over @ 1 pick2 << |and? ( drop "[x]" ; ) drop "[ ]" ;
@@ -607,7 +607,7 @@
 :icheck | 'var n -- 'var n
 	uiZone 
 	'focoCheck uiFocus 
-	[ 1 over << pick2 @ xor pick2 ! ; ] uiClk
+	[ 1 over << pick2 @ xor pick2 ! flagEx! ; ] uiClk
 	cx cy txat 
 	ic txicon 32 txemit a@+ txwrite
 	ui.. ;
@@ -623,7 +623,7 @@
 	colFocus uiLRect 
 	sdlkey
 	<tab> =? ( tabfocus  )
-	<ret> =? ( over pick3 ! ) | 'var n key -- 'var n key
+	<ret> =? ( over pick3 ! flagEx! ) | 'var n key -- 'var n key
 	drop ;
 
 :ir over @ |=? ( "(o)" ; ) "( )" ;
@@ -632,7 +632,7 @@
 :iradio | 'var n --
 	uiZone
 	'focoRadio uiFocus
-	[ 2dup swap ! ; ] uiClk
+	[ 2dup swap ! flagEx! ; ] uiClk
 	cx cy txat 
 	ir txicon 32 txemit a@+ txwrite
 	ui.. ;

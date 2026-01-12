@@ -270,7 +270,7 @@
 	
 |---- PLAY INSTRUMENT
 :midi_to_freq | note -- freq
-	fix. 69 - 12 / pow2. 440.0 *. ;
+	69 - fix. 12 / pow2. 440.0 *. ;
 
 |inc_sample=(fr_deseada<<32)/fr_base
 |inc_osc=(fr_desada<<32>/aurate

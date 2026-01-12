@@ -54,20 +54,50 @@
 	0 over 'playn + c! 
 	smstop ;
 	
-#i0 #i1 #i2 #i3
+|------------ eval
+#bpm 120
+#cyclesec 2.0 | 240/bpm bmp=120
 
-#largo 250 | milliseconds
-#bpm 60
 #run 0
 
-#pad * 256
+#pad "a b [c d] e? f " * 256
 
+#i0 #i1 #i2 #i3
+
+:splay
+	dup @+ swap @ swap smplayd ;
+	
+:genevt | note dur start --
+	'splay swap +vvvexe ;
+	 
+:generate
+	1 'ccycle +!
+	eval
+	'stack ( stack> <?
+		@+
+		dup 32 >>
+		over $ffff and cyclesec *.
+		rot 16 >> $ffff and cyclesec *.
+		genevt
+		|"%f %f %d" .println .flush
+		) drop ;
 	
 :cicle
 	run 0? ( drop ; ) drop
-	[ 0 0.25 smplayd ; ] 0.0 +vexe
-	[ 5 0.25 smplayd ; ] 0.5 +vexe
-	'cicle 1.0 +vexe
+	generate
+	'cicle cyclesec  +vexe
+	;
+
+:gencycle
+	'pad .println
+	"----" .println .flush
+|	"a b [c d] " 
+	'pad 
+	
+	process | str --
+	0 'ccycle !
+	1 'run !
+	cicle
 	;
 
 :play
@@ -87,12 +117,11 @@
 	0.1 %w uiO
 	stLink "* Chipa *" uiLabelC
 	
-|	largo " speed %d (ms)" sprint uiLabelC
-|	10 1000 'largo  uiSlideri 
-|	60000 largo / " %d BPM" sprint uiLabelC
-
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
+	|uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
+	
+	cyclesec "%f" sprint uiLabelC
 	
 	'play "Play" uiRBtn 
 	'stop "Stop" uiRBtn 
@@ -101,15 +130,16 @@
 	0.1 %h uiN
 	uiPush
 	0.5 %w uiO
-	"[esc]-Exit [f1/f2]-align" $11 uiText
+	"R3code music" $11 uiText
 	uiRest
-	drawbuffer
+	|drawbuffer
 	uiPop
 	
 	0.1 %h uiS
 
 	0.6 %w uiO
 	'pad 64 uiInputLine
+	uiEx? 1? ( gencycle ) drop
 	
 	uiRest
 	"Voices" uiLabel
@@ -125,16 +155,16 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<a> =? ( 0 keydn )
-	>a< =? ( 0 keyup )
-	<f1> =? ( run 1 xor 'run ! )
-	<f2> =? ( i0 smI! 1 0.25 smplayd )
-	<f3> =? ( i1 smI! 1 0.25 smplayd )
-	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
-	<z> =? ( i3 smi! 0 1.0 smplayd )
-	<x> =? ( i3 smi! 1 1.0 smplayd )
-	<c> =? ( i3 smi! 2 1.0 smplayd )
-	<v> =? ( i2 smI! 2 1.0 smplayd )
+|	<a> =? ( 0 keydn )
+|	>a< =? ( 0 keyup )
+	<f1> =? ( generate )
+|	<f2> =? ( i0 smI! 1 0.25 smplayd )
+|	<f3> =? ( i1 smI! 1 0.25 smplayd )
+|	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
+|	<z> =? ( i3 smi! 0 1.0 smplayd )
+|	<x> =? ( i3 smi! 1 1.0 smplayd )
+|	<c> =? ( i3 smi! 2 1.0 smplayd )
+|	<v> =? ( i2 smI! 2 1.0 smplayd )
 	drop 
 	smupdate
 	;

@@ -5,8 +5,8 @@
 ^r3/lib/rand.r3
 
 |--- word stack ---
-#stack * $ff
-#stack> 'stack
+##stack * $ff
+##stack> 'stack
 
 :push stack> !+ 'stack> ! ;
 :pop -8 'stack> +! stack> @ ;
@@ -225,20 +225,6 @@
 :t.scale	40 >> $fff and 8 << ; 
 :t.weigth	52 >> $fff and 8 << ;
 
-
-:.token | v -- v
-	dup t.type "%b " .print
-	dup t.repeat "!%d " .print
-	dup t.note "n:%d "  .print
-	dup t.prob "?%d " .print
-	dup t.scale "*/%f " .print
-	dup t.weigth "@%f " .print
-	
-	dup t.type $7 and 0? ( drop ; ) drop | nodes
-	dup t.nk "[n:%d " .print
-	dup t.fk "f:%d]" .print
-	;
-
 :toknro
 	tokens> 'tokens - 3 >> ;
 
@@ -331,17 +317,21 @@
 	;
 
 |------------------------------------------
-#cycleindex
-
+##ccycle
 #veval 0
 
 :start+dur | v -- v
 	dup 16 >> over + $ffff and 16 << swap $ffff and or ;
 
+|:list reuse
 :note | fnode token start|dur 
-	dup 16 >> $ffff and "%f " .print
-	dup $ffff and "%f |" .print
-	over t.note "%d" .println
+|	dup 16 >> $ffff and "%f " .print
+|	dup $ffff and "%f |" .print
+|	over t.note "%d" .println
+	
+	over t.note 32 <<
+	over or 
+	push
 	;
 
 :seq | fnode token start|dur
@@ -405,5 +395,6 @@
 	
 ::eval |
 	'(eval) 'veval !
+	'stack 'stack> ! | evenl list
 	$ffff (eval) ;
 	

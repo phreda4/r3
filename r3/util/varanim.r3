@@ -7,10 +7,13 @@
 | +vanim | 'var 100 10 1 2.0 1.0 -- 
 | ---exe in 3.0 seconds 
 | +vexe | 'exe 3.0 --
-| +vvexe | v1 'exe 3.0 --
-| +vvvexe | v1 v2 'exe 3.0 --
+| +vvexe | v1 'exe1 3.0 --
+| +vvvexe | v1 v2 'exe2 3.0 --
 | ---update 
 | vupdate | --
+|
+| exe1 get param >>	dup @
+| exe2 get param >>	dup @+ swap @
 |
 ^r3/lib/mem.r3
 ^r3/lib/color.r3
