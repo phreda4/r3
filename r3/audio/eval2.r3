@@ -28,7 +28,7 @@
 	1 24 << swap 2 << 'list + d+! ;
 
 | secuencias
-| token(8)|type(8)|end(12)|start(12)
+| type(4)|token(12)|cnt(8)|end(12)|start(12)
 #rseq * 1024 
 
 :]seq | n -- adr
@@ -44,7 +44,7 @@
 	]seq dup @ listnro 12 << or swap ! ;
 	
 :newseq | type --
-	24 <<
+	44 << 1 24 << or
 	1 'nseq +! 
 	nseq dup 'aseq ! 
 	]seq ! ;
@@ -171,6 +171,7 @@
 
 :parsenote | str -- note
 	c@+
+	$7e =? ( 2drop resetvars 0 'prob ! 0 ; ) | ~	
 	$df and | uppcase+unsigned
 	$41 <? ( 2drop -1 ; )	$47 >? ( 2drop -1 ; ) | A..G
 	$41 - 'semitone + c@
@@ -343,17 +344,22 @@
 	;
 
 |------------------------------------------
-#cycleindex
 
+##ccycle
 #veval 0
 
 :start+dur | v -- v
 	dup 16 >> over + $ffff and 16 << swap $ffff and or ;
 
+|:list reuse
 :note | fnode token start|dur 
 	dup 16 >> $ffff and "%f " .print
 	dup $ffff and "%f |" .print
 	over t.note "%d" .println
+	
+|	over t.note 32 <<
+|	over or 
+|	push
 	;
 
 :seq | fnode token start|dur
@@ -371,19 +377,17 @@
 		r> 1- ) 3drop ;
 	
 :alt | fnode token start|dur
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	drop | alterna cnt para suma
-	
+	ccycle pick2 t.nk mod 
+	pick2 t.fk +
 	32 << over or | add node info
-	veval ex
-	;
+	veval ex ;
 	
 :poly | fnode token start|dur
 	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
 	( 1? >r					| fnode token start|dur child ; r:nchild
-		over 32 << over or | add node info
+		over over 32 << or | add node info
 		veval ex
-		swap 1+ swap
+		1+
 		r> 1- ) 2drop ;
 		
 :ran
@@ -396,31 +400,31 @@
 	
 #listv	'note 'seq 'alt 'poly 'ran 0 0 0
 
-:eval | fnode --
-
- 'eval 'veval ! | <<< 2main
- 
+:(eval) | fnode --
 	dup 32 >> ]token@ 	| fnode token
-	
 	dup t.scale over t.repeat *.	| fnode token total
 |	dup "total:%d" .println
 	pick2 $ffff and over /			| fnode token total start|dur
 	pick3 $ffff0000 and or swap 	| fnode token start|dur total
 |	2dup "cnt:%d sd:%h" .println
 	( 1? >r			| fnode token start|dur
-		| prob
-|		over t.prob $ff randmax >? ( drop 
-|			over $7 and 3 << 'listv + @ ex 
-|			dup ) drop
-		over $7 and 3 << 'listv + @ ex		
+		over t.prob $ff randmax >? ( drop 
+			over $7 and 3 << 'listv + @ ex 
+			dup ) drop
 		start+dur
 		r> 1- ) 
 	4drop ;
 	
-| 'eval 'veval !
+	
+::eval |
+	'(eval) 'veval !
+	'stack 'stack> ! | evenl list
+	$ffff (eval) ;
 
 |------------------------------------------
 #mus1
+"< {a b c } {d e f} > a ~ " 
+"a b <e f> ~ " 
 "a b [c d] "
 "[[b c c c ] a a ]" 
 |"[b c] a" 
@@ -518,7 +522,12 @@
 	|"----printrec" .println 0 printrec .cr
 	
 	"----eval" .println
-	$ffff eval
+	0 'ccycle ! "." .println
+	eval 
+	1 'ccycle +! "." .println
+	eval 
+	1 'ccycle +! "." .println
+	eval
 	;
 
 :

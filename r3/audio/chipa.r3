@@ -60,14 +60,25 @@
 
 #run 0
 
-#pad "a b [c d] e? f " * 256
+#pad |"< {a b c } {d e f} > a ~ " 
+"<[e5 [b4 c5] d5 [c5 b4]]
+[a4 [a4 c5] e5 [d5 c5]]
+[b4 [~ c5] d5 e5]
+[c5 a4 a4 ~]
+[[~ d5] [~ f5] a5 [g5 f5]]
+[e5 [~ c5] e5 [d5 c5]]
+[b4 [b4 c5] d5 e5]
+[c5 a4 a4 ~]>"
+* 256
 
 #i0 #i1 #i2 #i3
 
 :splay
-	dup @+ swap @ swap smplayd ;
+	dup @+ swap @ swap | get 2 params
+	smplayd ;
 	
 :genevt | note dur start --
+	|". " .print .flush
 	'splay swap +vvvexe ;
 	 
 :generate
@@ -89,14 +100,11 @@
 	;
 
 :gencycle
-	'pad .println
-	"----" .println .flush
-|	"a b [c d] " 
-	'pad 
-	
-	process | str --
+	'pad .println .flush
+	'pad process | str --
 	0 'ccycle !
 	1 'run !
+	vareset
 	cicle
 	;
 
@@ -119,7 +127,7 @@
 	
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
-	|uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
+	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
 	
 	cyclesec "%f" sprint uiLabelC
 	
