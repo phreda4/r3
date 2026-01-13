@@ -365,6 +365,7 @@
 :(eval) | fnode --
 	dup 32 >> ]token@ 	| fnode token
 	dup t.scale over t.repeat *.	| fnode token total
+	0? ( 1+ ) | ceil
 |	dup "total:%d" .println
 	pick2 $ffff and over /			| fnode token total start|dur
 	pick3 $ffff0000 and or swap 	| fnode token start|dur total
