@@ -244,14 +244,10 @@
 
 :sub | n end now -- n end now 
 	over 2 - ]list@ $fff and str$ + | ]mod
-	2 + 
-|	dup "%w//" .println
-	parsemod 
+	2 + parsemod 
 	dup 1+ ]list@ 12 >> $fff and | nro seq
 	16 <<
-	|pick3 $ff and 8 << or | nro seq
-	vars!or 
-	;
+	vars!or ;
 	
 :,seq	sub	1 or ,tok ;
 :,alt	sub 2 or ,tok ;
@@ -303,8 +299,7 @@
 	dup 32 >> $fff and 16 <<
 	swap 24 >> $ff and 8 << or
 	swap $fffff00 nand or
-	swap !
-	;
+	swap ! ;
 	
 :pass3
 	'tokens ( tokens> <?

@@ -101,16 +101,20 @@
 #mdragh	
 #idfl		| idf last
 
-#flag
-##keymd		| key modify <<<
 #uistate
+##keymd		| key modify <<<
 
-:flagClear 
-	0 'flag ! ;
-:flagEx!
-	flag 1 or 'flag ! ;
-::uiEx?
-	flag 1 and ;
+:flagEx!	uistate $100 or 'uistate ! ;
+::uiEx?		uistate $100 and ;
+
+::uiOvr		uiState $f and 1 <>? ( 2drop ; ) drop ex ;  | 'v --
+::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
+::uiSel		uiState $f and 3 <>? ( 2drop ; ) drop ex ;  | 'v -- ; 3 <?
+::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
+::uiUp		uiState $f and 5 <? ( 2drop ; ) drop ex ;  | 'v --
+
+::uiFocusIn uiState $10 nand? ( 2drop ; ) drop ex ;
+::uiFocus 	uiState $20 nand? ( 2drop ; ) drop ex ;
 
 ::uiStart
 	uiFull
@@ -187,9 +191,9 @@
 	sdlx cx - $ffff and cw >? ( drop 0 ; ) drop
 	sdly cy - $ffff and chx >? ( drop 0 ; ) drop 
 	-1 ;
-|#idfx 
+
 :stMouse | -- state
-	flagClear 
+|	0 'uistate !	
 	1 'id +! 
 	ida -1 =? ( drop 			| no active
 		uIn? 0? ( ; ) drop		| out->0
@@ -243,15 +247,6 @@
 	ch 'chx !
 	uIn? 0? ( 2drop ; ) drop 'mdragh ! ;
 
-|-- interact	
-::uiOvr		uiState $f and 1 <>? ( 2drop ; ) drop ex ;  | 'v --
-::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
-::uiSel		uiState $f and 3 <? ( 2drop ; ) drop ex ;  | 'v --
-::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
-::uiUp		uiState $f and 5 <? ( 2drop ; ) drop ex ;  | 'v --
-
-::uiFocusIn uiState $10 nand? ( 2drop ; ) drop ex ;
-::uiFocus 	uiState $20 nand? ( 2drop ; ) drop ex ;
 
 ::uiRefocus	-1 'idfa ! ;
 ::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
@@ -336,17 +331,10 @@
 ::uilRRect	cx 1- cy 1- cw 2 + chx 2 + SDLRound ; | round --
 ::uilCRect	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + SDLRound ;
 
-:colBack
-	colBac sdlcolor ;
-	
-:colFill
-	colFil sdlcolor ;
-	
-:colFocus
-	colFoc sdlcolor ;
-	
-:colText
-	colTxt txrgb ;
+:colBack	colBac sdlcolor ;
+:colFill	colFil sdlcolor ;
+:colFocus	colFoc sdlcolor ;
+:colText	colTxt txrgb ;
 
 |---- text cursor
 ::uil..
@@ -358,7 +346,6 @@
 	colFill
 	cx cy 1+ cw 2 SDLRect
 	flpady 7 + 'cy +! ;
-	
 
 |---- helptext
 ::ttwrite | "text" --

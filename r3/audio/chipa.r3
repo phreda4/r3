@@ -61,14 +61,16 @@
 #run 0
 
 #pad |"< {a b c } {d e f} > a ~ " 
-"<[e5 [b4 c5] d5 [c5 b4]]
+"<
+[e5 [b4 c5] d5 [c5 b4]]
 [a4 [a4 c5] e5 [d5 c5]]
 [b4 [~ c5] d5 e5]
 [c5 a4 a4 ~]
 [[~ d5] [~ f5] a5 [g5 f5]]
 [e5 [~ c5] e5 [d5 c5]]
 [b4 [b4 c5] d5 e5]
-[c5 a4 a4 ~]>"
+[c5 a4 a4 ~]
+>"
 * 256
 
 #i0 #i1 #i2 #i3
@@ -163,16 +165,7 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-|	<a> =? ( 0 keydn )
-|	>a< =? ( 0 keyup )
 	<f1> =? ( generate )
-|	<f2> =? ( i0 smI! 1 0.25 smplayd )
-|	<f3> =? ( i1 smI! 1 0.25 smplayd )
-|	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
-|	<z> =? ( i3 smi! 0 1.0 smplayd )
-|	<x> =? ( i3 smi! 1 1.0 smplayd )
-|	<c> =? ( i3 smi! 2 1.0 smplayd )
-|	<v> =? ( i2 smI! 2 1.0 smplayd )
 	drop 
 	smupdate
 	;
@@ -184,13 +177,12 @@
 	sminit
 	$fff vaini
 
-
 	0.002 0.05 0.7 0.1 packADSR 'oscSinF iosc 'i0 !
 	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw2P iosc 'i1 !
 	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
 	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
 	i0 smI!
-	
+	bpm ">>%d" .println .flush
 	'main SDLshow
 	SDLquit 
 ;
