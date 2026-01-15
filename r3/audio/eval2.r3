@@ -212,6 +212,16 @@
 :]token@ 3 << 'tokens + @ ;
 :,tok	tokens> !+ 'tokens> ! ;
 
+| EXT
+| (seq=acc) (nodo=inc)
+#extok * $fff
+
+:]extok	3 << 'extok + ;
+:tok>ext 'tokens - 'extok + ;
+
+:n.acc@ ]extok @ 32 >> $ffffffff and  ;
+:n.wsum@ ]extok @ $ffffffff and ;
+
 :t.type		$7 and ;
 :t.repeat	3 >> $1f and ;
 
@@ -318,12 +328,25 @@
 	swap 24 >> $ff and 8 << or
 	swap $fffff00 nand or
 	swap !
+	| pre calc wsum & totalw
+	over 8 - @				| ... token
+	0 over t.fk pick2 t.nk 	| token sum 1node cnt
+	( 1? >r					| token sum node ; cnt
+		dup ]token@
+		dup t.weigth over t.scale *. swap t.repeat *	| token acc kid sum
+		dup 32 << pick2 ]extok !
+		rot + swap
+		1+ r> 1- ) 2drop nip
+	pick2 8 - tok>ext 
+	dup @ rot or swap ! 
 	;
+
+
 	
 :pass3
 	'tokens ( tokens> <?
 		@+ $7 and 1? ( fix ) drop
-		) drop ; 
+		) drop ;
 		
 
 |------------------------------------
@@ -351,43 +374,20 @@
 :start+dur | v -- v
 	dup 16 >> over + $ffff and 16 << swap $ffff and or ;
 
+:s+d
+	dup 16 << + $ffffffff and ;
+	
 |:list reuse
 :note | fnode token start|dur 
 	dup 16 >> $ffff and "%f " .print
 	dup $ffff and "%f |" .print
 	over t.note "%d" .println
 	
-|	over t.note 32 <<
-|	over or 
+|	over t.note 32 << over or 
 |	push
 	;
 
-:t.repeat	3 >> $1f and ;
-:t.weigth	52 >> $fff and 8 << ;
-
-:calcw | 1node cnt
-	0 pick2 pick2
-	( 1? >r	| token acc kid | r:cntk
-		dup ]token@ 					| token acc kid token
-		dup t.weigth over t.scale *. swap t.repeat *	| token acc kid sum
-		rot + swap
-		1+ r> 1- ) 2drop ;
 		
-:seq2 | fnode token start|dur
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	calcw "%f" .println
-	pick2 $ffff and over /	| duracion
-	pick3 $ffff0000 and or	| fnode token start|dur 1node cnt 
-	swap
-	( 1? >r					| fnode token start|dur child start|dur ; r:nchild
-		over 32 << over or | add node info
-		veval ex
-		
-		start+dur
-		
-		swap 1+ swap
-		r> 1- ) 3drop ;
-	
 |    // Calcular peso total incluyendo speed
 |    float total_weight = 0;
 |    for (int j = 0; j < node->child_count; j++) {
@@ -403,6 +403,30 @@
 |        calculate_events(child, offset, dur, cycle_index);
 |        offset += dur;
 
+|:]extok	3 << 'extok + ;
+|:tok>ext 'tokens - 'extok + ;
+
+|:n.acc@ ]extok @ 32 >> $ffffffff and  ;
+|:n.wsum@ ]extok @ $ffffffff and ;
+	
+	
+:seq2 | fnode token start|dur
+	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
+	pick2 $ffff and 16 << | duration
+	pick4 tok>ext @ $ffffffff and | total
+	/. 
+	dup "%f" .println
+	swap | s|d 1node total cnt
+	( 1? >r					| fnode token start|dur child ; r:nchild
+		
+		|over n.acc@
+		
+		over 32 << over or | add node info
+		
+		veval ex
+		s+d swap 1+ swap 
+		r> 1- ) 3drop ;
+
 :seq | fnode token start|dur
 	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
 	pick2 $ffff and over /	| duracion
@@ -412,9 +436,7 @@
 		over 32 << over or | add node info
 		veval ex
 		
-		start+dur
-		
-		swap 1+ swap
+		s+d swap 1+ swap
 		r> 1- ) 3drop ;
 	
 :alt | fnode token start|dur
@@ -453,7 +475,7 @@
 		over t.prob $ff randmax >? ( drop 
 			over $7 and 3 << 'listv + @ ex 
 			dup ) drop
-		start+dur
+		s+d
 		r> 1- ) 
 	4drop ;
 	
@@ -546,8 +568,9 @@
 	0 'tokens ( tokens> <?
 		swap dup "%h: " .print 1+ swap
 		@+ 	.token
-		dup "| %h " .print 
-		drop 
+		"| %h " .print 
+		dup 8 - tok>ext @ " %h" .print
+		|drop 
 		.cr 
 		) 2drop ;
 
