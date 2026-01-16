@@ -3,6 +3,7 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/util/immi.r3
+^r3/util/imedit.r3
 ^r3/util/varanim.r3
 
 ^./supermix.r3
@@ -11,6 +12,7 @@
 ^r3/lib/trace.r3
 
 #font1
+#font2
 
 |------------
 #kit909
@@ -39,7 +41,7 @@
 		over cx +
 		over $7fff + 10 >> $3f and cy + SDLPoint
 		over cx +
-		swap 16 >> $7fff + 10 >> $3f and cy + ch 2/ + SDLPoint
+		swap 16 >> $7fff + 10 >> $3f and cy + 32 + SDLPoint
 		) drop ;	
 		
 |------------ keys
@@ -60,12 +62,113 @@
 
 #run 0
 
-#pad |"< {a b c } {d e f} > a ~ " 
+
+#i0 #i1 #i2 #i3
+
+:splay
+	dup @+ swap @ swap | get 2 params
+	smplayd ;
+	
+:genevt | note dur start --
+	|". " .print .flush
+	'splay swap +vvvexe ;
+	 
+:generate
+	eval
+	1 'ccycle +!
+	'stack ( stack> <?
+		@+
+		dup 32 >>
+		over $ffff and cyclesec *.
+		rot 16 >> $ffff and cyclesec *.
+		genevt
+		|"%f %f %d" .println .flush
+		) drop ;
+	
+:cicle
+	run 0? ( drop ; ) drop
+	generate
+	'cicle cyclesec  +vexe
+	;
+
+:gencycle
+	fuente process | str --
+	0 'ccycle !
+	1 'run !
+	vareset
+	cicle
+	;
+
+:play
+	1 'run !
+	cicle ;
+	
+:stop
+	vareset
+	0 'run ! ;
+	
+|-----------------------------
+:gui
+	font1 txfont
+	uiStart
+	4 4 uiPading
+	$ffffff sdlcolor
+	
+	0.1 %w uiO
+	stLink 
+|"* Chipa *" uiLabelC
+	
+	"BPM" uiLabel
+	20 300 'bpm uiSlideri 
+	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
+	
+	cyclesec "%f" sprint uiLabelC
+	
+	'gencycle |'play 
+	"Play" uiRBtn 
+	'stop "Stop" uiRBtn 
+	stDang 'exit "Exit" uiRBtn 
+	
+	drawbuffer
+	
+	0.05 %h uiN
+|	"R3Music" $11 uiText
+	
+	0.1 %h uiS
+
+	0.6 %w uiO
+	font2 txfont
+	uiWinBox edwin 
+	edfocus
+	edcodedraw
+	
+	uiRest
+	$181818 sdlcolor uiWinBox sdlFrect
+	"Voices" uiLabel
+	
+	uiEnd
+	;
+	
+:main
+	vupdate
+	$0 SDLcls
+	gui	
+	
+	SDLredraw
+	SDLkey
+	>esc< =? ( exit )
+	<f1> =? ( gencycle )
+	drop 
+	smupdate
+	;
+
+#ex1 |"< {a b c } {d e f} > a ~ " 
 "<[g4*0.75 g4*0.25 a4 g4 c5 b4]
 [g4*0.75 g4*0.25 a4 g4 d5 c5]
 [g4*0.75 g4*0.25 g5 e5 c5 b4 a4]
 [f5*0.75 f5*0.25 e5 c5 d5 c5] ~>"
 
+#ex2
 "{<
 [e5 [b4 c5] d5 [c5 b4]]
 [a4 [a4 c5] e5 [d5 c5]]
@@ -86,118 +189,25 @@
 [[b1 b2]*2 [e2 e3]*2]
 [[a1 a2]*4]
 >}"
-* 256
-
-#i0 #i1 #i2 #i3
-
-:splay
-	dup @+ swap @ swap | get 2 params
-	smplayd ;
-	
-:genevt | note dur start --
-	|". " .print .flush
-	'splay swap +vvvexe ;
-	 
-:generate
-	1 'ccycle +!
-	eval
-	'stack ( stack> <?
-		@+
-		dup 32 >>
-		over $ffff and cyclesec *.
-		rot 16 >> $ffff and cyclesec *.
-		genevt
-		|"%f %f %d" .println .flush
-		) drop ;
-	
-:cicle
-	run 0? ( drop ; ) drop
-	generate
-	'cicle cyclesec  +vexe
-	;
-
-:gencycle
-	'pad .println .flush
-	'pad process | str --
-	0 'ccycle !
-	1 'run !
-	vareset
-	cicle
-	;
-
-:play
-	1 'run !
-	cicle ;
-	
-:stop
-	0 'run ! ;
-	
-|-----------------------------
-:gui
-	font1 txfont
-	uiStart
-	4 4 uiPading
-	$ffffff sdlcolor
-	
-	0.1 %w uiO
-	stLink "* Chipa *" uiLabelC
-	
-	"BPM" uiLabel
-	20 300 'bpm uiSlideri 
-	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
-	
-	cyclesec "%f" sprint uiLabelC
-	
-	'play "Play" uiRBtn 
-	'stop "Stop" uiRBtn 
-	stDang 'exit "Exit" uiRBtn 
-	
-	0.1 %h uiN
-	uiPush
-	0.5 %w uiO
-	"R3code music" $11 uiText
-	uiRest
-	|drawbuffer
-	uiPop
-	
-	0.1 %h uiS
-
-	0.6 %w uiO
-	'pad 64 uiInputLine
-	uiEx? 1? ( gencycle ) drop
-	
-	uiRest
-	"Voices" uiLabel
-	
-	uiEnd
-	;
-	
-:main
-	vupdate
-	$0 SDLcls
-	gui	
-	
-	SDLredraw
-	SDLkey
-	>esc< =? ( exit )
-	<f1> =? ( generate )
-	drop 
-	smupdate
-	;
 
 :
 	"Chipa" 1280 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
-
+	"media/ttf/RobotoMono-Bold.ttf" 18 txload 'font2 !
+	
+	edram
+	
 	sminit
 	$fff vaini
 
-	0.002 0.05 0.7 0.1 packADSR 'oscSinF iosc 'i0 !
+	0.002 0.05 0.7 0.1 packADSR 'oscSin iosc 'i0 !
 	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw2P iosc 'i1 !
 	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
 	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
 	i0 smI!
-	bpm ">>%d" .println .flush
+	
+	'ex2 edloadmem
+	
 	'main SDLshow
 	SDLquit 
 ;

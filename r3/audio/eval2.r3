@@ -341,8 +341,6 @@
 	dup @ rot or swap ! 
 	;
 
-
-	
 :pass3
 	'tokens ( tokens> <?
 		@+ $7 and 1? ( fix ) drop
@@ -383,79 +381,55 @@
 	dup $ffff and "%f |" .print
 	over t.note "%d" .println
 	
-|	over t.note 32 << over or 
-|	push
+|	over t.note 32 << over or push
 	;
 
-		
-|    // Calcular peso total incluyendo speed
-|    float total_weight = 0;
-|    for (int j = 0; j < node->child_count; j++) {
-|        Node* child = node->children[j];
-|        total_weight += child->weight * child->repeat * child->speed;
-|    if (total_weight == 0) break;
-|    // Distribuir proporcionalmente
-|    double scale = iteration_duration / total_weight;
-|    double offset = current_start;
-|    for (int j = 0; j < node->child_count; j++) {
-|        Node* child = node->children[j];
-|        double dur = (child->weight * child->repeat * child->speed) * scale;
-|        calculate_events(child, offset, dur, cycle_index);
-|        offset += dur;
-
-|:]extok	3 << 'extok + ;
-|:tok>ext 'tokens - 'extok + ;
-
-|:n.acc@ ]extok @ 32 >> $ffffffff and  ;
-|:n.wsum@ ]extok @ $ffffffff and ;
-	
-	
 :seq2 | fnode token start|dur
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	pick2 $ffff and 16 << | duration
-	pick4 tok>ext @ $ffffffff and | total
-	/. 
-	dup "%f" .println
-	swap | s|d 1node total cnt
-	( 1? >r					| fnode token start|dur child ; r:nchild
-		
-		|over n.acc@
-		
-		over 32 << over or | add node info
-		
+	dup $ffff and pick3 32 >> n.wsum@ 	|dup "sum:%f " .print
+	/. |fnode token s|d scale ;
+|	dup "scale:%f " .println
+	pick2 t.fk pick3 t.nk 	
+	pick3 swap | fnode token start|dur scale 1node start|dur cnt
+	( 1? >r					| fnode token start|dur scale child start|dur ; r:nchild
+		over n.acc@
+|		dup "acc:%f |" .print
+		pick3 *. | fnode token start|dur scale child stat|dur realdur
+		over $ffff0000 and over or | fnode token start|dur scale child start|dur realdur newsd
+		pick3 32 << or 
 		veval ex
-		s+d swap 1+ swap 
-		r> 1- ) 3drop ;
+		| fnode token start|dur scale child start|dur realdur
+		swap $ffff0000 and or
+		s+d 
+		swap 1+ swap 
+		r> 1- ) 4drop ;
 
-:seq | fnode token start|dur
+:seq | fnode token start|dur 
+|	dup $ffff and pick3 32 >> n.wsum@  /. "tot:%h " .println	
 	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	pick2 $ffff and over /	| duracion
-	pick3 $ffff0000 and or	| fnode token start|dur 1node cnt 
+	pick2 $ffff and |dup "dur:%h " .println
+	over /	| duracion
+	pick3 $ffff0000 and or	| fnode start|dur 1node cnt 
 	swap
-	( 1? >r					| fnode token start|dur child start|dur ; r:nchild
+	( 1? >r					| fnode start|dur child start|dur ; r:nchild
 		over 32 << over or | add node info
 		veval ex
-		
 		s+d swap 1+ swap
-		r> 1- ) 3drop ;
+		r> 1- ) 2drop ;
 	
 :alt | fnode token start|dur
-	ccycle pick2 t.nk mod 
-	pick2 t.fk +
+	ccycle pick2 t.nk mod pick2 t.fk +
 	32 << over or | add node info
 	veval ex ;
 	
-:poly | fnode token start|dur
+:poly | fnode token start|dur 
 	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
 	( 1? >r					| fnode token start|dur child ; r:nchild
 		over over 32 << or | add node info
 		veval ex
-		1+
-		r> 1- ) 2drop ;
+		1+ r> 1- ) 2drop ;
 		
 :ran
-	over t.fk 
-	pick2 t.nk 	| fnode token start|dur node
+	over t.fk pick2 t.nk 	| fnode token start|dur node
 	randmax +
 	32 << over or | add node info
 	veval ex
