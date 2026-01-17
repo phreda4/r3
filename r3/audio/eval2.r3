@@ -4,6 +4,8 @@
 ^r3/lib/console.r3
 ^r3/lib/rand.r3
 
+|^r3/lib/trace.r3
+
 |--- word stack ---
 #stack * $ff
 #stack> 'stack
@@ -342,6 +344,7 @@
 	;
 
 :pass3
+	'extok 0 tokens> 'tokens - 3 >> fill
 	'tokens ( tokens> <?
 		@+ $7 and 1? ( fix ) drop
 		) drop ;
@@ -384,7 +387,7 @@
 |	over t.note 32 << over or push
 	;
 
-:seq2 | fnode token start|dur
+:seq | fnode token start|dur
 	dup $ffff and pick3 32 >> n.wsum@ 	|dup "sum:%f " .print
 	/. |fnode token s|d scale ;
 |	dup "scale:%f " .println
@@ -403,21 +406,9 @@
 		swap 1+ swap 
 		r> 1- ) 4drop ;
 
-:seq | fnode token start|dur 
-|	dup $ffff and pick3 32 >> n.wsum@  /. "tot:%h " .println	
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	pick2 $ffff and |dup "dur:%h " .println
-	over /	| duracion
-	pick3 $ffff0000 and or	| fnode start|dur 1node cnt 
-	swap
-	( 1? >r					| fnode start|dur child start|dur ; r:nchild
-		over 32 << over or | add node info
-		veval ex
-		s+d swap 1+ swap
-		r> 1- ) 2drop ;
-	
 :alt | fnode token start|dur
 	ccycle pick2 t.nk mod pick2 t.fk +
+	dup "alt:%d" .println
 	32 << over or | add node info
 	veval ex ;
 	
@@ -435,7 +426,7 @@
 	veval ex
 	;
 	
-#listv	'note 'seq2 'alt 'poly 'ran 0 0 0
+#listv	'note 'seq 'alt 'poly 'ran 0 0 0
 
 :(eval) | fnode --
 	dup 32 >> ]token@ 	| fnode token
@@ -444,7 +435,7 @@
 |	dup "total:%d" .println
 	pick2 $ffff and over /			| fnode token total start|dur
 	pick3 $ffff0000 and or swap 	| fnode token start|dur total
-|	2dup "cnt:%d sd:%h" .println
+	|2dup "cnt:%d sd:%h >>" .print
 	( 1? >r			| fnode token start|dur
 		over t.prob $ff randmax >? ( drop 
 			over $7 and 3 << 'listv + @ ex 
@@ -460,46 +451,6 @@
 	$ffff (eval) ;
 
 |------------------------------------------
-#mus1
-
-"<[g4*0.75 g4*0.25 a4 g4 c5 b4]
-[g4*0.75 g4*0.25 a4 g4 d5 c5]
->"
-"< {a b c } {d e f} > a ~ " 
-"a b <e f> ~ " 
-"a b [c d] "
-"[[b c c c ] a a ]" 
-|"[b c] a" 
-|"[a b c a]" 
-"[a b c a]" 
-"[a b [c a]]" 
-"c c [b b b] c {a a}"
-"[ a b [c d] e ]"
-"b!2"
-"[a b? c]*2"
-"a b <c d e> [a c] [a b <a c>]"
-"< [[g#2 g#3]*2 [e2 e3]*2],[a b c]*2>"
-"<
-[e5 [b4 c5] d5 [c5 b4]]
-[a4 [a4 c5] e5 [d5 c5]]
-[b4 [~ c5] d5 e5]
-[c5 a4 a4 ~]
-[[~ d5] [~ f5] a5 [g5 f5]]
-[e5 [~ c5] e5 [d5 c5]]
-[b4 [b4 c5] d5 e5]
-[c5 a4 a4 ~]
-,
-[[e2 e3]*4]
-[[a2 a3]*4]
-[[g#2 g#3]*2 [e2 e3]*2]
-[a2 a3 a2 a3 a2 a3 b1 c2]
-[[d2 d3]*4]
-[[c2 c3]*4]
-[[b1 b2]*2 [e2 e3]*2]
-[[a1 a2]*4]
->"
-
-|------------------------------------
 :pp | v -- 
 	$fff and str$ + 
 	dup >>spl 
@@ -549,8 +500,8 @@
 		.cr 
 		) 2drop ;
 
-:test1
-	"a b c d" dup .println pass1 .cr
+:test
+	dup .println pass1 .cr
 |	"----list" .println printlist .cr
 	"----pass2" .println pass2
 	"----seq" .println printseq .cr
@@ -558,29 +509,17 @@
 	"----tokens" .println printoks
 	|"----printrec" .println 0 printrec .cr
 	"----eval" .println
-	0 'ccycle ! eval 
-|	1 'ccycle +! "." .println eval 
-|	1 'ccycle +! "." .println eval
+	0 'ccycle ! 
+	eval .cr 1 'ccycle +! 
+|	eval .cr 1 'ccycle +! 
+|	eval .cr 1 'ccycle +! 
 	;
 
 :main
 	getch drop
 	.cls
-	
-|	test1
-
-"-------------------------" .println
-
-	"a b [c d]" dup .println pass1 .cr
-|	"----list" .println printlist .cr
-	"----pass2" .println pass2
-	"----seq" .println printseq .cr
-	pass3	
-	"----tokens" .println printoks
-	|"----printrec" .println 0 printrec .cr
-	"----eval" .println
-	0 'ccycle ! eval 
-
+	"a [b c] d" test
+	"a [b c]" test
 	;
 
 :

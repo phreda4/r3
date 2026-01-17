@@ -94,12 +94,12 @@
 :gencycle
 	fuente 
 	trim dup c@ 0? ( 2drop ; ) drop
+|	dup .println .flush
 	process | str --
 	0 'ccycle !
 	1 'run !
 	vareset
-	cicle
-	;
+	cicle ;
 
 	
 :stop
@@ -148,7 +148,7 @@
 	0.02 %h uiS
 	
 	0.01 %w uiO
-	0.6 %w uiO $28 sdlcolor uiWinBox sdlFrect
+	0.6 %w uiO $181818 sdlcolor uiWinBox sdlFrect
 	font2 txfont
 	uiWinBox edwin 
 	edfocus
@@ -230,7 +230,7 @@
 :
 	"Chipa" 1024 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
-	"media/ttf/RobotoMono-Bold.ttf" 16 txload 'font2 !
+	"media/ttf/RobotoMono-Bold.ttf" 22 txload 'font2 !
 	
 	edram
 	

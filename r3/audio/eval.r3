@@ -300,7 +300,7 @@
 		
 |------- save first kid and count in token seq
 :fix | adr' t -- 'adr t
-	over 8 - dup @
+	over 8 - dup @ 
 	dup t.fk ]seq @
 	dup 32 >> $fff and 16 <<
 	swap 24 >> $ff and 8 << or
@@ -320,14 +320,23 @@
 	;
 	
 :pass3
+	'extok 0 tokens> 'tokens - 3 >> fill
 	'tokens ( tokens> <?
 		@+ $7 and 1? ( fix ) drop
 		) drop ; 
 		
+:debug
+	0 'tokens ( tokens> <?
+		swap dup "%h: " .print 1+ swap
+		@+ 	"| %h " .print 
+		dup 8 - tok>ext @ " %h" .print
+		.cr ) 2drop ;
+
 ::process | str --
 	pass1 
 	pass2
 	pass3
+|	debug
 	;
 
 |------------------------------------------
