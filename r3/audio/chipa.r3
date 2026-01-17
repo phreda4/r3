@@ -99,13 +99,32 @@
 	cicle
 	;
 
-:play
-	1 'run !
-	cicle ;
 	
 :stop
 	vareset
 	0 'run ! ;
+	
+:debug1
+	0 'tokens ( tokens> <?
+		mark
+		swap dup "%h: " ,print 1+ swap
+		@+ 	"| %h " ,print
+		dup 8 - tok>ext @ " %h" ,print
+		|drop 
+		,eol
+		empty here uiLabel
+		) 2drop ;
+
+:debug2
+	tokens> 'tokens - "%h " sprint uiLabel
+	list> 'list - "%h " sprint uiLabel
+	stack> 'stack - "%h" sprint uiLabel
+	;
+
+#listi oscSaw oscSqr oscPul1 oscPul2 oscTri oscSin oscFakeSuperSaw oscSuperSaw3P 
+#listex "Saw" "Sqr" "Pull1" "Pull2" "Tri" "Sin" "FSuperSaw" "SuperSaw" 0
+
+#vins 0 0
 	
 |-----------------------------
 :gui
@@ -114,52 +133,45 @@
 	4 4 uiPading
 	$ffffff sdlcolor
 	
-	0.1 %w uiO
-	stLink 
-|"* Chipa *" uiLabelC
+	0.05 %h uiN $004800 sdlcolor uiWinBox sdlFrect
+	"R3" uiLabel
 	
-	"BPM" uiLabel
-	20 300 'bpm uiSlideri 
-	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
+	0.02 %h uiS
 	
-	cyclesec "%f" sprint uiLabelC
-	
-	'gencycle |'play 
-	"Play" uiRBtn 
-	'stop "Stop" uiRBtn 
-	stDang 'exit "Exit" uiRBtn 
-	
-	drawbuffer
-	
-	0.05 %h uiN
-|	"R3Music" $11 uiText
-	
-	0.1 %h uiS
-
-	0.6 %w uiO
+	0.01 %w uiO
+	0.6 %w uiO $28 sdlcolor uiWinBox sdlFrect
 	font2 txfont
 	uiWinBox edwin 
 	edfocus
 	edcodedraw
 	
+	0.2 %w uiO $484848 sdlcolor uiWinBox sdlFrect
+	stLink 
+	"BPM" uiLabel
+	20 300 'bpm uiSlideri 
+	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
+	cyclesec "%fsec" sprint uiLabelC
+	
+	'vins 'listex uiCombo
+	uiEx? 1? ( "a" .println vins 3 << 'listi + @ i0 ioscch ) drop
+
+	ui--
+	'gencycle "Play" uiRBtn 
+	'stop "Stop" uiRBtn 
+	stDang 'exit "Exit" uiRBtn 
+	stInfo
+	
+	drawbuffer
+	
+	0.6 %w uiO
 	uiRest
 	$181818 sdlcolor uiWinBox sdlFrect
-	"Voices" uiLabel
+	font1 txfont
+	debug2
+
+|	"Voices" uiLabel
 	
 	uiEnd
-	;
-	
-:main
-	vupdate
-	$0 SDLcls
-	gui	
-	
-	SDLredraw
-	SDLkey
-	>esc< =? ( exit )
-	<f1> =? ( gencycle )
-	drop 
-	smupdate
 	;
 
 #ex1 |"< {a b c } {d e f} > a ~ " 
@@ -189,11 +201,27 @@
 [[b1 b2]*2 [e2 e3]*2]
 [[a1 a2]*4]
 >}"
+	
+:main
+	vupdate
+	$0 SDLcls
+	gui	
+	
+	SDLredraw
+	SDLkey
+	>esc< =? ( exit )
+	<f1> =? ( gencycle )
+	<f2> =? ( 'ex1 edloadmem )
+	<f3> =? ( 'ex2 edloadmem )
+	drop 
+	smupdate
+	;
 
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 :
-	"Chipa" 1280 720 SDLinit
+	"Chipa" 1024 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
-	"media/ttf/RobotoMono-Bold.ttf" 18 txload 'font2 !
+	"media/ttf/RobotoMono-Bold.ttf" 16 txload 'font2 !
 	
 	edram
 	
@@ -201,12 +229,14 @@
 	$fff vaini
 
 	0.002 0.05 0.7 0.1 packADSR 'oscSin iosc 'i0 !
-	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw2P iosc 'i1 !
+	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw3P iosc 'i1 !
 	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
 	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
-	i0 smI!
 	
-	'ex2 edloadmem
+	i0 smI! 
+	
+	|'ex1
+	"" edloadmem
 	
 	'main SDLshow
 	SDLquit 

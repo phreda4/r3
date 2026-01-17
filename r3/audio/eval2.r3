@@ -38,7 +38,8 @@
 	list> 'list - 2 >> ;
 	
 :]seqini! | n --
-	]seq dup @ listnro or swap ! ;
+	|]seq dup @ listnro or swap ! ;
+	listnro swap ]seq ! ;
 	
 :]seqend! | n --
 	]seq dup @ listnro 12 << or swap ! ;
@@ -94,7 +95,7 @@
 :dnlvl | --
 	+item 1+
 	aseq 
-	dup ]seq-!
+	|dup ]seq-!
 	]seqend!
 	pop 'aseq !
 	-1 'lvl +! 
@@ -461,6 +462,7 @@
 
 |------------------------------------------
 #mus1
+
 "<[g4*0.75 g4*0.25 a4 g4 c5 b4]
 [g4*0.75 g4*0.25 a4 g4 d5 c5]
 >"
@@ -548,25 +550,38 @@
 		.cr 
 		) 2drop ;
 
-:main
-	getch drop
-	.cls
-	"parse: " .print
-	'mus1 dup .println 
-	
-	pass1 .cr
+:test1
+	"a b c d" dup .println pass1 .cr
 |	"----list" .println printlist .cr
 	"----pass2" .println pass2
 	"----seq" .println printseq .cr
 	pass3	
 	"----tokens" .println printoks
-	
 	|"----printrec" .println 0 printrec .cr
-	
 	"----eval" .println
-	0 'ccycle ! "." .println eval 
+	0 'ccycle ! eval 
 |	1 'ccycle +! "." .println eval 
 |	1 'ccycle +! "." .println eval
+	;
+
+:main
+	getch drop
+	.cls
+	
+|	test1
+
+"-------------------------" .println
+
+	"a b [c d]" dup .println pass1 .cr
+|	"----list" .println printlist .cr
+	"----pass2" .println pass2
+	"----seq" .println printseq .cr
+	pass3	
+	"----tokens" .println printoks
+	|"----printrec" .println 0 printrec .cr
+	"----eval" .println
+	0 'ccycle ! eval 
+
 	;
 
 :

@@ -233,6 +233,9 @@
 	a> 'instr> ! 
 	ninstr ;
 
+::ioscch | osc n --
+	5 << 'instr + !
+	;
 
 ::inoise | ADSR noise -- n
 	instr> >a

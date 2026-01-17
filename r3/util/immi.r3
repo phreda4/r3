@@ -665,8 +665,8 @@
 	sdlkey 
 	<ret> =? ( flagEx! )
 	<tab> =? ( tabfocus ) 
-	<up> =? ( pick2 dup @ 1- clamp0 swap ! )
-	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! )	
+	<up> =? ( pick2 dup @ 1- clamp0 swap ! flagEx! )
+	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! flagEx! )	
 	drop 
 	cscroll ;
 
@@ -765,6 +765,7 @@
 	
 ::uiCombo | 'var 'list --
 	uiZone 
+	colBack uiLFill
 	'kblistc uiFocus
 	mark makeindx	
 	cx cy txat

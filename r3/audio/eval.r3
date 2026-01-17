@@ -18,8 +18,8 @@
 
 | tokenizado
 | cant(8)seq(12)str(12)
-#list * 1024
-#list> 'list
+##list * 1024
+##list> 'list
 
 :]list@ | n -- list@
 	2 << 'list + d@ ;
@@ -38,7 +38,8 @@
 	list> 'list - 2 >> ;
 	
 :]seqini! | n --
-	]seq dup @ listnro or swap ! ;
+	|]seq dup @ listnro or swap ! ;
+	listnro swap ]seq ! ;	
 	
 :]seqend! | n --
 	]seq dup @ listnro 12 << or swap ! ;
@@ -71,7 +72,7 @@
 
 	
 :]seq+!	]seq 1 24 << swap +! ;
-:]seq-!	]seq -2 24 << swap +! ; | ] +1 -2
+:]seq-!	]seq -1 24 << swap +! ; | ] +1 -2
 	
 | ITEM 32bits
 | seq(12) str(12)
@@ -127,6 +128,7 @@
 
 :pass1 | 'str -- 
 	dup 'str$ !
+	'stack 'stack> !
 	'list 'list> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
 	aseq dup ]seqini! push | first node..a b -> [a b]
 	( trimall 1? token ) 2drop 
@@ -206,8 +208,8 @@
 |mod->scale(12)
 |mod->weight(12)
 
-#tokens * $fff
-#tokens> 'tokens
+##tokens * $fff
+##tokens> 'tokens
 
 :]token@ 3 << 'tokens + @ ;
 :,tok	tokens> !+ 'tokens> ! ;
@@ -217,7 +219,7 @@
 #extok * $fff
 
 :]extok	3 << 'extok + ;
-:tok>ext 'tokens - 'extok + ;
+::tok>ext 'tokens - 'extok + ;
 
 :n.acc@ ]extok @ 32 >> $ffffffff and  ;
 :n.wsum@ ]extok @ $ffffffff and ;
