@@ -72,7 +72,7 @@
 
 	
 :]seq+!	]seq 1 24 << swap +! ;
-:]seq-!	]seq -2 24 << swap +! ; | ] +1 -2
+:]seq-!	]seq -1 24 << swap +! ;
 	
 | ITEM 32bits
 | seq(12) str(12)
@@ -95,7 +95,7 @@
 :dnlvl | --
 	+item 1+
 	aseq 
-	|dup ]seq-!
+	dup ]seq-!
 	]seqend!
 	pop 'aseq !
 	-1 'lvl +! 
@@ -105,7 +105,6 @@
 	1- ;
 	
 :coma
-	|+item 
 	aseq ]seq
 	dup @ $80000000 or swap ! ; | bit de polyfonia
 	

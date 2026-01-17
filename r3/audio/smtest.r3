@@ -33,19 +33,30 @@
 	
 #i0 #i1 #i2 #i3
 
+:debug
+	'voice
+	@ "%h" txprint
+	;
+	
 :main
 	vupdate
 	$0 SDLcls
 	drawbuffer
+	10 0 txat
+	voice> 'voice - "sm voice %h" sprint txprint
+	10 20 txat
+	debug
+	
+	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
 	<a> =? ( 0 keydn )
 	>a< =? ( 0 keyup )
-	<f1> =? ( 0 0.25 smplayd )
-	<f2> =? ( i0 smI! 1 0.25 smplayd )
-	<f3> =? ( i1 smI! 1 0.25 smplayd )
-	<f4> =? ( 4 0.5 smplayd 6 0.5 smplayd 9 0.5 smplayd )
+	<f1> =? ( 30 0.25 smplayd )
+	<f2> =? ( i0 smI! 31 0.25 smplayd )
+	<f3> =? ( i1 smI! 31 0.25 smplayd )
+	<f4> =? ( 34 0.5 smplayd 36 0.5 smplayd 39 0.5 smplayd )
 	<z> =? ( i3 smi! 0 1.0 smplayd )
 	<x> =? ( i3 smi! 1 1.0 smplayd )
 	<c> =? ( i3 smi! 2 1.0 smplayd )
@@ -54,8 +65,12 @@
 	smupdate
 	;
 
+#font1
+
 :
 	"supermix" 1024 600 SDLinit
+	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
+	font1 txfont	
 	sminit
 	$fff vaini
 

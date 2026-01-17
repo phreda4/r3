@@ -12,8 +12,8 @@
 | ---update 
 | vupdate | --
 |
-| exe1 get param >>	dup @
-| exe2 get param >>	dup @+ swap @
+| vvexe: get param >>	dup @ -> v1
+| vvvexe: get param >>	dup @+ swap @ -> v2 v1
 |
 ^r3/lib/mem.r3
 ^r3/lib/color.r3

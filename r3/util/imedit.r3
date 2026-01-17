@@ -544,7 +544,6 @@
 :inedit | write editor
 	$7f sdlcolor 
 	|xcode ycode wcode hcode sdlRect 
-	uiZoneW
 	|'dns 'mos 'ups onMap
 	'dns uiDwn
 	'mos uiSel
@@ -555,7 +554,6 @@
 	edselshow ;
 
 ::edfocus
-	|xcode ycode wcode hcode guiBox
 	uiZoneW
 	'inedit uiFocus
 	;

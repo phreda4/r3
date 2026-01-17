@@ -13,8 +13,8 @@
 
 |------------------- VOICES
 | unidad de sonido 
-#voice * $ffff
-#voice> 'voice
+##voice * $ffff
+##voice> 'voice
 
 :resetvoices
 	'voice 'voice> ! ;
@@ -46,9 +46,7 @@
 	-48 'voice> +! voice> 6 move ;
 
 :delvoicea | --
-	-48 'voice> +! 
-	a> voice> 6 move 
-	-48 a+	;
+	-48 'voice> +! a> voice> 6 move -48 a+ ;
 
 |---- OSC
 | time -- val
@@ -80,8 +78,9 @@
 
 
 	
-:envelADSR | voice -- mix
+:envelADSR | state -- mix	
 	1 d.time d+!
+	c.state c@
 	1 =? ( drop | attack
 		w.vol w@ 2* w.Adt w@ + 
 		1.0 <? ( ; ) 1.0 nip 
@@ -96,25 +95,25 @@
 		w.vol w@ 2* ; ) |sustain
 	drop | release
 	w.vol w@ 2* w.Rdt w@ -
-	0 >? ( ; ) 0.0 nip 
-	0 c.state c! ;
+	0 >? ( ; ) -1 nip 
+	0 c.state c! 
+	;
 
 :playosc | vol voice -- vol voice
-	c.state c@ 0? ( delvoicea ; ) 
-	envelADSR dup 2/ w.vol w! | volumen por envelope	
+	envelADSR -? ( 0 nip delvoicea ; ) 
+	dup 2/ w.vol w! | volumen por envelope	
 	
-	d.time d@ 
-	d.dtime d@ >? ( 4 c.state c! )
+	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.freq d@ *. $ffff and
 	q.func @ ex |oscSin | ciclo
 	
 	*. ; | senial * envelope
 
 :playnoise
-	c.state c@ 0? ( delvoicea ; ) 
-	envelADSR dup 2/ w.vol w! | volumen por envelope	
-	d.time d@ 
-	d.dtime d@ >? ( 4 c.state c! )
+	envelADSR -? ( 0 nip delvoicea ; ) 
+	dup 2/ w.vol w! | volumen por envelope	
+	
+	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	drop
 	q.func @ ex | noise sin ciclo |	fbrown 
 	*. ; | senial * envelope
@@ -125,10 +124,10 @@
 	rot pick2 - *. + ;
 
 :playsam
-	c.state c@ 0? ( delvoicea ; ) | state=0
-	envelADSR dup 2/ w.vol w! | volumen por envelope	
-	d.time d@ 
-	d.dtime d@ >? ( 4 c.state c! )
+	envelADSR -? ( 0 nip delvoicea ; )
+	dup 2/ w.vol w! | volumen por envelope	
+	
+	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.fresam d@ *
 	d.lensam d@ 16 << >=? ( 2drop 0 c.state c! 0 ; )
 	
@@ -141,7 +140,7 @@
 	2* *. ; |2.0 *. | w->0--1.0
 
 |------------------- RUN
-#aurate 48000 |44100 |
+#aurate 44100 |48000 |
 #audevice 
 #auspec * 32
 

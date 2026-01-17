@@ -119,6 +119,10 @@
 	tokens> 'tokens - "%h " sprint uiLabel
 	list> 'list - "%h " sprint uiLabel
 	stack> 'stack - "%h" sprint uiLabel
+	voice> 'voice - "sm voice %h" sprint uiLabel
+	timeline> timeline - 3 >> "timeline %d" sprint uiLabel
+	|#timeline<	
+	
 	;
 
 #listi oscSaw oscSqr oscPul1 oscPul2 oscTri oscSin oscFakeSuperSaw oscSuperSaw3P 
@@ -128,7 +132,7 @@
 	
 |-----------------------------
 :gui
-	font1 txfont
+	|font1 txfont
 	uiStart
 	4 4 uiPading
 	$ffffff sdlcolor
@@ -147,6 +151,7 @@
 	
 	0.2 %w uiO $484848 sdlcolor uiWinBox sdlFrect
 	stLink 
+	font1 txfont
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
 	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
@@ -163,13 +168,11 @@
 	
 	drawbuffer
 	
-	0.6 %w uiO
 	uiRest
 	$181818 sdlcolor uiWinBox sdlFrect
-	font1 txfont
 	debug2
 
-|	"Voices" uiLabel
+	"Voices" uiLabel
 	
 	uiEnd
 	;
