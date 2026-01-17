@@ -92,7 +92,9 @@
 	;
 
 :gencycle
-	fuente process | str --
+	fuente 
+	trim dup c@ 0? ( 2drop ; ) drop
+	process | str --
 	0 'ccycle !
 	1 'run !
 	vareset
@@ -128,7 +130,10 @@
 #listi oscSaw oscSqr oscPul1 oscPul2 oscTri oscSin oscFakeSuperSaw oscSuperSaw3P 
 #listex "Saw" "Sqr" "Pull1" "Pull2" "Tri" "Sin" "FSuperSaw" "SuperSaw" 0
 
-#vins 0 0
+#vins 0 0 | instrument
+:setInst
+	vins 3 << 'listi + @ i0 smOSC! 
+	i0 smi! ;
 	
 |-----------------------------
 :gui
@@ -138,7 +143,7 @@
 	$ffffff sdlcolor
 	
 	0.05 %h uiN $004800 sdlcolor uiWinBox sdlFrect
-	"R3" uiLabel
+	"r3ChipA - [f1] eval+play [f2] stop [esc] exit" uiLabel
 	
 	0.02 %h uiS
 	
@@ -152,15 +157,15 @@
 	0.2 %w uiO $484848 sdlcolor uiWinBox sdlFrect
 	stLink 
 	font1 txfont
+	
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
 	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
 	cyclesec "%fsec" sprint uiLabelC
 	
 	'vins 'listex uiCombo
-	uiEx? 1? ( "a" .println vins 3 << 'listi + @ i0 ioscch ) drop
+	uiEx? 1? ( setInst ) drop
 
-	ui--
 	'gencycle "Play" uiRBtn 
 	'stop "Stop" uiRBtn 
 	stDang 'exit "Exit" uiRBtn 
@@ -206,7 +211,6 @@
 >}"
 	
 :main
-	vupdate
 	$0 SDLcls
 	gui	
 	
@@ -214,9 +218,11 @@
 	SDLkey
 	>esc< =? ( exit )
 	<f1> =? ( gencycle )
-	<f2> =? ( 'ex1 edloadmem )
-	<f3> =? ( 'ex2 edloadmem )
+	<f2> =? ( stop )
+	<f4> =? ( 'ex1 edloadmem )
+	<f5> =? ( 'ex2 edloadmem )
 	drop 
+	vupdate
 	smupdate
 	;
 

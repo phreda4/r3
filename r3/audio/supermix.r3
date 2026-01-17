@@ -232,9 +232,6 @@
 	a> 'instr> ! 
 	ninstr ;
 
-::ioscch | osc n --
-	5 << 'instr + !
-	;
 
 ::inoise | ADSR noise -- n
 	instr> >a
@@ -263,8 +260,11 @@
 	@+ 'ins_ADSR !
 	@ 'ins_aux !
 	;
+
+::smOSC! | osc n --
+	5 << 'instr + 8 + ! ;
 	
-::smASDR! | v i --
+::smASDR! | v n --
 	5 << 'instr + 16 + ! ;
 	
 ::fx
