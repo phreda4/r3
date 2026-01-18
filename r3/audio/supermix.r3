@@ -95,8 +95,8 @@
 		w.vol w@ 2* ; ) |sustain
 	drop | release
 	w.vol w@ 2* w.Rdt w@ -
-	0 >? ( ; ) -1 nip 
-	0 c.state c! 
+|	0 >? ( ; ) -1 nip 
+|	0 c.state c! 
 	;
 
 :playosc | vol voice -- vol voice

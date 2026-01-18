@@ -1,4 +1,4 @@
-| chipa - strudel sudaca
+| ChipA - strudel sudaca
 | PHREDA 2026
 
 ^r3/lib/sdl2gfx.r3
@@ -237,14 +237,12 @@
 	sminit
 	$fff vaini
 
-	0.002 0.05 0.7 0.1 packADSR 'oscSin iosc 'i0 !
-	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw3P iosc 'i1 !
-	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
-	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
-	
+	0.002 0.05 0.8 0.1 packADSR 'oscSin iosc 'i0 !
+|	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw3P iosc 'i1 !
+|	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
+|	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
 	i0 smI! 
 	
-	|'ex1
 	"" edloadmem
 	
 	'main SDLshow
