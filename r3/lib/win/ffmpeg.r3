@@ -1,8 +1,5 @@
 | ffmpeg.dll
 | PHREDA 2024
-| api >> ffm.dll
-^r3/lib/math.r3
-^r3/lib/sdl2.r3
 
 #sys-IniVideo
 #sys-LoadVideo
@@ -37,7 +34,8 @@
 #vert [ 0 0 0 0 0
 		0 0 0 0 0
 		0 0 0 0 0
-		0 0 0 0 0 ]
+		0 0 0 0 0 
+	]
 
 #index [ 0 1 2 2 3 0 ]	
 
@@ -101,28 +99,6 @@
 	ab[ fillfull fillvertr ]ba 
 	r> 'vert 4 'index 6 VideoPoly ;
 	
-|-------- version 1 
-#actvideo
-#filename * 1024
-	
-::FFM_open | file --
-	actvideo StopVideo 
-	'filename strcpy
-	'filename
-	dup c@ 0? ( drop ; ) drop
-	|LOADING VID_NO_AUDIO or | audio
-	0
-	LoadVideo 'actvideo ! 
-	;
-	
-::FFM_redraw | -- 0-fin
-	actvideo dup 0 VideoBox
-	VideoFlag 
-	;
-	
-::FFM_close 
-	actvideo StopVideo ;
-	
 |----- BOOT	
 :
 	".\\dll" SetDllDirectory
@@ -138,5 +114,4 @@
 	drop
 	"" SetDllDirectory
 	;
-
 

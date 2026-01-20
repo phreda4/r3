@@ -341,49 +341,11 @@
 
 |------------------------------------------
 ##ccycle
-#veval 0
+
+#listv	0 0 0 0 0 0 0 0 |'note 'seq 'alt 'poly 'ran 0 0 0
 
 :start+dur | v -- v
 	dup 16 << + $ffffffff and ;
-
-|:list reuse
-:note | fnode token start|dur 
-	over t.note 32 << over or push ;
-
-:seq | fnode token start|dur
-	dup $ffff and pick3 32 >> n.wsum@ /. |fnode token s|d scale ;
-	pick2 t.fk pick3 t.nk 	
-	pick3 swap | fnode token start|dur scale 1node start|dur cnt
-	( 1? >r					| fnode token start|dur scale child start|dur ; r:nchild
-		over n.acc@ pick3 *. | fnode token start|dur scale child stat|dur realdur
-		over $ffff0000 and over or | fnode token start|dur scale child start|dur realdur newsd
-		pick3 32 << or 
-		veval ex
-		| fnode token start|dur scale child start|dur realdur
-		swap $ffff0000 and or
-		start+dur 
-		swap 1+ swap 
-		r> 1- ) 4drop ;
-	
-:alt | fnode token start|dur
-	ccycle pick2 t.nk mod
-	pick2 t.fk +
-	32 << over or | add node info
-	veval ex ;
-	
-:poly | fnode token start|dur
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	( 1? >r					| fnode token start|dur child ; r:nchild
-		over over 32 << or | add node info
-		veval ex
-		1+ r> 1- ) 2drop ;
-		
-:ran
-	over t.fk pick2 t.nk randmax +
-	32 << over or | add node info
-	veval ex ;
-	
-#listv	'note 'seq 'alt 'poly 'ran 0 0 0
 
 :(eval) | fnode --
 	dup 32 >> ]token@ 	| fnode token
@@ -398,10 +360,54 @@
 		start+dur
 		r> 1- ) 
 	4drop ;
+
+|:list reuse
+:note | fnode token start|dur 
+	over t.note 32 << over or push ;
+
+:seq | fnode token start|dur
+	dup $ffff and pick3 32 >> n.wsum@ /. |fnode token s|d scale ;
+	pick2 t.fk pick3 t.nk 	
+	pick3 swap | fnode token start|dur scale 1node start|dur cnt
+	( 1? >r					| fnode token start|dur scale child start|dur ; r:nchild
+		over n.acc@ pick3 *. | fnode token start|dur scale child stat|dur realdur
+		over $ffff0000 and over or | fnode token start|dur scale child start|dur realdur newsd
+		pick3 32 << or 
+		(eval)
+		| fnode token start|dur scale child start|dur realdur
+		swap $ffff0000 and or
+		start+dur 
+		swap 1+ swap 
+		r> 1- ) 4drop ;
+	
+:alt | fnode token start|dur
+	ccycle pick2 t.nk mod
+	pick2 t.fk +
+	32 << over or | add node info
+	(eval) ;
+	
+:poly | fnode token start|dur
+	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
+	( 1? >r					| fnode token start|dur child ; r:nchild
+		over over 32 << or | add node info
+		(eval)
+		1+ r> 1- ) 2drop ;
+		
+:ran
+	over t.fk pick2 t.nk randmax +
+	32 << over or | add node info
+	(eval) ;
 	
 	
 ::eval |
-	'(eval) 'veval !
-	'stack 'stack> ! | evenl list
+	'stack 'stack> ! | event list
 	$ffff (eval) ;
 	
+:
+'listv >a
+'note a!+	| 0
+'seq a!+	| 1
+'alt a!+	| 2
+'poly a!+	| 3
+'ran a!+	| 4
+;
