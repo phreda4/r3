@@ -4,7 +4,6 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 ^r3/lib/console.r3
-^r3/lib/mconsole.r3
 
 |------ Color line
 #colornow 0
@@ -22,7 +21,7 @@
 	over isNro 1? ( drop 11 'colornow ! ; ) 
 	drop 10 'colornow ! ;
 
-:,tcolor colornow ,fcolor ;
+:,tcolor colornow .fc ;
 
 #endlin
 #cntlin
@@ -73,6 +72,6 @@
 ::code-print | scrx scry lines width source --
 	swap 'cntlin !
 	0 ( pick2 <? | scrx lines src linen
-		pick4 pick4 pick2 + ,at ,sp
-		swap parseline ,eline
+		pick4 pick4 pick2 + .at .sp
+		swap parseline .eline
 		swap 1 + ) nip 4drop ;

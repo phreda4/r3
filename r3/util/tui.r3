@@ -1,7 +1,7 @@
 | Text User Inteface
 | PHREDA 2025
 |--------
-^r3/lib/term.r3
+^r3/lib/console.r3
 |^r3/lib/trace.r3
 ^r3/util/utfg.r3
 
@@ -117,7 +117,7 @@
 |******************
 ::.tdebug
 	wida idf ida id "id:%d ida:%d idf:%d wida:%d " .print
-	rflag "%d " .print
+	rflag "%d " .println
 	;
 |******************	
 
@@ -381,10 +381,10 @@
 
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-	cntlist >=? ( drop ; ) 
+	fx .col | color?
+	cntlist >=? ( drop fw .nsp .cr ; ) 
 	pick3 @ =? ( .rever )
 	uiNindx 
-	fx .col | color?
 	fw swap (xwrite) ex .cr
 	.reset 
 	;
@@ -462,8 +462,8 @@
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	pick3 @ =? ( .rever )
-	uiNindx c@+ 0? ( 2drop ; )
-	fx .col | color
+	fx .col
+	uiNindx c@+ 0? ( 2drop fw .nsp .cr ; )
 	mark dup $1f and 2* ,nsp ,iicon ,s ,eol empty
 	fw here (xwrite) ex .cr 
 	.reset ;

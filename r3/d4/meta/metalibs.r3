@@ -24,9 +24,9 @@
 #r3_lib_color.r3 'name 'words 'calls 'info
 ^r3/lib/console.r3
 #name "r3/lib/console.r3"
-#words  0
-#calls 
-#info ( )
+#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".cl" ".flush" ".type" ".emit" ".cr" ".sp" ".nsp" ".nch" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".ealine" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".Dim" ".Italic" ".Under" ".Blink" ".Rever" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" 0
+#calls  '[ESC] '[ENTER] '[BACK] '[TAB] '[DEL] '[INS] '[UP] '[DN] '[RI] '[LE] '[PGUP] '[PGDN] '[HOME] '[END] '[SHIFT+TAB] '[SHIFT+DEL] '[SHIFT+INS] '[SHIFT+UP] '[SHIFT+DN] '[SHIFT+RI] '[SHIFT+LE] '[SHIFT+PGUP] '[SHIFT+PGDN] '[SHIFT+HOME] '[SHIFT+END] '[F1] '[F2] '[F3] '[F4] '[F5] '[F6] '[F7] '[F8] '[F9] '[F10] '[F11] '[F12] '.cl '.flush '.type '.emit '.cr '.sp '.nsp '.nch '.write '.print '.println '.^[ '.[w '.[p '.rep '.fwrite '.fprint '.home '.cls '.at '.col '.eline '.ealine '.escreen '.escreenup '.showc '.hidec '.blc '.unblc '.savec '.restorec '.ovec '.insc '.blockc '.underc '.alsb '.masb '.scrolloff '.scrollon '.Black '.Red '.Green '.Yellow '.Blue '.Magenta '.Cyan '.White '.Blackl '.Redl '.Greenl '.Yellowl '.Bluel '.Magental '.Cyanl '.Whitel '.fc '.BBlack '.BRed '.BGreen '.BYellow '.BBlue '.BMagenta '.BCyan '.BWhite '.BBlackl '.BRedl '.BGreenl '.BYellowl '.BBluel '.BMagental '.BCyanl '.BWhitel '.bc '.fgrgb '.bgrgb '.Bold '.Dim '.Italic '.Under '.Blink '.Rever '.Hidden '.Strike '.Reset 'getch 'waitesc 'waitkey
+#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $0 $0 $1F $2E $1F $1F $1F $0 $1F $1F $2E $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $0 $0 $0 $0 $0 $0 $0 $0 $0 $1 $0 $0 )
 #r3_lib_console.r3 'name 'words 'calls 'info
 ^r3/lib/crc32.r3
 #name "r3/lib/crc32.r3"
@@ -76,12 +76,6 @@
 #calls  'cell 'cell+ 'ncell+ '1+ '1- '2/ '2* '*.s '*. '*.f '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'msb 'sqrt. 'log2. 'pow2. 'pow. 'root. 'ln. 'exp. 'tanh. 'fastanh. 'gamma. 'beta. 'cubicpulse 'pow 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '100000* '10000* '1000* '1000000* '100* '10* '10/ '10/mod '1000000/ 'i2fp 'f2fp 'fp2f 'fp2i 'fp16f 'f2fp24 'fp2f24 'byte>float32N 'float32N>byte
 #info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'calls 'info
-^r3/lib/mconsole.r3
-#name "r3/lib/mconsole.r3"
-#words  ",esc" ",[" ",fcolor" ",bcolor" ",eline" ",home" ",cls" ",at" ",col" ",eline" ",fc" ",bc" ",Black" ",Red" ",Green" ",Yellow" ",Blue" ",Magenta" ",Cyan" ",White" ",Blackl" ",Redl" ",Greenl" ",Yellowl" ",Bluel" ",Magental" ",Cyanl" ",Whitel" ",BBlack" ",BRed" ",BGreen" ",BYellow" ",BBlue" ",BMagenta" ",BCyan" ",BWhite" ",BBlackl" ",BRedl" ",BGreenl" ",BYellowl" ",BBluel" ",BMagental" ",BCyanl" ",BWhitel" ",Bold" ",Under" ",Rever" ",Reset" ",alsb" ",masb" ",showc" ",hidec" ",ovec" ",insc" ",savec" ",restc" ",print" ",println" ",printe" ",type" 0
-#calls  ',esc ',[ ',fcolor ',bcolor ',eline ',home ',cls ',at ',col ',eline ',fc ',bc ',Black ',Red ',Green ',Yellow ',Blue ',Magenta ',Cyan ',White ',Blackl ',Redl ',Greenl ',Yellowl ',Bluel ',Magental ',Cyanl ',Whitel ',BBlack ',BRed ',BGreen ',BYellow ',BBlue ',BMagenta ',BCyan ',BWhite ',BBlackl ',BRedl ',BGreenl ',BYellowl ',BBluel ',BMagental ',BCyanl ',BWhitel ',Bold ',Under ',Rever ',Reset ',alsb ',masb ',showc ',hidec ',ovec ',insc ',savec ',restc ',print ',println ',printe ',type
-#info ( $0 $1F $1F $1F $0 $0 $0 $2E $1F $0 $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E )
-#r3_lib_mconsole.r3 'name 'words 'calls 'info
 ^r3/lib/mem.r3
 #name "r3/lib/mem.r3"
 #words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" "sprintc" "sprintlnc" 0
@@ -178,12 +172,6 @@
 #calls  'strcpyl 'strcpy 'strcat 'strcpylnl 'strcpyln 'copynom 'copystr 'strpath 'toupp 'tolow 'count 'count 'utf8count 'utf8ncpy 'utf8bytes '= 'cmpstr '=s '=w '=pre '=pos '=lpos 'findchar 'findstr 'findstri '.d '.b '.h '.o '.f '.f2 '.f1 '.r. 'trim 'trimc 'trimcar 'trimstr '>>cr '>>0 'l0count 'n>>0 'only13 '>>sp '>>str
 #info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $11 $3E $20 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $2F $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 )
 #r3_lib_str.r3 'name 'words 'calls 'info
-^r3/lib/term.r3
-#name "r3/lib/term.r3"
-#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".cl" ".flush" ".type" ".emit" ".cr" ".sp" ".nsp" ".nch" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".rep" ".fwrite" ".fprint" ".fprintln" ".home" ".cls" ".at" ".col" ".eline" ".ealine" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".Dim" ".Italic" ".Under" ".Blink" ".Rever" ".Hidden" ".Strike" ".Reset" "waitesc" "waitkey" 0
-#calls  '[ESC] '[ENTER] '[BACK] '[TAB] '[DEL] '[INS] '[UP] '[DN] '[RI] '[LE] '[PGUP] '[PGDN] '[HOME] '[END] '[SHIFT+TAB] '[SHIFT+DEL] '[SHIFT+INS] '[SHIFT+UP] '[SHIFT+DN] '[SHIFT+RI] '[SHIFT+LE] '[SHIFT+PGUP] '[SHIFT+PGDN] '[SHIFT+HOME] '[SHIFT+END] '[F1] '[F2] '[F3] '[F4] '[F5] '[F6] '[F7] '[F8] '[F9] '[F10] '[F11] '[F12] '.cl '.flush '.type '.emit '.cr '.sp '.nsp '.nch '.write '.print '.println '.^[ '.[w '.[p '.rep '.fwrite '.fprint '.fprintln '.home '.cls '.at '.col '.eline '.ealine '.escreen '.escreenup '.showc '.hidec '.blc '.unblc '.savec '.restorec '.ovec '.insc '.blockc '.underc '.alsb '.masb '.scrolloff '.scrollon '.Black '.Red '.Green '.Yellow '.Blue '.Magenta '.Cyan '.White '.Blackl '.Redl '.Greenl '.Yellowl '.Bluel '.Magental '.Cyanl '.Whitel '.fc '.BBlack '.BRed '.BGreen '.BYellow '.BBlue '.BMagenta '.BCyan '.BWhite '.BBlackl '.BRedl '.BGreenl '.BYellowl '.BBluel '.BMagental '.BCyanl '.BWhitel '.bc '.fgrgb '.bgrgb '.Bold '.Dim '.Italic '.Under '.Blink '.Rever '.Hidden '.Strike '.Reset 'waitesc 'waitkey
-#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $0 $0 $1F $2E $1F $1F $1F $0 $1F $1F $2E $1F $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 )
-#r3_lib_term.r3 'name 'words 'calls 'info
 ^r3/lib/tflite.r3
 #name "r3/lib/tflite.r3"
 #words  "TfLiteModelCreateFromFile" "TfLiteInterpreterOptionsCreate" "TfLiteInterpreterCreate" "TfLiteInterpreterAllocateTensors" "TfLiteInterpreterGetInputTensor" "TfLiteInterpreterGetOutputTensor" "TfLiteTensorDim" "TfLiteTensorData" "TfLiteInterpreterInvoke" "TfLiteInterpreterDelete" "TfLiteInterpreterOptionsDelete" "TfLiteModelDelete" "TfLiteXNNPackDelegateCreate" "TfLiteInterpreterOptionsAddDelegate" "TfLiteTensorCopyFromBuffer" "TfLiteTensorCopyToBuffer" "TfLiteTensorByteSize" 0
@@ -306,9 +294,9 @@
 #r3_util_imcolor.r3 'name 'words 'calls 'info
 ^r3/util/imedit.r3
 #name "r3/util/imedit.r3"
-#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edload" "edsave" 0
-#calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edfocusro 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edload 'edsave
-#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $0 )
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
+#calls  'ycursor 'xcursor 'edfilename 'inisel 'finsel 'fuente 'fuente> 'edcodedraw 'edfill 'edtoolbar 'edfocus 'edfocusro 'clearmark 'addmark 'addsrcmark 'showmark 'edram 'edwin 'edloadmem 'edload 'edsave
+#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
 #r3_util_imedit.r3 'name 'words 'calls 'info
 ^r3/util/imfiledlg.r3
 #name "r3/util/imfiledlg.r3"
@@ -448,12 +436,6 @@
 #calls  '[ESC] ']ESC[ '[ENTER] '[BACK] ']BACK[ '[TAB] ']TAB[ '[DEL] '[UP] '[DN] '[RI] '[LE] '[PGUP] '[PGDN] '[HOME] '[END] '[INS] '[CTRL] ']CTRL[ '[ALT] '[SHIFTR] ']SHIFTR[ '[SHIFTL] ']SHIFTL[ '[F1] '[F2] '[F3] '[F4] '[F5] '[F6] '[F7] '[F8] '[F9] '[F10] '[F11] '[F12] 'k2ascii
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 )
 #r3_lib_win_conkey.r3 'name 'words 'calls 'info
-^r3/lib/win/console.r3
-#name "r3/lib/win/console.r3"
-#words  "stdin" "stdout" "stderr" "type" ".cr" ".sp" ".nsp" ".emit" ".[" ".write" ".print" ".println" ".home" ".cls" ".at" ".eline" ".fc" ".bc" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".Bold" ".Under" ".Rever" ".Reset" ".alsb" ".masb" ".showc" ".hidec" ".ovec" ".insc" "consoleinfo" "rows" "cols" ".getconsoleinfo" "getch" "inkey" "waitesc" "evtkey" "evtmxy" "evtmb" "evtmw" "evtm" "getevt" "inevt" "pad" "getcursorpos" ".input" ".inputn" ".printe" "evtmouse" ".free" 0
-#calls  'stdin 'stdout 'stderr 'type '.cr '.sp '.nsp '.emit '.[ '.write '.print '.println '.home '.cls '.at '.eline '.fc '.bc '.Black '.Red '.Green '.Yellow '.Blue '.Magenta '.Cyan '.White '.Blackl '.Redl '.Greenl '.Yellowl '.Bluel '.Magental '.Cyanl '.Whitel '.BBlack '.BRed '.BGreen '.BYellow '.BBlue '.BMagenta '.BCyan '.BWhite '.BBlackl '.BRedl '.BGreenl '.BYellowl '.BBluel '.BMagental '.BCyanl '.BWhitel '.Bold '.Under '.Rever '.Reset '.alsb '.masb '.showc '.hidec '.ovec '.insc 'consoleinfo 'rows 'cols '.getconsoleinfo 'getch 'inkey 'waitesc 'evtkey 'evtmxy 'evtmb 'evtmw 'evtm 'getevt 'inevt 'pad 'getcursorpos '.input '.inputn '.printe 'evtmouse '.free
-#info ( $80 $80 $80 $2E $0 $0 $1F $1F $1F $1F $1F $1F $0 $0 $2E $0 $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $80 $80 $80 $0 $1 $1 $0 $1 $2 $1 $1 $1 $1 $1 $80 $2 $0 $1 $1F $0 $0 )
-#r3_lib_win_console.r3 'name 'words 'calls 'info
 ^r3/lib/win/core.r3
 #name "r3/lib/win/core.r3"
 #words  "ms" "msec" "time" "date" "sysdate" "findata" "ffirst" "fnext" "FNAME" "FDIR" "FSIZEF" "filetimeD" "FCREADT" "FLASTDT" "FWRITEDT" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
@@ -466,18 +448,12 @@
 #calls  'IsDebuggerPresent 'OutputDebugStringA 'OutputDebugStringW 'DebugBreak 'ContinueDebugEvent 'WaitForDebugEvent 'DebugActiveProcess 'DebugActiveProcessStop 'CheckRemoteDebuggerPresent
 #info ( $1 $1F $1F $0 $3E $2F $10 $10 $2F )
 #r3_lib_win_debugapi.r3 'name 'words 'calls 'info
-^r3/lib/win/ffm.r3
-#name "r3/lib/win/ffm.r3"
-#words  "FFM_init" "FFM_open" "FFM_redraw" "FFM_resize" "FFM_close" 0
-#calls  'FFM_init 'FFM_open 'FFM_redraw 'FFM_resize 'FFM_close
-#info ( $0 $3D $10 $2F $0 )
-#r3_lib_win_ffm.r3 'name 'words 'calls 'info
-^r3/lib/win/ffmapi.r3
-#name "r3/lib/win/ffmapi.r3"
-#words  "IniVideo" "LoadVideo" "VideoBox" "VideoPoly" "VideoFlag" "VideoTex" "PlayVideo" "StopVideo" "LOADING" "VID_NO_AUDIO" "VID_LOOP" "VID_WAIT" "VideoTime" "VideoSize" "vshow" "vshowZ" "vshowR" "vshowRZ" "FFM_open" "FFM_redraw" "FFM_close" 0
-#calls  'IniVideo 'LoadVideo 'VideoBox 'VideoPoly 'VideoFlag 'VideoTex 'PlayVideo 'StopVideo 'LOADING 'VID_NO_AUDIO 'VID_LOOP 'VID_WAIT 'VideoTime 'VideoSize 'vshow 'vshowZ 'vshowR 'vshowRZ 'FFM_open 'FFM_redraw 'FFM_close
-#info ( $1F $2F $2E $5B $10 $10 $1F $1F $80 $80 $80 $80 $10 $11 $3D $4C $4C $3D $10 $1 $0 )
-#r3_lib_win_ffmapi.r3 'name 'words 'calls 'info
+^r3/lib/win/ffmpeg.r3
+#name "r3/lib/win/ffmpeg.r3"
+#words  "IniVideo" "LoadVideo" "VideoBox" "VideoPoly" "VideoFlag" "VideoTex" "PlayVideo" "StopVideo" "LOADING" "VID_NO_AUDIO" "VID_LOOP" "VID_WAIT" "VideoTime" "VideoSize" "vshow" "vshowZ" "vshowR" "vshowRZ" 0
+#calls  'IniVideo 'LoadVideo 'VideoBox 'VideoPoly 'VideoFlag 'VideoTex 'PlayVideo 'StopVideo 'LOADING 'VID_NO_AUDIO 'VID_LOOP 'VID_WAIT 'VideoTime 'VideoSize 'vshow 'vshowZ 'vshowR 'vshowRZ
+#info ( $1F $2F $2E $5B $10 $10 $1F $1F $80 $80 $80 $80 $10 $11 $3D $4C $4C $3D )
+#r3_lib_win_ffmpeg.r3 'name 'words 'calls 'info
 ^r3/lib/win/inet.r3
 #name "r3/lib/win/inet.r3"
 #words  "InternetOpen" "InternetOpenUrl" "InternetReadFile" "InternetCloseHandle" "DeleteUrlCacheEntry" "openurl" 0
@@ -498,9 +474,9 @@
 #r3_lib_win_urlmon.r3 'name 'words 'calls 'info
 ^r3/lib/win/win-term.r3
 #name "r3/lib/win/win-term.r3"
-#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" "getch" ".free" ".reterm" 0
-#calls  'stdin 'stdout 'stderr 'type 'rows 'cols '.onresize 'evtkey 'evtmx 'evtmy 'evtmb 'evtmw 'evtmxy 'inevt 'getevt 'inkey 'getch '.free '.reterm
-#info ( $80 $80 $80 $2E $80 $80 $1F $1 $80 $80 $80 $80 $2 $1 $1 $1 $1 $1F $0 )
+#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" ".free" ".reterm" 0
+#calls  'stdin 'stdout 'stderr 'type 'rows 'cols '.onresize 'evtkey 'evtmx 'evtmy 'evtmb 'evtmw 'evtmxy 'inevt 'getevt 'inkey '.free '.reterm
+#info ( $80 $80 $80 $2E $80 $80 $1F $1 $80 $80 $80 $80 $2 $1 $1 $1 $1F $0 )
 #r3_lib_win_win-term.r3 'name 'words 'calls 'info
 ^r3/lib/win/winhttp.r3
 #name "r3/lib/win/winhttp.r3"
@@ -521,4 +497,4 @@
 #info ( $2F $1 $3E $3E $2F $3E $3E $4D $4D $10 $5C $3E $10 $10 $2F $10 $4D $10 $10 $10 $3E $10 $10 $2F $2F $2F $1 $10 )
 #r3_lib_win_ws2.r3 'name 'words 'calls 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mconsole.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_netsock.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_term.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_console.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffm.r3 'r3_lib_win_ffmapi.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 'r3_lib_win_ws2.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_escapi.r3 'r3_lib_espeak-ng.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_netsock.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlbgui.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_conkey.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffmpeg.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 'r3_lib_win_ws2.r3 0

@@ -516,7 +516,6 @@
 	;
 
 :main
-	getch drop
 	.cls
 	"a [b c] d" test
 	"a [b c]" test

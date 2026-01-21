@@ -1,4 +1,4 @@
-^r3/lib/term.r3
+^r3/lib/console.r3
 ^r3/lib/win/core.r3
 ^r3/lib/netsock.r3
 

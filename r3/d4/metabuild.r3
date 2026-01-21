@@ -109,7 +109,7 @@
 	r3name
 	mark
 	here dup 'src ! | mem
-	'r3filename dup " | %s " .print |ln
+	'r3filename dup " | %s " .fprint |ln
 	namevirtual	| mem fn
 	load here =? ( drop .bred "no source code." .println empty ; )
 	0 swap c!+ 'here !
@@ -189,4 +189,4 @@
 	empty 
 	;
 
-: main "<enter> to continue." .print .input ;
+: main "any key to continue." .print waitkey ;

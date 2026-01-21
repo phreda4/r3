@@ -3,7 +3,6 @@
 | IDE 4 r3
 |-----------------
 ^r3/lib/console.r3
-^r3/lib/mconsole.r3
 
 ^r3/d4/r3view.r3
 ^r3/d4/r3token.r3
@@ -14,14 +13,14 @@
 #exit 0	
 
 :infobottom
-	1 hcode 2 - ,at 
-	,bblue ,white ,eline
+	1 hcode 2 - .at 
+	.bblue .white .eline
 	|" ^[7mF1^[27mRUN ^[7mF2^[27mRUN2C ^[7mF5^[27mSTEP ^[7mF6^[27mSTEPN ^[7mF7^[27mBP ^[7mF9^[27mVAR" 
 	" DEBUG ^[7mTAB^[27mMODE ^[7mF1^[27mSTEP " 
-	,printe ,nl
+	.printe .nl
 |	" info ^[7mF1^[27m " ,printe ,nl
-	,reset ,bblack 
-	regb rega <<ip "IP:%h RA:%h RB:%h " ,print ,nl
+	.reset .bblack 
+	regb rega <<ip "IP:%h RA:%h RB:%h " .print .nl
 |	,stackprintvm 
 	,stack 
 	;	
@@ -29,9 +28,8 @@
 |--------------- DICCIONARY
 #inidic 0
 
-#colpal ,red ,magenta
+#colpal .red .magenta
 
-::,col "%dG" sprint ,[ ; | x y -- 
 
 :info1 | n --
 	|dup "%h " ,print

@@ -1,7 +1,7 @@
 | Markov Chain
 | PHREDA 2025
 
-^r3/lib/term.r3
+^r3/lib/console.r3
 
 #states 2
 #trans [
@@ -100,7 +100,7 @@
 	
 	
 :main
-	"markov chain" .fprintln
+	"markov chain" .println
 	
 	'trans printmat
 |	'trans makealias

@@ -1,4 +1,4 @@
-| main filesystem
+| main filesystem - Unified Windows/Linux version
 | PHREDA 2019
 |------------------------
 ^r3/lib/console.r3
@@ -76,8 +76,10 @@
 	;
 
 :reload
-	'path "%s//*" sprint
-	ffirst ( fileadd fnext 1? ) drop
+	'path 
+|WIN|	"%s//*" sprint
+	ffirst 0? ( drop ; ) 
+	( fileadd fnext 1? ) drop
 	files> 'files - 3 >> 'nfiles !
 	;
 
@@ -169,7 +171,6 @@
 	'name 'path "%s/%s" sprint load 
 	0 swap ! 
 	;	
-	
 
 |---------------------
 :traverse | adr -- adrname
@@ -188,7 +189,7 @@
 	0 'path !
 	traverse
 	actual getactual nip
-	pagina linesv + 1 - >=? ( dup linesv - 1 + 'pagina ! )
+	pagina linesv + 1- >=? ( dup linesv - 1+ 'pagina ! )
 	'actual !
 	drop
 	setactual
@@ -207,74 +208,104 @@
 	0 swap c! ;
 
 |--------------------------------
+|WIN| :conadj | adjust console
+|WIN| 	.reterm	.getterminfo
+|WIN| 	.alsb .showc .insc
+|WIN| 	evtmouse	
+|WIN| 	;
+
+:checkerror
+	mark
+	here dup "mem/error.mem" load
+	over =? ( 2drop empty ; ) 
+	0 swap c!
+	.cr .bred .white 
+	" * ERROR * " .println
+	.reset
+	.println
+	.bblue .white
+	"<ESC> to continue..." .println
+	waitesc
+	empty
+	;
+
 :runfile
 	actual -? ( drop ; )
 	getinfo $7 and 2 <? ( drop ; ) drop
-	.reset .cls
+|WIN|	.reset .cls
+|LIN|	.reset .masb	
+	"mem/error.mem" delete
 	'path
-|WIN| "r3 ""%s/%s"""
-|LIN| "./r3lin ""%s/%s"""
-|RPI| "./r3rpi ""%s/%s"""
-|MAC| "./r3mac %s/%s"
-	sprint 
-	sys
-	evtmouse
+|WIN| 	"cmd /c r3 ""%s/%s"" 2>mem/error.mem"
+|LIN| 	"./r3lin ""%s/%s"" 2>mem/error.mem"
+	sprint sys
+	checkerror
+|WIN|	conadj 
+|LIN|	.alsb
 	;
 
 :r3info
-|WIN| "r3 r3/editor/r3info.r3"
-|LIN| "./r3lin r3/editor/r3info.r3"
-|RPI| "./r3rpi r3/editor/r3info.r3"
+|WIN| 	"r3 r3/editor/r3info.r3"
+|LIN| 	"./r3lin r3/editor/r3info.r3"
 	sys ;
 
 :r3edit
-|WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/editor/code-edit.r3"
-|RPI| "./r3rpi r3/editor/code-edit.r3"
-|MAC| "./r3mac r3/editor/code-edit.r3"
-	sys ;
-	
+|WIN| 	"r3 r3/editor/code-edit.r3"
+|LIN| 	"./r3lin r3/editor/code-edit.r3"
+	sys 
+|WIN|	conadj 
+	;
+
 |--------------------------------
 :editfile
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/main.mem" save
-	
-	r3info
-	|cerror 1? ( drop ; ) drop	
+|LIN|	r3info
+|LIN|	|cerror 1? ( drop ; ) drop	
 	r3edit
 	;
 
 :editmap
 	actual getname 'path "%s/%s" sprint 'name strcpy
 	'name 1024 "mem/mapedit.mem" save
-
-|WIN| "r3 r3/editor/map-edit.r3"
-|LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
+|WIN| 	"r3 r3/editor/map-edit.r3"
+|LIN| 	"./r3lin r3/editor/map-edit.r3"
 	sys
+|WIN|	conadj
 	;
 
 :editbmap
-	actual getname 'path "%s/%s" sprint 'name strcpy
-	'name 1024 "mem/bmapedit.mem" save
-
-|WIN| "r3 r3/editor/bmap-edit.r3"
-|LIN| "./r3lin r3/editor/bmap-edit.r3"
-|RPI| "./r3rpi r3/editor/bmap-edit.r3"
-|MAC| "./r3mac r3/editor/bmap-edit.r3"
-	sys
-	;
+ 	actual getname 'path "%s/%s" sprint 'name strcpy
+ 	'name 1024 "mem/bmapedit.mem" save
+|WIN| 	"r3 r3/editor/bmap-edit.r3"
+|LIN| 	"./r3lin r3/editor/bmap-edit.r3"
+ 	sys
+|WIN| 	conadj
+ 	;
 	
 :f2edit
 	actual -? ( drop ; )
 	|getinfo $3 and 2 <>? ( drop ; ) drop
-	actual getname 
+	getname 
 	".r3" =pos 1? ( 2drop editfile ; ) drop
 	".map" =pos 1? ( 2drop editmap ; ) drop
 	".bmap" =pos 1? ( 2drop editbmap ; ) drop
 	| ".png"
+	| ".jpg"
+	| ".txt"
 	drop
+	;
+
+:fileeditnew
+ 	actual -? ( drop ; )
+ 	getname 
+ 	".r3" =pos 0? ( 2drop ; ) drop
+ 	'path "%s/%s" sprint 'name strcpy
+ 	'name 1024 "mem/menu.mem" save
+|WIN| 	"r3 r3/d4/r3ide.r3"
+|LIN| 	"./r3lin r3/d4/r3ide.r3"
+	sys 
+|WIN|	conadj 
 	;
 	
 |--------------------------------
@@ -311,15 +342,12 @@
 
 	'name 1024 "mem/mapedit.mem" save
 	'name 1024 "mem/menu.mem" save
-
-|WIN| "r3 r3/editor/map-edit.r3"
-|LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
+|WIN| 	"r3 r3/editor/map-edit.r3"
+|LIN| 	"./r3lin r3/editor/map-edit.r3"
 	sys
-
 	rebuild
 	loadm
+|WIN|	conadj
 	;
 
 	
@@ -347,7 +375,7 @@
 	;
 
 :newfile
-	0 linesv 1 + .at 
+	0 linesv 1+ .at 
 	.bblue .white .eline 
 	" Name: " .print
 	.input 
@@ -372,7 +400,7 @@
 
 :fdn
 	actual nfiles 1 - >=? ( drop ; )
-	1 + pagina linesv + 1 - >=? ( dup linesv - 1 + 'pagina ! )
+	1 + pagina linesv + 1- >=? ( dup linesv - 1+ 'pagina ! )
 	'actual !
 	setactual ;
 
@@ -385,8 +413,8 @@
 :fpgdn
 	actual nfiles 1 - >=? ( drop ; )
 	20 + nfiles >? ( drop nfiles 1 - ) 'actual !
-	actual pagina linesv + 1 -
-	>=? ( dup linesv - 1 + 'pagina ! ) drop
+	actual pagina linesv + 1-
+	>=? ( dup linesv - 1+ 'pagina ! ) drop
 	setactual ;
 
 :fpgup
@@ -404,10 +432,9 @@
 :fend
 	actual nfiles 1 - >=? ( drop ; ) drop
 	nfiles 1 - 'actual !
-	actual 1 + pagina linesv + 1 -
-	>=? ( dup linesv - 1 + 'pagina ! ) drop
+	actual 1 + pagina linesv + 1-
+	>=? ( dup linesv - 1+ 'pagina ! ) drop
 	setactual ;
-
 
 |--------------------------------
 #filecolor 1 2 3 4 
@@ -438,11 +465,11 @@
 		1 + ) drop ;
 
 :drawsrc	
-	source 0? ( drop ; ) 
-	235 ,bc 
-	>r 40 2 linesv cols 41 - r> code-print
-	;
-	
+ 	source 0? ( drop ; ) drop
+ 	235 ,bc 
+ 	40 2 linesv cols 41 - source code-print
+ 	;
+
 :screen
 	mark
 	,hidec
@@ -460,55 +487,91 @@
 	;
 
 |-------------------------------------
-#exit 0
+|WIN| #exit 0
 
-:evkey	
-	evtkey
-	$1B1001 =? ( 1 'exit ! ) | esc
-	$D001C =? ( fenter )
+|WIN| :evkey	
+|WIN| 	evtkey
+|WIN| 	]ESC[ =? ( 1 'exit ! ) | esc
+|WIN| 	[ENTER] =? ( fenter )
+|WIN| 	[UP] =? ( fup ) | up
+|WIN| 	[DN] =? ( fdn ) | dn
+|WIN| 	[PGUP] =? ( fpgup )
+|WIN| 	[PGDN] =? ( fpgdn )
+|WIN| 	[HOME] =? ( fhome )
+|WIN| 	[END] =? ( fend )
+|WIN| 	[F1] =? ( fenter )
+|WIN| 	[F2] =? ( f2edit )
+|WIN| 	[F3] =? ( newfile )
+|WIN| 	|[F4] =? ( newfolder ) | f4 - new folder
+|WIN| 	[F5] =? ( fileeditnew ) | F5 - NEW VERSION
+|WIN| 	drop 
+|WIN| 	;
+
+|WIN| :evwmouse 
+|WIN| 	evtmw pagina +
+|WIN| 	clamp0 nfiles 1- min 
+|WIN| 	'pagina !
+|WIN| 	;
 	
-	$48 =? ( fup ) | up
-	$50 =? ( fdn ) | dn
-	$49 =? ( fpgup )
-	$51 =? ( fpgdn )
-	$47 =? ( fhome )
-	$4f =? ( fend )
+|WIN| :evmouse
+|WIN| 	evtm
+|WIN| 	1 =? ( drop ; ) | move 
+|WIN| 	4 =? ( drop evwmouse ; )
+|WIN| 	drop
+|WIN| 	evtmb 0? ( drop ; ) drop	
+|WIN| 	evtmxy swap
+|WIN| 	40 >? ( 2drop f2edit ; ) drop
+|WIN| 	1- pagina +
+|WIN| 	actual =? ( drop fenter ; )
+|WIN| 	'actual !
+|WIN| 	setactual 
+|WIN| 	;
 	
-	$3b =? ( fenter )
-	$3c =? ( f2edit ) |editfile  )
-	$3d =? ( newfile )
-	|$3e =? ( newfolder ) | f4 - new folder
+|WIN| :evsize	
+|WIN| 	.getconsoleinfo
+|WIN| 	rows 1- 'linesv !
+|WIN| 	;
+
+:teclado | key --
+    [ENTER] =? ( fenter screen ) 
+	
+	[UP] =? ( fup screen ) | up
+	[DN] =? ( fdn screen ) | dn
+	[PGUP] =? ( fpgup screen )
+	[PGDN] =? ( fpgdn screen )
+	[HOME] =? ( fhome screen )
+	[END] =? ( fend screen )
+	
+	[f1] =? ( fenter screen )
+	[f2] =? ( f2edit screen ) |editfile screen )
+	[f3] =? ( newfile screen )
+	|[f4] =? ( newfolder screen ) | f4 - new folder
 	drop 
-	;
-
-:evmouse
-	evtmb 0? ( drop ; ) drop	
-	evtmxy swap
-	40 >? ( 2drop f2edit ; ) drop
-	1- pagina +
-	actual =? ( drop fenter ; )
-	'actual !
-	setactual 
-	;
-	
-:evsize	
-	.getconsoleinfo
-	rows 1 - 'linesv !
 	;
 	
 |---------------------------------
 :main
 	rebuild
-	evtmouse
-	evsize	
+|LIN|	.getconsoleinfo rows 1- 'linesv !
+|LIN|	.alsb 
 	loadm
-	( exit 0? drop
-		screen
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) drop
-	savem ;
+|WIN|	( exit 0? drop
+|WIN|		screen
+|WIN|		getevt
+|WIN|		$1 =? ( evkey )
+|WIN|		$2 =? ( evmouse )
+|WIN|		$4 =? ( evsize )
+|WIN|		drop ) drop
 
-: main ;
+|LIN|	screen
+|LIN|	( getch [esc] <>? teclado ) drop | esc
+|LIN|	.reset |.cls
+|LIN|	.masb	
+	savem 
+	;
+
+: |<<<<<<<<<<<<<<< BOOT
+|WIN| conadj evsize
+	main 
+|WIN| .masb 
+	;

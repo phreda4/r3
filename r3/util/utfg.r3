@@ -1,6 +1,6 @@
 | Utg Graphics
 | PHREDA 2025
-^r3/lib/term.r3
+^r3/lib/console.r3
 
 #f8x8 | xz font
 $0 $100010003000200 $4100820 $4102EB81D740820 

@@ -1,6 +1,10 @@
 | ffmpeg.dll
 | PHREDA 2024
 
+|WIN|^r3/lib/win/core.r3
+|LIN|^r3/lib/posix/core.r3
+^r3/lib/math.r3
+
 #sys-IniVideo
 #sys-LoadVideo
 #sys-VideoBox

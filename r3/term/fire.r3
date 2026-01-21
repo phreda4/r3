@@ -1,7 +1,7 @@
 | fire effect - efecto de fuego en terminal
 | PHREDA 2025
 ^r3/lib/rand.r3
-^r3/lib/term.r3
+^r3/lib/console.r3
 
 #buffer1    | buffer de intensidades actual
 #buffer2    | buffer de intensidades siguiente

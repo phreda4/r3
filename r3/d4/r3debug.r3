@@ -1,9 +1,9 @@
+
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
 
 | r3debug
 | PHREDA 2025
-^r3/lib/term.r3
 ^r3/lib/win/core.r3
 ^r3/lib/netsock.r3
 
@@ -132,7 +132,7 @@
 		vminfo
 		100 ms
 		) drop 
-	"fin debug" .fprintln
+	"fin debug" .println
 	;
 
 #vincs 0 0

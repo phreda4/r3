@@ -2,7 +2,7 @@
 | Cross-platform drawing application with mouse support
 | Works with both Linux and Windows terminal libraries
 
-^r3/lib/term.r3
+^r3/lib/console.r3
 
 #running 1
 

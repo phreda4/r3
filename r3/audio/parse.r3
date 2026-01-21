@@ -287,7 +287,6 @@
 	;
 	
 :main
-	getch drop
 	.cls
 	"parse" .println
 	

@@ -1,5 +1,5 @@
 | PHREDA 2025
-^r3/lib/term.r3
+^r3/lib/console.r3
 ^r3/util/utfg.r3
 
 :testkey
