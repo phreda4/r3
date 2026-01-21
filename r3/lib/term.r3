@@ -62,7 +62,7 @@
 
 ::.write count .type ;
 ::.print sprintc .type ;
-::.println sprintlnc .type ;
+::.println sprintlnc .type .flush ;
 
 ::.^[ $1b .emit $5b .emit ;
 ::.[w .^[ .write ;
@@ -74,7 +74,6 @@
 |--- automatic flush version
 ::.fwrite .write .flush ;
 ::.fprint .print .flush ;
-::.fprintln .println .flush ;
 
 |------- Cursor Control -------
 ::.home "H" .[w ;
@@ -164,6 +163,10 @@
 ::.Strike "9m" .[w ;
 ::.Reset "0m" .[w ;
 
+::getch | -- key | wait for key
+	.flush
+    ( inkey 0? drop 10 ms ) ;
+
 ::waitesc | -- | wait for ESC key
     ( getch [esc] <>? drop 10 ms ) drop ;
 
@@ -173,6 +176,6 @@
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! dup 'outbuf> !
-	$ffff +	| 64kb flush buffer (big!!)
+	$fff +	| 8kb flush buffer
 	dup 'endbuf ! 'here !
 	;

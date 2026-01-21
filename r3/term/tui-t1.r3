@@ -78,7 +78,7 @@
 	;
 	
 :main
-	.reset .cls 
+	.reset .home |.cls 
 	|-----------
 	1 flxN
 	fx fy .at 

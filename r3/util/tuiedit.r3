@@ -292,7 +292,8 @@
 	;
 	
 :dns
-	clickMouse '1sel ! ;
+	clickMouse 
+	'1sel ! ;
 
 :mos
 	clickMouse
@@ -303,7 +304,7 @@
 	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
 	clickMouse
 	1sel 
-	over =?  ( 2drop 0 'inisel ! ; )
+	over =?  ( 2drop 0 dup 'inisel ! 'finsel ! ; )
 	over <? ( swap )
 	'finsel ! 'inisel ! ;
 

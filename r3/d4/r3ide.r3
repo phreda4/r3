@@ -219,7 +219,7 @@
 	;
 	
 :editcode
-	.reset .cls 
+	.reset .home |.cls 
 	1 flxN
 	|4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col

@@ -67,8 +67,8 @@
 :buffin | -- len
 	0 'bufferin 2dup ! 16 libc-read ;
 
-::getch | -- char
-	( buffin 0? drop ) drop bufferin ;
+|::getch | -- char
+|	( buffin 0? drop ) drop bufferin ;
 
 #tv 0 0
 #fds 0 0
