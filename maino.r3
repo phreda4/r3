@@ -209,9 +209,8 @@
 
 |--------------------------------
 |WIN| :conadj | adjust console
-|WIN| 	.reterm	.getterminfo
+|WIN| 	.reterm	
 |WIN| 	.alsb .showc .insc
-|WIN| 	evtmouse	
 |WIN| 	;
 
 :checkerror
@@ -373,6 +372,22 @@
 	rebuild
 	loadm
 	;
+	
+#pad * 64
+	
+:.char
+	0? ( drop ; )
+	8 =? ( swap 
+		1 - 'pad <? ( 2drop 'pad ; )
+		swap .emit "1P" .[w ; )
+	dup .emit
+	swap c!+ ;
+	
+::.input | --
+	'pad 
+	( getch [esc] <>? .char ) drop
+	0 swap c! ;
+	
 
 :newfile
 	0 linesv 1+ .at 
@@ -440,50 +455,54 @@
 #filecolor 1 2 3 4 
 
 :colorfile | n -- n
-	actual =? ( ,bwhite ,black ; )
+	actual =? ( .bwhite .black ; )
     dup getinfo $3 and
-	3 << 'filecolor + @ ,fc 
+	3 << 'filecolor + @ .fc 
 	;
 
 :printfn | n --
-	,sp
-	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+-  " + c@ ,c ,sp 
-	getname ,s ,sp
+	.sp
+	dup getlvl 1 << .nsp
+	dup getinfo $3 and "+-  " + c@ .emit .sp 
+	getname .write .sp
 	;
 
 :drawl | n --
-	,sp colorfile printfn ,nl ;
+	.sp colorfile printfn .cr ;
 	
 :drawtree
-	1 2 ,at
+	1 2 .at
 	0 ( linesv <?
 		dup pagina +
 		nfiles >=? ( 2drop ; )
-		,reset
+		.reset
     	drawl 
 		1 + ) drop ;
 
 :drawsrc	
  	source 0? ( drop ; ) drop
- 	235 ,bc 
+ 	235 .bc 
  	40 2 linesv cols 41 - source code-print
  	;
 
+:emite | char --
+	$5e =? ( drop 27 .emit ; ) | ^=escape
+	.emit ;
+	
+::.printe | "" --
+	sprint
+	( c@+ 1? emite ) 2drop ;
+
 :screen
-	mark
-	,hidec
-	,reset ,cls ,bblue 
-	1 1 ,at	" r3 " ,s
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
+	.hidec .reset .cls .bblue 
+	1 1 .at	" r3 " .write
+	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " .printe .eline
 	drawtree
 	drawsrc
-	,bblue ,white	
-	0 linesv 2 + ,at 
-	'name 'path " %s/%s  " ,print ,eline
-	,showc 
-	memsize type	| type buffer
-	empty			| free buffer	
+	.bblue .white	
+	0 linesv 2 + .at 
+	'name 'path " %s/%s  " .print .eline
+	.showc .flush
 	;
 
 |-------------------------------------
@@ -491,7 +510,7 @@
 
 |WIN| :evkey	
 |WIN| 	evtkey
-|WIN| 	]ESC[ =? ( 1 'exit ! ) | esc
+|WIN| 	[ESC] =? ( 1 'exit ! ) | esc
 |WIN| 	[ENTER] =? ( fenter )
 |WIN| 	[UP] =? ( fup ) | up
 |WIN| 	[DN] =? ( fdn ) | dn
@@ -514,7 +533,7 @@
 |WIN| 	;
 	
 |WIN| :evmouse
-|WIN| 	evtm
+|WIN| 	inevt
 |WIN| 	1 =? ( drop ; ) | move 
 |WIN| 	4 =? ( drop evwmouse ; )
 |WIN| 	drop
@@ -528,7 +547,6 @@
 |WIN| 	;
 	
 |WIN| :evsize	
-|WIN| 	.getconsoleinfo
 |WIN| 	rows 1- 'linesv !
 |WIN| 	;
 

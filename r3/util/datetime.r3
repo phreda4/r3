@@ -5,23 +5,29 @@
 ^r3/lib/mem.r3
 
 |---- datetime
-:,time
+::,time
 	time
 	dup 16 >> $ff and ,d ":" ,s
 	dup 8 >> $ff and ,2d ":" ,s
 	$ff and ,2d ;
 
-:,ti:me 
+::,ti:me 
 	time 
 	dup 16 >> $ff and ,d 
 	dup 1 and " :" + c@ ,c 
 	8 >> $ff and ,2d ;
 
-:,date
+::,date
 	date
 	dup $ff and ,d "/" ,s
 	dup 8 >> $ff and ,d "/" ,s
 	16 >> $ffff and ,d ;
+
+::,date-
+	date
+	dup 16 >> $ffff and ,d "-" ,s
+	dup 8 >> $ff and ,2d "-" ,s
+	$ff and ,2d ;
 
 ::str_DMA
 	mark ,sp ,date ,sp ,eol empty here ;

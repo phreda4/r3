@@ -204,6 +204,31 @@
 	empty 
 	;
 
+|---------- compati
+#pad * 64
+	
+:.char
+	0? ( drop ; )
+	8 =? ( swap 
+		1 - 'pad <? ( 2drop 'pad ; )
+		swap .emit "1P" .[w ; )
+	dup .emit
+	swap c!+ ;
+	
+::.input | --
+	'pad 
+	( getch [esc] <>? .char ) drop
+	0 swap c! ;
+	
+:emite | char --
+	$5e =? ( drop 27 .emit ; ) | ^=escape
+	.emit ;
+	
+::.printe | "" --
+	sprint
+	( c@+ 1? emite ) 2drop ;
+
+
 |----------------------------------
 :loadinfo
 	linecomm "mem/infomap.db" load 
@@ -431,15 +456,15 @@
 	97 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
 
 :buildinfo | infmov --
-	,bcyan 
-	dup $f and ,sp
-	dup ,ncar " -- " ,s
+	.bcyan 
+	dup $f and .sp
+	dup ,ncar " -- " .write
 	over 55 << 59 >> + | deltaD
-	,ncar ,sp 
-	,reset ,sp ,bcyan ,black
-	$1000000000 and? ( ";" ,s )	| multiple
-	$2000000000 and? ( "R" ,s )		| recurse
-	$8000000000 nand? ( "." ,s )	| no ;
+	,ncar .sp 
+	.reset .sp .bcyan .black
+	$1000000000 and? ( ";" .write )	| multiple
+	$2000000000 and? ( "R" .write )		| recurse
+	$8000000000 nand? ( "." .write )	| no ;
 	drop
 	;
 
@@ -447,7 +472,7 @@
 
 :prnerr	
 	drop
-	,sp ,bred ,white " << Error " ,s 
+	.sp .bred .white " << Error " .write
 	;
 
 :inicomm
@@ -465,10 +490,10 @@
 		drop @+ swap 'linecommnow ! 
 		prnerr prntcom ; ) drop
 	@+ swap 'linecommnow !
-	,sp
+	.sp
 	dup 12 32 + >> $ff and 
-	0? ( ,bred ,white " X " ,s ) drop
-	,black
+	0? ( .bred .white " X " .write ) drop
+	.black
 	buildinfo
 	prntcom
 	;
@@ -489,16 +514,16 @@
 	over isNro 1? ( drop 11 'colornow ! ; ) 
 	drop 10 'colornow ! ;
 
-:,tcolor colornow ,fcolor ;
+:,tcolor colornow .fc ;
 
 | 18 = blue dark for select
 :inselect
-	inisel finsel in? ( 18 ,bcolor ; )
-	0 ,bcolor ;
+	inisel finsel in? ( 18 .bc ; )
+	0 .bc ;
 	
 :atselect
-	inisel =? ( 18 ,bcolor ; )
-	finsel =? ( 0 ,bcolor ; )
+	inisel =? ( 18 .bc ; )
+	finsel =? ( 0 .bc ; )
 	;
 
 :iniline
@@ -511,49 +536,49 @@
 		drop swap ) drop ;
 	
 :,ct
-	9 =? ( ,sp ,sp 32 nip ) ,c ;
+	9 =? ( .sp .sp 32 nip ) .emit ;
 	
 :strword
-	,c
+	.emit
 	( atselect c@+ 1?
 		$22 =? (
 			over c@ $22 <>? ( drop ; )
-			,c swap 1+ swap )
+			.emit swap 1+ swap )
 		13 <>?
 		,ct ) drop 1- 0 ;
 	
 :endline
-	,c ( atselect c@+ 1? 13 <>? ,ct )	
+	.emit ( atselect c@+ 1? 13 <>? ,ct )	
 	1? ( drop ; ) drop 1- ;
 	
 :parseline 
 	,tcolor
 	( atselect c@+ 1? 13 <>? | 0 o 13 sale
-		9 =? ( wcolor ,tcolor ,sp ,sp drop 32 )
+		9 =? ( wcolor ,tcolor .sp .sp drop 32 )
 		32 =? ( wcolor ,tcolor )
 		$22 =? ( strword ) 		| $22 " string
 		$5e =? ( endline ; )	| $5e ^  Include
 		$7c =? ( endline ; )	| $7c |	 Comentario
-		,c
+		.emit
 		) 
 	1? ( drop ; ) drop
 	1- ;
 
 |... no color line	
 :parselinenc
-	( atselect c@+ 1? 13 <>? ,c ) 
+	( atselect c@+ 1? 13 <>? .emit ) 
 	1? ( drop ; ) drop
 	1- ;
 
 |..............................
 :linenow
-	ycursor =? ( $3e ,c ; ) 32 ,c ;
+	ycursor =? ( $3e .emit ; ) 32 .emit ;
 	
 :linenro | lin -- lin
-	over ylinea + linenow 1+ .d 3 .r. ,s 32 ,c ; 
+	over ylinea + linenow 1+ .d 3 .r. .write 32 .emit ; 
 
 :drawline | adr line -- line adr'
-	"^[0m^[37m" ,printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
+	"^[0m^[37m" .printe			| ,esc "0m" ,s ,esc "37m" ,s  | reset,white,clear
 	swap
 	linenro	
 	iniline
@@ -571,14 +596,15 @@
 	
 |..............................
 :drawcode
-	,reset
+	.reset
 	inicomm
 	pantaini>
 	0 ( hcode <?
-		1 ycode pick2 + ,at
+		1 ycode pick2 + .at
 		drawline
 		swap 1+ ) drop
-	$fuente <? ( 1- ) 'pantafin> ! ;
+	$fuente <? ( 1- ) 'pantafin> ! 
+	;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
@@ -626,8 +652,8 @@
 	;
 
 :controlkey
-	$101d =? ( controloff ) |>ctrl<
-	$1000 and? ( drop ; )	| upkey
+|	$101d =? ( controloff ) |>ctrl<
+|	$1000 and? ( drop ; )	| upkey
 	$ff and
 	
 	$2d =? ( controlx )		| x-cut
@@ -647,21 +673,13 @@
 	drop
 	;
 
-:vchar | char --  ; visible char
-|WIN|	$1000 and? ( drop ; )
-|WIN|	16 >> $ff and
-|WIN|	8 =? ( drop kback ; )
-|LIN|	$7f =? ( drop kback ; )
-	9 =? ( modo ex ; )
-	13 =? ( clearinfo modo ex ; )
-	32 <? ( drop ; )
-	modo ex ;
-
 :teclado
 |WIN|	panelcontrol 1? ( drop controlkey ; ) drop
-|WIN|	$ff0000 and? ( vchar fixcur ; ) 
-|LIN|	$80 <? ( vchar fixcur ; )
-	
+	32 126 in? ( modo ex fixcur ; )
+	[enter] =? ( 
+|LIN| $d nip | in linux [enter] is $a
+		clearinfo modo ex ; ) 
+	[BACK] =? ( kback )	
 	[DEL] =? ( kdel )
 	[UP] =? ( karriba ) 
 	[DN] =? ( kabajo )
@@ -675,10 +693,10 @@
 	[INS] =? ( modo | ins
 			'lins =? ( drop 'lover 'modo ! .ovec ; )
 			drop 'lins 'modo ! .insc )
-|WIN|	[CTRL] =? ( controlon ) 
+||WIN|	[CTRL] =? ( controlon ) 
 	
-|WIN|	[SHIFTR] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift der
-|WIN|	[SHIFTL] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift izq 
+||WIN|	[SHIFTR] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift der
+||WIN|	[SHIFTL] =? ( 1 'mshift ! ) ]SHIFTR[ =? ( 0 'mshift ! ) | shift izq 
 
 	[F1] =? ( runfile )
 	[F2] =? ( debugfile )
@@ -693,35 +711,34 @@
 
 |------------------------
 :barraf | F+
-	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" ,printe ;
+	" ^[7mF1^[27m Run ^[7mF2^[27m Debug ^[7mF3^[27m Profile ^[7mF4^[27m Plain ^[7mF5^[27m Compile" .printe ;
 
 :barrac | control+
-	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " ,printe
+	" ^[7mX^[27m Cut ^[7mC^[27mopy ^[7mV^[27m Paste ^[7mF^[27mind " .printe
 	'pad
 	dup c@ 0? ( 2drop ; ) drop
-	" [%s]" ,print ;
+	" [%s]" .print ;
 
 :topbar
-	1 hcode 2 + ,at ,bblue ,white ,eline
+	1 hcode 2 + .at .bblue .white .eline
 	panelcontrol
 	0? ( drop barraf ; ) drop
 	barrac ;
 
 :fotbar
-	1 1 ,at 
-	,bblue ,white ,eline
-	,sp 'name ,s ycursor xcursor "  %d:%d " ,print 
-	$fuente fuente - " %d chars" ,print 
-	clipboard> clipboard - " %d " ,print
-	mshift " %d " ,print
+	1 1 .at 
+	.bblue .white .eline
+	.sp 'name .write ycursor xcursor "  %d:%d " .print 
+	$fuente fuente - " %d chars" .print 
+	clipboard> clipboard - " %d " .print
+	mshift " %d " .print
 	| error-
 	cerror 0? ( drop ; ) drop
-	1 hcode 3 + ,at ,bred ,white ,eline 'outpad ,s
+	1 hcode 3 + .at .bred .white .eline 'outpad .write
 	;
 
 :pantalla	
-	mark			| buffer in freemem
-	,hidec ,reset ,cls
+	.hidec .reset .cls
 	cursorpos
 	
 	topbar
@@ -729,19 +746,15 @@
 	fotbar
 	
 	xcode xlinea - xcursor +
-	ycode ylinea - ycursor + ,at 
-	,showc
-	
-	memsize type	| type buffer
-	empty			| free buffer
+	ycode ylinea - ycursor + .at 
+	.showc
+	.flush
 	;
 
 #exit 0
 
 :evkey	
-|WIN|	evtkey ]ESC[ 
-|LIN|	getch [ESC]
-	=? ( 1 'exit ! )
+	getch [ESC]	=? ( 1 'exit ! )
 	teclado ;
 	
 ::>>cr | adr -- adr'
@@ -760,25 +773,23 @@
 
 			
 :evwmouse 
-|WIN|	evtmw 
+	evtmw 
 	-? ( drop scrolldw scrolldw ; ) drop
 	scrollup scrollup ;
 
 :evmouse
-|WIN|	evtm
+	inevt
 	1 =? ( drop ; ) | move 
 	4 =? ( drop evwmouse ; )
 	drop
-|WIN|	evtmb $0 =? ( drop ; ) drop 
-|WIN|	evtmxy
+	evtmb $0 =? ( drop ; ) drop 
+	evtmxy
 	1 <? ( 2drop ; )
 	1- xycursor
 	'fuente> ! 
 	;
 
-
 :evsize	
-	.getconsoleinfo
 	rows 1- 'hcode !
 	cols 7 - 'wcode !
 	;
@@ -791,12 +802,11 @@
 	.showc .insc
 	( exit 0? drop 
 		pantalla
-|WIN|		getevt
-|WIN|		$1 =? ( evkey )
-|WIN|		$2 =? ( evmouse )
-|WIN|		$4 =? ( evsize )
-|WIN|		drop 
-|LIN|		evkey
+		inevt
+		$1 =? ( evkey )
+		$2 =? ( evmouse )
+		$4 =? ( evsize )
+		drop 
 		) drop ;
 
 |---- Mantiene estado del editor
@@ -832,8 +842,6 @@
 	sys
 	
 	ram
-|WIN|	evtmouse
-	.getconsoleinfo
 	.alsb 
 	editor 
 	.masb

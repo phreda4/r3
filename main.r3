@@ -33,9 +33,11 @@
 	'fullpath 1024 "mem/menu.mem" save ;
 
 |---------------------------
+:banner
+	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
+	
 :runcheck
-	.cls 
-	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
+	banner
 	here dup "mem/errorm.mem" load
 	over =? ( 2drop ; ) 
 	0 swap c!
@@ -47,6 +49,7 @@
 
 :filerun
 	fuente c@ 0? ( drop ; ) drop
+	banner
 	savem
 	"mem/errorm.mem" delete
 	'fullpath
@@ -61,6 +64,9 @@
 	fuente c@ 0? ( drop ; ) drop
 	.masb .flush
 	savem
+||WIN| 	"r3 r3/editor/code-edit.r3"
+||LIN| 	"./r3lin r3/editor/code-edit.r3"
+
 |WIN| 	"r3 r3/d4/r3ide.r3"
 |LIN| 	"./r3lin r3/d4/r3ide.r3"
 	sys 

@@ -192,22 +192,27 @@
 |---- draw text with colors
 #focoe	
 #modoline
+
+#fc.
+:.fcc | color -- ; .fc w/cache
+	fc. =? ( drop ; )
+	dup .fc 'fc. ! ;
 	
 :codecolor | adr -- adr
 	dup c@ 
 	33 <? ( drop ; )
-	$22 =? ( drop 15 .fc 3 'modoline ! ; )		| $22 " string
-	$5e =? ( drop 11 .fc 2 'modoline ! ; )		| $5e ^  Include
-	$7c =? ( drop 8 .fc 2 'modoline ! ; )		| $7c |	 Comentario
-	$3A =? ( drop 196 .fc ; )		| $3a :  Definicion
-	$23 =? ( drop 201 .fc ; )	| $23 #  Variable
-	$27 =? ( drop 50 .fc ; )	| $27 ' Direccion
+	$22 =? ( drop 15 .fcc 3 'modoline ! ; )		| $22 " string
+	$5e =? ( drop 11 .fcc 2 'modoline ! ; )		| $5e ^  Include
+	$7c =? ( drop 8 .fcc 2 'modoline ! ; )		| $7c |	 Comentario
+	$3A =? ( drop 196 .fcc ; )		| $3a :  Definicion
+	$23 =? ( drop 201 .fcc ; )	| $23 #  Variable
+	$27 =? ( drop 50 .fcc ; )	| $27 ' Direccion
 	drop
-	dup isNro 1? ( drop 226 .fc ; ) drop
+	dup isNro 1? ( drop 226 .fcc ; ) drop
 |	dup isBase 
 |	1? ( 18 <? ( drop 20 .fc ; ) drop 214 .fc ; ) 
 |	drop
-	46 .fc ;
+	46 .fcc ;
 	
 :setcursor | y c adr
 	focoe 1? ( .savec ) drop ;
@@ -230,11 +235,11 @@
 	9 =? ( tabchar ) .emit ;
 
 :iniline | adr lin -- adr lin 
-	.reset |.rever
+|	.reset |.rever
 	fx over fy + .at
 	dup ylinea +  
-	ycursor =? ( 233 .bc 7 .fc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
-	235 .bc 240 .fc 1+ .d 4 .r. .write .sp ;
+	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
 	
 :drawline | nlin adr -- nlin adr
 	inselect
@@ -252,8 +257,33 @@
 		0? ( drop 1- ; ) | end of text
 		drop ) drop ;
 
+|----------------------
+:cemitmono | adr char -- adr 
+	modoline 0? ( drop
+		9 =? ( tabchar )
+		.emit ; ) 
+	3 =? ( drop .emit 1 'modoline ! ; ) | prev is "
+	2 =? ( drop 9 =? ( tabchar ) .emit ; ) drop
+	$22 =? ( .emit 0 'modoline ! ; ) | ""
+	9 =? ( tabchar ) .emit ;
+
+:drawlinemono
+	inselect
+	fw 5 - 
+	( 1? 1- swap 
+		fuente> =? ( setcursor )
+		atselect
+		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) 
+		13 =? ( drop fillend ; )
+		cemitmono
+		swap ) drop
+	( atselect c@+ 13 <>? 
+		0? ( drop 1- ; ) | end of text
+		drop ) drop ;
+
+|--------------------	
 :lastline
-	dup 1- c@ 13 =? ( drop swap 1+ iniline setcursor drop ; ) drop
+	dup 1- c@ 13 =? ( drop swap 1+ iniline setcursor fw 5 - .nsp drop ; ) drop
 	setcursor nip ;
 	
 :drawlines | ini -- end
