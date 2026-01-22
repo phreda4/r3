@@ -67,6 +67,10 @@
 #sys-SetCurrentDirectory
 #sys-GetCurrentDirectory
 
+#sys-GlobalAlloc
+#sys-GlobalLock
+#sys-GlobalUnlock
+#sys-GlobalFree
 	
 ::AllocConsole sys-allocconsole sys0 drop ;
 ::FreeConsole sys-freeconsole sys0 drop ;
@@ -133,6 +137,11 @@
 ::SetConsoleCP s-SetConsoleCP sys1 drop ;
 
 |::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
+
+::GlobalAlloc sys-GlobalAlloc sys2 ; |(UINT uFlags, SIZE_T dwBytes)
+::GlobalLock sys-GlobalLock sys1 ; |(HGLOBAL hMem)
+::GlobalUnlock sys-GlobalUnlock sys1 drop ; | (HGLOBAL hMem)
+::GlobalFree sys-GlobalFree sys1 drop ; |(HGLOBAL hMem)
 
 |------- BOOT
 :
@@ -201,6 +210,11 @@
 
 	dup "SetConsoleOutputCP" GETPROC 's-SetConsoleOutputCP !
 	dup "SetConsoleCP" GETPROC 's-SetConsoleCP !
+
+	dup "GlobalAlloc" getproc 'sys-GlobalAlloc !
+	dup "GlobalLock" getproc 'sys-GlobalLock !
+	dup "GlobalUnlock" getproc 'sys-GlobalUnlock !
+	dup "GlobalFree" getproc 'sys-GlobalFree !
 
 	drop
 	;

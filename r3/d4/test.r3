@@ -17,3 +17,6 @@ cua
 	-1 2 randminmax "%d" .println
 	) drop
 ;
+
+sdsd
+

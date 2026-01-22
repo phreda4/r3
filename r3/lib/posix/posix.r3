@@ -8,6 +8,8 @@
 #sys-close
 #sys-read
 #sys-write
+#sys-fread
+#sys-fwrite
 #sys-lseek
 #sys-exit
 #sys-fork
@@ -47,6 +49,10 @@
 #sys-access
 #sys-setlocale
 
+#sys-popen
+#sys-pclose
+#sys-fgets
+
 #sys-socket
 #sys-bind
 #sys-listen
@@ -75,6 +81,8 @@
 ::libc-close sys-close sys1 ;
 ::libc-read sys-read sys3 ;
 ::libc-write sys-write sys3 ;
+::libc-fread sys-fread sys4 ;
+::libc-fwrite sys-fwrite sys4 ;
 ::libc-lseek sys-lseek sys3 ;
 ::libc-exit sys-exit sys1 ;
 ::libc-fork sys-fork sys0 ;
@@ -114,6 +122,10 @@
 ::libc-access sys-access sys2 ;
 ::libc-setlocale sys-setlocale sys2 ;
 
+::libc-popen sys-popen sys2 ;
+::libc-pclose sys-pclose sys1 drop ;
+::libc-fgets sys-fgets sys3 ;
+
 ::libc-socket sys-socket sys3 ;
 ::libc-bind sys-bind sys3 ;
 ::libc-listen sys-listen sys2 ;
@@ -144,6 +156,9 @@
 	dup "close" getproc 'sys-close ! 
 	dup "read" getproc 'sys-read ! 
 	dup "write" getproc 'sys-write ! 
+	dup "fread" getproc 'sys-fread ! 
+	dup "fwrite" getproc 'sys-fwrite ! 
+	
 	dup "lseek" getproc 'sys-lseek ! 
 	dup "exit" getproc 'sys-exit ! 
 	dup "fork" getproc 'sys-fork ! 
@@ -177,16 +192,20 @@
 	dup "time" getproc 'sys-time !
 	dup "localtime" getproc 'sys-localtime !
 
-    dup "tcgetattr" getproc 'sys-tcgetattr !
-    dup "tcsetattr" getproc 'sys-tcsetattr !
+	dup "tcgetattr" getproc 'sys-tcgetattr !
+	dup "tcsetattr" getproc 'sys-tcsetattr !
 
-    dup "system" getproc 'sys-system !
-    dup "select" getproc 'sys-select !
-    dup "ioctl" getproc 'sys-ioctl !
-    dup "stat" getproc 'sys-stat !
-    dup "access" getproc 'sys-access !
-    dup "setlocale" getproc 'sys-setlocale !
+	dup "system" getproc 'sys-system !
+	dup "select" getproc 'sys-select !
+	dup "ioctl" getproc 'sys-ioctl !
+	dup "stat" getproc 'sys-stat !
+	dup "access" getproc 'sys-access !
+	dup "setlocale" getproc 'sys-setlocale !
 
+	dup "popen" getproc 'sys-popen !
+	dup "pclose" getproc 'sys-pclose !
+	dup "fgets" getproc 'sys-fgets !
+	
 	dup "socket" getproc 'sys-socket !
 	dup "bind" getproc 'sys-bind !
 	dup "listen" getproc 'sys-listen !
