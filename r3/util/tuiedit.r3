@@ -249,7 +249,7 @@
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
 		atselect
-		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) 
+		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
 		cemit
 		swap ) drop
@@ -258,41 +258,44 @@
 		drop ) drop ;
 
 |----------------------
-:cemitmono | adr char -- adr 
-	modoline 0? ( drop
-		9 =? ( tabchar )
-		.emit ; ) 
-	3 =? ( drop .emit 1 'modoline ! ; ) | prev is "
-	2 =? ( drop 9 =? ( tabchar ) .emit ; ) drop
-	$22 =? ( .emit 0 'modoline ! ; ) | ""
-	9 =? ( tabchar ) .emit ;
-
 :drawlinemono
 	inselect
 	fw 5 - 
 	( 1? 1- swap 
 		fuente> =? ( setcursor )
 		atselect
-		c@+ 0? ( drop fuente> =? ( setcursor ) nip 1- ; ) 
+		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
-		cemitmono
+		9 =? ( tabchar ) .emit 
 		swap ) drop
 	( atselect c@+ 13 <>? 
 		0? ( drop 1- ; ) | end of text
 		drop ) drop ;
 
-|--------------------	
-:lastline
-	dup 1- c@ 13 =? ( drop swap 1+ iniline setcursor fw 5 - .nsp drop ; ) drop
-	setcursor nip ;
+|--------------------
+:emline | adr lin -- adr lin 
+	fx over fy + .at
+	"~" .write fw 1- .nsp ;
+	
+:emptylines
+	dup 1- c@ 13 =? ( drop
+		fuente> =? ( swap 1+ iniline setcursor swap )
+		dup ) drop
+	235 .bc 240 .fcc
+	swap ( 1+ fh <? emline ) drop ;
 	
 :drawlines | ini -- end
 	0 ( fh <?
 		iniline swap 
 		drawline
-		$fuente =? ( | line adr
-			fuente> =? ( lastline ; ) | cursor in last position
-			nip ; ) | not draw more
+		$fuente =? ( emptylines ; )
+		swap 1+ ) drop ;
+
+:drawlinesmono | ini -- end
+	0 ( fh <?
+		iniline swap 
+		drawlinemono
+		$fuente =? ( emptylines ; ) | not draw more
 		swap 1+ ) drop ;
 		
 |---- mouse & keys
@@ -397,12 +400,23 @@
 ::tuEditCode 
 	EditMouse
 	EditFoco
-	fw 8 <? ( drop ; ) drop
+|	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! ;
 
 ::tuReadCode
-	fw 8 <? ( drop ; ) drop
+|	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! ;
+
+::tuEditCodeMono
+	EditMouse
+	EditFoco
+|	fw 8 <? ( drop ; ) drop
+	scrini> drawlinesmono 'scrend> ! ;
+
+::tuReadCodeMono
+|	fw 8 <? ( drop ; ) drop
+	scrini> drawlinesmono 'scrend> ! ;
+	
 	
 ::tudebug
 	ycursor 1+ xcursor 1+ " %d:%d " sprint ;
@@ -418,6 +432,9 @@
 	0 'hashfile !
 	;
 
+::TuSaveCode 
+	savetxt ;
+	
 |---------------	
 :
 	here

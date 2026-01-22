@@ -2,7 +2,7 @@
 | PHREDA 2025
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
 
 ^r3/d4/r3token.r3
 
@@ -120,19 +120,22 @@
 	;
 	
 |--- F1 RUN in CHECK	
+:banner
+	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
+
 :runcheck
-	.cls 
-	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush
 	here dup "mem/errorm.mem" load
 	over =? ( 2drop ; ) 
 	0 swap c!
+	banner
 	.cr .bred .white " * ERROR * " .write .cr
 	.reset .write .cr
 	.bblue .white " Any key to continue... " .write .cr
-	.flush 
 	waitkey ;	
 	
 :runcode
+	banner
+	TuSaveCode
 	"mem/errorm.mem" delete
 	'filename
 |WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
@@ -219,7 +222,7 @@
 	;
 	
 :editcode
-	.reset .home |.cls 
+	.reset .home
 	1 flxN
 	|4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
@@ -230,7 +233,7 @@
 	
 	1 flxS
 	fx fy .at 
-	" |ESC| Exit |F1| Check |F2| Debug |F3| Check |F4| Profile |F5| Compile"
+	" |ESC| Exit |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
 	.write
 
 	|-----------
@@ -247,7 +250,8 @@
 	tuEditCode
 	
 	uiKey
-	[f1] =? ( checkcode ) |show256 )
+	[f1] =? ( runcode )
+	|[f1] =? ( checkcode ) 
 	[f2] =? ( debugcode ) |show256 )
 	
 |	[f6] =? ( screenstate 1 xor 'screenstate ! )
@@ -262,15 +266,16 @@
 	
 |-----------------------------------
 : 
-	.alsb 
+	.alsb
 	'filename "mem/menu.mem" load	
 	|"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename TuLoadCode
 	|TuNewCode
-	
 	mark
-	
 	'main onTui 
+	
+	TuSaveCode 
+	
 	.masb .free 
 ;

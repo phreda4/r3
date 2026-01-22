@@ -12,9 +12,7 @@
 2 1 over + 
 tt
 cua 
-getch drop
-"hola" .print
-getch drop
+"hola" .println
 ( getch [esc] <>? drop
 	-1 2 randminmax "%d" .println
 	) drop
