@@ -191,7 +191,7 @@
 |-------------
 :controlv | paste
 	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
-	fuente> dup pick2  + swap | clip cnt 'f+ 'f
+	fuente> dup pick2 + swap | clip cnt 'f+ 'f
 	$fuente over - 1+ cmove>	| clip cnt
 	fuente> -rot | f clip cnt
 	dup '$fuente +!

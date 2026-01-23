@@ -86,10 +86,10 @@
 |------------
 :paneleditor
 	fuente c@ 0? ( drop ; ) drop
-	.wbordec
-	1 1 flpad 
+	tuwin $1 'fullpath .wtitle
+	2 2 flpad 
 |	tuEditCode
-	tuReadCode 
+	tuReadCode
 	;
 	
 |------------
@@ -113,8 +113,8 @@
 :dirpanel
 	.reset
 	'filecolor xwrite!
-	tuwin $1 " Dir " .wtitle
-	1 1 flpad |$00 xalign
+	tuwin $1 "" .wtitle
+	1 1 flpad 
 	'vfolder uiDirs tuTree
 	xwrite.reset
 	tuX? 1? ( changefiles ) drop
@@ -138,8 +138,9 @@
 	;
 
 |------------	
+#pad 
 :scrmain
-	.bblack .home |.cls 
+	.bblack .cls 
 	|___________
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
@@ -147,19 +148,26 @@
 	2dup " %d %d " .print
 	
 	|___________
-	1 flxS
-	fx fy .at " |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
+	4 flxS
+	
+	fx fy .at 
+	|" |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
+	fw .hline
+	
+	1 1 flpad 
+	'pad fw tuInputLine
 	|___________
 	38 flxO
 	dirpanel
 	|-4 flxS		dirfile
 	|___________
 	|1 flxE
-	-4 flxS
+	|-4 flxS
+	flxRest	
 	paneleditor
 	|___________
-	flxRest	
-	dirpad
+	|flxRest	
+	|dirpad
 
 	.flush 
 	uikey

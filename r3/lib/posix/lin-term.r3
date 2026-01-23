@@ -38,6 +38,10 @@
 	0 2 flgs libc-fcntl drop 
 	;
 
+|::reset-terminal-mode
+|    stermp 'sterm 12 + w!
+|    0 0 'sterm libc-tcsetattr  ;
+
 |------- Console Information -------
 ##rows ##cols
 #prevrc 0

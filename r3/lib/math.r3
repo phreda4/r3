@@ -136,12 +136,12 @@
 	drop nip 8 << ;
 
 :mcalc | x bitpos -- m
-	16 >? ( 16 - >> ; ) 16 swap - << ;
+	+? ( >> ; ) neg << ;
 	
 ::log2. | y -- r
 	0 <=? ( 0 nip ; ) 
 	63 over clz - 
-	dup 16 - 16 << | x bitpos integer
+	16 - dup 16 << | x bitpos integer
 	-rot | integer x bitpos
 	mcalc 1.0 - | int xnorm
 	19697

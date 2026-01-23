@@ -201,6 +201,6 @@
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! dup 'outbuf> !
-	$fff +	| 8kb flush buffer
+	$1fff +	| 16kb flush buffer
 	dup 'endbuf ! 'here !
 	;
