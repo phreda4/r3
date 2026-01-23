@@ -187,10 +187,10 @@
 	2drop ;
 
 |---- convert to number
-#mbuff * 65
+#mbuff * 64
 
 :mbuffi | -- adr
-	'mbuff 64 + 0 over c! 1- ;
+	'mbuff 63 + 0 over c! 1- ;
 
 :sign | adr sign -- adr'
 	-? ( drop $2d over c! ; ) drop 1+ ;
@@ -234,7 +234,7 @@
 	mbuffi over abs $ffff and 10 16 *>> 10 + .f! ;
 
 ::.r. | b nro -- b ; right spaces
-	'mbuff 64 + swap -
+	'mbuff 63 + swap -
 	swap ( over >?
 		1- $20 over c!
 		) drop ;

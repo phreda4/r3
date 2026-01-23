@@ -1,0 +1,211 @@
+| doble decimal math
+| 32.32 fixed point math
+|---------------------------------
+^r3/lib/math.r3
+^r3/lib/str.r3
+
+|---- fixed point 48.16
+::*.d	| a b -- c 
+	32 *>> ;
+
+::*.df	| a b -- c ; full adjust
+	32 *>> dup 63 >> - ;
+
+::/.d	| a b -- c
+	32 <</ ;
+	
+::ceil.d	| a -- a
+	$ffffffff + 32 >> ;
+
+::.d>i 32 >> ;
+::i>.d 32 << ;
+::f>.d 16 << ;
+::.d>f 16 >> ;
+
+
+:sinp
+	$7fffffff and $40000000 -
+	dup dup *.d
+	dup 4846800 *.d
+	2688000 - *.d
+	404000 + *.d ;
+	
+::cos.d | bangle -- r
+	$80000000 + $80000000 nand? ( sinp ; ) sinp neg ;
+::sin.d | bangle -- r
+	$40000000 + $80000000 nand? ( sinp ; ) sinp neg ;
+
+::tan.d | v -- f
+	$40000000 +
+	$7fffffff and $40000000 -
+	dup dup *.d
+	dup 129890000 *.d
+	5078000 + *.d
+	395600 + *.d ;
+
+
+:step | op res one r+o -- op res one
+	pick3 >? ( drop swap 2/ swap ; )
+	rot 2/ pick2 + | op one r+o nres
+	>r neg rot + r> | one nop nres
+	rot ;
+	
+::sqrt.d | x -- r
+	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
+	0 
+	1 63 pick3 clz - 1 nand <<
+	( 1? | op res one
+		2dup + | op res one r+o
+		step 2 >> )
+	drop nip 16 << ;
+	
+	
+:mcalc | x bitpos -- m
+	32 >? ( 32 - >> ; ) 32 swap - << ;
+	
+::log2.d | y -- r
+	0 <=? ( 0 nip ; ) 
+	63 over clz - 
+	dup 32 - 32 << | x bitpos integer
+	-rot | integer x bitpos
+	mcalc $100000000 - | int xnorm
+	5653561 | c5 (ajustado por iteración)
+	over * 32 >> 84410564 -  | c4 = -0.0196 × 2³²
+	over * 32 >> 536473190 +  | c3 = 0.1249 × 2³²
+	over * 32 >> 1462975590 - | c2 = -0.3406 × 2³²
+	over * 32 >> 2674653675 + | c1 = 0.6227 × 2³²
+	over * 32 >> 1292949975 - | c0 = -0.3010 × 2³²
+	over * 32 >> 
+	+ ;
+	
+::pow2.d | y -- r
+	dup $ffffffff and
+	13673216    | c6 = 0.0032 × 2³² ˜ minimax optimizado
+	over * 32 >> 90907852 +   | c5 = 0.0212 × 2³²
+	over * 32 >> 249678090 +  | c4 = 0.0581 × 2³²
+	over * 32 >> 620795693 +  | c3 = 0.1445 × 2³²
+	over * 32 >> 1285701837 + | c2 = 0.2993 × 2³²
+	over * 32 >> 2977044471 + | c1 = 0.6931 × 2³² (˜ ln(2))
+	* 32 >> $100000000 +
+	swap 32 >>
+	+? ( << ; ) neg >> ;
+
+::pow.d | x y -- r
+	|0? ( 2drop 1.0 ; ) 
+	swap 0? ( nip ; ) | y x
+	log2.d *. pow2.d ;
+	
+::root.d | x n -- r
+	swap 0 <=? ( 2drop 0 ; )
+	log2.d swap /.d pow2.d ;
+
+::ln.d | x -- ln(x)
+	log2.d $B17217D8 *.d ;
+
+::exp.d | x -- e^x  
+	$1715476DC *.d pow2.d ;
+	
+:_tanh	
+	$600000000 >=? ( $100000000 ; ) 
+	$10000000 <? ( ; ) 
+	2* exp. dup $100000000 - swap $100000000 + /.  ;
+
+::tanh.d
+	-? ( neg _tanh neg ; ) _tanh ;
+
+:gamma_stirling | v -- r
+	0 swap | accx workx
+	( $700000000 <?
+		swap over ln.d +
+		swap $100000000 + )
+	| accx work
+	dup $80000000 - over ln.d *.d 
+	| accx workx term1 
+	$100000000 pick2 12 * /.d
+	| acc workx term1 term3
+	$EB5DFC07 + rot + | accx term1 add
+	- swap -
+	;
+
+:-gamma | x -- r
+	$ffffffff nand? ( drop 0 ; )
+	$100000000 swap | acc x
+	( $100000000 <? 
+		swap over *.d
+		swap $100000000 + ) | acc x
+	gamma_stirling |exp. | ??
+	swap /.d
+	;
+
+::gamma.d | x -- r
+	0 <=? ( -gamma ; ) |0 nip ; )
+	gamma_stirling exp.d ;
+
+::beta.d | x y -- r
+	0 <? ( 2drop 0 ; )
+	swap 0 <? ( 2drop 0 ; )
+	2dup + | y x x+y
+	rot gamma_stirling
+	rot gamma_stirling +
+	swap gamma_stirling -
+	exp.d ;
+	
+|---- parse
+#f | fraccion
+#e | exponente
+
+:signo | str -- str signo
+	dup c@
+	$2b =? ( drop 1+ 0 ; )	| + $2b
+	$2d =? ( drop 1+ 1 ; )	| - $2d
+	drop 0 ;
+	
+:getfrac | nro adr' char -- nro adr' char
+	drop
+	1 swap | nro 1 adr'
+	( c@+ $2f >?
+		$39 >? ( rot 'f ! ; )
+		$30 - rot 10* + 
+		$100000000 >? ( 'f ! 
+			( c@+ $2f >? $3a <? drop ) ; ) 
+		swap )
+	rot 'f ! ;
+
+::str>f.d | adr -- 'adr fnro
+	0 'f !
+	trim 
+	dup c@ 0? ( ; ) drop
+	signo
+	over c@ 33 <? ( 2drop 1- 0 ; ) drop | caso + y - solos
+	1? ( [ neg ; ] >r ) drop
+	0 swap ( c@+ $2f >? $3a <? | 0..9
+		$30 - rot 10* + swap )
+	$2e =? ( getfrac )
+	drop 1- swap
+	32 << $100000000 f
+	1 over ( 1 >? 10/ swap 10* swap ) drop
+	*/ $ffffffff and or
+	;
+
+|----- print
+#mbuff * 64
+
+:mbuffi | -- adr
+	'mbuff 63 + 0 over c! 1- ;
+
+:sign | adr sign -- adr'
+	-? ( drop $2d over c! ; ) drop 1+ ;
+
+:.f!
+	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
+	1+ $2e over c! 1-
+	over abs 32 >>> 
+	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
+	swap sign ;
+	
+::.fd | fix -- str
+	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
+
+|"0.0000001" str>f.d nip 
+|"0.0000001" str>f.d nip +
+|.fd "%s" .println
