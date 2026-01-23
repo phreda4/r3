@@ -203,32 +203,6 @@
 	'name savemem
 	empty 
 	;
-
-|---------- compati
-#pad * 64
-	
-:.char
-	0? ( drop ; )
-	8 =? ( swap 
-		1 - 'pad <? ( 2drop 'pad ; )
-		swap .emit "1P" .[w ; )
-	dup .emit
-	swap c!+ ;
-	
-::.input | --
-	'pad 
-	( getch [esc] <>? .char ) drop
-	0 swap c! ;
-	
-:emite | char --
-	$5e =? ( drop 27 .emit ; ) | ^=escape
-	.emit ;
-	
-::.printe | "" --
-	sprint
-	( c@+ 1? emite ) 2drop ;
-
-
 |----------------------------------
 :loadinfo
 	linecomm "mem/infomap.db" load 

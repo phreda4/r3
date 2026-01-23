@@ -1,5 +1,7 @@
 | windows clipboard
 | PHREDA 2026
+^r3/lib/win/kernel32.r3
+^r3/lib/str.r3
 
 #s-OpenClipboard
 #s-CloseClipboard
@@ -23,7 +25,7 @@
 	EmptyClipboard
 	GMEM_MOVEABLE over GlobalAlloc | 'mem cnt alloc
 	dup GlobalLock | 'mem cnt alloc mlock
-	dup >r 2swap cmove | dsc
+	dup >r 2swap 1+ cmove | dsc
 	r@ GlobalUnlock 
 	CF_TEXT r@ SetClipboardData 
 	r> GlobalFree

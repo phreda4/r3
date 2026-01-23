@@ -1,4 +1,4 @@
-# R3Forth Terminal Library (term.r3)
+# R3Forth Terminal Library (console.r3)
 
 A comprehensive cross-platform terminal control library for R3Forth featuring ANSI/VT escape sequences, buffered output, keyboard input, and mouse events.
 
@@ -68,7 +68,7 @@ Predefined constants for special keyboard keys. These are **platform-independent
 
 ## Output Buffer System
 
-All output is buffered in a 64KB buffer for efficient terminal rendering. The buffer automatically flushes when full.
+All output is buffered in a 8KB buffer for efficient terminal rendering. The buffer automatically flushes when full. or .println or getch is called.
 
 ### Buffer Management
 
@@ -79,8 +79,8 @@ All output is buffered in a 64KB buffer for efficient terminal rendering. The bu
 
 - **`.flush`** - Write buffer contents to terminal and reset
   ```r3forth
-  "Hello" .type
-  "World" .type
+  "Hello" .print
+  "World" .print
   .flush  | Display both strings
   ```
   - Automatically called when buffer is full
@@ -100,8 +100,8 @@ All output is buffered in a 64KB buffer for efficient terminal rendering. The bu
 
 - **`.cr`** - Add newline (carriage return + line feed)
   ```r3forth
-  "Line 1" .type .cr
-  "Line 2" .type .cr
+  "Line 1" .write .cr
+  "Line 2" .write .cr
   ```
 
 - **`.sp`** - Add single space
@@ -129,7 +129,7 @@ All output is buffered in a 64KB buffer for efficient terminal rendering. The bu
   42 "Answer: %d" .print
   ```
 
-- **`.println`** `( ... "format" -- )` - Format and print with newline
+- **`.println`** `( ... "format" -- )` - Format and print with newline, flush the buffer
   ```r3forth
   3.14 "Pi: %f" .println
   ```
@@ -145,7 +145,6 @@ These functions automatically flush after output:
 
 - **`.fwrite`** `( "str" -- )` - Write and flush
 - **`.fprint`** `( ... "format" -- )` - Print and flush
-- **`.fprintln`** `( ... "format" -- )` - Print line and flush
 
 ---
 

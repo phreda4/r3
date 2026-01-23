@@ -373,21 +373,6 @@
 	loadm
 	;
 	
-#pad * 64
-	
-:.char
-	0? ( drop ; )
-	8 =? ( swap 
-		1 - 'pad <? ( 2drop 'pad ; )
-		swap .emit "1P" .[w ; )
-	dup .emit
-	swap c!+ ;
-	
-::.input | --
-	'pad 
-	( getch [esc] <>? .char ) drop
-	0 swap c! ;
-	
 
 :newfile
 	0 linesv 1+ .at 
@@ -484,14 +469,6 @@
  	235 .bc 
  	40 2 linesv cols 41 - source code-print
  	;
-
-:emite | char --
-	$5e =? ( drop 27 .emit ; ) | ^=escape
-	.emit ;
-	
-::.printe | "" --
-	sprint
-	( c@+ 1? emite ) 2drop ;
 
 :screen
 	.hidec .reset .cls .bblue 
