@@ -94,10 +94,10 @@
 ::.restorec "u" .[w ; | restore cursor position
 
 |------- Cursor Shapes -------
-::.ovec "0q" .[w ; | default cursor
-::.insc "5q" .[w ; | blinking bar
-::.blockc "2q" .[w ; | steady block
-::.underc "4q" .[w ; | steady underscore
+::.ovec "1 q" .[w ; | default cursor
+::.insc "5 q" .[w ; | blinking bar
+::.blockc "2 q" .[w ; | steady block
+::.underc "4 q" .[w ; | steady underscore
 
 |------- Screen Buffer Control -------
 ::.alsb "?1049h" .[w .flush ; | alternate screen buffer

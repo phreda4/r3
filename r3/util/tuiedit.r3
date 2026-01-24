@@ -214,8 +214,6 @@
 |	drop
 	46 .fcc ;
 	
-:setcursor | y c adr
-	focoe 1? ( .savec ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
 	|nip .eline ;
@@ -234,12 +232,16 @@
 	$22 =? ( .emit 0 'modoline ! codecolor ; ) | ""
 	9 =? ( tabchar ) .emit ;
 
+:linenormal
+	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
+	
 :iniline | adr lin -- adr lin 
 |	.reset |.rever
 	fx over fy + .at
-	dup ylinea +  
+	dup ylinea + 
+	focoe 0? ( drop linenormal ; ) drop
 	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
-	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
+	linenormal ;
 	
 :drawline | nlin adr -- nlin adr
 	inselect
@@ -247,7 +249,6 @@
 	codecolor
 	fw 5 - 
 	( 1? 1- swap 
-		fuente> =? ( setcursor )
 		atselect
 		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
@@ -262,7 +263,6 @@
 	inselect
 	fw 5 - 
 	( 1? 1- swap 
-		fuente> =? ( setcursor )
 		atselect
 		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
@@ -278,9 +278,6 @@
 	"~" .write fw 1- .nsp ;
 	
 :emptylines
-	dup 1- c@ 13 =? ( drop
-		fuente> =? ( swap 1+ iniline setcursor swap )
-		dup ) drop
 	235 .bc 240 .fcc
 	swap ( 1+ fh <? emline ) drop ;
 	
@@ -309,7 +306,7 @@
 	swap fx - 5 - clamp0 swap | 5- line numbers
 	( swap 1? 1- swap 
 		c@+ 
-		9 =? ( rot 2 - clamp0 -rot )
+		9 =? ( rot 1- clamp0 -rot )
 		13 =? ( 0 nip )
 		0? ( drop nip 1- ; ) 
 		drop ) drop ;
@@ -352,7 +349,7 @@
 	tuiw 
 	2 =? ( dns )
 	3 =? ( mos )
-	6 =? ( ups clickMouse 'fuente> ! )
+	6 =? ( ups clickMouse 'fuente> ! cursorpos )
 	drop ;
 	
 :chmode
@@ -401,7 +398,10 @@
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
-	scrini> drawlines 'scrend> ! ;
+	scrini> drawlines 'scrend> ! 
+	focoe 0? ( drop ; ) drop
+	fx xcursor + 5 + fy ycursor + ylinea - .at .savec
+	;
 
 ::tuReadCode
 |	fw 8 <? ( drop ; ) drop
@@ -411,7 +411,10 @@
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
-	scrini> drawlinesmono 'scrend> ! ;
+	scrini> drawlinesmono 'scrend> ! 
+	focoe 0? ( drop ; ) drop
+	fx xcursor + 5 + fy ycursor + ylinea - .at .savec
+	;
 
 ::tuReadCodeMono
 |	fw 8 <? ( drop ; ) drop
