@@ -185,7 +185,7 @@
 
 	1 flxS
 	fx fy .at 
-	" |ESC| Exit |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
+	" |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
 	.write
 
 	scrmsg
@@ -223,18 +223,18 @@
 	
 :editcode
 	.reset .home
-	1 flxN
-	|4 .bc 7 .fc
+	4 .bc 7 .fc
+	1 flxN 
 	fx fy .at fw .nsp fx .col
-	" R3edit [" .write
-	'filename .write 
-	"] " .write
+	" R3edit [" .write 'filename .write "] " .write
+	tudebug .write
+|	fx fy .at fw .nsp fx .col " R3edit [" .write 'filename .write "] " .write
 	|tudebug .write
 	
 	1 flxS
-	fx fy .at 
-	" |ESC| Exit |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
-	.write
+	fx fy .at fw .nsp fx .col
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
+	.printe 
 
 	|-----------
 	screenstate	
@@ -243,19 +243,22 @@
 
 	|-----------
 	.reset
-	flxRest tuWina 
-	$4 'filename .wtitle
-	$23 mark tudebug ,s ,eol empty here .wtitle
-	1 1 flpad 
+	flxRest |tuWina 
+	|$4 'filename .wtitle
+	|$23 mark tudebug ,s ,eol empty here .wtitle 1 1 flpad 
 	tuEditCode
 	
 	uiKey
-	[f1] =? ( runcode )
-	|[f1] =? ( checkcode ) 
-	[f2] =? ( debugcode ) |show256 )
+| f1 no usada	
+	|[f2] =? ( helpword )
+	|[f3] =? ( search )
+	|[f4] =? ( )
+	[f5] =? ( runcode )
+|	[f6] =? ( debug ) | a debug /profile/compile
+|[f7] =? (  )
+|[f8] =? ( siguiente??)
+|[f9] =? ( breakpoint )
 	
-|	[f6] =? ( screenstate 1 xor 'screenstate ! )
-|	[f7] =? ( screenstate 2 xor 'screenstate ! )
 	drop
 	;
 	

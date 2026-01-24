@@ -147,16 +147,19 @@
 
 |------------	
 :scrmain
-	.bblack .cls 
+	.bblack .cls
+	
 	|___________
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug
 	|2dup " %d %d " .print
 
+	4 .bc 7 .fc	
 	1 flxS
-	fx fy .at 10 .bc 0 .fc
-	" |ESC| Exit |R|un |E|dit |S|earch |C|lon |N|ew |H|elp" .write .eline
+	fx fy .at fw .nsp fx .col
+	" ^[7mF2^[27mHelp ^[7mF3^[27mSearch ^[7mF5/ENT^[27mRun ^[7mF6/SPC^[27mEdit " ||C|lon |N|ew " 
+	.printe
 	
 	|___________
 	38 flxO
@@ -171,17 +174,20 @@
 	|flxRest	
 	|dirpad
 
-	|.flush 
 	uikey
+		
+|	[f2] =? ( help )		| H
+|	[f3] =? ( filesearch )	|S
+
+	[f5] =? ( filerun )		| R
 	[ENTER] =? ( filerun )
-	toUpp | upcase
-	$52 =? ( filerun )	| R
-	$45 =? ( fileedit )	| E
 	
-|	$53 =? ( filesearch )	|S
+	[f6] =? ( fileedit )	| E
+	$20 =? ( fileedit )
+	
 |	$43 =? ( fileclon )	| C
 |	$4e =? ( filenew )	| N
-|	$48 =? ( help )		| H
+
 	drop
 	;
 
@@ -192,8 +198,7 @@
 	TuNewCode 	|"main.r3" TuLoadCode
 	loadm
 	'scrmain onTui 
-	
-	|savem
+	savem
 	;
 
 : .alsb main .masb .free ;

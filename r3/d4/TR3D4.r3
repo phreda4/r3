@@ -4,7 +4,6 @@
 |-----------------
 ^r3/lib/console.r3
 
-^r3/d4/r3view.r3
 ^r3/d4/r3token.r3
 
 #wcode 40

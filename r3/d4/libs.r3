@@ -5,6 +5,7 @@
 ^r3/util/sort.r3
 ^r3/d4/meta/mlibs.r3
 
+#pad * 256
 
 |-----------------------------------
 :char>6 | char -- 6bitchar
