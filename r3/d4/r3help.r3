@@ -4,7 +4,7 @@
 ^r3/util/tui.r3
 ^r3/d4/meta/mlibs.r3
 
-#pad * 256
+#padcom * 256
 
 #lstwords
 #txtmanual
@@ -34,7 +34,7 @@
 	4 flxN
 	tuWin $1 "Help" .wtitle
 	1 1 flpad
-	'pad fw tuInputLine
+	'padcom fw tuInputLine
 	|___________	
 	cols 2/ flxO
 		flxpush

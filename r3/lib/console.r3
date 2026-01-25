@@ -174,7 +174,7 @@
     ( getch 0? drop 10 ms ) drop ;
 	
 |---------- compati
-#pad * 64
+##pad * 128
 	
 :.char
 	0? ( drop ; )
@@ -185,9 +185,10 @@
 	swap c!+ ;
 	
 ::.input | --
+	.showc .ovec
 	'pad 
-	( getch [esc] <>? .char ) drop
-	0 swap c! ;
+	( getch [enter] <>? [esc] <>? .char ) drop
+	0 swap c! .cr .flush ;
 	
 :emite | char --
 	$5e =? ( drop 27 .emit ; ) | ^=escape

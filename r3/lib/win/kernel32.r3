@@ -1,220 +1,236 @@
 | Kernel32.dll
 | PHREDA 2021
 
-#sys-AllocConsole
-#sys-FreeConsole
-#sys-ExitProcess 
-#sys-GetStdHandle
-#sys-SetStdHandle
+#s-AllocConsole
+#s-FreeConsole
+#s-ExitProcess 
+#s-GetStdHandle
+#s-SetStdHandle
 
-#sys-ReadFile
-#sys-WriteFile 
-#sys-GetConsoleMode 
-#sys-SetConsoleMode
-#sys-SetConsoleTitle
-#sys-PeekConsoleInput
-#sys-PeekNamedPipe
-#sys-ReadConsoleInput
-#sys-WriteConsole
-#sys-ReadConsole
-#sys-WriteConsoleOutput
-#sys-FlushConsoleInputBuffer
-#sys-GetNumberOfConsoleInputEvents
+#s-ReadFile
+#s-WriteFile 
+#s-GetConsoleMode 
+#s-SetConsoleMode
+#s-SetConsoleTitle
+#s-PeekConsoleInput
+#s-PeekNamedPipe
+#s-ReadConsoleInput
+#s-WriteConsole
+#s-ReadConsole
+#s-WriteConsoleOutput
+#s-FlushConsoleInputBuffer
+#s-GetNumberOfConsoleInputEvents
 
-#sys-Sleep
-#sys-WaitForSingleObject 
-#sys-GetLastError
-#sys-CreateFile
-#sys-CreateDirectory
-#sys-CloseHandle
-#sys-FlushFileBuffers
-#sys-DeleteFile
-#sys-RemoveDirectory
-#sys-MoveFile
-#sys-SetFilePointer
-#sys-SetEndOfFile
-#sys-GetFileAttributes
-#sys-GetFileAttributesEx
-#sys-GetFileSize
-#sys-FileTimeToSystemTime
-#sys-SystemTimeToTzSpecificLocalTime
+#s-Sleep
+#s-WaitForSingleObject 
+#s-GetLastError
+#s-CreateFile
+#s-CreateDirectory
+#s-CloseHandle
+#s-FlushFileBuffers
+#s-DeleteFile
+#s-RemoveDirectory
+#s-MoveFile
+#s-SetFilePointer
+#s-SetEndOfFile
+#s-GetFileAttributes
+#s-GetFileAttributesEx
+#s-GetFileSize
+#s-FileTimeToSystemTime
+#s-SystemTimeToTzSpecificLocalTime
 
-#sys-GetProcessHeap
-#sys-HeapAlloc
-#sys-HeapFree
-#sys-HeapReAlloc
+#s-GetProcessHeap
+#s-HeapAlloc
+#s-HeapFree
+#s-HeapReAlloc
 
-#sys-GetTickCount
-#sys-GetLocalTime
-#sys-FindFirstFile
-#sys-FindNextFile
-#sys-FindClose
-#sys-CreateProcess
+#s-GetTickCount
+#s-GetLocalTime
+#s-FindFirstFile
+#s-FindNextFile
+#s-FindClose
+#s-CreateProcess
 
-#sys-GetConsoleScreenBufferInfo
+#s-GetConsoleScreenBufferInfo
 
-#sys-SetConsoleScreenBufferSize
-#sys-SetConsoleWindowInfo
+#s-SetConsoleScreenBufferSize
+#s-SetConsoleWindowInfo
 
-#sys-GetCommandLine
-#sys-GetConsoleWindow
-|#sys-GetConsoleCursorInfo
+#s-GetCommandLine
+#s-GetConsoleWindow
+|#s-GetConsoleCursorInfo
 
 #s-SetConsoleOutputCP 
 #s-SetConsoleCP 
 
-#sys-SetDllDirectory
-#sys-SetCurrentDirectory
-#sys-GetCurrentDirectory
+#s-SetDllDirectory
+#s-SetCurrentDirectory
+#s-GetCurrentDirectory
 
-#sys-GlobalAlloc
-#sys-GlobalLock
-#sys-GlobalUnlock
-#sys-GlobalFree
+#s-GlobalAlloc
+#s-GlobalLock
+#s-GlobalUnlock
+#s-GlobalFree
+
+#s-OpenFileMappingA
+#s-CreateFileMappingA
+#s-MapViewOfFile
+#s-UnmapViewOfFile
+
 	
-::AllocConsole sys-allocconsole sys0 drop ;
-::FreeConsole sys-freeconsole sys0 drop ;
+::AllocConsole s-allocconsole sys0 drop ;
+::FreeConsole s-freeconsole sys0 drop ;
 
-::ExitProcess sys-ExitProcess sys1 ;
-::GetStdHandle sys-GetStdHandle sys1 ;
-::SetStdHandle sys-SetStdHandle sys2 drop ;
+::ExitProcess s-ExitProcess sys1 ;
+::GetStdHandle s-GetStdHandle sys1 ;
+::SetStdHandle s-SetStdHandle sys2 drop ;
 
-::ReadFile sys-ReadFile sys5 ;
-::WriteFile sys-WriteFile sys5 ;
-::GetConsoleMode sys-GetConsoleMode sys2 ;
-::SetConsoleMode sys-SetConsoleMode sys2 ;
-::SetConsoleTitle sys-SetConsoleTitle sys1 drop ;
-::PeekConsoleInput sys-PeekConsoleInput sys4 drop ;
-::PeekNamedPipe sys-PeekNamedPipe sys6 drop ;
-::ReadConsoleInput sys-ReadConsoleInput sys4 drop ;
-::WriteConsole sys-WriteConsole sys5 drop ;
-::ReadConsole sys-ReadConsole sys5 drop ;
-::WriteConsoleOutput sys-WriteConsoleOutput sys5 drop ;
-::GetNumberOfConsoleInputEvents sys-GetNumberOfConsoleInputEvents sys2 drop ;
+::ReadFile s-ReadFile sys5 ;
+::WriteFile s-WriteFile sys5 ;
+::GetConsoleMode s-GetConsoleMode sys2 ;
+::SetConsoleMode s-SetConsoleMode sys2 ;
+::SetConsoleTitle s-SetConsoleTitle sys1 drop ;
+::PeekConsoleInput s-PeekConsoleInput sys4 drop ;
+::PeekNamedPipe s-PeekNamedPipe sys6 drop ;
+::ReadConsoleInput s-ReadConsoleInput sys4 drop ;
+::WriteConsole s-WriteConsole sys5 drop ;
+::ReadConsole s-ReadConsole sys5 drop ;
+::WriteConsoleOutput s-WriteConsoleOutput sys5 drop ;
+::GetNumberOfConsoleInputEvents s-GetNumberOfConsoleInputEvents sys2 drop ;
 
-::FlushConsoleInputBuffer sys-FlushConsoleInputBuffer sys1 drop ;
-::Sleep sys-Sleep sys1 drop ;
-::WaitForSingleObject sys-WaitForSingleObject sys2 drop ;
-::GetLastError sys-GetLastError sys0 ;
-::CreateFile sys-CreateFile sys7 ;
-::CreateDirectory sys-CreateDirectory sys2 ;
-::CloseHandle sys-CloseHandle sys1 drop ;
-::FlushFileBuffers sys-FlushFileBuffers sys1 ;
-::DeleteFile sys-DeleteFile sys1 ;
-::RemoveDirectory sys-RemoveDirectory sys1 ;
-::MoveFile sys-MoveFile sys2 ;
-::SetFilePointer sys-SetFilePointer sys4 ;
-::SetEndOfFile sys-SetEndOfFile sys1 ;
-::GetFileAttributes sys-GetFileAttributes sys1 ;
-::GetFileAttributesEx sys-GetFileAttributesex sys3 ;
-::GetFileSize sys-GetFileSize sys2 ;
-::FileTimeToSystemTime sys-FileTimeToSystemTime sys2 drop ;
-::SystemTimeToTzSpecificLocalTime sys-SystemTimeToTzSpecificLocalTime sys3 drop ;
+::FlushConsoleInputBuffer s-FlushConsoleInputBuffer sys1 drop ;
+::Sleep s-Sleep sys1 drop ;
+::WaitForSingleObject s-WaitForSingleObject sys2 drop ;
+::GetLastError s-GetLastError sys0 ;
+::CreateFile s-CreateFile sys7 ;
+::CreateDirectory s-CreateDirectory sys2 ;
+::CloseHandle s-CloseHandle sys1 drop ;
+::FlushFileBuffers s-FlushFileBuffers sys1 ;
+::DeleteFile s-DeleteFile sys1 ;
+::RemoveDirectory s-RemoveDirectory sys1 ;
+::MoveFile s-MoveFile sys2 ;
+::SetFilePointer s-SetFilePointer sys4 ;
+::SetEndOfFile s-SetEndOfFile sys1 ;
+::GetFileAttributes s-GetFileAttributes sys1 ;
+::GetFileAttributesEx s-GetFileAttributesex sys3 ;
+::GetFileSize s-GetFileSize sys2 ;
+::FileTimeToSystemTime s-FileTimeToSystemTime sys2 drop ;
+::SystemTimeToTzSpecificLocalTime s-SystemTimeToTzSpecificLocalTime sys3 drop ;
 
-::GetProcessHeap sys-GetProcessHeap sys0 ;
-::HeapAlloc sys-HeapAlloc sys3 drop ;
-::HeapFree sys-HeapFree sys3 drop ;
-::HeapReAlloc sys-HeapReAlloc sys4 drop ;
+::GetProcessHeap s-GetProcessHeap sys0 ;
+::HeapAlloc s-HeapAlloc sys3 drop ;
+::HeapFree s-HeapFree sys3 drop ;
+::HeapReAlloc s-HeapReAlloc sys4 drop ;
 
-::GetTickCount sys-GetTickCount sys0 ;
-::GetLocalTime sys-GetLocalTime sys1 drop ;
-::FindFirstFile sys-FindFirstFile sys2 ;
-::FindNextFile sys-FindNextFile sys2 ;
-::FindClose sys-FindClose sys1 drop ;
-::CreateProcess sys-CreateProcess sys10 ;
-::GetConsoleScreenBufferInfo sys-GetConsoleScreenBufferInfo sys2 ;
+::GetTickCount s-GetTickCount sys0 ;
+::GetLocalTime s-GetLocalTime sys1 drop ;
+::FindFirstFile s-FindFirstFile sys2 ;
+::FindNextFile s-FindNextFile sys2 ;
+::FindClose s-FindClose sys1 drop ;
+::CreateProcess s-CreateProcess sys10 ;
+::GetConsoleScreenBufferInfo s-GetConsoleScreenBufferInfo sys2 ;
 
-::SetConsoleScreenBufferSize sys-SetConsoleScreenBufferSize sys2 drop ;
-::SetConsoleWindowInfo sys-SetConsoleWindowInfo sys3 drop ;
+::SetConsoleScreenBufferSize s-SetConsoleScreenBufferSize sys2 drop ;
+::SetConsoleWindowInfo s-SetConsoleWindowInfo sys3 drop ;
 
-::GetCommandLine sys-GetCommandLine sys0 ;
-::GetConsoleWindow sys-GetConsoleWindow sys0 ;
-::SetDllDirectory sys-SetDllDirectory sys1 drop ;
-::SetCurrentDirectory sys-SetCurrentDirectory sys1 drop ;
-::GetCurrentDirectory sys-GetCurrentDirectory sys2 drop ;
+::GetCommandLine s-GetCommandLine sys0 ;
+::GetConsoleWindow s-GetConsoleWindow sys0 ;
+::SetDllDirectory s-SetDllDirectory sys1 drop ;
+::SetCurrentDirectory s-SetCurrentDirectory sys1 drop ;
+::GetCurrentDirectory s-GetCurrentDirectory sys2 drop ;
 
 ::SetConsoleOutputCP s-SetConsoleOutputCP sys1 drop ;
 ::SetConsoleCP s-SetConsoleCP sys1 drop ;
 
-|::GetConsoleCursorInfo sys-GetConsoleCursorInfo sys2 drop ;
+|::GetConsoleCursorInfo s-GetConsoleCursorInfo sys2 drop ;
 
-::GlobalAlloc sys-GlobalAlloc sys2 ; |(UINT uFlags, SIZE_T dwBytes)
-::GlobalLock sys-GlobalLock sys1 ; |(HGLOBAL hMem)
-::GlobalUnlock sys-GlobalUnlock sys1 drop ; | (HGLOBAL hMem)
-::GlobalFree sys-GlobalFree sys1 drop ; |(HGLOBAL hMem)
+::GlobalAlloc s-GlobalAlloc sys2 ; |(UINT uFlags, SIZE_T dwBytes)
+::GlobalLock s-GlobalLock sys1 ; |(HGLOBAL hMem)
+::GlobalUnlock s-GlobalUnlock sys1 drop ; | (HGLOBAL hMem)
+::GlobalFree s-GlobalFree sys1 drop ; |(HGLOBAL hMem)
+
+::OpenFileMappingA s-OpenFileMappingA sys3 ;
+::CreateFileMappingA s-CreateFileMappingA sys6 ;
+::MapViewOfFile s-MapViewOfFile sys5 ;
+::UnmapViewOfFile s-UnmapViewOfFile sys1 drop ;
 
 |------- BOOT
 :
 	"KERNEL32.DLL" loadlib 
-	dup "AllocConsole" getproc 'sys-AllocConsole !
-	dup "FreeConsole" getproc 'sys-FreeConsole !
-	dup "ExitProcess" getproc 'sys-ExitProcess ! 
-	dup "GetStdHandle" getproc 'sys-GetStdHandle !
-	dup "SetStdHandle" getproc 'sys-SetStdHandle !
+	dup "AllocConsole" getproc 's-AllocConsole !
+	dup "FreeConsole" getproc 's-FreeConsole !
+	dup "ExitProcess" getproc 's-ExitProcess ! 
+	dup "GetStdHandle" getproc 's-GetStdHandle !
+	dup "SetStdHandle" getproc 's-SetStdHandle !
 	
-	dup "ReadFile" getproc 'sys-ReadFile !
-	dup "WriteFile" getproc 'sys-WriteFile !
+	dup "ReadFile" getproc 's-ReadFile !
+	dup "WriteFile" getproc 's-WriteFile !
 	
-	dup "GetConsoleMode" getproc 'sys-GetConsoleMode !
-	dup "SetConsoleMode" getproc 'sys-SetConsoleMode !
-	dup "SetConsoleTitleA" getproc 'sys-SetConsoleTitle !
-	dup "PeekConsoleInputA" getproc 'sys-PeekConsoleInput !
-	dup "PeekNamedPipe" getproc 'sys-PeekNamedPipe !
-	dup "ReadConsoleInputA" getproc 'sys-ReadConsoleInput !
-	dup "WriteConsole" getproc 'sys-WriteConsole !
-	dup "ReadConsoleA" getproc 'sys-ReadConsole !
-	dup "WriteConsoleOutputA" getproc 'sys-WriteConsoleOutput !
-	dup "GetNumberOfConsoleInputEvents" getproc 'sys-GetNumberOfConsoleInputEvents !
+	dup "GetConsoleMode" getproc 's-GetConsoleMode !
+	dup "SetConsoleMode" getproc 's-SetConsoleMode !
+	dup "SetConsoleTitleA" getproc 's-SetConsoleTitle !
+	dup "PeekConsoleInputA" getproc 's-PeekConsoleInput !
+	dup "PeekNamedPipe" getproc 's-PeekNamedPipe !
+	dup "ReadConsoleInputA" getproc 's-ReadConsoleInput !
+	dup "WriteConsole" getproc 's-WriteConsole !
+	dup "ReadConsoleA" getproc 's-ReadConsole !
+	dup "WriteConsoleOutputA" getproc 's-WriteConsoleOutput !
+	dup "GetNumberOfConsoleInputEvents" getproc 's-GetNumberOfConsoleInputEvents !
 	
-	dup "FlushConsoleInputBuffer" getproc 'sys-FlushConsoleInputBuffer !
-	dup "Sleep" getproc 'sys-Sleep !
-	dup "WaitForSingleObject" getproc 'sys-WaitForSingleObject ! 
-	dup "GetLastError" getproc 'sys-GetLastError ! 
-	dup "CreateFileA" getproc 'sys-CreateFile ! 
-	dup "CreateDirectoryA" getproc 'sys-CreateDirectory !
-	dup "CloseHandle" getproc 'sys-CloseHandle !
-	dup "FlushFileBuffers" getproc 'sys-FlushFileBuffers !
-	dup "DeleteFileA" getproc 'sys-DeleteFile !
-	dup "RemoveDirectoryA" getproc 'sys-RemoveDirectory !
-	dup "MoveFileA" getproc 'sys-MoveFile !
-	dup "SetFilePointer" getproc 'sys-SetFilePointer !
-	dup "SetEndOfFile" getproc 'sys-SetEndOfFile !
-	dup "GetFileAttributesA" getproc 'sys-GetFileAttributes !
-	dup "GetFileAttributesExA" getproc 'sys-GetFileAttributesEx !
-	dup "GetFileSize" getproc 'sys-GetFileSize !
-	dup "FileTimeToSystemTime" getproc 'sys-FileTimeToSystemTime !
-	dup "SystemTimeToTzSpecificLocalTime" getproc 'sys-SystemTimeToTzSpecificLocalTime !
+	dup "FlushConsoleInputBuffer" getproc 's-FlushConsoleInputBuffer !
+	dup "Sleep" getproc 's-Sleep !
+	dup "WaitForSingleObject" getproc 's-WaitForSingleObject ! 
+	dup "GetLastError" getproc 's-GetLastError ! 
+	dup "CreateFileA" getproc 's-CreateFile ! 
+	dup "CreateDirectoryA" getproc 's-CreateDirectory !
+	dup "CloseHandle" getproc 's-CloseHandle !
+	dup "FlushFileBuffers" getproc 's-FlushFileBuffers !
+	dup "DeleteFileA" getproc 's-DeleteFile !
+	dup "RemoveDirectoryA" getproc 's-RemoveDirectory !
+	dup "MoveFileA" getproc 's-MoveFile !
+	dup "SetFilePointer" getproc 's-SetFilePointer !
+	dup "SetEndOfFile" getproc 's-SetEndOfFile !
+	dup "GetFileAttributesA" getproc 's-GetFileAttributes !
+	dup "GetFileAttributesExA" getproc 's-GetFileAttributesEx !
+	dup "GetFileSize" getproc 's-GetFileSize !
+	dup "FileTimeToSystemTime" getproc 's-FileTimeToSystemTime !
+	dup "SystemTimeToTzSpecificLocalTime" getproc 's-SystemTimeToTzSpecificLocalTime !
 
-	dup "GetProcessHeap" getproc 'sys-GetProcessHeap !
-	dup "HeapAlloc" getproc 'sys-HeapAlloc !
-	dup "HeapFree" getproc 'sys-HeapFree !
-	dup "HeapReAlloc" getproc 'sys-HeapReAlloc !
+	dup "GetProcessHeap" getproc 's-GetProcessHeap !
+	dup "HeapAlloc" getproc 's-HeapAlloc !
+	dup "HeapFree" getproc 's-HeapFree !
+	dup "HeapReAlloc" getproc 's-HeapReAlloc !
 
-	dup "GetLocalTime" getproc 'sys-GetLocalTime !
-	dup "FindFirstFileA" getproc 'sys-FindFirstFile !
-	dup "FindNextFileA" getproc 'sys-FindNextFile !
-	dup "FindClose" getproc 'sys-FindClose !
+	dup "GetLocalTime" getproc 's-GetLocalTime !
+	dup "FindFirstFileA" getproc 's-FindFirstFile !
+	dup "FindNextFileA" getproc 's-FindNextFile !
+	dup "FindClose" getproc 's-FindClose !
 
-	dup "CreateProcessA" getproc 'sys-CreateProcess	!
-	dup "GetTickCount" getproc 'sys-GetTickCount !
-	dup "GetConsoleScreenBufferInfo" getproc 'sys-GetConsoleScreenBufferInfo !
-	dup "GetCommandLineA" getproc 'sys-GetCommandLine !
-|	dup "GetConsoleCursorInfo" getproc 'sys-GetConsoleCursorInfo !
-	dup "SetConsoleScreenBufferSize" getproc 'sys-SetConsoleScreenBufferSize !
-	dup "SetConsoleWindowInfo" getproc 'sys-SetConsoleWindowInfo !
+	dup "CreateProcessA" getproc 's-CreateProcess	!
+	dup "GetTickCount" getproc 's-GetTickCount !
+	dup "GetConsoleScreenBufferInfo" getproc 's-GetConsoleScreenBufferInfo !
+	dup "GetCommandLineA" getproc 's-GetCommandLine !
+|	dup "GetConsoleCursorInfo" getproc 's-GetConsoleCursorInfo !
+	dup "SetConsoleScreenBufferSize" getproc 's-SetConsoleScreenBufferSize !
+	dup "SetConsoleWindowInfo" getproc 's-SetConsoleWindowInfo !
 	
-	dup "GetConsoleWindow" getproc 'sys-GetConsoleWindow !
-	dup "SetDllDirectoryA" getproc 'sys-SetDllDirectory !
-	dup "SetCurrentDirectory" getproc 'sys-SetCurrentDirectory !
-	dup "GetCurrentDirectory" getproc 'sys-GetCurrentDirectory !
+	dup "GetConsoleWindow" getproc 's-GetConsoleWindow !
+	dup "SetDllDirectoryA" getproc 's-SetDllDirectory !
+	dup "SetCurrentDirectory" getproc 's-SetCurrentDirectory !
+	dup "GetCurrentDirectory" getproc 's-GetCurrentDirectory !
 
 	dup "SetConsoleOutputCP" GETPROC 's-SetConsoleOutputCP !
 	dup "SetConsoleCP" GETPROC 's-SetConsoleCP !
 
-	dup "GlobalAlloc" getproc 'sys-GlobalAlloc !
-	dup "GlobalLock" getproc 'sys-GlobalLock !
-	dup "GlobalUnlock" getproc 'sys-GlobalUnlock !
-	dup "GlobalFree" getproc 'sys-GlobalFree !
+	dup "GlobalAlloc" getproc 's-GlobalAlloc !
+	dup "GlobalLock" getproc 's-GlobalLock !
+	dup "GlobalUnlock" getproc 's-GlobalUnlock !
+	dup "GlobalFree" getproc 's-GlobalFree !
+
+	dup "OpenFileMappingA" getproc 's-OpenFileMappingA !
+	dup "CreateFileMappingA" getproc 's-CreateFileMappingA !
+	dup "MapViewOfFile" getproc 's-MapViewOfFile !
+	dup "UnmapViewOfFile" getproc 's-UnmapViewOfFile !
 
 	drop
 	;

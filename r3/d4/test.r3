@@ -9,7 +9,7 @@
 
 :tt
 	var1 + cua ;
-	
+
 :
 .cls
 2 1 over + 

@@ -79,7 +79,7 @@
 :filesearch
 	;
 
-#pad 	
+#padcomm * 128
 :command
 	|___________
 	4 flxS
@@ -87,7 +87,7 @@
 	|" |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
 	fw .hline
 	1 1 flpad 
-	'pad fw tuInputLine
+	'padcomm fw tuInputLine
 	;
 |--------------------------------	
 
@@ -152,32 +152,23 @@
 	|___________
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
-	|.tdebug
-	|2dup " %d %d " .print
+	|.tdebug |2dup " %d %d " .print
 
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp fx .col
-	" ^[7mF2^[27mHelp ^[7mF3^[27mSearch ^[7mF5/ENT^[27mRun ^[7mF6/SPC^[27mEdit " ||C|lon |N|ew " 
-	.printe
-	
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5/ENTER ^[27mRun ^[7m F6/SPC ^[27mEdit " 	.printe
 	|___________
 	38 flxO
 	dirpanel
-	|-4 flxS		dirfile
 	|___________
-	|1 flxE
-	|-4 flxS
 	flxRest	
 	paneleditor
-	|___________
-	|flxRest	
-	|dirpad
 
 	uikey
 		
 |	[f2] =? ( help )		| H
-|	[f3] =? ( filesearch )	|S
+|	[f3] =? ( filesearch )	| S
 
 	[f5] =? ( filerun )		| R
 	[ENTER] =? ( filerun )

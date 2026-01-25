@@ -76,6 +76,10 @@
 #sys-getservbyport
 #sys-gethostname
 
+#sys-shm_open
+#sys-shm_unlink
+#sys-msync
+
 ::libc-open sys-open sys3 ;
 ::libc-creat sys-creat sys2 ;
 ::libc-close sys-close sys1 ;
@@ -148,6 +152,10 @@
 ::libc-getservbyname sys-getservbyname sys2 ;
 ::libc-getservbyport sys-getservbyport sys2 ;
 ::libc-gethostname sys-gethostname sys2 ;
+
+::shm_open sys-shm_open sys3 ;
+::shm_unlink sys-shm_unlink sys1 drop ;
+::msync sys-msync sys3 drop ;
 
 :
 	"/lib/libc.so.6" loadlib
@@ -228,5 +236,10 @@
 	dup "getservbyname" getproc 'sys-getservbyname !
 	dup "getservbyport" getproc 'sys-getservbyport !
 	dup "gethostname" getproc 'sys-gethostname !	
+	
+	| librt.so.1 in old distro <<<<
+	dup "shm_open" getproc 'sys-shm_open !
+	dup "shm_unlink" getproc 'sys-shm_unlink !
+	dup "msync" getproc 'sys-msync !
 	drop 
     ;

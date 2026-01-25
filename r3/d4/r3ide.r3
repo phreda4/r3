@@ -8,16 +8,14 @@
 
 #filename * 1024
 
-#mode 0
-#screenstate 
-| 0 - editor only
-| $1 - msg error
-| $2 - debug
-| $100 - list
+#msgstate 0
+#msg * 1024		| lst line msg
 
-#msg * 1024
 #errline
 #errword * 64
+
+#vlist 
+#msglist
 
 #vwords 0 0
 #vincs 0 0
@@ -34,9 +32,9 @@
 :coderror | error --
 	'msg strcpy
 	lerror "%w" sprint 'errword strcpy
-	cntlines
-	lerror 'fuente> !
-	1 'screenstate !
+	cntlines 
+	lerror tuiecursor!
+	2 'msgstate !
 	;
 
 |-------	
@@ -90,23 +88,21 @@
 :codeok
 	mark
 	'msg 'here !
-	cnttok cntdef cntinc "inc:%d words:%d tokens:%d" ,print
+	cnttok cntdef cntinc "OK inc:%d words:%d tokens:%d" ,print
 	,eol
 	empty
 	
-	4 'screenstate !
+	1 'msgstate !
 	makelistwords
 	makelistinc
 	;
+
 	
-|---  F1 RUN
 :checkcode
-	0 'screenstate !
+	0 'msgstate !
 	fuente 'filename r3loadmem
-	
 	error 1? ( coderror ; ) drop 
 	codeok 
-	1 'mode !
 	;
 	
 	
@@ -140,22 +136,27 @@
 :scrmapa
 	.reset
 	30 flxE 
-	flxpush
 	
-	8 flxN
-	tuWina $1 "Includes" .wtitle 1 1 flpad 
-	'vincs lincs tuList
-	
-	flxRest
+|	flxpush
+|	8 flxN
+|	tuWina $1 "Includes" .wtitle 1 1 flpad 
+|	'vincs lincs tuList
+|	flxRest
 	tuWina $1 "Dicc" .wtitle 1 1 flpad 
 	
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
+	tuX? 1? ( 
+	
+		vwords uiNindx str$>nro nip
+|	nro>dic 
+		"%d" sprint 'msg strcpy 
+	
+		) drop
 	xwrite.reset
-	flxpop
+|	flxpop
 	;
 	
-
 :scrmsg	
 	.reset
 	8 flxS tuWina $1 "Imm" .wtitle |242 .bc
@@ -163,65 +164,55 @@
 	'msg .print
 	;
 
-:debugscr
-	.reset .cls 
-	6 .bc 15 .fc	
-	1 flxN 
-	fx fy .at fw .nsp fx .col
-	" R3debug [" .write 'filename .write "] " .write tudebug .write
-	
-	1 flxS 
-	fx fy .at fw .nsp fx .col
-	" |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
-	|" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
-	.printe 
-	
-|	scrmsg
-|	scrmapa
-	.reset
-	cols 2/ flxE
-	tuWina 
-	$4 "Dicc" .wtitle
-	|-----------
-	flxRest 
-|	tuWina 
-|	$4 'filename .wtitle
-|	$23 mark tudebug ,s ,eol empty here .wtitle
-|	1 1 flpad 
-	tuReadCode 
-	
-	uiKey
-	[esc] =? ( exit )
-	|[f1] =? ( runcode ) |0 'mode ! ) |checkcode ) |show256 )
-|	[f2] =? ( debugcode ) |show256 )
-	
-|	[f6] =? ( screenstate 1 xor 'screenstate ! )
-|	[f7] =? ( screenstate 2 xor 'screenstate ! )
-	drop
+:moreinfo
+	$11 'msgstate !
 	;
+	
+|--- F2 HELP
+#lasthash -1
 
-|--- F6 DEBUG
-:debugcode
-	0 'screenstate !
+:helpcode
+	|editfasthash lasthash =? ( moreinfo ; ) 'lasthash !
+	0 'msgstate !
 	fuente 'filename r3loadmem
 	error 1? ( coderror ; ) drop
 	codeok
-	'debugscr onTui
+	moreinfo
 	;
 
-
-:screrr
-	.reset  
-	5 flxS .wfill
-	tuWina $1 " Error " .wtitle
-	1 1 flpad 	
-	fx fy .at 
-	'msg .write flcr
-	15 .fc 1 .bc 'errword .write flcr
-	.reset
-	errline "in line %d" .print
+:wordinfo
+|	.reset cols 2/ flxE
+|	.wfill 
+|	fx fy .at fw .nsp fx .col
+|	'vlist 'msglist tuList
+	scrmapa
 	;
 	
+:maninfo
+	;
+	
+|-------------------
+:posmsg
+	fx fy .at fw .nsp fx .col ;
+	
+:msgvoid
+	posmsg
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
+	.printe 
+	;
+	
+:msgok
+	15 .fc 2 .bc posmsg
+	'msg .write ;
+
+:msgerr
+	15 .fc 1 .bc posmsg
+	" " .write 'errword .write " :" .write
+	'msg .write errline " in line %d" .print ;
+
+
+#statusline 'msgvoid 'msgok 'msgerr
+
 :mainedit
 	.reset .home 4 .bc 7 .fc
 	1 flxN 
@@ -229,29 +220,25 @@
 	" R3edit [" .write 'filename .write "] " .write tudebug .write
 	
 	1 flxS 
-	fx fy .at fw .nsp fx .col
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
-	.printe 
-
-	|-----------
-	screenstate	
-	$1 and? ( screrr )
+	msgstate 
+	dup $f and 3 << 'statusline + @ ex
+	$10 and? ( wordinfo )
+	$20 and? ( maninfo )
+	
 	drop
+	|-----------
 
 	|-----------
-	.reset
-	flxRest |tuWina 
-	|$4 'filename .wtitle
-	|$23 mark tudebug ,s ,eol empty here .wtitle 1 1 flpad 
+	flxRest
 	tuEditCode
 	
 	uiKey
 | f1 no usada	
-	|[f2] =? ( helpword )
+	[f2] =? ( helpcode )
 	|[f3] =? ( search )
 	|[f4] =? ( )
 	[f5] =? ( runcode )
-	[f6] =? ( debugcode ) | a debug /profile/compile
+|	[f6] =? ( debugcode ) | a debug /profile/compile
 |[f7] =? (  )
 |[f8] =? ( siguiente??)
 |[f9] =? ( breakpoint )

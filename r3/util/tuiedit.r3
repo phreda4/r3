@@ -129,6 +129,9 @@
 	scrini> <? ( setpantafin ; )
 	scrend> >=? ( setpantaini ; )
 	drop ;
+
+::tuiecursor! | cursor --
+	'fuente> ! fixcur cursorpos ;
 	
 |-----------
 :karriba
@@ -172,6 +175,9 @@
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
 	
+::editfasthash | -- fh
+	0 fuente ( $fuente <? @+ rot 2/ xor swap ) drop ;
+		
 :loadtxt | -- ; cargar texto
 	fuente 'filename 
 	load 0 swap c!
