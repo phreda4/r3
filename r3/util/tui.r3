@@ -2,8 +2,9 @@
 | PHREDA 2025
 |--------
 ^r3/lib/console.r3
-|^r3/lib/trace.r3
 ^r3/util/utfg.r3
+
+|^r3/lib/trace.r3
 
 |--- Layout
 ##fx ##fy ##fw ##fh 
@@ -191,9 +192,9 @@
 	|evtmb 1? ( evtmxy .at "." .fwrite ) drop 
 |	evtmw 1? ( dup 32 << 'uimouse ! ) drop
 |	;
-:exvector
+:exvector | --
 	.cl .hidec tui vecdraw ex ;
-	
+
 :tuiredraw
 	exvector
 	rflag
@@ -203,9 +204,9 @@
 	.flush ;
 	
 ::onTui | 'vector --
-	'vecdraw !
 	'exvector .onresize
 	tuireset
+	vecdraw swap 'vecdraw ! | stack old value
 	tuiredraw
 	( rflag $4 nand? drop
 		0 'uikey ! 0 'rflag ! |0 'uimouse !
@@ -215,7 +216,10 @@
 		drop
 		5 ms
 		) drop 
-	tuireset ;
+	tuireset 
+	|tuR! 0 'uikey !
+	'vecdraw ! | restore old draw
+	;
 
 
 |---------------------	

@@ -109,15 +109,6 @@
 	1 'mode !
 	;
 	
-|--- F2 DEBUG
-:debugcode
-	0 'screenstate !
-	fuente 'filename r3loadmem
-	
-	error 1? ( coderror ; ) drop
-	codeok
-	1 'mode !
-	;
 	
 |--- F1 RUN in CHECK	
 :banner
@@ -172,40 +163,50 @@
 	'msg .print
 	;
 
-:debugcode
+:debugscr
 	.reset .cls 
-	1 flxN
-	
-	2 .bc 15 .fc
+	6 .bc 15 .fc	
+	1 flxN 
 	fx fy .at fw .nsp fx .col
-	" R3debug [" .write
-	'filename .write 
-	"] " .write
-	|tudebug .write
-
-	1 flxS
-	fx fy .at 
+	" R3debug [" .write 'filename .write "] " .write tudebug .write
+	
+	1 flxS 
+	fx fy .at fw .nsp fx .col
 	" |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
-	.write
-
-	scrmsg
-	scrmapa
-
-	|-----------
+	|" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
+	.printe 
+	
+|	scrmsg
+|	scrmapa
 	.reset
-	flxRest tuWina 
-	$4 'filename .wtitle
-	$23 mark tudebug ,s ,eol empty here .wtitle
-	1 1 flpad 
-	tuReadCode | 
+	cols 2/ flxE
+	tuWina 
+	$4 "Dicc" .wtitle
+	|-----------
+	flxRest 
+|	tuWina 
+|	$4 'filename .wtitle
+|	$23 mark tudebug ,s ,eol empty here .wtitle
+|	1 1 flpad 
+	tuReadCode 
 	
 	uiKey
-	[f1] =? ( runcode ) |0 'mode ! ) |checkcode ) |show256 )
+	[esc] =? ( exit )
+	|[f1] =? ( runcode ) |0 'mode ! ) |checkcode ) |show256 )
 |	[f2] =? ( debugcode ) |show256 )
 	
 |	[f6] =? ( screenstate 1 xor 'screenstate ! )
 |	[f7] =? ( screenstate 2 xor 'screenstate ! )
 	drop
+	;
+
+|--- F6 DEBUG
+:debugcode
+	0 'screenstate !
+	fuente 'filename r3loadmem
+	error 1? ( coderror ; ) drop
+	codeok
+	'debugscr onTui
 	;
 
 
@@ -221,17 +222,13 @@
 	errline "in line %d" .print
 	;
 	
-:editcode
-	.reset .home
-	4 .bc 7 .fc
+:mainedit
+	.reset .home 4 .bc 7 .fc
 	1 flxN 
 	fx fy .at fw .nsp fx .col
-	" R3edit [" .write 'filename .write "] " .write
-	tudebug .write
-|	fx fy .at fw .nsp fx .col " R3edit [" .write 'filename .write "] " .write
-	|tudebug .write
+	" R3edit [" .write 'filename .write "] " .write tudebug .write
 	
-	1 flxS
+	1 flxS 
 	fx fy .at fw .nsp fx .col
 	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
 	.printe 
@@ -254,7 +251,7 @@
 	|[f3] =? ( search )
 	|[f4] =? ( )
 	[f5] =? ( runcode )
-|	[f6] =? ( debug ) | a debug /profile/compile
+	[f6] =? ( debugcode ) | a debug /profile/compile
 |[f7] =? (  )
 |[f8] =? ( siguiente??)
 |[f9] =? ( breakpoint )
@@ -262,11 +259,7 @@
 	drop
 	;
 	
-#listmode 'editcode 'debugcode	
-:main
-	mode 3 << 'listmode + @ ex
-	;
-	
+
 |-----------------------------------
 : 
 	.alsb
@@ -276,8 +269,7 @@
 	'filename TuLoadCode
 	|TuNewCode
 	mark
-	'main onTui 
-	
+	'mainedit onTui 
 	TuSaveCode 
 	
 	.masb .free 
