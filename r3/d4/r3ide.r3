@@ -23,6 +23,31 @@
 #lwords
 #lincs
 
+|--------- botton line --------
+:posmsg
+	fx fy .at fw .nsp fx .col ;
+	
+:msgvoid
+	posmsg
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug  ^[7m F7 ^[27mPlain ^[7m F8 ^[27mCompile"  
+	.printe 
+	;
+	
+:msgok
+	15 .fc 2 .bc posmsg
+	'msg .write ;
+
+:msgerr
+	15 .fc 1 .bc posmsg
+	" " .write 'errword .write " :" .write
+	'msg .write errline " in line %d" .print ;
+
+#statusline 'msgvoid 'msgok 'msgerr
+
+:banner
+	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
+
+|----
 :cntlines
 	1 fuente 
 	( lerror <?
@@ -37,7 +62,7 @@
 	2 'msgstate !
 	;
 
-|-------	
+|----
 :makelistwordsfull
 	here 'lwords !
 	0 ( cntdef <?
@@ -97,7 +122,6 @@
 	makelistinc
 	;
 
-	
 :checkcode
 	0 'msgstate !
 	fuente 'filename r3loadmem
@@ -107,8 +131,6 @@
 	
 	
 |--- F1 RUN in CHECK	
-:banner
-	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
 
 :runcheck
 	here dup "mem/errorm.mem" load
@@ -159,7 +181,7 @@
 	
 :scrmapa
 	.reset
-	30 flxE 
+	cols 2/ flxE 
 	
 |	flxpush
 |	8 flxN
@@ -183,54 +205,52 @@
 	'msg .print
 	;
 
-:moreinfo
-	$11 'msgstate !
-	;
 	
 |--- F2 HELP
 #lasthash -1
+:v*********************
+	1 flxS 
+	fx fy .at fw .nsp fx .col
+	" |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
+	|" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
+	.printe 
+	;
 
+:helpmain
+	.reset .home 
+	4 .bc 7 .fc
+	1 flxN 
+	fx fy .at fw .nsp fx .col
+	" R3edit [" .write 'filename .write "] " .write tudebug .write
+	
+	1 flxS 
+	msgok
+	
+	scrmapa
+
+	|-----------
+	flxRest
+	tuReadCode
+	tuEditShowCursor .ovec tuC! 
+
+	uiKey
+	[esc] =? ( exit )
+	drop
+	;
+	
 :helpcode
 	|editfasthash lasthash =? ( moreinfo ; ) 'lasthash !
 	0 'msgstate !
 	fuente 'filename r3loadmem
 	error 1? ( coderror ; ) drop
 	codeok
-	moreinfo
+	'helpmain onTui
 	;
 
-:wordinfo
-|	.reset cols 2/ flxE
-|	.wfill 
-|	fx fy .at fw .nsp fx .col
-|	'vlist 'msglist tuList
-	scrmapa
-	;
 	
 :maninfo
 	;
 	
-|-------------------
-:posmsg
-	fx fy .at fw .nsp fx .col ;
-	
-:msgvoid
-	posmsg
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug  ^[7m F7 ^[27mPlain ^[7m F8 ^[27mCompile"  
-	.printe 
-	;
-	
-:msgok
-	15 .fc 2 .bc posmsg
-	'msg .write ;
-
-:msgerr
-	15 .fc 1 .bc posmsg
-	" " .write 'errword .write " :" .write
-	'msg .write errline " in line %d" .print ;
-
-
-#statusline 'msgvoid 'msgok 'msgerr
 
 :mainedit
 	.reset .home 4 .bc 7 .fc
@@ -241,17 +261,17 @@
 	1 flxS 
 	msgstate 
 	dup $f and 3 << 'statusline + @ ex
-	$10 and? ( wordinfo )
-	$20 and? ( maninfo )
+|	$10 and? ( wordinfo )
+|	$20 and? ( maninfo )
 	drop
 
 	|-----------
 	flxRest
 	tuEditCode
 	
-	msgstate 
-	$10 and? ( tuEditShowCursor .ovec tuC! )
-	drop
+|	msgstate 
+|	$10 and? ( tuEditShowCursor .ovec tuC! )
+|	drop
 	
 	uiKey
 | f1 no usada	
