@@ -2,6 +2,7 @@
 | PHREDA 2019
 |------------------
 ^r3/lib/console.r3
+^r3/util/utfg.r3
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3
@@ -74,8 +75,9 @@
 	;
 
 : 	
-	'name "mem/main.mem" load drop
-	" PHREDA - 2019" .println
+	'name "mem/menu.mem" load drop
+	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite 
+	.cr .cr .cr .cr 
 	" r3 compiler" .println
 
 	'name r3c
@@ -96,7 +98,7 @@
 	
 	"r3fasm.exe" sys
 
-	"press <enter> to continue..." .print
-	.input
+	"press any key to continue..." .print
+	waitkey
 	;
 

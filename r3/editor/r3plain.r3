@@ -2,6 +2,7 @@
 | PHREDA 2020
 |------------------
 ^r3/lib/console.r3
+^r3/util/utfg.r3
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3
@@ -66,12 +67,14 @@
 	r3-genplain
 	;
 
-:  	" PHREDA - 2020" .println
+:
+	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite 
+	.cr .cr .cr .cr 
 	" r3 plain generator" .println
-	'name "mem/main.mem" load drop
+	'name "mem/menu.mem" load drop
 	'name r3plain
 	
-	.cr "press <enter> to continue..." .print	
-	.input
+	.cr "press any key to continue..." .print	
+	waitkey
 	;
 

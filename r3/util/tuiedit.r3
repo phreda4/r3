@@ -400,13 +400,16 @@
 	cursorpos ;
 	
 |---- MAIN words
+::tuEditShowCursor
+	fx xcursor + 5 + fy ycursor + ylinea - .at .savec ;
+	
 ::tuEditCode 
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! 
 	focoe 0? ( drop ; ) drop
-	fx xcursor + 5 + fy ycursor + ylinea - .at .savec
+	tuEditShowCursor
 	;
 
 ::tuReadCode
@@ -419,7 +422,7 @@
 |	fw 8 <? ( drop ; ) drop
 	scrini> drawlinesmono 'scrend> ! 
 	focoe 0? ( drop ; ) drop
-	fx xcursor + 5 + fy ycursor + ylinea - .at .savec
+	tuEditShowCursor
 	;
 
 ::tuReadCodeMono

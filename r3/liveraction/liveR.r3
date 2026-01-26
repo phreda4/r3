@@ -1,7 +1,6 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/console.r3
-^./memshare.r3	
-
+^r3/lib/memshare.r3	
 
 :send
 	1 memshare c+!
@@ -10,10 +9,7 @@
 	
 :main
 	( ">" .write .input 'pad c@ 1? drop 
-	
 		send
-|		">>" .write 'pad .println
-		
 		) drop ;
 :
 inishare

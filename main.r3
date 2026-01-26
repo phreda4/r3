@@ -70,9 +70,8 @@
 |WIN| 	"r3 r3/d4/r3ide.r3"
 |LIN| 	"./r3lin r3/d4/r3ide.r3"
 	sys 
-	.reterm .alsb .flush
-	tuR! ;
-	
+	.reterm .alsb .flush tuR! ;
+
 :filenew
 	;
 	
@@ -157,7 +156,8 @@
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp fx .col
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5/ENTER ^[27mRun ^[7m F6/SPC ^[27mEdit " 	.printe
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5/ENTER ^[27mRun ^[7m F6/SPC ^[27mEdit" 	.printe
+	||C|lon |N|ew "
 	|___________
 	38 flxO
 	dirpanel

@@ -132,7 +132,31 @@
 	runcheck
 	tuR! ;
 	
+:fileplain
+	TuSaveCode
+	.masb .flush
+|WIN| "r3 r3/editor/r3plain.r3"
+	sys
+	.reterm .alsb .flush 
+	tuR! ;
+
+:filecompile
+	TuSaveCode
+
+	.masb .flush
+|WIN| "r3 r3/system/r3compiler.r3"
+	sys
+	.reterm .alsb .flush 
+	tuR! ;
+
 |---- screen
+:setcursoride
+	vwords uiNindx str$>nro nip
+	nro>dic @
+	|40 >> src + "%l" sprint 'msg strcpy 
+	40 >>> fuente + |1- | :#
+	tuiecursor!	;
+	
 :scrmapa
 	.reset
 	30 flxE 
@@ -146,13 +170,8 @@
 	
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
-	tuX? 1? ( 
-	
-		vwords uiNindx str$>nro nip
-|	nro>dic 
-		"%d" sprint 'msg strcpy 
-	
-		) drop
+|	tuX? 1? ( setcursoride ) drop
+	setcursoride
 	xwrite.reset
 |	flxpop
 	;
@@ -197,7 +216,7 @@
 	
 :msgvoid
 	posmsg
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug  ^[7m F7 ^[27mPlain ^[7m F8 ^[27mCompile"  
 	.printe 
 	;
 	
@@ -224,13 +243,15 @@
 	dup $f and 3 << 'statusline + @ ex
 	$10 and? ( wordinfo )
 	$20 and? ( maninfo )
-	
 	drop
-	|-----------
 
 	|-----------
 	flxRest
 	tuEditCode
+	
+	msgstate 
+	$10 and? ( tuEditShowCursor .ovec tuC! )
+	drop
 	
 	uiKey
 | f1 no usada	
@@ -239,7 +260,8 @@
 	|[f4] =? ( )
 	[f5] =? ( runcode )
 |	[f6] =? ( debugcode ) | a debug /profile/compile
-|[f7] =? (  )
+[f7] =? ( fileplain )
+[f8] =? ( filecompile )
 |[f8] =? ( siguiente??)
 |[f9] =? ( breakpoint )
 	
