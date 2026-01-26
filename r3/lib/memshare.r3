@@ -1,37 +1,34 @@
 | memory share WIN/LIN
 | PHREDA 2026
-| 4kb for now
+
+||||| memshare mapfile size filename 
+|		  0 8 16   24
+| #vshare 0 0 4096 "/data"
+
+| 'vshar inishare | filename need be static (no buffer)
+| vshar -> mem 
+| 'vshar endshare
 
 ^r3/lib/mem.r3
 
-#mapfilename "/data.mem"
-#mapfile
-##memshare
+:createmapv | 'varshare -- 'varshare mapfile
+|WIN|	-1 0 4 0 pick4 16 + @+ swap CreateFileMappingA
 
-|-WIN
+|LIN|	dup 24 + $42 $1b6 shm_open			| $42 OCREATE|RW
+|LIN|	dup over 16 + @ ftruncate drop
+	;
+
 |$F001F |FILE_MAP_ALL_ACCESS	
-|4 | PAGE_READWRITE,
-|-LIN
-| $40 OCREATE  $2 RW
-|PROT_READ	0x1	PROT_WRITE	0x2
-
-:createmap | 0 -- mapfile
-|WIN|	-1 0 4 0 4096 'mapfilename CreateFileMappingA
-
-|LIN|	'mapfilename $42 $1b6 shm_open
-|LIN|	dup 4096 ftruncate drop
-	;
-
-::iniShare | --
-|WIN|	$F001F 0 'mapfilename OpenFileMappingA 0? ( drop createmap ) 'mapfile !
-|WIN|	mapfile $f001F 0 0 4096 MapViewOfFile 'memshare !
+::inisharev | 'varshare --
+|WIN|	$F001F 0 pick2 24 + OpenFileMappingA 0? ( drop createmapv ) dup pick2 8 + !
+|WIN|	$f001F 0 0 pick4 16 + @ MapViewOfFile swap !
 	
-|LIN|	'mapfilename $2 $1b6 shm_open 32 << 32 >> -? ( drop createmap ) 'mapfile !
-|LIN|	0 4096 $3 1 mapfile 0 libc-mmap 'memshare !
+|LIN|	dup 24 + $2 $1b6 shm_open 32 << 32 >> -? ( drop createmapv ) over 8 + !
+|LIN|	0 over 16 + @  $3 1 pick4 8 + @ 0 libc-mmap swap ! | $3 PROT_READ|PROT_WRITE
 	;
 	
-::endShare
-|WIN|	memshare UnmapViewOfFile mapfile CloseHandle
+::endSharev | 'varshare --
+|WIN|	@+ UnmapViewOfFile swap @ CloseHandle
 
-|LIN|	mapfile 4096 libc-munmap mapfile libc-close
+|LIN|	dup 8 + @+ swap @ libc-munmap 8 + @ libc-close
 	;
