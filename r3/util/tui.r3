@@ -221,6 +221,24 @@
 	'vecdraw ! | restore old draw
 	;
 
+::onTuia | 'vector --
+	'exvector .onresize
+	tuireset
+	vecdraw swap 'vecdraw ! | stack old value
+	tuiredraw
+	( rflag $4 nand? drop
+		0 'uikey ! 0 'rflag ! |0 'uimouse !
+		inevt
+		1 =? ( hkey ) |	2 =? ( hmouse )
+|		1? ( tuiredraw ) | ?? animation
+		drop
+		tuiredraw
+		5 ms
+		) drop 
+	tuireset 
+	'vecdraw ! | restore old draw
+	;
+
 
 |---------------------	
 ::.wfill fx fy fw fh .boxf ;

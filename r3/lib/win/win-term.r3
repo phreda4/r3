@@ -126,8 +126,6 @@
 ::inkey | -- key | 0 if no key pressed
 	inevt 1 =? ( drop evtkey ; ) drop 0 ;
 	
-|::getch | -- key | wait for key
-|    ( inkey 0? drop 10 ms ) ;
 
 |------- Console Mode Management -------
 | Input Modes:
