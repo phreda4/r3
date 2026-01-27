@@ -13,7 +13,7 @@
 
 #filename * 1024
 
-#cntdicc
+#cntdicc #localdicc
 #boot
 #memc #memd
 #memdsize #memcsize
@@ -22,12 +22,11 @@
 
 #realdicc
 
-|DICC
-|v=(pos<<40)|(dicc[i].mem<<8)|dicc[i].info;
 
 :loadinfo
 	here dup "mem/r3code.mem" load 'here !
-	d@+ 'cntdicc ! d@+ 'boot !
+	w@+ 'cntdicc ! w@+ 'localdicc ! 
+	d@+ 'boot !
 	d@+ 'memc ! d@+ 'memd !
 	d@+ 'memdsize ! d@+ 'memcsize !
 	@+ 'memcode ! @+ 'memdata !
@@ -47,7 +46,6 @@
 #lwords
 #ltokens
 
-
 |	__int64 vmstate; // msg
 |	__int64 vminfo; // msg
 |    __int64 ip;
@@ -60,8 +58,12 @@
 |    __int64 retstack[252]; } VirtualMachine;	
 
 :*>end		$fe vshare ! ;
+
 :*>step		$2 vshare ! ;
 :*>stepw	$4 vshare ! ;
+
+|:*>stepin	iptok@ call localdicc<? ( *>stepw ; ) *>step ; | ?? sdlshow ??  stop in vector?
+
 :*>steps	$6 vshare ! ;
 :*>play		$1 vshare ! ;
 :*>stop		$0 vshare ! ;
@@ -77,6 +79,7 @@
 :vmDS		vshare 8 3 << + ;
 :vmRS		vshare 512 3 << + ;
 
+|---- aux info 
 #dstackoff
 #rstackoff
 #codeoff
@@ -89,9 +92,23 @@
 	dshare memdata - 'dataoff !
 	;
 
-|---- view dicc
-:ndicc | n -- entry
+|DICC
+|v=(pos<<40)|(dicc[i].mem<<8)|dicc[i].info;
+
+:ndicc@ | n -- entry
 	3 << realdicc + @ ;
+
+:buildcursor
+	|localdicc ndic@ 40 >> realdicc +
+	
+	|fuente
+	cshare >a
+	0 ( memc <? 
+		da@+ .token .write .sp
+		|$ffffffff and "%h " .print
+		1+ ) drop ;
+	
+|---- view dicc
 :dicc>name | nd -- str
 	40 >> realdicc cntdicc 3 << + + ;
 	
@@ -102,130 +119,102 @@
 	mark
 	str$>nro nip
 	cntdicc >=? ( drop "" ; ) 
-	ndicc wcolor
+	ndicc@ wcolor
 	dicc>name ,s ,eol 
 	empty
 	here lwrite ;
 
 :makelistwords
 	here 'lwords !
-	0 ( cntdicc <?
-|	dic< ( dic> <? | solo codigo principal
-		|chooseword
+	localdicc ( cntdicc <?
 		dup .h ,s ,eol
 		1+ ) drop
 	,eol ;
 
-|---- token	
-	
-:ndicc>toklen | n -- tok len
-	|$10 and? ( to
-	dup 8 >> $ffffffff and 
-	;	
-	
-|---- screen
-:scrViews
+:scrDicc
 	.reset
 	cols 3 / flxO 
-	flxpush
-	
-	12 flxN
 	tuWina $1 "Dicc" .wtitle 1 1 flpad 
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
 	xwrite.reset
-	
-	flxRest
-	tuWina $1 "Stack" .wtitle 1 1 flpad 
-	
-|	fx fy .at
-|	infocode
-	
-|	'xwrite.word xwrite!
-|	'vwords lwords tuList | 'var list --
-|	xwrite.reset
-	flxpop
 	;
 
 :scrMsg	
 	.reset
-	8 flxS |tuWina $1 "Imm" .wtitle |242 .bc
-	fx fy .at
-	cols .hline .cr
+	6 flxS |tuWina $1 "Imm" .wtitle |242 .bc
+	fx fy .at cols .hline .cr
 
 	vmIP	"IP:%h " .print 
-	vmTOS	"TOS:%h " .print
-	vmNOS	"NOS:%h " .print
-	vmRTOS	"RTOS:%h " .print .cr
+|	vmTOS	"TOS:%h " .print
+|	vmNOS	"NOS:%h " .print
+|	vmRTOS	"RTOS:%h " .print .cr
 	vmREGA	"A:%h " .print
 	vmREGB	"B:%h " .print 
-	vmDS	"DS:%h " .print
-	vmRS	"RS:%h " .print .cr
+|	vmDS	"DS:%h " .print
+|	vmRS	"RS:%h " .print 
+	.cr
 
 	cntdicc "cnddicc:%h " .print
+	localdicc "localdicc:%h " .print
 	boot "boot:%h " .print
 	memc "memc:%h " .print
 	memd "memd:%h " .print
-	memdsize "memdsize:%h " .print 
-	memcsize "memcsize:%h " .print .cr
+	memdsize "mdsize:%h " .print 
+	memcsize "mcsize:%h " .print 
 	
-	memcode "memcode:%h " .print 
-	memdata "memdat:%h " .print 
+	memcode "mcod:%h " .print 
+	memdata "mdat:%h " .print 
 	mdatastack "stack:%h " .print 
 	mretstack "rstack:%h " .print .cr
-
+	
 	
 	mdatastack dup
 	( 8 + vmNOS <? 
-		|dup mdatastack - vmDS + 8 + @ 
 		dup dstackoff + @ 
 		" %h" .print 
 		) drop
 	vmNOS <? ( vmTOS " %h <TOP" .print ) drop .cr
 	
 	mretstack 
-	( 8 - vmRTOS >=? 
-		dup |rstackoff + |@ 
+	( 8 - vmRTOS >? 
+		dup rstackoff + |@ 
 		"%h " .print
-		) drop .cr
-		
-|	mretstack ( 8 + vmRTOS <?
-|		dup rstackoff + @
-|		"%h " .print
-|		) drop .cr
+		) drop 
 		
 |	'msg .print
 	;
 	
-:scrtxcode
-	|tuWina $4 'filename .wtitle
-	|$23 mark tudebug ,s ,eol empty here .wtitle
-	|1 1 flpad 
-	
-	|tuEditCode
-	tuReadCode 
-	;
-	
 |---- view tokens	
-:scrtokens
-	fx fy .at
-	memcode 4 + >a
-|	|memc 
-	12
-	( 1? 1-
+
+:showdef | dicc --
+	$10 and? ( "#" .write ; ) ":" .write ;
+	
+:.fcr .cr fx .col ;
+	
+:scrTokens
+	.reset
+	20 flxE |tuWina $1 "Imm" .wtitle |242 .bc
+	fx fy .at fw .hline 
+	
+	.cr fx .col
+
+	localdicc ( cntdicc <? 
+		dup ndicc@ showdef 40 >> realdicc + cntdicc 3 << + .write .fcr
+		1+ ) drop
+	|fuente 
+	
+	;
+	cshare >a
+	0 ( |memc 
+	30 <? 
+		vmip =? ( .rever )
 		da@+ .token .write .sp
 		|$ffffffff and "%h " .print
-		) drop
+		vmip =? ( .reset )
+		1+ ) drop
 	;
 	
-:Infovm
-	fx fy .at
-	.reset
-	vshare >a
-	10 ( 1? 1-
-		a@+ "%h " .println
-		) drop ;
-
 |---- main	
 :maindb
 	.reset .cls
@@ -239,11 +228,13 @@
 	" F2-Step F3-Over F4-Stack F5-Play | F9-End" .write
 
 	scrMsg
-|	scrViews
+	
+	scrTokens
+	
+	scrDicc	
 	
 	flxRest 
-	scrtxcode
-	|scrtokens
+	tuReadCode 
 	
 	uiKey
 	[f2] =? ( *>step )
@@ -281,6 +272,7 @@
 	'cshare inisharev
 
 	precalc
+	buildcursor
 
 	'maindb onTuia
 	
