@@ -178,6 +178,8 @@
 	debug2
 
 	"Voices" uiLabel
+	2over 2over
+	"%h %h %h %h" sprint uiLabel
 	
 	uiEnd
 	;

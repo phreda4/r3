@@ -456,7 +456,8 @@
 	ymax >? ( 2drop ; ) 
 	over 12 >> $fff and fx + 5 + 
 	swap fy + ylinea - 1- .at
-	24 >> fuente + c@ .emit |drop | str
+	|dup 40 >> $f and 
+	24 >> $ffff and fuente + c@ .emit |drop | str
 	;
 
 ::tuOncode | 'marks --

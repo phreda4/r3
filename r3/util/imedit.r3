@@ -12,7 +12,7 @@
 | color 
 |#colb0 $1f1f1f |sdlcolor | backcode
 |#colb1 $000000 |sdlcolor | backnowline
-#colb2 $333333 |SDLColor | backselect
+#colb2 $444444 |SDLColor | backselect
 
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
@@ -28,9 +28,6 @@
 ##fuente  	| fuente editable
 ##fuente> 	| cursor
 #$fuente	| fin de texto
-
-#clipboard	|'clipboard
-#clipboard>
 
 #undobuffer |'undobuffer
 #undobuffer>
@@ -75,21 +72,22 @@
 		dup c@ 13 =? ( drop ; ) | quitar el 1 -
 		drop 1+ ) 1- ;
 
-#1sel #2sel
+#1sel
 
 :selecc	| agrega a la seleccion
-	mshift 0? ( dup 'inisel ! 'finsel ! ; ) drop
+	mshift 0? ( 'inisel ! ; ) drop
 	inisel 0? ( fuente> '1sel ! ) drop
-	fuente> dup '2sel !
-	1sel over <? ( swap )
-	'finsel ! 'inisel !
-	;
+	fuente> 1sel over <? ( swap )
+	'finsel ! 'inisel ! ;
 
 :khome
 	fuente> 1- <<13 1+ 'fuente> ! ;
 
+:last?
+	dup 1+ c@ 0? ( drop 1+ ; ) drop ;
+	
 :kend
-	fuente> >>13 'fuente> ! ;
+	fuente> >>13 last? 'fuente> ! ;
 
 :scrollup 
 	scrini> 2 - <<13 1+ 
@@ -145,9 +143,11 @@
 |----------------------------------
 :copysel
 	inisel 0? ( drop ; )
-	clipboard swap
-	finsel over - pick2 over + 'clipboard> !
-	cmove ;
+	here swap finsel over - | here ini cnt
+	0 pick3 pick2 + c! 	
+	cmove 
+	here SDL_SetClipboardText
+	;	
 
 :realdel
 	fuente>
@@ -156,7 +156,7 @@
 	finsel inisel - over swap - 'fuente> ! 
 	drop ;
 
-:borrasel
+:remsel
 	inisel finsel $fuente finsel - 4 + cmove
 	finsel inisel - neg '$fuente +!
 	realdel
@@ -164,11 +164,11 @@
 
 :kdel
 	inisel 0? ( drop del ; )
-	drop borrasel ;
+	drop remsel ;
 
 :kback
 	inisel 0? ( drop back ; )
-	drop borrasel ;
+	drop remsel ;
 
 |-------------
 | Edit CtrE
@@ -186,18 +186,20 @@
 |-------------
 :controlx | move
 	controlc
-	borrasel ;
+	remsel ;
 
 |-------------
 :controlv | paste
-	clipboard clipboard> over - 0? ( 3drop ; ) | clip cnt
+	SDL_HasClipboardText 0? ( drop ; ) drop
+	SDL_GetClipboardText
+	count 2dup
 	fuente> dup pick2 + swap | clip cnt 'f+ 'f
 	$fuente over - 1+ cmove>	| clip cnt
 	fuente> -rot | f clip cnt
 	dup '$fuente +!
 	cmove
-	clipboard> clipboard - 'fuente> +!
-	;
+	'fuente> +!
+	SDL_free ;
 
 |-------------
 :controlz | undo
@@ -402,8 +404,8 @@
 	>ctrl< =? ( controloff )
 |	<f> =? ( mode!find )
 	<x> =? ( controlx )
-	<c> =? ( controlc )
-	<v> =? ( controlv )
+	<c> =? ( controlc ) | copy
+	<v> =? ( controlv ) | paste
 
 	<up> =? ( controla )
 	<dn> =? ( controls )
@@ -457,12 +459,10 @@
 	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-	SDLchar 1? ( modo ex fixcur ; ) drop
-
+	SDLchar 1? ( modo ex ; ) drop
 	SDLkey 0? ( drop ; )
-	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
-
+	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
+	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
 	selecc
 	<back> =? ( kback )
 	<del> =? ( kdel )
@@ -473,10 +473,8 @@
 	<ins> =? ( kins )
 	<ret> =? ( 13 modo ex )
 	<tab> =? ( 9 modo ex )
-	fixcur selecc
 	drop
-	cursorpos
-	;
+	selecc ;
 
 ::edtoolbar
 	$555555 SDLColor
@@ -496,16 +494,15 @@
 #selxi #selyi
 #sw1 
 	
-:startsel
-	xcodel 'sx1 !
-	ycode 'sy1 ! 
-	scrini> 
-	inisel >=? ( ; )
-	( inisel <? c@+ 
-		13 =? ( txh 'sy1 +! xcodel 'sx1 ! )
-		txcw 'sx1 +! ) 
-	32 txcw neg 'sx1 +! ;
+:selcar
+	13 =? ( drop txh 'sy1 +! xcodel 'sx1 ! ; )
+	txcw 'sx1 +! ;
 		
+:startsel
+	xcodel 'sx1 ! ycode 'sy1 ! 
+	scrini> inisel >=? ( ; )
+	( inisel <? c@+ selcar ) ;
+	
 :edselshow
 	inisel 0? ( drop ; )
 	scrend> >? ( drop ; ) drop
@@ -513,11 +510,9 @@
 	sx1 'selxi ! sy1 'selyi !
 	0 'sw1 !
 	( scrend> <? finsel <? c@+
-		13 =? ( wcode sx1 - xcode + 'sw1 ! 
-				txh 'sy1 +! xcodel 'sx1 !
+		13 =? ( txh 'sy1 +! xcodel 'sx1 !
 				32 txcw neg 'sw1 ! )
-		txcw 'sw1 +!
-		) 
+		txcw 'sw1 +! ) 
 	finsel <? ( wcode sx1 - 'sw1 ! )
 	drop
 	sw1 'sx1 +! 
@@ -531,9 +526,10 @@
 	;
 
 :edlinecursor
+	fixcur 
 	fuente> scrini> <? ( drop ; ) scrend> >? ( drop ; ) drop
-	cursorpos
 	msec $100 and? ( drop ; ) drop
+	cursorpos
 	xcodel
 	ycode ycursor ylinea - txh * + 
 	txat
@@ -542,16 +538,13 @@
 	cursorlin fuente> txcuri ;	
 	
 :inedit | write editor
-	$7f sdlcolor 
+	|$7f sdlcolor 
 	|xcode ycode wcode hcode sdlRect 
-	|'dns 'mos 'ups onMap
-	'dns uiDwn
-	'mos uiSel
-	'ups uiUp	
+	'dns uiDwn 'mos uiSel 'ups uiUp
 	evwmouse
 	editmodekey
-	edlinecursor
-	edselshow ;
+	edselshow
+	edlinecursor ;
 
 ::edfocus
 	uiZoneW
@@ -563,34 +556,29 @@
 	panelcontrol 1? ( drop controlkey ; ) drop
 
 	SDLkey 0? ( drop ; )
-	<ctrl> =? ( controlon ) >ctrl< =? ( controloff )
-	<shift> =? ( 1 'mshift ! ) >shift< =? ( 0 'mshift ! )
+	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
+	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
 
 	selecc
 	<up> =? ( karriba ) <dn> =? ( kabajo )
 	<ri> =? ( kder ) <le> =? ( kizq )
 	<home> =? ( khome ) <end> =? ( kend )
 	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
-	fixcur selecc
 	drop
-	cursorpos ;
+	selecc ;
 	
 :inro | readonly editor
-|	'dns 'mos 'ups onMap
-	'dns uiDwn
-	'mos uiSel
-	'ups uiUp
+	'dns uiDwn 'mos uiSel 'ups uiUp
 	evwmouse
 	romodekey
-	edlinecursor
-	edselshow ;
+	edselshow 
+	edlinecursor ;
 	
 ::edfocusro
 	|xcode ycode wcode hcode guiBox
 	uiZoneW
 	'inro uiFocus
 	;
-
 
 |----------- marcas
 | y|x|ini|cnt|colorf|colorb
@@ -635,8 +623,6 @@
 	here	| --- RAM
 	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'scrini> !
 	$ffff +			| 64kb texto
-	dup 'clipboard ! dup 'clipboard> !
-	$fff +			| 4KB
 	dup 'undobuffer ! dup 'undobuffer> !
 	$1fff +			| 8kb
 	'here !			| -- FREE
