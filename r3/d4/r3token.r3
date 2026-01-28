@@ -224,11 +224,11 @@
 | .lits .lit .word .wadr .var .vadr .str ...
 
 :str! | src mem -- src 'mem
-	>a 1 + | skip "
+	>a 1+ | skip "
 	( c@+ 1? 
 		dup ca!+
 		34 =? ( drop c@+ 
-			34 <>? ( drop 1 - 0 a> 1 - c!+ ; ) 
+			34 <>? ( drop 1- 0 a> 1- c!+ ; ) 
 			) drop 
 		) swap "unfinish str" error! 
 		dup ;	

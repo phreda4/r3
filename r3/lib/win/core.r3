@@ -200,7 +200,8 @@
 ::sysnew | "" --
 	ininfo	
 	|1 'sinfo $38 + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
-	|5 'sinfo $3c + w! |    si.wShowWindow = SW_SHOW;
+	|5 'sinfo $40 + w! |    si.wShowWindow = SW_SHOW;
+	|4 'sinfo $40 + w! |    si.wShowWindow = SW_SHOWNOACTIVATE
 	
 	0 swap 0 0 0 $10 0 0 'sinfo 'pinfo CreateProcess drop
 	|pinfo -1 WaitForSingleObject

@@ -18,8 +18,8 @@
 #scrini>	| comienzo de pantalla
 #scrend>	| fin de pantalla
 
-##fuente		| fuente editable
-##fuente> 	| cursor
+##fuente	| fuente editable
+##fuente>	| cursor
 ##$fuente	| fin de texto
 
 #clipboard	|'clipboard
@@ -415,7 +415,7 @@
 ::tuReadCode
 |	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! ;
-
+	
 ::tuEditCodeMono
 	EditMouse
 	EditFoco
@@ -446,7 +446,24 @@
 
 ::TuSaveCode 
 	savetxt ;
-	
+
+|----
+#ymax
+
+:showtok | tok -- tok 
+	dup $fff and 
+	ylinea <? ( 2drop ; ) 
+	ymax >? ( 2drop ; ) 
+	over 12 >> $fff and fx + 5 + 
+	swap fy + ylinea - 1- .at
+	24 >> fuente + c@ .emit |drop | str
+	;
+
+::tuOncode | 'marks --
+	|.rever
+	ylinea fh + 'ymax !
+	( @+ 1? showtok ) 2drop ;
+
 |---------------	
 :
 	here
