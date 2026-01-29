@@ -24,7 +24,27 @@
 #cntinc #strinc | includes in order
 #realdicc
 
-:loadinfo
+|--- for show in code
+#codeinc
+#codedicc #codedicc>
+#codesrc #codesrc>
+
+:run&loadinfo
+
+	| start the server
+	"mem/r3code.mem" delete
+	"mem/r3dicc.mem" delete | "filename" --
+	
+	| start debug
+	'filename 
+	"cmd /c r3d ""%s""" sprint | only WIN for now
+	sysnew 
+
+	| wait info
+	"mem/r3dicc.mem"  
+	( 200 ms dup filexist 0? drop ) 
+	2drop 
+
 	here dup "mem/r3code.mem" load 'here !
 	w@+ 'cntdicc ! w@+ 'localdicc ! 
 	d@+ 'boot !
@@ -46,17 +66,6 @@
 #lincs
 #lwords
 #ltokens
-
-|	__int64 vmstate; // msg
-|	__int64 vminfo; // msg
-|    __int64 ip;
-|    __int64 TOS;
-|    __int64 *NOS;
-|    __int64 *RTOS;
-|    __int64 REGA;
-|    __int64 REGB;
-|    __int64 datastack[252];
-|    __int64 retstack[252]; } VirtualMachine;	
 
 :*>end		$fe vshare ! ;
 
@@ -96,29 +105,14 @@
 
 |----
 |DICC
-|v=(pos<<40)|(dicc[i].mem<<8)|dicc[i].info;
+|v=(inc<<56)|(pos<<40)|(dicc[i].mem<<8)|dicc[i].info;
 
 :ndicc@ | n -- entry
 	3 << realdicc + @ ;
 
-:buildcursor
-	"build cursor" .println
-	|localdicc ndic@ 40 >> realdicc +
-	
-	|fuente
-	localdicc ndicc@ 8 >> $ffffff and  "%h " .println
-	
-|	cshare >a
-|	memc 20 2 << - ( memc <? 
-|		da@+ .token .write .sp
-|		|$ffffffff and "%h " .print
-|		1+ ) drop 
-		
-	;
-	
 |---- view dicc
 :dicc>name | nd -- str
-	40 >> realdicc cntdicc 3 << + + ;
+	40 >> $ffff and realdicc cntdicc 3 << + + ; | name word
 	
 :wcolor
 	$10 nand? ( 201 .fc ":" ,s ; ) 196 .fc "#" ,s ;
@@ -127,26 +121,29 @@
 	mark
 	str$>nro nip
 	cntdicc >=? ( drop "" ; ) 
-	ndicc@ wcolor
+	ndicc@ 
+	dup 58 >> "%d " ,print | nro include
+	wcolor
 	dicc>name ,s ,eol 
 	empty
 	here lwrite ;
 
 :makelistwords
 	here 'lwords !
-	localdicc ( cntdicc <?
+	|localdicc 
+	0 ( cntdicc <?
 		dup .h ,s ,eol
 		1+ ) drop
 	,eol ;
 
 :scrDicc
-	.reset
-	cols 3 / flxO 
-	tuWina $1 "Dicc" .wtitle 1 1 flpad 
+	.reset tuWina $1 "Dicc" .wtitle 1 1 flpad 
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
 	xwrite.reset
 	;
+
+|-------------------------
 
 :.datastack
 	mdatastack dup
@@ -164,9 +161,7 @@
 		) drop ;
 		
 :scrMsg	
-	.reset
-	6 flxS |tuWina $1 "Imm" .wtitle |242 .bc
-	fx fy .at cols .hline .cr
+	.reset fx fy .at cols .hline .cr
 
 	vmIP	"IP:%h " .print 
 |	vmTOS	"TOS:%h " .print vmNOS	"NOS:%h " .print vmRTOS	"RTOS:%h " .print .cr
@@ -192,11 +187,8 @@
 :.fcr .cr fx .col ;
 	
 :scrTokens
-	.reset
-	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
-	fx fy .at fw .hline 
-	
-	.cr fx .col
+	.reset fx fy .at fw .hline 
+	.fcr
 
 |-------- print dicc
 |	localdicc ( cntdicc <? 
@@ -284,10 +276,53 @@
 	localdicc ndicc@ 8 >> $ffffff and  "%h " .println
 	;
 	
+|--- build show in code
+:inc2src
+	codeinc swap 3 << + @ ;
+
+:translatecode
+	;
+	
+:buildshowincode
+| make memory map
+	here 
+	dup 'codeinc ! 
+	cntinc 1+ 3 << +
+	dup 'codedicc ! dup 'codedicc> !
+	cntdicc 3 << +
+	dup 'codesrc ! dup 'codesrc> !
+	memc 3 << +
+	'here !
+
+| load src includes
+	codeinc >a
+	strinc 
+	0 ( cntinc <? swap
+		here dup a!+ 
+		|over load 0 swap c!+ 'here !
+		over load 0 swap c! here only13 'here !
+		>>0 swap 1+ ) 2drop
+	here dup a!+
+	|'filename load 0 swap c!+ 'here !
+	'filename load 0 swap c! here only13 'here !
+	
+| every include
+
+| main code
+	cntinc inc2src | src
+	
+|	localdicc
+|	fuente
+	;
+
+	
+:showcode | n --
+	inc2src TuLoadMemC ;
 	
 |---- main	
 :maindb
 	.reset .cls
+	
 	1 flxN
 	4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
@@ -297,18 +332,21 @@
 	fx fy .at fw .nsp fx .col
 	" F2-Step F3-Over F4-Stack F5-Play | F9-End" .write
 
+	6 flxS |tuWina $1 "Imm" .wtitle |242 .bc
 	scrMsg
 	
+	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 	scrTokens
 	
-	scrDicc	
+	|cols 3 / flxO 
+	|scrDicc
 	
 	flxRest 
 	tuReadCode 
 	
-	1 .bc 7 .fc
-	msec $100 and? ( 2 .bc ) drop
-	codemark tuOnCode
+	|1 .bc 7 .fc
+	|msec $100 and? ( 2 .bc ) drop
+	|codemark tuOnCode
 	
 	uiKey
 	[f2] =? ( *>step )
@@ -317,26 +355,15 @@
 	[f5] =? ( *>play )
 	
 	[f9] =? ( *>end )
+	$30 =? ( 0 showcode )
+	$31 =? ( 1 showcode )
 	
 	drop ;
 	
 :main
-	| start the server
-	"mem/r3dicc.mem" delete | "filename" --
-	
-	| start debug
-	'filename 
-	"cmd /c r3d ""%s""" sprint
-	sysnew 
+	run&loadinfo
 
-	| wait info
-	"mem/r3dicc.mem"  
-	( dup filexist 0? drop 100 ms ) 
-	2drop 
-	
-	loadinfo
-	makelistwords
-
+|---- conect sharde memory
 	memdsize 'dshare 16 + !		| data mem size
 	memcsize 'cshare 16 + !		| code mem size
 	
@@ -344,12 +371,18 @@
 	'bshare inisharev
 	'dshare inisharev
 	'cshare inisharev
-
 	precalc
-	buildcodemark
 
+|---- build code links
+	|makelistwords
+	|buildcodemark
+	buildshowincode
+	cntinc showcode
+	
+|---- run debug	
 	'maindb onTuia
 	
+|----- end all	
 |	100 sleep
 	*>end
 |	100 sleep
@@ -367,7 +400,5 @@
 |	"r3/audio/parse.r3" 
 	'filename strcpy
 	
-	'filename TuLoadCode
 	main
-	
 	.masb .free ;

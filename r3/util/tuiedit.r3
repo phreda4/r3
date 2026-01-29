@@ -177,7 +177,7 @@
 	
 ::editfasthash | -- fh
 	0 fuente ( $fuente <? @+ rot 2/ xor swap ) drop ;
-		
+			
 :loadtxt | -- ; cargar texto
 	fuente 'filename 
 	load 0 swap c!
@@ -429,9 +429,17 @@
 |	fw 8 <? ( drop ; ) drop
 	scrini> drawlinesmono 'scrend> ! ;
 	
-	
 ::tudebug
 	ycursor 1+ xcursor 1+ " %d:%d " sprint ;
+	
+::TuLoadMem | "" --
+	fuente strcpy
+	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
+	fuente dup 'scrini> ! 'fuente> ! ;
+
+::TuLoadMemC | "" -- | already sane
+	fuente strcpyl 1- '$fuente !
+	fuente dup 'scrini> ! 'fuente> ! ;
 	
 ::TuLoadCode | "" --
 	'filename strcpy
