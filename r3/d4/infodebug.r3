@@ -60,6 +60,12 @@
 "av!" "avC!" "avW!" "avD!" 
 "av!+" "avC!+" "avW!+" "avD!+" 
 "av+!" "avC+!" "avW+!" "avD+!" 
+"v@" "vC@" "vW@" "vD@" 
+"v@+" "vC@+" "vW@+" "vD@+" 
+"v!" "vC!" "vW!" "vD!" 
+"v!+" "vC!+" "vW!+" "vD!+" 
+"v+!" "vC+!" "vW+!" "vD+!" 
+
 
 #tokencnt (
 0 0 0 0 0
@@ -116,6 +122,11 @@
 3 3 3 |"1<<+!W" "2<<+!W" "3<<+!W" 
 3 3 3 |"1<<+!D" "2<<+!D" "3<<+!D" 
 1 1 |"AA1" "BA1" 
+1 1 1 1 |"av@" "avC@" "avW@" "avD@" 
+1 1 1 1 |"av@+" "avC@+" "avW@+" "avD@+" 
+1 1 1 1 |"av!" "avC!" "avW!" "avD!" 
+1 1 1 1 |"av!+" "avC!+" "avW!+" "avD!+" 
+1 1 1 1 |"av+!" "avC+!" "avW+!" "avD+!" 
 1 1 1 1 |"av@" "avC@" "avW@" "avD@" 
 1 1 1 1 |"av@+" "avC@+" "avW@+" "avD@+" 
 1 1 1 1 |"av!" "avC!" "avW!" "avD!" 

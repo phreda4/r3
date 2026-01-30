@@ -245,30 +245,45 @@
 	over fuente - 24 << or
 	da@+ dup token>cnt -? ( 3drop codesrc> 8 - @ codesrc> !+ 'codesrc> ! ; ) 
 	'tokenc !
-	dup .token .print |"%h " .println |drop
-	$ff and "(%h)" .println
+	dup .token .print $ff and "(%h) | " .print
 	codesrc> !+ 'codesrc> !
+	dup	w@ 
+	$2100 <? ( $ff and
+		$5b =? ( 0 'tokenc ! ) | [ JMP (1)->(0)
+ 		|$5d =? ( ; ) |]
+		) drop
 	>>sp 
 	;
 
 :,token
 	state 0? ( drop >>sp ; ) drop
-	dup	c@ 
-	$28 =? ( drop >>sp ; ) | (
-	$29 =? ( drop >>sp ; ) | )
-	drop
-	dup "%w=" .print
+	dup	w@ 
+	$2100 <? ( $ff and
+		$28 =? ( drop >>sp ; ) | (
+		$29 =? ( drop >>sp ; ) | )
+		) drop
+|	dup "%w=" .print
 	ctoken! |"[tok]" .write
 	;
 
 :,str 
 	state 0? ( drop >>str ; ) drop
-	ctoken! |"[str]" .write
+|	"<STR>" .print
+	
+	|||||ctoken! |"[str]" .write
+	tokenc 1? ( 1- 'tokenc ! >>str ; ) drop
+	yc $fff and xc $fff and 12 << or
+	over fuente - 24 << or
+	da@+ 
+	dup .token .print $ff and "(%h) | " .print
+	codesrc> !+ 'codesrc> !
+
 	>>str ;
 	
 |--- build show in code
 :defvar | str --
-	dup "#%w " .print
+	|.cr
+|	dup "%w " .print
 	b@+ | dicc entry
 	|drop
 	codedicc> !+ 'codedicc> !
@@ -276,18 +291,27 @@
 	;
 	
 :defwor | str --
-	dup ":%w " .print
+	.cr
+|	dup "%w " .print
 	b@+ | dicc entry
+	$8 and? ( da@+ codesrc> !+ 'codesrc> ! ) |"bootcall....." .println 
 	|drop
 	codedicc> !+ 'codedicc> !
 	1 'state ! 
+	;
+	
+:coment
+	drop
+|WIN|	"|WIN|" =pre 1? ( drop 5 + ; ) drop | Compila para WINDOWS
+|LIN|	"|LIN|" =pre 1? ( drop 5 + ; ) drop | Compila para LINUX
+	>>cr 
 	;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 	xycur+
 		0? ( nip ; ) drop 1+ )	| trim0
 	$5e =? ( drop >>cr ; )		| $5e ^  Include
-	$7c =? ( drop >>cr ; )		| $7c |	 Comentario
+	$7c =? ( coment ; )		| $7c |	 Comentario
 	$3A =? ( drop defwor >>sp ; )	| $3a :  Definicion
 	$23 =? ( drop defvar >>sp ; )	| $23 #  Variable
 	$22 =? ( drop ,str ; )		| $22 "	 Cadena
@@ -302,7 +326,7 @@
 	0 'state ! 0 'xc ! 0 'yc ! | reset src
 	0 'tokenc !
 	dup inc2src | src
-	( wrd2token waitkey 1? ) drop
+	( wrd2token 1? ) drop
 	;
 	
 :buildshowincode
@@ -334,7 +358,7 @@
 	0 ( cntinc <=? 
 		translatecode
 		1+ ) drop
-	waitkey
+	|waitkey
 	;
 
 |-------------------------------------
