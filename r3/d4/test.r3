@@ -1,12 +1,16 @@
-
+|main
 ^r3/lib/console.r3
 
 #var1 33
 
-:cua dup * ;
+:cua 
+	dup * ;
 
 :tt
-	var1 + cua ;
+	
+	var1 + cua 
+	10 <? ( 1 + ) 
+	;
 
 :
 2 1 over + 

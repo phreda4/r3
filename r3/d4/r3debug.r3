@@ -25,6 +25,7 @@
 #realdicc
 
 |--- for show in code
+#codenow -1
 #codeinc
 #codedicc #codedicc>
 #codesrc #codesrc>
@@ -213,19 +214,12 @@
 	;
 	
 |---- print on code
-#codemark #codemark>
-
-#xc #yc #state 0
+#xc #yc #state 0 #tokenc
 
 :xycur+ | car -- car
 	13 =? ( 1 'yc +! 0 'xc ! ; )
 	9 =? ( 2 'xc +! ; ) 
 	1 'xc +! ;
-	
-:ctoken! | src -- src
-	yc $fff and xc $fff and 12 << or
-	over fuente - 24 << or
-	codemark> !+ 'codemark> ! ;
 	
 ::>>cr | adr -- adr'
 	( c@+ 1? xycur+
@@ -244,43 +238,71 @@
 			) drop 
 		) drop ;	
 
+:ctoken! | src -- src
+	tokenc 1? ( 1- 'tokenc ! >>sp ; ) drop
+	
+	yc $fff and xc $fff and 12 << or
+	over fuente - 24 << or
+	da@+ dup token>cnt -? ( 3drop codesrc> 8 - @ codesrc> !+ 'codesrc> ! ; ) 
+	'tokenc !
+	dup .token .print |"%h " .println |drop
+	$ff and "(%h)" .println
+	codesrc> !+ 'codesrc> !
+	>>sp 
+	;
+
 :,token
 	state 0? ( drop >>sp ; ) drop
+	dup	c@ 
+	$28 =? ( drop >>sp ; ) | (
+	$29 =? ( drop >>sp ; ) | )
+	drop
+	dup "%w=" .print
 	ctoken! |"[tok]" .write
-	>>sp ;
+	;
 
 :,str 
 	state 0? ( drop >>str ; ) drop
 	ctoken! |"[str]" .write
 	>>str ;
 	
+|--- build show in code
+:defvar | str --
+	dup "#%w " .print
+	b@+ | dicc entry
+	|drop
+	codedicc> !+ 'codedicc> !
+	0 'state ! 
+	;
+	
+:defwor | str --
+	dup ":%w " .print
+	b@+ | dicc entry
+	|drop
+	codedicc> !+ 'codedicc> !
+	1 'state ! 
+	;
+	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? 	xycur+
 		0? ( nip ; ) drop 1+ )	| trim0
 	$5e =? ( drop >>cr ; )		| $5e ^  Include
 	$7c =? ( drop >>cr ; )		| $7c |	 Comentario
-	$3A =? ( drop 1 'state ! >>sp ; )	| $3a :  Definicion
-	$23 =? ( drop 0 'state ! >>sp ; )	| $23 #  Variable
+	$3A =? ( drop defwor >>sp ; )	| $3a :  Definicion
+	$23 =? ( drop defvar >>sp ; )	| $23 #  Variable
 	$22 =? ( drop ,str ; )		| $22 "	 Cadena
 	|$27 =? ( drop ,token ; )	| $27 ' Direccion
 	drop
 	,token ;
 
-:buildcodemark
-	0 'state ! 0 'xc ! 0 'yc !
-	here dup 
-	'codemark ! 'codemark> !
-	fuente ( wrd2token 1? ) drop 
-	0 codemark> !+ 'here ! | use mem
-	
-	localdicc ndicc@ 8 >> $ffffff and  "%h " .println
-	;
-	
-|--- build show in code
 :inc2src
 	codeinc swap 3 << + @ ;
 
-:translatecode
+:translatecode | n -- n ; B=dicc
+	0 'state ! 0 'xc ! 0 'yc ! | reset src
+	0 'tokenc !
+	dup inc2src | src
+	( wrd2token waitkey 1? ) drop
 	;
 	
 :buildshowincode
@@ -306,18 +328,28 @@
 	|'filename load 0 swap c!+ 'here !
 	'filename load 0 swap c! here only13 'here !
 	
-| every include
-
-| main code
-	cntinc inc2src | src
-	
-|	localdicc
-|	fuente
+| every include+main
+	realdicc >b | dicc
+	cshare 4 + >a | tokencode
+	0 ( cntinc <=? 
+		translatecode
+		1+ ) drop
+	waitkey
 	;
 
-	
+|-------------------------------------
+#labelfilename * 256
+
 :showcode | n --
-	inc2src TuLoadMemC ;
+	codenow =? ( drop ; ) 
+	dup 'codenow !
+	inc2src TuLoadMemC 
+	0 'labelfilename c! | build label
+	codenow cntinc <? ( 
+		strinc over n>>0 'labelfilename strcpy
+		" > " 'labelfilename strcat
+		) drop
+	'filename 'labelfilename strcat ;
 	
 |---- main	
 :maindb
@@ -326,7 +358,7 @@
 	1 flxN
 	4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
-	" R3forth DEBUG [" .write 'filename .write "] " .write
+	" R3forth DEBUG | " .write 'labelfilename .write
 	
 	1 flxS
 	fx fy .at fw .nsp fx .col
@@ -376,6 +408,7 @@
 |---- build code links
 	|makelistwords
 	|buildcodemark
+	
 	buildshowincode
 	cntinc showcode
 	
