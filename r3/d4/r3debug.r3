@@ -179,8 +179,8 @@
 |	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
 |	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
-|	"D|" .write .datastack |.cr
-	|"R|" .write .retstack
+	"D|" .write .datastack .cr
+	"R|" .write .retstack
 	;
 	
 |---- view tokens	

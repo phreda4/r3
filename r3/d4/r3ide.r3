@@ -159,7 +159,8 @@
 |WIN| 	"r3 r3/d4/r3debug.r3" 
 |LIN| 	"./r3lin r3/d4/r3debug.r3"
 	sys | run
-	.reterm .alsb .flush ;
+	.reterm .alsb .flush 
+	0 'msgstate ! ;
 	
 :fileplain
 	TuSaveCode
@@ -167,7 +168,7 @@
 |WIN| "r3 r3/editor/r3plain.r3"
 	sys
 	.reterm .alsb .flush 
-	tuR! ;
+	0 'msgstate ! ;
 
 :filecompile
 	TuSaveCode
@@ -176,7 +177,7 @@
 |WIN| "r3 r3/system/r3compiler.r3"
 	sys
 	.reterm .alsb .flush 
-	tuR! ;
+	0 'msgstate ! ;
 
 |---- screen
 :setcursoride
