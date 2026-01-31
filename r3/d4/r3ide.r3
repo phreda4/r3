@@ -151,8 +151,15 @@
 |LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
 	sprint sys | run
 	.reterm .alsb .flush
-	runcheck
-	tuR! ;
+	runcheck ;
+
+:debugcode
+	checkcode
+	TuSaveCode
+|WIN| 	"r3 r3/d4/r3debug.r3" 
+|LIN| 	"./r3lin r3/d4/r3debug.r3"
+	sys | run
+	.reterm .alsb .flush ;
 	
 :fileplain
 	TuSaveCode
@@ -245,6 +252,7 @@
 	error 1? ( coderror ; ) drop
 	codeok
 	'helpmain onTui
+	0 'msgstate !
 	;
 
 	
@@ -279,9 +287,10 @@
 	|[f3] =? ( search )
 	|[f4] =? ( )
 	[f5] =? ( runcode )
-|	[f6] =? ( debugcode ) | a debug /profile/compile
-[f7] =? ( fileplain )
-[f8] =? ( filecompile )
+	[f6] =? ( debugcode ) | a debug /profile/compile
+	
+	[f7] =? ( fileplain )
+	[f8] =? ( filecompile )
 |[f8] =? ( siguiente??)
 |[f9] =? ( breakpoint )
 	

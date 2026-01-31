@@ -167,7 +167,7 @@
 	cshare vmIP 2 << + d@ |codesrc + d@ 
 	.token .print .sp
 	
-	codesrc vmIP 1- 3 << + @ ":%h:" .print
+	|codesrc vmIP 1- 3 << + @ ":%h:" .print
 	
 |	vmTOS	"TOS:%h " .print vmNOS	"NOS:%h " .print vmRTOS	"RTOS:%h " .print .cr
 	vmREGA	"A:%h " .print vmREGB	"B:%h " .print 
@@ -179,7 +179,7 @@
 |	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
 |	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
-	"D|" .write .datastack |.cr
+|	"D|" .write .datastack |.cr
 	|"R|" .write .retstack
 	;
 	
@@ -225,9 +225,9 @@
 	1 'xc +! ;
 	
 ::>>cr | adr -- adr'
-	( c@+ 1? xycur+
-		10 =? ( drop 1- ; ) 
+	( c@+ 1? 
 		13 =? ( drop 1- ; ) 
+		xycur+
 		drop ) drop 1- ;
 
 ::>>sp | adr -- adr'	; next space
@@ -244,7 +244,7 @@
 
 | ii cc pppp xxx yyy
 :curposxy | str -- str v
-	yc 1- $fff and  | 1-?
+	yc $fff and 
 	xc $fff and 12 << or 
 	over srcini - $ffff and 24 << or  | str
 	over ( c@+ $ff and 32 >? drop ) drop pick2 - 1-
@@ -321,11 +321,10 @@
 	drop
 |WIN|	"|WIN|" =pre 1? ( drop 5 + ; ) drop | Compila para WINDOWS
 |LIN|	"|LIN|" =pre 1? ( drop 5 + ; ) drop | Compila para LINUX
-	>>cr 
-	;
+	>>cr ;
 	
 :wrd2token | str -- str'
-	( dup c@ $ff and 33 <? 	xycur+
+	( dup c@ $ff and 33 <? xycur+
 		0? ( nip ; ) drop 1+ )	| trim0
 	$5e =? ( drop >>cr ; )		| $5e ^  Include
 	$7c =? ( coment ; )		| $7c |	 Comentario
@@ -400,7 +399,8 @@
 :remake
 	dup 'cm ! 
 	dup 48 >> $ff and showcode
-	dup 24 >> $ffff and fuente + tuiecursor!	
+	dup 24 >> $ffff and fuente + tuipos!
+|	tuiecursor!	
 	;
 
 :drawcm
@@ -414,7 +414,6 @@
 	
 |---- main	
 :maindb
-	
 	.reset .cls
 	
 	1 flxN
@@ -425,7 +424,7 @@
 	1 flxS
 	fx fy .at fw .nsp fx .col
 	" F2-Step F3-Over F4-Stack F5-Play | F9-End" .write
-
+	cm $fff and " %d " .print
 	6 flxS |tuWina $1 "Imm" .wtitle |242 .bc
 	scrMsg
 	
@@ -437,6 +436,7 @@
 	
 	flxRest 
 	tuReadCode 
+	|tuEditCode 
 	drawcm
 	
 	uiKey
@@ -446,9 +446,7 @@
 	[f5] =? ( *>play )
 	
 	[f9] =? ( *>end )
-|	$30 =? ( 0 showcode )
-|	$31 =? ( 1 showcode )
-	
+
 	drop ;
 	
 :main
@@ -485,10 +483,8 @@
 
 : 
 	.alsb 
-	|'filename "mem/menu.mem" load	
-	"r3/d4/test.r3" 
-|	"r3/audio/parse.r3" 
-	'filename strcpy
+	'filename "mem/menu.mem" load
+|	"r3/d4/test.r3" 'filename strcpy
 	
 	main
 	.masb .free ;

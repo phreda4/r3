@@ -133,6 +133,14 @@
 ::tuiecursor! | cursor --
 	'fuente> ! fixcur cursorpos ;
 	
+::tuipos! | pos --
+	dup 'fuente> !
+	fh 2/ ( 1? swap 2 - <<13 1+ swap 1- ) drop
+	fuente <? ( fuente nip ) 
+	'scrini> !
+	cursorpos
+	;
+	
 |-----------
 :karriba
 	fuente> fuente =? ( drop ; )
@@ -459,9 +467,10 @@
 ::tokenCursor | 'mark --
 	dup $fff and 
 	ylinea <? ( 2drop ; ) 
-	ylinea fh + >? ( 2drop ; ) 
+	ylinea -
+	fh >? ( 2drop ; ) 
 	over 12 >> $fff and fx + 5 + 
-	swap ylinea - fy + 1- .at
+	swap fy + .at
 	dup 24 >> $ffff and fuente + 
 	swap 40 >> $ff and .type
 	;
