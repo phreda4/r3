@@ -35,11 +35,11 @@
 	inisel =? ( 18 .bc ; ) 
 	finsel =? ( fuente> =? ( 233 .bc ; ) 235 .bc ) ;
 
-#1sel #2sel
+#1sel 
 
 :sela	| add to select 
 	inisel 0? ( fuente> '1sel ! ) drop
-	fuente> dup '2sel !
+	fuente>
 	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
 
 :sele | empty select
@@ -456,22 +456,15 @@
 	savetxt ;
 
 |----
-#ymax
-
-:showtok | tok -- tok 
+::tokenCursor | 'mark --
 	dup $fff and 
 	ylinea <? ( 2drop ; ) 
-	ymax >? ( 2drop ; ) 
+	ylinea fh + >? ( 2drop ; ) 
 	over 12 >> $fff and fx + 5 + 
-	swap fy + ylinea - 1- .at
-	|dup 40 >> $f and 
-	24 >> $ffff and fuente + c@ .emit |drop | str
+	swap ylinea - fy + 1- .at
+	dup 24 >> $ffff and fuente + 
+	swap 40 >> $ff and .type
 	;
-
-::tuOncode | 'marks --
-	|.rever
-	ylinea fh + 'ymax !
-	( @+ 1? showtok ) 2drop ;
 
 |---------------	
 :

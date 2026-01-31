@@ -1,5 +1,10 @@
 | doble decimal math
 | 32.32 fixed point math
+
+|"0.0000001" str>f.d nip 
+|"0.0000001" str>f.d nip +
+|.fd "%s" .println
+|
 |---------------------------------
 ^r3/lib/math.r3
 ^r3/lib/str.r3
@@ -195,6 +200,8 @@
 	*/ $ffffffff and or
 	;
 
+::f32! swap str>f.d nip swap ! ;
+
 |----- print
 #mbuff * 64
 
@@ -214,6 +221,5 @@
 ::.fd | fix -- str
 	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
 
-|"0.0000001" str>f.d nip 
-|"0.0000001" str>f.d nip +
-|.fd "%s" .println
+::.f32 .fd .write ;
+

@@ -93,13 +93,11 @@
 |---- aux info 
 #dstackoff
 #rstackoff
-#codeoff
 #dataoff
 
 :precalc
 	vmDS mdatastack - 8 + 'dstackoff !
 	vmRS mretstack - 8 + 'rstackoff !
-	cshare memcode - 'codeoff !
 	dshare memdata - 'dataoff !
 	;
 
@@ -164,7 +162,13 @@
 :scrMsg	
 	.reset fx fy .at cols .hline .cr
 
-	vmIP	"IP:%h " .print 
+	vmIP "IP:%h " .print 
+	
+	cshare vmIP 2 << + d@ |codesrc + d@ 
+	.token .print .sp
+	
+	codesrc vmIP 1- 3 << + @ ":%h:" .print
+	
 |	vmTOS	"TOS:%h " .print vmNOS	"NOS:%h " .print vmRTOS	"RTOS:%h " .print .cr
 	vmREGA	"A:%h " .print vmREGB	"B:%h " .print 
 |	vmDS	"DS:%h " .print vmRS	"RS:%h " .print 
@@ -173,12 +177,10 @@
 |	cntdicc "cnddicc:%h " .print localdicc "localdicc:%h " .print
 |	boot "boot:%h " .print memc "memc:%h " .print memd "memd:%h " .print
 |	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
-	
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
-|	mdatastack "stack:%h " .print 
-|	mretstack "rstack:%h " .print .cr
-	"D|" .write .datastack .cr
-	"R|" .write .retstack
+|	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
+	"D|" .write .datastack |.cr
+	|"R|" .write .retstack
 	;
 	
 |---- view tokens	
@@ -215,6 +217,7 @@
 	
 |---- print on code
 #xc #yc #state 0 #tokenc
+#srcini
 
 :xycur+ | car -- car
 	13 =? ( 1 'yc +! 0 'xc ! ; )
@@ -232,20 +235,32 @@
 		drop ) drop 1- ;
 
 :>>str | src -- 'src 
-	1+ ( c@+ 1? xycur+
+	c@+ xycur+ drop
+	( c@+ 1? xycur+
 		34 =? ( drop c@+ xycur+
 			34 <>? ( drop ; ) 
 			) drop 
 		) drop ;	
 
+| ii cc pppp xxx yyy
+:curposxy | str -- str v
+	yc 1- $fff and  | 1-?
+	xc $fff and 12 << or 
+	over srcini - $ffff and 24 << or  | str
+	over ( c@+ $ff and 32 >? drop ) drop pick2 - 1-
+	40 << or
+	pick2 $ff and 48 << or | src
+	;
+
 :ctoken! | src -- src
 	tokenc 1? ( 1- 'tokenc ! >>sp ; ) drop
 	
-	yc $fff and xc $fff and 12 << or
-	over fuente - 24 << or
+	curposxy
+	
 	da@+ dup token>cnt -? ( 3drop codesrc> 8 - @ codesrc> !+ 'codesrc> ! ; ) 
 	'tokenc !
-	dup .token .print $ff and "(%h) | " .print
+	drop |.token .print |$ff and "(%h) | " .print
+	
 	codesrc> !+ 'codesrc> !
 	dup	w@ 
 	$2100 <? ( $ff and
@@ -272,30 +287,32 @@
 	
 	|||||ctoken! |"[str]" .write
 	tokenc 1? ( 1- 'tokenc ! >>str ; ) drop
-	yc $fff and xc $fff and 12 << or
-	over fuente - 24 << or
-	da@+ 
-	dup .token .print $ff and "(%h) | " .print
+	curposxy
+		
+	da@+ drop |.token .print |$ff and "(%h) | " .print
+	
 	codesrc> !+ 'codesrc> !
 
 	>>str ;
 	
 |--- build show in code
 :defvar | str --
-	|.cr
-|	dup "%w " .print
+|.cr dup "%w " .print
 	b@+ | dicc entry
-	|drop
+	drop
+	curposxy
 	codedicc> !+ 'codedicc> !
 	0 'state ! 
 	;
 	
 :defwor | str --
-	.cr
-|	dup "%w " .print
+|.cr dup "%w " .print
 	b@+ | dicc entry
-	$8 and? ( da@+ codesrc> !+ 'codesrc> ! ) |"bootcall....." .println 
-	|drop
+	$8 and? ( drop da@+ drop |"boot chain...." .println 
+			curposxy codesrc> !+ 'codesrc> ! 
+			dup ) 
+	drop
+	curposxy
 	codedicc> !+ 'codedicc> !
 	1 'state ! 
 	;
@@ -326,6 +343,7 @@
 	0 'state ! 0 'xc ! 0 'yc ! | reset src
 	0 'tokenc !
 	dup inc2src | src
+	dup 'srcini !
 	( wrd2token 1? ) drop
 	;
 	
@@ -375,8 +393,28 @@
 		) drop
 	'filename 'labelfilename strcat ;
 	
+
+|-------------------------------------
+#cm -1
+
+:remake
+	dup 'cm ! 
+	dup 48 >> $ff and showcode
+	dup 24 >> $ffff and fuente + tuiecursor!	
+	;
+
+:drawcm
+	msec $100 and? ( drop ; ) drop
+	
+	3 .bc 0 .fc |1 .bc 7 .fc
+	codesrc vmIP 1- 3 << + @ 
+	cm <>? ( remake )
+	tokenCursor
+	;
+	
 |---- main	
 :maindb
+	
 	.reset .cls
 	
 	1 flxN
@@ -395,14 +433,11 @@
 	scrTokens
 	
 	|cols 3 / flxO 
-	|scrDicc
+|	scrDicc
 	
 	flxRest 
 	tuReadCode 
-	
-	|1 .bc 7 .fc
-	|msec $100 and? ( 2 .bc ) drop
-	|codemark tuOnCode
+	drawcm
 	
 	uiKey
 	[f2] =? ( *>step )
@@ -411,8 +446,8 @@
 	[f5] =? ( *>play )
 	
 	[f9] =? ( *>end )
-	$30 =? ( 0 showcode )
-	$31 =? ( 1 showcode )
+|	$30 =? ( 0 showcode )
+|	$31 =? ( 1 showcode )
 	
 	drop ;
 	
@@ -440,9 +475,7 @@
 	'maindb onTuia
 	
 |----- end all	
-|	100 sleep
 	*>end
-|	100 sleep
 
 	'cshare endsharev
 	'dshare endsharev

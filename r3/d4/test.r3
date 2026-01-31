@@ -14,10 +14,10 @@
 	;
 
 :
-2 1 over + 
-tt
+2 1 over 3 + 
+"hola" over tt 
 cua 
-
+"%d" .println
 128 129 130
 ;
 
