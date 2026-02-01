@@ -2,6 +2,7 @@
 | PHREDA 2025
 
 ^r3/util/tui.r3
+^r3/lib/clipboard.r3
 |^r3/lib/trace.r3
 
 #hashfile 
@@ -21,9 +22,6 @@
 ##fuente	| fuente editable
 ##fuente>	| cursor
 ##$fuente	| fin de texto
-
-#clipboard	|'clipboard
-#clipboard>
 
 #undobuffer |'undobuffer
 #undobuffer>
@@ -365,6 +363,30 @@
 	3 =? ( mos )
 	6 =? ( ups clickMouse 'fuente> ! cursorpos )
 	drop ;
+
+	
+:txtcopy
+	inisel 0? ( drop ; )
+	finsel over - 1+
+	copyclipboard | 'mem cnt -- 	
+	'inisel here strcpy
+	;
+
+:txtcut
+	txtcopy
+	|remsel
+	;
+
+:txtpaste
+	here pasteclipboard | 'mem -- 	
+	here count 0? ( 2drop ; ) 
+	fuente> dup pick2 + swap | from count to+ 
+	$fuente over - 1+ cmove>	| clip cnt
+	fuente> -rot | f clip cnt
+	dup '$fuente +!
+	cmove
+	here count nip 'fuente> +!
+	;
 	
 :chmode
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
@@ -403,10 +425,15 @@
 	[SHIFT+PGDN] =? ( sela kpgdn sela )
 	[SHIFT+HOME] =? ( sela khome sela )
 	[SHIFT+END] =? ( sela kend sela )
+	$18 =? ( txtcut ) | ctcrl-x
+	$3 =? ( txtcopy ) | ctrl-c
+	$16 =? ( txtpaste ) | ctrl-v
+
 	drop 
 	fixcur 
 	cursorpos ;
-	
+
+
 |---- MAIN words
 ::tuEditShowCursor
 	fx xcursor + 5 + fy ycursor + ylinea - .at .savec ;
@@ -482,9 +509,6 @@
 	dup 'fuente> !
 	dup '$fuente !
 	$3ffff +			| 256kb texto
-	dup 'clipboard !
-	dup 'clipboard> !
-	$fff +				| 4KB
 	dup 'undobuffer !
 	dup 'undobuffer> !
 	$fff +				| 4kb

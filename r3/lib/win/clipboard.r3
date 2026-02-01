@@ -27,16 +27,16 @@
 	dup GlobalLock | 'mem cnt alloc mlock
 	dup >r 2swap 1+ cmove | dsc
 	r@ GlobalUnlock 
-	CF_TEXT r@ SetClipboardData 
-	r> GlobalFree
+	CF_TEXT r> SetClipboardData drop
+	|r> GlobalFree
 	CloseClipboard ;
 
 ::pasteclipboard | 'mem -- 
-	CF_TEXT IsClipboardFormatAvailable 0? ( 2drop ; ) drop
 	0 OpenClipboard 0? ( 2drop ; ) drop
+	CF_TEXT IsClipboardFormatAvailable 0? ( 2drop CloseClipboard ; ) drop
 	CF_TEXT GetClipboardData	| 'mem hdata
 	dup GlobalLock	| 'mem hdata ptext
-	rot strcpy
+	rot strcpyl 0 swap c!
 	GlobalUnlock
 	CloseClipboard 
 	;

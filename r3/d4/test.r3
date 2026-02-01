@@ -6,17 +6,15 @@
 :cua 
 	dup * ;
 	
-
-:tt
+:tt 
 	var1 + cua 
 	10 <? ( 1 + ) 
 	over
 	;
 
 :
-2 1 over 3 + 
+2 tt 1 cua over 3 + 
 "hola" over tt 
-23 0 !
 cua 
 |"%d" .println
 128 129 130

@@ -9,7 +9,7 @@
 ^r3/lib/trace.r3
 
 #vshare 0 0 4096 "/debug.mem"	| vm state
-#bshare 0 0 512 "/bp.mem"		| breakpoint
+#bshare 0 0 256 "/bp.mem"		| breakpoint
 #dshare 0 0 0 "/data.mem" 		| memdata
 #cshare 0 0 0 "/code.mem" 		| codedata
 
@@ -70,15 +70,10 @@
 #ltokens
 
 :*>end		$fe vshare ! ;
-
-:*>step		$2 vshare ! ;
-:*>stepw	$4 vshare ! ;
-
-|:*>stepin	iptok@ call localdicc<? ( *>stepw ; ) *>step ; | ?? sdlshow ??  stop in vector?
-
-:*>steps	$6 vshare ! ;
-:*>play		$1 vshare ! ;
 :*>stop		$0 vshare ! ;
+:*>play		$1 vshare ! ;
+:*>step		$2 vshare ! ;
+:*>stepo	$3 vshare ! ;
 
 :vmSTATE	vshare @ ;
 :vmINFO		vshare 1 3 << + @ ;
@@ -181,7 +176,7 @@
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
 |	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
 	"D|" .write .datastack .cr
-	"R|" .write .retstack
+	|"R|" .write .retstack
 	;
 	
 |---- view tokens	
@@ -386,7 +381,7 @@
 
 :slnormal
 	.cl	4 .bc 7 .fc cols .nsp
-	" F2-Step F3-Over F4-Stack F5-Play | F9-End" 
+	" ^[7mF3^[27m Step ^[7mF5^[27m Over ^[7mF5^[27m Run/Stop ^[7m F9 ^[27m End " .printe
 	'statusline strcpybuf ;
 	
 :runtimerror
@@ -430,6 +425,9 @@
 	tokenCursor
 	;
 	
+:play/stop
+	vmstate	1 =? ( drop *>stop ; ) drop *>play ;
+
 |---- main	
 :maindb
 	.reset .cls
@@ -453,7 +451,7 @@
 	scrTokens
 	
 	|cols 3 / flxO 
-|	scrDicc
+	|scrDicc
 	
 	flxRest 
 	tuReadCode 
@@ -461,11 +459,9 @@
 	msec $100 and? ( drawcm ) drop 
 	
 	uiKey
-	[f2] =? ( *>step )
-	[f3] =? ( *>stepw )
-	[f4] =? ( *>steps )
-	[f5] =? ( *>play )
-	[f6] =? ( *>stop )
+	[f3] =? ( *>step )
+	[f4] =? ( *>stepo )
+	[f5] =? ( play/stop )
 	
 	[f9] =? ( *>end )
 	drop 
