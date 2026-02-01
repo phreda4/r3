@@ -39,6 +39,7 @@
 	| start debug
 	'filename 
 	"cmd /c r3d ""%s""" sprint | only WIN for now
+|	"d.bat" 
 	sysnew 
 
 	| wait info
@@ -378,6 +379,24 @@
 	|waitkey
 	;
 
+
+|-------------------------------------
+#statusline * 256
+#errorst 0
+
+:slnormal
+	" F2-Step F3-Over F4-Stack F5-Play | F9-End" 'statusline strcpy 
+	;
+	
+:runtimerror
+	vmState 8 >> 'errorst !
+	0 vshare !
+	-1 vshare 2 3 << + +! ||-1 vmIP +!
+	.cl 15 .fc 1 .bc 
+	errorst " * RUNTIME ERROR: %h * " .print 
+	'statusline
+	strcpybuf ;
+	
 |-------------------------------------
 #labelfilename * 256
 
@@ -404,8 +423,6 @@
 	;
 
 :drawcm
-	msec $100 and? ( drop ; ) drop
-	
 	3 .bc 0 .fc |1 .bc 7 .fc
 	codesrc vmIP 1- 3 << + @ 
 	cm <>? ( remake )
@@ -419,13 +436,15 @@
 	1 flxN
 	4 .bc 7 .fc
 	fx fy .at fw .nsp fx .col
-	" R3forth DEBUG | " .write 'labelfilename .write
+	" R3debug | " .write 'labelfilename .write
 	
 	1 flxS
 	fx fy .at fw .nsp fx .col
-	" F2-Step F3-Over F4-Stack F5-Play | F9-End" .write
-	cm $fff and " %d " .print
-	6 flxS |tuWina $1 "Imm" .wtitle |242 .bc
+	'statusline .write
+	vmSTATE " >>%H<<" .PRINT	
+|	cm $fff and " %d " .print
+
+	7 flxS |tuWina $1 "Imm" .wtitle |242 .bc
 	scrMsg
 	
 	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
@@ -437,17 +456,19 @@
 	flxRest 
 	tuReadCode 
 	|tuEditCode 
-	drawcm
+	msec $100 and? ( drawcm ) drop 
 	
 	uiKey
 	[f2] =? ( *>step )
 	[f3] =? ( *>stepw )
 	[f4] =? ( *>steps )
 	[f5] =? ( *>play )
+	[f6] =? ( *>stop )
 	
 	[f9] =? ( *>end )
-
-	drop ;
+	drop 
+	vmState $ff >? ( runtimerror ) drop
+	;
 	
 :main
 	run&loadinfo
@@ -469,6 +490,7 @@
 	buildshowincode
 	cntinc showcode
 	
+	slnormal
 |---- run debug	
 	'maindb onTuia
 	

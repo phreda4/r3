@@ -61,7 +61,7 @@
 	'outbuf> +! ;
 
 ::.write count .type ;
-::.print sprintc .type ;
+::.print sprintc 1- .type ; | remove 0
 ::.println sprintlnc .type .flush ;
 
 ::.^[ $1b .emit $5b .emit ;
@@ -198,6 +198,9 @@
 	sprint
 	( c@+ 1? emite ) 2drop ;
 
+::strcpybuf | 'mem --
+	0 .emit
+	outbuf swap strcpy .cl ;
 	
 : |||||||||||||||||||||||||||||
 	here 

@@ -1,4 +1,4 @@
- |main
+|main
 |^r3/lib/console.r3
 
 #var1 33
@@ -16,6 +16,7 @@
 :
 2 1 over 3 + 
 "hola" over tt 
+23 0 !
 cua 
 |"%d" .println
 128 129 130
