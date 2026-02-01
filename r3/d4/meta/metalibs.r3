@@ -30,9 +30,9 @@
 #r3_lib_color.r3 'name 'words 'calls 'info
 ^r3/lib/console.r3
 #name "r3/lib/console.r3"
-#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".cl" ".flush" ".type" ".emit" ".cr" ".sp" ".nsp" ".nch" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".ealine" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".Dim" ".Italic" ".Under" ".Blink" ".Rever" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" "pad" ".input" ".printe" 0
-#calls  '[ESC] '[ENTER] '[BACK] '[TAB] '[DEL] '[INS] '[UP] '[DN] '[RI] '[LE] '[PGUP] '[PGDN] '[HOME] '[END] '[SHIFT+TAB] '[SHIFT+DEL] '[SHIFT+INS] '[SHIFT+UP] '[SHIFT+DN] '[SHIFT+RI] '[SHIFT+LE] '[SHIFT+PGUP] '[SHIFT+PGDN] '[SHIFT+HOME] '[SHIFT+END] '[F1] '[F2] '[F3] '[F4] '[F5] '[F6] '[F7] '[F8] '[F9] '[F10] '[F11] '[F12] '.cl '.flush '.type '.emit '.cr '.sp '.nsp '.nch '.write '.print '.println '.^[ '.[w '.[p '.rep '.fwrite '.fprint '.home '.cls '.at '.col '.eline '.ealine '.escreen '.escreenup '.showc '.hidec '.blc '.unblc '.savec '.restorec '.ovec '.insc '.blockc '.underc '.alsb '.masb '.scrolloff '.scrollon '.Black '.Red '.Green '.Yellow '.Blue '.Magenta '.Cyan '.White '.Blackl '.Redl '.Greenl '.Yellowl '.Bluel '.Magental '.Cyanl '.Whitel '.fc '.BBlack '.BRed '.BGreen '.BYellow '.BBlue '.BMagenta '.BCyan '.BWhite '.BBlackl '.BRedl '.BGreenl '.BYellowl '.BBluel '.BMagental '.BCyanl '.BWhitel '.bc '.fgrgb '.bgrgb '.Bold '.Dim '.Italic '.Under '.Blink '.Rever '.Hidden '.Strike '.Reset 'getch 'waitesc 'waitkey 'pad '.input '.printe
-#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $0 $0 $1F $2E $1F $1F $1F $0 $1F $1F $2E $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $0 $0 $0 $0 $0 $0 $0 $0 $0 $1 $0 $0 $80 $0 $1F )
+#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".cl" ".flush" ".type" ".emit" ".cr" ".sp" ".nch" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".ealine" ".escreen" ".escreenup" ".nsp" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".Dim" ".Italic" ".Under" ".Blink" ".Rever" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" "pad" ".input" ".printe" "strcpybuf" 0
+#calls  '[ESC] '[ENTER] '[BACK] '[TAB] '[DEL] '[INS] '[UP] '[DN] '[RI] '[LE] '[PGUP] '[PGDN] '[HOME] '[END] '[SHIFT+TAB] '[SHIFT+DEL] '[SHIFT+INS] '[SHIFT+UP] '[SHIFT+DN] '[SHIFT+RI] '[SHIFT+LE] '[SHIFT+PGUP] '[SHIFT+PGDN] '[SHIFT+HOME] '[SHIFT+END] '[F1] '[F2] '[F3] '[F4] '[F5] '[F6] '[F7] '[F8] '[F9] '[F10] '[F11] '[F12] '.cl '.flush '.type '.emit '.cr '.sp '.nch '.write '.print '.println '.^[ '.[w '.[p '.rep '.fwrite '.fprint '.home '.cls '.at '.col '.eline '.ealine '.escreen '.escreenup '.nsp '.showc '.hidec '.blc '.unblc '.savec '.restorec '.ovec '.insc '.blockc '.underc '.alsb '.masb '.scrolloff '.scrollon '.Black '.Red '.Green '.Yellow '.Blue '.Magenta '.Cyan '.White '.Blackl '.Redl '.Greenl '.Yellowl '.Bluel '.Magental '.Cyanl '.Whitel '.fc '.BBlack '.BRed '.BGreen '.BYellow '.BBlue '.BMagenta '.BCyan '.BWhite '.BBlackl '.BRedl '.BGreenl '.BYellowl '.BBluel '.BMagental '.BCyanl '.BWhitel '.bc '.fgrgb '.bgrgb '.Bold '.Dim '.Italic '.Under '.Blink '.Rever '.Hidden '.Strike '.Reset 'getch 'waitesc 'waitkey 'pad '.input '.printe 'strcpybuf
+#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $0 $0 $2E $1F $1F $1F $0 $1F $1F $2E $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $0 $0 $0 $0 $0 $0 $0 $0 $0 $1 $0 $0 $80 $0 $1F $1F )
 #r3_lib_console.r3 'name 'words 'calls 'info
 ^r3/lib/crc32.r3
 #name "r3/lib/crc32.r3"
@@ -42,9 +42,9 @@
 #r3_lib_crc32.r3 'name 'words 'calls 'info
 ^r3/lib/dmath.r3
 #name "r3/lib/dmath.r3"
-#words  "*.d" "*.df" "/.d" "ceil.d" ".d>i" "i>.d" "f>.d" ".d>f" "cos.d" "sin.d" "tan.d" "sqrt.d" "log2.d" "pow2.d" "pow.d" "root.d" "ln.d" "exp.d" "tanh.d" "gamma.d" "beta.d" "str>f.d" ".fd" 0
-#calls  '*.d '*.df '/.d 'ceil.d '.d>i 'i>.d 'f>.d '.d>f 'cos.d 'sin.d 'tan.d 'sqrt.d 'log2.d 'pow2.d 'pow.d 'root.d 'ln.d 'exp.d 'tanh.d 'gamma.d 'beta.d 'str>f.d '.fd
-#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $10 )
+#words  "*.d" "*.df" "/.d" "ceil.d" ".d>i" "i>.d" "f>.d" ".d>f" "cos.d" "sin.d" "tan.d" "tan.dc" "sqrt.d" "log2.d" "pow2.d" "pow.d" "root.d" "ln.d" "exp.d" "tanh.d" "gamma.d" "beta.d" "str>f.d" "f32!" ".fd" 0
+#calls  '*.d '*.df '/.d 'ceil.d '.d>i 'i>.d 'f>.d '.d>f 'cos.d 'sin.d 'tan.d 'tan.dc 'sqrt.d 'log2.d 'pow2.d 'pow.d 'root.d 'ln.d 'exp.d 'tanh.d 'gamma.d 'beta.d 'str>f.d 'f32! '.fd
+#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $2E $10 )
 #r3_lib_dmath.r3 'name 'words 'calls 'info
 ^r3/lib/escapi.r3
 #name "r3/lib/escapi.r3"
@@ -90,9 +90,9 @@
 #r3_lib_math.r3 'name 'words 'calls 'info
 ^r3/lib/mem.r3
 #name "r3/lib/mem.r3"
-#words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" "sprintc" "sprintlnc" 0
-#calls  'here ', ',c ',q ',w ',s ',word ',line ',2d ',d ',h ',b ',f ',ifp ',ffp ',cr ',eol ',sp ',nl ',nsp 'align32 'align16 'align8 'mark 'empty 'savemem 'sizemem 'memsize 'savememinc 'cpymem 'appendmem ',print 'sprint 'sprintln 'sprintc 'sprintlnc
-#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $10 $10 $11 $11 )
+#words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" 0
+#calls  'here ', ',c ',q ',w ',s ',word ',line ',2d ',d ',h ',b ',f ',ifp ',ffp ',cr ',eol ',sp ',nl ',nsp 'align32 'align16 'align8 'mark 'empty 'savemem 'sizemem 'memsize 'savememinc 'cpymem 'appendmem ',print 'sprint 'sprintln
+#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $10 $10 )
 #r3_lib_mem.r3 'name 'words 'calls 'info
 ^r3/lib/memavx.r3
 #name "r3/lib/memavx.r3"
@@ -426,9 +426,9 @@
 #r3_util_tui.r3 'name 'words 'calls 'info
 ^r3/util/tuiedit.r3
 #name "r3/util/tuiedit.r3"
-#words  "filename" "fuente" "fuente>" "$fuente" "tuiecursor!" "editfasthash" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuEditCodeMono" "tuReadCodeMono" "tudebug" "TuLoadCode" "TuNewCode" "TuSaveCode" "tuOncode" 0
-#calls  'filename 'fuente 'fuente> '$fuente 'tuiecursor! 'editfasthash 'tuEditShowCursor 'tuEditCode 'tuReadCode 'tuEditCodeMono 'tuReadCodeMono 'tudebug 'TuLoadCode 'TuNewCode 'TuSaveCode 'tuOncode
-#info ( $80 $80 $80 $80 $1F $1 $0 $0 $0 $0 $0 $1 $1F $0 $0 $1F )
+#words  "filename" "fuente" "fuente>" "$fuente" "tuiecursor!" "tuipos!" "editfasthash" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuEditCodeMono" "tuReadCodeMono" "tudebug" "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
+#calls  'filename 'fuente 'fuente> '$fuente 'tuiecursor! 'tuipos! 'editfasthash 'tuEditShowCursor 'tuEditCode 'tuReadCode 'tuEditCodeMono 'tuReadCodeMono 'tudebug 'TuLoadMem 'TuLoadMemC 'TuLoadCode 'TuNewCode 'TuSaveCode 'tokenCursor
+#info ( $80 $80 $80 $80 $1F $1F $1 $0 $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"

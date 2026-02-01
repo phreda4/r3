@@ -221,5 +221,3 @@
 ::.fd | fix -- str
 	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
 
-::.f32 .fd .write ;
-

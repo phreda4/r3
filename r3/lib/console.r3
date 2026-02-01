@@ -50,21 +50,27 @@
     'outbuf> +! ;
 ::.emit | char --
 	outbuf> endbuf =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
+:.wemit | char2char1 --
+	outbuf> endbuf =? ( .flush outbuf nip ) w!+ 'outbuf> ! ;
 
-::.cr 10 .emit 13 .emit ;
+::.cr $d0a .wemit ; |10 .emit 13 .emit ;
 ::.sp 32 .emit ;
-::.nsp | n -- ;..
-	32 swap 
+|::.nsp | n -- ;..
+|	32 swap 
 ::.nch | char n -- ; WARNIG not multibyte
 	endbuf outbuf> -  >? ( .flush )
 	outbuf> rot pick2 cfill | dvc
 	'outbuf> +! ;
 
 ::.write count .type ;
-::.print sprintc 1- .type ; | remove 0
-::.println sprintlnc .type .flush ;
 
-::.^[ $1b .emit $5b .emit ;
+::.print 
+	count endbuf outbuf> - >? ( .flush )  drop | %d!!
+	mark outbuf> 'here ! ,print here 'outbuf> ! empty ;
+
+::.println .print .cr .flush ;
+
+::.^[ $5b1b .wemit ; |$1b .emit $5b .emit ;
 ::.[w .^[ .write ;
 ::.[p .^[ .print ;
 
@@ -85,6 +91,7 @@
 ::.ealine "2K" .[w ; | borrar linea actual
 ::.escreen "J" .[w ; | erase from cursor to end of screen
 ::.escreenup "1J" .[w ; | erase from cursor to beginning
+::.nsp "%dX" .[p ; | n --
 
 ::.showc "?25h" .[w ;
 ::.hidec "?25l" .[w ;

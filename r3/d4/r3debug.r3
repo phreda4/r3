@@ -161,7 +161,7 @@
 		) drop ;
 		
 :scrMsg	
-	.reset fx fy .at cols .hline .cr
+	.reset fx fy .at fw .hline .cr
 
 	vmIP "IP:%h " .print 
 	
@@ -385,17 +385,18 @@
 #errorst 0
 
 :slnormal
-	" F2-Step F3-Over F4-Stack F5-Play | F9-End" 'statusline strcpy 
-	;
+	.cl	4 .bc 7 .fc cols .nsp
+	" F2-Step F3-Over F4-Stack F5-Play | F9-End" 
+	'statusline strcpybuf ;
 	
 :runtimerror
 	vmState 8 >> 'errorst !
 	0 vshare !
 	-1 vshare 2 3 << + +! ||-1 vmIP +!
-	.cl 15 .fc 1 .bc 
+	
+	.cl 15 .fc 1 .bc cols .nsp
 	errorst " * RUNTIME ERROR: %h * " .print 
-	'statusline
-	strcpybuf ;
+	'statusline strcpybuf ;
 	
 |-------------------------------------
 #labelfilename * 256
@@ -435,12 +436,13 @@
 	
 	1 flxN
 	4 .bc 7 .fc
-	fx fy .at fw .nsp fx .col
+	fx fy .at fw .nsp
 	" R3debug | " .write 'labelfilename .write
 	
 	1 flxS
-	fx fy .at fw .nsp fx .col
+	fx fy .at
 	'statusline .write
+	
 	vmSTATE " >>%H<<" .PRINT	
 |	cm $fff and " %d " .print
 

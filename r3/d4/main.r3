@@ -156,7 +156,7 @@
 
 	4 .bc 7 .fc	
 	1 flxS
-	fx fy .at fw .nsp fx .col
+	fx fy .at fw .nsp
 	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5/ENTER ^[27mRun ^[7m F6/SPC ^[27mEdit " 	.printe
 	|___________
 	38 flxO

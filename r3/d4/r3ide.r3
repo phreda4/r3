@@ -25,7 +25,7 @@
 
 |--------- botton line --------
 :posmsg
-	fx fy .at fw .nsp fx .col ;
+	fx fy .at fw .nsp ;
 	
 :msgvoid
 	posmsg
@@ -218,7 +218,7 @@
 #lasthash -1
 :v*********************
 	1 flxS 
-	fx fy .at fw .nsp fx .col
+	fx fy .at fw .nsp
 	" |F1| Run |F2| Debug |F3| Check |F4| Profile |F5| Compile"
 	|" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5 ^[27mRun ^[7m F6 ^[27mDebug " ||C|lon |N|ew " 
 	.printe 
@@ -228,7 +228,7 @@
 	.reset .home 
 	4 .bc 7 .fc
 	1 flxN 
-	fx fy .at fw .nsp fx .col
+	fx fy .at fw .nsp
 	" R3edit [" .write 'filename .write "] " .write tudebug .write
 	
 	1 flxS 
@@ -264,7 +264,7 @@
 :mainedit
 	.reset .home 4 .bc 7 .fc
 	1 flxN 
-	fx fy .at fw .nsp fx .col
+	fx fy .at fw .nsp
 	" R3edit [" .write 'filename .write "] " .write tudebug .write
 	
 	1 flxS 
