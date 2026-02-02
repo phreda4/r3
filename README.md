@@ -30,8 +30,16 @@ sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
 
 ```
 
+2a. **Run the precompiled binary:**
 
-2. **Build and Run:**
+```bash
+chmod +x r3lin
+./r3lin
+```
+
+or
+
+2b. **Build and Run:**
 If you want to build the VM from source (recommended for compatibility):
 ```bash
 # Clone the VM core
@@ -49,6 +57,49 @@ mv r3lin ../ && cd ..
 2. Extract and run `r3.exe`. No installation required.
 
 ---
+Esta sección es crucial porque define la **experiencia de usuario**. Para un desarrollador, entender el flujo de "escribir-compilar-ejecutar" es lo que hace que se queden.
+
+Aquí tienes cómo estructurar esa parte del README para que sea clara y profesional:
+
+---
+
+## Workflow: How to use r3
+
+r3 is flexible. You can use the built-in environment or stay in your favorite terminal/editor.
+
+### 1. The Integrated Development Environment (IDE)
+
+By default, running the binary without arguments loads the internal system.
+
+* **Execution:** Run `./r3lin` (Linux) or `r3.exe` (Windows).
+* **Bootstrap:** The system automatically loads `main.r3`. This script acts as the entry point, scanning the `/r3` folder to build the internal menu and tools.
+* **The Environment:** Inside, you have access to the built-in code editor, dictionary browser, and live-coding tools.
+
+### 2. Standard Text Editor Workflow (CLI)
+
+If you prefer using Emacs, Vim or Notepad++, you can use r3 as a traditional compiler/interpreter.
+
+* **Create your script:** Save your code with the `.r3` extension (e.g., `hello.r3`).
+* **Run it directly:** Pass the filename as an argument:
+```bash
+./r3lin hello.r3
+
+```
+
+* **Development Loop:** r3 is designed for instant feedback. The VM starts, compiles, and executes your script in milliseconds.
+
+### 3. Folder Structure
+
+* `main.r3`: The core startup script.
+* `/r3`: Contains all the code, the system libraries, the IDE code, and core tools, etc.. all in .r3 code
+* `/asm`: Compiler folder, not used if you not invoke it.
+* `/dll`: In WIN you not install anything, the dll is here.
+* `/doc`: Documentation, in progress as allways, r3datasheet.pdf is the usefull one.
+* `/media`: graphics, sounds, models, font..etc
+* `/mem`: use like static memory (for keep info when exit r3)
+*  `main.xml`: syntax coloring for notepad++
+
+---
 
 ## Showcase & Demos
 
@@ -62,14 +113,10 @@ r3 is not just a language; it's a creative suite. Here is what you can find:
 | **Advanced** | Immediate Mode GUI (immgui), Tilemap editors, and Sound synthesis. | ![GUI](link_a_tu_gif) |
 
 **** building ****
+
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/5ddc3924-0463-4a59-b8d6-fa3b48c271a6" />
 
-The main.r3 execute by r3.exe is a browser for files in /r3 folder
-
-with the keys you can navigate while see the code in the left side of the screen.
-
 <img width="360" alt="image" src="https://github.com/user-attachments/assets/bd0785a6-ddd1-4afc-8d35-8af8d5a5331f" /><img width="360" alt="image" src="https://github.com/user-attachments/assets/1b8edc5b-c4ed-42b6-b263-76d491cf5375" />
-
 
 Edit with ESP or execute with ENTER the code in this folder. 
 
@@ -80,10 +127,4 @@ Edit with ESP or execute with ENTER the code in this folder.
 ## Youtube Channel
 
 [Videos](https://www.youtube.com/@pablohreda)
-
-***
-
-
-
-https://github.com/phreda4/r3evm
 
