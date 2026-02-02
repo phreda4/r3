@@ -1,19 +1,67 @@
-# R3 programming language
+# r3forth 
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/phreda4/r3)
+A Minimalist, Self-Hosted Stack Machine Environment
 
-R3 is a concatenative language of the forth family, it takes elements of ColorForth. 
-Word colors are encoded by a prefix: in r3 this prefix is explicit.
+r3forth is a programming language and environment inspired by ColorForth and the Forth philosophy. It’s designed to be a complete, self-contained system that balances extreme minimalism with practical creative power.
 
-The size of cells is 64 bits, but you can access to memory in 8,16 or 32 bit size.
+R3 can load and call procedures from any dynamic library (.DLL in windows) or (.SO in linux) the distro use SDL2 library for make games.
 
-R3 can load and call procedures from any dynamic library (.DLL in windows) the distro use SDL2 library for make games.
+### Technical Overview
 
-[r3forth Manual](https://github.com/phreda4/r3/wiki/r3forth-Manual).
+* **Ultra-Minimalist VM:** A highly portable, lightweight core (~40kb) written in C. It’s designed for simplicity and speed, currently supporting Windows and Linux: [r3evm](https://github.com/phreda4/r3evm).
+* **Zero Bloat Philosophy:** No massive standard libraries or complex toolchains. It’s just the core VM, the stack, and your code.
+* **High Performance & Native Ambitions:** Despite running on a VM, r3 is architected for speed. It features a self-hosted compiler (currently for Windows) written entirely in **r3forth**, laying the groundwork for future direct-to-metal implementations.
+* **Rich Ecosystem:** On top of this minimal core, r3 provides a powerful suite of libraries for:
+* **Graphics & 2D:** Sprites, tilemaps, fonts, animations, and stack-based sprites.
+* **Advanced Logic:** 3D engine, collision hash, and TUI/Immediate Mode GUI (immgui).
+* **Tooling:** Integrated editors and a growing collection of games and demos.
 
-## WINDOWS
-Download the code of this repository, uncompress and execute r3.exe
+---
 
+# Quick Start
+
+### **LINUX**
+
+r3 requires **SDL2** development libraries.
+
+1. **Install dependencies:**
+```bash
+sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
+
+```
+
+
+2. **Build and Run:**
+If you want to build the VM from source (recommended for compatibility):
+```bash
+# Clone the VM core
+git clone https://github.com/phreda4/r3evm
+cd r3evm && make
+# Move the binary back to the main folder
+mv r3lin ../ && cd ..
+./r3lin
+
+```
+
+### **WINDOWS**
+
+1. Download the [latest release](https://www.google.com/search?q=https://github.com/phreda4/r3/releases).
+2. Extract and run `r3.exe`. No installation required.
+
+---
+
+## Showcase & Demos
+
+r3 is not just a language; it's a creative suite. Here is what you can find:
+
+| Category | Highlights | Image/GIF |
+| :--- | :--- | :--- |
+| **Graphics** | Real-time Fractals (Mandelbrot), 3D Wireframe Engine, Particle Systems. | ![Mandelbrot](link_a_tu_gif) |
+| **Games** | Classic Snake, Tetris, and Collision Physics demos. | ![Games](link_a_tu_gif) |
+| **Tooling** | **Self-hosted IDE**: code, debug, and run without leaving r3. | ![Editor](link_a_tu_gif) |
+| **Advanced** | Immediate Mode GUI (immgui), Tilemap editors, and Sound synthesis. | ![GUI](link_a_tu_gif) |
+
+**** building ****
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/5ddc3924-0463-4a59-b8d6-fa3b48c271a6" />
 
 The main.r3 execute by r3.exe is a browser for files in /r3 folder
@@ -23,37 +71,19 @@ with the keys you can navigate while see the code in the left side of the screen
 <img width="360" alt="image" src="https://github.com/user-attachments/assets/bd0785a6-ddd1-4afc-8d35-8af8d5a5331f" /><img width="360" alt="image" src="https://github.com/user-attachments/assets/1b8edc5b-c4ed-42b6-b263-76d491cf5375" />
 
 
-Edit with F2 or execute with F1 the code in this folder. When execute a code with F1 you can see in terminal the compilation
+Edit with ESP or execute with ENTER the code in this folder. 
 
-## LINUX
+## Manual
 
-Download the code of this repository, uncompress in a folder
-You need sdl2 library installed in the system, 
-For install sdl2 and make ./r3lin executable
+[r3forth Manual](https://github.com/phreda4/r3/wiki/r3forth-Manual).
 
-```
-sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
-chmod 777 ./r3lin
-```
+## Youtube Channel
 
-now, you can run the system
-
-```
-./r3lin
-```
+[Videos](https://www.youtube.com/@pablohreda)
 
 ***
 
-## [More code to play](https://github.com/phreda4/r3-games)
 
-## [Youtube Videos](https://www.youtube.com/@pablohreda)
 
-## [History](https://github.com/phreda4/r3/wiki/History)
-
-## [WIKI](https://github.com/phreda4/r3/wiki/Welcome-to-the-r3-wiki!)
-
-## [How the language works](https://github.com/phreda4/r3/wiki/Mini-Manual-R3)
-
-The language use a virtual machine for work, this is the source code for this lang:
 https://github.com/phreda4/r3evm
 
