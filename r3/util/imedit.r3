@@ -144,23 +144,20 @@
 :copysel
 	inisel 0? ( drop ; )
 	here swap finsel over - | here ini cnt
-	0 pick3 pick2 + c! 	
-	cmove 
-	here SDL_SetClipboardText
-	;	
+	0 pick3 pick2 + ! cmove | dsc
+	here SDL_SetClipboardText drop ;	
 
-:realdel
+:cursordel
 	fuente>
 	inisel <? ( drop ; )
-	finsel <=? ( drop inisel 'fuente> ! ; )
-	finsel inisel - over swap - 'fuente> ! 
-	drop ;
+	finsel <=? ( drop inisel 'fuente> ! ; ) drop
+	finsel inisel - neg 'fuente> +! ;
 
 :remsel
-	inisel finsel $fuente finsel - 4 + cmove
+	inisel 0? ( drop ; )
+	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	realdel
-	0 dup 'inisel ! 'finsel ! ;
+	cursordel 0 dup 'inisel ! 'finsel ! ;
 
 :kdel
 	inisel 0? ( drop del ; )
@@ -183,12 +180,9 @@
 :controlc | copy
 	copysel ;
 
-|-------------
-:controlx | move
-	controlc
-	remsel ;
+:controlx | cut
+	controlc remsel ;
 
-|-------------
 :controlv | paste
 	SDL_HasClipboardText 0? ( drop ; ) drop
 	SDL_GetClipboardText
@@ -196,9 +190,8 @@
 	fuente> dup pick2 + swap | clip cnt 'f+ 'f
 	$fuente over - 1+ cmove>	| clip cnt
 	fuente> -rot | f clip cnt
-	dup '$fuente +!
-	cmove
-	'fuente> +!
+	dup '$fuente +! 
+	cmove 'fuente> +!
 	SDL_free ;
 
 |-------------
@@ -463,9 +456,9 @@
 	SDLkey 0? ( drop ; )
 	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
 	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
-	selecc
 	<back> =? ( kback )
 	<del> =? ( kdel )
+	selecc
 	<up> =? ( karriba ) <dn> =? ( kabajo )
 	<ri> =? ( kder ) <le> =? ( kizq )
 	<home> =? ( khome ) <end> =? ( kend )

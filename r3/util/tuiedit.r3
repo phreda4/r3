@@ -55,14 +55,14 @@
 
 #modo 'lins
 
-:kback
+:back
 	fuente> fuente <=? ( drop ; )
 	dup 1- c@ undobuffer> c!+ 'undobuffer> !
 	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +!
 	-1 'fuente> +! ;
 
-:kdel
+:del
 	fuente>	$fuente >=? ( drop ; )
 	1+ fuente <=? ( drop ; )
 	9 over 1- c@ undobuffer> c!+ c!+ 'undobuffer> !
@@ -364,7 +364,18 @@
 	6 =? ( ups clickMouse 'fuente> ! cursorpos )
 	drop ;
 
-	
+:cursordel
+	fuente>
+	inisel <? ( drop ; )
+	finsel <=? ( drop inisel 'fuente> ! ; ) drop
+	finsel inisel - neg 'fuente> +! ;
+
+:remsel
+	inisel 0? ( drop ; )
+	finsel $fuente over - 1+ cmove
+	finsel inisel - neg '$fuente +!
+	cursordel 0 dup 'inisel ! 'finsel ! ;
+
 :txtcopy
 	inisel 0? ( drop ; )
 	finsel over - 1+
@@ -373,9 +384,7 @@
 	;
 
 :txtcut
-	txtcopy
-	|remsel
-	;
+	txtcopy remsel ;
 
 :txtpaste
 	here pasteclipboard | 'mem -- 	
@@ -387,6 +396,14 @@
 	cmove
 	here count nip 'fuente> +!
 	;
+	
+:kdel
+	inisel 0? ( drop del ; )
+	drop remsel ;
+
+:kback
+	inisel 0? ( drop back ; )
+	drop remsel ;
 	
 :chmode
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
@@ -425,7 +442,7 @@
 	[SHIFT+PGDN] =? ( sela kpgdn sela )
 	[SHIFT+HOME] =? ( sela khome sela )
 	[SHIFT+END] =? ( sela kend sela )
-	$18 =? ( txtcut ) | ctcrl-x
+	$18 =? ( txtcut ) | ctrl-x
 	$3 =? ( txtcopy ) | ctrl-c
 	$16 =? ( txtpaste ) | ctrl-v
 

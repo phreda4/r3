@@ -424,6 +424,19 @@
 	cm <>? ( remake )
 	tokenCursor
 	;
+
+#ck 
+#lastinclude
+
+:checkcm
+	cm <>? ( remake ) dup 'ck ! ;
+	
+:drawkeepcm
+	codesrc vmIP 1- 3 << + @ 
+	dup 48 >> $ff and lastinclude >=? ( swap checkcm ) 2drop
+|	checkcm 'ck !
+	3 .bc 0 .fc ck tokenCursor
+	;
 	
 :play/stop
 	vmstate	1 =? ( drop *>stop ; ) drop *>play ;
@@ -456,7 +469,7 @@
 	flxRest 
 	tuReadCode 
 	|tuEditCode 
-	msec $100 and? ( drawcm ) drop 
+	msec $100 and? ( drawkeepcm ) drop 
 	
 	uiKey
 	[f3] =? ( *>step )
@@ -486,7 +499,10 @@
 	|buildcodemark
 	
 	buildshowincode
-	cntinc showcode
+	cntinc 
+	|dup 2 - 'lastinclude !
+	0 'lastinclude !
+	showcode
 	
 	slnormal
 |---- run debug	
