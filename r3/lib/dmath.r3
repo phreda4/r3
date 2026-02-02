@@ -9,7 +9,7 @@
 ^r3/lib/math.r3
 ^r3/lib/str.r3
 
-|---- fixed point 48.16
+|---- fixed point 32.32
 ::*.d	| a b -- c 
 	32 *>> ;
 
