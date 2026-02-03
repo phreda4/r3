@@ -578,8 +578,8 @@ SDLkey
 drop
 ```
 - **SDLkey**: Returns key code
-- **<w>**, **<s>**, **<a>**, **<d>**: Key constants
-- **=?**: If equal, execute code
+- **`<w>`**, **`<s>`**, **`<a>`**, **`<d>`**: Key constants
+- **`=?`**: If equal, execute code
 
 #### Displaying Debug Information
 ```forth
