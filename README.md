@@ -91,12 +91,10 @@ r3 hello.r3
 <table border="0">
   <tr>
     <td>
-      <p align="center"><b>IDE</b></p>
-    <img src="https://github.com/user-attachments/assets/e13d9b6e-a0d9-4130-8f7a-95a31ecd3ee2">
+<video src="https://github.com/user-attachments/assets/163984bb-798e-472b-992c-779241fe481e" width="50%" controls></video>
     </td>
     <td>
-      <p align="center"><b>CLI</b></p>
-      <img src="https://github.com/user-attachments/assets/0ad1456f-fa25-4378-af93-5e44795eacdf">
+<video src="https://github.com/user-attachments/assets/7d836a55-aa24-4ed0-938d-1d2deb8490b3" width="50%" controls></video>
     </td>
   </tr>
 </table>
