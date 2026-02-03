@@ -134,6 +134,7 @@ In the doc folder. Always in progress.
 
 * [Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
 * [Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
+* [SDL graphics programing](https://github.com/phreda4/r3/blob/main/doc/r3forth-SDL-graphics.md)
 * [Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
 * [Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
 
