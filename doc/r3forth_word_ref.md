@@ -1,6 +1,6 @@
 # R3forth Word Reference
 
-Complete reference of base dictionary and core libraries.
+Reference of base dictionary and core libraries.
 
 ---
 
@@ -625,6 +625,63 @@ Complete reference of base dictionary and core libraries.
 
 ---
 
+## Library: console.r3
+
+**Terminal handling, ANSI escape sequences, and keyboard input.**
+
+### Output Buffer System
+
+| Word | Stack Effect | Description |
+| --- | --- | --- |
+| `.cl` | `--` | Clear the output buffer. |
+| `.flush` | `--` | Write the current buffer to stdout. |
+| `.type` | `str cnt --` | Add a string of length `cnt` to the buffer. |
+| `.emit` | `char --` | Add a single character to the buffer. |
+| `.cr` | `--` | Add a Carriage Return and Line Feed (CRLF). |
+| `.sp` | `--` | Add a space. |
+| `.nch` | `char n --` | Fill the buffer with `n` copies of `char`. |
+| `.write` | `str --` | Count and add a null-terminated string to the buffer. |
+| `.print` | `p... "str" --` | Format and compile to the buffer (uses `,print` logic). |
+| `.println` | `p... "str" --` | Same as `.print` followed by `.cr` and `.flush`. |
+
+### Cursor Control
+
+| Word | Stack Effect | Description |
+| --- | --- | --- |
+| `.home` | `--` | Move cursor to home position (H). |
+| `.cls` | `--` | Clear screen and move cursor to home. |
+| `.at` | `x y --` | Position cursor at column `x` and row `y`. |
+| `.col` | `x --` | Move cursor to specific column `x`. |
+| `.eline` | `--` | Erase line from cursor to end. |
+| `.ealine` | `--` | Erase the entire current line. |
+| `.escreen` | `--` | Erase from cursor to end of screen. |
+| `.showc` / `.hidec` | `--` | Show or hide the terminal cursor. |
+| `.savec` / `.restorec` | `--` | Save or restore the current cursor position.|
+
+### Colors & Text Attributes
+
+| Word | Stack Effect | Description |
+| --- | --- | --- |
+| `.Black` to `.White` | `--` | Set standard foreground colors. |
+| `.fc` | `n --` | Set foreground color using 256-color palette. |
+| `.bc` | `n --` | Set background color using 256-color palette. |
+| `.fgrgb` | `r g b --` | Set True Color (RGB) foreground. |
+| `.bgrgb` | `r g b --` | Set True Color (RGB) background. |
+| `.Bold` / `.Dim` | `--` | Set text intensity. |
+| `.Under` / `.Reset` | `--` | Set underline or reset all attributes. |
+
+### Input Handling
+
+| Word | Stack Effect | Description |
+| --- | --- | --- |
+| `getch` | `-- key` | Wait for and return the keycode of a pressed key. |
+| `waitkey` | `--` | Wait for any keypress. |
+| `waitesc` | `--` | Wait specifically for the ESC key. |
+| `.input` | `--` | Start an interactive input line with echo. |
+
+---
+
+
 ## Usage Examples
 
 ### Basic Stack Operations
@@ -720,6 +777,31 @@ empty                | Release
 | Result: "Value: 42 Hex: ff"
 ```
 
+### Terminal Example
+
+```forth
+| Clear screen and print colored text
+.cls
+.Red "Error:" .print .Reset " File not found." .println
+
+| Position cursor and use RGB
+10 5 .at
+255 200 0 .fgrgb "Warning" .println
+
+| Wait for user
+"Press any key to continue..." .write .flush
+waitkey
+
+```
+
+### Formatted Console Output
+
+```forth
+| Print formatted values directly to terminal
+42 $FF "The answer is %d (hex: %h)" .println
+
+```
+
 ---
 
 ## Notes
@@ -734,5 +816,3 @@ empty                | Release
 - **Angles:** Specified in turns (0.0-1.0 = 0°-360°)
 
 ---
-
-**Repository:** https://github.com/phreda4/r3</parameter>

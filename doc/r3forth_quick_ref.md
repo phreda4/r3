@@ -330,7 +330,7 @@ SDLkey SDLx SDLy SDLb    | Input state
 
 ```r3
 :debug | a -- a
-    dup "%d" .print .cr ;
+    dup "%d" .println ;
 
 | Usage:
 5 3 + debug              | Shows 8, leaves 8
@@ -378,6 +378,3 @@ pick2 pick3              | Deep access
 ```
 
 ---
-
-**Repository:** https://github.com/phreda4/r3  
-**Philosophy:** Simplicity, composition, explicitness, performance through understanding.

@@ -1,4 +1,4 @@
-# R3forth Complete Quick Reference
+# R3forth Quick Reference for FORTH programmers
 
 ## Critical Differences from Standard Forth
 
@@ -395,13 +395,6 @@ EMPTY             | Release allocation
 :safe-div | a b -- result
     0? ( ; )  | Return 0 if dividing by 0
     / ;
-```
-
-### Clamp Value
-```forth
-:clamp | val min max -- clamped 
-    rot over <? ( nip ; ) nip
-    over >? ( drop ; ) nip ; |**** CHECK!!!
 ```
 
 ### Array Traversal

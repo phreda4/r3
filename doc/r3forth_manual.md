@@ -279,9 +279,9 @@ Each word can take and/or leave values on the data stack. As help to the program
     dup * ;
 
 :distance | x1 y1 x2 y2 -- dist
-    rot - dup *         | x1 x2 dy²
-    -rot - dup *     | dy² dx²  
-    + sqrt ;            | distance
+    rot - square	| x1 x2 dy²
+    -rot - square	| dy² dx²  
+    + sqrt ;		| distance
 ```
 
 ### Stack Manipulation Words
@@ -2965,15 +2965,3 @@ This manual provides comprehensive coverage of R3forth programming concepts and 
 | **Prefix** | First character determining word type (: # " etc.) |
 
 ---
-
-## Final Notes
-
-R3forth is a living language that continues to evolve. This manual represents the core concepts and most stable features. Always refer to the latest repository for updates and new libraries.
-
-The philosophy of R3forth encourages:
-- **Simplicity** over complexity
-- **Composition** over monolithic design
-- **Explicitness** over magic
-- **Performance** through understanding
-
-Happy coding in R3forth!
