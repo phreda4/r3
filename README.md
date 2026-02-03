@@ -78,11 +78,28 @@ If you prefer using Emacs, Vim or Notepad++, you can use r3 as a traditional com
 * **Create your script:** Save your code with the `.r3` extension (e.g., `hello.r3`).
 * **Run it directly:** Pass the filename as an argument:
 ```bash
+| linux
 ./r3lin hello.r3
+
+| windows
+r3 hello.r3
 
 ```
 
 * **Development Loop:** r3 is designed for instant feedback. The VM starts, compiles, and executes your script in milliseconds.
+
+<table border="0">
+  <tr>
+    <td>
+      <p align="center"><b>IDE</b></p>
+    <img src="https://github.com/user-attachments/assets/e13d9b6e-a0d9-4130-8f7a-95a31ecd3ee2">
+    </td>
+    <td>
+      <p align="center"><b>CLI</b></p>
+      <img src="https://github.com/user-attachments/assets/0ad1456f-fa25-4378-af93-5e44795eacdf">
+    </td>
+  </tr>
+</table>
 
 ### 3. Folder Structure
 
