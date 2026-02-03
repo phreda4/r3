@@ -58,11 +58,6 @@ mv r3lin ../ && cd ..
 2. Extract and run `r3.exe`. No installation required.
 
 ---
-Esta sección es crucial porque define la **experiencia de usuario**. Para un desarrollador, entender el flujo de "escribir-compilar-ejecutar" es lo que hace que se queden.
-
-Aquí tienes cómo estructurar esa parte del README para que sea clara y profesional:
-
----
 
 ## Workflow: How to use r3
 
@@ -113,17 +108,18 @@ r3 is not just a language; it's a creative suite. Here is what you can find:
 | **Tooling** | **Self-hosted IDE**: code, debug, and run without leaving r3. | ![Editor](link_a_tu_gif) |
 | **Advanced** | Immediate Mode GUI (immgui), Tilemap editors, and Sound synthesis. | ![GUI](link_a_tu_gif) |
 
-**** building ****
+---
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/5ddc3924-0463-4a59-b8d6-fa3b48c271a6" />
+## More documentation
 
-<img width="360" alt="image" src="https://github.com/user-attachments/assets/bd0785a6-ddd1-4afc-8d35-8af8d5a5331f" /><img width="360" alt="image" src="https://github.com/user-attachments/assets/1b8edc5b-c4ed-42b6-b263-76d491cf5375" />
+In the doc folder. Always in progress.
 
-Edit with ESP or execute with ENTER the code in this folder. 
+[Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
+[Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
+[Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
+[Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
 
-## Manual
-
-[r3forth Manual](https://github.com/phreda4/r3/wiki/r3forth-Manual).
+---
 
 ## Youtube Channel
 
