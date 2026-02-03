@@ -1,11 +1,12 @@
 | Animation example
 | with multiple objects
 ^r3/lib/rand.r3
-^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
+^r3/util/arr16.r3
+^r3/util/txfont.r3
 
-#spritesheet 0 0 0 | sprites
-#people 0 0 | array
+#spritesheet 0 0 0 | 3 spritessheet
+#people 0 0 | dynamic array for sort
 
 |person array
 | x y ang anim ss vx vy ar
@@ -68,23 +69,33 @@
 	+people ;
 	
 :demo
-	0 SDLcls
+	$323262 SDLcls
 	timer.
 	'people p.drawo		| draw sprites
 	2 'people p.sort	| sort for draw (y coord)
+	
+	$4cff4c txrgb
+	$11 txalign  | Center horizontally and vertically
+	300 20 200 100 
+"Multisprite demo
+[SPC] add more people
+[ESC] to exit" 
+	txText
+	
 	SDLredraw 
-	+randpeople
+	|+randpeople
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( +randpeople )
+	<esp> =? ( +randpeople )
 	drop ;
 	
 :main
-	"r3sdl" 800 600 SDLinit
+	"r3 multisprite" 800 600 SDLinit
+	"media/ttf/VictorMono-Bold.ttf" 32 txload txfont
 	'spritesheet 
-	16 32 "media/img/p1.png" ssload swap !+
-	16 32 "media/img/p2.png" ssload swap !+
-	16 32 "media/img/p3.png" ssload swap !
+	16 32 "media/img/p1.png" ssload swap !+ | spritesheet[0]
+	16 32 "media/img/p2.png" ssload swap !+ | spritesheet[1]
+	16 32 "media/img/p3.png" ssload swap !  | spritesheet[2]
 	2000 'people p.ini
 	timer<
 	'demo SDLshow

@@ -1,9 +1,12 @@
-| programa 2 
-| puntos en pantalla
+| program 2 
+| more graphics
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/rand.r3
 
+:waitkey
+	SDLkey >esc< =? ( exit ) drop ;
+	
 :puntos
 	$ffffff randmax SDLColor 
 	sw randmax 
@@ -11,7 +14,7 @@
 	SDLPoint
 			
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 
 :lineas
 	$ffffff randmax SDLColor 
@@ -20,7 +23,7 @@
 	SDLLine
 	
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 
 :cajas
 	$ffffff randmax SDLColor 
@@ -29,7 +32,7 @@
 	SDLRect
 	
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 
 :fillcajas
 	$ffffff randmax SDLColor 
@@ -38,7 +41,7 @@
 	SDLFRect
 	
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 
 :elipse
 	$ffffff randmax SDLColor 
@@ -47,8 +50,7 @@
 	SDLEllipse
 	
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
-
+	waitkey ;
 
 :fillelipse
 	$ffffff randmax SDLColor 
@@ -57,7 +59,7 @@
 	SDLFEllipse
 	
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 
 :filltri
 	$ffffff randmax SDLColor 
@@ -67,10 +69,10 @@
 	SDLTriangle
 
 	SDLredraw 
-	SDLkey >esc< =? ( exit ) drop ;
+	waitkey ;
 	
-:	|====================== INICIO 
-	"r3sdl" 800 600 SDLinit
+:	
+	"r3 graphics" 800 600 SDLinit
 
 	0 SDLcls
 	'puntos SDLShow
