@@ -4,6 +4,8 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
+::type 1 -rot libc-write drop ;
+
 #enable_sgr ( $1B $5B $3F $31 $30 $30 $36 $68 )
 #enable_1002 ( $1B $5B $3F $31 $30 $30 $32 $68 )
 #disable_sgr ( $1B $5B $3F $31 $30 $30 $36 $6C )
