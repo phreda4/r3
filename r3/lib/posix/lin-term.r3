@@ -11,8 +11,6 @@
 #disable_sgr ( $1B $5B $3F $31 $30 $30 $36 $6C )
 #disable_1002 ( $1B $5B $3F $31 $30 $30 $32 $6C )
 
-:sendesc 1 swap 8 libc-write drop ;
-
 #sterm * 64		| termios structure copy (0=no copy)
 #flgs
 
@@ -39,15 +37,17 @@
 	a@+ b!+
 	da@ db!
 	0 0 here libc-tcsetattr 
-	'enable_1002 sendesc
-	'enable_sgr sendesc
+	'enable_1002 8 type
+	'enable_sgr 8 type
 	;
 
+#showc ( $1B $5B $31 $20 $71 )
 ::reset-terminal-mode | --
-	'disable_sgr sendesc
-	'disable_1002 sendesc
-    0 0 'sterm libc-tcsetattr 
-	0 2 flgs libc-fcntl drop 
+	'disable_sgr 8 type
+	'disable_1002 8 type
+	|0 2 flgs libc-fcntl drop  ??
+	0 0 'sterm libc-tcsetattr 
+	'showc 6 type
 	0 'sterm !
 	;
 

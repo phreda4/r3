@@ -8,10 +8,7 @@
 
 | KEYCODES 
 ::[ESC] $1b ; 
-::[ENTER] 
-|WIN| $d 
-|LIN| $a
-	; 
+::[ENTER] $d ;
 ::[BACK] $7f ;
 ::[TAB] $9 ; ::[DEL] $7E335B1B ; ::[INS] $7E325B1B ;
 ::[UP] $415b1b ; ::[DN] $425b1b ; 
@@ -204,9 +201,9 @@
 ::.printe | "" --
 	sprint
 	( c@+ 1? emite ) 2drop ;
-
 ::strcpybuf | 'mem --
 	0 .emit
+
 	outbuf swap strcpy .cl ;
 	
 : |||||||||||||||||||||||||||||
