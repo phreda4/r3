@@ -979,8 +979,8 @@ $326232 SDLcolor        | Set ground color
     drop
     ;
 ```
-- **>a**: Push to auxiliary register for easier access
-- **a@+**: Fetch and increment auxiliary pointer
+- **>a**: Copy to register for easier access
+- **a@+**: Fetch and increment register pointer
 - **timer+**: Add elapsed time for animation
 - **anim>n**: Convert animation value to frame number
 - **between**: Check if value is within range
@@ -1049,7 +1049,7 @@ timer+              | Add elapsed time
 - **Multiple sprite sheets**: Variety through random selection
 - **Encoded data**: Pack multiple values into single field
 - **Timer-based animation**: Frame-independent animation
-- **Auxiliary stack**: Simplify complex data access
+- **Register**: Simplify complex data access
 
 ### Array and Timer Reference
 
@@ -1241,7 +1241,7 @@ exit                         | Exit program
 7. **Use fixed point** (.0) for smooth movement
 8. **Load resources** before entering main loop
 9. **Check boundaries** to prevent objects going off-screen
-10. **Use auxiliary stack** (>a, a@+) for complex structures
+10. **Use register** (>a, a@+) for complex structures
 
 ### Common Patterns
 

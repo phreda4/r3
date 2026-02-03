@@ -105,7 +105,7 @@ r3 hello.r3
 * `/r3`: Contains all the code, the system libraries, the IDE code, and core tools, etc.. all in .r3 code
 * `/asm`: Compiler folder, not used if you not invoke it.
 * `/dll`: In WIN you not install anything, the dll is here.
-* `/doc`: Documentation, in progress as allways, r3datasheet.pdf is the usefull one.
+* `/doc`: Documentation.
 * `/media`: graphics, sounds, models, font..etc
 * `/mem`: use like static memory (for keep info when exit r3)
 *  `main.xml`: syntax coloring for notepad++
@@ -130,13 +130,14 @@ r3 is not just a language; it's a creative suite. Here is what you can find:
 
 ## More documentation
 
-In the doc folder. Always in progress.
+In the /doc folder.
+
+* [Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
 
 * [Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
 * [Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
 * [SDL graphics programing](https://github.com/phreda4/r3/blob/main/doc/r3forth-SDL-graphics.md)
 * [Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
-* [Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
 
 ---
 
