@@ -123,16 +123,19 @@ r3 is not just a language; it's a creative suite. Here is what you can find:
 | **Tooling** | **Self-hosted IDE**: code, debug, and run without leaving r3. | ![Editor](link_a_tu_gif) |
 | **Advanced** | Immediate Mode GUI (immgui), Tilemap editors, and Sound synthesis. | ![GUI](link_a_tu_gif) |
 
+### Games in itch.io
+* https://phreda4.itch.io/
+
 ---
 
 ## More documentation
 
 In the doc folder. Always in progress.
 
-[Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
-[Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
-[Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
-[Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
+* [Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
+* [Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
+* [Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
+* [Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
 
 ---
 
