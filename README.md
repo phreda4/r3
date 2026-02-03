@@ -32,6 +32,7 @@ sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
 
 2a. **Run the precompiled binary:**
 
+Donwload the [latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
 ```bash
 chmod +x r3lin
 ./r3lin
@@ -53,7 +54,7 @@ mv r3lin ../ && cd ..
 
 ### **WINDOWS**
 
-1. Download the [latest release](https://www.google.com/search?q=https://github.com/phreda4/r3/releases).
+1. Donwload the [latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
 2. Extract and run `r3.exe`. No installation required.
 
 ---
