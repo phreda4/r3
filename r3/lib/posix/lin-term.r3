@@ -4,52 +4,59 @@
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
-|------- Basic Output -------
-::type | str cnt --
-    1 -rot libc-write drop ;
+#enable_sgr ( $1B $5B $3F $31 $30 $30 $36 $68 )
+#enable_1002 ( $1B $5B $3F $31 $30 $30 $32 $68 )
+#disable_sgr ( $1B $5B $3F $31 $30 $30 $36 $6C )
+#disable_1002 ( $1B $5B $3F $31 $30 $30 $32 $6C )
 
-#sesc ( $1b $5b )
-:.[ 'sesc 2 type count type ;
+:sendesc 1 swap 8 libc-write drop ;
 
-|------- Terminal State Management -------
-#sterm * 64		| termios structure (NCC=32)
-#stermc * 64	| backup of terminal flags
+#sterm * 64		| termios structure copy (0=no copy)
 #flgs
 
-|#define F_DUPFD         0       /* Duplicate file descriptor */
-|#define F_GETFD         1       /* Get file descriptor flags */
-|#define F_SETFD         2       /* Set file descriptor flags */
-|#define F_GETFL         3       /* Get file status flags */
-|#define F_SETFL         4       /* Set file status flags */
-
+|#define F_DUPFD 0 /* Duplicate file descriptor */
+|#define F_GETFD 1 /* Get file descriptor flags */
+|#define F_SETFD 2 /* Set file descriptor flags */
+|#define F_GETFL 3 /* Get file status flags */
+|#define F_SETFL 4 /* Set file status flags */
+|#define OFF_IFLAG  0   // 4 bytes, uint32
+|#define OFF_OFLAG  4   // 4 bytes, uint32
+|#define OFF_CFLAG  8   // 4 bytes, uint32
+|#define OFF_LFLAG  12  // 4 bytes, uint32
+|#define OFF_LINE   16  // 1 byte
+|#define OFF_CC     17  // 32 bytes
 ::set-terminal-mode | --
-    0 'sterm libc-tcgetattr 
-	'stermc 'sterm 8 move | dsc 
-	'sterm dup 
-	12 + dup d@ $A nand swap d! |&= ~(ICANON | ECHO); 
-    0 0 rot 20 + 5 + c!+ c!		| c_cc[VTIME] = 0; c_cc[VMIN] = 0;  
-    0 0 'sterm libc-tcsetattr 
-	"?1006h" .[ "?1002h" .[  | 1003 mode not work with up btn
+	sterm 0? ( 0 'sterm libc-tcgetattr ) drop
+	'sterm >a here >b |'stermc >b
+	da@+ $FFFFFACD and db!+	| set32(raw, OFF_IFLAG, get32(raw, OFF_IFLAG) & 0xFFFFFACD);
+    da@+ $FFFFFFFE and db!+	| set32(raw, OFF_OFLAG, get32(raw, OFF_OFLAG) & 0xFFFFFFFE);
+    da@+ $30 or db!+		| set32(raw, OFF_CFLAG, get32(raw, OFF_CFLAG) | 0x30);
+	da@+ $FFFF7FF4 and db!+	| set32(raw, OFF_LFLAG, get32(raw, OFF_LFLAG) & 0xFFFF7FF4);	
+	ca@ cb!+ da@+ db!+ 2 a+ 
+	1 cb!+ 0 cb!+			| raw[OFF_CC + 5] = 1; raw[OFF_CC + 6] = 0;
+	a@+ b!+
+	da@ db!
+	0 0 here libc-tcsetattr 
+	'enable_1002 sendesc
+	'enable_sgr sendesc
 	;
 
 ::reset-terminal-mode | --
-	"?1002l" .[ "?1006l" .[ |:.disable-mouse	
-    0 0 'stermc libc-tcsetattr 
+	'disable_sgr sendesc
+	'disable_1002 sendesc
+    0 0 'sterm libc-tcsetattr 
 	0 2 flgs libc-fcntl drop 
+	0 'sterm !
 	;
-
-|::reset-terminal-mode
-|    stermp 'sterm 12 + w!
-|    0 0 'sterm libc-tcsetattr  ;
 
 |------- Console Information -------
 ##rows ##cols
 #prevrc 0
 
 ::.getterminfo | --
-    1 $5413 'flgs libc-ioctl | TIOCGWINSZ
-    flgs dup 16 >> $ffff and 1 - 'cols !
-    $ffff and 1 - 'rows ! ;
+	1 $5413 'flgs libc-ioctl | TIOCGWINSZ
+	flgs dup 16 >> $ffff and 1 - 'cols !
+	$ffff and 1 - 'rows ! ;
 
 :.getrc rows 16 << cols or ;
 
@@ -70,9 +77,6 @@
 
 :buffin | -- len
 	0 'bufferin 2dup ! 16 libc-read ;
-
-|::getch | -- char
-|	( buffin 0? drop ) drop bufferin ;
 
 #tv 0 0
 #fds 0 0
@@ -130,8 +134,8 @@
 
 |------- Cleanup -------
 ::.free | --
-    reset-terminal-mode
-    |0 libc-exit drop 
+	reset-terminal-mode
+	|0 libc-exit drop 
 	;
 
 |------- Initialization -------
