@@ -116,12 +116,24 @@ r3 hello.r3
 
 r3 is not just a language; it's a creative suite. Here is what you can find:
 
-| Category | Highlights | Image/GIF |
-| :--- | :--- | :--- |
-| **Graphics** | Real-time Fractals (Mandelbrot), 3D Wireframe Engine, Particle Systems. | ![Mandelbrot](link_a_tu_gif) |
-| **Games** | Classic Snake, Tetris, and Collision Physics demos. | ![Games](link_a_tu_gif) |
-| **Tooling** | **Self-hosted IDE**: code, debug, and run without leaving r3. | ![Editor](link_a_tu_gif) |
-| **Advanced** | Immediate Mode GUI (immgui), Tilemap editors, and Sound synthesis. | ![GUI](link_a_tu_gif) |
+<table border="0">
+  <tr>
+    <td>
+<video src="https://github.com/user-attachments/assets/1733a220-af3c-4621-a1bd-7330dee1b1d3" width="50%" controls></video>
+    </td>
+    <td>
+<video src="https://github.com/user-attachments/assets/8b1be4ba-7a59-4b79-a756-6679d80ab342" width="50%" controls></video>
+    </td>
+  </tr>
+  <tr>
+    <td>
+<video src="https://github.com/user-attachments/assets/aec7db6c-161a-4adf-b5d0-9a317ae7fe6f" width="50%" controls></video>
+    </td>
+    <td>
+<video src="https://github.com/user-attachments/assets/2b8a343e-6df0-4c43-913c-1097ca2f2b65" width="50%" controls></video>
+    </td>
+  </tr>
+</table>
 
 ### Games in itch.io
 * https://phreda4.itch.io/
@@ -143,5 +155,5 @@ In the /doc folder.
 
 ## Youtube Channel
 
-[Videos](https://www.youtube.com/@pablohreda)
+* [Videos](https://www.youtube.com/@pablohreda)
 
