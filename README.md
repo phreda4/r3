@@ -99,7 +99,30 @@ r3 hello.r3
   </tr>
 </table>
 
-### 3. Folder Structure
+### 3. First program
+
+Red box in the corner program
+
+```
+^r3/lib/sdl2gfx.r3
+
+:main
+	0 sdlcls
+	$ff0000 sdlcolor
+	10 10 100 100 sdlfrect
+	sdlredraw
+	sdlkey
+	>esc< =? ( exit )
+	drop ;
+	
+:
+	"red box in the corner" 800 600 SDLinit
+	'main SDLShow
+	SDLquit 
+	;
+```
+
+### 4. Folder Structure
 
 * `main.r3`: The core startup script.
 * `/r3`: Contains all the code, the system libraries, the IDE code, and core tools, etc.. all in .r3 code
