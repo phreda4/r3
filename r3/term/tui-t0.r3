@@ -86,7 +86,7 @@
 	
 	20 flxO
 	flxpush
-	32 flxS
+	14 flxS
 	tuwin $1 " Options " .wtitle
 	1 1 flpad 
 	5 'fh ! 

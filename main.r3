@@ -144,6 +144,7 @@
 	'fullpath .write | flcr
 	;
 
+#tk
 |------------	
 :scrmain
 	.bblack .cls
@@ -152,11 +153,11 @@
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug |2dup " %d %d " .print
-
+tk "%h" .print
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7m F5/ENTER ^[27mRun ^[7m F6/SPC ^[27mEdit" 	.printe
+	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7mR^[27mun ^[7mE^[27mEdit" 	.printe
 	||C|lon |N|ew "
 	|___________
 	38 flxO
@@ -166,19 +167,19 @@
 	paneleditor
 
 	uikey
-		
 |	[f2] =? ( help )		| H
 |	[f3] =? ( filesearch )	| S
 
-	[f5] =? ( filerun )		| R
+	[f5] =? ( filerun )
 	[ENTER] =? ( filerun )
 	
-	[f6] =? ( fileedit )	| E
+	[f6] =? ( fileedit )
 	$20 =? ( fileedit )
-	
-|	$43 =? ( fileclon )	| C
+	toUpp
+|	$43 =? ( fileclon )	| C	
+	$45	=? ( fileedit )	| E
 |	$4e =? ( filenew )	| N
-
+	$52 =? ( filerun )	| R
 	drop
 	;
 

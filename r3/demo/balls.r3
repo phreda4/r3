@@ -89,7 +89,7 @@
 	
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( +buble )
+	<esp> =? ( +buble )
 	drop
 	;
 
@@ -99,7 +99,7 @@
 	"media/img/ball.png" loadimg 'spr_ball !
 	1000 'bubles p.ini
 	'bubles p.clear
-	"<f1> add ball" .println
+	"<esp> add ball" .println
 	+buble
 	+buble
 	'main SDLshow

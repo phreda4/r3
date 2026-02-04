@@ -79,7 +79,7 @@
 	"<vcount>" =pre 0? ( drop nip ; ) drop
 	8 +
 	here dup pick3 ! >a
-	( trim 
+	( trim
 		"</vcount>" =pre 1? ( drop a> dup 'here ! rot 8 + ! ; ) drop
 		getnro ca!+ | save bytes!!
 		1? ) drop ;		
@@ -356,7 +356,6 @@
 	0 'level !
 	'bone 'bone> !
 	( trim 
-|		dup "%w" .println
 		"</library_visual_scenes" =pre 1? ( drop ; ) drop
 		"<node" =pre 1? ( lvlup ) drop
 		"</node" =pre 1? ( lvldn ) drop
@@ -399,7 +398,7 @@
 	'trib 'trib> !
 	here dup rot load 0 swap c!+ 'here !
 	( trim 
-|	dup "%w" .println
+	|dup "%w" .println
 		parseAnimation
 		parseAnimationClip 
 		parseController

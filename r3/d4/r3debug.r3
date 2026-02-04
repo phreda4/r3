@@ -131,6 +131,13 @@
 		1+ ) drop
 	,eol ;
 
+:makelistinc
+	here 'lincs !
+	0 ( cntinc <? 
+|		dup 4 << 'inc + @ "%w" ,print ,eol
+		1+ ) drop
+	,eol ;
+
 :scrDicc
 	.reset tuWina $1 "Dicc" .wtitle 1 1 flpad 
 	'xwrite.word xwrite!
@@ -194,10 +201,12 @@
 |		dup ndicc@ stypedef 40 >> realdicc + cntdicc 3 << + .write .fcr
 |		1+ ) drop
 	
+||	tuWina $1 "Includes" .wtitle 1 1 flpad 
+	|'vincs lincs tuList	
 |-------- print includes
-	strinc cntinc ( 1? 1- swap
-		dup .write .fcr
-		>>0 swap ) 2drop
+|	strinc cntinc ( 1? 1- swap
+|		dup .write .fcr
+|		>>0 swap ) 2drop
 	;
 	
 :printcode	
@@ -460,15 +469,17 @@
 	7 flxS |tuWina $1 "Imm" .wtitle |242 .bc
 	scrMsg
 	
-	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
-	scrTokens
+|	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
+|	scrTokens
 	
 	|cols 3 / flxO 
 	|scrDicc
 	
 	flxRest 
+	|1 1 flPad
 	tuReadCode 
 	|tuEditCode 
+	
 	msec $100 and? ( drawkeepcm ) drop 
 	
 	uiKey
@@ -496,6 +507,7 @@
 
 |---- build code links
 	|makelistwords
+	|makelistinc
 	|buildcodemark
 	
 	buildshowincode

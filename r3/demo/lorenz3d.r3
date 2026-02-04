@@ -141,7 +141,7 @@
 	;
 
 :
-	"r3sdl" 800 600 SDLinit
+	"r3 Lorenz" 800 600 SDLinit
 	SDLrenderer  0 0 0 $ff SDL_SetRenderDrawColor 
 	dnlook
 	'demo SDLshow

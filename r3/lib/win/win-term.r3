@@ -170,13 +170,13 @@
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE
     -12 GetStdHandle 'stderr ! | STD_ERROR_HANDLE
-	stdin $7 SetConsoleMode drop 
-	stdout $3 SetConsoleMode drop 
-	getterminfo
+|	stdin $7 SetConsoleMode drop 
+|	stdout $3 SetConsoleMode drop 
 	.reterm
-|	getterminfo2
-	getrc 'prevrc ! 
+	|getterminfo2
     | Enable UTF-8 code page (65001)
     65001 SetConsoleOutputCP  | Output UTF-8
     65001 SetConsoleCP | Input UTF-8
+	getterminfo
+	getrc 'prevrc ! 
 	;
