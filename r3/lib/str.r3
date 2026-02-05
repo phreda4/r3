@@ -41,10 +41,6 @@
 ::tolow | C -- c
 	$20 or ;
 
-::count | s1 -- s1 cnt ; naive version (not used)
-	0 over ( c@+ 1?
-		drop swap 1+ swap ) 2drop ;
-
 ::count | s1 -- s1 cnt ; version 3 - 8 bytes
 	0 over ( @+ dup $0101010101010101 -
 		swap nand $8080808080808080 nand? 
@@ -57,6 +53,10 @@
 	$800000000000 and? ( 2drop 5 + ; )
 	$80000000000000 and? ( 2drop 6 + ; )	
 	2drop 7 + ;
+
+::count | s1 -- s1 cnt 
+	0 over ( c@+ 1?
+		drop swap 1+ swap ) 2drop ;
 
 |---- UTF-8	
 ::utf8count | str -- str count
