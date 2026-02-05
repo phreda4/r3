@@ -13,86 +13,151 @@
 #src>
 #src$
 
+#view
+#viewx 0
+#viewy 0
+#vieww 40
+#viewh 20
+
 #mode 0
 #ncount	
 
 #line * 2048
-#linelen 10
 
 #pad * 512
 #msg * 512
 
-#scrsize 0
-:termx scrsize 36 >> $fff and ;
-:termy scrsize 24 >> $fff and ;
-:termw scrsize 12 >> $fff and ;
-:termh scrsize $fff and ;
+#curx
+#cury
 
-#cursor
-:curx cursor $fff and ;
-:cury cursor 12 >> $fff and ;
-:viex cursor 24 >> $fff and ;
-:viey cursor 36 >> $fff and ;
-
-#strmodo " NOR " " INS " " REP " " VIS " " CMD "
+:stm0
+	curx viewx - 1+ cury viewy - 1+ .at	
+	;
+:stm1
+	"-- INSERT --" .write
+	curx viewx - 1+ cury viewy - 1+ .at	
+	;
+:stm2
+	curx viewx - 1+ cury viewy - 1+ .at	
+	;
+:stm3
+	"-- VISUAL --" .write
+	curx viewx - 1+ cury viewy - 1+ .at		
+	;
+:stm4
+	":" .write
+	'pad .write
+	;
+	
+#stmodes stm0 stm1 stm2 stm3 stm4
+|---------------------------
+:drawline
+	vieww ( 1? 1- 
+		ca@+ 0? ( drop 1+ .nsp -1 a+ ; ) 
+		13 =? ( drop 1+ .nsp ; )
+		9 =? ( drop .sp 32  ) 
+		.emit ) drop ;
 
 :drawscreen
 	.cls
-	termh 2 -
+	view >a
+	viewh 2 -
 	0 ( over <?
-		dup "%h" .print .cr
+		drawline .cr
 		1+ ) drop 
+		
 	.rever
-	termw .nsp
-	mode 6 * 'strmodo + .write 
+	vieww .nsp
+	"[" .write 'filename .write "]" .write
+	cury 1+ curx 1+ " %d:%d " .print 
 	ncount " %d " .print
-	cury curx " %d:%d " .print
 	.cr
-	.reset
-	mode 
-	4 =? ( ":" .write ) | CMD mode
-	drop
-	'msg c@ 1? ( 'msg .write ) drop
-	
-	|cursor srview -
-	cursor dup 24 >> - 
-	dup $fff and swap 12 >> $fff and .at
+	.reset	
+	mode 3 << 'stmodes + @ ex
 	.flush
 	;
 
-:ccle
-	curx 0? ( drop ; )  1- cursor $fff nand or 'cursor ! ;
-:ccri
-	curx linelen >? ( drop ; ) 1+ cursor $fff nand or 'cursor ! ;
+|---------------------------
+:<<13 | a -- a
+	( src >=?
+		dup c@ 13 =? ( drop ; )
+		drop 1- ) ;
 
-:ccdn
-	;
+:>>13 | a -- a
+	( src$ <=?
+		dup c@ 13 =? ( drop ; )
+		drop 1+ ) 1- ;
+
+:khome	src> 1- <<13 1+ 'src> ! ;
+:kend	src> >>13 'src> ! ;
+
+#ilinea
+
+:kup
+	cury 0? ( drop ; ) drop
+	src> src <=? ( drop ; )
+	dup 1- <<13		| cur inili
+	swap over - swap	| cnt cur
+	dup 1- <<13			| cnt cur cura
+	dup 'ilinea !
+	swap over - 		| cnt cura cur-cura
+	rot min + src max 
+	dup 'src> ! 
+	ilinea 1+ - 'curx !
+	-1 'cury +! ;
+
+:kdn
+	src> src$ >=? ( drop ; )
+	dup 1- <<13 | cur inilinea	
+	over swap - swap | cnt cursor
+	>>13		| cnt cura
+	dup 'ilinea !
+	dup 1+ >>13 	| cnt cura curb
+	over - rot min +
+	dup 'src> ! 
+	ilinea 1+ - 'curx !
+	1 'cury +! ;
+
+:kri	
+	src> src$ >=? ( drop ; ) 
+	dup c@ 13 =? ( 2drop ; ) drop
+	1+ 'src> !
+	1 'curx +! ;
 	
-:ccup
-	;
+:kle	
+	src> 1- src <=? ( drop ; ) 
+	dup c@ 13 =? ( 2drop ; ) drop 
+	'src> !
+	-1 'curx +! ;
+	
 	
 :kmove
 	;
-	
-
 :kcount
 	$30 $39 in? ( dup $30 - ncount 10* + 'ncount ! ) ;
+	
+:vcount | vector --
+	ncount 0? ( 1+ ) ( 1? 1- over ex ) 2drop ;
 	
 |---NORMAL
 :knor
 	evtkey
 	[esc] =? ( -1 'mode ! ) 
 	kcount
+	[le] =? ( $48 nip ) 
+	[up] =? ( $4A nip )	
+	[dn] =? ( $4B nip ) 
+	[ri] =? ( $4C nip ) 	
+	$3A =? ( 4 'mode ! ) | :
+	$2F =? ( 4 'mode ! ) | /
 	toUpp
 	$49 =? ( 1 'mode ! ) | I
 	$52 =? ( 2 'mode ! ) | R
 	$56 =? ( 3 'mode ! ) | V
-	$3A =? ( 4 'mode ! ) | :
-	$2F =? ( 4 'mode ! ) | /
-	$48 =? ( ccle ) |H
-	$4A =? ( ccup ) |J
-	$51 =? ( ccdn ) |K
-	$4C =? ( ccri ) |L
+	$48 =? ( 'kle vcount ) |H
+	$4A =? ( 'kup vcount ) |J
+	$4B =? ( 'kdn vcount ) |K
+	$4C =? ( 'kri vcount ) |L
 	drop ;
 	
 |---INSERT
@@ -138,6 +203,19 @@
 		mode -1 <>? drop
 		) drop ;
 	
+::rivMem | "" --
+	src strcpy
+	src only13 1- 'src$ ! |-- queda solo cr al fin de linea
+	src dup 'view ! 'src> ! 
+	0 'curx ! 0 'cury !
+	0 'mode !
+	;
+	
+#test
+"esto es un texto de prueba
+de varias lineas
+para probar el editor"
+	
 |---------------	
 :
 	mark 
@@ -146,11 +224,13 @@
 	dup 'src$ ! $fff +
 	'here
 	src 'src> !
-	0 'cursor !
+	0 'curx ! 0 'cury !
 	0 'mode !
 	.alsb
-	cols 12 << rows or 'scrsize !
+	0 'viewx ! 0 'viewy !
+	cols 'vieww ! rows 'viewh !
 	.ovec
+	'test rivMem
 	editor
 	.masb 
 	.free
