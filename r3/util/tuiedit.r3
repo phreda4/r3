@@ -409,6 +409,17 @@
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
 	drop 'lins 'modo ! .insc ;
 
+::tueKeyMove
+	[UP] =? ( karriba sele ) 
+	[DN] =? ( kabajo sele )
+	[RI] =? ( kder sele ) 
+	[LE] =? ( kizq sele )
+	[HOME] =? ( khome sele ) 
+	[END] =? ( kend sele )
+	[PGUP] =? ( kpgup sele ) 
+	[PGDN] =? ( kpgdn sele )
+	;
+	
 :EditFoco
 	tuif 0? ( 'focoe ! ; )
 	|1 =? ( startfocus ) 
@@ -419,16 +430,11 @@
 	32 126 in? ( modo ex fixcur cursorpos ; ) 
 	[tab] =? ( modo ex fixcur cursorpos ; ) 
 	[enter] =? ( modo ex fixcur cursorpos ; ) 
+	
 	[BACK] =? ( kback )
 	[DEL] =? ( kdel )
-	[UP] =? ( karriba sele ) 
-	[DN] =? ( kabajo sele )
-	[RI] =? ( kder sele ) 
-	[LE] =? ( kizq sele )
-	[HOME] =? ( khome sele ) 
-	[END] =? ( kend sele )
-	[PGUP] =? ( kpgup sele ) 
-	[PGDN] =? ( kpgdn sele )
+	
+	tueKeyMove
 	[INS] =? ( chmode )	
 |[SHIFT+DEL] =? ( delword )
 |[SHIFT+INS] =? ( dupword )
@@ -464,7 +470,10 @@
 
 ::tuReadCode
 |	fw 8 <? ( drop ; ) drop
-	scrini> drawlines 'scrend> ! ;
+	fixcur cursorpos
+	scrini> drawlines 'scrend> !
+	tuEditShowCursor
+	;
 	
 ::tuEditCodeMono
 	EditMouse
@@ -480,7 +489,7 @@
 	scrini> drawlinesmono 'scrend> ! ;
 	
 ::tudebug
-	ycursor 1+ xcursor 1+ " %d:%d " sprint ;
+	ycursor 1+ xcursor 1+ "%d:%d " sprint ;
 	
 ::TuLoadMem | "" --
 	fuente strcpy

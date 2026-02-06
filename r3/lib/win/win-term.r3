@@ -121,7 +121,7 @@
 	;	
 
 ::getevt | -- type | wait for any event
-	( inevt 0? drop 10 ms ) ;
+	( inevt 0? drop 20 ms ) ;
 
 ::inkey | -- key | 0 if no key pressed
 	inevt 1 =? ( drop evtkey ; ) drop 0 ;

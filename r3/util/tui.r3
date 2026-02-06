@@ -205,25 +205,24 @@
 	
 ::onTui | 'vector --
 	'exvector .onresize
-	tuireset
+	tuireset 0 'uikey !
 	vecdraw swap 'vecdraw ! | stack old value
 	tuiredraw
 	( rflag $4 nand? drop
 		0 'uikey ! 0 'rflag ! |0 'uimouse !
-		inevt
+		|inevt
+		getevt
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
-		5 ms
 		) drop 
-	tuireset 
-	|tuR! 0 'uikey !
+	tuireset 0 'uikey ! |tuR! 	
 	'vecdraw ! | restore old draw
 	;
 
 ::onTuia | 'vector --
 	'exvector .onresize
-	tuireset
+	tuireset 0 'uikey !
 	vecdraw swap 'vecdraw ! | stack old value
 	tuiredraw
 	( rflag $4 nand? drop
@@ -233,12 +232,11 @@
 |		1? ( tuiredraw ) | ?? animation
 		drop
 		tuiredraw
-		5 ms
+		20 ms
 		) drop 
-	tuireset 
+	tuireset 0 'uikey !
 	'vecdraw ! | restore old draw
 	;
-
 
 |---------------------	
 ::.wfill fx fy fw fh .boxf ;

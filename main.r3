@@ -157,8 +157,9 @@ tk "%h" .print
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp
-	" ^[7m F2 ^[27mHelp ^[7m F3 ^[27mSearch ^[7mR^[27mun ^[7mE^[27mEdit" 	.printe
-	||C|lon |N|ew "
+	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m C ^[27mlon ^[7m N ^[27mew ^[7m / ^[27mSearch "
+	.printe
+
 	|___________
 	38 flxO
 	dirpanel
@@ -180,6 +181,7 @@ tk "%h" .print
 	$45	=? ( fileedit )	| E
 |	$4e =? ( filenew )	| N
 	$52 =? ( filerun )	| R
+	$51 =? ( exit )
 	drop
 	;
 
