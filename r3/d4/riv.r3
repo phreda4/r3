@@ -30,19 +30,23 @@
 #curx
 #cury
 
+:cursorintext
+	curx viewx - 1+ cury viewy - 1+ .at	 ;
+	
 :stm0
-	curx viewx - 1+ cury viewy - 1+ .at	
+	cursorintext
 	;
 :stm1
-	"-- INSERT --" .write
-	curx viewx - 1+ cury viewy - 1+ .at	
+	.yellow "-- INSERT --" .write
+	cursorintext
 	;
 :stm2
-	curx viewx - 1+ cury viewy - 1+ .at	
+	.green "-- VISUAL LINE--" .write
+	cursorintext
 	;
 :stm3
-	"-- VISUAL --" .write
-	curx viewx - 1+ cury viewy - 1+ .at		
+	.green "-- VISUAL --" .write
+	cursorintext
 	;
 :stm4
 	":" .write
@@ -59,7 +63,7 @@
 		.emit ) drop ;
 
 :drawscreen
-	.cls
+	.reset .cls
 	view >a
 	viewh 2 -
 	0 ( over <?
@@ -71,13 +75,38 @@
 	"[" .write 'filename .write "]" .write
 	cury 1+ curx 1+ " %d:%d " .print 
 	ncount " %d " .print
+	src> c@ ">%h<" .print
+	src> "%w" .print
 	.cr
 	.reset	
 	mode 3 << 'stmodes + @ ex
 	.flush
 	;
 
-|---------------------------
+|----- edicion
+:lins | c --
+	src> dup 1- src$ over - 1+ cmove>
+	1 'src$ +!
+:lover | c --
+	src> c!+ dup 'src> !
+	src$ >? ( dup 'src$ ! ) drop
+:0lin | --
+	0 src$ c! ;
+
+#modo 'lins
+
+:back
+	src> src <=? ( drop ; )
+	dup 1- swap src$ over - 1+ cmove
+	-1 'src$ +!
+	-1 'src> +! ;
+
+:del
+	src> src$ >=? ( drop ; )
+	1+ src <=? ( drop ; )
+	dup 1- swap src$ over - 1+ cmove
+	-1 'src$ +! ;
+
 :<<13 | a -- a
 	( src >=?
 		dup c@ 13 =? ( drop ; )
@@ -94,7 +123,8 @@
 #ilinea
 
 :kup
-	cury 0? ( drop ; ) drop
+	cury 0? ( drop ; ) drop | in start
+	src> c@ 0? ( drop src> <<13 1+ 'src> ! -1 'cury +! ; ) drop | in end
 	src> src <=? ( drop ; )
 	dup 1- <<13		| cur inili
 	swap over - swap	| cnt cur
@@ -131,23 +161,37 @@
 	-1 'curx +! ;
 	
 	
-:kmove
-	;
 :kcount
 	$30 $39 in? ( dup $30 - ncount 10* + 'ncount ! ) ;
 	
 :vcount | vector --
 	ncount 0? ( 1+ ) ( 1? 1- over ex ) 2drop ;
+
+:kmovecursor
+	[le] =? ( kle ) 
+	[up] =? ( kup )	
+	[dn] =? ( kdn ) 
+	[ri] =? ( kri ) 
+	[home] =? ( khome )
+	[end] =? ( kend )
+	;
+	
+:chmode
+	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
+	drop 'lins 'modo ! .insc ;
+
+:kinstext
+	32 126 in? ( dup modo ex 1 'curx +! )
+	[tab] =? ( dup modo ex 2 'curx +! )
+	[enter] =? ( dup modo ex 0 'curx +! 1 'cury +! )
+	;
 	
 |---NORMAL
 :knor
 	evtkey
 	[esc] =? ( -1 'mode ! ) 
 	kcount
-	[le] =? ( $48 nip ) 
-	[up] =? ( $4A nip )	
-	[dn] =? ( $4B nip ) 
-	[ri] =? ( $4C nip ) 	
+	kmovecursor		
 	$3A =? ( 4 'mode ! ) | :
 	$2F =? ( 4 'mode ! ) | /
 	toUpp
@@ -164,19 +208,22 @@
 :kins
 	evtkey
 	[esc] =? ( 0 'mode ! ) 
-	
+	kmovecursor
+	kinstext
 	drop ;
+	
 |---REPLACE
 :krep
 	evtkey
 	[esc] =? ( 0 'mode ! ) 
-	
+	kmovecursor	
+	kinstext	
 	drop ;
 |---VISUAL
 :kvis
 	evtkey
 	[esc] =? ( 0 'mode ! ) 
-	
+	kmovecursor
 	drop ;
 |---CMD
 :kcmd
@@ -188,21 +235,19 @@
 
 #kmode 'knor 'kins 'krep 'kvis 'kcmd
 
-:hkey
-
 :getevent
 	inevt
 	1 =? ( drop 'kmode mode 3 << + @ ex ; )
 	| 2 =? ( hmou )
 	drop
-	20 ms getevent ;
+	50 ms getevent ;
 	
 :editor
-	( drawscreen
+	( mode -1 <>? drop
+		drawscreen
 		getevent
-		mode -1 <>? drop
 		) drop ;
-	
+
 ::rivMem | "" --
 	src strcpy
 	src only13 1- 'src$ ! |-- queda solo cr al fin de linea
