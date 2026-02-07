@@ -488,7 +488,7 @@
 |	fw 8 <? ( drop ; ) drop
 	scrini> drawlinesmono 'scrend> ! ;
 	
-::tudebug
+::tuecursor.
 	ycursor 1+ xcursor 1+ "%d:%d " sprint ;
 	
 ::TuLoadMem | "" --

@@ -390,7 +390,7 @@
 
 :slnormal
 	.cl	4 .bc 7 .fc cols .nsp
-	" ^[7mF3^[27m Step ^[7mF5^[27m Over ^[7mF5^[27m Run/Stop ^[7m F9 ^[27m End " .printe
+	" ^[7mF3^[27m Step ^[7mF4^[27m Over ^[7mF5^[27m Run/Stop ^[7m F9 ^[27m End " .printe
 	'statusline strcpybuf ;
 	
 :runtimerror

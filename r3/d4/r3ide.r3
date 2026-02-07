@@ -139,7 +139,7 @@
 	
 	2 flxS 
 	fx fy .at fw .nsp
-	" help [" .write 'filename .write "] " .write tudebug .write
+	" help [" .write 'filename .write "] " .write tuecursor. .write
 	
 	scrmapa
 
@@ -178,7 +178,7 @@
 	.reset .cls 
 	1 flxS 
 	fx fy .at printfname
-	0 .fc 6 .bc msgmode .write tudebug .write 
+	0 .fc 6 .bc msgmode .write tuecursor. .write 
 	'msg .write .eline
 	flxRest
 	tuEditCode
@@ -245,7 +245,7 @@
 	.reset .home 
 	1 flxS 
 	fx fy .at printfname 
-	3 .bc 0 .fc 'MVIS .write tudebug .write 
+	3 .bc 0 .fc 'MVIS .write tuecursor. .write 
 	
 	4 .bc 7 .fc
 	" ^[7m R ^[27mun ^[7m D ^[27mebug  ^[7m P ^[27mlain ^[7m C ^[27mompile ^[7m H ^[27mHelp ^[7m / ^[27mSearch ^[7m Q ^[27muit "  
