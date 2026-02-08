@@ -218,6 +218,7 @@
 		) drop 
 	tuireset 0 'uikey ! |tuR! 	
 	'vecdraw ! | restore old draw
+	tuR! | redraw prev screen
 	;
 
 ::onTuia | 'vector --
@@ -236,6 +237,7 @@
 		) drop 
 	tuireset 0 'uikey !
 	'vecdraw ! | restore old draw
+	tuR! | redraw prev screen
 	;
 
 |---------------------	

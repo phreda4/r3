@@ -257,7 +257,7 @@
 	.ovec tuC!
 	uiKey
 	[esc] =? ( 'modedit onTui )
-	|$2f =? ( 'modesearch onTui)
+	|$2f =? ( 'modesearch onTui )
 	tueKeyMove
 	toLow
 	$68 =? ( helpcode )			| h
