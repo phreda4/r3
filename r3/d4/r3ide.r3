@@ -194,14 +194,14 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb .reset .cls .flush
 	TuSaveCode
-	"mem/errorm.mem" delete
 	'filename
-|WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
-|LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
+|WIN| 	"cmd /c r3 ""%s"""
+|LIN| 	"./r3lin ""%s"""
 	sprint sys | run
 	.reterm .alsb .flush
-	|here dup "mem/errorm.mem" load over =? ( 2drop ; ) 0 swap c!
+	|here dup "error.log" load over =? ( 2drop ; ) 0 swap c!
 	|drop "** error **" 'msg strcpy
+	
 	;
 
 :debugcode

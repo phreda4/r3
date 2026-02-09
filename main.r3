@@ -38,23 +38,24 @@
 	
 :runcheck
 	banner
-	here dup "mem/errorm.mem" load
+	here dup "error.log" load
 	over =? ( 2drop ; ) 
 	0 swap c!
 	.cr .bred .white " * ERROR * " .write .cr
 	.reset .write .cr
 	.bblue .white " Any key to continue... " .write .cr
 	.flush 
-	waitkey ;
+	waitkey 
+	"error.log" delete
+	;
 
 :filerun
 	fuente c@ 0? ( drop ; ) drop
 	banner
 	savem
-	"mem/errorm.mem" delete
 	'fullpath
-|WIN| 	"cmd /c r3 ""%s"" 2>mem/errorm.mem"
-|LIN| 	"./r3lin ""%s"" 2>mem/errorm.mem"
+|WIN| 	"cmd /c r3 ""%s"""
+|LIN| 	"./r3lin ""%s"""
 	sprint sys | run
 	.reterm .alsb .flush
 	runcheck

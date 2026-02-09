@@ -426,9 +426,9 @@
 #r3_util_tui.r3 'name 'words 'calls 'info
 ^r3/util/tuiedit.r3
 #name "r3/util/tuiedit.r3"
-#words  "filename" "fuente" "fuente>" "$fuente" "tuiecursor!" "tuipos!" "editfasthash" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuEditCodeMono" "tuReadCodeMono" "tudebug" "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
-#calls  'filename 'fuente 'fuente> '$fuente 'tuiecursor! 'tuipos! 'editfasthash 'tuEditShowCursor 'tuEditCode 'tuReadCode 'tuEditCodeMono 'tuReadCodeMono 'tudebug 'TuLoadMem 'TuLoadMemC 'TuLoadCode 'TuNewCode 'TuSaveCode 'tokenCursor
-#info ( $80 $80 $80 $80 $1F $1F $1 $0 $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
+#words  "filename" "fuente" "fuente>" "$fuente" "tuiecursor!" "tuipos!" "editfasthash" "tueKeyMove" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuEditCodeMono" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
+#calls  'filename 'fuente 'fuente> '$fuente 'tuiecursor! 'tuipos! 'editfasthash 'tueKeyMove 'tuEditShowCursor 'tuEditCode 'tuReadCode 'tuEditCodeMono 'tuReadCodeMono 'tuecursor. 'TuLoadMem 'TuLoadMemC 'TuLoadCode 'TuNewCode 'TuSaveCode 'tokenCursor
+#info ( $80 $80 $80 $80 $1F $1F $1 $10 $0 $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"
