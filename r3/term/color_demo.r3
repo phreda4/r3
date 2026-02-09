@@ -17,7 +17,7 @@
 	.BBlue .Whitel .Bold .eline 
 	1 center-text
     .Reset ;
-we
+
 :footer | --
     0 rows .at
     .BCyan .Black .eline
@@ -53,7 +53,7 @@ we
     27 14 .at .Whitel "White Light" .write
     
     50 5 .at .Bold "Background Colors:" .write .Reset
-ee    
+    
     52 7 .at .BBlack .White " Black BG " .write .Reset
     52 8 .at .BRed .White " Red BG " .write .Reset
     52 9 .at .BGreen .Black " Green BG " .write .Reset

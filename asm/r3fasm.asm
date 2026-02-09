@@ -13,12 +13,18 @@ include 'include/win64w.inc'
 ; from LocoDelAssembly in fasm forum
 macro cinvoke64 name, [args]{
 common
-   PUSH RSP             ;save current RSP position on the stack
-   PUSH qword [RSP]     ;keep another copy of that on the stack
-   ADD RSP,8
-   AND SPL,$F0         ;adjust RSP to align the stack if not already there
-   cinvoke name, args
-   POP RSP              ;restore RSP to its original value
+	mov rdx, rsp
+	sub rsp, 8
+	and rsp, -16
+	mov [rsp], rdx
+	cinvoke name, args
+	mov rsp, [rsp]
+;   PUSH RSP             ;save current RSP position on the stack
+;   PUSH qword [RSP]     ;keep another copy of that on the stack
+;   ADD RSP,8
+;   AND SPL,$F0         ;adjust RSP to align the stack if not already there
+;   cinvoke name, args
+;   POP RSP              ;restore RSP to its original value
 }
 
 section '.text' code readable executable

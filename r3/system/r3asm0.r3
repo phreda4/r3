@@ -895,7 +895,7 @@
 	varget 
 	"cinvoke64 GetProcAddress,rax,rbx" ,ln ;
 
-|-------------- 
+|-------------- ALIGN STACK, old method
 :preA16
 	"PUSH RSP" ,ln 
 	"PUSH qword [RSP]" ,ln 
@@ -905,14 +905,13 @@
 :posA16
 	"POP RSP" ,ln  ;
 
-|--------------
+|-------------- NEW METHOD
 :preA16
-	"mov rdx, rsp" ,ln         | Guardamos el RSP original en un registro volátil (RAX es ideal)
-	"sub rsp, 8" ,ln           | Espacio para guardar el RSP original
-	"and rsp, -16" ,ln         | Alineamos RSP a 16 bytes
-	"mov [rsp], rdx" ,ln       | Guardamos el RSP original en la pila ya alineada
-	;
-	
+	"mov rdx, rsp" ,ln
+	"sub rsp, 8" ,ln
+	"and rsp, -16" ,ln
+	"mov [rsp], rdx" ,ln ;
+
 :posA16
 	"mov rsp, [rsp]" ,ln  ;
 		

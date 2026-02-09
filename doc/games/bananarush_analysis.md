@@ -138,7 +138,7 @@ The banana projectile implements realistic physics:
     0.07 'yvbana +!                    // Gravity
     xvbana 0.03 *. 'rbana +!          // Rotation based on X velocity
     xvbana 'xbana +!                   // Apply X velocity
-    xabana 'xvbana +!                  // Air resistance
+    xabana 'xvbana +!                  // view movement
 ```
 
 ### Animation System Integration

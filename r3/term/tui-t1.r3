@@ -94,7 +94,7 @@
 	flxRest tuWin 
 |	$1 " Editor " .wtitle
 	$4 'filename .wtitle
-	$23 mark tudebug ,s ,eol empty here .wtitle
+	$23 mark tuecursor. ,s ,eol empty here .wtitle
 	1 1 flpad 
 	tuEditCode
 	uiKey

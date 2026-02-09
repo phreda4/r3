@@ -75,9 +75,9 @@
 		) drop ;
 		
 :coderror | error --
-	.cl	15 .fc 1 .bc
-	lerror " %w " .print
-	.write cntlines " in line %d" .print 
+	.cl	
+	15 .fc 13 .bc .sp .write cntlines " in line %d :" .print 
+	15 .fc 9 .bc .sp lerror "%w" .print | < word error
 	'msg strcpybuf ;
 	
 :codeok
@@ -166,7 +166,7 @@
 
 #mins " INS "
 #movr " OVR "
-#mvis " VIS "
+#mvis " MENU "
 
 #msgmode  mins
 
@@ -179,6 +179,7 @@
 	1 flxS 
 	fx fy .at printfname
 	0 .fc 6 .bc msgmode .write tuecursor. .write 
+	4 .bc 7 .fc
 	'msg .write .eline
 	flxRest
 	tuEditCode
@@ -218,6 +219,7 @@
 	.masb .reset .cls .flush
 	TuSaveCode
 |WIN| "r3 r3/editor/r3plain.r3"
+|LIN| "./r3lin r3/editor/r3plain.r3"
 	sys
 	.reterm .alsb .flush ;
 
@@ -226,6 +228,7 @@
 	.masb .reset .cls .flush
 	TuSaveCode
 |WIN| "r3 r3/system/r3compiler.r3"
+|LIN| "./r3lin r3/system/r3compiler.r3"
 	sys
 	.reterm .alsb .flush ;
 	
@@ -246,7 +249,6 @@
 	1 flxS 
 	fx fy .at printfname 
 	3 .bc 0 .fc 'MVIS .write tuecursor. .write 
-	
 	4 .bc 7 .fc
 	" ^[7m R ^[27mun ^[7m D ^[27mebug  ^[7m P ^[27mlain ^[7m C ^[27mompile ^[7m H ^[27mHelp ^[7m / ^[27mSearch ^[7m Q ^[27muit "  
 	.printe
