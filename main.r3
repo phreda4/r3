@@ -14,8 +14,6 @@
 #nameaux * 1024
 
 #vfolder 0 0
-#scratchpad * 1024
-#info * 64
 
 |---------------------
 :loadm
@@ -153,18 +151,6 @@
 	loadm
 	tuR! ;
 	
-#padcomm * 128
-:command
-	|___________
-	4 flxS
-	fx fy .at 
-	|" |ESC| Exit |F1| Run |F2| Ide |F3| Search |F4| Clon |F5| New |F10| Help" .write
-	fw .hline
-	1 1 flpad 
-	'padcomm fw tuInputLine
-	;
-|--------------------------------	
-
 |------------
 :paneleditor
 	fuente c@ 0? ( drop ; ) drop
@@ -202,22 +188,6 @@
 	tuX? 1? ( changefiles ) drop
 	;
 
-|------------
-:setcmd
-	0 'scratchpad ! tuRefocus
-	"command" 'info strcpy
-	;
-	
-:dirpad
-	.reset |	tuwin $1 " Command " .wtitle
-	.wbordec
-	1 1 flpad 
-	fx fy .at 
-
-|	'scratchpad	1024 tuInputline
-|	tuX? 1? ( setcmd ) drop	
-	'fullpath .write | flcr
-	;
 
 #tk
 |------------	
@@ -232,7 +202,7 @@
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp
-	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m ^[7m N ^[27mew ^[7m / ^[27mSearch "
+	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
 	.printe
 
 	|___________

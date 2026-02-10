@@ -6,7 +6,7 @@
 
 ^r3/d4/r3token.r3
 
-#filename * 1024
+|#filename * 1024
 
 #msg * 1024		| lst line msg
 
@@ -163,32 +163,12 @@
 :maninfo
 	;
 
-
-#mins "INS "
-#movr "OVR "
-
-#msgmode  mins
-
 |-------------------------------
 :printfname
 	4 .bc 7 .fc .sp 'filename .write .sp ;
 	
-:modedit
-	.reset .cls 
-	1 flxS 
-	fx fy .at printfname
-	0 .fc 6 .bc " EDIT " .write tuecursor. .write msgmode .write 
-	4 .bc 7 .fc
-	'msg .write .eline
-	flxRest
-	tuEditCode
-	uiKey
-	|[esc] =? ( exit )
-	drop ;
-
 :moderror
-	lerror tuiecursor! 
-	'modedit onTui ;
+	lerror tuiecursor! ;
 	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
@@ -279,10 +259,9 @@
 	.reset .home 
 	1 flxS 
 	fx fy .at printfname 
-	3 .bc 0 .fc .sp tuecursor. .write 
-	4 .bc 7 .fc
-	" ^[7m F2 ^[27mRun ^[7m F3 ^[27mDebug  ^[7m F10 ^[27mompile"  
-	.printe
+	0 .fc 6 .bc .sp tuecursor. .write 
+	'msg .write .eline
+	4 .bc 7 .fc " ^[7m F2 ^[27mRun ^[7m F3 ^[27mDebug  ^[7m F10 ^[27mompile" .printe
 	.eline
 	flxRest
 	

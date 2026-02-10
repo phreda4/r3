@@ -28,8 +28,8 @@
 :getterminfo | --
     stdout 'eventBuffer GetConsoleScreenBufferInfo drop 
     'eventBuffer 10 + @
-    dup 32 >> $ffff and over $ffff and - 'cols !
-    dup 48 >> $ffff and swap 16 >> $ffff and - 'rows ! ;
+    dup 32 >> $ffff and over $ffff and - 1+ 'cols !
+    dup 48 >> $ffff and swap 16 >> $ffff and - 1+ 'rows ! ;
 
 #c1 ( $1b ) "[9999;9999H"
 #c2 ( $1b ) "[6n"
