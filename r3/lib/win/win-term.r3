@@ -50,8 +50,8 @@
 ::.onresize | 'callback --
     'on-resize ! ; | something the size is wrong at start
 
-:sizecalc
-	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! ;
+|:sizecalc
+|	'eventBuffer 4 + w@+ 'cols ! w@ 'rows ! ;
 	
 :sizeex
 	getrc prevrc =? ( drop ; ) 'prevrc ! 
@@ -109,9 +109,11 @@
 	drop 'eventBuffer 8 + d@ 'evtmb ! ;
 
 :evtsize
-	( 4 =? ( sizecalc ) 
-		getEvent 2 >? drop | collect
-		) drop sizeex ;
+	( |4 =? ( sizecalc ) 
+		getEvent 2 >? drop | collect no use event
+		) drop 
+	getterminfo
+	sizeex ;
 
 ::inevt | -- type | check for event (no wait)
 	getEvent

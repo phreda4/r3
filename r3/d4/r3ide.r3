@@ -164,9 +164,8 @@
 :maninfo
 	;
 
-#mins " INS "
-#movr " OVR "
-#mvis " MENU "
+#mins "INS "
+#movr "OVR "
 
 #msgmode  mins
 
@@ -178,7 +177,7 @@
 	.reset .cls 
 	1 flxS 
 	fx fy .at printfname
-	0 .fc 6 .bc msgmode .write tuecursor. .write 
+	0 .fc 6 .bc " EDIT " .write tuecursor. .write msgmode .write 
 	4 .bc 7 .fc
 	'msg .write .eline
 	flxRest
@@ -248,7 +247,7 @@
 	.reset .home 
 	1 flxS 
 	fx fy .at printfname 
-	3 .bc 0 .fc 'MVIS .write tuecursor. .write 
+	3 .bc 0 .fc " MENU " .write tuecursor. .write 
 	4 .bc 7 .fc
 	" ^[7m R ^[27mun ^[7m D ^[27mebug  ^[7m P ^[27mlain ^[7m C ^[27mompile ^[7m H ^[27mHelp ^[7m / ^[27mSearch ^[7m Q ^[27muit "  
 	.printe

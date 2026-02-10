@@ -57,6 +57,7 @@
 	w@+ 'cntinc ! 'strinc !
 	here dup "mem/r3dicc.mem" load 'here !
 	'realdicc !
+	100 ms
 	;
 
 #msg * 1024
@@ -159,21 +160,19 @@
 	mretstack 
 	( 8 - vmRTOS >? 
 		dup rstackoff + |@ 
-		" %h " .print
+		" %h" .print
 		) drop ;
 		
-:scrMsg	
-	.reset fx fy .at fw .hline .cr
-
+:scrMsg
+	.reset |fx fy 1+ .at fw .hline .cr
 	vmIP "IP:%h " .print 
-	
-	cshare vmIP 2 << + d@ |codesrc + d@ 
-	.token .print .sp
 	
 	|codesrc vmIP 1- 3 << + @ ":%h:" .print
 	
 |	vmTOS	"TOS:%h " .print vmNOS	"NOS:%h " .print vmRTOS	"RTOS:%h " .print .cr
-	vmREGA	"A:%h " .print vmREGB	"B:%h " .print 
+	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
+	cshare vmIP 2 << + d@ |codesrc + d@ 
+	.token .print 
 |	vmDS	"DS:%h " .print vmRS	"RS:%h " .print 
 	.cr
 
@@ -182,8 +181,10 @@
 |	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
 |	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
+
 	"D|" .write .datastack .cr
-	"R|" .write .retstack
+	"R|" .write .retstack 
+	|fx fy fw fh "%d %d %d %d " .print cols rows "%d %d" .print
 	;
 	
 |---- view tokens	
@@ -455,18 +456,13 @@
 	.reset .cls
 	
 	1 flxN
-	4 .bc 7 .fc
-	fx fy .at fw .nsp
+	4 .bc 7 .fc fx fy .at fw .nsp
 	" R3debug | " .write 'labelfilename .write
 	
-	1 flxS
+	8 flxS
 	fx fy .at
 	'statusline .write
-	
-	vmSTATE " >>%H<<" .PRINT	
-|	cm $fff and " %d " .print
-
-	7 flxS |tuWina $1 "Imm" .wtitle |242 .bc
+	vmSTATE " >>%H<<" .PRINT .cr
 	scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
@@ -478,6 +474,7 @@
 	flxRest 
 	|1 1 flPad
 	tuReadCode 
+	
 	|tuEditCode 
 	
 	msec $100 and? ( drawkeepcm ) drop 
