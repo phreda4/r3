@@ -32,6 +32,10 @@
 :savem
 	'fullpath 1024 "mem/menu.mem" save ;
 
+:reloadir
+	empty mark
+	'basepath flScanFullDir ;
+
 |---------------------------
 :banner
 	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
@@ -73,12 +77,82 @@
 	sys 
 	.reterm .alsb .flush tuR! ;
 
-:filenew
+:remfilename | str --
+	count
+	swap over + | count 'fnla
+	( 1- dup c@ 
+		$2f =? ( drop 0 swap c! drop ; )
+		drop swap 1- 1?
+		swap ) 2drop ;
+
+:addext | str --
+	".r3" =pos 1? ( drop ; ) drop
+	".r3" swap strcat
 	;
+
+|===================================
+#newsdl "| r3 sdl program
+^r3/lib/sdl2gfx.r3
+	
+:main
+	0 SDLcls
+	$ff00 SDLColor
+	10 10 100 100 SDLFRect
+	SDLredraw
+	
+	SDLkey 
+	>esc< =? ( exit )
+	drop ;
+
+:
+	""r3sdl"" 800 600 SDLinit
+	'main SDLshow
+	SDLquit 
+;"
+|===================================
+	
+:filenew
+	0 rows .at 7 .fc 4 .bc cols .nsp
+	0 rows .at 
+	" Name: " .write .input
+	'pad trim c@ 0? ( drop ; ) drop
+	'fullpath remfilename
+	'pad addext
+	'pad 'fullpath "%s/%s" sprint 'fullpath strcpy
+
+	'fullpath filexist 1? ( drop 
+		15 .fc 1 .bc " ** FILE EXIST **" .write waitkey ; ) drop
+
+	mark
+	'newsdl ,s
+	'fullpath savemem
+	empty
+	
+	32 fuente c! | for enter edit
+	fileedit
+	reloadir
+	loadm
+	tuR! ;
 	
 :filesearch
 	;
 
+:filedelete
+	fuente c@ 0? ( drop ; ) drop	
+	0 rows .at 15 .fc 1 .bc cols .nsp
+	0 rows .at 
+	" !! " .write 'filename .write	
+	" !! DELETE ? (Y/N) " .write .eline
+	getch tolow
+	$79 <>? ( drop ; ) drop
+	'filename delete | "filename" --
+	'filename remfilename
+	'filename 'fullpath strcpy
+	savem
+	reloadir
+	loadm
+	tuR! ;
+	
 #padcomm * 128
 :command
 	|___________
@@ -154,11 +228,11 @@
 	4 flxN
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug |2dup " %d %d " .print
-tk "%h" .print
+	|tk "%h" .print 'fullpath .write
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp
-	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m C ^[27mlon ^[7m N ^[27mew ^[7m / ^[27mSearch "
+	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m ^[7m N ^[27mew ^[7m / ^[27mSearch "
 	.printe
 
 	|___________
@@ -178,16 +252,18 @@ tk "%h" .print
 	[f6] =? ( fileedit )
 	$20 =? ( fileedit )
 	toUpp
-|	$43 =? ( fileclon )	| C	
-	$45	=? ( fileedit )	| E
-|	$4e =? ( filenew )	| N
-	$52 =? ( filerun )	| R
+|	$43 =? ( fileclon )	| Clon	
+	$44 =? ( filedelete ) | Delete
+	$45	=? ( fileedit )	| Edit
+	$4e =? ( filenew )	| New
+	$52 =? ( filerun )	| Run
 	$51 =? ( exit )
 	drop
 	;
 
 |-----------------------------------
 :main
+	mark
 	'basepath flScanFullDir
 	
 	TuNewCode 	|"main.r3" TuLoadCode

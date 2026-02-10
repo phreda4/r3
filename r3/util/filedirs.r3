@@ -191,9 +191,9 @@
 ::flOpenFullPath | str -- place ; open the folders
 	ab[
 	uiDirs >a 0 >b
-	next/ 0? ( ; ) 
+	next/ 0? ( ]ba ; ) 
 	( dup next/ 1? swap
-		dup find/ 0? ( nip nip ; ) drop
+		dup find/ 0? ( nip nip ]ba ; ) drop
 		a> c@ $80 or a> c! | open dir
 		1 b+ ) drop 
 	findl drop | last name

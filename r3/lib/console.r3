@@ -182,9 +182,9 @@
 	
 :.char
 	0? ( drop ; )
-	8 =? ( swap 
-		1 - 'pad <? ( 2drop 'pad ; )
-		swap .emit "1P" .[w ; )
+	$7f =? ( drop | backspace
+		1- 'pad <? ( drop 'pad ; )
+		8 .emit 32 .emit 8 .emit ; )
 	dup .emit
 	swap c!+ ;
 	
