@@ -160,9 +160,9 @@
 	'helpmain onTui
 	;
 
-	
 :maninfo
 	;
+
 
 #mins "INS "
 #movr "OVR "
@@ -230,6 +230,38 @@
 |LIN| "./r3lin r3/system/r3compiler.r3"
 	sys
 	.reterm .alsb .flush ;
+
+|-------------------------------
+#tcomp 0
+
+:modecompile
+	.reset .home 
+	10 5 cols 20 - rows 10 - flx!
+	tuwin $1 " Compiler " .wtitle
+	1 1 flpad .wfill
+	|fx fy .at "hey" .write
+	
+|	5 flxS 1 1 flpad 
+|	fx fy .at 
+|	"Progress" .write
+	
+	20 flxO .wbordec 2 2 flpad 
+	fx fy .at
+	"Generate" tuLabelc
+	"" tuLabel
+	'fileplain "Plain file" tuBtn
+	'filecompile "Win64 exe" tuBtn
+	"" tuLabel
+	'exit "Exit" tuBtn | 'ev "" --
+	flxRest .wborde 1 1 flpad 
+	fx fy .at
+	"code" .write
+	;
+	
+:compile
+	checkcode error 1? ( drop moderror ; ) drop
+	'modecompile onTui
+	;
 	
 |-------------------------------
 #state
@@ -247,27 +279,32 @@
 	.reset .home 
 	1 flxS 
 	fx fy .at printfname 
-	3 .bc 0 .fc " MENU " .write tuecursor. .write 
+	3 .bc 0 .fc .sp tuecursor. .write 
 	4 .bc 7 .fc
-	" ^[7m R ^[27mun ^[7m D ^[27mebug  ^[7m P ^[27mlain ^[7m C ^[27mompile ^[7m H ^[27mHelp ^[7m / ^[27mSearch ^[7m Q ^[27muit "  
+	" ^[7m F2 ^[27mRun ^[7m F3 ^[27mDebug  ^[7m F10 ^[27mompile"  
 	.printe
 	.eline
 	flxRest
-	tuReadCode
-	|tuEditShowCursor
-	.ovec tuC!
+	
+	|tuReadCode .ovec tuC!
+	tuEditCode
+	
 	uiKey
-	[esc] =? ( 'modedit onTui )
+|	[esc] =? ( 'modedit onTui )
 	|$2f =? ( 'modesearch onTui )
-	tueKeyMove
+|	tueKeyMove
+	
+	[f2] =? ( runcode )
+	[f3] =? ( debugcode )
+	[f10] =? ( compile )
 	toLow
-	$68 =? ( helpcode )			| h
-	$71 =? ( $1 'state ! exit ) | q
-	$78 =? ( confirm )			| x salir sin grabar
-	$72 =? ( runcode )			| r un
-	$64 =? ( debugcode )		| d ebug
-	$70 =? ( fileplain )		| plain
-	$63 =? ( filecompile )		| compile
+|	$68 =? ( helpcode )			| h
+|	$71 =? ( $1 'state ! exit ) | q
+|	$78 =? ( confirm )			| x salir sin grabar
+|	$72 =? ( runcode )			| r un
+|	$64 =? ( debugcode )		| d ebug
+|	$70 =? ( fileplain )		| plain
+|	$63 =? ( filecompile )		| compile
 	drop ;
 
 |-----------------------------------

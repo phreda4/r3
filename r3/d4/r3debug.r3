@@ -474,12 +474,14 @@
 	flxRest 
 	|1 1 flPad
 	tuReadCode 
-	
+	.ovec tuC! | show user cursor
 	|tuEditCode 
 	
 	msec $100 and? ( drawkeepcm ) drop 
 	
 	uiKey
+	tueKeyMove	
+	
 	[f3] =? ( *>step )
 	[f4] =? ( *>stepo )
 	[f5] =? ( play/stop )

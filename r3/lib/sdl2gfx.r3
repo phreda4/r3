@@ -441,15 +441,18 @@
 	texEnd
 	dup 1 SDL_SetTextureBlendMode ;
 	
-::tex2static | tex -- newtexture
+::Tex2Surface | tex -- tex surface
 	dup 'xm 'ym 'dx 'dy SDL_QueryTexture | xm=format 
-	0 dx dy 0 xm SDL_CreateRGBSurfaceWithFormat 
+	0 dx dy 0 xm SDL_CreateRGBSurfaceWithFormat | tex surf
 	SDLrenderer pick2 SDL_SetRenderTarget
 	SDLrenderer 0 xm pick3 Surf>pixpi SDL_RenderReadPixels
-	SDLrenderer 0 SDL_SetRenderTarget	
+	SDlrenderer 0 SDL_SetRenderTarget ;
+
+::Tex2Static | tex -- newtexture
+	Tex2Surface
 	SDLrenderer over SDL_CreateTexturefromSurface | new texture
 	-rot SDL_FreeSurface SDL_destroytexture ;
-			
+	
 |.... time control
 #prevt
 #deltatime
