@@ -133,6 +133,11 @@
 	tuR! ;
 	
 :filesearch
+	0 rows .at 7 .fc 4 .bc cols .nsp
+	0 rows .at 
+	" ? " .write .input
+	'pad trim c@ 0? ( drop ; ) drop
+	
 	;
 
 :filedelete
@@ -188,7 +193,6 @@
 	tuX? 1? ( changefiles ) drop
 	;
 
-
 #tk
 |------------	
 :scrmain
@@ -214,13 +218,13 @@
 
 	uikey
 |	[f2] =? ( help )		| H
-|	[f3] =? ( filesearch )	| S
 
 	[f5] =? ( filerun )
 	[ENTER] =? ( filerun )
 	
 	[f6] =? ( fileedit )
 	$20 =? ( fileedit )
+	$2f =? ( filesearch )
 	toUpp
 |	$43 =? ( fileclon )	| Clon	
 	$44 =? ( filedelete ) | Delete

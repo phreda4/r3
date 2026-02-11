@@ -6,9 +6,8 @@
 
 ^r3/d4/r3token.r3
 
-|#filename * 1024
 
-#msg * 1024		| lst line msg
+#msg * 1024		| last line msg
 
 #vlist 
 #msglist
@@ -75,14 +74,15 @@
 		) drop ;
 		
 :coderror | error --
-	.cl	
-	15 .fc 13 .bc .sp .write cntlines " in line %d :" .print 
-	15 .fc 9 .bc .sp lerror "%w" .print | < word error
+	.cl	15 .fc 1 .bc lerror " %w | " .print
+	.write cntlines " in line %d" .print 
+	.eline
 	'msg strcpybuf ;
 	
 :codeok
 	.cl	2 .bc 0 .fc
-	cnttok cntdef cntinc " OK inc:%d words:%d tokens:%d" .print
+	cnttok cntdef cntinc " OK | inc:%d words:%d tokens:%d" .print 
+	.eline
 	'msg strcpybuf ;
 |	makelistwords
 |	makelistinc
@@ -160,9 +160,6 @@
 	'helpmain onTui
 	;
 
-:maninfo
-	;
-
 |-------------------------------
 :printfname
 	4 .bc 7 .fc .sp 'filename .write .sp ;
@@ -181,7 +178,6 @@
 	.reterm .alsb .flush
 	|here dup "error.log" load over =? ( 2drop ; ) 0 swap c!
 	|drop "** error **" 'msg strcpy
-	
 	;
 
 :debugcode
@@ -244,46 +240,23 @@
 	;
 	
 |-------------------------------
-#state
-
-:confirm
-	0 rows .at printfname 
-	6 .bc 0 .fc 
-	" exit without save ? (Y/N) " .write .eline
-	getch tolow
-	$79 <>? ( drop ; ) drop
-	$10 'state !
-	exit ; 
-
 :main
 	.reset .home 
-	1 flxS 
+	2 flxS 
 	fx fy .at printfname 
 	0 .fc 6 .bc .sp tuecursor. .write 
-	'msg .write .eline
-	4 .bc 7 .fc " ^[7m F2 ^[27mRun ^[7m F3 ^[27mDebug  ^[7m F10 ^[27mompile" .printe
-	.eline
+	4 .bc 7 .fc " ^[7mF4^[27mRun ^[7mF5^[27mDebug  ^[7mF10^[27mCompile" .printe .eline .cr
+	'msg .write
 	flxRest
 	
-	|tuReadCode .ovec tuC!
 	tuEditCode
-	
 	uiKey
-|	[esc] =? ( 'modedit onTui )
-	|$2f =? ( 'modesearch onTui )
-|	tueKeyMove
-	
-	[f2] =? ( runcode )
-	[f3] =? ( debugcode )
+	| [f2] =? ( helpcode )			| h
+	| [f3] =? ( analisis )
+	[f4] =? ( runcode )
+	[f5] =? ( debugcode )
 	[f10] =? ( compile )
 	toLow
-|	$68 =? ( helpcode )			| h
-|	$71 =? ( $1 'state ! exit ) | q
-|	$78 =? ( confirm )			| x salir sin grabar
-|	$72 =? ( runcode )			| r un
-|	$64 =? ( debugcode )		| d ebug
-|	$70 =? ( fileplain )		| plain
-|	$63 =? ( filecompile )		| compile
 	drop ;
 
 |-----------------------------------
@@ -295,9 +268,7 @@
 	'filename TuLoadCode
 	|TuNewCode
 	mark
-	0 'state !
 	'main onTui 
-	| state $1 and? ( TuSaveCode ) drop
 	TuSaveCode 
 	
 	.masb .free 

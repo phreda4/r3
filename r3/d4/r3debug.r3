@@ -391,7 +391,7 @@
 
 :slnormal
 	.cl	4 .bc 7 .fc cols .nsp
-	" ^[7mF3^[27m Step ^[7mF4^[27m Over ^[7mF5^[27m Run/Stop ^[7m F9 ^[27m End " .printe
+	" ^[7mF5^[27mPlay/Stop ^[7mF9^[27m BreakP ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
 	'statusline strcpybuf ;
 	
 :runtimerror
@@ -482,11 +482,10 @@
 	uiKey
 	tueKeyMove	
 	
-	[f3] =? ( *>step )
-	[f4] =? ( *>stepo )
 	[f5] =? ( play/stop )
-	
-	[f9] =? ( *>end )
+|	[f9] =? ( *>end )
+	[f10] =? ( *>stepo )
+	[f11] =? ( *>step )
 	drop 
 	vmState $ff >? ( runtimerror ) drop
 	;

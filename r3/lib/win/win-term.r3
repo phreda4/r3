@@ -68,15 +68,20 @@
 |   WORD  wVirtualScanCode;| 12
 |   WCHAR/CHAR UnicodeChar;| 14
 |   DWORD dwControlKeyState;
+|::evtkey | -- key | <--- OLD
+|	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
+|	14 + c@ $1b <>? ( ; ) 
+|	56 << ( 8 >> 
+|	    stdin 'ne GetNumberOfConsoleInputEvents 
+|		ne 1? drop
+|		stdin 'eventBuffer 1 'ne ReadConsoleInput
+|		'eventBuffer 14 + c@ 1? 56 << or ) drop
+|	( $ff nand? 8 >> ) ;
+
 ::evtkey | -- key
-	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
-	14 + c@ $1b <>? ( ; ) 
-	56 << ( 8 >> 
-	    stdin 'ne GetNumberOfConsoleInputEvents 
-		ne 1? drop
-		stdin 'eventBuffer 1 'ne ReadConsoleInput
-		'eventBuffer 14 + c@ 1? 56 << or ) drop
-	( $ff nand? 8 >> ) ;
+	0 'eventBuffer !
+	stdin 'eventBuffer 32 'ne 0 ReadFile drop
+	eventBuffer ;
 
 :getEvent
 	stdin 'ne GetNumberOfConsoleInputEvents 

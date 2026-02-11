@@ -12,7 +12,7 @@
 	
 :stackunder
 	10 ( 1? nip ) ;
-	
+
 :div0
 	1200 var2 / 'var1 ! ;
 	
