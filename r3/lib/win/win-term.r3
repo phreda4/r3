@@ -68,17 +68,17 @@
 |   WORD  wVirtualScanCode;| 12
 |   WCHAR/CHAR UnicodeChar;| 14
 |   DWORD dwControlKeyState;
-|::evtkey | -- key | <--- OLD
-|	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
-|	14 + c@ $1b <>? ( ; ) 
-|	56 << ( 8 >> 
-|	    stdin 'ne GetNumberOfConsoleInputEvents 
-|		ne 1? drop
-|		stdin 'eventBuffer 1 'ne ReadConsoleInput
-|		'eventBuffer 14 + c@ 1? 56 << or ) drop
-|	( $ff nand? 8 >> ) ;
+::evtkey | -- key 
+	'eventBuffer dup 4 + c@ 0? ( nip ; ) drop
+	14 + c@ $1b <>? ( ; ) 
+	56 << ( 8 >> 
+	    stdin 'ne GetNumberOfConsoleInputEvents 
+		ne 1? drop
+		stdin 'eventBuffer 1 'ne ReadConsoleInput
+		'eventBuffer 14 + c@ 1? 56 << or ) drop
+	( $ff nand? 8 >> ) ;
 
-::evtkey | -- key
+::evtkey2 | -- key | <-------- 
 	0 'eventBuffer !
 	stdin 'eventBuffer 32 'ne 0 ReadFile drop
 	eventBuffer ;
@@ -88,6 +88,12 @@
     ne 0? ( ; ) drop
     stdin 'eventBuffer 1 'ne ReadConsoleInput
     eventBuffer $ffff and ;
+	
+:isDown? | -- flag
+    eventBuffer 4 + c@ ;
+
+:repeatCount | -- n
+    eventBuffer 6 + w@ ; 
 	
 ##evtmx ##evtmy
 ##evtmb
@@ -170,7 +176,8 @@
 |------- Initialization -------
 ::.reterm  | Set console modes for ANSI/VT sequences and window events
     stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
-    stdout $7 SetConsoleMode drop ;
+    stdout $7 SetConsoleMode drop 
+	FlushConsoleInputBuffer ;
 	
 : |:.term
 	AllocConsole 

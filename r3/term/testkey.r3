@@ -3,7 +3,8 @@
 ^r3/util/utfg.r3
 
 :testkey
-	inevt	
+	|inevt	
+	getevt
 	1 =? ( 
 		evtkey 
 		[esc] =? ( 2drop ; ) 

@@ -47,7 +47,7 @@
 ::reset-terminal-mode | --
 	'disable_sgr 8 type
 	'disable_1002 8 type
-|	'showc 6 type
+	'showc 6 type
 	|0 2 flgs libc-fcntl drop  ??
 	0 0 'sterm libc-tcsetattr 
 
