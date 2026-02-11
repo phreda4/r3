@@ -32,22 +32,25 @@
     da@+ $FFFFFFFE and db!+	| set32(raw, OFF_OFLAG, get32(raw, OFF_OFLAG) & 0xFFFFFFFE);
     da@+ $30 or db!+		| set32(raw, OFF_CFLAG, get32(raw, OFF_CFLAG) | 0x30);
 	da@+ $FFFF7FF4 and db!+	| set32(raw, OFF_LFLAG, get32(raw, OFF_LFLAG) & 0xFFFF7FF4);	
-	ca@ cb!+ da@+ db!+ 2 a+ 
-	1 cb!+ 0 cb!+			| raw[OFF_CC + 5] = 1; raw[OFF_CC + 6] = 0;
-	a@+ b!+
-	da@ db!
+	ca@ cb!+ | line
+    a@+ b!+ a@+ b!+ a@+ b!+ a@ b!
+    here 17 + >b | cc[32]
+    $7f b> 2 + c!
+    1 b> 5 + c!
+    0 b> 6 + c!
 	0 0 here libc-tcsetattr 
 	'enable_1002 8 type
 	'enable_sgr 8 type
 	;
 
-#showc ( $1B $5B $31 $20 $71 )
+#showc ( $1B $5B $3f $32 $35 $68 )
 ::reset-terminal-mode | --
 	'disable_sgr 8 type
 	'disable_1002 8 type
+|	'showc 6 type
 	|0 2 flgs libc-fcntl drop  ??
 	0 0 'sterm libc-tcsetattr 
-	'showc 6 type
+
 	0 'sterm !
 	;
 
@@ -144,7 +147,7 @@
 ::.reterm
 	set-terminal-mode ;
 	
-: |:.term	
+:
 	.reterm
 	.getterminfo
 	.getrc 'prevrc ! 
