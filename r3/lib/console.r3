@@ -191,7 +191,7 @@
 ::.input | --
 	.showc .ovec
 	'pad 
-	( getch [enter] <>? [esc] <>? .char ) drop
+	( getch $a <>? [enter] <>? [esc] <>? .char ) drop
 	0 swap c! .cr .flush ;
 	
 :emite | char --

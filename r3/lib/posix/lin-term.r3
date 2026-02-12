@@ -6,11 +6,6 @@
 
 ::type 1 -rot libc-write drop ;
 
-#enable_sgr ( $1B $5B $3F $31 $30 $30 $36 $68 )
-#enable_1002 ( $1B $5B $3F $31 $30 $30 $32 $68 )
-#disable_sgr ( $1B $5B $3F $31 $30 $30 $36 $6C )
-#disable_1002 ( $1B $5B $3F $31 $30 $30 $32 $6C )
-
 #sterm * 64		| termios structure copy (0=no copy)
 #flgs
 
@@ -25,7 +20,8 @@
 |#define OFF_LFLAG  12  // 4 bytes, uint32
 |#define OFF_LINE   16  // 1 byte
 |#define OFF_CC     17  // 32 bytes
-::set-terminal-mode | --
+|------- Initialization -------
+::.reterm | --
 	sterm 0? ( 0 'sterm libc-tcgetattr ) drop
 	'sterm >a here >b |'stermc >b
 	da@+ $FFFFFACD and db!+	| set32(raw, OFF_IFLAG, get32(raw, OFF_IFLAG) & 0xFFFFFACD);
@@ -39,18 +35,13 @@
     1 b> 5 + c!
     0 b> 6 + c!
 	0 0 here libc-tcsetattr 
-	'enable_1002 8 type
-	'enable_sgr 8 type
 	;
 
 #showc ( $1B $5B $3f $32 $35 $68 )
-::reset-terminal-mode | --
-	'disable_sgr 8 type
-	'disable_1002 8 type
+::.free | --
 	'showc 6 type
 	|0 2 flgs libc-fcntl drop  ??
 	0 0 'sterm libc-tcsetattr 
-
 	0 'sterm !
 	;
 
@@ -137,16 +128,21 @@
 ::evtkey | -- key
     bufferin ;
 
-|------- Cleanup -------
-::.free | --
-	reset-terminal-mode
-	|0 libc-exit drop 
+#enable_sgr ( $1B $5B $3F $31 $30 $30 $36 $68 )
+#enable_1002 ( $1B $5B $3F $31 $30 $30 $33 $68 ) |>>3
+#disable_sgr ( $1B $5B $3F $31 $30 $30 $36 $6C )
+#disable_1002 ( $1B $5B $3F $31 $30 $30 $33 $6C ) |>>3
+
+::.enable-mouse
+	'enable_1002 8 type
+	'enable_sgr 8 type 
 	;
 
-|------- Initialization -------
-::.reterm
-	set-terminal-mode ;
-	
+::.disable-mouse
+	'disable_sgr 8 type
+	'disable_1002 8 type
+	;
+
 :
 	.reterm
 	.getterminfo
