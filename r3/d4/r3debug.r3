@@ -150,10 +150,10 @@
 
 :.datastack
 	mdatastack dup
-	( 8 + vmNOS <? 
+	( vmNOS <? 
 		dup dstackoff + @ " %h" .print 
-		) drop
-	vmNOS <? ( vmTOS " %h" .print ) 
+		8 + ) drop
+	vmNOS <=? ( vmTOS " %h" .print ) 
 	drop ;
 
 :.retstack
@@ -418,6 +418,9 @@
 	'filename 'labelfilename strcat ;
 	
 
+:playmode
+	;
+
 |-------------------------------------
 #cm -1
 
@@ -472,16 +475,13 @@
 	|scrDicc
 	
 	flxRest 
-	|1 1 flPad
 	tuReadCode 
 	.ovec tuC! | show user cursor
-	|tuEditCode 
-	
 	msec $100 and? ( drawkeepcm ) drop 
+
 	
 	uiKey
 	tueKeyMove	
-	
 	[f5] =? ( play/stop )
 |	[f9] =? ( *>end )
 	[f10] =? ( *>stepo )

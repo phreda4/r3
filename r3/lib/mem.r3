@@ -81,8 +81,8 @@
 |---- print to mem
 :c0	| 'p
 	;
-:c1	| a,q
-	;
+:c1	| a,q		(%a/q) fixed point 1 decimal
+	swap .f1 ,s ;
 :c2	| b,r		(%b) binario
 	swap .b ,s ;
 :c3	| c,s		(%s) string
@@ -91,7 +91,7 @@
 	swap .d ,s ;
 :c5	| e,u,%		(%%) caracter %
 	$25 ,c ;
-:c6	| f,v		(%f) punto fijo
+:c6	| f,v		(%f) fixed point 4 decima;
 	swap .f ,s ;
 :c7	| ..w		(%w) palabra
 	swap 0? ( drop ; ) ,word ;
@@ -99,14 +99,14 @@
 	swap .h ,s ;
 :c9	| i,y		(%i) parte entera fixed
 	swap 16 >> .d ,s ;
-:ca	| j,z		(%j) parte decimal fixel
+:ca	| j,z		(%j) parte decimal fixed
 	swap $ffff and .d ,s  ; | <--- NO ES
 :cb	| k,		(%k) caracter
 	swap ,c ;
 :cc	| l,		(%l) linea
 	swap 0? ( drop ; ) ,line ;
-:cd	| m,}
-	;
+:cd	| m,}		(%m) fixed point 2 decimal
+	swap .f2 ,s ;
 :ce	| .	| cr	(%.) finlinea
 	13 ,c ;
 :cf	| o,		(%o) octal

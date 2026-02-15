@@ -15,9 +15,15 @@
 
 :div0
 	1200 var2 / 'var1 ! ;
+
+:tcall
+	3 'var1 + ;
 	
 :
+.cls 
+tcall
 "test runtime error" .println
+.cr
 ( 
 	"f keys.." .print
 	getch [esc] <>? 

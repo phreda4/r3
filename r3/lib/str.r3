@@ -225,13 +225,13 @@
 	swap sign ;
 
 ::.f | fix -- str
-	mbuffi over	abs $ffff and 10000 16 *>> 10000 + .f! ;
+	mbuffi over	abs $ffff and 3 + 10000 16 *>> 10000 + .f! ; | 3 
 
 ::.f2 | fix -- str
-	mbuffi over	abs $ffff and 100 16 *>> 100 + .f! ;
+	mbuffi over	abs $ffff and 3 + 100 16 *>> 100 + .f! ; | 328 + dup 16 >> integer part +
 
 ::.f1 | fix -- str
-	mbuffi over abs $ffff and 10 16 *>> 10 + .f! ;
+	mbuffi over abs $ffff and 3 + 10 16 *>> 10 + .f! ; | 3277 + dup 16 >> integer part +
 
 ::.r. | b nro -- b ; right spaces
 	'mbuff 63 + swap -

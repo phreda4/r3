@@ -151,7 +151,9 @@
     1 'current-color !
     .hidec
     draw-screen
+.enable-mouse
     main-loop
+.disable-mouse
     .showc .Reset ;
 
 | Program entry point

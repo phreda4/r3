@@ -219,5 +219,5 @@
 	swap sign ;
 	
 ::.fd | fix -- str
-	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
+	mbuffi over	abs $ffffffff and 21 + 100000000 32 *>> 100000000 + .f! ;
 

@@ -651,3 +651,34 @@
 	src swap r3loadmem
 	;
 	
+
+|--------- info map
+:>>13 | a -- a
+	( c@+ 1?
+		13 =? ( drop ; ) 
+		drop ) drop 1- ;
+	
+:countlines | adr -- line
+	0 src ( pick2 <=? 
+		>>13 swap 1+ swap ) 
+	drop nip ;
+	
+:onlywords
+	dup @ 1 and? ( drop 16 + ; ) drop | variable no graba
+	
+	@+ countlines 1 -
+	,q				| fff -nro de linea
+|	8 +
+	@+ |swap @+ 
+|	rot 32 << or 
+	,q 				| info y mov<<32
+	;
+	
+::r3tokeninfo
+	mark
+	dic< ( dic> <? | solo codigo principal
+		onlywords ) drop
+
+	"mem/infomap.db" savemem
+	empty ;
+	

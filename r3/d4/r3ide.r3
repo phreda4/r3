@@ -92,10 +92,18 @@
 	0 'msg !
 	fuente 'filename r3loadmem
 	error 1? ( coderror ; ) drop 
-	codeok ;
+	codeok 
+	;
 	
 	
-|--- F1 RUN in CHECK	
+|--- F2 analisis
+:anacode
+	0 'msg !
+	fuente 'filename r3loadmem
+	error 1? ( coderror ; ) drop 
+	codeok 
+	|r3tokeninfo
+	;
 
 |---- screen
 :setcursoride
@@ -252,7 +260,7 @@
 	tuEditCode
 	uiKey
 	| [f2] =? ( helpcode )			| h
-	| [f3] =? ( analisis )
+	[f3] =? ( anacode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
 	[f10] =? ( compile )
