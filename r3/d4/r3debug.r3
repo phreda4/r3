@@ -143,15 +143,23 @@
 :scrDicc
 	flxPush
 |	tuS
+	rows 2/ flxS
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	
-	'xwrite.word xwrite!
-	'vwords lwords tuList | 'var list --
-	xwrite.reset
+|	'xwrite.word xwrite!
+|	'vwords lwords tuList | 'var list --
+|	xwrite.reset
+	flxRest
+	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
 	
 	flxPop
 	;
 
+
+:viewmemhere
+
+	;
+	
 |-------------------------
 
 :.datastack
@@ -488,6 +496,7 @@
 	
 	uiKey
 	tueKeyMove	
+	[f4] =? ( viewmemhere ) 
 	[f5] =? ( play/stop )
 |	[f9] =? ( *>end )
 	[f10] =? ( *>stepo )

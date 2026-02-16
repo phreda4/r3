@@ -8,6 +8,7 @@
 | + translate noname definitions
 |-----------------
 ^r3/lib/console.r3
+^r3/util/utfg.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt.r3
 
@@ -107,18 +108,31 @@
 	empty			| free buffer
 	;
 
+::r3plain | str --
+	dup "loading %s..." .println
+	r3load
+	error 1? ( dup .println ; ) drop
+	".pass1" .println
+	deferwi | for opt	
+	
+	".pass2" .println
+	|showvar 
+	".pass3" .println	
+|	resetvm
+	".pass4" .println	
+	saveopt
+	".genplain" .println
+	;
+	
 |--------------------- BOOT
 : 	
-	.cls
-	'filename "mem/main.mem" load drop
+	'filename "mem/menu.mem" load drop
 |	"r3/test/testasm.r3" 'filename strcpy
-
-	'filename r3load
-|	'filename .println
-	error 1? ( dup .print .cr ) drop
-	deferwi | for opt	
-|	showvar 
-	resetvm
-	saveopt
-	|.input
+	.cr
+	.reset "[07Make plain.r3" .awrite .cr .cr .cr .cr 
+	mark
+	'filename r3plain
+	cols .hline
+	.cr "press any key to continue..." .print	
+	waitkey	
 	;

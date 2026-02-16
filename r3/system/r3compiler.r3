@@ -27,7 +27,7 @@
 	r3name
 	here dup 'src !
 	'r3filename
-	dup "load %s" .println
+	dup "loading %s..." .println
 	2dup load | "fn" mem
 	here =? ( 3drop "no source code" .println ; )
 	0 swap c!+ 'here !
@@ -35,28 +35,28 @@
 	0 'cnttokens !
 	0 'cntdef !
 	'inc 'inc> !
-	" pass1" .println
+	".pass1" .println
 	swap r3-stage-1
 
 	error 1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop
 	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
 
-	" pass2" .println 
+	".pass2" .println 
 	r3-stage-2
 	1? ( 4drop "ERROR %s" .println lerror "%l" .println ; ) drop
 	code> code - 2 >> "tokens:%d" .println
 
-	" pass3" .println
+	".pass3" .println
 	r3-stage-3
-	" pass4" .println 
+	".pass4" .println 
 	r3-stage-4
 	3drop
 	|-----------------
-	" genset" .println
+	".genset" .println
 	r3-genset
-	" gencode" .println 
+	".gencode" .println 
 	r3-gencode
-	" gendata" .println
+	".gendata" .println
 	r3-gendata
 	;
 
@@ -76,19 +76,16 @@
 
 : 	
 	'name "mem/menu.mem" load drop
-	.reset .cls "[01R[023[03f[04o[05r[06t[07h" .awrite 
-	.cr .cr .cr .cr 
-	" r3 compiler" .println
-
+	.reset "[07Win64 Compiler" .awrite .cr .cr .cr .cr 
 	'name r3c
 
 	error 1? ( drop savedebug ; ) drop
 
 	
-|    "asm\fasm.exe asm\r3fasm.asm" sys
+|	"asm\fasm.exe asm\r3fasm.asm" sys
 |	"asm\test.bat" sys
 
-|   "asm\fasm.exe r3fasm.asm > asm\log.txt" sys
+|	"asm\fasm.exe r3fasm.asm > asm\log.txt" sys
 |	here "asm\log.txt" load 0 swap ! here print
 	
 	"asm\compile.bat" sys
@@ -97,7 +94,7 @@
 |	waitesc
 	
 	"r3fasm.exe" sys
-
+	cols .hline
 	"press any key to continue..." .print
 	waitkey
 	;

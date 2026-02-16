@@ -208,6 +208,18 @@
 |	.reterm .alsb .flush 
 	;
 
+|------- dev
+:fileplaino
+	checkcode error 1? ( drop moderror ; ) drop
+|	.masb .reset .cls .flush
+	TuSaveCode
+|WIN| "r3 r3/d4/r3plain.r3"
+|LIN| "./r3lin r3/d4/r3plain.r3"
+	sys
+|	.reterm .alsb .flush 
+	;
+|------- dev
+
 :filecompile
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
@@ -224,18 +236,22 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb
 	.reset .cls
-	"[07Compiler" .awrite .cr .cr .cr .cr 
+	"[07Building" .awrite .cr .cr .cr .cr 
+	
 	.cr
 	"Code: " .write 'filename .write .cr .cr
 	cntinc " includes:%d |" .print
 	cntdef " words:%d |" .print
 	cnttok " tokens:%d" .println
 	.cr .cr
-	"[f2] Win64exe [f3] Plain " .write
+	cols .hline
+	"[f2] Win64exe [f3] Plain " .write .cr
+	cols .hline
 	.reset .cr
 	getch 
 	[f2] =? ( filecompile )
 	[f3] =? ( fileplain ) 
+	[f4] =? ( fileplaino ) | dev
 	drop
 	.alsb
 	;
@@ -246,7 +262,7 @@
 	2 flxS 
 	fx fy .at printfname 
 	0 .fc 6 .bc .sp tuecursor. .write 
-	4 .bc 7 .fc " ^[7mF4^[27mRun ^[7mF5^[27mDebug  ^[7mF10^[27mCompile" .printe .eline .cr
+	4 .bc 7 .fc " ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build" .printe .eline .cr
 	'msg .write
 	flxRest
 	
@@ -263,7 +279,7 @@
 |-----------------------------------
 : 
 	.alsb
-	'filename "mem/menu.mem" load	
+	'filename "mem/menu.mem" load drop
 	|"r3/test/testasm.r3" 'filename strcpy
 	
 	'filename TuLoadCode
@@ -271,6 +287,5 @@
 	mark
 	'main onTui 
 	TuSaveCode 
-	
-	.masb .free 
+
 ;
