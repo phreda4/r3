@@ -175,7 +175,7 @@
     stdout $7 SetConsoleMode drop 
 	FlushConsoleInputBuffer ;
 	
-: |:.term
+: 
 	AllocConsole 
 	-10 GetStdHandle 'stdin ! | STD_INPUT_HANDLE
     -11 GetStdHandle 'stdout ! | STD_OUTPUT_HANDLE

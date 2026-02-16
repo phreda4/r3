@@ -19,7 +19,7 @@
 :tcall
 	3 'var1 + ;
 	
-:
+: 
 .cls 
 tcall
 "test runtime error" .println
@@ -34,5 +34,6 @@ tcall
 	" %h" .println
 	) drop
 "finish" .println
+
 ;
 

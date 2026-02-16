@@ -177,7 +177,7 @@
 	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
-	.masb .reset .cls .flush
+	|.masb .reset .cls .flush
 	TuSaveCode
 	'filename
 |WIN| 	"cmd /c r3 ""%s"""
@@ -190,61 +190,54 @@
 
 :debugcode
 	checkcode error 1? ( drop moderror ; ) drop
-	.masb .reset .cls .flush
+	|.masb .reset .cls .flush
 	TuSaveCode
 |WIN| 	"r3 r3/d4/r3debug.r3" 
 |LIN| 	"./r3lin r3/d4/r3debug.r3"
 	sys | run
-	.reterm .alsb .flush ;
+	.reterm .alsb .flush 
+	;
 	
 :fileplain
 	checkcode error 1? ( drop moderror ; ) drop
-	.masb .reset .cls .flush
+|	.masb .reset .cls .flush
 	TuSaveCode
 |WIN| "r3 r3/editor/r3plain.r3"
 |LIN| "./r3lin r3/editor/r3plain.r3"
 	sys
-	.reterm .alsb .flush ;
+|	.reterm .alsb .flush 
+	;
 
 :filecompile
 	checkcode error 1? ( drop moderror ; ) drop
-	.masb .reset .cls .flush
+	|.masb .reset .cls .flush
 	TuSaveCode
 |WIN| "r3 r3/system/r3compiler.r3"
 |LIN| "./r3lin r3/system/r3compiler.r3"
 	sys
-	.reterm .alsb .flush ;
+	|.reterm .alsb .flush 
+	;
 
 |-------------------------------
-#tcomp 0
 
-:modecompile
-	.reset .home 
-	10 5 cols 20 - rows 10 - flx!
-	tuwin $1 " Compiler " .wtitle
-	1 1 flpad .wfill
-	|fx fy .at "hey" .write
-	
-|	5 flxS 1 1 flpad 
-|	fx fy .at 
-|	"Progress" .write
-	
-	20 flxO .wbordec 2 2 flpad 
-	fx fy .at
-	"Generate" tuLabelc
-	"" tuLabel
-	'fileplain "Plain file" tuBtn
-	'filecompile "Win64 exe" tuBtn
-	"" tuLabel
-	'exit "Exit" tuBtn | 'ev "" --
-	flxRest .wborde 1 1 flpad 
-	fx fy .at
-	"code" .write
-	;
-	
 :compile
 	checkcode error 1? ( drop moderror ; ) drop
-	'modecompile onTui
+	.masb
+	.reset .cls
+	"[07Compiler" .awrite .cr .cr .cr .cr 
+	.cr
+	"Code: " .write 'filename .write .cr .cr
+	cntinc " includes:%d |" .print
+	cntdef " words:%d |" .print
+	cnttok " tokens:%d" .println
+	.cr .cr
+	"[f2] Win64exe [f3] Plain " .write
+	.reset .cr
+	getch 
+	[f2] =? ( filecompile )
+	[f3] =? ( fileplain ) 
+	drop
+	.alsb
 	;
 	
 |-------------------------------

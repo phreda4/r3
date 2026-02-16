@@ -38,8 +38,8 @@
 	
 	| start debug
 	'filename 
-	"cmd /c r3d ""%s""" sprint | only WIN for now
-|	"d.bat" 
+|WIN|	"cmd /c r3d ""%s""" sprint | only WIN for now
+|LIN|	"./r3lind ""%s""" sprint
 	sysnew 
 
 	| wait info
@@ -57,7 +57,7 @@
 	w@+ 'cntinc ! 'strinc !
 	here dup "mem/r3dicc.mem" load 'here !
 	'realdicc !
-	100 ms
+	|100 ms
 	;
 
 #msg * 1024
@@ -65,6 +65,7 @@
 #vincs 0 0
 #vwords 0 0
 #vtoken 0 0
+#vwatch 0 0
 
 #lincs
 #lwords
@@ -140,10 +141,15 @@
 	,eol ;
 
 :scrDicc
-	.reset tuWina $1 "Dicc" .wtitle 1 1 flpad 
+	flxPush
+|	tuS
+	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
+	
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
 	xwrite.reset
+	
+	flxPop
 	;
 
 |-------------------------
@@ -471,8 +477,8 @@
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
 	
-	|cols 3 / flxO 
-	|scrDicc
+	cols 2/ flxE
+	scrDicc
 	
 	flxRest 
 	tuReadCode 
@@ -504,8 +510,8 @@
 	precalc
 
 |---- build code links
-	|makelistwords
-	|makelistinc
+	makelistwords
+	makelistinc
 	|buildcodemark
 	
 	buildshowincode
