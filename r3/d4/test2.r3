@@ -4,7 +4,7 @@
 #v1 #v2 #v3 #v4 #v5 #v6 #v7
 
 :main
-	.cr .cr .cr
+	
 	"0.2 0.25 0.7 0.9999 0.0001 1.2 -2.399" 
 	dup .write .cr
 	str>fnro 'v1 !

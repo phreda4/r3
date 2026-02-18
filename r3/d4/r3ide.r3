@@ -177,7 +177,7 @@
 	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
-	|.masb .reset .cls .flush
+	.masb .reset .cls .flush
 	TuSaveCode
 	'filename
 |WIN| 	"cmd /c r3 ""%s"""

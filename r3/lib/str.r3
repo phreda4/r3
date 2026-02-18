@@ -157,6 +157,10 @@
 		pick2 <>? drop ) drop nip
 	1- ;
 
+:findbyte | v64 char -- check
+	$ff and dup 8 << or dup 16 << or dup 32 << or | $0101010101010101 *
+	xor	dup  $0101010101010101 - swap neg and $8080808080808080 and ;
+	
 |----------- find str
 :=p | s1 s2 -- 1/0
 	( c@+ 1?
