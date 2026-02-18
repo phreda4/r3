@@ -261,12 +261,10 @@ The semicolon `;` ends execution of a word and returns to the caller. This means
 A word definition without a closing `;` **falls through** into the next definition. This is a deliberate feature:
 
 ```forth
-:word2
-    something-more ;
-
 :word1
     something
 :word2          | no ; here — word1 continues directly into word2
+    something-more ;
 
 word1  | executes: something, something-more, end
 word2  | executes: something-more, end
