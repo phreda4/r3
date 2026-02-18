@@ -168,11 +168,9 @@ r3 is not just a language; it's a creative suite. Here is what you can find:
 In the /doc folder.
 
 * [Cheatsheet only BASE words](https://github.com/phreda4/r3/blob/main/doc/r3cheatsheet.pdf)
-
-* [Manual](https://github.com/phreda4/r3/blob/main/doc/r3forth_manual.md)
-* [Quick reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_quick_ref.md)
+* [Tutorial](https://github.com/phreda4/r3/blob/main/doc/r3forth_tutorial.md)
+* [Reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_reference.md)
 * [SDL graphics programing](https://github.com/phreda4/r3/blob/main/doc/r3forth-SDL-graphics.md)
-* [Words from basic libs](https://github.com/phreda4/r3/blob/main/doc/r3forth_word_ref.md)
 
 ---
 
