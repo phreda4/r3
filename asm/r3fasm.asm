@@ -11,10 +11,6 @@ include 'set.asm'
 include 'include/MACRO/proc64.inc'
 include 'include/MACRO/import64.inc'
 
-MEM_COMMIT		= 001000h
-MEM_RESERVE		= 002000h
-PAGE_READWRITE	= 004h
-
 macro cinvoke64 name, [args]{
 common
 	mov rdx, rsp
@@ -27,6 +23,9 @@ common
 
 section '.text' code readable executable
 
+MEM_COMMIT		= 001000h
+MEM_RESERVE		= 002000h
+PAGE_READWRITE	= 004h
 
 ;===============================================
 start:
