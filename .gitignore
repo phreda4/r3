@@ -25,3 +25,6 @@ onnx/yolo12n.onnx
 mem/r3.err
 mem/r3code.mem
 mem/r3dicc.mem
+dll/onnxruntime.dll
+/r3/onnx
+/onnx
