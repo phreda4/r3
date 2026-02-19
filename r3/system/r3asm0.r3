@@ -925,11 +925,11 @@
 	posA16 ;
 	
 :gSYS0v
-	"sub RSP,$20" ,ln 
 	preA16	
+	"sub RSP,$20" ,ln 
 	"CALL " ,s ,TOS ,cr
-	posA16 
 	"add RSP,$20" ,ln 
+	posA16 
 	;
 	
 :gSYS1 | a b -- c
@@ -943,13 +943,13 @@
 
 :gSYS1v
 	,DUP
-	"sub RSP,$20" ,ln 
 	preA16
+	"sub RSP,$20" ,ln 	
 	"mov rcx,[rbp]" ,ln
 	"call " ,s ,TOS ,cr
 	"sub rbp,8" ,ln 	
+	"add RSP,$20" ,ln 	
 	posA16 
-	"add RSP,$20" ,ln 
 	;
 	
 :gSYS2 
