@@ -90,11 +90,10 @@ Repository: https://github.com/phreda4/r3
 A definition without `;` continues execution into the next definition:
 
 ```forth
-:word2
-    part-b ;
-
 :word1
     part-a              | no ; — falls through to word2
+:word2
+    part-b ;
 
 word1   | executes part-a, then part-b
 word2   | executes part-b only
@@ -380,8 +379,8 @@ Used to call functions in dynamic libraries (`.dll` on Windows, `.so` on Linux).
 **Usage pattern:**
 ```forth
 "library.dll" LOADLIB 'lib !
-lib @ "FunctionName" GETPROC 'fn !
-arg1 arg2 fn @ SYS2 drop
+lib "FunctionName" GETPROC 'fn !
+arg1 arg2 fn SYS2 drop
 ```
 
 ---
@@ -793,7 +792,9 @@ Include with `^r3/lib/mem.r3`
 - `%h` — Hexadecimal
 - `%b` — Binary
 - `%s` — String from address
-- `%f` — Fixed-point
+- `%f` — Fixed-point (4 decimal)
+- `%m` — Fixed-point (2 decimal)
+- `%a` — Fixed-point (1 decimal)
 - `%w` — Word (until space)
 - `%k` — Character
 - `%l` — Line (until CR/LF)
@@ -934,6 +935,7 @@ All output is buffered. Call `.flush` to send to stdout, or use `.println` which
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
+| `inkey` | `-- key` | 0 if no key pressed |
 | `getch` | `-- key` | Wait for and return the keycode of a pressed key |
 | `waitkey` | `--` | Wait for any keypress |
 | `waitesc` | `--` | Wait specifically for the ESC key |

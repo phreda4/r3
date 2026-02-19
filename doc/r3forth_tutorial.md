@@ -261,12 +261,10 @@ The semicolon `;` ends execution of a word and returns to the caller. This means
 A word definition without a closing `;` **falls through** into the next definition. This is a deliberate feature:
 
 ```forth
-:word2
-    something-more ;
-
 :word1
     something
 :word2          | no ; here — word1 continues directly into word2
+    something-more ;
 
 word1  | executes: something, something-more, end
 word2  | executes: something-more, end
@@ -1372,10 +1370,10 @@ The pattern is always the same:
 ```forth
 "user32.dll" LOADLIB 'user32 !
 
-user32 @ "MessageBoxA" GETPROC 'msgbox !
+user32 "MessageBoxA" GETPROC 'msgbox !
 
 | MessageBoxA(NULL, text, title, MB_OK)
-0 "Hello" "Title" 0 msgbox @ SYS4 drop
+0 "Hello" "Title" 0 msgbox SYS4 drop
 ```
 
 ### Console Access
@@ -1398,7 +1396,7 @@ The simplest starting point — just include the console library:
 | SDL2_net.dll | `^r3/lib/sdl2net.r3` | Network communication |
 | SDL2_ttf.dll | `^r3/lib/sdl2ttf.r3` | TrueType font rendering |
 
-> **Platform support:** R3 is designed for Linux, macOS, and Raspberry Pi, though these ports are in progress.
+> **Platform support:** R3 is designed for Windows, Linux, macOS(future), and Raspberry Pi(future), though these ports are in progress.
 
 ---
 
@@ -1564,9 +1562,6 @@ time msec rerand       | seed with time
 | Error | Meaning | Solution |
 |-------|---------|----------|
 | `Error: 'word' not found` | Misspelled or undefined | Check spelling; define before use |
-| `Stack underflow` | Used more values than available | Check stack balance |
-| `Stack overflow` | Loop growing stack indefinitely | Check loop balance; add drops |
-| `Division by zero` | Dividing by zero | Check before dividing |
 
 ### Debugging Techniques
 
@@ -1832,7 +1827,6 @@ Factor for clarity, but inline trivial operations in tight loops:
 - Leave the stack imbalanced — every word should consume exactly what its stack comment promises
 - Assume registers persist across calls to other words (save them if needed)
 - Use deep stack operations — factor instead
-- Optimize prematurely
 - Mix memory access sizes carelessly
 - Forget to `drop` after conditionals
 
