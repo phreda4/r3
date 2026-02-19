@@ -65,8 +65,8 @@
 
 :rtrim | str -- str
 	dup ( c@+ 1? drop ) drop 2 -
-	( dup c@ $ff and 33 <? drop 1 - ) drop
-	0 swap 1 + c! ;
+	( dup c@ $ff and 33 <? drop 1- ) drop
+	0 swap 1+ c! ;
 	
 :load.inc | str -- str newsrc ; incluye codigo
 	here over realfilename rtrim 
@@ -107,10 +107,10 @@
 	
 :isstr | adr -- 'adr
 	flag 1? ( drop >>str ; ) drop
-	1 + | skyp "
+	1+ | skyp "
 	( c@+ 1? 
 		1 'cntstr +! 
-		34 =? ( drop c@+ 34 <>? ( drop 1 - ; ) ) 
+		34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) 
 		drop ) drop ;
 	
 :wrd2dicc | src -- src'
@@ -195,8 +195,8 @@
 	0 'flag !
 	0 'endcnt !
 	0 'noboot !
-	1 + dup c@
-	$3A =? ( 2 'flag ! swap 1 + swap ) 	|::
+	1+ dup c@
+	$3A =? ( 2 'flag ! swap 1+ swap ) 	|::
 	33 <? ( dic> dic - 4 >> 'noboot ! swap 1 - swap ) | : alone
 	drop
 	dup src - 40 << 
@@ -209,8 +209,8 @@
 :.var 
 	endef
 	1 'flag !
-	1 + dup c@
-	$23 =? ( 3 'flag ! swap 1 + swap ) 	|##
+	1+ dup c@
+	$23 =? ( 3 'flag ! swap 1+ swap ) 	|##
 	drop
 	',qv 'gmem ! 			| save qword default
 	dup src - 40 << 
@@ -613,7 +613,7 @@
 		dup nro>dic 
 	|	dup @ dic>name "%w" .println
 		StaticStackAnalisis
-		1 + ) drop ;
+		1+ ) drop ;
 	
 |-------------------------------------------
 ::r3loadmem | mem 'filename --

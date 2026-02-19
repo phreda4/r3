@@ -8,9 +8,13 @@ entry start
 include 'set.asm'
 ;----- SETINGS -----
 
-include 'include/win64w.inc'
+include 'include/MACRO/proc64.inc'
+include 'include/MACRO/import64.inc'
 
-; from LocoDelAssembly in fasm forum
+MEM_COMMIT		= 001000h
+MEM_RESERVE		= 002000h
+PAGE_READWRITE	= 004h
+
 macro cinvoke64 name, [args]{
 common
 	mov rdx, rsp
@@ -19,15 +23,10 @@ common
 	mov [rsp], rdx
 	cinvoke name, args
 	mov rsp, [rsp]
-;   PUSH RSP             ;save current RSP position on the stack
-;   PUSH qword [RSP]     ;keep another copy of that on the stack
-;   ADD RSP,8
-;   AND SPL,$F0         ;adjust RSP to align the stack if not already there
-;   cinvoke name, args
-;   POP RSP              ;restore RSP to its original value
 }
 
 section '.text' code readable executable
+
 
 ;===============================================
 start:
@@ -38,7 +37,7 @@ start:
   xor rax,rax
   call INICIO
   add rsp,40
-  cinvoke64 ExitProcess,0
+  invoke ExitProcess,0
   ret
 ;----- CODE -----
 include 'code.asm'
@@ -47,9 +46,6 @@ include 'code.asm'
 ;-----------------------------------------------
 ;-----------------------------------------------
 section '.data' data readable writeable
-
-  _title db "r3d",0
-  _error db "err",0
 
 align 16
   FREE_MEM	rq 2
@@ -62,9 +58,7 @@ align 16
 
 section '.idata' import readable
 
-  library kernel32,'KERNEL32',\
-          user32,'USER32'
+library kernel32,'KERNEL32'
 
-  include 'include\api\kernel32.inc'
-  include 'include\api\user32.inc'
+include 'include\api\kernel32.inc'
 

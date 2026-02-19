@@ -620,10 +620,11 @@
 	;
 
 :preA16
-	"PUSH RSP;PUSH qword [RSP];ADD RSP,8;AND SPL,$F0" ,asm ;
-	
+	"mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx" ,asm ;
+
 :posA16
-	"POP RSP" ,asm ;
+	"mov rsp, [rsp]" ,asm  ;
+	
 	
 :gSYS0  | a -- b
 	preA16	

@@ -145,7 +145,8 @@
 |	tuS
 	rows 2/ flxS
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
-	
+	fx fy .at
+	"coso" .write
 |	'xwrite.word xwrite!
 |	'vwords lwords tuList | 'var list --
 |	xwrite.reset

@@ -16,8 +16,11 @@
 :div0
 	1200 var2 / 'var1 ! ;
 
+:rstack
+	var2 * ;
+	
 :tcall
-	3 'var1 + ;
+	3 rstack 'var1 + ;
 	
 : 
 .cls 

@@ -4,6 +4,7 @@
 format PE64 DLL
 entry DllMain
 include 'include/win64a.inc'
+;include 'include/MACRO/IMPORT64.inc'
 
 ;--------------------------------------------------------------------
 section '.code' code readable executable
