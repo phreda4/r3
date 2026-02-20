@@ -21,7 +21,7 @@
 	
 :tcall
 	3 rstack 'var1 + ;
-	
+
 : 
 .cls 
 tcall
