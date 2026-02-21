@@ -40,8 +40,8 @@
 #webcam_set_auto_p
 #webcam_get_format_p
 
-| --- Wrappers (Llamadas al sistema) ---
-| Nota: 'drop' se usa en funciones que retornan void en C
+#webcam_set_conversion_size_p
+#webcam_get_converted_frame_p
 
 ::webcam_list_devices webcam_list_devices_p sys1 ;
 ::webcam_free_list webcam_free_list_p sys1 drop ;
@@ -62,6 +62,9 @@
 ::webcam_get_parameter webcam_get_parameter_p sys2 ;
 ::webcam_set_parameter webcam_set_parameter_p sys3 ;
 ::webcam_set_auto webcam_set_auto_p sys3 ;
+
+::webcam_set_conversion_size webcam_set_conversion_size_p sys3 drop ;
+::webcam_get_converted_frame webcam_get_converted_frame_p sys3 ;
 
 | --- Carga de la librería ---
 |typedef struct {
@@ -114,6 +117,9 @@
 	dup "webcam_get_parameter" getproc 'webcam_get_parameter_p !
 	dup "webcam_set_parameter" getproc 'webcam_set_parameter_p !
 	dup "webcam_set_auto" getproc 'webcam_set_auto_p !
+
+	dup "webcam_set_conversion_size" getproc 'webcam_set_conversion_size_p !
+	dup "webcam_get_converted_frame" getproc 'webcam_get_converted_frame_p !
 
 	drop 
 	;
