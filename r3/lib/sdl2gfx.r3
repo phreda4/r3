@@ -468,27 +468,22 @@
 |init(12) cnt-1(8) now(8) ms(12) acc(24)  = 64 bits
 |63..52   51..44   43..36  35..24  23..0
 ::aniInit | ini cnt fps -- V
-	0? ( 2drop 1 1.0 )				| 0fps is still
+	0? ( 2drop 0 1.0 )				| 0fps is still
 	1000.0 swap / $fff and 24 <<	| ms x frame
 	swap $ff and 44 << or	| cnt 0-> not 1-
 	swap $fff and 52 << or ;		| init
-	
-::ani+! | dt 'V --
-	ab[
-	dup @
-	rot +					| +dt
-	dup 36 >> $ff and >a	| now
-	dup 44 >> $ff and >b 
-	dup 24 >> $fff and		| ms
-	over $ffffff and		| 'var val ms acc
-	( over >=?				| ms acc
-		over -
-		a> 1+ b> >=? ( 0 nip ) >a
-		) nip				| 'var val acc
+
+::ani+! | dt 'v --
+	swap over +! 
+	dup @ dup $ffffff and	| 'v val acc
+	over 24 >> $fff and -	| 'v val acc-ms ( acc-ms)
+	-? ( 3drop ; ) 
+	over 36 >> $ff and 1+	| 'v val nacc nnow
+	pick2 44 >> $ff and		| 'v val nacc nnow cnt
+	>=? ( 0 nip )			| 'v val nacc now
+	36 << or				| 'v val nn
 	swap $ff000ffffff nand or
-	a> 36 << or
-	swap !
-	]ba ;
+	swap ! ;
 
 ::aniFrame | V -- f
 	dup 36 >> $ff and swap 52 >> $fff and + ;
