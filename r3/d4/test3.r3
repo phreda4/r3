@@ -5,7 +5,8 @@
 #at #dt
 
 :main
-	5 4 5.0 aniInit | 6 frames start in 5 at 1.5fps
+	|5 4 5.0 aniInit | 6 frames start in 5 at 1.5fps
+	15 6 2.0 aniInit
 	'anima !
 	msec 'at !
 	( inkey [esc] <>? drop

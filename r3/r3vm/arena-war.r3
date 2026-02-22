@@ -54,15 +54,14 @@
 	a@+ viewpz *. int. viewpy +	| x y
 	a@+ dup 32 >> swap | rot
 	$ffffffff and viewpz *. | zoom	 
-	deltatime a> ani+! a@+ aniFrame
+	a@+ aniFrame
 	a@+ sspriterz
 	;
 
 |------------------- fx
 :fxobj | adr --
-	dup .ani @ aniFrame
-	over .end @ 
-	=? ( 2drop 0 ; ) drop 
+	deltatime over .ani ani+!
+	dup .ani @ aniFrame over .end @ =? ( 2drop 0 ; ) drop
 	drawspr
 	|..... add velocity to position
 	dup .vx @ over .x +!
@@ -83,22 +82,22 @@
 	'fxobj 'fx p!+ >b
 	swap b!+ b!+	| x y 
 	32 << 2.0 or b!+	| ang zoom
-	10 4 15.0 aniInit	| init cnt fps
+	10 5 15.0 aniInit	| init cnt fps (+1 for end)
 	b!+ 
 	imgspr b!+	| anim sheet
 	0 b!+ 0 b!+ 	| vx vy
-	13 b!			| live
+	14 b!			| live
 	;
 	
 :+fxexplo | x y --
 	'fxobj 'fx p!+ >a
 	swap a!+ a!+	| x y 
 	rand 32 << 2.0 or a!+	| ang zoom
-	15 6 15.0 aniInit		| init cnt fps
+	15 7 15.0 aniInit		| init cnt (+1 for end) fps
 	a!+ 
 	imgspr a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
-	19 a!			| live
+	21 a!			| live
 	;
 	
 |------------------- bomb

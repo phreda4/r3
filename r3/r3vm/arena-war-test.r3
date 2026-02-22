@@ -21,7 +21,7 @@
 	gui
 	0 sdlcls
 	
-	pasto
+|	pasto
 	
 	3.0 tsize
 	$0 tcol 10 10 tat "Arena War" tprint

@@ -52,12 +52,12 @@
 
 :toright 
 	0.8 'vx ! -8.0 'x ! 
-	10 8 15.0 aniInit | 15 fps
+	10 8 12.0 aniInit | 15 fps
 	'a ! ;
 
 :toleft
 	-0.8 'vx ! 808.0 'x ! 
-	1 8 15.0 aniInit | init cnt scale -- val
+	1 8 12.0 aniInit | init cnt scale -- val
 	'a ! ;
 
 :+randpeople

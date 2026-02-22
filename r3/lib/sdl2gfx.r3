@@ -470,7 +470,7 @@
 ::aniInit | ini cnt fps -- V
 	0? ( 2drop 1 1.0 )				| 0fps is still
 	1000.0 swap / $fff and 24 <<	| ms x frame
-	swap 1? ( 1- ) $ff and 44 << or	| cnt 0-> not 1-
+	swap $ff and 44 << or	| cnt 0-> not 1-
 	swap $fff and 52 << or ;		| init
 	
 ::ani+! | dt 'V --
@@ -478,7 +478,7 @@
 	dup @
 	rot +					| +dt
 	dup 36 >> $ff and >a	| now
-	dup 44 >> $ff and 1+ >b 
+	dup 44 >> $ff and >b 
 	dup 24 >> $fff and		| ms
 	over $ffffff and		| 'var val ms acc
 	( over >=?				| ms acc
@@ -489,7 +489,7 @@
 	a> 36 << or
 	swap !
 	]ba ;
-	
+
 ::aniFrame | V -- f
 	dup 36 >> $ff and swap 52 >> $fff and + ;
 
