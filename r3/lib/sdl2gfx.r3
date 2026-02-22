@@ -463,30 +463,40 @@
 | $ffffffff7fffffff and  ; 	| for ring counter
 ::timer- deltatime - ; 								| sub timer
 
-|.... animation
-| fff ff fff ........
-| inicio(12) cnt(8) escala(12) time(32) (49 dias)
-|                      
-::ICS>anim | init cnt scale -- val
-	32 << swap 44 << or swap 52 << or ;
-	
-::vICS>anim | v init cnt scale -- val
-	ICS>anim swap $ffffffff and or ;
-	
-::anim>n | ani -- t
-	dup |$ffffffff and
-	dup 32 >> $fff and * $ffff and
-	over 44 >> $ff and 16 *>>
-	swap 52 >>> +
-	;
+|..... frame animation system
 
-::anim>c | ani -- c
-	dup |$ffffffff and
-	dup 32 >> $fff and * $ffff and
-	swap 44 >> $ff and 16 *>>
-	;
+|init(12) cnt-1(8) now(8) ms(12) acc(24)  = 64 bits
+|63..52   51..44   43..36  35..24  23..0
+::aniInit | ini cnt fps -- V
+	0? ( 2drop 1 1.0 )				| 0fps is still
+	1000.0 swap / $fff and 24 <<	| ms x frame
+	swap 1? ( 1- ) $ff and 44 << or	| cnt 0-> not 1-
+	swap $fff and 52 << or ;		| init
 	
-::anim>stop | ani -- ani
-	$ff00000000000 nand ;
+::ani+! | dt 'V --
+	ab[
+	dup @
+	rot +					| +dt
+	dup 36 >> $ff and >a	| now
+	dup 44 >> $ff and 1+ >b 
+	dup 24 >> $fff and		| ms
+	over $ffffff and		| 'var val ms acc
+	( over >=?				| ms acc
+		over -
+		a> 1+ b> >=? ( 0 nip ) >a
+		) nip				| 'var val acc
+	swap $ff000ffffff nand or
+	a> 36 << or
+	swap !
+	]ba ;
+	
+::aniFrame | V -- f
+	dup 36 >> $ff and swap 52 >> $fff and + ;
+
+::aniCnt | V -- c
+	36 >> $ff and ;
+
+::ani+timer! | 'V --
+	deltatime swap ani+! ;
 	
 : fillfull ;

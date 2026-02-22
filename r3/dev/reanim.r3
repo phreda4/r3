@@ -25,7 +25,7 @@
 	dup 8 + >a
 	a@+ int. a@+ int. | x y
 	a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@ timer+ dup a!+ anim>n 			| n
+	a> ani+timer! a@+ aniFrame
 	a@+ sspriterz
 	;
 |------------------- viewport

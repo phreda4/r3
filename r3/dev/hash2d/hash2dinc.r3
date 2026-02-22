@@ -170,8 +170,7 @@
 
 	dup 8 + >a
 	a@+ int. a@+ int. a@+ dup 32 >> swap $ffffffff and | rot zoom
-	a@ timer+ dup a!+ anim>n 			| n
-	
+	a> ani+timer! a@+ aniFrame
 	a@+ sspriterz
 	;
 	
@@ -353,7 +352,7 @@
 	bfont1
 	1000 'arr p.ini
 	'arr p.clear
-	tssprite 0 0 0 ICS>anim 2.0 0.0 100.0 100.0 +ptank 	
+	tssprite 0 0 0 aniInit 2.0 0.0 100.0 100.0 +ptank 	
 	40 insobj
 	
 	100 H2d.ini

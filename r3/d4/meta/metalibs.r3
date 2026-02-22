@@ -138,9 +138,9 @@
 #r3_lib_sdl2.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gfx.r3
 #name "r3/lib/sdl2gfx.r3"
-#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLFCircle" "SDLCircle" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "tex2static" "timer<" "timer." "timer+" "timer-" "ICS>anim" "vICS>anim" "anim>n" "anim>c" "anim>stop" 0
-#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLFCircle 'SDLCircle 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'tex2static 'timer< 'timer. 'timer+ 'timer- 'ICS>anim 'vICS>anim 'anim>n 'anim>c 'anim>stop
-#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $10 $0 $0 $10 $10 $3E $4D $10 $10 $10 )
+#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLFCircle" "SDLCircle" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" "timer<" "timer." "timer+" "timer-" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
+#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLFCircle 'SDLCircle 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'Tex2Surface 'Tex2Static 'timer< 'timer. 'timer+ 'timer- 'aniInit 'ani+! 'aniFrame 'aniCnt 'ani+timer!
+#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 $0 $0 $10 $10 $3E $2E $10 $10 $1F )
 #r3_lib_sdl2gfx.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gl.r3
 #name "r3/lib/sdl2gl.r3"
@@ -222,9 +222,9 @@
 #r3_lib_vec3.r3 'name 'words 'calls 'info
 ^r3/lib/webcam.r3
 #name "r3/lib/webcam.r3"
-#words  "WEBCAM_FMT_RGB24" "WEBCAM_FMT_RGB32" "WEBCAM_FMT_YUYV" "WEBCAM_FMT_YUV420" "WEBCAM_FMT_MJPEG" "WEBCAM_PARAM_BRIGHTNESS" "WEBCAM_PARAM_CONTRAST" "WEBCAM_PARAM_SATURATION" "WEBCAM_PARAM_EXPOSURE" "WEBCAM_PARAM_FOCUS" "WEBCAM_PARAM_ZOOM" "WEBCAM_PARAM_GAIN" "WEBCAM_PARAM_SHARPNESS" "webcam_list_devices" "webcam_free_list" "webcam_query_capabilities" "webcam_free_capabilities" "webcam_find_best_format" "webcam_open" "webcam_capture" "webcam_release_frame" "webcam_close" "webcam_get_actual_width" "webcam_get_actual_height" "webcam_get_format" "webcam_get_parameter" "webcam_set_parameter" "webcam_set_auto" 0
-#calls  'WEBCAM_FMT_RGB24 'WEBCAM_FMT_RGB32 'WEBCAM_FMT_YUYV 'WEBCAM_FMT_YUV420 'WEBCAM_FMT_MJPEG 'WEBCAM_PARAM_BRIGHTNESS 'WEBCAM_PARAM_CONTRAST 'WEBCAM_PARAM_SATURATION 'WEBCAM_PARAM_EXPOSURE 'WEBCAM_PARAM_FOCUS 'WEBCAM_PARAM_ZOOM 'WEBCAM_PARAM_GAIN 'WEBCAM_PARAM_SHARPNESS 'webcam_list_devices 'webcam_free_list 'webcam_query_capabilities 'webcam_free_capabilities 'webcam_find_best_format 'webcam_open 'webcam_capture 'webcam_release_frame 'webcam_close 'webcam_get_actual_width 'webcam_get_actual_height 'webcam_get_format 'webcam_get_parameter 'webcam_set_parameter 'webcam_set_auto
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $1F $10 $1F $4D $4D $2F $1F $1F $10 $10 $10 $2F $3E $3E )
+#words  "WEBCAM_FMT_RGB24" "WEBCAM_FMT_RGB32" "WEBCAM_FMT_YUYV" "WEBCAM_FMT_YUV420" "WEBCAM_FMT_MJPEG" "WEBCAM_PARAM_BRIGHTNESS" "WEBCAM_PARAM_CONTRAST" "WEBCAM_PARAM_SATURATION" "WEBCAM_PARAM_EXPOSURE" "WEBCAM_PARAM_FOCUS" "WEBCAM_PARAM_ZOOM" "WEBCAM_PARAM_GAIN" "WEBCAM_PARAM_SHARPNESS" "webcam_list_devices" "webcam_free_list" "webcam_query_capabilities" "webcam_free_capabilities" "webcam_find_best_format" "webcam_open" "webcam_capture" "webcam_release_frame" "webcam_close" "webcam_get_actual_width" "webcam_get_actual_height" "webcam_get_format" "webcam_get_parameter" "webcam_set_parameter" "webcam_set_auto" "webcam_set_conversion_size" "webcam_get_converted_frame" 0
+#calls  'WEBCAM_FMT_RGB24 'WEBCAM_FMT_RGB32 'WEBCAM_FMT_YUYV 'WEBCAM_FMT_YUV420 'WEBCAM_FMT_MJPEG 'WEBCAM_PARAM_BRIGHTNESS 'WEBCAM_PARAM_CONTRAST 'WEBCAM_PARAM_SATURATION 'WEBCAM_PARAM_EXPOSURE 'WEBCAM_PARAM_FOCUS 'WEBCAM_PARAM_ZOOM 'WEBCAM_PARAM_GAIN 'WEBCAM_PARAM_SHARPNESS 'webcam_list_devices 'webcam_free_list 'webcam_query_capabilities 'webcam_free_capabilities 'webcam_find_best_format 'webcam_open 'webcam_capture 'webcam_release_frame 'webcam_close 'webcam_get_actual_width 'webcam_get_actual_height 'webcam_get_format 'webcam_get_parameter 'webcam_set_parameter 'webcam_set_auto 'webcam_set_conversion_size 'webcam_get_converted_frame
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $1F $10 $1F $4D $4D $2F $1F $1F $10 $10 $10 $2F $3E $3E $3D $3E )
 #r3_lib_webcam.r3 'name 'words 'calls 'info
 ^r3/util/arr16.r3
 #name "r3/util/arr16.r3"
@@ -498,9 +498,9 @@
 #r3_lib_win_urlmon.r3 'name 'words 'calls 'info
 ^r3/lib/win/win-term.r3
 #name "r3/lib/win/win-term.r3"
-#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" ".free" ".reterm" 0
-#calls  'stdin 'stdout 'stderr 'type 'rows 'cols '.onresize 'evtkey 'evtmx 'evtmy 'evtmb 'evtmw 'evtmxy 'inevt 'getevt 'inkey '.free '.reterm
-#info ( $80 $80 $80 $2E $80 $80 $1F $1 $80 $80 $80 $80 $2 $1 $1 $1 $1F $0 )
+#words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtkey2" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" ".enable-mouse" ".disable-mouse" ".free" ".reterm" 0
+#calls  'stdin 'stdout 'stderr 'type 'rows 'cols '.onresize 'evtkey 'evtkey2 'evtmx 'evtmy 'evtmb 'evtmw 'evtmxy 'inevt 'getevt 'inkey '.enable-mouse '.disable-mouse '.free '.reterm
+#info ( $80 $80 $80 $2E $80 $80 $1F $1 $1 $80 $80 $80 $80 $2 $1 $1 $1 $0 $0 $1F $1F )
 #r3_lib_win_win-term.r3 'name 'words 'calls 'info
 ^r3/lib/win/winhttp.r3
 #name "r3/lib/win/winhttp.r3"

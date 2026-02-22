@@ -145,7 +145,8 @@
 | FX
 :drawfx
 	8 + >a
-	a@+ 64xyrz a@ dup deltatime + a!+ anim>n
+	a@+ 64xyrz 
+	deltatime a> ani+! a@+ aniFrame
 	imgspr sspriteRZ
 	a@+ a@ deltatime + dup a!	| livetime
 	swap >=? ( drop 0 ; ) drop ;
@@ -156,7 +157,7 @@
 
 :+fxcheck | x y -- x y 
 	0.6 | live
-	29 2 $ff ICS>anim
+	29 2 15.0 aniInit
 	2over posmap 0 viewpz xyrz64 
 	+fx 
 |.. animation	
@@ -205,7 +206,7 @@
 :drawitem
 	16 + >a
 	a@+ 64xyrz 
-	a@ dup deltatime + a!+ anim>n
+	deltatime a> ani+! a@+ aniFrame
 	imgspr sspriterz
 	;
 	
@@ -226,7 +227,7 @@
 :setitem | adr item
 	@+ 0? ( drop @ dup $ffff and 'xp ! 16 >> $ffff and 'yp ! ; )
 	swap @ 
-	dup 32 >> $ffff and over 48 >> $ffff and $7f ICS>anim
+	dup 32 >> $ffff and over 48 >> $ffff and 15.0 aniInit
 	swap
 	+item
 	;
@@ -402,12 +403,13 @@
 	
 :realmove | x y --
 	'yp ! 'xp !
-	'mani + c@ 3 $ff ICS>anim 'ap ! | anima
+	'mani + c@ 3 15.0 aniInit 'ap ! | anima
 	'playerxyrz
 	xp yp posmap 0 viewpz xyrz64 
 	playerxyrz
 	0 0.1 0 +vboxanim | 'var fin ini ease dur. start --	
-	[ ap anim>stop 'ap ! checkfall ; ] 0.1 +vexe | stop animation
+	[ |ap anim>stop 'ap ! 
+	checkfall ; ] 0.1 +vexe | stop animation
 	;
 	
 :chainmove | d nx ny wall --
@@ -501,8 +503,9 @@
 	'itemarr p.draw 
 
 	playerxyrz 64xyrz 
-	ap dup deltatime + 'ap ! 
-	anim>n
+	| stop 0? ( anima ) drop
+	deltatime 'ap ani+! 
+	ap aniFrame
 	imgspr sspriteRZ
 
 	'fxarr p.draw 
@@ -523,7 +526,7 @@
 	0 viewpz xyrz64 
 	'playerxyrz !
 	
-	3 0 128 ICS>anim 'ap ! | anima'ap !	
+	3 0 15.0 aniInit 'ap ! | anima'ap !	
 	
 	;
 	

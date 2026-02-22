@@ -54,13 +54,13 @@
 	a@+ viewpz *. int. viewpy +	| x y
 	a@+ dup 32 >> swap | rot
 	$ffffffff and viewpz *. | zoom	 
-	a@ deltatime + dup a!+ anim>n 			| n
+	deltatime a> ani+! a@+ aniFrame
 	a@+ sspriterz
 	;
 
 |------------------- fx
 :fxobj | adr --
-	dup .ani @ anim>n 
+	dup .ani @ aniFrame
 	over .end @ 
 	=? ( 2drop 0 ; ) drop 
 	drawspr
@@ -83,7 +83,7 @@
 	'fxobj 'fx p!+ >b
 	swap b!+ b!+	| x y 
 	32 << 2.0 or b!+	| ang zoom
-	10 4 $7f ICS>anim | init cnt scale
+	10 4 15.0 aniInit	| init cnt fps
 	b!+ 
 	imgspr b!+	| anim sheet
 	0 b!+ 0 b!+ 	| vx vy
@@ -93,8 +93,8 @@
 :+fxexplo | x y --
 	'fxobj 'fx p!+ >a
 	swap a!+ a!+	| x y 
-	rand 32 << 2.0 or a!+			| ang zoom
-	15 6 $7f ICS>anim | init cnt scale
+	rand 32 << 2.0 or a!+	| ang zoom
+	15 6 15.0 aniInit		| init cnt fps
 	a!+ 
 	imgspr a!+	| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
@@ -126,7 +126,7 @@
 	'disparo 'disp p!+ >b
 	swap b!+ b!+ 
 	neg 0.25 + dup 0.25 + 32 << 2.0 or b!+	| angulo zoom
-	14 1 0 ICS>anim | init cnt scale
+	14 1 0 aniInit | init cnt fps
 	b!+ | ani
 	imgspr b!+ |ss
 	swap polar 
@@ -175,8 +175,8 @@
 	
 |--------------------------
 :tanima | btn -- btn
-	$f and? ( a> .ani dup @ 0 2 $ff vICS>anim swap ! ; )
-	a> .ani dup @ 0 0 0 vICS>anim swap ! ;
+	$f and? ( 0 2 15.0 aniInit a> .ani  ! ; )
+	0 0 0 aniInit a> .ani  ! ;
 
 |:.x 1 ncell+ ;
 |:.y 2 ncell+ ;
@@ -288,7 +288,7 @@
 ::war.+rtank
 	rand $ff000000 or | color
 	imgspr 
-	0 0 0 ICS>anim | init cnt scale -- 
+	0 0 0 aniInit | init cnt fps -- 
 	2.0 1.0 randmax 
 	600.0 randmax 300.0 -
 	400.0 randmax 200.0 -
@@ -313,7 +313,7 @@
 	'disp p.clear
 	
 	imgspr
-	0 0 0 ICS>anim | init cnt scale -- 
+	0 0 0 aniInit | init cnt scale -- 
 	2.0 0.0 
 	0 0 +ptank 
 	;
