@@ -48,10 +48,7 @@ Complete API reference for the r3forth library ecosystem.
 31. [memavx.r3](#memavxr3) — AVX-accelerated buffer conversion |WIN|
 32. [netsock.r3](#netsockr3) — High-level socket wrapper
 33. [webcam.r3](#webcamr3) — Webcam capture (cross-platform)
-34. [escapi.r3](#escapir3) — Webcam capture (legacy Windows)
-35. [espeak-ng.r3](#espeak-ngr3) — Text-to-speech |WIN|
-36. [onnx.r3](#onnxr3) — ONNX Runtime inference |WIN|
-37. [tflite.r3](#tfliter3) — TensorFlow Lite inference |WIN|
+
 38. [clipboard.r3](#clipboardr3) — Clipboard (platform-provided)
 
 ### lib/win/ — Windows System Bindings
@@ -784,17 +781,71 @@ SDL2 2D drawing primitives, sprite/tileset system.
 ::SDLImagebb  ( srcbox dstbox img -- ) draw sub-region to box
 ```
 
-#### Tileset / Spritesheet System
+#### Tileset System
+Tileset: a single image divided into equal-sized tiles. Each tile has an index `n`.
 ```
-::tsload   ( w h "filename" -- ts )   load tileset (w×h tiles per image)
-::tscolor  ( rrggbb 'ts -- )          set color modulation
-::tsalpha  ( alpha 'ts -- )           set alpha
-::tsdraw   ( n 'ts x y -- )           draw tile n at x,y
-::tsdraws  ( n 'ts x y w h -- )       draw tile scaled to w×h
-::tsbox    ( 'boxsrc n 'ts -- )       draw tile from source box
-::tsfree   ( ts -- )                  free tileset
-::sprite   ( x y img -- )             draw sprite image
-::spriteZ  ( x y zoom img -- )        draw sprite with zoom
+::tsload   ( w h "filename" -- ts )   load image as tileset with w×h pixel tiles
+::tscolor  ( rrggbb 'ts -- )          set RGB color modulation on tileset
+::tsalpha  ( alpha 'ts -- )           set alpha modulation
+::tsdraw   ( n 'ts x y -- )           draw tile n centered at x,y
+::tsdraws  ( n 'ts x y w h -- )       draw tile n stretched to w×h at x,y
+::tsbox    ( 'boxsrc n 'ts -- )       fill a destination box with the source rect of tile n
+::tsfree   ( ts -- )                  free tileset texture
+```
+
+#### Single-Image Sprite Drawing
+Draw textures with optional rotation and zoom, centered on the given point.
+```
+::sprite   ( x y img -- )              draw texture centered at x,y
+::spriteZ  ( x y zoom img -- )         draw texture centered, scaled by zoom (16.16)
+::spriteR  ( x y ang img -- )          draw texture centered, rotated by binary angle
+::spriteRZ ( x y ang zoom img -- )     draw texture centered, rotated and scaled
+```
+
+#### Sprite-Sheet (ssload) System
+Sprite-sheet: all frames packed into one image in a grid. Frames are addressed by index `n` inside the sheet. UV coordinates are pre-computed at load time for GPU efficiency.
+```
+::ssload     ( w h "file" -- ssprite )      load image as sprite-sheet with w×h pixel cells
+::sspritewh  ( ssprite -- w h )             get cell size of a sprite-sheet
+::ssprite    ( x y n ssprite -- )           draw frame n centered at x,y
+::sspriter   ( x y ang n ssprite -- )       draw frame n centered, rotated by binary angle
+::sspritez   ( x y zoom n ssprite -- )      draw frame n centered, scaled by zoom (16.16)
+::sspriterz  ( x y ang zoom n ssprite -- )  draw frame n centered, rotated and scaled
+::sstint     ( AARRGGBB -- )                set tint color (with alpha) for next ssprite draw
+::ssnotint   ( -- )                         reset tint to white ($ffffffff)
+```
+
+#### Surface and Texture Composition
+```
+::createSurf  ( w h -- surface )       create an ARGB software surface
+::Surf>pix    ( surface -- surf px )   get pixel data pointer
+::Surf>wha    ( surface -- surf 'wh )  get pointer to w/h fields
+::Surf>wh     ( surface -- surf w h )  get surface dimensions
+::Surf>pixpi  ( surface -- 'px pitch ) get pixel pointer and row pitch
+::texIni      ( w h -- )               begin render-to-texture of size w×h
+::texEnd      ( -- texture )           end render-to-texture, return texture
+::texEndAlpha ( -- texture )           end render-to-texture with alpha blend enabled
+::Tex2Surface ( tex -- tex surface )   copy GPU texture back to a software surface
+::Tex2Static  ( tex -- newtex )        convert streaming texture to static
+```
+
+#### Timer and Delta-time
+```
+::timer<  ( msec -- )     reset timer to msec value
+::timer.  ( -- )          advance timer (call each frame); updates ##deltatime
+::timer+  ( n -- n+dt )   add deltatime to n
+::timer-  ( n -- n-dt )   subtract deltatime from n
+##deltatime               milliseconds since last timer. call
+```
+
+#### Frame Animation System
+Pack animation state into a single 64-bit value: start frame, frame count, fps, accumulator.
+```
+::aniInit    ( ini cnt fps -- V )   create animation value: ini=start frame, cnt=count, fps
+::ani+!      ( dt 'v -- )          advance animation by dt milliseconds
+::aniFrame   ( V -- f )            get current absolute frame (ini + current offset)
+::aniCnt     ( V -- c )            get current frame offset within the animation
+::ani+timer! ( 'V -- )             advance animation by ##deltatime (shortcut for timer.)
 ```
 
 ---
@@ -1241,63 +1292,6 @@ Cross-platform webcam capture via `webcam.dll`/`.so`.
 ::webcam_set_conversion_size ( handle w h -- )
 ::webcam_get_converted_frame ( handle 'buf sz -- 'frame )
 ```
-
----
-
-### escapi.r3
-
-Legacy Windows webcam using ESCAPI.dll. |WIN| only.
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-```
-::setupESCAPI ( -- ndevices )   initialize ESCAPI, return device count
-```
-
-⚠️ Incomplete — only `setupESCAPI` is exported. Use `webcam.r3` instead.
-
----
-
-### espeak-ng.r3
-
-Text-to-speech via eSpeak-NG. |WIN| only.
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-⚠️ No exported `::` words visible. Loads `espeak-ng.dll` at runtime. Incomplete binding.
-
----
-
-### onnx.r3
-
-ONNX Runtime inference engine binding. |WIN| only.
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-```
--- Constants --
-##OrtInvalidAllocator  ##OrtDeviceAllocator  ##OrtArenaAllocator
-##ORT_DISABLE_ALL  ##ORT_ENABLE_BASIC  ##ORT_ENABLE_EXTENDED  ##ORT_ENABLE_ALL
-##ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED(0) ..FLOAT(1) ..UINT8(2) ..INT8(3)
-##ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16(4) ..INT16(5) ..INT32(6) ..INT64(7)
-##ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING(8) ..BOOL(9) ..FLOAT16(10) ..DOUBLE(11)
-##ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32(12) ..UINT64(13) ..COMPLEX64(14)
-
--- Inference --
-::ortSess_CPU        ( opts n -- status )   create CPU session
-::ortSess_MDL        ( opts n -- status )   create model session
-::OrtgetVersionString ( -- str )            get ORT version string
-```
-
----
-
-### tflite.r3
-
-TensorFlow Lite inference engine binding. |WIN| only.
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-⚠️ No exported `::` words — runtime DLL bindings loaded via `tflite_c.dll`. Incomplete.
 
 ---
 
