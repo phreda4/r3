@@ -171,6 +171,7 @@ In the /doc folder.
 * [Tutorial](https://github.com/phreda4/r3/blob/main/doc/r3forth_tutorial.md)
 * [Reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_reference.md)
 * [SDL graphics programing](https://github.com/phreda4/r3/blob/main/doc/r3forth-SDL-graphics.md)
+* [Code libraries (Feb-2026)](https://github.com/phreda4/r3/blob/main/doc/r3forth-libs.md)
 
 ---
 
