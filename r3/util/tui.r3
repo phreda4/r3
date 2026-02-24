@@ -421,6 +421,33 @@
 	cscroll
 	2drop
 	empty ;	
+
+|--- list n [dwords], 0 end
+:makeindxn | 'adr -- 
+	dup 'indlist !
+	dup ( d@+ 1? drop ) drop
+	swap - 2 >> 1- 'cntlist ! ;
+
+:ilistn
+:ilist | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	fx .col | color?
+	cntlist >=? ( drop fw .nsp .cr ; ) 
+	pick3 @ =? ( .rever )
+	uiNindx 
+	fw swap (xwrite) ex .cr
+	.reset 
+	;
+	
+::tuListN | 'var listn --
+	fx fy .at
+	makeindxn
+	fh
+	mouList
+	focList
+	0 ( over <? ilistn 1+ ) drop
+	cscroll
+	2drop ;	
 	
 |----- TREE
 | #vtree 0 0

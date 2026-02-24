@@ -59,9 +59,9 @@
 	
 :.printword | nro -- nro
 	cntdicc <? ( ; )
-	dup ndicc@ typedef 40 >> realdicc + 
+	dup ndicc@ |typedef 40 >> realdicc + 
 	|cntdicc 3 << + 
-	"%w" .print 
+	dicc>name "%w" .print 
 	|.write 
 	.fcr ;
 	
@@ -71,14 +71,12 @@
 	rows 2/ flxS
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	fx fy .at
-	localdicc 
-	fw ( 1? 1- swap
-		.printword
-		1+ swap ) 2drop
-	
-|	'xwrite.word xwrite!
-|	'vwords lwords tuList | 'var list --
-|	xwrite.reset
+	|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop
+|	cntdicc localdicc "%d %d" .print
+
+	'xwrite.word xwrite!
+	'vwords lwords tuList | 'var list --
+	xwrite.reset
 
 	flxRest
 	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
@@ -246,7 +244,7 @@
 :main
 	'filename run&loadinfo
 |---- build code links
-|	makelistwords
+	makelistwords
 |	makelistinc
 	|buildcodemark
 	
