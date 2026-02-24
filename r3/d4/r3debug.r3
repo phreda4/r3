@@ -57,22 +57,25 @@
 	
 :.fcr .cr fx .col ;
 	
+:.printword | nro -- nro
+	cntdicc <? ( ; )
+	dup ndicc@ typedef 40 >> realdicc + 
+	|cntdicc 3 << + 
+	"%w" .print 
+	|.write 
+	.fcr ;
+	
 :scrDicc
 	flxPush
 |	tuS
 	rows 2/ flxS
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	fx fy .at
-
-	localdicc ( cntdicc <? 
-		dup ndicc@ typedef 40 >> realdicc + 
-		|cntdicc 3 << + 
-		"%w" .print 
-		|.write 
-		.fcr
-		1+ ) drop
+	localdicc 
+	fw ( 1? 1- swap
+		.printword
+		1+ swap ) 2drop
 	
-|	"coso" .write
 |	'xwrite.word xwrite!
 |	'vwords lwords tuList | 'var list --
 |	xwrite.reset

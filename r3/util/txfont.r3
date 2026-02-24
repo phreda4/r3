@@ -174,6 +174,9 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 ::tx+at | x y --
 	'cury +! 'curx +! ;
 
+::txcr
+	0 'curx ! txh 'cury +! ;
+	
 ::txpos | -- x y 
 	curx cury ;
 	

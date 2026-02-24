@@ -1,4 +1,4 @@
-| draw cube
+| draw cube without opengl
 | PHREDA 2025
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/color.r3

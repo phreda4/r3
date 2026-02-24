@@ -93,15 +93,6 @@
     *.d $100000000 +          | +1.0
 	swap 32 >>
 	+? ( << ; ) neg >> ;
-:***********
-	13673216    | c6 = 0.0032 ? 2?? ? minimax optimizado
-	over *.d 90907852 +   | c5 = 0.0212 ? 2??
-	over *.d 249678090 +  | c4 = 0.0581 ? 2??
-	over *.d 620795693 +  | c3 = 0.1445 ? 2??
-	over *.d 1285701837 + | c2 = 0.2993 ? 2??
-	over *.d 2977044471 + | c1 = 0.6931 ? 2?? (? ln(2))
-	*.d $100000000 + 
-	;
 	
 ::pow.d | x y -- r
 	|0? ( 2drop 1.0 ; ) 
@@ -214,10 +205,11 @@
 :.f!
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	1+ $2e over c! 1-
-	over abs 32 >>> 
+	over 32 >>> 
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 	
 ::.fd | fix -- str
-	mbuffi over	abs $ffffffff and 21 + 100000000 32 *>> 100000000 + .f! ;
+	dup abs 21 + | 0.000000005
+	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
 
