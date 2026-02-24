@@ -1,34 +1,36 @@
 | variable animator with GROUP TAG support
 | PHREDA 2023 / extended with group tags 2026
 |
-| === GROUP TAG (4 bits, values 0-15) ===
-| stored in bits 0-3 of the timeline entry's high word
-| Group 0 = default (no group), compatible with original varanim
+| vaini		| max --
+
+| +vanim | 'var ini fin ease dur. start --
+| +vboxanim | 'var fin ini ease dur. start --
+| +vxyanim | 'var ini fin ease dur. start --
+| +vcolanim | 'var ini fin ease dur. start --
+
+| +vanimg | 'var ini fin ease dur. start group --
+| +vboxanimg | 'var fin ini ease dur. start group --
+| +vxyanimg | 'var ini fin ease dur. start group --
+| +vcolanimg | 'var ini fin ease dur. start group --
+
+| ---exe in 3.0 seconds 
+| +vexe		| 'exe 3.0 --
+| +vvexe	| v1 'exe1 3.0 --
+| +vvvexe	| v1 v2 'exe2 3.0 --
+| +vexeg	| 'exe 3.0 group --
+| +vvexeg	| v1 'exe1 3.0 group --
+| +vvvexeg	| v1 v2 'exe2 3.0 group --
+
+| ---update 
+| vupdate	| --
+
+| vareset	| -- 			kill all events
+| vkillgroup| group --		kill for group
+| vkillvar  | 'var --		kill for 'var
+| vaempty    | -- n			cnt now
 |
-| API :
-| vaini      | max --
-| vareset    | --
-| +vanim     | 'var ini fin ease dur. start --        (group=0)
-| +vanim-g   | 'var ini fin ease dur. start group --  (group 0-15)
-| +vboxanim  | 'var fin ini ease dur. start --
-| +vboxanim-g| 'var fin ini ease dur. start group --
-| +vxyanim   | 'var ini fin ease dur. start --
-| +vxyanim-g | 'var ini fin ease dur. start group --
-| +vcolanim  | 'var ini fin ease dur. start --
-| +vcolanim-g| 'var ini fin ease dur. start group --
-| +vexe      | 'vector start --
-| +vvexe     | v 'vector start --
-| +vvvexe    | v v 'vector start --
-| vupdate    | --
-| vkill-group| group --    elimina todos los eventos del grupo
-| vkill-var  | 'var --     elimina todos los eventos de esa variable
-| vaempty    | -- n        cantidad de slots usados
-|
-| === FORMAT ENTRY iN TIMELINE (8 bytes) ===
-| bits 63-32  time ini (ms, $ffffffff = invalido)
-| bits 31-20  index in exevar (12 bits, hasta 4096 entradas)
-| bits 19-16  GROUP TAG (4 bits, 0-15)
-| bits 15-0   type (0=val, 1=box, 2=xy, 3=col) in bits 1-0
+| vvexe: get param >>	dup @ -> v1
+| vvvexe: get param >>	dup @+ swap @ -> v2 v1
 
 ^r3/lib/mem.r3
 ^r3/lib/color.r3
@@ -94,7 +96,6 @@
 | -------------------------------------------------------
 | TIMELINE INTERNAL
 | -------------------------------------------------------
-
 :remlast | 'list X -- 'list
     8 + @+ swap @ !  | set fin
 :remlist | 'list -- 'list ; remove from lista
@@ -172,47 +173,48 @@
     +ev ;
 
 | -------------------------------------------------------
-| PUBLIC: group=0
+| PUBLIC: ADD EVENT
 | -------------------------------------------------------
 ::+vanim | 'var ini fin ease dur. start --
-    >r addint r> +tline ;
-
-::+vboxanim | 'var fin ini ease dur. start --
-    >r addint $10000 or r> +tline ;
-
-::+vxyanim | 'var ini fin ease dur. start --
-    >r addint $20000 or r> +tline ;
-
-::+vcolanim | 'var ini fin ease dur. start --
-    >r addint $30000 or r> +tline ;
-
-| -------------------------------------------------------
-| PUBLIC: group 0-15
-| -------------------------------------------------------
-
+	0
 ::+vanimg | 'var ini fin ease dur. start group --
     >r >r addint r> r> +tlineg ;
 
+::+vboxanim | 'var fin ini ease dur. start --
+	0 
 ::+vboxanimg | 'var fin ini ease dur. start group --
     >r >r addint $10000 or r> r> +tlineg ;
 
+::+vxyanim | 'var ini fin ease dur. start --
+	0
 ::+vxyanimg | 'var ini fin ease dur. start group --
     >r >r addint $20000 or r> r> +tlineg ;
-
+	
+::+vcolanim | 'var ini fin ease dur. start --
+	0
 ::+vcolanimg | 'var ini fin ease dur. start group --
     >r >r addint $30000 or r> r> +tlineg ;
 
 | -------------------------------------------------------
-| PUBLIC: EXE EVENTS (sin grupo, como original)
+| PUBLIC: EXE EVENTS
 | -------------------------------------------------------
 ::+vexe | 'vector start --
-    swap dup dup 0 +ev swap +tline ;
+|    swap dup dup 0 +ev swap +tline ;
+	0
+::+vexeg | 'vector start group --
+    >r swap dup dup 0 +ev swap r> +tlineg ;
 
 ::+vvexe | v 'vector start --
-    swap rot over 0 +ev swap +tline ;
+    |swap rot over 0 +ev swap +tline ;
+	0
+::+vvexeg | v 'vector start --	
+	>r swap rot over 0 +ev swap r> +tlineg ;
 
 ::+vvvexe | v v 'vector start --
-    >r 0 +ev r> +tline ;
+    |>r 0 +ev r> +tline ;
+	0
+::+vvvexeg | v v 'vector start --
+    >r >r 0 +ev r> r> +tlineg ;
 
 | -------------------------------------------------------
 | PUBLIC: KILL BY GROUP
