@@ -3,7 +3,7 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/rand.r3
-^r3/util/varanimg.r3
+^r3/util/varanim.r3
 ^r3/util/txfont.r3
 
 #splayer
@@ -53,24 +53,24 @@
 	;
 	
 :anima2
-	1 vkillgroup
-	;
+	0 vkillgroup ;
+:anima3
+	2 vkillgroup ;
+:anima4
+	3 vkillgroup ;
+	
 	
 :main
 	vupdate
 	$0 SDLcls
 
 	$ffffff txrgb
-	8 8 txat "demo" txprint txcr
-	
 	8 28 txat 
 	timeline 
 	( timeline> <?
-		@+ "%h " txprint 
-		timeline< =? ( "< " txprint )
+		@+ "%h " txprint timeline< =? ( "< " txprint )
 		txcr
 		) drop
-
 	
 	spos0 64xyrz 0 splayer sspriteRZ
 	spos1 64xyrz 2 splayer sspriteRZ
@@ -82,6 +82,8 @@
 	>esc< =? ( exit )
 	<f1> =? ( anima1 )
 	<f2> =? ( anima2 )
+	<f3> =? ( anima3 )
+	<f4> =? ( anima4 )
 	drop ;
 	
 	

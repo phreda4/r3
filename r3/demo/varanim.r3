@@ -1,5 +1,4 @@
-| box animator
-
+| varbox animator
 | PHREDA 2024
 
 ^r3/lib/sdl2gfx.r3
