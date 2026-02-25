@@ -26,32 +26,32 @@
 	
 :wcolor
 	$10 nand? ( 201 .fc ":" ,s ; ) 196 .fc "#" ,s ;
-	
-:xwrite.word | str --
-	mark
-	str$>nro nip
+
+:xwriten.word | n --
+	1- $ffff and 
 	cntdicc >=? ( drop "" ; ) 
+	mark
 	ndicc@ 
-	dup 58 >> "%d " ,print | nro include
-	wcolor
-	dicc>name ,s ,eol 
+	dup 58 >>> "%d " ,print | nro include
+	wcolor dicc>name ,s ,eol 
 	empty
 	here lwrite ;
 
 :makelistwords
-	here 'lwords !
-	|localdicc 
-	0 ( cntdicc <?
-		dup .h ,s ,eol
-		1+ ) drop
-	,eol ;
+	here dup 'lwords !
+	localdicc |0 
+	( cntdicc <?
+		dup 1+ rot w!+ swap
+		1+ )
+	swap w!+ 'here ! ;
 
 :makelistinc
-	here 'lincs !
+	here dup 'lincs !
 	0 ( cntinc <? 
-|		dup 4 << 'inc + @ "%w" ,print ,eol
-		1+ ) drop
-	,eol ;
+		dup 1+ rot w!+ swap
+		1+ )
+	swap w!+ 'here ! ;
+
 
 :typedef $10 and? ( "#" .write ; ) ":" .write ;
 	
@@ -74,9 +74,9 @@
 	|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop
 |	cntdicc localdicc "%d %d" .print
 
-	'xwrite.word xwrite!
-	'vwords lwords tuList | 'var list --
-	xwrite.reset
+	'xwriten.word xwriten!
+	'vwords lwords tuListn | 'var list --
+	xwriten.reset
 
 	flxRest
 	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
@@ -245,7 +245,7 @@
 	'filename run&loadinfo
 |---- build code links
 	makelistwords
-|	makelistinc
+	makelistinc
 	|buildcodemark
 	
 	makemapdebug

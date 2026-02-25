@@ -424,10 +424,23 @@
 	empty ;	
 
 |--- list n [words], 0 end
+:lwriten
+	.d cwrite ;
+	
+#(xwriten) 'lwriten
+
+::xwriten!
+	'(xwriten) ! ;
+	
+::xwriten.reset
+	'lwriten '(xwriten) ! ;
+
 :makeindxn | 'adr -- 
 	dup 'indlist !
 	dup ( w@+ 1? drop ) drop
-	swap - 2/ 'cntlist ! ;
+	swap - 2/ 
+	|dup "cntl:%d" .println waitkey
+	'cntlist ! ;
 
 :uiNindxn
 	cntlist >=? ( drop 0 ; )
@@ -439,7 +452,7 @@
 	cntlist >=? ( drop fw .nsp .cr ; ) 
 	pick3 @ =? ( .rever )
 	uiNindxn 
-	fw swap (xwrite) ex .cr
+	fw swap (xwriten) ex .cr
 	.reset ;
 	
 ::tuListN | 'var listn --
