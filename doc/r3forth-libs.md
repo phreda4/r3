@@ -1870,15 +1870,13 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ```
 -- Global State --
 ##deltatime     time delta for current frame (ms)
-##timeline      current timeline position
-##timeline<     timeline start
-##timeline>     timeline end
-##exevar        active animation count
 
 -- Setup --
-::vareset   ( -- )           reset all animations
-::vaini     ( max -- )       initialize with max simultaneous animations
-::vaempty   ( -- )           clear all active animations
+::vareset     ( -- )           reset all animations
+::vaini       ( max -- )       initialize with max simultaneous animations
+::vaempty     ( -- )           clear all active animations
+::vakillgroup ( group -- )     clear all group events
+::vkillvar    ( 'var -- )      clear all var events
 
 -- Update --
 ::vupdate   ( -- )           advance all animations (call each frame)
@@ -1891,6 +1889,15 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ::+vexe     ( 'vector start -- )                  execute vector at time start
 ::+vvexe    ( v 'vector start -- )                execute with value
 ::+vvvexe   ( v v 'vector start -- )              execute with two values
+
+-- with group (0..15)
+::+vanimg    ( 'var ini fin ease dur. start gr -- )   animate scalar variable
+::+vboxanimg ( 'var fin ini ease dur. start gr -- )   animate scalar (reversed params)
+::+vxyanimg  ( 'var ini fin ease dur. start gr -- )   animate packed XY value
+::+vcolanimg ( 'var ini fin ease dur. start gr -- )   animate packed color
+::+vexeg     ( 'vector start gr -- )                  execute vector at time start
+::+vvexeg    ( v 'vector start gr -- )                execute with value
+::+vvvexeg   ( v v 'vector start gr -- )              execute with two values
 
 -- Packed Value Helpers --
 ::64xy      ( b -- x y )         unpack XY from 64-bit value

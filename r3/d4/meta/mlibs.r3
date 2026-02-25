@@ -28,7 +28,7 @@
 #r3_lib_crc32.r3 'name 'words 'info
 #name "r3/lib/dmath.r3"
 #words  "*.d" "*.df" "/.d" "ceil.d" ".d>i" "i>.d" "f>.d" ".d>f" "cos.d" "sin.d" "tan.d" "tan.dc" "sqrt.d" "log2.d" "pow2.d" "pow.d" "root.d" "ln.d" "exp.d" "tanh.d" "gamma.d" "beta.d" "str>f.d" "f32!" ".fd" 0
-#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $2E $10 )
+#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $2E $11 )
 #r3_lib_dmath.r3 'name 'words 'info
 #name "r3/lib/escapi.r3"
 #words  "countCaptureDevices" "deinitCapture" "doCapture" "initCapture" "initCOM" "isCaptureDone" "getCaptureDeviceName" "getCaptureProperty" "setCaptureProperty" "setupESCAPI" 0
@@ -279,24 +279,24 @@
 #info ( $80 $80 $1F $1F $1F $1F $2E $2E $12 $2F $2F $4 )
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/tui.r3"
-#words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "flcr" "uikey" "exit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" 0
-#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $1F $1F $0 $0 $0 $0 $2E $0 $0 $1F $2E $1F $1F $1F $1F $0 $10 $2E $2E $2F $80 $2E $2E $3D $3D $1F )
+#words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "flcr" "uikey" "exit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "tuListN" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" 0
+#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $1F $1F $0 $0 $0 $0 $2E $0 $0 $1F $2E $1F $1F $1F $1F $0 $10 $2E $2E $2E $2F $80 $2E $2E $3D $3D $1F )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
 #words  "filename" "fuente" "fuente>" "$fuente" "tuiecursor!" "tuipos!" "editfasthash" "tueKeyMove" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuEditCodeMono" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
 #info ( $80 $80 $80 $80 $1F $1F $1 $10 $0 $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
-#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" 0
-#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $2 $1F $1F $1F $1F $1F $2E $2E $2E $2E $2E $1F $4C )
+#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" 0
+#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $0 $2 $1F $1F $1F $1F $1F $2E $2E $2E $2E $2E $1F $4C )
 #r3_util_txfont.r3 'name 'words 'info
 #name "r3/util/utfg.r3"
 #words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" 0
 #info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C )
 #r3_util_utfg.r3 'name 'words 'info
 #name "r3/util/varanim.r3"
-#words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "vareset" "vaini" "vupdate" "+vanim" "+vboxanim" "+vxyanim" "+vcolanim" "+vexe" "+vvexe" "+vvvexe" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" 0
-#info ( $80 $80 $80 $80 $80 $0 $1F $0 $6A $6A $6A $6A $2E $3D $4C $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 )
+#words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" 0
+#info ( $80 $80 $80 $80 $80 $0 $1F $0 $6A $79 $6A $79 $6A $79 $6A $79 $2E $3D $3D $4C $4C $5B $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 )
 #r3_util_varanim.r3 'name 'words 'info
 #name "r3/util/vscreen.r3"
 #words  "vscreen" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0

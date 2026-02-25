@@ -109,7 +109,7 @@
     timenow over $fffffff and -   | actual-inicio=t0   | 'l1 var tn
     over 48 >> $3 and 3 << 'inlist + @ >a |'interp !
     swap 32 >> $ffff and 5 << exevar +     | 'list T0 VAR      | 'l1 tn ex
-    @+ 0? ( drop nip @+ ex drop remlist "r" .println ; )              | l1 tn ex+ v .. l1
+    @+ 0? ( drop nip @+ ex drop remlist ; )              | l1 tn ex+ v .. l1
     rot                            | var X t0
     over $fffffff and 16 <</      | var X t0 tmax
     $ffff >=? ( 2drop remlast ; )  | var X f x

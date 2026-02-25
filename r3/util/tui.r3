@@ -342,7 +342,7 @@
 :clicklist | 'var h e -- 'var h e
 	evtmy fy -
 	cntlist >=? ( drop ; )
-	pick3 8 + @ + cntlist min 
+	pick3 8 + @ + cntlist 1- min 
 	pick3 ! tuX! ;
 
 |---- WHEEL & SCROLL
@@ -360,7 +360,8 @@
 :cscroll | 'var h --
 	calccs -? ( 2drop ; ) 
 	fx fw + 1-  fy rot + .at
-	1+ 'dnbk .rep ;
+	1+ 
+	'dnbk .rep ;
 	
 :chwheel | 'v h 
 	cntlist >=? ( ; ) 
@@ -422,22 +423,24 @@
 	2drop
 	empty ;	
 
-|--- list n [dwords], 0 end
+|--- list n [words], 0 end
 :makeindxn | 'adr -- 
 	dup 'indlist !
-	dup ( d@+ 1? drop ) drop
-	swap - 2 >> 1- 'cntlist ! ;
+	dup ( w@+ 1? drop ) drop
+	swap - 2/ 'cntlist ! ;
 
-:ilistn
-:ilist | 'var max n  -- 'var max n
+:uiNindxn
+	cntlist >=? ( drop 0 ; )
+	2* indlist + w@ ;
+
+:ilistn | 'var max n  -- 'var max n
 	pick2 8 + @ over +
 	fx .col | color?
 	cntlist >=? ( drop fw .nsp .cr ; ) 
 	pick3 @ =? ( .rever )
-	uiNindx 
+	uiNindxn 
 	fw swap (xwrite) ex .cr
-	.reset 
-	;
+	.reset ;
 	
 ::tuListN | 'var listn --
 	fx fy .at
@@ -588,7 +591,7 @@
 	dup 'pad> ! 'padf> !
 	'lins  'modo ! ;
 
-:tuInputfoco
+:tuInputfoco | 'buff max -- 'buff max 
 	tuif 0? ( drop ; )
 	1 =? ( drop inInput dup ) drop
 	kbInputLine 
