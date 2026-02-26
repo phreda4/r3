@@ -92,6 +92,7 @@
 "v!+" "vC!+" "vW!+" "vD!+" 
 "v+!" "vC+!" "vW+!" "vD+!" 
 
+#tokenstra * 512
 
 #tokencnt (
 0 0 0 0 0
@@ -159,9 +160,18 @@
 1 1 1 1 |"av!+" "avC!+" "avW!+" "avD!+" 
 1 1 1 1 |"av+!" "avC+!" "avW+!" "avD+!" 
 
-::.token | value -- str
+| make tokenstra for fast resolve names
+::buildtokenstr
+	'tokenstra
+	'tokenstr ( 'tokenstra <?
+		dup 'tokenstr - rot w!+ swap >>0 ) 2drop ;
+		
+::.tokenslow | value -- str
 	'tokenstr swap $ff and n>>0 ;
-	
+
+::.token | value -- str
+	$ff and 2* 'tokenstra + w@ 'tokenstr + ;
+		
 ::token>cnt | value -- cnt
 	$ff and 'tokencnt + c@ ;
 	
@@ -367,10 +377,11 @@
 
 ::memtok
 	2 << cshare + d@ .token ;
-
+	
 |------------------------------------
 ::run&loadinfo | "" --
-
+	| ini loockup 
+	buildtokenstr
 	| start the server
 	"mem/r3code.mem" delete
 	"mem/r3dicc.mem" delete | "filename" --

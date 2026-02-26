@@ -108,7 +108,7 @@
 	.reset |fx fy 1+ .at fw .hline .cr
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
-	vmIP memtok .print
+	vmIP memtok .write
 	.cr
 	
 	codenow "%d" .print .cr
@@ -222,8 +222,8 @@
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
 	
-	cols 2/ flxE
-	scrDicc
+|	cols 2/ flxE
+|	scrDicc
 	
 	flxRest 
 	tuReadCode 
