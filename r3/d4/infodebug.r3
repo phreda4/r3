@@ -2,7 +2,8 @@
 | PHREDA 2026
 
 |^r3/lib/console.r3
-
+^r3/lib/trace.r3
+ 
 #vshare 0 0 4096 "/debug.mem"	| vm state
 #bshare 0 0 256 "/bp.mem"		| breakpoint
 #dshare 0 0 0 "/data.mem" 		| memdata
@@ -359,9 +360,12 @@
 	realdicc >b | dicc
 	cshare 4 + >a | tokencode
 	0 ( cntinc <=? 
+		|codesrc> over "%d %h" .println
 		translatecode
 		1+ ) drop
 	|waitkey
+	
+	|codeinc <<memmap
 	;
 
 |---- aux info 

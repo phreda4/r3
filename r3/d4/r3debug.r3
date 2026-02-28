@@ -109,6 +109,8 @@
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
 	vmIP memtok .write
+	" | " .write
+	codesrc vmIP 1- 3 << + @ ":%h:" .print
 	.cr
 	
 	codenow "%d" .print .cr
@@ -159,8 +161,11 @@
 
 :showcode | n --
 	codenow =? ( drop ; ) 
+	
 	dup 'codenow !
-	inc2src TuLoadMemC 
+	inc2src 
+	|dup "%l" .println waitkey
+	TuLoadMemC 
 	0 'labelfilename c! | build label
 	codenow cntinc <? ( 
 		strinc over n>>0 'labelfilename strcpy
@@ -197,8 +202,8 @@
 	
 :drawkeepcm
 	codesrc vmIP 1- 3 << + @ 
-	|dup 48 >> $ff and lastinclude >=? ( swap checkcm ) 2drop
-	checkcm 'ck !
+	dup 48 >> $ff and lastinclude >=? ( swap checkcm ) 2drop
+	|checkcm 'ck !
 	3 .bc 0 .fc ck tokenCursor
 	;
 	
@@ -228,7 +233,7 @@
 	flxRest 
 	tuReadCode 
 	.ovec tuC! | show user cursor
-	msec $100 and? ( drawkeepcm ) drop 
+|	msec $100 and? ( drawkeepcm ) drop 
 	
 	uiKey
 	tueKeyMove	
@@ -243,12 +248,13 @@
 	
 :main
 	'filename run&loadinfo
-|---- build code links
-	makelistwords
-	makelistinc
-	|buildcodemark
-	
 	makemapdebug
+|---- build code links
+
+|	makelistwords
+|	makelistinc
+	
+	
 	|cntinc 2 - 'lastinclude !
 	0 'lastinclude !
 	cntinc showcode

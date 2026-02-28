@@ -206,7 +206,7 @@
 	4 .bc 7 .fc	
 	1 flxS
 	fx fy .at fw .nsp
-	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mEdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
+	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
 	.printe
 
 	|___________
