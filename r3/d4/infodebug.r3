@@ -333,7 +333,7 @@
 	;
 
 |------------------------------------
-::makemapdebug
+::makemapdebug | 'filename --
 | make memory map
 	here 
 	dup 'codeinc ! 
@@ -349,23 +349,18 @@
 	strinc 
 	0 ( cntinc <? swap
 		here dup a!+ 
-		|over load 0 swap c!+ 'here !
 		over load 0 swap c! here only13 'here !
 		>>0 swap 1+ ) 2drop
 	here dup a!+
-	|'filename load 0 swap c!+ 'here !
-	'filename load 0 swap c! here only13 'here !
+	swap load 0 swap c! here only13 'here !
 	
 | every include+main
 	realdicc >b | dicc
 	cshare 4 + >a | tokencode
 	0 ( cntinc <=? 
-		|codesrc> over "%d %h" .println
 		translatecode
 		1+ ) drop
-	|waitkey
-	
-	|codeinc <<memmap
+|	waitkey
 	;
 
 |---- aux info 
@@ -386,17 +381,18 @@
 ::run&loadinfo | "" --
 	| ini loockup 
 	buildtokenstr
-	| start the server
+	
+	| delete info files
 	"mem/r3code.mem" delete
-	"mem/r3dicc.mem" delete | "filename" --
+	"mem/r3dicc.mem" delete 
 	
 	| start debug
 	|'filename 
-|WIN|	"cmd /c r3d ""%s""" sprint | only WIN for now
+|WIN|	"cmd /c r3d ""%s""" sprint
 |LIN|	"./r3lind ""%s""" sprint
 	sysnew 
 
-	| wait info
+	| wait info files
 	"mem/r3dicc.mem"  
 	( 200 ms dup filexist 0? drop ) 
 	2drop 

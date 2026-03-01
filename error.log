@@ -1,0 +1,4 @@
+FILE:./infodebug.r3 LINE:364 CHAR:4
+
+ 364|dup ini2src <<memmap
+         ^- word not found
