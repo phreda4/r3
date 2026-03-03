@@ -20,7 +20,11 @@
 	var2 * ;
 	
 :tcall
-	3 rstack 'var1 + 
+	3 
+	drop
+	drop
+	drop
+	
 	;
 
 	

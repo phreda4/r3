@@ -10,19 +10,19 @@
 #cshare 0 0 0 "/code.mem" 		| codedata
 
 ::*>end		$fe vshare ! ;
-::*>stop		$0 vshare ! ;
-::*>play		$1 vshare ! ;
-::*>step		$2 vshare ! ;
+::*>stop	$0 vshare ! ;
+::*>play	$1 vshare ! ;
+::*>step	$2 vshare ! ;
 ::*>stepo	$3 vshare ! ;
 
 ::vmSTATE	vshare @ ;
-::vmINFO		vshare 1 3 << + @ ;
+::vmINFO	vshare 1 3 << + @ ;
 ::vmIP		vshare 2 3 << + @ ;
 ::vmTOS		vshare 3 3 << + @ ;
 ::vmNOS		vshare 4 3 << + @ ;
-::vmRTOS		vshare 5 3 << + @ ;
-::vmREGA		vshare 6 3 << + @ ;
-::vmREGB		vshare 7 3 << + @ ;
+::vmRTOS	vshare 5 3 << + @ ;
+::vmREGA	vshare 6 3 << + @ ;
+::vmREGB	vshare 7 3 << + @ ;
 ::vmDS		vshare 8 3 << + ;
 ::vmRS		vshare 512 3 << + ;
 

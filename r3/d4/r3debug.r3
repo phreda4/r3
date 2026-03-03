@@ -14,8 +14,10 @@
 |--- for show in code
 #codenow -1
 
-#msg * 1024
-	
+|-------------------------------------
+#statusline * 256
+#errorst 0
+
 #vincs 0 0
 #vwords 0 0
 #vwatch 0 0
@@ -91,10 +93,10 @@
 |-------------------------
 :.datastack
 	mdatastack dup
-	( vmNOS <? 
+	( 8 + vmNOS <? 
 		dup dstackoff + @ " %h" .print 
-		8 + ) drop
-	vmNOS <=? ( vmTOS " %h" .print ) 
+		) drop
+	vmNOS <? ( vmTOS " %h" .print ) 
 	drop ;
 
 :.retstack
@@ -103,14 +105,23 @@
 		dup rstackoff + |@ 
 		" %h" .print
 		) drop ;
-		
+
+:checkdstack
+	mdatastack vmNOS <=? ( drop ; ) drop
+	*>stop
+	"STACK UNDERFLOW" 'statusline strcpy
+	|.cl 15 .fc 1 .bc " * RUNTIME ERROR: STACK UNDERFLOW * " .write 'statusline strcpybuf 
+	100 'errorst !
+	;
+	
 :scrMsg
 	.reset |fx fy 1+ .at fw .hline .cr
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
 	vmIP memtok .write
-	" | " .write
-	codesrc vmIP 1- 3 << + @ ":%h:" .print
+|	" | " .write codesrc vmIP 1- 3 << + @ ":%h:" .print
+
+	mdatastack vmNOS " NOS:%h DS:%h " .print
 	.cr
 	
 	"D|" .write .datastack .cr
@@ -135,9 +146,6 @@
 |		>>0 swap ) 2drop
 	;
 	
-|-------------------------------------
-#statusline * 256
-#errorst 0
 
 :slnormal
 	.cl	4 .bc 7 .fc cols .nsp
@@ -217,7 +225,9 @@
 	8 flxS
 	fx fy .at
 	'statusline .write
-	vmSTATE " >>%H<<" .PRINT .cr
+	vmSTATE " >>%H<<" .PRINT 
+	
+	.cr
 	scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
@@ -239,6 +249,7 @@
 	[f10] =? ( *>stepo )
 	[f11] =? ( *>step )
 	drop 
+	checkdstack 
 	vmState $ff >? ( runtimerror ) drop
 	;
 	

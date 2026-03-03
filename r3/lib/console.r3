@@ -201,10 +201,9 @@
 ::.printe | "" --
 	sprint
 	( c@+ 1? emite ) 2drop ;
+	
 ::strcpybuf | 'mem --
-	0 .emit
-
-	outbuf swap strcpy .cl ;
+	0 .emit outbuf swap strcpy .cl ;
 	
 : |||||||||||||||||||||||||||||
 	here 

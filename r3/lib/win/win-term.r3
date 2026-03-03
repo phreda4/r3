@@ -166,14 +166,14 @@
 ::.free | -- | free console
 	stdin $7 SetConsoleMode drop 
 	stdout $3 SetConsoleMode drop 
-	FlushConsoleInputBuffer
-    FreeConsole ;
+	stdin FlushConsoleInputBuffer
+	FreeConsole ;
 
 |------- Initialization -------
 ::.reterm  | Set console modes for ANSI/VT sequences and window events
-    stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
-    stdout $7 SetConsoleMode drop 
-	FlushConsoleInputBuffer ;
+	stdin $298 SetConsoleMode drop | Enable WINDOW_INPUT
+	stdout $7 SetConsoleMode drop 
+	stdin FlushConsoleInputBuffer ;
 	
 : 
 	AllocConsole 
