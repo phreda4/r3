@@ -333,6 +333,12 @@
 	;
 
 |------------------------------------
+#r3path * 512
+
+:realfilename | str -- str
+	dup c@ $2e <>? ( drop ; ) drop | "."
+	2 + 'r3path "%s/%s" sprint ;
+
 ::makemapdebug | 'filename --
 | make memory map
 	here 
@@ -344,12 +350,13 @@
 	memc 3 << +
 	'here !
 
+	dup 'r3path strpath
 | load src includes
 	codeinc >a
 	strinc 
 	0 ( cntinc <? swap
 		here dup a!+ 
-		over load 0 swap c! here only13 'here !
+		over realfilename load 0 swap c! here only13 'here !
 		>>0 swap 1+ ) 2drop
 	here dup a!+
 	swap load 0 swap c! here only13 'here !
@@ -433,9 +440,9 @@
 	
 |------------------------------------
 ::stoponerror
-	0 vshare !
 	-1 vshare 2 3 << + +! ||-1 vmIP +!
 	vmState 8 >>
+	0 vshare !
 	;
 
 |:printcode	

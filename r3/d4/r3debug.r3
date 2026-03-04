@@ -106,22 +106,17 @@
 		" %h" .print
 		) drop ;
 
-:checkdstack
-	mdatastack vmNOS <=? ( drop ; ) drop
-	*>stop
-	"STACK UNDERFLOW" 'statusline strcpy
-	|.cl 15 .fc 1 .bc " * RUNTIME ERROR: STACK UNDERFLOW * " .write 'statusline strcpybuf 
-	100 'errorst !
-	;
-	
 :scrMsg
 	.reset |fx fy 1+ .at fw .hline .cr
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
+	
 	vmIP memtok .write
-|	" | " .write codesrc vmIP 1- 3 << + @ ":%h:" .print
-
-	mdatastack vmNOS " NOS:%h DS:%h " .print
+	" | " .write 
+	codesrc "cs:%h " .print
+	vmIP "ip:%h " .print
+	codesrc vmIP 1- 3 << + @ ":%h:" .print
+	|mdatastack vmNOS " NOS:%h DS:%h " .print
 	.cr
 	
 	"D|" .write .datastack .cr
@@ -152,14 +147,16 @@
 	" ^[7mF5^[27mPlay/Stop ^[7mF9^[27m BreakP ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
 	'statusline strcpybuf ;
 	
+:strerr
+	errorst
+	$1 =? ( "Invalid memory" .write ) 
+	$100 =? ( "Stack underflow" .write )
+	$200 =? ( "Stack overflow" .write )
+	drop ;
+	
 :runtimerror
 	stoponerror 'errorst !
-|	vmState 8 >> 'errorst !
-|	0 vshare !
-|	-1 vshare 2 3 << + +! ||-1 vmIP +!
-	
-	.cl 15 .fc 1 .bc cols .nsp
-	errorst " * RUNTIME ERROR: %h * " .print 
+	.cl 15 .fc 1 .bc cols .nsp errorst " * RUNTIME ERROR:%h * " .print strerr
 	'statusline strcpybuf ;
 	
 |-------------------------------------
@@ -225,7 +222,7 @@
 	8 flxS
 	fx fy .at
 	'statusline .write
-	vmSTATE " >>%H<<" .PRINT 
+	|vmSTATE " >>%H<<" .PRINT 
 	
 	.cr
 	scrMsg
@@ -249,7 +246,7 @@
 	[f10] =? ( *>stepo )
 	[f11] =? ( *>step )
 	drop 
-	checkdstack 
+	|checkdstack 
 	vmState $ff >? ( runtimerror ) drop
 	;
 	
