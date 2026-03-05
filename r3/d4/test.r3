@@ -30,7 +30,7 @@
 	
 : 
 .cls 
-tcall
+|tcall
 "test runtime error" .println
 .cr
 ( 

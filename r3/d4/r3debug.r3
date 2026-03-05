@@ -15,6 +15,7 @@
 #codenow -1
 
 |-------------------------------------
+#topline * 256
 #statusline * 256
 #errorst 0
 
@@ -143,40 +144,94 @@
 	
 
 :slnormal
-	.cl	4 .bc 7 .fc cols .nsp
+	.cl	7 .fc cols .nsp
 	" ^[7mF5^[27mPlay/Stop ^[7mF9^[27m BreakP ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
 	'statusline strcpybuf ;
 	
-:strerr
+:.strerr
 	errorst
-	$1 =? ( "Invalid memory" .write ) 
+	$5 =? ( "Invalid memory" .write ) 
+	$94 =? ( "divide by 0" .write )
 	$100 =? ( "Stack underflow" .write )
 	$200 =? ( "Stack overflow" .write )
 	drop ;
 	
 :runtimerror
 	stoponerror 'errorst !
-	.cl 15 .fc 1 .bc cols .nsp errorst " * RUNTIME ERROR:%h * " .print strerr
+	.cl 15 .fc 1 .bc cols .nsp 
+	errorst " * RUNTIME ERROR:%h * " .print .strerr
 	'statusline strcpybuf ;
-	
-|-------------------------------------
-#labelfilename * 256
 
+|-------------------------------------
 :showcode | n --
 	codenow =? ( drop ; ) 
-	
 	dup 'codenow !
 	inc2src TuLoadMemC 
-	0 'labelfilename c! | build label
+	.cl 7 .fc cols .nsp
+	" r3debug | " .write
 	codenow cntinc <? ( 
-		strinc over n>>0 'labelfilename strcpy
-		" > " 'labelfilename strcat
+		strinc over n>>0 .write
+		" > " .write
 		) drop
-	'filename 'labelfilename strcat ;
+	'filename .write
+	'topline strcpybuf ;
 	
 
-:playmode
+|-------------------------------------
+
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+:ftokenIP
+	codesrc vmIP 1- 3 << + @ ;
+	
+:playshow
+	ftokenIP 
+	dup 48 >> $ff and codenow <>? ( 2drop ; ) drop
+	|dup 
+	24 >> $ffff and fuente + tuiposq!
+	
+	.cl .hidec tui
+	.reset .cls
+	1 flxN
+	 
+	fx fy .at 5 .bc 'topline .write
+	
+	8 flxS
+	fx fy .at 'statusline .write .cr
+	scrMsg
+	
+|	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
+|	scrTokens
+	
+|	cols 2/ flxE
+|	scrDicc
+	
+	flxRest 
+	tuReadCode 
+
+	|tokenCursor	| ftokenIP
+	.showc
+	.flush
 	;
+
+| play only in the source 
+:playmode
+	ftokenIP 48 >> $ff and 'codenow !
+	*>play 
+| wait for play
+	( vmState 0? drop ) drop 
+| until stop or error
+	( vmState 1 =? drop
+		inkey [esc] =? ( *>stop ) drop 
+		playshow
+		) 
+	$ff >? ( runtimerror ) 
+	drop 
+	*>stop
+| land in src
+	( ftokenIP 48 >> $ff and codenow <>? 
+		*>stepo drop ) drop 
+	;
+	
 
 |-------------------------------------
 #cm -1
@@ -190,7 +245,7 @@
 
 :drawcm
 	3 .bc 0 .fc |1 .bc 7 .fc
-	codesrc vmIP 1- 3 << + @ 
+	ftokenIP
 	cm <>? ( remake )
 	tokenCursor
 	;
@@ -202,7 +257,7 @@
 	cm <>? ( remake ) dup 'ck ! ;
 	
 :drawkeepcm
-	codesrc vmIP 1- 3 << + @ 
+	ftokenIP
 	|dup 48 >> $ff and lastinclude >=? ( swap checkcm ) 2drop
 	checkcm 'ck !
 	3 .bc 0 .fc ck tokenCursor
@@ -216,16 +271,13 @@
 	.reset .cls
 	
 	1 flxN
-	4 .bc 7 .fc fx fy .at fw .nsp
-	" R3debug | " .write 'labelfilename .write
+	fx fy .at 4 .bc 'topline .write
 	
 	8 flxS
-	fx fy .at
-	'statusline .write
+	fx fy .at 'statusline .write
 	|vmSTATE " >>%H<<" .PRINT 
-	
-	.cr
-	scrMsg
+
+	.cr scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
@@ -241,8 +293,9 @@
 	uiKey
 	tueKeyMove	
 	[f4] =? ( viewmemhere ) 
-	[f5] =? ( play/stop )
+|	[f5] =? ( play/stop )
 |	[f9] =? ( *>end )
+	[f5] =? ( playmode )
 	[f10] =? ( *>stepo )
 	[f11] =? ( *>step )
 	drop 

@@ -228,6 +228,7 @@
 			) drop 
 		) drop ;	
 
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
 | ii cc pppp xxx yyy
 :curposxy | str -- str v
 	yc $fff and 

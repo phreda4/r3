@@ -138,6 +138,15 @@
 	'scrini> !
 	cursorpos
 	;
+
+::tuiposq! | pos --
+	dup 'fuente> !
+	scrini> scrend> in? ( drop cursorpos ; )
+	fh 2/ ( 1? swap 2 - <<13 1+ swap 1- ) drop
+	fuente <? ( fuente nip ) 
+	'scrini> !
+	cursorpos
+	;
 	
 |-----------
 :karriba

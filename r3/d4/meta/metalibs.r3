@@ -476,7 +476,7 @@
 #name "r3/lib/win/ffmpeg.r3"
 #words  "IniVideo" "LoadVideo" "VideoBox" "VideoPoly" "VideoFlag" "VideoTex" "PlayVideo" "StopVideo" "LOADING" "VID_NO_AUDIO" "VID_LOOP" "VID_WAIT" "VideoTime" "VideoSize" "vshow" "vshowZ" "vshowR" "vshowRZ" 0
 #calls  'IniVideo 'LoadVideo 'VideoBox 'VideoPoly 'VideoFlag 'VideoTex 'PlayVideo 'StopVideo 'LOADING 'VID_NO_AUDIO 'VID_LOOP 'VID_WAIT 'VideoTime 'VideoSize 'vshow 'vshowZ 'vshowR 'vshowRZ
-#info ( $1F $2F $2E $5B $10 $10 $1F $1F $80 $80 $80 $80 $10 $11 $3D $4C $4C $3D )
+#info ( $1F $2F $2E $5B $10 $10 $1F $1F $80 $80 $80 $80 $10 $11 $3D $4C $4C $5B )
 #r3_lib_win_ffmpeg.r3 'name 'words 'calls 'info
 ^r3/lib/win/inet.r3
 #name "r3/lib/win/inet.r3"
@@ -500,7 +500,7 @@
 #name "r3/lib/win/win-term.r3"
 #words  "stdin" "stdout" "stderr" "type" "rows" "cols" ".onresize" "evtkey" "evtkey2" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "inkey" ".enable-mouse" ".disable-mouse" ".free" ".reterm" 0
 #calls  'stdin 'stdout 'stderr 'type 'rows 'cols '.onresize 'evtkey 'evtkey2 'evtmx 'evtmy 'evtmb 'evtmw 'evtmxy 'inevt 'getevt 'inkey '.enable-mouse '.disable-mouse '.free '.reterm
-#info ( $80 $80 $80 $2E $80 $80 $1F $1 $1 $80 $80 $80 $80 $2 $1 $1 $1 $0 $0 $1F $1F )
+#info ( $80 $80 $80 $2E $80 $80 $1F $1 $1 $80 $80 $80 $80 $2 $1 $1 $1 $0 $0 $0 $0 )
 #r3_lib_win_win-term.r3 'name 'words 'calls 'info
 ^r3/lib/win/winhttp.r3
 #name "r3/lib/win/winhttp.r3"
