@@ -88,6 +88,32 @@
 	;
 
 
+|-------------------------------------
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+
+::findtoken | pos -- codesrc
+	codesrc> ( 8 - dup @ 48 >> $ff and 
+		codenow >? drop ) drop 
+	( dup @ 24 >> $ffff and 
+		pick2 >? drop 8 - ) drop ;
+		
+:breakpoint
+	fuente> fuente - | pos in src
+	| search in ftokens
+	findtoken
+|	.cls
+|	@ 24 >> $ffff and fuente + "%w" .println
+	
+|	waitkey
+|	( dup @ 24 >> $ffff and 
+|		pick2 >? drop 8 - ) drop 
+|	@ 8 >>
+	| calc real token
+	|codesrc - 2 >> memcode + 
+	ftoken>token
+	addbp
+	;
+
 :viewmemhere
 	;
 	
@@ -112,16 +138,13 @@
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
 	
-	vmIP memtok .write
-	" | " .write 
-	codesrc "cs:%h " .print
-	vmIP "ip:%h " .print
-	codesrc vmIP 1- 3 << + @ ":%h:" .print
-	|mdatastack vmNOS " NOS:%h DS:%h " .print
-	.cr
-	
+	vmIP memtok .write " | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print codesrc vmIP 1- 3 << + @ ":%h:" .print
+	.cr	
 	"D|" .write .datastack .cr
-	"R|" .write .retstack 
+	"R|" .write .retstack .cr
+	
+	bplist ( @+ 1? "%h " .print ) 2drop .cr
+	vmIP "%h" .print
 	;
 	
 |---- view tokens	
@@ -162,11 +185,17 @@
 	errorst " * RUNTIME ERROR:%h * " .print .strerr
 	'statusline strcpybuf ;
 
+:checkerror
+	vmState $fe <? ( drop ; ) 
+	$fe =? ( drop exit ; ) drop
+	runtimerror
+	;
+	
 |-------------------------------------
 :showcode | n --
-	codenow =? ( drop ; ) 
-	dup 'codenow !
+	codenow =? ( drop ; ) dup 'codenow !
 	inc2src TuLoadMemC 
+	
 	.cl 7 .fc cols .nsp
 	" r3debug | " .write
 	codenow cntinc <? ( 
@@ -178,7 +207,6 @@
 	
 
 |-------------------------------------
-
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
 :ftokenIP
 	codesrc vmIP 1- 3 << + @ ;
@@ -192,12 +220,11 @@
 	.cl .hidec tui
 	.reset .cls
 	1 flxN
-	 
 	fx fy .at 5 .bc 'topline .write
 	
 	8 flxS
-	fx fy .at 'statusline .write .cr
-	scrMsg
+	fx fy .at 'statusline .write 
+	.cr scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
@@ -226,12 +253,20 @@
 		) 
 	$ff >? ( runtimerror ) 
 	drop 
-	*>stop
+|	*>stop
 | land in src
 	( ftokenIP 48 >> $ff and codenow <>? 
 		*>stepo drop ) drop 
+	tuR! | redraw
 	;
 	
+#ipnow
+:stepinsrc	
+	ftokenIP dup 'ipnow ! 48 >> $ff and 'codenow !
+	( *>step 
+		( ftokenIP ipnow =? drop ) dup 'ipnow !
+		48 >> $ff and codenow <>? drop ) drop 
+	;
 
 |-------------------------------------
 #cm -1
@@ -275,7 +310,7 @@
 	
 	8 flxS
 	fx fy .at 'statusline .write
-	|vmSTATE " >>%H<<" .PRINT 
+	vmSTATE " >>%H<<" .PRINT 
 
 	.cr scrMsg
 	
@@ -288,19 +323,23 @@
 	flxRest 
 	tuReadCode 
 	.ovec tuC! | show user cursor
-	msec $100 and? ( drawkeepcm ) drop 
+	msec $100 and? ( drawkeepcm ) drop
+	
+	1 .bc 7 .fc 
+	bplist ( @+ 1? token>ftoken @ tokenCursor ) 2drop 
 	
 	uiKey
 	tueKeyMove	
+	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
 |	[f5] =? ( play/stop )
 |	[f9] =? ( *>end )
 	[f5] =? ( playmode )
+	[f9] =? ( stepinsrc )
 	[f10] =? ( *>stepo )
 	[f11] =? ( *>step )
 	drop 
-	|checkdstack 
-	vmState $ff >? ( runtimerror ) drop
+	checkerror
 	;
 	
 :main
@@ -311,6 +350,7 @@
 |	makelistwords
 |	makelistinc
 	
+	clearbp
 	
 |	cntinc 2 - 'lastinclude !
 |	0 'lastinclude !

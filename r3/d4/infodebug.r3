@@ -5,7 +5,7 @@
 ^r3/lib/trace.r3
  
 #vshare 0 0 4096 "/debug.mem"	| vm state
-#bshare 0 0 256 "/bp.mem"		| breakpoint
+#bshare 0 0 64 "/bp.mem"		| breakpoint
 #dshare 0 0 0 "/data.mem" 		| memdata
 #cshare 0 0 0 "/code.mem" 		| codedata
 
@@ -465,3 +465,25 @@
 |	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
 |	memcode "mcod:%h " .print memdata "mdat:%h " .print 
 |	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
+#bplist>
+
+::clearbp
+	bshare 0 over ! 'bplist> ! ;
+	
+::addbp | bp --
+	bplist> !+ 0 over ! 'bplist> ! ;
+	
+::bplist | -- bs
+	bshare ;
+	
+::ftoken>token
+	codesrc - 3 >> ;
+	
+::token>ftoken
+	3 << codesrc + ;
+	
+::finddicc | ninc -- lword
+	codedicc> ( 8 - dup @ 48 >> $ff and 
+		pick2 >? drop ) drop nip 
+	codedicc - 3 >> ;
+	
