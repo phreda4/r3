@@ -22,15 +22,15 @@
 :tcall
 	3 
 	drop
-	drop
-	drop
-	
+	"hola" .println
+	var1 var2
+	*
 	;
 
 	
 : 
 .cls 
-|tcall
+tcall
 "test runtime error" .println
 .cr
 ( 

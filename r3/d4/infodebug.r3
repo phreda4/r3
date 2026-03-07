@@ -63,12 +63,9 @@
 "SYS6" "SYS7" "SYS8" "SYS9" "SYS10"
 "JMP" "JMPR" "LIT2" "LIT3" "LITF" 
 "AND_L" "OR_L" "XOR_L" "NAND_L" 
-"+_L" "-_L" "*_L" "/_L" 
-"<<_L" ">>_L" ">>>_L" 
+"+_L" "-_L" "*_L" "/_L" "<<_L" ">>_L" ">>>_L" 
 "MOD_L" "/MOD_L" "* /_L" 
-"*>>_L" "<</_L" 
-"*>>16_L" "<<16/_L" 
-"*>>16" "<<16/" 
+"*>>_L" "<</_L" "*>>16_L" "<<16/_L" "*>>16" "<<16/" 
 "<?_L" ">?_L" "=?_L" ">=?_L" "<=?_L" "<>?_L" "AN?_L" "NA?_L" 
 "<<>>_" ">>AND_" 
 "+@_" "+C@_" "+W@_" "+D@_" 
@@ -446,43 +443,34 @@
 	0 vshare !
 	;
 
-|:printcode	
-|	cshare >a
-|	0 ( |memc |30 <? 
-|		vmip =? ( .rever )
-|		da@+ .token .write .sp
-|		vmip =? ( .reset )
-|		1+ ) drop ;
-
-	|codesrc vmIP 1- 3 << + @ ":%h:" .print	
-|	vmTOS	"TOS:%h " .print vmNOS	"NOS:%h " .print vmRTOS	"RTOS:%h " .print .cr
-|	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
-|	cshare vmIP 2 << + d@ |codesrc + d@ .token .print 
-|	vmDS	"DS:%h " .print vmRS	"RS:%h " .print 
-	
-|	cntdicc "cnddicc:%h " .print localdicc "localdicc:%h " .print
-|	boot "boot:%h " .print memc "memc:%h " .print memd "memd:%h " .print
-|	memdsize "mdsize:%h " .print memcsize "mcsize:%h " .print 
-|	memcode "mcod:%h " .print memdata "mdat:%h " .print 
-|	mdatastack "stack:%h " .print mretstack "rstack:%h " .print .cr
+|---- BREAKPOINT
 #bplist>
 
 ::clearbp
-	bshare 0 over ! 'bplist> ! ;
+	bshare 0 over d! 'bplist> ! ;
 	
 ::addbp | bp --
-	bplist> !+ 0 over ! 'bplist> ! ;
+	bplist> d!+ 0 over d! 'bplist> ! ;
 	
 ::bplist | -- bs
 	bshare ;
 	
+::inbp? | bp -- bp exist?
+	bplist ( d@+ 1? 
+		pick2 =? ( drop ; ) 
+		drop ) nip ;
+		
+::delbp | adr --
+	( dup d@ 1? over 4 - d! 4 + ) swap 4 - d! 
+	-4 'bplist> +! ;
+	
 ::ftoken>token
-	codesrc - 3 >> ;
+	codesrc - 3 >> 1+ ;
 	
 ::token>ftoken
-	3 << codesrc + ;
+	1- 3 << codesrc + ;
 	
-::finddicc | ninc -- lword
+::finddicc | ninc -- lastword
 	codedicc> ( 8 - dup @ 48 >> $ff and 
 		pick2 >? drop ) drop nip 
 	codedicc - 3 >> ;

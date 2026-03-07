@@ -91,28 +91,18 @@
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
 
-::findtoken | pos -- codesrc
+:findtoken | pos -- codesrc
 	codesrc> ( 8 - dup @ 48 >> $ff and 
 		codenow >? drop ) drop 
 	( dup @ 24 >> $ffff and 
-		pick2 >? drop 8 - ) drop ;
+		pick2 >? drop 8 - ) drop ;	
 		
 :breakpoint
 	fuente> fuente - | pos in src
-	| search in ftokens
 	findtoken
-|	.cls
-|	@ 24 >> $ffff and fuente + "%w" .println
-	
-|	waitkey
-|	( dup @ 24 >> $ffff and 
-|		pick2 >? drop 8 - ) drop 
-|	@ 8 >>
-	| calc real token
-	|codesrc - 2 >> memcode + 
-	ftoken>token
-	addbp
-	;
+	ftoken>token 
+	inbp? 0? ( drop addBP ; ) 
+	nip delBP ;
 
 :viewmemhere
 	;
@@ -143,7 +133,7 @@
 	"D|" .write .datastack .cr
 	"R|" .write .retstack .cr
 	
-	bplist ( @+ 1? "%h " .print ) 2drop .cr
+	bplist ( d@+ 1? "%h " .print ) 2drop .cr
 	vmIP "%h" .print
 	;
 	
@@ -168,7 +158,7 @@
 
 :slnormal
 	.cl	7 .fc cols .nsp
-	" ^[7mF5^[27mPlay/Stop ^[7mF9^[27m BreakP ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
+	" ^[7mF3^[27m BreakP ^[7mF5^[27mPlay/Stop ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
 	'statusline strcpybuf ;
 	
 :.strerr
@@ -326,14 +316,13 @@
 	msec $100 and? ( drawkeepcm ) drop
 	
 	1 .bc 7 .fc 
-	bplist ( @+ 1? token>ftoken @ tokenCursor ) 2drop 
+	bplist ( d@+ 1? token>ftoken @ tokenCursor ) 2drop 
 	
 	uiKey
 	tueKeyMove	
 	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
 |	[f5] =? ( play/stop )
-|	[f9] =? ( *>end )
 	[f5] =? ( playmode )
 	[f9] =? ( stepinsrc )
 	[f10] =? ( *>stepo )
