@@ -387,6 +387,10 @@
 ::memtok
 	memtokn .token ;
 
+|LIN|:sysnew
+|LIN|	here "x-terminal-emulator -e bash -c '" ,s swap ,s "'" ,s ,eol
+|LIN|	libc-system drop ;
+	
 |------------------------------------
 ::run&loadinfo | "" --
 	| ini loockup 

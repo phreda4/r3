@@ -15,7 +15,7 @@
 |WIN|	-1 0 4 0 pick4 16 + @+ swap CreateFileMappingA
 
 |LIN|	dup 24 + $42 $1b6 shm_open			| $42 OCREATE|RW
-|LIN|	dup over 16 + @ ftruncate drop
+|LIN|	dup over 16 + @ libc-ftruncate drop
 	;
 
 |$F001F |FILE_MAP_ALL_ACCESS	
