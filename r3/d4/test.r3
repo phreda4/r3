@@ -19,13 +19,18 @@
 :rstack
 	var2 * ;
 	
+:callwithjump
+	31 'var1 !
+	;
+
 :tcall
 	3 
 	drop
 	"hola" .println
 	var1 var2
 	*
-	;
+	callwithjump 
+;
 
 	
 : 

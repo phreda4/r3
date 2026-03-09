@@ -32,7 +32,7 @@
 
 :xwriten.word | n --
 	1- $ffff and 
-	cntdicc >=? ( drop "" ; ) 
+	cntdicc >=? ( drop "" lwrite ; ) 
 	mark
 	ndicc@ 
 	dup 58 >>> "%d " ,print | nro include
@@ -45,8 +45,8 @@
 	localdicc |0 
 	( cntdicc <?
 		dup 1+ rot w!+ swap
-		1+ )
-	swap w!+ 'here ! ;
+		1+ ) drop
+	0 swap w!+ 'here ! ;
 
 :makelistinc
 	here dup 'lincs !
@@ -69,9 +69,9 @@
 	.fcr ;
 	
 :scrDicc
-	flxPush
+|	flxPush
 |	tuS
-	rows 2/ flxS
+|	rows 2/ flxS
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	fx fy .at
 	|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop
@@ -81,10 +81,10 @@
 	'vwords lwords tuListn | 'var list --
 	xwriten.reset
 
-	flxRest
-	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
+|	flxRest
+|	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
 	
-	flxPop
+|	flxPop
 	;
 
 
@@ -128,7 +128,9 @@
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
 	
-	vmIP memtok .write " | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print codesrc vmIP 1- 3 << + @ ":%h:" .print
+	vmIP memtok .write 
+	vmIP memtokn " %h" .print
+	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print codesrc vmIP 1- 3 << + @ ":%h:" .print
 	.cr	
 	"D|" .write .datastack .cr
 	"R|" .write .retstack .cr
@@ -258,6 +260,12 @@
 		48 >> $ff and codenow <>? drop ) drop 
 	;
 
+:stepout
+	vmIP memtokn $ff and 
+	$86 <>? ( drop *>stepo ; ) | JMP
+	drop *>stepu
+	;
+	
 |-------------------------------------
 #cm -1
 
@@ -325,7 +333,7 @@
 |	[f5] =? ( play/stop )
 	[f5] =? ( playmode )
 	[f9] =? ( stepinsrc )
-	[f10] =? ( *>stepo )
+	[f10] =? ( stepout )
 	[f11] =? ( *>step )
 	drop 
 	checkerror
@@ -336,7 +344,7 @@
 	'filename makemapdebug
 |---- build code links
 
-|	makelistwords
+	makelistwords
 |	makelistinc
 	
 	clearbp

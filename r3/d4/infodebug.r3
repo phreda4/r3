@@ -13,7 +13,8 @@
 ::*>stop	$0 vshare ! ;
 ::*>play	$1 vshare ! ;
 ::*>step	$2 vshare ! ;
-::*>stepo	$3 vshare ! ;
+::*>stepo	$3 vshare ! ; | 4 is the loop
+::*>stepu	$5 vshare ! ;
 
 ::vmSTATE	vshare @ ;
 ::vmINFO	vshare 1 3 << + @ ;
@@ -241,7 +242,9 @@
 	
 	curposxy
 	
-	da@+ dup token>cnt -? ( 3drop codesrc> 8 - @ codesrc> !+ 'codesrc> ! ; ) 
+	da@+ dup token>cnt -? ( 3drop 
+		codesrc> 8 - @ | TODO: calc ) position
+		codesrc> !+ 'codesrc> ! ; ) 
 	'tokenc !
 	drop |.token .print |$ff and "(%h) | " .print
 	
@@ -379,9 +382,11 @@
 	dshare memdata - 'dataoff !
 	;
 
+::memtokn
+	2 << cshare + d@ ;
 ::memtok
-	2 << cshare + d@ .token ;
-	
+	memtokn .token ;
+
 |------------------------------------
 ::run&loadinfo | "" --
 	| ini loockup 
