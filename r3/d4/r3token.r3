@@ -95,6 +95,7 @@
 |-------------------------------------------
 |-------------------------------- 1pass
 :iscom | adr -- 'adr
+	1+
 |WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
 |LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
 |MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
@@ -197,7 +198,7 @@
 	0 'noboot !
 	1+ dup c@
 	$3A =? ( 2 'flag ! swap 1+ swap ) 	|::
-	33 <? ( dic> dic - 4 >> 'noboot ! swap 1 - swap ) | : alone
+	33 <? ( dic> dic - 4 >> 'noboot ! swap 1- swap ) | : alone
 	drop
 	dup src - 40 << 
 	tok> tok - 3 >> 16 << or
@@ -328,7 +329,7 @@
 	;
 	
 :.wordinvar | adr nro -- adr
-	1 - dup 4 << dic + 
+	1- dup 4 << dic + 
 	@ 1 and? ( drop 
 		dup 4 << dic + 8 + @ 32 >>> fmem + ,qv 
 		8 << 5 or ,t >>sp ; ) drop 
@@ -337,7 +338,7 @@
 	
 :.word | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
-	1 - dup 4 << dic + 
+	1- dup 4 << dic + 
 	dic> 16 - =? ( flag $20 or 'flag ! )	| recursive
 	@ 
 |	dup $ff00 and flag or 'flag ! | copy flag2 to current word
@@ -346,7 +347,7 @@
 	
 :.adr | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
-	1 - dup 4 << dic +
+	1- dup 4 << dic +
 	@ 1 and? ( drop 8 << 5 or ,t >>sp ; ) | adata
 	drop 8 << 3 or ,t >>sp ; | acode
 	
@@ -365,7 +366,7 @@
 		|dup ?base 1? ( drop "No Addr for base dicc" error! ; ) drop
 		1+ 
 		?word 1? ( .adr ; ) drop
-		1 - "addr not exist" error!
+		1- "addr not exist" error!
 		0 ; )
 	drop
 	dup isNro 1? ( drop .nro ; ) drop	| numero
@@ -418,7 +419,7 @@
 	dup 8 + @ 16 >> $ffff and 1 >? ( ; ) | only 1 call traverse
 	drop 
 	rot !+ swap | add to dicc calls
-	dup dup ;
+	2dup ;
 
 :overdire | dc 'tok tok ctok -- dc 'tok xx xx
 	drop tok>dic +call! 
@@ -426,30 +427,33 @@
 	dup 8 + @ 16 >> $ffff and 1 >? ( ; )	| only 1 call traverse
 	drop 
 	rot !+ swap | add to dicc calls
-	dup dup ;
+	2dup ;
+
+:checkc
+	2 =? ( overcode ; ) | word
+	3 =? ( overdire ; ) | adr
+	4 =? ( overcode ; ) | var
+	5 =? ( overdire ; ) | adr
+	;
 	
 :rcode | dc word -- dc
 	toklen		| dc tok len
-	( 1? 1 - >r
+	( 1? 1- >r
 		@+ dup $ff and | dup "%d" .println
-		2 =? ( overcode ) | word
-		3 =? ( overdire ) | adr
-		4 =? ( overcode ) | var
-		5 =? ( overdire ) | adr
-		2drop r> ) 2drop ;
+		checkc 2drop r> ) 2drop ;
 
 :rdata | stack nro -- stack
 	toklend 
-	( 1? 1 - >r
-		@+ dup $ff and |dup "%h " .print
-		2 >=? ( 5 <=? ( overdire ) )
+	( 1? 1- >r
+		@+ dup $ff and 
+		2 5 in? ( overdire )
 		2drop r> ) 2drop ;
 		
 :datacode | dc word -- dc
 	dup @ 1 and? ( drop rdata ; ) drop rcode ;
 
 :pass3	
-	cntdef 1 -
+	cntdef 1-
 	nro>dic +call!
 	here !+
 	( here >? | diccalls
@@ -583,7 +587,7 @@
 	|dup @ dic>name "%w" .println
 	
 	resetinfo
-	dup toklen ( 1? 1 - swap
+	dup toklen ( 1? 1- swap
 		@+ tokeninfo 
 		swap ) 2drop
 |	usoD deltaD " d:%d u:%d " .println .cr
@@ -666,7 +670,7 @@
 :onlywords
 	dup @ 1 and? ( drop 16 + ; ) drop | variable no graba
 	
-	@+ countlines 1 -
+	@+ countlines 1-
 	,q				| fff -nro de linea
 |	8 +
 	@+ |swap @+ 
