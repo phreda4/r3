@@ -237,16 +237,28 @@
 	pick2 $ff and 48 << or | src
 	;
 
+:addCharCnt | src ftoken -- src nftoken
+	$ff0000000000 nand | remove cnt
+	over srcini -
+	over 24 >> $ffff and | src ftoken newpos getpos
+	- $ff and 40 << or ;
+	
 :ctoken! | src -- src
-	tokenc 1? ( 1- 'tokenc ! >>sp ; ) drop
+	tokenc 1? ( 1- 'tokenc ! 
+		>>sp 
+		codesrc> 8 - @
+		addCharCnt
+		codesrc> 8 - !
+		; ) drop
 	
 	curposxy
-	
-	da@+ dup token>cnt -? ( 3drop 
+	da@+ dup token>cnt -? ( 
+		3drop | jmpr is )
 		codesrc> 8 - @ | TODO: calc ) position
+		
 		codesrc> !+ 'codesrc> ! ; ) 
 	'tokenc !
-	drop |.token .print |$ff and "(%h) | " .print
+	drop
 	
 	codesrc> !+ 'codesrc> !
 	dup	w@ 
@@ -276,11 +288,17 @@
 	tokenc 1? ( 1- 'tokenc ! >>str ; ) drop
 	curposxy
 		
-	da@+ drop |.token .print |$ff and "(%h) | " .print
+	|da@+ drop |.token .print |$ff and "(%h) | " .print
+	4 a+
 	
 	codesrc> !+ 'codesrc> !
 
-	>>str ;
+	>>str 1-
+	codesrc> 8 - @
+	addCharCnt
+	codesrc> 8 - !
+	1+
+	;
 	
 |--- build show in code
 :defvar | str --
@@ -295,7 +313,9 @@
 :defwor | str --
 |.cr dup "%w " .print
 	b@+ | dicc entry
-	$8 and? ( drop da@+ drop |"boot chain...." .println 
+	$8 and? ( drop 
+			|da@+ drop |"boot chain...." .println 
+			4 a+
 			curposxy codesrc> !+ 'codesrc> ! 
 			dup ) 
 	drop
@@ -408,7 +428,9 @@
 
 	| wait info files
 	"mem/r3dicc.mem"  
-	( 200 ms dup filexist 0? drop ) 
+	( dup filexist 0? drop 
+		inkey [esc] <>? drop
+		200 ms ) 
 	2drop 
 
 	here dup "mem/r3code.mem" load 'here !

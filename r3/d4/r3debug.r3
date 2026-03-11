@@ -128,13 +128,14 @@
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
 	
-	vmIP memtok .write 
-	vmIP memtokn " %h" .print
+	codenow "% include:%d" .print
+	|vmIP memtok .write vmIP memtokn " %h" .print
 	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print codesrc vmIP 1- 3 << + @ ":%h:" .print
 	.cr	
 	"D|" .write .datastack .cr
 	"R|" .write .retstack .cr
 	
+	|*** debug ***
 	bplist ( d@+ 1? "%h " .print ) 2drop .cr
 	vmIP "%h" .print
 	;
@@ -196,7 +197,13 @@
 		) drop
 	'filename .write
 	'topline strcpybuf ;
-	
+
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc	
+:showbreakpoint
+	1 .bc 7 .fc 
+	bplist ( d@+ 1? token>ftoken @ 
+		dup 48 >>> codenow =? ( over tokenCursor ) 2drop
+		) 2drop ;
 
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
@@ -321,10 +328,10 @@
 	flxRest 
 	tuReadCode 
 	.ovec tuC! | show user cursor
-	msec $100 and? ( drawkeepcm ) drop
+	msec $100 nand? ( drawkeepcm ) drop
 	
-	1 .bc 7 .fc 
-	bplist ( d@+ 1? token>ftoken @ tokenCursor ) 2drop 
+	showbreakpoint
+	
 	
 	uiKey
 	tueKeyMove	
