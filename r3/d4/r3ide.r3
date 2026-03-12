@@ -186,6 +186,7 @@
 	.reterm .alsb .flush
 	|here dup "error.log" load over =? ( 2drop ; ) 0 swap c!
 	|drop "** error **" 'msg strcpy
+	tuR!
 	;
 
 :debugcode
@@ -196,6 +197,7 @@
 |LIN| 	"./r3lin r3/d4/r3debug.r3"
 	sys | run
 	.reterm .alsb .flush 
+	tuR!
 	;
 	
 :fileplain
