@@ -161,7 +161,7 @@
 
 :slnormal
 	.cl	7 .fc cols .nsp
-	" ^[7mF3^[27m BreakP ^[7mF5^[27mPlay/Stop ^[7mF10^[27mStep ^[7mF11^[27mInto " .printe
+	" ^[7mF3^[27m BreakP ^[7mF5^[27mRun ^[7mF7^[27mInto ^[7mF8^[27mOver ^[7mF9^[27mOut " .printe
 	'statusline strcpybuf ;
 	
 :.strerr
@@ -178,10 +178,16 @@
 	errorst " * RUNTIME ERROR:%h * " .print .strerr
 	'statusline strcpybuf ;
 
+:runtimeend
+	.cl 15 .fc 1 .bc cols .nsp 
+	" * END * " .print 
+	'statusline strcpybuf ;
+
 :checkerror
 	vmState $fe <? ( drop ; ) 
 	$fe =? ( drop exit ; ) drop
 	runtimerror
+	
 	;
 	
 |-------------------------------------
@@ -247,7 +253,13 @@
 	( vmState 0? drop ) drop 
 | until stop or error
 	( vmState 1 =? drop
-		inkey [esc] =? ( *>stop ) drop 
+		inkey 
+		[esc] =? ( *>stop ) 
+		[f5] =? ( *>stop ) 
+		[f7] =? ( *>stop ) 
+		[f8] =? ( *>stop ) 
+		[f9] =? ( *>stop ) 
+		drop 
 		playshow
 		) 
 	$ff >? ( runtimerror ) 
@@ -259,20 +271,7 @@
 	tuR! | redraw
 	;
 	
-#ipnow
-:stepinsrc	
-	ftokenIP dup 'ipnow ! 48 >> $ff and 'codenow !
-	( *>step 
-		( ftokenIP ipnow =? drop ) dup 'ipnow !
-		48 >> $ff and codenow <>? drop ) drop 
-	;
 
-:stepout
-	vmIP memtokn $ff and 
-	$86 <>? ( drop *>stepo ; ) | JMP
-	drop *>stepu
-	;
-	
 |-------------------------------------
 #cm -1
 
@@ -303,20 +302,17 @@
 	3 .bc 0 .fc ck tokenCursor
 	;
 	
-:play/stop
-	vmstate	1 =? ( drop *>stop ; ) drop *>play ;
-
 |---- main	
 :maindb
-	.reset .cls
+	.reset .cls .ovec 
 	
 	1 flxN
 	fx fy .at 4 .bc 'topline .write
 	
 	8 flxS
 	fx fy .at 'statusline .write
-	vmSTATE " >>%H<<" .PRINT 
-
+	vmSTATE " state:%h" .print vmIP memtokn " iptoken:%h" .print
+	
 	.cr scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
@@ -327,21 +323,22 @@
 	
 	flxRest 
 	tuReadCode 
-	.ovec tuC! | show user cursor
+	tuC! | show user cursor
+	
 	msec $100 nand? ( drawkeepcm ) drop
 	
-	showbreakpoint
-	
+	showbreakpoint	
 	
 	uiKey
 	tueKeyMove	
 	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
-|	[f5] =? ( play/stop )
 	[f5] =? ( playmode )
-	[f9] =? ( stepinsrc )
-	[f10] =? ( stepout )
-	[f11] =? ( *>step )
+	
+	[f7] =? ( *>step )
+	[f8] =? ( *>stepo )
+	[f9] =? ( *>stepu )
+	
 	drop 
 	checkerror
 	;
