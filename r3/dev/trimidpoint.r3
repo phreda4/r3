@@ -1,0 +1,151 @@
+| PHREDA 2017 idea
+| dibujo de triangulo por punto medio
+| para voxelizar triangulos texturados
+|--------------------------
+^r3/lib/sdl2gfx.r3
+
+#textbitmap #mpixel #mpitch
+
+:px! | col x y 
+	mpitch * swap 2 << + mpixel + d! ;
+:xyp | x y -- a	
+	mpitch * swap 2 << + mpixel + ;
+	
+#verlist * $ffff
+#cache
+
+:colavg | a b -- c
+	2dup or -rot xor $fefefefe and 1 >> - ;
+
+:xyzavg
+	2dup or -rot xor $fffefffefffefffe and 1 >> - ;
+	
+:xyz>v | x y z -- v
+	$ffff and 32 << 
+	swap $ffff and 16 << or
+	swap $ffff and or ;
+	
+:set! | c v --
+	dup 16 >> $ffff and mpitch * 
+	swap $ffff and 2 << + 
+	mpixel + d! ;
+	
+	
+:2drawtri | v1 rgb v2 rgb v3 rgb--
+	mark
+	here >a
+	swap a!+ a!+ swap a!+ a!+ swap a!+ a!+
+	empty
+	;
+
+|	$ffffff 100 100 10 xyz>v set!
+|	$ffffff 101 100 10 xyz>v set!
+|	$ffffff 102 100 10 xyz>v set!
+	
+|--------------------------	
+	
+:draw1p
+	d@+ swap d@+ swap 4 + d@
+	-rot 
+	xyp d!
+	;
+
+:endtri
+	dup draw1p 48 - ;
+
+| x y z uv
+:samep | adr --
+	dup d@
+	over 16 + d@ <>? ( drop 0 ; )
+	over 32 + d@ <>? ( drop 0 ; )
+	drop
+
+	dup 4 + d@
+	over 20 + d@ <>? ( drop 0 ; )
+	over 36 + d@ <>? ( drop 0 ; )
+	drop 1 ;
+
+| siempre converge a o2
+:2/1 | o2 o1 -- om ;
+	over - dup 31 >> - 2/ + ;
+
+:maketri | adr --		b:src a:des
+	dup d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@ db@+ colavg da!+
+	dup d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@ db@+ colavg da!+
+	d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@+ db@+ 2/1 da!+ d@ db@+ colavg da!+ ;
+
+:rectri | adr -- adr
+	samep 1? ( drop endtri ; ) drop
+
+	dup 48 + >a dup >b dup maketri
+    48 + rectri
+
+	dup 48 + >a dup >b dup 16 + maketri
+    48 + rectri
+
+	dup 48 + >a dup >b dup 32 + maketri
+    48 + rectri
+
+	dup 48 + >a dup >b
+	b> 32 + d@ db@+ + 2/ da!+
+	b> 32 + d@ db@+ + 2/ da!+
+	b> 32 + d@ db@+ + 2/ da!+
+	b> 32 + d@ db@+ colavg da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ colavg da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ + 2/ da!+
+	b> 16 - d@ db@+ colavg da!+
+    48 + rectri
+
+    48 -
+	;
+
+:tritest | 'vertez --
+	-1 'cache !
+	>a 'verlist >b
+	a@+ b!+ a@+ b!+
+	a@+ b!+ a@+ b!+
+	a@+ b!+ a@+ b!+
+	'verlist rectri drop
+	;
+
+|-------------------------
+| x y z uv
+#vertex [
+189 183 0 $ff0000
+200 100 0 $ff
+60 160 0 $ff00
+]
+
+:drawtri
+	sdly sdlx 'vertex d!+ d!
+	
+	textbitmap 0 'mpixel 'mpitch SDL_LockTexture
+	mpixel 0 600 600 * dfill |dvc 
+	'vertex tritest
+
+	textbitmap SDL_UnlockTexture
+	;
+
+		
+:draw
+	drawtri
+	SDLrenderer textbitmap 0 0 SDL_RenderCopy		
+	SDLredraw
+	SDLkey
+	>esc< =? ( exit )
+	drop ;
+
+:main
+	"r3sdl" 600 600 SDLinit
+	600 600 SDLframebuffer 'textbitmap !
+	drawtri
+	'draw SDLshow 
+	SDLquit	;
+
+: main ;
+
