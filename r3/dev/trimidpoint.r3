@@ -17,30 +17,64 @@
 :colavg | a b -- c
 	2dup or -rot xor $fefefefe and 1 >> - ;
 
+| rrggbbxzzzyyyxxx
 :xyzavg
-	2dup or -rot xor $fffefffefffefffe and 1 >> - ;
+	2dup or -rot xor $fefefefffeffeffe and 1 >> - ;
 	
-:xyz>v | x y z -- v
-	$ffff and 32 << 
-	swap $ffff and 16 << or
-	swap $ffff and or ;
+:xyz>v | rgb x y z -- v
+	$fff and 24 << 
+	swap $fff and 12 << or
+	swap $fff and or 
+	swap 36 << or ;
 	
-:set! | c v --
-	dup 16 >> $ffff and mpitch * 
-	swap $ffff and 2 << + 
-	mpixel + d! ;
+:set! | v --
+	dup 36 >> swap
+	dup 12 >> $fff and mpitch * 
+	swap $fff and 2 << + mpixel + 
+	d! ;
 	
+:v1@
+	a> 3 3 << - @ ;
+:v2@
+	a> 2 3 << - @ ;
+:v3@
+	a> 1 3 << - @ ;
 	
-:2drawtri | v1 rgb v2 rgb v3 rgb--
+:rectri | --
+	v1@ v2@ - v3@ - 0? ( v1@ set! -3 3 << a+ ; ) drop
+	
+	v1@ v2@ v3@
+	pick2 a!+
+	pick2 pick2 xyzavg a!+
+	pick2 over xyzavg a!+
+	rectri
+	over a!+
+	over pick3 xyzavg a!+
+	over over xyzavg a!+
+	rectri
+	dup a!+
+	dup pick3 xyzavg a!+
+	dup pick2 xyzavg a!+
+	rectri
+	2dup xyzavg a!+ | 2 3
+	pick2 xyzavg a!+ | 3 1
+	xyzavg a!+ | 1 2
+	rectri
+	-3 3 << a+ 
+	;
+	
+:drawtri2 | v1 v2 v3 --
 	mark
-	here >a
-	swap a!+ a!+ swap a!+ a!+ swap a!+ a!+
+	here >a 
+	a!+ a!+ a!+ 
+	rectri
 	empty
 	;
 
 |	$ffffff 100 100 10 xyz>v set!
 |	$ffffff 101 100 10 xyz>v set!
 |	$ffffff 102 100 10 xyz>v set!
+	
 	
 |--------------------------	
 	
