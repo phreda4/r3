@@ -12,11 +12,6 @@
 
 ^r3/opengl/shaderobjins.r3
 
-| opengl Constant
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
 #shaderd
 :initshaders
 	|"r3/opengl/shader/anim_model.sha" loadShader 'shaderd !

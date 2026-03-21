@@ -15,14 +15,6 @@
 	$8B8C glGetString .println | shader
 	;
 
-
-#GL_COMPILE_STATUS $8B81
-#GL_LINK_STATUS $8B82
-
-#GL_FRAGMENT_SHADER $8B30
-#GL_VERTEX_SHADER $8B31
- 	
-
 #frag
 #vert
 #err
@@ -65,23 +57,6 @@
 	;
 	
 |--------------------------------
-
-##GL_UNSIGNED_BYTE $1401
-
-##GL_TEXTURE $1702
-##GL_TEXTURE0 $84C0
-##GL_TEXTURE_2D $0DE1
-##GL_TEXTURE_2D_ARRAY $8C1A
-##GL_TEXTURE_3D $806F
-
-#GL_TEXTURE_MAG_FILTER $2800
-#GL_TEXTURE_MIN_FILTER $2801
-#GL_LINEAR $2601
-
-#GL_RED $1903
-#GL_RGB $1907
-#GL_RGBA $1908
-
 |--- sdl2 surface
 |struct SDL_Surface
 |	flags           dd ? 0 dd ? 4

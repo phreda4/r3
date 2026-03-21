@@ -6,25 +6,6 @@
 ^r3/lib/sdl2gl.r3
 ^r3/opengl/glutil.r3
 
-| opengl Constant
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
-#GL_ARRAY_BUFFER $8892
-
-#GL_STATIC_DRAW $88E4
-#GL_FLOAT $1406
-#GL_UNSIGNED_SHORT $1403
-
-#GL_TEXTURE $1702
-#GL_TEXTURE0 $84C0
-#GL_TEXTURE_2D $0DE1
-
-#GL_BLEND $0BE2
-#GL_SRC_ALPHA $0302
-#GL_ONE_MINUS_SRC_ALPHA $0303
-
 |-------------------------------------
 #fontshader	
 #fontTexture 

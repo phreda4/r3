@@ -9,10 +9,6 @@
 ^r3/util/loadobj.r3
 ^r3/opengl/glfgui.r3
 
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
 #filename * 1024
 #cutpath ( $2f )
 #fpath * 1024

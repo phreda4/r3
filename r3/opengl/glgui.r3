@@ -7,17 +7,9 @@
 
 ^r3/opengl/glfont.r3
 
-| opengl Constant
-#GL_DEPTH_TEST $0B71
-#GL_CULL_FACE $0B44
-#GL_BLEND $0BE2
-#GL_SRC_ALPHA $0302
-#GL_ONE_MINUS_SRC_ALPHA $0303
-
 |-------------------------------------
 ##guicolorbtn $ff0000ff
 ##guicolortex $ffffffff
-
 
 #winx 10 #winy 10
 #winh 10 #winh 10 

@@ -42,7 +42,6 @@
 	
 :rectri | --
 	v1@ v2@ - v3@ - 0? ( v1@ set! -3 3 << a+ ; ) drop
-	
 	v1@ v2@ v3@
 	pick2 a!+
 	pick2 pick2 xyzavg a!+

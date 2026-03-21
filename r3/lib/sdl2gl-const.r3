@@ -1,0 +1,143 @@
+| OpenGL Interface for r3forth via SDL2
+| PHREDA 2024-2026
+| --- OpenGL Constants (Final Consolidated Version) ---
+
+| --- General & Boolean ---
+##GL_FALSE                   0
+##GL_TRUE                    1
+##GL_NONE                    0
+##GL_MAJOR_VERSION           $821B
+##GL_MINOR_VERSION           $821C
+
+| --- Clear Bits ---
+##GL_DEPTH_BUFFER_BIT        $0100
+##GL_STENCIL_BUFFER_BIT      $0400
+##GL_COLOR_BUFFER_BIT        $4000
+
+| --- Primitive Types ---
+##GL_POINTS                  $0000
+##GL_LINES                   $0001
+##GL_LINE_STRIP              $0003
+##GL_TRIANGLES               $0004
+##GL_TRIANGLE_STRIP          $0005
+##GL_TRIANGLE_FAN            $0006
+
+| --- State Management & Rasterization ---
+##GL_CULL_FACE               $0B44
+##GL_DEPTH_TEST              $0B71
+##GL_STENCIL_TEST            $0B90
+##GL_BLEND                   $0BE2
+##GL_POLYGON_OFFSET_FILL     $8037
+
+| --- Comparison Functions ---
+##GL_NEVER                   $0200
+##GL_LESS                    $0201
+##GL_EQUAL                   $0202
+##GL_LEQUAL                  $0203
+##GL_GREATER                 $0204
+##GL_NOTEQUAL                $0205
+##GL_GEQUAL                  $0206
+##GL_ALWAYS                  $0207
+
+| --- Blending Factors ---
+##GL_SRC_ALPHA               $0302
+##GL_ONE_MINUS_SRC_ALPHA     $0303
+##GL_ONE                     $0001
+##GL_ZERO                    $0000
+
+| --- Data Types ---
+##GL_UNSIGNED_BYTE           $1401
+##GL_UNSIGNED_SHORT          $1403
+##GL_UNSIGNED_INT            $1405
+##GL_INT                     $1404
+##GL_FLOAT                   $1406
+
+| --- Pixel Formats & Internal Formats ---
+##GL_DEPTH_COMPONENT         $1902
+##GL_DEPTH_COMPONENT24       $81A6
+##GL_RED                     $1903
+##GL_RGB                     $1907
+##GL_RGBA                    $1908
+##GL_BGRA_EXT                $80E1
+
+| --- Texture Management (Units) ---
+##GL_TEXTURE0                $84C0
+##GL_TEXTURE1                $84C1
+##GL_TEXTURE2                $84C2
+##GL_TEXTURE3                $84C3
+##GL_TEXTURE4                $84C4
+##GL_TEXTURE5                $84C5
+##GL_TEXTURE6                $84C6
+##GL_TEXTURE7                $84C7
+
+| --- Texture Targets & Parameters ---
+##GL_TEXTURE_2D              $0DE1
+##GL_TEXTURE_MAG_FILTER      $2800
+##GL_TEXTURE_MIN_FILTER      $2801
+##GL_TEXTURE_WRAP_S          $2802
+##GL_TEXTURE_WRAP_T          $2803
+##GL_TEXTURE_BORDER_COLOR    $1004
+##GL_TEXTURE_COMPARE_MODE     $884C
+##GL_TEXTURE_COMPARE_FUNC     $884D
+##GL_COMPARE_REF_TO_TEXTURE   $884E
+##GL_TEXTURE                 $1702
+##GL_TEXTURE_2D_ARRAY         $8C1A
+##GL_TEXTURE_3D               $806F
+
+| --- Texture Filtering & Wrap Modes ---
+##GL_NEAREST                 $2600
+##GL_LINEAR                  $2601
+##GL_CLAMP_TO_EDGE           $812F
+##GL_CLAMP_TO_BORDER         $812D
+##GL_REPEAT                  $2901
+
+| --- Buffer Objects & VAO ---
+##GL_ARRAY_BUFFER            $8892
+##GL_ELEMENT_ARRAY_BUFFER    $8893
+##GL_UNIFORM_BUFFER          $8A11
+##GL_UNIFORM_BUFFER_BINDING  $8A28
+##GL_STATIC_DRAW             $88E4
+##GL_DYNAMIC_DRAW            $88E8
+
+| --- Buffer Storage Flags (GL 4.4+) ---
+##GL_MAP_READ_BIT            $0001
+##GL_MAP_WRITE_BIT           $0002
+##GL_MAP_PERSISTENT_BIT      $0040
+##GL_MAP_COHERENT_BIT        $0080
+##GL_DYNAMIC_STORAGE_BIT     $0100
+##GL_MAP_INVALIDATE_RANGE_BIT $0004
+##GL_MAP_UNSYNCHRONIZED_BIT  $0020
+
+| --- Shaders ---
+##GL_FRAGMENT_SHADER         $8B30
+##GL_VERTEX_SHADER           $8B31
+##GL_GEOMETRY_SHADER $8DD9
+##GL_COMPILE_STATUS          $8B81
+##GL_LINK_STATUS             $8B82
+##GL_INFO_LOG_LENGTH         $8B84
+
+| --- Framebuffers ---
+##GL_FRAMEBUFFER             $8D40
+##GL_DEPTH_ATTACHMENT        $8D00
+
+| --- Queries & Synchronization ---
+##GL_TIME_ELAPSED            $88BF
+##GL_QUERY_RESULT            $8866
+##GL_QUERY_RESULT_AVAILABLE  $8867
+##GL_SYNC_GPU_COMMANDS_COMPLETE $9117
+##GL_SYNC_FLUSH_COMMANDS_BIT  $00000001
+##GL_ALREADY_SIGNALED        $911A
+##GL_CONDITION_SATISFIED     $911C
+
+| --- Pixel Storage ---
+##GL_UNPACK_ALIGNMENT        $0CF5
+##GL_PACK_ALIGNMENT          $0D05
+
+| --- Buffer Usage Hints (Adiciones) ---
+##GL_DYNAMIC_COPY            $88EA
+##GL_DYNAMIC_READ            $88E9
+
+| --- Buffer Access Policies ---
+##GL_READ_ONLY               $88B8
+##GL_WRITE_ONLY              $88B9
+##GL_WRITE_WRITE             $88BA

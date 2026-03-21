@@ -13,18 +13,6 @@
 
 #xcam 0 #ycam 0 #zcam -4.0
 
-| opengl Constant
-#GL_ARRAY_BUFFER $8892
-#GL_STATIC_DRAW $88E4
-#GL_FLOAT $1406
-#GL_FALSE 0
-
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
-#GL_TRIANGLES $0004
-
 #vertex_buffer_data 
 #normal_buffer_data
 #uv_buffer_data 

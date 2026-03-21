@@ -12,11 +12,6 @@
 
 ^r3/opengl/shaderobjins.r3
 
-| opengl Constant
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
 |-------------------------------------
 :glinit
 	"test opengl" 800 600 SDLinitGL
