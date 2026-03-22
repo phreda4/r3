@@ -39,6 +39,43 @@ void main(){
 }
 @-----------------------"
 
+#verts [
+-1.0 -1.0  1.0   0  0  1.0    1.0 -1.0  1.0   0  0  1.0    1.0  1.0  1.0   0  0  1.0   -1.0  1.0  1.0   0  0  1.0 
+ 1.0 -1.0 -1.0   0  0 -1.0   -1.0 -1.0 -1.0   0  0 -1.0   -1.0  1.0 -1.0   0  0 -1.0    1.0  1.0 -1.0   0  0 -1.0 
+ 1.0 -1.0  1.0   1.0  0  0    1.0 -1.0 -1.0   1.0  0  0    1.0  1.0 -1.0   1.0  0  0    1.0  1.0  1.0   1.0  0  0 
+-1.0 -1.0 -1.0  -1.0  0  0   -1.0 -1.0  1.0  -1.0  0  0   -1.0  1.0  1.0  -1.0  0  0   -1.0  1.0 -1.0  -1.0  0  0 
+-1.0  1.0  1.0   0  1.0  0    1.0  1.0  1.0   0  1.0  0    1.0  1.0 -1.0   0  1.0  0   -1.0  1.0 -1.0   0  1.0  0 
+-1.0 -1.0 -1.0   0 -1.0  0    1.0 -1.0 -1.0   0 -1.0  0    1.0 -1.0  1.0   0 -1.0  0   -1.0 -1.0  1.0   0 -1.0  0 
+]
+#idx [
+ 0  1  2   0  2  3    4  5  6   4  6  7 
+ 8  9 10   8 10 11   12 13 14  12 14 15 
+16 17 18  16 18 19   20 21 22  20 22 23 
+]
+
+#g_vao #g_vbo #g_ebo
+
+:build_cube
+1 'g_vao glGenVertexArrays
+g_vao glBindVertexArray
+
+24 6 * 'verts memfloat
+1 'g_vbo glGenBuffers
+GL_ARRAY_BUFFER g_vbo glBindBuffer
+GL_ARRAY_BUFFER 24 6 * 4 * 'verts GL_STATIC_DRAW glBufferData
+
+1 'g_ebo glGenBuffers
+GL_ELEMENT_ARRAY_BUFFER g_ebo glBindBuffer
+GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
+
+0 glEnableVertexAttribArray
+0 3 GL_FLOAT GL_FALSE 6 4 * 0 glVertexAttribPointer | pos
+1 glEnableVertexAttribArray
+1 3 GL_FLOAT GL_FALSE 6 4 * 3 4 * glVertexAttribPointer | normal
+0 glBindVertexArray
+;
+
+
 #cam_yaw  0.25
 #cam_pit  0.45
 #cam_dist 4.5
@@ -47,30 +84,44 @@ void main(){
 #cube_rot 0.0
 #spinning 1
 
-
 #flamb * 12
 #fldif * 12
 #flspe * 12
 
 #pEye 0.0 0.0 4.5
-#pTo 0 0 0
+#pTo 0 0 0.0
 #pUp 0 1.0 0
 	
 #fmodel * 64
 #fmvp * 64
 	
+:viewresize
+|float asp = (vp_h > 0) ? (float)vp_w / (float)vp_h : 1.f;
+|	0 0 800 600 glViewport
+	;
+	
+	
 :update
-|        float asp = (vp_h > 0) ? (float)vp_w / (float)vp_h : 1.f;
-|        float ex = cosf(cam_yaw) * cosf(cam_pit) * cam_dist;
-|        float ey = sinf(cam_pit) * cam_dist;
-|        float ez = sinf(cam_yaw) * cosf(cam_pit) * cam_dist;
-
+	spinning 1? ( 0.01 'cube_rot +! ) drop
+	
+	|0.005 'cam_yaw +!
+	|0.0025 'cam_pit +!
+	
+	matini
+	
+	|cube_rot 0.4 *. mrotx 
+	|cube_rot mroty 
+	|m* | rotx*roty
+	cube_rot 0 over 0.2 *. mrot
+	
+	'fmodel mcpyf | >>MODEL
 
 	matini
-	cube_rot 0.4 *. mrotx 
-	cube_rot mroty 
-	m* | rotx*roty
-	'fmodel mcpyf | >>MODEL
+	'pEye >a
+	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
+	cam_pit sin cam_dist *. a!+
+	cam_yaw sin cam_pit cos *. cam_dist *. a!
+	
 	'pEye 'pTo 'pUp mlookat | VIEW
 	m* |( view*model)
 
@@ -93,7 +144,9 @@ void main(){
 	prog glUseProgram
 	loc_mvp   1 GL_FALSE 'fmvp glUniformMatrix4fv
 	loc_model 1 GL_FALSE 'fmodel glUniformMatrix4fv
-	rendercube
+	g_vao glBindVertexArray
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
+	
 	GLUpdate
 	sdlkey
 	>esc< =? ( exit )
@@ -105,19 +158,20 @@ void main(){
 :
 	"test opengl" 800 600 GLini
 	GLInfo
-	
 	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable	
 	GL_LESS glDepthFunc 
-	
 	$1c1c1c GLpaper
-	
-	'shader loadShaderv 'prog ! | "fragment" "vertex" -- idprogram
-	initcube
+	'shader loadShaderv 'prog !
+	build_cube
 	prog "uMVP" glGetUniformLocation 'loc_mvp !
 	prog "uModel" glGetUniformLocation 'loc_model !
-
+	0 0 800 600 glViewport
 	
 	'main SDLshow
+	
+    1 'g_vao glDeleteVertexArrays
+    1 'g_vbo glDeleteBuffers
+    1 'g_ebo glDeleteBuffers
+    prog glDeleteProgram
 	GLend
 	;
