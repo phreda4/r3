@@ -9,7 +9,7 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 
-^r3/opengl/glutil.r3
+^r3/lib/glutil.r3
 
 |-------------------------------------
 :memfloat | cnt place --

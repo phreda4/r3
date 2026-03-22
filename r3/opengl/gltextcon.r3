@@ -5,7 +5,7 @@
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gl.r3
 
-^r3/opengl/glutil.r3
+^r3/lib/glutil.r3
 
 |-------------------------------------
 #fontTexture |  // ID de la textura de la fuente

@@ -69,6 +69,7 @@
 ::GL_TEXTURE5 $84C5 ;
 ::GL_TEXTURE6 $84C6 ;
 ::GL_TEXTURE7 $84C7 ;
+::GL_TEXTURE8 $84C8 ;
 
 | --- Texture Targets & Parameters ---
 ::GL_TEXTURE_2D $0DE1 ;

@@ -5,14 +5,6 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/sdl2image.r3
-
-| print info from GPU
-::glInfo
-	$1f00 glGetString .println | vendor
-	$1f01 glGetString .println | render
-	$1f02 glGetString .println | version
-	$8B8C glGetString .println | shader
-	;
 	
 #t | aux for error
 #f #g #v	
@@ -158,10 +150,6 @@
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 
 |-----------
-#GL_ARRAY_BUFFER $8892
-#GL_STATIC_DRAW $88E4
-#GL_FLOAT $1406
-
 #cubevao
 #cubevbo
 
@@ -232,5 +220,5 @@
 ::rendercube
     cubevao glBindVertexArray
     4 0 36 glDrawArrays 
-    0 glBindVertexArray
+    |0 glBindVertexArray
 	;

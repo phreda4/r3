@@ -6,6 +6,7 @@
 #SDL_context
 
 | --- System Variable Declarations ---
+#sys-glClearBufferfv
 #sys-glCreateProgram #sys-glCreateShader #sys-glShaderSource #sys-glCompileShader
 #sys-glGetShaderiv #sys-glAttachShader #sys-glGetProgramiv #sys-glGetAttribLocation
 #sys-glClearColor #sys-glGenBuffers #sys-glBindBuffer #sys-glBindRenderbuffer
@@ -34,7 +35,9 @@
 #sys-glDeleteQueries #sys-glBeginQuery #sys-glEndQuery #sys-glGetQueryObjectuiv 
 #sys-glFenceSync #sys-glClientWaitSync #sys-glDeleteSync #sys-glBufferStorage #sys-glMapBufferRange
 
+
 | --- API Wrappers ---
+::glClearBufferfv sys-glClearBufferfv sys3 drop ;
 
 ::glCreateProgram sys-glCreateProgram sys0 ;
 ::glCreateShader sys-glCreateShader sys1 ;
@@ -154,6 +157,7 @@
 
 ::InitGLAPI
     0 SDL_GL_LoadLibrary
+	"glClearBufferfv" SDL_GL_GetProcAddress 'sys-glClearBufferfv !
     "glGetError" SDL_GL_GetProcAddress 'sys-glGetError !
     "glGetString" SDL_GL_GetProcAddress 'sys-glGetString !
     "glCreateProgram" SDL_GL_GetProcAddress 'sys-glCreateProgram !
@@ -303,14 +307,57 @@
 ::SDLGLupdate
     SDL_windows SDL_GL_SwapWindow ;
 
-::SDLglquit
-    SDL_context SDL_Gl_DeleteContext
-    SDL_windows SDL_DestroyWindow
-    SDL_Quit ;
-
 ::glInfo
     $1f00 glGetString .println
     $1f01 glGetString .println
     $1f02 glGetString .println
     $8B8C glGetString .println
     ;
+	
+:SDL_GL_CONTEXT_MAJOR_VERSION	17 ;
+:SDL_GL_CONTEXT_MINOR_VERSION	18 ;
+:SDL_GL_CONTEXT_PROFILE_MASK	21 ;
+:SDL_GL_CONTEXT_PROFILE_CORE	1 ;
+:SDL_GL_DOUBLEBUFFER	5 ;
+:SDL_GL_DEPTH_SIZE	6 ;
+	
+#colorgl [ 0 0 0 1.0 ]
+#basegl [ 1.0 ]
+
+::memfloat | cnt adr --
+	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+	
+::GLpaper | $ffffff --
+	'colorgl >a
+	dup 16 >> $ff and 1.0 8 *>> da!+
+	dup 8 >> $ff and 1.0 8 *>> da!+
+	$ff and 1.0 8 *>> da!
+	4 'colorgl memfloat ;
+	
+::GLcls
+	$1800 0 'colorgl glClearBufferfv | GL_COLOR
+	$1801 0 'basegl glClearBufferfv | GL_DEPTH
+	;
+	
+::GLIni | w h --
+	'sh ! 'sw !
+    $3231 SDL_init
+    SDL_GL_CONTEXT_MAJOR_VERSION 4 SDL_GL_SetAttribute
+    SDL_GL_CONTEXT_MINOR_VERSION 4 SDL_GL_SetAttribute
+    SDL_GL_CONTEXT_PROFILE_MASK SDL_GL_CONTEXT_PROFILE_CORE SDL_GL_SetAttribute
+    SDL_GL_DOUBLEBUFFER 1 SDL_GL_SetAttribute
+    SDL_GL_DEPTH_SIZE 24 SDL_GL_SetAttribute
+    $1FFF0000 dup sw sh $22 SDL_CreateWindow 'SDL_windows !
+    SDL_windows SDL_GL_CreateContext 'SDL_context !
+    1 SDL_GL_SetSwapInterval
+    InitGLAPI
+	5 'colorgl memfloat
+	;
+	
+::GLend
+    SDL_context SDL_Gl_DeleteContext
+    SDL_windows SDL_DestroyWindow
+    SDL_Quit ;
+	
+::GLUpdate
+   SDL_windows SDL_GL_SwapWindow ;
