@@ -43,7 +43,7 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
-	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @ f2fp db! 
 	;
 
 ::midf | fmat -- ; copy id matrix to floating point in fmat
@@ -57,7 +57,7 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
-	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
+	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @ f2fp db! 
 	;	
 	
 
@@ -438,6 +438,20 @@
 	>a mat> dup >b 128 +
 	mrow mrow mrow mrow drop
 	128 'mat> +! ;
+
+| Versión que multiplica la Vista por la matriz actual
+::mview | eye to up --
+    mpush      | Duplica la matriz actual (Modelo) al tope
+    mlookat    | Genera la Vista en el tope (borrando la copia)
+    m* | Multiplica: Matriz_Anterior * Vista -> Resultado
+;
+
+| Versión que multiplica la Proyección por la matriz actual
+::mproj | fov asp zn zf --
+    mpush      | Duplica la matriz (View*Model) al tope
+    mperspective | Genera la Proyección en el tope
+    m* | Multiplica: (View*Model) * Proj -> MVP
+;		
 
 ::mtra | x y z -- ; traslate
 	mat> dup >a 'mati 16 move 

@@ -4,8 +4,6 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
-^r3/lib/3dgl.r3
-^r3/lib/math.r3
 
 #shader "
 @vertex-----------------
@@ -181,6 +179,7 @@ void main(){
 
 #vp_w 900
 #vp_h 600
+#vp_asp 
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -213,43 +212,78 @@ void main(){
 
 :viewresize
     0 0 vp_w vp_h glViewport
+	vp_h vp_w /. 'vp_asp !
 	;
 
+|------------------------UI
+#id	#idh #ida 	| now hot active
+#idf #idfh #idfa | focus
+#fx #fy #fw #fh
+
+::immBox | x y w h --
+	'fh ! 'fw ! 'fy ! 'fx ! ;	
+	
+::immFull | --
+	0 0 sw sh immBox ;
+
+::immIni
+	immFull
+	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
+	idh 'ida ! -1 'id ! ;
+	
+:immIn? | -- 0/-1
+	sdlx fx - $ffff and fw >? ( drop 0 ; ) drop
+	sdly fy - $ffff and fh >? ( drop 0 ; ) drop 
+	-1 ;
+	
+::immMouse | -- state
+	1 'id +! 
+	ida -? ( drop 			| no active
+		immIn? 0? ( ; ) drop		| out->0
+		sdlb 0? ( drop 1 ; ) drop	| over->1
+		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
+	id <>? ( drop 0 ; ) 	|	 active no this->0
+	drop
+	immIn? 0? ( drop
+		sdlb 1? ( drop 4 ; ) drop	| active out->4
+		-1 'idh ! 5 ; ) drop		| out up->5
+	sdlb 1? ( drop 3 ; ) drop 		| active->3
+	-1 'idh ! 6 ; 					| click->6		
+
+#xp #yp 
+:movecam
+	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
+	sdly dup yp - neg 0.002 * 'cam_pit +! 'yp !
+:calcam
+	'pEye >a
+	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
+	cam_pit sin cam_dist *. a!+
+	cam_yaw sin cam_pit cos *. cam_dist *. a!
+	3 'pEye 'fpEye mem2float
+	;
+:wheelcam
+	SDLw 0? ( drop ; ) neg
+	0.2 * 'cam_dist +!
+	calcam
+	;
+	
+	
 :update
     spinning 1? ( 0.008 'cube_rot +! ) drop
-
-    | Build model matrix
-    matini
-    cube_rot 0.4 *. mrotx
-    cube_rot mroty
-    m*
-    'fmodel mcpyf
-
-    | Build view matrix
-    matini
+	matini
+|	cube_rot dup 0.2 *. 0 mrot
+	cube_rot 0.2 *. mroty
+	cube_rot mrotx
 	
-	'pEye >a
-    cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
-    cam_pit sin cam_dist *. a!+              | ey
-    cam_yaw sin cam_pit cos *. cam_dist *. a! | ez
-
-    'pEye 'pTo 'pUp mlookat
-    m* | view * model
-
-    | Build projection matrix
-    0.05 100.0 | near far
-    0.8 | FOV
-    vp_w vp_h /. | aspect
-    mperspective
-    m* | proj * view * model
-
-    'fmvp mcpyf
-	
-|::mem2float | cnt src dst --	
-	3 'pEye 'fpEye mem2float
+	'fmodel mcpyf | >>MODEL
+	'pEye 'pTo 'pUp mview
+	0.05 100.0 | near far
+	0.8 |FOV
+	vp_asp | aspect
+	mproj
+	'fmvp mcpyf	 | >>MVP
 	time 0.1 *. f2fp 'ftime !
 	;
-
 
 :draw
     prog glUseProgram
@@ -272,8 +306,15 @@ void main(){
 	GLcls
     update
     draw
-
     GLUpdate
+	
+	immIni
+	|100 100 600 400 immBox
+	immMouse
+	1 =? ( wheelcam ) | over
+	3 =? ( movecam ) | active
+	drop	
+	
     sdlkey
 	>esc< =? ( exit )
 	<esp> =? ( spinning not 'spinning ! )
@@ -297,7 +338,8 @@ void main(){
 
     | Viewport dimensions
     viewresize
-
+	calcam
+	
     | Clear and draw
     GL_DEPTH_TEST glEnable
     GL_LESS glDepthFunc

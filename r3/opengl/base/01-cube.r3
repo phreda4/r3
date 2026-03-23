@@ -4,7 +4,6 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
-^r3/lib/3dgl.r3
 
 #strshader "
 @vertex-----------------
@@ -96,39 +95,18 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 |float asp = (vp_h > 0) ? (float)vp_w / (float)vp_h : 1.f;
 |	0 0 800 600 glViewport
 	;
-:printmat
-	mat>
-	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
-	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
-	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
-	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .println .cr
-	drop
-	;
 	
 :update
-	spinning 1? ( 0.01 'cube_rot +! ) drop
-	
+	spinning 1? ( 0.001 'cube_rot +! ) drop
 	matini
-	
-	cube_rot 0 over 0.2 *. mrot
-	
-|	printmat
+	cube_rot dup 0.2 *. 0 mrot
 	'fmodel mcpyf | >>MODEL
-	
-	'pEye 'pTo 'pUp mlookat | VIEW
-	m* |( view*model)
-	
+	'pEye 'pTo 'pUp mview
 	0.05 100.0 | near far
 	0.8 |FOV
 	3.0 4.0 /. | aspect
-	mperspective  | PROJ
-	m*			| proj*(view*model)
-|		printmat
+	mproj
 	'fmvp mcpyf	 | >>MVP
-|        Mat4 view  = mat4_lookat((Vec3){ex,ey,ez}, (Vec3){0,0,0}, (Vec3){0,1,0});
-|        Mat4 proj  = mat4_persp(60.f * (PI/180.f), asp, 0.05f, 100.f);
-|        Mat4 model = mat4_mul(mat4_rotate_x(cube_rot * 0.4f), mat4_rotate_y(cube_rot));
-|        Mat4 mvp   = mat4_mul(proj, mat4_mul(view, model));
 	;
 	
 |------------------------UI
@@ -170,11 +148,16 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 :movecam
 	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
 	sdly dup yp - neg 0.002 * 'cam_pit +! 'yp !
-
+:calcam
 	'pEye >a
 	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
 	cam_pit sin cam_dist *. a!+
 	cam_yaw sin cam_pit cos *. cam_dist *. a!
+	;
+:wheelcam
+	SDLw 0? ( drop ; ) neg
+	0.2 * 'cam_dist +!
+	calcam
 	;
 	
 :main
@@ -182,7 +165,8 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 	GLcls
 	shader glUseProgram
 	loc_mvp   1 GL_FALSE 'fmvp glUniformMatrix4fv
-	loc_model 1 GL_FALSE 'fmodel glUniformMatrix4fv
+	loc_model 1 GL_FALSE 'fmodel glUniformMatrix4fv	
+
 	g_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	
@@ -191,6 +175,7 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 	immIni
 	|100 100 600 400 immBox
 	immMouse
+	1 =? ( wheelcam ) | over
 	3 =? ( movecam ) | active
 	drop
 	
