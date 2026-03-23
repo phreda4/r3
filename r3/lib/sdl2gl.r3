@@ -327,6 +327,9 @@
 ::memfloat | cnt adr --
 	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
 	
+::mem2float | cnt src dst --
+	>b >a ( 1? 1 - a@ f2fp db!+ ) drop ;
+	
 ::GLpaper | $ffffff --
 	'colorgl >a
 	dup 16 >> $ff and 1.0 8 *>> da!+
