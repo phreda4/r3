@@ -324,11 +324,13 @@
 #colorgl [ 0 0 0 1.0 ]
 #basegl [ 1.0 ]
 
+
 ::memfloat | cnt adr --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
+	>a ( 1? 1- da@ f2fp da!+ ) drop ;
 	
 ::mem2float | cnt src dst --
-	>b >a ( 1? 1 - a@ f2fp db!+ ) drop ;
+	>b >a ( 1? 1- a@ f2fp db!+ ) drop ;
+
 	
 ::GLpaper | $ffffff --
 	'colorgl >a

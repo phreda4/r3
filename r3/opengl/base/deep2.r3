@@ -7,16 +7,6 @@
 ^r3/lib/3dgl.r3
 ^r3/lib/math.r3
 
-#prog
-
-#loc_mvp
-#loc_model
-#loc_cam
-#loc_time
-
-#vp_w 900
-#vp_h 600
-
 #shader "
 @vertex-----------------
 #version 440 core
@@ -182,6 +172,16 @@ void main(){
     0 glBindVertexArray
 ;
 
+#prog
+
+#loc_mvp
+#loc_model
+#loc_cam
+#loc_time
+
+#vp_w 900
+#vp_h 600
+
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
 #cam_pit   0.45
@@ -284,10 +284,10 @@ void main(){
 :
     "cube sdf raymarching" 900 600 GLini
     GLInfo
-
-    'shader loadShaderv 'prog !
+	
     build_cube
 
+	'shader loadShaderv 'prog !
     prog "uMVP"    glGetUniformLocation 'loc_mvp   !
     prog "uModel"  glGetUniformLocation 'loc_model !
     prog "uCamPos" glGetUniformLocation 'loc_cam   !

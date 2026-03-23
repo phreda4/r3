@@ -35,7 +35,7 @@
 
 ::getfmat | -- fmat ; make float point mat
 	mat> dup 128 + >b >a
-	16 ( 1? 1 - a@+ f2fp db!+ ) drop 
+	16 ( 1? 1- a@+ f2fp db!+ ) drop 
 	mat> 128 + ;
 	
 ::gettfmat |  -- fmat ; transpose
@@ -46,10 +46,13 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
 	;
 
-::mcpyf | fmat --	; copy floating opoint mat to mem
-	>b mat> >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
+::midf | fmat -- ; copy id matrix to floating point in fmat
+	>b 'mati >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
 
-::mcpyft | fmat -- ; transpose
+::mcpyf | fmat --	; copy act matrix to floating point in fmat
+	>b mat> >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
+
+::mcpyft | fmat -- ; transpose + copy in floating point
 	>b mat> 
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
@@ -57,8 +60,6 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db! 
 	;	
 	
-::midf | fmat --
-	>b 'mati >a 16 ( 1? 1 - a@+ f2fp db!+ ) drop ;
 
 | Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);

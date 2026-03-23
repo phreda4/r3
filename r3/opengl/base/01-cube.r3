@@ -6,11 +6,7 @@
 ^r3/lib/glutil.r3
 ^r3/lib/3dgl.r3
 
-#prog
-#loc_mvp 
-#loc_model 
-
-#shader "
+#strshader "
 @vertex-----------------
 #version 440 core
 layout(location=0) in vec3 aPos;
@@ -53,6 +49,8 @@ void main(){
 16 17 18  16 18 19   20 21 22  20 22 23 
 ]
 
+#shader
+#loc_mvp #loc_model 
 #g_vao #g_vbo #g_ebo
 
 :build_cube
@@ -75,14 +73,13 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 0 glBindVertexArray
 ;
 
-
-#cam_yaw  0.25
+#cam_yaw  0.0
 #cam_pit  0.45
 #cam_dist 4.5
 #cam_drag 0
 
-#cube_rot 0.0
-#spinning 1
+#cube_rot 0.5
+#spinning -1
 
 #flamb * 12
 #fldif * 12
@@ -91,7 +88,7 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 #pEye 0.0 0.0 4.5
 #pTo 0 0 0.0
 #pUp 0 1.0 0
-	
+
 #fmodel * 64
 #fmvp * 64
 	
@@ -99,38 +96,34 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 |float asp = (vp_h > 0) ? (float)vp_w / (float)vp_h : 1.f;
 |	0 0 800 600 glViewport
 	;
-	
+:printmat
+	mat>
+	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
+	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
+	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .print .cr
+	@+ "%a " .print	@+ "%a " .print @+ "%a " .print @+ "%a " .println .cr
+	drop
+	;
 	
 :update
 	spinning 1? ( 0.01 'cube_rot +! ) drop
 	
-	|0.005 'cam_yaw +!
-	|0.0025 'cam_pit +!
-	
 	matini
 	
-	|cube_rot 0.4 *. mrotx 
-	|cube_rot mroty 
-	|m* | rotx*roty
 	cube_rot 0 over 0.2 *. mrot
 	
+|	printmat
 	'fmodel mcpyf | >>MODEL
-
-	matini
-	'pEye >a
-	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
-	cam_pit sin cam_dist *. a!+
-	cam_yaw sin cam_pit cos *. cam_dist *. a!
 	
 	'pEye 'pTo 'pUp mlookat | VIEW
 	m* |( view*model)
-
+	
 	0.05 100.0 | near far
 	0.8 |FOV
 	3.0 4.0 /. | aspect
 	mperspective  | PROJ
 	m*			| proj*(view*model)
-	
+|		printmat
 	'fmvp mcpyf	 | >>MVP
 |        Mat4 view  = mat4_lookat((Vec3){ex,ey,ez}, (Vec3){0,0,0}, (Vec3){0,1,0});
 |        Mat4 proj  = mat4_persp(60.f * (PI/180.f), asp, 0.05f, 100.f);
@@ -138,18 +131,72 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 |        Mat4 mvp   = mat4_mul(proj, mat4_mul(view, model));
 	;
 	
+|------------------------UI
+#id	#idh #ida 	| now hot active
+#idf #idfh #idfa | focus
+#fx #fy #fw #fh
+
+::immBox | x y w h --
+	'fh ! 'fw ! 'fy ! 'fx ! ;	
+	
+::immFull | --
+	0 0 sw sh immBox ;
+
+::immIni
+	immFull
+	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
+	idh 'ida ! -1 'id ! ;
+	
+:immIn? | -- 0/-1
+	sdlx fx - $ffff and fw >? ( drop 0 ; ) drop
+	sdly fy - $ffff and fh >? ( drop 0 ; ) drop 
+	-1 ;
+	
+::immMouse | -- state
+	1 'id +! 
+	ida -? ( drop 			| no active
+		immIn? 0? ( ; ) drop		| out->0
+		sdlb 0? ( drop 1 ; ) drop	| over->1
+		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
+	id <>? ( drop 0 ; ) 	|	 active no this->0
+	drop
+	immIn? 0? ( drop
+		sdlb 1? ( drop 4 ; ) drop	| active out->4
+		-1 'idh ! 5 ; ) drop		| out up->5
+	sdlb 1? ( drop 3 ; ) drop 		| active->3
+	-1 'idh ! 6 ; 					| click->6		
+
+#xp #yp 
+:movecam
+	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
+	sdly dup yp - neg 0.002 * 'cam_pit +! 'yp !
+
+	'pEye >a
+	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
+	cam_pit sin cam_dist *. a!+
+	cam_yaw sin cam_pit cos *. cam_dist *. a!
+	;
+	
 :main
 	update
 	GLcls
-	prog glUseProgram
+	shader glUseProgram
 	loc_mvp   1 GL_FALSE 'fmvp glUniformMatrix4fv
 	loc_model 1 GL_FALSE 'fmodel glUniformMatrix4fv
 	g_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	
 	GLUpdate
+	
+	immIni
+	|100 100 600 400 immBox
+	immMouse
+	3 =? ( movecam ) | active
+	drop
+	
 	sdlkey
 	>esc< =? ( exit )
+	<esp> =? ( spinning not 'spinning ! )
 	drop
 	;
 
@@ -161,10 +208,12 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 	GL_DEPTH_TEST glEnable 
 	GL_LESS glDepthFunc 
 	$1c1c1c GLpaper
-	'shader loadShaderv 'prog !
+	
+	'strshader loadShaderv 'shader !
+	shader "uMVP" glGetUniformLocation 'loc_mvp !
+	shader "uModel" glGetUniformLocation 'loc_model !
+
 	build_cube
-	prog "uMVP" glGetUniformLocation 'loc_mvp !
-	prog "uModel" glGetUniformLocation 'loc_model !
 	0 0 800 600 glViewport
 	
 	'main SDLshow
@@ -172,6 +221,6 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
     1 'g_vao glDeleteVertexArrays
     1 'g_vbo glDeleteBuffers
     1 'g_ebo glDeleteBuffers
-    prog glDeleteProgram
+    shader glDeleteProgram
 	GLend
 	;
