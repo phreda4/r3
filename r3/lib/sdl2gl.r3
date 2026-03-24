@@ -35,6 +35,42 @@
 #sys-glDeleteQueries #sys-glBeginQuery #sys-glEndQuery #sys-glGetQueryObjectuiv 
 #sys-glFenceSync #sys-glClientWaitSync #sys-glDeleteSync #sys-glBufferStorage #sys-glMapBufferRange
 
+|--------------------
+|------------------------UI
+#id	#idh #ida 	| now hot active
+#idf #idfh #idfa | focus
+#fx #fy #fw #fh
+
+::immBox | x y w h --
+	'fh ! 'fw ! 'fy ! 'fx ! ;	
+	
+::immFull | --
+	0 0 sw sh immBox ;
+
+::immIni
+	immFull
+	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
+	idh 'ida ! -1 'id ! ;
+	
+:immIn? | -- 0/-1
+	sdlx fx - $ffff and fw >? ( drop 0 ; ) drop
+	sdly fy - $ffff and fh >? ( drop 0 ; ) drop 
+	-1 ;
+	
+::immMouse | -- state
+	1 'id +! 
+	ida -? ( drop 			| no active
+		immIn? 0? ( ; ) drop		| out->0
+		sdlb 0? ( drop 1 ; ) drop	| over->1
+		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
+	id <>? ( drop 0 ; ) 	|	 active no this->0
+	drop
+	immIn? 0? ( drop
+		sdlb 1? ( drop 4 ; ) drop	| active out->4
+		-1 'idh ! 5 ; ) drop		| out up->5
+	sdlb 1? ( drop 3 ; ) drop 		| active->3
+	-1 'idh ! 6 ; 					| click->6		
+
 
 | --- API Wrappers ---
 ::glClearBufferfv sys-glClearBufferfv sys3 drop ;

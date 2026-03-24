@@ -189,7 +189,7 @@ void main(){
 
 | Cube rotation
 #cube_rot  0.0
-#spinning  1
+#spinning  -1
 
 #pEye 0.0 0.0 4.5
 #fpEye [ 0 0 0 ]
@@ -215,45 +215,12 @@ void main(){
 	vp_h vp_w /. 'vp_asp !
 	;
 
-|------------------------UI
-#id	#idh #ida 	| now hot active
-#idf #idfh #idfa | focus
-#fx #fy #fw #fh
-
-::immBox | x y w h --
-	'fh ! 'fw ! 'fy ! 'fx ! ;	
-	
-::immFull | --
-	0 0 sw sh immBox ;
-
-::immIni
-	immFull
-	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
-	idh 'ida ! -1 'id ! ;
-	
-:immIn? | -- 0/-1
-	sdlx fx - $ffff and fw >? ( drop 0 ; ) drop
-	sdly fy - $ffff and fh >? ( drop 0 ; ) drop 
-	-1 ;
-	
-::immMouse | -- state
-	1 'id +! 
-	ida -? ( drop 			| no active
-		immIn? 0? ( ; ) drop		| out->0
-		sdlb 0? ( drop 1 ; ) drop	| over->1
-		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
-	id <>? ( drop 0 ; ) 	|	 active no this->0
-	drop
-	immIn? 0? ( drop
-		sdlb 1? ( drop 4 ; ) drop	| active out->4
-		-1 'idh ! 5 ; ) drop		| out up->5
-	sdlb 1? ( drop 3 ; ) drop 		| active->3
-	-1 'idh ! 6 ; 					| click->6		
-
 #xp #yp 
 :movecam
 	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
-	sdly dup yp - neg 0.002 * 'cam_pit +! 'yp !
+	sdly dup yp - neg 0.002 * 
+	cam_pit + 0.2 min -0.2 max 'cam_pit ! 
+	'yp !
 :calcam
 	'pEye >a
 	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
@@ -269,12 +236,9 @@ void main(){
 	
 	
 :update
-    spinning 1? ( 0.008 'cube_rot +! ) drop
+    spinning 1? ( 0.004 'cube_rot +! ) drop
 	matini
-|	cube_rot dup 0.2 *. 0 mrot
-	cube_rot 0.2 *. mroty
-	cube_rot mrotx
-	
+	cube_rot dup 0.2 *. 0 mrot
 	'fmodel mcpyf | >>MODEL
 	'pEye 'pTo 'pUp mview
 	0.05 100.0 | near far
@@ -296,20 +260,13 @@ void main(){
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
 
-#now #dt
 :main
-    SDL_GetTicks 'now !
-    now last_time - 'dt !
-    now 'last_time !
-    dt 'time +!
-
 	GLcls
     update
     draw
     GLUpdate
 	
 	immIni
-	|100 100 600 400 immBox
 	immMouse
 	1 =? ( wheelcam ) | over
 	3 =? ( movecam ) | active
