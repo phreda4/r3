@@ -34,6 +34,36 @@
 #sys-glFramebufferRenderbuffer #sys-glGenRenderbuffers #sys-glGenQueries 
 #sys-glDeleteQueries #sys-glBeginQuery #sys-glEndQuery #sys-glGetQueryObjectuiv 
 #sys-glFenceSync #sys-glClientWaitSync #sys-glDeleteSync #sys-glBufferStorage #sys-glMapBufferRange
+#sys-glClearNamedFramebufferfv
+#sys-glCreateFramebuffers
+#sys-glCreateTextures
+#sys-glTextureStorage2D
+#sys-glTextureParameteri
+#sys-glNamedFramebufferTexture
+#sys-glCheckNamedFramebufferStatus
+#sys-glNamedFramebufferDrawBuffers
+#sys-glCreateVertexArrays
+#sys-glCreateBuffers
+#sys-glNamedBufferStorage
+#sys-glVertexArrayVertexBuffer
+#sys-glVertexArrayElementBuffer
+#sys-glEnableVertexArrayAttrib
+#sys-glVertexArrayAttribFormat
+#sys-glVertexArrayAttribBinding
+#sys-glBindTextures
+#sys-glProgramUniform1i
+#sys-glBindBufferRange
+#sys-glVertexAttribFormat
+#sys-glVertexAttribBinding
+#sys-glVertexBindingDivisor
+#sys-glColorMask
+#sys-glDepthMask
+#sys-glCullFace
+#sys-glFrontFace
+#sys-glBlitFramebuffer
+#sys-glDrawBuffers
+#sys-glCheckFramebufferStatus
+#sys-glDeleteRenderbuffers
 
 |--------------------
 |------------------------UI
@@ -177,7 +207,6 @@
 ::glFramebufferRenderbuffer sys-glFramebufferRenderbuffer sys4 drop ;
 ::glGenRenderbuffers sys-glGenRenderbuffers sys2 drop ;
 
-| New wrappers from sdl2gl1.r3
 ::glGenQueries sys-glGenQueries sys2 drop ;
 ::glDeleteQueries sys-glDeleteQueries sys2 drop ;
 ::glBeginQuery sys-glBeginQuery sys2 drop ;
@@ -189,6 +218,39 @@
 ::glBufferStorage sys-glBufferStorage sys4 drop ;
 ::glMapBufferRange sys-glMapBufferRange sys4 ;
 
+::glUniform3f sys-glUniform3f sys4 drop ;
+::glUniform1f sys-glUniform1f sys2 drop ;
+::glClearNamedFramebufferfv sys-glClearNamedFramebufferfv sys4 drop ;
+::glCreateFramebuffers sys-glCreateFramebuffers sys2 drop ;
+::glCreateTextures sys-glCreateTextures sys3 drop ;
+::glTextureStorage2D sys-glTextureStorage2D sys5 drop ;
+::glTextureParameteri sys-glTextureParameteri sys4 drop ;
+::glNamedFramebufferTexture sys-glNamedFramebufferTexture sys4 drop ;
+::glCheckNamedFramebufferStatus sys-glCheckNamedFramebufferStatus sys2 ;
+::glNamedFramebufferDrawBuffers sys-glNamedFramebufferDrawBuffers sys3 drop ;
+::glCreateVertexArrays sys-glCreateVertexArrays sys2 drop ;
+::glCreateBuffers sys-glCreateBuffers sys2 drop ;
+::glNamedBufferStorage sys-glNamedBufferStorage sys5 drop ;
+::glVertexArrayVertexBuffer sys-glVertexArrayVertexBuffer sys5 drop ;
+::glVertexArrayElementBuffer sys-glVertexArrayElementBuffer sys2 drop ;
+::glEnableVertexArrayAttrib sys-glEnableVertexArrayAttrib sys2 drop ;
+::glVertexArrayAttribFormat sys-glVertexArrayAttribFormat sys6 drop ;
+::glVertexArrayAttribBinding sys-glVertexArrayAttribBinding sys3 drop ;
+::glBindTextures sys-glBindTextures sys3 drop ;
+
+::glProgramUniform1i sys-glProgramUniform1i sys3 drop ;
+::glBindBufferRange sys-glBindBufferRange sys5 drop ;
+::glVertexAttribFormat sys-glVertexAttribFormat sys5 drop ;
+::glVertexAttribBinding sys-glVertexAttribBinding sys2 drop ;
+::glVertexBindingDivisor sys-glVertexBindingDivisor sys2 drop ;
+::glColorMask sys-glColorMask sys4 drop ;
+::glDepthMask sys-glDepthMask sys1 drop ;
+::glCullFace sys-glCullFace sys1 drop ;
+::glFrontFace sys-glFrontFace sys1 drop ;
+::glBlitFramebuffer sys-glBlitFramebuffer sys10 drop ;
+::glDrawBuffers sys-glDrawBuffers sys2 drop ;
+::glCheckFramebufferStatus sys-glCheckFramebufferStatus sys1 ;
+::glDeleteRenderbuffers sys-glDeleteRenderbuffers sys2 drop ;
 | --- API Initialization ---
 
 ::InitGLAPI
@@ -298,6 +360,37 @@
     "glDeleteSync" SDL_GL_GetProcAddress 'sys-glDeleteSync !
     "glBufferStorage" SDL_GL_GetProcAddress 'sys-glBufferStorage !
     "glMapBufferRange" SDL_GL_GetProcAddress 'sys-glMapBufferRange !
+    "glClearNamedFramebufferfv" SDL_GL_GetProcAddress 'sys-glClearNamedFramebufferfv !
+    "glCreateFramebuffers" SDL_GL_GetProcAddress 'sys-glCreateFramebuffers !
+    "glCreateTextures" SDL_GL_GetProcAddress 'sys-glCreateTextures !
+    "glTextureStorage2D" SDL_GL_GetProcAddress 'sys-glTextureStorage2D !
+    "glTextureParameteri" SDL_GL_GetProcAddress 'sys-glTextureParameteri !
+    "glNamedFramebufferTexture" SDL_GL_GetProcAddress 'sys-glNamedFramebufferTexture !
+    "glCheckNamedFramebufferStatus" SDL_GL_GetProcAddress 'sys-glCheckNamedFramebufferStatus !
+    "glNamedFramebufferDrawBuffers" SDL_GL_GetProcAddress 'sys-glNamedFramebufferDrawBuffers !
+    "glCreateVertexArrays" SDL_GL_GetProcAddress 'sys-glCreateVertexArrays !
+    "glCreateBuffers" SDL_GL_GetProcAddress 'sys-glCreateBuffers !
+    "glNamedBufferStorage" SDL_GL_GetProcAddress 'sys-glNamedBufferStorage !
+    "glVertexArrayVertexBuffer" SDL_GL_GetProcAddress 'sys-glVertexArrayVertexBuffer !
+    "glVertexArrayElementBuffer" SDL_GL_GetProcAddress 'sys-glVertexArrayElementBuffer !
+    "glEnableVertexArrayAttrib" SDL_GL_GetProcAddress 'sys-glEnableVertexArrayAttrib !
+    "glVertexArrayAttribFormat" SDL_GL_GetProcAddress 'sys-glVertexArrayAttribFormat !
+    "glVertexArrayAttribBinding" SDL_GL_GetProcAddress 'sys-glVertexArrayAttribBinding !
+    "glBindTextures" SDL_GL_GetProcAddress 'sys-glBindTextures !
+	
+    "glProgramUniform1i" SDL_GL_GetProcAddress 'sys-glProgramUniform1i !
+    "glBindBufferRange" SDL_GL_GetProcAddress 'sys-glBindBufferRange !
+    "glVertexAttribFormat" SDL_GL_GetProcAddress 'sys-glVertexAttribFormat !
+    "glVertexAttribBinding" SDL_GL_GetProcAddress 'sys-glVertexAttribBinding !
+    "glVertexBindingDivisor" SDL_GL_GetProcAddress 'sys-glVertexBindingDivisor !
+    "glColorMask" SDL_GL_GetProcAddress 'sys-glColorMask !
+    "glDepthMask" SDL_GL_GetProcAddress 'sys-glDepthMask !
+    "glCullFace" SDL_GL_GetProcAddress 'sys-glCullFace !
+    "glFrontFace" SDL_GL_GetProcAddress 'sys-glFrontFace !
+    "glBlitFramebuffer" SDL_GL_GetProcAddress 'sys-glBlitFramebuffer !
+    "glDrawBuffers" SDL_GL_GetProcAddress 'sys-glDrawBuffers !
+    "glCheckFramebufferStatus" SDL_GL_GetProcAddress 'sys-glCheckFramebufferStatus !
+    "glDeleteRenderbuffers" SDL_GL_GetProcAddress 'sys-glDeleteRenderbuffers !
     ;
 
 | --- SDL2 Context and Initialization ---
