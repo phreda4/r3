@@ -1,14 +1,11 @@
 | OpenGL example
 | PHREDA 2023
-|MEM 64
-^r3/lib/3dgl.r3
-^r3/lib/gui.r3
 
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
+^r3/lib/glutil.r3
 
 ^r3/util/loadobj.r3
-
 ^r3/opengl/ogl2util.r3
 
 #xcam 0 #ycam 0 #zcam -4.0
@@ -143,7 +140,7 @@
 :dnlook
 	SDLx SDLy 'ym ! 'xm ! ;
 
-:movelook
+:movecam
 	SDLx SDLy
 	ym over 'ym ! - neg 7 << 'rx +!
 	xm over 'xm ! - 7 << neg 'ry +!  ;
@@ -186,11 +183,7 @@
 	
 |--------------	
 :main
-	gui
-	'dnlook 'movelook onDnMove
-
 	$4100 glClear
-
 	programID glUseProgram
 	
 	mvp
@@ -221,9 +214,14 @@
 	0 glDisableVertexAttribArray
 	1 glDisableVertexAttribArray
 	2 glDisableVertexAttribArray
-
-|......		
 	SDL_windows SDL_GL_SwapWindow
+
+	immIni
+	immMouse
+|	1 =? ( wheelcam ) | over
+	3 =? ( movecam ) | active
+	drop
+
 	SDLkey
 	>esc< =? ( exit ) 	
 	<up> =? ( 1.0 'zcam +! )
@@ -234,6 +232,7 @@
 : 	
 	|"media/obj/cube.obj" 
 	"media/obj/suzanne.obj" 
+	|"media/obj/mario/Mario_body.png"
 	convertobj
 
 	initvec

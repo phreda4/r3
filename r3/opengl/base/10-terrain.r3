@@ -385,9 +385,6 @@ here 'ftex !
 |"media/obj/food/Lollipop.objm"
  ( 0 )
 
-
-:mem2float | cnt to from --
-	>a >b ( 1? 1 - da@+ f2fp db!+ ) drop ;
 |---------------------------		
 :ini	
 	loadshader			| load shader
@@ -400,7 +397,7 @@ here 'ftex !
 	initvec
 	1000 'arrayobj p.ini 
 	
-	10 'dif 'dif mem2float
+	10 'dif memfloat
 	genfloor
 	
 |	.cls	

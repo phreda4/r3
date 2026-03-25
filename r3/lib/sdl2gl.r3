@@ -218,8 +218,6 @@
 ::glBufferStorage sys-glBufferStorage sys4 drop ;
 ::glMapBufferRange sys-glMapBufferRange sys4 ;
 
-::glUniform3f sys-glUniform3f sys4 drop ;
-::glUniform1f sys-glUniform1f sys2 drop ;
 ::glClearNamedFramebufferfv sys-glClearNamedFramebufferfv sys4 drop ;
 ::glCreateFramebuffers sys-glCreateFramebuffers sys2 drop ;
 ::glCreateTextures sys-glCreateTextures sys3 drop ;
@@ -460,6 +458,8 @@
 ::mem2float | cnt src dst --
 	>b >a ( 1? 1- a@ f2fp db!+ ) drop ;
 
+::memd2float | cnt src dst --
+	>b >a ( 1? 1- da@ f2fp db!+ ) drop ;
 	
 ::GLpaper | $ffffff --
 	'colorgl >a

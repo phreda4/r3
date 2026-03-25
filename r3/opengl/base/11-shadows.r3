@@ -30,13 +30,6 @@
 #near_plane [ 1.0 ]
 #far_plane [ 7.5 ]
 
-
-:memfloat | cnt place --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
-
-:mem2float | cnt to from --
-	>a >b ( 1? 1 - a@+ f2fp db!+ ) drop ;
-	
 |-----------
 #cubevao
 #cubevbo

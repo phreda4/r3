@@ -1,41 +1,24 @@
 | OpenGL example
 | PHREDA 2023
 |MEM 64
-^r3/lib/3dgl.r3
-^r3/lib/rand.r3
-^r3/lib/gui.r3
-^r3/util/arr16.r3
-
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
+^r3/lib/glutil.r3
+^r3/lib/rand.r3
+^r3/util/arr16.r3
 
 ^r3/opengl/shaderobj.r3
 
-|-------------------------------------
-:glinit
-
-	"test opengl" 800 600 SDLinitGL
-	
-	glInfo	
-	GL_DEPTH_TEST glEnable 
-	GL_CULL_FACE glEnable	
-	GL_LESS glDepthFunc 
-	;	
-	
-:glend
-    SDL_Quit ;
-
-|-------------------------------------
-#flpos * 12
-#flamb * 12
-#fldif * 12
-#flspe * 12
+#flpos [ 1.2 20.0 2.0 ] | light position
+#flamb [ 1.0 1.0 1.0 ] | ambi
+#fldif [ 0.9 0.9 0.9 ] | diffuse
+#flspe [ 1.0 1.0 1.0 ] | spec
 	
 #fprojection * 64
 #fview * 64
 #fmodel * 64
 	
-#pEye 0.0 0.0 40.0
+#pEye 0.0 0.0 50.0
 #pTo 0 0 0
 #pUp 0 1.0 0
 
@@ -45,21 +28,11 @@
 :initvec
 	matini
 	0.1 1000.0 0.9 3.0 4.0 /. mperspective 
-|	-2.0 2.0 -2.0 2.0 -2.0 2.0 mortho
 	'fprojection mcpyf	| perspective matrix
 |	'fmodel midf	| view matrix >>
 	eyecam		| eyemat
-	
-	'flpos >a
-	1.2 f2fp da!+ 20.0 f2fp da!+ 2.0 f2fp da!+ | light position
-	'flamb >a
-	1.0 f2fp da!+ 1.0  f2fp da!+ 1.0 f2fp da!+ | ambi
-	'fldif >a
-	0.9 f2fp da!+ 0.9 f2fp da!+ 0.9 f2fp da!+ | diffuse
-	'flspe >a
-	1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ | spec
+	12 'flpos memfloat 
 	;
-
 
 |--------------	
 #o1 * 80
@@ -143,17 +116,21 @@
 
 |--------------	
 :main
-	gui
-	'dnlook 'movelook onDnMove
+	immIni
+	immMouse
+	1 =? ( sdlw 2.0 * 'pEye 16 + +! eyecam ) | over
+	2 =? ( dnlook )
+	3 =? ( movelook ) | active
+	drop
 
-	$4100 glClear | color+depth
+	SDLGLcls
 	'arrayobj p.draw
 
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	
-	<f1> =? ( 50 ( 1? 1 - objrand +objr ) drop ) 
-	<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
+	<f1> =? ( 50 ( 1? 1- objrand +objr ) drop ) 
+	<f2> =? ( 50 ( 1? 1- objrand +objr2 ) drop ) 
 	<f3> =? ( 'arrayobj dup @ swap p.del )
 	
 	<up> =? ( 0.5 'pEye +! eyecam )
@@ -196,8 +173,13 @@
 	
 |----------- BOOT
 :
-	glinit
+	"test opengl" 800 600 SDLinitGL
+	glInfo	
+	GL_DEPTH_TEST glEnable 
+	GL_CULL_FACE glEnable	
+	GL_LESS glDepthFunc 
  	ini
+	objrand +objr
 	'main SDLshow
-	glend 
+    SDL_Quit 
 	;	
