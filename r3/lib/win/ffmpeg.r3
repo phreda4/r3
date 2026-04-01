@@ -3,6 +3,7 @@
 
 |WIN|^r3/lib/win/core.r3
 |LIN|^r3/lib/posix/core.r3
+|MAC|^r3/lib/mac/core.r3
 ^r3/lib/math.r3
 
 #sys-IniVideo

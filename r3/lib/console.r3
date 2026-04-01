@@ -3,6 +3,7 @@
 
 |LIN| ^r3/lib/posix/lin-term.r3
 |WIN| ^r3/lib/win/win-term.r3
+|MAC| ^r3/lib/mac/mac-term.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 

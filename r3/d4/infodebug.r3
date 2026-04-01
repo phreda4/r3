@@ -328,6 +328,7 @@
 	drop
 |WIN|	"|WIN|" =pre 1? ( drop 5 + ; ) drop | Compila para WINDOWS
 |LIN|	"|LIN|" =pre 1? ( drop 5 + ; ) drop | Compila para LINUX
+|MAC|	"|MAC|" =pre 1? ( drop 5 + ; ) drop | Compila para MAC
 	>>cr ;
 	
 :wrd2token | str -- str'

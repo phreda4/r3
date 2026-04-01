@@ -35,6 +35,7 @@
 
 |WIN|^r3/lib/win/core.r3
 |LIN|^r3/lib/posix/core.r3
+|MAC|^r3/lib/mac/core.r3
 
 ::align32 | mem -- mem
 	$1f + $1f nand ;

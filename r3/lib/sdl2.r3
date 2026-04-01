@@ -3,6 +3,7 @@
 
 |WIN|^r3/lib/win/core.r3
 |LIN|^r3/lib/posix/core.r3
+|MAC|^r3/lib/mac/core.r3
 
 ^r3/lib/console.r3
 ^r3/lib/sdlkeys.r3
@@ -364,7 +365,8 @@
 |------- BOOT
 :
 |WIN|	"dll/SDL2.DLL" loadlib
-|LIN|   "libSDL2-2.0.so.0" loadlib	
+|LIN|   "libSDL2-2.0.so.0" loadlib
+|MAC|   "libSDL2-2.0.so.0" loadlib	
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_GetCurrentDisplayMode" getproc 'sys-SDL_GetCurrentDisplayMode !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !

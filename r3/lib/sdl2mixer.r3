@@ -60,6 +60,7 @@
 :
 |WIN|	"dll/SDL2_mixer.DLL" loadlib
 |LIN|	"libSDL2_mixer-2.0.so.0" loadlib
+|MAC|	"libSDL2_mixer-2.0.so.0" loadlib
 	dup "Mix_Init" getproc 'sys-Mix_Init !
 	dup "Mix_Quit" getproc 'sys-Mix_Quit !
 	dup "Mix_LoadWAV_RW" getproc 'sys-Mix_LoadWAV_RW !

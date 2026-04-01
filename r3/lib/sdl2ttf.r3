@@ -3,6 +3,7 @@
 
 |WIN|^r3/lib/win/core.r3
 |LIN|^r3/lib/posix/core.r3
+|MAC|^r3/lib/mac/core.r3
 
 #sys-TTF_Init
 #sys-TTF_OpenFont
@@ -51,7 +52,8 @@
 |----- BOOT 
 :
 |WIN|	"dll/SDL2_ttf.DLL" loadlib
-|LIN|	"libSDL2_ttf-2.0.so.0" loadlib	
+|LIN|	"libSDL2_ttf-2.0.so.0" loadlib
+|MAC|	"libSDL2_ttf-2.0.so.0" loadlib
 	dup "TTF_Init" getproc 'sys-TTF_Init !
 	dup "TTF_OpenFont" getproc 'sys-TTF_OpenFont !
 	dup "TTF_SetFontStyle" getproc 'sys-TTF_SetFontStyle !
