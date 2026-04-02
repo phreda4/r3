@@ -1,5 +1,10 @@
+| R3LIB 
+| PHREDA 2026
+
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
+
+^./rlmat.r3
 
 | SHADERS ===>
 #rl_shader_geom "
@@ -238,6 +243,7 @@ void main(){
 
 | Scene + Bloom
 :RL_BLOOM_MIPS 5 ; 
+
 #rl_scene_fbo   0
 #rl_scene_tex   0
 #rl_scene_depth 0
@@ -509,8 +515,9 @@ void main(){
 |------------- CAMERA ------------------
 #camDirty  1
 
-#camFov 0.8 | really atan 
-#camNear 0.5 
+##camParam 0	| ASPECT
+#camFov 0.8		| really atan 
+#camNear 0.5	
 #camFar 200.0
 
 ##camEye 0.0 0.0 4.5
@@ -530,6 +537,39 @@ void main(){
     'camFar ! 'camNear ! 'camFov ! 
 	1 'camDirty ! ;
 
+
+|----- UBO->GPU
+| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewPos(16) = 272 bytes
+#ubo_matView * 64
+#ubo_matvProj * 64
+#ubo_matvinvView * 64
+#ubo_matvinvProj * 64
+#ubo_matvviewPos * 16
+
+|------------------------------------
+:cache_proj
+	camDirty 0? ( drop ; ) drop
+	1 'camDirty !
+	rl_w rl_h /. 'camParam !
+	'camParam matProj 
+	'ubo_matvProj 'mat cpymatif 
+	'ubo_matvinvProj 'mati cpymatif
+	;
+
+::rl_set_camera | --
+	cache_proj
+	
+	'camEye 'camTo 'camUp mlookat
+	'ubo_matView 'mat cpymatif
+	matinv
+	'ubo_matvinvView 'mati cpymatif
+	3 'camEye 'ubo_matvviewPos mem2float | cnt sr ds
+	
+    GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
+    GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
+    GL_UNIFORM_BUFFER 0 glBindBuffer
+    ;
+
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
@@ -546,178 +586,11 @@ void main(){
     rl_sh_geom glUseProgram
     ;
 
-
-|----- UBO->GPU
-| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewPos(16) = 272 bytes
-#ubo_matView * 64
-#ubo_matvProj * 64
-#ubo_matvinvView * 64
-#ubo_matvinvProj * 64
-#ubo_matvviewPos * 16
-
-	
-#camFov 0.8 | really atan 
-#camNear 0.5 
-#camFar 200.0
-
-|----------------- MINILIB 
-#mat * 128
-#mati * 128 | aux inv
-#matx * 128 | aux
-
-:cpymatif | 'dest 'src --
-	>a >b 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
-
-:a] 3 << a> + ;	
-:b] 3 << b> + ;
-
-:matProj
-	'mat 0 16 fill | dvc
-	'mat >a
-	|...................
-		camFov dup rl_h rl_w /. /. 
-	a! | m[0]=fov/asp
-		|camFov 
-	5 a] ! | m[5]=f;
-		camNear camFar 2dup + -rot - /. | zn+zf zn-zf
-	10 a] ! | m[10]=-(zn+zf)/(zn-zf); 
-		-1.0 
-	11 a] ! | m[11]=-1.f;
-		camNear camFar 2dup - -rot
-		*. 2* neg swap /.
-	14 a] ! | m[14]=-2.f*zn*zf/(zn-zf); 
-	'ubo_matvProj 'mat cpymatif |>>>>>>>>>>>>>>
-	|...................
-	'mat >a
-		1.0 a@ /.
-	a! | inv_proj.m[0]  =  1.0f / proj.m[0];
-		1.0 5 a] @ /.
-	5 a] ! |inv_proj.m[5]  =  1.0f / proj.m[5];
-		10 a] @ 14 a] @ /.
-	15 a] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
-		0
-	10 a] !	
-		1.0 14 a] @ /.
-	11 a] ! | inv_proj.m[11] =  1.0f / proj.m[14];
-		-1.0
-	14 a] ! | inv_proj.m[14] = -1.0f;
-	'ubo_matvinvProj 'mat cpymatif |>>>>>>>>>>>>>>
-	;
-	
-#fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
-:fy 'fx 8 + @ ;
-:fz 'fx 16 + @ ;
-#sx 0 0 0 |#sy 0 #sz 0
-:sy 'sx 8 + @ ;
-:sz 'sx 16 + @ ;
-#ux 0 0 0 |#uy 0 #uz 0 
-:uy 'ux 8 + @ ;
-:uz 'ux 16 + @ ;
-	
-:mlookat | eye to up --
-	swap
-	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
-	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
-	'ux dup 'sx v3= 'fx v3vec
-	mat >b
-	sx b!+ |mat[0] = s.x;
-    ux b!+ |mat[1] = u.x;
-    fx neg b!+ |mat[2] = -f.x;
-    0 b!+ |mat[3] = 0.0;
-    sy b!+ |mat[4] = s.y;
-    uy b!+ |mat[5] = u.y;
-    fy neg b!+ |mat[6] = -f.y;
-    0 b!+ |mat[7] = 0.0;
-    sz b!+ |mat[8] = s.z;
-    uz b!+ |mat[9] = u.z;
-    fz neg b!+ |mat[10] = -f.z;
-    0 b!+ |mat[11] = 0.0;
-    'sx over v3ddot neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
-    'ux over v3ddot neg b!+ |mat[13] = -kmVec3Dot(&u, pEye);
-    'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
-    1.0 b! |mat[15] = 1.0;
-	;	
-
-	
-:matinv | -- | mat --> mati |invert
-	'mat >a
-	'matx >b | b store aux
-    0 a] @ 5 a] @ *. 1 a] @ 4 a] @ *. - b!+
-    0 a] @ 6 a] @ *. 2 a] @ 4 a] @ *. - b!+
-    0 a] @ 7 a] @ *. 3 a] @ 4 a] @ *. - b!+
-    1 a] @ 6 a] @ *. 2 a] @ 5 a] @ *. - b!+
-    1 a] @ 7 a] @ *. 3 a] @ 5 a] @ *. - b!+
-    2 a] @ 7 a] @ *. 3 a] @ 6 a] @ *. - b!+
-    8 a] @ 13 a] @ *. 9 a] @ 12 a] @ *. - b!+
-    8 a] @ 14 a] @ *. 10 a] @ 12 a] @ *. - b!+
-    8 a] @ 15 a] @ *. 11 a] @ 12 a] @ *. - b!+
-    9 a] @ 14 a] @ *. 10 a] @ 13 a] @ *. - b!+
-    9 a] @ 15 a] @ *. 11 a] @ 13 a] @ *. - b!+
-    10 a] @ 15 a] @ *. 11 a] @ 14 a] @ *. - b!+
-	
-	'matx >b 
-    0 b] @ 11 b] @ *. 
-	1 b] @ 10 b] @ *. -  
-	2 b] @ 9 b] @ *. + 
-	3 b] @ 8 b] @ *. + 
-	4 b] @ 7 b] @ *. - 
-	5 b] @ 6 b] @ *. + 
-	0? ( drop ; )
-	mati
-	1.0 swap /. 
-	5 a] @ 11 b] @ *. 6 a] @ 10 b] @ *. - 7 a] @ 9 b] @ *. + over *. rot !+ swap
-	2 a] @ 10 b] @ *. 3 a] @ 9 b] @ *. - 1 a] @ 11 b] @ *. - over *. rot !+ swap
-    13 a] @ 5 b] @ *. 14 a] @ 4 b] @ *. - 15 a] @ 3 b] @ *. + over *. rot !+ swap
-	10 a] @ 4 b] @ *. 11 a] @ 3 b] @ *. - 9 a] @ 5 b] @ *. - over *. rot !+ swap
-	
-	6 a] @ 8 b] @ *. 4 a] @ 11 b] @ *. - 7 a] @ 7 b] @ *. - over *. rot !+ swap
-    0 a] @ 11 b] @ *. 2 a] @ 8 b] @ *. - 3 a] @ 7 b] @ *. + over *. rot !+ swap
-	14 a] @ 2 b] @ *. 15 a] @ 1 b] @ *. - 12 a] @ 5 b] @ *. - over *. rot !+ swap
-    8 a] @ 5 b] @ *. 10 a] @ 2 b] @ *. - 11 a] @ 1 b] @ *. + over *. rot !+ swap
-	
-    4 a] @ 10 b] @ *. 5 a] @ 8 b] @ *. - 7 a] @ 6 b] @ *. + over *. rot !+ swap
-	1 a] @ 8 b] @ *. 3 a] @ 6 b] @ *. - 0 a] @ 10 b] @ *. - over *. rot !+ swap
-    12 a] @ 4 b] @ *. 13 a] @ 2 b] @ *. - 15 a] @ 0 b] @ *. + over *. rot !+ swap
-	9 a] @ 2 b] @ *. 11 a] @ 0 b] @ *. - 8 a] @ 4 b] @ *. - over *. rot !+ swap
-	
-	5 a] @ 7 b] @ *. 6 a] @ 6 b] @ *. - 4 a] @ 9 b] @ *. - over *. rot !+ swap
-    0 a] @ 9 b] @ *. 1 a] @ 7 b] @ *. - 2 a] @ 6 b] @ *. + over *. rot !+ swap
-	13 a] @ 1 b] @ *. 14 a] @ 0 b] @ *. - 12 a] @ 3 b] @ *. - over *. rot !+ swap
-    8 a] @ 3 b] @ *. 9 a] @ 1 b] @ *. - 10 a] @ 0 b] @ *. + *. swap !
-	
-	;
-
-|------------------------------------
-
-:cache_proj
-	camDirty 0? ( drop ; ) drop
-	1 'camDirty !
-	matProj ;
-
-::rl_set_camera | --
-	cache_proj
-	
-	'camEye 'camTo 'camUp mlookat
-	'ubo_matView 'mat cpymatif
-	matinv
-	'ubo_matvinvView 'mati cpymatif
-
-    GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-    GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
-    GL_UNIFORM_BUFFER 0 glBindBuffer
-    ;
-
-
-
 | RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
 #rl_ubo_dl_buf   * 48
 | RL_UBO_PointLights: count[4](16) + 16×(pos[4]+color[4])(32) = 16 + 512 = 528 bytes
 #rl_ubo_pl_buf   * 528
 	
-
-
-#_sc_fx 0  #_sc_fy 0  #_sc_fz 0
-
 | ================================================================
 ::rl_set_sun | dx_fp dy_fp dz_fp  r_fp g_fp b_fp intensity_fp enabled --
     | UBO layout: lightDir(16) lightColor(16) dirLightEnabled(4) pad(12)
@@ -743,20 +616,11 @@ void main(){
     ;
 
 | ================================================================
-::rl_point_light | --
-
     | Cada PointLight = 32 bytes: pos[4](16) + color[4](16)
-    rl_plight_count 5 << 'rl_plights +   | ptr a este slot (32*i = i<<5)
-    >r
-    r@ 12 + d!   | pz
-    r@ 8  + d!   | py
-    r@ 4  + d!   | px
-    0 i2fp r@ d! | pad pos.w
-    r@ 28 + d!   | intensity (color.w)
-    r@ 24 + d!   | b
-    r@ 20 + d!   | g
-    r@ 16 + d!   | r
-    r> drop
+::rl_point_light | int cr cg cb x y z --
+    rl_plight_count 5 << 'rl_plights + >a  | ptr a este slot (32*i = i<<5)
+	swap rot f2fp da!+ f2fp da!+ f2fp da!+ 0 da!+
+	swap rot f2fp da!+ f2fp da!+ f2fp da!+ f2fp da!+
     1 'rl_plight_count +!
     ;
 
@@ -769,6 +633,8 @@ void main(){
 ::rl_frame_end_geometry | --
     GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
+
+#_ao_on
 
 | ================================================================
 ::rl_frame_end_lighting | --
@@ -826,15 +692,6 @@ void main(){
     GL_FRAMEBUFFER 0 glBindFramebuffer
 
     0 glBindVertexArray
-    ;
-
-| ================================================================
-| rl_get_camera_pos  'px 'py 'pz --
-| ================================================================
-::rl_get_camera_pos | 'px 'py 'pz --
-    'rl_cam_pos 8 + d@ rot d!
-    'rl_cam_pos 4 + d@ rot d!
-    'rl_cam_pos 0 + d@ rot d!
     ;
 
 | ================================================================

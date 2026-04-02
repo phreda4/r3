@@ -42,32 +42,24 @@
 	;
 	
 :free_cube
-	1 'g_cube_vao glDeleteVertexArrays
-	1 'g_cube_vbo glDeleteBuffers
-	1 'g_cube_ebo glDeleteBuffers
+	1 'g_vao glDeleteVertexArrays
+	1 'g_vbo glDeleteBuffers
+	1 'g_ebo glDeleteBuffers
 	;
 	
 :draw_cube 
-    // Matriz de modelo
-    _M4 T = _id(); T.m[12] = x; T.m[13] = y; T.m[14] = z;
-    _M4 R = _ry(rot_y);
-    _M4 S = _sc(sx, sy, sz);
-    _M4 model = _mul(_mul(T,R), S);
 
-    // Normal matrix calculada en CPU (FIX #7).
-    // Como el cubo puede tener escala no-uniforme (sx/sy/sz distintos),
-    // usamos la versión completa transpose(inverse(mat3(model))).
-    float nm[9];
-    mat4_to_normalmat3_full(&model, nm);
+|    float nm[9];
+ |   mat4_to_normalmat3_full(&model, nm);
 
-    glUseProgram(ctx.prog);
-    glBindVertexArray(g_cube_vao);
-    glUniformMatrix4fv(ctx.u_model,     1, GL_FALSE, model.m);
-    glUniformMatrix3fv(rl_normal_matrix_location(), 1, GL_FALSE, nm);
-    glUniform3fv      (ctx.u_albedo,    1, albedo);
-    glUniform1i       (ctx.u_roughness, roughness);
-    glUniform1i       (ctx.u_metallic,  metallic);
-    glUniform1i       (ctx.u_glow,      glow);
+    ctx.prog glUseProgram
+    g_vao glBindVertexArray
+    ctx.u_model 1 GL_FALSE model.m glUniformMatrix4fv
+    rl_normal_matrix_location() 1 GL_FALSE nm glUniformMatrix3fv
+	ctx.u_albedo    1, albedo glUniform3fv
+	ctx.u_roughness roughness glUniform1i
+	ctx.u_metallic  metallic glUniform1i
+	ctx.u_glow      glow    glUniform1i
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
 	
