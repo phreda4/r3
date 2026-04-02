@@ -325,6 +325,15 @@
 	swap over shift	| v s shift i
 	134 rot - 23 << | s i m | 16 - (fractional part)
 	swap $7fffff and or or ;
+
+::memfloat | cnt adr --
+	>a ( 1? 1- da@ f2fp da!+ ) drop ;
+	
+::mem2float | cnt src dst --
+	>b >a ( 1? 1- a@ f2fp db!+ ) drop ;
+
+::memd2float | cnt src dst --
+	>b >a ( 1? 1- da@ f2fp db!+ ) drop ;
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
 ::fp2f | fp -- fixed point

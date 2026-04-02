@@ -3,13 +3,8 @@
 |-----
 ^r3/lib/rand.r3
 ^r3/lib/3dgl.r3
-^r3/lib/gui.r3
-
 ^r3/util/arr16.r3
-
-^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
-
 ^r3/opengl/shaderobj.r3
 
 #listobj 0 0
@@ -56,23 +51,6 @@
 	;
 
 |---------------
-#GL_ARRAY_BUFFER $8892
-#GL_ELEMENT_ARRAY_BUFFER $8893
-
-#GL_STATIC_DRAW $88E4
-#GL_DYNAMIC_DRAW $88E8
-
-#GL_FLOAT $1406
-#GL_UNSIGNED_SHORT $1403
-
-#GL_TRIANGLE_FAN $0006
-#GL_TRIANGLE_STRIP $0005
-#GL_FALSE 0
-
-#GL_TEXTURE $1702
-#GL_TEXTURE0 $84C0
-#GL_TEXTURE_2D $0DE1
-
 #shfloor
 #vafl
 #vbfl 
@@ -431,8 +409,8 @@
 	
 |-------------------------------	
 :juego
-	gui
-	'dnlook 'movelook onDnMove
+	|gui
+	|'dnlook 'movelook onDnMove
 
 	$4100 glClear | color+depth
 	
@@ -479,12 +457,6 @@
 |"media/obj/rock.objm"
  ( 0 )
 
-|---------------------------		
-| opengl Constant
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-	
 |-------------------------------------
 :glinit
 	.cls

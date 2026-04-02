@@ -1,0 +1,845 @@
+^r3/lib/sdl2gl.r3
+^r3/lib/glutil.r3
+
+| SHADERS ===>
+#rl_shader_geom "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNormal;
+layout(std140, binding=0) uniform Matrices {
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; };
+uniform mat4 model;
+uniform mat3 normalMatrix;
+out vec3 vPos; out vec3 vNormal;
+void main(){
+    vec4 wp = model*vec4(aPos,1.0);
+    vPos = wp.xyz;
+    vNormal = normalMatrix*aNormal;
+    gl_Position = proj*view*wp;
+}
+@fragment---------------
+#version 440 core
+in vec3 vPos; in vec3 vNormal;
+uniform vec3 uAlbedo; uniform int uRoughness, uMetallic, uGlow;
+layout(location=0) out vec3 gNormal;
+layout(location=1) out vec4 gAlbedo;
+void main(){
+    gNormal   = normalize(vNormal);
+    int pk = (uRoughness<<5)|(uMetallic<<2)|uGlow;
+    gAlbedo = vec4(uAlbedo, float(pk)/255.0);
+}
+@-----------------------"
+
+#rl_shader_quad_vert "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+void main(){}
+@-----------------------"
+
+#rl_shader_light "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv; out vec4 FragColor;
+layout(binding=0) uniform sampler2D gNormal;
+layout(binding=1) uniform sampler2D gAlbedo;
+layout(binding=2) uniform sampler2D occlusionTex;
+layout(binding=3) uniform sampler2D gDepth;
+layout(std140,binding=0) uniform Matrices{
+    mat4 view;mat4 proj;mat4 invView;mat4 invProj;vec4 viewPos;};
+layout(std140,binding=1) uniform DirectLight{
+    vec4 lightDir; vec4 lightColor;
+    int dirLightEnabled; int _pad[3];};
+layout(std140,binding=2) uniform PointLights{
+    ivec4 header;
+    struct { vec4 pos; vec4 color; } lights[16];
+} pl;
+uniform int uAOEnabled;
+vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv,
+                        mat4 invProj_, mat4 invView_) {
+    float d = texture(depthTex, uv).r;
+    vec4 ndc = vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
+    vec4 vp  = invProj_ * ndc;  vp /= vp.w;
+    return (invView_ * vp).xyz;
+}
+const float PI_RCP = 0.31830988618;
+float D_GGX(float NdH, float a2){
+    float d = NdH*NdH*(a2-1.0)+1.0;
+    return a2/(d*d);}
+float G_Schlick(float ndv, float k){
+    return ndv/(ndv*(1.0-k)+k);}
+vec3 F_Schlick(float ct, vec3 F0){
+    float f=1.0-ct; float f2=f*f;
+    return F0+(1.0-F0)*(f2*f2*f);}
+vec3 CookTorrance(float NdH,float NdV,float NdL,float a2,float k,vec3 F){
+    return (D_GGX(NdH,a2)*PI_RCP * G_Schlick(NdV,k)*G_Schlick(NdL,k) * F)
+           / (4.0*NdV*NdL+0.0001);}
+void main(){
+    vec3  nm  = texture(gNormal,  uv).xyz;
+    if(dot(nm,nm)<0.01){FragColor=vec4(0,0,0,1);return;}
+    vec3  fp  = rl_reconstruct_pos(gDepth,uv,invProj,invView);
+    vec4  aM  = texture(gAlbedo,  uv);
+    vec4  sh  = texture(occlusionTex,uv);
+    vec3  alb = aM.rgb;
+    int   pk  = int(aM.a*255.0+0.5);
+    float rough = float((pk>>5)&0x7)/7.0;
+    float metal = float((pk>>2)&0x7)/7.0;
+    float glow  = float(pk&3);
+    float occ = (uAOEnabled==1) ? clamp(1.0-(dot(sh.xyz,nm)+sh.w),0.0,1.0) : 1.0;
+    vec3  N   = normalize(nm);
+    vec3  V   = normalize(viewPos.xyz-fp);
+    float NdV = max(dot(N,V),0.0);
+    vec3  F0  = mix(vec3(0.04),alb,metal);
+    float a2  = rough*rough*rough*rough;
+    float k   = (rough+1.0)*(rough+1.0)*0.125;
+    vec3  albDiff = alb * PI_RCP * (1.0-metal);
+    vec3  Lo  = vec3(0.0);
+    if(dirLightEnabled==1){
+        vec3  L   = normalize(-lightDir.xyz);
+        vec3  H   = normalize(V+L);
+        float NdL = max(dot(N,L),0.0);
+        float NdH = max(dot(N,H),0.0);
+        vec3  F   = F_Schlick(max(dot(H,V),0.0),F0);
+        vec3  spc = CookTorrance(NdH,NdV,NdL,a2,k,F);
+        vec3  kD  = (1.0-F)*albDiff;
+        vec3  rad = lightColor.xyz*lightColor.w;
+        Lo += (kD+spc)*rad*(NdL*occ);
+    }
+    int lightCount = pl.header.x;
+    for(int i=0;i<lightCount;++i){
+        vec3  lv      = pl.lights[i].pos.xyz-fp;
+        float dist2   = dot(lv,lv);
+        float invDist = inversesqrt(dist2);
+        float dist    = 1.0/invDist;
+        float att     = 1.0/(1.0+dist*(0.09+0.032*dist));
+        vec3  L       = lv*invDist;
+        vec3  H    = normalize(V+L);
+        float NdL  = max(dot(N,L),0.0);
+        float NdH  = max(dot(N,H),0.0);
+        vec3  F    = F_Schlick(max(dot(H,V),0.0),F0);
+        vec3  spc  = CookTorrance(NdH,NdV,NdL,a2,k,F);
+        vec3  kD   = (1.0-F)*albDiff;
+        vec3  rad  = pl.lights[i].color.rgb * pl.lights[i].color.w;
+        Lo += (kD+spc)*rad*(NdL*occ*att);
+    }
+    vec3 ambient  = alb*(0.015*occ);
+    vec3 emission = alb*(1.1*glow);
+    FragColor = vec4(ambient+Lo+emission,1.0);
+}
+@-----------------------"
+
+#rl_shader_bright "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv; out vec4 FragColor;
+layout(binding=0) uniform sampler2D scene;
+uniform float threshold;
+void main(){
+    vec3 c=texture(scene,uv).rgb;
+    float lum=dot(c,vec3(0.2126,0.7152,0.0722));
+    float soft=clamp((lum-threshold)/max(threshold*0.5,0.0001),0,1);
+    FragColor=vec4(c*soft,1);
+}
+@-----------------------"
+
+#rl_shader_bloom_down "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv; out vec4 FragColor;
+layout(binding=0) uniform sampler2D src;
+uniform vec2 texelSize;
+void main(){
+    vec4 s=texture(src,uv)*4.0;
+    s+=texture(src,uv-texelSize);
+    s+=texture(src,uv+texelSize);
+    s+=texture(src,uv+vec2(texelSize.x,-texelSize.y));
+    s+=texture(src,uv+vec2(-texelSize.x,texelSize.y));
+    FragColor=s/8.0;
+}
+@-----------------------"
+
+#rl_shader_bloom_up "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv; out vec4 FragColor;
+layout(binding=0) uniform sampler2D src;
+uniform vec2 texelSize;
+void main(){
+    vec2 h=texelSize*0.5;
+    vec4 s =texture(src,uv+vec2(-h.x*2,0));
+         s+=texture(src,uv+vec2(-h.x, h.y))*2;
+         s+=texture(src,uv+vec2( 0,   h.y*2));
+         s+=texture(src,uv+vec2( h.x, h.y))*2;
+         s+=texture(src,uv+vec2( h.x*2,0));
+         s+=texture(src,uv+vec2( h.x,-h.y))*2;
+         s+=texture(src,uv+vec2( 0,  -h.y*2));
+         s+=texture(src,uv+vec2(-h.x,-h.y))*2;
+    FragColor=s/12.0;
+}
+@-----------------------"
+
+#rl_shader_composite "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv; out vec4 FragColor;
+layout(binding=0) uniform sampler2D scene;
+layout(binding=1) uniform sampler2D bloom;
+uniform float bloomIntensity;
+vec3 ACES(vec3 x){
+    const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14;
+    return clamp((x*(a*x+b))/(x*(c*x+d)+e),0,1);}
+void main(){
+    vec3 col=texture(scene,uv).rgb;
+    col+=texture(bloom,uv).rgb*bloomIntensity;
+    col=ACES(col);
+    col=pow(col,vec3(1.0/2.2));
+    FragColor=vec4(col,1);
+}
+@---" | <======= SHADERS
+
+|-----------------------------------------------------------
+#rl_w #rl_h
+
+| GBuffer
+#rl_gbuf_fbo    0
+#rl_gbuf_norm   0
+#rl_gbuf_albedo 0
+#rl_gbuf_depth  0
+
+| Scene + Bloom
+:RL_BLOOM_MIPS 5 ; 
+#rl_scene_fbo   0
+#rl_scene_tex   0
+#rl_scene_depth 0
+
+| Quad
+##rl_quad_vao 0  #rl_quad_vbo 0
+
+| UBOs
+#rl_ubo_matrices  0
+#rl_ubo_dirlight  0
+#rl_ubo_plights   0
+
+| Shaders
+#rl_sh_geom       0
+#rl_sh_light      0
+#rl_sh_bright     0
+#rl_sh_bloom_down 0
+#rl_sh_bloom_up   0
+#rl_sh_composite  0
+
+| Uniform locations
+#rl_u_model         -1
+#rl_u_albedo        -1
+#rl_u_roughness     -1
+#rl_u_metallic      -1
+#rl_u_glow          -1
+#rl_u_normal_matrix -1
+#rl_u_ao_enabled    -1
+#rl_u_bright_threshold    -1
+#rl_u_bloom_down_texel    -1
+#rl_u_bloom_up_texel      -1
+#rl_u_composite_intensity -1
+
+| Luces puntuales del frame
+| PointLight: pos[4] + color[4] = 8 floats = 32 bytes
+#rl_plights * 1024 | 32 x32
+#rl_plight_count 0
+
+| AO
+#rl_ao_texture   0
+#rl_ao_white_tex 0
+
+
+#tid #aux
+
+|----------------------------------
+:rl_make_tex2d | ifmt w h fmt type minf magf wrap -- texid
+	>r >r >r >r >r >r >r >r
+    1 'tid glGenTextures
+    GL_TEXTURE_2D tid glBindTexture
+    GL_TEXTURE_2D 0 r> r> r> 0 r> r> 0 glTexImage2D
+    GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER r> glTexParameteri
+    GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER r> glTexParameteri
+    r> 1? ( 
+		GL_TEXTURE_2D GL_TEXTURE_WRAP_S pick2 glTexParameteri
+		GL_TEXTURE_2D GL_TEXTURE_WRAP_T pick2 glTexParameteri
+		) drop
+	GL_TEXTURE_2D 0 glBindTexture
+	tid ;
+
+:rl_make_fbo | color_tex depth_tex -- fbo
+    1 'tid glGenFramebuffers
+    GL_FRAMEBUFFER tid glBindFramebuffer
+	1? ( 
+		GL_FRAMEBUFFER GL_DEPTH_ATTACHMENT GL_TEXTURE_2D pick3 0 glFramebufferTexture2D 
+		) drop
+	1? ( 
+		GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D pick3 0 glFramebufferTexture2D 
+		GL_COLOR_ATTACHMENT0 'aux !
+		1 'aux glDrawBuffers
+		) drop
+|	GL_FRAMEBUFFER glCheckFramebufferStatus
+|    $8CD5 <>? ( drop "[rl] FBO incompleto" .println ; ) drop   | GL_FRAMEBUFFER_COMPLETE = 0x8CD5
+    GL_FRAMEBUFFER 0 glBindFramebuffer
+    tid
+    ;
+
+#_fbo_id 0
+
+| GLenum draws[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}
+#_gdb_draws [ $8CE0 $8CE1 ]
+
+:rl_init_gbuffer
+    1 'rl_gbuf_fbo glGenFramebuffers
+    GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
+    | gNormal: GL_RGB16F 
+    GL_RGB16F rl_w rl_h $1907 $1406 GL_NEAREST GL_NEAREST 0
+    rl_make_tex2d 'rl_gbuf_norm !
+    | gAlbedo: GL_RGBA8
+    GL_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_NEAREST GL_NEAREST 0
+    rl_make_tex2d 'rl_gbuf_albedo !
+    | gDepth: GL_DEPTH_COMPONENT32F
+    GL_DEPTH_COMPONENT32F rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST GL_NEAREST 0
+    rl_make_tex2d 'rl_gbuf_depth !
+    GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D rl_gbuf_norm   0 glFramebufferTexture2D
+    GL_FRAMEBUFFER GL_COLOR_ATTACHMENT1 GL_TEXTURE_2D rl_gbuf_albedo 0 glFramebufferTexture2D
+    GL_FRAMEBUFFER GL_DEPTH_ATTACHMENT  GL_TEXTURE_2D rl_gbuf_depth  0 glFramebufferTexture2D
+    2 '_gdb_draws glDrawBuffers
+
+|    GL_FRAMEBUFFER glCheckFramebufferStatus|
+|    $8CD5 <>? ( drop "[rl] GBuffer FBO incompleto" .println ; ) drop
+
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	GL_TEXTURE_2D 0 glBindTexture
+	;
+
+| Bloom FBOs y texturas: 5 mips × 2 sides = 10 entradas (dwords)
+#rl_bloom_texfbo * 80    | 10 × 8 bytes
+#rl_bloom_inv_wh * 40   | 5 x2 floats
+
+#_bw #_bh
+
+| ================================================================	
+:rl_init_bloom
+    | scene_tex: 
+    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR 0
+    rl_make_tex2d 'rl_scene_tex !
+    | scene_depth: 
+    GL_DEPTH_COMPONENT24 rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST GL_NEAREST 0
+    rl_make_tex2d 'rl_scene_depth !
+
+    rl_scene_tex rl_scene_depth rl_make_fbo 'rl_scene_fbo !
+    | Bloom mips
+	'rl_bloom_texfbo >a
+	'rl_bloom_inv_wh >b 
+    rl_w rl_h 0 ( RL_BLOOM_MIPS <? >r
+		swap 2/ swap 2/  | w h
+		1.0 pick2 / f2fp $ffffffff and 1.0 pick2 / f2fp $ffffffff and 32 << b!+
+		2 min swap 2 min swap
+		$881A pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		dup 0 rl_make_fbo 32 << or a!+
+		$881A pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		dup 0 rl_make_fbo 32 << or a!+
+		r> 1+ ) 3drop ;
+
+| ================================================================
+:rl_destroy_gbuffer
+    rl_gbuf_fbo    1? ( 1 'rl_gbuf_fbo    glDeleteFramebuffers ) drop
+    rl_gbuf_norm   1? ( 1 'rl_gbuf_norm   glDeleteTextures     ) drop
+    rl_gbuf_albedo 1? ( 1 'rl_gbuf_albedo glDeleteTextures     ) drop
+    rl_gbuf_depth  1? ( 1 'rl_gbuf_depth  glDeleteTextures     ) drop
+    0 'rl_gbuf_fbo !  0 'rl_gbuf_norm !  0 'rl_gbuf_albedo !  0 'rl_gbuf_depth !
+    ;
+
+:rl_destroy_bloom
+    rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
+    rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
+    rl_scene_depth 1? ( 1 'rl_scene_depth glDeleteTextures     ) drop
+	'rl_bloom_texfbo >a
+	RL_BLOOM_MIPS 2* ( 1? 1-
+		a@+
+		1 over $ffffffff and glDeleteTextures
+		1 swap 32 >>> glDeleteFramebuffers
+		) drop ;
+
+
+#_quad_verts [ -1.0 -1.0  1.0 -1.0  -1.0 1.0  1.0 1.0 ]
+
+| ================================================================
+:rl_init_quad
+    8 '_quad_verts memfloat
+    1 'rl_quad_vao glGenVertexArrays
+    1 'rl_quad_vbo glGenBuffers
+    rl_quad_vao glBindVertexArray
+    GL_ARRAY_BUFFER rl_quad_vbo glBindBuffer
+    GL_ARRAY_BUFFER 8 4 * '_quad_verts GL_STATIC_DRAW glBufferData
+    0 glEnableVertexAttribArray
+    0 2 GL_FLOAT GL_FALSE 2 4 * 0 glVertexAttribPointer
+    0 glBindVertexArray
+    ;
+
+| ================================================================
+:rl_init_ubos
+    1 'rl_ubo_matrices glGenBuffers
+    GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
+    GL_UNIFORM_BUFFER 272 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 0 rl_ubo_matrices glBindBufferBase
+
+    1 'rl_ubo_dirlight glGenBuffers
+    GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
+    GL_UNIFORM_BUFFER 48 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 1 rl_ubo_dirlight glBindBufferBase
+
+    1 'rl_ubo_plights glGenBuffers
+    GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
+    GL_UNIFORM_BUFFER 528 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 2 rl_ubo_plights glBindBufferBase
+
+    GL_UNIFORM_BUFFER 0 glBindBuffer
+    ;
+
+| ================================================================
+:rl_bind_ubo | binding prog "name" --
+	over swap glGetUniformBlockIndex |(idx!=GL_INVALID_INDEX)
+	rot glUniformBlockBinding ;
+
+| ================================================================
+:rl_cache_uniforms
+    rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
+    rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
+    rl_sh_bloom_up   "texelSize"      glGetUniformLocation 'rl_u_bloom_up_texel      !
+    rl_sh_composite  "bloomIntensity" glGetUniformLocation 'rl_u_composite_intensity !
+    rl_sh_light      "uAOEnabled"     glGetUniformLocation 'rl_u_ao_enabled          !
+    ;
+
+| Textura blanca 1×1 para AO neutro
+#_white_px [ $ffffffff ]   | RGBA 255,255,255,255 como dword
+
+::rlInit
+    rl_init_gbuffer
+    rl_init_bloom
+    rl_init_quad
+    rl_init_ubos
+
+    'rl_shader_geom       loadShaderv 'rl_sh_geom       !
+    'rl_shader_light      loadShaderv 'rl_sh_light      !
+    'rl_shader_bright     loadShaderv 'rl_sh_bright     !
+    'rl_shader_bloom_down loadShaderv 'rl_sh_bloom_down !
+    'rl_shader_bloom_up   loadShaderv 'rl_sh_bloom_up   !
+    'rl_shader_composite  loadShaderv 'rl_sh_composite  !
+
+    0 rl_sh_geom  "Matrices"     rl_bind_ubo
+    0 rl_sh_light "Matrices"     rl_bind_ubo
+    1 rl_sh_light "DirectLight"  rl_bind_ubo
+    2 rl_sh_light "PointLights"  rl_bind_ubo
+
+    rl_sh_geom "model"        glGetUniformLocation 'rl_u_model         !
+    rl_sh_geom "uAlbedo"      glGetUniformLocation 'rl_u_albedo        !
+    rl_sh_geom "uRoughness"   glGetUniformLocation 'rl_u_roughness     !
+    rl_sh_geom "uMetallic"    glGetUniformLocation 'rl_u_metallic      !
+    rl_sh_geom "uGlow"        glGetUniformLocation 'rl_u_glow          !
+    rl_sh_geom "normalMatrix" glGetUniformLocation 'rl_u_normal_matrix !
+
+    rl_cache_uniforms
+    
+    1 'rl_ao_white_tex glGenTextures
+    GL_TEXTURE_2D rl_ao_white_tex glBindTexture
+    GL_TEXTURE_2D 0 GL_RGBA8 1 1 0 GL_RGBA GL_UNSIGNED_BYTE '_white_px glTexImage2D
+    GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
+    GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+    GL_TEXTURE_2D 0 glBindTexture
+    0 'rl_ao_texture !
+
+    GL_CULL_FACE glEnable
+    GL_BACK glCullFace
+    GL_CCW glFrontFace
+|    GLInfo
+	;
+	
+::rl_shutdown
+    rl_sh_geom       glDeleteProgram
+    rl_sh_light      glDeleteProgram
+    rl_sh_bright     glDeleteProgram
+    rl_sh_bloom_down glDeleteProgram
+    rl_sh_bloom_up   glDeleteProgram
+    rl_sh_composite  glDeleteProgram
+
+    rl_destroy_gbuffer
+    rl_destroy_bloom
+
+    1 'rl_quad_vao glDeleteVertexArrays
+    1 'rl_quad_vbo glDeleteBuffers
+    1 'rl_ao_white_tex glDeleteTextures
+    1 'rl_ubo_matrices glDeleteBuffers
+    1 'rl_ubo_dirlight glDeleteBuffers
+    1 'rl_ubo_plights  glDeleteBuffers
+    ;
+
+|------------- CAMERA ------------------
+#camDirty  1
+
+#camFov 0.8 | really atan 
+#camNear 0.5 
+#camFar 200.0
+
+##camEye 0.0 0.0 4.5
+##camTo 0 0 0.0
+##camUp 0 1.0 0
+
+| ================================================================
+::rl_resizewin | w h --
+    rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
+    1 'camDirty !
+	rl_destroy_bloom rl_destroy_gbuffer  
+	rl_init_gbuffer rl_init_bloom
+    ;
+
+| ================================================================
+::rl_set_projection | fov_deg_fp near_fp far_fp --
+    'camFar ! 'camNear ! 'camFov ! 
+	1 'camDirty ! ;
+
+| ================================================================
+::rl_frame_begin | --
+    0 'rl_plight_count !
+    0 'rl_ao_texture !
+
+    |0.0 f2fp glClearDepth |*****************
+    GL_GREATER glDepthFunc
+
+    0 0 rl_w rl_h glViewport
+    GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
+    GL_DEPTH_TEST glEnable
+    GL_TRUE glDepthMask
+    $4100 glClear   | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+    rl_sh_geom glUseProgram
+    ;
+
+
+|----- UBO->GPU
+| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewPos(16) = 272 bytes
+#ubo_matView * 64
+#ubo_matvProj * 64
+#ubo_matvinvView * 64
+#ubo_matvinvProj * 64
+#ubo_matvviewPos * 16
+
+	
+#camFov 0.8 | really atan 
+#camNear 0.5 
+#camFar 200.0
+
+|----------------- MINILIB 
+#mat * 128
+#mati * 128 | aux inv
+#matx * 128 | aux
+
+:cpymatif | 'dest 'src --
+	>a >b 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
+
+:a] 3 << a> + ;	
+:b] 3 << b> + ;
+
+:matProj
+	'mat 0 16 fill | dvc
+	'mat >a
+	|...................
+		camFov dup rl_h rl_w /. /. 
+	a! | m[0]=fov/asp
+		|camFov 
+	5 a] ! | m[5]=f;
+		camNear camFar 2dup + -rot - /. | zn+zf zn-zf
+	10 a] ! | m[10]=-(zn+zf)/(zn-zf); 
+		-1.0 
+	11 a] ! | m[11]=-1.f;
+		camNear camFar 2dup - -rot
+		*. 2* neg swap /.
+	14 a] ! | m[14]=-2.f*zn*zf/(zn-zf); 
+	'ubo_matvProj 'mat cpymatif |>>>>>>>>>>>>>>
+	|...................
+	'mat >a
+		1.0 a@ /.
+	a! | inv_proj.m[0]  =  1.0f / proj.m[0];
+		1.0 5 a] @ /.
+	5 a] ! |inv_proj.m[5]  =  1.0f / proj.m[5];
+		10 a] @ 14 a] @ /.
+	15 a] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
+		0
+	10 a] !	
+		1.0 14 a] @ /.
+	11 a] ! | inv_proj.m[11] =  1.0f / proj.m[14];
+		-1.0
+	14 a] ! | inv_proj.m[14] = -1.0f;
+	'ubo_matvinvProj 'mat cpymatif |>>>>>>>>>>>>>>
+	;
+	
+#fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
+:fy 'fx 8 + @ ;
+:fz 'fx 16 + @ ;
+#sx 0 0 0 |#sy 0 #sz 0
+:sy 'sx 8 + @ ;
+:sz 'sx 16 + @ ;
+#ux 0 0 0 |#uy 0 #uz 0 
+:uy 'ux 8 + @ ;
+:uz 'ux 16 + @ ;
+	
+:mlookat | eye to up --
+	swap
+	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
+	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
+	'ux dup 'sx v3= 'fx v3vec
+	mat >b
+	sx b!+ |mat[0] = s.x;
+    ux b!+ |mat[1] = u.x;
+    fx neg b!+ |mat[2] = -f.x;
+    0 b!+ |mat[3] = 0.0;
+    sy b!+ |mat[4] = s.y;
+    uy b!+ |mat[5] = u.y;
+    fy neg b!+ |mat[6] = -f.y;
+    0 b!+ |mat[7] = 0.0;
+    sz b!+ |mat[8] = s.z;
+    uz b!+ |mat[9] = u.z;
+    fz neg b!+ |mat[10] = -f.z;
+    0 b!+ |mat[11] = 0.0;
+    'sx over v3ddot neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'ux over v3ddot neg b!+ |mat[13] = -kmVec3Dot(&u, pEye);
+    'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
+    1.0 b! |mat[15] = 1.0;
+	;	
+
+	
+:matinv | -- | mat --> mati |invert
+	'mat >a
+	'matx >b | b store aux
+    0 a] @ 5 a] @ *. 1 a] @ 4 a] @ *. - b!+
+    0 a] @ 6 a] @ *. 2 a] @ 4 a] @ *. - b!+
+    0 a] @ 7 a] @ *. 3 a] @ 4 a] @ *. - b!+
+    1 a] @ 6 a] @ *. 2 a] @ 5 a] @ *. - b!+
+    1 a] @ 7 a] @ *. 3 a] @ 5 a] @ *. - b!+
+    2 a] @ 7 a] @ *. 3 a] @ 6 a] @ *. - b!+
+    8 a] @ 13 a] @ *. 9 a] @ 12 a] @ *. - b!+
+    8 a] @ 14 a] @ *. 10 a] @ 12 a] @ *. - b!+
+    8 a] @ 15 a] @ *. 11 a] @ 12 a] @ *. - b!+
+    9 a] @ 14 a] @ *. 10 a] @ 13 a] @ *. - b!+
+    9 a] @ 15 a] @ *. 11 a] @ 13 a] @ *. - b!+
+    10 a] @ 15 a] @ *. 11 a] @ 14 a] @ *. - b!+
+	
+	'matx >b 
+    0 b] @ 11 b] @ *. 
+	1 b] @ 10 b] @ *. -  
+	2 b] @ 9 b] @ *. + 
+	3 b] @ 8 b] @ *. + 
+	4 b] @ 7 b] @ *. - 
+	5 b] @ 6 b] @ *. + 
+	0? ( drop ; )
+	mati
+	1.0 swap /. 
+	5 a] @ 11 b] @ *. 6 a] @ 10 b] @ *. - 7 a] @ 9 b] @ *. + over *. rot !+ swap
+	2 a] @ 10 b] @ *. 3 a] @ 9 b] @ *. - 1 a] @ 11 b] @ *. - over *. rot !+ swap
+    13 a] @ 5 b] @ *. 14 a] @ 4 b] @ *. - 15 a] @ 3 b] @ *. + over *. rot !+ swap
+	10 a] @ 4 b] @ *. 11 a] @ 3 b] @ *. - 9 a] @ 5 b] @ *. - over *. rot !+ swap
+	
+	6 a] @ 8 b] @ *. 4 a] @ 11 b] @ *. - 7 a] @ 7 b] @ *. - over *. rot !+ swap
+    0 a] @ 11 b] @ *. 2 a] @ 8 b] @ *. - 3 a] @ 7 b] @ *. + over *. rot !+ swap
+	14 a] @ 2 b] @ *. 15 a] @ 1 b] @ *. - 12 a] @ 5 b] @ *. - over *. rot !+ swap
+    8 a] @ 5 b] @ *. 10 a] @ 2 b] @ *. - 11 a] @ 1 b] @ *. + over *. rot !+ swap
+	
+    4 a] @ 10 b] @ *. 5 a] @ 8 b] @ *. - 7 a] @ 6 b] @ *. + over *. rot !+ swap
+	1 a] @ 8 b] @ *. 3 a] @ 6 b] @ *. - 0 a] @ 10 b] @ *. - over *. rot !+ swap
+    12 a] @ 4 b] @ *. 13 a] @ 2 b] @ *. - 15 a] @ 0 b] @ *. + over *. rot !+ swap
+	9 a] @ 2 b] @ *. 11 a] @ 0 b] @ *. - 8 a] @ 4 b] @ *. - over *. rot !+ swap
+	
+	5 a] @ 7 b] @ *. 6 a] @ 6 b] @ *. - 4 a] @ 9 b] @ *. - over *. rot !+ swap
+    0 a] @ 9 b] @ *. 1 a] @ 7 b] @ *. - 2 a] @ 6 b] @ *. + over *. rot !+ swap
+	13 a] @ 1 b] @ *. 14 a] @ 0 b] @ *. - 12 a] @ 3 b] @ *. - over *. rot !+ swap
+    8 a] @ 3 b] @ *. 9 a] @ 1 b] @ *. - 10 a] @ 0 b] @ *. + *. swap !
+	
+	;
+
+|------------------------------------
+
+:cache_proj
+	camDirty 0? ( drop ; ) drop
+	1 'camDirty !
+	matProj ;
+
+::rl_set_camera | --
+	cache_proj
+	
+	'camEye 'camTo 'camUp mlookat
+	'ubo_matView 'mat cpymatif
+	matinv
+	'ubo_matvinvView 'mati cpymatif
+
+    GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
+    GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
+    GL_UNIFORM_BUFFER 0 glBindBuffer
+    ;
+
+
+
+| RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
+#rl_ubo_dl_buf   * 48
+| RL_UBO_PointLights: count[4](16) + 16×(pos[4]+color[4])(32) = 16 + 512 = 528 bytes
+#rl_ubo_pl_buf   * 528
+	
+
+
+#_sc_fx 0  #_sc_fy 0  #_sc_fz 0
+
+| ================================================================
+::rl_set_sun | dx_fp dy_fp dz_fp  r_fp g_fp b_fp intensity_fp enabled --
+    | UBO layout: lightDir(16) lightColor(16) dirLightEnabled(4) pad(12)
+    'rl_ubo_dl_buf 12 + d!   | dz
+    'rl_ubo_dl_buf 8  + d!   | dy
+    'rl_ubo_dl_buf 4  + d!   | dx
+    0 i2fp 'rl_ubo_dl_buf d! | pad lightDir.w = 0
+    | color+intensity
+    'rl_ubo_dl_buf 28 + d!   | intensity (w)
+    'rl_ubo_dl_buf 24 + d!   | b
+    'rl_ubo_dl_buf 20 + d!   | g
+    'rl_ubo_dl_buf 16 + d!   | r
+    | enabled
+    'rl_ubo_dl_buf 32 + d!   | dirLightEnabled (int32)
+    | pad[0..2] = 0
+    0 'rl_ubo_dl_buf 36 + d!
+    0 'rl_ubo_dl_buf 40 + d!
+    0 'rl_ubo_dl_buf 44 + d!
+
+    GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
+    GL_UNIFORM_BUFFER 0 48 'rl_ubo_dl_buf glBufferSubData
+    GL_UNIFORM_BUFFER 0 glBindBuffer
+    ;
+
+| ================================================================
+::rl_point_light | --
+
+    | Cada PointLight = 32 bytes: pos[4](16) + color[4](16)
+    rl_plight_count 5 << 'rl_plights +   | ptr a este slot (32*i = i<<5)
+    >r
+    r@ 12 + d!   | pz
+    r@ 8  + d!   | py
+    r@ 4  + d!   | px
+    0 i2fp r@ d! | pad pos.w
+    r@ 28 + d!   | intensity (color.w)
+    r@ 24 + d!   | b
+    r@ 20 + d!   | g
+    r@ 16 + d!   | r
+    r> drop
+    1 'rl_plight_count +!
+    ;
+
+| ================================================================
+::rl_set_ao_texture | texid --
+    'rl_ao_texture !
+    ;
+
+| ================================================================
+::rl_frame_end_geometry | --
+    GL_FRAMEBUFFER 0 glBindFramebuffer
+    ;
+
+| ================================================================
+::rl_frame_end_lighting | --
+    rl_quad_vao glBindVertexArray
+    | --- Lighting pass → scene_tex ---
+    0 0 rl_w rl_h glViewport
+    GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
+    GL_COLOR_BUFFER_BIT glClear
+    GL_DEPTH_TEST glDisable
+    rl_sh_light glUseProgram
+    GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
+    $84C1 glActiveTexture        GL_TEXTURE_2D rl_gbuf_albedo glBindTexture  | GL_TEXTURE1
+    $84C2 glActiveTexture        GL_TEXTURE_2D rl_ao_texture  glBindTexture  | GL_TEXTURE2
+    $84C3 glActiveTexture        GL_TEXTURE_2D rl_gbuf_depth  glBindTexture  | GL_TEXTURE3
+    GL_TEXTURE0 glActiveTexture
+    rl_u_ao_enabled _ao_on glUniform1i
+
+    | Upload point lights
+    rl_plight_count 'rl_ubo_pl_buf d!          | count[0]
+    0 'rl_ubo_pl_buf 4  + d!
+    0 'rl_ubo_pl_buf 8  + d!
+    0 'rl_ubo_pl_buf 12 + d!
+	
+    | Copiar plights al buffer (rl_plight_count × 32 bytes) a partir de offset 16
+    rl_plight_count 5 <<  | bytes a copiar
+    0 ( over <? dup 'rl_plights + d@ over 16 'rl_ubo_pl_buf + + d! 4 + ) 2drop
+	
+    | Upload
+    16 rl_plight_count 5 << +   | upload_size = 16 + n*32
+    GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
+    GL_UNIFORM_BUFFER 0 over 'rl_ubo_pl_buf glBufferSubData
+    drop
+    GL_UNIFORM_BUFFER 0 glBindBuffer
+
+    GL_TRIANGLE_STRIP 0 4 glDrawArrays
+
+    | --- Bloom bright extraction ---
+|}}}}}}}}}}}}}}}}}}}
+    | --- Composite final ---
+    GL_FRAMEBUFFER 0 glBindFramebuffer
+    0 0 rl_w rl_h glViewport
+    GL_COLOR_BUFFER_BIT glClear
+    rl_sh_composite glUseProgram
+    GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_scene_tex glBindTexture
+ |   $84C1 glActiveTexture        GL_TEXTURE_2D 'rl_bloom_texs 4 + d@ glBindTexture | bloom_texs[1]
+    GL_TEXTURE0 glActiveTexture
+    1.2 f2fp rl_u_composite_intensity 1 rot glUniform1fv
+
+    GL_TRIANGLE_STRIP 0 4 glDrawArrays
+
+    | --- Blit depth ---
+    GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
+    GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
+    0 0 rl_w rl_h 0 0 rl_w rl_h GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
+    GL_FRAMEBUFFER 0 glBindFramebuffer
+
+    0 glBindVertexArray
+    ;
+
+| ================================================================
+| rl_get_camera_pos  'px 'py 'pz --
+| ================================================================
+::rl_get_camera_pos | 'px 'py 'pz --
+    'rl_cam_pos 8 + d@ rot d!
+    'rl_cam_pos 4 + d@ rot d!
+    'rl_cam_pos 0 + d@ rot d!
+    ;
+
+| ================================================================
+::rl_gbuffer_textures | 'out_norm 'out_depth --
+    rl_gbuf_depth swap d!
+    rl_gbuf_norm  swap d!
+    ;
+

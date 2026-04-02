@@ -129,8 +129,6 @@
     0 glBindVertexArray
 	;
 
-#GL_TRIANGLE_FAN $0006
-
 :renderplane
     planeVAO glBindVertexArray
 	GL_TRIANGLE_FAN 0 4 glDrawArrays 

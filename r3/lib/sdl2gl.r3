@@ -64,6 +64,17 @@
 #sys-glDrawBuffers
 #sys-glCheckFramebufferStatus
 #sys-glDeleteRenderbuffers
+#sys-glClearDepth
+#sys-glDebugMessageCallback
+#sys-glDebugMessageControl
+#sys-glGetBufferSubData
+#sys-glUniform1f
+#sys-glUniform2f
+#sys-glUniform3f
+#sys-glUniform4f
+#sys-glTexImage1D
+#sys-glObjectLabel
+#sys-glDeleteFramebuffers
 
 |--------------------
 |------------------------UI
@@ -249,6 +260,19 @@
 ::glDrawBuffers sys-glDrawBuffers sys2 drop ;
 ::glCheckFramebufferStatus sys-glCheckFramebufferStatus sys1 ;
 ::glDeleteRenderbuffers sys-glDeleteRenderbuffers sys2 drop ;
+
+::glClearDepth sys-glClearDepth sys1 drop ;
+::glDebugMessageCallback sys-glDebugMessageCallback sys2 drop ;
+::glDebugMessageControl sys-glDebugMessageControl sys6 drop ;
+::glGetBufferSubData sys-glGetBufferSubData sys4 drop ;
+::glUniform1f sys-glUniform1f sys2 drop ;
+::glUniform2f sys-glUniform2f sys3 drop ;
+::glUniform3f sys-glUniform3f sys4 drop ;
+::glUniform4f sys-glUniform4f sys5 drop ;
+::glTexImage1D sys-glTexImage1D sys9 drop ;
+::glObjectLabel sys-glObjectLabel sys4 drop ;
+::glDeleteFramebuffers sys-glDeleteFramebuffers sys2 drop ;
+
 | --- API Initialization ---
 
 ::InitGLAPI
@@ -389,6 +413,18 @@
     "glDrawBuffers" SDL_GL_GetProcAddress 'sys-glDrawBuffers !
     "glCheckFramebufferStatus" SDL_GL_GetProcAddress 'sys-glCheckFramebufferStatus !
     "glDeleteRenderbuffers" SDL_GL_GetProcAddress 'sys-glDeleteRenderbuffers !
+	
+	"glClearDepth" SDL_GL_GetProcAddress 'sys-glClearDepth !
+    "glDebugMessageCallback" SDL_GL_GetProcAddress 'sys-glDebugMessageCallback !
+    "glDebugMessageControl" SDL_GL_GetProcAddress 'sys-glDebugMessageControl !
+    "glGetBufferSubData" SDL_GL_GetProcAddress 'sys-glGetBufferSubData !
+    "glUniform1f" SDL_GL_GetProcAddress 'sys-glUniform1f !
+    "glUniform2f" SDL_GL_GetProcAddress 'sys-glUniform2f !
+    "glUniform3f" SDL_GL_GetProcAddress 'sys-glUniform3f !
+    "glUniform4f" SDL_GL_GetProcAddress 'sys-glUniform4f !
+    "glTexImage1D" SDL_GL_GetProcAddress 'sys-glTexImage1D !
+    "glObjectLabel" SDL_GL_GetProcAddress 'sys-glObjectLabel !
+    "glDeleteFramebuffers" SDL_GL_GetProcAddress 'sys-glDeleteFramebuffers !
     ;
 
 | --- SDL2 Context and Initialization ---
@@ -452,15 +488,6 @@
 #basegl [ 1.0 ]
 
 
-::memfloat | cnt adr --
-	>a ( 1? 1- da@ f2fp da!+ ) drop ;
-	
-::mem2float | cnt src dst --
-	>b >a ( 1? 1- a@ f2fp db!+ ) drop ;
-
-::memd2float | cnt src dst --
-	>b >a ( 1? 1- da@ f2fp db!+ ) drop ;
-	
 ::GLpaper | $ffffff --
 	'colorgl >a
 	dup 16 >> $ff and 1.0 8 *>> da!+
@@ -495,3 +522,5 @@
 	
 ::GLUpdate
    SDL_windows SDL_GL_SwapWindow ;
+
+

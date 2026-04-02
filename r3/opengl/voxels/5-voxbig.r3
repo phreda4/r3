@@ -27,25 +27,6 @@
 3 7 2 7 6 2		4 0 5 0 1 5
 ]
 
-|--------------------
-#GL_ARRAY_BUFFER $8892
-#GL_UNIFORM_BUFFER $8A11
-#GL_STATIC_DRAW $88E4
-#GL_DYNAMIC_COPY $88EA
-#GL_DYNAMIC_DRAW $88E8
-#GL_DYNAMIC_READ $88E9
-
-#GL_ELEMENT_ARRAY_BUFFER $8893
-
-#GL_UNSIGNED_BYTE $1401
-#GL_UNSIGNED_SHORT $1403
-#GL_INT $1404
-#GL_UNSIGNED_INT $1405
-#GL_FLOAT $1406
-
-#GL_TRIANGLES $4
-#GL_FALSE 0
-
 |-------------------------------------
 #IDprojection
 #fprojection * 64
@@ -132,15 +113,6 @@ void main() {
 
 #vs 'vertexShaderSource
 #fs 'fragmentShaderSource
-
-#GL_COMPILE_STATUS $8B81
-#GL_LINK_STATUS $8B82
-#GL_FRAGMENT_SHADER $8B30
-#GL_VERTEX_SHADER $8B31
-
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
 
 #t
 :shCheckErr | ss --

@@ -12,9 +12,6 @@
 ^r3/lib/glutil.r3
 
 |-------------------------------------
-:memfloat | cnt place --
-	>a ( 1? 1 - da@ f2fp da!+ ) drop ;
-	
 #fontshader	
 #fontTexture 
 #fcolor [ 1.0 0.0 0.0 1.0 ]

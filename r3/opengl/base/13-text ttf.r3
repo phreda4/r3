@@ -99,7 +99,7 @@
 	$4100 glClear | color+depth
 
 	"Hola Mundo" -0.8 -0.8 glrendertext
-	rand 'ink !
+	$ffffff 'ink !
 	SDL_windows SDL_GL_SwapWindow
 	SDLkey
 	>esc< =? ( exit ) 	

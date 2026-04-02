@@ -37,12 +37,6 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 ::2float | cnt mem --
 	>a ( 1? 1- da@ f2fp da!+ ) drop ;
 
-
-#GL_COMPILE_STATUS $8B81
-#GL_LINK_STATUS $8B82
-#GL_FRAGMENT_SHADER $8B30
-#GL_VERTEX_SHADER $8B31
-
 #vertexShader
 #fragmentShader
 #t

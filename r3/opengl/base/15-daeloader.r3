@@ -416,27 +416,6 @@
 		>>sp0 1? ) drop ;
 
 |------------------------------
-|------------------------------
-
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
-#GL_TEXTURE_2D $0DE1
-#GL_TEXTURE0 $84C0
-
-#GL_ARRAY_BUFFER $8892
-#GL_ELEMENT_ARRAY_BUFFER $8893
-
-#GL_STATIC_DRAW $88E4
-
-#GL_UNSIGNED_SHORT $1403
-#GL_INT $1404
-#GL_FLOAT $1406
-
-#GL_FALSE 0
-#GL_TRIANGLE $0004
-
 #shaderd
 :initshaders
 	"r3/opengl/shader/anim_model.sha" loadShader 'shaderd !
@@ -617,7 +596,7 @@
 	|................
 	
     VAO glBindVertexArray
-	GL_TRIANGLE 0 cfaces glDrawArrays 
+	GL_TRIANGLES 0 cfaces glDrawArrays 
     0 glBindVertexArray
 	;
 	
