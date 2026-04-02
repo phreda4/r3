@@ -8,6 +8,12 @@
 ::cpymatif | 'dest 'src --
 	>a >b 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
 
+::cpymatif3
+	>a >b 
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ 8 a+
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ 8 a+
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ ;
+
 :a] 3 << a> + ;	
 :b] 3 << b> + ;
 
@@ -62,7 +68,7 @@
 	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
 	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
 	'ux dup 'sx v3= 'fx v3vec
-	mat >b
+	'mat >b
 	sx b!+ |mat[0] = s.x;
     ux b!+ |mat[1] = u.x;
     fx neg b!+ |mat[2] = -f.x;
@@ -106,8 +112,8 @@
 	4 b] @ 7 b] @ *. - 
 	5 b] @ 6 b] @ *. + 
 	0? ( drop ; )
-	mati
 	1.0 swap /. 
+	'mati swap
 	5 a] @ 11 b] @ *. 6 a] @ 10 b] @ *. - 7 a] @ 9 b] @ *. + over *. rot !+ swap
 	2 a] @ 10 b] @ *. 3 a] @ 9 b] @ *. - 1 a] @ 11 b] @ *. - over *. rot !+ swap
     13 a] @ 5 b] @ *. 14 a] @ 4 b] @ *. - 15 a] @ 3 b] @ *. + over *. rot !+ swap

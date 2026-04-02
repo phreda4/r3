@@ -4,6 +4,8 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
 
+^r3/lib/trace.r3
+
 ^./rlmat.r3
 
 | SHADERS ===>
@@ -233,7 +235,7 @@ void main(){
 @---" | <======= SHADERS
 
 |-----------------------------------------------------------
-#rl_w #rl_h
+#rl_w 1024 #rl_h 768
 
 | GBuffer
 #rl_gbuf_fbo    0
@@ -366,6 +368,8 @@ void main(){
     rl_make_tex2d 'rl_scene_depth !
 
     rl_scene_tex rl_scene_depth rl_make_fbo 'rl_scene_fbo !
+	;
+:aa	
     | Bloom mips
 	'rl_bloom_texfbo >a
 	'rl_bloom_inv_wh >b 
@@ -377,7 +381,8 @@ void main(){
 		dup 0 rl_make_fbo 32 << or a!+
 		$881A pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
 		dup 0 rl_make_fbo 32 << or a!+
-		r> 1+ ) 3drop ;
+		r> 1+ ) 3drop 
+	;
 
 | ================================================================
 :rl_destroy_gbuffer
@@ -452,12 +457,12 @@ void main(){
 | Textura blanca 1×1 para AO neutro
 #_white_px [ $ffffffff ]   | RGBA 255,255,255,255 como dword
 
-::rlInit
+::rl_Init
     rl_init_gbuffer
     rl_init_bloom
     rl_init_quad
     rl_init_ubos
-
+	
     'rl_shader_geom       loadShaderv 'rl_sh_geom       !
     'rl_shader_light      loadShaderv 'rl_sh_light      !
     'rl_shader_bright     loadShaderv 'rl_sh_bright     !
@@ -520,9 +525,9 @@ void main(){
 #camNear 0.5	
 #camFar 200.0
 
-##camEye 0.0 0.0 4.5
-##camTo 0 0 0.0
-##camUp 0 1.0 0
+##camEye 0.0 2.5  6.0
+##camTo  0.0 0.0  0.0
+##camUp  0.0 1.0  0.0
 
 | ================================================================
 ::rl_resizewin | w h --
@@ -550,7 +555,7 @@ void main(){
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	1 'camDirty !
-	rl_w rl_h /. 'camParam !
+	rl_w 16 << rl_h / 'camParam !
 	'camParam matProj 
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
@@ -558,8 +563,8 @@ void main(){
 
 ::rl_set_camera | --
 	cache_proj
-	
 	'camEye 'camTo 'camUp mlookat
+
 	'ubo_matView 'mat cpymatif
 	matinv
 	'ubo_matvinvView 'mati cpymatif
@@ -570,12 +575,15 @@ void main(){
     GL_UNIFORM_BUFFER 0 glBindBuffer
     ;
 
+#deepValue 0
+
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
     0 'rl_ao_texture !
 
     |0.0 f2fp glClearDepth |*****************
+	GL_DEPTH 0 'deepValue glClearBufferfv
     GL_GREATER glDepthFunc
 
     0 0 rl_w rl_h glViewport
@@ -630,28 +638,13 @@ void main(){
     ;
 
 | ================================================================
-::rl_frame_end_geometry | --
+::rl_frame_light | --
     GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
 
 #_ao_on
 
-| ================================================================
-::rl_frame_end_lighting | --
-    rl_quad_vao glBindVertexArray
-    | --- Lighting pass → scene_tex ---
-    0 0 rl_w rl_h glViewport
-    GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
-    GL_COLOR_BUFFER_BIT glClear
-    GL_DEPTH_TEST glDisable
-    rl_sh_light glUseProgram
-    GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
-    $84C1 glActiveTexture        GL_TEXTURE_2D rl_gbuf_albedo glBindTexture  | GL_TEXTURE1
-    $84C2 glActiveTexture        GL_TEXTURE_2D rl_ao_texture  glBindTexture  | GL_TEXTURE2
-    $84C3 glActiveTexture        GL_TEXTURE_2D rl_gbuf_depth  glBindTexture  | GL_TEXTURE3
-    GL_TEXTURE0 glActiveTexture
-    rl_u_ao_enabled _ao_on glUniform1i
-
+:lightpass
     | Upload point lights
     rl_plight_count 'rl_ubo_pl_buf d!          | count[0]
     0 'rl_ubo_pl_buf 4  + d!
@@ -671,17 +664,42 @@ void main(){
 
     GL_TRIANGLE_STRIP 0 4 glDrawArrays
 
+	;
+:bloompass
+	;
+	
+#
+| ================================================================
+::rl_frame_end | --
+    rl_quad_vao glBindVertexArray
+    | --- Lighting pass → scene_tex ---
+    0 0 rl_w rl_h glViewport
+    GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
+    GL_COLOR_BUFFER_BIT glClear
+    GL_DEPTH_TEST glDisable
+    rl_sh_light glUseProgram
+    GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
+    $84C1 glActiveTexture        GL_TEXTURE_2D rl_gbuf_albedo glBindTexture  | GL_TEXTURE1
+    $84C2 glActiveTexture        GL_TEXTURE_2D rl_ao_texture  glBindTexture  | GL_TEXTURE2
+    $84C3 glActiveTexture        GL_TEXTURE_2D rl_gbuf_depth  glBindTexture  | GL_TEXTURE3
+    GL_TEXTURE0 glActiveTexture
+    rl_u_ao_enabled _ao_on glUniform1i
+
+	| --- Light pass
+|lightpass
     | --- Bloom bright extraction ---
-|}}}}}}}}}}}}}}}}}}}
+|bloompass
     | --- Composite final ---
     GL_FRAMEBUFFER 0 glBindFramebuffer
     0 0 rl_w rl_h glViewport
     GL_COLOR_BUFFER_BIT glClear
     rl_sh_composite glUseProgram
+	
+
     GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_scene_tex glBindTexture
  |   $84C1 glActiveTexture        GL_TEXTURE_2D 'rl_bloom_texs 4 + d@ glBindTexture | bloom_texs[1]
     GL_TEXTURE0 glActiveTexture
-    1.2 f2fp rl_u_composite_intensity 1 rot glUniform1fv
+    |1.2 f2fp rl_u_composite_intensity 1 rot glUniform1fv
 
     GL_TRIANGLE_STRIP 0 4 glDrawArrays
 
@@ -699,4 +717,27 @@ void main(){
     rl_gbuf_depth swap d!
     rl_gbuf_norm  swap d!
     ;
+
+
+#cola [ 0 0 0 ]
+
+::rl_setcolor | rgbmm --
+    rl_u_roughness over 2 >> $7 and glUniform1i
+    rl_u_metallic over 5 >> $7 and glUniform1i
+	rl_u_glow over $3 and glUniform1i
+	dup   8 >> $ff and 1.0 8 *>> f2fp
+	over 16 >> $ff and 1.0 8 *>> f2fp
+	rot  24 >> $ff and 1.0 8 *>> f2fp
+	'cola d!+ d!+ d!
+	rl_u_albedo 1 'cola glUniform3fv
+	;
+
+::rl_ProgGeom
+	rl_sh_geom glUseProgram
+	;
+	
+::rl_geomat	| normal model --
+	>r rl_u_model 1 0 r> glUniformMatrix4fv
+	>r rl_u_normal_matrix 1 0 r> glUniformMatrix3fv 
+	;
 
