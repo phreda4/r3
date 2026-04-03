@@ -68,26 +68,38 @@
 #fnormal * 36 | mat3x3	
 
 :draw_cube 
-	matini
-	|msec 4 << 0 msec 3 << matrot
-	cube_rot cube_rot 2/ 0 matrot
-	2.0 0.5 2.0 matscale
-	0 0 0 matpos
 	'fmodel 'mat cpymatif
-	
 	matinv
 	'fnormal 'mati cpymatif3
 
 |	'fmodel .printfm <<trace
 |	'fnormal .printfm3 <<trace	
 	
-    rl_ProgGeom
-	$0f000000 rl_setcolor
 	'fnormal 'fmodel rl_geomat	
 	g_cube_vao glBindVertexArray
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
 
+:drawscene
+	rl_ProgGeom
+	
+	matini
+	|msec 4 << 0 msec 3 << matrot
+	|cube_rot cube_rot 2/ 0 matrot
+	20.0 0.1 20.0 matscale
+	0 -0.6 0 matpos
+	$0f000000 rl_setcolor
+	draw_cube 
+	
+	matini
+	|msec 4 << 0 msec 3 << matrot
+	cube_rot cube_rot 2/ 0 matrot
+	0.8 dup dup matscale
+	msec 6 << sin msec 5 << cos 0 matpos
+	$003f0003 rl_setcolor
+	draw_cube 
+	;
+	
 :viewresize
     |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
 	;
@@ -119,11 +131,19 @@
  1 ]
 	   
 :render
-	rl_frame_begin
-	|rl_set_camera
-	draw_cube
+	rl_frame_begin |rl_set_camera
+	|draw_cube
+	drawscene
 	'fsun rl_set_sun
 
+|      float lp0x =  3.0f*cosf(t),       lp0z = 3.0f*sinf(t),       lp0y = 2.0f+sinf(t*0.5f);
+	2.5 1.0 0.2 0.2
+	msec 3 << 
+	dup cos 3 * 
+	over sin 3 *
+	rot 0.5 + sin 2.5 *.
+	rl_point_light |(lp0x, lp0y, lp0z,  1.0f, 0.2f, 0.2f,  2.5f);
+		| int cr cg cb x y z --
 	rl_frame_end
 	spinning 1? ( 0.004 'cube_rot +! ) drop
 	;
@@ -149,7 +169,7 @@
 	"demo1 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
-	9 'fsun memfloat
+	8 'fsun memfloat
 	
 	|$1e1f53 GLpaper
 	'main SDLshow

@@ -244,8 +244,6 @@ void main(){
 #rl_gbuf_depth  0
 
 | Scene + Bloom
-:RL_BLOOM_MIPS 5 ; 
-
 #rl_scene_fbo   0
 #rl_scene_tex   0
 #rl_scene_depth 0
@@ -322,8 +320,6 @@ void main(){
     tid
     ;
 
-#_fbo_id 0
-
 | GLenum draws[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}
 #_gdb_draws [ $8CE0 $8CE1 ]
 
@@ -352,10 +348,28 @@ void main(){
 	;
 
 | Bloom FBOs y texturas: 5 mips × 2 sides = 10 entradas (dwords)
-#rl_bloom_texfbo * 80    | 10 × 8 bytes
-#rl_bloom_inv_wh * 40   | 5 x2 floats
+:RL_BLOOM_MIPS 5 ; 
 
-#_bw #_bh
+#listwh [ 0 0 0 0 0 0 ]
+#lisafp 0 0 0 0 0
+
+#listex [ 0 0 0 0 0 ]
+#lisfbo [ 0 0 0 0 0 ]
+
+:]wh | n -- w h
+	2 << 'listwh + d@ dup 16 >> swap $ffff and ;
+:]wh! | wh n --
+	2 << 'listwh + d! ;
+
+:]afp | n -- afp
+	3 << 'lisafp + ;
+:]afp! | afp n -- 
+	3 << 'lisafp + ! ;
+	
+:]tex | n -- tex
+	2* 'listex + w@ ;
+:]fbo | n -- fbo
+	2* 'lisfbo + w@ ;
 
 | ================================================================	
 :rl_init_bloom
@@ -367,21 +381,21 @@ void main(){
     rl_make_tex2d 'rl_scene_depth !
 
     rl_scene_tex rl_scene_depth rl_make_fbo 'rl_scene_fbo !
-	;
-:aa	
+	
     | Bloom mips
-	'rl_bloom_texfbo >a
-	'rl_bloom_inv_wh >b 
+	'listex >a
+	'lisfbo >b
     rl_w rl_h 0 ( RL_BLOOM_MIPS <? >r
-		swap 2/ swap 2/  | w h
-		1.0 pick2 / f2fp $ffffffff and 1.0 pick2 / f2fp $ffffffff and 32 << b!+
-		2 min swap 2 min swap
-		$881A pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
-		dup 0 rl_make_fbo 32 << or a!+
-		$881A pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
-		dup 0 rl_make_fbo 32 << or a!+
-		r> 1+ ) 3drop 
-	;
+		swap 2/ 2 max 
+		swap 2/ 2 max   | w h
+		2dup 16 << or r@ ]wh!
+		1.0 pick2 / f2fp 32 <<
+		1.0 pick2 / f2fp or r@ ]afp!
+		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
+		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
+		r> 1+ ) 3drop ;
 
 | ================================================================
 :rl_destroy_gbuffer
@@ -396,20 +410,25 @@ void main(){
     rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
     rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
     rl_scene_depth 1? ( 1 'rl_scene_depth glDeleteTextures     ) drop
-	'rl_bloom_texfbo >a
-	RL_BLOOM_MIPS 2* ( 1? 1-
-		a@+
-		1 over $ffffffff and glDeleteTextures
-		1 swap 32 >>> glDeleteFramebuffers
+	'listex >a
+	'lisfbo >b
+	RL_BLOOM_MIPS ( 1? 1-
+		da@+
+		1 over 16 >> glDeleteTextures
+		1 swap $ffff glDeleteTextures
+		db@+
+		1 over 16 >> glDeleteFramebuffers
+		1 swap $ffff glDeleteFramebuffers
 		) drop ;
 
 
 #_quad_verts [ -1.0 -1.0  1.0 -1.0  -1.0 1.0  1.0 1.0 ]
-#_intensity [ 1.2 ]
+#RL_BLOOM_INTENSITY [ 1.2 ]
+#RL_BLOOM_THRESHOLD [ 0.8 ]
 
 | ================================================================
 :rl_init_quad
-    9 '_quad_verts memfloat |1+ intensity
+	10 '_quad_verts memfloat 
 	
     1 'rl_quad_vao glGenVertexArrays
     1 'rl_quad_vbo glGenBuffers
@@ -456,7 +475,7 @@ void main(){
 ::rl_Init
 	0.0 GlDepth
     rl_init_gbuffer
-|    rl_init_bloom
+    rl_init_bloom
     rl_init_quad
     rl_init_ubos
 	
@@ -555,49 +574,29 @@ void main(){
 #ubo_matvinvProj * 64
 #ubo_matvviewPos * 16
 
+
+|****DEBUUG
 ::.printfm
-	>a
-	4 ( 1? 1-
-		4 ( 1? 1-
-			da@+ fp2f "%f " .print
-			) drop
-		.cr ) drop 
-	"" .println
-	;
+	>a 4 ( 1? 1- 4 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop "" .println ;
 
 ::.printfm3
-	>a
-	3 ( 1? 1-
-		3 ( 1? 1-
-			da@+ fp2f "%f " .print
-			) drop
-		.cr ) drop 
-	"" .println
-	;
+	>a 3 ( 1? 1- 3 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop "" .println ;
 	
 ::.printv
-	>a
-	da@+ fp2f da@+ fp2f da@ fp2f "(%f %f %f)" .println
+	>a da@+ fp2f da@+ fp2f da@ fp2f "(%f %f %f)" .println ;
 	
-	;
 :debugmat
-	"view" .println
-	'ubo_matView .printfm .cr
-	"pro" .println
-	'ubo_matvProj .printfm .cr
-	"inv view" .println
-	'ubo_matvinvView .printfm .cr
-	"inv proj" .println
-	'ubo_matvinvProj .printfm .cr
-	'ubo_matvviewPos .printv .cr
-	;
+	"view" .println 'ubo_matView .printfm .cr
+	"pro" .println 'ubo_matvProj .printfm .cr
+	"inv view" .println 'ubo_matvinvView .printfm .cr
+	"inv proj" .println 'ubo_matvinvProj .printfm .cr
+	'ubo_matvviewPos .printv .cr ;
 	
 |------------------------------------
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-	rl_w 16 << rl_h / 'camParam !
-	|camParam "%f" .println
+	rl_w 16 << rl_h / 'camParam ! |camParam "%f" .println
 	'camParam matProj 
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
@@ -612,14 +611,14 @@ void main(){
 	3 'camEye 'ubo_matvviewPos mem2float | cnt sr ds
 
 |//	debugmat <<trace
-	
-    GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-    GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
-    GL_UNIFORM_BUFFER 0 glBindBuffer
-    ;
+	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
+	GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
+	GL_UNIFORM_BUFFER 0 glBindBuffer
+	;
 
 #deepValue 0
 #clearColorPtr [ 0 0 0 $3F800000 ]
+
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
@@ -631,13 +630,12 @@ void main(){
     GL_DEPTH_TEST glEnable
     GL_TRUE glDepthMask
 	
-	|GLcls
 	$1800 0 'clearColorPtr glClearBufferfv | Limpiar Normales (ATTACHMENT0 -> Índice 0)
 	$1800 1 'clearColorPtr glClearBufferfv | Limpiar Albedo (ATTACHMENT1 -> Índice 1)
 	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> Índice 0)
 
 	rl_set_camera
-	rl_sh_geom glUseProgram
+	|rl_sh_geom glUseProgram
     ;
 
 | RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
@@ -667,26 +665,67 @@ void main(){
     ;
 
 | ================================================================
-#_ao_on 1
 | RL_UBO_PointLights: count[4](16) + 16×(pos[4]+color[4])(32) = 16 + 512 = 528 bytes
+
+#_ao_on 1
 #rl_ubo_pl_buf * 528
 
 :lightpass
-    | Upload point lights
-    rl_plight_count 'rl_ubo_pl_buf d!          | count[0]
-	
-    | Copiar plights al buffer (rl_plight_count × 32 bytes) a partir de offset 16
-|    rl_plight_count 5 <<  | bytes a copiar
- |   0 ( over <? dup 'rl_plights + d@ over 16 'rl_ubo_pl_buf + + d! 4 + ) 2drop
-	
-    GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
-    GL_UNIFORM_BUFFER 0 16 rl_plight_count 5 << + 'rl_ubo_pl_buf glBufferSubData
-    GL_UNIFORM_BUFFER 0 glBindBuffer
-    GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	| Upload point lights
+	rl_plight_count 'rl_ubo_pl_buf d!          | count[0]
+	'rl_ubo_pl_buf 16 + 'rl_plights rl_plight_count 5 << move |dsc
+	GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
+	GL_UNIFORM_BUFFER 0 16 rl_plight_count 5 << + 'rl_ubo_pl_buf glBufferSubData
+	GL_UNIFORM_BUFFER 0 glBindBuffer
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
-    
+	
+	
+:bpassd | invw id ftex fbos wh --
+	0 0 rot ]wh glViewport
+	GL_FRAMEBUFFER swap ]fbo glBindFramebuffer
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D swap ]tex glBindTexture
+	1 rot ]afp glUniform2fv 
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	;
+	
 :bloompass
+	rl_sh_bright glUseProgram
+	rl_u_bright_threshold 1 'RL_BLOOM_THRESHOLD glUniform1fv
+	0 0
+	0 ]wh
+	glViewport
+	GL_FRAMEBUFFER 0 ]fbo glBindFramebuffer |bos tex
+	GL_TEXTURE0 glActiveTexture 
+	GL_TEXTURE_2D rl_scene_tex glBindTexture
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	
+	| Downscale chain
+	rl_sh_bloom_down glUseProgram
+	0 rl_u_bloom_down_texel 0 2 1 bpassd | invw id ftex fbos w h --
+	1 rl_u_bloom_down_texel 2 4 2 bpassd | invw id ftex fbos w h --
+	2 rl_u_bloom_down_texel 4 6 3 bpassd | invw id ftex fbos w h --
+	3 rl_u_bloom_down_texel 6 8 4 bpassd | invw id ftex fbos w h --
+	
+	| Upscale chain
+	rl_sh_bloom_up glUseProgram
+	4 rl_u_bloom_up_texel 8 7 3 bpassd | invw id ftex fbos w h --
+	3 rl_u_bloom_up_texel 7 5 2 bpassd | invw id ftex fbos w h --
+	2 rl_u_bloom_up_texel 5 3 1 bpassd | invw id ftex fbos w h --
+	1 rl_u_bloom_up_texel 3 1 0 bpassd | invw id ftex fbos w h --
+	
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	0 0 rl_w rl_h glViewport
+|	$1800 0 'clearColorPtr glClearBufferfv
+
+	rl_sh_composite glUseProgram
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
+	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
+
 	
 | ================================================================
 ::rl_frame_end | --
@@ -709,19 +748,8 @@ void main(){
 	lightpass
 	
     | --- Bloom bright extraction ---
-|bloompass
-    | --- Composite final ---
-	GL_FRAMEBUFFER 0 glBindFramebuffer
-	0 0 rl_w rl_h glViewport
-|	$1800 0 'clearColorPtr glClearBufferfv
-
-	rl_sh_composite glUseProgram
+	bloompass
 	
-    GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_scene_tex glBindTexture
- |  GL_TEXTURE0 glActiveTexture       GL_TEXTURE_2D 'rl_bloom_texs 4 + d@ glBindTexture | bloom_texs[1]
-    rl_u_composite_intensity 1 '_intensity glUniform1fv
-    GL_TRIANGLE_STRIP 0 4 glDrawArrays
-
     | --- Blit depth ---
     GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
