@@ -1,9 +1,22 @@
 | RLMATH 
 | PHREDA 2026
 
+^r3/lib/vec3.r3
+
 ##mat * 128
 ##mati * 128 | aux inv
 #matx * 128 | aux
+
+#matid | matrix id
+1.0 0 0 0
+0 1.0 0 0
+0 0 1.0 0
+0 0 0 1.0
+#mats * 2560 | 20 matrices
+##mat> 'mats
+
+::matini
+	'mat 'matid 16 move ;
 
 ::cpymatif | 'dest 'src --
 	>a >b 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
@@ -22,66 +35,61 @@
 :camNear	2 b] @ ;
 :camFar		3 b] @ ;
 	
+#camT
+#camR
+
 ::matProj | 'infocam --
 	>b
 	'mat 0 16 fill | dvc
 	'mat >a
-	|...................
-		camFov dup camAsp /. 
-	a! | m[0]=fov/asp
-		|camFov 
-	5 a] ! | m[5]=f;
-		camNear camFar 2dup + -rot - /. | zn+zf zn-zf
-	10 a] ! | m[10]=-(zn+zf)/(zn-zf); 
-		-1.0 
-	11 a] ! | m[11]=-1.f;
-		camNear camFar 2dup - -rot
-		*. 2* neg swap /.
-	14 a] ! | m[14]=-2.f*zn*zf/(zn-zf); 
+	camNear camFov *. 'camT !
+	camT camAsp *. 'camR !
+
+	camNear camR /. a! | proj.m[0] = n / r;
+	camNear camT /. 5 a] ! | proj.m[5] = n / t;
+	camNear camFar 2dup + 'camT ! - 'camR !
+	camT neg camR /. 10 a] ! | proj.m[10] = -(n + f) / (n - f);
+	-1.0 11 a] ! | proj.m[11] = -1.0f;
+	camNear camFar *. 2* neg camR /. 14 a] ! | proj.m[14] = -2.0f * n * f / (n - f);
 	|...................
 	'mati 0 16 fill | dvc
 	'mati >b 'mat >a
-		1.0 a@ /.
-	b! | inv_proj.m[0]  =  1.0f / proj.m[0];
-		1.0 5 a] @ /.
-	5 b] ! |inv_proj.m[5]  =  1.0f / proj.m[5];
-		1.0 14 a] @ /.
-	11 b] ! | inv_proj.m[11] =  1.0f / proj.m[14];
-		-1.0
-	14 b] ! | inv_proj.m[14] = -1.0f;
-		10 a] @ 14 a] @ /.
-	15 b] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
+	1.0 a@ /. b! | inv_proj.m[0]  =  1.0f / proj.m[0];
+	1.0 5 a] @ /. 5 b] ! |inv_proj.m[5]  =  1.0f / proj.m[5];
+	1.0 14 a] @ /. 11 b] ! | inv_proj.m[11] =  1.0f / proj.m[14];
+	-1.0 14 b] ! | inv_proj.m[14] = -1.0f;
+	10 a] @ 14 a] @ /. 15 b] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
 	;
 	
 #fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
 :fy 'fx 8 + @ ;
 :fz 'fx 16 + @ ;
-#sx 0 0 0 |#sy 0 #sz 0
-:sy 'sx 8 + @ ;
-:sz 'sx 16 + @ ;
+#rx 0 0 0 |#sy 0 #sz 0
+:ry 'rx 8 + @ ;
+:rz 'rx 16 + @ ;
 #ux 0 0 0 |#uy 0 #uz 0 
 :uy 'ux 8 + @ ;
 :uz 'ux 16 + @ ;
 	
-::mlookat | 'eye 'to 'up --
+::mlookat | 'eye 'at 'up --
 	swap
 	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
-	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
-	'ux dup 'sx v3= 'fx v3vec
-	'mat >b
-	sx b!+ |mat[0] = s.x;
+	'rx dup 'fx v3= dup rot v3vec v3Nor | eye
+	'ux dup 'rx v3= 'fx v3vec
+	matini 'mat >b
+	rx b!+ |mat[0] = s.x;
     ux b!+ |mat[1] = u.x;
     fx neg b!+ |mat[2] = -f.x;
     0 b!+ |mat[3] = 0.0;
-    sy b!+ |mat[4] = s.y;
+    ry b!+ |mat[4] = s.y;
     uy b!+ |mat[5] = u.y;
     fy neg b!+ |mat[6] = -f.y;
     0 b!+ |mat[7] = 0.0;
-    sz b!+ |mat[8] = s.z;
+    rz b!+ |mat[8] = s.z;
     uz b!+ |mat[9] = u.z;
     fz neg b!+ |mat[10] = -f.z;
     0 b!+ |mat[11] = 0.0;
-    'sx over v3ddot neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
+    'rx over v3ddot neg b!+ |mat[12] = -kmVec3Dot(&s, pEye);
     'ux over v3ddot neg b!+ |mat[13] = -kmVec3Dot(&u, pEye);
     'fx swap v3ddot b!+ |mat[14] = kmVec3Dot(&f, pEye);
     1.0 b! |mat[15] = 1.0;
@@ -135,19 +143,10 @@
     8 a] @ 3 b] @ *. 9 a] @ 1 b] @ *. - 10 a] @ 0 b] @ *. + *. swap !	
 	;
 
-#matid | matrix id
-1.0 0 0 0
-0 1.0 0 0
-0 0 1.0 0
-0 0 0 1.0
-#mats * 2560 | 20 matrices
-##mat> 'mats
 
 #cox #coy #coz
 #six #siy #siz
 
-::matini
-	'mat 'matid 16 move ;
 	
 ::matrot | rx ry rz -- ; rotate
 	'mat >a
@@ -166,11 +165,19 @@
 	;
 
 ::matpos | x y z -- ; traslate
-	swap rot 'mat 14 3 << + !+ !+ ! ;
+	swap rot 'mat 12 3 << + !+ !+ ! ;
 	
 ::matscale | x y z -- ; scale
-	mat >a
+	'mat >a
 	pick2 a@ *. a!+ pick2 a@ *. a!+ pick2 a@ *. a!+ rot a@ *. a!+
 	over a@ *. a!+ over a@ *. a!+ over a@ *. a!+ swap a@ *. a!+
 	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ a@ *. a! ;
 	
+::matprint | mat --
+	>a
+	4 ( 1? 1- 
+		4 ( 1? 1-
+			a@+ "%f " .print
+			) drop
+		.cr ) drop
+	.cr ;

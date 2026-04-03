@@ -330,10 +330,10 @@
 	>a ( 1? 1- da@ f2fp da!+ ) drop ;
 	
 ::mem2float | cnt src dst --
-	>b >a ( 1? 1- a@ f2fp db!+ ) drop ;
+	>b >a ( 1? 1- a@+ f2fp db!+ ) drop ;
 
 ::memd2float | cnt src dst --
-	>b >a ( 1? 1- da@ f2fp db!+ ) drop ;
+	>b >a ( 1? 1- da@+ f2fp db!+ ) drop ;
 	
 |--- floating point	to fixed point (32 bit but sign bit in 64)
 ::fp2f | fp -- fixed point

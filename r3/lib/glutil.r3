@@ -5,7 +5,6 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/sdl2image.r3
-^r3/lib/3dgl.r3
 	
 #t | aux for error
 #f #g #v	
@@ -23,7 +22,7 @@
 	here .println ;
 
 :createsh | type mem -- nh
-	>r glCreateShader dup 
+	>r glCreateShader 
 	dup 1 r> 0 glShaderSource
 	dup glCompileShader 
 	dup GL_COMPILE_STATUS 't glGetShaderiv 

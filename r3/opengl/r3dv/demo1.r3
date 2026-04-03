@@ -22,17 +22,18 @@
 0 2 1 0 3 2  4 5 6 4 6 7  8 9 10 8 10 11 12 14 13 12 15 14  16 17 18 16 18 19  20 22 21 20 23 22
 ]
 
-#g_vao #g_vbo #g_ebo
+#g_cube_vao #g_cube_vbo #g_cube_ebo
 
 :build_cube
-    1 'g_vao glGenVertexArrays
-    g_vao glBindVertexArray
-    24 6 * 'verts memfloat
-    1 'g_vbo glGenBuffers
-    GL_ARRAY_BUFFER g_vbo glBindBuffer
-    GL_ARRAY_BUFFER 24 8 * 4 * 'verts GL_STATIC_DRAW glBufferData
-    1 'g_ebo glGenBuffers
-    GL_ELEMENT_ARRAY_BUFFER g_ebo glBindBuffer
+	24 6 * 'verts memfloat
+
+    1 'g_cube_vao glGenVertexArrays
+    1 'g_cube_vbo glGenBuffers
+    1 'g_cube_ebo glGenBuffers
+    g_cube_vao glBindVertexArray
+    GL_ARRAY_BUFFER g_cube_vbo glBindBuffer
+    GL_ARRAY_BUFFER 24 6 * 4 * 'verts GL_STATIC_DRAW glBufferData
+    GL_ELEMENT_ARRAY_BUFFER g_cube_ebo glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
     0 glEnableVertexAttribArray
     0 3 GL_FLOAT GL_FALSE 6 4 * 0 glVertexAttribPointer
@@ -42,9 +43,9 @@
 	;
 	
 :free_cube
-	1 'g_vao glDeleteVertexArrays
-	1 'g_vbo glDeleteBuffers
-	1 'g_ebo glDeleteBuffers
+	1 'g_cube_vao glDeleteVertexArrays
+	1 'g_cube_vbo glDeleteBuffers
+	1 'g_cube_ebo glDeleteBuffers
 	;
 	
 #fmodel * 64 | mat4x4
@@ -52,15 +53,19 @@
 
 :draw_cube 
 	matini
-	5.0 0.4 5.0 matscale
+	20.0 0.1 20.0 matscale
+	0 -0.6 0 matpos
 	'fmodel 'mat cpymatif
 	matinv
 	'fnormal 'mati cpymatif3
 	
+|	'fmodel .printfm <<trace
+|	'fnormal .printfm3 <<trace	
+	
     rl_ProgGeom
-	$00ff0000 rl_setcolor
-	'fmodel 'fnormal rl_geomat	
-	g_vao glBindVertexArray
+	$ffff00ff rl_setcolor
+	'fnormal 'fmodel rl_geomat	
+	g_cube_vao glBindVertexArray
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
 
@@ -109,19 +114,21 @@
     spinning 1? ( 0.004 'cube_rot +! ) drop
 	;
 
+#fsun [ 
+-0.5 -1.0 -0.5 0
+ 1.0 0.9 0.8 0.8  
+ 1 ]
+	   
 :render
 	rl_frame_begin
 	rl_set_camera
-	
 	draw_cube
-	
-	rl_frame_light
-	|post
+	'fsun rl_set_sun
+
 	rl_frame_end
 	;
 	
 :main
-	|GLcls
 	render
     GLUpdate
 	
@@ -142,6 +149,8 @@
 	"demo1 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
+	9 'fsun memfloat
+	
 	$1e1f53 GLpaper
 	'main SDLshow
 	|rl_shutdown
