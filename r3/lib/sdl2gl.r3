@@ -484,16 +484,19 @@
 :SDL_GL_DOUBLEBUFFER	5 ;
 :SDL_GL_DEPTH_SIZE	6 ;
 	
-#colorgl [ 0 0 0 1.0 ]
+#colorgl [ 0 0 0 1.0 1.0 ]
 #basegl [ 1.0 ]
-
 
 ::GLpaper | $ffffff --
 	'colorgl >a
 	dup 16 >> $ff and 1.0 8 *>> da!+
 	dup 8 >> $ff and 1.0 8 *>> da!+
-	$ff and 1.0 8 *>> da!
-	4 'colorgl memfloat ;
+	$ff and 1.0 8 *>> da!+
+	1.0 da!
+	5 'colorgl memfloat ;
+	
+::GlDepth
+	'basegl ! 1 'basegl memfloat ;
 	
 ::GLcls
 	$1800 0 'colorgl glClearBufferfv | GL_COLOR

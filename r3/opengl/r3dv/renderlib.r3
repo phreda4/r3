@@ -449,24 +449,18 @@ void main(){
 	rot glUniformBlockBinding ;
 
 | ================================================================
-:rl_cache_uniforms
-    rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
-    rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
-    rl_sh_bloom_up   "texelSize"      glGetUniformLocation 'rl_u_bloom_up_texel      !
-    rl_sh_composite  "bloomIntensity" glGetUniformLocation 'rl_u_composite_intensity !
-    rl_sh_light      "uAOEnabled"     glGetUniformLocation 'rl_u_ao_enabled          !
-    ;
 
 | Textura blanca 1×1 para AO neutro
 #_white_px [ $ffffffff ]   | RGBA 255,255,255,255 como dword
 
 ::rl_Init
+	0.0 GlDepth
     rl_init_gbuffer
 |    rl_init_bloom
     rl_init_quad
     rl_init_ubos
 	
-	'_intensity d@ fp2f "%f" .println
+	|'_intensity d@ fp2f "%f" .println
 	
     'rl_shader_geom       loadShaderv 'rl_sh_geom       !
     'rl_shader_light      loadShaderv 'rl_sh_light      !
@@ -487,7 +481,11 @@ void main(){
     rl_sh_geom "uGlow"        glGetUniformLocation 'rl_u_glow          !
     rl_sh_geom "normalMatrix" glGetUniformLocation 'rl_u_normal_matrix !
 
-    rl_cache_uniforms
+    rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
+    rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
+    rl_sh_bloom_up   "texelSize"      glGetUniformLocation 'rl_u_bloom_up_texel      !
+    rl_sh_composite  "bloomIntensity" glGetUniformLocation 'rl_u_composite_intensity !
+    rl_sh_light      "uAOEnabled"     glGetUniformLocation 'rl_u_ao_enabled          !
     
     1 'rl_ao_white_tex glGenTextures
     GL_TEXTURE_2D rl_ao_white_tex glBindTexture
@@ -532,7 +530,7 @@ void main(){
 #camFar 200.0
 
 ##camEye 0.0 2.0  6.0
-##camTo  0.0 2.0  5.0
+##camTo  0.0 0.0  0.0
 ##camUp  0.0 1.0  0.0
 
 | ================================================================
@@ -621,22 +619,25 @@ void main(){
     ;
 
 #deepValue 0
-
+#clearColorPtr [ 0 0 0 $3F800000 ]
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
     |0 'rl_ao_texture !
 
-    |0.0 f2fp glClearDepth |*****************
-	GL_DEPTH 0 'deepValue glClearBufferfv
-    GL_GREATER glDepthFunc
-
     0 0 rl_w rl_h glViewport
     GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
+	GL_GREATER glDepthFunc
     GL_DEPTH_TEST glEnable
     GL_TRUE glDepthMask
-    $4100 glClear   | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-    rl_sh_geom glUseProgram
+	
+	|GLcls
+	$1800 0 'clearColorPtr glClearBufferfv | Limpiar Normales (ATTACHMENT0 -> Índice 0)
+	$1800 1 'clearColorPtr glClearBufferfv | Limpiar Albedo (ATTACHMENT1 -> Índice 1)
+	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> Índice 0)
+
+	rl_set_camera
+	rl_sh_geom glUseProgram
     ;
 
 | RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
@@ -652,7 +653,7 @@ void main(){
     ;
 
 | ================================================================
-    | Cada PointLight = 32 bytes: pos[4](16) + color[4](16)
+| Cada PointLight = 32 bytes: pos[4](16) + color[4](16)
 ::rl_point_light | int cr cg cb x y z --
     rl_plight_count 5 << 'rl_plights + >a  | ptr a este slot (32*i = i<<5)
 	swap rot f2fp da!+ f2fp da!+ f2fp da!+ 0 da!+
@@ -693,7 +694,9 @@ void main(){
     | --- Lighting pass → scene_tex ---
     0 0 rl_w rl_h glViewport
     GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
-    GL_COLOR_BUFFER_BIT glClear
+
+	|$1800 0 'clearColorPtr glClearBufferfv
+	
     GL_DEPTH_TEST glDisable
     rl_sh_light glUseProgram
     GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
@@ -708,10 +711,11 @@ void main(){
     | --- Bloom bright extraction ---
 |bloompass
     | --- Composite final ---
-    GL_FRAMEBUFFER 0 glBindFramebuffer
-    0 0 rl_w rl_h glViewport
-    GL_COLOR_BUFFER_BIT glClear
-    rl_sh_composite glUseProgram
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	0 0 rl_w rl_h glViewport
+|	$1800 0 'clearColorPtr glClearBufferfv
+
+	rl_sh_composite glUseProgram
 	
     GL_TEXTURE0 glActiveTexture  GL_TEXTURE_2D rl_scene_tex glBindTexture
  |  GL_TEXTURE0 glActiveTexture       GL_TEXTURE_2D 'rl_bloom_texs 4 + d@ glBindTexture | bloom_texs[1]
@@ -722,7 +726,7 @@ void main(){
     GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
     0 0 rl_w rl_h 0 0 rl_w rl_h GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
-    GL_FRAMEBUFFER 0 glBindFramebuffer
+    |GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
 	
 

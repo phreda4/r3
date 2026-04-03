@@ -2,6 +2,22 @@
 | PHREDA 2026
 ^./renderlib.r3
 
+| Camera controls
+#cam_yaw  -0.785398   | -PI/4
+#cam_pit   0.45
+#cam_dist  4.5
+#cam_drag  0
+
+| Cube rotation
+#cube_rot  0.0
+#spinning  -1
+
+| Mouse state
+#mouse_x   0
+#mouse_y   0
+#mouse_btn 0
+
+
 | 24 vertices (4 por cara x 6 caras) con pos, normal, UV */
 #verts [
 -0.5  -0.5  -0.5  0 0 -1.0  0.5  -0.5  -0.5  0 0 -1.0 
@@ -53,37 +69,24 @@
 
 :draw_cube 
 	matini
-	20.0 0.1 20.0 matscale
-	0 -0.6 0 matpos
+	|msec 4 << 0 msec 3 << matrot
+	cube_rot cube_rot 2/ 0 matrot
+	2.0 0.5 2.0 matscale
+	0 0 0 matpos
 	'fmodel 'mat cpymatif
+	
 	matinv
 	'fnormal 'mati cpymatif3
-	
+
 |	'fmodel .printfm <<trace
 |	'fnormal .printfm3 <<trace	
 	
     rl_ProgGeom
-	$ffff00ff rl_setcolor
+	$0f000000 rl_setcolor
 	'fnormal 'fmodel rl_geomat	
 	g_cube_vao glBindVertexArray
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
-
-
-| Camera controls
-#cam_yaw  -0.785398   | -PI/4
-#cam_pit   0.45
-#cam_dist  4.5
-#cam_drag  0
-
-| Cube rotation
-#cube_rot  0.0
-#spinning  -1
-
-| Mouse state
-#mouse_x   0
-#mouse_y   0
-#mouse_btn 0
 
 :viewresize
     |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
@@ -101,7 +104,7 @@
 	cam_pit sin cam_dist *. a!+
 	cam_yaw sin cam_pit cos *. cam_dist *. a!
 |	3 'pEye 'fpEye mem2float
-	'camEye @+ swap @+ swap @ "%f %f %f" .println
+	|'camEye @+ swap @+ swap @ "%f %f %f" .println
 	;
 :wheelcam
 	SDLw 0? ( drop ; ) neg
@@ -109,10 +112,6 @@
 	calcam
 	;
 	
-	
-:update
-    spinning 1? ( 0.004 'cube_rot +! ) drop
-	;
 
 #fsun [ 
 -0.5 -1.0 -0.5 0
@@ -121,11 +120,12 @@
 	   
 :render
 	rl_frame_begin
-	rl_set_camera
+	|rl_set_camera
 	draw_cube
 	'fsun rl_set_sun
 
 	rl_frame_end
+	spinning 1? ( 0.004 'cube_rot +! ) drop
 	;
 	
 :main
@@ -151,7 +151,7 @@
 	build_cube
 	9 'fsun memfloat
 	
-	$1e1f53 GLpaper
+	|$1e1f53 GLpaper
 	'main SDLshow
 	|rl_shutdown
     GLend
