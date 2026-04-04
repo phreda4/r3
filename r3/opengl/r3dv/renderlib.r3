@@ -93,7 +93,7 @@ vec3 CookTorrance(float NdH,float NdV,float NdL,float a2,float k,vec3 F){
            / (4.0*NdV*NdL+0.0001);}
 void main(){
     vec3  nm  = texture(gNormal,  uv).xyz;
-    if(dot(nm,nm)<0.01){FragColor=vec4(0,0,0,1);return;}
+	if(dot(nm,nm)<0.01){FragColor=vec4(0,0,0,1);return;}
     vec3  fp  = rl_reconstruct_pos(gDepth,uv,invProj,invView);
     vec4  aM  = texture(gAlbedo,  uv);
     vec4  sh  = texture(occlusionTex,uv);
@@ -327,7 +327,7 @@ void main(){
     1 'rl_gbuf_fbo glGenFramebuffers
     GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     | gNormal: GL_RGB16F 
-    GL_RGB16F rl_w rl_h $1907 $1406 GL_NEAREST GL_NEAREST 0
+    GL_RGB16F rl_w rl_h GL_RGB GL_FLOAT GL_NEAREST GL_NEAREST 0
     rl_make_tex2d 'rl_gbuf_norm !
     | gAlbedo: GL_RGBA8
     GL_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_NEAREST GL_NEAREST 0
@@ -473,7 +473,6 @@ void main(){
 #_white_px [ $ffffffff ]   | RGBA 255,255,255,255 como dword
 
 ::rl_Init
-	0.0 GlDepth
     rl_init_gbuffer
     rl_init_bloom
     rl_init_quad
@@ -518,7 +517,6 @@ void main(){
     GL_CULL_FACE glEnable
     GL_BACK glCullFace
     GL_CCW glFrontFace
-|    GLInfo
 	;
 	
 ::rl_shutdown
@@ -617,34 +615,35 @@ void main(){
 	;
 
 #deepValue 0
-#clearColorPtr [ 0 0 0 $3F800000 ]
+#clearColorPtr [ 0 0 0 0 ]
 
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
     |0 'rl_ao_texture !
 
+	GL_GREATER glDepthFunc
+	
     0 0 rl_w rl_h glViewport
     GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
-	GL_GREATER glDepthFunc
-    GL_DEPTH_TEST glEnable
-    GL_TRUE glDepthMask
-	
+	GL_DEPTH_TEST glEnable
+	GL_TRUE glDepthMask
+
 	$1800 0 'clearColorPtr glClearBufferfv | Limpiar Normales (ATTACHMENT0 -> Índice 0)
 	$1800 1 'clearColorPtr glClearBufferfv | Limpiar Albedo (ATTACHMENT1 -> Índice 1)
-	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> Índice 0)
+	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> )
 
 	rl_set_camera
 	|rl_sh_geom glUseProgram
     ;
 
 | RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
-#rl_ubo_dl_buf   * 48
+#rl_ubo_dl_buf  * 48
 	
 | ================================================================
 | dx_fp dy_fp dz_fp  r_fp g_fp b_fp intensity_fp enabled
 ::rl_set_sun | 'sun --
-	'rl_ubo_dl_buf swap 9 dmove |d s c
+	'rl_ubo_dl_buf swap 12 dmove |d s c
     GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
     GL_UNIFORM_BUFFER 0 48 'rl_ubo_dl_buf glBufferSubData
     GL_UNIFORM_BUFFER 0 glBindBuffer
@@ -673,7 +672,7 @@ void main(){
 :lightpass
 	| Upload point lights
 	rl_plight_count 'rl_ubo_pl_buf d!          | count[0]
-	'rl_ubo_pl_buf 16 + 'rl_plights rl_plight_count 5 << move |dsc
+	'rl_ubo_pl_buf 16 + 'rl_plights rl_plight_count 5 << cmove |dsc
 	GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
 	GL_UNIFORM_BUFFER 0 16 rl_plight_count 5 << + 'rl_ubo_pl_buf glBufferSubData
 	GL_UNIFORM_BUFFER 0 glBindBuffer
@@ -715,15 +714,6 @@ void main(){
 	2 rl_u_bloom_up_texel 5 3 1 bpassd | invw id ftex fbos w h --
 	1 rl_u_bloom_up_texel 3 1 0 bpassd | invw id ftex fbos w h --
 	
-	GL_FRAMEBUFFER 0 glBindFramebuffer
-	0 0 rl_w rl_h glViewport
-|	$1800 0 'clearColorPtr glClearBufferfv
-
-	rl_sh_composite glUseProgram
-	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
-	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
-	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
 
 	
@@ -734,27 +724,40 @@ void main(){
     0 0 rl_w rl_h glViewport
     GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
 
-	|$1800 0 'clearColorPtr glClearBufferfv
+	$1800 0 'clearColorPtr glClearBufferfv
 	
     GL_DEPTH_TEST glDisable
     rl_sh_light glUseProgram
     GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
     GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D rl_gbuf_albedo glBindTexture  | GL_TEXTURE1
-    GL_TEXTURE2 glActiveTexture GL_TEXTURE_2D rl_ao_texture  glBindTexture  | GL_TEXTURE2
+    GL_TEXTURE2 glActiveTexture GL_TEXTURE_2D rl_ao_white_tex glBindTexture  | GL_TEXTURE2
     GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth  glBindTexture  | GL_TEXTURE3
-    rl_u_ao_enabled _ao_on glUniform1i
+	
+    rl_u_ao_enabled 0 glUniform1i
 
 	| --- Light pass
 	lightpass
 	
     | --- Bloom bright extraction ---
 	bloompass
+
+	| ---- Composite ----
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	0 0 rl_w rl_h glViewport
+	
+	$1800 0 'clearColorPtr glClearBufferfv
+	
+	rl_sh_composite glUseProgram
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
+	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
+	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	
     | --- Blit depth ---
     GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
     0 0 rl_w rl_h 0 0 rl_w rl_h GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
-    |GL_FRAMEBUFFER 0 glBindFramebuffer
+    GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
 	
 
@@ -767,7 +770,7 @@ void main(){
 ::rl_ProgGeom
 	rl_sh_geom glUseProgram ;
 
-#cola [ 0 0 0 ]
+#colora [ 0 0 0 ]
 
 ::rl_setcolor | rgbmm --
     rl_u_roughness over 2 >> $7 and glUniform1i
@@ -776,8 +779,8 @@ void main(){
 	dup   8 >> $ff and 1.0 8 *>> f2fp
 	over 16 >> $ff and 1.0 8 *>> f2fp
 	rot  24 >> $ff and 1.0 8 *>> f2fp
-	'cola d!+ d!+ d!
-	rl_u_albedo 1 'cola glUniform3fv
+	'colora d!+ d!+ d!
+	rl_u_albedo 1 'colora glUniform3fv
 	|'cola d@+ fp2f "%f " .print d@+ fp2f "%f " .print d@ fp2f "%f " .println <<trace
 	;
 	

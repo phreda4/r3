@@ -87,16 +87,16 @@
 	|msec 4 << 0 msec 3 << matrot
 	|cube_rot cube_rot 2/ 0 matrot
 	20.0 0.1 20.0 matscale
-	0 -0.6 0 matpos
-	$0f000000 rl_setcolor
+	0 -1.6 0 matpos
+	$eeeeee30 rl_setcolor
 	draw_cube 
 	
 	matini
 	|msec 4 << 0 msec 3 << matrot
 	cube_rot cube_rot 2/ 0 matrot
 	0.8 dup dup matscale
-	msec 6 << sin msec 5 << cos 0 matpos
-	$003f0003 rl_setcolor
+	msec 3 << sin 2 * msec 4 << cos 0.3 + 0 matpos
+	$fffffff0 rl_setcolor
 	draw_cube 
 	;
 	
@@ -128,22 +128,31 @@
 #fsun [ 
 -0.5 -1.0 -0.5 0
  1.0 0.9 0.8 0.8  
- 1 ]
+ 1 0 0 0 ]
 	   
 :render
 	rl_frame_begin |rl_set_camera
 	|draw_cube
 	drawscene
 	'fsun rl_set_sun
+	
+	2.5 0.2 0.2 1.0
+	msec 3 << 
+	dup cos -3 * 
+	over sin -3 *
+	rot sin 2.5 *.
+	rl_point_light | int cr cg cb x y z --
+	
 
-|      float lp0x =  3.0f*cosf(t),       lp0z = 3.0f*sinf(t),       lp0y = 2.0f+sinf(t*0.5f);
 	2.5 1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
 	over sin 3 *
 	rot 0.5 + sin 2.5 *.
-	rl_point_light |(lp0x, lp0y, lp0z,  1.0f, 0.2f, 0.2f,  2.5f);
-		| int cr cg cb x y z --
+	rl_point_light | int cr cg cb x y z --
+	
+	
+	
 	rl_frame_end
 	spinning 1? ( 0.004 'cube_rot +! ) drop
 	;
@@ -173,7 +182,8 @@
 	
 	|$1e1f53 GLpaper
 	'main SDLshow
-	|rl_shutdown
+	
+	rl_shutdown
     GLend
 	free_cube
 	;
