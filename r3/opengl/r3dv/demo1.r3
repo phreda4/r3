@@ -98,6 +98,15 @@
 	msec 3 << sin 2 * msec 4 << cos 0.3 + 0 matpos
 	$fffffff0 rl_setcolor
 	draw_cube 
+	
+	matini
+	|msec 4 << 0 msec 3 << matrot
+	cube_rot neg cube_rot 2/ 0.3 matrot
+	0.8 dup dup matscale
+	msec 3 << sin 2 * neg msec 4 << cos 0.3 + msec 2 << sin matpos
+	$6f34fff3 rl_setcolor
+	draw_cube 
+	
 	;
 	
 :viewresize
@@ -179,7 +188,6 @@
 	rl_init
 	build_cube
 	8 'fsun memfloat
-	
 	|$1e1f53 GLpaper
 	'main SDLshow
 	

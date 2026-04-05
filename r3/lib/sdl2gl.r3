@@ -269,7 +269,7 @@
 ::glUniform2f sys-glUniform2f sys3 drop ;
 ::glUniform3f sys-glUniform3f sys4 drop ;
 ::glUniform4f sys-glUniform4f sys5 drop ;
-::glTexImage1D sys-glTexImage1D sys9 drop ;
+::glTexImage1D sys-glTexImage1D sys8 drop ;
 ::glObjectLabel sys-glObjectLabel sys4 drop ;
 ::glDeleteFramebuffers sys-glDeleteFramebuffers sys2 drop ;
 

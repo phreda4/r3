@@ -255,7 +255,8 @@ void main() {
 		dup 16 >> $ffff and 
 		maxz >? ( dup 'maxz ! ) da!+ |nf (z)
 		$ffff and da!+	| offset
-		r> ) 2drop
+		r> ) drop
+	'defind !
 	a> 'here !
 |	dump
 	
@@ -267,7 +268,7 @@ void main() {
 
 	1 'idx_tex glGenTextures
 	GL_TEXTURE_1D idx_tex glBindTexture
-	GL_TEXTURE_1D 0 GL_R16UI ssaendfile here - GL_RED_INTEGER GL_UNSIGNED_SHORT here glTexImage1D
+	GL_TEXTURE_1D 0 GL_R16UI ssaendfile defind - 0 GL_RED_INTEGER GL_UNSIGNED_SHORT defind glTexImage1D
 	GL_TEXTURE_1D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_1D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_1D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
@@ -346,7 +347,7 @@ void main() {
 		GL_SHADER_STORAGE_BUFFER 
 		dirty_min 80 *  | ini
 		dirty_max dirty_min - 80 * | cnt
-		ss3d_inst dirty_min 80 * + | start mem
+		defind dirty_min 80 * + | start mem
 		glBufferSubData
 		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 		$ffff 'dirty_min ! 0 'dirty_max !
@@ -379,29 +380,29 @@ void main() {
 
 ::ss3dset | x y z rxyz scale color spr i --
 	dirty_min <? ( dup 'dirty_min ! )
-	dirty_max >=? ( dup 1+ 'dirty_max ! )
-	dup 80 * ss3d_inst + >a
+	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
+	dup 80 * defind + >a
 	da!+ | obj id
 	da!+ | spr
 	da!+ | color
-	0 d!+ | pad
+	0 da!+ | pad
 	'sc ! | scale
 	dup $ffff and sincos 'cz ! 'sz !
 	dup 16 >> $ffff and sincos 'cy ! 'sy !
 	32 >> $ffff and sincos 'cx ! 'sx !
-	cy cz *. sc *. f2fp 					dup 'rx ! da!+
-	cx sz *. sx sy *. cz *. + sc *. f2fp 	dup 'ry ! da!+
-	sx sz *. cx sy *. cz *. - sc *. f2fp 	dup 'rz ! da!+
+	cy cz *. sc *. dup 'rx ! 					f2fp da!+
+	cx sz *. sx sy *. cz *. + sc *. dup 'ry !	f2fp da!+
+	sx sz *. cx sy *. cz *. - sc *. dup 'rz !	f2fp da!+
 	0 da!+
-	cy neg sz *. sc *. f2fp 				da!+
-	cx cz *. sx sy *. sz *. - sc *. f2fp	da!+
-	sx cz *. cx sy *. sz *. + sc *. f2fp	da!+
+	cy neg sz *. sc *. 				f2fp da!+
+	cx cz *. sx sy *. sz *. - sc *. f2fp da!+
+	sx cz *. cx sy *. sz *. + sc *. f2fp da!+
 	0 da!+
-	sy sc *. f2fp							da!+
-	sx neg cy *. sc *. f2fp					da!+
-	cx cy *. sc *. f2fp						da!+
+	sy sc *.						f2fp da!+
+	sx neg cy *. sc *.				f2fp da!+
+	cx cy *. sc *.					f2fp da!+
 	0 da!+ 
-	rot da!+ swap da!+ da!+ 			| x y z
+	rot f2fp da!+ swap f2fp da!+ f2fp da!+ 			| x y z
 	1.0 rx dup *. ry dup *. + rz dup *. + 
-	0? ( 1.0 + ) /. da! | invs2
+	0? ( 1.0 + ) /.					f2fp da! | invs2
 	;
