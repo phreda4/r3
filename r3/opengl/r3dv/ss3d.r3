@@ -6,6 +6,7 @@
 #3dss_max
 #3dss_array
 #dirty_min #dirty_max 
+#ss3d_inst
 #ss3d_shader
 
 | * SS3DInstance  --  80 bytes, std430.
@@ -287,11 +288,120 @@ void main() {
 	'ss3d_shader_src "0000" findstr
 	maxw maxh + maxz + .d 4 .r. 
 	4 cmove |dsc	
+	
 | compile shader	
 	'ss3d_shader_src loadShaderv 'ss3d_shader !
 	ss3d_shader glUseProgram
 	ss3d_shader "uAlb" glGetUniformLocation 0 glUniform1i
 	ss3d_shader "uIdxBuf" glGetUniformLocation 3 glUniform1i
 	0 glUseProgram
+	0 'ss3d_inst !
+	;
+
+#vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
+			-1.0 -1.0  1.0   1.0 -1.0  1.0   1.0  1.0  1.0  -1.0  1.0  1.0	]
+			
+#indices [	0 1 2   0 2 3   4 6 5   4 7 6   0 7 4   0 3 7
+			1 5 6   1 6 2   3 2 6   3 6 7   0 4 5   0 5 1 ]
+	
+#bbox_vao
+#bbox_vbo
+#bbox_ibo
+
+:build_bbox
+	1 'bbox_vao glGenVertexArrays
+	bbox_vao glBindVertexArray
+
+	1 'bbox_vbo glGenBuffers
+	GL_ARRAY_BUFFER bbox_vbo glBindBuffer
+	GL_ARRAY_BUFFER 24 4 * 'vertices GL_STATIC_DRAW glBufferData
+	0 glEnableVertexAttribArray
+	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
+
+	1 'bbox_ibo glGenBuffers
+	GL_ELEMENT_ARRAY_BUFFER bbox_ibo glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER 36 4 * 'indices GL_STATIC_DRAW glBufferData
+
+	0 glBindVertexArray
+	GL_ARRAY_BUFFER 0 glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
+	;
+
+::SS3Dshutdown
+	ssbo_inst 1? ( 1 'ssbo_inst glDeleteBuffers ) drop
+	idx_tex 1? ( 1 'idx_tex  glDeleteTextures ) drop
+	atlas_tex 1? ( 1 'atlas_tex glDeleteTextures ) drop
+	ssbo_sprites 1? ( 1 'ssbo_sprites glDeleteBuffers ) drop
+	ss3d_shader 1? ( ss3d_shader glDeleteProgram ) drop
+	bbox_vao 1? ( 1 'bbox_vao glDeleteVertexArrays ) drop
+	bbox_vbo 1? ( 1 'bbox_vbo glDeleteBuffers ) drop
+	bbox_ibo 1? ( 1 'bbox_ibo glDeleteBuffers ) drop
 	;
 	
+::SS3Ddraw
+	ss3d_inst 0? ( drop ; ) drop
+	
+	dirty_min dirty_max <? (
+		GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
+		GL_SHADER_STORAGE_BUFFER 
+		dirty_min 80 *  | ini
+		dirty_max dirty_min - 80 * | cnt
+		ss3d_inst dirty_min 80 * + | start mem
+		glBufferSubData
+		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
+		$ffff 'dirty_min ! 0 'dirty_max !
+		) drop
+
+	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
+
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex glBindTexture
+	GL_TEXTURE3 glActiveTexture GL_TEXTURE_1D idx_tex glBindTexture
+	GL_TEXTURE0 glActiveTexture
+
+	GL_DEPTH_TEST glEnable
+	GL_CULL_FACE glEnable
+	GL_BACK glCullFace
+	GL_GREATER glDepthFunc
+	GL_TRUE glDepthMask
+
+	ss3d_shader glUseProgram
+	bbox_vao glBindVertexArray
+	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
+
+	GL_DEPTH_TEST glEnable
+	GL_GREATER glDepthFunc
+
+	0 glBindVertexArray
+	;
+
+#cz #sz #cy #sy #cx #sx
+#sc #rx #ry #rz
+
+::ss3dset | x y z rxyz scale color spr i --
+	dirty_min <? ( dup 'dirty_min ! )
+	dirty_max >=? ( dup 1+ 'dirty_max ! )
+	dup 80 * ss3d_inst + >a
+	da!+ | obj id
+	da!+ | spr
+	da!+ | color
+	0 d!+ | pad
+	'sc ! | scale
+	dup $ffff and sincos 'cz ! 'sz !
+	dup 16 >> $ffff and sincos 'cy ! 'sy !
+	32 >> $ffff and sincos 'cx ! 'sx !
+	cy cz *. sc *. f2fp 					dup 'rx ! da!+
+	cx sz *. sx sy *. cz *. + sc *. f2fp 	dup 'ry ! da!+
+	sx sz *. cx sy *. cz *. - sc *. f2fp 	dup 'rz ! da!+
+	0 da!+
+	cy neg sz *. sc *. f2fp 				da!+
+	cx cz *. sx sy *. sz *. - sc *. f2fp	da!+
+	sx cz *. cx sy *. sz *. + sc *. f2fp	da!+
+	0 da!+
+	sy sc *. f2fp							da!+
+	sx neg cy *. sc *. f2fp					da!+
+	cx cy *. sc *. f2fp						da!+
+	0 da!+ 
+	rot da!+ swap da!+ da!+ 			| x y z
+	1.0 rx dup *. ry dup *. + rz dup *. + 
+	0? ( 1.0 + ) /. da! | invs2
+	;
