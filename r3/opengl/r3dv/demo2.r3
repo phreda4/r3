@@ -82,12 +82,15 @@
 	rl_ProgGeom
 	
 	matini
-	20.0 0.1 20.0 matscale
-	0 -1.6 0 matpos
+	10.0 .1 10.0 matscale
+	0 -0.1 0 matpos
 	$5a5a5a00 rl_setcolor
 	draw_cube 
 
-	SS3Ddraw	
+	0 msec 3 << sin 0.5 +  0 
+	msec 3 << $ffff and 
+	1.0 $ffffff00 129 0 ss3dset
+	SS3Ddraw
 	;
 	
 :viewresize
@@ -140,8 +143,6 @@
 	rot 0.5 + sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
 	
-	
-	
 	rl_frame_end
 	;
 	
@@ -160,21 +161,33 @@
     drop
 	;
 
+:debbugmat
+	3dss_array >a
+	4 ( 1? 1-
+		da@+ "%d " .print da@+ "%d " .print da@+ "%h " .print da@+ "%d " .print .cr
+		4 ( 1? 1- 4 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop .cr
+		) drop 
+	"" .println ;
+	
 | Boot
 :
 	"demo2 r3dv" 1024 768 GLini GLInfo
 	
 	rl_init
 	"media/ss/sprites" 10 ss3dload
-	0 0 0 0 1.0 $ff00ff00 129 0 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.5 0 2.0 $ffffff10 32 1 ss3dset | x y z rxyz scale color spr i --
-	-1.0 0 0.2 0 3.0 $ffffff20 54 2 ss3dset | x y z rxyz scale color spr i --
-	0.4 0 0 1.2 4.0 $ff00ff30 200 3 ss3dset | x y z rxyz scale color spr i --
+	  0 0   0   0   1.0 $ff00ff00 129 0 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.5   0   4.0 $ffffff10 32 1 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.2   0   3.0 $ffffff20 54 2 ss3dset | x y z rxyz scale color spr i --
+	0.4 0.4 0 $7fff 4.0 $ff00ff3f 200 3 ss3dset | x y z rxyz scale color spr i --
+	
+|debbugmat
+
 	build_cube
 	8 'fsun memfloat
 	
 	'main SDLshow
 	
+	SS3Dshutdown
 	rl_shutdown
     GLend
 	free_cube

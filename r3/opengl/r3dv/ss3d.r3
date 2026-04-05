@@ -3,11 +3,13 @@
 
 ^r3/lib/str.r3
 
-#3dss_max
-#3dss_array
-#dirty_min #dirty_max 
-#ss3d_inst
-#ss3d_shader
+#3dss_max		| max instances
+##3dss_array		| instances array
+
+#dirty_min #dirty_max | update array
+#ss3d_inst			| current cnt instances
+
+#ss3d_shader		| shader program
 
 | * SS3DInstance  --  80 bytes, std430.
 | * model[16] column-major mat4 with extra data in W components:
@@ -216,11 +218,45 @@ void main() {
 	maxz maxh maxw "mw:%d mh:%d mz:%d" .println
 	;
 	
+
+
+#vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
+			-1.0 -1.0  1.0   1.0 -1.0  1.0   1.0  1.0  1.0  -1.0  1.0  1.0	]
+			
+#indices [	0 1 2   0 2 3   4 6 5   4 7 6   0 7 4   0 3 7
+			1 5 6   1 6 2   3 2 6   3 6 7   0 4 5   0 5 1 ]
+	
+#bbox_vao
+#bbox_vbo
+#bbox_ibo
+
+:build_bbox
+	1 'bbox_vao glGenVertexArrays
+	bbox_vao glBindVertexArray
+	
+	24 'vertices memfloat
+	
+	1 'bbox_vbo glGenBuffers
+	GL_ARRAY_BUFFER bbox_vbo glBindBuffer
+	GL_ARRAY_BUFFER 24 4 * 'vertices GL_STATIC_DRAW glBufferData
+	0 glEnableVertexAttribArray
+	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
+
+	1 'bbox_ibo glGenBuffers
+	GL_ELEMENT_ARRAY_BUFFER bbox_ibo glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER 36 4 * 'indices GL_STATIC_DRAW glBufferData
+
+	0 glBindVertexArray
+	GL_ARRAY_BUFFER 0 glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
+	;
+
 :imgtex>wh imgtex dup 16 + d@ swap 20 + d@ ;
 :imgtex>pix imgtex 32 + @ ;
 
 ::ss3dload | "file" instances --
 	'3dss_max !
+	build_bbox
 	mark
 	here dup '3dss_array !
 	over "%s.ssa" sprint load 
@@ -257,12 +293,12 @@ void main() {
 		$ffff and da!+	| offset
 		r> ) drop
 	'defind !
-	a> 'here !
+|	a> 'here !
 |	dump
 	
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER nsprites 8 * defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER nsprites 24 * defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 
@@ -275,7 +311,7 @@ void main() {
 	GL_TEXTURE_1D 0 glBindTexture
 	
 	empty
-	|here '3dss_array !
+	here '3dss_array !
     3dss_max 80 * 'here +!
 	
 	1 'ssbo_inst glGenBuffers
@@ -283,6 +319,7 @@ void main() {
     GL_SHADER_STORAGE_BUFFER 3dss_max 80 * 0 GL_DYNAMIC_DRAW glBufferData
     GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
     GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
+	
 	$FFFF 'dirty_min ! 0 'dirty_max !
 
 | set BOXMAX constant
@@ -297,37 +334,9 @@ void main() {
 	ss3d_shader "uIdxBuf" glGetUniformLocation 3 glUniform1i
 	0 glUseProgram
 	0 'ss3d_inst !
-	;
-
-#vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
-			-1.0 -1.0  1.0   1.0 -1.0  1.0   1.0  1.0  1.0  -1.0  1.0  1.0	]
-			
-#indices [	0 1 2   0 2 3   4 6 5   4 7 6   0 7 4   0 3 7
-			1 5 6   1 6 2   3 2 6   3 6 7   0 4 5   0 5 1 ]
 	
-#bbox_vao
-#bbox_vbo
-#bbox_ibo
-
-:build_bbox
-	1 'bbox_vao glGenVertexArrays
-	bbox_vao glBindVertexArray
-
-	1 'bbox_vbo glGenBuffers
-	GL_ARRAY_BUFFER bbox_vbo glBindBuffer
-	GL_ARRAY_BUFFER 24 4 * 'vertices GL_STATIC_DRAW glBufferData
-	0 glEnableVertexAttribArray
-	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
-
-	1 'bbox_ibo glGenBuffers
-	GL_ELEMENT_ARRAY_BUFFER bbox_ibo glBindBuffer
-	GL_ELEMENT_ARRAY_BUFFER 36 4 * 'indices GL_STATIC_DRAW glBufferData
-
-	0 glBindVertexArray
-	GL_ARRAY_BUFFER 0 glBindBuffer
-	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
 	;
-
+	
 ::SS3Dshutdown
 	ssbo_inst 1? ( 1 'ssbo_inst glDeleteBuffers ) drop
 	idx_tex 1? ( 1 'idx_tex  glDeleteTextures ) drop
@@ -341,15 +350,15 @@ void main() {
 	
 ::SS3Ddraw
 	ss3d_inst 0? ( drop ; ) drop
-	
 	dirty_min dirty_max <? (
 		GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 		GL_SHADER_STORAGE_BUFFER 
 		dirty_min 80 *  | ini
 		dirty_max dirty_min - 80 * | cnt
-		defind dirty_min 80 * + | start mem
+		3dss_array dirty_min 80 * + | start mem
 		glBufferSubData
 		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
+		|dirty_max dirty_min - 80 * "update:%d bytes" .println
 		$ffff 'dirty_min ! 0 'dirty_max !
 		) drop
 
@@ -364,24 +373,33 @@ void main() {
 	GL_BACK glCullFace
 	GL_GREATER glDepthFunc
 	GL_TRUE glDepthMask
-
 	ss3d_shader glUseProgram
 	bbox_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
-
 	GL_DEPTH_TEST glEnable
 	GL_GREATER glDepthFunc
-
 	0 glBindVertexArray
 	;
 
 #cz #sz #cy #sy #cx #sx
 #sc #rx #ry #rz
 
+|***************************
+|>>>> remove f2fp <<<<
+|layout (location = 0) in int fixed_val; // Recibimos el entero crudo
+|out float float_val;
+|void main() {
+|    // Convertimos 16.16 a float mediante una multiplicación
+|    // 1.0 / 65536.0 = 0.00001525878
+|    float_val = float(fixed_val) * 0.0000152587890625;
+|    // Ahora puedes usar float_val para posiciones, escalas, etc.
+|    gl_Position = vec4(pos * float_val, 1.0);
+|***************************
+
 ::ss3dset | x y z rxyz scale color spr i --
 	dirty_min <? ( dup 'dirty_min ! )
 	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
-	dup 80 * defind + >a
+	dup 80 * 3dss_array + >a
 	da!+ | obj id
 	da!+ | spr
 	da!+ | color
