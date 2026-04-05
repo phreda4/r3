@@ -350,11 +350,10 @@ void main(){
 | Bloom FBOs y texturas: 5 mips × 2 sides = 10 entradas (dwords)
 :RL_BLOOM_MIPS 5 ; 
 
-#listwh [ 0 0 0 0 0 0 ]
-#lisafp 0 0 0 0 0 0
-
-#listex [ 0 0 0 0 0 0 ]
-#lisfbo [ 0 0 0 0 0 0 ]
+#listwh [ 0 0 0 0 0 ]
+#lisafp 0 0 0 0 0 
+#listex [ 0 0 0 0 0 ]
+#lisfbo [ 0 0 0 0 0 ]
 
 :]wh | n -- w h
 	2 << 'listwh + d@ dup $ffff and swap 16 >>> ;
@@ -692,9 +691,7 @@ void main(){
 :bloompass
 	rl_sh_bright glUseProgram
 	rl_u_bright_threshold 1 'RL_BLOOM_THRESHOLD glUniform1fv
-	0 0
-	0 ]wh
-	glViewport
+	0 0 0 ]wh glViewport
 	GL_FRAMEBUFFER 0 ]fbo glBindFramebuffer |bos tex
 	GL_TEXTURE0 glActiveTexture 
 	GL_TEXTURE_2D rl_scene_tex glBindTexture
@@ -702,18 +699,17 @@ void main(){
 	
 	| Downscale chain
 	rl_sh_bloom_down glUseProgram
-	0 rl_u_bloom_down_texel 0 2 1 bpassd | invw id ftex fbos w h --
-	1 rl_u_bloom_down_texel 2 4 2 bpassd | invw id ftex fbos w h --
-	2 rl_u_bloom_down_texel 4 6 3 bpassd | invw id ftex fbos w h --
-	3 rl_u_bloom_down_texel 6 8 4 bpassd | invw id ftex fbos w h --
+	0 rl_u_bloom_down_texel 0 2 1 bpassd | invw id ftex fbos wh --
+	1 rl_u_bloom_down_texel 2 4 2 bpassd | invw id ftex fbos wh --
+	2 rl_u_bloom_down_texel 4 6 3 bpassd | invw id ftex fbos wh --
+	3 rl_u_bloom_down_texel 6 8 4 bpassd | invw id ftex fbos wh --
 	
 	| Upscale chain
 	rl_sh_bloom_up glUseProgram
-	4 rl_u_bloom_up_texel 8 7 3 bpassd | invw id ftex fbos w h --
-	3 rl_u_bloom_up_texel 7 5 2 bpassd | invw id ftex fbos w h --
-	2 rl_u_bloom_up_texel 5 3 1 bpassd | invw id ftex fbos w h --
-	1 rl_u_bloom_up_texel 3 1 0 bpassd | invw id ftex fbos w h --
-	
+	4 rl_u_bloom_up_texel 8 7 3 bpassd | invw id ftex fbos wh --
+	3 rl_u_bloom_up_texel 7 5 2 bpassd | invw id ftex fbos wh --
+	2 rl_u_bloom_up_texel 5 3 1 bpassd | invw id ftex fbos wh --
+	1 rl_u_bloom_up_texel 3 1 0 bpassd | invw id ftex fbos wh --
 	;
 
 	
@@ -756,9 +752,7 @@ void main(){
     | --- Blit depth ---
     GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
-    0 0 rl_w rl_h 2over 2over
-	|0 0 rl_w rl_h 
-	GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
+    0 0 rl_w rl_h 2over 2over GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
     GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
 	

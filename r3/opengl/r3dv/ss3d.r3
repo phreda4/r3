@@ -11,11 +11,11 @@
 
 #ss3d_shader		| shader program
 
-| * SS3DInstance  --  80 bytes, std430.
+| * SS3DInstance  --  64 bytes, std430.
 | * model[16] column-major mat4 with extra data in W components:
-| *   col0 = (rot_x.x, rot_x.y, rot_x.z, cam_obj.x)
-| *   col1 = (rot_y.x, rot_y.y, rot_y.z, cam_obj.y)
-| *   col2 = (rot_z.x, rot_z.y, rot_z.z, cam_obj.z)
+| *   col0 = (rot_x.x, rot_x.y, rot_x.z, obj)
+| *   col1 = (rot_y.x, rot_y.y, rot_y.z, sprite)
+| *   col2 = (rot_z.x, rot_z.y, rot_z.z, color)
 | *   col3 = (trans.x, trans.y, trans.z, inv_s2)
 | * color  --  packed material:  0xRRGGBBuma
 | *   bits 31-24  R  (8 bits, 0..255)
@@ -25,21 +25,17 @@
 | *   bits  4- 2  m  metallic  (3 bits, 0..7)
 | *   bits  1- 0  a  glow      (2 bits, 0..3)
 
-|    uint32_t obj_id;
-|    uint32_t spr_id;     /* sprite index (0..n_sprites-1)     */
-|    uint32_t color;      /* packed #RRGGBBuma — see above     */
-|    uint32_t _pad;       /* alignment padding — do not use    */
-|    float    model[16];  /* +16, 64B: column-major mat4       */ } SS3DInstance;
-
 #ss3d_shader_src "
 @vertex-----------------
 #version 440 core
 
 layout(location=0) in vec3 a_pos;
 
-struct Instance{
-    uint obj_id; uint spr_id; uint color; uint _pad;
-    mat4 model;
+struct Instance {
+    ivec3 r0; uint obj_id;
+    ivec3 r1; uint spr_id;
+    ivec3 r2; uint color;
+    ivec3 tr; uint inv_s2;
 };
 layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
 
@@ -61,17 +57,26 @@ flat out vec3 vWorldTrans;
 flat out uint vColorPk;
 flat out int  vNF, vOffset;
 
+float f1616(int v) { return float(v) * (1.0/65536.0); }
+float f248 (int v) { return float(v) * (1.0/65536.0); } //(1.0/256.0);   } por ahora no
+
 void main() {
     Instance inst = instances[gl_InstanceID];
     int spr_id = int(inst.spr_id);
     SpriteDef spr = sprites[spr_id];
     vExt = vec3(0.005*float(spr.tw), 0.005*float(spr.nf), 0.005*float(spr.th));
-    mat4 M = inst.model;
-    mat3 rot = mat3(M[0].xyz, M[1].xyz, M[2].xyz);
-    vec3 trans = M[3].xyz;
-    float inv_s2 = M[3].w;
+
+    mat3 rot = mat3(
+        f1616(inst.r0.x), f1616(inst.r1.x), f1616(inst.r2.x),
+        f1616(inst.r0.y), f1616(inst.r1.y), f1616(inst.r2.y),
+        f1616(inst.r0.z), f1616(inst.r1.z), f1616(inst.r2.z)
+    );
+    vec3  trans  = vec3(f248(inst.tr.x), f248(inst.tr.y), f248(inst.tr.z));
+    float inv_s2 = f1616(int(inst.inv_s2));
+
     vec3 dw = viewPos.xyz - trans;
     vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) * inv_s2;
+
     vec3 local_pos = a_pos * vExt;
     gl_Position = proj * view * vec4(rot*local_pos + trans, 1.0);
     vLocalPos = local_pos;
@@ -84,9 +89,8 @@ void main() {
 
 @fragment---------------
 #version 440 core
-#define BOXMAX 0000 
-struct Instance { uint obj_id; uint spr_id; uint color; uint _pad; mat4 model; };
-layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
+#define BOXMAX 0000
+
 struct SpriteDef { int tw, th, sw, sh, nf, offset; };
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 layout(std140,binding=0) uniform Matrices {
@@ -312,11 +316,11 @@ void main() {
 	
 	empty
 	here '3dss_array !
-    3dss_max 80 * 'here +!
+	3dss_max 64 * 'here +!
 	
 	1 'ssbo_inst glGenBuffers
     GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
-    GL_SHADER_STORAGE_BUFFER 3dss_max 80 * 0 GL_DYNAMIC_DRAW glBufferData
+	GL_SHADER_STORAGE_BUFFER 3dss_max 64 * 0 GL_DYNAMIC_DRAW glBufferData
     GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
     GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 	
@@ -353,12 +357,13 @@ void main() {
 	dirty_min dirty_max <? (
 		GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 		GL_SHADER_STORAGE_BUFFER 
-		dirty_min 80 *  | ini
-		dirty_max dirty_min - 80 * | cnt
-		3dss_array dirty_min 80 * + | start mem
+		dirty_min 64 *  | ini
+		dirty_max dirty_min - 64 * | cnt
+		3dss_array dirty_min 64 * + | start mem
+
 		glBufferSubData
 		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-		|dirty_max dirty_min - 80 * "update:%d bytes" .println
+		|dirty_max dirty_min - 64 * "update:%d bytes" .println
 		$ffff 'dirty_min ! 0 'dirty_max !
 		) drop
 
@@ -382,45 +387,37 @@ void main() {
 	;
 
 #cz #sz #cy #sy #cx #sx
-#sc #rx #ry #rz
-
-|***************************
-|>>>> remove f2fp <<<<
-|layout (location = 0) in int fixed_val; // Recibimos el entero crudo
-|out float float_val;
-|void main() {
-|    // Convertimos 16.16 a float mediante una multiplicación
-|    // 1.0 / 65536.0 = 0.00001525878
-|    float_val = float(fixed_val) * 0.0000152587890625;
-|    // Ahora puedes usar float_val para posiciones, escalas, etc.
-|    gl_Position = vec4(pos * float_val, 1.0);
-|***************************
-
-::ss3dset | x y z rxyz scale color spr i --
+#s2
+::ss3dset | x y z srxyz color spr i --
 	dirty_min <? ( dup 'dirty_min ! )
 	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
-	dup 80 * 3dss_array + >a
-	da!+ | obj id
-	da!+ | spr
-	da!+ | color
-	0 da!+ | pad
-	'sc ! | scale
+	dup 64 * 3dss_array + >a
+	
+	rot >r swap >r >r |da!+ | obj id da!+ | spr da!+ | color 0 da!+ | pad
+	
 	dup $ffff and sincos 'cz ! 'sz !
 	dup 16 >> $ffff and sincos 'cy ! 'sy !
-	32 >> $ffff and sincos 'cx ! 'sx !
-	cy cz *. sc *. dup 'rx ! 					f2fp da!+
-	cx sz *. sx sy *. cz *. + sc *. dup 'ry !	f2fp da!+
-	sx sz *. cx sy *. cz *. - sc *. dup 'rz !	f2fp da!+
-	0 da!+
-	cy neg sz *. sc *. 				f2fp da!+
-	cx cz *. sx sy *. sz *. - sc *. f2fp da!+
-	sx cz *. cx sy *. sz *. + sc *. f2fp da!+
-	0 da!+
-	sy sc *.						f2fp da!+
-	sx neg cy *. sc *.				f2fp da!+
-	cx cy *. sc *.					f2fp da!+
-	0 da!+ 
-	rot f2fp da!+ swap f2fp da!+ f2fp da!+ 			| x y z
-	1.0 rx dup *. ry dup *. + rz dup *. + 
-	0? ( 1.0 + ) /.					f2fp da! | invs2
+	dup 32 >> $ffff and sincos 'cx ! 'sx !
+	40 >> $ffff and 8 << | 8.8 fixepoint
+	dup cy cz *. *. dup					da!+
+	dup *. 's2 ! 
+	dup cx sz *. sx sy *. cz *. + *. dup da!+
+	dup *. 's2 +!	
+	dup sx sz *. cx sy *. cz *. - *. dup da!+
+	dup *. 's2 +!
+	r> da!+
+	
+	dup cy neg sz *. *. 				da!+
+	dup cx cz *. sx sy *. sz *. - *.	da!+
+	dup sx cz *. cx sy *. sz *. + *.	da!+
+	r> da!+
+	
+	dup sy *.					da!+
+	dup sx neg cy *. *.			da!+
+	cx cy *. *.					da!+ | <-- last scale
+	r> da!+ 
+	
+	rot da!+ swap da!+ da!+ 		| x y z
+	1.0 s2 0? ( 1.0 + ) /.		da! | invs2
 	;
+	

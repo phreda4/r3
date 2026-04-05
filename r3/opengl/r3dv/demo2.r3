@@ -81,20 +81,21 @@
 :drawscene
 	rl_ProgGeom
 	
-	matini
-	10.0 .1 10.0 matscale
-	0 -0.1 0 matpos
-	$5a5a5a00 rl_setcolor
-	draw_cube 
+	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
 
-	0 msec 3 << sin 0.5 +  0 
-	msec 5 << $ffff and 
-	1.0 $ffffff00 129 0 ss3dset
+	msec 4 << sin 0.5 +  0  over neg
+	msec 5 << $ffff and 16 << 
+	4.0 8 >> 40 << or
+	$ffffff00 
+	msec 11 >> $f and
+	0 ss3dset
 	
-	0.4 0.4 0 $7ff0 6.0 
-	$ffffff30 
-	msec 6 >> $ff and
-	3 ss3dset | x y z rxyz scale color spr i --	
+	0 msec 3 << sin dup
+	4.0 8 >> 40 << 
+	$ffffff00
+	msec 18 >> $1f and 1 
+	ss3dset | x y z rxyz scale color spr i --	
+	
 	SS3Ddraw
 	;
 	
