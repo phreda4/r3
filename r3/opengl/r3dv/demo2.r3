@@ -88,8 +88,13 @@
 	draw_cube 
 
 	0 msec 3 << sin 0.5 +  0 
-	msec 3 << $ffff and 
+	msec 5 << $ffff and 
 	1.0 $ffffff00 129 0 ss3dset
+	
+	0.4 0.4 0 $7ff0 6.0 
+	$ffffff30 
+	msec 6 >> $ff and
+	3 ss3dset | x y z rxyz scale color spr i --	
 	SS3Ddraw
 	;
 	
@@ -123,11 +128,7 @@
  1.0 0.9 0.8 0.8  
  1 0 0 0 ]
 	   
-:render
-	rl_frame_begin |rl_set_camera
-	drawscene
-	'fsun rl_set_sun
-	
+:luz
 	2.5 0.2 0.2 1.0
 	msec 3 << 
 	dup cos -3 * 
@@ -135,14 +136,19 @@
 	rot sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
 	
-
 	2.5 1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
 	over sin 3 * 1.0 +
 	rot 0.5 + sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
+	;
 	
+:render
+	rl_frame_begin |rl_set_camera
+	drawscene
+	|'fsun rl_set_sun
+	luz
 	rl_frame_end
 	;
 	
@@ -176,14 +182,15 @@
 	rl_init
 	"media/ss/sprites" 10 ss3dload
 	  0 0   0   0   1.0 $ff00ff00 129 0 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.5   0   4.0 $ffffff10 32 1 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.2   0   3.0 $ffffff20 54 2 ss3dset | x y z rxyz scale color spr i --
-	0.4 0.4 0 $7fff 4.0 $ff00ff3f 200 3 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.5   0   8.0 $ffffff10 32 1 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.2   0   9.0 $ffffff20 54 2 ss3dset | x y z rxyz scale color spr i --
+	0.4 0.4 0 $7ff0 9.0 $ff00ff3f 200 3 ss3dset | x y z rxyz scale color spr i --
 	
 |debbugmat
 
 	build_cube
 	8 'fsun memfloat
+	'fsun rl_set_sun
 	
 	'main SDLshow
 	

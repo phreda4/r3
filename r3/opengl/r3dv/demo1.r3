@@ -140,8 +140,7 @@
  1 0 0 0 ]
 	   
 :render
-	rl_frame_begin |rl_set_camera
-	|draw_cube
+	rl_frame_begin
 	drawscene
 	'fsun rl_set_sun
 	
@@ -159,8 +158,6 @@
 	over sin 3 *
 	rot 0.5 + sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
-	
-	
 	
 	rl_frame_end
 	spinning 1? ( 0.004 'cube_rot +! ) drop

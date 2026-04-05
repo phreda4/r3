@@ -351,13 +351,13 @@ void main(){
 :RL_BLOOM_MIPS 5 ; 
 
 #listwh [ 0 0 0 0 0 0 ]
-#lisafp 0 0 0 0 0
+#lisafp 0 0 0 0 0 0
 
-#listex [ 0 0 0 0 0 ]
-#lisfbo [ 0 0 0 0 0 ]
+#listex [ 0 0 0 0 0 0 ]
+#lisfbo [ 0 0 0 0 0 0 ]
 
 :]wh | n -- w h
-	2 << 'listwh + d@ dup 16 >> swap $ffff and ;
+	2 << 'listwh + d@ dup $ffff and swap 16 >>> ;
 :]wh! | wh n --
 	2 << 'listwh + d! ;
 
@@ -389,8 +389,8 @@ void main(){
 		swap 2/ 2 max 
 		swap 2/ 2 max   | w h
 		2dup 16 << or r@ ]wh!
-		1.0 pick2 / f2fp 32 <<
-		1.0 pick2 / f2fp or r@ ]afp!
+		1.0 pick2 / f2fp $ffffffff and 
+		1.0 pick2 / f2fp 32 << or r@ ]afp!
 		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
 		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
 		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
@@ -756,7 +756,9 @@ void main(){
     | --- Blit depth ---
     GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
     GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
-    0 0 rl_w rl_h 0 0 rl_w rl_h GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
+    0 0 rl_w rl_h 2over 2over
+	|0 0 rl_w rl_h 
+	GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
     GL_FRAMEBUFFER 0 glBindFramebuffer
     ;
 	
