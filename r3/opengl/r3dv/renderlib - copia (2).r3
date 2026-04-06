@@ -81,12 +81,10 @@ const float PI     = 3.14159265359;
 const float INV_PI = 0.31830988618;
 const float EPS    = 0.001;
 
-float pow5(float x) { float x2 = x * x; return x2 * x2 * x; }
-
 vec3 reconstructWorldPos(vec2 uv, float depth) {
     vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     vec4 vp  = invProj * ndc;
-    vp.xyz  /= vp.w;
+    vp.xyz  /= vp.w;                    // posición en espacio de vista
     return (invView * vec4(vp.xyz, 1.0)).xyz;
 }
 
@@ -100,19 +98,25 @@ float GeometrySchlickGGX(float NdotX, float k) {
 }
 
 vec3 BRDF(vec3 N, vec3 V, vec3 L,
-          float NdotV, float NdotL,
           vec3 albedo, float metallic,
           float a2, float k, vec3 F0)
 {
     vec3  H     = normalize(V + L);
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
     float NdotH = max(dot(N, H), 0.0);
     float HdotV = max(dot(H, V), 0.0);
+
     float NDF = DistributionGGX(NdotH, a2);
     float G   = GeometrySchlickGGX(NdotV, k) * GeometrySchlickGGX(NdotL, k);
-    float f   = pow5(1.0 - HdotV);
-    vec3  F   = F0 + (1.0 - F0) * f;
+
+    float t  = 1.0 - HdotV;
+    float t2 = t  * t;
+    vec3  F  = F0 + (1.0 - F0) * (t2 * t2 * t);
+
     vec3 kD      = (1.0 - F) * (1.0 - metallic);
     vec3 specular = (NDF * G * F) / (4.0 * NdotV * NdotL + EPS);
+
     return (kD * albedo * INV_PI + specular) * NdotL;
 }
 
@@ -127,41 +131,43 @@ void main() {
     float metallic  = float((packed >> 2) & 0x07) * (1.0 / 7.0);
     int   glowValue = packed & 0x03;
 
-    const vec4 emissiveLUT = vec4(0.0, 1.4, 2.2, 3.5);
+    const float emissiveLUT[4] = float[](0.0, 1.4, 2.2, 3.5);
     vec3 emissive = albedo * emissiveLUT[glowValue];
 
     float a         = max(roughness, 0.04);
     float a2        = a * a;
-    float k         = (a + 1.0) * (a + 1.0) * 0.125;
+    float k         = (a + 1.0) * (a + 1.0) * 0.125;   // /8 → *0.125
     vec3  F0        = mix(vec3(0.04), albedo, metallic);
     vec3  worldPos  = reconstructWorldPos(uv, depth);
     vec3  V         = normalize(viewPos.xyz - worldPos);
-
-    float NdotV = max(dot(N, V), 0.0);
 
     vec3 color = albedo * 0.12 + emissive;
 
     if (dirLightEnabled != 0) {
         vec3  L     = normalize(lightDir.xyz);
-        float NdotL = max(dot(N, L), 0.0);
-        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-                 * lightColor.rgb * lightColor.a;
+        float NdotL = dot(N, L);
+        if (NdotL > 0.0)
+            color += BRDF(N, V, L, albedo, metallic, a2, k, F0)
+                     * lightColor.rgb * lightColor.a;
     }
 
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
-        vec3 toLight = pl.lights[i].pos.xyz - worldPos;
-        float dist2   = dot(toLight, toLight);
-        float invDist = inversesqrt(dist2);
-        vec3  L       = toLight * invDist;
-        float dist    = dist2 * invDist;
-        float NdotL = max(dot(N, L), 0.0);
-        float att = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
-        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-                 * pl.lights[i].color.rgb
-                 * (pl.lights[i].color.a * att);
+        vec3  toLight = pl.lights[i].pos.xyz - worldPos;
+        float dist    = length(toLight);
+        vec3  L       = toLight / dist;          // normalización sin llamada extra
+
+        float NdotL = dot(N, L);
+        if (NdotL > 0.0) {
+            // Atenuación cuadrática fusionada (constante movida a uniforme en producción)
+            float att = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
+            color += BRDF(N, V, L, albedo, metallic, a2, k, F0)
+                     * pl.lights[i].color.rgb
+                     * (pl.lights[i].color.a * att);
+        }
     }
-	FragColor = vec4(color, 1.0);
+
+    FragColor = vec4(color, 1.0);
 }
 @-"
 

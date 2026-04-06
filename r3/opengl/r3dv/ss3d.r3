@@ -4,19 +4,13 @@
 ^r3/lib/str.r3
 
 #3dss_max		| max instances
-##3dss_array		| instances array
+#3dss_array		| instances array
 
 #dirty_min #dirty_max | update array
 #ss3d_inst			| current cnt instances
 
 #ss3d_shader		| shader program
 
-| * SS3DInstance  --  64 bytes, std430.
-| * model[16] column-major mat4 with extra data in W components:
-| *   col0 = (rot_x.x, rot_x.y, rot_x.z, obj)
-| *   col1 = (rot_y.x, rot_y.y, rot_y.z, sprite)
-| *   col2 = (rot_z.x, rot_z.y, rot_z.z, color)
-| *   col3 = (trans.x, trans.y, trans.z, inv_s2)
 | * color  --  packed material:  0xRRGGBBuma
 | *   bits 31-24  R  (8 bits, 0..255)
 | *   bits 23-16  G  (8 bits, 0..255)
@@ -57,22 +51,16 @@ flat out vec3 vWorldTrans;
 flat out uint vColorPk;
 flat out int  vNF, vOffset;
 
-float f1616(int v) { return float(v) * (1.0/65536.0); }
-float f248 (int v) { return float(v) * (1.0/65536.0); } //(1.0/256.0);   } por ahora no
-
 void main() {
     Instance inst = instances[gl_InstanceID];
     int spr_id = int(inst.spr_id);
     SpriteDef spr = sprites[spr_id];
     vExt = vec3(0.005*float(spr.tw), 0.005*float(spr.nf), 0.005*float(spr.th));
-
-    mat3 rot = mat3(
-        f1616(inst.r0.x), f1616(inst.r1.x), f1616(inst.r2.x),
-        f1616(inst.r0.y), f1616(inst.r1.y), f1616(inst.r2.y),
-        f1616(inst.r0.z), f1616(inst.r1.z), f1616(inst.r2.z)
-    );
-    vec3  trans  = vec3(f248(inst.tr.x), f248(inst.tr.y), f248(inst.tr.z));
-    float inv_s2 = f1616(int(inst.inv_s2));
+	
+	const float k = 1.0/65536.0; // fixed.point>>fp
+	mat3 rot = mat3(vec3(inst.r0) * k,vec3(inst.r1) * k,vec3(inst.r2) * k);
+	vec3 trans   = vec3(inst.tr) * k;
+	float inv_s2 = float(inst.inv_s2) * k;
 
     vec3 dw = viewPos.xyz - trans;
     vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) * inv_s2;
@@ -89,6 +77,7 @@ void main() {
 
 @fragment---------------
 #version 440 core
+#extension GL_ARB_conservative_depth : enable // TEST <----
 #define BOXMAX 0000
 
 struct SpriteDef { int tw, th, sw, sh, nf, offset; };
@@ -110,6 +99,7 @@ layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
+layout(depth_greater) out float gl_FragDepth; // TEST<-----
 
 void main() {
     vec3 vRd   = vLocalPos - vRo;
@@ -222,34 +212,24 @@ void main() {
 	maxz maxh maxw "mw:%d mh:%d mz:%d" .println
 	;
 	
-
-
+|----------------------------
 #vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
 			-1.0 -1.0  1.0   1.0 -1.0  1.0   1.0  1.0  1.0  -1.0  1.0  1.0	]
-			
 #indices [	0 1 2   0 2 3   4 6 5   4 7 6   0 7 4   0 3 7
 			1 5 6   1 6 2   3 2 6   3 6 7   0 4 5   0 5 1 ]
-	
-#bbox_vao
-#bbox_vbo
-#bbox_ibo
-
+#bbox_vao #bbox_vbo #bbox_ibo
 :build_bbox
+	24 'vertices memfloat
 	1 'bbox_vao glGenVertexArrays
 	bbox_vao glBindVertexArray
-	
-	24 'vertices memfloat
-	
 	1 'bbox_vbo glGenBuffers
 	GL_ARRAY_BUFFER bbox_vbo glBindBuffer
 	GL_ARRAY_BUFFER 24 4 * 'vertices GL_STATIC_DRAW glBufferData
 	0 glEnableVertexAttribArray
 	0 3 GL_FLOAT GL_FALSE 12 0 glVertexAttribPointer
-
 	1 'bbox_ibo glGenBuffers
 	GL_ELEMENT_ARRAY_BUFFER bbox_ibo glBindBuffer
 	GL_ELEMENT_ARRAY_BUFFER 36 4 * 'indices GL_STATIC_DRAW glBufferData
-
 	0 glBindVertexArray
 	GL_ARRAY_BUFFER 0 glBindBuffer
 	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
@@ -384,6 +364,8 @@ void main() {
 	GL_DEPTH_TEST glEnable
 	GL_GREATER glDepthFunc
 	0 glBindVertexArray
+	
+
 	;
 
 #cz #sz #cy #sy #cx #sx
@@ -395,10 +377,10 @@ void main() {
 	
 	rot >r swap >r >r |da!+ | obj id da!+ | spr da!+ | color 0 da!+ | pad
 	
-	dup $ffff and sincos 'cz ! 'sz !
-	dup 16 >> $ffff and sincos 'cy ! 'sy !
-	dup 32 >> $ffff and sincos 'cx ! 'sx !
-	40 >> $ffff and 8 << | 8.8 fixepoint
+	dup sincos 'cz ! 'sz !
+	dup 16 >> sincos 'cy ! 'sy !
+	dup 32 >> sincos 'cx ! 'sx !
+	32 >> $ffff00 and	| 8.8 fixepoint
 	dup cy cz *. *. dup					da!+
 	dup *. 's2 ! 
 	dup cx sz *. sx sy *. cz *. + *. dup da!+

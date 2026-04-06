@@ -69,20 +69,12 @@
 	'fmodel 'mat cpymatif
 	matinv
 	'fnormal 'mati cpymatif3
-
-|	'fmodel .printfm <<trace
-|	'fnormal .printfm3 <<trace	
-	
 	'fnormal 'fmodel rl_geomat	
 	g_cube_vao glBindVertexArray
     GL_TRIANGLES 36 GL_UNSIGNED_INT 0 glDrawElements
 	;
 
-:drawscene
-	rl_ProgGeom
-	
-	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
-
+:drawsprites
 	msec 4 << sin 0.5 +  0  over neg
 	msec 5 << $ffff and 16 << 
 	4.0 8 >> 40 << or
@@ -93,10 +85,18 @@
 	0 msec 3 << sin dup
 	4.0 8 >> 40 << 
 	$ffffff00
-	msec 18 >> $1f and 1 
-	ss3dset | x y z rxyz scale color spr i --	
+	msec 18 >> $1f and 
+	1 ss3dset | x y z rxyz scale color spr i --	
 	
 	SS3Ddraw
+	;
+
+:drawscene
+	rl_ProgGeom
+	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
+	
+	drawsprites	
+	
 	;
 	
 :viewresize
@@ -126,30 +126,36 @@
 
 #fsun [ 
 -0.5 -1.0 -0.5 0
- 1.0 0.9 0.8 0.8  
+ 1.0 0.9 0.8 0.2
  1 0 0 0 ]
 	   
 :luz
-	2.5 0.2 0.2 1.0
+	1.4 
+	0.2 0.2 1.0
 	msec 3 << 
 	dup cos -3 * 
 	over sin -3 * 1.0 +
+	|0
 	rot sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
-	
-	2.5 1.0 0.2 0.2
+
+	1.2 
+	1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
 	over sin 3 * 1.0 +
+	|0
 	rot 0.5 + sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
 	;
 	
 :render
 	rl_frame_begin |rl_set_camera
+
 	drawscene
 	|'fsun rl_set_sun
 	luz
+	
 	rl_frame_end
 	;
 	
@@ -168,28 +174,23 @@
     drop
 	;
 
-:debbugmat
-	3dss_array >a
-	4 ( 1? 1-
-		da@+ "%d " .print da@+ "%d " .print da@+ "%h " .print da@+ "%d " .print .cr
-		4 ( 1? 1- 4 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop .cr
-		) drop 
-	"" .println ;
+:load3d
+	"media/ss/sprites" 10 ss3dload
+	 0 0   0   0   1.0 8 >> 40 << or $ff00ff00 0 0 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.5   0   8.0 8 >> 40 << or $ffffff10 1 1 ss3dset | x y z rxyz scale color spr i --
+	1.0 0 0.2   0   7.0 8 >> 40 << or $ffffff20 2 2 ss3dset | x y z rxyz scale color spr i --
+	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 40 << or $ff00ff3f 3 3 ss3dset | x y z rxyz scale color spr i --
+	;
 	
 | Boot
 :
 	"demo2 r3dv" 1024 768 GLini GLInfo
-	
 	rl_init
-	"media/ss/sprites" 10 ss3dload
-	  0 0   0   0   1.0 $ff00ff00 129 0 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.5   0   8.0 $ffffff10 32 1 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.2   0   9.0 $ffffff20 54 2 ss3dset | x y z rxyz scale color spr i --
-	0.4 0.4 0 $7ff0 9.0 $ff00ff3f 200 3 ss3dset | x y z rxyz scale color spr i --
-	
 |debbugmat
-
 	build_cube
+
+	load3d
+	
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	

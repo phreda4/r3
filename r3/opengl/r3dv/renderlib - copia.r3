@@ -63,105 +63,121 @@ layout(std140, binding = 0) uniform Matrices {
 };
 
 layout(std140, binding = 1) uniform DirectLight {
-    vec4 lightDir;
-    vec4 lightColor;
+    vec4 lightDir;        // dirección mundial (normalizada)
+    vec4 lightColor;      // .rgb = color, .a = intensidad
     int dirLightEnabled;
     int _pad[3];
 };
 
 layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;
+    ivec4 header;         // header.x = número activo
     struct {
-        vec4 pos;
-        vec4 color;
+        vec4 pos;         // posición mundial
+        vec4 color;       // .rgb = color, .a = intensidad
     } lights[16];
 } pl;
 
-const float PI     = 3.14159265359;
-const float INV_PI = 0.31830988618;
-const float EPS    = 0.001;
-
-float pow5(float x) { float x2 = x * x; return x2 * x2 * x; }
-
-vec3 reconstructWorldPos(vec2 uv, float depth) {
-    vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    vec4 vp  = invProj * ndc;
-    vp.xyz  /= vp.w;
-    return (invView * vec4(vp.xyz, 1.0)).xyz;
+// Reconstrucción optimizada de posición mundial
+vec3 reconstructWorldPos(sampler2D depthTex, vec2 uv,
+                         mat4 invProj_, mat4 invView_) {
+    float d = texture(depthTex, uv).r;
+    vec4 ndc = vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
+    vec4 vp = invProj_ * ndc;
+    return (invView_ * (vp / vp.w)).xyz;
 }
 
-float DistributionGGX(float NdotH, float a2) {
-    float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
-    return a2 / (PI * d * d + EPS);
+const float PI = 3.14159265359;
+const float EPS = 0.001;
+
+float DistributionGGX(float NdotH, float roughness) {
+    float a = max(roughness, 0.04);
+    float a2 = a * a;
+    float denom = NdotH * NdotH * (a2 - 1.0) + 1.0;
+    denom = PI * denom * denom;
+    return a2 / max(denom, 0.0001);
 }
 
-float GeometrySchlickGGX(float NdotX, float k) {
-    return NdotX / (NdotX * (1.0 - k) + k);
+float GeometrySchlickGGX(float NdotV, float roughness) {
+    float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+    return NdotV / (NdotV * (1.0 - k) + k);
 }
 
-vec3 BRDF(vec3 N, vec3 V, vec3 L,
-          float NdotV, float NdotL,
-          vec3 albedo, float metallic,
-          float a2, float k, vec3 F0)
-{
-    vec3  H     = normalize(V + L);
+float GeometrySmith(float NdotV, float NdotL, float roughness) {
+    return GeometrySchlickGGX(NdotV, roughness) * 
+           GeometrySchlickGGX(NdotL, roughness);
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 BRDF(vec3 N, vec3 V, vec3 L, vec3 albedo, float metallic, float roughness) {
+    vec3 H = normalize(V + L);
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
     float NdotH = max(dot(N, H), 0.0);
     float HdotV = max(dot(H, V), 0.0);
-    float NDF = DistributionGGX(NdotH, a2);
-    float G   = GeometrySchlickGGX(NdotV, k) * GeometrySchlickGGX(NdotL, k);
-    float f   = pow5(1.0 - HdotV);
-    vec3  F   = F0 + (1.0 - F0) * f;
-    vec3 kD      = (1.0 - F) * (1.0 - metallic);
+
+    float NDF = DistributionGGX(NdotH, roughness);
+    float G = GeometrySmith(NdotV, NdotL, roughness);
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
+    vec3 F = FresnelSchlick(HdotV, F0);
+
+    vec3 kS = F;
+    vec3 kD = (1.0 - kS) * (1.0 - metallic);
+
     vec3 specular = (NDF * G * F) / (4.0 * NdotV * NdotL + EPS);
-    return (kD * albedo * INV_PI + specular) * NdotL;
+    return (kD * albedo / PI + specular) * NdotL;
 }
 
 void main() {
     vec4 albedoPacked = texture(gAlbedo, uv);
-    vec3 albedo       = albedoPacked.rgb;
-    vec3 N            = normalize(texture(gNormal, uv).rgb);
-    float depth       = texture(gDepth,  uv).r;
+    vec3 albedo = albedoPacked.rgb;
+    vec3 normalWorld = texture(gNormal, uv).rgb;   // NORMAL DIRECTAMENTE EN ESPACIO MUNDIAL
+    float depth = texture(gDepth, uv).r;
 
-    int   packed    = int(albedoPacked.a * 255.0 + 0.5);
+    int packed = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((packed >> 5) & 0x07) * (1.0 / 7.0);
     float metallic  = float((packed >> 2) & 0x07) * (1.0 / 7.0);
-    int   glowValue = packed & 0x03;
+    int glowValue = packed & 0x03;
 
-    const vec4 emissiveLUT = vec4(0.0, 1.4, 2.2, 3.5);
-    vec3 emissive = albedo * emissiveLUT[glowValue];
+    const float emissiveLUT[4] = float[](0.0, 1.4, 2.2, 3.5);
+    float emissiveIntensity = emissiveLUT[glowValue];
+    vec3 emissive = albedo * emissiveIntensity;
 
-    float a         = max(roughness, 0.04);
-    float a2        = a * a;
-    float k         = (a + 1.0) * (a + 1.0) * 0.125;
-    vec3  F0        = mix(vec3(0.04), albedo, metallic);
-    vec3  worldPos  = reconstructWorldPos(uv, depth);
-    vec3  V         = normalize(viewPos.xyz - worldPos);
-
-    float NdotV = max(dot(N, V), 0.0);
+    vec3 worldPos = reconstructWorldPos(gDepth, uv, invProj, invView);
+    vec3 N = normalize(normalWorld);              // ← SIN TRANSFORMACIÓN
+    vec3 V = normalize(viewPos.xyz - worldPos);
 
     vec3 color = albedo * 0.12 + emissive;
 
+    // Luz direccional
     if (dirLightEnabled != 0) {
-        vec3  L     = normalize(lightDir.xyz);
-        float NdotL = max(dot(N, L), 0.0);
-        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-                 * lightColor.rgb * lightColor.a;
+        vec3 L = normalize(lightDir.xyz);
+        float NdotL = dot(N, L);
+        if (NdotL > 0.0) {
+            color += BRDF(N, V, L, albedo, metallic, roughness) * lightColor.rgb * lightColor.a;
+        }
     }
 
+    // Luces puntuales
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
-        vec3 toLight = pl.lights[i].pos.xyz - worldPos;
-        float dist2   = dot(toLight, toLight);
-        float invDist = inversesqrt(dist2);
-        vec3  L       = toLight * invDist;
-        float dist    = dist2 * invDist;
-        float NdotL = max(dot(N, L), 0.0);
-        float att = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
-        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-                 * pl.lights[i].color.rgb
-                 * (pl.lights[i].color.a * att);
+        vec3 lightPos = pl.lights[i].pos.xyz;
+        vec3 lightColorRGB = pl.lights[i].color.rgb;
+        float intensity = pl.lights[i].color.a;
+
+        vec3 L = lightPos - worldPos;
+        float dist = length(L);
+        L = L / dist;
+        float NdotL = dot(N, L);
+        if (NdotL > 0.0) {
+            float attenuation = 1.0 / (1.0 + 0.09 * dist + 0.032 * dist * dist);
+            color += BRDF(N, V, L, albedo, metallic, roughness) * lightColorRGB * intensity * attenuation;
+        }
     }
-	FragColor = vec4(color, 1.0);
+
+    FragColor = vec4(color, 1.0);
 }
 @-"
 
