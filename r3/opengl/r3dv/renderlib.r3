@@ -65,8 +65,6 @@ layout(std140, binding = 0) uniform Matrices {
 layout(std140, binding = 1) uniform DirectLight {
     vec4 lightDir;
     vec4 lightColor;
-    int dirLightEnabled;
-    int _pad[3];
 };
 
 layout(std140, binding = 2) uniform PointLights {
@@ -141,12 +139,10 @@ void main() {
 
     vec3 color = albedo * 0.12 + emissive;
 
-    if (dirLightEnabled != 0) {
-        vec3  L     = normalize(lightDir.xyz);
-        float NdotL = max(dot(N, L), 0.0);
-        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-                 * lightColor.rgb * lightColor.a;
-    }
+    vec3  L     = normalize(lightDir.xyz);
+    float NdotL = max(dot(N, L), 0.0);
+    color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
+             * lightColor.rgb * lightColor.a;
 
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
@@ -192,8 +188,6 @@ layout(std140, binding = 0) uniform Matrices {
 layout(std140, binding = 1) uniform DirectLight {
     vec4 lightDir;     // Direction to light (world space, normalized)
     vec4 lightColor;   // Light color and intensity (rgb = color, a = intensity multiplier)
-    int dirLightEnabled;
-    int _pad[3];
 };
 
 layout(std140, binding = 2) uniform PointLights {
@@ -231,8 +225,6 @@ void main() {
 
     vec3 color = ambient;
 
-    // --- Directional light (if enabled) ---
-    if (dirLightEnabled != 0) {
         vec3 L = normalize(lightDir.xyz);
         vec3 N = normalize(normal);
         float diff = max(dot(N, L), 0.0);
@@ -244,7 +236,6 @@ void main() {
         vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5; // intensity 0.5
 
         color += diffuse + specular;
-    }
 
     // --- Point lights ---
     int numPointLights = pl.header.x;
@@ -481,10 +472,10 @@ void main(){
 | Bloom FBOs y texturas: 5 mips × 2 sides = 10 entradas (dwords)
 :RL_BLOOM_MIPS 5 ; 
 
-#listwh [ 0 0 0 0 0 0 0 0 0 0 ]
-#lisafp 0 0 0 0 0 0 0 0 0 0
-#listex [ 0 0 0 0 0 0 0 0 0 0 ]
-#lisfbo [ 0 0 0 0 0 0 0 0 0 0 ]
+#listwh [ 0 0 0 0 0 ]
+#lisafp 0 0 0 0 0 
+#listex [ 0 0 0 0 0 ]
+#lisfbo [ 0 0 0 0 0 ]
 
 :]wh | n -- w h
 	2 << 'listwh + d@ dup $ffff and swap 16 >>> ;
@@ -746,18 +737,15 @@ void main(){
 	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> )
 
 	rl_set_camera
-	|rl_sh_geom glUseProgram
     ;
 
-| RL_UBO_DirectLight: lightDir(16) lightColor(16) dirLightEnabled(4) _pad(12) = 48 bytes
-#rl_ubo_dl_buf  * 48
-	
+
 | ================================================================
-| dx_fp dy_fp dz_fp  r_fp g_fp b_fp intensity_fp enabled
+| RL_UBO_DirectLight: lightDir(16) lightColor(16)
 ::rl_set_sun | 'sun --
-	'rl_ubo_dl_buf swap 12 dmove |d s c
+	>r
     GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
-    GL_UNIFORM_BUFFER 0 48 'rl_ubo_dl_buf glBufferSubData
+    GL_UNIFORM_BUFFER 0 32 r> glBufferSubData
     GL_UNIFORM_BUFFER 0 glBindBuffer
     ;
 
@@ -819,14 +807,8 @@ void main(){
 
 | ================================================================
 ::rl_frame_end | --
-	
- GL_BLEND glDisable
- GL_DEPTH_TEST glDisable
- GL_STENCIL_TEST glDisable
- |GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer 
-|0 0 1024 768 glViewport	
-	
 	rl_quad_vao glBindVertexArray
+	
 	| --- Lighting pass → scene_tex ---
 	GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
 	0 0 rl_w rl_h glViewport
