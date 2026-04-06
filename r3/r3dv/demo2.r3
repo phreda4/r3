@@ -106,8 +106,9 @@
 	
 	immIni
 	immMouse
-	1 =? ( wheelcam ) | over
-	3 =? ( movecam ) | active
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movecam )				| active
 	drop	
 	
     sdlkey
@@ -116,7 +117,7 @@
 	;
 
 :load3d
-	"media/ss/sprites" 10 ss3dload
+	"media/ss/test" 10 ss3dload
 	 0 0   0   0   1.0 8 >> 40 << or $ff00ff00 0 0 ss3dset | x y z rxyz scale color spr i --
 	1.0 0 0.5   0   8.0 8 >> 40 << or $ffffff10 1 1 ss3dset | x y z rxyz scale color spr i --
 	1.0 0 0.2   0   7.0 8 >> 40 << or $ffffff20 2 2 ss3dset | x y z rxyz scale color spr i --

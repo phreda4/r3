@@ -48,32 +48,53 @@
 
 #fsun [ 
 -0.5 -1.0 -0.5 0
- 0.2 0.9 0.8 0.1
+ 0.2 0.9 0.8 0.9
  ]
 	   
 :luz
 	2.4 
 	0.2 0.2 1.0
 	msec 3 << 
-	dup cos -3 * 
+	dup cos -5 * 
 	over sin -3 * 1.0 +
 	|0
-	rot sin 2.5 *.
+	rot sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 
 	2.2 
 	1.0 0.2 0.2
 	msec 3 << 
-	dup cos 3 * 
+	dup cos 7 * 
 	over sin 3 * 1.0 +
 	|0
-	rot 0.5 + sin 2.5 *.
+	rot 0.5 + sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 	;
+
+#nbox	
+:movespr
+	0 ( n3dsprites <? dup >r
 	
+		dup nbox / nbox 2/ - 1.8 *
+|		10.0 randmax 5.0 -
+		|1.0 randmax
+		|dup 4 >> 8 - 1.0 *
+		over 10 << msec 4 << + sin 1.0 + 2/
+		pick2 nbox mod nbox 2/ - 1.8 *
+|		pick2 $f and 8 - 1.0 *
+		|10.0 randmax 5.0 -
+		|$ffffffffffff randmax
+		0
+		4.0 8 >> 40 << or
+		$ffffff00
+		r> dup
+		ss3dset
+		1+ ) drop
+	;
 :render
 	rl_frame_begin |rl_set_camera
 | drawgeom
+movespr	
 	SS3Ddraw
 	luz
 	
@@ -86,8 +107,9 @@
 	
 	immIni
 	immMouse
-	1 =? ( wheelcam ) | over
-	3 =? ( movecam ) | active
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movecam )				| active
 	drop	
 	
     sdlkey
@@ -95,10 +117,10 @@
     drop
 	;
 
-#nbox
+
 :load3d
-|	"media/ss/sprites" 256 ss3dload
-	"media/ss/mezcla" 512 ss3dload
+	"media/ss/sprites" 256 ss3dload
+|	"media/ss/mezcla" 512 ss3dload
 |	"media/ss/voxi" 256 ss3dload
 |	"media/ss/cars" 256 ss3dload
 |	"media/ss/test" 256 ss3dload
@@ -117,7 +139,7 @@
 		|$ffffffffffff randmax
 		0
 		4.0 8 >> 40 << or
-		$fffffffc
+		$ffffff00
 		r> dup
 		ss3dset
 		1+ ) drop
@@ -132,7 +154,6 @@
 	build_cube
 
 	load3d
-	
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	

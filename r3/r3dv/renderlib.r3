@@ -2,9 +2,8 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gl.r3
-^r3/lib/glutil.r3
 
-^./rlmat.r3
+^./r3dlib.r3
 
 | SHADERS ===>
 #rl_shader_geom "
@@ -121,10 +120,8 @@ void main() {
     int   packed    = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((packed >> 5) & 0x07) * (1.0 / 7.0);
     float metallic  = float((packed >> 2) & 0x07) * (1.0 / 7.0);
-    int   glowValue = packed & 0x03;
 
-    const vec4 emissiveLUT = vec4(0.0, 1.4, 2.2, 3.5);
-    vec3 emissive = albedo * emissiveLUT[glowValue];
+    vec3 emissive = albedo * float(packed & 0x03);
 
     float a         = max(roughness, 0.04);
     float a2        = a * a;
@@ -135,7 +132,7 @@ void main() {
 
     float NdotV = max(dot(N, V), 0.0);
 
-    vec3 color = albedo * 0.12 + emissive;
+    vec3 color = albedo * 0.01 + emissive; // 0.01 minimo
 
     vec3  L     = normalize(lightDir.xyz);
     float NdotL = max(dot(N, L), 0.0);

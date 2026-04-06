@@ -1,6 +1,6 @@
 | ssprite3d
 | PHREDA 2026
-
+^r3/lib/sdl2image.r3
 ^r3/lib/str.r3
 
 ##n3dsprites	| cnt sprites
@@ -317,8 +317,7 @@ void main() {
 	ss3d_shader "uAlb" glGetUniformLocation 0 glUniform1i
 	ss3d_shader "uIdxBuf" glGetUniformLocation 3 glUniform1i
 	0 glUseProgram
-	0 'ss3d_inst !
-	
+	0 'ss3d_inst !	
 	;
 	
 ::SS3Dshutdown
@@ -340,19 +339,15 @@ void main() {
 		dirty_min 64 *  | ini
 		dirty_max dirty_min - 64 * | cnt
 		3dss_array dirty_min 64 * + | start mem
-
 		glBufferSubData
 		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-		|dirty_max dirty_min - 64 * "update:%d bytes" .println
 		$ffff 'dirty_min ! 0 'dirty_max !
 		) drop
 
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
-
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex glBindTexture
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_1D idx_tex glBindTexture
 	GL_TEXTURE0 glActiveTexture
-
 	GL_DEPTH_TEST glEnable
 	GL_CULL_FACE glEnable
 	GL_BACK glCullFace
@@ -364,19 +359,21 @@ void main() {
 	GL_DEPTH_TEST glEnable
 	GL_GREATER glDepthFunc
 	0 glBindVertexArray
-	
-
 	;
 
-#cz #sz #cy #sy #cx #sx
-#s2
-::ss3dset | x y z srxyz color spr i --
+
+:dirtycheck
 	dirty_min <? ( dup 'dirty_min ! )
 	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
-	dup 64 * 3dss_array + >a
+	;
 	
+#cz #sz #cy #sy #cx #sx
+#s2
+
+::ss3dset | x y z srxyz color spr i --
+	dirtycheck
+	dup 6 << 3dss_array + >a
 	rot >r swap >r >r |da!+ | obj id da!+ | spr da!+ | color 0 da!+ | pad
-	
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !
@@ -387,19 +384,28 @@ void main() {
 	dup *. 's2 +!	
 	dup sx sz *. cx sy *. cz *. - *. dup da!+
 	dup *. 's2 +!
-	r> da!+
-	
+	r> da!+	
 	dup cy neg sz *. *. 				da!+
 	dup cx cz *. sx sy *. sz *. - *.	da!+
 	dup sx cz *. cx sy *. sz *. + *.	da!+
 	r> da!+
-	
 	dup sy *.					da!+
 	dup sx neg cy *. *.			da!+
 	cx cy *. *.					da!+ | <-- last scale
 	r> da!+ 
-	
 	rot da!+ swap da!+ da!+ 		| x y z
 	1.0 s2 0? ( 1.0 + ) /.		da! | invs2
 	;
 	
+::ss3dcs | color spr i --
+	dirtycheck
+	6 << 3dss_array + 
+	7 2 << + >a da!+
+	3 2 << a+ da! ;
+	
+::ss3dxyz | x y z i --
+	dirtycheck
+	6 << 3dss_array + 
+	12 2 << + >a
+	rot da!+ swap da!+ da!
+	;

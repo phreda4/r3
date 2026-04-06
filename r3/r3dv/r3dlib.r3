@@ -1,6 +1,6 @@
 | RLMATH 
 | PHREDA 2026
-
+^r3/lib/console.r3
 ^r3/lib/vec3.r3
 
 ##mat * 128
@@ -172,6 +172,7 @@
 	pick2 a@ *. a!+ pick2 a@ *. a!+ pick2 a@ *. a!+ rot a@ *. a!+
 	over a@ *. a!+ over a@ *. a!+ over a@ *. a!+ swap a@ *. a!+
 	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ a@ *. a! ;
+
 	
 ::matprint | mat --
 	>a
@@ -181,3 +182,64 @@
 			) drop
 		.cr ) drop
 	.cr ;
+	
+#t | aux for error
+#f #g #v	
+	
+:prCheckErr | ss --
+	dup GL_LINK_STATUS 't glGetProgramiv
+	t 1? ( 2drop ; ) drop
+	512 't here glGetProgramInfoLog
+	here .println ;
+
+:shCheckErr | ss --
+	dup GL_COMPILE_STATUS 't glGetShaderiv
+	t 1? ( 2drop ; ) drop
+	512 0 here glGetShaderInfoLog
+	here .println ;
+
+:createsh | type mem -- nh
+	>r glCreateShader 
+	dup 1 r> 0 glShaderSource
+	dup glCompileShader 
+	dup GL_COMPILE_STATUS 't glGetShaderiv 
+	t 0? ( drop shCheckErr 0 ; ) drop
+	;
+
+:typeshader | adr -- adr
+	0 swap c!+ | adr
+	dup c@ toupp
+	$46 =? ( drop >>cr trim dup 'f ! ; ) | F
+	$47 =? ( drop >>cr trim dup 'g ! ; ) | G
+	$56 =? ( drop >>cr trim dup 'v ! ; ) | V
+	drop ;
+
+| load shader/geom/vertex shader and return id
+| free memory used - return 0 if fail
+| @S..@
+| @g..@
+| @v..@
+
+::loadShaderv | "shader" -- idprogram
+	0 'f ! 0 'g ! 0 'v !
+	( 64 findchar 1? |"@" findstr 
+		typeshader ) drop
+
+	f 1? ( GL_FRAGMENT_SHADER 'f createsh 'f ! ) drop
+	g 1? ( GL_GEOMETRY_SHADER 'g createsh 'g ! ) drop
+	v 1? ( GL_VERTEX_SHADER 'v createsh 'v ! ) drop
+	
+	glCreateProgram |'programID !
+	dup v glAttachShader
+	dup f glAttachShader
+	dup g glAttachShader
+	dup glLinkProgram 
+	dup glValidateProgram
+	dup GL_LINK_STATUS 't glGetProgramiv 
+	t 0? ( drop prCheckErr 0 ; ) drop
+	
+	v glDeleteShader
+	f glDeleteShader
+	g glDeleteShader
+	;
+	

@@ -107,8 +107,9 @@
 	
 	immIni
 	immMouse
-	1 =? ( wheelcam ) | over
-	3 =? ( movecam ) | active
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movecam )				| active
 	drop	
 	
     sdlkey
