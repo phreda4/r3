@@ -1,24 +1,148 @@
-# assents/sprites.txt — 22 sprites
+# assets/sprites.txt — 146 sprites
 # idx  name                                         tile     slice    z-frames  offset
-[  0]  clon1_000                                      16x16    14x9       26  0
-[  1]  clon2_000                                      16x16    14x13      26  26
-[  2]  clon3_000                                      16x16    14x13      26  52
-[  3]  clon_agachado_disparando_000                   16x16    14x15      24  78
-[  4]  clon_conjetpack1_000                           16x16    14x13      26  102
-[  5]  clon_conjetpack2_000                           16x16    14x13      26  128
-[  6]  clon_conjetpack3_000                           16x16    14x13      26  154
-[  7]  clon_conjetpack4_000                           16x16    14x13      26  180
-[  8]  clon_conjetpack5_000                           16x16    14x13      26  206
-[  9]  clon_conjetpack6_000                           16x16    14x14      26  232
-[ 10]  clon_conjetpack8_000                           16x16    14x13      26  258
-[ 11]  clon_conjetpack_caminando1_000                 16x16    14x14      26  284
-[ 12]  clon_conjetpack_caminando2_000                 16x16    14x14      26  310
-[ 13]  clon_disparando_000                            16x16    14x14      26  336
-[ 14]  clon_muerte_000                                24x16    22x11      26  362
-[ 15]  cuboalambre_obj000                             16x16    16x16      16  388
-[ 16]  ovni1_000                                      32x32    29x29      28  404
-[ 17]  ovni2_000                                      32x32    29x29      28  432
-[ 18]  ovni31_000                                     32x32    29x29      30  460
-[ 19]  ovni32_000                                     32x32    29x29      30  490
-[ 20]  ovni33_000                                     32x32    29x29      30  520
-[ 21]  ovni3_000                                      32x32    29x29      30  550
+[  0]  atascii_000                                     8x8      7x6        1  0
+[  1]  atascii_001                                     8x8      5x8        1  1
+[  2]  atascii_002                                     8x8      2x8        1  2
+[  3]  atascii_003                                     8x8      5x5        1  3
+[  4]  atascii_004                                     8x8      5x8        1  4
+[  5]  atascii_005                                     8x8      5x5        1  5
+[  6]  atascii_006                                     8x8      8x8        1  6
+[  7]  atascii_007                                     8x8      8x8        1  7
+[  8]  atascii_008                                     8x8      8x8        1  8
+[  9]  atascii_009                                     8x8      4x4        1  9
+[ 10]  atascii_010                                     8x8      8x8        1  10
+[ 11]  atascii_011                                     8x8      4x4        1  11
+[ 12]  atascii_012                                     8x8      4x4        1  12
+[ 13]  atascii_013                                     8x8      8x2        1  13
+[ 14]  atascii_014                                     8x8      8x2        1  14
+[ 15]  atascii_015                                     8x8      4x4        1  15
+[ 16]  atascii_016                                     8x8      7x6        1  16
+[ 17]  atascii_017                                     8x8      5x5        1  17
+[ 18]  atascii_018                                     8x8      8x2        1  18
+[ 19]  atascii_019                                     8x8      8x8        1  19
+[ 20]  atascii_020                                     8x8      6x5        1  20
+[ 21]  atascii_021                                     8x8      8x4        1  21
+[ 22]  atascii_022                                     8x8      2x8        1  22
+[ 23]  atascii_023                                     8x8      8x5        1  23
+[ 24]  atascii_024                                     8x8      8x5        1  24
+[ 25]  atascii_025                                     8x8      4x8        1  25
+[ 26]  atascii_026                                     8x8      5x5        1  26
+[ 27]  atascii_027                                     8x8      6x7        1  27
+[ 28]  atascii_028                                     8x8      6x6        1  28
+[ 29]  atascii_029                                     8x8      6x6        1  29
+[ 30]  atascii_030                                     8x8      6x5        1  30
+[ 31]  atascii_031                                     8x8      6x5        1  31
+[ 32]  atascii_033                                     8x8      2x6        1  32
+[ 33]  atascii_034                                     8x8      6x3        1  33
+[ 34]  atascii_035                                     8x8      8x6        1  34
+[ 35]  atascii_036                                     8x8      6x7        1  35
+[ 36]  atascii_037                                     8x8      6x6        1  36
+[ 37]  atascii_038                                     8x8      7x7        1  37
+[ 38]  atascii_039                                     8x8      2x3        1  38
+[ 39]  atascii_040                                     8x8      4x6        1  39
+[ 40]  atascii_041                                     8x8      4x6        1  40
+[ 41]  atascii_042                                     8x8      8x5        1  41
+[ 42]  atascii_043                                     8x8      6x5        1  42
+[ 43]  atascii_044                                     8x8      3x3        1  43
+[ 44]  atascii_045                                     8x8      6x1        1  44
+[ 45]  atascii_046                                     8x8      2x2        1  45
+[ 46]  atascii_047                                     8x8      6x6        1  46
+[ 47]  atascii_048                                     8x8      6x6        1  47
+[ 48]  atascii_049                                     8x8      6x6        1  48
+[ 49]  atascii_050                                     8x8      6x6        1  49
+[ 50]  atascii_051                                     8x8      6x6        1  50
+[ 51]  atascii_052                                     8x8      6x6        1  51
+[ 52]  atascii_053                                     8x8      6x6        1  52
+[ 53]  atascii_054                                     8x8      6x6        1  53
+[ 54]  atascii_055                                     8x8      6x6        1  54
+[ 55]  atascii_056                                     8x8      6x6        1  55
+[ 56]  atascii_057                                     8x8      6x6        1  56
+[ 57]  atascii_058                                     8x8      2x5        1  57
+[ 58]  atascii_059                                     8x8      3x6        1  58
+[ 59]  atascii_060                                     8x8      5x7        1  59
+[ 60]  atascii_061                                     8x8      6x4        1  60
+[ 61]  atascii_062                                     8x8      5x7        1  61
+[ 62]  atascii_063                                     8x8      6x6        1  62
+[ 63]  atascii_064                                     8x8      6x6        1  63
+[ 64]  atascii_065                                     8x8      6x6        1  64
+[ 65]  atascii_066                                     8x8      6x6        1  65
+[ 66]  atascii_067                                     8x8      6x6        1  66
+[ 67]  atascii_068                                     8x8      6x6        1  67
+[ 68]  atascii_069                                     8x8      6x6        1  68
+[ 69]  atascii_070                                     8x8      6x6        1  69
+[ 70]  atascii_071                                     8x8      6x6        1  70
+[ 71]  atascii_072                                     8x8      6x6        1  71
+[ 72]  atascii_073                                     8x8      6x6        1  72
+[ 73]  atascii_074                                     8x8      6x6        1  73
+[ 74]  atascii_075                                     8x8      6x6        1  74
+[ 75]  atascii_076                                     8x8      6x6        1  75
+[ 76]  atascii_077                                     8x8      7x6        1  76
+[ 77]  atascii_078                                     8x8      6x6        1  77
+[ 78]  atascii_079                                     8x8      6x6        1  78
+[ 79]  atascii_080                                     8x8      6x6        1  79
+[ 80]  atascii_081                                     8x8      6x6        1  80
+[ 81]  atascii_082                                     8x8      6x6        1  81
+[ 82]  atascii_083                                     8x8      6x6        1  82
+[ 83]  atascii_084                                     8x8      6x6        1  83
+[ 84]  atascii_085                                     8x8      6x6        1  84
+[ 85]  atascii_086                                     8x8      6x6        1  85
+[ 86]  atascii_087                                     8x8      7x6        1  86
+[ 87]  atascii_088                                     8x8      6x6        1  87
+[ 88]  atascii_089                                     8x8      6x6        1  88
+[ 89]  atascii_090                                     8x8      6x6        1  89
+[ 90]  atascii_091                                     8x8      4x6        1  90
+[ 91]  atascii_092                                     8x8      6x6        1  91
+[ 92]  atascii_093                                     8x8      4x6        1  92
+[ 93]  atascii_094                                     8x8      7x4        1  93
+[ 94]  atascii_095                                     8x8      8x1        1  94
+[ 95]  atascii_096                                     8x8      6x6        1  95
+[ 96]  atascii_097                                     8x8      6x5        1  96
+[ 97]  atascii_098                                     8x8      6x6        1  97
+[ 98]  atascii_099                                     8x8      5x5        1  98
+[ 99]  atascii_100                                     8x8      6x6        1  99
+[100]  atascii_101                                     8x8      6x5        1  100
+[101]  atascii_102                                     8x8      5x6        1  101
+[102]  atascii_103                                     8x8      6x6        1  102
+[103]  atascii_104                                     8x8      6x6        1  103
+[104]  atascii_105                                     8x8      4x6        1  104
+[105]  atascii_106                                     8x8      5x7        1  105
+[106]  atascii_107                                     8x8      6x6        1  106
+[107]  atascii_108                                     8x8      4x6        1  107
+[108]  atascii_109                                     8x8      7x5        1  108
+[109]  atascii_110                                     8x8      6x5        1  109
+[110]  atascii_111                                     8x8      6x5        1  110
+[111]  atascii_112                                     8x8      6x6        1  111
+[112]  atascii_113                                     8x8      6x6        1  112
+[113]  atascii_114                                     8x8      6x5        1  113
+[114]  atascii_115                                     8x8      6x5        1  114
+[115]  atascii_116                                     8x8      6x6        1  115
+[116]  atascii_117                                     8x8      6x5        1  116
+[117]  atascii_118                                     8x8      6x5        1  117
+[118]  atascii_119                                     8x8      7x5        1  118
+[119]  atascii_120                                     8x8      6x5        1  119
+[120]  atascii_121                                     8x8      6x6        1  120
+[121]  atascii_122                                     8x8      6x5        1  121
+[122]  atascii_123                                     8x8      6x6        1  122
+[123]  atascii_124                                     8x8      2x8        1  123
+[124]  atascii_125                                     8x8      6x6        1  124
+[125]  atascii_126                                     8x8      4x7        1  125
+[126]  atascii_127                                     8x8      4x7        1  126
+[127]  clon1_000                                      16x16    14x9       26  127
+[128]  clon2_000                                      16x16    14x13      26  153
+[129]  clon3_000                                      16x16    14x13      26  179
+[130]  clon_agachado_disparando_000                   16x16    14x15      24  205
+[131]  clon_conjetpack1_000                           16x16    14x13      26  229
+[132]  clon_conjetpack2_000                           16x16    14x13      26  255
+[133]  clon_conjetpack3_000                           16x16    14x13      26  281
+[134]  clon_conjetpack4_000                           16x16    14x13      26  307
+[135]  clon_conjetpack5_000                           16x16    14x13      26  333
+[136]  clon_conjetpack6_000                           16x16    14x14      26  359
+[137]  clon_conjetpack8_000                           16x16    14x13      26  385
+[138]  clon_conjetpack_caminando1_000                 16x16    14x14      26  411
+[139]  clon_conjetpack_caminando2_000                 16x16    14x14      26  437
+[140]  clon_disparando_000                            16x16    14x14      26  463
+[141]  clon_muerte_000                                24x16    22x11      26  489
+[142]  cuboalambre_obj000                             16x16    16x16      16  515
+[143]  dude_obj000                                    16x8     13x4       30  531
+[144]  mono_obj000                                    16x8      9x5       15  561
+[145]  ovni_000                                       32x32    29x29      30  576

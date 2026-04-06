@@ -1,7 +1,9 @@
-| demo1 r3dv
+| demo3 r3dv -- show sprites
 | PHREDA 2026
 ^./renderlib.r3
 ^./geom.r3
+^./ss3d.r3
+^r3/lib/rand.r3
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -9,46 +11,18 @@
 #cam_dist  4.5
 #cam_drag  0
 
-| Cube rotation
-#cube_rot  0.0
-#spinning  -1
-
 | Mouse state
 #mouse_x   0
 #mouse_y   0
 #mouse_btn 0
 
-:drawscene
+:drawgeom
 	rl_ProgGeom
-	
-	matini
-	|msec 4 << 0 msec 3 << matrot
-	|cube_rot cube_rot 2/ 0 matrot
-	20.0 0.1 20.0 matscale
-	0 -1.6 0 matpos
-	$eeeeee30 rl_setcolor
-	draw_cube 
-	
-	matini
-	|msec 4 << 0 msec 3 << matrot
-	cube_rot cube_rot 2/ 0 matrot
-	0.8 dup dup matscale
-	msec 3 << sin 2 * msec 4 << cos 0.3 + 0 matpos
-	$fffffff0 rl_setcolor
-	draw_cube 
-	
-	matini
-	|msec 4 << 0 msec 3 << matrot
-	cube_rot neg cube_rot 2/ 0.3 matrot
-	0.8 dup dup matscale
-	msec 3 << sin 2 * neg msec 4 << cos 0.3 + msec 2 << sin matpos
-	$6f34fff3 rl_setcolor
-	draw_cube 
-	
-	;
-	
-:viewresize
-    |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
+	matini 
+	10.0 0.1 10.0 matscale 
+	0 -0.55 0 matpos 
+	$5a5a5a00 rl_setcolor 
+	draw_cube 	
 	;
 
 #xp #yp 
@@ -67,38 +41,43 @@
 	;
 :wheelcam
 	SDLw 0? ( drop ; ) neg
-	0.2 * 'cam_dist +!
+	0.6 * 'cam_dist +!
 	calcam
 	;
 	
 
 #fsun [ 
--0.5 -1.0 -0.5 0	| normal
- 1.0 1.0 1.0 0.2  ] | color,intensidad
+-0.5 -1.0 -0.5 0
+ 0.2 0.9 0.8 0.1
+ ]
 	   
-:render
-	rl_frame_begin
-	drawscene
-	
-	'fsun rl_set_sun
-	
-	1.5 0.2 0.2 1.0
+:luz
+	2.4 
+	0.2 0.2 1.0
 	msec 3 << 
 	dup cos -3 * 
-	over sin -3 *
+	over sin -3 * 1.0 +
+	|0
 	rot sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
-	
 
-	1.5 1.0 0.2 0.2
+	2.2 
+	1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
-	over sin 3 *
+	over sin 3 * 1.0 +
+	|0
 	rot 0.5 + sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
+	;
+	
+:render
+	rl_frame_begin |rl_set_camera
+| drawgeom
+	SS3Ddraw
+	luz
 	
 	rl_frame_end
-	spinning 1? ( 0.004 'cube_rot +! ) drop
 	;
 	
 :main
@@ -113,20 +92,53 @@
 	
     sdlkey
 	>esc< =? ( exit )
-	<esp> =? ( spinning not 'spinning ! )
     drop
 	;
 
+#nbox
+:load3d
+|	"media/ss/sprites" 256 ss3dload
+	"media/ss/mezcla" 512 ss3dload
+|	"media/ss/voxi" 256 ss3dload
+|	"media/ss/cars" 256 ss3dload
+|	"media/ss/test" 256 ss3dload
 
-| Boot
-:
-	"demo1 r3dv" 1024 768 GLini GLInfo
+	n3dsprites sqrt 'nbox !
+	0 ( n3dsprites <? dup >r
+	
+		dup nbox / nbox 2/ - 1.1 *
+|		10.0 randmax 5.0 -
+		|1.0 randmax
+		|dup 4 >> 8 - 1.0 *
+		0
+		pick2 nbox mod nbox 2/ - 1.1 *
+|		pick2 $f and 8 - 1.0 *
+		|10.0 randmax 5.0 -
+		|$ffffffffffff randmax
+		0
+		4.0 8 >> 40 << or
+		$fffffffc
+		r> dup
+		ss3dset
+		1+ ) drop
+
+	;
+	
+
+: | <<<<<<<< Boot
+
+	"demo2 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
+
+	load3d
+	
 	8 'fsun memfloat
-	|$1e1f53 GLpaper
+	'fsun rl_set_sun
+	
 	'main SDLshow
 	
+	SS3Dshutdown
 	rl_shutdown
     GLend
 	free_cube

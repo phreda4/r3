@@ -3,6 +3,7 @@
 
 ^r3/lib/str.r3
 
+##n3dsprites	| cnt sprites
 #3dss_max		| max instances
 #3dss_array		| instances array
 
@@ -183,11 +184,10 @@ void main() {
 @-----------------------"
 
 #imgtex | surface
-#nsprites 
 #defspr | sprite definition
 #defind | index definition
 #ssaendfile
-|    int   tile_w, tile_h, slice_w, slice_h, n_frames, offset; <-- shader
+| int tile_w, tile_h, slice_w, slice_h, n_frames, offset; <-- shader
 
 |----GPU
 #atlas_tex		| atlas
@@ -198,9 +198,9 @@ void main() {
 #maxw #maxh #maxz
 
 :dump
-	nsprites "%d sprites" .println
+	n3dsprites "%d sprites" .println
 	defspr >a
-	nsprites ( 1? 1-
+	n3dsprites ( 1? 1-
 		da@+ "tw:%d " .print
 		da@+ "th:%d " .print
 		da@+ "sw:%d " .print
@@ -260,10 +260,10 @@ void main() {
 	imgtex SDL_FreeSurface	
 	
 	3dss_array d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
-	w@+ 'nsprites !
+	w@+ 'n3dsprites !
 	here dup 'defspr ! >a
 	0 'maxw ! 0 'maxh ! 0 'maxz !
-	nsprites ( 1? 1- >r
+	n3dsprites ( 1? 1- >r
 		d@+
 		dup 8 >> $ff and da!+ |tw
 		dup $ff and da!+	|th
@@ -282,7 +282,7 @@ void main() {
 	
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER nsprites 24 * defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER n3dsprites 24 * defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 

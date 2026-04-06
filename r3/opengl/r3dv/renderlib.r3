@@ -4,8 +4,6 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
 
-|^r3/lib/trace.r3
-
 ^./rlmat.r3
 
 | SHADERS ===>
