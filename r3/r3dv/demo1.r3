@@ -47,9 +47,6 @@
 	
 	;
 	
-:viewresize
-    |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
-	;
 
 #xp #yp 
 :movecam
@@ -118,14 +115,16 @@
     drop
 	;
 
+:viewresize sh sw rl_resizewin ;
 
-| Boot
-:
+
+: | <<<<<< Boot
 	"demo1 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
 	8 'fsun memfloat
 	|$1e1f53 GLpaper
+	'viewresize SDLeventR
 	'main SDLshow
 	
 	rl_shutdown

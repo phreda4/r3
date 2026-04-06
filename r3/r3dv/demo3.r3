@@ -146,6 +146,7 @@ movespr
 
 	;
 	
+:viewresize sh sw rl_resizewin ;
 
 : | <<<<<<<< Boot
 
@@ -156,7 +157,7 @@ movespr
 	load3d
 	8 'fsun memfloat
 	'fsun rl_set_sun
-	
+	'viewresize SDLeventR
 	'main SDLshow
 	
 	SS3Dshutdown

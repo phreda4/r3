@@ -124,8 +124,10 @@
 	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 40 << or $ff00ff3f 3 3 ss3dset | x y z rxyz scale color spr i --
 	;
 	
-| Boot
-:
+:viewresize sh sw rl_resizewin ;
+	
+
+: | <<<<< Boot
 	"demo2 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
@@ -134,7 +136,7 @@
 	
 	8 'fsun memfloat
 	'fsun rl_set_sun
-	
+	'viewresize SDLeventR
 	'main SDLshow
 	
 	SS3Dshutdown

@@ -305,9 +305,11 @@
 	'eventr ! ;
 
 :changews | change windowsize
-	SDL_windows 'sw 'sh SDL_GetWindowSize 
-	eventr 0? ( drop ; ) ex
-	;
+	'SDLevent 12 + c@ 
+	5 <>? ( drop ; ) drop
+	'SDLevent 16 + 
+	d@+ 'sw ! d@ 'sh !
+	eventr 0? ( drop ; ) ex ;
 	
 ::SDLupdate
 	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !

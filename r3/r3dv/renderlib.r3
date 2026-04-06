@@ -522,6 +522,8 @@ void main(){
     0 'rl_gbuf_fbo !  0 'rl_gbuf_norm !  0 'rl_gbuf_albedo !  0 'rl_gbuf_depth !
     ;
 
+#idcont
+
 :rl_destroy_bloom
     rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
     rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
@@ -529,12 +531,14 @@ void main(){
 	'listex >a
 	'lisfbo >b
 	RL_BLOOM_MIPS ( 1? 1-
-		da@+
-		1 over 16 >> glDeleteTextures
-		1 swap $ffff glDeleteTextures
-		db@+
-		1 over 16 >> glDeleteFramebuffers
-		1 swap $ffff glDeleteFramebuffers
+		da@+ dup 16 >> 'idcont d!
+		1 'idcont glDeleteTextures
+		$ffff and 'idcont d!
+		1 'idcont  glDeleteTextures
+		db@+ dup 16 >> 'idcont d!
+		1 'idcont glDeleteFramebuffers
+		$ffff and 'idcont d!
+		1 'idcont glDeleteFramebuffers
 		) drop ;
 
 
