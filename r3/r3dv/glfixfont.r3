@@ -137,28 +137,16 @@ void main() {
     0 glBindVertexArray
     ;
 
-::frect | x1 y1 x2 y2 --
+:fillrect | x1 y1 x2 y2 --
     here >a
     pick3 da!+ pick2 da!+ 0 a!+
     over da!+ pick2 da!+ 0 a!+
     over da!+ dup da!+ 0 a!+
-    pick3 da!+ pick2 da!+ 0 a!+
-	over da!+ dup da!+ 0 a!+
     pick3 da!+ dup da!+ 0 a!+
-    4drop
-    GL_TRIANGLES 6 sdraw
-    ;
-	
+    4drop ;
+
+::frect | x1 y1 x2 y2 --
+    fillrect GL_TRIANGLE_FAN 4 sdraw ;	
+
 ::rect | x1 y1 x2 y2 --
-    here >a
-    pick3 da!+ pick2 da!+ 0 a!+
-    over da!+ pick2 da!+ 0 a!+
-	over da!+ pick2 da!+ 0 a!+	
-    over da!+ dup da!+ 0 a!+
-	over da!+ dup da!+ 0 a!+
-	pick3 da!+ dup da!+ 0 a!+
-	pick3 da!+ dup da!+ 0 a!+
-    pick3 da!+ pick2 da!+ 0 a!+
-    4drop
-    GL_LINES 8 sdraw
-    ;
+	fillrect GL_LINE_LOOP 4 sdraw ;

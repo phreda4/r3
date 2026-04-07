@@ -17,6 +17,7 @@
 | --- Primitive Types ---
 ##GL_POINTS                  $0000
 ##GL_LINES                   $0001
+##GL_LINE_LOOP               $0002
 ##GL_LINE_STRIP              $0003
 ##GL_TRIANGLES               $0004
 ##GL_TRIANGLE_STRIP          $0005
