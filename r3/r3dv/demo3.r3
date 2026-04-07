@@ -119,8 +119,8 @@ movespr
 
 
 :load3d
-	|"media/ss/sprites" 256 ss3dload
-	"media/ss/vox2" 512 ss3dload
+	"media/ss/sprites" 256 ss3dload
+	|"media/ss/vox2" 512 ss3dload
 |	"media/ss/mezcla" 512 ss3dload
 |	"media/ss/voxi" 256 ss3dload
 |	"media/ss/cars" 256 ss3dload

@@ -108,6 +108,9 @@
 	"r3forth - OpenGL" 16 sh 32 - ftext
 	$3fffffff 'fcolor !
 	10 310 650 60 frect
+	$ffffffff 'fcolor !
+	10 310 650 60 rect
+
 	fend
 	
     GLUpdate
