@@ -105,13 +105,14 @@ movespr
 	rl_frame_end
 	;
 	
-:gui
+:hud
 	fini
 	2 'fscale !
 	$7f000000 'fcolor !
 	8 sh 48 - 400 40 frect
 	$ffffffff 'fcolor !
-	"r3forth - DEMO 4 - GUI " 16 sh 40 - ftext
+	16 sh 40 - fat
+	"r3forth - DEMO 4 - GUI " ftext
 	
 	immIni
 	immMouse
@@ -119,13 +120,19 @@ movespr
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
 	drop	
+	
+	|'fscale !
+	10 10 180 46 immBox
+	"Exit" immBtn
+	'exit uiClk
+	
 
 	fend
 	;
 	
 :main
 	render
-|	gui
+	hud
 	
     GLUpdate
 	

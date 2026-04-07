@@ -80,7 +80,7 @@
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
 
-#wix #wiy #wiw #wih
+##wix ##wiy ##wiw ##wih
 
 ::immBox | x y w h --
 	'wih ! 'wiw ! 'wiy ! 'wix ! ;	
@@ -112,7 +112,7 @@
 	sdlb 1? ( drop 3 ; ) drop 		| active->3
 	-1 'idh ! 6 ; 					| click->6		
 
-#uistate
+##uistate
 
 ::immZone | -- ; Interaction is cx,cy,cw,th
 	immMouse 'uistate ! ;
