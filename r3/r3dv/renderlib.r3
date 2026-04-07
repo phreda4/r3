@@ -3,7 +3,7 @@
 
 ^r3/lib/sdl2gl.r3
 
-^./r3dlib.r3
+^./glLib.r3
 
 | SHADERS ===>
 #rl_shader_geom "

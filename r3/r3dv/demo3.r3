@@ -48,7 +48,7 @@
 
 #fsun [ 
 -0.5 -1.0 -0.5 0
- 0.2 0.9 0.8 0.9
+ 1.0 1.0 1.0 1.0
  ]
 	   
 :luz
@@ -75,12 +75,12 @@
 :movespr
 	0 ( n3dsprites <? dup >r
 	
-		dup nbox / nbox 2/ - 1.8 *
+		dup nbox / nbox 2/ - 1.2 *
 |		10.0 randmax 5.0 -
 		|1.0 randmax
 		|dup 4 >> 8 - 1.0 *
 		over 10 << msec 4 << + sin 1.0 + 2/
-		pick2 nbox mod nbox 2/ - 1.8 *
+		pick2 nbox mod nbox 2/ - 1.2 *
 |		pick2 $f and 8 - 1.0 *
 		|10.0 randmax 5.0 -
 		|$ffffffffffff randmax
@@ -119,7 +119,8 @@ movespr
 
 
 :load3d
-	"media/ss/sprites" 256 ss3dload
+	|"media/ss/sprites" 256 ss3dload
+	"media/ss/vox2" 512 ss3dload
 |	"media/ss/mezcla" 512 ss3dload
 |	"media/ss/voxi" 256 ss3dload
 |	"media/ss/cars" 256 ss3dload
@@ -150,7 +151,7 @@ movespr
 
 : | <<<<<<<< Boot
 
-	"demo2 r3dv" 1024 768 GLini GLInfo
+	"demo3 r3dv" 1024 768 GLini GLInfo
 	rl_init
 	build_cube
 

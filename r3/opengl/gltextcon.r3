@@ -15,40 +15,30 @@
 #shader "
 @vertex-----------------
 #version 330 core
-
 const int CW = 100; // 800/8
 const int CH = 37;	// 600/16
-
 const float uStep = 1.0 / 16.0;           // Ancho de un carácter en UV
 const float vStep = 1.0 / 16.0;           // Alto de un carácter en UV
-
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in float instanceData;
-
 out vec2 TexCoord;
 flat out vec4 fgColor;
-
 uniform mat4 projection;
-
 void main() {
     int ind=int(instanceData);
 	int charIndex=(ind&0xff);
-
 	fgColor = vec4(
 		((ind>>16)&0xf)*1.0/15, // r
 		((ind>>12)&0xf)*1.0/15,	// g
 		((ind>>8)&0xf)*1.0/15,	// b
 		((ind>>20)&1)*1.0 		// bit 20 inverso
 		);
-	
     float u = (charIndex % 16) / 16.0;  // Columna del carácter
     float v = (charIndex / 16) / 16.0;  // Fila del carácter
 	TexCoord = vec2(aTexCoord.x*uStep+u,aTexCoord.y*vStep+v);
-	
     float xOff = (gl_InstanceID%CW)*8.0 ;     // X de la posición
     float yOff = ((gl_InstanceID/CW)%CH)*16.0;     // Y de la posición
-	
 	gl_Position = projection * vec4(aPos.x+xOff, aPos.y+yOff, 0.0, 1.0);
 }
 @fragment---------------
@@ -57,7 +47,6 @@ out vec4 FragColor;
 in vec2 TexCoord;
 flat in vec4 fgColor;
 uniform sampler2D fontTexture;
-
 void main() {
 	vec4 colt=texture(fontTexture, TexCoord); 
 	if (fgColor.a==1.0) { colt.a=1.0-colt.a; } // inverso

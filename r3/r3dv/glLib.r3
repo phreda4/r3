@@ -1,7 +1,8 @@
-| RLMATH 
+| glLIB
 | PHREDA 2026
 ^r3/lib/console.r3
 ^r3/lib/vec3.r3
+^r3/lib/sdl2image.r3
 
 ##mat * 128
 ##mati * 128 | aux inv
@@ -60,6 +61,16 @@
 	-1.0 14 b] ! | inv_proj.m[14] = -1.0f;
 	10 a] @ 14 a] @ /. 15 b] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
 	;
+	
+::mortho | r l t b f n --
+	matini 'mat >a
+	2dup - -2.0 over /. 10 a] !		| 	mat[10] = -2 / (farVal - nearVal);
+	-rot + swap /. neg 14 a] !	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
+	2dup - 2.0 over /. 5 a] !		| mat[5] = 2 / (top - bottom);
+	-rot + swap /. neg 13 a] !	| mat[13] = -((top + bottom) / (top - bottom));
+	2dup - 2.0 over /. a> !			| mat[0] = 2 / (right - left);
+	-rot + swap /. neg 12 a] !	| mat[12] = -((right + left) / (right - left));
+	;	
 	
 #fx 0 0 0 |#fy 0 #fz 0 | compiler remove constant problem!!
 :fy 'fx 8 + @ ;
@@ -182,7 +193,8 @@
 			) drop
 		.cr ) drop
 	.cr ;
-	
+
+|-------------------------------------------------------	
 #t | aux for error
 #f #g #v	
 	
@@ -242,4 +254,51 @@
 	f glDeleteShader
 	g glDeleteShader
 	;
+|--------------------------------
+#surface
+##glimgw
+##glimgh
+
+:Surface->w surface 16 + d@ ;
+:Surface->h surface 20 + d@ ;
+:Surface->p surface 24 + d@ ;
+:Surface->pixels surface 32 + @ ;
+:GLBPP 
+	surface 8 + @ 16 + c@
+	32 =? ( drop GL_RGBA ; ) 
+	24 =? ( drop GL_RGB ; )
+	drop GL_RED ;
+
+::glImgFnt | "" -- t
+	1 't glGenTextures
+    GL_TEXTURE_2D t glBindTexture IMG_Load 'Surface !
+	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
+	Surface SDL_FreeSurface
+	t ;		
+
+
+:isPowerOf2 | dim -- 0=is^2
+	dup 1 - and ;
 	
+::glImgTex | "" -- texid
+	1 't glGenTextures
+    GL_TEXTURE_2D t glBindTexture
+	IMG_Load 'Surface !
+	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
+	Surface->w 'glimgw !
+	Surface->h 'glimgh !
+	Surface SDL_FreeSurface
+	t ;	
+	
+::glColorTex | col -- texid
+	'f d!
+	1 't glGenTextures
+    GL_TEXTURE_2D t glBindTexture
+	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE 'f glTexImage2D
+	t ;

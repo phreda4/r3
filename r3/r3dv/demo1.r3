@@ -2,6 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./geom.r3
+^./glfixfont.r3
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -100,6 +101,13 @@
 	
 :main
 	render
+	
+	fini
+	2 'fscale !
+	$ffffffff 'fcolor !
+	"r3forth - OpenGL" 16 sh 32 - ftext
+	fend
+	
     GLUpdate
 	
 	immIni
@@ -115,11 +123,12 @@
     drop
 	;
 
-:viewresize sh sw rl_resizewin ;
+:viewresize sh sw rl_resizewin fixFontResize ;
 
 
 : | <<<<<< Boot
 	"demo1 r3dv" 1024 768 GLini GLInfo
+	glFixFont
 	rl_init
 	build_cube
 	8 'fsun memfloat
