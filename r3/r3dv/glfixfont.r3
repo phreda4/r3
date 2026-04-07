@@ -107,8 +107,10 @@ void main() {
     0 glUseProgram
 	;
 	
-::ftext | "" x y --
-	'ys ! 'xs !
+::fat
+	'ys ! 'xs ! ;
+	
+::ftext | "" --	
 	fontshader "fgColor" glGetUniformLocation fcolor glUniform1i
 	fontshader "fgmode" glGetUniformLocation 0 glUniform1i
 	here >a ( c@+ 1? gchar ) 2drop
@@ -121,10 +123,10 @@ void main() {
 	0 glBindVertexArray
 	;
 
-:fsize | "" -- "" sizew sizeh
+::fsize | "" -- "" sizew sizeh
 	count 8 * fscale * 16 fscale * ;
 
-:gltextsizecnt | "" cnt -- "" 	
+::fsizecnt | "" cnt -- "" 	
 	8 * fscale * 16 fscale * ;
 	
 :sdraw | mode nverts --
@@ -137,16 +139,37 @@ void main() {
     0 glBindVertexArray
     ;
 
-:fillrect | x1 y1 x2 y2 --
+:fillrect | x y w h --
+	swap pick3 + swap pick2 +
     here >a
     pick3 da!+ pick2 da!+ 0 a!+
-    over da!+ pick2 da!+ 0 a!+
-    over da!+ dup da!+ 0 a!+
-    pick3 da!+ dup da!+ 0 a!+
+    over  da!+ pick2 da!+ 0 a!+
+    over  da!+ dup   da!+ 0 a!+
+    pick3 da!+ dup   da!+ 0 a!+
     4drop ;
 
-::frect | x1 y1 x2 y2 --
+::frect | x y w h --
     fillrect GL_TRIANGLE_FAN 4 sdraw ;	
 
-::rect | x1 y1 x2 y2 --
+::rect | x y w h --
 	fillrect GL_LINE_LOOP 4 sdraw ;
+	
+:fillrecb | x y w h b --
+	>b 
+	swap pick3 + swap pick2 +
+	here >a
+    pick3 b> + da!+ pick2      da!+ 0 a!+
+    over b> -  da!+ pick2      da!+ 0 a!+
+	over       da!+ pick2 b> + da!+ 0 a!+
+	over       da!+ dup b> -   da!+ 0 a!+
+	over b> -  da!+ dup        da!+ 0 a!+	
+	pick3 b> + da!+ dup        da!+ 0 a!+	
+	pick3      da!+ dup b> -   da!+ 0 a!+	
+	pick3      da!+ pick2 b> + da!+ 0 a!+
+    4drop ;
+	
+::frectb | x y w h b --
+    fillrecb GL_TRIANGLE_FAN 8 sdraw ;	
+
+::rectb | x y w h b --
+	fillrecb GL_LINE_LOOP 8 sdraw ;

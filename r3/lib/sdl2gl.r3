@@ -76,14 +76,14 @@
 #sys-glObjectLabel
 #sys-glDeleteFramebuffers
 
-|--------------------
 |------------------------UI
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
-#fx #fy #fw #fh
+
+#wix #wiy #wiw #wih
 
 ::immBox | x y w h --
-	'fh ! 'fw ! 'fy ! 'fx ! ;	
+	'wih ! 'wiw ! 'wiy ! 'wix ! ;	
 	
 ::immFull | --
 	0 0 sw sh immBox ;
@@ -94,8 +94,8 @@
 	idh 'ida ! -1 'id ! ;
 	
 :immIn? | -- 0/-1
-	sdlx fx - $ffff and fw >? ( drop 0 ; ) drop
-	sdly fy - $ffff and fh >? ( drop 0 ; ) drop 
+	sdlx wix - $ffff and wiw >? ( drop 0 ; ) drop
+	sdly wiy - $ffff and wih >? ( drop 0 ; ) drop 
 	-1 ;
 	
 ::immMouse | -- state
@@ -111,6 +111,27 @@
 		-1 'idh ! 5 ; ) drop		| out up->5
 	sdlb 1? ( drop 3 ; ) drop 		| active->3
 	-1 'idh ! 6 ; 					| click->6		
+
+#uistate
+
+::immZone | -- ; Interaction is cx,cy,cw,th
+	immMouse 'uistate ! ;
+
+::uiEx?		uistate $100 and ;
+
+| 0 = none
+| 1 = over
+| 2 = in (btn dwn)
+| 3 = active
+| 4 = active(outside)
+| 5 = out
+| 6 = click (btn up)
+
+::uiOvr		uiState $f and 1 <>? ( 2drop ; ) drop ex ;  | 'v --
+::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
+::uiSel		uiState $f and 3 <>? ( 2drop ; ) drop ex ;  | 'v -- 
+::uiUp		uiState $f and 5 <>? ( 2drop ; ) drop ex ;  | 'v --
+::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
 
 
 | --- API Wrappers ---

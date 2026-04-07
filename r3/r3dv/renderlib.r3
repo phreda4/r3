@@ -2,7 +2,6 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gl.r3
-
 ^./glLib.r3
 
 | SHADERS ===>
@@ -59,17 +58,12 @@ layout(std140, binding = 0) uniform Matrices {
     vec4 viewPos;
 };
 
-layout(std140, binding = 1) uniform DirectLight {
-    vec4 lightDir;
-    vec4 lightColor;
-};
+layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor; };
+
+struct PointLight { vec4 pos;vec4 color; };
 
 layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;
-    struct {
-        vec4 pos;
-        vec4 color;
-    } lights[16];
+    ivec4 header;PointLight lights[16]; // Ahora es un tipo de dato válido y definido
 } pl;
 
 const float PI     = 3.14159265359;
@@ -117,11 +111,11 @@ void main() {
     vec3 N            = normalize(texture(gNormal, uv).rgb);
     float depth       = texture(gDepth,  uv).r;
 
-    int   packed    = int(albedoPacked.a * 255.0 + 0.5);
-    float roughness = float((packed >> 5) & 0x07) * (1.0 / 7.0);
-    float metallic  = float((packed >> 2) & 0x07) * (1.0 / 7.0);
+    int   pack    = int(albedoPacked.a * 255.0 + 0.5);
+    float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
+    float metallic  = float((pack >> 2) & 0x07) * (1.0 / 7.0);
 
-    vec3 emissive = albedo * float(packed & 0x03);
+    vec3 emissive = albedo * float(pack & 0x03);
 
     float a         = max(roughness, 0.04);
     float a2        = a * a;

@@ -1,8 +1,8 @@
 | demo1 r3dv
 | PHREDA 2026
 ^./renderlib.r3
-^./geom.r3
 ^./glfixfont.r3
+^./geom.r3
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -104,13 +104,11 @@
 	
 	fini
 	2 'fscale !
+	$7f000000 'fcolor !
+	8 sh 48 - 400 40 frect
 	$ffffffff 'fcolor !
-	"r3forth - OpenGL" 16 sh 32 - ftext
-	$3fffffff 'fcolor !
-	10 310 650 60 frect
-	$ffffffff 'fcolor !
-	10 310 650 60 rect
-
+	16 sh 40 - fat
+	"r3forth - DEMO 1 " ftext
 	fend
 	
     GLUpdate

@@ -1,9 +1,13 @@
-| demo2 r3dv
+| demo3 r3dv -- show sprites
 | PHREDA 2026
+^r3/lib/rand.r3
+
 ^./renderlib.r3
 ^./glfixfont.r3
 ^./geom.r3
 ^./ss3d.r3
+^./glimm.r3
+
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -16,33 +20,13 @@
 #mouse_y   0
 #mouse_btn 0
 
-:drawsprites
-	msec 4 << sin 0.5 +  0  over neg
-	msec 5 << $ffff and 16 << 
-	4.0 8 >> 40 << or
-	$ffffff00 
-	msec 11 >> $f and
-	0 ss3dset
-	
-	0 msec 3 << sin dup
-	4.0 8 >> 40 << 
-	$ffffff00
-	msec 18 >> $1f and 
-	1 ss3dset | x y z rxyz scale color spr i --	
-	
-	SS3Ddraw
-	;
-
-:drawscene
+:drawgeom
 	rl_ProgGeom
-	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
-	
-	drawsprites	
-	
-	;
-	
-:viewresize
-    |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
+	matini 
+	10.0 0.1 10.0 matscale 
+	0 -0.55 0 matpos 
+	$5a5a5a00 rl_setcolor 
+	draw_cube 	
 	;
 
 #xp #yp 
@@ -67,53 +51,67 @@
 	
 
 #fsun [ 
--0.5 -1.0 -0.5 0
- 1.0 0.9 0.8 0.2
+-0.5 8.0 -0.5 0
+ 1.0 1.0 1.0 1.0
  ]
 	   
 :luz
-	1.4 
+	2.4 
 	0.2 0.2 1.0
 	msec 3 << 
-	dup cos -3 * 
+	dup cos -5 * 
 	over sin -3 * 1.0 +
 	|0
-	rot sin 2.5 *.
+	rot sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 
-	1.2 
+	2.2 
 	1.0 0.2 0.2
 	msec 3 << 
-	dup cos 3 * 
+	dup cos 7 * 
 	over sin 3 * 1.0 +
 	|0
-	rot 0.5 + sin 2.5 *.
+	rot 0.5 + sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 	;
+
+#nbox	
+:movespr
+	0 ( n3dsprites <? dup >r
 	
+		dup nbox / nbox 2/ - 1.2 *
+|		10.0 randmax 5.0 -
+		|1.0 randmax
+		|dup 4 >> 8 - 1.0 *
+		over 10 << msec 4 << + sin 1.0 + 2/
+		pick2 nbox mod nbox 2/ - 1.2 *
+|		pick2 $f and 8 - 1.0 *
+		|10.0 randmax 5.0 -
+		|$ffffffffffff randmax
+		0
+		4.0 8 >> 40 << or
+		$ffffff00
+		r> dup
+		ss3dset
+		1+ ) drop
+	;
 :render
 	rl_frame_begin |rl_set_camera
-
-	drawscene
-	|'fsun rl_set_sun
+| drawgeom
+movespr	
+	SS3Ddraw
 	luz
 	
 	rl_frame_end
 	;
 	
-:main
-	render
-	
+:gui
 	fini
 	2 'fscale !
 	$7f000000 'fcolor !
 	8 sh 48 - 400 40 frect
 	$ffffffff 'fcolor !
-	16 sh 40 -  fat
-	"r3forth - DEMO 2 " ftext
-	fend
-		
-    GLUpdate
+	"r3forth - DEMO 4 - GUI " 16 sh 40 - ftext
 	
 	immIni
 	immMouse
@@ -121,31 +119,61 @@
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
 	drop	
+
+	fend
+	;
+	
+:main
+	render
+|	gui
+	
+    GLUpdate
 	
     sdlkey
 	>esc< =? ( exit )
     drop
 	;
 
+
 :load3d
-	"media/ss/test" 10 ss3dload
-	 0 0   0   0   1.0 8 >> 40 << or $ff00ff00 0 0 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.5   0   8.0 8 >> 40 << or $ffffff10 1 1 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.2   0   7.0 8 >> 40 << or $ffffff20 2 2 ss3dset | x y z rxyz scale color spr i --
-	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 40 << or $ff00ff3f 3 3 ss3dset | x y z rxyz scale color spr i --
+	"media/ss/sprites" 256 ss3dload
+	|"media/ss/vox2" 512 ss3dload
+|	"media/ss/mezcla" 512 ss3dload
+|	"media/ss/voxi" 256 ss3dload
+|	"media/ss/cars" 256 ss3dload
+|	"media/ss/test" 256 ss3dload
+
+	n3dsprites sqrt 'nbox !
+	0 ( n3dsprites <? dup >r
+	
+		dup nbox / nbox 2/ - 1.1 *
+|		10.0 randmax 5.0 -
+		|1.0 randmax
+		|dup 4 >> 8 - 1.0 *
+		0
+		pick2 nbox mod nbox 2/ - 1.1 *
+|		pick2 $f and 8 - 1.0 *
+		|10.0 randmax 5.0 -
+		|$ffffffffffff randmax
+		0
+		4.0 8 >> 40 << or
+		$ffffff00
+		r> dup
+		ss3dset
+		1+ ) drop
+
 	;
 	
 :viewresize sh sw rl_resizewin fixFontResize ;
-	
 
-: | <<<<< Boot
-	"demo2 r3dv" 1024 768 GLini GLInfo
+: | <<<<<<<< Boot
+
+	"demo3 r3dv" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
 	build_cube
 
 	load3d
-	
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	'viewresize SDLeventR

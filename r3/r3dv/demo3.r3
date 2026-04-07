@@ -1,9 +1,12 @@
 | demo3 r3dv -- show sprites
 | PHREDA 2026
+^r3/lib/rand.r3
+
 ^./renderlib.r3
+^./glfixfont.r3
 ^./geom.r3
 ^./ss3d.r3
-^r3/lib/rand.r3
+
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -103,6 +106,16 @@ movespr
 	
 :main
 	render
+	
+	fini
+	2 'fscale !
+	$7f000000 'fcolor !
+	8 sh 48 - 400 40 frect
+	$ffffffff 'fcolor !
+	16 sh 40 - fat
+	"r3forth - DEMO 3 " ftext
+	fend
+	
     GLUpdate
 	
 	immIni
@@ -147,11 +160,12 @@ movespr
 
 	;
 	
-:viewresize sh sw rl_resizewin ;
+:viewresize sh sw rl_resizewin fixFontResize ;
 
 : | <<<<<<<< Boot
 
 	"demo3 r3dv" 1024 768 GLini GLInfo
+	glFixFont
 	rl_init
 	build_cube
 
