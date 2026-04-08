@@ -61,7 +61,6 @@ layout(std140, binding = 0) uniform Matrices {
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor; };
 
 struct PointLight { vec4 pos;vec4 color; };
-
 layout(std140, binding = 2) uniform PointLights {
     ivec4 header;PointLight lights[16]; // Ahora es un tipo de dato válido y definido
 } pl;
@@ -100,7 +99,7 @@ vec3 BRDF(vec3 N, vec3 V, vec3 L,
     float G   = GeometrySchlickGGX(NdotV, k) * GeometrySchlickGGX(NdotL, k);
     float f   = pow5(1.0 - HdotV);
     vec3  F   = F0 + (1.0 - F0) * f;
-    vec3 kD      = (1.0 - F) * (1.0 - metallic);
+    vec3 kD   = (1.0 - F) * (1.0 - metallic);
     vec3 specular = (NDF * G * F) / (4.0 * NdotV * NdotL + EPS);
     return (kD * albedo * INV_PI + specular) * NdotL;
 }
@@ -126,7 +125,7 @@ void main() {
 
     float NdotV = max(dot(N, V), 0.0);
 
-    vec3 color = albedo * 0.01 + emissive; // 0.01 minimo
+    vec3 color = albedo * 0.01 + emissive;
 
     vec3  L     = normalize(lightDir.xyz);
     float NdotL = max(dot(N, L), 0.0);
@@ -179,15 +178,11 @@ layout(std140, binding = 1) uniform DirectLight {
     vec4 lightColor;   // Light color and intensity (rgb = color, a = intensity multiplier)
 };
 
+struct PointLight { vec4 pos;vec4 color; };
 layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;      // header.x = number of active point lights
-    struct {
-        vec4 pos;      // world space position (xyz), w = unused
-        vec4 color;    // rgb = color, a = intensity
-    } lights[16];
+    ivec4 header;PointLight lights[16]; // Ahora es un tipo de dato válido y definido
 } pl;
 
-// Helper: reconstruct world position from depth and UV
 vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv,
                         mat4 invProj_, mat4 invView_) {
     float d = texture(depthTex, uv).r;
@@ -198,62 +193,40 @@ vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv,
 }
 
 void main() {
-    // Sample G-buffer
     vec3 albedo   = texture(gAlbedo, uv).rgb;
     vec3 normal   = texture(gNormal, uv).rgb;
     float depth   = texture(gDepth, uv).r;
-
-    // Reconstruct world position
     vec3 worldPos = rl_reconstruct_pos(gDepth, uv, invProj, invView);
-
-    // View direction (from fragment to camera)
     vec3 viewDir = normalize(viewPos.xyz - worldPos);
-
-    // Ambient term (constant low light)
-    vec3 ambient = albedo * 0.05;
-
-    vec3 color = ambient;
-
+    vec3 color = albedo * 0.01;
+	
         vec3 L = normalize(lightDir.xyz);
         vec3 N = normalize(normal);
         float diff = max(dot(N, L), 0.0);
         vec3 diffuse = diff * albedo * lightColor.rgb * lightColor.a;
 
-        // Basic specular (Blinn-Phong) with constant shininess
         vec3 H = normalize(L + viewDir);
         float spec = pow(max(dot(N, H), 0.0), 32.0);
-        vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5; // intensity 0.5
-
+        vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5;
         color += diffuse + specular;
-
-    // --- Point lights ---
+		
     int numPointLights = pl.header.x;
     for (int i = 0; i < numPointLights && i < 16; ++i) {
         vec3 lightPos = pl.lights[i].pos.xyz;
         vec3 lightCol = pl.lights[i].color.rgb;
         float intensity = pl.lights[i].color.a;
-
         vec3 L = lightPos - worldPos;
         float distance = length(L);
         L = normalize(L);
         vec3 N = normalize(normal);
-
-        // Diffuse
         float diff = max(dot(N, L), 0.0);
         vec3 diffuse = diff * albedo * lightCol * intensity;
-
-        // Specular
         vec3 H = normalize(L + viewDir);
         float spec = pow(max(dot(N, H), 0.0), 32.0);
         vec3 specular = spec * lightCol * intensity * 0.5;
-
-        // Attenuation (inverse quadratic)
         float attenuation = 1.0 / (1.0 + 0.1 * distance + 0.01 * distance * distance);
-
         color += (diffuse + specular) * attenuation;
     }
-
-    // Output final color (linear HDR)
     FragColor = vec4(color, 1.0);
 }
 @--"
@@ -763,7 +736,6 @@ void main(){
 	GL_UNIFORM_BUFFER 0 glBindBuffer
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
-	
 	
 :bpassd | invw id ftex fbos wh --
 	0 0 rot ]wh glViewport

@@ -55,16 +55,27 @@ void main() {
 
 #fvt #fbt
 
+#unifont
+#unipro
+#unicolor
+#unimode
+
 ::glFixFont
 	fixFontResize
-	'font_shader loadShaderv 'fontshader !
+	
+	'font_shader loadShaderv 
+	dup "u_FontTexture" glGetUniformLocation 'unifont !
+	dup "projection"    glGetUniformLocation 'unipro !
+	dup "fgColor" glGetUniformLocation 'unicolor !
+	dup "fgmode" glGetUniformLocation 'unimode !
+	'fontshader !
+	
 	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
 
 	1 'fvt glGenVertexArrays
 	1 'fbt glGenBuffers
 	fvt glBindVertexArray
 	GL_ARRAY_BUFFER fbt glBindBuffer
-
 	0 glEnableVertexAttribArray
 	0 2 GL_INT 4 2 << 0 glVertexAttribIPointer
 	1 glEnableVertexAttribArray
@@ -94,8 +105,8 @@ void main() {
     0 0 sw sh glViewport
 
     fontshader glUseProgram
-    fontshader "u_FontTexture" glGetUniformLocation 0 glUniform1i
-    fontshader "projection"    glGetUniformLocation 1 0 'fwintext glUniformMatrix4fv
+    unifont 0 glUniform1i
+    unipro 1 0 'fwintext glUniformMatrix4fv
 
     GL_TEXTURE0 glActiveTexture
     GL_TEXTURE_2D fontTexture glBindTexture
@@ -111,14 +122,14 @@ void main() {
 	'ys ! 'xs ! ;
 	
 ::ftext | "" --	
-	fontshader "fgColor" glGetUniformLocation fcolor glUniform1i
-	fontshader "fgmode" glGetUniformLocation 0 glUniform1i
+	unicolor fcolor glUniform1i
+	unimode 0 glUniform1i
 	here >a ( c@+ 1? gchar ) 2drop
 	a> here -
 
 	fvt glBindVertexArray
 	GL_ARRAY_BUFFER fbt glBindBuffer
-	GL_ARRAY_BUFFER over here GL_STATIC_DRAW glBufferData
+	GL_ARRAY_BUFFER over here GL_STREAM_DRAW  glBufferData
 	GL_TRIANGLES 0 rot 4 >> glDrawArrays
 	0 glBindVertexArray
 	;
@@ -130,8 +141,8 @@ void main() {
 	8 * fscale * 16 fscale * ;
 	
 :sdraw | mode nverts --
-	fontshader "fgColor" glGetUniformLocation fcolor glUniform1i
-	fontshader "fgmode" glGetUniformLocation 1 glUniform1i
+	unicolor fcolor glUniform1i
+	unimode 1 glUniform1i
     fvt glBindVertexArray
     GL_ARRAY_BUFFER fbt glBindBuffer
     GL_ARRAY_BUFFER over 4 << here GL_STATIC_DRAW glBufferData

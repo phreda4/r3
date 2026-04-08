@@ -52,6 +52,8 @@ flat out vec3 vWorldTrans;
 flat out uint vColorPk;
 flat out int  vNF, vOffset;
 
+flat out vec3 vScaleUV;
+
 void main() {
     Instance inst = instances[gl_InstanceID];
     int spr_id = int(inst.spr_id);
@@ -74,6 +76,8 @@ void main() {
     vTexParam0 = ivec2(spr.tw, spr.th);
     vNF = spr.nf; vOffset = spr.offset;
     vColorPk = inst.color;
+	
+    vScaleUV = (0.5 / vExt) * vec3(float(spr.tw), float(spr.nf), float(spr.th));
 }
 
 @fragment---------------
@@ -95,6 +99,7 @@ flat in mat3  vRot;
 flat in vec3  vWorldTrans;
 flat in uint  vColorPk;
 flat in int   vNF, vOffset;
+flat in vec3  vScaleUV;
 
 layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
@@ -112,19 +117,20 @@ void main() {
     if (tmin >= tmax) discard;
 
     int itw = vTexParam0.x; int ith = vTexParam0.y;
-    vec3 vInv2Ext = 0.5 / vExt;
+	
+    vec3 rd_g = vec3( vRd.x * vScaleUV.x,
+                     -vRd.y * vScaleUV.y,
+                      vRd.z * vScaleUV.z);
 
-    vec3 rd_g = vec3(vRd.x*vInv2Ext.x*float(itw),
-                    -vRd.y*vInv2Ext.y*float(vNF),
-                     vRd.z*vInv2Ext.z*float(ith));
     vec3 delta_t = 1.0 / max(abs(rd_g), vec3(1e-7));
     ivec3 step_c = ivec3(sign(rd_g));
     ivec3 limit  = ivec3(itw, vNF, ith);
 
-    vec3 entry_g = vec3(
-         (vRo.x + vRd.x*tmin + vExt.x) * vInv2Ext.x * float(itw),
-        -(vRo.y + vRd.y*tmin + vExt.y) * vInv2Ext.y * float(vNF) + float(vNF),
-         (vRo.z + vRd.z*tmin + vExt.z) * vInv2Ext.z * float(ith));
+   vec3 entry_g = vec3(
+         (vRo.x + vRd.x*tmin + vExt.x) * vScaleUV.x,
+        -(vRo.y + vRd.y*tmin + vExt.y) * vScaleUV.y + float(vNF),
+         (vRo.z + vRd.z*tmin + vExt.z) * vScaleUV.z);
+		 
     ivec3 cell = clamp(ivec3(entry_g), ivec3(0), limit - 1);
     vec3 next_t = vec3(
         ((step_c.x>0) ? float(cell.x+1)-entry_g.x : entry_g.x-float(cell.x)) * delta_t.x,
@@ -132,15 +138,15 @@ void main() {
         ((step_c.z>0) ? float(cell.z+1)-entry_g.z : entry_g.z-float(cell.z)) * delta_t.z
     );
 
-    int last_axis;
-    { float tx=min(t0.x,t1.x), ty=min(t0.y,t1.y), tz=min(t0.z,t1.z);
-      if (tx>=ty && tx>=tz) last_axis=0; else if (ty>=tz) last_axis=1; else last_axis=2; }
+    float tx=min(t0.x,t1.x), ty=min(t0.y,t1.y), tz=min(t0.z,t1.z);
+    int last_axis = (tx>=ty && tx>=tz) ? 0 : (ty>=tz ? 1 : 2);
 
     int   last_layer = -1;
     ivec2 base_texel = ivec2(0);
 
     for (int i=0; i<BOXMAX; i++) {
-        if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
+        
+		if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
 
         int cy = cell.y;
         if (cy != last_layer) {
@@ -156,7 +162,7 @@ void main() {
             if      (last_axis==0) n_local = vec3(-float(step_c.x), 0.0, 0.0);
             else if (last_axis==1) n_local = vec3(0.0, float(step_c.y), 0.0);
             else                   n_local = vec3(0.0, 0.0, -float(step_c.z));
-            vec3 world_n = normalize(vRot * n_local);
+            vec3 world_n = vRot * n_local;
 
             vec3 b_hit = vec3((float(cell.x)+0.5)/float(itw),
                               1.0-(float(cell.y)+0.5)/float(vNF),
@@ -356,8 +362,8 @@ void main() {
 	ss3d_shader glUseProgram
 	bbox_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
-	GL_DEPTH_TEST glEnable
-	GL_GREATER glDepthFunc
+|	GL_DEPTH_TEST glEnable
+|	GL_GREATER glDepthFunc
 	0 glBindVertexArray
 	;
 

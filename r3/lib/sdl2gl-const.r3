@@ -100,6 +100,7 @@
 ##GL_UNIFORM_BUFFER_BINDING  $8A28
 ##GL_STATIC_DRAW             $88E4
 ##GL_DYNAMIC_DRAW            $88E8
+##GL_STREAM_DRAW             $88E0
 
 | --- Buffer Storage Flags (GL 4.4+) ---
 ##GL_MAP_READ_BIT            $0001
