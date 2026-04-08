@@ -5,7 +5,7 @@
 
 ##n3dsprites	| cnt sprites
 #3dss_max		| max instances
-#3dss_array		| instances array
+##3dss_array		| instances array
 
 #dirty_min #dirty_max | update array
 #ss3d_inst			| current cnt instances
@@ -190,7 +190,7 @@ void main() {
 @-----------------------"
 
 #imgtex | surface
-#defspr | sprite definition
+##defspr | sprite definition
 #defind | index definition
 #ssaendfile
 | int tile_w, tile_h, slice_w, slice_h, n_frames, offset; <-- shader

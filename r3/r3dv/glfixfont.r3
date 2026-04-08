@@ -122,6 +122,7 @@ void main() {
 	'ys ! 'xs ! ;
 	
 ::ftext | "" --	
+	ab[
 	unicolor fcolor glUniform1i
 	unimode 0 glUniform1i
 	here >a ( c@+ 1? gchar ) 2drop
@@ -132,8 +133,12 @@ void main() {
 	GL_ARRAY_BUFFER over here GL_STREAM_DRAW  glBufferData
 	GL_TRIANGLES 0 rot 4 >> glDrawArrays
 	0 glBindVertexArray
+	]ba
 	;
 
+::fsizeh | -- cnh
+	16 fscale * ;
+	
 ::fsize | "" -- "" sizew sizeh
 	count 8 * fscale * 16 fscale * ;
 

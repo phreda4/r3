@@ -1,13 +1,16 @@
-| demo3 r3dv -- show sprites
+| demo4 - Small scene editor
 | PHREDA 2026
 ^r3/lib/rand.r3
+^r3/util/arr8.r3
 
 ^./renderlib.r3
 ^./glfixfont.r3
-^./geom.r3
 ^./ss3d.r3
 ^./glimm.r3
+^./rlgrid.r3
 
+
+#objlist 0 0 
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4
@@ -19,15 +22,6 @@
 #mouse_x   0
 #mouse_y   0
 #mouse_btn 0
-
-:drawgeom
-	rl_ProgGeom
-	matini 
-	10.0 0.1 10.0 matscale 
-	0 -0.55 0 matpos 
-	$5a5a5a00 rl_setcolor 
-	draw_cube 	
-	;
 
 #xp #yp 
 :movecam
@@ -47,15 +41,23 @@
 	SDLw 0? ( drop ; ) neg
 	0.6 * 'cam_dist +!
 	calcam
-	;
-	
+	;	
+
+#sun 
+-0.5 8.0 -0.5 0
+-0.5 8.0 -0.5 0
 
 #fsun [ 
 -0.5 8.0 -0.5 0
  1.0 1.0 1.0 1.0
  ]
+
+:lightsun
+	8 'fsun memfloat
+	'fsun rl_set_sun
+	;
 	   
-:luz
+:light
 	2.4 
 	0.2 0.2 1.0
 	msec 3 << 
@@ -76,87 +78,119 @@
 	;
 
 #nbox	
-:movespr
-	0 ( n3dsprites <? dup >r
-	
-		dup nbox / nbox 2/ - 1.2 *
-|		10.0 randmax 5.0 -
-		|1.0 randmax
-		|dup 4 >> 8 - 1.0 *
-		over 10 << msec 4 << + sin 1.0 + 2/
-		pick2 nbox mod nbox 2/ - 1.2 *
-|		pick2 $f and 8 - 1.0 *
-		|10.0 randmax 5.0 -
-		|$ffffffffffff randmax
-		0
-		4.0 8 >> 40 << or
-		$ffffff00
-		r> dup
-		ss3dset
-		1+ ) drop
-	;
+
 :render
 	rl_frame_begin |rl_set_camera
-| drawgeom
-movespr	
+	|movespr
 	SS3Ddraw
-	luz
+	draw_grid
 	
+	light
 	rl_frame_end
+	;
+
+#va
+
+|----------------------------
+#cntobjs 0
+#scale 2.0
+#nrosprite 0
+
+:makescene
+	;
+	
+:+obj | --
+	;	
+	
+:addobj
+	'camTo >a a@+ a@+ a@+ | x y z
+	scale 8 >> 40 <<
+	$ffffff00
+	nrosprite
+	cntobjs
+	ss3dset | x y z srxyz color spr i --
+	1 'cntobjs +!
+	;
+	
+:interface
+	1 'fscale !
+	$ffffffff 'fcolor !
+
+	uiFull
+	0.05 %ch uiN
+	$1f0000ff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	'exit "Exit" uiTBtn
+	'exit "eventos" uiTBtn
+	'exit "seleccion" uiTBtn
+	
+	0.2 %cw uiO
+	$1f00ff00 'fcolor !
+	gZoneAll frect
+	
+	$ffffffff 'fcolor !
+	"EDIT" uiLabelC
+	n3dsprites "cnt:%h" sprint uiLabelC
+	cntobjs "objs:%d" sprint uiLabelC
+	nrosprite "spr:%d" sprint uiLabelC
+	'addobj "add" uiFTBtn	
+	
+|	uiFill
+|	$1fff0000 'fcolor !
+|	gZoneAll frect
+	
+	|10 10 180 46 immBox "Exit" immBtn 'exit uiClk
 	;
 	
 :hud
 	fini
-	2 'fscale !
-	$7f000000 'fcolor !
-	8 sh 48 - 400 40 frect
-	$ffffffff 'fcolor !
-	16 sh 40 - fat
-	"r3forth - DEMO 4 - GUI " ftext
-	
 	immIni
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
 	drop	
-	
-	|'fscale !
-	10 10 180 46 immBox
-	"Exit" immBtn
-	'exit uiClk
-	
-
+	interface
 	fend
+	
+	sdlkey
+	>esc< =? ( exit )
+	<w> =? ( 0.5 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( -0.5 'va ! ) >s< =? ( 0 'va ! )
+	
+	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
+	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
+	
+	<esp> =? ( addobj )
+	drop
 	;
 	
-#va
+
 :main
 	render
 	hud
-	
-    GLUpdate
-	
-    sdlkey
-	>esc< =? ( exit )
-	<up> =? ( 0.5 'va ! ) >up< =? ( 0 'va ! )
-	<dn> =? ( -0.5 'va ! ) >dn< =? ( 0 'va ! )
-    drop
-	
+	GLUpdate
 	va 0? ( drop ; ) drop
-	
 	;
 
+#names 
 
 :load3d
 |	"media/ss/sprites" 256 ss3dload
 |	"media/ss/vox2" 512 ss3dload
 |	"media/ss/mezcla" 512 ss3dload
-	"media/ss/voxi" 256 ss3dload
+|	"media/ss/voxi" 256 ss3dload
 |	"media/ss/cars" 256 ss3dload
-|	"media/ss/test" 256 ss3dload
-
+	"media/ss/test" 
+	dup 256 ss3dload
+	here dup 'names !
+	swap sprint "%s.txt" load 0 swap c!+ 'here !
 	n3dsprites sqrt 'nbox !
+
+;
+:a
+	
 	0 ( n3dsprites <? dup >r
 	
 		dup nbox / nbox 2/ - 1.1 *
@@ -177,23 +211,29 @@ movespr
 
 	;
 	
-:viewresize sh sw rl_resizewin fixFontResize ;
+	
+:viewresize 
+	sh sw rl_resizewin 
+	fixFontResize ;
 
 : | <<<<<<<< Boot
 
-	"demo3 r3dv" 1024 768 GLini GLInfo
+	"Scene r3dv" 1024 768 GLini GLInfo
 	glFixFont
-	rl_init
-	build_cube
-
+	rl_init 
+	rl_grid_init
+|	build_cube
 	load3d
-	8 'fsun memfloat
-	'fsun rl_set_sun
 	'viewresize SDLeventR
+	lightsun
+	
+	1024 'objlist p8.ini
+	
 	'main SDLshow
 	
 	SS3Dshutdown
+	rl_grid_free 
 	rl_shutdown
     GLend
-	free_cube
+|	free_cube
 	;

@@ -11,7 +11,8 @@
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNormal;
 layout(std140, binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; };
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; 
+	vec4 viewPos; };
 uniform mat4 model;
 uniform mat3 normalMatrix;
 out vec3 vPos; out vec3 vNormal;
@@ -51,12 +52,8 @@ layout(binding = 1) uniform sampler2D gAlbedo;
 layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
-    mat4 view;
-    mat4 proj;
-    mat4 invView;
-    mat4 invProj;
-    vec4 viewPos;
-};
+    mat4 view;mat4 proj;mat4 invView;mat4 invProj;
+    vec4 viewPos; };
 
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor; };
 
@@ -166,12 +163,8 @@ layout(binding = 1) uniform sampler2D gAlbedo;
 layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
-    mat4 view;
-    mat4 proj;
-    mat4 invView;
-    mat4 invProj;
-    vec4 viewPos;      // Camera position in world space
-};
+    mat4 view;mat4 proj;mat4 invView;mat4 invProj;
+    vec4 viewPos; };
 
 layout(std140, binding = 1) uniform DirectLight {
     vec4 lightDir;     // Direction to light (world space, normalized)
@@ -322,7 +315,7 @@ void main(){
 @---" | <======= SHADERS
 
 |-----------------------------------------------------------
-#rl_w 1024 #rl_h 768
+##rl_w 1024 ##rl_h 768
 
 | GBuffer
 #rl_gbuf_fbo    0
@@ -615,14 +608,16 @@ void main(){
 |------------- CAMERA ------------------
 #camDirty  1
 
-##camParam 0	| ASPECT
-#camFov 0.4142		| really atan 
-#camNear 0.5	
-#camFar 200.0
-
 ##camEye 0.0 2.0  6.0
 ##camTo  0.0 0.0  0.0
 ##camUp  0.0 1.0  0.0
+
+##camProj 0 0 0
+
+##camParam 0	| Aspect
+#camFov 0.4142
+#camNear 0.5	
+#camFar 200.0
 
 | ================================================================
 ::rl_resizewin | w h --
@@ -638,12 +633,14 @@ void main(){
 	1 'camDirty ! ;
 
 |----- UBO->GPU
-| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewPos(16) = 272 bytes
+| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) 
+| viewPos(16) viewProj(64) = 336 bytes
 #ubo_matView * 64
 #ubo_matvProj * 64
 #ubo_matvinvView * 64
 #ubo_matvinvProj * 64
-#ubo_matvviewPos * 16
+#ubo_matViewPos * 16
+|#ubo_matViewProj * 64
 
 |****DEBUUG
 ::.printfm
@@ -660,7 +657,7 @@ void main(){
 	"pro" .println 'ubo_matvProj .printfm .cr
 	"inv view" .println 'ubo_matvinvView .printfm .cr
 	"inv proj" .println 'ubo_matvinvProj .printfm .cr
-	'ubo_matvviewPos .printv .cr ;
+	'ubo_matViewPos .printv .cr ;
 	
 |------------------------------------
 :cache_proj
@@ -676,9 +673,12 @@ void main(){
 	cache_proj
 	'camEye 'camTo 'camUp mlookat
 	'ubo_matView 'mat cpymatif
+|	3 'camProj 'ubo_matViewProj mem2float
 	matinv
 	'ubo_matvinvView 'mati cpymatif
-	3 'camEye 'ubo_matvviewPos mem2float | cnt sr ds
+	3 'camEye 'ubo_matViewPos mem2float | cnt sr ds
+	
+	
 
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
 	GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
