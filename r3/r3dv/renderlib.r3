@@ -678,8 +678,6 @@ void main(){
 	'ubo_matvinvView 'mati cpymatif
 	3 'camEye 'ubo_matViewPos mem2float | cnt sr ds
 	
-	
-
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
 	GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
 	GL_UNIFORM_BUFFER 0 glBindBuffer

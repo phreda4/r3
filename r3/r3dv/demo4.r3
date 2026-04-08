@@ -13,9 +13,6 @@
 #objlist 0 0 
 
 | Camera controls
-#cam_yaw  -0.785398   | -PI/4
-#cam_pit   0.45
-#cam_dist  4.5
 #cam_drag  0
 
 | Mouse state
@@ -24,25 +21,63 @@
 #mouse_btn 0
 
 #xp #yp 
-:movecam
-	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
-	sdly dup yp - neg 0.002 * 
-	cam_pit + 0.2 min -0.2 max 'cam_pit ! 
-	'yp ! |...
-:calcam
-	'camEye >a
-	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
-	cam_pit sin cam_dist *. a!+
-	cam_yaw sin cam_pit cos *. cam_dist *. a!
-|	3 'pEye 'fpEye mem2float
-	|'camEye @+ swap @+ swap @ "%f %f %f" .println
+
+#cam_yaw  0   | -PI/4
+#cam_pit  0
+
+#camAdv 0 0 0 | forward
+#camLat 0 0 0 | right
+#camAux 0 0 0 
+
+:calCamera
+	'camAdv 'camTO v3=
+	'camAdv 'camEYE v3-
+	'camAdv v3Nor | forward = normalize(TO - EYE);
+	
+	'camLat 'camAdv v3=
+	'camLat 'camUp v3vec
+	'camLat v3Nor | right = normalize(cross(forward, UP));
+	
+|	'camAux 'camAdv
+	| Yaw alrededor de up
+	'camAux 'camAdv cam_yaw v3rotY
+	| Pitch alrededor de right
+	'camAdv 'camAux 'camLat cam_pit v3rotAxis
+    | Limitar pitch
+    |forward.y = clamp(forward.y, -0.99f, 0.99f);
+	'camAdv 8 + dup @ -0.99 max 0.99 min swap !
+    |forward = normalize(forward);
+	'camAdv v3Nor
+	
+    |to = eye + forward;	
+	'camTo 'camEye v3=
+	'camTo 'camAdv v3+
+	rl_set_camera
 	;
+	
+:movecam
+	sdlb 4 <>? ( drop ; ) drop
+	sdlx dup xp - -0.001 * 'cam_yaw ! 'xp !
+	sdly dup yp - -0.001 * 'cam_pit ! 'yp !
+	cam_yaw cam_pit or 0? ( drop ; ) drop
+	calcamera ;
+	
 :wheelcam
-	SDLw 0? ( drop ; ) neg
-	0.6 * 'cam_dist +!
-	calcam
+	SDLw 0? ( drop ; ) 0.6 *
+	'camEye 'camAdv pick2 v3+*
+	'camTo 'camAdv pick2 v3+*
+	drop
+	rl_set_camera
 	;	
 
+:rotatemouse
+	immMouse
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movecam )				| active
+	drop	
+	;
+	
 #sun 
 -0.5 8.0 -0.5 0
 -0.5 8.0 -0.5 0
@@ -90,6 +125,7 @@
 	;
 
 #va
+#vl
 
 |----------------------------
 #cntobjs 0
@@ -135,7 +171,7 @@
 	cntobjs "objs:%d" sprint uiLabelC
 	nrosprite "spr:%d" sprint uiLabelC
 	'addobj "add" uiFTBtn	
-	
+	sdlb ">.%d.<" sprint uiLabelC
 |	uiFill
 |	$1fff0000 'fcolor !
 |	gZoneAll frect
@@ -146,18 +182,16 @@
 :hud
 	fini
 	immIni
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop	
+	rotatemouse
 	interface
 	fend
 	
 	sdlkey
 	>esc< =? ( exit )
-	<w> =? ( 0.5 'va ! ) >w< =? ( 0 'va ! )
-	<s> =? ( -0.5 'va ! ) >s< =? ( 0 'va ! )
+	<w> =? ( 0.1 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( -0.1 'va ! ) >s< =? ( 0 'va ! )
+	<a> =? ( -0.1 'vl ! ) >a< =? ( 0 'vl ! )
+	<d> =? ( 0.1 'vl ! ) >d< =? ( 0 'vl ! )
 	
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
@@ -171,7 +205,16 @@
 	render
 	hud
 	GLUpdate
-	va 0? ( drop ; ) drop
+	va 1? ( 
+		'camEye 'camAdv pick2 v3+*
+		'camTo 'camAdv pick2 v3+*
+		rl_set_camera
+		) drop
+	vl 1? (
+		'camEye 'camLat pick2 v3+*
+		'camTo 'camLat pick2 v3+*
+		rl_set_camera
+		) drop	
 	;
 
 #names 
@@ -226,8 +269,8 @@
 	load3d
 	'viewresize SDLeventR
 	lightsun
-	
-	1024 'objlist p8.ini
+	calCamera
+	|1024 'objlist p8.ini
 	
 	'main SDLshow
 	
