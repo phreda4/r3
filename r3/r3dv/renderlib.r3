@@ -614,10 +614,10 @@ void main(){
 
 ##camProj 0 0 0
 
-##camParam 0	| Aspect
-#camFov 0.4142
-#camNear 0.5	
-#camFar 200.0
+##camAsp 0	| Aspect
+##camFov 0.4142
+##camNear 0.5	
+##camFar 200.0
 
 | ================================================================
 ::rl_resizewin | w h --
@@ -663,8 +663,8 @@ void main(){
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-	rl_w 16 << rl_h / 'camParam ! |camParam "%f" .println
-	'camParam matProj 
+	rl_w 16 << rl_h / 'camAsp ! |camParam "%f" .println
+	'camAsp matProj 
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
 	;

@@ -19,6 +19,32 @@
 
 |----------------------
 #cp #sp #cy #sy 
+
+#raydir 0 0 0
+
+:makeraydir  
+	'raydir 'camAdv v3=
+	'raydir 'camlat 
+	sdlx sw 2/ - 16 << sw 2/ / |camFov *. camAsp *.
+	v3+*
+	'raydir 'camup 
+	sdly sh 2/ - 16 << sh 2/ / |camFov *.
+	v3+*
+	'raydir v3Nor
+	;
+
+#hit 0
+#v3hit 0 0 0
+
+:hitground
+	'raydir 8 + @ 0? ( 'hit ! ; ) 
+	'camEye 8 + @ swap /. | t
+	-? ( drop 0 'hit ! ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'raydir rot v3+*	
+	1 'hit !
+	;
+
 :makecam
 	cam_yaw sincos 'cy ! 'sy !
 	cam_pit sincos 'cp ! 'sp !
@@ -26,19 +52,24 @@
 	b@+ cy cp *. + a!+
 	b@+ sp + a!+
 	b@+ sy cp *. + a!
+|	'camTo v3Nor
 	'camAdv >a
 	cy neg cp *. a!+
 	sp neg a!+
 	sy neg cp *. a!
+|	'camAdv v3Nor
 	'camLat >a
 	sy a!+
 	0 a!+
 	cy neg a!+
+|	'camLat v3Nor
 	rl_set_camera
 	;
 
 #xp #yp 
 :movecam
+	sdlb 4 <>? ( drop ; ) drop
+	
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
 	sdly dup yp - neg 0.001 * 
@@ -109,6 +140,7 @@
 
 #va
 #vl
+#vu
 
 |----------------------------
 #cntobjs 0
@@ -121,8 +153,18 @@
 :+obj | --
 	;	
 	
+:hiteye
+	'camAdv 8 + @ 0? ( 'hit ! ; ) 
+	'camEye 8 + @ swap /. | t
+	-? ( drop 0 'hit ! ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'camAdv rot v3+*	
+	1 'hit !
+	;
+	
 :addobj
-	'camTo >a a@+ a@+ a@+ | x y z
+	hiteye hit 0? ( drop ; ) drop
+	'v3hit >a a@+ a@+ a@+ | x y z
 	scale 8 >> 40 <<
 	$ffffff00
 	nrosprite
@@ -153,14 +195,9 @@
 	n3dsprites "ant:%h" sprint uiLabelC
 	cntobjs "objs:%d" sprint uiLabelC
 	nrosprite "spr:%d" sprint uiLabelC
-	
+	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
 	'addobj "+" uiFTBtn	
 
-|	uiFill
-|	$1fff0000 'fcolor !
-|	gZoneAll frect
-	
-	|10 10 180 46 immBox "Exit" immBtn 'exit uiClk
 	;
 	
 :hud
@@ -176,15 +213,33 @@
 	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
 	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
 	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
+	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
+	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
+	
+	<f1> =? ( 
+		makeraydir hitground
+		hit 1? (
+			'raydir >a a@+ a@+ a@+ | x y z
+			scale 8 >> 40 <<
+			$ffffff00
+			nrosprite
+			cntobjs
+			ss3dset | x y z srxyz color spr i --
+			|1 'cntobjs +!
+			) drop
+
+		)
 	
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
 	
-	<esp> =? ( addobj )
+	<esp> =? ( 
+		addobj 
+		nrosprite 1+ n3dsprites mod 'nrosprite !
+		)
 	drop
 	;
 	
-
 :main
 	render
 	hud
@@ -199,45 +254,25 @@
 		'camTo 'camLat pick2 v3+*
 		rl_set_camera
 		) drop	
+	vu 1? (
+		'camEye 'camUp pick2 v3+*
+		'camTo 'camUp pick2 v3+*
+		rl_set_camera
+		) drop		
 	;
 
 #names 
 
 :load3d
-|	"media/ss/sprites" 256 ss3dload
-|	"media/ss/vox2" 512 ss3dload
-|	"media/ss/mezcla" 512 ss3dload
-|	"media/ss/voxi" 256 ss3dload
-|	"media/ss/cars" 256 ss3dload
-	"media/ss/test" 
+|	"media/ss/iti"
+|	"media/ss/vox2" 
+	"media/ss/sprites"	
 	dup 256 ss3dload
 	here dup 'names !
 	swap "%s.txt" sprint 
 	load 0 swap c!+ 'here !
 	n3dsprites sqrt 'nbox !
 	;
-:a
-	
-	0 ( n3dsprites <? dup >r
-	
-		dup nbox / nbox 2/ - 1.1 *
-|		10.0 randmax 5.0 -
-		|1.0 randmax
-		|dup 4 >> 8 - 1.0 *
-		0
-		pick2 nbox mod nbox 2/ - 1.1 *
-|		pick2 $f and 8 - 1.0 *
-		|10.0 randmax 5.0 -
-		|$ffffffffffff randmax
-		0
-		4.0 8 >> 40 << or
-		$ffffff00
-		r> dup
-		ss3dset
-		1+ ) drop
-
-	;
-	
 	
 :viewresize 
 	sh sw rl_resizewin 
@@ -255,13 +290,15 @@
 	'viewresize SDLeventR
 	lightsun
 	makeCam
+	
 	|1024 'objlist p8.ini
 	
 	'main SDLshow
 	
-	SS3Dshutdown
+	
+|	free_cube	
 	rl_grid_free 
 	rl_shutdown
-    GLend
-|	free_cube
+	SS3Dshutdown
+	GLend
 	;

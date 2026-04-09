@@ -201,23 +201,6 @@ void main() {
 #idx_tex		| index
 #ssbo_inst		| instances
 
-#maxw #maxh #maxz
-
-:dump
-	n3dsprites "%d sprites" .println
-	defspr >a
-	n3dsprites ( 1? 1-
-		da@+ "tw:%d " .print
-		da@+ "th:%d " .print
-		da@+ "sw:%d " .print
-		da@+ "sh:%d " .print
-		da@+ "z:%d " .print
-		da@+ "offset:%d " .print
-		.cr
-		) drop
-	maxz maxh maxw "mw:%d mh:%d mz:%d" .println
-	;
-	
 |----------------------------
 #vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
 			-1.0 -1.0  1.0   1.0 -1.0  1.0   1.0  1.0  1.0  -1.0  1.0  1.0	]
@@ -244,6 +227,10 @@ void main() {
 :imgtex>wh imgtex dup 16 + d@ swap 20 + d@ ;
 :imgtex>pix imgtex 32 + @ ;
 
+#maxsize #nowsize
+:cheksize
+	nowsize maxsize >? ( 'maxsize ! ; ) drop ; 
+	
 ::ss3dload | "file" instances --
 	'3dss_max !
 	build_bbox
@@ -268,19 +255,20 @@ void main() {
 	3dss_array d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
 	w@+ 'n3dsprites !
 	here dup 'defspr ! >a
-	0 'maxw ! 0 'maxh ! 0 'maxz !
+	0 'maxsize !
 	n3dsprites ( 1? 1- >r
 		d@+
 		dup 8 >> $ff and da!+ |tw
 		dup $ff and da!+	|th
 		dup 24 >> $ff and 
-		maxw >? ( dup 'maxw ! ) da!+ |sw 
+		dup 'nowsize ! da!+ |sw 
 		16 >> $ff and 
-		maxh >? ( dup 'maxh ! ) da!+ |sh
+		dup 'nowsize +! da!+ |sh
 		d@+
 		dup 16 >> $ffff and 
-		maxz >? ( dup 'maxz ! ) da!+ |nf (z)
+		dup 'nowsize +! da!+ |nf (z)
 		$ffff and da!+	| offset
+		cheksize
 		r> ) drop
 	'defind !
 |	a> 'here !
@@ -313,7 +301,7 @@ void main() {
 
 | set BOXMAX constant
 	'ss3d_shader_src "0000" findstr
-	maxw maxh + maxz + .d 4 .r. 
+	maxsize .d 4 .r. 
 	4 cmove |dsc	
 	
 | compile shader	
