@@ -488,6 +488,7 @@ void main(){
     rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
     rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
     rl_scene_depth 1? ( 1 'rl_scene_depth glDeleteTextures     ) drop
+	0 'rl_scene_fbo !  0 'rl_scene_tex !  0 'rl_scene_depth ! 
 	'listex >a
 	'lisfbo >b
 	RL_BLOOM_MIPS ( 1? 1-

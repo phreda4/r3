@@ -46,20 +46,17 @@ layout(std140,binding=0) uniform Matrices {
      out vec3 vRo;
      out vec3 vLocalPos;
 flat out vec3 vExt;
-flat out ivec2 vTexParam0;
 flat out mat3 vRot;
 flat out vec3 vWorldTrans;
 flat out uint vColorPk;
-flat out int  vNF, vOffset;
-
-flat out vec3 vScaleUV;
+flat out int  vOffset;
 
 void main() {
     Instance inst = instances[gl_InstanceID];
     int spr_id = int(inst.spr_id);
     SpriteDef spr = sprites[spr_id];
     vExt = vec3(0.005*float(spr.tw), 0.005*float(spr.nf), 0.005*float(spr.th));
-	
+
 	const float k = 1.0/65536.0; // fixed.point>>fp
 	mat3 rot = mat3(vec3(inst.r0) * k,vec3(inst.r1) * k,vec3(inst.r2) * k);
 	vec3 trans   = vec3(inst.tr) * k;
@@ -73,11 +70,8 @@ void main() {
     vLocalPos = local_pos;
     vRot = rot;
     vWorldTrans = trans;
-    vTexParam0 = ivec2(spr.tw, spr.th);
-    vNF = spr.nf; vOffset = spr.offset;
     vColorPk = inst.color;
-	
-    vScaleUV = (0.5 / vExt) * vec3(float(spr.tw), float(spr.nf), float(spr.th));
+    vOffset = spr.offset;
 }
 
 @fragment---------------
@@ -85,8 +79,6 @@ void main() {
 #extension GL_ARB_conservative_depth : enable // TEST <----
 #define BOXMAX 0000
 
-struct SpriteDef { int tw, th, sw, sh, nf, offset; };
-layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 layout(std140,binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos;
 };
@@ -94,12 +86,10 @@ layout(std140,binding=0) uniform Matrices {
 in  vec3  vRo;
 in  vec3  vLocalPos;
 flat in vec3  vExt;
-flat in ivec2 vTexParam0;
 flat in mat3  vRot;
 flat in vec3  vWorldTrans;
 flat in uint  vColorPk;
-flat in int   vNF, vOffset;
-flat in vec3  vScaleUV;
+flat in int   vOffset;
 
 layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
@@ -108,6 +98,8 @@ layout(location=1) out vec4 gAlbedo;
 layout(depth_greater) out float gl_FragDepth; // TEST<-----
 
 void main() {
+    const float kScale = 100.0;
+
     vec3 vRd   = vLocalPos - vRo;
     vec3 ir    = sign(vRd) / max(abs(vRd), vec3(1e-7));
     vec3 t0    = (-vExt - vRo) * ir;
@@ -116,21 +108,23 @@ void main() {
     float tmax = min(min(max(t0.x,t1.x), max(t0.y,t1.y)), max(t0.z,t1.z));
     if (tmin >= tmax) discard;
 
-    int itw = vTexParam0.x; int ith = vTexParam0.y;
-	
-    vec3 rd_g = vec3( vRd.x * vScaleUV.x,
-                     -vRd.y * vScaleUV.y,
-                      vRd.z * vScaleUV.z);
+    int itw = int(vExt.x * 200.0 + 0.5);
+    int ith = int(vExt.z * 200.0 + 0.5);
+    int iNF = int(vExt.y * 200.0 + 0.5);
+
+    vec3 rd_g = vec3( vRd.x * kScale,
+                     -vRd.y * kScale,
+                      vRd.z * kScale);
 
     vec3 delta_t = 1.0 / max(abs(rd_g), vec3(1e-7));
     ivec3 step_c = ivec3(sign(rd_g));
-    ivec3 limit  = ivec3(itw, vNF, ith);
+    ivec3 limit  = ivec3(itw, iNF, ith);
 
-   vec3 entry_g = vec3(
-         (vRo.x + vRd.x*tmin + vExt.x) * vScaleUV.x,
-        -(vRo.y + vRd.y*tmin + vExt.y) * vScaleUV.y + float(vNF),
-         (vRo.z + vRd.z*tmin + vExt.z) * vScaleUV.z);
-		 
+    vec3 entry_g = vec3(
+         (vRo.x + vRd.x*tmin + vExt.x) * kScale,
+        -(vRo.y + vRd.y*tmin + vExt.y) * kScale + float(iNF),
+         (vRo.z + vRd.z*tmin + vExt.z) * kScale);
+
     ivec3 cell = clamp(ivec3(entry_g), ivec3(0), limit - 1);
     vec3 next_t = vec3(
         ((step_c.x>0) ? float(cell.x+1)-entry_g.x : entry_g.x-float(cell.x)) * delta_t.x,
@@ -145,7 +139,7 @@ void main() {
     ivec2 base_texel = ivec2(0);
 
     for (int i=0; i<BOXMAX; i++) {
-        
+
 		if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
 
         int cy = cell.y;
@@ -165,7 +159,7 @@ void main() {
             vec3 world_n = vRot * n_local;
 
             vec3 b_hit = vec3((float(cell.x)+0.5)/float(itw),
-                              1.0-(float(cell.y)+0.5)/float(vNF),
+                              1.0-(float(cell.y)+0.5)/float(iNF),
                               (float(cell.z)+0.5)/float(ith));
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vWorldTrans + world_n*0.0005;
 
