@@ -9,66 +9,49 @@
 ^./glimm.r3
 ^./rlgrid.r3
 
-
 #objlist 0 0 
 
 | Camera controls
-#cam_drag  0
-
-| Mouse state
-#mouse_x   0
-#mouse_y   0
-#mouse_btn 0
-
-#xp #yp 
-
-#cam_yaw  0   | -PI/4
+#cam_yaw  0  
 #cam_pit  0
-
 #camAdv 0 0 0 | forward
 #camLat 0 0 0 | right
-#camAux 0 0 0 
 
-:calCamera
-	'camAdv 'camTO v3=
-	'camAdv 'camEYE v3-
-	'camAdv v3Nor | forward = normalize(TO - EYE);
-	
-	'camLat 'camAdv v3=
-	'camLat 'camUp v3vec
-	'camLat v3Nor | right = normalize(cross(forward, UP));
-	
-|	'camAux 'camAdv
-	| Yaw alrededor de up
-	'camAux 'camAdv cam_yaw v3rotY
-	| Pitch alrededor de right
-	'camAdv 'camAux 'camLat cam_pit v3rotAxis
-    | Limitar pitch
-    |forward.y = clamp(forward.y, -0.99f, 0.99f);
-	'camAdv 8 + dup @ -0.99 max 0.99 min swap !
-    |forward = normalize(forward);
-	'camAdv v3Nor
-	
-    |to = eye + forward;	
-	'camTo 'camEye v3=
-	'camTo 'camAdv v3+
+|----------------------
+#cp #sp #cy #sy 
+:makecam
+	cam_yaw sincos 'cy ! 'sy !
+	cam_pit sincos 'cp ! 'sp !
+	'camTo >a 'camEye >b
+	b@+ cy cp *. + a!+
+	b@+ sp + a!+
+	b@+ sy cp *. + a!
+	'camAdv >a
+	cy neg cp *. a!+
+	sp neg a!+
+	sy neg cp *. a!
+	'camLat >a
+	sy a!+
+	0 a!+
+	cy neg a!+
 	rl_set_camera
 	;
-	
+
+#xp #yp 
 :movecam
-	sdlb 4 <>? ( drop ; ) drop
-	sdlx dup xp - -0.001 * 'cam_yaw ! 'xp !
-	sdly dup yp - -0.001 * 'cam_pit ! 'yp !
-	cam_yaw cam_pit or 0? ( drop ; ) drop
-	calcamera ;
+	sdlx dup xp - 0.001 * 
+	'cam_yaw +! 'xp !
+	sdly dup yp - neg 0.001 * 
+	cam_pit + 0.2 min -0.2 max 
+	'cam_pit ! 'yp !
+	makecam ;
 	
 :wheelcam
-	SDLw 0? ( drop ; ) 0.6 *
+	SDLw 0? ( drop ; ) -0.4 *
 	'camEye 'camAdv pick2 v3+*
 	'camTo 'camAdv pick2 v3+*
 	drop
-	rl_set_camera
-	;	
+	rl_set_camera ;
 
 :rotatemouse
 	immMouse
@@ -167,11 +150,12 @@
 	
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
-	n3dsprites "cnt:%h" sprint uiLabelC
+	n3dsprites "ant:%h" sprint uiLabelC
 	cntobjs "objs:%d" sprint uiLabelC
 	nrosprite "spr:%d" sprint uiLabelC
-	'addobj "add" uiFTBtn	
-	sdlb ">.%d.<" sprint uiLabelC
+	
+	'addobj "+" uiFTBtn	
+
 |	uiFill
 |	$1fff0000 'fcolor !
 |	gZoneAll frect
@@ -188,10 +172,10 @@
 	
 	sdlkey
 	>esc< =? ( exit )
-	<w> =? ( 0.1 'va ! ) >w< =? ( 0 'va ! )
-	<s> =? ( -0.1 'va ! ) >s< =? ( 0 'va ! )
-	<a> =? ( -0.1 'vl ! ) >a< =? ( 0 'vl ! )
-	<d> =? ( 0.1 'vl ! ) >d< =? ( 0 'vl ! )
+	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
+	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
+	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
 	
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
@@ -228,10 +212,10 @@
 	"media/ss/test" 
 	dup 256 ss3dload
 	here dup 'names !
-	swap sprint "%s.txt" load 0 swap c!+ 'here !
+	swap "%s.txt" sprint 
+	load 0 swap c!+ 'here !
 	n3dsprites sqrt 'nbox !
-
-;
+	;
 :a
 	
 	0 ( n3dsprites <? dup >r
@@ -263,13 +247,14 @@
 
 	"Scene r3dv" 1024 768 GLini GLInfo
 	glFixFont
+	load3d
 	rl_init 
 	rl_grid_init
 |	build_cube
-	load3d
+	
 	'viewresize SDLeventR
 	lightsun
-	calCamera
+	makeCam
 	|1024 'objlist p8.ini
 	
 	'main SDLshow

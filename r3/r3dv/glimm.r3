@@ -172,24 +172,20 @@
 	fx cx + padx + 
 	fy cy +
 	fat ftext 
-	fsizeh mary + 'cy +!
-	;
-
+	fsizeh mary + 'cy +! ;
 	
 ::uiLabelC | "" --
 	fsize  | w h
 	fx fw 2/ + rot 2/ -
 	fy cy + rot >r
 	fat ftext 
-	r> mary + 'cy +!
-	;
+	r> mary + 'cy +! ;
 
 ::uiLabelR | "" --
 	fsize  | w h
 	fx fw + padx - rot -
 	fy cy + rot >r
 	fat ftext 
-	r> mary + 'cy +!
-	;
+	r> mary + 'cy +! ;
 
 	

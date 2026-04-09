@@ -247,7 +247,7 @@ void main() {
 ::ss3dload | "file" instances --
 	'3dss_max !
 	build_bbox
-	mark
+	|mark
 	here dup '3dss_array !
 	over "%s.ssa" sprint load 
 	dup 'ssaendfile !
@@ -300,10 +300,9 @@ void main() {
 	GL_TEXTURE_1D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
 	GL_TEXTURE_1D 0 glBindTexture
 	
-	empty
-	here '3dss_array !
+	|empty
+|	here '3dss_array !
 	3dss_max 64 * 'here +!
-	
 	1 'ssbo_inst glGenBuffers
     GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 	GL_SHADER_STORAGE_BUFFER 3dss_max 64 * 0 GL_DYNAMIC_DRAW glBufferData
