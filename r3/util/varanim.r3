@@ -3,15 +3,15 @@
 |
 | vaini		| max --
 
-| +vanim | 'var ini fin ease dur. start --
+| +vanim    | 'var fin ini ease dur. start --
 | +vboxanim | 'var fin ini ease dur. start --
-| +vxyanim | 'var ini fin ease dur. start --
-| +vcolanim | 'var ini fin ease dur. start --
+| +vxyanim  | 'var fin ini ease dur. start --
+| +vcolanim | 'var fin ini ease dur. start --
 
-| +vanimg | 'var ini fin ease dur. start group --
+| +vanimg    | 'var fin ini ease dur. start group --
 | +vboxanimg | 'var fin ini ease dur. start group --
-| +vxyanimg | 'var ini fin ease dur. start group --
-| +vcolanimg | 'var ini fin ease dur. start group --
+| +vxyanimg  | 'var fin ini ease dur. start group --
+| +vcolanimg | 'var fin ini ease dur. start group --
 
 | ---exe in 3.0 seconds 
 | +vexe		| 'exe 3.0 --
@@ -24,9 +24,9 @@
 | ---update 
 | vupdate	| --
 
-| vareset	| -- 			kill all events
-| vkillgroup| group --		kill for group
-| vkillvar  | 'var --		kill for 'var
+| vareset    | -- 			kill all events
+| vkillgroup | group --		kill for group
+| vkillvar   | 'var --		kill for 'var
 | vaempty    | -- n			cnt now
 |
 | vvexe: get param >>	dup @ -> v1

@@ -76,7 +76,7 @@ void main() {
 
 @fragment---------------
 #version 440 core
-#extension GL_ARB_conservative_depth : enable // TEST <----
+#extension GL_ARB_conservative_depth : enable
 #define BOXMAX 0000
 
 layout(std140,binding=0) uniform Matrices {
@@ -95,7 +95,7 @@ layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
-layout(depth_greater) out float gl_FragDepth; // TEST<-----
+layout(depth_greater) out float gl_FragDepth;
 
 void main() {
     const float kScale = 100.0;
@@ -334,20 +334,19 @@ void main() {
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex glBindTexture
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_1D idx_tex glBindTexture
-	GL_TEXTURE0 glActiveTexture
+
 	GL_DEPTH_TEST glEnable
 	GL_CULL_FACE glEnable
 	GL_BACK glCullFace
 	GL_GREATER glDepthFunc
 	GL_TRUE glDepthMask
+	
 	ss3d_shader glUseProgram
 	bbox_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
-|	GL_DEPTH_TEST glEnable
-|	GL_GREATER glDepthFunc
+	
 	0 glBindVertexArray
 	;
-
 
 :dirtycheck
 	dirty_min <? ( dup 'dirty_min ! )

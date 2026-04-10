@@ -1,7 +1,7 @@
 | demo4 - Small scene editor
 | PHREDA 2026
 ^r3/lib/rand.r3
-^r3/util/arr8.r3
+^r3/util/varanim.r3
 
 ^./renderlib.r3
 ^./glfixfont.r3
@@ -64,6 +64,7 @@
 	cy neg a!+
 |	'camLat v3Nor
 	rl_set_camera
+	
 	;
 
 #xp #yp 
@@ -106,41 +107,35 @@
 	'fsun rl_set_sun
 	;
 	   
-:light
+:light2
 	2.4 
-	0.2 0.2 1.0
+	0.0 0.0 1.0
 	msec 3 << 
 	dup cos -5 * 
 	over sin -3 * 1.0 +
-	|0
 	rot sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 
 	2.2 
-	1.0 0.2 0.2
+	1.0 0.0 0.0
 	msec 3 << 
 	dup cos 7 * 
 	over sin 3 * 1.0 +
-	|0
 	rot 0.5 + sin 4.5 *.
 	rl_point_light | int cr cg cb x y z --
 	;
-
-#nbox	
-
-:render
-	rl_frame_begin |rl_set_camera
-	|movespr
-	SS3Ddraw
-	draw_grid
 	
-	light
-	rl_frame_end
+:light
+	0.2
+	1.0 1.0 1.0
+	'camEye >a
+	a@+ a@+ 1.0 + a@
+	rl_point_light | int cr cg cb x y z --
 	;
 
-#va
-#vl
-#vu
+#nbox
+
+#va #vl #vu
 
 |----------------------------
 #cntobjs 0
@@ -172,11 +167,47 @@
 	ss3dset | x y z srxyz color spr i --
 	1 'cntobjs +!
 	;
+
+:toorigen
+	0 'cam_yaw !
+	0 'cam_pit !
+	'camTo >a
+	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	;
 	
+:totop
+	toorigen
+	'camEye >a
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 8.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	'makecam  1.0 +vexe
+	;
+	
+:tofront
+	toorigen
+	'camEye >a
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 6.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	'makecam  1.0 +vexe
+	;
+	
+:toside
+	toorigen
+	'camEye >a
+	a> 6.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	'makecam  1.0 +vexe
+	;
+
 :interface
 	1 'fscale !
 	$ffffffff 'fcolor !
-
+	
 	uiFull
 	0.05 %ch uiN
 	$1f0000ff 'fcolor !
@@ -192,11 +223,19 @@
 	
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
+	'totop "View TOP" uiFTBtn
+	'tofront "View FRONT" uiFTBtn
+	'toside "View SIDE" uiFTBtn
+	
+	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
+	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
+	|'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+	
 	n3dsprites "ant:%h" sprint uiLabelC
 	cntobjs "objs:%d" sprint uiLabelC
 	nrosprite "spr:%d" sprint uiLabelC
-	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
-	'addobj "+" uiFTBtn	
+|	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
+|	'addobj "+" uiFTBtn	
 
 	;
 	
@@ -227,23 +266,15 @@
 			ss3dset | x y z srxyz color spr i --
 			|1 'cntobjs +!
 			) drop
-
 		)
 	
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
-	
 	<esp> =? ( 
 		addobj 
 		nrosprite 1+ n3dsprites mod 'nrosprite !
 		)
 	drop
-	;
-	
-:main
-	render
-	hud
-	GLUpdate
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*
 		'camTo 'camAdv pick2 v3+*
@@ -253,25 +284,39 @@
 		'camEye 'camLat pick2 v3+*
 		'camTo 'camLat pick2 v3+*
 		rl_set_camera
-		) drop	
+		) drop
 	vu 1? (
 		'camEye 'camUp pick2 v3+*
 		'camTo 'camUp pick2 v3+*
 		rl_set_camera
-		) drop		
+		) drop
+	;
+	
+:main
+	vupdate
+
+	rl_frame_begin |rl_set_camera
+	|movespr
+	SS3Ddraw
+	draw_grid
+	light
+	rl_frame_end
+
+	hud
+	GLUpdate
 	;
 
 #names 
 
 :load3d
-|	"media/ss/iti"
+	"media/ss/iti"
 |	"media/ss/vox2" 
-	"media/ss/sprites"	
+|	"media/ss/sprites"	
 	dup 256 ss3dload
 	here dup 'names !
 	swap "%s.txt" sprint 
 	load 0 swap c!+ 'here !
-	n3dsprites sqrt 'nbox !
+|	n3dsprites sqrt 'nbox !
 	;
 	
 :viewresize 
@@ -281,6 +326,9 @@
 : | <<<<<<<< Boot
 
 	"Scene r3dv" 1024 768 GLini GLInfo
+	
+	$fff vaini
+	
 	glFixFont
 	load3d
 	rl_init 
