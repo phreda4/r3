@@ -47,22 +47,23 @@
 
 :makecam
 	cam_yaw sincos 'cy ! 'sy !
-	cam_pit sincos 'cp ! 'sp !
+	cam_pit |-0.24 max 0.24 min 
+	sincos 'cp ! 'sp !
 	'camTo >a 'camEye >b
 	b@+ cy cp *. + a!+
 	b@+ sp + a!+
 	b@+ sy cp *. + a!
-|	'camTo v3Nor
+	'camTo v3Nor
 	'camAdv >a
 	cy neg cp *. a!+
 	sp neg a!+
 	sy neg cp *. a!
-|	'camAdv v3Nor
+	'camAdv v3Nor
 	'camLat >a
 	sy a!+
 	0 a!+
 	cy neg a!+
-|	'camLat v3Nor
+	'camLat v3Nor
 	rl_set_camera
 	
 	;
@@ -74,7 +75,7 @@
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
 	sdly dup yp - neg 0.001 * 
-	cam_pit + 0.2 min -0.2 max 
+	cam_pit + |0.2 min -0.2 max 
 	'cam_pit ! 'yp !
 	makecam ;
 	
@@ -168,38 +169,33 @@
 	1 'cntobjs +!
 	;
 
-:toorigen
-	0 'cam_yaw !
-	0 'cam_pit !
-	'camTo >a
-	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	;
 	
 :totop
-	toorigen
+	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
+	'cam_pit -0.24 cam_pit 21 1.0 0 +vanim
 	'camEye >a
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 8.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
 	
 :tofront
-	toorigen
+	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
+	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 6.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
 	
 :toside
-	toorigen
+	'cam_yaw -0.24 cam_yaw 21 1.0 0 +vanim
+	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> 6.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 1.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
@@ -294,7 +290,8 @@
 	
 :main
 	vupdate
-
+	makecam
+	
 	rl_frame_begin |rl_set_camera
 	|movespr
 	SS3Ddraw
