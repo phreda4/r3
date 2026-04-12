@@ -12,7 +12,7 @@ layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNormal;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; 
-	vec4 viewPos; };
+	vec4 viewPos; mat4 ProjView; };
 uniform mat4 model;
 uniform mat3 normalMatrix;
 out vec3 vPos; out vec3 vNormal;
@@ -20,7 +20,7 @@ void main(){
     vec4 wp = model*vec4(aPos,1.0);
     vPos = wp.xyz;
     vNormal = normalMatrix*aNormal;
-    gl_Position = proj*view*wp;
+    gl_Position = ProjView*wp;
 }
 @fragment---------------
 #version 440 core
@@ -53,7 +53,7 @@ layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view;mat4 proj;mat4 invView;mat4 invProj;
-    vec4 viewPos; };
+    vec4 viewPos;mat4 ProjView; };
 
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor; };
 
@@ -164,7 +164,7 @@ layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view;mat4 proj;mat4 invView;mat4 invProj;
-    vec4 viewPos; };
+    vec4 viewPos;mat4 ProjView; };
 
 layout(std140, binding = 1) uniform DirectLight {
     vec4 lightDir;     // Direction to light (world space, normalized)
@@ -525,7 +525,7 @@ void main(){
 :rl_init_ubos
     1 'rl_ubo_matrices glGenBuffers
     GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-    GL_UNIFORM_BUFFER 272 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 336 0 GL_DYNAMIC_DRAW glBufferData
     GL_UNIFORM_BUFFER 0 rl_ubo_matrices glBindBufferBase
 
     1 'rl_ubo_dirlight glGenBuffers
@@ -641,7 +641,7 @@ void main(){
 #ubo_matvinvView * 64
 #ubo_matvinvProj * 64
 #ubo_matViewPos * 16
-|#ubo_matViewProj * 64
+#ubo_matProjView * 64
 
 |****DEBUUG
 ::.printfm
@@ -661,6 +661,8 @@ void main(){
 	'ubo_matViewPos .printv .cr ;
 	
 |------------------------------------
+#realproj * 128
+
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
@@ -668,19 +670,23 @@ void main(){
 	'camAsp matProj 
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
+	
+	'realproj 'mat 16 move  | copy for precalc proj*view
 	;
 
 ::rl_set_camera | --
 	cache_proj
 	'camEye 'camTo 'camUp mlookat
 	'ubo_matView 'mat cpymatif
-|	3 'camProj 'ubo_matViewProj mem2float
 	matinv
 	'ubo_matvinvView 'mati cpymatif
 	3 'camEye 'ubo_matViewPos mem2float | cnt sr ds
+
+	'realproj mat* | reverse proj*view
+	'ubo_matProjView 'mati cpymatif
 	
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-	GL_UNIFORM_BUFFER 0 272 'ubo_matview glBufferSubData
+	GL_UNIFORM_BUFFER 0 336 'ubo_matview glBufferSubData
 	GL_UNIFORM_BUFFER 0 glBindBuffer
 	;
 

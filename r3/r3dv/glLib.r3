@@ -52,7 +52,7 @@
 	camT neg camR /. 10 a] ! | proj.m[10] = -(n + f) / (n - f);
 	-1.0 11 a] ! | proj.m[11] = -1.0f;
 	camNear camFar *. 2* neg camR /. 14 a] ! | proj.m[14] = -2.0f * n * f / (n - f);
-	|...................
+	|................... calc inverse too
 	'mati 0 16 fill | dvc
 	'mati >b 'mat >a
 	1.0 a@ /. b! | inv_proj.m[0]  =  1.0f / proj.m[0];
@@ -106,7 +106,23 @@
     1.0 b! |mat[15] = 1.0;
 	;	
 
+|--- multiply
+:mline | -- v
+	a@+ b@ *. 32 b+
+	a@+ b@ *. + 32 b+
+	a@+ b@ *. + 32 b+
+	a@+ b@ *. + ;
 	
+:mrow | adr -- adr'
+	mline swap !+ -88 b+ -32 a+
+	mline swap !+ -88 b+ -32 a+
+	mline swap !+ -88 b+ -32 a+
+	mline swap !+ -96 b+ -24 b+ ;
+	
+::mat* | 'mat --
+	>b 'mat >a 'mati mrow mrow mrow mrow drop ;
+	
+|----  invert mat
 ::matinv | -- | mat --> mati |invert
 	'mat >a
 	'matx >b | b store aux

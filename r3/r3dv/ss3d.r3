@@ -40,7 +40,7 @@ struct SpriteDef {
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 
 layout(std140,binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos;
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; mat4 ProjView;
 };
 
      out vec3  vRo;
@@ -68,7 +68,8 @@ void main() {
     vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) * inv_s2;
 
     vec3 local_pos = a_pos * vExt;
-    gl_Position = proj * view * vec4(rot*local_pos + trans, 1.0);
+    //gl_Position = proj * view * vec4(rot*local_pos + trans, 1.0);
+	gl_Position = ProjView * vec4(rot*local_pos + trans, 1.0);
     vLocalPos    = local_pos;
     vRot         = rot;
     vWorldTrans  = trans;
@@ -82,7 +83,7 @@ void main() {
 #define BOXMAX 0000
 
 layout(std140,binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos;
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; mat4 ProjView;
 };
 
 in  vec3  vRo;
@@ -136,8 +137,8 @@ void main() {
         ((step_c.z>0) ? float(cell.z+1)-entry_g.z : entry_g.z-float(cell.z)) * delta_t.z
     );
 
-    float tx = min(t0.x,t1.x), ty = min(t0.y,t1.y), tz = min(t0.z,t1.z);
-    int last_axis = (tx>=ty && tx>=tz) ? 0 : (ty>=tz ? 1 : 2);
+	vec3 tmin3 = min(t0, t1);
+	int last_axis = (tmin3.x>=tmin3.y && tmin3.x>=tmin3.z) ? 0 : (tmin3.y>=tmin3.z ? 1 : 2);
 
     int   last_layer = -1;
     ivec2 base_texel = ivec2(0);
@@ -167,7 +168,8 @@ void main() {
                               (float(cell.z)+0.5)/float(ith));
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vWorldTrans + world_n*0.0005;
 
-            vec4 clip = proj * (view * vec4(world_hit, 1.0));
+            //vec4 clip = proj * (view * vec4(world_hit, 1.0));
+			vec4 clip = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w*0.5 + 0.5;
 
             vec3 tint = vec3(float((vColorPk>>24)&0xFFu),
