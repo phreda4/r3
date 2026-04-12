@@ -141,10 +141,12 @@ void main() {
 
     int   last_layer = -1;
     ivec2 base_texel = ivec2(0);
-
-    for (int i=0; i<BOXMAX; i++) {
-
-        if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
+	
+	ivec3 exit_cell = ivec3(step_c.x>0?limit.x:-1,step_c.y>0?limit.y:-1,step_c.z>0?limit.z:-1);
+	
+	for (int i=0; i<BOXMAX; i++) {
+	
+		if (any(equal(cell, exit_cell))) break;
 
         int cy = cell.y;
         if (cy != last_layer) {
@@ -189,7 +191,7 @@ void main() {
 ##defspr | sprite definition
 #defind | index definition
 #ssaendfile
-| int tile_w, tile_h, slice_w, slice_h, n_frames, offset; <-- shader
+| int tile_w, tile_h, /*slice_w, slice_h*/, n_frames, offset; <-- shader
 
 |----GPU
 #atlas_tex		| atlas
@@ -278,7 +280,7 @@ void main() {
 	
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER n3dsprites 24 * defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER n3dsprites 16 * defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 
