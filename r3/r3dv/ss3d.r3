@@ -35,7 +35,7 @@ struct Instance {
 layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
 
 struct SpriteDef {
-    int tw, th, sw, sh, nf, offset;
+    int tw, th, nf, offset;
 };
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 
@@ -43,35 +43,37 @@ layout(std140,binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos;
 };
 
-     out vec3 vRo;
-     out vec3 vLocalPos;
-flat out vec3 vExt;
-flat out mat3 vRot;
-flat out vec3 vWorldTrans;
-flat out uint vColorPk;
-flat out int  vOffset;
+     out vec3  vRo;
+     out vec3  vLocalPos;
+flat out ivec3 vSize;
+flat out mat3  vRot;
+flat out vec3  vWorldTrans;
+flat out uint  vColorPk;
+flat out int   vOffset;
 
 void main() {
-    Instance inst = instances[gl_InstanceID];
-    int spr_id = int(inst.spr_id);
-    SpriteDef spr = sprites[spr_id];
-    vExt = vec3(0.005*float(spr.tw), 0.005*float(spr.nf), 0.005*float(spr.th));
+    Instance inst  = instances[gl_InstanceID];
+    int spr_id     = int(inst.spr_id);
+    SpriteDef spr  = sprites[spr_id];
 
-	const float k = 1.0/65536.0; // fixed.point>>fp
-	mat3 rot = mat3(vec3(inst.r0) * k,vec3(inst.r1) * k,vec3(inst.r2) * k);
-	vec3 trans   = vec3(inst.tr) * k;
-	float inv_s2 = float(inst.inv_s2) * k;
+    vSize = ivec3(spr.tw, spr.nf, spr.th);    // sin multiplicar
+    vec3 vExt = vec3(vSize) * 0.005;          // una sola conversión aquí
+
+    const float k = 1.0/65536.0;
+    mat3 rot  = mat3(vec3(inst.r0)*k, vec3(inst.r1)*k, vec3(inst.r2)*k);
+    vec3 trans   = vec3(inst.tr) * k;
+    float inv_s2 = float(inst.inv_s2) * k;
 
     vec3 dw = viewPos.xyz - trans;
     vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) * inv_s2;
 
     vec3 local_pos = a_pos * vExt;
     gl_Position = proj * view * vec4(rot*local_pos + trans, 1.0);
-    vLocalPos = local_pos;
-    vRot = rot;
-    vWorldTrans = trans;
-    vColorPk = inst.color;
-    vOffset = spr.offset;
+    vLocalPos    = local_pos;
+    vRot         = rot;
+    vWorldTrans  = trans;
+    vColorPk     = inst.color;
+    vOffset      = spr.offset;
 }
 
 @fragment---------------
@@ -85,7 +87,7 @@ layout(std140,binding=0) uniform Matrices {
 
 in  vec3  vRo;
 in  vec3  vLocalPos;
-flat in vec3  vExt;
+flat in ivec3 vSize;
 flat in mat3  vRot;
 flat in vec3  vWorldTrans;
 flat in uint  vColorPk;
@@ -100,6 +102,12 @@ layout(depth_greater) out float gl_FragDepth;
 void main() {
     const float kScale = 100.0;
 
+    int itw = vSize.x;
+    int iNF = vSize.y;
+    int ith = vSize.z;
+
+    vec3 vExt = vec3(vSize) * 0.005;
+
     vec3 vRd   = vLocalPos - vRo;
     vec3 ir    = sign(vRd) / max(abs(vRd), vec3(1e-7));
     vec3 t0    = (-vExt - vRo) * ir;
@@ -107,10 +115,6 @@ void main() {
     float tmin = max(max(max(min(t0.x,t1.x), min(t0.y,t1.y)), min(t0.z,t1.z)), 1e-5);
     float tmax = min(min(max(t0.x,t1.x), max(t0.y,t1.y)), max(t0.z,t1.z));
     if (tmin >= tmax) discard;
-
-    int itw = int(vExt.x * 200.0 + 0.5);
-    int ith = int(vExt.z * 200.0 + 0.5);
-    int iNF = int(vExt.y * 200.0 + 0.5);
 
     vec3 rd_g = vec3( vRd.x * kScale,
                      -vRd.y * kScale,
@@ -132,7 +136,7 @@ void main() {
         ((step_c.z>0) ? float(cell.z+1)-entry_g.z : entry_g.z-float(cell.z)) * delta_t.z
     );
 
-    float tx=min(t0.x,t1.x), ty=min(t0.y,t1.y), tz=min(t0.z,t1.z);
+    float tx = min(t0.x,t1.x), ty = min(t0.y,t1.y), tz = min(t0.z,t1.z);
     int last_axis = (tx>=ty && tx>=tz) ? 0 : (ty>=tz ? 1 : 2);
 
     int   last_layer = -1;
@@ -140,7 +144,7 @@ void main() {
 
     for (int i=0; i<BOXMAX; i++) {
 
-		if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
+        if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, limit))) break;
 
         int cy = cell.y;
         if (cy != last_layer) {
@@ -152,10 +156,8 @@ void main() {
         vec4 tex = texelFetch(uAlb, base_texel + ivec2(cell.x, cell.z), 0);
 
         if (tex.a != 0.0) {
-            vec3 n_local;
-            if      (last_axis==0) n_local = vec3(-float(step_c.x), 0.0, 0.0);
-            else if (last_axis==1) n_local = vec3(0.0, float(step_c.y), 0.0);
-            else                   n_local = vec3(0.0, 0.0, -float(step_c.z));
+            vec3 signs  = vec3(-float(step_c.x), float(step_c.y), -float(step_c.z));
+            vec3 n_local = signs * vec3(last_axis==0, last_axis==1, last_axis==2);
             vec3 world_n = vRot * n_local;
 
             vec3 b_hit = vec3((float(cell.x)+0.5)/float(itw),
@@ -174,14 +176,14 @@ void main() {
             return;
         }
 
-        bvec3 m = lessThanEqual(next_t, min(next_t.yzx, next_t.zxy));
-        next_t += vec3(m) * delta_t;
-        cell   += ivec3(m) * step_c;
+        bvec3 m   = lessThanEqual(next_t, min(next_t.yzx, next_t.zxy));
+        next_t   += vec3(m) * delta_t;
+        cell     += ivec3(m) * step_c;
         last_axis = m.x ? 0 : (m.y ? 1 : 2);
     }
     discard;
 }
-@-----------------------"
+@-----"
 
 #imgtex | surface
 ##defspr | sprite definition
@@ -252,12 +254,18 @@ void main() {
 	0 'maxsize !
 	n3dsprites ( 1? 1- >r
 		d@+
-		dup 8 >> $ff and da!+ |tw
-		dup $ff and da!+	|th
-		dup 24 >> $ff and 
-		dup 'nowsize ! da!+ |sw 
-		16 >> $ff and 
-		dup 'nowsize +! da!+ |sh
+		dup 8 >> $ff and 
+		dup 'nowsize ! 
+		da!+ |tw
+		
+		dup $ff and 
+		dup 'nowsize +! 
+		da!+ |th
+		
+|		dup 24 >> $ff and da!+ |sw 
+|		16 >> $ff and da!+ |sh
+		drop
+		
 		d@+
 		dup 16 >> $ffff and 
 		dup 'nowsize +! da!+ |nf (z)
