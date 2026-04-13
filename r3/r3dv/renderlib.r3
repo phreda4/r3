@@ -58,7 +58,7 @@ layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor;
 
 struct PointLight { vec4 pos;vec4 color; };
 layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;PointLight lights[16]; // Ahora es un tipo de dato válido y definido
+    ivec4 header;PointLight lights[16];
 } pl;
 
 const float PI     = 3.14159265359;
@@ -166,8 +166,7 @@ layout(std140, binding = 0) uniform Matrices {
 	};
 
 layout(std140, binding = 1) uniform DirectLight {
-    vec4 lightDir;     // Direction to light (world space, normalized)
-    vec4 lightColor;   // Light color and intensity (rgb = color, a = intensity multiplier)
+    vec4 lightDir;vec4 lightColor;
 };
 
 struct PointLight { vec4 pos;vec4 color; };
@@ -175,32 +174,31 @@ layout(std140, binding = 2) uniform PointLights {
     ivec4 header;PointLight lights[16]; 
 } pl;
 
-vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv,
-                        mat4 invProj_, mat4 invView_) {
+vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv) {
     float d = texture(depthTex, uv).r;
     vec4 ndc = vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
-    vec4 vp  = invProj_ * ndc;
+    vec4 vp  = invProj * ndc;
     vp /= vp.w;
-    return (invView_ * vp).xyz;
+    return (invView * vp).xyz;
 }
 
 void main() {
     vec3 albedo   = texture(gAlbedo, uv).rgb;
     vec3 normal   = texture(gNormal, uv).rgb;
     float depth   = texture(gDepth, uv).r;
-    vec3 worldPos = rl_reconstruct_pos(gDepth, uv, invProj, invView);
+    vec3 worldPos = rl_reconstruct_pos(gDepth, uv);
     vec3 viewDir = normalize(viewPos.xyz - worldPos);
     vec3 color = albedo * 0.01;
 	
-        vec3 L = normalize(lightDir.xyz);
-        vec3 N = normalize(normal);
-        float diff = max(dot(N, L), 0.0);
-        vec3 diffuse = diff * albedo * lightColor.rgb * lightColor.a;
+	vec3 L = normalize(lightDir.xyz);
+	vec3 N = normalize(normal);
+	float diff = max(dot(N, L), 0.0);
+	vec3 diffuse = diff * albedo * lightColor.rgb * lightColor.a;
 
-        vec3 H = normalize(L + viewDir);
-        float spec = pow(max(dot(N, H), 0.0), 32.0);
-        vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5;
-        color += diffuse + specular;
+	vec3 H = normalize(L + viewDir);
+	float spec = pow(max(dot(N, H), 0.0), 32.0);
+	vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5;
+	color += diffuse + specular;
 		
     int numPointLights = pl.header.x;
     for (int i = 0; i < numPointLights && i < 16; ++i) {
@@ -633,8 +631,8 @@ void main(){
 	1 'camDirty ! ;
 
 |----- UBO->GPU
-| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) 
-| viewPos(16) viewProj(64) = 336 bytes
+| RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewProj(64)
+| viewPos(16) = 336 bytes
 #ubo_matView * 64
 #ubo_matvProj * 64
 #ubo_matvinvView * 64
@@ -642,23 +640,6 @@ void main(){
 #ubo_matProjView * 64
 #ubo_matViewPos * 16
 
-|****DEBUUG
-::.printfm
-	>a 4 ( 1? 1- 4 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop "" .println ;
-
-::.printfm3
-	>a 3 ( 1? 1- 3 ( 1? 1- da@+ fp2f "%f " .print ) drop .cr ) drop "" .println ;
-	
-::.printv
-	>a da@+ fp2f da@+ fp2f da@ fp2f "(%f %f %f)" .println ;
-	
-:debugmat
-	"view" .println 'ubo_matView .printfm .cr
-	"pro" .println 'ubo_matvProj .printfm .cr
-	"inv view" .println 'ubo_matvinvView .printfm .cr
-	"inv proj" .println 'ubo_matvinvProj .printfm .cr
-	'ubo_matViewPos .printv .cr ;
-	
 |------------------------------------
 #realproj * 128
 

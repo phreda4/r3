@@ -72,7 +72,7 @@
 	|sdlb 4 <>? ( drop ; ) drop
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
-	sdly dup yp - 0.001 * 
+	sdly dup yp - -0.001 * 
 	cam_pit + |0.24 min -0.24 max 
 	'cam_pit ! 'yp !
 	makecam ;
@@ -274,7 +274,7 @@
 		hit 1? (
 			'raydir >a a@+ a@+ a@+ | x y z
 			scale 8 >> 40 <<
-			$ffffff00
+			$ffffffff
 			nrosprite
 			cntobjs
 			ss3dset | x y z srxyz color spr i --

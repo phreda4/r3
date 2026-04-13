@@ -129,10 +129,10 @@
 
 :load3d
 	"media/ss/test" 10 ss3dload
-	 0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz scale color spr i --
-	1.0 0 0.2   0   7.0 8 >> 48 << or $ffffff20 2 2 ss3dset | x y z rxyz scale color spr i --
-	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ff00ff3f 3 3 ss3dset | x y z rxyz scale color spr i --
+	 0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz color spr i --
+	1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz color spr i --
+	1.0 0 0.2   0   7.0 8 >> 48 << or $ffffff20 2 2 ss3dset | x y z rxyz color spr i --
+	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ffff00ff 3 3 ss3dset | x y z rxyz color spr i --
 	;
 	
 :viewresize sh sw rl_resizewin fixFontResize ;
