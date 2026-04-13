@@ -35,7 +35,7 @@ struct Instance {
 layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
 
 struct SpriteDef {
-    int tw, th, nf, offset;
+    int twh, nfoff;
 };
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 
@@ -56,8 +56,8 @@ void main() {
     int spr_id     = int(inst.spr_id);
     SpriteDef spr  = sprites[spr_id];
 
-    vSize = ivec3(spr.tw, spr.nf, spr.th);    // sin multiplicar
-    vec3 vExt = vec3(vSize) * 0.005;          // una sola conversión aquí
+    vSize = ivec3(spr.twh>>16, spr.nfoff>>16, spr.twh&0xffff);
+    vec3 vExt = vec3(vSize) * 0.005;
 
     const float k = 1.0/65536.0;
     mat3 rot  = mat3(vec3(inst.r0)*k, vec3(inst.r1)*k, vec3(inst.r2)*k);
@@ -68,13 +68,12 @@ void main() {
     vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) * inv_s2;
 
     vec3 local_pos = a_pos * vExt;
-    //gl_Position = proj * view * vec4(rot*local_pos + trans, 1.0);
 	gl_Position = ProjView * vec4(rot*local_pos + trans, 1.0);
     vLocalPos    = local_pos;
     vRot         = rot;
     vWorldTrans  = trans;
     vColorPk     = inst.color;
-    vOffset      = spr.offset;
+    vOffset      = spr.nfoff&0xffff;
 }
 
 @fragment---------------
@@ -168,7 +167,6 @@ void main() {
                               (float(cell.z)+0.5)/float(ith));
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vWorldTrans + world_n*0.0005;
 
-            //vec4 clip = proj * (view * vec4(world_hit, 1.0));
 			vec4 clip = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w*0.5 + 0.5;
 
@@ -258,22 +256,15 @@ void main() {
 	0 'maxsize !
 	n3dsprites ( 1? 1- >r
 		d@+
-		dup 8 >> $ff and 
-		dup 'nowsize ! 
-		da!+ |tw
-		
-		dup $ff and 
-		dup 'nowsize +! 
-		da!+ |th
-		
-|		dup 24 >> $ff and da!+ |sw 
-|		16 >> $ff and da!+ |sh
-		drop
-		
+		dup 8 >> $ff and   dup 'nowsize ! 
+		16 <<
+		swap $ff and       dup 'nowsize +! 
+		or 
+		da!+ |tw+th
+	
 		d@+
-		dup 16 >> $ffff and 
-		dup 'nowsize +! da!+ |nf (z)
-		$ffff and da!+	| offset
+		dup 16 >> $ffff and 'nowsize +! |da!+ |nf (z)
+		da!+	| nf+offset
 		cheksize
 		r> ) drop
 	'defind !
@@ -282,7 +273,7 @@ void main() {
 	
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER n3dsprites 16 * defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER n3dsprites 8 * defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 

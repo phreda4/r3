@@ -173,7 +173,7 @@ layout(std140, binding = 1) uniform DirectLight {
 
 struct PointLight { vec4 pos;vec4 color; };
 layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;PointLight lights[16]; // Ahora es un tipo de dato válido y definido
+    ivec4 header;PointLight lights[16]; 
 } pl;
 
 vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv,
