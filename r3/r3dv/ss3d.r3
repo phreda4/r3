@@ -322,6 +322,9 @@ void main() {
 		swap 1+ ) 3drop
 	-1 ;
 	
+::ssnameid | id -- name
+	ss3names swap ( 1? 1- swap >>cr trim swap ) drop ;
+	
 ::SS3Dshutdown
 	ssbo_inst 1? ( 1 'ssbo_inst glDeleteBuffers ) drop
 	idx_tex 1? ( 1 'idx_tex  glDeleteTextures ) drop

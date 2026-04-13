@@ -53,7 +53,6 @@
 	b@+ cy cp *. + a!+
 	b@+ sp + a!+
 	b@+ sy cp *. + a!
-	|'camTo v3Nor
 	'camAdv >a
 	cy neg cp *. a!+
 	sp neg a!+
@@ -244,10 +243,12 @@
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
+	nrosprite ssnameid "%l" sprint uiLabelC
 	
-	n3dsprites "ant:%h" sprint uiLabelC
-	cntobjs "objs:%d" sprint uiLabelC
-	nrosprite "spr:%d" sprint uiLabelC
+|	n3dsprites "ant:%h" sprint uiLabelC
+|	cntobjs "objs:%d" sprint uiLabelC
+|	nrosprite "spr:%d" sprint uiLabelC
+
 |	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
 |	'addobj "+" uiFTBtn	
 
@@ -321,17 +322,12 @@
 	GLUpdate
 	;
 
-#names 
-
 :load3d
-	"media/ss/iti"
+|	"media/ss/iti"
 |	"media/ss/vox2" 
-|	"media/ss/sprites"	
+	"media/ss/sprites"
 	dup 256 ss3dload
-	here dup 'names !
-	swap "%s.txt" sprint 
-	load 0 swap c!+ 'here !
-|	n3dsprites sqrt 'nbox !
+	ss3loadnames
 	;
 	
 :viewresize 
