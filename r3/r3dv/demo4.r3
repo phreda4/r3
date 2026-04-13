@@ -47,13 +47,13 @@
 
 :makecam
 	cam_yaw sincos 'cy ! 'sy !
-	cam_pit |-0.24 max 0.24 min 
+	cam_pit -0.24 max 0.24 min 
 	sincos 'cp ! 'sp !
 	'camTo >a 'camEye >b
 	b@+ cy cp *. + a!+
 	b@+ sp + a!+
 	b@+ sy cp *. + a!
-	'camTo v3Nor
+	|'camTo v3Nor
 	'camAdv >a
 	cy neg cp *. a!+
 	sp neg a!+
@@ -65,17 +65,16 @@
 	cy neg a!+
 	'camLat v3Nor
 	rl_set_camera
-	
 	;
 
 #xp #yp 
 :movecam
-	sdlb 4 <>? ( drop ; ) drop
+	|sdlb 4 <>? ( drop ; ) drop
 	
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
-	sdly dup yp - neg 0.001 * 
-	cam_pit + |0.2 min -0.2 max 
+	sdly dup yp - -0.001 * 
+	cam_pit + |0.24 min -0.24 max 
 	'cam_pit ! 'yp !
 	makecam ;
 	
@@ -210,8 +209,11 @@
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	'exit "Exit" uiTBtn
-	'exit "eventos" uiTBtn
-	'exit "seleccion" uiTBtn
+|	'exit "eventos" uiTBtn
+|	'exit "seleccion" uiTBtn
+	'totop "T" uiTBtn
+	'tofront "F" uiTBtn
+	'toside "S" uiTBtn
 	
 	0.2 %cw uiO
 	$1f00ff00 'fcolor !
@@ -219,13 +221,15 @@
 	
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
-	'totop "View TOP" uiFTBtn
-	'tofront "View FRONT" uiFTBtn
-	'toside "View SIDE" uiFTBtn
 	
 	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
 	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
-	|'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+	'camAdv @+ swap @+ swap @ "Adv: %a,%a,%a" sprint uiLabelC
+	'camLat @+ swap @+ swap @ "Lat: %a,%a,%a" sprint uiLabelC
+
+	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
+
 	
 	n3dsprites "ant:%h" sprint uiLabelC
 	cntobjs "objs:%d" sprint uiLabelC
