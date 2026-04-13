@@ -237,7 +237,6 @@ void main() {
 	over "%s.ssa" sprint load 
 	dup 'ssaendfile !
 	'here !	|3dss_array here - "ss3load: %h" .println
-	
 	"%s.png" sprint IMG_load 'imgtex !
 
 	1 'atlas_tex glGenTextures
@@ -256,12 +255,9 @@ void main() {
 	0 'maxsize !
 	n3dsprites ( 1? 1- >r
 		d@+
-		dup 8 >> $ff and   dup 'nowsize ! 
-		16 <<
-		swap $ff and       dup 'nowsize +! 
-		or 
-		da!+ |tw+th
-	
+		dup 8 >> $ff and	dup 'nowsize ! 
+		16 << swap $ff and	dup 'nowsize +! 
+		or da!+	|tw+th
 		d@+
 		dup 16 >> $ffff and 'nowsize +! |da!+ |nf (z)
 		da!+	| nf+offset
@@ -309,6 +305,22 @@ void main() {
 	0 glUseProgram
 	0 'ss3d_inst !	
 	;
+
+##ss3names
+
+::ss3loadnames | "" --
+	here dup 'ss3names !
+	swap "%s.txt" sprint load 
+	0 swap c!+ 'here !
+	;
+
+::ss3idname | name -- id
+	ss3names
+	0 ( n3dsprites <? swap
+		pick2 =pre 1? ( 2drop nip ; ) drop
+		>>cr trim
+		swap 1+ ) 3drop
+	-1 ;
 	
 ::SS3Dshutdown
 	ssbo_inst 1? ( 1 'ssbo_inst glDeleteBuffers ) drop
@@ -357,7 +369,6 @@ void main() {
 	;
 	
 #cz #sz #cy #sy #cx #sx
-#s2
 
 ::ss3dset | x y z srxyz color spr i --
 	dirtycheck
@@ -366,26 +377,46 @@ void main() {
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !
-	40 >> $ffff00 and	| 8.8 fixepoint
-	dup cy cz *. *. dup					da!+
-	dup *. 's2 ! 
-	dup cx sz *. sx sy *. cz *. + *. dup da!+
-	dup *. 's2 +!	
-	dup sx sz *. cx sy *. cz *. - *. dup da!+
-	dup *. 's2 +!
+	40 >> $ffff00 and	| 8.8 fixepoint (scale)
+	dup cy cz *. *. 					da!+
+	dup cx sz *. sx sy *. cz *. + *.	da!+
+	dup sx sz *. cx sy *. cz *. - *.	da!+
 	r> da!+	
 	dup cy neg sz *. *. 				da!+
 	dup cx cz *. sx sy *. sz *. - *.	da!+
 	dup sx cz *. cx sy *. sz *. + *.	da!+
 	r> da!+
-	dup sy *.					da!+
-	dup sx neg cy *. *.			da!+
-	cx cy *. *.					da!+ | <-- last scale
+	dup sy *.							da!+
+	dup sx neg cy *. *.					da!+
+	dup cx cy *. *.						da!+
 	r> da!+ 
+	>r | scale
 	rot da!+ swap da!+ da!+ 		| x y z
-	1.0 s2 0? ( 1.0 + ) /.		da! | invs2
+	1.0 r> dup *. 0? ( 1.0 + ) /.		da! | invs2
 	;
-	
+
+::ss3drot | srxyz i --
+	dirtycheck
+	dup 6 << 3dss_array + >a
+	dup sincos 'cz ! 'sz !
+	dup 16 >> sincos 'cy ! 'sy !
+	dup 32 >> sincos 'cx ! 'sx !
+	40 >> $ffff00 and	| 8.8 fixepoint (scale)
+	dup cy cz *. *. 					da!+
+	dup cx sz *. sx sy *. cz *. + *.	da!+
+	dup sx sz *. cx sy *. cz *. - *.	da!+
+	4 a+
+	dup cy neg sz *. *. 				da!+
+	dup cx cz *. sx sy *. sz *. - *.	da!+
+	dup sx cz *. cx sy *. sz *. + *.	da!+
+	4 a+
+	dup sy *.							da!+
+	dup sx neg cy *. *.					da!+
+	dup cx cy *. *.						da!+
+	4 a+
+	1.0 swap dup *. 0? ( 1.0 + ) /.		da! | invs2
+	;
+
 ::ss3dcs | color spr i --
 	dirtycheck
 	6 << 3dss_array + 
@@ -396,5 +427,7 @@ void main() {
 	dirtycheck
 	6 << 3dss_array + 
 	12 2 << + >a
-	rot da!+ swap da!+ da!
-	;
+	rot da!+ swap da!+ da! ;
+	
+::ss3dreset | -- 
+	0 'ss3d_inst ! ;
