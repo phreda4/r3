@@ -26,8 +26,7 @@ void main(){
 in vec2 vScreen;
 
 layout(std140, binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj;
-    vec4 viewPos;
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
 };
 
 layout(location=0) out vec3 gNormal;

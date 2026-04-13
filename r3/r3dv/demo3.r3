@@ -88,7 +88,7 @@
 		|10.0 randmax 5.0 -
 		|$ffffffffffff randmax
 		0
-		4.0 8 >> 40 << or
+		4.0 8 >> 48 << or
 		$ffffff00
 		r> dup
 		ss3dset

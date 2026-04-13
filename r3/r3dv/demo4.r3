@@ -70,10 +70,9 @@
 #xp #yp 
 :movecam
 	|sdlb 4 <>? ( drop ; ) drop
-	
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
-	sdly dup yp - -0.001 * 
+	sdly dup yp - 0.001 * 
 	cam_pit + |0.24 min -0.24 max 
 	'cam_pit ! 'yp !
 	makecam ;
@@ -160,7 +159,7 @@
 :addobj
 	hiteye hit 0? ( drop ; ) drop
 	'v3hit >a a@+ a@+ a@+ | x y z
-	scale 8 >> 40 <<
+	scale 8 >> 48 <<
 	$ffffff00
 	nrosprite
 	cntobjs
@@ -168,6 +167,21 @@
 	1 'cntobjs +!
 	;
 
+:makeCancha
+	0 ( 9 <?
+		0 ( 6 <?
+			over over 9 * + 6 + >r
+
+			over 1.0 * 0.1 pick2 1.0 *
+			2.2 8 >> 48 << |$ffff000000000000 and 
+			$ffffff00
+			r>
+			cntobjs
+			ss3dset | x y z srxyz color spr i --
+			1 'cntobjs +!
+			1+ ) drop
+		1+ ) drop
+	;
 	
 :totop
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
@@ -225,8 +239,8 @@
 	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
 	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
 	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
-	'camAdv @+ swap @+ swap @ "Adv: %a,%a,%a" sprint uiLabelC
-	'camLat @+ swap @+ swap @ "Lat: %a,%a,%a" sprint uiLabelC
+	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
+	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
@@ -340,10 +354,10 @@
 	lightsun
 	makeCam
 	
+	makeCancha
 	|1024 'objlist p8.ini
 	
 	'main SDLshow
-	
 	
 |	free_cube	
 	rl_grid_free 

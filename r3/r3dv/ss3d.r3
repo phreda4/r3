@@ -40,7 +40,7 @@ struct SpriteDef {
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 
 layout(std140,binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; mat4 ProjView;
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
 };
 
      out vec3  vRo;
@@ -82,7 +82,7 @@ void main() {
 #define BOXMAX 0000
 
 layout(std140,binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; vec4 viewPos; mat4 ProjView;
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
 };
 
 in  vec3  vRo;
@@ -366,7 +366,7 @@ void main() {
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !
-	32 >> $ffff00 and	| 8.8 fixepoint
+	40 >> $ffff00 and	| 8.8 fixepoint
 	dup cy cz *. *. dup					da!+
 	dup *. 's2 ! 
 	dup cx sz *. sx sy *. cz *. + *. dup da!+

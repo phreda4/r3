@@ -11,8 +11,7 @@
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNormal;
 layout(std140, binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; 
-	vec4 viewPos; mat4 ProjView; };
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;  };
 uniform mat4 model;
 uniform mat3 normalMatrix;
 out vec3 vPos; out vec3 vNormal;
@@ -52,8 +51,8 @@ layout(binding = 1) uniform sampler2D gAlbedo;
 layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
-    mat4 view;mat4 proj;mat4 invView;mat4 invProj;
-    vec4 viewPos;mat4 ProjView; };
+    mat4 view;mat4 proj;mat4 invView;mat4 invProj; mat4 ProjView; vec4 viewPos;
+    };
 
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir;vec4 lightColor; };
 
@@ -163,8 +162,8 @@ layout(binding = 1) uniform sampler2D gAlbedo;
 layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
-    mat4 view;mat4 proj;mat4 invView;mat4 invProj;
-    vec4 viewPos;mat4 ProjView; };
+    mat4 view;mat4 proj;mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; 
+	};
 
 layout(std140, binding = 1) uniform DirectLight {
     vec4 lightDir;     // Direction to light (world space, normalized)
@@ -640,8 +639,8 @@ void main(){
 #ubo_matvProj * 64
 #ubo_matvinvView * 64
 #ubo_matvinvProj * 64
-#ubo_matViewPos * 16
 #ubo_matProjView * 64
+#ubo_matViewPos * 16
 
 |****DEBUUG
 ::.printfm
