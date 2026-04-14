@@ -145,82 +145,6 @@ void main() {
 }
 @-"
 
-#rl_shader_light_basic "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
-@fragment---------------
-#version 440 core
-
-in vec2 uv;
-out vec4 FragColor;
-
-layout(binding = 0) uniform sampler2D gNormal;
-layout(binding = 1) uniform sampler2D gAlbedo;
-layout(binding = 3) uniform sampler2D gDepth;
-
-layout(std140, binding = 0) uniform Matrices {
-    mat4 view;mat4 proj;mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; 
-	};
-
-layout(std140, binding = 1) uniform DirectLight {
-    vec4 lightDir;vec4 lightColor;
-};
-
-struct PointLight { vec4 pos;vec4 color; };
-layout(std140, binding = 2) uniform PointLights {
-    ivec4 header;PointLight lights[16]; 
-} pl;
-
-vec3 rl_reconstruct_pos(sampler2D depthTex, vec2 uv) {
-    float d = texture(depthTex, uv).r;
-    vec4 ndc = vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
-    vec4 vp  = invProj * ndc;
-    vp /= vp.w;
-    return (invView * vp).xyz;
-}
-
-void main() {
-    vec3 albedo   = texture(gAlbedo, uv).rgb;
-    vec3 normal   = texture(gNormal, uv).rgb;
-    float depth   = texture(gDepth, uv).r;
-    vec3 worldPos = rl_reconstruct_pos(gDepth, uv);
-    vec3 viewDir = normalize(viewPos.xyz - worldPos);
-    vec3 color = albedo * 0.01;
-	
-	vec3 L = normalize(lightDir.xyz);
-	vec3 N = normalize(normal);
-	float diff = max(dot(N, L), 0.0);
-	vec3 diffuse = diff * albedo * lightColor.rgb * lightColor.a;
-
-	vec3 H = normalize(L + viewDir);
-	float spec = pow(max(dot(N, H), 0.0), 32.0);
-	vec3 specular = spec * lightColor.rgb * lightColor.a * 0.5;
-	color += diffuse + specular;
-		
-    int numPointLights = pl.header.x;
-    for (int i = 0; i < numPointLights && i < 16; ++i) {
-        vec3 lightPos = pl.lights[i].pos.xyz;
-        vec3 lightCol = pl.lights[i].color.rgb;
-        float intensity = pl.lights[i].color.a;
-        vec3 L = lightPos - worldPos;
-        float distance = length(L);
-        L = normalize(L);
-        vec3 N = normalize(normal);
-        float diff = max(dot(N, L), 0.0);
-        vec3 diffuse = diff * albedo * lightCol * intensity;
-        vec3 H = normalize(L + viewDir);
-        float spec = pow(max(dot(N, H), 0.0), 32.0);
-        vec3 specular = spec * lightCol * intensity * 0.5;
-        float attenuation = 1.0 / (1.0 + 0.1 * distance + 0.01 * distance * distance);
-        color += (diffuse + specular) * attenuation;
-    }
-    FragColor = vec4(color, 1.0);
-}
-@--"
-
 
 #rl_shader_bright "
 @vertex-----------------
@@ -360,13 +284,14 @@ void main(){
 #tid #aux
 
 |----------------------------------
-:rl_make_tex2d | ifmt w h fmt type minf magf wrap -- texid
-	>r >r >r >r >r >r >r >r
+:rl_make_tex2d | ifmt w h fmt type minmagf wrap -- texid
+	>r >r >r >r >r >r >r
 	1 'tid glGenTextures
 	GL_TEXTURE_2D tid glBindTexture
 	GL_TEXTURE_2D 0 r> r> r> 0 r> r> 0 glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER r> glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER r> glTexParameteri
+	r> 
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER pick2 glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER rot glTexParameteri
 	r> 1? ( 
 		GL_TEXTURE_2D GL_TEXTURE_WRAP_S pick2 glTexParameteri
 		GL_TEXTURE_2D GL_TEXTURE_WRAP_T pick2 glTexParameteri
@@ -385,8 +310,6 @@ void main(){
 		GL_COLOR_ATTACHMENT0 'aux !
 		1 'aux glDrawBuffers
 		) drop
-|	GL_FRAMEBUFFER glCheckFramebufferStatus
-|    $8CD5 <>? ( drop "[rl] FBO incompleto" .println ; ) drop   | GL_FRAMEBUFFER_COMPLETE = 0x8CD5
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	tid ;
 
@@ -398,24 +321,21 @@ void main(){
     GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
 	
     | gNormal: GL_RGB16F 
-    GL_RGB16F rl_w rl_h GL_RGB GL_FLOAT GL_NEAREST GL_NEAREST 0
+    GL_RGB16F rl_w rl_h GL_RGB GL_FLOAT GL_NEAREST 0
     rl_make_tex2d 'rl_gbuf_norm !
 	
     | gAlbedo: GL_RGBA8
-    GL_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_NEAREST GL_NEAREST 0
+    GL_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_NEAREST 0
     rl_make_tex2d 'rl_gbuf_albedo !
 	
     | gDepth: GL_DEPTH_COMPONENT32F
-    GL_DEPTH_COMPONENT32F rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST GL_NEAREST 0
+    GL_DEPTH_COMPONENT32F rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST 0
     rl_make_tex2d 'rl_gbuf_depth !
 	
     GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D rl_gbuf_norm   0 glFramebufferTexture2D
     GL_FRAMEBUFFER GL_COLOR_ATTACHMENT1 GL_TEXTURE_2D rl_gbuf_albedo 0 glFramebufferTexture2D
     GL_FRAMEBUFFER GL_DEPTH_ATTACHMENT  GL_TEXTURE_2D rl_gbuf_depth  0 glFramebufferTexture2D
     2 '_gdb_draws glDrawBuffers
-
-|    GL_FRAMEBUFFER glCheckFramebufferStatus|
-|    $8CD5 <>? ( drop "[rl] GBuffer FBO incompleto" .println ; ) drop
 
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	GL_TEXTURE_2D 0 glBindTexture
@@ -447,10 +367,10 @@ void main(){
 | ================================================================	
 :rl_init_bloom
     | scene_tex: 
-    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR 0
+    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR 0
     rl_make_tex2d 'rl_scene_tex !
     | scene_depth: 
-    GL_DEPTH_COMPONENT24 rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST GL_NEAREST 0
+    GL_DEPTH_COMPONENT24 rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST 0
     rl_make_tex2d 'rl_scene_depth !
 
     rl_scene_tex rl_scene_depth rl_make_fbo 'rl_scene_fbo !
@@ -464,9 +384,9 @@ void main(){
 		2dup 16 << or r@ ]wh!
 		1.0 pick2 / f2fp $ffffffff and 
 		1.0 pick2 / f2fp 32 << or r@ ]afp!
-		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
 		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
-		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
 		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
 		r> 1+ ) 3drop ;
 
@@ -476,7 +396,7 @@ void main(){
     rl_gbuf_norm   1? ( 1 'rl_gbuf_norm   glDeleteTextures     ) drop
     rl_gbuf_albedo 1? ( 1 'rl_gbuf_albedo glDeleteTextures     ) drop
     rl_gbuf_depth  1? ( 1 'rl_gbuf_depth  glDeleteTextures     ) drop
-    0 'rl_gbuf_fbo !  0 'rl_gbuf_norm !  0 'rl_gbuf_albedo !  0 'rl_gbuf_depth !
+    0 'rl_gbuf_fbo ! 0 'rl_gbuf_norm ! 0 'rl_gbuf_albedo ! 0 'rl_gbuf_depth !
     ;
 
 #idcont
@@ -485,7 +405,7 @@ void main(){
     rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
     rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
     rl_scene_depth 1? ( 1 'rl_scene_depth glDeleteTextures     ) drop
-	0 'rl_scene_fbo !  0 'rl_scene_tex !  0 'rl_scene_depth ! 
+	0 'rl_scene_fbo ! 0 'rl_scene_tex ! 0 'rl_scene_depth ! 
 	'listex >a
 	'lisfbo >b
 	RL_BLOOM_MIPS ( 1? 1-
@@ -506,7 +426,7 @@ void main(){
 
 | ================================================================
 :rl_init_quad
-	10 '_quad_verts memfloat 
+	10 '_quad_verts memfloat  
 	
     1 'rl_quad_vao glGenVertexArrays
     1 'rl_quad_vbo glGenBuffers
@@ -536,20 +456,14 @@ void main(){
     GL_UNIFORM_BUFFER 2 rl_ubo_plights glBindBufferBase
 
     GL_UNIFORM_BUFFER 0 glBindBuffer
-	| rl_ubo_plights rl_ubo_dirlight rl_ubo_matrices "%d %d %d" .println
     ;
 
 | ================================================================
 :rl_bind_ubo | binding prog "name" --
-	over swap glGetUniformBlockIndex  | binding prog index
-	|(idx!=GL_INVALID_INDEX)
+	over swap glGetUniformBlockIndex  | binding prog index |(idx!=GL_INVALID_INDEX)
 	rot glUniformBlockBinding ;
 
 | ================================================================
-
-| Textura blanca 1×1 para AO neutro
-#_white_px [ $ffffffff ]   | RGBA 255,255,255,255 como dword
-
 ::rl_Init
     rl_init_gbuffer
     rl_init_bloom
@@ -787,13 +701,7 @@ void main(){
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
 	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
-	
-	| --- Blit depth ---
-	GL_READ_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
-	GL_DRAW_FRAMEBUFFER 0 glBindFramebuffer
-	0 0 rl_w rl_h 2over 2over GL_DEPTH_BUFFER_BIT GL_NEAREST glBlitFramebuffer
-	GL_FRAMEBUFFER 0 glBindFramebuffer
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays	
 	;
 
 
