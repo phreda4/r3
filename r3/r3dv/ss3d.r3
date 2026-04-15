@@ -442,9 +442,9 @@ void main() {
 	
 ::ss3dmat! | 'mat i --
 	dirtycheck
-	6 << 3dss_array + dup
-	rot 15 move  | d s c
-	dup @+ dup *. swap @+ dup *. swap @ *. + +
+	6 << 3dss_array + dup 
+	rot 15 move | dsc
+	dup @+ dup *. swap @+ dup *. swap @ dup *. + +
 	1.0 swap 0? ( 1.0 + ) /.
 	swap 15 3 << + ! ;
 

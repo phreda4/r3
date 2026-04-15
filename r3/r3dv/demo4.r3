@@ -207,18 +207,31 @@
 	7 << 'mats + mat* | fuente
 	b> 'mati 16 move ;
 
-:updateobj
-	'mats >b
-	'bones
-	( dup @+ -1 <>? | pos
-		swap @+ | srot
-		swap @ $ffff and | parent
-		getmatrix
-		128 b+ 32 + ) 2drop ;
-
 :updatebones
 	'mats >b
+	'bones
+	( dup @+ -1 <>?			| pos
+		swap @+				| pos srot
+		swap @ $ffff and	| pos srot parent
+		getmatrix
+		128 b+ 32 + ) 3drop 
+	'mats >a
+	0 ( 5 <? 
+		0 ( 4 <? 
+			0 ( 4 <?
+				a@+ "%a " .print
+				1+ ) drop
+			.cr
+			1+ ) drop
+		.cr
+		1+ ) drop
+		"" .println
+		;
+
+:updateobj
+	'mats >b
 	0 ( cntbones <?
+		dup "%d" .println
 		b> over ss3dmat! | 'mat i --
 		128 b+ 1+ ) drop ;
 
@@ -260,6 +273,7 @@
 	1 'cntobjs +!
 	;
 
+|-----------------------
 :makeCancha
 	0 ( 9 <?
 		0 ( 6 <?
@@ -283,9 +297,8 @@
 	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
 	'camEye >a
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 14.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 12.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	'makecam  1.0 +vexe
 	;
 	
 :tofront
@@ -295,7 +308,6 @@
 	a> -10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	'makecam  1.0 +vexe
 	;
 	
 :toside
@@ -305,7 +317,6 @@
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	'makecam  1.0 +vexe
 	;
 
 :interface
@@ -339,7 +350,7 @@
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
-	nrosprite ssnameid "%l" sprint uiLabelC
+	nrosprite ssnameid "[%l]" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
 |	cntobjs "objs:%d" sprint uiLabelC
@@ -366,7 +377,12 @@
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
+	
 	<f1> =? ( 
+		updatebones
+		updateobj
+		)
+	<f2> =? ( 
 		makeraydir hitground
 		hit 1? (
 			'raydir >a a@+ a@+ a@+ | x y z
@@ -452,10 +468,6 @@
 	makeScene
 	tofront
 
-	1.5 0.5 0.0 pack21 
-	unpack21 "%f %f %f" .println
-
-	
 	'main SDLshow
 	
 	rl_grid_free 
