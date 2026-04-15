@@ -1,4 +1,4 @@
-| demo4 - Small scene editor
+| test demo
 | PHREDA 2026
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
@@ -138,8 +138,6 @@
 #scale 2.0
 #nrosprite 0
 
-|---------------------------------------------
-
 |------ pack 1 scale (8.8) + 3 rotation (0.16)
 ::packsrot | sx rx ry rz -- rp
 	$ffff and swap 
@@ -167,6 +165,7 @@
 
 #cntbones 5
 #bones * $fff
+#mats * $ffff
 
 :makeskel
 	'bones >a
@@ -197,9 +196,6 @@
 	
 	-1 a!+ | end
 	;
-	
-
-#mats * $ffff
 
 :getmatrix | pos srot parent --
 	>r 'mat >a calcmat r>
@@ -272,23 +268,6 @@
 	1 'cntobjs +!
 	;
 
-|-----------------------
-:makeCancha
-	0 ( 9 <?
-		0 ( 6 <?
-			over over 9 * + 6 + >r
-
-			over 1.0 * 0.1 pick2 1.0 *
-			2.2 8 >> 48 << |$ffff000000000000 and 
-			$ffffff00
-			r>
-			cntobjs
-			ss3dset | x y z srxyz color spr i --
-			1 'cntobjs +!
-			1+ ) drop
-		1+ ) drop
-	;
-	
 |----------------------------------	
 	
 :totop
@@ -378,8 +357,10 @@
 	
 	
 	<f1> =? ( 
-		updatebones
-		updateobj
+		makeScene
+
+|		updatebones
+|		updateobj
 		)
 	<f2> =? ( 
 		makeraydir hitground
@@ -439,7 +420,7 @@
 	dup 256 ss3dload
 	ss3loadnames
 	
-	"ball" ss3idname 
+	"point" ss3idname 
 	dup .d .println
 	'ballid !
 	;
@@ -463,8 +444,6 @@
 	lightsun
 	makeCam
 	
-	|makeCancha
-	makeScene
 	tofront
 
 	'main SDLshow
