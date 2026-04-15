@@ -1,4 +1,4 @@
-# assets/sprites.map — 114 sprites
+# assets\sprites.map — 116 sprites
 # idx  name                                         tile     slice    z-frames  offset
 [  0]  atascii_001                                     8x8      2x6        1  0
 [  1]  atascii_002                                     8x8      6x3        1  1
@@ -95,22 +95,24 @@
 [ 92]  atascii_093                                     8x8      6x6        1  92
 [ 93]  atascii_094                                     8x8      4x7        1  93
 [ 94]  atascii_095                                     8x8      4x7        1  94
-[ 95]  clon1_000                                      16x16    14x9       26  95
-[ 96]  clon2_000                                      16x16    14x13      26  121
-[ 97]  clon3_000                                      16x16    14x13      26  147
-[ 98]  clon_agachado_disparando_000                   16x16    14x15      24  173
-[ 99]  clon_conjetpack1_000                           16x16    14x13      26  197
-[100]  clon_conjetpack2_000                           16x16    14x13      26  223
-[101]  clon_conjetpack3_000                           16x16    14x13      26  249
-[102]  clon_conjetpack4_000                           16x16    14x13      26  275
-[103]  clon_conjetpack5_000                           16x16    14x13      26  301
-[104]  clon_conjetpack6_000                           16x16    14x14      26  327
-[105]  clon_conjetpack8_000                           16x16    14x13      26  353
-[106]  clon_conjetpack_caminando1_000                 16x16    14x14      26  379
-[107]  clon_conjetpack_caminando2_000                 16x16    14x14      26  405
-[108]  clon_disparando_000                            16x16    14x14      26  431
-[109]  clon_muerte_000                                24x16    22x11      26  457
-[110]  cuboalambre_obj000                             16x16    16x16      16  483
-[111]  dude_obj000                                    16x8     13x4       30  499
-[112]  mono_obj000                                    16x8      9x5       15  529
-[113]  ovni_000                                       32x32    29x29      30  544
+[ 95]  ball_obj000                                    16x16    16x16      16  95
+[ 96]  clon1_000                                      16x16    14x9       26  111
+[ 97]  clon2_000                                      16x16    14x13      26  137
+[ 98]  clon3_000                                      16x16    14x13      26  163
+[ 99]  clon_agachado_disparando_000                   16x16    14x15      24  189
+[100]  clon_conjetpack1_000                           16x16    14x13      26  213
+[101]  clon_conjetpack2_000                           16x16    14x13      26  239
+[102]  clon_conjetpack3_000                           16x16    14x13      26  265
+[103]  clon_conjetpack4_000                           16x16    14x13      26  291
+[104]  clon_conjetpack5_000                           16x16    14x13      26  317
+[105]  clon_conjetpack6_000                           16x16    14x14      26  343
+[106]  clon_conjetpack8_000                           16x16    14x13      26  369
+[107]  clon_conjetpack_caminando1_000                 16x16    14x14      26  395
+[108]  clon_conjetpack_caminando2_000                 16x16    14x14      26  421
+[109]  clon_disparando_000                            16x16    14x14      26  447
+[110]  clon_muerte_000                                24x16    22x11      26  473
+[111]  cuboalambre_obj000                             16x16    16x16      16  499
+[112]  dude_obj000                                    16x8     13x4       30  515
+[113]  mono_obj000                                    16x8      9x5       15  545
+[114]  ovni_000                                       32x32    29x29      30  560
+[115]  point_obj000                                    8x8      8x8        8  590

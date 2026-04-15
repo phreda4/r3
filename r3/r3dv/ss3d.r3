@@ -375,6 +375,7 @@ void main() {
 
 ::ss3dset | x y z srxyz color spr i --
 	dirtycheck
+	ab[
 	dup 6 << 3dss_array + >a
 	rot >r swap >r >r |da!+ | obj id da!+ | spr da!+ | color 0 da!+ | pad
 	dup sincos 'cz ! 'sz !
@@ -396,10 +397,12 @@ void main() {
 	>r | scale
 	rot da!+ swap da!+ da!+ 		| x y z
 	1.0 r> dup *. 0? ( 1.0 + ) /.		da! | invs2
+	]ba
 	;
 
 ::ss3drot | srxyz i --
 	dirtycheck
+	ab[
 	dup 6 << 3dss_array + >a
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
@@ -418,19 +421,55 @@ void main() {
 	dup cx cy *. *.						da!+
 	4 a+
 	1.0 swap dup *. 0? ( 1.0 + ) /.		da! | invs2
+	]ba
 	;
 
 ::ss3dcs | color spr i --
 	dirtycheck
+	ab[
 	6 << 3dss_array + 
 	7 2 << + >a da!+
-	3 2 << a+ da! ;
+	3 2 << a+ da! 
+	]ba ;
 	
 ::ss3dxyz | x y z i --
 	dirtycheck
+	ab[
 	6 << 3dss_array + 
 	12 2 << + >a
-	rot da!+ swap da!+ da! ;
+	rot da!+ swap da!+ da! 
+	]ba ;
+	
+::ss3dmat! | 'mat i --
+	dirtycheck
+	6 << 3dss_array + dup
+	rot 15 move  | d s c
+	dup @+ dup *. swap @+ dup *. swap @ *. + +
+	1.0 swap 0? ( 1.0 + ) /.
+	swap 15 3 << + ! ;
+
+::calcmat | move srxyz -- ; a> dir mat
+	dup sincos 'cz ! 'sz !
+	dup 16 >> sincos 'cy ! 'sy !
+	dup 32 >> sincos 'cx ! 'sx !
+	40 >> $ffff00 and	| 8.8 fixepoint (scale)
+	dup cy cz *. *.						da!+
+	dup cx sz *. sx sy *. cz *. + *.	da!+
+	dup sx sz *. cx sy *. cz *. - *.	da!+
+	4 a+
+	dup cy neg sz *. *.					da!+
+	dup cx cz *. sx sy *. sz *. - *.	da!+
+	dup sx cz *. cx sy *. sz *. + *.	da!+
+	4 a+
+	dup sy *.							da!+
+	dup sx neg cy *. *.					da!+
+	cx cy *. *.						da!+
+	4 a+
+	dup 1 << 43 >> 8 << da!+	|x
+	dup 22 << 43 >> 8 << da!+	|y
+	43 << 43 >> 8 << da!+ 		|z
+	0 da!
+	;
 	
 ::ss3dreset | -- 
 	0 'ss3d_inst ! ;

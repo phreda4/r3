@@ -131,8 +131,6 @@
 	rl_point_light | int cr cg cb x y z --
 	;
 
-#nbox
-
 #va #vl #vu
 
 |----------------------------
@@ -140,12 +138,108 @@
 #scale 2.0
 #nrosprite 0
 
-:makescene
+|---------------------------------------------
+
+|------ pack 1 scale (8.8) + 3 rotation (0.16)
+::packsrot | sx rx ry rz -- rp
+	$ffff and swap 
+	$ffff and 16 << or swap 
+	$ffff and 32 << or swap
+	8 >> $ffff and 48 << or 
+	;
+
+::+srot | ra rb -- rr
+	+ $100010001 nand ;
+
+|------ pack 3 vel in 63bits (21x3) (13.8) 
+::pack21 | vx vy vz -- vp
+	8 >> $1fffff and swap
+	8 >> $1fffff and 21 << or swap
+	8 >> $1fffff and 42 << or ;
+	
+::+p21 | va vb -- vr
+	+ $40000200001 nand ;
+	
+::unpack21 | x -- px py pz
+	dup 1 << 43 >> 8 << swap
+	dup 22 << 43 >> 8 << swap
+	43 << 43 >> 8 << ;
+
+#cntbones 5
+#bones * $fff
+
+:makeskel
+	'bones >a
+	0.0 0.0 0.0 pack21 a!+	| raiz
+	2.0 0.0 0.0 0.0 packsrot a!+
+	$ff00 32 << -1 $ffff and or a!+
+	0 a!+
+
+	0.0 2.0 0.0 pack21 a!+	| torso
+	2.0 0.02 0.0 0.0 packsrot a!+
+	$ff0000 32 << 0 $ffff and or a!+
+	0 a!+
+
+	1.5 0.5 0.0 pack21 a!+	| hombrol
+	3.0 0.0 0.0 0.5 packsrot a!+
+	$ff000000 32 << 1 $ffff and or a!+
+	0 a!+
+
+	-1.5 0.5 0.0 pack21 a!+	| hombror
+	3.0 0.0 0.0 -0.5 packsrot a!+
+	$ffff00 32 << 1 $ffff and or a!+
+	0 a!+
+
+	0.0 -1.0 0.0 pack21 a!+	| cadera
+	4.0 0.0 0.0 0.0 packsrot a!+
+	$ff00ff00 32 << 0 $ffff and or a!+
+	0 a!+
+	
+	-1 a!+ | end
 	;
 	
-:+obj | --
-	;	
+
+#mats * $ffff
+
+:getmatrix | pos srot parent --
+	>r 'mat >a calcmat r>
+	$ffff =? ( drop b> 'mat 16 move ; ) | dsc
+	7 << 'mats + mat* | fuente
+	b> 'mati 16 move ;
+
+:updateobj
+	'mats >b
+	'bones
+	( dup @+ -1 <>? | pos
+		swap @+ | srot
+		swap @ $ffff and | parent
+		getmatrix
+		128 b+ 32 + ) 2drop ;
+
+:updatebones
+	'mats >b
+	0 ( cntbones <?
+		b> over ss3dmat! | 'mat i --
+		128 b+ 1+ ) drop ;
+
+|--------------------------------------
+#ballid
 	
+:makeScene
+	makeskel
+	'bones >a
+	( a@+ -1 <>? | pos
+		unpack21
+		a@+			| scale+rot
+		a@+ 32 >>>	| color
+		ballid
+		cntobjs
+		ss3dset | x y z srxyz color spr i --
+		1 'cntobjs +!
+		8 a+
+		) drop ;
+	
+
 :hiteye
 	'camAdv 8 + @ 0? ( 'hit ! ; ) 
 	'camEye 8 + @ swap /. | t
@@ -182,13 +276,15 @@
 		1+ ) drop
 	;
 	
+|----------------------------------	
+	
 :totop
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
-	'cam_pit -0.24 cam_pit 21 1.0 0 +vanim
+	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
 	'camEye >a
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 14.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
 	
@@ -196,19 +292,19 @@
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
 	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> -10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
 	
 :toside
-	'cam_yaw -0.24 cam_yaw 21 1.0 0 +vanim
+	'cam_yaw -0.25 cam_yaw 21 1.0 0 +vanim
 	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 1.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	'makecam  1.0 +vexe
 	;
 
@@ -312,7 +408,6 @@
 	makecam
 	
 	rl_frame_begin |rl_set_camera
-	|movespr
 	SS3Ddraw
 	draw_grid
 	light
@@ -328,6 +423,10 @@
 	"media/ss/sprites"
 	dup 256 ss3dload
 	ss3loadnames
+	
+	"ball" ss3idname 
+	dup .d .println
+	'ballid !
 	;
 	
 :viewresize 
@@ -344,18 +443,21 @@
 	load3d
 	rl_init 
 	rl_grid_init
-|	build_cube
 	
 	'viewresize SDLeventR
 	lightsun
 	makeCam
 	
-	makeCancha
-	|1024 'objlist p8.ini
+	|makeCancha
+	makeScene
+	tofront
+
+	1.5 0.5 0.0 pack21 
+	unpack21 "%f %f %f" .println
+
 	
 	'main SDLshow
 	
-|	free_cube	
 	rl_grid_free 
 	rl_shutdown
 	SS3Dshutdown

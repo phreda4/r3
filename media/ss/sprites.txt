@@ -93,6 +93,7 @@ atascii_092
 atascii_093
 atascii_094
 atascii_095
+ball_obj000
 clon1_000
 clon2_000
 clon3_000
@@ -112,3 +113,4 @@ cuboalambre_obj000
 dude_obj000
 mono_obj000
 ovni_000
+point_obj000
