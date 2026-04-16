@@ -165,91 +165,8 @@
 	dup 22 << 43 >> 8 << swap
 	43 << 43 >> 8 << ;
 
-#cntbones 5
-#bones * $fff
-
-:makeskel
-	'bones >a
-	0.0 0.0 0.0 pack21 a!+	| raiz
-	2.0 0.0 0.0 0.0 packsrot a!+
-	$ff00 32 << -1 $ffff and or a!+
-	0 a!+
-
-	0.0 2.0 0.0 pack21 a!+	| torso
-	2.0 0.02 0.0 0.0 packsrot a!+
-	$ff0000 32 << 0 $ffff and or a!+
-	0 a!+
-
-	1.5 0.5 0.0 pack21 a!+	| hombrol
-	3.0 0.0 0.0 0.5 packsrot a!+
-	$ff000000 32 << 1 $ffff and or a!+
-	0 a!+
-
-	-1.5 0.5 0.0 pack21 a!+	| hombror
-	3.0 0.0 0.0 -0.5 packsrot a!+
-	$ffff00 32 << 1 $ffff and or a!+
-	0 a!+
-
-	0.0 -1.0 0.0 pack21 a!+	| cadera
-	4.0 0.0 0.0 0.0 packsrot a!+
-	$ff00ff00 32 << 0 $ffff and or a!+
-	0 a!+
-	
-	-1 a!+ | end
-	;
-	
-
-#mats * $ffff
-
-:getmatrix | pos srot parent --
-	>r 'mat >a calcmat r>
-	$ffff =? ( drop b> 'mat 16 move ; ) | dsc
-	7 << 'mats + mat* | fuente
-	b> 'mati 16 move ;
-
-:updatebones
-	'mats >b
-	'bones
-	( dup @+ -1 <>?			| pos
-		swap @+				| pos srot
-		swap @ $ffff and	| pos srot parent
-		getmatrix
-		128 b+ 32 + ) 3drop 
-	'mats >a
-	0 ( 5 <? 
-		0 ( 4 <? 
-			0 ( 4 <?
-				a@+ "%a " .print
-				1+ ) drop
-			.cr
-			1+ ) drop
-		.cr
-		1+ ) drop
-		"" .println
-		;
-
-:updateobj
-	'mats >b
-	0 ( cntbones <?
-		b> over ss3dmat! | 'mat i --
-		128 b+ 1+ ) drop ;
-
 |--------------------------------------
 #ballid
-	
-:makeScene
-	makeskel
-	'bones >a
-	( a@+ -1 <>? | pos
-		unpack21
-		a@+			| scale+rot
-		a@+ 32 >>>	| color
-		ballid
-		cntobjs
-		ss3dset | x y z srxyz color spr i --
-		1 'cntobjs +!
-		8 a+
-		) drop ;
 	
 
 :hiteye
@@ -377,10 +294,6 @@
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
 	
-	<f1> =? ( 
-		updatebones
-		updateobj
-		)
 	<f2> =? ( 
 		makeraydir hitground
 		hit 1? (
@@ -464,7 +377,6 @@
 	makeCam
 	
 	|makeCancha
-	makeScene
 	tofront
 
 	'main SDLshow

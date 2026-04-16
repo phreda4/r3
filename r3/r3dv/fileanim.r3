@@ -29,10 +29,10 @@
 
 
 #cntbones 
-#bones * $fff
-#mats * $ffff | dwords!!
-
 #cntani
+
+#bones * $ffff
+#animas * $fff
 
 #filer3a
 #tx #ty #tz #rx #ry #rz #sc #pa
@@ -46,9 +46,15 @@
 
 :parsepose
 	0 ( cntbones <? swap
-		over "%d " .print
+|		over "%d " .print
+		>>sp trim | skip nro
+		parseline
+
+		tx ty tz pack21			a!+
+		sc rx ry rz packsrot	a!+
+		
 		>>cr trim
-		swap 1+ ) drop .cr
+		swap 1+ ) drop 
 	;
 	
 :parseanim | adr -- adr
@@ -56,6 +62,7 @@
 	dup "%l" .println
 	1+ >>str trim
 	getnro dup "steps:%d" .println  'cntstep !
+	
 	0 ( cntstep <? swap
 		"STEP"  findstr >>sp trim
 		>>cr trim
@@ -72,6 +79,7 @@
 	"SKELETON" findstr 
 	>>sp trim
 	getnro 'cntbones ! |"cnt:%d" .println
+	
 	'bones >a
 	0 ( cntbones <?
 		|dup "%d." .print
@@ -81,19 +89,42 @@
 		trim 1+ >>str trim
 		getnro 'pa ! | parent
 		parseline
-		tx ty tz pack21 a!+
-		sc rx ry rz packsrot a!+
-		$ff0000 32 << pa $ffff and or a!+
+		tx ty tz pack21			a!+
+		sc rx ry rz packsrot	a!+
+		$ffffff00 32 << pa $ffff and or	a!+
 		0 a!+
 		swap 1+ ) drop
-	a> 'bones - "bones %d bytes" .println
+		
+	|a> 'bones - "bones %d bytes" .println
 
 	"ANIMATIONS" findstr >>sp trim 
 	getnro dup "animations:%d" .println 'cntani !
+	
+	here >a
 	0 ( cntani <? swap 
 		parseanim 
 		swap 1+ ) drop
 	drop
+|-------------------------------------
+	mark 
+	"R3ANIMA" @ ,q 
+	cntbones , cntani ,
+	
+	0 ( cntani <?
+		
+		1+ ) drop
+	
+	'bones >a
+	0 ( cntbones <?
+		a@+ ,q a@+ ,q a@+ ,q a@+ ,q
+		1+ ) drop
+	
+	0 ( cntani <?
+		
+		1+ ) drop
+	
+	"test.ran" savemem
+	empty
 	;
 
 :main
