@@ -474,15 +474,15 @@ void main() {
 	dup cy cz *. *.						da!+
 	dup cx sz *. sx sy *. cz *. + *.	da!+
 	dup sx sz *. cx sy *. cz *. - *.	da!+
-	4 a+
+	0 da!+ |4 a+
 	dup cy neg sz *. *.					da!+
 	dup cx cz *. sx sy *. sz *. - *.	da!+
 	dup sx cz *. cx sy *. sz *. + *.	da!+
-	4 a+
+	0 da!+ |4 a+
 	dup sy *.							da!+
 	dup sx neg cy *. *.					da!+
 	cx cy *. *.						da!+
-	4 a+
+	0 da!+ |4 a+
 	dup 1 << 43 >> 8 << da!+	|x
 	dup 22 << 43 >> 8 << da!+	|y
 	43 << 43 >> 8 << da!+ 		|z
