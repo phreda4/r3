@@ -442,13 +442,31 @@ void main() {
 	
 ::ss3dmat! | 'mat i --
 	dirtycheck
-	6 << 3dss_array + dup 
-	rot 15 move | dsc
-	dup @+ dup *. swap @+ dup *. swap @ dup *. + +
-	1.0 swap 0? ( 1.0 + ) /.
-	swap 15 3 << + ! ;
+	ab[
+	6 << 3dss_array + 
+	dup >a swap >b | a:dst b:src
+|	rot |8 move | dsc
 
-::calcmat | move srxyz -- ; a> dir mat
+|	db@+ da!+ 12 b+ db@+ da!+ 12 b+ db@+ da!+ -32 b+ 4 a+ | transpose
+|	db@+ da!+ 12 b+ db@+ da!+ 12 b+ db@+ da!+ -32 b+ 4 a+
+|	db@+ da!+ 12 b+ db@+ da!+ 12 b+ db@+ da!+ 4 b+ 4 a+
+|	db@+ da!+ db@+ da!+ db@+ da!+ 4 b+ 4 a+
+|	||db@+ da!+ 12 b+ db@+ da!+ 12 b+ db@+ da!+
+	
+	db@+ da!+ db@+ da!+ db@+ da!+ 4 b+ 4 a+
+	db@+ da!+ db@+ da!+ db@+ da!+ 4 b+ 4 a+
+	db@+ da!+ db@+ da!+ db@+ da!+ 4 b+ 4 a+	
+	db@+ da!+ db@+ da!+ db@+ da!+ |4 b+ 4 a+
+	
+|	dup @+ dup *. swap @+ dup *. swap @ dup *. + +
+|	1.0 swap 0? ( 1.0 + ) /.
+|	swap 15 2 << +
+|	2drop |	d! 
+
+	drop | bad s2 !
+	]ba ;
+
+::ss3dcmat | move srxyz -- ; a> dir mat
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !

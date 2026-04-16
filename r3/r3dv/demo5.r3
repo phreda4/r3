@@ -1,4 +1,4 @@
-| test demo
+| test demo animation
 | PHREDA 2026
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
@@ -165,7 +165,44 @@
 
 #cntbones 5
 #bones * $fff
-#mats * $ffff
+#mats * $ffff | dwords!!
+
+
+#filer3a
+#tx #ty #tz #rx #ry #rz #sc #pa
+:parseline | adr -- adr'
+	trim
+	str>fnro 'tx ! str>fnro 'ty ! str>fnro 'tz !
+	str>fnro 'rx ! str>fnro 'ry ! str>fnro 'rz !
+	str>fnro 'sc ! ;
+	
+:loadr3a | "" --
+	here dup 'filer3a !
+	swap load 0 swap c!+ 'here !
+
+	filer3a 
+	"SKELETON" findstr 
+	>>sp trim
+	getnro 'cntbones ! |"cnt:%d" .println
+	'bones >a
+	0 ( cntbones <?
+		|dup "%d." .print
+		swap
+		"JOINT" findstr 5 +
+		trim getnro drop |"%d," .print
+		trim 1+ >>str trim
+		getnro 'pa ! | parent
+		parseline
+		tx ty tz pack21 a!+
+		sc rx ry rz packsrot a!+
+		$ff0000 32 << pa $ffff and or a!+
+		0 a!+
+		swap 1+ ) drop
+	drop
+	a> 'bones - "bones %d bytes" .println
+	-1 a!+ | end
+	;
+	
 
 :makeskel
 	'bones >a
@@ -197,32 +234,62 @@
 	-1 a!+ | end
 	;
 
+
+|--- multiply
+:mline | -- v
+	da@+ db@ *. 16 b+
+	da@+ db@ *. + 16 b+
+	da@+ db@ *. + 16 b+
+	da@+ db@ *. + ;
+	
+:mrow | adr -- adr'
+	mline swap d!+ -44 b+ -16 a+
+	mline swap d!+ -44 b+ -16 a+
+	mline swap d!+ -44 b+ -16 a+
+	mline swap d!+ -48 b+ -12 b+ ;
+	
+::dmat* | 'mat --
+	ab[
+	>b 'mat >a 'mati mrow mrow mrow mrow drop 
+	]ba ;
+
+	
 :getmatrix | pos srot parent --
-	>r 'mat >a calcmat r>
-	$ffff =? ( drop b> 'mat 16 move ; ) | dsc
-	7 << 'mats + mat* | fuente
-	b> 'mati 16 move ;
+	>r 'mat >a ss3dcmat r>
+	$ffff =? ( drop b> 'mat 8 move ; ) | dsc
+	6 << 'mats + dmat* | fuente
+	b> 'mati 8 move ;
 
 :updatebones
 	'mats >b
 	'bones
-	( dup @+ -1 <>?			| pos
-		swap @+				| pos srot
-		swap @ $ffff and	| pos srot parent
+	0 ( cntbones <? swap
+		dup @+ swap @+ swap @ $ffff and	| pos srot parent
 		getmatrix
-		128 b+ 32 + ) 3drop 
-	'mats >a
-	0 ( 5 <? 
-		0 ( 4 <? 
-			0 ( 4 <?
-				a@+ "%a " .print
-				1+ ) drop
-			.cr
-			1+ ) drop
-		.cr
-		1+ ) drop
-		"" .println
+		b> pick2 ss3dmat! | 'mat i --
+		32 + 64 b+ 
+		swap 1+ ) 2drop 
+		
+|	'mats >a | debug
+|	0 ( 5 <? 0 ( 4 <? 0 ( 4 <? da@+ "%a " .print 1+ ) drop .cr 1+ ) drop .cr 1+ ) drop
+|	"" .println
+		
+|	'mats >b | apply
+|	0 ( cntbones <? 
+|		b> over ss3dmat! | 'mat i --
+|		64 b+ 
+|		1+ ) drop 
+	
 		;
+
+	
+|    for (int i = 0; i < sc->njoint; i++) {
+|        const JointPose *lp = &local[i];
+|        Mat4 lm = local_matrix(lp->tx, lp->ty, lp->tz,
+|                               lp->ex, lp->ey, lp->ez, lp->scale);
+|        int par = sc->joints[i].parent;
+|        wmat[i] = (par < 0) ? lm : mat4_mul(&wmat[par], &lm);
+
 
 :updateobj
 	'mats >b
@@ -234,7 +301,6 @@
 #ballid
 	
 :makeScene
-	makeskel
 	'bones >a
 	( a@+ -1 <>? | pos
 		unpack21
@@ -274,27 +340,27 @@
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
 	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 12.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 12.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
 	;
 	
 :tofront
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
 	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> -10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> -10.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
 	;
 	
 :toside
 	'cam_yaw -0.25 cam_yaw 21 1.0 0 +vanim
 	'cam_pit 0 cam_pit 21 1.0 0 +vanim
 	'camEye >a
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
-	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
 	;
 
 :interface
@@ -356,13 +422,9 @@
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
 	
-	<f1> =? ( 
-		makeScene
-
-|		updatebones
-|		updateobj
-		)
-	<f2> =? ( 
+	<f1> =? ( makeScene )
+	<f2> =? ( updatebones )
+	<f3> =? ( 
 		makeraydir hitground
 		hit 1? (
 			'raydir >a a@+ a@+ a@+ | x y z
@@ -432,7 +494,13 @@
 : | <<<<<<<< Boot
 
 	"Scene r3dv" 1024 768 GLini GLInfo
-	
+
+
+	"media\bvh\pajaro.r3a" 
+	|"media\bvh\lobo.r3a" 
+	loadr3a
+|	makeskel	
+
 	$fff vaini
 	
 	glFixFont
@@ -443,7 +511,6 @@
 	'viewresize SDLeventR
 	lightsun
 	makeCam
-	
 	tofront
 
 	'main SDLshow

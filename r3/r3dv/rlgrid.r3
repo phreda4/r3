@@ -122,9 +122,7 @@ void main() {
 #rl_grid_ffar   [ 80.0 ]   | fully faded at 80 units
 
 :rl_bind_ubo | binding prog "name" --
-	over swap glGetUniformBlockIndex  | binding prog index
-	|(idx!=GL_INVALID_INDEX)
-	rot glUniformBlockBinding ;
+	over swap glGetUniformBlockIndex rot glUniformBlockBinding ;
 
 ::rl_grid_init
 	3 'rl_grid_scale memfloat
@@ -148,8 +146,6 @@ void main() {
     rl_quad_vao glBindVertexArray
     GL_TRIANGLE_STRIP 0 4 glDrawArrays
     0 glBindVertexArray
-    | Restore geometry shader for next drawscene calls
-    rl_ProgGeom
     ;
 
 | ============================================================
