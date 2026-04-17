@@ -46,7 +46,7 @@
 : 
 |WIN|	"dll/SDL2_image.DLL" loadlib
 |LIN|	"libSDL2_image-2.0.so.0" loadlib	
-|MAC|	"libSDL2_image-2.0.so.0" loadlib	
+|MAC|	"libSDL2_image.dylib" loadlib	
 	dup "IMG_Load" getproc 'sys-IMG_Load !
 	dup "IMG_Init" getproc 'sys-IMG_Init !
 	dup "IMG_LoadTexture" getproc 'sys-IMG_LoadTexture !

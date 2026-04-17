@@ -368,7 +368,7 @@
 :
 |WIN|	"dll/SDL2.DLL" loadlib
 |LIN|   "libSDL2-2.0.so.0" loadlib
-|MAC|   "libSDL2-2.0.so.0" loadlib	
+|MAC|   "libSDL2.dylib" loadlib	
 	dup "SDL_Init" getproc 'sys-SDL_Init !
 	dup "SDL_GetCurrentDisplayMode" getproc 'sys-SDL_GetCurrentDisplayMode !
 	dup "SDL_Quit" getproc 'sys-SDL_Quit !

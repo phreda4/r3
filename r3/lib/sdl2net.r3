@@ -96,7 +96,7 @@
 :
 |WIN|	"dll/SDL2_net.DLL" loadlib
 |LIN|	"libSDL2_net-2.0.so.0" loadlib
-|MAC|	"libSDL2_net-2.0.so.0" loadlib
+|MAC|	"libSDL2_net.dylib" loadlib
 	dup "SDLNet_Init" getproc 'sys-SDLNet_Init !
 	dup "SDLNet_Quit" getproc 'sys-SDLNet_Quit !	
 	dup "SDLNet_ResolveHost" getproc 'sys-SDLNet_ResolveHost !

@@ -158,7 +158,7 @@
 ::msync sys-msync sys3 drop ;
 
 :
-	"/lib/libc.so.6" loadlib
+	"/usr/lib/libSystem.B.dylib" loadlib
 	dup "open" getproc 'sys-open ! 
 	dup "creat" getproc 'sys-creat ! 
 	dup "close" getproc 'sys-close ! 
