@@ -34,6 +34,7 @@ void main(){
 }
 @-----------------------"
 
+
 #rl_shader_light "
 @vertex-----------------
 #version 440 core
@@ -45,21 +46,20 @@ void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 in vec2 uv;
 out vec4 FragColor;
 
+// ─── SSDO CONFIG ─────────────────────────────────────────────────────────────
 #define USE_SSDO
 
 #ifdef USE_SSDO
-const int   SSDO_SAMPLES      = 16;
+const int   SSDO_SAMPLES      = 8;//16
 const float SSDO_RADIUS       = 0.8;
 const float SSDO_BIAS         = 0.05;
-const float SSDO_INTENSITY    = 2.5;
-const float SSDO_FALLOFF      = 2.0;   // debe ser 2.0 para la optimización x*x
+const float SSDO_INTENSITY    = 2.8;
+const float SSDO_FALLOFF      = 2.0;
 const float SSDO_MAX_DISTANCE = 1.2;
 const float SSDO_BOUNCE_STR   = 0.35;
 const float SSDO_SHARPNESS    = 1.5;
-// Recíproca pre-calculada: evita división dentro del loop
-const float INV_MAX_DIST      = 1.0 / SSDO_MAX_DISTANCE;
-const float INV_SAMPLES       = 1.0 / float(SSDO_SAMPLES);
 #endif
+// ─────────────────────────────────────────────────────────────────────────────
 
 layout(binding = 0) uniform sampler2D gNormal;
 layout(binding = 1) uniform sampler2D gAlbedo;
@@ -79,169 +79,125 @@ const float PI     = 3.14159265359;
 const float INV_PI = 0.31830988618;
 const float EPS    = 0.001;
 
-float pow5(float x) { float x2=x*x; return x2*x2*x; }
+float pow5(float x) { float x2 = x * x; return x2 * x2 * x; }
 
 vec3 reconstructWorldPos(vec2 uv, float depth) {
-    vec4 ndc = vec4(uv*2.0-1.0, depth*2.0-1.0, 1.0);
-    vec4 vp  = invProj * ndc;
-    vp.xyz  /= vp.w;
+    float ndcZ = depth * 2.0 - 1.0;
+    vec4 ndc   = vec4(uv * 2.0 - 1.0, ndcZ, 1.0);
+    vec4 vp    = invProj * ndc;
+    vp.xyz    /= vp.w;
     return (invView * vec4(vp.xyz, 1.0)).xyz;
 }
 
 float DistributionGGX(float NdotH, float a2) {
-    float d = NdotH*NdotH*(a2-1.0)+1.0;
-    return a2 / (PI*d*d + EPS);
+    float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * d * d + EPS);
 }
-
-float GeomG(float NdotX, float k) {
-    return NdotX / (NdotX*(1.0-k) + k);
+float GeometrySchlickGGX(float NdotX, float k) {
+    return NdotX / (NdotX * (1.0 - k) + k);
 }
 
 vec3 BRDF(vec3 N, vec3 V, vec3 L,
           float NdotV, float NdotL,
           vec3 albedo, float metallic,
-          float a2, float k, vec3 F0,
-          float gNdotV)
+          float a2, float k, vec3 F0)
 {
-    vec3  H     = normalize(V+L);
-    float NdotH = max(dot(N,H), 0.0);
-    float HdotV = max(dot(H,V), 0.0);
+    vec3  H     = normalize(V + L);
+    float NdotH = max(dot(N, H), 0.0);
+    float HdotV = max(dot(H, V), 0.0);
     float NDF = DistributionGGX(NdotH, a2);
-    float G   = gNdotV * GeomG(NdotL, k);
+    float G   = GeometrySchlickGGX(NdotV, k) * GeometrySchlickGGX(NdotL, k);
     float f   = pow5(1.0 - HdotV);
-    vec3  F   = F0 + (1.0-F0)*f;
-    vec3  kD  = (1.0-F)*(1.0-metallic);
-    vec3  spec = (NDF*G*F) / (4.0*NdotV*NdotL + EPS);
-    return (kD*albedo*INV_PI + spec) * NdotL;
+    vec3  F   = F0 + (1.0 - F0) * f;
+    vec3 kD   = (1.0 - F) * (1.0 - metallic);
+    vec3 specular = (NDF * G * F) / (4.0 * NdotV * NdotL + EPS);
+    return (kD * albedo * INV_PI + specular) * NdotL;
 }
 
 #ifdef USE_SSDO
 
-// ── Kernel pre-calculado (golden ratio fibonacci, cosine-weighted) ───────────
-// Generado offline con SSDO_SAMPLES=16.
-// Cada vec3 es una dirección normalizada en la hemiesfera local (+Z = normal).
-// El compilador los trata como literales constantes → cero cómputo en runtime.
-const vec3 SSDO_KERNEL[16] = vec3[16](
-    vec3( 0.0000,  0.0000,  1.0000),
-    vec3( 0.2440, -0.4198,  0.8748),
-    vec3(-0.5584,  0.2376,  0.7947),
-    vec3( 0.4096,  0.6400,  0.6508),
-    vec3( 0.6893, -0.4223,  0.5879),
-    vec3(-0.1854, -0.7908,  0.5833),
-    vec3(-0.7071,  0.3765,  0.5976),  // ajustado a |v|=1
-    vec3( 0.7253,  0.3614,  0.5853),
-    vec3( 0.0775, -0.8660,  0.4939),
-    vec3(-0.7889, -0.1954,  0.5825),
-    vec3( 0.5920,  0.7285,  0.3425),
-    vec3( 0.5547, -0.7718,  0.3117),
-    vec3(-0.8507, -0.0000,  0.5257),
-    vec3( 0.3090,  0.9511,  0.0000),  // horizonte (oclusión rasante)
-    vec3(-0.9511,  0.3090,  0.0000),
-    vec3( 0.5878, -0.8090,  0.0000)
-);
-
-// Radio por muestra con distribución cuadrática (más muestras cerca)
-// También pre-calculado: evita la división float(i)/float(N) en el loop.
-const float SSDO_DIST[16] = float[16](
-    0.003125, 0.015625, 0.035156, 0.062500,
-    0.097656, 0.140625, 0.191406, 0.250000,
-    0.316406, 0.390625, 0.472656, 0.562500,
-    0.660156, 0.765625, 0.878906, 1.000000
-    // Nota: multiplicar por SSDO_RADIUS en el loop (constante, el compilador
-    // puede plegar la multiplicación si inlinea)
-);
-
-// ── Hash ─────────────────────────────────────────────────────────────────────
 float hash21(vec2 p) {
     p = fract(p * vec2(127.1, 311.7));
     p += dot(p, p.yx + 19.19);
     return fract(p.x * p.y);
 }
 
-// ── TBN robusto (Duff et al. 2017) ───────────────────────────────────────────
 mat3 buildTBN(vec3 N) {
-    float s = (N.z >= 0.0) ? 1.0 : -1.0;
-    float a = -1.0 / (s + N.z);
-    float b = N.x*N.y*a;
-    vec3 T  = vec3(1.0 + s*N.x*N.x*a,  s*b,           -s*N.x);
-    vec3 B  = vec3(b,                   s+N.y*N.y*a,   -N.y);
-    return mat3(T, B, N);
+	vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+	vec3 T = normalize(cross(up, N));
+	vec3 B = cross(N, T);	
+	return mat3(T, B, N);
 }
 
-// ── worldToUV optimizado ──────────────────────────────────────────────────────
-// Sólo divide xy (evita dividir z que no usamos para la proyección UV).
-// Usa bvec4 + all() en vez de 4 step() separados.
+vec3 cosineSampleHemisphere(float i, float n, float rnd) {
+    float phi   = (i / n + rnd * 0.1) * 2.0 * PI;
+    float r     = sqrt((i + 0.5 + rnd * 0.5) / n);
+    float sinR  = sqrt(max(0.0, 1.0 - r * r));
+    return vec3(cos(phi) * sinR, sin(phi) * sinR, r);
+}
+
+// ── Proyectar world-pos a UV de pantalla ─────────────────────────────────────
 vec3 worldToUV(vec3 wp) {
     vec4 clip = ProjView * vec4(wp, 1.0);
     if (clip.w <= 0.0) return vec3(0.5, 0.5, 0.0);
-    float invW = 1.0 / clip.w;
-    vec2  suv  = clip.xy * (invW * 0.5) + 0.5;
-    float on   = float(all(greaterThanEqual(suv, vec2(0.0))) &&
-                       all(lessThanEqual   (suv, vec2(1.0))));
-    return vec3(suv, on);
+    vec3 ndc  = clip.xyz / clip.w;
+    vec2 suv  = ndc.xy * 0.5 + 0.5;
+    float onscreen = step(0.0, suv.x) * step(suv.x, 1.0)
+                   * step(0.0, suv.y) * step(suv.y, 1.0);
+    return vec3(suv, onscreen);
 }
 
-// ── SSDO ─────────────────────────────────────────────────────────────────────
-// Nuevos parámetros:
-//   TBN     — ortonormal, pre-calculado en main()
-//   L_local — lightDir transformado al espacio tangente (TBN^T * L),
-//             evita dot(dir_world, L_dir) → dot(localDir, L_local)
-//             sin reconstruir dir en world-space cuando sólo se necesita el dot
-vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo,
-                 mat3 TBN, vec3 L_local)
-{
-    float rnd    = hash21(uv * 1000.0);
+// ── SSDO principal ───────────────────────────────────────────────────────────
+vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
+    mat3 TBN  = buildTBN(N);
+    float rnd = hash21(uv * 1000.0); // ruido por pixel para rotar el kernel
     float occ    = 0.0;
     vec3  bounce = vec3(0.0);
-
-    // Rotación 2D del kernel con el ruido por pixel
-    // (reemplaza la perturbación de ángulo en fibonacci)
-    float s = sin(rnd * 6.2832);
-    float c = cos(rnd * 6.2832);
-    mat2  R = mat2(c, -s, s, c);   // rotación 2D aplicada sobre xy del kernel
-
+    float weight = 0.0;
     for (int i = 0; i < SSDO_SAMPLES; ++i) {
-        vec3 kSample  = SSDO_KERNEL[i];
-        // Rotar sólo las componentes xy (tangente/bitangente); z (normal) queda igual
-        kSample.xy    = R * kSample.xy;
 
-        // Como TBN es ortonormal y kSample ya está normalizado, TBN*kSample
-        // también está normalizado → se elimina normalize()
-        vec3  dir  = TBN * kSample;
-        float dist = SSDO_DIST[i] * SSDO_RADIUS;
-        vec3  sPos = worldPos + dir*dist + N*SSDO_BIAS;
+        vec3 localDir = cosineSampleHemisphere(float(i), float(SSDO_SAMPLES), rnd);
+        vec3 dir      = normalize(TBN * localDir);
+
+        float t       = (float(i) + 0.5) / float(SSDO_SAMPLES);
+        float dist    = SSDO_RADIUS * t * t;
+        vec3  sPos    = worldPos + dir * dist + N * SSDO_BIAS;
 
         vec3  sUVFlag = worldToUV(sPos);
-        if (sUVFlag.z < 0.5) continue;
+        if (sUVFlag.z < 0.5) continue; // fuera de pantalla
 
-        vec2  sUV    = sUVFlag.xy;
-        float sDepth = texture(gDepth, sUV).r;
+        vec2  sUV     = sUVFlag.xy;
+        float sDepth  = texture(gDepth, sUV).r;
 
-        vec4  sClip  = ProjView * vec4(sPos, 1.0);
-        float sNDC_Z = sClip.z / sClip.w;
-        float bufNDC = sDepth*2.0-1.0;
+        vec3  sWorld  = reconstructWorldPos(sUV, sDepth);
 
-        bool occluded = (bufNDC > sNDC_Z + EPS)
-                     && (dist < SSDO_MAX_DISTANCE);
+        float occDist = length(sWorld - worldPos);
+
+        vec4  selfClip    = ProjView * vec4(sPos, 1.0);
+        float selfNDC_Z   = selfClip.z / selfClip.w; // NDC z de la muestra
+        float bufferNDC_Z = sDepth * 2.0 - 1.0;
+
+        bool occluded = (bufferNDC_Z > selfNDC_Z + EPS)
+                     && (occDist < SSDO_MAX_DISTANCE);
 
         if (occluded) {
-            // SSDO_FALLOFF == 2.0 → pow(x,2.0) == x*x, evita pow()
-            float t       = 1.0 - dist * INV_MAX_DIST;   // recíproca pre-calc
-            float falloff = t * t;                         // == pow(t, SSDO_FALLOFF)
+            float falloff = pow(1.0 - occDist / SSDO_MAX_DISTANCE, SSDO_FALLOFF);
 
-            // dot en espacio local: dot(kSample, L_local)
-            // evita reconstruir dir_world sólo para este dot
-            float dirTerm = max(dot(kSample, L_local), 0.0);
+            vec3  L       = normalize(lightDir.xyz);
+            float dirTerm = max(dot(dir, L), 0.0);
 
-            occ += falloff;
-            // Leer albedo sólo si dirTerm contribuye
-            if (dirTerm > 0.01)
-                bounce += texture(gAlbedo, sUV).rgb * (falloff * dirTerm * SSDO_BOUNCE_STR);
+            occ    += falloff;
+            bounce += texture(gAlbedo, sUV).rgb * falloff * dirTerm * SSDO_BOUNCE_STR;
         }
+        weight += 1.0;
     }
 
-    occ    *= INV_SAMPLES;   // multiplicación en vez de división
-    bounce *= INV_SAMPLES;
+    if (weight > 0.0) {
+        float invW  = 1.0 / weight;
+        occ        *= invW;
+        bounce     *= invW;
+    }
+
     occ = pow(clamp(occ * SSDO_INTENSITY, 0.0, 1.0), SSDO_SHARPNESS);
     return vec4(bounce, occ);
 }
@@ -253,52 +209,40 @@ void main() {
     vec3 N            = normalize(texture(gNormal, uv).rgb);
     float depth       = texture(gDepth, uv).r;
 
-    int   pack      = int(albedoPacked.a*255.0 + 0.5);
-    float roughness = float((pack >> 5) & 0x07) * (1.0/7.0);
-    float metallic  = float((pack >> 2) & 0x07) * (1.0/7.0);
+    int   pack      = int(albedoPacked.a * 255.0 + 0.5);
+    float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
+    float metallic  = float((pack >> 2) & 0x07) * (1.0 / 7.0);
     vec3  emissive  = albedo * float(pack & 0x03);
 
     float a  = max(roughness, 0.04);
-    float a2 = a*a;
-    float k  = (a+1.0)*(a+1.0)*0.125;
+    float a2 = a * a;
+    float k  = (a + 1.0) * (a + 1.0) * 0.125;
     vec3  F0 = mix(vec3(0.04), albedo, metallic);
 
     vec3  worldPos = reconstructWorldPos(uv, depth);
     vec3  V        = normalize(viewPos.xyz - worldPos);
-    float NdotV    = max(dot(N,V), 0.0);
+    float NdotV    = max(dot(N, V), 0.0);
 
-    // ── Constantes por fragmento ─────────────────────────────────────────
-    float gNdotV = GeomG(NdotV, k);
-    vec3  L_dir  = normalize(lightDir.xyz);
-    float NdotL  = max(dot(N, L_dir), 0.0);
-
-    // ── Early-out: fondo (depth=0 en inverse-z) ──────────────────────────
-    // Para píxeles de cielo, sólo emissive (no hay geometría que iluminar)
-    if (depth == 0.0) { FragColor = vec4(emissive, 1.0); return; }
-
-    // ── SSDO ─────────────────────────────────────────────────────────────
+    // ── SSDO ─────────────────────────────────────────────────────────────────
     float ao     = 1.0;
     vec3  bounce = vec3(0.0);
 #ifdef USE_SSDO
-    mat3 TBN     = buildTBN(N);
-    // L_local = TBN^T * L_dir (TBN ortonormal → transpuesta = inversa)
-    // Permite calcular dirTerm con dot en espacio tangente dentro del loop
-    vec3 L_local = vec3(dot(TBN[0], L_dir),
-                        dot(TBN[1], L_dir),
-                        dot(TBN[2], L_dir));
-    vec4 ssdo    = computeSSDO(worldPos, N, albedo, TBN, L_local);
-    ao     = 1.0 - ssdo.a;
-    bounce = ssdo.rgb;
+    // No aplicar SSDO en el cielo / fondo (depth == 0 en inverse-z = far plane)
+    if (depth > 0.0) {
+        vec4 ssdo = computeSSDO(worldPos, N, albedo);
+        ao     = 1.0 - ssdo.a;
+        bounce = ssdo.rgb;
+    }
 #endif
 
-    vec3 color = albedo*0.01*ao + emissive;
+    vec3 color = albedo * 0.01 * ao + emissive;
 
-    // Luz direccional
-    color += BRDF(N, V, L_dir, NdotV, NdotL, albedo, metallic, a2, k, F0, gNdotV)
+    vec3  L     = normalize(lightDir.xyz);
+    float NdotL = max(dot(N, L), 0.0);
+    color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
              * lightColor.rgb * lightColor.a * ao;
     color += bounce * lightColor.rgb * lightColor.a;
 
-    // Luces puntuales
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
         vec3  toLight = pl.lights[i].pos.xyz - worldPos;
@@ -306,9 +250,9 @@ void main() {
         float invDist = inversesqrt(dist2);
         vec3  Lp      = toLight * invDist;
         float dist    = dist2 * invDist;
-        float NdotLp  = max(dot(N,Lp), 0.0);
-        float att     = 1.0 / (1.0 + dist*(0.09 + 0.032*dist));
-        color += BRDF(N, V, Lp, NdotV, NdotLp, albedo, metallic, a2, k, F0, gNdotV)
+        float NdotLp  = max(dot(N, Lp), 0.0);
+        float att     = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
+        color += BRDF(N, V, Lp, NdotV, NdotLp, albedo, metallic, a2, k, F0)
                  * pl.lights[i].color.rgb
                  * (pl.lights[i].color.a * att)
                  * ao;
