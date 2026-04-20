@@ -205,7 +205,7 @@
 	fixFontResize ;
 
 : | <<<<<<<< Boot
-	"demo5 r3dv" 1024 768 GLini GLInfo
+	"demo3 r3dv" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
 	

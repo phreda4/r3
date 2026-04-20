@@ -47,6 +47,13 @@
 
 :ax a> @ ; :ay a> 8 + @ ; :az a> 16 + @ ;
 :vx b> @ ; :vy b> 8 + @ ; :vz b> 16 + @ ;	
+
+::v3rotX | 'vec 'src angle --
+	rot >a swap >b
+	sincos 
+	vx a!+
+	vy over *. vz pick3 *. - a!+
+	vy rot *. swap vz *. + a! ;
 	
 ::v3rotY | 'vec 'src angle --
 	rot >a swap >b
@@ -55,6 +62,13 @@
 	vy a!+
 	vx neg rot *. swap vz *. + a! ;
 
+::v3rotZ | 'vec 'src angle --
+	rot >a swap >b
+	sincos 
+	vx over *. vy pick3 *. - a!+
+	vx rot *. swap vy *. + a! 
+	vz a!+ ;
+	
 | rotate vec3 by axis
 #c #s #t
 ::v3rotAxis | 'dst 'src 'axis angle --

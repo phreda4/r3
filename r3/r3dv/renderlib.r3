@@ -34,13 +34,16 @@ void main(){
 }
 @-----------------------"
 
-
 #rl_shader_light "
 @vertex-----------------
 #version 440 core
 layout(location=0) in vec2 aPos;
 out vec2 uv;
 void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+
+// ────────────────────────────────────────────────────────────────────────────
+// FRAGMENT SHADER
+// ────────────────────────────────────────────────────────────────────────────
 @fragment---------------
 #version 440 core
 in vec2 uv;
@@ -50,7 +53,7 @@ out vec4 FragColor;
 #define USE_SSDO
 
 #ifdef USE_SSDO
-const int   SSDO_SAMPLES      = 8;//16
+const int   SSDO_SAMPLES      = 8;
 const float SSDO_RADIUS       = 0.8;
 const float SSDO_BIAS         = 0.05;
 const float SSDO_INTENSITY    = 2.8;
@@ -123,10 +126,10 @@ float hash21(vec2 p) {
 }
 
 mat3 buildTBN(vec3 N) {
-	vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-	vec3 T = normalize(cross(up, N));
-	vec3 B = cross(N, T);	
-	return mat3(T, B, N);
+    vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 T = normalize(cross(up, N));
+    vec3 B = cross(N, T);
+    return mat3(T, B, N);
 }
 
 vec3 cosineSampleHemisphere(float i, float n, float rnd) {
@@ -136,46 +139,42 @@ vec3 cosineSampleHemisphere(float i, float n, float rnd) {
     return vec3(cos(phi) * sinR, sin(phi) * sinR, r);
 }
 
-// ── Proyectar world-pos a UV de pantalla ─────────────────────────────────────
-vec3 worldToUV(vec3 wp) {
-    vec4 clip = ProjView * vec4(wp, 1.0);
-    if (clip.w <= 0.0) return vec3(0.5, 0.5, 0.0);
-    vec3 ndc  = clip.xyz / clip.w;
-    vec2 suv  = ndc.xy * 0.5 + 0.5;
-    float onscreen = step(0.0, suv.x) * step(suv.x, 1.0)
-                   * step(0.0, suv.y) * step(suv.y, 1.0);
-    return vec3(suv, onscreen);
-}
-
 // ── SSDO principal ───────────────────────────────────────────────────────────
 vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
     mat3 TBN  = buildTBN(N);
-    float rnd = hash21(uv * 1000.0); // ruido por pixel para rotar el kernel
+    float rnd = hash21(uv * 1000.0);
     float occ    = 0.0;
     vec3  bounce = vec3(0.0);
     float weight = 0.0;
+
     for (int i = 0; i < SSDO_SAMPLES; ++i) {
 
         vec3 localDir = cosineSampleHemisphere(float(i), float(SSDO_SAMPLES), rnd);
         vec3 dir      = normalize(TBN * localDir);
 
-        float t       = (float(i) + 0.5) / float(SSDO_SAMPLES);
-        float dist    = SSDO_RADIUS * t * t;
-        vec3  sPos    = worldPos + dir * dist + N * SSDO_BIAS;
+        float t    = (float(i) + 0.5) / float(SSDO_SAMPLES);
+        float dist = SSDO_RADIUS * t * t;
+        vec3  sPos = worldPos + dir * dist + N * SSDO_BIAS;
 
-        vec3  sUVFlag = worldToUV(sPos);
-        if (sUVFlag.z < 0.5) continue; // fuera de pantalla
+        // ── FIX: una sola multiplicación ProjView*sPos ───────────────────────
+        // Original: worldToUV(sPos) hacía ProjView*sPos internamente,
+        // y luego selfClip = ProjView*sPos lo repetía. Ahora se hace una vez.
+        vec4 clip = ProjView * vec4(sPos, 1.0);
+        if (clip.w <= 0.0) continue;
 
-        vec2  sUV     = sUVFlag.xy;
+        vec3  ndc      = clip.xyz / clip.w;
+        vec2  sUV      = ndc.xy * 0.5 + 0.5;
+        float onscreen = step(0.0, sUV.x) * step(sUV.x, 1.0)
+                       * step(0.0, sUV.y) * step(sUV.y, 1.0);
+        if (onscreen < 0.5) continue;
+
         float sDepth  = texture(gDepth, sUV).r;
-
         vec3  sWorld  = reconstructWorldPos(sUV, sDepth);
-
         float occDist = length(sWorld - worldPos);
 
-        vec4  selfClip    = ProjView * vec4(sPos, 1.0);
-        float selfNDC_Z   = selfClip.z / selfClip.w; // NDC z de la muestra
+        float selfNDC_Z   = ndc.z;              // ya disponible — sin recalcular
         float bufferNDC_Z = sDepth * 2.0 - 1.0;
+        // ────────────────────────────────────────────────────────────────────
 
         bool occluded = (bufferNDC_Z > selfNDC_Z + EPS)
                      && (occDist < SSDO_MAX_DISTANCE);
@@ -223,11 +222,9 @@ void main() {
     vec3  V        = normalize(viewPos.xyz - worldPos);
     float NdotV    = max(dot(N, V), 0.0);
 
-    // ── SSDO ─────────────────────────────────────────────────────────────────
     float ao     = 1.0;
     vec3  bounce = vec3(0.0);
 #ifdef USE_SSDO
-    // No aplicar SSDO en el cielo / fondo (depth == 0 en inverse-z = far plane)
     if (depth > 0.0) {
         vec4 ssdo = computeSSDO(worldPos, N, albedo);
         ao     = 1.0 - ssdo.a;
