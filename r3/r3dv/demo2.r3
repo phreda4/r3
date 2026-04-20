@@ -41,10 +41,6 @@
 	
 	;
 	
-:viewresize
-    |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
-	;
-
 #xp #yp 
 :movecam
 	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
@@ -135,7 +131,8 @@
 	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ffff00ff 3 3 ss3dset | x y z rxyz color spr i --
 	;
 	
-:viewresize sh sw rl_resizewin fixFontResize ;
+:viewresize 
+	sh sw rl_resizewin fixFontResize ;
 	
 
 : | <<<<< Boot

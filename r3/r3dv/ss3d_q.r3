@@ -49,7 +49,7 @@ layout(std140,binding=0) uniform Matrices {
      out vec3  vLocalPos;
 flat out ivec3 vSize;
 flat out mat3  vRot;
-flat out vec3  vWorldTrans;
+flat out vec3  vTrans;
 flat out uint  vColorPk;
 flat out int   vOffset;
 flat out float vScale;
@@ -57,10 +57,12 @@ flat out float vScale;
 mat3 quatToMat3(vec4 q) {
     float x=q.x, y=q.y, z=q.z, w=q.w;
     float x2=x*x, y2=y*y, z2=z*z;
+    float xy=x*y, xz=x*z, yz=y*z;
+    float wx=w*x, wy=w*y, wz=w*z;
     return mat3(
-        vec3(1.0-2.0*(y2+z2),  2.0*(x*y+z*w),  2.0*(x*z-y*w)),
-        vec3(2.0*(x*y-z*w),  1.0-2.0*(x2+z2),  2.0*(y*z+x*w)),
-        vec3(2.0*(x*z+y*w),    2.0*(y*z-x*w),  1.0-2.0*(x2+y2))
+        vec3(1.0-2.0*(y2+z2),    2.0*(xy+wz),  2.0*(xz-wy)),
+        vec3(    2.0*(xy-wz),1.0-2.0*(x2+z2),  2.0*(yz+wx)),
+        vec3(    2.0*(xz+wy),    2.0*(yz-wx),  1.0-2.0*(x2+y2))
     );
 }
 
@@ -96,7 +98,7 @@ void main() {
     gl_Position = ProjView * vec4(rot*local_pos + trans, 1.0);
     vLocalPos   = local_pos;
     vRot        = rot;
-    vWorldTrans = trans;
+    vTrans      = trans;
     vColorPk    = inst.color;
     vOffset     = spr.nfoff&0xffff;
 	vScale=scale;
@@ -115,7 +117,7 @@ in  vec3  vRo;
 in  vec3  vLocalPos;
 flat in ivec3 vSize;
 flat in mat3  vRot;
-flat in vec3  vWorldTrans;
+flat in vec3  vTrans;
 flat in uint  vColorPk;
 flat in int   vOffset;
 flat in float vScale;
@@ -178,7 +180,7 @@ void main() {
             vec3 b_hit   = vec3((float(cell.x)+0.5)/float(itw),
                                 1.0-(float(cell.y)+0.5)/float(iNF),
                                 (float(cell.z)+0.5)/float(ith));
-            vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vWorldTrans + world_n*0.0005;
+            vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vTrans + world_n*0.0005;
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w*0.5 + 0.5;
             vec3 tint    = vec3(float((vColorPk>>24)&0xFFu),
@@ -373,7 +375,7 @@ void main() {
 
 #cz #sz #cy #sy #cx #sx
 
-| srxyz -> qxyzw
+| rxyz -> qxyzw
 ::rxyz>q16 | rxyz -- qxyzw
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
@@ -424,6 +426,10 @@ void main() {
 	5 << 3dss_array + 5 2 << + >a
 	rot da!+ swap da!+ da! 
 	]ba ;
+
+::ss3dqua | quat i --
+	dirtycheck 
+	5 << 3dss_array + 3 2 << + ! ;
 	
 ::ss3dreset  
 	0 'ss3d_inst ! ;

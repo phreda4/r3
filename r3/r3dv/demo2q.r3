@@ -33,20 +33,21 @@
 	
 	;
 
+#rrot
+
 :drawscene
 	rl_ProgGeom
 	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
 	
 	|drawsprites	
-	msec 4 << sin 2.0 + 0 $ffffff00 0 ss3dcs
+	msec 4 << sin 2.0 + 97 $ffffff00 0 ss3dcs
 	|::ss3dcs | scale spr color i --
+	|msec 4 << sin 2.0 + 0 $ffffff00 
+	rrot 1 ss3dqua
+	
 	SS3Ddraw
 	;
 	
-:viewresize
-    |0 0 vp_w vp_h glViewport vp_h vp_w /. 'vp_asp ! 
-	;
-
 #xp #yp 
 :movecam
 	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
@@ -129,13 +130,20 @@
     drop
 	;
 
+#ns 0
 :load3d
-	"media/ss/iti" 10 ss3dload
 	
-	0 0 0 
-	$0 rxyz>q16
-	4.0 $ffffff00 0 0
-	ss3dset | x y z qxyzw scale color spr i --
+	-2.0 ( 2.0 <?
+		-2.0 ( 2.0 <?
+		
+		over 0 pick2
+		$0 rxyz>q16
+		4.0 $ffffff00 ns 97 + ns 
+		ss3dset | x y z qxyzw scale color spr i --
+		1 'ns +!
+		
+			1.0 + ) drop
+		1.0 + ) drop
 	
 	|0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz color spr i --
 	|1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz color spr i --
@@ -153,7 +161,11 @@
 	rl_init
 	build_cube
 
+	"media/ss/sprites" 512 ss3dload
+	
 	load3d
+	
+	0.25 rxyz>q16 'rrot !
 	
 	8 'fsun memfloat
 	'fsun rl_set_sun
