@@ -34,16 +34,12 @@ void main(){
 }
 @-----------------------"
 
-#rl_shader_light "
-@vertex-----------------
+#rl_shader_light 
+"@vertex-----------------
 #version 440 core
 layout(location=0) in vec2 aPos;
 out vec2 uv;
 void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
-
-// ────────────────────────────────────────────────────────────────────────────
-// FRAGMENT SHADER
-// ────────────────────────────────────────────────────────────────────────────
 @fragment---------------
 #version 440 core
 in vec2 uv;
@@ -90,6 +86,13 @@ vec3 reconstructWorldPos(vec2 uv, float depth) {
     vec4 vp    = invProj * ndc;
     vp.xyz    /= vp.w;
     return (invView * vec4(vp.xyz, 1.0)).xyz;
+}
+
+float reconstructViewZ(vec2 uv, float depth) {
+    float ndcZ = depth * 2.0 - 1.0;
+    vec4 ndc   = vec4(uv * 2.0 - 1.0, ndcZ, 1.0);
+    vec4 vp    = invProj * ndc;
+    return vp.z / vp.w;
 }
 
 float DistributionGGX(float NdotH, float a2) {
@@ -139,10 +142,9 @@ vec3 cosineSampleHemisphere(float i, float n, float rnd) {
     return vec3(cos(phi) * sinR, sin(phi) * sinR, r);
 }
 
-// ── SSDO principal ───────────────────────────────────────────────────────────
 vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
-    mat3 TBN  = buildTBN(N);
-    float rnd = hash21(uv * 1000.0);
+    mat3  TBN  = buildTBN(N);
+    float rnd  = hash21(uv * 1000.0);
     float occ    = 0.0;
     vec3  bounce = vec3(0.0);
     float weight = 0.0;
@@ -156,38 +158,36 @@ vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
         float dist = SSDO_RADIUS * t * t;
         vec3  sPos = worldPos + dir * dist + N * SSDO_BIAS;
 
-        // ── FIX: una sola multiplicación ProjView*sPos ───────────────────────
-        // Original: worldToUV(sPos) hacía ProjView*sPos internamente,
-        // y luego selfClip = ProjView*sPos lo repetía. Ahora se hace una vez.
         vec4 clip = ProjView * vec4(sPos, 1.0);
         if (clip.w <= 0.0) continue;
-
-        vec3  ndc      = clip.xyz / clip.w;
-        vec2  sUV      = ndc.xy * 0.5 + 0.5;
+        vec3  ndc     = clip.xyz / clip.w;
+        vec2  sUV     = ndc.xy * 0.5 + 0.5;
         float onscreen = step(0.0, sUV.x) * step(sUV.x, 1.0)
                        * step(0.0, sUV.y) * step(sUV.y, 1.0);
         if (onscreen < 0.5) continue;
 
-        float sDepth  = texture(gDepth, sUV).r;
+        float sDepth = texture(gDepth, sUV).r;
+
+        vec4  sClipView  = invProj * vec4(ndc, 1.0);
+        float sampleViewZ = sClipView.z / sClipView.w;
+
+        float bufferViewZ = reconstructViewZ(sUV, sDepth);
+
+        bool occluded = (bufferViewZ > sampleViewZ + EPS);
+
+        if (!occluded) { weight += 1.0; continue; }
+
         vec3  sWorld  = reconstructWorldPos(sUV, sDepth);
         float occDist = length(sWorld - worldPos);
+        if (occDist >= SSDO_MAX_DISTANCE) { weight += 1.0; continue; }
 
-        float selfNDC_Z   = ndc.z;              // ya disponible — sin recalcular
-        float bufferNDC_Z = sDepth * 2.0 - 1.0;
-        // ────────────────────────────────────────────────────────────────────
+        float falloff = pow(1.0 - occDist / SSDO_MAX_DISTANCE, SSDO_FALLOFF);
 
-        bool occluded = (bufferNDC_Z > selfNDC_Z + EPS)
-                     && (occDist < SSDO_MAX_DISTANCE);
+        vec3  L       = normalize(lightDir.xyz);
+        float dirTerm = max(dot(dir, L), 0.0);
 
-        if (occluded) {
-            float falloff = pow(1.0 - occDist / SSDO_MAX_DISTANCE, SSDO_FALLOFF);
-
-            vec3  L       = normalize(lightDir.xyz);
-            float dirTerm = max(dot(dir, L), 0.0);
-
-            occ    += falloff;
-            bounce += texture(gAlbedo, sUV).rgb * falloff * dirTerm * SSDO_BOUNCE_STR;
-        }
+        occ    += falloff;
+        bounce += texture(gAlbedo, sUV).rgb * falloff * dirTerm * SSDO_BOUNCE_STR;
         weight += 1.0;
     }
 
@@ -360,7 +360,6 @@ void main(){
 | Scene + Bloom
 #rl_scene_fbo   0
 #rl_scene_tex   0
-#rl_scene_depth 0
 
 | Quad
 ##rl_quad_vao 0  #rl_quad_vbo 0
@@ -482,11 +481,8 @@ void main(){
     | scene_tex: 
     GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR 0
     rl_make_tex2d 'rl_scene_tex !
-    | scene_depth: 
-    GL_DEPTH_COMPONENT24 rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST 0
-    rl_make_tex2d 'rl_scene_depth !
-
-    rl_scene_tex rl_scene_depth rl_make_fbo 'rl_scene_fbo !
+	
+	rl_scene_tex 0 rl_make_fbo 'rl_scene_fbo !
 	
     | Bloom mips
 	'listex >a
@@ -517,8 +513,7 @@ void main(){
 :rl_destroy_bloom
     rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
     rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
-    rl_scene_depth 1? ( 1 'rl_scene_depth glDeleteTextures     ) drop
-	0 'rl_scene_fbo ! 0 'rl_scene_tex ! 0 'rl_scene_depth ! 
+	0 'rl_scene_fbo ! 0 'rl_scene_tex !
 	'listex >a
 	'lisfbo >b
 	RL_BLOOM_MIPS ( 1? 1-

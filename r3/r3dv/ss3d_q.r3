@@ -379,22 +379,10 @@ void main() {
 	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
 	;
 
-| slot base address (32 bytes cada instancia)
-:ss3d>a  5 << 3dss_array + >a ;
-
-| pack int16 lo+hi en un int32
-:pack16  |( lo hi -- w )  
-	$ffff and swap 16 << or ;
-
-| pack spr_id (uint16) + scale (uint8.8) en un uint32
-| scale en r3forth ya es Q16: 1.0=$10000; bajar a 8.8 -> >> 8
-:packss | ( scale_q16 spr_id -- w )  
-	swap 8 >> 16 << or ;
-
 #cz #sz #cy #sy #cx #sx
 
-| srxyz -> qw qx qy qz  (int16 rango +-32767)
-:srxyz>q16
+| srxyz -> qxyzw
+::rxyz>q16
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !
@@ -404,75 +392,68 @@ void main() {
 	sx cy *. cz *. cx sy *. sz *. -		| qx
 	cx sy *. cz *. sx cy *. sz *. +		| qy
 	cx cy *. sz *. sx sy *. cz *. -		| qz
-	| -> int16 * 32767
-	32767 *. 
-	swap 32767 *.  swap
-	swap 32767 *.  swap
-	32767 *. 
-	| stack: qw16 qx16 qy16 qz16
+	2/ $ffff and 16 <<
+	swap 2/ $ffff and 32 << or
+	swap 2/ $ffff and 48 << or
+	swap 2/ $ffff and or 
 	;
 
-| | x y z srxyz scale color spr i --
-| scale en Q16: 1.0=$10000  2.0=$20000  0.5=$8000
-::ss3dset
+| Estructura Instance (32 bytes = 8 dwords):
+|
+|  dword 0   px        int32  posicion x * 65536
+|  dword 1   py        int32  posicion y * 65536
+|  dword 2   pz        int32  posicion z * 65536
+|  dword 3   obj_id    uint32
+|  dword 4   qxy       int16lo=qx  int16hi=qy   (* 32767)
+|  dword 5   qzw       int16lo=qz  int16hi=qw   (* 32767)
+|  dword 6   hi=scale uint8.8 (1.0=$0100)  lo=spr_id uint16
+|  dword 7   color     uint32  0xRRGGBBuma
+
+
+::ss3dset | x y z qxyzw scale color spr i --
 	dirtycheck
 	ab[
-	ss3d>a
-	>r >r >r >r		| r: i spr color scale
-	srxyz>q16		| qw16 qx16 qy16 qz16
-	>r >r >r >r		| r: i spr color scale qw qx qy qz
-	| pos x y z -> fixed *65536
-	65536 *.  da!+		| px
-	65536 *.  da!+		| py
-	65536 *.  da!+		| pz
-	0 da!+					| obj_id
-	r> r> pack16 da!+		| qxy = pack16(qx,qy)
-	r> r> pack16 da!+		| qzw = pack16(qz,qw)
-	r> r> packss da!+		| scale|spr_id
-	r> da!					| color
+	5 << 3dss_array + >a 
+	swap >r				| x y z xyzw scale spr
+	swap 8 >> 16 << or  | x y z xyzw scale|spr
+	>r >r
+	rot da!+ swap da!+ da!  | x y z
+	0 da!+
+	r> dup 32 >> da!+ da!+
+	r> da!+
+	r> da!
 	]ba
 	;
 
-| | fx fy fz qx qy qz qw scale color spr i --   (floats Q16, quat normalizado)
-::ss3dsetq
+::ss3dsetq | fx fy fz qxyzw scale color spr i --   (floats Q16, quat normalizado)
 	dirtycheck
 	ab[
-	ss3d>a
-	>r >r >r >r		| r: i spr color scale
-	32767 *.  >r		| qw16
-	32767 *.  >r		| qz16
-	32767 *.  >r		| qy16
-	32767 *.  >r		| qx16
-	65536 *.  da!+		| px
-	65536 *.  da!+		| py
-	65536 *.  da!+		| pz
-	0 da!+					| obj_id
+	5 << 3dss_array + >a 
+	swap >r
+	swap 8 >> 16 << or  | r: i spr color scale
+	>r >r >r >r >r		
+	rot da!+ swap da!+ da!  | x y z
+	0 da!+
 	r> r> pack16 da!+		| qxy
 	r> r> pack16 da!+		| qzw
-	r> r> packss da!+		| scale|spr_id
-	r> da!					| color
+	r> da!+
+	r> da!
 	]ba
 	;
 
-| | color scale spr i --
-::ss3dcs
+::ss3dcs | color scale spr i --
 	dirtycheck
 	ab[
-	ss3d>a
-	6 2 << a+				| -> dword 6
-	packss da!+				| scale|spr_id  (scale spr on stack)
+	5 << 3dss_array + 6 2 << + >a				| -> dword 6
+	swap 8 >> $ffff and 16 << or da!+	| scale|sprite
 	da!						| color
 	]ba ;
 
-| | fx fy fz i --
-::ss3dxyz
+::ss3dxyz | x y z i --
 	dirtycheck
 	ab[
-	ss3d>a
-	>r >r
-	65536 *.  da!+
-	r> 65536 *.  da!+
-	r> 65536 *.  da!
+	5 << 3dss_array + >a
+	rot da!+ swap da!+ da! 
 	]ba ;
-
+	
 ::ss3dreset  0 'ss3d_inst ! ;
