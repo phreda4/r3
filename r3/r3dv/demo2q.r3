@@ -30,15 +30,17 @@
 	msec 18 >> $1f and 
 	1 ss3dset | x y z rxyz scale color spr i --	
 	
-	SS3Ddraw
+	
 	;
 
 :drawscene
 	rl_ProgGeom
 	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
 	
-	drawsprites	
-	
+	|drawsprites	
+	msec 4 << sin 2.0 + 0 $ffffff00 0 ss3dcs
+	|::ss3dcs | scale spr color i --
+	SS3Ddraw
 	;
 	
 :viewresize
@@ -110,7 +112,7 @@
 	8 sh 48 - 400 40 frect
 	$ffffffff 'fcolor !
 	16 sh 40 -  fat
-	"r3forth - DEMO 2 " ftext
+	"r3forth - DEMO 2q " ftext
 	fend
 		
     GLUpdate
@@ -129,13 +131,20 @@
 
 :load3d
 	"media/ss/iti" 10 ss3dload
-	 0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz color spr i --
-	1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz color spr i --
-	1.0 0 0.2   0   7.0 8 >> 48 << or $ffffff20 2 2 ss3dset | x y z rxyz color spr i --
-	-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ffff00ff 3 3 ss3dset | x y z rxyz color spr i --
+	
+	0 0 0 
+	$0 rxyz>q16
+	4.0 $ffffff00 0 0
+	ss3dset | x y z qxyzw scale color spr i --
+	
+	|0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz color spr i --
+	|1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz color spr i --
+	|1.0 0 0.2   0   7.0 8 >> 48 << or $ffffff20 2 2 ss3dset | x y z rxyz color spr i --
+	|-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ffff00ff 3 3 ss3dset | x y z rxyz color spr i --
 	;
 	
-:viewresize sh sw rl_resizewin fixFontResize ;
+:viewresize 
+	sh sw rl_resizewin fixFontResize ;
 	
 
 : | <<<<< Boot

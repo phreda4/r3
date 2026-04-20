@@ -3,17 +3,6 @@
 ^r3/lib/sdl2image.r3
 ^r3/lib/str.r3
 
-| Estructura Instance (32 bytes = 8 dwords):
-|
-|  dword 0   px        int32  posicion x * 65536
-|  dword 1   py        int32  posicion y * 65536
-|  dword 2   pz        int32  posicion z * 65536
-|  dword 3   obj_id    uint32
-|  dword 4   qxy       int16lo=qx  int16hi=qy   (* 32767)
-|  dword 5   qzw       int16lo=qz  int16hi=qw   (* 32767)
-|  dword 6   hi=scale uint8.8 (1.0=$0100)  lo=spr_id uint16
-|  dword 7   color     uint32  0xRRGGBBuma
-
 ##n3dsprites	| cnt sprites
 #3dss_max		| max instances
 ##3dss_array	| instances array
@@ -38,12 +27,12 @@
 layout(location=0) in vec3 a_pos;
 
 struct Instance {
-    int  px, py, pz;
     uint obj_id;
+	uint color;
+	uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
     int  qxy;       // int16 qx (lo) | int16 qy (hi)
     int  qzw;       // int16 qz (lo) | int16 qw (hi)
-    uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
-    uint color;
+    int  px, py, pz;	
 };
 layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
 
@@ -63,6 +52,7 @@ flat out mat3  vRot;
 flat out vec3  vWorldTrans;
 flat out uint  vColorPk;
 flat out int   vOffset;
+flat out float vScale;
 
 mat3 quatToMat3(vec4 q) {
     float x=q.x, y=q.y, z=q.z, w=q.w;
@@ -99,8 +89,8 @@ void main() {
     mat3 rot = quatToMat3(normalize(q));
 
     vec3 dw = viewPos.xyz - trans;
-    // vRo en espacio local escalado: dividir por scale para compensar vExt*scale
-    vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw)) / scale;
+
+    vRo = vec3(dot(rot[0],dw), dot(rot[1],dw), dot(rot[2],dw));
 
     vec3 local_pos = a_pos * vExt;
     gl_Position = ProjView * vec4(rot*local_pos + trans, 1.0);
@@ -109,6 +99,7 @@ void main() {
     vWorldTrans = trans;
     vColorPk    = inst.color;
     vOffset     = spr.nfoff&0xffff;
+	vScale=scale;
 }
 
 @fragment---------------
@@ -127,6 +118,7 @@ flat in mat3  vRot;
 flat in vec3  vWorldTrans;
 flat in uint  vColorPk;
 flat in int   vOffset;
+flat in float vScale;
 
 layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
@@ -135,9 +127,9 @@ layout(location=1) out vec4 gAlbedo;
 layout(depth_greater) out float gl_FragDepth;
 
 void main() {
-    const float kScale = 100.0;
+    const float kScale = 100.0/vScale;
     int itw = vSize.x, iNF = vSize.y, ith = vSize.z;
-    vec3 vExt = vec3(vSize) * 0.005;
+	vec3 vExt = vec3(vSize) * (0.005 * vScale); 
 
     vec3 vRd = vLocalPos - vRo;
     vec3 ir  = sign(vRd) / max(abs(vRd), vec3(1e-7));
@@ -382,78 +374,56 @@ void main() {
 #cz #sz #cy #sy #cx #sx
 
 | srxyz -> qxyzw
-::rxyz>q16
+::rxyz>q16 | rxyz -- qxyzw
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
 	dup 32 >> sincos 'cx ! 'sx !
 	drop
 	| Euler ZYX -> quat (floats Q16)
 	cx cy *. cz *. sx sy *. sz *. +		| qw
-	sx cy *. cz *. cx sy *. sz *. -		| qx
-	cx sy *. cz *. sx cy *. sz *. +		| qy
+	2/ $ffff and 48 <<
 	cx cy *. sz *. sx sy *. cz *. -		| qz
-	2/ $ffff and 16 <<
-	swap 2/ $ffff and 32 << or
-	swap 2/ $ffff and 48 << or
-	swap 2/ $ffff and or 
+	2/ $ffff and 32 << or
+	cx sy *. cz *. sx cy *. sz *. +		| qy
+	2/ $ffff and 16 << or
+	sx cy *. cz *. cx sy *. sz *. -		| qx
+	2/ $ffff and or
 	;
 
-| Estructura Instance (32 bytes = 8 dwords):
-|
-|  dword 0   px        int32  posicion x * 65536
-|  dword 1   py        int32  posicion y * 65536
-|  dword 2   pz        int32  posicion z * 65536
-|  dword 3   obj_id    uint32
-|  dword 4   qxy       int16lo=qx  int16hi=qy   (* 32767)
-|  dword 5   qzw       int16lo=qz  int16hi=qw   (* 32767)
-|  dword 6   hi=scale uint8.8 (1.0=$0100)  lo=spr_id uint16
-|  dword 7   color     uint32  0xRRGGBBuma
-
+|struct Instance {
+|    uint obj_id;
+|    uint color;
+|    uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
+|    int  qxy;       // int16 qx (lo) | int16 qy (hi)
+|    int  qzw;       // int16 qz (lo) | int16 qw (hi)
+|    int  px, py, pz;
 
 ::ss3dset | x y z qxyzw scale color spr i --
 	dirtycheck
 	ab[
-	5 << 3dss_array + >a 
-	swap >r				| x y z xyzw scale spr
-	swap 8 >> 16 << or  | x y z xyzw scale|spr
-	>r >r
+	dup 5 << 3dss_array + >a 
+	da!+		|obj_id
+	swap da!+	| color
+	swap 8 >> 16 << or da!+ | scale|spr
+	a!+
 	rot da!+ swap da!+ da!  | x y z
-	0 da!+
-	r> dup 32 >> da!+ da!+
-	r> da!+
-	r> da!
 	]ba
 	;
 
-::ss3dsetq | fx fy fz qxyzw scale color spr i --   (floats Q16, quat normalizado)
+::ss3dcs | scale spr color i --
 	dirtycheck
 	ab[
-	5 << 3dss_array + >a 
-	swap >r
-	swap 8 >> 16 << or  | r: i spr color scale
-	>r >r >r >r >r		
-	rot da!+ swap da!+ da!  | x y z
-	0 da!+
-	r> r> pack16 da!+		| qxy
-	r> r> pack16 da!+		| qzw
-	r> da!+
-	r> da!
-	]ba
-	;
-
-::ss3dcs | color scale spr i --
-	dirtycheck
-	ab[
-	5 << 3dss_array + 6 2 << + >a				| -> dword 6
-	swap 8 >> $ffff and 16 << or da!+	| scale|sprite
-	da!						| color
+	5 << 3dss_array + 1 2 << + >a				| -> dword 1
+	da!+
+	swap 8 >> 16 << or da!	| scale|sprite
 	]ba ;
 
 ::ss3dxyz | x y z i --
 	dirtycheck
 	ab[
-	5 << 3dss_array + >a
+	5 << 3dss_array + 5 2 << + >a
 	rot da!+ swap da!+ da! 
 	]ba ;
 	
-::ss3dreset  0 'ss3d_inst ! ;
+::ss3dreset  
+	0 'ss3d_inst ! ;
