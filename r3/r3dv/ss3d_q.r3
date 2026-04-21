@@ -76,7 +76,7 @@ void main() {
     vec3 vExt = vec3(vSize) * (0.005 * scale);
 
     const float kPos  = 1.0/65536.0;
-    const float kQuat = 1.0/32767.0;
+    const float kQuat = 1.0/16387.0; //32767.0;
 
     vec3 trans = vec3(inst.px, inst.py, inst.pz) * kPos;
 
@@ -382,13 +382,13 @@ void main() {
 	32 >> sincos 'cx ! 'sx !
 	| Euler ZYX -> quat (floats Q16)
 	cx cy *.s cz *.s sx sy *.s sz *.s +		| qw
-	2/ $ffff and 48 <<
+	2 >> $ffff and 48 <<
 	cx cy *.s sz *.s sx sy *.s cz *.s -		| qz
-	2/ $ffff and 32 << or
+	2 >> $ffff and 32 << or
 	cx sy *.s cz *.s sx cy *.s sz *.s +		| qy
-	2/ $ffff and 16 << or
+	2 >> $ffff and 16 << or
 	sx cy *.s cz *.s cx sy *.s sz *.s -		| qx
-	2/ $ffff and or
+	2 >> $ffff and or
 	;
 
 |struct Instance {

@@ -155,9 +155,6 @@
 	8 >> $1fffff and 21 << or swap
 	8 >> $1fffff and 42 << or ;
 	
-::+p21 | va vb -- vr
-	+ $40000200001 nand ;
-	
 ::unpack21 | x -- px py pz
 	dup 1 << 43 >> 8 << swap
 	dup 22 << 43 >> 8 << swap
@@ -169,27 +166,22 @@
 	1 << 43 >> 8 << ;
 
 :packq | rx ry rz rw -- rp
-	2/ $ffff and 48 << swap
-	2/ $ffff and 32 << or swap
-	2/ $ffff and 16 << or swap
-	2/ $ffff and or ;
+	2 >> $ffff and 48 << swap
+	2 >> $ffff and 32 << or swap
+	2 >> $ffff and 16 << or swap
+	2 >> $ffff and or ;
 
 ::unpackq | rp -- rw rz ry rx
-	dup 48 >> 1 << swap
-	dup 16 << 48 >> 1 << swap
-	dup 32 << 48 >> 1 << swap
-	48 << 48 >> 1 << ;
+	dup 48 >> 2 << swap
+	dup 16 << 48 >> 2 << swap
+	dup 32 << 48 >> 2 << swap
+	48 << 48 >> 2 << ;
 
 :packq* | rx ry rz rw s -- rp
-	dup >r *.
-	2/ $ffff and 48 << swap
-	r@ *.
-	2/ $ffff and 32 << or swap
-	r@ *.
-	2/ $ffff and 16 << or swap
-	r> *.
-	2/ $ffff and or ;
-	
+	dup >r *. 2 >> $ffff and 48 << swap
+	r@ *. 2 >> $ffff and 32 << or swap
+	r@ *. 2 >> $ffff and 16 << or swap
+	r> *. 2 >> $ffff and or ;
 
 #cntbones 11
 #bones * $fff
@@ -213,38 +205,17 @@
 
 :makeskel
 	'bones >a
-0.0 0.0 0.0 pack21 a!+	| raiz
-0.0 0.0 0.0 1.0 packq a!+
-
-0 0.2 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
-
-0 1.2 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
-
-0.6 1.1 0 pack21 a!+
-0.0000    0.0000    0.0998    0.9950 packq a!+
-
-0 -0.9 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
-
--0.6 1.1 0 pack21 a!+
-0.0000    0.0000   -0.0998    0.9950 packq a!+
-
-0 -0.9 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
-
-0.25 -0.2 0 pack21 a!+
-0.0250    0.0000    0.0000    0.9997 packq a!+
-
-0 -1.1 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
-
--0.25 -0.2 0 pack21 a!+
--0.0250    0.0000    0.0000    0.9997 packq a!+
-
-0 -1.1 0 pack21 a!+
-0.0 0.0 0.0 1.0 packq a!+
+0.0 0.0 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+0.0 0.2 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+0.0 1.2 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+0.6 1.1 0.0 pack21 a!+		0.0 0.0 0.0998 0.9950 packq a!+
+0.0 -0.9 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+-0.6 1.1 0.0 pack21 a!+		0.0 0.0 -0.0998 0.9950 packq a!+
+0.0 -0.9 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+0.25 -0.2 0.0 pack21 a!+	0.025 0.0 0.0 0.9997 packq a!+
+0.0 -1.1 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
+-0.25 -0.2 0.0 pack21 a!+	-0.025 0.0 0.0 0.9997 packq a!+
+0.0 -1.1 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
 	;
 
 #qx #qy #qz #qw | still in calcrot
@@ -257,12 +228,9 @@
 	qy pz *. qz py *. - 2* 'tx !
 	qz px *. qx pz *. - 2* 'ty !
 	qx py *. qy px *. - 2* 'tz !
-	unpack21r
-	qw tx *. + qy tz *. qz ty *. - + | x
-	swap
-	qw ty *. + qz tx *. qx tz *. - + | y 
-	rot 
-	qw tz *. + qx ty *. qy tx *. - + | z
+	unpack21r	qw tx *. + qy tz *. qz ty *. - + px + | x
+	swap		qw ty *. + qz tx *. qx tz *. - + py + | y 
+	rot 		qw tz *. + qx ty *. qy tx *. - + pz + | z
 	pack21
 	;
 	
@@ -295,20 +263,18 @@
 	'skelp 
 	0 ( cntbones <? swap
 		c@+ calcw
-		swap 1+ ) 2drop
-	;
-	
-#ballid
+		swap 1+ ) 2drop	;
 
 :updateobj
 	calcword
 	'result >a
 	0 ( cntbones <?
 		a@+ unpack21 a@+ pick4 ss3dxyzq | x y z quat i --
-		1+ ) drop 
-		;
+		1+ ) drop ;
 
+|--------------------------------------
 
+#ballid
 :updatebones
 	'bones >a
 	0 ( cntbones <?
@@ -318,12 +284,9 @@
 		$ffffff00
 		ballid
 		cntobjs
-		ss3dset
-		|::ss3dset | x y z qxyzw scale color spr i --	
+		ss3dset | x y z qxyzw scale color spr i --	
 		1 'cntobjs +!
 		1+ ) drop ;
-
-
 
 |--------------------------------------
 #ballid
