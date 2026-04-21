@@ -33,8 +33,6 @@
 	
 	;
 
-#rrot
-
 :drawscene
 	rl_ProgGeom
 	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
@@ -43,7 +41,11 @@
 	msec 4 << sin 2.0 + 97 $ffffff00 0 ss3dcs
 	|::ss3dcs | scale spr color i --
 	|msec 4 << sin 2.0 + 0 $ffffff00 
-	rrot 1 ss3dqua
+	0.125 rxyz>q16 1 ss3dqua
+	
+	msec 3 << $ffff and 16 << 
+	msec 2 << $ffff and or
+	rxyz>q16 2 ss3dqua
 	
 	SS3Ddraw
 	;
@@ -144,11 +146,6 @@
 		
 			1.0 + ) drop
 		1.0 + ) drop
-	
-	|0 0   0   0   1.0 8 >> 48 << or $ff00ff00 0 0 ss3dset | x y z rxyz color spr i --
-	|1.0 0 0.5   0   8.0 8 >> 48 << or $ffffff10 1 1 ss3dset | x y z rxyz color spr i --
-	|1.0 0 0.2   0   7.0 8 >> 48 << or $ffffff20 2 2 ss3dset | x y z rxyz color spr i --
-	|-1.4 0.4 -1.0 $7ff0 7.0 8 >> 48 << or $ffff00ff 3 3 ss3dset | x y z rxyz color spr i --
 	;
 	
 :viewresize 
@@ -164,8 +161,6 @@
 	"media/ss/sprites" 512 ss3dload
 	
 	load3d
-	
-	0.25 rxyz>q16 'rrot !
 	
 	8 'fsun memfloat
 	'fsun rl_set_sun

@@ -379,16 +379,15 @@ void main() {
 ::rxyz>q16 | rxyz -- qxyzw
 	dup sincos 'cz ! 'sz !
 	dup 16 >> sincos 'cy ! 'sy !
-	dup 32 >> sincos 'cx ! 'sx !
-	drop
+	32 >> sincos 'cx ! 'sx !
 	| Euler ZYX -> quat (floats Q16)
-	cx cy *. cz *. sx sy *. sz *. +		| qw
+	cx cy *.s cz *.s sx sy *.s sz *.s +		| qw
 	2/ $ffff and 48 <<
-	cx cy *. sz *. sx sy *. cz *. -		| qz
+	cx cy *.s sz *.s sx sy *.s cz *.s -		| qz
 	2/ $ffff and 32 << or
-	cx sy *. cz *. sx cy *. sz *. +		| qy
+	cx sy *.s cz *.s sx cy *.s sz *.s +		| qy
 	2/ $ffff and 16 << or
-	sx cy *. cz *. cx sy *. sz *. -		| qx
+	sx cy *.s cz *.s cx sy *.s sz *.s -		| qx
 	2/ $ffff and or
 	;
 
@@ -430,6 +429,15 @@ void main() {
 ::ss3dqua | quat i --
 	dirtycheck 
 	5 << 3dss_array + 3 2 << + ! ;
+
+::ss3dxyzq | x y z quat i --
+	dirtycheck 
+	ab[
+	5 << 3dss_array + 3 2 << + >a
+	a!+
+	rot da!+ swap da!+ da! 
+	]ba ;
+	
 	
 ::ss3dreset  
 	0 'ss3d_inst ! ;
