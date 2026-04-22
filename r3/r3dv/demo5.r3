@@ -180,8 +180,9 @@
 	"" .println
 	skel 
 	cntbones ( 1? 1- swap
-		c@+ "%d " .print 16 + |@+ "%h " .print @+ "%h " .println
+		c@+ "%d " .print 
 		swap ) drop
+		"" .println
 	dup fileanim - "%h" .println
 	
 	w@+ 'nstep !
@@ -210,10 +211,100 @@
 	|cntbones 17 * +
 	|drop
 	
+|	debugr3a
+|	fileanim anims 3 2 << + d@ + 
+|	w@+ "cntframes %d" .println 
 
+|	; :a
+	 
+	fileanim anims 0 2 << + d@ + 
+	4 + | frames/vel
+	2 + | duracion
+	>a
+	skel
+	0 ( cntbones <? swap 
+		c@+ drop
+		a@+ unpack21 a@+ 1.0 $ffffff00 nrosprite cntobjs
+		ss3dset | x y z qxyzw scale color spr i --			
+		1 'cntobjs +!
+		swap 1+ ) 2drop
 	;
 
 
+#qx #qy #qz #qw | still in calcrot
+#px #py #pz
+#tx #ty #tz
+
+:calcpos | ppos prot pos -- npos
+	unpack21r 'px ! 'py ! 'pz !
+	unpackq 'qx ! 'qy ! 'qz ! 'qw !
+	qy pz *. qz py *. - 2* 'tx !
+	qz px *. qx pz *. - 2* 'ty !
+	qx py *. qy px *. - 2* 'tz !
+	unpack21r	qw tx *. + qy tz *. qz ty *. - + px + | x
+	swap		qw ty *. + qz tx *. qx tz *. - + py + | y 
+	rot 		qw tz *. + qx ty *. qy tx *. - + pz + | z
+	pack21
+	;
+	
+:calcrot | rot -- nrot
+	unpackq 'px ! 'py ! 'pz ! 'tz ! | pw=tz
+	qw px *. qx tz *. + qy pz *. + qz py *. - | x
+	qw py *. qx pz *. - qy tz *. + qz px *. + | y 
+    qw pz *. qx py *. + qy px *. - qz tz *. + | z
+    qw tz *. qx px *. - qy py *. - qz pz *. - | w
+	pick3 dup *. pick3 dup *. + pick2 dup *. + over dup *. +
+	sqrt. 1.0 swap /.
+	packq*
+	;
+	
+:calcw
+	-? ( drop 
+		a@+ b!+ | pos
+		a@+ b!+ | rot
+		; )
+	4 << here + @+ swap @ | ppos prot 
+	a@+ calcpos b!+ | keep qxyzw var
+	a@+ calcrot b!+
+	;
+
+:calcpose | anim --
+	2 << anims + d@ fileanim + 
+	4 + | frames/vel
+	| frame 0 
+	2 + | duracion
+	>a
+	
+	here >b
+	skel
+	0 ( cntbones <? swap
+		c@+ calcw swap
+		-16 b+
+		b@+ unpack21 b@+ pick4 ss3dxyzq | x y z quat i --
+		1+ ) 2drop ;
+
+#baseanim
+#cntframe
+
+:setanim | anim --
+	2 << anims + d@ fileanim + 
+	w@+ 'cntframe !
+	4 + 'baseanim !
+	;
+
+:calframe | frame --
+	cntframe mod
+	cntbones 4 << 2 + *
+	baseanim +
+	>a	
+	here >b
+	skel
+	0 ( cntbones <? swap
+		c@+ calcw swap
+		-16 b+
+		b@+ unpack21 b@+ pick4 ss3dxyzq | x y z quat i --
+		1+ ) 2drop ;
+	
 |----------------------------------	
 	
 :totop
@@ -301,14 +392,22 @@
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
+	<f1> =? ( 1 setanim )
+	<f2> =? ( 2 setanim )
+	<f3> =? ( 3 setanim )	
+	<f4> =? ( 0 setanim )	
 	
+|	<f3> =? ( 2 calcpose )
 |	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 |	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
 	<esp> =? ( 
-		addobj 
+		addobj
 		nrosprite 1+ n3dsprites mod 'nrosprite !
 		)
 	drop
+	
+	msec 6 >> calframe
+	
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*
 		'camTo 'camAdv pick2 v3+*
@@ -346,7 +445,7 @@
 	"media/ss/sprites"
 	dup 256 ss3dload
 	ss3loadnames
-|	"point" ss3idname 'ballid !
+	"point" ss3idname 'nrosprite !
 	;
 	
 
@@ -358,15 +457,18 @@
 : | <<<<<<<< Boot
 	"Scene r3dv" 1024 768 GLini GLInfo
 
-	"media\bvh\pajaro.r3a" 
-	|"media\bvh\lobo.r3a" 
-	loadr3a
-	|makeskel	
-
 	$fff vaini
 	
 	glFixFont
 	load3d
+	|"media\bvh\pajaro.r3a" 
+	"media\bvh\lobo.r3a" 
+	|"media\bvh\persona.r3a" 
+	loadr3a
+	|makeskel	
+	1 setanim
+	
+	
 	rl_init 
 	rl_grid_init
 	
