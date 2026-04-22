@@ -391,6 +391,40 @@ void main() {
 	2 >> $ffff and or
 	;
 
+|------ pack 3 pos in 63bits (21x3) (13.8) 
+::pack21 | x y z -- vp
+	8 >> $1fffff and swap
+	8 >> $1fffff and 21 << or swap
+	8 >> $1fffff and 42 << or ;
+	
+::unpack21 | x -- x y z
+	dup 1 << 43 >> 8 << swap
+	dup 22 << 43 >> 8 << swap
+	43 << 43 >> 8 << ;
+
+::unpack21r | x -- z y x
+	dup 43 << 43 >> 8 << swap
+	dup 22 << 43 >> 8 << swap
+	1 << 43 >> 8 << ;
+
+::packq | rx ry rz rw -- rp
+	2 >> $ffff and 48 << swap
+	2 >> $ffff and 32 << or swap
+	2 >> $ffff and 16 << or swap
+	2 >> $ffff and or ;
+
+::unpackq | rp -- rw rz ry rx
+	dup 48 >> 2 << swap
+	dup 16 << 48 >> 2 << swap
+	dup 32 << 48 >> 2 << swap
+	48 << 48 >> 2 << ;
+
+::packq* | rx ry rz rw s -- rp
+	dup >r *. 2 >> $ffff and 48 << swap
+	r@ *. 2 >> $ffff and 32 << or swap
+	r@ *. 2 >> $ffff and 16 << or swap
+	r> *. 2 >> $ffff and or ;
+
 |struct Instance {
 |    uint obj_id;
 |    uint color;

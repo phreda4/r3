@@ -62,6 +62,7 @@ void main(){
     vec3 B = normalize(vWBit);
 
     vec3 ro = vec3(dot(vWPos,T), dot(vWPos,B), 1.0);
+//	    vec3 ro = vec3(dot(uCamPos, T), dot(uCamPos, B), dot(uCamPos, N));
     vec3 rw = normalize(vRayDir);
     vec3 rd = vec3(dot(rw,T), dot(rw,B), dot(rw,N));
 

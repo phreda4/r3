@@ -5,7 +5,7 @@
 
 ^./renderlib.r3
 ^./glfixfont.r3
-^./ss3d.r3
+^./ss3d_q.r3
 ^./glimm.r3
 ^./rlgrid.r3
 
@@ -133,187 +133,9 @@
 
 #va #vl #vu
 
+
 |----------------------------
-#cntobjs 0
-#scale 2.0
-#nrosprite 0
-
-|------ pack 1 scale (8.8) + 3 rotation (0.16)
-::packsrot | sx rx ry rz -- rp
-	$ffff and swap 
-	$ffff and 16 << or swap 
-	$ffff and 32 << or swap
-	8 >> $ffff and 48 << or 
-	;
-
-::+srot | ra rb -- rr
-	+ $100010001 nand ;
-
-|------ pack 3 vel in 63bits (21x3) (13.8) 
-::pack21 | vx vy vz -- vp
-	8 >> $1fffff and swap
-	8 >> $1fffff and 21 << or swap
-	8 >> $1fffff and 42 << or ;
 	
-::+p21 | va vb -- vr
-	+ $40000200001 nand ;
-	
-::unpack21 | x -- px py pz
-	dup 1 << 43 >> 8 << swap
-	dup 22 << 43 >> 8 << swap
-	43 << 43 >> 8 << ;
-
-#cntbones 5
-#bones * $fff
-#mats * $ffff | dwords!!
-
-
-#filer3a
-#tx #ty #tz #rx #ry #rz #sc #pa
-:parseline | adr -- adr'
-	trim
-	str>fnro 'tx ! str>fnro 'ty ! str>fnro 'tz !
-	str>fnro 'rx ! str>fnro 'ry ! str>fnro 'rz !
-	str>fnro 'sc ! ;
-	
-:loadr3a | "" --
-	here dup 'filer3a !
-	swap load 0 swap c!+ 'here !
-
-	filer3a 
-	"SKELETON" findstr 
-	>>sp trim
-	getnro 'cntbones ! |"cnt:%d" .println
-	'bones >a
-	0 ( cntbones <?
-		|dup "%d." .print
-		swap
-		"JOINT" findstr 5 +
-		trim getnro drop |"%d," .print
-		trim 1+ >>str trim
-		getnro 'pa ! | parent
-		parseline
-		tx ty tz pack21 a!+
-		sc rx ry rz packsrot a!+
-		$ff0000 32 << pa $ffff and or a!+
-		0 a!+
-		swap 1+ ) drop
-	drop
-	a> 'bones - "bones %d bytes" .println
-	-1 a!+ | end
-	;
-	
-
-:makeskel
-	'bones >a
-	0.0 0.0 0.0 pack21 a!+	| raiz
-	2.0 0.0 0.0 0.0 packsrot a!+
-	$ff00 32 << -1 $ffff and or a!+
-	0 a!+
-
-	0.0 2.0 0.0 pack21 a!+	| torso
-	2.0 0.02 0.0 0.0 packsrot a!+
-	$ff0000 32 << 0 $ffff and or a!+
-	0 a!+
-
-	1.5 0.5 0.0 pack21 a!+	| hombrol
-	3.0 0.0 0.0 0.5 packsrot a!+
-	$ff000000 32 << 1 $ffff and or a!+
-	0 a!+
-
-	-1.5 0.5 0.0 pack21 a!+	| hombror
-	3.0 0.0 0.0 -0.5 packsrot a!+
-	$ffff00 32 << 1 $ffff and or a!+
-	0 a!+
-
-	0.0 -1.0 0.0 pack21 a!+	| cadera
-	4.0 0.0 0.0 0.0 packsrot a!+
-	$ff00ff00 32 << 0 $ffff and or a!+
-	0 a!+
-	
-	-1 a!+ | end
-	;
-
-
-|--- multiply
-:mline | -- v
-	da@+ db@ *. 16 b+
-	da@+ db@ *. + 16 b+
-	da@+ db@ *. + 16 b+
-	da@+ db@ *. + ;
-	
-:mrow | adr -- adr'
-	mline swap d!+ -44 b+ -16 a+
-	mline swap d!+ -44 b+ -16 a+
-	mline swap d!+ -44 b+ -16 a+
-	mline swap d!+ -48 b+ -12 b+ ;
-	
-::dmat* | 'mat --
-	ab[
-	>b 'mat >a 'mati mrow mrow mrow mrow drop 
-	]ba ;
-
-	
-:getmatrix | pos srot parent --
-	>r 'mat >a ss3dcmat r>
-	$ffff =? ( drop b> 'mat 8 move ; ) | dsc
-	6 << 'mats + dmat* | fuente
-	b> 'mati 8 move ;
-
-:updatebones
-	'mats >b
-	'bones
-	0 ( cntbones <? swap
-		dup @+ swap @+ swap @ $ffff and	| pos srot parent
-		getmatrix
-		b> pick2 ss3dmat! | 'mat i --
-		32 + 64 b+ 
-		swap 1+ ) 2drop 
-		
-|	'mats >a | debug
-|	0 ( 5 <? 0 ( 4 <? 0 ( 4 <? da@+ "%a " .print 1+ ) drop .cr 1+ ) drop .cr 1+ ) drop
-|	"" .println
-		
-|	'mats >b | apply
-|	0 ( cntbones <? 
-|		b> over ss3dmat! | 'mat i --
-|		64 b+ 
-|		1+ ) drop 
-	
-		;
-
-	
-|    for (int i = 0; i < sc->njoint; i++) {
-|        const JointPose *lp = &local[i];
-|        Mat4 lm = local_matrix(lp->tx, lp->ty, lp->tz,
-|                               lp->ex, lp->ey, lp->ez, lp->scale);
-|        int par = sc->joints[i].parent;
-|        wmat[i] = (par < 0) ? lm : mat4_mul(&wmat[par], &lm);
-
-
-:updateobj
-	'mats >b
-	0 ( cntbones <?
-		b> over ss3dmat! | 'mat i --
-		128 b+ 1+ ) drop ;
-
-|--------------------------------------
-#ballid
-	
-:makeScene
-	'bones >a
-	( a@+ -1 <>? | pos
-		unpack21
-		a@+			| scale+rot
-		a@+ 32 >>>	| color
-		ballid
-		cntobjs
-		ss3dset | x y z srxyz color spr i --
-		1 'cntobjs +!
-		8 a+
-		) drop ;
-	
-
 :hiteye
 	'camAdv 8 + @ 0? ( 'hit ! ; ) 
 	'camEye 8 + @ swap /. | t
@@ -323,16 +145,74 @@
 	1 'hit !
 	;
 	
+#cntobjs
+#nrosprite
+	
 :addobj
 	hiteye hit 0? ( drop ; ) drop
 	'v3hit >a a@+ a@+ a@+ | x y z
-	scale 8 >> 48 <<
+	$000000000000 rxyz>q16 
+	3.0
 	$ffffff00
 	nrosprite
 	cntobjs
-	ss3dset | x y z srxyz color spr i --
+	ss3dset | x y z qxyzw scale color spr i --	
+		
 	1 'cntobjs +!
 	;
+
+#fileanim 
+#cntbones
+#cntanim
+#anims
+#skel 
+
+#nstep
+#nvel
+
+:debugr3a |---debug
+	cntbones "bones:%d" .println
+	cntanim "anims:%d" .println
+	anims
+	cntanim ( 1? 1- swap 
+		d@+ "anim %h " .println 
+		swap ) 2drop
+	"" .println
+	skel 
+	cntbones ( 1? 1- swap
+		c@+ "%d " .print 16 + |@+ "%h " .print @+ "%h " .println
+		swap ) drop
+	dup fileanim - "%h" .println
+	
+	w@+ 'nstep !
+	w@+ 'nvel !
+	>a
+	0 ( nstep <?
+		a> w@+ 8 << "%f " .println
+		>a
+		0 ( cntbones <? 
+			16 a+
+			1+ ) drop
+		1+ ) 2drop
+	;
+	
+:loadr3a | "" --
+	here dup 'fileanim !
+	swap load 'here !
+	fileanim
+	d@+ "r3a" d@ <>? ( "bad file r3a" .println 2drop ; ) drop
+	w@+ 'cntbones !
+	w@+ 'cntanim !
+	dup 'anims !
+	cntanim 2 << +
+	|dup 
+	'skel !
+	|cntbones 17 * +
+	|drop
+	
+
+	;
+
 
 |----------------------------------	
 	
@@ -394,7 +274,7 @@
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
-	nrosprite ssnameid "[%l]" sprint uiLabelC
+	|nrosprite ssnameid "[%l]" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
 |	cntobjs "objs:%d" sprint uiLabelC
@@ -422,23 +302,8 @@
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
 	
-	<f1> =? ( makeScene )
-	<f2> =? ( updatebones )
-	<f3> =? ( 
-		makeraydir hitground
-		hit 1? (
-			'raydir >a a@+ a@+ a@+ | x y z
-			scale 8 >> 40 <<
-			$ffffffff
-			nrosprite
-			cntobjs
-			ss3dset | x y z srxyz color spr i --
-			|1 'cntobjs +!
-			) drop
-		)
-	
-	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
-	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
+|	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
+|	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
 	<esp> =? ( 
 		addobj 
 		nrosprite 1+ n3dsprites mod 'nrosprite !
@@ -481,25 +346,22 @@
 	"media/ss/sprites"
 	dup 256 ss3dload
 	ss3loadnames
-	
-	"point" ss3idname 
-	dup .d .println
-	'ballid !
+|	"point" ss3idname 'ballid !
 	;
+	
+
 	
 :viewresize 
 	sh sw rl_resizewin 
 	fixFontResize ;
 
 : | <<<<<<<< Boot
-
 	"Scene r3dv" 1024 768 GLini GLInfo
-
 
 	"media\bvh\pajaro.r3a" 
 	|"media\bvh\lobo.r3a" 
 	loadr3a
-|	makeskel	
+	|makeskel	
 
 	$fff vaini
 	

@@ -138,51 +138,6 @@
 #scale 2.0
 #nrosprite 0
 
-|------ pack 1 scale (8.8) + 3 rotation (0.16)
-::packsrot | sx rx ry rz -- rp
-	$ffff and swap 
-	$ffff and 16 << or swap 
-	$ffff and 32 << or swap
-	8 >> $ffff and 48 << or 
-	;
-
-::+srot | ra rb -- rr
-	+ $100010001 nand ;
-
-|------ pack 3 vel in 63bits (21x3) (13.8) 
-::pack21 | vx vy vz -- vp
-	8 >> $1fffff and swap
-	8 >> $1fffff and 21 << or swap
-	8 >> $1fffff and 42 << or ;
-	
-::unpack21 | x -- px py pz
-	dup 1 << 43 >> 8 << swap
-	dup 22 << 43 >> 8 << swap
-	43 << 43 >> 8 << ;
-
-::unpack21r | x -- pz py px
-	dup 43 << 43 >> 8 << swap
-	dup 22 << 43 >> 8 << swap
-	1 << 43 >> 8 << ;
-
-:packq | rx ry rz rw -- rp
-	2 >> $ffff and 48 << swap
-	2 >> $ffff and 32 << or swap
-	2 >> $ffff and 16 << or swap
-	2 >> $ffff and or ;
-
-::unpackq | rp -- rw rz ry rx
-	dup 48 >> 2 << swap
-	dup 16 << 48 >> 2 << swap
-	dup 32 << 48 >> 2 << swap
-	48 << 48 >> 2 << ;
-
-:packq* | rx ry rz rw s -- rp
-	dup >r *. 2 >> $ffff and 48 << swap
-	r@ *. 2 >> $ffff and 32 << or swap
-	r@ *. 2 >> $ffff and 16 << or swap
-	r> *. 2 >> $ffff and or ;
-
 #cntbones 11
 #bones * $fff
 #mats * $ffff | dwords!!
@@ -465,7 +420,6 @@
 	fixFontResize ;
 
 : | <<<<<<<< Boot
-
 	"Scene r3dv" 1024 768 GLini GLInfo
 
 	makeskel

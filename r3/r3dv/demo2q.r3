@@ -33,9 +33,12 @@
 	
 	;
 
+#col
 :drawscene
 	rl_ProgGeom
-	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a00 rl_setcolor draw_cube 
+	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a20 rl_setcolor draw_cube 
+	
+	1 'col +!
 	
 	|drawsprites	
 	msec 4 << sin 2.0 + 97 $ffffff00 0 ss3dcs
