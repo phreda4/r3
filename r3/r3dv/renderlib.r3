@@ -24,13 +24,15 @@ void main(){
 @fragment---------------
 #version 440 core
 in vec3 vPos; in vec3 vNormal;
-uniform vec3 uAlbedo; uniform int uRoughness, uMetallic, uGlow;
+uniform uint uPackColor;
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
 void main(){
-    gNormal   = normalize(vNormal);
-    int pk = (uRoughness<<5)|(uMetallic<<2)|uGlow;
-    gAlbedo = vec4(uAlbedo, float(pk)/255.0);
+	gNormal = normalize(vNormal);
+	gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
+		float((uPackColor>>16)&0xFFu),
+		float((uPackColor>> 8)&0xFFu),
+		float( uPackColor     &0xFFu))/ 255.0;
 }
 @-----------------------"
 
@@ -46,10 +48,10 @@ in vec2 uv;
 out vec4 FragColor;
 
 // ─── SSDO CONFIG ─────────────────────────────────────────────────────────────
-#define USE_SSDO
+//#define USE_SSDO
 
 #ifdef USE_SSDO
-const int   SSDO_SAMPLES      = 8;
+const int   SSDO_SAMPLES      = 16;
 const float SSDO_RADIUS       = 0.8;
 const float SSDO_BIAS         = 0.05;
 const float SSDO_INTENSITY    = 2.8;
@@ -379,11 +381,9 @@ void main(){
 
 | Uniform locations
 #rl_u_model         -1
-#rl_u_albedo        -1
-#rl_u_roughness     -1
-#rl_u_metallic      -1
-#rl_u_glow          -1
+#rl_u_uPackColor	-1
 #rl_u_normal_matrix -1
+
 #rl_u_bright_threshold    -1
 #rl_u_bloom_down_texel    -1
 #rl_u_bloom_up_texel      -1
@@ -591,10 +591,7 @@ void main(){
     2 rl_sh_light "PointLights"  rl_bind_ubo
 
     rl_sh_geom "model"        glGetUniformLocation 'rl_u_model         !
-    rl_sh_geom "uAlbedo"      glGetUniformLocation 'rl_u_albedo        !
-    rl_sh_geom "uRoughness"   glGetUniformLocation 'rl_u_roughness     !
-    rl_sh_geom "uMetallic"    glGetUniformLocation 'rl_u_metallic      !
-    rl_sh_geom "uGlow"        glGetUniformLocation 'rl_u_glow          !
+	rl_sh_geom "uPackColor"   glGetUniformLocation 'rl_u_uPackColor !
     rl_sh_geom "normalMatrix" glGetUniformLocation 'rl_u_normal_matrix !
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
@@ -812,25 +809,13 @@ void main(){
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays	
 	;
 
-
 | ================================================================
 ::rl_ProgGeom
 	rl_sh_geom glUseProgram ;
 
-#colora [ 0 0 0 ]
-
 ::rl_setcolor | rgbmm --
-    rl_u_roughness over 2 >> $7 and glUniform1i
-    rl_u_metallic over 5 >> $7 and glUniform1i
-	rl_u_glow over $3 and glUniform1i
-	dup   8 >> $ff and 1.0 8 *>> f2fp
-	over 16 >> $ff and 1.0 8 *>> f2fp
-	rot  24 >> $ff and 1.0 8 *>> f2fp
-	'colora d!+ d!+ d!
-	rl_u_albedo 1 'colora glUniform3fv
-	|'cola d@+ fp2f "%f " .print d@+ fp2f "%f " .print d@ fp2f "%f " .println <<trace
-	;
-	
+	rl_u_uPackColor swap glUniform1ui ;
+
 ::rl_geomat	| normal model --
 	>r rl_u_model 1 GL_FALSE r> glUniformMatrix4fv
 	>r rl_u_normal_matrix 1 GL_FALSE r> glUniformMatrix3fv 

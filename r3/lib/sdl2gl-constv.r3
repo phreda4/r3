@@ -159,6 +159,7 @@
 ::GL_RGBA8 $8058 ;
 ::GL_RGB16F $881B ;
 ::GL_R8 $8229 ;
+::GL_R32F $822E ;
 ::GL_DEPTH_COMPONENT32F $8CAC ;
 
 | --- Cube Map Textures ---

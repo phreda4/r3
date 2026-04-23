@@ -17,7 +17,7 @@
 #sys-glDeleteProgram #sys-glIsProgram #sys-glIsShader #sys-glGenVertexArrays
 #sys-glBindVertexArray #sys-glGetShaderInfoLog #sys-glGetProgramInfoLog
 #sys-glBindFragDataLocation #sys-glLinkProgram #sys-glActiveTexture #sys-glBindTexture
-#sys-glTexImage2D #sys-glUniform1i #sys-glTexParameteri #sys-glTexSubImage2D
+#sys-glTexImage2D #sys-glUniform1i #sys-glUniform1ui #sys-glTexParameteri #sys-glTexSubImage2D
 #sys-glEnable #sys-glDisable #sys-glDepthFunc #sys-glBlendFunc #sys-glDetachShader
 #sys-glDeleteShader #sys-glDeleteTextures #sys-glDeleteBuffers #sys-glDeleteVertexArrays
 #sys-glViewport #sys-glScissor #sys-glVertexPointer #sys-glClear #sys-glDrawElements
@@ -186,6 +186,7 @@
 ::glBindTexture sys-glBindTexture sys2 drop ;
 ::glTexImage2D sys-glTexImage2D sys9 drop ;
 ::glUniform1i sys-glUniform1i sys2 drop ;
+::glUniform1ui sys-glUniform1ui sys2 drop ;
 ::glTexParameteri sys-glTexParameteri sys3 drop ;
 ::glTexSubImage2D sys-glTexSubImage2D sys9 drop ;
 ::glEnable sys-glEnable sys1 drop ;
@@ -315,6 +316,7 @@
     "glGetAttribLocation" SDL_GL_GetProcAddress 'sys-glGetAttribLocation !
     "glEnableVertexAttribArray" SDL_GL_GetProcAddress 'sys-glEnableVertexAttribArray !
     "glUniform1i" SDL_GL_GetProcAddress 'sys-glUniform1i !
+	"glUniform1ui" SDL_GL_GetProcAddress 'sys-glUniform1ui !
     "glGetUniformLocation" SDL_GL_GetProcAddress 'sys-glGetUniformLocation !
     "glUniform1iv" SDL_GL_GetProcAddress 'sys-glUniform1iv !
     "glUniform2iv" SDL_GL_GetProcAddress 'sys-glUniform2iv !
