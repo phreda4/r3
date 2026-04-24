@@ -5,7 +5,7 @@
 
 ^./renderlib.r3
 ^./glfixfont.r3
-^./ss3d_q.r3
+^./ss3d.r3
 ^./glimm.r3
 ^./rlgrid.r3
 

@@ -181,31 +181,15 @@
 :addobj
 	hiteye hit 0? ( drop ; ) drop
 	'v3hit >a a@+ a@+ a@+ | x y z
-	scale 8 >> 48 <<
-	$ffffff00
+	$0 rxyz>q16
+	scale $ffffff00
 	nrosprite
 	cntobjs
 	ss3dset | x y z srxyz color spr i --
+	
 	1 'cntobjs +!
 	;
 
-|-----------------------
-:makeCancha
-	0 ( 9 <?
-		0 ( 6 <?
-			over over 9 * + 6 + >r
-
-			over 1.0 * 0.1 pick2 1.0 *
-			2.2 8 >> 48 << |$ffff000000000000 and 
-			$ffffff00
-			r>
-			cntobjs
-			ss3dset | x y z srxyz color spr i --
-			1 'cntobjs +!
-			1+ ) drop
-		1+ ) drop
-	;
-	
 |----------------------------------	
 	
 :totop
@@ -294,19 +278,6 @@
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
 	
-	<f2> =? ( 
-		makeraydir hitground
-		hit 1? (
-			'raydir >a a@+ a@+ a@+ | x y z
-			scale 8 >> 40 <<
-			$ffffffff
-			nrosprite
-			cntobjs
-			ss3dset | x y z srxyz color spr i --
-			|1 'cntobjs +!
-			) drop
-		)
-	
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
 	<esp> =? ( 
@@ -376,7 +347,6 @@
 	lightsun
 	makeCam
 	
-	|makeCancha
 	tofront
 
 	'main SDLshow

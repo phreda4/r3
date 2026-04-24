@@ -88,22 +88,13 @@
 
 #nbox	
 :movespr
-	0 ( n3dsprites <? dup >r
+	0 ( n3dsprites <? 
 	
 		dup nbox / nbox 2/ - 1.2 *
-|		10.0 randmax 5.0 -
-		|1.0 randmax
-		|dup 4 >> 8 - 1.0 *
 		over 10 << msec 4 << + sin 1.0 + 2/
 		pick2 nbox mod nbox 2/ - 1.2 *
-|		pick2 $f and 8 - 1.0 *
-		|10.0 randmax 5.0 -
-		|$ffffffffffff randmax
-		0
-		4.0 8 >> 48 << or
-		$ffffff00
-		r> dup
-		ss3dset
+	
+		pick3 ss3dxyz | x y z i --		
 		1+ ) drop
 	;
 
@@ -177,25 +168,19 @@
 	dup 256 ss3dload
 	ss3loadnames
 	
-	"clon" ss3idname .d .println
+|	"clon" ss3idname .d .println
 	
 	n3dsprites sqrt 'nbox !
 	0 ( n3dsprites <? dup >r
 	
 		dup nbox / nbox 2/ - 1.1 *
-|		10.0 randmax 5.0 -
-		|1.0 randmax
-		|dup 4 >> 8 - 1.0 *
 		0
 		pick2 nbox mod nbox 2/ - 1.1 *
-|		pick2 $f and 8 - 1.0 *
-		|10.0 randmax 5.0 -
-		|$ffffffffffff randmax
-		0
-		4.0 8 >> 40 << or
-		$ffffff00
-		r> dup
-		ss3dset
+		
+		$0 rxyz>q16
+		4.0 $ffffff00 r> dup |ns 97 + ns 
+		ss3dset | x y z qxyzw scale color spr i --
+		
 		1+ ) drop
 
 	;
