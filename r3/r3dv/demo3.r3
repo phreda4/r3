@@ -10,6 +10,9 @@
 | Camera controls
 #cam_yaw  0  
 #cam_pit  0
+#camEye -10.0 2.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0
 #camAdv 0 0 0 | forward
 #camLat 0 0 0 | right
 
@@ -33,7 +36,7 @@
 	0 a!+
 	cy neg a!+
 	'camLat v3Nor
-	rl_set_camera
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 
 #xp #yp 
@@ -51,7 +54,7 @@
 	'camEye 'camAdv pick2 v3+*
 	'camTo 'camAdv pick2 v3+*
 	drop
-	rl_set_camera ;
+	makecam ;
 
 :rotatemouse
 	immMouse
@@ -101,7 +104,7 @@
 #va #vl #vu
 	
 :render
-	rl_frame_begin |rl_set_camera
+	rl_frame_begin
 	movespr	
 	SS3Ddraw
 	luz
@@ -142,17 +145,17 @@
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*
 		'camTo 'camAdv pick2 v3+*
-		rl_set_camera
+		makecam
 		) drop
 	vl 1? (
 		'camEye 'camLat pick2 v3+*
 		'camTo 'camLat pick2 v3+*
-		rl_set_camera
+		makecam
 		) drop
 	vu 1? (
 		'camEye 'camUp pick2 v3+*
 		'camTo 'camUp pick2 v3+*
-		rl_set_camera
+		makecam
 		) drop	
 	;
 
@@ -198,6 +201,7 @@
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	'viewresize SDLeventR
+	makecam
 	'main SDLshow
 	
 	SS3Dshutdown

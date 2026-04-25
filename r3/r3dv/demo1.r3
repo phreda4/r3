@@ -10,6 +10,10 @@
 #cam_dist  4.5
 #cam_drag  0
 
+#camEye -10.0 2.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0
+
 | Cube rotation
 #cube_rot  0.0
 #spinning  -1
@@ -60,8 +64,7 @@
 	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
 	cam_pit sin cam_dist *. a!+
 	cam_yaw sin cam_pit cos *. cam_dist *. a!
-|	3 'pEye 'fpEye mem2float
-	|'camEye @+ swap @+ swap @ "%f %f %f" .println
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --		
 	;
 :wheelcam
 	SDLw 0? ( drop ; ) neg
@@ -137,6 +140,7 @@
 	8 'fsun memfloat
 	|$1e1f53 GLpaper
 	'viewresize SDLeventR
+	calcam
 	'main SDLshow
 	
 	rl_shutdown

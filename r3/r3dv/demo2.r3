@@ -52,6 +52,10 @@
 	
 	SS3Ddraw
 	;
+
+#camEye -10.0 2.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0	
 	
 #xp #yp 
 :movecam
@@ -64,8 +68,7 @@
 	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
 	cam_pit sin cam_dist *. a!+
 	cam_yaw sin cam_pit cos *. cam_dist *. a!
-|	3 'pEye 'fpEye mem2float
-	|'camEye @+ swap @+ swap @ "%f %f %f" .println
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 :wheelcam
 	SDLw 0? ( drop ; ) neg
@@ -165,9 +168,12 @@
 	
 	load3d
 	
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	'viewresize SDLeventR
+	calcam
 	'main SDLshow
 	
 	SS3Dshutdown

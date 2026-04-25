@@ -625,16 +625,10 @@ void main(){
 |------------- CAMERA ------------------
 #camDirty  1
 
-##camEye 0.0 2.0  6.0
-##camTo  0.0 0.0  0.0
-##camUp  0.0 1.0  0.0
-
-##camProj 0 0 0
-
-##camAsp 0	| Aspect
-##camFov 0.4142
-##camNear 0.1	
-##camFar 200.0
+#camAsp 0	| Aspect
+#camFov 0.4142
+#camNear 0.1	
+#camFar 200.0
 
 | ================================================================
 ::rl_resizewin | w h --
@@ -660,34 +654,33 @@ void main(){
 #ubo_matViewPos * 16
 
 |------------------------------------
-#realproj * 128
+#realproj * 128 | cache proj
 
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-	rl_w 16 << rl_h / 'camAsp ! |camParam "%f" .println
+	rl_w 16 << rl_h / 'camAsp !
 	'camAsp matProj 
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
-	
 	'realproj 'mat 16 move  | copy for precalc proj*view
 	;
 
-::rl_set_camera | --
+::rl_camera | 'eye 'to 'up --
+	3 pick3 'ubo_matViewPos mem2float | cnt sr ds
+	
 	cache_proj
-	'camEye 'camTo 'camUp mlookat
+	|'camEye 'camTo 'camUp mlookat
+	mlookat
+	
 	'ubo_matView 'mat cpymatif
 	matinv
 	'ubo_matvinvView 'mati cpymatif
-	3 'camEye 'ubo_matViewPos mem2float | cnt sr ds
 
 	'realproj mat* | reverse proj*view
 	'ubo_matProjView 'mati cpymatif
-	
-	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-	GL_UNIFORM_BUFFER 0 336 'ubo_matview glBufferSubData
-	GL_UNIFORM_BUFFER 0 glBindBuffer
 	;
+	
 
 #deepValue 0
 #clearColorPtr [ 0 0 0 0 ]
@@ -706,8 +699,11 @@ void main(){
 	$1800 1 'clearColorPtr glClearBufferfv | Limpiar Albedo (ATTACHMENT1 -> Índice 1)
 	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> )
 
-	rl_set_camera
-    ;
+	|--- camera --- shadow?
+	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
+	GL_UNIFORM_BUFFER 0 336 'ubo_matview glBufferSubData
+	GL_UNIFORM_BUFFER 0 glBindBuffer
+	;
 
 
 | ================================================================
