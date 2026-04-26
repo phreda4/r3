@@ -298,8 +298,7 @@ void main() {
 	$FFFF 'dirty_min ! 0 'dirty_max !
 
 	'ss3d_shader_src "0000" findstr
-	maxsize .d 4 .r.
-	4 cmove
+	maxsize .d 4 .r. 4 cmove | patch shader
 
 	'ss3d_shader_src loadShaderv 'ss3d_shader !
 	ss3d_shader glUseProgram

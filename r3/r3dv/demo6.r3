@@ -374,20 +374,23 @@
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*
 		'camTo 'camAdv pick2 v3+*
+		makecam
 		) drop
 	vl 1? (
 		'camEye 'camLat pick2 v3+*
 		'camTo 'camLat pick2 v3+*
+		makecam
 		) drop
 	vu 1? (
 		'camEye 'camUp pick2 v3+*
 		'camTo 'camUp pick2 v3+*
+		makecam
 		) drop
 	;
 	
 :main
 	vupdate
-	makecam
+	
 	
 	rl_frame_begin
 	SS3Ddraw

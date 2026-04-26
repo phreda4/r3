@@ -30,7 +30,7 @@
 	|msec 4 << 0 msec 3 << matrot
 	|cube_rot cube_rot 2/ 0 matrot
 	20.0 0.1 20.0 matscale
-	0 -1.6 0 matpos
+	0 -0.1 0 matpos
 	$eeeeee30 rl_setcolor
 	draw_cube 
 	
@@ -74,8 +74,8 @@
 	
 
 #fsun [ 
--0.5 -1.0 -0.5 0	| normal
- 1.0 1.0 1.0 0.2  ] | color,intensidad
+-2.5 2.0 -1.5 0	| normal
+ 1.0 1.0 1.0 1.2  ] | color,intensidad
 	   
 :render
 	rl_frame_begin
