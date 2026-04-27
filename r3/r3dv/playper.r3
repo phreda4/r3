@@ -158,9 +158,9 @@
 |	-5.0 5.0 randminmax 
 |	-5.0 5.0 randminmax
 |	-5.0 5.0 randminmax	
-|	1.0 randmax 1.0 randmax 1.0 randmax
-|	1.0 packq
-	0 0 0 0 1.0 
+	0 0 0 
+	1.0 randmax 1.0 randmax 1.0 randmax	1.0 packq
+	1.0 
 	$ffffff00 
 	$ff randmax or
 |	12 
@@ -199,7 +199,7 @@
 :objupdate
 	objlst >a
 	objcnt ( 1? 1-
-		$200000 a> +!
+		|$200000 a> +!
 		a@+ a@ +p3 dup a!+ | pos+
 		unpack21
 		checkhit
