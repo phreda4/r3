@@ -170,11 +170,9 @@
     8 a] @ 3 b] @ *. 9 a] @ 1 b] @ *. - 10 a] @ 0 b] @ *. + *. swap !	
 	;
 
-
 #cox #coy #coz
 #six #siy #siz
 
-	
 ::matrot | rx ry rz -- ; rotate
 	'mat >a
 	sincos 'coz ! 'siz !

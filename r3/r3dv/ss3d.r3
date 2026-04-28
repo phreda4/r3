@@ -76,7 +76,6 @@ void main() {
     vec3 vExt = vec3(vSize) * (0.005 * scale);
 
     const float kPos  = 1.0/65536.0;
-    const float kQuat = 1.0/16387.0; //32767.0;
 
     vec3 trans = vec3(inst.px, inst.py, inst.pz) * kPos;
 
@@ -86,7 +85,7 @@ void main() {
         float(inst.qxy >> 16),          // qy: bits 16-31
         float(inst.qzw << 16 >> 16),   // qz: sign-extend bits 0-15
         float(inst.qzw >> 16)           // qw: bits 16-31
-    ) * kQuat;
+    );
 
     mat3 rot = quatToMat3(normalize(q));
 

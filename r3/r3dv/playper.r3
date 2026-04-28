@@ -213,6 +213,40 @@
 
 #zz
 #vd #vr #vpz
+#pxp #pyp #pzp
+#prot
+
+#walk ( 7 8 7 9 ) 
+#face ( 3 4 5 3 )
+
+:jugador
+	prot neg sincos 
+	vd *. 'pxp +! 
+	vd *. 'pyp +!
+	vr prot + $ffff and 'prot !
+
+	prot 0.25 + 2/
+	$ffff and 16 << rxyz>q16 >r
+	
+	pxp pzp 0.5 + pyp
+	r@
+	4.0	$ffffff00 
+	msec 8 >> $3 and 'walk + c@
+	0 ss3dset
+
+	pxp pzp 1.05 + pyp
+	r>
+	3.0 $ffffff00 
+	msec 9 >> $3 and 'face + c@
+	1 ss3dset
+	
+	1.4 
+	1.0 1.0 1.0 
+	pxp pxp 2.0 + pyp 1.0 +
+	rl_point_light | int cr cg cb x y z --
+	
+	;
+
 |-------------------------------
 :juego
 	vupdate
@@ -223,9 +257,20 @@
 	
 	draw_grid
 	objupdate
+	
+	jugador
+	
 	SS3Ddraw
 	
 	rl_frame_end
+	
+	fini
+	2 'fscale !
+	$ffffffff 'fcolor !
+	16 16  fat
+	prot "r:%f " sprint ftext
+	fend
+	
 	GLUpdate
 	
 	SDLkey
@@ -233,8 +278,8 @@
 	<f1> =? ( +obj ) 
 	|<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
 	
-	<up> =? ( 0.1 'vd ! ) >up< =? ( 0 'vd ! )
-	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
+	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
+	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
 	<esp> =? ( vpz 0? ( 0.4 'vpz ! ) drop )
@@ -251,19 +296,11 @@
 	drop
 	;		
 
+	
 :jugar 
 	ss3dreset
 	0 'objcnt !
 
-	0 0.5 0 
-	0.0 0.0 0.0 1.0 packq | $4000000000000000
-	4.0
-	$ffffff00 7 0 ss3dset
-
-	0 1.05 0 
-	0.0 0.0 0.0 1.0 packq
-	3.0
-	$ffffff00 3 1 ss3dset
 	
 	2 'objnro !
 	makecam
