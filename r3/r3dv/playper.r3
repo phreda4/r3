@@ -12,73 +12,9 @@
 
 
 | Camera controls
-#cam_yaw  0  
-#cam_pit  0
-
 #camEye -4.0 1.0 0.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
-#camAdv 0 0 0 | forward
-#camLat 0 0 0 | right
-
-|----------------------
-#cp #sp #cy #sy 
-
-:makecam
-	cam_yaw sincos 'cy ! 'sy !
-	cam_pit -0.24 max 0.24 min 
-	sincos 'cp ! 'sp !
-	'camTo >a 'camEye >b
-	b@+ cy cp *. + a!+ b@+ sp + a!+ b@+ sy cp *. + a!
-	'camAdv >a
-	cy neg cp *. a!+ sp neg a!+ sy neg cp *. a!
-	'camAdv v3Nor
-	'camLat >a
-	sy a!+ 0 a!+ cy neg a!+
-	'camLat v3Nor
-	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
-	;
-
-#vadv #vlat #vup
-#xp #yp 
-:movecam
-	|sdlb 4 <>? ( drop ; ) drop
-	sdlx dup xp - 0.001 * 'cam_yaw +! 'xp !
-	sdly dup yp - -0.001 * 'cam_pit +! 'yp !
-	makecam ;
-	
-:wheelcam
-	SDLw 0? ( drop ; ) -0.4 *
-	'camEye 'camAdv pick2 v3+*
-	'camTo 'camAdv pick2 v3+*
-	drop 
-	makecam ;
-
-:rotatemouse
-	immIni
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop ;
-
-:movecamera
-	vadv 1? ( 
-		'camEye 'camAdv pick2 v3+*
-		'camTo 'camAdv pick2 v3+*
-		makecam
-		) drop
-	vlat 1? (
-		'camEye 'camLat pick2 v3+*
-		'camTo 'camLat pick2 v3+*
-		makecam
-		) drop
-	vup 1? (
-		'camEye 'camUp pick2 v3+*
-		'camTo 'camUp pick2 v3+*
-		makecam
-		) drop 
-	;
 
 |---------------------------------
 #objcnt 0
@@ -242,16 +178,23 @@
 	
 	1.4 
 	1.0 1.0 1.0 
-	pxp pxp 2.0 + pyp 1.0 +
+	pxp pzp 2.0 + pyp 1.0 +
 	rl_point_light | int cr cg cb x y z --
 	
+	pyp pzp pxp 'camTo !+ !+ !
+
+	prot 0.5 + neg sincos 
+	3 << pxp + 
+	swap 3 << pyp +
+	4.0 rot
+	'camEye !+ !+ !
+	
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 
 |-------------------------------
 :juego
 	vupdate
-	rotatemouse
-	movecamera
 
 	rl_frame_begin
 	
@@ -286,13 +229,6 @@
 |	<w> =? ( 0.1 'zz +! )
 |	<s> =? ( -0.1 'zz +! )
 	
-	<w> =? ( -0.05 'vadv ! ) >w< =? ( 0 'vadv ! )
-	<s> =? ( 0.05 'vadv ! ) >s< =? ( 0 'vadv ! )
-	<a> =? ( 0.04 'vlat ! ) >a< =? ( 0 'vlat ! )
-	<d> =? ( -0.04 'vlat ! ) >d< =? ( 0 'vlat ! )
-	<q> =? ( 0.04 'vup ! ) >q< =? ( 0 'vup ! )
-	<e> =? ( -0.04 'vup ! ) >e< =? ( 0 'vup ! )
-	
 	drop
 	;		
 
@@ -300,10 +236,7 @@
 :jugar 
 	ss3dreset
 	0 'objcnt !
-
-	
 	2 'objnro !
-	makecam
 	'juego SDLShow 
 	;
 	
@@ -321,7 +254,6 @@
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	;
-
 
 :load3d
 	"media/ss/iti"

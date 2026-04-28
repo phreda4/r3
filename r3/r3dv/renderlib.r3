@@ -573,6 +573,7 @@ void main(){
 
 | ================================================================
 ::rl_Init
+	sw 'rl_w ! sh 'rl_h !
     rl_init_gbuffer
     rl_init_bloom
     rl_init_quad
