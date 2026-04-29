@@ -181,7 +181,8 @@
 	pxp pzp 2.0 + pyp 1.0 +
 	rl_point_light | int cr cg cb x y z --
 	
-	pyp pzp pxp 'camTo !+ !+ !
+	pyp 0
+	pxp 'camTo !+ !+ !
 
 	prot 0.5 + neg sincos 
 	3 << pxp + 
@@ -190,6 +191,12 @@
 	'camEye !+ !+ !
 	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	
+	pzp vpz +
+	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
+	'pzp !
+	-0.01 'vpz +!	
+	
 	;
 
 |-------------------------------
@@ -225,7 +232,7 @@
 	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
-	<esp> =? ( vpz 0? ( 0.4 'vpz ! ) drop )
+	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 |	<w> =? ( 0.1 'zz +! )
 |	<s> =? ( -0.1 'zz +! )
 	

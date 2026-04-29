@@ -555,7 +555,7 @@ void main(){
 
     1 'rl_ubo_dirlight glGenBuffers
     GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
-    GL_UNIFORM_BUFFER 48 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 32 0 GL_DYNAMIC_DRAW glBufferData
     GL_UNIFORM_BUFFER 1 rl_ubo_dirlight glBindBufferBase
 
     1 'rl_ubo_plights glGenBuffers
@@ -669,9 +669,7 @@ void main(){
 
 ::rl_camera | 'eye 'to 'up --
 	3 pick3 'ubo_matViewPos mem2float | cnt sr ds
-	
 	cache_proj
-	|'camEye 'camTo 'camUp mlookat
 	mlookat
 	
 	'ubo_matView 'mat cpymatif
@@ -696,9 +694,9 @@ void main(){
 	GL_DEPTH_TEST glEnable
 	GL_TRUE glDepthMask
 
-	$1800 0 'clearColorPtr glClearBufferfv | Limpiar Normales (ATTACHMENT0 -> Índice 0)
-	$1800 1 'clearColorPtr glClearBufferfv | Limpiar Albedo (ATTACHMENT1 -> Índice 1)
-	$1801 0 'deepValue glClearBufferfv     | Limpiar Profundidad (ATTACHMENT_DEPTH -> )
+	$1800 0 'clearColorPtr glClearBufferfv | Normales ATTACHMENT0
+	$1800 1 'clearColorPtr glClearBufferfv | Albedo ATTACHMENT1
+	$1801 0 'deepValue glClearBufferfv     | Profundidad 
 
 	|--- camera --- shadow?
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
@@ -784,8 +782,8 @@ void main(){
 	GL_DEPTH_TEST glDisable
 	rl_sh_light glUseProgram
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
-	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D rl_gbuf_albedo glBindTexture  | GL_TEXTURE1
-	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth  glBindTexture  | GL_TEXTURE3
+	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D rl_gbuf_albedo glBindTexture
+	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth  glBindTexture
 
 	| --- Light pass
 	lightpass

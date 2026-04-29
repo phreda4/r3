@@ -1,5 +1,6 @@
-| test demo animation
+| 3dworld 
 | PHREDA 2026
+|-----
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
 
@@ -8,420 +9,188 @@
 ^./ss3d.r3
 ^./glimm.r3
 ^./rlgrid.r3
-
-#objlist 0 0 
+|^./rllunar.r3
 
 | Camera controls
-#cam_yaw  0  
-#cam_pit  0
-
-#camEye -10.0 2.0 0.0
+#camEye -4.0 1.0 0.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
-#camAdv 0 0 0 | forward
-#camLat 0 0 0 | right
 
-|----------------------
-#cp #sp #cy #sy 
+|---------------------------------
+#objcnt 0
+#objlst 0
+#objnro 0
 
-#raydir 0 0 0
+|---------------------------------
+| 0 x y z rxyz sxyz vxyz vrxyz
+| 0 1 2 3 4    5    6    7     
 
-:makeraydir  
-	'raydir 'camAdv v3=
-	'raydir 'camlat 
-	sdlx sw 2/ - 16 << sw 2/ / |camFov *. camAsp *.
-	v3+*
-	'raydir 'camup 
-	sdly sh 2/ - 16 << sh 2/ / |camFov *.
-	v3+*
-	'raydir v3Nor
-	;
-
-#hit 0
-#v3hit 0 0 0
-
-:hitground
-	'raydir 8 + @ 0? ( 'hit ! ; ) 
-	'camEye 8 + @ swap /. | t
-	-? ( drop 0 'hit ! ; ) neg
-	'v3hit 'camEye v3=
-	'v3hit 'raydir rot v3+*	
-	1 'hit !
-	;
-
-:makecam
-	cam_yaw sincos 'cy ! 'sy !
-	cam_pit -0.24 max 0.24 min 
-	sincos 'cp ! 'sp !
-	'camTo >a 'camEye >b
-	b@+ cy cp *. + a!+
-	b@+ sp + a!+
-	b@+ sy cp *. + a!
-	'camAdv >a
-	cy neg cp *. a!+
-	sp neg a!+
-	sy neg cp *. a!
-	'camAdv v3Nor
-	'camLat >a
-	sy a!+
-	0 a!+
-	cy neg a!+
-	'camLat v3Nor
-	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --
-	;
-
-#xp #yp 
-:movecam
-	|sdlb 4 <>? ( drop ; ) drop
-	sdlx dup xp - 0.001 * 
-	'cam_yaw +! 'xp !
-	sdly dup yp - -0.001 * 
-	cam_pit + |0.24 min -0.24 max 
-	'cam_pit ! 'yp !
-	makecam ;
+:]objs | n
+	6 << objlst + ; | 8 cells
 	
-:wheelcam
-	SDLw 0? ( drop ; ) -0.4 *
-	'camEye 'camAdv pick2 v3+*
-	'camTo 'camAdv pick2 v3+*
-	drop ;
+:+obj
+	objcnt ]objs >a | 8 cells
+	-15.0 15.0 randminmax a!+
+	2.0 |-5.0 5.0 randminmax 
+	a!+
+	-15.0 15.0 randminmax a!+
+	|1.0 randmax 1.0 randmax 1.0 randmax	1.0 packq 
+	0 rxyz>q16
+	a!+ | rot
+	objnro a!+
+	|a!+
+	-0.1 0.1 randminmax
+	-0.1 0.1 randminmax
+	-0.1 0.1 randminmax
+	packv21 a!+
+	
+	4.0 
+	|$ff randmax or
+	|n3dsprites randmax
+	114
+	$ffffff00 
+	objnro
+	ss3dcs | scale spr color i --
 
-:rotatemouse
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop	
+	1 'objnro +!
+	1 'objcnt +!
+	;
+
+:upobjlst
+	0 ( objcnt <?
+		dup ]objs >a
+		a> 5 3 << + @ unpackv21
+		rot a@ + a!+
+		swap a@ + a!+
+		a@ + a!+
+		msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 a!+
+		1+ ) drop ;
+	
+:drawobjlst 
+	upobjlst
+	
+	objlst >a
+	0 ( objcnt <? 
+		a@+ a@+ a@+ a@+ a@+ $ffff and ss3dxyzq | x y z q i --
+		3 3 << a+
+		1+ ) drop ;
+		
+|----- player
+#vd #vr #vpz
+#pxp #pyp #pzp
+#prot
+
+:jugador
+	prot neg sincos 
+	vd *. 'pxp +! 
+	vd *. 'pyp +!
+	vr prot + $ffff and 'prot !
+
+	pxp pzp 0.5 + pyp
+	prot 0.25 + 2/ $ffff and 16 << rxyz>q16 
+	4.0	$ffffff00 
+	|msec 8 >> $3 and 'walk + c@
+	96
+	0 ss3dset
+
+	1.4 
+	1.0 1.0 1.0 
+	pxp pzp 2.0 + pyp
+	rl_point_light | int cr cg cb x y z --
+	
+	|---- cam
+	pyp 0 pxp 'camTo !+ !+ !
+
+	prot 0.5 + neg sincos 
+	3 << pxp + 
+	swap 3 << pyp +
+	3.0 rot
+	'camEye !+ !+ !
+	
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	
+	|--- jump
+	pzp vpz +
+	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
+	'pzp !
+	-0.01 'vpz +!	
+	;
+
+|-------------------------------
+:juego
+	vupdate
+
+	rl_frame_begin
+	
+	|draw_lunar
+	draw_grid
+	
+	|objupdate
+	drawobjlst 
+	
+	jugador
+	SS3Ddraw
+	
+	rl_frame_end
+	
+	fini
+	2 'fscale !
+	$ffffffff 'fcolor !
+	16 16  fat
+	prot "r:%f " sprint ftext
+	fend
+	
+	GLUpdate
+	
+	SDLkey
+	>esc< =? ( exit ) 	
+	<f1> =? ( +obj ) 
+	|<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
+	
+	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
+	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
+	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
+	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
+	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
+	
+	drop
+	;		
+
+	
+:jugar 
+	ss3dreset
+	0 'objcnt !
+	1 'objnro !
+	'juego SDLShow 
 	;
 	
+|-------------------------------------
+:viewresize 
+	sh sw rl_resizewin 
+	fixFontResize ;
+
 #fsun [ 
 -0.5 8.0 -0.5 0
- 1.0 1.0 1.0 1.0
+ 1.0 1.0 1.0 2.0
  ]
 
 :lightsun
 	8 'fsun memfloat
 	'fsun rl_set_sun
 	;
-	   
-:light2
-	2.4 
-	0.0 0.0 1.0
-	msec 3 << 
-	dup cos -5 * 
-	over sin -3 * 1.0 +
-	rot sin 4.5 *.
-	rl_point_light | int cr cg cb x y z --
-
-	2.2 
-	1.0 0.0 0.0
-	msec 3 << 
-	dup cos 7 * 
-	over sin 3 * 1.0 +
-	rot 0.5 + sin 4.5 *.
-	rl_point_light | int cr cg cb x y z --
-	;
-	
-:light
-	0.2
-	1.0 1.0 1.0
-	'camEye >a
-	a@+ a@+ 1.0 + a@
-	rl_point_light | int cr cg cb x y z --
-	;
-
-#va #vl #vu
-
-|----------------------------
-#cntobjs 0
-#scale 2.0
-#nrosprite 0
-
-#cntbones 11
-#bones * $fff
-#mats * $ffff | dwords!!
-
-#skel [
--1 0.0
-0 0.6
-1 0.4
-1 -0.45
-3 -0.45
-1 -0.45
-5 -0.45
-0 -0.55
-7 -0.55
-0 -0.55
-9 -0.55
-]
-
-#skelp ( -1 0 1 1 3 1 5 0 7 0 9 )
-
-:makeskel
-	'bones >a
-0.0 0.0 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
-0.0 0.2 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
-0.0 1.2 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
-0.6 1.1 0.0 pack21 a!+		0.0 0.0 0.0998 0.9950 packq a!+
-0.0 -0.9 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
--0.6 1.1 0.0 pack21 a!+		0.0 0.0 -0.0998 0.9950 packq a!+
-0.0 -0.9 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
-0.25 -0.2 0.0 pack21 a!+	0.025 0.0 0.0 0.9997 packq a!+
-0.0 -1.1 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
--0.25 -0.2 0.0 pack21 a!+	-0.025 0.0 0.0 0.9997 packq a!+
-0.0 -1.1 0.0 pack21 a!+		0.0 0.0 0.0 1.0 packq a!+
-	;
-
-#qx #qy #qz #qw | still in calcrot
-#px #py #pz
-#tx #ty #tz
-
-:calcpos | ppos prot pos -- npos
-	unpack21r 'px ! 'py ! 'pz !
-	unpackq 'qx ! 'qy ! 'qz ! 'qw !
-	qy pz *. qz py *. - 2* 'tx !
-	qz px *. qx pz *. - 2* 'ty !
-	qx py *. qy px *. - 2* 'tz !
-	unpack21r	qw tx *. + qy tz *. qz ty *. - + px + | x
-	swap		qw ty *. + qz tx *. qx tz *. - + py + | y 
-	rot 		qw tz *. + qx ty *. qy tx *. - + pz + | z
-	pack21
-	;
-	
-:calcrot | rot -- nrot
-	unpackq 'px ! 'py ! 'pz ! 'tz ! | pw=tz
-	qw px *. qx tz *. + qy pz *. + qz py *. - | x
-	qw py *. qx pz *. - qy tz *. + qz px *. + | y 
-    qw pz *. qx py *. + qy px *. - qz tz *. + | z
-    qw tz *. qx px *. - qy py *. - qz pz *. - | w
-	pick3 dup *. pick3 dup *. + pick2 dup *. + over dup *. +
-	sqrt. 1.0 swap /.
-	packq*
-	;
-	
-#result * $ffff
-
-:calcw
-	-? ( drop 
-		a@+ b!+ | pos
-		a@+ b!+ | rot
-		; )
-	4 << 'result + @+ swap @ | ppos prot 
-	a@+ calcpos b!+ | keep qxyzw var
-	a@+ calcrot b!+
-	;
-
-:calcword | adr --
-	'bones >a
-	'result >b
-	'skelp 
-	0 ( cntbones <? swap
-		c@+ calcw
-		swap 1+ ) 2drop	;
-
-:updateobj
-	calcword
-	'result >a
-	0 ( cntbones <?
-		a@+ unpack21 a@+ pick4 ss3dxyzq | x y z quat i --
-		1+ ) drop ;
-
-|--------------------------------------
-
-#ballid
-:updatebones
-	'bones >a
-	0 ( cntbones <?
-		a@+ unpack21
-		a@+
-		1.0
-		$ffffff00
-		ballid
-		cntobjs
-		ss3dset | x y z qxyzw scale color spr i --	
-		1 'cntobjs +!
-		1+ ) drop ;
-
-|--------------------------------------
-#ballid
-	
-:makeScene
-	'bones >a
-	0 ( cntbones <?
-		a@+ unpack21
-		a@+
-		1.0
-		$ffffff00
-		ballid
-		cntobjs
-		ss3dset
-		|::ss3dset | x y z qxyzw scale color spr i --	
-		1 'cntobjs +!
-		1+ ) drop ;
-		
-
-
-:hiteye
-	'camAdv 8 + @ 0? ( 'hit ! ; ) 
-	'camEye 8 + @ swap /. | t
-	-? ( drop 0 'hit ! ; ) neg
-	'v3hit 'camEye v3=
-	'v3hit 'camAdv rot v3+*	
-	1 'hit !
-	;
-	
-:addobj
-	hiteye hit 0? ( drop ; ) drop
-	'v3hit >a a@+ a@+ a@+ | x y z
-	scale 8 >> 48 <<
-	$ffffff00
-	nrosprite
-	cntobjs
-	ss3dset | x y z srxyz color spr i --
-	1 'cntobjs +!
-	;
-
-|----------------------------------	
-	
-:totop
-	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
-	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
-	'camEye >a
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 12.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	;
-	
-:tofront
-	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
-	'cam_pit 0 cam_pit 21 1.0 0 +vanim
-	'camEye >a
-	a> -10.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	;
-	
-:toside
-	'cam_yaw -0.25 cam_yaw 21 1.0 0 +vanim
-	'cam_pit 0 cam_pit 21 1.0 0 +vanim
-	'camEye >a
-	a> 0.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 2.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	a> 10.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
-	;
-
-:interface
-	1 'fscale !
-	$ffffffff 'fcolor !
-	
-	uiFull
-	0.05 %ch uiN
-	$1f0000ff 'fcolor !
-	gZoneAll frect
-	$ffffffff 'fcolor !
-	'exit "Exit" uiTBtn
-|	'exit "eventos" uiTBtn
-|	'exit "seleccion" uiTBtn
-	'totop "T" uiTBtn
-	'tofront "F" uiTBtn
-	'toside "S" uiTBtn
-	
-	0.2 %cw uiO
-	$1f00ff00 'fcolor !
-	gZoneAll frect
-	
-	$ffffffff 'fcolor !
-	"EDIT" uiLabelC
-	
-	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
-	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
-	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
-	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
-	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
-
-	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
-
-	nrosprite ssnameid "[%l]" sprint uiLabelC
-	
-|	n3dsprites "ant:%h" sprint uiLabelC
-|	cntobjs "objs:%d" sprint uiLabelC
-|	nrosprite "spr:%d" sprint uiLabelC
-
-|	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
-|	'addobj "+" uiFTBtn	
-
-	;
-	
-:hud
-	fini
-	immIni
-	rotatemouse
-	interface
-	fend
-	
-	sdlkey
-	>esc< =? ( exit )
-	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
-	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
-	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
-	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
-	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
-	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
-	
-	<f1> =? ( makeScene )
-	<f2> =? ( updateobj )
-	drop
-	va 1? ( 
-		'camEye 'camAdv pick2 v3+*
-		'camTo 'camAdv pick2 v3+*
-		makecam
-		) drop
-	vl 1? (
-		'camEye 'camLat pick2 v3+*
-		'camTo 'camLat pick2 v3+*
-		makecam
-		) drop
-	vu 1? (
-		'camEye 'camUp pick2 v3+*
-		'camTo 'camUp pick2 v3+*
-		makecam
-		) drop
-	;
-	
-:main
-	vupdate
-	
-	
-	rl_frame_begin
-	SS3Ddraw
-	draw_grid
-	light
-	rl_frame_end
-
-	hud
-	GLUpdate
-	;
 
 :load3d
-|	"media/ss/iti"
 |	"media/ss/vox2" 
 	"media/ss/sprites"
-	dup 256 ss3dload
+	dup 1024 ss3dload
 	ss3loadnames
 	
-	"point" ss3idname 
-|	dup .d .println
-	'ballid !
+	|"point" ss3idname 'ballid !
 	;
 	
-:viewresize 
-	sh sw rl_resizewin 
-	fixFontResize ;
-
+|-------------------------------------
 : | <<<<<<<< Boot
-	"Scene r3dv" 1024 768 GLini GLInfo
-
-	makeskel
+	"play person" 1024 768 GLini GLInfo
 
 	$fff vaini
 	
@@ -429,15 +198,19 @@
 	load3d
 	rl_init 
 	rl_grid_init
-	
+	|rl_lunar_init
 	'viewresize SDLeventR
 	lightsun
-	makeCam
-	tofront
 
-	'main SDLshow
+	0 'objcnt !
+	here 'objlst !
+	
+	$ffff 'here +!
+	
+	jugar
 	
 	rl_grid_free 
+	|rl_lunar_free
 	rl_shutdown
 	SS3Dshutdown
 	GLend

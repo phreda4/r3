@@ -423,6 +423,16 @@ void main() {
 	r@ *. 2 >> $ffff and 16 << or swap
 	r> *. 2 >> $ffff and or ;
 
+::packv21 | x y z -- vp
+	4 >> $1fffff and swap
+	4 >> $1fffff and 21 << or swap
+	4 >> $1fffff and 42 << or ;
+	
+::unpackv21 | x -- x y z
+	dup 1 << 43 >> 4 << swap
+	dup 22 << 43 >> 4 << swap
+	43 << 43 >> 4 << ;
+
 |struct Instance {
 |    uint obj_id;
 |    uint color;

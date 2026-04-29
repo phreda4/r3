@@ -106,7 +106,6 @@
 	rl_frame_begin |rl_set_camera
 
 	drawscene
-	|'fsun rl_set_sun
 	luz
 	
 	rl_frame_end
@@ -140,7 +139,7 @@
 
 #ns 0
 :load3d
-	
+	"media/ss/sprites" 512 ss3dload
 	-2.0 ( 2.0 <?
 		-2.0 ( 2.0 <?
 		
@@ -164,8 +163,6 @@
 	rl_init
 	build_cube
 
-	"media/ss/sprites" 512 ss3dload
-	
 	load3d
 	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
@@ -177,7 +174,7 @@
 	'main SDLshow
 	
 	SS3Dshutdown
+	free_cube
 	rl_shutdown
     GLend
-	free_cube
 	;
