@@ -21,22 +21,32 @@
 #objlst 0
 #objnro 0
 
-|---------------------------------
-| 0 x y z rxyz sxyz vxyz vrxyz
-| 0 1 2 3 4    5    6    7     
+:.x		a> ;
+:.y		a> 1 3 << + ;
+:.z		a> 2 3 << + ;
+:.q		a> 3 3 << + ;
+:.info	a> 4 3 << + ;
+:.vp	a> 5 3 << + ;
+:.vr	a> 6 3 << + ;
+|:.v	a> 7 3 << + ;
 
 :]objs | n
 	6 << objlst + ; | 8 cells
 	
 :+obj
 	objcnt ]objs >a | 8 cells
-	-15.0 15.0 randminmax a!+
-	2.0 |-5.0 5.0 randminmax 
-	a!+
-	-15.0 15.0 randminmax a!+
+	|-15.0 15.0 randminmax 
+	0
+	a!+ | X
+	|-5.0 5.0 randminmax 
+	2.0 
+	a!+ | Y
+	|-15.0 15.0 randminmax 
+	0
+	a!+ | Z
 	|1.0 randmax 1.0 randmax 1.0 randmax	1.0 packq 
 	0 rxyz>q16
-	a!+ | rot
+	a!+ | Q
 	objnro a!+
 	|a!+
 	-0.1 0.1 randminmax
@@ -56,15 +66,54 @@
 	1 'objcnt +!
 	;
 
+||X    |Y   |Z
+|           $1
+|      $200000
+| $40000000000
+#hitbit
+:hitwall | x y z -- x y z
+	hitbit 0? ( drop ; ) | add
+	dup $1fffff * | mask
+	
+	.vp @	| add mask val
+	
+	over xor	| add mask pack
+	rot over	| mask pack add pack
+	+ pick2 and | mask pack p2
+	rot not and or
+	
+	.vp !
+	;
+	
 :upobjlst
+	objlst >a
 	0 ( objcnt <?
-		dup ]objs >a
-		a> 5 3 << + @ unpackv21
-		rot a@ + a!+
-		swap a@ + a!+
-		a@ + a!+
-		msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 a!+
-		1+ ) drop ;
+		.vp @ unpackv21
+	
+		0 'hitbit !	
+		
+		rot .x @ +
+		dup abs 15.0 >? (  $40000000000 'hitbit +! ) drop
+		.x !
+		
+		swap .y @ +
+		dup 
+		0.2 <? ( $200000 'hitbit +! ) 
+		8.0 >? ( $200000 'hitbit +! ) 
+		drop
+		.y !
+		
+		.z @ + 
+		dup abs 15.0 >? ( $1 'hitbit +! ) drop
+		.z !
+
+		hitwall
+		
+		|.vr
+		msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 
+		.q ! | ROT
+		
+		64 a+ 1+ ) drop ;
 	
 :drawobjlst 
 	upobjlst
@@ -99,7 +148,10 @@
 	rl_point_light | int cr cg cb x y z --
 	
 	|---- cam
-	pyp 0 pxp 'camTo !+ !+ !
+	pyp 
+	|0
+	pzp
+	pxp 'camTo !+ !+ !
 
 	prot 0.5 + neg sincos 
 	3 << pxp + 
@@ -145,7 +197,6 @@
 	SDLkey
 	>esc< =? ( exit ) 	
 	<f1> =? ( +obj ) 
-	|<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
 	
 	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
 	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
@@ -161,6 +212,7 @@
 	ss3dreset
 	0 'objcnt !
 	1 'objnro !
+	20 ( 1? 1- +obj ) drop
 	'juego SDLShow 
 	;
 	
@@ -204,7 +256,6 @@
 
 	0 'objcnt !
 	here 'objlst !
-	
 	$ffff 'here +!
 	
 	jugar

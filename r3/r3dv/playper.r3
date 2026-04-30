@@ -21,63 +21,18 @@
 #objlst 0
 #objnro 0
 
-|---------------------------------
-| x y z rxyz sxyz vxyz vrxyz
-| 1 2 3 4    5    6    7     
-:.rxyz 	1 ncell+ ;
-:.x		2 ncell+ ;
-:.y		3 ncell+ ;
-:.z		4 ncell+ ;
+:.x		a> ;
+:.y		a> 1 3 << + ;
+:.z		a> 2 3 << + ;
+:.q		a> 3 3 << + ;
+:.info	a> 4 3 << + ;
+:.vp	a> 5 3 << + ;
+:.vr	a> 6 3 << + ;
+|:.v	a> 7 3 << + ;
 
-:.sxyz	5 ncell+ ;
-:.vxyz	6 ncell+ ;
-:.vrxyz	7 ncell+ ;
-:.anim	8 ncell+ ;
-:.va	9 ncell+ ;
 
-#fhit
-#cntobj 
-
-:hit | mask pos -- pos
-	-50.0 <? ( over 'fhit +! )
-	50.0 >? ( over 'fhit +! )
-	nip ;
-
-:hitz | mask pos -- pos
-	0.0 <? ( over 'fhit +! )
-	90.0 >? ( over 'fhit +! )
-	nip ;
-	
-:rhit	
-	fhit 
-	%1 and? ( b> 8 + dup @ neg swap ! )
-	%10 and? ( b> 16 + dup @ neg swap ! )
-	%100 and? ( b> 24 + dup @ neg swap !  )
-	drop ;
-	
-:objexec | adr -- 
-	dup 8 + >b
-	|------- rot+pos obj
-	0 'fhit ! 
-	matini 
-	b@+ %1 b@+ hit %10 b@+ hit %100 b@+ hitz | x y z
-	
-
-	|------- refresh & hit
-	5 3 << + >b rhit
-|	b@+ b> 5 3 << - dup @ rot +rota swap !
-	b@+ b> 5 3 << - +! | +x
-	b@+ b> 5 3 << - +! | +y
-	b@+ b> 5 3 << - +! | +z
-	
-	|b@+ drawobjm
-	
-	ss3dxyzq | x y z quat i --
-	;
-
-	
 :+obj
-	objcnt 5 << objlst + >a
+	objcnt 6 << objlst + >a
 
 	-0.1 0.1 randminmax
 	-0.1 0.1 randminmax
@@ -146,8 +101,6 @@
 		) drop ;
 		
 |----- player
-
-#zz
 #vd #vr #vpz
 #pxp #pyp #pzp
 #prot
@@ -156,42 +109,43 @@
 #face ( 3 4 5 3 )
 
 :jugador
-	prot neg sincos 
-	vd *. 'pxp +! 
-	vd *. 'pyp +!
-	vr prot + $ffff and 'prot !
-
-	prot 0.25 + 2/
-	$ffff and 16 << rxyz>q16 >r
-	
 	pxp pzp 0.5 + pyp
-	r@
+	
+	prot 0.25 + 2/
+	$ffff and 16 << rxyz>q16 
+	
 	4.0	$ffffff00 
-	msec 8 >> $3 and 'walk + c@
+	|msec 8 >> $3 and 'walk + c@
+	12
 	0 ss3dset
 
-	pxp pzp 1.05 + pyp
-	r>
-	3.0 $ffffff00 
-	msec 9 >> $3 and 'face + c@
-	1 ss3dset
-	
 	1.4 
 	1.0 1.0 1.0 
 	pxp pzp 2.0 + pyp 1.0 +
 	rl_point_light | int cr cg cb x y z --
 	
-	pyp 0
+
+	|-----------
+	pyp 
+	|0
+	pzp
 	pxp 'camTo !+ !+ !
 
 	prot 0.5 + neg sincos 
 	3 << pxp + 
 	swap 3 << pyp +
-	4.0 rot
+	3.0 rot
 	'camEye !+ !+ !
 	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
-	
+
+	|--- update
+	prot neg sincos 
+	vd *. 'pxp +! 
+	vd *. 'pyp +!
+	vr prot + $ffff and 'prot !
+
+
 	pzp vpz +
 	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
 	'pzp !
@@ -206,7 +160,7 @@
 	rl_frame_begin
 	
 	draw_grid
-	objupdate
+|	objupdate
 	
 	jugador
 	
@@ -233,8 +187,6 @@
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
 	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
-|	<w> =? ( 0.1 'zz +! )
-|	<s> =? ( -0.1 'zz +! )
 	
 	drop
 	;		
@@ -243,7 +195,7 @@
 :jugar 
 	ss3dreset
 	0 'objcnt !
-	2 'objnro !
+	1 'objnro !
 	'juego SDLShow 
 	;
 	
