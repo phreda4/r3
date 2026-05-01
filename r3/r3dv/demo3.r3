@@ -162,6 +162,7 @@
 
 :load3d
 	"media/ss/sprites" 
+	|"media/ss/iti"
 	|"media/ss/vox2"
 |	"media/ss/mezcla"
 |	"media/ss/voxi"

@@ -114,9 +114,8 @@
 	prot 0.25 + 2/
 	$ffff and 16 << rxyz>q16 
 	
-	4.0	$ffffff00 
-	|msec 8 >> $3 and 'walk + c@
-	12
+	5.0	$ffffff00 
+	msec 8 >> $3 and 16 +
 	0 ss3dset
 
 	1.4 

@@ -136,36 +136,8 @@
 #scale 2.0
 #nrosprite 0
 
-|---------------------------------------------
-
-|------ pack 1 scale (8.8) + 3 rotation (0.16)
-::packsrot | sx rx ry rz -- rp
-	$ffff and swap 
-	$ffff and 16 << or swap 
-	$ffff and 32 << or swap
-	8 >> $ffff and 48 << or 
-	;
-
-::+srot | ra rb -- rr
-	+ $100010001 nand ;
-
-|------ pack 3 vel in 63bits (21x3) (13.8) 
-::pack21 | vx vy vz -- vp
-	8 >> $1fffff and swap
-	8 >> $1fffff and 21 << or swap
-	8 >> $1fffff and 42 << or ;
-	
-::+p21 | va vb -- vr
-	+ $40000200001 nand ;
-	
-::unpack21 | x -- px py pz
-	dup 1 << 43 >> 8 << swap
-	dup 22 << 43 >> 8 << swap
-	43 << 43 >> 8 << ;
-
 |--------------------------------------
 #ballid
-	
 
 :hiteye
 	'camAdv 8 + @ 0? ( 'hit ! ; ) 
@@ -189,7 +161,15 @@
 	;
 
 |----------------------------------	
+| scene
+
+
+
+:makescene
+|	ss3dset | x y z qxyzw scale color spr i --	
+	;
 	
+|----------------------------------	
 :totop
 	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
 	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
