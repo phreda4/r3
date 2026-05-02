@@ -71,7 +71,7 @@
 
 #xp #yp 
 :movecam
-	|sdlb 4 <>? ( drop ; ) drop
+	sdlb 4 <>? ( drop ; ) drop
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
 	sdly dup yp - -0.001 * 
@@ -85,12 +85,26 @@
 	'camTo 'camAdv pick2 v3+*
 	drop ;
 
-:rotatemouse
+#va #vl #vu
+
+:mousecam
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
-	drop	
+	drop
+	va 1? ( 
+		'camEye 'camAdv pick2 v3+*
+		'camTo 'camAdv pick2 v3+*
+		) drop
+	vl 1? (
+		'camEye 'camLat pick2 v3+*
+		'camTo 'camLat pick2 v3+*
+		) drop
+	vu 1? (
+		'camEye 'camUp pick2 v3+*
+		'camTo 'camUp pick2 v3+*
+		) drop	
 	;
 	
 #fsun [ 
@@ -129,7 +143,7 @@
 	rl_point_light | int cr cg cb x y z --
 	;
 
-#va #vl #vu
+
 
 |----------------------------
 #cntobjs 0
@@ -197,6 +211,8 @@
 	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	;
 
+#vrx
+#vrl 0 0
 :interface
 	1 'fscale !
 	$ffffffff 'fcolor !
@@ -212,6 +228,7 @@
 	'totop "T" uiTBtn
 	'tofront "F" uiTBtn
 	'toside "S" uiTBtn
+	
 	
 	0.2 %cw uiO
 	$1f00ff00 'fcolor !
@@ -235,14 +252,16 @@
 |	nrosprite "spr:%d" sprint uiLabelC
 
 |	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
-|	'addobj "+" uiFTBtn	
-
+	'addobj "Add Obj" uiFTBtn	
+	0.0 1.0 'vrx uiSliderf
+	|-1.0 1.0 'vrx uiprogressf
+	'vrl 8 ss3names uiList
 	;
 	
 :hud
 	fini
 	immIni
-	rotatemouse
+	mousecam
 	interface
 	fend
 	
@@ -254,8 +273,7 @@
 	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
-	
-	
+
 	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
 	<esp> =? ( 
@@ -263,18 +281,7 @@
 		nrosprite 1+ n3dsprites mod 'nrosprite !
 		)
 	drop
-	va 1? ( 
-		'camEye 'camAdv pick2 v3+*
-		'camTo 'camAdv pick2 v3+*
-		) drop
-	vl 1? (
-		'camEye 'camLat pick2 v3+*
-		'camTo 'camLat pick2 v3+*
-		) drop
-	vu 1? (
-		'camEye 'camUp pick2 v3+*
-		'camTo 'camUp pick2 v3+*
-		) drop
+
 	;
 	
 :main
@@ -299,7 +306,7 @@
 	ss3loadnames
 	
 	"ball" ss3idname 
-	dup .d .println
+	|dup .d .println
 	'ballid !
 	;
 	

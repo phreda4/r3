@@ -119,6 +119,7 @@
 	immMouse 'uistate ! ;
 
 ::uiEx?		uistate $100 and ;
+::uiEx!		uistate $100 or 'uistate ! ;
 
 | 0 = none
 | 1 = over

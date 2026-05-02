@@ -137,13 +137,16 @@ void main() {
 	;
 
 ::fsizeh | -- cnh
-	16 fscale * ;
+	fscale 16 * ;
+
+::fsizew | -- cnw
+	fscale 8 * ;
 	
 ::fsize | "" -- "" sizew sizeh
-	count 8 * fscale * 16 fscale * ;
+	count 8 * fscale * fscale 16 * ;
 
 ::fsizecnt | "" cnt -- "" 	
-	8 * fscale * 16 fscale * ;
+	8 * fscale * fscale 16 * ;
 	
 :sdraw | mode nverts --
 	unicolor fcolor glUniform1i

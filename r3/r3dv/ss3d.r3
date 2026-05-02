@@ -312,14 +312,20 @@ void main() {
 ::ss3loadnames | "" --
 	here dup 'ss3names !
 	swap "%s.txt" sprint load
-	0 swap c!+ 'here !
+	0 swap c! 'here !
+	ss3names dup >a
+	trim ( c@+ 1? $ff and 
+		13 =? ( 0 ca!+ )
+		31 >? ( dup ca!+ )
+		drop ) 2drop
+	0 a> c!+ 'here !
 	;
 
 ::ss3idname | name -- id
 	ss3names
 	0 ( n3dsprites <? swap
 		pick2 =pre 1? ( 2drop nip ; ) drop
-		>>cr trim
+		>>0 trim
 		swap 1+ ) 3drop
 	-1 ;
 
