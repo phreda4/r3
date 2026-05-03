@@ -312,7 +312,7 @@ void main() {
 ::ss3loadnames | "" --
 	here dup 'ss3names !
 	swap "%s.txt" sprint load
-	0 swap c! 'here !
+	0 swap c!+ 'here !
 	ss3names dup >a
 	trim ( c@+ 1? $ff and 
 		13 =? ( 0 ca!+ )

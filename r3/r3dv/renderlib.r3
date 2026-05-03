@@ -567,7 +567,7 @@ void main(){
     ;
 
 | ================================================================
-:rl_bind_ubo | binding prog "name" --
+::rl_bind_ubo | binding prog "name" --
 	over swap glGetUniformBlockIndex  | binding prog index |(idx!=GL_INVALID_INDEX)
 	rot glUniformBlockBinding ;
 

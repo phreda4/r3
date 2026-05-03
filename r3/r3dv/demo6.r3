@@ -34,7 +34,7 @@
 	6 << objlst + ; | 8 cells
 	
 :+obj
-	objcnt  >a | 8 cells
+	objcnt ]objs >a | 8 cells
 	|-15.0 15.0 randminmax 
 	0 32 <<
 	-0.1 0.1 randminmax
@@ -107,11 +107,40 @@
 #pxp #pyp #pzp
 #prot
 
+|------ Camera controls
+#camEye -4.0 1.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0
+
+#camEyeD 0 0 0
+#camDist 4.0
+#camRot
+
+:camera
+	pyp pzp pxp 'camTo !+ !+ !
+
+	prot 0.5 + neg camrot - 0.02 *. 'camrot +!
+	
+	'camEyeD >a
+	camrot sincos 
+	camDist *. pxp + a!+
+	2.0 a!+
+	camDist *. pyp + a!+
+	
+	'camEye >a 'camEyeD >b
+	a@ b@+ over - 0.05 *. + a!+
+	a@ b@+ over - 0.05 *. + a!+
+	a@ b@+ over - 0.05 *. + a!+
+	
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	;
+
+
 :jugador
 	prot neg sincos 
 	vd *. 'pxp +! 
 	vd *. 'pyp +!
-	vr prot + $ffff and 'prot !
+	vr prot + 'prot !
 
 	pxp pzp 0.5 + pyp
 	prot 0.25 + 2/ $ffff and 16 << rxyz>q16 
@@ -125,25 +154,13 @@
 	pxp pzp 2.0 + pyp
 	rl_point_light | int cr cg cb x y z --
 	
-	|---- cam
-	pyp 
-	|0
-	pzp
-	pxp 'camTo !+ !+ !
-
-	prot 0.5 + neg sincos 
-	3 << pxp + 
-	swap 3 << pyp +
-	3.0 rot
-	'camEye !+ !+ !
-	
-	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	camera
 	
 	|--- jump
 	pzp vpz +
 	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
 	'pzp !
-	-0.01 'vpz +!	
+	-0.001 'vpz +!	
 	;
 
 |-------------------------------
@@ -180,7 +197,7 @@
 	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
-	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
+	<esp> =? ( vpz 0? ( 0.05 'vpz ! ) drop )
 	
 	drop
 	;		

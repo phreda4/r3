@@ -121,9 +121,6 @@ void main() {
 #rl_grid_fnear  [ 10.0 ]   | fade starts at 10 units
 #rl_grid_ffar   [ 80.0 ]   | fully faded at 80 units
 
-:rl_bind_ubo | binding prog "name" --
-	over swap glGetUniformBlockIndex rot glUniformBlockBinding ;
-
 ::rl_grid_init
 	3 'rl_grid_scale memfloat
     'rl_shader_grid loadShaderv 'rl_sh_grid !

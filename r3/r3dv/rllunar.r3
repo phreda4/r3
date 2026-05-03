@@ -257,9 +257,6 @@ void main() {
 #rl_lunar_ffar   [ 80.0 ]   | fade ends at 80 units (CPU only, not sent to GPU)
 #rl_lunar_finvr  [ 0.0  ]   | filled in by rl_lunar_init
 
-:rl_bind_ubo | binding prog "name" --
-    over swap glGetUniformBlockIndex rot glUniformBlockBinding ;
-
 | Precompute 1/(ffar-fnear) so the shader can use a MAD instead of a divide.
 :rl_lunar_calc_invr
     'rl_lunar_ffar d@ 'rl_lunar_fnear d@ - 1.0 swap /. 'rl_lunar_finvr d! ;

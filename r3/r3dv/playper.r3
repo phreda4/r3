@@ -107,7 +107,7 @@
 #pxp #pyp #pzp
 #prot
 
-| Camera controls
+|------ Camera controls
 #camEye -4.0 1.0 0.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
