@@ -10,16 +10,23 @@
 ^./glimm.r3
 ^./rlgrid.r3
 
-
-| Camera controls
-#camEye -4.0 1.0 0.0
-#camTo  0.0 0.0  0.0
-#camUp  0.0 1.0  0.0
-
 |---------------------------------
 #objcnt 0
 #objlst 0
 #objnro 0
+
+:+static
+	-25.0 25.0 randminmax 
+	1.2
+	-25.0 25.0 randminmax
+	$ffff randmax 16 << rxyz>q16
+	8.0
+	$ffffff00
+	23 32 randminmax
+	objnro
+	ss3dset | x y z qxyzw scale color spr i --
+	1 'objnro +!
+	;
 
 :.x		a> ;
 :.y		a> 1 3 << + ;
@@ -30,84 +37,106 @@
 :.vr	a> 6 3 << + ;
 |:.v	a> 7 3 << + ;
 
+:]objs | n
+	6 << objlst + ; | 8 cells
 
 :+obj
-	objcnt 6 << objlst + >a
-
-	-0.1 0.1 randminmax
-	-0.1 0.1 randminmax
-	-0.1 0.1 randminmax	
-	pack21 a!+
-	-5.0 5.0 randminmax
-	-5.0 5.0 randminmax
-	-5.0 5.0 randminmax
-	pack21 a!+
-	0 a!+
-	objnro 
-	a!+
+	objcnt ]objs >a
+	-5.0 5.0 randminmax 32 <<
+	-0.1 0.1 randminmax $ffffffff and or
+	a!+ | X
 	
-|	-5.0 5.0 randminmax 
-|	-5.0 5.0 randminmax
-|	-5.0 5.0 randminmax	
-	0 0 0 
-	1.0 randmax 1.0 randmax 1.0 randmax	1.0 packq
-	1.0 
-	$ffffff00 
-	$ff randmax or
-|	12 
+	2.0 15.0 randminmax 32 <<
+	-0.1 0.1 randminmax $ffffffff and or
+	a!+ | Y
+	
+	-5.0 5.0 randminmax 32 <<
+	-0.1 0.1 randminmax $ffffffff and or
+	a!+ | Z
+	
+	rand rxyz>q16
+	a!+ | Q
+	objnro a!+
+	
+	1.0 4.0 randminmax
 	n3dsprites randmax
-	objnro ss3dset
+	$ffffff00 $ff randmax or
+	objnro
+	ss3dcs | scale spr color i --
 
 	1 'objnro +!
 	1 'objcnt +!
 	;
-||X    |Y   |Z
-|           $1
-|      $200000
-| $40000000000
-#hitbit
-:checkhit | x y z -- x y z
-	0 'hitbit !
-	pick2 abs 6.0 >? ( $40000000000 'hitbit +! ) drop
-	over abs 6.0 >? ( $200000 'hitbit +! ) drop
-	dup abs 6.0 >? ( $1 'hitbit +! ) drop
-	hitbit 0? ( drop ; ) | add
-	dup $1fffff * | mask
-	a> 16 - @	| add mask val
-	over xor	| add mask pack
-	rot over	| mask pack add pack
-	+ pick2 and | mask pack p2
-	rot not and or
-	a> 16 - !
+	
+:upobj
+	.x dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	dup abs 10.0 >? ( pick2 d@ neg pick3 d! ) drop
+	swap 4 + d!
+
+	.y dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	0.5 <? ( over d@ abs pick2 d! ) 
+	|18.0 >? ( over d@ neg pick2 d! ) 
+	over d@ 0.001 - pick2 d!
+	swap 4 + d!
+
+	.z dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	dup abs 10.0 >? ( pick2 d@ neg pick3 d! ) drop
+	swap 4 + d!
+	
+	|.vr
+	|msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 
+	|.q ! | ROT
 	;
-
-::+w4 | ra rb -- rr
-	+ $1000100010001 nand ;
-
-::+p3 | va vb -- vr
-	+ $40000200001 nand ;
-
-:objupdate
+	
+:drawobjlst 
 	objlst >a
-	objcnt ( 1? 1-
-		|$200000 a> +!
-		a@+ a@ +p3 dup a!+ | pos+
-		unpack21
-		checkhit
-		8 a+			| rot+
-		a@+
-		ss3dxyz | x y z i --
-		
-		) drop ;
-		
+	0 ( objcnt <? 
+		upobj
+		a@+ 32 >> 
+		a@+ 32 >> 
+		a@+ 32 >> 
+		a@+ a@+ $ffff and ss3dxyzq | x y z q i --
+		3 3 << a+
+		1+ ) drop ;
+
 |----- player
 #vd #vr #vpz
 #pxp #pyp #pzp
 #prot
 
-#walk ( 7 8 7 9 ) 
-#face ( 3 4 5 3 )
+| Camera controls
+#camEye -4.0 1.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0
 
+#camEyeD 0 0 0
+#camDist 4.0
+#camRot
+
+:camera
+	pyp pzp pxp 'camTo !+ !+ !
+
+	prot 0.5 + neg camrot - 0.02 *. 'camrot +!
+	
+	'camEyeD >a
+	camrot sincos 
+	camDist *. pxp + a!+
+	1.0 a!+
+	camDist *. pyp + a!+
+	
+	'camEye >a 'camEyeD >b
+	a@ b@+ over - 0.05 *. + a!+
+	a@ b@+ over - 0.05 *. + a!+
+	a@ b@+ over - 0.05 *. + a!+
+	
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	;
+
+#walk ( 16 17 16 18 ) 
+	
 :jugador
 	pxp pzp 0.5 + pyp
 	
@@ -115,7 +144,7 @@
 	$ffff and 16 << rxyz>q16 
 	
 	5.0	$ffffff00 
-	msec 8 >> $3 and 16 +
+	msec 8 >> $3 and 'walk + c@ 
 	0 ss3dset
 
 	1.4 
@@ -123,33 +152,18 @@
 	pxp pzp 2.0 + pyp 1.0 +
 	rl_point_light | int cr cg cb x y z --
 	
-
-	|-----------
-	pyp 
-	|0
-	pzp
-	pxp 'camTo !+ !+ !
-
-	prot 0.5 + neg sincos 
-	3 << pxp + 
-	swap 3 << pyp +
-	3.0 rot
-	'camEye !+ !+ !
-	
-	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	camera
 
 	|--- update
 	prot neg sincos 
 	vd *. 'pxp +! 
 	vd *. 'pyp +!
-	vr prot + $ffff and 'prot !
-
+	vr prot + 'prot !
 
 	pzp vpz +
 	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
 	'pzp !
-	-0.01 'vpz +!	
-	
+	-0.01 'vpz +!		
 	;
 
 |-------------------------------
@@ -159,8 +173,8 @@
 	rl_frame_begin
 	
 	draw_grid
-|	objupdate
 	
+	drawobjlst
 	jugador
 	
 	SS3Ddraw
@@ -179,7 +193,7 @@
 	SDLkey
 	>esc< =? ( exit ) 	
 	<f1> =? ( +obj ) 
-	|<f2> =? ( 50 ( 1? 1 - objrand +objr2 ) drop ) 
+	<f2> =? ( 50 ( 1? 1- +obj ) drop ) 
 	
 	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
 	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
@@ -195,6 +209,7 @@
 	ss3dreset
 	0 'objcnt !
 	1 'objnro !
+	200 ( 1? 1- +static ) drop
 	'juego SDLShow 
 	;
 	
@@ -217,7 +232,7 @@
 	"media/ss/iti"
 |	"media/ss/vox2" 
 |	"media/ss/sprites"
-	dup 1024 ss3dload
+	dup 4096 ss3dload
 	ss3loadnames
 	
 	|"point" ss3idname 'ballid !

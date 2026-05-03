@@ -34,29 +34,31 @@
 	6 << objlst + ; | 8 cells
 	
 :+obj
-	objcnt ]objs >a | 8 cells
+	objcnt  >a | 8 cells
 	|-15.0 15.0 randminmax 
-	0
+	0 32 <<
+	-0.1 0.1 randminmax
+	$ffffffff and or
 	a!+ | X
+	
 	|-5.0 5.0 randminmax 
-	2.0 
+	2.0 32 <<
+	-0.1 0.1 randminmax
+	$ffffffff and or
 	a!+ | Y
+	
 	|-15.0 15.0 randminmax 
-	0
+	0 32 <<
+	-0.1 0.1 randminmax
+	$ffffffff and or
 	a!+ | Z
+	
 	|1.0 randmax 1.0 randmax 1.0 randmax	1.0 packq 
 	0 rxyz>q16
 	a!+ | Q
 	objnro a!+
-	|a!+
-	-0.1 0.1 randminmax
-	-0.1 0.1 randminmax
-	-0.1 0.1 randminmax
-	packv21 a!+
 	
 	4.0 
-	|$ff randmax or
-	|n3dsprites randmax
 	114
 	$ffffff00 
 	objnro
@@ -66,61 +68,37 @@
 	1 'objcnt +!
 	;
 
-||X    |Y   |Z
-|           $1
-|      $200000
-| $40000000000
-#hitbit
-:hitwall | x y z -- x y z
-	hitbit 0? ( drop ; ) | add
-	dup $1fffff * | mask
+:upobj
+	.x dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	dup abs 15.0 >? ( pick2 d@ neg pick3 d! ) drop
+	swap 4 + d!
+
+	.y dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	0.2 <? ( over d@ abs pick2 d! ) 
+	8.0 >? ( over d@ neg pick2 d! ) 
+	over d@ 0.001 - pick2 d!
+	swap 4 + d!
+
+	.z dup 
+	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
+	dup abs 15.0 >? ( pick2 d@ neg pick3 d! ) drop
+	swap 4 + d!
 	
-	.vp @	| add mask val
-	
-	over xor	| add mask pack
-	rot over	| mask pack add pack
-	+ pick2 and | mask pack p2
-	rot not and or
-	
-	.vp !
+	|.vr
+	msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 
+	.q ! | ROT
 	;
 	
-:upobjlst
-	objlst >a
-	0 ( objcnt <?
-		.vp @ unpackv21
-	
-		0 'hitbit !	
-		
-		rot .x @ +
-		dup abs 15.0 >? (  $40000000000 'hitbit +! ) drop
-		.x !
-		
-		swap .y @ +
-		dup 
-		0.2 <? ( $200000 'hitbit +! ) 
-		8.0 >? ( $200000 'hitbit +! ) 
-		drop
-		.y !
-		
-		.z @ + 
-		dup abs 15.0 >? ( $1 'hitbit +! ) drop
-		.z !
-
-		hitwall
-		
-		|.vr
-		msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 
-		.q ! | ROT
-		
-		64 a+ 1+ ) drop ;
-	
 :drawobjlst 
-	upobjlst
-	
 	objlst >a
 	0 ( objcnt <? 
-		a@+ a@+ a@+ a@+ a@+ $ffff and ss3dxyzq | x y z q i --
+		upobj
+		a@+ 32 >> 
+		a@+ 32 >> 
+		a@+ 32 >> 
+		a@+ a@+ $ffff and ss3dxyzq | x y z q i --
 		3 3 << a+
 		1+ ) drop ;
 		
