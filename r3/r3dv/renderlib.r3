@@ -4,38 +4,6 @@
 ^r3/lib/sdl2gl.r3
 ^./glLib.r3
 
-| SHADERS ===>
-#rl_shader_geom "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec3 aPos;
-layout(location=1) in vec3 aNormal;
-layout(std140, binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;  };
-uniform mat4 model;
-uniform mat3 normalMatrix;
-out vec3 vPos; out vec3 vNormal;
-void main(){
-    vec4 wp = model*vec4(aPos,1.0);
-    vPos = wp.xyz;
-    vNormal = normalMatrix*aNormal;
-    gl_Position = ProjView*wp;
-}
-@fragment---------------
-#version 440 core
-in vec3 vPos; in vec3 vNormal;
-uniform uint uPackColor;
-layout(location=0) out vec3 gNormal;
-layout(location=1) out vec4 gAlbedo;
-void main(){
-	gNormal = normalize(vNormal);
-	gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-		float((uPackColor>>16)&0xFFu),
-		float((uPackColor>> 8)&0xFFu),
-		float( uPackColor     &0xFFu))/ 255.0;
-}
-@-----------------------"
-
 #rl_shader_light 
 "@vertex-----------------
 #version 440 core
@@ -372,7 +340,6 @@ void main(){
 #rl_ubo_plights   0
 
 | Shaders
-#rl_sh_geom       0
 #rl_sh_light      0
 #rl_sh_bright     0
 #rl_sh_bloom_down 0
@@ -380,10 +347,6 @@ void main(){
 #rl_sh_composite  0
 
 | Uniform locations
-#rl_u_model         -1
-#rl_u_uPackColor	-1
-#rl_u_normal_matrix -1
-
 #rl_u_bright_threshold    -1
 #rl_u_bloom_down_texel    -1
 #rl_u_bloom_up_texel      -1
@@ -578,22 +541,16 @@ void main(){
     rl_init_bloom
     rl_init_quad
     rl_init_ubos
-		
-    'rl_shader_geom       loadShaderv 'rl_sh_geom       !
+
     'rl_shader_light      loadShaderv 'rl_sh_light      !
     'rl_shader_bright     loadShaderv 'rl_sh_bright     !
     'rl_shader_bloom_down loadShaderv 'rl_sh_bloom_down !
     'rl_shader_bloom_up   loadShaderv 'rl_sh_bloom_up   !
     'rl_shader_composite  loadShaderv 'rl_sh_composite  !
 
-    0 rl_sh_geom  "Matrices"     rl_bind_ubo
     0 rl_sh_light "Matrices"     rl_bind_ubo
     1 rl_sh_light "DirectLight"  rl_bind_ubo
     2 rl_sh_light "PointLights"  rl_bind_ubo
-
-    rl_sh_geom "model"        glGetUniformLocation 'rl_u_model         !
-	rl_sh_geom "uPackColor"   glGetUniformLocation 'rl_u_uPackColor !
-    rl_sh_geom "normalMatrix" glGetUniformLocation 'rl_u_normal_matrix !
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
     rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
@@ -606,7 +563,6 @@ void main(){
 	;
 	
 ::rl_shutdown
-    rl_sh_geom       glDeleteProgram
     rl_sh_light      glDeleteProgram
     rl_sh_bright     glDeleteProgram
     rl_sh_bloom_down glDeleteProgram
@@ -804,15 +760,5 @@ void main(){
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays	
 	;
 
-| ================================================================
-::rl_ProgGeom
-	rl_sh_geom glUseProgram ;
 
-::rl_setcolor | rgbmm --
-	rl_u_uPackColor swap glUniform1ui ;
-
-::rl_geomat	| normal model --
-	>r rl_u_model 1 GL_FALSE r> glUniformMatrix4fv
-	>r rl_u_normal_matrix 1 GL_FALSE r> glUniformMatrix3fv 
-	;
 

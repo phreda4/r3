@@ -161,7 +161,7 @@
 	"demo2q r3dv" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
-	build_cube
+	IniGeom
 
 	load3d
 	
@@ -174,7 +174,7 @@
 	'main SDLshow
 	
 	SS3Dshutdown
-	free_cube
+	endGeom
 	rl_shutdown
     GLend
 	;

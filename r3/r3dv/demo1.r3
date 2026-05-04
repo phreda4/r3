@@ -29,7 +29,7 @@
 	matini
 	|msec 4 << 0 msec 3 << matrot
 	|cube_rot cube_rot 2/ 0 matrot
-	20.0 0.1 20.0 matscale
+	10.0 0.1 10.0 matscale
 	0 -0.1 0 matpos
 	$eeeeee30 rl_setcolor
 	draw_cube 
@@ -136,7 +136,7 @@
 	"demo1 r3dv" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
-	build_cube
+	IniGeom
 	8 'fsun memfloat
 	|$1e1f53 GLpaper
 	'viewresize SDLeventR
@@ -145,5 +145,5 @@
 	
 	rl_shutdown
     GLend
-	free_cube
+	endGeom
 	;
