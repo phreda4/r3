@@ -1,12 +1,6 @@
 | PHREDA 2026
 ^./renderlib.r3
 
-#rl_sh_geom       0
-
-#rl_u_model         -1
-#rl_u_uPackColor	-1
-#rl_u_normal_matrix -1
-
 #rl_sh_planes 0
 
 | escala: 1 unidad de grilla = estos valores en mundo
@@ -73,13 +67,8 @@ void main(){
 #pl_atlas_tex  0
 #pl_u_atlassize -1     | uniform location for uAtlasSize
 
-
 :,fv | x y z --
-	pl_bias + 
-	swap pl_bias + 10 << or
-	swap pl_bias + 20 << or
-	,
-	;
+	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or , ;
 
 #vv #vi
 :FlushPlanes
@@ -99,12 +88,19 @@ void main(){
 	-5 10  5 ,fv	$200020 ,
 	5 10 5 ,fv		$400020 ,
 	5 10 -5 ,fv		$400000 ,
+
+	10 -1 -1 ,fv	$000020 ,
+	10 -1 1 ,fv		$000040 ,
+	10 1 1 ,fv		$200040 ,
+	10 1 -1 ,fv		$200020 ,
 	
 	here 'vi !
 	0 , 1 , 2 , 0 , 2 , 3 ,	
 	4 , 5 , 6 , 4 , 6 , 7 ,
 	8 , 9 , 10 , 8 , 10 , 11 ,	
+	12 , 13 , 14 , 12 , 14 , 15 ,	
 	
+	1 'pl_count +!
 	1 'pl_count +!
 	1 'pl_count +!
 	1 'pl_count +!
@@ -117,9 +113,7 @@ void main(){
 
     GL_ELEMENT_ARRAY_BUFFER pl_ebo glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER pl_count 24 * vi GL_STATIC_DRAW glBufferData
-
 	;
-
 	
 ::ini3dtile
 |---------- planes	
