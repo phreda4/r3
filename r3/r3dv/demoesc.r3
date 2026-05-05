@@ -28,28 +28,14 @@
 	
 	matini
 	|msec 4 << 0 msec 3 << matrot
-	|cube_rot cube_rot 2/ 0 matrot
-	10.0 0.1 10.0 matscale
-	0 -0.3 0 matpos
-	$eeeeee30 rl_setcolor
-	draw_cube 
-	
-	matini
-	|msec 4 << 0 msec 3 << matrot
 	cube_rot cube_rot 2/ 0 matrot
 	0.8 dup dup matscale
-	msec 3 << sin 2 * msec 4 << cos 0.3 + 0 matpos
+	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 matpos
 	$fffffff0 rl_setcolor
 	draw_cube 
 	
-	matini
-	|msec 4 << 0 msec 3 << matrot
-	cube_rot neg cube_rot 2/ 0.3 matrot
-	0.8 dup dup matscale
-	msec 3 << sin 2 * neg msec 4 << cos 0.3 + msec 2 << sin matpos
-	$6f34fff3 rl_setcolor
-	draw_cube 
 	
+	draw_planes
 	;
 	
 
@@ -83,13 +69,6 @@
 	
 	'fsun rl_set_sun
 	
-	1.5 0.2 0.2 1.0
-	msec 3 << 
-	dup cos -3 * 
-	over sin -3 *
-	rot sin 2.5 *.
-	rl_point_light | int cr cg cb x y z --
-	
 	1.5 1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
@@ -110,7 +89,7 @@
 	8 sh 48 - 400 40 frect
 	$ffffffff 'fcolor !
 	16 sh 40 - fat
-	"r3forth - DEMO 1 " ftext
+	"r3forth - DEMO ESC " ftext
 	fend
 	
     GLUpdate
@@ -132,17 +111,19 @@
 
 
 : | <<<<<< Boot
-	"demo1 r3dv" 1024 768 GLini GLInfo
+	"demo escena" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
 	IniGeom
 	
 	8 'fsun memfloat
 	
-	|$1e1f53 GLpaper
 	'viewresize SDLeventR
 	calcam
-		
+	
+	IniPlanes
+	"media/img/atlaspl.png" rl_load_atlas	
+	
 	'main SDLshow
 	
 	rl_shutdown

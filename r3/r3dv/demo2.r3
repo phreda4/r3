@@ -2,7 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./glfixfont.r3
-^./geom.r3
+^./rlgeom.r3
 ^./ss3d.r3
 
 | Camera controls
