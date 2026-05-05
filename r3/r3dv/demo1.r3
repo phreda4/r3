@@ -26,13 +26,13 @@
 :drawscene
 	rl_ProgGeom
 	
-	matini
+|	matini
 	|msec 4 << 0 msec 3 << matrot
 	|cube_rot cube_rot 2/ 0 matrot
-	10.0 0.1 10.0 matscale
-	0 -0.1 0 matpos
-	$eeeeee30 rl_setcolor
-	draw_cube 
+|	10.0 0.1 10.0 matscale
+|	0 -0.1 0 matpos
+|	$eeeeee30 rl_setcolor
+|	draw_cube 
 	
 	matini
 	|msec 4 << 0 msec 3 << matrot
@@ -50,6 +50,7 @@
 	$6f34fff3 rl_setcolor
 	draw_cube 
 	
+	draw_planes
 	;
 	
 
@@ -90,7 +91,6 @@
 	rot sin 2.5 *.
 	rl_point_light | int cr cg cb x y z --
 	
-
 	1.5 1.0 0.2 0.2
 	msec 3 << 
 	dup cos 3 * 
@@ -137,10 +137,16 @@
 	glFixFont
 	rl_init
 	IniGeom
+	
 	8 'fsun memfloat
+	
 	|$1e1f53 GLpaper
 	'viewresize SDLeventR
 	calcam
+	
+	IniPlanes
+	"media/img/atlaspl.png" rl_load_atlas	
+	
 	'main SDLshow
 	
 	rl_shutdown
