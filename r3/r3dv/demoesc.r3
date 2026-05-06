@@ -123,6 +123,7 @@
 	
     sdlkey
 	>esc< =? ( exit )
+	<f1> =? ( genplanes ) 
 	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
 	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
 	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
@@ -147,8 +148,8 @@
 		) drop	
 	;
 
-:viewresize sh sw rl_resizewin fixFontResize ;
-
+:viewresize 
+	sh sw rl_resizewin fixFontResize ;
 
 : | <<<<<< Boot
 	"demo escena" 1024 768 GLini GLInfo
