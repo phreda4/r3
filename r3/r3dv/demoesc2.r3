@@ -4,6 +4,7 @@
 ^./glfixfont.r3
 ^./rlgeom.r3
 ^./rl3dtile.r3
+^r3/lib/rand.r3
 
 | Camera controls
 #cam_yaw  0  
@@ -61,6 +62,7 @@
 	3 =? ( movecam )				| active
 	drop	
 	;
+
 
 :drawscene
 	rl_ProgGeom
@@ -145,32 +147,34 @@
 		makecam
 		) drop	
 	;
-	
+
+#tile
 :maket3d
 	t3d_ini
+	-20 ( 20 <? 
+		-20 ( 20 <? 
+		
+			5 8 randminmax 64 * 12 << 
+			16 randmax 64 * or
+			'tile !
+			
+			$000000 tile +
+			pick2 pick2 -8 t3dv
+			$00003f tile +
+			pick2 pick2 1+ -8 t3dv
+			$03f03f tile +
+			pick2 1+ pick2 1+ -8 t3dv
+			$03f000 tile +
+			pick2 1+ pick2 -8
+			t3dq
+		
+			1+ ) drop
+		1+ ) drop
 
-	$00000 -5 -5 -10 t3dv
-	$0001f -5 5 -10 t3dv
-	$1f01f 5 5 -10 t3dv
-	$1f000 5 -5 -10 t3dq
-	
-	$20020 -5 -5 10 t3dv
-	$2003f -5 5 10 t3dv
-	$3f03f 5 5 10 t3dv
-	$3f020 5 -5 10 t3dq
-	
-	$20000 -5 10 -5 t3dv
-	$2001f -5 10  5 t3dv
-	$3f01f 5 10 5 t3dv
-	$3f000 5 10 -5 t3dq
-
-	$00020 10 0 0 t3dv
-	$0003f 10 0 1 t3dv
-	$1f03f 10 1 1 t3dv
-	$1f020 10 1 0 t3dq
 	t3d_end
 	;
-	
+
+
 :viewresize 
 	sh sw rl_resizewin fixFontResize ;
 
@@ -186,7 +190,7 @@
 	makecam
 	
 	ini3dtile
-	"media/img/atlaspl.png" rl_3datlas	
+	"media/img/tileskenney.png" rl_3datlas	
 	maket3d
 	
 	'main SDLshow

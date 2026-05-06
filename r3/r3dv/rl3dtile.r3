@@ -29,21 +29,24 @@ const float bias   = 512.0;
 
 out vec3 vWorldPos;
 out vec2 vUV;
+flat out float vColorPk;
 
 void main(){
     float x = (float((aPackedPos >> 20u) & 0x3FFu) - bias) * scaleX;
     float y = (float((aPackedPos >> 10u) & 0x3FFu) - bias) * scaleY;
     float z = (float( aPackedPos         & 0x3FFu) - bias) * scaleZ;
     vWorldPos   = vec3(x, y, z);
-    uint u = aUV & 0xFFFFu;
-    uint v = aUV >> 16u;
-    vUV    = vec2(u, v) * uAtlasSize;
+    uint u = aUV & 0xFFFu;
+    uint v = (aUV >> 12u) & 0xFFFu;
+	vColorPk=((aUV >> 24u) & 0xFFu)/255.0;
+    vUV    = (vec2(u, v)+0.5) * uAtlasSize;
     gl_Position = ProjView * vec4(vWorldPos, 1.0);
 }
 @fragment---------------
 #version 440 core
 in vec3 vWorldPos;
 in vec2 vUV;
+flat in float vColorPk;
 
 layout(binding=2) uniform sampler2D uAtlas;
 uniform vec2 uAtlasSize;
@@ -57,8 +60,7 @@ void main(){
 	vec3 dx = dFdx(vWorldPos);
 	vec3 dy = dFdy(vWorldPos);
 	gNormal = normalize(cross(dx, dy));
-	gAlbedo = vec4(tex.rgb, 0.0); // falta material
-			//vec4(texture(uAtlas, vUV).rgb, 1.0-texture(uAtlas, vUV).a);
+	gAlbedo = vec4(tex.rgb,vColorPk);
 }
 @-----------------------"
 
@@ -71,58 +73,34 @@ void main(){
 #pl_atlas_tex  0
 #pl_u_atlassize -1     | uniform location for uAtlasSize
 
+::t3d_ini
+	0 'pl_count ! 
+	mark ;
+
 :,fv | x y z --
 	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or , ;
 
-::genplanes
-	pl_vao glBindVertexArray
-
-	0 'pl_count !
-	mark
-	-5 -5 -10 ,fv	$000000 ,
-	-5 5 -10 ,fv	$000020 ,
-	5 5 -10 ,fv		$200020 ,
-	5 -5 -10 ,fv	$200000 ,
-	1 'pl_count +!
-	-5 -5 10 ,fv	$200020 ,
-	-5 5 10 ,fv		$200040 ,
-	5 5 10 ,fv		$400040 ,
-	5 -5 10 ,fv		$400020 ,
-	1 'pl_count +!
-	-5 10 -5 ,fv	$200000 ,
-	-5 10  5 ,fv	$200020 ,
-	5 10 5 ,fv		$400020 ,
-	5 10 -5 ,fv		$400000 ,
-	1 'pl_count +!
-	10 0 0 ,fv		$000020 ,
-	10 0 1 ,fv		$000040 ,
-	10 1 1 ,fv		$200040 ,
-	10 1 0 ,fv		$200020 ,
-	1 'pl_count +!
-	10 0 1 ,fv		$000020 ,
-	10 0 2 ,fv		$000040 ,
-	10 1 2 ,fv		$200040 ,
-	10 1 1 ,fv		$200020 ,
-	1 'pl_count +!
+::t3dv | (uv x y z) --
+	,fv , ;
+::t3dq | (uv x y z) --
+	t3dv 1 'pl_count +! ;
 	
+::t3d_end
 	empty
-	
+	pl_vao glBindVertexArray
 	GL_ARRAY_BUFFER pl_vbo glBindBuffer
 	GL_ARRAY_BUFFER 0 pl_count 32 * here glBufferSubData
-
 	mark
 	0 ( pl_count 6 * <? 
 		dup , dup 1 + , dup 2 + , 
 		dup , dup 2 + , dup 3 + ,		
 		4 + ) drop
 	empty
-
 	GL_ELEMENT_ARRAY_BUFFER pl_ebo glBindBuffer
 	GL_ELEMENT_ARRAY_BUFFER 0 pl_count 24 * here glBufferSubData
-	
 	0 glBindVertexArray ;
 
-#PL_MAX 1000
+#PL_MAX 8192
 
 ::ini3dtile
 	'rl_shader_planes loadShaderv 'rl_sh_planes !
@@ -142,7 +120,7 @@ void main(){
 	GL_ARRAY_BUFFER PL_MAX 4 * 32 * 0 GL_DYNAMIC_DRAW glBufferData
 	
 	GL_ELEMENT_ARRAY_BUFFER pl_ebo glBindBuffer
-	GL_ELEMENT_ARRAY_BUFFER PL_MAX 4 * 6  * 4 * 0 GL_DYNAMIC_DRAW glBufferData
+	GL_ELEMENT_ARRAY_BUFFER PL_MAX 4 * 6 * 4 * 0 GL_DYNAMIC_DRAW glBufferData
 
 | stride = 8 bytes
 | attrib 0: aPackedPos  uint  offset 0  → INTEGER attrib
@@ -180,7 +158,7 @@ void main(){
 	rl_sh_planes glUseProgram
 	pl_u_atlassize 1 'atlasimgsize glUniform2fv ;
 
-::rl_3datlas_reloa | "" --
+::rl_3datlas_reload | "" --
 	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop
 	0 'pl_atlas_tex !
 	rl_3datlas ;
@@ -193,15 +171,12 @@ void main(){
 	1 'pl_ebo glDeleteBuffers
 
 	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop
-
-	0 'pl_count !
-	0 'pl_vao ! 0 'pl_vbo ! 0 'pl_ebo !
 	;
 
 ::draw3dtiles
 	rl_sh_planes glUseProgram
-	GL_TEXTURE2    glActiveTexture
-	GL_TEXTURE_2D  pl_atlas_tex  glBindTexture
+	GL_TEXTURE2 glActiveTexture
+	GL_TEXTURE_2D pl_atlas_tex glBindTexture
 	pl_vao glBindVertexArray
 	GL_TRIANGLES pl_count 6 * GL_UNSIGNED_INT 0 glDrawElements
 	0 glBindVertexArray 
