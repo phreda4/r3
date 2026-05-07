@@ -582,10 +582,10 @@ void main(){
 |------------- CAMERA ------------------
 #camDirty  1
 
-#camAsp 0	| Aspect
-#camFov 0.4142
-#camNear 0.1	
-#camFar 200.0
+##camAsp 0	| Aspect
+##camFov 0.4142
+##camNear 0.1	
+##camFar 200.0
 
 | ================================================================
 ::rl_resizewin | w h --

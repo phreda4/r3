@@ -67,18 +67,70 @@
 	drop
 	;
 
+#camAdvMouse 0 0 0
+#v3hit 0 0 0
+#v3cursor 0 0 0
+
+:hiteye
+	'camAdvMouse 8 + @ 0? ( ; ) 
+	'camEye 8 + @ swap /. | t
+	-? ( drop 0 ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'camAdvMouse rot v3+*
+	1 ;
+	
+#xdir 
+#ydir
+
+:AdvMouse
+	sdlx 2* fix. sw / 1.0 -
+	camAsp *. camFov *. 'xdir !
+	
+	sdly 2* fix. sh / 1.0 -
+	camFov *. 'ydir !
+	
+	'camAdvMouse >a
+	'camAdv @      'camLat @      xdir *. + 'camUp @      ydir *. + a!+
+	'camAdv 8 + @  'camLat 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
+	'camAdv 16 + @ 'camLat 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
+	
+	'camAdvMouse v3Nor
+	|'camAdv >a a@+ a@+ a@ "%f %f %f" .println
+	|'camLat >a a@+ a@+ a@ "%f %f %f" .println
+	|'camUp >a a@+ a@+ a@ "%f %f %f" .println
+	|'camAdvMouse >a a@+ a@+ a@ "%f %f %f" .println
+	;
+	
+:draw_cursor
+	matini
+	0 0 0 matrot
+	1.0 dup dup matscale
+	'v3cursor >a a@+ a@+ a@+ 
+	matpos
+	$0000ff00 rl_setcolor
+	draw_cube 	
+	;
+
+:moveobj
+	AdvMouse
+	hiteye 0? ( drop ; ) drop
+	'v3cursor 'v3hit 3 move
+	;
+	
 :mobj
+	immMouse
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! moveobj )	| in
+	3 =? ( moveobj )				| active
+	drop
 	;
 	
 #modem 0
 #lmodem 'mcam 'mobj
 #lmodet "CAM" "OBJ" ( 0 )
-
 #laxist "X" "Y" "Z" ( 0 )
 
 :UsoMouse
-	|sdlb
-	
 	immIni
 	'lmodem modem ncell+ @ ex
 	;
@@ -94,11 +146,13 @@
 	msec 1 << 0 msec 2 << matrot
 	0.8 dup dup matscale
 	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 matpos
-	$fffffff0 rl_setcolor
+	$ffffff00 rl_setcolor
 	draw_cube 
+
+	draw_cursor
 	
 	draw3dtiles
-	
+
 	draw_gridp
 	;
 	   
@@ -155,6 +209,12 @@
 	modem 2 << 'lmodet + uiWrite
 	" " uiWrite
 	ga 2* 'laxist + uiWrite
+	gl " Level:%a " sprint uiWrite
+	
+	'camAdvMouse >a a@+ a@+ a@
+	" %f %f %f " sprint uiWrite
+	
+	
 	fend
 	;
 	
@@ -177,6 +237,7 @@
 	<f3> =? ( -1.0 valax )
 	<f4> =? ( 0.1 cgsx )
 	<f5> =? ( -0.1 cgsx )
+	<tab> =? ( modem 1 xor 'modem ! )
     drop
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*

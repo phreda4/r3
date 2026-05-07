@@ -23,31 +23,6 @@
 |----------------------
 #cp #sp #cy #sy 
 
-#raydir 0 0 0
-
-:makeraydir  
-	'raydir 'camAdv v3=
-	'raydir 'camlat 
-	sdlx sw 2/ - 16 << sw 2/ / |camFov *. camAsp *.
-	v3+*
-	'raydir 'camup 
-	sdly sh 2/ - 16 << sh 2/ / |camFov *.
-	v3+*
-	'raydir v3Nor
-	;
-
-#hit 0
-#v3hit 0 0 0
-
-:hitground
-	'raydir 8 + @ 0? ( 'hit ! ; ) 
-	'camEye 8 + @ swap /. | t
-	-? ( drop 0 'hit ! ; ) neg
-	'v3hit 'camEye v3=
-	'v3hit 'raydir rot v3+*	
-	1 'hit !
-	;
-
 :makecam
 	cam_yaw sincos 'cy ! 'sy !
 	cam_pit -0.24 max 0.24 min 
@@ -153,17 +128,36 @@
 |--------------------------------------
 #ballid
 
-:hiteye
-	'camAdv 8 + @ 0? ( 'hit ! ; ) 
-	'camEye 8 + @ swap /. | t
-	-? ( drop 0 'hit ! ; ) neg
-	'v3hit 'camEye v3=
-	'v3hit 'camAdv rot v3+*	
-	1 'hit !
+#camAdvMouse 0 0 0
+#v3hit 0 0 0
+#v3cursor 0 0 0
+
+#xdir 
+#ydir
+
+:AdvMouse
+	sdlx 2* fix. sw / 1.0 -
+	camAsp *. camFov *. 'xdir !
+	sdly 2* fix. sh / 1.0 -
+	camFov *. 'ydir !
+	'camAdvMouse >a
+	'camAdv @      'camLat @      xdir *. + 'camUp @      ydir *. + a!+
+	'camAdv 8 + @  'camLat 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
+	'camAdv 16 + @ 'camLat 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
+	'camAdvMouse v3Nor
 	;
 	
+:hiteye
+	'camAdvMouse 8 + @ 0? ( ; ) 
+	'camEye 8 + @ swap /. | t
+	-? ( drop 0 ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'camAdvMouse rot v3+*
+	1 ;
+	
 :addobj
-	hiteye hit 0? ( drop ; ) drop
+	AdvMouse
+	hiteye 0? ( drop ; ) drop
 	'v3hit >a a@+ a@+ a@+ | x y z
 	$0 rxyz>q16
 	scale $ffffff00
@@ -176,9 +170,6 @@
 
 |----------------------------------	
 | scene
-
-
-
 :makescene
 |	ss3dset | x y z qxyzw scale color spr i --	
 	;
