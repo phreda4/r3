@@ -467,7 +467,7 @@
 	
 	
 	rl_init 
-	rl_grid_init
+	0 rl_grid_init
 	
 	'viewresize SDLeventR
 	lightsun

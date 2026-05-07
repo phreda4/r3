@@ -244,7 +244,7 @@
 	glFixFont
 	load3d
 	rl_init 
-	rl_grid_init
+	1 rl_grid_init
 	|rl_lunar_init
 	'viewresize SDLeventR
 	lightsun

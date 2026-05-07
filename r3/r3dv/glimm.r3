@@ -215,7 +215,7 @@
 	dup @ pick3 - 
 	wiw 8 - pick4 pick4 swap - */ wix 1+ +
 	wiy 2 + 
-	6 wih
+	6 wih mary -
 	FRect ;
 
 ::uiSliderf | 0.0 1.0 'value --

@@ -23,6 +23,19 @@ void main(){
 @fragment---------------
 #version 440 core
 
+// ---------------------------------------------------------------
+// FLOOR_FILL to paint the whole floor with FLOOR_COLOR_BASE.
+
+//efine FLOOR_FILL // <--- PATCH
+
+#define FLOOR_COLOR_BASE  vec3(0.18, 0.20, 0.26)   // solid floor colour
+#define FLOOR_COLOR_LINE  vec3(0.45, 0.55, 0.75)   // grid line colour
+// ---------------------------------------------------------------
+
+// gAlbedo.a packs roughness=7(0xE0), metallic=0, glow=0 -> 224/255
+// Precomputed as a constant to avoid a per-fragment division.
+#define GBUFFER_PACK  0.87843137  // 224.0/255.0
+
 in vec2 vScreen;
 
 layout(std140, binding=0) uniform Matrices {
@@ -32,81 +45,66 @@ layout(std140, binding=0) uniform Matrices {
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
 
-// Reverse-Z: near maps to 1, far maps to 0
-// We write depth manually so objects occlude the grid.
-
 uniform float uGridScale;   // world units per cell
 uniform float uFadeNear;    // fade start distance
 uniform float uFadeFar;     // fade end distance
 
-// Reconstruct a world-space ray from NDC position
-void getRay(vec2 ndc, out vec3 ro, out vec3 rd) {
-    vec4 ndc4   = vec4(ndc, -1.0, 1.0);
-    vec4 vDir   = invProj * ndc4;
-    vDir.xyz   /= vDir.w;
-    vDir.w      = 0.0;
-    ro = viewPos.xyz;
-    rd = normalize((invView * vec4(vDir.xyz, 0.0)).xyz);
-}
-
-// NDC depth from world position (reverse-Z, no infinite far)
+// NDC depth from a view-space point (reverse-Z).
+// hit is already in world space; we only need the projected z/w.
+// Avoids a full mat4*vec4 by using ProjView directly.
 float worldToDepth(vec3 wp) {
-    vec4 cp = proj * view * vec4(wp, 1.0);
+    vec4 cp = ProjView * vec4(wp, 1.0);
     return (cp.z / cp.w) * 0.5 + 0.5;
 }
 
 void main() {
-    vec3 ro, rd;
-    getRay(vScreen, ro, rd);
+    // --- Ray reconstruction ---
+    // Unproject NDC -> view-space direction without an explicit getRay() call.
+    // invProj * vec4(ndc, -1, 1) with w=1:  result.xyz / result.w
+    // then rotate to world space via invView (rotation only, w=0).
+    vec4 vDir = invProj * vec4(vScreen, -1.0, 1.0);
+    vec3 rd   = normalize(mat3(invView) * (vDir.xyz / vDir.w));
+    vec3 ro   = viewPos.xyz;
 
-    // Intersect with Y = 0 plane
-    // rd.y == 0 means ray is parallel to floor -> no hit
+    // --- Intersect Y = 0 plane ---
     if (abs(rd.y) < 1e-5) discard;
-
     float t = -ro.y / rd.y;
-    if (t < 0.0) discard;           // intersection is behind camera
+    if (t < 0.0) discard;
+
+    // t == distance along the normalised ray -> no need for length(hit-ro)
+    float fade = 1.0 - clamp((t - uFadeNear) / (uFadeFar - uFadeNear), 0.0, 1.0);
+    if (fade <= 0.0) discard;
 
     vec3 hit = ro + rd * t;
 
-    // Distance fade
-    float dist = length(hit - ro);
-    float fade = 1.0 - clamp((dist - uFadeNear) / (uFadeFar - uFadeNear), 0.0, 1.0);
-    if (fade <= 0.0) discard;
-
-    // Grid pattern using fwidth for AA
-    vec2 gp    = hit.xz / uGridScale;
-    vec2 grid  = abs(fract(gp - 0.5) - 0.5) / fwidth(gp);
+    // --- Grid lines (AA via fwidth) ---
+    vec2 gp   = hit.xz / uGridScale;
+    vec2 fw   = fwidth(gp);                         // compute once, reuse for gp5
+    vec2 grid = abs(fract(gp - 0.5) - 0.5) / fw;
     float line = 1.0 - clamp(min(grid.x, grid.y) - 0.01, 0.0, 1.0);
 
-    // Sub-grid (thin lines every unit, thick every 5)
-    vec2 gp5   = hit.xz / (uGridScale * 5.0);
-    vec2 grid5 = abs(fract(gp5 - 0.5) - 0.5) / fwidth(gp5);
+    // gp5 = gp / 5  ->  fwidth(gp5) = fw / 5  (fwidth is linear)
+    vec2 gp5   = gp * 0.2;
+    vec2 grid5 = abs(fract(gp5 - 0.5) - 0.5) / (fw * 0.2);
     float line5 = 1.0 - clamp(min(grid5.x, grid5.y) - 0.01, 0.0, 1.0);
 
     float lineMask = max(line * 0.35, line5 * 0.8);
-    if (lineMask * fade < 0.02) discard;
 
-    // Write into GBuffer
+    // --- GBuffer write ---
     gNormal = vec3(0.0, 1.0, 0.0);
 
-    // Color pre-multiplied by fade so distant lines are truly dark.
-    // Thick lines are brighter than thin ones.
-    vec3 baseCol = mix(vec3(0.18, 0.20, 0.26), vec3(0.45, 0.55, 0.75), line5);
-    vec3 col = baseCol * lineMask * fade;
+#ifdef FLOOR_FILL
+    vec3 col = mix(FLOOR_COLOR_BASE, FLOOR_COLOR_LINE, lineMask) * fade;
+#else
+    if (lineMask * fade < 0.02) discard;
+    vec3 col = FLOOR_COLOR_LINE * (lineMask * fade);
+#endif
+    gAlbedo = vec4(col, GBUFFER_PACK);
 
-    // gAlbedo.a encodes roughness/metallic/glow as:
-    //   bits[7:5] = roughness (0-7)
-    //   bits[4:2] = metallic  (0-7)
-    //   bits[1:0] = glow      (0-3)
-    // We want roughness=7 (0xE0), metallic=0, glow=0  -> pack = 0xE0 = 224
-    // float(224)/255.0 ~ 0.878
-    // This gives a matte surface with NO glow, so bloom never fires on it.
-    gAlbedo = vec4(col, 224.0 / 255.0);
-
-    // Write correct reverse-Z depth so geometry occludes grid
     gl_FragDepth = worldToDepth(hit);
 }
 @-"
+
 | ============================================================
 | Grid state
 #rl_sh_grid       0
@@ -121,7 +119,13 @@ void main() {
 #rl_grid_fnear  [ 10.0 ]   | fade starts at 10 units
 #rl_grid_ffar   [ 80.0 ]   | fully faded at 80 units
 
-::rl_grid_init
+:modfill
+	'rl_shader_grid "//efine FLOOR_FILL" findstr
+	"#d" 2 cmove | patch shader
+	;
+
+::rl_grid_init | fillgrid --
+	1? ( modfill ) drop
 	3 'rl_grid_scale memfloat
     'rl_shader_grid loadShaderv 'rl_sh_grid !
     rl_sh_grid "uGridScale" glGetUniformLocation 'rl_u_grid_scale !

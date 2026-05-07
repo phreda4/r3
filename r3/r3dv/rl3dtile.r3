@@ -90,12 +90,11 @@ void main(){
 	pl_vao glBindVertexArray
 	GL_ARRAY_BUFFER pl_vbo glBindBuffer
 	GL_ARRAY_BUFFER 0 pl_count 32 * here glBufferSubData
-	mark
+	here >a
 	0 ( pl_count 6 * <? 
-		dup , dup 1 + , dup 2 + , 
-		dup , dup 2 + , dup 3 + ,		
+		dup da!+ dup 1 + da!+ dup 2 + da!+
+		dup da!+ dup 2 + da!+ dup 3 + da!+
 		4 + ) drop
-	empty
 	GL_ELEMENT_ARRAY_BUFFER pl_ebo glBindBuffer
 	GL_ELEMENT_ARRAY_BUFFER 0 pl_count 24 * here glBufferSubData
 	0 glBindVertexArray ;
