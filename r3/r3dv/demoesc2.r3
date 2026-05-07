@@ -4,7 +4,9 @@
 ^./glfixfont.r3
 ^./rlgeom.r3
 ^./rl3dtile.r3
+^./rlgridp.r3
 ^r3/lib/rand.r3
+^./glimm.r3
 
 | Camera controls
 #cam_yaw  0  
@@ -55,14 +57,35 @@
 	drop
 	makecam ;
 
-:rotatemouse
+
+
+:mcam
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
-	drop	
+	drop
 	;
 
+:mobj
+	;
+	
+#modem 0
+#lmodem 'mcam 'mobj
+#lmodet "CAM" "OBJ" ( 0 )
+
+#laxist "X" "Y" "Z" ( 0 )
+
+:UsoMouse
+	|sdlb
+	
+	immIni
+	'lmodem modem ncell+ @ ex
+	;
+|----------------------------------------
+#fsun [ 
+-2.5 2.0 -1.5 0	| normal
+ 1.0 1.0 1.0 1.2  ] | color,intensidad
 
 :drawscene
 	rl_ProgGeom
@@ -75,13 +98,9 @@
 	draw_cube 
 	
 	draw3dtiles
-	;
 	
-
-
-#fsun [ 
--2.5 2.0 -1.5 0	| normal
- 1.0 1.0 1.0 1.2  ] | color,intensidad
+	draw_gridp
+	;
 	   
 :render
 	rl_frame_begin
@@ -100,27 +119,50 @@
 	;
 	
 #va #vl #vu
+
+#gl 0
+#ga 0
+#gsx 1.0
+
+:changeaxis
+	ga 1+ 3 mod 'ga ! 
+	ga gridpAxis! ;
+	
+:valax | d --
+	'gl +! 
+	gl gridplevel! ;
+	
+:cgsx | d --
+	'gsx +!
+	gsx gridpsx! ;
+
+:interface
+	fini
+	1 'fscale !
+	$ffffffff 'fcolor !
+	
+	uiFull
+	32 uiN
+	$1f0000ff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	'exit "Exit" uiTBtn
+|	'exit "eventos" uiTBtn
+|	'exit "seleccion" uiTBtn
+|	'totop "T" uiTBtn
+|	'tofront "F" uiTBtn
+|	'toside "S" uiTBtn
+	modem 2 << 'lmodet + uiWrite
+	" " uiWrite
+	ga 2* 'laxist + uiWrite
+	fend
+	;
 	
 :main
 	render
-	
-	fini
-	2 'fscale !
-	$7f000000 'fcolor !
-	8 sh 48 - 400 40 frect
-	$ffffffff 'fcolor !
-	16 sh 40 - fat
-	"r3forth - DEMO ESC2 " ftext
-	fend
-	
-    GLUpdate
-	
-	immIni
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop	
+	interface
+	GLUpdate
+	UsoMouse
 	
     sdlkey
 	>esc< =? ( exit )
@@ -130,6 +172,11 @@
 	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )	
+	<f1> =? ( changeaxis )
+	<f2> =? ( 1.0 valax )
+	<f3> =? ( -1.0 valax )
+	<f4> =? ( 0.1 cgsx )
+	<f5> =? ( -0.1 cgsx )
     drop
 	va 1? ( 
 		'camEye 'camAdv pick2 v3+*
@@ -182,6 +229,8 @@
 	"demo escena" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
+	rl_gridp_init
+	
 	IniGeom
 	
 	8 'fsun memfloat
@@ -195,6 +244,7 @@
 	
 	'main SDLshow
 	
+	rl_gridp_free
 	rl_shutdown
     GLend
 	end3dtile

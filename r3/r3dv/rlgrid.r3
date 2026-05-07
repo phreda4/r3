@@ -148,5 +148,3 @@ void main() {
     GL_TRIANGLE_STRIP 0 4 glDrawArrays
     0 glBindVertexArray
     ;
-
-| ============================================================

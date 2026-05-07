@@ -180,6 +180,13 @@
 	|pady 2* + mary + 'cy +!	
 	;
 
+::uiWrite | "" --
+	fsize nip swap
+	fx cx + fy cy + fat
+	ftext 
+	'cx +!
+	;
+	
 ::uiLabel | "" --
 	fx cx + padx + 
 	fy cy +
