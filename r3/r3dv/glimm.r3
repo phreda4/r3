@@ -2,7 +2,7 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gl.r3
-^./glfixfont.r3
+^./rlhud.r3
 ^./gllib.r3
 
 #marx 4 #mary 4 | margin
@@ -182,9 +182,9 @@
 
 ::uiWrite | "" --
 	fsize nip swap
-	fx cx + fy cy + fat
+	fx cx + marx + fy cy + mary + fat
 	ftext 
-	'cx +!
+	marx + 'cx +!
 	;
 	
 ::uiLabel | "" --

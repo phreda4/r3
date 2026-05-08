@@ -4,7 +4,7 @@
 ^r3/util/varanim.r3
 
 ^./renderlib.r3
-^./glfixfont.r3
+^./rlhud.r3
 ^./ss3d.r3
 ^./glimm.r3
 ^./rlgrid.r3
@@ -455,7 +455,7 @@
 
 	$fff vaini
 	
-	glFixFont
+	rlhud
 	load3d
 	|"media\bvh\pajaro.r3a" 
 	"media\bvh\lobo.r3a" 

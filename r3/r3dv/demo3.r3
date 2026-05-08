@@ -3,7 +3,7 @@
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
-^./glfixfont.r3
+^./rlhud.r3
 ^./ss3d.r3
 ^./rlgrid.r3
 
@@ -195,7 +195,7 @@
 
 : | <<<<<<<< Boot
 	"demo3 r3dv" 1024 768 GLini GLInfo
-	glFixFont
+	rlhud
 	rl_init
 	
 	load3d

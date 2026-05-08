@@ -1,7 +1,7 @@
 | demo1 r3dv
 | PHREDA 2026
 ^./renderlib.r3
-^./glfixfont.r3
+^./rlhud.r3
 ^./rlgeom.r3
 ^./rl3dtile.r3
 ^./rlgridp.r3
@@ -141,26 +141,14 @@
 -2.5 2.0 -1.5 0	| normal
  1.0 1.0 1.0 1.2  ] | color,intensidad
 
-:drawscene
-	rl_ProgGeom
+:render
+	rl_frame_begin
 	
-	matini
-	msec 1 << 0 msec 2 << matrot
-	0.8 dup dup matscale
-	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 matpos
-	$ffffff00 rl_setcolor
-	draw_cube 
-
+	rl_ProgGeom
 	draw_cursor
 	
 	draw3dtiles
-
 	draw_gridp
-	;
-	   
-:render
-	rl_frame_begin
-	drawscene
 	
 	'fsun rl_set_sun
 	
@@ -190,6 +178,8 @@
 	'gsx +!
 	gsx gridpsx! ;
 
+#imgatlas
+
 :interface
 	fini
 	1 'fscale !
@@ -209,16 +199,17 @@
 	modem 2 << 'lmodet + uiWrite
 	" " uiWrite
 	gaxis 2* 'laxist + uiWrite
-	glevel " Level:%a " sprint uiWrite
+	" " uiWrite
 	
-	'camAdvMouse >a a@+ a@+ a@
-	" %f %f %f " sprint uiWrite
+	|'camAdvMouse >a a@+ a@+ a@ " %a %a %a " sprint uiWrite
+
+	|glevel " Level:%a " sprint uiWrite
 	
-	
+	imgatlas 10 32 210 232 imgdraw
 	fend
 	;
 	
-:main
+:mainedit
 	render
 	interface
 	GLUpdate
@@ -231,7 +222,8 @@
 	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
 	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
-	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )	
+	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
+	
 	<f1> =? ( changeaxis )
 	<f2> =? ( 1.0 valax )
 	<f3> =? ( -1.0 valax )
@@ -256,9 +248,16 @@
 		) drop	
 	;
 
+|---------------------------------------------
+
+#tilesize $03f03f
 #tile
+#tx #ty #tz
+#txyz
+
 :maket3d
 	t3d_ini
+	
 	-20 ( 20 <? 
 		-20 ( 20 <? 
 		
@@ -266,13 +265,13 @@
 			16 randmax 64 * or
 			'tile !
 			
-			$000000 tile +
+			tile
 			pick2 pick2 -8 t3dv
-			$00003f tile +
+			tile tilesize $fff and +
 			pick2 pick2 1+ -8 t3dv
-			$03f03f tile +
+			tile tilesize +
 			pick2 1+ pick2 1+ -8 t3dv
-			$03f000 tile +
+			tile tilesize $fff000 and +
 			pick2 1+ pick2 -8
 			t3dq
 		
@@ -282,17 +281,102 @@
 	t3d_end
 	;
 
+| 001 010 100
+| 010 001 010
+| 100 100 001
 
+#tv1 #tv2
+#nt
+
+:makeatlas
+	t3d_ini
+
+	0 'nt !
+	0 ( 16 <? 
+		0 ( 16 <? 
+			nt 4 >> $f and 64 * 12 << 
+			nt $f and 64 * or
+			'tile !
+		
+			0 pick2 pick2 |tx ty tz 
+			3dt3 'txyz !
+			
+			0 0 1 swap 10 << or swap 20 << or 'tv1 !
+			0 1 0 swap 10 << or swap 20 << or 'tv2 !
+			
+			tile 
+			txyz
+			tile tilesize $000fff and +
+			txyz tv1 +
+			tile tilesize +
+			txyz tv1 + tv2 +
+			tile tilesize $fff000 and +
+			txyz tv2 +
+			
+			t3d4v
+
+			1 'nt +!
+			1+ ) drop
+		1+ ) drop
+
+	t3d_end
+	;
+	
+|---------------------------------------------
+:interfaceatlas
+	fini
+	1 'fscale !
+	$ffffffff 'fcolor !
+	
+	uiFull
+	32 uiN
+	$1f0000ff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	'exit "Exit" uiTBtn
+	"- Atlas -" uiWrite
+	fend
+	;
+	
+:mainatlas
+	rl_frame_begin
+	
+	rl_ProgGeom
+	draw_cursor
+	
+	draw3dtiles
+	draw_gridp
+	
+	'fsun rl_set_sun	
+	rl_frame_end
+
+	interfaceatlas
+	GLUpdate
+	
+    sdlkey
+	>esc< =? ( exit )
+	drop
+	;
+
+:main
+
+	makeatlas
+|	mainatlas
+
+	|maket3d
+	mainedit
+	
+	;
+	
+|---------------------------------------------
 :viewresize 
 	sh sw rl_resizewin fixFontResize ;
 
 : | <<<<<< Boot
 	"demo escena" 1024 768 GLini GLInfo
-	glFixFont
+	rlhud
+	"media/img/tileskenney.png" fimgload 'imgatlas !
 	rl_init
-	
-	
-	
 	
 	rl_gridp_init
 	gaxis gridpAxis!
@@ -307,8 +391,7 @@
 	
 	ini3dtile
 	"media/img/tileskenney.png" rl_3datlas	
-	maket3d
-	
+		
 	'main SDLshow
 	
 	rl_gridp_free

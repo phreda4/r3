@@ -1,7 +1,7 @@
 | demo2 r3dv
 | PHREDA 2026
 ^./renderlib.r3
-^./glfixfont.r3
+^./rlhud.r3
 ^./rlgeom.r3
 ^./ss3d.r3
 
@@ -159,7 +159,7 @@
 
 : | <<<<< Boot
 	"demo2q r3dv" 1024 768 GLini GLInfo
-	glFixFont
+	rlhud
 	rl_init
 	IniGeom
 

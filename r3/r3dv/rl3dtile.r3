@@ -77,11 +77,14 @@ void main(){
 	0 'pl_count ! 
 	mark ;
 
-:,fv | x y z --
-	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or , ;
+::3dt3 | x y z -- v
+	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or ;
 
+::t3d4v | uv v uv v uv v uv v --
+	, , , , , , , , 1 'pl_count +! ;
+	
 ::t3dv | (uv x y z) --
-	,fv , ;
+	3dt3 , , ;
 ::t3dq | (uv x y z) --
 	t3dv 1 'pl_count +! ;
 	
