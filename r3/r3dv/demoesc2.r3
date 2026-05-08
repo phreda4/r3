@@ -58,7 +58,6 @@
 	makecam ;
 
 
-
 :mcam
 	immMouse
 	1 =? ( wheelcam )				| over
@@ -67,17 +66,21 @@
 	drop
 	;
 
+#glevel 0
+#gaxis 0
+
 #camAdvMouse 0 0 0
 #v3hit 0 0 0
 #v3cursor 0 0 0
 
 :hiteye
-	'camAdvMouse 8 + @ 0? ( ; ) 
-	'camEye 8 + @ swap /. | t
+	'camAdvMouse gaxis 3 << + @ 0? ( ; ) 
+	'camEye gaxis 3 << + @ glevel - swap /. | t
 	-? ( drop 0 ; ) neg
 	'v3hit 'camEye v3=
 	'v3hit 'camAdvMouse rot v3+*
 	1 ;
+	
 	
 #xdir 
 #ydir
@@ -93,19 +96,18 @@
 	'camAdv @      'camLat @      xdir *. + 'camUp @      ydir *. + a!+
 	'camAdv 8 + @  'camLat 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
 	'camAdv 16 + @ 'camLat 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
-	
+
 	'camAdvMouse v3Nor
-	|'camAdv >a a@+ a@+ a@ "%f %f %f" .println
-	|'camLat >a a@+ a@+ a@ "%f %f %f" .println
-	|'camUp >a a@+ a@+ a@ "%f %f %f" .println
-	|'camAdvMouse >a a@+ a@+ a@ "%f %f %f" .println
 	;
 	
 :draw_cursor
 	matini
 	0 0 0 matrot
 	1.0 dup dup matscale
-	'v3cursor >a a@+ a@+ a@+ 
+	'v3cursor >a 
+	a@+ $ffff nand $7fff +
+	a@+ $ffff nand $7fff +
+	a@+ $ffff nand $7fff +
 	matpos
 	$0000ff00 rl_setcolor
 	draw_cube 	
@@ -174,17 +176,15 @@
 	
 #va #vl #vu
 
-#gl 0
-#ga 0
 #gsx 1.0
 
 :changeaxis
-	ga 1+ 3 mod 'ga ! 
-	ga gridpAxis! ;
+	gaxis 1+ 3 mod 'gaxis ! 
+	gaxis gridpAxis! ;
 	
 :valax | d --
-	'gl +! 
-	gl gridplevel! ;
+	'glevel +! 
+	glevel gridplevel! ;
 	
 :cgsx | d --
 	'gsx +!
@@ -208,8 +208,8 @@
 |	'toside "S" uiTBtn
 	modem 2 << 'lmodet + uiWrite
 	" " uiWrite
-	ga 2* 'laxist + uiWrite
-	gl " Level:%a " sprint uiWrite
+	gaxis 2* 'laxist + uiWrite
+	glevel " Level:%a " sprint uiWrite
 	
 	'camAdvMouse >a a@+ a@+ a@
 	" %f %f %f " sprint uiWrite
@@ -290,7 +290,13 @@
 	"demo escena" 1024 768 GLini GLInfo
 	glFixFont
 	rl_init
+	
+	
+	
+	
 	rl_gridp_init
+	gaxis gridpAxis!
+	glevel gridplevel!
 	
 	IniGeom
 	
