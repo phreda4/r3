@@ -2,7 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./rlhud.r3
-^./rlgeom.r3
+^./rlshapes.r3
 ^./ss3d.r3
 
 | Camera controls
@@ -35,8 +35,8 @@
 
 #col
 :drawscene
-	rl_ProgGeom
-	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos $5a5a5a20 rl_setcolor draw_cube 
+	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos 
+	$5a5a5a20 draw_cube 
 	
 	1 'col +!
 	
@@ -161,7 +161,7 @@
 	"demo2q r3dv" 1024 768 GLini GLInfo
 	rlhud
 	rl_init
-	IniGeom
+	IniShapes
 
 	load3d
 	
@@ -174,7 +174,7 @@
 	'main SDLshow
 	
 	SS3Dshutdown
-	endGeom
+	endShapes
 	rl_shutdown
     GLend
 	;

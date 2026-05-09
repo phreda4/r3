@@ -2,7 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./rlhud.r3
-^./rlgeom.r3
+^./rlshapes.r3
 ^./rl3dtile.r3
 ^./rlgridp.r3
 ^r3/lib/rand.r3
@@ -109,8 +109,7 @@
 	a@+ $ffff nand $7fff +
 	a@+ $ffff nand $7fff +
 	matpos
-	$0000ff00 rl_setcolor
-	draw_cube 	
+	$0000ff00 draw_cube 	
 	;
 
 :moveobj
@@ -144,7 +143,6 @@
 :render
 	rl_frame_begin
 	
-	rl_ProgGeom
 	draw_cursor
 	
 	draw3dtiles
@@ -178,7 +176,17 @@
 	'gsx +!
 	gsx gridpsx! ;
 
+#modedit 0
 #imgatlas
+
+:modetile
+	modedit 1 xor 'modedit !
+	;
+
+:panelatlas
+	imgatlas 10 32 
+	400 400 imgdraw
+	;
 
 :interface
 	fini
@@ -191,6 +199,7 @@
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	'exit "Exit" uiTBtn
+	'modetile "Tile" uiTBtn
 |	'exit "eventos" uiTBtn
 |	'exit "seleccion" uiTBtn
 |	'totop "T" uiTBtn
@@ -204,8 +213,7 @@
 	|'camAdvMouse >a a@+ a@+ a@ " %a %a %a " sprint uiWrite
 
 	|glevel " Level:%a " sprint uiWrite
-	
-	imgatlas 10 32 210 232 imgdraw
+	modedit 1 =? ( panelatlas ) drop
 	fend
 	;
 	
@@ -341,7 +349,6 @@
 :mainatlas
 	rl_frame_begin
 	
-	rl_ProgGeom
 	draw_cursor
 	
 	draw3dtiles
@@ -382,7 +389,7 @@
 	gaxis gridpAxis!
 	glevel gridplevel!
 	
-	IniGeom
+	IniShapes
 	
 	8 'fsun memfloat
 	
@@ -398,5 +405,5 @@
 	rl_shutdown
     GLend
 	end3dtile
-	endGeom
+	endShapes
 	;

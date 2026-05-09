@@ -14,8 +14,8 @@ uniform int fgColor;
 out vec2 uv;
 flat out vec4 vColor;
 void main() {
-    vec2 pos = vec2(float(aPos & 0xffff), float((aPos >> 16) & 0xffff));
-    vec2 uvp = vec2(float(uvIn & 0xffff), float((uvIn >> 16) & 0xffff));
+    vec2 pos = vec2(float(aPos<<16>>16), float(aPos>>16));
+    vec2 uvp = vec2(float(uvIn<<16>>16), float(uvIn>>16));
     gl_Position = projection * vec4(pos, 0.0, 1.0);
     uv = uvp / vec2(128.0, 256.0);
     float a = float((fgColor >> 24) & 0xff) / 255.0;
@@ -49,8 +49,8 @@ uniform mat4 projection;
 uniform ivec2 uImgSize;
 out vec2 uv;
 void main() {
-    vec2 pos = vec2(float(aPos & 0xffff), float((aPos >> 16) & 0xffff));
-    vec2 uvp = vec2(float(uvIn & 0xffff), float((uvIn >> 16) & 0xffff));
+    vec2 pos = vec2(float(aPos<<16>>16), float(aPos>>16));
+    vec2 uvp = vec2(float(uvIn<<16>>16), float(uvIn>>16));
     gl_Position = projection * vec4(pos, 0.0, 1.0);
     uv = uvp / vec2(uImgSize);
 }
@@ -163,12 +163,9 @@ void main() {
 
 |---------------------------------------
 | pack two int16 into one int32: lo hi -- int32
-:p16 | lo hi -- int32
-	16 << swap $ffff and or ;
-:px+
-	$ffff and + ;
-:py+
-	$ffff0000 and + ;
+:p16 16 << swap $ffff and or ;
+:px+ $ffff and + ;
+:py+ $ffff0000 and + ;
 
 #xt 0 #yt 0
 
@@ -204,7 +201,6 @@ void main() {
 	img_unitex 0 glUniform1i
 	GL_TEXTURE0 glActiveTexture
 	;
-	
 	
 ::fini
 	GL_DEPTH_TEST glDisable
@@ -264,14 +260,14 @@ void main() {
 	;
 
 :fillrect | x y w h --
-	swap pick3 + swap pick2 +
+	p16 -rot p16 swap
 	here >a
-	pick3 pick3 p16 da!+  0 da!+
-	over  pick3 p16 da!+  0 da!+
-	over  over   p16 da!+  0 da!+
-	pick3 over   p16 da!+  0 da!+
-	4drop ;
-
+	over da!+     0 da!+
+	2dup px+ da!+ 0 da!+
+	2dup + da!+   0 da!+
+	py+ da!+      0 da!+
+	;
+	
 ::frect | x y w h --
 	fillrect GL_TRIANGLE_FAN 4 sdraw ;
 
@@ -316,9 +312,7 @@ void main() {
 	GL_TEXTURE_2D idx_img 4 * 'imgtextures + d@ glBindTexture
 	img_unisize 1 idx_img 8 * 'imgsizes + glUniform2iv
 	ab[
-	here >a
-	gimgquad
-	a> here -
+	here >a gimgquad a> here -
 	fvt glBindVertexArray
 	GL_ARRAY_BUFFER fbt glBindBuffer
 	GL_ARRAY_BUFFER over here GL_STREAM_DRAW glBufferData
@@ -332,7 +326,6 @@ void main() {
 ::imgdrawuv | idx dx dy dw dh sx sy sw sh --
 	p16 'swh_img ! p16 'sxy_img ! 
 	p16 'dwh_img ! p16 'dxy_img ! 
-	
 	'idx_img !
 	imgdoraw
 	;
@@ -342,7 +335,6 @@ void main() {
 ::imgdraw | idx dx dy dw dh --
 	p16 'dwh_img ! p16 'dxy_img ! 
 	'idx_img !
-
 	0 'sxy_img !
 	idx_img 8 * 'imgsizes + d@+ swap d@ p16 'swh_img !
 	imgdoraw

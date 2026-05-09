@@ -2,7 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./rlhud.r3
-^./rlgeom.r3
+^./rlShapes.r3
 ^./rl3dtile.r3
 
 | Camera controls
@@ -63,14 +63,11 @@
 	;
 
 :drawscene
-	rl_ProgGeom
-	
 	matini
 	msec 1 << 0 msec 2 << matrot
 	0.8 dup dup matscale
 	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 matpos
-	$fffffff0 rl_setcolor
-	draw_cube 
+	$fffffff0 draw_cube 
 	
 	draw3dtiles
 	;
@@ -178,7 +175,7 @@
 	"demo escena" 1024 768 GLini GLInfo
 	rlhud
 	rl_init
-	IniGeom
+	IniShapes
 	
 	8 'fsun memfloat
 	
@@ -194,5 +191,5 @@
 	rl_shutdown
     GLend
 	end3dtile
-	endGeom
+	endShapes
 	;
