@@ -54,27 +54,27 @@
 
     | --- ESFERA - pulsa y orbita lento ---
     matini
-    msec 5 << cos 3.5 *. 0.2 msec 5 << sin 3.5 *. matpos
-    |0.2 0 matpos
-    msec 3 << sin 0.08 *. 0.55 + dup dup matscale
-    0.55 $44ccfff2 draw_sphere
+    msec 2 << cos 3.5 *. 0.2 msec 2 << sin 3.5 *. matpos
+	msec 3 << 0 msec 4 << matrot
+    msec 3 << sin 0.5 *. 0.8 + dup 0.2 matscale
+    0.55 $44ccfff0 draw_sphere
 
     | --- CAPSULA - parada, gira lento en Y ---
     matini
     -3.5 0 0 matpos
-    0 msec 4 << 0 matrot
-    
+    0 msec 3 << msec 4 << matrot
     0.3 1.1 $88ff44f0 draw_capsule
 
     | --- CILINDRO - tumbado, rueda ---
     matini
     0 0 3.5 matpos
-    msec 3 << 0 msec 4 << matrot   | rueda sobre Z
+    msec 3 << 0 msec 4 << matrot
     0.35 0.9 $ffcc22f0 draw_cylinder
 
     | --- CONO - orbita vertical, apunta arriba ---
     matini
     msec 4 << sin 3.0 *. 0 msec 4 << cos 3.0 *. matpos
+	msec 2 << 0 msec 3 << matrot
     0.4 1.0 $ff44aaf8 draw_cone
 
     | --- DISCO - gira inclinado en el centro ---
@@ -154,7 +154,7 @@
     8 sh 48 - 500 40 frect
     $ffffffff 'fcolor !
     16 sh 40 - fat
-    "r3forth - IMPOSTORS: esfera capsula cilindro cono disco plano" ftext
+    "r3forth - Shapes" ftext
     fend
 
     GLUpdate

@@ -182,11 +182,10 @@ void main() {
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vTrans + world_n*0.0005;
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w*0.5 + 0.5;
-            vec3 tint    = vec3(float((vColorPk>>24)&0xFFu),
-                                float((vColorPk>>16)&0xFFu),
-                                float((vColorPk>> 8)&0xFFu)) / 255.0;
-            gNormal = world_n;
-            gAlbedo = vec4(tex.rgb * tint, float(vColorPk&0xFFu)/255.0);
+
+			gNormal = world_n;			
+			vec4 tint = unpackUnorm4x8(vColorPk).abgr;
+			gAlbedo = vec4(tex.rgb*tint.rgb, tint.a);
             return;
         }
         bvec3 m   = lessThanEqual(next_t, min(next_t.yzx, next_t.zxy));

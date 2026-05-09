@@ -48,17 +48,13 @@ layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
 void main(){
     gNormal = normalize(vNormal);
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
 | ============================================================
 | SHADER - ESFERA IMPOSTOR
 | ============================================================
-
 #shader_sphere "
 @vertex-----------------
 #version 440 core
@@ -67,15 +63,20 @@ layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
 uniform mat4  model;
 uniform float uRadius;
-out vec3  vRayDir; out vec3 vCenterView; out float vRadius;
+out vec3 vRayDir; out vec3 vCenterView; out float vRadius;
 void main(){
-    vec4 cv = view * model * vec4(0.0, 0.0, 0.0, 1.0);
-    vCenterView = cv.xyz;
+    vec3  ce = (view * model * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    vCenterView = ce;
     float wr = uRadius * length(vec3(model[0][0], model[1][0], model[2][0]));
     vRadius  = wr;
-    float d2    = dot(cv.xyz, cv.xyz);
-    float scale = wr * sqrt(d2 / max(d2 - wr * wr, 1e-6)) * 1.1;
-    vec3  qv    = cv.xyz + vec3(aPos.x, aPos.y, 0.0) * scale;
+    float d2    = dot(ce, ce);
+    float safe  = max(d2 - wr * wr, 1e-6);
+    float scale = wr * sqrt(d2 / safe);
+    vec3  cen = normalize(ce);
+    vec3  up  = abs(cen.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3  rx  = normalize(cross(up, cen));
+    vec3  ry  = cross(cen, rx);
+    vec3  qv  = ce + (rx * aPos.x + ry * aPos.y) * scale;
     vRayDir     = qv;
     gl_Position = proj * vec4(qv, 1.0);
 }
@@ -89,22 +90,19 @@ layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
 void main(){
     vec3  rd   = normalize(vRayDir);
-    vec3  oc   = -vCenterView;
-    float b    = dot(oc, rd);
-    float c    = dot(oc, oc) - vRadius * vRadius;
+    float b    = dot(vCenterView, rd);
+    float r2   = vRadius * vRadius;
+    float c    = dot(vCenterView, vCenterView) - r2;
     float disc = b * b - c;
     if (disc < 0.0) discard;
-    float t       = -b - sqrt(disc);
+    float t       = b - sqrt(disc);
     vec3  hitView = rd * t;
-    vec3  nView   = normalize(hitView - vCenterView);
+    vec3  nView   = (hitView - vCenterView) * (1.0 / vRadius);
     vec3  nWorld  = normalize((invView * vec4(nView, 0.0)).xyz);
     vec4  clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth  = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
@@ -125,17 +123,18 @@ uniform float uHeight;
 out vec3  vRayDir; out vec3 vAxisA; out vec3 vAxisB; out float vRadius;
 void main(){
     float halfH = uHeight * 0.5;
+    mat4  mv    = view * model;                    // precalcular view*model una vez
     vec3  sc    = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
     float wr    = uRadius * max(sc.x, sc.z);
     vRadius     = wr;
-    vAxisA      = (view * model * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
-    vAxisB      = (view * model * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
-    vec4  cv    = view * model * vec4(0.0, 0.0, 0.0, 1.0);
-    float d     = length(cv.xyz);
+    vAxisA      = (mv * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
+    vAxisB      = (mv * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
+    vec3  cv    = (mv * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    float d     = length(cv);
     float wh    = halfH * sc.y;
     float total = wh + wr;
-    float sc2   = (total + wr) / max(d - total, 0.01) * d * 1.15;
-    vec3  qv    = cv.xyz + vec3(aPos.x, aPos.y, 0.0) * sc2;
+    float sc2   = (total + wr) / max(d - total, wr * 0.01) * d * 1.15;
+    vec3  qv    = cv + vec3(aPos.x, aPos.y, 0.0) * sc2;
     vRayDir     = qv;
     gl_Position = proj * vec4(qv, 1.0);
 }
@@ -147,44 +146,51 @@ layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
-float hitSphere(vec3 rd, vec3 ce, float r){
-    vec3 oc = -ce; float b = dot(oc,rd); float c = dot(oc,oc)-r*r;
-    float d = b*b-c; if(d<0.0) return 1e9; return -b-sqrt(d);
+float hitSphere(vec3 rd, vec3 ce, float r2){
+    float b = dot(ce, rd);
+    float c = dot(ce, ce) - r2;
+    float d = b * b - c;
+    if(d < 0.0) return 1e9;
+    return b - sqrt(d);
 }
 void main(){
     vec3  rd  = normalize(vRayDir);
     vec3  ab  = vAxisB - vAxisA;
     float len = length(ab);
     vec3  ax  = ab / max(len, 1e-6);
+    float r2  = vRadius * vRadius;
     float tBest = 1e9; vec3 nBest = ax;
-    //| cilindro
-    vec3  rp = rd - dot(rd,ax)*ax;
-    vec3  op = -vAxisA - dot(-vAxisA, ax)*ax;
-    float a  = dot(rp,rp); float b = dot(rp,op);
-    float c  = dot(op,op) - vRadius*vRadius;
-    float disc = b*b - a*c;
+    float rdax = dot(rd, ax);
+    vec3  rp   = rd - rdax * ax;
+    vec3  oA   = -vAxisA;
+    float oAax = dot(oA, ax);
+    vec3  op   = oA - oAax * ax;
+    float a    = dot(rp, rp);
+    float b    = dot(rp, op);
+    float c    = dot(op, op) - r2;
+    float disc = b * b - a * c;
     if(disc >= 0.0 && a > 1e-6){
         float t = (-b - sqrt(disc)) / a;
         if(t > 0.0){
-            vec3  hit = rd*t; float p = dot(hit - vAxisA, ax);
-            if(p >= 0.0 && p <= len){ tBest = t; nBest = normalize(hit - vAxisA - ax*p); }
+            vec3  hit = rd * t;
+            float p   = dot(hit - vAxisA, ax);
+            if(p >= 0.0 && p <= len){
+                tBest = t;
+                nBest = (hit - vAxisA - ax * p) * (1.0 / vRadius);
+            }
         }
     }
-    //| caps esfericas
-    float tA = hitSphere(rd, vAxisA, vRadius);
-    if(tA < tBest && tA > 0.0){ tBest = tA; nBest = normalize(rd*tA - vAxisA); }
-    float tB = hitSphere(rd, vAxisB, vRadius);
-    if(tB < tBest && tB > 0.0){ tBest = tB; nBest = normalize(rd*tB - vAxisB); }
+    float tA = hitSphere(rd, vAxisA, r2);
+    if(tA < tBest && tA > 0.0){ tBest = tA; nBest = (rd * tA - vAxisA) * (1.0 / vRadius); }
+    float tB = hitSphere(rd, vAxisB, r2);
+    if(tB < tBest && tB > 0.0){ tBest = tB; nBest = (rd * tB - vAxisB) * (1.0 / vRadius); }
     if(tBest >= 1e8) discard;
     vec3 hitView = rd * tBest;
     vec3 nWorld  = normalize((invView * vec4(nBest, 0.0)).xyz);
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
@@ -205,15 +211,16 @@ uniform float uHeight;
 out vec3  vRayDir; out vec3 vAxisA; out vec3 vAxisB; out float vRadius;
 void main(){
     float halfH = uHeight * 0.5;
+    mat4  mv    = view * model;                    // precalcular view*model una vez
     vec3  sc    = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
     vRadius     = uRadius * max(sc.x, sc.z);
-    vAxisA      = (view * model * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
-    vAxisB      = (view * model * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
-    vec4  cv    = view * model * vec4(0.0, 0.0, 0.0, 1.0);
-    float d     = length(cv.xyz);
+    vAxisA      = (mv * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
+    vAxisB      = (mv * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
+    vec3  cv    = (mv * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    float d     = length(cv);
     float wh    = halfH * sc.y; float total = wh + vRadius;
-    float sc2   = (total + vRadius) / max(d - total, 0.01) * d * 1.15;
-    vec3  qv    = cv.xyz + vec3(aPos.x, aPos.y, 0.0) * sc2;
+    float sc2   = (total + vRadius) / max(d - total, vRadius * 0.01) * d * 1.15;
+    vec3  qv    = cv + vec3(aPos.x, aPos.y, 0.0) * sc2;
     vRayDir     = qv;
     gl_Position = proj * vec4(qv, 1.0);
 }
@@ -230,32 +237,39 @@ void main(){
     vec3  ab  = vAxisB - vAxisA;
     float len = length(ab);
     vec3  ax  = ab / max(len, 1e-6);
+    float r2  = vRadius * vRadius;
     float tBest = 1e9; vec3 nBest = ax;
-    // cuerpo
-    vec3  rp = rd - dot(rd,ax)*ax;
-    vec3  op = -vAxisA - dot(-vAxisA,ax)*ax;
-    float a  = dot(rp,rp); float b = dot(rp,op);
-    float c  = dot(op,op) - vRadius*vRadius;
-    float disc = b*b - a*c;
+    float rdax = dot(rd, ax);
+    vec3  oA   = -vAxisA;
+    float oAax = dot(oA, ax);
+    vec3  rp   = rd - rdax * ax;
+    vec3  op   = oA - oAax * ax;
+    float a    = dot(rp, rp);
+    float b    = dot(rp, op);
+    float c    = dot(op, op) - r2;
+    float disc = b * b - a * c;
     if(disc >= 0.0 && a > 1e-6){
         float t = (-b - sqrt(disc)) / a;
         if(t > 0.0){
-            vec3 hit = rd*t; float p = dot(hit - vAxisA, ax);
-            if(p >= 0.0 && p <= len){ tBest = t; nBest = normalize(hit - vAxisA - ax*p); }
+            vec3  hit = rd * t;
+            float p   = dot(hit - vAxisA, ax);
+            if(p >= 0.0 && p <= len){
+                tBest = t;
+                nBest = (hit - vAxisA - ax * p) * (1.0 / vRadius);
+            }
         }
     }
-    // caps planas
-    float dA = dot(rd, ax);
-    if(abs(dA) > 1e-6){
-        float t = dot(vAxisA, ax) / dA;
-        if(t > 0.0 && t < tBest){
-            vec3 hit = rd*t;
-            if(length(hit - vAxisA) <= vRadius){ tBest = t; nBest = -ax; }
+    if(abs(rdax) > 1e-6){
+        float invDA = 1.0 / rdax;
+        float tCap  = dot(vAxisA, ax) * invDA;
+        if(tCap > 0.0 && tCap < tBest){
+            vec3 dif = rd * tCap - vAxisA;
+            if(dot(dif, dif) <= r2){ tBest = tCap; nBest = -ax; }
         }
-        t = dot(vAxisB, ax) / dA;
-        if(t > 0.0 && t < tBest){
-            vec3 hit = rd*t;
-            if(length(hit - vAxisB) <= vRadius){ tBest = t; nBest = ax; }
+        tCap = dot(vAxisB, ax) * invDA;
+        if(tCap > 0.0 && tCap < tBest){
+            vec3 dif = rd * tCap - vAxisB;
+            if(dot(dif, dif) <= r2){ tBest = tCap; nBest = ax; }
         }
     }
     if(tBest >= 1e8) discard;
@@ -264,10 +278,7 @@ void main(){
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
@@ -288,16 +299,17 @@ uniform float uHeight;
 out vec3  vRayDir; out vec3 vApex; out vec3 vBase; out float vRadius; out float vHeight;
 void main(){
     float halfH = uHeight * 0.5;
+    mat4  mv    = view * model;                    // precalcular view*model una vez
     vec3  sc    = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
     vRadius     = uRadius * max(sc.x, sc.z);
     vHeight     = uHeight * sc.y;
-    vApex       = (view * model * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
-    vBase       = (view * model * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
-    vec4  cv    = view * model * vec4(0.0, 0.0, 0.0, 1.0);
-    float d     = length(cv.xyz);
+    vApex       = (mv * vec4(0.0,  halfH, 0.0, 1.0)).xyz;
+    vBase       = (mv * vec4(0.0, -halfH, 0.0, 1.0)).xyz;
+    vec3  cv    = (mv * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    float d     = length(cv);
     float total = vHeight * 0.5 + vRadius;
-    float sc2   = (total + vRadius) / max(d - total, 0.01) * d * 1.2;
-    vec3  qv    = cv.xyz + vec3(aPos.x, aPos.y, 0.0) * sc2;
+    float sc2   = (total + vRadius) / max(d - total, vRadius * 0.01) * d * 1.2;
+    vec3  qv    = cv + vec3(aPos.x, aPos.y, 0.0) * sc2;
     vRayDir     = qv;
     gl_Position = proj * vec4(qv, 1.0);
 }
@@ -315,36 +327,46 @@ void main(){
     float len = length(ab);
     vec3  ax  = ab / max(len, 1e-6);
     float k   = vRadius / max(vHeight, 1e-6);
+    float k2  = k * k;
     float tBest = 1e9; vec3 nBest = ax;
-    // superficie del cono (cuadrica)
     vec3  co  = -vApex;
-    float rdd = dot(rd, ax); float coo = dot(co, ax);
-    float A   = dot(rd,rd) - (1.0+k*k)*rdd*rdd;
-    float B   = dot(rd,co) - (1.0+k*k)*rdd*coo;
-    float C   = dot(co,co) - (1.0+k*k)*coo*coo;
-    float disc = B*B - A*C;
+    float rdd = dot(rd, ax);
+    float coo = dot(co, ax);
+    float kk1 = 1.0 + k2;
+    float A   = dot(rd, rd) - kk1 * rdd * rdd;
+    float B   = dot(rd, co) - kk1 * rdd * coo;
+    float C   = dot(co, co) - kk1 * coo * coo;
+    float disc = B * B - A * C;
     if(disc >= 0.0 && abs(A) > 1e-6){
         float sq = sqrt(disc);
-        for(int i=0; i<2; i++){
-            float t = (i==0) ? (-B-sq)/A : (-B+sq)/A;
-            if(t > 0.0 && t < tBest){
-                vec3  hit  = rd*t;
-                float p    = dot(hit - vApex, ax);
-                if(p >= 0.0 && p <= len){
-                    vec3 lat = hit - vApex - ax*p;
-                    vec3 nv  = normalize(lat - ax*(k*length(lat)));
-                    tBest = t; nBest = nv;
-                }
+        float invA = 1.0 / A;
+        float t0 = (-B - sq) * invA;
+        if(t0 > 0.0){
+            vec3  hit = rd * t0;
+            float p   = dot(hit - vApex, ax);
+            if(p >= 0.0 && p <= len){
+                vec3 lat = hit - vApex - ax * p;
+                vec3 nv  = normalize(lat * vHeight - ax * (vRadius * length(lat)));
+                tBest = t0; nBest = nv;
+            }
+        }
+        float t1 = (-B + sq) * invA;
+        if(t1 > 0.0 && t1 < tBest){
+            vec3  hit = rd * t1;
+            float p   = dot(hit - vApex, ax);
+            if(p >= 0.0 && p <= len){
+                vec3 lat = hit - vApex - ax * p;
+                vec3 nv  = normalize(lat * vHeight - ax * (vRadius * length(lat)));
+                tBest = t1; nBest = nv;
             }
         }
     }
-    // cap base plana
-    float dA = dot(rd, ax);
-    if(abs(dA) > 1e-6){
-        float t = dot(vBase, ax) / dA;
+    // cap base plana — dot² evita sqrt
+    if(abs(rdd) > 1e-6){
+        float t = dot(vBase, ax) / rdd;
         if(t > 0.0 && t < tBest){
-            vec3 hit = rd*t;
-            if(length(hit - vBase) <= vRadius){ tBest = t; nBest = -ax; }
+            vec3 dif = rd * t - vBase;
+            if(dot(dif, dif) <= vRadius * vRadius){ tBest = t; nBest = -ax; }
         }
     }
     if(tBest >= 1e8) discard;
@@ -353,10 +375,7 @@ void main(){
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
@@ -375,15 +394,16 @@ uniform mat4  model;
 uniform float uRadius;
 out vec3  vRayDir; out vec3 vCenter; out vec3 vNormalV; out float vRadius;
 void main(){
-    vec3 sc  = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
-    vRadius  = uRadius * max(sc.x, sc.z);
-    vec4 cv  = view * model * vec4(0.0, 0.0, 0.0, 1.0);
-    vCenter  = cv.xyz;
-    vNormalV = normalize((view * model * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
-    float d  = length(cv.xyz);
-    float sc2 = (vRadius + 0.01) / max(d - vRadius, 0.01) * d * 1.2;
-    vec3  qv  = cv.xyz + vec3(aPos.x, aPos.y, 0.0) * sc2;
-    vRayDir   = qv;
+    mat4  mv    = view * model;                    // precalcular view*model una vez
+    vec3  sc    = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
+    vRadius     = uRadius * max(sc.x, sc.z);
+    vec3  cv    = (mv * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    vCenter     = cv;
+    vNormalV    = normalize((mv * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+    float d     = length(cv);
+    float sc2   = (vRadius + 0.01) / max(d - vRadius, vRadius * 0.01) * d * 1.2;
+    vec3  qv    = cv + vec3(aPos.x, aPos.y, 0.0) * sc2;
+    vRayDir     = qv;
     gl_Position = proj * vec4(qv, 1.0);
 }
 @fragment---------------
@@ -398,19 +418,17 @@ void main(){
     vec3  rd = normalize(vRayDir);
     float dN = dot(rd, vNormalV);
     if(abs(dN) < 1e-6) discard;
-    float t  = dot(vCenter, vNormalV) / dN;
+    float t   = dot(vCenter, vNormalV) / dN;
     if(t <= 0.0) discard;
-    vec3  hit = rd * t;
-    if(length(hit - vCenter) > vRadius) discard;
+    vec3 hit  = rd * t;
+    vec3 dif  = hit - vCenter;
+    if(dot(dif, dif) > vRadius * vRadius) discard;    // dot² elimina sqrt
     vec3  nv     = (dN < 0.0) ? vNormalV : -vNormalV;
     vec3  nWorld = normalize((invView * vec4(nv, 0.0)).xyz);
     vec4  clip   = proj * vec4(hit, 1.0);
     gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
@@ -430,12 +448,14 @@ uniform mat4  model;
 uniform float uRadius;
 out vec3 vRayDir; out vec3 vCenter; out vec3 vNormalV; out float vHalfSize;
 void main(){
-    vec3 sc   = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
-    vHalfSize = (uRadius > 0.001) ? uRadius * max(sc.x, sc.z) : 500.0;
-    vCenter   = (view * model * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-    vNormalV  = normalize((view * model * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+    mat4  mv    = view * model;                    // precalcular view*model una vez
+    vec3  sc    = vec3(length(model[0].xyz), length(model[1].xyz), length(model[2].xyz));
+    vHalfSize   = (uRadius > 0.001) ? uRadius * max(sc.x, sc.z) : 500.0;
+    vCenter     = (mv * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    vNormalV    = normalize((mv * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
     gl_Position = vec4(aPos.x, aPos.y, 0.9999, 1.0);
-    vRayDir     = (invProj * vec4(aPos.x, aPos.y, 1.0, 1.0)).xyz;
+    vec4 tmp    = invProj * vec4(aPos.x, aPos.y, 1.0, 1.0);
+    vRayDir     = tmp.xyz / tmp.w;
 }
 @fragment---------------
 #version 440 core
@@ -454,17 +474,19 @@ void main(){
     vec3 hit = rd * t;
     vec3 rel = hit - vCenter;
     if(vHalfSize < 499.0){
-        if(abs(rel.x) > vHalfSize || abs(rel.y) > vHalfSize) discard;
+        vec3 tangent   = normalize(abs(vNormalV.x) < 0.9
+                                   ? cross(vNormalV, vec3(1.0, 0.0, 0.0))
+                                   : cross(vNormalV, vec3(0.0, 1.0, 0.0)));
+        vec3 bitangent = cross(vNormalV, tangent);
+        if(abs(dot(rel, tangent))   > vHalfSize) discard;
+        if(abs(dot(rel, bitangent)) > vHalfSize) discard;
     }
     vec3  nv     = (dN < 0.0) ? vNormalV : -vNormalV;
     vec3  nWorld = normalize((invView * vec4(nv, 0.0)).xyz);
     vec4  clip   = proj * vec4(hit, 1.0);
     gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
     gNormal = nWorld;
-    gAlbedo = vec4(float((uPackColor>>24)&0xFFu),
-                   float((uPackColor>>16)&0xFFu),
-                   float((uPackColor>> 8)&0xFFu),
-                   float( uPackColor     &0xFFu)) / 255.0;
+    gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
 @-----------------------"
 
