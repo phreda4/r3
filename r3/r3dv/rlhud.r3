@@ -130,7 +130,7 @@ void main() {
 
 |---------------------------------------
 | imgload | "" -- idx
-
+#idx_img
 #img_surface
 
 :imgsrf>wh
@@ -154,9 +154,7 @@ void main() {
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
 
 	| store w, h as int32 in imgsizes[idx]
-	imgsrf>wh swap
-	|2dup "%d %d" .println
-	'imgsizes imgcount 8 * + d!+ d!
+	imgsrf>wh swap 'imgsizes imgcount 8 * + d!+ d!
 
 	img_surface SDL_FreeSurface
 	imgcount
@@ -167,6 +165,10 @@ void main() {
 | pack two int16 into one int32: lo hi -- int32
 :p16 | lo hi -- int32
 	16 << swap $ffff and or ;
+:px+
+	$ffff and + ;
+:py+
+	$ffff0000 and + ;
 
 #xt 0 #yt 0
 
@@ -181,19 +183,36 @@ void main() {
 	ws fscale * 'xs +!
 	;
 
+|------- state 
+#sf 0
+
+:statefont
+	sf 1 =? ( drop ; ) drop 
+	1 'sf !
+	fontshader glUseProgram
+	unifont 0 glUniform1i
+	unipro 1 0 'fwintext glUniformMatrix4fv
+	GL_TEXTURE0 glActiveTexture
+	GL_TEXTURE_2D fontTexture glBindTexture
+	;
+
+:stateimg | --
+	sf 2 =? ( drop ; ) drop 
+	2 'sf !
+	imgshader glUseProgram
+	img_unipro 1 0 'fwintext glUniformMatrix4fv
+	img_unitex 0 glUniform1i
+	GL_TEXTURE0 glActiveTexture
+	;
+	
+	
 ::fini
 	GL_DEPTH_TEST glDisable
 	GL_CULL_FACE glDisable
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	0 0 sw sh glViewport
-
-	fontshader glUseProgram
-	unifont 0 glUniform1i
-	unipro 1 0 'fwintext glUniformMatrix4fv
-
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D fontTexture glBindTexture
+	0 'sf !
 	;
 
 ::fend
@@ -206,6 +225,7 @@ void main() {
 	'ys ! 'xs ! ;
 
 ::ftext | "" --
+	statefont
 	ab[
 	unicolor fcolor glUniform1i
 	unimode 0 glUniform1i
@@ -233,6 +253,7 @@ void main() {
 	8 * fscale * fscale 16 * ;
 
 :sdraw | mode nverts --
+	statefont
 	unicolor fcolor glUniform1i
 	unimode 1 glUniform1i
 	fvt glBindVertexArray
@@ -264,10 +285,10 @@ void main() {
 	pick3 b> + pick3      p16 da!+  0 da!+
 	over b> -  pick3      p16 da!+  0 da!+
 	over       pick3 b> + p16 da!+  0 da!+
-	over       over b> -   p16 da!+  0 da!+
-	over b> -  over        p16 da!+  0 da!+
-	pick3 b> + over        p16 da!+  0 da!+
-	pick3      over b> -   p16 da!+  0 da!+
+	over       over b> -  p16 da!+  0 da!+
+	over b> -  over       p16 da!+  0 da!+
+	pick3 b> + over       p16 da!+  0 da!+
+	pick3      over b> -  p16 da!+  0 da!+
 	pick3      pick3 b> + p16 da!+  0 da!+
 	4drop ;
 
@@ -279,32 +300,22 @@ void main() {
 
 |---------------------------------------
 | image drawing
-
-#idx_img
-#dx_img #dy_img #dw_img #dh_img
-#sx_img #sy_img #sw_img #sh_img
+#dxy_img #dwh_img #sxy_img #swh_img
 
 :gimgquad | -- builds 6 verts into buffer using img vars
-	dx_img dy_img p16 da!+              sx_img sy_img p16 da!+
-	dx_img dw_img + dy_img p16 da!+     sx_img sw_img + sy_img p16 da!+
-	dx_img dw_img + dy_img dh_img + p16 da!+  sx_img sw_img + sy_img sh_img + p16 da!+
-	dx_img dy_img p16 da!+              sx_img sy_img p16 da!+
-	dx_img dw_img + dy_img dh_img + p16 da!+  sx_img sw_img + sy_img sh_img + p16 da!+
-	dx_img dy_img dh_img + p16 da!+     sx_img sy_img sh_img + p16 da!+
-	;
-
-:imgswitch | --
-	imgshader glUseProgram
-	img_unipro 1 0 'fwintext glUniformMatrix4fv
-	img_unitex 0 glUniform1i
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D idx_img 4 * 'imgtextures + d@ glBindTexture
-	img_unisize 1 idx_img 8 * 'imgsizes + glUniform2iv
+	dxy_img da!+              sxy_img da!+
+	dxy_img dwh_img px+ da!+  sxy_img swh_img px+ da!+
+	dxy_img dwh_img + da!+    sxy_img swh_img + da!+
+	dxy_img da!+              sxy_img da!+
+	dxy_img dwh_img + da!+    sxy_img swh_img + da!+
+	dxy_img dwh_img py+ da!+  sxy_img swh_img py+ da!+
 	;
 
 :imgdoraw | --
+	stateimg
+	GL_TEXTURE_2D idx_img 4 * 'imgtextures + d@ glBindTexture
+	img_unisize 1 idx_img 8 * 'imgsizes + glUniform2iv
 	ab[
-	imgswitch
 	here >a
 	gimgquad
 	a> here -
@@ -313,21 +324,15 @@ void main() {
 	GL_ARRAY_BUFFER over here GL_STREAM_DRAW glBufferData
 	GL_TRIANGLES 0 rot 3 >> glDrawArrays
 	0 glBindVertexArray
-
-	| restore font shader
-	fontshader glUseProgram
-	unifont 0 glUniform1i
-	unipro 1 0 'fwintext glUniformMatrix4fv
-	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D fontTexture glBindTexture
 	]ba
 	;
 
 | imgdrawuv | idx dx dy dw dh sx sy sw sh --
 | Draw partial image: src region in pixels, dest rect on screen
 ::imgdrawuv | idx dx dy dw dh sx sy sw sh --
-	'sh_img ! 'sw_img ! 'sy_img ! 'sx_img !
-	'dh_img ! 'dw_img ! 'dy_img ! 'dx_img !
+	p16 'swh_img ! p16 'sxy_img ! 
+	p16 'dwh_img ! p16 'dxy_img ! 
+	
 	'idx_img !
 	imgdoraw
 	;
@@ -335,12 +340,10 @@ void main() {
 | imgdraw | idx dx dy dw dh --
 | Draw full image scaled to dest rect
 ::imgdraw | idx dx dy dw dh --
-	'dh_img ! 'dw_img ! 'dy_img ! 'dx_img !
+	p16 'dwh_img ! p16 'dxy_img ! 
 	'idx_img !
-	0 'sx_img !
-	0 'sy_img !
-	idx_img 8 * 'imgsizes + 
-	d@+ 'sw_img ! d@ 'sh_img !
-|	sh_img sw_img "%d %d" .println
+
+	0 'sxy_img !
+	idx_img 8 * 'imgsizes + d@+ swap d@ p16 'swh_img !
 	imgdoraw
 	;
