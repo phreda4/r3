@@ -109,7 +109,7 @@ void main() {
 	dup "fgmode"        glGetUniformLocation 'unimode !
 	'fontshader !
 
-	"media/img/VGA8x16.png" glImgFnt 'fontTexture !
+	"media/img/VGA8x16.png" glLoadImg 'fontTexture !
 
 	'img_shader loadShaderv
 	dup "u_ImgTexture" glGetUniformLocation 'img_unitex !
@@ -131,32 +131,13 @@ void main() {
 |---------------------------------------
 | imgload | "" -- idx
 #idx_img
-#img_surface
-
-:imgsrf>wh
-	img_surface dup 16 + d@ swap 20 + d@ ;
-
-:imgsrf>pix
-	img_surface 32 + @ ;
 
 ::fimgload | "" -- idx
-	IMG_Load 'img_surface !
-
-	| gen texture and upload
-	'imgtextures imgcount 4 * +
-	1 over glGenTextures
-	d@ GL_TEXTURE_2D over glBindTexture
-
-	GL_TEXTURE_2D 0 GL_RGBA imgsrf>wh 0 pick3 GL_UNSIGNED_BYTE imgsrf>pix glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
-
-	| store w, h as int32 in imgsizes[idx]
-	imgsrf>wh swap 'imgsizes imgcount 8 * + d!+ d!
-
-	img_surface SDL_FreeSurface
+	glLoadImg
+	dup $ffff and 'imgtextures imgcount 4 * + d!
+	32 >> 
+	dup 16 >> swap $ffff and 
+	'imgsizes imgcount 8 * + d!+ d!
 	imgcount
 	1 'imgcount +!
 	;
@@ -190,7 +171,7 @@ void main() {
 	unifont 0 glUniform1i
 	unipro 1 0 'fwintext glUniformMatrix4fv
 	GL_TEXTURE0 glActiveTexture
-	GL_TEXTURE_2D fontTexture glBindTexture
+	GL_TEXTURE_2D fontTexture $ffff and glBindTexture
 	;
 
 :stateimg | --

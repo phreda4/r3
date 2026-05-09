@@ -135,30 +135,16 @@ void main(){
 	;
 
 #atlasimgsize 0
-#pl_surface
-
-:imgtex>wh  
-	pl_surface dup 16 + d@ swap 20 + d@ ;
-	
-:imgtex>pix 
-	pl_surface 32 + @ ;
 
 ::rl_3datlas | "" --
-	IMG_Load 'pl_surface !
-	
-	1 'pl_atlas_tex glGenTextures
-	GL_TEXTURE_2D pl_atlas_tex glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA imgtex>wh 0 pick3 GL_UNSIGNED_BYTE imgtex>pix glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
-
-	pl_atlas_tex imgtex>wh 1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
-	pl_surface SDL_FreeSurface 0 'pl_surface !
+	glLoadImg 
+	dup $ffff and 'pl_atlas_tex !
+	32 >> dup $ffff and swap 16 >> 
+	1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
 	
 	rl_sh_planes glUseProgram
 	pl_u_atlassize 1 'atlasimgsize glUniform2fv ;
+	;
 
 ::rl_3datlas_reload | "" --
 	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop

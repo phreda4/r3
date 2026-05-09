@@ -43,7 +43,7 @@
     | --- PLANO INFINITO (fondo/suelo) ---
     matini
     0 -0.8 0 matpos
-    0.0 $33441100 draw_plane   | 0 = infinito
+    2.0 $33441100 draw_plane   | 0 = infinito
 
     | --- CUBO - gira sobre si mismo, posicion fija ---
     matini

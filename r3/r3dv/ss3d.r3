@@ -197,7 +197,6 @@ void main() {
 }
 @-----"
 
-#imgtex
 ##defspr
 #defind
 #ssaendfile
@@ -231,9 +230,6 @@ void main() {
 	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
 	;
 
-:imgtex>wh  imgtex dup 16 + d@ swap 20 + d@ ;
-:imgtex>pix imgtex 32 + @ ;
-
 #maxsize #nowsize
 :cheksize nowsize maxsize >? ( 'maxsize ! ; ) drop ;
 
@@ -244,18 +240,8 @@ void main() {
 	over "%s.ssa" sprint load
 	dup 'ssaendfile !
 	'here !
-	"%s.png" sprint IMG_load 'imgtex !
-
-	1 'atlas_tex glGenTextures
-	GL_TEXTURE_2D atlas_tex glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA imgtex>wh 0 GL_RGBA GL_UNSIGNED_BYTE imgtex>pix glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D 0 glBindTexture
-	imgtex SDL_FreeSurface
-
+	"%s.png" sprint glLoadImg 'atlas_tex !
+	
 	3dss_array d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
 	w@+ 'n3dsprites !
 	here dup 'defspr ! >a
@@ -356,7 +342,7 @@ void main() {
 		) drop
 
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
-	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex glBindTexture
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex $ffff and glBindTexture
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_1D idx_tex glBindTexture
 
 	GL_DEPTH_TEST glEnable

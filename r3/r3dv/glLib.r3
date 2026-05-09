@@ -270,45 +270,32 @@
 	;
 |--------------------------------
 #surface
-##glimgw
-##glimgh
 
-:Surface->w surface 16 + d@ ;
-:Surface->h surface 20 + d@ ;
 :Surface->p surface 24 + d@ ;
 :Surface->pixels surface 32 + @ ;
+:Surface->wh surface dup 16 + d@ swap 20 + d@ ;
+
 :GLBPP 
 	surface 8 + @ 16 + c@
 	32 =? ( drop GL_RGBA ; ) 
 	24 =? ( drop GL_RGB ; )
 	drop GL_RED ;
 
-::glImgFnt | "" -- t
+::glLoadImg | "" -- t
+	IMG_Load 'Surface !
 	1 't glGenTextures
-    GL_TEXTURE_2D t glBindTexture IMG_Load 'Surface !
-	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+    GL_TEXTURE_2D t glBindTexture 
+	GL_TEXTURE_2D 0 GLBPP Surface->wh 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri	
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE  glTexParameteri
+	Surface->wh
 	Surface SDL_FreeSurface
-	t ;		
-
+	16 << or 32 << t or ;
 
 :isPowerOf2 | dim -- 0=is^2
 	dup 1 - and ;
-	
-::glImgTex | "" -- texid
-	1 't glGenTextures
-    GL_TEXTURE_2D t glBindTexture
-	IMG_Load 'Surface !
-	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-	Surface->w 'glimgw !
-	Surface->h 'glimgh !
-	Surface SDL_FreeSurface
-	t ;	
 	
 ::glColorTex | col -- texid
 	'f d!
