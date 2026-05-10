@@ -137,20 +137,34 @@
     drop
 	;
 
+:ss3dh | n -- s
+	;
+	
 #ns 0
 :load3d
 	"media/ss/sprites" 512 ss3dload
-	-2.0 ( 2.0 <?
-		-2.0 ( 2.0 <?
+	-3.0 ( 3.0 <?
+		-3.0 ( 3.0 <?
 		
-		over 0 pick2
+		over 
+		0
+		|ns 80 + ss3dinfo .Ly 4.0 *.
+		pick2
 		$0 rxyz>q16
-		4.0 $ffffff00 ns 97 + ns 
+		4.0 $ffffff00 ns 80 + ns 
 		ss3dset | x y z qxyzw scale color spr i --
 		1 'ns +!
 		
 			1.0 + ) drop
 		1.0 + ) drop
+		
+		defspr >a
+	0 ( n3dsprites <?
+		a@+ over "%d. %h | " .print
+		1+
+		$3 nand? ( "" .println )
+		) drop 
+	
 	;
 	
 :viewresize 

@@ -1,4 +1,4 @@
-# assets\sprites.map — 116 sprites
+# assets/sprites.map — 116 sprites
 # idx  name                                         tile     slice    z-frames  offset
 [  0]  atascii_001                                     8x8      2x6        1  0
 [  1]  atascii_002                                     8x8      6x3        1  1

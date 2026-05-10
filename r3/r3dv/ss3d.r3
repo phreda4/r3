@@ -198,7 +198,7 @@ void main() {
 @-----"
 
 ##defspr
-#defind
+|#defind
 #ssaendfile
 
 |----GPU
@@ -230,65 +230,66 @@ void main() {
 	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
 	;
 
+|====== calc max step size
 #maxsize #nowsize
 :cheksize nowsize maxsize >? ( 'maxsize ! ; ) drop ;
 
 ::ss3dload | "file" instances --
 	'3dss_max !
 	build_bbox
-	here dup '3dss_array !
-	over "%s.ssa" sprint load
-	dup 'ssaendfile !
-	'here !
-	"%s.png" sprint glLoadImg 'atlas_tex !
-	
-	3dss_array d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
+|====== load image
+	dup "%s.png" sprint glLoadImg 'atlas_tex !
+|====== load map
+	here swap "%s.ssa" sprint load 'ssaendfile !
+|====== map for sprites	
+	here
+	d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
 	w@+ 'n3dsprites !
-	here dup 'defspr ! >a
+	dup 'defspr !
 	0 'maxsize !
 	n3dsprites ( 1? 1- >r
 		d@+
-		dup 8 >> $ff and  dup 'nowsize !
-		16 << swap $ff and dup 'nowsize +!
-		or da!+
+		dup 16 >>> 'nowsize ! | LX
+		$ffff and 'nowsize +! | LZ
 		d@+
-		dup 16 >> $ffff and 'nowsize +!
-		da!+
+		16 >> $ffff and 'nowsize +! | LY
 		cheksize
 		r> ) drop
-	'defind !
-
+	'here !
+|====== sprite definition
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
 	GL_SHADER_STORAGE_BUFFER n3dsprites 8 * defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-
+|====== index map
 	1 'idx_tex glGenTextures
 	GL_TEXTURE_1D idx_tex glBindTexture
-	GL_TEXTURE_1D 0 GL_R16UI ssaendfile defind - 0 GL_RED_INTEGER GL_UNSIGNED_SHORT defind glTexImage1D
+	GL_TEXTURE_1D 0 GL_R16UI ssaendfile here - 0 GL_RED_INTEGER GL_UNSIGNED_SHORT here glTexImage1D
 	GL_TEXTURE_1D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_1D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_1D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
 	GL_TEXTURE_1D 0 glBindTexture
-
-	3dss_max 32 * 'here +!			| 32 bytes por instancia
+|====== instance mem
 	1 'ssbo_inst glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 	GL_SHADER_STORAGE_BUFFER 3dss_max 32 * 0 GL_DYNAMIC_DRAW glBufferData
 	GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-
-	$FFFF 'dirty_min ! 0 'dirty_max !
-
+|====== patch shader
 	'ss3d_shader_src "0000" findstr
 	maxsize .d 4 .r. 4 cmove | patch shader
-
+|====== compile shader
 	'ss3d_shader_src loadShaderv 'ss3d_shader !
 	ss3d_shader glUseProgram
 	ss3d_shader "uAlb"    glGetUniformLocation 0 glUniform1i
 	ss3d_shader "uIdxBuf" glGetUniformLocation 3 glUniform1i
 	0 glUseProgram
+|====== reserve mem for instance
+	here '3dss_array !
+	3dss_max 32 * 'here +!			| 32 bytes por instancia
+	$FFFF 'dirty_min ! 
+	0 'dirty_max !	
 	0 'ss3d_inst !
 	;
 
@@ -471,6 +472,10 @@ void main() {
 	rot da!+ swap da!+ da! 
 	]ba ;
 	
-	
 ::ss3dreset  
 	0 'ss3d_inst ! ;
+	
+::ss3dinfo | n -- s
+	3 << defspr + @ ;
+::.Ly
+	32 >> $ffff and ;
