@@ -21,10 +21,10 @@
 	-25.0 25.0 randminmax
 	$ffff randmax 16 << rxyz>q16
 	8.0
-	$ffffff00
 	23 32 randminmax
+	$ffffff00
 	objnro
-	ss3dset | x y z qxyzw scale color spr i --
+	ss3dset | x y z qxyzw scale spr color i --
 	1 'objnro +!
 	;
 
@@ -143,8 +143,9 @@
 	prot 0.25 + 2/
 	$ffff and 16 << rxyz>q16 
 	
-	5.0	$ffffff00 
+	5.0	
 	msec 8 >> $3 and 'walk + c@ 
+	$ffffff00 
 	0 ss3dset
 
 	1.4 

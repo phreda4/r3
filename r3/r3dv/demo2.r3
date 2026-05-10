@@ -16,39 +16,22 @@
 #mouse_y   0
 #mouse_btn 0
 
-:drawsprites
-	msec 4 << sin 0.5 +  0  over neg
-	msec 5 << $ffff and 16 << 
-	4.0 8 >> 48 << or
-	$ffffff00 
-	msec 11 >> $f and
-	0 ss3dset
-	
-	0 msec 3 << sin dup
-	4.0 8 >> 48 << 
-	$ffffff00
-	msec 18 >> $1f and 
-	1 ss3dset | x y z rxyz scale color spr i --	
-	
-	
-	;
 
-#col
 :drawscene
-	matini 10.0 .1 10.0 matscale 0 -0.6 0 matpos 
+	matini 10.0 .1 10.0 matscale 0 -0.1 0 matpos 
 	$5a5a5a20 draw_cube 
 	
-	1 'col +!
+	msec 4 << sin 3.0 + | scale >
 	
-	|drawsprites	
-	msec 4 << sin 2.0 + 97 $ffffff00 0 ss3dcs
-	|::ss3dcs | scale spr color i --
-	|msec 4 << sin 2.0 + 0 $ffffff00 
-	0.125 rxyz>q16 1 ss3dqua
+	dup | < scale
+	97 
+	$ffffff00 
+	0 ss3dcs | scale spr color i --
 	
-	msec 3 << $ffff and 16 << 
-	msec 2 << $ffff and or
-	rxyz>q16 2 ss3dqua
+	-2.5
+	swap 97 ss3dfloor | < scale
+	-2.5
+	0 ss3dxyz | x y z i
 	
 	SS3Ddraw
 	;
@@ -79,7 +62,7 @@
 
 #fsun [ 
 -0.5 -1.0 -0.5 0
- 1.0 0.9 0.8 0.2
+ 1.0 0.9 0.8 1.2
  ]
 	   
 :luz
@@ -146,25 +129,18 @@
 	-3.0 ( 3.0 <?
 		-3.0 ( 3.0 <?
 		
-		over 
-		0
-		|ns 80 + ss3dinfo .Ly 4.0 *.
-		pick2
+		over 0.5 +
+		4.0 ns 80 + ss3dfloor | apoyado en el piso
+		
+		pick2 0.5 +
 		$0 rxyz>q16
-		4.0 $ffffff00 ns 80 + ns 
-		ss3dset | x y z qxyzw scale color spr i --
+		4.0 ns 80 + $ffffff00 
+		ns 
+		ss3dset | x y z qxyzw scale spr color i --
 		1 'ns +!
 		
 			1.0 + ) drop
-		1.0 + ) drop
-		
-		defspr >a
-	0 ( n3dsprites <?
-		a@+ over "%d. %h | " .print
-		1+
-		$3 nand? ( "" .println )
-		) drop 
-	
+		1.0 + ) drop		
 	;
 	
 :viewresize 

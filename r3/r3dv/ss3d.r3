@@ -433,12 +433,12 @@ void main() {
 |    int  qzw;       // int16 qz (lo) | int16 qw (hi)
 |    int  px, py, pz;
 
-::ss3dset | x y z qxyzw scale color spr i --
+::ss3dset | x y z qxyzw scale spr color i --
 	dirtycheck
 	ab[
 	dup 5 << 3dss_array + >a 
 	da!+		|obj_id
-	swap da!+	| color
+	da!+	| color
 	swap 8 >> 16 << or da!+ | scale|spr
 	a!+
 	rot da!+ swap da!+ da!  | x y z
@@ -475,7 +475,19 @@ void main() {
 ::ss3dreset  
 	0 'ss3d_inst ! ;
 	
-::ss3dinfo | n -- s
+::ss3dinfo | n -- v
 	3 << defspr + @ ;
-::.Ly
-	32 >> $ffff and ;
+::ss3dLX | n -- v
+	ss3dinfo 16 >> $ffff and ;
+::ss3dLY | n -- v
+	ss3dinfo 48 >> $ffff and ;
+::ss3dLZ | n -- v
+	ss3dinfo $ffff and ;
+	
+::ss3dfloor | scale n -- val
+	ss3dLY * 0.005 *. ;
+
+::ss3difloor | i -- val
+	5 << 3dss_array + 2 2 << + d@ 
+	dup 16 >>> 8 << 			| bits 31-16: scale uint8.8
+	swap $ffff and ss3dfloor ;	| bits 15-0: spr_id uint16 

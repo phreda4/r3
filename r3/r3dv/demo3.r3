@@ -95,6 +95,7 @@
 	
 		dup nbox / nbox 2/ - 1.2 *
 		over 10 << msec 4 << + sin 1.0 + 2/
+		pick2 ss3difloor +
 		pick2 nbox mod nbox 2/ - 1.2 *
 	
 		pick3 ss3dxyz | x y z i --		
@@ -182,8 +183,10 @@
 		pick2 nbox mod nbox 2/ - 1.1 *
 		
 		$0 rxyz>q16
-		4.0 $ffffff00 r> dup |ns 97 + ns 
-		ss3dset | x y z qxyzw scale color spr i --
+		4.0 r> 
+		$ffffff00 
+		over 
+		ss3dset | x y z qxyzw scale spr color i --
 		
 		1+ ) drop
 

@@ -158,12 +158,18 @@
 :addobj
 	AdvMouse
 	hiteye 0? ( drop ; ) drop
-	'v3hit >a a@+ a@+ a@+ | x y z
-	$0 rxyz>q16
-	scale $ffffff00
+		
+	scale 
 	nrosprite
-	cntobjs
-	ss3dset | x y z srxyz color spr i --
+	$ffffff00
+	cntobjs ss3dcs | scale spr color i --
+	
+	'v3hit >a 
+	a@+ 
+	a@+ cntobjs ss3difloor +
+	a@+ | x y z
+	$0 rxyz>q16
+	cntobjs ss3dxyzq
 	
 	1 'cntobjs +!
 	;
@@ -314,7 +320,7 @@
 	rlhud
 	load3d
 	rl_init 
-	0 rl_grid_init
+	1 rl_grid_init
 	
 	'viewresize SDLeventR
 	lightsun

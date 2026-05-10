@@ -144,9 +144,10 @@
 
 	pxp pzp 0.5 + pyp
 	prot 0.25 + 2/ $ffff and 16 << rxyz>q16 
-	4.0	$ffffff00 
+	4.0	
 	|msec 8 >> $3 and 'walk + c@
 	96
+	$ffffff00 
 	0 ss3dset
 
 	1.4 

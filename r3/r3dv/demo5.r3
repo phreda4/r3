@@ -152,10 +152,10 @@
 	'v3hit >a a@+ a@+ a@+ | x y z
 	$000000000000 rxyz>q16 
 	3.0
-	$ffffff00
 	nrosprite
+	$ffffff00
 	cntobjs
-	ss3dset | x y z qxyzw scale color spr i --	
+	ss3dset | x y z qxyzw scale spr color i --	
 		
 	1 'cntobjs +!
 	;
@@ -223,8 +223,8 @@
 	skel
 	0 ( cntbones <? swap 
 		c@+ drop
-		a@+ unpack21 a@+ 1.0 $ffffff00 nrosprite cntobjs
-		ss3dset | x y z qxyzw scale color spr i --			
+		a@+ unpack21 a@+ 1.0 nrosprite $ffffff00 cntobjs
+		ss3dset | x y z qxyzw scale spr color i --			
 		1 'cntobjs +!
 		swap 1+ ) 2drop
 	;
