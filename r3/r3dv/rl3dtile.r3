@@ -80,8 +80,11 @@ void main(){
 ::3dt3 | x y z -- v
 	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or ;
 
-::t3d4v | uv v uv v uv v uv v --
+::t3d4v | uv p uv p uv p uv p --
 	, , , , , , , , 1 'pl_count +! ;
+ 
+::t3d4q | uvp uvp uvp uvp --
+	,q ,q ,q ,q 1 'pl_count +! ;
 	
 ::t3dv | (uv x y z) --
 	3dt3 , , ;

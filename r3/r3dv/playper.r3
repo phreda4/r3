@@ -16,15 +16,17 @@
 #objnro 0
 
 :+static
-	-25.0 25.0 randminmax 
-	1.2
-	-25.0 25.0 randminmax
-	$ffff randmax 16 << rxyz>q16
-	8.0
+	8.0 16.0 randminmax
 	23 32 randminmax
 	$ffffff00
-	objnro
-	ss3dset | x y z qxyzw scale spr color i --
+	objnro ss3dcs | scale spr color i --
+	
+	-30.0 30.0 randminmax 
+	objnro ss3difloor
+	-30.0 30.0 randminmax
+	$ffff randmax 16 << rxyz>q16 | rot y
+	objnro ss3dxyzq
+	
 	1 'objnro +!
 	;
 
@@ -210,7 +212,7 @@
 	ss3dreset
 	0 'objcnt !
 	1 'objnro !
-	200 ( 1? 1- +static ) drop
+	100 ( 1? 1- +static ) drop
 	'juego SDLShow 
 	;
 	
