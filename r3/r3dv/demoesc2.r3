@@ -14,8 +14,8 @@
 #camEye -10.0 2.0 2.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
-#camAdv 0 0 0 | forward
-#camLat 0 0 0 | right
+#camFor 0 0 0 | forward
+#camRig 0 0 0 | right
 
 #cp #sp #cy #sy 
 
@@ -27,49 +27,23 @@
 	b@+ cy cp *. + a!+
 	b@+ sp + a!+
 	b@+ sy cp *. + a!
-	'camAdv >a
+	'camFor >a
 	cy neg cp *. a!+
 	sp neg a!+
 	sy neg cp *. a!
-	'camAdv v3Nor
-	'camLat >a
+	'camFor v3Nor
+	'camRig >a
 	sy a!+
 	0 a!+
 	cy neg a!+
-	'camLat v3Nor
+	'camRig v3Nor
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
-	;
-
-#xp #yp 
-:movecam
-	|sdlb 4 <>? ( drop ; ) drop
-	sdlx dup xp - 0.001 * 
-	'cam_yaw +! 'xp !
-	sdly dup yp - -0.001 * 
-	cam_pit + |0.24 min -0.24 max 
-	'cam_pit ! 'yp !
-	makecam ;
-	
-:wheelcam
-	SDLw 0? ( drop ; ) -0.4 *
-	'camEye 'camAdv pick2 v3+*
-	'camTo 'camAdv pick2 v3+*
-	drop
-	makecam ;
-
-
-:mcam 
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop
 	;
 
 #glevel 0
 #gaxis 0
 
-#camAdvMouse 0 0 0
+#camForMouse 0 0 0
 #v3hit 0 0 0
 #v3cursor 0 0 0
 
@@ -83,24 +57,28 @@
 	sdly 2* fix. sh / 1.0 -
 	camFov *. 'ydir !
 	
-	'camAdvMouse >a
-	'camAdv @      'camLat @      xdir *. + 'camUp @      ydir *. + a!+
-	'camAdv 8 + @  'camLat 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
-	'camAdv 16 + @ 'camLat 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
+	'camForMouse >a
+	'camFor @      'camRig @      xdir *. + 'camUp @      ydir *. + a!+
+	'camFor 8 + @  'camRig 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
+	'camFor 16 + @ 'camRig 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
 
-	'camAdvMouse v3Nor
+	'camForMouse v3Nor
 	;
 
 :hiteye
 	AdvMouse
-	'camAdvMouse gaxis 3 << + @ 0? ( ; ) 
+	'camForMouse gaxis 3 << + @ 0? ( ; ) 
 	'camEye gaxis 3 << + @ glevel - swap /. | t
 	-? ( drop 0 ; ) neg
 	'v3hit 'camEye v3=
-	'v3hit 'camAdvMouse rot v3+*
+	'v3hit 'camForMouse rot v3+*
 	1 ;
 	
-	
+:camVelMove | ve 'v3 -- ve
+	over 2dup 
+	'camEye -rot v3+*
+	'camTo  -rot v3+*
+	makecam ;
 	
 :blink
 	msec $100 and? ( drop $0000ff00 ; ) 
@@ -128,53 +106,61 @@
 	draw_cube 	
 	;
 
+#xp #yp 
+:movecam
+	sdlx dup xp - 0.001 * 
+	'cam_yaw +! 'xp !
+	sdly dup yp - -0.001 * 
+	cam_pit + |0.24 min -0.24 max 
+	'cam_pit ! 'yp !
+	makecam ;
+	
+:wheelcam
+	SDLw 0? ( drop ; ) -0.4 *
+	'camFor camVelMove drop ;
+
 :moveobj
 	hiteye 0? ( drop ; ) drop
 	'v3cursor 'v3hit 3 move
 	;
 	
-:mobj
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! moveobj )	| in
-	3 =? ( moveobj )				| active
-	drop
+:movemouse
+	sdlb 4 =? ( drop movecam ; ) drop
+	moveobj 
 	;
 	
 |--------------
 	
-#modem 0
-#lmodem 'mcam 'mobj
-#lmodet "CAM" "OBJ" ( 0 )
-#laxist "X" "Y" "Z" ( 0 )
+#laxist "-X-" "-Y-" "-Z-" ( 0 )
 
+| 0 = none
+| 1 = over
+| 2 = in (btn dwn)
+| 3 = active
+| 4 = active(outside)
+| 5 = out
+| 6 = click (btn up)
 :UsoMouse
 	immIni
-	'lmodem modem ncell+ @ ex
+	immMouse 0? ( drop ; ) 
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movemouse )				| active
+	drop
 	;
 |----------------------------------------
 #fsun [ 
--2.5 2.0 -1.5 0	| normal
+-2.0 2.0 -2.0 0	| normal
  1.0 1.0 1.0 1.2  ] | color,intensidad
 
-:render
-	rl_frame_begin
-	
-	draw_cursor
-	draw3dtiles
-	draw_gridp
-	
+:luces
 	'fsun rl_set_sun
 	
-	1.5 1.0 0.2 0.2
-	msec 3 << 
-	dup cos 3 * 
-	over sin 3 *
-	rot 0.5 + sin 2.5 *.
+	2.0 1.0 1.0 1.0
+	'camEye @+ swap @+ swap @
 	rl_point_light | int cr cg cb x y z --
-	
-	rl_frame_end
 	;
+	
 	
 #va #vl #vu
 
@@ -193,23 +179,30 @@
 	gsx gridpsx! ;
 
 #modedit 0
+
 #imgatlas
 
 |---------------------------------------------
 #arena
 #arena>
 
-#tile
+#tile 0
 #tilesize $03f03f
 
 #x1 #y1 #z1
 #x2 #y2 #z2
 #x4 #y4 #z4
 
-#txyz
-
 :arenareset
 	arena 'arena> ! ;
+	
+:searchtile | v -- i/-1
+	arena> arena dup >b - 5 >> | 32
+	( 1? 1- 
+		db@ over =? ( drop b> arena - 5 >> ; ) 
+		drop
+		32 b+ ) drop
+	-1 ;
 	
 :arena!+
 	arena> >a
@@ -242,18 +235,30 @@
 	t3d_end
 	;
 
-#tv1 #tv2
-#nt
-	
+| build patch by axis
+#deltaxis (
+1 1 1 0 1 0 0 0 1
+1 0 1 0 0 0 0 0 1
+0 1 0 0 0 1 0 0 0
+)
+
 :addpanel
 	hiteye 0? ( drop ; ) drop
-	
+
+	'deltaxis gaxis 9 * + >a
 	'v3cursor
-	@+ 16 >> 'x1 ! @+ 16 >> 'y1 ! @ 16 >> 'z1 !
-	
-	x1 'x2 !	y1 1+ 'y2 !		z1 'z2 !
-	
-	x1 'x4 !	y1 'y4 !		z1 1+ 'z4 !
+	@+ 16 >> 
+	dup ca@+ + 'x1 !
+	dup ca@+ + 'x2 !
+	ca@+ + 'x4 !
+	@+ 16 >> 
+	dup ca@+ + 'y1 ! 
+	dup ca@+ + 'y2 !
+	ca@+ + 'y4 !
+	@ 16 >>
+	dup ca@+ + 'z1 !
+	dup ca@+ + 'z2 !
+	ca@ + 'z4 !
 	
 	arena!+
 	genarena
@@ -261,10 +266,22 @@
 
 |-------------
 :modetile
-	modedit 1 xor 'modedit !
+	1 'modedit ! ;
+	
+:changemode
+	modedit
+	1+
+	$1 and
+	'modedit !
 	;
 
 :panelatlas
+	0.4 %w uiO
+	$1f0000ff 'fcolor !
+	gZoneAll frect
+
+	
+
 	imgatlas 10 32 
 	400 400 imgdraw
 	;
@@ -280,28 +297,38 @@
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	'exit "Exit" uiTBtn
-	'modetile "Tile" uiTBtn
-|	'exit "eventos" uiTBtn
-|	'exit "seleccion" uiTBtn
+	'changemode "Mode" uiTBtn
+	gaxis 2 << 'laxist + uiWrite
+	arena> arena - 5 >> " %d " sprint uiWrite
+|	'exit "PAINT" uiTBtn
+|	'exit "ERASE" uiTBtn
+|	'exit "SELECT" uiTBtn
+
 |	'totop "T" uiTBtn
 |	'tofront "F" uiTBtn
 |	'toside "S" uiTBtn
-	modem 2 << 'lmodet + uiWrite
-	" " uiWrite
-	gaxis 2* 'laxist + uiWrite
-	" " uiWrite
-	
-	|'camAdvMouse >a a@+ a@+ a@ " %a %a %a " sprint uiWrite
 
-	|glevel " Level:%a " sprint uiWrite
-	modedit 1 =? ( panelatlas ) drop
+	modedit 
+	1 =? ( panelatlas ) 
+	drop
+	
 	fend
 	;
 	
-:mainedit
-	render
+	
+:main
+	|---------
+	rl_frame_begin
+	draw_cursor
+	draw3dtiles
+	draw_gridp
+	luces
+	rl_frame_end
+	|---------
+	
 	interface
 	GLUpdate
+	|---------
 	UsoMouse
 	
     sdlkey
@@ -313,29 +340,17 @@
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
-	<f1> =? ( changeaxis )
+	<tab> =? ( changeaxis )
+	<ctrl> =? ( changemode )
 	<f2> =? ( 1.0 valax )
 	<f3> =? ( -1.0 valax )
 	
 	<esp> =? ( addpanel )
 		
-	<tab> =? ( modem 1 xor 'modem ! )
     drop
-	va 1? ( 
-		'camEye 'camAdv pick2 v3+*
-		'camTo 'camAdv pick2 v3+*
-		makecam
-		) drop
-	vl 1? (
-		'camEye 'camLat pick2 v3+*
-		'camTo 'camLat pick2 v3+*
-		makecam
-		) drop
-	vu 1? (
-		'camEye 'camUp pick2 v3+*
-		'camTo 'camUp pick2 v3+*
-		makecam
-		) drop	
+	va 1? ( 'camFor camVelMove ) drop
+	vl 1? ( 'camRig camVelMove ) drop
+	vu 1? ( 'camUp camVelMove ) drop
 	;
 
 
@@ -374,16 +389,6 @@
 	drop
 	;
 
-:main
-
-	|makeatlas
-|	mainatlas
-
-	|maket3d
-	'mainedit sdlshow
-	
-	;
-	
 |---------------------------------------------
 :viewresize 
 	sh sw rl_resizewin fixFontResize ;
@@ -409,11 +414,11 @@
 	|-----
 	"media/img/tileskenney.png" rl_3datlas
 	
-	here 'arena ! $ffff 'here +! 
+	here 'arena ! 
+	$fffff 'here +! | 1MB
 	arenareset
 	|-----
-	|'main SDLshow
-	main
+	'main SDLshow
 	
 	rl_gridp_free
 	rl_shutdown
