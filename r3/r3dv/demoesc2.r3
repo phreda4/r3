@@ -73,15 +73,6 @@
 #v3hit 0 0 0
 #v3cursor 0 0 0
 
-:hiteye
-	'camAdvMouse gaxis 3 << + @ 0? ( ; ) 
-	'camEye gaxis 3 << + @ glevel - swap /. | t
-	-? ( drop 0 ; ) neg
-	'v3hit 'camEye v3=
-	'v3hit 'camAdvMouse rot v3+*
-	1 ;
-	
-	
 #xdir 
 #ydir
 
@@ -99,6 +90,17 @@
 
 	'camAdvMouse v3Nor
 	;
+
+:hiteye
+	AdvMouse
+	'camAdvMouse gaxis 3 << + @ 0? ( ; ) 
+	'camEye gaxis 3 << + @ glevel - swap /. | t
+	-? ( drop 0 ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'camAdvMouse rot v3+*
+	1 ;
+	
+	
 	
 :blink
 	msec $100 and? ( drop $0000ff00 ; ) 
@@ -127,7 +129,6 @@
 	;
 
 :moveobj
-	AdvMouse
 	hiteye 0? ( drop ; ) drop
 	'v3cursor 'v3hit 3 move
 	;
@@ -194,7 +195,6 @@
 #modedit 0
 #imgatlas
 
-
 |---------------------------------------------
 #arena
 #arena>
@@ -213,134 +213,52 @@
 	
 :arena!+
 	arena> >a
-	tile da!+
+	
 	x1 y1 z1 3dt3 da!+
+	tile da!+
 	
-	tile tilesize $fff and + da!+
 	x2 y2 z2 3dt3 da!+
+	tile tilesize $fff and + da!+
 	
-	tile tilesize + da!+
 	x4 x1 - x2 +
 	y4 y1 - y2 +
 	z4 z1 - z2 +
 	3dt3 da!+
+	tile tilesize + da!+
 	
-	tile tilesize $fff000 and + da!+
 	x4 y4 z4 3dt3 da!+
+	tile tilesize $fff000 and + da!+
 	
 	a> 'arena> !
 	;
 	
 :genarena
 	t3d_ini
-|	here "%h-" .print
 	arena> arena dup >a - 5 >> | 32
 	( 1? 1- 
-		a@+ a@+ a@+ a@+
+		a@+ a@+ a@+ a@+ 
 		t3d4q
 		) drop
-|	here "%h" .println
 	t3d_end
 	;
-
-|------------------
-:storetest
-	5 8 randminmax 64 * 12 << 
-	16 randmax 64 * or
-	'tile !
-			
-	tile
-	pick2 pick2 -8 t3dv
-	tile tilesize $fff and +
-	pick2 pick2 1+ -8 t3dv
-	tile tilesize +
-	pick2 1+ pick2 1+ -8 t3dv
-	tile tilesize $fff000 and +
-	pick2 1+ pick2 -8
-	t3dq
-	;
-
-:maket3d
-	t3d_ini
-	
-	-20 ( 20 <? 
-		-20 ( 20 <? 
-		
-			storetest
-		
-			1+ ) drop
-		1+ ) drop
-
-	t3d_end
-	;
-
-:addpanel
-	AdvMouse
-	hiteye 0? ( drop ; ) drop
-	'v3cursor
-	@+ 16 >> 'x1 ! 
-	@+ 16 >> 'y1 !
-	@ 16 >> 'z1 !
-	
-	0 'x1 ! 0 'y1 ! 0 'z1 !
-	
-	x1 1+ 'x2 !	y1 'y2 !	z1 'z2 !
-	x1 'x4 !	y1 'y4 !	z1 1+ 'z4 !
-	
-	arena!+
-	
-	|0 0 0 storetest 3drop
-	
-	arena> 32 -
-	@+ "%h " .print
-	@+ "%h " .print
-	@+ "%h " .print
-	@ "%h " .println
-	genarena
-	;
-
-	
-
-| 001 010 100
-| 010 001 010
-| 100 100 001
 
 #tv1 #tv2
 #nt
-
-:makeatlas
-	t3d_ini
-
-	0 'nt !
-	0 ( 16 <? 
-		0 ( 16 <? 
-			nt 4 >> $f and 64 * 12 << 
-			nt $f and 64 * or
-			'tile !
-		
-			0 pick2 pick2 |tx ty tz 
-			3dt3 'txyz !
-			
-			0 0 1 swap 10 << or swap 20 << or 'tv1 !
-			0 1 0 swap 10 << or swap 20 << or 'tv2 !
-			
-			tile 
-			txyz
-			tile tilesize $000fff and +
-			txyz tv1 +
-			tile tilesize +
-			txyz tv1 + tv2 +
-			tile tilesize $fff000 and +
-			txyz tv2 +
-			
-			t3d4v
-
-			1 'nt +!
-			1+ ) drop
-		1+ ) drop
-
-	t3d_end
+	
+:addpanel
+	hiteye 0? ( drop ; ) drop
+	
+	'v3cursor
+	@+ 16 >> 'x1 ! @+ 16 >> 'y1 ! @ 16 >> 'z1 !
+	
+	x1 'x2 !	y1 1+ 'y2 !		z1 'z2 !
+	
+	x1 'x4 !	y1 'y4 !		z1 1+ 'z4 !
+	
+	arena!+
+	genarena
 	;
+
 |-------------
 :modetile
 	modedit 1 xor 'modedit !
@@ -400,10 +318,7 @@
 	<f3> =? ( -1.0 valax )
 	
 	<esp> =? ( addpanel )
-	
-	<f4> =? ( maket3d )
-	<f5> =? ( makeatlas )
-	
+		
 	<tab> =? ( modem 1 xor 'modem ! )
     drop
 	va 1? ( 
@@ -494,7 +409,7 @@
 	|-----
 	"media/img/tileskenney.png" rl_3datlas
 	
-	here 'arena !
+	here 'arena ! $ffff 'here +! 
 	arenareset
 	|-----
 	|'main SDLshow
