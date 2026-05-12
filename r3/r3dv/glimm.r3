@@ -5,6 +5,37 @@
 ^./rlhud.r3
 ^./gllib.r3
 
+
+|  disable|focus|over|normal
+#colBac	$ff222222ff111111 | background
+#colFil $ff80D9FFff005D85 | fill
+#colTxt $ffffffffffffffff | texto
+
+#colFoc $ffffff 
+
+::stDang $ffff8099ff85001B 'colfil ! ;	| danger
+::stWarn $ffffBF29fff55D00 'colfil ! ;	| warning
+::stSucc $ff5BCD9Aff1F6546 'colfil ! ;	| success
+::stInfo $ff80D9FFff005D85 'colfil ! ;	| info
+::stLink $ff4258FFff000F85 'colfil ! ;	| link
+::stDark $ff393F4Cff14161A 'colfil ! ;	| dark
+::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
+
+| 0 = none
+| 1 = over
+| 2 = in (btn dwn)
+| 3 = active
+| 4 = active(outside)
+| 5 = out
+| 6 = click (btn up)
+#statec ( 0 0 32 32 0 0 32 ) 
+:colorFill
+	colfil uistate 'statec + c@ >> 'fcolor ! ;
+:colorBack
+	colbac uistate 'statec + c@ >> 'fcolor ! ;
+:colorText
+	colTxt 'fcolor ! ;
+	
 #marx 4 #mary 4 | margin
 #padx 9 #pady 2 | pad
 
@@ -154,12 +185,9 @@
 | fullwidth button down
 ::uiFTBtn | 'v "" --
 	zonefline
-|	uistate $7 and 2 << 'colors + d@ 'fcolor !
-|	wix wiy wiw wih 5 frectb
 
-	$ffffffff 'fcolor !
-	uistate 1? ( wix wiy wiw wih 5 rectb ) drop
-	tcwrite 
+	colorFill wix wiy wiw wih 2 rectb
+	colorText tcwrite 
 	
 	uiClk 
 	fsizeh 
@@ -174,11 +202,8 @@
 	fsizeh pady 2* + 
 	immBox immZone
 	
-	wix wiy wiw wih 5 rectb
-	
-	$ffffffff 'fcolor !
-|	uistate 1? ( wix wiy wiw wih 5 rectb ) drop
-	tcwrite 
+	colorFill wix wiy wiw wih 2 frectb
+	colorText tcwrite 
 
 	uiClk 
 	r> marx 2* + 'cx +!
@@ -188,28 +213,28 @@
 ::uiWrite | "" --
 	fsize nip swap
 	fx cx + marx + fy cy + mary + fat
-	ftext 
+	colorText ftext 
 	marx + 'cx +!
 	;
 	
 ::uiLabel | "" --
 	fx cx + padx + 
 	fy cy +
-	fat ftext 
+	fat colorText ftext 
 	fsizeh mary + 'cy +! ;
 	
 ::uiLabelC | "" --
 	fsize  | w h
 	fx fw 2/ + rot 2/ -
 	fy cy + rot >r
-	fat ftext 
+	fat colorText ftext 
 	r> mary + 'cy +! ;
 
 ::uiLabelR | "" --
 	fsize  | w h
 	fx fw + padx - rot -
 	fy cy + rot >r
-	fat ftext 
+	fat colorText ftext 
 	r> mary + 'cy +! ;
 
 |---- Horizontal slide
@@ -221,9 +246,9 @@
 	uiEx! ;
 	
 :slideshow | 0.0 1.0 'value --
-	|colBack uiLFill
+	|colorBack
 |	[ kbSlide colFocus uiLRect ; ] uiFocus
-	|colFill
+	colorFill
 	dup @ pick3 - 
 	wiw 8 - pick4 pick4 swap - */ wix 1+ +
 	wiy 2 + 
@@ -249,7 +274,7 @@
 :progreshow | 0.0 1.0 'value --
 |	colBack uiLFill
 |	[ kbSlide colFocus uiLRect ; ] uiFocus	
-|	colFill
+	colorFill
 	dup @ pick3 - wiw pick4 pick4 swap - */
 	wih
 	wix wiy 2swap

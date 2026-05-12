@@ -94,7 +94,6 @@
 	
 :draw_cursor
 	matini
-	0 0 0 matrot
 	|scursor
 	1.0 dup dup 
 	matscale
@@ -121,15 +120,11 @@
 	SDLw 0? ( drop ; ) -0.4 *
 	'camFor camVelMove drop ;
 
-:moveobj
+:movecursor
 	hiteye 0? ( drop ; ) drop
 	'v3cursor 'v3hit 3 move
 	;
 	
-:movemouse
-	sdlb 4 =? ( drop movecam ; ) drop
-	moveobj 
-	;
 	
 |--------------
 	
@@ -244,9 +239,7 @@
 0 1 0  1 1 0  0 0 0
 )
 
-:addpanel
-	hiteye 0? ( drop ; ) drop
-
+:addtile
 	'deltaxis gaxis 9 * + >a
 	'v3cursor
 	@+ 16 >> 
@@ -261,10 +254,14 @@
 	dup ca@+ + 'z1 !
 	dup ca@+ + 'z2 !
 	ca@ + 'z4 !
-	
 	arena!+
 	genarena
 	;
+
+:addpanel
+	hiteye 0? ( drop ; ) drop
+	addtile ;
+	
 
 |-------------
 :modetile
@@ -330,6 +327,50 @@
 	cursortile
 	;
 
+#cachexyza
+
+:hitnew?
+	'v3cursor
+	@+ 16 >> $3ff and swap @+ 16 >> $3ff and swap @ 16 >> $3ff and 
+	10 << or 10 << or gaxis 30 << or 
+	cachexyza =? ( drop 0 ; ) 'cachexyza ! 1
+	;
+
+#moded 0
+
+:setp 0 'moded ! ;
+:sete 1 'moded ! ;
+:sets 2 'moded ! ;
+	
+:paintile 
+	hiteye 0? ( drop ; ) drop
+	hitnew? 0? ( drop ; ) drop
+	addtile
+	;
+:erasetile 
+	hiteye 0? ( drop ; ) drop
+	;
+:selectile
+	;
+	
+#modedlist 'paintile 'erasetile 'selectile
+
+:movemouse
+	sdlb 4 =? ( drop movecam ; ) drop
+	movecursor
+	moded 3 << 'modedlist + @ ex
+	;
+	
+:clickmouse
+	;
+
+#grids 1
+:gridc
+	grids 1 xor 'grids ! ;
+	
+:btncolor
+	moded =? ( drop stWarn ; ) drop stLigt ;
+
 :interface
 	fini
 	immIni
@@ -338,18 +379,21 @@
 	
 	uiFull
 	32 uiN
-	$7f0000ff 'fcolor !
+	$7fffffff 'fcolor !
 	gZoneAll frect
-	$ffffffff 'fcolor !
+	stDang
 	'exit "Exit" uiTBtn
-	'changemode "Mode" uiTBtn
+	stDark
+	'changemode "Tiles" uiTBtn
+	'gridc "G" uiTBtn
+	
+	0 btncolor 'setp "PAINT" uiTBtn
+	1 btncolor 'sete "ERASE" uiTBtn
+	2 btncolor 'sets "SELECT" uiTBtn
+
 	gaxis 2 << 'laxist + uiWrite
 	arena> arena - 5 >> " %d " sprint uiWrite
-|	'exit "PAINT" uiTBtn
-|	'exit "ERASE" uiTBtn
-|	'exit "SELECT" uiTBtn
 
-|	'totop "T" uiTBtn
 |	'tofront "F" uiTBtn
 |	'toside "S" uiTBtn
 
@@ -362,6 +406,7 @@
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movemouse )				| active
+	6 =? ( clickmouse ) 
 	drop
 	
 	fend
@@ -369,15 +414,14 @@
 	
 	
 :main
-	|---------
+	|--------- render
 	rl_frame_begin
-	draw_cursor
+	|draw_cursor
 	draw3dtiles
-	draw_gridp
+	grids 1? ( draw_gridp ) drop
 	luces
 	rl_frame_end
-	|---------
-	
+	|--------- HUD
 	interface
 	GLUpdate
 	|---------
@@ -391,11 +435,11 @@
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 	
-	<tab> =? ( changeaxis )
 	<ctrl> =? ( changemode )
 	
-	<f2> =? ( 1.0 valax )
-	<f3> =? ( -1.0 valax )
+	<tab> =? ( changeaxis )
+	<up> =? ( 1.0 valax )
+	<dn> =? ( -1.0 valax )
 	
 	<esp> =? ( addpanel )
 		
