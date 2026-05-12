@@ -80,6 +80,8 @@
 	'camTo  -rot v3+*
 	makecam ;
 	
+|----------------
+	
 :blink
 	msec $100 and? ( drop $0000ff00 ; ) 
 	drop $ffffff00 ; 
@@ -111,7 +113,7 @@
 	sdlx dup xp - 0.001 * 
 	'cam_yaw +! 'xp !
 	sdly dup yp - -0.001 * 
-	cam_pit + |0.24 min -0.24 max 
+	cam_pit + 0.24 min -0.24 max 
 	'cam_pit ! 'yp !
 	makecam ;
 	
@@ -133,21 +135,6 @@
 	
 #laxist "-X-" "-Y-" "-Z-" ( 0 )
 
-| 0 = none
-| 1 = over
-| 2 = in (btn dwn)
-| 3 = active
-| 4 = active(outside)
-| 5 = out
-| 6 = click (btn up)
-:UsoMouse
-	immIni
-	immMouse 0? ( drop ; ) 
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movemouse )				| active
-	drop
-	;
 |----------------------------------------
 #fsun [ 
 -2.0 2.0 -2.0 0	| normal
@@ -165,29 +152,44 @@
 #va #vl #vu
 
 #gsx 1.0
+#gsy 1.0
+#gsz 1.0
 
 :changeaxis
-	gaxis 1+ 3 mod 'gaxis ! 
-	gaxis gridpAxis! ;
+	gaxis 1+ 3 mod 'gaxis ! gaxis gridpAxis! ;
 	
 :valax | d --
-	'glevel +! 
-	glevel gridplevel! ;
+	'glevel +! glevel gridplevel! ;
 	
 :cgsx | d --
-	'gsx +!
-	gsx gridpsx! ;
+	'gsx +! gsx gridpsx! ;
 
-#modedit 0
-
-#imgatlas
+:cgsy | d --
+	'gsy +! gsy gridpsy! ;
+	
+:cgsz | d --
+	'gsz +! gsz gridpsz! ;
 
 |---------------------------------------------
 #arena
 #arena>
 
-#tile 0
-#tilesize $03f03f
+#modedit 0
+
+#imgatlas
+#imgatlash
+#imgscale
+#imgw #imgh
+
+#tilex 0 
+#tiley 0
+#tilesw 64
+#tilesh 64
+
+:tilep1 tilex tiley 12 << or ;
+:tilep2 tilex tilesw + tiley 12 << or ;
+:tilep3 tilex tilesw + tiley tilesh + 12 << or ;
+:tilep4 tilex tiley tilesh + 12 << or ;
 
 #x1 #y1 #z1
 #x2 #y2 #z2
@@ -208,19 +210,19 @@
 	arena> >a
 	
 	x1 y1 z1 3dt3 da!+
-	tile da!+
+	tilep1 da!+
 	
 	x2 y2 z2 3dt3 da!+
-	tile tilesize $fff and + da!+
+	tilep2 da!+
 	
 	x4 x1 - x2 +
 	y4 y1 - y2 +
 	z4 z1 - z2 +
 	3dt3 da!+
-	tile tilesize + da!+
+	tilep3 da!+
 	
 	x4 y4 z4 3dt3 da!+
-	tile tilesize $fff000 and + da!+
+	tilep4 da!+
 	
 	a> 'arena> !
 	;
@@ -237,9 +239,9 @@
 
 | build patch by axis
 #deltaxis (
-1 1 1 0 1 0 0 0 1
-1 0 1 0 0 0 0 0 1
-0 1 0 0 0 1 0 0 0
+1 1 1  1 1 0  0 1 0
+1 1 0  0 0 0  0 1 0
+0 1 0  1 1 0  0 0 0
 )
 
 :addpanel
@@ -275,25 +277,68 @@
 	'modedit !
 	;
 
-:panelatlas
-	0.4 %w uiO
-	$1f0000ff 'fcolor !
-	gZoneAll frect
-
+:cursortile
+	|msec $100 and? ( drop ; ) drop
+	$ffffffff 'fcolor !
+	gzoneall 2drop
+	tiley 390 imgw */ + 32 + swap | correct aspect
+	tilex 390 imgw */ + 5 + swap 
+	tilesw 390 imgw */
+	tilesh 390 imgw */ | correct aspect
+	rect
+	;
 	
+:quant | v q -- v
+	dup -rot / * ;
+	
+:seltile
+	sdlx wix - imgw 390 */ tilesw quant
+	sdly wiy - imgw 390 */ tilesh quant
+	'tiley ! 'tilex !
+	;
+	
+:mousetile |
+	uiPush
+	immBox immZone
+	immMouse
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( seltile )				| active
+	drop	
+	uiPop
+	;
+	
+:panelatlas
+	180 uiO
+	$7f0f0fff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	gsz gsy gsx "%a %a %a" sprint uiLabelC
+	'exit "save" uiFTBtn	
 
-	imgatlas 10 32 
-	400 400 imgdraw
+	400 uiE
+	$3fffffff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	
+	tiley tilex imgh imgw "%dx%d : %dx%d" sprint uiLabelC
+	
+	imgatlas 
+	gZoneAll 2drop
+	32 + swap 5 + swap 390 imgatlash | x y w h 
+	2over 2over mousetile | [ ]
+	imgdraw
+	cursortile
 	;
 
 :interface
 	fini
+	immIni
 	1 'fscale !
 	$ffffffff 'fcolor !
 	
 	uiFull
 	32 uiN
-	$1f0000ff 'fcolor !
+	$7f0000ff 'fcolor !
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	'exit "Exit" uiTBtn
@@ -310,6 +355,13 @@
 
 	modedit 
 	1 =? ( panelatlas ) 
+	drop
+	
+	uiFill
+	immMouse
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movemouse )				| active
 	drop
 	
 	fend
@@ -329,7 +381,6 @@
 	interface
 	GLUpdate
 	|---------
-	UsoMouse
 	
     sdlkey
 	>esc< =? ( exit )
@@ -342,6 +393,7 @@
 	
 	<tab> =? ( changeaxis )
 	<ctrl> =? ( changemode )
+	
 	<f2> =? ( 1.0 valax )
 	<f3> =? ( -1.0 valax )
 	
@@ -353,42 +405,18 @@
 	vu 1? ( 'camUp camVelMove ) drop
 	;
 
-
-	
 |---------------------------------------------
-:interfaceatlas
-	fini
-	1 'fscale !
-	$ffffffff 'fcolor !
+:tileinfo | "" -- 
+	fimgload 'imgatlas !
 	
-	uiFull
-	32 uiN
-	$1f0000ff 'fcolor !
-	gZoneAll frect
-	$ffffffff 'fcolor !
-	'exit "Exit" uiTBtn
-	"- Atlas -" uiWrite
-	fend
+	imgatlas fimgwh
+	2dup 'imgh ! 'imgw !
+	390 pick2 */ 
+	dup "%d" .println
+	'imgatlash !
+	390 fix. swap / 'imgscale !
 	;
 	
-:mainatlas
-	rl_frame_begin
-	
-	draw_cursor
-	draw3dtiles
-	draw_gridp
-	
-	'fsun rl_set_sun	
-	rl_frame_end
-
-	interfaceatlas
-	GLUpdate
-	
-    sdlkey
-	>esc< =? ( exit )
-	drop
-	;
-
 |---------------------------------------------
 :viewresize 
 	sh sw rl_resizewin fixFontResize ;
@@ -396,7 +424,7 @@
 : | <<<<<< Boot
 	"demo escena" 1024 768 GLini GLInfo
 	rlhud
-	"media/img/tileskenney.png" fimgload 'imgatlas !
+	"media/img/tileskenney.png" tileinfo
 	rl_init
 	
 	rl_gridp_init

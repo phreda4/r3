@@ -141,6 +141,9 @@ void main() {
 	imgcount
 	1 'imgcount +!
 	;
+	
+::fimgwh | idx -- w h
+	8 * 'imgsizes + d@+ swap d@ ;
 
 |---------------------------------------
 | pack two int16 into one int32: lo hi -- int32

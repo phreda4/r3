@@ -29,7 +29,10 @@
 	marx 'cx ! 
 	mary 'cy ! 
 	fw marx 2* - 'cw ! 
-	fh mary 2* - 'ch ! ;
+	fh mary 2* - 'ch ! 
+	
+	|fx fy fw fh immBox
+	;
 
 :fl>now | v --
 	w@+ 'fx ! w@+ 'fy ! w@+ 'fw ! w@ 'fh ! ;
@@ -61,7 +64,9 @@
 :uiGet
 	flstack> 8 - fl>now ;
 ::uiFill
-	uiGet f2c ;
+	uiGet f2c
+	fx fy fw fh immBox
+	;
 
 | N=^ S=v E=> O=<
 | - is full minus the number
