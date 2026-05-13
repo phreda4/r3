@@ -181,10 +181,15 @@
 #tilesw 64
 #tilesh 64
 
-:tilep1 tilex tiley 12 << or ;
-:tilep2 tilex tilesw + tiley 12 << or ;
-:tilep3 tilex tilesw + tiley tilesh + 12 << or ;
-:tilep4 tilex tiley tilesh + 12 << or ;
+#texuv [ 0 0 0 0 ]
+
+:makeuv
+	'texuv >b
+	tilex tiley 12 << or db!+
+	tilex tilesw + tiley 12 << or db!+
+	tilex tilesw + tiley tilesh + 12 << or db!+
+	tilex tiley tilesh + 12 << or db!
+	;
 
 #x1 #y1 #z1
 #x2 #y2 #z2
@@ -193,27 +198,24 @@
 :arenareset
 	arena 'arena> ! ;
 	
-:arena!+
-	arena> >a
+:arena!
+	makeuv
+	'texuv >b
+	x1 y1 z1 3dt3 
+	gaxis 30 << or da!+ db@+ da!+
 	
-	x1 y1 z1 3dt3 gaxis 30 << or da!+
-	tilep1 da!+
+	x2 y2 z2 3dt3  da!+ db@+ da!+
 	
-	x2 y2 z2 3dt3 da!+
-	tilep2 da!+
+	x4 x1 - x2 + y4 y1 - y2 + z4 z1 - z2 +
+	3dt3          da!+ db@+ da!+
 	
-	x4 x1 - x2 +
-	y4 y1 - y2 +
-	z4 z1 - z2 +
-	3dt3 da!+
-	tilep3 da!+
-	
-	x4 y4 z4 3dt3 da!+
-	tilep4 da!+
-	
-	a> 'arena> !
+	x4 y4 z4 3dt3 da!+ db@+ da!+
 	;
 	
+:arena!+
+	arena> >a arena! a> 'arena> ! ;
+
+| OPT: orderlist and binary search
 :searchtile | v -- i/-1
 	arena> arena dup >b - 5 >> | 32
 	( 1? 1- 
@@ -227,7 +229,6 @@
 	searchtile
 	;
 
-	
 :genarena
 	t3d_ini
 	arena> arena dup >a - 5 >> | 32
@@ -262,13 +263,14 @@
 	ca@ + 'z4 ! ;
 
 :addtile
-	|builcursor
 	arena!+
 	genarena ;
+	
+:modtile | n --
+	5 << arena + >a arena!
+	genarena ;
 
-:deltile
-	builcursor
-	checktile -? ( drop ; )
+:deltile | n --
 	5 << arena + dup 32 + arena> over - 3 >> move
 	-32 'arena> +!
 	genarena ;
@@ -354,12 +356,14 @@
 	hiteye 0? ( drop ; ) drop
 	hitnew? 0? ( drop ; ) drop
 	builcursor
-	checktile +? ( drop ; ) drop
+	checktile +? ( modtile ; ) drop
 	addtile ;
 	
 :erasetile 
 	hiteye 0? ( drop ; ) drop
 	hitnew? 0? ( drop ; ) drop
+	builcursor
+	checktile -? ( drop ; )
 	deltile ;
 	
 :selectile
