@@ -142,6 +142,15 @@ void main() {
 	1 'imgcount +!
 	;
 	
+::fimgtex | tex -- idx
+	dup $ffff and 'imgtextures imgcount 4 * + d!
+	32 >> 
+	dup 16 >> swap $ffff and 
+	'imgsizes imgcount 8 * + d!+ d!
+	imgcount
+	1 'imgcount +!
+	;
+	
 ::fimgwh | idx -- w h
 	8 * 'imgsizes + d@+ swap d@ ;
 

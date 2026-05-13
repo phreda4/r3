@@ -193,18 +193,10 @@
 :arenareset
 	arena 'arena> ! ;
 	
-:searchtile | v -- i/-1
-	arena> arena dup >b - 5 >> | 32
-	( 1? 1- 
-		db@ over =? ( drop b> arena - 5 >> ; ) 
-		drop
-		32 b+ ) drop
-	-1 ;
-	
 :arena!+
 	arena> >a
 	
-	x1 y1 z1 3dt3 da!+
+	x1 y1 z1 3dt3 gaxis 30 << or da!+
 	tilep1 da!+
 	
 	x2 y2 z2 3dt3 da!+
@@ -221,6 +213,20 @@
 	
 	a> 'arena> !
 	;
+	
+:searchtile | v -- i/-1
+	arena> arena dup >b - 5 >> | 32
+	( 1? 1- 
+		db@ pick2 =? ( 3drop b> arena - 5 >> ; ) 
+		drop
+		32 b+ ) 2drop
+	-1 ;
+
+:checktile | -- i/-1
+	x1 y1 z1 3dt3 gaxis 30 << or 
+	searchtile
+	;
+
 	
 :genarena
 	t3d_ini
@@ -239,7 +245,7 @@
 0 1 0  1 1 0  0 0 0
 )
 
-:addtile
+:builcursor
 	'deltaxis gaxis 9 * + >a
 	'v3cursor
 	@+ 16 >> 
@@ -253,16 +259,20 @@
 	@ 16 >>
 	dup ca@+ + 'z1 !
 	dup ca@+ + 'z2 !
-	ca@ + 'z4 !
+	ca@ + 'z4 ! ;
+
+:addtile
+	|builcursor
 	arena!+
-	genarena
-	;
+	genarena ;
 
-:addpanel
-	hiteye 0? ( drop ; ) drop
-	addtile ;
+:deltile
+	builcursor
+	checktile -? ( drop ; )
+	5 << arena + dup 32 + arena> over - 3 >> move
+	-32 'arena> +!
+	genarena ;
 	
-
 |-------------
 :modetile
 	1 'modedit ! ;
@@ -330,11 +340,9 @@
 #cachexyza
 
 :hitnew?
-	'v3cursor
-	@+ 16 >> $3ff and swap @+ 16 >> $3ff and swap @ 16 >> $3ff and 
-	10 << or 10 << or gaxis 30 << or 
-	cachexyza =? ( drop 0 ; ) 'cachexyza ! 1
-	;
+	'v3cursor @+ 16 >> swap @+ 16 >> swap @ 16 >>  
+	3dt3 gaxis 30 << or 
+	cachexyza =? ( drop 0 ; ) 'cachexyza ! 1 ;
 
 #moded 0
 
@@ -345,11 +353,15 @@
 :paintile 
 	hiteye 0? ( drop ; ) drop
 	hitnew? 0? ( drop ; ) drop
-	addtile
-	;
+	builcursor
+	checktile +? ( drop ; ) drop
+	addtile ;
+	
 :erasetile 
 	hiteye 0? ( drop ; ) drop
-	;
+	hitnew? 0? ( drop ; ) drop
+	deltile ;
+	
 :selectile
 	;
 	
@@ -394,8 +406,6 @@
 	gaxis 2 << 'laxist + uiWrite
 	arena> arena - 5 >> " %d " sprint uiWrite
 
-|	'tofront "F" uiTBtn
-|	'toside "S" uiTBtn
 
 	modedit 
 	1 =? ( panelatlas ) 
@@ -406,7 +416,7 @@
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movemouse )				| active
-	6 =? ( clickmouse ) 
+	6 =? ( clickmouse )				| release
 	drop
 	
 	fend
@@ -419,6 +429,7 @@
 	|draw_cursor
 	draw3dtiles
 	grids 1? ( draw_gridp ) drop
+	|matini 0.05 $fffffff1 draw_sphere 
 	luces
 	rl_frame_end
 	|--------- HUD
@@ -428,12 +439,14 @@
 	
     sdlkey
 	>esc< =? ( exit )
-	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
-	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
-	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
-	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
-	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
-	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
+	<w> =? ( -0.1 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( 0.1 'va ! ) >s< =? ( 0 'va ! )
+	<a> =? ( 0.1 'vl ! ) >a< =? ( 0 'vl ! )
+	<d> =? ( -0.1 'vl ! ) >d< =? ( 0 'vl ! )
+	<q> =? ( 0.1 'vu ! ) >q< =? ( 0 'vu ! )
+	<e> =? ( -0.1 'vu ! ) >e< =? ( 0 'vu ! )
+	
+	<g> =? ( gridc )
 	
 	<ctrl> =? ( changemode )
 	
@@ -441,7 +454,6 @@
 	<up> =? ( 1.0 valax )
 	<dn> =? ( -1.0 valax )
 	
-	<esp> =? ( addpanel )
 		
     drop
 	va 1? ( 'camFor camVelMove ) drop
@@ -450,14 +462,11 @@
 	;
 
 |---------------------------------------------
-:tileinfo | "" -- 
-	fimgload 'imgatlas !
-	
+:tileinfo | tx -- 
+	pl_atlas_tex fimgtex 'imgatlas !
 	imgatlas fimgwh
 	2dup 'imgh ! 'imgw !
-	390 pick2 */ 
-	dup "%d" .println
-	'imgatlash !
+	390 pick2 */ 'imgatlash !
 	390 fix. swap / 'imgscale !
 	;
 	
@@ -466,16 +475,15 @@
 	sh sw rl_resizewin fixFontResize ;
 
 : | <<<<<< Boot
-	"demo escena" 1024 768 GLini GLInfo
+	"3dtile Editor" 1024 768 GLini GLInfo
 	rlhud
-	"media/img/tileskenney.png" tileinfo
+
 	rl_init
+	IniShapes
 	
 	rl_gridp_init
 	gaxis gridpAxis!
 	glevel gridplevel!
-	
-	IniShapes
 	
 	8 'fsun memfloat
 	
@@ -485,6 +493,7 @@
 	ini3dtile
 	|-----
 	"media/img/tileskenney.png" rl_3datlas
+	tileinfo
 	
 	here 'arena ! 
 	$fffff 'here +! | 1MB

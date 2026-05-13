@@ -70,7 +70,7 @@ void main(){
 #pl_vbo 
 #pl_ebo
 
-#pl_atlas_tex  0
+##pl_atlas_tex  0		| export atlas
 #pl_u_atlassize -1     | uniform location for uAtlasSize
 
 ::t3d_ini
@@ -141,7 +141,7 @@ void main(){
 
 ::rl_3datlas | "" --
 	glLoadImg 
-	dup $ffff and 'pl_atlas_tex !
+	dup 'pl_atlas_tex !
 	32 >> dup $ffff and swap 16 >> 
 	1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
 	
@@ -167,7 +167,7 @@ void main(){
 ::draw3dtiles
 	rl_sh_planes glUseProgram
 	GL_TEXTURE2 glActiveTexture
-	GL_TEXTURE_2D pl_atlas_tex glBindTexture
+	GL_TEXTURE_2D pl_atlas_tex $ffffffff and glBindTexture
 	pl_vao glBindVertexArray
 	GL_TRIANGLES pl_count 6 * GL_UNSIGNED_INT 0 glDrawElements
 	0 glBindVertexArray 
