@@ -7,13 +7,11 @@
 #pl_scaleX 1.0
 #pl_scaleY 1.0
 #pl_scaleZ 1.0
-| offset de centro: 512 para coordenada sin signo 10 bits
-#pl_bias 512
 
 #rl_shader_planes "
 @vertex-----------------
 #version 440 core
-layout(location=0) in uint aPackedPos;
+layout(location=0) in int aPackedPos;
 layout(location=1) in uint aUV;
 
 layout(std140, binding=0) uniform Matrices {
@@ -25,16 +23,15 @@ uniform vec2 uAtlasSize;
 const float scaleX = 1.0;
 const float scaleY = 1.0;
 const float scaleZ = 1.0;
-const float bias   = 512.0;
 
 out vec3 vWorldPos;
 out vec2 vUV;
 flat out float vColorPk;
 
 void main(){
-    float x = (float((aPackedPos >> 20u) & 0x3FFu) - bias) * scaleX;
-    float y = (float((aPackedPos >> 10u) & 0x3FFu) - bias) * scaleY;
-    float z = (float( aPackedPos         & 0x3FFu) - bias) * scaleZ;
+    float x = float(aPackedPos << 2 >> 22 ) * scaleX;
+    float y = float(aPackedPos << 12 >> 22 ) * scaleY;
+    float z = float(aPackedPos << 22 >> 22 ) * scaleZ;
     vWorldPos   = vec3(x, y, z);
     uint u = aUV & 0xFFFu;
     uint v = (aUV >> 12u) & 0xFFFu;
@@ -78,7 +75,9 @@ void main(){
 	mark ;
 
 ::3dt3 | x y z -- v
-	pl_bias + swap pl_bias + 10 << or swap pl_bias + 20 << or ;
+	$3ff and swap
+	$3ff and 10 << or swap
+	$3ff and 20 << or ;
 
 ::t3d4v | uv p uv p uv p uv p --
 	, , , , , , , , 1 'pl_count +! ;
@@ -106,15 +105,21 @@ void main(){
 	0 glBindVertexArray ;
 
 #PL_MAX 8192
+#atlasimgsize 0
 
-::ini3dtile
+::ini3dtile | "filename" --
+	glLoadImg dup 'pl_atlas_tex !
+	32 >> dup $ffff and swap 16 >> 
+	1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
+
 	'rl_shader_planes loadShaderv 'rl_sh_planes !
-
+	
 	rl_sh_planes glUseProgram
 |	rl_sh_planes "uAtlas" glGetUniformLocation 2 swap glUniform1i
 	rl_sh_planes "uAtlasSize" glGetUniformLocation 'pl_u_atlassize !
 	0 rl_sh_planes "Matrices" rl_bind_ubo
-
+	pl_u_atlassize 1 'atlasimgsize glUniform2fv 
+	
 	1 'pl_vao glGenVertexArrays
 	1 'pl_vbo glGenBuffers
 	1 'pl_ebo glGenBuffers
@@ -130,29 +135,18 @@ void main(){
 | stride = 8 bytes
 | attrib 0: aPackedPos  uint  offset 0  → INTEGER attrib
 	0 glEnableVertexAttribArray
-	0 1 GL_UNSIGNED_INT 8 0 glVertexAttribIPointer
+	0 1 GL_INT 8 0 glVertexAttribIPointer
 | attrib 1: aUV         uint  offset 4  → INTEGER attrib  
 	1 glEnableVertexAttribArray
 	1 1 GL_UNSIGNED_INT 8 4 glVertexAttribIPointer
 	0 glBindVertexArray
 	;
 
-#atlasimgsize 0
-
-::rl_3datlas | "" --
-	glLoadImg 
-	dup 'pl_atlas_tex !
-	32 >> dup $ffff and swap 16 >> 
-	1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
-	
-	rl_sh_planes glUseProgram
-	pl_u_atlassize 1 'atlasimgsize glUniform2fv ;
-	;
-
-::rl_3datlas_reload | "" --
+:rl_3datlas_reload | "" --
 	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop
 	0 'pl_atlas_tex !
-	rl_3datlas ;
+	|rl_3datlas 
+	;
 
 ::end3dtile
 	rl_sh_planes glDeleteProgram

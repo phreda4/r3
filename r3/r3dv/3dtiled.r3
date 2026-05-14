@@ -191,6 +191,12 @@
 	tilex tiley tilesh + 12 << or db!
 	;
 
+:rotauv
+	'texuv d@
+	'texuv dup 4 + 3 dmove
+	'texuv 3 2 << + d! ;
+	
+
 #x1 #y1 #z1
 #x2 #y2 #z2
 #x4 #y4 #z4
@@ -466,7 +472,9 @@
 	;
 
 |---------------------------------------------
-:tileinfo | tx -- 
+:load3dtile | -- 
+	"media/img/tileskenney.png" ini3dtile
+	|rl_3datlas
 	pl_atlas_tex fimgtex 'imgatlas !
 	imgatlas fimgwh
 	2dup 'imgh ! 'imgw !
@@ -494,10 +502,8 @@
 	'viewresize SDLeventR
 	makecam
 	
-	ini3dtile
-	|-----
-	"media/img/tileskenney.png" rl_3datlas
-	tileinfo
+	load3dtile
+	
 	
 	here 'arena ! 
 	$fffff 'here +! | 1MB
