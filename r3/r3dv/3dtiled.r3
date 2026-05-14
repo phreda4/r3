@@ -68,10 +68,13 @@
 :hiteye
 	AdvMouse
 	'camForMouse gaxis 3 << + @ 0? ( ; ) 
-	'camEye gaxis 3 << + @ glevel - swap /. | t
+	'camEye gaxis 3 << + @ glevel - 
+	swap /. | t
 	-? ( drop 0 ; ) neg
 	'v3hit 'camEye v3=
 	'v3hit 'camForMouse rot v3+*
+	'camEye gaxis 3 << + @ glevel - +? ( drop 1 ; ) drop 
+	1.0 'v3hit gaxis 3 << + +!
 	1 ;
 	
 :camVelMove | ve 'v3 -- ve
@@ -166,20 +169,28 @@
 	'gsz +! gsz gridpsz! ;
 
 |---------------------------------------------
-#arena
-#arena>
+#filename "mem/scratch.3dm"
 
-#modedit 0
+#inifile | adr in here
+
+|-- head 1024
+#filepng * 512
+#maxtile 8192
+#tilex 0 #tiley 0
+#tilesw 64 #tilesh 64
+
+#__pad * 472 | 512-5*8
+
+|---------------------------------------------
+#modepanel 0
 
 #imgatlas
 #imgatlash
 #imgscale
 #imgw #imgh
 
-#tilex 0 
-#tiley 0
-#tilesw 64
-#tilesh 64
+#arena
+#arena>
 
 #texuv [ 0 0 0 0 ]
 
@@ -201,9 +212,7 @@
 #x2 #y2 #z2
 #x4 #y4 #z4
 
-:arenareset
-	arena 'arena> ! ;
-	
+
 :arena!
 	makeuv
 	'texuv >b
@@ -242,12 +251,11 @@
 		a@+ a@+ a@+ a@+ 
 		t3d4q
 		) drop
-	t3d_end
-	;
+	t3d_end ;
 
 | build patch by axis
 #deltaxis (
-1 1 1  1 1 0  0 1 0
+0 0 0  0 0 1  1 0 1
 1 1 0  0 0 0  0 1 0
 0 1 0  1 1 0  0 0 0
 )
@@ -283,14 +291,10 @@
 	
 |-------------
 :modetile
-	1 'modedit ! ;
+	1 'modepanel ! ;
 	
 :changemode
-	modedit
-	1+
-	$1 and
-	'modedit !
-	;
+	modepanel 1+ $3 and 'modepanel ! ;
 
 :cursortile
 	|msec $100 and? ( drop ; ) drop
@@ -322,14 +326,16 @@
 	uiPop
 	;
 	
-:panelatlas
+:panelinfo
 	180 uiO
 	$7f0f0fff 'fcolor !
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	gsz gsy gsx "%a %a %a" sprint uiLabelC
-	'exit "save" uiFTBtn	
+	'exit "save" uiFTBtn
+	;
 
+:panelatlas
 	400 uiE
 	$3fffffff 'fcolor !
 	gZoneAll frect
@@ -416,9 +422,9 @@
 	gaxis 2 << 'laxist + uiWrite
 	arena> arena - 5 >> " %d " sprint uiWrite
 
-
-	modedit 
-	1 =? ( panelatlas ) 
+	modepanel
+	$1 and? ( panelinfo ) 
+	$2 and? ( panelatlas ) 
 	drop
 	
 	uiFill
@@ -464,7 +470,6 @@
 	<up> =? ( 1.0 valax )
 	<dn> =? ( -1.0 valax )
 	
-		
     drop
 	va 1? ( 'camFor camVelMove ) drop
 	vl 1? ( 'camRig camVelMove ) drop
@@ -472,14 +477,48 @@
 	;
 
 |---------------------------------------------
-:load3dtile | -- 
-	"media/img/tileskenney.png" ini3dtile
-	|rl_3datlas
+|#filename "mem/scratch.3dm"
+|"media/img/tileskenney.png"
+
+:adjust	
 	pl_atlas_tex fimgtex 'imgatlas !
 	imgatlas fimgwh
 	2dup 'imgh ! 'imgw !
 	390 pick2 */ 'imgatlash !
 	390 fix. swap / 'imgscale !
+	;
+
+:default3dtile
+	"media/img/tileskenney.png" 'filepng strcpy
+	8192 'maxtile !
+	'filepng maxtile ini3dtile
+	adjust
+	|---- filemap
+	here dup 'inifile !
+	dup 'filepng 1024 cmove 
+	1024 + dup 'arena ! 
+	$fffff + | 1MB 
+	'here ! 
+	arena 'arena> !
+	;
+	
+:load3dtile | -- 
+	'filename filexist 0? ( drop default3dtile ; ) drop
+	here 'inifile !
+	'filename load drop | here 'last
+	'filepng inifile 1024 cmove
+	'filepng maxtile ini3dtile | use here but not need
+	|-- reload (ini3dtile trash)
+	inifile 'filename load | here 'last
+	inifile 1024 + 'arena !
+	dup arena> !
+	$fffff + 'here ! | more place
+	adjust
+	;
+	
+	
+:save3dtile 
+	
 	;
 	
 |---------------------------------------------
@@ -504,12 +543,9 @@
 	
 	load3dtile
 	
-	
-	here 'arena ! 
-	$fffff 'here +! | 1MB
-	arenareset
-	|-----
 	'main SDLshow
+
+	save3dtile
 	
 	rl_gridp_free
 	rl_shutdown

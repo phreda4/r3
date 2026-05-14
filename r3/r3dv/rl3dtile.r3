@@ -1,9 +1,9 @@
+| 3dtile 
 | PHREDA 2026
 ^./renderlib.r3
 
 #rl_sh_planes 0
 
-| escala: 1 unidad de grilla = estos valores en mundo
 #pl_scaleX 1.0
 #pl_scaleY 1.0
 #pl_scaleZ 1.0
@@ -68,7 +68,7 @@ void main(){
 #pl_ebo
 
 ##pl_atlas_tex  0		| export atlas
-#pl_u_atlassize -1     | uniform location for uAtlasSize
+#pl_u_atlassize -1
 
 ::t3d_ini
 	0 'pl_count ! 
@@ -104,10 +104,11 @@ void main(){
 	GL_ELEMENT_ARRAY_BUFFER 0 pl_count 24 * here glBufferSubData
 	0 glBindVertexArray ;
 
-#PL_MAX 8192
+#pl_max 8192
 #atlasimgsize 0
 
-::ini3dtile | "filename" --
+::ini3dtile | "filename" maxtiles --
+	'pl_max !
 	glLoadImg dup 'pl_atlas_tex !
 	32 >> dup $ffff and swap 16 >> 
 	1.0 swap / f2fp 1.0 rot / f2fp 'atlasimgsize d!+ d!
@@ -115,7 +116,6 @@ void main(){
 	'rl_shader_planes loadShaderv 'rl_sh_planes !
 	
 	rl_sh_planes glUseProgram
-|	rl_sh_planes "uAtlas" glGetUniformLocation 2 swap glUniform1i
 	rl_sh_planes "uAtlasSize" glGetUniformLocation 'pl_u_atlassize !
 	0 rl_sh_planes "Matrices" rl_bind_ubo
 	pl_u_atlassize 1 'atlasimgsize glUniform2fv 
@@ -133,19 +133,13 @@ void main(){
 	GL_ELEMENT_ARRAY_BUFFER PL_MAX 4 * 6 * 4 * 0 GL_DYNAMIC_DRAW glBufferData
 
 | stride = 8 bytes
-| attrib 0: aPackedPos  uint  offset 0  → INTEGER attrib
+| attrib 0: aPackedPos  int  offset 0  → INTEGER attrib
 	0 glEnableVertexAttribArray
 	0 1 GL_INT 8 0 glVertexAttribIPointer
 | attrib 1: aUV         uint  offset 4  → INTEGER attrib  
 	1 glEnableVertexAttribArray
 	1 1 GL_UNSIGNED_INT 8 4 glVertexAttribIPointer
 	0 glBindVertexArray
-	;
-
-:rl_3datlas_reload | "" --
-	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop
-	0 'pl_atlas_tex !
-	|rl_3datlas 
 	;
 
 ::end3dtile
@@ -158,6 +152,24 @@ void main(){
 	pl_atlas_tex 1? ( 1 'pl_atlas_tex glDeleteTextures ) drop
 	;
 
+#pini #pcnt
+::upd3dtiles | mem end ini --
+	dup 'pini ! - 'pcnt ! >r
+	pl_vao glBindVertexArray
+	GL_ARRAY_BUFFER pl_vbo glBindBuffer
+	GL_ARRAY_BUFFER pini 32 * pcnt 32 * r> glBufferSubData
+	here >a
+	0 ( pcnt 6 * <? 
+		pini 4 * +
+		dup da!+ dup 1 + da!+ dup 2 + da!+
+		dup da!+ dup 2 + da!+ 3 + da!+
+		4 + ) drop
+	GL_ELEMENT_ARRAY_BUFFER pl_ebo glBindBuffer
+	GL_ELEMENT_ARRAY_BUFFER pini 24 * pcnt 24 * here glBufferSubData
+	0 glBindVertexArray 
+	pini pcnt + pl_count max 'pl_count !
+	;
+	
 ::draw3dtiles
 	rl_sh_planes glUseProgram
 	GL_TEXTURE2 glActiveTexture

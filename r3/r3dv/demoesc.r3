@@ -182,8 +182,8 @@
 	'viewresize SDLeventR
 	makecam
 	
-	ini3dtile
-	"media/img/atlaspl.png" rl_3datlas	
+	
+	"media/img/atlaspl.png" 1024 ini3dtile
 	maket3d
 	
 	'main SDLshow
