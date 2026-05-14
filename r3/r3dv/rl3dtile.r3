@@ -104,6 +104,13 @@ void main(){
 	GL_ELEMENT_ARRAY_BUFFER 0 pl_count 24 * here glBufferSubData
 	0 glBindVertexArray ;
 
+::t3dstatic | cnt adr --
+	mark
+	here swap pick2 2 << move | 4qword p/panel
+	dup 'pl_count !
+	5 << 'here +!
+	t3d_end ;
+
 #pl_max 8192
 #atlasimgsize 0
 

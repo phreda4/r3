@@ -73,6 +73,7 @@
 	-? ( drop 0 ; ) neg
 	'v3hit 'camEye v3=
 	'v3hit 'camForMouse rot v3+*
+	|-- adjust for 1 plane, not the cube
 	'camEye gaxis 3 << + @ glevel - +? ( drop 1 ; ) drop 
 	1.0 'v3hit gaxis 3 << + +!
 	1 ;
@@ -245,6 +246,9 @@
 	;
 
 :genarena
+	arena arena> over - 5 >> swap t3dstatic ;
+	
+:a	
 	t3d_ini
 	arena> arena dup >a - 5 >> | 32
 	( 1? 1- 
@@ -478,7 +482,6 @@
 
 |---------------------------------------------
 |#filename "mem/scratch.3dm"
-|"media/img/tileskenney.png"
 
 :adjust	
 	pl_atlas_tex fimgtex 'imgatlas !
@@ -504,21 +507,21 @@
 	
 :load3dtile | -- 
 	'filename filexist 0? ( drop default3dtile ; ) drop
-	here 'inifile !
+	here dup 'inifile !
 	'filename load drop | here 'last
 	'filepng inifile 1024 cmove
 	'filepng maxtile ini3dtile | use here but not need
-	|-- reload (ini3dtile trash)
+	|-- reload (ini3dtile trash it)
 	inifile 'filename load | here 'last
 	inifile 1024 + 'arena !
-	dup arena> !
+	dup 'arena> !
 	$fffff + 'here ! | more place
 	adjust
+	genarena 
 	;
 	
-	
 :save3dtile 
-	
+	inifile arena> over - 'filename save
 	;
 	
 |---------------------------------------------
