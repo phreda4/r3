@@ -134,9 +134,32 @@
 	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
+	
+#estado 
+#anima
+#aniref ( 96 97 96 98 )
 
+:correr | --
+	1 estado =? ( drop ; ) 'estado !
+	0 4 7.0 aniInit 'anima !
+	1 'estado ! ;
+	
+:girar
+	2 estado =? ( drop ; ) 'estado !
+	0 2 7.0 aniInit 'anima !
+	2 'estado ! ;
 
+:parar
+	0 0 0 aniInit 'anima !
+	0 'estado !
+	;
+	
+:saltar
+	;
+	
 :jugador
+	'anima ani+timer!
+	
 	prot neg sincos 
 	vd *. 'pxp +! 
 	vd *. 'pyp +!
@@ -145,8 +168,7 @@
 	pxp pzp 0.5 + pyp
 	prot 0.25 + 2/ $ffff and 16 << rxyz>q16 
 	4.0	
-	|msec 8 >> $3 and 'walk + c@
-	96
+	anima aniFrame 'aniref + c@
 	$ffffff00 
 	0 ss3dset
 
@@ -194,10 +216,10 @@
 	>esc< =? ( exit ) 	
 	<f1> =? ( +obj ) 
 	
-	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
-	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
-	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
-	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
+	<up> =? ( 0.02 'vd ! correr ) >up< =? ( 0 'vd ! parar )
+	<dn> =? ( -0.02 'vd ! correr ) >dn< =? ( 0 'vd ! parar )
+	<le> =? ( 0.005 'vr ! girar ) >le< =? ( 0 'vr ! parar )
+	<ri> =? ( -0.005 'vr ! girar ) >ri< =? ( 0 'vr ! parar )
 	<esp> =? ( vpz 0? ( 0.05 'vpz ! ) drop )
 	
 	drop
@@ -209,6 +231,8 @@
 	0 'objcnt !
 	1 'objnro !
 	20 ( 1? 1- +obj ) drop
+	|correr
+	parar
 	'juego SDLShow 
 	;
 	
