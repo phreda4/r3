@@ -301,7 +301,7 @@ void main() {
 	0 swap c!+ 'here !
 	ss3names dup >a
 	trim ( c@+ 1? $ff and 
-		13 =? ( 0 ca!+ )
+		10 =? ( 0 ca!+ ) | linux store 10 only
 		31 >? ( dup ca!+ )
 		drop ) 2drop
 	0 a> c!+ 'here !

@@ -85,32 +85,6 @@
 	makecam ;
 	
 |----------------
-	
-:blink
-	msec $100 and? ( drop $0000ff00 ; ) 
-	drop $ffffff00 ; 
-
-:scursor
-	gaxis
-	0? ( drop 0.1 1.0 1.0 ; )
-	1 =? ( drop 1.0 0.1 1.0 ; )
-	drop 1.0 1.0 0.1 ;
-	
-:draw_cursor
-	matini
-	|scursor
-	1.0 dup dup 
-	matscale
-	'v3cursor >a 
-	a@+ $ffff nand $7fff +
-	a@+ $ffff nand $7fff +
-	a@+ $ffff nand $7fff +
-	matpos
-	blink
-	|$ffffff00
-	draw_cube 	
-	;
-
 #xp #yp 
 :movecam
 	sdlx dup xp - 0.001 * 
@@ -248,14 +222,6 @@
 :genarena
 	arena arena> over - 5 >> swap t3dstatic ;
 	
-:a	
-	t3d_ini
-	arena> arena dup >a - 5 >> | 32
-	( 1? 1- 
-		a@+ a@+ a@+ a@+ 
-		t3d4q
-		) drop
-	t3d_end ;
 
 | build patch by axis
 #deltaxis (
@@ -294,11 +260,10 @@
 	genarena ;
 	
 |-------------
-:modetile
-	1 'modepanel ! ;
-	
+:changemenu
+	modepanel $1 xor 'modepanel ! ;
 :changemode
-	modepanel 1+ $3 and 'modepanel ! ;
+	modepanel $2 xor 'modepanel ! ;
 
 :cursortile
 	|msec $100 and? ( drop ; ) drop
@@ -416,6 +381,7 @@
 	stDang
 	'exit "Exit" uiTBtn
 	stDark
+	'changemenu "Menu" uiTBtn
 	'changemode "Tiles" uiTBtn
 	'gridc "G" uiTBtn
 	
@@ -446,7 +412,6 @@
 :main
 	|--------- render
 	rl_frame_begin
-	|draw_cursor
 	draw3dtiles
 	grids 1? ( draw_gridp ) drop
 	|matini 0.05 $fffffff1 draw_sphere 

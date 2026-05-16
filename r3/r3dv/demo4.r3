@@ -234,13 +234,13 @@
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
 	
-	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
-	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
-	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
-	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
-	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
+|	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
+|	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
+|	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+|	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
+|	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
 
-	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
+|	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
 	nrosprite ssnameid "[%l]" sprint uiLabelC
 	
