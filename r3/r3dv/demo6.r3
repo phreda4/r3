@@ -11,11 +11,6 @@
 ^./rlgrid.r3
 |^./rllunar.r3
 
-| Camera controls
-#camEye -4.0 1.0 0.0
-#camTo  0.0 0.0  0.0
-#camUp  0.0 1.0  0.0
-
 |---------------------------------
 #objcnt 0
 #objlst 0
@@ -116,8 +111,9 @@
 #camDist 4.0
 #camRot
 
+
 :camera
-	pyp pzp pxp 'camTo !+ !+ !
+	pyp pzp 0.6 + pxp 'camTo !+ !+ !
 
 	prot 0.5 + neg camrot - 0.02 *. 'camrot +!
 	
@@ -137,7 +133,7 @@
 	
 #estado 
 #anima
-#aniref ( 96 97 96 98 )
+#aniref ( 96 97 96 98 110 )
 
 :correr | --
 	1 estado =? ( drop ; ) 'estado !
@@ -155,6 +151,8 @@
 	;
 	
 :saltar
+	4 0 0 aniInit 'anima !
+	3 'estado !
 	;
 	
 :jugador
@@ -186,41 +184,40 @@
 	-0.001 'vpz +!	
 	;
 
-|-------------------------------
-:juego
-	vupdate
-
-	rl_frame_begin
-	
-	|draw_lunar
-	draw_grid
-	
-	|objupdate
-	drawobjlst 
-	
-	jugador
-	SS3Ddraw
-	
-	rl_frame_end
-	
+:hud
 	fini
 	2 'fscale !
 	$ffffffff 'fcolor !
-	16 16  fat
-	prot "r:%f " sprint ftext
+|	16 16  fat
+|	prot "r:%f " sprint ftext
 	fend
+
+	;
 	
+|-------------------------------
+:juego
+	vupdate
+	rl_frame_begin
+	|draw_lunar
+	draw_grid
+	|objupdate
+	drawobjlst 
+	jugador
+	SS3Ddraw
+	rl_frame_end
+	
+	hud
 	GLUpdate
 	
 	SDLkey
 	>esc< =? ( exit ) 	
 	<f1> =? ( +obj ) 
 	
-	<up> =? ( 0.02 'vd ! correr ) >up< =? ( 0 'vd ! parar )
-	<dn> =? ( -0.02 'vd ! correr ) >dn< =? ( 0 'vd ! parar )
-	<le> =? ( 0.005 'vr ! girar ) >le< =? ( 0 'vr ! parar )
-	<ri> =? ( -0.005 'vr ! girar ) >ri< =? ( 0 'vr ! parar )
-	<esp> =? ( vpz 0? ( 0.05 'vpz ! ) drop )
+	<w> =? ( 0.02 'vd ! correr ) >w< =? ( 0 'vd ! parar )
+	<s> =? ( -0.02 'vd ! correr ) >s< =? ( 0 'vd ! parar )
+	<a> =? ( 0.005 'vr ! girar ) >a< =? ( 0 'vr ! parar )
+	<d> =? ( -0.005 'vr ! girar ) >d< =? ( 0 'vr ! parar )
+	<esp> =? ( saltar vpz 0? ( 0.05 'vpz ! ) drop )
 	
 	drop
 	;		
@@ -233,6 +230,7 @@
 	20 ( 1? 1- +obj ) drop
 	|correr
 	parar
+	|0 sdl_ShowCursor
 	'juego SDLShow 
 	;
 	

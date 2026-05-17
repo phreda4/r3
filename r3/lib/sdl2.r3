@@ -245,17 +245,19 @@
 |    int refresh_rate;     /**< frecuencia de actualización (o cero para no especificado) */
 |    void *driverdata;     /**< datos específicos del controlador, inicializar a 0 */
 |
-#dm 0 0 0
 
+::SDLdfullsw | display --
+	here SDL_GetCurrentDisplayMode
+	here 4 + d@+ swap d@ ;
+	
 ::SDLfullw | "titulo" display --
 	$3231 SDL_init 
-	dup 'dm SDL_GetCurrentDisplayMode
-	'dm 4 + d@+ 'sw ! d@ 'sh ! 
+	dup SDLdfullsw 'sh ! 'sw !
 	$2fff0000 or dup | display nro
 	sw sh $10 SDL_CreateWindow dup 'SDL_windows !
 	-1 0 SDL_CreateRenderer 'SDLrenderer !
 	;
-	
+
 ::SDLfull | --
 	SDL_windows 1 SDL_SetWindowFullscreen ;
 	

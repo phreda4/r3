@@ -296,7 +296,7 @@
 ::vaempty
     timeline> timeline - 3 >> ;
 
-
+|------------ FRAME ANIMATION
 |init(12) cnt-1(8) now(8) ms(12) acc(24)  = 64 bits
 |63..52   51..44   43..36  35..24  23..0
 ::aniInit | ini cnt fps -- V
