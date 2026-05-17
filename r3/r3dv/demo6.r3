@@ -28,6 +28,7 @@
 :]objs | n
 	6 << objlst + ; | 8 cells
 	
+#randobj ( 95 117 112 111 )
 :+obj
 	objcnt ]objs >a | 8 cells
 	|-15.0 15.0 randminmax 
@@ -54,8 +55,9 @@
 	objnro a!+
 	
 	4.0 
-	114
-	$ffffff00 
+	4 randmax 'randobj + c@ 
+	|$ffffff00 
+	rand
 	objnro
 	ss3dcs | scale spr color i --
 
@@ -82,7 +84,7 @@
 	swap 4 + d!
 	
 	|.vr
-	msec 4 << $ffff and 16 << over $10000000 * + rxyz>q16 
+	msec 4 << $ffff and 16 << over $100020000400 * + rxyz>q16 
 	.q ! | ROT
 	;
 	
@@ -188,8 +190,7 @@
 	fini
 	2 'fscale !
 	$ffffffff 'fcolor !
-|	16 16  fat
-|	prot "r:%f " sprint ftext
+	16 16  fat "f1 +obj" ftext
 	fend
 
 	;

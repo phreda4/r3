@@ -1,4 +1,4 @@
-| 3dworld 
+| block editor en 3d
 | PHREDA 2026
 |-----
 ^r3/lib/rand.r3
@@ -14,19 +14,15 @@
 #conw 44
 #conh 32
 #conmem
+#curx #cury #curatr
+
 #iniobj 0
 #charq
 #xc #yc
 
 :drawcar | color char -- color char
-	3.0 
-	over 33 -
-	pick3 $ffffff00 and
-	iniobj ss3dcs
-	
-	zi yc xc charq 
-	iniobj ss3dxyzq
-	
+	3.0 over 33 - pick3 $ffffff00 and iniobj ss3dcs
+	zi yc xc charq iniobj ss3dxyzq
 	1 'iniobj +!
 	;
 	
@@ -36,18 +32,38 @@
 	0 'iniobj !
 	0 ( conh <?
 		0 ( conw <?
-			da@+ dup $ff and 33 96 in? ( drawcar ) 2drop
+			da@+ dup $ff and 
+			$21 $7d in? ( drawcar ) 2drop
 			dx 'xc +!
 			1+ ) drop
 		xi 'xc !
 		dy 'yc +!
 		1+ ) drop ;
+		
+:3dpos | x y -- adr
+	conw * + 2 << conmem + ;
 	
-|---------------------------------
-#objcnt 0
-#objlst 0
-#objnro 0
+:3dcls | --
+	conmem 0 conw conh * dfill |dvc		
+:3dhome | -- 
+	0 'curx ! 0 'cury ! ;
 
+:3dcolor | rgb --
+	8 << 'curatr ! ;
+	
+:3dat | x y --
+	'cury ! 'curx ! ;
+	
+:3dwrite | "" --
+	curx cury 3dpos >a
+	( c@+ 1? $ff and 
+		curatr or da!+
+		curx 1+ 
+		conw >=? ( 0 nip 1 'cury +! ) 
+		'curx !
+		) 2drop ;
+		
+	
 |------ Camera controls
 #cam_yaw  0  
 #cam_pit  0
@@ -56,8 +72,6 @@
 #camUp  0.0 1.0  0.0
 #camFor 0 0 0 | forward
 #camRig 0 0 0 | right
-
-#va #vl #vu
 
 #cp #sp #cy #sy 
 #xp #yp 
@@ -88,7 +102,6 @@
 	'camEye -rot v3+*
 	'camTo  -rot v3+*
 	makecam ;
-
 
 :movecam
 	sdlx dup xp - 0.001 * 
@@ -142,23 +155,14 @@
 	GLUpdate
 	
 	SDLkey
-	>esc< =? ( exit ) 		
-	<up> =? ( -0.1 'va ! ) >up< =? ( 0 'va ! )
-	<dn> =? ( 0.1 'va ! ) >dn< =? ( 0 'va ! )
-	<le> =? ( 0.1 'vl ! ) >le< =? ( 0 'vl ! )
-	<ri> =? ( -0.1 'vl ! ) >ri< =? ( 0 'vl ! )
-	drop
-	va 1? ( 'camFor camVelMove ) drop
-	vl 1? ( 'camRig camVelMove ) drop
-	vu 1? ( 'camUp camVelMove ) drop
+	>esc< =? ( exit )
 	
+	drop
 	;		
 
 	
 :jugar 
 	ss3dreset
-	0 'objcnt !
-	1 'objnro !
 	'juego SDLShow 
 	;
 	
@@ -184,24 +188,18 @@
 	ss3loadnames	
 	|"point" ss3idname 'ballid !
 	
+	0.5 -0.5 0 0 packq rxyz>q16 'charq !
+	
 	here 'conmem !
 	conw conh * 2 << 'here +!
-	conmem 0 conw conh * dfill |dvc
 	
-	conmem >a
-	conw conh * ( 1?
-		32 80 randminmax
-		$ffffff00 or
-		da!+
-		1- ) drop
-	conmem >a
-	$ffff0030 da!+
-	$ffff0031 da!+
-	$ffff0032 da!+
-	$ffff0033 da!+
-	$ffff0034 da!+
+	3dcls
+	$ffffff 3dcolor
+	"r3Forth" 3dwrite
+	10 10 3dat
+	"2313213213fdfdsfds233" 3dwrite
 	
-	0.5 -0.5 0 1.0 packq rxyz>q16 'charq !
+
 	;
 	
 |-------------------------------------

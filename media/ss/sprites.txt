@@ -110,7 +110,9 @@ clon_conjetpack_caminando2_000
 clon_disparando_000
 clon_muerte_000
 cuboalambre_obj000
+cylinder_obj000
 dude_obj000
 mono_obj000
 ovni_000
 point_obj000
+pyrami_obj000

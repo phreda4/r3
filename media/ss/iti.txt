@@ -7,10 +7,10 @@ cabeza0_obj000
 cabeza1_obj000
 cabeza2_obj000
 cabeza_obj000
-chimchamplogotipo_obj000
 cuerpo-1_obj000
 cuerpo-2_obj000
 cuerpo-3_obj000
+logotiporeal_obj000
 loro1_obj000
 loro2_obj000
 loro3_obj000
@@ -31,7 +31,6 @@ obj_tree2b_obj000
 obj_tree2c_obj000
 obj_tree3_obj000
 obj_tree4_obj000
-pelota_obj000
 pelotao_obj000
 tacho2_obj000
 tacho_obj000
