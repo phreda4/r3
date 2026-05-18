@@ -1,11 +1,7 @@
-| block editor en 3d
+| block editor in 3d
 | PHREDA 2026
 |-----
-^r3/lib/rand.r3
-^r3/util/varanim.r3
-
 ^./renderlib.r3
-^./rlhud.r3
 ^./ss3d.r3
 
 #xi -4.5 #yi 3.4 #zi 5.0
@@ -60,24 +56,35 @@
 :3dat | x y --
 	'cury ! 'curx ! ;
 
-:3dcr
-	0 'curx ! 
+:3dup
+	cury 1-
+	0 <? ( drop conh 1- )
+	'cury !	;
+:3ddn
 	cury 1+
 	conh >=? ( 0 nip ) 
 	'cury ! ;
 	
-:cur++
-	curx 1+ 
-	conw >=? ( drop 3dcr ; ) 
+:3dle
+	curx 1- 
+	0 <? ( drop conw 1- )
 	'curx ! ;
 	
+:3dri
+	curx 1+ 
+	conw >=? ( 0 nip ) 
+	'curx ! ;
+
+:3dcr
+	0 'curx ! 3ddn ;
+		
 :3demit | nro --
 	$ff and curatr or curx cury 3dpos d! 
-	cur++ ;
+	3dri ;
 	
 :3dwrite | "" --
 	curx cury 3dpos >a
-	( c@+ 1? $ff and curatr or da!+ cur++ ) 2drop ;
+	( c@+ 1? $ff and curatr or da!+ 3dri ) 2drop ;
 		
 	
 |------ Camera controls
@@ -131,24 +138,17 @@
 	SDLw 0? ( drop ; ) -0.4 *
 	'camFor camVelMove drop ;
 
-:hud
-	fini
-	2 'fscale !
-	$ffffffff 'fcolor !
-|	16 16  fat
-|	prot "r:%f " sprint ftext
+:mouse
 	immIni
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
 	3 =? ( movecam )				| active
 	drop
-	fend
 	;
 	
 |-------------------------------
-:juego
-	vupdate
+:3deditor
 	rl_frame_begin
 	
 	ss3dreset
@@ -164,31 +164,22 @@
 	
 	rl_frame_end
 	
-	hud
+	mouse
 	GLUpdate
 	
 	SDLkey
 	>esc< =? ( exit )
 	<ret> =? ( 3dcr )
-	<up> =? ( -1 'cury +! )
-	<dn> =? ( 1 'cury +! )
-	<le> =? ( -1 'curx +! )
-	<ri> =? ( 1 'curx +! )
-	<back> =? ( -1 'curx +! 32 3demit -1 'curx +! )
+	<up> =? ( 3dup ) <dn> =? ( 3ddn )
+	<le> =? ( 3dle ) <ri> =? ( 3dri )
+	<back> =? ( 3dle 32 3demit 3dle )
 	drop
 	SDLchar 1? ( dup 3demit ) drop
 	;		
-
-	
-:jugar 
-	ss3dreset
-	'juego SDLShow 
-	;
 	
 |-------------------------------------
 :viewresize 
-	sh sw rl_resizewin 
-	fixFontResize ;
+	sh sw rl_resizewin ;
 
 #fsun [ 
 -0.5 1.0 -0.5 0
@@ -200,13 +191,10 @@
 	'fsun rl_set_sun
 	;
 
-
 :load3d
 	"media/ss/sprites"
 	dup 2048 ss3dload
 	ss3loadnames	
-	|"point" ss3idname 'ballid !
-	
 	0.5 -0.5 0 0 packq rxyz>q16 'charq !
 	
 	here 'conmem !
@@ -223,14 +211,13 @@
 : | <<<<<<<< Boot
 	"3dtext" 1024 768 GLini GLInfo
 
-	rlhud
 	load3d
 	rl_init 
-	$fff vaini
 	'viewresize SDLeventR
 	lightsun
-	
-	jugar
+
+	ss3dreset
+	'3deditor SDLShow 
 	
 	rl_shutdown
 	SS3Dshutdown
