@@ -20,7 +20,6 @@ mono2_obj000
 mono3_obj000
 mono4_obj000
 mono5_obj000
-mono_obj000
 obj_tree1_obj000
 obj_tree1a_obj000
 obj_tree1b_obj000
