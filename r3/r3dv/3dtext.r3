@@ -29,7 +29,7 @@
 :drawconsole
 	conmem >a
 	xi 'xc ! yi 'yc ! 
-	0 'iniobj !
+	1 'iniobj !
 	0 ( conh <?
 		0 ( conw <?
 			da@+ dup $ff and 
@@ -39,6 +39,12 @@
 		xi 'xc !
 		dy 'yc +!
 		1+ ) drop ;
+		
+:drawcursor
+	msec 6 << $f000 and $fff or 111 $ffffff01 0 ss3dcs
+	zi yi cury dy * + xi curx dx * +
+	charq 0 ss3dxyzq
+	;
 		
 :3dpos | x y -- adr
 	conw * + 2 << conmem + ;
@@ -53,15 +59,25 @@
 	
 :3dat | x y --
 	'cury ! 'curx ! ;
+
+:3dcr
+	0 'curx ! 
+	cury 1+
+	conh >=? ( 0 nip ) 
+	'cury ! ;
+	
+:cur++
+	curx 1+ 
+	conw >=? ( drop 3dcr ; ) 
+	'curx ! ;
+	
+:3demit | nro --
+	$ff and curatr or curx cury 3dpos d! 
+	cur++ ;
 	
 :3dwrite | "" --
 	curx cury 3dpos >a
-	( c@+ 1? $ff and 
-		curatr or da!+
-		curx 1+ 
-		conw >=? ( 0 nip 1 'cury +! ) 
-		'curx !
-		) 2drop ;
+	( c@+ 1? $ff and curatr or da!+ cur++ ) 2drop ;
 		
 	
 |------ Camera controls
@@ -115,16 +131,12 @@
 	SDLw 0? ( drop ; ) -0.4 *
 	'camFor camVelMove drop ;
 
-
-		
 :hud
 	fini
-	
 	2 'fscale !
 	$ffffffff 'fcolor !
 |	16 16  fat
 |	prot "r:%f " sprint ftext
-
 	immIni
 	immMouse
 	1 =? ( wheelcam )				| over
@@ -132,13 +144,15 @@
 	3 =? ( movecam )				| active
 	drop
 	fend
-	
 	;
 	
 |-------------------------------
 :juego
 	vupdate
 	rl_frame_begin
+	
+	ss3dreset
+	drawcursor
 	drawconsole
 	SS3Ddraw
 	
@@ -148,7 +162,6 @@
 	rl_point_light | int cr cg cb x y z --
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --		
 	
-	
 	rl_frame_end
 	
 	hud
@@ -156,8 +169,14 @@
 	
 	SDLkey
 	>esc< =? ( exit )
-	
+	<ret> =? ( 3dcr )
+	<up> =? ( -1 'cury +! )
+	<dn> =? ( 1 'cury +! )
+	<le> =? ( -1 'curx +! )
+	<ri> =? ( 1 'curx +! )
+	<back> =? ( -1 'curx +! 32 3demit -1 'curx +! )
 	drop
+	SDLchar 1? ( dup 3demit ) drop
 	;		
 
 	
@@ -196,10 +215,8 @@
 	3dcls
 	$ffffff 3dcolor
 	"r3Forth" 3dwrite
-	10 10 3dat
-	"2313213213fdfdsfds233" 3dwrite
-	
-
+	$ffff00 3dcolor
+	3dcr
 	;
 	
 |-------------------------------------
