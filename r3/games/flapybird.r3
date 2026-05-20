@@ -65,7 +65,7 @@
 	"r3sdl" 800 600 SDLinit
 
 	"media/img/pileline.png" loadimg 'sprpipe !
-	36 25 "media/img/bird.png" ssload 'sprbird !
+	24 20 "media/img/bird.png" ssload 'sprbird !
 
 	'juego SDLshow
 	
