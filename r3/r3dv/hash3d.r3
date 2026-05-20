@@ -84,17 +84,34 @@
 	drop
 	;
 	
-
-::h3d+! | nro r x y z -- 
-	pack3	| nro r xyz
-	collect	| nro r xyz
-	hash3	| nro r xyrp hash
-	dup 2* matrix + dup w@	| nro rxhp phash ninhash
-	$ffff and 16 << rot or 			| nro phash rxhph
-	pick2 4 << matlist + !+ !
-	w!
+| xyz-id|rad|idp
+::h3d+! | id r x y z -- 
+	pack3	| id r xyz
+	collect	| id r xyz
+	|swap >r | id xyz
+	nip
+	|rot 32 << rot $ffff and 16 << or rot | idr xyz
+	dup hash3	| id xyz cell
+	2* matrix + dup >r w@	| id xyz prev
+	
+	swap pick2 4 << matlist + !+ !
+	r> w!
 	;
 
 ::h3d! | x y zoom nro sizepixel/2 -- x y zoom 
 |	400 200 2.0 2 8 
 	pick2 *. pick4 pick4 h3d+! ;
+	
+::ldebug
+	matrix 
+	arraylen ( 1? 1- swap
+		w@+ "%d " .print
+		swap ) 2drop
+	.cr
+	matlist
+	arraylen ( 1? 1- swap
+		@+ "%d:" .print
+		@+ "%d " .print
+		swap ) 2drop 
+	"" .println
+	;

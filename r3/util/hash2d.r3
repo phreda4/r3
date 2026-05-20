@@ -28,11 +28,11 @@
 	arraylen and ;
 
 ::H2d.ini | maxobj --
-	dup 4 << nextpow2 1 - 'arraylen !	
+	dup 4 << nextpow2 1- 'arraylen !	
 	|..... MEMMAP .....
 	here 
 	dup 'matrix !	| hash array
-	arraylen 1 + 1 << + 
+	arraylen 1+ 1 << + 
 	dup 'matlist !	| list objs
 	swap 3 << + 	| max obj
 	'here !
@@ -40,7 +40,7 @@
 	;
 				
 ::H2d.clear
-	matrix -1 arraylen 2 >> 1 + fill	| fill hashtable with -1
+	matrix -1 arraylen 2 >> 1+ fill	| fill hashtable with -1
 	H2dlist 'H2dlist> ! ;
 	
 ::H2d.list	| -- 'adr cnt
@@ -61,7 +61,7 @@
 	35 >> $7ffff and ; | 10 << 45 >>
 	
 :check | xr yr x y point --
-	1 + $ffff nand? ( drop ; ) 1 -
+	1+ $ffff nand? ( drop ; ) 1-
 	$ffff and dup 3 << matlist + @ 
 	dup gety cpointy - abs
 	over getx cpointx - abs max
