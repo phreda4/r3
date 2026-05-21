@@ -12,7 +12,7 @@
 [  9]  cuerpo-1_obj000                                16x8     12x5       17  238
 [ 10]  cuerpo-2_obj000                                16x8     12x8       17  255
 [ 11]  cuerpo-3_obj000                                16x8     12x8       18  272
-[ 12]  logotiporeal_obj000                            80x32    76x30      29  290
+[ 12]  logotipo_obj000                                80x32    74x29      29  290
 [ 13]  loro1_obj000                                   16x16    16x16       5  319
 [ 14]  loro2_obj000                                   16x16    16x16       5  324
 [ 15]  loro3_obj000                                   16x16    16x16       5  329

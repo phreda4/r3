@@ -510,23 +510,23 @@
 :SDL_GL_DOUBLEBUFFER	5 ;
 :SDL_GL_DEPTH_SIZE	6 ;
 	
-#colorgl [ 0 0 0 1.0 1.0 ]
-#basegl [ 1.0 ]
+##vcolorgl [ 0 0 0 1.0 ]
+##vbasegl [ 1.0 ]
 
 ::GLpaper | $ffffff --
-	'colorgl >a
-	dup 16 >> $ff and 1.0 8 *>> da!+
-	dup 8 >> $ff and 1.0 8 *>> da!+
-	$ff and 1.0 8 *>> da!+
-	1.0 da!
-	5 'colorgl memfloat ;
+	'vcolorgl >a
+	dup 8 >> $ff00 and da!+
+	dup $ff00 and da!+
+	$ff and 8 << da!+
+	1.0 da! 
+	4 'vcolorgl memfloat ;
 	
-::GlDepth
-	'basegl ! 1 'basegl memfloat ;
+::GlDepth | deeph --
+	'vbasegl ! 1 'vbasegl memfloat ;
 	
 ::GLcls
-	$1800 0 'colorgl glClearBufferfv | GL_COLOR
-	$1801 0 'basegl glClearBufferfv | GL_DEPTH
+	$1800 0 'vcolorgl glClearBufferfv | GL_COLOR
+	$1801 0 'vbasegl glClearBufferfv | GL_DEPTH
 	;
 	
 ::GLIni | w h --
@@ -541,7 +541,7 @@
     SDL_windows SDL_GL_CreateContext 'SDL_context !
     1 SDL_GL_SetSwapInterval
     InitGLAPI
-	5 'colorgl memfloat
+	5 'vcolorgl memfloat
 	;
 	
 ::GLend

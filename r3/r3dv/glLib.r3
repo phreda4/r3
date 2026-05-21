@@ -275,17 +275,14 @@
 :Surface->pixels surface 32 + @ ;
 :Surface->wh surface dup 16 + d@ swap 20 + d@ ;
 
-:GLBPP 
-	surface 8 + @ 16 + c@
-	32 =? ( drop GL_RGBA ; ) 
-	24 =? ( drop GL_RGB ; )
-	drop GL_RED ;
-
 ::glLoadImg | "" -- t
-	IMG_Load 'Surface !
+	IMG_Load 
+	dup $16762004 0 SDL_ConvertSurfaceFormat
+	'Surface !
+	SDL_FreeSurface
 	1 't glGenTextures
     GL_TEXTURE_2D t glBindTexture 
-	GL_TEXTURE_2D 0 GLBPP Surface->wh 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D 0 GL_RGBA Surface->wh 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
 	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
 	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE  glTexParameteri

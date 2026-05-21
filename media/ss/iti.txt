@@ -10,7 +10,7 @@ cabeza_obj000
 cuerpo-1_obj000
 cuerpo-2_obj000
 cuerpo-3_obj000
-logotiporeal_obj000
+logotipo_obj000
 loro1_obj000
 loro2_obj000
 loro3_obj000

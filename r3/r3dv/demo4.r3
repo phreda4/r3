@@ -327,7 +327,7 @@
 	makeCam
 	
 	tofront
-
+	|$020902 GLpaper
 	'main SDLshow
 	
 	rl_grid_free 

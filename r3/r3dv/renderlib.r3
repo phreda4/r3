@@ -560,6 +560,7 @@ void main(){
     GL_CULL_FACE glEnable
     GL_BACK glCullFace
     GL_CCW glFrontFace
+	0.0 GlDepth
 	;
 	
 ::rl_shutdown
@@ -636,10 +637,6 @@ void main(){
 	'ubo_matProjView 'mati cpymatif
 	;
 	
-
-#deepValue 0
-#clearColorPtr [ 0 0 0 0 ]
-
 | ================================================================
 ::rl_frame_begin | --
     0 'rl_plight_count !
@@ -650,9 +647,9 @@ void main(){
 	GL_DEPTH_TEST glEnable
 	GL_TRUE glDepthMask
 
-	$1800 0 'clearColorPtr glClearBufferfv | Normales ATTACHMENT0
-	$1800 1 'clearColorPtr glClearBufferfv | Albedo ATTACHMENT1
-	$1801 0 'deepValue glClearBufferfv     | Profundidad 
+	$1800 0 'vcolorgl glClearBufferfv | Normales ATTACHMENT0
+	$1800 1 'vcolorgl glClearBufferfv | Albedo ATTACHMENT1
+	$1801 0 'vbasegl glClearBufferfv     | Profundidad 
 
 	|--- camera --- shadow?
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
@@ -733,7 +730,7 @@ void main(){
 	GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
 	0 0 rl_w rl_h glViewport
 	
-	$1800 0 'clearColorPtr glClearBufferfv
+	$1800 0 'vcolorgl glClearBufferfv
 	
 	GL_DEPTH_TEST glDisable
 	rl_sh_light glUseProgram
@@ -751,7 +748,7 @@ void main(){
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	0 0 rl_w rl_h glViewport
 	
-	$1800 0 'clearColorPtr glClearBufferfv
+	$1800 0 'vcolorgl glClearBufferfv
 	
 	rl_sh_composite glUseProgram
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
