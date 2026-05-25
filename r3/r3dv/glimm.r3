@@ -165,7 +165,6 @@
 	fat
 	ftext ;
 
-
 :zonefline
 	fx cx +
 	fy cy +
@@ -181,12 +180,25 @@
 	fsizeh r> * pady 2* + 
 	immBox immZone ;
 
+
+#lx #ly
+
+:fillboxb 
+	wix wiy wiw wih 2 frectb ;
+
+:fillline 
+	lx ly wiw fsizeh FRect ;
+
+:drawfocus
+	colFoc 'fcolor !
+	wix wiy wiw wih rect ;
 	
+|--------------------------------------	
 | fullwidth button down
 ::uiFTBtn | 'v "" --
 	zonefline
 
-	colorFill wix wiy wiw wih 2 rectb
+	colorFill fillboxb 
 	colorText tcwrite 
 	
 	uiClk 
@@ -202,7 +214,7 @@
 	fsizeh pady 2* + 
 	immBox immZone
 	
-	colorFill wix wiy wiw wih 2 frectb
+	colorFill fillboxb 
 	colorText tcwrite 
 
 	uiClk 
@@ -238,6 +250,15 @@
 	r> mary + 'cy +! ;
 
 |---- Horizontal slide
+:kbSlide
+	sdlkey 
+	<tab> =? ( tabfocus ) 
+	<le> =? ( <dn> nip ) 
+	<dn> =? ( over dup @ 1- clamp0 swap ! uiEx! )
+	<ri> =? ( <up> nip ) 
+	<up> =? ( over dup @ 1+ pick4 clampmax swap ! uiEx! )	
+	drop ;
+
 :slideh | 0.0 1.0 'value --
 	sdlx wix - wiw clamp0max 
 	2over swap - | Fw
@@ -247,7 +268,7 @@
 	
 :slideshow | 0.0 1.0 'value --
 	|colorBack
-|	[ kbSlide colFocus uiLRect ; ] uiFocus
+	[ kbSlide drawfocus ; ] uiFocus
 	colorFill
 	dup @ pick3 - 
 	wiw 8 - pick4 pick4 swap - */ wix 1+ +
@@ -272,8 +293,8 @@
 	2drop ;	
 	
 :progreshow | 0.0 1.0 'value --
-|	colBack uiLFill
-|	[ kbSlide colFocus uiLRect ; ] uiFocus	
+	|colBack uiLFill
+	[ kbSlide drawfocus  ; ] uiFocus	
 	colorFill
 	dup @ pick3 - wiw pick4 pick4 swap - */
 	wih
@@ -337,17 +358,12 @@
 
 
 |--------
-#lx #ly
-
 :wwlist	| 'var max d -- 'var max d ; Wheel 
 	dup pick3 8 + 
 	dup @ rot + 
 	cntlist pick4 -
 	clamp0max
 	swap ! ;
-	
-:backline 
-	lx ly wiw wih FRect ;
 	
 :slidev | 'var max -- 'var max
 	cntlist over - 1+	| maxi
@@ -370,20 +386,24 @@
 	SDLw 1? ( wwlist ) drop 
 	sdlkey 
 	<ret> =? ( uiEx! )
-	|<tab> =? ( tabfocus ) 
+	<tab> =? ( tabfocus ) 
 	<up> =? ( pick2 dup @ 1- clamp0 swap ! uiEx! )
 	<dn> =? ( pick2 dup @ 1+ cntlist 1- clampmax swap ! uiEx! )	
 	drop 
-	cscroll ;
+	|cscroll 
+	;
 
 :cklist | 'var max --
 	cntlist <? ( sdlx wix - wiw 12 - >? ( drop slidev ; ) drop )
-	sdly wiy - fsizew / pick2 8 + @ + cntlist 1- clampmax pick2 !
+	sdly wiy - fsizeh / pick2 8 + @ + cntlist 1- clampmax pick2 !
 	;
-	
+
+|::tabfocus
+	|keymd 1 and? ( drop uiFocus<< ; ) drop uiFocus>> ;
+
 :ilist | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-|	pick3 @ =? ( colFill backline )
+	pick3 @ =? ( colorFill fillline colorText )
 	|overl =? ( colBack uiFill )
 	uiNindx 
 	lx ly fat ftext fsizeh 'ly +!
@@ -393,15 +413,53 @@
 	over zonecline
 	
 	wix wiy wiw wih Rect 
+	|drawfocus
 	
 	mark makeindx
 	wix 'lx ! wiy 'ly !
 	0 ( over <? ilist 1+ ) drop
-|	[ kblist colFocus uiLRect ; ] uiFocus	
+	'kblist uiFocus	
 	'cklist uiClk
 	2drop
 	empty 
 	|chx flpady + 'cy +! 
 	;
+
+|----- TREE
+| #vtree 0 0
+
+:cktree | 'var cnt --
+	cntlist <? ( sdlx cx - cw 12 - >? ( drop slidev ; ) drop )
+	sdly cy - fsizeh / pick2 8 + @ + cntlist 1- clampmax
+	pick2 @ <>? ( pick2 ! ; )
+	3 << indlist + @ 
+	dup c@ $80 xor swap c! ;
+
+:iicon | n -- 
+	$20 nand? ( drop " " ftext ; )
+	7 >> 1 and $3d + " " dup rot c! ftext ; 
+	
+:itree | 'var max n  -- 'var max n
+	pick2 8 + @ over +
+	pick3 @ =? ( colorFill fillline colorText )
+|	overl =? ( overfil uiFill )
+	uiNindx 
+	c@+ 0? ( 2drop ch 'ly +! ; )
+	dup $1f and 4 << lx + ly fat iicon ftext
+	fsizeh 'ly +! ;
+
+::uiTree | 'var cntl list --
+	over zonecline
+	mark maketree
+	cx 'lx ! cy 'ly !
+	0 ( over <? itree 1+ ) drop
+	|[ kblist colFocus uiLRect ; ] uiFocus
+	'kblist uiFocus
+	'cktree uiClk
+	2drop
+	empty 
+|	chx flpady + 'cy +! 
+	;
+	
 	
 	

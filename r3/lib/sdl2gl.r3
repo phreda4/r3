@@ -81,6 +81,9 @@
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
 
+##uistate
+##keymd	
+
 ##wix ##wiy ##wiw ##wih
 
 ::immBox | x y w h --
@@ -92,7 +95,11 @@
 ::immIni
 	immFull
 	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
-	idh 'ida ! -1 'id ! ;
+	idh 'ida ! -1 'id ! 
+	sdlkey
+	<shift> =? ( keymd 1 or 'keymd ! ) 
+	>shift< =? ( keymd 1 nand 'keymd ! ) 
+	drop ;
 	
 :immIn? | -- 0/-1
 	sdlx wix - $ffff and wiw >? ( drop 0 ; ) drop
@@ -113,10 +120,24 @@
 	sdlb 1? ( drop 3 ; ) drop 		| active->3
 	-1 'idh ! 6 ; 					| click->6		
 
-##uistate
+| 0 - No
+| 1 - Start focus
+| 2 - In focus
+:stFocus | -- flag
+	id 
+	idf <>? ( drop 0 ; )
+	idfa <>? ( 'idfa ! $10 ; ) | in 
+	drop $20 ; | stay
+
+::uiRefocus	-1 'idfa ! ;
+::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
+::uiFocus<< -1 'idfh +! ;
+
+::tabfocus
+	keymd 1 and? ( drop uiFocus<< ; ) drop uiFocus>> ;
 
 ::immZone | -- ; Interaction is cx,cy,cw,th
-	immMouse 'uistate ! ;
+	immMouse stFocus or 'uistate ! ;
 
 ::uiEx?		uistate $100 and ;
 ::uiEx!		uistate $100 or 'uistate ! ;
@@ -135,6 +156,8 @@
 ::uiUp		uiState $f and 5 <>? ( 2drop ; ) drop ex ;  | 'v --
 ::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
 
+::uiFocusIn uiState $10 nand? ( 2drop ; ) drop ex ;
+::uiFocus 	uiState $20 nand? ( 2drop ; ) drop ex ;
 
 | --- API Wrappers ---
 ::glClearBufferfv sys-glClearBufferfv sys3 drop ;
