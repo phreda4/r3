@@ -152,7 +152,7 @@
 #filepng * 512
 #maxtile 8192
 #tilex 0 #tiley 0
-#tilesw 64 #tilesh 64
+#tilesw 32 #tilesh 32
 
 #__pad * 472 | 512-5*8
 
@@ -172,9 +172,9 @@
 :makeuv
 	'texuv >b
 	tilex tiley 12 << or db!+
-	tilex tilesw + tiley 12 << or db!+
-	tilex tilesw + tiley tilesh + 12 << or db!+
-	tilex tiley tilesh + 12 << or db!
+	tilex tilesw 1- + tiley 12 << or db!+
+	tilex tilesw 1- + tiley tilesh 1- + 12 << or db!+
+	tilex tiley tilesh 1- + 12 << or db!
 	;
 
 :rotauv
@@ -457,7 +457,7 @@
 	;
 
 :default3dtile
-	"media/img/tileskenney.png" 'filepng strcpy
+	"media/img/framesfutbol.png" 'filepng strcpy
 	8192 'maxtile !
 	'filepng maxtile ini3dtile
 	adjust
