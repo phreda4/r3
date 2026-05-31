@@ -187,9 +187,11 @@
 #x2 #y2 #z2
 #x4 #y4 #z4
 
+#uvr 0
 
 :arena!
 	makeuv
+	uvr ( 1? 1- rotauv ) drop
 	'texuv >b
 	x1 y1 z1 3dt3 
 	gaxis 30 << or da!+ db@+ da!+
@@ -269,7 +271,7 @@
 	|msec $100 and? ( drop ; ) drop
 	$ffffffff 'fcolor !
 	gzoneall 2drop
-	tiley 390 imgw */ + 32 + swap | correct aspect
+	tiley 390 imgw */ + 64 + swap | correct aspect
 	tilex 390 imgw */ + 5 + swap 
 	tilesw 390 imgw */
 	tilesh 390 imgw */ | correct aspect
@@ -304,23 +306,35 @@
 	'exit "save" uiFTBtn
 	;
 
+#cachexyza
+
+:btncolor
+	uvr =? ( stWarn ; ) stLigt ;
+:ro1
+	dup 'uvr ! 1 'cachexyza ! ; | clear cache
+
 :panelatlas
 	400 uiE
 	$3fffffff 'fcolor !
 	gZoneAll frect
 	$ffffffff 'fcolor !
+
+	0 btncolor 'ro1 "0" uiTBtn
+	1+ btncolor 'ro1 "1" uiTBtn
+	1+ btncolor 'ro1 "2" uiTBtn
+	1+ btncolor 'ro1 "3" uiTBtn
+	drop
 	
-	tiley tilex imgh imgw "%dx%d : %dx%d" sprint uiLabelC
+	tiley tilex " %dx%d" sprint uiLabelR	
 	
 	imgatlas 
 	gZoneAll 2drop
-	32 + swap 5 + swap 390 imgatlash | x y w h 
+	64 + swap 5 + swap 390 imgatlash | x y w h 
 	2over 2over mousetile | [ ]
 	imgdraw
 	cursortile
 	;
 
-#cachexyza
 
 :hitnew?
 	'v3cursor @+ 16 >> swap @+ 16 >> swap @ 16 >>  
