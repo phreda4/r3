@@ -316,8 +316,8 @@
 
 :btncolor
 	uvr =? ( stWarn ; ) stLigt ;
-:ro1
-	dup 'uvr ! 1 'cachexyza ! ; | clear cache
+:rotab
+	dup 'uvr ! -1 'cachexyza ! ; | clear cache
 
 :panelatlas
 	400 uiE
@@ -325,10 +325,10 @@
 	gZoneAll frect
 	$ffffffff 'fcolor !
 
-	0 btncolor 'ro1 "0" uiTBtn
-	1+ btncolor 'ro1 "1" uiTBtn
-	1+ btncolor 'ro1 "2" uiTBtn
-	1+ btncolor 'ro1 "3" uiTBtn
+	0 btncolor 'rotab "1" uiTBtn
+	1+ btncolor 'rotab "2" uiTBtn
+	1+ btncolor 'rotab "3" uiTBtn
+	1+ btncolor 'rotab "4" uiTBtn
 	drop
 	
 	tiley tilex " %dx%d" sprint uiLabelR	
@@ -458,7 +458,10 @@
 	<tab> =? ( changeaxis )
 	<up> =? ( 1.0 valax )
 	<dn> =? ( -1.0 valax )
-	
+	<1> =? ( 0 rotab drop )
+	<2> =? ( 1 rotab drop )
+	<3> =? ( 2 rotab drop )
+	<4> =? ( 3 rotab drop )
     drop
 	va 1? ( 'camFor camVelMove ) drop
 	vl 1? ( 'camRig camVelMove ) drop

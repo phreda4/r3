@@ -178,6 +178,7 @@ void main(){
 	;
 	
 ::draw3dtiles
+	GL_CULL_FACE glDisable
 	rl_sh_planes glUseProgram
 	GL_TEXTURE2 glActiveTexture
 	GL_TEXTURE_2D pl_atlas_tex $ffffffff and glBindTexture

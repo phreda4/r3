@@ -113,11 +113,11 @@
 	|--------- render
 	rl_frame_begin
 
-	
+	draw3dtiles
 	matini 0.1 $fffffff1 draw_sphere 
 	jugador
 	SS3Ddraw
-	draw3dtiles
+	
 	
 	rl_frame_end
 
