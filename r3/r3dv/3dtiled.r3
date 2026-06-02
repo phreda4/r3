@@ -14,6 +14,7 @@
 #camEye -10.0 2.0 2.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
+#camViewUp 0 0 0
 #camFor 0 0 0 | forward
 #camRig 0 0 0 | right
 
@@ -37,6 +38,11 @@
 	0 a!+
 	cy neg a!+
 	'camRig v3Nor
+    'camViewUp >a
+    cy sp *. neg a!+    | x = -cy*sp
+    cp a!+              | y = cp
+    sy sp *. neg a!     | z = -sy*sp
+	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 
@@ -58,9 +64,9 @@
 	camFov *. 'ydir !
 	
 	'camForMouse >a
-	'camFor @      'camRig @      xdir *. + 'camUp @      ydir *. + a!+
-	'camFor 8 + @  'camRig 8 + @  xdir *. + 'camUp 8 + @  ydir *. + a!+
-	'camFor 16 + @ 'camRig 16 + @ xdir *. + 'camUp 16 + @ ydir *. + a!+
+	'camFor @      'camRig @      xdir *. + 'camViewUp @      ydir *. + a!+
+	'camFor 8 + @  'camRig 8 + @  xdir *. + 'camViewUp 8 + @  ydir *. + a!+
+	'camFor 16 + @ 'camRig 16 + @ xdir *. + 'camViewUp 16 + @ ydir *. + a!+
 
 	'camForMouse v3Nor
 	;
