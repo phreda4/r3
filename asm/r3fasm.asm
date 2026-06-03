@@ -8,8 +8,7 @@ entry start
 include 'set.asm'
 ;----- SETINGS -----
 
-include 'include/MACRO/proc64.inc'
-include 'include/MACRO/import64.inc'
+include 'r3f.inc'
 
 macro cinvoke64 name, [args]{
 common
@@ -59,5 +58,5 @@ section '.idata' import readable
 
 library kernel32,'KERNEL32'
 
-include 'include\api\kernel32.inc'
+r3f_kernel32
 
