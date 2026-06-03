@@ -534,9 +534,30 @@ void main(){
 	over swap glGetUniformBlockIndex  | binding prog index |(idx!=GL_INVALID_INDEX)
 	rot glUniformBlockBinding ;
 
+|------------- CAMERA ------------------
+#camDirty  1
+
+##camFov 0.4142
+##camNear 0.1	
+##camFar 200.0
+
+| ================================================================
+::rl_resizewin | w h --
+    rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
+    1 'camDirty !
+	rl_destroy_bloom rl_destroy_gbuffer  
+	rl_init_gbuffer rl_init_bloom
+    ;
+
+| ================================================================
+::rl_set_projection | fov_deg_fp near_fp far_fp --
+    'camFar ! 'camNear ! 'camFov ! 
+	1 'camDirty ! ;
+
 | ================================================================
 ::rl_Init
 	sw 'rl_w ! sh 'rl_h !
+	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer
     rl_init_bloom
     rl_init_quad
@@ -580,26 +601,6 @@ void main(){
     1 'rl_ubo_plights  glDeleteBuffers
     ;
 
-|------------- CAMERA ------------------
-#camDirty  1
-
-##camAsp 0	| Aspect
-##camFov 0.4142
-##camNear 0.1	
-##camFar 200.0
-
-| ================================================================
-::rl_resizewin | w h --
-    rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
-    1 'camDirty !
-	rl_destroy_bloom rl_destroy_gbuffer  
-	rl_init_gbuffer rl_init_bloom
-    ;
-
-| ================================================================
-::rl_set_projection | fov_deg_fp near_fp far_fp --
-    'camFar ! 'camNear ! 'camFov ! 
-	1 'camDirty ! ;
 
 |----- UBO->GPU
 | RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewProj(64)
@@ -617,8 +618,9 @@ void main(){
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-	rl_w 16 << rl_h / 'camAsp !
-	'camAsp matProj 
+
+	camNear camFar rl_w 16 << rl_h / camFov matProjV | near far asp fov --
+	
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
 	'realproj 'mat 16 move  | copy for precalc proj*view
@@ -628,11 +630,9 @@ void main(){
 	3 pick3 'ubo_matViewPos mem2float | cnt sr ds
 	cache_proj
 	mlookat
-	
 	'ubo_matView 'mat cpymatif
 	matinv
 	'ubo_matvinvView 'mati cpymatif
-
 	'realproj mat* | reverse proj*view
 	'ubo_matProjView 'mati cpymatif
 	;

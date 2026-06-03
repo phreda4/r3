@@ -155,7 +155,7 @@
 	drawcursor
 	drawconsole
 	SS3Ddraw
-	
+
 	1.4 
 	1.0 1.0 1.0 
 	1.0 1.0 1.0
@@ -210,12 +210,10 @@
 |-------------------------------------
 : | <<<<<<<< Boot
 	"3dtext" 1024 768 GLini GLInfo
-
 	load3d
 	rl_init 
 	'viewresize SDLeventR
 	lightsun
-
 	ss3dreset
 	'3deditor SDLShow 
 	

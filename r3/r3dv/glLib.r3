@@ -31,44 +31,35 @@
 :a] 3 << a> + ;	
 :b] 3 << b> + ;
 
-:camAsp		b@ ;
-:camFov		1 b] @ ;
-:camNear	2 b] @ ;
-:camFar		3 b] @ ;
-	
-#camT
-#camR
+#camT #camR
 
-::matProj | 'infocam --
-	>b
+::matProjV | near far asp fov --
 	'mat 0 16 fill | dvc
 	'mat >a
-	camNear camFov *. 'camT !
-	camT camAsp *. 'camR !
-
-	camNear camR /. a! | proj.m[0] = n / r;
-	camNear camT /. 5 a] ! | proj.m[5] = n / t;
-	camNear camFar 2dup + 'camT ! - 'camR !
-	camT neg camR /. 10 a] ! | proj.m[10] = -(n + f) / (n - f);
-	-1.0 11 a] ! | proj.m[11] = -1.0f;
-	camNear camFar *. 2* neg camR /. 14 a] ! | proj.m[14] = -2.0f * n * f / (n - f);
+	pick3 *. dup 'camT ! *. 'camR !
+	over camR /. a!					| proj.m[0] = n / r;
+	over camT /. 5 a] ! 			| proj.m[5] = n / t;
+	2dup + 'camT ! 2dup - 'camR !
+	camT neg camR /. 10 a] ! 		| proj.m[10] = -(n + f) / (n - f);
+	-1.0 11 a] ! 					| proj.m[11] = -1.0f;
+	*. 2* neg camR /. 14 a] !		| proj.m[14] = -2.0f * n * f / (n - f);
 	|................... calc inverse too
 	'mati 0 16 fill | dvc
 	'mati >b 'mat >a
-	1.0 a@ /. b! | inv_proj.m[0]  =  1.0f / proj.m[0];
-	1.0 5 a] @ /. 5 b] ! |inv_proj.m[5]  =  1.0f / proj.m[5];
-	1.0 14 a] @ /. 11 b] ! | inv_proj.m[11] =  1.0f / proj.m[14];
-	-1.0 14 b] ! | inv_proj.m[14] = -1.0f;
-	10 a] @ 14 a] @ /. 15 b] ! | inv_proj.m[15] =  proj.m[10] / proj.m[14];
+	1.0 a@ /. b! 				| inv_proj.m[0]  =  1.0f / proj.m[0];
+	1.0 5 a] @ /. 5 b] ! 		| inv_proj.m[5]  =  1.0f / proj.m[5];
+	1.0 14 a] @ /. 11 b] ! 		| inv_proj.m[11] =  1.0f / proj.m[14];
+	-1.0 14 b] !				| inv_proj.m[14] = -1.0f;
+	10 a] @ 14 a] @ /. 15 b] !	| inv_proj.m[15] =  proj.m[10] / proj.m[14];
 	;
 	
 ::mortho | r l t b f n --
 	matini 'mat >a
-	2dup - -2.0 over /. 10 a] !		| 	mat[10] = -2 / (farVal - nearVal);
+	2dup - -2.0 over /. 10 a] !	| mat[10] = -2 / (farVal - nearVal);
 	-rot + swap /. neg 14 a] !	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
-	2dup - 2.0 over /. 5 a] !		| mat[5] = 2 / (top - bottom);
+	2dup - 2.0 over /. 5 a] !	| mat[5] = 2 / (top - bottom);
 	-rot + swap /. neg 13 a] !	| mat[13] = -((top + bottom) / (top - bottom));
-	2dup - 2.0 over /. a> !			| mat[0] = 2 / (right - left);
+	2dup - 2.0 over /. a> !		| mat[0] = 2 / (right - left);
 	-rot + swap /. neg 12 a] !	| mat[12] = -((right + left) / (right - left));
 	;	
 	
