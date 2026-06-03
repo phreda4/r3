@@ -36,7 +36,7 @@ void main(){
     uint u = aUV & 0xFFFu;
     uint v = (aUV >> 12u) & 0xFFFu;
 	vColorPk=((aUV >> 24u) & 0xFFu)/255.0;
-    vUV    = (vec2(u, v)+0.5) * uAtlasSize;
+    vUV    = vec2(u, v) * uAtlasSize;
     gl_Position = ProjView * vec4(vWorldPos, 1.0);
 }
 @fragment---------------

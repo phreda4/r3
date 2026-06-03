@@ -73,7 +73,7 @@
 
 	.y dup 
 	@ dup 32 >> swap 32 << 32 >> + | .x v+pos
-	0.2 <? ( over d@ abs pick2 d! ) 
+	0.0 <? ( over d@ abs pick2 d! ) 
 	8.0 >? ( over d@ neg pick2 d! ) 
 	over d@ 0.001 - pick2 d!
 	swap 4 + d!
@@ -94,6 +94,7 @@
 		upobj
 		a@+ 32 >> 
 		a@+ 32 >> 
+		a> 3 3 << + @ $ffff and ss3difloor + 
 		a@+ 32 >> 
 		a@+ a@+ $ffff and ss3dxyzq | x y z q i --
 		3 3 << a+

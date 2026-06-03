@@ -9,6 +9,7 @@
 ^./glimm.r3
 
 ^r3/lib/rand.r3
+^r3/util/varanim.r3
 
 |----------------------------------------
 #fsun [ 
@@ -29,11 +30,6 @@
 #__pad * 472 | 512-5*8
 
 |---------------------------------------------
-#arena
-#arena>
-
-:genarena
-	arena arena> over - 5 >> swap t3dstatic ;
 
 |------ Camera controls
 #camEye -4.0 1.0 0.0
@@ -48,6 +44,7 @@
 #vd #vr #vpz
 #pxp #pyp #pzp
 #prot
+#anima
 
 :camera
 	pyp pzp pxp 'camTo !+ !+ !
@@ -57,7 +54,7 @@
 	'camEyeD >a
 	camrot sincos 
 	camDist *. pxp + a!+
-	1.0 a!+
+	3.0 a!+
 	camDist *. pyp + a!+
 	
 	'camEye >a 'camEyeD >b
@@ -68,35 +65,38 @@
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 
-
 :luces
 	'fsun rl_set_sun
-	
-	2.0 1.0 1.0 1.0
-	'camEye @+ swap @+ swap @
-	rl_point_light | int cr cg cb x y z --
-	;
 
-#walk ( 16 17 16 18 ) 
-	
-:jugador
-	pxp pzp 0.5 + pyp
-	
-	prot 0.25 + 2/
-	$ffff and 16 << rxyz>q16 
-	
-	5.0	
-	msec 8 >> $3 and 'walk + c@ 
-	$ffffff00 
-	0 ss3dset
-	
 	1.4 
 	1.0 1.0 1.0 
 	pxp pzp 2.0 + pyp 1.0 +
 	rl_point_light | int cr cg cb x y z --
 	
-	camera
+|	2.0 1.0 1.0 1.0
+|	'camEye @+ swap @+ swap @
+|	rl_point_light | int cr cg cb x y z --
+	;
 
+|---------------------------------------------
+#walk ( 16 17 16 18 ) 
+	
+:getframe
+	anima aniFrame 	
+	'walk + c@ ;
+	
+:jugador
+	'anima ani+timer! 
+	
+	pxp pzp 0 ss3difloor + pyp
+	prot 0.25 + 2/
+	$ffff and 16 << rxyz>q16 
+	5.0	
+	|msec 8 >> $3 and 'walk + c@ 
+	getframe
+	$ffffff00 
+	0 ss3dset
+	
 	|--- update
 	prot neg sincos 
 	vd *. 'pxp +! 
@@ -109,16 +109,63 @@
 	-0.01 'vpz +!		
 	;
 	
+:quieto
+	vd 0? ( drop ; ) drop
+	0 'vd ! 
+	0 0 7.0 aniInit 'anima ! ;
+	
+:camina | vd --
+	vd =? ( drop ; ) 'vd !
+	0 4 7.0 aniInit 'anima ! ;
+	
+|---------------------------------------------
+#pelx #pely #pelz
+#pelvx #pelvy #pelvz
+#pelpot 0.08
+
+:kick
+	prot neg sincos 
+	pelpot *. 'pelvx +!
+	pelpot *. 'pelvy +!
+	0.1 'pelvz +!
+	;
+	
+:pelota
+	pelx pelz 1 ss3difloor + pely
+	pelx 2 >> $ffff and 16 << pely 3 >> $ffff and or rxyz>q16 
+	2.0	
+	32
+	$ffffff00 
+	1 ss3dset
+	
+	pelvx 1? ( dup 0.99 *.f 'pelvx ! )
+	'pelx +! 
+	pelvy 1? ( dup 0.99 *.f 'pelvy ! )
+	'pely +! 
+	
+	pelz pelvz + 
+	-? ( pelvz abs 0.8 *.f 'pelvz ! 
+		0 nip ) 
+	+? ( -0.01 'pelvz +! )
+	'pelz ! 
+	;
+	
+|---------------------------------------------
 :main
+	vupdate
 	|--------- render
 	rl_frame_begin
 
 	draw3dtiles
-	matini 0.1 $fffffff1 draw_sphere 
+	|matini 0.1 $fffffff1 draw_sphere 
 	jugador
+	pelota
+	
 	SS3Ddraw
-	
-	
+
+	luces
+	camera
+		
 	rl_frame_end
 
 	GLUpdate
@@ -126,16 +173,20 @@
     sdlkey
 	>esc< =? ( exit )
 
-	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
-	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
-	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
-	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
+	<up> =? ( 0.03 camina ) >up< =? ( quieto )
+	<dn> =? ( -0.03 camina ) >dn< =? ( quieto )
+	<le> =? ( 0.005 'vr ! 0.02 camina ) >le< =? ( 0 'vr ! quieto )
+	<ri> =? ( -0.005 'vr ! 0.02 camina ) >ri< =? ( 0 'vr ! quieto )
 	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 
+	<q> =? ( kick )
     drop
 	;
 
 |---------------------------------------------
+#arena
+#arena>
+
 :load3dtile | -- 
 	'filename filexist 0? ( drop ; ) drop
 	here dup 'inifile !
@@ -146,8 +197,9 @@
 	inifile 'filename load | here 'last
 	inifile 1024 + 'arena !
 	dup 'arena> !
-	'here !
-	genarena 
+|	'here !
+	arena arena> over - 5 >> swap 
+	t3dstatic
 	;
 	
 	
@@ -173,7 +225,8 @@
 	
 	load3dtile
 	load3d	
-
+	$ff vaini
+	
 	'viewresize SDLeventR	
 	'main SDLshow
 
