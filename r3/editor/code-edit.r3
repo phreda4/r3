@@ -217,11 +217,7 @@
 		13 =? ( rot 1+ -rot ) drop ) drop ;
 		
 :r3info
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
-
+	"r3/editor/r3info.r3" r3run
 	rows 1- 'hcode !
 	0 'outpad !
 	0 'cerror !
@@ -250,12 +246,7 @@
 	r3info	
 	cerror 1? ( drop ; ) drop
 	.masb .reset .cls
-	mark
-|WIN|	"r3 "
-|LIN|	"./r3lin "
-|RPI|	"./r3rpi "
-	,s 'name ,s ,eol
-	empty here sys
+	'name r3run
 	.reset
 	|"press <ESC> to continue" .write waitesc
 	.alsb
@@ -264,30 +255,21 @@
 
 :debugfile
 	savetxt
-|WIN|	"r3 r3/editor/r3debug.r3"
-|LIN|	"./r3lin r3/editor/r3debug.r3"
-|RPI|	"./r3rpi r3/editor/r3debug.r3"
-	sys
+	"r3/editor/r3debug.r3" r3run
 	"press <ESC> to continue" .write waitesc
 	;
 
 :mkplain
 	.masb .reset .cls
 	savetxt
-|WIN| "r3 r3/editor/r3plain.r3"
-|LIN| "./r3lin r3/editor/r3plain.r3"
-|RPI| "./r3rpi r3/editor/r3plain.r3"
-	sys
+	"r3/editor/r3plain.r3" r3run
 	.alsb
 	;
 
 :compile
 	.masb .reset .cls
 	savetxt
-|WIN| "r3 r3/system/r3compiler.r3"
-|LIN| "./r3lin r3/system/r3compiler.r3"
-|RPI| "./r3rpi r3/system/r3compiler.r3"
-	sys
+	"r3/system/r3compiler.r3" r3run
 	.alsb
 	;
 
@@ -810,10 +792,7 @@
 :main
 	'name "mem/main.mem" load drop
 	
-|WIN|	"r3 r3/editor/r3info.r3"
-|LIN|	"./r3lin r3/editor/r3info.r3"
-|RPI|	"./r3rpi r3/editor/r3info.r3"
-	sys
+	"r3/editor/r3info.r3" r3run
 	
 	ram
 	.alsb 

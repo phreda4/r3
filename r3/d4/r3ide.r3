@@ -179,10 +179,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb .reset .cls .flush
 	TuSaveCode
-	'filename
-|WIN| 	"cmd /c r3 ""%s"""
-|LIN| 	"./r3lin ""%s"""
-	sprint sys | run
+	'filename r3run
 	.reterm .alsb .flush
 	|here dup "error.log" load over =? ( 2drop ; ) 0 swap c!
 	|drop "** error **" 'msg strcpy
@@ -193,9 +190,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
 	TuSaveCode
-|WIN| 	"r3 r3/d4/r3debug.r3" 
-|LIN| 	"./r3lin r3/d4/r3debug.r3"
-	sys | run
+	"r3/d4/r3debug.r3" r3run
 	.reterm .alsb .flush 
 	tuR!
 	;
@@ -204,8 +199,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 |	.masb .reset .cls .flush
 	TuSaveCode
-|WIN| "r3 r3/editor/r3plain.r3"
-|LIN| "./r3lin r3/editor/r3plain.r3"
+	"r3/editor/r3plain.r3" r3run
 	sys
 |	.reterm .alsb .flush 
 	;
@@ -215,9 +209,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 |	.masb .reset .cls .flush
 	TuSaveCode
-|WIN| "r3 r3/d4/r3plain.r3"
-|LIN| "./r3lin r3/d4/r3plain.r3"
-	sys
+	"r3/d4/r3plain.r3" r3run
 |	.reterm .alsb .flush 
 	;
 |------- dev
@@ -226,9 +218,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
 	TuSaveCode
-|WIN| "r3 r3/system/r3compiler.r3"
-|LIN| "./r3lin r3/system/r3compiler.r3"
-	sys
+	"r3/system/r3compiler.r3" r3run
 	|.reterm .alsb .flush 
 	;
 

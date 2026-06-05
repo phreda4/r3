@@ -206,6 +206,16 @@
 ::strcpybuf | 'mem --
 	0 .emit outbuf swap strcpy .cl ;
 	
+|------------------------------
+::r3run | "" --
+	here
+|WIN|	"r3 "
+|LIN|	"./r3lin "
+|MAC|	"./r3mac "	
+|RPI|	"./r3rpi "	
+	,s swap ,s 0 ,c sys ;
+	
+	
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! dup 'outbuf> !

@@ -425,6 +425,7 @@
 	|'filename 
 |WIN|	"cmd /c r3d ""%s""" sprint
 |LIN|	"./r3lind ""%s""" sprint
+|MAC|	"./r3macd ""%s""" sprint
 	sysnew 
 
 	| wait info files

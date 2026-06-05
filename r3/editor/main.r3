@@ -1,514 +1,241 @@
-| main filesystem
-| PHREDA 2019
-|------------------------
-^r3/lib/console.r3
-^r3/editor/code-print.r3
+| start program
+| PHREDA 2025
+|---------------
+^r3/util/tui.r3
+^r3/util/tuiedit.r3
+^r3/util/filedirs.r3
 
-#reset 0
-#path * 1024
-#name * 1024
+|^r3/lib/trace.r3
 
-#nfiles
-#files * 8192
-#files> 'files
-#files< 'files
-#filen * $3fff
-#filen> 'filen
+|--------------------------------	
+#basepath "r3/"
+#fullpath * 1024
 
-#nivel
-#pagina
-#actual
-#linesv 15
-
-#source 0
-
-|--------------------------------
-:FINFO | adr -- adr info
-	dup FDIR 1? ( drop 0 ; ) drop
-	dup FNAME
-	".r3" =pos 1? ( 2drop 2 ; ) 2drop
-	3 ;
-
-:getname | nro -- ""
-	3 << 'files + @ 8 >> 'filen + ;
-
-:getinfo | nro -- info
-	3 << 'files + @ $ff and ;
-
-:getlvl | nro -- info
-	3 << 'files + @ 4 >> $f and ;
-
-:chginfo | nro --
-	3 << 'files + dup @ $1 xor swap ! ;
-
-|--------------------------------
-:files.clear
-	0 'nfiles !
-	'filen 'filen> !
-	'files dup 'files> ! 'files< !
-	;
-
-:files!+
-	files> ( files< >?
-		8 - dup @+ swap !
-		) drop
-	files< !+ 'files< !
-	8 'files> +!
-	;
-
-:files.free
-	0 'files ( files> <?
-		@+ pick2 >? ( swap rot )
-		drop ) drop
-	8 >> 'filen +
-	( c@+ 1? drop ) drop
-	'filen> !
-	;
-
-:fileadd
-	dup FNAME
-	dup ".." = 1? ( 3drop ; ) drop
-	dup "." = 1? ( 3drop ; ) drop
-	drop
-	FINFO nivel 4 << or filen> 'filen - 8 << or
-	files!+
-	FNAME filen> strcpyl 'filen> !
-	;
-
-:reload
-	'path "%s//*" sprint
-	ffirst ( fileadd fnext 1? ) drop
-	files> 'files - 3 >> 'nfiles !
-	;
-
-:rebuild
-	"r3" 'path strcpy
-	files.clear
-	0 'pagina !
-	0 'nivel !
-	reload
-	;
-
-|-----------------------------
-:makepath | actual nivel --
-	0? ( drop
-		"r3/" 'path strcpy
-		getname 'path strcat
-		; )
-	over 1 -
-	( dup getlvl pick2 >=?
-		drop 1 - ) drop
-	over 1 - makepath drop
-	"/" 'path strcat
-	getname 'path strcat
-	;
-
-:expande
-	actual dup
-	getlvl makepath
-   	actual chginfo
-	actual getlvl 1 + 'nivel !
-    actual 1 + 3 << 'files + 'files< !
-	reload
-	;
-
-:remfiles
-	actual chginfo
-	actual getlvl 1 +
-	actual 1 +
-	( dup getlvl pick2 >=?
-		drop 1 + ) drop
-	nip
-	actual 1 +
-	( swap nfiles <?
-		dup 3 << 'files + @
-		pick2 3 << 'files + !
-		1 + swap 1 + ) drop
-	3 << 'files + 'files> !
-	files> 'files - 3 >> 'nfiles !
-	files.free
-	;
-
-:contrae
-	'path ( c@+ 1? drop ) drop 1 -
-	( 'path >?
-		dup c@ $2f =? ( drop 0 swap c! remfiles ; )
-		drop 1 - ) drop
-	remfiles ;
-
-|-------------
 #nameaux * 1024
 
-:next/ | adr -- adr'
-	( c@+ 1?
-		$2f =? ( drop 0 swap 1 - c!+ ; )
-		drop ) nip ;
-
-:getactual | adr actual -- actual
-	( nfiles <?
-		dup getname pick2 = 1? ( drop nip ; )
-		drop 1 + ) nip ;
-
-
-|--------------------------
-:remlastpath
-	'path ( c@+ 1? drop ) drop 1 -
-	( dup c@ $2f <>? drop 1 - ) drop
-	0 swap c! ;
-
-:setactual
-	actual dup getlvl makepath
-	actual getinfo 1 >? ( remlastpath ) drop
-	actual
-	dup getinfo $3 and 
-	2 <? ( 2drop "" 'name strcpy 0 'source ! ; ) 
-	3 =? ( drop getname 'name strcpy 0 'source ! ; ) 
-	drop
-	getname 'name strcpy
-	here $ffff + dup 'source ! 
-	'name 'path "%s/%s" sprint load 
-	0 swap ! 
-	;	
-	
+#vfolder 0 0
 
 |---------------------
-:traverse | adr -- adrname
-	dup next/ 0? ( drop ; )
-	( dup next/ 1?
-		swap
-		actual getactual 'actual !
-		expande
-		) drop ;
-
 :loadm
 	'nameaux "mem/menu.mem" load
 	'nameaux =? ( drop ; )
 	'nameaux dup c@ 0? ( 2drop ; ) drop
-	0 'actual !
-	0 'path !
-	traverse
-	actual getactual nip
-	pagina linesv + 1 - >=? ( dup linesv - 1 + 'pagina ! )
-	'actual !
-	drop
-	setactual
-	;
+	dup 'fullpath strcpy
+	flOpenFullPath 'vfolder !
+	'fullpath 
+	".r3" =pos 1? ( drop TuLoadCode ; ) 
+	2drop
+	tuNewCode ;	
 
 :savem
-    'path 'name strcpy
-	"/" 'name strcat
-	actual getname 'name strcat
-	'name 1024 "mem/menu.mem" save ;
+	'fullpath 1024 "mem/menu.mem" save ;
 
-|--------------------------
-:remlastpath
-	'path ( c@+ 1? drop ) drop 1 -
-	( dup c@ $2f <>? drop 1 - ) drop
-	0 swap c! ;
+:reloadir
+	empty mark
+	'basepath flScanFullDir ;
 
-|--------------------------------
-:runfile
-	actual -? ( drop ; )
-	getinfo $7 and 2 <? ( drop ; ) drop
-	.reset .cls
-	'path
-|WIN| "r3 ""%s/%s"""
-|LIN| "./r3lin ""%s/%s"""
-|RPI| "./r3rpi ""%s/%s"""
-|MAC| "./r3mac %s/%s"
-	sprint 
-	sys
-	evtmouse
-	;
-
-:r3info
-|WIN| "r3 r3/editor/r3info.r3"
-|LIN| "./r3lin r3/editor/r3info.r3"
-|RPI| "./r3rpi r3/editor/r3info.r3"
-	sys ;
-
-:r3edit
-|WIN| "r3 r3/editor/code-edit.r3"
-|LIN| "./r3lin r3/editor/code-edit.r3"
-|RPI| "./r3rpi r3/editor/code-edit.r3"
-|MAC| "./r3mac r3/editor/code-edit.r3"
-	sys ;
+|---------------------------
+:banner
+	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
 	
-|--------------------------------
-:editfile
-	actual getname 'path "%s/%s" sprint 'name strcpy
-	'name 1024 "mem/main.mem" save
+:runcheck
+	banner
+	here dup "error.log" load
+	over =? ( 2drop ; ) 
+	0 swap c!
+	.cr .bred .white " * ERROR * " .write .cr
+	.reset .write .cr
+	.bblue .white " Any key to continue... " .write .cr
+	.flush 
+	waitkey 
+	"error.log" delete
+	;
+
+:filerun
+	fuente c@ 0? ( drop ; ) drop
+	banner
+	savem
+	'fullpath r3run
+	.reterm .alsb .flush
+	runcheck
+	tuR! ;
 	
-	r3info
-	|cerror 1? ( drop ; ) drop	
-	r3edit
+:fileedit	
+	fuente c@ 0? ( drop ; ) drop
+	.masb .flush
+	savem
+	"r3/d4/r3ide.r3" r3run
+	.reterm .alsb .flush tuR! ;
+
+:remfilename | str --
+	count
+	swap over + | count 'fnla
+	( 1- dup c@ 
+		$2f =? ( drop 0 swap c! drop ; )
+		drop swap 1- 1?
+		swap ) 2drop ;
+
+:addext | str --
+	".r3" =pos 1? ( drop ; ) drop
+	".r3" swap strcat
 	;
 
-:editmap
-	actual getname 'path "%s/%s" sprint 'name strcpy
-	'name 1024 "mem/mapedit.mem" save
-
-|WIN| "r3 r3/editor/map-edit.r3"
-|LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
-	sys
-	;
-
-:editbmap
-	actual getname 'path "%s/%s" sprint 'name strcpy
-	'name 1024 "mem/bmapedit.mem" save
-
-|WIN| "r3 r3/editor/bmap-edit.r3"
-|LIN| "./r3lin r3/editor/bmap-edit.r3"
-|RPI| "./r3rpi r3/editor/bmap-edit.r3"
-|MAC| "./r3mac r3/editor/bmap-edit.r3"
-	sys
-	;
-	
-:f2edit
-	actual -? ( drop ; )
-	|getinfo $3 and 2 <>? ( drop ; ) drop
-	actual getname 
-	".r3" =pos 1? ( 2drop editfile ; ) drop
-	".map" =pos 1? ( 2drop editmap ; ) drop
-	".bmap" =pos 1? ( 2drop editbmap ; ) drop
-	| ".png"
-	drop
-	;
-	
-|--------------------------------
 |===================================
-#newprg1 "| r3 sdl program
+#newsdl "| r3 sdl program
 ^r3/lib/sdl2gfx.r3
 	
-:demo
+:main
 	0 SDLcls
-	$ff0000 SDLColor
-	10 10 20 20 SDLFRect
+	$ff00 SDLColor
+	10 10 100 100 SDLFRect
 	SDLredraw
 	
 	SDLkey 
 	>esc< =? ( exit )
 	drop ;
 
-:main
+:
 	""r3sdl"" 800 600 SDLinit
-	'demo SDLshow
-	SDLquit ;	
-	
-: main ;"
+	'main SDLshow
+	SDLquit 
+;"
 |===================================
-:createmap
-	'path "%s/%s" sprint 'name strcpy
-	mark
-	0 ,q
-	10 , 10 ,
-	100 ( 1? 1 - 0 ,c ) drop
-	0 ,c
-	'name savemem
-	empty	
-
-	'name 1024 "mem/mapedit.mem" save
-	'name 1024 "mem/menu.mem" save
-
-|WIN| "r3 r3/editor/map-edit.r3"
-|LIN| "./r3lin r3/editor/map-edit.r3"
-|RPI| "./r3rpi r3/editor/map-edit.r3"
-|MAC| "./r3mac r3/editor/map-edit.r3"
-	sys
-
-	rebuild
-	loadm
-	;
-
 	
-:createfile
-	'name 
-	".map" =pos 1? ( drop createmap ; ) drop
-	".r3" =pos 0? ( ".r3" pick2 strcat ) drop
+:filenew
+	0 rows .at 7 .fc 4 .bc cols .nsp
+	0 rows .at 
+	" Name: " .write .input
+	'pad trim c@ 0? ( drop ; ) drop
+	'fullpath remfilename
+	'pad addext
+	'pad 'fullpath "%s/%s" sprint 'fullpath strcpy
 
-|	remaddtxt
-	|'name 
-	'path "%s/%s" sprint 'name strcpy
+	'fullpath filexist 1? ( drop 
+		15 .fc 1 .bc " ** FILE EXIST **" .write waitkey ; ) drop
 
 	mark
-	'newprg1 ,s
-	'name savemem
+	'newsdl ,s
+	'fullpath savemem
 	empty
-
-	'name 1024 "mem/main.mem" save
-	'name 1024 "mem/menu.mem" save
-
-	r3edit
-
-	rebuild
+	
+	32 fuente c! | for enter edit
+	fileedit
+	reloadir
 	loadm
+	tuR! ;
+	
+:filesearch
+	0 rows .at 7 .fc 4 .bc cols .nsp
+	0 rows .at 
+	" ? " .write .input
+	'pad trim c@ 0? ( drop ; ) drop
+	
 	;
 
-:newfile
-	0 linesv 1 + .at 
-	.bblue .white .eline 
-	" Name: " .print
-	.input 
-	'pad 'name strcpy
-	'name c@ 0? ( drop ; ) drop
-	createfile
+:filedelete
+	fuente c@ 0? ( drop ; ) drop	
+	0 rows .at 15 .fc 1 .bc cols .nsp
+	0 rows .at 
+	" !! " .write 'filename .write	
+	" !! DELETE ? (Y/N) " .write .eline
+	getch tolow
+	$79 <>? ( drop ; ) drop
+	'filename delete | "filename" --
+	'filename remfilename
+	'filename 'fullpath strcpy
+	savem
+	reloadir
+	loadm
+	tuR! ;
+	
+|------------
+:paneleditor
+	fuente c@ 0? ( drop ; ) drop
+	tuwin $1 'fullpath .wtitle
+	1 1 flpad 
+|	tuEditCode
+	tuReadCode
+	;
+	
+|------------
+:changefiles
+	vfolder flTreePath
+	'basepath 'fullpath strcpyl 1- strcpy
+	'fullpath c@ 0? ( drop tuNewCode ; ) drop |
+	'fullpath 
+	".r3" =pos 1? ( drop TuLoadCode ; ) 
+	2drop
+	tuNewCode ;
+	
+:setcolor | str -- str
+	"/" =pos 1? ( drop 7 .fc ; ) drop
+	".r3" =pos 1? ( drop 11 .fc ; ) drop	
+	14 .fc ;
+	
+:filecolor	
+	setcolor lwrite ;
+	
+:dirpanel
+	.reset
+	'filecolor xwrite!
+	tuwin $1 "" .wtitle
+	1 1 flpad 
+	'vfolder uiDirs tuTree
+	xwrite.reset
+	tuX? 1? ( changefiles ) drop
 	;
 
-|--------------------------------
-:fenter
-	actual
-	getinfo $f and
-	0? ( drop expande ; )
-	1 =? ( drop contrae ; )
+#tk
+|------------	
+:scrmain
+	.bblack .cls
+	
+	|___________
+	4 flxN
+	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
+	|.tdebug |2dup " %d %d " .print
+	|tk "%h" .print 'fullpath .write
+	4 .bc 7 .fc	
+	1 flxS
+	fx fy .at fw .nsp
+	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
+	.printe
+
+	|___________
+	38 flxO
+	dirpanel
+	|___________
+	flxRest	
+	paneleditor
+
+	uikey
+|	[f2] =? ( help )		| H
+
+	[f5] =? ( filerun )
+	[ENTER] =? ( filerun )
+	
+	[f6] =? ( fileedit )
+	$20 =? ( fileedit )
+	$2f =? ( filesearch )
+	toUpp
+|	$43 =? ( fileclon )	| Clon	
+	$44 =? ( filedelete ) | Delete
+	$45	=? ( fileedit )	| Edit
+	$4e =? ( filenew )	| New
+	$52 =? ( filerun )	| Run
+	$51 =? ( exit )
 	drop
-
-	actual
-	getname
-	".r3" =pos 1? ( drop runfile ; ) drop
-	drop
 	;
 
-:fdn
-	actual nfiles 1 - >=? ( drop ; )
-	1 + pagina linesv + 1 - >=? ( dup linesv - 1 + 'pagina ! )
-	'actual !
-	setactual ;
-
-:fup
-	actual 0? ( drop ; )
-	1 - pagina <? ( dup 'pagina ! )
-	'actual !
-	setactual ;
-
-:fpgdn
-	actual nfiles 1 - >=? ( drop ; )
-	20 + nfiles >? ( drop nfiles 1 - ) 'actual !
-	actual pagina linesv + 1 -
-	>=? ( dup linesv - 1 + 'pagina ! ) drop
-	setactual ;
-
-:fpgup
-	actual 0? ( drop ; )
-	20 - 0 <? ( drop 0 )
-	pagina <? ( dup 'pagina ! )
-	'actual !
-	setactual ;
-
-:fhome
-	actual 0? ( drop ; ) drop
-	0 'actual ! 0 'pagina !
-	setactual ;
-
-:fend
-	actual nfiles 1 - >=? ( drop ; ) drop
-	nfiles 1 - 'actual !
-	actual 1 + pagina linesv + 1 -
-	>=? ( dup linesv - 1 + 'pagina ! ) drop
-	setactual ;
-
-
-|--------------------------------
-#filecolor 1 2 3 4 
-
-:colorfile | n -- n
-	actual =? ( ,bwhite ,black ; )
-    dup getinfo $3 and
-	3 << 'filecolor + @ ,fc 
-	;
-
-:printfn | n --
-	,sp
-	dup getlvl 1 << ,nsp
-	dup getinfo $3 and "+-  " + c@ ,c ,sp 
-	getname ,s ,sp
-	;
-
-:drawl | n --
-	,sp colorfile printfn ,nl ;
-	
-:drawtree
-	1 2 ,at
-	0 ( linesv <?
-		dup pagina +
-		nfiles >=? ( 2drop ; )
-		,reset
-    	drawl 
-		1 + ) drop ;
-
-:drawsrc	
-	source 0? ( drop ; ) 
-	235 ,bc 
-	>r 40 2 linesv cols 41 - r> code-print
-	;
-	
-:screen
-	mark
-	,hidec
-	,reset ,cls ,bblue 
-	1 1 ,at	" r3 " ,s
-	"^[7mF1^[27m Run ^[7mF2^[27m Edit ^[7mF3^[27m New " ,printe ,eline
-	drawtree
-	drawsrc
-	,bblue ,white	
-	0 linesv 2 + ,at 
-	'name 'path " %s/%s  " ,print ,eline
-	,showc 
-	memsize type	| type buffer
-	empty			| free buffer	
-	;
-
-|-------------------------------------
-#exit 0
-
-:evkey	
-	evtkey
-	$1B1001 =? ( 1 'exit ! ) | esc
-	$D001C =? ( fenter )
-	
-	$48 =? ( fup ) | up
-	$50 =? ( fdn ) | dn
-	$49 =? ( fpgup )
-	$51 =? ( fpgdn )
-	$47 =? ( fhome )
-	$4f =? ( fend )
-	
-	$3b =? ( fenter )
-	$3c =? ( f2edit ) |editfile  )
-	$3d =? ( newfile )
-	|$3e =? ( newfolder ) | f4 - new folder
-	drop 
-	;
-
-:evmouse
-	evtmb 0? ( drop ; ) drop	
-	evtmxy swap
-	40 >? ( 2drop f2edit ; ) drop
-	1- pagina +
-	actual =? ( drop fenter ; )
-	'actual !
-	setactual 
-	;
-	
-:evsize	
-	.getconsoleinfo
-	rows 1 - 'linesv !
-	;
-	
-|---------------------------------
+|-----------------------------------
 :main
-	rebuild
-	evtmouse
-	evsize	
+	mark
+	'basepath flScanFullDir
+	
+	TuNewCode 	|"main.r3" TuLoadCode
 	loadm
-	( exit 0? drop
-		screen
-		getevt
-		$1 =? ( evkey )
-		$2 =? ( evmouse )
-		$4 =? ( evsize )
-		drop ) drop
-	savem ;
+	'scrmain onTui 
+	savem
+	;
 
-: main ;
+: .alsb main .masb .free ;

@@ -55,10 +55,7 @@
 	fuente c@ 0? ( drop ; ) drop
 	banner
 	savem
-	'fullpath
-|WIN| 	"cmd /c r3 ""%s"""
-|LIN| 	"./r3lin ""%s"""
-	sprint sys | run
+	'fullpath r3run
 	.reterm .alsb .flush
 	runcheck
 	tuR! ;
@@ -67,12 +64,7 @@
 	fuente c@ 0? ( drop ; ) drop
 	.masb .flush
 	savem
-||WIN| 	"r3 r3/editor/code-edit.r3"
-||LIN| 	"./r3lin r3/editor/code-edit.r3"
-
-|WIN| 	"r3 r3/d4/r3ide.r3"
-|LIN| 	"./r3lin r3/d4/r3ide.r3"
-	sys 
+	"r3/d4/r3ide.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
 :remfilename | str --
