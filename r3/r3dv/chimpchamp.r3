@@ -33,8 +33,8 @@
 
 |------ Camera controls
 #camEye -4.0 1.0 0.0
-#camTo  0.0 0.0  0.0
-#camUp  0.0 1.0  0.0
+#camTo   0.0 0.0 0.0
+#camUp   0.0 1.0 0.0
 
 #camEyeD 0 0 0
 #camDist 4.0
@@ -46,17 +46,29 @@
 #prot
 #anima
 
-:camera
+:camfollow 
 	pyp pzp pxp 'camTo !+ !+ !
-
 	prot 0.5 + neg camrot - 0.02 *. 'camrot +!
-	
 	'camEyeD >a
 	camrot sincos 
 	camDist *. pxp + a!+
 	3.0 a!+
 	camDist *. pyp + a!+
+	;
 	
+:camfar
+	-8.0 16.0 0.0 swap rot 'camEyeD !+ !+ !
+	 |0.0 0.0 0.0 swap rot 'camTo !+ !+ !
+	 pyp pzp pxp 'camTo !+ !+ !
+|	 0.0 1.0 0.0 swap rot 'camUp !+ !+ !	
+	;
+	
+#ncam
+#camlist 'camfar 'camfollow
+	
+:camera
+	'camlist ncam $1 and 3 << + @ ex
+
 	'camEye >a 'camEyeD >b
 	a@ b@+ over - 0.05 *. + a!+
 	a@ b@+ over - 0.05 *. + a!+
@@ -64,7 +76,7 @@
 	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
-
+	
 :luces
 	'fsun rl_set_sun
 
@@ -179,6 +191,7 @@
 	<ri> =? ( -0.005 'vr ! 0.02 camina ) >ri< =? ( 0 'vr ! quieto )
 	<spc> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 
+	<f1> =? ( 1 'ncam +! )
 	<q> =? ( kick )
     drop
 	;
@@ -226,7 +239,6 @@
 	load3dtile
 	load3d	
 	$ff vaini
-	
 	'viewresize SDLeventR	
 	'main SDLshow
 

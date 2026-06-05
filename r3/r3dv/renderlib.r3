@@ -537,6 +537,7 @@ void main(){
 |------------- CAMERA ------------------
 #camDirty  1
 
+##camAsp 0
 ##camFov 0.4142
 ##camNear 0.1	
 ##camFar 200.0
@@ -618,8 +619,8 @@ void main(){
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-
-	camNear camFar rl_w 16 << rl_h / camFov matProjV | near far asp fov --
+	rl_w 16 << rl_h / 'camAsp ! 
+	camNear camFar camAsp camFov matProjV | near far asp fov --
 	
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
