@@ -291,7 +291,7 @@
 	<a> =? ( 1.0 'pEye 16 + +! )
 	<d> =? ( -1.0 'pEye 16 + +! )
 
-	<esp> =? ( +objr )
+	<spc> =? ( +objr )
 	drop ;	
 
 |---------------------------		
@@ -311,7 +311,7 @@
 	"<esc> - Exit" .println
 	"<f1> - 50 obj moving" .println
 	"<f2> - 50 obj static" .println
-	"<esp> - 1 obj moving" .println
+	"<spc> - 1 obj moving" .println
 	;
 	
 |----------- BOOT

@@ -86,7 +86,7 @@
 	|+randpeople
 	SDLkey
 	>esc< =? ( exit )
-	<esp> =? ( +randpeople )
+	<spc> =? ( +randpeople )
 	drop ;
 	
 :main

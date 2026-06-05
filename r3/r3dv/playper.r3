@@ -202,7 +202,7 @@
 	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
-	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
+	<spc> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 	
 	drop
 	;		

@@ -276,7 +276,7 @@ void main(){
 	
     sdlkey
 	>esc< =? ( exit )
-	<esp> =? ( spinning not 'spinning ! )
+	<spc> =? ( spinning not 'spinning ! )
     drop
 	;
 

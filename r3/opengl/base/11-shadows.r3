@@ -390,7 +390,7 @@
 	.cr 
 	"<esc> - Exit" .println
 	"<f1> - 1 obj moving" .println
-	"<esp> - 1 obj fix" .println	
+	"<spc> - 1 obj fix" .println	
 	.cr
 
 	'main SDLshow

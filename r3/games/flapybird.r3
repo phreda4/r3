@@ -57,7 +57,7 @@
 	
 	SDLkey
 	>esc< =? ( exit )
-	<esp> =? ( -4.0 'vy ! )	
+	<spc> =? ( -4.0 'vy ! )	
 	drop
 	;
 

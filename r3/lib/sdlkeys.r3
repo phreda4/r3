@@ -5,7 +5,7 @@
 ##<tab> $9		##>tab< $1009
 ##<ret> $d		##>ret< $100d
 ##<esc> $1b		##>esc< $101b
-##<esp> $20		##>esp< $1020
+##<spc> $20		##>esp< $1020
 ##<del> $7f		##>del< $107f
 
 ##<home> $405f	##>home< $505f

@@ -119,7 +119,7 @@
 	<dn> =? ( 2.0 'vyp ! ) >dn< =? ( 0 'vyp ! )
 	<le> =? ( -2.0 'vxp ! ) >le< =? ( 0 'vxp ! )
 	<ri> =? ( 2.0 'vxp ! ) >ri< =? ( 0 'vxp ! )
-	<esp> =? ( +shoot )
+	<spc> =? ( +shoot )
 	drop
 	;
 

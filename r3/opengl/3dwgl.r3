@@ -351,7 +351,7 @@
 	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
 	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
 	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
-	<esp> =? ( vpz 0? ( 0.4 'vpz ! ) drop )
+	<spc> =? ( vpz 0? ( 0.4 'vpz ! ) drop )
 	<w> =? ( 0.1 'zz +! )
 	<s> =? ( -0.1 'zz +! )
 	<a> =? ( genfloordyn )
@@ -484,7 +484,7 @@
 	initvec
 	.cr .cr 
 	"<esc> - Exit" .println
-	"<esp> - jmp" .println	
+	"<spc> - jmp" .println	
 	
 
 	100 'listfx p.ini

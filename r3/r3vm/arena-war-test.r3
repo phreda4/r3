@@ -41,7 +41,7 @@
 	>dn< =? ( btnpad %100 nand 'btnpad ! )
 	>le< =? ( btnpad %10 nand 'btnpad ! )
 	>ri< =? ( btnpad %1 nand 'btnpad ! )
-	<esp> =? ( btnpad $10 or 'btnpad ! )
+	<spc> =? ( btnpad $10 or 'btnpad ! )
 	
 	<f1> =? ( war.+rtank )
 	

@@ -399,7 +399,7 @@
 |	<f3> =? ( 2 calcpose )
 |	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
 |	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
-	<esp> =? ( 
+	<spc> =? ( 
 		addobj
 		nrosprite 1+ n3dsprites mod 'nrosprite !
 		)

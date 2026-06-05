@@ -69,7 +69,7 @@
 	<up> =? ( -0.2 'ayp ! 91 'nspr ! )	>up< =? ( 0 'ayp ! )	
 	<le> =? ( -0.2 'axp ! 94 'nspr ! ) >le< =? ( 0 'axp ! )	
 	<ri> =? ( 0.2 'axp ! ) >ri< =? ( 0 'axp ! )
-	<esp> =? ( xp yp +disparo )
+	<spc> =? ( xp yp +disparo )
 	drop 
 	;
 	

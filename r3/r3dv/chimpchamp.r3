@@ -177,7 +177,7 @@
 	<dn> =? ( -0.03 camina ) >dn< =? ( quieto )
 	<le> =? ( 0.005 'vr ! 0.02 camina ) >le< =? ( 0 'vr ! quieto )
 	<ri> =? ( -0.005 'vr ! 0.02 camina ) >ri< =? ( 0 'vr ! quieto )
-	<esp> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
+	<spc> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 
 	<q> =? ( kick )
     drop

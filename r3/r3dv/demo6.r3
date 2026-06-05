@@ -219,7 +219,7 @@
 	<s> =? ( -0.02 'vd ! correr ) >s< =? ( 0 'vd ! parar )
 	<a> =? ( 0.005 'vr ! girar ) >a< =? ( 0 'vr ! parar )
 	<d> =? ( -0.005 'vr ! girar ) >d< =? ( 0 'vr ! parar )
-	<esp> =? ( saltar vpz 0? ( 0.05 'vpz ! ) drop )
+	<spc> =? ( saltar vpz 0? ( 0.05 'vpz ! ) drop )
 	
 	drop
 	;		

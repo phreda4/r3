@@ -149,7 +149,7 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 	
 	sdlkey
 	>esc< =? ( exit )
-	<esp> =? ( spinning not 'spinning ! )
+	<spc> =? ( spinning not 'spinning ! )
 	drop
 	;
 
