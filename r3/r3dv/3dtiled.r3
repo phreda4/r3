@@ -1,16 +1,18 @@
 | demo1 r3dv
 | PHREDA 2026
+^r3/lib/rand.r3
+
 ^./renderlib.r3
 ^./rlhud.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
 ^./rlgridp.r3
-^r3/lib/rand.r3
 ^./glimm.r3
 
 | Camera controls
 #cam_yaw  0  
 #cam_pit  0
+
 #camEye -10.0 2.0 2.0
 #camTo  0.0 0.0  0.0
 #camUp  0.0 1.0  0.0
@@ -108,10 +110,9 @@
 	hiteye 0? ( drop ; ) drop
 	'v3cursor 'v3hit 3 move
 	;
-	
-	
+		
 |--------------
-	
+
 #laxist "-X-" "-Y-" "-Z-" ( 0 )
 
 |----------------------------------------
@@ -188,16 +189,19 @@
 	'texuv dup 4 + 3 dmove
 	'texuv 3 2 << + d! ;
 	
-
 #x1 #y1 #z1
 #x2 #y2 #z2
 #x4 #y4 #z4
 
 #uvr 0
 
+:uvrn
+	uvr 4 =? ( randmax ) | 4=random rotation
+	( 1? 1- rotauv ) drop ;
+	
 :arena!
-	makeuv
-	uvr ( 1? 1- rotauv ) drop
+	makeuv uvrn
+	
 	'texuv >b
 	x1 y1 z1 3dt3 
 	gaxis 30 << or da!+ db@+ da!+
@@ -312,6 +316,76 @@
 	'exit "save" uiFTBtn
 	;
 
+#v3rec1 0 0 0
+#v3rec2 0 0 0
+
+#x0 #y0 #z0
+#x #y #z
+#xd #yd #zd
+#xu #yu #zu
+#ni #nj
+
+:planox
+	0 'xd ! 0 'xu !
+	yd y0 - 1+ 'ni ! 1 'yu ! 0 'zu !
+	zd z0 - 1+ 'nj ! 0 'yd ! 1 'zd !
+	;
+	
+:planoy
+	0 'yd ! 0 'yu !
+	xd x0 - 1+ 'ni ! 1 'xu ! 0 'zu !
+	zd z0 - 1+ 'nj ! 0 'xd ! 1 'zd !
+	;
+	
+:precalc
+	'v3rec1 @+ 16 >> 'x0 ! @+ 16 >> 'y0 ! @ 16 >> 'z0 ! 
+	'v3rec2 @+ 16 >> 'xd ! @+ 16 >> 'yd ! @ 16 >> 'zd ! 
+
+	x0 xd over <? ( swap ) 'xd ! 'x0 !
+	y0 yd over <? ( swap ) 'yd ! 'y0 !
+	z0 zd over <? ( swap ) 'zd ! 'z0 !
+
+	xd x0 =? ( drop planox ; ) drop
+	yd y0 =? ( drop planoy ; ) drop
+	0 'zd ! 0 'zu !
+	xd x0 - 1+ 'ni ! 1 'xu ! 0 'yu !
+	yd y0 - 1+ 'nj ! 0 'xd ! 1 'yd !
+	;
+
+:fillvector | 'vec --
+	precalc
+	ni ( 1? 1-
+		x0 'x ! y0 'y ! z0 'z !
+		nj ( 1? 1-
+			pick2 ex
+			xd 'x +! yd 'y +! zd 'z +!
+			) drop
+		xu 'x0 +! yu 'y0 +! zu 'z0 +! 
+		) 2drop
+	genarena ;
+	
+:fillcell
+	z 16 << y 16 << x 16 << 'v3cursor !+ !+ !
+	builcursor
+	checktile +? ( 5 << arena + >a arena! ; ) drop
+	arena!+ ;
+
+:fillsel
+	'fillcell fillvector ;
+	
+:erasecell	
+	z 16 << y 16 << x 16 << 'v3cursor !+ !+ !
+	builcursor
+	checktile -? ( drop ; ) 
+	5 << arena + dup 32 + arena> over - 3 >> move
+	-32 'arena> +!
+	;	
+	
+:erasesel
+	'erasecell fillvector ;
+	
+#moded 0
+
 #cachexyza
 
 :btncolor
@@ -329,9 +403,20 @@
 	1+ btncolor 'rotab "2" uiTBtn
 	1+ btncolor 'rotab "3" uiTBtn
 	1+ btncolor 'rotab "4" uiTBtn
+	1+ btncolor 'rotab "R" uiTBtn
 	drop
 	
-	tiley tilex " %dx%d" sprint uiLabelR	
+	moded
+	2 =? (
+		'fillsel "Fill" UITBtn
+		'erasesel "Erase" UITBtn
+	
+		'v3rec1 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
+		'v3rec2 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
+		) 
+	drop
+
+|	tiley tilex " %dx%d" sprint uiLabelR	
 	
 	imgatlas 
 	gZoneAll 2drop
@@ -341,13 +426,11 @@
 	cursortile
 	;
 
-
 :hitnew?
 	'v3cursor @+ 16 >> swap @+ 16 >> swap @ 16 >>  
 	3dt3 gaxis 30 << or 
 	cachexyza =? ( drop 0 ; ) 'cachexyza ! 1 ;
 
-#moded 0
 
 :setp 0 'moded ! ;
 :sete 1 'moded ! ;
@@ -366,8 +449,11 @@
 	builcursor
 	checktile -? ( drop ; )
 	deltile ;
-	
+
 :selectile
+	hiteye 0? ( drop ; ) drop
+	|buildcursor
+	'v3rec2 'v3hit 3 move
 	;
 	
 #modedlist 'paintile 'erasetile 'selectile
@@ -378,7 +464,18 @@
 	moded 3 << 'modedlist + @ ex
 	;
 	
+:dnmouse
+	sdlx 'xp ! sdly 'yp ! 
+	sdlb 4 =? ( drop ; ) drop
+	moded 2 <>? ( drop ; ) drop | select
+	hiteye 0? ( drop ; ) drop
+	'v3rec1 'v3hit 3 move
+	;
+	
 :clickmouse
+	sdlb 4 =? ( drop ; ) drop
+	moded 2 <>? ( drop ; ) drop | select
+	hiteye 0? ( drop ; ) drop	
 	;
 
 #grids 1
@@ -420,7 +517,7 @@
 	uiFill
 	immMouse
 	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	2 =? ( dnmouse )	| in
 	3 =? ( movemouse )				| active
 	6 =? ( clickmouse )				| release
 	drop
