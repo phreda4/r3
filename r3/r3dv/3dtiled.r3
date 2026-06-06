@@ -221,7 +221,7 @@
 :searchtile | v -- i/-1
 	arena> arena dup >b - 5 >> | 32
 	( 1? 1- 
-		db@ pick2 =? ( 3drop b> arena - 5 >> ; ) 
+		db@ $ffffffff and pick2 =? ( 3drop b> arena - 5 >> ; ) 
 		drop
 		32 b+ ) 2drop
 	-1 ;
@@ -383,6 +383,8 @@
 	
 :erasesel
 	'erasecell fillvector ;
+
+#selx1 #sely1 #selx2 #sely2
 	
 #moded 0
 
@@ -408,14 +410,15 @@
 	
 	moded
 	2 =? (
+		stInfo
 		'fillsel "Fill" UITBtn
 		'erasesel "Erase" UITBtn
 	
-		'v3rec1 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
-		'v3rec2 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
+		|'v3rec1 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
+		|'v3rec2 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
 		) 
 	drop
-
+	|gaxis "%d" sprint uiLabelC
 |	tiley tilex " %dx%d" sprint uiLabelR	
 	
 	imgatlas 
@@ -431,7 +434,6 @@
 	3dt3 gaxis 30 << or 
 	cachexyza =? ( drop 0 ; ) 'cachexyza ! 1 ;
 
-
 :setp 0 'moded ! ;
 :sete 1 'moded ! ;
 :sets 2 'moded ! ;
@@ -445,14 +447,14 @@
 	
 :erasetile 
 	hiteye 0? ( drop ; ) drop
-	hitnew? 0? ( drop ; ) drop
+	|hitnew? 0? ( drop ; ) drop
 	builcursor
 	checktile -? ( drop ; )
 	deltile ;
 
 :selectile
 	hiteye 0? ( drop ; ) drop
-	|buildcursor
+	sdlx 'selx2 ! sdly 'sely2 !
 	'v3rec2 'v3hit 3 move
 	;
 	
@@ -469,6 +471,7 @@
 	sdlb 4 =? ( drop ; ) drop
 	moded 2 <>? ( drop ; ) drop | select
 	hiteye 0? ( drop ; ) drop
+	sdlx 'selx1 ! sdly 'sely1 !
 	'v3rec1 'v3hit 3 move
 	;
 	
@@ -514,6 +517,15 @@
 	$2 and? ( panelatlas ) 
 	drop
 	
+	moded
+	2 =? (
+		$7f0000ff 'fcolor !
+		selx1 selx2 over <? ( swap ) over -
+		sely1 sely2 over <? ( swap ) over - 
+		rot swap 
+		frect ) 
+	drop
+
 	uiFill
 	immMouse
 	1 =? ( wheelcam )				| over
