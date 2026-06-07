@@ -179,9 +179,9 @@
 :makeuv
 	'texuv >b
 	tilex tiley 12 << or db!+
-	tilex tilesw 1- + tiley 12 << or db!+
-	tilex tilesw 1- + tiley tilesh 1- + 12 << or db!+
-	tilex tiley tilesh 1- + 12 << or db!
+	tilex tilesw + tiley 12 << or db!+
+	tilex tilesw + tiley tilesh + 12 << or db!+
+	tilex tiley tilesh + 12 << or db!
 	;
 
 :rotauv
@@ -619,6 +619,7 @@
 	
 :save3dtile 
 	inifile arena> over - 'filename save
+	arena arena> over - "mem/test.3ta" save
 	;
 	
 |---------------------------------------------

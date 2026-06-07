@@ -86,7 +86,7 @@
 	;
 	
 |--- quaternios
-|#q 0 0 0 0
+|#q 0 0 0 1.0
 
 ::q4= | v1 v2 -- ; v1=v2
 	4 move ;
@@ -128,12 +128,44 @@
 	
 ::q4nor | q --
 	dup q4len | q len
-	0? ( drop 0 4 fill ; )
+	0? ( drop >a 0 a!+ 0 a!+ 0 a!+ 1.0 a! ; )
 	1.0 swap /.
 	swap >a
 	a@ over *. a!+
 	a@ over *. a!+
 	a@ over *. a!+
 	a@ *. a! ;
-	
 
+::q4lenf | q -- 1/len
+	@+ dup *. swap
+	@+ dup *. swap	
+	@+ dup *. swap
+	@ dup *. swap
+	+ + + 0? ( ; ) 
+	1.0 over /	| n2 inv
+	swap over *.	| i n2
+	neg 3.0 + 2/ *.
+	;
+
+::q4norf | q --
+	dup q4lenf | q len
+	0? ( drop >a 0 a!+ 0 a!+ 0 a!+ 1.0 a! ; )
+	swap >a
+	a@ over *. a!+
+	a@ over *. a!+
+	a@ over *. a!+
+	a@ *. a! ;
+	
+#qx #qy #qz #qw	
+#ox #oy #oz
+::q4integrate | q omega dt --
+	2/	
+	swap @+ 'ox ! @+ 'oy ! @ 'oz !
+	over dup >a 
+	@+ 'qx ! @+ 'qy ! @+ 'qz ! @ 'qw !
+	ox qw *. oz qy *. + oy qz *. - over *. a@ + a!+ | x
+	oy qw *. ox qz *. + oz qx *. - over *. a@ + a!+ | y
+	oz qw *. oy qx *. + ox qy *. - over *. a@ + a!+ | z
+	ox qx *. oy qy *. + oz qz *. + neg *. a@ + a! | w
+	q4nor ;
+	

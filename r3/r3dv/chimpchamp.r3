@@ -16,21 +16,6 @@
 -2.0 2.0 -2.0 0	| normal
  1.0 1.0 1.0 1.2  ] | color,intensidad
 	
-|---------------------------------------------
-#filename "mem/scratch.3dm"
-
-#inifile | adr in here
-
-|-- head 1024
-#filepng * 512
-#maxtile 8192
-#tilex 0 #tiley 0
-#tilesw 32 #tilesh 32
-
-#__pad * 472 | 512-5*8
-
-|---------------------------------------------
-
 |------ Camera controls
 #camEye -4.0 1.0 0.0
 #camTo   0.0 0.0 0.0
@@ -41,8 +26,8 @@
 #camRot
 
 |----- player
-#vd #vr #vpz
 #pxp #pyp #pzp
+#vd #vr #vpz
 #prot
 #anima
 
@@ -57,7 +42,7 @@
 	;
 	
 :camfar
-	-8.0 16.0 0.0 swap rot 'camEyeD !+ !+ !
+	-8.0 10.0 18.0 swap rot 'camEyeD !+ !+ !
 	 |0.0 0.0 0.0 swap rot 'camTo !+ !+ !
 	 pyp pzp pxp 'camTo !+ !+ !
 |	 0.0 1.0 0.0 swap rot 'camUp !+ !+ !	
@@ -200,21 +185,14 @@
 #arena
 #arena>
 
-:load3dtile | -- 
-	'filename filexist 0? ( drop ; ) drop
-	here dup 'inifile !
-	'filename load drop | here 'last
-	'filepng inifile 1024 cmove
-	'filepng maxtile ini3dtile | use here but not need
-	|-- reload (ini3dtile trash it)
-	inifile 'filename load | here 'last
-	inifile 1024 + 'arena !
-	dup 'arena> !
-|	'here !
+:load3dtile | png 3dm --
+	|dup filexist 0? ( 3drop ; ) drop
+	here dup 'arena !
+	swap load 'arena> !
+	arena> arena - 7 >>
+	ini3dtile
 	arena arena> over - 5 >> swap 
-	t3dstatic
-	;
-	
+	t3dstatic ;
 	
 |---------------------------------------------
 :viewresize 
@@ -235,8 +213,9 @@
 	rl_init
 	IniShapes
 	8 'fsun memfloat
+
+	"media/img/framesfutbol.png" "mem/test.3ta" load3dtile
 	
-	load3dtile
 	load3d	
 	$ff vaini
 	'viewresize SDLeventR	
