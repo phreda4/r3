@@ -118,33 +118,57 @@
 |---------------------------------------------
 #pelx #pely #pelz
 #pelvx #pelvy #pelvz
+#pqx #pqy #pqz #pqw
+#pox #poy #poz
+
+#pelg -0.01
+
 #pelpot 0.08
 
 :kick
 	prot neg sincos 
+	dup 'poy !
 	pelpot *. 'pelvx +!
+	dup 'pox !
 	pelpot *. 'pelvy +!
 	0.1 'pelvz +!
+	-0.01 'pelg !
+	
 	;
 	
+:piso
+	pelg 'pelvz +!
+	pelz pelvz + 
+	-? ( 0 nip 
+		pelvz abs 0.8 *. 
+		0.01 <? ( 0 nip 0 'pelg ! )
+		'pelvz !
+		) 'pelz ! ;
+
 :pelota
 	pelx pelz 1 ss3difloor + pely
-	pelx 2 >> $ffff and 16 << pely 3 >> $ffff and or rxyz>q16 
+	pqx pqy pqz pqw packq
 	2.0	
-	32
-	$ffffff00 
-	1 ss3dset
+	32 
+	$ffffff00 1 ss3dset
+
+	pox 0.99 *.f 'pox !
+	poy 0.99 *.f 'poy !
+	poz 0.99 *.f 'poz !
 	
-	pelvx 1? ( dup 0.99 *.f 'pelvx ! )
-	'pelx +! 
-	pelvy 1? ( dup 0.99 *.f 'pelvy ! )
-	'pely +! 
+	pelvx 1? ( dup 0.99 *.f 'pelvx ! ) 'pelx +! 
+	pelvy 1? ( dup 0.99 *.f 'pelvy ! ) 'pely +! 
 	
-	pelz pelvz + 
-	-? ( pelvz abs 0.8 *.f 'pelvz ! 
-		0 nip ) 
-	+? ( -0.01 'pelvz +! )
-	'pelz ! 
+	piso
+	
+	'pqx 'pox 1.0 q4integrate
+	;
+	
+:setpelota
+	0 'pqx ! 0 'pqy ! 0 'pqz ! 1.0 'pqw ! 
+	0 'pox ! 0 'poy ! 0 'poz ! 
+	0 'pelx ! 0 'pely ! 2.0 'pelz !
+	0 'pelvx ! 0 'pelvy ! 0 'pelvz !
 	;
 	
 |---------------------------------------------
@@ -219,6 +243,9 @@
 	load3d	
 	$ff vaini
 	'viewresize SDLeventR	
+	
+	setpelota
+	
 	'main SDLshow
 
 	rl_shutdown

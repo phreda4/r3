@@ -142,7 +142,7 @@
 	@+ dup *. swap
 	@ dup *. swap
 	+ + + 0? ( ; ) 
-	1.0 over /	| n2 inv
+	1.0 over /.	| n2 inv
 	swap over *.	| i n2
 	neg 3.0 + 2/ *.
 	;
@@ -167,5 +167,5 @@
 	oy qw *. ox qz *. + oz qx *. - over *. a@ + a!+ | y
 	oz qw *. oy qx *. + ox qy *. - over *. a@ + a!+ | z
 	ox qx *. oy qy *. + oz qz *. + neg *. a@ + a! | w
-	q4nor ;
+	q4norf ;
 	
