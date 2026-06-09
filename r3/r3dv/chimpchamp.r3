@@ -131,19 +131,11 @@
 	pelpot *. 'pelvx +!
 	dup 'pox !
 	pelpot *. 'pelvy +!
-	0.1 'pelvz +!
-	-0.01 'pelg !
 	
+	0.2 'pelvz +!
+	-0.01 'pelg !	
 	;
 	
-:piso
-	pelg 'pelvz +!
-	pelz pelvz + 
-	-? ( 0 nip 
-		pelvz abs 0.8 *. 
-		0.01 <? ( 0 nip 0 'pelg ! )
-		'pelvz !
-		) 'pelz ! ;
 
 :pelota
 	pelx pelz 1 ss3difloor + pely
@@ -158,9 +150,14 @@
 	
 	pelvx 1? ( dup 0.99 *.f 'pelvx ! ) 'pelx +! 
 	pelvy 1? ( dup 0.99 *.f 'pelvy ! ) 'pely +! 
-	
-	piso
-	
+	pelg 'pelvz +!
+	pelz pelvz + 
+	-? ( 0 nip 
+		pelvz abs 0.8 *. 
+		0.01 <? ( 0 nip 0 'pelg ! )
+		'pelvz !
+		) 'pelz ! 
+		
 	'pqx 'pox 1.0 q4integrate
 	;
 	

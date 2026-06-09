@@ -566,6 +566,21 @@
     InitGLAPI
 	5 'vcolorgl memfloat
 	;
+
+::GLIniFull |--
+    $3231 SDL_init
+	0 SDLdfullsw 'sh ! 'sw !
+    SDL_GL_CONTEXT_MAJOR_VERSION 4 SDL_GL_SetAttribute
+    SDL_GL_CONTEXT_MINOR_VERSION 4 SDL_GL_SetAttribute
+    SDL_GL_CONTEXT_PROFILE_MASK SDL_GL_CONTEXT_PROFILE_CORE SDL_GL_SetAttribute
+    SDL_GL_DOUBLEBUFFER 1 SDL_GL_SetAttribute
+    SDL_GL_DEPTH_SIZE 24 SDL_GL_SetAttribute
+    $1FFF0000 dup sw sh $22 SDL_CreateWindow 'SDL_windows !
+    SDL_windows SDL_GL_CreateContext 'SDL_context !
+    1 SDL_GL_SetSwapInterval
+    InitGLAPI
+	5 'vcolorgl memfloat
+	;
 	
 ::GLend
     SDL_context SDL_Gl_DeleteContext

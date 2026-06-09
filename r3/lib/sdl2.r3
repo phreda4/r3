@@ -246,7 +246,7 @@
 |    void *driverdata;     /**< datos específicos del controlador, inicializar a 0 */
 |
 
-::SDLdfullsw | display --
+::SDLdfullsw | display -- sw sh
 	here SDL_GetCurrentDisplayMode
 	here 4 + d@+ swap d@ ;
 	

@@ -627,7 +627,9 @@
 	sh sw rl_resizewin fixFontResize ;
 
 : | <<<<<< Boot
-	"3dtile Editor" 1024 768 GLini GLInfo
+
+	"3dtile Editor" GLiniFull
+	GLInfo
 	rlhud
 
 	rl_init
