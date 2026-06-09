@@ -1,0 +1,352 @@
+| Ss scene editor
+| PHREDA 2026
+
+^r3/lib/rand.r3
+^r3/util/varanim.r3
+
+^./renderlib.r3
+^./rlhud.r3
+^./ss3d.r3
+^./glimm.r3
+^./rlgrid.r3
+
+#objlist 0 0 
+
+| Camera controls
+#cam_yaw  0  
+#cam_pit  0
+#camEye -10.0 2.0 0.0
+#camTo  0.0 0.0  0.0
+#camUp  0.0 1.0  0.0
+#camViewUp 0 0 0
+#camFor 0 0 0 | forward
+#camRig 0 0 0 | right
+
+|----------------------
+#cp #sp #cy #sy 
+
+:makecam
+	cam_yaw sincos 'cy ! 'sy !
+	cam_pit -0.24 max 0.24 min 
+	sincos 'cp ! 'sp !
+	'camTo >a 'camEye >b
+	b@+ cy cp *. + a!+
+	b@+ sp + a!+
+	b@+ sy cp *. + a!
+	'camFor >a
+	cy neg cp *. a!+
+	sp neg a!+
+	sy neg cp *. a!
+	'camFor v3Nor
+	'camRig >a
+	sy a!+
+	0 a!+
+	cy neg a!+
+	'camRig v3Nor
+    'camViewUp >a
+    cy sp *. neg a!+    | x = -cy*sp
+    cp a!+              | y = cp
+    sy sp *. neg a!     | z = -sy*sp
+	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
+	;
+
+#glevel 0
+#gaxis 1
+
+#camForMouse 0 0 0
+#v3hit 0 0 0
+
+#xdir 
+#ydir
+
+:AdvMouse
+	sdlx 2* fix. sw / 1.0 -
+	camAsp *. camFov *. 'xdir !
+	
+	sdly 2* fix. sh / 1.0 -
+	camFov *. 'ydir !
+	
+	'camForMouse >a
+	'camFor @      'camRig @      xdir *. + 'camViewUp @      ydir *. + a!+
+	'camFor 8 + @  'camRig 8 + @  xdir *. + 'camViewUp 8 + @  ydir *. + a!+
+	'camFor 16 + @ 'camRig 16 + @ xdir *. + 'camViewUp 16 + @ ydir *. + a!+
+
+	'camForMouse v3Nor
+	;
+
+:hiteye
+	AdvMouse
+	'camForMouse gaxis 3 << + @ 0? ( ; ) 
+	'camEye gaxis 3 << + @ glevel - 
+	swap /. | t
+	-? ( drop 0 ; ) neg
+	'v3hit 'camEye v3=
+	'v3hit 'camForMouse rot v3+*
+	|-- adjust for 1 plane, not the cube
+	'camEye gaxis 3 << + @ glevel - +? ( drop 1 ; ) drop 
+	1.0 'v3hit gaxis 3 << + +!
+	1 ;
+	
+:camVelMove | ve 'v3 -- ve
+	over 2dup 
+	'camEye -rot v3+*
+	'camTo  -rot v3+*
+	makecam ;
+	
+	
+|----------------
+#xp #yp 
+:movecam
+	sdlb 4 <>? ( drop ; ) drop
+	sdlx dup xp - 0.001 * 
+	'cam_yaw +! 'xp !
+	sdly dup yp - -0.001 * 
+	cam_pit + |0.24 min -0.24 max 
+	'cam_pit ! 'yp !
+	makecam ;
+	
+:wheelcam
+	SDLw 0? ( drop ; ) -0.4 *
+	'camFor camVelMove drop ;
+
+#va #vl #vu
+
+:mousecam
+	immMouse
+	1 =? ( wheelcam )				| over
+	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
+	3 =? ( movecam )				| active
+	drop
+	va 1? ( 'camFor camVelMove ) drop
+	vl 1? ( 'camRig camVelMove ) drop
+	vu 1? ( 'camUp camVelMove ) drop
+	;
+	
+#fsun [ 
+-0.5 8.0 -0.5 0
+ 1.0 1.0 1.0 1.0
+ ]
+
+:lightsun
+	8 'fsun memfloat
+	'fsun rl_set_sun
+	;
+	   
+:light2
+	2.4 
+	0.0 0.0 1.0
+	msec 3 << 
+	dup cos -5 * 
+	over sin -3 * 1.0 +
+	rot sin 4.5 *.
+	rl_point_light | int cr cg cb x y z --
+
+	2.2 
+	1.0 0.0 0.0
+	msec 3 << 
+	dup cos 7 * 
+	over sin 3 * 1.0 +
+	rot 0.5 + sin 4.5 *.
+	rl_point_light | int cr cg cb x y z --
+	;
+	
+:light
+	0.2
+	1.0 1.0 1.0
+	'camEye >a
+	a@+ a@+ 1.0 + a@
+	rl_point_light | int cr cg cb x y z --
+	;
+
+
+|----------------------------
+#cntobjs 0
+#scale 2.0
+#nrosprite 0
+
+|--------------------------------------
+#ballid
+
+:addobj
+	AdvMouse
+	hiteye 0? ( drop ; ) drop
+		
+	scale 
+	nrosprite
+	$ffffff00
+	cntobjs ss3dcs | scale spr color i --
+	
+	'v3hit >a 
+	a@+ 
+	a@+ cntobjs ss3difloor +
+	a@+ | x y z
+	$0 rxyz>q16
+	cntobjs ss3dxyzq
+	
+	1 'cntobjs +!
+	;
+
+|----------------------------------	
+| scene
+:makescene
+|	ss3dset | x y z qxyzw scale color spr i --	
+	;
+	
+|----------------------------------	
+:totop
+	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
+	'cam_pit -0.25 cam_pit 21 1.0 0 +vanim
+	'camEye >a
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 12.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	;
+	
+:tofront
+	'cam_yaw 0 cam_yaw 21 1.0 0 +vanim
+	'cam_pit 0 cam_pit 21 1.0 0 +vanim
+	'camEye >a
+	a> -10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	;
+	
+:toside
+	'cam_yaw -0.25 cam_yaw 21 1.0 0 +vanim
+	'cam_pit 0 cam_pit 21 1.0 0 +vanim
+	'camEye >a
+	a> 0.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 2.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
+	;
+
+#vrx
+#vrl 0 0
+:interface
+	1 'fscale !
+	$ffffffff 'fcolor !
+	
+	uiFull
+	0.05 %ch uiN
+	$1f0000ff 'fcolor !
+	gZoneAll frect
+	$ffffffff 'fcolor !
+	'exit "Exit" uiTBtn
+|	'exit "eventos" uiTBtn
+|	'exit "seleccion" uiTBtn
+	'totop "T" uiTBtn
+	'tofront "F" uiTBtn
+	'toside "S" uiTBtn
+	
+	
+	0.2 %cw uiO
+	$1f00ff00 'fcolor !
+	gZoneAll frect
+	
+	$ffffffff 'fcolor !
+	"EDIT" uiLabelC
+	
+|	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
+|	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
+|	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+|	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
+|	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
+
+|	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
+
+	nrosprite ssnameid "[%s]" sprint uiLabelC
+	
+|	n3dsprites "ant:%h" sprint uiLabelC
+|	cntobjs "objs:%d" sprint uiLabelC
+|	nrosprite "spr:%d" sprint uiLabelC
+
+|	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
+	'addobj "Add Obj" uiFTBtn	
+	0.0 1.0 'vrx uiSliderf
+	|-1.0 1.0 'vrx uiprogressf
+	'vrl 8 ss3names uiList
+	uiEx? 1? ( vrl 'nrosprite ! ) drop
+	;
+	
+:hud
+	fini
+	immIni
+	mousecam
+	interface
+	fend
+	
+	sdlkey
+	>esc< =? ( exit )
+	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
+	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
+	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
+	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
+	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
+
+	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
+	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
+	<spc> =? ( 
+		addobj 
+		|nrosprite 1+ n3dsprites mod 'nrosprite !
+		)
+	drop
+
+	;
+	
+:main
+	vupdate
+	makecam
+	
+	rl_frame_begin
+	SS3Ddraw
+	draw_grid
+	light
+	rl_frame_end
+
+	hud
+	GLUpdate
+	;
+
+:load3d
+|	"media/ss/iti"
+|	"media/ss/vox2" 
+	"media/ss/sprites"
+	dup 1024 ss3dload
+	ss3loadnames
+	
+	"ball" ss3idname 
+	|dup .d .println
+	'ballid !
+	;
+	
+:viewresize 
+	sh sw rl_resizewin 
+	fixFontResize ;
+
+: | <<<<<<<< Boot
+
+	"Scene r3dv" 
+	|1024 768 GLini GLInfo
+	GlInifull
+	
+	$fff vaini
+	
+	rlhud
+	load3d
+	rl_init 
+	1 rl_grid_init
+	
+	'viewresize SDLeventR
+	lightsun
+	makeCam
+	
+	tofront
+	|$020902 GLpaper
+	'main SDLshow
+	
+	rl_grid_free 
+	rl_shutdown
+	SS3Dshutdown
+	GLend
+	;

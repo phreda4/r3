@@ -44,7 +44,6 @@
     cy sp *. neg a!+    | x = -cy*sp
     cp a!+              | y = cp
     sy sp *. neg a!     | z = -sy*sp
-	
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 

@@ -316,7 +316,7 @@ void main() {
 	-1 ;
 
 ::ssnameid | id -- name
-	ss3names swap ( 1? 1- swap >>cr trim swap ) drop ;
+	ss3names swap ( 1? 1- swap >>0 trim swap ) drop ;
 
 ::SS3Dshutdown
 	ssbo_inst   1? ( 1 'ssbo_inst   glDeleteBuffers  ) drop
