@@ -161,12 +161,17 @@
 
 |----------------------------
 #cntobjs 0
+
+#vrx #vry #vrz
 #scale 2.0
 #nrosprite 0
 
 |--------------------------------------
 #ballid
 
+:getrot
+	vrx $ffff and 16 << vry $ffff and or 16 << vrz $ffff and or ;
+	
 :addobj
 	AdvMouse
 	hiteye 0? ( drop ; ) drop
@@ -180,10 +185,22 @@
 	a@+ 
 	a@+ cntobjs ss3difloor +
 	a@+ | x y z
-	$0 rxyz>q16
+	getrot rxyz>q16
 	cntobjs ss3dxyzq
 	
 	1 'cntobjs +!
+	;
+	
+:modobj
+	getrot rxyz>q16
+	cntobjs 1- 
+	ss3dqua | quat i --
+	
+	scale 
+	nrosprite
+	$ffffff00
+	cntobjs 1- 
+	ss3dcs | scale spr color i --
 	;
 
 |----------------------------------	
@@ -220,8 +237,13 @@
 	a> 10.0 a@+ 21 1.0 0 +vanim | 'var ini fin ease dur. start --
 	;
 
-#vrx
-#vrl 0 0
+
+
+:prevobj
+	nrosprite 1- 0 max 'nrosprite ! modobj ;
+:nextobj
+	nrosprite 1+ n3dsprites min 'nrosprite ! modobj ;
+	
 :interface
 	1 'fscale !
 	$ffffffff 'fcolor !
@@ -246,26 +268,23 @@
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
 	
-|	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
-|	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
-|	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
-|	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
-|	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
-
-|	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
-
-	nrosprite ssnameid "[%s]" sprint uiLabelC
+	nrosprite ssnameid "%s" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
-|	cntobjs "objs:%d" sprint uiLabelC
+	cntobjs "objs:%d" sprint uiLabelC
 |	nrosprite "spr:%d" sprint uiLabelC
 
 |	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
-	'addobj "Add Obj" uiFTBtn	
-	0.0 1.0 'vrx uiSliderf
+	
+	0.0 1.0 'vrx uiSliderf uiEx? 1? ( modobj ) drop
+	0.0 1.0 'vry uiSliderf uiEx? 1? ( modobj ) drop
+	0.0 1.0 'vrz uiSliderf uiEx? 1? ( modobj ) drop
+	0.1 10.0 'scale uiSliderf uiEx? 1? ( modobj ) drop
+	'prevobj "<<" uiTBtn	
+	'nextobj ">>" uiTBtn	
 	|-1.0 1.0 'vrx uiprogressf
-	'vrl 8 ss3names uiList
-	uiEx? 1? ( vrl 'nrosprite ! ) drop
+|	'vrl 8 ss3names uiList
+|	uiEx? 1? ( vrl 'nrosprite ! ) drop
 	;
 	
 :hud
@@ -284,14 +303,10 @@
 	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )
 
-	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
-	<pgdn> =? ( nrosprite 1- 0 max 'nrosprite ! )
-	<spc> =? ( 
-		addobj 
-		|nrosprite 1+ n3dsprites mod 'nrosprite !
-		)
+	<up> =? ( nextobj )
+	<dn> =? ( prevobj )
+	<spc> =? ( addobj )
 	drop
-
 	;
 	
 :main
@@ -310,8 +325,9 @@
 
 :load3d
 |	"media/ss/iti"
-|	"media/ss/vox2" 
-	"media/ss/sprites"
+	|"media/ss/city" 
+|	"media/ss/sprites"
+	"media/ss/dino" 
 	dup 1024 ss3dload
 	ss3loadnames
 	

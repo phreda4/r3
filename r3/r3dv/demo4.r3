@@ -108,14 +108,11 @@
 
 
 :load3d
-	"media/ss/sprites" 
+	|"media/ss/sprites" 
 	|"media/ss/iti"
-	|"media/ss/vox2"
-|	"media/ss/mezcla"
-|	"media/ss/voxi"
-|	"media/ss/cars"
-|	"media/ss/test"
-
+|	"media/ss/city" 
+|	"media/ss/sprites"
+	"media/ss/dino" 
 	dup 1024 ss3dload
 	ss3loadnames
 	
