@@ -336,6 +336,7 @@
 ::ssload | w h "file" -- ssprite
 	loadimg
 	dup SDLTexwh 'dy ! 'dx !
+	ab[
 	here >a a!+ 		| texture
 	2dup 32 << or a!+	| wi hi
 	dy 16 <</ 'dy ! 
@@ -351,6 +352,13 @@
 			dx + ) drop
 		dy + ) drop
 	here a> 'here ! 
+	]ba
+	;
+	
+::sscnt | ssprite -- ssprite nframes ; olny work after ssload (when change here not work anymore)
+	here over - | bytes
+	16 - | header
+	3 >> 
 	;
 
 :settile | n adr -- adr
