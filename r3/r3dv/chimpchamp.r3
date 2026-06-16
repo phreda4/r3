@@ -210,10 +210,10 @@
 	|dup filexist 0? ( 3drop ; ) drop
 	here dup 'arena !
 	swap load 'arena> !
-	arena> arena - 7 >>
+	arena> arena - 6 >> |7 >>
 	ini3dtile
-	arena arena> over - 5 >> swap 
-	t3dstatic ;
+	arena arena> over - 5 >> 
+	swap t3dstatic ;
 	
 |---------------------------------------------
 :viewresize 
