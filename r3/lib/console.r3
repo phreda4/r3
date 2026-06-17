@@ -213,7 +213,7 @@
 |LIN|	"./r3lin "
 |MAC|	"./r3mac "	
 |RPI|	"./r3rpi "	
-	,s swap ,s 0 ,c sys ;
+	,s swap 34 ,c ,s 34 ,c 0 ,c sys ;
 	
 	
 : |||||||||||||||||||||||||||||
