@@ -36,13 +36,13 @@
 
 ::sign | v -- v s
 	dup 63 >> 1 or ;
-
+	
 :sinp
 	$7fff and $4000 -
 	dup dup *.
-	dup 4846800 *.
-	2688000 - *.
-	404000 + *. ;
+	dup 5214464 *.        | c3 ajustado para cierre exacto
+	2720000 - *.          | c2 optimizado
+	411775 + *. ;         | c1 = 2pi * 65536 (Pendiente real)
 	
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
@@ -53,9 +53,9 @@
 	$4000 +
 	$7fff and $4000 -
 	dup dup *.
-	dup 129890000 *.
-	5078000 + *.
-	395600 + *. ;
+	dup 114054080 *.      | c5 anclado para exactitud en 45°
+	5418737 + *.          | c3 Taylor modificado
+	411775 + *. ;         | c1 = 2pi * 65536	
 
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
@@ -143,21 +143,21 @@
 	63 over clz - 
 	16 - dup 16 << | x bitpos integer
 	-rot | integer x bitpos
-	mcalc 1.0 - | int xnorm
-	19697
-	over * 16 >> 51259 -
-	over * 16 >> 97098 +
+	mcalc 1.0 - | int xnorm	
+	16515                    | c3
+	over * 16 >> 45416 -     | c2
+	over * 16 >> 94437 +     | c1
 	* 16 >> + ;
 	
 ::pow2. | y -- r
 	dup $ffff and
-	5089
-	over * 16 >> 14850 +
-	over * 16 >> 45600 +
+	5118                     | c3 = 0.078093
+	over * 16 >> 14815 +     | c2 = 0.226065
+	over * 16 >> 45603 +     | c1 = 0.695842
 	* 16 >> 1.0 +
 	swap 16 >>
 	+? ( << ; ) neg >> ;
-
+	
 ::pow. | x y -- r
 	|0? ( 2drop 1.0 ; ) 
 	swap 0? ( nip ; ) | y x
