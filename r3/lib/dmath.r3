@@ -35,6 +35,13 @@
 	2757855059 - *.d         | c2 = 0.6421  
 	6744473128 + *.d ;       | c3 = 1.5703 (p/2)
 	
+:sinp
+	$7fffffff and $40000000 -
+	dup dup *.d
+	dup 342274944 *.d        | c3 = 0.0796926 (quintic)
+	2774390002 - *.d         | c2 = 0.6459641 (cubic)
+	6746420559 + *.d ;       | c1 = 1.5707963 (linear)	
+	
 ::cos.d | bangle -- r
 	$80000000 + $80000000 nand? ( sinp ; ) sinp neg ;
 ::sin.d | bangle -- r
@@ -84,6 +91,19 @@
 	over *.d 6197467388 +
 	*.d + ;
 
+::log2.d | x -- r
+	0 <=? ( 0 nip ; ) 
+	63 over clz - | x bitpos
+	32 - dup 32 << -rot 		| bp x bp
+	mc $100000000 -	| bp x
+	
+    | Polinomio grado 4 Minimax
+	-476311656               | c4 = -0.1109
+	over *.d 1633805378 +    | c3 = 0.3804
+	over *.d -3033100378 +   | c2 = -0.7062
+	over *.d 6170669228 +    | c1 = 1.4367
+	*.d + ;
+	
 ::pow2.d | y -- r
 	dup $ffffffff and
     | Polinomio grado 3 óptimo
@@ -93,6 +113,16 @@
     *.d $100000000 +          | +1.0
 	swap 32 >>
 	+? ( << ; ) neg >> ;
+
+::pow2.d | y -- r
+	dup $ffffffff and
+    | Polinomio grado 3 Minimax
+    335407021                 | c3 = 0.078093
+    over *.d 970921703 +      | c2 = 0.226065
+    over *.d 2988615740 +     | c1 = 0.695842
+    *.d $100000000 +          | +1.0
+	swap 32 >>
+	+? ( << ; ) neg >> ;	
 	
 ::pow.d | x y -- r
 	|0? ( 2drop 1.0 ; ) 
