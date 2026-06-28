@@ -306,3 +306,69 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		txh + ) drop
 	3drop
 	]ba empty ;	
+	
+|--- Edita linea
+#cmax
+#padi>	| inicio
+#pad>	| cursor
+#padf>	| fin
+
+:lins  | c -- ;
+	padf> padi> - cmax >=? ( 2drop ; ) drop
+	pad> dup 1- padf> over - 1+ cmove> 1 'padf> +!
+:lover | c -- ;
+	pad> c!+ dup 'pad> !
+	padf> <=? ( drop ; )
+	dup padi> - cmax >=? ( swap 1- swap -1 'pad> +! ) drop
+	'padf> ! ;
+:0lin 0 padf> c! ;
+:kdel pad> padf> >=? ( drop ; ) drop 1 'pad> +! | --;
+:kback pad> padi> <=? ( drop ; ) dup 1- swap padf> over - 1+ cmove -1 'padf> +! -1 'pad> +! ;
+:kder pad> padf> <? ( 1+ ) 'pad> ! ;
+:kizq pad> padi> >? ( 1- ) 'pad> ! ;
+:kup
+	pad> ( padi> >?
+		1- dup c@ $ff and 32 <? ( drop 'pad> ! ; )
+		drop ) 'pad> ! ;
+:kdn
+	pad> ( c@+ 1?
+		$ff and 32 <? ( drop 'pad> ! ; )
+		drop ) drop 1- 'pad> ! ;
+
+#modo 'lins
+
+::pad.reset | 'var max -- 'var max
+	1- 'cmax !
+	dup dup 'padi> !
+	( c@+ 1? drop ) drop 1-
+	dup 'pad> ! 'padf> !
+	'lins 'modo ! ;
+
+:chmode
+	modo 'lins =? ( drop 'lover 'modo ! ; )
+	drop 'lins 'modo ! ;
+
+:drawcur
+	msec $100 and? ( drop ; ) drop
+	$a0a0a0 SDLColor
+	padi> pad> 
+	modo 'lins =? ( drop txcur ; ) drop
+	txcuri ;
+
+::pad.draw | 'buff --
+	txpos drawcur
+	txat txwrite
+	
+	SDLchar 1? ( modo ex ; ) drop
+	
+	SDLkey
+	<ins> =? ( chmode )
+	
+	|--pc mode
+	<le> =? ( kizq ) <ri> =? ( kder )
+	<back> =? ( kback ) <del> =? ( kdel )
+	<home> =? ( padi> 'pad> ! ) <end> =? ( padf> 'pad> ! )
+	|-- vim ...
+	
+	drop
+	;

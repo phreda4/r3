@@ -27,14 +27,6 @@
 ::f>.d 16 << ;
 ::.d>f 16 >> ;
 
-
-:sinp
-	$7fffffff and $40000000 -
-	dup dup *.d
-	dup 308640022 *.d        | c1 = 0.0719
-	2757855059 - *.d         | c2 = 0.6421  
-	6744473128 + *.d ;       | c3 = 1.5703 (p/2)
-	
 :sinp
 	$7fffffff and $40000000 -
 	dup dup *.d
@@ -83,20 +75,6 @@
 	32 - dup 32 << -rot 		| bp x bp
 	mc $100000000 -	| bp x
 	
-	-1032911231 
-	over *.d 1239493478 +
-	over *.d -1549366847 +
-	over *.d 2065822463 +
-	over *.d -3098733694 +
-	over *.d 6197467388 +
-	*.d + ;
-
-::log2.d | x -- r
-	0 <=? ( 0 nip ; ) 
-	63 over clz - | x bitpos
-	32 - dup 32 << -rot 		| bp x bp
-	mc $100000000 -	| bp x
-	
     | Polinomio grado 4 Minimax
 	-476311656               | c4 = -0.1109
 	over *.d 1633805378 +    | c3 = 0.3804
@@ -104,16 +82,6 @@
 	over *.d 6170669228 +    | c1 = 1.4367
 	*.d + ;
 	
-::pow2.d | y -- r
-	dup $ffffffff and
-    | Polinomio grado 3 óptimo
-    429496729                 | c3 = 0.1
-    over *.d 858993459 +      | c2 = 0.2
-    over *.d 3013174610 +     | c1 ˜ ln(2)
-    *.d $100000000 +          | +1.0
-	swap 32 >>
-	+? ( << ; ) neg >> ;
-
 ::pow2.d | y -- r
 	dup $ffffffff and
     | Polinomio grado 3 Minimax

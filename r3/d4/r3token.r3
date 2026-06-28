@@ -643,6 +643,28 @@
 	pass3			| calc tree calls
 	pass4
 	;
+
+::r3loadmemd | mem 'filename --
+|-------------------------------------------
+	empty mark | reuse mem (need 1 mark)
+	0 0 error!
+	dup 'filename strcpy
+	'r3path strpath
+	'src !
+	'inc 'inc> ! 
+	
+	'filename src includes drop | load includes
+	pass1			| calc sizes
+	makemem			| reserve mem
+	pass2			| tokenize code
+	error 1? ( drop ; ) drop
+|	cnttok cntdef "%d %d" .println	
+	tok> tok - 3 >> 'cnttok !	| real token use
+	dic> dic - 4 >> 'cntdef !	| real definition use
+	inc> 'inc - 4 >> 'cntinc !
+|	cnttok cntdef "%d %d" .println
+	fmem> 'here !	| mark memory for vars	
+	;
 	
 |-------------------------------------------
 ::r3load | 'filename --
