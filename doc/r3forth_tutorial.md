@@ -1167,12 +1167,18 @@ The `.print` word processes a format string with `%` placeholders, consuming val
 
 | String copy
 :strcpy | dest src --
-    ( c@+ 1? over c! swap 1 + swap ) 2drop c! ;
+    ( c@+ 1?
+        swap >r swap c!+ r>
+    ) nip swap c! ;
 
 | String compare (returns 0 if equal)
+| Note: only detects a difference if str1 ends before str2 (or the
+| characters differ). If str2 is shorter than str1, this still reports
+| equal at str2's terminator -- restructure with both bounds checked
+| together if you need full-length comparison.
 :strcmp | str1 str2 -- n
     ( c@+ 1?
-        rot c@+ rot - 1? ( rot 2drop ; )
+        rot c@+ rot - 1? ( nip nip ; )
         drop swap
     ) 3drop 0 ;
 ```
@@ -1491,8 +1497,8 @@ time msec rerand       | seed with time
 |------|--------------|-------------|
 | `::SDLImage` | `x y img --` | Draw image |
 | `::SDLImages` | `x y w h img --` | Draw image scaled |
-| `::SDLspriteZ` | `x y zoom img --` | Draw with zoom |
-| `::SDLSpriteR` | `x y ang img --` | Draw with rotation |
+| `::spriteZ` | `x y zoom img --` | Draw with zoom |
+| `::spriteR` | `x y ang img --` | Draw with rotation |
 
 **Sprite sheets:**
 
@@ -1661,11 +1667,10 @@ time msec rerand       | seed with time
 
 ```forth
 :clamp | value min max -- clamped
-    rot
-    over <? ( nip ; )    | value < min → return min
-    nip
-    over >? ( drop ; )   | value > max → return max
-    nip ;
+    >r                        | value min           (max saved on return stack)
+    over <? ( drop ; ) nip    | clamp to >= min
+    r>                        | bring max back
+    over >? ( drop ; ) nip ;  | clamp to <= max
 ```
 
 ### Circular Buffer
@@ -1679,14 +1684,15 @@ time msec rerand       | seed with time
 :cbuffer-write | value --
     ccount 100 >=? ( 2drop ; ) drop
     cwrite !+
-    dup 'cbuffer 800 + >=? ( drop 'cbuffer )
+    'cbuffer 800 + >=? ( drop 'cbuffer )
     'cwrite !
     1 'ccount +! ;
 
 :cbuffer-read | -- value
     ccount 0? ( ; ) drop
-    cread @+
-    dup 'cbuffer 800 + >=? ( drop 'cbuffer )
+    cread @+                              | newaddr value
+    swap                                  | value newaddr
+    'cbuffer 800 + >=? ( drop 'cbuffer )  | value newaddr'
     'cread !
     -1 'ccount +! ;
 ```
@@ -1778,7 +1784,7 @@ Countdown loops are faster because `1?` doesn't consume the counter:
 
 ```forth
 | Faster
-10 ( 1? 1 - process ) drop
+10 ( 1? 1 - dup process ) drop
 
 | Slower — requires more stack work
 0 ( 10 <? dup process 1 + ) drop
@@ -1793,6 +1799,7 @@ Exit as soon as the answer is known:
     >r
     ( 1? 1 -
         over @ r@ =? ( r> 3drop ; )
+        drop
         swap 8 + swap
     ) r> 3drop 0 ;
 ```
