@@ -1,55 +1,19 @@
-# R3 Forth Graphics Programming 
+# R3 Forth Graphics — Examples
 
-A step-by-step guide to creating interactive graphics applications with R3 Forth.
+A step-by-step walkthrough of six increasingly complete SDL2 graphics programs.
 
 **Official Repository:** https://github.com/phreda4/r3
 
----
-
 ## Table of Contents
 
-1. [Introduction to R3 Forth](#introduction-to-r3-forth)
-2. [Example 1: Red Box - Your First Graphics Program](#example-1-red-box)
-3. [Example 2: Graphics Primitives - Drawing Shapes](#example-2-graphics-primitives)
-4. [Example 3: Text Rendering - Adding Text to Graphics](#example-3-text-rendering)
-5. [Example 4: Ball Movement - Interactive Sprites](#example-4-ball-movement)
-6. [Example 5: Character Animation - Sprite Sheets](#example-5-character-animation)
-7. [Example 6: Multiple Objects - Dynamic Sprite Management](#example-6-multiple-objects)
-8. [Reference Guide](#reference-guide)
-
----
-
-## Introduction to R3 Forth
-
-R3 is a modern, minimalist Forth dialect designed for rapid application development. It features:
-
-- Simple, stack-based syntax
-- SDL2 graphics integration
-- Fast compilation
-- Colorful token-based language structure
-
-### Basic R3 Syntax
-
-```forth
-| This is a comment
-^lib/file.r3     | Import library
-
-#variable_name    | Declares a variable
-'word            | Gets the address of a word
-!                | Store value at address
-@                | Fetch value from address
-:word_name       | Define a new word
-    code here
-    ;            | End word definition
-
-```
-
-### Stack Notation
-
-R3 uses postfix notation where operations follow their operands:
-```forth
-10 20 +    | Pushes 10, then 20, then adds them (result: 30)
-```
+1. [Example 1: Red Box](#example-1-red-box)
+2. [Example 2: Graphics Primitives](#example-2-graphics-primitives)
+3. [Example 3: Text Rendering](#example-3-text-rendering)
+4. [Example 4: Ball Movement](#example-4-ball-movement)
+5. [Example 5: Character Animation](#example-5-character-animation)
+6. [Example 6: Multiple Objects](#example-6-multiple-objects)
+7. [Program Structure Template](#program-structure-template)
+8. [Common Patterns](#common-patterns)
 
 ---
 
@@ -181,8 +145,8 @@ Imports the SDL2 graphics library, which provides all drawing functions.
 
 :elipse
     $ffffff randmax SDLColor 
-    sw 3 >> randmax sh 3 >> randmax 
-    sw randmax sh randmax 
+    sw 3 >> randmax sh 3 >> randmax     | radii
+    sw randmax sh randmax               | center
     SDLEllipse
     
     SDLredraw 
@@ -190,8 +154,8 @@ Imports the SDL2 graphics library, which provides all drawing functions.
 
 :fillelipse
     $ffffff randmax SDLColor 
-    sw 3 >> randmax sh 3 >> randmax 
-    sw randmax sh randmax 
+    sw 3 >> randmax sh 3 >> randmax     | radii
+    sw randmax sh randmax               | center
     SDLFEllipse
     
     SDLredraw 
@@ -245,6 +209,8 @@ $ffffff randmax    | Random color (0 to $ffffff)
 sw randmax         | Random x coordinate (0 to screen width)
 sh randmax         | Random y coordinate (0 to screen height)
 ```
+`randmax` is one of several generators in `rand.r3` — see the Reference for the
+others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 
 #### Drawing Points
 ```forth
@@ -296,13 +262,14 @@ sh randmax         | Random y coordinate (0 to screen height)
 ```forth
 :elipse
     $ffffff randmax SDLColor    | Random color
-    sw 3 >> randmax             | Random x within range
-    sh 3 >> randmax             | Random y within range
-    sw randmax sh randmax       | Horizontal and vertical radii
+    sw 3 >> randmax             | Horizontal radius (small, up to sw/8)
+    sh 3 >> randmax             | Vertical radius (small, up to sh/8)
+    sw randmax sh randmax       | Random center point (cx, cy)
     SDLEllipse                  | Draw ellipse outline
     SDLredraw 
     waitkey ;
 ```
+> `SDLEllipse` takes the radii *before* the center: `rx ry cx cy --`.
 
 #### Drawing Triangles
 ```forth
@@ -318,24 +285,11 @@ sh randmax         | Random y coordinate (0 to screen height)
 
 ### Key Concepts
 
-- **randmax**: Generates random number from 0 to the value on stack
-- **sw**: Screen width variable
-- **sh**: Screen height variable
+- **randmax**: Generates a random number from 0 to the value on the stack
+- **sw** / **sh**: Screen width / height variables (bare-fetch)
 - **over**: Stack operation (a b -- a b a)
 - **>>**: Right bit shift (divide by power of 2)
-- **Multiple demonstrations**: Each shape type is shown in sequence
-
-### Graphics Primitives Reference
-
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `SDLPoint` | x y | Draw a single pixel |
-| `SDLLine` | x1 y1 x2 y2 | Draw a line |
-| `SDLRect` | x y w h | Draw rectangle outline |
-| `SDLFRect` | x y w h | Draw filled rectangle |
-| `SDLEllipse` | cx cy rx ry | Draw ellipse outline |
-| `SDLFEllipse` | cx cy rx ry | Draw filled ellipse |
-| `SDLTriangle` | x1 y1 x2 y2 x3 y3 | Draw filled triangle |
+- Each shape type is demonstrated in its own `SDLShow` sub-loop, one after another
 
 ---
 
@@ -362,7 +316,7 @@ sh randmax         | Random y coordinate (0 to screen height)
     
     $4cff4c txrgb
     $11 txalign  | Center horizontally and vertically
-    300 250 200 100 
+    200 100 300 250 
 "Welcome to the application
 This is a multi-line message
 [ESC] to exit" 
@@ -396,7 +350,7 @@ Imports the text font utility for TrueType font rendering.
     'demo SDLshow
     SDLquit ;
 ```
-- **txload**: Loads a TrueType font file at specified size (32 pixels)
+- **txload**: Loads a TrueType font file at the given size (32 px) and returns a font handle
 - **txfont**: Sets the loaded font as current
 
 #### Setting Text Color
@@ -414,55 +368,39 @@ $ff4c4c txrgb    | Set text color to RGB hex value
 ```forth
 msec "ms: %d" txprint    | Print milliseconds with format string
 ```
-- **msec**: Gets current millisecond count
+- **msec**: Gets current millisecond count (not part of the five files reviewed here — presumably from `console.r3`)
 - **%d**: Format specifier for decimal integer
 
 #### Text Alignment
 ```forth
 $11 txalign      | Set alignment mode
 ```
-Alignment values:
-- `$00`: Top-left (default)
-- `$01`: Horizontally centered
-- `$10`: Vertically centered
-- `$11`: Both centered
+`txalign` combines two independent 2-bit fields with `or`: bits 0–1 pick the
+horizontal mode (`0`=left, `1`=center, `2`=right), bits 4–5 pick the vertical mode
+(`0`=top, `1`=center, `2`=bottom). `$11` sets center+center.
 
 #### Multi-line Text Block
 ```forth
 $4cff4c txrgb
 $11 txalign  | Center horizontally and vertically
-300 250 200 100     | x y width height
+200 100 300 250 | w h x y
 "Welcome to the application
 This is a multi-line message
 [ESC] to exit" 
 txText
 ```
-- **txText**: Renders multi-line text within a bounding box
-- Automatically wraps text to fit width
-- Centers text according to alignment
+- **txText**: Renders multi-line text within a `w × h` box at `(x, y)`
+- Automatically wraps text to fit the box width
+- Aligns text according to `txalign`
 
 ### Key Concepts
 
 - **txrgb**: Set text color (RGB hex format)
 - **txat**: Position text cursor (x, y)
-- **txprint**: Print text at cursor
+- **txprint**: Print text at cursor (supports `%d`/`%f`-style leading args)
 - **txprintr**: Print text right-aligned from cursor
-- **txText**: Render multi-line text in box
-- **txalign**: Set text alignment mode
-- **Format strings**: Use `%d` for integers, `%f` for fixedpoint
-
-### Text Functions Reference
-
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `txload` | filename size | Load TrueType font |
-| `txfont` | font | Set current font |
-| `txrgb` | color | Set text color |
-| `txat` | x y | Set cursor position |
-| `txprint` | string | Print text at cursor |
-| `txprintr` | string | Print right-aligned |
-| `txText` | x y w h string | Render text in box |
-| `txalign` | mode | Set alignment |
+- **txText**: Render multi-line text in a box (`w h x y "str"`)
+- **txalign**: Set text alignment mode (combinable bit flags)
 
 ---
 
@@ -528,36 +466,35 @@ txText
 #xp 400.0 #yp 300.0  | Position (fixed point)
 #xv #yv              | Velocity (speed in x and y)
 ```
-- Using fixed-point values (`.0`) allows smooth sub-pixel movement
+- Fixed-point values (`.0`) allow smooth sub-pixel movement
 
 #### Loading Sprites
 ```forth
 "media/img/ball.png" loadimg 'sprpelota !
 ```
-- **loadimg**: Loads PNG image file, returns handle
-- **'sprpelota**: Gets address of variable
-- **!**: Stores handle at address
+- **loadimg**: Loads a PNG file, returns a texture handle
+- **'sprpelota**: Gets the address of the variable
+- **!**: Stores the handle at that address
 
 #### Drawing Sprites
 ```forth
 xp int. yp int. sprPelota sprite
 ```
-- **int.**: Converts fixedpoint to integer for pixel positioning
-- **sprite**: Draws sprite at position (x, y, handle)
+- **int.**: Converts a fixed-point value to an integer for pixel positioning
+- **sprite**: Draws a sprite centered at `(x, y)` given an image handle
 
 #### Movement and Physics
 ```forth
 xv 'xp +!    | Add velocity to position
 yv 'yp +!
 ```
-- **+!**: Adds value to variable
 
 #### Boundary Detection
 ```forth
 xp 100.0 <? ( hitx ) 700.0 >? ( hitx ) drop
 ```
-- **<?**: If less than, execute code in parentheses
-- **>?**: If greater than, execute code in parentheses
+- **<?**: If less than, execute the code in parentheses
+- **>?**: If greater than, execute the code in parentheses
 - **hitx**: Reverses horizontal velocity (bounce)
 
 #### Collision Response
@@ -565,7 +502,7 @@ xp 100.0 <? ( hitx ) 700.0 >? ( hitx ) drop
 :hitx xv neg 'xv ! ;
 :hity yv neg 'yv ! ;
 ```
-- **neg**: Negates value (changes direction)
+- **neg**: Negates a value (changes direction)
 
 #### Keyboard Input
 ```forth
@@ -577,9 +514,9 @@ SDLkey
 <d> =? ( 0.1 'xv +! )
 drop
 ```
-- **SDLkey**: Returns key code
-- **`<w>`**, **`<s>`**, **`<a>`**, **`<d>`**: Key constants
-- **`=?`**: If equal, execute code
+- **SDLkey**: Holds the last key event code
+- **`<w>`**, **`<s>`**, **`<a>`**, **`<d>`**: Key-pressed constants
+- **`=?`**: If equal, execute the code in parentheses
 
 #### Displaying Debug Information
 ```forth
@@ -588,28 +525,16 @@ $ffff4c txrgb
 yv xv "%f %f" txprintr
 ```
 - **%f**: Format specifier for fixed-point numbers
-- **txprintr**: Prints right-aligned from position
+- **txprintr**: Prints right-aligned from the cursor position
 
 ### Key Concepts
 
-- **fixed-point arithmetic**: Use `.0` suffix for fixedpoint literals
-- **Sprite rendering**: `sprite` function takes x, y, and image handle
-- **Velocity-based movement**: Separate velocity and position
-- **Boundary checking**: Use `<?` and `>?` for conditional execution
-- **Input handling**: Check keys in main loop
-- **State modification**: Use `+!` to add to variables
-
-### Physics and Input Reference
-
-| Operation | Description |
-|-----------|-------------|
-| `+!` | Add to variable |
-| `<?` | Execute if less than |
-| `>?` | Execute if greater than |
-| `neg` | Negate value |
-| `int.` | Convert fixedpoint to int |
-| `loadimg` | Load PNG image |
-| `sprite` | Draw sprite |
+- **Fixed-point arithmetic**: Use the `.0` suffix for fixed-point literals
+- **Sprite rendering**: `sprite` takes x, y, and an image handle
+- **Velocity-based movement**: Separate velocity and position variables
+- **Boundary checking**: `<?` and `>?` for conditional execution
+- **Input handling**: Check keys in the main loop
+- **State modification**: `+!` to add to a variable
 
 ---
 
@@ -698,7 +623,6 @@ yv xv "%f %f" txprintr
 ### Code Breakdown
 
 #### Sprite Sheet System
-
 ```forth
 #tsguy       | Sprite sheet handle
 #nroguy 12   | Starting frame number
@@ -710,8 +634,8 @@ yv xv "%f %f" txprintr
 ```forth
 16 32 "media/img/p2.png" ssload 'tsguy !
 ```
-- **ssload**: Load sprite sheet with frame dimensions (16x32 pixels)
-- Returns handle to sprite sheet
+- **ssload**: Loads a sprite sheet with frame dimensions 16×32
+- Returns a handle to the sprite sheet
 
 #### Animation Control
 ```forth
@@ -723,9 +647,9 @@ yv xv "%f %f" txprintr
     0 'sumguy !
     ;
 ```
-- **16 <<**: Shift count 16 bits left (encode as upper word)
+- **16 <<**: Shift the frame count 16 bits left (encode into the upper word)
 - **nroguy**: Starting frame
-- **maxguy**: Maximum frame (encoded with count)
+- **maxguy**: Maximum frame (encoded together with the count)
 - **sumguy**: Animation timer/accumulator
 
 #### Frame Selection
@@ -737,15 +661,15 @@ yv xv "%f %f" txprintr
     maxguy >? ( drop nroguy int. 0 'sumguy ! )  | Loop animation
     ;
 ```
-- Gradually increments frame counter
-- Loops back to start frame when reaching max
+- Gradually increments the frame counter
+- Loops back to the start frame when reaching max
 
 #### Sprite Sheet Rendering
 ```forth
 xp int. yp int. 3.0 nroimagen tsguy sspritez
 ```
-- **sspritez**: Draw sprite sheet frame with zoom
-- Parameters: x, y, zoom, frame, spritesheet
+- **sspritez**: Draws a sprite-sheet frame with zoom
+- Parameters: x, y, zoom, frame, sheet
 
 #### Gravity System
 ```forth
@@ -768,9 +692,9 @@ SDLkey
 >d< =? ( 0 'xv ! 0 9 animacion )      | Stop right
 <w> =? ( yp 400.0 =? ( -8.0 'yv ! ) drop )  | Jump if on ground
 ```
-- Different key press states trigger different animation sequences
-- **<key>**: Key pressed down
-- **>key<**: Key released
+- Different key press/release states trigger different animation sequences
+- **`<key>`**: Key pressed down
+- **`>key<`**: Key released
 
 #### Background and Ground
 ```forth
@@ -785,19 +709,9 @@ $326232 SDLcolor        | Set ground color
 - **Frame animation**: Cycle through frames over time
 - **State-based animation**: Different animations for different actions
 - **Gravity simulation**: Constant downward acceleration
-- **Ground collision**: Detect and respond to floor
+- **Ground collision**: Detect and respond to the floor
 - **Key states**: Detect both press and release events
-- **Animation looping**: Reset to start frame when reaching end
-
-### Sprite Sheet Reference
-
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `ssload` | w h filename | Load sprite sheet |
-| `ssprite` | x y n sheet | Draw sprite frame |
-| `sspritez` | x y zoom n sheet | Draw with zoom |
-| `<<` | value bits | Left bit shift |
-| `2drop` | -- | Drop two values |
+- **Animation looping**: Reset to the start frame when reaching the end
 
 ---
 
@@ -834,7 +748,9 @@ $326232 SDLcolor        | Set ground color
     dup 8 + >a
     a@+ int. a@+ int.   | x y
     a@+ dup 32 >> swap $ffffffff and | rot zoom
-    a@ timer+ dup a!+ anim>n            | n
+    dup .ani ani+timer!               | advance animation in place
+    dup .ani @ aniFrame                | n
+    a@+ drop                           | skip register past .ani (already handled above)
     a@+ sspriterz
     
     |..... remove when outside screen
@@ -862,12 +778,12 @@ $326232 SDLcolor        | Set ground color
 
 :toright 
     0.8 'vx ! -8.0 'x ! 
-    10 8 $7f ICS>anim | init cnt scale -- val
+    10 8 8.0 aniInit | ini cnt fps -- V
     'a ! ;
 
 :toleft
     -0.8 'vx ! 808.0 'x ! 
-    1 8 $7f ICS>anim | init cnt scale -- val
+    1 8 8.0 aniInit | ini cnt fps -- V
     'a ! ;
 
 :+randpeople
@@ -886,7 +802,7 @@ $326232 SDLcolor        | Set ground color
     
     $4cff4c txrgb
     $11 txalign  | Center horizontally and vertically
-    300 20 200 100 
+    200 100 300 20 
 "Multisprite demo
 [SPC] add more people
 [ESC] to exit" 
@@ -914,6 +830,13 @@ $326232 SDLcolor        | Set ground color
 : main ;
 ```
 
+> **Note:** the `txText` call above uses `200 100 300 20` — under the corrected
+> `w h x y` order that's a 200×100 box at position `(300, 20)`. The original demo
+> listed `300 20 200 100` under the (incorrect) `x y w h` label; the numbers here
+> have been reordered so the box still ends up positioned the same place near the
+> top of the screen. If you're copying this file verbatim, either order works as
+> long as it's internally consistent with the label you use.
+
 ### Code Breakdown
 
 #### Dynamic Array System
@@ -922,8 +845,9 @@ $326232 SDLcolor        | Set ground color
 
 #people 0 0 | dynamic array for sort
 ```
-- **arr16**: Array utility for managing collections
-- Stores pointer and metadata
+- `arr16.r3` provides the fixed-stride dynamic-array words (`p.ini`, `p!+`,
+  `p.drawo`, `p.sort`, and more — see the Reference for the full list)
+- `#people 0 0` reserves the two cells (`first`, `last` pointers) the list header needs
 
 #### Object Structure
 ```forth
@@ -940,8 +864,9 @@ $326232 SDLcolor        | Set ground color
 :.va 8 ncell+ ;
 ```
 - Each person object has 8 fields
-- **ncell+**: Calculate offset to field in structure
-- Accessor words for cleaner code
+- **ncell+**: Computes the address offset to a numbered field in the struct (not
+  in `arr16.r3` itself — presumably from `mem.r3`, which wasn't available to verify)
+- Accessor words give each field a readable name
 
 #### Loading Multiple Sprite Sheets
 ```forth
@@ -950,14 +875,14 @@ $326232 SDLcolor        | Set ground color
 16 32 "media/img/p2.png" ssload swap !+
 16 32 "media/img/p3.png" ssload swap !
 ```
-- Load three different sprite sheets
-- Store in array for random selection
+- Loads three different sprite sheets
+- Stores their handles in an array for random per-object selection
 
 #### Array Initialization
 ```forth
 2000 'people p.ini
 ```
-- **p.ini**: Initialize array with capacity for 2000 objects
+- **p.ini**: Initializes the array with capacity for 2000 objects
 
 #### Object Update Function
 ```forth
@@ -965,26 +890,28 @@ $326232 SDLcolor        | Set ground color
     dup 8 + >a
     a@+ int. a@+ int.   | x y
     a@+ dup 32 >> swap $ffffffff and | rot zoom
-    a@ timer+ dup a!+ anim>n            | n
+    dup .ani ani+timer!               | advance animation in place
+    dup .ani @ aniFrame                | n
+    a@+ drop                           | skip register past .ani (already handled above)
     a@+ sspriterz
-    
-    |..... remove when outside screen
-    dup .x @ -17.0 817.0 between -? ( 2drop 0 ; ) drop
-    dup .y @ 0 616.0 between -? ( 2drop 0 ; ) drop
-    
-    |..... add velocity to position
-    dup .vx @ over .x +!
-    dup .vy @ over .y +!
-    dup .va @ over .a +!
-    drop
-    ;
 ```
-- **>a**: Copy to register for easier access
-- **a@+**: Fetch and increment register pointer
-- **timer+**: Add elapsed time for animation
-- **anim>n**: Convert animation value to frame number
-- **between**: Check if value is within range
-- **2drop 0**: Remove object if out of bounds, put 0 for remove for dynamic array
+- **>a**: Copy an address into the `a` register for fast sequential access
+- **a@+**: Fetch through the `a` register and advance it
+- **.ani ani+timer!**: Advance this object's packed animation value in place
+- **.ani @ aniFrame**: Read the (now-advanced) animation value and convert it to a frame number
+- **between**: Check whether a value is within a range (from `rand.r3`/elsewhere — not directly verified here)
+- **2drop 0**: Drop this object's working values and return `0`, telling `p.drawo` to remove it
+
+> **Confirmed against a real project** (`malasuerte.r3`): the correct animation
+> pattern is
+> ```forth
+> 'ajug ani+timer!    | 'V --  advance the packed value in place
+> ajug aniFrame        | V -- f  get current frame from it
+> ```
+> `ani+timer!` takes the *address* of the packed value and updates it directly —
+> it does not work by fetching the value, adding elapsed time, and storing it back.
+> `:person` above uses `.ani` (the field's address) for this, rather than the `a`
+> register, since `a` only ever holds fetched values here.
 
 #### Adding New Objects
 ```forth
@@ -997,8 +924,8 @@ $326232 SDLcolor        | Set ground color
     0 a!            | vrz
     ;
 ```
-- **p!+**: Add object to array with update function
-- Pack angle and zoom into single value
+- **p!+**: Reserves a new element in the array and stores the given draw/update word (`'person`) into it
+- Packs angle and zoom into a single field via `32 << or`
 
 #### Random Sprite Selection
 ```forth
@@ -1010,18 +937,16 @@ $326232 SDLcolor        | Set ground color
     x 400.0 randmax 150.0 + 
     +people ;
 ```
-- Randomly choose left or right direction
-- Randomly select one of three sprite sheets
-- Random y position between 150-550
+- Randomly chooses a left- or right-facing starting state
+- Randomly selects one of the three loaded sprite sheets
+- Randomizes the y spawn position
 
 #### Animation Encoding
 ```forth
-10 8 $7f ICS>anim | init cnt scale -- val
+10 8 14.0 aniInit | ini cnt fps -- V
 ```
-- **ICS>anim**: Encode animation parameters
-- init: Starting frame
-- cnt: Frame count
-- scale: Animation speed
+- **aniInit**: Encodes animation parameters into a single packed value `V`
+- `ini`: starting frame, `cnt`: frame count, `fps`: playback speed (fixed point)
 
 #### Drawing All Objects
 ```forth
@@ -1029,154 +954,31 @@ timer.
 'people p.drawo     | draw sprites
 2 'people p.sort    | sort for draw (y coord)
 ```
-- **timer.**: Update global timer
-- **p.drawo**: Draw all objects in array
-- **p.sort**: Sort by field 2 (y coordinate) for proper overlap (1 buble sort cycle)
+- **timer.**: Advances the global frame timer
+- **p.drawo**: Draws (and order-preserving-removes) all objects in the array
+- **p.sort**: One bubble-sort pass over field 2 (y coordinate), for back-to-front overlap ordering — called every frame so the array gradually converges to fully sorted
 
 #### Timer System
 ```forth
 timer<              | Start timer
-timer.              | Update timer
-timer+              | Add elapsed time
+timer.              | Advance timer
+timer+              | Add elapsed time to a value
 ```
 
 ### Key Concepts
 
 - **Dynamic arrays**: Manage collections of objects
-- **Object-oriented approach**: Structures with methods
+- **Object-oriented approach**: Structures with per-object "methods" (the stored update word)
 - **Depth sorting**: Draw back-to-front based on y coordinate
-- **Automatic culling**: Remove objects outside screen
+- **Automatic culling**: Remove objects outside the screen
 - **Multiple sprite sheets**: Variety through random selection
-- **Encoded data**: Pack multiple values into single field
-- **Timer-based animation**: Frame-independent animation
-- **Register**: Simplify complex data access
-
-### Array and Timer Reference
-
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `p.ini` | capacity array | Initialize array |
-| `p!+` | function array | Add object |
-| `p.drawo` | array | Draw all objects |
-| `p.sort` | field array | Sort by field |
-| `timer<` | -- | Start timer |
-| `timer.` | -- | Update timer |
-| `timer+` | value | Add time to value |
-| `anim>n` | anim | Get frame number |
-| `ICS>anim` | i c s | Create animation |
-| `ncell+` | n | Calculate offset |
-| `between` | val min max | Check range |
+- **Encoded data**: Pack multiple values into a single field
+- **Timer-based animation**: Frame-rate-independent animation
+- **Register**: Simplify complex data access with `>a`/`a@+`
 
 ---
 
-## Reference Guide
-
-### Essential SDL2 Functions
-
-#### Window Management
-```forth
-title width height SDLinit    | Initialize window
-SDLquit                        | Clean up and close
-'function SDLShow              | Run main loop
-SDLkey                         | Get keyboard input
-```
-
-#### Drawing Functions
-```forth
-color sdlcls                   | Clear screen
-color sdlcolor                 | Set draw color
-x y w h sdlfrect              | Filled rectangle
-x y w h sdlrect               | Rectangle outline
-x1 y1 x2 y2 sdlline           | Line
-x y sdlpoint                  | Point
-cx cy rx ry SDLEllipse        | Ellipse outline
-cx cy rx ry SDLFEllipse       | Filled ellipse
-x1 y1 x2 y2 x3 y3 SDLTriangle | Filled triangle
-sdlredraw                     | Update display
-```
-
-#### Image and Sprite Functions
-```forth
-filename loadimg              | Load PNG image
-x y handle sprite             | Draw sprite
-w h filename ssload           | Load sprite sheet
-x y n sheet ssprite           | Draw frame
-x y zoom n sheet sspritez     | Draw frame with zoom
-x y zoom rot n sheet sspriterz | Draw with zoom and rotation
-```
-
-### Text Functions
-
-```forth
-filename size txload          | Load TrueType font
-font txfont                   | Set current font
-color txrgb                   | Set text color
-x y txat                      | Set cursor position
-string txprint                | Print text
-string txprintr               | Print right-aligned
-x y w h string txText         | Render in box
-mode txalign                  | Set alignment
-```
-
-### Math and Logic
-
-```forth
-+ - * /                       | Basic arithmetic
-neg                           | Negate value
-<< >>                         | Bit shift
-and or xor                    | Bitwise operations
-< > =                         | Comparisons
-<? >? =?                      | Conditional execution
-int.                          | Fixed point to int
-```
-
-### Stack Operations
-
-```forth
-dup                           | Duplicate top
-drop                          | Remove top
-swap                          | Swap top two
-over                          | Copy second
-2dup                          | Duplicate top two
-2drop                         | Remove top two
-```
-
-### Memory Operations
-
-```forth
-#name                         | Declare variable
-'name                         | Get address
-!                            | Store at address
-@                            | Fetch from address
-+!                           | Add to variable
-```
-
-### Variables and Constants
-
-```forth
-sw                           | Screen width
-sh                           | Screen height
-msec                         | Milliseconds
-```
-
-### Key Constants
-
-```forth
->esc<                        | ESC key
-<w> <a> <s> <d>             | WASD keys (down)
->w< >a< >s< >d<             | WASD keys (up)
-<esp>                        | Space key
-```
-
-### Control Flow
-
-```forth
-:name ... ;                  | Define word
-( ... )                      | Execute if true
-exit                         | Exit program
-```
-
-### Program Structure Template
+## Program Structure Template
 
 ```forth
 | Program description
@@ -1232,20 +1034,20 @@ exit                         | Exit program
 
 ### Best Practices
 
-1. **Use meaningful variable names** with `#` prefix
+1. **Use meaningful variable names** with the `#` prefix
 2. **Comment your code** with `|` for clarity
 3. **Keep functions small** and focused
 4. **Clear the screen** every frame with `sdlcls`
 5. **Call sdlredraw** after all drawing
-6. **Handle ESC key** for clean exit
-7. **Use fixed point** (.0) for smooth movement
-8. **Load resources** before entering main loop
+6. **Handle ESC key** for a clean exit
+7. **Use fixed point** (`.0`) for smooth movement
+8. **Load resources** before entering the main loop
 9. **Check boundaries** to prevent objects going off-screen
-10. **Use register** (>a, a@+) for complex structures
+10. **Use registers** (`>a`, `a@+`) for complex structures or mem traverse
 
-### Common Patterns
+## Common Patterns
 
-#### Simple Animation Loop
+### Simple Animation Loop
 ```forth
 :main
     0 SDLcls
@@ -1254,7 +1056,7 @@ exit                         | Exit program
     SDLkey >esc< =? ( exit ) drop ;
 ```
 
-#### Velocity-Based Movement
+### Velocity-Based Movement
 ```forth
 #x #y #vx #vy
 
@@ -1264,12 +1066,12 @@ exit                         | Exit program
     ;
 ```
 
-#### Boundary Checking
+### Boundary Checking
 ```forth
 x 0 <? ( 0 'x ! ) 800.0 >? ( 800.0 'x ! ) drop | warning, if use fixed point  !!
 ```
 
-#### Key Handler
+### Key Handler
 ```forth
 SDLkey
 >esc< =? ( exit )
@@ -1277,10 +1079,14 @@ SDLkey
 drop
 ```
 
-#### Timer-Based Animation
+### Timer-Based Animation
 ```forth
-timer<                      | Initialize once
-timer.                      | Update each frame
-some_value timer+ anim>n    | Get current frame
-```
+#anim
 
+0 8 6.0 aniInit 'anim !    | ini cnt fps -- V   (once, when starting the animation)
+
+:update
+    'anim ani+timer!        | 'V --  advance in place, call every frame
+    anim aniFrame            | V -- f  get current frame to draw
+    ;
+```
