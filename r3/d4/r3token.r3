@@ -175,7 +175,7 @@
 	drop ;
 	
 :endef
-	level 1? ( over "missing )" error! ) drop
+	level 1? ( drop "missing )" error! 0 ; ) drop
 	tok> codeini - 0? ( emptyvar ) drop	| no token in def
 	codeini 1? ( callend ) drop	 |callend	|??
 	tok> 'codeini !
@@ -192,7 +192,7 @@
 	8 << 2 or ,t ; | call prev	
 	
 :.def 
-	endef
+	endef 0? ( ; ) 
 	0 'flag !
 	0 'endcnt !
 	0 'noboot !
@@ -208,7 +208,7 @@
 	;
 
 :.var 
-	endef
+	endef 0? ( ; ) 
 	1 'flag !
 	1+ dup c@
 	$23 =? ( 3 'flag ! swap 1+ swap ) 	|##
@@ -352,7 +352,6 @@
 	drop 8 << 3 or ,t >>sp ; | acode
 	
 :wrd2token | str -- str'
-	error 1? ( 2drop 0 ; ) drop
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
 		

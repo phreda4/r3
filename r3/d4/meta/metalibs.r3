@@ -450,9 +450,9 @@
 #r3_util_tuiedit.r3 'name 'words 'calls 'info
 ^r3/util/txfont.r3
 #name "r3/util/txfont.r3"
-#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" 0
-#calls  'txloadwicon 'txload 'txfont 'txfont@ 'txrgb 'txcw 'txw 'txch 'txh 'txat 'tx+at 'txcr 'txpos 'txemit 'txwrite 'txemitr 'txprint 'txprintr 'txcur 'txcuri 'lwrite 'cwrite 'rwrite 'txalign 'txText
-#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $0 $2 $1F $1F $1F $1F $1F $2E $2E $2E $2E $2E $1F $4C )
+#words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "pad.reset" "pad.draw" 0
+#calls  'txloadwicon 'txload 'txfont 'txfont@ 'txrgb 'txcw 'txw 'txch 'txh 'txat 'tx+at 'txcr 'txpos 'txemit 'txwrite 'txemitr 'txprint 'txprintr 'txcur 'txcuri 'lwrite 'cwrite 'rwrite 'txalign 'txText 'pad.reset 'pad.draw
+#info ( $2F $2F $1F $1 $1F $10 $11 $10 $1 $2E $2E $0 $2 $1F $1F $1F $1F $1F $2E $2E $2E $2E $2E $1F $4C $2F $10 )
 #r3_util_txfont.r3 'name 'words 'calls 'info
 ^r3/util/utfg.r3
 #name "r3/util/utfg.r3"
