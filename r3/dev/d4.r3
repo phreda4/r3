@@ -26,6 +26,7 @@
 
 
 :main.draw
+	$00 txalign
 	sw 16 - ypad 16 - 8 8  
 	'sourcecode
 	txtext | w h x y "" --

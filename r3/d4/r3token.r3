@@ -352,6 +352,7 @@
 	drop 8 << 3 or ,t >>sp ; | acode
 	
 :wrd2token | str -- str'
+	error 1? ( 2drop 0 ; ) drop
 	( dup c@ $ff and 33 <?
 		0? ( nip ; ) drop 1+ )	| trim0
 		
