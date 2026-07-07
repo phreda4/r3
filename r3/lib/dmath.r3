@@ -203,11 +203,11 @@
 :.f!
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	1+ $2e over c! 1-
-	over 32 >>> 
+	swap 32 >>> 
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 	
 ::.fd | fix -- str
 	dup abs 21 + | 0.000000005
-	mbuffi over	abs $ffffffff and 100000000 32 *>> 100000000 + .f! ;
+	mbuffi over $ffffffff and 100000000 32 *>> 100000000 + .f! ;
 
