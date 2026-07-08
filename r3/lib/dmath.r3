@@ -191,23 +191,4 @@
 
 ::f32! swap str>f.d nip swap ! ;
 
-|----- print
-#mbuff * 64
-
-:mbuffi | -- adr
-	'mbuff 63 + 0 over c! 1- ;
-
-:sign | adr sign -- adr'
-	-? ( drop $2d over c! ; ) drop 1+ ;
-
-:.f!
-	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
-	1+ $2e over c! 1-
-	swap 32 >>> 
-	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
-	swap sign ;
-	
-::.fd | fix -- str
-	dup abs 21 + | 0.000000005
-	mbuffi over $ffffffff and 100000000 32 *>> 100000000 + .f! ;
 

@@ -82,7 +82,7 @@
 
 |---- print to mem
 :c0	| 'p
-	;
+	swap .fd ,s ;
 :c1	| a,q		(%a/q) fixed point 1 decimal
 	swap .f1 ,s ;
 :c2	| b,r		(%b) binario

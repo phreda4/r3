@@ -245,6 +245,17 @@
 	swap ( over >?
 		1- $20 over c!
 		) drop ;
+		
+:.f!
+	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
+	1+ $2e over c! 1-
+	swap 32 >>> 
+	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
+	swap sign ;
+	
+::.fd | fix -- str
+	dup abs 21 + mbuffi | 0.000000005
+	over $ffffffff and 100000000 32 *>> 100000000 + .f! ;		
 
 |----------------------------------
 ::trim | adr -- adr'
