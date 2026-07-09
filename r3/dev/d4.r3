@@ -1,5 +1,6 @@
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
+^r3/util/varanim.r3
 ^r3/util/txfont.r3
 
 ^r3/d4/r3token.r3

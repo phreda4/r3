@@ -46,6 +46,12 @@
 ##exevar
 #maxcnt
 
+::timer< msec 'prevt ! 0 'deltatime ! ; 			| reset timer
+::timer. msec dup prevt - 'deltatime ! 'prevt ! ;	| adv timer
+::timer+ deltatime + ; 								| add timer
+| $ffffffff7fffffff and  ; 	| for ring counter
+::timer- deltatime - ; 								| sub timer
+
 | -------------------------------------------------------
 | RESET
 | -------------------------------------------------------
