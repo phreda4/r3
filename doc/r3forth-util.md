@@ -289,6 +289,11 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 -- Global State --
 ##deltatime     time delta for current frame (ms)
 
+::timer<  ( msec -- )     reset timer to msec value
+::timer.  ( -- )          advance timer (call each frame); updates #deltatime
+::timer+  ( n -- n+dt )   add deltatime to n
+::timer-  ( n -- n-dt )   subtract deltatime from n
+
 -- Setup --
 ::vareset     ( -- )           reset all animations
 ::vaini       ( max -- )       initialize with max simultaneous animations

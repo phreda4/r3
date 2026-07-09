@@ -144,9 +144,9 @@
 #r3_lib_sdl2.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gfx.r3
 #name "r3/lib/sdl2gfx.r3"
-#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLFCircle" "SDLCircle" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" "timer<" "timer." "timer+" "timer-" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
-#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLFCircle 'SDLCircle 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sscnt 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'Tex2Surface 'Tex2Static 'timer< 'timer. 'timer+ 'timer- 'aniInit 'ani+! 'aniFrame 'aniCnt 'ani+timer!
-#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 $0 $0 $10 $10 $3E $2E $10 $10 $1F )
+#words  "SDLColor" "SDLColorA" "SDLcls" "SDLPoint" "SDLGetPixel" "SDLLine" "SDLLineH" "SDLLineV" "SDLFRect" "SDLRect" "SDLFEllipse" "SDLEllipse" "SDLTriangle" "SDLFRound" "SDLRound" "SDLFCircle" "SDLCircle" "SDLImage" "SDLImages" "SDLImageb" "SDLImagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
+#calls  'SDLColor 'SDLColorA 'SDLcls 'SDLPoint 'SDLGetPixel 'SDLLine 'SDLLineH 'SDLLineV 'SDLFRect 'SDLRect 'SDLFEllipse 'SDLEllipse 'SDLTriangle 'SDLFRound 'SDLRound 'SDLFCircle 'SDLCircle 'SDLImage 'SDLImages 'SDLImageb 'SDLImagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sscnt 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'Tex2Surface 'Tex2Static
+#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 )
 #r3_lib_sdl2gfx.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gl-const.r3
 #name "r3/lib/sdl2gl-const.r3"
@@ -462,9 +462,9 @@
 #r3_util_utfg.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
 #name "r3/util/varanim.r3"
-#words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
-#calls  'deltatime 'timeline 'timeline< 'timeline> 'exevar 'vareset 'vaini 'vupdate '+vanim '+vanimg '+vboxanim '+vboxanimg '+vxyanim '+vxyanimg '+vcolanim '+vcolanimg '+vexe '+vexeg '+vvexe '+vvexeg '+vvvexe '+vvvexeg 'vkillgroup 'vkillvar '64xy '64wh '64xywh 'xywh64 '64xyrz 'xyrz64 '64box '32xy 'xy32 'vaempty 'aniInit 'ani+! 'aniFrame 'aniCnt 'ani+timer!
-#info ( $80 $80 $80 $80 $80 $0 $1F $0 $6A $79 $6A $79 $6A $79 $6A $79 $2E $3D $3D $4C $4C $5B $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
+#words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "timer<" "timer." "timer+" "timer-" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
+#calls  'deltatime 'timeline 'timeline< 'timeline> 'exevar 'timer< 'timer. 'timer+ 'timer- 'vareset 'vaini 'vupdate '+vanim '+vanimg '+vboxanim '+vboxanimg '+vxyanim '+vxyanimg '+vcolanim '+vcolanimg '+vexe '+vexeg '+vvexe '+vvexeg '+vvvexe '+vvvexeg 'vkillgroup 'vkillvar '64xy '64wh '64xywh 'xywh64 '64xyrz 'xyrz64 '64box '32xy 'xy32 'vaempty 'aniInit 'ani+! 'aniFrame 'aniCnt 'ani+timer!
+#info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $0 $6A $79 $6A $79 $6A $79 $6A $79 $2E $3D $3D $4C $4C $5B $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
 #r3_util_varanim.r3 'name 'words 'calls 'info
 ^r3/util/vscreen.r3
 #name "r3/util/vscreen.r3"

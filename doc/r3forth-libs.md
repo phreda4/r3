@@ -794,26 +794,6 @@ Sprite-sheet: all frames packed into one image in a grid. Frames are addressed b
 ::Tex2Surface ( tex -- tex surface )   copy GPU texture back to a software surface
 ::Tex2Static  ( tex -- newtex )        convert streaming texture to static
 ```
-
-#### Timer and Delta-time
-```
-::timer<  ( msec -- )     reset timer to msec value
-::timer.  ( -- )          advance timer (call each frame); updates #deltatime
-::timer+  ( n -- n+dt )   add deltatime to n
-::timer-  ( n -- n-dt )   subtract deltatime from n
-#deltatime                 milliseconds since last timer. call (private — use timer+/timer- to read it)
-```
-
-#### Frame Animation System
-Pack animation state into a single 64-bit value: start frame, frame count, fps, accumulator.
-```
-::aniInit    ( ini cnt fps -- V )   create animation value: ini=start frame, cnt=count, fps
-::ani+!      ( dt 'v -- )          advance animation by dt milliseconds
-::aniFrame   ( V -- f )            get current absolute frame (ini + current offset)
-::aniCnt     ( V -- c )            get current frame offset within the animation
-::ani+timer! ( 'V -- )             advance animation by #deltatime (shortcut for timer.)
-```
-
 ---
 
 ### sdl2image.r3
