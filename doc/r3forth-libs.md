@@ -238,10 +238,6 @@ All `.d` words operate on 32.32 fixed-point values (integer × 2^32).
 ::gamma.d ( x.d -- r.d )
 ::beta.d  ( x.d y.d -- r.d )
 
--- String parsing/formatting --
-::str>f.d ( adr -- 'adr fnro )  parse float string → 32.32 fixed
-::f32!    ( 'cell -- )          store float32 from string at address
-::.fd     ( fix.d -- str )      format 32.32 to decimal string
 ```
 
 ---
@@ -293,6 +289,7 @@ String manipulation words. Strings are zero-terminated (C style).
 ::.h  ( n -- str )     format hex to string
 ::.o  ( n -- str )     format octal to string
 ::.f  ( fix. -- str )  format 48.16 fixed-point as decimal
+::.fd ( fix.d -- str ) format 32.32 to decimal string
 ```
 
 ---

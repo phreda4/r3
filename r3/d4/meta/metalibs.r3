@@ -42,9 +42,9 @@
 #r3_lib_crc32.r3 'name 'words 'calls 'info
 ^r3/lib/dmath.r3
 #name "r3/lib/dmath.r3"
-#words  "*.d" "*.df" "/.d" "ceil.d" ".d>i" "i>.d" "f>.d" ".d>f" "cos.d" "sin.d" "tan.d" "tan.dc" "sqrt.d" "log2.d" "pow2.d" "pow.d" "root.d" "ln.d" "exp.d" "tanh.d" "gamma.d" "beta.d" "str>f.d" "f32!" ".fd" 0
-#calls  '*.d '*.df '/.d 'ceil.d '.d>i 'i>.d 'f>.d '.d>f 'cos.d 'sin.d 'tan.d 'tan.dc 'sqrt.d 'log2.d 'pow2.d 'pow.d 'root.d 'ln.d 'exp.d 'tanh.d 'gamma.d 'beta.d 'str>f.d 'f32! '.fd
-#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $2E $11 )
+#words  "*.d" "*.df" "/.d" "ceil.d" ".d>i" "i>.d" "f>.d" ".d>f" "cos.d" "sin.d" "tan.d" "tan.dc" "sqrt.d" "log2.d" "pow2.d" "pow.d" "root.d" "ln.d" "exp.d" "tanh.d" "gamma.d" "beta.d" "str>f.d" "f32!" 0
+#calls  '*.d '*.df '/.d 'ceil.d '.d>i 'i>.d 'f>.d '.d>f 'cos.d 'sin.d 'tan.d 'tan.dc 'sqrt.d 'log2.d 'pow2.d 'pow.d 'root.d 'ln.d 'exp.d 'tanh.d 'gamma.d 'beta.d 'str>f.d 'f32!
+#info ( $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $2F $11 $2E )
 #r3_lib_dmath.r3 'name 'words 'calls 'info
 ^r3/lib/escapi.r3
 #name "r3/lib/escapi.r3"
@@ -204,9 +204,9 @@
 #r3_lib_sdlkeys.r3 'name 'words 'calls 'info
 ^r3/lib/str.r3
 #name "r3/lib/str.r3"
-#words  "strcpyl" "strcpy" "strcat" "strcpylnl" "strcpyln" "copynom" "copystr" "strpath" "toupp" "tolow" "count" "count" "utf8count" "utf8ncpy" "utf8bytes" "=" "cmpstr" "=s" "=w" "=pre" "=pos" "=lpos" "findchar" "findstr" "findstri" ".d" ".b" ".h" ".o" ".f" ".f2" ".f1" ".r." "trim" "trimc" "trimcar" "trimstr" ">>cr" ">>0" "l0count" "n>>0" "only13" ">>sp" ">>str" 0
-#calls  'strcpyl 'strcpy 'strcat 'strcpylnl 'strcpyln 'copynom 'copystr 'strpath 'toupp 'tolow 'count 'count 'utf8count 'utf8ncpy 'utf8bytes '= 'cmpstr '=s '=w '=pre '=pos '=lpos 'findchar 'findstr 'findstri '.d '.b '.h '.o '.f '.f2 '.f1 '.r. 'trim 'trimc 'trimcar 'trimstr '>>cr '>>0 'l0count 'n>>0 'only13 '>>sp '>>str
-#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $11 $3E $20 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $2F $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 )
+#words  "strcpyl" "strcpy" "strcat" "strcpylnl" "strcpyln" "copynom" "copystr" "strpath" "toupp" "tolow" "count" "count" "utf8count" "utf8ncpy" "utf8bytes" "=" "cmpstr" "=s" "=w" "=pre" "=pos" "=lpos" "findchar" "findstr" "findstri" ".d" ".b" ".h" ".o" ".f" ".f2" ".f1" ".r." ".fd" "trim" "trimc" "trimcar" "trimstr" ">>cr" ">>0" "l0count" "n>>0" "only13" ">>sp" ">>str" 0
+#calls  'strcpyl 'strcpy 'strcat 'strcpylnl 'strcpyln 'copynom 'copystr 'strpath 'toupp 'tolow 'count 'count 'utf8count 'utf8ncpy 'utf8bytes '= 'cmpstr '=s '=w '=pre '=pos '=lpos 'findchar 'findstr 'findstri '.d '.b '.h '.o '.f '.f2 '.f1 '.r. '.fd 'trim 'trimc 'trimcar 'trimstr '>>cr '>>0 'l0count 'n>>0 'only13 '>>sp '>>str
+#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $11 $3E $20 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $2F $10 $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 )
 #r3_lib_str.r3 'name 'words 'calls 'info
 ^r3/lib/tflite.r3
 #name "r3/lib/tflite.r3"
