@@ -127,11 +127,13 @@
 	.reset |fx fy 1+ .at fw .hline .cr
 	vmIP "IP:%h " .print 
 	vmREGA	"A:%h " .print vmREGB	"B:%h | " .print 
-	
-	codenow "% include:%d" .print
+
+	codenow "include:%d" .print
 	|vmIP memtok .write vmIP memtokn " %h" .print
-	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print codesrc vmIP 1- 3 << + @ ":%h:" .print
+	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print 
+	codesrc vmIP 1- 3 << + @ ":%h:" .print
 	.cr	
+
 	"D|" .write .datastack .cr
 	"R|" .write .retstack .cr
 	
@@ -342,7 +344,7 @@
 	drop 
 	checkerror
 	;
-	
+
 :main
 	'filename run&loadinfo
 	'filename makemapdebug
@@ -358,7 +360,9 @@
 	cntinc showcode
 	slnormal
 |---- run debug	
+
 	'maindb onTuia
+	
 	debugend
 	;
 

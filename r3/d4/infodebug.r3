@@ -2,7 +2,7 @@
 | PHREDA 2026
 
 |^r3/lib/console.r3
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
  
 #vshare 0 0 4096 "/debug.mem"	| vm state
 #bshare 0 0 64 "/bp.mem"		| breakpoint
