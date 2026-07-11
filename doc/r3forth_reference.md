@@ -537,7 +537,7 @@ All fixed-point values use **48.16 format**. Angles in **turns** (0.25 = 90°, 0
 | `clamp0` | `v -- v` | Clamp to 0 minimum |
 | `clamp0max` | `v max -- v` | Clamp between 0 and max |
 | `clamps16` | `v -- v` | Clamp to signed 16-bit range |
-| `between` | `v min max -- flag` | 1 if min ≤ v ≤ max, else 0 |
+| `between` | `v min max -- flag` | negative if outside, positive if inside |
 | `msb` | `n -- pos` | Position of most significant bit |
 
 ### Special Functions

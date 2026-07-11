@@ -96,7 +96,7 @@
 :reseta	
 	'tokana 'tokana> ! 
 	'biglit 'biglit> ! ;
-:,<< | --
+:,back | --
 	-8 'tokana> +! 
 	| big? -8 'biglit> +! | reuse bigliteral 
 	;
@@ -206,14 +206,14 @@
 #tknot 59 #tkneg 60
 
 :,lAND
-	getTOS -1 =? ( 2drop ,<< ; ) drop ,t ;
+	getTOS -1 =? ( 2drop ,back ; ) drop ,t ;
 :,AND
 	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
 	1lit? 1? ( drop ,lAND ; ) drop	
 	,t ;
 	
 :,lOR
-	getTOS 0? ( 2drop ,<< ; ) drop ,t ;
+	getTOS 0? ( 2drop ,back ; ) drop ,t ;
 :,OR
 	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
 	1lit? 1? ( drop ,lOR ; ) drop	
@@ -221,8 +221,8 @@
 
 :,lXOR
 	getTOS 
-	0? ( 2drop ,<< ; ) 
-	-1 =? ( 2drop ,<< TKnot ,t ; )
+	0? ( 2drop ,back ; ) 
+	-1 =? ( 2drop ,back TKnot ,t ; )
 	drop ,t ;
 :,XOR
 	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
@@ -231,35 +231,35 @@
 
 :,+
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
 	,t ;
 	
 :,- 
 	2lit? 1? ( 2drop 2litpush .- ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
 	,t ;
 	
 |----------------------- *	
 |>>>> 8 * --> 3 <<	
 :,*pot | tok tos --
-	nip ,<<
+	nip ,back
 	63 swap clz - ,tlit
 	TK<< ,t ;
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
-	nip ,<< TKdup ,t
+	nip ,back TKdup ,t
 	64 swap clz - 1 - ,tlit
 	TK<< ,t TK+ ,t ;
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
-	nip ,<< TKdup ,t
+	nip ,back TKdup ,t
 	64 swap clz - ,tlit
 	TK<< ,t TKswap ,t TK- ,t ;
 :,lit* 	
 	getTOS
 	0? ( 2drop TKand ,t ; ) 
-	1 =? ( 2drop ,<< ; ) 	| 1 * --> _
-	-1 =? ( 2drop ,<< tkneg ,t ; )
+	1 =? ( 2drop ,back ; ) 	| 1 * --> _
+	-1 =? ( 2drop ,back tkneg ,t ; )
 	dup 1 - nand? ( ,*pot ; )
 	dup 1 - dup 1 - nand? (  drop ,*pot+1 ; ) drop
 	dup 1 + nand? ( ,*pot-1 ; )
@@ -312,17 +312,17 @@
 	
 |>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
 :,/pot | tok tos --
-	nip ,<<
+	nip ,back
 	63 swap clz - ,tlit
 	TK>> ,t ,sigadj ;	
 	
 :,lit/
 	getTOS
 	0? ( 2drop 0 "0 division" error! ; )
-	1 =? ( 2drop ,<< ; ) 
-	-1 =? ( 2drop ,<< tkneg ,t ; )
+	1 =? ( 2drop ,back ; ) 
+	-1 =? ( 2drop ,back tkneg ,t ; )
 	dup 1 - nand? ( ,/pot ; )	
-	nip ,<< 
+	nip ,back 
 	calcmagic
 	divm ,tlit divs ,tlit TK*>> ,t ,sigadj ;
 	
@@ -334,25 +334,25 @@
 |------------------------	
 :,<< 
 	2lit? 1? ( 2drop 2litpush .<< ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
 	,t ;
 :,>> 
 	2lit? 1? ( 2drop 2litpush .>> ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop	
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop	
 	,t ;
 :,>>>	
 	2lit? 1? ( 2drop 2litpush .>>> ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,<< ; ) drop ) drop	
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop	
 	,t ;
 	
 |----------------------- mod	
 :,litmod | *****
 	getTOS
 |	0? ( 2drop 0 "0 division" error! ; )
-|	1 =? ( 2drop ,<< ; ) 
-|	-1 =? ( 2drop ,<< tkneg ,t ; )
+|	1 =? ( 2drop ,back ; ) 
+|	-1 =? ( 2drop ,back tkneg ,t ; )
 |	dup 1 - nand? ( ,modpot ; )	
-	nip ,<< 
+	nip ,back 
 	dup calcmagic 
 	TKdup ,t divm ,tlit	divs ,tlit TK*>> ,t ,sigadj
 	,tlit TK* ,t TK- ,t 
