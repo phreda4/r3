@@ -283,26 +283,26 @@
 
 :calcstep
 	1 'p +!
-	q1 1 << 'q1 ! r1 1 << 'r1 !
+	q1 2* 'q1 ! r1 2* 'r1 !
 	r1 anc >=? ( 1 'q1 +! anc neg 'r1 +! ) drop
-	q2 1 << 'q2 ! r2 1 << 'r2 !
+	q2 2* 'q2 ! r2 2* 'r2 !
 	r2 ad >=? ( 1 'q2 +! ad neg 'r2 +! ) drop
 	;
 
 :calcmagic | d --
 	dup abs 'ad !
-    $80000000 over 31 >>> + 't !
-    t dup 1 - swap ad mod - 'anc !
-    31 'p !
-    $80000000 anc / abs 'q1 !
-    $80000000 q1 anc * - abs 'r1 !
-	$80000000 ad / abs 'q2 !
-	$80000000 q2 ad * - abs 'r2 !
+    $4000000000000000 over 62 >>> + 't !
+    t dup 1- swap ad mod - 'anc !
+    62 'p !
+    $4000000000000000 anc / abs 'q1 !
+    $4000000000000000 q1 anc * - abs 'r1 !
+	$4000000000000000 ad / abs 'q2 !
+	$4000000000000000 q2 ad * - abs 'r2 !
 	( calcstep
 		ad r2 -	| delta
-		q1 =? ( r1 0? ( swap 1 + swap ) drop )
+		q1 =? ( r1 0? ( swap 1+ swap ) drop )
 		q1 >? drop ) drop
-	q2 1 +
+	q2 1+
 	swap -? ( drop neg 'divm ! p 'divs ! ; ) drop
 	'divm ! p 'divs ! ;
 	
