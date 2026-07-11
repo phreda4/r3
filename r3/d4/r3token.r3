@@ -611,7 +611,7 @@
 :StaticStackAnalisis
 	dup @ 1 and? ( drop anadata ; ) drop anacode ;
 	
-::pass4
+:pass4
 	0 ( cntdef <?
 	|dup "%d" .println 
 		dup nro>dic 

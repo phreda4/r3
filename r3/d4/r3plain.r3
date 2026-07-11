@@ -22,7 +22,7 @@
 	
 	dup "#w%h" ,print
 	dup 4 << dic + toklend		| dc tok len
-	( 1? 1 - swap ,sp 
+	( 1? 1- swap ,sp 
 		@+ ,tokenstrd
 		swap ) 2drop 
 	,cr ;
@@ -42,12 +42,12 @@
 :withanon | nro --
 	0 'cnta !
 	4 << dic + toklen 
-	( 1? 1 - swap @+ $ff and
+	( 1? 1- swap @+ $ff and
 		11 =? ( over 8 - cnta 3 << 'anon + ! 1 'cnta +! ) | ]
 		drop swap ) 2drop 
 	0 ( cnta <? 
 		'anon over 3 << + @ ,anonw
-		1 + ) drop ;
+		1+ ) drop ;
 	
 :codew
 |dup 4 << dic + @ dic>name "%w" .println | debug
@@ -74,9 +74,9 @@
 	drop codew ;
 	
 :generate
-	0 ( cntdef 1 - <?
+	0 ( cntdef 1- <?
 		,everyword 
-		1 + )
+		1+ )
 	dup withanon 
 	"|-----BOOT-----" ,s ,cr
 	":" ,print 
@@ -116,7 +116,7 @@
 	deferwi | for opt	
 	
 	".pass2" .println
-	|showvar 
+	showvar 
 	".pass3" .println	
 |	resetvm
 	".pass4" .println	

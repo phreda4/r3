@@ -200,8 +200,8 @@
 |	.masb .reset .cls .flush
 	TuSaveCode
 	"r3/editor/r3plain.r3" r3run
-	sys
-|	.reterm .alsb .flush 
+	.reterm .alsb .flush 
+	tuR!
 	;
 
 |------- dev
@@ -210,7 +210,8 @@
 |	.masb .reset .cls .flush
 	TuSaveCode
 	"r3/d4/r3plain.r3" r3run
-|	.reterm .alsb .flush 
+	.reterm .alsb .flush 
+	tuR!
 	;
 |------- dev
 
