@@ -103,8 +103,11 @@
 	mark
 	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
+	
 	generate
-	"r3/d4/gen/plain.r3" savemem
+	|"r3/d4/gen/plain.r3" 
+	"r3/plain.r3" 
+	savemem
 	empty			| free buffer
 	;
 

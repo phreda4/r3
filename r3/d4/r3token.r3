@@ -622,7 +622,7 @@
 |-------------------------------------------
 ::r3loadmem | mem 'filename --
 |-------------------------------------------
-	empty mark | reuse mem (need 1 mark)
+	empty mark | reuse mem (need 1 mark) CAUTION
 	0 0 error!
 	dup 'filename strcpy
 	'r3path strpath
@@ -633,7 +633,7 @@
 	pass1			| calc sizes
 	makemem			| reserve mem
 	pass2			| tokenize code
-	error 1? ( drop ; ) drop
+	error 1? ( drop ; ) drop	
 |	cnttok cntdef "%d %d" .println	
 	tok> tok - 3 >> 'cnttok !	| real token use
 	dic> dic - 4 >> 'cntdef !	| real definition use
@@ -646,7 +646,7 @@
 
 ::r3loadmemd | mem 'filename --
 |-------------------------------------------
-	empty mark | reuse mem (need 1 mark)
+	empty mark | reuse mem (need 1 mark) CAUTION
 	0 0 error!
 	dup 'filename strcpy
 	'r3path strpath
@@ -674,6 +674,7 @@
 	here =? ( "no source code" error! drop ; ) 
 	0 swap c! 
 	src only13 'here !
+	mark | <<< reload includes from here CAUTION
 	src swap r3loadmem
 	;
 	
