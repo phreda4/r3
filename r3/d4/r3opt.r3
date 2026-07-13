@@ -85,8 +85,7 @@
 	
 ::,tokenstrd
 	dup $ff and 
-|	dup "%h" .println
-|	.input
+|	dup "%h" .println .input
 	6 >? ( 7 - basename ,s drop ; )
 	3 << 'bmacro + @ ex ;
 		
@@ -229,6 +228,13 @@
 	1lit? 1? ( drop ,lXOR ; ) drop		
 	,t ;
 
+:,lNAND
+	getTOS -1 =? ( 2drop ,back ; ) drop ,t ;
+:,NAND
+	2lit? 1? ( 2drop 2litpush .NAND ,TOSLIT ; ) drop
+	1lit? 1? ( drop ,lNAND ; ) drop	
+	,t ;
+	
 :,+
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
 	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
@@ -410,11 +416,11 @@
 ,LIT ,LIT ,CODE ,t ,DATA ,t ,t 	|.lit .lit .code .acode .data .adata .str
 ,t ,t ,t ,[ ,] 				|.; .( .) .[ .] 
 ,t ,t ,t ,t ,t 				|.EX .0? .1? .+? .-? 
-,t ,t ,t ,t ,t ,t ,t ,t ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .B? 
+,t ,t ,t ,t ,t ,t ,t ,t ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .IN? 
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
-,t ,t ,t ,t ,t ,t ,t 		|.ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
+,t ,t ,t ,t ,t ,t ,t ,t 	|.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 ,t ,t ,t 					|.>R .R> .R@ 
-,AND ,OR ,XOR ,+ ,- ,* ,/ ,<< ,>> ,>>>
+,AND ,OR ,XOR ,NAND ,+ ,- ,* ,/ ,<< ,>> ,>>>
 ,MOD ,/MOD ,*/ ,*>> ,<</ 			
 ,NOT ,NEG ,ABS ,SQRT ,CLZ 
 ,t ,t ,t ,t 		|.@ .C@ .W@ .D@ 
@@ -438,7 +444,9 @@
 	
 :,ana | nro --
 |	dup 40 >> src + "%w " .print
-	dup $ff and 3 << 'optw + @ ex ;
+	dup $ff and 
+|	dup "%d " .println
+	3 << 'optw + @ ex ;
 	
 |--------------
 :lenword | dicc - toklast tokini

@@ -60,7 +60,6 @@
 	| info in plain--
 	
 |	dup 4 << dic + @ dic>name "| :%w | " .println
-	
 	dup ":w%h" ,print 
 	dup wordanalysis
 	'tokana ( tokana> <? ,sp
@@ -116,7 +115,7 @@
 	r3load
 	error 1? ( dup .println ; ) drop
 	".pass1" .println
-	deferwi | for opt	
+	deferwi | for opt and inline
 	
 	".pass2" .println
 	showvar 

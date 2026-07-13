@@ -29,6 +29,14 @@
 	'vresize SDLeventR
 	vresize ;
 
+::vscreenf | w h --
+	'vscrh ! 'vscrw !
+	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
+	dup 0 SDL_SetTextureScaleMode | 0 no blend
+	'vscrtex ! 
+	'vresize SDLeventR
+	vresize ;
+
 ::vini | --
 	SDLrenderer vscrtex SDL_SetRenderTarget	;
 	
