@@ -42,15 +42,20 @@
 
 |-------------------------------------------
 |-------------------------------- includes
-:escom
+:iscom
+	1+
 |WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
 |LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
 |MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
 |RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
+|	"MEM" =pre 1? ( drop				| MEM 640
+|		4 +
+|		trim str>nro 'switchmem !
+|		>>cr ; ) drop
     >>cr ;
 
 :includepal | str car -- str'
-	$7c =? ( drop escom ; )		| $7c |	 Comentario
+	$7c =? ( drop 1- iscom ; )		| $7c |	 Comentario
 	$22 =? ( drop >>str ; )		| $22 "	 Cadena
 	drop >>sp ;
 	
@@ -94,18 +99,7 @@
 	
 |-------------------------------------------
 |-------------------------------- 1pass
-:iscom | adr -- 'adr
-	1+
-|WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
-|LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
-|MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
-|RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
-|	"MEM" =pre 1? ( drop				| MEM 640
-|		4 +
-|		trim str>nro 'switchmem !
-|		>>cr ; ) drop
-    >>cr ;
-	
+
 :isstr | adr -- 'adr
 	flag 1? ( drop >>str ; ) drop
 	1+ | skyp "
@@ -358,7 +352,7 @@
 	|over "%w " .print |** debug
 	
 	$5e =? ( drop >>cr ; )	| $5e ^  Include
-	$7c =? ( drop >>cr ; )	| $7c |	 Comentario
+	$7c =? ( drop iscom ; )	| $7c |	 Comentario
 	$3A =? ( drop .def ; )	| $3a :  Definicion
 	$23 =? ( drop .var ; )	| $23 #  Variable
 	$22 =? ( drop .str ; )	| $22 "	 Cadena
