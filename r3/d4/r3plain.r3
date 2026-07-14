@@ -14,7 +14,7 @@
 
 |----------------------------------------
 :dataw | n -- n
-	dup datause? 0? ( drop ; ) drop
+	dup datause? 0? ( drop ; ) drop | <<< var inline
 	
 	| info in plain--
 	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
@@ -51,6 +51,7 @@
 	
 :codew
 |dup 4 << dic + @ dic>name "%w" .println | debug
+
 	dup worduse? 0? ( drop ; ) drop
 	dup withanon
 	
@@ -59,7 +60,8 @@
 	dup 4 << dic + 8 + @ ,mov ,cr
 	| info in plain--
 	
-|	dup 4 << dic + @ dic>name "| :%w | " .println
+	|dup 4 << dic + @ dic>name "%.| :%w | %." filelog
+	
 	dup ":w%h" ,print 
 	dup wordanalysis
 	'tokana ( tokana> <? ,sp

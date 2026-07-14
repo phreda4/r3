@@ -173,7 +173,8 @@
 	tok> codeini - 0? ( emptyvar ) drop	| no token in def
 	codeini 1? ( callend ) drop	 |callend	|??
 	tok> 'codeini !
-	flag 
+	flag  
+	|$10 or | <<<< avoid inline ( mark all multiple ; )
 	dic> 16 - +! | store flag
 	;
 	

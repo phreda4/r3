@@ -17,6 +17,8 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
 
+^r3/lib/trace.r3
+
 ##biglit * 80 | 10 bigliteral !!!!!!!
 ##biglit>
 ##tokana * $ffff | 8192 tokens !!!!!!!
@@ -128,7 +130,7 @@
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
 :nlit? | n -- n 0/1
 	tokana> over 3 << - 'tokana <? ( drop 0 ; ) | n tok
-	over ( 1? 1 - swap							| n n tok
+	over ( 1? 1- swap							| n n tok
 		@+ $ff and 1 >? ( 3drop 0 ; ) drop		| n n tok 
 		swap ) 2drop 1 ; 						| n 1
 
@@ -151,7 +153,7 @@
 	
 :nlitpush | n --
 	tokana> over 3 << - dup 'tokana> !
-	swap ( 1? 1 - swap
+	swap ( 1? 1- swap
 		@+ litpush NPUSH swap ) 2drop ;
 
 :,TOSLIT | -- ; TOS to tokana>
@@ -161,9 +163,9 @@
 :,ntoslit | n --
 	0? ( drop ; )
 	NOS over 2 - 3 << - over | n NOS n
-	( 1 - 1? swap @+ ,nlit swap ) 2drop
+	( 1- 1? swap @+ ,nlit swap ) 2drop
 	TOS ,nlit
-	( 1? 1 - .drop ) drop ;
+	( 1? 1- .drop ) drop ;
 	
 :dic@	| tok -- info1
 	8 >> $ffffffff and 4 << dic + @ ;
@@ -195,14 +197,16 @@
 	;
 	
 :,data | tok --
+	|,t ; |<<< var inline	
 	dup dic@ $4 and? ( drop ,t ; ) drop | real var
 	dic@len fmem + @ ,nlit		| detect cte var
 	;
 
+
 #tkdup 26 #Tkover 28 #tkswap 32
-#TKand 44 #tk+ 47 #tk- 48 #tk* 49 
-#tk<< 51 #TK>> 52 #TK>>> 53 #TK*>> 57
-#tknot 59 #tkneg 60
+#TKand 45 #tk+ 49 #tk- 50 #tk* 51 
+#tk<< 53 #TK>> 54 #TK>>> 55 #TK*>> 59
+#tknot 61 #tkneg 62
 
 :,lAND
 	getTOS -1 =? ( 2drop ,back ; ) drop ,t ;
@@ -254,7 +258,7 @@
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
 	nip ,back TKdup ,t
-	64 swap clz - 1 - ,tlit
+	64 swap clz - 1- ,tlit
 	TK<< ,t TK+ ,t ;
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
@@ -266,9 +270,9 @@
 	0? ( 2drop TKand ,t ; ) 
 	1 =? ( 2drop ,back ; ) 	| 1 * --> _
 	-1 =? ( 2drop ,back tkneg ,t ; )
-	dup 1 - nand? ( ,*pot ; )
-	dup 1 - dup 1 - nand? (  drop ,*pot+1 ; ) drop
-	dup 1 + nand? ( ,*pot-1 ; )
+	dup 1- nand? ( ,*pot ; )
+	dup 1- dup 1- nand? (  drop ,*pot+1 ; ) drop
+	dup 1+ nand? ( ,*pot-1 ; )
 	drop
 	,t ;
 	
@@ -328,7 +332,7 @@
 	0? ( 2drop 0 "0 division" error! ; )
 	1 =? ( 2drop ,back ; ) 
 	-1 =? ( 2drop ,back tkneg ,t ; )
-	dup 1 - nand? ( ,/pot ; )	
+	dup 1- nand? ( ,/pot ; )	
 	nip ,back 
 	calcmagic
 	divm ,tlit divs ,tlit TK*>> ,t ,sigadj ;
@@ -358,7 +362,7 @@
 |	0? ( 2drop 0 "0 division" error! ; )
 |	1 =? ( 2drop ,back ; ) 
 |	-1 =? ( 2drop ,back tkneg ,t ; )
-|	dup 1 - nand? ( ,modpot ; )	
+|	dup 1- nand? ( ,modpot ; )	
 	nip ,back 
 	dup calcmagic 
 	TKdup ,t divm ,tlit	divs ,tlit TK*>> ,t ,sigadj
@@ -420,7 +424,8 @@
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 ,t ,t ,t 					|.>R .R> .R@ 
-,AND ,OR ,XOR ,NAND ,+ ,- ,* ,/ ,<< ,>> ,>>>
+,AND ,OR ,XOR ,NAND 
+,+ ,- ,* ,/ ,<< ,>> ,>>>
 ,MOD ,/MOD ,*/ ,*>> ,<</ 			
 ,NOT ,NEG ,ABS ,SQRT ,CLZ 
 ,t ,t ,t ,t 		|.@ .C@ .W@ .D@ 
@@ -434,6 +439,7 @@
 ,t ,t ,t ,t ,t ,t ,t |.>B .B> .B+ .B@ .B! .B@+ .B!+ 
 ,t ,t ,t ,t 		|.cB@ .cB! .cB@+ .cB!+ 
 ,t ,t ,t ,t 		|.dB@ .dB! .dB@+ .dB!+ 
+,t ,t				| ab[ ]ba
 ,t ,t ,t 			|.MOVE .MOVE> .FILL 
 ,t ,t ,t 			|.CMOVE .CMOVE> .CFILL 
 ,t ,t ,t 			|.DMOVE .DMOVE> .DFILL 
@@ -443,9 +449,12 @@
 0	
 	
 :,ana | nro --
-|	dup 40 >> src + "%w " .print
+	|dup 40 >> src + "%w " filelog
+	
 	dup $ff and 
-|	dup "%d " .println
+	
+	|dup "(%d)%." filelog
+	
 	3 << 'optw + @ ex ;
 	
 |--------------
@@ -462,7 +471,7 @@
 	lenwor ( over <? @+ ,ana ) 2drop ;
 		
 :inlineword | tok --
-	tok>dic toklen 1 - | ini cnt | remove ;
+	tok>dic toklen 1- | ini cnt | remove ;
 	3 << over + swap 
 	( over <? @+ ,ana ) 2drop ;
 
