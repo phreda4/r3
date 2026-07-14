@@ -504,4 +504,6 @@
 ::datause? | nro -- 0/1
 	4 << dic + dup 8 + @
 	16 >> $ffff and 0? ( nip ; ) drop	| no calls-> NOT need code
-	@ $4 and? ( ; ) drop 0 ;
+	@ 
+	$14 and? ( ; ) | not init var or used in adress
+	drop 0 ;

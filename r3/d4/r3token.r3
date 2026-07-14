@@ -155,11 +155,11 @@
 	
 :emptyvar
 	flag 1 nand? ( drop ; ) drop | only var
+	$10 'flag +! | var empty...if used then not a constant
 	0 ,qv ;
 	
 :callend
 	flag 1 and? ( drop ; ) drop | only code
-	
 	tok> codeini - 3 >> | code_length
 	32 <<
 	dic> 8 - ! | info in wordnow

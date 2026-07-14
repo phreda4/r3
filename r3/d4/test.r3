@@ -3,6 +3,7 @@
 
 #var1 33
 #var2 0
+#var3 
 
 :meminv	
 	23 var1 ! ;
@@ -27,9 +28,9 @@
 	3 
 	drop
 	"hola" .println
-	var1 var2
-	*
+	var1 var2 *
 	callwithjump 
+	|var3
 ;
 
 	
