@@ -38,8 +38,7 @@
 #sprinscr<
 
 :inisprite
-	here 1 63 << dup rot !+ !+ 
-	dup 'sprinscr ! 
+	sprinscr 
 	dup 'sprinscr> ! 
 	'sprinscr< ! 
 	;
@@ -218,10 +217,14 @@
 	;
 
 |---------------------
-#persona1 (  0  1  0  2  3  4  3  5  6  7  6  8  9 10  9 11 )
-#persona2 ( 12 13 12 14 15 16 15 17 18 19 18 20 21 22 21 23 )
-#persona3 ( 24 25 24 26 27 28 27 29 30 31 30 32 33 34 33 35 )
-#persona4 ( 36 37 36 38 39 40 39 41 42 43 42 44 45 46 45 47 )
+#persona1
+(  0  1  0  2  3  4  3  5  6  7  6  8  9 10  9 11 )
+|#persona2 
+( 12 13 12 14 15 16 15 17 18 19 18 20 21 22 21 23 )
+|#persona3 
+( 24 25 24 26 27 28 27 29 30 31 30 32 33 34 33 35 )
+|#persona4 
+( 36 37 36 38 39 40 39 41 42 43 42 44 45 46 45 47 )
 
 :sumax | adv -- tilew
 	0? ( ; ) -? ( drop -20 ; ) drop 16 ;
@@ -376,7 +379,11 @@
 	;
 	
 :juego
+	
+	here 'sprinscr ! 
+	$ffff 'here +!
 	inisprite
+	
 	reset
 	'persona1 130.0 300.0 +jugador
 	200 ( 1? 1 - randnpc ) drop
