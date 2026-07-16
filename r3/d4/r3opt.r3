@@ -188,7 +188,7 @@
 	deferinline ex ;
 	
 :,code | tok --
-	dup dic@ $100 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
+	dup dic@ $1f00 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
 	dup dic@use										| tok stack use
 	nlit? 0? ( 2drop ,inlinecode ; ) drop			| all are literal?
 	nlitpush		| push the numbers in virtual stack

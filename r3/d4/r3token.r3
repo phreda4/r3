@@ -174,7 +174,7 @@
 	codeini 1? ( callend ) drop	 |callend	|??
 	tok> 'codeini !
 	flag  
-	|$10 or | <<<< avoid inline ( mark all multiple ; )
+|	$10 or | <<<< avoid inline ( mark all multiple ; )
 	dic> 16 - +! | store flag
 	;
 	
