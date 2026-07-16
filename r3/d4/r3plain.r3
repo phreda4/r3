@@ -102,6 +102,7 @@
 :saveopt | --
 	error 1? ( drop ; ) drop
 	mark
+	switchmem "|MEM %d" ,print ,cr
 	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
 	

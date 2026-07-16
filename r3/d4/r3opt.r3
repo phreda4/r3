@@ -182,8 +182,9 @@
 | $..............08	1 r esta desbalanceada		| var cte
 | $..............10	0 un ; 1 varios ;
 | $..............20	1 si es recursiva	
+
 :,inlinecode | ; inline code ?
-	dup dic@ $38 and 1? ( drop ,t ; ) drop	| not inlline
+	dup dic@ $38 and 1? ( drop ,t ; ) drop	| not inline
 	dup dic@len 7 >? ( drop ,t ; ) drop		| min len inline
 	deferinline ex ;
 	
@@ -196,9 +197,10 @@
 	dic@loa ,ntoslit		| pop the numbers to code
 	;
 	
+| $..............10	var not int, is not a cte
 :,data | tok --
 	|,t ; |<<< var inline	
-	dup dic@ $4 and? ( drop ,t ; ) drop | real var
+	dup dic@ $14 and? ( drop ,t ; ) drop | real var
 	dic@len fmem + @ ,nlit		| detect cte var
 	;
 

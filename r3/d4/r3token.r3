@@ -6,6 +6,7 @@
 ^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
 
+##switchmem
 #sst * 512 	| stack for blocks and count
 #sst> 'sst
 
@@ -48,10 +49,10 @@
 |LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
 |MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
 |RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
-|	"MEM" =pre 1? ( drop				| MEM 640
-|		4 +
-|		trim str>nro 'switchmem !
-|		>>cr ; ) drop
+	"MEM" =pre 1? ( drop				| MEM 640
+		4 +
+		trim str>nro 'switchmem !
+		>>cr ; ) drop
     >>cr ;
 
 :includepal | str car -- str'

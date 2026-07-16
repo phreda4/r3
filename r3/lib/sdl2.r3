@@ -300,8 +300,7 @@
 ##SDLchar
 ##SDLx ##SDLy ##SDLb ##SDLw
 
-
-#eventr	0
+#eventr	
 
 ::SDLeventR | 'vec --
 	'eventr ! ;
