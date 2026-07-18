@@ -478,8 +478,8 @@
 	2drop
 	( >>0 dup c@ 1? 
 		$1f and lvl >? drop )
-	drop ;
-	
+	'lvl ! ;
+
 :maketree |
 	0 'lvl !
 	here dup 'indlist ! >a

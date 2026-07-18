@@ -17,7 +17,7 @@
 	dup datause? 0? ( drop ; ) drop | <<< var inline
 	
 	| info in plain--
-	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
+|	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
 	| info in plain--
 	
 	dup "#w%h" ,print
@@ -56,8 +56,8 @@
 	dup withanon
 	
 	| info in plain--
-	dup 4 << dic + @ dic>name "| :%w | " ,print 
-	dup 4 << dic + 8 + @ ,mov ,cr
+|	dup 4 << dic + @ dic>name "| :%w | " ,print 
+|	dup 4 << dic + 8 + @ ,mov ,cr
 	| info in plain--
 	
 	|dup 4 << dic + @ dic>name "%.| :%w | %." filelog
