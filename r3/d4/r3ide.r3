@@ -18,6 +18,13 @@
 #lwords
 #lincs
 
+#xsplit 40
+#panelinfo 0
+
+|---- change error mode
+:moderror
+	lerror tuiecursor! ;
+
 |----
 :makelistwordsfull
 	here 'lwords !
@@ -65,7 +72,38 @@
 		1+ ) drop
 	,eol ;
 	
+|---- screen
+:setcursoride
+	vwords uiNindx str$>nro nip
+	nro>dic @
+	|40 >> src + "%l" sprint 'msg strcpy 
+	40 >>> fuente + |1- | :#
+	tuiecursor!	;
+	
+:scrmapa
+|	.reset
+|	cols 2/ flxE 
+	
+|	flxpush
+|	8 flxN
+|	tuWina $1 "Includes" .wtitle 1 1 flpad 
+|	'vincs lincs tuList
+|	flxRest
+	.reset
+|	tuWina $1 "Words" .wtitle 1 1 flpad 
+	.wfill
+	
+	'xwrite.word xwrite!
+	'vwords lwords tuList | 'var list --
 
+|	tuX? 1? ( setcursoride ) drop
+
+|	setcursoride
+	xwrite.reset
+
+|	flxpop
+	;
+	
 |---- CHECKCODE
 :cntlines | -- nrolin
 	1 fuente 
@@ -84,11 +122,9 @@
 	cnttok cntdef cntinc " OK | inc:%d words:%d tokens:%d" .print 
 	.eline
 	'msg strcpybuf ;
-|	makelistwords
-|	makelistinc
-|	;
 
 :checkcode
+	TuSaveCode
 	0 'msg !
 	fuente 'filename r3loadmem
 	error 1? ( coderror ; ) drop 
@@ -96,41 +132,19 @@
 	;
 	
 	
-|--- F2 analisis
+|--- F3 analisis
 :anacode
-	0 'msg !
-	fuente 'filename r3loadmem
-	error 1? ( coderror ; ) drop 
-	codeok 
-	|r3tokeninfo
+	checkcode error 1? ( drop moderror ; ) drop
+|	0 'msg !
+|	fuente 'filename r3loadmem
+|	error 1? ( coderror ; ) drop 
+|	codeok 
+|	r3tokeninfo
+	makelistwords
+	makelistinc
+	'scrmapa 'panelinfo !
 	;
 
-|---- screen
-:setcursoride
-	vwords uiNindx str$>nro nip
-	nro>dic @
-	|40 >> src + "%l" sprint 'msg strcpy 
-	40 >>> fuente + |1- | :#
-	tuiecursor!	;
-	
-:scrmapa
-	.reset
-	cols 2/ flxE 
-	
-|	flxpush
-|	8 flxN
-|	tuWina $1 "Includes" .wtitle 1 1 flpad 
-|	'vincs lincs tuList
-|	flxRest
-	tuWina $1 "Dicc" .wtitle 1 1 flpad 
-	
-	'xwrite.word xwrite!
-	'vwords lwords tuList | 'var list --
-|	tuX? 1? ( setcursoride ) drop
-	setcursoride
-	xwrite.reset
-|	flxpop
-	;
 	
 :scrmsg	
 	.reset
@@ -138,47 +152,28 @@
 	fx fy .at
 	'msg .print
 	;
-
-
-:helpmain
-	.reset .home 
-	4 .bc 7 .fc
-	1 flxN 
 	
-	2 flxS 
-	fx fy .at fw .nsp
-	" help [" .write 'filename .write "] " .write tuecursor. .write
-	
-	scrmapa
-
-	flxRest
-	tuReadCode
-	tuEditShowCursor .ovec tuC! 
-
-	uiKey
-	[esc] =? ( exit )
-	drop
+|--- F2 help	
+:panelhelp
+	.reset .wfill fx fy .at 
+	"- Help -" .write
 	;
 	
 :helpcode
-	|editfasthash lasthash =? ( moreinfo ; ) 'lasthash !
-	fuente 'filename r3loadmem
-	error 1? ( coderror ; ) drop
-	codeok
-	'helpmain onTui
+	checkcode error 1? ( drop moderror ; ) drop
+|	fuente 'filename r3loadmem
+|	error 1? ( coderror ; ) drop
+|	codeok
+	'panelhelp 'panelinfo !
 	;
 
 |-------------------------------
 :printfname
 	4 .bc 7 .fc .sp 'filename .write .sp ;
 	
-:moderror
-	lerror tuiecursor! ;
-	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb .reset .cls .flush
-	TuSaveCode
 	'filename r3run
 	.reterm .alsb .flush
 	|here dup "error.log" load over =? ( 2drop ; ) 0 swap c!
@@ -189,36 +184,28 @@
 :debugcode
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
-	TuSaveCode
 	"r3/d4/r3debug.r3" r3run
 	.reterm .alsb .flush 
 	tuR!
 	;
-	
+
+|------- old
 :fileplain
 	checkcode error 1? ( drop moderror ; ) drop
-|	.masb .reset .cls .flush
-	TuSaveCode
 	"r3/editor/r3plain.r3" r3run
-	.reterm .alsb .flush 
 	tuR!
 	;
+|------- old
 
-|------- dev
 :fileplaino
 	checkcode error 1? ( drop moderror ; ) drop
-|	.masb .reset .cls .flush
-	TuSaveCode
 	"r3/d4/r3plain.r3" r3run
-	.reterm .alsb .flush 
+|	.reterm .alsb .flush 
 	tuR!
 	;
-|------- dev
 
 :filecompile
 	checkcode error 1? ( drop moderror ; ) drop
-	|.masb .reset .cls .flush
-	TuSaveCode
 	"r3/system/r3compiler.r3" r3run
 	|.reterm .alsb .flush 
 	;
@@ -227,8 +214,7 @@
 
 :compile
 	checkcode error 1? ( drop moderror ; ) drop
-	.masb
-	.reset .cls
+	.masb .reset .cls
 	"[07Building" .awrite .cr .cr .cr .cr 
 	
 	.cr
@@ -243,25 +229,39 @@
 	.reset .cr
 	getch 
 	[f2] =? ( filecompile )
-	[f3] =? ( fileplain ) 
-	[f4] =? ( fileplaino ) | dev
+	[f3] =? ( fileplaino ) 
+	|[f4] =? ( fileplain ) | dev
 	drop
 	.alsb
 	;
 	
+	
+:panel
+	panelinfo 0? ( drop ; ) 
+	xsplit flxE
+	ex ;
+	
 |-------------------------------
 :main
 	.reset .home 
-	2 flxS 
-	fx fy .at printfname 
-	0 .fc 6 .bc .sp tuecursor. .write 
-	4 .bc 7 .fc " ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build" .printe .eline .cr
+	1 flxN 
+	4 .bc 7 .fc " r3IDE | " .write printfname 
+	" | " .write tuecursor. .write 
+	.eline
+	
+	1 flxS 
+	fx fy .at 
+	4 .bc 7 .fc 
+	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
 	'msg .write
+	.eline
+	
+	panel
 	flxRest
 	
 	tuEditCode
 	uiKey
-	| [f2] =? ( helpcode )			| h
+	[f2] =? ( helpcode )			| h
 	[f3] =? ( anacode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
@@ -275,10 +275,10 @@
 	'filename "mem/menu.mem" load drop
 	|"r3/test/testasm.r3" 'filename strcpy
 	
+	cols 2/ 'xsplit !
 	'filename TuLoadCode
 	|TuNewCode
 	mark
 	'main onTui 
 	TuSaveCode 
-
 ;

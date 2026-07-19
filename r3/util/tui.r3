@@ -469,23 +469,21 @@
 | #vtree 0 0
 
 #lvl	|  $1f:level $20:have_more $80:is_open	
-:getval	| adr c@ ; a
-	$1f and 
-	lvl <=? ( 'lvl ! ; ) 
+:getval	| adr lvl -- adr nlvl
+	lvl <=? ( ; ) 
 	a> 8 - @ dup 				
-	c@ $20 or over c!
-	c@ $80 and? ( drop 'lvl ! ; ) | draw
+	c@ $20 or over c! | need this mark
+	c@ $80 and? ( drop ; )
 	2drop
 	( >>0 dup c@ 1? 
-		$1f and lvl >? drop )
-	'lvl ! ;
+		$1f and lvl >? drop ) ;
 
 :maketree |
 	0 'lvl !
 	here dup 'indlist ! >a
 	( dup a!+ >>0
 		dup c@ 1? 
-		getval
+		$1f and getval 'lvl !
 		) 2drop
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
