@@ -1,11 +1,12 @@
 | TUI IDE
 | PHREDA 2025
+
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
 |^r3/lib/trace.r3
 
+^r3/d4/helplib.r3
 ^r3/d4/r3token.r3
-
 
 #msg * 1024		| last line msg
 
@@ -71,6 +72,26 @@
 		dup 4 << 'inc + @ "%w" ,print ,eol
 		1+ ) drop
 	,eol ;
+	
+|----
+#helpword * 32
+
+:iniword
+	fuente> ( dup 1- c@ $ff and 32 >? 
+		drop 1- ) drop | busca comienzo	
+		
+	'helpword 
+	31 ( 1? 1- -rot
+		swap c@+ $ff and 
+		32 <=? ( 2drop 0 swap c! drop ; )
+		rot c!+
+		rot
+		) drop
+	0 swap c! 
+	drop ;
+	
+|	'fuente> ! 
+|	tuR! ;
 	
 |---- screen
 :setcursoride
@@ -253,6 +274,7 @@
 	fx fy .at 
 	4 .bc 7 .fc 
 	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
+	'helpword .write
 	'msg .write
 	.eline
 	
@@ -265,6 +287,8 @@
 	[f3] =? ( anacode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
+	
+	[f6] =? ( iniword )
 	[f10] =? ( compile )
 	toLow
 	drop ;

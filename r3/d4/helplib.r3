@@ -1,6 +1,3 @@
-| wordlist
-| PHREDA 2025
-|
 ^r3/lib/console.r3
 ^r3/util/sort.r3
 ^r3/d4/meta/mlibs.r3
@@ -138,81 +135,21 @@
 		drop 8 + ) 3drop
 	-1 ;
 
-:nwordname | nro -- name
+::lwordname | nro -- name
 	4 << namwlist + 8 + @
 	dup 48 >> $ffff and 3 << 'liblist + @ 8 + @ | lib
 	swap 32 >> $ffff and +  | word
 	;
-	
-|...repetidas
-:listrepe 
-	namwlist >a
-	( a@ 1?
-		a> 16 + @ =? ( a> namwlist - 4 >> "%d " .print )
-		drop 16 a+
-		) 2drop ;
-	
-:.lib | n -- words
-	3 << 'liblist + @ @+ .write @ ;
 
-:.wordinfo | val --
-	dup $ff and "%h " .print
-	dup 48 >> $ffff and .lib | lib
-	" -> " .print
-	swap 32 >> $ffff and + .write | name
-	;		
-	
-|----------------	
-:.writewords | adr nro --
-	( 1? 1- swap
-		@+ 6>str .write
-		@+ .wordinfo
-		.cr
-		swap ) 2drop ;
-
-:wordshow | n --
-	dup nwordname 
-	'pad = 1? ( over "(%d)" .print )  drop
-	4 << namwlist +
-	5 .writewords 
+:.lwordlib | nro -- lib
+	4 << namwlist + 8 + @
+	48 >> $ffff and 3 << 'liblist + @ @ 
 	;
 	
-|---------------------------------	
-:find
-	'pad isNro
-	1? ( "is a number" .println ; ) drop
-	'pad basefind 
-	+? ( "base word %d" .println ; ) drop
-	'pad wordfind
-	+? ( wordshow ; ) drop
-	drop "Not found" .println ;
-|	@+ 6>str .write @ .wordinfo .cr
-	;
-
-:ask
-	.cr "> " .print
-	.input .cr
-	'pad c@ 0? ( drop ; ) drop
-	find
-	ask ;
-
-:main
-	makelist
-	makelistbase
-	|listrepe	
-	"r3libs" .println 
-	cntwlist "%d words" .println
-"---------------" .println	
-	namwlist >a
-	0 ( 5 <?
-		a@+ 6>str .write
-		|a@+ "%h " .println 
-		a@+ .wordinfo
-		.cr
-		1+ ) drop
-	0 'pad !
-	ask
-	;
-
-: main ;
+::lwordfind | str -- tipo|nro
+	dup isNro 1? ( drop $10000 ; ) drop
+	dup basefind  +? ( $20000 or ; ) drop
+	wordfind +? ( ; ) drop
+	drop -1 ;
+	
 	

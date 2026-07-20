@@ -193,7 +193,7 @@
 	.showc .ovec
 	'pad 
 	( getch $a <>? [enter] <>? [esc] <>? .char ) drop
-	0 swap c! .cr .flush ;
+	0 swap c! .cr .flush ;	
 	
 :emite | char --
 	$5e =? ( drop 27 .emit ; ) | ^=escape

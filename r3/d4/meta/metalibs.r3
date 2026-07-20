@@ -468,9 +468,9 @@
 #r3_util_varanim.r3 'name 'words 'calls 'info
 ^r3/util/vscreen.r3
 #name "r3/util/vscreen.r3"
-#words  "vscreen" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
-#calls  'vscreen 'vini 'vredraw 'vfree 'sdlx 'sdly '%w '%h
-#info ( $2E $0 $0 $0 $1 $1 $10 $10 )
+#words  "vscreen" "vscreenf" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
+#calls  'vscreen 'vscreenf 'vini 'vredraw 'vfree 'sdlx 'sdly '%w '%h
+#info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'calls 'info
 ^r3/lib/win/clipboard.r3
 #name "r3/lib/win/clipboard.r3"

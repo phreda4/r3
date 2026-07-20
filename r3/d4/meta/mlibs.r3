@@ -311,8 +311,8 @@
 #info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $0 $6A $79 $6A $79 $6A $79 $6A $79 $2E $3D $3D $4C $4C $5B $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
 #r3_util_varanim.r3 'name 'words 'info
 #name "r3/util/vscreen.r3"
-#words  "vscreen" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
-#info ( $2E $0 $0 $0 $1 $1 $10 $10 )
+#words  "vscreen" "vscreenf" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
+#info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info
 #name "r3/lib/win/clipboard.r3"
 #words  "OpenClipboard" "CloseClipboard" "EmptyClipboard" "IsClipboardFormatAvailable" "GetClipboardData" "SetClipboardData" "copyclipboard" "pasteclipboard" 0
