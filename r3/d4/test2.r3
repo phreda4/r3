@@ -1,10 +1,13 @@
 ^r3/lib/console.r3
 ^r3/lib/parse.r3
 
-#v1 #v2 #v3 #v4 #v5 #v6 #v7
+#v1 #v2 330 #v3 #v4 #v5 #v6 #v7
 
 :main
-	
+	|2 2 + 5 * 2 / 89 * 3 +
+	|v1 0 <<
+	v2 10 /
+	"%d" .println 
 	"0.254 0.255 0.256 0.99 0.001 1.2 -2.399" 
 	dup .write .cr
 	str>fnro 'v1 !

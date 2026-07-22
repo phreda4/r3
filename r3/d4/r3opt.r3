@@ -217,6 +217,7 @@
 #tkdup 26 #Tkover 28 #tkswap 32
 #TKand 45 #tk+ 49 #tk- 50 #tk* 51 
 #tk<< 53 #TK>> 54 #TK>>> 55 #TK*>> 59
+#TK<</ 60
 #tknot 61 #tkneg 62
 
 :,lAND
@@ -328,6 +329,7 @@
 	'divm ! r> 'divs ! ;
 	
 	
+	
 |--- ajuste por signo
 :,sigadj | --
 	TKdup ,t 63 ,tlit TK>> ,t TK- ,t ;
@@ -338,7 +340,7 @@
 	63 swap clz - ,tlit
 	TK>> ,t ,sigadj ;	
 	
-:,lit/
+:,lit/ | tok --
 	getTOS
 	0? ( 2drop 0 "0 division" error! ; )
 	1 =? ( 2drop ,back ; ) 
@@ -346,7 +348,7 @@
 	dup 1- nand? ( ,/pot ; )	
 	nip ,back 
 	calcmagic
-	divm ,tlit divs ,tlit TK*>> ,t ,sigadj ;
+	divm ,nlit divs ,tlit TK*>> ,t ,sigadj ;
 	
 :,/ 
 	2lit? 1? ( 2drop 2litpush ./ ,TOSLIT ; ) drop 
@@ -376,8 +378,8 @@
 |	dup 1- nand? ( ,modpot ; )	
 	nip ,back 
 	dup calcmagic 
-	TKdup ,t divm ,tlit	divs ,tlit TK*>> ,t ,sigadj
-	,tlit TK* ,t TK- ,t 
+	TKdup ,t divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
+	,nlit TK* ,t TK- ,t 
 	;
 
 :,mod
@@ -403,32 +405,30 @@
 	
 	
 :,lit2pot<</ | c b -- ;lit2 b = pot2
-	63 swap clz - -				| c-pot(b )
-	-? ( neg ,tlit TK<< ,t ,sigadj ; )	| multiplica
-	,tlit TK>> ,t ,sigadj
-	;
+	63 swap clz - -				| c-pot(b)
+	-? ( neg ,tlit TK>> ,t ,sigadj ; )	| multiplica
+	,tlit TK<< ,t ;
 	
-:,lit2<</ | b,c literales -- ; (a<<c)/b sin shift en runtime
+:,lit2<</ | -- 
 	getTOS ,back      | c
 	getTOS ,back      | c b
 	0? ( 2drop 0 "0 division" error! ; )
-	1 =? ( drop ,tlit TK<< ,t ; )              | (a<<c)/1 = a<<c
-	-1 =? ( drop ,tlit TK<< ,t tkneg ,t ; )     | (a<<c)/-1 = -(a<<c)
+	1 =? ( drop ,nlit TK<< ,t ; )              | (a<<c)/1 = a<<c
+	-1 =? ( drop ,nlit TK<< ,t tkneg ,t ; )     | (a<<c)/-1 = -(a<<c)
 	dup 1- nand? ( ,lit2pot<</ ; )	
 	calcmagic
-	divm ,tlit 
-	divs - | divs-c 
+	divm ,nlit 
+	divs swap - | divs-c 
 	-? ( TK* ,t neg ,tlit TK<< ,t ; )
-	,tlit 	
-	TK*>> ,t ,sigadj ;
+	,tlit TK*>> ,t ,sigadj ;
 
 	
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
-	|2lit? 1? ( 2drop ,lit2<</ ; ) drop	
+	2lit? 1? ( 2drop ,lit2<</ ; ) drop	
 |	1lit? 1? ( ) drop
 	,t ;
-	
+
 :,NOT 
 	1lit? 1? ( 2drop 1litpush .not ,TOSLIT ; ) drop 
 	,t ;
@@ -484,11 +484,8 @@
 	
 :,ana | nro --
 	|dup 40 >> src + "%w " filelog
-	
 	dup $ff and 
-	
 	|dup "(%d)%." filelog
-	
 	3 << 'optw + @ ex ;
 	
 |--------------
