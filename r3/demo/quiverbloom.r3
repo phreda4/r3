@@ -1,6 +1,7 @@
 | Swimming Quiverbloom - puerto de QB64 a r3forth
 | https://github.com/oonap0oo/QB64-projects/tree/main
 | Original: K Moerman 2026
+| from: @yuruyurau
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/math.r3

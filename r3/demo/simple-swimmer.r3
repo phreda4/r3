@@ -5,7 +5,7 @@
 ^r3/lib/math.r3
 
 #PI 3.14159265
-#t #a #at #b #e #l #w #x #y #col
+#t #a #at #b #e #l #w #x #y
 #px #py #prevpx #prevpy
 #SCALEX #SCALEY #ASTEP
 
@@ -41,12 +41,12 @@
 	w l rcos *. 'x !
 	w l rsin *. 'y !
 
-	b 4.0 *. a 6.0 *. - rcos 127.0 *. 128.0 + int. 'col !
+	b 4.0 *. a 6.0 *. - rcos 127.0 *. 128.0 + int. 
+	setcolor2
 
 	x 1.0 + SCALEX *. int. 'px !
 	y 1.0 + SCALEY *. int. 'py !
-	col setcolor2
-
+	
 	prevpx 1? ( dup prevpy px py SDLLine ) drop
 	px 'prevpx !
 	py 'prevpy ! ;

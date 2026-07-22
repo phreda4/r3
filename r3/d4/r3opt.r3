@@ -3,7 +3,7 @@
 | r3 to r3 optimizer translator
 | plan:
 |
-| x remove noname definitions
+| + remove noname definitions
 | - reorder stack?, minimice heigth ( 2 3 4 + + =>> 3 4 + 2 + )
 |
 | + reemplace constant
@@ -12,7 +12,10 @@
 | + folder constant
 | + cte * transform
 | + cte / transform
-| - cte mod transform
+| + cte mod transform
+| + cte /mod transform
+| + cte *>> transform
+| + cte <</ transform
 |-----------------
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
@@ -133,6 +136,12 @@
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 	
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+:13lit?
+	tokana> 24 - 'tokana <? ( drop 0 ; ) 
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
+	8 + @ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+	
+	
 :nlit? | n -- n 0/1
 	tokana> over 3 << - 'tokana <? ( drop 0 ; ) | n tok
 	over ( 1? 1- swap							| n n tok
@@ -278,7 +287,7 @@
 	TK<< ,t TKswap ,t TK- ,t ;
 :,lit* 	
 	getTOS
-	0? ( 2drop TKand ,t ; ) 
+	0? ( 2drop ,back ,back 0 ,tlit ; ) 
 	1 =? ( 2drop ,back ; ) 	| 1 * --> _
 	-1 =? ( 2drop ,back tkneg ,t ; )
 	dup 1- nand? ( ,*pot ; )
@@ -296,7 +305,7 @@
 |----- division by constant
 | http://www.flounder.com/multiplicative_inverse.htm
 
-#ad		| d absoluto
+#ad		| d abs
 #anc 
 
 #divm	| magic mult
@@ -326,8 +335,6 @@
 	drop 1+ nip nip | d q2
 	swap -? ( drop neg 'divm ! r> 'divs ! ; ) drop
 	'divm ! r> 'divs ! ;
-	
-	
 	
 |--- ajuste por signo
 :,sigadj | --
@@ -369,13 +376,18 @@
 	,t ;
 	
 |----------------------- mod	
-:,litmod | *****
+:,modpot | n -- ;  8 mod -> 7 and
+	,back
+	1- ,nlit
+	TKand ,t ;
+	
+:,litmod | --
 	getTOS
-|	0? ( 2drop 0 "0 division" error! ; )
-|	1 =? ( 2drop ,back ; ) 
+	,back 
+	0? ( drop 0 "0 division" error! ; )
+	1 =? ( drop ,back 0 ,tlit ; ) 
 |	-1 =? ( 2drop ,back tkneg ,t ; )
-|	dup 1- nand? ( ,modpot ; )	
-	nip ,back 
+	dup 1- nand? ( ,modpot ; )	
 	dup calcmagic 
 	TKdup ,t divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
 	,nlit TK* ,t TK- ,t 
@@ -383,15 +395,38 @@
 
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
-	|1lit? 1? ( drop ,litmod ; ) drop
+	1lit? 1? ( 2drop ,litmod ; ) drop
 	,t ;
+
+|----------------------------
+:,mod/pot | n -- ;  v 8 mod -> v dup 3 >> swap 7 and 
+	,back
+	TKdup ,t
+	63 over clz - ,tlit	
+	TK>> ,t
+	TKswap ,t
+	1- ,nlit
+	TKand ,t ;
+	
+:,lit/mod | -- 
+	getTOS
+	,back 
+	0? ( drop 0 "0 division" error! ; )
+	1 =? ( drop 0 ,tlit ; )
+	dup 1- nand? ( ,mod/pot ; ) 
+	dup calcmagic
+	TKdup ,t 
+	divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
+	TKdup ,t
+	,nlit TK* ,t TK- ,t 	
+	;
 	
 :,/mod
 	2lit? 1? ( 2drop 2litpush ./mod ,2TOSLIT ; ) drop
-|	1lit? 1? ( ) drop
+	1lit? 1? ( 2drop ,lit/mod ; ) drop
 	,t ;
 	
-|----------------------------	
+|----------------------------
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop
@@ -413,10 +448,14 @@
 	dup 1- nand? ( ,lit2pot*>> ; ) 
 	,nlit ,tlit TK*>> ,t ;
 	
+:12swap
+	tokana> 24 - @+ swap @ | [nos-1] [nos]
+	tokana> 24 - !+ ! ;
+	
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
 	2lit? 1? ( 2drop 2lit*>> ; ) drop	
-|	1lit? 1? ( ) drop
+|	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt (falta bigint !!! )
 	,t ;
 	
 |----------------------------	
