@@ -148,7 +148,6 @@
 
 :getNOS | -- NOSV
 	tokana> 16 - @ litpush ;
-
 	
 :1litpush
 	tokana> 8 - dup 'tokana> !
@@ -392,18 +391,35 @@
 |	1lit? 1? ( ) drop
 	,t ;
 	
+|----------------------------	
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop
 |	1lit? 1? ( ) drop
 	,t ;
+
+|----------------------------	
+:,lit2pot*>> | c b --
+	63 swap clz - -				| c-pot(b)
+	-? ( neg ,tlit TK<< ,t  ; )	| multiplica
+	,tlit TK>> ,t ,sigadj ;
+	
+:2lit*>>	
+	getTOS ,back      | c
+	getTOS ,back      | c b
+	0? ( 2drop ,back 0 ,tlit ; ) 			| var 0 cc *>>
+	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
+	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
+	dup 1- nand? ( ,lit2pot*>> ; ) 
+	,nlit ,tlit TK*>> ,t ;
+	
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
-|	2lit? 1? ( ) drop	
+	2lit? 1? ( 2drop 2lit*>> ; ) drop	
 |	1lit? 1? ( ) drop
 	,t ;
 	
-	
+|----------------------------	
 :,lit2pot<</ | c b -- ;lit2 b = pot2
 	63 swap clz - -				| c-pot(b)
 	-? ( neg ,tlit TK>> ,t ,sigadj ; )	| multiplica
@@ -421,7 +437,6 @@
 	divs swap - | divs-c 
 	-? ( TK* ,t neg ,tlit TK<< ,t ; )
 	,tlit TK*>> ,t ,sigadj ;
-
 	
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
@@ -429,6 +444,7 @@
 |	1lit? 1? ( ) drop
 	,t ;
 
+|----------------------------
 :,NOT 
 	1lit? 1? ( 2drop 1litpush .not ,TOSLIT ; ) drop 
 	,t ;
