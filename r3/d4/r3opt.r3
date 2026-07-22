@@ -101,6 +101,11 @@
 	-8 'tokana> +! 
 	| big? -8 'biglit> +! | reuse bigliteral 
 	;
+:,backNOS | saca el token de NOS, deja el de TOS (lo corre un lugar)
+	tokana> 8 - @ tokana> 16 - !
+	-8 'tokana> +! 
+	;
+	
 :,t	| tok --
 	tokana> !+ 'tokana> !  ;
 :,tlit | lit --
@@ -140,6 +145,10 @@
 
 :getTOS | -- TOSV
 	tokana> 8 - @ litpush ;
+
+:getNOS | -- NOSV
+	tokana> 16 - @ litpush ;
+
 	
 :1litpush
 	tokana> 8 - dup 'tokana> !
@@ -391,9 +400,32 @@
 |	2lit? 1? ( ) drop	
 |	1lit? 1? ( ) drop
 	,t ;
+	
+	
+:,lit2pot<</ | c b -- ;lit2 b = pot2
+	63 swap clz - -				| c-pot(b )
+	-? ( neg ,tlit TK<< ,t ,sigadj ; )	| multiplica
+	,tlit TK>> ,t ,sigadj
+	;
+	
+:,lit2<</ | b,c literales -- ; (a<<c)/b sin shift en runtime
+	getTOS ,back      | c
+	getTOS ,back      | c b
+	0? ( 2drop 0 "0 division" error! ; )
+	1 =? ( drop ,tlit TK<< ,t ; )              | (a<<c)/1 = a<<c
+	-1 =? ( drop ,tlit TK<< ,t tkneg ,t ; )     | (a<<c)/-1 = -(a<<c)
+	dup 1- nand? ( ,lit2pot<</ ; )	
+	calcmagic
+	divm ,tlit 
+	divs - | divs-c 
+	-? ( TK* ,t neg ,tlit TK<< ,t ; )
+	,tlit 	
+	TK*>> ,t ,sigadj ;
+
+	
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
-|	2lit? 1? ( ) drop	
+	|2lit? 1? ( 2drop ,lit2<</ ; ) drop	
 |	1lit? 1? ( ) drop
 	,t ;
 	

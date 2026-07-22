@@ -5,7 +5,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/math.r3
 
-#t #y #k #e #d #q #c #xp #yp #xr #yr #col
+#t #y #k #e #d #q #c #xp #yp
 #SCALEX #SCALEY
 
 | SIN/COS de argumentos en radianes (los que vienen de x, no de t)
@@ -39,14 +39,15 @@
 	q c rcos 50.0 *. - 85.0 - 'xp !
 	d 39.0 *. q c rsin *. - 620.0 - 'yp !
 
-	xp t cos *. yp t sin *. - 'xr !
-	xp t sin *. yp t cos *. + 'yr !
+	k 3.0 *. rsin 100.0 *. int. 
+	setcolor
 
-	k 3.0 *. rsin 100.0 *. int. 'col !
-
-	col setcolor
-	xr 190.0 + SCALEX *. int.
-	yr 200.0 + SCALEY *. int.
+	xp t cos *. yp t sin *. - 
+	190.0 + SCALEX *. int.
+	
+	xp t sin *. yp t cos *. + 
+	200.0 + SCALEY *. int.
+	
 	SDLPoint ;
 
 :curve | --
@@ -56,8 +57,7 @@
 
 | t en turns: 1.0 = 2*PI, avanza PI/400 rad = 1/800 turn por frame
 :advance-t | --
-	0.00125 't +!
-	t 1.0 >=? ( t 1.0 - 't ! ) drop ;
+	t 0.00125 + $ffff and 't ! ;
 
 :draw
 	0 SDLcls
