@@ -22,7 +22,7 @@
 
 ^r3/lib/trace.r3
 
-##biglit * 80 | 10 bigliteral !!!!!!!
+##biglit * 320 | 40 bigliteral !!!!!!!
 ##biglit>
 ##tokana * $ffff | 8192 tokens !!!!!!!
 ##tokana>
@@ -66,7 +66,7 @@
 
 |-------------------------------- NAME >> NUMBER
 :.lits	8 >> 'biglit + @ "$%h" ,print ;
-:.lit	8 >> -? ( neg "-$%h" ,print ; ) "$%h" ,print ; | literal in opt is bigger
+:.lit	8 >> -? ( "%d" ,print ; ) "$%h" ,print ; 
 :.word	8 >> $ffffffff and "w%h" ,print ;
 :.wadr	8 >> $ffffffff and "'w%h" ,print ;
 :.var	8 >> $ffffffff and "w%h" ,print ;
@@ -102,7 +102,6 @@
 	'biglit 'biglit> ! ;
 :,back | --
 	-8 'tokana> +! 
-	| big? -8 'biglit> +! | reuse bigliteral 
 	;
 :,backNOS | saca el token de NOS, deja el de TOS (lo corre un lugar)
 	tokana> 8 - @ tokana> 16 - !
@@ -111,6 +110,7 @@
 	
 :,t	| tok --
 	tokana> !+ 'tokana> !  ;
+	
 :,tlit | lit --
 	8 << 1 or ,t ;
 	
@@ -124,24 +124,43 @@
 	40 >> src + str>anro nip | get the number from src
 	,nlit ;
 	
-:1lit?	
+:1lit?	||||  LIT --
 	tokana> 8 - 'tokana <? ( drop 0 ; ) 
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
-:2lit?	
+	
+:01lit?	||||  LIT NRO -- 
+	tokana> 16 - 'tokana <? ( drop 0 ; ) 
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop
+	@ $ff and 6 >? ( drop 0 ; ) drop 1 ;
+	
+:2lit?	||||  LIT LIT --
 	tokana> 16 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
-:3lit?	
+	
+:3lit?	||||  LIT LIT LIT --
 	tokana> 24 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 	
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
-:13lit?
+	
+:13lit?	||||  LIT NRO LIT --
 	tokana> 24 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
-	8 + @ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+	@+ $ff and 6 >? ( 2drop 0 ; ) drop 
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
 	
-	
+
+:01swap |||| a b -- b a
+	"swap error" .println
+	tokana> 16 - @+ swap @ | [nos] tos
+	tokana> 16 - !+ ! ;	
+
+:12swap |||| a b c -- b a c
+	tokana> 24 - @+ swap @ | [nos-1] [nos]
+	tokana> 24 - !+ ! ;
+
+|-----------------------	
 :nlit? | n -- n 0/1
 	tokana> over 3 << - 'tokana <? ( drop 0 ; ) | n tok
 	over ( 1? 1- swap							| n n tok
@@ -208,19 +227,18 @@
 :,code | tok --
 	dup dic@ $1f00 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
 	dup dic@use										| tok stack use
-	nlit? 0? ( 2drop ,inlinecode ; ) drop			| all are literal?
-	nlitpush		| push the numbers in virtual stack
-	dup exncode		| exec code in compile time
+	nlit? 0? ( 	2drop ,inlinecode ; ) drop			| all are literal?
+	
+	nlitpush				| push the numbers in virtual stack
+	dup exncode				| exec code in compile time
 	dic@loa ,ntoslit		| pop the numbers to code
 	;
 	
 | $..............10	var not int, is not a cte
 :,data | tok --
-	|,t ; |<<< var inline	
 	dup dic@ $14 and? ( drop ,t ; ) drop | real var
 	dic@len fmem + @ ,nlit		| detect cte var
 	;
-
 
 #tkdup 26 #Tkover 28 #tkswap 32
 #TKand 45 #tk+ 49 #tk- 50 #tk* 51 
@@ -229,17 +247,25 @@
 #tknot 61 #tkneg 62
 
 :,lAND
-	getTOS -1 =? ( 2drop ,back ; ) drop ,t ;
+	getTOS 
+	0? ( 2drop ,back ,back 0 ,nlit ; ) 
+	-1 =? ( 2drop ,back ; ) 
+	drop ,t ;
 :,AND
 	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
 	1lit? 1? ( drop ,lAND ; ) drop	
+	01lit? 1? ( drop 01swap ,lAND ; ) drop
 	,t ;
 	
 :,lOR
-	getTOS 0? ( 2drop ,back ; ) drop ,t ;
+	getTOS
+	0? ( 2drop ,back ; ) 
+	-1 =? ( 2drop ,back ,back -1 ,nlit ; ) 
+	drop ,t ;
 :,OR
 	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
 	1lit? 1? ( drop ,lOR ; ) drop	
+	01lit? 1? ( drop 01swap ,lOR ; ) drop	
 	,t ;
 
 :,lXOR
@@ -250,18 +276,28 @@
 :,XOR
 	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
 	1lit? 1? ( drop ,lXOR ; ) drop		
+	01lit? 1? ( drop 01swap ,lXOR ; ) drop
 	,t ;
 
 :,lNAND
-	getTOS -1 =? ( 2drop ,back ; ) drop ,t ;
+	getTOS 
+	0? ( 2drop ,back ; )
+	-1 =? ( 2drop ,back ,back 0 ,nlit ; ) 
+	drop ,t ;
 :,NAND
 	2lit? 1? ( 2drop 2litpush .NAND ,TOSLIT ; ) drop
 	1lit? 1? ( drop ,lNAND ; ) drop	
+	01lit? 1? ( drop 01swap ,lNAND ; ) drop	
 	,t ;
 	
+:,l+
+	getTOS 
+	0? ( 2drop ,back ; ) 
+	drop ,t	;
 :,+
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
+	1lit? 1? ( drop ,l+ ; ) drop
+	|01lit? 1? ( drop 01swap ,l+ ; ) drop | lit nro + --> nro lit + ***************
 	,t ;
 	
 :,- 
@@ -275,16 +311,19 @@
 	nip ,back
 	63 swap clz - ,tlit
 	TK<< ,t ;
+	
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
 	nip ,back TKdup ,t
 	64 swap clz - 1- ,tlit
 	TK<< ,t TK+ ,t ;
+	
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
 	nip ,back TKdup ,t
 	64 swap clz - ,tlit
 	TK<< ,t TKswap ,t TK- ,t ;
+	
 :,lit* 	
 	getTOS
 	0? ( 2drop ,back ,back 0 ,tlit ; ) 
@@ -295,10 +334,11 @@
 	dup 1+ nand? ( ,*pot-1 ; )
 	drop
 	,t ;
-	
+
 :,* 
 	2lit? 1? ( 2drop 2litpush .* ,TOSLIT ; ) drop 
 	1lit? 1? ( drop ,lit* ; ) drop
+	01lit? 1? ( drop 01swap ,lit* ; ) drop
 	,t ;
 	
 |----------------------- /
@@ -427,6 +467,7 @@
 	,t ;
 	
 |----------------------------
+
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( ) drop
@@ -439,18 +480,18 @@
 	-? ( neg ,tlit TK<< ,t  ; )	| multiplica
 	,tlit TK>> ,t ,sigadj ;
 	
+:,lit2pot0*>> | c d -- ;  4.0 16 *>> -->  4 * --> 2 << 
+	;
+	
 :2lit*>>	
 	getTOS ,back      | c
 	getTOS ,back      | c b
 	0? ( 2drop ,back 0 ,tlit ; ) 			| var 0 cc *>>
 	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
 	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
-	dup 1- nand? ( ,lit2pot*>> ; ) 
+	dup 1- nand? ( ,lit2pot*>> ; ) | 2pot 2pot *>>
+	| ,lit2pot0*>>
 	,nlit ,tlit TK*>> ,t ;
-	
-:12swap
-	tokana> 24 - @+ swap @ | [nos-1] [nos]
-	tokana> 24 - !+ ! ;
 	
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
@@ -480,7 +521,6 @@
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
 	2lit? 1? ( 2drop ,lit2<</ ; ) drop	
-|	1lit? 1? ( ) drop
 	,t ;
 
 |----------------------------
@@ -568,7 +608,7 @@
 ::wordanalysis | nro --
 	reseta
 	4 << dic + 
-	dup @ 1 and? ( drop dataw ; ) drop
+	dup @ 1 and? ( drop dataw "DATA" .println ; ) drop |******** !!! no analizar
 	codew ;
 	
 ::wordanon | tok> tok --
