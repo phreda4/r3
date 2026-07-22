@@ -76,16 +76,15 @@
 |----
 #helpword * 32
 
-:iniword
-	fuente> ( dup 1- c@ $ff and 32 >? 
-		drop 1- ) drop | busca comienzo	
-		
+:cpyhelpword
+	fuente> ( dup 1- | find start
+		c@ $ff and 32 >? 
+		drop 1- ) drop 
 	'helpword 
-	31 ( 1? 1- -rot
+	31 ( 1? 1- -rot		| copy word
 		swap c@+ $ff and 
 		32 <=? ( 2drop 0 swap c! drop ; )
-		rot c!+
-		rot
+		rot c!+ rot
 		) drop
 	0 swap c! 
 	drop ;
@@ -288,7 +287,8 @@
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
 	
-	[f6] =? ( iniword )
+	[f6] =? ( cpyhelpword  )
+	
 	[f10] =? ( compile )
 	toLow
 	drop ;
