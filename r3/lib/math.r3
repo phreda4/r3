@@ -118,7 +118,7 @@
 	pick2 - -rot - or ;
 
 ::msb | x -- n
-	63 swap clz - ;
+	clz 63 xor ;
 	
 ::ctz | x -- n
 	0? ( 64 + ; ) 
@@ -140,7 +140,7 @@
 ::sqrt. | x -- r
 	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
 	0 
-	1 63 pick3 clz - 1 nand <<
+	1 pick2 msb 1 nand <<
 	( 1? | op res one
 		2dup + | op res one r+o
 		step 2 >> )
@@ -151,7 +151,7 @@
 	
 ::log2. | y -- r
 	0 <=? ( 0 nip ; ) 
-	63 over clz - 
+	dup msb
 	16 - dup 16 << | x bitpos integer
 	-rot | integer x bitpos
 	mcalc 1.0 - | int xnorm	

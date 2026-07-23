@@ -20,7 +20,7 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3vmd.r3
 
-^r3/lib/trace.r3
+|^r3/lib/trace.r3
 
 ##biglit * 320 | 40 bigliteral !!!!!!!
 ##biglit>
@@ -310,19 +310,19 @@
 |>>>> 8 * --> 3 <<	
 :,*pot | tok tos --
 	nip ,back
-	63 swap clz - ,tlit
+	msb ,tlit
 	TK<< ,t ;
 	
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
 	nip ,back TKdup ,t
-	64 swap clz - 1- ,tlit
+	msb 1- ,tlit
 	TK<< ,t TK+ ,t ;
 	
 |>>>> 7 * --> dup 3 << swap -
 :,*pot-1 | tok tos --
 	nip ,back TKdup ,t
-	64 swap clz - ,tlit
+	msb ,tlit
 	TK<< ,t TKswap ,t TK- ,t ;
 	
 :,lit* 	
@@ -384,7 +384,7 @@
 |>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
 :,/pot | tok tos --
 	nip ,back
-	63 swap clz - ,tlit
+	msb ,tlit
 	TK>> ,t ,sigadj ;	
 	
 :,lit/ | tok --
@@ -443,7 +443,7 @@
 :,mod/pot | n -- ;  v 8 mod -> v dup 3 >> swap 7 and 
 	,back
 	TKdup ,t
-	63 over clz - ,tlit	
+	dup msb ,tlit	
 	TK>> ,t
 	TKswap ,t
 	1- ,nlit
@@ -483,7 +483,7 @@
 
 |----------------------------	
 :,lit2pot*>> | c b --
-	63 swap clz - -				| c-pot(b)
+	msb -				| c-pot(b)
 	-? ( neg ,tlit TK<< ,t  ; )	| multiplica
 	,tlit TK>> ,t ,sigadj ;
 	
@@ -508,7 +508,7 @@
 	
 |----------------------------	
 :,lit2pot<</ | c b -- ;lit2 b = pot2
-	63 swap clz - -				| c-pot(b)
+	msb -				| c-pot(b)
 	-? ( neg ,tlit TK>> ,t ,sigadj ; )	| multiplica
 	,tlit TK<< ,t ;
 	

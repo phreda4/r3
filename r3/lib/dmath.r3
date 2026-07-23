@@ -60,7 +60,7 @@
 ::sqrt.d | x -- r
 	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
 	0 
-	1 63 pick3 clz - 1 nand <<
+	1 pick2 msb 1 nand <<
 	( 1? | op res one
 		2dup + | op res one r+o
 		step 2 >> )
@@ -71,7 +71,7 @@
 	
 ::log2.d | x -- r
 	0 <=? ( 0 nip ; ) 
-	63 over clz - | x bitpos
+	dup msb | x bitpos
 	32 - dup 32 << -rot 		| bp x bp
 	mc $100000000 -	| bp x
 	

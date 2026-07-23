@@ -226,14 +226,14 @@
 | 8 * --> 3 <<
 :*pot
 	code<<
-	63 swap clz - cte!+
+	msb cte!+
 	TK<< code!+ ;
 
 | 7 * --> dup 3 << swap -
 :*pot-1
 	code<<
 	TKdup code!+	| dup
-	64 swap clz - cte!+
+	msb cte!+
 	TK<<	code!+	| <<
 	TKswap	code!+	| swap
 	TK- code!+ | -
@@ -283,7 +283,7 @@
 	TK>>> code!+ | >>>
 
 	TK+	code!+	| +
-	63 swap clz - cte!+ | 2
+	msb cte!+ | 2
 	TK>> code!+ | >>
 	;
 
