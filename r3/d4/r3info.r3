@@ -12,17 +12,17 @@
 :>>13 | a -- a
 	( c@+ 1?
 		13 =? ( drop ; ) 
-		drop ) drop 1 - ;
+		drop ) drop 1- ;
 	
 :countlines | adr -- line
 	0 src ( pick2 <=? 
-		>>13 swap 1 + swap ) 
+		>>13 swap 1+ swap ) 
 	drop nip ;
 	
 :onlywords
 	dup 16 + @ 1 and? ( drop 32 + ; ) drop | variable no graba
 	
-	@+ countlines 1 -
+	@+ countlines 1-
 	,q				| fff -nro de linea
 	8 +
 	@+ swap @+ 

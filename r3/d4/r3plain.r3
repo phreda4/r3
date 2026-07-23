@@ -17,7 +17,7 @@
 	dup datause? 0? ( drop ; ) drop | <<< var inline
 	
 	| info in plain--
-|	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
+	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
 	| info in plain--
 	
 	dup "#w%h" ,print
@@ -56,8 +56,8 @@
 	dup withanon
 	
 	| info in plain--
-|	dup 4 << dic + @ dic>name "| :%w | " ,print 
-|	dup 4 << dic + 8 + @ ,mov ,cr
+	dup 4 << dic + @ dic>name "| :%w | " ,print 
+	dup 4 << dic + 8 + @ ,mov ,cr
 	| info in plain--
 	
 	|dup 4 << dic + @ dic>name "%.| :%w | %." filelog
@@ -107,8 +107,8 @@
 	"| r3 optimizer" ,s ,cr
 	
 	generate
-	|"r3/d4/gen/plain.r3" 
-	"r3/plain.r3" 
+	"r3/d4/gen/plain.r3" 
+	|"r3/plain.r3" 
 	savemem
 	empty			| free buffer
 	;
@@ -124,7 +124,7 @@
 	showvar 
 	".pass3" .println	
 |	resetvm
-	".pass4" .println	
+|	".pass4" .println	
 	saveopt
 	".genplain" .println
 	;
@@ -134,10 +134,10 @@
 	'filename "mem/menu.mem" load drop
 |	"r3/test/testasm.r3" 'filename strcpy
 	.cr
-	.reset "[07Make plain.r3" .awrite .cr .cr .cr .cr 
+	.reset 
+	"Make plain.r3" .println
 	mark
 	'filename r3plain
 	cols .hline
-	.cr "press any key to continue..." .print	
-	waitkey	
+	|.cr "press any key to continue..." .print waitkey	
 	;

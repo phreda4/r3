@@ -146,15 +146,18 @@
 		step 2 >> )
 	drop nip 8 << ;
 
-:mcalc | x bitpos -- m
-	+? ( >> ; ) neg << ;
+|:mcalc | x bitpos -- m
+|	+? ( >> ; ) neg << ;
+|- shift with sign
+:shift
+	-? ( neg >> ; ) << ;
 	
 ::log2. | y -- r
 	0 <=? ( 0 nip ; ) 
-	dup msb
-	16 - dup 16 << | x bitpos integer
+	dup msb 16 - 
+	dup 16 << | x bitpos integer
 	-rot | integer x bitpos
-	mcalc 1.0 - | int xnorm	
+	neg shift 1.0 - | int xnorm	
 	16515                    | c3
 	over * 16 >> 45416 -     | c2
 	over * 16 >> 94437 +     | c1
@@ -310,9 +313,6 @@
 ::1000000/
 	18446744073710 64 *>> ;
 
-|- shift with sign
-:shift
-	-? ( neg >> ; ) << ;
 
 :clzd
 	clz 32 - ; |0 max ;

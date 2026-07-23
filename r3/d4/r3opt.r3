@@ -316,7 +316,7 @@
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tok tos --
 	nip ,back TKdup ,t
-	msb 1- ,tlit
+	msb ,tlit
 	TK<< ,t TK+ ,t ;
 	
 |>>>> 7 * --> dup 3 << swap -
@@ -436,7 +436,7 @@
 
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
-	1lit? 1? ( 2drop ,litmod ; ) drop
+	|1lit? 1? ( 2drop ,litmod ; ) drop |***********
 	,t ;
 
 |----------------------------
@@ -464,7 +464,7 @@
 	
 :,/mod
 	2lit? 1? ( 2drop 2litpush ./mod ,2TOSLIT ; ) drop
-	1lit? 1? ( 2drop ,lit/mod ; ) drop
+	|1lit? 1? ( 2drop ,lit/mod ; ) drop
 	,t ;
 	
 |----------------------------
@@ -479,6 +479,7 @@
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( 2drop ,lit*/ ; ) drop
 |	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
+	|13lit? 1? ( 12swap ) drop | lit1 nro lit -- nro lit1 lit
 	,t ;
 
 |----------------------------	

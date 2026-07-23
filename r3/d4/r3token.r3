@@ -6,7 +6,7 @@
 ^r3/d4/r3map.r3
 ^r3/d4/r3vmd.r3
 
-##switchmem
+##switchmem 10
 #sst * 512 	| stack for blocks and count
 #sst> 'sst
 

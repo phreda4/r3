@@ -16,8 +16,8 @@
 	dup 513 - >a	
 	ca@+ 
 	ca@+ + ca@ + 
-	512 a+			ca@ + -2 a+ ca@ +
-	512 a+  		ca@+ + ca@+ + ca@ +
+	512 a+	ca@ + -2 a+ ca@ +
+	512 a+  ca@+ + ca@+ + ca@ +
 	3 =? ( drop 1 cb!+ ; )
 	2 <>? ( drop 0 cb!+ ; ) 
 	drop
@@ -29,9 +29,10 @@
 	arena
 	0 ( 512 <? 
 		0 ( 512 <? 
-			rot check 1 + -rot 
-			1 + ) drop
-		1 + ) 2drop 
+			rot check
+			1+ -rot 
+			1+ ) drop
+		1+ ) 2drop 
 	arena arenan 512 512 * move ;
 	
 		
@@ -40,8 +41,8 @@
 	
 	mpixel >a
 	arena >b
-	512 ( 1? 1 -
-		512 ( 1? 1 -
+	512 ( 1? 1-
+		512 ( 1? 1-
 			cb@+ 1? ( $ffffff or ) da!+
 		) drop
 	) drop

@@ -206,29 +206,34 @@
 	|.masb .reset .cls .flush
 	"r3/d4/r3debug.r3" r3run
 	.reterm .alsb .flush 
-	tuR!
-	;
+	tuR! ;
 
 |------- old
 :fileplain
 	checkcode error 1? ( drop moderror ; ) drop
 	"r3/editor/r3plain.r3" r3run
-	tuR!
-	;
+	tuR! ;
 |------- old
 
 :fileplaino
 	checkcode error 1? ( drop moderror ; ) drop
 	"r3/d4/r3plain.r3" r3run
 |	.reterm .alsb .flush 
-	tuR!
-	;
+	"r3/d4/gen/plain.r3" r3run
+	tuR! ;
 
 :filecompile
 	checkcode error 1? ( drop moderror ; ) drop
 	"r3/system/r3compiler.r3" r3run
 	|.reterm .alsb .flush 
-	;
+	tuR! ;
+
+:filecompileo
+	checkcode error 1? ( drop moderror ; ) drop
+	|"r3/d4/r3plain.r3" r3run
+	"r3/d4/r3wincomp.r3" r3run
+	|.reterm .alsb .flush 
+	tuR! ;
 
 |-------------------------------
 
@@ -249,8 +254,12 @@
 	.reset .cr
 	getch 
 	[f2] =? ( filecompile )
+	[f4] =? ( filecompileo )
+	
 	[f3] =? ( fileplaino ) 
-	|[f4] =? ( fileplain ) | dev
+	[f5] =? ( fileplain ) | dev
+	
+	
 	drop
 	.alsb
 	;
