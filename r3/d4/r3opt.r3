@@ -131,7 +131,8 @@
 :01lit?	||||  LIT NRO -- 
 	tokana> 16 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop
-	@ $ff and 6 >? ( drop 0 ; ) drop 1 ;
+	@ $ff and 2 =? ( drop 0 ; )  | no call
+	6 >? ( drop 0 ; ) drop 1 ;
 	
 :2lit?	||||  LIT LIT --
 	tokana> 16 - 'tokana <? ( drop 0 ; ) 
@@ -147,12 +148,12 @@
 :13lit?	||||  LIT NRO LIT --
 	tokana> 24 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
-	@+ $ff and 6 >? ( 2drop 0 ; ) drop 
+	@+ $ff and 2 =? ( drop 0 ; ) | no call
+	6 >? ( 2drop 0 ; ) drop 
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
 	
 
 :01swap |||| a b -- b a
-	"swap error" .println
 	tokana> 16 - @+ swap @ | [nos] tos
 	tokana> 16 - !+ ! ;	
 
@@ -167,7 +168,7 @@
 		@+ $ff and 1 >? ( 3drop 0 ; ) drop		| n n tok 
 		swap ) 2drop 1 ; 						| n 1
 
-:litpush | tok --
+:litpush | tok -- value
 	dup $ff and 1? ( drop 8 >> ; ) 
 	drop 8 >> 'biglit + @ ;
 
@@ -297,7 +298,7 @@
 :,+
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
 	1lit? 1? ( drop ,l+ ; ) drop
-	|01lit? 1? ( drop 01swap ,l+ ; ) drop | lit nro + --> nro lit + ***************
+	01lit? 1? ( drop 01swap ,l+ ; ) drop | lit nro + --> nro lit +
 	,t ;
 	
 :,- 
@@ -480,23 +481,24 @@
 	-? ( neg ,tlit TK<< ,t  ; )	| multiplica
 	,tlit TK>> ,t ,sigadj ;
 	
-:,lit2pot0*>> | c d -- ;  4.0 16 *>> -->  4 * --> 2 << 
+:,lit2pot0*>> | c d cp -- ;  4.0 16 *>> -->  4 * --> 2 << 
+	"%d %h %d" .println
 	;
 	
 :2lit*>>	
 	getTOS ,back      | c
-	getTOS ,back      | c b
+	getTOS ,back      | c l
 	0? ( 2drop ,back 0 ,tlit ; ) 			| var 0 cc *>>
 	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
 	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
 	dup 1- nand? ( ,lit2pot*>> ; ) | 2pot 2pot *>>
-	| ,lit2pot0*>>
+	|dup ctz pick2 <=? ( ,lit2pot0*>> ; ) drop
 	,nlit ,tlit TK*>> ,t ;
 	
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
 	2lit? 1? ( 2drop 2lit*>> ; ) drop	
-|	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt (falta bigint !!! )
+	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt (falta bigint !!! )
 	,t ;
 	
 |----------------------------	

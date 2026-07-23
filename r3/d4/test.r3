@@ -5,50 +5,29 @@
 #var2 0
 #var3 
 
-:meminv	
-	23 var1 ! ;
-	
-:stakover
-	10 ( 1? dup ) ;
-	
-:stackunder
-	10 ( 1? nip ) ;
-
-:div0
-	1200 var2 / 'var1 ! ;
-
-:rstack
-	var2 * ;
-	
-:callwithjump
-	31 'var1 !
-	;
-
-:tcall
-	3 
-	drop
-	"hola" .println
-	var1 var2 *
-	callwithjump 
-	|var3
-;
-
+::ctz | x -- n
+	0? ( 64 + ; ) 
+	dup neg and 
+	dup "%h" .println
+	0 swap
+    $00000000FFFFFFFF nand? ( swap 32 + swap ) 
+    $0000FFFF0000FFFF nand? ( swap 16 + swap )
+    $00FF00FF00FF00FF nand? ( swap 8 + swap )
+    $0F0F0F0F0F0F0F0F nand? ( swap 4 + swap )
+    $3333333333333333 nand? ( swap 2 + swap )
+    $5555555555555555 nand? ( swap 1 + swap )
+	drop 
+	.cr ;
 	
 : 
-.cls 
-tcall
-"test runtime error" .println
-.cr
-( 
-	"f keys.." .print
-	getch [esc] <>? 
-	[F2] =? ( meminv ) 
-	[F3] =? ( stakover )
-	[F4] =? ( stackunder )
-	[F5] =? ( div0 )	
-	" %h" .println
-	) drop
-"finish" .println
+1 dup ctz "%d %d " .println
+2 dup ctz "%d %d " .println
+8 dup ctz "%d %d " .println
+1.0 dup ctz "%d %d " .println
+2.0 dup ctz "%d %d " .println
+128.0 dup ctz "%d %d " .println
 
+"finish" .println
+waitesc
 ;
 
