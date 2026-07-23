@@ -1,4 +1,5 @@
 |main
+^r3/lib/console.r3
 
 #var1 33
 #var2 0
@@ -6,8 +7,11 @@
 
 : 
 |var1 5.0 16 *>> 
-var1 6.0 16 <</
+var1 8 
+|/mod "%d %d" .println
+mod "%d " .println
 1 'var1 !
+waitesc
 ;
 
 |	v1 0 16 *>> "%f" .println 

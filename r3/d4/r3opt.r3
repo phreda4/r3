@@ -382,24 +382,23 @@
 	TKdup ,t 63 ,tlit TK>> ,t TK- ,t ;
 	
 |>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
-:,/pot | tok tos --
-	nip ,back
-	msb ,tlit
-	TK>> ,t ,sigadj ;	
+:,/pot | tos --
+	,back
+	msb ,tlit TK>> ,t ,sigadj ;	
 	
 :,lit/ | tok --
 	getTOS
-	0? ( 2drop 0 "0 division" error! ; )
-	1 =? ( 2drop ,back ; ) 
-	-1 =? ( 2drop ,back tkneg ,t ; )
+	0? ( drop 0 "0 division" error! ; )
+	1 =? ( drop ,back ; ) 
+	-1 =? ( drop ,back tkneg ,t ; )
 	dup 1- nand? ( ,/pot ; )	
-	nip ,back 
+	,back 
 	calcmagic
 	divm ,nlit divs ,tlit TK*>> ,t ,sigadj ;
 	
 :,/ 
 	2lit? 1? ( 2drop 2litpush ./ ,TOSLIT ; ) drop 
-	1lit? 1? ( drop ,lit/ ; ) drop
+	1lit? 1? ( 2drop ,lit/ ; ) drop
 	,t ;
 	
 |------------------------	
@@ -418,9 +417,7 @@
 	
 |----------------------- mod	
 :,modpot | n -- ;  8 mod -> 7 and
-	,back
-	1- ,nlit
-	TKand ,t ;
+	1- ,nlit TKand ,t ;
 	
 :,litmod | --
 	getTOS
@@ -436,18 +433,15 @@
 
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
-	|1lit? 1? ( 2drop ,litmod ; ) drop |***********
+	1lit? 1? ( 2drop ,litmod ; ) drop
 	,t ;
 
 |----------------------------
 :,mod/pot | n -- ;  v 8 mod -> v dup 3 >> swap 7 and 
-	,back
 	TKdup ,t
-	dup msb ,tlit	
-	TK>> ,t
+	dup msb ,tlit TK>> ,t
 	TKswap ,t
-	1- ,nlit
-	TKand ,t ;
+	1- ,nlit TKand ,t ;
 	
 :,lit/mod | -- 
 	getTOS
@@ -458,13 +452,13 @@
 	dup calcmagic
 	TKdup ,t 
 	divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
-	TKdup ,t
+	TKswap ,t TKover ,t
 	,nlit TK* ,t TK- ,t 	
 	;
 	
 :,/mod
 	2lit? 1? ( 2drop 2litpush ./mod ,2TOSLIT ; ) drop
-	|1lit? 1? ( 2drop ,lit/mod ; ) drop
+	1lit? 1? ( 2drop ,lit/mod ; ) drop
 	,t ;
 	
 |----------------------------
