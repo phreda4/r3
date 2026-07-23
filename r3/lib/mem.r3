@@ -30,12 +30,11 @@
 ::,ifp i2fp , ;
 ::,ffp f2fp , ;
 
-::,cr 13 ,c ;
+::,cr 13 ,c ; | 10 ,c ?
 ::,eol 0 ,c ;
 ::,sp 32 ,c ;
 ::,nl $0a0d ,w ;
 ::,nsp here 32 pick2 cfill 'here +! ;
-
 
 
 ::align32 | mem -- mem
@@ -130,13 +129,13 @@
 	mark 'buff 'here ! ,print ,eol empty 'buff ;
 	
 ::sprintln | p p .. "" -- adr
-	mark 'buff 'here ! ,print 10 ,c 13 ,c ,eol empty 'buff ;
+	mark 'buff 'here ! ,print 13 ,c 10 ,c ,eol empty 'buff ;
 
 |::sprintc | p p .. "" -- adr c
 |	mark 'buff 'here ! ,print ,eol here empty 'buff swap over - ;
 	
 |::sprintlnc | p p .. "" -- adr c
-|	mark 'buff 'here ! ,print 10 ,c 13 ,c ,eol here empty 'buff swap over - ;
+|	mark 'buff 'here ! ,print 13 ,c 10 ,c ,eol here empty 'buff swap over - ;
 	
 |---- init here with free mem	
 : mem 'here ! ;
