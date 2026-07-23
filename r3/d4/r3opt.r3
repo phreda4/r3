@@ -468,11 +468,17 @@
 	,t ;
 	
 |----------------------------
-
+:,lit*/
+	getTOS ,back      | c
+	getTOS ,back      | c l
+	swap 
+	0? ( 2drop 0 "0 division" error! ; )
+	/ ,nlit TK* ,t ; | mmmmm, que pasa cuando pierde precision..convertir a /
+	
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
-|	2lit? 1? ( ) drop
-|	1lit? 1? ( ) drop
+|	2lit? 1? ( 2drop ,lit*/ ; ) drop
+|	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
 	,t ;
 
 |----------------------------	
@@ -482,8 +488,7 @@
 	,tlit TK>> ,t ,sigadj ;
 	
 :,lit2pot0*>> | c d cp -- ;  4.0 16 *>> -->  4 * --> 2 << 
-	"%d %h %d" .println
-	;
+	drop swap >> ,nlit TK* ,lit* ;
 	
 :2lit*>>	
 	getTOS ,back      | c
@@ -492,7 +497,7 @@
 	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
 	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
 	dup 1- nand? ( ,lit2pot*>> ; ) | 2pot 2pot *>>
-	|dup ctz pick2 <=? ( ,lit2pot0*>> ; ) drop
+	dup ctz pick2 >=? ( ,lit2pot0*>> ; ) drop
 	,nlit ,tlit TK*>> ,t ;
 	
 :,*>> 
