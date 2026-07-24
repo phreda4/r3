@@ -1,0 +1,495 @@
+========================================================================
+ r3debug — código nuevo: call stack, watch de variable, memory browser
+ PHREDA-style, para insertar donde corresponda
+========================================================================
+
+Contexto general
+-----------------
+Todo lo nuevo se apoya en estructuras que YA existen, sin tocar el
+protocolo con el intérprete (r3d.cpp):
+
+  - codesrc  (infodebug.r3) : arreglo de "ftoken" por cada token de
+    código fuente. Índice = IP de la VM (1-based). Formato del ftoken:
+        ftoken = (inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+    inc=include, pos=offset del texto en el fuente, cnt=longitud texto.
+
+  - codedicc (infodebug.r3) : mismo formato ftoken, pero 1 entrada por
+    CADA definición ":palabra" / "#variable" en el fuente, en el orden
+    en que aparecen. Lo llena defwor/defvar durante makemapdebug.
+
+  - realdicc (infodebug.r3) : diccionario real del programa, entrada:
+        v = (inc<<56)|(pos<<40)|(mem<<8)|info
+    inc=include, pos=offset del nombre en el string de nombres,
+    mem=dirección real (código o dato), info=flags (bit $10 = variable).
+
+  - dataoff  (infodebug.r3, precalc) : dshare - memdata. Sumado a una
+    dirección "mem" de dicc, da la dirección real DENTRO de dshare
+    (la memoria de datos espejada, mapeada y legible desde el debugger).
+
+  - vmRS/vmRTOS (infodebug.r3) : return stack de la VM y su cantidad de
+    entradas. Cada entrada es un IP de retorno (no una dirección de
+    memoria de datos).
+
+Idea común a las 3 piezas: para ir de "una dirección" a "una palabra del
+diccionario", hay que recorrer realdicc buscando la entrada de mayor
+`mem` que sea <= a la dirección buscada (asumiendo direcciones crecientes
+y sin huecos raros, que es como compila r3). Para ir de "un IP de código"
+a "la definición de código fuente que lo contiene", se hace lo mismo
+pero recorriendo codedicc y comparando por (inc,pos) contra el ftoken
+del IP en codesrc.
+
+
+------------------------------------------------------------------------
+PARTE 1 — Resolver "IP de retorno" -> "palabra que lo contiene"
+------------------------------------------------------------------------
+Insertar en infodebug.r3, después de "finddicc" (línea ~509), ya que usa
+codedicc/codesrc igual que esa función.
+
+La función existente `finddicc` solo filtra por include (ninc), no por
+posición dentro del include — sirve para otra cosa (encontrar la última
+palabra ANTES de compilar el include actual durante makemapdebug, no para
+resolver un IP cualquiera). Por eso hace falta una nueva:
+
+    |---- dado un ftoken (de un token de codesrc), busca en codedicc
+    |---- la ULTIMA definicion (:palabra o #var) que este antes o en la
+    |---- misma posicion, dentro del mismo include. Devuelve el indice
+    |---- de esa entrada en codedicc (0-based, como para leer con
+    |---- codedicc + n 3 << + @), o -1 si no se encontro (ej: token
+    |---- suelto antes de cualquier definicion, boot code).
+    ::findworddef | ftoken -- n/-1
+        dup 48 >> $ff and swap        | inc ftoken
+        24 >> $ffff and               | inc pos
+        -1 -1                          | inc pos bestn bestpos
+        codedicc> codedicc
+        ( 2dup =? ( 4drop 0 ; )        | listo (no debería pasar)
+            8 -
+            dup @ | e
+            dup 48 >> $ff and         | inc pos bestn bestpos e einc
+            pick5 =? (                | mismo include
+                dup 24 >> $ffff and   | ... epos
+                pick2                  | ... epos pos
+                pick2 <=? (            | epos <= pos ? -> candidato
+                    | guardar si es mejor candidato (mayor epos) que el actual
+                    pick2 pick2 <? (   | bestpos < epos ?
+                        nip 'bestpos guardado luego
+                        ) drop
+                    ) drop
+                ) drop
+            drop
+            8 -
+            ) 
+        4drop 4drop
+        bestn ;
+
+NOTA: la implementación de arriba con pick/nip a mano es propensa a
+error y difícil de leer en r3. Conviene resolverlo con 2 variables
+auxiliares en vez de manipular la pila a ciegas — versión recomendada:
+
+    #fw.inc #fw.pos #fw.bestn #fw.bestpos
+
+    ::findworddef | ftoken -- n/-1
+        dup 48 >> $ff and 'fw.inc !
+        24 >> $ffff and 'fw.pos !
+        -1 'fw.bestn !
+        -1 'fw.bestpos !
+        0
+        ( dup cntcodedicc <? ) ( | i
+            dup 3 << codedicc + @  | i e
+            dup 48 >> $ff and fw.inc =? (   | mismo include
+                24 >> $ffff and             | i epos
+                dup fw.pos <=? (            | epos <= pos buscado
+                    dup fw.bestpos >? (      | mejor que el candidato actual
+                        dup 'fw.bestpos !
+                        pick2 'fw.bestn !
+                        ) drop
+                    ) drop
+                drop
+                ) ( drop )
+            1+
+            )
+        drop
+        fw.bestn ;
+
+Falta `cntcodedicc` (cuántas entradas tiene codedicc) — no existe hoy,
+agregarla junto a `codedicc>` en precalc/makemapdebug:
+
+    | en infodebug.r3, junto a ##codedicc ##codedicc> (línea 187):
+    ##cntcodedicc
+
+    | y en el lugar donde termina de construirse codedicc (buscar en
+    | makemapdebug donde se cierra el include principal), agregar:
+    codedicc> codedicc - 3 >> 'cntcodedicc !
+
+
+------------------------------------------------------------------------
+PARTE 2 — Nombre + ubicación de una palabra dado su índice en codedicc
+------------------------------------------------------------------------
+Dado el índice que devuelve findworddef, hace falta el nombre real de
+la palabra. codedicc solo tiene la POSICIÓN en el fuente (para poder
+saltar ahí con el cursor), no el nombre — pero podemos leer el nombre
+directamente del fuente en esa posición (mismo mecanismo que usa
+c@+/,word al tokenizar), o resolverlo contra realdicc si conocemos el
+include y offset exactos. Más simple y confiable: leer el texto fuente.
+
+    | dado un indice de codedicc, imprime "nombre @ archivo:fila:col"
+    ::.worddef | n --
+        dup -1? ( drop "?" .write ; )
+        3 << codedicc + @      | ftoken de la definicion
+        dup 'strdefword lwrite&pos  | escribe el nombre de la palabra
+                                     | (ver abajo, extrae texto fuente)
+        " @ " .write
+        dup 48 >> $ff and .incname   | ver PARTE 3 (nombre de archivo)
+        ":" .write
+        yc>1based .d ;              | fila (yc es 0-based en pantalla)
+
+Para extraer el texto del nombre desde el ftoken (pos+cnt apuntan al
+string fuente del include correspondiente), usar el mismo patrón que
+`curposxy`/`addCharCnt` en infodebug.r3 usan al tokenizar — leer bytes
+crudos desde el buffer fuente de ese include:
+
+    | ftoken -- (escribe el string del nombre de la palabra)
+    ::lwrite&pos
+        dup 40 >> $ff and         | cnt
+        swap 24 >> $ffff and      | pos cnt  (ojo: orden pos,cnt)
+        | fuente del include correspondiente: strinc[inc] (ver precalc,
+        | strinc es el arreglo de punteros a cada buffer fuente cargado)
+        rot 48 >> $ff and 3 << strinc + @  | pos cnt strptr
+        + swap lwrite ;                     | (strptr+pos) cnt -> lwrite
+
+
+------------------------------------------------------------------------
+PARTE 3 — Nombre de archivo dado un número de include
+------------------------------------------------------------------------
+`strinc`/`cntinc` (infodebug.r3, cargados en run&loadinfo desde
+mem/r3code.mem) ya tienen los includes en orden, pero como PUNTEROS A
+BUFFER DE FUENTE, no como nombre de archivo — el nombre de archivo no
+viaja hoy en el protocolo con r3d.cpp. Dos opciones:
+
+  a) (rápido) Mostrar solo el número de include: "inc#2:134" en vez de
+     nombre real — no requiere tocar nada.
+
+  b) (completo) Agregar el nombre de archivo de cada include al volcado
+     que hace r3d.cpp en mem/r3code.mem, y parsearlo en run&loadinfo
+     igual que cntinc/strinc. Requiere tocar r3d.cpp (fuera del alcance
+     de este texto ya que pediste no tocar el intérprete); documentar
+     como pendiente si se quiere nombre real de archivo en vez de "inc#N".
+
+Para no bloquear el resto, se implementa (a):
+
+    ::.incname | ninc --
+        "inc#" .write .d ;
+
+
+------------------------------------------------------------------------
+PARTE 4 — Call stack legible: nueva palabra .callstack
+------------------------------------------------------------------------
+Insertar en r3debug.r3, junto a `.retstack` (línea ~119). Reemplaza/
+complementa el volcado crudo actual.
+
+Recordatorio de `.retstack` actual (solo hex crudo):
+
+    :.retstack
+        mretstack 
+        ( 8 - vmRTOS >? 
+            dup rstackoff + |@ 
+            ... ) ...
+
+Nueva versión, recorre el return stack y para cada entrada (que es un
+IP) la resuelve a "palabra @ archivo:fila" usando lo de arriba:
+
+    | imprime el call stack completo, mas reciente arriba (tope del
+    | return stack primero). Usar en vez de .retstack, o llamarla desde
+    | ahi ademas del volcado hex si se quiere conservar el debug crudo.
+    :.callstack
+        "Call stack:" .writeln
+        0                              | contador de profundidad
+        mretstack
+        ( 8 - vmRTOS >? 
+            dup rstackoff + @          | direccion de retorno cruda del RS
+                                        | (offset como usa .retstack hoy,
+                                        | vmRS + rstackoff, ver infodebug)
+            dup ftokenIP2 |over        | reutilizar logica de ftokenIP pero
+                                        | parametrizada por un IP dado, no
+                                        | solo vmIP (ver nota abajo)
+            findworddef .worddef
+            .cr
+            1+
+            8 -
+            )
+        drop drop ;
+
+NOTA importante sobre el IP guardado en el return stack: hay que
+confirmar (mirando r3d.cpp, case CALL/case EX) si lo que se empuja al
+llamar una palabra es el IP DE RETORNO (instrucción siguiente al CALL,
+que es lo útil para mostrar "desde dónde se llamó") o el IP de destino.
+Lo esperable en una VM de este estilo es que sea el de retorno — si al
+probarlo ves que el .callstack muestra la palabra LLAMADA en vez de la
+que LLAMA, es que hay que restarle el tamaño de la instrucción CALL (o
+sumarle 1) antes de resolverlo, análogo al "-1" que hace stoponerror
+para el caso de error. Dejar un punto de ajuste:
+
+    #callstack.adjust 0   | poner -1 o +1 aca si hace falta, sin tocar
+                           | el resto del codigo, una vez confirmado
+                           | contra una prueba real
+
+    | ftokenIP tal como existe hoy solo usa vmIP fijo. Se necesita la
+    | misma cuenta pero para un IP arbitrario (el que viene del RS):
+    ::ftokenIP2 | ip -- ftoken
+        callstack.adjust + 1- 3 << codesrc + @ ;
+
+Uso sugerido: llamar `.callstack` en dos lugares:
+  1. Reemplazando/junto a `.retstack` en el panel de stacks normal.
+  2. Dentro de `runtimerror` (r3debug.r3), justo después de imprimir el
+     mensaje de error, para ver de un vistazo la cadena de llamadas que
+     llevó al crash — es el pedido explícito de "para imprimir el call
+     stack en el error".
+
+
+------------------------------------------------------------------------
+PARTE 5 — Watch: inspeccionar la variable bajo el cursor
+------------------------------------------------------------------------
+Insertar en r3debug.r3. Se apoya en:
+  - findtoken (infodebug.r3) : posición de texto -> índice en codesrc.
+  - El diccionario real (realdicc) para resolver nombre bajo el cursor
+    a su entrada completa (mem + info + inc).
+  - dataoff (infodebug.r3, precalc) para traducir la dirección real del
+    programa a un offset dentro de dshare (memoria de datos espejada,
+    legible desde el debugger).
+
+Primero, resolver "nombre bajo el cursor -> entrada de realdicc". Hoy
+no existe una función directa "dame el índice en realdicc dado un
+nombre"; se arma recorriendo realdicc y comparando el string de nombre
+(dicc>name) contra el texto bajo el cursor:
+
+    | busca por nombre en el diccionario completo, recorriendo desde el
+    | final (shadowing: la definicion mas nueva gana, igual que en Forth)
+    ::finddiccbyname | str -- n/-1
+        cntdicc 1-
+        ( dup 0>=? ) (
+            dup ndicc@ dicc>name    | n dicc dicname
+            pick3 =s? (              | comparar strings
+                nip ; )               | encontrado: devolver n
+            drop
+            1-
+            )
+        drop -1 ;
+
+Extraer el texto de la palabra bajo el cursor (mismo patrón que usa
+tuiedit.r3/,word para tokenizar, pero apuntando al buffer actual del
+código fuente que se está mostrando y a la posición del cursor):
+
+    | usa la posicion actual de cursor en el editor (cx/cy -> offset)
+    | y el buffer del archivo mostrado (codenow) para extraer la palabra
+    ::wordundercursor | -- str
+        curbufferpos           | posicion de texto bajo el cursor,
+                                | ya existe algo asi en tuiedit (revisar
+                                | nombre exacto: es lo mismo que usa
+                                | breakpoint/findtoken para saber "donde
+                                | esta parado el cursor")
+        cursrcbuf swap +       | puntero al texto en esa posicion
+        ,word ;                | extrae el nombre (usa la definicion de
+                                | ,word en mem.r3, ya filtra separadores)
+
+NOTA: `curbufferpos`/`cursrcbuf` son placeholders — hay que revisar
+tuiedit.r3/tui.r3 para el nombre real de la función que da la posición
+de texto bajo el cursor del widget de edición (el mismo dato que ya usa
+la palabra `breakpoint` de r3debug.r3 para saber dónde poner un bp).
+Reusar esa función existente en vez de escribir una nueva.
+
+Con el nombre resuelto a una entrada de diccionario, mostrar el watch:
+
+    :showwatch | -- 
+        wordundercursor
+        finddiccbyname
+        dup -1? ( drop "no encontrada" .writeln ; )
+        ndicc@                          | entry
+        dup $ff and                     | entry info
+        dup $10 and? (                   | es variable (bit $10 set)
+            drop
+            8 >> $ffffffff and           | mem (direccion real, bits 8-39)
+            dataoff +                    | direccion dentro de dshare
+            dup "addr(real)=%h " ... .print   | mostrar direccion real
+            dup dshare @                 | leer el primer word ahi
+            "value(64)=%d ($%h)" .print
+            ) (
+            drop "no es variable (es palabra de codigo)" .writeln
+            )
+        | flags: mostrar el byte info completo, no solo el bit $10,
+        | por si hay mas flags definidos a futuro en r3d.cpp
+        entry $ff and "flags=$%h" .print
+        .cr ;
+
+Bind sugerido: una tecla nueva (ej. F6, ya que F4/viewmemhere está
+libre/stub) en el dispatch de `maindb`:
+
+    [f6] =? ( drop showwatch ) 
+
+Para watch "en vivo" (que se actualice solo mientras el programa corre,
+como pediste como extensión futura en el doc anterior), lo mínimo es
+guardar la dirección resuelta en una variable y volver a leerla en cada
+vuelta de playshow — no lo desarrollo acá porque el pedido concreto de
+este mensaje es "cursor sobre variable -> ver memoria y flags", que es
+snapshot puntual (tecla), no continuo.
+
+
+------------------------------------------------------------------------
+PARTE 6 — Memory browser: recorrer memoria desde una dirección dada
+------------------------------------------------------------------------
+Objetivo: dar una dirección (tecleada, o tomada del tope de alguna pila
+con el cursor puesto ahí) y navegar un hexdump de dshare/cshare desde
+ahí, con +/- para avanzar/retroceder. Esto es justamente lo que hoy es
+el stub vacío `viewmemhere` (F4) en r3debug.r3 — conviene implementarlo
+ahí en vez de crear una tecla nueva.
+
+    #memview.addr 0    | direccion actual mostrada (offset en dshare)
+    #memview.cols 8    | words por linea
+
+    | vuelca N lineas de memoria de dshare, formato: addr | hex x8 | ascii
+    :.memdump | addr lines --
+        ( dup 0>? ) (
+            1-
+            over "%h: " .print            | addr lines addr
+            over                            | ... addr(dup para hex)
+            memview.cols
+            ( dup 0>? ) (
+                1-
+                over dshare + c@           | leer un byte de dshare
+                "%h " .print
+                1+ | avanzar direccion temporal (ver nota abajo)
+                )
+            drop
+            .cr
+            memview.cols +                  | siguiente linea de a N bytes
+            )
+        2drop ;
+
+NOTA: el pseudo-loop de arriba mezcla mal la pila (dos contadores +
+dirección simultáneos es incómodo en Forth con solo dup/over/swap) —
+versión más prolija con una variable auxiliar de columna, más fácil de
+mantener:
+
+    #mv.col
+
+    :.memdump | addr lines --
+        ( dup 0>? ) ( 1-              | addr lines
+            over "%.6h: " .print      | imprime direccion base de la linea
+            0 'mv.col !
+            ( mv.col memview.cols <? ) (
+                over mv.col + dshare + c@
+                "%.2h " .print
+                1 'mv.col +!
+                )
+            .cr
+            over memview.cols + swap drop  | addr += cols (recalcular)
+            swap memview.cols + swap        | ajustar orden en pila: 
+                                             | (dejar addr avanzado, lines)
+            )
+        2drop ;
+
+    | version limpia final, evitando shuffling de pila confuso:
+    :.memdump | addr lines --
+        swap 'memview.addr !
+        ( dup 0>? ) ( 1-
+            memview.addr "%.6h: " .print
+            0 'mv.col !
+            ( mv.col memview.cols <? ) (
+                memview.addr mv.col + dshare + c@
+                "%.2h " .print
+                1 'mv.col +!
+                )
+            .cr
+            memview.cols 'memview.addr +!
+            )
+        drop ;
+
+    | Entrada F4: si el cursor esta sobre una variable, arranca ahi;
+    | si no, pide la direccion por teclado (reusar input numerico que
+    | ya usa breakpoint/goto si existe en tui.r3, sino .getnum simple)
+    :viewmemhere
+        wordundercursor finddiccbyname
+        dup -1? ( drop 
+            "Direccion (hex): " .write .getnum   | leer numero tecleado
+            ) (
+            ndicc@ 8 >> $ffffffff and dataoff +
+            )
+        16 .memdump ;
+
+    | navegacion dentro del viewer: +N/-N lineas, ligado a alguna tecla
+    | mientras el viewer esta activo (ej PageUp/PageDown ya mapeados en
+    | tui.r3 para otros paneles, reusar el mismo patron)
+    :memview.pgdn
+        memview.cols 16 * 'memview.addr +!
+        memview.addr 16 .memdump ;
+    :memview.pgup
+        memview.cols 16 * negate 'memview.addr +!
+        memview.addr 16 .memdump ;
+
+Para "dirección que está en la pila" (pedido explícito: poder arrancar
+el memory browser desde un valor que está en el data stack o return
+stack, no solo desde una variable con nombre): agregar una entrada
+alternativa que lea directamente vmTOS o la entrada del stack donde
+está el cursor en el panel de stacks:
+
+    | arranca el memory browser en la direccion que esta en TOS
+    :viewmem@tos
+        vmTOS 16 .memdump ;
+
+    | arranca en una entrada cualquiera del data stack, dado su indice
+    | (0 = TOS, 1 = siguiente, etc.) - util si el cursor del panel de
+    | stack ya sabe en que indice esta parado el usuario
+    :viewmem@ds | idx --
+        3 << vmDS + @ 16 .memdump ;
+
+    | idem para el return stack
+    :viewmem@rs | idx --
+        3 << vmRS + @ 16 .memdump ;
+
+Bind sugerido: con el cursor posicionado sobre una línea del panel de
+data stack o return stack (que ya existe, `.datastack`/.retstack), una
+tecla (ej. Enter, o F4 reusando el mismo stub) que tome el índice bajo
+el cursor de ESE panel y llame viewmem@ds/viewmem@rs correspondiente —
+requiere que el widget de stacks sepa devolver "en qué línea/índice
+está el cursor", que hoy no expone (.datastack/.retstack son solo
+impresión, no widgets navegables); si se quiere eso hay que migrar esos
+paneles a tuListn (como ya se usa para vwords), lo cual es un cambio de
+UI más grande, fuera del alcance de este código puntual.
+
+
+------------------------------------------------------------------------
+RESUMEN — dónde va cada cosa
+------------------------------------------------------------------------
+infodebug.r3:
+  - cntcodedicc (variable nueva, junto a codedicc>)
+  - findworddef       (después de finddicc)
+  - .worddef / lwrite&pos / .incname
+  - ftokenIP2 / #callstack.adjust
+
+r3debug.r3:
+  - .callstack         (junto a .retstack; llamarla también desde
+                         runtimerror para el pedido de call stack en error)
+  - finddiccbyname / wordundercursor / showwatch  (bind a [f6])
+  - .memdump / viewmemhere (reemplaza el stub vacío, bind ya existe: F4)
+  - viewmem@tos / viewmem@ds / viewmem@rs
+  - memview.pgdn / memview.pgup
+
+------------------------------------------------------------------------
+PENDIENTES / A VERIFICAR ANTES DE USAR EN SERIO
+------------------------------------------------------------------------
+1. Confirmar contra r3d.cpp (case CALL) si el IP guardado en el return
+   stack es el de retorno o el de destino — ajustar callstack.adjust.
+2. wordundercursor/curbufferpos: revisar tui.r3/tuiedit.r3 para el
+   nombre real de la función que da posición de cursor -> offset de
+   texto (reusar la que ya usa `breakpoint`, no reinventar).
+3. .getnum (entrada numérica por teclado) puede no existir con ese
+   nombre exacto en tui.r3 — revisar qué usa el editor para pedir
+   inputs (ej. "ir a línea") y reusar ese mecanismo.
+4. Nombre de archivo real por include (Parte 3, opción b) requiere
+   tocar r3d.cpp para que mem/r3code.mem incluya los paths — no lo
+   hice porque pediste no tocar el intérprete; con solo "inc#N" ya
+   alcanza para desambiguar, el nombre lindo es cosmético.
+5. Todo el código de arriba no fue compilado/probado contra el r3
+   real — está escrito en base al patrón de estilo del resto de
+   infodebug.r3/r3debug.r3 y a las funciones ya auditadas del repo,
+   pero conviene compilarlo con -werror (r3 tiene chequeo de stack
+   balanceado en tiempo de compilación) antes de usarlo en un debug
+   real.

@@ -142,8 +142,8 @@
 	
 |--------------------- BOOT
 : 	
-	'filename "mem/menu.mem" load drop
-	|"r3/demo/spring.r3" 'filename strcpy | <<< error in plain
+	|'filename "mem/menu.mem" load drop
+	"r3/demo/spring.r3" 'filename strcpy | <<< error in plain
 	.cr
 	.reset 
 	"Make plain.r3" .println

@@ -168,8 +168,16 @@
 	
 :.strerr
 	errorst
-	$5 =? ( "Invalid memory" .write ) 
-	$94 =? ( "divide by 0" .write )
+|WIN|	$05 =? ( "Invalid memory (access violation)" .write )
+|WIN|	$94 =? ( "Divide by 0" .write )
+|WIN|	$1d =? ( "Illegal instruction" .write )
+|WIN|	$03 =? ( "Breakpoint" .write )
+|LIN|	$4 =? ( "Illegal instruction" .write )
+|LIN|	$6 =? ( "Abort" .write )
+|LIN|	$7 =? ( "Bus error (invalid memory)" .write )
+|LIN|	$8 =? ( "Divide by 0 / FP error" .write )
+|LIN|	$b =? ( "Invalid memory (segfault)" .write )
+|LIN|	$d =? ( "Broken pipe" .write )
 	$100 =? ( "Stack underflow" .write )
 	$200 =? ( "Stack overflow" .write )
 	drop ;

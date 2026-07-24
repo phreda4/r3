@@ -1,0 +1,334 @@
+========================================================================
+ r3debug — Ventana de Watch de variables: diseño + código
+ PHREDA-style, para insertar donde corresponda
+========================================================================
+
+Este documento asume el código de PARTE 5 de "r3debug_extensiones.txt"
+(finddiccbyname, wordundercursor, dataoff) como base para resolver
+nombre->dirección. Acá el foco es la VENTANA en sí: layout, estado,
+lista persistente de variables watcheadas, redibujado en cada frame, y
+manejo de teclas para agregar/sacar entradas.
+
+
+------------------------------------------------------------------------
+1. Por qué NO reusar tuListn/scrDicc tal cual
+------------------------------------------------------------------------
+`scrDicc` (r3debug.r3, línea ~71) ya dice "Watch" en el título y usa el
+widget `tuListn`, pero lista TODO `localdicc..cntdicc` — es un browser
+de diccionario completo, no una selección curada de variables con sus
+valores en vivo. Sirve como PICKER (elegir qué agregar al watch), no
+como el panel de watch en sí. Se reusa para eso (ver sección 4), pero
+la ventana de watch necesita su propia lista corta y su propio
+`xwriten.word` que muestre valor, no solo nombre.
+
+Diferencia clave de responsabilidad:
+  - scrDicc / makelistwords  -> universo completo, de solo lectura,
+    usado como picker.
+  - watchlist (nuevo)         -> subconjunto elegido por el usuario,
+    persistente entre steps, muestra nombre + valor + flags, se
+    actualiza en cada redraw.
+
+
+------------------------------------------------------------------------
+2. Estructura de datos: la lista de watch
+------------------------------------------------------------------------
+Igual que bshare (breakpoints) es un arreglo simple de doubles con
+terminador 0, la watchlist se guarda igual pero en memoria normal del
+proceso debugger (no necesita ser memoria compartida — solo el lado
+debugger la usa, no el programa depurado).
+
+Cada entrada NO es la dirección directamente, sino el índice en
+`realdicc` (`n` tal que `n ndicc@` da la entrada) — así, si el programa
+se recarga (nuevo run del target), el nombre se re-resuelve y sigue
+funcionando aunque las direcciones absolutas cambien entre corridas.
+
+    | infodebug.r3 o r3debug.r3, junto a las otras listas (bshare, etc)
+    #watchlist * 64        | hasta 8 variables (64 bytes / 8 = 8 doubles)
+    #watchlist> 0           | fin de lista (offset relativo)
+    #watchcnt 0
+    #watchsel 0              | indice seleccionado (para tuListn)
+
+    ::clearwatch
+        0 'watchcnt !
+        0 'watchsel ! ;
+
+    ::addwatch | n --    | n = indice en realdicc
+        watchcnt 8 >=? ( drop ; )   | limite: 8 entradas
+        | evitar duplicados
+        0 ( dup watchcnt <? ) (
+            dup 3 << watchlist + @
+            pick2 =? ( 2drop -1 ; )   | ya esta, no agregar de nuevo
+            1+
+            ) drop
+        watchcnt 3 << watchlist + !
+        1 'watchcnt +! ;
+
+    ::delwatch | idx --    | idx = posicion dentro de watchlist (0-based)
+        watchcnt 0<=? ( drop ; )
+        dup watchcnt 1- <? ( |shiftear el resto un lugar a la izquierda
+            dup 1+ ( 
+                dup watchcnt <? ) (
+                dup 3 << watchlist +
+                dup 8 + @ swap !
+                1+
+                ) drop
+            ) drop
+        drop
+        -1 'watchcnt +!
+        watchsel watchcnt >=? ( watchcnt 1- 0max 'watchsel ! ) drop ;
+
+
+------------------------------------------------------------------------
+3. Layout de la ventana: dónde vive en pantalla
+------------------------------------------------------------------------
+Reusando el sistema flx (flxN/S/E/O recortan un borde de la región
+activa; flxpush/flxpop guardan/restauran). Propuesta: la ventana de
+Watch vive en un panel lateral derecho, dividido en dos mitades
+horizontales: arriba la lista de watch actual (con valores), abajo el
+detalle de la entrada seleccionada (memoria cruda + flags), similar a
+como un IDE típico separa "variables" arriba y "hex view" abajo.
+
+    Panel completo (llamar desde maindb, junto a donde hoy están
+    comentados scrDicc/scrTokens):
+
+    ┌─ código fuente ──────────────┬─ WATCH ──────────────┐
+    │                               │ #0 counter   = 42     │
+    │  : loop                       │ #1 flag      = 0      │
+    │    1 +                        │ #2 ptr       = $4A10  │
+    │  ;                            │                        │
+    │                               ├─ DETAIL ──────────────┤
+    │                               │ addr(real)=$4A10       │
+    ├─ DS: 1 2 3 ────────────────── │ value(64)=$00000000... │
+    │ RS: (callstack) ─────────────  │ flags=$10 (var)        │
+    └───────────────────────────────┴────────────────────────┘
+
+    ::scrWatch
+        flxpush
+        flxE 30                     | recorta 30 columnas a la derecha
+                                     | para todo el panel de watch
+        flxpush
+        flxS 12                      | mitad de abajo: detalle (12 lineas)
+        .reset tuWina $1 "Detail" .wtitle 1 1 flpad
+        watchdetail
+        flxpop
+                                      | lo que queda arriba: lista
+        .reset tuWina $1 "Watch" .wtitle 1 1 flpad
+        'xwriten.watch xwriten!
+        'watchsel watchlistn tuListn
+        xwriten.reset
+        flxpop ;
+
+NOTA sobre flxE/flxS: mirando la firma real en tui.r3, flxE recorta
+columnas del lado derecho de la región ACTUAL (queda como región activa
+la franja recortada) y deja el resto disponible tras el próximo
+flxpop/flxRest — hay que probarlo visualmente una vez insertado, el
+orden push/E/push/S/pop/.../pop de arriba sigue el mismo patrón que ya
+usa el código existente para dividir pantalla (ver comentarios
+`flxPush`/`flxS rows 2/` comentados en el scrDicc original), pero no
+está 100% confirmado el sentido (izq/derecha) sin correrlo.
+
+
+------------------------------------------------------------------------
+4. xwriten.watch — cómo se imprime cada fila de la lista
+------------------------------------------------------------------------
+Análogo a `xwriten.word` (línea 33 de r3debug.r3), pero en vez de
+recibir un índice de diccionario recibe un índice DENTRO de watchlist,
+y muestra nombre + valor actual (no solo nombre):
+
+    | necesita las mismas ideas de dataoff/dshare que showwatch en
+    | r3debug_extensiones.txt parte 5
+    :xwriten.watch | n --   | n = posicion 1-based en watchlist (por
+                             | como arma la lista tuListn, ver makeindxn)
+        1- watchcnt >=? ( drop "" lwrite ; )
+        3 << watchlist + @        | indice en realdicc
+        mark
+        ndicc@                     | entry cruda
+        dup $ff and $10 and? (      | es variable?
+            dup 8 >> $ffffffff and dataoff +  | direccion real en dshare
+            dup dshare @               | leer valor 64-bit
+            swap "$%h" .print          | valor en hex...
+            drop
+            ) (
+            "(code)" .print            | si es palabra de codigo, no dato
+            )
+        " " .print
+        wcolor
+        | reobtener nombre: necesito el indice de dicc, no la entry.
+        | como ndicc@ ya consumio el indice, guardar antes:
+        .cr
+        empty
+        here lwrite ;
+
+Esta primera versión tiene un bug de manejo de pila (usa el índice de
+diccionario dos veces: una para `ndicc@` y otra para `dicc>name`, pero
+lo dropea en el medio). Versión corregida, guardando el índice aparte:
+
+    #xw.n
+
+    :xwriten.watch | n --
+        1- watchcnt >=? ( drop "" lwrite ; )
+        3 << watchlist + @
+        dup 'xw.n !
+        mark
+        ndicc@                       | entry
+        dup $ff and $10 and? (
+            dup 8 >> $ffffffff and dataoff +
+            dshare @
+            "$%h  " .print
+            ) (
+            drop "(code)      " .print
+            )
+        wcolor
+        xw.n dicc>name ,s
+        ,eol
+        empty
+        here lwrite ;
+
+    :watchlistn | -- (arma el arreglo de indices 1..watchcnt,0 para tuListn)
+        here dup 'lwatch !
+        0 ( dup watchcnt <? )
+            ( dup 1+ rot w!+ swap 1+ )
+        drop
+        0 swap w!+ 'here ! ;
+
+Notar el paralelo exacto con `makelistwords` (línea 43) — mismo patrón,
+arreglo de w16 1-based con terminador 0 en `here`, apuntado por una
+variable (`lwatch`, que ya estaba declarada sin uso en r3debug.r3 línea
+28 — este es justo el lugar donde se iba a usar).
+
+
+------------------------------------------------------------------------
+5. watchdetail — panel inferior con memoria cruda + flags
+------------------------------------------------------------------------
+Muestra el detalle de la entrada actualmente seleccionada en la lista
+de arriba (`watchsel`), reusando el hexdump de la Parte 6 del documento
+anterior (.memdump):
+
+    :watchdetail
+        watchcnt 0<=? ( "sin variables" .writeln ; )
+        watchsel 3 << watchlist + @
+        dup 'xw.n !
+        ndicc@                          | entry
+        dup $ff and                     | info
+        dup $10 and? (
+            drop
+            8 >> $ffffffff and dataoff +
+            dup "addr=$%h" .println
+            8 .memdump                   | 8 lineas de hexdump desde ahi
+            ) (
+            drop
+            "(palabra de codigo, sin datos)" .writeln
+            )
+        xw.n ndicc@ $ff and "flags=$%h" .println ;
+
+
+------------------------------------------------------------------------
+6. Agregar/sacar variables: bindeo de teclas
+------------------------------------------------------------------------
+Dos formas de agregar, combinables:
+
+  a) Cursor sobre una variable en el código fuente + tecla dedicada
+     (reusa wordundercursor/finddiccbyname de la Parte 5 anterior).
+  b) Parado sobre una fila del picker general (scrDicc/vwords, que ya
+     lista TODO el diccionario) + Enter para agregar esa al watch.
+
+Insertar en el dispatch de `maindb` (r3debug.r3, junto a donde están
+los `[f3]`/`[f5]`/etc, línea ~340 en adelante):
+
+    | (a) agregar/sacar watch con el cursor sobre el código
+    [f6] =? ( drop
+        wordundercursor finddiccbyname
+        dup -1? ( drop "no encontrada" .writeln ; )
+        addwatch
+        )
+
+    | sacar la seleccionada en el panel de watch (foco tiene que estar
+    | ahi; usar la misma convencion de foco que ya usa focus>>/focus<<
+    | del framework tui para saber cual panel tiene el foco activo)
+    [del] =? ( drop
+        infocuswatch? (          | helper: ¿el foco esta en el panel watch?
+            watchsel delwatch
+            ) drop
+        )
+
+Para (b), agregar el bind dentro del propio `scrDicc` (picker), Enter
+sobre la fila seleccionada agrega esa palabra al watch:
+
+    | dentro de scrDicc, despues de tuListn, ANTES de xwriten.reset,
+    | detectar Enter sobre la lista:
+    [enter] =? ( drop
+        vwords localdicc +      | traducir seleccion a indice real...
+        | ojo: vwords/lwords usan localdicc como offset base (ver
+        | makelistwords linea 45: arranca en localdicc, no en 0) hay
+        | que sumar ese offset antes de addwatch
+        addwatch
+        ) drop
+
+NOTA: el chequeo de tecla dentro de scrDicc tal como está (solo llama
+tuListn, que internamente ya consume `uikey` vía focList) puede
+consumir la tecla antes de que el dispatch externo la vea — según cómo
+esté armado `focList`/`uikey` (consume-once vs peek), puede hacer falta
+leer la tecla ANTES de llamar tuListn y pasarla, o usar el mismo patrón
+que usa `mouList`/`clicklist` para clicks. Revisar el comportamiento
+exacto de `uikey` (¿se resetea solo, o hay que hacer drop explícito?)
+antes de asumir que este bloque funciona tal cual — es el punto menos
+probado de este documento.
+
+
+------------------------------------------------------------------------
+7. Inicialización y llamado desde maindb
+------------------------------------------------------------------------
+    | al arrancar el debugger (junto a clearbp existente):
+    clearbp
+    clearwatch
+
+    | dentro de maindb, junto a donde estan comentados scrTokens/scrDicc
+    | (reemplazar esos comentarios, no scrDicc en sí que sigue sirviendo
+    | como picker en otra tecla, ej [f9] shift o similar si se quiere
+    | mantener ambos paneles disponibles)
+    scrWatch
+
+
+------------------------------------------------------------------------
+RESUMEN — dónde va cada cosa
+------------------------------------------------------------------------
+r3debug.r3 (o infodebug.r3 si se prefiere mantener ahí todo lo que es
+puramente de datos, separado de lo que es UI — watchlist/addwatch/
+delwatch podrían vivir en infodebug.r3, xwriten.watch/scrWatch/
+watchdetail son UI y van en r3debug.r3):
+
+  Datos (infodebug.r3):
+    - watchlist / watchlist> / watchcnt / watchsel
+    - clearwatch / addwatch / delwatch
+
+  UI (r3debug.r3):
+    - xw.n (var auxiliar)
+    - xwriten.watch
+    - watchlistn
+    - watchdetail
+    - scrWatch
+    - binds: [f6] agregar desde cursor, [del] sacar seleccionada,
+      [enter] agregar desde picker (scrDicc)
+    - clearwatch en la inicialización, scrWatch en maindb
+
+
+------------------------------------------------------------------------
+PENDIENTES / A VERIFICAR
+------------------------------------------------------------------------
+1. Sentido exacto de flxE/flxS (qué lado queda activo tras el corte) —
+   probar visualmente, ajustar orden si el panel aparece invertido.
+2. Comportamiento de `uikey` como "consume una vez" vs "peek" — afecta
+   si el bind [enter] dentro de scrDicc funciona tal como está escrito
+   o si hace falta leer la tecla antes de tuListn.
+3. `focus>>`/`focus<<` (ciclado de foco entre paneles, visto en
+   focList) — confirmar cómo se determina "qué panel tiene el foco
+   ahora" para el helper `infocuswatch?` usado en el bind de [del];
+   no vi ese helper en el código auditado, hay que revisar tui.r3 más
+   a fondo o llevar un flag propio (#curpanel) seteado a mano al entrar
+   a cada scrXxx.
+4. offset `localdicc` al traducir selección del picker (sección 6b) —
+   confirmado por makelistwords, pero probarlo con una variable real
+   antes de confiar en el número.
+5. Igual que en el documento anterior: código no compilado/probado
+   contra el r3 real, escrito por patrón de estilo — compilar y
+   revisar balance de pila antes de usar en un debug real.
