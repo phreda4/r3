@@ -264,7 +264,10 @@
 		drop 
 		playshow
 		) 
-	$ff >? ( runtimerror ) 
+	$ff >? ( 
+		ftokenIP dup 48 >> $ff and showcode
+		24 >> $ffff and fuente + tuipos!	
+		runtimerror ) 
 	drop 
 |	*>stop
 | land in src

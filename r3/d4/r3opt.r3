@@ -232,24 +232,26 @@
 	;
 	
 | $..............10	var not int, is not a cte
+| $............2000 definition has address
+
 :,data | tok --
-	dup dic@ $14 and? ( drop ,t ; ) drop | real var
-	
-	dup dic@ $2000 and? ( drop dic@ dic>tok @ ,t ; ) drop	
-	
+	dup dic@ 
+	$14 and? ( drop ,t ; ) 			| real var
+	$2000 and? ( dic>tok @ ,t ; )	| detect cte var (address)
+	drop	
 	|--- var is cte but is and address (***)
 	|dup dic@ dic>tok @ $ff and		| tipo del token guardado en el cuerpo de la var
 	|3 =? ( drop dic@ dic>tok @ ,t ; )	| .wadr -- cte es direccion de codigo
 	|5 =? ( drop dic@ dic>tok @ ,t ; )	| .vadr -- cte es direccion de var
 	|drop	
 	|---------------
-	dic@len fmem + @ ,nlit		| detect cte var
+	dic@len fmem + @ ,nlit		| detect cte var (number)
 	;
 
 #TKdup 26 #TKover 28 #TKswap 32
-#TKand 45 #TK+ 49 #TK- 50 #TK* 51 
+#TKand 45 #TK+ 49 #TK- 50 #TK* 51 #TK/ 52
 #TK<< 53 #TK>> 54 #TK>>> 55 
-#TK*>> 59 #TK<</ 60
+#TK*/ 58 #TK*>> 59 #TK<</ 60
 #TKnot 61 #TKneg 62
 
 :,lAND
@@ -471,11 +473,27 @@
 	0? ( 2drop 0 "0 division" error! ; )
 	/ ,nlit TK* ,t ; | mmmmm, que pasa cuando pierde precision..convertir a /
 	
+|----------------------------
+:,lit*/ | -- ; a(runtime) b c(TOS) literales -- a*b/c
+	getTOS 
+	0? ( drop 0 "0 division" error! ; ) 	| c==0
+	,back getTOS	| b c
+	2dup mod | b c (b mod c)
+	0? ( drop /						| q = b/c
+		1 =? ( 3drop ,back ; )			| a*1 -> a
+		-1 =? ( 3drop ,back TKneg ,t ; )	| a*-1 -> -a
+		,back nip nip ,nlit TK* ,t ; 
+		) drop
+	2dup swap mod | c b (c mod b)
+	0? ( drop /						| q = c/b
+		,nlit ,back ,back TK/ ,t ; 
+		) 2drop 
+	,nlit TK*/ ,t ;	| no exact division
+
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
 |	2lit? 1? ( 2drop ,lit*/ ; ) drop
 |	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
-	|13lit? 1? ( 12swap ) drop | lit1 nro lit -- nro lit1 lit
 	,t ;
 
 |----------------------------	

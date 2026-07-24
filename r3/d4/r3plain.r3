@@ -63,9 +63,17 @@
 	|dup 4 << dic + @ dic>name "%.| :%w | %." filelog
 	
 	dup ":w%h" ,print 
+	
+|	"r3/d4/gen/plain.r3" savemem
+	
 	dup wordanalysis
+	
+	|"|" ,print ,cr "r3/d4/gen/plain.r3" savemem
+	
 	'tokana ( tokana> <? ,sp
 		@+ ,tokenstrw 
+		
+		|"r3/d4/gen/plain.r3" savemem
 		) drop ,cr ;
 	
 :,everyword | n -- n
@@ -77,6 +85,9 @@
 :generate
 	0 ( cntdef 1- <?
 		,everyword 
+
+|	"r3/d4/gen/plain.r3" savemem
+		
 		1+ )
 	dup withanon 
 	"|-----BOOT-----" ,s ,cr
@@ -132,7 +143,7 @@
 |--------------------- BOOT
 : 	
 	'filename "mem/menu.mem" load drop
-|	"r3/test/testasm.r3" 'filename strcpy
+	|"r3/demo/spring.r3" 'filename strcpy | <<< error in plain
 	.cr
 	.reset 
 	"Make plain.r3" .println
