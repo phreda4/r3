@@ -32,6 +32,7 @@
 | $.............400 a
 | $.............800 >B
 | $............1000 b
+| $............2000 tiene 'word
 | $......ffffff....	-> tok+ -> code
 | $ffffff.......... -> src+ -> src
 |
@@ -325,6 +326,7 @@
 	;
 	
 :.wordinvar | adr nro -- adr
+	flag $2000 or 'flag ! | with addr word
 	1- dup 4 << dic + 
 	@ 1 and? ( drop 
 		dup 4 << dic + 8 + @ 32 >>> fmem + ,qv 
@@ -343,6 +345,7 @@
 	
 :.adr | adr nro -- adr
 	flag 1 and? ( drop .wordinvar ; ) drop	| in var always adr
+	flag $2000 or 'flag ! | with addr word
 	1- dup 4 << dic +
 	@ 1 and? ( drop 8 << 5 or ,t >>sp ; ) | adata
 	drop 8 << 3 or ,t >>sp ; | acode

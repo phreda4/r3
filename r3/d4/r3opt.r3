@@ -100,13 +100,9 @@
 :reseta	
 	'tokana 'tokana> ! 
 	'biglit 'biglit> ! ;
+	
 :,back | --
-	-8 'tokana> +! 
-	;
-:,backNOS | saca el token de NOS, deja el de TOS (lo corre un lugar)
-	tokana> 8 - @ tokana> 16 - !
-	-8 'tokana> +! 
-	;
+	-8 'tokana> +! ;
 	
 :,t	| tok --
 	tokana> !+ 'tokana> !  ;
@@ -226,7 +222,7 @@
 	deferinline ex ;
 	
 :,code | tok --
-	dup dic@ $1f00 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
+	dup dic@ $3f00 and? ( drop ,inlinecode ; ) drop	| no pure code -> normal tokenizer
 	dup dic@use										| tok stack use
 	nlit? 0? ( 	2drop ,inlinecode ; ) drop			| all are literal?
 	
@@ -238,14 +234,23 @@
 | $..............10	var not int, is not a cte
 :,data | tok --
 	dup dic@ $14 and? ( drop ,t ; ) drop | real var
+	
+	dup dic@ $2000 and? ( drop dic@ dic>tok @ ,t ; ) drop	
+	
+	|--- var is cte but is and address (***)
+	|dup dic@ dic>tok @ $ff and		| tipo del token guardado en el cuerpo de la var
+	|3 =? ( drop dic@ dic>tok @ ,t ; )	| .wadr -- cte es direccion de codigo
+	|5 =? ( drop dic@ dic>tok @ ,t ; )	| .vadr -- cte es direccion de var
+	|drop	
+	|---------------
 	dic@len fmem + @ ,nlit		| detect cte var
 	;
 
-#tkdup 26 #Tkover 28 #tkswap 32
-#TKand 45 #tk+ 49 #tk- 50 #tk* 51 
-#tk<< 53 #TK>> 54 #TK>>> 55 #TK*>> 59
-#TK<</ 60
-#tknot 61 #tkneg 62
+#TKdup 26 #TKover 28 #TKswap 32
+#TKand 45 #TK+ 49 #TK- 50 #TK* 51 
+#TK<< 53 #TK>> 54 #TK>>> 55 
+#TK*>> 59 #TK<</ 60
+#TKnot 61 #TKneg 62
 
 :,lAND
 	getTOS 
@@ -308,38 +313,35 @@
 	
 |----------------------- *	
 |>>>> 8 * --> 3 <<	
-:,*pot | tok tos --
-	nip ,back
-	msb ,tlit
-	TK<< ,t ;
+:,*pot | tos --
+	,back
+	msb ,tlit TK<< ,t ;
 	
 |>>>> 9 * --> dup 3 << +
-:,*pot+1 | tok tos --
-	nip ,back TKdup ,t
-	msb ,tlit
-	TK<< ,t TK+ ,t ;
+:,*pot+1 | tos --
+	,back TKdup ,t
+	msb ,tlit TK<< ,t TK+ ,t ;
 	
 |>>>> 7 * --> dup 3 << swap -
-:,*pot-1 | tok tos --
-	nip ,back TKdup ,t
-	msb ,tlit
-	TK<< ,t TKswap ,t TK- ,t ;
+:,*pot-1 | tos --
+	,back TKdup ,t
+	msb ,tlit TK<< ,t TKswap ,t TK- ,t ;
 	
 :,lit* 	
 	getTOS
-	0? ( 2drop ,back ,back 0 ,tlit ; ) 
-	1 =? ( 2drop ,back ; ) 	| 1 * --> _
-	-1 =? ( 2drop ,back tkneg ,t ; )
+	0? ( drop ,back ,back 0 ,tlit ; ) 
+	1 =? ( drop ,back ; ) 	| 1 * --> _
+	-1 =? ( drop ,back tkneg ,t ; )
 	dup 1- nand? ( ,*pot ; )
 	dup 1- dup 1- nand? (  drop ,*pot+1 ; ) drop
 	dup 1+ nand? ( ,*pot-1 ; )
 	drop
-	,t ;
+	TK* ,t ;
 
 :,* 
 	2lit? 1? ( 2drop 2litpush .* ,TOSLIT ; ) drop 
-	1lit? 1? ( drop ,lit* ; ) drop
-	01lit? 1? ( drop 01swap ,lit* ; ) drop
+	1lit? 1? ( 2drop ,lit* ; ) drop
+	01lit? 1? ( 2drop 01swap ,lit* ; ) drop
 	,t ;
 	
 |----------------------- /
