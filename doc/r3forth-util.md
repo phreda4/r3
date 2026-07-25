@@ -29,7 +29,7 @@ Every word and stack signature below was checked directly against the current so
 17. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
 18. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
 19. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
-20. [sdlbgui.r3](#sdlbguir3) — Immediate-mode GUI with bitmap font (SDL2)
+
 21. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
 22. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
 23. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
@@ -679,16 +679,6 @@ Immediate-mode GUI framework with TrueType font rendering for SDL2.
 ::immRedraw ( -- )            force redraw
 ::immwins   ( -- )            end of window frame
 ```
-
----
-
-### sdlbgui.r3
-
-Immediate-mode GUI framework using bitmap font instead of TTF.
-
-**Dependencies:** `^r3/lib/gui.r3`, `^r3/lib/sdl2gfx.r3`, `^r3/lib/input.r3`
-
-Same widget API as sdlgui.r3 but renders with bfont. Key differences: no `immfont!`, no `immSDL` — uses preloaded bitmap font. Has `immInputLine2` (two-line input variant).
 
 ---
 

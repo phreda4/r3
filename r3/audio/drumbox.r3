@@ -4,31 +4,33 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
 ^r3/util/varanim.r3
-^r3/util/sdlgui.r3
+^r3/util/immi.r3
 ^r3/util/arr16.r3
+
+#font1
 
 |------ sound
 #sndfiles 
-"909CX BD1"
-"909CX BD2"
-"909CX BD3"
-"909CX CHH"
-"909CX CP1"
-"909CX CS1"
-"909CX CS2"
-"909CX FTH"
-"909CX FTL"
-"909CX HTH"
-"909CX HTL"
-"909CX MTH"
-"909CX MTL"
-"909CX OHH"
-"909CX PHH"
-"909CX RD2"
-"909CX RM1"
-"909CX SN1"
-"909CX SN2"
-"909CX SN3"
+"BD1"
+"BD2"
+"BD3"
+"CHH"
+"CP1"
+"CS1"
+"CS2"
+"FTH"
+"FTL"
+"HTH"
+"HTL"
+"MTH"
+"MTL"
+"OHH"
+"PHH"
+"RD2"
+"RM1"
+"SN1"
+"SN2"
+"SN3"
 0
 #sndlist * 160
 #cntlist
@@ -37,7 +39,7 @@
 	'sndlist >a
 	'sndfiles
 	( dup c@ 1? drop
-		dup "media/snd/909/%s.mp3" sprint mix_loadWAV a!+
+		dup "media/snd/909/909CX %s.mp3" sprint mix_loadWAV a!+
 		>>0 ) 2drop 
 	a> 'sndlist - 3 >> 'cntlist !
 	;
@@ -53,6 +55,7 @@
 
 #tgrid * 1024
 #lgrid 16
+#boxsize 23
 
 |---- clock
 :trestart
@@ -85,11 +88,9 @@
 
 |------- timeline
 :channel
-	175 64 immat
-	120 14 immbox 
 	'sndfiles
 	0 ( cntlist <? 
-		[ dup playsnd ; ] pick2 immbtn immdn
+		[ dup playsnd ; ] pick2 uiBtn
 		swap >>0 swap 1 + ) 2drop ;
 
 :colorcell | cell -- 
@@ -101,14 +102,14 @@
 	'tgrid >a
 	0 ( lgrid <?
 		0 ( cntlist <? 
-			over 4 << 300 + over 4 << 64 + 15 15 
+			over boxsize * cx + over boxsize * cy + boxsize dup
 			ca@+ colorcell
 			1 + ) drop 
 		1 + ) drop ;
 	
 :mapxy
-	SDLy 64 - 4 >>
-	SDLx 300 - 4 >>	
+	SDLy cy - boxsize /
+	SDLx cx - boxsize /
 	cntlist * + 'tgrid + ;
 	
 :clickcell
@@ -116,45 +117,49 @@
 	
 :game
 	timer.
-	immgui 	
 	$0 SDLcls
 	
-	160 20 immbox
-	0 0 immat
-	"Drum Box" immlabelc immdn
-	|740 64 immat
-	largo " speed %d (ms)" sprint immLabel immdn
-	10 1000 'largo  immSlideri immdn
-	60000 largo / " %d BPM" sprint immLabel immdn	
+	uiStart 
+	2 1 uiPading
 	
+	font1 txfont
+	0.05 %h uiN
+	"Drum Box" uiLabelC
+	
+	0.2 %w uiO | ------------
+	largo " speed %d (ms)" sprint uiLabelC
+	10 1000 'largo uiSlideri
+	60000 largo / " %d BPM" sprint uiLabelC
+	
+	0.1 %w uiO | ------------
 	channel
 	
+	uiRest	| ------------
 	drawgrid
-	300 64 lgrid 4 << cntlist 4 << guiBox
-	'clickcell onClick
+	cx cy lgrid boxsize * cntlist boxsize * uiZoneBox
+	'clickcell uiClk
+	uiBackBox
 
 	$ff00 sdlcolor
-	300 ntime 4 << + 64 cntlist 4 << + 15 15 sdlfrect
+	cx ntime boxsize * + cy cntlist boxsize * + boxsize dup sdlfrect
 	
 	tclock
-	|paso 
-	playgrid
 	
+	playgrid
+
+	uiEnd
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
 	drop ;
 	
-:main
-	"Drum Box" 1024 600 SDLinit
-	44100 $8010 1 1024 Mix_OpenAudio | minimal buffer for low latency
+
+:	
+	"Drum Box" 1024 600 SDLinitR
+	"media/ttf/RobotoMono-Bold.ttf" 16 txload 'font1 !
+	
 	loadsnd
-	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
-	1 1 immpad!
 	timer<
 	'game SDLshow
 	SDLquit 
 	;
-
-
-: main ;
