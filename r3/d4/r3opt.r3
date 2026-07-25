@@ -503,7 +503,7 @@
 	,tlit TK>> ,t ,sigadj ;
 	
 :,lit2pot0*>> | c d cp -- ;  4.0 16 *>> -->  4 * --> 2 << 
-	drop swap >> ,nlit TK* ,lit* ;
+	drop swap >> ,nlit ,lit* ;
 	
 :2lit*>>	
 	getTOS ,back      | c
@@ -518,7 +518,7 @@
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
 	2lit? 1? ( 2drop 2lit*>> ; ) drop	
-	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt (falta bigint !!! )
+|	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt
 	,t ;
 	
 |----------------------------	

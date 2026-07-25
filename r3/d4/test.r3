@@ -9,11 +9,10 @@
 
 :rsin | rad -- s   
 	0.1591549 *. sin ;
-:rcos | rad -- s   
-	0.1591549 *. cos ;
 
 :point | xin --	e	
-	d 39.0 *. q c rsin *. + 440.0 - 'yp !
+	d 39.0 *. |q c rsin *. + 440.0 - 
+	'yp !
 	;
 : 
 	1 point drop

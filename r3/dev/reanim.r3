@@ -5,8 +5,9 @@
 ^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
-^r3/util/sdlbgui.r3
+^r3/util/sdlgui.r3
 
+#font
 #ssheet 0 0
 #obj 0 0
 #fx 0 0
@@ -115,11 +116,11 @@
 |	sw 64 - 32 64 sh 32 - sdlrect
 |	0 sh 128 - sw 128 sdlrect
 	
-	$ffffff bcolor
-	0 0 bat " ReAnimator" bprint2 
+	$ffffff ttcolor
+	0 0 ttat " ReAnimator" ttprint 
 	
-	0 32 bat 
-	inpoly> inpoly - 3 >> "%d" bprint
+	0 32 ttat 
+	inpoly> inpoly - 3 >> "%d" ttprint
 	workarea
 	
 	sdlredraw
@@ -146,7 +147,6 @@
 |-------------------
 : |<<< BOOT <<<
 	"reAnimator" 1024 600 SDLinitR
-	bfont1
 	
 	32 'ssheet p.ini
 	100 'obj p.ini
@@ -155,6 +155,7 @@
 	here 'inpoly !
 	$ffff 'here +!
 	
+	"media/ttf/RobotoMono-Bold.ttf" 24 TTF_OpenFont immSDL
 	reset
 	'main SDLshow
 	SDLquit 
