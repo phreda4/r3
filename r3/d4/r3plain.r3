@@ -64,7 +64,7 @@
 	
 	dup ":w%h" ,print 
 	
-|	"r3/d4/gen/plain.r3" savemem
+	|"r3/d4/gen/plain.r3" savemem
 	
 	dup wordanalysis
 	
@@ -142,8 +142,9 @@
 	
 |--------------------- BOOT
 : 	
-	|'filename "mem/menu.mem" load drop
-	"r3/demo/spring.r3" 'filename strcpy | <<< error in plain
+	'filename "mem/menu.mem" load drop
+	|"r3/demo/spring.r3" 'filename strcpy | <<< error in plain
+	|"r3/demo/quiverbloom.r3" 'filename strcpy | <<< error in plain
 	.cr
 	.reset 
 	"Make plain.r3" .println

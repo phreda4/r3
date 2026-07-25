@@ -270,53 +270,6 @@ main (r3debug.r3)
 
 ---
 
-## 8. Bugs conocidos
-
-### a) Error en un include no se muestra en el lugar correcto (F5 / `playmode`)
-
-Cuando el programa está corriendo con F5 y el error ocurre en un archivo
-`^incluido` distinto del que el debugger tenía abierto al arrancar el play,
-la pantalla se queda mostrando el archivo/posición viejos.
-
-Causas combinadas:
-
-1. **`playshow` ignora redibujados fuera del include inicial.** Filtra con
-   `dup 48 >> $ff and codenow <>? ( 2drop ; )` — mientras el IP corre dentro
-   de un include distinto a `codenow` (fijado una sola vez al entrar a
-   `playmode`), el debugger nunca actualiza pantalla.
-2. **`runtimerror` no resincroniza el include.** Solo escribe el mensaje de
-   error en el statusline; nunca llama `showcode` con el include real donde
-   ocurrió el error, ni reposiciona el cursor (`tuipos!`).
-3. **El "land in src" de `playmode` corre incluso en estado de error**,
-   mandando `*>stepo` cuando debería mostrar el error tal cual está.
-
-`stoponerror` (infodebug.r3) sí calcula bien el include/posición real
-(`vmIP -= 1` antes de reportar) — el dato disponible es correcto, el
-problema es enteramente de UI en `r3debug.r3` al no usarlo.
-
-**Fix**: en `playmode`, antes del bloque "land in src", detectar error y
-llamar `showcode`+`tuipos!` con el include/posición reales sacados de
-`ftokenIP`, evitando el `*>stepo` posterior en ese caso.
-
-### b) `.strerr` no reconoce los códigos de error reales
-
-`.strerr` compara `errorst` contra `$5` y `$94` para "Invalid memory" y
-"divide by 0" — códigos que **no corresponden a lo que emite `r3d.cpp`**.
-El intérprete señaliza vía `signal()` (Linux) o `SetUnhandledExceptionFilter`
-(Windows), y el código que llega a `errorst` es la señal POSIX cruda
-(`SIGSEGV=$b`, `SIGFPE=$8`, `SIGBUS=$7`, etc.) o el NTSTATUS de 32 bits en
-Windows — nunca `$5`/`$94`. Solo `$100`/`$200` (under/overflow, que vienen
-de `checkr3()` con otro formato) matchean correctamente hoy.
-
-**Efecto**: ante un crash real (segfault, div/0), el debugger muestra
-"* RUNTIME ERROR: $b *" sin descripción, en vez del mensaje esperado.
-
-**Fix**: actualizar `.strerr` para comparar contra los códigos de señal
-reales (ver tabla de la sección 1), idealmente condicionado por plataforma
-(`|WIN|`/`|LIN|`) ya que Windows usa NTSTATUS y Linux usa señales POSIX.
-
----
-
 ## 9. Qué le falta al debugger (para las extensiones pedidas)
 
 ### a) Watch de variables

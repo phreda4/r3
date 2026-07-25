@@ -1,23 +1,20 @@
-|main
-^r3/lib/console.r3
+^r3/lib/sdl2gfx.r3
+^r3/lib/math.r3
 
-#var1 33
-#var2 0
-#var3 
+#t #y #k #e #d #q #c #xp #yp
+#SCALEX #SCALEY
+#colormode
 
+#colortime |#phase1 #phase2 #phase3 |#hue #sat #val #bright
+
+:rsin | rad -- s   
+	0.1591549 *. sin ;
+:rcos | rad -- s   
+	0.1591549 *. cos ;
+
+:point | xin --	e	
+	d 39.0 *. q c rsin *. + 440.0 - 'yp !
+	;
 : 
-|var1 5.0 16 *>> 
-var1 8 
-|/mod "%d %d" .println
-mod "%d " .println
-1 'var1 !
-waitesc
+	1 point drop
 ;
-
-|	v1 0 16 *>> "%f" .println 
-|	v1 1 16 *>> "%f" .println 
-|	v3 -1 16 *>> "%f" .println 
-|	v3 -1 16 *>> "%f" .println 
-|	v2 2.0 16 *>> "%f" .println 	
-|	v2 128.0 16 *>> "%f" .println 
-

@@ -487,9 +487,4 @@ PENDIENTES / A VERIFICAR ANTES DE USAR EN SERIO
    tocar r3d.cpp para que mem/r3code.mem incluya los paths — no lo
    hice porque pediste no tocar el intérprete; con solo "inc#N" ya
    alcanza para desambiguar, el nombre lindo es cosmético.
-5. Todo el código de arriba no fue compilado/probado contra el r3
-   real — está escrito en base al patrón de estilo del resto de
-   infodebug.r3/r3debug.r3 y a las funciones ya auditadas del repo,
-   pero conviene compilarlo con -werror (r3 tiene chequeo de stack
-   balanceado en tiempo de compilación) antes de usarlo en un debug
-   real.
+

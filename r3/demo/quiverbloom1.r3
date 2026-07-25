@@ -5,20 +5,44 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/math.r3
+^r3/lib/color.r3
 
 #t #y #k #e #d #q #c #xp #yp
 #SCALEX #SCALEY
+#colormode
+
+#colortime |#phase1 #phase2 #phase3 |#hue #sat #val #bright
 
 | SIN/COS de argumentos en radianes (los que vienen de x, no de t)
+| sin/cos nativos toman turns (fixed-point 48.16, 1.0 = 360°)
 :rsin | rad -- s   
 	0.1591549 *. sin ;
 :rcos | rad -- s   
 	0.1591549 *. cos ;
 
-:setcolor | col --
-	dup 155 + $ff and 8 << swap
-	255 swap - $ff and or
-	$ff0000 or SDLColor ;
+| HSV cíclico basado en xp,yp,d,t 
+| el brillo (bright, 0.5..1.5) se aplica multiplicando V y clampeando a 1.0,
+| ya que V es exactamente el canal de brillo en HSV
+:calc-color | -- rgb32
+	t 0.5 *. 'colortime !
+
+	xp 0.01 *. colortime + rsin 0.5 *. 0.5 + |'phase1 !
+	colortime 0.0555 *. + |'hue !
+	
+	yp 0.1 *. colortime 1.3 *. + rsin 0.5 *. 0.5 + |'phase2 !
+	0.4 *. 0.6 + |'sat !
+	
+	d 0.5 *. colortime 0.7 *. + rsin 0.5 *. 0.5 + |'phase3 !
+	0.2 *. 0.8 +
+	| animBrightness = abs(sin(t*2 + xp*0.001)) + 0.5   ( 0.5 .. 1.5 )
+	t 2.0 *. xp 0.001 *. + rsin abs 0.5 + |'bright ! 
+	*. 1.0 min |'val !
+
+	hsv2rgb ; 	|hue sat val 
+
+:setcolor | --
+	calc-color
+	SDLColor ;
 
 :point | xin --
 	dup 235.0 /. 'y !
@@ -40,7 +64,6 @@
 	q c rcos 50.0 *. + 200.0 + 'xp !
 	d 39.0 *. q c rsin *. + 440.0 - 'yp !
 
-	k 3.0 *. rsin 100.0 *. int. 
 	setcolor
 
 	xp SCALEX *. int. 
@@ -52,7 +75,6 @@
 		point 0.5 +
 		) drop ;
 
-| t en radianes, avanza PI/240 rad por frame (igual que el original)
 :advance-t | --
 	t 3.14159265 240.0 /. + 't ! ;
 
@@ -71,6 +93,7 @@
 	800.0 380.0 /. 'SCALEX !
 	600.0 400.0 /. 'SCALEY !
 	0.0 't !
+	0 'colormode !
 	'draw SDLshow
 	SDLquit ;
 
