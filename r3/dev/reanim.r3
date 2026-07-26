@@ -5,7 +5,7 @@
 ^r3/util/arr16.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
-^r3/util/sdlgui.r3
+^r3/util/immi.r3
 
 #font
 #ssheet 0 0
@@ -97,18 +97,23 @@
 :workarea
 	$ffffff sdlcolor
 	64 32 sw 64 - pick2 - sh 128 - pick2 -
-	2over 2over sdlrect guibox
+	2over 2over sdlrect
+	uiZoneBox
+
 	moded
 	@+ ex
-	@+ swap @+ swap @ onMapA | 'dn 'move 'up --	
+	@+ uiDwn
+	@+ uiSel
+	@ uiUp
+	uiBackBox
 	;
 	
 |-------------------
 :main
 	timer.
-	immgui 
+	uiStart
 	0 sdlcls
-
+	font txfont
 	$696969 sdlcolor
 	0 0 sw 32 sdlfrect
 |	$ffffff sdlcolor
@@ -116,11 +121,11 @@
 |	sw 64 - 32 64 sh 32 - sdlrect
 |	0 sh 128 - sw 128 sdlrect
 	
-	$ffffff ttcolor
-	0 0 ttat " ReAnimator" ttprint 
+	$ffffff txrgb
+	0 0 txat "ReAnimator" txprint 
 	
-	0 32 ttat 
-	inpoly> inpoly - 3 >> "%d" ttprint
+	0 32 txat 
+	inpoly> inpoly - 3 >> "%d" txprint
 	workarea
 	
 	sdlredraw
@@ -155,7 +160,7 @@
 	here 'inpoly !
 	$ffff 'here +!
 	
-	"media/ttf/RobotoMono-Bold.ttf" 24 TTF_OpenFont immSDL
+	"media/ttf/RobotoMono-Bold.ttf" 24 txload 'font !
 	reset
 	'main SDLshow
 	SDLquit 

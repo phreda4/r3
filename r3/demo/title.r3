@@ -3,7 +3,7 @@
 |
 ^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
+^r3/util/immi.r3
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
 ^r3/lib/color.r3
@@ -39,48 +39,14 @@
 	'exit 15.0 +vexe 
 	;
 	
-:l0count | list -- cnt
-	0 ( swap dup c@ 1? drop >>0 swap 1+ ) 2drop ;
-	
-#t	
-:lines | texto --
-	dup 'texto> !
-	$ff 'colm !
-	vareset
-	1.0 't !
-	l0count 
-	0 ( over <? 
-		'colm 0 $ff 5 1.0 t +vanim
-		'colm $ff 0 5 1.0 t 2.0 + +vanim
-		'nextt t 3.0 + +vexe
-		4.0 't +!
-		1 + ) drop 
-	'exit t +vexe 		
-	;
-	
-
-#rtbox [ 0 0 324 180 ] |500 200 324 180 ]
-
-:drawtex | texture x y --
-	swap
-	pick2 0 0 'rtbox 8 + dup 4 + SDL_QueryTexture
-	'rtbox d!+ d!
-	SDLrenderer over 0 'rtbox SDL_RenderCopy	
-	SDL_DestroyTexture ;
-	
-|'ttp $1f0f0 224 120 font1 textbox 310 50 drawtex
-	
 :titlestart
 	vupdate
 	$0 SDLcls
-
-	texto>
-	colm 4 >> $f xor dup 4 << over 8 << or or 
-	$5f000 or
-	424 400
-	font
-	textbox 300 100 drawtex
-		
+	font txfont
+	
+	colm $ff xor dup 8 << or dup 8 << or txrgb
+	sw 200 - sh 100 0 texto> txText
+			
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )
@@ -106,20 +72,19 @@
 :titlemenu
 	vupdate
 	$0 SDLcls
-	
-	ta "animacion %d" sprint
-	$5ffff 
-	824 300
-	font
-	textbox 100 yb drawtex
 
-	immgui
-	412 400 immat
-	200 immwidth
-	$ffffff 'immcolortex !
-	'exit "Jugar" immbtn
-	immdn
-	'exit "Salir" immbtn
+	uiStart
+
+	0.3 %h uiS
+	|0.3 %w uiO 0.3 %w uiE uiRest
+	'exit "Jugar" uiBtn
+	'exit "Salir" uiBtn
+	uiEnd
+
+	$ffffff txrgb
+	sw 0.7 %h 0 yb 
+	ta "animacion %d" sprint
+	txText
 
 	SDLredraw	
 	SDLkey
@@ -130,8 +95,7 @@
 	
 |------------	
 :start
-	|animstart
-	'texto lines
+	animstart
 	'titlestart SDLshow
 	
 	loopini
@@ -139,8 +103,8 @@
 	;
 	
 : 
-	"test titles" 1024 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 48 TTF_OpenFont dup 'font ! immSDL 
+	"test titles" 1024 600 SDLinitR
+	"media/ttf/Roboto-Medium.ttf" 48 txload 'font !
 	$ff vaini
 	start
 	SDLquit
