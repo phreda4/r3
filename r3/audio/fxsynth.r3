@@ -2,8 +2,6 @@
 | PHREDA-style, sin samples, todo sintetizado
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
-^r3/lib/parse.r3
-^r3/lib/str.r3
 
 |============================================================
 | PARAMETROS (0.0..1.0 fixed salvo aclaracion). Editables por UI o presets.
@@ -29,8 +27,6 @@
 ##p_duty     0.5
 ##p_dutyramp 0.0
 
-##p_repeat   0.0
-
 ##p_lpffreq 1.0    | 1.0 = filtro abierto (sin efecto)
 ##p_lpframp 0.0
 ##p_lpfreso 0.0
@@ -38,6 +34,7 @@
 ##p_hpffreq 0.0
 ##p_hpframp 0.0
 
+##p_repeat   0.0
 ##p_vol 0.5
 
 |============================================================
@@ -363,42 +360,18 @@
 	0.0 0.5 randminmax 'p_vibspeed !
 	-0.5 0.5 randminmax 'p_arpmod !
 	0.0 1.0 randminmax 'p_duty !
-	0.0 0.5 randminmax 'p_repeat !
 	0.2 1.0 randminmax 'p_lpffreq !
-	0.0 0.5 randminmax 'p_hpffreq ! ;
+	0.0 0.5 randminmax 'p_hpffreq ! 
+	
+	0.0 0.5 randminmax 'p_repeat !
+	;
 
-|============================================================
-| GUARDAR / CARGAR (serializa todos los p_* como texto)
-|============================================================
-::fxSave | 'buff --
-	p_vol p_hpframp p_hpffreq p_lpfreso p_lpframp p_lpffreq
-	p_repeat p_dutyramp p_duty p_arpspeed p_arpmod
-	p_vibspeed p_vibdepth p_freqdramp p_freqramp p_freqlimit p_freq
-	p_decay p_punch p_sustain p_attack p_wave
-	"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d" sprint
-	swap strcpy ;
-
-::fxLoad | 'buff --
-	str>nro 'p_wave !
-	trim str>nro 'p_attack !
-	trim str>nro 'p_sustain !
-	trim str>nro 'p_punch !
-	trim str>nro 'p_decay !
-	trim str>nro 'p_freq !
-	trim str>nro 'p_freqlimit !
-	trim str>nro 'p_freqramp !
-	trim str>nro 'p_freqdramp !
-	trim str>nro 'p_vibdepth !
-	trim str>nro 'p_vibspeed !
-	trim str>nro 'p_arpmod !
-	trim str>nro 'p_arpspeed !
-	trim str>nro 'p_duty !
-	trim str>nro 'p_dutyramp !
-	trim str>nro 'p_repeat !
-	trim str>nro 'p_lpffreq !
-	trim str>nro 'p_lpframp !
-	trim str>nro 'p_lpfreso !
-	trim str>nro 'p_hpffreq !
-	trim str>nro 'p_hpframp !
-	trim str>nro 'p_vol !
-	drop ;
+::fxPack | 'dest --
+	>a 'p_wave >b
+	b@+ ca!+
+	19 ( 1? 1- b@+ da!+ ) drop ;
+	
+::fxUnpack
+	>a 'p_wave >b
+	ca@+ b!+
+	19 ( 1? 1- da@+ b!+ ) drop ;	

@@ -4,60 +4,74 @@
 ^r3/audio/fx.r3
 
 #font1
-#seedbuf * 256
+
+#fxbuff * 160 | 20*8
 
 :presetsPanel
-	stLink [ fxPickup fxPlay ; ]    "Pickup / Coin" uiBtn
-	stLink [ fxLaser fxPlay ; ]     "Laser / Shoot" uiBtn
-	stLink [ fxExplosion fxPlay ; ] "Explosion"     uiBtn
-	stLink [ fxPowerup fxPlay ; ]   "Powerup"       uiBtn
-	stLink [ fxHit fxPlay ; ]       "Hit / Hurt"    uiBtn
-	stLink [ fxJump fxPlay ; ]      "Jump"          uiBtn
-	stLink [ fxBlip fxPlay ; ]      "Blip / Select" uiBtn
-	stDang [ fxRandom fxPlay ; ]    "Random"        uiBtn
+	stSucc [ fxPlay ; ]             "Play"    uiCBtn
+	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
 	ui--
-	stSucc [ fxPlay ; ]             "Reproducir"    uiBtn
+	stLink 
+	[ fxPickup fxPlay ; ]    "Pickup / Coin" uiRbtn
+	[ fxLaser fxPlay ; ]     "Laser / Shoot" uiRbtn
+	[ fxExplosion fxPlay ; ] "Explosion"     uiRbtn
+	[ fxPowerup fxPlay ; ]   "Powerup"       uiRbtn
+	[ fxHit fxPlay ; ]       "Hit / Hurt"    uiRbtn
+	[ fxJump fxPlay ; ]      "Jump"          uiRbtn
+	[ fxBlip fxPlay ; ]      "Blip / Select" uiRbtn
+
 	;
 
 |---- botones de onda: solo cambian p_wave y vuelven a tocar, sin tocar el resto
 :wavebtns
-	stLink [ 0 'p_wave ! fxPlay ; ] "Cuadrada"  uiBtn
-	stLink [ 1 'p_wave ! fxPlay ; ] "Sierra"    uiBtn
-	stLink [ 2 'p_wave ! fxPlay ; ] "Seno"      uiBtn
-	stLink [ 3 'p_wave ! fxPlay ; ] "Ruido"     uiBtn
-	stLink [ 4 'p_wave ! fxPlay ; ] "Triangulo" uiBtn
+	stLink [ 0 'p_wave ! fxPlay ; ] "Square" uiCBtn
+	stLink [ 1 'p_wave ! fxPlay ; ] "Saw"    uiCBtn
+	stLink [ 2 'p_wave ! fxPlay ; ] "Sin"    uiCBtn
+	stLink [ 3 'p_wave ! fxPlay ; ] "Noise"  uiCBtn
+	stLink [ 4 'p_wave ! fxPlay ; ] "Trig"   uiCBtn
 	;
 
 :paramsLeft
-	p_freq .f2 "Freq %s" sprint uiLabelC
-	p_attack .f2 "Ataque %s" sprint uiLabelC	
-	p_sustain .f2 "Sosten %s" sprint uiLabelC
-	p_punch .f2 "Punch %s" sprint uiLabelC
-	p_decay .f2 "Decay %s" sprint uiLabelC
-	p_freqramp .f2 "Ramp %s" sprint uiLabelC
-	p_duty .f2 "Duty %s" sprint uiLabelC
-	
-	p_vibdepth .f2 "Vib.Prof %s" sprint uiLabelC
-	p_vibspeed .f2 "Vib.Vel %s" sprint uiLabelC
-	p_lpffreq .f2 "LowPass %s" sprint uiLabelC
-	p_hpffreq .f2 "HighPass %s" sprint uiLabelC
-	p_repeat .f2 "Repetir %s" sprint uiLabelC
-	p_vol .f2 "Volumen %s" sprint uiLabelC
-	
+	"Freq " sprint uiLabelR
+	"Ataque " sprint uiLabelR	
+	"Sosten " sprint uiLabelR
+	"Punch " sprint uiLabelR
+	"Decay " sprint uiLabelR
+	"Ramp " sprint uiLabelR
+	"Duty " sprint uiLabelR
+	"Vib.Prof " sprint uiLabelR
+	"Vib.Vel " sprint uiLabelR
+	"LowPass " sprint uiLabelR
+	"HighPass " sprint uiLabelR
+	ui--
+	"Repetir " sprint uiLabelR
+	"Volumen " sprint uiLabelR
 	;
 
 :paramsRight
 	0.0 1.0 'p_freq uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_attack uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_sustain uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_punch uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_decay uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	-1.0 1.0 'p_freqramp uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_duty uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_vibdepth uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_vibspeed uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_lpffreq uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_hpffreq uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
+	ui--
 	0.0 1.0 'p_repeat uiSliderf
 	0.0 1.0 'p_vol uiSliderf
 	;
@@ -65,10 +79,12 @@
 :seedPanel
 	uiPush
 	0.12 %w uiO
-	stSucc [ 'seedbuf fxSave ; ]         "Guardar"  uiBtn
-	stWarn [ 'seedbuf fxLoad fxPlay ; ]  "Cargar"   uiBtn
+	
+	stSucc [ 'fxbuff fxpack ; ]         "Guardar"  uiCBtn
+	stWarn [ 'fxbuff fxunpack fxPlay ; ]  "Cargar"   uiCBtn
 	uiRest
-	'seedbuf $11 uiText |Label
+	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
+	$11 uiText |Label
 	uiPop
 	;
 
@@ -76,7 +92,7 @@
 	$0 SDLcls
 
 	uiStart
-	2 1 uiPading
+	8 2 uiPading
 	font1 txfont
 
 	0.1 %h uiN
@@ -84,15 +100,14 @@
 	ui--	
 	
 	0.1 %h uiS 	
-	ui--
 	seedPanel
 	
 	0.2 %w uiO
 	presetsPanel
-	ui--
+	"* Wave *" uiLabelC
 	wavebtns
 
-	0.3 %w uiO
+	0.2 %w uiO
 	paramsLeft
 	
 	0.3 %w uiO
@@ -112,6 +127,6 @@
 	"media/ttf/Roboto-Medium.ttf" 20 txload 'font1 !
 
 	fxDefaults
-	'seedbuf fxSave
+	'fxbuff fxPack
 	'game SDLshow
 	SDLquit ;
