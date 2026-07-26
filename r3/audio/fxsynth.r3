@@ -167,21 +167,36 @@
 	replimit 0? ( drop ; )
 	drop
 	1 'reptime +!
-	reptime replimit >=? ( drop 0 'reptime ! fxDeriveFreq ; )
+	reptime replimit >=? ( drop 0 'reptime !
+		iphase period
+		fxDeriveFreq
+		fperiod int. 8 max
+		swap /.
+		*. 'iphase ! ; )
 	drop ;
 
 :fxArpCheck
 	arplimit 0? ( drop ; )
 	drop
 	1 'arptime +!
-	arptime arplimit >=? ( drop fperiod arpmod *. 'fperiod ! 0 'arplimit ! ; )
+	arptime arplimit >=? ( drop
+		fperiod arpmod *. 'fperiod !
+		iphase arpmod *. 'iphase !
+		0 'arplimit ! ; )
 	drop ;
+
+:fxForceFadeOut
+	envstage 2 <? (
+		2 'envstage !
+		0 'envtime !
+		200 'envlen2 !
+	) drop ;
 
 :fxSlide
 	fperiod fslide *. 'fperiod !
 	fdslide 'fslide +!
 	fperiod fmaxperiod >? ( drop fmaxperiod 'fperiod !
-		p_freqlimit 1? ( 0 'playing ! ) drop ; )
+		p_freqlimit 1? ( fxForceFadeOut ) drop ; )
 	drop ;
 
 :fxRFPeriod | -- rfperiod
@@ -271,7 +286,7 @@
 	0 'fxlen !
 	0
 	( fxmaxsamples <?
-		fxSample 1.0 clampmax -1.0 clampmin 2/
+		fxSample 2/ -32768 clampmin 32767 clampmax
 		fxwptr w!
 		2 'fxwptr +!
 		1 'fxlen +!
@@ -369,9 +384,9 @@
 ::fxPack | 'dest --
 	>a 'p_wave >b
 	b@+ ca!+
-	19 ( 1? 1- b@+ da!+ ) drop ;
+	21 ( 1? 1- b@+ da!+ ) drop ;
 	
 ::fxUnpack
 	>a 'p_wave >b
 	ca@+ b!+
-	19 ( 1? 1- da@+ b!+ ) drop ;	
+	21 ( 1? 1- da@+ b!+ ) drop ;	

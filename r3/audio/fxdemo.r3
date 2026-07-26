@@ -5,13 +5,16 @@
 
 #font1
 
-#fxbuff * 160 | 20*8
+#fxbuff * 46 | 1+22*2
+
+#fxlist * 1024
+#fxlist>
 
 :presetsPanel
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
-	ui--
 	stLink 
+	"* Type *" uiLabelC
 	[ fxPickup fxPlay ; ]    "Pickup / Coin" uiRbtn
 	[ fxLaser fxPlay ; ]     "Laser / Shoot" uiRbtn
 	[ fxExplosion fxPlay ; ] "Explosion"     uiRbtn
@@ -32,20 +35,19 @@
 	;
 
 :paramsLeft
-	"Freq " sprint uiLabelR
-	"Ataque " sprint uiLabelR	
-	"Sosten " sprint uiLabelR
-	"Punch " sprint uiLabelR
-	"Decay " sprint uiLabelR
-	"Ramp " sprint uiLabelR
-	"Duty " sprint uiLabelR
-	"Vib.Prof " sprint uiLabelR
-	"Vib.Vel " sprint uiLabelR
-	"LowPass " sprint uiLabelR
-	"HighPass " sprint uiLabelR
-	ui--
-	"Repetir " sprint uiLabelR
-	"Volumen " sprint uiLabelR
+	"Freq " uiLabelR
+	"Ataque " uiLabelR	
+	"Sosten " uiLabelR
+	"Punch " uiLabelR
+	"Decay " uiLabelR
+	"Ramp " uiLabelR
+	"Duty " uiLabelR
+	"Vib.Prof " uiLabelR
+	"Vib.Vel " uiLabelR
+	"LowPass " uiLabelR
+	"HighPass " uiLabelR
+	"Repetir " uiLabelR
+	"Volumen " uiLabelR
 	;
 
 :paramsRight
@@ -71,17 +73,34 @@
 	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_hpffreq uiSliderf
 	uiEx? 1? ( fxStop fxPlay ) drop
-	ui--
 	0.0 1.0 'p_repeat uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	0.0 1.0 'p_vol uiSliderf
+	uiEx? 1? ( fxStop fxPlay ) drop
 	;
 
+:setlist
+	;
+	
+:putlist
+	'fxbuff fxpack
+	fxlist> 'fxbuff 56 cmove
+	56 'fxlist> +!
+	;
+:listfx
+	stLink
+	'fxlist
+	( fxlist> <?
+		'setlist over "%h" sprint uiRbtn
+		56 + ) drop
+	;
+	
 :seedPanel
 	uiPush
 	0.12 %w uiO
 	
-	stSucc [ 'fxbuff fxpack ; ]         "Guardar"  uiCBtn
-	stWarn [ 'fxbuff fxunpack fxPlay ; ]  "Cargar"   uiCBtn
+	stSucc 'putlist         "Save"  uiCBtn
+	stWarn [ 'fxbuff fxunpack fxPlay ; ]  "Load"   uiCBtn
 	uiRest
 	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
 	$11 uiText |Label
@@ -113,6 +132,9 @@
 	0.3 %w uiO
 	paramsRight
 
+	uiRest
+	listfx
+	
 	fxUpdate
 
 	uiEnd
@@ -128,5 +150,7 @@
 
 	fxDefaults
 	'fxbuff fxPack
+	
+	'fxlist 'fxlist> !
 	'game SDLshow
 	SDLquit ;
