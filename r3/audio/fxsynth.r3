@@ -112,19 +112,18 @@
 	0 'iphase ! ;
 
 :fxDeriveArp
-	p_arpmod +? ( drop 1.0 p_arpmod dup *. 0.9 *. - 'arpmod ! ; )
-	drop 1.0 p_arpmod dup *. 10.0 *. + 'arpmod ! ;
+	p_arpmod 
+	+? ( 1.0 swap dup *. 0.9 *. - 'arpmod ! ; )
+	1.0 swap dup *. 10.0 *. + 'arpmod ! ;
 
 :fxDeriveArpLimit
-	p_arpspeed 1.0 =? ( drop 0 'arplimit ! ; )
-	drop
-	1.0 p_arpspeed - dup *. 20000 *. 32 + 'arplimit !
+	p_arpspeed 1.0 =? ( drop 0 'arplimit ! ; ) 
+	1.0 swap - dup *. 20000 *. 32 + 'arplimit !
 	0 'arptime ! ;
 
 :fxDeriveRepeat
-	p_repeat 0? ( drop 0 'replimit ! ; )
-	drop
-	1.0 p_repeat - dup *. 20000 *. 32 + 'replimit !
+	p_repeat 0? ( drop 0 'replimit ! ; ) 
+	1.0 swap - dup *. 20000 *. 32 + 'replimit !
 	0 'reptime ! ;
 
 :fxDeriveEnv
@@ -164,8 +163,7 @@
 | PASO DE MUESTRA (envolvente, slide, filtros)
 |============================================================
 :fxRepeatCheck
-	replimit 0? ( drop ; )
-	drop
+	replimit 0? ( drop ; ) drop
 	1 'reptime +!
 	reptime replimit >=? ( drop 0 'reptime !
 		iphase period
@@ -176,8 +174,7 @@
 	drop ;
 
 :fxArpCheck
-	arplimit 0? ( drop ; )
-	drop
+	arplimit 0? ( drop ; ) drop
 	1 'arptime +!
 	arptime arplimit >=? ( drop
 		fperiod arpmod *. 'fperiod !
@@ -204,19 +201,19 @@
 	fperiod vibphase sin vibamp *. 1.0 + *. ;
 
 :fxEnvDecay
-	envtime envlen2 >=? ( drop 0 'playing ! 0.0 'envvol ! ; )
-	drop
-	1.0 envtime envlen2 /. - 'envvol ! ;
+	envtime 
+	envlen2 >=? ( drop 0 'playing ! 0.0 'envvol ! ; )	
+	1.0 swap envlen2 /. - 'envvol ! ;
 
 :fxEnvSustain
-	envtime envlen1 >=? ( drop 0 'envtime ! 2 'envstage ! fxEnvDecay ; )
-	drop
-	1.0 envtime envlen1 /. - p_punch 2.0 *. *. 1.0 + 'envvol ! ;
+	envtime 
+	envlen1 >=? ( drop 0 'envtime ! 2 'envstage ! fxEnvDecay ; )
+	1.0 swap envlen1 /. - p_punch 2.0 *. *. 1.0 + 'envvol ! ;
 
 :fxEnvAttack
-	envtime envlen0 >=? ( drop 0 'envtime ! 1 'envstage ! fxEnvSustain ; )
-	drop
-	envtime envlen0 /. 'envvol ! ;
+	envtime 
+	envlen0 >=? ( drop 0 'envtime ! 1 'envstage ! fxEnvSustain ; ) 
+	envlen0 /. 'envvol ! ;
 
 :fxEnvelope
 	1 'envtime +!
@@ -239,8 +236,7 @@
 	drop fxFilterLP ;
 
 :fxHpRamp
-	flthpd 0? ( drop ; )
-	drop
+	flthpd 0? ( drop ; ) drop
 	flthp flthpd *. 0.00001 clampmin 0.1 clampmax 'flthp ! ;
 
 :fxHighpass | s -- s'
@@ -258,8 +254,9 @@
 	sdutyramp 'sduty +!
 	sduty 0.0 clampmin 0.5 clampmax 'sduty !
 	1 'iphase +!
-	iphase period >=? ( 0 'iphase ! fxNoiseWrapCheck ) drop
-	iphase period /. fxOsc
+	iphase 
+	period >=? ( 0 'iphase ! fxNoiseWrapCheck )
+	period /. fxOsc
 	fltp 'pp !
 	fxLowpass
 	fxHighpass
@@ -273,26 +270,15 @@
 ##fxrate 44100
 ##fxmaxsamples 176400 | 4 seg tope de seguridad
 ##fxbuf * 352800        | fxmaxsamples * 2 bytes
-##fxlen 0
-#fxwptr
-
-:fxNextI | i -- i'
-	playing 0? ( 2drop fxmaxsamples ; )
-	drop 1 + ;
 
 ::fxRender | -- len
+	|playing 0? ( drop fxmaxsamples ; ) drop
 	fxReset
-	'fxbuf 'fxwptr !
-	0 'fxlen !
-	0
-	( fxmaxsamples <?
-		fxSample 2/ -32768 clampmin 32767 clampmax
-		fxwptr w!
-		2 'fxwptr +!
-		1 'fxlen +!
-		fxNextI
-	) drop
-	fxlen ;
+	'fxbuf 
+	0 ( fxmaxsamples <?
+		fxSample 2/ clamps16
+		rot w!+ swap
+		1+ ) nip ;
 
 |============================================================
 | PRESETS ALEATORIOS ESTILO BFXR
