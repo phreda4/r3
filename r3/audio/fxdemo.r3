@@ -68,7 +68,7 @@
 	stSucc [ 'seedbuf fxSave ; ]         "Guardar"  uiBtn
 	stWarn [ 'seedbuf fxLoad fxPlay ; ]  "Cargar"   uiBtn
 	uiRest
-	'seedbuf uiLabel
+	'seedbuf $11 uiText |Label
 	uiPop
 	;
 

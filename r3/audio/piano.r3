@@ -3,10 +3,11 @@
 |
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
-^r3/util/sdlgui.r3
+^r3/util/immi.r3
 ^r3/lib/rand.r3
 
 #chunk
+#font1
 
 #frec
   16.35   17.32   18.35   19.45   20.60   21.83   23.12   24.50   25.96   27.50   29.14   30.87 |0
@@ -38,11 +39,11 @@
 |} Mix_Chunk;
 
 :infowav | adr
-	d@+ "allocate %d" immLabel immdn
+	d@+ "allocate %d" uiLabel
 	4 + | align
-	@+ "buffer %h" immLabel immdn	
-	d@+ "len %h" immLabel immdn	
-	c@+ $ff and "vol %d" immLabel immdn immdn
+	@+ "buffer %h" uiLabel	
+	d@+ "len %h" uiLabel	
+	c@+ $ff and "vol %d" uiLabel
 	drop
 	;
 	
@@ -158,12 +159,12 @@
 
 |-------------------------------------------
 :main
-	immgui 	
+	uiStart
 	$0 SDLcls
 	
-	180 20 immbox
-	0 0 immat
-	"Simple PIANO" immlabelc immdn
+	font1 txfont
+	0.05 %h uiN
+	"Simple PIANO" uiLabelC
 |	chunk infowav
 |	$ff00 sdlcolor chunk viewave
 	
@@ -206,16 +207,16 @@
 	drop ;
 	
 :init
-	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
+	"media/ttf/Roboto-Medium.ttf" 24 txload 'font1 !
 	44100 $8010 1 1024 Mix_OpenAudio | minimal buffer for low latency
-	"media/snd/piano-c.mp3" 
+	|"media/snd/piano-c.mp3" 
 	"media/snd/DX7-Bass-c2.mp3" 
 	mix_loadWAV 'chunk !
 	makenotes
 	;
 
 : 
-	"Resample wav" 1024 600 SDLinit
+	"Resample wav" 1024 600 SDLinitR
 	init
 	'main SDLshow
 	SDLquit 	

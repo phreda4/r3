@@ -161,6 +161,15 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 ::txw | "" -- "" width
 	0 over ( c@+ 1? txcw rot + swap ) 2drop ;
 	
+::txfit | w "" -- ncar
+	0 over
+	( c@+ 1? txcw	| w "" l "" cw
+		rot +		| w "" "" cw+l
+		pick3 >? ( drop swap - nip ; )
+		swap
+		) drop nip 
+	swap - nip ;
+	
 ::txch | car -- height
 	decode
 	$ff and 3 << newTab + 6 + w@ ;
@@ -243,12 +252,11 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		dup c@ $ff and 32 >? 
 		drop 1- ) drop nip nip ;
 
-:testw | str -- str
-	pick4 >r utf8count 
-	r> swap >? ( drop ; ) | str count
-	over a!+ | newline
-	utf8bytes | str bytes
-	over + <<sp
+:testw | w h x y str -- str
+	pick4 over txfit | w h x y str ncar
+	over count nip >=? ( drop ; )
+	over a!+ 		| newline
+	over + <<sp		
 	0 swap c!+
 	testw ;
 	

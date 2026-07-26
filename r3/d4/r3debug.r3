@@ -315,6 +315,12 @@
 	3 .bc 0 .fc ck tokenCursor
 	;
 	
+:stepout
+	vmIP memtokn
+	$23 =? ( drop *>step ; )
+	drop
+	*>stepo
+	;
 |---- main	
 :maindb
 	.reset .cls .ovec 
@@ -349,7 +355,7 @@
 	[f5] =? ( playmode )
 	
 	[f7] =? ( *>step )
-	[f8] =? ( *>stepo )
+	[f8] =? ( stepout )
 	[f9] =? ( *>stepu )
 	
 	drop 
