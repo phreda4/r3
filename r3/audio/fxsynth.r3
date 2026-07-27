@@ -280,99 +280,16 @@
 		rot w!+ swap
 		1+ ) nip ;
 
-|============================================================
-| PRESETS ALEATORIOS ESTILO BFXR
-|============================================================
-::fxPickup
-	fxDefaults
-	0 'p_wave !
-	0.3 0.5 randminmax 'p_freq !
-	0.0 0.1 randminmax 'p_sustain !
-	0.3 0.6 randminmax 'p_punch !
-	0.1 0.5 randminmax 'p_decay !
-	0.0 0.3 randminmax 'p_freqramp !
-	0.0 1.0 randminmax 'p_duty ! ;
 
-::fxLaser
-	fxDefaults
-	3 randmax 'p_wave !
-	0.5 1.0 randminmax 'p_freq !
-	p_freq 0.3 - 0.1 clampmin 'p_freqlimit !
-	-0.35 -0.15 randminmax 'p_freqramp !
-	0.0 1.0 randminmax 'p_duty !
-	0.1 0.3 randminmax 'p_sustain !
-	0.0 0.4 randminmax 'p_decay !
-	0.0 0.3 randminmax 'p_hpffreq ! ;
-
-::fxExplosion
-	fxDefaults
-	3 'p_wave !
-	0.1 0.6 randminmax 'p_freq !
-	-0.2 0.2 randminmax 'p_freqramp !
-	0.1 0.4 randminmax 'p_sustain !
-	0.2 0.8 randminmax 'p_punch !
-	0.2 0.6 randminmax 'p_decay !
-	0.2 0.9 randminmax 'p_lpffreq ! ;
-
-::fxPowerup
-	fxDefaults
-	2 randmax 'p_wave !
-	0.2 0.5 randminmax 'p_freq !
-	0.1 0.3 randminmax 'p_freqramp !
-	0.2 0.5 randminmax 'p_sustain !
-	0.2 0.5 randminmax 'p_decay !
-	0.0 0.3 randminmax 'p_arpmod !
-	0.5 0.8 randminmax 'p_arpspeed ! ;
-
-::fxHit
-	fxDefaults
-	4 randmax 'p_wave !
-	0.2 0.8 randminmax 'p_freq !
-	-0.5 -0.2 randminmax 'p_freqramp !
-	0.0 0.1 randminmax 'p_sustain !
-	0.1 0.3 randminmax 'p_decay ! ;
-
-::fxJump
-	fxDefaults
-	0 'p_wave !
-	0.3 0.6 randminmax 'p_freq !
-	0.1 0.3 randminmax 'p_freqramp !
-	0.1 0.3 randminmax 'p_sustain !
-	0.1 0.2 randminmax 'p_decay !
-	0.0 1.0 randminmax 'p_duty ! ;
-
-::fxBlip
-	fxDefaults
-	2 randmax 'p_wave !
-	0.2 0.6 randminmax 'p_freq !
-	0.03 0.1 randminmax 'p_sustain !
-	0.05 0.2 randminmax 'p_decay ! ;
-
-::fxRandom
-	fxDefaults
-	5 randmax 'p_wave !
-	0.0 0.3 randminmax 'p_attack !
-	0.0 0.5 randminmax 'p_sustain !
-	0.0 0.5 randminmax 'p_punch !
-	0.1 0.6 randminmax 'p_decay !
-	0.1 1.0 randminmax 'p_freq !
-	-0.5 0.5 randminmax 'p_freqramp !
-	0.0 0.5 randminmax 'p_vibdepth !
-	0.0 0.5 randminmax 'p_vibspeed !
-	-0.5 0.5 randminmax 'p_arpmod !
-	0.0 1.0 randminmax 'p_duty !
-	0.2 1.0 randminmax 'p_lpffreq !
-	0.0 0.5 randminmax 'p_hpffreq ! 
-	
-	0.0 0.5 randminmax 'p_repeat !
-	;
 
 ::fxPack | 'dest --
-	>a 'p_wave >b
-	b@+ ca!+
-	21 ( 1? 1- b@+ da!+ ) drop ;
+	'p_wave >b
+	b@+ swap w!+ 
+	21 ( 1? 1- b@+ 2 >> rot w!+ swap ) 
+	2drop ;
 	
-::fxUnpack
-	>a 'p_wave >b
-	ca@+ b!+
-	21 ( 1? 1- da@+ b!+ ) drop ;	
+::fxUnpack | 'src --
+	'p_wave >b
+	w@+ b!+
+	21 ( 1? 1- swap w@+ 2 << b!+ swap ) 
+	2drop ;

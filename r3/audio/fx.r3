@@ -34,12 +34,9 @@
 	0 'vplaying ! ;
 
 :fxGenSample | -- v
-	vplaying 0? ( drop 0 ; )
-	drop
-	vphase vlen >=? ( drop 0 'vplaying ! 0 ; )
-	drop
-	vphase 1 << vptr + w@
-	dup $8000 and? ( $ffff0000 or ) drop
+	vplaying 0? ( drop 0 ; ) drop
+	vphase vlen >=? ( drop 0 'vplaying ! 0 ; ) 
+	1 << vptr + w@
 	1 'vphase +! ;
 
 #outbuffer * 8192 | 2048 frames stereo 16bit
@@ -54,8 +51,7 @@
 		) drop ;
 
 ::fxUpdate | -- ; llamar cada frame del loop principal
-	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; )
-	drop
+	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop
 	genAudio
 	audevice 'outbuffer 8192 SDL_QueueAudio ;
 

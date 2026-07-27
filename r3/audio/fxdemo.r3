@@ -5,11 +5,99 @@
 
 #font1
 
-#fxbuff * 46 | 1+22*2
+#fxbuff * 44 | 22*2
 
+#fxlistcnt
 #fxlist * 1024
 #fxlist>
 
+|============================================================
+| PRESETS ALEATORIOS ESTILO BFXR
+|============================================================
+::fxPickup
+	fxDefaults
+	0 'p_wave !
+	0.3 0.5 randminmax 'p_freq !
+	0.0 0.1 randminmax 'p_sustain !
+	0.3 0.6 randminmax 'p_punch !
+	0.1 0.5 randminmax 'p_decay !
+	0.0 0.3 randminmax 'p_freqramp !
+	0.0 1.0 randminmax 'p_duty ! ;
+
+::fxLaser
+	fxDefaults
+	3 randmax 'p_wave !
+	0.5 1.0 randminmax 'p_freq !
+	p_freq 0.3 - 0.1 clampmin 'p_freqlimit !
+	-0.35 -0.15 randminmax 'p_freqramp !
+	0.0 1.0 randminmax 'p_duty !
+	0.1 0.3 randminmax 'p_sustain !
+	0.0 0.4 randminmax 'p_decay !
+	0.0 0.3 randminmax 'p_hpffreq ! ;
+
+::fxExplosion
+	fxDefaults
+	3 'p_wave !
+	0.1 0.6 randminmax 'p_freq !
+	-0.2 0.2 randminmax 'p_freqramp !
+	0.1 0.4 randminmax 'p_sustain !
+	0.2 0.8 randminmax 'p_punch !
+	0.2 0.6 randminmax 'p_decay !
+	0.2 0.9 randminmax 'p_lpffreq ! ;
+
+::fxPowerup
+	fxDefaults
+	2 randmax 'p_wave !
+	0.2 0.5 randminmax 'p_freq !
+	0.1 0.3 randminmax 'p_freqramp !
+	0.2 0.5 randminmax 'p_sustain !
+	0.2 0.5 randminmax 'p_decay !
+	0.0 0.3 randminmax 'p_arpmod !
+	0.5 0.8 randminmax 'p_arpspeed ! ;
+
+::fxHit
+	fxDefaults
+	4 randmax 'p_wave !
+	0.2 0.8 randminmax 'p_freq !
+	-0.5 -0.2 randminmax 'p_freqramp !
+	0.0 0.1 randminmax 'p_sustain !
+	0.1 0.3 randminmax 'p_decay ! ;
+
+::fxJump
+	fxDefaults
+	0 'p_wave !
+	0.3 0.6 randminmax 'p_freq !
+	0.1 0.3 randminmax 'p_freqramp !
+	0.1 0.3 randminmax 'p_sustain !
+	0.1 0.2 randminmax 'p_decay !
+	0.0 1.0 randminmax 'p_duty ! ;
+
+::fxBlip
+	fxDefaults
+	2 randmax 'p_wave !
+	0.2 0.6 randminmax 'p_freq !
+	0.03 0.1 randminmax 'p_sustain !
+	0.05 0.2 randminmax 'p_decay ! ;
+
+::fxRandom
+	fxDefaults
+	5 randmax 'p_wave !
+	0.0 0.3 randminmax 'p_attack !
+	0.0 0.5 randminmax 'p_sustain !
+	0.0 0.5 randminmax 'p_punch !
+	0.1 0.6 randminmax 'p_decay !
+	0.1 1.0 randminmax 'p_freq !
+	-0.5 0.5 randminmax 'p_freqramp !
+	0.0 0.5 randminmax 'p_vibdepth !
+	0.0 0.5 randminmax 'p_vibspeed !
+	-0.5 0.5 randminmax 'p_arpmod !
+	0.0 1.0 randminmax 'p_duty !
+	0.2 1.0 randminmax 'p_lpffreq !
+	0.0 0.5 randminmax 'p_hpffreq ! 
+	
+	0.0 0.5 randminmax 'p_repeat !
+	;
+	
 :presetsPanel
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
@@ -78,21 +166,26 @@
 	0.0 1.0 'p_vol uiSliderf
 	uiEx? 1? ( fxStop fxPlay ) drop
 	;
-
+	
+|---- fx list
 :setlist
+	'fxbuff over 44 * 'fxlist + 44 cmove
+	'fxbuff fxUnpack
+	fxStop fxPlay
 	;
 	
 :putlist
 	'fxbuff fxpack
-	fxlist> 'fxbuff 56 cmove
-	56 'fxlist> +!
+	fxlist> 'fxbuff 44 cmove
+	44 'fxlist> +!
+	1 'fxlistcnt +!
 	;
+	
 :listfx
 	stLink
-	'fxlist
-	( fxlist> <?
+	0 ( fxlistcnt <?
 		'setlist over "%h" sprint uiRbtn
-		56 + ) drop
+		1+ ) drop
 	;
 	
 :seedPanel
@@ -100,7 +193,7 @@
 	0.12 %w uiO
 	
 	stSucc 'putlist         "Save"  uiCBtn
-	stWarn [ 'fxbuff fxunpack fxPlay ; ]  "Load"   uiCBtn
+	stWarn [ 'fxbuff fxUnpack fxPlay ; ]  "Load"   uiCBtn
 	uiRest
 	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
 	$11 uiText |Label
@@ -152,5 +245,6 @@
 	'fxbuff fxPack
 	
 	'fxlist 'fxlist> !
+	0 'fxlistcnt !
 	'game SDLshow
 	SDLquit ;
