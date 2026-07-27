@@ -1,8 +1,8 @@
 | BUscaminas
 | PHREDA 2023
-^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
+^r3/lib/sdl2gfx.r3
+^r3/util/immi.r3
 
 #sprites
 #map * $ffff
@@ -109,9 +109,11 @@
 |-----------		
 
 :click
+	"a" .println
 	SDLx 4 >> -? ( drop ; ) w >? ( drop ; )
 	SDLy 4 >> -? ( 2drop ; ) h >? ( 2drop ; )
-	clkbtn 1 >? ( drop marca ; ) drop
+	btnMouse dup "%d" .println
+	1 >? ( drop marca ; ) drop
 	checkc 0? ( drop clearcell ; )
 	-rot ]map 
 	dup c@ $1 and 
@@ -136,18 +138,26 @@
 	
 :game
 	0 SDLcls
-	immgui 0 0 sw sh guibox 
 	drawmap
 	showbomb?	
-	'click onClick 
-	200 28 immbox
-	500 16 immat
-	"Minesweeper" immlabelc		immdn
-	'reset1 "Beginner" immbtn 	immdn
-	'reset2 "Intermediate" immbtn 	immdn
-	'reset3 "Advance" immbtn 		immdn 
-	'state immlabelc			immdn
-	'exit "Exit" immbtn 
+	
+	uiStart
+	8 4 uiPading
+	|0.7 %w uiO
+	
+	uiZoneW 'click uiClk 
+	
+	0.3 %w uiE
+	$ffffff txrgb
+	
+	"Minesweeper" uiLabelC
+	'reset1 "Beginner" uiRbtn
+	'reset2 "Intermediate" uiRbtn
+	'reset3 "Advance" uiRbtn
+	'state uiLabelC
+	'exit "Exit" uiRbtn 
+	uiEnd
+	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
@@ -157,7 +167,7 @@
 	msec time rerand
 	"Minesweeper" 800 600 SDLinit
 	16 16 "media/img/mines.png" ssload 'sprites !
-	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 24 txload txfont
 	reset1
 	'game SDLshow
 	SDLquit 

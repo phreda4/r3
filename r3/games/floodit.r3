@@ -1,8 +1,8 @@
 | floodit ! 
 | PHREDA 2023
-^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
+^r3/lib/sdl2gfx.r3
+^r3/util/immi.r3
 
 #map * $ffff
 #w 8 #h 8 
@@ -79,26 +79,37 @@
 	
 :game
 	0 SDLcls
-	immgui 	
+	
 	drawmap
+	
+	uiStart
+	8 4 uiPading
+	
+	
+	0.3 %w uiE
+	$ffffff txrgb
+	
+	'reset "New Game" uiRbtn
+	'exit "Exit" uiRbtn	
 
-	32 32 immbox
-	16 500 immat
+	"Floodit !" uiLabelC
+	'reset1 "Beginner" uiRbtn
+	'reset2 "Intermediate" uiRbtn
+	'reset3 "Advance" uiRbtn 
+	'state uiLabelC	
+	turn "turn:%d" sprint uiLabel
+	'exit "Exit" uiRbtn 
+	
+	0.1 %h uiS
+	6 1 uiGrid
 	'colors 0 ( 6 <? 
-		swap @+ 'immcolorbtn !
-		swap [ dup floodit ; ] "" immbtn imm>>
-		1 + ) 2drop
-		
-	$ff 'immcolorbtn !
-	200 28 immbox
-	500 16 immat
-	"Floodit !" immlabelc		immdn
-	'reset1 "Beginner" immbtn 	immdn
-	'reset2 "Intermediate" immbtn 	immdn
-	'reset3 "Advance" immbtn 		immdn 
-	'state immlabelc			immdn
-	turn "turn:%d" immlabelc immdn
-	'exit "Exit" immbtn 
+		swap @+ sdlcolor swap 2 uiRFill
+		uiZoneW
+		[ dup floodit ; ] uiClk
+		uiNext 1+ ) 2drop
+	
+	uiEnd
+	
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
@@ -107,7 +118,7 @@
 :	
 	msec time rerand
 	"Floodit!" 800 600 SDLinit
-	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 32 txload txfont
 	reset1
 	'game SDLshow
 	SDLquit 

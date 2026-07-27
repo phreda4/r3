@@ -103,6 +103,7 @@
 
 #uistate
 ##keymd		| key modify <<<
+##btnMouse
 
 :flagEx!	uistate $100 or 'uistate ! ;
 ::uiEx?		uistate $100 and ;
@@ -197,7 +198,8 @@
 	1 'id +! 
 	ida -1 =? ( drop 			| no active
 		uIn? 0? ( ; ) drop		| out->0
-		sdlb 0? ( drop 1 ; ) drop	| over->1
+		sdlb 0? ( drop 1 ; ) |drop	| over->1
+		'BtnMouse !
 |		id dup 'idh ! 'idfh ! -1 'idfx ! 1 ; )	| in->2(prev)
 		id dup 'idh ! 'idfh ! 2 ; )	| in->2(prev)
 	id <>? ( drop 0 ; ) 	|	 active no this->0

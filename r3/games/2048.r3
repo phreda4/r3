@@ -1,8 +1,8 @@
 | 2048 game
 | PHREDA 2024
-^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
+^r3/lib/sdl2gfx.r3
+^r3/util/immi.r3
 
 #colors $afa192 $eee4da $ede0c8 $f2b179 $ffcea4 $e8c064 $ffab6e $fd9982 $ead79c $76daff $beeaa5 $d7d4f0
 #map * 16 | 4 * 4 
@@ -24,9 +24,9 @@
 	postile 62 dup SDLFrect
 	rot 0? ( drop ; ) 
 	-rot
-	$000000 ttcolor
-	postile	8 + swap 8 + swap ttat
-	rot 1 swap << "%d" ttprint
+	$000000 txrgb
+	postile	8 + swap 8 + swap txat
+	rot 1 swap << "%d" txprint
 	;
 	
 :drawmap
@@ -103,22 +103,25 @@
 	;
 		
 :play
-	immgui 	
-	0 SDLcls
+	0 sdlcls
 	drawmap
 
-	$ff 'immcolorbtn !
-	200 28 immbox
-	500 16 immat
-	"* 2048 *" immlabelc immdn immdn
+	uiStart
+	8 4 uiPading
 	
-	moves "Moves:%d" immlabelc immdn
-	score "Score:%d" immlabelc immdn 
-	immdn
-	'state immlabelc immdn 
-	immdn
-	'reset "New Game" immbtn immdn 
-	'exit "Exit" immbtn 	
+	0.2 %w uiE
+	$ffffff txrgb
+	ui..
+	"* 2048 *" uiLabelC
+	ui..
+	moves "Moves:%d" sprint uiLabel
+	score "Score:%d" sprint uiLabel
+	ui..
+	'state uiLabelC
+	ui..
+	'reset "New Game" uiRbtn
+	'exit "Exit" uiRbtn	
+	uiEnd
 	
 	sdlredraw
 	sdlkey 
@@ -132,7 +135,7 @@
 	
 :
 	"2048" 800 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 24 ttf_OpenFont ttfont!
+	"media/ttf/Roboto-Medium.ttf" 24 txload txfont
 	reset
 	'play sdlshow
 	SDLquit 
