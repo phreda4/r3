@@ -231,7 +231,7 @@
 	
 	noise_mix randmax +
 	
-	a> d.fil_env w@ fenvelope a> d.fil_env d!
+	a> d.fil_env d@ fenvelope a> d.fil_env d!
 	
 	cutoff
 	a> d.fil_env d@ contour_amount *. 2/ +
