@@ -1,5 +1,5 @@
 | fxdemo.r3 - demo interactivo de fxsynth.r3 (estilo bfxr/jfxr)
-| PHREDA-style - GUI immi.r3 v3
+| PHREDA 2026 
 ^r3/util/immi.r3
 ^r3/audio/fx.r3
 
@@ -7,8 +7,10 @@
 
 #fxbuff * 44 | 22*2
 
+#fxlistini
 #fxlistcnt
-#fxlist * 1024
+#fxlistnow
+#fxlist * 2048
 #fxlist>
 
 |============================================================
@@ -98,7 +100,74 @@
 	0.0 0.5 randminmax 'p_repeat !
 	;
 	
-:presetsPanel
+|---- fx list
+:setlist | n --
+	dup 'fxlistnow !
+	'fxbuff over 44 * 'fxlist + 44 cmove
+	'fxbuff fxUnpack
+	fxStop fxPlay
+	;
+	
+:putlist
+	'fxbuff fxpack
+	fxlist> 'fxbuff 44 cmove
+	44 'fxlist> +!
+	1 'fxlistcnt +!
+	;
+	
+:remlist
+	;
+	
+:listfx
+	stLink
+	0 ( fxlistcnt <?
+		fxlistnow =? ( stInfo ) 
+		'setlist over "%h" sprint uiRbtn
+		fxlistnow =? ( stLink ) 
+		1+ ) drop ;
+	
+:seedPanel
+	uiPush
+	0.12 %w uiO
+	stSucc 
+	'putlist         "Save"  uiCBtn
+	stinfo
+	[ 'fxbuff fxUnpack fxPlay ; ]  "Load"   uiCBtn
+	stDang
+	'remlist "Delete" uiCBtn
+	uiRest
+	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
+	$11 uiText |Label
+	uiPop
+	;
+
+#wavelist "Sqr" "Saw" "Sin" "Nse" "Tri" 
+
+:wavebtns
+	0 ( 5 <?
+		p_wave =? ( stInfo )
+		[ dup 'p_wave ! fxPlay ; ] over 2 << 'wavelist + uiCBtn
+		p_wave =? ( stLink )
+		1+ ) drop ;
+		
+:exPlay
+	uiEx? 1? ( fxStop fxPlay ) drop	;
+	
+:game
+	$0 SDLcls
+
+	uiStart
+	8 2 uiPading
+	font1 txfont
+
+	0.1 %h uiN
+	"FX Generator" uiLabelC
+	ui--	
+	
+	0.14 %h uiS 	
+	seedPanel
+	
+	0.2 %w uiO
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
 	stLink 
@@ -110,19 +179,10 @@
 	[ fxHit fxPlay ; ]       "Hit / Hurt"    uiRbtn
 	[ fxJump fxPlay ; ]      "Jump"          uiRbtn
 	[ fxBlip fxPlay ; ]      "Blip / Select" uiRbtn
+	"* Wave *" uiLabelC
+	wavebtns
 
-	;
-
-|---- botones de onda: solo cambian p_wave y vuelven a tocar, sin tocar el resto
-:wavebtns
-	stLink [ 0 'p_wave ! fxPlay ; ] "Square" uiCBtn
-	stLink [ 1 'p_wave ! fxPlay ; ] "Saw"    uiCBtn
-	stLink [ 2 'p_wave ! fxPlay ; ] "Sin"    uiCBtn
-	stLink [ 3 'p_wave ! fxPlay ; ] "Noise"  uiCBtn
-	stLink [ 4 'p_wave ! fxPlay ; ] "Trig"   uiCBtn
-	;
-
-:paramsLeft
+	0.2 %w uiO
 	"Freq " uiLabelR
 	"Ataque " uiLabelR	
 	"Sosten " uiLabelR
@@ -136,94 +196,21 @@
 	"HighPass " uiLabelR
 	"Repetir " uiLabelR
 	"Volumen " uiLabelR
-	;
-
-:paramsRight
-	0.0 1.0 'p_freq uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_attack uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_sustain uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_punch uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_decay uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	-1.0 1.0 'p_freqramp uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_duty uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_vibdepth uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_vibspeed uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_lpffreq uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_hpffreq uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_repeat uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	0.0 1.0 'p_vol uiSliderf
-	uiEx? 1? ( fxStop fxPlay ) drop
-	;
-	
-|---- fx list
-:setlist
-	'fxbuff over 44 * 'fxlist + 44 cmove
-	'fxbuff fxUnpack
-	fxStop fxPlay
-	;
-	
-:putlist
-	'fxbuff fxpack
-	fxlist> 'fxbuff 44 cmove
-	44 'fxlist> +!
-	1 'fxlistcnt +!
-	;
-	
-:listfx
-	stLink
-	0 ( fxlistcnt <?
-		'setlist over "%h" sprint uiRbtn
-		1+ ) drop
-	;
-	
-:seedPanel
-	uiPush
-	0.12 %w uiO
-	
-	stSucc 'putlist         "Save"  uiCBtn
-	stWarn [ 'fxbuff fxUnpack fxPlay ; ]  "Load"   uiCBtn
-	uiRest
-	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
-	$11 uiText |Label
-	uiPop
-	;
-
-:game
-	$0 SDLcls
-
-	uiStart
-	8 2 uiPading
-	font1 txfont
-
-	0.1 %h uiN
-	"FX Generator" uiLabelC
-	ui--	
-	
-	0.1 %h uiS 	
-	seedPanel
-	
-	0.2 %w uiO
-	presetsPanel
-	"* Wave *" uiLabelC
-	wavebtns
-
-	0.2 %w uiO
-	paramsLeft
 	
 	0.3 %w uiO
-	paramsRight
+	0.0 1.0 'p_freq uiSliderf		exPlay
+	0.0 1.0 'p_attack uiSliderf		exPlay
+	0.0 1.0 'p_sustain uiSliderf	exPlay
+	0.0 1.0 'p_punch uiSliderf		exPlay
+	0.0 1.0 'p_decay uiSliderf		exPlay
+	-1.0 1.0 'p_freqramp uiSliderf	exPlay
+	0.0 1.0 'p_duty uiSliderf		exPlay
+	0.0 1.0 'p_vibdepth uiSliderf	exPlay
+	0.0 1.0 'p_vibspeed uiSliderf	exPlay
+	0.0 1.0 'p_lpffreq uiSliderf 	exPlay
+	0.0 1.0 'p_hpffreq uiSliderf 	exPlay
+	0.0 1.0 'p_repeat uiSliderf 	exPlay
+	0.0 1.0 'p_vol uiSliderf		exPlay
 
 	uiRest
 	listfx
@@ -246,5 +233,6 @@
 	
 	'fxlist 'fxlist> !
 	0 'fxlistcnt !
+	putlist
 	'game SDLshow
 	SDLquit ;
