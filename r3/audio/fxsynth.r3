@@ -106,9 +106,9 @@
 	100.0 p_freq dup *. 0.001 + /. 'fperiod !
 	100.0 p_freqlimit dup *. 0.001 + /. 'fmaxperiod !
 	1.0 p_freqramp dup dup *. *. 0.01 *. - 'fslide !
-	p_freqdramp dup dup *. *. 0.000001 *. neg 'fdslide !
+	p_freqdramp dup dup *. *. 0.0001 *. neg 'fdslide !
 	0.5 p_duty 2/ - 'sduty !
-	p_dutyramp neg 0.00005 *. 'sdutyramp !
+	p_dutyramp neg 0.0005 *. 'sdutyramp !
 	0 'iphase ! ;
 
 :fxDeriveArp

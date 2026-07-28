@@ -508,7 +508,12 @@
 :2lit*>>	
 	getTOS ,back      | c
 	getTOS ,back      | c l
-	0? ( 2drop ,back 0 ,tlit ; ) 			| var 0 cc *>>
+	
+	| var 0 cc *>> !! ojo 3er token puede ser cualquiera
+	| y si tengo 0.0000001 lo va a codificar como 0 !!
+	|0? ( 2drop ,back 0 ,tlit ; ) 		
+	0? ( 2drop 0 ,tlit TKand ,t ; )
+	
 	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
 	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
 	dup 1- nand? ( ,lit2pot*>> ; ) | 2pot 2pot *>>
