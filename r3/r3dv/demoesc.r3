@@ -2,7 +2,7 @@
 | PHREDA 2026
 ^./renderlib.r3
 ^./rlhud.r3
-^./rlShapes.r3
+^./rlshapes.r3
 ^./rl3dtile.r3
 
 | Camera controls
