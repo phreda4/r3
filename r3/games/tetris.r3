@@ -216,7 +216,9 @@
 	ui..
 	'Label uiLabelC
 	ui..
+	stInfo
 	'reset "Reset" uiRbtn
+	stDang
 	'exit "Exit" uiRbtn	
 	uiEnd
 	
@@ -247,7 +249,7 @@
 :
 	msec time rerand
 	"Tetris" 800 600 SDLinit
-	"media/ttf/ProggyClean.ttf" 24 txload txfont
+	"media/ttf/ProggyClean.ttf" 32 txload txfont
 	reset
 	'game SDLshow
 	SDLquit 

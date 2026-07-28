@@ -119,7 +119,9 @@
 	ui..
 	'state uiLabelC
 	ui..
+	stInfo
 	'reset "New Game" uiRbtn
+	stDang
 	'exit "Exit" uiRbtn	
 	uiEnd
 	

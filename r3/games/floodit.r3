@@ -88,16 +88,18 @@
 	
 	0.3 %w uiE
 	$ffffff txrgb
-	
-	'reset "New Game" uiRbtn
-	'exit "Exit" uiRbtn	
-
+	ui..
 	"Floodit !" uiLabelC
+	ui..
+	stInfo
 	'reset1 "Beginner" uiRbtn
 	'reset2 "Intermediate" uiRbtn
 	'reset3 "Advance" uiRbtn 
+	ui..
 	'state uiLabelC	
 	turn "turn:%d" sprint uiLabel
+	ui..
+	stDang
 	'exit "Exit" uiRbtn 
 	
 	0.1 %h uiS

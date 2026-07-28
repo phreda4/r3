@@ -3,6 +3,7 @@
 | PHREDA 2025
 |
 ^r3/lib/sdl2gfx.r3
+^r3/lib/color.r3
 ^r3/util/txfont.r3
 
 |--- Layout
@@ -315,6 +316,11 @@
 ::stDark $ff393F4Cff14161A 'colfil ! ;	| dark
 ::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
 
+::stColor | rgb --
+	dup $ffffff $7f colmix  
+	32 << or $ff000000ff000000 or
+	'colfil ! ;
+	
 |--- fill widget
 ::uilFill
 |	colBac sdlcolor 

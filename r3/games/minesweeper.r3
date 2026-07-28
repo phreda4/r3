@@ -109,10 +109,9 @@
 |-----------		
 
 :click
-	"a" .println
 	SDLx 4 >> -? ( drop ; ) w >? ( drop ; )
 	SDLy 4 >> -? ( 2drop ; ) h >? ( 2drop ; )
-	btnMouse dup "%d" .println
+	btnMouse 
 	1 >? ( drop marca ; ) drop
 	checkc 0? ( drop clearcell ; )
 	-rot ]map 
@@ -149,12 +148,17 @@
 	
 	0.3 %w uiE
 	$ffffff txrgb
-	
+	ui..
 	"Minesweeper" uiLabelC
+	ui..
+	stInfo
 	'reset1 "Beginner" uiRbtn
 	'reset2 "Intermediate" uiRbtn
 	'reset3 "Advance" uiRbtn
+	ui..
 	'state uiLabelC
+	ui..
+	stDang	
 	'exit "Exit" uiRbtn 
 	uiEnd
 	
@@ -167,7 +171,7 @@
 	msec time rerand
 	"Minesweeper" 800 600 SDLinit
 	16 16 "media/img/mines.png" ssload 'sprites !
-	"media/ttf/ProggyClean.ttf" 24 txload txfont
+	"media/ttf/ProggyClean.ttf" 32 txload txfont
 	reset1
 	'game SDLshow
 	SDLquit 
