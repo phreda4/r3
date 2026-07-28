@@ -1,19 +1,18 @@
-^r3/lib/sdl2gfx.r3
-^r3/lib/math.r3
+^r3/lib/console.r3
 
 #t #y #k #e #d #q #c #xp #yp
-#SCALEX #SCALEY
-#colormode
 
-#colortime |#phase1 #phase2 #phase3 |#hue #sat #val #bright
-
-:rsin | rad -- s   
-	0.1591549 *. sin ;
-
+:gcd | a b -- gcd
+	0? ( ; )
+	( 1? swap over mod ) drop ;
+	
 :point | xin --	e	
-	d 39.0 *. |q c rsin *. + 440.0 - 
-	'yp !
+	d 9 3 */
+	'd !
 	;
 : 
-	1 point drop
+	point
+	8 'd !
+	0 2 gcd "%d" .println
+	waitesc
 ;

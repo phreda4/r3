@@ -473,27 +473,32 @@
 	0? ( 2drop 0 "0 division" error! ; )
 	/ ,nlit TK* ,t ; | mmmmm, que pasa cuando pierde precision..convertir a /
 	
+:gcd | a b -- gcd
+	|0? ( ; )
+	( 1? swap over mod ) drop ;
+	
 |----------------------------
 :,lit*/ | -- ; a(runtime) b c(TOS) literales -- a*b/c
-	getTOS 
+	getTOS ,back
 	0? ( drop 0 "0 division" error! ; ) 	| c==0
-	,back getTOS	| b c
-	2dup mod | b c (b mod c)
-	0? ( drop /						| q = b/c
-		1 =? ( 3drop ,back ; )			| a*1 -> a
-		-1 =? ( 3drop ,back TKneg ,t ; )	| a*-1 -> -a
-		,back nip nip ,nlit TK* ,t ; 
-		) drop
-	2dup swap mod | c b (c mod b)
-	0? ( drop /						| q = c/b
-		,nlit ,back ,back TK/ ,t ; 
-		) 2drop 
-	,nlit TK*/ ,t ;	| no exact division
+	getTOS ,back 			| c b		; vv b c */
+	2dup abs swap abs gcd 	| b c gcd	; nunca 0
+	rot over / -rot / 		| b' c'		; reduzco	
+	0? ( 2drop 0 ,nlit TKand ,t ; ) | res=0
+	1 =? ( drop | c=1
+		1 =? ( drop ; )				| b=1
+		-1 =? ( drop TKneg ,t ; )	| b=-1
+		,nlit TK/ ,t ; ) |,/ ; )		!!!
+	swap | 'c 'b
+	|0? ( 2drop 0 ,nlit TKand ,t ; ) | res=0
+	1 =? ( drop | b=1 
+		,nlit TK* ,t ; ) |,* ; )		!!!
+	,nlit ,nlit TK*/ ,t ;	| no exact division
 
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
-|	2lit? 1? ( 2drop ,lit*/ ; ) drop
-|	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
+	2lit? 1? ( 2drop ,lit*/ ; ) drop
+	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
 	,t ;
 
 |----------------------------	
@@ -618,10 +623,14 @@
 	toklen 3 << over + swap ;
 	
 :dataw | dicc --
-	lenword ( over <? @+ ,ana ) 2drop ;
+	lenword ( over <? @+ ,ana 
+		| error?
+		) 2drop ;
 	
 :codew | dicc --
-	lenwor ( over <? @+ ,ana ) 2drop ;
+	lenwor ( over <? @+ ,ana 
+		| error?
+		) 2drop ;
 		
 :inlineword | tok --
 	tok>dic toklen 1- | ini cnt | remove ;
