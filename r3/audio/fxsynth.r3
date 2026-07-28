@@ -224,12 +224,11 @@
 
 :fxFilterBypass | s -- s'
 	dup 'fltp ! 0.0 'fltdp ! ;
-
+	
 :fxFilterLP | s -- s'
-	dup fltp - fltw *. 'fltdp +!
-	fltdp fltdmp *. neg 'fltdp +!
-	fltp fltdp + 'fltp !
-	drop fltp ;
+	fltp - fltw *. fltdp +
+	dup fltdmp *. - dup 'fltdp !
+	fltp + dup 'fltp ! ;
 
 :fxLowpass | s -- s'
 	p_lpffreq 1.0 =? ( drop fxFilterBypass ; )
