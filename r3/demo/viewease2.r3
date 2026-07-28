@@ -1,6 +1,5 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/varanim.r3
-^r3/util/sdlgui.r3
 ^r3/util/textb.r3
 
 #font
@@ -53,7 +52,6 @@
 	"View ease" 1024 600 SDLinit
 	"media/ttf/Roboto-Medium.ttf" 20 TTF_OpenFont 'font ! 
 	$ff vaini
-
 	
 	inipanel
 	"View EASE number" $ffff0025f000 200 80 font textbox 'titulo !

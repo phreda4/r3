@@ -2,8 +2,8 @@
 | PHREDA 2020
 |-------------------
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/lib/rand.r3
+^r3/util/immi.r3
 
 #grid * 800 | 10 * 20 *4
 
@@ -205,16 +205,21 @@
 :game | ( --- )
 	$444444 SDLcls
 	
-	immgui 	
-	200 28 immbox
-	500 50 immat
-	"Tetris R3" immlabelc immdn
-	points "Points:%d" sprint
-	immlabelC immdn	
-	'Label immlabelc immdn
-	'reset "Reset" immbtn immdn
-	'exit "Exit" immbtn 
-
+	uiStart
+	8 4 uiPading
+	0.2 %w uiE
+	$ffffff txrgb
+	ui..
+	"Tetris R3" uiLabelC
+	ui..
+	points "Score:%d" sprint uiLabel
+	ui..
+	'Label uiLabelC
+	ui..
+	'reset "Reset" uiRbtn
+	'exit "Exit" uiRbtn	
+	uiEnd
+	
 	$0 SDLColor
 	286 96 128 70 SDLFRect
 	62 96 166 326 SDLFRect
@@ -242,7 +247,7 @@
 :
 	msec time rerand
 	"Tetris" 800 600 SDLinit
-	"media/ttf/ProggyClean.ttf" 24 TTF_OpenFont immSDL
+	"media/ttf/ProggyClean.ttf" 24 txload txfont
 	reset
 	'game SDLshow
 	SDLquit 
