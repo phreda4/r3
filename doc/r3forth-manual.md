@@ -24,7 +24,7 @@
 - `a b >?` asks "is `a` greater than `b`?" — NOS is always `a`
 - Unary conditionals (`0?`, `1?`, `-?`, `+?`) do **not** consume the stack
 - Binary conditionals (`>?`, `<?`, etc.) consume TOS, leave NOS
-- **Fixed-point:** 48.16 format — multiply any real by 65536 to get the stored integer
+- **Fixed-point:** 48.16 format — multiply any real by $10000 to get the stored integer
 - **Angles:** in turns (0.0–1.0 = 0°–360°; 0.25 = 90°, 0.5 = 180°)
 
 ---
@@ -423,10 +423,7 @@ EMPTY                  | release — no garbage collector needed
 
 ---
 
-### core.r3 (I/O del sistema — dependiente de plataforma) *(multiplataforma)*
-
-Incluida automáticamente por `mem.r3` (`|WIN|^r3/lib/win/core.r3` o `|LIN|^r3/lib/posix/core.r3`).
-Misma API en ambos sistemas salvo lo marcado *(solo Windows)*.
+### core.r3 - I/O multiplataform
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -438,8 +435,8 @@ Misma API en ambos sistemas salvo lo marcado *(solo Windows)*.
 | `date.d` | `-- day` | day of month |
 | `date.dw` | `-- wday` | day of week |
 | `date.m` | `-- month` | month (1..12) |
-| `date.y` | `-- year` | |
-| `time.ms` | `-- ms` | milliseconds *(solo Windows)* |
+| `date.y` | `-- year` | year |
+| `time.ms` | `-- ms` | milliseconds *(only Windows)* |
 | `time.s` | `-- sec` | seconds |
 | `time.m` | `-- min` | minutes |
 | `time.h` | `-- hour` | hours |
@@ -449,7 +446,7 @@ Misma API en ambos sistemas salvo lo marcado *(solo Windows)*.
 | `FNAME` | `adr -- adrname` | get filename from find data |
 | `FDIR` | `adr -- 1/0` | is directory? |
 | `FSIZEF` | `adr -- size` | file size in bytes |
-| `filetimeD` | `'FILETIME -- 'dt` | FILETIME to date/time *(solo Windows)* |
+| `filetimeD` | `'FILETIME -- 'dt` | FILETIME to date/time *(only Windows)* |
 | `FCREADT` | `adr -- 'dt` | file creation date/time |
 | `FLASTDT` | `adr -- 'dt` | last access date/time |
 | `FWRITEDT` | `adr -- 'dt` | last write date/time |
@@ -461,12 +458,12 @@ Misma API en ambos sistemas salvo lo marcado *(solo Windows)*.
 | `fileisize` | `-- size` | size after fileinfo |
 | `fileijul` | `-- jul` | modification date as Julian |
 | `fileinfo` | `"file" -- 0=not exist` | get file info |
-| `filecreatetime` | `-- 'dt` | creation time (after fileinfo) *(solo Windows)* |
-| `filelastactime` | `-- 'dt` | last access time (after fileinfo) *(solo Windows)* |
-| `filelastwrtime` | `-- 'dt` | last write time (after fileinfo) *(solo Windows)* |
+| `filecreatetime` | `-- 'dt` | creation time (after fileinfo) *(only Windows)* |
+| `filelastactime` | `-- 'dt` | last access time (after fileinfo) *(only Windows)* |
+| `filelastwrtime` | `-- 'dt` | last write time (after fileinfo) *(only Windows)* |
 | `sys` | `"" --` | execute command (wait on Windows / shell exec on Linux) |
 | `sysnew` | `"" --` | execute in new window (Windows) / background (Linux) |
-| `sysdebug` | `"" --` | execute with debug *(solo Windows)* |
+| `sysdebug` | `"" --` | execute with debug *(only Windows)* |
 
 ---
 
@@ -492,7 +489,7 @@ Fixed-point (48.16) arithmetic, trigonometry, statistics, and float32 conversion
 | `2*` | `n -- n*2` | shift left |
 
 #### 48.16 Fixed-Point Arithmetic
-All values with `.` suffix are 48.16 fixed-point (integer × 65536).
+All values with `.` suffix are 48.16 fixed-point (integer × $10000).
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `*.s` | `a. b. -- c.` | fixed multiply, small numbers only |
