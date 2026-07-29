@@ -200,3 +200,24 @@
 	searchtree
 	]ba ;
 
+#ancestors * 256	| scratch: 32 niveles posibles
+
+::flOpenSearch | "text" -- adr/0 ; busca substring (case-insens) en uiDirs,
+	uiDirs
+	( dup c@ 1? 
+		$1f and 3 << 'ancestors + over swap !
+		dup 1+ pick2 findstri 
+		1? ( drop 
+			dup c@ $1f and
+			( 1? 1-
+				dup 3 << 'ancestors + @
+				dup c@ $80 or swap c!
+				) drop nip ; 
+			) drop
+		>>0	) 2drop 0 ;
+
+::flCloseAll |	; cierra todas las carpetas (limpia $80 en todo uiDirs)
+	uiDirs
+	( dup c@ 1? 
+		$7f and over c!
+		>>0 ) 2drop ;

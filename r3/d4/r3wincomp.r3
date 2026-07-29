@@ -2,7 +2,6 @@
 | PHREDA 2026
 |------------------
 ^r3/lib/console.r3
-^r3/util/utfg.r3
 
 ^r3/d4/r3token.r3
 ^r3/d4/genx64.r3
@@ -18,14 +17,28 @@
 	"asm/set.asm"
 	savemem
 	empty ;
+
+|------------------
+:codew | nro -- nro
+	dup 4 << dic + @ dic>name "%w" .println | debug
+	;	
 	
 :generatecode	
+	0 ( cntdef 1- <?
+		codew
+		1+ )
+	";-----BOOT-----" ,s ,cr
+	codew
+	drop
 	;
 
 : 	
-	.reset "[07Win64 Compiler" .awrite .cr .cr .cr .cr .cr
+	.reset 
+	"Win64 Compiler" .println
 	
-	'filename "mem/menu.mem" load drop
+	|'filename "mem/menu.mem" load drop
+	"r3/d4/gen/plain.r3" 'filename strcpy
+	
 	'filename .write " compiling..." .println
 	
 	'filename r3load
@@ -34,7 +47,7 @@
 |	"asm\compile.bat" sys
 |	"r3fasm.exe" sys
 	.cr
-	cols .hline
+	
 	"press any key to continue..." .print
 	waitkey
 	;

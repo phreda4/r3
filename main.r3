@@ -128,9 +128,13 @@
 	0 rows .at 7 .fc 4 .bc cols .nsp
 	0 rows .at 
 	" ? " .write .input
-	'pad trim c@ 0? ( drop ; ) drop
-	
-	;
+	'pad trim
+	dup c@ 0? ( 2drop ; ) drop
+	flCloseAll
+	flOpenSearch 0? ( drop ; ) 
+	uiDirs swap flVisibleIndex
+	-1 =? ( drop ; ) 'vfolder ! 
+	tuR! ;
 
 :filedelete
 	fuente c@ 0? ( drop ; ) drop	

@@ -488,6 +488,15 @@
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
 
+::flVisibleIndex | listadr adr -- idx/-1 ; adr debe ser un item de listadr	
+	swap
+	mark
+	maketree 'indlist @ >a
+	0 ( cntlist <?
+		a@+ pick2 =? ( drop nip empty ; )
+		drop 1+ ) 2drop 
+	empty -1 ;
+
 :chsel | 'var n key delta -- 'var n key
 	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv (2 -) !!
 	pageadj

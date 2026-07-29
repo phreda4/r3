@@ -151,5 +151,9 @@
 	dup basefind  +? ( $20000 or ; ) drop
 	wordfind +? ( ; ) drop
 	drop -1 ;
-	
+
+::makehelpwords	
+	makelist
+	makelistbase
+	;
 	

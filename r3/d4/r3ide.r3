@@ -73,7 +73,7 @@
 		1+ ) drop
 	,eol ;
 	
-|----
+|---- helpword
 #helpword * 32
 
 :cpyhelpword
@@ -88,9 +88,6 @@
 		) drop
 	0 swap c! 
 	drop ;
-	
-|	'fuente> ! 
-|	tuR! ;
 	
 |---- screen
 :setcursoride
@@ -173,19 +170,6 @@
 	'msg .print
 	;
 	
-|--- F2 help	
-:panelhelp
-	.reset .wfill fx fy .at 
-	"- Help -" .write
-	;
-	
-:helpcode
-	checkcode error 1? ( drop moderror ; ) drop
-|	fuente 'filename r3loadmem
-|	error 1? ( coderror ; ) drop
-|	codeok
-	'panelhelp 'panelinfo !
-	;
 
 |-------------------------------
 :printfname
@@ -259,16 +243,81 @@
 	[f3] =? ( fileplaino ) 
 	[f5] =? ( fileplain ) | dev
 	
-	
 	drop
 	.alsb
 	;
 	
+
+|--- F2 help	
+#infow
+#infohelp * 128
+
+:helpc
+	.reset .home 
+	1 flxN 
+	4 .bc 7 .fc " r3Help | " .write printfname 
+	" | " .write tuecursor. .write 
+	.eline
 	
-:panel
-	panelinfo 0? ( drop ; ) 
-	xsplit flxE
-	ex ;
+	1 flxS 
+	fx fy .at 
+	4 .bc 7 .fc 
+	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
+	'helpword .write
+	'msg .write
+	.eline
+	5 flxS
+	4 .bc 7 .fc
+	.wfill fx fy .at 
+	
+	"** " .write 'helpword .write " ** " .write 
+	infow " %h " .print 
+	'infohelp .write
+	
+	flxRest
+	tuReadCode
+	
+	uiKey
+	
+|	[f2] =? ( helpcode )
+|	[f3] =? ( anacode )
+|	[f4] =? ( runcode )
+|	[f5] =? ( debugcode )
+	
+|	[f6] =? ( cpyhelpword  )
+	
+|	[f10] =? ( compile )
+	toLow
+	drop ;
+	
+:wordshow
+	lwordname 'infohelp strcpy 
+|	mark
+|	4 << namwlist +	
+|	@+ 6>str .write
+|	@ .wordinfo 
+|	empty
+	;
+	
+:getlabel
+	'helpword lwordfind
+	$10000 and? ( drop "number push to data stack" 'infohelp strcpy ; ) 
+	$20000 and? ( drop "base word" 'infohelp strcpy ; )
+	+? ( wordshow ; ) 
+	drop "Not found" 'infohelp strcpy ;
+	
+:helpcode
+	cpyhelpword
+	getlabel
+	
+	|'helpword lwordfind 'infow !
+	
+|	checkcode error 1? ( drop moderror ; ) drop
+|	fuente 'filename r3loadmem
+|	error 1? ( coderror ; ) drop
+|	codeok
+	'helpc onTui 
+	;
 	
 |-------------------------------
 :main
@@ -285,13 +334,11 @@
 	'helpword .write
 	'msg .write
 	.eline
-	
-	panel
 	flxRest
-	
 	tuEditCode
+	
 	uiKey
-	[f2] =? ( helpcode )			| h
+	[f2] =? ( helpcode )
 	[f3] =? ( anacode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
@@ -307,6 +354,8 @@
 	.alsb
 	'filename "mem/menu.mem" load drop
 	|"r3/test/testasm.r3" 'filename strcpy
+	
+	makehelpwords	
 	
 	cols 2/ 'xsplit !
 	'filename TuLoadCode
