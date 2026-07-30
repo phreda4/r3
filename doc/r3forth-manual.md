@@ -238,7 +238,8 @@ drop
 
 ## Register Operations
 
-Registers A and B are fast auxiliary variables optimized for memory traversal. They **persist across word calls** — save them with `AB[` / `]BA` if you call words that may use them.
+Registers A and B are fast auxiliary variables optimized for memory traversal. 
+They **persist across word calls** — save them with `AB[` / `]BA` if you call words that may use them.
 
 ### Register A
 
@@ -307,7 +308,9 @@ Registers A and B are fast auxiliary variables optimized for memory traversal. T
 
 ## Return Stack
 
-The return stack stores return addresses during word calls. It can be used as temporary storage *within a single word* — every `>R` must be matched by `R>` before any exit, including conditional exits.
+The return stack stores return addresses during word calls. 
+It can be used as temporary storage *within a single word* — 
+every `>R` must be matched by `R>` before any exit, including conditional exits.
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -315,7 +318,8 @@ The return stack stores return addresses during word calls. It can be used as te
 | `R>` | `-- a (r: a --)` | Pop from return stack |
 | `R@` | `-- a (r: a -- a)` | Copy top of return stack (non-destructive) |
 
-> **Warning:** An unbalanced return stack causes the word to return to the wrong address. Always balance within the same word on all code paths.
+> **Warning:** An unbalanced return stack causes the word to return to the wrong address. 
+> Always balance within the same word on all code paths.
 
 ---
 
@@ -468,7 +472,8 @@ EMPTY                  | release — no garbage collector needed
 
 ### math.r3
 
-Fixed-point (48.16) arithmetic, trigonometry, statistics, and float32 conversion. Foundation library included by almost everything.
+Fixed-point (48.16) arithmetic, trigonometry, statistics, and float32 conversion. 
+Foundation library included by almost everything.
 
 **No dependencies.**
 
@@ -489,6 +494,7 @@ Fixed-point (48.16) arithmetic, trigonometry, statistics, and float32 conversion
 
 #### 48.16 Fixed-Point Arithmetic
 All values with `.` suffix are 48.16 fixed-point (integer × $10000).
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `*.s` | `a. b. -- c.` | fixed multiply, small numbers only |
@@ -502,7 +508,9 @@ All values with `.` suffix are 48.16 fixed-point (integer × $10000).
 | `sign` | `v -- v s` | push sign: +1 or -1 |
 
 #### Trigonometry (binary angles)
-Binary angle: `0`=0°, `0.25`=90°, `0.5`=180°, `1.0`≈360°. Results are 48.16 fixed-point in range -1.0..1.0.
+Binary angle: `0`=0°, `0.25`=90°, `0.5`=180°, `1.0`≈360°. 
+Results are 48.16 fixed-point in range -1.0..1.0.
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `sin` | `bangle -- r.` |  |
@@ -677,7 +685,8 @@ String manipulation words. Strings are zero-terminated (C style).
 
 ### mem.r3
 
-Heap memory management and formatted print words. Provides `here` as a bump-pointer allocator with mark/empty for temporary use.
+Heap memory management and formatted print words. 
+Provides `here` as a bump-pointer allocator with mark/empty for temporary use.
 
 **Dependencies:** `^r3/lib/str.r3`
 
@@ -892,12 +901,15 @@ Julian day number calculations for date arithmetic.
 
 ### console.r3
 
-Terminal I/O with ANSI escape sequences. Uses buffered output for performance. All `.` prefix words output to the console buffer.
+Terminal I/O with ANSI escape sequences. Uses buffered output for performance. 
+All `.` prefix words output to the console buffer.
 
 **Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/parse.r3`
 
 #### Key Code Constants
-Named constants for ANSI/VT key sequences: `[ESC]`, `[ENTER]`, `[BACK]`, `[TAB]`, `[DEL]`, `[INS]`, `[UP]`, `[DN]`, `[RI]`, `[LE]`, `[PGUP]`, `[PGDN]`, `[HOME]`, `[END]`, `[F1]`..`[F12]`, `[SHIFT+*]` variants.
+Named constants for ANSI/VT key sequences: `[ESC]`, `[ENTER]`, `[BACK]`, `[TAB]`, 
+`[DEL]`, `[INS]`, `[UP]`, `[DN]`, `[RI]`, `[LE]`, `[PGUP]`, `[PGDN]`, `[HOME]`, 
+`[END]`, `[F1]`..`[F12]`, `[SHIFT+*]` variants.
 
 #### Output Buffer
 | Word | Stack Effect | Description |
@@ -952,8 +964,11 @@ Named constants for ANSI/VT key sequences: `[ESC]`, `[ENTER]`, `[BACK]`, `[TAB]`
 | `.scrollon` | `--` | reset scroll region |
 
 #### ANSI Colors
-Standard foreground: `.Black` `.Red` `.Green` `.Yellow` `.Blue` `.Magenta` `.Cyan` `.White` (and bright variants with `l` suffix).
-Standard background: `.BBlack` `.BRed` `.BGreen` `.BYellow` `.BBlue` `.BMagenta` `.BCyan` `.BWhite`.
+Standard foreground: `.Black` `.Red` `.Green` `.Yellow` `.Blue` `.Magenta` 
+`.Cyan` `.White` (and bright variants with `l` suffix).
+Standard background: `.BBlack` `.BRed` `.BGreen` `.BYellow` `.BBlue` `.BMagenta` 
+`.BCyan` `.BWhite`.
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `.fc` | `n --` | 256-color foreground (0..255) |
@@ -1024,9 +1039,11 @@ Base64 encoding and decoding.
 
 ### sdl2.r3
 
-SDL2 window creation, renderer, textures, events, and audio. Core SDL2 binding — all graphics libraries depend on this.
+SDL2 window creation, renderer, textures, events, and audio. 
+Core SDL2 binding — all graphics libraries depend on this.
 
-**Dependencies:** `|WIN|^r3/lib/win/core.r3` or `|LIN|^r3/lib/posix/core.r3`, `^r3/lib/console.r3`, `^r3/lib/sdlkeys.r3`
+**Dependencies:** `|WIN|^r3/lib/win/core.r3` or `|LIN|^r3/lib/posix/core.r3`, 
+`^r3/lib/console.r3`, `^r3/lib/sdlkeys.r3`
 
 #### Global State
 | Word | Stack Effect | Description |
@@ -1076,7 +1093,12 @@ SDL2 window creation, renderer, textures, events, and audio. Core SDL2 binding �
 | `SDLTexwh` | `tex -- w h` | get texture dimensions |
 
 #### Raw SDL2 Bindings
-Direct wrappers for: `SDL_Init`, `SDL_Quit`, `SDL_CreateWindow`, `SDL_CreateRenderer`, `SDL_CreateTexture`, `SDL_DestroyTexture`, `SDL_DestroyRenderer`, `SDL_UpdateTexture`, `SDL_RenderClear`, `SDL_RenderCopy`, `SDL_RenderCopyEx`, `SDL_RenderPresent`, `SDL_SetRenderDrawColor`, `SDL_PollEvent`, `SDL_GetTicks`, `SDL_Delay`, `SDL_GL_*`, `SDL_OpenAudioDevice`, `SDL_QueueAudio`, `SDL_GetClipboardText`, `SDL_SetClipboardText`, and many more.
+Direct wrappers for: `SDL_Init`, `SDL_Quit`, `SDL_CreateWindow`, `SDL_CreateRenderer`, 
+`SDL_CreateTexture`, `SDL_DestroyTexture`, `SDL_DestroyRenderer`, `SDL_UpdateTexture`, 
+`SDL_RenderClear`, `SDL_RenderCopy`, `SDL_RenderCopyEx`, `SDL_RenderPresent`, 
+`SDL_SetRenderDrawColor`, `SDL_PollEvent`, `SDL_GetTicks`, `SDL_Delay`, `SDL_GL_*`, 
+`SDL_OpenAudioDevice`, `SDL_QueueAudio`, `SDL_GetClipboardText`, `SDL_SetClipboardText`, 
+and many more.
 
 ---
 
@@ -1121,6 +1143,7 @@ SDL2 2D drawing primitives, sprite/tileset system.
 
 #### Tileset System
 Tileset: a single image divided into equal-sized tiles. Each tile has an index `n`.
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `tsload` | `w h "filename" -- ts` | load image as tileset with w×h pixel tiles |
@@ -1133,6 +1156,7 @@ Tileset: a single image divided into equal-sized tiles. Each tile has an index `
 
 #### Single-Image Sprite Drawing
 Draw textures with optional rotation and zoom, centered on the given point.
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `sprite` | `x y img --` | draw texture centered at x,y |
@@ -1141,7 +1165,10 @@ Draw textures with optional rotation and zoom, centered on the given point.
 | `spriteRZ` | `x y ang zoom img --` | draw texture centered, rotated and scaled |
 
 #### Sprite-Sheet (ssload) System
-Sprite-sheet: all frames packed into one image in a grid. Frames are addressed by index `n` inside the sheet. UV coordinates are pre-computed at load time for GPU efficiency.
+Sprite-sheet: all frames packed into one image in a grid. 
+Frames are addressed by index `n` inside the sheet. UV coordinates are 
+pre-computed at load time for GPU efficiency.
+
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `ssload` | `w h "file" -- ssprite` | load image as sprite-sheet with w×h pixel cells |
@@ -1196,7 +1223,11 @@ SDL2_ttf bindings for TrueType font rendering.
 
 **Dependencies:** `|WIN|^r3/lib/win/core.r3` or `|LIN|^r3/lib/posix/core.r3`
 
-Direct wrappers: `TTF_Init`, `TTF_Quit`, `TTF_OpenFont`, `TTF_CloseFont`, `TTF_SetFontStyle`, `TTF_SetFontSize`, `TTF_SetFontSDF`, `TTF_SetFontOutline`, `TTF_SetFontLineSkip`, `TTF_SizeText`, `TTF_SizeUTF8`, `TTF_MeasureUTF8`, `TTF_RenderText_Solid`, `TTF_RenderUTF8_Solid`, `TTF_RenderUTF8_Blended`, `TTF_RenderUTF8_Blended_Wrapped`, `TTF_RenderUNICODE_Blended`.
+Direct wrappers: `TTF_Init`, `TTF_Quit`, `TTF_OpenFont`, `TTF_CloseFont`, 
+`TTF_SetFontStyle`, `TTF_SetFontSize`, `TTF_SetFontSDF`, `TTF_SetFontOutline`, 
+`TTF_SetFontLineSkip`, `TTF_SizeText`, `TTF_SizeUTF8`, `TTF_MeasureUTF8`, 
+`TTF_RenderText_Solid`, `TTF_RenderUTF8_Solid`, `TTF_RenderUTF8_Blended`, 
+`TTF_RenderUTF8_Blended_Wrapped`, `TTF_RenderUNICODE_Blended`.
 
 ---
 
@@ -1241,7 +1272,11 @@ SDL2_net bindings for TCP and UDP networking.
 
 **Dependencies:** `|WIN|^r3/lib/win/core.r3` or `|LIN|^r3/lib/posix/core.r3`
 
-Direct wrappers: `SDLNet_Init`, `SDLNet_Quit`, `SDLNet_ResolveHost`, `SDLNet_ResolveIP`, `SDLNet_TCP_Open`, `SDLNet_TCP_OpenServer`, `SDLNet_TCP_OpenClient`, `SDLNet_TCP_Accept`, `SDLNet_TCP_Send`, `SDLNet_TCP_Recv`, `SDLNet_TCP_Close`, `SDLNet_UDP_Open`, `SDLNet_UDP_Send`, `SDLNet_UDP_Recv`, `SDLNet_UDP_Close`, `SDLNet_AllocPacket`, `SDLNet_FreePacket`.
+Direct wrappers: `SDLNet_Init`, `SDLNet_Quit`, `SDLNet_ResolveHost`, 
+`SDLNet_ResolveIP`, `SDLNet_TCP_Open`, `SDLNet_TCP_OpenServer`, 
+`SDLNet_TCP_OpenClient`, `SDLNet_TCP_Accept`, `SDLNet_TCP_Send`, 
+`SDLNet_TCP_Recv`, `SDLNet_TCP_Close`, `SDLNet_UDP_Open`, `SDLNet_UDP_Send`, 
+`SDLNet_UDP_Recv`, `SDLNet_UDP_Close`, `SDLNet_AllocPacket`, `SDLNet_FreePacket`.
 
 ---
 
@@ -1273,7 +1308,14 @@ OpenGL bindings accessed via SDL2's GL context.
 
 **Dependencies:** `^r3/lib/sdl2.r3`
 
-Direct wrappers for: `glCreateProgram`, `glCreateShader`, `glShaderSource`, `glCompileShader`, `glGetShaderiv`, `glAttachShader`, `glGetAttribLocation`, `glGenBuffers`, `glBindBuffer`, `glBufferData`, `glBufferSubData`, `glClearColor`, `glClear`, `glUseProgram`, `glValidateProgram`, `glEnableVertexAttribArray`, `glVertexAttribPointer`, `glDrawElements`, `glDrawArrays`, `glDrawArraysInstanced`, `glMapBuffer`, `glUnmapBuffer`, `glGetUniformBlockIndex`, `glUniformBlockBinding`, `glBindBufferBase`, `glGetTexImage`, and more.
+Direct wrappers for: `glCreateProgram`, `glCreateShader`, `glShaderSource`, 
+`glCompileShader`, `glGetShaderiv`, `glAttachShader`, `glGetAttribLocation`, 
+`glGenBuffers`, `glBindBuffer`, `glBufferData`, `glBufferSubData`, 
+`glClearColor`, `glClear`, `glUseProgram`, `glValidateProgram`, 
+`glEnableVertexAttribArray`, `glVertexAttribPointer`, `glDrawElements`, 
+`glDrawArrays`, `glDrawArraysInstanced`, `glMapBuffer`, `glUnmapBuffer`, 
+`glGetUniformBlockIndex`, `glUniformBlockBinding`, `glBindBufferBase`, 
+`glGetTexImage`, and more.
 
 ---
 
@@ -1283,7 +1325,8 @@ SDL2 keyboard scancode constants.
 
 **No dependencies.**
 
-⚠️ Runtime binding — constants defined via SDL2 event system. Used by `sdl2.r3` and `input.r3`. Provides named constants for all SDL_Scancode values.
+⚠️ Runtime binding — constants defined via SDL2 event system. 
+Used by `sdl2.r3` and `input.r3`. Provides named constants for all SDL_Scancode values.
 
 ---
 
@@ -1486,7 +1529,8 @@ Isometric sprite rendering system with z-sort.
 
 ### vdraw.r3
 
-Virtual drawing surface with pluggable set/get pixel callbacks. Used for off-screen rendering into arbitrary buffers.
+Virtual drawing surface with pluggable set/get pixel callbacks. 
+Used for off-screen rendering into arbitrary buffers.
 
 **Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/math.r3`
 
@@ -1522,11 +1566,14 @@ Structure layout: `offset 0`=map handle, `8`=file handle, `16`=size, `24`=filena
 
 ### memavx.r3
 
-AVX-accelerated buffer conversions between float32, fixed-point 48.16, and packed RGB. |WIN| only.
+AVX-accelerated buffer conversions between float32, 
+fixed-point 48.16, and packed RGB. |WIN| only.
 
 **Dependencies:** `^r3/lib/win/kernel32.r3`
 
-⚠️ Loads `memavx.dll` at runtime. Specific exported word names depend on DLL version. Used for high-speed image data type conversion (e.g., float arrays to/from pixel buffers).
+⚠️ Loads `memavx.dll` at runtime. Specific exported word names depend 
+on DLL version. Used for high-speed image data type conversion 
+(e.g., float arrays to/from pixel buffers).
 
 ---
 
@@ -1605,9 +1652,11 @@ Cross-platform webcam capture via `webcam.dll`/`.so`.
 
 ### glutil.r3
 
-OpenGL helper words layered on `sdl2gl.r3`: shader loading/compilation, uniform setters, texture loading from images, and a ready-made textured cube.
+OpenGL helper words layered on `sdl2gl.r3`: shader loading/compilation, 
+uniform setters, texture loading from images, and a ready-made textured cube.
 
-**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl.r3`, `^r3/lib/sdl2image.r3`
+**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl.r3`, 
+]`^r3/lib/sdl2image.r3`
 
 ```
 -- Shader Loading --
@@ -1637,65 +1686,14 @@ OpenGL helper words layered on `sdl2gl.r3`: shader loading/compilation, uniform 
 
 `##glimgw`/`##glimgh` hold the pixel size of the last texture loaded via `glImgTex`.
 
----
-
-### onnx.r3
-
-Direct bindings to the [ONNX Runtime C API](https://onnxruntime.ai/docs/api/c/) (`onnxruntime.dll`), for running neural network models. |WIN|
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-This is a near-complete 1:1 mirror of the official `OrtApi` function table — roughly 190 functions covering environment/session setup, tensors, memory info, sparse tensors, execution providers (CUDA, TensorRT, ROCm, DirectML, Dnnl...), IO binding, and LoRA adapters. Every real ONNX Runtime C API function `OrtApi->Xxx(...)` is exposed here as `::OrtXxx`, in the same argument order, via the standard `sysN` DLL-call mechanism (`N` = argument count). A few conveniences are added on top:
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `OrtgetVersionString` | `-- 'str` | ONNX Runtime version string |
-| `ortSess_CPU` | `'options threads -- 'status` | append the CPU execution provider |
-| `ortSess_MDL` | `'options threads -- 'status` | append the MDL execution provider |
-
-Given the size and 1:1 nature of the rest, function-by-function stack docs aren't reproduced here — the [official OrtApi reference](https://onnxruntime.ai/docs/api/c/struct_ort_api.html) applies directly: whatever a given `OrtXxx` takes in C, the r3 word `::OrtXxx` takes on the stack in the same left-to-right order (with the trailing output pointer(s) becoming stack outputs). Typical flow: `OrtCreateEnv` → `OrtCreateSessionOptions` (+ `ortSess_CPU`/`ortSess_MDL` or one of the `SessionOptionsAppendExecutionProvider_*` words) → `OrtCreateSession` → `OrtRun`.
 
 ---
 
-### tflite.r3
-
-Bindings to the [TensorFlow Lite C API](https://www.tensorflow.org/lite/api_docs/c) (`tensorflowlite_c.dll`), for running `.tflite` models. |WIN|
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| **Setup** | | |
-| `TfLiteModelCreateFromFile` | `'path -- 'model` |  |
-| `TfLiteInterpreterOptionsCreate` | `-- 'options` |  |
-| `TfLiteInterpreterOptionsAddDelegate` | `'options 'delegate --` |  |
-| `TfLiteXNNPackDelegateCreate` | `'xnnopts -- 'delegate` | CPU-optimized delegate |
-| `TfLiteInterpreterCreate` | `'model 'options -- 'interp` |  |
-| `TfLiteInterpreterAllocateTensors` | `'interp -- r` |  |
-| **Tensors** | | |
-| `TfLiteInterpreterGetInputTensor` | `'interp idx -- 'tensor` |  |
-| `TfLiteInterpreterGetOutputTensor` | `'interp idx -- 'tensor` |  |
-| `TfLiteTensorDim` | `'tensor idx -- n` | size of dimension idx |
-| `TfLiteTensorByteSize` | `'tensor -- bytes` |  |
-| `TfLiteTensorData` | `'tensor -- 'buf` | raw data pointer |
-| `TfLiteTensorCopyFromBuffer` | `'tensor 'src bytes -- r` | upload input data |
-| `TfLiteTensorCopyToBuffer` | `'tensor 'dst bytes -- r` | read back output data |
-| **Run** | | |
-| `TfLiteInterpreterInvoke` | `'interp -- r` |  |
-| **Cleanup** | | |
-| `TfLiteInterpreterDelete` | `'interp -- r` |  |
-| `TfLiteInterpreterOptionsDelete` | `'options -- r` |  |
-| `TfLiteModelDelete` | `'model -- r` |  |
-
-**Typical flow:** `TfLiteModelCreateFromFile` → `TfLiteInterpreterOptionsCreate` (+ `TfLiteXNNPackDelegateCreate`/`TfLiteInterpreterOptionsAddDelegate` if using the XNNPACK delegate) → `TfLiteInterpreterCreate` → `TfLiteInterpreterAllocateTensors` → get input tensor(s), `TfLiteTensorCopyFromBuffer` → `TfLiteInterpreterInvoke` → get output tensor(s), `TfLiteTensorCopyToBuffer`.
-
----
 
 ### sdl2gl-const.r3
 
-OpenGL constant definitions, included by `sdl2gl.r3`. Not called directly — just a table of `$`-prefixed GL enum values (booleans, buffer bits, etc.).
-
----
+OpenGL constant definitions, included by `sdl2gl.r3`. 
+Not called directly — just a table of `$`-prefixed GL enum values (booleans, buffer bits, etc.).
 
 ### sdl2gl-constv.r3
 
@@ -1717,7 +1715,16 @@ Clipboard access. Platform-specific implementation in `lib/win/` or `lib/posix/`
 
 ### win/kernel32.r3
 
-Raw Win32 kernel32.dll bindings. Includes: Console management (`AllocConsole`, `FreeConsole`, `GetConsoleMode`, `SetConsoleMode`, `SetConsoleTitle`, `ReadConsoleInput`, `WriteConsole`), File operations (`CreateFile`, `CloseHandle`, `ReadFile`, `WriteFile`, `SetFilePointer`, `SetEndOfFile`, `DeleteFile`, `MoveFile`, `GetFileAttributes`, `GetFileSize`), Memory (`GetProcessHeap`, `HeapAlloc`, `HeapFree`, `HeapReAlloc`, `GlobalAlloc`, `GlobalLock`, `GlobalFree`), Process/Thread (`CreateProcess`, `Sleep`, `WaitForSingleObject`, `GetLastError`), File Mapping (`OpenFileMappingA`, `CreateFileMappingA`, `MapViewOfFile`, `UnmapViewOfFile`), Directory (`CreateDirectory`, `RemoveDirectory`, `SetCurrentDirectory`, `FindFirstFile`, `FindNextFile`, `FindClose`), System (`GetLocalTime`, `GetTickCount`, `FileTimeToSystemTime`, `SetConsoleOutputCP`).
+Raw Win32 kernel32.dll bindings. Includes: Console management (
+`AllocConsole`, `FreeConsole`, `GetConsoleMode`, `SetConsoleMode`, 
+`SetConsoleTitle`, `ReadConsoleInput`, `WriteConsole`), 
+File operations (`CreateFile`, `CloseHandle`, `ReadFile`, `WriteFile`, 
+`SetFilePointer`, `SetEndOfFile`, `DeleteFile`, `MoveFile`, `GetFileAttributes`, `GetFileSize`), 
+Memory (`GetProcessHeap`, `HeapAlloc`, `HeapFree`, `HeapReAlloc`, `GlobalAlloc`, `GlobalLock`, `GlobalFree`), 
+Process/Thread (`CreateProcess`, `Sleep`, `WaitForSingleObject`, `GetLastError`), 
+File Mapping (`OpenFileMappingA`, `CreateFileMappingA`, `MapViewOfFile`, `UnmapViewOfFile`), 
+Directory (`CreateDirectory`, `RemoveDirectory`, `SetCurrentDirectory`, `FindFirstFile`, `FindNextFile`, `FindClose`), 
+System (`GetLocalTime`, `GetTickCount`, `FileTimeToSystemTime`, `SetConsoleOutputCP`).
 
 ---
 
@@ -1829,7 +1836,12 @@ Raw Winsock2 bindings (Windows-specific names).
 
 Winsock2 bindings with `ws2-` prefix to avoid collision with posix names.
 
-All words are `ws2-*` versions: `ws2-WSAStartup`, `ws2-socket`, `ws2-bind`, `ws2-listen`, `ws2-accept`, `ws2-connect`, `ws2-send`, `ws2-recv`, `ws2-closesocket`, `ws2-setsockopt`, `ws2-ioctlsocket`, `ws2-inet_addr`, `ws2-htons`, `ws2-getaddrinfo`, `ws2-freeaddrinfo`, `ws2-gethostbyname`, `ws2-gethostbyaddr`, `ws2-gethostname`, `ws2-WSAGetLastError`, `ws2-WSASetLastError`, etc.
+All words are `ws2-*` versions: `ws2-WSAStartup`, `ws2-socket`, `ws2-bind`, 
+`ws2-listen`, `ws2-accept`, `ws2-connect`, `ws2-send`, `ws2-recv`, 
+`ws2-closesocket`, `ws2-setsockopt`, `ws2-ioctlsocket`, `ws2-inet_addr`, 
+`ws2-htons`, `ws2-getaddrinfo`, `ws2-freeaddrinfo`, `ws2-gethostbyname`, 
+`ws2-gethostbyaddr`, `ws2-gethostname`, `ws2-WSAGetLastError`, 
+`ws2-WSASetLastError`, etc.
 
 ---
 
@@ -1902,7 +1914,17 @@ Windows Debug API bindings.
 
 Raw POSIX syscall bindings. All words are `libc-*` prefixed.
 
-Includes: `libc-open`, `libc-close`, `libc-read`, `libc-write`, `libc-lseek`, `libc-fork`, `libc-wait`, `libc-waitpid`, `libc-mmap`, `libc-munmap`, `libc-malloc`, `libc-free`, `libc-realloc`, `libc-usleep`, `libc-ftruncate`, `libc-fsync`, `libc-mprotect`, `libc-signal`, `libc-chdir`, `libc-mkdir`, `libc-rmdir`, `libc-opendir`, `libc-closedir`, `libc-readdir`, `libc-fstatat`, `libc-clock_gettime`, `libc-fcntl`, `libc-tcgetattr`, `libc-tcsetattr`, `libc-system`, `libc-select`, `libc-stat`, `libc-access`, `libc-setlocale`, `libc-popen`, `libc-pclose`, `libc-socket`, `libc-bind`, `libc-listen`, `libc-accept`, `libc-connect`, `libc-send`, `libc-recv`, `libc-setsockopt`, `libc-inet_addr`, `libc-htons`, `libc-getaddrinfo`, `libc-gethostbyname`, plus: `shm_open`, `shm_unlink`, `msync`.
+Includes: `libc-open`, `libc-close`, `libc-read`, `libc-write`, `libc-lseek`, 
+`libc-fork`, `libc-wait`, `libc-waitpid`, `libc-mmap`, `libc-munmap`, 
+`libc-malloc`, `libc-free`, `libc-realloc`, `libc-usleep`, `libc-ftruncate`, 
+`libc-fsync`, `libc-mprotect`, `libc-signal`, `libc-chdir`, `libc-mkdir`, 
+`libc-rmdir`, `libc-opendir`, `libc-closedir`, `libc-readdir`, `libc-fstatat`, 
+`libc-clock_gettime`, `libc-fcntl`, `libc-tcgetattr`, `libc-tcsetattr`, 
+`libc-system`, `libc-select`, `libc-stat`, `libc-access`, `libc-setlocale`, 
+`libc-popen`, `libc-pclose`, `libc-socket`, `libc-bind`, `libc-listen`, 
+`libc-accept`, `libc-connect`, `libc-send`, `libc-recv`, `libc-setsockopt`, 
+`libc-inet_addr`, `libc-htons`, `libc-getaddrinfo`, `libc-gethostbyname`, 
+plus: `shm_open`, `shm_unlink`, `msync`.
 
 ---
 
@@ -1976,7 +1998,8 @@ Fixed object pool for 8-value (64-byte) objects. Object index 0 is reserved as "
 
 ### arr16.r3
 
-Fixed object pool for 16-value (128-byte) objects. Like arr8 but larger objects with sorting and mapping.
+Fixed object pool for 16-value (128-byte) objects. 
+Like arr8 but larger objects with sorting and mapping.
 
 **Dependencies:** `^r3/lib/mem.r3`
 
@@ -2115,7 +2138,8 @@ RadixSort variant with offset keys.
 
 ### penner.r3
 
-30 Penner easing functions in 48.16 fixed-point. Input `t` is in range `[0.0 .. 1.0]` (fixed-point), output is in `[0.0 .. 1.0]`.
+30 Penner easing functions in 48.16 fixed-point. 
+Input `t` is in range `[0.0 .. 1.0]` (fixed-point), output is in `[0.0 .. 1.0]`.
 
 **Dependencies:** `^r3/lib/math.r3`
 
@@ -2174,7 +2198,8 @@ RadixSort variant with offset keys.
 
 ### varanim.r3
 
-Timeline-based variable animator. Drives values from `ini` to `fin` over time using a Penner ease.
+Timeline-based variable animator. 
+Drives values from `ini` to `fin` over time using a Penner ease.
 
 **Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/color.r3`, `^r3/util/penner.r3`
 
@@ -2225,7 +2250,8 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 
 ### utfg.r3
 
-8×8 bitmap Unicode font for terminal output. Outputs to console buffer via `.write`.
+8×8 bitmap Unicode font for terminal output. 
+Outputs to console buffer via `.write`.
 
 **Dependencies:** `^r3/lib/console.r3`
 
@@ -2412,7 +2438,8 @@ TrueType font atlas renderer with pseudo-UTF8 support and glyph caching.
 
 ### ttext.r3
 
-Tilesheet-based terminal text renderer for SDL2. Uses a sprite sheet for characters.
+Tilesheet-based terminal text renderer for SDL2. 
+Uses a sprite sheet for characters.
 
 **Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/sdl2image.r3`
 
@@ -2459,13 +2486,17 @@ Tilesheet-based terminal text renderer for SDL2. Uses a sprite sheet for charact
 
 Renders text into a box with word wrapping, color, and offset parameters.
 
-**Dependencies:** `^r3/lib/math.r3`, `^r3/lib/color.r3`, `^r3/lib/sdl2gfx.r3`, `^r3/lib/sdl2ttf.r3`
+**Dependencies:** `^r3/lib/math.r3`, `^r3/lib/color.r3`, 
+`^r3/lib/sdl2gfx.r3`, `^r3/lib/sdl2ttf.r3`
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `textbox` | `str $colb-colo-ofvh-colf w h font -- texture` |  |
 
-Parameters: `str`=text string, `$colb`=background color, `$colo`=text outline color, `$ofvh`=packed vertical/horizontal offset, `$colf`=foreground color, `w h`=box dimensions, `font`=TTF font handle. Returns SDL texture.
+Parameters: `str`=text string, `$colb`=background color, 
+`$colo`=text outline color, `$ofvh`=packed vertical/horizontal offset, 
+`$colf`=foreground color, `w h`=box dimensions, `font`=TTF font handle. 
+Returns SDL texture.
 
 ---
 
@@ -2573,7 +2604,8 @@ File open/save dialog using sdlgui.r3.
 
 Interactive color picker dialog for SDL2.
 
-**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/color.r3`, `^r3/lib/gui.r3`, `^r3/util/bfont.r3`
+**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/color.r3`, 
+`^r3/lib/gui.r3`, `^r3/util/bfont.r3`
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -2601,12 +2633,14 @@ File browser dialog for SDL2 (uses gui.r3 input system).
 
 ### immi.r3
 
-Modern grid-layout immediate-mode GUI for SDL2 (version 3, 2025). Uses txfont for rendering.
+Modern grid-layout immediate-mode GUI for SDL2 (version 3, 2025). 
+Uses txfont for rendering.
 
 **Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/util/txfont.r3`
 
 #### Layout System
-The layout cursor `(cx, cy, cw, ch)` tracks current widget position. The frame stack allows push/pop for nested layouts.
+The layout cursor `(cx, cy, cw, ch)` tracks current widget position. 
+The frame stack allows push/pop for nested layouts.
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -2802,7 +2836,8 @@ Calendar and time picker widgets for immi.
 | `uiDate` | `'var --` | date-only calendar widget |
 | `uiTime` | `'var --` | time-only picker widget |
 
-The variable stores packed date/time as a 64-bit value; use `datetime.r3` words to interpret it.
+The variable stores packed date/time as a 64-bit value; 
+use `datetime.r3` words to interpret it.
 
 ---
 
@@ -2813,7 +2848,8 @@ Text UI layout framework for terminal interfaces.
 **Dependencies:** `^r3/lib/console.r3`, `^r3/util/utfg.r3`
 
 #### Frame Layout
-A "frame" defines a rectangular region of the terminal. Frames can be split and nested.
+A "frame" defines a rectangular region of the terminal. 
+Frames can be split and nested.
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -2902,7 +2938,8 @@ A "frame" defines a rectangular region of the terminal. Frames can be split and 
 
 ### tuiedit.r3
 
-Full-featured text editor widget for TUI framework. Supports selection, clipboard, and undo.
+Full-featured text editor widget for TUI framework. 
+Supports selection, clipboard, and undo.
 
 **Dependencies:** `^r3/util/tui.r3`, `^r3/lib/clipboard.r3`
 
@@ -2941,7 +2978,8 @@ Full-featured text editor widget for TUI framework. Supports selection, clipboar
 
 ### vscreen.r3
 
-Virtual resolution rendering. Renders to an internal texture at logical size, then scales to the actual window.
+Virtual resolution rendering. Renders to an internal texture at 
+logical size, then scales to the actual window.
 
 **Dependencies:** `^r3/lib/sdl2.r3`
 
@@ -2984,7 +3022,8 @@ Tile map system with scrolling view.
 
 Multi-layer tile map for 2D games with isometric and z-sorted sprite rendering.
 
-**Dependencies:** `^r3/lib/console.r3`, `^r3/lib/sdl2gfx.r3`, `^r3/util/sdlgui.r3`, `^r3/util/arr16.r3`, `^r3/lib/rand.r3`
+**Dependencies:** `^r3/lib/console.r3`, `^r3/lib/sdl2gfx.r3`, 
+`^r3/util/sdlgui.r3`, `^r3/util/arr16.r3`, `^r3/lib/rand.r3`
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
@@ -3128,7 +3167,9 @@ Text database version 1. Records separated by newline, fields by `|`, rows by `^
 **Dependencies:** `^r3/lib/console.r3`
 
 Same API as db2.r3. Same word names:
-`getnfilename`, `loadnfile`, `>>line`, `loaddb-i`, `prevdb-i`, `dbfld`, `loaddb`, `getdbrow`, `findbrow`, `cntdbrow`, `>>fld`, `getdbfld`, `cpydbfld`, `cpydbfldn`.
+`getnfilename`, `loadnfile`, `>>line`, `loaddb-i`, `prevdb-i`, 
+`dbfld`, `loaddb`, `getdbrow`, `findbrow`, `cntdbrow`, `>>fld`, 
+`getdbfld`, `cpydbfld`, `cpydbfldn`.
 
 Use `dbtxt.r3` for pipe-delimited flat text, `db2.r3` for binary-delimited packed format.
 

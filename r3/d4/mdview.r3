@@ -1,4 +1,4 @@
-| view manual
+| view .md files
 | PHREDA 2026
 ^r3/lib/console.r3
 ^r3/util/tui.r3
@@ -10,7 +10,8 @@
 
 #mrever
 :rever mrever 1 xor 1 and? ( .rever 'mrever ! ; ) .nrever 'mrever ! ; 
-	
+
+
 | * *	negrita
 | ** ** italica
 | ` ` codigo
@@ -21,12 +22,17 @@
 		|$60 =? ( drop c@+ rever ) |''
 		$5c =? ( drop c@+ ) |\
 		.emit ) 2drop ;
+
+:,rever 
+	mrever 1 xor 1 and? ( 
+	$5b1b ,w "7m" ,s 'mrever ! ; ) 
+	$5b1b ,w "27m" ,s 'mrever ! ; 
 		
 :emitfield | v -- v' str
 	$fffff and manual + 
 	( c@+ $ff and 32 >=? 
-|		$2a =? ( drop 1+ ; ) |*
-		|$60 =? ( drop c@+ rever ) |''
+|		$2a =? ( drop 1+ ; ) |*!!
+		|$60 =? ( drop 32 dup ,c ,rever ) |''!!
 		$7c <>?  | |
 		$5c =? ( drop c@+ ) |\
 		,c ) drop 
@@ -53,7 +59,7 @@
 	drop .reset .sp fw 2 - .hline ;
 	
 :bul
-	4 .fc " * " .write emitline ;
+	9 .fc " * " .write emitline ;
 	
 :bla	
 	5 .fc " │ " .write emitline ;
@@ -80,13 +86,13 @@
 	dup 24 >> $ff and 1 max
 	fw over / | cnt len
 	32 over 2/ .nch | espacio
-	8 .bc 7 .fc
+	4 .bc 7 .fc
 	swap 1- ( 1? 	| v len cnt
 		mark
 		rot 				| len cnt v
 		here >r emitfield	| len cnt v 
 		-rot
-		over r> lwrite | len str
+		over r> cwrite | len str
 		empty
 		1- 1? ( "│" .write )
 		) 3drop 
@@ -97,7 +103,7 @@
 	24 >> $ff and 1 max
 	fw over / | cnt len
 	32 over 2/ .nch | espacio
-	8 .bc 7 .fc
+	4 .bc 7 .fc
 	swap 1- ( 1? 
 		over "─" .rep 
 		1- 1? ( "┼" .write )
@@ -114,6 +120,7 @@
 	.reset .cls 
 	1 flxS
 	2 fy .at "|ESC| Exit " .write
+
 	flxrest
 	tuwin $1 " Manual " .wtitle
 	1 1 flpad
@@ -121,7 +128,7 @@
 	0 ( fh <?
 		fx fy pick2 + .at	
 		dup nman + viewline 
-		1+ ) drop
+		1+ ) 2drop
 		
 	uiKey
 	[up] =? ( nman 1- 0 max 'nman ! )
@@ -228,7 +235,7 @@
 |-------------------	
 	
 :parseline | adr -- 
-	dup c@ 0? ( drop 1+ ; ) 
+	dup c@ 0? ( 2drop ; ) 
 	flag $ff00 and 'flag !
 	$23 =? ( titu ) | #
 	$2d =? ( bull ) | -
