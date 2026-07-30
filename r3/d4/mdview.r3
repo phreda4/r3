@@ -8,62 +8,102 @@
 #cmanual
 #nman 0
 
+#mrever
+:rever mrever 1 xor 1 and? ( .rever 'mrever ! ; ) .nrever 'mrever ! ; 
+	
 | * *	negrita
 | ** ** italica
 | ` ` codigo
 :emitline | l --
 	$fffff and manual + 
 	( c@+ $ff and 32 >=? 
-		
-	
+|		$2a =? ( drop 1+ ; ) |*
+		|$60 =? ( drop c@+ rever ) |''
+		$5c =? ( drop c@+ ) |\
 		.emit ) 2drop ;
+		
+:emitfield | v -- v' str
+	$fffff and manual + 
+	( c@+ $ff and 32 >=? 
+|		$2a =? ( drop 1+ ; ) |*
+		|$60 =? ( drop c@+ rever ) |''
+		$7c <>?  | |
+		$5c =? ( drop c@+ ) |\
+		,c ) drop 
+	0 ,c
+	manual - 
+	;
+	
 
 :nor
-	.reset
-	emitline ;
+	.reset emitline ;
 
 :tit1 :tit2
-	3 .fc
-	.Bold .Cyan .Under
-	emitline ;
+	fw over 24 >> $ff and - 2/ 32 swap .nch | center
+	|dup 24 >> $ff and "%d:" .print
+	.Bold 14 .fc .Under emitline ;
 
 :tit3
-	3 .fc
-	.Bold .Cyan
-	emitline ;
+	.sp .Bold 14 .fc emitline ;
 
 :tit4
-	3 .fc
-	emitline ;
+	14 .fc emitline ;
 	
 :lin
-	drop 
-	.reset .sp fw 2 - .hline ;
+	drop .reset .sp fw 2 - .hline ;
 	
 :bul
-	4 .fc " * " .write 
-	emitline ;
+	4 .fc " * " .write emitline ;
 	
 :bla	
-	5 .fc " | " .write 
-	emitline ;
+	5 .fc " │ " .write emitline ;
 	
+:codi
+	"  " .write 
+	12 .fc
+	.savec fw 5 - "─" .rep "┐" .write .restorec
+	"┌" .write emitline ;
 
-:cod	
-	8 .fc
-	.savec 2 .nsp fw 2 - .hline .restorec
-	"  " .write emitline ;
+:codf	
+	"  " .write 
+	12 .fc
+	.savec fw 5 - "─" .rep "┘" .write .restorec
+	"└" .write emitline ;
 	
 :codl 
-	8 .fc 
-	" |" .write
+	.sp .sp
+	12 .fc "│" .write
+	.savec 32 fw 6 - .nch "│" .write .restorec
 	emitline ;
 	
 :tab
-	8 .fc
-	emitline ;
+	dup 24 >> $ff and 1 max
+	fw over / | cnt len
+	32 over 2/ .nch | espacio
+	8 .bc 7 .fc
+	swap 1- ( 1? 	| v len cnt
+		mark
+		rot 				| len cnt v
+		here >r emitfield	| len cnt v 
+		-rot
+		over r> lwrite | len str
+		empty
+		1- 1? ( "│" .write )
+		) 3drop 
+	.reset ;
+	
+	
+:tabl	
+	24 >> $ff and 1 max
+	fw over / | cnt len
+	32 over 2/ .nch | espacio
+	8 .bc 7 .fc
+	swap 1- ( 1? 
+		over "─" .rep 
+		1- 1? ( "┼" .write )
+		) 2drop .reset ;
 		
-#typeline 'nor 'tit1 'tit2 'tit3 'tit4 'lin 'bul 'bla 'cod 'codl 'tab
+#typeline 'nor 'tit1 'tit2 'tit3 'tit4 'lin 'bul 'bla 'codi 'codf 'codl 'tab 'tabl
 
 :viewline | n --
 	cmanual >=? ( drop ; ) 
@@ -96,10 +136,7 @@
 #incode
 #flag
 
-|##
-|###
-|####
-:titu | #
+:titu | # |## |### |####
 	drop
 	0 over ( c@+ $23 =? drop swap 1+ swap ) | adr cnt adr' last
 	$20 <>? ( 3drop $23 ; ) drop | adr cnt adr'
@@ -107,13 +144,11 @@
 	4 min 'flag +! | 1..4
 	drop $23 ;
 	
-|- |
-|* |
-|---
+|- ||* ||---
 :bull | -/*
 	drop
 	dup d@ $ffffff and
-	$2d2d2d =? ( $5 'flag +! drop >>cr 1- 13 ; )
+	$2d2d2d =? ( $5 'flag +! drop >>cr 13 ; )
 	8 >> $ff and
 	$20 <>? ( drop $2d ; ) drop
 	$6 'flag +! | bullet
@@ -126,23 +161,29 @@
 	$7 'flag +! | bullet
 	2 + $3e ;
 	
-|~~~
-|```
+|~~~ |```
 :code | ~
 	over d@ $ffffff and
 	$606060 <>? ( drop ; ) drop
 	$8 'flag +!
-	$900 flag xor 'flag !
+	flag 
+	$A00 xor 
+	$8 =? ( 1+ )
+	'flag !
 	swap 3 + swap
 	;
 
-:codel | ~
-	$9 'flag +!
-	;
-	
+:isline | adr -- 0/13
+	( c@+ 13 >? 
+		$7c =? ( $2d nip )
+		$2d <>? ( 2drop 0 ; )
+		drop ) nip ;
 || |
 :tabl | |
-	$A 'flag +!
+	swap 1+ swap 
+	over isline
+	13 =? ( drop $c 'flag +! ; )
+	drop $b 'flag +! 
 	;
 	
 |-------------------
@@ -164,13 +205,27 @@
 	0 swap ( c@+ $ff and 13 >?
 		lencar
 		) 2drop ;
-|-------------------	
+
 	
 :addlen | adr off flag -- adr off len|flag --
-	|pick2 lenreal
-	10
-	$ff and 24 << or
+	over manual + lenreal
+	$ff and 4 << or
 	;
+	
+|-------------------		
+:lensep
+	1 swap ( c@+ $ff and 13 >? 
+		$5c =? ( drop 1+ c@+ )
+		$7c =? ( rot 1+ -rot ) 
+		drop
+		) 2drop ;
+
+:addsep	| adr off flag -- adr off len|flag --
+	over manual + lensep
+	$ff and 4 << or
+	;
+	
+|-------------------	
 	
 :parseline | adr -- 
 	dup c@ 0? ( drop 1+ ; ) 
@@ -185,7 +240,8 @@
 	over manual - 
 	flag $ff00 and? ( $ff nand? ( 8 >> ) )
 	$f and 
-	7 >? ( addlen )
+	$B <? ( addlen )
+	$B >=? ( addsep )
 	20 << or da!+
 	13 =? ( swap 1+ swap )
 	( 13 <>? drop c@+ ) drop

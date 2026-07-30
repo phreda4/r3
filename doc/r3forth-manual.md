@@ -1,4 +1,3 @@
-*A Concatenative Language Derived from ColorForth — Pablo H. Reda — https://github.com/phreda4/r3*
 
 ## Quick Reference Card
 

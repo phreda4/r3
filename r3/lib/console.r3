@@ -89,7 +89,7 @@
 ::.ealine "2K" .[w ; | borrar linea actual
 ::.escreen "J" .[w ; | erase from cursor to end of screen
 ::.escreenup "1J" .[w ; | erase from cursor to beginning
-::.nsp "%dX" .[p ; | n --
+::.nsp "%dX" .[p ; | n -- | not adv cursor
 
 ::.showc "?25h" .[w ;
 ::.hidec "?25l" .[w ;

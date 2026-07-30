@@ -75,7 +75,7 @@
     5 7 .at .Reset "Normal text" .write
     5 8 .at .Bold "Bold text" .write .Reset
     5 9 .at .Dim "Dim text" .write .Reset
-    5 10 .at .Italic "Italic text" .write .Reset
+    5 10 .at .Ital "Italic text" .write .Reset
     5 11 .at .Under "Underlined text" .write .Reset
     5 12 .at .Blink "Blinking text" .write .Reset
     5 13 .at .Rever "Reversed text" .write .Reset
@@ -86,7 +86,7 @@
     37 7 .at .Bold .Red "Bold Red" .write .Reset
     37 8 .at .Under .Green "Underlined Green" .write .Reset
     37 9 .at .Bold .Under .Blue "Bold Underlined Blue" .write .Reset
-    37 10 .at .Italic .Magenta "Italic Magenta" .write .Reset
+    37 10 .at .Ital .Magenta "Italic Magenta" .write .Reset
     37 11 .at .Rever .Cyan "Reversed Cyan" .write .Reset
     
     3 17 .at .Bold "Color + Background:" .write .Reset
