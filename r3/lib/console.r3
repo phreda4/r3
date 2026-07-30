@@ -159,11 +159,21 @@
 
 |------- Text Attributes -------
 ::.Bold "1m" .[w ;
+::.NBold "22m" .[w ;
+
 ::.Dim "2m" .[w ;
-::.Italic "3m" .[w ;
+
+::.Ital "3m" .[w ;
+::.NItal "23m" .[w ;
+
 ::.Under "4m" .[w ;
+::.NUnder "24m" .[w ;
+
 ::.Blink "5m" .[w ;
+
 ::.Rever "7m" .[w ;
+::.NRever "27m" .[w ;
+
 ::.Hidden "8m" .[w ;
 ::.Strike "9m" .[w ;
 ::.Reset "0m" .[w ;

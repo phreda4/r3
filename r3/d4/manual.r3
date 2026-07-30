@@ -8,56 +8,67 @@
 #cmanual
 #nman 0
 
-| * *	
-| ** **
-| ` `
-:emitline | adr --
+| * *	negrita
+| ** ** italica
+| ` ` codigo
+:emitline | l --
+	$fffff and manual + 
 	( c@+ $ff and 32 >=? 
+		
+	
 		.emit ) 2drop ;
 
 :nor
 	.reset
-	$ffff and manual + emitline ;
+	emitline ;
 
 :tit1 :tit2
 	3 .fc
-	$ffff and manual + emitline ;
+	.Bold .Cyan .Under
+	emitline ;
 
 :tit3
 	3 .fc
-	$ffff and manual + emitline ;
+	.Bold .Cyan
+	emitline ;
 
 :tit4
 	3 .fc
-	$ffff and manual + emitline ;
+	emitline ;
 	
 :lin
 	drop 
-	.reset fw .hline ;
+	.reset .sp fw 2 - .hline ;
 	
 :bul
 	4 .fc " * " .write 
-	$ffff and manual + emitline ;
+	emitline ;
 	
-:codl 
-	8 .fc 
-	.savec fw .hline .restorec
-	$ffff and manual + emitline ;
+:bla	
+	5 .fc " | " .write 
+	emitline ;
+	
 
 :cod	
 	8 .fc
-	$ffff and manual + emitline ;
+	.savec 2 .nsp fw 2 - .hline .restorec
+	"  " .write emitline ;
+	
+:codl 
+	8 .fc 
+	" |" .write
+	emitline ;
 	
 :tab
 	8 .fc
-	$ffff and manual + emitline ;
+	emitline ;
 		
-#typeline 'nor 'tit1 'tit2 'tit3 'tit4 'lin 'bul 'codl 'cod 'tab
+#typeline 'nor 'tit1 'tit2 'tit3 'tit4 'lin 'bul 'bla 'cod 'codl 'tab
 
 :viewline | n --
 	cmanual >=? ( drop ; ) 
-	3 << imanual + @ |dup "%h :" .print
-	dup 16 >> 3 << 'typeline + @ ex ;
+	2 << imanual + d@ |dup "%h :" .print
+	dup 17 >> $78 and 'typeline + @ ex ;
 	
 :viewmanual
 	.reset .cls 
@@ -93,7 +104,7 @@
 	0 over ( c@+ $23 =? drop swap 1+ swap ) | adr cnt adr' last
 	$20 <>? ( 3drop $23 ; ) drop | adr cnt adr'
 	-rot 
-	4 min 16 << 'flag ! | 1..4
+	4 min 'flag +! | 1..4
 	drop $23 ;
 	
 |- |
@@ -101,34 +112,69 @@
 |---
 :bull | -/*
 	drop
-	dup d@ | adr D
-	$ffffff and
-	$2d2d2d =? ( $50000 'flag ! drop >>cr 1- 13 ; )
+	dup d@ $ffffff and
+	$2d2d2d =? ( $5 'flag +! drop >>cr 1- 13 ; )
 	8 >> $ff and
 	$20 <>? ( drop $2d ; ) drop
-	$60000 'flag ! | bullet
+	$6 'flag +! | bullet
 	2 + $2d ;
 	
 |> |	
 :blac | >
 	over 1+ c@
 	$20 <>? ( drop ; ) 2drop
+	$7 'flag +! | bullet
 	2 + $3e ;
 	
 |~~~
 |```
 :code | ~
-	$70000 'flag !
+	over d@ $ffffff and
+	$606060 <>? ( drop ; ) drop
+	$8 'flag +!
+	$900 flag xor 'flag !
+	swap 3 + swap
+	;
+
+:codel | ~
+	$9 'flag +!
 	;
 	
 || |
 :tabl | |
-	$90000 'flag !
+	$A 'flag +!
 	;
-
+	
+|-------------------
+:lenesc | adr car -- adr
+	drop c@+
+	$5b =? ( ( drop c@+ $ff and 64 >=? 127 <=? ) ) |esc
+	drop ;
+	
+:lencar | adr car -- adr
+	27 =? ( lenesc ; )
+	$5c =? ( drop 1+ ; ) |\
+	$2a =? ( drop 1+ ; ) |*
+	$60 =? ( drop 1+ ; ) |''
+	drop 
+	swap 1+ swap
+	;
+	
+:lenreal | adr -- count
+	0 swap ( c@+ $ff and 13 >?
+		lencar
+		) 2drop ;
+|-------------------	
+	
+:addlen | adr off flag -- adr off len|flag --
+	|pick2 lenreal
+	10
+	$ff and 24 << or
+	;
+	
 :parseline | adr -- 
 	dup c@ 0? ( drop 1+ ; ) 
-	0 'flag !
+	flag $ff00 and 'flag !
 	$23 =? ( titu ) | #
 	$2d =? ( bull ) | -
 	$2a =? ( bull ) | *
@@ -136,7 +182,11 @@
 	$7e =? ( code ) | ~
 	$60 =? ( code ) | `
 	$7c =? ( tabl ) | |
-	over manual - flag or a!+
+	over manual - 
+	flag $ff00 and? ( $ff nand? ( 8 >> ) )
+	$f and 
+	7 >? ( addlen )
+	20 << or da!+
 	13 =? ( swap 1+ swap )
 	( 13 <>? drop c@+ ) drop
 	parseline ;
@@ -148,7 +198,7 @@
 	here only13 0 swap c!+
 	dup >a 'imanual !
 	manual parseline
-	a> dup imanual - 3 >> 'cmanual !
+	a> dup imanual - 2 >> 'cmanual !
 	'here !
 	'viewmanual onTui 
 	;
