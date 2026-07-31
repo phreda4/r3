@@ -323,7 +323,7 @@ Low-level helpers for building ANSI escape sequences.
 
 - **`.Bold`** - Bold/bright text
 - **`.Dim`** - Dim/faint text
-- **`.Italic`** - Italic text
+- **`.Ital`** - Italic text
 - **`.Under`** - Underlined text
 - **`.Blink`** - Blinking text
 - **`.Rever`** - Reverse video (swap foreground/background)

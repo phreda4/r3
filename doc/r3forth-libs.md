@@ -592,7 +592,7 @@ Standard background: `.BBlack` `.BRed` `.BGreen` `.BYellow` `.BBlue` `.BMagenta`
 ```
 
 #### Text Attributes
-`.Bold` `.Dim` `.Italic` `.Under` `.Blink` `.Rever` `.Hidden` `.Strike` `.Reset`
+`.Bold` `.Dim` `.Ital` `.Under` `.Blink` `.Rever` `.Hidden` `.Strike` `.Reset`
 
 #### Input
 ```

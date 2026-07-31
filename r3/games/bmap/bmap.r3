@@ -3,7 +3,6 @@
 |------------------
 ^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
 ^r3/util/arr16.r3
 ^r3/lib/rand.r3
 
@@ -345,8 +344,6 @@
 |----- JUGAR
 :jugar
 	0 SDLcls
-	immgui		| ini IMMGUI	
-
 	inisprite
 	'obj p.draw
 	drawmaps
@@ -393,7 +390,6 @@
 
 :main
 	"r3sdl" 1024 600 SDLinit
-	"media/ttf/Roboto-Medium.ttf" 12 TTF_OpenFont immSDL
 	"r3/games/bmap/escuela1.bmap" loadmap 'mapa1 !
 	32 32 "r3/games/bmap/protagonista.png" ssload 'sprplayer !
 	1000 'obj p.ini

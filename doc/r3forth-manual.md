@@ -1,5 +1,5 @@
 
-## Quick Reference Card
+## R3forth - Quick Reference
 
 ### The 8 Prefixes
 
@@ -977,7 +977,7 @@ Standard background: `.BBlack` `.BRed` `.BGreen` `.BYellow` `.BBlue` `.BMagenta`
 | `.bgrgb` | `r g b --` | 24-bit RGB background |
 
 #### Text Attributes
-`.Bold` `.Dim` `.Italic` `.Under` `.Blink` `.Rever` `.Hidden` `.Strike` `.Reset`
+`.Bold` `.Dim` `.Ital` `.Under` `.Blink` `.Rever` `.Hidden` `.Strike` `.Reset`
 
 #### Input
 | Word | Stack Effect | Description |
