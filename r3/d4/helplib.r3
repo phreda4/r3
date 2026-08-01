@@ -146,6 +146,10 @@
 	48 >> $ffff and 3 << 'liblist + @ @ 
 	;
 	
+::lwordhelp | nword -- linehelp
+	4 << namwlist + 8 + @
+	48 >> $ffff and 3 << 'liblist + @ 24 + @ ;
+	
 ::lwordfind | str -- tipo|nro
 	dup isNro 1? ( drop $10000 ; ) drop
 	dup basefind  +? ( $20000 or ; ) drop

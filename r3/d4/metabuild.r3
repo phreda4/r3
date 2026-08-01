@@ -23,16 +23,37 @@
 | #call seed8 rand8 seed rand rerand randmax rnd rndmax rnd128 0
 | ##lib_rand.r3 'name 'words 'info 'call
 |
+| PHREDA 2026 ;; add 'manual por
 ^r3/lib/console.r3
 ^r3/system/r3base.r3
 ^r3/system/r3pass1.r3
 ^r3/system/r3pass2.r3
 ^r3/system/r3pass3.r3
 ^r3/system/r3pass4.r3
-|---------------------------
 
+|---------------------------
 #filenamev * 1024
 
+#manual
+#imanual
+#cmanual
+
+:searchmanual | 'name -- pos-manual
+|	DUP ">>%s<<" .PRINTln
+	0 ( cmanual <?
+		dup 2 << imanual + d@ manual + | position
+		4 + | skip ###_
+		pick2 swap = 1? ( drop nip ; )
+		drop
+		1+ ) 2drop
+	0 ;
+
+
+:last_ | str -- str' 
+	count + 
+	( 1- dup c@ $5f <>? drop ) 
+	drop 1+ ;
+	
 :,wordstr | adr --
 	( c@+ $ff and 32 >? 
 		$22 =? ( dup ,c )
@@ -94,6 +115,11 @@
 	" )" ,s 
 	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'info" ,s 
+	
+	'filenamev last_
+	|dup .println
+	searchmanual | advance 'r3_lib_'
+	" $%h" ,print
 	,nl
 	"r3/d4/meta/mlibs.r3" appendmem
 	empty ;
@@ -164,8 +190,30 @@
 	( nextfilelist fnext 1? ) drop ;
 
 |-------------	
+| collect #### lib.r3 
+:parsemanual | adr -- 
+	( dup c@ $ff and? drop
+		dup manual - da!+
+		( c@+ 13 <>? drop ) drop
+		) 2drop ;
+	
+	
 :main
 	.cls
+	
+	"loading manual.." .println
+	mark
+	here dup 'manual !
+	"doc/r3forth-manual.md" load 0 swap c!
+	here only13 0 swap c!+
+	dup >a 'imanual !
+	manual parsemanual
+	a> dup imanual - 2 >> 'cmanual !
+	'here !
+	
+	cmanual "%d entry libs" .println .cr
+	
+	
 	"library generator" .println
 	mark "r3/d4/meta/metalibs.r3" savemem empty 
 	mark "r3/d4/meta/mlibs.r3" savemem empty 

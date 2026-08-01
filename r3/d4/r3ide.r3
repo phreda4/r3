@@ -5,8 +5,9 @@
 ^r3/util/tuiedit.r3
 |^r3/lib/trace.r3
 
-^r3/d4/helplib.r3
 ^r3/d4/r3token.r3
+^r3/d4/helplib.r3
+^r3/d4/manualview.r3
 
 #msg * 1024		| last line msg
 
@@ -19,12 +20,12 @@
 #lwords
 #lincs
 
-#xsplit 40
-#panelinfo 0
-
 |---- change error mode
 :moderror
 	lerror tuiecursor! ;
+
+:printfname
+	4 .bc 7 .fc .sp 'filename .write .sp ;
 
 |----
 :makelistwordsfull
@@ -150,6 +151,31 @@
 	
 	
 |--- F3 analisis
+:anac
+	.reset .home 
+	1 flxN 
+	4 .bc 7 .fc " r3Help | " .write printfname 
+	" | " .write tuecursor. .write 
+	.eline
+	
+	1 flxS 
+	fx fy .at 
+	4 .bc 7 .fc 
+	" ^[7mESC^[27m Exit analisis " .printe 
+	'helpword .write
+	'msg .write
+	.eline
+	cols 2 >> flxO | 1/4 of screen
+	tuReadCode
+	flxRest
+|	tuwin $1 " Manual " .wtitle 1 1 flpad
+	.reset .wfill 
+	|viewmanual	
+	
+	uiKey
+|	[f3] =? ( anacode )
+	drop ;
+
 :anacode
 	checkcode error 1? ( drop moderror ; ) drop
 |	0 'msg !
@@ -159,7 +185,8 @@
 |	r3tokeninfo
 	makelistwords
 	makelistinc
-	'scrmapa 'panelinfo !
+	|'scrmapa 'panelinfo !
+	'anac onTui
 	;
 
 	
@@ -170,10 +197,7 @@
 	'msg .print
 	;
 	
-
 |-------------------------------
-:printfname
-	4 .bc 7 .fc .sp 'filename .write .sp ;
 	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
@@ -262,36 +286,26 @@
 	1 flxS 
 	fx fy .at 
 	4 .bc 7 .fc 
-	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
+	" ^[7mESC^[27m Exit manual " .printe 
 	'helpword .write
 	'msg .write
 	.eline
-	5 flxS
-	4 .bc 7 .fc
-	.wfill fx fy .at 
-	
-	"** " .write 'helpword .write " ** " .write 
-	infow " %h " .print 
-	'infohelp .write
-	
-	flxRest
+	rows 2 >> flxN | 1/4 of screen
 	tuReadCode
+	flxRest
+|	tuwin $1 " Manual " .wtitle 1 1 flpad
+	.reset .wfill 
+	viewmanual	
 	
 	uiKey
-	
-|	[f2] =? ( helpcode )
 |	[f3] =? ( anacode )
-|	[f4] =? ( runcode )
-|	[f5] =? ( debugcode )
-	
-|	[f6] =? ( cpyhelpword  )
-	
-|	[f10] =? ( compile )
-	toLow
 	drop ;
 	
 :wordshow
+	dup lwordhelp gomanual
 	lwordname 'infohelp strcpy 
+	
+	| search in manual or 
 |	mark
 |	4 << namwlist +	
 |	@+ 6>str .write
@@ -301,8 +315,8 @@
 	
 :getlabel
 	'helpword lwordfind
-	$10000 and? ( drop "number push to data stack" 'infohelp strcpy ; ) 
-	$20000 and? ( drop "base word" 'infohelp strcpy ; )
+	$10000 and? ( drop "number push to data stack" 'infohelp strcpy 0 gomanual ; ) 
+	$20000 and? ( drop "base word" 'infohelp strcpy 0 gomanual ; )
 	+? ( wordshow ; ) 
 	drop "Not found" 'infohelp strcpy ;
 	
@@ -316,6 +330,7 @@
 |	fuente 'filename r3loadmem
 |	error 1? ( coderror ; ) drop
 |	codeok
+	
 	'helpc onTui 
 	;
 	
@@ -356,8 +371,8 @@
 	|"r3/test/testasm.r3" 'filename strcpy
 	
 	makehelpwords	
+	loadmanual	
 	
-	cols 2/ 'xsplit !
 	'filename TuLoadCode
 	|TuNewCode
 	mark

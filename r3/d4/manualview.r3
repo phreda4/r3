@@ -6,7 +6,9 @@
 #manual
 #imanual
 #cmanual
+
 #nman 0
+
 
 #mrever
 :rever mrever 1 xor 1 and? ( .rever 'mrever ! ; ) .nrever 'mrever ! ; 
@@ -116,19 +118,11 @@
 	2 << imanual + d@ |dup "%h :" .print
 	dup 17 >> $78 and 'typeline + @ ex ;
 	
-:viewmanual
-	.reset .cls 
-	1 flxS
-	2 fy .at "|ESC| Exit " .write
-
-	flxrest
-	tuwin $1 " Manual " .wtitle
-	1 1 flpad
-	manual 
+::viewmanual
 	0 ( fh <?
 		fx fy pick2 + .at	
 		dup nman + viewline 
-		1+ ) 2drop
+		1+ ) drop
 		
 	uiKey
 	[up] =? ( nman 1- 0 max 'nman ! )
@@ -137,7 +131,11 @@
 	[pgdn] =? ( nman fh + cmanual fh - min 'nman ! )	
 	drop		
 	;
-
+	
+::gomanual | nro --
+	'nman ! ;
+	
+	
 |------------------------------
 #intable
 #incode
@@ -254,7 +252,7 @@
 	( 13 <>? drop c@+ ) drop
 	parseline ; | really loop
 	
-:main
+::loadmanual
 	mark
 	here dup 'manual !
 	"doc/r3forth-manual.md" load 0 swap c!
@@ -263,7 +261,5 @@
 	manual parseline
 	a> dup imanual - 2 >> 'cmanual !
 	'here !
-	'viewmanual onTui 
 	;
 	
-: main ;
