@@ -3,6 +3,7 @@
 Complete API reference for the r3forth library ecosystem.
 
 **Conventions:**
+- Words are case-insensitive
 - `::word` — exported word (public API)
 - `##var` — exported mutable global variable
 - Stack notation: `( inputs -- outputs )` — `.` suffix = 48.16 fixed-point, `.d` = 32.32 fixed-point

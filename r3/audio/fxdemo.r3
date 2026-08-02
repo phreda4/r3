@@ -19,12 +19,17 @@
 ::fxPickup
 	fxDefaults
 	0 'p_wave !
-	0.3 0.5 randminmax 'p_freq !
+	0.4 0.9 randminmax 'p_freq !
 	0.0 0.1 randminmax 'p_sustain !
 	0.3 0.6 randminmax 'p_punch !
 	0.1 0.5 randminmax 'p_decay !
 	0.0 0.3 randminmax 'p_freqramp !
-	0.0 1.0 randminmax 'p_duty ! ;
+	0.0 1.0 randminmax 'p_duty ! 
+	rand $10000 and? (
+		0.5 0.7 randminmax 'p_arpspeed !
+		0.05 0.78 randminmax 'p_arpmod !
+	) drop ;	
+	
 
 ::fxLaser
 	fxDefaults
@@ -61,25 +66,32 @@
 	fxDefaults
 	4 randmax 'p_wave !
 	0.2 0.8 randminmax 'p_freq !
-	-0.5 -0.2 randminmax 'p_freqramp !
+	-0.7 -0.3 randminmax 'p_freqramp !
 	0.0 0.1 randminmax 'p_sustain !
-	0.1 0.3 randminmax 'p_decay ! ;
+	0.1 0.3 randminmax 'p_decay ! 
+	
+	0.0 0.3 randminmax 'p_hpffreq !
+	;
 
 ::fxJump
 	fxDefaults
 	0 'p_wave !
 	0.3 0.6 randminmax 'p_freq !
 	0.1 0.3 randminmax 'p_freqramp !
-	0.1 0.3 randminmax 'p_sustain !
-	0.1 0.2 randminmax 'p_decay !
-	0.0 1.0 randminmax 'p_duty ! ;
+	0.1 0.4 randminmax 'p_sustain !
+	0.1 0.3 randminmax 'p_decay !
+	0.0 0.6 randminmax 'p_duty ! 
+	0.0 0.3 randminmax 'p_hpffreq ! 
+	0.4 1.0 randminmax 'p_lpffreq !	
+	;
 
 ::fxBlip
 	fxDefaults
 	2 randmax 'p_wave !
 	0.2 0.6 randminmax 'p_freq !
 	0.03 0.1 randminmax 'p_sustain !
-	0.05 0.2 randminmax 'p_decay ! ;
+	0.05 0.2 randminmax 'p_decay ! 
+	0.1 'p_hpffreq ! ;
 
 ::fxRandom
 	fxDefaults

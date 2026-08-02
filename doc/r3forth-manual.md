@@ -16,6 +16,7 @@
 
 ### Key Conventions
 
+- Words are case-insensitive
 - `a b -- c` means: consumes `a` and `b`, produces `c`
 - **TOS** = Top Of Stack (most recently pushed)
 - **NOS** = Next Of Stack (second from top)

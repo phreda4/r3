@@ -225,7 +225,12 @@
 :fxFilterBypass | s -- s'
 	dup 'fltp ! 0.0 'fltdp ! ;
 	
+:fxLpRamp
+	fltwd 0? ( drop ; )
+	fltw *. 1.0 clamp0max 'fltw ! ;
+	
 :fxFilterLP | s -- s'
+	fxLpRamp
 	fltp - fltw *. fltdp +
 	dup fltdmp *. - dup 'fltdp !
 	fltp + dup 'fltp ! ;
@@ -251,7 +256,7 @@
 	fxSlide
 	fxRFPeriod int. 8 max 'period !
 	sdutyramp 'sduty +!
-	sduty 0.0 clampmin 0.5 clampmax 'sduty !
+	sduty 0.5 clamp0max 'sduty !
 	1 'iphase +!
 	iphase 
 	period >=? ( 0 'iphase ! fxNoiseWrapCheck )
