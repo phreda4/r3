@@ -25,7 +25,7 @@
 	lerror tuiecursor! ;
 
 :printfname
-	4 .bc 7 .fc .sp 'filename .write .sp ;
+	.sp 'filename .write .sp ;
 
 |----
 :makelistwordsfull
@@ -136,7 +136,7 @@
 	'msg strcpybuf ;
 	
 :codeok
-	.cl	2 .bc 0 .fc
+	.cl	|2 .bc 0 .fc
 	cnttok cntdef cntinc " OK | inc:%d words:%d tokens:%d" .print 
 	.eline
 	'msg strcpybuf ;
@@ -161,11 +161,11 @@
 	1 flxS 
 	fx fy .at 
 	4 .bc 7 .fc 
-	" ^[7mESC^[27m Exit analisis " .printe 
-	'helpword .write
+	" ^[7mESC^[27m Exit help | " .printe 
+	'helpword .write " | " .write
 	'msg .write
 	.eline
-	cols 2 >> flxO | 1/4 of screen
+	cols 2/ flxO | 1/2 of screen
 	tuReadCode
 	flxRest
 |	tuwin $1 " Manual " .wtitle 1 1 flpad
@@ -279,15 +279,16 @@
 :helpc
 	.reset .home 
 	1 flxN 
-	4 .bc 7 .fc " r3Help | " .write printfname 
+	9 .bc 0 .fc " r3Manual | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
 	fx fy .at 
-	4 .bc 7 .fc 
-	" ^[7mESC^[27m Exit manual " .printe 
-	'helpword .write
+	9 .bc 0 .fc 
+	" ^[7mESC^[27m Exit manual | " .printe 
+	'helpword .write " | " .write
+	'infohelp .write
 	'msg .write
 	.eline
 	rows 2 >> flxN | 1/4 of screen
@@ -303,8 +304,10 @@
 	
 :wordshow
 	dup lwordhelp gomanual
-	lwordname 'infohelp strcpy 
-	
+	dup lwordlib
+	swap lwordname 
+	"%s << ^%s" sprint
+	'infohelp strcpy 
 	| search in manual or 
 |	mark
 |	4 << namwlist +	

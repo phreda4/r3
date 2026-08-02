@@ -12,6 +12,7 @@
 		char>6 rot 6 << or
 		$fc0000000000000 and? ( nip ; )
 		swap ) 2drop 
+	0? ( ; )
 	( $fc0000000000000 nand? 	| fill with 0
 		6 << ) ;				| without this order is len, not alpha
 	
@@ -141,7 +142,7 @@
 	swap 32 >> $ffff and +  | word
 	;
 
-:.lwordlib | nro -- lib
+::lwordlib | nro -- lib
 	4 << namwlist + 8 + @
 	48 >> $ffff and 3 << 'liblist + @ @ 
 	;
