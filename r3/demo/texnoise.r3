@@ -16,8 +16,6 @@
 :frac | v -- f
 	$ffff and ;
 
-#vx0 #vy0 #vfx #vfy |#vlsh
-
 :vhash | ly lx -- byte
 	10 << + hash ;
 
@@ -27,8 +25,11 @@
 :lerp | a b t -- v
 	-rot over - rot *. + ;
 
+#vx0 #vy0 
+#vfx #vfy 
+
 | lshift = 16 - log2(cell): cell=32 -> 11, cell=16 -> 12, cell=8 -> 13 ...
-:voctave | ylat xlat -- byte
+:voctaveOLD | ylat xlat -- byte
 	dup int. 'vx0 ! frac fade 'vfx !
 	dup int. 'vy0 ! frac fade 'vfy !
 	vy0 vx0 vhash
@@ -39,8 +40,21 @@
 	vfx lerp
 	vfy lerp ;
 
+:voctave | ylat xlat -- byte
+	dup frac fade 'vfx !
+	over frac fade 'vfy !
+	int. 10 << swap int. +
+	dup hash
+	over $400 + hash
+	vfx lerp
+	over $1 + hash
+	rot  $401 + hash
+	vfx lerp
+	vfy lerp ;
+
+
 | ---- suma de N octavas: escala y amplitud por shift, normaliza al final ----
-#fvlsh0 11
+#fvlsh0 10
 #foctaves 4
 #facc #famp #ftotalamp 
 
@@ -57,18 +71,20 @@
 		* 'facc +!
 		2* swap 2* swap
 		r> ) 3drop
-	facc ftotalamp / $ff and ;
+|	facc ftotalamp / $ff and 
+	facc
+	;
 
 :updatevalue
 	textbitmap 0 'mpixel 'mpitch SDL_LockTexture
 	mpixel >a
-	600 ( 1? 1-
-		800 ( 1? 1-
+	480 ( 1? 1-
+		640 ( 1? 1-
 			over frame + 
 			over frame + 
 			foctaves fbmvalue
-			dup 8 << 
-			over 16 << or or 
+			| dup 8 << over 16 << or or 
+			| $ffffff xor
 			$ff000000 or da!+
 		) drop
 	) drop
@@ -82,8 +98,8 @@
 	SDLkey >esc< =? ( exit ) drop ;
 
 :main
-	"r3sdl" 800 600 SDLinit
-	800 600 SDLframebuffer 'textbitmap !
+	"r3sdl" 640 480 SDLinit
+	640 480 SDLframebuffer 'textbitmap !
 	
 	256 2* dup foctaves >> - 'ftotalamp !
 	
