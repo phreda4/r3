@@ -152,19 +152,19 @@
 	
 |--- F3 analisis
 :anac
-	.reset .home 
+	.reset .home 9 .bc 0 .fc 
 	1 flxN 
-	4 .bc 7 .fc " r3Help | " .write printfname 
+	" r3Help | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
 	fx fy .at 
-	4 .bc 7 .fc 
 	" ^[7mESC^[27m Exit help | " .printe 
 	'helpword .write " | " .write
 	'msg .write
 	.eline
+	
 	cols 2/ flxO | 1/2 of screen
 	tuReadCode
 	flxRest
@@ -185,7 +185,6 @@
 |	r3tokeninfo
 	makelistwords
 	makelistinc
-	|'scrmapa 'panelinfo !
 	'anac onTui
 	;
 
@@ -277,15 +276,14 @@
 #infohelp * 128
 
 :helpc
-	.reset .home 
+	.reset .home 9 .bc 0 .fc 
 	1 flxN 
-	9 .bc 0 .fc " r3Manual | " .write printfname 
+	" r3Manual | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
 	fx fy .at 
-	9 .bc 0 .fc 
 	" ^[7mESC^[27m Exit manual | " .printe 
 	'helpword .write " | " .write
 	'infohelp .write
@@ -304,6 +302,7 @@
 	
 :wordshow
 	dup lwordhelp gomanual
+	
 	dup lwordlib
 	swap lwordname 
 	"%s << ^%s" sprint
@@ -339,15 +338,14 @@
 	
 |-------------------------------
 :main
-	.reset .home 
+	.reset .home 4 .bc 7 .fc 
 	1 flxN 
-	4 .bc 7 .fc " r3IDE | " .write printfname 
+	" r3IDE | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
 	fx fy .at 
-	4 .bc 7 .fc 
 	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
 	'helpword .write
 	'msg .write
