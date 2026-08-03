@@ -1,6 +1,6 @@
-| fx.r3 - reproduce sonidos generados por fxsynth.r3 (SDL2, 1 voz de preview)
-| PHREDA-style
-| requiere que ya se haya llamado SDLinit/SDL_Init (subsistema audio incluido)
+| fx.r3 - reproduce sonidos generados por fxsynth.r3 
+| PHREDA 2026
+
 ^r3/audio/fxsynth.r3
 ^r3/lib/sdl2.r3
 

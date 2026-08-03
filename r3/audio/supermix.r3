@@ -144,8 +144,6 @@
 #audevice 
 #auspec * 32
 
-:dt>inc dt 32 *>> ;
-
 ::sminit | -- ..
 	aurate $8010 2 1024 Mix_OpenAudio | minimal buffer for low latency
 

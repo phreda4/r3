@@ -49,9 +49,8 @@
 #vibphase #vibspeedinc #vibamp
 #fltp #fltdp #fltw #fltwd #fltdmp #fltphp #flthp #flthpd #pp
 #iphase #period
-#playing
 
-#noisebuf * 256   | 32 qwords
+#playing
 
 |============================================================
 | DEFAULTS
@@ -69,22 +68,11 @@
 	0.5 'p_vol ! ;
 
 |============================================================
-| NOISE BUFFER
-|============================================================
-:fxNoiseGen
-	'noisebuf >a
-	32 ( 1? -1.0 1.0 randminmax a!+ 1- ) drop ;
-
-:fxNoiseSample | -- v
-	iphase 32 * period / 3 << 'noisebuf + @ ;
-
-:fxNoiseWrapCheck
-	p_wave 3 =? ( drop fxNoiseGen ; )
-	drop ;
-
-|============================================================
 | OSCILADORES : fp(0.0..1.0 fixed) -- v(-1.0..1.0 fixed)
 |============================================================
+:fxNoiseSample | -- v
+	-1.0 1.0 randminmax ;
+
 :fxOscSqr | fp -- v
 	sduty <? ( drop 0.5 ; ) drop -0.5 ;
 
@@ -157,7 +145,7 @@
 	fxDeriveVib
 	fxDeriveFilter
 	1 'playing !
-	fxNoiseGen ;
+	;
 
 |============================================================
 | PASO DE MUESTRA (envolvente, slide, filtros)
@@ -165,22 +153,22 @@
 :fxRepeatCheck
 	replimit 0? ( drop ; ) drop
 	1 'reptime +!
-	reptime replimit >=? ( drop 0 'reptime !
-		iphase period
-		fxDeriveFreq
-		fperiod int. 8 max
-		swap /.
-		*. 'iphase ! ; )
-	drop ;
+	reptime replimit <? ( drop ; ) drop 
+	0 'reptime !
+	iphase period
+	fxDeriveFreq
+	fperiod int. 8 max
+	swap /.
+	*. 'iphase ! ; 
 
 :fxArpCheck
 	arplimit 0? ( drop ; ) drop
 	1 'arptime +!
-	arptime arplimit >=? ( drop
-		fperiod arpmod *. 'fperiod !
-		iphase arpmod *. 'iphase !
-		0 'arplimit ! ; )
-	drop ;
+	arptime arplimit <? ( drop ; ) drop
+	fperiod arpmod *. 'fperiod !
+	iphase arpmod *. 'iphase !
+	0 'arplimit ! ; 
+
 
 :fxForceFadeOut
 	envstage 2 <? (
@@ -259,7 +247,7 @@
 	sduty 0.5 clamp0max 'sduty !
 	1 'iphase +!
 	iphase 
-	period >=? ( 0 'iphase ! fxNoiseWrapCheck )
+	period >=? ( 0 'iphase ! )
 	period /. fxOsc
 	fltp 'pp !
 	fxLowpass
@@ -283,8 +271,6 @@
 		fxSample 2/ clamps16
 		rot w!+ swap
 		1+ ) nip ;
-
-
 
 ::fxPack | 'dest --
 	'p_wave >b
