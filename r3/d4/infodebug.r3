@@ -409,7 +409,12 @@
 	memtokn .token ;
 
 |LIN|:sysnew
-|LIN|	here "x-terminal-emulator -e bash -c '" ,s swap ,s "'" ,s ,eol
+|LIN|	here "xdotool getactivewindow > /tmp/r3_activewin.txt" ,s ,eol
+|LIN|	libc-system drop
+|LIN|	here "x-terminal-emulator -e bash -c '" ,s swap ,s "' &" ,s ,eol 
+|LIN|	libc-system drop
+|LIN|	300 ms | dejo que abra la ventana nueva
+|LIN|	here "xdotool windowactivate $(cat /tmp/r3_activewin.txt)" ,s ,eol
 |LIN|	libc-system drop ;
 	
 |------------------------------------

@@ -77,6 +77,9 @@
 #s-MapViewOfFile
 #s-UnmapViewOfFile
 
+##s-SetForegroundWindow
+
+::SetForegroundWindow s-SetForegroundWindow sys1 drop ;
 	
 ::AllocConsole s-allocconsole sys0 drop ;
 ::FreeConsole s-freeconsole sys0 drop ;
@@ -231,7 +234,10 @@
 	dup "CreateFileMappingA" getproc 's-CreateFileMappingA !
 	dup "MapViewOfFile" getproc 's-MapViewOfFile !
 	dup "UnmapViewOfFile" getproc 's-UnmapViewOfFile !
-
+	
 	drop
+	"USER32.DLL" loadlib 
+	dup "SetForegroundWindow" getproc 's-SetForegroundWindow !
+	drop	
 	;
 	
