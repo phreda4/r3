@@ -24,10 +24,8 @@
 
 #gx #gy #ctile #cbelow #nx #sd
 #pplaced
-#dplaced
 #espawned
 #dx #dy #newx #newy #target #beyondx
-#enx #eny 
 
 #OX 4 #OY 4
 
@@ -173,27 +171,18 @@
 	1 mapHeight 2 - randminmax ;
 
 :ensure-min-gems
-	2000 ( 1? 1-
-		totalGems MINGEMS <? ( 
-			randxy
-			2dup cur@ tile-open?
-			1? ( pick2 pick2 GEM cur! 1 'totalGems +! ) 
-			3drop
-		) drop
-	) drop ;
+	totalGems ( MINGEMS <?
+		( randxy 2dup cur@ tile-open? 0? drop ) drop
+		GEM cur!
+		1+ ) drop ;
 
 :ensure-min-rocks
-	2000 ( 1? 1-
-		totalRocks MINROCKS <? ( 
-			randxy			
-			2dup cur@ tile-open?
-			1? ( 
-				2 randmax 0? ( 2drop ROCK1 cur! ; ) drop
-				pick2 pick2 ROCK2 cur!
-				1 'totalRocks +!
-			) 3drop
-		) drop
-	) drop ;
+	totalRocks ( MINROCKS <?
+		( randxy 2dup cur@ tile-open? 0? drop ) drop
+		ROCK1 
+		2 randmax 0? ( 2drop ROCK2 dup ) drop
+		cur!
+		1+ ) drop ; 
 
 :randomize-map
 	randomize-pass
@@ -221,17 +210,8 @@
 	) drop ;
 
 :place-door
-	0 'dplaced !
-	2000 ( 1? 1-
-		dplaced 0? (
-			randxy
-			2dup cur@ tile-open?
-			1? ( 
-				pick2 pick2 DOOR cur!
-				1 'dplaced !
-			) 3drop
-		) drop
-	) drop
+	( randxy 2dup cur@ tile-open? 0? drop ) drop
+	DOOR cur!
 	"FIND THE DOOR" 'msgline strcpy ;
 
 :spawn-enemy
@@ -350,22 +330,20 @@
 		drop
 		3 randmax 2 + 'enemySteps !
 		) drop
-	enemyX enemyDirX + 'enx !
-	enemyY enemyDirY + 'eny !
-	enx 
+	enemyX enemyDirX + 
 	1 <? ( drop 0 'enemySteps ! ; ) 
 	mapWidth >=? ( drop 0 'enemySteps ! ; ) 
-	drop
-	eny 
-	1 <? ( drop 0 'enemySteps ! ; ) 
-	mapHeight >=? ( drop 0 'enemySteps ! ; ) 
-	drop
-	enx eny cur@ enemy-walkable? 0? ( drop 0 'enemySteps ! ; ) drop
-	enx playerX =? ( eny playerY =? ( 2drop 1 'playerDead ! ; ) drop ) drop
+	
+	enemyY enemyDirY + 
+	1 <? ( 2drop 0 'enemySteps ! ; ) 
+	mapHeight >=? ( 2drop 0 'enemySteps ! ; ) 
+
+	2dup cur@ enemy-walkable? 0? ( 3drop 0 'enemySteps ! ; ) drop
+	playerY =? ( swap playerX =? ( 2drop 1 'playerDead ! ; ) swap ) 
 	enemyX enemyY STAGE cur!
-	enx eny ENEMY cur!
-	enx 'enemyX ! eny 'enemyY !
-	enemySteps 1- 'enemySteps ! ;
+	2dup ENEMY cur!
+	'enemyY ! 'enemyX !
+	-1 'enemySteps +! ;
 
 :update-timer
 	msec lastSecondTimer - 1000 <? ( drop ; ) drop
