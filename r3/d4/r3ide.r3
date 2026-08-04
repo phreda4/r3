@@ -97,31 +97,7 @@
 	|40 >> src + "%l" sprint 'msg strcpy 
 	40 >>> fuente + |1- | :#
 	tuiecursor!	;
-	
-:scrmapa
-|	.reset
-|	cols 2/ flxE 
-	
-|	flxpush
-|	8 flxN
-|	tuWina $1 "Includes" .wtitle 1 1 flpad 
-|	'vincs lincs tuList
-|	flxRest
-	.reset
-|	tuWina $1 "Words" .wtitle 1 1 flpad 
-	.wfill
-	
-	'xwrite.word xwrite!
-	'vwords lwords tuList | 'var list --
-
-|	tuX? 1? ( setcursoride ) drop
-
-|	setcursoride
-	xwrite.reset
-
-|	flxpop
-	;
-	
+		
 |---- CHECKCODE
 :cntlines | -- nrolin
 	1 fuente 
@@ -149,12 +125,11 @@
 	codeok 
 	;
 	
-	
-|--- F3 analisis
-:anac
+|--- F3 Fx
+:fxwin
 	.reset .home 9 .bc 0 .fc 
 	1 flxN 
-	" r3Help | " .write printfname 
+	" r3Rx | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
@@ -167,16 +142,22 @@
 	
 	cols 2/ flxO | 1/2 of screen
 	tuReadCode
-	flxRest
-|	tuwin $1 " Manual " .wtitle 1 1 flpad
-	.reset .wfill 
-	|viewmanual	
+	flxRest .reset
+	tuwina $1 " Rx " .wtitle 1 1 flpad .wfill 
+
+	'xwrite.word xwrite!
+	'vwords lwords tuList | 'var list --
+
+|	tuX? 1? ( setcursoride ) drop
+
+|	setcursoride
+	xwrite.reset
 	
 	uiKey
 |	[f3] =? ( anacode )
 	drop ;
 
-:anacode
+:fxcode
 	checkcode error 1? ( drop moderror ; ) drop
 |	0 'msg !
 |	fuente 'filename r3loadmem
@@ -185,7 +166,7 @@
 |	r3tokeninfo
 	makelistwords
 	makelistinc
-	'anac onTui
+	'fxwin onTui
 	;
 
 	
@@ -292,8 +273,8 @@
 	rows 2 >> flxN | 1/4 of screen
 	tuReadCode
 	flxRest
-|	tuwin $1 " Manual " .wtitle 1 1 flpad
-	.reset .wfill 
+	.reset 
+	tuwina $1 " Manual " .wtitle 1 1 flpad .wfill 
 	viewmanual	
 	
 	uiKey
@@ -346,7 +327,7 @@
 	
 	1 flxS 
 	fx fy .at 
-	" ^[7mF2^[27m Help ^[7mF3^[27m Check ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
+	" ^[7mF2^[27m Help ^[7mF3^[27m Rx ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
 	'helpword .write
 	'msg .write
 	.eline
@@ -355,7 +336,7 @@
 	
 	uiKey
 	[f2] =? ( helpcode )
-	[f3] =? ( anacode )
+	[f3] =? ( fxcode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
 	
