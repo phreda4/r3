@@ -21,7 +21,7 @@
 #startx #starty
 
 :** | 0/1 --
-	and? ( xx yy 20 dup SDLFRect ) 
+	and? ( xx yy 20 dup frect ) 
 	20 'xx +! ;
 
 :drawd | addr --
@@ -47,11 +47,11 @@
 |----- PLAYERS	
 #yj1 #v1 #p1
 
-:j1 $ff0000 SDLColor 10 yj1 20 80 SDLFRect v1 'yj1 +! ;
+:j1 $ff0000 color 10 yj1 20 80 frect v1 'yj1 +! ;
 
 #yj2 #v2 #p2
 
-:j2 $ff SDLColor 770 yj2 20 80 SDLFRect v2 'yj2 +! ;
+:j2 $ff color 770 yj2 20 80 frect v2 'yj2 +! ;
 
 |----- BALL
 #x #y #vx #vy | ball pos
@@ -85,8 +85,8 @@
 :pierde2 1 'p1 +! reset ;
 
 :pelota
-	$ffffff SDLColor
-	x int. y int. 20 20 SDLFRect
+	$ffffff color
+	x int. y int. 20 20 frect
 	vx 'x +! vy 'y +!
 |	x 0 <? ( hitx ) 780.0 >? ( hitx ) drop
 	y 0 <? ( hity ) 580.0 >? ( hity ) drop
@@ -97,9 +97,9 @@
 	;
 
 :game
-	0 SDLcls
-	$ff0000 SDLColor p1 sw 1 >> 220 - 20 drawnumber
-	$ff SDLColor p2 sw 1 >> 20 + 20 drawnumber
+	0 cls
+	$ff0000 color p1 sw 1 >> 220 - 20 drawnumber
+	$ff color p2 sw 1 >> 20 + 20 drawnumber
 	j1 j2 pelota
 	SDLredraw
 	

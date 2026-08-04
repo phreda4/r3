@@ -28,7 +28,7 @@
 
 :demo
 	vupdate
-	$0 SDLcls
+	$0 cls
 	512 50 titulo sprite
 	panel
 	SDLredraw	

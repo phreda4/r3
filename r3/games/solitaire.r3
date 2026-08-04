@@ -232,10 +232,10 @@
 	
 :game
 	uiStart
-	$6600 SDLcls
+	$6600 cls
 	$ffffff txrgb 10 4 txat "R3 Solitaire" txprint
 	
-	$3f00 sdlcolor
+	$3f00 color
 	55 40 50 80 uiBox uiZoneW 8 uiRFill 
 	'clkstock uiClk
 	80.0 80.0 'stock drawpile

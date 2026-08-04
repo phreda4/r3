@@ -186,7 +186,7 @@ Multi-screen UI using the immediate mode GUI:
 :juego
     vini                          // Initialize virtual screen
     vupdate                       // Update animations
-    $40C87C sdlcls               // Clear with background color
+    $40C87C cls               // Clear with background color
     
     planos                        // Render parallax layers
     'dis p.draw                   // Update/render projectiles

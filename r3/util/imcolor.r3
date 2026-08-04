@@ -35,11 +35,11 @@
 	
 :selectColorPick
 	uiZone
-	$222222 sdlcolor uiFill
+	$222222 color uiFill
 	'col128 >a
 	0 ( 128 <?
-		da@+ SDLColor
-		cx 140 + over cy + 5 + over 10 + over SDLLine
+		da@+ color
+		cx 140 + over cy + 5 + over 10 + over line
 		1 + ) drop
 	
 	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry	
@@ -57,21 +57,21 @@
 	[ SDLx cx - 127 clamp0max 'c1a ! ; ] uiSel
 	uiBackBox
 	
-	$0 SDLColor
-	cx 4 + cy 4 + 130 130 SDLRect
-	cx 139 + cy 4 + 12 130 SDLRect
-	cx 5 + c1x + 2 - cy 5 + c1y + 2 - 5 5 SDLRect	
-	$ffffff SDLColor
-	cx 137 + cy c1w + 4 + 16 3 SDLRect
-	cx 5 + c1x + 1- cy 5 + c1y + 1- 3 3 SDLRect
-	cx 5 + cy 140 + 128 2 SDLRect
-	cx 5 + c1a + cy 137 + 2 8 SDLRect
+	$0 color
+	cx 4 + cy 4 + 130 130 rect
+	cx 139 + cy 4 + 12 130 rect
+	cx 5 + c1x + 2 - cy 5 + c1y + 2 - 5 5 rect	
+	$ffffff color
+	cx 137 + cy c1w + 4 + 16 3 rect
+	cx 5 + c1x + 1- cy 5 + c1y + 1- 3 3 rect
+	cx 5 + cy 140 + 128 2 rect
+	cx 5 + c1a + cy 137 + 2 8 rect
 
  	cx 64 + cy 150 + txat
 	colorvar @ $ffffffff and "$%h" txprint
-	colorvar @ SDLColor
+	colorvar @ color
 	cx 10 + cy 154 + 50 20 
-	2over 2over SDLFRect
+	2over 2over frect
 	uiZoneBox
 	'uiExitWidget uiClk
 	uiBackBox ;
@@ -92,8 +92,8 @@
 	;
 
 :kbcolor
-	$ffffff sdlcolor
-	4 cx 1- cy 1- cw 2 + txh 2 + SDLRound
+	$ffffff color
+	4 cx 1- cy 1- cw 2 + txh 2 + round
 	'iniColor uiClk 
 	sdlkey 
 	<tab> =? ( tabfocus ) 
@@ -102,14 +102,14 @@
 ::uiColor | 'var --
 	uiZone 
 	'kbcolor uiFocus
-	@ sdlcolor 
-	4 cx cy cw txh SDLFRound 
+	@ color 
+	4 cx cy cw txh fround 
 	ui.. ;
 
 ::uiColorH | 'var --
 	uiZone 
 	'kbcolor uiFocus
-	dup @ sdlcolor uiRFill 
+	dup @ color uiRFill 
 	@ .h ttwritec
 	ui.. ;
 	

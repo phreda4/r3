@@ -137,7 +137,7 @@
 	;
 	
 :main
-	0 sdlcls
+	0 cls
 	1280 2/ 720 2/ tsize texmem spritez
 	guipanel		
 	sdlredraw

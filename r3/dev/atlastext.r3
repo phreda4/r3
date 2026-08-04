@@ -190,11 +190,11 @@ $f0c8 $f14a
 #prueba ( 128 129 130 131 132 133 134 135 136 0  )
 
 :game
-	$0 SDLcls
-	$ffffff sdlcolor
+	$0 cls
+	$ffffff color
 	
 	font1 txfont
-	10 200 newtex sdlimage
+	10 200 newtex image
 	
 	$00ffff txrgb
 	10 10 txat ":hola a ""coso"" todo el mundi ;" txemits
@@ -206,13 +206,13 @@ $f0c8 $f14a
 	'prueba txemits
 	
 	font2 txfont
-|	10 400 newtex sdlimage
+|	10 400 newtex image
 	$ffffff txrgb
 	'utf8 txemits
 	10 90 txat ":hola a ""coso"" todo el mundi ;" txemits
 
 	font3 txfont
-	|500 10 newtex sdlimage
+	|500 10 newtex image
 	$ffff00 txrgb
 	" djhaskdjahsf" txemits
 	'utf8 txemits
@@ -223,7 +223,7 @@ $f0c8 $f14a
 	10 110 txat
 	"esto is un cirv"
 	msec $80 and? ( 
-		$ff sdlcolor 
+		$ff color 
 		over dup msec 9 >> $f and + txcur 
 		) drop
 	txemits

@@ -166,7 +166,7 @@
 	uiEx? 1? ( fxStop fxPlay ) drop	;
 	
 :game
-	$0 SDLcls
+	$0 cls
 
 	uiStart
 	8 2 uiPading

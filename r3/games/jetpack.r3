@@ -74,7 +74,7 @@
 	;
 	
 :juego
-	0 SDLcls
+	0 cls
 	
 	'fx p.draw
 	jetpack

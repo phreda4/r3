@@ -69,13 +69,13 @@
 :drawpoint | 'plist --
 	>b
 	( b@+ 1? 
-		4 dup rot pxy SDLFEllipse
+		4 dup rot pxy fellipse
 		) drop ;
 		
 :drawsprints
 	>a
 	( a@+ 1? 
-		pxy a@+ pxy SDLLine
+		pxy a@+ pxy line
 		8 a+
 		) drop 	;
 
@@ -104,12 +104,12 @@
 	;
 	
 :pendulum
-	$0 SDLCls
+	$0 cls
 
 	10 10 bat "pendulum demo" bprint
-	$ffe451 SDLcolor
+	$ffe451 color
 	'splist drawsprints
-	$00aefa SDLcolor
+	$00aefa color
 	'plist drawpoint
 	
 	'splist 0.0 0.04 'plist upd-spring
@@ -179,10 +179,10 @@
 	;
 	
 :cloth
-	$0 SDLCls
+	$0 cls
 
 	10 10 bat "cloth demo" bprint
-	$ffe451 SDLcolor
+	$ffe451 color
 	springs drawsprints
 	
 	springs |0.0 0.04 
@@ -249,10 +249,10 @@
 	;
 		
 :softbody
-	$0 SDLCls
+	$0 cls
 
 	10 10 bat "soft body" bprint
-	$ffe451 SDLcolor
+	$ffe451 color
 	springs drawsprints
 	
 	springs 0.0 0.04 listp upd-spring

@@ -107,9 +107,9 @@ Red box in the corner program
 ^r3/lib/sdl2gfx.r3
 
 :main
-	0 sdlcls
-	$ff0000 sdlcolor
-	10 10 100 100 sdlfrect
+	0 cls
+	$ff0000 color
+	10 10 100 100 frect
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )

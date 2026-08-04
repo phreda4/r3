@@ -19,7 +19,7 @@
 
 #xp #yp
 	
-:lip dup getxy xp yp sdlline 
+:lip dup getxy xp yp line 
 :opp getxy 'yp ! 'xp ! ;	
 
 :showpoli | end ini --
@@ -33,7 +33,7 @@
 	dup 16 << 48 >> 500 +
 	swap 48 >> 100 + ;
 
-:lip dup getxy xp yp sdlline 
+:lip dup getxy xp yp line 
 :opp getxy 'yp ! 'xp ! ;	
 
 :shadowpoli
@@ -164,19 +164,19 @@
 	
 |---------------	
 :main
-	0 sdlcls
+	0 cls
 	
-	$7a7a7a sdlcolor
-	100 100 256 dup sdlrect
+	$7a7a7a color
+	100 100 256 dup rect
 	
-	$00ff00 sdlcolor vertex> 'vertex showpoli
-	$ff00ff sdlcolor verfix> 'verfix showpoli	
+	$00ff00 color vertex> 'vertex showpoli
+	$ff00ff color verfix> 'verfix showpoli	
 	
-	$7a7a7a sdlcolor
-	500 100 256 dup sdlrect
+	$7a7a7a color
+	500 100 256 dup rect
 	
-	$00ff00 sdlcolor vertex> 'vertex shadowpoli
-	$ff00ff sdlcolor verfix> 'verfix shadowpoli
+	$00ff00 color vertex> 'vertex shadowpoli
+	$ff00ff color verfix> 'verfix shadowpoli
 	
 	SDLRedraw 
 	SDLkey

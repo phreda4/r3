@@ -1,7 +1,7 @@
 ^r3/sdl3/sdl3.r3
 
 :scr
-	$00ff00 SDLcls
+	$00ff00 cls
 	SDLredraw
 	sdlkey
 	>esc< =? ( exit )

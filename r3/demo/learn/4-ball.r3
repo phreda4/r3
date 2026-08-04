@@ -11,7 +11,7 @@
 :hity yv neg 'yv ! ;
 
 :main
-	0 SDLcls
+	0 cls
 	xp int. yp int. sprPelota sprite
 	
 	$ffff4c txrgb

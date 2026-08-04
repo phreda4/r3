@@ -33,7 +33,7 @@
 	'trail dup 8 + trail> over - 3 >> move -8 'trail> +! ;
 
 :drawbox | x y --
-	gs * swap gs * swap gs 1 - dup SDLFRect ;
+	gs * swap gs * swap gs 1 - dup frect ;
 
 :hit? | x y -- x y
 	py <>? ( ; )
@@ -64,12 +64,12 @@
 	;
 	
 :game
-	0 SDLcls
+	0 cls
 
-	$ff SDLColor
+	$ff color
 	'trail ( trail> <?
 		@+ unpack hit? drawbox ) drop
-	$ff0000 SDLColor
+	$ff0000 color
 	ax ay drawbox
 	
 	SDLredraw

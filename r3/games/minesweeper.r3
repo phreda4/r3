@@ -136,7 +136,7 @@
 	makemap 0 'sb ! "" 'state strcpy ;
 	
 :game
-	0 SDLcls
+	0 cls
 	drawmap
 	showbomb?	
 	

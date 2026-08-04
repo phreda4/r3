@@ -172,7 +172,7 @@ Used for rectangles, sprites, and packed coordinate data.
 
 | Later, unpack for rendering
 mybox 64xywh  | -- 100 200 300 150 (interpolated)
-SDLRect
+rect
 ```
 
 ### XY Format (2×32-bit)
@@ -312,11 +312,11 @@ vareset
     vupdate
     
     | Clear screen
-    $000000 SDLcls
+    $000000 cls
     
     | Draw object
-    $ffffff SDLColor
-    xpos ypos 20 20 SDLFRect
+    $ffffff color
+    xpos ypos 20 20 frect
     
     SDLredraw
     SDLkey 
@@ -359,10 +359,10 @@ vareset
 :render
     vupdate
     
-    $000000 SDLcls
-    $ff00ff SDLColor
+    $000000 cls
+    $ff00ff color
     
-    box 64xywh SDLFRect  | Unpack and draw
+    box 64xywh frect  | Unpack and draw
     
     SDLredraw
     SDLkey 
@@ -391,7 +391,7 @@ vareset
 
 :draw
     vupdate
-    bgColor SDLcls
+    bgColor cls
     SDLredraw
     SDLkey 0? ( drop draw ; ) drop ;
 
@@ -441,7 +441,7 @@ draw
 :render
     vupdate
     
-    $000000 SDLcls
+    $000000 cls
     
     sprite 64xyrz   | -- x y r z
     myTexture       | Add texture

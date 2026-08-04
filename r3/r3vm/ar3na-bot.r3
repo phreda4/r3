@@ -14,18 +14,18 @@
 |---------
 :btnt | x y v "" col --
 	pick4 pick4 128 24 guiBox
-	[ dup 2* or ; ] guiI sdlcolor
+	[ dup 2* or ; ] guiI color
 	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 128 24 sdlfrect
+	2over 128 24 frect
 	2swap 4 + swap 4 + swap tat
 	$e tcol temits	
 	onClick ;
 
 :btnt2 | x y v "" col --
 	pick4 pick4 256 48 guiBox
-	[ dup 2* or ; ] guiI sdlcolor
+	[ dup 2* or ; ] guiI color
 	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 256 48 sdlfrect
+	2over 256 48 frect
 	2swap 8 + swap 8 + swap tat
 	$e tcol temits	
 	onClick ;
@@ -101,10 +101,10 @@
 		
 :draw.script
 	sstate -? ( drop ; ) drop
-	$7f3f3f3f sdlcolorA	
+	$7f3f3f3f colorA	
 	xterm yterm wterm hterm 
 	|8 32 sw 16 - 14 16 * 
-	sdlFRect
+	frect
 	2.0 tsize 3 tcol 0 'inv !
 	xterm 8 + 'tcx ! yterm 8 + 'tcy !
 	|2 1 txy 
@@ -127,7 +127,7 @@
 	state $f0 nand? ( drop ; ) drop
 	4.0 tsize 
 	$c tcol
-	infx infy 500 100 sdlfrect
+	infx infy 500 100 frect
 	infx padx + infy 36 + tat
 	infs temits
 	;
@@ -169,7 +169,7 @@
 	
 :jugar
 	vupdate
-	gui 0 0 sw sh guiRect 0 sdlcls
+	gui 0 0 sw sh guiRect 0 cls
 
 	draw.map
 	draw.code
@@ -263,9 +263,9 @@
 	;
 	
 :menu
-	vupdate gui 0 sdlcls
+	vupdate gui 0 cls
 	
-	|$7f3f3f3f sdlcolorA	200 200 200 600 sdlFRect
+	|$7f3f3f3f colorA	200 200 200 600 frect
 	
 	6.0 tsize
 	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Code" temits tcr

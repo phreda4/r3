@@ -411,8 +411,8 @@
 	
 
 ::edtoolbar
-	$003f3f sdlcolor 
-	xedit yedit hedit + wedit advy SDLFrect
+	$003f3f color 
+	xedit yedit hedit + wedit advy frect
 	xedit yedit hedit + tat |printmode
 	6 tcol tsp
 	xcursor 1+ .d temits tsp
@@ -429,7 +429,7 @@
 	xedit sx1 lnsize + advx * +
 	sy1
 	sw1 advx * 
-	advy sdlFrect ;
+	advy frect ;
 	
 :startsel
 	0 'sx1 ! yedit 'sy1 ! 
@@ -448,7 +448,7 @@
 :edselshow
 	inisel 0? ( drop ; )
 	pantafin> >? ( drop ; ) drop
-	$585858 SDLColor
+	$585858 color
 	startsel
 	0 'sw1 !
 	( pantafin> <? finsel <? c@+
@@ -465,13 +465,13 @@
 :edlinecursor
 	fuente> pantaini> <? ( drop ; ) pantafin> >? ( drop ; ) drop
 	cursorpos
-|	colb1 sdlcolor
+|	colb1 color
 |	xcode 1 + ycursor ylinea - ycode + wcode 2 - 1 bfillline
 	msec $100 and? ( drop ; ) drop
 	xedit lnsize advx * +
 	ycursor ylinea - advy * yedit + 
 	tat
-	$ffffff SDLColor 
+	$ffffff color 
 	'lover modo	=? ( xcursor tcursor drop ; ) drop
 	xcursor tcursori
 	;

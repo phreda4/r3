@@ -78,7 +78,7 @@
 	swap ttsize  | strcur str w h
 	ttx rot + tty rot 
 	sizechar
-	swap SDLFrect
+	swap frect
 	backc rot c!
 	;
 
@@ -90,7 +90,7 @@
 	sizechar | x y h w
 	rot 	| x h w y
 	rot + 2 -	| x w y+h
-	swap 2 sdlFrect
+	swap 2 frect
 	backc rot c!
 	;
 	

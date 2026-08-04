@@ -19,37 +19,37 @@
 :rgb32 | argb -- r g b a
 	dup 16 >> $ff and swap dup 8 >> $ff and swap dup $ff and swap 24 >> $ff and ;
 	
-::SDLColor | col --
+::color | col --
 	SDLrenderer swap rgb24 $ff SDL_SetRenderDrawColor ;
 
-::SDLColorA | col --
+::colorA | col --
 	SDLrenderer swap rgb32 SDL_SetRenderDrawColor ;
 
-::SDLcls | color --
-	SDLColor SDLrenderer SDL_RenderClear ;
+::cls | color --
+	color SDLrenderer SDL_RenderClear ;
 	
-::SDLPoint | x y --
+::point | x y --
 	SDLRenderer -rot SDL_RenderDrawPoint ;
 
-::SDLGetPixel | x y -- v
+::getpixel | x y -- v
 	swap 'rec d!+ d!+ $10001 swap !
 	SDLrenderer 'rec $16362004 'vert 1 SDL_RenderReadPixels 
 	vert $ffffff and ;
 
-::SDLLine | x y x y --	
+::line | x y x y --	
 	>r >r SDLRenderer -rot r> r> SDL_RenderDrawLine ;
 	
-::SDLLineH | x y x --	
+::lineH | x y x --	
 	SDLRenderer swap 2swap swap over SDL_RenderDrawLine ;
 
-::SDLLineV | x y y --	
+::lineV | x y y --	
 	SDLRenderer swap 2swap rot pick2 swap SDL_RenderDrawLine ;
 
-::SDLFRect | x y w h --	
+::frect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderFillRect ;
 
-::SDLRect | x y w h --	
+::rect | x y w h --	
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderDrawRect ;
 	
@@ -71,13 +71,13 @@
 	;
 
 :qf
-	xm pick2 - ym pick2 - xm pick4 + SDLLineH 
-	xm pick2 - ym pick2 + xm pick4 + SDLLineH  ;
+	xm pick2 - ym pick2 - xm pick4 + lineH 
+	xm pick2 - ym pick2 + xm pick4 + lineH  ;
 
-::SDLFEllipse | rx ry x y --
+::fellipse | rx ry x y --
 	ab[
 	inielipse
-	xm pick2 - ym xm pick4 + SDLLineH
+	xm pick2 - ym xm pick4 + lineH
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1- -rot pick3 'dx +! dx a+ )
@@ -96,7 +96,7 @@
 	xm pick2 - ym pick2 - 32 << xm pick4 + borde
 	xm pick2 - ym pick2 + 32 << xm pick4 + borde ;
 
-::SDLEllipse | rx ry x y --
+::ellipse | rx ry x y --
 	ab[
     inielipse
 	here >b
@@ -111,7 +111,7 @@
 	]ba ;
 	
 |-----------------	
-::SDLTriangle | x y x y x y --
+::triangle | x y x y x y --
 	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
 	'vert >a
 	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
@@ -121,17 +121,17 @@
 	
 |-----------------
 :8points
-	xm over - ym pick3 - xm dx + pick3 + sdlLineH
-	xm over - ym dy + pick3 + xm dx + pick3 + sdlLineH
-	xm pick2 - ym pick2 - ym dy + pick3 + sdlLineV
-	xm dx + pick2 + ym pick2 - ym dy + pick3 + sdlLineV	 ;
+	xm over - ym pick3 - xm dx + pick3 + lineH
+	xm over - ym dy + pick3 + xm dx + pick3 + lineH
+	xm pick2 - ym pick2 - ym dy + pick3 + lineV
+	xm dx + pick2 + ym pick2 - ym dy + pick3 + lineV	 ;
 
 :stepd
 	d -? ( over 2 << 6 + + 'd ! ; )
 	over pick3 - 2 << 10 + + 'd ! 
 	8points swap 1- swap ;
 
-::SDLFRound | r x y w h --
+::fround | r x y w h --
 	1- pick4 2* - 'dy ! 
 	1- pick3 2* - 'dx !
 	pick2 + 'ym ! over + 'xm !
@@ -139,7 +139,7 @@
 	0 ( over <=? stepd 1+ ) drop 
 	xm over - ym pick2 -
 	rot 2* 1+ dx over + dy rot +
-	SDLfRect ;
+	frect ;
 
 |-----------------
 :2points | x y x --
@@ -156,13 +156,13 @@
 	over pick3 - 2 << 10 + + >b 
 	swap 1- swap ;
 
-::SDLRound | r x y w h --
+::round | r x y w h --
 	1- pick4 2* - 'dy ! 
 	1- pick3 2* - 'dx !
-	pick2 pick2 + over dx pick2 + SDLLineH
-	pick2 pick2 + over dy + pick4 2* + dx pick2 + SDLLineH
-	2dup pick4 + dy over + SDLLineV
-	over dx + pick3 2* + over pick4 + dy over + SDLLineV	
+	pick2 pick2 + over dx pick2 + lineH
+	pick2 pick2 + over dy + pick4 2* + dx pick2 + lineH
+	2dup pick4 + dy over + lineV
+	over dx + pick3 2* + over pick4 + dy over + lineV	
 	pick2 + 'ym ! over + 'xm !
 	ab[
 	3 over 2* - >b here >a
@@ -172,13 +172,13 @@
 	
 |-----------------
 :rect
-	xm over - ym pick3 + xm pick3 + sdlLineH
-	xm over - ym pick3 - xm pick3 + sdlLineH
-	xm pick2 + ym pick2 - ym pick3 + sdlLineV
-	xm pick2 - ym pick2 - ym pick3 + sdlLineV
+	xm over - ym pick3 + xm pick3 + lineH
+	xm over - ym pick3 - xm pick3 + lineH
+	xm pick2 + ym pick2 - ym pick3 + lineV
+	xm pick2 - ym pick2 - ym pick3 + lineV
 	;
 	
-::SDLFCircle | r x y --
+::fcircle | r x y --
 	'ym ! 'xm !
 	ab[
 	3 over 2* - >b |'d !
@@ -186,7 +186,7 @@
 	]ba
 	xm over - ym pick3 -
 	2swap 2* swap 2*
-	sdlfrect ;
+	frect ;
 
 |-----------------
 :8points
@@ -195,7 +195,7 @@
 	xm pick2 + ym pick2 + 32 << xm pick4 - 2points
 	xm pick2 + ym pick2 - 32 << xm pick4 - 2points ;
 	
-::SDLCircle | r x y --
+::circle | r x y --
 	'ym ! 'xm !
 	ab[
 	3 over 2* - >b here >a
@@ -204,20 +204,20 @@
 	]ba ;
 
 |-------------------
-::SDLImage | x y img --		
+::image | x y img --		
 	dup SDLTexwh 'ym ! 'xm ! >r
 	swap 'rec d!+ d!+ ym xm rot d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
-::SDLImages | x y w h img --
+::images | x y w h img --
 	>r
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLrenderer r> 0 'rec SDL_RenderCopy ;
 	
-::SDLImageb | box img --
+::imageb | box img --
 	SDLrenderer swap rot 0 swap SDL_RenderCopy ;
 	
-::SDLImagebb | box box img --
+::imagebb | box box img --
 	SDLrenderer swap 2swap SDL_RenderCopy ;	
 
 |------------------- TILESET	

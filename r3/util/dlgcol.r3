@@ -48,13 +48,13 @@
 	
 
 :selectColorPick
-	$454545 SDLColor
-	cwx cwy 160 180 SDLFRect
+	$454545 color
+	cwx cwy 160 180 frect
 
 	'col128 >a
 	0 ( 128 <?
-		da@+ SDLColor
-		cwx 140 + over cwy + 5 + over 10 + over SDLLine
+		da@+ color
+		cwx 140 + over cwy + 5 + over 10 + over line
 		1 + ) drop
 	
 	SDLrenderer 0 'vert 4 'index 6 SDL_RenderGeometry	
@@ -73,35 +73,35 @@
 	[ SDLx cwx - 5 - 127 clamp0max 'c1a ! ; ] dup
 	onDnMoveA	
 		
-	$0 SDLColor
-	cwx 4 + cwy 4 + 130 130 SDLRect
-	cwx 139 + cwy 4 + 12 130 SDLRect
+	$0 color
+	cwx 4 + cwy 4 + 130 130 rect
+	cwx 139 + cwy 4 + 12 130 rect
 	
 	cwx 5 + c1x + 2 -
 	cwy 5 + c1y + 2 -
-	5 5 SDLRect	
+	5 5 rect	
 	
-	$ffffff SDLColor
+	$ffffff color
 	cwx 137 + 
 	cwy c1w + 4 + 
-	16 3 SDLRect
+	16 3 rect
 	
 	cwx 5 + c1x + 1 -
 	cwy 5 + c1y + 1 -
-	3 3 SDLRect
+	3 3 rect
 
 	cwx 5 + cwy 140 + 
-	128 2 SDLRect
+	128 2 rect
 
 	cwx 5 + c1a +
 	cwy 137 +
-	2 8 SDLRect
+	2 8 rect
 	
  	cwx 5 + cwy 158 + bat
 	colord $ffffffff and "$%h" sprint bprint
 	
-|	colord SDLColor
-|	cwx 10 + cwy 154 + 50 20 SDLFRect
+|	colord color
+|	cwx 10 + cwy 154 + 50 20 frect
 	
 	cwx cwy 160 180 guiBox
 	
@@ -120,29 +120,29 @@
 ::dlgColor | x y --
 	select 1? ( 60 'cwx +! fillcbox selectColorPick -60 'cwx +! ) drop
 
-	$454545 SDLColor
-	cwx cwy 60 380 SDLFRect
+	$454545 color
+	cwx cwy 60 380 frect
 
-	colord SDLColor
+	colord color
 	cwx 10 + cwy 5 + 40 30 
-	2over 2over SDLFRect
+	2over 2over frect
 	guiBox
 	[ select 1 xor 'select ! ; ] onClick
 	
 	'pal8
 	0 ( 20 <?
 		0 ( 3 <?
-			rot d@+ dup 'ink ! SDLColor
+			rot d@+ dup 'ink ! color
 			-rot
         	over 4 << 41 + cwy +
 			over 4 << 7 + cwx + swap 14 14
-			2over 2over SDLFRect
+			2over 2over frect
 			guiBox
 			over 3 * over +
 			[ dup 'npal ! ink color! ; ] onClick
 			npal =? ( 
-				$ffffff SDLColor
-				xr1 yr1 xr2 pick2 - yr2 pick2 - SDLRect
+				$ffffff color
+				xr1 yr1 xr2 pick2 - yr2 pick2 - rect
 				)
 			drop
 			1 + ) drop

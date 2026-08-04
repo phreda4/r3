@@ -36,10 +36,10 @@
 	;
 	
 :demo
-	$323262 SDLcls
+	$323262 cls
 	
-	$326232 SDLcolor
-	0 400 800 200 sdlfrect
+	$326232 color
+	0 400 800 200 frect
 	xp int. yp int. 3.0 nroimagen tsguy sspritez	
 	
 	$ffff4c txrgb

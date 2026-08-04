@@ -124,14 +124,14 @@
 	
 :config
 	gui
-	0 SDLcls
+	0 cls
 	
 	newmapw newmaph
 	0 0 
 	200 80 
 	2 2	mapamem tiledraws
 	
-	$666699 SDLColor
+	$666699 color
 |	50 60 bat 'loadfile "[ TILES ]" tbtn
 	
 	$ffffff bcolor 
@@ -220,8 +220,8 @@
 	0 nip ;
 	
 :inpal
-	blink SDLColor
-	xy2pal tilew tileh SDLRect ;	
+	blink color
+	xy2pal tilew tileh rect ;	
 	
 :xy2tile
 	sdlx 40 - tilew / ntilew 1 - clamp0max
@@ -234,7 +234,7 @@
 :pagetile
 	40 40 sw sh guiBox
 		
-	40 40 tilemem @ sdlimage
+	40 40 tilemem @ image
 	
 	'inpal guiI
 	'clpal onClick
@@ -244,7 +244,7 @@
 
 :stileset
 	gui
-	0 SDLcls
+	0 cls
 
 	$ffffff bcolor 
 	44 4 bat 'filetile "TILESET [ %s ]" sprint bprint
@@ -272,7 +272,7 @@
 	'selectile onClick
 	
 	0 40 40 sh guiBox
-	[ $403DFF SDLColor sdly 40 / 0 swap 40 * 40 40 SDLFRect ; ] guiI
+	[ $403DFF color sdly 40 / 0 swap 40 * 40 40 frect ; ] guiI
 	[ 'paleta sdly 40 / ncell+ @ dup palins! 'tilenow ! ; ] onClick
 
 	0 0 ( 12 <?
@@ -283,7 +283,7 @@
 |--------------------------------
 :viewscr
 	gui
-	0 SDLcls
+	0 cls
 
 	$ffffff bcolor 
 	44 4 bat "FULLMAP" bprint
@@ -309,8 +309,8 @@
 :tool2xy | btbn -- x y
 	40 * Xinitool + 0 ;
 :inbtn
-	$403DFF SDLColor
-	xy2tool tool2xy 40 40 SDLFRect ;	
+	$403DFF color
+	xy2tool tool2xy 40 40 frect ;	
 	
 :clicktool
 	xy2tool 
@@ -321,8 +321,8 @@
 	drop exit ;
 	
 :toolbar	
-	$999999 SDLColor
-	modo tool2xy 40 40 SDLFRect 
+	$999999 color
+	modo tool2xy 40 40 frect 
 
 	Xinitool 0 sw 40 guiBox
 	'inbtn guiI
@@ -353,8 +353,8 @@
 	onDnMove ;
 	
 :drawselect | --
-	blink SDLColor
-	sdlx sdly mx pick2 - my pick2 -  SDLRect
+	blink color
+	sdlx sdly mx pick2 - my pick2 -  rect
 	;
 	
 :sort1d | m1 m2 -- mm mM
@@ -384,14 +384,14 @@
 #modelist 'mdraw 'mmove 'msele 'mfill
 
 :grid
-	$666666 SDLColor
+	$666666 color
 	maph mapy - tileh * 40 + sh min
 	mapw mapx - tilew * 40 + sw min
 	40 ( pick2 <=? 
-		40 over pick3 over SDLline
+		40 over pick3 over line
 		tileh + ) drop
 	40 ( over <=? 
-		dup pick3 over 40 SDLLine
+		dup pick3 over 40 line
 		tilew + ) 3drop ;
 	
 :mapinscreen
@@ -443,7 +443,7 @@
 	
 :editing
 	gui
-	0 SDLcls
+	0 cls
 
 	mapinscreen
 	upbar

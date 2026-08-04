@@ -95,7 +95,7 @@ This tutorial analyzes the complete pong.r3 implementation by PHREDA, teaching R
 
 ```forth
 :** | 0/1 --
-	and? ( xx yy 20 dup SDLFRect ) 
+	and? ( xx yy 20 dup frect ) 
 	20 'xx +! ;
 
 :drawd | addr --
@@ -140,11 +140,11 @@ This tutorial analyzes the complete pong.r3 implementation by PHREDA, teaching R
 ```forth
 #yj1 #v1 #p1
 
-:j1 $ff0000 SDLColor 10 yj1 20 80 SDLFRect v1 'yj1 +! ;
+:j1 $ff0000 color 10 yj1 20 80 frect v1 'yj1 +! ;
 
 #yj2 #v2 #p2
 
-:j2 $ff SDLColor 770 yj2 20 80 SDLFRect v2 'yj2 +! ;
+:j2 $ff color 770 yj2 20 80 frect v2 'yj2 +! ;
 ```
 
 **Player Implementation:**
@@ -171,8 +171,8 @@ Paddles start at y=260 (center of 600-pixel screen height)
 #x #y #vx #vy | ball pos
 
 :pelota
-	$ffffff SDLColor
-	x int. y int. 20 20 SDLFRect
+	$ffffff color
+	x int. y int. 20 20 frect
 	vx 'x +! vy 'y +!
 	y 0 <? ( hity ) 580.0 >? ( hity ) drop
 	x 
@@ -270,8 +270,8 @@ Perfect elastic collision - velocity component perpendicular to surface is negat
 ### Game State Display
 
 ```forth
-	$ff0000 SDLColor p1 sw 1 >> 220 - 20 drawnumber
-	$ff SDLColor p2 sw 1 >> 20 + 20 drawnumber
+	$ff0000 color p1 sw 1 >> 220 - 20 drawnumber
+	$ff color p2 sw 1 >> 20 + 20 drawnumber
 ```
 
 **Score Positioning:**
@@ -337,8 +337,8 @@ n 10 / 10 mod          | Extract decimal digits
 
 ```forth
 | Color setting before drawing:
-$ff0000 SDLColor       | Set red color
-x int. y int. w h SDLFRect  | Convert fixed point to pixels
+$ff0000 color       | Set red color
+x int. y int. w h frect  | Convert fixed point to pixels
 ```
 
 ---

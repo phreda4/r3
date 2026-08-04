@@ -8,65 +8,65 @@
 	SDLkey >esc< =? ( exit ) drop ;
 	
 :puntos
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw randmax 
 	sh randmax 
-	SDLPoint
+	point
 			
 	SDLredraw 
 	waitkey ;
 
 :lineas
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw randmax sh randmax 
 	sw randmax sh randmax 
-	SDLLine
+	line
 	
 	SDLredraw 
 	waitkey ;
 
 :cajas
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw randmax sh randmax 
 	sw over - randmax sh over - randmax 
-	SDLRect
+	rect
 	
 	SDLredraw 
 	waitkey ;
 
 :fillcajas
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw randmax sh randmax 
 	sw over - randmax sh over - randmax 
-	SDLFRect
+	frect
 	
 	SDLredraw 
 	waitkey ;
 
 :elipse
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw 3 >> randmax sh 3 >> randmax 
 	sw randmax sh randmax 
-	SDLEllipse
+	ellipse
 	
 	SDLredraw 
 	waitkey ;
 
 :fillelipse
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw 3 >> randmax sh 3 >> randmax 
 	sw randmax sh randmax 
-	SDLFEllipse
+	fellipse
 	
 	SDLredraw 
 	waitkey ;
 
 :filltri
-	$ffffff randmax SDLColor 
+	$ffffff randmax color 
 	sw randmax sh randmax 
 	sw randmax sh randmax 
 	sw randmax sh randmax 
-	SDLTriangle
+	triangle
 
 	SDLredraw 
 	waitkey ;
@@ -74,25 +74,25 @@
 :	
 	"r3 graphics" 800 600 SDLinit
 
-	0 SDLcls
+	0 cls
 	'puntos SDLShow
 
-	0 SDLcls
+	0 cls
 	'lineas SDLShow
 
-	0 SDLcls
+	0 cls
 	'cajas SDLShow
 	
-	0 SDLcls
+	0 cls
 	'fillcajas SDLShow
 	
-	0 SDLcls
+	0 cls
 	'elipse  SDLShow
 	
-	0 SDLcls
+	0 cls
 	'fillelipse SDLShow
 
-	0 SDLcls
+	0 cls
 	'filltri SDLShow
 	
 	SDLquit 

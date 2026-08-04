@@ -13,14 +13,13 @@
 |-----------------------------
 #xcam 0 #ycam 0.0 #zcam -100.0
 
-:fcircle | xc yc r --
-	dup 2swap SDLFEllipse ;
 	
 #xo #yo	
 :3dop project3d 'yo ! 'xo ! ;
-:3dline project3d 2dup xo yo SDLLine 'yo ! 'xo ! ;
+:3dline project3d 2dup xo yo line 'yo ! 'xo ! ;
 
-:3dpoint project3d msec 6 >> $7 and 4 and? ( $7 xor ) 1 + fcircle ;
+:3dpoint project3d msec 6 >> $7 and 4 and? ( $7 xor ) 1 + 
+	-rot fcircle ;
 
 :grillaxy
 	-50.0 ( 50.0 <=?
@@ -181,7 +180,8 @@
 	dup .posx @ 
 	over .posy @ 
 	pick2 .fit @
-	project3d 2 fcircle 
+	project3d
+	2 -rot fcircle 		
 	;
 	
 :drawlist
@@ -217,12 +217,12 @@
 	rx mrotx ry mroty
 	xcam ycam zcam mtrans
 
-	$0 SDLcls
+	$0 cls
 	
-	$3f3f3f SDLColor
+	$3f3f3f color
 	grillaxy grillayz grillaxz
 
-	$ff0000 SDLColor
+	$ff0000 color
 	drawlist	
 	updlist
 	SDLredraw

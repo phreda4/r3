@@ -42,9 +42,9 @@
 
 :setcolor | --
 	calc-color
-	SDLColor ;
+	color ;
 
-:point | xin --
+:qpoint | xin --
 	dup 235.0 /. 'y !
 	dup 11.0 /. 8.0 t *. + rsin 4.0 +
 	over 14.0 /. rcos *. 'k !
@@ -68,18 +68,18 @@
 
 	xp SCALEX *. int. 
 	yp SCALEY *. int.
-	SDLPoint ;
+	point ;
 
 :curve | --
 	0.0 ( 12000.0 <=?
-		point 0.5 +
+		qpoint 0.5 +
 		) drop ;
 
 :advance-t | --
 	t 3.14159265 240.0 /. + 't ! ;
 
 :draw
-	0 SDLcls
+	0 cls
 	curve
 	SDLredraw
 	advance-t

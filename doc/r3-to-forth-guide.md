@@ -475,7 +475,7 @@ The semicolon `;` ENDS execution and returns to caller:
 ^r3/lib/sdl2.r3
 
 SDLinit   | "title" w h -- initialize window
-SDLcls    | color -- clear screen
+cls    | color -- clear screen
 SDLredraw | -- refresh display
 SDLshow   | 'word -- run word each frame
 ```

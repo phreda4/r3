@@ -216,7 +216,7 @@
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin
-	rot dup SDLREct
+	rot dup rect
 	;
 
 :objset 	
@@ -226,7 +226,7 @@
 :drawcl	| o1 o2 --
 	'arr p.adr dup .x @ int. swap .y @ int.
 	rot 'arr p.adr dup .x @ int. swap .y @ int.
-	sdlline
+	line
 	;
 
 :printmat
@@ -264,7 +264,7 @@
 |	1 << matrix + w@ viewobj
 
 	colist> colist - 2 >> "%d" bprint bcr
-	$ff00 sdlcolor
+	$ff00 color
 	colist ( colist> <?
 		d@+ |"%h" bprint bcr
 		dup 16 >>> swap $ffff and drawcl
@@ -272,7 +272,7 @@
 	;
 	
 :main
-	$0 SDLcls
+	$0 cls
 	
 	H2d.clear
 	'arr p.draw | calc/draw/hash
@@ -312,7 +312,7 @@
 		swap ) 2drop ;
 		
 :main2
-	$0 SDLcls
+	$0 cls
 	
 	H2d.clear
 	

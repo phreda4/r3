@@ -24,11 +24,11 @@
 	swap 32 << 48 >> rando+ ;
 
 :nodel | x y -- 'x 'y
-	a>xy 2swap 2over sdlline ;
+	a>xy 2swap 2over line ;
 
 :node | x y n -- 'x 'y
 	$100000000 and? ( nodel ; )	
-	dup 33 >> SDLColor
+	dup 33 >> color
 	a>xy 2swap 2drop ;
 	
 :anidraw	
@@ -37,10 +37,10 @@
 	
 |---- in screen	
 :alinedraw
-	$ffffff sdlcolor
+	$ffffff color
 	'aline @+ a>xy rot
 	( aline> <? >a
-		a@+ a>xy 2swap 2over SDLLine
+		a@+ a>xy 2swap 2over line
 		a> ) 3drop ;
 	
 #prev 
@@ -68,7 +68,7 @@
 	;
 	
 :drawline
-	0 sdlcls
+	0 cls
 	gui		
 	0 0 sw sh guiRect
 	'pendn 'penmv 'pencopy onMap

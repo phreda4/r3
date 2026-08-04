@@ -82,25 +82,25 @@
 	ymin - ch ymax ymin - */ ch swap - cy + ;
 
 :drawGrid
-	$444444 sdlcolor
+	$444444 color
 	xmin $ffff + $ffff nand
 	( xmax <?
-		dup x>scr cy 1 ch sdlrect
+		dup x>scr cy 1 ch rect
 		1.0 + ) drop
 		
 	ymin $ffff + $ffff nand
 	( ymax <?
-		cx over y>scr cw 1 sdlrect
+		cx over y>scr cw 1 rect
 		1.0 + ) drop
 		
-	$888888 sdlcolor
-	cx 0.0 y>scr cw 1 sdlrect
-	0.0 x>scr cy 1 ch sdlrect 
+	$888888 color
+	cx 0.0 y>scr cw 1 rect
+	0.0 x>scr cy 1 ch rect 
 	;
 	
 |--- direct draw
 #xp #yp
-:xline 2dup xp yp sdlline
+:xline 2dup xp yp line
 :xop 'yp ! 'xp ! ;	
 
 :xfun | 'vec x -- 'vec x x' y'
@@ -138,7 +138,7 @@
 	lines> d!+ 'lines> ! ;
 	
 :linplot
-	-? ( sdlcolor d@+ 32uv xop ; )
+	-? ( color d@+ 32uv xop ; )
 	32uv xline ;
 	
 :lin.draw
@@ -304,7 +304,7 @@
 #funame * 64
 
 :main
-	$0 sdlcls
+	$0 cls
 	uiStart
 	8 8 uiPading
 	font txfont

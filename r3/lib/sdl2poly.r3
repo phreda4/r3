@@ -69,7 +69,7 @@
 	ymax
 	ymin dup 3 << 'segs + >a
 	( over <=?
-		da@+ over da@+ over SDLLine		
+		da@+ over da@+ over line		
 		1 + ) 2drop 
 	>a 	;
 	
@@ -111,7 +111,7 @@
 	gg1 16 *>> rot + swap ;
 
 :glinei |x y x y --
-	gg1 0? ( drop SDLLine ; ) drop
+	gg1 0? ( drop line ; ) drop
 	pick3 pick2 - pick3 pick2 - atan2 $4000 + 'ang1 ! | +1/4 de angulo
 	2over ang1 calg1 SDLop
 	0 ( $8000 <? >r

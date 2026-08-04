@@ -45,13 +45,13 @@
 	;
 
 :draw_block | ( x y -- )
-	15 15 SDLFRect ;
+	15 15 frect ;
 
 :nthcolor | ( n -- color )
 	2 << 'colors + d@ ;
 
 :visit_block | ( y x -- y x )
-	da@+ 0? ( drop ; ) SDLColor
+	da@+ 0? ( drop ; ) color
 	2dup or packed2xy draw_block ;
 
 :draw_grid | ( --- )
@@ -82,7 +82,7 @@
 	translate_block packed2xy draw_block ;
 
 :draw_player | ( --- )
-	playercolor SDLColor
+	playercolor color
 	'player
 	@+ draw_player_block
 	@+ draw_player_block
@@ -93,7 +93,7 @@
 	inmask 15 + packed2xy draw_block ;
 	  
 :draw_nextpiece
-	nextpiece dup nthcolor SDLColor
+	nextpiece dup nthcolor color
 	1 - 2 << 'pieces +
 	c@+ draw_nextpiece_block
 	c@+ draw_nextpiece_block
@@ -203,7 +203,7 @@
 	;
 
 :game | ( --- )
-	$444444 SDLcls
+	$444444 cls
 	
 	uiStart
 	8 4 uiPading
@@ -222,9 +222,9 @@
 	'exit "Exit" uiRbtn	
 	uiEnd
 	
-	$0 SDLColor
-	286 96 128 70 SDLFRect
-	62 96 166 326 SDLFRect
+	$0 color
+	286 96 128 70 frect
+	62 96 166 326 frect
 
 	draw_grid
 	draw_player

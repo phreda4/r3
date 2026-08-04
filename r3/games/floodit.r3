@@ -23,8 +23,8 @@
 #colors $ff0000 $ff00 $ff $ffff00 $ffff $ff00ff
 
 :drawc	| x y -- x y
-	2dup ]map c@ 3 << 'colors + @ SDLColor
-	xymap 16 dup SDLFRect ;
+	2dup ]map c@ 3 << 'colors + @ color
+	xymap 16 dup frect ;
 	
 :drawmap
 	0 ( w <? 0 ( h <? drawc 1 + ) drop 1 + ) drop ;
@@ -78,7 +78,7 @@
 	drop ;
 	
 :game
-	0 SDLcls
+	0 cls
 	
 	drawmap
 	
@@ -105,7 +105,7 @@
 	0.1 %h uiS
 	6 1 uiGrid
 	'colors 0 ( 6 <? 
-		swap @+ sdlcolor swap 2 uiRFill
+		swap @+ color swap 2 uiRFill
 		uiZoneW
 		[ dup floodit ; ] uiClk
 		uiNext 1+ ) 2drop

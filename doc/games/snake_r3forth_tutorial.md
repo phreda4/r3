@@ -156,14 +156,14 @@ This tutorial analyzes the complete snake.r3 implementation by PHREDA, teaching 
 
 ```forth
 :drawbox | x y --
-	gs * swap gs * swap gs 1 - dup SDLFRect ;
+	gs * swap gs * swap gs 1 - dup frect ;
 ```
 
 **Code Analysis:**
 - `gs *` - Convert grid coordinate to pixel coordinate
 - `swap gs * swap` - Convert both x and y coordinates  
 - `gs 1 - dup` - Make rectangle size gs-1 × gs-1 (19×19 pixels)
-- `SDLFRect` - Draw filled rectangle
+- `frect` - Draw filled rectangle
 
 **Coordinate Systems:**
 - **Game Logic**: Grid cells (0-39, 0-29)
@@ -324,25 +324,25 @@ This tutorial analyzes the complete snake.r3 implementation by PHREDA, teaching 
 
 ```forth
 :game
-	0 SDLcls
+	0 cls
 
-	$ff SDLColor
+	$ff color
 	'trail ( trail> <?
 		@+ unpack hit? drawbox ) drop
-	$ff0000 SDLColor
+	$ff0000 color
 	ax ay drawbox
 	
 	SDLredraw
 ```
 
 **Rendering Pipeline:**
-1. `0 SDLcls` - Clear screen to black
-2. `$ff SDLColor` - Set white color for snake body
+1. `0 cls` - Clear screen to black
+2. `$ff color` - Set white color for snake body
 3. Trail drawing loop:
    - `'trail ( trail> <?` - Iterate through all tail segments
    - `@+ unpack` - Read packed coordinate, unpack to x,y
    - `hit? drawbox` - Draw segment (hit? currently no-op)
-4. `$ff0000 SDLColor` - Set red color for fruit
+4. `$ff0000 color` - Set red color for fruit
 5. `ax ay drawbox` - Draw fruit
 6. `SDLredraw` - Present frame to screen
 

@@ -10,9 +10,9 @@
 #xcodel
 
 | color 
-|#colb0 $1f1f1f |sdlcolor | backcode
-|#colb1 $000000 |sdlcolor | backnowline
-#colb2 $444444 |SDLColor | backselect
+|#colb0 $1f1f1f |color | backcode
+|#colb1 $000000 |color | backnowline
+#colb2 $444444 |color | backselect
 
 #xlinea 0 #ylinea 0	| primera linea visible
 ##ycursor ##xcursor
@@ -332,7 +332,7 @@
 	;
 	
 ::edfill
-	xcode ycode wcode hcode sdlFrect ;
+	xcode ycode wcode hcode frect ;
 	
 |-------------- panel control
 #panelcontrol
@@ -470,8 +470,8 @@
 	selecc ;
 
 ::edtoolbar
-	$555555 SDLColor
-	xcode ycode txh - wcode txh sdlFrect 
+	$555555 color
+	xcode ycode txh - wcode txh frect 
 	$ffffff txrgb 
 	xcode ycode txh - txat |printmode
 	'edfilename " %s" txprint
@@ -511,11 +511,11 @@
 	sw1 'sx1 +! 
 	
 	|....draw select
-	colb2 SDLColor
-	selxi selyi sy1 =? ( sx1 pick2 - txh sdlfrect ; ) 
-	xcode wcode + pick2 - txh sdlfrect
-	xcodel selyi txh + wcode xcodel xcode - - sy1 pick2 - sdlfrect
-	xcodel sy1 sx1 pick2 - txh sdlfrect
+	colb2 color
+	selxi selyi sy1 =? ( sx1 pick2 - txh frect ; ) 
+	xcode wcode + pick2 - txh frect
+	xcodel selyi txh + wcode xcodel xcode - - sy1 pick2 - frect
+	xcodel sy1 sx1 pick2 - txh frect
 	;
 
 :edlinecursor
@@ -526,13 +526,13 @@
 	xcodel
 	ycode ycursor ylinea - txh * + 
 	txat
-	$ffffff SDLColor 
+	$ffffff color 
 	'lover modo	=? ( drop cursorlin fuente> txcur ; ) drop
 	cursorlin fuente> txcuri ;	
 	
 :inedit | write editor
-	|$7f sdlcolor 
-	|xcode ycode wcode hcode sdlRect 
+	|$7f color 
+	|xcode ycode wcode hcode rect 
 	'dns uiDwn 'mos uiSel 'ups uiUp
 	evwmouse
 	editmodekey
@@ -603,8 +603,8 @@
 	dup 24 >> $ff and 32 txcw * | w
 	swap 16 >> $ff and txh * | h
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
-	a> 32 >> 4bcol sdlcolor sdlRect
-	a> 48 >> 4bcol sdlcolor sdlFRect
+	a> 32 >> 4bcol color rect
+	a> 48 >> 4bcol color frect
 	;
 	
 ::showmark

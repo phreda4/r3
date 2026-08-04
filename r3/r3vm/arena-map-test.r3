@@ -28,7 +28,7 @@
 |-----------------------------	
 :main
 	vupdate
-	0 sdlcls 
+	0 cls 
 	gui
 	mouseview
 	

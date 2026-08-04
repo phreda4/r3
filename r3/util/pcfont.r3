@@ -123,10 +123,10 @@
 	pcsize pcpos 2swap ;
 	
 ::pccursor | n --
-	ws << pcpos swap rot + swap 8 16 SDLFRect ;
+	ws << pcpos swap rot + swap 8 16 frect ;
 
 ::pccursori | n --
-	ws << pcpos swap rot + swap 16 dup 2 >> - + 8 16 2 >> SDLFRect ;
+	ws << pcpos swap rot + swap 16 dup 2 >> - + 8 16 2 >> frect ;
 
 ::pcfont
 	"media/img/VGA8x16.png" 

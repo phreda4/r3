@@ -14,7 +14,7 @@
 	xc rot + yc rot - gline ;
 
 :drawclock | --
-	$ffffff SDLColor
+	$ffffff color
 	3 linegr!
 	0 ( 1.0 <? 
 		dup csize polar
@@ -23,21 +23,21 @@
 		swap xc + swap yc + gline
 		0.0834 + ) drop
 	time | s m h --
-	$ff0000 SDLColor
+	$ff0000 color
 	8 linegr!
 	dup 16 >> $ff and 60 *	| hora
 	over 8 >> $ff and	| minuto
 	+
 	1.0 720 */ csize 4 - 1 >> aguja
-	$ff00 SDLColor
+	$ff00 color
 	4 linegr!
 	dup 8 >> $ff and 1.0 60 */ csize 4 -  aguja
-	$ffffff SDLColor
+	$ffffff color
 	1 linegr!
 	$ff and 1.0 60 */ csize 4 - aguja ;
 	
 :clock	
-	0 SDLcls
+	0 cls
 	drawclock
 	SDLredraw
 	

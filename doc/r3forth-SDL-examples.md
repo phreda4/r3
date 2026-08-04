@@ -30,9 +30,9 @@ A step-by-step walkthrough of six increasingly complete SDL2 graphics programs.
 ^r3/lib/sdl2gfx.r3
 
 :main
-    0 sdlcls
-    $ff0000 sdlcolor
-    10 10 100 100 sdlfrect
+    0 cls
+    $ff0000 color
+    10 10 100 100 frect
     sdlredraw
     sdlkey
     >esc< =? ( exit )
@@ -56,9 +56,9 @@ Imports the SDL2 graphics library, which provides all drawing functions.
 #### 2. Main Loop
 ```forth
 :main
-    0 sdlcls                    | Clear screen with black (color 0)
-    $ff0000 sdlcolor            | Set color to red (#FF0000)
-    10 10 100 100 sdlfrect      | Draw filled rectangle at (10,10) size (100x100)
+    0 cls                    | Clear screen with black (color 0)
+    $ff0000 color            | Set color to red (#FF0000)
+    10 10 100 100 frect      | Draw filled rectangle at (10,10) size (100x100)
     sdlredraw                   | Update the screen
     sdlkey                      | Get keyboard input
     >esc< =? ( exit )           | If ESC pressed, exit
@@ -76,9 +76,9 @@ Imports the SDL2 graphics library, which provides all drawing functions.
 
 ### Key Concepts
 
-- **sdlcls**: Clears the screen with a color
-- **sdlcolor**: Sets the current drawing color (RGB hex format)
-- **sdlfrect**: Draws a filled rectangle (x, y, width, height)
+- **cls**: Clears the screen with a color
+- **color**: Sets the current drawing color (RGB hex format)
+- **frect**: Draws a filled rectangle (x, y, width, height)
 - **sdlredraw**: Must be called to actually display what you've drawn
 - **SDLShow**: Runs a loop, calling your function repeatedly
 - **Anonymous word** (`:` without a name): The program's entry point
@@ -108,43 +108,43 @@ Imports the SDL2 graphics library, which provides all drawing functions.
     SDLkey >esc< =? ( exit ) drop ;
     
 :puntos
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw randmax 
     sh randmax 
-    SDLPoint
+    point
             
     SDLredraw 
     waitkey ;
 
 :lineas
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw randmax sh randmax 
     sw randmax sh randmax 
-    SDLLine
+    line
     
     SDLredraw 
     waitkey ;
 
 :cajas
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw randmax sh randmax 
     sw over - randmax sh over - randmax 
-    SDLRect
+    rect
     
     SDLredraw 
     waitkey ;
 
 :fillcajas
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw randmax sh randmax 
     sw over - randmax sh over - randmax 
-    SDLFRect
+    frect
     
     SDLredraw 
     waitkey ;
 
 :elipse
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw 3 >> randmax sh 3 >> randmax     | radii
     sw randmax sh randmax               | center
     SDLEllipse
@@ -153,20 +153,20 @@ Imports the SDL2 graphics library, which provides all drawing functions.
     waitkey ;
 
 :fillelipse
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw 3 >> randmax sh 3 >> randmax     | radii
     sw randmax sh randmax               | center
-    SDLFEllipse
+    fellipse
     
     SDLredraw 
     waitkey ;
 
 :filltri
-    $ffffff randmax SDLColor 
+    $ffffff randmax color 
     sw randmax sh randmax 
     sw randmax sh randmax 
     sw randmax sh randmax 
-    SDLTriangle
+    triangle
 
     SDLredraw 
     waitkey ;
@@ -174,25 +174,25 @@ Imports the SDL2 graphics library, which provides all drawing functions.
 :   
     "r3 graphics" 800 600 SDLinit
 
-    0 SDLcls
+    0 cls
     'puntos SDLShow
 
-    0 SDLcls
+    0 cls
     'lineas SDLShow
 
-    0 SDLcls
+    0 cls
     'cajas SDLShow
     
-    0 SDLcls
+    0 cls
     'fillcajas SDLShow
     
-    0 SDLcls
+    0 cls
     'elipse  SDLShow
     
-    0 SDLcls
+    0 cls
     'fillelipse SDLShow
 
-    0 SDLcls
+    0 cls
     'filltri SDLShow
     
     SDLquit 
@@ -215,10 +215,10 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Points
 ```forth
 :puntos
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw randmax                  | Random x
     sh randmax                  | Random y
-    SDLPoint                    | Draw point
+    point                    | Draw point
     SDLredraw 
     waitkey ;
 ```
@@ -226,10 +226,10 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Lines
 ```forth
 :lineas
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw randmax sh randmax       | Start point (x1, y1)
     sw randmax sh randmax       | End point (x2, y2)
-    SDLLine                     | Draw line
+    line                     | Draw line
     SDLredraw 
     waitkey ;
 ```
@@ -237,11 +237,11 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Rectangles
 ```forth
 :cajas
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw randmax sh randmax       | Top-left corner (x, y)
     sw over - randmax           | Width (calculated from x)
     sh over - randmax           | Height (calculated from y)
-    SDLRect                     | Draw rectangle outline
+    rect                     | Draw rectangle outline
     SDLredraw 
     waitkey ;
 ```
@@ -249,11 +249,11 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Filled Rectangles
 ```forth
 :fillcajas
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw randmax sh randmax       | Top-left corner
     sw over - randmax           | Width
     sh over - randmax           | Height
-    SDLFRect                    | Draw filled rectangle
+    frect                    | Draw filled rectangle
     SDLredraw 
     waitkey ;
 ```
@@ -261,7 +261,7 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Ellipses
 ```forth
 :elipse
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw 3 >> randmax             | Horizontal radius (small, up to sw/8)
     sh 3 >> randmax             | Vertical radius (small, up to sh/8)
     sw randmax sh randmax       | Random center point (cx, cy)
@@ -274,11 +274,11 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 #### Drawing Triangles
 ```forth
 :filltri
-    $ffffff randmax SDLColor    | Random color
+    $ffffff randmax color    | Random color
     sw randmax sh randmax       | Point 1 (x1, y1)
     sw randmax sh randmax       | Point 2 (x2, y2)
     sw randmax sh randmax       | Point 3 (x3, y3)
-    SDLTriangle                 | Draw filled triangle
+    triangle                 | Draw filled triangle
     SDLredraw 
     waitkey ;
 ```
@@ -306,7 +306,7 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
 ^r3/util/txfont.r3
 
 :demo
-    0 SDLcls
+    0 cls
     $ff4c4c txrgb
     10 10 txat
     "Tx Font lib" txprint
@@ -424,7 +424,7 @@ txText
 :hity yv neg 'yv ! ;
 
 :main
-    0 SDLcls
+    0 cls
     xp int. yp int. sprPelota sprite
     
     $ffff4c txrgb
@@ -583,10 +583,10 @@ yv xv "%f %f" txprintr
     ;
     
 :demo
-    $323262 SDLcls
+    $323262 cls
     
-    $326232 SDLcolor
-    0 400 800 200 sdlfrect
+    $326232 color
+    0 400 800 200 frect
     xp int. yp int. 3.0 nroimagen tsguy sspritez    
     
     $ffff4c txrgb
@@ -698,9 +698,9 @@ SDLkey
 
 #### Background and Ground
 ```forth
-$323262 SDLcls          | Clear with dark purple
-$326232 SDLcolor        | Set ground color
-0 400 800 200 sdlfrect  | Draw ground rectangle
+$323262 cls          | Clear with dark purple
+$326232 color        | Set ground color
+0 400 800 200 frect  | Draw ground rectangle
 ```
 
 ### Key Concepts
@@ -795,7 +795,7 @@ $326232 SDLcolor        | Set ground color
     +people ;
     
 :demo
-    $323262 SDLcls
+    $323262 cls
     timer.
     'people p.drawo     | draw sprites
     2 'people p.sort    | sort for draw (y coord)
@@ -829,13 +829,6 @@ $326232 SDLcolor        | Set ground color
     
 : main ;
 ```
-
-> **Note:** the `txText` call above uses `200 100 300 20` — under the corrected
-> `w h x y` order that's a 200×100 box at position `(300, 20)`. The original demo
-> listed `300 20 200 100` under the (incorrect) `x y w h` label; the numbers here
-> have been reordered so the box still ends up positioned the same place near the
-> top of the screen. If you're copying this file verbatim, either order works as
-> long as it's internally consistent with the label you use.
 
 ### Code Breakdown
 
@@ -901,17 +894,6 @@ $326232 SDLcolor        | Set ground color
 - **.ani @ aniFrame**: Read the (now-advanced) animation value and convert it to a frame number
 - **between**: Check whether a value is within a range (from `rand.r3`/elsewhere — not directly verified here)
 - **2drop 0**: Drop this object's working values and return `0`, telling `p.drawo` to remove it
-
-> **Confirmed against a real project** (`malasuerte.r3`): the correct animation
-> pattern is
-> ```forth
-> 'ajug ani+timer!    | 'V --  advance the packed value in place
-> ajug aniFrame        | V -- f  get current frame from it
-> ```
-> `ani+timer!` takes the *address* of the packed value and updates it directly —
-> it does not work by fetching the value, adding elapsed time, and storing it back.
-> `:person` above uses `.ani` (the field's address) for this, rather than the `a`
-> register, since `a` only ever holds fetched values here.
 
 #### Adding New Objects
 ```forth
@@ -1003,7 +985,7 @@ timer+              | Add elapsed time to a value
 | Main loop
 :main
     | Clear and draw
-    0 SDLcls
+    0 cls
     | ... drawing code ...
     SDLredraw
     
@@ -1037,7 +1019,7 @@ timer+              | Add elapsed time to a value
 1. **Use meaningful variable names** with the `#` prefix
 2. **Comment your code** with `|` for clarity
 3. **Keep functions small** and focused
-4. **Clear the screen** every frame with `sdlcls`
+4. **Clear the screen** every frame with `cls`
 5. **Call sdlredraw** after all drawing
 6. **Handle ESC key** for a clean exit
 7. **Use fixed point** (`.0`) for smooth movement
@@ -1050,7 +1032,7 @@ timer+              | Add elapsed time to a value
 ### Simple Animation Loop
 ```forth
 :main
-    0 SDLcls
+    0 cls
     | draw code here
     SDLredraw
     SDLkey >esc< =? ( exit ) drop ;

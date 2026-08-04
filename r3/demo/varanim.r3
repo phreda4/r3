@@ -15,9 +15,9 @@
 #tex2
 
 :drawb
-	acol sdlcolor
+	acol color
 	SDLRenderer 'rec SDL_RenderFillRect 
-	$ffffff sdlcolor
+	$ffffff color
 	SDLRenderer 'rec SDL_RenderDrawRect 
 	;
 
@@ -47,7 +47,7 @@
 	swap
 	pick2 0 0 'rtbox 8 + dup 4 + SDL_QueryTexture
 	'rtbox d!+ d!
-	$5a5a5a SDLColor SDLRenderer 'rtbox SDL_RenderDrawRect 
+	$5a5a5a color SDLRenderer 'rtbox SDL_RenderDrawRect 
 	SDLrenderer over 0 'rtbox SDL_RenderCopy	
 	SDL_DestroyTexture ;
 
@@ -91,7 +91,7 @@
 
 :main
 	vupdate
-	$0 SDLcls
+	$0 cls
 
 	drawboxs
 	

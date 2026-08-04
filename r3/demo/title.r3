@@ -41,7 +41,7 @@
 	
 :titlestart
 	vupdate
-	$0 SDLcls
+	$0 cls
 	font txfont
 	
 	colm $ff xor dup 8 << or dup 8 << or txrgb
@@ -71,7 +71,7 @@
 	
 :titlemenu
 	vupdate
-	$0 SDLcls
+	$0 cls
 
 	uiStart
 

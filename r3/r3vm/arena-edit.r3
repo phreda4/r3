@@ -44,8 +44,8 @@
 	dup 24 >> $ff and advx * 8 + | w
 	swap 16 >> $ff and advy * | h
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
-	a> 32 >> 4bcol sdlcolor sdlRect
-	a> 48 >> 4bcol sdlcolor sdlFRect
+	a> 32 >> 4bcol color rect
+	a> 48 >> 4bcol color frect
 	;
 
 :showmark
@@ -82,12 +82,12 @@
 	a@+ 
 
 	vmcellcol tcol
-	vmtokstr trect swap advx 2* + swap sdlfrect | cler 2 char more
+	vmtokstr trect swap advx 2* + swap frect | cler 2 char more
 	temits
 	;
 	
 :showvars
-	$0 sdlcolor 
+	$0 color 
 	data >a 
 	'vard ( @+ 1? linevar ) 2drop 
 	;
@@ -141,10 +141,10 @@
 :cellstack | cell --
 	vmcellcol $7 and 
 	tpal 2/ $7f7f7f and |$00000 col50% | obscure
-	sdlcolor 
+	color 
 	xedit wedit + 2 +
 	sty 2 - 
-	112 28 sdlfrect
+	112 28 frect
 	xedit wedit + 2 +
 	sty tat vmcell temits
 	-30 'sty +!
@@ -154,7 +154,7 @@
 	xedit -? ( drop ; ) | not show without editor
 	wedit + 2 + 
 	yedit hedit + 
-	110 16 sdlfrect
+	110 16 frect
 	6 tcol
 	xedit wedit + 3 +
 	yedit hedit + 
@@ -170,9 +170,9 @@
 	
 |-----------------------
 :showread
-	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$003f00 color xedit yedit 16 - wedit 16 frect
 	$ffffff trgb xedit 64 + yedit 16 - tat "CODE:" tprint
-	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	$7f00003f colorA	xedit yedit wedit hedit frect
 	
 |	edfocus
 	edcodedraw
@@ -180,9 +180,9 @@
 	;
 
 :showeditor
-	$003f00 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$003f00 color xedit yedit 16 - wedit 16 frect
 	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: EDIT" tprint
-	$7f00007f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	$7f00007f colorA	xedit yedit wedit hedit frect
 	
 	edfocus
 	edcodedraw
@@ -191,9 +191,9 @@
 	;	
 	
 :showruning
-	$003f3f sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$003f3f color xedit yedit 16 - wedit 16 frect
 	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: RUN" tprint
-	$7f00003f sdlcolorA	xedit yedit wedit hedit sdlFRect
+	$7f00003f colorA	xedit yedit wedit hedit frect
 	
 	clearmark
 	fuente> $007ffff addsrcmark | ip
@@ -208,9 +208,9 @@
 	;	
 
 :showerror
-	$3f0000 sdlcolor xedit yedit 16 - wedit 16 SDLFrect
+	$3f0000 color xedit yedit 16 - wedit 16 frect
 	$ffffff trgb xedit 64 + yedit 16 - tat "CODE: " tprint vmerror tprint
-	$7f00007f sdlcolorA xedit yedit wedit hedit sdlFRect
+	$7f00007f colorA xedit yedit wedit hedit frect
 
 	showmark
 	

@@ -178,7 +178,7 @@
 
 #xop #yop
 :xxop 'yop ! 'xop ! ;
-:xxline 2dup xop yop SDLLine 'yop ! 'xop ! ;
+:xxline 2dup xop yop line 'yop ! 'xop ! ;
 
 :3dop project3d xxop ;
 :3dline project3d xxline ;
@@ -197,23 +197,23 @@
 
 :box | x y r --
 	rot over - rot pick2 -
-	rot 1 << dup SDLREct
+	rot 1 << dup rect
 	;
 
 :drawstick | level
 	0 0 0 project3d
-	$ff00 SDLColor 
+	$ff00 color 
 	2dup 2 box 
 	2dup XXOP
 	swap
 	pick2 5 << 'boneslevel + d!+ d!
 	2 <? ( ; )
-	$ff SDLColor 
+	$ff color 
 	dup 1 - 5 << 'boneslevel +
 	d@+ swap d@ XXline ;
 
 :drawcube |
-	$ff00 SDLColor
+	$ff00 color
 	-0.5 drawboxz
 	0.5 drawboxz
 	-0.5 -0.5 drawlinez
@@ -298,7 +298,7 @@
 
 
 :main
-	0 SDLcls
+	0 cls
 	
 |	dup "%d" .print .cr
 |	chsum "chsum:%d " .print

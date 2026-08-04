@@ -354,8 +354,8 @@ drawColor 'currentColor !
     0 ( 600 <?
         0 ( 800 <?
             2dup scr@
-            SDLColor
-            2dup 1 1 SDLFRect
+            color
+            2dup 1 1 frect
             1+
         ) drop
         1+

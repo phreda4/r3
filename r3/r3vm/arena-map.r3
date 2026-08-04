@@ -172,7 +172,7 @@
 	8 + >a
 	a@+ 64xywh 
 	2over 2swap
-	$000000 sdlcolor sdlfrect
+	$000000 color frect
 	2 + swap 2 + swap tat 	
 	
 	a@+ a@ deltatime + dup a!+ | livetime

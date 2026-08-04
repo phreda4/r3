@@ -151,7 +151,7 @@
 	
 	
 :jugando
-	$666666 SDLcls
+	$666666 cls
 
 	viewport
 	drawmapa	

@@ -365,9 +365,9 @@ void main() {
 |	SDLGLupdate
 
 	
-	0 sdlcls
-	$ff00 sdlcolor
-	200 150 400 200 SDLFEllipse
+	0 cls
+	$ff00 color
+	200 150 400 200 fellipse
 
     RenderToFramebuffer
 	CreateSDLTextureFromOpenGL

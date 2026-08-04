@@ -212,9 +212,9 @@
 	training >a
 	ntraining ( 1? 1 -
 		a> numInputs ncell+ @ neuroncolor	| result
-		SDLColor
+		color
 		8 dup a@+ a@+ 
-		tomap SDLFEllipse
+		tomap fellipse
 	
 		numInputs 2 - numOutputs + cell * a+
 		) drop ;
@@ -223,8 +223,8 @@
 #x #y
 
 :drawneuron	| 
-	neuroncolor SDLColor
-	10 dup x y SDLFEllipse
+	neuroncolor color
+	10 dup x y fellipse
 	;
 
 :drawlayer | cnt layer --
@@ -233,12 +233,12 @@
 		40 'y +! ) 2drop ;
 		
 :drawlink | n2 n1 w -- n2 n1
-	linkcolor SDLColor
+	linkcolor color
 	x
 	over 40 * y + 
 	x 40 +
 	pick4 40 * y +
-	SDLLine
+	line
 	;
 	
 :draww 
@@ -302,7 +302,7 @@
 
 |--------------------------------------	draw map
 :dbox | color --
-	SDLColor x y 4 dup SDLFRect ;
+	color x y 4 dup frect ;
 	
 :drawmap
 	0 'y !
@@ -336,7 +336,7 @@
 	;
 	
 :main
-	0 SDLcls
+	0 cls
 	
 	drawmap	
 	drawtrain	

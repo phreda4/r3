@@ -62,7 +62,7 @@
 	
 :main
 	vupdate
-	$0 SDLcls
+	$0 cls
 
 	$ffffff txrgb
 	8 28 txat 

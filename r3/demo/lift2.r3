@@ -300,24 +300,24 @@
 	$0 nip ; 
 	
 :drawbuiling
-	$21B8B8 SDLColor
-	0 0 300 560 SDLfrect
+	$21B8B8 color
+	0 0 300 560 frect
 	'floor >a
 	560 ( 60 >? 
-		$DEDEDE SDLColor
-		0 over 300 10 SDLFRect
-		$B8B8B8 SDLColor
-		0 over 10 + 300 6 SDLFRect
-		buttonfloorcolor SDLColor
-		294 over 26 - 4 4 SDLFRect
+		$DEDEDE color
+		0 over 300 10 frect
+		$B8B8B8 color
+		0 over 10 + 300 6 frect
+		buttonfloorcolor color
+		294 over 26 - 4 4 frect
 		70 - ) drop
 
-	$B8B8B8 SDLColor
-	301 yelev 16 >> 80 76 SDLFRect
-	340 0 4 yelev 16 >> SDLFRect
+	$B8B8B8 color
+	301 yelev 16 >> 80 76 frect
+	340 0 4 yelev 16 >> frect
 	
-	$DEDEDE SDLColor
-	301 yelev 16 >> 60 + 80 10 SDLFRect
+	$DEDEDE color
+	301 yelev 16 >> 60 + 80 10 frect
 	;
 	
 |--- gui	
@@ -372,7 +372,7 @@
 		
 |--- main loop	
 :main
-	0 SDLcls
+	0 cls
 	immgui		| ini IMMGUI
 	drawbuiling
 	runelevator

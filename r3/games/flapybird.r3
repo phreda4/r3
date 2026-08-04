@@ -49,10 +49,10 @@
 	;
 	
 :drawpipe | x y --
-	over 0 60 pick3 80 - sprpipe SDLImages
-	over 5 - over 80 - 70 40 sprpipe SDLImages
-	over 5 - over 80 + 70 40 sprpipe SDLImages
-	over over 120 + 60 sh over - sprpipe SDLImages
+	over 0 60 pick3 80 - sprpipe images
+	over 5 - over 80 - 70 40 sprpipe images
+	over 5 - over 80 + 70 40 sprpipe images
+	over over 120 + 60 sh over - sprpipe images
 	2drop ;
 
 :newpipe
@@ -79,7 +79,7 @@
 	;
 	
 :juego
-	0 SDLcls
+	0 cls
 	fondo
 	jugador
 

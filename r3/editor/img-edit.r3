@@ -58,13 +58,13 @@
 |----------- LINE
 :modoline
 	[ xypen 'ya ! 'xa ! ; ]
-	[ colord SDLColor xa ya xypen SDLLine ; ]
+	[ colord color xa ya xypen line ; ]
 	[ xa ya scr2img vop xypen scr2img vline buffercopy ; ] onMap ;
 
 |----------- BOX
 :modobox
 	[ xypen 'ya ! 'xa ! ; ]
-	[ colord SDLColor xa ya xypen pick2 - swap pick3 - swap SDLRect ; ]
+	[ colord color xa ya xypen pick2 - swap pick3 - swap rect ; ]
 	[ xa ya scr2img xypen scr2img vrect buffercopy ; ] onMap ;
 
 |----------- CIRCLE
@@ -75,7 +75,7 @@
 
 :modocircle
 	[ xypen 'ya ! 'xa ! ; ]
-	[ colord SDLColor xa ya xypen border2cenrad SDLEllipse ; ]
+	[ colord color xa ya xypen border2cenrad ellipse ; ]
 	[ xa ya scr2img xypen scr2img 	| x y x y
 		border2cenrad vellipseb buffercopy ; ] onMap ;
 
@@ -90,7 +90,7 @@
 |----------- SELECT
 :modoselect
 	[ xypen 'ys1 ! 'xs1 ! ; ]
-	[ xs1 ys1 xypen pick2 - swap pick3 - swap  SDLRect ; ]
+	[ xs1 ys1 xypen pick2 - swap pick3 - swap  rect ; ]
 	[ xypen scr2img 'ys2 ! 'xs2 ! ; ] onMap ;
 
 |------------------------------
@@ -116,8 +116,8 @@
 	;
 	
 :intool
-	$ffffff SDLColor
-	xytool modo2xy 30 30 SDLRect 
+	$ffffff color
+	xytool modo2xy 30 30 rect 
 	;
 	
 :settool
@@ -126,9 +126,9 @@
 	;
 
 :toolbar
-    xtool ytool imgtoolbar SDLImage
-	$ff00 SDLColor
-	modo modo2xy 30 30 SDLRect |box.inv
+    xtool ytool imgtoolbar image
+	$ff00 color
+	modo modo2xy 30 30 rect |box.inv
 
 	xtool ytool 60 180 guiBox
 	'intool guiI
@@ -141,7 +141,7 @@
 	imagenw zoom <<
 	imagenh zoom <<
 	textura
-	SDLImages 
+	images 
 	;
 
 :teclado
@@ -208,11 +208,11 @@
 		
 	$7f 
 	[ $ff nip ; ] guiI
-	SDLColor
+	color
 	xr1 yr1 xr2 pick2 - yr2 pick2 -
-	SDLFRect	
+	frect	
 	
-	$ffffff SDLColor
+	$ffffff color
 	bsize | w h
 	xr2 xr1 + 1 >> rot 1 >> - 
 	yr2 yr1 + 1 >> rot 1 >> -
@@ -224,18 +224,18 @@
 |-----------------------------
 :main
 	gui
-	$0 SDLcls
+	$0 cls
     imagen.draw
 
-	$454545 SDLColor
-	0 0 sw 20 SDLFRect
+	$454545 color
+	0 0 sw 20 frect
 
-	$ffffff SDLColor
+	$ffffff color
 	4 4 bat
 	":r3 Img Editor [ " bprint
 	'nombre bprint
 	imagenh imagenw " | %dx%d ] " sprint bprint
-	$7f7f7f SDLColor
+	$7f7f7f color
 	[ 0 'zoom ! ; ] "x1" btnt " " bprint
 	[ 1 'zoom ! ; ] "x2" btnt " " bprint
 	[ 2 'zoom ! ; ] "x4" btnt " " bprint

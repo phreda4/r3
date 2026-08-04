@@ -24,7 +24,7 @@ name              | A bare variable name FETCHES its current value
     ;
 ::word_name       | Define an exported/public word (usable from any file that
     code here     | imports this one — this is the convention used for every
-    ;             | public API word in the library, e.g. `::SDLColor`, `::sprite`)
+    ;             | public API word in the library, e.g. `::color`, `::sprite`)
 ```
 
 ### Stack Notation
@@ -82,38 +82,38 @@ always the top item (pushed last).
 
 | Word | Stack | Description |
 |---|---|---|
-| `SDLColor` | `col --` | Set the draw color from a `$RRGGBB` value (opaque). |
-| `SDLColorA` | `col --` | Set the draw color from a `$AARRGGBB` value (with alpha). |
-| `SDLcls` | `col --` | Clear the screen to `col` (calls `SDLColor` then clears). |
+| `color` | `col --` | Set the draw color from a `$RRGGBB` value (opaque). |
+| `colorA` | `col --` | Set the draw color from a `$AARRGGBB` value (with alpha). |
+| `cls` | `col --` | Clear the screen to `col` (calls `color` then clears). |
 
 ### Points, Lines, Rects
 
 | Word | Stack | Description |
 |---|---|---|
-| `SDLPoint` | `x y --` | Draw a single pixel. |
-| `SDLGetPixel` | `x y -- v` | Read back a pixel's color from the render target. |
-| `SDLLine` | `x1 y1 x2 y2 --` | Draw a line between two points. |
-| `SDLLineH` | `x1 y x2 --` | Fast path for a horizontal line. |
-| `SDLLineV` | `x y1 y2 --` | Fast path for a vertical line. |
-| `SDLRect` | `x y w h --` | Draw a rectangle outline. |
-| `SDLFRect` | `x y w h --` | Draw a filled rectangle. |
-| `SDLRound` | `r x y w h --` | Draw a rounded-rectangle outline with corner radius `r`. |
-| `SDLFRound` | `r x y w h --` | Draw a filled rounded rectangle. |
+| `point` | `x y --` | Draw a single pixel. |
+| `getpixel` | `x y -- v` | Read back a pixel's color from the render target. |
+| `line` | `x1 y1 x2 y2 --` | Draw a line between two points. |
+| `lineH` | `x1 y x2 --` | Fast path for a horizontal line. |
+| `lineV` | `x y1 y2 --` | Fast path for a vertical line. |
+| `rect` | `x y w h --` | Draw a rectangle outline. |
+| `frect` | `x y w h --` | Draw a filled rectangle. |
+| `round` | `r x y w h --` | Draw a rounded-rectangle outline with corner radius `r`. |
+| `fround` | `r x y w h --` | Draw a filled rounded rectangle. |
 
 ### Ellipses & Circles
 
 | Word | Stack | Description |
 |---|---|---|
 | `SDLEllipse` | `rx ry cx cy --` | Draw an ellipse outline. **Radii come before the center point.** |
-| `SDLFEllipse` | `rx ry cx cy --` | Draw a filled ellipse. |
-| `SDLCircle` | `r x y --` | Draw a circle outline. |
-| `SDLFCircle` | `r x y --` | Draw a filled circle. |
+| `fellipse` | `rx ry cx cy --` | Draw a filled ellipse. |
+| `circle` | `r x y --` | Draw a circle outline. |
+| `fcircle` | `r x y --` | Draw a filled circle. |
 
 ### Triangle
 
 | Word | Stack | Description |
 |---|---|---|
-| `SDLTriangle` | `x1 y1 x2 y2 x3 y3 --` | Draw a filled, solid-color triangle. |
+| `triangle` | `x1 y1 x2 y2 x3 y3 --` | Draw a filled, solid-color triangle. |
 
 `SDLredraw` (`-- `) presents the frame — call it once per frame after drawing.
 
@@ -124,10 +124,10 @@ always the top item (pushed last).
 | Word | Stack | Description |
 |---|---|---|
 | `loadimg` | `"file" -- img` | Load a PNG (etc.) file into a texture handle. **(unverified — from `sdl2image.r3`)** |
-| `SDLImage` | `x y img --` | Draw an image at its native size. |
-| `SDLImages` | `x y w h img --` | Draw an image scaled into a `w × h` box. |
-| `SDLImageb` | `box img --` | Draw an image into a packed destination rect. |
-| `SDLImagebb` | `srcbox dstbox img --` | Draw a sub-rect of an image into a destination rect. |
+| `image` | `x y img --` | Draw an image at its native size. |
+| `images` | `x y w h img --` | Draw an image scaled into a `w × h` box. |
+| `imageb` | `box img --` | Draw an image into a packed destination rect. |
+| `imagebb` | `srcbox dstbox img --` | Draw a sub-rect of an image into a destination rect. |
 | `sprite` | `x y img --` | Draw an image centered on `(x, y)`. |
 | `spriteZ` | `x y zoom img --` | Centered sprite draw with zoom (16.16 fixed point). |
 | `spriteR` | `x y ang img --` | Centered sprite draw, rotated (fixed-point angle). |

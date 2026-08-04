@@ -28,7 +28,7 @@
 	8 + @ off +
 	0 ( 1000 <? swap
 		w@+ neg 8 >> 300 + pick2 swap
-		sdlpoint
+		point
 		swap 1 + ) 2drop ;
 
 |typedef struct Mix_Chunk {
@@ -115,19 +115,19 @@
 :pressk | n x y --
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
-	$0 sdlcolor
+	$0 color
 	over 1 + over 46 +
-	30 4 sdlFRect ;
+	30 4 frect ;
 
 :bkey | n --
 	0? ( drop ; )
-	colork sdlcolor
+	colork color
 	over 'keyb - 
 	5 << 116 + 100
-	2dup 30 50 sdlFRect
+	2dup 30 50 frect
 	pressk
-	$0 sdlcolor
-	30 50 sdlRect
+	$0 color
+	30 50 rect
 	drop ;
 	
 :colork
@@ -138,18 +138,18 @@
 :pressk | n x y --
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
-	$808080 sdlcolor
+	$808080 color
 	over 1 + over 96 +
-	30 4 sdlFRect ;
+	30 4 frect ;
 	
 :wkey | n --
-	colork sdlcolor
+	colork color
 	over 'keyw -
 	5 << 100 + 100
-	2dup 32 100 sdlFRect
+	2dup 32 100 frect
 	pressk
-	$0 sdlcolor
-	32 100 sdlRect
+	$0 color
+	32 100 rect
 	drop ;
 
 :drawkeys
@@ -160,13 +160,13 @@
 |-------------------------------------------
 :main
 	uiStart
-	$0 SDLcls
+	$0 cls
 	
 	font1 txfont
 	0.05 %h uiN
 	"Simple PIANO" uiLabelC
 |	chunk infowav
-|	$ff00 sdlcolor chunk viewave
+|	$ff00 color chunk viewave
 	
 	drawkeys
 	

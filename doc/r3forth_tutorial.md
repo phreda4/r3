@@ -1464,7 +1464,7 @@ time msec rerand       | seed with time
 | `::SDLinit` | `"title" w h --` | Open window |
 | `::SDLfull` | `--` | Set fullscreen |
 | `::SDLquit` | `--` | Close window |
-| `::SDLcls` | `color --` | Clear screen |
+| `::cls` | `color --` | Clear screen |
 | `::SDLredraw` | `--` | Flip buffers |
 | `::SDLshow` | `'word --` | Run word every frame |
 | `::exit` | `--` | Exit the show loop |
@@ -1482,21 +1482,21 @@ time msec rerand       | seed with time
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `::SDLColor` | `col --` | Set color ($RRGGBB) |
-| `::SDLPoint` | `x y --` | Draw pixel |
-| `::SDLLine` | `x1 y1 x2 y2 --` | Draw line |
-| `::SDLFRect` | `x y w h --` | Filled rectangle |
-| `::SDLRect` | `x y w h --` | Rectangle outline |
-| `::SDLFCircle` | `r x y --` | Filled circle |
-| `::SDLCircle` | `r x y --` | Circle outline |
-| `::SDLTriangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |
+| `::color` | `col --` | Set color ($RRGGBB) |
+| `::point` | `x y --` | Draw pixel |
+| `::line` | `x1 y1 x2 y2 --` | Draw line |
+| `::frect` | `x y w h --` | Filled rectangle |
+| `::rect` | `x y w h --` | Rectangle outline |
+| `::fcircle` | `r x y --` | Filled circle |
+| `::circle` | `r x y --` | Circle outline |
+| `::triangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |
 
 **Images:**
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `::SDLImage` | `x y img --` | Draw image |
-| `::SDLImages` | `x y w h img --` | Draw image scaled |
+| `::image` | `x y img --` | Draw image |
+| `::images` | `x y w h img --` | Draw image scaled |
 | `::spriteZ` | `x y zoom img --` | Draw with zoom |
 | `::spriteR` | `x y ang img --` | Draw with rotation |
 
@@ -1539,7 +1539,7 @@ time msec rerand       | seed with time
     drop ;
 
 :game-draw
-    0 SDLcls
+    0 cls
     player
     SDLredraw ;
 

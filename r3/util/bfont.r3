@@ -145,16 +145,16 @@
 	bsize bpos 2swap ;
 	
 ::bcursor | n --
-	wp * bpos swap rot + swap wp hp SDLFRect ;
+	wp * bpos swap rot + swap wp hp frect ;
 
 ::bcursori | n --
-	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> SDLFRect ;
+	wp * bpos swap rot + swap hp dup 2 >> - + wp hp 2 >> frect ;
 
 ::bcursor2 | n --
-	wp 2* * bpos swap rot + swap wp 2* hp 2* SDLFRect ;
+	wp 2* * bpos swap rot + swap wp 2* hp 2* frect ;
 
 ::bcursori2 | n --
-	wp 2* * bpos swap rot + swap hp dup 2/ + + wp 2* hp 2/ SDLFRect ;
+	wp 2* * bpos swap rot + swap hp dup 2/ + + wp 2* hp 2/ frect ;
 	
 
 ::bfont1	

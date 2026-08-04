@@ -158,7 +158,7 @@
 	uiPush
 
 	cx cy cw ch uiBox
-	uiZone $222222 sdlcolor uiFill
+	uiZone $222222 color uiFill
 	4 4 uiPading
 
 	txh 16 + uiN
@@ -217,15 +217,15 @@
 	'uiFilen uisaveLast ;
 
 :ffilen
-	$ffffff sdlcolor
-	4 cx 1- cy 1- cw 2 + txh 2 + SDLRound
+	$ffffff color
+	4 cx 1- cy 1- cw 2 + txh 2 + round
 	'ffilei uiClk 
 	sdlkey
 	<tab> =? ( tabfocus )
 	drop ;
 
 ::uiFileName | 'var --
-	uiZone $222222 sdlcolor uilFill |overfil uiRFill
+	uiZone $222222 color uilFill |overfil uiRFill
 	'ffilen uiFocus |'datefocoini w/foco
 	ttwritec ui.. ;
 

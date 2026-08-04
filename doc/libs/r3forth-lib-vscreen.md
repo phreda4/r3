@@ -166,11 +166,11 @@ When window aspect ratio doesn't match virtual screen:
     vini
     
     | Clear virtual screen
-    $000000 SDLcls
+    $000000 cls
     
     | Draw game at 800×600 resolution
-    $ffffff SDLColor
-    100 100 200 150 SDLFRect
+    $ffffff color
+    100 100 200 150 frect
     
     | Display virtual screen scaled to window
     vredraw
@@ -201,8 +201,8 @@ SDLquit
     vini
     
     | Draw at virtual resolution
-    $ff00ff SDLColor
-    playerX playerY 32 32 SDLFRect
+    $ff00ff color
+    playerX playerY 32 32 frect
     
     vredraw ;
 
@@ -273,7 +273,7 @@ gameLoop
 :drawUI
     vini
     
-    $000000 SDLcls
+    $000000 cls
     
     | Text always at 800×600 resolution
     font txfont
@@ -284,7 +284,7 @@ gameLoop
     score .d txwrite
     
     | Button at fixed virtual position
-    300 250 200 50 SDLFRect
+    300 250 200 50 frect
     
     vredraw ;
 
@@ -398,7 +398,7 @@ gameLoop
     
     | Clear window to custom color before copying
     SDLrenderer 0 SDL_SetRenderTarget
-    $202020 SDLcls  | Dark gray letterbox
+    $202020 cls  | Dark gray letterbox
     
     | Now copy virtual screen (vredraw does this)
     SDLrenderer vscrtex 0 'recd SDL_RenderCopy
@@ -501,7 +501,7 @@ gameLoop
     | Center button on virtual screen
     vscrw 2/ 100 - 
     vscrh 2/ 25 -
-    200 50 SDLFRect
+    200 50 frect
     
     vredraw ;
 ```

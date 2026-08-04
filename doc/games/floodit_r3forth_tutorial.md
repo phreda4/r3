@@ -164,16 +164,16 @@ This tutorial analyzes the complete floodit.r3 implementation by PHREDA, teachin
 
 ```forth
 :drawc	| x y -- x y
-	2dup ]map c@ 3 << 'colors + @ SDLColor
-	xymap 16 dup SDLFRect ;
+	2dup ]map c@ 3 << 'colors + @ color
+	xymap 16 dup frect ;
 ```
 
 **Code Analysis:**
 1. `2dup ]map c@` - Get color index from board cell
 2. `3 << 'colors +` - Multiply by 8 (color array stride), add to colors base
-3. `@ SDLColor` - Load color value and set SDL drawing color
+3. `@ color` - Load color value and set SDL drawing color
 4. `xymap` - Convert coordinates to screen pixels
-5. `16 dup SDLFRect` - Draw 16x16 filled rectangle
+5. `16 dup frect` - Draw 16x16 filled rectangle
 
 **Programming Concepts:**
 - **Array Indexing**: `index * 8 + base_address` for 64-bit values
@@ -403,7 +403,7 @@ turn "turn:%d" immlabelc immdn
 
 ```forth
 :game
-	0 SDLcls
+	0 cls
 	immgui 	
 	drawmap
 
@@ -431,7 +431,7 @@ turn "turn:%d" immlabelc immdn
 ```
 
 **Game Loop Analysis:**
-1. **Clear Screen**: `0 SDLcls` - Black background
+1. **Clear Screen**: `0 cls` - Black background
 2. **Initialize GUI**: `immgui` - Start immediate mode GUI
 3. **Draw Game**: `drawmap` - Render colored grid
 4. **Color Buttons**: Dynamic button generation from color array

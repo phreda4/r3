@@ -955,7 +955,7 @@ Include with `^r3/lib/sdl2.r3`
 | `::SDLinit` | `"title" w h --` | Open window, w×h pixels |
 | `::SDLfull` | `--` | Switch to fullscreen |
 | `::SDLquit` | `--` | Close window and quit |
-| `::SDLcls` | `color --` | Clear screen with color ($RRGGBB) |
+| `::cls` | `color --` | Clear screen with color ($RRGGBB) |
 | `::SDLredraw` | `--` | Flip display buffer (show frame) |
 | `::SDLshow` | `'word --` | Run word every frame until `exit` |
 | `::exit` | `--` | Stop the `SDLshow` loop |
@@ -991,7 +991,7 @@ Include with `^r3/lib/sdl2.r3`
 
 :update
     SDLkey >esc< =? ( exit ) drop
-    0 SDLcls
+    0 cls
     SDLredraw ;
 
 : "My Window" 640 480 SDLinit
@@ -1009,33 +1009,33 @@ Include with `^r3/lib/sdl2gfx.r3`
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `::SDLColor` | `col --` | Set drawing color ($RRGGBB) |
+| `::color` | `col --` | Set drawing color ($RRGGBB) |
 
 ### Drawing Primitives
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `::SDLPoint` | `x y --` | Draw pixel |
-| `::SDLLine` | `x1 y1 x2 y2 --` | Draw line |
-| `::SDLFRect` | `x y w h --` | Filled rectangle |
-| `::SDLRect` | `x y w h --` | Rectangle outline |
-| `::SDLFCircle` | `r x y --` | Filled circle |
-| `::SDLCircle` | `r x y --` | Circle outline |
-| `::SDLFEllipse` | `rx ry x y --` | Filled ellipse |
+| `::point` | `x y --` | Draw pixel |
+| `::line` | `x1 y1 x2 y2 --` | Draw line |
+| `::frect` | `x y w h --` | Filled rectangle |
+| `::rect` | `x y w h --` | Rectangle outline |
+| `::fcircle` | `r x y --` | Filled circle |
+| `::circle` | `r x y --` | Circle outline |
+| `::fellipse` | `rx ry x y --` | Filled ellipse |
 | `::SDLEllipse` | `rx ry x y --` | Ellipse outline |
-| `::SDLFRound` | `r x y w h --` | Filled rounded rectangle |
-| `::SDLRound` | `r x y w h --` | Rounded rectangle outline |
-| `::SDLTriangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |
+| `::fround` | `r x y w h --` | Filled rounded rectangle |
+| `::round` | `r x y w h --` | Rounded rectangle outline |
+| `::triangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |
 
 ### Images
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `::SDLimagewh` | `img -- w h` | Get image dimensions |
-| `::SDLImage` | `x y img --` | Draw image at position |
-| `::SDLImages` | `x y w h img --` | Draw image scaled to w×h |
-| `::SDLImageb` | `box img --` | Draw image in box |
-| `::SDLImagebb` | `srcbox dstbox img --` | Draw sub-region of image |
+| `::imagewh` | `img -- w h` | Get image dimensions |
+| `::image` | `x y img --` | Draw image at position |
+| `::images` | `x y w h img --` | Draw image scaled to w×h |
+| `::imageb` | `box img --` | Draw image in box |
+| `::imagebb` | `srcbox dstbox img --` | Draw sub-region of image |
 | `::SDLspriteZ` | `x y zoom img --` | Draw image with zoom |
 | `::SDLSpriteR` | `x y ang img --` | Draw image with rotation (turns) |
 | `::SDLspriteRZ` | `x y ang zoom img --` | Draw image with rotation and zoom |

@@ -23,7 +23,7 @@
 |---------------------------------	
 #xop #yop
 :xxop 'yop ! 'xop ! ;
-:xxline 2dup xop yop SDLLine 'yop ! 'xop ! ;
+:xxline 2dup xop yop line 'yop ! 'xop ! ;
 
 :3dop project3d xxop ;
 :3dline project3d xxline ;
@@ -92,8 +92,8 @@
 	
 |-------------------------------	
 :juego
-	0 sdlcls
-	$ff00 sdlcolor
+	0 cls
+	$ff00 color
 
 	freelook
 	

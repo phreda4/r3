@@ -62,8 +62,8 @@
 	xs 0? ( drop ; ) drop
 	8 'xs +!
 	xs sw >? ( 0 'xs ! drop ; ) drop
-	$ffffff SDLColor
-	xs ys 10 4 SDLFRect
+	$ffffff color
+	xs ys 10 4 frect
 	hit??
 	;
 
@@ -87,11 +87,11 @@
 #ss> 'ss
 
 :drawback
-	$ffffff SDLColor 
+	$ffffff color 
 	'ss ( ss> <?
 		d@+ -? ( 800 nip )
 		dup 1 - pick2 4 - d!
-		swap d@+ rot swap SDLPoint
+		swap d@+ rot swap point
 		) drop ;
 
 :fillback
@@ -103,7 +103,7 @@
 	a> 'ss> ! ;
 
 :game
-	0 SDLcls
+	0 cls
 	
 	drawback
 	player

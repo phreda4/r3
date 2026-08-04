@@ -232,8 +232,8 @@
 	'listaspr listaspr> over - 3 >> swap shellsort1 
 	|....... floor
 	yhorizon ( sh <? 	
-		dup 3 >> 8to24 sdlcolor
-		0 over 800 2 sdlrect
+		dup 3 >> 8to24 color
+		0 over 800 2 rect
 		2 + ) drop
 	drawmix
 	;
@@ -279,7 +279,7 @@
 #vesq
 
 :game
-	$0 SDLcls
+	$0 cls
 	pantalla
 
 	SDLredraw

@@ -47,14 +47,14 @@
 	prmode 1+ $3 and 'prmode ! ;
 
 :demo
-	colback SDLcls
+	colback cls
 	
 	t1 txfont
 	$ffffff txrgb
 	main.draw
 		
-	colpad SDLcolor
-	0 ypad sw hpad sdlfrect
+	colpad color
+	0 ypad sw hpad frect
 	
 	t0 txfont
 	$ffffff txrgb

@@ -9,14 +9,14 @@
 ^r3/lib/trace.r3
 
 :drawbuffer
-	$ffffff sdlcolor
+	$ffffff color
 	'outbuffer >a 
 	0 ( 1024 <? 1+
 		da@+
 		over 0 +
-		over $7fff + 10 >> $3f and 200 + SDLPoint
+		over $7fff + 10 >> $3f and 200 + point
 		over 0 +
-		swap 16 >> $7fff + 10 >> $3f and 400 + SDLPoint
+		swap 16 >> $7fff + 10 >> $3f and 400 + point
 		) drop ;	
 		
 |------------ keys
@@ -40,7 +40,7 @@
 	
 :main
 	vupdate
-	$0 SDLcls
+	$0 cls
 	drawbuffer
 	10 0 txat
 	voice> 'voice - "sm voice %h" sprint txprint

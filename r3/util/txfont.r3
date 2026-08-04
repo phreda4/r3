@@ -358,7 +358,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 
 :drawcur
 	msec $100 and? ( drop ; ) drop
-	$a0a0a0 SDLColor
+	$a0a0a0 color
 	padi> pad> 
 	modo 'lins =? ( drop txcur ; ) drop
 	txcuri ;

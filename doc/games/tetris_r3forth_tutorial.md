@@ -466,10 +466,10 @@ Template Index → packed2grid → Memory Address
 
 ```forth
 :draw_block | ( x y -- )
-	15 15 SDLFRect ;
+	15 15 frect ;
 
 :visit_block | ( y x -- y x )
-	da@+ 0? ( drop ; ) SDLColor
+	da@+ 0? ( drop ; ) color
 	2dup or packed2xy draw_block ;
 
 :draw_grid | ( --- )
@@ -494,7 +494,7 @@ Template Index → packed2grid → Memory Address
 	translate_block packed2xy draw_block ;
 
 :draw_player | ( --- )
-	playercolor SDLColor
+	playercolor color
 	'player
 	@+ draw_player_block
 	@+ draw_player_block
@@ -514,7 +514,7 @@ Template Index → packed2grid → Memory Address
 	inmask 15 + packed2xy draw_block ;
 	  
 :draw_nextpiece
-	nextpiece dup nthcolor SDLColor
+	nextpiece dup nthcolor color
 	1 - 2 << 'pieces +
 	c@+ draw_nextpiece_block
 	c@+ draw_nextpiece_block
@@ -571,7 +571,7 @@ Template Index → packed2grid → Memory Address
 
 ```forth
 :game | ( --- )
-	$444444 SDLcls
+	$444444 cls
 	
 	immgui 	
 	200 28 immbox
@@ -583,9 +583,9 @@ Template Index → packed2grid → Memory Address
 	'reset "Reset" immbtn immdn
 	'exit "Exit" immbtn 
 
-	$0 SDLColor
-	286 96 128 70 SDLFRect
-	62 96 166 326 SDLFRect
+	$0 color
+	286 96 128 70 frect
+	62 96 166 326 frect
 
 	draw_grid
 	draw_player

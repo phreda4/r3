@@ -79,7 +79,7 @@
 
 ::immcur | x y w h --
 	pick3 winx + pick3 winy + pick3 pick3 guiBox
-	$999999 sdlcolor pick3 pick3 pick3 pick3 SDLRect
+	$999999 color pick3 pick3 pick3 pick3 rect
 	'boxh ! 'boxw ! 'cury ! 'curx ! 
 	;
 	
@@ -130,7 +130,7 @@
 
 |--- text in list, no pad
 ::immback | color --
-	SDLColor curx padx + cury boxw boxh SDLFRect ;
+	color curx padx + cury boxw boxh frect ;
 
 ::immblabel | "" --
 	immcolortex ttColor
@@ -154,16 +154,16 @@
 |--- widget	
 ::immbtn | 'click "" --
 	plgui
-	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI SDLColor
-	plxywh SDLFRect
+	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI color
+	plxywh frect
 	immlabelc
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
 	
 ::immibtn | 'click nro --
 	plgui
-	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI SDLColor
-	plxywh SDLFRect
+	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI color
+	plxywh frect
 	immiconb
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
@@ -171,7 +171,7 @@
 ::immtbtn | 'click "" --
 	ttsize drop 'boxw !
 	plgui
-	[ immcolorbtn SDLColor plxywh SDLFRect 2 2 immat+ ; ] guiI
+	[ immcolorbtn color plxywh frect 2 2 immat+ ; ] guiI
 	imm.
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;
@@ -195,16 +195,16 @@
 	over ! ;
 	
 :slideshow | 0.0 1.0 'value --
-	$7f SDLColor
-	curx padx + cury pady + boxw boxh SDLFRect
-	$3f3fff [ $7f7fff nip ; ] guiI SDLColor
+	$7f color
+	curx padx + cury pady + boxw boxh frect
+	$3f3fff [ $7f7fff nip ; ] guiI color
 	dup @ pick3 - 
 	boxw 8 - pick4 pick4 swap - */ 
 	curx padx + 1 + +
 	cury pady + 2 + 
 	6 
 	boxh 4 - 
-	SDLFRect ;
+	frect ;
 	
 ::immSliderf | 0.0 1.0 'value --
 	plgui
@@ -244,15 +244,15 @@
 #wid	
 
 :scrollshowv | 0.0 1.0 'value --
-|	$ff00007f SDLColor
-|	curx padx + cury pady + boxw boxh SDLFRect
-	$7f7f7f [ $1f1f1f nip ; ] guiI SDLColor
+|	$ff00007f color
+|	curx padx + cury pady + boxw boxh frect
+	$7f7f7f [ $1f1f1f nip ; ] guiI color
 	
 	dup @ pick3 - 
 	boxh 4 - pick4 pick4 swap - 1 + */ 
 	curx padx + 
 	cury pady + rot + 
-	boxw 4 - wid 1 - SDLFRect ;
+	boxw 4 - wid 1 - frect ;
 	
 ::immScrollv | 0 max 'value --
 	plgui
@@ -303,9 +303,9 @@
 ::immCombo | 'val "op1|op2|op3" -- ; [op1  v]
 	mark
 	makelist
-	$7f SDLColor
+	$7f color
 	plgui
-	plxywh SDLFRect
+	plxywh frect
 	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
 	268	curx boxw + 24 - cury immicon
 	over @ nlist immLabel
@@ -348,7 +348,7 @@
 
 :cursor | 'var max
 	msec $100 and? ( drop ; ) drop
-	$a0a0a0 SDLColor
+	$a0a0a0 color
 	modo 'lins =? ( drop padi> pad> ttcursor drop ; ) drop
 	padi> pad> ttcursori drop ;
 	
@@ -366,8 +366,8 @@
 	drop 'lins 'modo ! ;
 
 :proinputa | --
-	$ffffff SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+	$ffffff color
+	curx cury boxw padx 1 << + boxh pady 1 << + rect
 
 	cursor 
 	SDLchar 1? ( modo ex ; ) drop
@@ -387,8 +387,8 @@
 |************************************
 ::immInputLine | 'buff max --
 	plgui
-	$222222 SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+	$222222 color
+	curx cury boxw padx 1 << + boxh pady 1 << + frect
 |	boxh 16 - 1 >> + ttat
 |	$7f7f7f [ $ffffff nip ; ] guiI glcolor
 	curx padx + 
@@ -411,11 +411,11 @@
 
 |	ttx rot + tty rot 
 |	sizechar
-|	swap SDLFrect
+|	swap frect
 	
 :proinputi
-	$ffffff SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlRect
+	$ffffff color
+	curx cury boxw padx 1 << + boxh pady 1 << + rect
 	|1 cursor drop
 	knro
 	sdlkey
@@ -429,8 +429,8 @@
 |************************************
 ::immInputInt | 'var --
 	plgui
-	$222222 SDLColor
-	curx cury boxw padx 1 << + boxh pady 1 << + sdlFRect
+	$222222 color
+	curx cury boxw padx 1 << + boxh pady 1 << + frect
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
 	ttat 
@@ -471,18 +471,18 @@
 	;
 
 :wintitle | "" --
-	immcolorwin SDLColor
+	immcolorwin color
 	winx winy winw winh 
-	pick3 pick3 pick3 pick3 SDLFRect
+	pick3 pick3 pick3 pick3 frect
 	guiBox
 	[ winnow 'winhot ! ; ] guiI
-	0 SDLColor
-	winx winy winw winh SDLRect
+	0 color
+	winx winy winw winh rect
 	
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
-	immcolortwin SDLColor
-	plxywh SDLFRect 
+	immcolortwin color
+	plxywh frect 
 	immlabelc
 	|---- close button
 	$444444 'immcolorbtn !
@@ -545,15 +545,15 @@
 |----- static windows
 
 :wintitles | "" --
-	immcolorwin SDLColor
+	immcolorwin color
 	winx winy winw winh 
-	pick3 pick3 pick3 pick3 SDLFRect
+	pick3 pick3 pick3 pick3 frect
 	pick3 pick3 pick3 pick3 guiBox
-	0 SDLColor SDLRect
+	0 color rect
 	winx 'curx ! winy 'cury !
 	winw padx 1 << - 'boxw ! immfontsh pady + 'boxh !
-	immcolortwin SDLColor
-	plxywh SDLFRect 
+	immcolortwin color
+	plxywh frect 
 	immlabelc
 	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
 	;	

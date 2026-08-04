@@ -93,7 +93,7 @@
 	
 |------------------------------
 :main
-	$0 SDLcls
+	$0 cls
 	drawtrack
 	'arr p.draw
 	carcontrol

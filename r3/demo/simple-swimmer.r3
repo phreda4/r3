@@ -17,7 +17,7 @@
 :setcolor2 | col --
 	dup $ff and 16 << $ff00 or
 	swap 1 swap - $ff and or
-	SDLColor ;
+	color ;
 
 :point-a | a -- 
 	'a !
@@ -47,7 +47,7 @@
 	x 1.0 + SCALEX *. int. 'px !
 	y 1.0 + SCALEY *. int. 'py !
 	
-	prevpx 1? ( dup prevpy px py SDLLine ) drop
+	prevpx 1? ( dup prevpy px py line ) drop
 	px 'prevpx !
 	py 'prevpy ! ;
 
@@ -63,7 +63,7 @@
 	t 0.00523599 + 6.2831853 >=? ( 6.2831853 - ) 't ! ;
 
 :draw
-	0 SDLcls
+	0 cls
 	curve
 	SDLredraw
 	advance-t

@@ -366,7 +366,7 @@ The code also shows a stack-based alternative to recursion:
 
 ```forth
 :game
-	0 SDLcls
+	0 cls
 	immgui 0 0 sw sh guibox 
 	drawmap
 	showbomb?	

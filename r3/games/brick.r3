@@ -7,8 +7,8 @@
 #pvx 0.0
 
 :paddle
-	$ffffff SDLColor
-	px int. py int. 100 20 SDLFRect 
+	$ffffff color
+	px int. py int. 100 20 frect 
 	px pvx +
 	0 <? ( 0 nip ) 600.0 >? ( 600.0 nip )
 	'px !
@@ -21,8 +21,8 @@
 :hity byv neg 'byv ! ;
 
 :ball
-	$ffffff SDLColor
-	bx int. by int. 10 10 SDLFRect 
+	$ffffff color
+	bx int. by int. 10 10 frect 
 
 	bx bxv +
 	5.0 <? ( hitx ) 785.0 >? ( hitx )
@@ -43,9 +43,9 @@
 #bricks 0 0
 
 :tbricks | adr --
-	8 + >a a@+ SDLColor 
+	8 + >a a@+ color 
 	a@+ a@+	| x y 
-	2dup 60 20 SDLFRect
+	2dup 60 20 frect
 	bx int. rot 10 - dup 60 + in? ( -1 nip )
 	by int. rot 10 - dup 20 + in? ( -1 nip ) 
 	and -? ( drop 0 hity ; ) drop
@@ -61,7 +61,7 @@
 		70 + swap ) 4drop ;
 		
 :game
-	$0 SDLcls
+	$0 cls
 	ball
 	'bricks p.draw
 	paddle

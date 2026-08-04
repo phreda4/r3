@@ -35,21 +35,21 @@
 	|font1 txfont
 	uiStart
 	4 4 uiPading
-	$ffffff sdlcolor
+	$ffffff color
 	
-	0.05 %h uiN $004800 sdlcolor uiWinBox sdlFrect
+	0.05 %h uiN $004800 color uiWinBox frect
 	"r3ChipA - [f1] eval+play [f2] stop [esc] exit" uiLabel
 	
 	0.02 %h uiS
 	
 	0.01 %w uiO
-	0.6 %w uiO $181818 sdlcolor uiWinBox sdlFrect
+	0.6 %w uiO $181818 color uiWinBox frect
 	font2 txfont
 	uiWinBox edwin 
 	edfocus
 	edcodedraw
 	
-	0.2 %w uiO $484848 sdlcolor uiWinBox sdlFrect
+	0.2 %w uiO $484848 color uiWinBox frect
 	stLink 
 	font1 txfont
 	
@@ -63,7 +63,7 @@
 	
 	
 	uiRest
-	$181818 sdlcolor uiWinBox sdlFrect
+	$181818 color uiWinBox frect
 	"Voices" uiLabel
 	2over 2over
 	"%h %h %h %h" sprint uiLabel
@@ -100,7 +100,7 @@
 >}"
 	
 :main
-	$0 SDLcls
+	$0 cls
 	gui		
 	SDLredraw
 	SDLkey

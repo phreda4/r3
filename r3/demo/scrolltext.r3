@@ -48,7 +48,7 @@
 	
 :title
 	vupdate
-	$0 SDLcls
+	$0 cls
 	$ffffff ttcolor
 	drawlines	
 	

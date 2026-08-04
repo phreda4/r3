@@ -57,7 +57,7 @@
 		
 :Fileselect
 	0.01 %w 0.05 %h 0.35 %w 0.94 %h uiBox
-	|$222222 sdlcolor uiFillW
+	|$222222 color uiFillW
 	2 22 uiGrid 
 	
 	stDark 
@@ -88,7 +88,7 @@
 	
 |---------------------
 :browser
-	$55 SDLcls 
+	$55 cls 
 	
 	font2 txfont	
 	16 6 txat

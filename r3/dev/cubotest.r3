@@ -268,8 +268,8 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 
 
 :main
-	0 sdlcls
-	$ff00 sdlcolor
+	0 cls
+	$ff00 color
 
 	$ffffff pccolor
 	0 0 pcat

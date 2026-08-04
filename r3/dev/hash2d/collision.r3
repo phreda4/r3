@@ -51,11 +51,11 @@
 	;
 	
 :drawrect | adr -- adr
-	$ffffff sdlcolor
+	$ffffff color
 	dup .radio @ over .zoom @ 16 *>> | radio
 	over .x @ int. over 1 + 1 >> - 		| radio xmin
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
-	rot dup SDLREct
+	rot dup rect
 	;
 
 :hitx over .vx dup @ neg swap ! ;
@@ -118,7 +118,7 @@
 
 |------------------------------
 :main
-	$0 SDLcls
+	$0 cls
 	'arr p.draw
 	SDLredraw
 	

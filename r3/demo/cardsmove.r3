@@ -83,7 +83,7 @@
 	
 :game
 	gui
-	$6600 SDLcls
+	$6600 cls
 	'cards p.draw
 	SDLredraw
 	SDLkey 

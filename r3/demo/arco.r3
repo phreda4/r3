@@ -12,7 +12,7 @@
 	>r + 2/ 1.0 randmax 0.5 - r> *. + ;
 
 :light | x1 y1 x2 y2 d --
-	5 <? ( drop SDLLine ; )
+	5 <? ( drop line ; )
 	>r
 	2swap
 	pick3 pick2 r@ calc dup 'mx !
@@ -22,7 +22,7 @@
 
 
 :light2 | x1 y1 x2 y2 d --
-	5 <? ( drop SDLLine ; ) 
+	5 <? ( drop line ; ) 
 	>r
 	2swap
 	pick3 pick2 r@ calc
@@ -32,12 +32,12 @@
 	r> 2/ light2 ;
 
 :main
-	0 SDLcls
-	$ffffff SDLColor
+	0 cls
+	$ffffff color
 	SDLx SDLy 0 0 pick3 pick2 - abs 2/
 	light
 
-	$ffff00 SDLColor
+	$ffff00 color
 	SDLx SDLy 0 0 pick3 pick2 - abs 2/
 	light2
 		

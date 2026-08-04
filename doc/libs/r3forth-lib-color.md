@@ -276,8 +276,8 @@ Color difference format with Green as base.
     'currentColor ! ;
 
 :drawFaded
-    currentColor SDLColor
-    100 100 200 200 SDLFRect ;
+    currentColor color
+    100 100 200 200 frect ;
 ```
 
 ### HSV Color Wheel
@@ -286,9 +286,9 @@ Color difference format with Green as base.
 :drawColorWheel
     0 ( 360 <?
         dup 360 */ 1.0 1.0 hsv2rgb  | Convert hue to RGB
-        SDLColor
+        color
         | Draw segment
-        dup 10 * 200 + 200 20 20 SDLFRect
+        dup 10 * 200 + 200 20 20 frect
         1+
     ) drop ;
 ```
@@ -300,12 +300,12 @@ Color difference format with Green as base.
 
 :drawWithShadow
     | Draw shadow (darker)
-    baseColor 128 shadow8 SDLColor
-    102 102 100 100 SDLFRect
+    baseColor 128 shadow8 color
+    102 102 100 100 frect
     
     | Draw main object
-    baseColor SDLColor
-    100 100 100 100 SDLFRect ;
+    baseColor color
+    100 100 100 100 frect ;
 ```
 
 ### Smooth Color Transition
@@ -318,9 +318,9 @@ Color difference format with Green as base.
     
     | Animate through rainbow
     phase 1.0 1.0 hsv2rgb
-    SDLColor
+    color
     
-    sw 2/ sh 2/ 100 SDLCircle ;
+    sw 2/ sh 2/ 100 circle ;
 ```
 
 ### YUV Color Adjustment

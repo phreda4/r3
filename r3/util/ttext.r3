@@ -91,10 +91,10 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	tsbox tpos 2swap ;
 	
 ::tcursor | n --
-	advx * tpos swap rot + swap advx advy SDLFRect ;
+	advx * tpos swap rot + swap advx advy frect ;
 
 ::tcursori | n --
-	advx * tpos swap rot + swap advy dup 2 >> - + advx advy 2 >> SDLFRect ;
+	advx * tpos swap rot + swap advy dup 2 >> - + advx advy 2 >> frect ;
 
 ::tsize | zoom --
 	wp over 16 *>> dup 'advx ! 

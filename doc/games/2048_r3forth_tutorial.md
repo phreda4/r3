@@ -132,9 +132,9 @@ Grid:     [0][1][2][3]
 
 ```forth
 :tile | x y -- x y 
-	ca@+ dup 3 << 'colors + @ sdlColor
+	ca@+ dup 3 << 'colors + @ color
 	-rot
-	postile 62 dup SDLFrect
+	postile 62 dup frect
 	rot 0? ( drop ; ) 
 	-rot
 	$000000 ttcolor
@@ -146,7 +146,7 @@ Grid:     [0][1][2][3]
 **Rendering Pipeline:**
 1. `ca@+` - Read tile value and advance register A
 2. `3 << 'colors + @` - Get color (value * 8 + colors_base)
-3. `SDLFrect` - Draw filled rectangle (62×62 pixels)
+3. `frect` - Draw filled rectangle (62×62 pixels)
 4. Early exit if tile empty (`0? ( drop ; )`)
 5. Position text at center (`8 + swap 8 +`)
 6. `1 swap <<` - Calculate display value (2^n)
@@ -332,7 +332,7 @@ The movement system uses a sophisticated falling/merging algorithm:
 ```forth
 :play
 	immgui 	
-	0 SDLcls
+	0 cls
 	drawmap
 
 	$ff 'immcolorbtn !

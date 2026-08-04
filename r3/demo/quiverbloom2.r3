@@ -20,9 +20,9 @@
 :setcolor | col --
 	dup 155 + $ff and 8 << swap
 	255 swap - $ff and or
-	$ff0000 or SDLColor ;
+	$ff0000 or color ;
 
-:point | xin --
+:qpoint | xin --
 	dup 235.0 /. 'y !
 	dup 21.0 /. rcos 4.0 *. 'k !
 
@@ -45,18 +45,18 @@
 
 	q c rsin *. d 39.0 *. + 475.0 - 
 	SCALEY *. int.
-	SDLPoint ;
+	point ;
 
 :curve | --
 	0.0 ( 10000.0 <=?
-		point 1.0 +
+		qpoint 1.0 +
 		) drop ;
 
 :advance-t | --
 	t 0.0125 + 6.2831853 >=? ( 6.2831853 - ) 't ! ;
 
 :draw
-	0 SDLcls
+	0 cls
 	curve
 	SDLredraw
 	advance-t

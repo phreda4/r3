@@ -22,18 +22,18 @@
 |---------
 :btnt | x y v "" col --
 	pick4 pick4 128 24 guiBox
-	[ dup 2* or ; ] guiI sdlcolor
+	[ dup 2* or ; ] guiI color
 	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 128 24 sdlfrect
+	2over 128 24 frect
 	2swap 4 + swap 4 + swap tat
 	$e tcol temits	
 	onClick ;
 
 :btnt2 | x y v "" col --
 	pick4 pick4 256 48 guiBox
-	[ dup 2* or ; ] guiI sdlcolor
+	[ dup 2* or ; ] guiI color
 	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 256 48 sdlfrect
+	2over 256 48 frect
 	2swap 8 + swap 8 + swap tat
 	$e tcol temits	
 	onClick ;
@@ -165,7 +165,7 @@
 	
 |-------------------
 :runscr
-	vupdate gui	0 sdlcls
+	vupdate gui	0 cls
 	
 	mouse
 	
@@ -213,9 +213,9 @@
 
 |-------------------------------------
 :menu
-	vupdate gui 0 0 sw sh guiRect 0 sdlcls
+	vupdate gui 0 0 sw sh guiRect 0 cls
 	
-	|$7f3f3f3f sdlcolorA	200 200 200 600 sdlFRect
+	|$7f3f3f3f colorA	200 200 200 600 frect
 	
 	6.0 tsize
 	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits tcr

@@ -5,14 +5,14 @@
 ^r3/util/bfont.r3
 
 :demo
-	0 SDLcls
+	0 cls
 	$ffffff bcolor 
 	10 10 bat 
 	"Resize Windows" bprint2
 	bcr bcr
 	sh sw "w:%d h:%d" bprint2
-	$ff00 sdlcolor
-	0 0 sw sh SDLline
+	$ff00 color
+	0 0 sw sh line
 	SDLredraw	
 	SDLkey
 	>esc< =? ( exit )

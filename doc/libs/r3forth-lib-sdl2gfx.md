@@ -32,19 +32,19 @@ This library provides:
 
 ### Setting Colors
 
-- **`SDLColor`** `( rgb -- )` - Set draw color (opaque)
+- **`color`** `( rgb -- )` - Set draw color (opaque)
   ```r3forth
-  $FF0000 SDLColor  | Red
+  $FF0000 color  | Red
   ```
 
-- **`SDLColorA`** `( argb -- )` - Set draw color with alpha
+- **`colorA`** `( argb -- )` - Set draw color with alpha
   ```r3forth
-  $80FF0000 SDLColorA  | Semi-transparent red
+  $80FF0000 colorA  | Semi-transparent red
   ```
 
-- **`SDLcls`** `( color -- )` - Clear screen with color
+- **`cls`** `( color -- )` - Clear screen with color
   ```r3forth
-  $000000 SDLcls  | Clear to black
+  $000000 cls  | Clear to black
   ```
 
 ---
@@ -53,70 +53,70 @@ This library provides:
 
 ### Points and Lines
 
-- **`SDLPoint`** `( x y -- )` - Draw single point
+- **`point`** `( x y -- )` - Draw single point
   ```r3forth
-  100 100 SDLPoint
+  100 100 point
   ```
 
-- **`SDLGetPixel`** `( x y -- color )` - Read pixel color
+- **`getpixel`** `( x y -- color )` - Read pixel color
   ```r3forth
-  100 100 SDLGetPixel  | Returns RGB value
+  100 100 getpixel  | Returns RGB value
   ```
 
-- **`SDLLine`** `( x1 y1 x2 y2 -- )` - Draw line
+- **`line`** `( x1 y1 x2 y2 -- )` - Draw line
   ```r3forth
-  0 0 100 100 SDLLine  | Diagonal line
+  0 0 100 100 line  | Diagonal line
   ```
 
-- **`SDLLineH`** `( x1 y x2 -- )` - Draw horizontal line
+- **`lineH`** `( x1 y x2 -- )` - Draw horizontal line
   ```r3forth
-  50 100 150 SDLLineH  | Horizontal from (50,100) to (150,100)
+  50 100 150 lineH  | Horizontal from (50,100) to (150,100)
   ```
 
-- **`SDLLineV`** `( x y1 y2 -- )` - Draw vertical line
+- **`lineV`** `( x y1 y2 -- )` - Draw vertical line
   ```r3forth
-  100 50 150 SDLLineV  | Vertical from (100,50) to (100,150)
+  100 50 150 lineV  | Vertical from (100,50) to (100,150)
   ```
 
 ### Rectangles
 
-- **`SDLFRect`** `( x y w h -- )` - Draw filled rectangle
+- **`frect`** `( x y w h -- )` - Draw filled rectangle
   ```r3forth
-  50 50 100 80 SDLFRect
+  50 50 100 80 frect
   ```
 
-- **`SDLRect`** `( x y w h -- )` - Draw rectangle outline
+- **`rect`** `( x y w h -- )` - Draw rectangle outline
   ```r3forth
-  50 50 100 80 SDLRect
+  50 50 100 80 rect
   ```
 
-- **`SDLFRound`** `( r x y w h -- )` - Draw filled rounded rectangle
+- **`fround`** `( r x y w h -- )` - Draw filled rounded rectangle
   ```r3forth
-  10 50 50 200 150 SDLFRound  | Radius=10
+  10 50 50 200 150 fround  | Radius=10
   ```
 
-- **`SDLRound`** `( r x y w h -- )` - Draw rounded rectangle outline
+- **`round`** `( r x y w h -- )` - Draw rounded rectangle outline
   ```r3forth
-  15 50 50 200 150 SDLRound
+  15 50 50 200 150 round
   ```
 
 ### Circles
 
-- **`SDLFCircle`** `( r x y -- )` - Draw filled circle
+- **`fcircle`** `( r x y -- )` - Draw filled circle
   ```r3forth
-  50 200 200 SDLFCircle  | Radius=50, center=(200,200)
+  50 200 200 fcircle  | Radius=50, center=(200,200)
   ```
 
-- **`SDLCircle`** `( r x y -- )` - Draw circle outline
+- **`circle`** `( r x y -- )` - Draw circle outline
   ```r3forth
-  50 200 200 SDLCircle
+  50 200 200 circle
   ```
 
 ### Ellipses
 
-- **`SDLFEllipse`** `( rx ry x y -- )` - Draw filled ellipse
+- **`fellipse`** `( rx ry x y -- )` - Draw filled ellipse
   ```r3forth
-  80 50 200 200 SDLFEllipse  | rx=80, ry=50
+  80 50 200 200 fellipse  | rx=80, ry=50
   ```
 
 - **`SDLEllipse`** `( rx ry x y -- )` - Draw ellipse outline
@@ -126,9 +126,9 @@ This library provides:
 
 ### Triangle
 
-- **`SDLTriangle`** `( x1 y1 x2 y2 x3 y3 -- )` - Draw filled triangle
+- **`triangle`** `( x1 y1 x2 y2 x3 y3 -- )` - Draw filled triangle
   ```r3forth
-  100 50  200 150  50 150 SDLTriangle
+  100 50  200 150  50 150 triangle
   ```
 
 ---
@@ -137,28 +137,28 @@ This library provides:
 
 Simple image drawing functions.
 
-- **`SDLImage`** `( x y img -- )` - Draw image at position
+- **`image`** `( x y img -- )` - Draw image at position
   ```r3forth
-  100 100 my-image SDLImage
+  100 100 my-image image
   ```
   - Draws at original size
   - Top-left corner at (x, y)
 
-- **`SDLImages`** `( x y w h img -- )` - Draw scaled image
+- **`images`** `( x y w h img -- )` - Draw scaled image
   ```r3forth
-  100 100 200 150 my-image SDLImages
+  100 100 200 150 my-image images
   ```
   - Stretches/shrinks to fit w×h
 
-- **`SDLImageb`** `( 'box img -- )` - Draw with box (destination)
+- **`imageb`** `( 'box img -- )` - Draw with box (destination)
   ```r3forth
-  'dest-box my-image SDLImageb
+  'dest-box my-image imageb
   ```
   - Box format: x, y, w, h (4 integers)
 
-- **`SDLImagebb`** `( 'srcbox 'dstbox img -- )` - Draw with source and destination
+- **`imagebb`** `( 'srcbox 'dstbox img -- )` - Draw with source and destination
   ```r3forth
-  'source-box 'dest-box my-image SDLImagebb
+  'source-box 'dest-box my-image imagebb
   ```
   - Copy portion of image to specific location
 
@@ -360,8 +360,8 @@ Render-to-texture for creating complex graphics offline.
 - **`texEnd`** `( -- texture )` - Finish and return texture
   ```r3forth
   800 600 texIni
-  $FF0000 SDLColor
-  100 100 200 200 SDLFRect
+  $FF0000 color
+  100 100 200 200 frect
   texEnd 'composed-texture !
   ```
   - Returns handle to created texture
@@ -465,16 +465,16 @@ Animations pack: initial frame, frame count, time scale, and current time into a
 ### Basic Drawing
 ```r3forth
 :draw-scene
-  $000000 SDLcls  | Clear to black
+  $000000 cls  | Clear to black
   
-  $FF0000 SDLColor
-  100 100 200 150 SDLFRect  | Red rectangle
+  $FF0000 color
+  100 100 200 150 frect  | Red rectangle
   
-  $00FF00 SDLColor
-  300 200 50 SDLFCircle  | Green circle
+  $00FF00 color
+  300 200 50 fcircle  | Green circle
   
-  $0000FF SDLColor
-  400 100 500 300 SDLLine  | Blue line
+  $0000FF color
+  400 100 500 300 line  | Blue line
   
   SDLredraw
   ;
@@ -495,7 +495,7 @@ Animations pack: initial frame, frame count, time scale, and current time into a
 
 :game-loop
   SDLupdate
-  $000000 SDLcls
+  $000000 cls
   animate-player
   SDLredraw
   ;
@@ -558,19 +558,19 @@ Animations pack: initial frame, frame count, time scale, and current time into a
   800 600 texIni
   
   | Draw complex background
-  $000080 SDLcls  | Dark blue base
+  $000080 cls  | Dark blue base
   
   100 ( 1? 1-
     800 randmax 600 randmax
-    $FFFFFF SDLColor
-    SDLPoint  | Stars
+    $FFFFFF color
+    point  | Stars
   ) drop
   
   texEnd 'background-texture !
   ;
 
 :draw-scene
-  0 0 background-texture SDLImage  | Draw cached background
+  0 0 background-texture image  | Draw cached background
   | ... draw dynamic objects ...
   ;
 ```
@@ -590,10 +590,10 @@ Animations pack: initial frame, frame count, time scale, and current time into a
   ;
 
 :draw-particles
-  $FFFFFF SDLColor
+  $FFFFFF color
   'paticles >a
   100 ( 1? 1-
-	a@+ int. a@+ int. 5 SDLFCircle | warning coord are the integer part
+	a@+ int. a@+ int. 5 fcircle | warning coord are the integer part
 	a@+ a> 24 - +! | vx 'x +!
 	a@+ a> 24 - +! | vy 'y +!
   ) drop
@@ -651,7 +651,7 @@ Animations pack: initial frame, frame count, time scale, and current time into a
 1. **Use appropriate primitive for task**
    ```r3forth
    | Good: specific function
-   SDLFCircle  | Fast filled circle
+   fcircle  | Fast filled circle
    
    | Avoid: generic geometry
    | Manual circle with triangles
@@ -661,7 +661,7 @@ Animations pack: initial frame, frame count, time scale, and current time into a
    ```r3forth
    | Good: render once
    create-background
-   ( game-loop 0 0 background-texture SDLImage )
+   ( game-loop 0 0 background-texture image )
    
    | Avoid: redraw every frame
    ( game-loop draw-complex-background )

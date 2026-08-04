@@ -86,9 +86,9 @@
 :l2 backall dup 12 >> dlayer ;
 :l3 backall dup 24 >> dlayer ;
 :l4 backall dup 36 >> dlayer ;
-:l5 backall $7fff0000 SDLColorA dup 48 >> bitlayer ;
-:l6 backall $7f00ff00 SDLColorA dup 49 >> bitlayer ;
-:l7 backall $7f0000ff SDLColorA dup 50 >> bitlayer ;
+:l5 backall $7fff0000 colorA dup 48 >> bitlayer ;
+:l6 backall $7f00ff00 colorA dup 49 >> bitlayer ;
+:l7 backall $7f0000ff colorA dup 50 >> bitlayer ;
 
 #viewlevel l0 l1 l2 l3 l4 l5 l6 l7
 
@@ -124,14 +124,14 @@
 
 :drawgrid
 	mgrid 0? ( drop ; ) drop		
-	$7f666666 SDLColorA
+	$7f666666 colorA
 	maph mapsy - mapth * mapy + sh min
 	mapw mapsx - maptw * mapx + sw min
 	mapy ( pick2 <=? 
-		mapx over pick3 over SDLline
+		mapx over pick3 over line
 		mapth + ) drop
 	mapx ( over <=? 
-		dup pick3 over mapy SDLLine
+		dup pick3 over mapy line
 		maptw + ) 3drop ;
 
 	
@@ -216,14 +216,14 @@
 
 :moderect
 	'select1 'select2 onDnMoveA 
-	$7f007f00 SDLColorA
+	$7f007f00 colorA
 	tilex1 tilex2 2dup min | x1 x2 x
 	mapsx - maptw * mapx + -rot - abs | x w
 	tiley1 tiley2 2dup min | x w y1 y2 y
 	mapsy - mapth * mapy + -rot - abs | x w y h
 	rot 1 + maptw * | x y h w
 	swap 1 + mapth * 
-	SDLFRect ;
+	frect ;
 
 |------------- FILL
 #last>
@@ -390,12 +390,12 @@
 	
 :wintiles
 	'wintdlg immwin 0? ( drop ; ) drop
-	curx cury ts_spr 0? ( 3drop ; ) @ SDLImage
+	curx cury ts_spr 0? ( 3drop ; ) @ image
 	'chdn 'chmv dup onMap
-	$7f0000ff sdlcolorA	| cursor
+	$7f0000ff colorA	| cursor
 	curx tx tilew * + cury ty tileh * +
 	tw tilew * th tileh * 
-	SDLfRect
+	frect
 	;
 	
 #bsrc 0 0
@@ -403,12 +403,12 @@
 
 :drawtilecursor | x y w h --
 	ts_spr 0? ( drop 4drop ; ) drop
-	$0 sdlcolor
-	pick3 pick3 pick3 pick3 sdlfrect
+	$0 color
+	pick3 pick3 pick3 pick3 frect
 	swap 2swap swap 'bdst d!+ d!+ d!+ d!
 	th tileh * tw tilew * ty tileh * tx tilew *
 	'bsrc d!+ d!+ d!+ d!
-	'bsrc 'bdst ts_spr @ SDLImagebb | box box img --
+	'bsrc 'bdst ts_spr @ imagebb | box box img --
 	;
 
 	
@@ -603,7 +603,7 @@
 	;
 	
 :editor
-	0 SDLcls
+	0 cls
 	immgui		| ini IMMGUI
 	drawmapedit	
 	toolbar

@@ -30,7 +30,7 @@
 :dline | x y yf xf -- x y yf
 	wb 8 - *. pick3 4 + +
 	over hb 8 - *. pick3 4 + +
-	2dup xo yo sdlline
+	2dup xo yo line
 	'yo ! 'xo !
 	;
 	
@@ -44,15 +44,15 @@
 |-----------------	
 :boxease | n -- n
 	ntoxy 
-	$ff00 sdlcolor
+	$ff00 color
 	linebox
 	2dup txat
 	pick2 1 + 'nameease over n>>0 "%s %d" txprint
 	
-	$ffff sdlcolor
+	$ffff color
 	swap 'varx pick3 ncell+ @ 3 - +
 	swap 'vary pick3 ncell+ @ 3 - +
-	6 6 sdlfrect
+	6 6 frect
 	;
 	
 :panel
@@ -62,7 +62,7 @@
 		
 :demo
 	vupdate
-	$0 SDLcls
+	$0 cls
 	panel
 	SDLredraw	
 	SDLkey

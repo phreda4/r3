@@ -42,7 +42,7 @@
 	font1 txfont
 	uiStart
 	4 4 uiPading
-	$ffffff sdlcolor
+	$ffffff color
 	
 	0.1 %h uiN
 	"Widget Test " ali uiText
@@ -51,7 +51,7 @@
 	"[esc]-Exit [f1/f2]-align" $11 uiText
 	
 	0.5 %w uiO
-	$111111 sdlcolor uiFill
+	$111111 color uiFill
 	
 	uiPush
 	0.05 %h uiN
@@ -115,7 +115,7 @@ stLink
 	
 |-----------------------------
 :main
-	0 SDLcls
+	0 cls
 	test
 	
 	SDLredraw

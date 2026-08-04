@@ -34,14 +34,14 @@
 
 |-----------
 :drawbuffer
-	$ffffff sdlcolor
+	$ffffff color
 	'outbuffer >a 
 	0 ( cw <? 1+
 		da@+ 
 		over cx +
-		over $7fff + 10 >> $3f and cy + SDLPoint
+		over $7fff + 10 >> $3f and cy + point
 		over cx +
-		swap 16 >> $7fff + 10 >> $3f and cy + 32 + SDLPoint
+		swap 16 >> $7fff + 10 >> $3f and cy + 32 + point
 		) drop ;	
 		
 |------------ keys
@@ -140,21 +140,21 @@
 	|font1 txfont
 	uiStart
 	4 4 uiPading
-	$ffffff sdlcolor
+	$ffffff color
 	
-	0.05 %h uiN $004800 sdlcolor uiWinBox sdlFrect
+	0.05 %h uiN $004800 color uiWinBox frect
 	"r3ChipA - [f1] eval+play [f2] stop [esc] exit" uiLabel
 	
 	0.02 %h uiS
 	
 	0.01 %w uiO
-	0.6 %w uiO $181818 sdlcolor uiWinBox sdlFrect
+	0.6 %w uiO $181818 color uiWinBox frect
 	font2 txfont
 	uiWinBox edwin 
 	edfocus
 	edcodedraw
 	
-	0.2 %w uiO $484848 sdlcolor uiWinBox sdlFrect
+	0.2 %w uiO $484848 color uiWinBox frect
 	stLink 
 	font1 txfont
 	
@@ -174,7 +174,7 @@
 	drawbuffer
 	
 	uiRest
-	$181818 sdlcolor uiWinBox sdlFrect
+	$181818 color uiWinBox frect
 	debug2
 
 	"Voices" uiLabel
@@ -213,7 +213,7 @@
 >}"
 	
 :main
-	$0 SDLcls
+	$0 cls
 	gui	
 	
 	SDLredraw

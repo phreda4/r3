@@ -85,9 +85,9 @@
 ^r3/lib/sdl2gfx.r3
 	
 :main
-	0 SDLcls
-	$ff00 SDLColor
-	10 10 100 100 SDLFRect
+	0 cls
+	$ff00 color
+	10 10 100 100 frect
 	SDLredraw
 	
 	SDLkey 

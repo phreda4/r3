@@ -146,7 +146,7 @@
 	nlevel 1 - 0 max dup 'nlevel ! loadlevel ;
 	
 :game
-	0 SDLcls
+	0 cls
 	drawmap
 	drawplay
 	$ffffff ttcolor

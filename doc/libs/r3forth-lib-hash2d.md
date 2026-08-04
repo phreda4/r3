@@ -291,8 +291,8 @@ Two variants:
 :drawCircles
     circles 100 ( 1? 1-
         @+ @+  | x y
-        $ffffff SDLColor
-        pick2 SDLCircle
+        $ffffff color
+        pick2 circle
         16 +
     ) drop ;
 
@@ -300,7 +300,7 @@ Two variants:
     updateCircles
     handleCollisions
     
-    $000000 SDLcls
+    $000000 cls
     drawCircles
     SDLredraw
     

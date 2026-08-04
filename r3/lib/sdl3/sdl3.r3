@@ -313,11 +313,11 @@
 :rgb24 | argb -- r g b
 	dup 16 >> $ff and swap dup 8 >> $ff and swap dup $ff and swap 24 >> $ff and ;
 	
-::SDLColor | col --
+::color | col --
 	sdlscr swap rgb23 $ff SDL_SetRenderDrawColor ;
 	
-::SDLcls | color --
-	SDLColor sdlscr SDL_RenderClear ;	
+::cls | color --
+	color sdlscr SDL_RenderClear ;	
 	
 |------- BOOT
 :

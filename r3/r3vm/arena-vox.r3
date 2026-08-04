@@ -411,12 +411,12 @@ void main() {
 	
 :drawvox	
 	0 620 'screenv d!+ d!
-	$333333 sdlcolor
+	$333333 color
 	SDLRenderer 'screenv SDL_RenderFillRect 
 	SDLrenderer glviewport 'vista1 'screenv SDL_RenderCopy
 
 	300 620 'screenv d!+ d!
-	$000033 sdlcolor
+	$000033 color
 	SDLRenderer 'screenv SDL_RenderFillRect 
 	SDLrenderer glviewport 'vista2 'screenv SDL_RenderCopy
 	;
@@ -424,7 +424,7 @@ void main() {
 :runscr
 	vupdate gui	0 0 sw sh guiRect
 	'dnlook 'movelook onDnMove
-	0 sdlcls
+	0 cls
 
 	0 0 tat $5 tcol "Cube" temits $3 tcol " Code" temits 
 
@@ -432,7 +432,7 @@ void main() {
 	drawvox
 	
 	|... paleta
-	|0 ( 15 <? dup 2 << 'paleta + d@ sdlcolor dup 5 << 500 + 560 32 32 sdlfrect 1+ ) drop
+	|0 ( 15 <? dup 2 << 'paleta + d@ color dup 5 << 500 + 560 32 32 frect 1+ ) drop
 		
 	sdlkey
 	>esc< =? ( exit )

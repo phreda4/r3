@@ -502,7 +502,7 @@ uiFull   | Use full screen
 10 10 uiPading  | 10px padding
 
 | Title
-$ffffff sdlcolor
+$ffffff color
 2 uiN  | Take 2 lines at top
 "My Application" uiLabelC
 

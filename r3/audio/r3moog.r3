@@ -307,14 +307,14 @@
 
 |--------------------------------	
 :drawbuffer
-	$ffffff sdlcolor
+	$ffffff color
 	'outbuffer >a 
 	0 ( cw <? 1+
 		da@+ 12 a+
 		over cx +
-		over $7fff + 10 >> $3f and cy + SDLPoint
+		over $7fff + 10 >> $3f and cy + point
 		over cx +
-		swap 16 >> $7fff + 10 >> $3f and cy + ch 2/ + SDLPoint
+		swap 16 >> $7fff + 10 >> $3f and cy + ch 2/ + point
 		) drop ;
 		
 |-----------------------------------------
@@ -331,18 +331,18 @@
 :pressk | n x y --
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
-	$808080 sdlcolor
+	$808080 color
 	over 1+ over 96 +
-	30 4 sdlFRect ;
+	30 4 frect ;
 
 :wkey | n --
-	colork sdlcolor
+	colork color
 	over 'keyw -
 	5 << cx + cy
-	2dup 32 100 sdlFRect
+	2dup 32 100 frect
 	pressk
-	$0 sdlcolor
-	32 100 sdlRect
+	$0 color
+	32 100 rect
 	drop ;
 
 :colork
@@ -353,19 +353,19 @@
 :pressk | n x y --
 	pick2 'playn + c@ 
 	1? ( drop ; ) drop
-	$0 sdlcolor
+	$0 color
 	over 1+ over 46 +
-	30 4 sdlFRect ;
+	30 4 frect ;
 
 :bkey | n --
 	0? ( drop ; )
-	colork sdlcolor
+	colork color
 	over 'keyb - 
 	5 << 16 + cx + cy 
-	2dup 30 50 sdlFRect
+	2dup 30 50 frect
 	pressk
-	$0 sdlcolor
-	30 50 sdlRect
+	$0 color
+	30 50 rect
 	drop ;
 
 :drawkeys
@@ -457,11 +457,11 @@
 		
 |--------------------------------
 :main
-	$0 SDLcls
+	$0 cls
 	font1 txfont
 	uiStart
 	4 8 uiPading
-	$ffffff sdlcolor
+	$ffffff color
 	
 	0.02 %h uiN 
 	
@@ -478,7 +478,7 @@
 |------------------
 	0.02 %w uiO 
 	0.36 %w uiO 
-	$666666 sdlcolor 4 uiWinBox SDLFRound
+	$666666 color 4 uiWinBox fround
 	uiPush
 	3 1 uiGrid 
 	"OSC 1" uiLabel
@@ -511,7 +511,7 @@
 |------------------
 	0.02 %w uiO 
 	0.36 %w uiO 
-	$666666 sdlcolor 4 uiWinBox SDLFRound
+	$666666 color 4 uiWinBox fround
 	uiPush
 	3 1 uiGrid 
 	"Cutoff" uiLabel
@@ -550,7 +550,7 @@
 |------------------	
 	0.02 %w uiO
 	0.2 %w uiO |4 uiWRRect
-	$666666 sdlcolor 4 uiWinBox SDLFRound
+	$666666 color 4 uiWinBox fround
 	uiPush
 	3 1 uiGrid 
 

@@ -290,9 +290,9 @@
 
 | WIRE
 :drawtri | x y x y x y --
-	>r >r 2over 2over SDLLine
-	r> r> 2swap 2over SDLLine
-	SDLLine ;
+	>r >r 2over 2over line
+	r> r> 2swap 2over line
+	line ;
 
 :d>xy | d -- x y
 	dup 32 >> swap 32 << 32 >> ;
@@ -302,7 +302,7 @@
 #colist $ff0000 $ff00 $ff $ffff00 $ff00ff $ffff $ffffff
 
 :ncolorset | nro -- nro
-	dup $fffff and 1 - 3 << 'colist + @ SDLColor ;
+	dup $fffff and 1 - 3 << 'colist + @ color ;
 	
 ::objwire
 	mark
@@ -326,9 +326,9 @@
 	verl >b
 	nver ( 1? 1 -
 		b@+ b@+ b@+ 
-		8 b+ |b@+ $7 and 3 << 'colist + @ SDLColor
+		8 b+ |b@+ $7 and 3 << 'colist + @ color
 		project3d
-		SDLPoint ) drop	;
+		point ) drop	;
 |------------------------
 :,d "%d " ,print ;
 
@@ -430,13 +430,13 @@
 :main
 	gui
 	'dnlook 'movelook onDnMove
-	0 SDLcls
+	0 cls
 
 	1.0 3dmode
 	rx ry 0 mrot
 	xcam ycam zcam mtrans
 	
-	$007f00 SDLColor
+	$007f00 color
 	nface 10000 <? ( objwire ) drop
 	|objpoint
 	

@@ -50,10 +50,10 @@
 
 |------------------- LINE
 :draw0in
-	$ffffff sdlcolor
+	$ffffff color
 	inpoly >a a@+ p2 
 	( a> inpoly> <? drop
-		a@+ p2 2swap 2over sdlline
+		a@+ p2 2swap 2over line
 		) 3drop ;
 
 :res0 ;
@@ -63,9 +63,9 @@
 
 |------------------- POINTS
 :draw1in
-	$ffffff sdlcolor
+	$ffffff color
 	inpoly ( inpoly> <? 
-		@+ p2 5 5 2swap SDLFEllipse
+		@+ p2 5 5 2swap fellipse
 		) drop ;
 
 :res1 ;
@@ -95,9 +95,9 @@
 	dup 4 ncell+ @ ex 'moded ! ;
 	
 :workarea
-	$ffffff sdlcolor
+	$ffffff color
 	64 32 sw 64 - pick2 - sh 128 - pick2 -
-	2over 2over sdlrect
+	2over 2over rect
 	uiZoneBox
 
 	moded
@@ -112,14 +112,14 @@
 :main
 	timer.
 	uiStart
-	0 sdlcls
+	0 cls
 	font txfont
-	$696969 sdlcolor
-	0 0 sw 32 sdlfrect
-|	$ffffff sdlcolor
-|	0 32 64 sh 32 - sdlrect
-|	sw 64 - 32 64 sh 32 - sdlrect
-|	0 sh 128 - sw 128 sdlrect
+	$696969 color
+	0 0 sw 32 frect
+|	$ffffff color
+|	0 32 64 sh 32 - rect
+|	sw 64 - 32 64 sh 32 - rect
+|	0 sh 128 - sw 128 rect
 	
 	$ffffff txrgb
 	0 0 txat "ReAnimator" txprint 

@@ -372,7 +372,7 @@
 
 :cscroll | 'var max -- 'var max
 	cntlist >=? ( ; ) 
-	|$ffffff sdlcolor 
+	|$ffffff color 
 	cntlist over - 1+	| maxi
 	wix wiw + 10 -		| 'var max maxi x 
 	pick3 8 + @ 		| 'var max maxi x ini

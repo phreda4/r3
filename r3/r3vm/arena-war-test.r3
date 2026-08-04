@@ -19,7 +19,7 @@
 :runscr
 	vupdate
 	gui
-	0 sdlcls
+	0 cls
 	
 |	pasto
 	

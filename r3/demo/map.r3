@@ -156,7 +156,7 @@
 	
 |---- MAIN
 :demo
-	0 SDLcls
+	0 cls
 	
 	drawrmap
 	drawplayer

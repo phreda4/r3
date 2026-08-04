@@ -4,7 +4,7 @@
 ^r3/util/txfont.r3
 
 :demo
-	0 SDLcls
+	0 cls
 	$ff4c4c txrgb
 	10 10 txat
 	"Tx Font lib" txprint

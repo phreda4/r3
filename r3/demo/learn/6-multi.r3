@@ -70,7 +70,7 @@
 	+people ;
 	
 :demo
-	$323262 SDLcls
+	$323262 cls
 	timer.
 	'people p.drawo		| draw sprites
 	2 'people p.sort	| sort for draw (y coord)

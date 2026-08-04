@@ -19,9 +19,9 @@
 	;
 	
 :tile | x y -- x y 
-	ca@+ dup 3 << 'colors + @ sdlColor
+	ca@+ dup 3 << 'colors + @ color
 	-rot
-	postile 62 dup SDLFrect
+	postile 62 dup frect
 	rot 0? ( drop ; ) 
 	-rot
 	$000000 txrgb
@@ -103,7 +103,7 @@
 	;
 		
 :play
-	0 sdlcls
+	0 cls
 	drawmap
 
 	uiStart

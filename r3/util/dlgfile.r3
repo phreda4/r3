@@ -71,15 +71,15 @@
 	
 :dlgtitle
 	xdlg 4 + ydlg 4 + bat
-	$ffffff SDLColor
+	$ffffff color
 	bprint
 	;
 
 :fillback
-	$ffffff SDLColor
+	$ffffff color
 	xdlg 8 + pick2
     wdlg 16 - 16 | alto letra
-	SDLFRect
+	frect
 	;
 
 :colorline | n --
@@ -148,19 +148,19 @@
 	drop ;
 
 :dlgback
-	0 SDLcls
+	0 cls
 	gui
-	$696969 SDLColor 
-	xdlg ydlg wdlg hdlg SDLFRect
+	$696969 color 
+	xdlg ydlg wdlg hdlg frect
 	
-	$006900 SDLColor 
-	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + SDLFRect
+	$006900 color 
+	xdlg 2 + ydlg 2 + wdlg 4 - 20 6 + frect
 
-	$00 SDLColor 
-	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + SDLFRect
-	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + SDLFRect
+	$00 color 
+	xdlg 6 + ydlg 20 1 << + wdlg 12 - 20 6 + frect
+	xdlg 6 + ydlg 20 2 << + wdlg 12 - 20 6 + frect
 	
-	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * SDLFRect
+	xdlg 8 + ydlg 20 3 << + wdlg 16 - 20 filelines * frect
 
 	$ffffff bcolor
 	xdlg 8 + ydlg 20 1 << + 3 + bat

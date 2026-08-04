@@ -183,14 +183,14 @@
 	dup .radio @ over .zoom @ 16 *>> | adr radio
 	over .x @ int. over 1 >> - 		| adr radio xmin
 	rot .y @ int. pick2 1 >> - 	| adr radio ymin ymin
-	rot dup SDLFREct
+	rot dup frect
 	;
 
 :objset
 	a> 4 - d@ 1 - drawrect ;
 	
 :main
-	$0 SDLcls
+	$0 cls
 	'arr p.draw | calc/draw/hash
 	
 	buildH2d	
@@ -198,7 +198,7 @@
 
 	30.0 sdlx 16 << sdly 16 << qH2d
 
-	$ffffff sdlcolor
+	$ffffff color
 |	'objset 900.0 sdlx 16 << sdly 16 << nH2
 	'objset 30.0 sdlx 16 << sdly 16 << nH2b
 	

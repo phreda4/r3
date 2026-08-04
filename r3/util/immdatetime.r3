@@ -135,7 +135,7 @@
 :uiDMY
 	uiPush
 	cx cy cw ch uiBox
-	uiZone $222222 sdlcolor uiFill
+	uiZone $222222 color uiFill
 	4 4 uiPading
 	
 	txh 16 + uiN
@@ -162,10 +162,10 @@
 
 |-----------------------------
 :uiHMS
-	uiZone $222222 sdlcolor uiFill
+	uiZone $222222 color uiFill
 	4 4 uiPading
 
-	1 11 UIGrid |$444444 sdlcolor uiRFill
+	1 11 UIGrid |$444444 color uiRFill
 	0 0 uiAt 
 	'uiExitWidget
 	mark datevar @ ,64>dtt 0 ,c empty here uiRBtn
@@ -183,7 +183,7 @@
 	cy |0.25 %h -
 	0.25 %w txh 20 * |0.5 %h 
 	'uiDMY uisaveLast
-	|cifoc sdlColor uiRRect
+	|cifoc color uiRRect
 	sdlkey
 	<tab> =? ( tabfocus )
 	drop ;	
@@ -193,7 +193,7 @@
 	dup @ 0? ( drop setnowdmy ; ) set64dmy ;
 	
 ::uiDateTime | 'var --
-	uiZone $222222 sdlcolor uilFill |overfil uiRFill
+	uiZone $222222 color uilFill |overfil uiRFill
 	'datetimefoco uiFocus |'datetimefocoini w/foco
 	mark @ ,64>dtf 0 ,c empty here 
 	ttwritec ui.. ;
@@ -209,9 +209,9 @@
 	dup @ 0? ( drop setnowdmy ; ) set64dmy ;
 
 :datefoco
-	$ffffff sdlcolor
-	4 cx 1- cy 1- cw 2 + txh 2 + SDLRound
-|	cifoc sdlColor uiRRect
+	$ffffff color
+	4 cx 1- cy 1- cw 2 + txh 2 + round
+|	cifoc color uiRRect
 	'datefocoini uiClk 
 	sdlkey
 	<tab> =? ( tabfocus )
@@ -219,7 +219,7 @@
 	
 	
 ::uiDate | 'var --
-	uiZone $222222 sdlcolor uilFill |overfil uiRFill
+	uiZone $222222 color uilFill |overfil uiRFill
 	'datefoco uiFocus |'datefocoini w/foco
 	mark @ ,64>dtd 0 ,c	empty here 
 	ttwritec ui.. ;
@@ -228,7 +228,7 @@
 :timefoco
 	cx cy 0.2 %h - 0.1 %w 0.4 %h 
 	'uiHMS uisaveLast
-|	cifoc sdlColor uiRRect
+|	cifoc color uiRRect
 	sdlkey
 	<tab> =? ( tabfocus )
 	drop ;

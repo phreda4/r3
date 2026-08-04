@@ -31,7 +31,7 @@
 	dup .radio @
 	over .x @ int. over 1 + 1 >> - 		| radio xmin
 	pick2 .y @ int. pick2 1 + 1 >> - 	| radio ymin ymin
-	rot dup SDLfRect
+	rot dup frect
 	drop
 	;
 	
@@ -62,7 +62,7 @@
 	;	
 
 :drawhit
-	$ffffff sdlcolor
+	$ffffff color
 	H2d.list
 	( 1? 1 - swap
 		d@+ dup
@@ -137,7 +137,7 @@
 	
 |------------------------------
 :main
-	$0 SDLcls
+	$0 cls
 	
 	H2d.clear
 	'arr p.draw

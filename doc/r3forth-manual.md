@@ -1112,35 +1112,35 @@ SDL2 2D drawing primitives, sprite/tileset system.
 #### Color and State
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `SDLColor` | `col --` | set draw color (RGB packed) |
-| `SDLColorA` | `col --` | set draw color with alpha |
-| `SDLcls` | `color --` | clear screen with color |
+| `color` | `col --` | set draw color (RGB packed) |
+| `colorA` | `col --` | set draw color with alpha |
+| `cls` | `color --` | clear screen with color |
 
 #### Drawing Primitives
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `SDLPoint` | `x y --` | draw point |
-| `SDLGetPixel` | `x y -- v` | get pixel color |
-| `SDLLine` | `x1 y1 x2 y2 --` | draw line |
-| `SDLLineH` | `x y x2 --` | horizontal line |
-| `SDLLineV` | `x y y2 --` | vertical line |
-| `SDLRect` | `x y w h --` | draw hollow rectangle |
-| `SDLFRect` | `x y w h --` | draw filled rectangle |
+| `point` | `x y --` | draw point |
+| `getpixel` | `x y -- v` | get pixel color |
+| `line` | `x1 y1 x2 y2 --` | draw line |
+| `lineH` | `x y x2 --` | horizontal line |
+| `lineV` | `x y y2 --` | vertical line |
+| `rect` | `x y w h --` | draw hollow rectangle |
+| `frect` | `x y w h --` | draw filled rectangle |
 | `SDLEllipse` | `rx ry x y --` | draw hollow ellipse |
-| `SDLFEllipse` | `rx ry x y --` | draw filled ellipse |
-| `SDLTriangle` | `x1 y1 x2 y2 x3 y3 --` | draw filled triangle |
-| `SDLRound` | `r x y w h --` | draw rounded rectangle (hollow) |
-| `SDLFRound` | `r x y w h --` | draw rounded rectangle (filled) |
-| `SDLCircle` | `r x y --` | draw circle |
-| `SDLFCircle` | `r x y --` | draw filled circle |
+| `fellipse` | `rx ry x y --` | draw filled ellipse |
+| `triangle` | `x1 y1 x2 y2 x3 y3 --` | draw filled triangle |
+| `round` | `r x y w h --` | draw rounded rectangle (hollow) |
+| `fround` | `r x y w h --` | draw rounded rectangle (filled) |
+| `circle` | `r x y --` | draw circle |
+| `fcircle` | `r x y --` | draw filled circle |
 
 #### Image and Texture Drawing
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `SDLImage` | `x y img --` | draw texture at x,y |
-| `SDLImages` | `x y w h img --` | draw texture stretched to w×h |
-| `SDLImageb` | `box img --` | draw texture to box rect |
-| `SDLImagebb` | `srcbox dstbox img --` | draw sub-region to box |
+| `image` | `x y img --` | draw texture at x,y |
+| `images` | `x y w h img --` | draw texture stretched to w×h |
+| `imageb` | `box img --` | draw texture to box rect |
+| `imagebb` | `srcbox dstbox img --` | draw sub-region to box |
 
 #### Tileset System
 Tileset: a single image divided into equal-sized tiles. Each tile has an index `n`.

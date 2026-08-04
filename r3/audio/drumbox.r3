@@ -79,11 +79,11 @@
 	;
 	
 :paso
-	$ff00 sdlcolor
-	tiempo 2 >> 240 + 20 20 20 SDLFrect
+	$ff00 color
+	tiempo 2 >> 240 + 20 20 20 frect
 	tiempo 100 >? ( drop ; ) drop
-	$ff sdlcolor
-	200 0 20 20 SDLFrect	
+	$ff color
+	200 0 20 20 frect	
 	;
 
 |------- timeline
@@ -94,11 +94,11 @@
 		swap >>0 swap 1 + ) 2drop ;
 
 :colorcell | cell -- 
-	0? ( drop sdlrect ; ) drop
-	sdlfrect ;
+	0? ( drop rect ; ) drop
+	frect ;
 	
 :drawgrid
-	$666666 sdlcolor
+	$666666 color
 	'tgrid >a
 	0 ( lgrid <?
 		0 ( cntlist <? 
@@ -117,7 +117,7 @@
 	
 :game
 	timer.
-	$0 SDLcls
+	$0 cls
 	
 	uiStart 
 	2 1 uiPading
@@ -140,8 +140,8 @@
 	'clickcell uiClk
 	uiBackBox
 
-	$ff00 sdlcolor
-	cx ntime boxsize * + cy cntlist boxsize * + boxsize dup sdlfrect
+	$ff00 color
+	cx ntime boxsize * + cy cntlist boxsize * + boxsize dup frect
 	
 	tclock
 	

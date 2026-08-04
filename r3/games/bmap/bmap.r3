@@ -343,7 +343,7 @@
 	
 |----- JUGAR
 :jugar
-	0 SDLcls
+	0 cls
 	inisprite
 	'obj p.draw
 	drawmaps

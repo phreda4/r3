@@ -23,7 +23,7 @@
 
 #xo #yo	
 :op 'yo ! 'xo ! ;
-:lineo 2dup xo yo SDLLine 'yo ! 'xo ! ;
+:lineo 2dup xo yo line 'yo ! 'xo ! ;
 
 :makeGround
 	'grd >a
@@ -54,12 +54,12 @@
 	;
 
 :stars
-	$ffffff SDLColor 
+	$ffffff color 
 	'astars >b
 	100 ( 1? 1 -
 		db@+
 		dup $ffff and swap 16 >>
-		SDLPoint
+		point
 		) drop ;
 
 :keyboard
@@ -114,7 +114,7 @@
 #timee
 
 :crash
-	0 SDLcls
+	0 cls
 	stars
 	ground
 
@@ -131,7 +131,7 @@
 	;
 	
 :game
-	0 SDLcls
+	0 cls
 	
 	stars
 	ground
