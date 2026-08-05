@@ -2,45 +2,36 @@
 
 ## Introduction
 
-R3forth is a concatenative stack-based programming language that uses Reverse Polish Notation (RPN). This manual explains how to systematically translate C code to R3forth.
+R3forth is a concatenative, stack-based language using Reverse Polish Notation (RPN). This manual gives the rules and patterns needed to systematically translate C code to R3forth. Words are case-insensitive.
 
 ---
 
 ## Fundamental Concepts
 
-### Type System and Memory
+### Memory Cells
 
-#### Memory Cells
-- **All cells are 64 bits (8 bytes)**
-- A variable defined with `#` stores a 64-bit value
-- No separate types: integers and fixed-point use the same format
+- All cells are **64 bits (8 bytes)**.
+- A variable defined with `#` stores one 64-bit cell.
+- No separate types: integers and fixed-point numbers use the same 64-bit format.
 
-#### Fixed Point 48.16
-Decimal numbers are represented in fixed-point format:
-- 48 bits: integer part
-- 16 bits: fractional part
-- **Same access as integers** (no special access operators)
+### Fixed Point 48.16
+
+Real numbers are stored as fixed-point: 48 integer bits + 16 fractional bits. Same storage and access as integers — only the arithmetic words differ (`*.`, `/.` instead of `*`, `/`).
 
 ```r3
-| Define variables
 #x 100
 #y 1.5
-
-| Use values
-x y *.    | multiply 100 * 1.5 (fixed point)
+x y *.    | 100 * 1.5, fixed point
 ```
 
 ### Postfix Notation
 
-**Fundamental rule**: Operands come first, then the operator.
+Operands first, operator last.
 
 ```c
-// C
 int result = (a + b) * c;
 ```
-
 ```r3
-| R3forth
 a b + c *
 ```
 
@@ -48,66 +39,39 @@ a b + c *
 
 ## Variables and Memory Access
 
-### Variable Definition
-
 ```r3
-#var              | One cell (8 bytes), value 0
-#var 100          | One cell, value 100
-#var 10 20        | Two consecutive cells: 10, 20
-#buffer * 1000    | 1000 bytes (zro buffer)
+#var              | one cell (8 bytes), value 0
+#var 100          | one cell, value 100
+#var 10 20        | two consecutive cells: 10, 20
+#buffer * 1000    | 1000 bytes, zeroed
 ```
 
-### Access Methods
-
 ```r3
-| Define variable
 #x 50
 
-| 1. By NAME (pushes the VALUE)
-x             | Pushes: 50
-
-| 2. By ADDRESS with '
-'x            | Pushes: address of x
-
-| 3. Read from address with @
-'x @          | Pushes: value at x (50)
-              | Equivalent to: x
-
-| 4. Write to address with !
-100 'x !      | x is now 100
-
-| 5. Modify value with +!
-5 'x +!       | x = x + 5
+x             | value of x        -> 50
+'x            | address of x
+'x @          | read at address   -> 50 (same as `x`)
+100 'x !      | write: x = 100
+5 'x +!       | modify: x = x + 5
 ```
 
-**Critical rule**:
-- `x` → value of x
-- `'x` → address of x
-- Memory operators (`!`, `@`, `+!`) **always** require address
-
-### Comparative Examples
+**Rule**: `x` is the value, `'x` is the address. `!`, `@`, `+!` always operate on an address.
 
 ```c
-// C
 int x = 100;
 x = x + 5;
 y = x * 2;
 x += 10;
 ```
-
 ```r3
-| R3forth
 #x 100
 5 'x +!           | x = x + 5
 x 2 * 'y !        | y = x * 2
 10 'x +!          | x += 10
 ```
 
----
-
-## Memory Access Sizes
-
-R3 provides different operators depending on data size:
+### Memory Access Sizes
 
 | Size  | Read | Write | Read+ | Write+ | Bytes |
 |-------|------|-------|-------|--------|-------|
@@ -116,162 +80,140 @@ R3 provides different operators depending on data size:
 | dword | `d@` | `d!`  | `d@+` | `d!+`  | 4     |
 | qword | `@`  | `!`   | `@+`  | `!+`   | 8     |
 
-**Important**: The `@+` and `!+` operators **increment** the address by the data size:
-- `c@+` increments +1
-- `w@+` increments +2  
-- `d@+` increments +4
-- `@+` increments +8
+The `@+`/`!+` variants **advance the address by the size read/written** — `c@+` by 1, `w@+` by 2, `d@+` by 4, `@+` by 8. Never assume +1. Their stack effect is `addr -- new_addr value` — the incremented address ends up *under* the value, not on top, so chaining raw calls means juggling with `swap`:
 
 ```r3
-| Read consecutive bytes
 #buffer * 100
-'buffer c@+ swap   | Read byte at [0], leaves address [1]
-        c@+ swap   | Read byte at [1], leaves address [2]
-        c@  swap   | Read byte at [2]
-        4drop  | Clean stack: v1 v2 v3 adress
+'buffer c@+           | new_addr v0
+        swap c@+      | v0 new_addr2 v1
+        swap c@+      | v0 v1 new_addr3 v2
+        nip           | v0 v1 v2   (drop the now-unneeded address)
 ```
+
+This is exactly why registers exist: `ca@+`/`ca@` do the same increment in A, off the stack, so nothing needs swapping:
+
+```r3
+'buffer >a
+ca@+ ca@+ ca@         | v0 v1 v2 — no swaps, no address to clean up
+```
+
+Prefer the register form whenever you're reading more than one value in sequence.
 
 ---
 
 ## Control Structures
 
-### Conditionals
-
-#### IF without ELSE
+### IF without ELSE
 
 ```c
-// C
 if (x > 5) {
     doSomething();
 }
 doAlways();
 ```
-
 ```r3
-| R3forth
-x 5 >? ( drop doSomething ) drop
+x 5 >? ( doSomething ) drop
 doAlways
 ```
 
-**CRITICAL**: Comparisons in R3 **only consume TOS** (top of stack).
+**Comparisons only consume TOS.** `a b <?` compares `a < b`, consumes `b`, leaves `a` on the stack. `x` is still there after the test either way, so it needs exactly **one** `drop` — placed *after* the block, so it runs whether or not the block ran. Do **not** also `drop` inside the block: that only balances the true branch, and leaves the false branch (block skipped) one item too high — or, if `doSomething` itself doesn't produce a replacement value, an outright stack mismatch between branches. `doSomething` here must not touch `x` (leave the stack as it found it); if it needs to consume `x`, see the early-exit pattern below instead.
+
+### Stack balance is a choice, not automatic
+
+R3 never balances the stack for you — *you* decide how. There are exactly two shapes that stay correct, and mixing them is the most common source of bugs:
+
+- **Pass-through**: the block leaves the tested value in place (doesn't drop or consume it), so one `drop` *after* the block balances both branches, taken or not.
+- **Early exit**: the block consumes the value and ends the word with `;`. Code after the block then only ever runs on the branch where the block was skipped, so it starts from a clean, independent stack — no shared drop needed. This is the pattern the real codebase uses almost everywhere a value must be consumed inside the branch:
 
 ```r3
-a b <?          | Compares: a < b
-                | Consumes: b (TOS)
-                | Leaves: a on stack
+| games/minesweeper.r3
+1 >? ( drop marca ; ) drop
 ```
 
-#### IF-ELSE Pattern
+Here the true branch drops the tested value, calls `marca`, and exits — it never reaches the trailing `drop`. The false branch skips the block entirely, so the trailing `drop` is what cleans it up. Two different paths, each independently balanced — never both `drop`s executing back to back.
 
-R3 **has no ELSE**. Use early exit with `;`:
+### IF-ELSE
+
+R3 has no `else`. Use early exit with `;`: any conditional test can be followed by a block, and a `;` inside that block returns from the word immediately, so code after the block only runs when the test was false.
 
 ```c
-// C
 if (condition) {
     branch1();
 } else {
     branch2();
 }
 ```
-
 ```r3
-| R3forth - Early exit
 :myword
-    condition? ( branch1 ; )  | If true: execute and exit
-    branch2 ;                 | If false: continue here
+    condition? ( branch1 ; )  | true: run branch1 and return
+    branch2 ;                 | false: falls through to here
 ```
 
-Alternative with helper word:
+`condition?` above stands for any test ending in `?` (`0?`, `=?`, a user word, ...) — whatever leaves a true/false result for the block to act on.
 
-```r3
-:true_branch
-    branch1 ;
-
-:myword
-    condition? ( true_branch ; )
-    branch2 ;
-```
-
-#### SWITCH/CASE
+### SWITCH/CASE
 
 ```c
-// C
 switch(type) {
     case 0: action0(); break;
     case 1: action1(); break;
-    case 2: action2(); break;
     default: actionDefault();
 }
 ```
-
 ```r3
-| R3forth
 type
 0 =? ( drop action0 ; )
 1 =? ( drop action1 ; )
-2 =? ( drop action2 ; )
 drop actionDefault ;
 ```
 
 ### Loops
 
-#### Countdown Loop (PREFERRED - faster)
+`(` opens a repeating block; it loops back to `(` as long as the value tested at that point is non-zero. Each iteration must leave the stack the same height it started with.
 
+**Countdown (preferred — `1?` doesn't consume, so it's cheaper):**
 ```c
-// C
 for (int i = 10; i > 0; i--) {
     process(i);
 }
 ```
-
 ```r3
-| R3forth
-10 ( 1? 1-       | While != 0, decrement
-    process      | need dup if process consume (you choose)
+10 ( 1? 1-
+    dup process   | dup if process consumes the count
 ) drop
 ```
 
-**Why preferred**: `1?` doesn't consume the value, it's more efficient.
-
-#### Count-up Loop
-
+**Count-up**, matching `for (i = 0; i < 10; i++)` — increment *after* using `i`, so `process` sees 0..9:
 ```c
-// C
 for (int i = 0; i < 10; i++) {
     process(i);
 }
 ```
-
 ```r3
-| R3forth
-0 ( 10 <? 1+      | While < 10, increment
+0 ( 10 <?
     dup process
+    1+
 ) drop
 ```
+(Incrementing *before* `process` instead is also valid R3 — it just shifts what `process` receives to 1..10. Pick the order that matches the range you need.)
 
-#### While Loop
-
+**While:**
 ```c
-// C
 while (condition()) {
     body();
 }
 ```
-
 ```r3
-| R3forth
-( condition 1? drop | need the word leave a 1 or 0 for while condition
+( condition 1? drop   | condition must leave a 0/1 for the test
     body
 ) drop
 ```
-
-**Critical rule**: Each iteration MUST leave stack at same height.
 
 ---
 
 ## Conditional Operators
 
-### Stack Tests (DON'T consume)
+### Unary tests (don't consume)
 
 | Word | Test | Stack |
 |------|------|-------|
@@ -280,7 +222,7 @@ while (condition()) {
 | `+?` | `a ≥ 0` | `a -- a` |
 | `-?` | `a < 0` | `a -- a` |
 
-### Comparisons (consume TOS, keep NOS)
+### Binary comparisons (consume TOS, keep NOS)
 
 | Word | Test | Stack |
 |------|------|-------|
@@ -290,317 +232,288 @@ while (condition()) {
 | `<=?` | `a ≤ b` | `a b -- a` |
 | `>=?` | `a ≥ b` | `a b -- a` |
 | `<>?` | `a ≠ b` | `a b -- a` |
-
-### Logical Tests (consume TOS)
-
-| Word | Test | Stack |
-|------|------|-------|
-| `and?` | `(a AND b) ≠ 0` | `a b -- a` |
-| `nand?` | `(a NAND b) ≠ 0` | `a b -- a` |
-
-### Range Test (consume two values)
-
-| Word | Test | Stack |
-|------|------|-------|
+| `and?` | `(a and b) ≠ 0` | `a b -- a` |
+| `nand?` | `(a nand b) ≠ 0` | `a b -- a` |
 | `in?` | `b ≤ a ≤ c` | `a b c -- a` |
 
-**Important example**:
 ```r3
 x 5 10 in? ( "Between 5 and 10" print ) drop
 ```
 
-### Usage Pattern
-
+Tested values are never dropped automatically — clean up once, after all the tests:
 ```r3
-| Value persists after test
 x 0? ( "Is zero" print )
-  +? ( "Is positive" print )    | x still on stack
-drop                             | Clean up at end
+  +? ( "Is positive" print )    | x still on stack here
+drop
 ```
 
 ---
 
 ## Arithmetic
 
-### Basic Operations
+| Word | Effect | Description |
+|------|--------|-------------|
+| `+` `-` | `a b -- c` | add / subtract |
+| `*` `/` `mod` | `a b -- c` | multiply / divide / remainder (integer) |
+| `*.` `/.` | `a b -- c` | multiply / divide (fixed point) |
+| `neg` | `a -- -a` | negate |
+| `abs` | `a -- \|a\|` | absolute value |
+
+**Double-precision ops** avoid overflow in the intermediate result — use them for scaling:
 
 | Word | Effect | Description |
 |------|--------|-------------|
-| `+` | `a b -- c` | c = a + b |
-| `-` | `a b -- c` | c = a - b |
-| `*` | `a b -- c` | c = a × b (integers) |
-| `*.` | `a b -- c` | c = a × b (fixed point) |
-| `/` | `a b -- c` | c = a ÷ b (integers) |
-| `/.` | `a b -- c` | c = a ÷ b (fixed point) |
-| `mod` | `a b -- c` | c = a mod b |
-| `neg` | `a -- -a` | Negate |
-| `abs` | `a -- |a|` | Absolute value |
+| `*/` | `a b c -- d` | d = (a×b)÷c, no overflow |
+| `*>>` | `a b c -- d` | d = (a×b)>>c, no loss |
+| `<</` | `a b c -- d` | d = (a<<c)÷b, no loss |
 
-### Double-Precision Arithmetic (CRITICAL)
-
-**Prevents overflow in intermediate calculations**:
-
-| Word | Effect | Description |
-|------|--------|-------------|
-| `*/` | `a b c -- d` | d = (a×b)÷c no overflow |
-| `*>>` | `a b c -- d` | d = (a×b)>>c no loss |
-| `<</` | `a b c -- d` | d = (a<<c)÷b no loss |
-
-**Example**: Scale from 0-100 to 0-255
+```c
+result = (value * 255) / 100;   // can overflow
+```
 ```r3
-| C (can overflow)
-result = (value * 255) / 100;
-
-| R3forth (safe)
-value 255 100 */
+value 255 100 */                | safe
 ```
 
 ### Bit Operations
 
-| Word | Effect | Description |
-|------|--------|-------------|
-| `<<` | `a b -- c` | Shift left |
-| `>>` | `a b -- c` | Shift right (signed) |
-| `>>>` | `a b -- c` | Shift right (unsigned) |
-| `and` | `a b -- c` | Bitwise AND |
-| `or` | `a b -- c` | Bitwise OR |
-| `xor` | `a b -- c` | Bitwise XOR |
-| `not` | `a -- b` | Bitwise NOT |
-| `nand` | `a b -- c` | Bitwise NAND |
+| Word | Effect |
+|------|--------|
+| `<<` `>>` | shift left / signed shift right |
+| `>>>` | unsigned shift right |
+| `and` `or` `xor` `nand` | bitwise ops, `a b -- c` |
+| `not` | bitwise NOT, `a -- b` |
 
 ---
 
 ## Stack Operations
 
-### Basic Manipulation
-
-| Word | Effect | Description |
-|------|--------|-------------|
-| `dup` | `a -- a a` | Duplicate TOS |
-| `drop` | `a --` | Remove TOS |
-| `swap` | `a b -- b a` | Exchange top two |
-| `over` | `a b -- a b a` | Copy second to top |
-| `nip` | `a b -- b` | Remove second |
-| `rot` | `a b c -- b c a` | Rotate three left |
-| `-rot` | `a b c -- c a b` | Rotate three right |
-| `pick2` | `a b c -- a b c a` | Copy third |
-| `pick3` | `a b c d -- a b c d a` | Copy fourth |
-| `pick4` | `a b c d e -- a b c d e a` | Copy fifth |
-
-### Multi-Element
-
-| Word | Effect | Description |
-|------|--------|-------------|
-| `2dup` | `a b -- a b a b` | Duplicate top two |
-| `2drop` | `a b --` | Remove top two |
-| `3drop` | `a b c --` | Remove top three |
-| `4drop` | `a b c d --` | Remove top four |
-| `2over` | `a b c d -- a b c d a b` | Copy 3rd and 4th |
-| `2swap` | `a b c d -- c d a b` | Exchange pairs |
+| Word | Effect |
+|------|--------|
+| `dup` | `a -- a a` |
+| `drop` | `a --` |
+| `swap` | `a b -- b a` |
+| `over` | `a b -- a b a` |
+| `nip` | `a b -- b` |
+| `rot` | `a b c -- b c a` |
+| `-rot` | `a b c -- c a b` |
+| `pick2/3/4` | copy 3rd/4th/5th item to top |
+| `2dup` / `2drop` | duplicate / drop top pair |
+| `3drop` / `4drop` | drop top 3 / 4 |
+| `2over` | `a b c d -- a b c d a b` |
+| `2swap` | `a b c d -- c d a b` |
 
 ---
 
 ## Registers A and B
 
-**Fast temporary storage** for addresses:
+Fast scratch pointers for tight loops. Same operation set for both, prefixed `a`/`b`:
 
-### Register A Operations
+| Word | Effect |
+|------|--------|
+| `>a` / `a>` | store TOS in A / push A |
+| `a+` | add TOS to A |
+| `a@` / `a!` | read/write qword at A |
+| `a@+` / `a!+` | read/write qword at A, then A += 8 |
 
-| Word | Effect | Description |
-|------|--------|-------------|
-| `>a` | `val --` | Load A |
-| `a>` | `-- val` | Push A value |
-| `a+` | `val --` | Add to A |
-| `a@` | `-- val` | Read qword from A |
-| `a!` | `val --` | Write qword to A |
-| `a@+` | `-- val` | Read qword, A+=8 |
-| `a!+` | `val --` | Write qword, A+=8 |
-
-**Size variants**:
-- `ca@`, `ca!`, `ca@+`, `ca!+` (byte, +1)
-- `wa@`, `wa!`, `wa@+`, `wa!+` (word, +2)
-- `da@`, `da!`, `da@+`, `da!+` (dword, +4)
-
-### Register B Operations
-
-Identical to A: `>b`, `b>`, `b+`, `b@`, `b!`, `b@+`, etc.
-
-### Use Case
+Size variants: `ca@`/`ca!`/`ca@+`/`ca!+` (byte, ±1), `wa@…` (word, ±2), `da@…` (dword, ±4). Same set exists for B (`>b`, `b@+`, ...).
 
 ```r3
-| Process array
 'array >a
 100 ( 1? 1-
-    a@+ process    | Read from A and advance +8
+    a@+ process    | read from A, A += 8
 ) drop
 ```
 
-**⚠️ WARNING**: Registers are NOT preserved across word calls.
-
-### Save/Restore Registers
+**Registers are global and not preserved across word calls.** They're not local loop variables — they're two shared slots the whole program uses. If `process` above also uses `>a`/`a@+` internally (directly, or through *anything it calls*), it silently overwrites your traversal pointer and the loop reads garbage from then on:
 
 ```r3
-ab[               | Save A and B
-'data >a
-| ... use A ...
-]ba               | Restore B and A
+| BROKEN if `process` touches A internally
+'array >a
+100 ( 1? 1-
+    a@+ process    | process() clobbers A -> next a@+ is corrupted
+) drop
 ```
+
+Fix by saving/restoring A (and B) around the call that might reuse them — `ab[` pushes both to the return stack, `]ba` pops and restores them:
+
+```r3
+'array >a
+100 ( 1? 1-
+    a@+ ab[ process ]ba   | A is safe across process, even if it uses A/B
+) drop
+```
+
+Or, cheaper when only the *traversal* needs protecting and `process` is the one using registers internally: keep the pointer in a normal variable instead of a register, and only load it into A for the instruction that actually needs it. As a rule: prefer registers for tight, leaf-level loops that call nothing register-using; reach for `ab[ ]ba` as soon as the loop body calls a word you didn't write yourself (or don't know the internals of).
 
 ---
 
 ## Return Stack
 
-| Word | Effect | Description |
-|------|--------|-------------|
-| `>r` | `a -- (r: -- a)` | Push to return stack |
-| `r>` | `-- a (r: a --)` | Pop from return stack |
-| `r@` | `-- a (r: a -- a)` | Copy top of return stack |
+| Word | Effect |
+|------|--------|
+| `>r` | push TOS to return stack |
+| `r>` | pop return stack to TOS |
+| `r@` | copy top of return stack |
 
-**⚠️ DANGER**: Return stack imbalance will crash. Use with extreme care.
+An unbalanced return stack crashes the word — every `>r` in a word needs a matching `r>` before it returns.
 
 ---
 
 ## Data Structures from C
 
-### Translating Structs
+### Structs
+
+R3 has no struct type — a "struct" is just a plain memory region you index by hand-picked byte offsets. There's no compiler to check field sizes or overlaps, so the offsets in the comments **are** the struct definition; get them wrong and you silently read/write the wrong field. Pack small fields into one cell manually; give each field an offset-based accessor.
 
 ```c
-// C
 typedef struct {
-    uint8_t type;    // offset 0 (1 byte)
-    uint8_t note;    // offset 1 (1 byte)
-    int value;       // offset 8 (64-bit alignment)
+    uint8_t type;   // byte 0
+    uint8_t note;   // byte 1
+    int value;      // offset 8 (next cell)
 } Node;
 ```
+```r3
+| cell 0: type | note (packed)
+| cell 1: value
+
+:n.type     @ $ff and ;        | addr -- type
+:n.note     @ 8 >> $ff and ;   | addr -- note
+:n.value    8 + ;              | addr -- addr_value
+
+:pack_node  | type note value -- addr
+    here >a
+    rot rot 8 << or a!+        | pack type|note
+    a!+                        | value
+    here a> 'here ! ;          | return start address
+
+0 60 100 pack_node 'mynode !
+mynode n.type       | -> 0
+mynode n.note        | -> 60
+mynode n.value @      | -> 100
+```
+
+Field accessors always take an address and return an address or a value — never assume field order in memory matches field order in the C struct unless you laid it out that way on purpose.
+
+**Signed fields need explicit sign extension.** The stack holds signed 64-bit integers, but a mask (`and`) only extracts bits — it never restores a sign bit that used to be bit 7/15/31 of a smaller field. `n.type` above works because unsigned bytes don't need it, but a *signed* 8-bit field needs the sign put back before it's used as a signed value:
 
 ```r3
-| R3forth - In 64-bit cells
-| Cell 0: type | note | padding (packed)
-| Cell 1: value
+| WRONG for a signed byte: $ff and only masks, doesn't sign-extend
+:n.svalue   @ $ff and ;          | -1 stored as byte becomes 255, not -1
 
-| Accessors
-:n.type     @ $ff and ;           | addr -- type
-:n.note     @ 8 >> $ff and ;      | addr -- note
-:n.value    8 + ;                 | addr -- addr_value
-
-| Pack
-:pack_node  | type note value -- adr
-    here >a
-    rot rot 8 << or a!+    |  Pack type|note
-    a!+                     | value
-    here a> 'here ! ;       | start of node
-
-| Use
-0 60 100 pack_node 'mynode !
-mynode n.type    | → 0
-mynode n.note    | → 60
-mynode n.value @ | → 100
+| CORRECT: shift the field up to bit 63, then signed >> back down
+:n.svalue   @ 56 << 56 >> ;      | byte at bit 0..7 -> sign-correct 64-bit value
 ```
+
+The pattern is `<< (64 - field_bits) >> (64 - field_bits)` with a *signed* `>>` — this is how the real libraries sign-extend packed sub-fields (see `varanim.r3`'s `16 << 48 >>` for a packed 16-bit field). Unsigned fields skip this and just `and` with a mask.
+
+**Field layout is a design choice, not just a translation detail.** Pack fields into the same cell when they're always read/written together (like `type`/`note` above) — one `@` fetches both. If fields are accessed independently or don't fit the packing cleanly, give each its own cell instead; the resulting address math (`+ 8`, `+ 16`, ...) is simpler and cheaper than mask/shift for fields you don't always need together.
 
 ### Arrays
 
+Cells are 8 bytes, so index with `<< 3` (×8), not `+1`.
+
 ```c
-// C
 int array[10];
 array[5] = 100;
 x = array[5];
 ```
-
 ```r3
-| R3forth
-#array * 80        | 10 cells * 8 bytes
+#array * 80                 | 10 cells * 8 bytes
 
-| Write
-100 'array 5 3 << + !     | array[5] = 100
-                          | 3 << = *8 (cell size)
-
-| Read
-'array 5 3 << + @         | x = array[5]
+100 'array 5 3 << + !       | array[5] = 100
+'array 5 3 << + @           | x = array[5]
 ```
+
+The shift is `log2(record size in bytes)` — pick it to match your element size, not just single cells:
+
+| Element size | Shift | Meaning |
+|---|---|---|
+| 8 bytes (1 cell) | `3 <<` | index × 8 |
+| 16 bytes (2 cells) | `4 <<` | index × 16 |
+| 32 bytes (4 cells) | `5 <<` | index × 32 |
+
+i.e. an array of the `Node` struct above (2 cells = 16 bytes/record) is indexed with `5 nodes 4 << + n.value @` — same idea as `array[i]`, just with the stride made explicit.
+
+### Don't reinvent what the libraries already do
+
+Before hand-rolling packing, string, or math helpers, check `r3forth-lib-*.md` (`core`, `mem`, `str`, `math`) — most common C idioms (bounds clamping, string copy/compare, array fill, random ranges) already exist as words. Translating C byte-for-byte into raw mask/shift/loop code when a library word already does it is extra bugs for no benefit.
+
+### Storing and running code from a variable
+
+A word's address (`'word`) is just a 64-bit value — it can be stored in a variable like any other, fetched later, and run with `EX`. This is how C-style callbacks/function pointers translate:
+
+```c
+void (*handler)(int) = on_click;
+handler(5);
+```
+```r3
+#handler 0
+'on_click 'handler !     | store the address
+5 handler EX             | fetch it and run it
+```
+
+`EX` just jumps to the address on TOS — it doesn't know or check the stack effect of what it calls. Keep the stack coherent yourself: decide a fixed signature for anything you'll call this way (e.g. "takes one value, leaves nothing") and make every word you might store there follow it, the same discipline as a C function-pointer type.
 
 ---
 
 ## Definition Order
 
-**CRITICAL**: In R3 you CANNOT use a word before defining it.
+Words must be defined before use — no forward references.
 
 ```r3
-| ✗ INCORRECT
+| wrong
 :main helper ;
 :helper "text" print ;
 
-| ✓ CORRECT
+| correct
 :helper "text" print ;
 :main helper ;
-```
-
-**Dependency order**:
-```
-base_function
-    ↓
-intermediate_function (uses base_function)
-    ↓
-main_function (uses intermediate_function)
 ```
 
 ---
 
 ## Common Patterns
 
-### Safe Division
-
 ```c
-// C
 int safe_div(int a, int b) {
     if (b == 0) return 0;
     return a / b;
 }
 ```
-
 ```r3
-| R3forth
 :safe_div | a b -- result
-    0? ( nip ; )  | If b=0, leave a and exit
-    / ;           | Otherwise, divide
+    0? ( nip ; )   | b = 0: keep a, return it
+    / ;
 ```
 
-### Clamp/Bounds
-
 ```c
-// C
 int clamp(int val, int min, int max) {
     if (val < min) return min;
     if (val > max) return max;
     return val;
 }
 ```
-
 ```r3
-| R3forth
 :clamp | val min max -- clamped
-    rot over >? ( drop nip ; ) nip     | Check minimum
-    over <? ( drop ; ) nip ;       | Check maximum
+    rot over >? ( drop nip ; ) nip     | below min
+    over <? ( drop ; ) nip ;           | above max
 ```
 
-### Process Array
-
 ```c
-// C
 void process_array(int* arr, int count) {
     for (int i = 0; i < count; i++) {
         process(arr[i]);
     }
 }
 ```
-
 ```r3
-| R3forth - Option 1
+| without registers
 :process_array | addr count --
     ( 1? 1-
         swap @+ process swap
     ) 2drop ;
 
-| R3forth - Option 2 (with register)
+| with register A
 :process_array | addr count --
     swap >a
     ( 1? 1-
@@ -612,89 +525,51 @@ void process_array(int* arr, int count) {
 
 ## Converting C Functions
 
-### Simple Function
-
 ```c
-// C
 int add_five(int x) {
     return x + 5;
 }
 ```
-
 ```r3
-| R3forth
 :add_five | x -- result
     5 + ;
 ```
 
-### Function with Multiple Returns
-
 ```c
-// C
 int classify(int x) {
     if (x < 0) return -1;
     if (x == 0) return 0;
     return 1;
 }
 ```
-
 ```r3
-| R3forth
 :classify | x -- class
-    -? ( drop -1 ; )    | Negative
-    0? ( ; )            | Zero
-    drop 1 ;            | Positive
+    -? ( drop -1 ; )
+    0? ( ; )
+    drop 1 ;
 ```
-
-### Function with Local Variables
 
 ```c
-// C
 int calculate(int a, int b) {
     int temp = a * 2;
-    int result = temp + b;
-    return result;
+    return temp + b;
 }
 ```
-
 ```r3
-| R3forth - Option 1: No variables
+| option 1: no locals needed
 :calculate | a b -- result
     swap 2 * + ;
 
-| R3forth - Option 2: With return stack
+| option 2: return stack as scratch
 :calculate | a b -- result
     >r 2 * r> + ;
-
----
-
-## Translation Checklist
-
-### ✓ Do:
-1. Define all words BEFORE using them
-2. Balance stack in every word
-3. Use countdown loops with `1?` when possible
-4. Drop values after conditionals
-5. Use early exit `;` instead of IF-ELSE
-6. Comment stack effects: `| before -- after`
-7. Use `*/` for safe scaling
-8. Use `'var` for memory operations
-
-### ✗ Don't:
-1. Forward references
-2. Assume IF-ELSE exists
-3. Forget that conditionals KEEP the tested value
-4. Use registers across calls without saving
-5. Assume `@+` always increments +1
-6. Use `x` when you need `'x` for memory
-7. Forget that cells are 8 bytes
+```
 
 ---
 
 ## Complete Example: C → R3forth
 
 ```c
-// C
 #include <stdio.h>
 
 int fibonacci(int n) {
@@ -709,87 +584,55 @@ int main() {
     return 0;
 }
 ```
-
 ```r3
-| R3forth
 ^r3/lib/console.r3
 
 :fibonacci | n -- fib(n)
-    1 <=? ( ; )              | If n≤1, return n
-    dup 1 - fibonacci            | fib(n-1)
-    swap 2 - fibonacci           | fib(n-2)
-    + ;                          | add
+    1 <=? ( ; )                  | n <= 1: return n
+    dup 1 - fibonacci
+    swap 2 - fibonacci
+    + ;
 
 :main | --
-    10 0 ( over <? 
+    10 0 ( over <?
         dup fibonacci "%d " .print
         1+
-    ) 2drop 
+    ) 2drop
     .cr ;
 
-: main ;
+: main ;    | invoke main at load time
 ```
 
 ---
 
-## Common Errors
+## Translation Checklist
 
-### Error 1: Confusing value with address
+1. Define every word before it's used.
+2. Balance the stack in every word and every loop iteration — pick pass-through (drop once, after the block) or early-exit (drop inside, then `;`), never mix the two for the same value.
+3. Prefer countdown loops with `1?` — it doesn't consume.
+4. `drop` values left over after conditionals.
+5. Use early exit (`;` inside a block) instead of reaching for if-else.
+6. Comment stack effects: `| before -- after`.
+7. Use `*/` (and `*>>`, `<</`) instead of `* /` when the intermediate product can overflow.
+8. Use `'var` for `!`/`@`/`+!` — never the bare value.
+9. `@+`/`!+` advance by the *access size*, not always by 8.
+10. Save registers (`ab[ ... ]ba`) before calling anything that might reuse A/B.
+
+### Frequent mistakes
 
 ```r3
-| ✗ INCORRECT
+| value vs address
 #x 100
-x !               | Error: x is the value, not address
+x !               | wrong: x is a value, ! needs an address
+50 'x !           | correct
 
-| ✓ CORRECT
-#x 100
-50 'x !           | 'x is the address
-```
-
-### Error 2: Forgetting DROP after conditionals
-
-```r3
-| ✗ INCORRECT
+| forgetting to drop after a conditional chain
 x 0? ( "zero" print )
-  5 =? ( "five" print )
-| x still on stack!
+drop              | needed even if no branch matched
 
-| ✓ CORRECT
-x 0? ( "zero" print )
-  5 =? ( "five" print )
-drop
-```
-
-### Error 3: Forward references
-
-```r3
-| ✗ INCORRECT
-:main helper ;
-:helper ... ;
-
-| ✓ CORRECT
-:helper ... ;
-:main helper ;
-```
-
-### Error 4: Overflow in calculations
-
-```r3
-| ✗ CAN OVERFLOW
-big_number 1000 * 1000000 /
-
-| ✓ SAFE
-big_number 1000 1000000 */
-```
-
-### Error 5: Assuming +1 increment
-
-```r3
-| ✗ INCORRECT (assumes +1)
-'buffer @+ swap @+ swap @+    | Reads at offsets 0, 8, 16 (not 0,1,2)
-
-| ✓ CORRECT for consecutive bytes
-'buffer c@+ swap c@+ swap c@+  | Reads at offsets 0, 1, 2
+| wrong access size for consecutive bytes
+'buffer @+ swap @+   | reads offsets 0, 8 (qword step) — probably not what you want
+'buffer c@+ swap c@+  | reads offsets 0, 1
 ```
 
 ---
@@ -798,24 +641,22 @@ big_number 1000 1000000 */
 
 | Concept | C | R3forth |
 |---------|---|---------|
-| Variables | `int x = 5;` | `#x 5` |
-| Access value | `x` | `x` |
-| Access address | `&x` | `'x` |
-| Assignment | `x = 10;` | `10 'x !` |
+| Declare variable | `int x = 5;` | `#x 5` |
+| Read value | `x` | `x` |
+| Take address | `&x` | `'x` |
+| Assign | `x = 10;` | `10 'x !` |
 | Increment | `x += 5;` | `5 'x +!` |
-| If-else | `if {} else {}` | `condition? ( ; ) else_code` |
-| For loop | `for(;;)` | `( 1? 1- ... )` |
-| Arrays | `arr[i]` | `'arr i 3 << + @` |
-| Structs | `node.field` | `node field_offset + @` |
+| If/else | `if {} else {}` | `test? ( ...; ) ...` |
+| For loop | `for(;;)` | `count ( test ... ) drop` |
+| Array index | `arr[i]` | `'arr i 3 << + @` |
+| Struct field | `node.field` | `node field_offset + @` |
 
 ---
 
-## Resources and References
+## Further Reading
 
-For more details about R3forth, consult the complete manual `r3forth-guide.md` which includes:
-- Complete word dictionary
-- Standard library details
-- Advanced examples
-- Design patterns
+- `r3forth_reference.md` — full word dictionary and quick-reference card
+- `r3forth-manual.md` — complete language and library manual
+- `r3-to-forth-guide.md` — extended C-to-R3forth translation guide with more examples
 
-**Remember**: R3forth favors factoring code into small, single-purpose words rather than complex control structures.
+R3forth favors factoring code into small, single-purpose words over nested control structures — when a translation feels awkward, splitting it into another word is usually the fix.
