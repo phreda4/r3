@@ -91,15 +91,14 @@
 	
 ::pow2.d | y -- r
 	dup $ffffffff and
-| Esquema de Horner de grado 8 2^f (32.32)
-	5676
-	over *.d 65510 +
-	over *.d 661580 +
-	over *.d 5726713 +
-	over *.d 41309489 +
-	over *.d 238389658 +
-	over *.d 1031768875 +
-	over *.d 2977044471 + 
+    | Polinomio grado 7 Minimax (Remez), err max 2.33e-10 (piso Q32.32)
+	89118                      | c7 = 0.0000207489
+	over *.d 627254 +          | c6 = 0.0001460394
+	over *.d 5750807 +         | c5 = 0.0013389...
+	over *.d 41300961 +        | c4 = 0.0096169...
+	over *.d 238389783 +       | c3 = 0.0555005...
+	over *.d 1031764899 +      | c2 = 0.2402266...
+	over *.d 2977044473 +      | c1 = 0.6931471...
     *.d $100000000 +          | +1.0
 	swap 32 >>
 	+? ( << ; ) neg >> ;	
