@@ -91,10 +91,15 @@
 	
 ::pow2.d | y -- r
 	dup $ffffffff and
-    | Polinomio grado 3 Minimax
-    335407021                 | c3 = 0.078093
-    over *.d 970921703 +      | c2 = 0.226065
-    over *.d 2988615740 +     | c1 = 0.695842
+| Esquema de Horner de grado 8 2^f (32.32)
+	5676
+	over *.d 65510 +
+	over *.d 661580 +
+	over *.d 5726713 +
+	over *.d 41309489 +
+	over *.d 238389658 +
+	over *.d 1031768875 +
+	over *.d 2977044471 + 
     *.d $100000000 +          | +1.0
 	swap 32 >>
 	+? ( << ; ) neg >> ;	
