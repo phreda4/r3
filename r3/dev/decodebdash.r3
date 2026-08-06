@@ -16,8 +16,10 @@ $FF )
 	
 :nextRandom 
 	randseed2 rotr8 $13 +
-	dup 8 >> swap $ff and 'randseed2 !
-	randseed2 2/ + randseed1 rotr8 + $ff and 'randseed1 !
+	dup 8 >> swap $ff and 
+	dup 'randseed2 !
+	2/ + randseed1 rotr8 + $ff and 
+	'randseed1 !
 	;
 
 |------------ DECODE
