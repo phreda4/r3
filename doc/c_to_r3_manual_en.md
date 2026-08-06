@@ -19,9 +19,9 @@ R3forth is a concatenative, stack-based language using Reverse Polish Notation (
 Real numbers are stored as fixed-point: 48 integer bits + 16 fractional bits. Same storage and access as integers — only the arithmetic words differ (`*.`, `/.` instead of `*`, `/`).
 
 ```r3
-#x 100
+#x 100.0  | need . 
 #y 1.5
-x y *.    | 100 * 1.5, fixed point
+x y *.    | 100.0 * 1.5, fixed point
 ```
 
 ### Postfix Notation
@@ -84,10 +84,9 @@ The `@+`/`!+` variants **advance the address by the size read/written** — `c@+
 
 ```r3
 #buffer * 100
-'buffer c@+           | new_addr v0
-        swap c@+      | v0 new_addr2 v1
-        swap c@+      | v0 v1 new_addr3 v2
-        nip           | v0 v1 v2   (drop the now-unneeded address)
+'buffer c@+          | new_addr v0
+        swap c@+     | v0 new_addr2 v1
+        c@           | v0 v1 v2  
 ```
 
 This is exactly why registers exist: `ca@+`/`ca@` do the same increment in A, off the stack, so nothing needs swapping:
@@ -180,7 +179,7 @@ for (int i = 10; i > 0; i--) {
 ```r3
 10 ( 1? 1-
     dup process   | dup if process consumes the count
-) drop
+    ) drop
 ```
 
 **Count-up**, matching `for (i = 0; i < 10; i++)` — increment *after* using `i`, so `process` sees 0..9:
@@ -193,7 +192,7 @@ for (int i = 0; i < 10; i++) {
 0 ( 10 <?
     dup process
     1+
-) drop
+    ) drop
 ```
 (Incrementing *before* `process` instead is also valid R3 — it just shifts what `process` receives to 1..10. Pick the order that matches the range you need.)
 
@@ -321,7 +320,7 @@ Size variants: `ca@`/`ca!`/`ca@+`/`ca!+` (byte, ±1), `wa@…` (word, ±2), `da@
 'array >a
 100 ( 1? 1-
     a@+ process    | read from A, A += 8
-) drop
+    ) drop
 ```
 
 **Registers are global and not preserved across word calls.** They're not local loop variables — they're two shared slots the whole program uses. If `process` above also uses `>a`/`a@+` internally (directly, or through *anything it calls*), it silently overwrites your traversal pointer and the loop reads garbage from then on:
@@ -331,7 +330,7 @@ Size variants: `ca@`/`ca!`/`ca@+`/`ca!+` (byte, ±1), `wa@…` (word, ±2), `da@
 'array >a
 100 ( 1? 1-
     a@+ process    | process() clobbers A -> next a@+ is corrupted
-) drop
+    ) drop
 ```
 
 Fix by saving/restoring A (and B) around the call that might reuse them — `ab[` pushes both to the return stack, `]ba` pops and restores them:
@@ -340,7 +339,7 @@ Fix by saving/restoring A (and B) around the call that might reuse them — `ab[
 'array >a
 100 ( 1? 1-
     a@+ ab[ process ]ba   | A is safe across process, even if it uses A/B
-) drop
+    ) drop
 ```
 
 Or, cheaper when only the *traversal* needs protecting and `process` is the one using registers internally: keep the pointer in a normal variable instead of a register, and only load it into A for the instruction that actually needs it. As a rule: prefer registers for tight, leaf-level loops that call nothing register-using; reach for `ab[ ]ba` as soon as the loop body calls a word you didn't write yourself (or don't know the internals of).
