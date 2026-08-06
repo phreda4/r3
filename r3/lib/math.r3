@@ -146,8 +146,6 @@
 		step 2 >> )
 	drop nip 8 << ;
 
-|:mcalc | x bitpos -- m
-|	+? ( >> ; ) neg << ;
 |- shift with sign
 :shift
 	-? ( neg >> ; ) << ;
@@ -158,19 +156,24 @@
 	dup 16 << | x bitpos integer
 	-rot | integer x bitpos
 	neg shift 1.0 - | int xnorm	
-	16515                    | c3
-	over * 16 >> 45416 -     | c2
-	over * 16 >> 94437 +     | c1
+    | Polinomio grado 6 Minimax, err max ~1.5e-5 (piso Q48.16)
+	-2319                    | c6
+	over * 16 >> 9726 +      | c5
+	over * 16 >> -19997 +    | c4
+	over * 16 >> 30797 +     | c3
+	over * 16 >> -47220 +    | c2
+	over * 16 >> 94548 +     | c1
 	* 16 >> + ;
 	
 ::pow2. | y -- r
 	dup $ffff and
-	5118                     | c3 = 0.078093
-	over * 16 >> 14815 +     | c2 = 0.226065
-	over * 16 >> 45603 +     | c1 = 0.695842
+    | Polinomio grado 4 Minimax, err max ~1.5e-5 (piso Q48.16)
+	838                      | c4
+	over * 16 >> 3500 +      | c3
+	over * 16 >> 15772 +     | c2
+	over * 16 >> 45425 +     | c1
 	* 16 >> 1.0 +
-	swap 16 >>
-	+? ( << ; ) neg >> ;
+	swap 16 >> shift ;
 	
 ::pow. | x y -- r
 	|0? ( 2drop 1.0 ; ) 
