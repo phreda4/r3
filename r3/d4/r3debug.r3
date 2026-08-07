@@ -14,6 +14,7 @@
 |--- for show in code
 #codenow -1
 
+#showpanel 0 | panel
 |-------------------------------------
 #topline * 256
 #statusline * 256
@@ -35,7 +36,7 @@
 	cntdicc >=? ( drop "" lwrite ; ) 
 	mark
 	ndicc@ 
-	dup 58 >>> "%d " ,print | nro include
+	|dup 58 >>> "%d " ,print | nro include
 	wcolor dicc>name ,s ,eol 
 	empty
 	here lwrite ;
@@ -68,14 +69,13 @@
 	|.write 
 	.fcr ;
 	
-:scrDicc
-|	flxPush
-|	tuS
-|	rows 2/ flxS
+
+:panelWatch
+
+	cols 2/ flxE
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	fx fy .at
 	|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop
-|	cntdicc localdicc "%d %d" .print
 
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
@@ -84,9 +84,16 @@
 |	flxRest
 |	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
 	
-|	flxPop
+
 	;
 
+:panelInclude
+	5 flxN
+	.reset tuWina $1 "Includes" .wtitle 1 1 flpad 
+	fx fy .at
+	cntdicc localdicc "%d %d" .print
+
+	;
 
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
@@ -243,9 +250,12 @@
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
+
+	showpanel
+	1 and? ( panelwatch )
+	2 and? ( panelinclude )
+	drop
 	
-|	cols 2/ flxE
-|	scrDicc
 	
 	flxRest 
 	tuReadCode 
@@ -264,7 +274,7 @@
 | until stop or error
 	( vmState 1 =? drop
 		inkey 
-		[esc] =? ( *>stop ) 
+		[esc] =? ( *>stop drop ; ) 
 		[f5] =? ( *>stop ) 
 		[f7] =? ( *>stop ) 
 		[f8] =? ( *>stop ) 
@@ -317,6 +327,8 @@
 	
 :stepout
 	vmIP memtokn
+	$ff and 
+	$86 =? ( drop *>stepu ; ) | word; ->jmp
 	$23 =? ( drop *>step ; )
 	drop
 	*>stepo
@@ -334,11 +346,10 @@
 	
 	.cr scrMsg
 	
-|	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
-|	scrTokens
-	
-|	cols 2/ flxE
-|	scrDicc
+	showpanel
+	1 and? ( panelwatch )
+	2 and? ( panelinclude )
+	drop
 	
 	flxRest 
 	tuReadCode 
@@ -349,15 +360,19 @@
 	showbreakpoint	
 	
 	uiKey
-	tueKeyMove	
 	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
 	[f5] =? ( playmode )
-	
+
 	[f7] =? ( *>step )
 	[f8] =? ( stepout )
 	[f9] =? ( *>stepu )
 	
+	showpanel 0? ( swap tueKeyMove swap ) drop
+	
+	tolow
+	$69 =? ( showpanel 2 xor 'showpanel ! ) |iI
+	$77 =? ( showpanel 1 xor 'showpanel ! ) |wW
 	drop 
 	checkerror
 	;
@@ -368,7 +383,7 @@
 |---- build code links
 
 	makelistwords
-|	makelistinc
+	makelistinc
 	
 	clearbp
 	

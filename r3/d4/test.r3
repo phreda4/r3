@@ -8,7 +8,9 @@
 	
 :point | xin --	e	
 	d 9 3 */
-	'd !
+	'd ! 
+	10 4 gcd
+	10 4 gcd
 	;
 : 
 	point
