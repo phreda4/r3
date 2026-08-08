@@ -88,7 +88,8 @@
 	dup 24 >> $ff and 1 max
 	fw over / | cnt len
 	32 over 2/ .nch | espacio
-	4 .bc 7 .fc
+	|4 .bc 7 .fc
+	11 .fc
 	swap 1- ( 1? 	| v len cnt
 		mark
 		rot 				| len cnt v
@@ -105,7 +106,8 @@
 	24 >> $ff and 1 max
 	fw over / | cnt len
 	32 over 2/ .nch | espacio
-	4 .bc 7 .fc
+	|4 .bc 7 .fc
+	11 .fc
 	swap 1- ( 1? 
 		over "─" .rep 
 		1- 1? ( "┼" .write )

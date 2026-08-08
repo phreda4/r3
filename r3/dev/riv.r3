@@ -18,6 +18,7 @@
 #viewy 0
 #vieww 40
 #viewh 20
+#GUTTER 5
 
 #mode 0
 #ncount	
@@ -39,14 +40,23 @@
 #searchpat * 512
 #vstart
 
-#undopos
-#undoold * 4096
-#undooldlen 0
-#undonewlen 0
-#undovalid 0
+#UNDOCAP 58
+#undobuf
+#trashslot * 280
+#undocount 0
+#undoidx 0
+#allocslot
+#insstart
+#indentbuf * 256
+#indentlen
+#wpos
+#wlen
+#eapos
+#eaoldlen
+#eanewlen
 
 :cursorintext
-	curx viewx - 1+ cury viewy - 1+ .at	 ;
+	curx viewx - 1+ GUTTER + cury viewy - 1+ .at	 ;
 	
 :stm0
 	cursorintext
@@ -74,8 +84,14 @@
 	
 #stmodes stm0 stm1 stm2 stm3 stm4 stm5
 |---------------------------
+:printlinenum | n --
+	dup 10 <? ( drop "   " .write "%d " .print ; ) drop
+	dup 100 <? ( drop "  " .write "%d " .print ; ) drop
+	dup 1000 <? ( drop " " .write "%d " .print ; ) drop
+	"%d " .print ;
+
 :drawline
-	vieww ( 1? 1- 
+	vieww GUTTER - ( 1? 1- 
 		ca@+ 0? ( drop 1+ .nsp -1 a+ ; ) 
 		13 =? ( drop 1+ .nsp ; )
 		9 =? ( drop .sp 32  ) 
@@ -86,6 +102,7 @@
 	view> >a
 	viewh 2 -
 	0 ( over <?
+		244 .fc dup viewy + 1+ printlinenum .reset
 		drawline .cr
 		1+ ) drop 
 		
@@ -154,25 +171,86 @@
 	dup 1- swap src$ over - 1+ cmove
 	-1 'src$ +! ;
 
-|--- undo (un nivel)
-:recdel | pos len --
-	dup 'undooldlen !
-	0 'undonewlen !
-	over 'undopos !
-	'undoold -rot cmove
-	1 'undovalid ! ;
+|--- recalcula curx/cury a partir de src> (para saltos como búsqueda/G)
+:synccursor
+	0 'cury !
+	src 'ilinea !
+	src ( src> <?
+		dup c@ 13 =? ( 1 'cury +! over 1+ 'ilinea ! )
+		drop
+		1+ ) drop
+	src> ilinea - 'curx ! ;
 
-:recins | pos len --
-	'undonewlen !
-	'undopos !
-	0 'undooldlen !
-	1 'undovalid ! ;
+|--- undo/redo multinivel (anillo de slots en undobuf)
+| formato de slot (280 bytes): +0 pos(8) +8 oldlen(8) +16 newlen(8) +24 contenido(256: viejo primero, nuevo despues)
+:undoslot | index -- addr
+	280 * undobuf + ;
+
+:undoalloc | -- addr
+	undoidx 'undocount !
+	undocount UNDOCAP >=? ( drop 'trashslot ; ) drop
+	undocount undoslot 'allocslot !
+	1 'undocount +!
+	1 'undoidx +!
+	allocslot ;
+
+:undopushdel | pos len -- ; llamar ANTES de borrar
+	256 >? ( 2drop ; )
+	'wlen ! 'wpos !
+	undoalloc 'allocslot !
+	wpos allocslot !
+	wlen allocslot 8 + !
+	0 allocslot 16 + !
+	allocslot 24 + wpos wlen cmove ;
+
+:undopushins | pos len -- ; llamar DESPUES de insertar
+	256 >? ( 2drop ; )
+	'wlen ! 'wpos !
+	undoalloc 'allocslot !
+	wpos allocslot !
+	0 allocslot 8 + !
+	wlen allocslot 16 + !
+	allocslot 24 + wpos wlen cmove ;
+
+:undo
+	undoidx 0? ( drop ; ) drop
+	-1 'undoidx +!
+	undoidx undoslot 'allocslot !
+	allocslot @ 'eapos !
+	allocslot 8 + @ 'eaoldlen !
+	allocslot 16 + @ 'eanewlen !
+	eapos eanewlen + 'ilinea !
+	eapos ilinea src$ ilinea - 1+ cmove
+	src$ eanewlen - 'src$ !
+	eapos eaoldlen + 'ilinea !
+	ilinea eapos src$ eapos - 1+ cmove>
+	src$ eaoldlen + 'src$ !
+	eapos allocslot 24 + eaoldlen cmove
+	eapos 'src> !
+	synccursor ;
+
+:redo
+	undoidx undocount >=? ( drop ; ) drop
+	undoidx undoslot 'allocslot !
+	allocslot @ 'eapos !
+	allocslot 8 + @ 'eaoldlen !
+	allocslot 16 + @ 'eanewlen !
+	1 'undoidx +!
+	eapos eaoldlen + 'ilinea !
+	eapos ilinea src$ ilinea - 1+ cmove
+	src$ eaoldlen - 'src$ !
+	eapos eanewlen + 'ilinea !
+	ilinea eapos src$ eapos - 1+ cmove>
+	src$ eanewlen + 'src$ !
+	eapos allocslot 24 + eaoldlen + eanewlen cmove
+	eapos 'src> !
+	synccursor ;
 
 |--- dd / yy / p / P (línea completa)
 :dd
 	src> 1- <<13 1+ 'ilinea !
 	ilinea >>13 src$ <? ( 1+ ) 'remend !
-	ilinea remend ilinea - recdel
+	ilinea remend ilinea - undopushdel
 	remend ilinea - 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard
@@ -195,7 +273,7 @@
 :pasteat | at --
 	yanklen 0? ( 2drop ; ) drop
 	dup 'ilinea !
-	dup yanklen recins
+	dup yanklen undopushins
 	dup yanklen + swap src$ over - 1+ cmove>
 	yanklen 'src$ +!
 	ilinea 'yank yanklen cmove ;
@@ -225,6 +303,44 @@
 	'cbbuf yanklen cbfix
 	'yank 'cbbuf yanklen cmove
 	kp ;
+
+|--- cargar / guardar / nuevo archivo
+#cmdarg * 1024
+
+:parsearg | -- ; cmdarg = lo que sigue al primer espacio en pad (o vacio)
+	0 'cmdarg c!
+	'pad ( c@+ 1?
+		32 =? ( drop 'cmdarg strcpy ; )
+		drop
+	) 2drop ;
+
+:updatefilename | -- ; si cmdarg no esta vacio, actualiza 'filename
+	'cmdarg c@ 0? ( drop ; )
+	drop 'cmdarg 'filename strcpy ;
+
+:loadfile | -- ; carga 'filename en el buffer principal
+	src 'filename load
+	0 swap c!
+	src only13 1- 'src$ !
+	src 'src> !
+	0 'curx ! 0 'cury !
+	0 'viewx ! 0 'viewy !
+	0 'undocount ! 0 'undoidx ! ;
+
+:savefile | -- ; guarda src..src$ en 'filename (convierte CR interno a LF)
+	mark
+	src ( c@+ 1?
+		13 =? ( drop 10 ) ,c ) 2drop
+	'filename savemem
+	empty ;
+
+:newfile | -- ; buffer vacio
+	0 src c!
+	src 'src$ !
+	src 'src> !
+	0 'curx ! 0 'cury !
+	0 'viewx ! 0 'viewy !
+	0 'undocount ! 0 'undoidx ! ;
 
 :khome
 	src> 1- <<13 1+ 'src> ! 0 'curx ! ;
@@ -295,26 +411,65 @@
 	modo 'lins =? ( drop 'lover 'modo ! .blockc ; )
 	drop 'lins 'modo ! .insc ;
 
+|--- indentacion automatica (copia espacios/tabs del inicio de una linea)
+:autoindentfrom | linestart --
+	'ilinea !
+	200 ( 1?
+		1-
+		ilinea src$ >=? ( 2drop ; )
+		drop
+		ilinea c@ dup 32 - swap 9 - * 1? ( 2drop ; )
+		drop
+		ilinea c@ modo ex
+		1 'curx +!
+		1 'ilinea +!
+	) drop ;
+
+:autoindent | -- ; copia la indentacion de la linea anterior a src>
+	src> 2 - <<13 1+ autoindentfrom ;
+
+:captureindent | linestart -- ; guarda en indentbuf los espacios/tabs iniciales de linestart
+	'ilinea !
+	0 'indentlen !
+	200 ( 1?
+		1-
+		ilinea src$ >=? ( 2drop ; )
+		drop
+		ilinea c@ dup 32 - swap 9 - * 1? ( 2drop ; )
+		drop
+		ilinea c@ 'indentbuf indentlen + c!
+		1 'indentlen +!
+		1 'ilinea +!
+	) drop ;
+
+:replayindent | -- ; inserta indentbuf (indentlen bytes) en src>
+	0 ( indentlen <?
+		dup 'indentbuf + c@ modo ex
+		1 'curx +!
+		1+
+	) drop ;
+
 :kinstext
 	32 126 in? ( dup modo ex 1 'curx +! )
 	[tab] =? ( dup modo ex 2 'curx +! )
-	[enter] =? ( dup modo ex 0 'curx ! 1 'cury +! )
+	[enter] =? ( dup modo ex 0 'curx ! 1 'cury +! autoindent )
 	;
 
 |--- D (borrar hasta fin de linea)
 :kD
 	src> >>13 'ilinea !
-	src> ilinea src> - recdel
+	src> ilinea src> - undopushdel
 	src> ilinea src$ ilinea - 1+ cmove
 	src$ ilinea src> - - 'src$ ! ;
 
 |--- ~ (toggle mayus/minus y avanza)
 :ktilde
-	src> 1 recdel
-	1 'undonewlen !
+	src> 1 undopushdel
 	src> c@ 'ilinea !
-	ilinea 97 122 in? ( drop ilinea 32 - src> c! kri ; ) drop
+	ilinea 97 122 in? ( ilinea 32 - src> c! ) drop
 	ilinea 65 90 in? ( ilinea 32 + src> c! ) drop
+	1 allocslot 16 + !
+	src> c@ allocslot 25 + c!
 	kri ;
 
 |--- G (ir al final) / gg (ir al inicio)
@@ -328,37 +483,17 @@
 :kopenb
 	kend
 	13 modo ex
-	0 'curx ! 1 'cury +! ;
+	0 'curx ! 1 'cury +!
+	autoindent ;
 
 :kopena
 	khome
-	src> 'ilinea !
+	src> captureindent
+	src> 'wpos !
 	13 modo ex
-	ilinea 'src> !
-	0 'curx ! ;
-
-|--- recalcula curx/cury a partir de src> (para saltos como búsqueda/G)
-:synccursor
-	0 'cury !
-	src 'ilinea !
-	src ( src> <?
-		dup c@ 13 =? ( 1 'cury +! over 1+ 'ilinea ! )
-		drop
-		1+ ) drop
-	src> ilinea - 'curx ! ;
-
-:undo
-	undovalid 0? ( drop ; ) drop
-	0 'undovalid !
-	undopos undonewlen + 'ilinea !
-	undopos ilinea src$ ilinea - 1+ cmove
-	src$ undonewlen - 'src$ !
-	undopos undooldlen + 'ilinea !
-	ilinea undopos src$ undopos - 1+ cmove>
-	src$ undooldlen + 'src$ !
-	undopos 'undoold undooldlen cmove
-	undopos 'src> !
-	synccursor ;
+	wpos 'src> !
+	0 'curx !
+	replayindent ;
 
 |--- movimiento por palabras (w / b)
 :skipword | avanza mientras haya texto no-espacio
@@ -406,7 +541,7 @@
 
 :visdel
 	vrange
-	ilinea remend ilinea - recdel
+	ilinea remend ilinea - undopushdel
 	remend ilinea - 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard
@@ -462,20 +597,21 @@
 		$6B =? ( 'kup vcount ) |k
 		$6C =? ( 'kri vcount ) |l	
 		
-		$78 =? ( src> 1 recdel del ) | x
+		$78 =? ( src> 1 undopushdel del ) | x
 		$44 =? ( kD ) | D
 		$70 =? ( kp ) | p
 		$50 =? ( kP ) | P
 		$7E =? ( ktilde ) | ~
 		$47 =? ( kG ) | G
 		
-		$69 =? ( src> 'undopos ! 1 'mode ! ) | i
-		$41 =? ( kend src> 'undopos ! 1 'mode ! ) | A
-		$49 =? ( khome src> 'undopos ! 1 'mode ! ) | I
-		$6F =? ( kopenb src> 'undopos ! 1 'mode ! ) | o
-		$4F =? ( kopena src> 'undopos ! 1 'mode ! ) | O
-		$72 =? ( chmode src> 'undopos ! 2 'mode ! ) | r
+		$69 =? ( src> 'insstart ! 1 'mode ! ) | i
+		$41 =? ( kend src> 'insstart ! 1 'mode ! ) | A
+		$49 =? ( khome src> 'insstart ! 1 'mode ! ) | I
+		$6F =? ( kopenb src> 'insstart ! 1 'mode ! ) | o
+		$4F =? ( kopena src> 'insstart ! 1 'mode ! ) | O
+		$72 =? ( chmode src> 'insstart ! 2 'mode ! ) | r
 		$75 =? ( undo ) | u
+		$12 =? ( redo ) | ctrl-r (rehacer)
 		$16 =? ( pasteclip ) | ctrl-v (pegar del portapapeles del sistema)
 		$76 =? ( src> 'vstart ! 3 'mode ! ) | v
 		$56 =? ( src> 'vstart ! 4 'mode ! ) | V
@@ -498,7 +634,7 @@
 |---INSERT
 :kins
 	evtkey
-	[esc] =? ( undopos src> undopos - recins 0 'mode ! ) 
+	[esc] =? ( insstart src> insstart - undopushins 0 'mode ! ) 
 	[back] =? ( back )
 	kmovecursor
 	kinstext
@@ -507,7 +643,7 @@
 |---REPLACE
 :krep
 	evtkey
-	[esc] =? ( chmode undopos src> undopos - recins 0 'mode ! ) 
+	[esc] =? ( chmode insstart src> insstart - undopushins 0 'mode ! ) 
 	[back] =? ( back )
 	kmovecursor	
 	kinstext	
@@ -531,12 +667,21 @@
 	$62 =? ( kb ) | b
 	drop ;
 |---CMD
-:excmd | -- ejecuta comando del pad (:w :q :wq)
-	'pad c@ $71 =? ( drop -1 'mode ! ; )		| q
-	'pad c@ $77 =? ( drop
-		src src$ src - 'filename save
+:excmd | -- ejecuta comando del pad (:w [archivo] :wq :q :e archivo :n)
+	'pad c@
+	$71 =? ( drop -1 'mode ! ; )		| q
+	$77 =? ( drop
+		parsearg updatefilename
+		savefile
 		'pad 1+ c@ $71 =? ( drop -1 'mode ! ; )	| wq
 		drop 0 'mode ! ; )				| w
+	$65 =? ( drop
+		parsearg updatefilename
+		loadfile
+		0 'mode ! ; )					| e (abrir archivo)
+	$6E =? ( drop
+		newfile
+		0 'mode ! ; )					| n (nuevo archivo vacio)
 	drop
 	0 'mode ! ;
 
@@ -583,10 +728,14 @@ para probar el editor"
 :
 	mark 
 	here
-	dup 'src ! $ffff +
-	dup 'src$ ! $fff +
-	'here
-	src 'src> !
+	dup 'src ! dup 'src> ! dup 'src$ !
+	$100000 +			| 1MB para el texto
+	dup 'undobuf !
+	16240 +				| ~16KB para 58 registros de undo/redo
+	dup 'trashslot !
+	280 +				| slot basura (historial lleno)
+	'here !
+	mark
 	0 'curx ! 0 'cury !
 	0 'mode !
 	.alsb
@@ -595,7 +744,8 @@ para probar el editor"
 	.ovec
 	"riv.txt" 'filename strcpy
 	'pad 'padp ! 0 'pad c!
-	'test rivMem
+	loadfile
+	src$ src <=? ( drop 'test rivMem ) drop
 	editor
 	.masb 
 	.free

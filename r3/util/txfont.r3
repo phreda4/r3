@@ -112,6 +112,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTab 32 3 << + @	| width ESP
 	dup newTab !			| 0
 	dup newTab 13 3 << + !	| cr
+	dup newTab 10 3 << + !	| ln
 	dup $ffff0000 and 2 << swap $ffffffff0000ffff and or 
 	newTab 9 3 << + !	| tab
 	newTex ;	| reuturn ini font
@@ -133,6 +134,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTab 32 3 << + @	| width ESP
 	dup newTab !			| 0
 	dup newTab 13 3 << + !	| cr
+	dup newTab 10 3 << + !	| ln
 	dup $ffff0000 and 2 << swap $ffffffff0000ffff and or 
 	newTab 9 3 << + !	| tab
 	newTex ;	| reuturn ini font
