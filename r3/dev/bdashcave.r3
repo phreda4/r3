@@ -1,8 +1,6 @@
-^r3/lib/console.r3
-^r3/lib/sdl2gfx.r3
-^r3/util/txfont.r3
+| decode  cave for bdash
 
-#cave * 960 | 40x24
+##cave * 960 | 40x24
 
 #cave1 (
 $01 $14 $0A $0F $0A $0B $0C $0D $0E $0C $0C $0C $0C $0C $96 $6E 
@@ -158,29 +156,36 @@ $C1 $10 $0A $03 $0D $C1 $14 $0A $03 $0D $50 $16 $08 $0C $02 $48
 $16 $07 $0C $02 $C1 $17 $06 $03 $04 $C1 $1B $06 $03 $04 $C1 $1F
 $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 
-#ncaves 20
+##ncaves 20
+
 #cavetab 'cave1 'cave2 'cave3 'cave4 'cave5 'cave6 'cave7 'cave8 'cave9 'cave10
          'cave11 'cave12 'cave13 'cave14 'cave15 'cave16 'cave17 'cave18 'cave19 'cave20
-
-#cavenow
-
+		 
 #randseed1
 #randseed2
-
-:rotr8 | v -- v
-	dup 2/ $7f and swap $1 and 7 << or ;
 	
-:nextRandom 
-	randseed2 rotr8 $13 +
-	dup 8 >> swap $ff and 
-	dup 'randseed2 !
-	2/ + randseed1 rotr8 + $ff and 
-	'randseed1 !
+:nextRandom
+	randseed2 dup 2/ $7f and | s1 tmp2
+	swap dup 1 and $80 * + | tmp2 res
+	dup 8 >> 1 and 			| tmp res carry
+	swap $ff and + $13 +	| tmp res
+	dup 8 >> 1 and 			| tmp res carry
+	swap $ff and 'randseed2 !	| tmp carry
+	randseed1 dup 1 and $80 * + + | tmp carry+s0
+	dup 8 >> 1 and 				| tmp res crry
+	swap $ff and + + 
+	$ff and 'randseed1 !			
 	;
-
+	
 |------------ DECODE
-:cave! | t x y --
-	40 * + 'cave + c! ;
+::cavea | x y -- adr
+	40 * + 'cave + ;
+
+::cave! | t x y --
+	cavea c! ;
+
+::cave@ | x y -- t
+	cavea c@ ;
 
 #ldx (  0   1  1  1  0  -1  -1  -1 )
 #ldy ( -1  -1  0  1  1   1   0  -1 )
@@ -214,9 +219,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 		2over pick2 + pick3 cave!
 		2over pick2 + pick3 h + cave!
 		1+ ) drop
-	1 ( h <?
+	1 ( h <? | t x y h
 		2over 2over + cave!
-		2over 1+ 2over + o -rot w 1 - 2 line!
+		o pick3 1+ pick3 pick3 + w 1- 2 line!
 		2over w + 2over + cave!
 		1+ ) drop
 	3drop ;
@@ -237,6 +242,8 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	
 :decodecave | cave --
 	>a
+	0 'randseed1 !
+	4 ]acave $ff and 'randseed2 ! | + dificult
 	'cave 7 40 22 * cfill
 	3 ( 23 <=? 
 		0 ( 39 <=?
@@ -260,18 +267,17 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	$7 0 2 40 22 rect!
 	;
 	
-:decodecavenow	
-	cavenow 3 << 'cavetab + @ decodecave ;
+::decodecavenow	| ncave --
+	3 << 'cavetab + @ decodecave ;
 	
 
-	
 |------------ SHOW
 #tchars " .wmof*W<<<<>>>>OOoo^^vv                                                "
 :.ec
 	$3f and 'tchars + c@ .emit
 	;
 
-:showsb
+::showsb
 	'cave 80 + >a
 	1 ( 23 <? 1+
 		dup "%d " .print
@@ -281,52 +287,3 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 			) drop
 		.cr
 		) drop ;
-|------------ SPRITES
-#imgspr
-#sprconv ( 57 57 51 50 4 0 57 49 0 0 0 0 0 0 0 56 56 56 56 ) 
-
-
-:drawtile | y x tile -- y x
-	0? ( drop ; )
-	over 32 * 16 +	| x
-	pick3 32 * 16 +	| y
-	rot 
-	'sprconv + c@
-	imgspr ssprite
-	;
-	
-:showcave
-	'cave 80 + >a
-	1 ( 23 <? 1+ 
-		0 ( 40 <? 
-			ca@+ drawtile
-			1+ ) drop
-		) drop ;
-		
-|------------ MAIN	
-:main
-	0 cls
-	showcave
-	$ffffff txrgb
-	0 0 txat
-	ncaves cavenow "%d/%d " txprint
-	sdlRedraw
-	sdlkey
-	>esc< =? ( exit )
-	<up> =? ( cavenow 1- -? ( ncaves 1- nip ) 'cavenow ! decodecavenow )
-	<dn> =? ( cavenow 1+ ncaves >=? ( 0 nip ) 'cavenow ! decodecavenow )
-	drop
-	;
-	
-: 
-	"r3 multisprite" 640 480 SDLinit
-	"media/ttf/VictorMono-Bold.ttf" 32 txload txfont
-	32 32  "media/img/bdash.png" ssload 'imgspr !
-
-	3 'cavenow !
-	decodecavenow
-	showsb .flush
-	
-	'main sdlshow
-
-	;
