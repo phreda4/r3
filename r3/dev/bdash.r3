@@ -7,10 +7,10 @@
 #cavenow
 
 #dir
-#diam
+#diam #diamt
 
-#xview 16 #yview 16
-#xviewd 16 #yviewd 16
+#xview -640.0 #yview -480.0
+#xviewd 16.0 #yviewd 16.0
 
 | --- timer
 #mseca
@@ -32,12 +32,18 @@
  0  0 64  0  0  0  0  0  | $38 a $3F
 )
 
+#aniplayer ( 8 32 40 32 40 ) | dir
 
-
-#AMASK $00000F003F000480 $001000FF00000800
+:player
+	dir 'aniplayer + c@ 
+	|*** wait for piecito
+	globalframe $7 and + ;
+	
+#AMASK $00000F003F000480 $001000FF00000800	
 
 :animasprite | base -- sprite
 	$3f and 
+	$38 =? ( drop player ; ) 
 	'AMASK over 5 >> 3 << + @ over $1f and 2* >> $3 and 
 	1 swap << 1-
 	globalframe and
@@ -46,8 +52,8 @@
 	
 :drawtile | y x tile -- y x
 	0? ( drop ; )
-	over 32 * xview +	| x
-	pick3 32 * yview +	| y
+	over 32 * xview int. +	| x
+	pick3 32 * yview int. +	| y
 	rot 
 	animasprite
 	imgspr ssprite
@@ -90,11 +96,11 @@
 	
 :explode | adr -- adr
 	dup caveup cavele >a
-	$ab ca!+ $ab ca!+ $ab ca! 
+	$9b ca!+ $9b ca!+ $9b ca! 
 	40 2 - a+
-	$ab ca!+ $ab ca!+ $ab ca! 
+	$9b ca!+ $9b ca!+ $9b ca! 
 	40 2 - a+
-	$ab ca!+ $ab ca!+ $ab ca! 
+	$9b ca!+ $9b ca!+ $9b ca! 
 	;
 	
 :killplayer | adr -- adr
@@ -110,12 +116,13 @@
 	$16 =? ( $2 nand over c! ; ) | clear falling
 	$38 =? ( drop killplayer ; ) 
 	drop
+	dup c@ $2 nand over c! | stop falling
 	;
 	
 |--- explosion	
 :t2 | adr --  adr
 	dup c@
-	$2f =? ( drop 0 over c! ; )
+	$1f =? ( drop 0 over c! ; )
 	$24 =? ( drop $14 over c! ; )
 	$28 =? ( drop $38 over c! ; )
 	1+ over c! 
@@ -126,9 +133,19 @@
 
 :deltadir | dir -- delta
 	dir 'dirlist + c@ ;
+
+:adrtoview | adr -- adr
+	dup 'cave -
+	40 /mod 
+	10 - 32.0 * 16.0 max 19 32.0 * 16.0 + min | 10 cells prior with cave limits 
+	neg 'xviewd ! 
+	10 - 32.0 * 16.0 max 19 32.0 * 16.0 + min
+	neg 'yviewd ! ;
 	
 :moveplay
-	$38 $80 or swap c! 0 over c! ;
+	$38 $80 or swap c! 0 over c! 
+	adrtoview
+	;
 	
 :pullrock | adr adrd -- adr
 	dir 3 <? ( 2drop ; ) drop | left or right only
@@ -141,12 +158,6 @@
 	0 over c!
 	;
 	
-:adrtoview | adr -- adr
-	dup 'cave -
-	40 /mod | y x
-	10 - 32 * 16 max 'xviewd !
-	10 - 32 * 16 max 'yviewd !
-	;
 :player
 	deltadir over + dup c@ | adr adrd des@
 	2 <? ( drop moveplay ; ) 
@@ -164,6 +175,7 @@
 #tiposl 't0 't1 't2 't3 	
 :updatetile | celda --
 	-? ( drop ; ) | $80 ready
+	$1b $1f in? ( drop t2 ; )
 	$30 and 4 >> 3 << 'tiposl + @ ex ;
 	
 :updategame
@@ -182,6 +194,15 @@
 	ncaves >=? ( 0 nip )
 	dup 'cavenow ! 
 	decodecavenow 
+	| --- reset game
+	16.0 'xview ! 16.0 'yview !
+	0 'diamt !
+	'cave ( 'cavelast <? c@+ 
+		$26 =? ( $38 nip )
+		$28 =? ( $38 nip )
+		$38 =? ( over 1- adrtoview drop ) 
+		$14 =? ( 1 'diamt +! )
+		drop ) drop 
 	;
 		
 :logic
@@ -198,16 +219,23 @@
 	'globalupdate !
 	; 
 	
+:movecam
+	xview xviewd over - 0.02 *. + 'xview !
+	yview yviewd over - 0.02 *. + 'yview !
+	;
+	
 |------------ MAIN	
 :main
-	logic
-	
 	0 cls	
+	logic
+	movecam
+	showgame
+
 	$ffffff txrgb
 	0 0 txat ncaves cavenow "%d/%d " txprint
-	sw 0 txat diam "%d" txprintr
-
-	showgame
+	sw 0 txat 
+	diamt diam "%d/%d" txprintr
+	|yviewd xviewd "%f %f" txprintr
 	
 	sdlRedraw
 	sdlkey
