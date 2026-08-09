@@ -1,6 +1,6 @@
 | decode  cave for bdash
 
-##cave * 960 | 40x24
+
 
 #cave1 (
 $01 $14 $0A $0F $0A $0B $0C $0D $0E $0C $0C $0C $0C $0C $96 $6E 
@@ -178,6 +178,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	;
 	
 |------------ DECODE
+##cave * 960 | 40x24
+##cavelast
+
 ::cavea | x y -- adr
 	40 * + 'cave + ;
 
@@ -274,7 +277,8 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 |------------ SHOW
 #tchars " .wmof*W<<<<>>>>OOoo^^vv                                                "
 :.ec
-	$3f and 'tchars + c@ .emit
+	|$3f and 'tchars + c@ .emit
+	"%h " .print
 	;
 
 ::showsb

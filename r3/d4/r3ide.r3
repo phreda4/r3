@@ -228,9 +228,7 @@
 :compile
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb .reset .cls
-	"[07Building" .awrite .cr .cr .cr .cr 
-	
-	.cr
+	"Building" .println
 	"Code: " .write 'filename .write .cr .cr
 	cntinc " includes:%d |" .print
 	cntdef " words:%d |" .print

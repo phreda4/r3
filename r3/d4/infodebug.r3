@@ -447,7 +447,9 @@
 	d@+ 'memdsize ! d@+ 'memcsize !
 	@+ 'memcode ! @+ 'memdata !
 	@+ dup 'mdatastack ! 504 3 << + 'mretstack !
-	w@+ 'cntinc ! 'strinc !
+	w@+ 'cntinc ! 
+	'strinc !
+|	cntinc n>>0 'here !
 	here dup "mem/r3dicc.mem" load 'here !
 	'realdicc !
 	|100 ms

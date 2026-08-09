@@ -4,7 +4,6 @@
 ^r3/lib/memshare.r3
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
-
 ^./infodebug.r3
 
 |^r3/lib/trace.r3
@@ -27,6 +26,22 @@
 #lincs
 #lwords
 #lwatch
+
+
+|------------------------
+:typedef $10 and? ( "#" .write ; ) ":" .write ;
+	
+:.fcr .cr fx .col ;
+	
+:.printword | nro -- nro
+	cntdicc <? ( ; )
+	dup ndicc@ |typedef 40 >> realdicc + 
+	|cntdicc 3 << + 
+	dicc>name "%w" .print 
+	|.write 
+	.fcr ;
+|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop	
+|-----------------------------
 	
 :wcolor
 	$10 nand? ( 201 .fc ":" ,s ; ) 196 .fc "#" ,s ;
@@ -44,55 +59,27 @@
 :makelistwords
 	here dup 'lwords !
 	localdicc |0 
-	( cntdicc <?
-		dup 1+ rot w!+ swap
-		1+ ) drop
+	( cntdicc <? 1+
+		dup rot w!+ swap
+		) drop
 	0 swap w!+ 'here ! ;
 
-:makelistinc
-	here dup 'lincs !
-	0 ( cntinc <? 
-		dup 1+ rot w!+ swap
-		1+ )
-	swap w!+ 'here ! ;
-
-
-:typedef $10 and? ( "#" .write ; ) ":" .write ;
-	
-:.fcr .cr fx .col ;
-	
-:.printword | nro -- nro
-	cntdicc <? ( ; )
-	dup ndicc@ |typedef 40 >> realdicc + 
-	|cntdicc 3 << + 
-	dicc>name "%w" .print 
-	|.write 
-	.fcr ;
-	
 
 :panelWatch
-
 	cols 2/ flxE
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
-	fx fy .at
-	|localdicc fw 4 - ( 1? 1- swap .printword 1+ swap ) 2drop
-
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
 	xwriten.reset
-
 |	flxRest
 |	.reset tuWina $1 "Mem" .wtitle 1 1 flpad 
-	
-
 	;
 
+|------------------------
 :panelInclude
-	5 flxN
+	25 flxO
 	.reset tuWina $1 "Includes" .wtitle 1 1 flpad 
-	fx fy .at
-	cntdicc localdicc "%d %d" .print
-
+	'vincs strinc tuList | 'var list --
 	;
 
 |-------------------------------------
@@ -383,7 +370,7 @@
 |---- build code links
 
 	makelistwords
-	makelistinc
+	|makelistinc
 	
 	clearbp
 	
