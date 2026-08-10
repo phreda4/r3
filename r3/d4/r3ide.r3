@@ -147,10 +147,7 @@
 
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
-
 |	tuX? 1? ( setcursoride ) drop
-
-|	setcursoride
 	xwrite.reset
 	
 	uiKey
@@ -168,17 +165,8 @@
 	makelistinc
 	'fxwin onTui
 	;
-
 	
-:scrmsg	
-	.reset
-	8 flxS tuWina $1 "Imm" .wtitle |242 .bc
-	fx fy .at
-	'msg .print
-	;
-	
-|-------------------------------
-	
+|-------------------------------	
 :runcode
 	checkcode error 1? ( drop moderror ; ) drop
 	.masb .reset .cls .flush
@@ -207,7 +195,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	"r3/d4/r3plain.r3" r3run
 |	.reterm .alsb .flush 
-	"r3/d4/gen/plain.r3" r3run
+	"r3/d4/gen/plain.r3" r3run | exec
 	tuR! ;
 
 :filecompile

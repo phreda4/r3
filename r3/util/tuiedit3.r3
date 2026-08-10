@@ -25,7 +25,9 @@
 
 #undobuffer |'undobuffer
 #undobuffer>
-#undobuffer^	| tope valido de redo
+
+#redobuffer |'redobuffer
+#redobuffer>
 
 #findpad * 64	|----- find text
 
@@ -58,23 +60,21 @@
 
 #modo 'lins
 
-:pushu | marca data -- ; graba registro fijo [marca][data] e invalida redo
-	swap undobuffer> c!+ c!+ 'undobuffer> !
-	undobuffer> 'undobuffer^ ! ;
-
 :back
 	fuente> fuente <=? ( drop ; )
-	dup 1- c@ 0 swap pushu
+	dup 1- c@ undobuffer> c!+ 'undobuffer> !
 	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +!
-	-1 'fuente> +! ;
+	-1 'fuente> +!
+	redobuffer 'redobuffer> ! ;	| nueva edicion invalida redo
 
 :del
 	fuente>	$fuente >=? ( drop ; )
 	1+ fuente <=? ( drop ; )
-	dup 1- c@ 9 swap pushu
+	9 over 1- c@ undobuffer> c!+ c!+ 'undobuffer> !
 	dup 1- swap $fuente over - 1+ cmove
-	-1 '$fuente +! ;
+	-1 '$fuente +!
+	redobuffer 'redobuffer> ! ;	| nueva edicion invalida redo
 
 :<<13 | a -- a
 	( fuente >=?
@@ -414,24 +414,24 @@
 	;
 	
 |-------------
-| undobuffer formato: registro fijo de 2 bytes [marca][data] (un solo buffer)
-|   back      guarda: [0][char]      -> redo = reinsertar (redoback)
-|   del       guarda: [9][char]      -> redo = borrar de nuevo (redodel)
-|   lins      guarda: [1][0]         -> undo escribe el char real en [data] antes de borrar
-|   overwrite guarda: [2][charviejo] -> undo/redo van pisando [data] con el valor opuesto en cada pasada
-:redodel	| repite un del
+| undobuffer / redobuffer formato:
+|   back      guarda: [char]       -> redo = reinsertar (redoback), avanza cursor
+|   del       guarda: [char][9]    -> redo = borrar de nuevo (redodel)
+|   lins      guarda: [1]          -> redo = insertar de nuevo (redolins)
+|   overwrite guarda: [charviejo][2] -> redo = volver a pisar (usa swapchar)
+:redodel	| repite un del sin tocar redobuffer
 	fuente>	$fuente >=? ( drop ; )
 	1+ fuente <=? ( drop ; )
 	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +! ;
 
-:redoback	| repite un back
+:redoback	| repite un back sin tocar redobuffer
 	fuente> fuente <=? ( drop ; )
 	dup 1- swap $fuente over - 1+ cmove
 	-1 '$fuente +!
 	-1 'fuente> +! ;
 
-:redolins | c -- ; repite una insercion
+:redolins | c -- ; repite una insercion sin tocar undobuffer
 	fuente> dup 1- $fuente over - 1+ cmove>
 	1 '$fuente +!
 	fuente> c!+ dup 'fuente> !
@@ -443,21 +443,52 @@
 :controlz | undo
 	undobuffer>
 	undobuffer =? ( drop ; )		| ptr
-	2 - dup c@				| (ptr-2) marca
-	9 =? ( drop dup 1+ c@ lins 'undobuffer> ! ; )	| DEL: reinserta charreal guardado
-	1 =? ( drop fuente> 1- c@ over 1+ c! redoback 'undobuffer> ! ; )	| INSERT: guarda char antes de borrarlo
-	2 =? ( drop dup 1+ c@ fuente> 1- swapchar over 1+ c! 'undobuffer> ! ; )	| OVERWRITE: restaura charviejo, guarda charactual p/redo
-						| BACK: reinserta charval guardado
-	drop dup 1+ c@ lins 'undobuffer> ! ;
+	1- dup c@				| (ptr-1) charval
+	9 =? ( 					| era un DEL
+		drop 1- dup c@			| (ptr-2) charreal
+		dup 9 swap redobuffer> c!+ c!+ 'redobuffer> !	| escribe charreal, luego 9; deja (ptr-2) charreal
+		lins 'undobuffer> ! ; )
+	1 =? (					| era un INSERT
+		drop				| (ptr-1)
+		fuente> 1- c@			| (ptr-1) charreal  ; char a punto de borrarse
+		dup 1 swap redobuffer> c!+ c!+ 'redobuffer> !	| escribe charreal, luego 1; deja (ptr-1) charreal
+		drop 'undobuffer> !
+		redoback ; )
+	2 =? (					| era un OVERWRITE
+		drop				| (ptr-1)
+		1- dup c@			| (ptr-2) charviejo
+		fuente> 1-			| (ptr-2) charviejo destadr
+		swapchar			| (ptr-2) charactual ; restaura charviejo, devuelve lo pisado
+		dup 2 swap redobuffer> c!+ c!+ 'redobuffer> !	| escribe charactual, luego 2 en redo
+		drop 'undobuffer> ! ; )
+						| era un BACK: (ptr-1) charval
+	dup redobuffer> c!+ 'redobuffer> !	| escribe charval (sin marca) ; deja (ptr-1) charval
+	lins 'undobuffer> ! ;
 
+|-------------
 :controly | redo
-	undobuffer> undobuffer^ =? ( drop ; )	| nada para rehacer
-	dup c@				| ptr marca
-	9 =? ( drop redodel )			| rehace un DEL
-	1 =? ( drop dup 1+ c@ redolins )		| rehace un INSERT con el char guardado
-	2 =? ( drop dup 1+ c@ fuente> 1- swapchar over 1+ c! )	| rehace OVERWRITE, guarda charviejo p/undo
-	0 =? ( drop dup 1+ c@ redoback drop )	| rehace un BACK
-	2 + 'undobuffer> ! ;
+	redobuffer>
+	redobuffer =? ( drop ; )		| ptr
+	1- dup c@				| (ptr-1) charval
+	9 =? (					| era un DEL (a rehacer)
+		drop 1- dup c@			| (ptr-2) charreal
+		dup 9 swap undobuffer> c!+ c!+ 'undobuffer> !	| escribe charreal, luego 9
+		drop redodel ; )
+	1 =? (					| era un INSERT (a rehacer)
+		drop 1- dup c@			| (ptr-2) charreal
+		dup 1 swap undobuffer> c!+ c!+ 'undobuffer> !	| escribe charreal, luego 1; deja (ptr-2) charreal
+		swap 'redobuffer> !		| guarda (ptr-2) como nuevo redobuffer> ; deja charreal
+		redolins ; )
+	2 =? (					| era un OVERWRITE (a rehacer)
+		drop				| (ptr-1)
+		1- dup c@			| (ptr-2) charnuevo
+		fuente> 1-			| (ptr-2) charnuevo destadr
+		over swapchar			| (ptr-2) charnuevo charviejo ; pisa de nuevo, guarda lo anterior
+		dup 2 swap undobuffer> c!+ c!+ 'undobuffer> !	| escribe charviejo, luego 2 en undo; deja (ptr-2) charnuevo charviejo
+		drop swap 'redobuffer> ! drop ; )
+						| era un BACK (a rehacer): (ptr-1) charval
+	dup undobuffer> c!+ 'undobuffer> !	| escribe charval (sin marca)
+	drop redoback ;
 
 
 :kdel
@@ -501,13 +532,16 @@
 	[PGDN] =? ( kpgdn sele )
 	;
 	
-:simpleins | c -- ; graba [1][0] (INSERT) e inserta/appendea
-	dup 1 0 pushu			| graba registro; deja c
+:simpleins | c -- ; graba marca INSERT(1) e inserta/appendea
+	dup 1 undobuffer> c!+ 'undobuffer> !	| graba [1]; deja c
+	redobuffer 'redobuffer> !		| nueva edicion invalida redo
 	modo ex ;
 
-:ovwchar | c -- ; graba [2][charviejo] (OVERWRITE), y sobreescribe
-	fuente> c@			| c charviejo
-	2 swap pushu			| graba registro; deja c
+:ovwchar | c -- ; graba marca OVERWRITE(2) con el char pisado, y sobreescribe
+	fuente> c@				| c charviejo
+	dup 2 swap undobuffer> c!+ c!+ 'undobuffer> !	| graba [charviejo][2]; deja c charviejo
+	drop					| c
+	redobuffer 'redobuffer> !		| nueva edicion invalida redo
 	lover ;
 
 :insertchar | c -- ; inserta o sobreescribe c, grabando undo/redo
@@ -595,7 +629,7 @@
 	
 :clearundo
 	undobuffer 'undobuffer> !
-	undobuffer 'undobuffer^ ! ;
+	redobuffer 'redobuffer> ! ;
 
 ::TuLoadMem | "" --
 	fuente strcpy
@@ -645,8 +679,10 @@
 	$3ffff +			| 256kb texto
 	dup 'undobuffer !
 	dup 'undobuffer> !
-	dup 'undobuffer^ !
-	$1fff +				| 8kb undo/redo (buffer unico)
+	$fff +				| 4kb undo
+	dup 'redobuffer !
+	dup 'redobuffer> !
+	$fff +				| 4kb redo
 	'here ! | -- FREE
 	mark 
 ;
