@@ -438,20 +438,20 @@
 	undobuffer>
 	undobuffer =? ( drop ; )		| ptr
 	2 - dup c@				| (ptr-2) marca
-	9 =? ( drop dup 1+ c@ lins 'undobuffer> ! ; )	| DEL: reinserta charreal guardado
+	9 =? ( drop dup 1+ c@ lins -1 'fuente> +! 'undobuffer> ! ; )	| DEL: reinserta charreal, del NO mueve cursor -> compensa el avance de lins
 	1 =? ( drop fuente> 1- c@ over 1+ c! redoback 'undobuffer> ! ; )	| INSERT: guarda char antes de borrarlo
-	2 =? ( drop dup 1+ c@ fuente> 1- swapchar over 1+ c! 'undobuffer> ! ; )	| OVERWRITE: restaura charviejo, guarda charactual p/redo
+	2 =? ( drop dup 1+ c@ -1 'fuente> +! fuente> swapchar over 1+ c! 'undobuffer> ! ; )	| OVERWRITE: retrocede cursor, restaura charviejo, guarda charactual p/redo
 						| BACK: reinserta charval guardado
 	drop dup 1+ c@ lins 'undobuffer> ! ;
 
 :controly | redo
 	undobuffer> undobuffer< =? ( drop ; )	| nada para rehacer
-	dup c@				| ptr marca
-	9 =? ( drop redodel )			| rehace un DEL
-	1 =? ( drop dup 1+ c@ lins )		| rehace un INSERT con el char guardado (lins = shift+write+adjust)
-	2 =? ( drop dup 1+ c@ fuente> 1- swapchar over 1+ c! )	| rehace OVERWRITE, guarda charviejo p/undo
-	0 =? ( drop dup 1+ c@ redoback drop )	| rehace un BACK
-	2 + 'undobuffer> ! ;
+	dup c@					| ptr marca
+	9 =? ( redodel )			| rehace un DEL (no necesita char)
+	1 =? ( over 1+ c@ lins )		| rehace un INSERT con el char guardado
+	2 =? ( over 1+ dup c@ fuente> swapchar swap c! 1 'fuente> +! )	| rehace OVERWRITE, avanza cursor, guarda charviejo p/undo
+	0 =? ( redoback )			| rehace un BACK (no necesita char)
+	drop 2 + 'undobuffer> ! ;
 
 
 :kdel

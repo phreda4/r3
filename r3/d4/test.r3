@@ -5,7 +5,7 @@
 :gcd | a b -- gcd
 	0? ( ; )
 	( 1? swap over mod ) drop ;
-	
+
 :point | xin --	e	
 	d 9 3 */
 	'd ! 
