@@ -4,10 +4,13 @@
 
 ^./bdashcave.r3
 
+#cave * 960 | 40x24
+#cavelast
 #cavenow
 
 #dir
 #diam #diamt
+#cavetime 
 
 #xview -640.0 #yview -480.0
 #xviewd 16.0 #yviewd 16.0
@@ -79,10 +82,13 @@
 	dup c@ $82 or | falling + mark ready
 	over cavedn c!
 	0 over c! ;
+
+:stopfall | adr -- adr
+	dup c@ $2 nand over c! ; 
 		
 :roundr
-	dup caveri c@ 1? ( drop ; ) drop
-	dup caveri cavedn c@ 1? ( drop ; ) drop
+	dup caveri c@ 1? ( drop stopfall ; ) drop
+	dup caveri cavedn c@ 1? ( drop stopfall ; ) drop
 	dup c@ $80 or 
 	over caveri cavedn c!
 	0 over c! ;
@@ -109,15 +115,12 @@
 	;
 	
 :t1 | adr -- adr 
-	dup cavedn c@ 
+	dup cavedn c@ | cell dn?
 	0? ( drop space ; )
-	$10 $17 in? ( drop roundfall ; )
-	$12 =? ( $2 nand over c! ; ) | clear falling
-	$16 =? ( $2 nand over c! ; ) | clear falling
+	$10 $16 in? ( drop roundfall ; )
 	$38 =? ( drop killplayer ; ) 
 	drop
-	dup c@ $2 nand over c! | stop falling
-	;
+	stopfall ;
 	
 |--- explosion	
 :t2 | adr --  adr
@@ -166,9 +169,36 @@
 	2drop
 	;
 	
+#dirs ( -40 1 40 -1 ) 	
+
+:dir2dad | dir -- deltaa
+	$3 and 'dirs + c@ ;
+	
+:criatura | adr base pref -- adr 
+	pick2 c@  	| adr base pref diract
+	over +		| adr base pref dirpref
+	dir2dad pick3 + | adr base pref adrpref
+	dup c@ 0? ( drop	| adr base pref adrpref 
+		-rot 			| adr adrpref base pref 
+		pick3 c@ + $3 and or $80 or | adr adrpref v
+		swap c!
+		0 over c!
+		; ) 2drop			| adr base pref 
+	pick2 dup c@ dir2dad +	| adr base pref diract
+	dup c@ 0? ( drop		| adr base pref diract
+		nip nip over c@ $80 or 
+		swap c!
+		0 over c!
+		; ) 2drop 			| adr base pref
+	neg pick2 c@ + $3 and or
+	over c! ;
+	
 :t3 | adr --  adr
 	dup c@
 	$38 =? ( drop player ; )
+	$fc and
+	$08 =? ( 1 criatura ; )
+	$30 =? ( -1 criatura ; )
 	drop
 	;
 
@@ -188,12 +218,13 @@
 		1+ ) drop ;
 			
 |--------------	
-:cave+! | dc --
+:getCave | dc --
 	cavenow +
 	-? ( ncaves 1- nip )
 	ncaves >=? ( 0 nip )
 	dup 'cavenow ! 
-	decodecavenow 
+	'cave decodecavenow | nro cavedst --
+	a> $e + c@ 'cavetime !
 	| --- reset game
 	16.0 'xview ! 16.0 'yview !
 	0 'diamt !
@@ -203,6 +234,8 @@
 		$38 =? ( over 1- adrtoview drop ) 
 		$14 =? ( 1 'diamt +! )
 		drop ) drop 
+		
+	|'cave showsb .flush		
 	;
 		
 :logic
@@ -232,7 +265,9 @@
 	showgame
 
 	$ffffff txrgb
-	0 0 txat ncaves cavenow "%d/%d " txprint
+	0 0 txat 
+	ncaves cavenow "%d/%d " txprint
+	cavetime "%d" txprint
 	sw 0 txat 
 	diamt diam "%d/%d" txprintr
 	|yviewd xviewd "%f %f" txprintr
@@ -249,8 +284,8 @@
 	>le< =? ( 0 'dir ! )
 	>ri< =? ( 0 'dir ! )
 	
-	<f1> =? ( -1 cave+! )
-	<f2> =? ( 1 cave+! )
+	<f1> =? ( -1 getCave )
+	<f2> =? ( 1 getCave )
 	drop
 	;
 	
@@ -260,9 +295,8 @@
 	32 32  "media/img/bdash.png" ssload 'imgspr !
 
 	msec 'mseca ! 0 'deltat !
-	0 'cavenow ! 0 cave+!
+	0 'cavenow ! 0 getCave
 	0 'diam !
-	|showsb .flush
 	
 	'main sdlshow
 

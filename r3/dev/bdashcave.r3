@@ -1,6 +1,6 @@
 | decode  cave for bdash
 
-
+##ncaves 20
 
 #cave1 (
 $01 $14 $0A $0F $0A $0B $0C $0D $0E $0C $0C $0C $0C $0C $96 $6E 
@@ -156,7 +156,6 @@ $C1 $10 $0A $03 $0D $C1 $14 $0A $03 $0D $50 $16 $08 $0C $02 $48
 $16 $07 $0C $02 $C1 $17 $06 $03 $04 $C1 $1B $06 $03 $04 $C1 $1F
 $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 
-##ncaves 20
 
 #cavetab 'cave1 'cave2 'cave3 'cave4 'cave5 'cave6 'cave7 'cave8 'cave9 'cave10
          'cave11 'cave12 'cave13 'cave14 'cave15 'cave16 'cave17 'cave18 'cave19 'cave20
@@ -178,11 +177,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	;
 	
 |------------ DECODE
-##cave * 960 | 40x24
-##cavelast
 
 ::cavea | x y -- adr
-	40 * + 'cave + ;
+	40 * + b> + ;
 
 ::cave! | t x y --
 	cavea c! ;
@@ -243,11 +240,10 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	
 #tlist t0 t1 t2 t3
 	
-:decodecave | cave --
-	>a
+:decodecave | caveto cavesrc --
 	0 'randseed1 !
 	4 ]acave $ff and 'randseed2 ! | + dificult
-	'cave 7 40 22 * cfill
+	b> 7 40 22 * cfill
 	3 ( 23 <=? 
 		0 ( 39 <=?
 			nextRandom
@@ -270,8 +266,10 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	$7 0 2 40 22 rect!
 	;
 	
-::decodecavenow	| ncave --
-	3 << 'cavetab + @ decodecave ;
+::decodecavenow	| ncave 'cavedst --
+	>b
+	3 << 'cavetab + @ >a
+	decodecave ;
 	
 
 |------------ SHOW
@@ -281,8 +279,8 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	"%h " .print
 	;
 
-::showsb
-	'cave 80 + >a
+::showsb | 'cave --
+	80 + >a
 	1 ( 23 <? 1+
 		dup "%d " .print
 		.sp
