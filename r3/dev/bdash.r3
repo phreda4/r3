@@ -224,7 +224,9 @@
 	ncaves >=? ( 0 nip )
 	dup 'cavenow ! 
 	'cave decodecavenow | nro cavedst --
-	a> $e + c@ 'cavetime !
+	a> $e + c@ 'cavetime ! | tick de fisica
+	
+	
 	| --- reset game
 	16.0 'xview ! 16.0 'yview !
 	0 'diamt !
