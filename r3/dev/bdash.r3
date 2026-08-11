@@ -1,19 +1,24 @@
 ^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/txfont.r3
+^r3/lib/rand.r3
 
 ^./bdashcave.r3
 
 #cave * 960 | 40x24
-#cavelast
-#cavenow
+#cavenow	| limit for cave too
+#level
 
 #dir
-#diam #diamt
+#diam 
+#points
+#cavediam
 #cavetime 
+#doorplace
 
-#xview -640.0 #yview -480.0
-#xviewd 16.0 #yviewd 16.0
+
+#xview 0 #yview 0
+#xviewd 0 #yviewd 0
 
 | --- timer
 #mseca
@@ -40,9 +45,10 @@
 :player
 	dir 'aniplayer + c@ 
 	|*** wait for piecito
-	globalframe $7 and + ;
+	globalframe 2 >> $7 and + ;
 	
-#AMASK $00000F003F000480 $001000FF00000800	
+$3a	
+#AMASK $00000F003F010480 $001000FF00000800	
 
 :animasprite | base -- sprite
 	$3f and 
@@ -72,10 +78,6 @@
 
 |--------------
 :caveup 40 - ; :cavedn 40 + ; :caveri 1+ ; :cavele 1- ;
-
-| inerte
-:t0 |  -- 
-	;
 		
 |---- gravedad		
 :space | adr -- adr
@@ -102,28 +104,35 @@
 	
 :explode | adr -- adr
 	dup caveup cavele >a
-	$9b ca!+ $9b ca!+ $9b ca! 
-	40 2 - a+
-	$9b ca!+ $9b ca!+ $9b ca! 
-	40 2 - a+
-	$9b ca!+ $9b ca!+ $9b ca! 
-	;
+	$9b ca!+ $9b ca!+ $9b ca! 40 2 - a+
+	$9b ca!+ $9b ca!+ $9b ca! 40 2 - a+
+	$9b ca!+ $9b ca!+ $9b ca! ;
 	
+:exploded	
+	dup caveup cavele >a
+	$a0 ca!+ $a0 ca!+ $a0 ca! 40 2 - a+
+	$a0 ca!+ $a0 ca!+ $a0 ca! 40 2 - a+
+	$a0 ca!+ $a0 ca!+ $a0 ca! ;
+
 :killplayer | adr -- adr
 	dup c@ $2 nand? ( drop ; ) drop | only falling
 	explode
 	;
 	
-:t1 | adr -- adr 
+:gravity | adr -- adr 
 	dup cavedn c@ | cell dn?
 	0? ( drop space ; )
 	$10 $16 in? ( drop roundfall ; )
 	$38 =? ( drop killplayer ; ) 
+	$fc and
+	$08 =? ( drop exploded ; )
+	$30 =? ( drop explode ; )
+	$38 =? ( drop explode ; )
 	drop
 	stopfall ;
 	
 |--- explosion	
-:t2 | adr --  adr
+:explo | adr --  adr
 	dup c@
 	$1f =? ( drop 0 over c! ; )
 	$24 =? ( drop $14 over c! ; )
@@ -163,11 +172,23 @@
 	$B8 swap c! | player ready
 	0 over c!
 	;
+
+:winplayer
+	;
+	
+:opendoor
+	$5 'doorplace !
+	;
 	
 :player
 	deltadir over + dup c@ | adr adrd des@
 	2 <? ( drop moveplay ; ) 
-	$14 =? ( drop moveplay 1 'diam +! ; )
+	$5 =? ( drop 
+		diam cavediam >=? ( drop winplayer ; ) 
+		)
+	$14 =? ( drop moveplay 
+		diam 1+ cavediam >=? ( opendoor ) 'diam ! 
+		; )
 	$10 =? ( drop pullrock ; )
 	2drop
 	;
@@ -196,27 +217,49 @@
 	neg pick2 c@ + $3 and or
 	over c! ;
 	
-:t3 | adr --  adr
+:amoeba	| adr -- adr
+	rand8 dir2dad over + 
+	dup c@ $7f and 1 >? ( 2drop ; ) drop
+	$3a $80 or swap c!
+	;
+	
+:things | adr --  adr
 	dup c@
 	$38 =? ( drop player ; )
 	$fc and
 	$08 =? ( 1 criatura ; )
 	$30 =? ( -1 criatura ; )
+	$38 =? ( drop amoeba ; )
 	drop
 	;
 
-#tiposl 't0 't1 't2 't3 	
+#GRUPO (
+    0 0 0 0 0 0 0 0  | Inerte (Vacío Tierra Muros)
+    3 3 3 3 0 0 0 0  | 0x08-0x0B = Luciérnagas (Grupo 3 - Entidades)
+    1 1 1 1 1 1 1 1  | Gravedad (Rocas Diamantes)
+    1 1 1 2 2 2 2 2  | 0x1B-0x1F = Explosiones (Grupo 2)
+    2 2 2 2 2 2 2 2  | Explosiones y Prerockford (Grupo 2)
+    2 0 0 0 0 0 0 0  | 0x28 = Prerockford final (Grupo 2)
+    3 3 3 3 0 0 0 0  | 0x30-0x33 = Mariposas (Grupo 3 - Entidades)
+    3 0 3 0 0 0 0 0   | 0x38 = Rockford 0x3A = Ameba (Grupo 3 - Entidades)
+	)
+	
 :updatetile | celda --
 	-? ( drop ; ) | $80 ready
-	$1b $1f in? ( drop t2 ; )
-	$30 and 4 >> 3 << 'tiposl + @ ex ;
+	$3f and 'GRUPO + c@
+	0? ( drop ; ) 
+	1- 0? ( drop gravity ; )
+	1- 0? ( drop explo ; ) 
+	drop
+	things ;
+	
 	
 :updategame
 	'cave 80 +
-	dup ( 'cavelast <? | clear ready
+	dup ( 'cavenow <? | clear ready
 		dup c@ $7f and swap c!+ 
 		) drop 
-	( 'cavelast <?	| traverse
+	( 'cavenow <?	| traverse
 		dup c@ updatetile
 		1+ ) drop ;
 			
@@ -226,20 +269,24 @@
 	-? ( ncaves 1- nip )
 	ncaves >=? ( 0 nip )
 	dup 'cavenow ! 
-	'cave decodecavenow | nro cavedst --
-	a> $e + c@ 'cavetime ! | tick de fisica
+	level swap 'cave decodecavenow | nro cavedst --
 	
-	
+	a> $e + level + c@ $ff and 'cavetime ! | tick de fisica
+	a> $9 + level + c@ $ff and 'cavediam !
+	0 'points !
+	0 'diam !
 	| --- reset game
 	16.0 'xview ! 16.0 'yview !
-	0 'diamt !
-	'cave ( 'cavelast <? c@+ 
+	'cave ( 'cavenow <? c@+ 
+		$4 =? ( over 1- 'doorplace ! )
+		$5 =? ( over 1- 'doorplace ! )
 		$25 =? ( $38 nip )
 		$26 =? ( $38 nip )
-		$38 =? ( over 1- adrtoview drop ) 
-		$14 =? ( 1 'diamt +! )
+		$38 =? ( over 1- adrtoview drop 
+			xviewd 'xview ! yviewd 'yview ! ) 
 		drop ) drop 
-		
+	doorplace c@ $4 =? ( $7 doorplace c! ) drop
+	
 	|'cave showsb .flush		
 	;
 		
@@ -274,7 +321,7 @@
 	ncaves cavenow "%d/%d " txprint
 	cavetime "%d" txprint
 	sw 0 txat 
-	diamt diam "%d/%d" txprintr
+	points cavediam diam "%d/%d : %d" txprintr
 	|yviewd xviewd "%f %f" txprintr
 	
 	sdlRedraw
@@ -301,7 +348,7 @@
 
 	msec 'mseca ! 0 'deltat !
 	0 'cavenow ! 0 getCave
-	0 'diam !
+	
 	
 	'main sdlshow
 

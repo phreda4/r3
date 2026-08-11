@@ -240,9 +240,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	
 #tlist t0 t1 t2 t3
 	
-:decodecave | caveto cavesrc --
+:decodecave | level --
 	0 'randseed1 !
-	4 ]acave $ff and 'randseed2 ! | + dificult
+	4 ]acave + $ff and 'randseed2 ! | + dificult
 	b> 7 40 22 * cfill
 	3 ( 23 <=? 
 		0 ( 39 <=?
@@ -266,7 +266,7 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	$7 0 2 40 22 rect!
 	;
 	
-::decodecavenow	| ncave 'cavedst --
+::decodecavenow	| level ncave 'cavedst --
 	>b
 	3 << 'cavetab + @ >a
 	decodecave ;
@@ -282,7 +282,7 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 ::showsb | 'cave --
 	80 + >a
 	1 ( 23 <? 1+
-		dup "%d " .print
+
 		.sp
 		40 ( 1? 1-
 			ca@+ .ec

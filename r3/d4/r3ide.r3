@@ -18,7 +18,6 @@
 #vincs 0 0
 
 #lwords
-#lincs
 
 |---- change error mode
 :moderror
@@ -36,7 +35,7 @@
 		1+ ) drop 
 	,eol ;
 	
-|---- list words
+
 :makelistwords
 	here 'lwords !
 	0 ( cntdef <?
@@ -45,6 +44,7 @@
 		1+ ) drop 
 	,eol ;
 
+|---- list words
 :chooseword
 	dup dic - 4 >> .h ,s ,eol ;
 	
@@ -66,21 +66,10 @@
 	empty
 	here lwrite ;
 	
-|---- list inc	
-:makelistinc
-	here 'lincs !
-	0 ( cntinc <? 
-		dup 4 << 'inc + @ "%w" ,print ,eol
-		1+ ) drop
-	,eol ;
-	
 |---- helpword
 #helpword * 32
 
-:cpyhelpword
-	fuente> ( dup 1- | find start
-		c@ $ff and 32 >? 
-		drop 1- ) drop 
+:cpyhword | adr -- 
 	'helpword 
 	31 ( 1? 1- -rot		| copy word
 		swap c@+ $ff and 
@@ -89,6 +78,25 @@
 		) drop
 	0 swap c! 
 	drop ;
+
+:<<sp | adr -- adr' ; adr@=space
+	( dup 1- c@ $ff and 32 >? drop 1- ) drop ;
+	
+:cpyhelpword
+	fuente> <<sp cpyhword ;
+
+:<<: | adr -- adr' ; adr@=:
+	( fuente =? ( ; ) dup 1- c@ $3a <>? drop 1- ) drop ;
+
+:cpydefword 
+	fuente> <<: cpyhword ;
+	
+:searchword | -- nro
+	cntdef ( 1? 1-
+		dup nro>dic @ dic>name
+		'helpword =w 1? ( drop ; )
+		drop ) ;
+	
 	
 |---- screen
 :setcursoride
@@ -126,11 +134,15 @@
 	;
 	
 |--- F3 Fx
+#rxword
+
 :fxwin
 	.reset .home 9 .bc 0 .fc 
 	1 flxN 
 	" r3Rx | " .write printfname 
 	" | " .write tuecursor. .write 
+	rxword " >>%d<< " .print
+	'helpword .write
 	.eline
 	
 	1 flxS 
@@ -156,13 +168,11 @@
 
 :fxcode
 	checkcode error 1? ( drop moderror ; ) drop
-|	0 'msg !
-|	fuente 'filename r3loadmem
-|	error 1? ( coderror ; ) drop 
-|	codeok 
-|	r3tokeninfo
+	cpydefword
+	'helpword c@ 0? ( drop "DEFINITION NOT FOUND" 'helpword strcpy ; ) drop
+	searchword 'rxword !
 	makelistwords
-	makelistinc
+	
 	'fxwin onTui
 	;
 	

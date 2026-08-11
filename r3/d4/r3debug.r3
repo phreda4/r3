@@ -133,7 +133,6 @@
 	
 	|*** debug ***
 	bplist ( d@+ 1? "%h " .print ) 2drop .cr
-	vmIP "%h" .print
 	;
 	
 |---- view tokens	
