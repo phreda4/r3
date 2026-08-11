@@ -28,13 +28,13 @@
 	sh 100 - maph / 
 	min  | size
 	dup	'zmap !
-	10 << $800 + 'zspr ! | adjust for space in sprites
+	12 << $800 + 'zspr ! | adjust for space in sprites
 	sw mapw zmap * - 1 >> zmap 1 >> + 'xmap !
 	sh maph zmap * - 1 >> zmap 1 >> + 'ymap !
 	;
 	
-#nrocell ( 89 98 6 9 102 )	| ground wall box boxgoal groundgoal
-#nroplay ( 55 52 78 81 ) 	| up dn ri le
+#nrocell ( 20 15 25 26 30 )	| ground wall box boxgoal groundgoal
+#nroplay ( 6 9 3 0 ) 	| up dn ri le
 
 |------- MAP
 :]map | x y -- adr
@@ -47,7 +47,7 @@
 :drawc	| x y -- x y
 	2dup ]map c@ 'nrocell + c@
 	pick2 pick2 xymap 
-	2dup zspr 89 sprites sspritez | always stone back
+	2dup zspr 20 sprites sspritez | always stone back
 	rot zspr swap sprites sspritez ;
 		
 :drawmap
@@ -174,7 +174,7 @@
 : |<<<<< BOOT >>>>>
 	msec time rerand
 	"Sokoban" 1024 600 SDLinit
-	64 64 "media/img/sokoban_tilesheet.png" ssload 'sprites !
+	16 16 "media/img/arena-map.png" ssload 'sprites !
 	ttf_init
 	"media/ttf/Roboto-Medium.ttf" 32 TTF_OpenFont ttfont!
 	here 'undo. !

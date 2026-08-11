@@ -140,10 +140,13 @@
 :adrtoview | adr -- adr
 	dup 'cave -
 	40 /mod 
-	10 - 32.0 * 16.0 max 19 32.0 * 16.0 + min | 10 cells prior with cave limits 
-	neg 'xviewd ! 
-	10 - 32.0 * 16.0 max 19 32.0 * 16.0 + min
-	neg 'yviewd ! ;
+	10 - 32.0 *
+    -16.0 max 624.0 min  
+    neg 'xviewd !
+    7 - 32.0 *
+    16.0 max 272.0 min
+    neg 'yviewd !
+	;
 	
 :moveplay
 	$38 $80 or swap c! 0 over c! 
@@ -231,8 +234,8 @@
 	16.0 'xview ! 16.0 'yview !
 	0 'diamt !
 	'cave ( 'cavelast <? c@+ 
+		$25 =? ( $38 nip )
 		$26 =? ( $38 nip )
-		$28 =? ( $38 nip )
 		$38 =? ( over 1- adrtoview drop ) 
 		$14 =? ( 1 'diamt +! )
 		drop ) drop 
@@ -255,8 +258,8 @@
 	; 
 	
 :movecam
-	xview xviewd over - 0.02 *. + 'xview !
-	yview yviewd over - 0.02 *. + 'yview !
+	xview xviewd over - 0.03 *. + 'xview !
+	yview yviewd over - 0.03 *. + 'yview !
 	;
 	
 |------------ MAIN	
