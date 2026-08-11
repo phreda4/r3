@@ -141,11 +141,11 @@
 	dup 'cave -
 	40 /mod 
 	10 - 32.0 *
-    -16.0 max 624.0 min  
-    neg 'xviewd !
-    7 - 32.0 *
-    16.0 max 272.0 min
-    neg 'yviewd !
+	-16.0 max 624.0 min  
+	neg 'xviewd !
+	7 - 32.0 *
+	16.0 max 272.0 min
+	neg 'yviewd !
 	;
 	
 :moveplay

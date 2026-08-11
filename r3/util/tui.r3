@@ -438,8 +438,7 @@
 :makeindxn | 'adr -- 
 	dup 'indlist !
 	dup ( w@+ 1? drop ) drop
-	swap - 2/ 
-	|dup "cntl:%d" .println waitkey
+	swap - 2/ 1-
 	'cntlist ! ;
 
 :uiNindxn
