@@ -16,7 +16,6 @@
 #cavetime 
 #doorplace
 
-
 #xview 0 #yview 0
 #xviewd 0 #yviewd 0
 
@@ -47,8 +46,7 @@
 	|*** wait for piecito
 	globalframe 2 >> $7 and + ;
 	
-$3a	
-#AMASK $00000F003F010480 $001000FF00000800	
+#AMASK $00000F003F000F00 $00F000FF00000F00
 
 :animasprite | base -- sprite
 	$3f and 
@@ -77,6 +75,12 @@ $3a
 		) drop ;
 
 |--------------
+:deadplayer
+	;
+
+:winplayer
+	;
+
 :caveup 40 - ; :cavedn 40 + ; :caveri 1+ ; :cavele 1- ;
 		
 |---- gravedad		
@@ -102,21 +106,22 @@ $3a
 	over cavele cavedn c!
 	0 over c! ;
 	
-:explode | adr -- adr
-	dup caveup cavele >a
-	$9b ca!+ $9b ca!+ $9b ca! 40 2 - a+
-	$9b ca!+ $9b ca!+ $9b ca! 40 2 - a+
-	$9b ca!+ $9b ca!+ $9b ca! ;
+:eca!+ | value -- value
+	ca@ $ff and 
+	$38 =? ( 0 nip deadplayer ) 
+	1 >? ( drop 1 a+ ; ) drop
+	dup ca!+ ;
 	
-:exploded	
-	dup caveup cavele >a
-	$a0 ca!+ $a0 ca!+ $a0 ca! 40 2 - a+
-	$a0 ca!+ $a0 ca!+ $a0 ca! 40 2 - a+
-	$a0 ca!+ $a0 ca!+ $a0 ca! ;
-
+:eline!+
+	eca!+ eca!+ eca!+ 40 3 - a+	;
+	
+:explode | adr val -- adr
+	over cavele >a
+	eline!+ eline!+ eline!+ drop ;
+	
 :killplayer | adr -- adr
 	dup c@ $2 nand? ( drop ; ) drop | only falling
-	explode
+	$9b explode
 	;
 	
 :gravity | adr -- adr 
@@ -125,9 +130,9 @@ $3a
 	$10 $16 in? ( drop roundfall ; )
 	$38 =? ( drop killplayer ; ) 
 	$fc and
-	$08 =? ( drop exploded ; )
-	$30 =? ( drop explode ; )
-	$38 =? ( drop explode ; )
+	$08 =? ( drop $9b explode ; )
+	$30 =? ( drop $a0 explode ; )
+	$38 =? ( drop $9b explode ; )
 	drop
 	stopfall ;
 	
@@ -173,23 +178,20 @@ $3a
 	0 over c!
 	;
 
-:winplayer
-	;
-	
 :opendoor
-	$5 'doorplace !
+	$5 doorplace ! 
 	;
 	
 :player
 	deltadir over + dup c@ | adr adrd des@
 	2 <? ( drop moveplay ; ) 
-	$5 =? ( drop 
-		diam cavediam >=? ( drop winplayer ; ) 
-		)
 	$14 =? ( drop moveplay 
 		diam 1+ cavediam >=? ( opendoor ) 'diam ! 
 		; )
 	$10 =? ( drop pullrock ; )
+	$05 =? ( drop 
+		diam cavediam >=? ( drop winplayer ; ) 
+		)
 	2drop
 	;
 	
@@ -219,7 +221,9 @@ $3a
 	
 :amoeba	| adr -- adr
 	rand8 dir2dad over + 
-	dup c@ $7f and 1 >? ( 2drop ; ) drop
+	dup c@ $7f and 
+	$38 =? ( deadplayer 1 nip ) 
+	1 >? ( 2drop ; ) drop
 	$3a $80 or swap c!
 	;
 	
@@ -255,8 +259,8 @@ $3a
 	
 	
 :updategame
-	'cave 80 +
-	dup ( 'cavenow <? | clear ready
+	'cave 80 + dup 
+	( 'cavenow <? | clear ready
 		dup c@ $7f and swap c!+ 
 		) drop 
 	( 'cavenow <?	| traverse
@@ -348,8 +352,7 @@ $3a
 
 	msec 'mseca ! 0 'deltat !
 	0 'cavenow ! 0 getCave
-	
-	
+		
 	'main sdlshow
 
 	;

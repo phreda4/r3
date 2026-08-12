@@ -239,10 +239,12 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	ca@+ ca@+ ca@+ ca@+ rect! ;
 	
 #tlist t0 t1 t2 t3
-	
+#level	
+
 :decodecave | level --
+	'level !
 	0 'randseed1 !
-	4 ]acave + $ff and 'randseed2 ! | + dificult
+	4 level + ]acave $ff and 'randseed2 ! | + dificult
 	b> 7 40 22 * cfill
 	3 ( 23 <=? 
 		0 ( 39 <=?
@@ -250,9 +252,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 			1								| obj
 			0 ( 3 <=?						| obj cnt
 				randseed1 					| obj cnt rnd
-				over $1c + ]acave <? ( 		| obj cnt rnd
+				over $1c + level + ]acave <? ( 		| obj cnt rnd
 					rot drop 				| cnt rnd
-					over $18 + ]acave -rot	| obj cnt rnd
+					over $18 + level + ]acave -rot	| obj cnt rnd
 					) drop
 				1+ ) drop	| y x obj
 			over pick3 cave!
@@ -271,21 +273,14 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	3 << 'cavetab + @ >a
 	decodecave ;
 	
-
 |------------ SHOW
-#tchars " .wmof*W<<<<>>>>OOoo^^vv                                                "
-:.ec
-	|$3f and 'tchars + c@ .emit
-	"%h " .print
-	;
-
 ::showsb | 'cave --
 	80 + >a
 	1 ( 23 <? 1+
 
 		.sp
 		40 ( 1? 1-
-			ca@+ .ec
+			ca@+ "%h " .print
 			) drop
 		.cr
 		) drop ;
