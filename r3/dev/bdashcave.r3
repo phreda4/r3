@@ -252,9 +252,9 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 			1								| obj
 			0 ( 3 <=?						| obj cnt
 				randseed1 					| obj cnt rnd
-				over $1c + level + ]acave <? ( 		| obj cnt rnd
+				over $1c + ]acave <? ( 		| obj cnt rnd
 					rot drop 				| cnt rnd
-					over $18 + level + ]acave -rot	| obj cnt rnd
+					over $18 + ]acave -rot	| obj cnt rnd
 					) drop
 				1+ ) drop	| y x obj
 			over pick3 cave!
@@ -280,7 +280,8 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 
 		.sp
 		40 ( 1? 1-
-			ca@+ "%h " .print
+			ca@+ |10 <? ( "0" .write )
+			"%h " .print
 			) drop
 		.cr
 		) drop ;

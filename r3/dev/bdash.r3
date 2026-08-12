@@ -7,11 +7,14 @@
 
 #cave * 960 | 40x24
 #cavenow	| limit for cave too
-#level
+#level 1
 
 #dir
 #diam 
-#points
+
+#score
+#bestscore
+
 #cavediam
 #cavetime 
 #doorplace
@@ -75,11 +78,15 @@
 		) drop ;
 
 |--------------
+#wingame
+
 :deadplayer
-	;
+	0 'wingame !
+	exit ;
 
 :winplayer
-	;
+	1 'wingame !
+	exit ;
 
 :caveup 40 - ; :cavedn 40 + ; :caveri 1+ ; :cavele 1- ;
 		
@@ -268,17 +275,11 @@
 		1+ ) drop ;
 			
 |--------------	
-:getCave | dc --
-	cavenow +
-	-? ( ncaves 1- nip )
-	ncaves >=? ( 0 nip )
-	dup 'cavenow ! 
-	level swap 'cave decodecavenow | nro cavedst --
+:buildcave | --
+	level cavenow 'cave decodecavenow | nro cavedst --
 	
 	a> $e + level + c@ $ff and 'cavetime ! | tick de fisica
 	a> $9 + level + c@ $ff and 'cavediam !
-	0 'points !
-	0 'diam !
 	| --- reset game
 	16.0 'xview ! 16.0 'yview !
 	'cave ( 'cavenow <? c@+ 
@@ -291,9 +292,18 @@
 		drop ) drop 
 	doorplace c@ $4 =? ( $7 doorplace c! ) drop
 	
-	|'cave showsb .flush		
+	'cave showsb .flush		
 	;
-		
+
+:getCave | dc --
+	cavenow +
+	-? ( ncaves 1- nip )
+	ncaves >=? ( 0 nip )
+	'cavenow ! 
+	buildcave ;
+
+|---------------------------------------
+#ticktime	
 :logic
 	msec dup mseca - 'deltat +! 'mseca !
 	deltat 20 <? ( drop ; )  | 50 fps
@@ -306,7 +316,12 @@
 		updategame 
 		)
 	'globalupdate !
+	
+	ticktime 1+ 50 <? ( 'ticktime ! ; )  drop | 1 sec
+	0 'ticktime !
+	-1 'cavetime +!
 	; 
+
 	
 :movecam
 	xview xviewd over - 0.03 *. + 'xview !
@@ -314,7 +329,7 @@
 	;
 	
 |------------ MAIN	
-:main
+:game
 	0 cls	
 	logic
 	movecam
@@ -323,14 +338,14 @@
 	$ffffff txrgb
 	0 0 txat 
 	ncaves cavenow "%d/%d " txprint
-	cavetime "%d" txprint
+	140 0 tx+at cavetime "%d" txprint
 	sw 0 txat 
-	points cavediam diam "%d/%d : %d" txprintr
+	score cavediam diam "%d/%d : %d" txprintr
 	|yviewd xviewd "%f %f" txprintr
 	
 	sdlRedraw
 	sdlkey
-	>esc< =? ( exit )
+	>esc< =? ( 0 'wingame ! exit )
 	<up> =? ( 1 'dir ! )
 	<dn> =? ( 2 'dir ! )
 	<le> =? ( 3 'dir ! )
@@ -345,14 +360,69 @@
 	drop
 	;
 	
+:playgame
+	0 'score !
+	0 'diam !
+	0 'wingame !
+	
+	( buildcave
+		'game SDLShow
+		
+		1 'cavenow +!
+		cavenow 20 =? ( 
+			1 'level +! 
+			level 5 =? ( 0 'wingame ) drop
+			) drop
+			
+		wingame 1? drop 			
+		) drop
+	
+	score bestscore >? ( dup 'bestscore ! ) drop
+	;
+	
+#xhor
+	
+:main
+	0 cls
+	$ffffff txrgb
+	$11 txalign
+	sw 64 0 16 "BDash Clone in r3forth" txText
+	
+	32 128 txat
+	level 1+ cavenow "Cave: %d - Level: %d " txPrint txcr
+	32 0 tx+at
+	bestscore "Best Score:%d" txPrint
+	
+	$7fff7f txrgb
+	sw 64 0 sh 64 -
+	"<Space> - Start" txText
+
+	sw 2/ sh dup 2 >> - 
+	4.0 msec 6 >> $7 and 16 + 
+	imgspr
+	sspritez
+	
+	sdlredraw
+	sdlkey
+	>esc< =? ( exit )
+	<up> =? ( level 1+ 4 min 'level ! )
+	<dn> =? ( level 1- 0 max 'level ! )
+	<le> =? ( cavenow 1- 0 max 'cavenow ! )
+	<ri> =? ( cavenow 1+ 19 min 'cavenow ! )
+	<spc> =? ( playgame )
+	drop
+	;
+	
 : 
 	"r3 multisprite" 640 480 SDLinit
 	"media/ttf/VictorMono-Bold.ttf" 32 txload txfont
 	32 32  "media/img/bdash.png" ssload 'imgspr !
 
 	msec 'mseca ! 0 'deltat !
-	0 'cavenow ! 0 getCave
-		
-	'main sdlshow
+|	0 'cavenow ! 0 getCave
+
+	playgame		
+	
+|	'main sdlshow
 
 	;
