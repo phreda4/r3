@@ -239,12 +239,10 @@ $06 $03 $04 $25 $03 $03 $04 $27 $14 $FF )
 	ca@+ ca@+ ca@+ ca@+ rect! ;
 	
 #tlist t0 t1 t2 t3
-#level	
 
 :decodecave | level --
-	'level !
 	0 'randseed1 !
-	4 level + ]acave $ff and 'randseed2 ! | + dificult
+	4 + ]acave $ff and 'randseed2 ! | + dificult
 	b> 7 40 22 * cfill
 	3 ( 23 <=? 
 		0 ( 39 <=?
