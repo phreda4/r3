@@ -125,10 +125,7 @@
 			) drop
 		16 - ) drop
 	0 ;
-	
-:align16 | mem -- mem ; align to 16
-	$10 over $f and - $f and + ; 
-	
+		
 ::makemem
 	|-- make mem
 	here 

@@ -55,16 +55,48 @@
 		16 + ) drop
 	,eol ;
 
+
+|---------- TAGS in code	
+:,ncar | n -- 
+	97 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
+
+:buildinfo | infmov --
+	drop
+	;
+
 :wcolor
 	1 and? ( 201 .fc ; ) 196 .fc ;
 	
 :xwrite.word | str --
 	mark
-	str$>nro nip
-	nro>dic @ wcolor
-	dic>name "%w" ,print ,eol 
+	str$>nro nip 
+	nro>dic
+	@+ 
+	dup wcolor
+	dic>name "%w " ,print 
+	$5b1b ,w | esc
+	"30;1m" ,s
+	"|" ,s
+	swap @ 
+	dup $ff and 
+	dup ,ncar " -- " ,s	
+	swap 48 << 56 >> + abs ,ncar " | " ,s
+	$10 and? ( ";" ,s )	| multiple
+	$20 and? ( "R" ,s )	| recurse
+	$80 and? ( "." ,s )	| no ;
+	drop
+	,eol 
 	empty
 	here lwrite ;
+	
+| $..............01 - code/data
+| $..............02 - loc/ext
+| $..............04	1 es usado con direccion
+| $..............08	1 r esta desbalanceada		| var cte
+| $..............10	0 un ; 1 varios ;
+| $..............20	1 si es recursiva
+| $..............40	1 si tiene anonimas
+| $..............80	1 termina sin ;
 	
 |---- helpword
 #helpword * 32
@@ -159,7 +191,7 @@
 
 	'xwrite.word xwrite!
 	'vwords lwords tuList | 'var list --
-|	tuX? 1? ( setcursoride ) drop
+	tuX? 1? ( setcursoride ) drop
 	xwrite.reset
 	
 	uiKey
