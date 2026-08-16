@@ -47,7 +47,7 @@
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 )
 
-#nspr ( 0 84 85 86 87 88 89 90 1 2 3 4 5 )
+#nspr ( 0 12 13 14 15 16 17 18 19 20 21 22 )
 
 |------ DRAW MAP
 
@@ -73,8 +73,8 @@
 		
 |--------- PLAYER
 #nplay ( 
-91 92 91 93  
-94 95 94 96 
+3 4 3 5
+0 1 0 2  
 )
 
 #nstep
@@ -172,7 +172,7 @@
 :main
 	"r3sdl" 800 600 SDLinit
 
-	64 64 "media/img/sokoban_tilesheet.png" tsload 'ts_spr !
+	16 16  "media/img/arena-map.png" tsload 'ts_spr !
 	'demo SDLshow
 	
 	SDLquit

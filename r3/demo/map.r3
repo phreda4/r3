@@ -47,12 +47,12 @@
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 )
 
-#nspr ( 0 84 85 86 87 88 89 90 1 2 3 4 5 )
+#nspr ( 0 12 13 14 15 16 17 18 19 20 21 22 )
 	
 |----- PLAYER
 #nplay ( 
-91 92 91 93  
-94 95 94 96 
+3 4 3 5
+0 1 0 2  
 )
 
 #nstep
@@ -123,7 +123,8 @@
 	nstep 16 >> 'nplay + c@  
 	ts_spr
 	sw 1 >> sh 1 >> 
-	tsdraw 
+	64 64 
+	tsdraws
 	;
 
 :resetplayer
@@ -140,7 +141,7 @@
 	dup xp 22 >> +
 	pick2 yp 22 >> +
 	[map]@ 0? ( drop ; )
-	'nspr + c@ ts_spr xm ym tsdraw ;
+	'nspr + c@ ts_spr xm ym 64 64 tsdraws ;
 
 :drawrmap
 	-7 6 << sw 1 >> + xp 16 >> $3f and - 'xm !
@@ -171,7 +172,7 @@
 :main
 	"r3sdl" 800 600 SDLinit
 
-	64 64 "media/img/sokoban_tilesheet.png" tsload 'ts_spr !
+	16 16 "media/img/arena-map.png" tsload 'ts_spr !
 	'demo SDLshow
 	
 	SDLquit

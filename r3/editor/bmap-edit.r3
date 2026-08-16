@@ -302,8 +302,8 @@
 
 :emptymap
 	32 'mapw ! 32 'maph !
-	64 'tilew ! 64 'tileh ! 
-	"media/img/sokoban_tilesheet.png" 'tilefile strcpy
+	16 'tilew ! 16 'tileh ! 
+	"media/img/tiles.png" 'tilefile strcpy
 	tilew tileh 'tilefile tsload 'ts_spr !	
 	here 'mapmem !
 	mapw maph * 3 << 'here +!

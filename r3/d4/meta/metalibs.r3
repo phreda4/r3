@@ -26,7 +26,7 @@
 #name "r3/lib/color.r3"
 #words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmix4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
 #calls  'swapcolor 'colavg 'col50% 'col25% 'col33% 'colmix 'colmix4 'diffrgb2 'rgb2yuv 'yuv2rgb 'yuv32 'hsv2rgb 'rgb2hsv 'rgb2ycocg 'ycocg2rgb 'rgb2ycc 'rgb2yuv2 'yuv2rgb2 'RGB>Gbr 'Gbr>RGB 'RGB2YCoCg24 'YCoCg242RGB 'shadow4 'light4 'shadow8 'light8 'blend2 'b2color 'bgr2rgb '4bcol '4bicol
-#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $4E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
+#info ( $10 $2F $2F $2F $2F $3E $3E $2F $30 $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'calls 'info
 ^r3/lib/console.r3
 #name "r3/lib/console.r3"
@@ -78,9 +78,9 @@
 #r3_lib_jul.r3 'name 'words 'calls 'info
 ^r3/lib/math.r3
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#calls  'cell 'cell+ 'ncell+ '1+ '1- '2/ '2* '*.s '*. '*.f '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'msb 'ctz 'sqrt. 'log2. 'pow2. 'pow. 'root. 'ln. 'exp. 'tanh. 'fastanh. 'gamma. 'beta. 'cubicpulse 'pow 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '100000* '10000* '1000* '1000000* '100* '10* '10/ '10/mod '1000000/ 'i2fp 'f2fp 'memfloat 'mem2float 'memd2float 'fp2f 'fp2i 'fp16f 'f2fp24 'fp2f24 'byte>float32N 'float32N>byte
-#info ( $80 $10 $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
+#calls  'cell 'cell+ 'ncell+ 'ndword+ 'nword+ '1+ '1- '2/ '2* '*.s '*. '*.f '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'msb 'ctz 'sqrt. 'log2. 'pow2. 'pow. 'root. 'ln. 'exp. 'tanh. 'fastanh. 'gamma. 'beta. 'cubicpulse 'pow 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '100000* '10000* '1000* '1000000* '100* '10* '10/ '10/mod '1000000/ 'i2fp 'f2fp 'memfloat 'mem2float 'memd2float 'fp2f 'fp2i 'fp16f 'f2fp24 'fp2f24 'byte>float32N 'float32N>byte
+#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'calls 'info
 ^r3/lib/mem.r3
 #name "r3/lib/mem.r3"
@@ -192,9 +192,9 @@
 #r3_lib_sdlkeys.r3 'name 'words 'calls 'info
 ^r3/lib/str.r3
 #name "r3/lib/str.r3"
-#words  "strcpyl" "strcpy" "strcat" "strcpylnl" "strcpyln" "copynom" "copystr" "strpath" "toupp" "tolow" "count" "count" "utf8count" "utf8ncpy" "utf8bytes" "=" "cmpstr" "=s" "=w" "=pre" "=pos" "=lpos" "findchar" "findstr" "findstri" ".d" ".b" ".h" ".o" ".f" ".f2" ".f1" ".r." ".fd" "trim" "trimc" "trimcar" "trimstr" ">>cr" ">>0" "l0count" "n>>0" "only13" ">>sp" ">>str" 0
-#calls  'strcpyl 'strcpy 'strcat 'strcpylnl 'strcpyln 'copynom 'copystr 'strpath 'toupp 'tolow 'count 'count 'utf8count 'utf8ncpy 'utf8bytes '= 'cmpstr '=s '=w '=pre '=pos '=lpos 'findchar 'findstr 'findstri '.d '.b '.h '.o '.f '.f2 '.f1 '.r. '.fd 'trim 'trimc 'trimcar 'trimstr '>>cr '>>0 'l0count 'n>>0 'only13 '>>sp '>>str
-#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $11 $3E $20 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $10 $10 $10 $10 $10 $10 $10 $2F $10 $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 )
+#words  "strcpyl" "strcpy" "strcat" "strcpylnl" "strcpyln" "copynom" "copystr" "strpath" "toupp" "tolow" "count" "count" "utf8count" "utf8ncpy" "utf8bytes" "=" "cmpstr" "=s" "=w" "=pre" "=pos" "=lpos" "findchar" "findstr" "findstri" "rfindstri" ".d" ".b" ".h" ".o" ".f" ".f2" ".f1" ".r." ".fd" "trim" "trimc" "trimcar" "trimstr" ">>cr" ">>0" "l0count" "n>>0" "only10" "only13" ">>sp" ">>str" 0
+#calls  'strcpyl 'strcpy 'strcat 'strcpylnl 'strcpyln 'copynom 'copystr 'strpath 'toupp 'tolow 'count 'count 'utf8count 'utf8ncpy 'utf8bytes '= 'cmpstr '=s '=w '=pre '=pos '=lpos 'findchar 'findstr 'findstri 'rfindstri '.d '.b '.h '.o '.f '.f2 '.f1 '.r. '.fd 'trim 'trimc 'trimcar 'trimstr '>>cr '>>0 'l0count 'n>>0 'only10 'only13 '>>sp '>>str
+#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $11 $3E $20 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $3E $10 $10 $10 $10 $10 $10 $10 $2F $10 $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 $10 )
 #r3_lib_str.r3 'name 'words 'calls 'info
 ^r3/lib/tflite.r3
 #name "r3/lib/tflite.r3"

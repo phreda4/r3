@@ -44,7 +44,7 @@
 	ayp axp vyp vxp "%f %f %f %f" sprint bprint	
 
 	|cohete 1? ( fuego ) drop 
-	nspr sprplayer xp int. yp int. tsdraw
+	nspr sprplayer xp int. yp int. 64 64 tsdraws
 
 	xp vxp axp +
 	1.9 clampmax -1.9 clampmin | limites x
@@ -66,8 +66,8 @@
 :teclado
 	SDLkey 
 	>esc< =? ( exit )
-	<up> =? ( -0.2 'ayp ! 91 'nspr ! )	>up< =? ( 0 'ayp ! )	
-	<le> =? ( -0.2 'axp ! 94 'nspr ! ) >le< =? ( 0 'axp ! )	
+	<up> =? ( -0.2 'ayp ! 0 'nspr ! )	>up< =? ( 0 'ayp ! )	
+	<le> =? ( -0.2 'axp ! 3 'nspr ! ) >le< =? ( 0 'axp ! )	
 	<ri> =? ( 0.2 'axp ! ) >ri< =? ( 0 'axp ! )
 	<spc> =? ( xp yp +disparo )
 	drop 
@@ -88,7 +88,7 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1 
 	|SDLfull
-	64 64 "media/img/sokoban_tilesheet.png" tsload 'sprplayer !
+	16 16 "media/img/arena-map.png" tsload 'sprplayer !
 
 	'juego SDLshow
 	SDLquit ;	
