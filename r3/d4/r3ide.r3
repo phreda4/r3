@@ -26,52 +26,36 @@
 :printfname
 	.sp 'filename .write .sp ;
 
-|----
-:makelistwordsfull
-	here 'lwords !
-	0 ( cntdef <?
-		dup nro>dic 
-		@ dic>name "%w" ,print ,eol 
-		1+ ) drop 
-	,eol ;
-	
-
 :makelistwords
-	here 'lwords !
-	0 ( cntdef <?
-		dup .h ,s ,eol
-		|nro>dic @ dic>name "%w" ,print ,eol 
-		1+ ) drop 
-	,eol ;
-
-|---- list words
-:chooseword
-	dup dic - 4 >> .h ,s ,eol ;
-	
-:makelistwords
-	here 'lwords !
-	dic< ( dic> <? | solo codigo principal
-		chooseword
+	here dup 'lwords !
+	dic< 
+	|dic
+	( dic> <? | solo codigo principal
+		dup dic - 4 >> 1+ rot w!+ swap
 		16 + ) drop
-	,eol ;
-
+	0 swap w!+ 'here ! ;
 
 |---------- TAGS in code	
 :,ncar | n -- 
 	97 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
 
-:buildinfo | infmov --
-	drop
-	;
-
 :wcolor
 	1 and? ( 201 .fc ; ) 196 .fc ;
+		
+| $..............01 - code/data
+| $..............02 - loc/ext
+| $..............04	1 es usado con direccion
+| $..............08	1 r esta desbalanceada		| var cte
+| $..............10	0 un ; 1 varios ;
+| $..............20	1 si es recursiva
+| $..............40	1 si tiene anonimas
+| $..............80	1 termina sin ;
 	
-:xwrite.word | str --
+:xwriten.word | n --
+	1- $ffff and 
+	|cntdicc >=? ( drop "" lwrite ; ) 
 	mark
-	str$>nro nip 
-	nro>dic
-	@+ 
+	nro>dic @+ 
 	dup wcolor
 	dic>name "%w " ,print 
 	$5b1b ,w | esc
@@ -88,15 +72,6 @@
 	,eol 
 	empty
 	here lwrite ;
-	
-| $..............01 - code/data
-| $..............02 - loc/ext
-| $..............04	1 es usado con direccion
-| $..............08	1 r esta desbalanceada		| var cte
-| $..............10	0 un ; 1 varios ;
-| $..............20	1 si es recursiva
-| $..............40	1 si tiene anonimas
-| $..............80	1 termina sin ;
 	
 |---- helpword
 #helpword * 32
@@ -129,10 +104,9 @@
 		'helpword =w 1? ( drop ; )
 		drop ) ;
 	
-	
 |---- screen
 :setcursoride
-	vwords uiNindx str$>nro nip
+	vwords uiNindxn 1-
 	nro>dic @
 	|40 >> src + "%l" sprint 'msg strcpy 
 	40 >>> fuente + |1- | :#
@@ -189,8 +163,8 @@
 	flxRest .reset
 	tuwina $1 " Rx " .wtitle 1 1 flpad .wfill 
 
-	'xwrite.word xwrite!
-	'vwords lwords tuList | 'var list --
+	'xwriten.word xwriten!
+	'vwords lwords tuListn | 'var list --
 	tuX? 1? ( setcursoride ) drop
 	xwrite.reset
 	

@@ -441,7 +441,7 @@
 	swap - 2/ 1-
 	'cntlist ! ;
 
-:uiNindxn
+::uiNindxn
 	cntlist >=? ( drop 0 ; )
 	2* indlist + w@ ;
 
