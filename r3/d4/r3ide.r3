@@ -37,11 +37,8 @@
 
 |---------- TAGS in code	
 :,ncar | n -- 
-	97 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
+	65 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
 
-:wcolor
-	1 and? ( 201 .fc ; ) 196 .fc ;
-		
 | $..............01 - code/data
 | $..............02 - loc/ext
 | $..............04	1 es usado con direccion
@@ -50,28 +47,27 @@
 | $..............20	1 si es recursiva
 | $..............40	1 si tiene anonimas
 | $..............80	1 termina sin ;
-	
-:xwriten.word | n --
-	1- $ffff and 
-	|cntdicc >=? ( drop "" lwrite ; ) 
-	mark
+
+:wordhead
 	nro>dic @+ 
-	dup wcolor
-	dic>name "%w " ,print 
-	$5b1b ,w | esc
-	"30;1m" ,s
-	"|" ,s
+	1 and? ( 201 .fc dic>name "#%w" ,print ,eol drop ; ) 
+	196 .fc 
+	dup 
+	dic>name ":%w | " ,print 
+	|$5b1b ,w "30;1m" ,s "|" ,s
 	swap @ 
-	dup $ff and 
-	dup ,ncar " -- " ,s	
-	swap 48 << 56 >> + abs ,ncar " | " ,s
+	dup $ff and dup ,ncar " -- " ,s	swap 48 << 56 >> + abs ,ncar 
+	"  " ,s
 	$10 and? ( ";" ,s )	| multiple
 	$20 and? ( "R" ,s )	| recurse
 	$80 and? ( "." ,s )	| no ;
 	drop
-	,eol 
-	empty
-	here lwrite ;
+	,eol ;
+	
+:xwriten.word | n --
+	1- $ffff and 
+	|cntdicc >=? ( drop "" lwrite ; ) 
+	mark wordhead empty here lwrite ;
 	
 |---- helpword
 #helpword * 32
@@ -93,7 +89,10 @@
 	fuente> <<sp cpyhword ;
 
 :<<: | adr -- adr' ; adr@=:
-	( fuente =? ( ; ) dup 1- c@ $3a <>? drop 1- ) drop ;
+	( fuente =? ( ; ) dup 1- c@ 
+		$3a <>? | :
+		$23 <>? | #
+		drop 1- ) drop ;
 
 :cpydefword 
 	fuente> <<: cpyhword ;
@@ -105,8 +104,11 @@
 		drop ) ;
 	
 |---- screen
+#nowword
+
 :setcursoride
 	vwords uiNindxn 1-
+	dup 'nowword !
 	nro>dic @
 	|40 >> src + "%l" sprint 'msg strcpy 
 	40 >>> fuente + |1- | :#
@@ -140,14 +142,40 @@
 	;
 	
 |--- F3 Fx
-#rxword
+#vanaly 0 0
+#lanaly * $ffff
 
+:.tokenprint
+	$ff and 6 >? ( 7 - basename ; ) 
+	"%h " sprint ;
+	 	 
+:setanalysis
+	mark
+	'lanaly 'here !
+	resetinfo
+	nowword 
+	nro>dic
+|	dup "%d >> " ,print
+|	dup @ dic>name "%w" ,print 0 ,c
+	dup toklen 
+|	dup "%d" ,print
+	( 1? 1- swap
+		@+ 
+		dup .tokenprint ,s
+		tokeninfo		
+		wwinfo " %h" ,print 0 ,c
+		swap ) 2drop
+	0 ,c
+	empty
+	0 'vanaly !	
+	;
+	
 :fxwin
 	.reset .home 9 .bc 0 .fc 
 	1 flxN 
 	" r3Rx | " .write printfname 
 	" | " .write tuecursor. .write 
-	rxword " >>%d<< " .print
+	|rxword " >>%d<< " .print
 	'helpword .write
 	.eline
 	
@@ -158,26 +186,44 @@
 	'msg .write
 	.eline
 	
-	cols 2/ flxO | 1/2 of screen
-	tuReadCode
-	flxRest .reset
+	cols 2 >> flxO | 1/4 of screen
+	.reset
 	tuwina $1 " Rx " .wtitle 1 1 flpad .wfill 
-
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
 	tuX? 1? ( setcursoride ) drop
 	xwrite.reset
+
+	cols 2 >> flxE
+	.reset
+	tuwina $1 " Static Analysis " .wtitle 1 1 flpad .wfill 
+|'anal	 .write
+	
+	'vanaly 'lanaly tuList | 'var list --
+|	tuX? 1? ( setcursoride ) drop
+	
+	flxRest 
+	tuReadCode
 	
 	uiKey
 |	[f3] =? ( anacode )
+	[enter] =? ( setanalysis )
 	drop ;
 
+:setvwords | nrow --
+	lwords ( w@+ 1?
+		pick2 =? ( drop nip lwords - 1 >> 'vwords ! ; ) 
+		drop ) 2drop 
+	0 'vwords ! ;
+	
 :fxcode
 	checkcode error 1? ( drop moderror ; ) drop
 	cpydefword
 	'helpword c@ 0? ( drop "DEFINITION NOT FOUND" 'helpword strcpy ; ) drop
-	searchword 'rxword !
 	makelistwords
+	searchword dup 'nowword ! setvwords
+	
+	setanalysis
 	
 	'fxwin onTui
 	;

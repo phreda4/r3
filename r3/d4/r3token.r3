@@ -469,7 +469,7 @@
 #finlist * 800  | 100 ;
 #lastdircode
 
-:resetinfo | --
+::resetinfo | --
 	0 'flag !
 	'sst 'sst> !		| stack
 	0 'pano ! 0 'cano ! 0 'cntfin !
@@ -581,7 +581,6 @@
 	3 << 'toklis + @ ex	
 	;
 
-
 :anacode | dic --
 	|dup @ dic>name "%w" .println
 	
@@ -598,7 +597,11 @@
 	usod $ff and deltad $ff and 8 << or
 	swap 8 + dup @ rot or swap ! | store stackmov
 	;
-
+::wwinfo	
+	deltaD $ff and 8 << 
+	usoD $ff and or 8 << 
+	deltaR $ff and or ;
+	
 :resetinfod | --
 	;
 	

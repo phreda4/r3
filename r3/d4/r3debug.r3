@@ -48,7 +48,7 @@
 
 :xwriten.word | n --
 	1- $ffff and 
-	cntdicc >=? ( drop "" lwrite ; ) 
+	|cntdicc >=? ( drop "" lwrite ; ) 
 	mark
 	ndicc@ 
 	|dup 58 >>> "%d " ,print | nro include
