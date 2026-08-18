@@ -597,6 +597,7 @@
 	usod $ff and deltad $ff and 8 << or
 	swap 8 + dup @ rot or swap ! | store stackmov
 	;
+	
 ::wwinfo	
 	deltaD $ff and 8 << 
 	usoD $ff and or 8 << 

@@ -112,7 +112,8 @@
 	nro>dic @
 	|40 >> src + "%l" sprint 'msg strcpy 
 	40 >>> fuente + |1- | :#
-	tuiecursor!	;
+	tuiecursor!	
+	;
 		
 |---- CHECKCODE
 :cntlines | -- nrolin
@@ -145,69 +146,97 @@
 #vanaly 0 0
 #lanaly * $ffff
 
+|:.l	40 >>> src + "%w" ,print ;
+
+|#bmacro .l .l .word .wadr .var .vadr .str 
+
 :.tokenprint
-	$ff and 6 >? ( 7 - basename ; ) 
-	"%h " sprint ;
+	$ff and 6 >? ( 7 - basename ; ) drop
+	dup 40 >>> src + "%w" sprint
+	|3 << 'bmacro + @ ex 
+	;
 	 	 
+:buildline | str --
+	,s
+	tokeninfo		
+	wwinfo 
+	16 >> 
+	$ff and 
+	" %h" ,print 
+	
+	0 ,c
+
+|	deltaD $ff and 8 << 
+|	usoD $ff and or 8 << 
+|	deltaR $ff and or ;
+	;
+	
 :setanalysis
 	mark
 	'lanaly 'here !
 	resetinfo
-	nowword 
-	nro>dic
+	nowword nro>dic
 |	dup "%d >> " ,print
 |	dup @ dic>name "%w" ,print 0 ,c
-	dup toklen 
-|	dup "%d" ,print
+	toklen | tok len
 	( 1? 1- swap
 		@+ 
-		dup .tokenprint ,s
-		tokeninfo		
-		wwinfo " %h" ,print 0 ,c
+		dup .tokenprint 
+		buildline
 		swap ) 2drop
 	0 ,c
 	empty
 	0 'vanaly !	
 	;
 	
-:fxwin
-	.reset .home 9 .bc 0 .fc 
-	1 flxN 
-	" r3Rx | " .write printfname 
-	" | " .write tuecursor. .write 
-	|rxword " >>%d<< " .print
-	'helpword .write
-	.eline
-	
-	1 flxS 
-	fx fy .at 
-	" ^[7mESC^[27m Exit help | " .printe 
-	'helpword .write " | " .write
-	'msg .write
-	.eline
-	
-	cols 2 >> flxO | 1/4 of screen
+#modefx
+:fxlist
+	cols 2/ flxE | 1/4 of screen
 	.reset
 	tuwina $1 " Rx " .wtitle 1 1 flpad .wfill 
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
 	tuX? 1? ( setcursoride ) drop
 	xwrite.reset
+	;
 
-	cols 2 >> flxE
+:fxword
+	cols 2/ flxE
 	.reset
-	tuwina $1 " Static Analysis " .wtitle 1 1 flpad .wfill 
-|'anal	 .write
-	
+	tuwina $1 " Word " .wtitle 1 1 flpad .wfill 
 	'vanaly 'lanaly tuList | 'var list --
+
 |	tuX? 1? ( setcursoride ) drop
+	;
+
+#modelfx fxlist fxword
+
+:fxwin
+	.reset .home 9 .bc 0 .fc 
+	1 flxN 
+	" r3Rx | " .write printfname 
+	" | " .write tuecursor. .write 
+	'helpword .write
+	.eline
+	
+	1 flxS 
+	fx fy .at 
+	" ^[7mESC^[27m Exit rx ^[7mENTER^[27m Word | " .printe 
+	'helpword .write " | " .write
+	'msg .write
+	.eline
+	
+	modefx 3 << 'modelfx + @ ex
 	
 	flxRest 
 	tuReadCode
 	
 	uiKey
+|	[esc] =? ( exit )
 |	[f3] =? ( anacode )
-	[enter] =? ( setanalysis )
+	[enter] =? ( setanalysis 1 'modefx ! )
+	[back] =? ( modefx 0? ( exit ) drop 0 'modefx ! )
+|	[del] =? ( 0 'modefx ! )
 	drop ;
 
 :setvwords | nrow --
@@ -222,10 +251,11 @@
 	'helpword c@ 0? ( drop "DEFINITION NOT FOUND" 'helpword strcpy ; ) drop
 	makelistwords
 	searchword dup 'nowword ! setvwords
-	
 	setanalysis
-	
+	0 'modefx !
 	'fxwin onTui
+	0 'uikey !
+	tuR!
 	;
 	
 |-------------------------------	
@@ -327,6 +357,8 @@
 	
 	uiKey
 |	[f3] =? ( anacode )
+| busqueda
+
 	drop ;
 	
 :wordshow
