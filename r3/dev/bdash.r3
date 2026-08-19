@@ -291,8 +291,7 @@
 			xviewd 'xview ! yviewd 'yview ! ) 
 		drop ) drop 
 	doorplace c@ $4 =? ( $7 doorplace c! ) drop
-	
-	'cave showsb .flush		
+	|'cave showsb .flush		
 	;
 
 :getCave | dc --
@@ -366,6 +365,7 @@
 	0 'wingame !
 	
 	( buildcave
+		msec 'mseca ! 0 'deltat !
 		'game SDLShow
 		
 		1 'cavenow +!
@@ -417,12 +417,6 @@
 	"r3 multisprite" 640 480 SDLinit
 	"media/ttf/VictorMono-Bold.ttf" 32 txload txfont
 	32 32  "media/img/bdash.png" ssload 'imgspr !
-
-	msec 'mseca ! 0 'deltat !
-|	0 'cavenow ! 0 getCave
-
-	playgame		
-	
-|	'main sdlshow
-
+	|0 'cavenow ! 0 getCave
+	'main sdlshow
 	;

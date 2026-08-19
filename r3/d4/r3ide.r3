@@ -155,17 +155,22 @@
 	dup 40 >>> src + "%w" sprint
 	|3 << 'bmacro + @ ex 
 	;
-	 	 
+	
+:,scnt | str cnt --
+	swap utf8count	| cnt str scount
+	pick2 >? ( drop over ) 
+	swap		| cnt scnt str
+	here pick2 utf8ncpy 'here !
+	- ,nsp ;
+	
 :buildline | str --
-	,s
+	10 ,scnt
 	tokeninfo		
 	wwinfo 
 	16 >> 
 	$ff and 
 	" %h" ,print 
-	
 	0 ,c
-
 |	deltaD $ff and 8 << 
 |	usoD $ff and or 8 << 
 |	deltaR $ff and or ;
@@ -180,9 +185,7 @@
 |	dup @ dic>name "%w" ,print 0 ,c
 	toklen | tok len
 	( 1? 1- swap
-		@+ 
-		dup .tokenprint 
-		buildline
+		@+ dup .tokenprint buildline
 		swap ) 2drop
 	0 ,c
 	empty
@@ -205,7 +208,6 @@
 	.reset
 	tuwina $1 " Word " .wtitle 1 1 flpad .wfill 
 	'vanaly 'lanaly tuList | 'var list --
-
 |	tuX? 1? ( setcursoride ) drop
 	;
 
@@ -232,8 +234,6 @@
 	tuReadCode
 	
 	uiKey
-|	[esc] =? ( exit )
-|	[f3] =? ( anacode )
 	[enter] =? ( setanalysis 1 'modefx ! )
 	[back] =? ( modefx 0? ( exit ) drop 0 'modefx ! )
 |	[del] =? ( 0 'modefx ! )
