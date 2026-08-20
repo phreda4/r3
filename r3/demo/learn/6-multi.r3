@@ -77,7 +77,7 @@
 	
 	$4cff4c txrgb
 	$11 txalign  | Center horizontally and vertically
-	300 20 200 100 
+	400 20 150 100 
 "Multisprite demo
 [SPC] add more people
 [ESC] to exit" 

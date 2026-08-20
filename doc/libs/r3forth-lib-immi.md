@@ -37,17 +37,35 @@ IMMI (Immediate Mode Interface) v.3 provides a stateless GUI system where widget
 
 ### Layout Stack
 
-- **`uiPush`** `( -- )` - Save current layout state
-  - Pushes current box dimensions onto stack
-  - Allows nested layouts
+There is a single active layout stack level (`flstack` top) at any time.
+`uiN`/`uiS`/`uiE`/`uiO` do not create anything new: they **carve a piece
+off the active level** and hand it to the cursor; whatever remains stays
+mutated in that same level for further carving.
 
-- **`uiPop`** `( -- )` - Restore previous layout state
-  - Pops layout from stack
-  - Returns to previous UI region
+- **`uiPush`** `( -- )` - Freeze the current cursor area as a new stack
+  level. Carves (`uiN`/`uiS`/`uiE`/`uiO`) done after this only consume
+  that area, without touching the parent level.
+  ```
+  0.3 %w uiO   | cursor = left 30%
+  uiPush       | that area becomes its own level to subdivide
+  ```
 
-- **`uiRest`** `( -- )` - Restore layout without popping
-  - Resets to current saved layout
-  - Useful for repetitive operations
+- **`uiPop`** `( -- )` - Discard the current level and go back to the
+  parent level's remainder, exactly as it was at the time of the
+  matching `uiPush` (unaffected by anything carved inside the child).
+
+- **`uiRest`** `( -- )` - Does not touch the stack. Just refreshes the
+  cursor to the active level's *current remainder* (typically used
+  after cutting off a top and/or bottom strip, to grab "whatever is
+  left in the middle").
+
+**Rule of thumb:** if you're subdividing an area into sub-zones that
+must not eat into each other, `uiPush` before you start carving that
+area and `uiPop` when you're done with it. If you're just cutting
+successive strips off the same level and never need to come back, you
+don't need push/pop at all.
+
+See **"Building Nested Layouts"** below for a full worked example.
 
 ### Layout Subdivision
 
@@ -82,8 +100,13 @@ IMMI (Immediate Mode Interface) v.3 provides a stateless GUI system where widget
 - **`uiGrid`** `( cols rows -- )` - Create grid layout
   - Divides current box into cols×rows grid
   - Automatically adjusts for fit
+  - **Cells are always uniform** (`flcolm = fw/cols`, `flrowm = fh/rows`).
+    There is no built-in support for columns/rows of unequal size. For
+    unequal columns, don't use `uiGrid` — chain manual `uiO`/`uiE` cuts
+    instead (optionally with `uiPush`/`uiPop` per column if each one
+    needs its own internal sub-layout). See "Building Nested Layouts".
   ```
-  3 4 uiGrid  | 3 columns, 4 rows
+  3 4 uiGrid  | 3 columns, 4 rows, all equal size
   ```
 
 - **`uiNext`** `( -- )` - Move to next grid cell (row-major order)
@@ -220,7 +243,9 @@ All callbacks execute only when their condition is met:
 - **`uiTex`** `( texture -- )` - Draw texture at cursor
   - Stretches texture to cursor size
 
-- **`uiWinBox`** `( -- x y w h )` - Get current window box dimensions
+- **`uiWinBox`** `( -- x y w h )` - Get the raw frame of the last
+  processed layout level (`fx fy fw fh`). Not necessarily the whole
+  window — it's whatever frame is currently active.
 
 ### Line-based Drawing
 
@@ -260,6 +285,13 @@ colFoc  | Focus highlight color
 - **`stLink`** `( -- )` - Link style (dark blue) `$ff4258FFff000F85`
 - **`stDark`** `( -- )` - Dark style `$ff393F4Cff14161A`
 - **`stLigt`** `( -- )` - Light style `$ffaaaaaaff888888`
+
+- **`stColor`** `( rgb -- )` - Build `colFil` from a plain 24-bit RGB
+  value (blends with white for the alternate variant, packs full
+  alpha), for cases where the preset styles above don't fit.
+  ```
+  $ff8800 stColor  | custom orange fill
+  ```
 
 ---
 
@@ -342,10 +374,13 @@ colFoc  | Focus highlight color
 ### Progress Bars
 
 - **`uiProgressf`** `( min max 'var -- )` - Fixed-point progress bar
-  - Non-interactive display of progress
-  - Can be made interactive by enabling selection
+  - **Currently draggable just like `uiSliderf`** (shares the same
+    `slideh` drag handler, only the drawing routine differs). If a
+    read-only progress bar is what you actually want, this needs a
+    code fix — don't rely on it being non-interactive.
 
 - **`uiProgressi`** `( min max 'var -- )` - Integer progress bar
+  - Same caveat as `uiProgressf` above.
 
 ---
 
@@ -355,14 +390,13 @@ colFoc  | Focus highlight color
 
 - **`uiCheck`** `( 'var 'list -- )` - Multiple checkbox list
   - 'var': variable holding bitmask of selected items
-  - 'list': null-terminated string list
+  - 'list': null-terminated string list (**not** a bracketed array —
+    see the format below)
   - Each line becomes one checkbox
   - Uses icons: 139 (checked), 138 (unchecked)
   ```
   #options 0
-  [ "Option 1" 0
-    "Option 2" 0
-    "Option 3" 0 ]
+  #optionList "Option 1" "Option 2" "Option 3" 0
   'options 'optionList uiCheck
   ```
 
@@ -594,6 +628,54 @@ uiEnd
 
 ---
 
+## Building Nested Layouts
+
+`uiN`/`uiS`/`uiE`/`uiO` carve a slice off the active stack level and
+put it in the cursor; the leftover stays in that same level. `uiPush`
+opens a fresh level from the current cursor area so you can carve
+inside it independently; `uiPop` throws that level away and returns
+to the parent's leftover exactly as it was before the push.
+
+**Example:** a left panel containing a top bar, a variable-width
+column grid in the middle, and a bottom bar — with the right side of
+the screen left untouched for something else.
+
+```r3forth
+uiStart
+uiFull
+
+0.3 %w uiO        | cursor = left 30% of the screen
+uiPush            | work inside that area independently
+
+  60 uiN          | top strip, 60px
+  ... draw top bar ...
+
+  80 uiS          | bottom strip, 80px
+  ... draw bottom bar ...
+
+  uiRest          | cursor = whatever is left in the middle
+
+  | uiGrid only does uniform cells - for unequal columns,
+  | chain manual cuts instead:
+  0.2 %w uiO      | column 1: 20%
+  ... column 1 content ...
+  0.5 %w uiO      | column 2: 50% of what remained
+  ... column 2 content ...
+  uiRest          | column 3: whatever is left
+
+uiPop             | back to the untouched right 70% of the screen
+... right side content ...
+
+uiEnd
+```
+
+If any of those columns needs its own internal rows/sub-areas, wrap
+it in another `uiPush` / `uiPop` pair — the same rule applies at every
+nesting depth: **push before you start carving a self-contained area,
+pop when you're done with it.**
+
+---
+
 ## Notes
 
 - **Immediate mode**: Widgets must be recreated every frame
@@ -619,9 +701,14 @@ uiEnd
 
 1. **Always call uiStart/uiEnd** - Required for each frame
 2. **Set layout first** - Use uiBox/uiFull before widgets
-3. **Use uiPush/uiPop** - For nested layouts
+3. **Use uiPush/uiPop** - For nested layouts, one pair per self-contained area
 4. **Set colors before drawing** - Style affects subsequent widgets
 5. **Check uiEx?** - After interactive widgets to detect activation
 6. **Store widget state externally** - Variables must persist between frames
 7. **Consistent ordering** - Keep widget order same each frame for focus
+
+## Known Issues (source audit, not yet fixed in code)
+
+- `uiProgressf`/`uiProgressi` are draggable (see their entries above),
+  which may not be the intended behavior for a "progress" widget.
 

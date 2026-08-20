@@ -223,7 +223,7 @@
 	
 	1 flxS 
 	fx fy .at 
-	" ^[7mESC^[27m Exit rx ^[7mENTER^[27m Word | " .printe 
+	" ^[7mESC^[27m Exit rx ^[7mENTER^[27m Word ^[7mDel^[27m Dicc | " .printe 
 	'helpword .write " | " .write
 	'msg .write
 	.eline
