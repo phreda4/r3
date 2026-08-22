@@ -115,8 +115,8 @@
 #info ( $0 $0 $3E $10 $2F $10 $10 $10 $10 $10 $3E $3E $10 $10 $2F $1F $2F $1F $10 $2E $2E $2E $2F $3E $3E $2F $2F $1F $10 $2F $2F $2F $1F $1 )
 #r3_lib_sdl2net.r3 'name 'words 'info $4F5
 #name "r3/lib/sdl2poly.r3"
-#words  "SDLop" "SDLop2" "SDLpline" "SDLpoly" "SDLFngon" "linegr!" "linegr" "gop" "gline" "SDLngon" 0
-#info ( $2E $2E $2E $0 $5B $1F $1 $2E $2E $5B )
+#words  "polyop" "polyline" "fngon" "linegr!" "linegr" "gop" "gline" "ngon" 0
+#info ( $2E $2E $5B $1F $1 $2E $2E $5B )
 #r3_lib_sdl2poly.r3 'name 'words 'info $503
 #name "r3/lib/sdl2ttf.r3"
 #words  "TTF_Init" "TTF_OpenFont" "TTF_SetFontStyle" "TTF_SetFontOutline" "TTF_SetFontLineSkip" "TTF_SetFontWrappedAlign" "TTF_SetFontSize" "TTF_SetFontSDF" "TTF_SizeText" "TTF_SizeUTF8" "TTF_MeasureUTF8" "TTF_RenderText_Solid" "TTF_RenderUTF8_Solid" "TTF_RenderText_Shaded" "TTF_RenderUTF8_Shaded" "TTF_RenderText_Blended" "TTF_RenderUTF8_Blended" "TTF_RenderUTF8_Blended_Wrapped" "TTF_RenderUNICODE_Blended" "TTF_CloseFont" "TTF_Quit" 0

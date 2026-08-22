@@ -146,30 +146,30 @@
 #vanaly 0 0
 #lanaly * $ffff
 
-|:.l	40 >>> src + "%w" ,print ;
-
 |#bmacro .l .l .word .wadr .var .vadr .str 
 
-:.tokenprint
+:tok2str | tok -- str
 	$ff and 6 >? ( 7 - basename ; ) drop
 	dup 40 >>> src + "%w" sprint
 	|3 << 'bmacro + @ ex 
 	;
 	
 :,scnt | str cnt --
-	swap utf8count	| cnt str scount
-	pick2 >? ( drop over ) 
-	swap		| cnt scnt str
+	swap utf8count					| cnt str scount
+	pick2 >? ( drop over ) swap	| cnt scnt str
 	here pick2 utf8ncpy 'here !
 	- ,nsp ;
 	
-:buildline | str --
-	10 ,scnt
-	tokeninfo		
+:buildline | token --
+	dup tok2str		| tok str
+	20 ,scnt
+	tokeninfo	
 	wwinfo 
-	16 >> 
-	$ff and 
-	" %h" ,print 
+	dup 32 >> $f and swap
+	
+	16 >> $ff and |,ncar
+	" %h %d" ,print 
+	
 	0 ,c
 |	deltaD $ff and 8 << 
 |	usoD $ff and or 8 << 
@@ -185,7 +185,7 @@
 |	dup @ dic>name "%w" ,print 0 ,c
 	toklen | tok len
 	( 1? 1- swap
-		@+ dup .tokenprint buildline
+		@+ buildline
 		swap ) 2drop
 	0 ,c
 	empty

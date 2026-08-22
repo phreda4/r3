@@ -4,7 +4,7 @@
 ^r3/lib/console.r3
 
 ^r3/d4/r3token.r3
-^r3/d4/genx64.r3
+|^r3/d4/genx64.r3
 
 #filename * 1024
 
@@ -20,10 +20,11 @@
 
 |------------------
 :codew | nro -- nro
-	dup 4 << dic + @ dic>name "%w" .println | debug
+	dup 4 << dic + @ dic>name "%w " .print | debug
 	;	
 	
 :generatecode	
+	"generate..." .println
 	0 ( cntdef 1- <?
 		codew
 		1+ )

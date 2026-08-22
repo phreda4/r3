@@ -506,24 +506,29 @@
 		34 =? ( drop c@+ 34 <>? ( 2drop ; ) )
 		is25 ) 2drop ;
 		
+|------------		
 :.blit 
 :.lit
+:.data 
+:.adata 
+	drop
 	;
+	
 :.code 
-	dup 8 - @ tok>dic 
+	|dup 8 - @
+	tok>dic 
 	dup @ 8 >> $ff and flag or 'flag !	| copy flags2 from called word
 	8 + @ 								| get info2 from word
 	dup $ff and deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
+	
 :.acode 
-	dup 8 - @ 8 >> $ffffff and 'lastdircode ! ;
-:.data 
-:.adata 
-	;
+	|dup 8 - @ 
+	8 >> $ffffff and 'lastdircode ! ;
+	
 :.str
- 	dup 8 - @ 
-|	dup "%h " .print
+ 	|dup 8 - @ 
 	8 >> $ffffffff and strm + | string
 |	dup .write .cr
 	strusestack 
@@ -531,25 +536,32 @@
 	neg 'deltaD +!
 	;
 :.;
-	pano 1? ( drop ; ) drop
+	|drop
+	pano 1? ( 2drop ; ) 2drop
 	deltaD $ff and 8 << 
 	usoD $ff and or 8 << 
 	deltaR $ff and or
 	cntfin 3 << 'finlist + !
 	1 'cntfin +! ;
 :.(
+	drop
 	pushvar ;
 :.)
+	drop
 	popvar ;
 :.[
+	drop
 	pushvar 1 'pano +! 1 'cano +! ;
 :.]
+	drop
 	popvar -1 'pano +! 1 'deltad +! ; | push adr
 :.??
-	dup 8 - @ 24 << 32 >> over + 8 - 		| go to )
+	|dup 8 - @ 
+	24 << 32 >> over + 8 - 		| go to )
 	@ 8 >> $ffffff and 0? ( drop ; ) drop	| IF -> do nothing
 	dropvar pushvar ; 						| WHILE -> copy stack
 :.ex
+	drop
 	lastdircode nro>dic 8 + @
 	dup $ff and deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
@@ -568,22 +580,21 @@
 	6 >? ( dup 7 - basename .print ) drop
 	;
 	
-::tokeninfo | t --
-|	dup $ffffffff and "%h " .print
+::tokeninfo | tok --
 |	debuginfo
-	$ff and dup r3ainfo
+	dup $ff and | tok ntok
+	dup r3ainfo
 	c@+ deltaD swap - neg clamp0 usoD max 'usoD !
 	c@+ 'deltaD +!
 	c@+ 'deltaR +!
 	c@ $ff and flag or 'flag !
 |	usoD deltaD " d:%d u:%d " .println
-	25 >? ( drop ; )
+	25 >? ( 2drop ; )
 	3 << 'toklis + @ ex	
 	;
 
 :anacode | dic --
 	|dup @ dic>name "%w" .println
-	
 	resetinfo
 	dup toklen ( 1? 1- swap
 		@+ tokeninfo 
@@ -601,7 +612,9 @@
 ::wwinfo	
 	deltaD $ff and 8 << 
 	usoD $ff and or 8 << 
-	deltaR $ff and or ;
+	deltaR $ff and or 
+	sst> 'sst - 2 >> $ff and 32 << or
+	;
 	
 :resetinfod | --
 	;

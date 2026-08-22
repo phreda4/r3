@@ -174,9 +174,9 @@
 #r3_lib_sdl2net.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2poly.r3
 #name "r3/lib/sdl2poly.r3"
-#words  "SDLop" "SDLop2" "SDLpline" "SDLpoly" "SDLFngon" "linegr!" "linegr" "gop" "gline" "SDLngon" 0
-#calls  'SDLop 'SDLop2 'SDLpline 'SDLpoly 'SDLFngon 'linegr! 'linegr 'gop 'gline 'SDLngon
-#info ( $2E $2E $2E $0 $5B $1F $1 $2E $2E $5B )
+#words  "polyop" "polyline" "fngon" "linegr!" "linegr" "gop" "gline" "ngon" 0
+#calls  'polyop 'polyline 'fngon 'linegr! 'linegr 'gop 'gline 'ngon
+#info ( $2E $2E $5B $1F $1 $2E $2E $5B )
 #r3_lib_sdl2poly.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2ttf.r3
 #name "r3/lib/sdl2ttf.r3"
