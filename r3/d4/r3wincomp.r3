@@ -18,8 +18,7 @@
 	( 1? 1- swap
 		d@+ "$%h " ,print
 		swap ) 2drop
-	,cr	
-	
+	,cr		
 	;	
 	
 :generatecode	
@@ -156,14 +155,6 @@
 	over ,dlits
 	,cr ;
 	
-|:.str	8 >> $ffffffff and strm + 34 ,c 
-|		( c@+ 1? 34 =? ( dup ,c ) ,c ) 2drop
-|		34 ,c ;
-|----	
-|	over 8 >>> "str%h " ,print
-|	over ,dlits
-|	,cr ;
-
 :gendatastr | adr --
 	dup 4 << dic + @ 1 nand? ( drop ; ) | only code
 	dup nro>dic toklen | nro adr len
@@ -207,11 +198,11 @@
 |------------------ MAIN
 :compiling..
 	generatecode 
-|	generatedata
+	generatedata
 |	generatesets
 	;
 	
-: 	
+:
 	.reset 
 	"Win64 Compiler" .println
 	

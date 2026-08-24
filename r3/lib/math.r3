@@ -44,9 +44,9 @@
 :sinp
 	$7fff and $4000 -
 	dup dup *.
-	dup 5214464 *.        | c3 ajustado para cierre exacto
-	2720000 - *.          | c2 optimizado
-	411775 + *. ;         | c1 = 2pi * 65536 (Pendiente real)
+	dup 4872679 *.        | c3 minimax
+	2698638 - *.           | c2 minimax
+	411775 + *. ;          | c1 = 2pi * 65536
 	
 ::cos | bangle -- r
 	$8000 + $8000 nand? ( sinp ; ) sinp neg ;
@@ -57,10 +57,10 @@
 	$4000 +
 	$7fff and $4000 -
 	dup dup *.
-	dup 114054080 *.      | c5 anclado para exactitud en 45°
-	5418737 + *.          | c3 Taylor modificado
-	411775 + *. ;         | c1 = 2pi * 65536	
-
+	dup 134156714 *.      | c5 minimax
+	5104633 + *.           | c3 minimax
+	411775 + *. ;          | c1 = 2pi * 65536
+	
 ::sincos | bangle -- sin cos
 	dup sin swap cos ;
 
