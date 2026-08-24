@@ -37,24 +37,156 @@
 	empty ;
 
 |------------------ DATA
-:coded | nro -- nro
-	dup 4 << dic + @ 1 nand? ( drop ; ) | only data
+#d1 "dq " #d2 "dd " #d3	"db " #d4 "rb "
+#dtipo 'd1
+#dini 0 #dcnt 0 #instr 0
 
-	dic>name "; --- #%w " ,print ,cr | debug
+:tok>dicn | nro -- adr
+	dup 4 << dic + @ dic>name "%w" sprint ;
+
+:tok>cte | tok -- nro
+	40 >>> src +
+	dup ?numero 1? ( drop nip nip ; ) drop
+	str>fnro nip ;
+
+:tok>str | tok -- str
+	8 >> $ffffffff and strm + ;
+
+:pasoinstr	| cuando hay un string en otro tipo
+	,cr dtipo ,s 0 'dini ! 0 'instr ! ;
+
+:stringdd | cuando hay string dentro de otro tipo
+	dtipo 'd3 =? ( drop "," ,s ; ) drop
+	,cr 'd3 ,s 1 'instr !
+|	'd3 'dtipo !
+	;
+
+:dfin
+	instr 1? ( drop pasoinstr ; ) drop
+	dini 0 'dini ! 1? ( drop dtipo ,s ; )
+	drop "," ,s ;
+:dfins
+	dini 0? ( drop stringdd ; ) drop
+	'd3 ,s 0 'dini ! ;
+:dfind
+	instr 1? ( drop pasoinstr ; ) drop
+	dini 0 'dini ! 1? ( 'd1 ,s drop ; ) "," ,s drop  ;
+
+:dtipoch
+	dini 1? ( drop ; ) drop
+	,cr 1 'dini ! ;
+
+:cpycad | adr --
+	( c@+ 1? 34 =? ( dup ,c ) ,c ) 2drop ;
+	
+:cpycadsrc | adr --
+	( c@+ 1? 
+		34 =? ( drop c@+ 
+			34 <>? ( 2drop ; )
+			"""," ,s dup ,d "," ,s
+			) 
+		$ff and 32 <? ( """," ,s ,d "," ,s 34 ) | not print char
+		,c ) 2drop ;
+
+:stringwith0 | str --
+	34 ,c here swap cpycadsrc here - 34 ,c drop ",0" ,s ;
+
+:,ddefw
+:,ddefv drop ;
+
+:,dlit  1 'dcnt +! dfin 
+|		dcnt $f and $f =? ( ,cr ) drop	| every 16
+		tok>cte
+		-? ( ,d ; ) "$" ,s ,h ;
+
+:,dlits	1 'dcnt +! dfins 
+		tok>str
+		stringwith0 ;
+
+:,dwor	1 'dcnt +! dfind
+		tok>dicn
+		,s ;
+
+:,d;	drop ;
+
+:,d(	drop 'd3 'dtipo ! dtipoch ;
+:,d)	drop 'd1 'dtipo ! dtipoch ;
+:,d[	drop 'd2 'dtipo ! dtipoch ;
+:,d]	drop 'd1 'dtipo ! dtipoch ;
+
+:,d*	'd4 'dtipo ! dtipoch ;
+
+#coded ,dlit ,dlit ,dwor ,dwor ,dwor ,dwor ,dlits ,d; ,d( ,d) ,d[ ,d]
+
+|----- data
+:datastep
+	dup $ff and
+	12 <? ( 3 << 'coded + @ ex ; )
+	51 =? ( ,d* ) | token * antes 51
+	2drop  | vacio
+	;
+
+:gendata | nro -- nro
+	dup 4 << dic + @ 1 nand? ( drop ; ) | only data
+	
+	'd1 'dtipo !
+	1 'dini !
+	0 'dcnt !
+	0 'instr !
+
+|    ";--------------------------" ,s ,cr
+
+    "; " ,s |dup dicc - 5 >> ,datainfo ,cr
+	dup dic>name ,s ,sp
 	
 	dup nro>dic toklend | nro adr len	
 	( 1? 1- swap
-		d@+ "$%h " ,print
+		d@+ datastep
+		swap ) 2drop
+	dini 0? ( drop ,cr ; ) drop
+	dcnt 1? ( drop ,cr ; ) drop
+	dtipo ,s 0 ,d ,cr
+	;
+
+	
+|----- string
+:otrostr | token btoken -- token btoken
+	1 'dini !
+	over 8 >> $ffffffff and "str%h " ,print
+	over ,dlits
+	,cr ;
+	
+|:.str	8 >> $ffffffff and strm + 34 ,c 
+|		( c@+ 1? 34 =? ( dup ,c ) ,c ) 2drop
+|		34 ,c ;
+|----	
+|	over 8 >>> "str%h " ,print
+|	over ,dlits
+|	,cr ;
+
+:gendatastr | adr --
+	dup 4 << dic + @ 1 nand? ( drop ; ) | only code
+	dup nro>dic toklen | nro adr len
+	( 1? 1- swap
+		d@+ dup 
+		$ff and 6 =? ( otrostr ) 2drop
 		swap ) 2drop
 	,cr
-	;	
-	
+	;
+		
 :generatedata
 	mark
-	";---r3 data" ,print ,cr
+	";---r3 compiler data.asm" ,print ,cr
+	"; *** STRINGS ***" ,s ,cr
 
 	0 ( cntdef <?
-		coded
+		gendatastr
+		1+ ) drop
+
+	"; *** VARS ***" ,s ,cr
+	"align 16 " ,s ,cr
+	0 ( cntdef <?
+		gendata
 		1+ ) drop
 	0 ,c
 	"asm/data.asm"
