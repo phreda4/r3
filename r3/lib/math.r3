@@ -79,19 +79,43 @@
 ::polar2 | largo bangle  -- dx dy
 	sincos pick2 *. -rot *. swap ;
 
-:iatan2 | |x| y -- bangle
-	swap
-	+? ( 2dup + 0? ( nip nip ; )
-		-rot swap - 0.125 rot */ 0.125 swap - ; )
-	2dup - 0? ( nip nip ; )
-	-rot + 0.125 rot */ 0.375 swap - ;
-::atan2 | x y -- bangle
-    swap -? ( neg iatan2 neg ; ) iatan2 ;
+:atanb | sx sy |x| |y| -- sx sy angle
+	over >? ( 16 <</ $21F3 *. $4000 swap - ; )
+	swap 16 <</ $21F3 *. ; 
+	
+::atan2 | y x -- bangle
+	over 63 >> over 63 >>	| x y sx sy
+	2swap					| sx sy x y 
+	pick2 xor pick2 - swap
+	pick3 xor pick3 - swap	| sx sy |x| |y|
+	0? ( swap 0? ( 4drop 0 ; ) swap ) 
+	atanb	| sx sy angle
+	swap pick2 xor 1 and? ( swap neg swap ) drop
+	swap $8000 and + $ffff and ;
+
+| extender prec
+:atanc
+	16 <</ 
+	dup dup *. over *.	| r r3
+	-$07D2 *. swap $279E *. + ;
+	
+:atanb
+	over >? ( atanc $4000 swap - ; )
+	swap atanc ; 
+
+::atan2x | y x -- bangle
+	over 63 >> over 63 >>	| x y sx sy
+	2swap					| sx sy x y 
+	pick2 xor pick2 - swap
+	pick3 xor pick3 - swap	| sx sy |x| |y|
+	0? ( swap 0? ( 4drop 0 ; ) swap ) 
+	atanb	| sx sy angle
+	swap pick2 xor 1 and? ( swap neg swap ) drop
+	swap $8000 and + $ffff and ;
 
 ::distfast | dx dy -- dis
     abs swap abs over <? ( swap ) | min max
-    dup 3 >> -		| max*7/8 (max - max/8)
-    swap 1 >> + ;	| Calcular: max*7/8 + min/2
+	dup 5 >> - swap dup 2 >> swap 3 >> + + ; | max*31/32 + min/4 + min/8 = min*3/8
 
 ::average | x y -- v
 	2dup xor 1 >> -rot and + ;
@@ -162,21 +186,21 @@
 	neg shift 1.0 - | int xnorm	
     | Polinomio grado 6 Minimax, err max ~1.5e-5 (piso Q48.16)
 	-2319                    | c6
-	over * 16 >> 9726 +      | c5
-	over * 16 >> -19997 +    | c4
-	over * 16 >> 30797 +     | c3
-	over * 16 >> -47220 +    | c2
-	over * 16 >> 94548 +     | c1
-	* 16 >> + ;
+	over 16 *>> 9726 +      | c5
+	over 16 *>> -19997 +    | c4
+	over 16 *>> 30797 +     | c3
+	over 16 *>> -47220 +    | c2
+	over 16 *>> 94548 +     | c1
+	16 *>> + ;
 	
 ::pow2. | y -- r
 	dup $ffff and
     | Polinomio grado 4 Minimax, err max ~1.5e-5 (piso Q48.16)
 	838                      | c4
-	over * 16 >> 3500 +      | c3
-	over * 16 >> 15772 +     | c2
-	over * 16 >> 45425 +     | c1
-	* 16 >> 1.0 +
+	over 16 *>> 3500 +      | c3
+	over 16 *>> 15772 +     | c2
+	over 16 *>> 45425 +     | c1
+	16 *>> 1.0 +
 	swap 16 >> shift ;
 	
 ::pow. | x y -- r

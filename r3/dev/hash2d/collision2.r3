@@ -44,8 +44,8 @@
 	
 	>=? ( drop ; ) sqrt. |2.0 swap -
 	0.02 *. >a 
+	pick2 .y @ pick2 .y @ -	
 	over .x @ over .x @ -
-	pick2 .y @ pick2 .y @ -
 	atan2 sincos 				| p1 p2 si co
 	
 	a> *.

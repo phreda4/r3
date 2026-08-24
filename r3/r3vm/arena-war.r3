@@ -361,7 +361,7 @@
 :itan | ang -- tan
 	vmpop 32 >> tan 32 << vmpush ;
 :itan2 | x y -- ang
-	vmpop 32 >> vmpop 32 >> swap atan2 32 << vmpush ;
+	vmpop 32 >> vmpop 32 >>  atan2 32 << vmpush ;
 
 :irand | max -- rand
 	vmpop 32 >> randmax 32 << vmpush ;

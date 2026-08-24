@@ -71,7 +71,7 @@
 
 :glinei |x y x y --
 	gg1 0? ( drop line ; ) drop
-	pick3 pick2 - pick3 pick2 - atan2 $4000 + 'ang1 ! | +1/4 de angulo
+	pick3 pick2 - pick3 pick2 - swap atan2 $4000 + 'ang1 ! | +1/4 de angulo
 	2over ang1 calg1 polyop
 	0 ( $8000 <? >r
 		2dup ang1 r@ + calg1 polyline

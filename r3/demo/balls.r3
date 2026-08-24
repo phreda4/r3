@@ -61,8 +61,9 @@
 	pick2 .y @ pick2 .y @ - dup *. +
 	4.0 >=? ( drop ; ) sqrt. 2.0 swap -
 	1 >> >a | lose impulse
-	over .x @ over .x @ -
+
 	pick2 .y @ pick2 .y @ -
+	over .x @ over .x @ -
 	atan2 sincos 				| p1 p2 si co
 	
 	a> *.
