@@ -202,6 +202,35 @@
 	0 ( 8points over <=? stepd 1+ ) 2drop
 	SDLrenderer here a> over - 3 >> SDL_RenderDrawPoints 	
 	]ba ;
+	
+|-----------------
+:polyxy
+	i2fp 32 << swap i2fp $ffffffff and or 'ym ! ;
+
+::polyop | x y --
+	polyxy
+	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
+	'vert >a
+	ym a!+ rec da!+ 8 a+
+	8 a+ rec da!+ 8 a+
+	8 a+ rec da!+ 
+	1 'rec !
+	;
+	
+:drawtri	
+	'vert 20 + >a
+	xm a!+ 12 a+ ym a!+ 12 a+
+	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry 
+	ym 'xm ! 
+	;
+	
+::polyline | x y --
+	polyxy
+	1 'rec +!
+	rec 2 =? ( drop ym 'xm ! ; ) drop
+	drawtri
+	;
+		
 
 |-------------------
 ::image | x y img --		

@@ -78,9 +78,9 @@
 #r3_lib_jul.r3 'name 'words 'calls 'info
 ^r3/lib/math.r3
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#calls  'cell 'cell+ 'ncell+ 'ndword+ 'nword+ '1+ '1- '2/ '2* '*.s '*. '*.f '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'msb 'ctz 'sqrt. 'log2. 'pow2. 'pow. 'root. 'ln. 'exp. 'tanh. 'fastanh. 'gamma. 'beta. 'cubicpulse 'pow 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '100000* '10000* '1000* '1000000* '100* '10* '10/ '10/mod '1000000/ 'i2fp 'f2fp 'memfloat 'mem2float 'memd2float 'fp2f 'fp2i 'fp16f 'f2fp24 'fp2f24 'byte>float32N 'float32N>byte
-#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $10 )
+#words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "atan2" "atan2x" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
+#calls  'cell 'cell+ 'ncell+ 'ndword+ 'nword+ '1+ '1- '2/ '2* '*.s '*. '*.f '/. '2/. 'ceil 'int. 'fix. 'sign 'cos 'sin 'tan 'sincos 'xy+polar 'xy+polar2 'ar>xy 'polar 'polar2 'atan2 'atan2x 'distfast 'average 'min 'max 'clampmax 'clampmin 'clamp0 'clamp0max 'clamps16 'between 'msb 'ctz 'sqrt. 'log2. 'pow2. 'pow. 'root. 'ln. 'exp. 'tanh. 'fastanh. 'gamma. 'beta. 'cubicpulse 'pow 'bswap32 'bswap64 'nextpow2 '6* '6/ '6mod '100000* '10000* '1000* '1000000* '100* '10* '10/ '10/mod '1000000/ 'i2fp 'f2fp 'memfloat 'mem2float 'memd2float 'fp2f 'fp2i 'fp16f 'f2fp24 'fp2f24 'byte>float32N 'float32N>byte
+#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $2F $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $0 $0 $11 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $0 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'calls 'info
 ^r3/lib/mem.r3
 #name "r3/lib/mem.r3"
@@ -132,9 +132,9 @@
 #r3_lib_sdl2.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gfx.r3
 #name "r3/lib/sdl2gfx.r3"
-#words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "triangle" "fround" "round" "fcircle" "circle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
-#calls  'color 'colorA 'cls 'point 'getpixel 'line 'lineH 'lineV 'frect 'rect 'fellipse 'ellipse 'triangle 'fround 'round 'fcircle 'circle 'image 'images 'imageb 'imagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sscnt 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'Tex2Surface 'Tex2Static
-#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 )
+#words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "triangle" "fround" "round" "fcircle" "circle" "polyop" "polyline" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
+#calls  'color 'colorA 'cls 'point 'getpixel 'line 'lineH 'lineV 'frect 'rect 'fellipse 'ellipse 'triangle 'fround 'round 'fcircle 'circle 'polyop 'polyline 'image 'images 'imageb 'imagebb 'tsload 'tscolor 'tsalpha 'tsdraw 'tsdraws 'tsbox 'tsfree 'sprite 'spriteZ 'spriteR 'spriteRZ 'ssload 'sscnt 'sstint 'ssnotint 'sspritewh 'ssprite 'sspriter 'sspritez 'sspriterz 'createSurf 'Surf>pix 'Surf>wha 'Surf>wh 'Surf>pixpi 'texIni 'texEnd 'texEndAlpha 'Tex2Surface 'Tex2Static
+#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $6A $5B $5B $3D $3D $2E $2E $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 )
 #r3_lib_sdl2gfx.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2gl-const.r3
 #name "r3/lib/sdl2gl-const.r3"
@@ -174,9 +174,9 @@
 #r3_lib_sdl2net.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2poly.r3
 #name "r3/lib/sdl2poly.r3"
-#words  "polyop" "polyline" "fngon" "linegr!" "linegr" "gop" "gline" "ngon" 0
-#calls  'polyop 'polyline 'fngon 'linegr! 'linegr 'gop 'gline 'ngon
-#info ( $2E $2E $5B $1F $1 $2E $2E $5B )
+#words  "fngon" "linegr!" "linegr" "gop" "gline" "ngon" 0
+#calls  'fngon 'linegr! 'linegr 'gop 'gline 'ngon
+#info ( $5B $1F $1 $2E $2E $5B )
 #r3_lib_sdl2poly.r3 'name 'words 'calls 'info
 ^r3/lib/sdl2ttf.r3
 #name "r3/lib/sdl2ttf.r3"

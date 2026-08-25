@@ -79,9 +79,16 @@
 ::polar2 | largo bangle  -- dx dy
 	sincos pick2 *. -rot *. swap ;
 
+|--- atan2
+:atanf
+	|swap pick2 xor 1? ( swap neg swap ) drop
+	swap pick2 xor			| sx angle m
+	dup -rot xor swap -		| sx angle
+	swap $8000 and + $ffff and ;
+
 :atanb | sx sy |x| |y| -- sx sy angle
-	over >? ( 16 <</ $21F3 *. $4000 swap - ; )
-	swap 16 <</ $21F3 *. ; 
+	over >? ( 16 <</ $21F3 *. $4000 swap - atanf ; )
+	swap 16 <</ $21F3 *. atanf ; 
 	
 ::atan2 | y x -- bangle
 	over 63 >> over 63 >>	| x y sx sy
@@ -89,19 +96,16 @@
 	pick2 xor pick2 - swap
 	pick3 xor pick3 - swap	| sx sy |x| |y|
 	0? ( swap 0? ( 4drop 0 ; ) swap ) 
-	atanb	| sx sy angle
-	swap pick2 xor 1 and? ( swap neg swap ) drop
-	swap $8000 and + $ffff and ;
+	atanb ;
 
-| extender prec
+| atan2 extender precition
 :atanc
-	16 <</ 
-	dup dup *. over *.	| r r3
+	16 <</ dup dup *. over *.	| r r3
 	-$07D2 *. swap $279E *. + ;
 	
 :atanb
-	over >? ( atanc $4000 swap - ; )
-	swap atanc ; 
+	over >? ( atanc $4000 swap - atanf ; )
+	swap atanc atanf ; 
 
 ::atan2x | y x -- bangle
 	over 63 >> over 63 >>	| x y sx sy
@@ -109,9 +113,7 @@
 	pick2 xor pick2 - swap
 	pick3 xor pick3 - swap	| sx sy |x| |y|
 	0? ( swap 0? ( 4drop 0 ; ) swap ) 
-	atanb	| sx sy angle
-	swap pick2 xor 1 and? ( swap neg swap ) drop
-	swap $8000 and + $ffff and ;
+	atanb ;
 
 ::distfast | dx dy -- dis
     abs swap abs over <? ( swap ) | min max
