@@ -110,15 +110,6 @@
 	SDLrenderer here b> over - 3 >> SDL_RenderDrawPoints 
 	]ba ;
 	
-|-----------------	
-::triangle | x y x y x y --
-	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
-	'vert >a
-	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
-	swap i2fp da!+ i2fp da!+ rec da!+ 8 a+
-	swap i2fp da!+ i2fp da!+ rec da!+ 
-	SDLrenderer 0 'vert 3 0 0 SDL_RenderGeometry  ;
-	
 |-----------------
 :8points
 	xm over - ym pick3 - xm dx + pick3 + lineH
@@ -231,6 +222,9 @@
 	drawtri
 	;
 		
+|-----------------	
+::triangle | x y x y x y --
+	polyop polyline polyline ;
 
 |-------------------
 ::image | x y img --		

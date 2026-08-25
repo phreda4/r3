@@ -10,9 +10,10 @@
 | 'l p.draw		| traverse exe every ( return 0 for delete )
 | 'l p.drawo	| traverse exe every ( return 0 for delete in order )
 | 'a 'l p.del	| delete 
-| n 'l p.adr 	| nro to adr 
-| 'a 'l p.nro	| adr to nro
-| 'v 'l p.mapd	| exe v for every
+| n 'l p.adr 	| nro -- adr 
+| 'a 'l p.nro	| adr -- nro
+| 'v 'l p.mapv	| exe v for every
+| 'v 'l p.mapd	| exe v for every (ret 0 when delete row)
 | 'v 'l p.map2	| exe v for every pair (triangle traverse)
 | c 'l p.sort	| sort for c column (1pass)
 | c 'l p.isort	| reverse sort for c column (1pass)
@@ -20,7 +21,7 @@
 
 ^r3/lib/mem.r3
 
-::p.ini | cantidad list --
+::p.ini | cnt list --
 	here dup rot !+ ! 7 << 'here +! ;
 
 ::p.clear | list --
