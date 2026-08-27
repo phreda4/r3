@@ -8,7 +8,6 @@
 
 |----
 #sprplayer
-#mapa1
 
 #btnpad
 #xvp #yvp		| viewport
@@ -177,7 +176,8 @@
 		0 ( mapsw <?
 			setxy drawtilelast
 			1 + ) 2drop		
-	cerasemap ;
+	cerasemap 
+	;
 
 |------ LOAD MAP
 :loadmap | filename -- 
@@ -390,7 +390,7 @@
 
 :main
 	"r3sdl" 1024 600 SDLinit
-	"r3/games/bmap/escuela1.bmap" loadmap 'mapa1 !
+	"r3/games/bmap/escuela1.bmap" loadmap 
 	32 32 "r3/games/bmap/protagonista.png" ssload 'sprplayer !
 	1000 'obj p.ini
 	juego
