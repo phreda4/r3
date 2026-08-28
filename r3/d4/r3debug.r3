@@ -190,7 +190,6 @@
 	vmState $fe <? ( drop ; ) 
 	$fe =? ( drop exit ; ) drop
 	runtimerror
-	
 	;
 	
 |-------------------------------------
@@ -217,7 +216,9 @@
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
 :ftokenIP
-	codesrc vmIP 1- 3 << + @ ;
+	codesrc vmIP 
+	0? ( nip ; ) | check limits CODE
+	1- 3 << + @ ;
 	
 :playshow
 	ftokenIP 
@@ -282,33 +283,17 @@
 	
 
 |-------------------------------------
-#cm -1
+#cm -1 | actual cursor
 
-:remake
+:remakecursor
+	ftokenIP
+	0? ( drop ; )
+	cm =? ( drop ; )
 	dup 'cm ! 
 	dup 48 >> $ff and showcode
 	dup 24 >> $ffff and fuente + tuipos!
 |	tuiecursor!	
-	;
-
-:drawcm
-	3 .bc 0 .fc |1 .bc 7 .fc
-	ftokenIP
-	cm <>? ( remake )
 	tokenCursor
-	;
-
-#ck 
-|#lastinclude
-
-:checkcm
-	cm <>? ( remake ) dup 'ck ! ;
-	
-:drawkeepcm
-	ftokenIP
-	|dup 48 >> $ff and lastinclude >=? ( swap checkcm ) 2drop
-	checkcm 'ck !
-	3 .bc 0 .fc ck tokenCursor
 	;
 	
 :stepout
@@ -328,7 +313,8 @@
 	
 	8 flxS
 	fx fy .at 'statusline .write
-	vmSTATE " state:%h" .print vmIP memtokn " iptoken:%h" .print
+	vmSTATE " state:%h" .print 
+	vmIP memtokn " iptoken:%h" .print
 	
 	.cr scrMsg
 	
@@ -341,8 +327,7 @@
 	tuReadCode 
 	tuC! | show user cursor
 	
-	msec $100 nand? ( drawkeepcm ) drop
-	
+	remakecursor
 	showbreakpoint	
 	
 	uiKey
