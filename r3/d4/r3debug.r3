@@ -101,6 +101,7 @@
 :viewmemhere
 	;
 	
+	
 |-------------------------
 :.datastack
 	mdatastack dup
@@ -187,8 +188,10 @@
 	'statusline strcpybuf ;
 
 :checkerror
-	vmState $fe <? ( drop ; ) 
-	$fe =? ( drop exit ; ) drop
+	vmState 
+	$fe <? ( drop ; ) 
+	|$fe =? ( drop exit ; ) 
+	drop
 	runtimerror
 	;
 	
@@ -215,10 +218,22 @@
 
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+|-------------------------------------
+#lastIP -1 
+
 :ftokenIP
-	codesrc vmIP 
-	0? ( nip ; ) | check limits CODE
-	1- 3 << + @ ;
+	vmIP 0? ( ; ) | check limits CODE
+	1- 3 << codesrc + @ ;
+
+:remakecursor
+	vmIP 0? ( drop ; ) | check limits CODE
+	lastIP =? ( drop ; ) 
+	dup 'lastIP !
+	1- 3 << codesrc + @ 
+	dup 48 >> $ff and showcode
+	dup 24 >> $ffff and fuente + tuipos!
+	tokenCursor
+	;
 	
 :playshow
 	ftokenIP 
@@ -270,31 +285,29 @@
 		playshow
 		) 
 	$ff >? ( 
-		ftokenIP dup 48 >> $ff and showcode
+		ftokenIP 
+		dup 48 >> $ff and showcode
 		24 >> $ffff and fuente + tuipos!	
 		runtimerror ) 
 	drop 
 |	*>stop
 | land in src
-	( ftokenIP 48 >> $ff and codenow <>? 
+	( ftokenIP 1? | 0=break
+		48 >> $ff and codenow <>? 
 		*>stepo drop ) drop 
 	tuR! | redraw
 	;
+
+:runtocursor
+	fuente> fuente - | pos in src
+	findtoken
+	ftoken>token 
+	dup addBP
+	playmode		
+	delBP
+	;
 	
 
-|-------------------------------------
-#cm -1 | actual cursor
-
-:remakecursor
-	ftokenIP
-	0? ( drop ; )
-	cm =? ( drop ; )
-	dup 'cm ! 
-	dup 48 >> $ff and showcode
-	dup 24 >> $ffff and fuente + tuipos!
-|	tuiecursor!	
-	tokenCursor
-	;
 	
 :stepout
 	vmIP memtokn
@@ -304,6 +317,7 @@
 	drop
 	*>stepo
 	;
+	
 |---- main	
 :maindb
 	.reset .cls .ovec 
@@ -314,7 +328,7 @@
 	8 flxS
 	fx fy .at 'statusline .write
 	vmSTATE " state:%h" .print 
-	vmIP memtokn " iptoken:%h" .print
+	|vmIP memtokn " iptoken:%h" .print
 	
 	.cr scrMsg
 	
@@ -334,16 +348,26 @@
 	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
 	[f5] =? ( playmode )
-
+	
 	[f7] =? ( *>step )
 	[f8] =? ( stepout )
-	[f9] =? ( *>stepu )
 	
+	[f9] =? ( *>stepu )
+		
 	showpanel 0? ( swap tueKeyMove swap ) drop
 	
-	tolow
-	$69 =? ( showpanel 2 xor 'showpanel ! ) |iI
-	$77 =? ( showpanel 1 xor 'showpanel ! ) |wW
+	toUpp
+|	$20 =? ( repeatlast ) 	| <esp>
+	$42 =? ( breakpoint )	| B breakpoint
+	$43 =? ( playmode )		| C continue
+	$4E =? ( stepout )		| N step over (next)
+	$4F =? ( *>stepu )		| O step out
+	$51 =? ( exit ) 		| Q uit
+	$52 =? ( runtocursor )	| R un to cursor
+	$53 =? ( *>step )		| S
+	
+	$49 =? ( showpanel 2 xor 'showpanel ! ) |iI
+	$57 =? ( showpanel 1 xor 'showpanel ! ) |wW
 	drop 
 	checkerror
 	;
@@ -372,7 +396,7 @@
 : 
 	.alsb 
 	'filename "mem/menu.mem" load
-|	"r3/d4/test.r3" 'filename strcpy
+|	"r3/d4/testerror.r3" 'filename strcpy
 	
 	main
 	.masb .free ;

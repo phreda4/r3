@@ -115,9 +115,10 @@
 	0? ( swap 0? ( 4drop 0 ; ) swap ) 
 	atanb ;
 
+| max*31/32 + min/4 + min/8 = min*3/8
 ::distfast | dx dy -- dis
     abs swap abs over <? ( swap ) | min max
-	dup 5 >> - swap dup 2 >> swap 3 >> + + ; | max*31/32 + min/4 + min/8 = min*3/8
+	dup 5 >> - swap dup 2 >> swap 3 >> + + ; 
 
 ::average | x y -- v
 	2dup xor 1 >> -rot and + ;

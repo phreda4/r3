@@ -121,11 +121,12 @@
 	dup $10000 and 9 * 'm !
 	dup 81.0 /. rcos 9.0 *. 'k !
 	dup 765.0 /. 13.0 - 'e !
-	k dup *. e dup *. + sqrt. 4.0 /. 'd !
+	|k dup *. e dup *. + sqrt. 4.0 /. 'd !
+	k e distfast 2 >> 'd !
 	k k *. nbr nip |'branch ! drop
 	79.0
-	k 3.0 *. rsin 2.0 *. -
-	swap rsin 2.0 /. k *.
+	k 3.0 *. rsin 2* -
+	swap rsin 2/ k *.
 	d d *. e 6.0 /. - t - m + rsin 5.0 *. 9.0 +
 	*. + 'q !
 	d d *. 9.0 /. t 16.0 /. - m + 'c !
