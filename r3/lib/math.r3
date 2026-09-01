@@ -78,6 +78,17 @@
 
 ::polar2 | largo bangle  -- dx dy
 	sincos pick2 *. -rot *. swap ;
+	
+::dir2vec | dx dy -- vx vy
+	over dup * over dup * + 
+	0? ( nip nip dup ; ) | 0 0
+	sqrt rot over 16 <</ -rot 16 <</ ;
+
+::sdir2vec | scale dx dy -- vx vy
+	over dup * over dup * + 
+	0? ( nip nip nip dup ; ) | 0 0
+	sqrt >r rot r> 16 <</
+	rot over *. -rot *. ;	
 
 |--- atan2
 :atanf
