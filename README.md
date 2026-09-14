@@ -20,7 +20,7 @@ R3 can load and call procedures from any dynamic library (.DLL in windows) or (.
 
 # Quick Start
 
-### **LINUX**
+### **LINUX Mint / Ubuntu / Debian**
 
 r3 requires **SDL2** development libraries.
 
@@ -50,6 +50,14 @@ cd r3evm && make
 mv r3lin ../ && cd ..
 ./r3lin
 
+```
+
+### **NixOs**
+
+in progress
+
+```bash
+nix-shell -p steam-run --run "steam-run ./r3lin"
 ```
 
 ### **WINDOWS**
