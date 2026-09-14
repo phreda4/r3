@@ -20,6 +20,9 @@ R3 can load and call procedures from any dynamic library (.DLL in windows) or (.
 
 # Quick Start
 
+You don't need to clone the repository; you can download the latest version here.
+[latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
+
 ### **LINUX Mint / Ubuntu / Debian**
 
 r3 requires **SDL2** development libraries.
@@ -32,9 +35,7 @@ sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
 
 2a. **Run the precompiled binary:**
 
-Donwload the [latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
 ```bash
-chmod +x r3lin
 ./r3lin
 ```
 
@@ -54,8 +55,7 @@ mv r3lin ../ && cd ..
 
 ### **NixOs**
 
-This work on the vm for me at last!.
-writeme any error
+Use the shell-fhs.nix from distro
 
 ```bash
 nix-shell shell-fhs.nix
@@ -64,8 +64,7 @@ nix-shell shell-fhs.nix
 
 ### **WINDOWS**
 
-1. Donwload the [latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
-2. Extract and run `r3.exe`. No installation required.
+Extract and run `r3.exe`. No installation required.
 
 ---
 
