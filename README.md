@@ -54,10 +54,12 @@ mv r3lin ../ && cd ..
 
 ### **NixOs**
 
-in progress
+This work on the vm for me at last!.
+writeme any error
 
 ```bash
-NIXPKGS_ALLOW_UNFREE=1 nix-shell -p steam-run --run "steam-run ./r3lin"
+nix-shell shell-fhs.nix
+./r3lin
 ```
 
 ### **WINDOWS**
