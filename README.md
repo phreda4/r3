@@ -57,7 +57,7 @@ mv r3lin ../ && cd ..
 in progress
 
 ```bash
-nix-shell -p steam-run --run "steam-run ./r3lin"
+NIXPKGS_ALLOW_UNFREE=1 nix-shell -p steam-run --run "steam-run ./r3lin"
 ```
 
 ### **WINDOWS**
