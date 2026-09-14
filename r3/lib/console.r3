@@ -50,6 +50,22 @@
 	outbuf> endbuf =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
 :.wemit | char2char1 --
 	outbuf> endbuf =? ( .flush outbuf nip ) w!+ 'outbuf> ! ;
+	
+::.uemit | cp -- ; UNICODE emit
+	$10FFFF >? ( drop ; )
+	$D800 >=? ( $DFFF <=? ( drop ; ) ) | fuera de rango
+	$7f <=? ( .emit ; )
+    $7FF <=? ( 
+		dup 6 >> $c0 or .emit 
+		$3f and $80 or .emit ; )
+	$ffff <=? ( 
+		dup 12 >> $e0 or .emit 
+		dup 6 >> $3f and $80 or .emit 
+		$3f and $80 or .emit ; )
+	dup 18 >> $f0 or .emit
+	dup 12 >> $3f and $80 or .emit
+	dup 6 >> $3f and $80 or .emit
+	$3f and $80 or .emit ;	
 
 ::.cr $d0a .wemit ; |10 .emit 13 .emit ;
 ::.sp 32 .emit ;
