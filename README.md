@@ -55,10 +55,10 @@ mv r3lin ../ && cd ..
 
 ### **NixOs**
 
-Use the shell-fhs.nix from distro
+Use the fhs.nix from distro
 
 ```bash
-nix-shell shell-fhs.nix
+nix-shell fhs.nix
 ./r3lin
 ```
 
