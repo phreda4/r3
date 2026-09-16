@@ -23,10 +23,10 @@
 #vwords 0 0
 #vwatch 0 0
 
-#lincs
+#lincs	| list includes
 #lwords
 #lwatch
-
+#lret 	| list return
 
 |------------------------
 :typedef $10 and? ( "#" .write ; ) ":" .write ;
@@ -64,9 +64,13 @@
 		) drop
 	0 swap w!+ 'here ! ;
 
-
+:makelistret | ; reserve memory
+	here dup 'lret !
+	0 over c!
+	$ffff + 'here ! ;
+	
 :panelWatch
-	cols 2/ flxE
+	cols 2 >> flxE
 	.reset tuWina $1 "Watch" .wtitle 1 1 flpad 
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
@@ -82,6 +86,54 @@
 	'vincs strinc tuList | 'var list --
 	;
 
+:panelrstack
+	25 flxO
+	.reset tuWin $1 "RStack" .wtitle 1 1 flpad 
+	
+|	'vret lret tuList | 'var list --
+	fx fy .at
+	lret 
+	( dup c@ 1? drop
+		fx .col
+		dup .print 
+		>>0
+		.cr
+		) 2drop
+	;
+
+|------------------------
+#lmem
+#cntbytes 32
+
+:linemem
+	dup .h 8 .r. .write " : " .write
+	dup 
+	cntbytes ( 1? 1- swap 
+		c@+ $ff and .h 2 .r. .write 
+		swap ) 2drop
+	" : " .write
+	cntbytes ( 1? 1- swap 
+		c@+ 32 <? ( $2e nip ) .emit 
+		swap ) drop
+	;
+	
+:panelMem
+	10 flxN
+	.reset tuWina $1 "Memory" .wtitle 1 1 flpad 
+	fx fy .at
+	lmem
+	fh ( 1? 1- swap
+		fx .col linemem .cr
+		swap ) 2drop ;
+
+:paneldraw
+	showpanel
+	1 and? ( panelwatch )
+	2 and? ( panelinclude )
+	4 and? ( panelrstack )
+	8 and? ( panelMem )
+	drop ;
+	
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
 
@@ -103,6 +155,18 @@
 	
 	
 |-------------------------
+:buildrstack
+	mark 
+	lret 'here !
+	mretstack 
+	( 8 - vmRTOS >? 
+		dup rstackoff + |@ 
+		" %h" ,print ,eol
+		) drop 
+	,eol
+	empty
+	;
+	
 :.datastack
 	mdatastack dup
 	( 8 + vmNOS <? 
@@ -246,18 +310,14 @@
 	1 flxN
 	fx fy .at 5 .bc 'topline .write
 	
-	8 flxS
+	6 flxS
 	fx fy .at 'statusline .write 
 	.cr scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
 
-	showpanel
-	1 and? ( panelwatch )
-	2 and? ( panelinclude )
-	drop
-	
+	paneldraw
 	
 	flxRest 
 	tuReadCode 
@@ -325,18 +385,15 @@
 	1 flxN
 	fx fy .at 4 .bc 'topline .write
 	
-	8 flxS
+	6 flxS
 	fx fy .at 'statusline .write
 	vmSTATE " state:%h" .print 
 	|vmIP memtokn " iptoken:%h" .print
 	
 	.cr scrMsg
 	
-	showpanel
-	1 and? ( panelwatch )
-	2 and? ( panelinclude )
-	drop
-	
+	paneldraw
+
 	flxRest 
 	tuReadCode 
 	tuC! | show user cursor
@@ -360,14 +417,19 @@
 |	$20 =? ( repeatlast ) 	| <esp>
 	$42 =? ( breakpoint )	| B breakpoint
 	$43 =? ( playmode )		| C continue
-	$4E =? ( stepout )		| N step over (next)
+	
+	$49 =? ( showpanel 2 xor 'showpanel ! ) | I include Panel
+	$4B =? ( buildrstack showpanel 4 xor 'showpanel ! ) | K RetPanel
+	$4D =? ( showpanel 8 xor 'showpanel ! ) | M MemoryPanel
+	
+	$4E =? ( stepout )		| N step over (next)`
 	$4F =? ( *>stepu )		| O step out
 	$51 =? ( exit ) 		| Q uit
 	$52 =? ( runtocursor )	| R un to cursor
 	$53 =? ( *>step )		| S
+
+	$57 =? ( showpanel 1 xor 'showpanel ! ) | W wordlist Panel
 	
-	$49 =? ( showpanel 2 xor 'showpanel ! ) |iI
-	$57 =? ( showpanel 1 xor 'showpanel ! ) |wW
 	drop 
 	checkerror
 	;
@@ -379,7 +441,8 @@
 
 	makelistwords
 	|makelistinc
-	
+	makelistret 
+	here 'lmem !
 	clearbp
 	
 |	cntinc 2 - 'lastinclude !
