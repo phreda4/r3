@@ -105,17 +105,44 @@
 #lmem
 #cntbytes 32
 
+:memdn		cntbytes 'lmem +! ;
+:memup		cntbytes neg 'lmem +! ;
+:mempgdn	cntbytes fh * 'lmem +! ;
+:mempgup	cntbytes fh * neg 'lmem +! ;
+
+:altcolor
+	7 over 1 and + .fc ;
+
+:linebytes
+	cntbytes ( 1? altcolor 1- swap 
+		c@+ .h 2 .r. .write 
+		swap ) 2drop ;
+
+:lineword
+	cntbytes 1 >> ( 1? altcolor 1- swap 
+		w@+ .h 4 .r. .write 
+		swap ) 2drop ;
+
+:linedword
+	cntbytes 2 >> ( 1? altcolor 1- swap 
+		d@+ .h 8 .r. .write 
+		swap ) 2drop ;
+
+:lineqword
+	cntbytes 3 >> ( 1? altcolor 1- swap 
+		@+ .h 16 .r. .write 
+		swap ) 2drop ;
+	
+#linesn	'linebytes
+
 :linemem
+	7 .fc
 	dup .h 8 .r. .write " : " .write
-	dup 
-	cntbytes ( 1? 1- swap 
-		c@+ $ff and .h 2 .r. .write 
-		swap ) 2drop
+	dup linesn ex
 	" : " .write
 	cntbytes ( 1? 1- swap 
 		c@+ 32 <? ( $2e nip ) .emit 
-		swap ) drop
-	;
+		swap ) drop ;
 	
 :panelMem
 	10 flxN
@@ -124,7 +151,13 @@
 	lmem
 	fh ( 1? 1- swap
 		fx .col linemem .cr
-		swap ) 2drop ;
+		swap ) 2drop 
+	uiKey
+	[DN] =? ( memdn )
+	[UP] =? ( memup )
+	[PGDN] =? ( mempgdn )
+	[PGUP] =? ( mempgup )
+	drop ;
 
 :paneldraw
 	showpanel
@@ -442,7 +475,11 @@
 	makelistwords
 	|makelistinc
 	makelistret 
-	here 'lmem !
+	
+	dataini
+	|here 
+	'lmem !
+	
 	clearbp
 	
 |	cntinc 2 - 'lastinclude !

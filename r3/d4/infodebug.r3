@@ -396,12 +396,8 @@
 ##dstackoff
 ##rstackoff
 ##dataoff
+##dataini
 
-:precalc
-	vmDS mdatastack - 8 + 'dstackoff !
-	vmRS mretstack - 8 + 'rstackoff !
-	dshare memdata - 'dataoff !
-	;
 
 ::memtokn
 	2 << cshare + d@ ;
@@ -458,7 +454,11 @@
 	'bshare inisharev
 	'dshare inisharev
 	'cshare inisharev
-	precalc
+
+	vmDS mdatastack - 8 + 'dstackoff !
+	vmRS mretstack - 8 + 'rstackoff !
+	dshare memdata - 'dataoff !
+	dshare 'dataini !
 	;
 
 |------------------------------------
