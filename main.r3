@@ -201,7 +201,7 @@
 	|tk "%h" .print 'fullpath .write
 	4 .bc 7 .fc	
 	1 flxS
-	fx fy .at fw .nsp
+	fx fy .at .eline 
 	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
 	.printe
 

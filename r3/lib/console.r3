@@ -100,9 +100,9 @@
 ::.cls "H" .[w "J" .[w ;
 ::.at "%d;%dH" .[p ; | x y -- | f
 ::.col "%dG" .[p ; | x -- columna
-::.eline "0K" .[w ; | erase line from cursor
+::.eline "K" .[w ; | erase line from cursor
 |::.eline0 "1K" .[w ; | erase from start of line to cursor
-::.ealine "2K" .[w ; | borrar linea actual
+|::.ealine "2K" .[w ; | borrar linea actual
 ::.escreen "J" .[w ; | erase from cursor to end of screen
 ::.escreenup "1J" .[w ; | erase from cursor to beginning
 ::.nsp "%dX" .[p ; | n -- | not adv cursor
