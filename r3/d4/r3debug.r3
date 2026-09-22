@@ -465,6 +465,7 @@
 	
 	drop 
 	checkerror
+	tuR! | redoing the screen
 	;
 
 :main
@@ -488,14 +489,14 @@
 	slnormal
 |---- run debug	
 
-	'maindb onTuia
+	'maindb onTui |a :no autoanimation
 	
 	debugend
 	;
 
 : 
 	.alsb 
-	'filename "mem/menu.mem" load
+	'filename "mem/menu.mem" load drop
 |	"r3/d4/testerror.r3" 'filename strcpy
 	
 	main
