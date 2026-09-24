@@ -267,7 +267,7 @@
 |	.reset |.rever
 	fx over fy + .at
 	dup ylinea + 
-	focoe 0? ( drop linenormal ; ) drop
+	|focoe 0? ( drop linenormal ; ) drop | sin foco?
 	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
 	linenormal ;
 	
@@ -478,7 +478,7 @@
 	'fuente> ! ;
 
 :enterfind | -- ; pide texto a buscar (como filesearch en main.r3) y busca
-	fx fy .at 7 .fc 4 .bc fw .nsp
+	fx fy .at 7 .fc 4 .eline 
 	" find: " .write
 	.input
 	'pad 'findpad strcpy

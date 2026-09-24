@@ -16,6 +16,7 @@
 |--- for show in code
 #codenow -1
 
+|-------------------------------------
 :showcode | n --
 	codenow =? ( drop ; ) dup 'codenow !
 	inc2src TuLoadMemC 
@@ -29,6 +30,23 @@
 	'filename .write
 	'topline strcpybuf ;
 
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+|-------------------------------------
+#lastIP -1 
+
+:ftokenIP
+	vmIP 0? ( ; ) | check limits CODE
+	1- 3 << codesrc + @ ;
+
+:remakecursor
+	vmIP 0? ( drop ; ) | check limits CODE
+	lastIP =? ( drop ; ) 
+	dup 'lastIP !
+	1- 3 << codesrc + @ 
+	dup 48 >> $ff and showcode
+	dup 24 >> $ffff and fuente + tuipos!
+	tokenCursor
+	;
 |------------------------
 #lmem
 #cntbytes 32
@@ -80,10 +98,10 @@
 		fx .col linemem .cr
 		swap ) 2drop 
 	uiKey
-	[DN] =? ( memdn )
-	[UP] =? ( memup )
-	[PGDN] =? ( mempgdn )
-	[PGUP] =? ( mempgup )
+|	[DN] =? ( memdn )
+|	[UP] =? ( memup )
+|	[PGDN] =? ( mempgdn )
+|	[PGUP] =? ( mempgup )
 	drop ;
 
 
@@ -123,8 +141,15 @@
 	|fx fy .at "IP" .write
 	
 	flxRest
-	|fx fy .at "CODE" .write
+	
 	tuReadCode 
+	|fx fy .at "CODE" .write tuecursor. .write
+	remakecursor
+	tuC! | show user cursor
+	
+	uiKey
+	tueKeyMove
+	drop
 	;
 	
 :main
