@@ -489,7 +489,7 @@
 	slnormal
 |---- run debug	
 
-	'maindb onTui |a :no autoanimation
+	'maindb onTuia |no autoanimation?
 	
 	debugend
 	;
