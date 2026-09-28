@@ -398,7 +398,7 @@
 	4drop ;
 
 ::sstint | color --- ; with alpha!! AARRGGBB
-	'vert >a 8 a+ dup da!+ 16 a+ dup da!+ 16 a+ dup da!+ 16 a+ da! ;
+	dup 2dup 'vert 8 + d!+ 16 + d!+ 16 + d!+ 16 + d! ;
 	
 ::ssnotint 
 	$ffffffff sstint ;
