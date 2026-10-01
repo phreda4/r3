@@ -11,7 +11,7 @@
 
 :RenderTextB | SDLrender color font "texto" x y --
 	swap 'textbox d!+ d!
-	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	2dup 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	rot dup $ffffff and swap 32 >> TTF_RenderUTF8_Shaded
 	2dup SDL_CreateTextureFromSurface | sd surface texture
 	rot over 0 'textbox SDL_RenderCopy	
@@ -20,8 +20,8 @@
 	
 :RenderText | SDLrender color font "texto" x y --
 	swap 'textbox d!+ d!
-	2dup 'textbox dup 8 + swap 12 + TTF_SizeText drop
-	rot TTF_RenderText_Blended 
+	2dup 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
+	rot TTF_RenderUTF8_Blended 
 	2dup SDL_CreateTextureFromSurface | sd surface texture
 	rot over 0 'textbox SDL_RenderCopy	
 	SDL_DestroyTexture
@@ -51,8 +51,8 @@
 ::ttprint | "" --
 	sprint	
 ::ttemits | "" --
-	SDLrenderer ttink ttfon pick3 ttx tty RenderText 
-	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	SDLrenderer ttink ttfon pick3 ttx tty RenderText
+	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@ 'ttx +! 
 	;
 	
@@ -62,20 +62,26 @@
 ::+ttat | x y --
 	'tty +! 'ttx +! ;	
 
-::ttsize | "" -- "" w h
-	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeText drop
+::ttwh | "" -- "" w h
+	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@+ swap d@ ;
-			
+
+::ttsize  | size -- 
+	ttfon swap TTF_SetFontSize ;
+	
+::ttstyle | style -- | KUIB %0001
+	ttfon swap TTF_SetFontStyle ;
+	
 #backc	
 :sizechar | -- w 
 	backc 0? ( drop 8 ; ) drop
-	ttfon 'backc 'textbox dup 8 + swap 12 + TTF_SizeText drop
+	ttfon 'backc 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@ ;
 	
 ::ttcursor | str strcur -- str
 	dup c@ 'backc c! | str strcur
 	0 over c!		| set end
-	swap ttsize  | strcur str w h
+	swap ttwh  | strcur str w h
 	ttx rot + tty rot 
 	sizechar
 	swap frect
@@ -85,7 +91,7 @@
 ::ttcursori | str strcur -- str
 	dup c@ 'backc c! | str strcur
 	0 over c!		| set end
-	swap ttsize  | strcur str w h
+	swap ttwh  | strcur str w h
 	ttx rot + tty rot 
 	sizechar | x y h w
 	rot 	| x h w y
@@ -95,5 +101,5 @@
 	;
 	
 ::ttrect |  "" -- "" x y w h
-	ttsize ttx tty 2swap ;
+	ttwh ttx tty 2swap ;
 	

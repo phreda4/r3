@@ -116,6 +116,7 @@
 	printtext
 	drop ;
 	
+| back    outline pading align  font-color	
 | colb(4) colo(4) pad(2) flag(2) colf(4)	
 ::textbox | str $colb-colo-ofvh-colf w h font -- texture
 	'font ! 

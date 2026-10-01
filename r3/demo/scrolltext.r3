@@ -29,7 +29,7 @@
 :printline | ynow nro str -- ynow nro
 
 |... center 1024,yh
-	ttsize | w h 
+	ttwh | w h 
 	yh swap - 1 >> pick4 + swap
 	1024 swap - 1 >> swap ttat
 	

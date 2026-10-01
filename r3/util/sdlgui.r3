@@ -52,7 +52,7 @@
 ::immat 'cury ! 'curx ! ;
 ::immat+ 'cury +! 'curx +! ;
 ::immbox 'boxh ! 'boxw ! ;
-::immfont! dup 'immfont ! ttfont! "A" ttsize 'immfontsh ! drop ;
+::immfont! dup 'immfont ! ttfont! "A" ttwh 'immfontsh ! drop ;
 ::immpad! 'pady ! 'padx ! ;
 ::immwinxy 2dup 'winy ! 'winx ! pady + swap padx + swap immat ;
 
@@ -101,13 +101,13 @@
 	
 ::immlabelc | "" --
 	immcolortex ttColor
-	ttsize boxw rot - 1 >> curx + padx +
+	ttwh boxw rot - 1 >> curx + padx +
 	boxh rot - 1 >> cury + pady + 
 	ttat ttprint ;
 
 ::immlabelr | "" --
 	immcolortex ttColor
-	ttsize boxw rot - curx + padx -
+	ttwh boxw rot - curx + padx -
 	boxh rot - 1 >> cury + pady +
 	ttat ttprint ;
 
@@ -116,12 +116,12 @@
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
 	ttat sprint dup ttemits
-	ttsize drop nip padx 1 << + 'curx +!
+	ttwh drop nip padx 1 << + 'curx +!
 	;
 	
 ::immStrC | "" --
 	immcolortex ttColor
-	ttsize boxw rot - 1 >> curx + padx +
+	ttwh boxw rot - 1 >> curx + padx +
 	boxh rot - 1 >> cury + pady + 
 	ttat ttemits ;
 
@@ -169,7 +169,7 @@
 	onClick ;	
 
 ::immtbtn | 'click "" --
-	ttsize drop 'boxw !
+	ttwh drop 'boxw !
 	plgui
 	[ immcolorbtn color plxywh frect 2 2 immat+ ; ] guiI
 	imm.
@@ -177,7 +177,7 @@
 	onClick ;
 
 ::immebtn | 'click "" --
-	ttsize drop 'boxw !
+	ttwh drop 'boxw !
 	plgui
 	[ 2 2 immat+ ; ] guiI
 	immlabelc
