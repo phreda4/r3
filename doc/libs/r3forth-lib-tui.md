@@ -213,7 +213,7 @@ Each widget returns a state value indicating interaction:
 
 ### Action Flags
 
-- **`tuX!`** - Mark action executed (click/enter)
+- **`tuX!`** `( -- )` - Mark action executed (click/enter)
 - **`tuX?`** `( -- 1/0 )` - Check if action should execute
 - **`tuR!`** - Request redraw
 - **`tuC!`** - Enable cursor display
@@ -627,8 +627,8 @@ Display progress indicator.
   ```
 
 - **`evtmx`, `evtmy`** - Mouse position (from terminal lib)
-- **`evtmb`** - Mouse buttons
-- **`evtmw`** - Mouse wheel delta
+- **`evtmb`** - Mouse buttons (from the terminal lib, `win-term`/`lin-term`)
+- **`evtmw`** - Mouse wheel delta (from the terminal lib)
 
 ---
 

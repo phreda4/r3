@@ -42,9 +42,9 @@ This library provides:
 
 ### Cleanup
 
-- **`SDLglquit`** - Cleanup and shutdown
+- **`GLend`** `( -- )` - Cleanup and shutdown (pairs with `GLIni` / `GLIniFull`; `SDLinitSGL` has no dedicated quit word)
   ```r3forth
-  SDLglquit
+  GLend
   ```
   - Deletes OpenGL context
   - Destroys window

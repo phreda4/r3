@@ -104,7 +104,7 @@ always the top item (pushed last).
 
 | Word | Stack | Description |
 |---|---|---|
-| `SDLEllipse` | `rx ry cx cy --` | Draw an ellipse outline. **Radii come before the center point.** |
+| `ellipse` | `rx ry cx cy --` | Draw an ellipse outline. **Radii come before the center point.** |
 | `fellipse` | `rx ry cx cy --` | Draw a filled ellipse. |
 | `circle` | `r x y --` | Draw a circle outline. |
 | `fcircle` | `r x y --` | Draw a filled circle. |

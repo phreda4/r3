@@ -810,8 +810,6 @@ Include with `^r3/lib/mem.r3`
 | `,print` | `p p .. "" --` | Format and compile to HERE |
 | `sprint` | `p p .. "" -- adr` | Format to buffer |
 | `sprintln` | `p p .. "" -- adr` | Format to buffer with newline |
-| `sprintc` | `p p .. "" -- adr c` | Format and return with count |
-| `sprintlnc` | `p p .. "" -- adr c` | Format with newline and count |
 
 ---
 
@@ -915,7 +913,6 @@ All output is buffered. Call `.flush` to send to stdout, or use `.println` which
 | `.at` | `x y --` | Position cursor at column `x` and row `y` |
 | `.col` | `x --` | Move cursor to specific column `x` |
 | `.eline` | `--` | Erase line from cursor to end |
-| `.ealine` | `--` | Erase the entire current line |
 | `.escreen` | `--` | Erase from cursor to end of screen |
 | `.showc` / `.hidec` | `--` | Show or hide the terminal cursor |
 | `.savec` / `.restorec` | `--` | Save or restore the current cursor position |
@@ -1022,7 +1019,7 @@ Include with `^r3/lib/sdl2gfx.r3`
 | `::fcircle` | `r x y --` | Filled circle |
 | `::circle` | `r x y --` | Circle outline |
 | `::fellipse` | `rx ry x y --` | Filled ellipse |
-| `::SDLEllipse` | `rx ry x y --` | Ellipse outline |
+| `::ellipse` | `rx ry x y --` | Ellipse outline |
 | `::fround` | `r x y w h --` | Filled rounded rectangle |
 | `::round` | `r x y w h --` | Rounded rectangle outline |
 | `::triangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |

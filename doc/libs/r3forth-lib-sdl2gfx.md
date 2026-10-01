@@ -20,12 +20,12 @@ This library provides:
 
 ### Color Conversion
 
-- **`rgb24`** `( rgb -- r g b )` - Extract RGB components from 24-bit color
+- **`rgb24`** `( rgb -- r g b )` *(private to sdl2gfx, not exported)* - Extract RGB components from 24-bit color
   ```r3forth
   $FF8040 rgb24  | Returns 255 128 64 (R G B)
   ```
 
-- **`rgb32`** `( argb -- r g b a )` - Extract ARGB components from 32-bit color
+- **`rgb32`** `( argb -- r g b a )` *(private to sdl2gfx, not exported)* - Extract ARGB components from 32-bit color
   ```r3forth
   $80FF8040 rgb32  | Returns 255 128 64 128 (R G B A)
   ```
@@ -119,9 +119,9 @@ This library provides:
   80 50 200 200 fellipse  | rx=80, ry=50
   ```
 
-- **`SDLEllipse`** `( rx ry x y -- )` - Draw ellipse outline
+- **`ellipse`** `( rx ry x y -- )` - Draw ellipse outline
   ```r3forth
-  80 50 200 200 SDLEllipse
+  80 50 200 200 ellipse
   ```
 
 ### Triangle
@@ -373,9 +373,9 @@ Render-to-texture for creating complex graphics offline.
   ```
   - Same as `texEnd` but enables blending
 
-- **`tex2static`** `( tex -- newtex )` - Convert dynamic texture to static
+- **`Tex2Static`** `( tex -- newtex )` - Convert dynamic texture to static
   ```r3forth
-  render-target tex2static 'static-copy !
+  render-target Tex2Static 'static-copy !
   ```
   - Copies render target to regular texture
   - Destroys original texture
@@ -424,39 +424,19 @@ Animations pack: initial frame, frame count, time scale, and current time into a
 
 ### Creating Animations
 
-- **`ICS>anim`** `( init cnt scale -- anim )` - Create animation value
-  ```r3forth
-  0 16 4 ICS>anim  | Start=0, 16 frames, scale=4
-  ```
-  - `init`: Starting frame
-  - `cnt`: Number of frames
-  - `scale`: Time scale (higher = slower)
+The animation words live in `varanim.r3` (see `r3forth-lib-varanim.md`):
 
-- **`vICS>anim`** `( time init cnt scale -- anim )` - Create with initial time
-  ```r3forth
-  1000 0 16 4 vICS>anim
-  ```
+- **`aniInit`** `( ini cnt fps -- V )` - Create a packed animation value (first frame, frame count, frames per second as fixed point, e.g. `8.0`)
+- **`ani+timer!`** `( 'V -- )` - Advance the animation at `'V` using the current timer
+- **`ani+!`** `( dt 'v -- )` - Advance the animation at `'v` by `dt`
+- **`aniFrame`** `( V -- f )` - Current frame number (`ini` + current index)
+- **`aniCnt`** `( V -- c )` - Current index inside the animation (0-based, without `ini`)
 
-### Using Animations
-
-- **`anim>n`** `( anim -- frame )` - Get current frame with wrap
-  ```r3forth
-  animation anim>n  | Returns frame number (loops)
-  ```
-  - Automatically wraps from last to first frame
-  - Returns frame number to use
-
-- **`anim>c`** `( anim -- frame )` - Get current frame no wrap
-  ```r3forth
-  animation anim>c  | Returns frame (stops at last)
-  ```
-  - Clamps at last frame (doesn't loop)
-
-- **`anim>stop`** `( anim -- anim' )` - Stop animation
-  ```r3forth
-  running-anim anim>stop 'stopped-anim !
-  ```
-  - Resets frame count to prevent animation
+```r3forth
+0 16 8.0 aniInit 'walk-anim !   | 16 frames from 0, 8 fps
+'walk-anim ani+timer!          | in the update loop
+walk-anim aniFrame             | current frame
+```
 
 ---
 
@@ -629,16 +609,16 @@ Animations pack: initial frame, frame count, time scale, and current time into a
 #walk-anim
 
 :init-walk
-  | 8 frames starting at 0, scale 8
-  0 8 8 ICS>anim 'walk-anim !
+  | 8 frames starting at 0, 8 fps (fixed point)
+  0 8 8.0 aniInit 'walk-anim !
   ;
 
 :update-walk
-  walk-anim timer+ 'walk-anim !
-  
+  'walk-anim ani+timer!
+
   | Get current frame
-  walk-anim anim>n
-  
+  walk-anim aniFrame
+
   | Draw frame
   player-x player-y rot char-sheet ssprite
   ;

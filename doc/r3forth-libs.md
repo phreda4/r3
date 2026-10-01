@@ -556,7 +556,6 @@ Named constants for ANSI/VT key sequences: `[ESC]`, `[ENTER]`, `[BACK]`, `[TAB]`
 ::.savec    ( -- )             save cursor position
 ::.restorec ( -- )             restore cursor position
 ::.eline    ( -- )             erase from cursor to end of line
-::.ealine   ( -- )             erase entire line
 ::.escreen  ( -- )             erase from cursor to end of screen
 ::.escreenup ( -- )            erase from cursor to screen top
 ::.nsp      ( n -- )           erase n characters forward
@@ -731,7 +730,7 @@ SDL2 2D drawing primitives, sprite/tileset system.
 ::lineV    ( x y y2 -- )      vertical line
 ::rect     ( x y w h -- )     draw hollow rectangle
 ::frect    ( x y w h -- )     draw filled rectangle
-::SDLEllipse  ( rx ry x y -- )   draw hollow ellipse
+::ellipse  ( rx ry x y -- )   draw hollow ellipse
 ::fellipse ( rx ry x y -- )   draw filled ellipse
 ::triangle ( x1 y1 x2 y2 x3 y3 -- )  draw filled triangle
 ::round    ( r x y w h -- )   draw rounded rectangle (hollow)

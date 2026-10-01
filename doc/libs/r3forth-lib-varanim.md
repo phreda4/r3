@@ -52,8 +52,25 @@ VarAnim manages a timeline of animations and scheduled events. It supports:
 
 ### Time Variables
 
-- **`deltatime`** - Time elapsed since last update (milliseconds)
-- **`timenow`** - Current animation system time (milliseconds from start)
+- **`deltatime`** - Time elapsed since last update (milliseconds). Set by `vupdate`, `timer<` and `timer.`
+- `timenow` - Current animation system time (milliseconds from start); **private** (`#`), not exported
+
+### Standalone Timer
+
+Independent of the animation timeline; they only write `deltatime` (used by `timer+`, `timer-` and `ani+timer!`). Do not call `timer.` in the same loop as `vupdate`, both update `deltatime`.
+
+- **`timer<`** `( -- )` - Reset timer: stores current `msec` and sets `deltatime` to 0
+- **`timer.`** `( -- )` - Advance timer: `deltatime` = `msec` - previous `msec`
+- **`timer+`** `( t -- t' )` - Add `deltatime` to `t`
+- **`timer-`** `( t -- t' )` - Subtract `deltatime` from `t`
+  ```r3forth
+  timer<                 | once, at start
+  :loop timer. ... pos timer+ 'pos ! ;
+  ```
+
+### Internal Pointers (exported)
+
+`timeline`, `timeline<`, `timeline>` and `exevar` are exported variables holding internal pointers: `timeline` is the start of the event array (8 bytes per event, sorted by start time), `timeline<` the boundary between pending and running events, `timeline>` the end, and `exevar` the base of the slot table (32 bytes per event). Not meant to be modified; `timeline> timeline - 3 >>` is what `vaempty` computes.
 
 ---
 
@@ -115,25 +132,48 @@ VarAnim manages a timeline of animations and scheduled events. It supports:
 
 - **`+vexe`** `( 'vector start -- )` - Execute function at specified time
   - Schedules code execution for future time
-  - No parameters passed to function
+  - The word is called with an address on the stack that it must leave balanced (it is dropped afterwards); it has no parameters of its own
   ```
   [ "Event triggered!" print ; ] 3.0 +vexe
   | Execute in 3 seconds
   ```
 
 - **`+vvexe`** `( v 'vector start -- )` - Execute with 1 parameter
-  - Passes single value to function
+  - The word receives the **address** of the stored value, not the value: read it with `dup @` (leaving the address on the stack)
   ```
-  42 [ "Value: " print . ; ] 2.0 +vvexe
+  42 [ dup @ "Value: %d" .println ; ] 2.0 +vvexe
   | Execute in 2 seconds with value 42
   ```
 
 - **`+vvvexe`** `( v1 v2 'vector start -- )` - Execute with 2 parameters
-  - Passes two values to function
+  - The word receives the address of the stored pair: `dup @+ swap @` gives `v2 v1` (as in `chipa.r3`: `dup @+ swap @ swap`)
   ```
-  100 200 [ "Values: " print . . ; ] 1.5 +vvvexe
+  100 200 [ dup @+ swap @ "%d %d" .println ; ] 1.5 +vvvexe
   | Execute in 1.5 seconds with values 100 and 200
   ```
+
+---
+
+## Groups
+
+Every event has a group tag (0-15; only the low 4 bits are used). The non-`g` words use group 0. The `g` variants take one extra `group` argument at the end:
+
+- **`+vanimg`**, **`+vboxanimg`**, **`+vxyanimg`**, **`+vcolanimg`** `( 'var ini fin ease dur start group -- )`
+- **`+vexeg`** `( 'vector start group -- )`
+- **`+vvexeg`** `( v 'vector start group -- )`
+- **`+vvvexeg`** `( v1 v2 'vector start group -- )`
+
+```r3forth
+'xpos 0.0 500.0 2 1.0 0.0 1 +vanimg   | group 1
+'ypos 0.0 300.0 2 1.0 0.0 1 +vanimg   | group 1
+1 vkillgroup                          | cancel both
+```
+
+### Cancelling Events
+
+- **`vkillgroup`** `( group -- )` - Remove all pending events of that group (`0 vkillgroup` removes all events created with the non-`g` words). The animated variables keep their current value
+- **`vkillvar`** `( 'var -- )` - Remove all animation events targeting that variable address
+- **`vareset`** `( -- )` - Remove all events
 
 ---
 
@@ -154,7 +194,7 @@ Used for rectangles, sprites, and packed coordinate data.
 - **`64wh`** `( packed -- w h )` - Extract W and H only
 
 - **`64box`** `( packed addr -- )` - Unpack to memory
-  - Stores 4 values as 64-bit integers at address
+  - Stores the 4 values (x y w h) as 32-bit integers (`d!+`) at address
   - Useful for direct structure updates
 
 **Example:**
@@ -208,12 +248,11 @@ Special format for sprite positioning with rotation and scale.
 
 - **`xyrz64`** `( x y r z -- packed )` - Pack sprite data
   - x, y: position (16-bit)
-  - r: rotation in bangles (16-bit, stored ×4)
-  - z: scale factor (16-bit, stored ×16)
+  - r: rotation in bangles (stored divided by 4, 16-bit)
+  - z: scale factor (stored divided by 16, 16-bit)
 
 - **`64xyrz`** `( packed -- x y r z )` - Unpack sprite data
-  - Returns r scaled down by 4
-  - Returns z scaled down by 16
+  - Returns r multiplied by 4 and z multiplied by 16 (precision loss: the low 2 and 4 bits are discarded when packing)
 
 **Example:**
 ```r3forth
@@ -236,21 +275,60 @@ spriteData 64xyrz drawRotatedSprite
 
 ## System Status
 
-- **`vaempty`** `( -- flag )` - Check if animation system is idle
-  - Returns true if no active animations or events
+- **`vaempty`** `( -- n )` - Number of events currently in the timeline (pending + running)
+  - `0` means no active animations or events
   - Useful for detecting when sequences complete
   ```
-  vaempty? ( "All animations finished" .print )
+  vaempty 0? ( "All animations finished" .println ) drop
   ```
+
+---
+
+## Frame Animation (packed value)
+
+A frame animation is a single 64-bit value, independent from the event timeline. Layout: `init` (12 bits, 63..52), `cnt` (8 bits, 51..44), `now` (8 bits, 43..36), `ms` per frame (12 bits, 35..24), accumulator (24 bits, 23..0).
+
+- **`aniInit`** `( ini cnt fps -- V )` - Create the animation value
+  - `ini`: first frame number
+  - `cnt`: number of frames (`0` = static, shows `ini`)
+  - `fps`: frames per second in **fixed point** (`7.0`, not `7`); `0.0` also gives a static animation
+  ```r3forth
+  0 4 7.0 aniInit 'anim !   | frames 0..3 at 7 fps
+  ```
+- **`ani+timer!`** `( 'V -- )` - Advance the animation stored at `'V` by `deltatime`
+  ```r3forth
+  'anim ani+timer!         | each frame (after timer. or vupdate)
+  ```
+- **`ani+!`** `( dt 'v -- )` - Same, with an explicit `dt` in milliseconds
+- **`aniFrame`** `( V -- f )` - Current frame number (`ini` + current index)
+  ```r3forth
+  anim aniFrame 'sprites + c@
+  ```
+- **`aniCnt`** `( V -- c )` - Current index inside the animation (0-based, without `ini`); despite the name it is not the frame count
 
 ---
 
 ## Easing Functions
 
-VarAnim uses the Penner easing library. Common easing function indices:
+`ease` is the index into the `ease` table of `penner.r3` (`ease ( t nro -- t' )`). Only the low 8 bits of the index are used. Index 0 is linear (no easing); indices 1-30 are:
 
-| Index | Easing Type | Description |
-|-------|-------------|-------------|
+| Index | Easing | Index | Easing | Index | Easing |
+|-------|--------|-------|--------|-------|--------|
+| 0 | Linear | 10 | Quin_In | 20 | Cir_Out |
+| 1 | Quad_In | 11 | Quin_Out | 21 | Cir_InOut |
+| 2 | Quad_Out | 12 | Quin_InOut | 22 | Ela_In |
+| 3 | Quad_InOut | 13 | Sin_In | 23 | Ela_Out |
+| 4 | Cub_In | 14 | Sin_Out | 24 | Ela_InOut |
+| 5 | Cub_Out | 15 | Sin_InOut | 25 | Bac_In |
+| 6 | Cub_InOut | 16 | Exp_In | 26 | Bac_Out |
+| 7 | Quar_In | 17 | Exp_Out | 27 | Bac_InOut |
+| 8 | Quar_Out | 18 | Exp_InOut | 28 | Bou_In |
+| 9 | Quar_InOut | 19 | Cir_In | 29 | Bou_Out |
+| | | | | 30 | Bou_InOut |
+
+See `r3forth-lib-penner.md` for the functions.
+
+-------|-------------|-------------|
 | 0 | Linear | Constant speed |
 | 1 | Quad In | Accelerating from zero |
 | 2 | Quad Out | Decelerating to zero |
@@ -472,9 +550,9 @@ draw
 - **Time precision**: Uses milliseconds internally for accuracy
 - **Concurrent animations**: Multiple animations can target same variable
 - **Completion detection**: Use `vaempty` or scheduled callback
-- **Performance**: Efficient O(log n) insertion, O(n) update per frame
+- **Performance**: Insertion is a linear scan plus a memory move (O(n)); O(n) update per frame
 - **Fixed-point math**: All durations and start times in fixed-point seconds
-- **Easing functions**: Index 0-30, see Penner library for details
+- **Easing functions**: Index 0-30 (table above)
 - **Variable safety**: Ensure animated variables persist (not stack-allocated)
 - **Reset caution**: `vareset` clears ALL animations immediately
 
@@ -487,7 +565,7 @@ draw
 | Poll until done
 :waitAnim
     vupdate
-    vaempty? ( drop ; ) drop | Exit when empty
+    vaempty 0? ( drop ; ) drop | Exit when empty
     waitAnim ;
 
 | Start animation

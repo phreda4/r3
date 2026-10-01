@@ -25,7 +25,9 @@ This library uses **48.16 fixed-point arithmetic** (48 bits integer, 16 bits fra
 
 ### Basic Fixed-Point Operations
 
-- **`*.u`** `( a b -- c )` - Unsigned fixed-point multiplication
+- **`*.s`** `( a b -- c )` - Fixed-point multiplication for small numbers (`* 16 >>`, no overflow protection)
+
+- **`*.f`** `( a b -- c )` - Fixed-point multiplication with full adjustment (rounds toward zero)
 
 - **`*.`** `( a b -- c )` - Signed fixed-point multiplication with proper sign handling
 

@@ -4,7 +4,7 @@ A collection of pseudo-random number generators (PRNGs) for R3Forth, offering va
 
 ## Overview
 
-This library provides four different random number generators:
+This library provides five different random number generators:
 - **8-bit PRNG** - Simple, fast, short period
 - **MulAdd** - Linear Congruential Generator (LCG)
 - **Xorshift** - Fast, good quality, medium period
@@ -109,8 +109,7 @@ High-quality PRNG with very long period (2^128 - 1).
 
 ### State Variables
 
-- **`state0`** - First state variable (default: 1)
-- **`state1`** - Second state variable (default: 2)
+- `state0` (default: 1) and `state1` (default: 2) are **private** (`#`), not exported: they cannot be accessed or seeded from other modules
 
 ### Functions
 
@@ -125,13 +124,7 @@ High-quality PRNG with very long period (2^128 - 1).
 
 ### Seeding
 
-```r3forth
-| Custom seed
-12345 'state0 !
-67890 'state1 !
-```
-
-**Important:** Both states must be non-zero. Never set both to 0.
+There is no public seeding word for `rnd128`; the state is private and starts at 1 and 2. (`rerand` seeds only `seed`, used by `rand`/`rnd`.)
 
 ---
 
@@ -141,9 +134,7 @@ Advanced PRNG with excellent statistical properties and long period.
 
 ### State Variables
 
-- **`fast_loop`** - Fast loop state (default: `$DEADBEEF12345678`)
-- **`slow_loop`** - Slow loop state (default: `$ABCDEF0123456789`)
-- **`mix`** - Mix state (default: `$123456789ABCDEF`)
+- `fast_loop` (default: `$DEADBEEF12345678`), `slow_loop` (default: `$ABCDEF0123456789`) and `mix` (default: `$123456789ABCDEF`) are **private** (`#`), not exported
 
 ### Functions
 
@@ -159,12 +150,7 @@ Advanced PRNG with excellent statistical properties and long period.
 
 ### Seeding
 
-```r3forth
-| Initialize with three values
-msec 'fast_loop !
-date 'slow_loop !
-time 'mix !
-```
+There is no public seeding word for `loopMix128`; its state is private and fixed at load time.
 
 ---
 
@@ -359,12 +345,6 @@ weighted-random "%s %d" .print
    
    | Avoid
    rand 6 mod 1+   | Biased for large ranges
-   ```
-
-5. **Check for zero states in rnd128**
-   ```r3forth
-   state0 0? ( 1 'state0 ! )
-   state1 0? ( 2 'state1 ! )
    ```
 
 ---

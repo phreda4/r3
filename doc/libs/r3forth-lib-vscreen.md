@@ -104,7 +104,7 @@ The library automatically transforms window coordinates to virtual screen space:
 
 ## Internal Variables
 
-These variables are maintained by the system:
+These variables are **private** (`#`) and not exported; they are listed only to explain the internals:
 
 - **`vscrw`** - Virtual screen width
 - **`vscrh`** - Virtual screen height

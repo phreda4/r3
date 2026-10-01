@@ -94,11 +94,6 @@ These functions append data to memory at `here` and advance the pointer.
   5 ,b  | Appends "101"
   ```
 
-- **`,o`** `( n -- )` - Append octal string
-  ```r3forth
-  64 ,o  | Appends "100"
-  ```
-
 - **`,f`** `( fix -- )` - Append fixed-point as decimal string
   ```r3forth
   65536 ,f  | Appends "1.0000"
@@ -277,19 +272,6 @@ Printf-style formatting with `sprint` family functions.
   | Returns "Size: 100 x 200\n\r\0"
   ```
   - Appends LF + CR + null
-
-- **`sprintc`** `( ... "format" -- str cnt )` - Format and return count
-  ```r3forth
-  "Hello" "%s World" sprintc
-  | Returns pointer and byte count
-  ```
-  - Useful for functions expecting counted strings
-
-- **`sprintlnc`** `( ... "format" -- str cnt )` - Format with newline and count
-  ```r3forth
-  42 "Answer: %d" sprintlnc
-  | Returns pointer and byte count (with newline)
-  ```
 
 ---
 

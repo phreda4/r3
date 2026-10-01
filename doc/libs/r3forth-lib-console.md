@@ -124,7 +124,7 @@ All output is buffered in a 8KB buffer for efficient terminal rendering. The buf
   "Hello World" .write
   ```
 
-- **`.print`** `( ... "format" -- )` - Format and print (uses `sprintc`)
+- **`.print`** `( ... "format" -- )` - Format and print (uses `,print`)
   ```r3forth
   42 "Answer: %d" .print
   ```
@@ -193,7 +193,6 @@ Low-level helpers for building ANSI escape sequences.
 ### Erasing
 
 - **`.eline`** - Erase from cursor to end of current line
-- **`.ealine`** - Erase entire current line
 - **`.escreen`** - Erase from cursor to end of screen
 - **`.escreenup`** - Erase from cursor to beginning of screen
 

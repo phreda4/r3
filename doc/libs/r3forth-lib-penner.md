@@ -211,16 +211,17 @@ Bouncing ball effect with decreasing amplitude.
 
 | Index | Function | Index | Function | Index | Function |
 |-------|----------|-------|----------|-------|----------|
-| 0 | None (pass through) | 10 | Quin_Out | 20 | Ela_Out |
-| 1 | Quad_In | 11 | Quin_InOut | 21 | Ela_InOut |
-| 2 | Quad_Out | 12 | Sin_In | 22 | Bac_In |
-| 3 | Quad_InOut | 13 | Sin_Out | 23 | Bac_Out |
-| 4 | Cub_In | 14 | Sin_InOut | 24 | Bac_InOut |
-| 5 | Cub_Out | 15 | Exp_In | 25 | Bou_In |
-| 6 | Cub_InOut | 16 | Exp_Out | 26 | Bou_Out |
-| 7 | Quar_In | 17 | Exp_InOut | 27 | Bou_InOut |
-| 8 | Quar_Out | 18 | Cir_In | | |
-| 9 | Quar_InOut | 19 | Cir_Out | | |
+| 0 | None (pass through) | 11 | Quin_Out | 21 | Cir_InOut |
+| 1 | Quad_In | 12 | Quin_InOut | 22 | Ela_In |
+| 2 | Quad_Out | 13 | Sin_In | 23 | Ela_Out |
+| 3 | Quad_InOut | 14 | Sin_Out | 24 | Ela_InOut |
+| 4 | Cub_In | 15 | Sin_InOut | 25 | Bac_In |
+| 5 | Cub_Out | 16 | Exp_In | 26 | Bac_Out |
+| 6 | Cub_InOut | 17 | Exp_Out | 27 | Bac_InOut |
+| 7 | Quar_In | 18 | Exp_InOut | 28 | Bou_In |
+| 8 | Quar_Out | 19 | Cir_In | 29 | Bou_Out |
+| 9 | Quar_InOut | 20 | Cir_Out | 30 | Bou_InOut |
+| 10 | Quin_In | | | | |
 
 ### Compact Easing Table
 

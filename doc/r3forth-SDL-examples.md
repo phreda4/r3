@@ -147,7 +147,7 @@ Imports the SDL2 graphics library, which provides all drawing functions.
     $ffffff randmax color 
     sw 3 >> randmax sh 3 >> randmax     | radii
     sw randmax sh randmax               | center
-    SDLEllipse
+    ellipse
     
     SDLredraw 
     waitkey ;
@@ -265,11 +265,11 @@ others (`rnd`/`rndmax`, `rand8`, `rnd128`, `loopMix128`).
     sw 3 >> randmax             | Horizontal radius (small, up to sw/8)
     sh 3 >> randmax             | Vertical radius (small, up to sh/8)
     sw randmax sh randmax       | Random center point (cx, cy)
-    SDLEllipse                  | Draw ellipse outline
+    ellipse                  | Draw ellipse outline
     SDLredraw 
     waitkey ;
 ```
-> `SDLEllipse` takes the radii *before* the center: `rx ry cx cy --`.
+> `ellipse` takes the radii *before* the center: `rx ry cx cy --`.
 
 #### Drawing Triangles
 ```forth
