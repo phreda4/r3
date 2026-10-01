@@ -294,7 +294,7 @@
     dup 32 >> swap 32 << 32 >> ;
 
 ::xy32 | x y -- b
-    $ffffffff and swap 32 >> $ffffffff and or ;
+    $ffffffff and swap 32 << or ;
 
 | -------------------------------------------------------
 | PUBLIC: UTILS
