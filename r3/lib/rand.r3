@@ -44,9 +44,9 @@
 	state0 state1 dup 'state0 !
 	swap
 	dup 23 << xor
-	dup 17 >> xor
+	dup 17 >>> xor
 	over xor
-	swap 26 >> xor
+	swap 26 >>> xor
 	dup 'state1 ! ;
 
 

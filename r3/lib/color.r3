@@ -154,23 +154,23 @@
 	pick2 + $ff and rot swap ;
 
 |-- YCoCg24
-:fwlift | x y -- avg dif
+:fwlift | x y -- dif avg
 	over - $ff and
 	dup 1 >> rot + $ff and  ;
 
 ::RGB2YCoCg24 | r g b -- Y co cg
-	rot fwlift | G avg dif
-	>r fwlift	| Y cg
-	r> ;
+	rot fwlift	| g co t
+	rot swap fwlift	| co cg Y
+	-rot ;
 
-:relift | dif avg  -- y x
+:relift | dif avg  -- x y
 	over 1 >> - $ff and
 	swap over + $ff and ;
 
 ::YCoCg242RGB | Y co cg -- r g b
-	rot relift
-	>r relift
-	r> ;
+	rot fwlift	| g co t
+	rot swap fwlift	| co cg Y
+	-rot ;
 
 |--- darker lighter color
 

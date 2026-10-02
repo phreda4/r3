@@ -47,7 +47,7 @@
 	'pl !
 	'trylist
 	( d@+ 1? dup 			| len ty h i
-		( pick3 <?
+		( pick3 <=?
 			dup 1- 4 << pl + 8 + @	| list[i]=v
 			over 				| len h i v j
 			sort 1+ )
@@ -65,7 +65,7 @@
 :sort1 | len h i v j -- len h i
 	( pick3 >?
       	dup pick4 - 		| len h i v j j-h
-		dup 1 - 3 << pl + @ 	| len h i v j j-h list[j-h]
+		dup 1- 3 << pl + @ 	| len h i v j j-h list[j-h]
 		pick3 <=? ( 4drop ; )
 		drop xch1 nip )
 	2drop ;
@@ -86,12 +86,12 @@
 | a=b -- 0
 | a>b -- +
 :cmpstr | a b -- a c
-	over 1 - 3 << pl + @
-	swap 1 - 3 << pl + @		| a aS bS
+	over 1- 4 << pl + @
+	swap 1- 4 << pl + @		| a aS bS
 	( c@+ 1? $ff and rot	| a bS b1 aS
 		c@+ $ff and rot -	| a bS aS a1-b1
 		-? ( nip nip ; )
-		1 - +? ( nip nip 1 + ; )	| 0 pasa
+		1- +? ( nip nip 1+ ; )	| 0 pasa
 		drop swap )
 	rot c@ - 0? ( nip ; )	| a bS b1 a1
 	2drop 1 ;
@@ -99,15 +99,15 @@
 :sort | len t1 h i -- len t1 h i
 	( over >? 	|
       	dup pick2 -	| len t1 h i i-h
-		over cmpstr 1 -	| <= ; len t1 h i i-h s
+		over cmpstr 1-	| <= ; len t1 h i i-h s
 		-? ( 2drop ; ) drop
 		xch nip ) ;
 
 ::sortstr | len lista -- ; lista es pstr-valor
-	'pl ! 1 +
+	'pl !
 	'trylist
 	( d@+ 1? dup 			| len tl h i
-		( pick3 <=? sort 1 + )
+		( pick3 <=? sort 1+ )
 		2drop )
 	3drop ;
 

@@ -101,7 +101,7 @@
 	over >? ( 16 <</ $21F3 *. $4000 swap - atanf ; )
 	swap 16 <</ $21F3 *. atanf ; 
 	
-::atan2 | y x -- bangle
+::atan2 | x y -- bangle
 	over 63 >> over 63 >>	| x y sx sy
 	2swap					| sx sy x y 
 	pick2 xor pick2 - swap
@@ -118,7 +118,7 @@
 	over >? ( atanc $4000 swap - atanf ; )
 	swap atanc atanf ; 
 
-::atan2x | y x -- bangle
+::atan2x | x y -- bangle
 	over 63 >> over 63 >>	| x y sx sy
 	2swap					| sx sy x y 
 	pick2 xor pick2 - swap
@@ -180,13 +180,13 @@
 	rot ;
 	
 ::sqrt. | x -- r
-	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
+	0 <=? ( drop 0 ; ) 16 << |1.0 =? ( ; )
 	0 
 	1 pick2 msb 1 nand <<
 	( 1? | op res one
 		2dup + | op res one r+o
 		step 2 >> )
-	drop nip 8 << ;
+	drop nip ;
 
 |- shift with sign
 :shift
@@ -227,10 +227,10 @@
 	log2. swap /. pow2. ;
 
 ::ln.	log2. 45426 *. ;
-::exp.	94544 *. pow2. ;
+::exp.	94548 *. pow2. ;
 	
 :_tanh	
-	6.0 >=? ( 1.0 ; ) 0.0625 <? ( ; ) 
+	6.0 >=? ( drop 1.0 ; ) 0.0625 <? ( ; ) 
 	2* exp. dup 1.0 - swap 1.0 + /.  ;
 
 ::tanh.
@@ -248,9 +248,7 @@
 		swap 0.08625 16 *>> 0.92167 + + ; )
 	2.4 -
 	0.02722 16 *>> 0.98367 +
-|	1.0 <? ( ; ) 1.0 nip 
-|	$ffff <? ( ; ) $ffff and
-	;
+	1.0 min ;
 	
 ::fastanh.
 	-? ( neg _softclip neg ; ) _softclip ;
@@ -266,8 +264,7 @@
 	| accx workx term1 
 	1.0 pick2 12 * /.
 	| acc workx term1 term3 | HALF_LN_2PI = 60223
-	60223 + rot + | accx term1 add
-	- swap -
+	60223 + rot - + swap - | accx lnGamma(z)
 	;
 
 :-gamma | x -- r
@@ -329,6 +326,7 @@
 	dup 4 >> or
 	dup 8 >> or
 	dup 16 >> or
+	dup 32 >> or
 	1+
 	;
 	
@@ -337,7 +335,7 @@
 ::6* | n -- n*6
 	2* dup 2* + ;
 ::6/ | n -- n/6
-	$AAAAAAAAAAAAAAAB 65 *>> ;
+	$2AAAAAAAAAAAAAAB 64 *>> ;
  
 ::6mod | n -- n%6
 	dup 6/ 6* - ;
@@ -407,7 +405,7 @@
 ::fp16f | fp16 -- f
 	0? ( ; ) 
 	dup $3ff and $400 or
-	over 10 >> $1f and 15 - 
+	over 10 >> $1f and 9 - 
 	shift swap -? ( drop neg ; ) drop ;
 	
 |=--- float 40.24	
