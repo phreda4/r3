@@ -47,9 +47,9 @@
 	outbuf> rot pick2 cmove
     'outbuf> +! ;
 ::.emit | char --
-	outbuf> endbuf =? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
+	outbuf> endbuf >=? ( .flush outbuf nip ) c!+ 'outbuf> ! ;
 :.wemit | char2char1 --
-	outbuf> endbuf =? ( .flush outbuf nip ) w!+ 'outbuf> ! ;
+	outbuf> endbuf >=? ( .flush outbuf nip ) w!+ 'outbuf> ! ;
 	
 ::.uemit | cp -- ; UNICODE emit
 	$10FFFF >? ( drop ; )
@@ -105,7 +105,7 @@
 |::.ealine "2K" .[w ; | borrar linea actual
 ::.escreen "J" .[w ; | erase from cursor to end of screen
 ::.escreenup "1J" .[w ; | erase from cursor to beginning
-::.nsp "%dX" .[p ; | n -- | not adv cursor
+::.nsp $ffff and "%dX" .[p ; | n -- | not adv cursor
 
 ::.showc "?25h" .[w ;
 ::.hidec "?25l" .[w ;
@@ -207,19 +207,36 @@
 |---------- compati
 ##pad * 128
 	
-:.char
+:.bks | adr -- adr' ; backspace de un caracter utf8
+	'pad <=? ( ; )
+	1- ( dup c@ $c0 and $80 =? drop 1- ) drop
+	'pad <? ( drop 'pad )
+	8 .emit 32 .emit 8 .emit ;
+
+::.ukey | key -- key n ; n=bytes
+	32 126 in? ( 1 ; )
+	dup $ff and
+	$c2 $df in? ( drop dup $3fff not and $8000 =? ( drop 2 ; ) drop 0 ; )
+	$e0 $ef in? ( drop dup $3f3fff not and $808000 =? ( drop 3 ; ) drop 0 ; )
+	$f0 $f4 in? ( drop dup $3f3f3fff not and $80808000 =? ( drop 4 ; ) drop 0 ; )
+	drop 0 ;
+
+:.char | adr key -- adr'	
 	0? ( drop ; )
-	$7f =? ( drop | backspace
-		1- 'pad <? ( drop 'pad ; )
-		8 .emit 32 .emit 8 .emit ; )
-	dup .emit
-	swap c!+ ;
+	$7f =? ( drop .bks ; )
+	.ukey 0? ( 2drop ; )
+	pick2 'pad - over + 120 >? ( 3drop ; ) drop
+	( 1? 1- >r
+		dup .emit
+		dup 8 >> -rot swap c!+ swap
+		r> ) 2drop ;	
 	
-::.input | --
+::.input | -- ; ESC cancela (deja pad vacio)
 	.showc .ovec
 	'pad 
-	( getch $a <>? [enter] <>? [esc] <>? .char ) drop
-	0 swap c! .cr .flush ;	
+	( getch $a <>? [enter] <>? [esc] <>? .char ) 
+	[esc] =? ( 2drop 'pad 0 swap c! .cr .flush ; )
+	drop 0 swap c! .cr .flush ;
 	
 :emite | char --
 	$5e =? ( drop 27 .emit ; ) | ^=escape
@@ -246,5 +263,6 @@
 	here 
 	dup 'outbuf ! dup 'outbuf> !
 	$1fff +	| 16kb flush buffer
-	dup 'endbuf ! 'here !
+	dup 'endbuf ! 
+	32 + 'here !
 	;

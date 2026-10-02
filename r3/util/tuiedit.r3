@@ -27,8 +27,18 @@
 #undobuffer>
 #undobuffer<	| tope valido de redo
 
-#findpad * 64	|----- find text
+#findpad * 128	|----- find text
 
+:ubackc | adr -- adr' ; retrocede al primer byte del caracter utf8
+	( fuente >?
+		dup c@ $c0 and $80 <>? ( drop ; )
+		drop 1- ) ;
+
+:ufwdc | adr -- adr' ; avanza saltando bytes de continuacion utf8
+	( $fuente <?
+		dup c@ $c0 and $80 <>? ( drop ; )
+		drop 1+ ) ;
+		
 :inselect | adr -- adr
 	inisel finsel in? ( 18 .bc ) ;
 	
@@ -93,6 +103,7 @@
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
 	9 =? ( drop 2 'xcursor +! ; )
+	$c0 and $80 =? ( drop ; )
 	drop 1 'xcursor +! ;
 
 #cacheyl
@@ -162,7 +173,7 @@
 	swap over - swap	| cnt cur
 	dup 1- <<13			| cnt cur cura
 	swap over - 		| cnt cura cur-cura
-	rot min + fuente max
+	rot min + fuente max ubackc
 	'fuente> ! ;
 
 :kabajo
@@ -171,11 +182,11 @@
 	over swap - swap | cnt cursor
 	>>13		| cnt cura
 	dup 1+ >>13 	| cnt cura curb
-	over - rot min +
+	over - rot min + ubackc
 	'fuente> ! ;
 
-:kder	fuente> $fuente <? ( 1+ 'fuente> ! ; ) drop ;
-:kizq	fuente> fuente >? ( 1- 'fuente> ! ; ) drop ;
+:kder	fuente> $fuente <? ( 1+ ufwdc 'fuente> ! ; ) drop ;
+:kizq	fuente> fuente >? ( 1- ubackc 'fuente> ! ; ) drop ;
 :kpgup	fh ( 1? 1- karriba fixcur ) drop ;
 :kpgdn	fh ( 1? 1- kabajo fixcur ) drop ;
 
@@ -242,13 +253,21 @@
 |	drop
 	46 .fcc ;
 	
+:ctlfix | c -- c' 
+	dup $ff and
+	32 <? ( drop 9 =? ( ; ) drop 46 ; )
+	$7f =? ( 2drop 46 ; )
+	drop ;
+
+:utfrest | adr -- adr' 
+	( dup c@ $c0 and $80 =? drop c@+ .emit ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
 	|nip .eline ;
 	swap 1+ .nsp ;
 
 :tabchar | adr 9 -- adr 32
-	drop swap 1- swap .sp 32 ;
+	drop swap 0? ( swap 32 ; ) 1- swap .sp 32 ;
 	
 :cemit | adr char -- adr 
 	modoline 0? ( drop
@@ -276,11 +295,11 @@
 	0 'modoline ! | string multilinea****
 	codecolor
 	fw 5 - 
-	( 1? 1- swap 
+	( 0 >? 1- swap 
 		atselect
 		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
-		cemit
+		ctlfix cemit utfrest
 		swap ) drop
 	( atselect c@+ 13 <>? 
 		0? ( drop 1- ; ) | end of text
@@ -290,11 +309,11 @@
 :drawlinemono
 	inselect
 	fw 5 - 
-	( 1? 1- swap 
+	( 0 >? 1- swap 
 		atselect
 		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
-		9 =? ( tabchar ) .emit 
+		ctlfix 9 =? ( tabchar ) .emit utfrest
 		swap ) drop
 	( atselect c@+ 13 <>? 
 		0? ( drop 1- ; ) | end of text
@@ -310,6 +329,7 @@
 	swap ( 1+ fh <? emline ) drop ;
 	
 :drawlines | ini -- end
+	-1 'fc. !
 	0 ( fh <?
 		iniline swap 
 		drawline
@@ -317,6 +337,7 @@
 		swap 1+ ) drop ;
 
 :drawlinesmono | ini -- end
+	-1 'fc. !
 	0 ( fh <?
 		iniline swap 
 		drawlinemono
@@ -327,7 +348,7 @@
 :cr.. | adr -- adr'
 	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
 	
-:clickMouse
+:clickMouse0
 	evtmxy fy -
 	scrini> | x y c
 	( swap 1? 1- swap cr.. ) drop | x c
@@ -338,6 +359,8 @@
 		13 =? ( 0 nip )
 		0? ( drop nip 1- ; ) 
 		drop ) drop ;
+
+:clickMouse clickMouse0 ubackc ;
 
 #tclick
 
@@ -392,18 +415,30 @@
 	finsel inisel - neg '$fuente +!
 	cursordel 0 dup 'inisel ! 'finsel ! ;
 
+:cr>lf | adr cnt --
+	( 1? 1- swap
+		dup c@ 10 =? ( 13 pick2 c! ) drop
+		1+ swap ) 2drop ;
+		
 :txtcopy
 	inisel 0? ( drop ; )
-	finsel over - 1+
-	copyclipboard | 'mem cnt -- 	
-	'inisel here strcpy
-	;
+	finsel over -				| ini cnt (fin exclusivo)
+	here pick2 pick2 cmove	| copia a here
+	nip 0 over here + c!		| cnt ; terminador
+|LIN|	here over cr>lf
+	here swap copyclipboard ;
 
 :txtcut
 	txtcopy remsel ;
 
+:pastefix | adr -- 
+	( dup c@ $ff and 1?
+		32 <? ( 9 <>? ( 13 <>? ( 32 pick2 c! ) ) )
+		drop 1+ ) 2drop ;
+
 :txtpaste
-	here pasteclipboard | 'mem -- 	
+	here pasteclipboard
+	here only13 drop here pastefix
 	here count 0? ( 2drop ; ) 
 	fuente> dup pick2 + swap | from count to+ 
 	$fuente over - 1+ cmove>	| clip cnt
@@ -412,7 +447,7 @@
 	cmove
 	here count nip 'fuente> +!
 	;
-	
+		
 |-------------
 | undobuffer formato: registro fijo de 2 bytes [marca][data] (un solo buffer)
 |   back      guarda: [0][char]      -> redo = reinsertar (redoback)
@@ -453,13 +488,22 @@
 	0 =? ( redoback )			| rehace un BACK (no necesita char)
 	drop 2 + 'undobuffer> ! ;
 
+:backu | borra el caracter utf8 anterior
+	fuente> fuente <=? ( drop ; )
+	dup 1- ubackc -
+	( 1? 1- back ) drop ;
+
+:delu | borra el caracter utf8 bajo el cursor
+	fuente> $fuente >=? ( drop ; )
+	1+ ufwdc fuente> -
+	( 1? 1- del ) drop ;
 
 :kdel
-	inisel 0? ( drop del ; )
+	inisel 0? ( drop delu ; )
 	drop remsel ;
 
 :kback
-	inisel 0? ( drop back ; )
+	inisel 0? ( drop backu ; )
 	drop remsel ;
 	
 :chmode
@@ -478,11 +522,12 @@
 	'fuente> ! ;
 
 :enterfind | -- ; pide texto a buscar (como filesearch en main.r3) y busca
-	fx fy .at 7 .fc 4 .eline 
+	fx fy .at 7 .fc 4 .bc .eline 
 	" find: " .write
 	.input
+	'pad c@ 0? ( drop ; ) drop
 	'pad 'findpad strcpy
-	findnext ;
+	findnext ;	
 
 ::tueKeyMove
 	[UP] =? ( karriba sele ) 
@@ -496,7 +541,7 @@
 	;
 	
 :simpleins | c -- ; graba [1][0] (INSERT) e inserta/appendea
-	dup 0 1 pushu			| graba registro; deja c
+	0 1 pushu			| graba registro; deja c
 	modo ex ;
 
 :ovwchar | c -- ; graba [2][charviejo] (OVERWRITE), y sobreescribe
@@ -504,13 +549,25 @@
 	2 pushu				| graba registro; deja c
 	lover ;
 
+:canover | c -- c f ; sobreescribir solo ascii sobre ascii
+	$80 >=? ( 0 ; )
+	fuente> $fuente >=? ( drop 0 ; )
+	c@ $ff and $80 >=? ( drop 0 ; ) drop -1 ;
+
+:insins | c -- ; inserta SIEMPRE (modo lins), graba [1][0]
+	0 1 pushu lins ;
+
 :insertchar | c -- ; inserta o sobreescribe c, grabando undo/redo
 	modo 'lover =? (
 		drop				| c
-		fuente> $fuente <? ( drop ovwchar ; )	| hay char real debajo -> overwrite
-		drop simpleins ; )		| cursor al final -> se comporta como insert
+		canover 1? ( drop ovwchar ; )	| ascii sobre ascii -> overwrite
+		drop insins ; )			| resto -> insert real
 	drop simpleins ;
 
+:typeutf | key n -- ; inserta un caracter utf8 completo
+	( 1? 1- swap dup $ff and insertchar 8 >> swap ) 2drop
+	fixcur cursorpos ;
+	
 :EditFoco
 	tuif 0? ( 'focoe ! ; )
 	|1 =? ( startfocus ) 
@@ -519,6 +576,7 @@
 	evtmw 1? ( evwmouse cursorpos ) drop
 	uikey 0? ( drop ; )	
 	32 126 in? ( insertchar fixcur cursorpos ; ) 
+	.ukey 1? ( typeutf ; ) drop
 	[tab] =? ( insertchar fixcur cursorpos ; ) 
 	[enter] =? ( insertchar fixcur cursorpos ; ) 
 	

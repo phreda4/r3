@@ -22,11 +22,11 @@
 	@ neg rot *. swap 8 + +! ;
 
 ::v2* | 'v1 n -- ; v1=v1*n
-	over @ over *. swap !+
+	over @ over *. rot !+ | n 'v1y
 	dup @ rot *. swap ! ;
 
 ::v2/ | 'v1 n -- ; v1=v1/n
-	over @ over /. swap !+
+	over @ over /. rot !+
 	dup @ rot /. swap ! ;
 
 ::v2len | 'v -- m

@@ -66,8 +66,8 @@
 	rot >a swap >b
 	sincos 
 	vx over *. vy pick3 *. - a!+
-	vx rot *. swap vy *. + a! 
-	vz a!+ ;
+	vx rot *. swap vy *. + a!+ 
+	vz a! ;
 	
 | rotate vec3 by axis
 #c #s #t
@@ -82,7 +82,7 @@
 	t ay *. az *. s ax *. - vz *. + swap !+
 	t ax *. az *. s ay *. - vx *.
 	t ay *. az *. s ax *. + vy *. +
-	t az *. az *. c + vz *. + swap ! ;
+	t az *. az *. c + vz *. + swap ! 
 	;
 	
 |--- quaternios
@@ -104,7 +104,7 @@
 	+ + + ;
 	
 ::q4inv | q1 q2d --
-	2dup q4dot 1.0 swap /.
+	over dup q4dot 1.0 swap /.
 	rot >a swap | invdot d
 	over a@+ neg *. swap !+
 	over a@+ neg *. swap !+
@@ -143,7 +143,7 @@
 	@ dup *. swap
 	+ + + 0? ( ; ) 
 	1.0 over /.	| n2 inv
-	swap over *.	| i n2
+	swap over dup *. *. 	| i n2*i*i
 	neg 3.0 + 2/ *.
 	;
 
