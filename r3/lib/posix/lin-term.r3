@@ -51,8 +51,7 @@
 
 ::.getterminfo | --
 	1 $5413 'flgs libc-ioctl | TIOCGWINSZ
-	flgs dup 16 >> $ffff and 1 - 'cols !
-	$ffff and 1 - 'rows ! ;
+	flgs dup 16 >> $ffff and 'cols ! $ffff and 'rows ! ;
 
 :.getrc rows 16 << cols or ;
 

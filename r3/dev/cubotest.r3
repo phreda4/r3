@@ -251,8 +251,8 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 :randvoxel
 	'voxels >a 
 	$1000 ( 1? | 8=1ff
-		|256 randmax 
-		14 randmax 1+
+		128 randmax 
+		|14 randmax |1+
 		15 >? ( 0 nip )
 		ca!+ 
 		1- ) drop ;
@@ -296,5 +296,6 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 : 
 	"cube" 1024 720 SDLinit
 	pcfont
+	randvoxel
 	'main sdlshow
 	SDLquit ;

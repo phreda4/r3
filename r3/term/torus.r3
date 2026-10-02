@@ -5,39 +5,38 @@
 ^r3/lib/console.r3
 ^r3/lib/math.r3
 
-| ---- buffers (maximo 400 x 120 celdas) ----
+| ---- buffers (maximo 400 x 120 celdas)
 #zbuf * 192000	| 1/z por celda (dword, 16.16)
 #cbuf * 48000	| caracter por celda
 #kbuf * 48000	| color 256 por celda
 
-| ---- pantalla ----
+| ---- pantalla 
 #SW 0 #SH 0		| celdas usadas
 #K1 0			| escala de proyeccion (16.16)
 #nth 0 #nph 0	| muestras por vuelta: tubo / anillo
-#tw 0 #th 0
 
-| ---- geometria (16.16) ----
+| ---- geometria 
 #fp1 0.8		| radio del tubo
 #fp2 2.2		| radio del anillo
 #K2  7.0		| distancia ojo - centro
 
-| ---- animacion ----
+| ---- animacion 
 #angA 0 #angB 0
 #cosA #sinA #cosB #sinB
 #hf 0			| fase del arcoiris
 #hue 0			| fila de paleta de la muestra
 #ph 0
 
-| ---- temporales por muestra ----
+| ---- temporales por muestra
 #ct #st #cp #sp #cxr
 #px #py #pz #rx #ry #rz
 #nx #ny #nz #rnx #rny #rnz
 #ooz #sc #xp #yp #idx #lum
 
-| ---- rampa de luminancia (12 niveles) ----
+| ---- rampa de luminancia (12 niveles) 
 #lc ".,-~:;=!*#$@"
 
-| ---- paleta: 24 tonos x 12 brillos -> color 256 ----
+| ---- paleta: 24 tonos x 12 brillos -> color 256 
 #pal * 288
 #tt #cr #cg #cb #bv #bw
 
@@ -71,23 +70,14 @@
 	SW SH 1 << min 16 << 'K1 !
 	K1 16 >> 5 * 4 / 500 min 40 max 'nth !
 	nth 2 << 'nph !
-	|mktheta
 	.Reset .cls ;
 
-:termsize | -- w h
-|LIN|	.getterminfo cols 1+ rows 1+ ;
-|WIN|	cols rows ;
-
-:checksize | --
-	termsize 120 min 10 max 'th ! 400 min 20 max 'tw !
-	tw SW <>? ( drop ; ) drop
-	th SH <>? ( drop ; ) drop ;
-
 :resize? | --
-	termsize 120 min 10 max 'th ! 400 min 20 max 'tw !
-	tw SW =? ( drop th SH =? ( drop ; ) )
-	drop
-	tw 'SW ! th 'SH !
+|LIN|	.getterminfo
+	cols 400 min 20 max 
+	rows 120 min 10 max 
+	SH =? ( swap SW =? ( 2drop ; ) swap )
+	'SH ! 'SW !
 	setsize ;
 
 | ---- helpers ----
@@ -100,7 +90,7 @@
 	angA cos 'cosA !   angA sin 'sinA !
 	angB cos 'cosB !   angB sin 'sinB ! ;
 
-| ===== una muestra del toro =====
+| ===== una muestra del toro 
 :dotsample | i --
 	16 << nth / sincos 'ct ! 'st !
 	
@@ -140,8 +130,9 @@
 	SW * + 'idx !
 
 	| z-buffer: gana el mas cercano (mayor 1/z)
-	idx 2 << 'zbuf + d@ ooz >=? ( drop ; ) drop
-	ooz idx 2 << 'zbuf + d!
+	idx 2 << 'zbuf + ooz 
+	over d@ <? ( 2drop ; ) 
+	swap d!
 
 	| luz desde arriba-frente: L = (0, .707, -.707)
 	rny rnz - 46341 *. 0 max 11 * 16 >> 11 min 'lum !
@@ -157,7 +148,7 @@
 		0 ( nth <? dup dotsample 1+ ) drop
 		1+ ) drop ;
 
-| ===== buffer -> terminal =====
+| ===== buffer -> terminal 
 #lk -1
 #tf 0
 
@@ -175,8 +166,9 @@
 		0 ( SW <?
 			over SW * over + putcell
 			1+ ) drop
-		SH 1- <? ( .cr )
-		1+ ) drop
+		1+
+		SH <? ( .cr )
+		) drop
 	.flush ;
 
 :spin | --
