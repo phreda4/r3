@@ -48,14 +48,6 @@
 ::ttfont! | font --
 	'ttfon ! ;
 	
-::ttprint | "" --
-	sprint	
-::ttemits | "" --
-	SDLrenderer ttink ttfon pick3 ttx tty RenderText
-	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
-	'textbox 8 + d@ 'ttx +! 
-	;
-	
 ::ttat | x y --
 	'tty ! 'ttx ! ;	
 
@@ -71,6 +63,32 @@
 	
 ::ttstyle | style -- | KUIB %0001
 	ttfon swap TTF_SetFontStyle ;
+
+::ttprint | "" --
+	sprint	
+::ttemits | "" --
+	SDLrenderer ttink ttfon pick3 ttx tty RenderText
+	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
+	'textbox 8 + d@ 'ttx +! 
+	;
+
+::ttemitc | width "" --
+	ttwh drop | w "" tw
+	rot swap - 2/
+	'ttx +!
+	ttemits ;
+
+::ttemitr | "" --
+	ttwh drop | "" tw
+	neg 'ttx +!
+	ttemits ;
+	
+::ttboxcc | w h "" --
+	ttwh | w h "" tw th
+	2swap >r | w tw th h "" 
+	swap - 2/ 'tty +!
+	- 2/ 'ttx +!
+	r> ttemits ;
 	
 #backc	
 :sizechar | -- w 
