@@ -28,7 +28,9 @@
     |direccion.sin_addr.s_addr = INADDR_ANY;
 	
 ::server |( port -- sock )
-    AF_INET 'server_addr w!
+|LIN|    AF_INET 'server_addr w!
+|WIN|    AF_INET 'server_addr w!
+|MAC|    $210 'server_addr w!	| BSD sockaddr_in: sin_len=16, sin_family=AF_INET
 	dup 8 << swap 8 >> or	'server_addr 2 + w!
 	$0 						'server_addr 4 + d! |INADDR_ANY
 | 'server_addr dumpadr

@@ -1,12 +1,12 @@
-| console words linux - Enhanced and Consistent
-| PHREDA 2022 - Updated 2025
+| console mac
+| PHREDA
 ^r3/lib/mac/posix.r3
 ^r3/lib/mem.r3
 ^r3/lib/parse.r3
 
 ::type 1 -rot libc-write drop ;
 
-#sterm * 64		| termios structure copy (0=no copy)
+#sterm * 80		| termios structure copy
 #flgs
 
 |#define F_DUPFD 0 /* Duplicate file descriptor */
@@ -23,17 +23,10 @@
 |------- Initialization -------
 ::.reterm | --
 	sterm 0? ( 0 'sterm libc-tcgetattr ) drop
-	'sterm >a here >b |'stermc >b
-	da@+ $FFFFFACD and db!+	| set32(raw, OFF_IFLAG, get32(raw, OFF_IFLAG) & 0xFFFFFACD);
-    da@+ $FFFFFFFE and db!+	| set32(raw, OFF_OFLAG, get32(raw, OFF_OFLAG) & 0xFFFFFFFE);
-    da@+ $30 or db!+		| set32(raw, OFF_CFLAG, get32(raw, OFF_CFLAG) | 0x30);
-	da@+ $FFFF7FF4 and db!+	| set32(raw, OFF_LFLAG, get32(raw, OFF_LFLAG) & 0xFFFF7FF4);	
-	ca@ cb!+ | line
-    a@+ b!+ a@+ b!+ a@+ b!+ a@ b!
-    here 17 + >b | cc[32]
-    $7f b> 2 + c!
-    1 b> 5 + c!
-    0 b> 6 + c!
+	0 here libc-tcgetattr		| raw = current settings
+	here libc-cfmakeraw		| no echo/canon/ISIG/OPOST/IXON.., CS8
+	0 here 48 + c!			| c_cc[VMIN=16] = 0
+	1 here 49 + c!			| c_cc[VTIME=17] = 1 (0.1 s)
 	0 0 here libc-tcsetattr 
 	;
 
@@ -91,15 +84,19 @@
 ##evtmw
 ::evtmxy evtmx evtmy ;
 
-|--- mode 1006
+|--- mode 1006 | SGR button 0,1,2 = left,middle,right -> evtmb bits 0,2,1 (as win-term)
+:btnmap | bits -- bits'
+	dup 1 and over 2 and 1 << or swap 4 and 1 >> or ;
+
 :dnbtn
 	$40 and? ( $1 and 2* 1- neg 'evtmw ! ; ) 
-	$3 and 1 swap <<
+	$20 and? ( $3 and 3 =? ( 0 'evtmb ! ) drop ; ) | motion: only hover clears
+	$3 and 1 swap << btnmap
 	evtmb or 'evtmb ! ;
 	
 :upbtn
 	$40 and? ( $1 and 2* 1- 'evtmw ! ; ) 
-	$3 and 1 swap << not
+	$3 and 1 swap << btnmap not
 	evtmb and 'evtmb ! ;
 	
 | Formato: ESC[<button;x;yM o m

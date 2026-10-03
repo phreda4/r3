@@ -57,18 +57,22 @@
 	stckhdd> findata 
 |WIN|	520 
 |LIN|	8
+|MAC|	8
 	cmove |dsc
 |WIN|	520 
 |LIN|	8
+|MAC|	8
 	'stckhdd> +! ;
 	
 :pophdd
 |WIN|	-520 
 |LIN|	-8
+|MAC|	-8
 	'stckhdd> +!
 	findata stckhdd>
 |WIN|	520 
 |LIN|	8
+|MAC|	8
 	cmove ;
 
 :dir.?

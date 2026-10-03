@@ -151,6 +151,12 @@
 |LIN|	$8 =? ( "Divide by 0 / FP error" .write )
 |LIN|	$b =? ( "Invalid memory (segfault)" .write )
 |LIN|	$d =? ( "Broken pipe" .write )
+|MAC|	$4 =? ( "Illegal instruction" .write )
+|MAC|	$6 =? ( "Abort" .write )
+|MAC|	$a =? ( "Bus error (invalid memory)" .write )
+|MAC|	$8 =? ( "Divide by 0 / FP error" .write )
+|MAC|	$b =? ( "Invalid memory (segfault)" .write )
+|MAC|	$d =? ( "Broken pipe" .write )
 	$100 =? ( "Stack underflow" .write )
 	$200 =? ( "Stack overflow" .write )
 	drop ;

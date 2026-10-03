@@ -3,6 +3,7 @@
 
 ^r3/lib/mem.r3
 |LIN|^r3/lib/posix/posix.r3
+|MAC|^r3/lib/mac/posix.r3
 |WIN|^r3/lib/win/ws2.r3
 
 | ============================================
@@ -11,11 +12,20 @@
 
 #AF_INET 2
 #SOCK_STREAM 1
-#SOL_SOCKET 1
-#SO_REUSEADDR 2
+|LIN|#SOL_SOCKET 1
+|WIN|#SOL_SOCKET $ffff
+|MAC|#SOL_SOCKET $ffff
+|LIN|#SO_REUSEADDR 2
+|WIN|#SO_REUSEADDR 4
+|MAC|#SO_REUSEADDR 4
 #INVALID_SOCKET -1
 
 |LIN|#FIONBIO $5421
+|MAC|#FIONBIO $8004667E
+|LIN|#F_SETFL 4
+|LIN|#O_NONBLOCK $800
+|MAC|#F_SETFL 4
+|MAC|#O_NONBLOCK 4
 |WIN|#FIONBIO $8004667E
 |WIN|#FIONBIO_MODE 1
 
@@ -45,6 +55,7 @@
 ::socket-create |( family type protocol -- sock )
 |WIN| ws2-socket
 |LIN| libc-socket 
+|MAC| libc-socket 
 	;
 
 | ============================================
@@ -52,6 +63,7 @@
 | ============================================
 ::socket-set-nonblock |( sock -- result )
 |LIN| F_SETFL O_NONBLOCK libc-fcntl
+|MAC| F_SETFL O_NONBLOCK libc-fcntl
 |WIN| 1 here ! $8004667E here ws2-ioctlsocket
 	;
 
@@ -63,6 +75,7 @@
 	SOL_SOCKET SO_REUSEADDR here 4 
 |WIN| ws2-setsockopt
 |LIN| libc-setsockopt
+|MAC| libc-setsockopt
 	;
 
 | ============================================
@@ -71,31 +84,37 @@
 ::socket-bind |( sock addr port -- result )
 |WIN| ws2-bind
 |LIN| libc-bind 
+|MAC| libc-bind 
 	;
 
 ::socket-listen |( sock backlog -- result )
 |WIN| ws2-listen
 |LIN| libc-listen 
+|MAC| libc-listen 
 	;
 	
 ::socket-accept |( sock addr addrlen -- newsock )
 |WIN| ws2-accept
 |LIN| libc-accept 
+|MAC| libc-accept
 	;
 
 ::socket-connect |( sock addr addrlen -- result )
 |WIN| ws2-connect
 |LIN| libc-connect 
+|MAC| libc-connect 
 	;
 
 ::socket-send |( sock data len flags -- bytes_sent )
 |WIN| ws2-send
 |LIN| libc-send 
+|MAC| libc-send 
 	;
 
 ::socket-recv |( sock buf len flags -- bytes_recv )
 |WIN| ws2-recv
 |LIN| libc-recv 
+|MAC| libc-recv 
 	;
 
 | ============================================
@@ -103,6 +122,7 @@
 | ============================================
 ::socket-close |( sock -- result )
 |LIN| libc-close
+|MAC| libc-close
 |WIN| ws2-closesocket
 	;
 
@@ -111,6 +131,7 @@
 | ============================================
 ::net-addr-to-int |( "ip-string" -- addr )
 |LIN| libc-inet_addr
+|MAC| libc-inet_addr
 |WIN| ws2-inet_addr
 	;
 
@@ -120,7 +141,8 @@
 	;
 
 ::net-get-last-error |( -- error_code )
-|LIN| 0 | errno en Linux (requiere acceso a variable global)
+|LIN| 0 
+|MAC| 0 
 |WIN| ws2-WSAGetLastError
 	;
 
@@ -144,14 +166,16 @@
     |direccion.sin_addr.s_addr = INADDR_ANY;
 	
 ::server-socket |( port -- sock )
-    AF_INET 'server_addr w!
+|LIN|    AF_INET 'server_addr w!
+|WIN|    AF_INET 'server_addr w!
+|MAC|    $210 'server_addr w!	| BSD sockaddr_in: sin_len=16, sin_family=AF_INET
 	dup 8 << swap 8 >> or	'server_addr 2 + w!
 	$0 						'server_addr 4 + d! |INADDR_ANY
 | 'server_addr dumpadr
 
 	AF_INET SOCK_STREAM IPPROTO_TCP socket-create
 	dup 'server_addr 16 socket-bind drop
-	dup 1 socket-listen drop | MAXCON
+	dup 1 socket-listen drop | MAnXCON
 	dup socket-set-nonblock drop
 |	dup socket-set-reuseaddr drop	
 	;

@@ -90,6 +90,7 @@
 	dup date.y ,d "-" ,s 
 	dup date.m ,2d "-" ,s 
 |LIN| dup	
+|MAC| dup
 	date.d ,2d " " ,s
 |WIN|	@ 
 	dup time.h ,2d ":" ,s 
@@ -107,6 +108,7 @@
 	over date.dw 40 << or
 |WIN|	swap 
 |LIN|	over
+|MAC|	over
 	date.d 32 << or
 	swap
 |WIN|	@

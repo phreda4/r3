@@ -1,4 +1,5 @@
-| linux system calls
+| macOS (libSystem) calls
+| arm64 Apple
 | stdin : 0 
 | stdout : 1
 | stderr : 2
@@ -48,6 +49,7 @@
 #sys-stat
 #sys-access
 #sys-setlocale
+#sys-cfmakeraw
 
 #sys-popen
 #sys-pclose
@@ -125,6 +127,7 @@
 ::libc-stat sys-stat sys2 ;
 ::libc-access sys-access sys2 ;
 ::libc-setlocale sys-setlocale sys2 ;
+::libc-cfmakeraw sys-cfmakeraw sys1 drop ;
 
 ::libc-popen sys-popen sys2 ;
 ::libc-pclose sys-pclose sys1 drop ;
@@ -190,10 +193,14 @@
 	dup "mkdir" getproc 'sys-mkdir !
 	dup "rmdir" getproc 'sys-rmdir !
 	dup "getwd" getproc 'sys-getwd !
-	dup "opendir" getproc 'sys-opendir !
+	dup "opendir$INODE64" getproc 
+	0? ( drop dup "opendir" getproc ) 'sys-opendir !
 	dup "closedir" getproc 'sys-closedir !
-	dup "readdir" getproc 'sys-readdir !
-	dup "fstatat" getproc 'sys-fstatat !
+	dup "readdir$INODE64" getproc 
+	0? ( drop dup "readdir" getproc ) 'sys-readdir !
+	dup "fstatat$INODE64" getproc 
+	0? ( drop dup "fstatat" getproc ) 'sys-fstatat !
+ 		
 	dup "dirfd" getproc 'sys-dirfd !
 	dup "clock_gettime" getproc 'sys-clock_gettime !
 	dup "fcntl" getproc 'sys-fcntl ! 
@@ -206,9 +213,12 @@
 	dup "system" getproc 'sys-system !
 	dup "select" getproc 'sys-select !
 	dup "ioctl" getproc 'sys-ioctl !
-	dup "stat" getproc 'sys-stat !
+	
+	dup "stat$INODE64" getproc 
+	0? ( drop dup "stat" getproc ) 'sys-stat !
 	dup "access" getproc 'sys-access !
 	dup "setlocale" getproc 'sys-setlocale !
+	dup "cfmakeraw" getproc 'sys-cfmakeraw !
 
 	dup "popen" getproc 'sys-popen !
 	dup "pclose" getproc 'sys-pclose !
@@ -237,7 +247,7 @@
 	dup "getservbyport" getproc 'sys-getservbyport !
 	dup "gethostname" getproc 'sys-gethostname !	
 	
-	| librt.so.1 in old distro <<<<
+	| shm_* are in libSystem on macOS
 	dup "shm_open" getproc 'sys-shm_open !
 	dup "shm_unlink" getproc 'sys-shm_unlink !
 	dup "msync" getproc 'sys-msync !

@@ -47,7 +47,7 @@
 ::date.dw 24 + d@ ;
 ::date.m 16 + d@ 1+ ; | 1..12
 ::date.y 20 + d@ 1900 + ;
-::time.ms 0 ; | not exist!
+::time.ms drop 0 ; | not exist!
 ::time.s d@ ;
 ::time.m 4 + d@ ;
 ::time.h 8 + d@ ;   
@@ -78,32 +78,37 @@
 |MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
 	1 and ;
 
+| struct stat offsets: LIN x86_64 size 48 atime 72 mtime 88 ctime 104
+|                      MAC (64bit inode) atime 32 mtime 48 ctime 64 birth 80 size 96
 ::FSIZEF
-	drop 'st 48 + @ ;
+	drop 'st 96 + @ ;
 
 ::FCREADT | adr -- 'timedate | creation date
-	drop 'st 88 + libc-localtime ;
+	drop 'st 80 + libc-localtime ;
 
 ::FLASTDT | adr -- 'timedate  | last acces date
 	drop 'st 72 + libc-localtime ;
 
 ::FWRITEDT | adr -- 'timedate | last write date
-	drop 'st 104 + libc-localtime ;
+	drop 'st 48 + libc-localtime ;
 
 ::findata 'dirp ;
 
-::ffirst | "path//*" -- fdd/0
+:statent | ent -- ent/0 ; fill 'st for the entry
+	0? ( ; )
+	dirfd over FNAME 'st 0 libc-fstatat drop ;
+
+::ffirst | "path" -- fdd/0
 	libc-opendir dup 'dirp ! 
 	0? ( ; ) 
 	dup libc-dirfd 'dirfd !
-	libc-readdir ;
+	libc-readdir statent ; 
 
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
-	libc-readdir 
-	dirfd over FNAME 'st 0 libc-fstatat drop
-	1? ( ; ) 
-	dirp libc-closedir drop ;	
+	libc-readdir
+	0? ( drop dirp libc-closedir drop 0 'dirp ! 0 ; )
+	statent ;
 
 |0 constant O_RDONLY octal
 |1 constant O_WRONLY
@@ -119,13 +124,14 @@
 ::load | 'from "filename" -- 'to
 	0? ( drop ; )
 	$0 0 libc-open 32>64 -? ( drop ; ) | adr FILE
-	swap ( 2dup $ffff libc-read 1? + ) drop
+	swap ( 2dup $ffff libc-read 0 >? + ) drop
 	swap libc-close drop
 	;
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	$241 $1ff libc-open 32>64 -? ( 3drop ; )
+	$1a4 libc-creat 32>64	| O_WRONLY|O_CREAT|O_TRUNC (no variadic open: Apple arm64 ABI)
+	-? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -133,7 +139,9 @@
 
 ::append | 'from cnt "filename" -- 
 	0? ( 3drop ; )
-	$441 $1ff libc-open 32>64 -? ( 3drop ; )
+	dup 0 libc-access 32>64 -? ( over $1a4 libc-creat 32>64 libc-close drop ) drop | create if missing
+	$9 0 libc-open 32>64	| O_WRONLY|O_APPEND
+	-? ( 3drop ; )	
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -143,27 +151,33 @@
 	libc-unlink drop ;
 
 ::filexist | "file" -- 0=no
-	0 libc-access $ffffffff xor ;
+	0 libc-access 32>64 1+ ;	| access: 0 ok / -1 error
 
 | atrib creation access write size
-#fileatrib 0 0 0 0 0
+#fileatrib * 160
 
 ::fileisize | -- size
-	'fileatrib 28 + @ 
-	dup 32 >> swap 32 << or ;
-
-:86400000000/
-	$CC61A60 64 *>> ;
+	'fileatrib 96 + @ ;
 	
-::fileijul | -- jul
-	'fileatrib 20 + @
-	86400000000/ | segundos>days
-	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10/
-	;
+::fileijul | -- jul ; julian day number of last write date (UTC)
+	'fileatrib 48 + @
+	86400 / 2440588 + ;	
 	
 ::fileinfo | "file" -- 0=not exist
-	'fileatrib libc-stat ;
+	'fileatrib libc-stat 32>64 
+	0? ( drop 1 ; ) drop 0 ;
+
+::filecreatetime | -- 'time_t | LIN: ctime, MAC: birth time
+	'fileatrib 80 +	;
+	
+::filelastactime | -- 'time_t
+	'fileatrib 32 + ;
+
+::filelastwrtime | -- 'time_t
+	'fileatrib 48 +	;
+
+::filetimeD | 'time_t -- 'timedate
+	libc-localtime ;
 	
 ::sys | "" --
 	libc-system drop ;
