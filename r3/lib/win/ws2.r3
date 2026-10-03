@@ -79,7 +79,7 @@
 	dup "inet_ntoa" getproc 'sys-inet_ntoa !
 	dup "getaddrinfo" getproc 'sys-getaddrinfo !
 	dup "freeaddrinfo" getproc 'sys-freeaddrinfo !
-	dup "gai_strerror" getproc 'sys-gai_strerror !
+	dup "gai_strerrorA" getproc 'sys-gai_strerror !
 	dup "gethostbyname" getproc 'sys-gethostbyname !
 	dup "gethostbyaddr" getproc 'sys-gethostbyaddr !
 	dup "getprotobyname" getproc 'sys-getprotobyname !

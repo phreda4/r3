@@ -113,17 +113,15 @@
 ::save | 'from cnt "filename" -- 
 	$40000000 0 0 2 $8000000 0 CreateFile
 	-1 =? ( 3drop ; )
-	dup >r -rot 'aux 0 WriteFile
-	r> swap 0? ( 2drop ; ) drop
-	CloseHandle ;
+	dup >r -rot 'aux 0 WriteFile drop
+	r> CloseHandle ;
+
 	
 ::append | 'from cnt "filename" -- 
 	$4 1 0 4 $80 0 CreateFile
 	-1 =? ( 3drop ; )
-	dup 0 0 2 SetFilePointer drop
-	dup >r -rot 'aux 0 WriteFile
-	r> swap 0? ( 2drop ; ) drop
-	CloseHandle ;
++	dup >r -rot 'aux 0 WriteFile drop
++	r> CloseHandle ;
 
 ::delete | "filename" --
 	DeleteFile drop ;
@@ -144,13 +142,12 @@
 #fileatrib 0 0 0 0 0
 	
 ::fileisize | -- size
-	'fileatrib 28 + @ dup 32 >> swap 32 << or ;
+	'fileatrib 28 + @ dup 32 >>> swap 32 << or ;
 
 ::fileijul | -- jul
 	'fileatrib 20 + @
-	86400000000 / | segundos>days
-	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10 / ;	
+	864000000000 / | 100ns ticks > days
+	2305814 + ;	| julian day number from 1601-01-01 (JD 2305813.5)	
 	
 ::fileinfo | "file" -- 0=not exist
 	0 'fileatrib GetFileAttributesEx  ;
@@ -193,6 +190,7 @@
 	ininfo
 	0 swap 0 0 0 0 0 0 'sinfo 'pinfo CreateProcess drop
 	pinfo -1 WaitForSingleObject
+	'pinfo @+ CloseHandle @ CloseHandle
 	;
 	
 |https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags	
@@ -200,7 +198,7 @@
 ::sysnew | "" --
 	GetConsoleWindow >r | guardo la ventana actual
 	ininfo	
-	1 'sinfo $38 + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
+	1 'sinfo $3c + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
 	4 'sinfo $40 + w! |    si.wShowWindow = SW_SHOWNOACTIVATE
 	
 	0 swap 0 0 0 $10 0 0 'sinfo 'pinfo CreateProcess drop

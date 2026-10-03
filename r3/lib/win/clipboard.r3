@@ -23,11 +23,11 @@
 ::copyclipboard | 'mem cnt -- 
 	0 OpenClipboard 0? ( 3drop ; ) drop
 	EmptyClipboard
-	GMEM_MOVEABLE over GlobalAlloc | 'mem cnt alloc
+	GMEM_MOVEABLE over 1+ GlobalAlloc | 'mem cnt alloc
 	dup GlobalLock | 'mem cnt alloc mlock
 	dup >r 2swap 1+ cmove | dsc
 	r@ GlobalUnlock 
-	CF_TEXT r> SetClipboardData drop
+	CF_TEXT r> SetClipboardData |drop
 	|r> GlobalFree
 	CloseClipboard ;
 

@@ -6,7 +6,7 @@
 #sys-URLDownloadToFile
 #sys-URLOpenBlockingStreamA
 
-::URLDownloadToFile sys-URLDownloadToFile sys5 ;
+::URLDownloadToFile sys-URLDownloadToFile sys5 drop ;
 ::URLOpenBlockingStreamA sys-URLOpenBlockingStreamA	sys5 ;
 
 ::url2file | url file -- 

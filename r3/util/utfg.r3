@@ -90,9 +90,9 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 :xcol
 	$20 nand 63 >? ( 7 - ) $30 - $f and ;
 :escape
-	xcol .bc c@+ xcol .fc ;
+	xcol .bc c@+ 0? ( drop 1- ; ) xcol .fc ;
 :xchar | char
-	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
+	$5b =? ( drop c@+ $5b <>? ( 0? ( drop 1- ; ) escape ; ) ) | [[
 	bigemit ;
 	
 | big font zx, colors with [BF 
@@ -100,7 +100,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	( c@+ 1? xchar ) 2drop ;
 
 :achar | char
-	$5b =? ( drop c@+ $5b <>? ( escape ; ) ) | [[
+	$5b =? ( drop c@+ $5b <>? ( 0? ( drop 1- ; ) escape ; ) ) | [[
 	bigemita ;
 
 | big font A, colors with [BF 
@@ -230,7 +230,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 
 :testw | str -- str
 	pick4 >r utf8count 
-	r> swap >? ( drop ; ) | str count
+	r> swap >=? ( drop ; ) | str count
 	over a!+ | newline
 	utf8bytes | str bytes
 	over + <<sp
@@ -253,7 +253,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 
 :vtop	drop ;
 :vcen	cntlines - 2/ + ;
-:vbot	cntlines - ;
+:vbot	cntlines - + ;
 
 #halign 'calign
 #valign 'vcen
@@ -277,7 +277,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	mark ab[ 
 	splitlines 
 	rot 	| w x y h
-	valign ex
+	valign ex 1 max
 	lines >a ( 
 		2dup .at
 		a@+ 1? pick3 swap xwrite 

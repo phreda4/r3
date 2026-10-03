@@ -175,7 +175,7 @@
 	dup "PeekConsoleInputA" getproc 's-PeekConsoleInput !
 	dup "PeekNamedPipe" getproc 's-PeekNamedPipe !
 	dup "ReadConsoleInputA" getproc 's-ReadConsoleInput !
-	dup "WriteConsole" getproc 's-WriteConsole !
+	dup "WriteConsoleA" getproc 's-WriteConsole !
 	dup "ReadConsoleA" getproc 's-ReadConsole !
 	dup "WriteConsoleOutputA" getproc 's-WriteConsoleOutput !
 	dup "GetNumberOfConsoleInputEvents" getproc 's-GetNumberOfConsoleInputEvents !
@@ -219,8 +219,8 @@
 	
 	dup "GetConsoleWindow" getproc 's-GetConsoleWindow !
 	dup "SetDllDirectoryA" getproc 's-SetDllDirectory !
-	dup "SetCurrentDirectory" getproc 's-SetCurrentDirectory !
-	dup "GetCurrentDirectory" getproc 's-GetCurrentDirectory !
+	dup "SetCurrentDirectoryA" getproc 's-SetCurrentDirectory !
+	dup "GetCurrentDirectoryA" getproc 's-GetCurrentDirectory !
 
 	dup "SetConsoleOutputCP" GETPROC 's-SetConsoleOutputCP !
 	dup "SetConsoleCP" GETPROC 's-SetConsoleCP !

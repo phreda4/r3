@@ -47,7 +47,7 @@
 ::date.dw 24 + d@ ;
 ::date.m 16 + d@ 1+ ; | 1..12
 ::date.y 20 + d@ 1900 + ;
-::time.ms 0 ; | not exist!
+::time.ms drop 0 ; | not exist!
 ::time.s d@ ;
 ::time.m 4 + d@ ;
 ::time.h 8 + d@ ;   
@@ -82,28 +82,31 @@
 	drop 'st 48 + @ ;
 
 ::FCREADT | adr -- 'timedate | creation date
-	drop 'st 88 + libc-localtime ;
+	drop 'st 104 + libc-localtime ;
 
 ::FLASTDT | adr -- 'timedate  | last acces date
 	drop 'st 72 + libc-localtime ;
 
 ::FWRITEDT | adr -- 'timedate | last write date
-	drop 'st 104 + libc-localtime ;
+	drop 'st 88 + libc-localtime ;
 
 ::findata 'dirp ;
+
+:statent | ent -- ent/0 ; fill 'st for the entry
+	0? ( ; )
+	dirfd over FNAME 'st 0 libc-fstatat drop ;
 
 ::ffirst | "path//*" -- fdd/0
 	libc-opendir dup 'dirp ! 
 	0? ( ; ) 
 	dup libc-dirfd 'dirfd !
-	libc-readdir ;
+	libc-readdir statent ;
 
 ::fnext | -- fdd/0
 	dirp 0? ( ; ) 
-	libc-readdir 
-	dirfd over FNAME 'st 0 libc-fstatat drop
-	1? ( ; ) 
-	dirp libc-closedir drop ;	
+	libc-readdir
+	0? ( drop dirp libc-closedir drop 0 'dirp ! 0 ; )
+	statent ;	
 
 |0 constant O_RDONLY octal
 |1 constant O_WRONLY
@@ -125,7 +128,7 @@
 
 ::save | 'from cnt "filename" --
 	0? ( 3drop ; )
-	$241 $1ff libc-open 32>64 -? ( 3drop ; )
+	$241 $1a4 libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -133,7 +136,7 @@
 
 ::append | 'from cnt "filename" -- 
 	0? ( 3drop ; )
-	$441 $1ff libc-open 32>64 -? ( 3drop ; )
+	$441 $1a4 libc-open 32>64 -? ( 3drop ; )
 	dup >r
 	-rot libc-write drop
 	r> libc-close drop 
@@ -146,25 +149,30 @@
 	0 libc-access $ffffffff xor ;
 
 | atrib creation access write size
-#fileatrib 0 0 0 0 0
+| struct stat (x86_64/aarch64 glibc): size 48, atime 72, mtime 88, ctime 104
+#fileatrib * 160
 
 ::fileisize | -- size
-	'fileatrib 28 + @ 
-	dup 32 >> swap 32 << or ;
+	'fileatrib 48 + @ ;
 
 :86400000000/
 	$CC61A60 64 *>> ;
 	
-::fileijul | -- jul
-	'fileatrib 20 + @
-	86400000000/ | sec>days
-	23058138 + | julian from 1601-01-01 (2305813.5) (+3??)
-	10/
-	;
-	
+::fileijul | -- jul ; julian day number of last write date (UTC)
+	'fileatrib 88 + @
+	86400 / 2440588 + ;
+		
 ::fileinfo | "file" -- 0=not exist
-	'fileatrib libc-stat ;
-	
+	'fileatrib libc-stat 32>64 
+	0? ( drop 1 ; ) drop 0 ;
+
+::filecreatetime 'fileatrib 104 + ;	| ctime (no birth time in stat)
+::filelastactime 'fileatrib 72 + ;
+::filelastwrtime 'fileatrib 88 + ;
+
+::filetimeD | 'time_t -- 'timedate
+	libc-localtime ;
+		
 ::sys | "" --
 	libc-system drop ;
 	

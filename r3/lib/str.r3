@@ -68,26 +68,18 @@
 	ab[
 	swap >a swap >b | a=dst b=src
 	( 1? 1-
-		cb@+
-		$80 and? ( ca!+ cb@+ 
-			$80 and? ( $40 and? ( ca!+ cb@+ 
-				$80 and? ( $40 and? ( ca!+ cb@+ ) )
-				) )
-			)
-		ca!+ ) drop
+		cb@+ ca!+
+		( cb@ $c0 and $80 =? drop cb@+ ca!+ ) drop
+		) drop
 	a>
 	]ba ;
 	
 ::utf8bytes | str cnt  -- str bytes
-	over | str cnt rec
+	over | str cnt p
 	( swap 1? 1- swap
-		c@+ 
-		$80 and? ( drop c@+ 
-			$80 and? ( $40 and? ( drop c@+ 
-				$80 and? ( $40 and? ( drop c@+ ) )
-					) )
-			) drop
-		 ) drop
+		c@+ 0? ( drop 1- nip over - ; ) drop
+		( dup c@ $c0 and $80 =? drop 1+ ) drop
+		) drop
 	over - ;	
 		
 |----- Compare	
