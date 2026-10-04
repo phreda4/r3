@@ -4,6 +4,8 @@ A practical guide to writing terminal programs with `r3/lib/console.r3`.
 For the complete word list see [libs/r3forth-lib-console.md](libs/r3forth-lib-console.md);
 for widgets (tables, menus, inputs) see [libs/r3forth-lib-tui.md](libs/r3forth-lib-tui.md).
 
+Every snippet below was compiled and run on Linux.
+
 ---
 
 ## 1. Minimal program
@@ -264,7 +266,8 @@ Typing `a`, then the up arrow, `ñ`, Ctrl+C and Delete prints `61 415B1B B1C3 3 
 
 ## 6. Events: mouse and resize
 
-For mouse or resize use `inevt` instead of `inkey`. It returns the event type, or `0`
+For mouse events use `inevt` instead of `inkey`: `inkey` and `getch` return only keys
+(mouse and resize events are consumed and ignored). `inevt` returns the event type, or `0`
 if nothing happened:
 
 | Type | Event | Data |
@@ -281,10 +284,11 @@ if nothing happened:
 - `evtmw` is the wheel: `1` up, `-1` down (otherwise `0`).
 - Call `.enable-mouse` before and `.disable-mouse` after.
 - **Linux: register a resize callback** with `.onresize` to receive event `4`, even
-  if the callback does nothing: `[ ; ] .onresize`. Without it `inevt` never reports a
-  resize.
-- The size is only checked inside `inevt`/`getevt`. A loop that uses only `inkey` or
-  `getch` never notices a resize, and the callback is not called.
+  if the callback does nothing: `[ ; ] .onresize`. Without it a resize is never
+  reported.
+- The size is checked every time the program polls: `inevt`, `getevt`, `inkey` and
+  `getch` all do it, so a loop that only uses `inkey` still runs the callback and sees
+  the new `cols`/`rows` (as on Windows).
 
 ```forth
 ^r3/lib/console.r3
@@ -403,7 +407,6 @@ Tips taken from the examples in `r3/term`:
 | Forgetting `.Reset` | the terminal keeps the color after the program ends | `.Reset` before `.free` |
 | `inevt` loop without a free exit test | loop runs once | `( running 1? drop ... )` |
 | `.onresize` missing (Linux) | no event `4`, `cols`/`rows` never change | `[ ; ] .onresize` |
-| Resize handled with `inkey` only | callback never runs | poll with `inevt` |
 | No ESC handling | cannot exit (Ctrl+C is a key in raw mode) | always test `[esc]` |
 | Writing UTF-8 with `.emit` | broken characters | `.write` for literals, `.uemit` for code points |
 | `.nch` with a multibyte char | garbage | use `.rep` |
