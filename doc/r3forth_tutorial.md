@@ -722,11 +722,49 @@ drop
 
 ## Repetition
 
-When a conditional is placed **inside** a code block, it becomes a loop. While the condition is true, the block repeats. When false, execution jumps to the word after `)`.
+### IF and WHILE: how a block is read
+
+A code block `( ... )` is either the body of an IF or the body of a WHILE.
+What tells them apart is where the conditional is written.
+
+| Shape            | Meaning                                              |
+|------------------|------------------------------------------------------|
+| `?? ( body )`    | IF: body runs once, only if the test is true         |
+| `( ... ?? ... )` | WHILE: repeats; a false test leaves the loop         |
+
+A conditional written right before `(` guards that block.
+A conditional inside a block (not followed by its own `( )`) is an
+exit test of that loop. When the test is false, execution jumps to the word after `)`.
+
+The exit test can be anywhere in the loop, and there can be several;
+each one leaves the loop when it is false. Code before a test runs
+on every pass, including the last one; code after it does not.
+
+| Test position | Body runs                          | Example                      |
+|---------------|------------------------------------|------------------------------|
+| start         | zero or more times                 | `0 ( 3 <? inc 1+ ) drop`     |
+| end           | at least once                      | `0 ( inc 1+ 3 <? ) drop`     |
+| middle        | part of the last pass is skipped   | `0 ( 1+ inc 3 <? inc ) drop` |
+
+**IF inside WHILE:** the inner conditional has its own block, so it is an IF
+and does not end the loop.
+
 
 ```forth
-( condition-word  body )
+0 ( 3 <? 1+
+    1 =? ( inc )
+) drop
 ```
+
+**Early exit:** a `;` inside a block leaves the whole word.
+
+```forth
+0 ( 10 <? 1+
+    4 =? ( drop ; )
+) drop
+```
+
+Rule for every loop: each pass must leave the stack at the same height.
 
 ### Counting Up
 

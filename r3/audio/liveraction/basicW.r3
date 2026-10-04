@@ -5,7 +5,8 @@
 #vshare 0 0 4096 "/data.mem"
 
 :send
-	1 vshare c+! 'pad vshare 1+ strcpy
+	'pad vshare 1+ strcpy		| primero el texto...
+	1 vshare c+!				| ...y despues el contador (el lector no ve texto a medias)
 	;
 	
 :main
@@ -16,7 +17,7 @@
 'vshare inisharev
 
 ">> basic start <<" .println
-|WIN| "cmd /c r3 ""r3/liveraction/basicr.r3""" sprint sysnew 
+|WIN| "cmd /c r3 ""r3/audio/liveraction/basicR.r3""" sprint sysnew 
 	
 "*** hola ***" 'pad strcpy send
 main

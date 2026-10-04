@@ -66,7 +66,7 @@
 :d.f_buff3 36 + ;
 :d.freq 40 + ;
 
-#voice * $fff
+#voice * 4080
 #voice> 'voice
 
 :resetvoices
@@ -122,7 +122,7 @@
 #listwave "Saw" "Square" "Triangle" "Sin" 0
 
 :oscSaw		2* 1.0 - ;
-:oscSqr		0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
+:oscSqr		0.5 >? ( -1.0 nip ; ) 1.0 nip ; 
 :oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 :oscSin		sin ;
 
@@ -154,12 +154,12 @@
 #frelrt
 
 :calcvar
-	dt amp_attack / 'aattrt !
-	dt amp_decay / 'adecrt !
-	dt amp_release / 'arelrt !
-	dt fil_attack / 'fattrt !
-	dt fil_decay / 'fdecrt !
-	dt fil_release / 'frelrt !
+	dt amp_attack 1 max / 'aattrt !
+	dt amp_decay 1 max / 'adecrt !
+	dt amp_release 1 max / 'arelrt !
+	dt fil_attack 1 max / 'fattrt !
+	dt fil_decay 1 max / 'fdecrt !
+	dt fil_release 1 max / 'frelrt !
 	;
 
 :aenvelope | -- 
@@ -229,7 +229,7 @@
 	a> w.phase3 w@ $ffff and osc_waveforms3 get_osc_sample
 	osc_mix3 *. +
 	
-	noise_mix randmax +
+	-1.0 1.0 randminmax noise_mix *. +
 	
 	a> d.fil_env d@ fenvelope a> d.fil_env d!
 	
@@ -265,7 +265,7 @@
 
 		master_volume *.
 		fastanh. | -1.0..1.00 
-		32767 *. |2/ -32768 max 32767 min | Clamp to 16-bit range
+		32767 *. clamps16
 
 		$ffff and
 		dup 16 << or       | Duplicate to both channels

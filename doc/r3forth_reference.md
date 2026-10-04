@@ -71,7 +71,7 @@ Repository: https://github.com/phreda4/r3
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `;` | `--` | End word execution, return to caller |
-| `(` | `--` | Begin code block (loop or conditional) |
+| `(` | `--` | Begin block: IF body or WHILE loop (see Tutorial → Repetition) |
 | `)` | `--` | End code block |
 | `[` | `-- v` | Begin anonymous word definition |
 | `]` | `v --` | End anonymous word definition |

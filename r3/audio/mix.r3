@@ -32,9 +32,9 @@
 
 |-------------------------
 
-#voice * $fff
+#voice * 4080
 #voice> 'voice
-#sample * $fff
+#sample * 4080
 #sample> 'sample
 
 :resetvoices
@@ -127,7 +127,7 @@
 
 |---- OSC
 :oscSaw		2* 1.0 - ;
-:oscSqr		0.5 >? ( 0.0 nip ; ) 1.0 nip ; 
+:oscSqr		0.5 >? ( -1.0 nip ; ) 1.0 nip ; 
 :oscTri		$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
 :oscSin		sin ;
 
@@ -141,9 +141,9 @@
 #arelrt
 
 :calcvar
-	dt amp_attack / 'aattrt !
-	dt amp_decay / 'adecrt !
-	dt amp_release / 'arelrt !
+	dt amp_attack 1 max / 'aattrt !
+	dt amp_decay 1 max / 'adecrt !
+	dt amp_release 1 max / 'arelrt !
 	;
 	
 :aenvelope | voice -- mix

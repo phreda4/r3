@@ -35,19 +35,18 @@
 #outbuf> 'outbuf | Current position in buffer
 #endbuf |  end of outbuf
 
-::.cl outbuf 'outbuf> ! ;
-	
 ::.flush | -- | Write buffer to stdout
     outbuf> outbuf - 0? ( drop ; )
 	outbuf swap type
-    outbuf 'outbuf> ! ;
+::.cl 	| -- | reset buffer
+	outbuf 'outbuf> ! ;	    
 
 ::.type | str cnt -- | Add to buffer
     endbuf outbuf> - >? ( .flush ) 
 	outbuf> rot pick2 cmove
     'outbuf> +! ;
 ::.emit | char --
-	outbuf> c!+ endbuf <? ( 'outbuf> ! ; ) drop .flush ;
+	outbuf> c!+ endbuf <? ( 'outbuf> ! ; ) 'outbuf> ! .flush ;
 :.wemit | char2char1 --
 	outbuf> w!+ 'outbuf> ! ;
 :..emit | char1 --
@@ -73,7 +72,7 @@
 ::.sp 32 ..emit ;
 
 ::.nch | char n -- ; WARNIG not multibyte
-	endbuf outbuf> -  >? ( .flush )
+	|endbuf outbuf> -  >? ( .flush )
 	outbuf> rot pick2 cfill | dvc
 	'outbuf> +! ;
 
@@ -81,7 +80,7 @@
 
 ::.print 
 	mark outbuf> 'here ! ,print here empty 
-	endbuf <? ( 'outbuf> ! ; ) drop 
+	endbuf <? ( 'outbuf> ! ; ) 'outbuf> !
 	.flush ;
 
 ::.println .print .cr .flush ;
@@ -264,7 +263,7 @@
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! dup 'outbuf> !
-	$1fff +	| 16kb flush buffer
+	$1f00 +	| 16kb flush buffer
 	dup 'endbuf ! 
-	32 + 'here !
+	$ff + 'here !
 	;

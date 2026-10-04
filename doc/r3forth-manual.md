@@ -34,7 +34,7 @@
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
 | `;` | `--` | End word execution, return to caller |
-| `(` | `--` | Begin code block (loop or conditional) |
+| `(` | `--` | Begin block: IF body or WHILE loop (see Tutorial → Repetition) |
 | `)` | `--` | End code block |
 | `[` | `--` | Begin anonymous word definition |
 | `]` | `-- v` | End anonymous word definition |

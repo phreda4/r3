@@ -433,7 +433,7 @@
 		1+ ) drop
 	$1b ,c "[0m" ,s
 	status
-	fs here fs - type empty ;
+	fs here over - type empty ;
 
 |---------------- control
 :wrapsc | n -- n
@@ -483,7 +483,7 @@
 	( running 1? drop
 		frame
 		keys
-		10 ms
+		1 ms
 		) drop ;
 
 : 

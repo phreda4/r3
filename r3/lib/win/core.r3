@@ -196,15 +196,15 @@
 |https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags	
 | $10 new console
 ::sysnew | "" --
-	GetConsoleWindow >r | guardo la ventana actual
+	GetConsoleWindow >r
 	ininfo	
-	1 'sinfo $3c + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
+	1 'sinfo $38 + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
 	4 'sinfo $40 + w! |    si.wShowWindow = SW_SHOWNOACTIVATE
 	
 	0 swap 0 0 0 $10 0 0 'sinfo 'pinfo CreateProcess drop
 	'pinfo @+ CloseHandle @ CloseHandle | no wait
 	100 ms
-	r> SetForegroundWindow | reactivo la ventana que llamó
+	r> SetForegroundWindow
 	;
 	
 |https://learn.microsoft.com/es-mx/windows/win32/debug/creating-a-basic-debugger?redirectedfrom=MSDN

@@ -261,7 +261,7 @@ $FF $55 AND | = $55
 ### Critical Loop Rules
 1. Each iteration MUST leave stack at same height
 2. Use countdown with `1?` when possible (no consumption = faster)
-3. Multiple exit conditions are allowed
+3. Multiple exit conditions are allowed, and they can be anywhere in the loop (see Tutorial → Repetition → IF and WHILE)
 
 ## Memory Operations
 

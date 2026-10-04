@@ -78,36 +78,37 @@
 
 
 	
+:rvol	w.Vol w@ $ffff and 2* ;
+:rsus	w.Sdt w@ $ffff and 2* ;
+
 :envelADSR | state -- mix	
 	1 d.time d+!
 	c.state c@
 	1 =? ( drop | attack
-		w.vol w@ 2* w.Adt w@ + 
+		rvol w.Adt w@ $ffff and + 
 		1.0 <? ( ; ) 1.0 nip 
 		2 c.state c!
 		; )
 	2 =? ( drop | decay
-		w.vol w@ 2* w.Ddt w@ -
-		w.Sdt w@ 2* >? ( ; ) w.Sdt w@ 2* nip
+		rvol w.Ddt w@ $ffff and -
+		rsus >? ( ; ) rsus nip
 		3 c.state c!
 		; )
 	3 =? ( drop 
-		w.vol w@ 2* ; ) |sustain
+		rvol ; ) |sustain
 	drop | release
-	w.vol w@ 2* w.Rdt w@ -
-|	0 >? ( ; ) -1 nip 
-|	0 c.state c! 
+	rvol w.Rdt w@ $ffff and -
 	;
 
 :playosc | vol voice -- vol voice
 	envelADSR -? ( 0 nip delvoicea ; ) 
-	dup 2/ w.vol w! | volumen por envelope	
+	dup 2/ w.vol w! 
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.freq d@ *. $ffff and
 	q.func @ ex |oscSin | ciclo
 	
-	*. ; | senial * envelope
+	*. ; | s * envelope
 
 :playnoise
 	envelADSR -? ( 0 nip delvoicea ; ) 
@@ -115,8 +116,8 @@
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	drop
-	q.func @ ex | noise sin ciclo |	fbrown 
-	*. ; | senial * envelope
+	q.func @ ex | wo ciclo |	fbrown 
+	*. ; | s * envelope
 
 :interpolate | scr sample -- value
 	w@+ swap 2 + w@	| src v0 v1 | 2 + stereo!
@@ -125,7 +126,7 @@
 
 :playsam
 	envelADSR -? ( 0 nip delvoicea ; )
-	dup 2/ w.vol w! | volumen por envelope	
+	dup 2/ w.vol w! | vol envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.fresam d@ *
@@ -177,7 +178,7 @@
 
 		2/ | shift 
 		master_volume *.
-		fastanh. 2/ $ffff and
+		fastanh. 2/ clamps16 $ffff and	
 		
 		dup 16 << or       | to stereo
 		db!+
@@ -296,19 +297,20 @@
 
 #nnote 1
 
-::smplay | nota -- id
-	$7fffffff smplayd 
+::smplay | nota -- id		| id=0 si no hay voces libres
+	voice> >r
+	$7fffffff smplayd
+	voice> r> =? ( drop 0 ; ) drop
 	nnote 1+ $ff and 0? ( 1+ ) 
 	dup 'nnote !
-	dup c.id !
-	;
+	dup c.id c! ;				| c! (antes ! escribia 8 bytes y pisaba freq/vol/ADSR)
 	
 ::smstop | id --
+	$ff and
 	'voice ( voice> <? 	| Find voice playing this note
-		dup 1+
+		dup 1+ c@ $ff and	| id de la voz (antes se comparaba la DIRECCION)
 		pick2 =? ( drop 
-			4 swap c!
-			drop ;	)
+			4 over c!		| release
+			2drop ; )
 		drop
 		48 + ) 2drop ;
-	

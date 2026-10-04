@@ -168,7 +168,7 @@ drop actionDefault ;
 
 ### Loops
 
-`(` opens a repeating block; it loops back to `(` as long as the value tested at that point is non-zero. Each iteration must leave the stack the same height it started with.
+A block repeats when it contains an exit test (a conditional inside the block, not followed by its own `( )`); the loop ends when that test is false. See Tutorial → Repetition → IF and WHILE. Each iteration must leave the stack the same height it started with.
 
 **Countdown (preferred — `1?` doesn't consume, so it's cheaper):**
 ```c

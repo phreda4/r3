@@ -5,7 +5,7 @@
 ^r3/lib/rand.r3
 
 |--- word stack ---
-##stack * $ff
+##stack * $800
 ##stack> 'stack
 
 :push stack> !+ 'stack> ! ;

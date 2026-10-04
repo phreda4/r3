@@ -10,7 +10,7 @@
 	
 |---- pink noise
 #pinkc
-#pink 0 0 
+#pink * 16
 
 ::pnoise
 	$ffff randmax
@@ -18,9 +18,13 @@
 	'pink 
 	@+ dup 32 >> + dup 16 >> + swap
 	@ dup 32 >> + dup 16 >> + +
-	3 >> $1fff and $fff - 2*
+	3 >> $1fff and $fff - 2* ;
+	
+::pnoise1			| Voss-McCartney
+	pinkc ctz $7 and 1 << 'pink + rand swap w!
 	1 'pinkc +!
-	;
+	0 8 ( 1? 1- dup 1 << 'pink + w@ $ffff and rot + swap ) drop
+	3 >> $8000 - 2* ;
 
 |----- brown noise	
 #browna
