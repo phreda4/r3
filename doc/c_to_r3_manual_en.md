@@ -203,7 +203,7 @@ while (condition()) {
 }
 ```
 ```r3
-( condition 1? drop   | condition must leave a 0/1 for the test
+( condition 1? drop 
     body
 ) drop
 ```

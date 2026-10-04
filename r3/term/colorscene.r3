@@ -20,8 +20,8 @@
 #stx * 2048 #sty * 2048 #stz * 2048	| estrellas
 
 #xx #yy
-#running 1 #auto 1 #needinit 0
-#scn 0 #t0 0 #tt 0 #fade 0 #fps 30 #dt 33 #tlast 0 #fstart 0
+#running 1 #auto 1 
+#scn 0 #t0 0 #tt 0 #fade 0 #fps 30 #dt 33 #tlast 0 
 
 :tnow msec t0 - ;
 
@@ -80,13 +80,8 @@
 	$ff and 2 << 'pal + d@ ;
 
 |---------------- salida: el frame se arma en memoria (here) y se escribe de una vez
-:onum | n -- ; 0..255
-	10 <? ( 48 + ,c ; )
-	100 <? ( 10 /mod swap 48 + ,c 48 + ,c ; )
-	100 /mod swap 48 + ,c 10 /mod swap 48 + ,c 48 + ,c ;
-
 :onum3 | r g b --
-	rot onum 59 ,c swap onum 59 ,c onum ;
+	rot ,d 59 ,c swap ,d 59 ,c ,d ;
 
 :ofg | c -- 
 	$1b ,c "[38;2;" ,s unpack onum3 109 ,c ;
@@ -438,7 +433,7 @@
 		1+ ) drop
 	$1b ,c "[0m" ,s
 	status
-	.flush fs here fs - type empty ;
+	fs here fs - type empty ;
 
 |---------------- control
 :wrapsc | n -- n
@@ -452,15 +447,13 @@
 :setscene | n --
 	wrapsc 'scn ! msec 't0 ! 0 'fade ! initscene ;
 
-:setsize
+:resize 
 |LIN|	.getterminfo
 	cols 320 min 20 max 'CW !
 	rows 1- 100 min 8 max 'CH !
 	CW 'PW ! CH 1 << 'PH !
 	.Reset .cls
 	scn setscene ;
-
-:resize 1 'needinit ! ;
 
 :keys
 	inkey 0? ( drop ; )
@@ -481,21 +474,21 @@
 	'ovl 0 CW CH * cfill
 	scn 3 << 'sframe + @ ex
 	tt 2500 <? ( scname 1 $ffffff otextc ) drop
-	present ;
+	present 
+	auto 0? ( drop ; ) drop
+	tt 12000 >? ( scn 1+ setscene ) drop
+	;
 
 :main
 	( running 1? drop
-		msec 'fstart !
-		needinit 1? ( 0 'needinit ! setsize ) drop
 		frame
-		auto 1? ( tt 12000 >? ( scn 1+ setscene ) drop ) drop
 		keys
-		33 msec fstart - - 1 max ms
+		10 ms
 		) drop ;
 
 : 
 	.alsb .hidec
 	'resize .onresize
-	setsize
+	resize
 	main
 	.Reset .showc .masb .free ;

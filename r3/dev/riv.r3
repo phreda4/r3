@@ -34,6 +34,7 @@
 
 #yank * 4096
 #yanklen 0
+#yankline 1
 #remend
 #pending 0
 #cmdtype 0
@@ -54,10 +55,46 @@
 #eapos
 #eaoldlen
 #eanewlen
+#insextra 0
+#repbuf * 256
+#repcnt 0
+#repend 0
+#ipos 0
+
+#ilinea
+
+:<<13 | a -- a
+	( src >=?
+		dup c@ 13 =? ( drop ; )
+		drop 1- ) ;
+
+:>>13 | a -- a
+	( src$ <=?
+		dup c@ 13 =? ( drop ; )
+		drop 1+ ) 1- ;
+
+|--- recalcula curx/cury a partir de src> (para saltos como búsqueda/G)
+:synccursor
+	0 'cury !
+	src 'ilinea !
+	src ( src> <?
+		dup c@ 13 =? ( 1 'cury +! over 1+ 'ilinea ! )
+		drop
+		1+ ) drop
+	src> ilinea - 'curx ! ;
+
+
+|--- columna de pantalla del cursor (tab = 2 columnas)
+#dcol
+:dispcol | -- n
+	0 'dcol !
+	src> 1- <<13 1+ ( src> <?
+		c@+ 9 =? ( 1 'dcol +! ) drop 1 'dcol +! ) drop
+	dcol ;
 
 :cursorintext
-	curx viewx - 1+ GUTTER + cury viewy - 1+ .at	 ;
-	
+	dispcol viewx - 1+ GUTTER + cury viewy - 1+ .at ;
+
 :stm0
 	cursorintext
 	;
@@ -90,35 +127,48 @@
 	dup 1000 <? ( drop " " .write "%d " .print ; ) drop
 	"%d " .print ;
 
-:drawline
-	vieww GUTTER - ( 1? 1- 
-		ca@+ 0? ( drop 1+ .nsp -1 a+ ; ) 
-		13 =? ( drop 1+ .nsp ; )
-		9 =? ( drop .sp 32  ) 
-		.emit ) drop ;
+:viewrows | -- n
+	viewh 2 - 1 max ;
+
+|--- mantiene el cursor visible: ajusta viewy/viewx y recalcula view>
+:scrollfix
+	cury viewy <? ( dup 'viewy ! ) drop
+	cury viewy - viewrows >=? ( cury viewrows - 1+ 'viewy ! ) drop
+	dispcol viewx <? ( dup 'viewx ! ) drop
+	dispcol viewx - vieww GUTTER - >=? ( dispcol vieww - GUTTER + 1+ 'viewx ! ) drop
+	src 0 ( viewy <? swap >>13 1+ swap 1+ ) drop 'view> ! ;
+
+#dc
+:showc | c --
+	dc viewx - 0 vieww GUTTER - 1- in? ( drop .emit 1 'dc +! ; )
+	2drop 1 'dc +! ;
+
+:drawline | dibuja una linea completa (recorta a la ventana); deja a en la proxima linea
+	0 'dc !
+	( ca@+ 1? 13 <>?
+		9 =? ( drop 32 showc 32 )
+		showc ) 
+	0? ( drop -1 a+ ; ) drop ;
 
 :drawscreen
+	synccursor scrollfix
 	.reset .cls
 	view> >a
-	viewh 2 -
+	viewrows
 	0 ( over <?
 		244 .fc dup viewy + 1+ printlinenum .reset
 		drawline .cr
-		1+ ) drop 
-		
+		1+ ) 2drop
 	.rever
 	vieww .nsp
 	"[" .write 'filename .write "]" .write
-	cury 1+ curx 1+ " %d:%d " .print 
+	curx 1+ cury 1+ " %d:%d " .print
 	ncount " %d " .print
-	src> c@ ">%h<" .print
-	src> "%w" .print
 	.cr
-	.reset	
+	.reset
 	mode 3 << 'stmodes + @ ex
 	.flush
 	;
-
 
 |------- calc xy cursor
 
@@ -127,25 +177,23 @@
 	src> dup 1- src$ over - 1+ cmove>
 	1 'src$ +!
 	src> c!+ 'src> ! ;
-:lover | c --
+:insone | c -- ; inserta (tambien en REPLACE: desplaza el fin original)
+	mode 2 =? ( 1 'repend +! ) drop
+	lins ;
+
+:replog | -- ; guarda el caracter original que se va a pisar (para undo)
+	src> repend >=? ( drop ; ) drop
+	repcnt 256 <? ( drop src> c@ 'repbuf repcnt + c! 1 'repcnt +! ; )
+	drop 1000 'repcnt ! ;
+:lover | c -- ; en REPLACE el fin de linea no se pisa: se inserta
+	src> c@ 13 =? ( drop insone ; ) drop
+	replog
 	src> c!+ dup 'src> !
-	src$ >? ( dup 'src$ ! ) drop ;
+	src$ >? ( dup 'src$ ! 0 over c! ) drop ;
 :0lin | --
 	0 src$ c! ;
 
 #modo 'lins
-
-#ilinea
-
-:<<13 | a -- a
-	( src >=?
-		dup c@ 13 =? ( drop ; )
-		drop 1- ) ;
-
-:>>13 | a -- a
-	( src$ <=?
-		dup c@ 13 =? ( drop ; )
-		drop 1+ ) 1- ;
 
 :back
 	src> src <=? ( drop ; )
@@ -171,31 +219,29 @@
 	dup 1- swap src$ over - 1+ cmove
 	-1 'src$ +! ;
 
-|--- recalcula curx/cury a partir de src> (para saltos como búsqueda/G)
-:synccursor
-	0 'cury !
-	src 'ilinea !
-	src ( src> <?
-		dup c@ 13 =? ( 1 'cury +! over 1+ 'ilinea ! )
-		drop
-		1+ ) drop
-	src> ilinea - 'curx ! ;
-
 |--- undo/redo multinivel (anillo de slots en undobuf)
 | formato de slot (280 bytes): +0 pos(8) +8 oldlen(8) +16 newlen(8) +24 contenido(256: viejo primero, nuevo despues)
 :undoslot | index -- addr
 	280 * undobuf + ;
 
+:undoclear | -- ; descarta todo el historial
+	0 'undocount ! 0 'undoidx ! ;
+
+:undoshift | -- ; historial lleno: descarta el slot mas viejo
+	0 undoslot 1 undoslot UNDOCAP 1- 280 * cmove
+	-1 'undocount +! -1 'undoidx +! ;
+
 :undoalloc | -- addr
 	undoidx 'undocount !
-	undocount UNDOCAP >=? ( drop 'trashslot ; ) drop
+	undocount UNDOCAP >=? ( undoshift ) drop
 	undocount undoslot 'allocslot !
 	1 'undocount +!
 	1 'undoidx +!
 	allocslot ;
 
 :undopushdel | pos len -- ; llamar ANTES de borrar
-	256 >? ( 2drop ; )
+	1 <? ( 2drop ; )
+	256 >? ( 2drop undoclear ; )
 	'wlen ! 'wpos !
 	undoalloc 'allocslot !
 	wpos allocslot !
@@ -204,13 +250,26 @@
 	allocslot 24 + wpos wlen cmove ;
 
 :undopushins | pos len -- ; llamar DESPUES de insertar
-	256 >? ( 2drop ; )
+	1 <? ( 2drop ; )
+	256 >? ( 2drop undoclear ; )
 	'wlen ! 'wpos !
 	undoalloc 'allocslot !
 	wpos allocslot !
 	0 allocslot 8 + !
 	wlen allocslot 16 + !
 	allocslot 24 + wpos wlen cmove ;
+
+:undopushrep | -- ; modo replace: viejo (repbuf) + nuevo (texto escrito)
+	repcnt 256 >? ( drop undoclear ; ) drop
+	src> insstart - 1 <? ( drop ; ) 'wlen !
+	insstart 'wpos !
+	wlen repcnt + 256 >? ( drop undoclear ; ) drop
+	undoalloc 'allocslot !
+	wpos allocslot !
+	repcnt allocslot 8 + !
+	wlen allocslot 16 + !
+	allocslot 24 + 'repbuf repcnt cmove
+	allocslot 24 + repcnt + wpos wlen cmove ;
 
 :undo
 	undoidx 0? ( drop ; ) drop
@@ -248,10 +307,11 @@
 
 |--- dd / yy / p / P (línea completa)
 :dd
+	1 'yankline !
 	src> 1- <<13 1+ 'ilinea !
 	ilinea >>13 src$ <? ( 1+ ) 'remend !
 	ilinea remend ilinea - undopushdel
-	remend ilinea - 'yanklen !
+	remend ilinea - 4096 min 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard
 	ilinea remend src$ remend - 1+ cmove
@@ -260,30 +320,42 @@
 	0 'curx !
 	src> src <=? ( drop ; )
 	src> src$ <? ( drop ; )
-	src> 1- <<13 1+ 'src> !
+	src> 2 - <<13 1+ 'src> !
 	-1 'cury +! ;
 
 :yy
+	1 'yankline !
 	src> 1- <<13 1+ 'ilinea !
 	ilinea >>13 src$ <? ( 1+ ) 'remend !
-	remend ilinea - 'yanklen !
+	remend ilinea - 4096 min 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard ;
 
 :pasteat | at --
 	yanklen 0? ( 2drop ; ) drop
 	dup 'ilinea !
-	dup yanklen undopushins
 	dup yanklen + swap src$ over - 1+ cmove>
 	yanklen 'src$ +!
-	ilinea 'yank yanklen cmove ;
+	ilinea 'yank yanklen cmove
+	ilinea yanklen undopushins ;
 
-:kp | pegar debajo
+:pastechar | at -- ; pegado de caracteres: deja el cursor en el ultimo pegado
+	pasteat
+	yanklen 0? ( drop ; ) drop
+	ilinea yanklen + 1- 'src> ! ;
+
+:kpaste | p: linea debajo / caracteres despues del cursor
+	yankline 0? ( drop
+		src> c@ 0? ( drop src> pastechar ; ) 13 =? ( drop src> pastechar ; ) drop
+		src> 1+ pastechar ; )
+	drop
 	src> >>13 src$ <? ( 1+ ) pasteat
 	yanklen 0? ( drop ; ) drop
 	ilinea 'src> ! 0 'curx ! 1 'cury +! ;
 
-:kP | pegar encima
+:kpasteup | P: linea encima / caracteres antes del cursor
+	yankline 0? ( drop src> pastechar ; )
+	drop
 	src> 1- <<13 1+ pasteat
 	yanklen 0? ( drop ; ) drop
 	ilinea 'src> ! 0 'curx ! ;
@@ -293,16 +365,18 @@
 	over + swap ( over <?
 		dup c@ 10 =? ( over 13 swap c! ) drop
 		1+
-		) drop ;
+		) 2drop ;
 
 #cbbuf * 65536
 
 :pasteclip
 	'cbbuf pasteclipboard
-	'cbbuf count 4096 min 'yanklen !
+	'cbbuf count nip 4096 min 'yanklen !
 	'cbbuf yanklen cbfix
 	'yank 'cbbuf yanklen cmove
-	kp ;
+	0 'yankline !
+	yanklen 1? ( 'yank + 1- c@ 13 =? ( 1 'yankline ! ) ) drop
+	kpaste ;
 
 |--- cargar / guardar / nuevo archivo
 #cmdarg * 1024
@@ -322,12 +396,13 @@
 	src 'filename load
 	0 swap c!
 	src only13 1- 'src$ !
-	src 'src> !
+	src 'src> ! src 'view> !
 	0 'curx ! 0 'cury !
 	0 'viewx ! 0 'viewy !
 	0 'undocount ! 0 'undoidx ! ;
 
 :savefile | -- ; guarda src..src$ en 'filename (convierte CR interno a LF)
+	'filename c@ 0? ( drop ; ) drop
 	mark
 	src ( c@+ 1?
 		13 =? ( drop 10 ) ,c ) 2drop
@@ -337,7 +412,7 @@
 :newfile | -- ; buffer vacio
 	0 src c!
 	src 'src$ !
-	src 'src> !
+	src 'src> ! src 'view> !
 	0 'curx ! 0 'cury !
 	0 'viewx ! 0 'viewy !
 	0 'undocount ! 0 'undoidx ! ;
@@ -346,14 +421,12 @@
 	src> 1- <<13 1+ 'src> ! 0 'curx ! ;
 :kend
 	src> dup >>13 dup rot - 'curx ! 'src> ! ;
-:kfspace
-	src> 1- <<13 1+ 'src> ! 0 'curx ! 
-	src> ( c@+ 0? ( 2drop -1 'curx +! ; ) 
-		$ff and 32 <=? drop 1 'curx +! ) 2drop ;
+:kfspace | ^ primer caracter no blanco de la linea
+	khome
+	( src> c@ $ff and 1? 13 <>? 33 <? drop 1 'src> +! ) drop ;
 
 :kup
 	cury 0? ( drop ; ) drop | in start
-	src> c@ 0? ( drop src> <<13 1+ 'src> ! -1 'cury +! ; ) drop | in end
 	src> src <=? ( drop ; )
 	dup 1- <<13		| cur inili
 	swap over - swap	| cnt cur
@@ -366,7 +439,8 @@
 	-1 'cury +! ;
 
 :kdn
-	src> src$ >=? ( drop ; )
+	src> >>13 1+ src$ >=? ( drop ; ) drop
+	src>
 	dup 1- <<13 | cur inilinea	
 	over swap - swap | cnt cursor
 	>>13		| cnt cura
@@ -384,10 +458,18 @@
 	1 'curx +! ;
 
 :kle	
-	src> 1- src <=? ( drop ; ) 
+	src> 1- src <? ( drop ; ) 
 	dup c@ 13 =? ( 2drop ; ) drop 
 	'src> !
 	-1 'curx +! ;
+
+:kendn | $ en modo normal: sobre el ultimo caracter, no sobre el fin de linea
+	kend kle ;
+
+:kx | x: borra el caracter bajo el cursor, nunca el fin de linea
+	src> c@ 0? ( drop ; ) 13 =? ( drop ; ) drop
+	src> 1 undopushdel del
+	src> c@ 0? ( drop kle ; ) 13 =? ( drop kle ; ) drop ;
 	
 |------------------------------
 	
@@ -420,7 +502,7 @@
 		drop
 		ilinea c@ dup 32 - swap 9 - * 1? ( 2drop ; )
 		drop
-		ilinea c@ modo ex
+		ilinea c@ insone
 		1 'curx +!
 		1 'ilinea +!
 	) drop ;
@@ -444,15 +526,15 @@
 
 :replayindent | -- ; inserta indentbuf (indentlen bytes) en src>
 	0 ( indentlen <?
-		dup 'indentbuf + c@ modo ex
+		dup 'indentbuf + c@ insone
 		1 'curx +!
 		1+
 	) drop ;
 
 :kinstext
 	32 126 in? ( dup modo ex 1 'curx +! )
-	[tab] =? ( dup modo ex 2 'curx +! )
-	[enter] =? ( dup modo ex 0 'curx ! 1 'cury +! autoindent )
+	[tab] =? ( dup insone 1 'curx +! )
+	[enter] =? ( dup insone 0 'curx ! 1 'cury +! autoindent )
 	;
 
 |--- D (borrar hasta fin de linea)
@@ -463,26 +545,27 @@
 	src$ ilinea src> - - 'src$ ! ;
 
 |--- ~ (toggle mayus/minus y avanza)
-:ktilde
-	src> 1 undopushdel
-	src> c@ 'ilinea !
-	ilinea 97 122 in? ( ilinea 32 - src> c! ) drop
-	ilinea 65 90 in? ( ilinea 32 + src> c! ) drop
+:tilfix | deja el caracter nuevo en el slot de undo
 	1 allocslot 16 + !
-	src> c@ allocslot 25 + c!
+	src> c@ allocslot 25 + c! ;
+
+:ktilde
+	src> c@ 'ilinea !
+	ilinea 97 122 in? ( src> 1 undopushdel ilinea 32 - src> c! tilfix ) drop
+	ilinea 65 90 in? ( src> 1 undopushdel ilinea 32 + src> c! tilfix ) drop
 	kri ;
 
 |--- G (ir al final) / gg (ir al inicio)
 :kG
-	( src> >>13 src$ <? drop kdn ) drop ;
+	( src> >>13 1+ src$ <? drop kdn ) drop ;
 
 :kgg
 	src 'src> ! 0 'curx ! 0 'cury ! ;
 
 |--- o / O (abrir linea debajo/encima)
 :kopenb
-	kend
-	13 modo ex
+	kend src> 'insstart !
+	13 insone
 	0 'curx ! 1 'cury +!
 	autoindent ;
 
@@ -490,7 +573,8 @@
 	khome
 	src> captureindent
 	src> 'wpos !
-	13 modo ex
+	wpos 'insstart ! 1 'insextra !
+	13 insone
 	wpos 'src> !
 	0 'curx !
 	replayindent ;
@@ -541,8 +625,9 @@
 
 :visdel
 	vrange
+	0 'yankline ! mode 4 =? ( 1 'yankline ! ) drop
 	ilinea remend ilinea - undopushdel
-	remend ilinea - 'yanklen !
+	remend ilinea - 4096 min 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard
 	ilinea remend src$ remend - 1+ cmove
@@ -553,7 +638,8 @@
 
 :visyank
 	vrange
-	remend ilinea - 'yanklen !
+	0 'yankline ! mode 4 =? ( 1 'yankline ! ) drop
+	remend ilinea - 4096 min 'yanklen !
 	'yank ilinea yanklen cmove
 	'yank yanklen copyclipboard
 	ilinea 'src> !
@@ -588,8 +674,8 @@
 		$2F =? ( 'pad 'padp ! 0 'pad c! 1 'cmdtype ! 5 'mode ! ) | /
 		$6E =? ( kn ) | n (repite busqueda)
 		$4E =? ( kn ) | N (repite busqueda, misma direccion por ahora)
-		$30 =? ( khome ) | 0
-		$24 =? ( kend ) | $
+		$30 =? ( ncount 0? ( khome ) drop ) | 0 (si no es parte de un numero)
+		$24 =? ( kendn ) | $
 		$5e =? ( kfspace ) | ^
 		
 		$68 =? ( 'kle vcount ) |h
@@ -597,19 +683,19 @@
 		$6B =? ( 'kup vcount ) |k
 		$6C =? ( 'kri vcount ) |l	
 		
-		$78 =? ( src> 1 undopushdel del ) | x
+		$78 =? ( 'kx vcount ) | x
 		$44 =? ( kD ) | D
-		$70 =? ( kp ) | p
-		$50 =? ( kP ) | P
+		$70 =? ( kpaste ) | p
+		$50 =? ( kpasteup ) | P
 		$7E =? ( ktilde ) | ~
 		$47 =? ( kG ) | G
 		
 		$69 =? ( src> 'insstart ! 1 'mode ! ) | i
 		$41 =? ( kend src> 'insstart ! 1 'mode ! ) | A
 		$49 =? ( khome src> 'insstart ! 1 'mode ! ) | I
-		$6F =? ( kopenb src> 'insstart ! 1 'mode ! ) | o
-		$4F =? ( kopena src> 'insstart ! 1 'mode ! ) | O
-		$72 =? ( chmode src> 'insstart ! 2 'mode ! ) | r
+		$6F =? ( kopenb 1 'mode ! ) | o
+		$4F =? ( kopena 1 'mode ! ) | O
+		$72 =? ( chmode src> 'insstart ! 0 'repcnt ! src$ 'repend ! 2 'mode ! ) | r
 		$75 =? ( undo ) | u
 		$12 =? ( redo ) | ctrl-r (rehacer)
 		$16 =? ( pasteclip ) | ctrl-v (pegar del portapapeles del sistema)
@@ -617,12 +703,14 @@
 		$56 =? ( src> 'vstart ! 4 'mode ! ) | V
 		$77 =? ( kw ) | w
 		$62 =? ( kb ) | b
+		$30 $39 in? ( drop ; )
+		0 'ncount !
 		drop ;
 	)
 	=? (
 		0 'pending !
-		dup $64 =? ( drop dd ; )
-		dup $79 =? ( drop yy ; )
+		$64 =? ( drop dd ; )
+		$79 =? ( drop yy ; )
 		$67 =? ( drop kgg ; )
 		drop ;
 	)
@@ -631,22 +719,44 @@
 	kmovecursor
 	drop ;
 	
+|--- cierra el tramo de insercion/reemplazo actual para el undo
+:insflush
+	mode 2 =? ( drop undopushrep 0 'repcnt ! ; )
+	drop insstart src> insstart - insextra + undopushins 0 'insextra ! ;
+
+:insend | ESC: fin de insercion
+	insflush 0 'mode ! ;
+
+|--- movimiento dentro de insercion: cierra el tramo y empieza otro
+#npos
+:inskeys | key -- key
+	src> 'ipos !
+	kmovecursor
+	src> ipos =? ( drop ; ) drop
+	src> 'npos !
+	ipos 'src> ! insflush
+	npos 'src> ! src> 'insstart ! 0 'repcnt ! src$ 'repend ! ;
+
+:insback | backspace en INSERT
+	src> src <=? ( drop ; )
+	insstart <=? ( drop undoclear back src> 'insstart ! ; )
+	drop back ;
+
 |---INSERT
 :kins
 	evtkey
-	[esc] =? ( insstart src> insstart - undopushins 0 'mode ! ) 
-	[back] =? ( back )
-	kmovecursor
+	[esc] =? ( insend )
+	[back] =? ( insback )
+	inskeys
 	kinstext
 	drop ;
-	
-|---REPLACE
+
+|---REPLACE | backspace no hace nada (no se puede restaurar el texto original)
 :krep
 	evtkey
-	[esc] =? ( chmode insstart src> insstart - undopushins 0 'mode ! ) 
-	[back] =? ( back )
-	kmovecursor	
-	kinstext	
+	[esc] =? ( chmode insend )
+	inskeys
+	kinstext
 	drop ;
 |---VISUAL
 :kvis
@@ -661,8 +771,8 @@
 	$6A =? ( 'kdn vcount ) |j
 	$6B =? ( 'kup vcount ) |k
 	$6C =? ( 'kri vcount ) |l
-	$30 =? ( khome ) | 0
-	$24 =? ( kend ) | $
+	$30 =? ( ncount 0? ( khome ) drop ) | 0
+	$24 =? ( kendn ) | $
 	$77 =? ( kw ) | w
 	$62 =? ( kb ) | b
 	drop ;
@@ -685,6 +795,10 @@
 	drop
 	0 'mode ! ;
 
+:padadd | c -- ; agrega al pad (maximo 500 caracteres)
+	padp 'pad - 500 >=? ( 2drop ; ) drop
+	padp c!+ 'padp ! 0 padp c! ;
+
 :kcmd
 	evtkey
 	[esc] =? ( drop 0 'mode ! 'pad 'padp ! 0 'pad c! ; )
@@ -693,7 +807,7 @@
 		drop dosearch 0 'mode !
 		'pad 'padp ! 0 'pad c! ; )
 	[back] =? ( padp 'pad >? ( -1 'padp +! 0 padp c! ) drop )
-	32 126 in? ( dup padp c!+ 'padp ! 0 padp c! )
+	32 126 in? ( dup padadd )
 	drop ;
 
 #kmode 'knor 'kins 'krep 'kvis 'kvis 'kcmd
