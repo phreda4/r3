@@ -207,7 +207,11 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 ::txemitr | "" --
 	txw neg 'curx +!
 	txwrite ;
-	
+
+::txemitc | w "" --
+	txw rot swap - 2/ 'curx +!
+	txwrite ;
+
 ::txprint | .. "" --
 	sprint txwrite ;
 

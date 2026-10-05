@@ -120,8 +120,8 @@
 ::append | 'from cnt "filename" -- 
 	$4 1 0 4 $80 0 CreateFile
 	-1 =? ( 3drop ; )
-+	dup >r -rot 'aux 0 WriteFile drop
-+	r> CloseHandle ;
+	dup >r -rot 'aux 0 WriteFile drop
+	r> CloseHandle ;
 
 ::delete | "filename" --
 	DeleteFile drop ;
