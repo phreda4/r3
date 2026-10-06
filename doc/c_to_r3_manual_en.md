@@ -58,6 +58,8 @@ x             | value of x        -> 50
 
 **Rule**: `x` is the value, `'x` is the address. `!`, `@`, `+!` always operate on an address.
 
+In C every local is a variable. In idiomatic R3forth most of them are not: temporaries live on the stack. See [Replacing Variables with Stack References](#replacing-variables-with-stack-references) for when and how to remove them.
+
 ```c
 int x = 100;
 x = x + 5;
@@ -301,6 +303,8 @@ value 255 100 */                | safe
 | `2over` | `a b c d -- a b c d a b` |
 | `2swap` | `a b c d -- c d a b` |
 
+`pick4` is the deepest copy: only the top 5 items are reachable (see [Replacing Variables with Stack References](#replacing-variables-with-stack-references)).
+
 ---
 
 ## Registers A and B
@@ -355,6 +359,305 @@ Or, cheaper when only the *traversal* needs protecting and `process` is the one 
 | `r@` | copy top of return stack |
 
 An unbalanced return stack crashes the word — every `>r` in a word needs a matching `r>` before it returns.
+
+---
+
+## Replacing Variables with Stack References
+
+A direct C translation gives every local a `#variable`. Idiomatic R3forth keeps temporaries **on the stack** and reads them back with `over`, `pick2`, `pick3`, `pick4`. The result is shorter, has no global state to clobber, and is often faster. This section is the method, step by step, taken from the real refactoring of `r3/term/colorscene.r3` (about 75 variables down to 27, not counting buffers, with identical output).
+
+It is a mechanical process, not a rewrite: **the program must give exactly the same results before and after.** Verify that at every step (Step 1 and Step 9).
+
+### When a variable is worth removing
+
+| The variable is... | Do this |
+|---|---|
+| a loop counter (`xx`, `yy`, `i`) | keep it on the stack as the loop value; pass it to callees as an argument |
+| a temporary used only inside one word | stack (or `>r` / `r@`) |
+| a parameter written at the top of a word and read below (`'dy ! 'dx !`) | it already *is* on the stack: just don't store it |
+| a value computed from another global (`ta` = `tt 8 *`) | inline the expression where it is used, or make it a word with no variable |
+| a per-frame constant read many times in a hot loop (`dux`, `dvx`) | keep the variable |
+| state that survives between calls or frames | keep the variable |
+| something that would need more than 5 live values at once | keep the variable, or split the word |
+
+Removing a variable never changes what the program computes; it only changes where the value lives. If you cannot tell where a value would live, that is the sign to keep the variable.
+
+### Reading the stack: distance and `pick`
+
+The **distance** of a value is how many items are above it. The top is distance 0.
+
+| Word | Copies the item at distance | Stack effect |
+|---|---|---|
+| `dup` | 0 | `a -- a a` |
+| `over` | 1 | `a b -- a b a` |
+| `pick2` | 2 | `a b c -- a b c a` |
+| `pick3` | 3 | `a b c d -- a b c d a` |
+| `pick4` | 4 | `a b c d e -- a b c d e a` |
+
+`pick4` is the deepest: **only the top 5 values are reachable by copy.** `swap`, `rot`, `-rot` and `nip` rearrange or trim the top items; `2over` / `2swap` work on pairs. A word that needs more live values than that must be split into smaller words, or keep a variable (see the table above).
+
+**The moving target.** The distance of a value grows by one every time you push something above it. This is the mistake behind most wrong `pick`s, so count again after every push:
+
+```r3
+| stack: f dr dg db i        (i is on top)
+pick4                        | copies f    (distance 4)   -> f dr dg db i f
+pick4                        | copies dr   (was 3, now 4) -> f dr dg db i f dr
+pick2                        | copies i    (was 0, now 2) -> f dr dg db i f dr i
+```
+
+### The process
+
+#### Step 1. Freeze a baseline
+
+Before touching anything, make the program produce a **checksum** of its output, with every source of variation fixed: the random seed, the clock value, the screen size. After each change, the checksum must be identical.
+
+```r3
+^r3/lib/rand.r3
+
+#hh
+:hashmem | adr n --            ; hash of n dwords
+	0 'hh !
+	( 1? 1- over d@ hh 31 * + 'hh ! swap 4 + swap ) 2drop ;
+
+:main
+	12345 'seed !              | same random sequence on every run
+	render                     | the code under test
+	'buf 64 hashmem
+	hh "hash = %h" .println ;
+```
+
+For `colorscene.r3` the test ran each of the 7 scenes for a few frames with `tt` (the time) set by hand, then printed one hash per scene. When a hash changed, the last edit was the culprit, so each edit stayed small. If the output is not a buffer, compare the text it prints, or the bytes it emits.
+
+If a hash changes **on purpose** (a bug fix), do it as a separate step, so the refactoring still compares equal to a known-good baseline.
+
+#### Step 2. Write the stack effect first
+
+For every word, state what it takes and returns, in the comment:
+
+```r3
+:dist2 | x1 y1 x2 y2 -- d
+```
+
+The words that used to be called with global variables (`xx yy`) now get parameters: `:px | x y -- color`. The stack effect is the contract; the body must honor it exactly, on **every** path (see Step 7).
+
+#### Step 3. Trace with stack comments
+
+Write the stack after every line, as a comment. Do not skip this; it is what makes Step 4 mechanical:
+
+```r3
+:dist2 | x1 y1 x2 y2 -- d
+	rot -                | x1 x2 dy
+	dup *                | x1 x2 dy*dy
+	-rot swap -          | dy*dy dx
+	dup * + ;
+```
+
+Keep the comments in the final code when the word is more than a couple of lines long. They are cheap and they are the documentation.
+
+#### Step 4. Turn variable reads into `pick`s
+
+For each variable read, find the value's distance **at that moment** (remember the moving target), and use `dup`, `over` or `pickN`. Example: the cosine palette from `colorscene.r3`, first with variables:
+
+```r3
+#pr #pg #pb #pf #pt
+
+:mkpal | f dr dg db --
+	'pb ! 'pg ! 'pr ! 'pf !
+	0 ( 256 <?
+		dup pf * 8 >> 'pt !
+		pt pr + cosc  pt pg + cosc  pt pb + cosc  rgb
+		over 2 << 'pal + d!
+		1+ ) drop ;
+```
+
+and then with the stack. The four arguments (`f dr dg db`) stay below the loop counter `i`, and a helper `pch` computes one channel:
+
+```r3
+:pch | f d i -- v              ; one channel: cosc( i*f/256 + d )
+	rot * 8 >> + cosc ;
+
+:mkpal | f dr dg db --
+	0 ( 256 <?                                  | f dr dg db i
+		pick4 pick4 pick2 pch 16 << >r              | red   (parked on the return stack)
+		pick4 pick3 pick2 pch 8 << r> or >r         | green
+		pick4 pick2 pick2 pch r> or                 | blue
+		over 2 << 'pal + d!                         | f dr dg db i
+		1+ ) 4drop drop ;
+```
+
+How each `pick` was chosen (the stack grows by one with each push):
+
+| Line | Wanted | Stack before the pick | Pick |
+|---|---|---|---|
+| red | `f` | `f dr dg db i` | `pick4` |
+| | `dr` | `f dr dg db i f` | `pick4` (it was at 3, `f` pushed one) |
+| | `i` | `f dr dg db i f dr` | `pick2` |
+| green | `f` | `f dr dg db i` | `pick4` |
+| | `dg` | `f dr dg db i f` | `pick3` |
+| | `i` | `f dr dg db i f dg` | `pick2` |
+| blue | `f` | `f dr dg db i` | `pick4` |
+| | `db` | `f dr dg db i f` | `pick2` |
+| | `i` | `f dr dg db i f db` | `pick2` |
+
+Both versions give the same palette entry for entry (checked: 0 different entries out of 256). Two things made it fit: the helper `pch` has only three inputs, and the three channels are computed one after the other, so only one partial result (the red or the red+green already combined) is alive at a time.
+
+#### Step 5. Turn variable writes into computation in place
+
+A variable written once and read once disappears: leave the value on the stack, where the next word expects it. When a value must wait while you compute something else, park it on the **return stack**:
+
+| Word | Use |
+|---|---|
+| `>r` | move TOS to the return stack (park) |
+| `r@` | copy it back without removing it |
+| `r>` | take it back |
+
+The rules: every `>r` is matched by an `r>` **inside the same word**, and a loop body must leave the return stack as it found it. While a value is parked it is **not on the data stack**, so do not count it when you work out distances for `pick`. The `mkpal` above parks the red component while it computes the green one.
+
+Do not park more than one or two values. If you need more, you are probably missing a helper word.
+
+#### Step 6. Factor when you run out of reach
+
+If a body needs a value deeper than `pick4`, do not fight for it. Extract the part that needs only a few inputs into its own word with a clear stack effect, as `pch` did above. A rule of thumb that held in practice: **a word with 3 inputs or fewer is easy to write on the stack; with 5 inputs it is already hard to read.**
+
+For example, a perspective projection that used four variables becomes one three-input word:
+
+```r3
+:proj | v z half -- p          ; v*PH / (z<<4) + half
+	>r 4 << swap PH * swap / r> + ;
+```
+
+#### Step 7. Branches and early exits
+
+Conditionals (`=?`, `<?`, `0?`, ...) leave the tested value in place. **Every path through a word must leave the same stack.** When a branch ends with `;`, it has to consume all that word's inputs and leave exactly the result.
+
+```r3
+:band | x y -- c               ; y 0..23 : three bands of 8 rows
+	dup 8 /                    | x y band
+	0? ( 2drop $ff0000 ; )     | band 0: drop band and y, ignore x
+	1 =? ( 2drop $00ff00 ; )   | band 1
+	drop drop $0000ff ;        | any other band
+```
+
+`5 3 band` gives `$FF0000`, `5 10 band` gives `$00FF00` and `5 20 band` gives `$0000FF`.
+
+Which values each branch drops is the part that goes wrong. Write the stack before the `;` in a comment for every branch until you are sure.
+
+#### Step 8. Loops and callbacks: replace `xx yy` by parameters
+
+Keep the loop counter on the stack, and put the loop body into a word that receives what it used to read from globals. The counter of the **inner** loop is on top; the outer one is right below it:
+
+```r3
+0 ( H <?                       | y
+	0 ( W <?                   | y x
+		...
+		1+ ) drop              | y
+	1+ ) drop
+```
+
+Generalize the pixel loop to take the per-pixel word as an argument. The callback is called with `x y`, so nothing needs to be global:
+
+```r3
+:forpx | 'px --                ; fills 'buf with px ( x y -- c )
+	'buf >a
+	0 ( H <?
+		0 ( W <?                       | px y x
+			dup pick2 pick4 ex da!+    | x y px  -> px(x,y) -> store
+			1+ ) drop
+		1+ ) 2drop ;
+
+:px | x y -- c
+	swap 10 * + ;
+
+'px forpx
+```
+
+Inside the inner loop the stack is `px y x`; `dup pick2 pick4` builds `x y px` on top (distance of `y` is 2 after the `dup`, and of `px` is 4 after the second pick), `ex` runs the word and leaves its result, and `da!+` stores it. The version with global variables was:
+
+```r3
+#xx #yy
+:px-var | -- c
+	xx 10 * yy + ;
+...
+	0 ( H <? dup 'yy !
+		0 ( W <? dup 'xx !
+			px-var da!+
+			1+ ) drop
+		1+ ) drop
+```
+
+Both fill the buffer with the same values. The callback version also lets you reuse the loop for every scene, which is how `colorscene.r3` got `forpx` and `forxy` and dropped `xx` and `yy`.
+
+#### Step 9. Compare, then measure
+
+Run the baseline of Step 1 and check that **every** hash is equal. Then measure time before and after, because the stack version is not always faster.
+
+Measured on `colorscene.r3` (milliseconds per frame, same machine, Linux; compare the columns, not the absolute values):
+
+| Part | Original | Stack version | Note |
+|---|---|---|---|
+| `present` (draw all cells) | 1.54 ms | 0.63 ms | variables removed from the inner loop |
+| spectrum, plasma, tunnel, fire, stars, copper | | within 0.1 ms | |
+| rotozoomer | 0.27 ms | 0.44 ms | slower: see below |
+
+### Variables worth keeping
+
+The rotozoomer got slower because the original keeps two variables `uu` and `vv` updated **incrementally**: at the start of each row it sets them, and then adds a constant for each pixel:
+
+```r3
+dux 'uu +!   dvx 'vv +!
+```
+
+The stack version evaluated `u = (x-hw)*dux - (y-hh)*dvx + tt*700` (and the same for `v`) for every pixel: four multiplications per pixel instead of two additions. It is simpler to read, but it does more work in the innermost loop. Putting the variables back (and keeping everything else on the stack) gave 0.25 ms, the fastest of the three.
+
+The variables that stayed in `colorscene.r3`, and why:
+
+| Variables | Why they stayed |
+|---|---|
+| `uu vv dux dvx` | incremental update in the innermost loop (speed) |
+| `pcx pcy` | computed once per frame, read for every pixel; passing them as parameters would need more than `pick4` |
+| `sx sy tx ty ln` | the star's trail needs 7 live values at once |
+| `sdz strail` | per-frame parameters shared by many stars |
+| `lfg lbg` | cached terminal colors: state that survives between cells |
+| `tt fade dt fps scn ...` | global application state |
+| `CW CH PW PH` | screen dimensions: read in almost every word |
+
+Rule: **keep a variable when it is state, when it saves work in the hot loop, or when removing it would hide the code.** The goal is not zero variables; it is variables that mean something.
+
+### Frequent mistakes in this transformation
+
+| Mistake | Symptom | Fix |
+|---|---|---|
+| `pickN` counted before pushing an intermediate | wrong value, no error | recount after each push (the moving target) |
+| a branch with `;` leaves an extra value | the stack grows each call; crash after a while | write the stack before `;` in every branch |
+| one path leaves one item more or fewer | corrupted values far from the cause | check that every path ends with the declared stack effect |
+| `<?`, `=?`, `0?` assumed to consume the tested value | off-by-one on the stack | binary tests consume only the second operand; unary tests (`0?`, `1?`) consume nothing |
+| `>r` without `r>` in some path | crash on return | pair them inside the same word |
+| a loop with no exit condition of its own | it runs once | the loop test must be a conditional that has no block of its own (`( running 1? drop ... )`) |
+| `c@` returns a signed byte | negative values in indexes | mask it: `c@ $ff and` |
+| the stack effect comment lies | later edits break silently | update the comment with the code |
+
+How to find the first wrong line: compare the hash after each edit; if it differs, undo the last edit and redo it in smaller steps.
+
+To check a single word, call it from a small `:main` with known inputs and put a **sentinel** value under them. If the word honors its stack effect, the sentinel comes back untouched; if it leaks or eats a value, the sentinel is wrong:
+
+```r3
+:main
+	99 1 2 4 6 dist2 "dist2 = %d" .println     | 25
+	"sentinel = %d" .println ;                 | 99
+```
+
+### Checklist
+
+1. Make a deterministic checksum of the output and save it.
+2. For each word, write its stack effect.
+3. Classify every variable (table at the top); only convert the ones that qualify.
+4. Trace the stack in comments, one line at a time.
+5. Count distances again after every push; never go beyond `pick4`.
+6. Make every branch and every loop iteration leave the same stack depth.
+7. Factor out any part that needs more than 3 or 4 inputs.
+8. Compare the checksum after every change.
+9. Measure the time. If the inner loop got slower, put the variable back.
+10. Delete the variable declarations only when no word uses them any more.
 
 ---
 
@@ -616,6 +919,7 @@ int main() {
 8. Use `'var` for `!`/`@`/`+!` — never the bare value.
 9. `@+`/`!+` advance by the *access size*, not always by 8.
 10. Save registers (`ab[ ... ]ba`) before calling anything that might reuse A/B.
+11. Temporaries and loop counters usually belong on the stack, not in `#variables`; convert them with the method in [Replacing Variables with Stack References](#replacing-variables-with-stack-references).
 
 ### Frequent mistakes
 
