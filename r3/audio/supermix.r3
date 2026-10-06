@@ -13,7 +13,7 @@
 
 |------------------- VOICES
 | unidad de sonido 
-##voice * $ffff
+##voice * 65536	
 ##voice> 'voice
 
 :resetvoices
@@ -32,21 +32,23 @@
 :d.lensam	a> 16 + ;	| 
 :d.fresam	a> 20 + ;
 
-:d.time		a> 24 + ;	| time+dt
+:d.time		a> 24 + ;	| time+dt (negativo = retardo antes de sonar)
 :d.dtime	a> 28 + ;
 
 :q.func		a> 32 + ;
 :q.vec		a> 40 + ;
+:d.vel		a> 48 + ;	| ganancia de la voz (16.16)
+:d.crv		a> 52 + ;	| curva de envolvente: env^(n+1): 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exponencial)
 
 :newvoice | -- nv
 	voice> 'voice> >=? ( drop 0 ; )
-	48 'voice> +! ;
+	64 'voice> +! ;
 	
 :delvoice | nv --
-	-48 'voice> +! voice> 6 move ;
+	-64 'voice> +! voice> 8 move ;
 
 :delvoicea | --
-	-48 'voice> +! a> voice> 6 move -48 a+ ;
+	-64 'voice> +! a> voice> 8 move -64 a+ ;
 
 |---- OSC
 | time -- val
@@ -78,7 +80,7 @@
 
 
 	
-:rvol	w.Vol w@ $ffff and 2* ;
+:rvol	w.Vol w@ $ffff and 2* ;	| w sin signo: 1.0/2 = $8000 no cabe en un w con signo
 :rsus	w.Sdt w@ $ffff and 2* ;
 
 :envelADSR | state -- mix	
@@ -96,28 +98,55 @@
 		; )
 	3 =? ( drop 
 		rvol ; ) |sustain
-	drop | release
+	drop | release (negativo = voz terminada, la borra playosc/playnoise/playsam)
 	rvol w.Rdt w@ $ffff and -
 	;
 
-:playosc | vol voice -- vol voice
+:delaying | -- 0/1		| retardo previo (sample-accurate): silencio mientras time < 0
+	d.time d@ -? ( 1+ d.time d! 1 ; ) drop 0 ;
+
+:shape | env -- env'
+	d.crv c@ 0? ( drop ; )
+	1 =? ( drop dup *. ; )
+	2 =? ( drop dup dup *. *. ; )
+	drop dup *. dup *. ;
+
+:out | env osc -- v		| senial * envelope(curva) * ganancia de la voz
+	swap shape swap *. d.vel d@ *. ;
+
+:playosc	| -- v
+	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; ) 
-	dup 2/ w.vol w! 
+	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.freq d@ *. $ffff and
 	q.func @ ex |oscSin | ciclo
 	
-	*. ; | s * envelope
+	out ;
+
+|--- oscilador con pitch slide: fase acumulada (d.fresam) e incremento (d.freq) que
+|    cambia cada muestra en forma exponencial; d.lensam = delta (0.32) por muestra
+:playsweep	| -- v
+	delaying 1? ( drop 0 ; ) drop
+	envelADSR -? ( 0 nip delvoicea ; ) 
+	dup 2/ w.vol w!
+	d.time d@ d.dtime d@ >? ( 4 c.state c! ) drop
+	d.freq d@ dup d.lensam d@ * 32 >> + 0 max
+	dup d.freq d!
+	d.fresam d@ + dup d.fresam d!
+	16 >> $ffff and
+	q.func @ ex out ;
 
 :playnoise
+	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; ) 
 	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	drop
-	q.func @ ex | wo ciclo |	fbrown 
-	*. ; | s * envelope
+	q.func @ ex | noise sin ciclo |	fbrown 
+	out ;
 
 :interpolate | scr sample -- value
 	w@+ swap 2 + w@	| src v0 v1 | 2 + stereo!
@@ -125,8 +154,9 @@
 	rot pick2 - *. + ;
 
 :playsam
+	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; )
-	dup 2/ w.vol w! | vol envelope	
+	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.fresam d@ *
@@ -138,10 +168,10 @@
 | interpolacion 
 	dup 16 >> 2 << q.func @ + interpolate
 	
-	2* *. ; |2.0 *. | w->0--1.0
+	2* out ; |2.0 *. | w->0--1.0
 
 |------------------- RUN
-#aurate 44100 |48000 |
+##aurate 44100 |48000 |
 #audevice 
 #auspec * 32
 
@@ -174,11 +204,11 @@
 		'voice ( voice> <? >a
 			q.vec @ ex |playosc 
 			| d.vel d@ *.	| VOLUME por voice
-			+ a> 48 + ) drop
+			+ a> 64 + ) drop
 
 		2/ | shift 
 		master_volume *.
-		fastanh. 2/ clamps16 $ffff and	
+		fastanh. 2/ clamps16 $ffff and	| fastanh. puede pasar de 1.0 con muchas voces
 		
 		dup 16 << or       | to stereo
 		db!+
@@ -186,8 +216,15 @@
 	;	
 
 
+##smtick 0				| hook: 'palabra 'smtick ! ; se ejecuta antes de generar cada bloque de 2048 muestras
+:runtick smtick 1? ( ex ; ) drop ;
+
+::smmaster! | v --		| volumen general 0..1.0
+	'master_volume ! ;
+
 ::smupdate | Queue audio
 	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
+	runtick
 	genAudio
 	audevice 'outbuffer 8192 SDL_QueueAudio 
 	;
@@ -202,6 +239,8 @@
 #ins_wave oscSin |oscTri |'oscSin
 #ins_ADSR 0 
 #ins_aux
+#ins_vel 1.0
+#ins_crv 0
 
 | A:0.001 -> 16.0
 | D:0.001 -> 16.0
@@ -241,6 +280,15 @@
 	a> 'instr> ! 
 	ninstr ;
 
+::isweep | ADSR osc -- n		| oscilador con pitch slide (ver smslide!)
+	instr> >a
+	'playsweep a!+
+	a!+ | func
+	a!+ | ADSR
+	0 a!+
+	a> 'instr> ! 
+	ninstr ;
+
 ::isample | ADSR "" -- n
 	instr> >a
 	'playsam a!+
@@ -258,7 +306,17 @@
 	@+ 'ins_wave !
 	@+ 'ins_ADSR !
 	@ 'ins_aux !
+	1.0 'ins_vel ! 0 'ins_crv !	| se ajustan despues de smi! (smslide! smvel! smcurve!)
 	;
+
+::smslide! | oct/s --		| slide (octavas por segundo, +sube -baja) para el proximo smplayd; despues de smi!
+	dt 45426 *. *. 'ins_aux ! ;
+
+::smvel! | v --			| ganancia (16.16) de las proximas voces; despues de smi!
+	'ins_vel ! ;
+
+::smcurve! | n --		| curva de envolvente 0 lineal .. 3 cuartica (~exp); despues de smi!
+	'ins_crv ! ;
 
 ::smOSC! | osc n --
 	5 << 'instr + 8 + ! ;
@@ -270,19 +328,22 @@
 ::control
 	
 |---- PLAY INSTRUMENT
+|inc_sample=(fr_deseada<<32)/fr_base
+|inc_osc=(fr_desada<<32>/aurate
+
 :midi_to_freq | note -- freq
 	69 - fix. 12 / pow2. 440.0 *. ;
 
 |inc_sample=(fr_deseada<<32)/fr_base
 |inc_osc=(fr_desada<<32>/aurate
 
-::smplayd | note time --
+::smplayhz | hz time --		| frecuencia en Hz (16.16), duracion en segundos (16.16)
 	newvoice 0? ( 3drop ; ) | No free voices|
 	>a | Save voice index
 
 	aurate *. 32 << d.time !
 	
-	midi_to_freq 16 <<
+	16 <<
 	dup 440.0 / d.fresam d! | para sample base 440
 	aurate / d.freq d!	| para oscilador
 
@@ -290,10 +351,27 @@
 	ins_wave q.func !
 	ins_ADSR w.adt ! | ADSR
 	ins_aux d.lensam d!
+	ins_vel d.vel d!
+	ins_crv d.crv c!
+	ins_vector 'playsweep =? ( 0 d.fresam d! ) drop	| fase inicial 0
 	
 	1 c.state c!
 	0 w.Vol w!
 	;
+
+::smplayd | note time --
+	swap midi_to_freq swap smplayhz ;
+
+#sdelay
+::smplayhzat | hz time delay --	| como smplayhz pero empieza 'delay' muestras despues
+	'sdelay !
+	voice> >r
+	smplayhz
+	voice> r> =? ( drop ; ) drop
+	sdelay neg voice> 64 - 24 + d! ;
+
+::smplayat | note time delay --	| como smplayd pero empieza 'delay' muestras despues
+	>r swap midi_to_freq swap r> smplayhzat ;
 
 #nnote 1
 
@@ -313,4 +391,4 @@
 			4 over c!		| release
 			2drop ; )
 		drop
-		48 + ) 2drop ;
+		64 + ) 2drop ;
