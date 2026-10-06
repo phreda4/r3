@@ -26,12 +26,22 @@
 	over - rot * 8 >> + $ff00ff00ff and
 	dup 24 >> or ;
 	
+::colmul | c1 a -- c
+	swap dup 24 << or $ff00ff00ff and
+	* 8 >> $ff00ff00ff and
+	dup 24 >> or ;
+
 ::colmix4 | c1 c2 a -- c 
 	rot dup 12 << or $f0f0f and
 	rot dup 12 << or $f0f0f and
 	over - rot 4 >> * 4 >> + $f0f0f and
 	dup 12 >> or ;
-	
+
+::colmul4 | c1 a -- c
+	swap dup 12 << or $f0f0f and
+	* 4 >> $f0f0f and
+	dup 12 >> or ;
+
 |--- diferencia de color
 ::diffrgb2 | a b -- v
 	over 16 >> over 16 >> - abs | a b a1
