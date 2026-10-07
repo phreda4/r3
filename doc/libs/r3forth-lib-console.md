@@ -5,7 +5,7 @@ A comprehensive cross-platform terminal control library for R3Forth featuring AN
 ## Overview
 
 This library provides unified terminal control across Windows and Linux with support for:
-- **Buffered output** (64KB) for efficient rendering
+- **Buffered output** (about 8 KB) for efficient rendering
 - **ANSI escape sequences** for colors and cursor control
 - **Keyboard input** with special key detection
 - **Mouse events** (button clicks, movement, and wheel)
@@ -68,7 +68,7 @@ Predefined constants for special keyboard keys. These are **platform-independent
 
 ## Output Buffer System
 
-All output is buffered in a 8KB buffer for efficient terminal rendering. The buffer automatically flushes when full. or .println or getch is called.
+All output is buffered in an 8 KB buffer for efficient terminal rendering. The buffer is flushed automatically when it is full, and by `.flush`, `.println`, `getch` (and so `waitkey`, `.input`).
 
 ### Buffer Management
 
@@ -208,7 +208,7 @@ Low-level helpers for building ANSI escape sequences.
 - **`.savec`** - Save current cursor position
   ```r3forth
   .savec
-  20 10 .at "Temporary" .type
+  20 10 .at "Temporary" .write
   .restorec  | Return to saved position
   ```
 
@@ -330,7 +330,7 @@ Low-level helpers for building ANSI escape sequences.
 - **`.Strike`** - Strikethrough text
 - **`.Reset`** - Reset all attributes to default
   ```r3forth
-  .Bold .Red "Error!" .type .Reset
+  .Bold .Red "Error!" .write .Reset
   ```
 
 ---
@@ -344,7 +344,7 @@ Low-level helpers for building ANSI escape sequences.
 
 Example:
 ```r3forth
-rows cols "Terminal size: %d x %d" .fprintln
+rows cols "Terminal size: %d x %d" .println
 ```
 
 ---
@@ -364,19 +364,21 @@ The library provides a unified event system for keyboard, mouse, and resize even
 - **`inevt`** `( -- type )` - Check for event without waiting
   ```r3forth
   inevt 
-  1 =? ( drop evtkey handle-key )
-  2 =? ( drop handle-mouse )
+  1 =? ( evtkey handle-key )    | handle-key ( key -- )
+  2 =? ( handle-mouse )
   drop
   ```
   - Returns event type or 0 if no event
 
 - **`getevt`** `( -- type )` - Wait for any event
   ```r3forth
-  ( getevt
-    1 =? ( drop evtkey process-key )
-    2 =? ( drop process-mouse )
-    4 =? ( drop handle-resize )
-  ) ;
+  ( running 1? drop
+    getevt
+    1 =? ( evtkey process-key )   | process-key ( key -- ), may set 0 'running !
+    2 =? ( process-mouse )
+    4 =? ( handle-resize )
+    drop
+  ) drop ;
   ```
   - Blocks until event occurs
 
@@ -387,11 +389,11 @@ The library provides a unified event system for keyboard, mouse, and resize even
 - **`getch`** `( -- key )` - Wait for keypress and return key code
   ```r3forth
   getch  | Wait for key
-  [ESC] =? ( "Exit" print ; )
+  [ESC] =? ( "Exit" .println ; )
   drop
   ```
 
-- **`inkey`** `( -- key )` - Check for keypress without waiting
+- **`inkey`** `( -- key )` - Check for keypress without waiting. Mouse and resize events are consumed and reported as `0` (use `inevt` to see them)
   ```r3forth
   inkey  | Returns 0 if no key pressed
   0? ( drop ; )
@@ -413,7 +415,7 @@ The library provides a unified event system for keyboard, mouse, and resize even
 
 Example:
 ```r3forth
-evtmxy .at "*" .type  | Draw at mouse position
+evtmxy .at "*" .write  | Draw at mouse position
 ```
 
 ### Mouse Buttons
@@ -424,8 +426,8 @@ evtmxy .at "*" .type  | Draw at mouse position
   - Bit 2: Middle button
 
 ```r3forth
-evtmb 1 and? ( "Left button pressed" print ; )
-evtmb 2 and? ( "Right button pressed" print ; )
+evtmb 1 and? ( "Left button pressed" .write ; )
+evtmb 2 and? ( "Right button pressed" .write ; )
 ```
 
 ### Mouse Wheel
@@ -437,8 +439,8 @@ evtmb 2 and? ( "Right button pressed" print ; )
 
 ```r3forth
 evtmw 
-0 >? ( "Scroll up" print ; )
-0 <? ( "Scroll down" print ; )
+0 >? ( "Scroll up" .write ; )
+0 <? ( "Scroll down" .write ; )
 drop
 ```
 
@@ -449,12 +451,13 @@ drop
 - **`.onresize`** `( 'callback -- )` - Set callback for terminal resize
   ```r3forth
   :on-resize
-    rows cols "New size: %d x %d" .fprintln ;
+    rows cols "New size: %d x %d" .println ;
   
   'on-resize .onresize
   ```
   - Callback is executed when terminal size changes
   - Global variables `rows` and `cols` are updated before callback
+  - It runs while the program polls the keyboard (`inevt`, `getevt`, `inkey`, `getch`)
 
 ---
 
@@ -462,14 +465,14 @@ drop
 
 - **`waitesc`** - Wait until ESC key is pressed
   ```r3forth
-  "Press ESC to exit..." .fprintln
+  "Press ESC to exit..." .println
   waitesc
   .cls
   ```
 
 - **`waitkey`** - Wait until any key is pressed
   ```r3forth
-  "Press any key to continue..." .fprintln
+  "Press any key to continue..." .println
   waitkey
   ```
 
@@ -501,7 +504,7 @@ All exported functions work the same on Windows and Linux:
 - All color functions
 - All text attributes
 - Buffered output system
-- Event system (keyboard, mouse, resize)
+- Event system (keyboard, mouse, resize), see the resize note below
 - Mouse button and wheel detection
 
 ### Platform Notes
@@ -512,8 +515,8 @@ All exported functions work the same on Windows and Linux:
 - Movement tracking works on both platforms
 
 **Resize Detection:**
-- Works automatically on both platforms
-- Callback system is identical
+- The size is checked every time the program polls (`inevt`, `getevt`, `inkey`, `getch`), on both platforms
+- On Linux a callback must be registered with `.onresize` (it may be empty: `[ ; ] .onresize`) or a resize is never reported
 
 **UTF-8:**
 - Fully supported on both platforms
@@ -532,8 +535,8 @@ All exported functions work the same on Windows and Linux:
 ```r3forth
 .cls
 .home
-.Green "Success: " .type
-.Reset "Operation completed" .type
+.Green "Success: " .write
+.Reset "Operation completed" .write
 .cr .flush
 ```
 
@@ -541,91 +544,88 @@ All exported functions work the same on Windows and Linux:
 ```r3forth
 :draw-menu
   .cls
-  1 1 .at .Bold "=== MENU ===" .println .Reset
-  1 3 .at "1. Option One" .println
-  1 4 .at "2. Option Two" .println
-  1 5 .at "3. Exit" .println
-  1 7 .at "Choice: " .print .flush ;
+  1 1 .at .Bold "=== MENU ===" .write .Reset
+  1 3 .at "1. Option One" .write
+  1 4 .at "2. Option Two" .write
+  1 5 .at "q. Quit" .write ;
+
+:option | key --
+  $31 =? ( 1 7 .at "one chosen" .write )
+  $32 =? ( 1 7 .at "two chosen" .write )
+  drop ;
 
 :menu
   draw-menu
-  ( getch
-    $31 =? ( handle-option1 )
-    $32 =? ( handle-option2 )
-    $33 =? ( .cls )
-    drop draw-menu
-    ) ;
+  ( getch $71 <>? option ) drop ;
 ```
 
 ### Interactive Drawing
 ```r3forth
-#curx 40 #cury 12
+#px 40 #py 12
 
 :draw-ui
   .cls
-  .hidec
-  1 1 .at "Arrow keys to move, ESC to exit" .fprintln
-  curx cury .at .Red "*" .type .Reset
+  1 1 .at "Arrow keys to move, ESC to exit" .write
+  px py .at .Red "*" .write .Reset
   .flush ;
 
-:handle-keys
-  [UP] =? ( cury 1- 1 max 'cury ! )
-  [DN] =? ( cury 1+ rows min 'cury ! )
-  [LE] =? ( curx 1- 1 max 'curx ! )
-  [RI] =? ( curx 1+ cols min 'curx ! )
-  draw-ui ;
+:handle-keys | key -- key
+  [UP] =? ( py 1- 1 max 'py ! )
+  [DN] =? ( py 1+ rows min 'py ! )
+  [LE] =? ( px 1- 1 max 'px ! )
+  [RI] =? ( px 1+ cols min 'px ! ) ;
 
 :main
+  .hidec
   draw-ui
-  ( getch 
-    [ESC] <>?
-    handle-keys ) 
-  drop ;
+  ( getch [ESC] <>? handle-keys drop draw-ui ) drop
+  .showc ;
 ```
 
 ### Mouse Interaction
 ```r3forth
+#running 1
+
+:on-key evtkey [ESC] =? ( 0 'running ! ) drop ;
+
+:on-mouse
+  evtmb 1 and? ( evtmxy .at .Blue "o" .write .Reset .flush ) drop ;
+
+:on-size
+  .cls 1 1 .at "Resized!" .write .flush ;
+
 :mouse-demo
-  .cls
-  .hidec
-  1 1 .at "Click anywhere (ESC to exit)" .fprintln
-  .flush
-  
-  ( inevt
-    1 =? ( getch [ESC] =? ( 2drop .cls .showc ; ) drop )
-    2 =? ( 
-      evtmb 1 and? (  | Left button
-        evtmxy .at .Blue "o" .type .flush
-      ) drop
-    )
-    4 =? ( 
-      .cls
-      1 1 .at "Resized!" .fprintln .flush
-    )
+  [ ; ] .onresize          | needed on Linux to receive event 4
+  .cls .hidec
+  1 1 .at "Click anywhere (ESC to exit)" .write .flush
+  .enable-mouse
+  ( running 1? drop
+    inevt
+    1 =? ( on-key )
+    2 =? ( on-mouse )
+    4 =? ( on-size )
     drop
-  ) ;
+    10 ms ) drop
+  .disable-mouse
+  .showc ;
 ```
+
+The loop begins with `running 1?` on purpose: the `1 =?`, `2 =?` and `4 =?` have their own blocks, so without a loop test of its own the block would run only once.
 
 ### Progress Bar
 ```r3forth
-:progress-bar | current total --
-  .savec
-  over 100 * over / 10 /  | percentage / 10
-  .Green 61 over .nch  | '=' chars
-  .Reset 45 10 pick2 - .nch  | '-' chars
-  .restorec
-  3drop .flush ;
+:progress | pct --        ; 0..100, drawn with 20 cells
+  5 /
+  1 3 .at "[" .write
+  .Green 35 over .nch .Reset
+  45 over 20 swap - .nch
+  "]" .write drop ;
 
 :demo-progress
-  .cls
-  1 5 .at "Progress: [" .type
-  12 5 .at "]" .type
-  0 ( 100 <=?
-    12 5 .at
-    dup 100 progress-bar
-    1+ 50 ms
-  ) drop
-  .flush 1000 ms ;
+  .cls .hidec
+  0 ( 101 <? dup progress .flush 1+ 20 ms ) drop
+  1 5 .at "done" .write .flush
+  waitkey .showc ;
 ```
 
 ### Color Demo
@@ -655,7 +655,7 @@ All exported functions work the same on Windows and Linux:
   .hidec
   
   | ... application code ...
-  20 12 .at "Press any key to exit" .fprintln
+  20 12 .at "Press any key to exit" .println
   .flush
   waitkey
   
@@ -670,7 +670,7 @@ All exported functions work the same on Windows and Linux:
 
 1. **Always flush before waiting for input**
    ```r3forth
-   "Prompt: " .type .flush
+   "Prompt: " .write .flush
    getch
    ```
 
@@ -702,7 +702,7 @@ All exported functions work the same on Windows and Linux:
 
 5. **Reset attributes after colored output**
    ```r3forth
-   .Red "Error" .type .Reset
+   .Red "Error" .write .Reset
    ```
 
 6. **Check event types before accessing data**
@@ -739,29 +739,37 @@ All exported functions work the same on Windows and Linux:
 ```r3forth
 :status-line | "text" --
   .savec
-  1 rows .at
-  .Rever .type .Reset
+  1 rows .at .Rever cols .nsp .write .Reset
   .restorec
   .flush ;
 
 "Ready" status-line
 ```
+`.nsp` paints `cols` cells with the current attributes without moving the cursor, so the text written next goes over the painted bar.
 
 ### Centered Text
 ```r3forth
 :center | "text" row --
-  .at
-  dup count cols swap - 2/ swap .type
-  .flush ;
+  over count nip cols swap - 2/ 1+ swap .at
+  .write .flush ;
 
 "Title" 1 center
 ```
 
 ### Box Drawing
 ```r3forth
-:box | x y w h --
-  | ... draw box using .at and .nch ...
-  ;
+:hline | n --
+  ( 1? 1- "─" .write ) drop ;
+
+#bx #by #bw #bh
+
+:box | x y w h --         ; w h = inner size
+  'bh ! 'bw ! 'by ! 'bx !
+  bx by .at "┌" .write bw hline "┐" .write
+  0 ( bh <?
+    bx over by + 1+ .at "│" .write 32 bw .nch "│" .write
+    1+ ) drop
+  bx by bh + 1+ .at "└" .write bw hline "┘" .write ;
 
 10 5 30 10 box
 ```
@@ -770,7 +778,7 @@ All exported functions work the same on Windows and Linux:
 
 ## Notes
 
-- **Buffer size:** 64KB (automatically managed)
+- **Buffer size:** about 8 KB (flushed automatically when full)
 - **Coordinate system:** 1-based (1,1 is top-left)
 - **UTF-8:** Fully supported on both platforms
 - **Thread safety:** Not thread-safe

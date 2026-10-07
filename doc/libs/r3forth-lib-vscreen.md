@@ -290,9 +290,11 @@ gameLoop
 
 :checkButton
     | Mouse coordinates in virtual space
-    sdlx 300 >= sdlx 500 <= and
-    sdly 250 >= sdly 300 <= and
-    sdlb and? ( buttonClicked ; ) drop ;
+    sdlx 300 500 in? (
+        sdly 250 300 in? (
+            sdlb 1? ( buttonClicked ) drop
+        ) drop
+    ) drop ;
 ```
 
 ### Window Resize Handling

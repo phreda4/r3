@@ -423,7 +423,7 @@ vareset
 'scale 2.0 1.0 5 1.0 2.0 +vanim
 
 | 4. Execute callback at end
-[ "Sequence complete!" print ; ] 3.0 +vexe
+[ "Sequence complete!" .write ; ] 3.0 +vexe
 ```
 
 ### Box Animation
@@ -502,13 +502,13 @@ draw
 'ypos 100.0 400.0 5 1.0 0.5 +vanim
 
 | Print message when movement completes
-[ "Movement finished" print ; ] 1.5 +vexe
+[ "Movement finished" .write ; ] 1.5 +vexe
 
 | Fade out
 'alpha 1.0 0.0 2 0.5 2.0 +vanim
 
 | Clean up when done
-[ "Sequence complete" print vareset ; ] 2.5 +vexe
+[ "Sequence complete" .write vareset ; ] 2.5 +vexe
 ```
 
 ### Sprite Animation
@@ -571,7 +571,7 @@ draw
 | Start animation
 'value 0.0 100.0 2 1.0 0.0 +vanim
 waitAnim
-"Animation complete!" print
+"Animation complete!" .write
 ```
 
 ### Chain Animations

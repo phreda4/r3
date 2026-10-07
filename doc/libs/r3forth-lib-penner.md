@@ -288,10 +288,10 @@ Bouncing ball effect with decreasing amplitude.
 
 ```r3forth
 :testEasing | t --
-    dup "Linear: " print . cr
-    dup Quad_Out "Quad_Out: " print . cr
-    dup Exp_Out "Exp_Out: " print . cr
-    Ela_Out "Ela_Out: " print . cr ;
+    dup "Linear: %f" .print .cr
+    dup Quad_Out "Quad_Out: %f" .print .cr
+    dup Exp_Out "Exp_Out: %f" .print .cr
+    Ela_Out "Ela_Out: %f" .print .cr ;
 
 0.5 testEasing
 ```

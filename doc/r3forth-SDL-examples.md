@@ -727,6 +727,7 @@ $326232 color        | Set ground color
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
 ^r3/util/arr16.r3
+^r3/util/varanim.r3
 ^r3/util/txfont.r3
 
 #spritesheet 0 0 0 | 3 spritessheet
@@ -812,7 +813,7 @@ $326232 color        | Set ground color
     |+randpeople
     SDLkey
     >esc< =? ( exit )
-    <esp> =? ( +randpeople )
+    <spc> =? ( +randpeople )
     drop ;
     
 :main
@@ -966,8 +967,10 @@ timer+              | Add elapsed time to a value
 | Program description
 
 ^r3/lib/sdl2gfx.r3
-^r3/lib/rand.r3              | If needed
-^r3/util/txfont.r3           | If using text
+| rand.r3: if needed
+^r3/lib/rand.r3
+| txfont.r3: if using text
+^r3/util/txfont.r3
 
 | Variables
 #variable1

@@ -126,7 +126,7 @@ This library provides efficient string operations for null-terminated strings (C
 
 - **`=`** `( s1 s2 -- 1/0 )` - Case-insensitive equality
   ```r3forth
-  "Hello" "HELLO" = 1? ( "Equal" print )
+  "Hello" "HELLO" = 1? ( "Equal" .write )
   ```
   - Compares entire strings
   - Returns 1 if equal, 0 if different
@@ -157,14 +157,14 @@ This library provides efficient string operations for null-terminated strings (C
 
 - **`=pre`** `( str "prefix" -- str 1/0 )` - Check if string starts with prefix
   ```r3forth
-  "filename.txt" ".txt" =pre 0? ( "No match" print ) 
+  "filename.txt" ".txt" =pre 0? ( "No match" .write ) 
   ```
   - Case-insensitive
   - Preserves original string pointer
 
 - **`=pos`** `( str "suffix" -- str 1/0 )` - Check if string ends with suffix
   ```r3forth
-  "document.pdf" ".pdf" =pos 1? ( "PDF file" print )
+  "document.pdf" ".pdf" =pos 1? ( "PDF file" .write )
   ```
   - Case-sensitive
   - Checks end of string
@@ -184,7 +184,7 @@ This library provides efficient string operations for null-terminated strings (C
 - **`findchar`** `( str char -- adr'/0 )` - Find first occurrence of character
   ```r3forth
   "Hello World" 'W findchar  | Returns pointer to 'W'
-  0? ( "Not found" print )
+  0? ( "Not found" .write )
   ```
   - Returns 0 if not found
   - Returns pointer to character if found
@@ -194,15 +194,15 @@ This library provides efficient string operations for null-terminated strings (C
 - **`findstr`** `( str "text" -- adr'/0 )` - Find substring (case-sensitive)
   ```r3forth
   "The quick brown fox" "quick" findstr
-  0? ( "Not found" print )
-  FNAME print  | Print from match point
+  0? ( "Not found" .write )
+  FNAME .write  | Print from match point
   ```
 
 - **`findstri`** `( str "text" -- adr'/0 )` - Find substring (case-insensitive)
   ```r3forth
   "Hello World" "WORLD" findstri
-  0? ( "Not found" print ; )
-  "Found!" print
+  0? ( "Not found" .write ; )
+  "Found!" .write
   ```
 
 ---
@@ -213,26 +213,26 @@ This library provides efficient string operations for null-terminated strings (C
 
 - **`.d`** `( val -- str )` - Convert to decimal string
   ```r3forth
-  42 .d print  | Output: "42"
-  -100 .d print  | Output: "-100"
+  42 .d .write  | Output: "42"
+  -100 .d .write  | Output: "-100"
   ```
   - Handles full 64-bit signed integers
   - Minimum value: "-9223372036854775808"
 
 - **`.b`** `( bin -- str )` - Convert to binary string
   ```r3forth
-  5 .b print  | Output: "101"
+  5 .b .write  | Output: "101"
   ```
 
 - **`.h`** `( hex -- str )` - Convert to hexadecimal string
   ```r3forth
-  255 .h print  | Output: "ff"
+  255 .h .write  | Output: "ff"
   ```
   - Lowercase letters
 
 - **`.o`** `( oct -- str )` - Convert to octal string
   ```r3forth
-  64 .o print  | Output: "100"
+  64 .o .write  | Output: "100"
   ```
 
 ### Fixed-Point Formats
@@ -241,19 +241,19 @@ Fixed-point numbers use 16.16 format (16 bits integer, 16 bits fractional).
 
 - **`.f`** `( fix -- str )` - Convert fixed-point to decimal (4 decimals)
   ```r3forth
-  65536 .f print  | Output: "1.0000"
-  98304 .f print  | Output: "1.5000"
+  65536 .f .write  | Output: "1.0000"
+  98304 .f .write  | Output: "1.5000"
   ```
   - Shows 4 decimal places
 
 - **`.f2`** `( fix -- str )` - Convert to decimal (2 decimals)
   ```r3forth
-  98304 .f2 print  | Output: "1.50"
+  98304 .f2 .write  | Output: "1.50"
   ```
 
 - **`.f1`** `( fix -- str )` - Convert to decimal (1 decimal)
   ```r3forth
-  98304 .f1 print  | Output: "1.5"
+  98304 .f1 .write  | Output: "1.5"
   ```
 
 ### Formatting
@@ -352,7 +352,7 @@ Fixed-point numbers use 16.16 format (16 bits integer, 16 bits fractional).
   'buffer strcat
   'buffer ;
 
-"home" "document.txt" buildpath print
+"home" "document.txt" buildpath .write
 | Output: "home/document.txt"
 ```
 
@@ -360,10 +360,10 @@ Fixed-point numbers use 16.16 format (16 bits integer, 16 bits fractional).
 ```r3forth
 :parse-command | "cmd args" --
   'buffer copynom  | Extract command
-  'buffer "quit" = 1? ( drop "Exiting" print ; )
+  'buffer "quit" = 1? ( drop "Exiting" .write ; )
   'buffer "help" = 1? ( drop show-help ; )
   drop
-  "Unknown command" print ;
+  "Unknown command" .write ;
 
 "help parameters" parse-command
 ```
@@ -375,7 +375,7 @@ Fixed-point numbers use 16.16 format (16 bits integer, 16 bits fractional).
   dup ".4th" =pos 1? ( nip ; )
   drop 0 ;
 
-"program.r3" is-source 1? ( "Source file" print )
+"program.r3" is-source 1? ( "Source file" .write )
 ```
 
 ### Number Formatting
@@ -435,7 +435,7 @@ next-field .print  | "field3"
   dup "START" =s 1? ( drop start-game ; )
   dup "QUIT" =s 1? ( drop quit-game ; )
   dup "HELP" =s 1? ( drop show-help ; )
-  drop "Unknown command" print ;
+  drop "Unknown command" .write ;
 ```
 
 ---
@@ -450,7 +450,7 @@ next-field .print  | "field3"
 2. **Check search results before use**
    ```r3forth
    "text" "pattern" findstr
-   0? ( "Not found" print drop ; )
+   0? ( "Not found" .write drop ; )
    | ... use result ...
    ```
 

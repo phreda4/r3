@@ -309,7 +309,7 @@ This library provides:
 - **`SDLeventR`** `( 'callback -- )` - Set resize callback
   ```r3forth
   :on-resize
-    sw sh "Resized to %d x %d" print ;
+    sw sh "Resized to %d x %d" .print ;
   
   'on-resize SDLeventR
   ```
@@ -340,9 +340,9 @@ This library provides:
 
 - **`SDLb`** - Mouse button state (bitmask)
   ```r3forth
-  SDLb 1 and? ( "Left button down" print ; )
-  SDLb 2 and? ( "Middle button down" print ; )
-  SDLb 4 and? ( "Right button down" print ; )
+  SDLb 1 and? ( "Left button down" .write ; )
+  SDLb 2 and? ( "Middle button down" .write ; )
+  SDLb 4 and? ( "Right button down" .write ; )
   ```
   - Bit 0: Left button
   - Bit 1: Middle button
@@ -350,8 +350,8 @@ This library provides:
 
 - **`SDLw`** - Mouse wheel delta
   ```r3forth
-  SDLw 0 >? ( "Scroll up" print ; )
-  SDLw 0 <? ( "Scroll down" print ; )
+  SDLw 0 >? ( "Scroll up" .write ; )
+  SDLw 0 <? ( "Scroll down" .write ; )
   ```
 
 ### Click Detection
@@ -359,7 +359,7 @@ This library provides:
 - **`SDLClick`** `( 'callback -- )` - Execute on mouse click
   ```r3forth
   :on-click
-    SDLx SDLy "Clicked at %d, %d" print ;
+    SDLx SDLy "Clicked at %d, %d" .print ;
   
   'on-click SDLClick
   ```
@@ -388,7 +388,7 @@ This library provides:
 
 - **`sdlbreak`** - Debug pause (F12 to continue, ESC to exit)
   ```r3forth
-  some-error? ( sdlbreak ; )
+  result -? ( sdlbreak ; ) drop  | SDL functions return a negative value on error
   ```
 
 ---
@@ -516,7 +516,7 @@ Surfaces are CPU-side image buffers.
 
 - **`SDL_GetClipboardText`** `( -- text )` - Get clipboard string
   ```r3forth
-  SDL_GetClipboardText dup print
+  SDL_GetClipboardText dup .write
   SDL_free  | Free returned string
   ```
 
@@ -568,7 +568,7 @@ Surfaces are CPU-side image buffers.
 
 - **`SDL_GetError`** `( -- errstr )` - Get last error
   ```r3forth
-  SDL_GetError print  | Display error message
+  SDL_GetError .write  | Display error message
   ```
 
 - **`SDL_ShowCursor`** `( toggle -- )` - Show/hide cursor

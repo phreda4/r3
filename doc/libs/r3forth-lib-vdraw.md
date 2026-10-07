@@ -396,8 +396,8 @@ mainLoop
         1+
     ) 2drop ;
 
-:sine | x -- y
-    360 */ sin. 100 *. 300 + ;
+:sine | x -- y             ; one turn every 800 pixels
+    65536 800 */ sin 100 *. 300 + ;
 
 :parabola | x -- y
     400 - dup * 1000 / 300 + ;
@@ -512,10 +512,11 @@ x2 y2 vline  | Line from where?
 ### 4. Check Fill Seed Point
 
 ```r3forth
-| CORRECT - check if fill needed
-color x y 2dup vget@ pick3 <>? (
-    vfill
-) 3drop
+| CORRECT - check if fill needed (myPixel@ is the word given to vget!)
+:fillIfNeeded | color x y --
+    2dup myPixel@         | color x y pixel
+    pick3 =? ( 4drop ; )  | already that color: nothing to do
+    drop vfill ;
 
 | INEFFICIENT - always fills
 color x y vfill

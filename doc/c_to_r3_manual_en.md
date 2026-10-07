@@ -145,8 +145,9 @@ if (condition) {
 }
 ```
 ```r3
+| ?? stands for any conditional (0? 1? =? <? >? ...)
 :myword
-    condition? ( branch1 ; )  | true: run branch1 and return
+    ?? ( branch1 ; )              | true: run branch1 and return
     branch2 ;                 | false: falls through to here
 ```
 
@@ -205,7 +206,7 @@ while (condition()) {
 }
 ```
 ```r3
-( condition 1? drop 
+( condition 1? drop   | condition must leave a 0/1 for the test
     body
 ) drop
 ```
@@ -238,13 +239,13 @@ while (condition()) {
 | `in?` | `b ≤ a ≤ c` | `a b c -- a` |
 
 ```r3
-x 5 10 in? ( "Between 5 and 10" print ) drop
+x 5 10 in? ( "Between 5 and 10" .write ) drop
 ```
 
 Tested values are never dropped automatically — clean up once, after all the tests:
 ```r3
-x 0? ( "Is zero" print )
-  +? ( "Is positive" print )    | x still on stack here
+x 0? ( "Is zero" .write )
+  +? ( "Is positive" .write )    | x still on stack here
 drop
 ```
 
@@ -765,10 +766,10 @@ Words must be defined before use — no forward references.
 ```r3
 | wrong
 :main helper ;
-:helper "text" print ;
+:helper "text" .write ;
 
 | correct
-:helper "text" print ;
+:helper "text" .write ;
 :main helper ;
 ```
 
@@ -930,7 +931,7 @@ x !               | wrong: x is a value, ! needs an address
 50 'x !           | correct
 
 | forgetting to drop after a conditional chain
-x 0? ( "zero" print )
+x 0? ( "zero" .write )
 drop              | needed even if no branch matched
 
 | wrong access size for consecutive bytes

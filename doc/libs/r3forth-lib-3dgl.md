@@ -479,17 +479,19 @@ Compact storage for multiple rotations (space optimization).
 ### Camera Orbiting
 ```r3forth
 #angle 0
+#camera-pos 0 0 0
+#origin 0 0 0
+#up 0 1.0 0
 
 :orbit-camera
   angle 1+ $FFFF and 'angle !
-  
-  | Calculate camera position
-  angle sin 10.0 *.  | X = sin * radius
-  angle cos 10.0 *.  | Z = cos * radius
-  5.0                | Y = height
-  
-  'camera-pos v3!    | Set camera position
-  'origin 'up mlookat
+
+  | Calculate camera position (each field is 8 bytes: X, Y, Z)
+  angle sin 10.0 *. 'camera-pos !          | X = sin * radius
+  5.0 'camera-pos 8 + !                    | Y = height
+  angle cos 10.0 *. 'camera-pos 16 + !     | Z = cos * radius
+
+  'camera-pos 'origin 'up mlookat
   ;
 ```
 
@@ -617,10 +619,10 @@ Compact storage for multiple rotations (space optimization).
 6. **Pre-calculate rotations for batches**
    ```r3forth
    rx ry rz calcrot
-   ( particles?
+   100 ( 1? 1-         | for each particle
      makerot  | Fast rotation
      draw-particle
-   )
+   ) drop
    ```
 
 ---

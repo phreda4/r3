@@ -154,7 +154,7 @@ Divide frame into regions (N=North, S=South, E=East, O=Oeste/West):
 
 - **`flin?`** `( x y -- 1/0 )` - Check if point is inside frame
   ```r3forth
-  evtmx evtmy flin? 0? ( "Outside" print ; )
+  evtmx evtmy flin? 0? ( "Outside" .write ; )
   ```
 
 - **`flin?1`** `( x y -- 1/0 )` - Check if point is in first line only
@@ -185,7 +185,7 @@ Each widget returns a state value indicating interaction:
 - **`tuiw`** `( -- state )` - Widget with mouse interaction (full frame)
   ```r3forth
   tuiw
-  6 =? ( "Clicked!" print )
+  6 =? ( "Clicked!" .write )
   drop
   ```
   - Tests entire frame area
@@ -196,7 +196,7 @@ Each widget returns a state value indicating interaction:
 - **`tuiw1`** `( -- state )` - Widget with mouse interaction (single line)
   ```r3forth
   tuiw1  | Only tests first line of frame
-  6 =? ( "Clicked!" print )
+  6 =? ( "Clicked!" .write )
   drop
   ```
   - Tests only first row (fy)
@@ -205,8 +205,8 @@ Each widget returns a state value indicating interaction:
 - **`tuif`** `( -- state )` - Widget with focus (keyboard)
   ```r3forth
   tuif
-  1 =? ( "Got focus" print )
-  2 =? ( "Has focus" print )
+  1 =? ( "Got focus" .write )
+  2 =? ( "Has focus" .write )
   drop
   ```
   - Returns: 0=no focus, 1=just got focus, 2=has focus
@@ -227,7 +227,7 @@ Each widget returns a state value indicating interaction:
 
 - **`tuBtn`** `( 'callback "text" -- )` - Standard button (single line)
   ```r3forth
-  :on-click "Button clicked!" print tuR! ;
+  :on-click "Button clicked!" .write tuR! ;
   'on-click "Click Me" tuBtn
   ```
   - Centers text horizontally
@@ -623,7 +623,7 @@ Display progress indicator.
 
 - **`uikey`** - Current key code (from keyboard event)
   ```r3forth
-  uikey [enter] =? ( "Enter pressed" print ; )
+  uikey [enter] =? ( "Enter pressed" .write ; )
   ```
 
 - **`evtmx`, `evtmy`** - Mouse position (from terminal lib)
@@ -750,7 +750,7 @@ Display progress indicator.
   flxRest -2 flxN
   flxpush
   50.0 fw% flxO
-  :on-save "Settings saved!" print tuR! ;
+  :on-save "Settings saved!" .write tuR! ;
   'on-save "Save" tuBtn
   flxpop
   50.0 fw% flxE
@@ -781,7 +781,7 @@ Display progress indicator.
 
 3. **Request redraw when state changes**
    ```r3forth
-   value-changed? ( tuR! ; )
+   changed 1? ( drop tuR! ; ) drop
    ```
 
 4. **Use appropriate widget**

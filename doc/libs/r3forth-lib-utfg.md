@@ -457,7 +457,7 @@ Press ESC to return."
 
 5. **Check terminal size**
    ```r3forth
-   cols 80 <? ( "Terminal too small" print ; )
+   cols 80 <? ( "Terminal too small" .write ; )
    ```
 
 ---

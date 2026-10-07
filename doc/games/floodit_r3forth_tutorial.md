@@ -492,9 +492,9 @@ w h * ( 1? 1 - actions ) drop
 | Array traversal:
 'array ( end <? c@+ process ) drop
 
-| Conditional execution:
-condition? ( true-action ; )
-condition? ( true-action ) else-action
+| Conditional execution (?? stands for any conditional: 0? 1? =? <? ...):
+?? ( true-action ; )
+?? ( true-action ) else-action
 ```
 
 ### Stack Management Patterns

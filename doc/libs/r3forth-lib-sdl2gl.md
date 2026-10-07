@@ -101,7 +101,7 @@ This library provides:
 
 - **`glIsProgram`** `( program -- bool )` - Check if valid program
   ```r3forth
-  my-program glIsProgram 0? ( "Invalid program" print ; )
+  my-program glIsProgram 0? ( "Invalid program" .write ; )
   ```
 
 ### Shader Compilation
@@ -140,7 +140,7 @@ This library provides:
 
 - **`glIsShader`** `( shader -- bool )` - Check if valid shader
   ```r3forth
-  shader glIsShader 0? ( "Invalid shader" print ; )
+  shader glIsShader 0? ( "Invalid shader" .write ; )
   ```
 
 ### Shader Attachment
@@ -598,10 +598,10 @@ This library provides:
 - **`glGetError`** `( -- error )` - Get last error
   ```r3forth
   glGetError 
-  0? ( "No error" print ; )
-  $0500 =? ( "Invalid enum" print ; )
-  $0501 =? ( "Invalid value" print ; )
-  $0502 =? ( "Invalid operation" print ; )
+  0? ( "No error" .write ; )
+  $0500 =? ( "Invalid enum" .write ; )
+  $0501 =? ( "Invalid value" .write ; )
+  $0502 =? ( "Invalid operation" .write ; )
   drop
   ```
 
@@ -674,7 +674,7 @@ void main() {
   status 0? (
     #log * 512
     r@ 512 0 'log glGetShaderInfoLog
-    log print
+    log .write
   )
   r>
   ;
@@ -958,7 +958,7 @@ void main() {
 ```r3forth
 :check-gl-error | "location" --
   glGetError 0? ( 2drop ; )
-  swap "%s - GL Error: %h" print
+  swap "%s - GL Error: %h" .print
   ;
 
 "After shader compile" check-gl-error

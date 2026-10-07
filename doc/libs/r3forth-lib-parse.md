@@ -275,18 +275,18 @@ These functions test if a string is a valid number **without** parsing.
 
 ### Calculator
 ```r3forth
-:calculate | "123 + 456" --
-  str>nro >r     | Parse first number
+:calculate | "123 + 456" -- result
+  str>nro >r     | Parse first number (parked on the return stack)
   trim           | Skip spaces
-  c@+ >r         | Get operator
-  str>nro drop   | Parse second number
-  r> r>          | operator num1 num2
-  
-  '+' =? ( drop + ; )
-  '-' =? ( drop - ; )
-  '*' =? ( drop * ; )
-  '/' =? ( drop / ; )
-  drop 3drop 0 ;
+  c@+ >r         | Get operator (parked)
+  trim str>nro nip  | Skip spaces, parse second number
+  r> r> -rot     | num1 num2 operator
+
+  $2b =? ( drop + ; )      | '+'
+  $2d =? ( drop - ; )      | '-'
+  $2a =? ( drop * ; )      | '*'
+  $2f =? ( drop / ; )      | '/'
+  drop 2drop 0 ;           | unknown operator
 
 "123 + 456" calculate  | Returns 579
 ```
@@ -309,7 +309,7 @@ These functions test if a string is a valid number **without** parsing.
   
   field1 .print " | "
   field2 .print " | "
-  field3 .print cr ;
+  field3 .print .cr ;
 
 "Alice,30,Engineer" parse-csv-line
 ```

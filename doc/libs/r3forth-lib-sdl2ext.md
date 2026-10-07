@@ -353,8 +353,9 @@ loadAssets
 ### Screenshot System
 
 ```r3forth
-:takeScreenshot
-    SDLrenderer SDL_GetRenderTarget 
+| IMG_SavePNG saves a surface (not a texture). Fill the surface first,
+| for example with SDL_RenderReadPixels. SDL_GetRenderTarget is not bound.
+:saveScreenshot | surface --
     dup "screenshot.png" IMG_SavePNG
     SDL_FreeSurface ;
 ```

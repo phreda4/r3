@@ -549,10 +549,10 @@ colBack uiFill
 3 1 uiGrid  | 3 columns, 1 row
 
 0 0 uiAt
-[ "OK clicked" print ; ] "OK" uiBtn
+[ "OK clicked" .write ; ] "OK" uiBtn
 
 1 0 uiAt
-[ "Cancel clicked" print ; ] "Cancel" uiBtn
+[ "Cancel clicked" .write ; ] "Cancel" uiBtn
 
 uiEnd  | End frame
 ```

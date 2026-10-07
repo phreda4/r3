@@ -450,9 +450,9 @@ empty
 ```r3forth
 :accumulate
   mark
-  ( condition? 
-	data ,s " " ,s
-	)
+  10 ( 1? 1-                | for 10 items
+    data ,s " " ,s
+  ) drop
   ,eol
   here ;
 ```

@@ -134,7 +134,7 @@ Think of `a b >?` as "is `a` greater than `b`?" — exactly as written in math.
 
 ```forth
 value
-test? ( block-if-true )
+?? ( block-if-true )        | ?? is any conditional word: 0? 1? =? <? ...
 drop                        | value always remains; must be cleaned up
 ```
 
@@ -984,7 +984,7 @@ Include with `^r3/lib/sdl2.r3`
 ### Minimal Game Loop
 
 ```forth
-^r3/lib/sdl2.r3
+^r3/lib/sdl2gfx.r3
 
 :update
     SDLkey >esc< =? ( exit ) drop

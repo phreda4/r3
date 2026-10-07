@@ -649,8 +649,8 @@ if (x > 5) {
 To replicate IF-ELSE when absolutely necessary, use early exit:
 
 ```forth
-| Instead of: condition ( A ) else ( B )
-:conditional  condition ( A ; ) B ;
+| Instead of: condition ( A ) else ( B )   (?? = any conditional)
+:conditional  ?? ( A ; ) B ;
 ```
 
 ### Switch-Case Alternatives
@@ -748,7 +748,6 @@ on every pass, including the last one; code after it does not.
 
 **IF inside WHILE:** the inner conditional has its own block, so it is an IF
 and does not end the loop.
-
 
 ```forth
 0 ( 3 <? 1+
@@ -1378,13 +1377,13 @@ There is a second stack that handles word calls — storing the return address u
 | ✗ WRONG
 :bad | n --
     >r
-    condition? ( r> process )  | only pops in one branch!
+    ?? ( r> process )          | only pops in one branch!  (?? = any conditional)
     ;
 
 | ✓ CORRECT
 :good | n --
     >r
-    condition? ( r> process ; )
+    ?? ( r> process ; )
     r> drop ;
 ```
 
@@ -1741,11 +1740,11 @@ time msec rerand       | seed with time
 #state 0
 
 :state0
-    player-hit? ( 1 'state ! ; ) drop
+    hit 1? ( drop 1 'state ! ; ) drop
     handle-state-0 ;
 
 :state1
-    player-safe? ( 0 'state ! ; ) drop
+    safe 1? ( drop 0 'state ! ; ) drop
     handle-state-1 ;
 
 #state-table 'state0 'state1

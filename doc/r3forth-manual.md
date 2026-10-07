@@ -98,7 +98,7 @@ Think of `a b >?` as "is `a` greater than `b`?" — exactly as written in math.
 
 ```forth
 value
-test? ( block-if-true )
+?? ( block-if-true )        | ?? is any conditional word: 0? 1? =? <? ...
 drop                        | value always remains; must be cleaned up
 ```
 

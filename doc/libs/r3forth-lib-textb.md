@@ -277,13 +277,13 @@ textbox
 ### Styled List
 
 ```r3forth
+:itemBg | index -- flags      ; alternate background per row
+    1 and 0? ( drop $eeff00000400000f ; )   | even: light bg
+    drop $dddf00000400000f ;                | odd: darker bg
+
 :createListItem | "text" index --
     swap
-    pick2 2 mod 0? (
-        $eeff00000400000f  | Light bg
-    ) (
-        $dddf00000400000f  | Darker bg
-    ) 
+    over itemBg
     400 40 listFont textbox
     swap 40 * listY + listX swap 400 40 'itemRect !
     SDLrenderer swap 0 'itemRect SDL_RenderCopy ;
@@ -317,12 +317,11 @@ textbox
 | Helper to build flags programmatically
 
 :makeFlags | bgCol outCol pad outWidth align txtCol -- flags
-    swap               | bgCol outCol pad outWidth txtCol align
-    pick4 24 << or     | Add padding
-    pick3 20 << or     | Add outline width
-    pick5 28 << or     | Add outline color
-    pick6 48 << or     | Add background color
-    or ;               | Add text color + align
+    or                 | bgCol outCol pad outWidth flags  (text color + align)
+    swap 20 << or      | Add outline width
+    swap 24 << or      | Add padding
+    swap 28 << or      | Add outline color
+    swap 48 << or ;    | Add background color
 
 | Usage:
 $000f  | bg: black

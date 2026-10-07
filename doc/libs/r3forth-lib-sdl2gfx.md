@@ -571,7 +571,7 @@ walk-anim aniFrame             | current frame
 
 :draw-particles
   $FFFFFF color
-  'paticles >a
+  'particles >a
   100 ( 1? 1-
 	a@+ int. a@+ int. 5 fcircle | warning coord are the integer part
 	a@+ a> 24 - +! | vx 'x +!
@@ -640,11 +640,11 @@ walk-anim aniFrame             | current frame
 2. **Cache complex renders**
    ```r3forth
    | Good: render once
-   create-background
-   ( game-loop 0 0 background-texture image )
+   | (create-background fills background-texture once, at startup)
+   :frame 0 0 background-texture image game-loop ;
    
    | Avoid: redraw every frame
-   ( game-loop draw-complex-background )
+   :frame draw-complex-background game-loop ;
    ```
 
 3. **Use sprite sheets over individual images**
@@ -670,8 +670,10 @@ walk-anim aniFrame             | current frame
 
 6. **Use timer system for smooth animation**
    ```r3forth
-   timer<
-   ( frame timer. animation timer+ ... )
+   timer<                           | at startup: reset the timer
+   :frame
+     timer.                         | each frame: advance it (sets deltatime)
+     'angle @ timer+ 'angle ! ;     | add deltatime to an animated value
    ```
 
 ---

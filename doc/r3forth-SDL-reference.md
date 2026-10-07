@@ -325,8 +325,8 @@ defined** in `arr16.r3` — it most likely comes from `mem.r3`, which wasn't pro
 neg                | Negate
 << >> >>>           | Bit shifts (>>> likely unsigned/logical)
 and or xor         | Bitwise ops
-< > =              | Comparisons
-<? >? =? <>?       | Conditional execution: consumes/tests, runs ( ... ) if true
+0? 1? +? -?        | Conditionals on the top value (no comparison words: only these)
+<? >? =? <>? >=? <=? and? nand? in?  | Conditional execution: tests, runs ( ... ) if true
 dup drop swap over 2dup 2drop pick2/pick3/pick4
 int.               | Fixed-point to integer
 ```

@@ -25,8 +25,8 @@ R3forth uses conditionals with code blocks instead:
 | Standard Forth style (NOT valid in R3):
 | IF action1 ELSE action2 THEN
 
-| R3forth style:
-condition? ( action1 ; )  | Early exit if true
+| R3forth style (?? stands for any conditional: 0? 1? =? <? ...):
+?? ( action1 ; )          | Early exit if true
 action2                    | Execute if false
 ```
 
@@ -159,7 +159,7 @@ x 5 10 IN? ( "Between 5 and 10" .print ) drop
 ### Conditional Execution Pattern
 
 ```forth
-value condition? ( code-if-true ) code-after
+value ?? ( code-if-true ) code-after
 
 | Example:
 x 5 >? ( "Greater" .print )  | If x>5, print message
@@ -836,9 +836,10 @@ x 5 10 IN? ( "in range" .print )
 
 ### Pattern: Clamp/Bounds
 ```forth
+^r3/lib/math.r3
+
 :clamp | val min max -- clamped
-    rot over <? ( nip ; ) nip    | Check minimum
-    over >? ( drop ; ) nip ;      | Check maximum
+    >r max r> min ;    | raise to min, then cut at max (min, max: math.r3)
 ```
 
 ### Pattern: Array Processing
@@ -999,30 +1000,34 @@ drop
 
 ```forth
 ^r3/lib/console.r3
+^r3/lib/math.r3
 
 #value 0
-#min 0
-#max 100
+#lo 0
+#hi 100
 
 | Helper words defined FIRST
 :in-range? | val -- val flag
-    min max IN? ( 1 ; )
+    lo hi IN? ( 1 ; )
     0 ;
 
+:clamp | val min max -- clamped
+    >r max r> min ;
+
 :clamp-value | val -- clamped
-    min max clamp ;
+    lo hi clamp ;
 
 :process-value | --
-    value in-range?
-    1 =? ( value "Value %d in range" .print drop ; )
-    drop
-    value clamp-value 'value !
+    value in-range?                              | val flag
+    1 =? ( drop "Value %d in range" .print ; )   | flag dropped, val is printed
+    drop                                         | val
+    clamp-value dup 'value !
     "Value clamped to %d" .print ;
 
 | Main program defined LAST
 :main | --
     150 'value !
-    process-value ;
+    process-value .flush ;
 
 : main ;  | Entry point
 ```

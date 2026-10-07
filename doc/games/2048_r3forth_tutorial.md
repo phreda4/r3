@@ -414,7 +414,7 @@ The movement system uses a sophisticated falling/merging algorithm:
 ```forth
 | Linear array traversal:
 'map >a               | Load array base into register A
-( condition ca@+ process )  | Read and advance automatically
+16 ( 1? 1- ca@+ process ) drop  | Read and advance automatically
 
 | 2D grid access:
 x y + 4 * 'map +      | Convert (x,y) to memory address

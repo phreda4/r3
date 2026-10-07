@@ -331,11 +331,11 @@ weighted-random "%s %d" .print
 3. **Don't reseed too frequently**
    ```r3forth
    | Bad: reseeding in loop
-   ( msec rerand rand ... )
+   100 ( 1? 1- msec rerand rand drop ) drop
    
    | Good: seed once at start
    msec date rerand
-   ( rand ... )
+   100 ( 1? 1- rand drop ) drop
    ```
 
 4. **Use range functions when possible**

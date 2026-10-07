@@ -74,7 +74,7 @@ These extract individual components from the `sysdate` pointer:
 - **`ffirst`** `( "pattern" -- fdd/0 )` - Find first file matching pattern
   ```r3forth
   "*.txt" ffirst  | Find first .txt file
-  0? ( "No files found" print ; )
+  0? ( "No files found" .write ; )
   ```
   - **Windows:** Pattern uses wildcards (e.g., `"*.txt"`, `"dir//*"`)
   - **Linux:** Opens directory (pattern should be directory path)
@@ -83,7 +83,7 @@ These extract individual components from the `sysdate` pointer:
 - **`fnext`** `( -- fdd/0 )` - Get next file in directory
   ```r3forth
   ( fnext 1?  | While files remain
-    dup FNAME print cr  | Print filename
+    dup FNAME .write .cr  | Print filename
   ) drop
   ```
   - Returns pointer to next file or 0 when done
@@ -95,20 +95,20 @@ These extract individual components from the `sysdate` pointer:
 
 - **`FNAME`** `( adr -- adrname )` - Get pointer to filename string
   ```r3forth
-  fdd FNAME print  | Print filename
+  "r3/*" ffirst 1? ( dup FNAME .write .cr ) drop  | Print the first filename
   ```
   - **Windows:** Offset +44 in `WIN32_FIND_DATA`
   - **Linux:** Offset +19 in `struct dirent`
 
 - **`FDIR`** `( adr -- 1/0 )` - Check if entry is a directory
   ```r3forth
-  fdd FDIR 1? ( "Directory" print ; )
+  fdd FDIR 1? ( "Directory" .write ; )
   ```
   - Returns 1 for directory, 0 for file
 
 - **`FSIZEF`** `( adr -- bytes )` - Get file size in bytes
   ```r3forth
-  fdd FSIZEF "Size: %d" print
+  fdd FSIZEF "Size: %d" .print
   ```
   - **Windows:** Combines `nFileSizeHigh` and `nFileSizeLow`
   - **Linux:** Uses `stat` structure
@@ -167,7 +167,7 @@ These functions return pointers to time/date structures:
 
 - **`filexist`** `( "file" -- 0=no )` - Check if file exists
   ```r3forth
-  "config.ini" filexist 0? ( "File not found" print ; )
+  "config.ini" filexist 0? ( "File not found" .write ; )
   ```
   - Returns non-zero if file exists, 0 if not
   - **Windows:** Uses `GetFileAttributes`
@@ -178,7 +178,7 @@ These functions return pointers to time/date structures:
 - **`fileinfo`** `( "file" -- 0=not exist )` - Get detailed file information
   ```r3forth
   "data.bin" fileinfo 0? ( "Not found" ; )
-  fileisize "Size: %d bytes" print
+  fileisize "Size: %d bytes" .print
   ```
   - Fills internal `fileatrib` structure
   - Returns 0 if file doesn't exist
@@ -188,7 +188,7 @@ These functions return pointers to time/date structures:
 - **`fileisize`** `( -- size )` - Get file size from last `fileinfo` call
   ```r3forth
   "bigfile.dat" fileinfo drop
-  fileisize 1000000 > ( "File over 1MB" print ; )
+  fileisize 1000000 >? ( "File over 1MB" .write ) drop
   ```
 
 - **`fileijul`** `( -- julian )` - Get Julian date from last `fileinfo` call
@@ -272,8 +272,8 @@ tm_wday, tm_yday, tm_isdst
 :listfiles | "pattern" --
   ffirst
   ( 1?
-    dup FDIR 1? ( drop "DIR  " print ) drop
-    dup FNAME print cr
+    dup FDIR 1? ( drop "DIR  " .write ) drop
+    dup FNAME .write .cr
     fnext
   ) drop ;
 
@@ -298,7 +298,7 @@ tm_wday, tm_yday, tm_isdst
   ( 1?
     dup FDIR 0? (  | Skip directories
       dup FNAME 
-      dup "Processing: " print print cr
+      dup "Processing: " .write .write .cr
       | ... process file ...
     ) drop
     fnext
@@ -310,11 +310,11 @@ tm_wday, tm_yday, tm_isdst
 ### Timestamp Check
 ```r3forth
 :checkmodified | "file" --
-  fileinfo 0? ( "File not found" print ; )
+  fileinfo 0? ( "File not found" .write ; )
   filelastwrtime
-  date.y "Year: %d" print cr
-  date.m "Month: %d" print cr
-  date.d "Day: %d" print cr ;
+  date.y "Year: %d" .print .cr
+  date.m "Month: %d" .print .cr
+  date.d "Day: %d" .print .cr ;
 
 "document.txt" checkmodified
 ```
@@ -324,7 +324,7 @@ tm_wday, tm_yday, tm_isdst
 :benchmark | 'code --
   msec >r  | Save start time
   ex  | Execute code
-  msec r> - "Time: %d ms" print ;
+  msec r> - "Time: %d ms" .print ;
 
 :mycode 1000 ( 1? 1- ) drop ;
 'mycode benchmark
@@ -348,7 +348,7 @@ tm_wday, tm_yday, tm_isdst
 
 1. **Always check return values** for file operations
    ```r3forth
-   "file.txt" load 0? ( "Load failed" print ; )
+   "file.txt" load 0? ( "Load failed" .write ; )
    ```
 
 2. **Close directory handles** by iterating to completion
@@ -380,13 +380,13 @@ Most functions return 0 or -1 on failure:
 
 ```r3forth
 "file.txt" load
-0? ( "Cannot load file" print ; )  | Check for failure
+0? ( "Cannot load file" .write ; )  | Check for failure
 
 "output.dat" filexist
-0? ( "File does not exist" print ; )
+0? ( "File does not exist" .write ; )
 
 "*.txt" ffirst
-0? ( "No files found" print ; )
+0? ( "No files found" .write ; )
 ```
 
 ---
