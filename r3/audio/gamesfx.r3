@@ -1,22 +1,28 @@
 | gamesfx.r3 - sonidos de videojuego generados (sin .mp3) sobre supermix.r3
+| PHREDA 2025
 |
-| Un SONIDO es una lista de CAPAS (numeros en una variable de datos) terminada en 0.
-| Una capa es un tono (con barrido de frecuencia) o una rafaga de ruido:
+| Un SONIDO es una lista de CAPAS terminada en 0, escrita con la sintaxis de datos de
+| 32 bits:   ##nombre [ ... ]    (cada valor ocupa un dword)
+| Una capa es un tono (con barrido de frecuencia) o una rafaga de ruido: 10 valores
 |
-|   kind f0   f1  dur   wave vol  delay  A     D    S   R     crv
-|    1   200  70  0.09   0   0.14 0.0   0.001 0.09 0.0 0.01   2     <- tono
-|    2   0    0   0.09   0   0.18 0.0   0.001 0.09 0.0 0.005  0     <- ruido (f1 = color)
+|   $kwc  f0    f1    dur   vol   delay  A     D    S   R
+|   $103  200.0 70.0  0.09  0.14  0.0    0.001 0.09 0.0 0.005   <- tono
+|   $200  0.0   0.0   0.09  0.18  0.0    0.001 0.09 0.0 0.005   <- ruido (f1 = color)
 |
-|   kind  1 tono, 2 ruido, 0 fin de la lista
+|   $kwc  primer valor, tres nibbles en hexa:  k = kind   w = wave   c = crv
+|         ej: kind=1 wave=10 crv=2 -> $1A2.  Como kind va primero, el valor 0 sigue
+|         siendo FIN DE LISTA (kind 0)
+|   kind  1 tono, 2 ruido
+|   wave  forma de onda 0..11, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
+|   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
 |   f0    frecuencia inicial en Hz (16.16)
 |   f1    frecuencia final en Hz: el tono barre f0->f1 (exponencial) durante 'dur'
 |         en ruido: color 0.0 blanco, 1.0 rosa, 2.0 marron
 |   dur   duracion de la nota en segundos; despues se agrega la cola R
-|   wave  forma de onda, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
 |   vol   volumen 0..1 (16.16)
 |   delay retardo en segundos desde que se dispara el sonido (capas en serie o simultaneas)
 |   A D S R  envolvente: ataque(s) decaimiento(s) nivel de sostenido(0..1) release(s)
-|   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
+|   (16.16 en 32 bits con signo: las frecuencias llegan a 32767 Hz)
 |
 | Todo arranca con precision de muestra (supermix: smtick + smplayhzat), asi que las
 | capas con delay y las notas de las melodias no dependen de los cuadros por segundo.
@@ -49,7 +55,7 @@
 |--------------------------------------------------------------- tablas
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin3 'oscSuperSaw2P
 ##sfxnwaves 12
-##sfxLAYER 96			| 12 celdas de 8 bytes por capa
+##sfxLAYER 40			| bytes por capa: 10 valores de 32 bits
 
 #sxwnames "square" "saw" "sine" "triangle" "pulse25" "pulse10" "saw-rev" "sine-fold" "trapezoid" "half-sine" "sine3" "supersaw"
 #sxnnames "white" "pink" "brown"
@@ -104,8 +110,9 @@
 
 :sxschedlayer | 'layer --
 	>a
-	a@+ 'sxLk !  a@+ 'sxLf0 !  a@+ 'sxLf1 !  a@+ 'sxLdur !  a@+ 'sxLwave !  a@+ 'sxLvol !
-	a@+ 'sxLdelay !  a@+ 'sxLA !  a@+ 'sxLD !  a@+ 'sxLS !  a@+ 'sxLR !  a@+ 'sxLcrv !
+	da@+ dup 8 >> $f and 'sxLk !  dup 4 >> $f and 'sxLwave !  $f and 'sxLcrv !	| $kwc
+	da@+ 'sxLf0 !  da@+ 'sxLf1 !  da@+ 'sxLdur !  da@+ 'sxLvol !
+	da@+ 'sxLdelay !  da@+ 'sxLA !  da@+ 'sxLD !  da@+ 'sxLS !  da@+ 'sxLR !
 	sxLk 'sxEkind !
 	sxclock sxLdelay aurate *. + 'sxEstart !
 	sxLdur 'sxEdur !  sxLvol 'sxEvol !  sxLcrv 'sxEcrv !
@@ -210,10 +217,10 @@
 	sxtdur 16 << aurate / 0.9 *. 'sxEdur !
 	0 'sxEslide !
 	t.patch @ 'sxlp !
-	sxlp 32 + @ 0 max 11 min 3 << 'sfxwaves + @ 'sxEwave !
-	sxlp 40 + @ 'sxEvol !
-	sxlp 56 + @ sxlp 64 + @ sxlp 72 + @ sxlp 80 + @ packADSR 'sxEadsr !
-	sxlp 88 + @ 'sxEcrv !
+	sxlp d@ 4 >> $f and 0 max 11 min 3 << 'sfxwaves + @ 'sxEwave !
+	sxlp 16 + d@ 'sxEvol !
+	sxlp 24 + d@ sxlp 28 + d@ sxlp 32 + d@ sxlp 36 + d@ packADSR 'sxEadsr !
+	sxlp d@ $f and 'sxEcrv !
 	sxevadd ;
 
 :sxtend | --			| fin del texto: repite o termina
@@ -276,7 +283,7 @@
 	dup 'sxvolume ! smmaster! ;
 
 :sxplaylayers | 'sonido --
-	( dup @ 1? drop dup sxschedlayer sfxLAYER + ) 2drop ;
+	( dup d@ 1? drop dup sxschedlayer sfxLAYER + ) 2drop ;
 
 ::sfxplay | 'sonido --
 	1.0 'sxratio ! sxplaylayers ;

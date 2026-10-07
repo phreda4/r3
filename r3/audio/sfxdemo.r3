@@ -1,4 +1,5 @@
 | sfxdemo.r3 - demo de terminal: generador de sonidos de videojuego (supermix + gamesfx)
+| PHREDA 2025
 |
 |  1-9 q-o  dispara un sonido (pack futbol = port de audio.c, y pack generico)
 |  Tab      elegir el sonido a editar          Espacio  reproducir lo editado
@@ -27,31 +28,52 @@
 	3 << 'sounds + @ ;
 
 |--------------------------------------------------------------- buffer de edicion
-#edit * 1024		| hasta 8 capas de 96 bytes + terminador
-#newlayer 1 440.0 440.0 0.1 0 0.25 0.0 0.001 0.1 0.0 0.02 1
+| capas de 10 dwords (40 bytes): $kwc f0 f1 dur vol delay A D S R  (ver gamesfx.r3)
+| la tabla muestra 12 columnas logicas; kind/wave/crv viven empaquetados en el 1er dword
+#edit * 512		| hasta 8 capas + terminador
+#newlayer [ $101 440.0 440.0 0.1 0.25 0.0 0.001 0.1 0.0 0.02 ]
 #cur 0			| sonido en edicion
 #row 0 #col 0		| celda seleccionada
 #vol 2.0
 #bgm1 -1 #bgm2 -1
 #vu 0
 
+#sidx 0 1 2 3 0 4 5 6 7 8 9 0	| columna logica -> dword de la capa
+
+:lay | r -- adr
+	40 * 'edit + ;
+
+:gv | r c -- v			| valor de la celda (kind/wave/crv ya desempaquetados)
+	swap lay swap
+	0 =? ( drop d@ 8 >> $f and ; )
+	4 =? ( drop d@ 4 >> $f and ; )
+	11 =? ( drop d@ $f and ; )
+	3 << 'sidx + @ 2 << + d@ ;
+
+:sv | v r c --			| escribe la celda
+	swap lay swap
+	0 =? ( drop dup d@ $0ff and rot 8 << or swap d! ; )
+	4 =? ( drop dup d@ $f0f and rot 4 << or swap d! ; )
+	11 =? ( drop dup d@ $ff0 and rot or swap d! ; )
+	3 << 'sidx + @ 2 << + d! ;
+
+:cur@ | -- v
+	row col gv ;
+:cur! | v --
+	row col sv ;
+:kind@ | -- kind de la fila actual
+	row 0 gv ;
+
 :nlay | -- n
-	0 'edit ( dup @ 1? drop 96 + swap 1+ swap ) 2drop ;
+	0 'edit ( dup d@ 1? drop 40 + swap 1+ swap ) 2drop ;
 
 :loadedit | n --
 	'cur !
-	cur saddr >b
-	'edit >a
-	8 ( 1? 1- b@ 0? ( 2drop 0 a! ; ) drop
-		12 ( 1? 1- b@+ a!+ ) drop
-		) drop
-	0 a! ;
-
-:cell | -- adr
-	row 96 * col 3 << + 'edit + ;
-
-:kind@ | -- kind de la fila actual
-	row 96 * 'edit + @ ;
+	'edit 0 512 cfill
+	0 ( 8 <?
+		dup 40 * cur saddr + d@ 0? ( 2drop ; ) drop
+		dup 40 * 'edit + over 40 * cur saddr + 40 cmove
+		1+ ) drop ;
 
 :clampcell | --
 	row nlay 1 max 1- min 0 max 'row !
@@ -83,45 +105,49 @@
 :acrv | v -- v'
 	adjd + 0 max 3 min ;
 
+:kindfix | --			| tras cambiar el tipo: f0/f1 con sentido (tono: Hz ; ruido: color blanco)
+	kind@ 1 =? ( drop row 1 gv 20.0 <? ( 440.0 row 1 sv 440.0 row 2 sv ) drop ; )
+	drop 0.0 row 2 sv ;
+
 :adjust | --
-	cell @ col
-	0 =? ( 2drop 3 cell @ - cell ! ; )
-	1 =? ( drop kind@ 2 =? ( 2drop ; ) drop ahz cell ! ; )
-	2 =? ( drop kind@ 2 =? ( drop acol cell ! ; ) drop ahz cell ! ; )
-	3 =? ( drop adur cell ! ; )
-	4 =? ( drop awave cell ! ; )
-	5 =? ( drop avol cell ! ; )
-	6 =? ( drop adelay cell ! ; )
-	7 =? ( drop aA cell ! ; )
-	8 =? ( drop aD cell ! ; )
-	9 =? ( drop aS cell ! ; )
-	10 =? ( drop aR cell ! ; )
-	drop acrv cell ! ;
+	col 0 =? ( drop 3 kind@ - cur! kindfix ; ) drop
+	cur@ col
+	1 =? ( drop kind@ 2 =? ( 2drop ; ) drop ahz cur! ; )
+	2 =? ( drop kind@ 2 =? ( drop acol cur! ; ) drop ahz cur! ; )
+	3 =? ( drop adur cur! ; )
+	4 =? ( drop awave cur! ; )
+	5 =? ( drop avol cur! ; )
+	6 =? ( drop adelay cur! ; )
+	7 =? ( drop aA cur! ; )
+	8 =? ( drop aD cur! ; )
+	9 =? ( drop aS cur! ; )
+	10 =? ( drop aR cur! ; )
+	drop acrv cur! ;
 
 :chg | dir coarse --
 	'adjc ! 'adjd ! adjust ;
 
 :addlayer | --
 	nlay 8 >=? ( drop ; )
-	96 * 'edit + dup 'newlayer 96 cmove
-	96 + 0 swap !
+	40 * 'edit + dup 'newlayer 40 cmove
+	40 + 0 swap d!
 	nlay 1- 'row ! ;
 
 :dellayer | --
 	nlay 1 <=? ( drop ; ) drop
-	row 96 * 'edit + dup 96 +
-	nlay row - 96 * cmove
+	row 40 * 'edit + dup 40 +
+	nlay row - 40 * cmove
 	clampcell ;
 
-:mulcell | off lo hi --		| a[off] *= azar(lo..hi)
-	randminmax a> rot + dup @ rot *. swap ! ;
+:mulcell | off lo hi --		| dword[off] *= azar(lo..hi)
+	randminmax a> rot + dup d@ rot *. swap d! ;
 
 :mutate | --
-	0 ( nlay <? dup 96 * 'edit + >a
-		a@ 1 =? ( 8 0.85 1.2 mulcell 16 0.85 1.2 mulcell ) drop
-		24 0.85 1.15 mulcell
-		40 0.9 1.1 mulcell
-		a> 40 + dup @ 1.0 min swap !
+	0 ( nlay <? dup 40 * 'edit + >a
+		a> d@ 8 >> $f and 1 =? ( 4 0.85 1.2 mulcell 8 0.85 1.2 mulcell ) drop
+		12 0.85 1.15 mulcell
+		16 0.9 1.1 mulcell
+		a> 16 + dup d@ 1.0 min swap d!
 		1+ ) drop ;
 
 |--------------------------------------------------------------- musica
@@ -228,10 +254,10 @@
 
 :prow | r --
 	'pr !
-	pr 96 * 'edit + @ 'pk !
+	pr 0 gv 'pk !
 	1 pr 8 + .at .eline
 	0 ( 12 <? dup 'pc !
-		pr 96 * pc 3 << + 'edit + @ 'pv !
+		pr pc gv 'pv !
 		pc 3 << 'colx + @ pr 8 + .at
 		.Reset 7 .fc
 		pr row =? ( pc col =? ( 15 .fc 24 .bc ) drop ) drop
@@ -255,7 +281,7 @@
 	8 .fc
 	1 18 .at "Tab sonido  flechas celda  + - valor  * / grueso  Espacio oir  0 recargar" .write
 	1 19 .at "a/d capa  f variar  m jingle  g gameover  b musica  x stop  [ ] volumen  Esc salir" .write
-	1 20 .at "dur dly D R en ms, A en ms con decimal" .write
+	1 20 .at "dur dly D R en ms, A en ms con decimal; el pack futbol reproduce las 9 llamadas de audio.c" .write
 	.Reset ;
 
 :draw | --
@@ -263,12 +289,13 @@
 
 |--------------------------------------------------------------- salida
 :dump | --			| el sonido editado como datos para pegar en un .r3
-	"##mysound   | editado desde: " .write cur sname .write .cr
-	0 ( nlay <? dup 96 * 'edit + >a
-		a> 88 + @ a> 80 + @ a> 72 + @ a> 64 + @ a> 56 + @ a> 48 + @ a> 40 + @ a> 32 + @ a> 24 + @ a> 16 + @ a> 8 + @ a@
-		"  %d %f %f %f %d %f %f %f %f %f %f %d" .println
+	"##mysound [   | editado desde: " .write cur sname .write .cr
+	0 ( nlay <? dup 40 * 'edit + >a
+		a> 36 + d@ a> 32 + d@ a> 28 + d@ a> 24 + d@ a> 20 + d@ a> 16 + d@ a> 12 + d@ a> 8 + d@ a> 4 + d@
+		a> d@ $f and  a> d@ 4 >> $f and  a> d@ 8 >> $f and
+		"  $%h%h%h %f %f %f %f %f %f %f %f %f" .println
 		1+ ) drop
-	"  0" .println ;
+	"  0 ]" .println ;
 
 :main
 	sfxinit

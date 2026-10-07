@@ -13,7 +13,7 @@
 
 |------------------- VOICES
 | unidad de sonido 
-##voice * 65536	
+##voice * 65536		| 1024 voces x 64 bytes exactos ('voice> queda justo al final)
 ##voice> 'voice
 
 :resetvoices
