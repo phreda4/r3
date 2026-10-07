@@ -9,7 +9,7 @@
 #nman 0
 
 #mrever
-:rever mrever 1 xor 1 and? ( .rever 'mrever ! ; ) .nrever 'mrever ! ; 
+:rever mrever 1 xor 1 and? ( .rev 'mrever ! ; ) .nrev 'mrever ! ; 
 
 
 | * *	negrita

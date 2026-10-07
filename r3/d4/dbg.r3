@@ -276,21 +276,28 @@
 	|"DBG" .write
 	
 	1 flxS
-	0 fy .at 7 .fc 4 .bc .eline  
-	"|ESC| Exit " .write
-
+	0 fy .at 8 .bc 15 .fc .sp 
+	.rev "B" .write .nrev "reakpoint  " .write 
+	.rev "C" .write .nrev "ontinue  " .write 
+	.rev "R" .write .nrev "uncursor  " .write 
+	.rev "S" .write .nrev "tep  " .write
+	.rev "N" .write .nrev "extover  " .write 
+	"step" .write .rev "O" .write .nrev "ut  " .write 
+	.rev "Q" .write .nrev "uit" .write 
+	.eline
+	
 	panelMemSize flxS
 	panelMem
 	
-	20 flxO
-	fx fw + 1- fy .at fh .vline 
+	20 flxE
+	|fx fw + 1- fy .at fh .vline 
 	
 	flxpush
-	fx fy .at fw 1- .hline 
+	|fx fy .at fw 1- .hline 
 	fx fy .at "RET" .write
 	
 	14 flxS
-	fx fy .at fw 1- .hline 
+	|fx fy .at fw 1- .hline 
 	fx fy .at "WATCH" .write 
 	flxpop
 
@@ -317,6 +324,8 @@
 	$53 =? ( *>step )		| S	
 	drop
 	;
+
+
 	
 :main
 	|'filename "mem/menu.mem" load drop

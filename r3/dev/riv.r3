@@ -159,7 +159,7 @@
 		244 .fc dup viewy + 1+ printlinenum .reset
 		drawline .cr
 		1+ ) 2drop
-	.rever
+	.rev
 	vieww .nsp
 	"[" .write 'filename .write "]" .write
 	curx 1+ cury 1+ " %d:%d " .print

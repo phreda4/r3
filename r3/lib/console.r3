@@ -188,8 +188,8 @@
 
 ::.Blink "5m" .[w ;
 
-::.Rever "7m" .[w ;
-::.NRever "27m" .[w ;
+::.Rev "7m" .[w ;
+::.NRev "27m" .[w ;
 
 ::.Hidden "8m" .[w ;
 ::.Strike "9m" .[w ;

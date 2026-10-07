@@ -78,7 +78,7 @@
     5 10 .at .Ital "Italic text" .write .Reset
     5 11 .at .Under "Underlined text" .write .Reset
     5 12 .at .Blink "Blinking text" .write .Reset
-    5 13 .at .Rever "Reversed text" .write .Reset
+    5 13 .at .Rev "Reversed text" .write .Reset
     5 14 .at .Strike "Strikethrough text" .write .Reset
     
     35 5 .at .Bold "Combined Attributes:" .write .Reset
@@ -87,7 +87,7 @@
     37 8 .at .Under .Green "Underlined Green" .write .Reset
     37 9 .at .Bold .Under .Blue "Bold Underlined Blue" .write .Reset
     37 10 .at .Ital .Magenta "Italic Magenta" .write .Reset
-    37 11 .at .Rever .Cyan "Reversed Cyan" .write .Reset
+    37 11 .at .Rev .Cyan "Reversed Cyan" .write .Reset
     
     3 17 .at .Bold "Color + Background:" .write .Reset
     

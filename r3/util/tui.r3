@@ -406,7 +406,7 @@
 	pick2 8 + @ over +
 	fx .col | color?
 	cntlist >=? ( drop fw .nsp .cr ; ) 
-	pick3 @ =? ( .rever )
+	pick3 @ =? ( .rev )
 	uiNindx 
 	fw swap (xwrite) ex .cr
 	.reset 
@@ -449,7 +449,7 @@
 	pick2 8 + @ over +
 	fx .col | color?
 	cntlist >=? ( drop fw .nsp .cr ; ) 
-	pick3 @ =? ( .rever )
+	pick3 @ =? ( .rev )
 	uiNindxn 
 	fw swap (xwriten) ex .cr
 	.reset ;
@@ -532,7 +532,7 @@
 	
 :itree | 'var max n  -- 'var max n
 	pick2 8 + @ over +
-	pick3 @ =? ( .rever )
+	pick3 @ =? ( .rev )
 	fx .col
 	uiNindx c@+ 0? ( 2drop fw .nsp .cr ; )
 	mark dup $1f and 2* ,nsp ,iicon ,s ,eol empty

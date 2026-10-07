@@ -283,7 +283,7 @@
 	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
 	
 :iniline | adr lin -- adr lin 
-|	.reset |.rever
+|	.reset |.rev
 	fx over fy + .at
 	dup ylinea + 
 	|focoe 0? ( drop linenormal ; ) drop | sin foco?
