@@ -48,10 +48,12 @@
 
 #1sel 
 
+:rsel | p -- ; seleccion entre 1sel y p
+	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
+
 :sela	| add to select 
 	inisel 0? ( fuente> '1sel ! ) drop
-	fuente>
-	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
+	fuente> rsel ;
 
 :sele | empty select
 	0 dup 'inisel ! 'finsel ! ; 
@@ -64,10 +66,7 @@
 	1 'fuente> +! ;
 
 :lover | c --
-	fuente> c!+ dup 'fuente> !
-	$fuente >? ( dup '$fuente ! ) drop
-:0lin | --
-	0 $fuente c! ;
+	fuente> c!+ 'fuente> ! ;
 
 #modo 'lins
 
@@ -95,8 +94,7 @@
 
 :back
 	fuente> fuente <=? ( drop ; )
-	dup 1- c@ 0 pushu
-	drop redoback ;
+	1- c@ 0 pushu redoback ;
 
 :del | DEL: graba [9][char] y borra char bajo cursor
 	fuente> $fuente >=? ( drop ; )
@@ -163,8 +161,10 @@
 	scrend> >=? ( setpantaini ; )
 	drop ;
 
+:fixpos fixcur cursorpos ;
+
 ::tuiecursor! | cursor --
-	'fuente> ! fixcur cursorpos ;
+	'fuente> ! fixpos ;
 	
 ::tuipos! | pos --
 	dup 'fuente> !
@@ -175,14 +175,8 @@
 	;
 
 ::tuiposq! | pos --
-	dup 'fuente> !
-	scrini> scrend> in? ( drop cursorpos ; )
-	fh 2/ ( 1? swap 2 - <<13 1+ swap 1- ) drop
-	fuente <? ( fuente nip ) 
-	'scrini> !
-	cursorpos
-	;
-	
+	scrini> scrend> in? ( 'fuente> ! cursorpos ; ) tuipos! ;
+		
 |-----------
 :karriba
 	fuente> fuente =? ( drop ; )
@@ -228,13 +222,19 @@
 ::editfasthash | -- fh
 	0 fuente ( $fuente <? @+ rot 2/ xor swap ) drop ;
 			
-:loadtxt | -- ; cargar texto
+:fin13 | -- ; queda solo cr al fin de linea
+	fuente only13 1- '$fuente ! ;
+
+:rewind | -- ; vista y cursor al inicio
 	0 'xlinea !
+	fuente dup 'scrini> ! 'fuente> !
+	clearundo ;
+
+:loadtxt | -- ; cargar texto
 	fuente 'filename 
 	load 0 swap c!
-	fuente only13 1- '$fuente !	|-- queda solo cr al fin de linea
-	fuente dup 'scrini> ! dup 'fuente> !
-	simplehash 'hashfile !
+	fin13 rewind
+	fuente simplehash 'hashfile !
 	;
 
 :savetxt | -- ; guarda texto
@@ -288,16 +288,25 @@
 :tabchar | adr 9 -- adr 32
 	drop swap 0? ( swap 32 ; ) 1- swap .sp 32 ;
 	
-:cemit | adr char -- adr 
-	modoline 0? ( drop
-		9 =? ( tabchar )
-		32 =? ( .emit codecolor ; ) 
-		.emit ; ) 
-	3 =? ( drop .emit 1 'modoline ! ; ) | prev is "
-	2 =? ( drop 9 =? ( tabchar ) .emit ; ) drop
-	$22 =? ( .emit 0 'modoline ! codecolor ; ) | ""
-	9 =? ( tabchar ) .emit ;
+:cskip | adr c -- adr ; avanza estado de color (sin emitir)
+	modoline 0? ( drop 32 =? ( drop codecolor ; ) drop ; )
+	3 =? ( 2drop 1 'modoline ! ; )
+	2 =? ( 2drop ; ) drop
+	$22 =? ( drop 0 'modoline ! codecolor ; ) drop ;
 
+:cskipm drop ;	| mono: sin color
+:nocolor ;
+
+#skipw 'cskip	| cskip / cskipm
+#colw 'codecolor	| codecolor / nocolor
+
+:modocolor 'codecolor 'colw ! 'cskip 'skipw ! ;
+:modomono 'nocolor 'colw ! 'cskipm 'skipw ! ;
+
+:cemit | adr char -- adr 
+	9 =? ( tabchar )
+	dup .emit skipw ex ;
+		
 :linenormal
 	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
 	
@@ -309,32 +318,21 @@
 	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
 	linenormal ;
 	
-:cskip | adr c -- adr ; avanza estado de color sin emitir
-	modoline 0? ( drop 32 =? ( drop codecolor ; ) drop ; )
-	3 =? ( 2drop 1 'modoline ! ; )
-	2 =? ( 2drop ; ) drop
-	$22 =? ( drop 0 'modoline ! codecolor ; ) drop ;
-
-:cskipm | adr c -- adr ; mono: sin color
-	drop ;
-
-#skipw 'cskip
-
 :skipx | adr -- adr' ; saltea xlinea columnas sin emitir, se detiene en CR/0
 	xlinea swap			| n adr
 	( swap 1? 1- swap
 		atselect c@+ $ff and
 		0? ( drop 1- nip ; )
 		13 =? ( drop 1- nip ; )
-		9 =? ( rot 1- clamp0 -rot )	| tab = 2 columnas
+		9 =? ( rot 1- clamp0 -rot drop 32 )	| tab = 2 columnas
 		skipw ex ufwdc )
 	drop ;
 
 :drawline | nlin adr -- nlin adr
 	inselect
 	0 'modoline ! | string multilinea****
-	codecolor
-	'cskip 'skipw ! skipx
+	colw ex
+	skipx
 	fw 5 - 
 	( 0 >? 1- swap 
 		atselect
@@ -347,20 +345,6 @@
 		drop ) drop ;
 
 |----------------------
-:drawlinemono
-	inselect
-	'cskipm 'skipw ! skipx
-	fw 5 - 
-	( 0 >? 1- swap 
-		atselect
-		c@+ 0? ( drop fillend 1- ; ) 
-		13 =? ( drop fillend ; )
-		ctlfix 9 =? ( tabchar ) .emit utfrest
-		swap ) drop
-	( atselect c@+ 13 <>? 
-		0? ( drop 1- ; ) | end of text
-		drop ) drop ;
-
 |--------------------
 :emline | adr lin -- adr lin 
 	fx over fy + .at
@@ -378,14 +362,6 @@
 		$fuente =? ( emptylines ; )
 		swap 1+ ) drop ;
 
-:drawlinesmono | ini -- end
-	-1 'fc. !
-	0 ( fh <?
-		iniline swap 
-		drawlinemono
-		$fuente =? ( emptylines ; ) | not draw more
-		swap 1+ ) drop ;
-		
 |---- mouse & keys
 :cr.. | adr -- adr'
 	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
@@ -419,17 +395,13 @@
 	'1sel ! ;
 
 :mos
-	clickMouse
-	1sel over <? ( swap )
-	'finsel ! 'inisel ! ;
+	clickMouse rsel ;
 
 :ups
 	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
 	clickMouse
-	1sel 
-	over =?  ( 2drop 0 dup 'inisel ! 'finsel ! ; )
-	over <? ( swap )
-	'finsel ! 'inisel ! ;
+	dup 1sel =? ( 2drop sele ; ) drop
+	rsel ;
 
 | 0 = normal
 | 1 = over (not all sytems)
@@ -455,7 +427,7 @@
 	inisel 0? ( drop ; )
 	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	cursordel 0 dup 'inisel ! 'finsel ! clearundo ;
+	cursordel sele clearundo ;
 
 :cr>lf | adr cnt --
 	( 1? 1- swap
@@ -599,8 +571,7 @@
 	drop insins ;
 
 :typeutf | key n -- ; inserta un caracter utf8 completo
-	( 1? 1- swap dup $ff and insertchar 8 >> swap ) 2drop
-	fixcur cursorpos ;
+	( 1? 1- swap dup $ff and insertchar 8 >> swap ) 2drop fixpos ;
 	
 :EditFoco
 	tuif 0? ( 'focoe ! ; )
@@ -609,10 +580,10 @@
 	tuC!	| activate cursor
 	evtmw 1? ( evwmouse cursorpos ) drop
 	uikey 0? ( drop ; )	
-	32 126 in? ( insertchar fixcur cursorpos ; ) 
+	32 126 in? ( insertchar fixpos ; ) 
 	.ukey 1? ( typeutf ; ) drop
-	[tab] =? ( insertchar fixcur cursorpos ; ) 
-	[enter] =? ( insertchar fixcur cursorpos ; ) 
+	[tab] =? ( insertchar fixpos ; ) 
+	[enter] =? ( insertchar fixpos ; ) 
 	
 	[BACK] =? ( kback )
 	[DEL] =? ( kdel )
@@ -638,9 +609,7 @@
 	$e =? ( findnext )	| ctrl-n find next
 	$10 =? ( findprev )	| ctrl-p find prev
 
-	drop 
-	fixcur 
-	cursorpos ;
+	drop fixpos ;
 
 
 |---- MAIN words
@@ -648,6 +617,7 @@
 	fx xcursor + xlinea - 5 + fy ycursor + ylinea - .at .savec ;
 	
 ::tuEditCode 
+	modocolor
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
@@ -657,54 +627,49 @@
 	;
 
 ::tuReadCode
+	modocolor
 |	fw 8 <? ( drop ; ) drop
-	fixcur cursorpos
+	fixpos
 	scrini> drawlines 'scrend> !
 	tuEditShowCursor
 	;
 	
 ::tuEditCodeMono
+	modomono
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
-	scrini> drawlinesmono 'scrend> ! 
+	scrini> drawlines 'scrend> ! 
 	focoe 0? ( drop ; ) drop
 	tuEditShowCursor
 	;
 
 ::tuReadCodeMono
+	modomono
 |	fw 8 <? ( drop ; ) drop
-	scrini> drawlinesmono 'scrend> ! ;
+	scrini> drawlines 'scrend> ! ;
 	
 ::tuecursor.
 	ycursor 1+ xcursor 1+ "%d:%d " sprint ;
 	
 ::TuLoadMem | "" --
-	0 'xlinea !
 	fuente strcpy
-	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
-	fuente dup 'scrini> ! 'fuente> !
-	clearundo ;
+	fin13 rewind ;
 
 ::TuLoadMemC | "" -- | already sane
-	0 'xlinea !
 	fuente strcpyl 1- '$fuente !
-	fuente dup 'scrini> ! 'fuente> !
-	clearundo ;
-	
+	rewind ;
+
 ::TuLoadCode | "" --
 	'filename strcpy
-	loadtxt
-	clearundo ;
+	loadtxt ;
 
 ::TuNewCode
-	0 'xlinea !
 	"r3/new.r3" 'filename strcpy
-	fuente dup '$fuente ! dup 'scrini> ! 'fuente> !
+	fuente '$fuente !
 	0 fuente !
 	0 'hashfile !
-	clearundo
-	;
+	rewind ;
 
 ::TuSaveCode 
 	savetxt ;
