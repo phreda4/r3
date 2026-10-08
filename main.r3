@@ -125,7 +125,8 @@
 	tuR! ;
 	
 :filesearch
-	8 .bc 15 .fc 
+	|8 .bc 15 .fc 
+	4 .bc 7 .fc
 	0 rows 1- .at 
 	" ? " .write .eline .input 
 	'pad trim
@@ -204,12 +205,13 @@
 	|tk "%h" .print 'fullpath .write
 	8 .bc 15 .fc 
 	3 flxS
-	fx fy .at .eline .cr .sp
+	fx fy .at .sp
 	.rev " H" .write .nrev "elp  " .write 
 	.rev " R" .write .nrev "un  " .write 
 	.rev " E" .write .nrev "dit  " .write 
 	.rev " N" .write .nrev "ew  " .write 
 	.rev " /" .write .nrev "Search  " .write 
+	.eline .cr 
 	.eline .cr
 	.eline
 	|___________

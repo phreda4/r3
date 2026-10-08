@@ -34,7 +34,13 @@
 	'filename .write
 	'topline strcpybuf ;
 
-| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc	
+:showbreakpoint
+	1 .bc 7 .fc 
+	bplist ( d@+ 1? token>ftoken @ 
+		dup 48 >>> codenow =? ( over tokenCursor ) 2drop
+		) 2drop ;
+
 |-------------------------------------
 #lastIP -1 
 
@@ -261,7 +267,7 @@
 	
 	flxpush
 	20 flxO fx fy .at
-	6 .fc
+	2 .fc
 	fx .col "   IP:" .write 
 	vmIP .h 8 .r. .write .sp .cr
 	"  RET STK:" .write
@@ -280,10 +286,11 @@
 	.datastack
 	
 	20 flxO fx fy .at
-	6 .fc
+	2 .fc
 	.retstack
 	
 	flxRest fx fy .at
+	15 .fc 1 .bc
 	fx .col bplist ( d@+ 1? 
 		fx .col " %h " .print .cr
 		) 2drop
@@ -333,6 +340,7 @@
 	tuReadCode 
 	remakecursor
 	tuC! | show user cursor
+	showbreakpoint
 	
 	modekey	1? ( drop ; ) drop | mode 0
 	uiKey
@@ -354,14 +362,20 @@
 	
 :main
 	|'filename "mem/menu.mem" load drop
-	"r3/d4/test.r3" 'filename strcpy
+	"r3/d4/test2.r3" 'filename strcpy
 	
 	'filename run&loadinfo
 	'filename makemapdebug
 	
+	|makelistwords
+	|makelistinc
+	|makelistret 
+	
 	|dataini
 	here 
 	'lmem !
+	
+	clearbp
 	
 	cntinc showcode
 	

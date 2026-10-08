@@ -281,7 +281,7 @@
 	8 .fc
 	1 18 .at "Tab sonido  flechas celda  + - valor  * / grueso  Espacio oir  0 recargar" .write
 	1 19 .at "a/d capa  f variar  m jingle  g gameover  b musica  x stop  [ ] volumen  Esc salir" .write
-	1 20 .at "dur dly D R en ms, A en ms con decimal; el pack futbol reproduce las 9 llamadas de audio.c" .write
+	1 20 .at "dur dly D R en ms, A en ms con decimal" .write
 	.Reset ;
 
 :draw | --

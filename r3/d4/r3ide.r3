@@ -273,6 +273,7 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
 	"r3/d4/r3debug.r3" r3run
+|	"r3/d4/dbg.r3" r3run
 	.reterm .alsb .flush 
 	tuR! ;
 
