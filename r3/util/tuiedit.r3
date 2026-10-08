@@ -142,13 +142,13 @@
 	( fuente> <? c@+ emitcur ) drop 
 	xcursor
 	xlinea <? ( dup 'xlinea ! )
-	xlinea fw + >=? ( dup fw - 1+ 'xlinea ! )
+	xlinea fw + 5 - >=? ( dup fw - 6 + 'xlinea ! )
 	drop ;
 	
 |-----------
 :setpantafin | cursor --
 	1- <<13 1+ dup 'scrini> !
-	fh ( 1? swap >>13 swap 1- ) drop
+	fh ( 1? swap >>13 1+ swap 1- ) drop
 	|$fuente <? ( 1- ) 
 	'scrend> ! ;
 	
@@ -209,7 +209,7 @@
 
 :scrollup | 'fuente -- 'fuente
 	scrini> 2 - <<13 1+ 
-	fuente <=? ( drop ; )
+	fuente <? ( drop ; )
 	'scrini> ! ;
 
 :scrolldw
@@ -229,6 +229,7 @@
 	0 fuente ( $fuente <? @+ rot 2/ xor swap ) drop ;
 			
 :loadtxt | -- ; cargar texto
+	0 'xlinea !
 	fuente 'filename 
 	load 0 swap c!
 	fuente only13 1- '$fuente !	|-- queda solo cr al fin de linea
@@ -243,6 +244,7 @@
 		13 =? ( ,c 10 ) ,c ) 2drop
 	'filename savemem
 	empty 
+	fuente simplehash 'hashfile !
 	;
 	
 |---- draw text with colors
@@ -307,10 +309,32 @@
 	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
 	linenormal ;
 	
+:cskip | adr c -- adr ; avanza estado de color sin emitir
+	modoline 0? ( drop 32 =? ( drop codecolor ; ) drop ; )
+	3 =? ( 2drop 1 'modoline ! ; )
+	2 =? ( 2drop ; ) drop
+	$22 =? ( drop 0 'modoline ! codecolor ; ) drop ;
+
+:cskipm | adr c -- adr ; mono: sin color
+	drop ;
+
+#skipw 'cskip
+
+:skipx | adr -- adr' ; saltea xlinea columnas sin emitir, se detiene en CR/0
+	xlinea swap			| n adr
+	( swap 1? 1- swap
+		atselect c@+ $ff and
+		0? ( drop 1- nip ; )
+		13 =? ( drop 1- nip ; )
+		9 =? ( rot 1- clamp0 -rot )	| tab = 2 columnas
+		skipw ex ufwdc )
+	drop ;
+
 :drawline | nlin adr -- nlin adr
 	inselect
 	0 'modoline ! | string multilinea****
 	codecolor
+	'cskip 'skipw ! skipx
 	fw 5 - 
 	( 0 >? 1- swap 
 		atselect
@@ -325,6 +349,7 @@
 |----------------------
 :drawlinemono
 	inselect
+	'cskipm 'skipw ! skipx
 	fw 5 - 
 	( 0 >? 1- swap 
 		atselect
@@ -369,13 +394,13 @@
 	evtmxy fy -
 	scrini> | x y c
 	( swap 1? 1- swap cr.. ) drop | x c
-	swap fx - 5 - clamp0 swap | 5- line numbers
+	swap fx - 5 - clamp0 xlinea + swap | 5- line numbers
 	( swap 1? 1- swap 
 		c@+ 
 		9 =? ( rot 1- clamp0 -rot )
 		13 =? ( 0 nip )
 		0? ( drop nip 1- ; ) 
-		drop ) drop ;
+		drop ufwdc ) drop ;
 
 :clickMouse clickMouse0 ubackc ;
 
@@ -430,11 +455,11 @@
 	inisel 0? ( drop ; )
 	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	cursordel 0 dup 'inisel ! 'finsel ! ;
+	cursordel 0 dup 'inisel ! 'finsel ! clearundo ;
 
 :cr>lf | adr cnt --
 	( 1? 1- swap
-		dup c@ 10 =? ( 13 pick2 c! ) drop
+		dup c@ 13 =? ( 10 pick2 c! ) drop
 		1+ swap ) 2drop ;
 		
 :txtcopy
@@ -454,6 +479,7 @@
 		drop 1+ ) 2drop ;
 
 :txtpaste
+	remsel
 	here pasteclipboard
 	here only13 drop here pastefix
 	here count 0? ( 2drop ; ) 
@@ -463,6 +489,7 @@
 	dup '$fuente +!
 	cmove
 	here count nip 'fuente> +!
+	clearundo
 	;
 		
 |-------------
@@ -555,13 +582,16 @@
 
 :canover | c -- c f ; sobreescribir solo ascii sobre ascii
 	$80 >=? ( 0 ; )
+	13 =? ( 0 ; )
 	fuente> $fuente >=? ( drop 0 ; )
-	c@ $ff and $80 >=? ( drop 0 ; ) drop -1 ;
+	c@ $ff and $80 >=? ( drop 0 ; )
+	13 =? ( drop 0 ; ) drop -1 ;
 
 :insins | c -- ; inserta SIEMPRE (modo lins), graba [1][c]
 	dup 1 pushu lins ;
 
 :insertchar | c -- ; inserta o sobreescribe c, grabando undo/redo
+	remsel
 	modo 'lover =? (
 		drop				| c
 		canover 1? ( drop ovwchar ; )	| ascii sobre ascii -> overwrite
@@ -615,7 +645,7 @@
 
 |---- MAIN words
 ::tuEditShowCursor
-	fx xcursor + 5 + fy ycursor + ylinea - .at .savec ;
+	fx xcursor + xlinea - 5 + fy ycursor + ylinea - .at .savec ;
 	
 ::tuEditCode 
 	EditMouse
@@ -650,12 +680,14 @@
 	ycursor 1+ xcursor 1+ "%d:%d " sprint ;
 	
 ::TuLoadMem | "" --
+	0 'xlinea !
 	fuente strcpy
 	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
 	fuente dup 'scrini> ! 'fuente> !
 	clearundo ;
 
 ::TuLoadMemC | "" -- | already sane
+	0 'xlinea !
 	fuente strcpyl 1- '$fuente !
 	fuente dup 'scrini> ! 'fuente> !
 	clearundo ;
@@ -666,6 +698,7 @@
 	clearundo ;
 
 ::TuNewCode
+	0 'xlinea !
 	"r3/new.r3" 'filename strcpy
 	fuente dup '$fuente ! dup 'scrini> ! 'fuente> !
 	0 fuente !
@@ -682,7 +715,7 @@
 	ylinea <? ( 2drop ; ) 
 	ylinea -
 	fh >? ( 2drop ; ) 
-	over 12 >> $fff and fx + 5 + 
+	over 12 >> $fff and xlinea - -? ( 3drop ; ) fw 5 - >=? ( 3drop ; ) fx + 5 + 
 	swap fy + .at
 	dup 24 >> $ffff and fuente + 
 	swap 40 >> $ff and .type
