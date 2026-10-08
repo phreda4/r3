@@ -7,7 +7,9 @@
 
 ```forth
 | This is a comment
-^lib/file.r3     | Import library
+^lib/file.r3
+| Import a library: the path starts at r3/ and no comment may follow on that line
+^r3/lib/file.r3
 
 #name             | Declare a local/file-scope variable
 ##name            | Declare a global variable (visible across files, used by the

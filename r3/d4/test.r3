@@ -13,6 +13,7 @@
 	10 4 gcd
 	;
 : 
+	1 2 3 4 5 6 * +
 	point
 	8 'd !
 	0 2 gcd "%d" .println

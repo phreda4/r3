@@ -24,7 +24,7 @@
 	lerror tuiecursor! ;
 
 :printfname
-	.sp 'filename .write .sp ;
+	'filename .write .sp ;
 
 :makelistwords
 	here dup 'lwords !
@@ -399,7 +399,7 @@
 	
 |-------------------------------
 :main
-	.reset .home 4 .bc 7 .fc 
+	.reset .home 8 .bc 15 .fc 
 	1 flxN 
 	" r3IDE | " .write printfname 
 	" | " .write tuecursor. .write 

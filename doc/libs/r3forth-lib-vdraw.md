@@ -333,7 +333,7 @@ drawColor 'currentColor !
 
 ```r3forth
 ^r3/lib/sdl2gfx.r3
-^r3/util/vdraw.r3
+^r3/lib/vdraw.r3
 
 #screen * 640000
 #penColor $ffffff

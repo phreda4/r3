@@ -87,9 +87,9 @@
 #linesn	'linebytes
 
 :linemem
-	7 .fc
+	5 .fc
 	dup $ffff and 
-	":" .write
+	" :" .write
 	.h 4 .r. .write ":" .write
 	dup linesn ex
 	.sp
@@ -99,11 +99,12 @@
 	
 :panelMem
 	.reset
-	fx fy .at 
-	modekey 1 =? ( fw .hline ) drop
-	fx fy .at 
-	lmem dup $ffff and swap 16 >> ": %h:%h " .print .cr
-	
+|	fx fy .at 
+	modekey 1 =? ( .rev |fw .hline 
+		) drop
+	fx fy .at 5 .fc
+	lmem dup $ffff and swap 16 >> " DUMP %h:%h " .print .eline .cr
+	.reset
 	1 'fy +! -1 'fh +!
 	fw 11 - 3 / 'panelMemBytes !	
 	
@@ -120,7 +121,10 @@
 	[PGUP] =? ( mempgup )
 	[tab] =? ( 0 'modekey ! 0 'uiKey ! ) 
 	toUpp
-	
+	$42 =? ( 'linebytes 'linesn ! ) | Bytes
+	$44 =? ( 'linedword 'linesn ! ) | Dwords
+	$51 =? ( 'lineqword 'linesn ! ) | Qwords
+	$57 =? ( 'lineword 'linesn ! ) | Words
 	drop ;
 
 |-------------------------------------
@@ -228,42 +232,69 @@
 |-------------------------
 #panelIPSize 6
 	
+:.stk | val --
+	fx .col 
+	.h 8 .r. .write .cr ;
+	
 :.datastack
-	mdatastack dup
-	( 8 + vmNOS <? 
-		dup dstackoff + @ " %h" .print 
-		) drop
-	vmNOS <? ( vmTOS " %h" .print ) 
-	drop ;
+	vmNOS 
+	mdatastack >? ( vmTOS .stk ) 
+	dup mdatastack - 3 >> 
+	fh min 1- clamp0 swap
+	dstackoff +
+	( swap 1? 1- swap
+		8 - dup @ 
+		.stk
+		) 2drop ;
 
 :.retstack
 	mretstack 
 	( 8 - vmRTOS >? 
 		dup rstackoff + |@ 
-		" %h" .print
+		.stk
 		) drop ;
-
+	
 :panelIP
 	.reset |fx fy 1+ .at fw .hline .cr
-	fx fy .at 
-	modekey 0 =? ( fw .hline ) drop
-	.cr fx .col
-	"D)" .write .datastack .cr
-	fx .col
-	"R)" .write .retstack .cr
-	fx .col
-	vmREGA	"A:%h | " .print vmREGB "B:%h " .print .cr
+	fx fy .at modekey 0 =? ( .rev |fw .hline 
+		) drop
 	
+	flxpush
+	20 flxO fx fy .at
+	6 .fc
+	fx .col "   IP:" .write 
+	vmIP .h 8 .r. .write .sp .cr
+	"  RET STK:" .write
+	mretstack vmRTOS - 3 >> 1- .d 4 .r. .write .sp .cr
+	
+	3 .fc
+	fx .col "    A:" .write 
+	vmREGA .h 8 .r. .write .sp .cr
+	fx .col "    B:" .write 
+	vmREGB .h 8 .r. .write .sp .cr
+	" DATA STK:" .write
+	vmNOS mdatastack - 3 >> .d 4 .r. .write .sp .cr
+	
+	20 flxO fx fy .at
+	3 .fc
+	.datastack
+	
+	20 flxO fx fy .at
+	6 .fc
+	.retstack
+	
+	flxRest fx fy .at
+	fx .col bplist ( d@+ 1? 
+		fx .col " %h " .print .cr
+		) 2drop
 	|*** debug ***
-	fx .col
-	vmIP "IP:%h " .print 
-	codenow "inc:%d" .print
+|	codenow "inc:%d" .print
 	|vmIP memtok .write vmIP memtokn " %h" .print
-	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print 
-	codesrc vmIP 1- 3 << + @ ":%h:" .print
-	.cr	
-	fx .col
-	bplist ( d@+ 1? "%h " .print ) 2drop
+|	" | " .write  codesrc "cs:%h " .print vmIP "ip:%h " .print 
+|	codesrc vmIP 1- 3 << + @ ":%h:" .print
+|	.cr	
+	
+	flxpop
 	;
 	
 |-----------------	
@@ -271,40 +302,34 @@
 	.reset .cls 
 	
 	1 flxN
-	0 fy .at 7 .fc 4 .bc .eline 
-	'topline .write
+	8 .bc 15 .fc 
+	0 fy .at 
+	'topline .write .eline 
 	|"DBG" .write
 	
 	1 flxS
-	0 fy .at 8 .bc 15 .fc .sp 
+	0 fy .at .sp 
 	.rev "B" .write .nrev "reakpoint  " .write 
 	.rev "C" .write .nrev "ontinue  " .write 
 	.rev "R" .write .nrev "uncursor  " .write 
 	.rev "S" .write .nrev "tep  " .write
 	.rev "N" .write .nrev "extover  " .write 
 	"step" .write .rev "O" .write .nrev "ut  " .write 
+	.rev "TAB" .write .nrev " mem/code " .write 
 	.rev "Q" .write .nrev "uit" .write 
 	.eline
 	
-	panelMemSize flxS
+	panelMemSize flxS 
 	panelMem
 	
-	20 flxE
-	|fx fw + 1- fy .at fh .vline 
-	
-	flxpush
+	20 flxE .reset
 	|fx fy .at fw 1- .hline 
-	fx fy .at "RET" .write
-	
-	14 flxS
-	|fx fy .at fw 1- .hline 
-	fx fy .at "WATCH" .write 
-	flxpop
+	fx fy .at " WATCH" .write 
 
 	panelIPSize flxS
 	panelIP
 	
-	flxRest	
+	flxRest	.reset
 	tuReadCode 
 	remakecursor
 	tuC! | show user cursor
@@ -329,7 +354,7 @@
 	
 :main
 	|'filename "mem/menu.mem" load drop
-	"r3/d4/test2.r3" 'filename strcpy
+	"r3/d4/test.r3" 'filename strcpy
 	
 	'filename run&loadinfo
 	'filename makemapdebug

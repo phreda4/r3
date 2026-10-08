@@ -102,9 +102,9 @@
 |===================================
 	
 :filenew
-	0 rows .at 7 .fc 4 .bc cols .nsp
-	0 rows .at 
-	" Name: " .write .input
+	8 .bc 15 .fc 
+	0 rows 1- .at 
+	" Name: " .write .eline .input
 	'pad trim c@ 0? ( drop ; ) drop
 	'fullpath remfilename
 	'pad addext
@@ -125,9 +125,9 @@
 	tuR! ;
 	
 :filesearch
-	0 rows .at 7 .fc 4 .bc cols .nsp
-	0 rows .at 
-	" ? " .write .input
+	8 .bc 15 .fc 
+	0 rows 1- .at 
+	" ? " .write .eline .input 
 	'pad trim
 	dup c@ 0? ( 2drop ; ) drop
 	flCloseAll
@@ -138,8 +138,8 @@
 
 :filedelete
 	fuente c@ 0? ( drop ; ) drop	
-	0 rows .at 15 .fc 1 .bc cols .nsp
-	0 rows .at 
+	15 .fc 1 .bc
+	0 rows 1- .at 
 	" !! " .write 'filename .write	
 	" !! DELETE ? (Y/N) " .write .eline
 	getch tolow
@@ -155,8 +155,11 @@
 |------------
 :paneleditor
 	fuente c@ 0? ( drop ; ) drop
-	tuwin $1 'fullpath .wtitle
-	1 1 flpad 
+	|tuwin $1 'fullpath .wtitle
+	fx fy .at 
+	8 .bc 15 .fc .sp 'fullpath .write .eline
+	1 'fy +! -1 'fh +!
+	|1 1 flpad 
 |	tuEditCode
 	tuReadCode
 	;
@@ -199,12 +202,16 @@
 	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
 	|.tdebug |2dup " %d %d " .print
 	|tk "%h" .print 'fullpath .write
-	4 .bc 7 .fc	
-	1 flxS
-	fx fy .at .eline 
-	" ^[7m H ^[27melp ^[7m R ^[27mun ^[7m E ^[27mdit ^[7m N ^[27mew ^[7m / ^[27mSearch "
-	.printe
-
+	8 .bc 15 .fc 
+	3 flxS
+	fx fy .at .eline .cr .sp
+	.rev " H" .write .nrev "elp  " .write 
+	.rev " R" .write .nrev "un  " .write 
+	.rev " E" .write .nrev "dit  " .write 
+	.rev " N" .write .nrev "ew  " .write 
+	.rev " /" .write .nrev "Search  " .write 
+	.eline .cr
+	.eline
 	|___________
 	38 flxO
 	dirpanel
