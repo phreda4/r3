@@ -8,14 +8,14 @@
 	.flush
 	;
 	
-#p1 [ $110 0.0 0.0 0.0 0.22 0.0 0.005 0.12 0.55 0.06 ]
-#p2 [ $122 0.0 0.0 0.0 0.30 0.0 0.002 0.40 0.0 0.20 ]
-#p3 [ $130 0.0 0.0 0.0 0.32 0.0 0.01 0.10 0.65 0.08 ]
-#p4 [ $100 0.0 0.0 0.0 0.20 0.0 0.005 0.10 0.60 0.05 ]
+#i1 #i2
+:mkins | --
+	0.005 0.12 0.55 0.06 packADSR 'oscSaw iosc 'i1 !
+	0.002 0.40 0.0 0.20 packADSR 'oscSin iosc 'i2 ! ;
 
 :music
-	"a bb c d e ~ a" 180 'p1 0 sfxtune drop
-	"bb cd " 180 'p2 1 sfxtune drop
+	"a bb c d e ~ a" 180 i1 0 sfxtune 0.22 0 sfxtunemix drop
+	"bb cd " 180 i2 1 sfxtune 0.30 2 sfxtunemix drop
 	;
 
 :handle
@@ -23,7 +23,7 @@
 	;
 	
 :main
-	sfxinit
+	sfxinit mkins
 	.alsb .hidec .cls
 	( inkey [ESC] <>?
 		handle drop

@@ -534,9 +534,9 @@ Conditionals (`=?`, `<?`, `0?`, ...) leave the tested value in place. **Every pa
 ```r3
 :band | x y -- c               ; y 0..23 : three bands of 8 rows
 	dup 8 /                    | x y band
-	0? ( 2drop $ff0000 ; )     | band 0: drop band and y, ignore x
-	1 =? ( 2drop $00ff00 ; )   | band 1
-	drop drop $0000ff ;        | any other band
+	0? ( 3drop $ff0000 ; )     | band 0: drop band, y and x
+	1 =? ( 3drop $00ff00 ; )   | band 1
+	3drop $0000ff ;            | any other band
 ```
 
 `5 3 band` gives `$FF0000`, `5 10 band` gives `$00FF00` and `5 20 band` gives `$0000FF`.
@@ -682,7 +682,7 @@ typedef struct {
 :n.type     @ $ff and ;        | addr -- type
 :n.note     @ 8 >> $ff and ;   | addr -- note
 :n.value    8 + ;              | addr -- addr_value
-
+#mynode
 :pack_node  | type note value -- addr
     here >a
     rot rot 8 << or a!+        | pack type|note
@@ -798,8 +798,8 @@ int clamp(int val, int min, int max) {
 ```
 ```r3
 :clamp | val min max -- clamped
-    rot over >? ( drop nip ; ) nip     | below min
-    over <? ( drop ; ) nip ;           | above max
+	rot over >? ( drop nip ; ) nip     | val > max: return max
+	over <? ( drop ; ) nip ;           | val < min: return min
 ```
 
 ```c

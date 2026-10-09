@@ -32,7 +32,9 @@
 |   sfxupdate                llamar una vez por cuadro (genera/encola el audio)
 |   'sonido sfxplay          dispara un sonido
 |   'sonido n sfxplayp       igual, transpuesto n semitonos (variacion)
-|   "notas" bpm 'parche loop sfxtune -- id      melodia (formato abajo)
+|   "notas" bpm ins loop sfxtune -- id        melodia (formato abajo); ins = instrumento de supermix
+|                                            (iosc isweep isample...), fijo para toda la melodia
+|   id vol crv sfxtunemix -- id   volumen (16.16) y curva de la melodia (por defecto 1.0 y 0)
 |   id sfxtunestop           corta una melodia
 |   sfxstop                  corta todo
 |   v sfxvol                 volumen general (1.0 normal, 2.0 por defecto)
@@ -46,7 +48,11 @@
 |   > <                      sube / baja la octava actual (afecta a las notas sin numero);
 |   |                        separador de compas (se ignora)
 |   el numero de octava fija la octava en forma absoluta: 'c4' siempre es el do central
-| El 'parche' es una capa de tono (misma estructura): usa wave vol A D S R crv.
+| REGISTROS: el registro B apunta al registro actual (la melodia en proceso o la capa que
+| se esta tocando); A es scratch de hojas (l.adsr) y lo usa smplayhz. Supermix solo usa A/B
+| dentro de genAudio, que corre despues del hook, asi que no hay choque. La API publica
+| (sfxupdate sfxplay sfxplayp sfxtune sfxtunemix) guarda y restaura A y B (ab[ ]ba).
+| Capas y notas se disparan con smplayhzat (el retardo en muestras lo maneja la voz): no hay cola de eventos.
 
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
@@ -75,106 +81,72 @@
 #sxnoises 'sxnWhite 'sxnPink 'sxnBrown
 
 |--------------------------------------------------------------- estado
-#sxinsT #sxinsN		| instrumentos: tonos con barrido / ruido
+#sxinsT #sxinsN		| instrumentos de efectos: tonos con barrido / ruido
 #sxclock 0		| muestra (absoluta) donde empieza el proximo bloque a generar
 #sxbstart 0		| inicio del bloque que se esta por generar
 #sxvolume 2.0		| master: con 2.0 'vol 1.0' de una capa = fondo de escala
-#sxratio 1.0		| transposicion del sonido que se esta programando
 
-|--- eventos pendientes (10 celdas = 80 bytes): kind start hz dur slide wave adsr vol crv
-##sxev * 20480
-
-#sxEkind #sxEstart #sxEhz #sxEdur #sxEslide #sxEwave #sxEadsr #sxEvol #sxEcrv
-
-:sxevalloc | -- adr/0
-	'sxev ( 'sxev 20480 + <?
-		dup @ 0? ( drop ; ) drop
-		80 + ) drop 0 ;
-
-:sxevadd | --			| agrega un evento con las variables sxE*
-	sxevalloc 0? ( drop ; ) >a
-	sxEkind a!+  sxEstart a!+  sxEhz a!+  sxEdur a!+
-	sxEslide a!+  sxEwave a!+  sxEadsr a!+  sxEvol a!+  sxEcrv a!+ ;
-
-|--------------------------------------------------------------- capas -> eventos
-#sxLk #sxLf0 #sxLf1 #sxLdur #sxLwave #sxLvol #sxLdelay #sxLA #sxLD #sxLS #sxLR #sxLcrv
-#sxsf0 #sxsf1 #sxsd
-
+|--------------------------------------------------------------- capas
 :sxslideof | f0 f1 dur -- oct/s	| log2(f1/f0)/dur
-	'sxsd ! 'sxsf1 ! 'sxsf0 !
-	sxsd 0? ( ; ) drop
-	sxsf0 0? ( ; ) drop
-	sxsf1 0? ( drop 0 ; ) drop
-	sxsf1 sxsf0 =? ( drop 0 ; ) drop
-	sxsf1 sxsf0 /. log2. sxsd /. ;
+	0? ( 3drop 0 ; )
+	rot 0? ( 3drop 0 ; )					| f1 dur f0
+	pick2 0? ( 4drop 0 ; ) =? ( 3drop 0 ; )	| f1 dur f0
+	rot swap /. log2. swap /. ;
 
-:sxschedlayer | 'layer --
-	>a
-	da@+ dup 8 >> $f and 'sxLk !  dup 4 >> $f and 'sxLwave !  $f and 'sxLcrv !	| $kwc
-	da@+ 'sxLf0 !  da@+ 'sxLf1 !  da@+ 'sxLdur !  da@+ 'sxLvol !
-	da@+ 'sxLdelay !  da@+ 'sxLA !  da@+ 'sxLD !  da@+ 'sxLS !  da@+ 'sxLR !
-	sxLk 'sxEkind !
-	sxclock sxLdelay aurate *. + 'sxEstart !
-	sxLdur 'sxEdur !  sxLvol 'sxEvol !  sxLcrv 'sxEcrv !
-	sxLA sxLD sxLS sxLR packADSR 'sxEadsr !
-	sxLk 1 =? (
-		sxLf0 sxratio *. 'sxEhz !
-		sxLf0 sxLf1 sxLdur sxslideof 'sxEslide !
-		sxLwave 0 max 11 min 3 << 'sfxwaves + @ 'sxEwave !
-		sxevadd drop ; )
-	drop
-	440.0 'sxEhz !  0 'sxEslide !
-	sxLf1 16 >> 0 max 2 min 3 << 'sxnoises + @ 'sxEwave !
-	sxevadd ;
+:l.k db@ 8 >> $f and ;			| B = capa en curso
+:l.w db@ 4 >> $f and ;
+:l.c db@ $f and ;
+:l.f0 b> 4 + d@ ;
+:l.f1 b> 8 + d@ ;
+:l.dur b> 12 + d@ ;
+:l.vol b> 16 + d@ ;
+:l.delay b> 20 + d@ ;
+:l.adsr b> 24 + >a da@+ da@+ da@+ da@+ packADSR ;
 
-|--------------------------------------------------------------- lanzar eventos
-#sxins
+:sxsetins | osc ins --		| onda y ADSR de la capa en el instrumento; lo selecciona
+	dup >r smOSC!  l.adsr r@ smASDR!  r> smi! ;
 
-:sxplayev | adr --
-	>a
-	a@+ 'sxEkind !  a@+ 'sxEstart !  a@+ 'sxEhz !  a@+ 'sxEdur !
-	a@+ 'sxEslide !  a@+ 'sxEwave !  a@+ 'sxEadsr !  a@+ 'sxEvol !  a@+ 'sxEcrv !
-	sxinsN 'sxins !
-	sxEkind 1 =? ( sxinsT 'sxins ! ) drop
-	sxEwave sxins smOSC!
-	sxEadsr sxins smASDR!
-	sxins smi!
-	sxEkind 1 =? ( sxEslide smslide! ) drop
-	sxEvol smvel!
-	sxEcrv smcurve!
-	sxEhz sxEdur
-	sxEstart sxbstart - 0 max
-	smplayhzat ;
+:sxplaynote | hz --
+	l.vol smvel!  l.c smcurve!
+	l.dur l.delay aurate *. smplayhzat ;
 
-#sxq
-:sxlaunch | --			| lanza los eventos que empiezan dentro del bloque
-	'sxev ( 'sxev 20480 + <?
-		dup 'sxq !
-		sxq @ 1? (
-			sxq 8 + @ sxbstart 2048 + <? ( sxq sxplayev 0 sxq ! ) drop
-			) drop
-		80 + ) drop ;
+:sxplaylayer | 'layer ratio --
+	swap >b
+	l.k 1 =? ( drop
+		l.w 0 max 11 min 3 << 'sfxwaves + @ sxinsT sxsetins
+		l.f0 l.f1 l.dur sxslideof smslide!
+		l.f0 *. sxplaynote ; ) drop
+	l.f1 16 >> 0 max 2 min 3 << 'sxnoises + @ sxinsN sxsetins
+	drop 440.0 sxplaynote ;
 
 |--------------------------------------------------------------- melodias
-| registro de melodia (10 celdas = 80 bytes), 8 melodias simultaneas:
-|   0 activa 1 ptr 2 inicio 3 proximo(muestra) 4 pulso(muestras) 5 'parche 6 loop 7 octava 8 ultimo-reinicio
-#sxtunes * 640
-#sxtn 0
-#sxTmult 1.0 #sxTsemi 0 #sxTacc 0 #sxlp 0
+| registro de melodia (9 celdas = 72 bytes), 8 melodias simultaneas; B apunta al registro en proceso:
+|   0 ptr (0 = inactiva) 8 inicio 16 proximo(muestra) 24 pulso(muestras) 32 instrumento
+|   40 loop 48 octava 56 ultimo-reinicio 64 vol(dword) 68 crv(dword)
+#sxtunes * 576
 #sxsemis 9 11 0 2 4 5 7		| a b c d e f g
 
-:t.on sxtn ;
-:t.ptr sxtn 8 + ;
-:t.ini sxtn 16 + ;
-:t.next sxtn 24 + ;
-:t.beat sxtn 32 + ;
-:t.patch sxtn 40 + ;
-:t.loop sxtn 48 + ;
-:t.oct sxtn 56 + ;
-:t.last sxtn 64 + ;
+:sxtune@ | n -- adr		| registro de la melodia n
+	72 * 'sxtunes + ;
+
+:t.ini b> 8 + ;
+:t.next b> 16 + ;
+:t.beat b> 24 + ;
+:t.ins b> 32 + ;
+:t.loop b> 40 + ;
+:t.oct b> 48 + ;
+:t.last b> 56 + ;
+:t.vol b> 64 + ;
+:t.crv b> 68 + ;
 
 :sxskipws | p -- p'
 	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
+
+:sxpint | p -- p' n		| entero decimal
+	0 swap
+	( dup c@ $ff and 48 - 0 9 in?
+		rot 10 * + swap 1+ ) drop swap ;
+
 
 :sxpint | p -- p' n		| entero decimal
 	0 swap
@@ -187,83 +159,76 @@
 :sxmidi>hz | midi -- hz
 	69 - fix. 12 / pow2. 440.0 *. ;
 
-:sxsuffix1 | p -- p'
-	dup c@ $ff and
-	$2a =? ( drop 1+ sxpint sxTmult swap * 'sxTmult ! sxsuffix1 ; )
-	$2f =? ( drop 1+ sxpint 1 max sxTmult swap / 'sxTmult ! sxsuffix1 ; )
-	$2e =? ( drop 1+ sxTmult 1.5 *. 'sxTmult ! sxsuffix1 ; )
+:sxsuffix1 | p mult -- p' mult
+	over c@ $ff and
+	$2a =? ( drop swap 1+ sxpint rot * sxsuffix1 ; )		| *n
+	$2f =? ( drop swap 1+ sxpint 1 max rot swap / sxsuffix1 ; )	| /n
+	$2e =? ( drop swap 1+ swap 1.5 *. sxsuffix1 ; )		| .
 	drop ;
 
-:sxsuffix | p -- p'		| *n  /n  .   -> sxTmult
-	1.0 'sxTmult ! sxsuffix1 ;
+:sxsuffix | p -- p' mult	| multiplicador de duracion (16.16)
+	1.0 sxsuffix1 ;
 
-:sxaccid | p -- p'		| # sostenido, b bemol
-	0 'sxTacc !
+:sxaccid | p -- p' acc		| # sostenido, b bemol
 	dup c@ $ff and
-	$23 =? ( drop 1 'sxTacc ! 1+ ; )
-	$62 =? ( drop -1 'sxTacc ! 1+ ; )
-	drop ;
+	$23 =? ( drop 1+ 1 ; )
+	$62 =? ( drop 1+ -1 ; )
+	drop 0 ;
 
 :sxoctv | p -- p'		| un digito fija la octava
 	dup c@ $ff and 48 - 0 9 in? ( t.oct ! 1+ ; ) drop ;
 
-:sxtdur | -- muestras
-	t.beat @ sxTmult *. ;
-
-:sxtplay | midi --		| programa una nota con el parche de la melodia
-	sxmidi>hz 'sxEhz !
-	1 'sxEkind !
-	t.next @ 'sxEstart !
-	sxtdur 16 << aurate / 0.9 *. 'sxEdur !
-	0 'sxEslide !
-	t.patch @ 'sxlp !
-	sxlp d@ 4 >> $f and 0 max 11 min 3 << 'sfxwaves + @ 'sxEwave !
-	sxlp 16 + d@ 'sxEvol !
-	sxlp 24 + d@ sxlp 28 + d@ sxlp 32 + d@ sxlp 36 + d@ packADSR 'sxEadsr !
-	sxlp d@ $f and 'sxEcrv !
-	sxevadd ;
+:sxtnote | midi dur --		| toca la nota ahora (retardo en muestras dentro del bloque) y avanza
+	swap sxmidi>hz					| dur hz
+	t.ins @ smi!  t.vol d@ smvel!  t.crv d@ smcurve!
+	over 16 << aurate / 0.9 *.			| dur hz seg
+	t.next @ sxbstart - 0 max smplayhzat
+	t.next +! ;
 
 :sxtend | --			| fin del texto: repite o termina
-	t.loop @ 0? ( drop 0 t.on ! ; ) drop
-	t.next @ t.last @ =? ( drop 0 t.on ! ; ) drop	| una pasada sin avanzar el tiempo
+	t.loop @ 0? ( drop 0 b! ; ) drop
+	t.next @ t.last @ =? ( drop 0 b! ; ) drop	| una pasada sin avanzar el tiempo
 	t.next @ t.last !
-	t.ini @ t.ptr ! ;
+	t.ini @ b! ;
 
 :sxtunestep | --			| interpreta un token
-	t.ptr @ sxskipws dup c@ $ff and
+	b@ sxskipws dup c@ $ff and
 	0? ( 2drop sxtend ; )
-	$7c =? ( drop 1+ t.ptr ! ; )
-	$3e =? ( drop 1+ t.ptr ! 1 t.oct +! ; )
-	$3c =? ( drop 1+ t.ptr ! -1 t.oct +! ; )
-	$7e =? ( drop 1+ sxsuffix t.ptr ! sxtdur t.next +! ; )
-	sxnote>semi -? ( drop 1+ t.ptr ! ; )
-	'sxTsemi ! 1+ sxaccid sxoctv sxsuffix t.ptr !
-	t.oct @ 1+ 12 * sxTsemi + sxTacc + sxtplay
-	sxtdur t.next +! ;
+	$7c =? ( drop 1+ b! ; )
+	$3e =? ( drop 1+ b! 1 t.oct +! ; )
+	$3c =? ( drop 1+ b! -1 t.oct +! ; )
+	$7e =? ( drop 1+ sxsuffix swap b! t.beat @ swap *. t.next +! ; )
+	sxnote>semi -? ( drop 1+ b! ; )	| p semi
+	swap 1+ sxaccid rot +			| p' semi+acc
+	swap sxoctv sxsuffix			| semi p' mult
+	swap b!				| semi mult
+	t.beat @ swap *.				| semi dur
+	swap t.oct @ 1+ 12 * + swap		| midi dur
+	sxtnote ;
 
-:sxtune1 | --			| programa las notas de la melodia sxtn que caen en este bloque
+:sxtune1 | --			| programa las notas de la melodia B que caen en este bloque
 	64 ( 1? 1-
-		t.on @ 0? ( 2drop ; ) drop
+		b@ 0? ( 2drop ; ) drop
 		t.next @ sxbstart 2048 + >=? ( 2drop ; ) drop
 		sxtunestep ) drop ;
 
 :sxtunesched | --
-	'sxtunes ( 'sxtunes 640 + <?
-		dup 'sxtn ! sxtune1
-		80 + ) drop ;
+	'sxtunes >b
+	8 ( 1? 1- sxtune1 72 b+ ) drop ;
+
+:sxtunesclear | --
+	'sxtunes 0 576 cfill ;
 
 |--------------------------------------------------------------- API
 :sxtick | --				| hook de supermix: antes de generar cada bloque
 	sxclock 'sxbstart !
 	sxtunesched
-	sxlaunch
 	2048 'sxclock +! ;
 
 ::sfxinit0 | --			| igual que sfxinit pero sin SDL_Init (la app ya inicio SDL / render offline)
 	sminit
 	0 'sxclock !
-	'sxev 0 20480 cfill
-	'sxtunes 0 640 cfill
+	sxtunesclear
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
 	sxvolume smmaster!
@@ -274,7 +239,7 @@
 	sfxinit0 ;
 
 ::sfxupdate | --
-	smupdate ;
+	ab[ smupdate ]ba ;
 
 ::sfxclock | -- muestras		| muestras generadas hasta ahora (reloj del secuenciador)
 	sxclock ;
@@ -282,31 +247,46 @@
 ::sfxvol | v --
 	dup 'sxvolume ! smmaster! ;
 
-:sxplaylayers | 'sonido --
-	( dup d@ 1? drop dup sxschedlayer sfxLAYER + ) 2drop ;
+:sxplaylayers | 'sonido ratio --
+	ab[ swap ( dup d@ 1? drop			| ratio snd
+		2dup swap sxplaylayer
+		sfxLAYER + ) 3drop ]ba ;
 
 ::sfxplay | 'sonido --
-	1.0 'sxratio ! sxplaylayers ;
+	1.0 sxplaylayers ;
 
 ::sfxplayp | 'sonido semitonos --
-	fix. 12 / pow2. 'sxratio ! sxplaylayers 1.0 'sxratio ! ;
+	fix. 12 / pow2. sxplaylayers ;
 
-#sxTt #sxTb #sxTp #sxTl
-::sfxtune | "notas" bpm 'parche loop -- id
-	'sxTl ! 'sxTp ! 'sxTb ! 'sxTt !
+:sxtunefree | -- id/-1
 	0 ( 8 <?
-		dup 80 * 'sxtunes + 'sxtn !
-		t.on @ 0? ( drop
-			1 t.on !  sxTt t.ptr !  sxTt t.ini !  sxclock t.next !
-			aurate 60 * sxTb 1 max / t.beat !
-			sxTp t.patch !  sxTl t.loop !  4 t.oct !  -1 t.last !
-			; ) drop
+		dup sxtune@ @ 0? ( drop ; ) drop
 		1+ ) drop -1 ;
 
+:sxtunenew | "notas" bpm ins loop -- id
+	sxtunefree -? ( >r 4drop r> ; )		| txt bpm ins loop id
+	dup sxtune@ >b  >r
+	t.loop !  t.ins !					| txt bpm
+	aurate 60 * swap 1 max / t.beat !	| txt
+	dup b!  t.ini !
+	sxclock t.next !  4 t.oct !  -1 t.last !
+	1.0 t.vol d!  0 t.crv d!
+	r> ;
+
+::sfxtune | "notas" bpm ins loop -- id
+	ab[ sxtunenew ]ba ;
+
+:sxtunemix | id vol crv -- id
+	rot -? ( 3drop -1 ; )				| vol crv id
+	dup sxtune@ >b
+	>r t.crv d! t.vol d! r> ;
+
+::sfxtunemix | id vol crv -- id
+	ab[ sxtunemix ]ba ;
+
 ::sfxtunestop | id --
-	0 swap 80 * 'sxtunes + ! ;
+	-? ( drop ; ) 0 swap sxtune@ ! ;
 
 ::sfxstop | --
 	smreset sxvolume smmaster!		| smreset deja el master en 1.0
-	'sxev 0 20480 cfill
-	'sxtunes 0 640 cfill ;
+	sxtunesclear ;

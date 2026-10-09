@@ -151,10 +151,16 @@
 		1+ ) drop ;
 
 |--------------------------------------------------------------- musica
+#iLead #iTri #iBass
+:mkins | --
+	0.005 0.12 0.55 0.06 packADSR 'oscSaw iosc 'iLead !
+	0.01 0.10 0.65 0.08 packADSR 'oscTri iosc 'iTri !
+	0.005 0.10 0.60 0.05 packADSR 'oscSqr iosc 'iBass ! ;
+
 :bgm | --
 	bgm1 0 >=? ( drop bgm1 sfxtunestop bgm2 sfxtunestop -1 'bgm1 ! -1 'bgm2 ! ; ) drop
-	'tune_bgm_lead 132 'patch_tri 1 sfxtune 'bgm1 !
-	'tune_bgm_bass 132 'patch_bass 1 sfxtune 'bgm2 ! ;
+	'tune_bgm_lead 132 iTri 1 sfxtune 0.32 0 sfxtunemix 'bgm1 !
+	'tune_bgm_bass 132 iBass 1 sfxtune 0.20 0 sfxtunemix 'bgm2 ! ;
 
 :stopall | --
 	sfxstop -1 'bgm1 ! -1 'bgm2 ! ;
@@ -189,8 +195,8 @@
 	$66 =? ( drop mutate 'edit sfxplay ; )
 	$5b =? ( drop -0.25 volume ; )
 	$5d =? ( drop 0.25 volume ; )
-	$6d =? ( drop 'tune_jingle 150 'patch_lead 0 sfxtune drop ; )
-	$67 =? ( drop 'tune_gameover 110 'patch_tri 0 sfxtune drop ; )
+	$6d =? ( drop 'tune_jingle 150 iLead 0 sfxtune 0.22 0 sfxtunemix drop ; )
+	$67 =? ( drop 'tune_gameover 110 iTri 0 sfxtune 0.32 0 sfxtunemix drop ; )
 	$62 =? ( drop bgm ; )
 	$78 =? ( drop stopall ; )
 	findkey -? ( drop ; )
@@ -298,7 +304,7 @@
 	"  0 ]" .println ;
 
 :main
-	sfxinit
+	sfxinit mkins
 	msec $1234567 rerand
 	0 loadedit
 	.alsb .hidec .cls
