@@ -9,7 +9,8 @@
 |^r3/lib/trace.r3
 
 #master_volume 1.0
-#dt
+#dt			| 2^32/aurate
+#dte			| 2^47/aurate (envelope)
 
 |------------------- VOICES
 | unidad de sonido 
@@ -21,13 +22,12 @@
 
 :c.state	a> ;		| state
 :c.id		a> 1 + ;	| id
-:w.Vol		a> 2 + ;	| Volumen (/2)
+:c.crv		a> 2 + ;	| curva de envolvente: env^(n+1): 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exponencial)
 :d.freq		a> 4 + ;	| inc freq
 
-:w.Adt		a> 8 + ;	| ADSR
-:w.Ddt		a> 10 + ;	| 
-:w.Sdt		a> 12 + ;	| Volumen /2
-:w.Rdt		a> 14 + ;	| 
+:q.AD		a> 8 + ;	| ADSR = 2 celdas (v1 v2 de packADSR), incrementos por muestra en 0.31 (1.0=$7fffffff)
+:d.Adt		a> 8 + ;	| Attack
+:d.Ddt		a> 12 + ;	| Decay
 
 :d.lensam	a> 16 + ;	| 
 :d.fresam	a> 20 + ;
@@ -38,7 +38,10 @@
 :q.func		a> 32 + ;
 :q.vec		a> 40 + ;
 :d.vel		a> 48 + ;	| ganancia de la voz (16.16)
-:d.crv		a> 52 + ;	| curva de envolvente: env^(n+1): 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exponencial)
+:d.env		a> 52 + ;	| envelope actual (0.31, 1.0=$7fffffff)
+:q.SR		a> 56 + ;
+:d.Sus		a> 56 + ;	| Sustain (nivel 0.31)
+:d.Rdt		a> 60 + ;	| Release
 
 :newvoice | -- nv
 	voice> 'voice> >=? ( drop 0 ; )
@@ -80,33 +83,28 @@
 
 
 	
-:rvol	w.Vol w@ $ffff and 2* ;	| w sin signo: 1.0/2 = $8000 no cabe en un w con signo
-:rsus	w.Sdt w@ $ffff and 2* ;
-
-:envelADSR | state -- mix	
+:envelADSR | -- env		| env 16.16 (0..$ffff); negativo = voz terminada
 	1 d.time d+!
 	c.state c@
-	1 =? ( drop | attack
-		rvol w.Adt w@ $ffff and + 
-		1.0 <? ( ; ) 1.0 nip 
-		2 c.state c!
-		; )
-	2 =? ( drop | decay
-		rvol w.Ddt w@ $ffff and -
-		rsus >? ( ; ) rsus nip
-		3 c.state c!
-		; )
-	3 =? ( drop 
-		rvol ; ) |sustain
-	drop | release (negativo = voz terminada, la borra playosc/playnoise/playsam)
-	rvol w.Rdt w@ $ffff and -
-	;
+	3 =? ( drop d.env d@ 15 >> ; )		| sustain
+	1 =? ( drop							| attack
+		d.env d@ d.Adt d@ +
+		$7fffffff <? ( dup d.env d! 15 >> ; )
+		$7fffffff nip dup d.env d! 2 c.state c! 15 >> ; )
+	2 =? ( drop							| decay
+		d.env d@ d.Ddt d@ -
+		d.Sus d@ >? ( dup d.env d! 15 >> ; )
+		drop d.Sus d@ dup d.env d! 3 c.state c! 15 >> ; )
+	drop									| release (negativo = voz terminada, la borra playosc/playnoise/playsam)
+	d.env d@ d.Rdt d@ -
+	-? ( ; )
+	dup d.env d! 15 >> ;
 
 :delaying | -- 0/1		| retardo previo (sample-accurate): silencio mientras time < 0
 	d.time d@ -? ( 1+ d.time d! 1 ; ) drop 0 ;
 
 :shape | env -- env'
-	d.crv c@ 0? ( drop ; )
+	c.crv c@ 0? ( drop ; )
 	1 =? ( drop dup *. ; )
 	2 =? ( drop dup dup *. *. ; )
 	drop dup *. dup *. ;
@@ -117,7 +115,6 @@
 :playosc	| -- v
 	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; ) 
-	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.freq d@ *. $ffff and
@@ -125,12 +122,36 @@
 	
 	out ;
 
+|--- supersaw: 7 osciladores desafinados (detune simetrico), fase = time*freq_i + offset_i
+|    d.lensam = detune (16.16, fraccion de freq del oscilador extremo), d.fresam = freq*detune (0.32)
+#sstab				| detune_i (16.16, -1..1) | fase inicial_i (16 bits, secuencia aurea)
+-65536 0  -43691 40503  -21845 15471  0 55974  21845 30942  43691 5909  65536 46413
+
+:osc1 | time i -- v
+	4 << 'sstab +					| time adr
+	@+ d.fresam d@ *. d.freq d@ +	| time adr' freq_i
+	pick2 *.						| time adr' fase
+	swap @ + $ffff and nip		| fase
+	q.func @ ex ;
+
+:supersum | time -- sum
+	0 7 ( 1? 1-					| time acc i
+		pick2 over osc1			| time acc i v
+		rot + swap )				| time acc' i
+	drop nip ;
+
+:playsuper	| -- v
+	delaying 1? ( drop 0 ; ) drop
+	envelADSR -? ( 0 nip delvoicea ; )
+	d.time d@ d.dtime d@ >? ( 4 c.state c! )
+	supersum 26214 *.				| 0.4: ~1/raiz(7), parejo en volumen con un osc simple
+	out ;
+
 |--- oscilador con pitch slide: fase acumulada (d.fresam) e incremento (d.freq) que
 |    cambia cada muestra en forma exponencial; d.lensam = delta (0.32) por muestra
 :playsweep	| -- v
 	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; ) 
-	dup 2/ w.vol w!
 	d.time d@ d.dtime d@ >? ( 4 c.state c! ) drop
 	d.freq d@ dup d.lensam d@ * 32 >> + 0 max
 	dup d.freq d!
@@ -141,7 +162,6 @@
 :playnoise
 	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; ) 
-	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	drop
@@ -156,11 +176,10 @@
 :playsam
 	delaying 1? ( drop 0 ; ) drop
 	envelADSR -? ( 0 nip delvoicea ; )
-	dup 2/ w.vol w! | volumen por envelope	
 	
 	d.time d@ d.dtime d@ >? ( 4 c.state c! )
 	d.fresam d@ *
-	d.lensam d@ 16 << >=? ( 2drop 0 c.state c! 0 ; )
+	d.lensam d@ 1- 16 << >=? ( 2drop 0 delvoicea ; )	| 1-: interpolate lee el frame siguiente
 	
 | sin interpolacion
 |	16 >> 2 << q.func @ + w@ 
@@ -188,6 +207,7 @@
 	audevice 0 SDL_PauseAudioDevice
 	
 	1.0 16 << aurate / 'dt ! 
+	1 47 << aurate / 'dte !
 	
 ::smreset
 	1.0 'master_volume !
@@ -232,79 +252,79 @@
 
 |------------------- INSTRUMENTS
 
-#instr * $fff
+#instr * $2000		| 128 instrumentos x 64 bytes
 #instr> 'instr
 
 #ins_vector playosc
 #ins_wave oscSin |oscTri |'oscSin
 #ins_ADSR 0 
+#ins_ADSR2 0
 #ins_aux
 #ins_vel 1.0
 #ins_crv 0
 
-| A:0.001 -> 16.0
-| D:0.001 -> 16.0
-| S: 0..1.0
-| R 0.001 -> 16.0
-::packADSR | A D S R -- v
-	dt swap 0? ( 1+ ) / $ffff and 0? ( 1+ )  16 <<	| rdt
-	swap 2/ $ffff and or 16 <<					| Sdt
-	dt rot 0? ( 1+ ) / $ffff and or 16 <<	| ddt
-	dt rot 0? ( 1+ ) / $ffff and 0? ( 1+ ) or		| adt
-	;
+| ADSR en 2 celdas (v1 v2); iosc/inoise/isweep/isample/smASDR! las consumen tal cual
+|  v1 = Attack | Decay<<32     v2 = Sustain | Release<<32      (campos de 32 bits, incremento por muestra 0.31)
+| A,D,R: segundos, 1 muestra .. horas, sin escalon | S: 0..1.0
+:tinc | seg -- inc
+	0? ( 1+ ) dte swap / 0? ( 1+ ) $7fffffff min ;
+
+::packADSR | A D S R -- v1 v2
+	tinc 32 << swap 15 << $7fffffff min or	| A D v2
+	swap tinc 32 << rot tinc or				| v2 v1
+	swap ;
 
 |--- MAKE INSTRUMENT
 
 :ninstr
-	instr> 'instr - 5 >> 1- ;  | 4 data
+	instr> 'instr - 6 >> 1- ;	| slot: vec wave ADSR1 ADSR2 aux (64 bytes)
 	
 :ireset
 	'instr 'instr> ! ;
 
-::iosc | ADSR osc -- n
+#nochunk 0 0 0	| chunk vacio (abuf=0,alen=0): si falla la carga la voz termina al instante
+
+:iadsr | v1 v2 --			| ADSR (2 celdas) al instrumento
+	swap a!+ a!+ ;
+
+:iend | aux -- n			| aux y salta al proximo slot
+	a!+ 24 a+ a> 'instr> ! ninstr ;
+
+::iosc | v1 v2 osc -- n
 	instr> >a
 	'playosc a!+
-	a!+ | func
-	a!+ | ADSR
-	0 a!+
-	a> 'instr> ! 
-	ninstr ;
+	a!+ iadsr 0 iend ;
 
-
-::inoise | ADSR noise -- n
+::inoise | v1 v2 noise -- n
 	instr> >a
 	'playnoise a!+
-	a!+	| func
-	a!+ | ADSR
-	0 a!+
-	a> 'instr> ! 
-	ninstr ;
+	a!+ iadsr 0 iend ;
 
-::isweep | ADSR osc -- n		| oscilador con pitch slide (ver smslide!)
+::isweep | v1 v2 osc -- n		| oscilador con pitch slide (ver smslide!)
 	instr> >a
 	'playsweep a!+
-	a!+ | func
-	a!+ | ADSR
-	0 a!+
-	a> 'instr> ! 
-	ninstr ;
+	a!+ iadsr 0 iend ;
 
-::isample | ADSR "" -- n
+::isuper | v1 v2 osc detune -- n	| supersaw: detune = fraccion de freq (0.01 = 1%) del osc extremo
+	instr> >a
+	'playsuper a!+
+	swap a!+ >r iadsr r> iend ;
+
+::isample | v1 v2 "" -- n
 	instr> >a
 	'playsam a!+
-	mix_loadWAV 
+	mix_loadWAV 0? ( drop 'nochunk )
 	dup 8 + @ a!+ 		| sample
-	swap a!+ 			| ADSR
-	16 + d@ 2 >> a!+	| len sample
-	a> 'instr> !
-	ninstr ;
+	-rot iadsr
+	16 + d@ 2 >> iend ;	| len sample
 
 |---- SET INSTRUMENT
 ::smi! | n --
-	5 << 'instr +
+	6 << 'instr +
 	@+ 'ins_vector !
 	@+ 'ins_wave !
 	@+ 'ins_ADSR !
+	@+ 'ins_ADSR2 !
 	@ 'ins_aux !
 	1.0 'ins_vel ! 0 'ins_crv !	| se ajustan despues de smi! (smslide! smvel! smcurve!)
 	;
@@ -318,11 +338,14 @@
 ::smcurve! | n --		| curva de envolvente 0 lineal .. 3 cuartica (~exp); despues de smi!
 	'ins_crv ! ;
 
+::smdetune! | v --		| detune (16.16) de las proximas voces supersaw; despues de smi!
+	'ins_aux ! ;
+
 ::smOSC! | osc n --
-	5 << 'instr + 8 + ! ;
+	6 << 'instr + 8 + ! ;
 	
-::smASDR! | v n --
-	5 << 'instr + 16 + ! ;
+::smASDR! | v1 v2 n --
+	6 << 'instr + 16 + rot over ! 8 + ! ;
 	
 ::fx
 ::control
@@ -349,14 +372,16 @@
 
 	ins_vector q.vec !
 	ins_wave q.func !
-	ins_ADSR w.adt ! | ADSR
+	ins_ADSR q.AD !
+	ins_ADSR2 q.SR !
 	ins_aux d.lensam d!
 	ins_vel d.vel d!
-	ins_crv d.crv c!
-	ins_vector 'playsweep =? ( 0 d.fresam d! ) drop	| fase inicial 0
+	ins_crv c.crv c!
+	ins_vector 'playsweep =? ( 0 d.fresam d! )
+	'playsuper =? ( d.freq d@ d.lensam d@ *. d.fresam d! ) drop
 	
-	1 c.state c!
-	0 w.Vol w!
+	1 c.state w!					| state=1, id=0 (voz sin id: smplay lo asigna despues)
+	0 d.env d!
 	;
 
 ::smplayd | note time --
@@ -375,20 +400,31 @@
 
 #nnote 1
 
-::smplay | nota -- id		| id=0 si no hay voces libres
-	voice> >r
+:idused? | id -- 0/1		| algun voz (incluso en release) tiene este id?
+	'voice ( voice> <?
+		dup 1+ c@ $ff and
+		pick2 =? ( 3drop 1 ; )
+		drop 64 + ) 2drop 0 ;
+
+:nextid | -- id/0			| proximo id 1..255 libre (0 = todos en uso)
+	255 ( 1? 1-
+		nnote 1+ $ff and 0? ( 1+ ) dup 'nnote !
+		idused? 0? ( 2drop nnote ; ) drop
+		) drop 0 ;
+
+::smplay | nota -- id		| id=0 si no hay voces libres o ids agotados
+	nextid 0? ( nip ; )
+	swap voice> >r
 	$7fffffff smplayd
-	voice> r> =? ( drop 0 ; ) drop
-	nnote 1+ $ff and 0? ( 1+ ) 
-	dup 'nnote !
+	voice> r> =? ( 2drop 0 ; ) drop
 	dup c.id c! ;				| c! (antes ! escribia 8 bytes y pisaba freq/vol/ADSR)
 	
 ::smstop | id --
-	$ff and
+	$ff and 0? ( drop ; )		| 0 = voz sin id
 	'voice ( voice> <? 	| Find voice playing this note
 		dup 1+ c@ $ff and	| id de la voz (antes se comparaba la DIRECCION)
 		pick2 =? ( drop 
-			4 over c!		| release
+			4 over w!		| release + libera el id (state=4, id=0)
 			2drop ; )
 		drop
 		64 + ) 2drop ;

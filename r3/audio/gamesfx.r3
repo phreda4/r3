@@ -24,9 +24,6 @@
 |   A D S R  envolvente: ataque(s) decaimiento(s) nivel de sostenido(0..1) release(s)
 |   (16.16 en 32 bits con signo: las frecuencias llegan a 32767 Hz)
 |
-| Todo arranca con precision de muestra (supermix: smtick + smplayhzat), asi que las
-| capas con delay y las notas de las melodias no dependen de los cuadros por segundo.
-|
 | API
 |   sfxinit                  inicia supermix, instrumentos y secuenciador
 |   sfxupdate                llamar una vez por cuadro (genera/encola el audio)
@@ -48,11 +45,6 @@
 |   > <                      sube / baja la octava actual (afecta a las notas sin numero);
 |   |                        separador de compas (se ignora)
 |   el numero de octava fija la octava en forma absoluta: 'c4' siempre es el do central
-| REGISTROS: el registro B apunta al registro actual (la melodia en proceso o la capa que
-| se esta tocando); A es scratch de hojas (l.adsr) y lo usa smplayhz. Supermix solo usa A/B
-| dentro de genAudio, que corre despues del hook, asi que no hay choque. La API publica
-| (sfxupdate sfxplay sfxplayp sfxtune sfxtunemix) guarda y restaura A y B (ab[ ]ba).
-| Capas y notas se disparan con smplayhzat (el retardo en muestras lo maneja la voz): no hay cola de eventos.
 
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
@@ -147,12 +139,6 @@
 	( dup c@ $ff and 48 - 0 9 in?
 		rot 10 * + swap 1+ ) drop swap ;
 
-
-:sxpint | p -- p' n		| entero decimal
-	0 swap
-	( dup c@ $ff and 48 - 0 9 in?
-		rot 10 * + swap 1+ ) drop swap ;
-
 :sxnote>semi | char -- semitono/-1
 	$20 or 97 - 0 6 in? ( 3 << 'sxsemis + @ ; ) drop -1 ;
 
@@ -225,23 +211,21 @@
 	sxtunesched
 	2048 'sxclock +! ;
 
-::sfxinit0 | --			| igual que sfxinit pero sin SDL_Init (la app ya inicio SDL / render offline)
+::sfxinit | --			| SDL audio + supermix + secuenciador
+	$10 SDL_Init		| SDL_INIT_AUDIO
+::sfxinit0 | --	
 	sminit
 	0 'sxclock !
 	sxtunesclear
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
 	sxvolume smmaster!
-	'sxtick 'smtick ! ;
-
-::sfxinit | --			| SDL audio + supermix + secuenciador
-	$10 SDL_Init			| SDL_INIT_AUDIO
-	sfxinit0 ;
+	'sxtick 'smtick ! ;	
 
 ::sfxupdate | --
 	ab[ smupdate ]ba ;
 
-::sfxclock | -- muestras		| muestras generadas hasta ahora (reloj del secuenciador)
+::sfxclock | -- muestras
 	sxclock ;
 
 ::sfxvol | v --
@@ -264,12 +248,12 @@
 		1+ ) drop -1 ;
 
 :sxtunenew | "notas" bpm ins loop -- id
-	sxtunefree -? ( >r 4drop r> ; )		| txt bpm ins loop id
-	dup sxtune@ >b  >r
+	sxtunefree -? ( nip nip nip nip ; )		| txt bpm ins loop id
+	dup sxtune@ >b >r
 	t.loop !  t.ins !					| txt bpm
 	aurate 60 * swap 1 max / t.beat !	| txt
-	dup b!  t.ini !
-	sxclock t.next !  4 t.oct !  -1 t.last !
+	dup b! t.ini !
+	sxclock t.next ! 4 t.oct ! -1 t.last !
 	1.0 t.vol d!  0 t.crv d!
 	r> ;
 
