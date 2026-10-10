@@ -171,11 +171,14 @@
 
 #semitone ( 9 11 0 2 4 5 7 0 )
 
+:rest | a b -- 0		| silencio (prob 0)
+	2drop resetvars 0 'prob ! 0 ;
+
 :parsenote | str -- note
 	c@+
-	$7e =? ( 2drop resetvars 0 'prob ! 0 ; ) | ~
+	$7e =? ( rest ; ) | ~
 	$df and | uppcase+unsigned
-	$41 <? ( 2drop -1 ; )	$47 >? ( 2drop -1 ; ) | A..G
+	$41 <? ( rest ; )	$47 >? ( rest ; ) | A..G, otro = silencio
 	$41 - 'semitone + c@
 	over c@ | adr note char
 	$23 =? ( rot 1+ rot 1+ rot ) | #
@@ -215,13 +218,13 @@
 :,tok	tokens> !+ 'tokens> ! ;
 
 | EXT
-| (seq=acc) (nodo=inc)
+| 64 bits: peso propio del nodo (alto) | suma de pesos de sus hijos si es seq (bajo)
 #extok * $fff
 
 :]extok	3 << 'extok + ;
 ::tok>ext 'tokens - 'extok + ;
 
-:n.acc@ ]extok @ 32 >> $ffffffff and  ;
+:n.w@   ]extok @ 32 >> $ffffffff and  ;
 :n.wsum@ ]extok @ $ffffffff and ;
 
 :t.type		$7 and ;
@@ -255,9 +258,9 @@
 	,tok ;
 
 :sub | n end now -- n end now 
-	over 2 - ]list@ $fff and str$ + | ]mod
-	2 + parsemod 
-	dup 1+ ]list@ 12 >> $fff and | nro seq
+	dup 1+ ]list@ 12 >> $fff and			| nro seq hijo
+	dup ]seq @ 12 >> $fff and 1- ]list@	| item ']' del hijo
+	$fff and str$ + 1+ parsemod			| modificadores despues de ']'
 	16 <<
 	vars!or ;
 	
@@ -370,7 +373,7 @@
 	pick2 t.fk pick3 t.nk 	
 	pick3 swap | fnode token start|dur scale 1node start|dur cnt
 	( 1? >r					| fnode token start|dur scale child start|dur ; r:nchild
-		over n.acc@ pick3 *. | fnode token start|dur scale child stat|dur realdur
+		over n.w@ pick3 *. | fnode token start|dur scale child stat|dur realdur
 		over $ffff0000 and over or | fnode token start|dur scale child start|dur realdur newsd
 		pick3 32 << or 
 		(eval)

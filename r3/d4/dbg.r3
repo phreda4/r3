@@ -12,13 +12,25 @@
 #topline * 256
 #statusline * 256
 
-| 0 - code
-| 1 - mem
-#modekey 0
 #errorst 0
 
 |--- for show in code
 #codenow -1
+
+::bg0 $000 rgb4t .bc ;
+::bg1 $112 rgb4t .bc ;
+::bg2 $222 rgb4t .bc ;
+::bg3 $334 rgb4t .bc ;
+::fTx $EEE rgb4t .fc ;
+::fMu $889 rgb4t .fc ;
+::fDi $556 rgb4t .fc ;
+::fPr $FA8 rgb4t .fc ;
+::fBl $59E rgb4t .fc ;
+::fPu $97D rgb4t .fc ;
+::fGr $7D8 rgb4t .fc ;
+::fRd $D67 rgb4t .fc ;
+::fYe $EA4 rgb4t .fc ;
+::fb2 $222 rgb4t .fc ;
 
 |-------------------------------------
 :showcode | n --
@@ -92,6 +104,14 @@
 	
 #linesn	'linebytes
 
+:changemem
+	linesn
+	'lineqword =? ( drop 'linebytes 'linesn ! ; )
+	'linedword =? ( 'lineqword nip )
+	'lineword =? ( 'linedword nip )
+	'linebytes =? ( 'lineword nip )
+	'linesn ! ;
+
 :linemem
 	5 .fc
 	dup $ffff and 
@@ -105,9 +125,6 @@
 	
 :panelMem
 	.reset
-|	fx fy .at 
-	modekey 1 =? ( .rev |fw .hline 
-		) drop
 	fx fy .at 5 .fc
 	lmem dup $ffff and swap 16 >> " DUMP %h:%h " .print .eline .cr
 	.reset
@@ -118,20 +135,7 @@
 	fh ( 1? 1- swap
 		fx .col linemem .cr
 		swap ) 2drop 
-
-	modekey	1 <>? ( drop ; ) drop | mode 1
-	uiKey
-	[DN] =? ( memdn )
-	[UP] =? ( memup )
-	[PGDN] =? ( mempgdn )
-	[PGUP] =? ( mempgup )
-	[tab] =? ( 0 'modekey ! 0 'uiKey ! ) 
-	toUpp
-	$42 =? ( 'linebytes 'linesn ! ) | Bytes
-	$44 =? ( 'linedword 'linesn ! ) | Dwords
-	$51 =? ( 'lineqword 'linesn ! ) | Qwords
-	$57 =? ( 'lineword 'linesn ! ) | Words
-	drop ;
+	;
 
 |-------------------------------------
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
@@ -242,11 +246,16 @@
 	fx .col 
 	.h 8 .r. .write .cr ;
 	
+:dtackcnt | -- cnt
+	vmNOS mdatastack - 3 >> ;
+	
+:rstackcnt | -- cnt
+	mretstack vmRTOS - 3 >> 1- ;
+	
 :.datastack
 	vmNOS 
 	mdatastack >? ( vmTOS .stk ) 
-	dup mdatastack - 3 >> 
-	fh min 1- clamp0 swap
+	dtackcnt fh min 1- clamp0 swap
 	dstackoff +
 	( swap 1? 1- swap
 		8 - dup @ 
@@ -262,26 +271,18 @@
 	
 :panelIP
 	.reset |fx fy 1+ .at fw .hline .cr
-	fx fy .at modekey 0 =? ( .rev |fw .hline 
-		) drop
-	
 	flxpush
 	20 flxO fx fy .at
 	2 .fc
-	fx .col "   IP:" .write 
-	vmIP .h 8 .r. .write .sp .cr
-	"  RET STK:" .write
-	mretstack vmRTOS - 3 >> 1- .d 4 .r. .write .sp .cr
+	fx .col "   IP:" .write vmIP .h 8 .r. .write .sp .cr
+	"  RET STK:" .write rstackcnt .d 4 .r. .write .sp .cr
 	
 	3 .fc
-	fx .col "    A:" .write 
-	vmREGA .h 8 .r. .write .sp .cr
-	fx .col "    B:" .write 
-	vmREGB .h 8 .r. .write .sp .cr
-	" DATA STK:" .write
-	vmNOS mdatastack - 3 >> .d 4 .r. .write .sp .cr
+	fx .col "    A:" .write vmREGA .h 8 .r. .write .sp .cr
+	fx .col "    B:" .write vmREGB .h 8 .r. .write .sp .cr
+	" DATA STK:" .write dtackcnt .d 4 .r. .write .sp .cr
 	
-	20 flxO fx fy .at
+	20 flxO fx fy .at .rev
 	3 .fc
 	.datastack
 	
@@ -304,6 +305,31 @@
 	flxpop
 	;
 	
+:keyext
+	[SHIFT+DN] =? ( memdn )
+	[SHIFT+UP] =? ( memup )
+	[SHIFT+PGDN] =? ( mempgdn )
+	[SHIFT+PGUP] =? ( mempgup )
+	[SHIFT+TAB] =? ( changemem )	
+	drop
+	;
+	
+:teclado
+	uiKey
+	tueKeyMove
+	$7f >? ( keyext ; )
+	toUpp
+	$42 =? ( breakpoint )	| B breakpoint
+	$43 =? ( playmode )		| C continue
+	
+	$4E =? ( stepout )		| N step over (next)`
+	$4F =? ( *>stepu )		| O step out
+	$51 =? ( exit ) 		| Q uit
+	$52 =? ( runtocursor )	| R un to cursor
+	$53 =? ( *>step )		| S	
+	drop 
+	;	
+	
 |-----------------	
 :maindb
 	.reset .cls 
@@ -322,7 +348,6 @@
 	.rev "S" .write .nrev "tep  " .write
 	.rev "N" .write .nrev "extover  " .write 
 	"step" .write .rev "O" .write .nrev "ut  " .write 
-	.rev "TAB" .write .nrev " mem/code " .write 
 	.rev "Q" .write .nrev "uit" .write 
 	.eline
 	
@@ -342,20 +367,7 @@
 	tuC! | show user cursor
 	showbreakpoint
 	
-	modekey	1? ( drop ; ) drop | mode 0
-	uiKey
-	tueKeyMove
-	[tab] =? ( 1 'modekey ! ) 
-	toUpp
-	$42 =? ( breakpoint )	| B breakpoint
-	$43 =? ( playmode )		| C continue
-	
-	$4E =? ( stepout )		| N step over (next)`
-	$4F =? ( *>stepu )		| O step out
-	$51 =? ( exit ) 		| Q uit
-	$52 =? ( runtocursor )	| R un to cursor
-	$53 =? ( *>step )		| S	
-	drop
+	teclado
 	;
 
 

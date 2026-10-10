@@ -27,7 +27,7 @@
 #undobuffer>
 #undobuffer<	| tope valido de redo
 
-#findpad * 128	|----- find text
+#findpad * 64	|----- find text
 
 :ubackc | adr -- adr' ; retrocede al primer byte del caracter utf8
 	( fuente >?
@@ -311,7 +311,7 @@
 	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
 	
 :iniline | adr lin -- adr lin 
-|	.reset |.rev
+|	.reset
 	fx over fy + .at
 	dup ylinea + 
 	|focoe 0? ( drop linenormal ; ) drop | sin foco?

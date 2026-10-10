@@ -1,4 +1,4 @@
-| Utg Graphics
+| Utf-8  Graphics/font/color ex
 | PHREDA 2025
 ^r3/lib/console.r3
 
@@ -285,3 +285,17 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		) drop
 	3drop
 	]ba empty ;
+
+
+#map4to6 ( 0 0 0 1 1 1 1 2 2 2 3 3 4 4 5 5 )
+#gray_lut ( 232 233 235 236 238 239 241 242 244 245 247 248 250 251 253 255 )
+
+::rgb4t | col12 -- col256
+	dup 8 >> $f and 
+	over 4 >> $f and 
+	rot $f and | r g b
+	over =? ( pick2 =? ( nip nip 'gray_lut + c@ ; ) )
+	'map4to6 + c@
+	swap 'map4to6 + c@ 6 * +
+	swap 'map4to6 + c@ 36 * +
+	16 + ;
