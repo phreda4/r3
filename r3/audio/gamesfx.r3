@@ -24,31 +24,38 @@
 |   A D S R  envolvente: ataque(s) decaimiento(s) nivel de sostenido(0..1) release(s)
 |   (16.16 en 32 bits con signo: las frecuencias llegan a 32767 Hz)
 |
+| Todo arranca con precision de muestra (supermix: smtick + smplayhzat), asi que las
+| capas con delay y las notas de las melodias no dependen de los cuadros por segundo.
+|
 | API
 |   sfxinit                  inicia supermix, instrumentos y secuenciador
 |   sfxupdate                llamar una vez por cuadro (genera/encola el audio)
 |   'sonido sfxplay          dispara un sonido
 |   'sonido n sfxplayp       igual, transpuesto n semitonos (variacion)
-|   "notas" bpm ins loop sfxtune -- id        melodia (formato abajo); ins = instrumento de supermix
-|                                            (iosc isweep isample...), fijo para toda la melodia
+|   "patron" bpm ins loop sfxtune -- id       melodia (mini-notacion Strudel, abajo); ins = instrumento de
+|                                            supermix (iosc isweep isample...), fijo para toda la melodia
 |   id vol crv sfxtunemix -- id   volumen (16.16) y curva de la melodia (por defecto 1.0 y 0)
 |   id sfxtunestop           corta una melodia
 |   sfxstop                  corta todo
 |   v sfxvol                 volumen general (1.0 normal, 2.0 por defecto)
 |
-| MELODIAS: texto con notas separadas por espacios
-|   c4 d4 e4 f4 g4 a4 b4     nota + octava (c4 = do central, midi 60)
-|   c#4 db4 f#3              sostenido (#) bemol (b)
-|   c e g                    sin octava usa la ultima nombrada (empieza en 4)
-|   c4*2  c4/2  c4.          duracion en pulsos: *n multiplica, /n divide, . puntillo
-|   ~  ~*2                   silencio
-|   > <                      sube / baja la octava actual (afecta a las notas sin numero);
-|   |                        separador de compas (se ignora)
-|   el numero de octava fija la octava en forma absoluta: 'c4' siempre es el do central
+| MELODIAS: mini-notacion de Strudel (el parser es eval.r3, ahi esta la sintaxis completa)
+|   c4 d4 e4 f4          notas: c4 = do central (midi 60); sin octava = octava 3; c#4 db4; un numero = midi
+|   ~                    silencio            [c4 d4]  un paso con dos notas    <c4 d4>  una por ciclo
+|   c4*2  c4/2           mas rapido / mas lento    c4!2  replica    c4@3  c4 _  pesos    c4?  al azar
+|   [c4 e4, g4]  {c4 e4 g4}  (c4 d4)  c4(3,8)  c4:3  c4^0.5   capas, acordes, azar, euclidiano, variante, volumen
+|   Un CICLO dura 4 pulsos a 'bpm' (240/bpm segundos): "c4 d4 e4 f4" son cuatro negras. Para melodias largas se
+|   escribe un compas por ciclo con <...>:   <[c4 d4 e4 f4] [g4@2 e4@2]>   (loop 1 repite)
+| REGISTROS: el registro B apunta al registro actual (la melodia en proceso o la capa que
+| se esta tocando); A es scratch de hojas (l.adsr) y lo usa smplayhz. Supermix solo usa A/B
+| dentro de genAudio, que corre despues del hook, asi que no hay choque. La API publica
+| (sfxupdate sfxplay sfxplayp sfxtune sfxtunemix) guarda y restaura A y B (ab[ ]ba).
+| Capas y notas se disparan con smplayhzat (el retardo en muestras lo maneja la voz): no hay cola de eventos.
 
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
 ^./supermix.r3
+^./eval.r3
 
 |--------------------------------------------------------------- tablas
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin3 'oscSuperSaw2P
@@ -112,98 +119,74 @@
 	drop 440.0 sxplaynote ;
 
 |--------------------------------------------------------------- melodias
-| registro de melodia (9 celdas = 72 bytes), 8 melodias simultaneas; B apunta al registro en proceso:
-|   0 ptr (0 = inactiva) 8 inicio 16 proximo(muestra) 24 pulso(muestras) 32 instrumento
-|   40 loop 48 octava 56 ultimo-reinicio 64 vol(dword) 68 crv(dword)
-#sxtunes * 576
-#sxsemis 9 11 0 2 4 5 7		| a b c d e f g
+| mini-notacion Strudel (eval.r3): cada ciclo se evalua una vez, los eventos se guardan y se
+| programan por bloque con smplayhzat (precision de muestra).
+| registro de melodia (64 bytes), 8 simultaneas; B apunta al registro en proceso:
+|   0 arbol (buffer de eval.r3, 0 = inactiva)  8 largo del ciclo (muestras)  16 inicio del ciclo actual (muestra)
+|   24 nro de ciclo  32 instrumento  40 loop  48 vol(dword)  52 crv(dword)  56 eventos del ciclo (-1 = sin generar)
+#sxtunes * 512
+#sxtoks * $20000		| arbol de cada melodia: 16 KB (512 nodos)
+#sxevs * $4000		| eventos del ciclo actual de cada melodia: 2 KB (256 eventos)
 
 :sxtune@ | n -- adr		| registro de la melodia n
-	72 * 'sxtunes + ;
+	6 << 'sxtunes + ;
 
-:t.ini b> 8 + ;
-:t.next b> 16 + ;
-:t.beat b> 24 + ;
+:t.tree b> ;
+:t.clen b> 8 + ;
+:t.cstart b> 16 + ;
+:t.cyc b> 24 + ;
 :t.ins b> 32 + ;
 :t.loop b> 40 + ;
-:t.oct b> 48 + ;
-:t.last b> 56 + ;
-:t.vol b> 64 + ;
-:t.crv b> 68 + ;
+:t.vol b> 48 + ;
+:t.crv b> 52 + ;
+:t.nev b> 56 + ;
 
-:sxskipws | p -- p'
-	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
-
-:sxpint | p -- p' n		| entero decimal
-	0 swap
-	( dup c@ $ff and 48 - 0 9 in?
-		rot 10 * + swap 1+ ) drop swap ;
-
-:sxnote>semi | char -- semitono/-1
-	$20 or 97 - 0 6 in? ( 3 << 'sxsemis + @ ; ) drop -1 ;
+:t.evs | -- adr		| buffer de eventos de la melodia B
+	b> 'sxtunes - 6 >> 11 << 'sxevs + ;
 
 :sxmidi>hz | midi -- hz
 	69 - fix. 12 / pow2. 440.0 *. ;
 
-:sxsuffix1 | p mult -- p' mult
-	over c@ $ff and
-	$2a =? ( drop swap 1+ sxpint rot * sxsuffix1 ; )		| *n
-	$2f =? ( drop swap 1+ sxpint 1 max rot swap / sxsuffix1 ; )	| /n
-	$2e =? ( drop swap 1+ swap 1.5 *. sxsuffix1 ; )		| .
-	drop ;
+:sxgen | --			| evalua el ciclo actual de la melodia B y guarda sus eventos
+	'stack 'stack> !
+	t.tree @ t.cyc @ evalat
+	stack> 'stack - 3 >> dup t.nev !
+	t.evs 'stack rot move ;
 
-:sxsuffix | p -- p' mult	| multiplicador de duracion (16.16)
-	1.0 sxsuffix1 ;
+:sxevvel | ev -- vel	| volumen del evento (0 = normal) por el de la melodia
+	48 >> $ff and 1? ( 16 << 255 / t.vol d@ *. ; ) drop t.vol d@ ;
 
-:sxaccid | p -- p' acc		| # sostenido, b bemol
-	dup c@ $ff and
-	$23 =? ( drop 1+ 1 ; )
-	$62 =? ( drop 1+ -1 ; )
-	drop 0 ;
+:sxev | ev --			| programa el evento si cae dentro de este bloque
+	dup 16 >> $ffff and t.clen @ * 16 >> t.cstart @ + sxbstart -	| ev delay
+	0 <? ( 2drop ; ) 2048 >=? ( 2drop ; )
+	swap										| delay ev
+	t.ins @ smi!
+	dup sxevvel smvel!  t.crv d@ smcurve!
+	dup 32 >> $ff and sxmidi>hz					| delay ev hz
+	swap $ffff and t.clen @ * 16 >> 16 << aurate / 0.9 *.	| delay hz seg
+	rot smplayhzat ;
 
-:sxoctv | p -- p'		| un digito fija la octava
-	dup c@ $ff and 48 - 0 9 in? ( t.oct ! 1+ ; ) drop ;
+:sxevs1 | --			| eventos del ciclo de la melodia B que caen en este bloque
+	t.evs t.nev @ ( 1? 1- >r @+ sxev r> ) 2drop ;
 
-:sxtnote | midi dur --		| toca la nota ahora (retardo en muestras dentro del bloque) y avanza
-	swap sxmidi>hz					| dur hz
-	t.ins @ smi!  t.vol d@ smvel!  t.crv d@ smcurve!
-	over 16 << aurate / 0.9 *.			| dur hz seg
-	t.next @ sxbstart - 0 max smplayhzat
-	t.next +! ;
+:sxadvance | -- 0/1		| pasa al ciclo siguiente (0 = la melodia termino)
+	t.loop @ 0? ( drop 0 t.tree ! 0 ; ) drop
+	1 t.cyc +!  t.clen @ t.cstart +!  sxgen 1 ;
 
-:sxtend | --			| fin del texto: repite o termina
-	t.loop @ 0? ( drop 0 b! ; ) drop
-	t.next @ t.last @ =? ( drop 0 b! ; ) drop	| una pasada sin avanzar el tiempo
-	t.next @ t.last !
-	t.ini @ b! ;
-
-:sxtunestep | --			| interpreta un token
-	b@ sxskipws dup c@ $ff and
-	0? ( 2drop sxtend ; )
-	$7c =? ( drop 1+ b! ; )
-	$3e =? ( drop 1+ b! 1 t.oct +! ; )
-	$3c =? ( drop 1+ b! -1 t.oct +! ; )
-	$7e =? ( drop 1+ sxsuffix swap b! t.beat @ swap *. t.next +! ; )
-	sxnote>semi -? ( drop 1+ b! ; )	| p semi
-	swap 1+ sxaccid rot +			| p' semi+acc
-	swap sxoctv sxsuffix			| semi p' mult
-	swap b!				| semi mult
-	t.beat @ swap *.				| semi dur
-	swap t.oct @ 1+ 12 * + swap		| midi dur
-	sxtnote ;
-
-:sxtune1 | --			| programa las notas de la melodia B que caen en este bloque
+:sxtune1 | --			| programa la melodia B en este bloque
+	t.tree @ 0? ( drop ; ) drop
+	t.nev @ -? ( sxgen ) drop
 	64 ( 1? 1-
-		b@ 0? ( 2drop ; ) drop
-		t.next @ sxbstart 2048 + >=? ( 2drop ; ) drop
-		sxtunestep ) drop ;
+		sxevs1
+		t.cstart @ t.clen @ + sxbstart 2048 + >=? ( 2drop ; ) drop
+		sxadvance 0? ( 2drop ; ) drop ) drop ;
 
 :sxtunesched | --
 	'sxtunes >b
-	8 ( 1? 1- sxtune1 72 b+ ) drop ;
+	8 ( 1? 1- sxtune1 64 b+ ) drop ;
 
 :sxtunesclear | --
-	'sxtunes 0 576 cfill ;
+	'sxtunes 0 512 cfill ;
 
 |--------------------------------------------------------------- API
 :sxtick | --				| hook de supermix: antes de generar cada bloque
@@ -211,21 +194,23 @@
 	sxtunesched
 	2048 'sxclock +! ;
 
-::sfxinit | --			| SDL audio + supermix + secuenciador
-	$10 SDL_Init		| SDL_INIT_AUDIO
-::sfxinit0 | --	
+::sfxinit0 | --			| igual que sfxinit pero sin SDL_Init (la app ya inicio SDL / render offline)
 	sminit
 	0 'sxclock !
 	sxtunesclear
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
 	sxvolume smmaster!
-	'sxtick 'smtick ! ;	
+	'sxtick 'smtick ! ;
+
+::sfxinit | --			| SDL audio + supermix + secuenciador
+	$10 SDL_Init			| SDL_INIT_AUDIO
+	sfxinit0 ;
 
 ::sfxupdate | --
 	ab[ smupdate ]ba ;
 
-::sfxclock | -- muestras
+::sfxclock | -- muestras		| muestras generadas hasta ahora (reloj del secuenciador)
 	sxclock ;
 
 ::sfxvol | v --
@@ -247,17 +232,18 @@
 		dup sxtune@ @ 0? ( drop ; ) drop
 		1+ ) drop -1 ;
 
-:sxtunenew | "notas" bpm ins loop -- id
-	sxtunefree -? ( nip nip nip nip ; )		| txt bpm ins loop id
-	dup sxtune@ >b >r
+:sxtunenew | "patron" bpm ins loop -- id
+	sxtunefree -? ( >r 4drop r> ; )		| txt bpm ins loop id
+	dup sxtune@ >b  >r
 	t.loop !  t.ins !					| txt bpm
-	aurate 60 * swap 1 max / t.beat !	| txt
-	dup b! t.ini !
-	sxclock t.next ! 4 t.oct ! -1 t.last !
+	aurate 240 * swap 1 max / t.clen !	| txt: un ciclo = 4 pulsos
+	r@ 14 << 'sxtoks + dup t.tree !		| txt buf
+	processat drop
+	sxclock t.cstart !  0 t.cyc !  -1 t.nev !
 	1.0 t.vol d!  0 t.crv d!
 	r> ;
 
-::sfxtune | "notas" bpm ins loop -- id
+::sfxtune | "patron" bpm ins loop -- id
 	ab[ sxtunenew ]ba ;
 
 :sxtunemix | id vol crv -- id

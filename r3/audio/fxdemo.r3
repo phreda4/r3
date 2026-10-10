@@ -153,13 +153,18 @@
 	uiPop
 	;
 
-#wavelist "Sqr" "Saw" "Sin" "Nse" "Tri" 
+#wavelist "Sqr" "Saw" "Sin" "Nse" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin2" "Sin3" "Parab" "SSaw2" "SSaw3" "SSawF" "Pink" "Brown"
+
+:wavename | n -- "str"
+	'wavelist swap ( 1? 1- swap >>0 swap ) drop ;
 
 :wavebtns
-	0 ( 5 <?
+	2 11 uiGrid
+	0 ( fxnwaves <?
 		p_wave =? ( stInfo )
-		[ dup 'p_wave ! fxPlay ; ] over 2 << 'wavelist + uiCBtn
+		[ dup 'p_wave ! fxPlay ; ] over wavename uiCBtn
 		p_wave =? ( stLink )
+		uiNext
 		1+ ) drop ;
 		
 :exPlay
@@ -180,6 +185,8 @@
 	seedPanel
 	
 	0.2 %w uiO
+	uiPush
+	txh 2 + 11 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
 	stLink 
@@ -192,35 +199,72 @@
 	[ fxJump fxPlay ; ]      "Jump"          uiRbtn
 	[ fxBlip fxPlay ; ]      "Blip / Select" uiRbtn
 	"* Wave *" uiLabelC
+	uiRest
 	wavebtns
+	uiPop
 
-	0.2 %w uiO
-	"Freq " uiLabelR
-	"Ataque " uiLabelR	
+	|---- parametros, dos columnas (etiquetas | sliders); una fila de titulo por grupo
+	0.115 %w uiO
+	"* Envolvente *" uiLabelC
+	"Ataque " uiLabelR
 	"Sosten " uiLabelR
 	"Punch " uiLabelR
 	"Decay " uiLabelR
+	"* Frecuencia *" uiLabelC
+	"Freq " uiLabelR
+	"Freq.Min " uiLabelR
 	"Ramp " uiLabelR
-	"Duty " uiLabelR
+	"Ramp.Acel " uiLabelR
+	"* Vibrato *" uiLabelC
 	"Vib.Prof " uiLabelR
 	"Vib.Vel " uiLabelR
-	"LowPass " uiLabelR
-	"HighPass " uiLabelR
-	"Repetir " uiLabelR
-	"Volumen " uiLabelR
-	
-	0.3 %w uiO
-	0.0 1.0 'p_freq uiSliderf		exPlay
+	"* Arpegio *" uiLabelC
+	"Arp.Mod " uiLabelR
+	"Arp.Vel " uiLabelR
+
+	0.165 %w uiO
+	ui..
 	0.0 1.0 'p_attack uiSliderf		exPlay
 	0.0 1.0 'p_sustain uiSliderf	exPlay
 	0.0 1.0 'p_punch uiSliderf		exPlay
 	0.0 1.0 'p_decay uiSliderf		exPlay
+	ui..
+	0.0 1.0 'p_freq uiSliderf		exPlay
+	0.0 1.0 'p_freqlimit uiSliderf	exPlay
 	-1.0 1.0 'p_freqramp uiSliderf	exPlay
-	0.0 1.0 'p_duty uiSliderf		exPlay
+	-1.0 1.0 'p_freqdramp uiSliderf	exPlay
+	ui..
 	0.0 1.0 'p_vibdepth uiSliderf	exPlay
 	0.0 1.0 'p_vibspeed uiSliderf	exPlay
+	ui..
+	-1.0 1.0 'p_arpmod uiSliderf	exPlay
+	0.0 1.0 'p_arpspeed uiSliderf	exPlay
+
+	0.115 %w uiO
+	"* Duty *" uiLabelC
+	"Duty " uiLabelR
+	"Duty.Ramp " uiLabelR
+	"* Filtros *" uiLabelC
+	"LowPass " uiLabelR
+	"LP.Ramp " uiLabelR
+	"LP.Reso " uiLabelR
+	"HighPass " uiLabelR
+	"HP.Ramp " uiLabelR
+	"* Salida *" uiLabelC
+	"Repetir " uiLabelR
+	"Volumen " uiLabelR
+
+	0.165 %w uiO
+	ui..
+	0.0 1.0 'p_duty uiSliderf		exPlay
+	-1.0 1.0 'p_dutyramp uiSliderf	exPlay
+	ui..
 	0.0 1.0 'p_lpffreq uiSliderf 	exPlay
+	-1.0 1.0 'p_lpframp uiSliderf	exPlay
+	0.0 1.0 'p_lpfreso uiSliderf	exPlay
 	0.0 1.0 'p_hpffreq uiSliderf 	exPlay
+	-1.0 1.0 'p_hpframp uiSliderf	exPlay
+	ui..
 	0.0 1.0 'p_repeat uiSliderf 	exPlay
 	0.0 1.0 'p_vol uiSliderf		exPlay
 

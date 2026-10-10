@@ -13,9 +13,16 @@
 	0.005 0.12 0.55 0.06 packADSR 'oscSaw iosc 'i1 !
 	0.002 0.40 0.0 0.20 packADSR 'oscSin iosc 'i2 ! ;
 
+
 :music
-	"a bb c d e ~ a" 180 i1 0 sfxtune 0.22 0 sfxtunemix drop
-	"bb cd " 180 i2 1 sfxtune 0.30 2 sfxtunemix drop
+"<[c#4 e4 g#4 b4  a3 c#4 e4 g#4  e3 g#3 b3 e4  b3 d#4 f#4 b4]
+[a3 c#4 e4 e4  f#4 e4 d#4 c#4  b3 d#4 f#4 f#4  g#4 f#4 e4 d#4]
+[[c#4 e4 g#4 e4] [f#4 e4 c#4 e4]  [a3 c#4 e4 c#4] [f#4 e4 d#4 c#4]  [e3 g#3 b3 g#3] [e4 d#4 c#4 b3]  [b3 d#4 f#4 d#4] [g#4 f#4 e4 d#4]]
+[c#5 b4 g#4 f#4  e4 f#4 g#4 e4  a4 g#4 f#4 e4  d#4 e4 f#4 b4]>"
+  90 i1 1 sfxtune
+0.22 0 sfxtunemix drop
+"c#2 a1 e2 b1" 90 i2 1 sfxtune 
+0.30 2 sfxtunemix drop
 	;
 
 :handle

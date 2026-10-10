@@ -104,9 +104,11 @@
 	0 ]
 
 |---------------------------------------------------------------
-| MELODIAS (texto): ver formato en gamesfx.r3
+| MELODIAS (texto): mini-notacion Strudel, ver gamesfx.r3 / eval.r3
+| un ciclo = 4 pulsos a 'bpm'; las que tienen N pasos en un ciclo piden bpm = 4/N del tempo en pulsos:
+|   jingle 10 pasos a 150 pulsos/min -> bpm 60 | gameover 9 pasos a 110 -> bpm 49 | bgm: 1 compas por ciclo, bpm 132
 |---------------------------------------------------------------
-##tune_jingle "c5 e5 g5 c6*2 ~ g5 c6*3"
-##tune_gameover "c5 b4 a#4 a4*2 ~ g4*3"
-##tune_bgm_lead "e4 g4 a4 b4 | b4 a4 g4 e4 | d4 f#4 a4 d5 | b4*2 a4*2 | e4 g4 a4 b4 | c5 b4 a4 g4 | f#4 a4 d5 f#5 | e5*4"
-##tune_bgm_bass "e2*4 b2*4 d3*4 g2*2 b2*2 e2*4 a2*4 d3*4 e2*4"
+##tune_jingle "c5 e5 g5 c6@2 ~ g5 c6@3"
+##tune_gameover "c5 b4 a#4 a4@2 ~ g4@3"
+##tune_bgm_lead "<[e4 g4 a4 b4] [b4 a4 g4 e4] [d4 f#4 a4 d5] [b4@2 a4@2] [e4 g4 a4 b4] [c5 b4 a4 g4] [f#4 a4 d5 f#5] e5>"
+##tune_bgm_bass "<e2 b2 d3 [g2 b2] e2 a2 d3 e2>"

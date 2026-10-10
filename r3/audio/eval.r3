@@ -1,416 +1,369 @@
-| parse+vm
+| eval.r3 - mini-notacion tipo Strudel: parser recursivo + evaluador por ciclos
 | PHREDA 2025
+|
+| SINTAXIS
+|   c4 d#4 eb3 60   nota (c4 = 60, sin octava = octava 3, un numero = nota midi)
+|   ~ -             silencio                       a b c  ==  [a b c]
+|   [a b c]         secuencia: un paso por elemento
+|   <a b c>         alterna: un elemento por ciclo
+|   {a b c}         todos al mismo tiempo (capas)
+|   (a b c)         uno al azar en cada evaluacion
+|   [a b, c d e]    la coma apila capas (tambien en < > ( ) y al nivel superior)
+|   a*2  a*1.5      mas rapido, se repite dentro del paso     a/2  mas lento
+|   a!3  a!         replica: a a a / a a                      a@3  a _   peso: el paso dura 3 / uno mas
+|   a?  a?0.3       se pierde con probabilidad 0.5 / 0.3
+|   a(3,8)  a(3,8,2)  euclidiano (pulsos,pasos,rotacion)
+|   a:3             variante (sample) 0..255                  a^0.5  volumen 0..1
+|
+| API
+|   process | "str" --         parsea a ##tokens
+|   eval    | --              eventos del ciclo ##ccycle -> ##stack (la limpia antes)
+|   processat | "str" 'buf -- bytes     parsea a otro buffer (devuelve los bytes usados)
+|   evalat  | 'buf cycle --   eventos del ciclo cycle del arbol de 'buf -> ##stack (no la limpia)
+|   evento (64 bits): nota(8) variante(8) volumen(8) <<32 | start(16)<<16 | dur(16)
+|                     start y dur: fraccion del ciclo (65536 = 1 ciclo); volumen 0 = normal
 
 ^r3/lib/console.r3
+^r3/lib/parse.r3
 ^r3/lib/rand.r3
 
-|--- word stack ---
-##stack * $800
+|--- eventos
+##stack * $2000
 ##stack> 'stack
 
 :push stack> !+ 'stack> ! ;
-:pop -8 'stack> +! stack> @ ;
 
-#str$
-#lvl
-#aseq
-#nseq
+|--- arbol: nodos de 32 bytes
+|  0 c tipo (0 nota 1 seq 2 alt 3 capas 4 azar 5 silencio)  1 c nota  2 c variante  3 c volumen
+|  4 w nro de hijos  6 w primer hijo (indice)  8 d peso (16.16)  12 d suma de pesos de los hijos
+|  16 d velocidad (fast/slow 16.16)  20 d prob. de sonar (16.16)  24 c euclid pulsos  25 c pasos  26 c rotacion
+##tokens * $8000
+##tokens> 'tokens
+#tbase 'tokens
 
-| tokenizado
-| cant(8)seq(12)str(12)
-##list * 1024
-##list> 'list
+:n.type		c@ ;
+:n.note		1+ c@ $ff and ;
+:n.var		2 + c@ $ff and ;
+:n.vol		3 + c@ $ff and ;
+:n.nk		4 + w@ ;
+:n.fk		6 + w@ ;
+:n.weight	8 + d@ ;
+:n.wsum		12 + d@ ;
+:n.rate		16 + d@ ;
+:n.prob		20 + d@ ;
+:n.ek		24 + c@ $ff and ;
+:n.en		25 + c@ $ff and ;
+:n.er		26 + c@ ;
 
-:]list@ | n -- list@
-	2 << 'list + d@ ;
-	
-:]list+!
-	1 24 << swap 2 << 'list + d+! ;
+:>node | idx -- adr
+	5 << tbase + ;
 
-| secuencias
-| type(4)|token(12)|cnt(8)|end(12)|start(12)
-#rseq * 1024 
+|--- parser
+#pp			| puntero de parseo
+:cc pp c@ $ff and ;
+:pp+ pp 1+ 'pp ! ;
+:skipws ( cc 1? 33 <? drop pp+ ) drop ;
 
-:]seq | n -- adr
-	3 << 'rseq + ;
-	
-:listnro
-	list> 'list - 2 >> ;
-	
-:]seqini! | n --
-	|]seq dup @ listnro or swap ! ;
-	listnro swap ]seq ! ;	
-	
-:]seqend! | n --
-	]seq dup @ listnro 12 << or swap ! ;
-	
-:newseq | type --
-	44 << 1 24 << or
-	1 'nseq +! 
-	nseq dup 'aseq ! 
-	]seq ! ;
-
-|delimiter  ESP ( ) < > [ ] { } ,
-:isD? | char -- X/0
+:delim? | c -- 0/1		| espacio ( ) < > [ ] { } ,
 	$ff and
-	$20 <=? ( 4 nip ; )
-	$28 =? ( 1 nip ; ) |$28 $29 ( )m
-	$29 =? ( 2 nip ; )
-	$3c =? ( 1 nip ; ) |$3c $3e < >m alterna
-	$3e =? ( 2 nip ; )
-	$5b =? ( 1 nip ; ) |$5b $5d [ ]m secuencia
-	$5d =? ( 2 nip ; )
-	$7b =? ( 1 nip ; ) |$7b $7d { }m mismo tiempo
-	$7d =? ( 2 nip ; )
-	$2c =? ( 3 nip ; ) | ,
+	33 <? ( 1 nip ; )
+	$5b =? ( 1 nip ; ) $5d =? ( 1 nip ; )
+	$3c =? ( 1 nip ; ) $3e =? ( 1 nip ; )
+	$7b =? ( 1 nip ; ) $7d =? ( 1 nip ; )
+	$28 =? ( 1 nip ; ) $29 =? ( 1 nip ; )
+	$2c =? ( 1 nip ; )
 	0 nip ;
 
-::>>spl | adr -- adr'
-	( c@+ $ff and 32 >? 
-		isD? 1? ( drop 1- ; ) drop
-		) drop 1- ;
+:skiptok ( cc delim? 0? drop pp+ ) drop ;
 
-	
-:]seq+!	]seq 1 24 << swap +! ;
-:]seq-!	]seq -1 24 << swap +! ; | remove ]}>
-	
-| ITEM 32bits
-| seq(12) str(12)
-:+item | adr  -- adr
-	aseq 
-	dup ]seq+!		| suma uno a la seq
-	$fff and 12 << 
-	over str$ - $fff and or
-	list> d!+ 'list> !
-	>>spl ;
-	
-:uplvl | adr type -- adr
-	swap
-	+item 1+
-	aseq push
-	swap newseq
-	aseq ]seqini!
-	1 'lvl +! ;
-	
-:dnlvl | --
-	+item 1+
-	aseq 
-	dup ]seq-!
-	]seqend!
-	pop 'aseq !
-	-1 'lvl +! 
-	>>spl 
-	dup c@ isD? 1? ( drop ; ) drop
-	dup 1+ c@ isD? 1? ( drop ; ) drop
-	1- ;
-	
-:coma | *****
-	|+item 
-	aseq ]seq
-	dup @ $80000000 or swap ! ; | bit de polyfonia
-	
-:token
-|	$28 =? ( drop 4 uplvl ; ) |$28 $29 ( )m
-|	$29 =? ( drop dnlvl ; )
-	$5b =? ( drop 1 uplvl ; ) |$5b $5d [ ]m SEQ
-	$5d =? ( drop dnlvl ; )
-	$3c =? ( drop 2 uplvl ; ) |$3c $3e < >m ALT
-	$3e =? ( drop dnlvl ; )
-	$7b =? ( drop 3 uplvl ; ) |$7b $7d { }m POLY
-	$7d =? ( drop dnlvl ; )
-	$2c =? ( drop coma 1+ ; ) | marca seq con poly <a b , c> --> {[a b] [c]}
-	drop +item ;
-	
-:trimall | adr -- 'adr char
-	( dup c@ 0? ( ; )
-		$ff and 33 <? 
-		drop 1+ ) ;
+:mint | -- n
+	pp str>nro swap 'pp ! ;
+:mnum | -- fix
+	pp str>fnro swap 'pp ! ;
+:digit? | -- 0/1
+	cc 48 - 0 9 in? ( drop 1 ; ) drop 0 ;
 
-:pass1 | 'str -- 
-	dup 'str$ !
-	'stack 'stack> !
-	'list 'list> ! 0 'lvl ! 0 'aseq ! 0 'nseq ! 
-	aseq dup ]seqini! push | first node..a b -> [a b]
-	( trimall 1? token ) 2drop 
-	pop ]seqend!
-	;
-	
-|----------------------------------
-|----------------------------------
-#vari #repl
-#prob #mult #divi #weig #eucl
+|--- nodo en construccion
+#cur * 32
+:c.type 'cur ;
+:c.note 'cur 1+ ;
+:c.var 'cur 2 + ;
+:c.vol 'cur 3 + ;
+:c.nk 'cur 4 + ;
+:c.fk 'cur 6 + ;
+:c.weight 'cur 8 + ;
+:c.wsum 'cur 12 + ;
+:c.rate 'cur 16 + ;
+:c.prob 'cur 20 + ;
+:c.ek 'cur 24 + ;
+:c.en 'cur 25 + ;
+:c.er 'cur 26 + ;
 
-:pmod
-	$2a =? ( drop str>fnro 'mult ! ; )		|* 
-	$2f =? ( drop str>fnro 'divi ! ; )		|/ 
-	$21 =? ( drop str>fnro int. 'repl ! ; )	|! 
-	$40 =? ( drop str>fnro 'weig ! ; )		|@
-	$3f =? ( drop str>fnro 0? ( 0.5 + ) 'prob ! ; ) |?
-	$3a =? ( drop str>fnro int. 'vari ! ; )	| : Variante/índice
-	| <.1
-	| >.4
-| falta euclid
-	| %2.3 
-| error
-	drop 1+ ;
-	
-:resetvars
-	1 'repl !
-	1.0 'mult ! 1.0 'divi !
-	1.0 'weig ! 1.0 'prob !
-	0 'eucl ! 0 'vari !
-	| desp < > -1.0 .. 1.0
-	;
-	
-:parsemod | str -- 
-	resetvars
-	( c@+ 1?
-		dup isD? 1? ( 3drop ; ) drop
-		pmod
-		) 2drop ;
+#mfast #mslow #mrep
 
-#semitone ( 9 11 0 2 4 5 7 0 )
+:curinit
+	'cur 0 32 cfill
+	1.0 c.weight d!  1.0 c.rate d!  1.0 c.prob d!
+	1.0 'mfast !  1.0 'mslow !  1 'mrep ! ;
 
-:rest | a b -- 0		| silencio (prob 0)
-	2drop resetvars 0 'prob ! 0 ;
+|--- pila temporal de nodos (los hijos se copian contiguos a ##tokens al cerrar el grupo)
+#tmp * $8000
+#tmp> 'tmp
 
-:parsenote | str -- note
-	c@+
-	$7e =? ( rest ; ) | ~
-	$df and | uppcase+unsigned
-	$41 <? ( rest ; )	$47 >? ( rest ; ) | A..G, otro = silencio
-	$41 - 'semitone + c@
-	over c@ | adr note char
-	$23 =? ( rot 1+ rot 1+ rot ) | #
-	$df and | uppcase+unsigned
-	$53 =? ( rot 1+ rot 1+ rot ) | s
-	$42 =? ( rot 1+ rot 1- rot ) | b
-	drop 
-	4 12 * + | octva 4
-	over c@ | adr note char
-	$30 $39 in? ( | 0..9
-		rot 1+ rot 
-		4 12 * - | resta octava 4
-		pick2 $30 - 12 * + | suma octava
-		rot
-		) 
-	drop 
-	swap parsemod
-	;
+:cur>tmp1 tmp> 'cur 4 move 32 'tmp> +! ;
 
-|parse name/nro
-| .. "hh sd"  or  "1.0 2 3.0"
+:kidsw | from -- sum		| suma de pesos de los nodos desde from hasta tmp>
+	0 swap
+	( tmp> <?
+		dup n.weight rot + swap 32 + ) drop ;
 
-|------------------------------------------------
-| TOKEN
-|type (3)
-|repeat (5)
-|note(8)		|nk:nrokids (in mem)
-|vol(8)var(8)	|fk:firstkid (in mem) (node)
-|mod->prob(8)
-|mod->scale(12)
-|mod->weight(12)
+:kids>cur | from type --	| nodo de grupo en cur con los nodos de tmp desde from
+	curinit c.type c!
+	dup kidsw c.wsum d!
+	tokens> tbase - 5 >> c.fk w!
+	tmp> over -
+	dup 5 >> c.nk w!
+	tokens> pick2 pick2 3 >> move
+	tokens> + 'tokens> !
+	'tmp> ! ;
 
-##tokens * $fff
-##tokens> 'tokens
+|--- modificadores  * / ! @ ? : ^ (k,n,r)
+:meuc | --
+	skipws mint c.ek c!  skipws cc $2c =? ( pp+ ) drop
+	skipws mint c.en c!  skipws
+	cc $2c =? ( pp+ skipws mint c.er c! skipws ) drop
+	cc $29 =? ( pp+ ) drop ;
 
-:]token@ 3 << 'tokens + @ ;
-:,tok	tokens> !+ 'tokens> ! ;
+:pmod | c -- 0/1
+	$2a =? ( drop pp+ mnum 'mfast ! 1 ; )
+	$2f =? ( drop pp+ mnum 'mslow ! 1 ; )
+	$21 =? ( drop pp+ digit? 1? ( drop mint 'mrep ! 1 ; ) drop 2 'mrep ! 1 ; )
+	$40 =? ( drop pp+ mnum c.weight d! 1 ; )
+	$3f =? ( drop pp+ mnum 0? ( 0.5 + ) 1.0 swap - c.prob d! 1 ; )
+	$3a =? ( drop pp+ mint c.var c! 1 ; )
+	$5e =? ( drop pp+ mnum 255 *. 1 max 255 min c.vol c! 1 ; )
+	$28 =? ( drop pp+ meuc 1 ; )
+	drop 0 ;
 
-| EXT
-| 64 bits: peso propio del nodo (alto) | suma de pesos de sus hijos si es seq (bajo)
-#extok * $fff
+:pmods ( cc pmod 1? drop ) drop ;
 
-:]extok	3 << 'extok + ;
-::tok>ext 'tokens - 'extok + ;
+:pitemend | --		| modificadores, velocidad y replica
+	pmods
+	mslow 0? ( drop 1.0 ) mfast swap /. c.rate d!
+	mrep ( 1? 1- cur>tmp1 ) drop ;
 
-:n.w@   ]extok @ 32 >> $ffffffff and  ;
-:n.wsum@ ]extok @ $ffffffff and ;
+|--- notas
+#semi 9 11 0 2 4 5 7		| a b c d e f g
 
-:t.type		$7 and ;
-:t.repeat	3 >> $1f and ;
+:accid | semi -- semi'
+	cc $20 or
+	$23 =? ( drop pp+ 1+ ; ) $73 =? ( drop pp+ 1+ ; ) $62 =? ( drop pp+ 1- ; )
+	drop ;
 
-:t.nk
-:t.note		8 >> $ff and ;
+:octave | -- oct
+	cc 48 - 0 9 in? ( pp+ ; ) drop 3 ;
 
-:t.fk		16 >> $ffff and ;
-:t.vol		16 >> $ff and ;
-:t.var		24 >> $ff and ;
+:mnote | -- midi
+	cc $20 or 97 - 3 << 'semi + @ pp+ accid octave 1+ 12 * + ;
 
-:t.prob		32 >> $ff and ;
-:t.scale	40 >> $fff and 8 << ; 
-:t.weigth	52 >> $fff and 8 << ;
+:mrest curinit 5 c.type c! ;
 
-:toknro
-	tokens> 'tokens - 3 >> ;
+|--- grupos (recursivos: pitem se llama por variable)
+#pitemx
 
-:vars!or | v -- v
-	repl $1f and 3 << or
-	prob $ff 16 *>> $ff and 32 << or
-	mult divi 0? ( 1.0 + ) /. |<<< FIX
-	8 >> $fff and 40 << or | scale
-	weig 8 >> $fff and 52 << or
-	;
+:gstep | pstart type -- pstart'
+	cc $2c =? ( drop pp+ kids>cur cur>tmp1 tmp> ; )
+	2drop pitemx ex ;
 
-:,note 
-	parsenote $ff and 8 << | note
-	vars!or
-	,tok ;
+#fbase
+:gfin | close type pstart --	| arma el nodo del grupo en cur
+	rot drop fbase =? ( drop fbase swap kids>cur ; )
+	swap kids>cur cur>tmp1 fbase 3 kids>cur ;
 
-:sub | n end now -- n end now 
-	dup 1+ ]list@ 12 >> $fff and			| nro seq hijo
-	dup ]seq @ 12 >> $fff and 1- ]list@	| item ']' del hijo
-	$fff and str$ + 1+ parsemod			| modificadores despues de ']'
-	16 <<
-	vars!or ;
-	
-:,seq	sub	1 or ,tok ;
-:,alt	sub 2 or ,tok ;
-:,par	sub 3 or ,tok ;
-	
-:token? | n end now -- n end now
-	dup ]list@ 
-	dup 12 >> $fff and | n end now L ln
-	pick4 <>? ( 2drop ; ) drop | no this secuence	
-	$fff and str$ + 
-	dup c@
-	$3c =? ( 2drop ,alt ; ) |$3c $3e < >m
-	$3e =? ( 2drop ; )
-	$5b =? ( 2drop ,seq ; ) |$5b $5d [ ]m
-	$5d =? ( 2drop ; )
-	$7b =? ( 2drop ,par ; ) |$7b $7d { }m
-	$7d =? ( 2drop ; )
-	drop ,note ;
-	
-	
-:compseq | n -- n
-	dup ]seq
-	dup @ toknro 32 << or swap ! | nro token
-	dup ]seq @
-	dup 12 >> $fff and
-	swap $fff and | n end start
-	( over <? token? 1+ ) 2drop 		
-|	error 1? ( "error en expr" ) drop
-|	.cr
-	;
-	
-:pass2
-	'tokens 'tokens> !
-	resetvars 1 vars!or ,tok | "a b" -> "[a b]"
-	0 ( nseq <=?
-		compseq 
-		1+ ) drop ;
-		
-|------- save first kid and count in token seq
-:fix | adr' t -- 'adr t
-	over 8 - dup @ 
-	dup t.fk ]seq @
-	dup 32 >> $fff and 16 <<
-	swap 24 >> $ff and 8 << or
-	swap $fffff00 nand or
-	swap ! 
-	| pre calc wsum & totalw
-	over 8 - @				| ... token
-	0 over t.fk pick2 t.nk 	| token sum 1node cnt
-	( 1? >r					| token sum node ; cnt
-		dup ]token@
-		dup t.weigth over t.scale *. swap t.repeat *	| token acc kid sum
-		dup 32 << pick2 ]extok !
-		rot + swap
-		1+ r> 1- ) 2drop nip
-	pick2 8 - tok>ext 
-	dup @ rot or swap ! 
-	;
-	
-:pass3
-	'extok 0 tokens> 'tokens - 3 >> fill
-	'tokens ( tokens> <?
-		@+ $7 and 1? ( fix ) drop
-		) drop ; 
-		
-:debug
-	0 'tokens ( tokens> <?
-		swap dup "%h: " .print 1+ swap
-		@+ 	"| %h " .print 
-		dup 8 - tok>ext @ " %h" .print
-		.cr ) 2drop ;
+:pgroup | close type --
+	tmp> >r tmp>
+	( skipws cc 1? pick3 <>? drop over gstep )
+	drop cc 1? ( pp+ ) drop
+	r> 'fbase !
+	rot drop fbase =? ( drop fbase swap kids>cur ; )
+	swap kids>cur cur>tmp1 fbase 3 kids>cur ;
 
-::process | str --
-	pass1 
-	pass2
-	pass3
-|	debug
-	;
+:mextend | _  : alarga el elemento anterior
+	tmp> 'tmp >? ( 32 - dup 8 + d@ 1.0 + swap 8 + d! ; ) drop ;
 
-|------------------------------------------
+:pitem | --
+	cc
+	$5b =? ( drop pp+ $5d 1 pgroup pitemend ; )
+	$3c =? ( drop pp+ $3e 2 pgroup pitemend ; )
+	$7b =? ( drop pp+ $7d 3 pgroup pitemend ; )
+	$28 =? ( drop pp+ $29 4 pgroup pitemend ; )
+	$7e =? ( drop pp+ mrest pitemend ; )
+	$2d =? ( drop pp+ mrest pitemend ; )
+	$5f =? ( drop pp+ mextend ; )
+	drop
+	cc $20 or 97 - 0 6 in? ( drop curinit mnote c.note c! pitemend ; ) drop
+	cc 48 - 0 9 in? ( drop curinit mint c.note c! pitemend ; ) drop
+	pp+ skiptok mrest pitemend ;
+
+::processat | "str" 'buf -- bytes
+	'pitem 'pitemx !
+	swap 'pp ! 'tbase !
+	tbase 32 + 'tokens> !
+	'tmp 'tmp> !
+	0 1 pgroup
+	tbase 'cur 4 move
+	tokens> tbase - ;
+
+::process | "str" --
+	'tokens processat drop ;
+
+|--- evaluacion
+|  tiempo interno: 1 ciclo = $100000000.  ev(s d node cyc): eventos del ciclo cyc del nodo en [s, s+d)
 ##ccycle
+#vn #vcyc #vs #vd		| nodo, ciclo, inicio y duracion actuales
+#clo #chi			| ventana de inicio de eventos permitida
+#gprob			| probabilidad acumulada de los ancestros (16.16)
+#evs0 #evd0
 
-#listv	0 0 0 0 0 0 0 0 |'note 'seq 'alt 'poly 'ran 0 0 0
+:evw | s d node cyc xt --	| guarda y fija el estado, ejecuta xt, restaura
+	vn >r vcyc >r vs >r vd >r
+	>r 'vcyc ! 'vn ! 'vd ! 'vs !
+	r> ex
+	r> 'vd ! r> 'vs ! r> 'vcyc ! r> 'vn ! ;
 
-:start+dur | v -- v
-	dup 16 << + $ffffffff and ;
+#ev1x #evbx
+:ev | s d node cyc --
+	ev1x evw ;
+:evb | s d node cyc --
+	evbx evw ;
 
-:(eval) | fnode --
-	dup 32 >> ]token@ 	| fnode token
-	dup t.scale over t.repeat *.	| fnode token total
-	0? ( 1+ ) | ceil
-	pick2 $ffff and over /			| fnode token total start|dur
-	pick3 $ffff0000 and or swap 	| fnode token start|dur total
-	( 1? >r			| fnode token start|dur
-		over t.prob $ff randmax >? ( drop 
-			over $7 and 3 << 'listv + @ ex 
-			dup ) drop
-		start+dur
-		r> 1- ) 
-	4drop ;
+:probok? | -- 0/1		| sobrevive a la probabilidad acumulada?
+	gprob 65536 <? ( 65536 randmax <=? ( 0 nip ; ) ) drop 1 ;
 
-|:list reuse
-:note | fnode token start|dur 
-	over t.note 32 << over or push ;
+:evnote | --		| el inicio se redondea a 16 bits antes de la ventana (sin duplicados en el borde)
+	vs $8000 + 16 >>
+	clo $8000 + 16 >> <? ( drop ; )
+	chi $8000 + 16 >> >=? ( drop ; )
+	probok? 0? ( 2drop ; ) drop
+	16 <<
+	vn n.note vn n.var 8 << or vn n.vol 16 << or 32 << or
+	vd $8000 + 16 >> 1 max $ffff min or
+	push ;
 
-:seq | fnode token start|dur
-	dup $ffff and pick3 32 >> n.wsum@ /. |fnode token s|d scale ;
-	pick2 t.fk pick3 t.nk 	
-	pick3 swap | fnode token start|dur scale 1node start|dur cnt
-	( 1? >r					| fnode token start|dur scale child start|dur ; r:nchild
-		over n.w@ pick3 *. | fnode token start|dur scale child stat|dur realdur
-		over $ffff0000 and over or | fnode token start|dur scale child start|dur realdur newsd
-		pick3 32 << or 
-		(eval)
-		| fnode token start|dur scale child start|dur realdur
-		swap $ffff0000 and or
-		start+dur 
-		swap 1+ swap 
+:wpos | acc W -- s		| vs + vd*acc/W
+	swap vd * swap / vs + ;
+
+:evseq | --
+	vn n.wsum 0? ( drop ; )
+	vn n.fk >node 0 vn n.nk
+	( 1? >r
+		dup pick3 wpos
+		pick2 n.weight pick2 + >r
+		r@ pick4 wpos
+		over -
+		pick3 vcyc ev
+		drop 32 + r>
 		r> 1- ) 4drop ;
-	
-:alt | fnode token start|dur
-	ccycle pick2 t.nk mod
-	pick2 t.fk +
-	32 << over or | add node info
-	(eval) ;
-	
-:poly | fnode token start|dur
-	over t.fk pick2 t.nk 	| fnode token start|dur 1node cnt
-	( 1? >r					| fnode token start|dur child ; r:nchild
-		over over 32 << or | add node info
-		(eval)
-		1+ r> 1- ) 2drop ;
-		
-:ran
-	over t.fk pick2 t.nk randmax +
-	32 << over or | add node info
-	(eval) ;
-	
-	
-::eval |
-	'stack 'stack> ! | event list
-	$ffff (eval) ;
-	
-:
-'listv >a
-'note a!+	| 0
-'seq a!+	| 1
-'alt a!+	| 2
-'poly a!+	| 3
-'ran a!+	| 4
-;
+
+:evalt | --
+	vn n.nk 0? ( drop ; )
+	vs vd rot
+	vcyc over mod vn n.fk + >node
+	swap vcyc swap /
+	ev ;
+
+:evstack | --
+	vn n.fk >node vn n.nk
+	( 1? >r
+		vs vd pick2 vcyc ev
+		32 + r> 1- ) 2drop ;
+
+:evrand | --
+	vn n.nk 0? ( drop ; )
+	randmax vn n.fk + >node
+	vs vd rot vcyc ev ;
+
+:evtype | --
+	vn n.type
+	0 =? ( drop evnote ; )
+	1 =? ( drop evseq ; )
+	2 =? ( drop evalt ; )
+	3 =? ( drop evstack ; )
+	4 =? ( drop evrand ; )
+	drop ;
+
+|--- euclidiano (Bjorklund con enteros: cada grupo es bits+largo+cantidad)
+#ba #bla #bca #bb #blb #bcb
+
+:bleft | --			| lo que sobra del grupo mayor
+	bca bcb >? ( drop ba 'bb ! bla 'blb ! bca bcb - 'bcb ! ; ) drop
+	bcb bca - 'bcb ! ;
+
+:bstep | --
+	ba blb << bb or  bla blb +
+	bca bcb min
+	bleft
+	'bca ! 'bla ! 'ba ! ;
+
+:bjork | k n -- mask	| bit (n-1-i) = paso i
+	over - 'bcb ! 'bca !
+	1 'ba ! 1 'bla ! 0 'bb ! 1 'blb !
+	( bca bcb min 1 >? drop bstep ) drop
+	0 bca ( 1? 1- swap bla << ba or swap ) drop
+	bcb ( 1? 1- swap blb << bb or swap ) drop ;
+
+:ehit | mask i -- 0/1
+	vn n.er + vn n.en + vn n.en mod
+	vn n.en 1- swap - >> 1 and ;
+
+:eucstep | mask i -- mask i
+	2dup ehit 0? ( drop ; ) drop
+	dup evd0 * vn n.en / evs0 + 'vs !
+	evtype ;
+
+:euclid | --
+	evs0 >r evd0 >r
+	vs 'evs0 !  vd 'evd0 !
+	vd vn n.en / 'vd !
+	vn n.ek vn n.en min vn n.en bjork 0
+	( vn n.en <? eucstep 1+ ) 2drop
+	evd0 'vd ! evs0 'vs !
+	r> 'evd0 ! r> 'evs0 ! ;
+
+:evbody | --
+	gprob >r
+	vn n.prob gprob *. 'gprob !
+	vn n.en 0? ( drop evtype r> 'gprob ! ; ) drop
+	euclid
+	r> 'gprob ! ;
+
+|--- velocidad: node*F repite/estira el ciclo del nodo F veces por ciclo del padre
+:evfast | --
+	clo >r chi >r
+	vs clo max 'clo !  vs vd + chi min 'chi !
+	vn n.rate vcyc over *
+	dup 16 >>
+	pick2 pick2 + $ffff + 16 >> >r
+	( r@ <?
+		dup 16 << pick2 -
+		vd * pick3 / vs +
+		vd 16 << pick4 /
+		vn pick3 evb
+		1+ )
+	r> drop 3drop
+	r> 'chi ! r> 'clo ! ;
+
+:ev1 | --
+	vn n.rate 1.0 <>? ( drop evfast ; ) drop
+	evbody ;
+
+::evalat | 'buf cycle --
+	'ev1 'ev1x !  'evbody 'evbx !
+	>r 'tbase !
+	0 'clo !  $100000000 'chi !  65536 'gprob !
+	0 $100000000 tbase r> ev ;
+
+::eval | --
+	'stack 'stack> !
+	'tokens ccycle evalat ;
+

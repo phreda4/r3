@@ -78,7 +78,7 @@
 	1 'ccycle +!
 	'stack ( stack> <?
 		@+
-		dup 32 >>
+		dup 32 >> $ff and
 		over $ffff and cyclesec *.
 		rot 16 >> $ffff and cyclesec *.
 		genevt
@@ -111,7 +111,6 @@
 		mark
 		swap dup "%h: " ,print 1+ swap
 		@+ 	"| %h " ,print
-		dup 8 - tok>ext @ " %h" ,print
 		|drop 
 		,eol
 		empty here uiLabel
@@ -119,7 +118,6 @@
 
 :debug2
 	tokens> 'tokens - "%h " sprint uiLabel
-	list> 'list - "%h " sprint uiLabel
 	stack> 'stack - "%h" sprint uiLabel
 	voice> 'voice - "sm voice %h" sprint uiLabel
 	timeline> timeline - 3 >> "timeline %d" sprint uiLabel
