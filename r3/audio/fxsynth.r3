@@ -7,6 +7,7 @@
 |============================================================
 | PARAMETROS (0.0..1.0 fixed salvo aclaracion). Editables por UI o presets.
 |============================================================
+##fxfreqmul 8	| sfxr avanza el oscilador 8 veces por muestra: sin esto Freq 1.0 llega solo a 441 Hz (1 = como antes)
 ##fxnwaves 19	| cantidad de formas de onda (fuera del bloque de parametros: fxPack los lee contiguos desde p_wave)
 
 ##p_wave 0        | 0 sqr | 1 saw | 2 sin | 3 noise | 4 tri | 5.. ver fxwaves (19 formas de onda)
@@ -128,8 +129,8 @@
 | DERIVACION DE PARAMETROS (reset)
 |============================================================
 :fxDeriveFreq
-	100.0 p_freq dup *. 0.001 + /. 'fperiod !
-	100.0 p_freqlimit dup *. 0.001 + /. 'fmaxperiod !
+	100.0 fxfreqmul / p_freq dup *. 0.001 + /. 'fperiod !
+	100.0 fxfreqmul / p_freqlimit dup *. 0.001 + /. 'fmaxperiod !
 	1.0 p_freqramp dup dup *. *. 0.01 *. - 'fslide !
 	p_freqdramp dup dup *. *. 0.0001 *. neg 'fdslide !
 	0.5 p_duty 2/ - 'sduty !
@@ -193,7 +194,7 @@
 	reptime replimit <? ( drop ; ) drop 
 	0 'reptime !
 	iphase period
-	fxDeriveFreq
+	fxDeriveFreq fxDeriveArp fxDeriveArpLimit	| el repeat tambien rearma el arpegio
 	fperiod int. 8 max
 	swap /.
 	*. 'iphase ! ; 

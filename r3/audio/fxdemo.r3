@@ -93,9 +93,111 @@
 	0.05 0.2 randminmax 'p_decay ! 
 	0.1 'p_hpffreq ! ;
 
+
+|============================================================
+| TIPO SFXDEMO: variaciones al azar de los sonidos de sfxpack.r3
+|  (frecuencia: Hz = 3528*(p_freq^2+0.001); ramp<0 baja, >0 sube; tiempos: seg = param^2 * 2.27)
+|============================================================
+:randw | 'tabla n -- onda		| onda al azar de una tabla
+	randmax 3 << + @ ;
+
+#wk 0 4 8 2 5		| Sqr Tri SinFold Sin Pul25
+#wt 3 17 18 3		| ruidos
+#ws 0 5 1 14		| Sqr Pul25 Saw SSaw2
+#wg 0 5 2 14 4		| Sqr Pul25 Sin SSaw2 Tri
+#ww 2 4 10 12		| Sin Tri HSin Sin3
+#wn 0 2 4 11 8		| Sqr Sin Tri Sin2 SinFold
+#wl 1 4 14 15 7		| Saw Tri SSaw2 SSaw3 SawRev
+#wc 1 16 0 14		| Saw SSawF Sqr SSaw2
+
+::fxKick			| kick / pass / bounce: tono corto que cae (200->70 Hz, 0.09 s)
+	fxDefaults
+	'wk 5 randw 'p_wave !
+	0.18 0.32 randminmax 'p_freq !
+	-0.34 -0.2 randminmax 'p_freqramp !
+	0.0 0.1 randminmax 'p_sustain !
+	0.15 0.22 randminmax 'p_decay !
+	0.3 0.6 randminmax 'p_punch !
+	0.0 1.0 randminmax 'p_duty ! ;
+
+::fxTackle		| tackle: rafaga de ruido (0.09 s)
+	fxDefaults
+	'wt 4 randw 'p_wave !
+	0.0 0.08 randminmax 'p_sustain !
+	0.15 0.22 randminmax 'p_decay !
+	0.3 0.8 randminmax 'p_lpffreq !
+	0.0 0.1 randminmax 'p_hpffreq ! ;
+
+::fxSave			| save: chirp que sube (500->900 Hz, 0.08 s)
+	fxDefaults
+	'ws 4 randw 'p_wave !
+	0.33 0.43 randminmax 'p_freq !
+	0.2 0.32 randminmax 'p_freqramp !
+	0.05 0.12 randminmax 'p_sustain !
+	0.12 0.2 randminmax 'p_decay !
+	0.2 0.4 randminmax 'p_punch !
+	0.05 0.2 randminmax 'p_hpffreq ! ;
+
+::fxGoal			| goal: salto de arpegio repetido (do-mi-sol, 0.13 s por nota)
+	fxDefaults
+	'wg 5 randw 'p_wave !
+	0.37 0.45 randminmax 'p_freq !
+	0.45 0.62 randminmax 'p_arpmod !
+	0.42 0.55 randminmax 'p_arpspeed !
+	0.2 0.3 randminmax 'p_repeat !
+	0.3 0.42 randminmax 'p_sustain !
+	0.25 0.4 randminmax 'p_decay !
+	0.2 0.5 randminmax 'p_punch !
+	0.0 1.0 randminmax 'p_duty ! ;
+
+::fxWhistle		| whistle: tono agudo sostenido (2300 Hz, 0.15 s)
+	fxDefaults
+	'ww 4 randw 'p_wave !
+	0.72 0.85 randminmax 'p_freq !
+	0.0 0.12 randminmax 'p_vibdepth !
+	0.1 0.16 randminmax 'p_vibspeed !
+	0.22 0.3 randminmax 'p_sustain !
+	0.1 0.2 randminmax 'p_decay ! ;
+
+::fxKnock		| knock / bounce: golpe grave que cae (90->40 Hz)
+	fxDefaults
+	'wn 5 randw 'p_wave !
+	0.13 0.2 randminmax 'p_freq !
+	-0.3 -0.18 randminmax 'p_freqramp !
+	0.05 0.15 randminmax 'p_sustain !
+	0.15 0.27 randminmax 'p_decay !
+	0.3 0.6 randminmax 'p_punch ! ;
+
+::fxLose			| lose: caida larga (440->110 Hz, 0.6 s)
+	fxDefaults
+	'wl 5 randw 'p_wave !
+	0.3 0.42 randminmax 'p_freq !
+	-0.18 -0.12 randminmax 'p_freqramp !
+	0.38 0.46 randminmax 'p_sustain !
+	0.2 0.3 randminmax 'p_decay !
+	0.0 0.2 randminmax 'p_vibdepth !
+	0.1 0.2 randminmax 'p_vibspeed ! ;
+
+::fxCrazy		| crazy: barrido que sube con vibrato (160->1200 Hz, 0.45 s)
+	fxDefaults
+	'wc 4 randw 'p_wave !
+	0.15 0.26 randminmax 'p_freq !
+	0.17 0.22 randminmax 'p_freqramp !
+	0.38 0.46 randminmax 'p_sustain !
+	0.2 0.3 randminmax 'p_decay !
+	0.2 0.5 randminmax 'p_vibdepth !
+	0.2 0.4 randminmax 'p_vibspeed !
+	0.0 0.2 randminmax 'p_hpffreq ! ;
+
+#fxall 'fxPickup 'fxLaser 'fxExplosion 'fxPowerup 'fxHit 'fxJump 'fxBlip
+'fxKick 'fxTackle 'fxSave 'fxGoal 'fxWhistle 'fxKnock 'fxLose 'fxCrazy
+
+::fxMix			| uno cualquiera de todos los tipos
+	15 randmax 3 << 'fxall + @ ex ;
+
 ::fxRandom
 	fxDefaults
-	5 randmax 'p_wave !
+	fxnwaves randmax 'p_wave !
 	0.0 0.3 randminmax 'p_attack !
 	0.0 0.5 randminmax 'p_sustain !
 	0.0 0.5 randminmax 'p_punch !
@@ -159,9 +261,10 @@
 	'wavelist swap ( 1? 1- swap >>0 swap ) drop ;
 
 :wavebtns
-	2 11 uiGrid
+	2 2 uiPading
+	8 3 uiGrid
 	0 ( fxnwaves <?
-		p_wave =? ( stInfo )
+		p_wave =? ( stWarn )
 		[ dup 'p_wave ! fxPlay ; ] over wavename uiCBtn
 		p_wave =? ( stLink )
 		uiNext
@@ -170,6 +273,7 @@
 :exPlay
 	uiEx? 1? ( fxStop fxPlay ) drop	;
 	
+|---- tipos al azar parecidos a los sonidos de sfxdemo
 :game
 	$0 cls
 
@@ -177,16 +281,13 @@
 	8 2 uiPading
 	font1 txfont
 
-	0.1 %h uiN
+	0.05 %h uiN
 	"FX Generator" uiLabelC
-	ui--	
-	
-	0.14 %h uiS 	
-	seedPanel
+	ui--
 	
 	0.2 %w uiO
 	uiPush
-	txh 2 + 11 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
+	txh 2 + 5 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
 	stLink 
@@ -198,31 +299,41 @@
 	[ fxHit fxPlay ; ]       "Hit / Hurt"    uiRbtn
 	[ fxJump fxPlay ; ]      "Jump"          uiRbtn
 	[ fxBlip fxPlay ; ]      "Blip / Select" uiRbtn
-	"* Wave *" uiLabelC
-	uiRest
-	wavebtns
+	[ fxKick fxPlay ; ]    "Kick / Pass"    uiRbtn 
+	[ fxTackle fxPlay ; ]  "Tackle"         uiRbtn 
+	[ fxSave fxPlay ; ]    "Save"           uiRbtn 
+	[ fxGoal fxPlay ; ]    "Goal"           uiRbtn 
+	[ fxWhistle fxPlay ; ] "Whistle"        uiRbtn 
+	[ fxKnock fxPlay ; ]   "Knock"          uiRbtn 
+	[ fxLose fxPlay ; ]    "Lose / Fall"    uiRbtn 
+	[ fxCrazy fxPlay ; ]   "Crazy"          uiRbtn 
+	[ fxMix fxPlay ; ]     "Mix (all)"    uiRbtn  
 	uiPop
 
-	|---- parametros, dos columnas (etiquetas | sliders); una fila de titulo por grupo
-	0.115 %w uiO
-	"* Envolvente *" uiLabelC
-	"Ataque " uiLabelR
-	"Sosten " uiLabelR
+	|---- zona central: parametros (dos columnas etiquetas | sliders) arriba, tipos sfx abajo
+	0.7 %w uiO
+	uiPush
+	txh 2 + 16 * uiN
+	uiPush
+	0.12 %w uiO
+	"* Envelope *" uiLabelC
+	"Attack " uiLabelR
+	"Sustain " uiLabelR
 	"Punch " uiLabelR
 	"Decay " uiLabelR
-	"* Frecuencia *" uiLabelC
+	"* Frequency *" uiLabelC
 	"Freq " uiLabelR
-	"Freq.Min " uiLabelR
-	"Ramp " uiLabelR
-	"Ramp.Acel " uiLabelR
+	"Min.Freq " uiLabelR
+	"Slide " uiLabelR
+	"D.Slide " uiLabelR
 	"* Vibrato *" uiLabelC
-	"Vib.Prof " uiLabelR
-	"Vib.Vel " uiLabelR
-	"* Arpegio *" uiLabelC
-	"Arp.Mod " uiLabelR
-	"Arp.Vel " uiLabelR
+	"Vib.Depth " uiLabelR
+	"Vib.Speed " uiLabelR
+	"* Arpeggio *" uiLabelC
+	"Arp.Amount " uiLabelR
+	"Arp.Speed " uiLabelR
 
-	0.165 %w uiO
+	0.23 %w uiO
 	ui..
 	0.0 1.0 'p_attack uiSliderf		exPlay
 	0.0 1.0 'p_sustain uiSliderf	exPlay
@@ -240,21 +351,21 @@
 	-1.0 1.0 'p_arpmod uiSliderf	exPlay
 	0.0 1.0 'p_arpspeed uiSliderf	exPlay
 
-	0.115 %w uiO
+	0.12 %w uiO
 	"* Duty *" uiLabelC
 	"Duty " uiLabelR
-	"Duty.Ramp " uiLabelR
-	"* Filtros *" uiLabelC
+	"Duty.Sweep " uiLabelR
+	"* Filters *" uiLabelC
 	"LowPass " uiLabelR
-	"LP.Ramp " uiLabelR
+	"LP.Sweep " uiLabelR
 	"LP.Reso " uiLabelR
 	"HighPass " uiLabelR
-	"HP.Ramp " uiLabelR
-	"* Salida *" uiLabelC
-	"Repetir " uiLabelR
-	"Volumen " uiLabelR
+	"HP.Sweep " uiLabelR
+	"* Output *" uiLabelC
+	"Repeat " uiLabelR
+	"Volume " uiLabelR
 
-	0.165 %w uiO
+	0.23 %w uiO
 	ui..
 	0.0 1.0 'p_duty uiSliderf		exPlay
 	-1.0 1.0 'p_dutyramp uiSliderf	exPlay
@@ -267,6 +378,13 @@
 	ui..
 	0.0 1.0 'p_repeat uiSliderf 	exPlay
 	0.0 1.0 'p_vol uiSliderf		exPlay
+	uiPop
+	
+	txh 2 + 3 * uiN
+	|ui-- "* Wave *" uiLabelC
+	|uiRest
+	wavebtns
+	uiPop
 
 	uiRest
 	listfx
