@@ -1,11 +1,5 @@
 # R3Forth Console Guide
 
-A practical guide to writing terminal programs with `r3/lib/console.r3`.
-For the complete word list see [libs/r3forth-lib-console.md](libs/r3forth-lib-console.md);
-for widgets (tables, menus, inputs) see [libs/r3forth-lib-tui.md](libs/r3forth-lib-tui.md).
-
-Every snippet below was compiled and run on Linux.
-
 ---
 
 ## 1. Minimal program
@@ -26,7 +20,6 @@ Every snippet below was compiled and run on Linux.
 ```
 
 - `^r3/lib/console.r3` loads the right backend for the platform (`|LIN|`, `|WIN|`,
-  `|MAC|` lines inside the library are compiled only on that platform).
 - While the program runs the terminal is in **raw mode**: no echo, no line buffering,
   and Ctrl+C does not stop the program (it arrives as key `$03`). Always give the user
   a way out (usually ESC).

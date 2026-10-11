@@ -292,25 +292,34 @@
 	4 =? ( drop evrand ; )
 	drop ;
 
-|--- euclidiano (Bjorklund con enteros: cada grupo es bits+largo+cantidad)
-#ba #bla #bca #bb #blb #bcb
+|--- euclidiano (Bjorklund sin variables: todo en la pila)
+| dos grupos de bits, A x ca copias y B x cb copias; cada grupo es un entero con un bit
+| centinela arriba (largo = 63 - clz): A = 3 (un "1"), B = 2 (un "0").
+| cada paso: A' = A+B (x min), el grupo que sobra pasa a ser B. Estado: A ca B cb
 
-:bleft | --			| lo que sobra del grupo mayor
-	bca bcb >? ( drop ba 'bb ! bla 'blb ! bca bcb - 'bcb ! ; ) drop
-	bcb bca - 'bcb ! ;
+:cat | X Y -- XY			| concatena dos grupos con centinela
+	dup clz 63 swap -			| X Y largo
+	rot over << -rot			| X<<largo Y largo
+	1 swap << xor or ;
 
-:bstep | --
-	ba blb << bb or  bla blb +
-	bca bcb min
+:bleft | A ca B cb -- x n	| el grupo que sobra: (A ca-cb) o (B cb-ca)
+	pick2 over - 0 >? ( >r 2drop drop r> ; )
+	neg >r drop nip nip r> ;
+
+:bstep | A ca B cb -- A' ca' B' cb'
+	pick2 over min >r		| m
+	pick3 pick2 cat >r		| A+B
 	bleft
-	'bca ! 'bla ! 'ba ! ;
+	r> r> 2swap ;
 
-:bjork | k n -- mask	| bit (n-1-i) = paso i
-	over - 'bcb ! 'bca !
-	1 'ba ! 1 'bla ! 0 'bb ! 1 'blb !
-	( bca bcb min 1 >? drop bstep ) drop
-	0 bca ( 1? 1- swap bla << ba or swap ) drop
-	bcb ( 1? 1- swap blb << bb or swap ) drop ;
+:repp | T X c -- T'		| antepone X c veces
+	( 1? 1- rot pick2 swap cat -rot ) 2drop ;
+
+:bjork | k n -- mask		| bit (n-1-i) = paso i
+	over - >r 3 swap 2 r>
+	( pick2 over min 1 >? drop bstep ) drop
+	1 -rot repp -rot repp
+	dup clz 63 swap - 1 swap << xor ;
 
 :ehit | mask i -- 0/1
 	vn n.er + vn n.en + vn n.en mod
