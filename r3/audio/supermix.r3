@@ -318,6 +318,12 @@
 	-rot iadsr
 	16 + d@ 2 >> iend ;	| len sample
 
+::isamplemem | v1 v2 adr frames -- n	| sample en memoria: 16 bits estereo intercalado (L R), 'frames' frames, a 44100 Hz
+	>r >r instr> >a
+	'playsam a!+
+	r> a!+							| adr
+	iadsr r> iend ;					| frames (se cambia con smAUX!); 440 Hz = velocidad original
+
 |---- SET INSTRUMENT
 ::smi! | n --
 	6 << 'instr +

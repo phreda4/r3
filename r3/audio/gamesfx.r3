@@ -13,7 +13,7 @@
 |         ej: kind=1 wave=10 crv=2 -> $1A2.  Como kind va primero, el valor 0 sigue
 |         siendo FIN DE LISTA (kind 0)
 |   kind  1 tono, 2 ruido
-|   wave  forma de onda 0..11, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
+|   wave  forma de onda 0..15, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
 |   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
 |   f0    frecuencia inicial en Hz (16.16)
 |   f1    frecuencia final en Hz: el tono barre f0->f1 (exponencial) durante 'dur'
@@ -43,6 +43,20 @@
 |   sfxstop                  corta todo
 |   v sfxvol                 volumen general (1.0 normal, 2.0 por defecto)
 |
+| PISTAS: instrumento editable + melodia en bucle + notas sostenidas (teclado). 8 pistas, cada una con
+|   sus parametros y su melodia; sirven para editores/sliders (ver chipa.r3).
+|   n sfxtrk -- rec          registro de la pista n. Los campos son variables de 64 bits (16.16) para
+|                            sliders y combos:  rec tkwave|tka|tkd|tks|tkr|tkvol|tkcrv|tkdet -- adr
+|   tkwave  onda 0..19, nombres en sfxtnames (lista para uiCombo): 0..15 osciladores (igual que la
+|           columna wave de los sonidos), 16 supersaw de 7 osciladores, 17 18 19 ruido blanco rosa marron
+|   tka tkd tks tkr   envolvente: ataque y decaimiento (s), sostenido (0..1), release (s)
+|   tkvol tkcrv       volumen (1.0) y curva de la envolvente (0 lineal .. 3 cuartica)
+|   tkdet             detune del supersaw: fraccion de la frecuencia (0.01 = 1%)
+|   n sfxtrkapply                aplica los parametros: llamar despues de cambiarlos (valen desde la proxima nota)
+|   n "patron" bpm sfxtrkplay    melodia en bucle; si ya suena, el patron nuevo entra en el proximo ciclo
+|   n sfxtrkstop      n bpm sfxtrkbpm      n sfxtrkplaying -- 0/1      n sfxtrkcycle -- n
+|   midi n sfxtrkon   midi n sfxtrkoff    nota sostenida con el instrumento de la pista
+|
 | MELODIAS: mini-notacion de Strudel (el parser es eval.r3, ahi esta la sintaxis completa)
 |   c4 d4 e4 f4          notas: c4 = do central (midi 60); sin octava = octava 3; c#4 db4; un numero = midi
 |   ~                    silencio            [c4 d4]  un paso con dos notas    <c4 d4>  una por ciclo
@@ -63,14 +77,15 @@
 
 |--------------------------------------------------------------- tablas
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin3 'oscSuperSaw2P
-##sfxnwaves 12
+'oscSin2 'oscParab 'oscFakeSuperSaw 'oscSuperSaw3P
+##sfxnwaves 16			| ondas de capa (nibble wave: 0..15)
 ##sfxLAYER 40			| bytes por capa: 10 valores de 32 bits
 
-#sxwnames "square" "saw" "sine" "triangle" "pulse25" "pulse10" "saw-rev" "sine-fold" "trapezoid" "half-sine" "sine3" "supersaw"
+#sxwnames "square" "saw" "sine" "triangle" "pulse25" "pulse10" "saw-rev" "sine-fold" "trapezoid" "half-sine" "sine3" "supersaw" "sine2" "parabola" "fake-supersaw" "supersaw3"
 #sxnnames "white" "pink" "brown"
 
 ::sfxwavename | n -- "str"
-	0 max 11 min
+	0 max 15 min
 	'sxwnames swap ( 1? 1- swap >>0 swap ) drop ;
 
 ::sfxnoisename | n -- "str"
@@ -82,6 +97,9 @@
 :sxnPink pnoise ;
 :sxnBrown bnoise 3 * ;
 #sxnoises 'sxnWhite 'sxnPink 'sxnBrown
+#sxtknoises 'wnoise 'pnoise1 'bnoise	| ruidos de pista (17 18 19)
+
+##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin3" "SSaw2" "Sin2" "Parab" "FSaw" "SSaw3" "SuperSaw" "White" "Pink" "Brown" 0
 
 |--------------------------------------------------------------- estado
 #sxinsT #sxinsN		| instrumentos de efectos: tonos con barrido / ruido
@@ -116,7 +134,7 @@
 :sxplaylayer | 'layer ratio --
 	swap >b
 	l.k 1 =? ( drop
-		l.w 0 max 11 min 3 << 'sfxwaves + @ sxinsT sxsetins
+		l.w 0 max 15 min 3 << 'sfxwaves + @ sxinsT sxsetins
 		l.f0 l.f1 l.dur sxslideof smslide!
 		l.f0 *. sxplaynote ; ) drop
 	l.f1 16 >> 0 max 2 min 3 << 'sxnoises + @ sxinsN sxsetins
@@ -198,10 +216,43 @@
 	sxtunesched
 	2048 'sxclock +! ;
 
+|--------------------------------------------------------------- pistas: registro
+| 8 pistas x 128 bytes, campos de 64 bits: 0 wave 8 a 16 d 24 s 32 r 40 vol 48 crv 56 det (parametros,
+| 16.16)  64 io 72 is 80 in (instrumentos onda/supersaw/ruido, -1 = sin crear)  88 ins (el que suena)
+| 96 id (melodia en curso, -1 = ninguna).  Los instrumentos se crean la primera vez que se usa la pista.
+#sxtrks * 1024
+#sxtkn * 1024		| notas sostenidas: 128 bytes por pista (id de voz por nota midi)
+#sxtk 0			| pista en curso (registro)
+
+::sfxtrk | n -- rec		| registro de la pista n (0..7)
+	0 max 7 min 7 << 'sxtrks + ;
+::tkwave 0 + ;
+::tka 8 + ;
+::tkd 16 + ;
+::tks 24 + ;
+::tkr 32 + ;
+::tkvol 40 + ;
+::tkcrv 48 + ;
+::tkdet 56 + ;
+:tkio 64 + ;
+:tkis 72 + ;
+:tkin 80 + ;
+:tkins 88 + ;
+:tkid 96 + ;
+
+:sxtkreset | --
+	0 ( 8 <? dup sfxtrk 'sxtk !
+		0 sxtk tkwave !
+		0.002 sxtk tka !  0.05 sxtk tkd !  0.8 sxtk tks !  0.1 sxtk tkr !
+		1.0 sxtk tkvol !  0 sxtk tkcrv !  0.01 sxtk tkdet !
+		-1 sxtk tkio !  -1 sxtk tkis !  -1 sxtk tkin !  0 sxtk tkins !  -1 sxtk tkid !
+		1+ ) drop
+	'sxtkn 0 1024 cfill ;
+
 ::sfxinit0 | --			| igual que sfxinit pero sin SDL_Init (la app ya inicio SDL / render offline)
 	sminit
 	0 'sxclock !
-	sxtunesclear
+	sxtunesclear sxtkreset
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
 	sxvolume smmaster!
@@ -293,6 +344,85 @@
 ::sfxtunecycle | id -- n
 	-? ( drop 0 ; ) sxtune@ 24 + @ ;
 
+|--------------------------------------------------------------- pistas: API
+:sxtkadsr | -- v1 v2
+	sxtk tka @ sxtk tkd @ sxtk tks @ sxtk tkr @ packADSR ;
+
+:sxtkset | n --			| envolvente al instrumento n
+	sxtkadsr rot smASDR! ;
+
+:sxtkwave | --			| funcion de onda segun tkwave (instrumento onda, supersaw o ruido)
+	sxtk tkwave @ 0 max 19 min
+	16 <? ( 3 << 'sfxwaves + @ sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ; )
+	16 =? ( drop 'oscSaw sxtk tkis @ smOSC!
+		sxtk tkdet @ sxtk tkis @ smAUX!  sxtk tkis @ sxtk tkins ! ; )
+	17 - 3 << 'sxtknoises + @ sxtk tkin @ smOSC!  sxtk tkin @ sxtk tkins ! ;
+
+:sxtkopen | --			| crea los 3 instrumentos de la pista la primera vez
+	sxtk tkio @ -? ( drop
+		sxtkadsr 'oscSin iosc sxtk tkio !
+		sxtkadsr 'oscSaw sxtk tkdet @ isuper sxtk tkis !
+		sxtkadsr 'wnoise inoise sxtk tkin !
+		sxtkwave ; ) drop ;
+
+:sxtkapply | --
+	sxtkopen
+	sxtk tkio @ sxtkset  sxtk tkis @ sxtkset  sxtk tkin @ sxtkset
+	sxtkwave
+	sxtk tkid @ sxtk tkins @ sxtuneins
+	sxtk tkid @ sxtk tkvol @ sxtk tkcrv @ sxtunemix drop ;
+
+::sfxtrkapply | n --
+	ab[ sfxtrk 'sxtk ! sxtkapply ]ba ;
+
+:sxtkplay | "patron" bpm --
+	sxtkopen
+	sxtk tkid @ sfxtuneplaying 1? ( drop			| ya suena: tempo y patron nuevo en el proximo ciclo
+		sxtk tkid @ swap sxtunebpm
+		sxtk tkid @ swap sxtunetext ; ) drop
+	sxtk tkins @ 1 sxtunenew dup sxtk tkid !
+	sxtk tkvol @ sxtk tkcrv @ sxtunemix drop ;
+
+::sfxtrkplay | n "patron" bpm --
+	ab[ rot sfxtrk 'sxtk ! sxtkplay ]ba ;
+
+::sfxtrkstop | n --
+	sfxtrk tkid dup @ sfxtunestop -1 swap ! ;
+
+::sfxtrkbpm | n bpm --
+	swap sfxtrk tkid @ swap sfxtunebpm ;
+
+::sfxtrkplaying | n -- 0/1
+	sfxtrk tkid @ sfxtuneplaying ;
+
+::sfxtrkcycle | n -- n
+	sfxtrk tkid @ sfxtunecycle ;
+
+|--- notas sostenidas (teclado): el id de la voz se guarda por nota
+:sxtknote | midi -- adr
+	0 max 127 min sxtk 'sxtrks - 'sxtkn + + ;
+
+:sxtkon | midi --
+	sxtkopen
+	0 max 127 min dup sxtknote
+	dup c@ 1? ( 3drop ; ) drop			| midi adr
+	sxtk tkins @ smi!  sxtk tkvol @ smvel!  sxtk tkcrv @ smcurve!
+	swap smplay swap c! ;
+
+:sxtkoff | midi --
+	sxtknote dup c@ 0? ( 2drop ; )
+	smstop 0 swap c! ;
+
+::sfxtrkon | midi n --
+	ab[ sfxtrk 'sxtk ! sxtkon ]ba ;
+
+::sfxtrkoff | midi n --
+	ab[ sfxtrk 'sxtk ! sxtkoff ]ba ;
+
+:sxtkhalt | --			| las melodias y voces ya no existen (sfxstop)
+	0 ( 8 <? dup sfxtrk tkid -1 swap !  1+ ) drop
+	'sxtkn 0 1024 cfill ;
+
 ::sfxstop | --
 	smreset sxvolume smmaster!		| smreset deja el master en 1.0
-	sxtunesclear ;
+	sxtunesclear sxtkhalt ;

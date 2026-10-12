@@ -89,7 +89,7 @@
 :adur | v -- v'
 	0.01 adjc * adjd * + 0.005 max 4.0 min ;
 :awave | v -- v'
-	adjd + 12 + 12 mod ;
+	adjd + sfxnwaves + sfxnwaves mod ;
 :avol | v -- v'
 	0.01 adjc * adjd * + 0.0 max 1.0 min ;
 :adelay | v -- v'

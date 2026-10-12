@@ -82,7 +82,7 @@
 	|-----------
 	1 flxN
 	fx fy .at 
-	.rever .eline
+	.rev .eline
 	" R3forth" .write
 
 	|-----------

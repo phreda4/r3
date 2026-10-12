@@ -39,7 +39,7 @@
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr ;
 	
 :runcheck
-	.cls banner
+	.cls banner .flush
 	here dup "error.log" load
 	over =? ( 2drop ; ) 
 	0 swap c!
@@ -53,7 +53,7 @@
 
 :filerun
 	fuente c@ 0? ( drop ; ) drop
-	.cls banner
+	.cls banner .flush
 	savem
 	'fullpath r3run
 	.reterm .alsb .flush
@@ -65,6 +65,13 @@
 	.masb .flush
 	savem
 	"r3/d4/r3ide.r3" r3run
+	.reterm .alsb .flush tuR! ;
+
+:filedebug
+	savem
+	|checkcode error 1? ( drop moderror ; ) drop
+|	"r3/d4/r3debug.r3" r3run
+	"r3/d4/dbg.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
 :r3repl
@@ -246,9 +253,11 @@
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
 | ctrl
-	$5 =? ( fileedit ) | e
-	$9 =? ( r3repl )	| Interactive
-	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
+	$5 =? ( fileedit )	| ctrl+e Edit
+	$9 =? ( r3repl )	| ctrl+i Interactive
+	$4 =? ( filedebug )	| ctrl+d debug
+	$3 =? ( exit ) 		| ctrl+c exit
+	
 	drop
 	;
 

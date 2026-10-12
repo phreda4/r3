@@ -1,9 +1,25 @@
 | fxdemo.r3 - demo interactivo de fxsynth.r3 (estilo bfxr/jfxr)
 | PHREDA 2026 
 ^r3/util/immi.r3
-^r3/audio/fx.r3
+^./supermix.r3
+^./fxsynth.r3
 
 #font1
+
+|---- audio: supermix reproduce el buffer de fxsynth (una voz de preview)
+#fxins					| instrumento sobre 'fxbuf (el largo se ajusta en cada render)
+
+:fxAudioInit | --
+	sminit
+	0.0 0.0 1.0 0.01 packADSR 'fxbuf 0 isamplemem 'fxins ! ;
+
+:fxStop | --
+	smreset ;
+
+:fxPlay | --
+	smreset
+	fxRender fxins smAUX!			| largo en frames
+	fxins smi!  69 smplay drop ;	| nota 69 = 440 Hz = velocidad original
 
 #fxbuff * 44 | 22*2
 
@@ -389,7 +405,7 @@
 	uiRest
 	listfx
 	
-	fxUpdate
+	smupdate
 
 	uiEnd
 	SDLredraw

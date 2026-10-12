@@ -5,7 +5,7 @@
 ^r3/util/immi.r3
 ^r3/util/imedit.r3
 
-^./chipalib.r3
+^./gamesfx.r3
 
 ^r3/lib/trace.r3
 
@@ -42,30 +42,33 @@
 		swap 16 >> $7fff + 10 >> $3f and cy + 32 + point
 		) drop ;	
 		
-|------------ musica: chipalib (motor de gamesfx: eval.r3 + smtick/smplayhz, precision de muestra)
+|------------ musica: pista 0 de gamesfx (eval.r3 + smtick/smplayhz, precision de muestra)
+#trk 0
+:t0 trk sfxtrk ;			| registro de parametros de la pista
 |  Play evalua el texto: si ya suena, el patron nuevo entra en el proximo ciclo y sigue el compas
 #bpm 120
 
 :play
 	fuente trim dup c@ 0? ( 2drop ; ) drop
-	bpm cpplay ;
+	trk swap bpm sfxtrkplay ;
 
 :stop
-	cpstop ;
+	trk sfxtrkstop ;
 
 :restart
-	cpstop play ;
+	stop play ;
 
 :debug2
-	cpcycle "cycle %d" sprint uiLabel
-	cpplaying "playing %d" sprint uiLabel
+	trk sfxtrkcycle "cycle %d" sprint uiLabel
+	trk sfxtrkplaying "playing %d" sprint uiLabel
 	stack> 'stack - 3 >> "events %d" sprint uiLabel
 	voice> 'voice - 6 >> "voices %d" sprint uiLabel ;
 
 |-----------------------------
 :ap | --			| aplica los parametros si el ultimo widget cambio
-	uiEx? 1? ( cpapply ) drop ;
+	uiEx? 1? ( trk sfxtrkapply ) drop ;
 
+#tkwave0 0 0
 :gui
 	|font1 txfont
 	uiStart
@@ -90,7 +93,7 @@
 	
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
-	uiEx? 1? ( bpm cpbpm ) drop
+	uiEx? 1? ( trk bpm sfxtrkbpm ) drop
 	240.0 bpm / "%fsec" sprint uiLabelC
 	
 	'play "Play" uiRBtn 
@@ -106,21 +109,22 @@
 	
 	"* Instrument *" uiLabelC
 	"Wave" uiLabel
-	'cp_wave 'cp_wnames uiCombo ap
+	'tkwave0 'sfxtnames uiCombo 
+	uiEx? 1? ( tkwave0 dup "%d" .println t0 tkwave ! trk sfxtrkapply ) drop 
 	"Attack" uiLabel
-	0.0 1.0 'cp_a uiSliderf ap
+	0.0 1.0 t0 tka uiSliderf ap
 	"Decay" uiLabel
-	0.0 2.0 'cp_d uiSliderf ap
+	0.0 2.0 t0 tkd uiSliderf ap
 	"Sustain" uiLabel
-	0.0 1.0 'cp_s uiSliderf ap
+	0.0 1.0 t0 tks uiSliderf ap
 	"Release" uiLabel
-	0.0 3.0 'cp_r uiSliderf ap
+	0.0 3.0 t0 tkr uiSliderf ap
 	"Volume" uiLabel
-	0.0 2.0 'cp_vol uiSliderf ap
+	0.0 2.0 t0 tkvol uiSliderf ap
 	"Curve" uiLabel
-	0 3 'cp_crv uiSlideri ap
+	0 3 t0 tkcrv uiSlideri ap
 	"Detune" uiLabel
-	0.0 0.05 'cp_detune uiSliderf ap
+	0.0 0.05 t0 tkdet uiSliderf ap
 	
 	debug2
 	
@@ -168,7 +172,7 @@
 	<f4> =? ( 'ex1 edloadmem )
 	<f5> =? ( 'ex2 edloadmem )
 	drop 
-	cpupdate
+	sfxupdate
 	;
 
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -179,7 +183,7 @@
 	
 	edram
 	
-	cpinit0
+	sfxinit0
 	
 	"" edloadmem
 	

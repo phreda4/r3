@@ -5,7 +5,7 @@
 | There is no interpreter in the REPL: r3lin runs everything.
 ^r3/lib/console.r3
 ^r3/util/utfg.r3
-^r3/d4/meta/mlibs.r3
+^repl/replib.r3
 ^repl/replhelp.r3
 
 |---------------- paleta (true color)
@@ -41,15 +41,15 @@
 	cols sw - 'mw ! ;
 
 |---------------- transcript
-#tp * $20000
-#tp> 'tp
+#tp 0
+#tp> 0
 #tl * $2000
 #ntl 0
 #scroll 0
 
 :tl+p | "txt" style -- 'guardado
-	ntl 1000 >=? ( 0 'ntl ! 'tp 'tp> ! ) drop
-	tp> 'tp - $1f000 >? ( 0 'ntl ! 'tp 'tp> ! ) drop
+	ntl 1000 >=? ( 0 'ntl ! tp 'tp> ! ) drop
+	tp> tp - $1f000 >? ( 0 'ntl ! tp 'tp> ! ) drop
 	tp> 8 << or
 	ntl 3 << 'tl + !
 	tp> swap over strcpyl 'tp> !
@@ -62,60 +62,16 @@
 #sn 0
 #incs * 4096		| includes de la sesion, 32 x 128 ("^r3/lib/math.r3")
 #ninc 0 #ninc0 0
-#defs * $20000		| texto del proyecto (sin includes)
-#defs> 'defs
+#defs 0		| texto del proyecto (sin includes)
+#defs> 0
 #defl 0
 #dnp * 512		| punteros a nombres definidos
 #dnn 0 #dnn0 0
 #dnpool * 4096
 #dnpool> 'dnpool
 
-|---------------- help table (repl/replhelp.r3) and real libraries (mlibs.r3)
-
-|--- librerias reales: liblist -> 'name 'words 'info  (mlibs.r3, generado por metabuild)
-| scanlibs llama 'vec por cada palabra con cw=palabra cl=libreria ci=info
-#cw 0 #cl 0 #ci 0 #xvec 0 #xwd 0 #xin 0
-#fnd 0 #fcl 0 #fci 0
-
-:scanlibs | 'vec --
-	'xvec !
-	'liblist ( @+ 1?
-		dup @ 'cl !
-		dup 8 + @ 'xwd !
-		16 + @ 'xin !
-		( xwd c@ $ff and 1? drop
-			xin c@ $ff and 'ci ! xwd 'cw !
-			xvec ex
-			xwd >>0 'xwd ! 1 'xin +! )
-		drop )
-	2drop ;
-
-:iswin? | -- 0/1 ; las de win/ no aplican en linux
-	cl "/win/" findstr 0? ( ; ) drop 1 ;
-
-:effinfo | info -- 'str ; info = $80 dato | uso<<4 | delta (4 bits con signo)
-	$80 and? ( drop "data" ; )
-	dup 4 >> 7 and swap $f and 8 xor 8 - over + swap
-	"%d -> %d" sprint ;
-
-#efb * 64
-:effbuf | info -- 'efb
-	effinfo 'efb strcpy 'efb ;
-
-:btabfind | -- e/0 ; busca 'tk en la tabla base
-	'btab ( dup c@ $ff and 1? drop
-		dup 'tk = 1? ( drop ; ) drop
-		e.next )
-	2drop 0 ;
-
-:m.exact
-	cw 'tk = 0? ( drop ; ) drop
-	iswin? 1? ( drop ; ) drop
-	fnd 1? ( drop ; ) drop
-	1 'fnd ! cl 'fcl ! ci 'fci ! ;
-
-:libfind | -- 0/1 ; busca 'tk en mlibs
-	0 'fnd ! 'm.exact scanlibs fnd ;
+|---------------- words: replib.r3 (base + mlibs) and commands: replhelp.r3
+#fnd 0
 
 |---------------- texto: tokens, includes y nombres
 :tok | adr -- adr' ; copies the token to 'tk (copynom), returns the delimiter (>>sp)
@@ -187,8 +143,7 @@
 	'tk c@ 0? ( drop 0 ; ) drop
 	'tk isNro 1? ( drop 0 ; ) drop
 	defined? 1? ( drop 0 ; ) drop
-	btabfind 1? ( drop 0 ; ) drop
-	libfind 1? ( fcl "^%s" sprint inc+ ) drop
+	'tk wfind 2 =? ( cl "^%s" sprint inc+ ) drop
 	0 ;
 
 :scaninc | adr -- ; agrega los includes que necesite la linea
@@ -199,7 +154,7 @@
 	2drop ;
 
 :defs+ | str -- ; agrega la linea a las definiciones de la sesion
-	defs> 'defs - $1e000 >=? ( 2drop ; ) drop
+	defs> defs - $1e000 >=? ( 2drop ; ) drop
 	defs> strcpyl 1- 13 swap c!+ 10 swap c!+
 	0 over c! 'defs> ! 1 'defl +! ;
 
@@ -208,7 +163,7 @@
 #pname * 64
 #ppath * 256
 #pfold * 256
-#pbuf * $20000
+#pbuf 0
 #menubuf * 1024
 
 :setproj | "name" --
@@ -227,7 +182,7 @@
 	"repl" mk1 "repl/proj" mk1 'pfold mk1 ;
 
 :proj-clear
-	0 'ninc ! 'defs 'defs> ! 0 'defs c! 0 'defl !
+	0 'ninc ! defs 'defs> ! 0 defs c! 0 'defl !
 	'dnpool 'dnpool> ! 0 'dnn ! ;
 
 :pline | procesa la linea que esta en 'lo2
@@ -247,15 +202,15 @@
 
 :proj-load | -- ok
 	'ppath filexist 0? ( ; ) drop
-	'pbuf 'ppath load 0 swap c!
-	'pbuf proj-parse 1 ;
+	pbuf 'ppath load 0 swap c!
+	pbuf proj-parse 1 ;
 
 :proj-save
 	mark
 	'pname "| r3repl - project %s" ,print ,nl
 	0 ( ninc <? dup 7 << 'incs + ,s ,nl 1+ ) drop
 	,nl
-	'defs ,s
+	defs ,s
 	'ppath savemem
 	empty
 	'ppath filexist 0? ( drop 'ppath "could not save %s  (paths are relative to where r3 runs; mkdir failed?)" sprint 4 tl+ ; ) drop ;
@@ -284,7 +239,7 @@
 #t0 0 #tms 0
 #obuf * 2064
 #ebuf * 4096
-#lbuf * $4000
+#lbuf 0
 #emsg * 256
 #efile * 128
 #els 0 #elne 0 #eline 0
@@ -311,7 +266,7 @@
 
 :gen-defs | las palabras de arranque del proyecto no se ejecutan en el REPL
 	0 'inboot !
-	'defs ( dup c@ $ff and 1? drop
+	defs ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln gline
 		nextl ) 2drop ;
 
@@ -508,7 +463,7 @@
 #inp * 256
 #cur 0
 #nc 0 #tmpr 0
-#recs * 16384
+#recs 0
 #cp * 4096
 #prw * 768
 
@@ -520,26 +475,25 @@
 :wstart | -- i
 	cur ( dup 1- ch@ 32 >? drop 1- ) drop ;
 
-| candidato = 4 qwords: kind(0 base/cmd, 1 libreria) eff|info libreria nombre
+| candidato = 4 qwords: kind(0 comando: eff = args, 1 palabra: eff = efecto) eff libreria nombre
 :cadd | name lib eff kind --
 	nc 500 >=? ( 4drop ; ) drop
-	nc 5 << 'recs + dup nc 3 << 'cp + !
+	nc 5 << recs + dup nc 3 << 'cp + !
 	>a a!+ a!+ a!+ a!+
 	1 'nc +! ;
 
-:btadd | e --
+:ctadd | e --
 	'pwd =pre 0? ( 2drop ; ) drop
-	dup e.lib over e.eff 0 cadd ;
+	dup e.lib over e.arg 0 cadd ;
 
-:m.pre
-	cw 'pwd =pre nip 0? ( drop ; ) drop
-	iswin? 1? ( drop ; ) drop
-	cw cl ci 1 cadd ;
+:m.pre | -- stop
+	'pwd wpre 0? ( ; ) drop
+	cw cl ce 1 cadd 0 ;
 
 :r.name 24 + @ ;
 :r.lib 16 + @ ;
 :r.eff@ | rec -- 'str
-	dup 8 + @ swap @ 1? ( drop effinfo ; ) drop ;
+	dup 8 + @ swap @ 1? ( drop effstr ; ) drop ;
 
 :cgt | j -- 0/1 ; cp[j-1] > tmp ?
 	0? ( ; )
@@ -566,8 +520,8 @@
 
 :gather
 	0 'nc !
-	'btab ( dup c@ $ff and 1? drop dup btadd e.next ) 2drop
-	'm.pre scanlibs
+	'ctab ( dup c@ $ff and 1? drop dup ctadd e.next ) 2drop
+	'm.pre scanwords drop
 	csort ;
 
 :hide? | -- 1/0 ; palabras de 1 letra no abren popup (salvo / y .)
@@ -704,9 +658,9 @@
 	memsize drop empty ;
 
 #nolm 14 #nols 5
-:showlbuf | style max -- ; vuelca las lineas de 'lbuf al transcript
+:showlbuf | style max -- ; vuelca las lineas de lbuf al transcript
 	'nolm ! 'nols ! 0 'nol !
-	'lbuf ( dup c@ $ff and 1? drop
+	lbuf ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln
 		'lo2 c@ 1? ( 'lo2 nols tl+ 1 'nol +! ) drop
 		nextl
@@ -714,8 +668,8 @@
 	2drop ;
 
 :outlines | muestra la salida del programa (mem/repl.log)
-	'lbuf "mem/repl.log" load 0 swap c!
-	'lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
+	lbuf "mem/repl.log" load 0 swap c!
+	lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
 	5 14 showlbuf ;
 
 :show-err
@@ -775,30 +729,18 @@
 	"" 0 tstep ;
 
 |---------------- comandos
+:helpline | e --
+	dup e.desc over e.arg rot "%s  %s  %s" sprint 8 tl+ ;
+
 :cmd-help
 	"Commands" 7 tl+
-	"/words txt  search words (base + mlibs)" 8 tl+
-	"/lib word   which library to include" 8 tl+
-	"/stack      show the stack        /reset  clear the stack" 8 tl+
-	"/fmt [dec|hex|fix]  stack format (no arg: cycle; also ctrl+f)" 8 tl+
-	"/term       show the output terminal of the last run (also ctrl+t)" 8 tl+
-	"/src        show the generated program" 8 tl+
-	"/save       save the project (also saved when code is added)" 8 tl+
-	"/new name   new project           /load name  open one" 8 tl+
-	"/proj       list projects" 8 tl+
-	"/open file  new project from a code in r3/" 8 tl+
-	"/find txt   search codes in r3/" 8 tl+
-	"/init [code|off]  hook run before each line (e.g. graphics setup)" 8 tl+
-	"/done [code|off]  hook run after each line (e.g. wait, quit)" 8 tl+
-	"/edit       edit the project (r3ide, F5 debugs)   /run  launch it" 8 tl+
-	".rs         inside any code: prints the stack and keeps it" 8 tl+
-	"/clear      clear the screen history   /exit  quit" 8 tl+
+	'ctab ( dup c@ $ff and 1? drop dup helpline e.next ) 2drop
 	"" 0 tl+ ;
 
 #carg 0 #ntk 0
 
 :wline | e --
-	dup e.lib over e.eff rot "%s  %s  %s" sprint 8 tstep ;
+	dup e.desc over e.arg rot "%s  %s  %s" sprint 8 tstep ;
 
 :wtry | e --
 	dup carg findstri 0? ( 2drop ; ) drop
@@ -806,12 +748,11 @@
 	ntk 12 >? ( 2drop ; ) drop
 	wline ;
 
-:m.wlib
-	cw carg findstri 0? ( drop ; ) drop
-	iswin? 1? ( drop ; ) drop
+:m.wlib | -- stop
+	carg wsub 0? ( ; ) drop
 	1 'ntk +!
-	ntk 12 >? ( drop ; ) drop
-	ci effbuf cl cw "%s  ^%s  %s" sprint 8 tstep ;
+	ntk 12 >? ( drop 1 ; ) drop
+	ce effstr cl cw "%s  ^%s  %s" sprint 8 tstep 0 ;
 
 :cmd-words | arg --
 	trim 'carg !
@@ -820,35 +761,33 @@
 		"/words dup   to search" 6 tstep
 		"" 0 tstep ; ) drop
 	0 'ntk !
-	'btab ( dup c@ $ff and 1? drop dup wtry e.next ) 2drop
-	'm.wlib scanlibs
+	'ctab ( dup c@ $ff and 1? drop dup wtry e.next ) 2drop
+	'm.wlib scanwords drop
 	ntk 0? ( "no results" 6 tstep ) drop
 	ntk 12 >? ( "..." 6 tstep ) drop
 	"" 0 tstep ;
 
-:m.libline
-	cw 'tk = 0? ( drop ; ) drop
-	iswin? 1? ( drop ; ) drop
-	1 'fnd +!
-	ci effbuf cl cw "%s  ^%s  %s" sprint 8 tstep ;
+:m.libline | -- stop
+	'tk wis 0? ( ; ) drop
+	ce effstr cl cw "%s  ^%s  %s" sprint 8 tstep 0 ;
 
 :cmd-lib | arg --
 	trim tok drop
 	'tk c@ 0? ( drop "usage: /lib word" 6 tstep ; ) drop
-	btabfind 1? ( e.eff 'tk "%s  base  %s  -  no include needed" sprint 8 tstep "" 0 tstep ; ) drop
-	0 'fnd !
-	'm.libline scanlibs
-	fnd 0? ( "not found in base or mlibs.r3" 4 tstep ) drop
-	"" 0 tstep ;
+	'tk wfind
+	0? ( "not found in base or mlibs.r3" 4 tstep )
+	1 =? ( ce effstr 'tk "%s  base  %s  -  no include needed" sprint 8 tstep )
+	2 =? ( 'm.libline scanwords drop )
+	drop "" 0 tstep ;
 
 :cmd-src | the program every line is compiled with (rebuilt from the current project)
 	"" 1 gen-src
-	'lbuf "mem/repl.r3" load 0 swap c!
+	lbuf "mem/repl.r3" load 0 swap c!
 	6 60 showlbuf
 	"" 0 tl+ ;
 
 :cmd-clear
-	0 'ntl ! 'tp 'tp> ! 0 'scroll ! ;
+	0 'ntl ! tp 'tp> ! 0 'scroll ! ;
 
 :cmd-reset
 	0 'sn !
@@ -875,7 +814,7 @@
 :cmd-proj
 	"Projects" 7 tl+
 	ls-proj
-	'lbuf "mem/repl.ls" load 0 swap c!
+	lbuf "mem/repl.ls" load 0 swap c!
 	8 14 showlbuf
 	'pname "current: %s" sprint 6 tl+
 	"" 0 tl+ ;
@@ -913,7 +852,7 @@
 	"%s.r3" tryf 1? ( ; ) drop
 	"r3/%s.r3" tryf ;
 
-:basename | -- ; 'tk = nombre del archivo sin ruta ni .r3
+:projbase | -- ; 'tk = nombre del archivo sin ruta ni .r3
 	'ofile 'bp !
 	'ofile ( c@+ $ff and 1? $2f =? ( over 'bp ! ) $5c =? ( over 'bp ! ) drop ) 2drop
 	bp 'tk strcpy
@@ -922,12 +861,12 @@
 
 :cmd-open | arg --
 	resolve 0? ( drop "file not found (/find text)" 4 tl+ "" 0 tl+ ; ) drop
-	basename
+	projbase
 	'tk namecheck 0? ( drop "invalid project name" 4 tl+ "" 0 tl+ ; ) drop
 	'tk 'tk 'pdir "%s%s/%s.r3" sprint filexist 1? ( drop "a project with that name already exists (/load)" 4 tl+ "" 0 tl+ ; ) drop
 	'tk setproj mkproj
-	'pbuf 'ofile load 0 swap c!
-	'pbuf proj-parse
+	pbuf 'ofile load 0 swap c!
+	pbuf proj-parse
 	proj-save switched
 	'ofile "base code: %s" sprint 6 tl+
 	pinfo ;
@@ -941,8 +880,8 @@
 |MAC|	"find r3 -iname ""*%s*.r3"" | sort > mem/repl.ls 2>/dev/null"
 |RPI|	"find r3 -iname ""*%s*.r3"" | sort > mem/repl.ls 2>/dev/null"
 	sprint sys
-	'lbuf "mem/repl.ls" load 0 swap c!
-	'lbuf c@ 0? ( drop "no results" 6 tl+ "" 0 tl+ ; ) drop
+	lbuf "mem/repl.ls" load 0 swap c!
+	lbuf c@ 0? ( drop "no results" 6 tl+ "" 0 tl+ ; ) drop
 	8 14 showlbuf
 	"/open path   opens it as a project" 6 tl+
 	"" 0 tl+ ;
@@ -977,7 +916,7 @@
 
 :names-rebuild | rebuilds the defined-names list from the project text
 	0 'dnn ! 'dnpool 'dnpool> !
-	'defs ( dup c@ $ff and 1? drop
+	defs ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln 'lo2 lkind 2 =? ( 'lo2 regnames ) drop
 		nextl ) 2drop ;
 
@@ -987,16 +926,16 @@
 
 :defs-del | "prefix" -- ; removes the lines that start with prefix
 	'delp !
-	'defs 'pbuf strcpy
-	'defs 'defs> ! 0 'defs c! 0 'defl !
-	'pbuf ( dup c@ $ff and 1? drop
+	defs pbuf strcpy
+	defs 'defs> ! 0 defs c! 0 'defl !
+	pbuf ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln keepline nextl ) 2drop ;
 
 #hname 0
 #pfx * 64
 :hook-show
 	0 'fnd !
-	'defs ( dup c@ $ff and 1? drop
+	defs ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln
 		'lo2 'pfx =pre nip 1? ( 'lo2 6 tl+ 1 'fnd ! ) drop
 		nextl ) 2drop
@@ -1035,11 +974,11 @@
 	"usage: /fmt dec|hex|fix" 4 tl+ "" 0 tl+ ;
 
 :cmd-term | shows the output terminal of the last run (raw, in the normal screen)
-	'lbuf "mem/repl.log" load 0 swap c!
-	'lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
+	lbuf "mem/repl.log" load 0 swap c!
+	lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
 	.masb .reset .cls .flush
-	'lbuf c@ 0? ( " (no output yet)" .write ) drop
-	'lbuf .write
+	lbuf c@ 0? ( " (no output yet)" .write ) drop
+	lbuf .write
 	.cr .cr " -- end of output, press any key --" .write .flush
 	waitkey
 	.alsb .flush ;
@@ -1084,8 +1023,8 @@
 	empty ;
 
 :hist-load
-	'pbuf "mem/repl.hist" load 0 swap c!
-	'pbuf ( dup c@ $ff and 1? drop
+	pbuf "mem/repl.hist" load 0 swap c!
+	pbuf ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln
 		'lo2 255 + 0 swap c!
 		'lo2 c@ 1? ( 'lo2 hist+ ) drop
@@ -1105,8 +1044,8 @@
 	hn swap - hslot 'inp strcpy inplen 'cur ! popup! ;
 
 :proj-boot | abre el ultimo proyecto (o scratch)
-	'pbuf "mem/repl.last" load 0 swap c!
-	'tk 'pbuf trim copynom
+	pbuf "mem/repl.last" load 0 swap c!
+	'tk pbuf trim copynom
 	'tk namecheck 0? ( "scratch" 'tk strcpy ) drop
 	'tk setproj proj-ensure proj-load drop proj-remember
 	hist-load ;
@@ -1148,7 +1087,18 @@
 	$3 =? ( 1+ ) $4 =? ( 1 'quit ! ) | ctrl+c +d
 	drop ;
 
+:initmem | big buffers (>8192) are reserved in the boot: tp defs pbuf lbuf recs hold the address
+	here
+	dup 'tp ! $20000 +
+	dup 'defs ! $20000 +
+	dup 'pbuf ! $20000 +
+	dup 'lbuf ! $4000 +
+	dup 'recs ! 16384 +
+	'here !
+	tp 'tp> ! defs 'defs> ! 0 defs c! ;
+
 :main
+	initmem
 	proj-boot
 	.alsb
 	( quit 0? drop

@@ -295,11 +295,12 @@
 	p_vol *. ;
 
 |============================================================
-| RENDER OFFLINE A BUFFER (16 bit signed, mono, 44100hz)
+| RENDER OFFLINE A BUFFER (16 bit signed, estereo L=R intercalado, 44100hz)
+| listo para supermix: isamplemem ... 'fxbuf len (frames) 
 |============================================================
 ##fxrate 44100
 ##fxmaxsamples 176400 | 4 seg tope de seguridad
-##fxbuf * 352800        | fxmaxsamples * 2 bytes
+##fxbuf * 705600        | fxmaxsamples * 4 bytes (frame = L R)
 
 ::fxRender | -- len
 	|playing 0? ( drop fxmaxsamples ; ) drop
@@ -307,7 +308,7 @@
 	'fxbuf 
 	0 ( fxmaxsamples <?
 		fxSample 2/ clamps16
-		rot w!+ swap
+		rot over swap w!+ w!+ swap
 		1+ ) nip ;
 
 ::fxPack | 'dest --
