@@ -41,3 +41,8 @@ media/ss/vox2.png
 media/ss/vox2.ssa
 media/ss/vox2.txt
 r3/d4/gen/plain.r3
+mem/repl.hist
+mem/repl.last
+mem/repl.log
+mem/repl.out
+mem/repl.r3

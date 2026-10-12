@@ -36,10 +36,10 @@
 
 |---------------------------
 :banner
-	.cls "[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr .flush ;
+	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr ;
 	
 :runcheck
-	banner
+	.cls banner
 	here dup "error.log" load
 	over =? ( 2drop ; ) 
 	0 swap c!
@@ -53,7 +53,7 @@
 
 :filerun
 	fuente c@ 0? ( drop ; ) drop
-	banner
+	.cls banner
 	savem
 	'fullpath r3run
 	.reterm .alsb .flush
@@ -65,6 +65,12 @@
 	.masb .flush
 	savem
 	"r3/d4/r3ide.r3" r3run
+	.reterm .alsb .flush tuR! ;
+
+:r3repl
+	.masb .flush
+	savem
+	"repl/repl.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
 :remfilename | str --
@@ -200,18 +206,18 @@
 	
 	|___________
 	4 flxN
-	fx fy .at "[01R[023[07forth" .awrite 
+	fx fy .at banner 
 	|.tdebug |2dup " %d %d " .print
 	|tk "%h" .print 'fullpath .write
 	8 .bc 15 .fc 
 	1 flxS
 	fx fy .at .sp
-	.rev " H" .write .nrev "elp  " .write 
-	.rev " R" .write .nrev "un  " .write 
-	.rev " E" .write .nrev "dit  " .write 
-	.rev " N" .write .nrev "ew  " .write 
-	.rev " I" .write .nrev "nteractive  " .write 	
-	.rev " /" .write .nrev "Search  " .write 
+	.rev "H" .write .nrev "elp  " .write 
+	.rev "R" .write .nrev "un  " .write 
+	.rev "E" .write .nrev "dit  " .write 
+	.rev "N" .write .nrev "ew  " .write 
+	.rev "I" .write .nrev "mm  " .write 	
+	.rev "/" .write .nrev "Search  " .write 
 |	.eline .cr 
 |	.eline .cr
 	.eline
@@ -231,13 +237,16 @@
 	[f6] =? ( fileedit )
 	$20 =? ( fileedit )
 	$2f =? ( filesearch )
+	
 	toUpp
 |	$43 =? ( fileclon )	| Clon	
 	$44 =? ( filedelete ) | Delete
 	$45	=? ( fileedit )	| Edit
+	$49	=? ( r3repl )	| Interactive
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
-	$51 =? ( exit )
+	
+	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
 	drop
 	;
 
