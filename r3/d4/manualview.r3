@@ -47,7 +47,7 @@
 	.reset emitline ;
 
 :tit1 :tit2
-	fw over 24 >> $ff and - 2/ 32 swap .nch | center
+	fw over 24 >> $ff and - 2/ .nsp | center
 	|dup 24 >> $ff and "%d:" .print
 	.Bold 14 .fc .Under emitline ;
 
@@ -81,13 +81,13 @@
 :codl 
 	.sp .sp
 	12 .fc "│" .write
-	.savec 32 fw 6 - .nch "│" .write .restorec
+	.savec fw 6 - .nsp "│" .write .restorec
 	emitline ;
 	
 :tab
 	dup 24 >> $ff and 1 max
 	fw over / | cnt len
-	32 over 2/ .nch | espacio
+	dup 2/ .nsp
 	|4 .bc 7 .fc
 	11 .fc
 	swap 1- ( 1? 	| v len cnt
@@ -105,7 +105,7 @@
 :tabl	
 	24 >> $ff and 1 max
 	fw over / | cnt len
-	32 over 2/ .nch | espacio
+	dup 2/ .nsp
 	|4 .bc 7 .fc
 	11 .fc
 	swap 1- ( 1? 

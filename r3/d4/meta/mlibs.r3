@@ -291,8 +291,8 @@
 #info ( $2F $2F $1F $1 $1F $10 $11 $2F $10 $1 $2E $2E $0 $2 $1F $1F $1F $2E $1F $1F $2E $2E $2E $2E $2E $1F $4C $2F $10 )
 #r3_util_txfont.r3 'name 'words 'info $95E
 #name "r3/util/utfg.r3"
-#words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" 0
-#info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C )
+#words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" "rgb4t" 0
+#info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C $10 )
 #r3_util_utfg.r3 'name 'words 'info $8CA
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "timer<" "timer." "timer+" "timer-" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0

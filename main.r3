@@ -245,7 +245,9 @@
 	$49	=? ( r3repl )	| Interactive
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
-	
+| ctrl
+	$5 =? ( fileedit ) | e
+	$9 =? ( r3repl )	| Interactive
 	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
 	drop
 	;

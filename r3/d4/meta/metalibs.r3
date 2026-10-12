@@ -438,9 +438,9 @@
 #r3_util_txfont.r3 'name 'words 'calls 'info
 ^r3/util/utfg.r3
 #name "r3/util/utfg.r3"
-#words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" 0
-#calls  '.xwrite '.awrite '.vline '.hline '.vlined '.hlined '.boxl '.boxc '.boxd '.boxf 'lalign 'calign 'ralign 'lwrite 'cwrite 'rwrite 'xalign 'xwrite 'xText
-#info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C )
+#words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" "rgb4t" 0
+#calls  '.xwrite '.awrite '.vline '.hline '.vlined '.hlined '.boxl '.boxc '.boxd '.boxf 'lalign 'calign 'ralign 'lwrite 'cwrite 'rwrite 'xalign 'xwrite 'xText 'rgb4t
+#info ( $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $1F $4C $10 )
 #r3_util_utfg.r3 'name 'words 'calls 'info
 ^r3/util/varanim.r3
 #name "r3/util/varanim.r3"

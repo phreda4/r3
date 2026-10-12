@@ -71,11 +71,6 @@
 ::.cr $d0a .wemit ; |10 .emit 13 .emit ;
 ::.sp 32 ..emit ;
 
-::.nch | char n -- ; WARNIG not multibyte
-	|endbuf outbuf> -  >? ( .flush )
-	outbuf> rot pick2 cfill | dvc
-	'outbuf> +! ;
-
 ::.write count .type ;
 
 ::.print 
@@ -89,7 +84,15 @@
 ::.[w .^[ .write ;
 ::.[p .^[ .print ;
 
-::.rep | cnt  "car" -- 
+::.nsp | n --
+	32  
+::.nch | n char -- ; WARNIG not multibyte
+	..emit 1- "%db" .[p ;
+	
+::.ndel | n -- | not adv cursor
+	"%dX" .[p ;
+
+::.rep | cnt "car" -- ; REPEAT with multibyte
 	count rot ( 1? 1- pick2 pick2 .type ) 3drop ;
 
 |--- automatic flush version
@@ -106,7 +109,7 @@
 |::.ealine "2K" .[w ; | borrar linea actual
 ::.escreen "J" .[w ; | erase from cursor to end of screen
 ::.escreenup "1J" .[w ; | erase from cursor to beginning
-::.nsp $ffff and "%dX" .[p ; | n -- | not adv cursor
+
 
 ::.showc "?25h" .[w ;
 ::.hidec "?25l" .[w ;

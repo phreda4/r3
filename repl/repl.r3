@@ -449,7 +449,7 @@
 		1+ ) drop ;
 
 :drawhead
-	bg0 fDi 3 2 .at 45 mw 4 - .nch
+	bg0 fDi 3 2 .at mw 4 - 45 .nch
 	3 1 .at fPr .Bold "# " .write fTx "r3repl" .write .NBold
 	fMu "  -  " .write 'pname .write
 	fMu mw 20 - 1 .at 18 fmtname sn "stack %d  [%s]" sprint rwrite ;
