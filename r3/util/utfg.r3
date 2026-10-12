@@ -162,14 +162,14 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		swap 1+ swap r> ) drop 
 	-rot .at
 	"╚" .write 2 - "═" .rep "╝" .write ;
-	
-::.boxf
+		
+::.boxf | x y w h --
 	1 <? ( 4drop ; ) swap
 	1 <? ( 4drop ; ) swap
-	( 1? 1- >r
-		pick2 pick2 .at
-		dup .nsp swap 1+ swap 
-		r> ) 4drop ;
+	pick3 pick3 .at
+	( 1? 1- over .ndel
+		1? ( "B" .[w ) )
+	4drop ;
 	
 |--- utf align | result in HERE
 ::lalign | cnt str -- 

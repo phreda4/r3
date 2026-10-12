@@ -266,7 +266,7 @@
 : |||||||||||||||||||||||||||||
 	here 
 	dup 'outbuf ! dup 'outbuf> !
-	$1f00 +	| 16kb flush buffer
+	$3f00 +	| 16kb flush buffer
 	dup 'endbuf ! 
 	$ff + 'here !
 	;
