@@ -346,6 +346,9 @@
 	
 ::smASDR! | v1 v2 n --
 	6 << 'instr + 16 + rot over ! 8 + ! ;
+
+::smAUX! | aux n --		| dato auxiliar del instrumento n (detune de isuper, slide de isweep)
+	6 << 'instr + 32 + ! ;
 	
 ::fx
 ::control

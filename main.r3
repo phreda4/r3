@@ -200,19 +200,20 @@
 	
 	|___________
 	4 flxN
-	fx fy .at "[01R[023[03f[04o[05r[06t[07h" .awrite 
+	fx fy .at "[01R[023[07forth" .awrite 
 	|.tdebug |2dup " %d %d " .print
 	|tk "%h" .print 'fullpath .write
 	8 .bc 15 .fc 
-	3 flxS
+	1 flxS
 	fx fy .at .sp
 	.rev " H" .write .nrev "elp  " .write 
 	.rev " R" .write .nrev "un  " .write 
 	.rev " E" .write .nrev "dit  " .write 
 	.rev " N" .write .nrev "ew  " .write 
+	.rev " I" .write .nrev "nteractive  " .write 	
 	.rev " /" .write .nrev "Search  " .write 
-	.eline .cr 
-	.eline .cr
+|	.eline .cr 
+|	.eline .cr
 	.eline
 	|___________
 	38 flxO

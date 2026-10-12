@@ -4,7 +4,10 @@
 
 :screen
 	0 0 .at
-	"Music" .print
+	"Music" .println .cr
+	
+	"f1 - music1" .println
+	"f2 - music2" .println
 	.flush
 	;
 	
@@ -25,8 +28,25 @@
 0.30 2 sfxtunemix drop
 	;
 
+:music2
+"<[f#2 c#2 e2 f#2 e2 c#2 b1 c#2]!6 [d2 d2 c#2 c#2 b1 b1 c#2 c#2]!2 [f#2 c#2 b1 c#2 d2 c#2 b1 c#2]!2>"
+
+	117 i2 1 sfxtune
+	0.3 0 sfxtunemix drop
+	
+"<~
+ [[f#3,a3,c#4,e4] ~ ~ [g#3,b3,d#4,f#4] ~ ~  ]!5
+ [[d3,f3,a3,c4] [c#3,e3,g#3,b3]]!2
+ [[f#3,a3,c#4] [b3,d4,f#4]]!2
+>"
+|	117 i1 1 sfxtune 
+|	0.2 0 sfxtunemix drop
+	
+	;
+	
 :handle
 	[f1] =? ( music ) 
+	[f2] =? ( music2 ) 
 	;
 	
 :main

@@ -17,33 +17,33 @@
 |--- for show in code
 #codenow -1
 
-::bg0 $000 rgb4t .bc ;
-::bg1 $112 rgb4t .bc ;
-::bg2 $222 rgb4t .bc ;
-::bg3 $334 rgb4t .bc ;
-::fTx $EEE rgb4t .fc ;
-::fMu $889 rgb4t .fc ;
-::fDi $556 rgb4t .fc ;
-::fPr $FA8 rgb4t .fc ;
-::fBl $59E rgb4t .fc ;
-::fPu $97D rgb4t .fc ;
-::fGr $7D8 rgb4t .fc ;
-::fRd $D67 rgb4t .fc ;
-::fYe $EA4 rgb4t .fc ;
-::fb2 $222 rgb4t .fc ;
+:bg0 $000 rgb4t .bc ;
+:bg1 $112 rgb4t .bc ;
+:bg2 $222 rgb4t .bc ;
+:bg3 $334 rgb4t .bc ;
+:fTx $EEE rgb4t .fc ;
+:fMu $889 rgb4t .fc ;
+:fDi $556 rgb4t .fc ;
+:fPr $FA8 rgb4t .fc ;
+:fBl $59E rgb4t .fc ;
+:fPu $97D rgb4t .fc ;
+:fGr $7D8 rgb4t .fc ;
+:fRd $D67 rgb4t .fc ;
+:fYe $EA4 rgb4t .fc ;
+:fb2 $222 rgb4t .fc ;
 
 |-------------------------------------
 :showcode | n --
 	codenow =? ( drop ; ) dup 'codenow !
 	inc2src TuLoadMemC 
 	
-	.cl 7 .fc cols .nsp
+	.cl 15 .fc
 	" r3debug | " .write
 	codenow cntinc <? ( 
 		strinc over n>>0 .write
 		" > " .write
 		) drop
-	'filename .write
+	'filename .write .eline
 	'topline strcpybuf ;
 
 | ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc	
@@ -118,15 +118,15 @@
 	" :" .write
 	.h 4 .r. .write ":" .write
 	dup linesn ex
-	.sp
+	.sp 15 .fc
 	panelMemBytes ( 1? 1- swap 
 		c@+ 32 <? ( $2e nip ) .emit 
 		swap ) drop ;
 	
 :panelMem
 	.reset
-	fx fy .at 5 .fc
-	lmem dup $ffff and swap 16 >> " DUMP %h:%h " .print .eline .cr
+	fx fy .at 5 .bc 15 .fc 
+	lmem dup $ffff and swap 16 >> " MEM %h:%h - " .print .eline .cr
 	.reset
 	1 'fy +! -1 'fh +!
 	fw 11 - 3 / 'panelMemBytes !	
@@ -242,9 +242,18 @@
 |-------------------------
 #panelIPSize 6
 	
+#fmt '.h
+
+:chgfmt
+	fmt 
+	'.h =? ( drop '.d 'fmt ! ; ) 
+	'.d =? ( drop '.f 'fmt ! ; ) 	
+	'.f =? ( drop '.b 'fmt ! ; ) 
+	drop 
+	'.h 'fmt ! ;
+	
 :.stk | val --
-	fx .col 
-	.h 8 .r. .write .cr ;
+	fx .col fmt ex 24 .r. .write .cr ;
 	
 :dtackcnt | -- cnt
 	vmNOS mdatastack - 3 >> ;
@@ -258,8 +267,7 @@
 	dtackcnt fh min 1- clamp0 swap
 	dstackoff +
 	( swap 1? 1- swap
-		8 - dup @ 
-		.stk
+		8 - dup @ .stk
 		) 2drop ;
 
 :.retstack
@@ -269,25 +277,27 @@
 		.stk
 		) drop ;
 	
+:hhline
+	fx fw + 1- fy .at fh .vline 1 'fx +! 
+	fx fy .at ;
+	
 :panelIP
 	.reset |fx fy 1+ .at fw .hline .cr
 	flxpush
-	20 flxO fx fy .at
-	2 .fc
-	fx .col "   IP:" .write vmIP .h 8 .r. .write .sp .cr
-	"  RET STK:" .write rstackcnt .d 4 .r. .write .sp .cr
+	18 flxO 
+	hhline
+	fx .col "  IP :" .write vmIP .h 8 .r. .write .cr
+	fx .col "   A :" .write vmREGA .h 8 .r. .write .cr
+	fx .col "   B :" .write vmREGB .h 8 .r. .write .cr
+	fx .col "DATA :" .write dtackcnt .d 8 .r. .write .cr
+	fx .col "RETN :" .write rstackcnt .d 8 .r. .write
 	
-	3 .fc
-	fx .col "    A:" .write vmREGA .h 8 .r. .write .sp .cr
-	fx .col "    B:" .write vmREGB .h 8 .r. .write .sp .cr
-	" DATA STK:" .write dtackcnt .d 4 .r. .write .sp .cr
-	
-	20 flxO fx fy .at .rev
-	3 .fc
+	26 flxO 
+	hhline
 	.datastack
 	
-	20 flxO fx fy .at
-	2 .fc
+	26 flxO 
+	hhline
 	.retstack
 	
 	flxRest fx fy .at
@@ -310,14 +320,21 @@
 	[SHIFT+UP] =? ( memup )
 	[SHIFT+PGDN] =? ( mempgdn )
 	[SHIFT+PGUP] =? ( mempgup )
-	[SHIFT+TAB] =? ( changemem )	
-	drop
-	;
+	|[SHIFT+TAB] =? ( changemem )	
+	drop ;
+
+:keyctrl
+	3 =? ( exit )	| CTRL+C
+	4 =? ( exit )	| CTRL+D
+	6 =? ( chgfmt )	| CTRL+F
+	13 =? ( changemem ) | +M
+	drop ;
 	
 :teclado
 	uiKey
 	tueKeyMove
 	$7f >? ( keyext ; )
+	32 <? ( keyctrl ; )
 	toUpp
 	$42 =? ( breakpoint )	| B breakpoint
 	$43 =? ( playmode )		| C continue
@@ -341,6 +358,7 @@
 	|"DBG" .write
 	
 	1 flxS
+	8 .bc 15 .fc 
 	0 fy .at .sp 
 	.rev "B" .write .nrev "reakpoint  " .write 
 	.rev "C" .write .nrev "ontinue  " .write 
@@ -354,9 +372,9 @@
 	panelMemSize flxS 
 	panelMem
 	
-	20 flxE .reset
-	|fx fy .at fw 1- .hline 
-	fx fy .at " WATCH" .write 
+	30 flxE .reset
+	fx fy .at fh .vline 1 'fx +!
+	fx fy .at "WATCH" .write 
 
 	panelIPSize flxS
 	panelIP

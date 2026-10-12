@@ -4,10 +4,8 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/util/immi.r3
 ^r3/util/imedit.r3
-^r3/util/varanim.r3
 
-^./supermix.r3
-^./eval.r3
+^./chipalib.r3
 
 ^r3/lib/trace.r3
 
@@ -44,96 +42,30 @@
 		swap 16 >> $7fff + 10 >> $3f and cy + 32 + point
 		) drop ;	
 		
-|------------ keys
-#playn * 100 
-
-:keydn | note --
-	dup 'playn + c@ 1? ( 2drop ; ) drop 
-	dup smplay 'playn + c! ;
-
-:keyup | note --
-	dup 'playn + c@ 0? ( 2drop ; )
-	0 over 'playn + c! 
-	smstop ;
-	
-|------------ eval
+|------------ musica: chipalib (motor de gamesfx: eval.r3 + smtick/smplayhz, precision de muestra)
+|  Play evalua el texto: si ya suena, el patron nuevo entra en el proximo ciclo y sigue el compas
 #bpm 120
-#cyclesec 2.0 | 240/bpm bmp=120
 
-#run 0
+:play
+	fuente trim dup c@ 0? ( 2drop ; ) drop
+	bpm cpplay ;
 
-
-#i0 #i1 #i2 #i3
-
-:splay
-	dup @+ swap @ swap | get 2 params
-	smplayd ;
-	
-:genevt | note dur start --
-	|". " .print .flush
-	'splay swap +vvvexe ;
-	 
-:generate
-	eval
-	1 'ccycle +!
-	'stack ( stack> <?
-		@+
-		dup 32 >> $ff and
-		over $ffff and cyclesec *.
-		rot 16 >> $ffff and cyclesec *.
-		genevt
-		|"%f %f %d" .println .flush
-		) drop ;
-	
-:cicle
-	run 0? ( drop ; ) drop
-	generate
-	'cicle cyclesec  +vexe
-	;
-
-:gencycle
-	fuente 
-	trim dup c@ 0? ( 2drop ; ) drop
-|	dup .println .flush
-	process | str --
-	0 'ccycle !
-	1 'run !
-	vareset
-	cicle ;
-
-	
 :stop
-	vareset
-	0 'run ! ;
-	
-:debug1
-	0 'tokens ( tokens> <?
-		mark
-		swap dup "%h: " ,print 1+ swap
-		@+ 	"| %h " ,print
-		|drop 
-		,eol
-		empty here uiLabel
-		) 2drop ;
+	cpstop ;
+
+:restart
+	cpstop play ;
 
 :debug2
-	tokens> 'tokens - "%h " sprint uiLabel
-	stack> 'stack - "%h" sprint uiLabel
-	voice> 'voice - "sm voice %h" sprint uiLabel
-	timeline> timeline - 3 >> "timeline %d" sprint uiLabel
-	|#timeline<	
-	
-	;
+	cpcycle "cycle %d" sprint uiLabel
+	cpplaying "playing %d" sprint uiLabel
+	stack> 'stack - 3 >> "events %d" sprint uiLabel
+	voice> 'voice - 6 >> "voices %d" sprint uiLabel ;
 
-#listi oscSaw oscSqr oscPul1 oscPul2 oscTri oscSin oscFakeSuperSaw oscSuperSaw3P 
-#listex "Saw" "Sqr" "Pull1" "Pull2" "Tri" "Sin" "FSuperSaw" "SuperSaw" 0
-
-#vins 0 0 | instrument
-:setInst
-	vins 3 << 'listi + @ i0 smOSC! 
-	i0 smi! ;
-	
 |-----------------------------
+:ap | --			| aplica los parametros si el ultimo widget cambio
+	uiEx? 1? ( cpapply ) drop ;
+
 :gui
 	|font1 txfont
 	uiStart
@@ -141,7 +73,7 @@
 	$ffffff color
 	
 	0.05 %h uiN $004800 color uiWinBox frect
-	"r3ChipA - [f1] eval+play [f2] stop [esc] exit" uiLabel
+	"r3ChipA - [f1] play/eval [f2] stop [f3] restart [esc] exit" uiLabel
 	
 	0.02 %h uiS
 	
@@ -158,14 +90,12 @@
 	
 	"BPM" uiLabel
 	20 300 'bpm uiSlideri 
-	uiEx? 1? ( 240.0 bpm / 'cyclesec ! ) drop
-	cyclesec "%fsec" sprint uiLabelC
+	uiEx? 1? ( bpm cpbpm ) drop
+	240.0 bpm / "%fsec" sprint uiLabelC
 	
-	'vins 'listex uiCombo
-	uiEx? 1? ( setInst ) drop
-
-	'gencycle "Play" uiRBtn 
+	'play "Play" uiRBtn 
 	'stop "Stop" uiRBtn 
+	'restart "Restart" uiRBtn 
 	stDang 'exit "Exit" uiRBtn 
 	stInfo
 	
@@ -173,20 +103,35 @@
 	
 	uiRest
 	$181818 color uiWinBox frect
+	
+	"* Instrument *" uiLabelC
+	"Wave" uiLabel
+	'cp_wave 'cp_wnames uiCombo ap
+	"Attack" uiLabel
+	0.0 1.0 'cp_a uiSliderf ap
+	"Decay" uiLabel
+	0.0 2.0 'cp_d uiSliderf ap
+	"Sustain" uiLabel
+	0.0 1.0 'cp_s uiSliderf ap
+	"Release" uiLabel
+	0.0 3.0 'cp_r uiSliderf ap
+	"Volume" uiLabel
+	0.0 2.0 'cp_vol uiSliderf ap
+	"Curve" uiLabel
+	0 3 'cp_crv uiSlideri ap
+	"Detune" uiLabel
+	0.0 0.05 'cp_detune uiSliderf ap
+	
 	debug2
-
-	"Voices" uiLabel
-	2over 2over
-	"%h %h %h %h" sprint uiLabel
 	
 	uiEnd
 	;
 
 #ex1 |"< {a b c } {d e f} > a ~ " 
-"<[g4*0.75 g4*0.25 a4 g4 c5 b4]
-[g4*0.75 g4*0.25 a4 g4 d5 c5]
-[g4*0.75 g4*0.25 g5 e5 c5 b4 a4]
-[f5*0.75 f5*0.25 e5 c5 d5 c5] ~>"
+"<[g4@0.75 g4@0.25 a4 g4 c5 b4]
+[g4@0.75 g4@0.25 a4 g4 d5 c5]
+[g4@0.75 g4@0.25 g5 e5 c5 b4 a4]
+[f5@0.75 f5@0.25 e5 c5 d5 c5] ~>"
 
 #ex2
 "{<
@@ -217,13 +162,13 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<f1> =? ( gencycle )
+	<f1> =? ( play )
 	<f2> =? ( stop )
+	<f3> =? ( restart )
 	<f4> =? ( 'ex1 edloadmem )
 	<f5> =? ( 'ex2 edloadmem )
 	drop 
-	vupdate
-	smupdate
+	cpupdate
 	;
 
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -234,14 +179,7 @@
 	
 	edram
 	
-	sminit
-	$fff vaini
-
-	0.002 0.05 0.8 0.1 packADSR 'oscSin iosc 'i0 !
-|	0.002 0.01 0.8 0.1 packADSR 'oscSuperSaw3P iosc 'i1 !
-|	0.01 0.01 0.8 0.2 packADSR 'bnoise inoise 'i2 !
-|	0.001 0.01 0.8 0.2 packADSR "media/snd/piano-C.mp3" isample 'i3 !
-	i0 smI! 
+	cpinit0
 	
 	"" edloadmem
 	

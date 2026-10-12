@@ -36,6 +36,10 @@
 |                                            supermix (iosc isweep isample...), fijo para toda la melodia
 |   id vol crv sfxtunemix -- id   volumen (16.16) y curva de la melodia (por defecto 1.0 y 0)
 |   id sfxtunestop           corta una melodia
+|   id "patron" sfxtunetext  cambia el patron de una melodia que suena (entra en el proximo ciclo, sigue el compas)
+|   id bpm sfxtunebpm         cambia el tempo de una melodia que suena
+|   id ins sfxtuneins         cambia el instrumento de una melodia que suena (vale desde la proxima nota)
+|   id sfxtuneplaying -- 0/1  la melodia sigue sonando?          id sfxtunecycle -- n   ciclo actual
 |   sfxstop                  corta todo
 |   v sfxvol                 volumen general (1.0 normal, 2.0 por defecto)
 |
@@ -256,6 +260,38 @@
 
 ::sfxtunestop | id --
 	-? ( drop ; ) 0 swap sxtune@ ! ;
+
+|--- control en vivo de una melodia (id de sfxtune)
+:sxtunetext | id "patron" --
+	swap -? ( 2drop ; )
+	dup sxtune@ >b
+	t.tree @ 0? ( 3drop ; ) drop			| txt id
+	14 << 'sxtoks + processat drop ;	| se parsea en el buffer de la melodia: el ciclo ya generado no cambia
+
+::sfxtunetext | id "patron" --
+	ab[ sxtunetext ]ba ;
+
+:sxtunebpm | id bpm --
+	swap -? ( 2drop ; )
+	sxtune@ >b
+	aurate 240 * swap 1 max / t.clen ! ;
+
+::sfxtunebpm | id bpm --
+	ab[ sxtunebpm ]ba ;
+
+:sxtuneins | id ins --
+	swap -? ( 2drop ; )
+	sxtune@ >b
+	t.ins ! ;
+
+::sfxtuneins | id ins --
+	ab[ sxtuneins ]ba ;
+
+::sfxtuneplaying | id -- 0/1
+	-? ( drop 0 ; ) sxtune@ @ 0? ( ; ) drop 1 ;
+
+::sfxtunecycle | id -- n
+	-? ( drop 0 ; ) sxtune@ 24 + @ ;
 
 ::sfxstop | --
 	smreset sxvolume smmaster!		| smreset deja el master en 1.0
