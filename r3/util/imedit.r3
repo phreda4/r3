@@ -8,6 +8,8 @@
 | size win
 #xcode #ycode #wcode #hcode 
 #xcodel
+#xpad		| columnas de tab cortado a la izquierda
+#xvis #xrem	| columnas visibles / restantes en la linea
 
 | color 
 |#colb0 $1f1f1f |color | backcode
@@ -31,10 +33,20 @@
 
 #undobuffer |'undobuffer
 #undobuffer>
+#undobuffer<	| tope valido de redo
 
 #findpad * 64 |----- find text
 
 #mshift
+
+:xoffs | -- px ; scroll horizontal en pixels
+	xlinea 32 txcw * ;
+
+:xclip | x -- x' ; x sin scroll -> pantalla, recortado a la ventana
+	xoffs - xcodel max xcode wcode + min ;
+
+:skipcr | adr -- adr' ; hasta el CR (incluido) o fin de texto
+	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
 
 |----- edicion
 :lins  | c --
@@ -48,19 +60,36 @@
 
 #modo 'lins
 
+:clearundo
+	undobuffer 'undobuffer> !
+	undobuffer 'undobuffer< ! ;
+
+:undofull | -- ; vacia el buffer si no entra otro registro
+	undobuffer $1ffe + undobuffer> <=? ( drop clearundo ; )
+	drop ;
+
+:pushu | data marca -- ; graba [marca][data] e invalida redo
+	undofull
+	undobuffer> c!+ c!+ 'undobuffer> !
+	undobuffer> 'undobuffer< ! ;
+
+:delraw | adr -- ; borra el char bajo adr, no mueve cursor
+	dup 1+ $fuente over - 1+ cmove
+	-1 '$fuente +! ;
+
+:redoback | repite un back
+	fuente> fuente <=? ( drop ; )
+	drop -1 'fuente> +!
+	fuente> delraw ;
+
 :back
 	fuente> fuente <=? ( drop ; )
-	dup 1- c@ undobuffer> c!+ 'undobuffer> !
-	dup 1- swap $fuente over - 1+ cmove
-	-1 '$fuente +!
-	-1 'fuente> +! ;
+	1- c@ 0 pushu redoback ;
 
-:del
-	fuente>	$fuente >=? ( drop ; )
-    1+ fuente <=? ( drop ; )
-	9 over 1- c@ undobuffer> c!+ c!+ 'undobuffer> !
-	dup 1- swap $fuente over - 1+ cmove
-	-1 '$fuente +! ;
+:del | graba [9][char] y borra el char bajo el cursor
+	fuente> $fuente >=? ( drop ; )
+	dup c@ 9 pushu
+	delraw ;
 
 :<<13 | a -- a
 	( fuente >=?
@@ -157,7 +186,8 @@
 	inisel 0? ( drop ; )
 	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	cursordel 0 dup 'inisel ! 'finsel ! ;
+	cursordel 0 dup 'inisel ! 'finsel !
+	clearundo ;
 
 :kdel
 	inisel 0? ( drop del ; )
@@ -166,6 +196,29 @@
 :kback
 	inisel 0? ( drop back ; )
 	drop remsel ;
+
+|----- insertar / sobreescribir con undo
+:ovwchar | c -- ; graba [2][charviejo] y sobreescribe
+	fuente> c@
+	2 pushu
+	lover ;
+
+:canover | c -- c f ; sobreescribir solo ascii sobre ascii
+	$80 >=? ( 0 ; )
+	13 =? ( 0 ; )
+	fuente> $fuente >=? ( drop 0 ; )
+	c@ $ff and $80 >=? ( drop 0 ; )
+	13 =? ( drop 0 ; ) drop -1 ;
+
+:insins | c -- ; inserta siempre, graba [1][c]
+	dup 1 pushu lins ;
+
+:insertchar | c -- ; reemplaza la seleccion, inserta o sobreescribe
+	remsel
+	modo 'lover =? (
+		drop canover 1? ( drop ovwchar ; )
+		drop insins ; )
+	drop insins ;
 
 |-------------
 | Edit CtrE
@@ -192,15 +245,35 @@
 	fuente> -rot | f clip cnt
 	dup '$fuente +! 
 	cmove 'fuente> +!
+	clearundo
 	SDL_free ;
 
 |-------------
+:redodel | repite un del
+	fuente> $fuente >=? ( drop ; )
+	delraw ;
+
+:swapchar | charnuevo adr -- charviejo
+	dup c@ -rot c! ;
+
+| registros [marca][char]: 0 BACK, 1 INS, 9 DEL, 2 OVR
 :controlz | undo
 	undobuffer>
 	undobuffer =? ( drop ; )
-	1- dup c@
-	9 =? ( drop 1- dup c@ [ -1 'fuente> +! ; ] >r )
-	lins 'undobuffer> ! ;
+	2 - dup c@
+	9 =? ( drop dup 1+ c@ lins -1 'fuente> +! 'undobuffer> ! ; )
+	1 =? ( drop redoback 'undobuffer> ! ; )
+	2 =? ( drop -1 'fuente> +! dup 1+ c@ fuente> swapchar over 1+ c! 'undobuffer> ! ; )
+	drop dup 1+ c@ lins 'undobuffer> ! ;
+
+:controly | redo
+	undobuffer> undobuffer< =? ( drop ; )
+	dup c@
+	9 =? ( redodel )
+	0 =? ( redoback )
+	1 =? ( over 1+ c@ lins )
+	2 =? ( over 1+ dup c@ fuente> swapchar swap c! 1 'fuente> +! )
+	drop 2 + 'undobuffer> ! ;
 
 |-------------
 :=w | w1 w2 -- 1/0
@@ -292,15 +365,15 @@
 	;
 
 :iniline
-	0 'mcolor !
+	0 'mcolor ! 0 'xpad !
 	xlinea wcolor
-	( 1? 1- swap
+	( 0 >? 1- swap
 		c@+ 0? ( drop nip 1- ; )
 		13 =? ( drop nip 1- ; )
-		9 =? ( wcolor )
+		9 =? ( wcolor rot 3 - -rot )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
-		drop swap ) drop ;
+		drop swap ) neg 'xpad ! ;
 
 :txsp 32 txemit ;
 :txtab "   " txwrite ;
@@ -311,12 +384,15 @@
 	swap 1+ dup .d 4 .r. txwrite	| src ylin nline 
 	xcodel ycode pick3 + txat
 	rot iniline						| ylin nline src 
+	xpad 32 txcw * 0 tx+at
+	xvis xpad - 'xrem !
 	( c@+ 1?
 		13 =? ( drop swap rot ; )
-		9 =? ( drop txtab 32 wcolor )
+		xrem 1 <? ( 2drop skipcr swap rot ; ) drop
+		9 =? ( drop txtab 32 wcolor -3 'xrem +! )
 		32 =? ( wcolor )
 		$22 =? ( strcol )
-		txemit
+		txemit -1 'xrem +!
 		) drop 1-  
 	swap rot ; | src nline ylin
 
@@ -348,13 +424,25 @@
 	txcw rot +			| x adr' xa'
 	rot swap ;
 
+:skipcols | adr -- adr' ; salta xlinea columnas (tab=4)
+	0 'xpad !
+	xlinea swap			| n adr
+	( over 0 >? drop
+		dup c@
+		13 =? ( drop nip ; )
+		0? ( drop nip ; )
+		9 =? ( rot 3 - -rot )
+		drop swap 1- swap 1+ )
+	drop swap neg 'xpad ! ;
+
 :cursormouse
 	SDLx xcode - | xmouse
 	scrini>
 	SDLy
 	ycode txh +
 	( over <? txh + rot >>13 1+ -rot ) 2drop
-	swap 0 txcw 2* dup 2* + | adr x xa
+	skipcols
+	swap 0 txcw 2* dup 2* + xpad 32 txcw * + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
@@ -399,6 +487,8 @@
 	<x> =? ( controlx )
 	<c> =? ( controlc ) | copy
 	<v> =? ( controlv ) | paste
+	<z> =? ( controlz ) | undo
+	<y> =? ( controly ) | redo
 
 	<up> =? ( controla )
 	<dn> =? ( controls )
@@ -438,7 +528,11 @@
 	getcacheini
 	ylinea 'ycursor !
 	dup 'cursorlin !
-	( fuente> <? c@+ emitcur ) drop ;
+	( fuente> <? c@+ emitcur ) drop
+	xcursor
+	xlinea <? ( dup 'xlinea ! )
+	xlinea xvis + >=? ( dup xvis - 1+ 'xlinea ! )
+	drop ;
 	
 :src2pos | src -- 
 	0 'xcursor ! 0 'ycursor !
@@ -452,20 +546,20 @@
 	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-	SDLchar 1? ( modo ex ; ) drop
+	SDLchar 1? ( insertchar ; ) drop
 	SDLkey 0? ( drop ; )
 	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
 	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
 	<back> =? ( kback )
 	<del> =? ( kdel )
+	<ret> =? ( 13 insertchar )
+	<tab> =? ( 9 insertchar )
 	selecc
 	<up> =? ( karriba ) <dn> =? ( kabajo )
 	<ri> =? ( kder ) <le> =? ( kizq )
 	<home> =? ( khome ) <end> =? ( kend )
 	<pgup> =? ( kpgup ) <pgdn> =? ( kpgdn )
 	<ins> =? ( kins )
-	<ret> =? ( 13 modo ex )
-	<tab> =? ( 9 modo ex )
 	drop
 	selecc ;
 
@@ -506,9 +600,11 @@
 		13 =? ( txh 'sy1 +! xcodel 'sx1 !
 				32 txcw neg 'sw1 ! )
 		txcw 'sw1 +! ) 
-	finsel <? ( wcode sx1 - 'sw1 ! )
+	finsel <? ( xcode wcode + xoffs + sx1 - 'sw1 ! )
 	drop
 	sw1 'sx1 +! 
+	selxi xclip 'selxi !
+	sx1 xclip 'sx1 !
 	
 	|....draw select
 	colb2 color
@@ -521,9 +617,9 @@
 :edlinecursor
 	fixcur 
 	fuente> scrini> <? ( drop ; ) scrend> >? ( drop ; ) drop
-	msec $100 and? ( drop ; ) drop
 	cursorpos
-	xcodel
+	msec $100 and? ( drop ; ) drop
+	xcodel xoffs -
 	ycode ycursor ylinea - txh * + 
 	txat
 	$ffffff color 
@@ -592,16 +688,22 @@
 	$010000 or	| h
 	or addmark ;
 
+#mx #my #mw #mh
+
 :linemark | mark --
 	dup $ff and ylinea -
-	-? ( 2drop ; ) hcode >=? ( 2drop ; ) | fuera de pantalla
-	over >a
-	txh * ycode +  | y real
-	over 8 >> $ff and 
-	xcode + 5 32 txcw * + | x real
-	swap rot | x y vv
-	dup 24 >> $ff and 32 txcw * | w
-	swap 16 >> $ff and txh * | h
+	-? ( 2drop ; ) hcode >=? ( 2drop ; )	| fuera de pantalla
+	txh * ycode + 'my !
+	dup >a
+	dup 8 >> $ff and xlinea - 'mx !
+	dup 24 >> $ff and 'mw !
+	16 >> $ff and txh * 'mh !
+	mx -? ( dup mw + 'mw ! 0 'mx ! ) drop	| recorte izquierdo
+	mx mw + xvis -
+	0 >? ( dup neg 'mw +! ) drop			| recorte derecho
+	mw 1 <? ( drop ; ) drop
+	mx 32 txcw * xcode + 5 32 txcw * +	| x real
+	my mw 32 txcw * mh
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol color rect
 	a> 48 >> 4bcol color frect
@@ -616,7 +718,7 @@
 	here	| --- RAM
 	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'scrini> !
 	$ffff +			| 64kb texto
-	dup 'undobuffer ! dup 'undobuffer> !
+	dup 'undobuffer ! dup 'undobuffer> ! dup 'undobuffer< !
 	$1fff +			| 8kb
 	'here !			| -- FREE
 	0 here !
@@ -624,17 +726,25 @@
 
 ::edwin | x y w h --
 	'hcode ! 'wcode ! 'ycode ! 'xcode ! 
-	"00000" txw nip xcode + 'xcodel ! ;
+	"00000" txw nip xcode + 'xcodel !
+	wcode xcodel xcode - - 32 txcw / 'xvis ! ;
 
 |------------------------------------------------
 #hashfile
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
 	
+:rewind | -- ; vista, cursor, seleccion y undo al inicio
+	0 'xlinea !
+	fuente dup 'scrini> ! 'fuente> !
+	0 dup 'inisel ! 'finsel !
+	clearundo ;
+
 ::edloadmem | "" --
 	fuente strcpy
 	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
-	fuente dup 'scrini> ! simplehash 'hashfile !
+	rewind
+	fuente simplehash 'hashfile !
 	;
 	
 ::edload | "" --
@@ -642,7 +752,8 @@
 	fuente 'edfilename |getpath
 	load 0 swap c!
 	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
-	fuente dup 'scrini> ! simplehash 'hashfile !
+	rewind
+	fuente simplehash 'hashfile !
 	;
 
 ::edsave | --

@@ -12,7 +12,7 @@
 |   $kwc  primer valor, tres nibbles en hexa:  k = kind   w = wave   c = crv
 |         ej: kind=1 wave=10 crv=2 -> $1A2.  Como kind va primero, el valor 0 sigue
 |         siendo FIN DE LISTA (kind 0)
-|   kind  1 tono, 2 ruido
+|   kind  1 tono, 2 ruido, 3 sonido de fxsynth (ver KIND 3)
 |   wave  forma de onda 0..15, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
 |   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
 |   f0    frecuencia inicial en Hz (16.16)
@@ -24,6 +24,14 @@
 |   A D S R  envolvente: ataque(s) decaimiento(s) nivel de sostenido(0..1) release(s)
 |   (16.16 en 32 bits con signo: las frecuencias llegan a 32767 Hz)
 |
+| KIND 3: sonido de fxsynth.r3 (filtros, vibrato, arpegio, duty, punch...). La capa mide 32 valores:
+|   los 10 de siempre ($300; solo valen vol y delay, el resto se ignora) y despues los 22 parametros
+|   de fxsynth en el orden p_wave p_attack ... p_vol (16.16; p_wave es un entero, como lo imprime fxdemo)
+|   $300 0.0 0.0 0.0 1.0 0.0 0 0 0 0   0 0.0 0.15 0.0 0.2 0.8 0.5 -0.25 0.0 ...(22 valores)
+|   Se renderiza una sola vez (la primera vez que suena, o antes con sfxprepare) y queda en un
+|   cache de 16 sonidos / 1 MB; suena como un sample con vol, delay y transposicion (sfxplayp).
+|   Usa los p_* de fxsynth como registro de trabajo.
+|
 | Todo arranca con precision de muestra (supermix: smtick + smplayhzat), asi que las
 | capas con delay y las notas de las melodias no dependen de los cuadros por segundo.
 |
@@ -32,6 +40,7 @@
 |   sfxupdate                llamar una vez por cuadro (genera/encola el audio)
 |   'sonido sfxplay          dispara un sonido
 |   'sonido n sfxplayp       igual, transpuesto n semitonos (variacion)
+|   'sonido sfxprepare       renderiza antes las capas kind 3 (el primer disparo no se traba)
 |   "patron" bpm ins loop sfxtune -- id       melodia (mini-notacion Strudel, abajo); ins = instrumento de
 |                                            supermix (iosc isweep isample...), fijo para toda la melodia
 |   id vol crv sfxtunemix -- id   volumen (16.16) y curva de la melodia (por defecto 1.0 y 0)
@@ -47,7 +56,7 @@
 |   sus parametros y su melodia; sirven para editores/sliders (ver chipa.r3).
 |   n sfxtrk -- rec          registro de la pista n. Los campos son variables de 64 bits (16.16) para
 |                            sliders y combos:  rec tkwave|tka|tkd|tks|tkr|tkvol|tkcrv|tkdet -- adr
-|   tkwave  onda 0..19, nombres en sfxtnames (lista para uiCombo): 0..15 osciladores (igual que la
+|   tkwave  (puede ir directo a uiCombo) onda 0..19, nombres en sfxtnames: 0..15 osciladores (igual que la
 |           columna wave de los sonidos), 16 supersaw de 7 osciladores, 17 18 19 ruido blanco rosa marron
 |   tka tkd tks tkr   envolvente: ataque y decaimiento (s), sostenido (0..1), release (s)
 |   tkvol tkcrv       volumen (1.0) y curva de la envolvente (0 lineal .. 3 cuartica)
@@ -74,6 +83,7 @@
 ^r3/lib/rand.r3
 ^./supermix.r3
 ^./eval.r3
+^./fxsynth.r3
 
 |--------------------------------------------------------------- tablas
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin3 'oscSuperSaw2P
@@ -131,12 +141,66 @@
 	l.vol smvel!  l.c smcurve!
 	l.dur l.delay aurate *. smplayhzat ;
 
+|--------------------------------------------------------------- capa kind 3: sonido de fxsynth
+| ver KIND 3 en la cabecera. El render (176400 muestras) es costoso: se hace una sola vez por capa
+| y queda en un cache (clave = direccion de la capa).
+#sxfxpool * $100000		| 1 MB: samples renderizados, frames estereo de 16 bits
+#sxfxused 0			| bytes usados del pool
+#sxfxc * 512			| cache de 16 entradas x 32 bytes: 0 capa  8 instrumento  16 frames
+#sxfxn 0			| entradas usadas
+#sxfxe 0			| entrada en construccion
+
+:sxfxload | 'params --		| 22 dwords 16.16 -> p_wave .. p_vol (qwords contiguos)
+	>a 'p_wave >b
+	22 ( 1? 1- da@+ 32 << 32 >> b!+ ) drop ;
+
+:sxfxtrim | len -- frames		| quita el silencio del final del render
+	( 1? 1- dup 2 << 'fxbuf + w@ 48 << 48 >> abs 64 >=?
+		( drop 1+ 256 + fxmaxsamples min ; ) drop )
+	256 + ;
+
+:sxfxfind | 'layer -- ent/0
+	0 ( sxfxn <?				| layer i
+		dup 5 << 'sxfxc + dup @		| layer i ent key
+		pick3 =? ( drop nip nip ; )
+		2drop 1+ ) 2drop 0 ;
+
+:sxfxnew | 'layer -- ent/0
+	sxfxn 16 >=? ( 2drop 0 ; ) drop
+	dup 40 + sxfxload
+	fxRender sxfxtrim			| layer frames
+	sxfxused over 2 << + $100000 >? ( 3drop 0 ; ) drop
+	sxfxn 5 << 'sxfxc + 'sxfxe !
+	swap sxfxe !				| frames   (clave = capa)
+	dup sxfxe 16 + !			| frames   (largo)
+	'sxfxpool sxfxused + 'fxbuf pick2 2 << cmove
+	0.0 0.0 1.0 0.01 packADSR 'sxfxpool sxfxused + pick3 isamplemem sxfxe 8 + !
+	2 << 'sxfxused +!
+	1 'sxfxn +!
+	sxfxe ;
+
+:sxfxget | 'layer -- ent/0
+	dup sxfxfind 1? ( nip ; ) drop sxfxnew ;
+
+:sxlnext | 'layer -- 'layer'		| capa siguiente (kind 3 mide 32 dwords)
+	dup d@ 8 >> $f and 3 =? ( drop 128 + ; ) drop sfxLAYER + ;
+
+:sxplayfx | ratio --			| capa kind 3 (B = capa): sample del cache
+	b> ab[ sxfxget ]ba			| ratio ent/0
+	0? ( 2drop ; )
+	dup 8 + @ smi!
+	l.vol smvel!  0 smcurve!
+	16 + @ 16 << aurate /			| ratio seg
+	swap 440.0 *. swap			| hz seg   (440 Hz = velocidad original)
+	l.delay aurate *. smplayhzat ;
+
 :sxplaylayer | 'layer ratio --
 	swap >b
 	l.k 1 =? ( drop
 		l.w 0 max 15 min 3 << 'sfxwaves + @ sxinsT sxsetins
 		l.f0 l.f1 l.dur sxslideof smslide!
-		l.f0 *. sxplaynote ; ) drop
+		l.f0 *. sxplaynote ; )
+	3 =? ( drop sxplayfx ; ) drop
 	l.f1 16 >> 0 max 2 min 3 << 'sxnoises + @ sxinsN sxsetins
 	drop 440.0 sxplaynote ;
 
@@ -217,9 +281,10 @@
 	2048 'sxclock +! ;
 
 |--------------------------------------------------------------- pistas: registro
-| 8 pistas x 128 bytes, campos de 64 bits: 0 wave 8 a 16 d 24 s 32 r 40 vol 48 crv 56 det (parametros,
-| 16.16)  64 io 72 is 80 in (instrumentos onda/supersaw/ruido, -1 = sin crear)  88 ins (el que suena)
-| 96 id (melodia en curso, -1 = ninguna).  Los instrumentos se crean la primera vez que se usa la pista.
+| 8 pistas x 128 bytes, campos de 64 bits: 0 wave (3 celdas: uiCombo usa var+8 y var+16 como estado)
+| 24 a 32 d 40 s 48 r 56 vol 64 crv 72 det (parametros, 16.16)  80 io 88 is 96 in (instrumentos
+| onda/supersaw/ruido, -1 = sin crear)  104 ins (el que suena)  112 id (melodia en curso, -1 = ninguna).
+| Los instrumentos se crean la primera vez que se usa la pista.
 #sxtrks * 1024
 #sxtkn * 1024		| notas sostenidas: 128 bytes por pista (id de voz por nota midi)
 #sxtk 0			| pista en curso (registro)
@@ -227,18 +292,18 @@
 ::sfxtrk | n -- rec		| registro de la pista n (0..7)
 	0 max 7 min 7 << 'sxtrks + ;
 ::tkwave 0 + ;
-::tka 8 + ;
-::tkd 16 + ;
-::tks 24 + ;
-::tkr 32 + ;
-::tkvol 40 + ;
-::tkcrv 48 + ;
-::tkdet 56 + ;
-:tkio 64 + ;
-:tkis 72 + ;
-:tkin 80 + ;
-:tkins 88 + ;
-:tkid 96 + ;
+::tka 24 + ;
+::tkd 32 + ;
+::tks 40 + ;
+::tkr 48 + ;
+::tkvol 56 + ;
+::tkcrv 64 + ;
+::tkdet 72 + ;
+:tkio 80 + ;
+:tkis 88 + ;
+:tkin 96 + ;
+:tkins 104 + ;
+:tkid 112 + ;
 
 :sxtkreset | --
 	0 ( 8 <? dup sfxtrk 'sxtk !
@@ -253,6 +318,7 @@
 	sminit
 	0 'sxclock !
 	sxtunesclear sxtkreset
+	0 'sxfxn ! 0 'sxfxused !
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
 	sxvolume smmaster!
@@ -274,13 +340,18 @@
 :sxplaylayers | 'sonido ratio --
 	ab[ swap ( dup d@ 1? drop			| ratio snd
 		2dup swap sxplaylayer
-		sfxLAYER + ) 3drop ]ba ;
+		sxlnext ) 3drop ]ba ;
 
 ::sfxplay | 'sonido --
 	1.0 sxplaylayers ;
 
 ::sfxplayp | 'sonido semitonos --
 	fix. 12 / pow2. sxplaylayers ;
+
+::sfxprepare | 'sonido --		| renderiza antes las capas kind 3 (el primer disparo no se traba)
+	ab[ ( dup d@ 1? drop
+		dup d@ 8 >> $f and 3 =? ( drop dup sxfxget ) drop
+		sxlnext ) drop ]ba ;
 
 :sxtunefree | -- id/-1
 	0 ( 8 <?

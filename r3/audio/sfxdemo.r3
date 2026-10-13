@@ -3,12 +3,15 @@
 |
 |  1-9 q-o  dispara un sonido (pack futbol = port de audio.c, y pack generico)
 |  Tab      elegir el sonido a editar          Espacio  reproducir lo editado
-|  flechas  mover celda (arriba/abajo capa, izq/der parametro)
+|  izq/der  mover parametro
 |  + -      cambia el valor    * /  cambio grueso      0  recargar el original
-|  a d      agregar / borrar capa     f  variar (mutacion al azar)
+|  f        variar (mutacion al azar)
 |  [ ]      volumen general
 |  m g      jingle / game over        b  musica de fondo (2 voces en loop)    x  corta todo
 |  Esc      salir (imprime el sonido editado como datos listos para pegar)
+|
+| Edita UNA sola capa: la primera del sonido elegido. Las teclas 1-9 q-o siguen tocando el sonido
+| completo, con todas sus capas.
 
 ^r3/lib/console.r3
 ^r3/lib/rand.r3
@@ -28,55 +31,44 @@
 	3 << 'sounds + @ ;
 
 |--------------------------------------------------------------- buffer de edicion
-| capas de 10 dwords (40 bytes): $kwc f0 f1 dur vol delay A D S R  (ver gamesfx.r3)
+| una capa de 10 dwords (40 bytes): $kwc f0 f1 dur vol delay A D S R  (ver gamesfx.r3)
 | la tabla muestra 12 columnas logicas; kind/wave/crv viven empaquetados en el 1er dword
-#edit * 512		| hasta 8 capas + terminador
-#newlayer [ $101 440.0 440.0 0.1 0.25 0.0 0.001 0.1 0.0 0.02 ]
+#edit * 48		| una capa + terminador
 #cur 0			| sonido en edicion
-#row 0 #col 0		| celda seleccionada
+#col 0			| columna seleccionada
 #vol 2.0
 #bgm1 -1 #bgm2 -1
 #vu 0
 
 #sidx 0 1 2 3 0 4 5 6 7 8 9 0	| columna logica -> dword de la capa
 
-:lay | r -- adr
-	40 * 'edit + ;
-
-:gv | r c -- v			| valor de la celda (kind/wave/crv ya desempaquetados)
-	swap lay swap
+:gv | c -- v			| valor de la columna (kind/wave/crv ya desempaquetados)
+	'edit swap
 	0 =? ( drop d@ 8 >> $f and ; )
 	4 =? ( drop d@ 4 >> $f and ; )
 	11 =? ( drop d@ $f and ; )
 	3 << 'sidx + @ 2 << + d@ ;
 
-:sv | v r c --			| escribe la celda
-	swap lay swap
+:sv | v c --			| escribe la columna
+	'edit swap
 	0 =? ( drop dup d@ $0ff and rot 8 << or swap d! ; )
 	4 =? ( drop dup d@ $f0f and rot 4 << or swap d! ; )
 	11 =? ( drop dup d@ $ff0 and rot or swap d! ; )
 	3 << 'sidx + @ 2 << + d! ;
 
 :cur@ | -- v
-	row col gv ;
+	col gv ;
 :cur! | v --
-	row col sv ;
-:kind@ | -- kind de la fila actual
-	row 0 gv ;
+	col sv ;
+:kind@ | -- kind
+	0 gv ;
 
-:nlay | -- n
-	0 'edit ( dup d@ 1? drop 40 + swap 1+ swap ) 2drop ;
-
-:loadedit | n --
+:loadedit | n --			| carga la primera capa del sonido n
 	'cur !
-	'edit 0 512 cfill
-	0 ( 8 <?
-		dup 40 * cur saddr + d@ 0? ( 2drop ; ) drop
-		dup 40 * 'edit + over 40 * cur saddr + 40 cmove
-		1+ ) drop ;
+	'edit 0 48 cfill
+	'edit cur saddr 40 cmove ;
 
 :clampcell | --
-	row nlay 1 max 1- min 0 max 'row !
 	col 0 max 11 min 'col ! ;
 
 |--------------------------------------------------------------- cambio de valores
@@ -106,8 +98,8 @@
 	adjd + 0 max 3 min ;
 
 :kindfix | --			| tras cambiar el tipo: f0/f1 con sentido (tono: Hz ; ruido: color blanco)
-	kind@ 1 =? ( drop row 1 gv 20.0 <? ( 440.0 row 1 sv 440.0 row 2 sv ) drop ; )
-	drop 0.0 row 2 sv ;
+	kind@ 1 =? ( drop 1 gv 20.0 <? ( 440.0 1 sv 440.0 2 sv ) drop ; )
+	drop 0.0 2 sv ;
 
 :adjust | --
 	col 0 =? ( drop 3 kind@ - cur! kindfix ; ) drop
@@ -127,28 +119,15 @@
 :chg | dir coarse --
 	'adjc ! 'adjd ! adjust ;
 
-:addlayer | --
-	nlay 8 >=? ( drop ; )
-	40 * 'edit + dup 'newlayer 40 cmove
-	40 + 0 swap d!
-	nlay 1- 'row ! ;
-
-:dellayer | --
-	nlay 1 <=? ( drop ; ) drop
-	row 40 * 'edit + dup 40 +
-	nlay row - 40 * cmove
-	clampcell ;
-
 :mulcell | off lo hi --		| dword[off] *= azar(lo..hi)
 	randminmax a> rot + dup d@ rot *. swap d! ;
 
 :mutate | --
-	0 ( nlay <? dup 40 * 'edit + >a
-		a> d@ 8 >> $f and 1 =? ( 4 0.85 1.2 mulcell 8 0.85 1.2 mulcell ) drop
-		12 0.85 1.15 mulcell
-		16 0.9 1.1 mulcell
-		a> 16 + dup d@ 1.0 min swap d!
-		1+ ) drop ;
+	'edit >a
+	a> d@ 8 >> $f and 1 =? ( 4 0.85 1.2 mulcell 8 0.85 1.2 mulcell ) drop
+	12 0.85 1.15 mulcell
+	16 0.9 1.1 mulcell
+	a> 16 + dup d@ 1.0 min swap d! ;
 
 |--------------------------------------------------------------- musica
 #iLead #iTri #iBass
@@ -178,9 +157,7 @@
 
 :handle | key --
 	0? ( drop ; )
-	[TAB] =? ( drop cur 1+ NSND mod loadedit 0 'row ! ; )
-	[UP] =? ( drop -1 'row +! clampcell ; )
-	[DN] =? ( drop 1 'row +! clampcell ; )
+	[TAB] =? ( drop cur 1+ NSND mod loadedit ; )
 	[LE] =? ( drop -1 'col +! clampcell ; )
 	[RI] =? ( drop 1 'col +! clampcell ; )
 	$2b =? ( drop 1 1 chg ; )
@@ -190,8 +167,6 @@
 	$2f =? ( drop -1 10 chg ; )
 	32 =? ( drop 'edit sfxplay ; )
 	$30 =? ( drop cur loadedit ; )
-	$61 =? ( drop addlayer ; )
-	$64 =? ( drop dellayer ; )
 	$66 =? ( drop mutate 'edit sfxplay ; )
 	$5b =? ( drop -0.25 volume ; )
 	$5d =? ( drop 0.25 volume ; )
@@ -200,11 +175,11 @@
 	$62 =? ( drop bgm ; )
 	$78 =? ( drop stopall ; )
 	findkey -? ( drop ; )
-	dup loadedit 0 'row ! saddr sfxplay ;
+	dup loadedit saddr sfxplay ;
 
 |--------------------------------------------------------------- pantalla
 #colx 3 9 15 21 26 37 42 47 52 57 62 67
-#pr #pc #pv #pk
+#pc #pv #pk
 
 :ms16 | v -- ms        | segundos 16.16 -> milisegundos redondeados
 	1000 * $8000 + 16 >> ;
@@ -258,15 +233,14 @@
 	10 =? ( drop pv ms16 "%d" .print ; )
 	drop pv "%d" .print ;
 
-:prow | r --
-	'pr !
-	pr 0 gv 'pk !
-	1 pr 8 + .at .eline
+:prow | --
+	0 gv 'pk !
+	1 8 .at .eline
 	0 ( 12 <? dup 'pc !
-		pr pc gv 'pv !
-		pc 3 << 'colx + @ pr 8 + .at
+		pc gv 'pv !
+		pc 3 << 'colx + @ 8 .at
 		.Reset 7 .fc
-		pr row =? ( pc col =? ( 15 .fc 24 .bc ) drop ) drop
+		pc col =? ( 15 .fc 24 .bc ) drop
 		ptxt
 		.Reset
 		1+ ) drop ;
@@ -278,15 +252,12 @@
 	26 7 .at "wave" .write  37 7 .at "vol%" .write  42 7 .at "dly" .write  47 7 .at "A" .write
 	52 7 .at "D" .write  57 7 .at "S%" .write  62 7 .at "R" .write  67 7 .at "crv" .write
 	.Reset
-	0 ( 8 <?
-		dup nlay <? ( dup prow ) drop
-		dup nlay >=? ( 1 over 8 + .at .eline ) drop
-		1+ ) drop ;
+	prow ;
 
 :drawhelp | --
 	8 .fc
-	1 18 .at "Tab sonido  flechas celda  + - valor  * / grueso  Espacio oir  0 recargar" .write
-	1 19 .at "a/d capa  f variar  m jingle  g gameover  b musica  x stop  [ ] volumen  Esc salir" .write
+	1 18 .at "Tab sonido  izq/der parametro  + - valor  * / grueso  Espacio oir  0 recargar" .write
+	1 19 .at "f variar  m jingle  g gameover  b musica  x stop  [ ] volumen  Esc salir" .write
 	1 20 .at "dur dly D R en ms, A en ms con decimal" .write
 	.Reset ;
 
@@ -295,12 +266,11 @@
 
 |--------------------------------------------------------------- salida
 :dump | --			| el sonido editado como datos para pegar en un .r3
-	"##mysound [   | editado desde: " .write cur sname .write .cr
-	0 ( nlay <? dup 40 * 'edit + >a
-		a> 36 + d@ a> 32 + d@ a> 28 + d@ a> 24 + d@ a> 20 + d@ a> 16 + d@ a> 12 + d@ a> 8 + d@ a> 4 + d@
-		a> d@ $f and  a> d@ 4 >> $f and  a> d@ 8 >> $f and
-		"  $%h%h%h %f %f %f %f %f %f %f %f %f" .println
-		1+ ) drop
+	"##mysound [   | editado desde (capa 1): " .write cur sname .write .cr
+	'edit >a
+	a> 36 + d@ a> 32 + d@ a> 28 + d@ a> 24 + d@ a> 20 + d@ a> 16 + d@ a> 12 + d@ a> 8 + d@ a> 4 + d@
+	a> d@ $f and  a> d@ 4 >> $f and  a> d@ 8 >> $f and
+	"  $%h%h%h %f %f %f %f %f %f %f %f %f" .println
 	"  0 ]" .println ;
 
 :main

@@ -1,6 +1,7 @@
 ^r3/lib/console.r3
 ^r3/lib/rand.r3
 ^./gamesfx.r3
+^./sfxpack.r3
 
 :screen
 	0 0 .at
@@ -8,6 +9,7 @@
 	
 	"f1 - music1" .println
 	"f2 - music2" .println
+	"f3 - fx kind 3 (fxsynth)" .println
 	.flush
 	;
 	
@@ -47,10 +49,12 @@
 :handle
 	[f1] =? ( music ) 
 	[f2] =? ( music2 ) 
+	[f3] =? ( 'sfx_fxzap sfxplay ) 
 	;
 	
 :main
 	sfxinit mkins
+	'sfx_fxzap sfxprepare
 	.alsb .hidec .cls
 	( inkey [ESC] <>?
 		handle drop

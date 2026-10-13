@@ -112,3 +112,12 @@
 ##tune_gameover "c5 b4 a#4 a4@2 ~ g4@3"
 ##tune_bgm_lead "<[e4 g4 a4 b4] [b4 a4 g4 e4] [d4 f#4 a4 d5] [b4@2 a4@2] [e4 g4 a4 b4] [c5 b4 a4 g4] [f#4 a4 d5 f#5] e5>"
 ##tune_bgm_bass "<e2 b2 d3 [g2 b2] e2 a2 d3 e2>"
+
+|---------------------------------------------------------------
+| EJEMPLO kind 3: sonido de fxsynth (32 valores por capa, ver gamesfx.r3)
+| 10 de cabecera ($300 vol delay) + p_wave p_attack ... p_vol
+|---------------------------------------------------------------
+##sfx_fxzap [
+	$300 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0
+	0 0.0 0.15 0.0 0.2  0.8 0.5 -0.25 0.0  0.0 0.0  0.0 0.0  0.5 0.0  1.0 0.0 0.0  0.1 0.0  0.0 0.5
+	0 ]
