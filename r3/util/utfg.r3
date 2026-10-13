@@ -108,8 +108,8 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	( c@+ 1? achar ) 2drop ;
 
 |---- Draw lines
-#vl ( $e2 $94 $82 $1b $5b $42 $1b $5b $44 0 ) | |v<
-#vd	( $e2 $95 $91 $1b $5b $42 $1b $5b $44 0 ) | ||v<
+#vl ( $e2 $94 $82 $1b $5b $42 $8 0 )
+#vd	( $e2 $95 $91 $1b $5b $42 $8 0 )  ||v<
 
 ::.vline | h --
 	'vl .rep ;
@@ -121,55 +121,54 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 ::.hlined | w --
 	"═" .rep ;
 
+#vl2 ( $e2 $94 $82 $1b $5b $42 0 )
+#vd2 ( $e2 $95 $91 $1b $5b $42 0 )  ||v<
+
+::.vline2 | h --
+	'vl2 .rep ;
+::.vlined2 | h --
+	'vd2 .rep ;
+
 ::.boxl | x y w h --
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
 	"┌" .write over 2 - "─" .rep "┐" .write
-	2swap 1+
-	2swap 2 -
-	( 1? 1- >r
-		pick2 pick2 .at "│" .write 
-		pick2 over + 1- .col "│" .write 
-		swap 1+ swap r> ) drop 	
-	-rot .at
-	"└" .write 2 - "─" .rep "┘" .write ;
+	2 - 2swap 1+ | w h x y
+	2dup .at pick2 .vline
+	"└" .write pick3 2 - "─" .rep "┘" .write 
+	>r rot + 1- cols =? ( r> .at .vline2 ; )
+	r> .at .vline ;
 
 ::.boxc | x y w h --
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
 	"╭" .write over 2 - "─" .rep "╮" .write
-	2swap 1+
-	2swap 2 -
-	( 1? 1- >r
-		pick2 pick2 .at "│" .write 
-		pick2 over + 1- .col "│" .write 
-		swap 1+ swap r> ) drop 	
-	-rot .at
-	"╰" .write 2 - "─" .rep "╯" .write ;
+	2 - 2swap 1+ | w h x y
+	2dup .at pick2 .vline
+	"╰" .write pick3 2 - "─" .rep "╯" .write 
+	>r rot + 1- cols =? ( r> .at .vline2 ; )
+	r> .at .vline ;
 
 ::.boxd | x y w h --
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
 	"╔" .write over 2 - "═" .rep "╗" .write
-	2swap 1+
-	2swap 2 -
-	( 1? 1- >r
-		pick2 pick2 .at "║" .write 
-		pick2 over + 1- .col "║" .write 
-		swap 1+ swap r> ) drop 
-	-rot .at
-	"╚" .write 2 - "═" .rep "╝" .write ;
+	2 - 2swap 1+ | w h x y
+	2dup .at pick2 .vlined
+	"╚" .write pick3 2 - "═" .rep "╝" .write 
+	>r rot + 1- cols =? ( r> .at .vlined2 ; )
+	r> .at .vlined ;
 		
 ::.boxf | x y w h --
+	1 <? ( 4drop ; ) swap 
 	1 <? ( 4drop ; ) swap
-	1 <? ( 4drop ; ) swap
-	pick3 pick3 .at
-	( 1? 1- over .ndel
-		1? ( "B" .[w ) )
-	4drop ;
+	2over .at
+	( 1- 1? over .ndel "B" .[w ) drop
+	.ndel
+	2drop ;
 	
 |--- utf align | result in HERE
 ::lalign | cnt str -- 
@@ -294,7 +293,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	dup 8 >> $f and 
 	over 4 >> $f and 
 	rot $f and | r g b
-	over =? ( pick2 =? ( nip nip 'gray_lut + c@ ; ) )
+	over =? ( pick2 =? ( nip nip 'gray_lut + c@ $ff and ; ) )
 	'map4to6 + c@
 	swap 'map4to6 + c@ 6 * +
 	swap 'map4to6 + c@ 36 * +

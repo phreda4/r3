@@ -1,4 +1,4 @@
-| DEBUGER (style of r3repl)
+| DEBUGER
 | PHREDA 2026
 
 ^r3/util/tui.r3
@@ -103,26 +103,21 @@
 		swap ) 2drop ;
 
 #linesn	'linebytes
+#linesnstr "bytes" ( 0 0 )
 
+:chm! | "" 'dir --
+	'linesn ! 'linesnstr strcpy ;
+	
 :changemem
 	linesn
-	'lineqword =? ( drop 'linebytes 'linesn ! ; )
-	'linedword =? ( 'lineqword nip )
-	'lineword =? ( 'linedword nip )
-	'linebytes =? ( 'lineword nip )
-	'linesn ! ;
-
-:memmode | -- "str"
-	linesn
-	'linebytes =? ( drop "bytes" ; )
-	'lineword =? ( drop "words" ; )
-	'linedword =? ( drop "dwords" ; )
-	drop "qwords" ;
+	'lineqword =? ( drop "bytes" 'linebytes chm! ; )
+	'linedword =? ( drop "qwords" 'lineqword chm! ; )
+	'lineword  =? ( drop "dwords" 'linedword chm! ; )
+	drop "words" 'lineword chm! ; 
 
 :asciich | c --
-	32 <? ( drop $2e .emit ; )
-	127 >? ( drop $2e .emit ; )
-	.emit ;
+	32 127 in? ( .emit ; ) 
+	drop $2e .emit ; 
 
 :linemem
 	fBl dup $ffff and .h 4 .r. .write
@@ -137,11 +132,11 @@
 	bg1 fx fy fw fh .boxf
 	fx 1+ fy .at fPr .Bold "Memory" .write .NBold
 	fMu lmem dup $ffff and swap 16 >> "  %h:%h" .print
-	fx fw + 10 - fy .at fDi memmode .write
+	fx fw + 10 - .col fDi 'linesnstr .write
+	
 	1 'fy +! -1 'fh +!
 	fx 1+ fy .at
 	fw 12 - 3 / 'panelMemBytes !
-
 	lmem
 	fh ( 1? 1- swap
 		linemem .cr fx 1+ .col
@@ -163,6 +158,12 @@
 	ftoken>token
 	inbp? 0? ( drop addBP ; )
 	nip delBP ;
+
+|---------
+:slnormal
+	.cl	7 .fc
+	" ^[7mB^[27mreakP ^[7mR^[27mun ^[7mS^[27mtep ^[7mN^[27mextStep ^[7mO^[27mutStep " .printe
+	'statusline strcpybuf ;
 
 :.strerr
 	errorst
@@ -196,6 +197,32 @@
 	.cl fGr "+ " .write fMu "program ended" .write
 	'statusline strcpybuf ;
 
+
+:playshow
+	ftokenIP 
+	dup 48 >> $ff and codenow <>? ( 2drop ; ) drop
+	|dup 
+	24 >> $ffff and fuente + tuiposq!
+	
+	.cl .hidec tui
+	.reset .cls
+	1 flxN
+	fx fy .at 5 .bc 'topline .write
+	
+	6 flxS
+	fx fy .at 'statusline .write 
+	|.cr scrMsg
+
+|	paneldraw
+	
+	flxRest 
+	tuReadCode 
+
+	|tokenCursor	| ftokenIP
+	.showc
+	.flush
+	;
+
 | play only in the source
 :playmode
 	0 'statusline c!
@@ -212,8 +239,7 @@
 		[f8] =? ( *>stop )
 		[f9] =? ( *>stop )
 		drop
-		|playshow
-
+		playshow
 		)
 	$ff >? (
 		ftokenIP
@@ -247,7 +273,7 @@
 	*>stepo
 	;
 
-|------------------------- sidebar (registers, stacks, breakpoints, watch)
+|-------- sidebar (registers, stacks, breakpoints, watch)
 #fmt '.h
 
 :chgfmt
@@ -265,6 +291,7 @@
 	'.f =? ( drop "fix" ; )
 	drop "bin" ;
 
+
 #sdx 0 #sdy 0 #sde 0 #sdw 34 #sdl 0 #sds 0
 
 :sline | "txt" --
@@ -279,6 +306,7 @@
 :sec | "title" --
 	1 'sdy +!
 	fPr .Bold sline .NBold ;
+
 
 :stk. | val --
 	sdy sde >=? ( 2drop ; ) drop
@@ -319,8 +347,9 @@
 	"ip" vmIP .h kv
 	"a" vmREGA .h kv
 	"b" vmREGB .h kv
-	"data" dtackcnt .d kv
-	"return" rstackcnt .d kv ;
+|	"data" dtackcnt .d kv
+|	"return" rstackcnt .d kv 
+	;
 
 :tagfmt | -- ; format tag at the right of the title
 	sdx sdw 6 - + 8 -
@@ -354,45 +383,43 @@
 :drawside
 	bg1 fx fy fw fh .boxf
 	fx 2 + 'sdx ! fy 'sdy ! fy fh + 'sde !
-	|fTx .Bold "r3debug" sline .NBold
-	|fMu sdx sdy .at sdw 4 - 'filename lwrite 1 'sdy +!
 	regs
 	sde sdy - 8 - 2/ 2 max 'sdl !
-	datasec retsec bpsec watchsec ;
+	datasec 
+	retsec 
+	bpsec 
+	watchsec ;
 
-|------------------------- header, status and footer
+|------ header
 :drawhead
-	bg0 fx fy .at fw .nsp
-	fx 1+ fy .at fPr .Bold "# " .write fTx "r3debug" .write .NBold
-	fMu "  -  " .write 'topline .write
-	|bg0 fDi fx fy 1+ .at fw 45 .nch 
+	8 .bc 15 .fc
+	fx fy .at fw .ndel
+	" r3dbg | " .write
+	'topline .write 
 	;
 
-:banner | status line, only when there is one
-	'statusline c@ 0? ( drop ; ) drop
-	1 flxN
-	bg1 fx fy fw fh .boxf
-	fx 1+ fy .at 'statusline .write bg0 ;
-
-:key | "k" "label" --
-	fTx swap .write fDi .write ;
-
 :drawfoot
-	bg0 fx fy .at fw .nsp
-	fx 2 + fy .at
-	"b" " breakpoint   " key
-	"c" " continue   " key
-	"r" " run cursor   " key
-	"s" " step   " key
-	"n" " next over   " key
-	"o" " step out   " key
-	"q" " quit" key
-	fw 112 <? ( drop ; ) drop
-	fx fw + 26 - fy .at
-	"^f" " format   " key
-	"enter" " memory" key ;
+	fx fy .at fw .ndel
+	'statusline	.write ;
 
-|------------------------- keys
+:drawscreen
+	sdw flxE
+	drawside
+
+	1 flxN
+	drawhead
+
+	1 flxS
+	drawfoot
+
+	panelMemSize flxS
+	panelMem
+
+	flxRest
+	tuReadCode
+	;
+	
+|------- keys
 :keyext
 	[SHIFT+DN] =? ( memdn )
 	[SHIFT+UP] =? ( memup )
@@ -426,32 +453,12 @@
 	;
 
 |-----------------
-:calcsw
-	cols 100 <? ( drop 28 'sdw ! ; ) drop 36 'sdw ! ;
-
 :maindb
 	.reset bg0 fTx .cls
-	calcsw
-
-	1 flxN
-	drawhead
-	banner
-
-	1 flxS
-	drawfoot
-
-	sdw flxE
-	drawside
-
-	panelMemSize flxS
-	panelMem
-
-	flxRest .reset
-	tuReadCode
+	drawscreen
 	remakecursor
 	tuC! | show user cursor
 	showbreakpoint
-
 	teclado
 	;
 
@@ -475,6 +482,7 @@
 
 :
 .alsb
+slnormal
 main
 .masb .free
 ;

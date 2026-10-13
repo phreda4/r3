@@ -39,12 +39,26 @@
 		dup c@ $c0 and $80 <>? ( drop ; )
 		drop 1+ ) ;
 		
+|----- themes
+
+##themeold ( 255 226 244 196 201 50 226 46 18 235 233 239 250 46 )
+##themenew ( 255 228 241 204 135 44 220 114 17 232 235 239 216 208 )
+
+#th 'themenew
+
+::tuTheme! | 'theme -- ; 'themeold / 'themenew
+	'th ! ;
+
+:tcol | n -- col256
+	th + c@ $ff and ;
+
+|----- select
 :inselect | adr -- adr
-	inisel finsel in? ( 18 .bc ) ;
+	inisel finsel in? ( 8 tcol .bc ) ;
 	
 :atselect | adr -- addr
-	inisel =? ( 18 .bc ; ) 
-	finsel =? ( fuente> =? ( 233 .bc ; ) 235 .bc ) ;
+	inisel =? ( 8 tcol .bc ; ) 
+	finsel =? ( fuente> =? ( 10 tcol .bc ; ) 9 tcol .bc ) ;
 
 #1sel 
 
@@ -58,7 +72,7 @@
 :sele | empty select
 	0 dup 'inisel ! 'finsel ! ; 
 	
-|----- edicion
+|----- edit
 :lins | c -- ; inserta c en cursor y avanza
 	fuente> dup 1+ swap $fuente over - 1+ cmove>
 	fuente> c!
@@ -259,18 +273,18 @@
 :codecolor | adr -- adr
 	dup c@ 
 	33 <? ( drop ; )
-	$22 =? ( drop 15 .fcc 3 'modoline ! ; )		| $22 " string
-	$5e =? ( drop 11 .fcc 2 'modoline ! ; )		| $5e ^  Include
-	$7c =? ( drop 8 .fcc 2 'modoline ! ; )		| $7c |	 Comentario
-	$3A =? ( drop 196 .fcc ; )		| $3a :  Definicion
-	$23 =? ( drop 201 .fcc ; )	| $23 #  Variable
-	$27 =? ( drop 50 .fcc ; )	| $27 ' Direccion
+	$22 =? ( drop 0 tcol .fcc 3 'modoline ! ; )		| $22 " string
+	$5e =? ( drop 1 tcol .fcc 2 'modoline ! ; )		| $5e ^  Include
+	$7c =? ( drop 2 tcol .fcc 2 'modoline ! ; )		| $7c |	 Comentario
+	$3A =? ( drop 3 tcol .fcc ; )		| $3a :  Definicion
+	$23 =? ( drop 4 tcol .fcc ; )	| $23 #  Variable
+	$27 =? ( drop 5 tcol .fcc ; )	| $27 ' Direccion
 	drop
-	dup isNro 1? ( drop 226 .fcc ; ) drop
+	dup isNro 1? ( drop 6 tcol .fcc ; ) drop
 |	dup isBase 
 |	1? ( 18 <? ( drop 20 .fc ; ) drop 214 .fc ; ) 
 |	drop
-	46 .fcc ;
+	7 tcol .fcc ;
 	
 :ctlfix | c -- c' 
 	dup $ff and
@@ -308,14 +322,14 @@
 	dup .emit skipw ex ;
 		
 :linenormal
-	235 .bc 240 .fcc 1+ .d 4 .r. .write .sp ;
+	9 tcol .bc 11 tcol .fcc 1+ .d 4 .r. .write .sp ;
 	
 :iniline | adr lin -- adr lin 
 |	.reset
 	fx over fy + .at
 	dup ylinea + 
 	|focoe 0? ( drop linenormal ; ) drop | sin foco?
-	ycursor =? ( 233 .bc 7 .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	ycursor =? ( 10 tcol .bc 12 tcol .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
 	linenormal ;
 	
 :skipx | adr -- adr' ; saltea xlinea columnas sin emitir, se detiene en CR/0
@@ -351,7 +365,7 @@
 	"~" .write fw 1- .nsp ;
 	
 :emptylines
-	235 .bc 240 .fcc
+	9 tcol .bc 11 tcol .fcc
 	swap ( 1+ fh <? emline ) drop ;
 	
 :drawlines | ini -- end

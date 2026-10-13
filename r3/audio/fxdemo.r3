@@ -1,4 +1,4 @@
-| fxdemo.r3 - demo interactivo de fxsynth.r3 (estilo bfxr/jfxr)
+| fxdemo.r3 - demo interactivo de fxsynth.r3 
 | PHREDA 2026 
 ^r3/util/immi.r3
 ^./supermix.r3
@@ -6,8 +6,8 @@
 
 #font1
 
-|---- audio: supermix reproduce el buffer de fxsynth (una voz de preview)
-#fxins					| instrumento sobre 'fxbuf (el largo se ajusta en cada render)
+|---- audio: supermix reproduce el buffer de fxsynth
+#fxins					| instrumento sobre 'fxbuf 
 
 :fxAudioInit | --
 	sminit
@@ -21,7 +21,7 @@
 	fxRender fxins smAUX!			| largo en frames
 	fxins smi!  69 smplay drop ;	| nota 69 = 440 Hz = velocidad original
 
-|---- exportar: capa kind 3 de gamesfx.r3 (cabecera + 22 parametros) lista para pegar en un .r3
+|---- exportr
 #fxtxt * 1024
 :fxExport | -- adr
 	mark 'fxtxt 'here !
@@ -296,7 +296,7 @@
 	txh 2 + 5 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
-	stInfo [ fxExport SDL_SetClipboardText drop ; ] "Copy kind3" uiCBtn
+	stInfo [ fxExport SDL_SetClipboardText drop ; ] "Copy" uiCBtn
 	stLink 
 	"* Type *" uiLabelC
 	[ fxPickup fxPlay ; ]    "Pickup / Coin" uiRbtn
