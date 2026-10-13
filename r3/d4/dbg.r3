@@ -129,7 +129,7 @@
 		swap ) drop ;
 
 :panelMem
-	bg1 fx fy fw fh .boxf
+	bg1 .wfill
 	fx 1+ fy .at fPr .Bold "Memory" .write .NBold
 	fMu lmem dup $ffff and swap 16 >> "  %h:%h" .print
 	fx fw + 10 - .col fDi 'linesnstr .write
@@ -291,26 +291,10 @@
 	'.f =? ( drop "fix" ; )
 	drop "bin" ;
 
-
-#sdx 0 #sdy 0 #sde 0 #sdw 34 #sdl 0 #sds 0
-
-:sline | "txt" --
-	sdy sde <? ( drop sdx sdy .at .write 1 'sdy +! ; ) 2drop ;
-
-:kv | "label" "value" --
-	sdy sde <? ( drop
-		fMu sdx sdy .at swap .write
-		fTx sdx 8 + .col .write
-		1 'sdy +! ; ) 3drop ;
-
-:sec | "title" --
-	1 'sdy +!
-	fPr .Bold sline .NBold ;
-
+|--------------------------
 
 :stk. | val --
-	sdy sde >=? ( 2drop ; ) drop
-	sdx sdy .at fmt ex 24 .r. .write 1 'sdy +! ;
+	fx .col fmt ex 24 .r. .write .cr ;
 
 :dtackcnt | -- cnt
 	vmNOS mdatastack - 3 >> ;
@@ -321,11 +305,12 @@
 :.datastack
 	fTx
 	vmNOS
-	mdatastack >? ( vmTOS stk. ) fMu
-	dtackcnt sdl min 1- clamp0 swap
+	mdatastack >? ( vmTOS stk. ) 
+	fMu
+	dtackcnt 8 min 1- clamp0 swap | hasta 8 
 	dstackoff +
 	( swap 1? 1- swap
-		8 - dup @ stk.
+		8 - dup @ stk. 
 		) 2drop ;
 
 :.retstack
@@ -336,55 +321,56 @@
 		stk.
 		) drop ;
 
-:limit+ | n -- ; limit the section to n lines
-	sde 'sds !
-	sdy + sde min 'sde ! ;
-
-:limit- sds 'sde ! ;
-
+:sec
+	fpr .bold fx .col .write .nbold ;
+	
+:label | val label --
+	fx .col fmu .write ftx ;
+	
 :regs
-	"Registers" sec
-	"ip" vmIP .h kv
-	"a" vmREGA .h kv
-	"b" vmREGB .h kv
-|	"data" dtackcnt .d kv
-|	"return" rstackcnt .d kv 
+	"Registers " sec 
+	fmu "IP:" .write vmIP .h .write .cr
+	fx .col 
+	fmu " A:" .write ftx vmREGA .h 8 .r. .write 
+	fmu " B:" .write ftx vmREGB .h 8 .r. .write .cr
+	.cr
 	;
 
-:tagfmt | -- ; format tag at the right of the title
-	sdx sdw 6 - + 8 -
-	sdy 1- .at fDi fmtname "[%s]" sprint .write ;
-
 :datasec
-	"Data stack" sec tagfmt
-	sdy sdl limit+
+	"Data stack " sec 
+	dtackcnt .d .write .sp
+	fDi fmtname "[%s]" sprint .write .cr
 	.datastack
-	sdy =? ( fDi "(empty)" sline ) drop
-	limit- ;
+	dtackcnt 0? ( fDi "(empty)" .write .cr ) drop
+	.cr
+	;
 
 :retsec
-	"Return stack" sec
-	sdy sdl limit+
+	"Return stack " sec 
+	rstackcnt .d .write 
+	.cr
 	.retstack
-	sdy =? ( fDi "(empty)" sline ) drop
-	limit- ;
+	rstackcnt 0? ( fDi "(empty)" .write .cr ) drop
+	.cr
+	;
 
 :bpsec
-	"Breakpoints" sec
-	sdy 3 limit+
-	fMu bplist ( d@+ 1? "$%h" sprint sline ) 2drop
-	sdy =? ( fDi "(none)" sline ) drop
-	limit- ;
+	"Breakpoints" sec .cr
+	fMu bplist ( d@+ 1? 
+		fx .col "$%h" sprint .write .cr 
+		) 2drop
+	|sdy =? ( fDi "(none)" sline ) drop
+	;
 
 :watchsec
-	"Watch" sec
-	fDi "(none)" sline ;
+	"Watch" sec .cr
+	fDi "(none)" .write ;
 
 :drawside
-	bg1 fx fy fw fh .boxf
-	fx 2 + 'sdx ! fy 'sdy ! fy fh + 'sde !
+	bg1 .wfill
+	1 'fx +! 1 'fy +!
+	fx fy .at 
 	regs
-	sde sdy - 8 - 2/ 2 max 'sdl !
 	datasec 
 	retsec 
 	bpsec 
@@ -403,7 +389,7 @@
 	'statusline	.write ;
 
 :drawscreen
-	sdw flxE
+	34 flxE
 	drawside
 
 	1 flxN

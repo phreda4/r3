@@ -93,11 +93,11 @@
 	'exit "Salir" tuBtn | 'ev "" --
 	|1 'fy +! 
 	[ 1 'v3 +! ; ] "Coso" tuBtn | 'ev "" --
-	flcr
+	.cr
 	'v1 "op1" tuCheck
 	0 'v2 "opr1" tuRadio
 	1 'v2 "opr2" tuRadio
-	flcr
+	.cr
 	'v3 0 100 tuSlider
 	v3 tuProgress
 	

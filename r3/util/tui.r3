@@ -82,8 +82,6 @@
 	dup 'fy +! 2* neg 'fh +!
 	dup 'fx +! 2* neg 'fw +! ;
 	
-::flcr
-	.cr 1 'fy +! fx .col ;
 	
 |---- Events
 #vecdraw
@@ -308,11 +306,11 @@
 	tuX? 0? ( 2drop ; ) drop ex ;
 	
 ::tuLabel | "" --
-	fw swap lwrite .reset flcr ;
+	fx .col fw swap lwrite 1 'fy +! .cr ;
 ::tuLabelC | "" --
-	fw swap cwrite .reset flcr ;
+	fx .col fw swap cwrite 1 'fy +! .cr ;
 ::tuLabelR | "" --
-	fw swap rwrite .reset flcr ;
+	fx .col fw swap rwrite 1 'fy +! .cr ;
 	
 |--------------------------------	
 |---- write line
