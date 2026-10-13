@@ -21,9 +21,17 @@
 	fxRender fxins smAUX!			| largo en frames
 	fxins smi!  69 smplay drop ;	| nota 69 = 440 Hz = velocidad original
 
+|---- exportar: capa kind 3 de gamesfx.r3 (cabecera + 22 parametros) lista para pegar en un .r3
+#fxtxt * 1024
+:fxExport | -- adr
+	mark 'fxtxt 'here !
+	"##sfx_fx [" ,s ,nl
+	9 ,c "$300 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0" ,s ,nl
+	9 ,c ab[ 'p_wave >a a@+ ,d 21 ( 1? 1- ,sp a@+ ,f ) drop ]ba ,nl
+	9 ,c "0 ]" ,s ,eol empty 'fxtxt ;
+
 #fxbuff * 44 | 22*2
 
-#fxlistini
 #fxlistcnt
 #fxlistnow
 #fxlist * 2048
@@ -245,9 +253,6 @@
 	1 'fxlistcnt +!
 	;
 	
-:remlist
-	;
-	
 :listfx
 	stLink
 	0 ( fxlistcnt <?
@@ -256,21 +261,6 @@
 		fxlistnow =? ( stLink ) 
 		1+ ) drop ;
 	
-:seedPanel
-	uiPush
-	0.12 %w uiO
-	stSucc 
-	'putlist         "Save"  uiCBtn
-	stinfo
-	[ 'fxbuff fxUnpack fxPlay ; ]  "Load"   uiCBtn
-	stDang
-	'remlist "Delete" uiCBtn
-	uiRest
-	'fxbuff @+ swap @+ swap @ "$%h $%h $%h.." sprint 
-	$11 uiText |Label
-	uiPop
-	;
-
 #wavelist "Sqr" "Saw" "Sin" "Nse" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin2" "Sin3" "Parab" "SSaw2" "SSaw3" "SSawF" "Pink" "Brown"
 
 :wavename | n -- "str"
@@ -306,6 +296,7 @@
 	txh 2 + 5 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
+	stInfo [ fxExport SDL_SetClipboardText drop ; ] "Copy kind3" uiCBtn
 	stLink 
 	"* Type *" uiLabelC
 	[ fxPickup fxPlay ; ]    "Pickup / Coin" uiRbtn

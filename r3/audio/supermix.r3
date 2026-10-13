@@ -279,9 +279,6 @@
 :ninstr
 	instr> 'instr - 6 >> 1- ;	| slot: vec wave ADSR1 ADSR2 aux (64 bytes)
 	
-:ireset
-	'instr 'instr> ! ;
-
 #nochunk 0 0 0	| chunk vacio (abuf=0,alen=0): si falla la carga la voz termina al instante
 
 :iadsr | v1 v2 --			| ADSR (2 celdas) al instrumento

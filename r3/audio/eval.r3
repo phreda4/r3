@@ -23,7 +23,6 @@
 |   evento (64 bits): nota(8) variante(8) volumen(8) <<32 | start(16)<<16 | dur(16)
 |                     start y dur: fraccion del ciclo (65536 = 1 ciclo); volumen 0 = normal
 
-^r3/lib/console.r3
 ^r3/lib/parse.r3
 ^r3/lib/rand.r3
 
@@ -176,10 +175,6 @@
 	2drop pitemx ex ;
 
 #fbase
-:gfin | close type pstart --	| arma el nodo del grupo en cur
-	rot drop fbase =? ( drop fbase swap kids>cur ; )
-	swap kids>cur cur>tmp1 fbase 3 kids>cur ;
-
 :pgroup | close type --
 	tmp> >r tmp>
 	( skipws cc 1? pick3 <>? drop over gstep )

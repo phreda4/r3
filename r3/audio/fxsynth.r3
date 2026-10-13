@@ -2,7 +2,7 @@
 | PHREDA-style, sin samples, todo sintetizado
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
-^r3/audio/noise.r3
+^./noise.r3
 
 |============================================================
 | PARAMETROS (0.0..1.0 fixed salvo aclaracion). Editables por UI o presets.
@@ -298,7 +298,6 @@
 | RENDER OFFLINE A BUFFER (16 bit signed, estereo L=R intercalado, 44100hz)
 | listo para supermix: isamplemem ... 'fxbuf len (frames) 
 |============================================================
-##fxrate 44100
 ##fxmaxsamples 176400 | 4 seg tope de seguridad
 ##fxbuf * 705600        | fxmaxsamples * 4 bytes (frame = L R)
 
