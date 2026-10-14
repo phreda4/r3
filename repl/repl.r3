@@ -618,7 +618,7 @@
 	px 3 + cur + py 1+ .at .showc .flush ;
 
 |---------------- dibujo: pantallas
-:drawlogo | y -- ; big chars (utfg .awrite), 4 filas, avance 7 columnas
+:drawlogo | y -- 
 	cols 43 - 2/ 1+ swap .at
 	"[01R[023[03f[04o[05r[06t[07h" .awrite
 	bg0 fTx ;
@@ -632,7 +632,6 @@
 	fTx px py 6 + .at "tab" .write fDi " complete     " .write
 	fTx "/words" .write fDi " search     " .write
 	fTx "/help" .write fDi " commands" .write
-	fYe px py 8 + .at "* Tip  " .write fMu "try  2 3 + dup *   then   :sq dup * ;   and   5 sq" .write
 	drawcommon ;
 
 :draw-sess

@@ -3,8 +3,10 @@
 |
 | COMO AGREGAR SONIDO Y MUSICA A UN PROGRAMA O JUEGO (gamesfx.r3 + sfxpack.r3):
 |
-|   1. ^./gamesfx.r3 y ^./sfxpack.r3        (los sonidos listos son ##sfx_..., se editan con sfxdemo.r3)
+|   1. ^./gamesfx.r3 y ^./sfxpack.r3        (los sonidos listos son ##sfx_...: tono/ruido se editan con sfxdemo.r3,
+|                                            los kind 3 (fxsynth) con fxdemo.r3)
 |   2. sfxinit                                una vez al inicio: audio + sintetizador + secuenciador
+|      'sfx_x sfxprepare                      (opcional) renderiza antes un sonido kind 3: el primer disparo no se traba
 |   3. 'sfx_coin sfxplay                      en cada evento del juego (choque, salto, moneda...)
 |      'sfx_coin 3 sfxplayp                   el mismo sonido 3 semitonos mas agudo (variacion)
 |      "c4 e4 g4 c5" 120 inst 1 sfxtune       musica en bucle: patron Strudel, bpm, instrumento, loop 1
@@ -171,6 +173,7 @@
 
 :main
 	sfxinit mkins
+	0 ( NB <? dup 3 << 'bsnd + @ sfxprepare 1+ ) drop	| los kind 3 se renderizan antes de tocar
 	msec $1234567 rerand
 	0 ( NB <? dup binit 1+ ) drop
 	bgm
