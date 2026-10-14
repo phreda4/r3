@@ -230,7 +230,7 @@
 	"R|" .write .retstack .cr
 	
 	|*** debug ***
-	bplist ( d@+ 1? "%h " .print ) 2drop .cr
+	|bplist ( d@+ 1? "%h " .print ) 2drop .cr
 	;
 	
 |---- view tokens	
@@ -253,7 +253,7 @@
 	
 
 :slnormal
-	.cl	7 .fc cols .nsp
+	.cl	7 .fc cols .ndel
 	" ^[7mF3^[27m BreakP ^[7mF5^[27mRun ^[7mF7^[27mInto ^[7mF8^[27mOver ^[7mF9^[27mOut " .printe
 	'statusline strcpybuf ;
 	
@@ -281,12 +281,12 @@
 	
 :runtimerror
 	stoponerror 'errorst !
-	.cl 15 .fc 1 .bc cols .nsp 
+	.cl 15 .fc 1 .bc cols .ndel
 	errorst " * RUNTIME ERROR:%h * " .print .strerr
 	'statusline strcpybuf ;
 
 :runtimeend
-	.cl 15 .fc 1 .bc cols .nsp 
+	.cl 15 .fc 1 .bc cols .ndel
 	" * END * " .print 
 	'statusline strcpybuf ;
 
@@ -303,7 +303,7 @@
 	codenow =? ( drop ; ) dup 'codenow !
 	inc2src TuLoadMemC 
 	
-	.cl 7 .fc cols .nsp
+	.cl 7 .fc cols .ndel
 	" r3debug | " .write
 	codenow cntinc <? ( 
 		strinc over n>>0 .write
@@ -349,9 +349,9 @@
 	1 flxN
 	fx fy .at 5 .bc 'topline .write
 	
-	6 flxS
-	fx fy .at 'statusline .write 
-	.cr scrMsg
+	8 flxS
+	fx fy .at 'statusline .write .cr 
+	scrMsg
 	
 |	30 flxE |tuWina $1 "Imm" .wtitle |242 .bc
 |	scrTokens
@@ -424,12 +424,12 @@
 	1 flxN
 	fx fy .at 4 .bc 'topline .write
 	
-	6 flxS
+	8 flxS
 	fx fy .at 'statusline .write
 	vmSTATE " state:%h" .print 
 	|vmIP memtokn " iptoken:%h" .print
-	
-	.cr scrMsg
+	.cr 
+	scrMsg
 	
 	paneldraw
 

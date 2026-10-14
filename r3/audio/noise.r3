@@ -12,15 +12,7 @@
 #pinkc
 #pink * 16
 
-::pnoise
-	$ffff randmax
-	pinkc not clz $7 and 2 << 'pink + w+!
-	'pink 
-	@+ dup 32 >> + dup 16 >> + swap
-	@ dup 32 >> + dup 16 >> + +
-	3 >> $1fff and $fff - 2* ;
-	
-::pnoise1			| Voss-McCartney
+::pnoise			| rosa: Voss-McCartney
 	pinkc ctz $7 and 1 << 'pink + rand swap w!
 	1 'pinkc +!
 	0 8 ( 1? 1- dup 1 << 'pink + w@ $ffff and rot + swap ) drop
@@ -36,4 +28,6 @@
 	clamps16
 	dup 'browna !
 	;
-	
+
+::bnoise3 | -- v		| marron normalizado (bnoise sale en +-0.27)
+	bnoise 3 * ;

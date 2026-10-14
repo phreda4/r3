@@ -5,6 +5,7 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
 ^./noise.r3
+^./osc.r3
 
 |^r3/lib/trace.r3
 
@@ -53,36 +54,6 @@
 :delvoicea | --
 	-64 'voice> +! a> voice> 8 move -64 a+ ;
 
-|---- OSC
-| time -- val
-::oscSaw	2* 1.0 - ;
-::oscSqr	0.5 >? ( -1.0 nip ; ) 1.0 nip ; 
-::oscPul1	0.1 >? ( -1.0 nip ; ) 1.0 nip ; 
-::oscPul2	0.25 >? ( -1.0 nip ; ) 1.0 nip ; 
-::oscTri	$8000 and? ( $ffff xor ) 2 << 1.0 - ; 
-::oscSin	sin ;
-::oscHSin	sin abs ;
-::oscSin2	sin dup *. ;
-::oscSin3	sin dup dup *. *. ;
-::oscSinF	2* 1.0 - dup *. 2* 1.0 - ;
-::oscSawRev	1.0 swap - 2* 1.0 - ;
-::oscTrap	0.25 <? ( 2 << ) 0.75 >? ( 2 << 4.0 - ) 2* 1.0 - ;
-::oscParab	dup *. 2* 1.0 - ;
-
-::oscFakeSuperSaw | phase -- v
-	dup 2* 1.0 - swap dup *. 2* 1.0 - + 2/ ;
-	
-::oscSuperSaw2P | phase -- v
-	2* 1.0 - dup 1.01 *. 2* 1.0 - + 2/ ;
-
-::oscSuperSaw3P | phase -- v
-	dup 2* 1.0 -
-	swap dup 0.99 *. 2* 1.0 - +
-	swap 1.01 *. 2* 1.0 - +
-	0.333 *. ;
-
-
-	
 :envelADSR | -- env		| env 16.16 (0..$ffff); negativo = voz terminada
 	1 d.time d+!
 	c.state c@

@@ -1,44 +1,29 @@
-| r3repl - REPL environment for R3Forth   (folder repl/)
-| A session = a project: repl/proj/<name>/<name>.r3 (scratch by default).
+| r3repl - REPL environment for R3Forth   (folder repl/)    TUI version (util/tui.r3)
+| A session = a project: repl/proj/<n>/<n>.r3 (scratch by default).
 | Each line is generated as a program (mem/repl.r3) and run with r3.
 | The stack is recovered with the internal library repl/repldump.r3 (mem/repl.out).
 | There is no interpreter in the REPL: r3lin runs everything.
-^r3/lib/console.r3
-^r3/util/utfg.r3
-^repl/replib.r3
+|   replcore.r3  session and project (includes, definitions, files)
+|   replgen.r3   generation and execution of the program
+|   repl2.r3     screen, commands and keys (layout and colors from util/tui.r3)
+^r3/util/tui.r3
 ^repl/replhelp.r3
-
-|---------------- paleta (true color)
-:bg0 0 0 0 .bgrgb ;
-:bg1 24 24 28 .bgrgb ;
-:bg2 36 36 42 .bgrgb ;
-:bg3 56 56 66 .bgrgb ;
-:bBl 92 156 245 .bgrgb ;
-:bPu 157 124 216 .bgrgb ;
-:fTx 238 238 238 .fgrgb ;
-:fMu 140 140 152 .fgrgb ;
-:fDi 88 88 98 .fgrgb ;
-:fPr 250 178 131 .fgrgb ;
-:fBl 92 156 245 .fgrgb ;
-:fPu 157 124 216 .fgrgb ;
-:fGr 127 216 143 .fgrgb ;
-:fRd 224 108 117 .fgrgb ;
-:fYe 245 167 66 .fgrgb ;
+^repl/replcore.r3
+^repl/replgen.r3
 
 |---------------- variables
-#sw 0 #mw 80
-#px 0 #py 0 #pw 0
+#sw 0
+#px 0 #py 0 #pw 0		| prompt frame
 #tmp * 256
-#tk * 256
-#lo2 * 2048
-#pe 0 #ry 0
+#pe 0
 #busy 0 #sf 0 #quit 0 #zero 0
+#fnd 0
+#nol 0
 
 |---------------- utilidades de pantalla
 :layout
 |LIN|	.getterminfo
-	0 'sw ! cols 100 >=? ( 34 'sw ! ) drop
-	cols sw - 'mw ! ;
+	0 'sw ! cols 100 >=? ( 34 'sw ! ) drop ;
 
 |---------------- transcript
 #tp 0
@@ -57,292 +42,6 @@
 
 :tl+ tl+p drop ;
 
-|---------------- estado de la sesion
-#sstk * 2048		| pila de la sesion (valores recuperados de mem/repl.out)
-#sn 0
-#incs * 4096		| includes de la sesion, 32 x 128 ("^r3/lib/math.r3")
-#ninc 0 #ninc0 0
-#defs 0		| texto del proyecto (sin includes)
-#defs> 0
-#defl 0
-#dnp * 512		| punteros a nombres definidos
-#dnn 0 #dnn0 0
-#dnpool * 4096
-#dnpool> 'dnpool
-
-|---------------- words: replib.r3 (base + mlibs) and commands: replhelp.r3
-#fnd 0
-
-|---------------- texto: tokens, includes y nombres
-:tok | adr -- adr' ; copies the token to 'tk (copynom), returns the delimiter (>>sp)
-	dup 'tk swap copynom >>sp ;
-
-:nextl | adr -- adr' ; start of the next line (>>cr stops AT the CR/LF)
-	>>cr c@+ $ff and
-	0? ( drop 1- ; )
-	13 =? ( drop dup c@ $ff and 10 =? ( drop 1+ ; ) drop ; )
-	drop ;
-
-:lkind | adr -- k ; 0 expresion, 1 include, 2 definicion, 3 vacia/comentario
-	trim c@ $ff and
-	0? ( drop 3 ; )
-	$5e =? ( drop 1 ; )
-	$7c =? ( drop 3 ; )
-	$3a =? ( drop 2 ; )
-	$23 =? ( drop 2 ; )
-	drop 0 ;
-
-:inc? | "^path" -- 0/1
-	0 ( ninc <?
-		dup 7 << 'incs + pick2 = 1? ( 3drop 1 ; ) drop
-		1+ ) 2drop 0 ;
-
-:inc+ | "^path" --
-	dup inc? 1? ( 2drop ; ) drop
-	ninc 31 >=? ( 2drop ; ) drop
-	ninc 7 << 'incs + strcpy 1 'ninc +! ;
-
-:dn+ | str -- ; recuerda un nombre definido
-	dnn 63 >=? ( 2drop ; ) drop
-	dnpool> 'dnpool - 3800 >=? ( 2drop ; ) drop
-	dnpool> dup dnn 3 << 'dnp + !
-	strcpyl 'dnpool> ! 1 'dnn +! ;
-
-:defined? | -- 0/1 ; 'tk es un nombre definido en la sesion
-	0 ( dnn <?
-		dup 3 << 'dnp + @ 'tk = 1? ( 2drop 1 ; ) drop
-		1+ ) drop 0 ;
-
-:dch? | c -- 0/1
-	$3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
-
-:regtok | si 'tk es :nombre o #nombre lo registra
-	'tk c@ $ff and dch? 0? ( drop ; ) drop
-	'tk ( dup c@ $ff and dch? 1? drop 1+ ) drop
-	dup c@ $ff and 0? ( 2drop ; ) drop
-	dn+ ;
-
-:regnames | adr --
-	( trim dup c@ $ff and 1? drop
-		tok regtok ) 2drop ;
-
-#inq 0
-:qcnt | -- n ; number of quotes in 'tk (findchar)
-	0 'tk ( 34 findchar 1? 1+ swap 1+ swap ) drop ;
-
-:tkcheck | -- stop ; token -> include si es palabra de libreria
-	qcnt dup inq or swap 1 and inq xor 'inq !
-	1? ( drop 0 ; ) drop
-	'tk c@ $ff and
-	$7c =? ( drop 1 ; )
-	$3a =? ( drop 0 ; )
-	$23 =? ( drop 0 ; )
-	$5e =? ( drop 0 ; )
-	$27 =? ( 'tk 1+ 'tk strcpy )
-	drop
-	'tk c@ 0? ( drop 0 ; ) drop
-	'tk isNro 1? ( drop 0 ; ) drop
-	defined? 1? ( drop 0 ; ) drop
-	'tk wfind 2 =? ( cl "^%s" sprint inc+ ) drop
-	0 ;
-
-:scaninc | adr -- ; agrega los includes que necesite la linea
-	0 'inq !
-	( trim dup c@ $ff and 1? drop
-		tok tkcheck
-		1? ( nip 'zero swap ) drop )
-	2drop ;
-
-:defs+ | str -- ; agrega la linea a las definiciones de la sesion
-	defs> defs - $1e000 >=? ( 2drop ; ) drop
-	defs> strcpyl 1- 13 swap c!+ 10 swap c!+
-	0 over c! 'defs> ! 1 'defl +! ;
-
-|---------------- proyectos: repl/proj/<nombre>/<nombre>.r3
-#pdir "repl/proj/"
-#pname * 64
-#ppath * 256
-#pfold * 256
-#pbuf 0
-#menubuf * 1024
-
-:setproj | "name" --
-	'pname strcpy
-	'pname 'pname 'pdir "%s%s/%s.r3" sprint 'ppath strcpy
-	'pname 'pdir "%s%s" sprint 'pfold strcpy ;
-
-:mk1 | "path" -- ; creates one folder (no shell: sys on Windows does not run cmd)
-|WIN|	0 CreateDirectory drop
-|LIN|	$1ff libc-mkdir drop
-|MAC|	$1ff libc-mkdir drop
-|RPI|	$1ff libc-mkdir drop
-	;
-
-:mkproj | creates repl/proj/<name> (each level, existing ones are ignored)
-	"repl" mk1 "repl/proj" mk1 'pfold mk1 ;
-
-:proj-clear
-	0 'ninc ! defs 'defs> ! 0 defs c! 0 'defl !
-	'dnpool 'dnpool> ! 0 'dnn ! ;
-
-:pline | procesa la linea que esta en 'lo2
-	'lo2 "| r3repl" =pre nip 1? ( drop ; ) drop
-	defl 0? ( 'lo2 trim c@ 0? ( 2drop ; ) drop ) drop
-	'lo2 lkind
-	1 =? ( drop 'lo2 trim tok drop 'tk inc+ ; )
-	2 =? ( 'lo2 regnames )
-	drop 'lo2 defs+ ;
-
-:proj-parse | adr -- ; includes y definiciones desde el texto
-	proj-clear
-	( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln pline
-		nextl )
-	2drop ;
-
-:proj-load | -- ok
-	'ppath filexist 0? ( ; ) drop
-	pbuf 'ppath load 0 swap c!
-	pbuf proj-parse 1 ;
-
-:proj-save
-	mark
-	'pname "| r3repl - project %s" ,print ,nl
-	0 ( ninc <? dup 7 << 'incs + ,s ,nl 1+ ) drop
-	,nl
-	defs ,s
-	'ppath savemem
-	empty
-	'ppath filexist 0? ( drop 'ppath "could not save %s  (paths are relative to where r3 runs; mkdir failed?)" sprint 4 tl+ ; ) drop ;
-
-:proj-ensure | crea el proyecto si no existe
-	'ppath filexist 1? ( drop ; ) drop
-	mkproj proj-clear proj-save ;
-
-:proj-remember
-	'pname count "mem/repl.last" save ;
-
-:okch? | c -- 0/1 ; a-z 0-9 _ -
-	97 122 in? ( drop 1 ; ) 48 57 in? ( drop 1 ; ) 95 =? ( drop 1 ; ) 45 =? ( drop 1 ; ) drop 0 ;
-
-:namecheck | str -- 0/1
-	dup count nip 30 >? ( 2drop 0 ; ) drop
-	dup c@ $ff and 0? ( 2drop 0 ; ) drop
-	( c@+ $ff and 1? tolow okch? 0? ( 2drop 0 ; ) drop )
-	2drop 1 ;
-
-:sanit | str -- ; reemplaza por _ lo que no sea valido
-	( dup c@ $ff and 1? tolow okch? 0? ( 95 pick2 c! ) drop 1+ ) 2drop ;
-
-|---------------- generacion y ejecucion (r3 real)
-#gk 0 #ga 0 #gl 0 #gboot 0
-#t0 0 #tms 0
-#obuf * 2064
-#ebuf * 4096
-#lbuf 0
-#emsg * 256
-#efile * 128
-#els 0 #elne 0 #eline 0
-#nol 0
-
-:gnl ,nl 1 'gl +! ;
-
-#inboot 0
-:bootline? | adr -- 0/1 ; linea que abre una palabra de arranque (: ...)
-	c@+ $3a <>? ( 2drop 0 ; ) drop
-	c@ $ff and 33 <? ( drop 1 ; ) drop 0 ;
-
-:emit-line 'lo2 ,s gnl ;
-:emit-skip "|" ,s gnl ;
-
-:gline | decide que hacer con la linea en 'lo2
-	inboot 1? ( drop emit-skip
-		'lo2 ";" findstr 1? ( 0 'inboot ! ) drop
-		; ) drop
-	'lo2 bootline? 0? ( drop emit-line ; ) drop
-	1 'inboot !
-	emit-skip
-	'lo2 ";" findstr 1? ( 0 'inboot ! ) drop ;
-
-:gen-defs | las palabras de arranque del proyecto no se ejecutan en el REPL
-	0 'inboot !
-	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln gline
-		nextl ) 2drop ;
-
-:hasdef | "name" -- 0/1 ; is the word defined in the project?
-	'tk strcpy defined? ;
-
-:gen-src | adr kind -- ; escribe mem/repl.r3
-	'gk ! 'ga !
-	mark 0 'gl !
-	"^repl/repldump.r3" ,s gnl
-	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop
-	gen-defs
-	gk 2 =? ( ga ,s gnl ) drop
-	gl 1+ 'gboot !
-	": .rbegin " ,s
-	gk 0? ( "repl-init" hasdef 1? ( "repl-init " ,s ) drop ) drop
-	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
-	gk 0? ( ga ,s "repl-done" hasdef 1? ( " repl-done" ,s ) drop ) drop
-	" .rdump ;" ,s gnl
-	"mem/repl.r3" savemem
-	empty ;
-
-:runcmd | runs mem/repl.r3 with output to mem/repl.log
-	mark here
-|WIN|	"cmd /c ""r3 mem/repl.r3 > mem/repl.log 2>&1 < nul"""
-|LIN|	"timeout 20 ./r3lin mem/repl.r3 > mem/repl.log 2>&1 < /dev/null"
-|MAC|	"./r3mac mem/repl.r3 > mem/repl.log 2>&1 < /dev/null"
-|RPI|	"./r3rpi mem/repl.r3 > mem/repl.log 2>&1 < /dev/null"
-	,s 0 ,c
-	sys empty ;
-
-:cleanup
-	"mem/repl.out" delete "error.log" delete "mem/repl.log" delete ;
-
-:do-run
-	cleanup
-	msec 't0 !
-	runcmd
-	.reterm
-	msec t0 - 'tms ! ;
-
-|--- lectura de resultados
-:rd-file
-	0 'efile c!
-	'ebuf "FILE:" findstr 0? ( drop ; ) 5 + 'efile swap copynom ;
-
-:rd-line
-	0 'eline !
-	'ebuf "LINE:" findstr 0? ( drop ; ) 5 + str>nro nip 'eline ! ;
-
-:rd-msg | ultima linea no vacia del log
-	'ebuf 'els ! 'ebuf 'elne !
-	'ebuf ( c@+ $ff and 1?
-		10 =? ( over 'els ! )
-		32 >? ( els 'elne ! )
-		drop )
-	2drop
-	elne trim "^- " =pre 1? ( swap 3 + swap ) drop
-	'emsg strcpyln ;
-
-:rd-err
-	'ebuf "error.log" load 0 swap c!
-	rd-file rd-line rd-msg ;
-
-:readdump | -- code ; 0 ok, 2 sin volcado, 3 underflow, 4 pila grande
-	'obuf "mem/repl.out" load 'obuf -
-	8 <? ( drop 2 ; ) drop
-	'obuf @
-	-1 =? ( drop 4 ; )
-	-2 =? ( drop 3 ; )
-	-? ( drop 2 ; )
-	dup 255 >? ( 2drop 2 ; ) drop
-	dup 'sn !
-	0 ( over <? dup 1+ 3 << 'obuf + @ over 3 << 'sstk + ! 1+ ) 2drop
-	0 ;
-
 |---------------- stack display format: 0 decimal, 1 hex, 2 fixed point (16.16)
 #fmt 0
 #fmtn "dec" "hex" "fix" ( 0 )
@@ -356,32 +55,34 @@
 :fmtcycle
 	fmt 1+ 3 =? ( drop 0 ) 'fmt ! ;
 
-|---------------- dibujo: transcript (se define antes de los pasos)
-#ls 0 #lt 0 #ly 0 #i0 0 #i1 0 #vis 0
+
+|---------------- dibujo: transcript (frame: x y w h of the zone)
+#lt 0 #i0 0 #i1 0 #vis 0
 
 :r.user
-	bg1 3 ly mw 4 - 1 .boxf
-	fBl 3 ly .at "▐" .write 
-	bg1 fTx 5 ly .at mw 9 - lt lwrite ;
+	bg1 fw .nsp fx .col
+	fBl "▐" .write bg1 fTx .sp fw 5 - lt lwrite ;
 :r.head
-	3 ly .at fPr "*  " .write fMu mw 8 - lt lwrite ;
+	fPr "*  " .write fMu fw 4 - lt lwrite ;
 :r.ok
-	3 ly .at fGr "  + " .write fMu mw 10 - lt lwrite ;
+	fGr "  + " .write fMu fw 6 - lt lwrite ;
 :r.err
-	3 ly .at fRd "  x " .write mw 10 - lt lwrite ;
+	fRd "  x " .write fw 6 - lt lwrite ;
 :r.out
-	5 ly .at fPu "▐" .write bg0 fTx .sp mw 12 - lt lwrite ;
+	.sp .sp fPu "▐" .write bg0 fTx .sp fw 8 - lt lwrite ;
 :r.note
-	3 ly .at fMu "  " .write mw 8 - lt lwrite ;
+	fMu "  " .write fw 4 - lt lwrite ;
 :r.title
-	5 ly .at fPr .Bold mw 10 - lt lwrite .NBold ;
+	.sp .sp fPr .Bold fw 6 - lt lwrite .NBold ;
 :r.cmd
-	3 ly .at fBl "  " .write
+	fBl "  " .write
 	lt ( c@+ $ff and 32 >? .emit ) drop 1-
-	fMu mw 16 - swap lwrite ;
+	fMu fw 12 - swap lwrite ;
 
-:rline | entry y --
-	'ly ! dup $ff and swap 8 >> 'lt !
+:rowt | i --
+	i0 + i1 >=? ( drop ; )
+	3 << 'tl + @
+	dup $ff and swap 8 >> 'lt !
 	bg0
 	1 =? ( drop r.user ; )
 	2 =? ( drop r.head ; )
@@ -394,65 +95,55 @@
 	drop ;
 
 :drawlines
-	py 3 - 'vis !
+	fh 'vis !
 	ntl vis - scroll - 0 max dup 'i0 !
 	vis + ntl min 'i1 !
-	i0 ( i1 <?
-		dup 3 << 'tl + @
-		over i0 - 3 +
-		rline
-		1+ ) drop ;
+	fhome 'rowt vis .lines ;
 
 :drawhead
-	bg0 fDi 3 2 .at mw 4 - 45 .nch
-	3 1 .at fPr .Bold "# " .write fTx "r3repl" .write .NBold
+	fhome bg0 fPr .Bold "# " .write fTx "r3repl" .write .NBold
 	fMu "  -  " .write 'pname .write
-	fMu mw 20 - 1 .at 18 fmtname sn "stack %d  [%s]" sprint rwrite ;
+	fx fw + 19 - fy .at fMu 18 fmtname sn "stack %d  [%s]" sprint rwrite
+	fx fy 1+ .at fDi fw 45 .nch ;
 
-|---------------- dibujo: sidebar
-#sx 0 #sy 0
-
-:sline | "txt" --
-	sx sy .at .write 1 'sy +! ;
-
+|---------------- dibujo: sidebar (frame: right zone)
 :sec | "titulo" --
-	1 'sy +!
-	fPr .Bold sline .NBold ;
+	fcr fPr .Bold .lw .NBold ;
+
+:bul | "txt" --
+	fGr "*" .write fMu .sp fw 2 - swap lwrite fcr ;
 
 :sstack
 	"Stack" sec
-	sn 0? ( fDi "(empty)" sline ) drop
+	sn 0? ( fDi "(empty)" .lw ) drop
 	0 ( sn <? 8 <?
 		fMu sn 1- over - 3 << 'sstk + @ dup 'sbf fmt n>>0 sprint
-		sline 1+ ) drop ;
+		.lw 1+ ) drop ;
 
 :sdefs
 	"Definitions" sec
-	dnn 0? ( fDi "(none)" sline ) drop
+	dnn 0? ( fDi "(none)" .lw ) drop
 	0 ( dnn <? 6 <?
-		fMu dup 3 << 'dnp + @ "> %s" sprint sline
+		fMu dup 3 << 'dnp + @ "> %s" sprint .lw
 		1+ ) drop ;
 
 :slibs
 	"Libraries" sec
-	fGr sx sy .at "*" .write fMu " base" .write 1 'sy +!
-	ninc 0? ( fDi "  + added as needed" sline ) drop
+	"base" bul
+	ninc 0? ( fDi "  + added as needed" .lw ) drop
 	0 ( ninc <? 6 <?
-		fGr sx sy .at "*" .write fMu " " .write
-		dup 7 << 'incs + 4 + sw 6 - swap lwrite 1 'sy +!
+		dup 7 << 'incs + 4 + bul
 		1+ ) drop ;
 
 :sinfo
 	"r3" sec
-	fMu "real execution" sline
-	fMu "mem/repl.r3  mem/repl.out" sline ;
+	fMu "real execution" .lw
+	fMu "mem/repl.r3  mem/repl.out" .lw ;
 
 :drawside
-	sw 0? ( drop ; ) drop
-	bg1 mw 1+ 1 sw rows 1- .boxf
-	mw 3 + 'sx ! 2 'sy !
-	fTx .Bold "r3repl" sline .NBold
-	fMu 'pname "project %s" sprint sline
+	bg1 .wfill 2 1 flpad fhome
+	fTx .Bold "r3repl" .lw .NBold
+	fMu 'pname "project %s" sprint .lw
 	sstack sdefs slibs sinfo ;
 
 |---------------- autocompletado
@@ -571,51 +262,46 @@
 	'inp cur + c@ 0? ( drop ; ) drop
 	1 'cur +! kbks ;
 
+
 |---------------- dibujo: prompt, popup, footer
-:drawprompt
-	0 ( 4 <?
-		fBl px py pick2 + .at "▐" .write
-		bg2 px 1+ py pick2 + pw 1- 1 .boxf
-		1+ ) drop
-	bg2 px 3 + py 1+ .at
+:drawprompt | frame: x y w ; uses 4 rows
+	fx 'px ! fy 'py ! fw 'pw !
+	fhome bg2 4 ( 1? 1- fBl "▐" .write bg2 fw 1- .nsp fcr ) drop
+	bg2 fx 3 + fy 1+ .at
 	inplen 0? ( fDi "Type an R3Forth expression  (e.g. 2 3 + dup *)" .write )
-	1? ( fTx pw 5 - 'inp lwrite ) drop
-	bg2 px 3 + py 2 + .at
-	|fBl .Bold "Repl" .write .NBold fMu "  r3" .write 
-	bg0 ;
+	1? ( fTx fw 5 - 'inp lwrite ) drop
+	bg0 fx 3 + cur + fy 1+ .at .savec tuC! ;
 
 :pbg | i -- ; fondo segun seleccion
 	psel =? ( drop bg3 ; ) drop bg1 ;
 :pc | i -- ; color del nombre
 	psel =? ( drop fPr ; ) drop fTx ;
 
+#pdef ( 16 0 0 0 26 2 0 0 )	| tabla del popup: nombre, descripcion (ancho segun pw), libreria
+
 :prow | i --
 	dup pbg
-	dup 7 << 'prw + 'pe !
-	dup pn - py + 'ry !
-	px ry pw 1 .boxf
-	dup pc
-	px 2 + ry .at pe .write
-	fMu px 19 + ry .at pw 48 - pe 32 + lwrite
-	fDi px pw + 28 - ry .at 26 pe 72 + rwrite
+	fw .nsp fx .col .sp .sp
+	dup pc dup 7 << 'prw + 'pe !
+	pe cell
+	fMu pe 32 + cell
+	fDi pe 72 + cell
 	drop ;
 
 :drawpopup
 	pn 0? ( drop ; ) drop
-	0 ( pn <? dup prow 1+ ) drop ;
+	pw 48 - 1 max 255 min 'pdef 2 + c!
+	px py pn - pw pn flx!
+	'pdef tcols fhome
+	'prow pn .lines ;
 
 #spin "|" "/" "-" "\" ( 0 )
 
 :drawfoot
-	bg0 1 rows cols 1 .boxf
-	2 rows .at
+	bg0 fx fy fw 1 .boxf fx 1+ fy .at
 	busy 1? ( fPr 'spin sf 4 mod n>>0 .write fMu " running r3..." .write 1 'sf +! )
 	0? ( fDi "~/r3" .write ) drop
-	cols 74 >=? ( fDi cols 68 - rows .at 66 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal  " rwrite ) drop ;
-
-:drawcommon
-	drawpopup drawfoot
-	px 3 + cur + py 1+ .at .showc .flush ;
+	cols 74 >=? ( fDi cols 68 - fy .at 66 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal  " rwrite ) drop ;
 
 |---------------- dibujo: pantallas
 :drawlogo | y -- 
@@ -624,30 +310,44 @@
 	bg0 fTx ;
 
 :draw-home
+	1 flxS drawfoot
 	cols 6 - 72 min 'pw ! cols pw - 2/ 1+ 'px ! rows 2/ 'py !
 	py 9 - drawlogo
 	fMu 1 py 4 - .at cols "interactive R3Forth environment" cwrite
 	fMu 1 py 3 - .at cols 'pname "project: %s" sprint cwrite
-	drawprompt
+	px py pw 4 flx! drawprompt
 	fTx px py 6 + .at "tab" .write fDi " complete     " .write
 	fTx "/words" .write fDi " search     " .write
 	fTx "/help" .write fDi " commands" .write
-	drawcommon ;
+	drawpopup ;
 
 :draw-sess
-	mw 4 - 'pw ! 3 'px ! rows 6 - 'py !
-	drawhead drawlines drawside drawprompt
-	drawcommon ;
+	1 flxS drawfoot
+	sw 1? ( dup flxE drawside ) drop
+	2 flxN 2 0 flpad drawhead
+	6 flxS 2 0 flpad drawprompt
+	flxRest 2 0 flpad drawlines
+	drawpopup ;
 
-:draw
-	layout
-	.hidec bg0 fTx .cls
+:drawscr
+	flx layout
+	bg0 fTx .cls
 	ntl 0? ( drop draw-home ; ) drop
 	draw-sess ;
 
+:frame | redraw now (during a long operation)
+	.cl .hidec tui drawscr .restorec .showc .flush ;
+
+|---------------- guardar el proyecto (core devuelve ok)
+:savefail
+	'ppath "could not save %s  (paths are relative to where r3 runs; mkdir failed?)" sprint 4 tl+ ;
+
+:psave | --
+	proj-save 0? ( drop savefail ; ) drop ;
+
 |---------------- evaluacion real
 :tstep | "txt" style --
-	tl+ 1 'busy ! draw 60 ms ;
+	tl+ 1 'busy ! frame 60 ms ;
 
 :stack$ | -- 'str ; stack text in the current format (valid until the next write to here)
 	mark
@@ -721,8 +421,8 @@
 		dnn 'dnn0 !
 		ga defs+ ga regnames
 		dnn0 ( dnn <? dup 3 << 'dnp + @ "defined      %s" sprint 3 tstep 1+ ) drop ) drop
-	gk 0 <>? ( proj-save ) drop
-	ninc ninc0 <>? ( proj-save ) drop
+	gk 0 <>? ( psave ) drop
+	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
 	stack$ 5 tstep
 	"" 0 tstep ;
@@ -819,7 +519,7 @@
 	"" 0 tl+ ;
 
 :cmd-save
-	proj-save
+	psave
 	'ppath "saved to %s" sprint 6 tl+
 	"" 0 tl+ ;
 
@@ -827,7 +527,7 @@
 	trim tok drop
 	'tk namecheck 0? ( drop "invalid name (a-z 0-9 _ -, up to 30)" 4 tl+ "" 0 tl+ ; ) drop
 	'tk 'tk 'pdir "%s%s/%s.r3" sprint filexist 1? ( drop "already exists: /load name" 4 tl+ "" 0 tl+ ; ) drop
-	'tk setproj mkproj proj-clear proj-save switched
+	'tk setproj mkproj proj-clear psave switched
 	pinfo ;
 
 :cmd-load | arg --
@@ -866,7 +566,7 @@
 	'tk setproj mkproj
 	pbuf 'ofile load 0 swap c!
 	pbuf proj-parse
-	proj-save switched
+	psave switched
 	'ofile "base code: %s" sprint 6 tl+
 	pinfo ;
 
@@ -893,7 +593,7 @@
 	"error.log" delete ;
 
 :cmd-run
-	proj-save
+	psave
 	.masb .reset .cls .flush
 	'ppath r3run
 	.reterm
@@ -904,7 +604,7 @@
 	"project launched" 6 tl+ "" 0 tl+ ;
 
 :cmd-edit
-	proj-save
+	psave
 	'ppath 'menubuf strcpy
 	'menubuf 1024 "mem/menu.mem" save
 	.masb .flush
@@ -912,23 +612,6 @@
 	.reterm .alsb .flush
 	proj-load drop
 	pinfo ;
-
-:names-rebuild | rebuilds the defined-names list from the project text
-	0 'dnn ! 'dnpool 'dnpool> !
-	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln 'lo2 lkind 2 =? ( 'lo2 regnames ) drop
-		nextl ) 2drop ;
-
-#delp 0
-:keepline | appends 'lo2 to the project unless it starts with delp
-	'lo2 delp =pre nip 1? ( drop ; ) drop 'lo2 defs+ ;
-
-:defs-del | "prefix" -- ; removes the lines that start with prefix
-	'delp !
-	defs pbuf strcpy
-	defs 'defs> ! 0 defs c! 0 'defl !
-	pbuf ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln keepline nextl ) 2drop ;
 
 #hname 0
 #pfx * 64
@@ -949,14 +632,14 @@
 	hname ":%s " sprint 'pfx strcpy
 	trim
 	dup c@ 0? ( 2drop hook-show "" 0 tl+ ; ) drop
-	"off" over = 1? ( 2drop 'pfx defs-del names-rebuild proj-save "hook removed" 6 tl+ "" 0 tl+ ; ) drop
+	"off" over = 1? ( 2drop 'pfx defs-del names-rebuild psave "hook removed" 6 tl+ "" 0 tl+ ; ) drop
 	ninc 'ninc0 !
 	'pfx defs-del
 	hname ":%s %s ;" sprint 'lo2 strcpy
 	'lo2 scaninc 'lo2 defs+
 	names-rebuild
 	hook-check 0? ( drop 'pfx defs-del names-rebuild ninc0 'ninc ! "hook rejected" 6 tl+ "" 0 tl+ ; ) drop
-	proj-save hook-show "" 0 tl+ ;
+	psave hook-show "" 0 tl+ ;
 
 :showfmt
 	fmtname "format: %s" sprint 6 tl+
@@ -1046,7 +729,7 @@
 	pbuf "mem/repl.last" load 0 swap c!
 	'tk pbuf trim copynom
 	'tk namecheck 0? ( "scratch" 'tk strcpy ) drop
-	'tk setproj proj-ensure proj-load drop proj-remember
+	'tk setproj proj-ensure 0? ( savefail ) drop proj-load drop proj-remember
 	hist-load ;
 
 |---------------- entrada de teclado
@@ -1061,6 +744,8 @@
 	0 'inp c! 0 'cur ! 0 'pn !
 	dup c@ $ff and $2f =? ( drop docmd fin ; ) drop
 	real-eval fin ;
+
+:quit! 1 'quit ! exit ;
 
 :clampscroll
 	scroll ntl rows 8 - - 0 max min 0 max 'scroll ! ;
@@ -1083,26 +768,31 @@
 	[pgup] =? ( drop 5 'scroll +! clampscroll ; )
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( kins popup! ; )
-	$3 =? ( 1+ ) $4 =? ( 1 'quit ! ) | ctrl+c +d
+	$3 =? ( 1+ ) $4 =? ( quit! ) | ctrl+c +d
 	drop ;
 
-:initmem | big buffers (>8192) are reserved in the boot: tp defs pbuf lbuf recs hold the address
+|---------------- pantalla (tui): tecla -> dibujo
+:dokey
+	uikey 0? ( drop ; )
+	0 'uikey !
+	onkey ;
+
+:replscr
+	dokey drawscr ;
+
+:initmem | big buffers (>8192) are reserved in the boot: tp recs
 	here
 	dup 'tp ! $20000 +
-	dup 'defs ! $20000 +
-	dup 'pbuf ! $20000 +
-	dup 'lbuf ! $4000 +
 	dup 'recs ! 16384 +
 	'here !
-	tp 'tp> ! defs 'defs> ! 0 defs c! ;
+	tp 'tp> ! ;
 
 :main
-	initmem
+	core-init gen-init initmem
 	proj-boot
 	.alsb
-	( quit 0? drop
-		draw getch onkey
-		) drop
+	( quit 0? drop 'replscr onTui ) | ESC ends onTui: it only closes the popup, so it is started again
+	drop
 	.masb .showc .Reset .flush ;
 
 : main ;

@@ -3,6 +3,7 @@
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
 ^./noise.r3
+^./osc.r3
 
 |============================================================
 | PARAMETROS (0.0..1.0 fixed salvo aclaracion). Editables por UI o presets.
@@ -73,54 +74,20 @@
 |============================================================
 | OSCILADORES : fp(0.0..1.0 fixed) -- v(-1.0..1.0 fixed)
 |============================================================
-:fxNoiseSample | -- v
-	-1.0 1.0 randminmax ;
-
 :fxOscSqr | fp -- v
 	sduty <? ( drop 0.5 ; ) drop -0.5 ;
 
-:fxOscTri | fp -- v
-	$8000 and? ( $ffff xor ) 2 << 1.0 - ;
-
-:fxOscSaw | fp -- v
-	2* 1.0 - ;
-:fxOscSin | fp -- v
-	sin ;
 :fxOscNoise | fp -- v
-	drop fxNoiseSample ;
-:fxOscPul25 | fp -- v
-	0.25 >? ( -1.0 nip ; ) 1.0 nip ;
-:fxOscPul10 | fp -- v
-	0.1 >? ( -1.0 nip ; ) 1.0 nip ;
-:fxOscSawRev | fp -- v
-	1.0 swap - 2* 1.0 - ;
-:fxOscSinF | fp -- v
-	2* 1.0 - dup *. 2* 1.0 - ;
-:fxOscTrap | fp -- v
-	0.25 <? ( 2 << ) 0.75 >? ( 2 << 4.0 - ) 2* 1.0 - ;
-:fxOscHSin | fp -- v
-	sin abs ;
-:fxOscSin2 | fp -- v
-	sin dup *. ;
-:fxOscSin3 | fp -- v
-	sin dup dup *. *. ;
-:fxOscParab | fp -- v
-	dup *. 2* 1.0 - ;
-:fxOscSSaw2 | fp -- v
-	2* 1.0 - dup 1.01 *. 2* 1.0 - + 2/ ;
-:fxOscSSaw3 | fp -- v
-	dup 2* 1.0 - swap dup 0.99 *. 2* 1.0 - + swap 1.01 *. 2* 1.0 - + 0.333 *. ;
-:fxOscSSawF | fp -- v
-	dup 2* 1.0 - swap dup *. 2* 1.0 - + 2/ ;
-:fxOscPink | fp -- v			| ruido rosa (Voss-McCartney, pnoise1); pnoise de noise.r3 sale blanco
-	drop pnoise1 ;
+	drop wnoise ;
+:fxOscPink | fp -- v
+	drop pnoise ;
 :fxOscBrown | fp -- v
-	drop bnoise 3 * ;		| bnoise sale en +-0.27
+	drop bnoise3 ;
 
 | indice = p_wave
-#fxwaves 'fxOscSqr 'fxOscSaw 'fxOscSin 'fxOscNoise 'fxOscTri
-'fxOscPul25 'fxOscPul10 'fxOscSawRev 'fxOscSinF 'fxOscTrap 'fxOscHSin 'fxOscSin2 'fxOscSin3 'fxOscParab
-'fxOscSSaw2 'fxOscSSaw3 'fxOscSSawF 'fxOscPink 'fxOscBrown
+#fxwaves 'fxOscSqr 'oscSaw 'oscSin 'fxOscNoise 'oscTri
+'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin2 'oscSin3 'oscParab
+'oscSuperSaw2P 'oscSuperSaw3P 'oscFakeSuperSaw 'fxOscPink 'fxOscBrown
 
 :fxOsc | fp -- v
 	p_wave 0 max 18 min 3 << 'fxwaves + @ ex ;

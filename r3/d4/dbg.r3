@@ -198,71 +198,12 @@
 	'statusline strcpybuf ;
 
 
-:playshow
-	ftokenIP 
-	dup 48 >> $ff and codenow <>? ( 2drop ; ) drop
-	|dup 
-	24 >> $ffff and fuente + tuiposq!
-	
-	.cl .hidec tui
-	.reset .cls
-	1 flxN
-	fx fy .at 5 .bc 'topline .write
-	
-	6 flxS
-	fx fy .at 'statusline .write 
-	|.cr scrMsg
 
-|	paneldraw
-	
-	flxRest 
-	tuReadCode 
 
-	|tokenCursor	| ftokenIP
-	.showc
-	.flush
-	;
 
-| play only in the source
-:playmode
-	0 'statusline c!
-	ftokenIP 48 >> $ff and 'codenow !
-	*>play
-| wait for play
-	( vmState 0? drop ) drop
-| until stop or error
-	( vmState 1 =? drop
-		inkey
-		[esc] =? ( *>stop drop ; )
-		[f5] =? ( *>stop )
-		[f7] =? ( *>stop )
-		[f8] =? ( *>stop )
-		[f9] =? ( *>stop )
-		drop
-		playshow
-		)
-	$ff >? (
-		ftokenIP
-		dup 48 >> $ff and showcode
-		24 >> $ffff and fuente + tuipos!
-		runtimerror )
-	drop
-|	*>stop
-| land in src
-	( ftokenIP 1? | 0=break
-		48 >> $ff and codenow <>?
-		*>stepo drop ) drop
-	tuR! | redraw
-	;
 
-:runtocursor
-	fuente> fuente - | pos in src
-	findtoken
-	ftoken>token
-	dup addBP
-	playmode
-	delBP
-	;
+
+
 
 :stepout
 	vmIP memtokn
@@ -380,9 +321,7 @@
 :drawhead
 	8 .bc 15 .fc
 	fx fy .at fw .ndel
-	" r3dbg | " .write
-	'topline .write 
-	;
+	" r3dbg | " .write 'topline .write ;
 
 :drawfoot
 	fx fy .at fw .ndel
@@ -403,6 +342,75 @@
 
 	flxRest
 	tuReadCode
+	;
+	
+	
+:playshow
+	ftokenIP 
+	dup 48 >> $ff and codenow <>? ( 2drop ; ) drop
+	|dup 
+	24 >> $ffff and fuente + tuiposq!
+|	.reset .cls tui drawscreen .flush
+|; :A	
+	.cl .hidec tui
+	.reset .cls
+
+	34 flxE
+	drawside
+
+	1 flxN
+	drawhead
+
+	1 flxS
+	drawfoot
+
+	flxRest
+	tuReadCode
+
+	|tokenCursor	| ftokenIP
+	.showc
+	.flush
+	;
+
+| play only in the source
+:playmode
+	0 'statusline c!
+	ftokenIP 48 >> $ff and 'codenow !
+	*>play
+| wait for play
+	( vmState 0? drop ) drop
+| until stop or error
+	( vmState 1 =? drop
+		inkey
+		[esc] =? ( *>stop drop ; )
+		[f5] =? ( *>stop )
+		[f7] =? ( *>stop )
+		[f8] =? ( *>stop )
+		[f9] =? ( *>stop )
+		drop
+		playshow
+		)
+	$ff >? (
+		ftokenIP
+		dup 48 >> $ff and showcode
+		24 >> $ffff and fuente + tuipos!
+		runtimerror )
+	drop
+|	*>stop
+| land in src
+	( ftokenIP 1? | 0=break
+		48 >> $ff and codenow <>?
+		*>stepo drop ) drop
+	tuR! | redraw
+	;
+
+:runtocursor
+	fuente> fuente - | pos in src
+	findtoken
+	ftoken>token
+	dup addBP
+	playmode
+	delBP
 	;
 	
 |------- keys
@@ -449,26 +457,23 @@
 	;
 
 :main
-	|'filename "mem/menu.mem" load drop
-	"r3/d4/test2.r3" 'filename strcpy
+	'filename "mem/menu.mem" load drop
+	|"r3/d4/test2.r3" 'filename strcpy
 
 	'filename run&loadinfo
 	'filename makemapdebug
 
-	here
-	'lmem !
-
-	clearbp
-
+	here 'lmem !	| panelmem
+	clearbp			| breakpoints
 	cntinc showcode
-
+	
+	slnormal
 	'maindb onTuia
 	debugend
 	;
 
-:
+: |------------------------
 .alsb
-slnormal
 main
 .masb .free
 ;

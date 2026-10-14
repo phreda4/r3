@@ -90,25 +90,19 @@
 'oscSin2 'oscParab 'oscFakeSuperSaw 'oscSuperSaw3P
 ##sfxnwaves 16			| ondas de sonido (nibble wave: 0..15)
 
-#sxwnames "square" "saw" "sine" "triangle" "pulse25" "pulse10" "saw-rev" "sine-fold" "trapezoid" "half-sine" "sine3" "supersaw" "sine2" "parabola" "fake-supersaw" "supersaw3"
-#sxnnames "white" "pink" "brown"
+##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin3" "SSaw2" "Sin2" "Parab" "FSaw" "SSaw3" "SuperSaw" "White" "Pink" "Brown" 0		| 0..15 ondas (= sfxwaves), 16 supersaw, 17 18 19 ruidos
+
+:sxname | 'lista n -- str
+	( 1? 1- swap >>0 swap ) drop ;
 
 ::sfxwavename | n -- "str"
-	0 max 15 min
-	'sxwnames swap ( 1? 1- swap >>0 swap ) drop ;
+	'sfxtnames swap 0 max 15 min sxname ;
 
 ::sfxnoisename | n -- "str"
-	0 max 2 min
-	'sxnnames swap ( 1? 1- swap >>0 swap ) drop ;
+	'sfxtnames swap 0 max 2 min 17 + sxname ;
 
-| ruidos normalizados (el marron sale mas bajo)
-:sxnWhite wnoise ;
-:sxnPink pnoise ;
-:sxnBrown bnoise 3 * ;
-#sxnoises 'sxnWhite 'sxnPink 'sxnBrown
-#sxtknoises 'wnoise 'pnoise1 'bnoise	| ruidos de pista (17 18 19)
+#sxnoises 'wnoise 'pnoise 'bnoise3		| blanco rosa marron (normalizados)
 
-##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin3" "SSaw2" "Sin2" "Parab" "FSaw" "SSaw3" "SuperSaw" "White" "Pink" "Brown" 0
 
 |--------------------------------------------------------------- estado
 #sxinsT #sxinsN		| instrumentos de efectos: tonos con barrido / ruido
@@ -317,7 +311,7 @@
 	sxtunesclear sxtkreset
 	0 'sxfxn ! 0 'sxfxused !
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
-	0.001 0.05 0.0 0.05 packADSR 'sxnWhite inoise 'sxinsN !
+	0.001 0.05 0.0 0.05 packADSR 'wnoise inoise 'sxinsN !
 	sxvolume smmaster!
 	'sxtick 'smtick ! ;
 
@@ -418,7 +412,7 @@
 	16 <? ( 3 << 'sfxwaves + @ sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ; )
 	16 =? ( drop 'oscSaw sxtk tkis @ smOSC!
 		sxtk tkdet @ sxtk tkis @ smAUX!  sxtk tkis @ sxtk tkins ! ; )
-	17 - 3 << 'sxtknoises + @ sxtk tkin @ smOSC!  sxtk tkin @ sxtk tkins ! ;
+	17 - 3 << 'sxnoises + @ sxtk tkin @ smOSC!  sxtk tkin @ sxtk tkins ! ;
 
 :sxtkopen | --			| crea los 3 instrumentos de la pista la primera vez
 	sxtk tkio @ -? ( drop
