@@ -4,7 +4,6 @@
 
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
-^./noise.r3
 ^./osc.r3
 
 |^r3/lib/trace.r3
@@ -66,7 +65,7 @@
 		d.env d@ d.Ddt d@ -
 		d.Sus d@ >? ( dup d.env d! 15 >> ; )
 		drop d.Sus d@ dup d.env d! 3 c.state c! 15 >> ; )
-	drop									| release (negativo = voz terminada, la borra playosc/playnoise/playsam)
+	drop									| release (negativo = voz terminada, la borra playosc/playsam)
 	d.env d@ d.Rdt d@ -
 	-? ( ; )
 	dup d.env d! 15 >> ;
@@ -129,15 +128,6 @@
 	d.fresam d@ + dup d.fresam d!
 	16 >> $ffff and
 	q.func @ ex out ;
-
-:playnoise
-	delaying 1? ( drop 0 ; ) drop
-	envelADSR -? ( 0 nip delvoicea ; ) 
-	
-	d.time d@ d.dtime d@ >? ( 4 c.state c! )
-	drop
-	q.func @ ex | noise sin ciclo |	fbrown 
-	out ;
 
 :interpolate | scr sample -- value
 	w@+ swap 2 + w@	| src v0 v1 | 2 + stereo!
@@ -234,7 +224,7 @@
 #ins_vel 1.0
 #ins_crv 0
 
-| ADSR en 2 celdas (v1 v2); iosc/inoise/isweep/isample/smASDR! las consumen tal cual
+| ADSR en 2 celdas (v1 v2); iosc/isweep/isample/smASDR! las consumen tal cual
 |  v1 = Attack | Decay<<32     v2 = Sustain | Release<<32      (campos de 32 bits, incremento por muestra 0.31)
 | A,D,R: segundos, 1 muestra .. horas, sin escalon | S: 0..1.0
 :tinc | seg -- inc
@@ -261,11 +251,6 @@
 ::iosc | v1 v2 osc -- n
 	instr> >a
 	'playosc a!+
-	a!+ iadsr 0 iend ;
-
-::inoise | v1 v2 noise -- n
-	instr> >a
-	'playnoise a!+
 	a!+ iadsr 0 iend ;
 
 ::isweep | v1 v2 osc -- n		| oscilador con pitch slide (ver smslide!)

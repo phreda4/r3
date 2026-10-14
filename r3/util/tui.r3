@@ -713,35 +713,33 @@
 ::fTx 4 cfg ;	::fMu 5 cfg ;	::fDi 6 cfg ;	::fPr 7 cfg ;
 ::fBl 8 cfg ;	::fPu 9 cfg ;	::fGr 10 cfg ;	::fRd 11 cfg ;	::fYe 12 cfg ;
 
-|--- cursor / linea 
+|--- cursor / linea -------------------------------------------------
 #tdef #tdef0
 
-::fhome | -- 
+::fhome | -- ; arriba-izquierda del panel
 	fx fy .at ;
-	
-::fcr | -- 
+::fcr | -- ; baja linea (y reinicia columnas de tabla)
 	.cr fx .col tdef0 'tdef ! ;
-	
-| "" --
+|--- lineas: "" -- (ancho fw, bajan linea) -----------------------------
 ::.lw	fw swap lwrite fcr ;
 ::.cw	fw swap cwrite fcr ;
 ::.rw	fw swap rwrite fcr ;
 
-| w n --
+|--- numeros: n w -- ----------------------------------------------------
 ::.nd .d swap .r. .write ;
 ::.nh .h swap .r. .write ;
 ::.nf .f swap .r. .write ;
 ::.nb .b swap .r. .write ;
 
-|--- panel 
+|--- panel ----------------------------------------------------------
 ::pan | "title" -- ; fondo bg1, padding 1, titulo en acento
 	bg1 .wfill 1 1 flpad fhome
 	fPr .Bold .write fcr .NBold fTx ;
 
-::.lines | 'v n -- 
+::.lines | 'v n -- ; v ( i -- ) escribe trozos de la fila i; lines agrega .nl
 	0 ( over <? pick2 over swap ex fcr 1+ ) 3drop ;
 
-|--- tabla: def = ( w just ... 0 ) just 0 izq 1 centro 2 der
+|--- tabla: def = ( w just ... 0 ) just 0 izq 1 centro 2 der -----------
 ::tcols | 'def --
 	dup 'tdef0 ! 'tdef ! ;
 ::cell | "" -- ; el color es el activo
@@ -751,7 +749,7 @@
 	0? ( drop lwrite .sp ; )
 	1 =? ( drop cwrite .sp ; )
 	drop rwrite .sp ;
-::row | "a|b|c" --
+::row | "a|b|c" -- ; fila completa desde texto separado por |
 	mark here swap
 	( c@+ 1? $7c =? ( 0 nip ) ,c ) ,c 0 ,c drop
 	( dup c@ 1? drop dup cell >>0 ) 2drop
@@ -759,38 +757,89 @@
 ::hdr | "a|b|c" --
 	fMu .Bold row .NBold fTx ;
 
-|--- texto ajustado: "" n wrap 
+|--- tabla con recuadro: mismo def que tcols, widths w ---------------
+| linea  ┌──┬──┐ / ├──┼──┤ / └──┴──┘  ;  fila  │ a │ b │
+| cada columna ocupa w+2 entre bordes; ancho total = tbw
+| bordes en fDi, el contenido usa el color de la fila (tbrowc) y el fondo activo
+:tbline | "l" "m" "r" -- ; linea horizontal
+	>r >r .write
+	tdef0 dup c@ $ff and
+	( 1? 2 + "─" .rep
+		2 + dup c@ $ff and
+		1? ( r@ .write ) )
+	2drop r> drop r> .write fcr ;
 
-#wp #wq #wch #wsp #wspc #we #wn #wc
+::tbw | -- n ; ancho total de la tabla con recuadro
+	1 tdef0
+	( dup c@ $ff and 1? 3 + rot + swap 2 + ) 2drop ;
 
-:wstep | -- 0/1 ; 0 = end 
-	wq c@ $ff and
+::tbtop fDi "┌" "┬" "┐" tbline ;
+::tbsep fDi "├" "┼" "┤" tbline ;
+::tbbot fDi "└" "┴" "┘" tbline ;
+
+:tbcol | 'color -- ; borde izquierdo de una columna y color del contenido
+	fDi "│" .write .sp ex ;
+
+::tbrowc | "a|b|c" 'color -- ; fila con recuadro, 'color = palabra de color
+	>r mark here swap
+	( c@+ 1? $7c =? ( 0 nip ) ,c ) ,c 0 ,c drop
+	( dup c@ 1? drop
+		r@ tbcol dup cell >>0 ) 2drop
+	( tdef c@ $ff and 1? drop			| columnas sin dato
+		r@ tbcol "" cell ) drop
+	fDi "│" .write r> drop fcr empty ;
+
+::tbrow | "a|b|c" -- ; fila con recuadro
+	'fTx tbrowc ;
+::tbhdr | "a|b|c" -- ; cabecera con recuadro
+	.Bold 'fMu tbrowc .NBold fTx ;
+
+|--- texto ajustado: "" n wrap ----------------------------------------
+| corta por palabra (o duro si no hay espacio) en fw columnas, UTF-8, \n corta
+| linea; escribe como mucho n lineas (usar fh).
+| sin variables: q = puntero, ch = columnas, p = inicio de linea (en la pila)
+
+:wstep | q ch -- q ch f ; avanza un caracter, f = 0 fin de linea
+	over c@ $ff and
+	0? ( ; )
 	32 <? ( drop 0 ; )
-	dup $c0 and $80 =? ( 2drop 1 'wq +! 1 ; ) drop
-	wch fw >=? ( 2drop 0 ; ) drop
-	32 =? ( wq 'wsp ! wch 'wspc ! ) drop
-	1 'wch +! 1 'wq +! 1 ;
+	$c0 and $80 =? ( drop swap 1+ swap 1 ; )	| byte de continuacion utf8
+	drop dup fw >=? ( drop 0 ; ) drop
+	1+ swap 1+ swap 1 ;
 
-:wcut | -- ; we (fin), wn (siguiente), wc (columnas)
-	wq c@ $ff and
-	0? ( drop wq 'we ! wq 'wn ! wch 'wc ! ; )
-	32 <? ( drop wq 'we ! wq 1+ 'wn ! wch 'wc ! ; )
-	32 =? ( drop wq 'we ! wq 1+ 'wn ! wch 'wc ! ; )
-	drop
-	wsp 0? ( drop wq 'we ! wq 'wn ! wch 'wc ! ; ) drop
-	wsp 'we ! wsp 1+ 'wn ! wspc 'wc ! ;
+:wscan | p -- q ch ; hasta fin de linea o fw columnas
+	0 ( wstep 1? drop ) drop ;
 
-:wlin | -- 
-	wp 'wq ! 0 'wch ! 0 'wsp !
-	( wstep 1? drop ) drop
-	wcut
-	wp we wp - .type
-	fw wc - 
-	1 <? ( drop ; )
-	.nsp ; 
+:wbrk | p q -- sp/0 ; ultimo espacio en [p,q)
+	( over >? 1- dup c@ $ff and 32 =? ( drop nip ; ) drop ) 2drop 0 ;
+
+:ncol | n b -- n' ; suma 1 si b no es byte de continuacion utf8
+	$ff and $c0 and $80 <>? ( drop 1+ ; ) drop ;
+
+:wcols | p e -- n ; columnas utf8 entre p y e
+	over - 0						| p L n
+	( over 1? drop
+		pick2 c@ ncol				| p L n'
+		rot 1+ -rot					| p' L n'
+		swap 1- swap				| p' L' n'
+		) drop nip nip ;
+
+:wcut | p q ch -- p c e s ; c columnas escritas, e fin del texto, s bytes a saltar
+	over c@ $ff and
+	0? ( drop swap 0 ; )			| fin de texto
+	33 <? ( drop swap 1 ; )			| salto de linea o espacio justo en el corte
+	drop pick2 pick2 wbrk			| p q ch sp
+	0? ( drop swap 0 ; )			| sin espacio: corte duro
+	nip nip 2dup wcols swap 1 ;		| p c sp 1
+
+:wlin | p -- n ; escribe una linea, devuelve el comienzo de la siguiente
+	dup wscan wcut					| p c e s
+	over + >r						| p c e        r: n
+	rot swap over - .type			| c
+	fw swap -
+	2 >=? ( .nsp r> ; )
+	1? ( .sp ) drop r> ;
 
 ::wrap | "" n --
-	swap 'wp !
-	( 1? wp c@ $ff and 1? drop
-		wlin wn 'wp ! fcr
-		1- ) 2drop ;
+	( 1? over c@ $ff and 0? ( 3drop ; ) drop
+		swap wlin fcr swap 1- ) 2drop ;

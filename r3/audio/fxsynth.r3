@@ -2,16 +2,15 @@
 | PHREDA-style, sin samples, todo sintetizado
 ^r3/lib/math.r3
 ^r3/lib/rand.r3
-^./noise.r3
 ^./osc.r3
 
 |============================================================
 | PARAMETROS (0.0..1.0 fixed salvo aclaracion). Editables por UI o presets.
 |============================================================
 ##fxfreqmul 8	| sfxr avanza el oscilador 8 veces por muestra: sin esto Freq 1.0 llega solo a 441 Hz (1 = como antes)
-##fxnwaves 19	| cantidad de formas de onda (fuera del bloque de parametros: fxPack los lee contiguos desde p_wave)
+##fxnwaves 12	| cantidad de formas de onda (fuera del bloque de parametros: fxPack los lee contiguos desde p_wave)
 
-##p_wave 0        | 0 sqr | 1 saw | 2 sin | 3 noise | 4 tri | 5.. ver fxwaves (19 formas de onda)
+##p_wave 0        | 0 sqr | 1 saw | 2 sin | 3 noise | 4 tri | 5.. ver fxwaves (12 formas de onda)
 ##p_attack  0.0
 ##p_sustain 0.3
 ##p_punch   0.0
@@ -77,20 +76,12 @@
 :fxOscSqr | fp -- v
 	sduty <? ( drop 0.5 ; ) drop -0.5 ;
 
-:fxOscNoise | fp -- v
-	drop wnoise ;
-:fxOscPink | fp -- v
-	drop pnoise ;
-:fxOscBrown | fp -- v
-	drop bnoise3 ;
-
 | indice = p_wave
-#fxwaves 'fxOscSqr 'oscSaw 'oscSin 'fxOscNoise 'oscTri
-'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin2 'oscSin3 'oscParab
-'oscSuperSaw2P 'oscSuperSaw3P 'oscFakeSuperSaw 'fxOscPink 'fxOscBrown
+#fxwaves 'fxOscSqr 'oscSaw 'oscSin 'oscWhite 'oscTri
+'oscPul2 'oscPul1 'oscSinF 'oscHSin 'oscSin3 'oscPink 'oscBrown
 
 :fxOsc | fp -- v
-	p_wave 0 max 18 min 3 << 'fxwaves + @ ex ;
+	p_wave 0 max 11 min 3 << 'fxwaves + @ ex ;
 
 |============================================================
 | DERIVACION DE PARAMETROS (reset)

@@ -10,7 +10,7 @@
 |  m g      jingle / game over        b  musica de fondo (2 voces en loop)    x  corta todo
 |  Esc      salir (imprime el sonido editado como datos listos para pegar)
 |
-| Cada sonido es un solo bloque (ver gamesfx.r3): los tonos y ruidos (kind 1 / 2) se editan aca;
+| Cada sonido es un solo bloque (ver gamesfx.r3): los tonos y ruidos (kind 1) se editan aca;
 | los kind 3 (fxsynth) se oyen igual pero se editan en fxdemo.r3 (boton Copy).
 
 ^r3/lib/console.r3
@@ -35,7 +35,7 @@
 | la tabla muestra 12 columnas logicas; kind/wave/crv viven empaquetados en el 1er dword
 #edit * 128		| copia del sonido en edicion (un kind 3 mide 128 bytes)
 #cur 0			| sonido en edicion
-#col 0			| columna seleccionada
+#col 1			| columna seleccionada (la 0 es el kind, no se edita)
 #vol 2.0
 #bgm1 -1 #bgm2 -1
 #vu 0
@@ -75,15 +75,13 @@
 	is3 1? ( drop cur saddr sfxplay ; ) drop 'edit sfxplay ;
 
 :clampcell | --
-	col 0 max 11 min 'col ! ;
+	col 1 max 11 min 'col ! ;
 
 |--------------------------------------------------------------- cambio de valores
 #adjd #adjc		| direccion (+1/-1) y multiplicador (1 fino / 10 grueso)
 
 :ahz | v -- v'		| semitonos (grueso: octavas x 1)
 	adjd adjc * fix. 12 / pow2. *. 20.0 max 20000.0 min ;
-:acol | v -- v'
-	adjd 1.0 * + 0.0 max 2.0 min ;
 :adur | v -- v'
 	0.01 adjc * adjd * + 0.005 max 4.0 min ;
 :awave | v -- v'
@@ -103,16 +101,11 @@
 :acrv | v -- v'
 	adjd + 0 max 3 min ;
 
-:kindfix | --			| tras cambiar el tipo: f0/f1 con sentido (tono: Hz ; ruido: color blanco)
-	kind@ 1 =? ( drop 1 gv 20.0 <? ( 440.0 1 sv 440.0 2 sv ) drop ; )
-	drop 0.0 2 sv ;
-
 :adjust | --
 	is3 1? ( drop ; ) drop
-	col 0 =? ( drop 3 kind@ - cur! kindfix ; ) drop
 	cur@ col
-	1 =? ( drop kind@ 2 =? ( 2drop ; ) drop ahz cur! ; )
-	2 =? ( drop kind@ 2 =? ( drop acol cur! ; ) drop ahz cur! ; )
+	1 =? ( drop ahz cur! ; )
+	2 =? ( drop ahz cur! ; )
 	3 =? ( drop adur cur! ; )
 	4 =? ( drop awave cur! ; )
 	5 =? ( drop avol cur! ; )
@@ -132,7 +125,8 @@
 :mutate | --
 	is3 1? ( drop ; ) drop
 	'edit >a
-	a> d@ 8 >> $f and 1 =? ( 4 0.85 1.2 mulcell 8 0.85 1.2 mulcell ) drop
+	4 0.85 1.2 mulcell
+	8 0.85 1.2 mulcell
 	12 0.85 1.15 mulcell
 	16 0.9 1.1 mulcell
 	a> 16 + dup d@ 1.0 min swap d! ;
@@ -187,7 +181,7 @@
 
 |--------------------------------------------------------------- pantalla
 #colx 3 9 15 21 26 37 42 47 52 57 62 67
-#pc #pv #pk
+#pc #pv
 
 :ms16 | v -- ms        | segundos 16.16 -> milisegundos redondeados
 	1000 * $8000 + 16 >> ;
@@ -228,11 +222,10 @@
 
 :ptxt | --
 	pc
-	0 =? ( drop pk 1 =? ( drop "tone " .write ; ) drop "noise" .write ; )
-	1 =? ( drop pk 1 =? ( drop pv 16 >> "%d" .print ; ) drop "-" .write ; )
-	2 =? ( drop pk 1 =? ( drop pv 16 >> "%d" .print ; ) drop pv 16 >> sfxnoisename .write ; )
+	1 =? ( drop pv 16 >> "%d" .print ; )
+	2 =? ( drop pv 16 >> "%d" .print ; )
 	3 =? ( drop pv ms16 "%d" .print ; )
-	4 =? ( drop pk 1 =? ( drop pv sfxwavename .write ; ) drop "-" .write ; )
+	4 =? ( drop pv sfxwavename .write ; )
 	5 =? ( drop pv pc16 "%d" .print ; )
 	6 =? ( drop pv ms16 "%d" .print ; )
 	7 =? ( drop pv 10000 * $8000 + 16 >> dup 10 / "%d" .print "." .write 10 mod "%d" .print ; )
@@ -242,9 +235,8 @@
 	drop pv "%d" .print ;
 
 :prow | --
-	0 gv 'pk !
 	1 8 .at .eline
-	0 ( 12 <? dup 'pc !
+	1 ( 12 <? dup 'pc !
 		pc gv 'pv !
 		pc 3 << 'colx + @ 8 .at
 		.Reset 7 .fc
@@ -257,7 +249,7 @@
 	.Reset 8 .fc
 	1 7 .at .eline
 	is3 1? ( drop 3 7 .at "kind 3 (fxsynth): se edita en fxdemo.r3" .write .Reset 1 8 .at .eline ; ) drop
-	3 7 .at "kind" .write  9 7 .at "f0Hz" .write  15 7 .at "f1Hz" .write  21 7 .at "dur" .write
+	9 7 .at "f0Hz" .write  15 7 .at "f1Hz" .write  21 7 .at "dur" .write
 	26 7 .at "wave" .write  37 7 .at "vol%" .write  42 7 .at "dly" .write  47 7 .at "A" .write
 	52 7 .at "D" .write  57 7 .at "S%" .write  62 7 .at "R" .write  67 7 .at "crv" .write
 	.Reset

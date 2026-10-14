@@ -5,7 +5,7 @@
 ^r3/util/immi.r3
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
-^./noise.r3
+^./osc.r3
 
 #aurate 44100 |48000 |
 #audevice 

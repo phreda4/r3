@@ -3,21 +3,21 @@
 |
 | Un SONIDO es un solo bloque de datos, escrito con la sintaxis de datos de 32 bits:
 |   ##nombre [ ... ]    (cada valor ocupa un dword; no hay terminador ni capas)
-| Es un tono (con barrido de frecuencia) o una rafaga de ruido: 10 valores. Los efectos
+| Es un tono con barrido de frecuencia (o una rafaga de ruido: ondas 9 10 11): 10 valores. Los efectos
 | compuestos (arpegios, repeticiones, filtros, vibrato) se hacen con kind 3.
 |
 |   $kwc  f0    f1    dur   vol   delay  A     D    S   R
 |   $103  200.0 70.0  0.09  0.14  0.0    0.001 0.09 0.0 0.005   <- tono
-|   $200  0.0   0.0   0.09  0.18  0.0    0.001 0.09 0.0 0.005   <- ruido (f1 = color)
+|   $190  440.0 440.0 0.09  0.18  0.0    0.001 0.09 0.0 0.005   <- ruido blanco (wave 9)
 |
 |   $kwc  primer valor, tres nibbles en hexa:  k = kind   w = wave   c = crv
 |         ej: kind=1 wave=10 crv=2 -> $1A2.  Un sonido con kind 0 no suena
-|   kind  1 tono, 2 ruido, 3 sonido de fxsynth (ver KIND 3)
-|   wave  forma de onda 0..15, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ...)
+|   kind  1 tono / ruido, 3 sonido de fxsynth (ver KIND 3)
+|   wave  forma de onda 0..11, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ... 9 10 11 ruido
+|         blanco rosa marron: ignoran f0 y f1)
 |   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
 |   f0    frecuencia inicial en Hz (16.16)
 |   f1    frecuencia final en Hz: el tono barre f0->f1 (exponencial) durante 'dur'
-|         en ruido: color 0.0 blanco, 1.0 rosa, 2.0 marron
 |   dur   duracion de la nota en segundos; despues se agrega la cola R
 |   vol   volumen 0..1 (16.16)
 |   delay retardo en segundos desde que se dispara el sonido
@@ -56,8 +56,8 @@
 |   sus parametros y su melodia; sirven para editores/sliders (ver chipa.r3).
 |   n sfxtrk -- rec          registro de la pista n. Los campos son variables de 64 bits (16.16) para
 |                            sliders y combos:  rec tkwave|tka|tkd|tks|tkr|tkvol|tkcrv|tkdet -- adr
-|   tkwave  (puede ir directo a uiCombo) onda 0..19, nombres en sfxtnames: 0..15 osciladores (igual que la
-|           columna wave de los sonidos), 16 supersaw de 7 osciladores, 17 18 19 ruido blanco rosa marron
+|   tkwave  (puede ir directo a uiCombo) onda 0..12, nombres en sfxtnames: 0..11 como la columna
+|           wave de los sonidos (9 10 11 = ruido blanco rosa marron), 12 supersaw de 7 osciladores
 |   tka tkd tks tkr   envolvente: ataque y decaimiento (s), sostenido (0..1), release (s)
 |   tkvol tkcrv       volumen (1.0) y curva de la envolvente (0 lineal .. 3 cuartica)
 |   tkdet             detune del supersaw: fraccion de la frecuencia (0.01 = 1%)
@@ -86,26 +86,20 @@
 ^./fxsynth.r3
 
 |--------------------------------------------------------------- tablas
-##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSawRev 'oscSinF 'oscTrap 'oscHSin 'oscSin3 'oscSuperSaw2P
-'oscSin2 'oscParab 'oscFakeSuperSaw 'oscSuperSaw3P
-##sfxnwaves 16			| ondas de sonido (nibble wave: 0..15)
+##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSinF 'oscHSin 'oscSin3 'oscWhite 'oscPink 'oscBrown
+##sfxnwaves 12			| ondas de sonido (nibble wave: 0..11)
 
-##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin3" "SSaw2" "Sin2" "Parab" "FSaw" "SSaw3" "SuperSaw" "White" "Pink" "Brown" 0		| 0..15 ondas (= sfxwaves), 16 supersaw, 17 18 19 ruidos
+##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SinFold" "HSin" "Sin3" "White" "Pink" "Brown" "SuperSaw" 0		| 0..11 ondas (= sfxwaves), 12 supersaw
 
 :sxname | 'lista n -- str
 	( 1? 1- swap >>0 swap ) drop ;
 
 ::sfxwavename | n -- "str"
-	'sfxtnames swap 0 max 15 min sxname ;
-
-::sfxnoisename | n -- "str"
-	'sfxtnames swap 0 max 2 min 17 + sxname ;
-
-#sxnoises 'wnoise 'pnoise 'bnoise3		| blanco rosa marron (normalizados)
+	'sfxtnames swap 0 max 11 min sxname ;
 
 
 |--------------------------------------------------------------- estado
-#sxinsT #sxinsN		| instrumentos de efectos: tonos con barrido / ruido
+#sxinsT			| instrumento de efectos: oscilador con barrido (tonos y ruidos)
 #sxclock 0		| muestra (absoluta) donde empieza el proximo bloque a generar
 #sxbstart 0		| inicio del bloque que se esta por generar
 #sxvolume 2.0		| master: con 2.0 'vol 1.0' de un sonido = fondo de escala
@@ -187,13 +181,11 @@
 :sxplaysound | 'sonido ratio --		| B = sonido
 	swap >b
 	l.k 0? ( 2drop ; )
-	1 =? ( drop
-		l.w 0 max 15 min 3 << 'sfxwaves + @ sxinsT sxsetins
-		l.f0 l.f1 l.dur sxslideof smslide!
-		l.f0 *. sxplaynote ; )
-	3 =? ( drop sxplayfx ; ) drop
-	l.f1 16 >> 0 max 2 min 3 << 'sxnoises + @ sxinsN sxsetins
-	drop 440.0 sxplaynote ;
+	3 =? ( drop sxplayfx ; )
+	1 <>? ( 2drop ; ) drop
+	l.w 0 max 11 min 3 << 'sfxwaves + @ sxinsT sxsetins
+	l.f0 l.f1 l.dur sxslideof smslide!
+	l.f0 *. sxplaynote ;
 
 |--------------------------------------------------------------- melodias
 | mini-notacion Strudel (eval.r3): cada ciclo se evalua una vez, los eventos se guardan y se
@@ -273,8 +265,8 @@
 
 |--------------------------------------------------------------- pistas: registro
 | 8 pistas x 128 bytes, campos de 64 bits: 0 wave (3 celdas: uiCombo usa var+8 y var+16 como estado)
-| 24 a 32 d 40 s 48 r 56 vol 64 crv 72 det (parametros, 16.16)  80 io 88 is 96 in (instrumentos
-| onda/supersaw/ruido, -1 = sin crear)  104 ins (el que suena)  112 id (melodia en curso, -1 = ninguna).
+| 24 a 32 d 40 s 48 r 56 vol 64 crv 72 det (parametros, 16.16)  80 io 88 is (instrumentos
+| onda y supersaw, -1 = sin crear)  96 ins (el que suena)  104 id (melodia en curso, -1 = ninguna).
 | Los instrumentos se crean la primera vez que se usa la pista.
 #sxtrks * 1024
 #sxtkn * 1024		| notas sostenidas: 128 bytes por pista (id de voz por nota midi)
@@ -292,16 +284,15 @@
 ::tkdet 72 + ;
 :tkio 80 + ;
 :tkis 88 + ;
-:tkin 96 + ;
-:tkins 104 + ;
-:tkid 112 + ;
+:tkins 96 + ;
+:tkid 104 + ;
 
 :sxtkreset | --
 	0 ( 8 <? dup sfxtrk 'sxtk !
 		0 sxtk tkwave !
 		0.002 sxtk tka !  0.05 sxtk tkd !  0.8 sxtk tks !  0.1 sxtk tkr !
 		1.0 sxtk tkvol !  0 sxtk tkcrv !  0.01 sxtk tkdet !
-		-1 sxtk tkio !  -1 sxtk tkis !  -1 sxtk tkin !  0 sxtk tkins !  -1 sxtk tkid !
+		-1 sxtk tkio !  -1 sxtk tkis !  0 sxtk tkins !  -1 sxtk tkid !
 		1+ ) drop
 	'sxtkn 0 1024 cfill ;
 
@@ -311,7 +302,6 @@
 	sxtunesclear sxtkreset
 	0 'sxfxn ! 0 'sxfxused !
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
-	0.001 0.05 0.0 0.05 packADSR 'wnoise inoise 'sxinsN !
 	sxvolume smmaster!
 	'sxtick 'smtick ! ;
 
@@ -407,23 +397,21 @@
 :sxtkset | n --			| envolvente al instrumento n
 	sxtkadsr rot smASDR! ;
 
-:sxtkwave | --			| funcion de onda segun tkwave (instrumento onda, supersaw o ruido)
-	sxtk tkwave @ 0 max 19 min
-	16 <? ( 3 << 'sfxwaves + @ sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ; )
-	16 =? ( drop 'oscSaw sxtk tkis @ smOSC!
-		sxtk tkdet @ sxtk tkis @ smAUX!  sxtk tkis @ sxtk tkins ! ; )
-	17 - 3 << 'sxnoises + @ sxtk tkin @ smOSC!  sxtk tkin @ sxtk tkins ! ;
+:sxtkwave | --			| funcion de onda segun tkwave (instrumento onda o supersaw)
+	sxtk tkwave @ 0 max 12 min
+	12 <? ( 3 << 'sfxwaves + @ sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ; )
+	drop 'oscSaw sxtk tkis @ smOSC!			| 12: supersaw de 7 osciladores
+	sxtk tkdet @ sxtk tkis @ smAUX!  sxtk tkis @ sxtk tkins ! ;
 
-:sxtkopen | --			| crea los 3 instrumentos de la pista la primera vez
+:sxtkopen | --			| crea los 2 instrumentos de la pista la primera vez
 	sxtk tkio @ -? ( drop
 		sxtkadsr 'oscSin iosc sxtk tkio !
 		sxtkadsr 'oscSaw sxtk tkdet @ isuper sxtk tkis !
-		sxtkadsr 'wnoise inoise sxtk tkin !
 		sxtkwave ; ) drop ;
 
 :sxtkapply | --
 	sxtkopen
-	sxtk tkio @ sxtkset  sxtk tkis @ sxtkset  sxtk tkin @ sxtkset
+	sxtk tkio @ sxtkset  sxtk tkis @ sxtkset
 	sxtkwave
 	sxtk tkid @ sxtk tkins @ sxtuneins
 	sxtk tkid @ sxtk tkvol @ sxtk tkcrv @ sxtunemix drop ;

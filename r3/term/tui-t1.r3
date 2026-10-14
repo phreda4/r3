@@ -13,6 +13,7 @@
 #cnam "fTx" "fMu" "fDi" "fPr" "fBl" "fPu" "fGr" "fRd" "fYe"
 
 #tdb ( 0 0 0 2 0 1 0 0 )	| tabla: 3 columnas (w just), w se calcula con fw
+#tdg ( 0 0 0 2 0 1 0 0 )	| tabla con recuadro, igual formato
 #ndat 9
 #dtable
 	"uno|alfa|ok"
@@ -71,6 +72,24 @@
 	fh 2 - clamp0 ndat min
 	0 ( over <? zebra 'dtable over n>>0 row 1+ ) 2drop ;
 
+|--- panel tabla con recuadro
+:tdefg | -- ; anchos segun fw (bordes y espacios = 10)
+	fw 10 - clamp0
+	dup 1 >> 1 max 255 min 'tdg c!
+	dup 3 * 10 / 1 max 255 min 'tdg 2 + c!
+	dup 1 >> over 3 * 10 / + - 1 max 255 min 'tdg 4 + c! ;
+
+:tablab
+	"Recuadro" pan
+	fw 14 <? ( drop "(angosto)" .lw ; ) drop
+	tdefg 'tdg tcols
+	tbtop
+	"nombre|valor|ok" tbhdr
+	tbsep
+	fh 5 - clamp0 ndat min
+	0 ( over <? zebra 'dtable over n>>0 tbrow 1+ ) 2drop
+	bg1 tbbot ;
+
 |--- panel texto 
 :texto
 	"Texto" pan
@@ -96,7 +115,10 @@
 	leftp
 	flxRest
 	fh 2/ flxN
-	tabla
+	flxpush
+	fw 2/ flxO tabla
+	flxRest tablab
+	flxpop
 	flxRest
 	texto ;
 

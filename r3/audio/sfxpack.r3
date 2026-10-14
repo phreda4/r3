@@ -1,8 +1,7 @@
 | sfxpack.r3 - sonidos listos para usar con gamesfx.r3
 | Un sonido es un solo bloque de datos, sin terminador (ver gamesfx.r3):
-|   tono / ruido (kind 1 / 2), 10 valores:  $kwc f0 f1 dur vol delay A D S R    k=kind w=wave c=crv, en hexa
-|   ruido: f1 = color 0.0 blanco 1.0 rosa 2.0 marron
-|   wave: 0 cuadrada 1 sierra 2 seno 3 triangulo 4 pulso25 5 pulso10 ...
+|   tono / ruido (kind 1), 10 valores:  $kwc f0 f1 dur vol delay A D S R    k=kind w=wave c=crv, en hexa
+|   wave: 0 cuadrada 1 sierra 2 seno 3 triangulo 4 pulso25 5 pulso10 ... 9 10 11 ruido blanco rosa marron
 |   fxsynth (kind 3), 32 valores: $300 ... vol delay ... y los 22 parametros p_wave..p_vol
 |   (se disenan en fxdemo.r3 y se copian con el boton Copy)
 |   Los efectos compuestos (arpegio, repeat, filtros, vibrato) son siempre kind 3.
@@ -10,13 +9,13 @@
 |---------------------------------------------------------------
 | PACK "FUTBOL": port de audio.c (tone/noise con decaimiento exponencial)
 | tone(f0,f1,dur,wave,vol) -> $10<wave>3 f0 f1 dur vol 0.0 0.001 dur 0.0 0.005
-| noise(dur,vol)          -> $200 0.0 0.0 dur vol 0.0 0.001 dur 0.0 0.005
+| noise(dur,vol)          -> $190 440.0 440.0 dur vol 0.0 0.001 dur 0.0 0.005   (wave 9 = ruido blanco)
 | (en C las llamadas se encolan una tras otra; aca los sonidos compuestos son una aproximacion
 |  kind 3 de un solo bloque: ajustar a oido en fxdemo.r3)
 |---------------------------------------------------------------
 ##sfx_kick [ $103 200.0 70.0 0.09 0.14 0.0 0.001 0.09 0.0 0.005 ]
 ##sfx_pass [ $103 320.0 140.0 0.06 0.09 0.0 0.001 0.06 0.0 0.005 ]
-##sfx_tackle [ $200 0.0 0.0 0.09 0.18 0.0 0.001 0.09 0.0 0.005 ]
+##sfx_tackle [ $190 440.0 440.0 0.09 0.18 0.0 0.001 0.09 0.0 0.005 ]
 ##sfx_save [			| chirp que sube: cuadrada 500->900 Hz, 0.08 s
 	$300 0.0 0.0 0.0 0.12 0.0 0.0 0.0 0.0 0.0
 	0 0.0 0.0939 0.3 0.1627  0.3751 0.0 0.2564 0.0  0.0 0.0  0.0 0.0  0.5 0.0  1.0 0.0 0.0  0.0 0.0  0.0 0.5
@@ -53,7 +52,7 @@
 	]
 ##sfx_explosion [			| explosion: ruido marron con pasa-bajos, 0.6 s
 	$300 0.0 0.0 0.0 0.6 0.0 0.0 0.0 0.0 0.0
-	18 0.0 0.2485 0.5 0.4504  0.5 0.0 0.0 0.0  0.0 0.0  0.0 0.0  0.5 0.0  0.55 0.0 0.0  0.0 0.0  0.0 0.5
+	11 0.0 0.2485 0.5 0.4504  0.5 0.0 0.0 0.0  0.0 0.0  0.0 0.0  0.5 0.0  0.55 0.0 0.0  0.0 0.0  0.0 0.5
 	]
 ##sfx_powerup [			| power up: cuadrada 330->784 Hz, 0.46 s
 	$300 0.0 0.0 0.0 0.2 0.0 0.0 0.0 0.0 0.0
