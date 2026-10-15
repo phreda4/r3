@@ -82,6 +82,8 @@
 	dup 'fy +! 2* neg 'fh +!
 	dup 'fx +! 2* neg 'fw +! ;
 	
+::fhome | -- ; arriba-izquierda del panel
+	fx fy .at ;	
 	
 |---- Events
 #vecdraw
@@ -243,9 +245,6 @@
 	'vecdraw ! | restore old draw
 	tuR! | redraw prev screen
 	;
-
-::onTuiNoExit
-	;
 	
 ::onTuiResize | vec --
 	'(resizevec) !
@@ -313,7 +312,7 @@
 	6 =? ( tuX! )
 	drop
 	kbBtn
-	fx fy .at
+	fhome
 	fw swap calign here .write 
 	.reset 1 'fy +!
 	tuX? 0? ( 2drop ; ) drop ex ;
@@ -424,7 +423,7 @@
 	;
 
 ::tuList | 'var list --
-	fx fy .at
+	fhome
 	mark makeindx
 	fh
 	mouList
@@ -466,7 +465,7 @@
 	.reset ;
 	
 ::tuListN | 'var listn --
-	fx fy .at
+	fhome
 	makeindxn
 	fh
 	mouList
@@ -551,7 +550,7 @@
 	.reset ;
 	
 ::tuTree | 'var list --
-	fx fy .at
+	fhome
 	mark maketree
 	fh
 	mouTree
@@ -635,7 +634,7 @@
 	tuiw1 drop
 	tuInputfoco
 	drop
-	fx fy .at
+	fhome
 	fw 2 <? ( 2drop ; ) 
 	swap lwrite
 	;
@@ -649,7 +648,7 @@
 	6 =? ( pick2 dup @ 1 xor swap ! tuX! tuR! )
 	dup .bc
 	drop
-	fx fy .at
+	fhome
 	over @ checkr .write .write 
 	.reset 1 'fy +!
 	tuif 0? ( 2drop ; ) drop
@@ -667,7 +666,7 @@
 	6 =? ( pick3 pick3 ! tuX! tuR! )
 	dup .bc
 	drop
-	fx fy .at
+	fhome
 	pick2 pick2 @ checkr .write .write 
 	.reset 1 'fy +!
 	tuif 0? ( 3drop ; ) drop
@@ -686,7 +685,7 @@
 		pick4 !
 		tuR! tuX! )
 	drop
-	fx fy .at fw "─" .rep
+	fhome fw "─" .rep
 	rot @ | min max var
 	pick2 - fw 2swap swap - */
 	fx + fy .at "●" .write
@@ -694,7 +693,7 @@
 
 |--- progress
 ::tuProgress | percent --
-	fx fy .at
+	fhome
 	100 clamp0max fw 100 */ "█" .rep
 	.reset 1 'fy +! ;
 
@@ -729,8 +728,7 @@
 |--- cursor / linea -------------------------------------------------
 #tdef #tdef0
 
-::fhome | -- ; arriba-izquierda del panel
-	fx fy .at ;
+
 ::fcr | -- ; baja linea (y reinicia columnas de tabla)
 	.cr fx .col tdef0 'tdef ! ;
 	

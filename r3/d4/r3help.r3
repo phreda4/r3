@@ -27,7 +27,7 @@
 	.bblack .cls
 	|___________
 	4 flxN
-	fx fy .at "[01R[023[03f[04o[05r[06t[07h [08Help" .awrite 
+	fhome "[01R[023[03f[04o[05r[06t[07h [08Help" .awrite 
 	|.tdebug |2dup " %d %d " .print
 	|___________
 	.reset

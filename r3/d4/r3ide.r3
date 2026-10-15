@@ -222,7 +222,7 @@
 	.eline
 	
 	1 flxS 
-	fx fy .at 
+	fhome 
 	" ^[7mESC^[27m Exit rx ^[7mENTER^[27m Word ^[7mDel^[27m Dicc | " .printe 
 	'helpword .write " | " .write
 	'msg .write
@@ -343,7 +343,7 @@
 	.eline
 	
 	1 flxS 
-	fx fy .at 
+	fhome
 	" ^[7mESC^[27m Exit manual | " .printe 
 	'helpword .write " | " .write
 	'infohelp .write
@@ -408,7 +408,7 @@
 	.eline
 	
 	1 flxS 
-	fx fy .at 
+	fhome
 	" ^[7mF2^[27m Help ^[7mF3^[27m Rx ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
 	'helpword .write
 	'msg .write

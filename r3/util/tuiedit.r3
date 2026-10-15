@@ -543,7 +543,7 @@
 	'fuente> ! ;
 
 :enterfind | -- ; pide texto a buscar (como filesearch en main.r3) y busca
-	fx fy .at 7 .fc 4 .bc .eline 
+	fhome 7 .fc 4 .bc .eline 
 	" find: " .write
 	.input
 	'pad c@ 0? ( drop ; ) drop

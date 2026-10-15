@@ -55,7 +55,7 @@
 
 :tuTable | 'var --
 	drop
-	fx fy .at
+	fhome
 	fx .col 'ttable1 table.head .cr 
 	'dtable1 
 	( dup c@ 1? drop

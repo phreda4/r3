@@ -16,7 +16,7 @@
 #px 0 #py 0 #pw 0		| prompt frame
 #tmp * 256
 #pe 0
-#busy 0 #sf 0 #quit 0 #zero 0
+#busy 0 #sf 0 #zero 0
 #fnd 0
 #nol 0
 
@@ -685,7 +685,7 @@
 	"/run" over = 1? ( 2drop cmd-run ; ) drop
 	"/clear" over = 1? ( 2drop cmd-clear ; ) drop
 	"/reset" over = 1? ( 2drop cmd-reset ; ) drop
-	"/exit" over = 1? ( 2drop 1 'quit ! ; ) drop
+	"/exit" over = 1? ( 2drop exit ; ) drop
 	drop "unknown command  -  /help" 4 tstep "" 0 tstep ;
 
 |---------------- historial (no se guarda con el proyecto)
@@ -745,8 +745,6 @@
 	dup c@ $ff and $2f =? ( drop docmd fin ; ) drop
 	real-eval fin ;
 
-:quit! 1 'quit ! exit ;
-
 :clampscroll
 	scroll ntl rows 8 - - 0 max min 0 max 'scroll ! ;
 
@@ -768,8 +766,8 @@
 	[pgup] =? ( drop 5 'scroll +! clampscroll ; )
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( kins popup! ; )
-	$3 =? ( 1+ ) $4 =? ( quit! ) | ctrl+c +d
-	[esc] =? ( quit! )
+	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
+	[esc] =? ( exit )
 	drop ;
 
 |---------------- pantalla (tui): tecla -> dibujo
@@ -787,8 +785,7 @@
 	core-init gen-init initmem
 	proj-boot
 	.alsb
-	( quit 0? drop 'replscr onTui ) | ESC ends onTui: it only closes the popup, so it is started again
-	drop
+	'replscr onTui 
 	.masb .showc .Reset .flush ;
 
 : main ;

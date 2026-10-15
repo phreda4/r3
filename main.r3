@@ -169,10 +169,8 @@
 :paneleditor
 	fuente c@ 0? ( drop ; ) drop
 	|tuwin $1 'fullpath .wtitle
-	fx fy .at 
-	8 .bc 15 .fc .sp 'fullpath .write .eline
-	1 'fy +! -1 'fh +!
-	|1 1 flpad 
+	bg0 fPr fhome .sp 'fullpath .write .eline
+	1 2 flpad
 |	tuEditCode
 	tuReadCode
 	;
@@ -212,20 +210,12 @@
 	
 	|___________
 	4 flxN
-	fx fy .at banner 
+	fhome banner 
 	|.tdebug |2dup " %d %d " .print
 	|tk "%h" .print 'fullpath .write
-	8 .bc 15 .fc 
 	1 flxS
-	fx fy .at .sp
-	.rev "H" .write .nrev "elp  " .write 
-	.rev "R" .write .nrev "un  " .write 
-	.rev "E" .write .nrev "dit  " .write 
-	.rev "N" .write .nrev "ew  " .write 
-	.rev "I" .write .nrev "mm  " .write 	
-	.rev "/" .write .nrev "Search  " .write 
-|	.eline .cr 
-|	.eline .cr
+	bg0 fDi fhome
+	" ^help  ^run  ^edit  ^new  ^imm  /Search  " .write 
 	.eline
 	|___________
 	38 flxO
