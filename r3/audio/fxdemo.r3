@@ -261,14 +261,14 @@
 		fxlistnow =? ( stLink ) 
 		1+ ) drop ;
 	
-#wavelist "Sqr" "Saw" "Sin" "Nse" "Tri" "Pul25" "Pul10" "SawRev" "SinFold" "Trap" "HSin" "Sin2" "Sin3" "Parab" "SSaw2" "SSaw3" "SSawF" "Pink" "Brown"
+#wavelist "Sqr" "Saw" "Sin" "White" "Tri" "Pul25" "Pul10" "SinFold" "HSin" "Sin3" "Pink" "Brown"
 
 :wavename | n -- "str"
 	'wavelist swap ( 1? 1- swap >>0 swap ) drop ;
 
 :wavebtns
 	2 2 uiPading
-	8 3 uiGrid
+	6 3 uiGrid
 	0 ( fxnwaves <?
 		p_wave =? ( stWarn )
 		[ dup 'p_wave ! fxPlay ; ] over wavename uiCBtn
@@ -290,6 +290,9 @@
 	0.05 %h uiN
 	"FX Generator" uiLabelC
 	ui--
+
+	txh 2 + 3 * uiS
+	wavebtns
 	
 	0.2 %w uiO
 	uiPush
@@ -320,7 +323,7 @@
 	|---- zona central: parametros (dos columnas etiquetas | sliders) arriba, tipos sfx abajo
 	0.7 %w uiO
 	uiPush
-	txh 2 + 16 * uiN
+	txh 2 + 18 * uiN
 	uiPush
 	0.12 %w uiO
 	"* Envelope *" uiLabelC
@@ -386,18 +389,11 @@
 	0.0 1.0 'p_repeat uiSliderf 	exPlay
 	0.0 1.0 'p_vol uiSliderf		exPlay
 	uiPop
-	
-	txh 2 + 3 * uiN
-	|ui-- "* Wave *" uiLabelC
-	|uiRest
-	wavebtns
 	uiPop
-
+	
 	uiRest
 	listfx
-	
 	smupdate
-
 	uiEnd
 	SDLredraw
 	SDLkey

@@ -25,16 +25,18 @@
 
 #pinkc
 #pink * 16
-::oscPink							| rosa: Voss-McCartney
-	drop pinkc ctz $7 and 1 << 'pink + rand swap w!
-	1 'pinkc +!
-	0 8 ( 1? 1- dup 1 << 'pink + w@ $ffff and rot + swap ) drop
-	3 >> $8000 - 2* ;
+#psum
 
+::oscPink	| rosa: Voss-McCartney
+	drop pinkc ctz $7 and 2* 'pink +	| a
+	rand $ffff and over w@ $ffff and -	| a d
+	dup 'psum +! swap w+!
+	1 'pinkc +!
+	psum 3 >> $8000 - 2* ;
+	
 #browna
-::oscBrown							| marron, normalizado (el paseo aleatorio sale en +-0.27)
+::oscBrown	| marron
 	drop browna 0.99 * 16 >>
 	-0.02 0.02 randminmax +
 	clamps16
-	dup 'browna !
-	3 * ;
+	dup 'browna ! 3 * ;

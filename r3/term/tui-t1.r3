@@ -93,7 +93,9 @@
 |--- panel texto 
 :texto
 	"Texto" pan
-	fMu 'txt fh 1- clamp0 wrap ;
+	0 1 flpad
+	fMu 'txt 
+	$00 wText ; 
 
 |--- pantalla 
 :theme

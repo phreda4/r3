@@ -210,7 +210,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 ::rwrite | w "str" --
 	ralign here .write ;
 
-|---- Text
+|---- Box Text
 #strsplit
 #strsplit>
 #lines
@@ -284,7 +284,6 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 		) drop
 	3drop
 	]ba empty ;
-
 
 #map4to6 ( 0 0 0 1 1 1 1 2 2 2 3 3 4 4 5 5 )
 #gray_lut ( 232 233 235 236 238 239 241 242 244 245 247 248 250 251 253 255 )
