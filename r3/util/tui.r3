@@ -183,7 +183,7 @@
 	
 :hkey
 	evtkey
-	[esc] =? ( exit ) 
+|	[esc] =? ( exit ) 
 	'uikey ! ;
 	
 |:hmouse 
@@ -193,6 +193,12 @@
 :exvector | --
 	.cl .hidec tui vecdraw ex ;
 
+#(resizevec) 0
+
+:resizevec 
+	(resizevec) 1? ( dup ex ) drop
+	exvector ;
+	
 :tuiredraw
 	exvector
 	rflag
@@ -209,7 +215,7 @@
 	( rflag $4 nand? drop
 		0 'uikey ! 0 'rflag ! |0 'uimouse !
 		|inevt
-		getevt
+		getevt 
 		1 =? ( hkey ) |	2 =? ( hmouse )
 		1? ( tuiredraw ) | ?? animation
 		drop
@@ -236,6 +242,13 @@
 	tuireset 0 'uikey !
 	'vecdraw ! | restore old draw
 	tuR! | redraw prev screen
+	;
+
+::onTuiNoExit
+	;
+	
+::onTuiResize | vec --
+	'(resizevec) !
 	;
 
 |---------------------	
@@ -720,26 +733,27 @@
 	fx fy .at ;
 ::fcr | -- ; baja linea (y reinicia columnas de tabla)
 	.cr fx .col tdef0 'tdef ! ;
-|--- lineas: "" -- (ancho fw, bajan linea) -----------------------------
+	
+|--- lineas: "" -- (ancho fw, bajan linea) 
 ::.lw	fw swap lwrite fcr ;
 ::.cw	fw swap cwrite fcr ;
 ::.rw	fw swap rwrite fcr ;
 
-|--- numeros: n w -- ----------------------------------------------------
+|--- numeros: w n -- 
 ::.nd .d swap .r. .write ;
 ::.nh .h swap .r. .write ;
 ::.nf .f swap .r. .write ;
 ::.nb .b swap .r. .write ;
 
-|--- panel ----------------------------------------------------------
+|--- panel 
 ::pan | "title" -- ; fondo bg1, padding 1, titulo en acento
 	bg1 .wfill 1 1 flpad fhome
 	fPr .Bold .write fcr .NBold fTx ;
 
-::.lines | 'v n -- ; v ( i -- ) escribe trozos de la fila i; lines agrega .nl
+::.lines | 'v n -- 
 	0 ( over <? pick2 over swap ex fcr 1+ ) 3drop ;
 
-|--- tabla: def = ( w just ... 0 ) just 0 izq 1 centro 2 der -----------
+|--- tabla: def = ( w just ... 0 ) just 0 izq 1 cen 2 der 
 ::tcols | 'def --
 	dup 'tdef0 ! 'tdef ! ;
 ::cell | "" -- ; el color es el activo
@@ -793,3 +807,32 @@
 	'fTx tbrowc ;
 ::tbhdr | "a|b|c" -- ; cabecera con recuadro
 	.Bold 'fMu tbrowc .NBold fTx ;
+
+::flxRoot | -- ; fullscr
+	1 'fx ! 1 'fy ! cols 'fw ! rows 'fh ! ;
+
+::flxC | w h -- ; frame w x h cent
+	fh min swap fw min swap			| w h
+	fw pick2 - 2/ fx +				| w h x
+	fh pick2 - 2/ fy +				| w h x y
+	'fy ! 'fx ! 'fh ! 'fw ! ;
+
+|--- dialogo -----------------------------------------------------
+| 44 9 "Titulo" tuDlg
+|    ... contenido (fcr, .lw, .cw, flxN, flxS, etc) ...
+| tuDlgEnd
+|
+| centrado en pantalla, fondo bg2, borde redondeado, titulo centrado en el borde.
+| el frame activo queda en el interior (padding 1) y el cursor en su esquina.
+| usa 2 niveles de la pila de frames; tuDlgEnd restaura el frame de antes.
+::tuDlg | "title" w h --
+	flxpush					| guarda el frame activo
+	flxRoot flxC
+	bg2 .wfill
+	fDi .wbordec
+	fPr .Bold $4 swap " %s " sprint .wtitle .NBold
+	fTx 1 1 flpad fhome
+	flxpush ;					| el interior es la base de flxN/flxS...
+
+::tuDlgEnd | --
+	flxpop flxpop ;

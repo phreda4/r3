@@ -234,6 +234,7 @@
 	tuReadCode
 	
 	uiKey
+	[esc] =? ( exit ) 
 	[enter] =? ( setanalysis 1 'modefx ! )
 	[back] =? ( modefx 0? ( exit ) drop 0 'modefx ! )
 |	[del] =? ( 0 'modefx ! )
@@ -273,7 +274,6 @@
 	checkcode error 1? ( drop moderror ; ) drop
 	|.masb .reset .cls .flush
 	"r3/d4/r3debug.r3" r3run
-|	"r3/d4/dbg.r3" r3run
 	.reterm .alsb .flush 
 	tuR! ;
 
@@ -357,6 +357,7 @@
 	viewmanual	
 	
 	uiKey
+	[esc] =? ( exit ) 
 |	[f3] =? ( anacode )
 | busqueda
 
@@ -416,6 +417,7 @@
 	tuEditCode
 	
 	uiKey
+	[esc] =? ( exit ) 
 	[f2] =? ( helpcode )
 	[f3] =? ( fxcode )
 	[f4] =? ( runcode )

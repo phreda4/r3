@@ -751,7 +751,7 @@
 	scroll ntl rows 8 - - 0 max min 0 max 'scroll ! ;
 
 :onkey | key --
-	[esc] =? ( drop 0 'pn ! ; )
+	uiKey
 	12 =? ( drop cmd-clear ; )
 	6 =? ( drop fmtcycle ; )
 	20 =? ( drop cmd-term ; )
@@ -769,16 +769,12 @@
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( kins popup! ; )
 	$3 =? ( 1+ ) $4 =? ( quit! ) | ctrl+c +d
+	[esc] =? ( quit! )
 	drop ;
 
 |---------------- pantalla (tui): tecla -> dibujo
-:dokey
-	uikey 0? ( drop ; )
-	0 'uikey !
-	onkey ;
-
 :replscr
-	dokey drawscr ;
+	onkey drawscr ;
 
 :initmem | big buffers (>8192) are reserved in the boot: tp recs
 	here

@@ -90,12 +90,12 @@
 	0 ( over <? zebra 'dtable over n>>0 tbrow 1+ ) 2drop
 	bg1 tbbot ;
 
+
 |--- panel texto 
 :texto
 	"Texto" pan
 	0 1 flpad
-	fMu 'txt 
-	$00 wText ; 
+	fMu 'txt $00 tuText ; 
 
 |--- pantalla 
 :theme
@@ -106,8 +106,30 @@
 :chico
 	1 1 .at "terminal chica (min 40x12)" .write ;
 
+#salio 
+
+:exitdlg
+	"Salir" 46 9 tuDlg
+	fcr
+	"Seguro que queres salir?" .cw
+	fcr
+	1 flxS fhome
+	fMu "[ENTER] ok   [ESC] cancelar" .cw
+	flxRest
+	tuDlgEnd	
+	uikey 
+	[esc] =? ( exit ) 
+	$d =? ( 1 'salio ! exit ) 
+	drop
+	;
+	
+:dialogexit
+	0 'salio !
+	'exitdlg onTui
+	salio 1? ( exit ) drop
+	;
+	
 :demo
-	uikey $74 =? ( theme ) drop
 	.reset bg0 fTx .cls
 	cols 40 <? ( drop chico ; ) drop
 	rows 12 <? ( drop chico ; ) drop
@@ -122,10 +144,17 @@
 	flxRest tablab
 	flxpop
 	flxRest
-	texto ;
+	texto 
+	uikey 
+	$74 =? ( theme ) 
+	[esc] =? ( dialogexit )
+	drop
+	;
 
 |-----------------------------------
 :
 	.alsb
+|	onTuiNoExit
+|	'changeres onTuiResize
 	'demo onTui
 	.masb .free ;

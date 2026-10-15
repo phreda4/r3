@@ -121,6 +121,9 @@ y con varias lineas
 para ver como se comporta
 cuando cambia de tamanio"
 	$11 tuText
+	uiKey
+	[esc] =? ( exit ) 
+	drop
 	;
 	
 |-----------------------------------

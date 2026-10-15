@@ -98,6 +98,7 @@
 	1 1 flpad 
 	tuEditCode
 	uiKey
+	[esc] =? ( exit ) 
 	[f1] =? ( show256 )
 	drop
 	;

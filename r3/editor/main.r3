@@ -209,6 +209,7 @@
 	paneleditor
 
 	uikey
+	[esc] =? ( exit ) 
 |	[f2] =? ( help )		| H
 
 	[f5] =? ( filerun )

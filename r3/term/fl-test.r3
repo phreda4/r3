@@ -121,7 +121,9 @@
 		flxpop
 	flxRest
 	uiboxl	
-	
+	uiKey
+	[esc] =? ( exit ) 
+	drop
 	;
 	
 |-----------------------------------
