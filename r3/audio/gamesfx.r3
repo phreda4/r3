@@ -56,11 +56,13 @@
 |   sus parametros y su melodia; sirven para editores/sliders (ver chipa.r3).
 |   n sfxtrk -- rec          registro de la pista n. Los campos son variables de 64 bits (16.16) para
 |                            sliders y combos:  rec tkwave|tka|tkd|tks|tkr|tkvol|tkcrv|tkdet -- adr
-|   tkwave  (puede ir directo a uiCombo) onda 0..12, nombres en sfxtnames: 0..11 como la columna
-|           wave de los sonidos (9 10 11 = ruido blanco rosa marron), 12 supersaw de 7 osciladores
+|   tkwave  (puede ir directo a uiCombo) onda 0..11 (nombres en sfxtnames), igual que la columna wave
+|           de los sonidos (9 10 11 = ruido blanco rosa marron)
 |   tka tkd tks tkr   envolvente: ataque y decaimiento (s), sostenido (0..1), release (s)
 |   tkvol tkcrv       volumen (1.0) y curva de la envolvente (0 lineal .. 3 cuartica)
-|   tkdet             detune del supersaw: fraccion de la frecuencia (0.01 = 1%)
+|   tkdet             detune: con 0 suena un solo oscilador; con tkdet > 0 las ondas tonales (0..8) suenan
+|                     en unison (7 osciladores desafinados, fraccion de la frecuencia del extremo: 0.01 = 1%;
+|                     con Saw es la supersierra). El ruido no usa detune.
 |   n sfxtrkapply                aplica los parametros: llamar despues de cambiarlos (valen desde la proxima nota)
 |   n "patron" bpm sfxtrkplay    melodia en bucle; si ya suena, el patron nuevo entra en el proximo ciclo
 |   n sfxtrkstop      n bpm sfxtrkbpm      n sfxtrkplaying -- 0/1      n sfxtrkcycle -- n
@@ -89,7 +91,7 @@
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSinF 'oscHSin 'oscSin3 'oscWhite 'oscPink 'oscBrown
 ##sfxnwaves 12			| ondas de sonido (nibble wave: 0..11)
 
-##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SinFold" "HSin" "Sin3" "White" "Pink" "Brown" "SuperSaw" 0		| 0..11 ondas (= sfxwaves), 12 supersaw
+##sfxtnames "Sqr" "Saw" "Sin" "Tri" "Pul25" "Pul10" "SinFold" "HSin" "Sin3" "White" "Pink" "Brown" 0		| 0..11 ondas (= sfxwaves)
 
 :sxname | 'lista n -- str
 	( 1? 1- swap >>0 swap ) drop ;
@@ -266,7 +268,7 @@
 |--------------------------------------------------------------- pistas: registro
 | 8 pistas x 128 bytes, campos de 64 bits: 0 wave (3 celdas: uiCombo usa var+8 y var+16 como estado)
 | 24 a 32 d 40 s 48 r 56 vol 64 crv 72 det (parametros, 16.16)  80 io 88 is (instrumentos
-| onda y supersaw, -1 = sin crear)  96 ins (el que suena)  104 id (melodia en curso, -1 = ninguna).
+| onda y unison, -1 = sin crear)  96 ins (el que suena)  104 id (melodia en curso, -1 = ninguna).
 | Los instrumentos se crean la primera vez que se usa la pista.
 #sxtrks * 1024
 #sxtkn * 1024		| notas sostenidas: 128 bytes por pista (id de voz por nota midi)
@@ -291,7 +293,7 @@
 	0 ( 8 <? dup sfxtrk 'sxtk !
 		0 sxtk tkwave !
 		0.002 sxtk tka !  0.05 sxtk tkd !  0.8 sxtk tks !  0.1 sxtk tkr !
-		1.0 sxtk tkvol !  0 sxtk tkcrv !  0.01 sxtk tkdet !
+		1.0 sxtk tkvol !  0 sxtk tkcrv !  0.0 sxtk tkdet !
 		-1 sxtk tkio !  -1 sxtk tkis !  0 sxtk tkins !  -1 sxtk tkid !
 		1+ ) drop
 	'sxtkn 0 1024 cfill ;
@@ -397,11 +399,17 @@
 :sxtkset | n --			| envolvente al instrumento n
 	sxtkadsr rot smASDR! ;
 
-:sxtkwave | --			| funcion de onda segun tkwave (instrumento onda o supersaw)
-	sxtk tkwave @ 0 max 12 min
-	12 <? ( 3 << 'sfxwaves + @ sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ; )
-	drop 'oscSaw sxtk tkis @ smOSC!			| 12: supersaw de 7 osciladores
-	sxtk tkdet @ sxtk tkis @ smAUX!  sxtk tkis @ sxtk tkins ! ;
+:sxtkuni? | -- 0/1			| 1 = onda tonal con detune: suena en unison (instrumento supersaw)
+	sxtk tkdet @ 0? ( ; ) drop
+	sxtk tkwave @ 9 <? ( drop 1 ; ) drop 0 ;
+
+:sxtkwave | --			| funcion de onda en el instrumento (unison si hay detune, simple si no)
+	sxtk tkwave @ 0 max 11 min 3 << 'sfxwaves + @
+	sxtkuni? 1? ( drop
+		sxtk tkis @ smOSC!
+		sxtk tkdet @ sxtk tkis @ smAUX!
+		sxtk tkis @ sxtk tkins ! ; ) drop
+	sxtk tkio @ smOSC!  sxtk tkio @ sxtk tkins ! ;
 
 :sxtkopen | --			| crea los 2 instrumentos de la pista la primera vez
 	sxtk tkio @ -? ( drop
