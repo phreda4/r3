@@ -1,10 +1,10 @@
 | replgen - generation and real execution of r3repl (no UI)
 | gen-src writes mem/repl.r3 ; do-run runs it with r3 ; readdump recovers the stack
-| rd-err reads error.log (emsg efile eline) ; the results of a line are reported by repl2.r3
+| rd-err reads error.log (emsg efile eline) ; the results of a line are reported by repl.r3
 ^repl/replcore.r3
 
 |---------------- generacion y ejecucion (r3 real)
-##gk 0 ##ga 0 ##gl 0 ##gboot 0
+##gk 0 ##ga 0 ##gl 0 ##gboot 0 ##gyour 0	| gyour = line of the typed code in mem/repl.r3
 #t0 0 ##tms 0
 #obuf * 2064
 ##ebuf * 4096
@@ -48,14 +48,15 @@
 	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop
 	"#rdini 0" ,s gnl
 	gen-defs
-	gk 2 =? ( ga ,s gnl ) drop
+	gk 2 =? ( gl 1+ 'gyour ! ga ,s gnl ) drop
 	"#rdend 0" ,s gnl
 	gl 1+ 'gboot !
+	gk 2 <>? ( gboot 'gyour ! ) drop
 	": 'rdini 'rdend .rreg .rrest .rbegin " ,s
 	gk 0? ( "repl-init" hasdef 1? ( "repl-init " ,s ) drop ) drop
 	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
-	gk 0? ( ga ,s "repl-done" hasdef 1? ( " repl-done" ,s ) drop ) drop
-	" .rdump ;" ,s gnl
+	gk 0? ( ga ,s gnl "repl-done" hasdef 1? ( "repl-done " ,s ) drop ) drop
+	".rdump ;" ,s gnl
 	"mem/repl.r3" savemem
 	empty ;
 

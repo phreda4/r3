@@ -1,34 +1,30 @@
-| inc-prof - ejemplo: cuenta llamadas y tiempo inclusivo (ms) por palabra
-| prof_ini | n --   prof_end | n --   (n = nro de palabra en el diccionario)
-^r3/lib/console.r3
+| r4-include profile (now r3)
+| PHREDA 2015 (2026)
+|------------------
+^r3/lib/mem.r3
 
-#pcnt * 16384	| 2048 palabras
-#ptim * 16384
-#pstk * 4096
-#pstk> 'pstk
-#pn
+| tabla profile
+| mseca calls|deltamsec
+#profile_table
+#profile_end
 
-::prof_ini | n --
-	dup 3 << 'pcnt + 1 swap +!
-	pstk> !+ msec swap !+ 'pstk> ! ;
+::profile_start | nrow --
+	4 << profile_table + msec swap ! ;
 
-:rep1 | n --
-	dup 3 << 'ptim + @ over 3 << 'pcnt + @ rot
-	"w%d calls:%d ms:%d" .println ;
+::profile_end | nrow --
+	4 << profile_table + 
+	msec over @ - $100000000 or
+	swap 8 + +! ;
 
-:report | -- ; no debe tocar la pila
-	0 ( 2048 <?
-		dup 3 << 'pcnt + @ 1? ( over rep1 ) drop
-		1+ ) drop ;
+|------------------------------------------
+::profile_mem | cntw --
+	here >a
+	a!+
+	a> 'profile_table !
+	( 1? 0 a!+ 0 a!+ 1- ) drop
+	a> dup 'profile_end ! 
+	'here ! ;
 
-::profile_mem | n -- ; reserva/limpia para n palabras
-	'pn ! ;
+::profile_save | --
+	profile_table 8 - profile_end over - "mem/profile.mem" save ;
 
-::profile_save | -- ; vuelca el reporte
-	report ;
-
-::prof_end | n --
-	-16 'pstk> +!
-	pstk> 8 + @ msec swap -
-	swap 3 << 'ptim + +!
-	;

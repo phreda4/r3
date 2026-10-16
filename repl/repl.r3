@@ -331,7 +331,7 @@
 	busy 1? ( fPr 'spin sf 4 mod n>>0 .write fMu " running r3..." .write 1 'sf +! )
 	0? ( fDi "~/r3" .write ) drop
 	pn 1? ( nc pn >? ( fMu nc psel 1+ "  %d/%d" sprint .write ) drop ) drop
-	cols 74 >=? ( fDi cols 68 - .col 66 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal  " rwrite ) drop ;
+	cols 86 >=? ( fDi cols 80 - .col 78 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal   ^l clear  " rwrite ) drop ;
 
 |---------------- dibujo: pantallas
 :drawlogo | y -- 
@@ -425,8 +425,8 @@
 	eline 0? ( drop ; ) drop
 	'efile "mem/repl.r3" =
 	0? ( drop eline 'efile "in %s  line %d" sprint 6 tstep ; ) drop
-	eline gboot =? ( drop "in your line" 6 tstep ; )
-	2 + 'pname "in project %s  line %d" sprint 6 tstep ;
+	eline gyour =? ( drop "in your line" 6 tstep ; )
+	'pname "in project %s  line %d" sprint 6 tstep ;
 
 :fail | -- ; descarta lo agregado en esta linea
 	ninc0 'ninc ! 0 'busy ! tsb ;
@@ -447,12 +447,100 @@
 		ga scaninc 1 ; )
 	drop ga scaninc 1 ;
 
+|---------------- aviso previo: la linea escribe memoria? (analisis estatico)
+| palabras base que escriben + palabras definidas que las usan (transitivo). Se avisa antes de ejecutar.
+#mwrw "!" "c!" "w!" "d!" "!+" "c!+" "w!+" "d!+" "+!" "c+!" "w+!" "d+!"
+"a!" "a!+" "ca!" "ca!+" "da!" "da!+" "b!" "b!+" "cb!" "cb!+" "db!" "db!+"
+"move" "move>" "fill" "cmove" "cmove>" "cfill" "dmove" "dmove>" "dfill" ( 0 )
+#mwie 0 #mwq 0 #mwflag 0 #mwchg 0
+#mwcur * 64
+#mwnm * 2048 #mwnm> 0
+#mwmb * 160 #mwmb> 0 #mwmn 0
+
+:mw.qcount | -- n ; comillas en 'tk
+	0 'tk ( c@+ $ff and 1? $22 =? ( rot 1+ -rot ) drop ) 2drop ;
+
+:mw.in? | str ini end -- 0/1
+	'mwie !
+	( mwie <?
+		over over =s 1? ( 3drop 1 ; ) drop
+		>>0 ) 2drop 0 ;
+
+:mw.add | -- ; agrega 'mwcur a la lista de escritores
+	'mwcur 'mwnm mwnm> mw.in? 1? ( drop ; ) drop
+	mwnm> 'mwnm - 1900 >=? ( drop ; ) drop
+	'mwcur mwnm> strcpyl 'mwnm> ! 1 'mwchg ! ;
+
+:mw.cul | -- ; agrega 'tk a los culpables del mensaje (sin repetir)
+	mwmn 6 >=? ( drop ; ) drop
+	'tk 'mwmb mwmb> mw.in? 1? ( drop ; ) drop
+	mwmb> 'mwmb - 120 >=? ( drop ; ) drop
+	'tk mwmb> strcpyl 'mwmb> ! 1 'mwmn +! ;
+
+:mw.mark | -- ; 'tk escribe memoria
+	1 'mwflag ! mw.cul
+	'mwcur c@ $ff and 1? ( drop mw.add ; ) drop ;
+
+:mw.base? | -- 0/1
+	0 ( 33 <?
+		'mwrw over n>>0 'tk =s 1? ( 2drop 1 ; ) drop
+		1+ ) drop 0 ;
+
+:mw.tok | -- stop ; procesa el token 'tk
+	mw.qcount mwq
+	1? ( drop 1 and 1? ( 0 'mwq ! ) drop 0 ; ) drop
+	1 and 1? ( drop 1 'mwq ! 0 ; ) drop
+	'tk c@ $ff and
+	$7c =? ( drop 1 ; )
+	$3a =? ( drop 'tk 1+ 'mwcur strcpy 0 ; )
+	$23 =? ( drop 0 'mwcur c! 0 ; )
+	drop
+	mw.base? 1? ( drop mw.mark 0 ; ) drop
+	'tk 'mwnm mwnm> mw.in? 1? ( drop mw.mark 0 ; ) drop
+	0 ;
+
+:mw.scan | adr --
+	0 'mwq !
+	( trim dup c@ $ff and 1? drop
+		tok mw.tok 1? ( nip 'zero swap ) drop )
+	2drop ;
+
+:mw.pass | -- ; una pasada sobre las definiciones del proyecto
+	0 'mwchg !
+	defs ( dup c@ $ff and 1? drop
+		dup 'lo2 strcpyln
+		'lo2 mw.scan
+		nextl ) 2drop ;
+
+:mw.prep | -- ; escritores definidos (hasta que no aparezcan mas)
+	'mwnm 'mwnm> ! 'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwcur c!
+	mw.pass
+	( mwchg 1? drop 0 'mwcur c! mw.pass ) drop ;
+
+:mw.check | adr -- ; avisa antes de ejecutar si la linea escribe memoria
+	mw.prep
+	'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag ! 0 'mwcur c!
+	mw.scan
+	mwflag 0? ( drop ; ) drop
+	mark
+	"memory      writes: " ,s
+	'mwmb ( mwmb> <? dup ,s " " ,s >>0 ) drop
+	"(kept between lines)" ,s ,eol
+	memsize drop empty
+	6 tstep ;
+
+:mw.dname | name -- 'str
+	dup 'mwnm mwnm> mw.in?
+	1? ( drop "defined      %s  (writes memory)" sprint ; ) drop
+	"defined      %s" sprint ;
+
 :real-eval | adr --
 	dup 'ga ! lkind 'gk !
 	gk 3 =? ( drop ; ) drop
 	ninc 'ninc0 !
 	prep 0? ( drop ; ) drop
 	"r3repl  -  r3" 2 tstep
+	gk 0? ( ga mw.check ) drop
 	ga gk gen-src
 	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
 	do-run
@@ -467,8 +555,8 @@
 	outlines
 	gk 2 =? (
 		dnn 'dnn0 !
-		ga defs+ ga regnames
-		dnn0 ( dnn <? dup 3 << 'dnp + @ "defined      %s" sprint 3 tstep 1+ ) drop ) drop
+		ga defs+ ga regnames mw.prep
+		dnn0 ( dnn <? dup 3 << 'dnp + @ mw.dname 3 tstep 1+ ) drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
@@ -476,8 +564,16 @@
 	tsb ;
 
 |---------------- comandos
-:cmdstr | e -- 'str
-	dup e.desc over e.arg rot "%s  %s  %s" sprint ;
+#cb * 256 #cd 0
+:cput | str w -- ; copia str en 'cd y rellena con espacios hasta w
+	over count nip - 0 max swap
+	cd strcpyl 1- 'cd !
+	( 1? 1- 32 cd c!+ 'cd ! ) drop ;
+
+:cmdstr | e -- 'str ; columnas alineadas: comando, argumentos, descripcion
+	'cb 'cd !
+	dup 9 cput dup e.arg 15 cput
+	e.desc cd strcpy 'cb ;
 
 :helpline | e --
 	cmdstr 8 tl+ ;
@@ -542,9 +638,33 @@
 :cmd-clear
 	0 'ntl ! tp 'tp> ! 0 'scroll ! ;
 
-:cmd-reset
-	0 'sn ! data-clear
-	"stack and data cleared" tsn ;
+:pbackup | -- ; copia el proyecto a <name>.r3.bak antes de vaciarlo
+	'ppath filexist 0? ( drop ; ) drop
+	pbuf 'ppath load pbuf -
+	pbuf swap 'ppath "%s.bak" sprint save ;
+
+#rdok 0
+:resetdlg | dialogo de confirmacion (tui.r3: tuDlg + onTui)
+	"Reset" 56 8 tuDlg
+	fcr
+	'pname "Empties stack, data and ALL the code of %s" sprint .cw
+	'pname "(a copy is kept in %s.r3.bak)" sprint fMu .cw fTx
+	fcr
+	1 flxS fhome
+	fMu "[ENTER] reset     [ESC] cancel" .cw
+	flxRest
+	tuDlgEnd
+	uikey
+	[esc] =? ( exit )
+	$d =? ( 1 'rdok ! exit )
+	drop ;
+
+:cmd-reset | vacia todo: pila, datos y codigo del proyecto (pide confirmacion)
+	0 'rdok ! frame 'resetdlg onTui
+	rdok 0? ( drop "reset cancelled" tsn ; ) drop
+	pbackup
+	0 'sn ! data-clear proj-clear 0 'ninc0 ! psave
+	'pname "stack, data and code cleared  (backup: %s.r3.bak)" sprint tsn ;
 
 |---------------- comandos de proyecto
 #ofile * 256
@@ -805,6 +925,25 @@
 :clampscroll
 	scroll ntl rows 7 - pl - - 0 max min 0 max 'scroll ! ;
 
+#qok 0
+:quitdlg | confirmacion de salida con ESC (ctrl+c y /exit salen directo)
+	"Quit" 40 7 tuDlg
+	fcr
+	"Quit r3repl?" .cw
+	'pname "(project %s is already saved)" sprint fMu .cw fTx
+	1 flxS fhome
+	fMu "[ENTER] quit     [ESC] stay" .cw
+	flxRest
+	tuDlgEnd
+	uikey
+	[esc] =? ( exit )
+	$d =? ( 1 'qok ! exit )
+	drop ;
+
+:askquit
+	0 'qok ! 'quitdlg onTui
+	qok 1? ( drop exit ; ) drop ;
+
 :onkey | key --
 	uiKey
 	12 =? ( drop cmd-clear ; )
@@ -824,7 +963,7 @@
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( kins popup! ; )
 	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
-	[esc] =? ( drop pn 1? ( drop 0 'pn ! ; ) drop exit ; )
+	[esc] =? ( drop pn 1? ( drop 0 'pn ! ; ) drop askquit ; )
 	drop ;
 
 |---------------- pantalla (tui): tecla -> dibujo
