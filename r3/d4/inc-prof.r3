@@ -6,7 +6,7 @@
 | tabla profile
 | mseca calls|deltamsec
 #profile_table
-#profile_end
+#profile_endp
 
 ::profile_start | nrow --
 	4 << profile_table + msec swap ! ;
@@ -19,12 +19,12 @@
 |------------------------------------------
 ::profile_mem | cntw --
 	here >a
-	a!+
+	dup a!+
 	a> 'profile_table !
 	( 1? 0 a!+ 0 a!+ 1- ) drop
-	a> dup 'profile_end ! 
+	a> dup 'profile_endp ! 
 	'here ! ;
 
 ::profile_save | --
-	profile_table 8 - profile_end over - "mem/profile.mem" save ;
+	profile_table 8 - profile_endp over - "mem/profile.mem" save ;
 

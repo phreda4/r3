@@ -1,9 +1,9 @@
 | r3genprof - agrega profiling al codigo principal (no a las librerias)
 | por cada palabra con ;   :test 2 + ;   genera
 |	:_test_ 2 + ;
-|	:test N prof_ini _test_ N prof_end ;
+|	:test N profile_start _test_ N profile_end ;
 | N = nro de palabra - primera del codigo principal (indice 0..cntdef-nmain-1)
-| prof_ini | n --  y  prof_end | n --  van en inc-prof.r3
+| profile_start | n --  y  profile_end | n --  van en inc-prof.r3
 | no se envuelven: datos, palabras de arranque, palabras sin ;
 | el boot principal ": ..." se reemplaza por
 |	:_run_ ... ;
@@ -16,7 +16,7 @@
 #profinc "^r3/d4/inc-prof.r3"
 
 #cur -1		| palabra que se esta generando como _name_
-#nmain		| primer palabra del codigo principal
+##nmain	| primer palabra del codigo principal
 
 :,selfname | --
 	"_" ,s cur ,name0 "_" ,s ;
@@ -47,9 +47,9 @@
 	-1 'cur !
 	dup nro>dic @ ,r3pre
 	dup ,name0 ,sp
-	dup nmain - "%d prof_ini " ,print
+	dup nmain - "%d profile_start " ,print
 	"_" ,s dup ,name0 "_ " ,s
-	nmain - "%d prof_end ;" ,print ,cr ;
+	nmain - "%d profile_end ;" ,print ,cr ;
 
 :nextl | adr -- adr' ; inicio de la linea siguiente
 	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
