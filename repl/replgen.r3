@@ -46,10 +46,12 @@
 	mark 0 'gl !
 	"^repl/repldump.r3" ,s gnl
 	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop
+	"#rdini 0" ,s gnl
 	gen-defs
 	gk 2 =? ( ga ,s gnl ) drop
+	"#rdend 0" ,s gnl
 	gl 1+ 'gboot !
-	": .rbegin " ,s
+	": 'rdini 'rdend .rreg .rrest .rbegin " ,s
 	gk 0? ( "repl-init" hasdef 1? ( "repl-init " ,s ) drop ) drop
 	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
 	gk 0? ( ga ,s "repl-done" hasdef 1? ( " repl-done" ,s ) drop ) drop
@@ -68,6 +70,9 @@
 
 :cleanup
 	"mem/repl.out" delete "error.log" delete "mem/repl.log" delete ;
+
+::data-clear | -- ; forgets the variables of the session (mem/repl.dat)
+	"mem/repl.dat" delete ;
 
 ::do-run
 	cleanup

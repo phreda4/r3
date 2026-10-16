@@ -426,7 +426,7 @@
 	'efile "mem/repl.r3" =
 	0? ( drop eline 'efile "in %s  line %d" sprint 6 tstep ; ) drop
 	eline gboot =? ( drop "in your line" 6 tstep ; )
-	1+ 'pname "in project %s  line %d" sprint 6 tstep ;
+	2 + 'pname "in project %s  line %d" sprint 6 tstep ;
 
 :fail | -- ; descarta lo agregado en esta linea
 	ninc0 'ninc ! 0 'busy ! tsb ;
@@ -543,15 +543,15 @@
 	0 'ntl ! tp 'tp> ! 0 'scroll ! ;
 
 :cmd-reset
-	0 'sn !
-	"stack cleared" tsn ;
+	0 'sn ! data-clear
+	"stack and data cleared" tsn ;
 
 |---------------- comandos de proyecto
 #ofile * 256
 #bp 0
 
 :switched | despues de cambiar de proyecto
-	0 'sn ! proj-remember ;
+	0 'sn ! data-clear proj-remember ;
 
 :pinfo
 	dnn ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
@@ -667,7 +667,7 @@
 	.masb .flush
 	"r3/d4/r3ide.r3" r3run
 	.reterm .alsb .flush
-	proj-load drop
+	proj-load drop data-clear
 	pinfo ;
 
 #hname 0
@@ -840,7 +840,7 @@
 
 :main
 	core-init gen-init initmem
-	proj-boot
+	data-clear proj-boot
 	.alsb
 	'replscr onTui 
 	.masb .showc .Reset .flush ;
