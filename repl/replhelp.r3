@@ -8,6 +8,7 @@
 "/fmt" "cmd" "[dec|hex|fix]" "stack format, no arg: cycle (also ctrl+f)"
 "/term" "cmd" "" "output terminal of the last run (also ctrl+t)"
 "/src" "cmd" "" "show the generated program"
+"/trace" "cmd" "[on|off]" "stack at the exit of each project word (program instrumented from the tokens)"
 | clean
 "/clear" "cmd" "" "clear the screen only (also ctrl+l)"
 "/reset" "cmd" "" "empty stack, data and project code (keeps .bak)"

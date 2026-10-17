@@ -471,6 +471,32 @@
 	1? ( drop "defined      %s  (writes memory)" sprint ; ) drop
 	"defined      %s" sprint ;
 
+:trace-gen | -- ; /trace: mem/repl.r3 is regenerated from the tokens with .tr before each ;
+	trace 0? ( drop ; ) drop
+	gk 0 <>? ( drop ; ) drop
+	chk-trace 1? ( drop ; ) drop
+	"trace: the instrumented program was rejected, running without trace" 4 tstep ;
+
+#trc 0
+:trline | i -- ; one exit: word and stack (mem/repl.trc)
+	80 * 'trbuf 16 + + >a
+	mark "exit         " ,s
+	a@+ trname ,s
+	"  [ " ,s
+	a@+ dup 8 >? ( ".. " ,s ) drop 8 min
+	( 1? 1- a@+ "%d " ,print ) drop
+	"]" ,s ,eol
+	memsize drop empty
+	6 tstep ;
+
+:show-trace | -- ; the stack at the exit of each project word of the run
+	"mem/repl.trc" filexist 0? ( drop ; ) drop
+	'trbuf "mem/repl.trc" load drop
+	'trbuf @ 'trc !
+	0 ( trc 30 min <? dup trline 1+ ) drop
+	trc 30 >? ( trc 30 - "...          %d more exits" sprint 3 tstep ) drop
+	'trbuf 8 + @ 1? ( dup "...          %d exits not recorded (limit)" sprint 3 tstep ) drop ;
+
 :real-eval | adr --
 	dup 'ga ! lkind 'gk !
 	gk 3 =? ( drop ; ) drop
@@ -484,6 +510,8 @@
 	drop
 	gk 0? ( mw.report ) drop
 	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
+	"mem/repl.trc" delete
+	trace-gen
 	do-run
 	"error.log" filexist 1? ( drop show-err fail ; ) drop
 	readdump
@@ -493,6 +521,7 @@
 	drop
 	okpaso
 	tms "run          r3  -  %d ms" sprint 3 tstep
+	gk 0? ( trace 1? ( show-trace ) drop ) drop
 	outlines
 	gk 2 =? (
 		dnn 'dnn0 !
@@ -785,6 +814,17 @@
 	waitkey
 	.alsb .flush ;
 
+:trace-msg
+	trace 1? ( drop "trace on   -  stack at the exit of each project word, shown after the run" 5 tstep tsb ; ) drop
+	"trace off" 5 tstep tsb ;
+
+:cmd-trace | arg --
+	trim tok drop
+	'tk c@ 0? ( drop trace 1 xor 'trace ! trace-msg ; ) drop
+	"on" 'tk = 1? ( drop 1 'trace ! trace-msg ; ) drop
+	"off" 'tk = 1? ( drop 0 'trace ! trace-msg ; ) drop
+	"usage: /trace on|off" lne ;
+
 :docmd | adr --
 	"/help" over = 1? ( 2drop cmd-help ; ) drop
 	"/words" over = 1? ( drop >>sp cmd-words ; ) drop
@@ -795,6 +835,7 @@
 	"/done" over = 1? ( drop >>sp "repl-done" hook-cmd ; ) drop
 	"/term" over = 1? ( 2drop cmd-term ; ) drop
 	"/src" over = 1? ( 2drop cmd-src ; ) drop
+	"/trace" over = 1? ( drop >>sp cmd-trace ; ) drop
 	"/save" over = 1? ( 2drop cmd-save ; ) drop
 	"/new" over = 1? ( drop >>sp cmd-new ; ) drop
 	"/load" over = 1? ( drop >>sp cmd-load ; ) drop

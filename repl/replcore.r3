@@ -4,6 +4,7 @@
 ^r3/lib/console.r3
 ^repl/replib.r3
 ^r3/d4/r3token.r3	| before the definition of tok below (r3token uses the r3map one)
+^r3/d4/r3genera.r3
 
 ##tk * 256		| current token (see tok)
 ##lo2 * 2048		| current line

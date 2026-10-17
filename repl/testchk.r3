@@ -34,10 +34,10 @@
 	"+ + +" t0
 	"dup 0? ( drop ) drop" t0
 	"1 2 3 4 5 + + + + + + +" t0
-	":zzz nope ;" defs+
-	"1" t0
 	| effect of the project words (only certain effects are used)
 	0 'sn !
 	":two 2 + ;" defs+ ":three two two two ;" defs+
 	":cond 0? ( 1 ) ;" defs+ ":rec dup 1 >? ( 1- rec ) ;" defs+
-	"two" t0 "three" t0 "cond" t0 "rec" t0 "randmax" t0 "1 two drop two" t0 ;
+	"two" t0 "three" t0 "cond" t0 "rec" t0 "randmax" t0 "1 two drop two" t0
+	| an error in a project definition
+	":zzz nope ;" defs+ "1" t0 ;
