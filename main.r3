@@ -35,6 +35,24 @@
 	'basepath flScanFullDir ;
 
 |---------------------------
+:helpdlg 
+	"Help" 50 12 tuDlg
+	fcr
+	"ctrl+r Run    ctrl+e Edit " .cw
+	"ctrl+i Imm    ctrl+d Debug" .cw
+	"ctrl+n New    ctrl+o Clon " .cw
+	fcr
+	"ctrl+h Help   ctrl+s Search" .cw
+	"ctrl+c Exit   ctrl+x Delete" .cw
+	fcr
+	fcr
+	
+	fMu "PHREDA - R3Forth" .cw
+	tuDlgEnd
+	uikey
+	[esc] =? ( exit )
+	drop ;
+	
 :banner
 	"[01R[023[03f[04o[05r[06t[07h" .awrite .cr .cr .cr .cr ;
 	
@@ -93,7 +111,7 @@
 	;
 
 |===================================
-#newsdl "| r3 sdl program
+#newsdl "| r3 sdl code
 ^r3/lib/sdl2gfx.r3
 	
 :main
@@ -111,6 +129,18 @@
 	'main SDLshow
 	SDLquit 
 ;"
+|===================================
+#newconsole "| r3 console code
+^r3/lib/console.r3
+	
+:main
+	.cls
+	.cr
+	""Hello Word !"" .println
+	anykey 
+	;
+
+: main ;"
 |===================================
 	
 :filenew
@@ -203,50 +233,52 @@
 	tuX? 1? ( changefiles ) drop
 	;
 
-#tk
 |------------	
 :scrmain
-	.bblack .cls
+	.reset .bblack .cls
 	
-	|___________
-	4 flxN
+	4 flxN |___________
 	fhome banner 
-	|.tdebug |2dup " %d %d " .print
-	|tk "%h" .print 'fullpath .write
-	1 flxS
+	
+	1 flxS |___________
 	bg0 fDi fhome
-	" ^help  ^run  ^edit  ^new  ^imm  /Search  " .write 
+	" ^help  ^run  ^edit  ^new  ^imm " .write 
 	.eline
-	|___________
-	38 flxO
+	
+	38 flxO |___________
 	dirpanel
-	|___________
-	flxRest	
+	
+	flxRest	 |___________
 	paneleditor
 
 	uikey
 	[esc] =? ( exit ) 
-|	[f2] =? ( help )		| H
-
 	[f5] =? ( filerun )
-	[ENTER] =? ( filerun )
-	
 	[f6] =? ( fileedit )
+	[ENTER] =? ( filerun )
 	$20 =? ( fileedit )
 	$2f =? ( filesearch )
 	
+| ctrl
+	$3 =? ( exit ) 		| ctrl+c exit
+	$4 =? ( filedebug )	| ctrl+d Debug
+	$5 =? ( fileedit )	| ctrl+e Edit
+	$8 =? ( 'helpdlg onTui ) | ctrl+h Help	
+	$9 =? ( r3repl )	| ctrl+i Imm
+	$e =? ( filenew )	| ctrl+n New
+	$12 =? ( filerun )	| ctrl+r run
+	$13 =? ( filesearch )	| ctrl+s search
+	$18 =? ( filedelete ) | ctrl+x delete
+
 	toUpp
-|	$43 =? ( fileclon )	| Clon	
-	$44 =? ( filedelete ) | Delete
+	$44 =? ( filedebug ) | Debug
 	$45	=? ( fileedit )	| Edit
+	$48 =? ( 'helpdlg onTui ) | ctrl+h Help	
 	$49	=? ( r3repl )	| Interactive
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
-| ctrl
-	$5 =? ( fileedit )	| ctrl+e Edit
-	$9 =? ( r3repl )	| ctrl+i Interactive
-	$4 =? ( filedebug )	| ctrl+d debug
-	$3 =? ( exit ) 		| ctrl+c exit
+	$53 =? ( filesearch )	| S search
+	$58 =? ( filedelete ) | X Delete
 	
 	drop
 	;
