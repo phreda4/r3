@@ -162,32 +162,63 @@
  0
 #foldern * 1024
 
-:nextfile | file --
+| sorted list of the files of a folder (the order of readdir is not fixed in linux)
+#fnames * $4000
+#fnames> 'fnames
+#fidx * $800
+#fcnt 0
+#xvec 0
+
+:fcopy | name -- start
+	fnames> dup >a swap
+	( c@+ 1? ca!+ ) 2drop
+	0 ca!+ a> 'fnames> ! ;
+
+:fgt? | name i -- name i 1/0 ; fidx[i-1] > name
+	0? ( 0 ; )
+	dup 1- 3 << 'fidx + @ pick2 cmpstr +? ( drop 1 ; ) drop 0 ;
+
+:finsert | name --
+	fcnt
+	( fgt? 1? drop
+		dup 1- 3 << 'fidx + @ over 3 << 'fidx + !
+		1- )
+	drop 3 << 'fidx + !
+	1 'fcnt +! ;
+
+:fentry | file --
 	dup FDIR 1? ( 2drop ; ) drop
 	FNAME
 	dup ".." = 1? ( 2drop ; ) drop
 	dup "." = 1? ( 2drop ; ) drop
+	fcopy finsert ;
+
+:scanfolder | "dir" 'vec --	; vec | name --   sorted
+	'xvec !
+	'fnames 'fnames> ! 0 'fcnt !
+|WIN|	"%s//*" sprint
+	ffirst 0? ( drop ; )		| not found or empty
+	( fentry fnext 1? ) drop
+	0 ( fcnt <?
+		dup 3 << 'fidx + @ xvec ex
+		1+ ) drop ;
+
+:procfile | name --
 	'foldern "%s/%s" sprint 
 	makelib  ;
-	
+
 :folder | "" --
-	"%s//*" sprint ffirst 
-	( nextfile fnext 1? ) drop ;
+	'procfile scanfolder ;
 	
 |-------------	
-:nextfilelist | file --
-	dup FDIR 1? ( 2drop ; ) drop
-	FNAME
-	dup ".." = 1? ( 2drop ; ) drop
-	dup "." = 1? ( 2drop ; ) drop
+:procfilelist | name --
 	'foldern "%s/%s" sprint 
 	namevirtual drop
 	" '" ,s 'filenamev ,s 
 	;
 	
 :folderlist	| "" --
-	"%s//*" sprint ffirst 
-	( nextfilelist fnext 1? ) drop ;
+	'procfilelist scanfolder ;
 
 |-------------	
 | collect #### lib.r3 
