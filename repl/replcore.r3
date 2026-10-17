@@ -3,6 +3,7 @@
 | the generated program and its execution are in replgen.r3 ; the screen in repl2.r3
 ^r3/lib/console.r3
 ^repl/replib.r3
+^r3/d4/r3token.r3	| before the definition of tok below (r3token uses the r3map one)
 
 ##tk * 256		| current token (see tok)
 ##lo2 * 2048		| current line
@@ -73,33 +74,6 @@
 ::regnames | adr --
 	( trim dup c@ $ff and 1? drop
 		tok regtok ) 2drop ;
-
-#inq 0
-:qcnt | -- n ; number of quotes in 'tk (findchar)
-	0 'tk ( 34 findchar 1? 1+ swap 1+ swap ) drop ;
-
-:tkcheck | -- stop ; token -> include si es palabra de libreria
-	qcnt dup inq or swap 1 and inq xor 'inq !
-	1? ( drop 0 ; ) drop
-	'tk c@ $ff and
-	$7c =? ( drop 1 ; )
-	$3a =? ( drop 0 ; )
-	$23 =? ( drop 0 ; )
-	$5e =? ( drop 0 ; )
-	$27 =? ( 'tk 1+ 'tk strcpy )
-	drop
-	'tk c@ 0? ( drop 0 ; ) drop
-	'tk isNro 1? ( drop 0 ; ) drop
-	defined? 1? ( drop 0 ; ) drop
-	'tk wfind 2 =? ( cl "^%s" sprint inc+ ) drop
-	0 ;
-
-::scaninc | adr -- ; agrega los includes que necesite la linea
-	0 'inq !
-	( trim dup c@ $ff and 1? drop
-		tok tkcheck
-		1? ( nip 'zero swap ) drop )
-	2drop ;
 
 ::defs+ | str -- ; agrega la linea a las definiciones de la sesion
 	defs> defs - $1e000 >=? ( 2drop ; ) drop

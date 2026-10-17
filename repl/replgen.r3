@@ -55,7 +55,7 @@
 	": 'rdini 'rdend .rreg .rrest .rbegin " ,s
 	gk 0? ( "repl-init" hasdef 1? ( "repl-init " ,s ) drop ) drop
 	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
-	gk 0? ( ga ,s gnl "repl-done" hasdef 1? ( "repl-done " ,s ) drop ) drop
+	gk 0? ( gnl gl 1+ 'gyour ! ga ,s gnl "repl-done" hasdef 1? ( "repl-done " ,s ) drop ) drop
 	".rdump ;" ,s gnl
 	"mem/repl.r3" savemem
 	empty ;

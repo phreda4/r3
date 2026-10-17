@@ -10,6 +10,7 @@
 ^repl/replhelp.r3
 ^repl/replcore.r3
 ^repl/replgen.r3
+^repl/replchk.r3
 
 |---------------- variables
 #sw 0
@@ -436,7 +437,7 @@
 		dup 7 << 'incs + "include      %s" sprint 3 tstep
 		1+ ) drop ;
 
-:prep | -- ok ; kind 1: valida e incluye ; otros: includes automaticos
+:prep | -- ok ; kind 1: valida e incluye ; los demas includes los agrega chk-run
 	gk
 	1 =? ( drop
 		ga trim tok drop
@@ -444,83 +445,11 @@
 		'tk inc+ 1 ; )
 	2 =? ( drop
 		ga trim bootline? 1? ( drop "boot words (: ...) are edited with /edit" tse 0 ; ) drop
-		ga scaninc 1 ; )
-	drop ga scaninc 1 ;
+		1 ; )
+	drop 1 ;
 
-|---------------- aviso previo: la linea escribe memoria? (analisis estatico)
-| palabras base que escriben + palabras definidas que las usan (transitivo). Se avisa antes de ejecutar.
-#mwrw "!" "c!" "w!" "d!" "!+" "c!+" "w!+" "d!+" "+!" "c+!" "w+!" "d+!"
-"a!" "a!+" "ca!" "ca!+" "da!" "da!+" "b!" "b!+" "cb!" "cb!+" "db!" "db!+"
-"move" "move>" "fill" "cmove" "cmove>" "cfill" "dmove" "dmove>" "dfill" ( 0 )
-#mwie 0 #mwq 0 #mwflag 0 #mwchg 0
-#mwcur * 64
-#mwnm * 2048 #mwnm> 0
-#mwmb * 160 #mwmb> 0 #mwmn 0
-
-:mw.qcount | -- n ; comillas en 'tk
-	0 'tk ( c@+ $ff and 1? $22 =? ( rot 1+ -rot ) drop ) 2drop ;
-
-:mw.in? | str ini end -- 0/1
-	'mwie !
-	( mwie <?
-		over over =s 1? ( 3drop 1 ; ) drop
-		>>0 ) 2drop 0 ;
-
-:mw.add | -- ; agrega 'mwcur a la lista de escritores
-	'mwcur 'mwnm mwnm> mw.in? 1? ( drop ; ) drop
-	mwnm> 'mwnm - 1900 >=? ( drop ; ) drop
-	'mwcur mwnm> strcpyl 'mwnm> ! 1 'mwchg ! ;
-
-:mw.cul | -- ; agrega 'tk a los culpables del mensaje (sin repetir)
-	mwmn 6 >=? ( drop ; ) drop
-	'tk 'mwmb mwmb> mw.in? 1? ( drop ; ) drop
-	mwmb> 'mwmb - 120 >=? ( drop ; ) drop
-	'tk mwmb> strcpyl 'mwmb> ! 1 'mwmn +! ;
-
-:mw.mark | -- ; 'tk escribe memoria
-	1 'mwflag ! mw.cul
-	'mwcur c@ $ff and 1? ( drop mw.add ; ) drop ;
-
-:mw.base? | -- 0/1
-	0 ( 33 <?
-		'mwrw over n>>0 'tk =s 1? ( 2drop 1 ; ) drop
-		1+ ) drop 0 ;
-
-:mw.tok | -- stop ; procesa el token 'tk
-	mw.qcount mwq
-	1? ( drop 1 and 1? ( 0 'mwq ! ) drop 0 ; ) drop
-	1 and 1? ( drop 1 'mwq ! 0 ; ) drop
-	'tk c@ $ff and
-	$7c =? ( drop 1 ; )
-	$3a =? ( drop 'tk 1+ 'mwcur strcpy 0 ; )
-	$23 =? ( drop 0 'mwcur c! 0 ; )
-	drop
-	mw.base? 1? ( drop mw.mark 0 ; ) drop
-	'tk 'mwnm mwnm> mw.in? 1? ( drop mw.mark 0 ; ) drop
-	0 ;
-
-:mw.scan | adr --
-	0 'mwq !
-	( trim dup c@ $ff and 1? drop
-		tok mw.tok 1? ( nip 'zero swap ) drop )
-	2drop ;
-
-:mw.pass | -- ; una pasada sobre las definiciones del proyecto
-	0 'mwchg !
-	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln
-		'lo2 mw.scan
-		nextl ) 2drop ;
-
-:mw.prep | -- ; escritores definidos (hasta que no aparezcan mas)
-	'mwnm 'mwnm> ! 'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwcur c!
-	mw.pass
-	( mwchg 1? drop 0 'mwcur c! mw.pass ) drop ;
-
-:mw.check | adr -- ; avisa antes de ejecutar si la linea escribe memoria
-	mw.prep
-	'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag ! 0 'mwcur c!
-	mw.scan
+|---------------- aviso previo: la linea escribe memoria? (lo calcula replchk con los tokens)
+:mw.report | -- ; avisa antes de ejecutar si la linea escribe memoria
 	mwflag 0? ( drop ; ) drop
 	mark
 	"memory      writes: " ,s
@@ -528,6 +457,14 @@
 	"(kept between lines)" ,s ,eol
 	memsize drop empty
 	6 tstep ;
+
+:show-chk | -- ; compile error found by replchk (nothing was run)
+	'ckmsg "error: %s" sprint 4 tstep
+	ckline 0? ( drop ; ) drop
+	'ckfile "mem/repl.r3" =
+	0? ( drop ckline 'ckfile "in %s  line %d" sprint 6 tstep ; ) drop
+	ckline gyour =? ( drop "in your line" 6 tstep ; )
+	'pname "in project %s  line %d" sprint 6 tstep ;
 
 :mw.dname | name -- 'str
 	dup 'mwnm mwnm> mw.in?
@@ -540,8 +477,12 @@
 	ninc 'ninc0 !
 	prep 0? ( drop ; ) drop
 	"r3repl  -  r3" 2 tstep
-	gk 0? ( ga mw.check ) drop
 	ga gk gen-src
+	chk-run
+	1 =? ( drop show-chk fail ; )
+	2 =? ( drop 'ckmsg "stack underflow: %s" sprint 4 tstep fail ; )
+	drop
+	gk 0? ( mw.report ) drop
 	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
 	do-run
 	"error.log" filexist 1? ( drop show-err fail ; ) drop
@@ -555,7 +496,7 @@
 	outlines
 	gk 2 =? (
 		dnn 'dnn0 !
-		ga defs+ ga regnames mw.prep
+		ga defs+ ga regnames
 		dnn0 ( dnn <? dup 3 << 'dnp + @ mw.dname 3 tstep 1+ ) drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
@@ -801,8 +742,10 @@
 	fnd 0? ( "(none)" 6 tl+ ) drop ;
 
 :hook-check | -- ok ; compiles the project (no hooks, no line) to validate it
-	"" 1 gen-src do-run
-	"error.log" filexist 1? ( drop show-err 0 ; ) drop 1 ;
+	"" 'ga ! 1 'gk !
+	ga gk gen-src
+	chk-run 0? ( drop 1 ; ) drop
+	show-chk 0 ;
 
 :hook-cmd | arg "name" -- ; /init and /done: one-line hook definition in the project
 	'hname !
@@ -813,7 +756,7 @@
 	ninc 'ninc0 !
 	'pfx defs-del
 	hname ":%s %s ;" sprint 'lo2 strcpy
-	'lo2 scaninc 'lo2 defs+
+	'lo2 defs+
 	names-rebuild
 	hook-check 0? ( drop 'pfx defs-del names-rebuild ninc0 'ninc ! "hook rejected" lnn ; ) drop
 	psave hook-show lnb ;
