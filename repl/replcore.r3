@@ -3,12 +3,12 @@
 | the generated program and its execution are in replgen.r3 ; the screen in repl2.r3
 ^r3/lib/console.r3
 ^repl/replib.r3
-^r3/d4/r3token.r3	| before the definition of tok below (r3token uses the r3map one)
+| r3token and r3genera must come before the definition of tok below (r3token uses the r3map one)
+^r3/d4/r3token.r3
 ^r3/d4/r3genera.r3
 
 ##tk * 256		| current token (see tok)
 ##lo2 * 2048		| current line
-#zero 0
 
 |---------------- estado de la sesion
 ##sstk * 2048		| pila de la sesion (valores recuperados de mem/repl.out)
@@ -18,10 +18,7 @@
 ##defs 0		| texto del proyecto (sin includes)
 ##defs> 0
 ##defl 0
-##dnp * 512		| punteros a nombres definidos
-##dnn 0 ##dnn0 0
-#dnpool * 4096
-#dnpool> 'dnpool
+##mdirty 1		| the project changed: the model (replmodel) must be built again
 
 |---------------- texto: tokens, includes y nombres
 ::tok | adr -- adr' ; copies the token to 'tk (copynom), returns the delimiter (>>sp)
@@ -50,36 +47,12 @@
 ::inc+ | "^path" --
 	dup inc? 1? ( 2drop ; ) drop
 	ninc 31 >=? ( 2drop ; ) drop
-	ninc 7 << 'incs + strcpy 1 'ninc +! ;
-
-:dn+ | str -- ; recuerda un nombre definido
-	dnn 63 >=? ( 2drop ; ) drop
-	dnpool> 'dnpool - 3800 >=? ( 2drop ; ) drop
-	dnpool> dup dnn 3 << 'dnp + !
-	strcpyl 'dnpool> ! 1 'dnn +! ;
-
-::defined? | -- 0/1 ; 'tk es un nombre definido en la sesion
-	0 ( dnn <?
-		dup 3 << 'dnp + @ 'tk = 1? ( 2drop 1 ; ) drop
-		1+ ) drop 0 ;
-
-:dch? | c -- 0/1
-	$3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
-
-:regtok | si 'tk es :nombre o #nombre lo registra
-	'tk c@ $ff and dch? 0? ( drop ; ) drop
-	'tk ( dup c@ $ff and dch? 1? drop 1+ ) drop
-	dup c@ $ff and 0? ( 2drop ; ) drop
-	dn+ ;
-
-::regnames | adr --
-	( trim dup c@ $ff and 1? drop
-		tok regtok ) 2drop ;
+	ninc 7 << 'incs + strcpy 1 'ninc +! 1 'mdirty ! ;
 
 ::defs+ | str -- ; agrega la linea a las definiciones de la sesion
 	defs> defs - $1e000 >=? ( 2drop ; ) drop
 	defs> strcpyl 1- 13 swap c!+ 10 swap c!+
-	0 over c! 'defs> ! 1 'defl +! ;
+	0 over c! 'defs> ! 1 'defl +! 1 'mdirty ! ;
 
 |---------------- proyectos: repl/proj/<nombre>/<nombre>.r3
 ##pdir "repl/proj/"
@@ -106,14 +79,13 @@
 
 ::proj-clear
 	0 'ninc ! defs 'defs> ! 0 defs c! 0 'defl !
-	'dnpool 'dnpool> ! 0 'dnn ! ;
+	1 'mdirty ! ;
 
 :pline | procesa la linea que esta en 'lo2
 	'lo2 "| r3repl" =pre nip 1? ( drop ; ) drop
 	defl 0? ( 'lo2 trim c@ 0? ( 2drop ; ) drop ) drop
 	'lo2 lkind
 	1 =? ( drop 'lo2 trim tok drop 'tk inc+ ; )
-	2 =? ( 'lo2 regnames )
 	drop 'lo2 defs+ ;
 
 ::proj-parse | adr -- ; includes y definiciones desde el texto
@@ -158,18 +130,12 @@
 	( dup c@ $ff and 1? tolow okch? 0? ( 95 pick2 c! ) drop 1+ ) 2drop ;
 
 |---------------- edicion del texto del proyecto
-::names-rebuild | rebuilds the defined-names list from the project text
-	0 'dnn ! 'dnpool 'dnpool> !
-	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln 'lo2 lkind 2 =? ( 'lo2 regnames ) drop
-		nextl ) 2drop ;
-
 #delp 0
 :keepline | appends 'lo2 to the project unless it starts with delp
 	'lo2 delp =pre nip 1? ( drop ; ) drop 'lo2 defs+ ;
 
 ::defs-del | "prefix" -- ; removes the lines that start with prefix
-	'delp !
+	'delp ! 1 'mdirty !
 	defs pbuf strcpy
 	defs 'defs> ! 0 defs c! 0 'defl !
 	pbuf ( dup c@ $ff and 1? drop

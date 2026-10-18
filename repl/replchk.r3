@@ -13,7 +13,6 @@
 ##ckline 0
 
 |--- memory writers (filled by chk-run)
-##mwnm * 2048 ##mwnm> 0		| project words that write memory
 ##mwmb * 160 ##mwmb> 0		| words of the line that write memory
 ##mwflag 0
 #mwmn 0 #mwie 0 #cktmp * 64 #cktmp2 * 64
@@ -45,11 +44,6 @@
 :lowcpy | str dst --
 	( swap c@+ $ff and 1? tolow rot c!+ ) 2drop 0 swap c! ;
 
-:cknamew | str -- ; project word that writes memory
-	'cktmp swap copynom
-	mwnm> 'mwnm - 1900 >=? ( drop ; ) drop
-	'cktmp mwnm> strcpyl 'mwnm> ! ;
-
 :ckadd | str -- ; culprit of the line (no repeats, at most 6)
 	1 'mwflag !
 	mwmn 6 >=? ( 2drop ; ) drop
@@ -77,7 +71,6 @@
 	0 'ckcw !
 	dup nro>dic toklend ( 1? 1- swap @+ cktok swap ) 2drop
 	ckcw 0? ( 2drop ; ) drop
-	dup r3name cknamew
 	2 swap 'ckinfo + c! ;
 
 |--- the line: the stack with the analyzer of r3token (resetinfo / tokeninfo / wwinfo, as r3ide does)
@@ -133,11 +126,18 @@
 	boot>> nro>dic toklend
 	( 1? 1- swap @+ ckutok swap ) 2drop ;
 
-:chk-user | -- code
-	'mwnm 'mwnm> ! 'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag !
+::ckwriters | -- ; marks the project words that write memory (call it with the tokens loaded)
+	ckinit
 	dic< dic - 4 >> 'cknmain !
 	0 ( 1024 <? 0 over 3 << 'ckinfo + ! 1+ ) drop
-	0 ( cntdef <? dup ckdef 1+ ) drop
+	0 ( cntdef <? dup ckdef 1+ ) drop ;
+
+::ckwrites? | n -- 0/1
+	8192 >=? ( drop 0 ; ) 'ckinfo + c@ 2 and 1 >> ;
+
+:chk-user | -- code
+	'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag !
+	ckwriters
 	ckuser
 	ckres ;
 
@@ -145,7 +145,7 @@
 #ckeo 0 #ckbo 0 #cklc 0 #ckunk 0 #ckni 0 #ckn 0
 #ckword * 64
 
-:cklines | a b -- n
+::cklines | a b -- n
 	0 'cklc ! swap ( over <? c@+ 13 =? ( 1 'cklc +! ) drop ) 2drop cklc 1+ ;
 
 :ckinc | entry -- ; the file whose text contains the error
@@ -159,7 +159,7 @@
 	lerror 1- dup c@ $ff and 33 <? ( swap drop lerror swap ) drop
 	dup c@ $ff and $27 =? ( swap 1+ swap ) drop ;
 
-:ckerr | --
+::ckerr | --
 	error 'ckmsg strcpy
 	0 'ckline ! 0 'ckunk ! 0 'ckword c!
 	error "word not found" = error "addr not exist" = or 'ckunk !

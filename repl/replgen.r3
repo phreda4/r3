@@ -38,8 +38,9 @@
 		dup 'lo2 strcpyln gline
 		nextl ) 2drop ;
 
-::hasdef | "name" -- 0/1 ; is the word defined in the project?
-	'tk strcpy defined? ;
+##mhook 0		| set by replmodel (m.init): "name" -- 0/1
+::hasdef | "name" -- 0/1 ; is the word defined in the project? (the model of r3token answers)
+	mhook 1? ( ex ; ) 2drop 0 ;
 
 ::gen-src | adr kind -- ; escribe mem/repl.r3
 	'gk ! 'ga !

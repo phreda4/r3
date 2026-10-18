@@ -11,6 +11,7 @@
 ^repl/replcore.r3
 ^repl/replgen.r3
 ^repl/replchk.r3
+^repl/replmodel.r3
 
 |---------------- variables
 #sw 0
@@ -130,9 +131,10 @@
 
 :sdefs
 	"Definitions" sec
-	dnn 0? ( fDi "(none)" .lw ) drop
-	0 ( dnn <? 6 <?
-		fMu dup 3 << 'dnp + @ "> %s" sprint .lw
+	m.ready
+	m.count 0? ( fDi "(none)" .lw ) drop
+	0 ( m.count <? 6 <?
+		fMu dup m.name "> %s" sprint .lw
 		1+ ) drop ;
 
 :slibs
@@ -466,10 +468,12 @@
 	ckline gyour =? ( drop "in your line" 6 tstep ; )
 	'pname "in project %s  line %d" sprint 6 tstep ;
 
-:mw.dname | name -- 'str
-	dup 'mwnm mwnm> mw.in?
-	1? ( drop "defined      %s  (writes memory)" sprint ; ) drop
-	"defined      %s" sprint ;
+#mtx * 128
+:mdef | i -- 'str ; defined word: its effect and if it writes memory
+	dup m.eff effstr over m.name
+	"defined      %s  ( %s )" sprint 'mtx strcpy
+	m.writes? 1? ( drop 'mtx "%s  (writes memory)" sprint ; ) drop
+	'mtx ;
 
 :trace-gen | -- ; /trace: mem/repl.r3 is regenerated from the tokens with .tr before each ;
 	trace 0? ( drop ; ) drop
@@ -477,7 +481,7 @@
 	chk-trace 1? ( drop ; ) drop
 	"trace: the instrumented program was rejected, running without trace" 4 tstep ;
 
-#trc 0
+#trc 0 #mn0 0
 :trline | i -- ; one exit: word and stack (mem/repl.trc)
 	80 * 'trbuf 16 + + >a
 	mark "exit         " ,s
@@ -498,6 +502,7 @@
 	'trbuf 8 + @ 1? ( dup "...          %d exits not recorded (limit)" sprint 3 tstep ) drop ;
 
 :real-eval | adr --
+	m.ready
 	dup 'ga ! lkind 'gk !
 	gk 3 =? ( drop ; ) drop
 	ninc 'ninc0 !
@@ -524,9 +529,9 @@
 	gk 0? ( trace 1? ( show-trace ) drop ) drop
 	outlines
 	gk 2 =? (
-		dnn 'dnn0 !
-		ga defs+ ga regnames
-		dnn0 ( dnn <? dup 3 << 'dnp + @ mw.dname 3 tstep 1+ ) drop ) drop
+		m.count 'mn0 !
+		ga defs+ m.ready
+		mn0 ( m.count <? dup mdef 3 tstep 1+ ) drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
@@ -644,7 +649,9 @@
 	0 'sn ! data-clear proj-remember ;
 
 :pinfo
-	dnn ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
+	m.ready
+	m.count ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
+	m.ok 0? ( drop ckline 'ckmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ ) drop
 	lnb ;
 
 :ls-proj
@@ -781,13 +788,12 @@
 	hname ":%s " sprint 'pfx strcpy
 	trim
 	dup c@ 0? ( 2drop hook-show lnb ; ) drop
-	"off" over = 1? ( 2drop 'pfx defs-del names-rebuild psave "hook removed" lnn ; ) drop
+	"off" over = 1? ( 2drop 'pfx defs-del psave "hook removed" lnn ; ) drop
 	ninc 'ninc0 !
 	'pfx defs-del
 	hname ":%s %s ;" sprint 'lo2 strcpy
 	'lo2 defs+
-	names-rebuild
-	hook-check 0? ( drop 'pfx defs-del names-rebuild ninc0 'ninc ! "hook rejected" lnn ; ) drop
+	hook-check 0? ( drop 'pfx defs-del ninc0 'ninc ! "hook rejected" lnn ; ) drop
 	psave hook-show lnb ;
 
 :showfmt
@@ -962,7 +968,7 @@
 	tp 'tp> ! ;
 
 :main
-	core-init gen-init initmem
+	core-init gen-init m.init initmem
 	data-clear proj-boot
 	.alsb
 	'replscr onTui 
