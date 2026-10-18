@@ -217,7 +217,7 @@
 	.reset .home 9 .bc 0 .fc 
 	1 flxN 
 	" r3Rx | " .write printfname 
-	" | " .write tuecursor. .write 
+	" | " .write tuecursor. .write .sp
 	'helpword .write
 	.eline
 	
@@ -399,6 +399,23 @@
 	'helpc onTui 
 	;
 	
+:helpdlg
+	"r3IDE Help" 50 12 tuDlg
+	fcr
+	"ctrl+r Run    ctrl+d Debug" .cw
+	"ctrl+i Imm    ctrl+b Build" .cw
+	"" .cw
+	fcr
+	"ctrl+k Help   " .cw
+	"ctrl+q Quit   " .cw
+	fcr
+	fcr
+	
+	tuDlgEnd
+	uikey
+	[esc] =? ( exit )
+	drop ;
+	
 |-------------------------------
 :main
 	.reset .home 8 .bc 15 .fc 
@@ -408,8 +425,8 @@
 	.eline
 	
 	1 flxS 
-	fhome
-	" ^[7mF2^[27m Help ^[7mF3^[27m Rx ^[7mF4^[27m Run ^[7mF5^[27m Debug  ^[7mF10^[27m Build " .printe 
+	bg0 fDi fhome
+	" ^run  ^debug  ^build  ^imm  ^khelp " .write 	
 	'helpword .write
 	'msg .write
 	.eline
@@ -417,16 +434,25 @@
 	tuEditCode
 	
 	uiKey
-	[esc] =? ( exit ) 
+	
+	|$2 =? ( buildcode )
+	
 	[f2] =? ( helpcode )
 	[f3] =? ( fxcode )
+	
 	[f4] =? ( runcode )
+	$12 =? ( runcode )	| ctrl+r run
+	
 	[f5] =? ( debugcode )
+	$4 =? ( debugcode ) 		| ctrl+d debug
 	
-	[f6] =? ( cpyhelpword  )
-	
+	[f6] =? ( cpyhelpword )
 	[f10] =? ( compile )
-	toLow
+	
+	$b =? ( 'helpdlg onTui ) | ctrl+k Help	
+	| ctrl
+	$11 =? ( exit )	| ctrl+q quit
+	[esc] =? ( exit ) 
 	drop ;
 
 |-----------------------------------
@@ -441,6 +467,7 @@
 	'filename TuLoadCode
 	|TuNewCode
 	mark
+	5 tuEditLN!
 	'main onTui 
 	TuSaveCode 
 ;

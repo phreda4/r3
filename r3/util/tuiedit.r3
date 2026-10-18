@@ -8,6 +8,7 @@
 #hashfile 
 ##filename * 1024
 
+#nlw		| ancho linea 0=hidden
 #xlinea 0
 #ylinea 0	| primera linea visible
 #ycursor
@@ -129,11 +130,14 @@
 :kend	fuente> >>13 'fuente> ! ;
 
 |------- calc xy cursor
+:cwidth | c -- w ; ancho visual: tab 2, continuacion utf8 0, resto 1
+	9 =? ( drop 2 ; )
+	$c0 and $80 =? ( drop 0 ; )
+	drop 1 ;
+
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
-	9 =? ( drop 2 'xcursor +! ; )
-	$c0 and $80 =? ( drop ; )
-	drop 1 'xcursor +! ;
+	cwidth 'xcursor +! ;
 
 #cacheyl
 #cachepi
@@ -154,10 +158,14 @@
 	( fuente> <? c@+ emitcur ) drop 
 	xcursor
 	xlinea <? ( dup 'xlinea ! )
-	xlinea fw + 5 - >=? ( dup fw - 6 + 'xlinea ! )
+	xlinea fw + nlw - >=? ( dup fw - nlw + 1+ 'xlinea ! )
 	drop ;
 	
 |-----------
+:lineasup | adr n -- adr' ; sube n lineas (inicio de linea, >= fuente)
+	( 1? swap 2 - <<13 1+ swap 1- ) drop
+	fuente <? ( fuente nip ) ;
+
 :setpantafin | cursor --
 	1- <<13 1+ dup 'scrini> !
 	fh ( 1? swap >>13 1+ swap 1- ) drop
@@ -166,8 +174,7 @@
 	
 :setpantaini | cursor --
 	>>13 1+ dup 'scrend> ! 
-	fh ( 1? swap 2 - <<13 1+ swap 1- ) drop
-	fuente <? ( fuente nip ) 'scrini> !	;
+	fh lineasup 'scrini> ! ;
 	
 :fixcur
 	fuente>
@@ -182,9 +189,7 @@
 	
 ::tuipos! | pos --
 	dup 'fuente> !
-	fh 2/ ( 1? swap 2 - <<13 1+ swap 1- ) drop
-	fuente <? ( fuente nip ) 
-	'scrini> !
+	fh 2/ lineasup 'scrini> !
 	cursorpos
 	;
 
@@ -192,23 +197,36 @@
 	scrini> scrend> in? ( 'fuente> ! cursorpos ; ) tuipos! ;
 		
 |-----------
-:karriba
-	fuente> fuente =? ( drop ; )
-	dup 1- <<13		| cur inili
-	swap over - swap	| cnt cur
-	dup 1- <<13			| cnt cur cura
-	swap over - 		| cnt cura cur-cura
-	rot min + fuente max ubackc
-	'fuente> ! ;
+:linecol | adr -- col 
+	dup 1- <<13 1+		| adr ini
+	0 swap			| adr col p
+	( pick2 <? c@+ $ff and cwidth rot + swap )
+	drop nip ;
 
-:kabajo
-	fuente> $fuente >=? ( drop ; )
-	dup 1- <<13 | cur inilinea
-	over swap - swap | cnt cursor
-	>>13		| cnt cura
-	dup 1+ >>13 	| cnt cura curb
-	over - rot min + ubackc
-	'fuente> ! ;
+:coladv | ini col -- adr 
+	swap				| col p
+	( swap 1? swap			| col p
+		dup c@ $ff and
+		0? ( drop nip ; )
+		13 =? ( drop nip ; )
+		cwidth pick2 >? ( drop nip ; )	| no entra (tab) -> antes del char
+		rot swap - swap		| col-w p
+		1+ ufwdc ) drop ;
+
+ :karriba
+ 	fuente> fuente =? ( drop ; )
+	dup linecol swap		| col cur
+	1- <<13			| col cr
+	fuente <? ( 2drop fuente 'fuente> ! ; )
+	1- <<13 1+			| col inilinea
+	swap coladv 'fuente> ! ;
+ 
+ :kabajo
+ 	fuente> $fuente >=? ( drop ; )
+	dup linecol swap		| col cur
+	>>13				| col cr
+	$fuente >=? ( 2drop $fuente 'fuente> ! ; )
+	1+ swap coladv 'fuente> ! ;
 
 :kder	fuente> $fuente <? ( 1+ ufwdc 'fuente> ! ; ) drop ;
 :kizq	fuente> fuente >? ( 1- ubackc 'fuente> ! ; ) drop ;
@@ -232,10 +250,7 @@
 |------------------------------------------------
 :simplehash | adr -- hash
 	0 swap ( c@+ 1? rot dup 5 << + + swap ) 2drop ;
-	
-::editfasthash | -- fh
-	0 fuente ( $fuente <? @+ rot 2/ xor swap ) drop ;
-			
+				
 :fin13 | -- ; queda solo cr al fin de linea
 	fuente only13 1- '$fuente ! ;
 
@@ -321,15 +336,21 @@
 	9 =? ( tabchar )
 	dup .emit skipw ex ;
 		
-:linenormal
-	9 tcol .bc 11 tcol .fcc 1+ .d 4 .r. .write .sp ;
+	
+:linenormal | n --
+	9 tcol .bc 11 tcol .fcc
+	nlw 0? ( 2drop ; ) drop
+	1+ .d 4 .r. .write .sp ;
+
+:linecur | n --
+	nlw 0? ( 2drop 9 tcol .bc 11 tcol .fcc ; ) drop
+	10 tcol .bc 12 tcol .fcc 1+ .d 4 .r. .write .sp ;	
 	
 :iniline | adr lin -- adr lin 
-|	.reset
 	fx over fy + .at
 	dup ylinea + 
 	|focoe 0? ( drop linenormal ; ) drop | sin foco?
-	ycursor =? ( 10 tcol .bc 12 tcol .fcc 1+ .d 4 .r. .write .sp ; ) |">" .write ; )
+	ycursor =? ( linecur ; ) |">" .write ; )
 	linenormal ;
 	
 :skipx | adr -- adr' ; saltea xlinea columnas sin emitir, se detiene en CR/0
@@ -342,24 +363,27 @@
 		skipw ex ufwdc )
 	drop ;
 
+:cr.. | adr -- adr'
+	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
+	
 :drawline | nlin adr -- nlin adr
 	inselect
 	0 'modoline ! | string multilinea****
 	colw ex
 	skipx
-	fw 5 - 
+	fw nlw - 
 	( 0 >? 1- swap 
 		atselect
 		c@+ 0? ( drop fillend 1- ; ) 
 		13 =? ( drop fillend ; )
 		ctlfix cemit utfrest
 		swap ) drop
-	( atselect c@+ 13 <>? 
-		0? ( drop 1- ; ) | end of text
-		drop ) drop ;
+|	( atselect c@+ 13 <>? 
+|		0? ( drop 1- ; ) | end of text
+|		drop ) drop ;
+	cr.. ;
 
 |----------------------
-|--------------------
 :emline | adr lin -- adr lin 
 	fx over fy + .at
 	"~" .write fw 1- .nsp ;
@@ -377,14 +401,11 @@
 		swap 1+ ) drop ;
 
 |---- mouse & keys
-:cr.. | adr -- adr'
-	( c@+ 1? 13 =? ( drop ; ) drop ) drop 1- ;
-	
 :clickMouse0
 	evtmxy fy -
 	scrini> | x y c
 	( swap 1? 1- swap cr.. ) drop | x c
-	swap fx - 5 - clamp0 xlinea + swap | 5- line numbers
+	swap fx - nlw - clamp0 xlinea + swap | nlw<- line numbers
 	( swap 1? 1- swap 
 		c@+ 
 		9 =? ( rot 1- clamp0 -rot )
@@ -441,7 +462,8 @@
 	inisel 0? ( drop ; )
 	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	cursordel sele clearundo ;
+	cursordel sele clearundo
+	0 'cachepi ! ;
 
 :cr>lf | adr cnt --
 	( 1? 1- swap
@@ -532,15 +554,15 @@
 	drop 'lins 'modo ! .insc ;
 
 |-------------
-:findnext | -- ; busca proxima ocurrencia de findpad, desde despues del cursor
+:findnext
 	'findpad c@ 0? ( drop ; ) drop
-	fuente> 1+ 'findpad findstri 0? ( drop ; )
+	fuente> $fuente >=? ( drop ; ) 1+ 'findpad findstri 0? ( drop ; )
 	'fuente> ! ;
-	
-:findprev | -- ; busca ultima ocurrencia de findpad antes del cursor
+
+:findprev
 	'findpad c@ 0? ( drop ; ) drop
-	fuente 'findpad fuente> 1- rfindstri 0? ( drop ; )
-	'fuente> ! ;
+	fuente 'findpad fuente> fuente <=? ( 3drop ; ) 1- rfindstri 0? ( drop ; )
+	'fuente> ! ;	
 
 :enterfind | -- ; pide texto a buscar (como filesearch en main.r3) y busca
 	fhome 7 .fc 4 .bc .eline 
@@ -627,11 +649,17 @@
 
 
 |---- MAIN words
+::tuEditLN! | n -- ; line number place
+	'nlw ! ;
+
 ::tuEditShowCursor
-	fx xcursor + xlinea - 5 + fy ycursor + ylinea - .at .savec ;
+	fx xcursor + xlinea - nlw +
+	fy ycursor ylinea - clamp0 fh 1- min +	| fila dentro del widget
+	.at .savec ;	
 	
 ::tuEditCode 
 	modocolor
+:editw	
 	EditMouse
 	EditFoco
 |	fw 8 <? ( drop ; ) drop
@@ -639,32 +667,22 @@
 	focoe 0? ( drop ; ) drop
 	tuEditShowCursor
 	;
+
+:tuEditCodeMono 
+	modomono editw ;
 
 ::tuReadCode
 	modocolor
-|	fw 8 <? ( drop ; ) drop
 	fixpos
 	scrini> drawlines 'scrend> !
-	tuEditShowCursor
-	;
-	
-::tuEditCodeMono
-	modomono
-	EditMouse
-	EditFoco
-|	fw 8 <? ( drop ; ) drop
-	scrini> drawlines 'scrend> ! 
-	focoe 0? ( drop ; ) drop
-	tuEditShowCursor
-	;
+	tuEditShowCursor ;
 
 ::tuReadCodeMono
 	modomono
-|	fw 8 <? ( drop ; ) drop
 	scrini> drawlines 'scrend> ! ;
 	
 ::tuecursor.
-	ycursor 1+ xcursor 1+ "%d:%d " sprint ;
+	ycursor 1+ xcursor 1+ "%d:%d" sprint ;
 	
 ::TuLoadMem | "" --
 	fuente strcpy
@@ -694,7 +712,7 @@
 	ylinea <? ( 2drop ; ) 
 	ylinea -
 	fh >? ( 2drop ; ) 
-	over 12 >> $fff and xlinea - -? ( 3drop ; ) fw 5 - >=? ( 3drop ; ) fx + 5 + 
+	over 12 >> $fff and xlinea - -? ( 3drop ; ) fw nlw - >=? ( 3drop ; ) fx + nlw + 
 	swap fy + .at
 	dup 24 >> $ffff and fuente + 
 	swap 40 >> $ff and .type

@@ -35,15 +35,15 @@
 	'basepath flScanFullDir ;
 
 |---------------------------
-:helpdlg 
+:helpdlg
 	"Help" 50 12 tuDlg
 	fcr
 	"ctrl+r Run    ctrl+e Edit " .cw
 	"ctrl+i Imm    ctrl+d Debug" .cw
 	"ctrl+n New    ctrl+o Clon " .cw
 	fcr
-	"ctrl+h Help   ctrl+s Search" .cw
-	"ctrl+c Exit   ctrl+x Delete" .cw
+	"ctrl+k Help   ctrl+s Search" .cw
+	"ctrl+q Quit   ctrl+x Delete" .cw
 	fcr
 	fcr
 	
@@ -242,7 +242,7 @@
 	
 	1 flxS |___________
 	bg0 fDi fhome
-	" ^help  ^run  ^edit  ^new  ^imm " .write 
+	" ^run  ^edit  ^new  ^imm  ^khelp " .write 
 	.eline
 	
 	38 flxO |___________
@@ -258,14 +258,15 @@
 	[ENTER] =? ( filerun )
 	$20 =? ( fileedit )
 	$2f =? ( filesearch )
-	
+
 | ctrl
 	$3 =? ( exit ) 		| ctrl+c exit
 	$4 =? ( filedebug )	| ctrl+d Debug
 	$5 =? ( fileedit )	| ctrl+e Edit
-	$8 =? ( 'helpdlg onTui ) | ctrl+h Help	
 	$9 =? ( r3repl )	| ctrl+i Imm
+	$b =? ( 'helpdlg onTui ) | ctrl+k Help	
 	$e =? ( filenew )	| ctrl+n New
+	$11 =? ( exit )		| ctrl+q quit
 	$12 =? ( filerun )	| ctrl+r run
 	$13 =? ( filesearch )	| ctrl+s search
 	$18 =? ( filedelete ) | ctrl+x delete
@@ -273,13 +274,12 @@
 	toUpp
 	$44 =? ( filedebug ) | Debug
 	$45	=? ( fileedit )	| Edit
-	$48 =? ( 'helpdlg onTui ) | ctrl+h Help	
 	$49	=? ( r3repl )	| Interactive
+	$4b =? ( 'helpdlg onTui ) | k Help	
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
 	$53 =? ( filesearch )	| S search
-	$58 =? ( filedelete ) | X Delete
-	
+	$58 =? ( filedelete ) | X Delete	
 	drop
 	;
 
