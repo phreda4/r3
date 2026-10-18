@@ -15,27 +15,30 @@
 
 :gnl ,nl 1 'gl +! ;
 
-#inboot 0
-::bootline? | adr -- 0/1 ; linea que abre una palabra de arranque (: ...)
-	c@+ $3a <>? ( 2drop 0 ; ) drop
-	c@ $ff and 33 <? ( drop 1 ; ) drop 0 ;
+##graw 0		| 1 = the project as it is (with its boot words): the model of r3token reads it
+##mbhook 0		| set by replmodel (m.init): line -- 0/1   is it inside a boot word of the project?
+##mrhook 0		| set by replmodel (m.init): --   the model is up to date
 
-:emit-line 'lo2 ,s gnl ;
-:emit-skip "|" ,s gnl ;
+:mbline | fl -- 0/1
+	mbhook 1? ( ex ; ) 2drop 0 ;
 
-:gline | decide que hacer con la linea en 'lo2
-	inboot 1? ( drop emit-skip
-		'lo2 ";" findstr 1? ( 0 'inboot ! ) drop
-		; ) drop
-	'lo2 bootline? 0? ( drop emit-line ; ) drop
-	1 'inboot !
-	emit-skip
-	'lo2 ";" findstr 1? ( 0 'inboot ! ) drop ;
+:mready
+	mrhook 1? ( ex ; ) drop ;
 
-:gen-defs | las palabras de arranque del proyecto no se ejecutan en el REPL
-	0 'inboot !
+#dl 0
+:skip? | n -- 0/1 ; is the project line n inside a boot word? (raw: nothing is skipped)
+	graw 1? ( 2drop 0 ; ) drop
+	ninc 2 + + mbline ;
+
+:gline | n -- ; project line n -> mem/repl.r3 ; the boot words of the project are not run (the model knows them)
+	skip? 1? ( drop "|" ,s gnl ; ) drop
+	'lo2 ,s gnl ;
+
+:gen-defs
+	0 'dl !
 	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln gline
+		1 'dl +!
+		dup 'lo2 strcpyln dl gline
 		nextl ) 2drop ;
 
 ##mhook 0		| set by replmodel (m.init): "name" -- 0/1
@@ -44,6 +47,7 @@
 
 ::gen-src | adr kind -- ; escribe mem/repl.r3
 	'gk ! 'ga !
+	graw 0? ( mready ) drop
 	mark 0 'gl !
 	"^repl/repldump.r3" ,s gnl
 	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop

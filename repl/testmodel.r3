@@ -24,6 +24,13 @@
 	":repl-init 1 ;" defs+ m.ready "repl-init" hasdef "hasdef repl-init (after):%d" .println
 	"^r3/lib/rand.r3" inc+ ":rr randmax ;" defs+
 	"with include:" .println list
+	":sq dup dup * * ;" defs+ m.ready
+	"sq prev:" .println m.count 1- m.prev "%d" .println
+	": 5 | a; b" defs+ "  1 + ;" defs+ ":after 2 * ;" defs+
+	"with boot:" .println list
+	m.boots "boots:%d" .println
+	0 ( 14 <? dup dup m.boot? swap "line %d boot:%d" .println 1+ ) drop
+	"1" 'ga ! 0 'gk ! ga gk gen-src chk-run "exec program with the boot skipped: chk-run code:%d" .println
 	":bad nope ;" defs+
 	"with error:" .println list
 	ckline 'ckmsg "msg:%s line:%d" .println ;

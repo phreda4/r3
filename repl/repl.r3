@@ -439,15 +439,12 @@
 		dup 7 << 'incs + "include      %s" sprint 3 tstep
 		1+ ) drop ;
 
-:prep | -- ok ; kind 1: valida e incluye ; los demas includes los agrega chk-run
+:prep | -- ok ; kind 1: valida e incluye ; los boots y los includes que faltan los resuelve chk-run con los tokens
 	gk
 	1 =? ( drop
 		ga trim tok drop
 		'tk 1+ filexist 0? ( drop "file not found" tse 0 ; ) drop
 		'tk inc+ 1 ; )
-	2 =? ( drop
-		ga trim bootline? 1? ( drop "boot words (: ...) are edited with /edit" tse 0 ; ) drop
-		1 ; )
 	drop 1 ;
 
 |---------------- aviso previo: la linea escribe memoria? (lo calcula replchk con los tokens)
@@ -474,6 +471,10 @@
 	"defined      %s  ( %s )" sprint 'mtx strcpy
 	m.writes? 1? ( drop 'mtx "%s  (writes memory)" sprint ; ) drop
 	'mtx ;
+
+:mredef | i -- ; warns if the name was already defined in the project
+	dup m.prev -? ( 2drop ; )
+	m.line swap m.name "warning      %s was already defined (line %d)" sprint 6 tstep ;
 
 :trace-gen | -- ; /trace: mem/repl.r3 is regenerated from the tokens with .tr before each ;
 	trace 0? ( drop ; ) drop
@@ -512,6 +513,7 @@
 	chk-run
 	1 =? ( drop show-chk fail ; )
 	2 =? ( drop 'ckmsg "stack underflow: %s" sprint 4 tstep fail ; )
+	3 =? ( drop 'ckmsg tse fail ; )
 	drop
 	gk 0? ( mw.report ) drop
 	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
@@ -531,7 +533,7 @@
 	gk 2 =? (
 		m.count 'mn0 !
 		ga defs+ m.ready
-		mn0 ( m.count <? dup mdef 3 tstep 1+ ) drop ) drop
+		mn0 ( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
@@ -652,6 +654,7 @@
 	m.ready
 	m.count ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
 	m.ok 0? ( drop ckline 'ckmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ ) drop
+	m.boots 1? ( dup 0 m.bootline swap "%d boot word(s) ignored when running  (first at line %d)" sprint 6 tl+ ) drop
 	lnb ;
 
 :ls-proj

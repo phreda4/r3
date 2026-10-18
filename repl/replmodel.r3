@@ -4,6 +4,7 @@
 | name, data/code, exported, writes memory, effect, uses, line of the project file
 | m.ready tokenizes again only if the project changed (mdirty is set by replcore)
 |   m.count m.name m.data? m.exp? m.writes? m.eff m.calls m.line m.find m.has m.ok
+|   m.boots m.boot? (lines of the boot words of the project)  m.prev (an earlier definition of the same name)
 |   m.ok = 0 : the project does not compile (ckmsg ckfile ckline say why); the model keeps the words before the error
 ^repl/replchk.r3
 
@@ -13,6 +14,7 @@
 #mtmp * 64
 #mp 0
 #msga 0 #msgk 0
+#mbs * 128 #mbe * 128 #mbn 0 #mbl 0	| boot words of the project: first and last line (file lines), 16 at most
 
 :m.add | n -- ; stores the word n of the dictionary
 	mn 1024 >=? ( 2drop ; ) drop
@@ -33,18 +35,30 @@
 	dup r3name "rdini" =s 1? ( 2drop 1 ; ) drop
 	r3name "rdend" =s ;
 
+:m.addboot | n -- ; lines of a boot word of the project
+	mbn 16 >=? ( 2drop ; ) drop
+	dup r3name src swap cklines mbn 3 << 'mbs + !
+	nro>dic toklend 1- 3 << + @ 40 >>> src + src swap cklines
+	mbn 3 << 'mbe + !
+	1 'mbn +! ;
+
+:m.chkboot | n --
+	dup ckboot1? 1? ( drop m.addboot ; ) 2drop ;
+
 :m.snap | -- ; the project words (between the libraries and the final boot)
-	0 'mn !
+	0 'mn ! 0 'mbn !
 	ckwriters
 	dic< dic - 4 >> ( cntdef <?
+		dup m.chkboot
 		dup m.skip? 0? ( over m.add ) drop
 		1+ ) drop ;
 
 ::m.update | -- ; tokenizes the project (without line) and stores its words
 	0 'mdirty !
 	ga 'msga ! gk 'msgk !
-	"" 'ga ! 1 'gk !
+	"" 'ga ! 1 'gk ! 1 'graw !
 	ga gk gen-src
+	0 'graw !
 	"mem/repl.r3" r3tok
 	error 0? ( 1 'mok ! )
 	1? ( 0 'mok ! ckerr
@@ -96,5 +110,24 @@
 ::m.has | "name" -- 0/1
 	m.find -? ( drop 0 ; ) drop 1 ;
 
-::m.init | -- ; hasdef (replgen) asks this model
-	'm.has 'mhook ! 1 'mdirty ! ;
+::m.boots | -- n
+	mbn ;
+
+:m.inb? | i -- 0/1
+	dup 3 << 'mbs + @ mbl >? ( 2drop 0 ; ) drop
+	3 << 'mbe + @ mbl <? ( drop 0 ; ) drop 1 ;
+
+::m.boot? | line -- 0/1 ; is that line of the project file inside a boot word?
+	'mbl !
+	0 ( mbn <? dup m.inb? 1? ( 2drop 1 ; ) drop 1+ ) drop 0 ;
+
+::m.bootline | i -- first ; first line of the boot word i
+	3 << 'mbs + @ ;
+
+::m.prev | i -- j ; the previous definition of the same name, -1 = none
+	dup m.name swap
+	( 1? 1- 2dup m.name =s 1? ( drop nip ; ) drop )
+	2drop -1 ;
+
+::m.init | -- ; replgen asks this model
+	'm.has 'mhook ! 'm.boot? 'mbhook ! 'm.ready 'mrhook ! 1 'mdirty ! ;

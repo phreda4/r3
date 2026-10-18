@@ -4,7 +4,7 @@
 |  - word not found: the library is looked up (wfind), included and the check repeated
 |  - stack: the line surely needs more values than the stack holds (straight-line start only)
 |  - memory: words of the line and project words that write memory
-| chk-run  -- code    0 ok | 1 compile error | 2 stack underflow    (ckmsg ckfile ckline)
+| chk-run  -- code    0 ok | 1 compile error | 2 stack underflow | 3 boot word in the project    (ckmsg ckfile ckline)
 | r3token must be included before replcore (replcore redefines tok)
 ^repl/replgen.r3
 
@@ -135,9 +135,17 @@
 ::ckwrites? | n -- 0/1
 	8192 >=? ( drop 0 ; ) 'ckinfo + c@ 2 and 1 >> ;
 
-:chk-user | -- code
-	'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag !
+::ckboot1? | n -- 0/1 ; a boot word that is not the final boot of the REPL
+	dup r3isboot 0? ( 2drop 0 ; ) drop
+	boot>> <>? ( drop 1 ; ) drop 0 ;
+
+:ckbootin | -- 0/1
+	cknmain ( cntdef <? dup ckboot1? 1? ( 2drop 1 ; ) drop 1+ ) drop 0 ;
+
+:chk-user | -- code ; 0 ok, 2 stack, 3 a boot word typed in the project
+	'mwmb 'mwmb> ! 0 'mwmn ! 0 'mwflag ! 0 'ckline !
 	ckwriters
+	ckbootin 1? ( drop "boot words (: ...) are edited with /edit" 'ckmsg strcpy 3 ; ) drop
 	ckuser
 	ckres ;
 
