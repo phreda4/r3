@@ -1,9 +1,7 @@
 | SDL2_net.dll
 | PHREDA 2024
 
-|WIN|^r3/lib/win/core.r3
-|LIN|^r3/lib/posix/core.r3
-|MAC|^r3/lib/mac/core.r3
+^r3/lib/core.r3
 
 #sys-SDLNet_Init
 #sys-SDLNet_Quit
