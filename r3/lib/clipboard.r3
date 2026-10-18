@@ -2,7 +2,7 @@
 | PHREDA 2026
 |WIN| ^r3/lib/win/clipboard.r3
 |LIN| ^r3/lib/posix/posix.r3
-|MAC| ^r3/lib/mac/clipboard.r3
+|MAC| ^r3/lib/mac/posix.r3
 
 
 #CF_TEXT		1
@@ -21,6 +21,11 @@
 |LIN| 	"xclip -selection clipboard -i" "w" libc-popen 0? ( 3drop ; )
 |LIN| 	>r 1 swap r@ libc-fwrite drop
 |LIN| 	r> libc-pclose 
+
+|MAC|	"pbcopy" "w" libc-popen
+|MAC|	0? ( 3drop ; )
+|MAC|	>r 1 swap r@ libc-fwrite drop	| fwrite(mem,1,cnt,pipe)
+|MAC|	r> libc-pclose 
 	;
 		
 ::pasteclipboard | 'mem -- 
@@ -36,6 +41,12 @@
 |LIN| 	>r dup 1 8191 r@ libc-fread | 'mem n
 |LIN| 	+ 0 swap c!
 |LIN| 	r> libc-pclose 
+
+|MAC|	"pbpaste" "r" libc-popen
+|MAC|	0? ( 2drop ; ) | 'mem pipe
+|MAC|	>r dup 1 8191 r@ libc-fread | hasta 8k-1
+|MAC|	+ 0 swap c!			| 0 final
+|MAC|	r> libc-pclose 
 	;
 
 

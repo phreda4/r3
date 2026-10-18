@@ -1,7 +1,6 @@
 | windows clipboard
 | PHREDA 2026
 ^r3/lib/win/kernel32.r3
-^r3/lib/str.r3
 
 #s-OpenClipboard
 #s-CloseClipboard
