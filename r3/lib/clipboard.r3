@@ -1,9 +1,10 @@
 | clipboard
 | PHREDA 2026
+
+^r3/lib/str.r3
 |WIN| ^r3/lib/win/clipboard.r3
 |LIN| ^r3/lib/posix/posix.r3
 |MAC| ^r3/lib/mac/posix.r3
-
 
 #CF_TEXT		1
 #GMEM_MOVEABLE	2
@@ -15,7 +16,7 @@
 |WIN|	dup GlobalLock | 'mem cnt alloc mlock
 |WIN|	dup >r 2swap 1+ cmove | dsc
 |WIN|	r@ GlobalUnlock 
-|WIN|	CF_TEXT r> SetClipboardData |drop
+|WIN|	CF_TEXT r> SetClipboardData 
 |WIN|	CloseClipboard
 
 |LIN| 	"xclip -selection clipboard -i" "w" libc-popen 0? ( 3drop ; )
@@ -48,5 +49,4 @@
 |MAC|	+ 0 swap c!			| 0 final
 |MAC|	r> libc-pclose 
 	;
-
 
