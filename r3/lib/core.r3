@@ -159,6 +159,14 @@
 	;	
 
 
+|WIN|	#fdd * 512 #hfind 
+|LIN|	#dirp #dirfd #st * 160 
+|LIN|:statent | ent -- ent/0 ; fill 'st for the entry
+|LIN|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
+|MAC|	#dirp #dirfd #st * 160 
+|MAC|:statent | ent -- ent/0 ; fill 'st for the entry
+|MAC|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
+
 | struct stat offsets: LIN x86_64 size 48 atime 72 mtime 88 ctime 104
 |                      MAC (64bit inode) atime 32 mtime 48 ctime 64 birth 80 size 96
 	
@@ -201,14 +209,6 @@
 |MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
 	1 and ;
 
-
-|WIN|	#fdd * 512 #hfind 
-|LIN|	#dirp #dirfd #st * 160 
-|LIN|:statent | ent -- ent/0 ; fill 'st for the entry
-|LIN|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
-|MAC|	#dirp #dirfd #st * 160 
-|MAC|:statent | ent -- ent/0 ; fill 'st for the entry
-|MAC|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
 
 ::findata
 |WIN|	'fdd 
@@ -310,7 +310,6 @@
 |LIN|	0 libc-time 'sit ! 'sit libc-localtime 
 |MAC|	0 libc-time 'sit ! 'sit libc-localtime 
 	;
-
 
 ##sinfo * 104
 ##pinfo * 24

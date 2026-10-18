@@ -398,7 +398,8 @@
 		
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		8 + ) drop 
-	callend
+	|callend
+	endef 0? ( ; ) 
 	| continue word need add lengths
 	dic> 16 - ( dic >? 
 		16 - contword ) drop	

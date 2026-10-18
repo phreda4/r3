@@ -23,75 +23,50 @@
 | #call seed8 rand8 seed rand rerand randmax rnd rndmax rnd128 0
 | ##lib_rand.r3 'name 'words 'info 'call
 |
-| PHREDA 2026 ;; add 'manual por
 ^r3/lib/console.r3
-^r3/system/r3base.r3
-^r3/system/r3pass1.r3
-^r3/system/r3pass2.r3
-^r3/system/r3pass3.r3
-^r3/system/r3pass4.r3
+^r3/d4/r3token.r3
 
 |---------------------------
 #filenamev * 1024
 
-#manual
-#imanual
-#cmanual
-
-:searchmanual | 'name -- pos-manual
-|	DUP ">>%s<<" .PRINTln
-	0 ( cmanual <?
-		dup 2 << imanual + d@ manual + | position
-		4 + | skip ###_
-		pick2 swap = 1? ( drop nip ; )
-		drop
-		1+ ) 2drop
-	0 ;
-
-
-:last_ | str -- str' 
-	count + 
-	( 1- dup c@ $5f <>? drop ) 
-	drop 1+ ;
-	
 :,wordstr | adr --
 	( c@+ $ff and 32 >? 
 		$22 =? ( dup ,c )
 		,c	) 2drop ;
 		
 :gname | adr --
-	dup 16 + @ $2 nand? ( 2drop ; ) drop | only export
-	" """ ,s @ ,wordstr """" ,s ;
+	dup @ $2 nand? ( 2drop ; ) drop | only export
+	" """ ,s @ dic>name ,wordstr """" ,s ;
 
 :gvector | adr --
-	dup 16 + @ $2 nand? ( 2drop ; ) drop | only export
-	@ " '%w" ,print ;
+	dup @ $2 nand? ( 2drop ; ) drop | only export
+	@ dic>name " '%w" ,print ;
 
 #flag 
 :ginfo | adr --
-	dup 16 + @ $2 nand? ( 2drop ; )  | only export
+	dup @ $2 nand? ( 2drop ; )  | only export
 	0 'flag !
 	1 and? ( $80 'flag +! ) | data?
 	drop
-	24 + @ 
-	dup $7 and 4 << 'flag +!  | uso ($f in ana)
-	4 >> $f and 'flag +! | 55 << 59 >> ; delta ($1f0 in ana)
+	8 + @ 
+	dup $7 and 4 << 'flag +!  | uso ($ff in info2)
+	8 >> $f and 'flag +! | delta ($ff00 in info2, low 4 bits)
 	flag " $%h" ,print
 	;
 
 :genlib
 	mark
-	"^" ,s 'r3filename ,s ,nl
-	"#name """ ,s 'r3filename ,s """" ,s
+	"^" ,s 'filename ,s ,nl
+	"#name """ ,s 'filename ,s """" ,s
 	,nl
 	"#words " ,s
-	dicc< ( dicc> <? dup gname 32 + ) drop " 0" ,s 
+	dic< ( dic> <? dup gname 16 + ) drop " 0" ,s 
 	,nl
 	"#calls " ,s
-	dicc< ( dicc> <? dup gvector 32 + ) drop 
+	dic< ( dic> <? dup gvector 16 + ) drop 
 	,nl
 	"#info (" ,s
-	dicc< ( dicc> <? dup ginfo 32 + ) drop 
+	dic< ( dic> <? dup ginfo 16 + ) drop 
 	" )" ,s 
 	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'calls 'info" ,s 
@@ -101,25 +76,22 @@
 
 :genlibnocall
 	mark
-|	"^" ,s 'r3filename ,s ,nl
-	"#name """ ,s 'r3filename ,s """" ,s
+|	"^" ,s 'filename ,s ,nl
+	"#name """ ,s 'filename ,s """" ,s
 	,nl
 	"#words " ,s
-	dicc< ( dicc> <? dup gname 32 + ) drop " 0" ,s 
+	dic< ( dic> <? dup gname 16 + ) drop " 0" ,s 
 	,nl
 |	"#calls " ,s
-|	dicc< ( dicc> <? dup gvector 32 + ) drop 
+|	dic< ( dic> <? dup gvector 16 + ) drop 
 |	,nl
 	"#info (" ,s
-	dicc< ( dicc> <? dup ginfo 32 + ) drop 
+	dic< ( dic> <? dup ginfo 16 + ) drop 
 	" )" ,s 
 	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'info" ,s 
 	
-	'filenamev last_
-	|dup .println
-	searchmanual | advance 'r3_lib_'
-	" $%h" ,print
+	" 0" ,s				| (reserved: help line in manual, helplib.r3)
 	,nl
 	"r3/d4/meta/mlibs.r3" appendmem
 	empty ;
@@ -132,34 +104,23 @@
 		drop ) 2drop ;
 	
 ::makelib | str --
-	r3name
 	mark
-	here dup 'src ! | mem
-	'r3filename dup " | %s " .fprint |ln
-	namevirtual	| mem fn
-	load here =? ( drop .bred "no source code." .println empty ; )
-	0 swap c!+ 'here !
-	0 'error ! 0 'cnttokens ! 0 'cntdef !
-	'inc 'inc> !
-	src 
-	r3-stage-1 
-	error 1? ( 4drop .bred "ERROR %s" .println ; ) drop
-|	cntdef cnttokens cntinc "includes:%d tokens:%d definitions:%d" .println
-	r3-stage-2 |drop
-	1? ( .bred "ERROR %s" .println empty ; ) drop
-|	code> code - 2 >> "tokens:%d" .println
-|	r3-stage-3 | core.r3 fail!! (need inv)
-	r3-stage-4-full
+	dup namevirtual drop		| name
+	dup " | %s " .fprint
+	here swap 2dup load		| mem name end
+	here =? ( 3drop .bred "no source code." .println empty ; )
+	$0d3a0d swap !				| add ":" at end: r3token close the last word only when a new def start
+	over only13 'here !
+	mark
+	r3loadmem				| tokenize + static analysis
+	error 1? ( .bred "ERROR %s" .println empty empty ; ) drop
 	genlib
 	genlibnocall
-	empty
+	empty empty
 	;
 
 |----------------------------
-#folders "r3/lib" "r3/util" 
-|WIN|"r3/lib/win"
-|LIN|"r3/lib/posix"
- 0
+#folders "r3/lib" "r3/util" 0
 #foldern * 1024
 
 | sorted list of the files of a folder (the order of readdir is not fixed in linux)
@@ -221,29 +182,8 @@
 	'procfilelist scanfolder ;
 
 |-------------	
-| collect #### lib.r3 
-:parsemanual | adr -- 
-	( dup c@ $ff and? drop
-		dup manual - da!+
-		( c@+ 13 <>? drop ) drop
-		) 2drop ;
-	
-	
 :main
 	.cls
-	
-	"loading manual.." .println
-	mark
-	here dup 'manual !
-	"doc/r3forth-manual.md" load 0 swap c!
-	here only13 0 swap c!+
-	dup >a 'imanual !
-	manual parsemanual
-	a> dup imanual - 2 >> 'cmanual !
-	'here !
-	
-	cmanual "%d entry libs" .println .cr
-	
 	
 	"library generator" .println
 	mark "r3/d4/meta/metalibs.r3" savemem empty 
