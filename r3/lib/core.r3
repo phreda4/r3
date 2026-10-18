@@ -158,12 +158,27 @@
 |MAC|	libc-localtime 
 	;	
 
+::FNAME | adr -- adrname
+|WIN| 44 +
+|LIN| 19 +
+|RPI| 11 +
+|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
+	;
+
+::FDIR | adr -- 1/0
+|WIN| @ 4 >>
+|LIN| 18 + c@ 2 >>
+|RPI| 10 + c@ 2 >>
+|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
+	1 and ;
+
 
 |WIN|	#fdd * 512 #hfind 
 |LIN|	#dirp #dirfd #st * 160 
+|MAC|	#dirp #dirfd #st * 160 
+
 |LIN|:statent | ent -- ent/0 ; fill 'st for the entry
 |LIN|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
-|MAC|	#dirp #dirfd #st * 160 
 |MAC|:statent | ent -- ent/0 ; fill 'st for the entry
 |MAC|	0? ( ; ) dirfd over FNAME 'st 0 libc-fstatat drop ;
 
@@ -194,20 +209,6 @@
 |MAC|	drop 'st 48 + libc-localtime
 	;
 
-
-::FNAME | adr -- adrname
-|WIN| 44 +
-|LIN| 19 +
-|RPI| 11 +
-|MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	;
-
-::FDIR | adr -- 1/0
-|WIN| @ 4 >>
-|LIN| 18 + c@ 2 >>
-|RPI| 10 + c@ 2 >>
-|MAC| 20 + c@ 2 >>       | when _DARWIN_FEATURE_64_BIT_INODE is set !
-	1 and ;
 
 
 ::findata

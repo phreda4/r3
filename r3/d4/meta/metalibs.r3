@@ -36,8 +36,8 @@
 #r3_lib_console.r3 'name 'words 'calls 'info
 ^r3/lib/core.r3
 #name "r3/lib/core.r3"
-#words  "ms" "msec" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "filetimeD" "FSIZEF" "FCREADT" "FLASTDT" "FWRITEDT" "FNAME" "FDIR" "findata" "ffirst" "fnext" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "time" "date" "sysdate" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
-#calls  'ms 'msec 'load 'save 'append 'delete 'filexist 'fileisize 'fileijul 'fileinfo 'filecreatetime 'filelastactime 'filelastwrtime 'filetimeD 'FSIZEF 'FCREADT 'FLASTDT 'FWRITEDT 'FNAME 'FDIR 'findata 'ffirst 'fnext 'date.d 'time.ms 'date.dw 'time.s 'date.m 'time.m 'date.y 'time.h 'time 'date 'sysdate 'sinfo 'pinfo 'sys 'sysnew 'sysdebug
+#words  "ms" "msec" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "filetimeD" "FNAME" "FDIR" "FSIZEF" "FCREADT" "FLASTDT" "FWRITEDT" "findata" "ffirst" "fnext" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "time" "date" "sysdate" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
+#calls  'ms 'msec 'load 'save 'append 'delete 'filexist 'fileisize 'fileijul 'fileinfo 'filecreatetime 'filelastactime 'filelastwrtime 'filetimeD 'FNAME 'FDIR 'FSIZEF 'FCREADT 'FLASTDT 'FWRITEDT 'findata 'ffirst 'fnext 'date.d 'time.ms 'date.dw 'time.s 'date.m 'time.m 'date.y 'time.h 'time 'date 'sysdate 'sinfo 'pinfo 'sys 'sysnew 'sysdebug
 #info ( $1F $1 $2F $3D $3D $1F $10 $1 $1 $10 $1 $1 $1 $10 $10 $10 $10 $10 $10 $10 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $10 $1 $1 $1 $80 $80 $1F $1F $1F )
 #r3_lib_core.r3 'name 'words 'calls 'info
 ^r3/lib/crc32.r3
@@ -368,7 +368,7 @@
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
 #calls  'Lineal 'Quad_In 'Quad_Out 'Quad_InOut 'Cub_In 'Cub_Out 'Cub_InOut 'Quar_In 'Quar_Out 'Quar_InOut 'Quin_In 'Quin_Out 'Quin_InOut 'Sin_In 'Sin_Out 'Sin_InOut 'Exp_In 'Exp_Out 'Exp_InOut 'Cir_In 'Cir_Out 'Cir_InOut 'Ela_In 'Ela_Out 'Ela_InOut 'Bac_In 'Bac_Out 'Bac_InOut 'Bou_Out 'Bou_In 'Bou_InOut 'easet 'ease 'easem 'catmullRom
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $16 $16 $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $1F $1F $5C )
 #r3_util_penner.r3 'name 'words 'calls 'info
 ^r3/util/sdlfiledlg.r3
 #name "r3/util/sdlfiledlg.r3"
