@@ -18,9 +18,9 @@
 #r3_lib_base64.r3 'name 'words 'calls 'info
 ^r3/lib/clipboard.r3
 #name "r3/lib/clipboard.r3"
-#words  0
-#calls 
-#info ( )
+#words  "copyclipboard" "pasteclipboard" 0
+#calls  'copyclipboard 'pasteclipboard
+#info ( $2E $1F )
 #r3_lib_clipboard.r3 'name 'words 'calls 'info
 ^r3/lib/color.r3
 #name "r3/lib/color.r3"
@@ -456,9 +456,9 @@
 #r3_util_vscreen.r3 'name 'words 'calls 'info
 ^r3/lib/win/clipboard.r3
 #name "r3/lib/win/clipboard.r3"
-#words  "OpenClipboard" "CloseClipboard" "EmptyClipboard" "IsClipboardFormatAvailable" "GetClipboardData" "SetClipboardData" "copyclipboard" "pasteclipboard" 0
-#calls  'OpenClipboard 'CloseClipboard 'EmptyClipboard 'IsClipboardFormatAvailable 'GetClipboardData 'SetClipboardData 'copyclipboard 'pasteclipboard
-#info ( $10 $0 $0 $10 $10 $2E $2E $1F )
+#words  "OpenClipboard" "CloseClipboard" "EmptyClipboard" "IsClipboardFormatAvailable" "GetClipboardData" "SetClipboardData" 0
+#calls  'OpenClipboard 'CloseClipboard 'EmptyClipboard 'IsClipboardFormatAvailable 'GetClipboardData 'SetClipboardData
+#info ( $10 $0 $0 $10 $10 $2E )
 #r3_lib_win_clipboard.r3 'name 'words 'calls 'info
 ^r3/lib/win/core.r3
 #name "r3/lib/win/core.r3"

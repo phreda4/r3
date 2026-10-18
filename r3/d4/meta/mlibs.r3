@@ -11,8 +11,8 @@
 #info ( $2F $3E )
 #r3_lib_base64.r3 'name 'words 'info $402
 #name "r3/lib/clipboard.r3"
-#words  0
-#info ( )
+#words  "copyclipboard" "pasteclipboard" 0
+#info ( $2E $1F )
 #r3_lib_clipboard.r3 'name 'words 'info $6A7
 #name "r3/lib/color.r3"
 #words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmul" "colmix4" "colmul4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
@@ -64,7 +64,8 @@
 #r3_lib_memavx.r3 'name 'words 'info $61E
 #name "r3/lib/memshare.r3"
 #words  "inisharev" "endSharev" 0
-#info ( $1F $2F )
+|WIN|#info ( $1F $2F )
+|LIN|#info ( $1F $11 )
 #r3_lib_memshare.r3 'name 'words 'info $60F
 #name "r3/lib/netsock.r3"
 #words  "socket-ini" "socket-end" "socket-create" "socket-set-nonblock" "socket-set-reuseaddr" "socket-bind" "socket-listen" "socket-accept" "socket-connect" "socket-send" "socket-recv" "socket-close" "net-addr-to-int" "net-htons" "net-get-last-error" "server-socket" "client-socket" "socket-final" 0
@@ -303,8 +304,8 @@
 #info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info $BA2
 #name "r3/lib/win/clipboard.r3"
-#words  "OpenClipboard" "CloseClipboard" "EmptyClipboard" "IsClipboardFormatAvailable" "GetClipboardData" "SetClipboardData" "copyclipboard" "pasteclipboard" 0
-#info ( $10 $0 $0 $10 $10 $2E $2E $1F )
+#words  "OpenClipboard" "CloseClipboard" "EmptyClipboard" "IsClipboardFormatAvailable" "GetClipboardData" "SetClipboardData" 0
+#info ( $10 $0 $0 $10 $10 $2E )
 #r3_lib_win_clipboard.r3 'name 'words 'info $6A7
 #name "r3/lib/win/core.r3"
 #words  "ms" "msec" "time" "date" "sysdate" "findata" "ffirst" "fnext" "FNAME" "FDIR" "FSIZEF" "filetimeD" "FCREADT" "FLASTDT" "FWRITEDT" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
@@ -346,5 +347,21 @@
 #words  "ws2-WSAStartup" "ws2-WSACleanup" "ws2-socket" "ws2-bind" "ws2-listen" "ws2-accept" "ws2-connect" "ws2-send" "ws2-recv" "ws2-closesocket" "ws2-setsockopt" "ws2-ioctlsocket" "ws2-inet_addr" "ws2-htons" "ws2-inet_aton" "ws2-inet_ntoa" "ws2-getaddrinfo" "ws2-freeaddrinfo" "ws2-gai_strerror" "ws2-gethostbyname" "ws2-gethostbyaddr" "ws2-getprotobyname" "ws2-getprotobynumber" "ws2-getservbyname" "ws2-getservbyport" "ws2-gethostname" "ws2-WSAGetLastError" "ws2-WSASetLastError" 0
 #info ( $2F $1 $3E $3E $2F $3E $3E $4D $4D $10 $5C $3E $10 $10 $2F $10 $4D $10 $10 $10 $3E $10 $10 $2F $2F $2F $1 $10 )
 #r3_lib_win_ws2.r3 'name 'words 'info $0
+#name "r3/lib/posix/clipboard.r3"
+#words  "copyclipboard" "pasteclipboard" 0
+#info ( $2E $1F )
+#r3_lib_posix_clipboard.r3 'name 'words 'info $6A7
+#name "r3/lib/posix/core.r3"
+#words  "ms" "msec" "time" "date" "sysdate" "date.d" "date.dw" "date.m" "date.y" "time.ms" "time.s" "time.m" "time.h" "FNAME" "FDIR" "FSIZEF" "FCREADT" "FLASTDT" "FWRITEDT" "findata" "ffirst" "fnext" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "filetimeD" "sys" "sysnew" 0
+#info ( $1F $1 $1 $1 $1 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $1 $10 $1 $2F $3D $3D $1F $10 $1 $1 $10 $1 $1 $1 $0 $1F $1F )
+#r3_lib_posix_core.r3 'name 'words 'info $1AD
+#name "r3/lib/posix/lin-term.r3"
+#words  "type" ".reterm" ".free" "rows" "cols" ".getterminfo" ".onresize" "kbhit" "inkey" "evtmx" "evtmy" "evtmb" "evtmw" "evtmxy" "inevt" "getevt" "evtkey" ".enable-mouse" ".disable-mouse" 0
+#info ( $2E $0 $0 $80 $80 $0 $1F $1 $1 $80 $80 $80 $80 $2 $1 $1 $1 $0 $0 )
+#r3_lib_posix_lin-term.r3 'name 'words 'info $0
+#name "r3/lib/posix/posix.r3"
+#words  "libc-open" "libc-creat" "libc-close" "libc-read" "libc-write" "libc-fread" "libc-fwrite" "libc-lseek" "libc-exit" "libc-fork" "libc-wait" "libc-waitpid" "libc-mmap" "libc-munmap" "libc-unlink" "libc-rename" "libc-malloc" "libc-free" "libc-realloc" "libc-usleep" "libc-ftruncate" "libc-fsync" "libc-mprotect" "libc-signal" "libc-chdir" "libc-mkdir" "libc-rmdir" "libc-getwd" "libc-opendir" "libc-closedir" "libc-readdir" "libc-dirfd" "libc-fstatat" "libc-clock_gettime" "libc-fcntl" "libc-time" "libc-localtime" "libc-tcgetattr" "libc-tcsetattr" "libc-system" "libc-select" "libc-ioctl" "libc-stat" "libc-access" "libc-setlocale" "libc-popen" "libc-pclose" "libc-fgets" "libc-socket" "libc-bind" "libc-listen" "libc-accept" "libc-connect" "libc-send" "libc-recv" "libc-setsockopt" "libc-inet_addr" "libc-htons" "libc-inet_aton" "libc-inet_ntoa" "libc-getaddrinfo" "libc-freeaddrinfo" "libc-gai_strerror" "libc-gethostbyname" "libc-gethostbyaddr" "libc-getprotobyname" "libc-getprotobynumber" "libc-getservbyname" "libc-getservbyport" "libc-gethostname" "shm_open" "shm_unlink" "msync" 0
+#info ( $3E $2F $10 $3E $3E $4D $4D $3E $10 $1 $10 $3E $6B $2F $10 $2F $10 $10 $2F $10 $2F $10 $3E $2F $10 $2F $10 $10 $10 $10 $10 $10 $4D $2F $3E $10 $10 $2E $3D $10 $5C $3D $2F $2F $2F $2F $1F $3E $3E $3E $2F $3E $3E $4D $4D $5C $10 $10 $2F $10 $4D $10 $10 $10 $3E $10 $10 $2F $2F $2F $3E $1F $3D )
+#r3_lib_posix_posix.r3 'name 'words 'info $0
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_clipboard.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffmpeg.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 'r3_lib_win_ws2.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_lib_win_clipboard.r3 'r3_lib_win_core.r3 'r3_lib_win_debugapi.r3 'r3_lib_win_ffmpeg.r3 'r3_lib_win_inet.r3 'r3_lib_win_kernel32.r3 'r3_lib_win_urlmon.r3 'r3_lib_win_win-term.r3 'r3_lib_win_winhttp.r3 'r3_lib_win_winsock.r3 'r3_lib_win_ws2.r3 'r3_lib_posix_clipboard.r3 'r3_lib_posix_core.r3 'r3_lib_posix_lin-term.r3 'r3_lib_posix_posix.r3 0
