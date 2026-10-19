@@ -58,18 +58,68 @@
 	0 over ( c@+ 1?
 		drop swap 1+ swap ) 2drop ;
 
-|---- UTF-8	
+|---- UTF-8
+::utf8c? | c -- flag ; 0=is cont !
+	$80 xor $c0 and ;
+
+::utf8len | c -- n 
+	$ff and
+	$80 <? ( drop 1 ; ) $c0 <? ( drop 0 ; )
+	$e0 <? ( drop 2 ; ) $f0 <? ( drop 3 ; )
+	$f8 <? ( drop 4 ; ) drop 0 ;
+
+::utf8skip | adr -- adr' 
+	( dup c@ utf8c? 0? drop 1+ ) drop ;
+
+::utf8next | adr -- adr' 
+	dup c@ 0? ( drop ; ) drop
+	1+ utf8skip ;
+
+::utf8lead | adr -- adr' 
+	( dup c@ utf8c? 0? drop 1- ) drop ;
+
+::utf8prev | adr -- adr' 
+	1- utf8lead ;
+
+:u8tail | adr n -- flag 
+	( 1? 1- over c@ utf8c? 1? ( 3drop 0 ; ) drop swap 1+ swap ) 2drop 1 ;
+
+:ucont | adr cp -- adr' cp'
+	swap c@+ $3f and rot 6 << or ;
+
+::utf8@+ | adr -- adr' cp 
+	c@+ $ff and
+	$c0 <? ( ; )
+	$e0 <? ( over 1 u8tail 0? ( drop ; ) drop $1f and ucont ; )
+	$f0 <? ( over 2 u8tail 0? ( drop ; ) drop $0f and ucont ucont ; )
+	$f8 <? ( over 3 u8tail 0? ( drop ; ) drop $07 and ucont ucont ucont ; )
+	;
+
+::utf8!+ | cp adr -- adr' 
+	swap
+	$7f <=? ( swap c!+ ; )
+	$7ff <=? (
+		dup 6 >> $c0 or rot c!+ 
+		swap $3f and $80 or swap c!+ ; )
+	$ffff <=? (
+		dup 12 >> $e0 or rot c!+ 
+		swap dup 6 >> $3f and $80 or rot c!+ 
+		swap $3f and $80 or swap c!+ ; )
+	dup 18 >> $f0 or rot c!+ 
+	swap dup 12 >> $3f and $80 or rot c!+ 
+	swap dup 6 >> $3f and $80 or rot c!+ 
+	swap $3f and $80 or swap c!+ ;
+
 ::utf8count | str -- str count
-	0 over ( c@+ 1? $c0 and 
-		$80 <>? ( rot 1+ -rot )
-		drop ) 2drop ;
+	0 over ( c@+ 1? 
+		utf8c? 1? ( rot 1+ -rot ) drop ) 2drop ;
 
 ::utf8ncpy | str 'dst cnt  -- 'dst
 	ab[
 	swap >a swap >b | a=dst b=src
 	( 1? 1-
 		cb@+ ca!+
-		( cb@ $c0 and $80 =? drop cb@+ ca!+ ) drop
+		( cb@ utf8c? 0? drop cb@+ ca!+ ) drop
 		) drop
 	a>
 	]ba ;
@@ -78,7 +128,7 @@
 	over | str cnt p
 	( swap 1? 1- swap
 		c@+ 0? ( drop 1- nip over - ; ) drop
-		( dup c@ $c0 and $80 =? drop 1+ ) drop
+		utf8skip
 		) drop
 	over - ;	
 		

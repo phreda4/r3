@@ -30,16 +30,9 @@
 
 #findpad * 64	|----- find text
 
-:ubackc | adr -- adr' ; retrocede al primer byte del caracter utf8
-	( fuente >?
-		dup c@ $c0 and $80 <>? ( drop ; )
-		drop 1- ) ;
+:ubackc | adr -- adr' ; primer byte del caracter utf8, sin pasar de fuente
+	utf8lead fuente max ;
 
-:ufwdc | adr -- adr' ; avanza saltando bytes de continuacion utf8
-	( $fuente <?
-		dup c@ $c0 and $80 <>? ( drop ; )
-		drop 1+ ) ;
-		
 |----- themes
 
 ##themeold ( 255 226 244 196 201 50 226 46 18 235 233 239 250 46 )
@@ -185,9 +178,7 @@
 
 |------- calc xy cursor
 :cwidth | c -- w ; ancho visual: tab 2, continuacion utf8 0, resto 1
-	9 =? ( drop 2 ; )
-	$c0 and $80 =? ( drop 0 ; )
-	drop 1 ;
+	9 =? ( drop 2 ; ) utf8c? 1? ( 1 nip ) ;
 
 :emitcur
 	13 =? ( drop 1 'ycursor +! 0 'xcursor ! ; )
@@ -265,7 +256,7 @@
 		13 =? ( drop nip ; )
 		cwidth pick2 >? ( drop nip ; )	| no entra (tab) -> antes del char
 		rot swap - swap		| col-w p
-		1+ ufwdc ) drop ;
+		utf8next ) drop ;
 
  :karriba
  	fuente> fuente =? ( drop ; )
@@ -282,7 +273,7 @@
 	$fuente >=? ( 2drop $fuente 'fuente> ! ; )
 	1+ swap coladv 'fuente> ! ;
 
-:kder	fuente> $fuente <? ( 1+ ufwdc 'fuente> ! ; ) drop ;
+:kder	fuente> $fuente <? ( utf8next 'fuente> ! ; ) drop ;
 :kizq	fuente> fuente >? ( 1- ubackc 'fuente> ! ; ) drop ;
 :kpgup	fh ( 1? 1- karriba fixcur ) drop ;
 :kpgdn	fh ( 1? 1- kabajo fixcur ) drop ;
@@ -362,7 +353,7 @@
 	drop ;
 
 :utfrest | adr -- adr' 
-	( dup c@ $c0 and $80 =? drop c@+ .emit ) drop ;
+	( dup c@ utf8c? 0? drop c@+ .emit ) drop ;
 	
 :fillend | nlin cnt adr -- nlin adr 	
 	|nip .eline ;
@@ -414,7 +405,7 @@
 		0? ( drop 1- nip ; )
 		13 =? ( drop 1- nip ; )
 		9 =? ( rot 1- clamp0 -rot drop 32 )	| tab = 2 columnas
-		skipw ex ufwdc )
+		skipw ex utf8skip )
 	drop ;
 
 :cr.. | adr -- adr'
@@ -465,7 +456,7 @@
 		9 =? ( rot 1- clamp0 -rot )
 		13 =? ( 0 nip )
 		0? ( drop nip 1- ; ) 
-		drop ufwdc ) drop ;
+		drop utf8skip ) drop ;
 
 :clickMouse clickMouse0 ubackc ;
 
@@ -609,7 +600,7 @@
 
 :delu | borra el caracter utf8 bajo el cursor
 	fuente> $fuente >=? ( drop ; )
-	1+ ufwdc fuente> -
+	utf8next fuente> -
 	( 1? 1- 0 del1 ) drop ;
 
 :kdel
@@ -739,7 +730,7 @@
 	tuEditShowCursor
 	;
 
-::tuEditCodeMono 
+:tuEditCodeMono 
 	modomono editw ;
 
 ::tuReadCode

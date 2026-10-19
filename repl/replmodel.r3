@@ -4,8 +4,8 @@
 | name, data/code, exported, writes memory, effect, uses, line of the project file
 | m.ready tokenizes again only if the project changed (mdirty is set by replcore)
 |   m.count m.name m.data? m.exp? m.writes? m.eff m.calls m.line m.find m.has m.ok
-|   m.boots m.boot? (lines of the boot words of the project)  m.prev (an earlier definition of the same name)
-|   m.ok = 0 : the project does not compile (ckmsg ckfile ckline say why); the model keeps the words before the error
+|   m.boots m.bootline (the boot words of the project)  m.prev (an earlier definition of the same name)
+|   m.ok = 0 : the project does not compile (m.errmsg m.errline say why); the model keeps the words before the error
 ^repl/replchk.r3
 
 #mtab * 32768		| 1024 words x 32 bytes: name 24, flags 1, use 1, delta 1, calls 2 (at 28), line 2 (at 30)
@@ -14,7 +14,7 @@
 #mtmp * 64
 #mp 0
 #msga 0 #msgk 0
-#mbs * 128 #mbe * 128 #mbn 0 #mbl 0	| boot words of the project: first and last line (file lines), 16 at most
+#mbs * 128 #mbe * 128 #mbn 0	| boot words of the project: first and last line (file lines), 16 at most
 
 :m.add | n -- ; stores the word n of the dictionary
 	mn 1024 >=? ( 2drop ; ) drop
@@ -53,19 +53,26 @@
 		dup m.skip? 0? ( over m.add ) drop
 		1+ ) drop ;
 
+#mmsg * 160 #mline 0
+#msok 0 #mser 0 #msau 1
+
+:m.snapok | -- code ; the tokens are loaded
+	1 'mok ! m.snap 0 ;
+
+:m.snaperr | -- ; the tokenizer stopped: the words before the error
+	0 'mok ! 'ckmsg 'mmsg strcpy ckline 'mline !
+	dic> dic - 4 >> 1- 0 max 'cntdef !	| the word being defined when the error came is incomplete
+	m.snap ;
+
 ::m.update | -- ; tokenizes the project (without line) and stores its words
 	0 'mdirty !
 	ga 'msga ! gk 'msgk !
-	"" 'ga ! 1 'gk ! 1 'graw !
+	ckonok 'msok ! ckonerr 'mser ! ckauto 'msau !
+	'm.snapok 'ckonok ! 'm.snaperr 'ckonerr ! 0 'ckauto !
+	"" 'ga ! 1 'gk !
 	ga gk gen-src
-	0 'graw !
-	"mem/repl.r3" r3tok
-	error 0? ( 1 'mok ! )
-	1? ( 0 'mok ! ckerr
-		dic> dic - 4 >> 1- 0 max 'cntdef ! )	| the word being defined when the error came is incomplete
-	drop
-	m.snap
-	r3free
+	chk-loop drop
+	msok 'ckonok ! mser 'ckonerr ! msau 'ckauto !
 	msga 'ga ! msgk 'gk ! ;
 
 ::m.ready | -- ; the model is up to date
@@ -73,6 +80,12 @@
 
 ::m.ok | -- 0/1
 	mok ;
+
+::m.errmsg | -- 'str ; why the project does not compile
+	'mmsg ;
+
+::m.errline | -- line
+	mline ;
 
 ::m.count | -- n
 	mn ;
@@ -113,14 +126,6 @@
 ::m.boots | -- n
 	mbn ;
 
-:m.inb? | i -- 0/1
-	dup 3 << 'mbs + @ mbl >? ( 2drop 0 ; ) drop
-	3 << 'mbe + @ mbl <? ( drop 0 ; ) drop 1 ;
-
-::m.boot? | line -- 0/1 ; is that line of the project file inside a boot word?
-	'mbl !
-	0 ( mbn <? dup m.inb? 1? ( 2drop 1 ; ) drop 1+ ) drop 0 ;
-
 ::m.bootline | i -- first ; first line of the boot word i
 	3 << 'mbs + @ ;
 
@@ -129,5 +134,5 @@
 	( 1? 1- 2dup m.name =s 1? ( drop nip ; ) drop )
 	2drop -1 ;
 
-::m.init | -- ; replgen asks this model
-	'm.has 'mhook ! 'm.boot? 'mbhook ! 'm.ready 'mrhook ! 1 'mdirty ! ;
+::m.init | --
+	1 'mdirty ! ;

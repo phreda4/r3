@@ -54,19 +54,8 @@
 	
 ::.uemit | cp -- ; UNICODE emit
 	$10FFFF >? ( drop ; )
-	$D800 >=? ( $DFFF <=? ( drop ; ) ) | fuera de rango
-	$7f <=? ( .emit ; )
-    $7FF <=? ( 
-		dup 6 >> $c0 or ..emit 
-		$3f and $80 or .emit ; )
-	$ffff <=? ( 
-		dup 12 >> $e0 or ..emit 
-		dup 6 >> $3f and $80 or ..emit 
-		$3f and $80 or .emit ; )
-	dup 18 >> $f0 or ..emit
-	dup 12 >> $3f and $80 or ..emit
-	dup 6 >> $3f and $80 or ..emit
-	$3f and $80 or .emit ;	
+	$D800 >=? ( $DFFF <=? ( drop ; ) )	| fuera de rango
+	outbuf> utf8!+ endbuf <? ( 'outbuf> ! ; ) 'outbuf> ! .flush ;
 
 ::.cr $d0a .wemit ; |10 .emit 13 .emit ;
 ::.sp 32 ..emit ;
@@ -213,8 +202,7 @@
 	
 :.bks | adr -- adr' ; backspace de un caracter utf8
 	'pad <=? ( ; )
-	1- ( dup c@ $c0 and $80 =? drop 1- ) drop
-	'pad <? ( drop 'pad )
+	utf8prev 'pad max
 	8 .emit 32 .emit 8 .emit ;
 
 ::.ukey | key -- key n ; n=bytes

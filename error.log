@@ -1,0 +1,4 @@
+FILE:r3/util/tuiedit.r3 LINE:181 CHAR:28
+
+ 181|	9 =? ( drop 2 ; ) utf8c? 1 clamp ;
+     	                           ^- word not found

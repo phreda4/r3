@@ -1,5 +1,6 @@
 | replgen - generation and real execution of r3repl (no UI)
-| gen-src writes mem/repl.r3 ; do-run runs it with r3 ; readdump recovers the stack
+| gen-src assembles the program (text) ; replchk generates from it, with the tokens, the one that is run
+| do-run runs mem/repl.r3 with r3 ; readdump recovers the stack
 | rd-err reads error.log (emsg efile eline) ; the results of a line are reported by repl.r3
 ^repl/replcore.r3
 
@@ -15,39 +16,15 @@
 
 :gnl ,nl 1 'gl +! ;
 
-##graw 0		| 1 = the project as it is (with its boot words): the model of r3token reads it
-##mbhook 0		| set by replmodel (m.init): line -- 0/1   is it inside a boot word of the project?
-##mrhook 0		| set by replmodel (m.init): --   the model is up to date
-
-:mbline | fl -- 0/1
-	mbhook 1? ( ex ; ) 2drop 0 ;
-
-:mready
-	mrhook 1? ( ex ; ) drop ;
-
 #dl 0
-:skip? | n -- 0/1 ; is the project line n inside a boot word? (raw: nothing is skipped)
-	graw 1? ( 2drop 0 ; ) drop
-	ninc 2 + + mbline ;
-
-:gline | n -- ; project line n -> mem/repl.r3 ; the boot words of the project are not run (the model knows them)
-	skip? 1? ( drop "|" ,s gnl ; ) drop
-	'lo2 ,s gnl ;
-
-:gen-defs
+:gen-defs | the project as it is: its boot words are left out when the program is generated from the tokens (replchk)
 	0 'dl !
 	defs ( dup c@ $ff and 1? drop
-		1 'dl +!
-		dup 'lo2 strcpyln dl gline
+		dup 'lo2 strcpyln 'lo2 ,s gnl
 		nextl ) 2drop ;
-
-##mhook 0		| set by replmodel (m.init): "name" -- 0/1
-::hasdef | "name" -- 0/1 ; is the word defined in the project? (the model of r3token answers)
-	mhook 1? ( ex ; ) 2drop 0 ;
 
 ::gen-src | adr kind -- ; escribe mem/repl.r3
 	'gk ! 'ga !
-	graw 0? ( mready ) drop
 	mark 0 'gl !
 	"^repl/repldump.r3" ,s gnl
 	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop
@@ -58,9 +35,8 @@
 	gl 1+ 'gboot !
 	gk 2 <>? ( gboot 'gyour ! ) drop
 	": 'rdini 'rdend .rreg .rrest .rbegin " ,s
-	gk 0? ( "repl-init" hasdef 1? ( "repl-init " ,s ) drop ) drop
 	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
-	gk 0? ( gnl gl 1+ 'gyour ! ga ,s gnl "repl-done" hasdef 1? ( "repl-done " ,s ) drop ) drop
+	gk 0? ( gnl gl 1+ 'gyour ! ga ,s gnl ) drop
 	".rdump ;" ,s gnl
 	"mem/repl.r3" savemem
 	empty ;

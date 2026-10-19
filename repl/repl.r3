@@ -422,14 +422,16 @@
 	lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
 	5 14 showlbuf ;
 
-:show-err
+:err-where | 'file line -- ; where an error is: your line, a line of the project or another file
+	0? ( 2drop ; )
+	over "mem/repl.r3" = 0? ( drop swap "in %s  line %d" sprint 6 tstep ; ) drop
+	gyour =? ( 2drop "in your line" 6 tstep ; )
+	nip 'pname "in project %s  line %d" sprint 6 tstep ;
+
+:show-err | -- ; runtime error (error.log)
 	rd-err
 	'emsg "error: %s" sprint 4 tstep
-	eline 0? ( drop ; ) drop
-	'efile "mem/repl.r3" =
-	0? ( drop eline 'efile "in %s  line %d" sprint 6 tstep ; ) drop
-	eline gyour =? ( drop "in your line" 6 tstep ; )
-	'pname "in project %s  line %d" sprint 6 tstep ;
+	'efile eline err-where ;
 
 :fail | -- ; descarta lo agregado en esta linea
 	ninc0 'ninc ! 0 'busy ! tsb ;
@@ -459,11 +461,7 @@
 
 :show-chk | -- ; compile error found by replchk (nothing was run)
 	'ckmsg "error: %s" sprint 4 tstep
-	ckline 0? ( drop ; ) drop
-	'ckfile "mem/repl.r3" =
-	0? ( drop ckline 'ckfile "in %s  line %d" sprint 6 tstep ; ) drop
-	ckline gyour =? ( drop "in your line" 6 tstep ; )
-	'pname "in project %s  line %d" sprint 6 tstep ;
+	'ckfile ckline err-where ;
 
 #mtx * 128
 :mdef | i -- 'str ; defined word: its effect and if it writes memory
@@ -475,12 +473,6 @@
 :mredef | i -- ; warns if the name was already defined in the project
 	dup m.prev -? ( 2drop ; )
 	m.line swap m.name "warning      %s was already defined (line %d)" sprint 6 tstep ;
-
-:trace-gen | -- ; /trace: mem/repl.r3 is regenerated from the tokens with .tr before each ;
-	trace 0? ( drop ; ) drop
-	gk 0 <>? ( drop ; ) drop
-	chk-trace 1? ( drop ; ) drop
-	"trace: the instrumented program was rejected, running without trace" 4 tstep ;
 
 #trc 0 #mn0 0
 :trline | i -- ; one exit: word and stack (mem/repl.trc)
@@ -518,7 +510,7 @@
 	gk 0? ( mw.report ) drop
 	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
 	"mem/repl.trc" delete
-	trace-gen
+	chk-gen 0? ( drop "the program could not be generated from the tokens" tse fail ; ) drop
 	do-run
 	"error.log" filexist 1? ( drop show-err fail ; ) drop
 	readdump
@@ -606,8 +598,9 @@
 	2 =? ( 'm.libline scanwords drop )
 	drop tsb ;
 
-:cmd-src | the program every line is compiled with (rebuilt from the current project)
-	"" 1 gen-src
+:cmd-src | the program every line is run with (the assembled one, generated again from the tokens)
+	"" 'ga ! 1 'gk ! ga gk gen-src
+	chk-gen drop
 	lbuf "mem/repl.r3" load 0 swap c!
 	6 60 showlbuf
 	lnb ;
@@ -653,7 +646,7 @@
 :pinfo
 	m.ready
 	m.count ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
-	m.ok 0? ( drop ckline 'ckmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ ) drop
+	m.ok 0? ( drop m.errline m.errmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ ) drop
 	m.boots 1? ( dup 0 m.bootline swap "%d boot word(s) ignored when running  (first at line %d)" sprint 6 tl+ ) drop
 	lnb ;
 
