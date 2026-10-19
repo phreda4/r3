@@ -9,13 +9,29 @@
 
 #filename * 1024
 
-#topline * 256
-#statusline * 256
+#topline * 512
+#statusline * 512
 
 #errorst 0
 
 |--- for show in code
 #codenow -1
+
+:helpdlg
+	"r3DBG Help" 50 12 tuDlg
+	fcr
+	"R run   runto C ursor" .cw
+	"S step  N over  O out" .cw
+	"B break point / Watch" .cw
+	fcr
+	"ctrl+K Help   ctrl+Q Quit   " .cw
+	fcr
+	fcr
+	
+	tuDlgEnd
+	uikey
+	[esc] =? ( exit )
+	drop ;
 
 |-------------------------------------
 :showcode | n --
@@ -144,7 +160,12 @@
 |---------
 :slnormal
 	.cl fMu
-	" ^[7mB^[27mreakP ^[7mR^[27mun ^[7mS^[27mtep ^[7mN^[27mextStep ^[7mO^[27mutStep " .printe
+	fPr " ^B" .write fTx "reakPoint" .write 
+	fPr " ^R" .write fTx "un" .write 
+	fPr " ^C" .write fTx "ursor run" .write 	
+	fPr " ^S" .write fTx "tep" .write 
+	fPr " ^N" .write fTx "ext step" .write 
+	fPr " ^O" .write fTx "ut step" .write 
 	'statusline strcpybuf ;
 
 :.strerr
@@ -289,11 +310,11 @@
 
 |------ header / footer
 :drawhead
-	bg3 fTx fhome fw .ndel
-	" r3dbg | " .write 'topline .write ;
+	bg3 fhome fw .ndel
+	fTx " r3dbg | " .write 'topline .write ;
 
 :drawfoot
-	bg2 fTx fhome fw .ndel
+	bg3 fhome fw .ndel
 	'statusline .write ;
 
 :cls0 .reset bg0 fTx .cls ;
@@ -381,7 +402,8 @@
 	3 =? ( exit )	| CTRL+C
 	4 =? ( exit )	| CTRL+D
 	6 =? ( chgfmt )	| CTRL+F
-	13 =? ( changemem ) | +M
+	$b =? ( 'helpdlg onTui )	|c+K 
+	$d =? ( changemem ) 		| c+M
 	drop ;
 
 :teclado
@@ -392,24 +414,25 @@
 	
 	toUpp
 	$42 =? ( breakpoint )	| B breakpoint
-	$43 =? ( playmode )		| C continue
+	$43 =? ( runtocursor )	| C to cursor
 
+	$4C =? ( 'helpdlg onTui ) 
 	$4E =? ( stepout )		| N step over (next)`
 	$4F =? ( *>stepu )		| O step out
 	$51 =? ( exit ) 		| Q uit
-	$52 =? ( runtocursor )	| R un to cursor
+	$52 =? ( playmode )		| R un
 	$53 =? ( *>step )		| S
 	drop
 	;
 
 |-----------------
 :maindb
+	teclado
 	cls0
 	drawscreen
 	remakecursor
 	tuC! | show user cursor
 	showbreakpoint
-	teclado
 	checkerror
 	;
 
@@ -426,9 +449,9 @@
 	
 	clearbp			| breakpoints
 	cntinc showcode
-	
 	slnormal
-	'maindb onTuia
+	.ovec .flush
+	'maindb onTuia | << a
 	debugend
 	
 	;

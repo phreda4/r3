@@ -38,12 +38,12 @@
 :helpdlg
 	"Help" 50 12 tuDlg
 	fcr
-	"ctrl+r Run    ctrl+e Edit " .cw
-	"ctrl+i Imm    ctrl+d Debug" .cw
-	"ctrl+n New    ctrl+o Clon " .cw
+	"ctrl+R Run    ctrl+E Edit " .cw
+	"ctrl+I Imm    ctrl+D Debug" .cw
+	"ctrl+N New    ctrl+O Clon " .cw
 	fcr
-	"ctrl+k Help   ctrl+s Search" .cw
-	"ctrl+q Quit   ctrl+x Delete" .cw
+	"ctrl+K Help   ctrl+S Search" .cw
+	"ctrl+Q Quit   ctrl+X Delete" .cw
 	fcr
 	fcr
 	
@@ -241,8 +241,12 @@
 	fhome banner 
 	
 	1 flxS |___________
-	bg0 fDi fhome
-	" ^run  ^edit  ^new  ^imm  ^khelp " .write 
+	bg3 fhome
+	fPr " ^R" .write fTx "un" .write 
+	fPr " ^E" .write fTx "dit" .write 
+	fPr " ^N" .write fTx "ew" .write 
+	fPr " ^I" .write fTx "mm" .write 
+	fPr " ^K" .write fTx "help" .write 
 	.eline
 	
 	38 flxO |___________

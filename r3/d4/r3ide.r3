@@ -402,12 +402,11 @@
 :helpdlg
 	"r3IDE Help" 50 12 tuDlg
 	fcr
-	"ctrl+r Run    ctrl+d Debug" .cw
-	"ctrl+i Imm    ctrl+b Build" .cw
+	"ctrl+R Run    ctrl+D Debug" .cw
+	"ctrl+I Imm    ctrl+B Build" .cw
 	"" .cw
 	fcr
-	"ctrl+k Help   " .cw
-	"ctrl+q Quit   " .cw
+	"ctrl+K Help   ctrl+Q Quit   " .cw
 	fcr
 	fcr
 	
@@ -418,17 +417,22 @@
 	
 |-------------------------------
 :main
-	.reset .home 8 .bc 15 .fc 
+	.reset |.home 8 .bc 15 .fc 
 	1 flxN 
+	bg3 fTx fhome
 	" r3IDE | " .write printfname 
 	" | " .write tuecursor. .write 
+	|'helpword .write
+	" | " .write 'msg .write
 	.eline
 	
 	1 flxS 
-	bg0 fDi fhome
-	" ^run  ^debug  ^build  ^imm  ^khelp " .write 	
-	'helpword .write
-	'msg .write
+	bg3 fhome
+	fPr " ^R" .write fTx "un" .write 
+	fPr " ^D" .write fTx "ebug" .write 
+	fPr " ^B" .write fTx "uild" .write 
+	fPr " ^I" .write fTx "mm" .write 
+	fPr " ^K" .write fTx "help" .write 
 	.eline
 	flxRest
 	tuEditCode
