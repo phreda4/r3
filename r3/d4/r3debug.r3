@@ -356,11 +356,7 @@
 | until stop or error
 	( vmState 1 =? drop
 		inkey
-		[esc] =? ( *>stop drop ; )
-		[f5] =? ( *>stop )
-		[f7] =? ( *>stop )
-		[f8] =? ( *>stop )
-		[f9] =? ( *>stop )
+		1 127 in? ( *>stop ) | any key
 		drop
 		playshow
 		checkerror
@@ -371,8 +367,7 @@
 		24 >> $ffff and fuente + tuipos!
 		runtimerror )
 	drop
-|	*>stop
-| land in src
+|	*>stop ; land in src
 	( ftokenIP 1? | 0=break
 		48 >> $ff and codenow <>?
 		*>stepo drop ) drop
