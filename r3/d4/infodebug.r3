@@ -398,14 +398,13 @@
 ##dataoff
 ##dataini
 
-
 ::memtokn
 	2 << cshare + d@ ;
 ::memtok
 	memtokn .token ;
 
 |LIN|:sysnew
-|LIN|	here "x-terminal-emulator -e bash -c '" ,s swap ,s "' &" ,s ,eol 
+|LIN|	here mark "x-terminal-emulator -e bash -c '" ,s swap ,s "' &" ,s ,eol empty
 |LIN|	libc-system drop
 |LIN| ;
 	

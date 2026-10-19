@@ -87,8 +87,8 @@
 		@+ .h 16 .r. .write
 		swap ) 2drop ;
 
-#linesn	'linebytes
-#linesnstr "bytes" ( 0 0 )
+#linesn	'lineqword
+#linesnstr "qwords" ( 0 )
 
 :chm! | "" 'dir --
 	'linesn ! 'linesnstr strcpy ;
@@ -105,21 +105,23 @@
 	drop $2e .emit ; 
 
 :linemem
-	fBl dup $ffff and .h 4 .r. .write
-	fDi "  " .write
+	.sp fBl dup $ffff and .h 4 .r. .write
+	fDi 2 .nsp
 	dup linesn ex
-	"  " .write fMu 
+	2 .nsp fMu 
 	panelMemBytes ( 1? 1- swap
 		c@+ $ff and asciich
 		swap ) drop ;
 
 :panelMem
-	"Memory" pan
-	fMu lmem dup $ffff and swap 16 >> "%h:%h" .print
-	.sp fDi 'linesnstr .write fcr
+	bg1 .wfill 
+	fhome fw .hline
+	fx 1+ .col fPr " Memory " .write fTx
+	fx 10 + .col fBl lmem dup $ffff and swap 16 >> " %h:%h" .print
+	fDi " [" .write 'linesnstr .write "] " .write fcr
 	fw 10 - 3 / 'panelMemBytes !
 	lmem
-	fh 2 - clamp0 ( 1? 1- swap
+	fh 1- clamp0 ( 1? 1- swap
 		linemem fcr
 		swap ) 2drop ;
 
@@ -417,8 +419,11 @@
 
 	'filename run&loadinfo
 	'filename makemapdebug
-
-	here 'lmem !	| panelmem
+	
+	|dataini
+	localdicc ndicc@ 8 >> $ffffff and dataini + | primer dato?
+	'lmem !	| panelmem
+	
 	clearbp			| breakpoints
 	cntinc showcode
 	

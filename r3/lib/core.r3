@@ -209,8 +209,6 @@
 |MAC|	drop 'st 48 + libc-localtime
 	;
 
-
-
 ::findata
 |WIN|	'fdd 
 |LIN|	'dirp
