@@ -198,10 +198,9 @@
 |------------
 :paneleditor
 	fuente c@ 0? ( drop ; ) drop
-	|tuwin $1 'fullpath .wtitle
-	bg0 fPr fhome .sp 'fullpath .write .eline
-	1 2 flpad
-|	tuEditCode
+	.wbordec
+	$1 'fullpath .wtitle
+	1 1 flpad 
 	tuReadCode
 	;
 	
@@ -224,10 +223,9 @@
 	setcolor lwrite ;
 	
 :dirpanel
-	.reset
+	.reset 
+	1 0 flpad 
 	'filecolor xwrite!
-	tuwin $1 "" .wtitle
-	1 1 flpad 
 	'vfolder uiDirs tuTree
 	xwrite.reset
 	tuX? 1? ( changefiles ) drop

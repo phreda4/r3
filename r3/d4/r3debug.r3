@@ -340,10 +340,11 @@
 	ftokenIP
 	dup 48 >> $ff and codenow <>? ( 2drop ; ) drop
 	24 >> $ffff and fuente + tuiposq!
-	.cl .hidec tui
-	cls0
+	.cl 
+|	.hidec 
+	cls0 tui
 	drawscreen
-	.showc
+|	.showc
 	.flush ;
 
 | play only in the source
@@ -353,6 +354,7 @@
 	*>play
 | wait for play
 	( vmState 0? drop ) drop
+	
 | until stop or error
 	( vmState 1 =? drop
 		inkey
@@ -428,6 +430,7 @@
 	remakecursor
 	tuC! | show user cursor
 	showbreakpoint
+	| 'IP tokenCursor
 	checkerror
 	;
 
@@ -445,7 +448,7 @@
 	clearbp			| breakpoints
 	cntinc showcode
 	slnormal
-	.ovec .flush
+	.blockc .flush
 	'maindb onTuia | << a
 	debugend
 	

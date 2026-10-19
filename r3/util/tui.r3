@@ -193,7 +193,8 @@
 |	evtmw 1? ( dup 32 << 'uimouse ! ) drop
 |	;
 :exvector | --
-	.cl .hidec tui vecdraw ex ;
+	.cl |.hidec 
+	tui vecdraw ex ;
 
 #(resizevec) 0
 
@@ -205,7 +206,8 @@
 	exvector
 	rflag
 	$8 and? ( 0 'uikey ! exvector ) | redraw
-	$1 and? ( .restorec .showc )	| with cursor
+	$1 and? ( .restorec |.showc 
+	)	| with cursor
 	drop
 	.flush ;
 	
