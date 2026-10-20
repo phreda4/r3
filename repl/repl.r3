@@ -18,13 +18,10 @@
 #sw 0
 #px 0 #py 0 #pw 0 #ptw 40		| prompt frame
 #tmp * 256
-#pe 0
 #busy 0 #sf 0 #zero 0
-#fnd 0
-#nol 0
 #bk 0 #bkn 0		| definicion de varias lineas en curso, lineas ingresadas
 #bkb * 4096 #bkb> 0	| texto de la definicion (lineas separadas por 13)
-#bkd 0 #bks 0 #bksm 0 #bkcm 0 #bktl 0 #bktc 0 #bkc 0 #bkk 0
+#bkd 0 #bko 0 #bks 0 #bkt * 4096
 
 |---------------- utilidades de pantalla
 :layout
@@ -171,7 +168,7 @@
 #wst 0
 #inp * 256
 #cur 0
-#nc 0 #tmpr 0
+#nc 0
 #recs 0
 #cp * 4096
 #prw * 768
@@ -204,28 +201,25 @@
 :r.eff@ | rec -- 'str
 	dup 8 + @ swap @ 1? ( drop effstr ; ) drop ;
 
-:cgt | j -- 0/1 ; cp[j-1] > tmp ?
-	0? ( ; )
-	1- 3 << 'cp + @ r.name tmpr r.name cmpstr
+:cgt | tmp j -- tmp j 0/1 ; cp[j-1] > tmp ?
+	dup 0? ( ; ) drop
+	dup 1- 3 << 'cp + @ r.name pick2 r.name cmpstr
 	0? ( drop 0 ; ) +? ( drop 1 ; ) drop 0 ;
 
 :csort
 	1 ( nc <?
-		dup 3 << 'cp + @ 'tmpr !
-		dup ( dup cgt 1? drop
+		dup 3 << 'cp + @ over
+		( cgt 1? drop
 			dup 1- 3 << 'cp + @ over 3 << 'cp + !
 			1- )
-		drop
-		tmpr swap 3 << 'cp + !
+		drop 3 << 'cp + !
 		1+ ) drop ;
 
 :fillrow | k --
-	dup 3 << 'cp + @
-	over poff - 7 << 'prw + 'pe !
-	dup r.name pe strcpy
-	dup r.eff@ pe 32 + strcpy
-	r.lib pe 72 + strcpy
-	drop ;
+	dup 3 << 'cp + @ swap poff - 7 << 'prw +
+	over r.name over strcpy
+	over r.eff@ over 32 + strcpy
+	swap r.lib swap 72 + strcpy ;
 
 :gather
 	0 'nc !
@@ -325,10 +319,10 @@
 :prow | i --
 	dup pbg
 	fw .nsp fx .col .sp .sp
-	dup pc dup 7 << 'prw + 'pe !
-	pe cell
-	fMu pe 32 + cell
-	fDi pe 72 + cell
+	dup pc dup 7 << 'prw +
+	dup cell
+	fMu dup 32 + cell
+	fDi 72 + cell
 	drop ;
 
 :drawpopup
@@ -423,20 +417,38 @@
 	"]" ,s ,eol
 	memsize drop empty ;
 
-#nolm 0 #nols 0
-:showlbuf | style max -- ; vuelca las lineas de lbuf al transcript
-	'nolm ! 'nols ! 0 'nol !
-	lbuf ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln
-		'lo2 c@ 1? ( 'lo2 nols tl+ 1 'nol +! ) drop
-		nextl
-		nol nolm >=? ( nip 'zero swap ) drop )
-	2drop ;
+:tlx | style -- 0/1 ; the line in lo2 to the transcript if it is not blank
+	'lo2 c@ 0? ( nip ; ) drop
+	'lo2 swap tl+ 1 ;
+
+:lenl | adr -- n ; length of the line
+	0 swap ( c@+ $ff and 1? 13 <>? 10 <>? drop swap 1+ swap ) 2drop ;
+
+:lcopy | adr -- ; the line to lo2, 2047 characters at most (the output of a program has any length)
+	dup lenl 2047 min
+	'lo2 pick2 pick2 cmove
+	'lo2 + 0 swap c! drop ;
+
+:showtxt | adr style max -- n ; lines of the text to the transcript (blank lines are skipped), up to max ; n = lines shown
+	-rot swap pick2
+	( over c@ $ff and 1? drop
+		over lcopy
+		pick2 tlx -
+		swap nextl swap
+		0? ( swap drop 'zero swap ) )
+	drop -rot 2drop - ;
+
+:cutbanner | text -- text ; the output of the run without the r3 banner
+	dup "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop ;
+
+:showfile | "file" style max -- ; the first lines of a file to the transcript (the memory is only used while it is shown)
+	rot mark loadtxt cutbanner
+	-rot showtxt drop
+	lbig 1? ( lbig "%d bytes: the file is bigger than 1 MB, it is not shown" sprint 4 tl+ ) drop
+	empty ;
 
 :outlines | muestra la salida del programa (mem/repl.log)
-	lbuf "mem/repl.log" load 0 swap c!
-	lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
-	5 14 showlbuf ;
+	"mem/repl.log" 5 14 showfile ;
 
 :err-where | 'file line -- ; where an error is: your line, a line of the project or another file
 	0? ( 2drop ; )
@@ -492,7 +504,6 @@
 	dup m.prev -? ( 2drop ; )
 	m.line swap m.name "warning      %s was already defined (line %d)" sprint 6 tstep ;
 
-#trc 0 #mn0 0
 :trline | i -- ; one exit: word and stack (mem/repl.trc)
 	80 * 'trbuf 16 + + >a
 	mark "exit         " ,s
@@ -507,9 +518,9 @@
 :show-trace | -- ; the stack at the exit of each project word of the run
 	"mem/repl.trc" filexist 0? ( drop ; ) drop
 	'trbuf "mem/repl.trc" load drop
-	'trbuf @ 'trc !
-	0 ( trc 30 min <? dup trline 1+ ) drop
-	trc 30 >? ( trc 30 - "...          %d more exits" sprint 3 tstep ) drop
+	'trbuf @
+	0 ( over 30 min <? dup trline 1+ ) drop
+	30 >? ( dup 30 - "...          %d more exits" sprint 3 tstep ) drop
 	'trbuf 8 + @ 1? ( dup "...          %d exits not recorded (limit)" sprint 3 tstep ) drop ;
 
 :real-eval | adr --
@@ -541,9 +552,8 @@
 	gk 0? ( trace 1? ( show-trace ) drop ) drop
 	outlines
 	gk 2 =? (
-		m.count 'mn0 !
-		defs-mark ga defs+n m.ready
-		mn0 ( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop
+		m.count defs-mark ga defs+n m.ready
+		( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop
 		defs-fmt ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
@@ -566,8 +576,8 @@
 :helpline | e --
 	cmdstr 8 tl+ ;
 
-:cmd-help
-	"Commands" 7 tl+
+:cmd-help | arg --
+	drop "Commands" 7 tl+
 	'ctab ( dup c@ $ff and 1? drop dup helpline e.next ) 2drop
 	lnb ;
 
@@ -604,13 +614,15 @@
 	ntk 12 >? ( "..." 6 tstep ) drop
 	tsb ;
 
+:arg1 | arg -- c ; the first word of the arguments goes to 'tk, c = its first char
+	trim tok drop 'tk c@ $ff and ;
+
 :m.libline | -- stop
 	'tk wis 0? ( ; ) drop
 	libline ;
 
 :cmd-lib | arg --
-	trim tok drop
-	'tk c@ 0? ( drop "usage: /lib word" 6 tstep ; ) drop
+	arg1 0? ( drop "usage: /lib word" 6 tstep ; ) drop
 	'tk wfind
 	0? ( "not found in base or mlibs.r3" 4 tstep )
 	1 =? ( ce effstr 'tk "%s  base  %s  -  no include needed" sprint 8 tstep )
@@ -618,44 +630,31 @@
 	drop tsb ;
 
 #srcmax 256
-:src-line | adr -- ; one line of the project definitions to the transcript
-	'lo2 strcpyln
-	'lo2 c@ 1? ( 'lo2 6 tl+ 1 'nol +! ) drop ;
-
 :src-all | all the definitions, up to srcmax lines
-	0 'nol !
-	defs ( dup c@ $ff and 1? drop
-		dup src-line nextl
-		nol srcmax >=? ( nip 'zero swap ) drop )
-	2drop
-	nol 0? ( "(no definitions)" 6 tl+ ) drop
+	defs 6 srcmax showtxt
+	0? ( "(no definitions)" 6 tl+ ) drop
 	defl srcmax >? ( defl srcmax - "...  %d more lines" sprint 6 tl+ ) drop
 	lnb ;
 
-:src-next | adr -- adr' ; prints a line ; 'zero at the next definition or at the limit
-	dup src-line nextl
-	dup c@ $ff and
-	$3a =? ( 2drop 'zero ; )
-	$23 =? ( 2drop 'zero ; )
-	drop
-	nol srcmax >=? ( nip 'zero swap ) drop ;
+:defstart? | adr -- 0/1 ; the line starts a definition (: or # in the first column)
+	c@ $ff and $3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
 
-:src-word | i -- ; the definition of one word of the project
+:src-word | i -- ; the definition of one word of the project (the text is cut for a moment at its end)
 	m.line ninc 3 + - -? ( drop "not in the project file" lne ; )
 	defs swap ( 1? 1- swap nextl swap ) drop
-	0 'nol !
-	( dup c@ $ff and 1? drop src-next ) 2drop
-	lnb ;
+	dup nextl ( dup c@ $ff and 1? drop dup defstart? 0? drop nextl ) drop
+	dup c@ $ff and >r 0 over c!
+	swap 6 srcmax showtxt drop
+	r> swap c! lnb ;
 
 :cmd-src | arg -- ; /src: the definitions of the project ; /src word: only that one
-	trim tok drop
-	'tk c@ 0? ( drop src-all ; ) drop
+	arg1 0? ( drop src-all ; ) drop
 	m.ready
 	'tk m.find -? ( drop "word not found in the project" lne ; )
 	src-word ;
 
-:cmd-clear
-	0 'ntl ! tp 'tp> ! 0 'scroll ! ;
+:cmd-clear | arg --
+	drop 0 'ntl ! tp 'tp> ! 0 'scroll ! ;
 
 :pbackup | -- ; copia el proyecto a <name>.r3.bak antes de vaciarlo
 	'ppath filexist 0? ( drop ; ) drop
@@ -678,8 +677,8 @@
 	$d =? ( 1 'rdok ! exit )
 	drop ;
 
-:cmd-reset | vacia todo: pila, datos y codigo del proyecto (pide confirmacion)
-	0 'rdok ! frame 'resetdlg onTui
+:cmd-reset | arg -- ; vacia todo: pila, datos y codigo del proyecto (pide confirmacion)
+	drop 0 'rdok ! frame 'resetdlg onTui
 	rdok 0? ( drop "reset cancelled" tsn ; ) drop
 	pbackup
 	0 'sn ! data-clear proj-clear 0 'ninc0 ! psave
@@ -706,16 +705,15 @@
 |RPI|	"ls -1 repl/proj > mem/repl.ls 2>/dev/null"
 	sys ;
 
-:cmd-proj
-	"Projects" 7 tl+
+:cmd-proj | arg --
+	drop "Projects" 7 tl+
 	ls-proj
-	lbuf "mem/repl.ls" load 0 swap c!
-	8 14 showlbuf
+	"mem/repl.ls" 8 14 showfile
 	'pname "current: %s" sprint 6 tl+
 	lnb ;
 
-:cmd-save
-	psave
+:cmd-save | arg --
+	drop psave
 	'ppath "saved to %s" sprint 6 tl+
 	lnb ;
 
@@ -730,8 +728,7 @@
 	pinfo ;
 
 :cmd-load | arg --
-	trim tok drop
-	'tk c@ 0? ( drop cmd-proj ; ) drop
+	arg1 0? ( drop 0 cmd-proj ; ) drop
 	proj? 0? ( drop "no such project (/proj lists them)" lne ; ) drop
 	'tk setproj proj-load drop switched
 	pinfo ;
@@ -743,8 +740,7 @@
 	'ofile strcpy 1 ;
 
 :resolve | arg -- 0/1 ; 'ofile = archivo .r3 encontrado
-	trim tok drop
-	'tk c@ 0? ( drop 0 ; ) drop
+	arg1 0? ( drop 0 ; ) drop
 	"%s" tryf 1? ( ; ) drop
 	"r3/%s" tryf 1? ( ; ) drop
 	"%s.r3" tryf 1? ( ; ) drop
@@ -763,36 +759,34 @@
 	'tk namecheck 0? ( drop "invalid project name" lne ; ) drop
 	proj? 1? ( drop "a project with that name already exists (/load)" lne ; ) drop
 	'tk setproj mkproj
-	pbuf 'ofile load 0 swap c!
+	pbuf 'ofile loadz
 	pbuf proj-parse
 	psave switched
 	'ofile "base code: %s" sprint 6 tl+
 	pinfo ;
 
 :cmd-find | arg --
-	trim tok drop
-	'tk c@ 0? ( drop "usage: /find text" lnn ; ) drop
+	arg1 0? ( drop "usage: /find text" lnn ; ) drop
 	'tk
 |WIN|	"cmd /c ""dir /s /b r3\*%s*.r3 > mem/repl.ls 2>nul"""
 |LIN|	"find r3 -iname ""*%s*.r3"" | sort > mem/repl.ls 2>/dev/null"
 |MAC|	"find r3 -iname ""*%s*.r3"" | sort > mem/repl.ls 2>/dev/null"
 |RPI|	"find r3 -iname ""*%s*.r3"" | sort > mem/repl.ls 2>/dev/null"
 	sprint sys
-	lbuf "mem/repl.ls" load 0 swap c!
-	lbuf c@ 0? ( drop "no results" lnn ; ) drop
-	8 14 showlbuf
+	"mem/repl.ls" fsize 0? ( drop "no results" lnn ; ) drop
+	"mem/repl.ls" 8 14 showfile
 	"/open path   opens it as a project" 6 tl+
 	lnb ;
 
 :runerr | muestra error.log como main.r3
 	"error.log" filexist 0? ( drop ; ) drop
-	'ebuf "error.log" load 0 swap c!
+	'ebuf "error.log" loadz
 	.cr .bred .white " * ERROR * " .write .reset .cr
 	'ebuf .write .cr
 	"error.log" delete ;
 
-:cmd-run
-	psave
+:cmd-run | arg --
+	drop psave
 	.masb .reset .cls .flush
 	'ppath r3run
 	.reterm
@@ -802,8 +796,8 @@
 	.alsb .flush
 	"project launched" lnn ;
 
-:cmd-edit
-	psave
+:cmd-edit | arg --
+	drop psave
 	'ppath 'menubuf strcpy
 	'menubuf 1024 "mem/menu.mem" save
 	.masb .flush
@@ -812,31 +806,27 @@
 	proj-load drop data-clear
 	pinfo ;
 
-#hname 0
 #pfx * 64
 :hook-show
-	0 'fnd !
-	defs ( dup c@ $ff and 1? drop
+	0 defs ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln
-		'lo2 'pfx =pre nip 1? ( 'lo2 6 tl+ 1 'fnd ! ) drop
+		'lo2 'pfx =pre nip 1? ( 'lo2 6 tl+ rot 1+ -rot ) drop
 		nextl ) 2drop
-	fnd 0? ( "(none)" 6 tl+ ) drop ;
+	0? ( "(none)" 6 tl+ ) drop ;
 
 :hook-check | -- ok ; compiles the project (no hooks, no line) to validate it
-	"" 'ga ! 1 'gk !
-	ga gk gen-src
+	gen-proj
 	chk-run 0? ( drop 1 ; ) drop
 	show-chk 0 ;
 
 :hook-cmd | arg "name" -- ; /init and /done: one-line hook definition in the project
-	'hname !
-	hname ":%s " sprint 'pfx strcpy
-	trim
-	dup c@ 0? ( 2drop hook-show lnb ; ) drop
-	"off" over = 1? ( 2drop 'pfx defs-del psave "hook removed" lnn ; ) drop
+	dup ":%s " sprint 'pfx strcpy
+	swap trim
+	dup c@ 0? ( 3drop hook-show lnb ; ) drop
+	"off" over = 1? ( 3drop 'pfx defs-del psave "hook removed" lnn ; ) drop
 	ninc 'ninc0 !
 	'pfx defs-del
-	hname ":%s %s ;" sprint 'lo2 strcpy
+	swap ":%s %s ;" sprint 'lo2 strcpy
 	'lo2 defs+
 	hook-check 0? ( drop 'pfx defs-del ninc0 'ninc ! "hook rejected" lnn ; ) drop
 	psave hook-show lnb ;
@@ -846,59 +836,55 @@
 	stack$ 5 tl+
 	lnb ;
 
-:cmd-fmt | arg --
-	trim tok drop
-	'tk c@ 0? ( drop fmtcycle showfmt ; ) drop
-	"dec" 'tk = 1? ( drop 0 'fmt ! showfmt ; ) drop
-	"hex" 'tk = 1? ( drop 1 'fmt ! showfmt ; ) drop
-	"fix" 'tk = 1? ( drop 2 'fmt ! showfmt ; ) drop
-	"fixed" 'tk = 1? ( drop 2 'fmt ! showfmt ; ) drop
-	"usage: /fmt dec|hex|fix" lne ;
+:fmtidx | -- i ; the format named in 'tk (dec hex fix), -1 = none
+	0 ( 3 <? dup 'fmtn swap n>>0 'tk swap =pre nip 1? ( drop ; ) drop 1+ ) drop -1 ;
 
-:cmd-term | shows the output terminal of the last run (raw, in the normal screen)
-	lbuf "mem/repl.log" load 0 swap c!
-	lbuf "r3vm - PHREDA" findstr dup 1? ( 0 over c! ) 2drop
+:cmd-fmt | arg --
+	arg1 0? ( drop fmtcycle showfmt ; ) drop
+	fmtidx -? ( drop "usage: /fmt dec|hex|fix" lne ; )
+	'fmt ! showfmt ;
+
+:cmd-term | arg -- ; shows the output terminal of the last run (raw, in the normal screen)
+	drop mark "mem/repl.log" loadtxt cutbanner
 	.masb .reset .cls .flush
-	lbuf c@ 0? ( " (no output yet)" .write ) drop
-	lbuf .write
+	dup c@ 0? ( " (no output yet)" .write ) drop
+	lbig 1? ( " (bigger than 1 MB, not shown: mem/repl.log)" .write ) drop
+	.write
 	.cr .cr " -- end of output, press any key --" .write .flush
 	waitkey
-	.alsb .flush ;
+	.alsb .flush empty ;
 
 :trace-msg
 	trace 1? ( drop "trace on   -  stack at the exit of each project word, shown after the run" 5 tstep tsb ; ) drop
 	"trace off" 5 tstep tsb ;
 
 :cmd-trace | arg --
-	trim tok drop
-	'tk c@ 0? ( drop trace 1 xor 'trace ! trace-msg ; ) drop
+	arg1 0? ( drop trace 1 xor 'trace ! trace-msg ; ) drop
 	"on" 'tk = 1? ( drop 1 'trace ! trace-msg ; ) drop
 	"off" 'tk = 1? ( drop 0 'trace ! trace-msg ; ) drop
 	"usage: /trace on|off" lne ;
 
-:docmd | adr --
-	"/help" over = 1? ( 2drop cmd-help ; ) drop
-	"/words" over = 1? ( drop >>sp cmd-words ; ) drop
-	"/lib" over = 1? ( drop >>sp cmd-lib ; ) drop
-	"/stack" over = 1? ( 2drop stack$ 5 tstep tsb ; ) drop
-	"/fmt" over = 1? ( drop >>sp cmd-fmt ; ) drop
-	"/init" over = 1? ( drop >>sp "repl-init" hook-cmd ; ) drop
-	"/done" over = 1? ( drop >>sp "repl-done" hook-cmd ; ) drop
-	"/term" over = 1? ( 2drop cmd-term ; ) drop
-	"/src" over = 1? ( drop >>sp cmd-src ; ) drop
-	"/trace" over = 1? ( drop >>sp cmd-trace ; ) drop
-	"/save" over = 1? ( 2drop cmd-save ; ) drop
-	"/new" over = 1? ( drop >>sp cmd-new ; ) drop
-	"/load" over = 1? ( drop >>sp cmd-load ; ) drop
-	"/proj" over = 1? ( 2drop cmd-proj ; ) drop
-	"/open" over = 1? ( drop >>sp cmd-open ; ) drop
-	"/find" over = 1? ( drop >>sp cmd-find ; ) drop
-	"/edit" over = 1? ( 2drop cmd-edit ; ) drop
-	"/run" over = 1? ( 2drop cmd-run ; ) drop
-	"/clear" over = 1? ( 2drop cmd-clear ; ) drop
-	"/reset" over = 1? ( 2drop cmd-reset ; ) drop
-	"/exit" over = 1? ( 2drop exit ; ) drop
-	drop "unknown command  -  /help" tse ;
+:cmd-stack | arg --
+	drop stack$ 5 tstep tsb ;
+
+:cmd-init | arg --
+	"repl-init" hook-cmd ;
+
+:cmd-done | arg --
+	"repl-done" hook-cmd ;
+
+:cmd-exit | arg --
+	drop exit ;
+
+#cmdv 'cmd-stack 'cmd-fmt 'cmd-term 'cmd-src 'cmd-trace 'cmd-clear 'cmd-reset 'cmd-save 'cmd-new 'cmd-load 'cmd-proj 'cmd-open 'cmd-find 'cmd-edit 'cmd-run 'cmd-init 'cmd-done 'cmd-help 'cmd-words 'cmd-lib 'cmd-exit
+| the same order as the commands of ctab (replhelp.r3)
+
+:docmd | adr -- ; the command goes to its word with the rest of the line
+	'ctab 'cmdv
+	( over c@ $ff and $2f =? drop
+		over pick3 = 1? ( drop nip @ swap >>sp swap ex ; ) drop
+		swap e.next swap 8 + )
+	4drop "unknown command  -  /help" tse ;
 
 |---------------- historial (no se guarda con el proyecto)
 #hist * 8192
@@ -917,7 +903,7 @@
 	empty ;
 
 :hist-load
-	pbuf "mem/repl.hist" load 0 swap c!
+	pbuf "mem/repl.hist" loadz
 	pbuf ( dup c@ $ff and 1? drop
 		dup 'lo2 strcpyln
 		'lo2 255 + 0 swap c!
@@ -938,7 +924,7 @@
 	hn swap - hslot 'inp strcpy inplen 'cur ! popup! ;
 
 :proj-boot | abre el ultimo proyecto (o scratch)
-	pbuf "mem/repl.last" load 0 swap c!
+	pbuf "mem/repl.last" loadz
 	'tk pbuf trim copynom
 	'tk namecheck 0? ( "scratch" 'tk strcpy ) drop
 	'tk setproj proj-ensure 0? ( savefail ) drop proj-load drop proj-remember
@@ -949,69 +935,52 @@
 	0 'busy ! popup! ;
 
 |---------------- definiciones de varias lineas (: o #): se cierran con una linea vacia
-| el scanner lleva parentesis abiertos (bkd), string abierto (bks), si la palabra ya tiene
-| su ; (bksm) y la ultima definicion vista (bkk). Los comentarios | y los strings no cuentan.
-:bk.t1 | -- ; token de un caracter
-	bktc $28 =? ( 1 'bkd +! ) $29 =? ( -1 'bkd +! ) $3b =? ( bkd 0? ( 1 'bksm ! ) drop ) drop ;
+| bk.parse tokenizes the text of the block (rtokx of replfmt: comments and strings do not count) and leaves
+| bkd = ( [ open, bko = the last : word has no ; yet, bks = string not closed
+:quotes | str -- n
+	0 swap ( c@+ $ff and 1? 34 =? ( rot 1+ -rot ) drop ) 2drop ;
 
-:bk.tn | -- ; token mas largo: :nombre #nombre
-	bktc $3a =? ( $3a 'bkk ! 0 'bksm ! ) $23 =? ( $23 'bkk ! ) drop ;
+:bk.tok | -- ; the token in bkt
+	'bkt c@ $ff and
+	$22 =? ( drop 'bkt quotes 1 and 'bks ! ; )
+	$3a =? ( drop 'bkt 1+ c@ 1? ( 1 'bko ! ) drop ; )
+	$23 =? ( drop 'bkt 1+ c@ 1? ( 0 'bko ! ) drop ; )
+	'bkt 1+ c@ 1? ( 2drop ; ) drop
+	$28 =? ( 1 'bkd +! ) $5b =? ( 1 'bkd +! )
+	$29 =? ( -1 'bkd +! ) $5d =? ( -1 'bkd +! )
+	$3b =? ( bkd 0? ( 0 'bko ! ) drop )
+	drop ;
 
-:bk.tend | -- ; fin de token
-	bktl 1 =? ( drop bk.t1 0 'bktl ! ; )
-	1 >? ( drop bk.tn 0 'bktl ! ; )
-	drop 0 'bktl ! ;
-
-:bk.ch | c --
-	'bkc !
-	bkcm 1? ( drop ; ) drop
-	bks 1 =? ( drop bkc $22 =? ( 2 'bks ! ) drop ; ) drop
-	bks 2 =? ( 0 'bks ! bkc $22 =? ( 1 'bks ! drop drop ; ) drop ) drop
-	bkc 33 <? ( drop bk.tend ; ) drop
-	bktl 0? ( bkc 'bktc !
-		bkc $7c =? ( 1 'bkcm ! ) drop
-		bkc $22 =? ( 1 'bks ! 1 'bktl +! ) drop ) drop
-	1 'bktl +! ;
-
-:bk.scan | adr -- ; actualiza el estado con una linea
-	0 'bkcm ! 0 'bktl !
-	( c@+ $ff and 1? bk.ch ) 2drop
-	bk.tend
-	bks 2 =? ( 0 'bks ! ) drop ;
+:bk.parse | -- ; the state of the block
+	0 'bkd ! 0 'bko ! 0 'bks !
+	'bkb ( 'bkt rtokx 'bkt c@ $ff and 1? drop bk.tok ) 2drop ;
 
 :bk.reset | -- ; sale del modo definicion
-	0 'bk ! 0 'bkn ! 0 'bkd ! 0 'bks ! 0 'bksm ! 0 'bktl ! 0 'bkcm ! 0 'bkk !
+	0 'bk ! 0 'bkn ! 0 'bkd ! 0 'bko ! 0 'bks !
 	'bkb 'bkb> ! 0 'bkb c! ;
 
 :bk.err | "msg" -- ; error que no se arregla agregando lineas: se descarta la definicion
 	tse bk.reset ;
 
 :bk.add | adr -- ; agrega la linea al bloque
-	dup bk.scan
 	bkn 1? ( 13 bkb> c!+ 'bkb> ! ) drop
 	bkb> strcpyl 1- 'bkb> !
 	1 'bkn +! ;
 
-:bk.open? | -- 0/1 ; la ultima palabra : todavia no tiene su ;
-	bkk $3a =? ( bksm 0? ( 2drop 1 ; ) drop ) drop 0 ;
-
-:bk.defstart? | adr -- 0/1 ; la linea empieza una definicion
-	trim c@ $ff and $3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
-
 :bk.nest? | adr -- 0/1 ; la linea abre otra definicion con una palabra sin cerrar
-	bks 1? ( 2drop 0 ; ) drop
-	bk.defstart? 0? ( ; )
-	drop bk.open? ;
+	bk.parse bks 1? ( 2drop 0 ; ) drop
+	lkind 2 <>? ( drop 0 ; ) drop
+	bko ;
 
 :bk.begin | adr -- ; primera linea de una definicion
 	bk.reset 1 'bk !
-	bk.add
+	bk.add bk.parse
 	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
 
 :bk.end | -- ; linea vacia: cierra la definicion si esta completa
 	bks 1? ( drop "string not closed  (esc cancels)" tse ; ) drop
 	bkd 1? ( drop bkd "%d ( not closed  (esc cancels)" sprint tse ; ) drop
-	bk.open? 1? ( drop "missing ;  (esc cancels)" tse ; ) drop
+	bko 1? ( drop "missing ;  (esc cancels)" tse ; ) drop
 	'bkb real-eval bk.reset ;
 
 :bk.line | -- ; enter dentro de la definicion (la linea esta en 'inp)
@@ -1022,7 +991,7 @@
 	0 'inp c! 0 'cur ! 0 'pn !
 	dup bk.nest? 1? ( 2drop "missing ;  before the next definition" bk.err ; ) drop
 	bkb> 'bkb - 3800 >? ( 2drop "definition too long" bk.err ; ) drop
-	bk.add
+	bk.add bk.parse
 	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
 
 :bk.cancel | -- ; esc dentro de la definicion
@@ -1044,9 +1013,9 @@
 
 :onkey | key --
 	uiKey
-	12 =? ( drop cmd-clear ; )
+	12 =? ( drop 0 cmd-clear ; )
 	6 =? ( drop fmtcycle ; )
-	20 =? ( drop cmd-term ; )
+	20 =? ( drop 0 cmd-term ; )
 	[enter] =? ( drop submit ; )
 	[back] =? ( drop kbks popup! ; )
 	[del] =? ( drop kdel popup! ; )
@@ -1076,7 +1045,7 @@
 	tp 'tp> ! ;
 
 :main
-	core-init gen-init m.init initmem
+	core-init m.init initmem
 	data-clear proj-boot
 	.alsb
 	'replscr onTui 

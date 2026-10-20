@@ -7,6 +7,22 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3genera.r3
 
+::loadz | adr "file" -- ; the file at adr as a text (0 at the end)
+	load 0 swap c! ;
+
+##lmax $100000		| a file read to the free memory is limited to 1 MB
+##lbig 0			| size of the last file that was not read because of lmax (0 = nothing left out)
+
+::fsize | "file" -- size ; 0 = it does not exist
+	fileinfo 0? ( ; ) drop fileisize ;
+
+::loadtxt | "file" -- 'text ; the file as a text at here, here goes after it: mark before, empty after
+	0 'lbig !
+	here 0 over c!
+	swap dup fsize lmax >? ( 'lbig ! drop dup 1+ 'here ! ; ) drop
+	over swap load
+	0 swap c!+ 'here ! ;
+
 ##tk * 256		| current token (see tok)
 ##lo2 * 2048		| current line
 
@@ -102,7 +118,7 @@
 
 ::proj-load | -- ok
 	'ppath filexist 0? ( ; ) drop
-	pbuf 'ppath load 0 swap c!
+	pbuf 'ppath loadz
 	pbuf proj-parse 1 ;
 
 ::proj-save | -- ok ; 0 = the file could not be saved

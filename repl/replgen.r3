@@ -9,7 +9,6 @@
 #t0 0 ##tms 0
 #obuf * 2064
 ##ebuf * 4096
-##lbuf 0
 ##emsg * 256
 ##efile * 128
 #els 0 #elne 0 ##eline 0
@@ -25,12 +24,8 @@
 ::inyour? | line -- n ; 0 = not in the typed text, else its line number inside it (1..)
 	gyour - -? ( drop 0 ; ) 1+ gyn 1+ >? ( drop 0 ; ) ;
 
-#dl 0
-:gen-defs | the project as it is: its boot words are left out when the program is generated from the tokens (replchk)
-	0 'dl !
-	defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln 'lo2 ,s gnl
-		nextl ) 2drop ;
+:gen-defs | the project as it is (defs keeps its lines with CR LF)
+	defs ,s defl 'gl +! ;
 
 ::gen-src | adr kind -- ; escribe mem/repl.r3
 	'gk ! 'ga ! 0 'gyn !
@@ -50,6 +45,9 @@
 	".rdump ;" ,s gnl
 	"mem/repl.r3" savemem
 	empty ;
+
+::gen-proj | -- ; the project alone: no hooks, no line
+	"" 1 gen-src ;
 
 :runcmd | runs mem/repl.r3 with output to mem/repl.log
 	mark here
@@ -93,7 +91,7 @@
 	'emsg strcpyln ;
 
 ::rd-err
-	'ebuf "error.log" load 0 swap c!
+	'ebuf "error.log" loadz
 	rd-file rd-line rd-msg ;
 
 ::readdump | -- code ; 0 ok, 2 sin volcado, 3 underflow, 4 pila grande
@@ -108,5 +106,3 @@
 	0 ( over <? dup 1+ 3 << 'obuf + @ over 3 << 'sstk + ! 1+ ) 2drop
 	0 ;
 
-::gen-init | -- ; lbuf (>8192) is reserved at the boot
-	here dup 'lbuf ! $4000 + 'here ! ;

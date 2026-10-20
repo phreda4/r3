@@ -7,14 +7,10 @@
 ^repl/replmodel.r3
 
 #ftk * 1024 #fpk * 1024 #fnm * 128
-#rdst 0
-#fi 1 #fb 1 #ffirst 0 #fblank 0 #fmi 0
-#dm0 0 #dl0 0 #ftmp 0
+#fi 1 #fb 1 #ffirst 0 #fblank 0
+#dm0 0 #dl0 0
 
 |---------------- tokens (the text is a stream: lines are not important, a definition ends at the next : # | in column 0)
-:rput | c --
-	rdst c!+ 'rdst ! ;
-
 :skipws | adr -- adr'
 	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
 
@@ -29,28 +25,34 @@
 	drop 0 ;
 
 :rtcom | adr -- adr' ; comment up to the end of the line
-	( dup c@ $ff and 1? 13 <>? 10 <>? rput 1+ )
-	drop 0 rdst c! ;
+	( dup c@ $ff and 1? 13 <>? 10 <>? ca!+ 1+ )
+	drop 0 ca! ;
 
 :rtstr | adr -- adr' ; "string" (a double quote inside is written twice)
-	c@+ rput
+	c@+ ca!+
 	( dup c@ $ff and 1?
-		34 =? ( drop c@+ rput dup c@ $ff and 34 <>? ( drop 0 rdst c! ; ) )
-		rput 1+ )
-	drop 0 rdst c! ;
+		34 =? ( drop c@+ ca!+ dup c@ $ff and 34 <>? ( drop 0 ca! ; ) )
+		ca!+ 1+ )
+	drop 0 ca! ;
 
 :rtwrd | adr -- adr'
-	( dup c@ $ff and 32 >? rput 1+ )
-	drop 0 rdst c! ;
+	( dup c@ $ff and 32 >? ca!+ 1+ )
+	drop 0 ca! ;
 
-:rtok | adr dst -- adr' ; next token in dst (empty at the end or at the next definition)
-	'rdst !
-	skipws bound? 1? ( drop 0 rdst c! ; ) drop
-	dup c@ $ff and 0? ( drop 0 rdst c! ; ) drop
+:rtok0 | adr -- adr' ; next token, it is written at A (empty at the end)
+	skipws
+	dup c@ $ff and 0? ( drop 0 ca! ; ) drop
 	dup c@ $ff and
 	$7c =? ( drop rtcom ; )
 	$22 =? ( drop rtstr ; )
 	drop rtwrd ;
+
+::rtokx | adr dst -- adr' ; next token in dst (the lines do not matter)
+	>a rtok0 ;
+
+:rtok | adr dst -- adr' ; the same, but empty at the next definition (: # | in the first column)
+	>a skipws bound? 1? ( drop 0 ca! ; ) drop
+	rtok0 ;
 
 |---------------- what a token does to the stack
 :digit? | c -- 0/1
@@ -132,22 +134,21 @@
 :f-name | adr -- adr' ; ":name" as it was written
 	( dup c@ $ff and 32 >? drop c@+ ,c ) drop ;
 
-:f-stk | -- ; " | a -- b" (the mov of the model: delta<<8 | use, as ,mov of r3map wants)
-	fmi m.eff -? ( drop ; )
+:f-stk | i -- ; " | a -- b" (the mov of the model: delta<<8 | use, as ,mov of r3map wants)
+	m.eff -? ( drop ; )
 	" | " ,s
 	dup $ff and 8 << swap 8 >> $ff and or ,mov ;
 
 :f-def | adr i -- adr'
-	'fmi !
-	f-name f-stk ,nl
+	swap f-name swap f-stk ,nl
 	f-body
 	,nl 1 'fblank ! ;
 
 :f-nmidx | adr -- adr i ; model index of the word of ":name" (-1 = boot word or unknown)
 	dup 1+ dup c@ $ff and $3a =? ( drop 1+ 0 ) drop
-	'fnm 'rdst !
-	( dup c@ $ff and 32 >? rput 1+ ) drop
-	0 rdst c! drop
+	'fnm >a
+	( dup c@ $ff and 32 >? ca!+ 1+ ) drop
+	0 ca! drop
 	'fnm c@ $ff and 0? ( drop -1 ; ) drop
 	'fnm m.find ;
 
@@ -171,8 +172,7 @@
 
 ::defs-fmt | -- ; formats what was added since defs-mark (the model must know the new words)
 	defs> dm0 =? ( drop ; ) drop
-	mark here 'ftmp !
+	mark here
 	dm0 fmt-text 0 ,c
 	dm0 'defs> ! 0 dm0 c! dl0 'defl !
-	ftmp defs+n
-	empty ;
+	defs+n empty ;

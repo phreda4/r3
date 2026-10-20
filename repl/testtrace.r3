@@ -6,7 +6,7 @@
 	a@+ trname a@+ swap "%w depth:%d" .println ;
 
 :
-	core-init gen-init
+	core-init
 	0 'sn !
 	":sq dup * ;" defs+
 	":cub dup sq * ;" defs+

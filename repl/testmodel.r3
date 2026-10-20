@@ -12,16 +12,16 @@
 	0 ( m.count <? dup show 1+ ) drop ;
 
 :
-	core-init gen-init m.init
+	core-init m.init
 	"project empty:" .println list
 	":sq dup * ;" defs+ ":cub dup sq * ;" defs+ "#v 0" defs+
 	":setv 'v ! ;" defs+ "::pub 1 + ;" defs+ ":cond 0? ( 1 ) ;" defs+
 	"project:" .println list
-	"sq" m.has "has sq:%d" .println
-	"nope" m.has "has nope:%d" .println
+	"sq" m.find "find sq:%d" .println
+	"nope" m.find "find nope:%d" .println
 	"cub" m.find "find cub:%d" .println
-	"repl-init" m.has "has repl-init:%d" .println
-	":repl-init 1 ;" defs+ m.ready "repl-init" m.has "has repl-init (after):%d" .println
+	"repl-init" m.find "find repl-init:%d" .println
+	":repl-init 1 ;" defs+ m.ready "repl-init" m.find "find repl-init (after):%d" .println
 	"^r3/lib/rand.r3" inc+ ":rr randmax ;" defs+
 	"with include:" .println list
 	":sq dup dup * * ;" defs+ m.ready

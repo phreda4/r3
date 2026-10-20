@@ -292,6 +292,7 @@
 #bd_spr * 2048
 #bd_scl * 2048
 #bd_t   * 2048
+#bd_old * 2048	| sprite a restaurar al des-ocultar
 
 #tspr #tscl #tt
 
@@ -299,6 +300,7 @@
 	'tt ! 'tscl ! 'tspr !
 	3 <<
 	tspr over 'bd_spr + !
+	tspr -? ( drop nrosprite ) over 'bd_old + !
 	tscl over 'bd_scl + !
 	tt swap 'bd_t + ! ;
 
@@ -311,12 +313,26 @@
 		dup tspr tscl tt bdset
 		1+ ) drop ;
 
-| escala/sprite de cada instancia (ocultos: escala 0)
+#bsel 0		| hueso seleccionado
+#bdebug 1	| 1 = resalta seleccion (rojo) y raiz (amarillo)
+#bs #bc
+
+:bcolor | i -- color
+	bdebug 0? ( 2drop $ffffff00 ; ) drop
+	bsel =? ( drop $ff202000 ; )
+	dup skel + c@ -? ( 2drop $ffff0000 ; ) drop
+	drop $ffffff00 ;
+
+| escala/sprite/color de cada instancia (ocultos: escala 0,
+| salvo el seleccionado: punto chico para poder verlo)
 :bdone | i --
 	dup 3 <<
-	dup 'bd_scl + @ swap 'bd_spr + @ | i scl spr
-	-? ( 2drop 0 0 )
-	$ffffff00 pick3 ss3dcs drop ;
+	dup 'bd_scl + @ 'bc !
+	'bd_spr + @ 'bs !
+	bs -? ( drop 0 'bc ! 0 'bs !
+		dup bsel =? ( 0.4 'bc ! nrosprite 'bs ! ) )
+	drop
+	bc bs pick2 bcolor pick3 ss3dcs drop ;
 
 :bdapply
 	0 ( cntbones <?
@@ -332,9 +348,30 @@
 
 :listbones | debug: i padre spr
 	0 ( cntbones <?
-		dup dup skel + c@ over 3 << 'bd_spr + @
+		dup 3 << 'bd_spr + @
+		over skel + c@
+		pick2
 		"%d p:%d spr:%d" .println
 		1+ ) drop ;
+
+:listhidden | lineas para pegar en :describe
+	0 ( cntbones <?
+		dup 3 << 'bd_spr + @ -? (
+			over "%d -1 1.0 1.0 bdset" .println ) drop
+		1+ ) drop ;
+
+:bnext bsel 1+ cntbones mod 'bsel ! bdapply ;
+:bprev bsel 1- cntbones + cntbones mod 'bsel ! bdapply ;
+
+#boff
+:btoggle | oculta / muestra el hueso seleccionado
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ -? (
+		drop boff 'bd_old + @ boff 'bd_spr + !
+		bdapply ; )
+	boff 'bd_old + !
+	-1 boff 'bd_spr + !
+	bdapply ;
 
 #b0x #b0y #b0z
 #b1x #b1y #b1z
@@ -442,6 +479,14 @@
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
+	bsel 3 << 'bd_spr + @
+	bsel skel + c@
+	bsel
+	"bone %d padre %d spr %d" sprint uiLabelC
+	'bprev "<" uiTBtn
+	'bnext ">" uiTBtn
+	'btoggle "hide" uiTBtn
+
 	|nrosprite ssnameid "[%l]" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
@@ -474,6 +519,9 @@
 	<f3> =? ( 3 setanim )	
 	<f4> =? ( 0 setanim )	
 	<f5> =? ( listbones )
+	<f6> =? ( bdebug 1 xor 'bdebug ! bdapply )
+	<f7> =? ( listhidden )
+	<le> =? ( bprev ) <ri> =? ( bnext ) <h> =? ( btoggle )
 	
 |	<f3> =? ( 2 calcpose )
 |	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )

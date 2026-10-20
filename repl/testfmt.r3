@@ -10,7 +10,7 @@
 	defs-mark defs+n m.ready defs-fmt ;
 
 :
-	core-init gen-init m.init
+	core-init m.init
 	"^r3/lib/rand.r3" inc+
 	":cua dup * ;" add
 	":foo 2 3 + dup cua * ;" add

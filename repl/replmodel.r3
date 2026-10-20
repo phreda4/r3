@@ -3,18 +3,18 @@
 | and this model keeps what the dictionary says about the project words:
 | name, data/code, exported, writes memory, effect, uses, line of the project file
 | m.ready tokenizes again only if the project changed (mdirty is set by replcore)
-|   m.count m.name m.data? m.exp? m.writes? m.eff m.calls m.line m.find m.has m.ok
+|   m.count m.name m.data? m.writes? m.eff m.line m.find m.ok
 |   m.boots m.bootline (the boot words of the project)  m.prev (an earlier definition of the same name)
 |   m.ok = 0 : the project does not compile (m.errmsg m.errline say why); the model keeps the words before the error
 ^repl/replchk.r3
 
-#mtab * 32768		| 1024 words x 32 bytes: name 24, flags 1, use 1, delta 1, calls 2 (at 28), line 2 (at 30)
+#mtab * 32768		| 1024 words x 32 bytes: name 24, flags 1, use 1, delta 1, line 2 (at 30)
 #mn 0
 #mok 1
 #mtmp * 64
 #mp 0
 #msga 0 #msgk 0
-#mbs * 128 #mbe * 128 #mbn 0	| boot words of the project: first and last line (file lines), 16 at most
+#mbs * 128 #mbn 0	| boot words of the project: first line (file line), 16 at most
 
 :m.add | n -- ; stores the word n of the dictionary
 	mn 1024 >=? ( 2drop ; ) drop
@@ -25,8 +25,7 @@
 	dup nro>dic @ 3 and over ckwrites? 2 << or mp 24 + c!
 	dup nro>dic 8 + @
 	dup $ff and mp 25 + c!
-	dup 8 >> $ff and mp 26 + c!
-	16 >> $ffff and mp 28 + w!
+	8 >> $ff and mp 26 + c!
 	r3name src swap cklines mp 30 + w!
 	1 'mn +! ;
 
@@ -37,9 +36,7 @@
 
 :m.addboot | n -- ; lines of a boot word of the project
 	mbn 16 >=? ( 2drop ; ) drop
-	dup r3name src swap cklines mbn 3 << 'mbs + !
-	nro>dic toklend 1- 3 << + @ 40 >>> src + src swap cklines
-	mbn 3 << 'mbe + !
+	r3name src swap cklines mbn 3 << 'mbs + !
 	1 'mbn +! ;
 
 :m.chkboot | n --
@@ -69,8 +66,7 @@
 	ga 'msga ! gk 'msgk !
 	ckonok 'msok ! ckonerr 'mser ! ckauto 'msau !
 	'm.snapok 'ckonok ! 'm.snaperr 'ckonerr ! 0 'ckauto !
-	"" 'ga ! 1 'gk !
-	ga gk gen-src
+	gen-proj
 	chk-loop drop
 	msok 'ckonok ! mser 'ckonerr ! msau 'ckauto !
 	msga 'ga ! msgk 'gk ! ;
@@ -99,18 +95,12 @@
 ::m.data? | i -- 0/1
 	m.fl 1 and ;
 
-::m.exp? | i -- 0/1
-	m.fl 2 and 1 >> ;
-
 ::m.writes? | i -- 0/1
 	m.fl 4 and 2 >> ;
 
 ::m.eff | i -- eff ; use<<8 | delta&$ff, -1 = data (the format of effstr)
 	dup m.data? 1? ( 2drop -1 ; ) drop
 	5 << 'mtab + dup 25 + c@ $ff and 8 << swap 26 + c@ $ff and or ;
-
-::m.calls | i -- n
-	5 << 'mtab + 28 + w@ $ffff and ;
 
 ::m.line | i -- line ; line of the project file
 	5 << 'mtab + 30 + w@ $ffff and ;
@@ -119,9 +109,6 @@
 	mn ( 1? 1-
 		2dup m.name =s 1? ( drop nip ; ) drop )
 	2drop -1 ;
-
-::m.has | "name" -- 0/1
-	m.find -? ( drop 0 ; ) drop 1 ;
 
 ::m.boots | -- n
 	mbn ;

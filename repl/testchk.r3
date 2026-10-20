@@ -18,7 +18,7 @@
 :t2 2 t ;
 
 :
-	core-init gen-init
+	core-init
 	0 'sn !
 	"1 2 +" t0
 	"+" t0

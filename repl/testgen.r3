@@ -9,7 +9,7 @@
 	chk-gen "chk-gen:%d" .println ;
 
 :
-	core-init gen-init
+	core-init
 	0 'sn !
 	":sq dup * ;" defs+
 	": 5 | a; b" defs+ "  1 + ;" defs+
