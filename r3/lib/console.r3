@@ -109,7 +109,7 @@
 
 |------- Cursor Shapes -------
 ::.ovec "1 q" .[w ; | default cursor
-::.insc "3 q" .[w ; | blinking bar
+::.insc "3 q" .[w ; | blinking underscore
 ::.blockc "2 q" .[w ; | steady block
 ::.underc "4 q" .[w ; | steady underscore
 

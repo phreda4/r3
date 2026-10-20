@@ -5,7 +5,7 @@
 ^repl/replcore.r3
 
 |---------------- generacion y ejecucion (r3 real)
-##gk 0 ##ga 0 ##gl 0 ##gboot 0 ##gyour 0	| gyour = line of the typed code in mem/repl.r3
+##gk 0 ##ga 0 ##gl 0 ##gboot 0 ##gyour 0 ##gyn 0	| gyour = line of the typed code in mem/repl.r3 ; gyn = extra lines of a multi-line definition
 #t0 0 ##tms 0
 #obuf * 2064
 ##ebuf * 4096
@@ -16,6 +16,15 @@
 
 :gnl ,nl 1 'gl +! ;
 
+#crc 0
+:crn | adr -- n ; number of CR in the text (extra lines of a multi-line definition)
+	0 'crc !
+	( c@+ $ff and 1? 13 =? ( 1 'crc +! ) drop ) 2drop
+	crc ;
+
+::inyour? | line -- n ; 0 = not in the typed text, else its line number inside it (1..)
+	gyour - -? ( drop 0 ; ) 1+ gyn 1+ >? ( drop 0 ; ) ;
+
 #dl 0
 :gen-defs | the project as it is: its boot words are left out when the program is generated from the tokens (replchk)
 	0 'dl !
@@ -24,19 +33,20 @@
 		nextl ) 2drop ;
 
 ::gen-src | adr kind -- ; escribe mem/repl.r3
-	'gk ! 'ga !
+	'gk ! 'ga ! 0 'gyn !
 	mark 0 'gl !
 	"^repl/repldump.r3" ,s gnl
 	0 ( ninc <? dup 7 << 'incs + ,s gnl 1+ ) drop
 	"#rdini 0" ,s gnl
 	gen-defs
-	gk 2 =? ( gl 1+ 'gyour ! ga ,s gnl ) drop
+	gk 2 =? ( gl 1+ 'gyour ! ga ,s gnl ga crn dup 'gyn ! 'gl +! ) drop
 	"#rdend 0" ,s gnl
+	gk 0? ( ":rdline" ,s gnl gl 1+ 'gyour ! ga ,s gnl ";" ,s gnl ) drop	| the line is a word: r3token gives its stack effect
 	gl 1+ 'gboot !
-	gk 2 <>? ( gboot 'gyour ! ) drop
+	gk 1 =? ( gboot 'gyour ! ) drop
 	": 'rdini 'rdend .rreg .rrest .rbegin " ,s
 	0 ( sn <? dup 3 << 'sstk + @ "%d " ,print 1+ ) drop
-	gk 0? ( gnl gl 1+ 'gyour ! ga ,s gnl ) drop
+	gk 0? ( "rdline " ,s ) drop
 	".rdump ;" ,s gnl
 	"mem/repl.r3" savemem
 	empty ;

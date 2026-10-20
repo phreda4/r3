@@ -21,6 +21,9 @@
 #busy 0 #sf 0 #zero 0
 #fnd 0
 #nol 0
+#bk 0 #bkn 0		| definicion de varias lineas en curso, lineas ingresadas
+#bkb * 4096 #bkb> 0	| texto de la definicion (lineas separadas por 13)
+#bkd 0 #bks 0 #bksm 0 #bkcm 0 #bktl 0 #bktc 0 #bkc 0 #bkk 0
 
 |---------------- utilidades de pantalla
 :layout
@@ -71,6 +74,9 @@
 :r.user
 	bg1 fx .col fw .ndel
 	fBl bar bg1 fTx .sp fw 5 - lt lwrite ;
+:r.cont
+	bg1 fx .col fw .ndel
+	fPr bar bg1 fTx .sp fw 5 - lt lwrite ;
 :r.head
 	fPr "*  " .write fMu fw 4 - lt lwrite ;
 :r.ok
@@ -101,6 +107,7 @@
 	6 =? ( drop r.note ; )
 	7 =? ( drop r.title ; )
 	8 =? ( drop r.cmd ; )
+	9 =? ( drop r.cont ; )
 	drop ;
 
 :drawlines
@@ -287,15 +294,22 @@
 :ptw! | width pad -- ; ancho de texto del prompt para un frame y un margen
 	2* - 3 - 1 max 'ptw ! ;
 
+:phold | -- "text" ; texto del prompt vacio
+	bk 0? ( drop "Type an R3Forth expression  (e.g. 2 3 + dup *)" ; ) drop
+	bkn 1+ "definition  -  line %d  -  empty line to finish  (esc cancels)" sprint ;
+
+:pbar | -- ; color de la barra del prompt: azul, violeta mientras se ingresa una definicion
+	bk 0? ( drop fBl ; ) drop fPr ;
+
 :promptline | i -- ; linea i del texto de entrada
-	inplen 0? ( 2drop fDi ptw "Type an R3Forth expression  (e.g. 2 3 + dup *)" lwrite ; ) drop
+	inplen 0? ( 2drop fDi ptw phold lwrite ; ) drop
 	ptw * 'inp + fTx ptw swap lwrite ;
 
 :drawprompt | pad -- ; texto de entrada con salto de linea (pl filas) mas 3 de margen
 	0 flpad fhome
 	fx 'px ! fy 'py ! fw 'pw !
 	0 ( pl 3 + <?
-		fBl bg2 bar fw .ndel .sp .sp
+		pbar bg2 bar fw .ndel .sp .sp
 		1 pl in? ( dup 1- promptline )
 		fcr 1+ ) drop
 	bg0 fx 3 + cur ptw mod + fy 1+ cur ptw / + .at .savec tuC! ;
@@ -334,6 +348,7 @@
 	busy 1? ( fPr 'spin sf 4 mod n>>0 .write fMu " running r3..." .write 1 'sf +! )
 	0? ( fDi "~/r3" .write ) drop
 	pn 1? ( nc pn >? ( fMu nc psel 1+ "  %d/%d" sprint .write ) drop ) drop
+	bk 1? ( fPr bkd bkn "  definition  %d lines  %d open (" sprint .write ) drop
 	cols 86 >=? ( fDi cols 80 - .col 78 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal   ^l clear  " rwrite ) drop ;
 
 |---------------- dibujo: pantallas
@@ -425,7 +440,9 @@
 :err-where | 'file line -- ; where an error is: your line, a line of the project or another file
 	0? ( 2drop ; )
 	over "mem/repl.r3" = 0? ( drop swap "in %s  line %d" sprint 6 tstep ; ) drop
-	gyour =? ( 2drop "in your line" 6 tstep ; )
+	dup inyour? 1? ( nip nip
+		gyn 0? ( 2drop "in your line" 6 tstep ; ) drop
+		"in your definition  line %d" sprint 6 tstep ; ) drop
 	nip 'pname "in project %s  line %d" sprint 6 tstep ;
 
 :show-err | -- ; runtime error (error.log)
@@ -497,7 +514,7 @@
 :real-eval | adr --
 	m.ready
 	dup 'ga ! lkind 'gk !
-	gk 3 =? ( drop ; ) drop
+	gk 3 =? ( drop ga trim c@ $ff and 0? ( drop ; ) drop ga defs+ psave ; ) drop
 	ninc 'ninc0 !
 	prep 0? ( drop ; ) drop
 	"r3repl  -  r3" 2 tstep
@@ -524,7 +541,7 @@
 	outlines
 	gk 2 =? (
 		m.count 'mn0 !
-		ga defs+ m.ready
+		ga defs+n m.ready
 		mn0 ( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
@@ -899,36 +916,99 @@
 :fin
 	0 'busy ! popup! ;
 
+|---------------- definiciones de varias lineas (: o #): se cierran con una linea vacia
+| el scanner lleva parentesis abiertos (bkd), string abierto (bks), si la palabra ya tiene
+| su ; (bksm) y la ultima definicion vista (bkk). Los comentarios | y los strings no cuentan.
+:bk.t1 | -- ; token de un caracter
+	bktc $28 =? ( 1 'bkd +! ) $29 =? ( -1 'bkd +! ) $3b =? ( bkd 0? ( 1 'bksm ! ) drop ) drop ;
+
+:bk.tn | -- ; token mas largo: :nombre #nombre
+	bktc $3a =? ( $3a 'bkk ! 0 'bksm ! ) $23 =? ( $23 'bkk ! ) drop ;
+
+:bk.tend | -- ; fin de token
+	bktl 1 =? ( drop bk.t1 0 'bktl ! ; )
+	1 >? ( drop bk.tn 0 'bktl ! ; )
+	drop 0 'bktl ! ;
+
+:bk.ch | c --
+	'bkc !
+	bkcm 1? ( drop ; ) drop
+	bks 1 =? ( drop bkc $22 =? ( 2 'bks ! ) drop ; ) drop
+	bks 2 =? ( 0 'bks ! bkc $22 =? ( 1 'bks ! drop drop ; ) drop ) drop
+	bkc 33 <? ( drop bk.tend ; ) drop
+	bktl 0? ( bkc 'bktc !
+		bkc $7c =? ( 1 'bkcm ! ) drop
+		bkc $22 =? ( 1 'bks ! 1 'bktl +! ) drop ) drop
+	1 'bktl +! ;
+
+:bk.scan | adr -- ; actualiza el estado con una linea
+	0 'bkcm ! 0 'bktl !
+	( c@+ $ff and 1? bk.ch ) 2drop
+	bk.tend
+	bks 2 =? ( 0 'bks ! ) drop ;
+
+:bk.reset | -- ; sale del modo definicion
+	0 'bk ! 0 'bkn ! 0 'bkd ! 0 'bks ! 0 'bksm ! 0 'bktl ! 0 'bkcm ! 0 'bkk !
+	'bkb 'bkb> ! 0 'bkb c! ;
+
+:bk.err | "msg" -- ; error que no se arregla agregando lineas: se descarta la definicion
+	tse bk.reset ;
+
+:bk.add | adr -- ; agrega la linea al bloque
+	dup bk.scan
+	bkn 1? ( 13 bkb> c!+ 'bkb> ! ) drop
+	bkb> strcpyl 1- 'bkb> !
+	1 'bkn +! ;
+
+:bk.open? | -- 0/1 ; la ultima palabra : todavia no tiene su ;
+	bkk $3a =? ( bksm 0? ( 2drop 1 ; ) drop ) drop 0 ;
+
+:bk.defstart? | adr -- 0/1 ; la linea empieza una definicion
+	trim c@ $ff and $3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
+
+:bk.nest? | adr -- 0/1 ; la linea abre otra definicion con una palabra sin cerrar
+	bks 1? ( 2drop 0 ; ) drop
+	bk.defstart? 0? ( ; )
+	drop bk.open? ;
+
+:bk.begin | adr -- ; primera linea de una definicion
+	bk.reset 1 'bk !
+	bk.add
+	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
+
+:bk.end | -- ; linea vacia: cierra la definicion si esta completa
+	bks 1? ( drop "string not closed  (esc cancels)" tse ; ) drop
+	bkd 1? ( drop bkd "%d ( not closed  (esc cancels)" sprint tse ; ) drop
+	bk.open? 1? ( drop "missing ;  (esc cancels)" tse ; ) drop
+	'bkb real-eval bk.reset ;
+
+:bk.line | -- ; enter dentro de la definicion (la linea esta en 'inp)
+	0 'scroll !
+	'inp trim c@ $ff and 0? ( drop 0 'inp c! 0 'cur ! 0 'pn ! bk.end ; ) drop
+	'inp hist+ hist-save
+	'inp 9 tl+p
+	0 'inp c! 0 'cur ! 0 'pn !
+	dup bk.nest? 1? ( 2drop "missing ;  before the next definition" bk.err ; ) drop
+	bkb> 'bkb - 3800 >? ( 2drop "definition too long" bk.err ; ) drop
+	bk.add
+	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
+
+:bk.cancel | -- ; esc dentro de la definicion
+	bk.reset "definition canceled" lnn ;
+
 :submit
+	bk 1? ( drop bk.line fin ; ) drop
 	inplen 0? ( drop ; ) drop
 	'inp hist+ hist-save
 	0 'scroll !
 	'inp 1 tl+p
 	0 'inp c! 0 'cur ! 0 'pn !
 	dup c@ $ff and $2f =? ( drop docmd fin ; ) drop
+	dup lkind 2 =? ( drop bk.begin fin ; ) drop
 	real-eval fin ;
 
 :clampscroll
 	scroll ntl rows 7 - pl - - 0 max min 0 max 'scroll ! ;
-
-#qok 0
-:quitdlg | confirmacion de salida con ESC (ctrl+c y /exit salen directo)
-	"Quit" 40 7 tuDlg
-	fcr
-	"Quit r3repl?" .cw
-	'pname "(project %s is already saved)" sprint fMu .cw fTx
-	1 flxS fhome
-	fMu "[ENTER] quit     [ESC] stay" .cw
-	flxRest
-	tuDlgEnd
-	uikey
-	[esc] =? ( exit )
-	$d =? ( 1 'qok ! exit )
-	drop ;
-
-:askquit
-	0 'qok ! 'quitdlg onTui
-	qok 1? ( drop exit ; ) drop ;
 
 :onkey | key --
 	uiKey
@@ -949,7 +1029,7 @@
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( kins popup! ; )
 	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
-	[esc] =? ( drop pn 1? ( drop 0 'pn ! ; ) drop askquit ; )
+	[esc] =? ( drop pn 1? ( drop 0 'pn ! ; ) drop bk 1? ( drop bk.cancel ; ) drop exit ; )
 	drop ;
 
 |---------------- pantalla (tui): tecla -> dibujo

@@ -7,13 +7,16 @@
 	( 1? swap over mod ) drop ;
 
 :point | xin --	e	
-	d 9 3 */
-	'd ! 
-	10 4 gcd
-	10 4 gcd
+	10 4 gcd 2
 	;
+
+:PROF
+	3 + POINT 3 ;
+
 : 
-	1 2 3 4 5 6 * +
+	2
+	prof
+	1 2 * +
 	point
 	8 'd !
 	0 2 gcd "%d" .println

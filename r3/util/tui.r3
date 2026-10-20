@@ -193,8 +193,7 @@
 |	evtmw 1? ( dup 32 << 'uimouse ! ) drop
 |	;
 :exvector | --
-	.cl |.hidec 
-	tui vecdraw ex ;
+	.cl tui vecdraw ex ;
 
 #(resizevec) 0
 
@@ -206,8 +205,7 @@
 	exvector
 	rflag
 	$8 and? ( 0 'uikey ! exvector ) | redraw
-	$1 and? ( .restorec |.showc 
-	)	| with cursor
+	$1 and? ( .restorec )	| with cursor
 	drop
 	.flush ;
 	
@@ -622,6 +620,9 @@
 	dup 'pad> ! 'padf> !
 	'lins  'modo ! ;
 
+:cshape | -- ; forma de cursor segun modo
+	modo 'lins =? ( drop .insc ; ) drop .ovec ;
+
 :tuInputfoco | 'buff max -- 'buff max 
 	tuif 0? ( drop ; )
 	1 =? ( drop inInput dup ) drop
@@ -629,6 +630,7 @@
 	fx fy swap 
 	pad> padi> - + | !! falta utf
 	swap .at .savec | cursor
+	cshape
 	tuC!		| activate cursor
 	;
 	

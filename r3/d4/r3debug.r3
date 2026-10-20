@@ -256,13 +256,33 @@
 		8 - dup @ stk. 
 		) 2drop ;
 
+| ret>ftoken: valor de la pila R -> ftoken del CALL/EX que lo apilo (0 si no es direccion)
+| vmIP es indice de token (1..n); la direccion de retorno apunta al token siguiente al CALL
+:ret>ftoken | v -- ftoken|0
+	2 <? ( drop 0 ; )
+	codesrc> codesrc - 3 >> >? ( drop 0 ; )
+	dup 1- memtokn $ff and
+	3 =? ( drop 2 - 3 << codesrc + @ ; )	| CALL
+	5 =? ( drop 2 - 3 << codesrc + @ ; )	| EX
+	2drop 0 ;
+
+| ftoken=(inc<<48)|(cnt<<40)|(pos<<24)|(xc<<12)|yc
+:.rtok | ftoken -- ; escribe el texto del token (como tokenCursor)
+	dup 24 >> $ffff and
+	over 48 >> $ff and inc2src +
+	swap 40 >> $ff and fw min .type ;
+
+:rstk. | val --
+	dup ret>ftoken 1? ( nip fTx .rtok fcr fMu ; ) 
+	drop stk. ;
+
 :.retstack
 	fMu
-	mretstack
-	( 8 - vmRTOS >?
-		dup rstackoff + |@
-		stk.
-		) drop ;
+	vmRTOS
+	( mretstack 8 - vmRTOS 64 + min <?
+		dup rstackoff + 8 - @
+		rstk.
+		8 + ) drop ;
 
 :sec | "" -- ; titulo de seccion (sigue en la linea)
 	fPr .Bold .write .NBold ;

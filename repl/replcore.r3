@@ -54,6 +54,11 @@
 	defs> strcpyl 1- 13 swap c!+ 10 swap c!+
 	0 over c! 'defs> ! 1 'defl +! 1 'mdirty ! ;
 
+::defs+n | adr -- ; agrega un bloque de varias lineas, una por linea
+	( dup c@ $ff and 1? drop
+		dup 'lo2 strcpyln 'lo2 defs+
+		nextl ) 2drop ;
+
 |---------------- proyectos: repl/proj/<nombre>/<nombre>.r3
 ##pdir "repl/proj/"
 ##pname * 64

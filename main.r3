@@ -233,7 +233,7 @@
 
 |------------	
 :scrmain
-	.reset .bblack .cls
+	.reset .hidec .bblack .cls
 	
 	4 flxN |___________
 	fhome banner 

@@ -717,7 +717,9 @@
 ::tuEditShowCursor
 	fx xcursor + xlinea - nlw +
 	fy ycursor ylinea - clamp0 fh 1- min +	| fila dentro del widget
-	.at .savec ;	
+	.at .savec
+	modo 'lins =? ( drop .insc ; ) drop .ovec 
+	;
 	
 ::tuEditCode 
 	modocolor

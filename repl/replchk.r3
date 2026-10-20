@@ -2,7 +2,7 @@
 | tokenizes the file inside the REPL process (r3token) before r3 is launched:
 |  - compile error: message and exact file/line, without running anything
 |  - word not found: the library is looked up (wfind), included and the check repeated
-|  - stack: the line surely needs more values than the stack holds (straight-line start only)
+|  - stack: the line (the word rdline of mem/repl.r3) needs more values than the stack holds: its use, as r3token computed it
 |  - memory: words of the line and project words that write memory
 | chk-run  -- code    0 ok | 1 compile error | 2 stack underflow | 3 boot word in the project    (ckmsg ckfile ckline)
 | r3token must be included before replcore (replcore redefines tok)
@@ -17,10 +17,6 @@
 ##mwflag 0
 #mwmn 0 #mwie 0 #cktmp * 64 #cktmp2 * 64
 
-#mwrw "!" "c!" "w!" "d!" "!+" "c!+" "w!+" "d!+" "+!" "c+!" "w+!" "d+!"
-"a!" "a!+" "ca!" "ca!+" "da!" "da!+" "b!" "b!+" "cb!" "cb!+" "db!" "db!+"
-"move" "move>" "fill" "cmove" "cmove>" "cfill" "dmove" "dmove>" "dfill" ( 0 )
-
 ::mw.in? | str ini end -- 0/1
 	'mwie !
 	( mwie <?
@@ -29,16 +25,10 @@
 
 |--- tables
 #ckinfo * 8192		| by word number: 2 = project word that writes memory
-#ckwtab * 256		| by token: 1 = base word that writes memory
-#ckready 0
 #cknmain 0
 
-:ckinit | -- ; base writers by token number
-	ckready 1? ( drop ; ) drop
-	'mwrw ( dup c@ 1?  drop
-		dup ?base 1? ( dup 6 + 'ckwtab + 1 swap c! ) drop
-		>>0 ) 2drop
-	1 'ckready ! ;
+:ckwbase? | ntok -- 0/1 ; a base word that writes memory (bit $40 of its info in r3map)
+	r3ainfo 3 + c@ $40 and ;
 
 |--- lowercase copy / names
 :lowcpy | str dst --
@@ -60,8 +50,8 @@
 	2 =? ( drop 8 >> $ffffffff and
 		8192 >=? ( drop ; )
 		'ckinfo + c@ 2 and? ( 1 'ckcw ! ) drop ; )
-	dup 'ckwtab + c@ 1? ( 1 'ckcw ! ) drop
-	2drop ;
+	7 <? ( 2drop ; )
+	ckwbase? 1? ( 1 'ckcw ! ) 2drop ;
 
 :ckdef | n -- ; project words that write memory (their callees are always before)
 	8192 >=? ( drop ; )
@@ -73,25 +63,12 @@
 	ckcw 0? ( 2drop ; ) drop
 	2 swap 'ckinfo + c! ;
 
-|--- the line: the stack with the analyzer of r3token (resetinfo / tokeninfo / wwinfo, as r3ide does)
-#ckstop 0 #ckres 0 #ckus 0 #ckue 0 #cktk 0 #ckavail 0
+|--- the line: the word rdline, its stack effect is the one r3token computed (info2: use / delta)
+#ckstop 0 #ckres 0 #ckus 0 #ckue 0 #ckrdl 0 #ckavail 0
 
-:cknm | tok -- str ; name of a word or base word, for the messages
-	dup $ff and
-	2 =? ( drop 8 >> $ffffffff and r3name ; )
-	7 >=? ( nip 7 - basename 'cktmp lowcpy 'cktmp ; )
-	2drop "?" ;
-
-:ckunder | tok --
-	cknm ckavail wwinfo 8 >> $ff and
-	"the line needs %d values, only %d on the stack (at %w)" sprint 'ckmsg strcpy
-	2 'ckres ! 1 'ckstop ! ;
-
-:ckrisky? | tok -- 0/1 ; control token, or a word whose effect is not fixed (several ; / R unbalanced / recursive / no ;)
-	dup $ff and
-	2 =? ( drop 8 >> $ffffffff and nro>dic @ $b8 and? ( drop 1 ; ) drop 0 ; )
-	7 12 in? ( 2drop 1 ; )
-	2drop 0 ;
+:ckrisky? | tok -- 0/1 ; a word whose effect is not fixed (several ; / R unbalanced / recursive / no ;)
+	dup $ff and 2 <>? ( 2drop 0 ; ) drop
+	8 >> $ffffffff and nro>dic @ $b8 and? ( drop 1 ; ) drop 0 ;
 
 
 :ckculp | tok -- ; does the token write memory?
@@ -100,7 +77,8 @@
 		8192 >=? ( drop ; )
 		dup 'ckinfo + c@ 2 and 0? ( 2drop ; ) drop
 		nro>dic @ dic>name ckadd ; )
-	dup 'ckwtab + c@ 0? ( 3drop ; ) drop
+	7 <? ( 2drop ; )
+	dup ckwbase? 0? ( 3drop ; ) drop
 	nip 7 - basename 'cktmp2 lowcpy 'cktmp2 ckadd ;
 
 :cknl | adr -- adr' ; start of the next line (the text only has 13)
@@ -109,13 +87,10 @@
 :cklstart | line -- adr
 	src swap ( 1 >? 1- swap cknl swap ) drop ;
 
-:ckutok | tok --
+:ckutok | tok -- ; culprits of the line, and if its effect is fixed
 	dup 40 >>> src + ckus <? ( 2drop ; ) ckue >=? ( 2drop ; ) drop
 	dup ckculp
-	ckstop 1? ( 2drop ; ) drop
-	dup ckrisky? 1? ( 2drop 1 'ckstop ! ; ) drop
-	dup 'cktk ! tokeninfo				| the analyzer needs the next token address under the token (as in r3ide)
-	wwinfo 8 >> $ff and ckavail >? ( drop cktk ckunder ; ) drop ;
+	ckrisky? 1? ( 1 'ckstop ! ) drop ;
 
 :ckfind | "name" -- idx ; the last word of the program with that name (-1 = none)
 	cntdef ( cknmain >? 1- 2dup r3name =s 1? ( drop nip ; ) drop )
@@ -128,15 +103,18 @@
 :ckuser | --
 	0 'ckres ! 0 'ckstop !
 	gk 0 <>? ( drop ; ) drop
-	boot>> -? ( drop ; ) drop
-	sn ckinitd + 0 max 'ckavail !
+	"rdline" ckfind -? ( drop ; ) 'ckrdl !
 	gyour cklstart dup 'ckus ! cknl 'ckue !
-	resetinfo
-	boot>> nro>dic toklend
-	( 1? 1- swap @+ ckutok swap ) 2drop ;
+	ckrdl nro>dic toklend
+	( 1? 1- swap @+ ckutok swap ) 2drop
+	ckstop 1? ( drop ; ) drop
+	sn ckinitd + 0 max 'ckavail !
+	ckrdl nro>dic 8 + @ $ff and			| values the line takes from the stack
+	ckavail >? (						| ... and the stack has less
+		ckavail swap "the line needs %d values, only %d on the stack" sprint 'ckmsg strcpy
+		2 'ckres ! ; ) drop ;
 
 ::ckwriters | -- ; marks the project words that write memory (call it with the tokens loaded)
-	ckinit
 	dic< dic - 4 >> 'cknmain !
 	0 ( 1024 <? 0 over 3 << 'ckinfo + ! 1+ ) drop
 	0 ( cntdef <? dup ckdef 1+ ) drop ;
@@ -154,7 +132,7 @@
 
 :ckboottyped? | n -- 0/1 ; a boot word that starts on the line of the typed definition (the others are the boots of the project)
 	dup ckboot1? 0? ( 2drop 0 ; ) drop
-	r3name src swap cklines gyour - 0? ( drop 1 ; ) drop 0 ;
+	r3name src swap cklines inyour? 1? ( drop 1 ; ) drop 0 ;
 
 :ckbootin | -- 0/1
 	gk 2 <>? ( drop 0 ; ) drop
@@ -211,7 +189,6 @@
 	ckonerr 1? ( ex ; ) drop ;
 
 :ckpass | -- code ; tokenizes mem/repl.r3 and calls ckonok (or ckonerr)
-	ckinit
 	"mem/repl.r3" r3tok
 	error 1? ( drop ckerr ckerrx r3free 1 ; ) drop
 	ckonok ex r3free ;
@@ -278,6 +255,7 @@
 :ckgsemi | tok -- ; ; of a project word (not in an anonymous one): with /trace the stack is recorded first
 	ckanon 1? ( drop ckp ; ) drop
 	ckcur boot>> =? ( drop ckp ; ) drop
+	ckcur ckrdl =? ( drop ckp ; ) drop
 	trace 0? ( drop ckp ; ) drop
 	gk 0 <>? ( drop ckp ; ) drop
 	ckcur cknmain - "%d .tr " ,print
@@ -303,6 +281,7 @@
 
 :ckgen | -- ; the program that is run, from the tokens (the lines of mem/repl.r3 are kept)
 	dic< dic - 4 >> 'cknmain !
+	"rdline" ckfind 'ckrdl !
 	0 'ckanon !
 	cknmain r3name src swap cklines dup 'ckol !
 	cklstart
@@ -317,7 +296,6 @@
 	error 1? ( drop r3free 0 ; ) drop 1 ;
 
 ::chk-gen | -- 0/1 ; the program that is run is written from the tokens (1) ; 0 = it could not be written
-	ckinit
 	ckload 0? ( ; ) drop
 	ckgen r3free
 	ckload 1? ( drop r3free 1 ; ) drop		| the new program must compile
