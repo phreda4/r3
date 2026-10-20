@@ -12,6 +12,7 @@
 ^repl/replgen.r3
 ^repl/replchk.r3
 ^repl/replmodel.r3
+^repl/replfmt.r3
 
 |---------------- variables
 #sw 0
@@ -541,8 +542,9 @@
 	outlines
 	gk 2 =? (
 		m.count 'mn0 !
-		ga defs+n m.ready
-		mn0 ( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop ) drop
+		defs-mark ga defs+n m.ready
+		mn0 ( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop
+		defs-fmt ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
@@ -615,12 +617,42 @@
 	2 =? ( 'm.libline scanwords drop )
 	drop tsb ;
 
-:cmd-src | the program every line is run with (the assembled one, generated again from the tokens)
-	"" 'ga ! 1 'gk ! ga gk gen-src
-	chk-gen drop
-	lbuf "mem/repl.r3" load 0 swap c!
-	6 60 showlbuf
+#srcmax 256
+:src-line | adr -- ; one line of the project definitions to the transcript
+	'lo2 strcpyln
+	'lo2 c@ 1? ( 'lo2 6 tl+ 1 'nol +! ) drop ;
+
+:src-all | all the definitions, up to srcmax lines
+	0 'nol !
+	defs ( dup c@ $ff and 1? drop
+		dup src-line nextl
+		nol srcmax >=? ( nip 'zero swap ) drop )
+	2drop
+	nol 0? ( "(no definitions)" 6 tl+ ) drop
+	defl srcmax >? ( defl srcmax - "...  %d more lines" sprint 6 tl+ ) drop
 	lnb ;
+
+:src-next | adr -- adr' ; prints a line ; 'zero at the next definition or at the limit
+	dup src-line nextl
+	dup c@ $ff and
+	$3a =? ( 2drop 'zero ; )
+	$23 =? ( 2drop 'zero ; )
+	drop
+	nol srcmax >=? ( nip 'zero swap ) drop ;
+
+:src-word | i -- ; the definition of one word of the project
+	m.line ninc 3 + - -? ( drop "not in the project file" lne ; )
+	defs swap ( 1? 1- swap nextl swap ) drop
+	0 'nol !
+	( dup c@ $ff and 1? drop src-next ) 2drop
+	lnb ;
+
+:cmd-src | arg -- ; /src: the definitions of the project ; /src word: only that one
+	trim tok drop
+	'tk c@ 0? ( drop src-all ; ) drop
+	m.ready
+	'tk m.find -? ( drop "word not found in the project" lne ; )
+	src-word ;
 
 :cmd-clear
 	0 'ntl ! tp 'tp> ! 0 'scroll ! ;
@@ -853,7 +885,7 @@
 	"/init" over = 1? ( drop >>sp "repl-init" hook-cmd ; ) drop
 	"/done" over = 1? ( drop >>sp "repl-done" hook-cmd ; ) drop
 	"/term" over = 1? ( 2drop cmd-term ; ) drop
-	"/src" over = 1? ( 2drop cmd-src ; ) drop
+	"/src" over = 1? ( drop >>sp cmd-src ; ) drop
 	"/trace" over = 1? ( drop >>sp cmd-trace ; ) drop
 	"/save" over = 1? ( 2drop cmd-save ; ) drop
 	"/new" over = 1? ( drop >>sp cmd-new ; ) drop

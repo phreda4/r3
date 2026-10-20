@@ -7,7 +7,7 @@
 "/stack" "cmd" "" "show the stack"
 "/fmt" "cmd" "[dec|hex|fix]" "stack format, no arg: cycle (also ctrl+f)"
 "/term" "cmd" "" "output terminal of the last run (also ctrl+t)"
-"/src" "cmd" "" "show the generated program"
+"/src" "cmd" "[word]" "definitions of the project, or only that word"
 "/trace" "cmd" "[on|off]" "stack at the exit of each project word (program instrumented from the tokens)"
 | clean
 "/clear" "cmd" "" "clear the screen only (also ctrl+l)"
