@@ -42,7 +42,9 @@
 	;
 	
 :+sprite | N x y --
-	mapth neg <? ( 3drop ; ) sh mapth + >? ( 3drop ; ) 32 << 
+|	mapth neg <? ( 3drop ; ) | ******* crash
+	0 <? ( 3drop ; )
+	sh mapth + >? ( 3drop ; ) 32 << 
 	swap -32 <? ( 3drop ; ) sw 32 + >? ( 3drop ; )
 	$ffffffff and or | compress
 	sprinscr>
@@ -176,7 +178,7 @@
 		0 ( mapsw <?
 			setxy drawtilelast
 			1 + ) 2drop		
-	cerasemap 
+	cerasemap
 	;
 
 |------ LOAD MAP
