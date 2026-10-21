@@ -6,7 +6,7 @@
 | defs-mark before adding the text, defs-fmt after the model knows the new words
 ^repl/replmodel.r3
 
-#ftk * 1024 #fpk * 1024 #fnm * 128
+#ftk * 4096 #fpk * 4096 #fnm * 256
 #fi 1 #fb 1 #ffirst 0 #fblank 0
 #dm0 0 #dl0 0
 
@@ -153,7 +153,7 @@
 	'fnm m.find ;
 
 :f-copy | adr -- adr' ; a line as it is (one blank line at most after a definition)
-	dup 'lo2 strcpyln
+	dup lcopy
 	'lo2 c@ $ff and 0? ( drop fblank 0? ( drop ,nl 1 'fblank ! 0 ) drop nextl ; ) drop
 	'lo2 ,s ,nl 0 'fblank ! nextl ;
 

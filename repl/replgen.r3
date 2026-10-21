@@ -8,7 +8,6 @@
 ##gk 0 ##ga 0 ##gl 0 ##gboot 0 ##gyour 0 ##gyn 0	| gyour = line of the typed code in mem/repl.r3 ; gyn = extra lines of a multi-line definition
 #t0 0 ##tms 0
 #obuf * 2064
-##ebuf * 4096
 ##emsg * 256
 ##efile * 128
 #els 0 #elne 0 ##eline 0
@@ -72,17 +71,17 @@
 	msec t0 - 'tms ! ;
 
 |--- lectura de resultados
-:rd-file
+:rd-file | text -- text
 	0 'efile c!
-	'ebuf "FILE:" findstr 0? ( drop ; ) 5 + 'efile swap copynom ;
+	dup "FILE:" findstr 0? ( drop ; ) 5 + 'efile swap copynom ;
 
-:rd-line
+:rd-line | text -- text
 	0 'eline !
-	'ebuf "LINE:" findstr 0? ( drop ; ) 5 + str>nro nip 'eline ! ;
+	dup "LINE:" findstr 0? ( drop ; ) 5 + str>nro nip 'eline ! ;
 
-:rd-msg | ultima linea no vacia del log
-	'ebuf 'els ! 'ebuf 'elne !
-	'ebuf ( c@+ $ff and 1?
+:rd-msg | text -- ; ultima linea no vacia del log
+	dup 'els ! dup 'elne !
+	( c@+ $ff and 1?
 		10 =? ( over 'els ! )
 		32 >? ( els 'elne ! )
 		drop )
@@ -91,8 +90,9 @@
 	'emsg strcpyln ;
 
 ::rd-err
-	'ebuf "error.log" loadz
-	rd-file rd-line rd-msg ;
+	mark "error.log" loadtxt
+	rd-file rd-line rd-msg
+	empty ;
 
 ::readdump | -- code ; 0 ok, 2 sin volcado, 3 underflow, 4 pila grande
 	'obuf "mem/repl.out" load 'obuf -

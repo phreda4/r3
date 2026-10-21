@@ -26,6 +26,14 @@
 ##tk * 256		| current token (see tok)
 ##lo2 * 2048		| current line
 
+:lenl | adr -- n ; length of the line
+	0 swap ( c@+ $ff and 1? 13 <>? 10 <>? drop swap 1+ swap ) 2drop ;
+
+::lcopy | adr -- ; the line to lo2, 2047 characters at most (a file or an output has any length)
+	dup lenl 2047 min
+	'lo2 pick2 pick2 cmove
+	'lo2 + 0 swap c! drop ;
+
 |---------------- estado de la sesion
 ##sstk * 2048		| pila de la sesion (valores recuperados de mem/repl.out)
 ##sn 0
@@ -72,7 +80,7 @@
 
 ::defs+n | adr -- ; agrega un bloque de varias lineas, una por linea
 	( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln 'lo2 defs+
+		dup lcopy 'lo2 defs+
 		nextl ) 2drop ;
 
 |---------------- proyectos: repl/proj/<nombre>/<nombre>.r3
@@ -80,7 +88,6 @@
 ##pname * 64
 ##ppath * 256
 ##pfold * 256
-##pbuf 0
 ##menubuf * 1024
 
 ::setproj | "name" --
@@ -112,14 +119,13 @@
 ::proj-parse | adr -- ; includes y definiciones desde el texto
 	proj-clear
 	( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln pline
+		dup lcopy pline
 		nextl )
 	2drop ;
 
 ::proj-load | -- ok
 	'ppath filexist 0? ( ; ) drop
-	pbuf 'ppath loadz
-	pbuf proj-parse 1 ;
+	mark 'ppath loadtxt proj-parse empty 1 ;
 
 ::proj-save | -- ok ; 0 = the file could not be saved
 	mark
@@ -157,14 +163,12 @@
 
 ::defs-del | "prefix" -- ; removes the lines that start with prefix
 	'delp ! 1 'mdirty !
-	defs pbuf strcpy
+	mark here defs ,s 0 ,c
 	defs 'defs> ! 0 defs c! 0 'defl !
-	pbuf ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln keepline nextl ) 2drop ;
+	( dup c@ $ff and 1? drop
+		dup lcopy keepline nextl ) 2drop
+	empty ;
 
-::core-init | -- ; big buffers (>8192) are reserved at the boot
-	here
-	dup 'defs ! $20000 +
-	dup 'pbuf ! $20000 +
-	'here !
+::core-init | -- ; the text of the project (defs) is reserved at the boot ; the rest of the memory is for mark ... empty
+	here dup 'defs ! $20000 + 'here !
 	defs 'defs> ! 0 defs c! ;

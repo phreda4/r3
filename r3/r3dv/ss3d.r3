@@ -52,7 +52,7 @@ flat out mat3  vRot;
 flat out vec3  vTrans;
 flat out uint  vColorPk;
 flat out int   vOffset;
-flat out float vScale;
+flat out vec3  vScl;
 
 mat3 quatToMat3(vec4 q) {
     float x=q.x, y=q.y, z=q.z, w=q.w;
@@ -70,10 +70,15 @@ void main() {
     Instance inst = instances[gl_InstanceID];
     int   spr_id  = int(inst.spr_scl & 0xFFFFu);
     float scale   = float(inst.spr_scl >> 16) / 256.0;   // uint8.8 -> float
+    // obj_id = estiramiento por eje, 3 x 10 bits (x, y<<10, z<<20) = m*32 ; 0 = sin estirar
+    uint  so   = inst.obj_id;
+    vec3  str  = (so == 0u) ? vec3(1.0)
+        : vec3(float(so & 1023u), float((so >> 10) & 1023u), float((so >> 20) & 1023u)) * (1.0/32.0);
+    vec3  scl3 = vec3(scale) * str;
     SpriteDef spr = sprites[spr_id];
 
     vSize = ivec3(spr.twh>>16, spr.nfoff>>16, spr.twh&0xffff);
-    vec3 vExt = vec3(vSize) * (0.005 * scale);
+    vec3 vExt = vec3(vSize) * (0.005 * scl3);
 
     const float kPos  = 1.0/65536.0;
 
@@ -100,7 +105,7 @@ void main() {
     vTrans      = trans;
     vColorPk    = inst.color;
     vOffset     = spr.nfoff&0xffff;
-	vScale=scale;
+	vScl=scl3;
 }
 
 @fragment---------------
@@ -119,7 +124,7 @@ flat in mat3  vRot;
 flat in vec3  vTrans;
 flat in uint  vColorPk;
 flat in int   vOffset;
-flat in float vScale;
+flat in vec3  vScl;
 
 layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
@@ -128,9 +133,9 @@ layout(location=1) out vec4 gAlbedo;
 layout(depth_greater) out float gl_FragDepth;
 
 void main() {
-    const float kScale = 100.0/vScale;
+    vec3 kScale = 100.0/vScl;
     int itw = vSize.x, iNF = vSize.y, ith = vSize.z;
-	vec3 vExt = vec3(vSize) * (0.005 * vScale); 
+	vec3 vExt = vec3(vSize) * (0.005 * vScl); 
 
     vec3 vRd = vLocalPos - vRo;
     vec3 ir  = sign(vRd) / max(abs(vRd), vec3(1e-7));
@@ -146,9 +151,9 @@ void main() {
     ivec3 limit  = ivec3(itw, iNF, ith);
 
     vec3 entry_g = vec3(
-         (vRo.x + vRd.x*tmin + vExt.x) * kScale,
-        -(vRo.y + vRd.y*tmin + vExt.y) * kScale + float(iNF),
-         (vRo.z + vRd.z*tmin + vExt.z) * kScale);
+         (vRo.x + vRd.x*tmin + vExt.x) * kScale.x,
+        -(vRo.y + vRd.y*tmin + vExt.y) * kScale.y + float(iNF),
+         (vRo.z + vRd.z*tmin + vExt.z) * kScale.z);
 
     ivec3 cell  = clamp(ivec3(entry_g), ivec3(0), limit - 1);
     vec3 next_t = vec3(
@@ -426,7 +431,7 @@ void main() {
 	43 << 43 >> 4 << ;
 
 |struct Instance {
-|    uint obj_id;
+|    uint obj_id;   // estiramiento por eje: x | y<<10 | z<<20 (m*32), 0 = ninguno
 |    uint color;
 |    uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
 |    int  qxy;       // int16 qx (lo) | int16 qy (hi)
@@ -437,7 +442,7 @@ void main() {
 	dirtycheck
 	ab[
 	dup 5 << 3dss_array + >a 
-	da!+		|obj_id
+	drop 0 da!+		|obj_id = estiramiento (0 = ninguno)
 	da!+	| color
 	swap 8 >> 16 << or da!+ | scale|spr
 	a!+
@@ -445,10 +450,30 @@ void main() {
 	]ba
 	;
 
+|--- estiramiento por eje (multiplica la escala uniforme)
+:str10 | m -- v	; multiplicador 16.16 -> 10 bits (m*32): 1/32 .. 31.9
+	11 >> 1 max 1023 min ;
+
+::ss3dstr | sx sy sz i --
+	dirtycheck
+	ab[
+	5 << 3dss_array + >a
+	str10 20 <<
+	swap str10 10 << or
+	swap str10 or
+	$2008020 =? ( drop 0 )		| 1.0 1.0 1.0 = sin estirar
+	da!
+	]ba ;
+
+::ss3dmax | -- n	; cantidad maxima de instancias
+	3dss_max ;
+
 ::ss3dcs | scale spr color i --
 	dirtycheck
 	ab[
-	5 << 3dss_array + 1 2 << + >a				| -> dword 1
+	5 << 3dss_array + |1 2 << + 
+	>a				| -> dword 1
+	0 da!+ | xyz scale
 	da!+
 	swap 8 >> 16 << or da!	| scale|sprite
 	]ba ;
@@ -487,7 +512,13 @@ void main() {
 ::ss3dfloor | scale n -- val
 	ss3dLY * 0.005 *. ;
 
+:instsy | adr -- sy	; estiramiento en Y (16.16)
+	d@ 0? ( drop 1.0 ; ) 10 >> 1023 and 11 << ;
+
 ::ss3difloor | i -- val
-	5 << 3dss_array + 2 2 << + d@ 
+	5 << 3dss_array +
+	dup instsy swap
+	2 2 << + d@ $ffffffff and
 	dup 16 >>> 8 << 			| bits 31-16: scale uint8.8
-	swap $ffff and ss3dfloor ;	| bits 15-0: spr_id uint16 
+	swap $ffff and ss3dfloor
+	swap *. ;	| bits 15-0: spr_id uint16 

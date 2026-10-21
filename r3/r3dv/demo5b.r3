@@ -283,16 +283,19 @@
 		1+ ) 2drop ;
 
 |----------------------------------
-| DESCRIPCION DE HUESOS
-| hueso i = segmento padre(i) -> i
-| spr   : nro de sprite ss3d (-1 = oculto)
-| scale : escala del sprite
-| t     : posicion sobre el segmento (0=padre, 0.5=centro, 1.0=articulacion i)
-| rotacion = la del padre (la raiz usa la suya)
+| DESCRIPCION
+| NODOS (vertices): un sprite ss3d en cada articulacion (esfera de voxeles),
+|   mismo sprite y escala para todos (nspr, nscl)
+| HUESOS: un sprite ss3d por hueso, ubicado en el segmento padre(i) -> i
+|   spr   : nro de sprite ss3d (-1 = oculto)
+|   scale : escala del sprite
+|   t     : posicion sobre el segmento (0=padre, 0.5=centro, 1.0=articulacion i)
+|   rotacion = la del padre; con "alinear" el eje Y del sprite va por el hueso
 #bd_spr * 2048
 #bd_scl * 2048
 #bd_t   * 2048
 #bd_old * 2048	| sprite a restaurar al des-ocultar
+#bd_arc * 2048	| quaternion: lleva el eje Y del sprite a lo largo del hueso
 
 #tspr #tscl #tt
 
@@ -313,18 +316,52 @@
 		dup tspr tscl tt bdset
 		1+ ) drop ;
 
-#bsel 0		| hueso seleccionado
+#nspr #nscl 1.0	| sprite y escala de los nodos
+:nodedef | spr scale --
+	'nscl ! 'nspr ! ;
+
+#shownodes 1	| 1 = se ven los nodos
+#showbones 1	| 1 = se ven los sprites de hueso
+#alinear 1		| 1 = el eje Y del sprite de hueso va por el hueso
+#ajustar 0		| 1 = el sprite se estira en Y hasta el largo del hueso (escala = grosor)
+#nch0 #locator	| locator=1: el nodo 0 es un ubicador (raiz con un solo hijo)
+
+:calcloc | raiz con un solo hijo = ubicador del objeto (no se dibuja)
+	0 'nch0 ! 0 'locator !
+	1 ( cntbones <?
+		dup skel + c@ 0? ( 1 'nch0 +! ) drop
+		1+ ) drop
+	nch0 1 =? ( 1 'locator ! ) drop ;
+
+:bpar | i -- p ; padre efectivo (-1 = raiz o hijo del ubicador)
+	skel + c@
+	0? ( locator 1? ( 2drop -1 ; ) drop ) ;
+
+#bsel 1		| hueso seleccionado (el 0 nunca se dibuja ni se elige)
 #bdebug 1	| 1 = resalta seleccion (rojo) y raiz (amarillo)
 #bs #bc
+#bi0		| primera instancia de huesos (los nodos son 0..cntbones-1)
 
-:bcolor | i -- color
+:bcolor | i -- color ; hueso
 	bdebug 0? ( 2drop $ffffff00 ; ) drop
 	bsel =? ( drop $ff202000 ; )
-	dup skel + c@ -? ( 2drop $ffff0000 ; ) drop
 	drop $ffffff00 ;
 
-| escala/sprite/color de cada instancia (ocultos: escala 0,
-| salvo el seleccionado: punto chico para poder verlo)
+:ncolor | i -- color ; nodo
+	bdebug 0? ( 2drop $ffffff00 ; ) drop
+	bsel =? ( drop $ff202000 ; )
+	dup bpar -? ( 2drop $ffff0000 ; ) drop
+	drop $ffffff00 ;
+
+| nodo i = instancia i (el nodo 0 nunca se dibuja)
+:ndone | i --
+	0 'bc !
+	shownodes 1? ( nscl 'bc ! ) drop
+	dup 0? ( 0 'bc ! ) drop
+	bc nspr pick2 ncolor pick3 ss3dcs drop ;
+
+| hueso i = instancia bi0+i (oculto: escala 0, salvo el seleccionado:
+| punto chico para poder verlo; sin segmento: no se dibuja)
 :bdone | i --
 	dup 3 <<
 	dup 'bd_scl + @ 'bc !
@@ -332,16 +369,19 @@
 	bs -? ( drop 0 'bc ! 0 'bs !
 		dup bsel =? ( 0.4 'bc ! nrosprite 'bs ! ) )
 	drop
-	bc bs pick2 bcolor pick3 ss3dcs drop ;
+	showbones 0? ( 0 'bc ! ) drop
+	dup bpar -? ( 0 'bc ! ) drop
+	bc bs pick2 bcolor pick3 bi0 + ss3dcs drop ;
 
 :bdapply
 	0 ( cntbones <?
+		dup ndone
 		dup bdone
 		1+ ) drop ;
 
 :describe
-	nrosprite 1.0 1.0 bdall	| todos: sprite por defecto en la articulacion
-	|0 "ball" 1.0 1.0 bdname
+	nrosprite 1.0 nodedef		| nodos: sprite/escala
+	nrosprite 1.0 0.5 bdall		| huesos: sprite/escala/t por defecto
 	|1 "cylinder" 1.0 0.5 bdname
 	|2 "cuboalambre" 1.0 0.5 bdname
 	;
@@ -354,16 +394,26 @@
 		"%d p:%d spr:%d" .println
 		1+ ) drop ;
 
-:listhidden | lineas para pegar en :describe
-	0 ( cntbones <?
-		dup 3 << 'bd_spr + @ -? (
-			over "%d -1 1.0 1.0 bdset" .println ) drop
+#boff
+:listdesc | lineas para pegar en :describe (solo lo distinto del defecto)
+	nscl nspr "%d %f nodedef" .println
+	1 ( cntbones <?
+		dup 3 << 'boff !
+		0 'tt !
+		boff 'bd_spr + @ nrosprite <>? ( 1 'tt ! ) drop
+		boff 'bd_scl + @ 1.0 <>? ( 1 'tt ! ) drop
+		boff 'bd_t + @ 0.5 <>? ( 1 'tt ! ) drop
+		tt 1? (
+			boff 'bd_t + @
+			boff 'bd_scl + @
+			boff 'bd_spr + @
+			pick4
+			"%d %d %f %f bdset" .println ) drop
 		1+ ) drop ;
 
-:bnext bsel 1+ cntbones mod 'bsel ! bdapply ;
-:bprev bsel 1- cntbones + cntbones mod 'bsel ! bdapply ;
+:bnext bsel cntbones 1- mod 1+ 'bsel ! bdapply ;
+:bprev bsel 1- 1 <? ( drop cntbones 1- ) 'bsel ! bdapply ;
 
-#boff
 :btoggle | oculta / muestra el hueso seleccionado
 	bsel 3 << 'boff !
 	boff 'bd_spr + @ -? (
@@ -373,29 +423,117 @@
 	-1 boff 'bd_spr + !
 	bdapply ;
 
+| instancias de los sprites de hueso (despues de las de los nodos)
+:makebones
+	cntobjs 'bi0 !
+	cntobjs cntbones + 256 >? ( "faltan instancias para los huesos" .println ) drop
+	0 ( cntbones <?
+		0 0 0  0 0 0 1.0 packq  0 nrosprite $ffffff00 cntobjs ss3dset
+		1 'cntobjs +!
+		1+ ) drop ;
+
+| arco corto del eje Y (0 1 0) a la direccion (x y z), en el marco del padre
+#alx #aly #alz #all
+#aqx #aqy #aqz #aqw
+:arcloc | x y z -- qpack
+	'alz ! 'aly ! 'alx !
+	alx dup *. aly dup *. + alz dup *. + sqrt. 'all !
+	all 0? ( drop 0 0 0 1.0 packq ; ) drop
+	alx all /. 'alx ! aly all /. 'aly ! alz all /. 'alz !
+	aly 1.0 + 0.002 <? ( drop 1.0 0 0 0 packq ; ) drop	| opuesto: 180 sobre X
+	alz 'aqx ! 0 'aqy ! alx neg 'aqz ! aly 1.0 + 'aqw !
+	aqx dup *. aqz dup *. + aqw dup *. + sqrt. 'all !
+	aqx all /. aqy all /. aqz all /. aqw all /. packq ;
+
+| usa la pose base (anim 0, frame 0): offset local de cada hueso
+:makearcs
+	fileanim anims 0 2 << + d@ + 4 + 2 + >a
+	0 ( cntbones <?
+		a@+ unpack21 arcloc
+		over 3 << 'bd_arc + !
+		a@+ drop
+		1+ ) drop ;
+
 #b0x #b0y #b0z
 #b1x #b1y #b1z
 #bq #bt
+#rqx #rqy #rqz #rqw
 
 :blerp | a b t -- a+(b-a)*t
 	>r over - r> *. + ;
 
+| rotacion del sprite de hueso i: la del padre (bq), con arco local si alinear
+:balign | i -- qpack
+	alinear 0? ( 2drop bq ; ) drop
+	3 << 'bd_arc + @ unpackq 'aqx ! 'aqy ! 'aqz ! 'aqw !
+	bq unpackq 'rqx ! 'rqy ! 'rqz ! 'rqw !
+	rqw aqx *. rqx aqw *. + rqy aqz *. + rqz aqy *. -
+	rqw aqy *. rqx aqz *. - rqy aqw *. + rqz aqx *. +
+	rqw aqz *. rqx aqy *. + rqy aqx *. - rqz aqw *. +
+	rqw aqw *. rqx aqx *. - rqy aqy *. - rqz aqz *. -
+	packq ;
+
+:placenode | i --
+	dup 4 << here + >b
+	b@+ unpack21 b@+ pick4 ss3dxyzq drop ;
+
+:bsy | i -- sy ; estiramiento en Y para que el sprite mida lo que el hueso
+	ajustar 0? ( 2drop 1.0 ; ) drop
+	3 <<
+	dup 'bd_spr + @ -? ( 2drop 1.0 ; )
+	swap 'bd_scl + @ swap
+	ss3dfloor 2*
+	0? ( drop 1.0 ; )
+	b1x b0x - dup *. b1y b0y - dup *. + b1z b0z - dup *. + sqrt.
+	swap /. ;
+
 :placebone | i --
 	dup 3 << 'bd_t + @ 'bt !
-	dup skel + c@
-	-? ( drop dup )			| raiz: usa su propio hueso
-	dup 4 << here + 8 + @ 'bq !	| rot del padre
+	dup bpar -? ( 2drop ; )			| sin segmento
+	dup 4 << here + 8 + @ 'bq !		| rot del padre
 	4 << here + @ unpack21 'b0z ! 'b0y ! 'b0x !
 	dup 4 << here + @ unpack21 'b1z ! 'b1y ! 'b1x !
 	b0x b1x bt blerp
 	b0y b1y bt blerp
-	b0z b1z bt blerp
-	bq pick4 ss3dxyzq drop ;
+	b0z b1z bt blerp			| i x y z
+	pick3 balign				| i x y z q
+	pick4 bi0 + ss3dxyzq
+	1.0 over bsy 1.0 pick3 bi0 + ss3dstr drop ;
 
 :placebones
 	0 ( cntbones <?
+		dup placenode
 		dup placebone
 		1+ ) drop ;
+
+|----------------------------------
+| EDICION del hueso seleccionado (sprite / escala / t)
+#vsp #vsc #vt
+
+:ed_load
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ 0 max 'vsp !
+	boff 'bd_scl + @ 'vsc !
+	boff 'bd_t + @ 'vt ! ;
+:ed_spr vsp boff 'bd_spr + ! vsp boff 'bd_old + ! bdapply ;
+:ed_scl vsc boff 'bd_scl + ! bdapply ;
+:ed_t   vt boff 'bd_t + ! ;
+
+:bspr+ | d --
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ -? ( drop boff 'bd_old + @ )
+	+ 0 max n3dsprites 1- min
+	dup boff 'bd_spr + ! boff 'bd_old + !
+	bdapply ;
+:bscl+ | d --
+	bsel 3 << 'boff !
+	boff 'bd_scl + @ + 0.1 max
+	boff 'bd_scl + ! bdapply ;
+
+:togglenodes shownodes 1 xor 'shownodes ! bdapply ;
+:togglebones showbones 1 xor 'showbones ! bdapply ;
+:togglealign alinear 1 xor 'alinear ! ;
+:togglefit ajustar 1 xor 'ajustar ! ;
 
 |----------------------------------
 #baseanim
@@ -487,6 +625,21 @@
 	'bnext ">" uiTBtn
 	'btoggle "hide" uiTBtn
 
+	ed_load
+	vsp ssnameid "%s" sprint uiLabelC
+	0 n3dsprites 1- 'vsp uiSlideri uiEx? 1? ( ed_spr ) drop
+	"escala" uiLabelC
+	0.1 4.0 'vsc uiSliderf uiEx? 1? ( ed_scl ) drop
+	"t (0 padre - 1 nodo)" uiLabelC
+	-0.5 1.5 'vt uiSliderf uiEx? 1? ( ed_t ) drop
+	nspr ssnameid "nodo: %s" sprint uiLabelC
+	0 n3dsprites 1- 'nspr uiSlideri uiEx? 1? ( bdapply ) drop
+	0.1 4.0 'nscl uiSliderf uiEx? 1? ( bdapply ) drop
+	'togglenodes "nodos" uiTBtn
+	'togglebones "huesos" uiTBtn
+	'togglealign "alinear" uiTBtn
+	'togglefit "ajustar largo" uiTBtn
+
 	|nrosprite ssnameid "[%l]" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
@@ -520,7 +673,10 @@
 	<f4> =? ( 0 setanim )	
 	<f5> =? ( listbones )
 	<f6> =? ( bdebug 1 xor 'bdebug ! bdapply )
-	<f7> =? ( listhidden )
+	<f7> =? ( listdesc )
+	<up> =? ( 1 bspr+ ) <dn> =? ( -1 bspr+ )
+	<pgup> =? ( 0.1 bscl+ ) <pgdn> =? ( -0.1 bscl+ )
+	<n> =? ( togglenodes ) <b> =? ( togglebones )
 	<le> =? ( bprev ) <ri> =? ( bnext ) <h> =? ( btoggle )
 	
 |	<f3> =? ( 2 calcpose )
@@ -591,7 +747,7 @@
 	loadr3a
 	|makeskel	
 	1 setanim
-	describe bdapply
+	makebones makearcs calcloc describe bdapply
 	
 	
 	rl_init 

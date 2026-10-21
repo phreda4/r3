@@ -421,14 +421,6 @@
 	'lo2 c@ 0? ( nip ; ) drop
 	'lo2 swap tl+ 1 ;
 
-:lenl | adr -- n ; length of the line
-	0 swap ( c@+ $ff and 1? 13 <>? 10 <>? drop swap 1+ swap ) 2drop ;
-
-:lcopy | adr -- ; the line to lo2, 2047 characters at most (the output of a program has any length)
-	dup lenl 2047 min
-	'lo2 pick2 pick2 cmove
-	'lo2 + 0 swap c! drop ;
-
 :showtxt | adr style max -- n ; lines of the text to the transcript (blank lines are skipped), up to max ; n = lines shown
 	-rot swap pick2
 	( over c@ $ff and 1? drop
@@ -658,8 +650,7 @@
 
 :pbackup | -- ; copia el proyecto a <name>.r3.bak antes de vaciarlo
 	'ppath filexist 0? ( drop ; ) drop
-	pbuf 'ppath load pbuf -
-	pbuf swap 'ppath "%s.bak" sprint save ;
+	mark 'ppath loadtxt count 'ppath "%s.bak" sprint save empty ;
 
 #rdok 0
 :resetdlg | dialogo de confirmacion (tui.r3: tuDlg + onTui)
@@ -759,8 +750,7 @@
 	'tk namecheck 0? ( drop "invalid project name" lne ; ) drop
 	proj? 1? ( drop "a project with that name already exists (/load)" lne ; ) drop
 	'tk setproj mkproj
-	pbuf 'ofile loadz
-	pbuf proj-parse
+	mark 'ofile loadtxt proj-parse empty
 	psave switched
 	'ofile "base code: %s" sprint 6 tl+
 	pinfo ;
@@ -780,9 +770,8 @@
 
 :runerr | muestra error.log como main.r3
 	"error.log" filexist 0? ( drop ; ) drop
-	'ebuf "error.log" loadz
 	.cr .bred .white " * ERROR * " .write .reset .cr
-	'ebuf .write .cr
+	mark "error.log" loadtxt .write empty .cr
 	"error.log" delete ;
 
 :cmd-run | arg --
@@ -809,7 +798,7 @@
 #pfx * 64
 :hook-show
 	0 defs ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln
+		dup lcopy
 		'lo2 'pfx =pre nip 1? ( 'lo2 6 tl+ rot 1+ -rot ) drop
 		nextl ) 2drop
 	0? ( "(none)" 6 tl+ ) drop ;
@@ -903,13 +892,13 @@
 	empty ;
 
 :hist-load
-	pbuf "mem/repl.hist" loadz
-	pbuf ( dup c@ $ff and 1? drop
-		dup 'lo2 strcpyln
+	mark "mem/repl.hist" loadtxt
+	( dup c@ $ff and 1? drop
+		dup lcopy
 		'lo2 255 + 0 swap c!
 		'lo2 c@ 1? ( 'lo2 hist+ ) drop
 		nextl )
-	2drop 0 'hp ! ;
+	2drop empty 0 'hp ! ;
 
 :hup | recorre el historial hacia atras
 	hp 1+ dup hn >? ( 2drop ; ) drop
@@ -924,8 +913,7 @@
 	hn swap - hslot 'inp strcpy inplen 'cur ! popup! ;
 
 :proj-boot | abre el ultimo proyecto (o scratch)
-	pbuf "mem/repl.last" loadz
-	'tk pbuf trim copynom
+	'tk mark "mem/repl.last" loadtxt trim copynom empty
 	'tk namecheck 0? ( "scratch" 'tk strcpy ) drop
 	'tk setproj proj-ensure 0? ( savefail ) drop proj-load drop proj-remember
 	hist-load ;

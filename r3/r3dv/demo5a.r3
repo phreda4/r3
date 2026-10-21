@@ -283,6 +283,34 @@
 		b@+ unpack21 b@+ pick4 ss3dxyzq | x y z quat i --
 		1+ ) 2drop ;
 
+|----------------------------------
+| NODOS / UBICADOR / ANCHO
+#brad 0.04		| ancho (radio) de los huesos
+#shownodes 1	| 1 = se ven los nodos (puntos)
+#nch0 #locator	| locator=1: el nodo 0 es un ubicador (raiz con un solo hijo)
+#bc
+
+:calcloc | raiz con un solo hijo = ubicador del objeto (no se dibuja)
+	0 'nch0 ! 0 'locator !
+	1 ( cntbones <?
+		dup skel + c@ 0? ( 1 'nch0 +! ) drop
+		1+ ) drop
+	nch0 1 =? ( 1 'locator ! ) drop ;
+
+:bpar | i -- p ; padre efectivo (-1 = raiz o hijo del ubicador)
+	skel + c@
+	0? ( locator 1? ( 2drop -1 ; ) drop ) ;
+
+:nodesapply | nodo 0 nunca se dibuja
+	0 ( cntbones <?
+		0 'bc !
+		shownodes 1? ( over 1? ( 1.0 'bc ! ) drop ) drop
+		bc nrosprite $ffffff00 pick3 ss3dcs
+		1+ ) drop ;
+
+:togglenodes shownodes 1 xor 'shownodes ! nodesapply ;
+
+|----------------------------------
 #baseanim
 #cntframe
 
@@ -365,6 +393,10 @@
 
 	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
 
+	"ancho" uiLabelC
+	0.005 0.2 'brad uiSliderf
+	'togglenodes "nodos" uiTBtn
+
 	|nrosprite ssnameid "[%l]" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
@@ -396,6 +428,7 @@
 	<f2> =? ( 2 setanim )
 	<f3> =? ( 3 setanim )	
 	<f4> =? ( 0 setanim )	
+	<n> =? ( togglenodes )
 	
 |	<f3> =? ( 2 calcpose )
 |	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
@@ -424,7 +457,6 @@
 	
 |----------------------------------
 | BONES: capsula padre -> hueso
-#brad 0.04
 #bcol $ffcc44f0
 
 #b0x #b0y #b0z	| padre
@@ -447,7 +479,7 @@
 	;
 
 :capbone | i --
-	dup skel + c@ -? ( 2drop ; )
+	dup bpar -? ( 2drop ; )
 	bonepos 'b0z ! 'b0y ! 'b0x !
 	bonepos 'b1z ! 'b1y ! 'b1x !
 	b1x b0x - 'dx ! b1y b0y - 'dy ! b1z b0z - 'dz !
@@ -517,6 +549,7 @@
 	loadr3a
 	|makeskel	
 	1 setanim
+	calcloc nodesapply
 	
 	
 	rl_init 
