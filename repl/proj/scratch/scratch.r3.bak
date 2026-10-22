@@ -1,44 +1,4 @@
 | r3repl - project scratch
 
-#board 
-0 0 0
-0 0 0
-0 0 0
-:cell | a -- b
-	3 <<
-	'board + ;
-
-:put | ab -- 
-	cell ! ;
-
-:get | a -- b
-	cell @ ;
-
-:.c | a -- 
-	0? (
-		drop
-		"." .write ;
-	) 1 =? (
-		drop
-		"X" .write ;
-	) drop
-	"O" .write ;
-
-:.row | a -- bc
-	3 *
-	dup 3 +
-	swap (
-		over <?
-		dup get .c
-		" " .write
-		1+
-	) 2 drop
-	.cr ;
-
-:.board |  -- 
-	0 (
-		3 <?
-		dup .row 1+
-	) drop
-	.flush ;
+#board 0 0 0 0 0 0 0 0 0
 

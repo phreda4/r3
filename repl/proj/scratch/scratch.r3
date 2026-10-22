@@ -1,42 +1,20 @@
 | r3repl - project scratch
-^r3/lib/rand.r3
 
-#board
-0 0 0
-0 0 0
-0 0 0
-:cell | a -- b
+#de 0
+
+#codo 0 32 3
+
+:def | a -- b
+	dup *
+	1? ( ; ) ;
+
+:cc | a -- b
 	3 <<
-	'board + ;
+	'codo + ;
 
-:put | ab -- 
-	cell ! ;
+#ewjr
 
-:get | a -- b
-	cell @ ;
+#data1
 
-:.c | a -- 
-	".XO" +
-	c@ .emit ;
-
-:.row | a -- 
-	3 *
-	dup 3 +
-	swap (
-		over <?
-		dup get .c
-		.sp 1+
-	) 2drop .cr ;
-
-:.board |  -- 
-	0 (
-		3 <?
-		dup .row
-		1+
-	) drop ;
-
-:ia |  -- a
-	9 randmax dup get 0 <>? (
-		2drop ia ;
-	) 2 swap put ;
+2 3 4 
 

@@ -72,7 +72,7 @@
 
 |------------------------ memory panel
 #lmem
-#panelMemSize 12
+#panelMemSize 7
 #panelMemBytes 32
 
 :memdn		panelMemBytes 'lmem +! ;

@@ -291,6 +291,27 @@
 	slideshow
 	@ .d uiLabelC
 	2drop ;	
+
+#scy
+::uiSliderfL | "name" 0.0 1.0 'value --	; slider con nombre a la izquierda y valor a la derecha
+	zonefline
+	'slideh uiSel
+	slideshow
+	cy 'scy !
+	pick3 uiLabel
+	scy 'cy !
+	@ .f2 uiLabelR
+	2drop drop ;
+
+::uiFToggle | 'var "text" --	; boton de ancho completo que alterna 'var 0/1 (verde = activo)
+	over @ 1? ( stSucc ) drop
+	zonefline
+	colorFill fillboxb
+	colorText tcwrite
+	[ dup @ 1 xor over ! uiEx! ; ] uiClk
+	drop
+	stInfo
+	fsizeh pady 2* + mary + 'cy +! ;
 	
 :progreshow | 0.0 1.0 'value --
 	|colBack uiLFill

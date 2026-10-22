@@ -5,9 +5,12 @@
 | a blank line after each definition ; data, comments and boot words (": ") are left as they are
 | defs-mark before adding the text, defs-fmt after the model knows the new words
 ^repl/replmodel.r3
+^repl/replzone.r3
 
 #ftk * 4096 #fpk * 4096 #fnm * 256
+##fparen 1		| 1: the line ends after ( and [ and the block goes in ; 0: the block stays in the line until a word takes the stack back
 #fi 1 #fb 1 #ffirst 0 #fblank 0
+#fbk * 4096 #fbp 0	| one flag per open block: it has a line break inside
 #dm0 0 #dl0 0
 
 |---------------- tokens (the text is a stream: lines are not important, a definition ends at the next : # | in column 0)
@@ -58,13 +61,34 @@
 :digit? | c -- 0/1
 	48 <? ( drop 0 ; ) 57 >? ( drop 0 ; ) drop 1 ;
 
-:num? | adr -- 0/1
+:dig? | c -- 0/1
+	48 <? ( drop 0 ; ) 57 >? ( drop 0 ; ) drop 1 ;
+
+:hexd? | c -- 0/1
+	dup dig? 1? ( 2drop 1 ; ) drop
+	$20 or 97 <? ( drop 0 ; ) 102 >? ( drop 0 ; ) drop 1 ;
+
+:decd? | c -- 0/1 ; a digit or the point of a fixed number
+	46 =? ( drop 1 ; ) dig? ;
+
+:bind? | c -- 0/1
+	48 =? ( drop 1 ; ) 49 =? ( drop 1 ; ) drop 0 ;
+
+:alld | adr -- 0/1 ; all the chars are digits (or a point)
+	( c@+ $ff and 1? decd? 1? drop ) drop 1- c@ $ff and 0? ( drop 1 ; ) drop 0 ;
+
+:allh | adr -- 0/1
+	( c@+ $ff and 1? hexd? 1? drop ) drop 1- c@ $ff and 0? ( drop 1 ; ) drop 0 ;
+
+:allb | adr -- 0/1
+	( c@+ $ff and 1? bind? 1? drop ) drop 1- c@ $ff and 0? ( drop 1 ; ) drop 0 ;
+
+::num? | adr -- 0/1 ; a number: 12  -3  0.5  $ff  %101  (0? 1+ 2* are words)
 	dup c@ $ff and
-	dup digit? 1? ( 3drop 1 ; ) drop
-	$24 =? ( drop 1+ c@ $ff and 32 >? ( drop 1 ; ) drop 0 ; )
-	$25 =? ( drop 1+ c@ $ff and 32 >? ( drop 1 ; ) drop 0 ; )
-	$2d =? ( drop 1+ c@ $ff and digit? ; )
-	$2b =? ( drop 1+ c@ $ff and digit? ; )
+	$24 =? ( drop 1+ dup c@ $ff and 0? ( 2drop 0 ; ) drop allh ; )
+	$25 =? ( drop 1+ dup c@ $ff and 0? ( 2drop 0 ; ) drop allb ; )
+	$2d =? ( drop 1+ dup c@ $ff and dig? 0? ( 2drop 0 ; ) drop alld ; )
+	dig? 1? ( drop alld ; )
 	2drop 0 ;
 
 :eff>delta | eff -- delta ; data (-1) puts its value
@@ -85,8 +109,11 @@
 	drop 1 ;
 
 |---------------- output
+:f-brk | -- ; the block where we are has a line break inside
+	fbp 1? ( drop 1 fbp 1- 'fbk + c! ; ) drop ;
+
 :f-nl | -- ; ends the line (not if it is empty)
-	fb 0? ( drop ,nl 1 'fb ! ; ) drop ;
+	fb 0? ( drop f-brk ,nl 1 'fb ! ; ) drop ;
 
 :f-tabs | --
 	fi ( 1? 1- 9 ,c ) drop ;
@@ -96,15 +123,18 @@
 	,s ;
 
 :f-open | --
-	'ftk f-out 1 'fi +! f-nl ;
+	'ftk f-out 1 'fi +!
+	fparen fbp 'fbk + c! 1 'fbp +!
+	fparen 1? ( f-nl ) drop ;
 
 :f-close | --
-	f-nl fi 1 >? ( -1 'fi +! ) drop
+	fbp 1? ( -1 'fbp +! fbp 'fbk + c@ $ff and 1? ( f-nl ) drop ) drop
+	fi 1 >? ( -1 'fi +! ) drop
 	'ftk f-out ;
 
-:f-semi | -- ; a ; inside a block ends the line
+:f-semi | adr -- adr ; a ; inside a block ends the line, unless the block closes next
 	'ftk f-out
-	fi 1 >? ( drop f-nl ; ) drop ;
+	fi 1 >? ( drop dup brk? 1? ( f-nl ) ) drop ;
 
 :f-tok | adr -- adr ; the token in ftk
 	'ftk "(" =s 1? ( drop f-open ; ) drop
@@ -125,7 +155,7 @@
 	'ftk "--" findstr 1? ( drop 1 ; ) drop 0 ;
 
 :f-body | adr -- adr'
-	1 'fi ! 1 'fb ! 1 'ffirst !
+	1 'fi ! 1 'fb ! 1 'ffirst ! 0 'fbp !
 	( 'ftk rtok 'ftk c@ $ff and 1? drop
 		stkcom? 0? ( drop f-tok 0 ) drop )
 	drop f-nl ;
@@ -162,9 +192,24 @@
 	f-nmidx -? ( drop f-copy ; )
 	f-def ;
 
-:fmt-text | adr -- ; the formatted text is written with ,s
+::fmt-text | adr -- ; the formatted text is written with ,s
 	0 'fblank !
 	( dup c@ $ff and 1? drop f-item ) 2drop ;
+
+|---------------- zones (replzone)
+::fmt-zone | i -- ; formats the code zone i (the model must know the words)
+	dup z.kind 1 <>? ( 2drop ; ) drop
+	dup z.adr over z.len +
+	dup c@ $ff and >r 0 over c!
+	mark here
+	pick2 z.adr fmt-text 0 ,c
+	swap r> swap c!
+	z.replace drop empty ;
+
+::defs-fmt-all | -- ; formats every code zone and leaves one blank line after each zone
+	m.ready z.build
+	zn ( 1? 1- dup fmt-zone ) drop
+	z.norm drop ;
 
 |---------------- use
 ::defs-mark | -- ; before adding text to defs

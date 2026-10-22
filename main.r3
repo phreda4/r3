@@ -97,6 +97,12 @@
 	"repl/repl.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
+:r3repl2
+	.masb .flush
+	savem
+	"repl/repl2.r3" r3run
+	.reterm .alsb .flush tuR! ;
+
 :remfilename | str --
 	count
 	swap over + | count 'fnla
@@ -266,6 +272,7 @@
 	$4 =? ( filedebug )	| ctrl+d Debug
 	$5 =? ( fileedit )	| ctrl+e Edit
 	$9 =? ( r3repl )	| ctrl+i Imm
+	$a	=? ( r3repl2 )	| JInteractive2
 	$b =? ( 'helpdlg onTui ) | ctrl+k Help	
 	$e =? ( filenew )	| ctrl+n New
 	$11 =? ( exit )		| ctrl+q quit
@@ -277,6 +284,7 @@
 	$44 =? ( filedebug ) | Debug
 	$45	=? ( fileedit )	| Edit
 	$49	=? ( r3repl )	| Interactive
+	$4a	=? ( r3repl2 )	| JInteractive2
 	$4b =? ( 'helpdlg onTui ) | k Help	
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run

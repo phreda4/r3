@@ -163,7 +163,8 @@
 #cntobjs 0
 
 #vrx #vry #vrz
-#scale 2.0
+#sx 2.0 #sy 2.0 #sz 2.0	| escala por eje (punto fijo 5.5 en ss3d: paso 1/32)
+#slock 1			| 1 = escala uniforme
 #nrosprite 0
 
 |--------------------------------------
@@ -172,14 +173,23 @@
 :getrot
 	vrx $ffff and 16 << vry $ffff and or 16 << vrz $ffff and or ;
 	
+:snap32 | v -- v'	; redondea a 1/32 (lo que guarda ss3d)
+	1024 + 11 >> 1 max 11 << ;
+
+:applyscale | i --	; escala xyz de la instancia i
+	sx snap32 'sx ! sy snap32 'sy ! sz snap32 'sz !
+	sx sy sz pick3 ss3dscl3 drop ;
+
 :addobj
+	cntobjs ss3dmax >=? ( drop ; ) drop
 	AdvMouse
 	hiteye 0? ( drop ; ) drop
 		
-	scale 
+	sx 
 	nrosprite
 	$ffffff00
 	cntobjs ss3dcs | scale spr color i --
+	cntobjs applyscale
 	
 	'v3hit >a 
 	a@+ 
@@ -192,16 +202,36 @@
 	;
 	
 :modobj
+	cntobjs 0? ( drop ; ) drop		| sin objetos no hay nada que modificar
 	getrot rxyz>q16
 	cntobjs 1- 
 	ss3dqua | quat i --
 	
-	scale 
+	sx 
 	nrosprite
 	$ffffff00
 	cntobjs 1- 
 	ss3dcs | scale spr color i --
+	cntobjs 1- applyscale
 	;
+
+|--- escala
+:clampv | v -- v'
+	0.125 max 16.0 min ;
+
+:chgx slock 1? ( sx dup 'sy ! 'sz ! ) drop modobj ;
+:chgy slock 1? ( sy dup 'sx ! 'sz ! ) drop modobj ;
+:chgz slock 1? ( sz dup 'sx ! 'sy ! ) drop modobj ;
+
+:scalestep | d --	; suma d a cada eje
+	dup sx + clampv 'sx !
+	dup sy + clampv 'sy !
+	sz + clampv 'sz !
+	modobj ;
+
+:scalex2 sx 2* clampv 'sx ! sy 2* clampv 'sy ! sz 2* clampv 'sz ! modobj ;
+:scalehalf sx 2/ clampv 'sx ! sy 2/ clampv 'sy ! sz 2/ clampv 'sz ! modobj ;
+:scale1 1.0 dup dup 'sz ! 'sy ! 'sx ! modobj ;
 
 |----------------------------------	
 | scene
@@ -242,7 +272,7 @@
 :prevobj
 	nrosprite 1- 0 max 'nrosprite ! modobj ;
 :nextobj
-	nrosprite 1+ n3dsprites min 'nrosprite ! modobj ;
+	nrosprite 1+ n3dsprites 1- min 'nrosprite ! modobj ;
 	
 :interface
 	1 'fscale !
@@ -276,10 +306,17 @@
 
 |	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
 	
-	0.0 1.0 'vrx uiSliderf uiEx? 1? ( modobj ) drop
-	0.0 1.0 'vry uiSliderf uiEx? 1? ( modobj ) drop
-	0.0 1.0 'vrz uiSliderf uiEx? 1? ( modobj ) drop
-	0.1 10.0 'scale uiSliderf uiEx? 1? ( modobj ) drop
+	"rot x" 0.0 1.0 'vrx uiSliderfL uiEx? 1? ( modobj ) drop
+	"rot y" 0.0 1.0 'vry uiSliderfL uiEx? 1? ( modobj ) drop
+	"rot z" 0.0 1.0 'vrz uiSliderfL uiEx? 1? ( modobj ) drop
+	"escala" uiLabelC
+	"X" 0.125 16.0 'sx uiSliderfL uiEx? 1? ( chgx ) drop
+	"Y" 0.125 16.0 'sy uiSliderfL uiEx? 1? ( chgy ) drop
+	"Z" 0.125 16.0 'sz uiSliderfL uiEx? 1? ( chgz ) drop
+	'slock "uniforme" uiFToggle
+	'scalex2 "x2" uiTBtn
+	'scalehalf "/2" uiTBtn
+	'scale1 "1:1" uiTBtn
 	'prevobj "<<" uiTBtn	
 	'nextobj ">>" uiTBtn	
 	|-1.0 1.0 'vrx uiprogressf
@@ -306,6 +343,7 @@
 	<up> =? ( nextobj )
 	<dn> =? ( prevobj )
 	<spc> =? ( addobj )
+	<pgup> =? ( 0.25 scalestep ) <pgdn> =? ( -0.25 scalestep )
 	drop
 	;
 	
