@@ -27,9 +27,9 @@
 layout(location=0) in vec3 a_pos;
 
 struct Instance {
-    uint obj_id;
+    uint scale3;    // escala x|y<<10|z<<20, 10 bits c/u en punto fijo 5.5 (v/32, 0 = oculto)
 	uint color;
-	uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
+	uint spr_obj;   // bits 15-0: spr_id uint16 | bits 31-16: obj_id uint16
     int  qxy;       // int16 qx (lo) | int16 qy (hi)
     int  qzw;       // int16 qz (lo) | int16 qw (hi)
     int  px, py, pz;	
@@ -68,13 +68,9 @@ mat3 quatToMat3(vec4 q) {
 
 void main() {
     Instance inst = instances[gl_InstanceID];
-    int   spr_id  = int(inst.spr_scl & 0xFFFFu);
-    float scale   = float(inst.spr_scl >> 16) / 256.0;   // uint8.8 -> float
-    // obj_id = estiramiento por eje, 3 x 10 bits (x, y<<10, z<<20) = m*32 ; 0 = sin estirar
-    uint  so   = inst.obj_id;
-    vec3  str  = (so == 0u) ? vec3(1.0)
-        : vec3(float(so & 1023u), float((so >> 10) & 1023u), float((so >> 20) & 1023u)) * (1.0/32.0);
-    vec3  scl3 = vec3(scale) * str;
+    int   spr_id  = int(inst.spr_obj & 0xFFFFu);
+    uint  sc3     = inst.scale3;
+    vec3  scl3    = vec3(float(sc3 & 1023u), float((sc3 >> 10) & 1023u), float((sc3 >> 20) & 1023u)) * (1.0/32.0);
     SpriteDef spr = sprites[spr_id];
 
     vSize = ivec3(spr.twh>>16, spr.nfoff>>16, spr.twh&0xffff);
@@ -431,39 +427,44 @@ void main() {
 	43 << 43 >> 4 << ;
 
 |struct Instance {
-|    uint obj_id;   // estiramiento por eje: x | y<<10 | z<<20 (m*32), 0 = ninguno
+|    uint scale3;   // escala x | y<<10 | z<<20 (punto fijo 5.5 c/u), 0 = oculto
 |    uint color;
-|    uint spr_scl;   // bits 15-0: spr_id uint16 | bits 31-16: scale uint8.8
+|    uint spr_obj;   // bits 15-0: spr_id uint16 | bits 31-16: obj_id uint16
 |    int  qxy;       // int16 qx (lo) | int16 qy (hi)
 |    int  qzw;       // int16 qz (lo) | int16 qw (hi)
 |    int  px, py, pz;
 
+|--- escala: punto fijo 5.5 por eje (10 bits): valor = v/32
+|    rango 0 .. 31.97 ; paso 1/32 ; 0 = oculto
+:enc10 | fp16.16 -- v10
+	1024 + 11 >> 0 max 1023 min ;
+
+:dec10 | v10 -- fp16.16
+	11 << ;
+
+:enc3 | s -- v		; mismo valor en x y z
+	enc10 dup 10 << over or swap 20 << or ;
+
+:enc3x | sx sy sz -- v
+	enc10 20 <<
+	swap enc10 10 << or
+	swap enc10 or ;
+
+#sbase
+
 ::ss3dset | x y z qxyzw scale spr color i --
 	dirtycheck
 	ab[
-	dup 5 << 3dss_array + >a 
-	drop 0 da!+		|obj_id = estiramiento (0 = ninguno)
-	da!+	| color
-	swap 8 >> 16 << or da!+ | scale|spr
-	a!+
-	rot da!+ swap da!+ da!  | x y z
+	dup 5 << 3dss_array + 'sbase !
+	$ffff and 16 <<				| obj_id = i
+	rot or						| scale color (obj|spr)
+	sbase 2 2 << + >a da!
+	sbase 1 2 << + >a da!		| color
+	enc3 sbase >a da!			| scale xyz
+	sbase 3 2 << + >a a!+
+	rot da!+ swap da!+ da!		| x y z
 	]ba
 	;
-
-|--- estiramiento por eje (multiplica la escala uniforme)
-:str10 | m -- v	; multiplicador 16.16 -> 10 bits (m*32): 1/32 .. 31.9
-	11 >> 1 max 1023 min ;
-
-::ss3dstr | sx sy sz i --
-	dirtycheck
-	ab[
-	5 << 3dss_array + >a
-	str10 20 <<
-	swap str10 10 << or
-	swap str10 or
-	$2008020 =? ( drop 0 )		| 1.0 1.0 1.0 = sin estirar
-	da!
-	]ba ;
 
 ::ss3dmax | -- n	; cantidad maxima de instancias
 	3dss_max ;
@@ -471,12 +472,25 @@ void main() {
 ::ss3dcs | scale spr color i --
 	dirtycheck
 	ab[
-	5 << 3dss_array + |1 2 << + 
-	>a				| -> dword 1
-	0 da!+ | xyz scale
-	da!+
-	swap 8 >> 16 << or da!	| scale|sprite
+	5 << 3dss_array + 'sbase !
+	sbase 1 2 << + >a da!		| color
+	sbase 2 2 << + w!			| sprite (no toca obj_id)
+	enc3 sbase >a da!			| scale xyz
 	]ba ;
+
+::ss3dscl3 | sx sy sz i --	; escala por eje (16.16)
+	dirtycheck
+	ab[
+	5 << 3dss_array + >a
+	enc3x da!
+	]ba ;
+
+::ss3dobj | id i --		; obj_id (16 bits)
+	dirtycheck
+	5 << 3dss_array + 10 + w! ;
+
+::ss3dobj@ | i -- id
+	5 << 3dss_array + 8 + d@ 16 >> $ffff and ;
 
 ::ss3dxyz | x y z i --
 	dirtycheck
@@ -512,13 +526,8 @@ void main() {
 ::ss3dfloor | scale n -- val
 	ss3dLY * 0.005 *. ;
 
-:instsy | adr -- sy	; estiramiento en Y (16.16)
-	d@ 0? ( drop 1.0 ; ) 10 >> 1023 and 11 << ;
-
 ::ss3difloor | i -- val
 	5 << 3dss_array +
-	dup instsy swap
-	2 2 << + d@ $ffffffff and
-	dup 16 >>> 8 << 			| bits 31-16: scale uint8.8
-	swap $ffff and ss3dfloor
-	swap *. ;	| bits 15-0: spr_id uint16 
+	dup d@ 10 >> $3ff and dec10		| adr sy
+	swap 8 + d@ $ffff and			| sy spr
+	ss3dfloor ;

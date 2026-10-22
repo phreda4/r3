@@ -296,6 +296,7 @@
 #bd_t   * 2048
 #bd_old * 2048	| sprite a restaurar al des-ocultar
 #bd_arc * 2048	| quaternion: lleva el eje Y del sprite a lo largo del hueso
+#bd_eff * 2048	| escala efectiva del sprite de hueso (0 = oculto)
 
 #tspr #tscl #tt
 
@@ -371,6 +372,7 @@
 	drop
 	showbones 0? ( 0 'bc ! ) drop
 	dup bpar -? ( 0 'bc ! ) drop
+	bc over 3 << 'bd_eff + !
 	bc bs pick2 bcolor pick3 bi0 + ss3dcs drop ;
 
 :bdapply
@@ -477,15 +479,20 @@
 	dup 4 << here + >b
 	b@+ unpack21 b@+ pick4 ss3dxyzq drop ;
 
-:bsy | i -- sy ; estiramiento en Y para que el sprite mida lo que el hueso
-	ajustar 0? ( 2drop 1.0 ; ) drop
-	3 <<
-	dup 'bd_spr + @ -? ( 2drop 1.0 ; )
-	swap 'bd_scl + @ swap
-	ss3dfloor 2*
-	0? ( drop 1.0 ; )
+:bsy | i s -- sy ; escala absoluta en Y: s, o la que hace que el sprite mida lo que el hueso
+	ajustar 0? ( drop nip ; ) drop
+	over 3 << 'bd_spr + @ -? ( drop nip ; )
+	ss3dLY 0? ( drop nip ; )
 	b1x b0x - dup *. b1y b0y - dup *. + b1z b0z - dup *. + sqrt.
-	swap /. ;
+	100 * swap /
+	nip nip ;
+
+#sc1 #sc2
+:bscale | i -- ; escala xyz del sprite de hueso (grosor = escala, largo ajustable)
+	dup 3 << 'bd_eff + @ 0? ( 2drop ; )
+	'sc1 !
+	dup sc1 bsy 'sc2 !
+	sc1 sc2 sc1 pick3 bi0 + ss3dscl3 drop ;
 
 :placebone | i --
 	dup 3 << 'bd_t + @ 'bt !
@@ -497,8 +504,7 @@
 	b0y b1y bt blerp
 	b0z b1z bt blerp			| i x y z
 	pick3 balign				| i x y z q
-	pick4 bi0 + ss3dxyzq
-	1.0 over bsy 1.0 pick3 bi0 + ss3dstr drop ;
+	pick4 bi0 + ss3dxyzq bscale ;
 
 :placebones
 	0 ( cntbones <?
