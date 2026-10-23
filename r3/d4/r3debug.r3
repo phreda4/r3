@@ -469,6 +469,7 @@
 	cntinc showcode
 	slnormal
 	.blockc .flush
+	5 tuEditLN!
 	'maindb onTuia | << a
 	debugend
 	
