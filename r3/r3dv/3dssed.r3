@@ -111,12 +111,7 @@
 
 #va #vl #vu
 
-:mousecam
-	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop
+:keycam
 	va 1? ( 'camFor camVelMove ) drop
 	vl 1? ( 'camRig camVelMove ) drop
 	vu 1? ( 'camUp camVelMove ) drop
@@ -180,40 +175,94 @@
 	sx snap32 'sx ! sy snap32 'sy ! sz snap32 'sz !
 	sx sy sz pick3 ss3dscl3 drop ;
 
+|--- objetos y seleccion
+#sel -1			| objeto seleccionado (-1 = ninguno: los valores del panel son el "pincel")
+#oldsel
+#obrot * 8192		| rotacion de cada objeto (3 x 16 bits, igual que getrot)
+
+:objcolor | i -- color	; seleccionado: tinte calido + glow
+	sel =? ( drop $ffa04001 ; ) drop $ffffff00 ;
+
+:objstyle | i --	; sprite, color y escala del panel en la instancia i
+	sx nrosprite pick2 objcolor pick3 ss3dcs
+	applyscale ;
+
+:objrot | i --		; rotacion del panel en la instancia i
+	getrot dup pick2 3 << 'obrot + !
+	rxyz>q16 swap ss3dqua ;
+
+:paintsel | i --	; color segun este seleccionada o no
+	-? ( drop ; )
+	dup objcolor over ss3dcol drop ;
+
+:loadsel | i --		; carga los valores del objeto i en el panel
+	dup ss3dspr@ 'nrosprite !
+	dup ss3dscl@ 'sz ! 'sy ! 'sx !
+	3 << 'obrot + @
+	dup 32 >> $ffff and 'vrx !
+	dup 16 >> $ffff and 'vry !
+	$ffff and 'vrz ! ;
+
+:selobj | i --		; selecciona la instancia i (-1 = ninguna)
+	sel 'oldsel !
+	'sel !
+	oldsel paintsel
+	sel paintsel
+	sel -? ( drop ; ) loadsel ;
+
+:selnext
+	cntobjs 0? ( drop ; ) drop
+	sel 1+ cntobjs mod selobj ;
+
+#deli
+:dupobj | duplica el seleccionado, desplazado un ancho en x
+	sel -? ( drop ; ) drop
+	cntobjs ss3dmax >=? ( drop ; ) drop
+	sel cntobjs ss3dcopy
+	sel 3 << 'obrot + @ cntobjs 3 << 'obrot + !
+	cntobjs dup ss3dobj
+	cntobjs ss3dxyz@
+	rot sx sel ss3dspr@ ss3dLX * 0.01 *. + -rot
+	cntobjs ss3dxyz
+	1 'cntobjs +!
+	cntobjs 1- selobj ;
+
+:delobj | borra el seleccionado (conserva el orden de los demas)
+	sel -? ( drop ; )
+	'deli !
+	deli ( cntobjs 1- <?
+		dup 1+ over ss3dcopy
+		dup 1+ 3 << 'obrot + @ over 3 << 'obrot + !
+		1+ ) drop
+	-1 'cntobjs +!
+	deli ( cntobjs <? dup dup ss3dobj 1+ ) drop	| obj_id = indice
+	cntobjs ss3dlen!
+	-1 'sel !				| evita repintar el indice que ya no existe
+	cntobjs 0? ( drop ; ) drop
+	deli cntobjs <? ( selobj ; ) drop	| el siguiente ocupa el indice
+	cntobjs 1- selobj ;
+
 :addobj
 	cntobjs ss3dmax >=? ( drop ; ) drop
 	AdvMouse
 	hiteye 0? ( drop ; ) drop
-		
-	sx 
-	nrosprite
-	$ffffff00
-	cntobjs ss3dcs | scale spr color i --
-	cntobjs applyscale
-	
+	cntobjs dup ss3dobj
+	cntobjs objstyle
 	'v3hit >a 
 	a@+ 
 	a@+ cntobjs ss3difloor +
 	a@+ | x y z
-	getrot rxyz>q16
+	getrot dup cntobjs 3 << 'obrot + !
+	rxyz>q16
 	cntobjs ss3dxyzq
-	
 	1 'cntobjs +!
+	cntobjs 1- selobj
 	;
 	
 :modobj
-	cntobjs 0? ( drop ; ) drop		| sin objetos no hay nada que modificar
-	getrot rxyz>q16
-	cntobjs 1- 
-	ss3dqua | quat i --
-	
-	sx 
-	nrosprite
-	$ffffff00
-	cntobjs 1- 
-	ss3dcs | scale spr color i --
-	cntobjs 1- applyscale
-	;
+	sel -? ( drop ; )		| sin seleccion solo cambia el pincel
+	dup objrot
+	objstyle ;
 
 |--- escala
 :clampv | v -- v'
@@ -269,6 +318,30 @@
 
 
 
+#raydir 0 0 0
+
+:pickmouse
+	AdvMouse
+	| camForMouse apunta de la escena hacia la camara (hiteye usa neg t): el rayo es su opuesto
+	'raydir >a
+	'camForMouse @ neg a!+
+	'camForMouse 8 + @ neg a!+
+	'camForMouse 16 + @ neg a!
+	'camEye 'raydir cntobjs ss3dpick selobj ;
+
+:dnmouse
+	sdlx 'xp ! sdly 'yp !
+	sdlb 4 =? ( drop ; ) drop	| boton derecho: orbita
+	pickmouse ;
+
+:viewmouse
+	uiFill
+	immMouse
+	1 =? ( wheelcam )		| over
+	2 =? ( dnmouse )		| in
+	3 =? ( movecam )		| active
+	drop ;
+
 :prevobj
 	nrosprite 1- 0 max 'nrosprite ! modobj ;
 :nextobj
@@ -301,7 +374,7 @@
 	nrosprite ssnameid "%s" sprint uiLabelC
 	
 |	n3dsprites "ant:%h" sprint uiLabelC
-	cntobjs "objs:%d" sprint uiLabelC
+	cntobjs sel "sel:%d  objs:%d" sprint uiLabelC
 |	nrosprite "spr:%d" sprint uiLabelC
 
 |	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
@@ -319,6 +392,9 @@
 	'scale1 "1:1" uiTBtn
 	'prevobj "<<" uiTBtn	
 	'nextobj ">>" uiTBtn	
+	'dupobj "dup" uiTBtn
+	'delobj "del" uiTBtn
+	viewmouse
 	|-1.0 1.0 'vrx uiprogressf
 |	'vrl 8 ss3names uiList
 |	uiEx? 1? ( vrl 'nrosprite ! ) drop
@@ -327,7 +403,7 @@
 :hud
 	fini
 	immIni
-	mousecam
+	keycam
 	interface
 	fend
 	
@@ -343,6 +419,8 @@
 	<up> =? ( nextobj )
 	<dn> =? ( prevobj )
 	<spc> =? ( addobj )
+	<tab> =? ( selnext )
+	<ins> =? ( dupobj ) <del> =? ( delobj )
 	<pgup> =? ( 0.25 scalestep ) <pgdn> =? ( -0.25 scalestep )
 	drop
 	;

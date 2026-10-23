@@ -1,18 +1,20 @@
-| r3repl - REPL environment for R3Forth   (folder repl/)    TUI version (util/tui.r3)
-| A session = a project: repl/proj/<n>/<n>.r3 (scratch by default).
-| Each line is generated as a program (mem/repl.r3) and run with r3.
-| The stack is recovered with the internal library repl/repldump.r3 (mem/repl.out).
-| There is no interpreter in the REPL: r3lin runs everything.
-|   replcore.r3  session and project (includes, definitions, files)
-|   replgen.r3   generation and execution of the program
-|   repl.r3      screen, commands and keys (layout and colors from util/tui.r3)
+| r3repl2 - REPL environment for R3Forth with a text box of several lines  (folder repl/)  TUI version (util/tui.r3)
+| The box edits a zone as a whole: a definition (:), a data (#), a block of comments (|) or a line to run.
+| What is typed is classified while it is typed: the color of the bar and of the words tells what it is.
+|   immediate (blue)  it is run, it goes to the history and not to the code
+|   code (violet)     a definition: enter takes it when it is closed ; ctrl+j new line
+|   data (green) / comments (gray)
+|   redefinition (yellow)  /redef loads a zone in the box, enter puts it back in its place
+| The text of the project is a list of zones (replzone.r3), the box is replbox.r3, the formatter replfmt.r3.
+| The session, the generation and the model are the libraries of repl.r3 (replcore replgen replchk replmodel).
 ^r3/util/tui.r3
-^repl/replhelp.r3
+^repl/replhelp2.r3
 ^repl/replcore.r3
 ^repl/replgen.r3
 ^repl/replchk.r3
 ^repl/replmodel.r3
 ^repl/replfmt.r3
+^repl/replbox.r3
 
 |---------------- variables
 #sw 0
@@ -166,20 +168,10 @@
 #pn 0
 #psel 0 #poff 0 #ph 0
 #wst 0
-#inp * 256
-#cur 0
 #nc 0
 #recs 0
 #cp * 4096
 #prw * 768
-
-:inplen 'inp count nip ;
-
-:ch@ | i -- c
-	-? ( drop 0 ; ) 'inp + c@ $ff and ;
-
-:wstart | -- i
-	cur ( dup 1- ch@ 32 >? drop 1- ) drop ;
 
 | candidato = 4 qwords: kind(0 comando: eff = args, 1 palabra: eff = efecto) eff libreria nombre
 :cadd | name lib eff kind --
@@ -239,11 +231,19 @@
 	psel poff pn + >=? ( psel pn - 1+ 'poff ! ) drop
 	refill ;
 
+#pwmax 100
+:incom? | -- 0/1 ; the cursor is in a comment or in a string
+	bxc 0? ( ; ) drop
+	bxc 1- 'ba + c@ $ff and
+	1 =? ( drop 1 ; ) 2 =? ( drop 1 ; ) drop 0 ;
+
 :popup!
 	0 'pn ! 0 'psel ! 0 'poff !
-	wstart 'wst !
+	bx.color incom? 1? ( drop ; ) drop
+	bx.word 'wst !
+	bxc wst - pwmax >? ( drop ; ) drop
 	'pwd >a
-	wst ( cur <? dup 'inp + c@ ca!+ 1+ ) drop
+	wst ( bxc <? dup 'bx + c@ ca!+ 1+ ) drop
 	0 ca!
 	'pwd c@ 0? ( drop ; ) drop
 	'pwd isNro 1? ( drop ; ) drop
@@ -253,61 +253,65 @@
 
 :accept
 	pn 0? ( drop ; ) drop
-	'inp cur + 'tmp strcpy
-	psel poff - 7 << 'prw + 'inp wst + strcpyl
-	1- 32 swap c!+
-	dup 'inp - 'cur !
-	'tmp swap strcpy ;
-
-|---------------- entrada de texto
-:kins | c --
-	inplen 200 >=? ( 2drop ; ) drop
-	inplen
-	( cur >=?
-		dup 'inp + dup c@ swap 1+ c!
-		1- )
-	drop
-	'inp cur + c! 1 'cur +! ;
-
-:kbks
-	cur 0? ( drop ; ) drop
-	cur 1-
-	( dup 'inp + dup 1+ c@ swap c!
-		dup 'inp + c@ $ff and 1? drop
-		1+ )
-	2drop -1 'cur +! ;
-
-:kdel
-	'inp cur + c@ 0? ( drop ; ) drop
-	1 'cur +! kbks ;
-
+	psel poff - 7 << 'prw + bx.accept ;
 
 |---------------- dibujo: prompt, popup, footer
-:pl | -- n ; lineas de texto del prompt (la ultima incluye el cursor)
-	inplen ptw / 1+ ;
+#lcls -1
+#estyle 1
+
+:pl | -- n ; text rows of the box
+	bx.nl rows 4 / 3 max 10 min min 1 max ;
 
 :ptw! | width pad -- ; ancho de texto del prompt para un frame y un margen
 	2* - 3 - 1 max 'ptw ! ;
 
-:phold | -- "text" ; texto del prompt vacio
-	bk 0? ( drop "Type an R3Forth expression  (e.g. 2 3 + dup *)" ; ) drop
-	bkn 1+ "definition  -  line %d  -  empty line to finish  (esc cancels)" sprint ;
+:phold | -- "text" ; the box is empty
+	"Type an R3Forth expression  (e.g. 2 3 + dup *)" ;
 
-:pbar | -- ; color de la barra del prompt: azul, violeta mientras se ingresa una definicion
-	bk 0? ( drop fBl ; ) drop fPr ;
+:pbar | -- ; sets the color of the bar of the box: it tells what is being typed
+	bxrz 0 >=? ( drop fYe ; ) drop
+	bx.mode 0? ( drop fBl ; ) 1 =? ( drop fBl ; ) 2 =? ( drop fPu ; )
+	3 =? ( drop fGr ; ) 4 =? ( drop fDi ; ) drop fBl ;
 
-:promptline | i -- ; linea i del texto de entrada
-	inplen 0? ( 2drop fDi ptw phold lwrite ; ) drop
-	ptw * 'inp + fTx ptw swap lwrite ;
+:hint | -- "text" ; what enter does in this mode
+	bxrz 0 >=? ( drop bxrz 1+ "redefining zone %d  -  enter takes it  -  esc cancels" sprint ; ) drop
+	bx.mode
+	1 =? ( drop "immediate  -  enter runs it  -  it goes to the history, not to the code" ; )
+	2 =? ( drop "code  -  enter takes it when it is closed  -  ctrl+j new line  -  esc clears" ; )
+	3 =? ( drop "data  -  enter takes it" ; )
+	4 =? ( drop "comments  -  enter takes them  -  ctrl+j new line" ; )
+	5 =? ( drop "include  -  enter adds it to the project" ; )
+	drop "" ;
 
-:drawprompt | pad -- ; texto de entrada con salto de linea (pl filas) mas 3 de margen
+:cls>col | class -- ; color of a class of bx.color
+	0? ( drop fTx ; ) 1 =? ( drop fDi ; ) 2 =? ( drop fGr ; ) 3 =? ( drop fYe ; )
+	4 =? ( drop fBl ; ) 5 =? ( drop fPr ; ) 6 =? ( drop fPu ; ) 7 =? ( drop fRd ; )
+	8 =? ( drop fYe ; ) 9 =? ( drop fMu ; ) 10 =? ( drop fPr ; ) 11 =? ( drop fMu ; )
+	drop fTx ;
+
+:cls-set | class --
+	lcls =? ( drop ; ) dup 'lcls ! cls>col ;
+
+:draw-line | n -- ; line n of the box from the column bxx
+	bx.lineat dup bx.le swap bxx + swap
+	over - 0 max ptw min
+	-1 'lcls !
+	( 1? 1- swap dup 'ba + c@ $ff and cls-set dup 'bx + c@ $ff and .emit 1+ swap ) 2drop ;
+
+:prow-text | r -- ; row r (1..) of the text of the box
+	bx.len 0? ( drop 1 =? ( fDi ptw phold lwrite ) drop ; ) drop
+	1- bxy + bx.nl <? ( draw-line ; ) drop ;
+
+:drawprompt | pad -- ; the box (pl rows) with 3 more rows of margin
 	0 flpad fhome
 	fx 'px ! fy 'py ! fw 'pw !
+	pl ptw bx.scroll bx.color
 	0 ( pl 3 + <?
 		pbar bg2 bar fw .ndel .sp .sp
-		1 pl in? ( dup 1- promptline )
+		1 pl in? ( dup prow-text )
+		dup pl 1+ =? ( fDi ptw hint lwrite ) drop
 		fcr 1+ ) drop
-	bg0 fx 3 + cur ptw mod + fy 1+ cur ptw / + .at .savec tuC! ;
+	bg0 fx 3 + bx.col bxx - + fy 1+ bx.line bxy - + .at .savec tuC! ;
 
 :pbg | i -- ; fondo segun seleccion
 	psel poff - =? ( drop bg3 ; ) drop bg1 ;
@@ -343,8 +347,8 @@
 	busy 1? ( fPr 'spin sf 4 mod n>>0 .write fMu " running r3..." .write 1 'sf +! )
 	0? ( fDi "~/r3" .write ) drop
 	pn 1? ( nc pn >? ( fMu nc psel 1+ "  %d/%d" sprint .write ) drop ) drop
-	bk 1? ( fPr bkd bkn "  definition  %d lines  %d open (" sprint .write ) drop
-	cols 86 >=? ( fDi cols 80 - .col 78 "ctrl+c quit   tab complete   / commands   ^f format   ^t terminal   ^l clear  " rwrite ) drop ;
+	bxrz 0 >=? ( fYe bxrz 1+ "  redefining zone %d" sprint .write ) drop
+	cols 86 >=? ( fDi cols 80 - .col 78 "ctrl+c quit   tab complete   / commands   ctrl+j newline   ^t term   ^l clear" rwrite ) drop ;
 
 |---------------- dibujo: pantallas
 :drawlogo | y -- 
@@ -455,8 +459,8 @@
 	'emsg "error: %s" sprint 4 tstep
 	'efile eline err-where ;
 
-:fail | -- ; descarta lo agregado en esta linea
-	ninc0 'ninc ! 0 'busy ! tsb ;
+:fail | -- 0 ; descarta lo agregado en esta linea
+	ninc0 'ninc ! 0 'busy ! tsb 0 ;
 
 :okpaso | muestra los includes nuevos
 	ninc0 ( ninc <?
@@ -515,13 +519,12 @@
 	30 >? ( dup 30 - "...          %d more exits" sprint 3 tstep ) drop
 	'trbuf 8 + @ 1? ( dup "...          %d exits not recorded (limit)" sprint 3 tstep ) drop ;
 
-:real-eval | adr --
+:real-eval | adr -- ok
 	m.ready
 	dup 'ga ! lkind 'gk !
-	gk 3 =? ( drop ga trim c@ $ff and 0? ( drop ; ) drop ga defs+ psave ; ) drop
+	gk 3 =? ( drop ga defs+n z.norm drop psave 1 ; ) drop
 	ninc 'ninc0 !
-	prep 0? ( drop ; ) drop
-	"r3repl  -  r3" 2 tstep
+	prep 0? ( ; ) drop
 	ga gk gen-src
 	chk-run
 	1 =? ( drop show-chk fail ; )
@@ -529,7 +532,6 @@
 	3 =? ( drop 'ckmsg tse fail ; )
 	drop
 	gk 0? ( mw.report ) drop
-	gl "generate     mem/repl.r3  -  %d lines" sprint 3 tstep
 	"mem/repl.trc" delete
 	chk-gen 0? ( drop "the program could not be generated from the tokens" tse fail ; ) drop
 	do-run
@@ -540,18 +542,17 @@
 	4 =? ( drop "stack too large (more than 255 values)" 4 tstep outlines fail ; )
 	drop
 	okpaso
-	tms "run          r3  -  %d ms" sprint 3 tstep
 	gk 0? ( trace 1? ( show-trace ) drop ) drop
 	outlines
 	gk 2 =? (
 		m.count defs-mark ga defs+n m.ready
 		( m.count <? dup mdef 3 tstep dup mredef 1+ ) drop
-		defs-fmt ) drop
+		defs-fmt z.norm drop ) drop
 	gk 0 <>? ( psave ) drop
 	ninc ninc0 <>? ( psave ) drop
 	0 'busy !
-	stack$ 5 tstep
-	tsb ;
+	gk 0? ( stack$ 5 tstep ) drop
+	tsb 1 ;
 
 |---------------- comandos
 #cb * 256 #cd 0
@@ -628,22 +629,104 @@
 	defl srcmax >? ( defl srcmax - "...  %d more lines" sprint 6 tl+ ) drop
 	lnb ;
 
-:defstart? | adr -- 0/1 ; the line starts a definition (: or # in the first column)
-	c@ $ff and $3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
-
-:src-word | i -- ; the definition of one word of the project (the text is cut for a moment at its end)
-	m.line ninc 3 + - -? ( drop "not in the project file" lne ; )
-	defs swap ( 1? 1- swap nextl swap ) drop
-	dup nextl ( dup c@ $ff and 1? drop dup defstart? 0? drop nextl ) drop
+:zone-show | i -- ; the lines of zone i (the text is cut for a moment at its end)
+	dup z.adr swap z.len over +
 	dup c@ $ff and >r 0 over c!
 	swap 6 srcmax showtxt drop
 	r> swap c! lnb ;
 
+|---------------- zones: /list /redef /del /format and the replacement of a zone
+#bkp 0 #bdl 0 #lcnt 0 #zlv 0
+
+:defs-backup | -- adr ; a copy of the text of the project (the caller does mark before and empty after)
+	defl 'bdl ! here defs ,s 0 ,c ;
+
+:defs-restore | adr -- ; the text of the project is the copy again
+	dup count 1+ defs -rot cmove
+	count nip defs + 'defs> !
+	bdl 'defl ! 1 'mdirty ! ;
+
+:zline | l -- i ; last zone that starts at or before the line l of the project text (-1 none)
+	'zlv ! zn ( 1? 1- dup z.line zlv <=? ( drop ; ) drop ) drop -1 ;
+
+:zerr | -- ; why the model does not accept the project
+	m.errmsg "the project would not compile: %s" sprint tse
+	m.errline ninc 3 + - zline -? ( drop ; )
+	dup z.name swap 1+ "in zone %d  %s" sprint 4 tl+ lnb ;
+
+:zok | i -- i/-1
+	-? ( drop -1 ; ) zn >=? ( drop -1 ; ) ;
+
+:zlast | -- i ; the last code or data zone
+	zn ( 1? 1- dup z.kind 3 <? ( drop ; ) drop ) drop -1 ;
+
+:zarg | -- i ; the zone of the argument in 'tk: a number of /list, a name, nothing = the last one (-1 = none)
+	'tk c@ $ff and 0? ( drop zlast ; ) drop
+	'tk isNro 1? ( drop 'tk str>nro nip 1- zok ; ) drop
+	'tk z.find ;
+
+:kch | kind -- "mark"
+	1 =? ( drop ":" ; ) 2 =? ( drop "#" ; ) 3 =? ( drop "|" ; ) drop "-" ;
+
+:zmatch? | i -- 0/1 ; the name has the text of the argument
+	'tk c@ $ff and 0? ( 2drop 1 ; ) drop
+	z.name 'tk findstr 1? ( drop 1 ; ) drop 0 ;
+
+:zrow | i --
+	dup z.nl over z.name pick2 z.kind kch pick3 1+
+	"%d  %s  %s   (%d)" sprint 6 tl+ drop ;
+
+:zshow | i --
+	dup zmatch? 0? ( 2drop ; ) drop
+	lcnt 1+ dup 'lcnt ! 60 >? ( 2drop ; ) drop
+	zrow ;
+
+:cmd-list | arg --
+	arg1 drop z.build 0 'lcnt !
+	0 ( zn <? dup zshow 1+ ) drop
+	lcnt 0? ( "(no zones)" 6 tl+ ) drop
+	lcnt 60 >? ( lcnt 60 - "...  %d more" sprint 6 tl+ ) drop
+	lnb ;
+
+:cmd-redef | arg -- ; a zone goes to the box, to replace it when the box is taken
+	arg1 drop z.build zarg
+	-? ( drop "no such zone  -  see /list" lne ; )
+	dup bx.zone
+	dup z.name over 1+ "zone %d  %s  is in the box  -  enter takes it, esc cancels" sprint 6 tl+ drop
+	lnb ;
+
+:cmd-del | arg --
+	arg1 0? ( drop "usage: /del word|n" lne ; ) drop
+	z.build zarg
+	-? ( drop "no such zone  -  see /list" lne ; )
+	dup z.name 'tk strcpy
+	mark defs-backup 'bkp !
+	z.delete drop
+	m.ready m.ok 0? ( drop zerr bkp defs-restore empty "not deleted" lne ; ) drop
+	empty psave
+	'tk "deleted  %s" sprint 6 tl+ lnb ;
+
+:cmd-format | arg -- ; the code of the project is formatted and the zones are separated by a blank line
+	drop mark defs-backup 'bkp !
+	defs-fmt-all
+	m.ready m.ok 0? ( drop zerr bkp defs-restore empty "not formatted" lne ; ) drop
+	empty psave
+	z.build zn "formatted  %d zones" sprint 6 tl+ lnb ;
+
+:rz-commit | -- ok ; the text of the box replaces the zone bxrz
+	z.build bxrz zn >=? ( drop "the zone is not there any more" lne 0 ; ) drop
+	mark defs-backup 'bkp !
+	bxrz bx.out z.replace 0? ( drop bkp defs-restore empty "the text of the project is full" lne 0 ; ) drop
+	m.ready m.ok 0? ( drop zerr bkp defs-restore empty 0 ; ) drop
+	z.build bxrz fmt-zone z.norm drop
+	empty psave m.ready
+	bxrz z.name m.find -? ( drop "replaced" 6 tl+ lnb 1 ; )
+	dup m.eff effstr over m.name "replaced  %s  ( %s )" sprint 6 tl+ drop lnb 1 ;
+
 :cmd-src | arg -- ; /src: the definitions of the project ; /src word: only that one
 	arg1 0? ( drop src-all ; ) drop
-	m.ready
-	'tk m.find -? ( drop "word not found in the project" lne ; )
-	src-word ;
+	z.build 'tk z.find -? ( drop "word not found in the project" lne ; )
+	zone-show ;
 
 :cmd-clear | arg --
 	drop 0 'ntl ! tp 'tp> ! 0 'scroll ! ;
@@ -685,7 +768,7 @@
 :pinfo
 	m.ready
 	m.count ninc 'pname "project %s  -  %d includes, %d definitions" sprint 6 tl+
-	m.ok 0? ( drop m.errline m.errmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ ) drop
+	m.ok 0? ( drop m.errline m.errmsg "the project does not compile: %s  (line %d)" sprint 4 tl+ 0 ) drop
 	m.boots 1? ( dup 0 m.bootline swap "%d boot word(s) ignored when running  (first at line %d)" sprint 6 tl+ ) drop
 	lnb ;
 
@@ -865,7 +948,7 @@
 :cmd-exit | arg --
 	drop exit ;
 
-#cmdv 'cmd-stack 'cmd-fmt 'cmd-term 'cmd-src 'cmd-trace 'cmd-clear 'cmd-reset 'cmd-save 'cmd-new 'cmd-load 'cmd-proj 'cmd-open 'cmd-find 'cmd-edit 'cmd-run 'cmd-init 'cmd-done 'cmd-help 'cmd-words 'cmd-lib 'cmd-exit
+#cmdv 'cmd-stack 'cmd-fmt 'cmd-term 'cmd-src 'cmd-list 'cmd-redef 'cmd-del 'cmd-format 'cmd-trace 'cmd-clear 'cmd-reset 'cmd-save 'cmd-new 'cmd-load 'cmd-proj 'cmd-open 'cmd-find 'cmd-edit 'cmd-run 'cmd-init 'cmd-done 'cmd-help 'cmd-words 'cmd-lib 'cmd-exit
 | the same order as the commands of ctab (replhelp.r3)
 
 :docmd | adr -- ; the command goes to its word with the rest of the line
@@ -904,13 +987,13 @@
 	hp 1+ dup hn >? ( 2drop ; ) drop
 	dup 32 >? ( 2drop ; ) drop
 	dup 'hp !
-	hn swap - hslot 'inp strcpy inplen 'cur ! popup! ;
+	hn swap - hslot bx.set popup! ;
 
 :hdn
 	hp 0? ( drop ; ) drop
 	hp 1- dup 'hp !
-	0? ( drop 0 'inp c! 0 'cur ! popup! ; )
-	hn swap - hslot 'inp strcpy inplen 'cur ! popup! ;
+	0? ( drop bx.clear popup! ; )
+	hn swap - hslot bx.set popup! ;
 
 :proj-boot | abre el ultimo proyecto (o scratch)
 	'tk mark "mem/repl.last" loadtxt trim copynom empty
@@ -922,79 +1005,71 @@
 :fin
 	0 'busy ! popup! ;
 
-|---------------- definiciones de varias lineas (: o #): se cierran con una linea vacia
-| bk.parse tokenizes the text of the block (rtokx of replfmt: comments and strings do not count) and leaves
-| bkd = ( [ open, bko = the last : word has no ; yet, bks = string not closed
-:quotes | str -- n
-	0 swap ( c@+ $ff and 1? 34 =? ( rot 1+ -rot ) drop ) 2drop ;
+|---------------- the box: enter takes it, ctrl+j new line
+:echo-box | -- ; the lines of the box to the transcript
+	1 'estyle !
+	'bx ( dup c@ $ff and 1? drop
+		dup lcopy 'lo2 c@ 1? ( 'lo2 estyle tl+p drop 9 'estyle ! ) drop
+		nextl ) 2drop ;
 
-:bk.tok | -- ; the token in bkt
-	'bkt c@ $ff and
-	$22 =? ( drop 'bkt quotes 1 and 'bks ! ; )
-	$3a =? ( drop 'bkt 1+ c@ 1? ( 1 'bko ! ) drop ; )
-	$23 =? ( drop 'bkt 1+ c@ 1? ( 0 'bko ! ) drop ; )
-	'bkt 1+ c@ 1? ( 2drop ; ) drop
-	$28 =? ( 1 'bkd +! ) $5b =? ( 1 'bkd +! )
-	$29 =? ( -1 'bkd +! ) $5d =? ( -1 'bkd +! )
-	$3b =? ( bkd 0? ( 0 'bko ! ) drop )
-	drop ;
+:hist-box | -- ; the first line goes to the history
+	'bx lcopy 'lo2 255 + 0 swap c! 'lo2 hist+ hist-save ;
 
-:bk.parse | -- ; the state of the block
-	0 'bkd ! 0 'bko ! 0 'bks !
-	'bkb ( 'bkt rtokx 'bkt c@ $ff and 1? drop bk.tok ) 2drop ;
+:lead | s -- n ; spaces at the start of the line s
+	0 swap ( dup 'bx + c@ $ff and 32 =? drop swap 1+ swap 1+ ) 2drop ;
 
-:bk.reset | -- ; sale del modo definicion
-	0 'bk ! 0 'bkn ! 0 'bkd ! 0 'bko ! 0 'bks !
-	'bkb 'bkb> ! 0 'bkb c! ;
+:spaces | n --
+	( 1? 1- 32 bx.ins ) drop ;
 
-:bk.err | "msg" -- ; error que no se arregla agregando lineas: se descarta la definicion
-	tse bk.reset ;
+:indent | -- ; the new line has the indentation of the line above (2 spaces under a : line)
+	bxc 1- bx.ls
+	dup 'bx + c@ $ff and $3a =? ( 2drop 2 spaces ; ) drop
+	lead spaces ;
 
-:bk.add | adr -- ; agrega la linea al bloque
-	bkn 1? ( 13 bkb> c!+ 'bkb> ! ) drop
-	bkb> strcpyl 1- 'bkb> !
-	1 'bkn +! ;
+:nlin | -- ; new line
+	10 bx.ins indent popup! ;
 
-:bk.nest? | adr -- 0/1 ; la linea abre otra definicion con una palabra sin cerrar
-	bk.parse bks 1? ( 2drop 0 ; ) drop
-	lkind 2 <>? ( drop 0 ; ) drop
-	bko ;
+:take | -- ; the box is a line to run or a new zone
+	bx.mode 1 =? ( hist-box ) 5 =? ( hist-box ) drop
+	echo-box
+	bx.out dup c@ $ff and $2f =? ( drop bx.clear docmd ; ) drop
+	real-eval 0? ( bx.mode 1 =? ( bx.clear ) 5 =? ( bx.clear ) drop ) 1? ( bx.clear ) drop ;
 
-:bk.begin | adr -- ; primera linea de una definicion
-	bk.reset 1 'bk !
-	bk.add bk.parse
-	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
-
-:bk.end | -- ; linea vacia: cierra la definicion si esta completa
-	bks 1? ( drop "string not closed  (esc cancels)" tse ; ) drop
-	bkd 1? ( drop bkd "%d ( not closed  (esc cancels)" sprint tse ; ) drop
-	bko 1? ( drop "missing ;  (esc cancels)" tse ; ) drop
-	'bkb real-eval bk.reset ;
-
-:bk.line | -- ; enter dentro de la definicion (la linea esta en 'inp)
-	0 'scroll !
-	'inp trim c@ $ff and 0? ( drop 0 'inp c! 0 'cur ! 0 'pn ! bk.end ; ) drop
-	'inp hist+ hist-save
-	'inp 9 tl+p
-	0 'inp c! 0 'cur ! 0 'pn !
-	dup bk.nest? 1? ( 2drop "missing ;  before the next definition" bk.err ; ) drop
-	bkb> 'bkb - 3800 >? ( 2drop "definition too long" bk.err ; ) drop
-	bk.add bk.parse
-	bkd -? ( drop "unmatched )" bk.err ; ) drop ;
-
-:bk.cancel | -- ; esc dentro de la definicion
-	bk.reset "definition canceled" lnn ;
+:fin
+	0 'busy ! popup! ;
 
 :submit
-	bk 1? ( drop bk.line fin ; ) drop
-	inplen 0? ( drop ; ) drop
-	'inp hist+ hist-save
+	bx.mode 0? ( drop ; ) drop
 	0 'scroll !
-	'inp 1 tl+p
-	0 'inp c! 0 'cur ! 0 'pn !
-	dup c@ $ff and $2f =? ( drop docmd fin ; ) drop
-	dup lkind 2 =? ( drop bk.begin fin ; ) drop
-	real-eval fin ;
+	bxrz 0 >=? ( drop rz-commit 1? ( bx.clear ) drop fin ; ) drop
+	bx.mode 2 =? ( drop bx.complete? 0? ( drop bx.err tse ; ) ) drop
+	take fin ;
+
+:kenter | -- ; a line is taken at once, a zone when it is complete and the cursor is at its end
+	bx.mode 0? ( drop ; ) 1 =? ( drop submit ; ) 5 =? ( drop submit ; ) drop
+	bxc bx.len <? ( drop nlin ; ) drop
+	bx.complete? 1? ( drop submit ; ) drop
+	'bx bxc + 1- c@ $ff and 10 =? ( drop submit ; ) drop
+	nlin ;
+
+:kup
+	pn 1? ( drop psel 1- 0 max 'psel ! selvis ; ) drop
+	bx.up 1? ( drop popup! ; ) drop
+	bx.nl 1 =? ( drop bxrz -? ( drop hup ; ) ) drop ;
+
+:kdn
+	pn 1? ( drop psel 1+ nc 1- min 'psel ! selvis ; ) drop
+	bx.down 1? ( drop popup! ; ) drop
+	bx.nl 1 =? ( drop bxrz -? ( drop hdn ; ) ) drop ;
+
+:ktab
+	pn 1? ( drop accept popup! ; ) drop
+	32 bx.ins 32 bx.ins popup! ;
+
+:kesc
+	pn 1? ( drop 0 'pn ! ; ) drop
+	bx.len 1? ( drop bxrz 0 >=? ( drop "redefinition canceled" lnn 0 ) drop bx.clear popup! ; ) drop
+	exit ;
 
 :clampscroll
 	scroll ntl rows 7 - pl - - 0 max min 0 max 'scroll ! ;
@@ -1004,21 +1079,22 @@
 	12 =? ( drop 0 cmd-clear ; )
 	6 =? ( drop fmtcycle ; )
 	20 =? ( drop 0 cmd-term ; )
-	[enter] =? ( drop submit ; )
-	[back] =? ( drop kbks popup! ; )
-	[del] =? ( drop kdel popup! ; )
-	[le] =? ( drop cur 1? ( -1 'cur +! ) drop popup! ; )
-	[ri] =? ( drop cur inplen <? ( 1 'cur +! ) drop popup! ; )
-	[home] =? ( drop 0 'cur ! popup! ; )
-	[end] =? ( drop inplen 'cur ! popup! ; )
-	[tab] =? ( drop accept popup! ; )
-	[up] =? ( drop pn 1? ( drop psel 1- 0 max 'psel ! selvis ; ) drop hup ; )
-	[dn] =? ( drop pn 1? ( drop psel 1+ nc 1- min 'psel ! selvis ; ) drop hdn ; )
+	10 =? ( drop nlin ; )
+	[enter] =? ( drop kenter ; )
+	[back] =? ( drop bx.back popup! ; )
+	[del] =? ( drop bx.del popup! ; )
+	[le] =? ( drop bx.left popup! ; )
+	[ri] =? ( drop bx.right popup! ; )
+	[home] =? ( drop bx.home popup! ; )
+	[end] =? ( drop bx.end popup! ; )
+	[tab] =? ( drop ktab ; )
+	[up] =? ( drop kup ; )
+	[dn] =? ( drop kdn ; )
 	[pgup] =? ( drop 5 'scroll +! clampscroll ; )
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
-	32 126 in? ( kins popup! ; )
+	32 126 in? ( bx.ins popup! ; )
 	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
-	[esc] =? ( drop pn 1? ( drop 0 'pn ! ; ) drop bk 1? ( drop bk.cancel ; ) drop exit ; )
+	[esc] =? ( drop kesc ; )
 	drop ;
 
 |---------------- pantalla (tui): tecla -> dibujo
@@ -1034,6 +1110,7 @@
 
 :main
 	core-init m.init initmem
+	0 'fparen ! bx.clear
 	data-clear proj-boot
 	.alsb
 	'replscr onTui 

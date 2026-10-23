@@ -27,7 +27,7 @@
 layout(location=0) in vec3 a_pos;
 
 struct Instance {
-    uint scale3;    // escala x|y<<10|z<<20, 10 bits c/u en punto fijo 5.5 (v/32, 0 = oculto)
+    uint scale3;    // scale x|y<<10|z<<20
 	uint color;
 	uint spr_obj;   // bits 15-0: spr_id uint16 | bits 31-16: obj_id uint16
     int  qxy;       // int16 qx (lo) | int16 qy (hi)
@@ -274,7 +274,7 @@ void main() {
 |====== instance mem
 	1 'ssbo_inst glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
-	GL_SHADER_STORAGE_BUFFER 3dss_max 32 * 0 GL_DYNAMIC_DRAW glBufferData
+	GL_SHADER_STORAGE_BUFFER 3dss_max 5 << 0 GL_DYNAMIC_DRAW glBufferData |32*
 	GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 |====== patch shader
@@ -288,7 +288,8 @@ void main() {
 	0 glUseProgram
 |====== reserve mem for instance
 	here '3dss_array !
-	3dss_max 32 * 'here +!			| 32 bytes por instancia
+	3dss_max 5 << | 32* 
+	'here +!			| 32 bytes x inst
 	$FFFF 'dirty_min ! 
 	0 'dirty_max !	
 	0 'ss3d_inst !
@@ -335,9 +336,9 @@ void main() {
 	dirty_min dirty_max <? (
 		GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 		GL_SHADER_STORAGE_BUFFER
-		dirty_min 32 *
-		dirty_max dirty_min - 32 *
-		3dss_array dirty_min 32 * +
+		dirty_min 5 << | 32*
+		dirty_max dirty_min - 5 << | 32*
+		3dss_array dirty_min 5 << + | 32* +
 		glBufferSubData
 		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 		$ffff 'dirty_min ! 0 'dirty_max !
@@ -426,18 +427,11 @@ void main() {
 	dup 22 << 43 >> 4 << swap
 	43 << 43 >> 4 << ;
 
-|struct Instance {
-|    uint scale3;   // escala x | y<<10 | z<<20 (punto fijo 5.5 c/u), 0 = oculto
-|    uint color;
-|    uint spr_obj;   // bits 15-0: spr_id uint16 | bits 31-16: obj_id uint16
-|    int  qxy;       // int16 qx (lo) | int16 qy (hi)
-|    int  qzw;       // int16 qz (lo) | int16 qw (hi)
-|    int  px, py, pz;
 
 |--- escala: punto fijo 5.5 por eje (10 bits): valor = v/32
 |    rango 0 .. 31.97 ; paso 1/32 ; 0 = oculto
 :enc10 | fp16.16 -- v10
-	1024 + 11 >> 0 max 1023 min ;
+	1024 + 11 >> $3ff and ;
 
 :dec10 | v10 -- fp16.16
 	11 << ;
@@ -531,3 +525,101 @@ void main() {
 	dup d@ 10 >> $3ff and dec10		| adr sy
 	swap 8 + d@ $ffff and			| sy spr
 	ss3dfloor ;
+
+|--- lectura de instancias
+::ss3dxyz@ | i -- x y z
+	5 << 3dss_array + 5 2 << + d@+ swap d@+ swap d@ ;
+
+::ss3dqua@ | i -- quat
+	5 << 3dss_array + 3 2 << + @ ;
+
+::ss3dscl@ | i -- sx sy sz	; escala por eje (16.16)
+	5 << 3dss_array + d@
+	dup $3ff and dec10 swap
+	dup 10 >> $3ff and dec10 swap
+	20 >> $3ff and dec10 ;
+
+::ss3dspr@ | i -- spr
+	5 << 3dss_array + 8 + d@ $ffff and ;
+
+::ss3dcol@ | i -- color
+	5 << 3dss_array + 4 + d@ $ffffffff and ;
+
+::ss3dcol | color i --	; solo el color
+	dirtycheck
+	ab[
+	5 << 3dss_array + 4 + >a da!
+	]ba ;
+
+|--- picking: rayo contra la caja orientada (OBB) de cada instancia
+#pkqx #pkqy #pkqz #pkqw
+#pkvx #pkvy #pkvz
+#pktx #pkty #pktz
+#pkcx #pkcy #pkcz
+#pkox #pkoy #pkoz	| origen del rayo en el espacio local de la instancia
+#pkdx #pkdy #pkdz	| direccion
+#pksx #pksy #pksz #pkspr
+#pkso #pksd #pksh
+#pktn #pktf #pkmiss
+#pkp #pkd #pki
+#pkbest #pkbi #pkn
+
+:pkrot | vx vy vz -- rx ry rz	; rota por pkq (ya conjugado = inversa)
+	'pkvz ! 'pkvy ! 'pkvx !
+	pkqy pkvz *. pkqz pkvy *. - 2* 'pktx !
+	pkqz pkvx *. pkqx pkvz *. - 2* 'pkty !
+	pkqx pkvy *. pkqy pkvx *. - 2* 'pktz !
+	pkvx pkqw pktx *. + pkqy pktz *. + pkqz pkty *. -
+	pkvy pkqw pkty *. + pkqz pktx *. + pkqx pktz *. -
+	pkvz pkqw pktz *. + pkqx pkty *. + pkqy pktx *. - ;
+
+:pkslab | o d h --	; intervalo [tn tf] del rayo dentro de la placa +-h
+	'pksh ! 'pksd ! 'pkso !
+	pksd abs 32 <? ( drop		| paralelo al plano
+		pkso abs pksh >? ( 1 'pkmiss ! ) drop
+		; ) drop
+	pksh neg pkso - pksd /.
+	pksh pkso - pksd /.
+	2dup min -rot max
+	pktf min 'pktf !
+	pktn max 'pktn ! ;
+
+::ss3dhit | 'orig 'dir i -- t	; distancia (16.16) al borde de la caja, -1 si no la toca
+	'pki ! 'pkd ! 'pkp !
+	pki ss3dqua@ unpackq 'pkqx ! 'pkqy ! 'pkqz ! 'pkqw !
+	pkqx neg 'pkqx ! pkqy neg 'pkqy ! pkqz neg 'pkqz !
+	pki ss3dxyz@ 'pkcz ! 'pkcy ! 'pkcx !
+	pkp @ pkcx - pkp 8 + @ pkcy - pkp 16 + @ pkcz - pkrot 'pkoz ! 'pkoy ! 'pkox !
+	pkd @ pkd 8 + @ pkd 16 + @ pkrot 'pkdz ! 'pkdy ! 'pkdx !
+	pki ss3dscl@ 'pksz ! 'pksy ! 'pksx !
+	pki ss3dspr@ 'pkspr !
+	0 'pktn ! $7fffffffffff 'pktf ! 0 'pkmiss !
+	pkox pkdx pksx pkspr ss3dLX * 0.005 *. pkslab
+	pkoy pkdy pksy pkspr ss3dLY * 0.005 *. pkslab
+	pkoz pkdz pksz pkspr ss3dLZ * 0.005 *. pkslab
+	pkmiss 1? ( drop -1 ; ) drop
+	pktn pktf >? ( drop -1 ; ) drop
+	pktn ;
+
+::ss3dpick | 'orig 'dir n -- i	; instancia mas cercana que toca el rayo (-1 = ninguna)
+	'pkn ! 'pkd ! 'pkp !
+	-1 'pkbi ! $7fffffffffff 'pkbest !
+	0 ( pkn <?
+		pkp pkd pick2 ss3dhit
+		0 >=? ( pkbest <? ( dup 'pkbest ! over 'pkbi ! ) ) drop
+		1+ ) drop
+	pkbi ;
+
+|--- copiar instancias / cantidad dibujada
+#cps #cpd
+::ss3dcopy | src dst --	; copia los 32 bytes de la instancia src en dst
+	dirtycheck
+	5 << 3dss_array + 'cpd !
+	5 << 3dss_array + 'cps !
+	cps @ cpd !
+	cps 8 + @ cpd 8 + !
+	cps 16 + @ cpd 16 + !
+	cps 24 + @ cpd 24 + ! ;
+
+::ss3dlen! | n --	; cantidad de instancias que se dibujan (0..n-1)
+	'ss3d_inst ! ;

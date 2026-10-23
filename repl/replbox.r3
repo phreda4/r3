@@ -185,7 +185,7 @@
 	ptst 'bx - bxc >? ( drop 0 ; )
 	'pt count nip + bxc <? ( drop 0 ; ) drop 1 ;
 
-:wf | 'str -- 0/1/2 ; wfind without changing cw cl ce (the run of a line needs them while the box is drawn)
+:wf | -- 0/1/2 ; wfind of the token in pt, without changing cw cl ce (the run of a line needs them while the box is drawn)
 	cw cl ce 'pt wfind >r 'ce ! 'cl ! 'cw ! r> ;
 
 :bx.cls | -- class ; of the token in pt
