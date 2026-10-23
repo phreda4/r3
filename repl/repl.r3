@@ -8,7 +8,7 @@
 | The text of the project is a list of zones (replzone.r3), the box is replbox.r3, the formatter replfmt.r3.
 | The session, the generation and the model are the libraries of repl.r3 (replcore replgen replchk replmodel).
 ^r3/util/tui.r3
-^repl/replhelp2.r3
+^repl/replhelp.r3
 ^repl/replcore.r3
 ^repl/replgen.r3
 ^repl/replchk.r3

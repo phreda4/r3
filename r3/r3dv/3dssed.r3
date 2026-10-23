@@ -178,6 +178,10 @@
 |--- objetos y seleccion
 #sel -1			| objeto seleccionado (-1 = ninguno: los valores del panel son el "pincel")
 #oldsel
+#opos 0 0 0		| posicion del seleccionado (x y z)
+#doff 0 0 0		| offset de agarre al arrastrar
+#dhit 0 0 0
+#drag 0			| 1 = arrastrando el seleccionado
 #obrot * 8192		| rotacion de cada objeto (3 x 16 bits, igual que getrot)
 
 :objcolor | i -- color	; seleccionado: tinte calido + glow
@@ -196,6 +200,7 @@
 	dup objcolor over ss3dcol drop ;
 
 :loadsel | i --		; carga los valores del objeto i en el panel
+	dup ss3dxyz@ 'opos 16 + ! 'opos 8 + ! 'opos !
 	dup ss3dspr@ 'nrosprite !
 	dup ss3dscl@ 'sz ! 'sy ! 'sx !
 	3 << 'obrot + @
@@ -320,14 +325,65 @@
 
 #raydir 0 0 0
 
-:pickmouse
+:raymouse | rayo del mouse (camForMouse apunta hacia la camara: se invierte)
 	AdvMouse
-	| camForMouse apunta de la escena hacia la camara (hiteye usa neg t): el rayo es su opuesto
 	'raydir >a
 	'camForMouse @ neg a!+
 	'camForMouse 8 + @ neg a!+
-	'camForMouse 16 + @ neg a!
-	'camEye 'raydir cntobjs ss3dpick selobj ;
+	'camForMouse 16 + @ neg a! ;
+
+|--- mover el seleccionado
+#mvi
+:movobj
+	sel -? ( drop ; )
+	'mvi !
+	'opos @ 'opos 8 + @ 'opos 16 + @ mvi ss3dxyz ;
+
+#nx #ny #nz
+:nudge | dx dy dz --
+	'nz ! 'ny ! 'nx !
+	sel -? ( drop ; ) drop
+	'opos @ nx + 'opos !
+	'opos 8 + @ ny + 'opos 8 + !
+	'opos 16 + @ nz + 'opos 16 + !
+	movobj ;
+
+#rg #keepg
+:planehit | -- flag	; rayo del mouse contra el plano de trabajo por el objeto
+	'raydir gaxis 3 << + @ 'rg !
+	rg abs 655 <? ( drop 0 ; ) drop		| casi paralelo
+	'opos gaxis 3 << + @ 'camEye gaxis 3 << + @ - rg /.
+	-? ( drop 0 ; )				| el plano esta detras de la camara
+	dup 'raydir @ *. 'camEye @ + 'dhit !
+	dup 'raydir 8 + @ *. 'camEye 8 + @ + 'dhit 8 + !
+	'raydir 16 + @ *. 'camEye 16 + @ + 'dhit 16 + !
+	1 ;
+
+:dragbegin | arranca el arrastre del seleccionado (si hay)
+	0 'drag !
+	sel -? ( drop ; ) drop
+	planehit 0? ( drop ; ) drop
+	'opos @ 'dhit @ - 'doff !
+	'opos 8 + @ 'dhit 8 + @ - 'doff 8 + !
+	'opos 16 + @ 'dhit 16 + @ - 'doff 16 + !
+	1 'drag ! ;
+
+:dragmouse
+	drag 0? ( drop ; ) drop
+	sdlb 1 and 0? ( drop 0 'drag ! ; ) drop
+	raymouse
+	'opos gaxis 3 << + @ 'keepg !
+	planehit 0? ( drop ; ) drop
+	'dhit @ 'doff @ + 'opos !
+	'dhit 8 + @ 'doff 8 + @ + 'opos 8 + !
+	'dhit 16 + @ 'doff 16 + @ + 'opos 16 + !
+	keepg 'opos gaxis 3 << + !		| el eje del plano no cambia
+	movobj ;
+
+:pickmouse
+	raymouse
+	'camEye 'raydir cntobjs ss3dpick selobj
+	dragbegin ;
 
 :dnmouse
 	sdlx 'xp ! sdly 'yp !
@@ -336,11 +392,17 @@
 
 :viewmouse
 	uiFill
+	sdlb 1 and 0? ( 0 'drag ! ) drop	| boton izquierdo soltado
 	immMouse
 	1 =? ( wheelcam )		| over
 	2 =? ( dnmouse )		| in
-	3 =? ( movecam )		| active
+	3 =? ( dragmouse movecam )	| active
 	drop ;
+
+:posui
+	"pos x" -30.0 30.0 'opos uiSliderfL uiEx? 1? ( movobj ) drop
+	"pos y" -30.0 30.0 'opos 8 + uiSliderfL uiEx? 1? ( movobj ) drop
+	"pos z" -30.0 30.0 'opos 16 + uiSliderfL uiEx? 1? ( movobj ) drop ;
 
 :prevobj
 	nrosprite 1- 0 max 'nrosprite ! modobj ;
@@ -390,6 +452,8 @@
 	'scalex2 "x2" uiTBtn
 	'scalehalf "/2" uiTBtn
 	'scale1 "1:1" uiTBtn
+	uiLn
+	sel 0 >=? ( posui ) drop
 	'prevobj "<<" uiTBtn	
 	'nextobj ">>" uiTBtn	
 	'dupobj "dup" uiTBtn
@@ -421,6 +485,8 @@
 	<spc> =? ( addobj )
 	<tab> =? ( selnext )
 	<ins> =? ( dupobj ) <del> =? ( delobj )
+	<le> =? ( -0.25 0 0 nudge ) <ri> =? ( 0.25 0 0 nudge )
+	<home> =? ( 0 0 -0.25 nudge ) <end> =? ( 0 0 0.25 nudge )
 	<pgup> =? ( 0.25 scalestep ) <pgdn> =? ( -0.25 scalestep )
 	drop
 	;

@@ -303,6 +303,9 @@
 	@ .f2 uiLabelR
 	2drop drop ;
 
+::uiLn | --	; salto de fila (despues de botones en linea)
+	fsizeh pady 2* + mary + 'cy +! marx 'cx ! ;
+
 ::uiFToggle | 'var "text" --	; boton de ancho completo que alterna 'var 0/1 (verde = activo)
 	over @ 1? ( stSucc ) drop
 	zonefline
