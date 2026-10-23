@@ -173,10 +173,13 @@ vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
 #endif // USE_SSDO
 
 void main() {
-    vec4 albedoPacked = texture(gAlbedo, uv);
-    vec3 albedo       = albedoPacked.rgb;
-    vec3 N            = normalize(texture(gNormal, uv).rgb);
-    float depth       = texture(gDepth, uv).r;
+
+// no color in background
+	float depth = texelFetch(gDepth, ivec2(gl_FragCoord.xy), 0).r;
+	if (depth <= 0.0) { FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; } // BLACK
+	vec4 albedoPacked = texelFetch(gAlbedo, ivec2(gl_FragCoord.xy), 0);
+	vec3 albedo       = albedoPacked.rgb;
+	vec3 N            = normalize(texelFetch(gNormal, ivec2(gl_FragCoord.xy), 0).rgb);
 
     int   pack      = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
@@ -204,25 +207,28 @@ void main() {
 
     vec3 color = albedo * 0.01 * ao + emissive;
 
-    vec3  L     = normalize(lightDir.xyz);
-    float NdotL = max(dot(N, L), 0.0);
-    color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-             * lightColor.rgb * lightColor.a * ao;
-    color += bounce * lightColor.rgb * lightColor.a;
+	vec3 L = normalize(lightDir.xyz);
+	float NdotL = dot(N, L);
+	if (NdotL > 0.0) {
+		color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0) * lightColor.rgb * lightColor.a * ao;
+		}	
 
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
-        vec3  toLight = pl.lights[i].pos.xyz - worldPos;
-        float dist2   = dot(toLight, toLight);
-        float invDist = inversesqrt(dist2);
-        vec3  Lp      = toLight * invDist;
-        float dist    = dist2 * invDist;
-        float NdotLp  = max(dot(N, Lp), 0.0);
-        float att     = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
-        color += BRDF(N, V, Lp, NdotV, NdotLp, albedo, metallic, a2, k, F0)
-                 * pl.lights[i].color.rgb
-                 * (pl.lights[i].color.a * att)
-                 * ao;
+	
+		vec3 toLight = pl.lights[i].pos.xyz - worldPos;
+		float dist2 = dot(toLight, toLight);
+		if (dist2 > 1e-8) {
+			float invDist = inversesqrt(dist2);
+			vec3 Lp = toLight * invDist;
+			float NdotLp = dot(N, Lp);
+			if (NdotLp > 0.0) {
+				float dist = dist2 * invDist;
+				float att = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
+				color += BRDF(N, V, Lp, NdotV, NdotLp,albedo, metallic, a2, k, F0)
+						* pl.lights[i].color.rgb* (pl.lights[i].color.a * att)* ao;
+				}
+			}
     }
 
     FragColor = vec4(color, 1.0);
