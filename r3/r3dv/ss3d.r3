@@ -126,6 +126,9 @@ layout(binding=0) uniform sampler2D  uAlb;
 layout(binding=3) uniform usampler1D uIdxBuf;
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
+// El bbox esta definido al reves (winding interior) y con CULL_FACE BACK se rasterizan
+// las caras LEJANAS. El hit queda mas cerca => reverse-Z => profundidad mayor => depth_greater.
+// NO cambiar a depth_less ni limitar con gl_FragCoord.z (aplanaria la profundidad del sprite).
 layout(depth_greater) out float gl_FragDepth;
 
 void main() {
@@ -182,7 +185,7 @@ void main() {
                                 (float(cell.z)+0.5)/float(ith));
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vTrans + world_n*0.0005;
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
-            gl_FragDepth = clip.z/clip.w*0.5 + 0.5;
+            gl_FragDepth = clip.z/clip.w;   // clip ZERO_TO_ONE
 
 			gNormal = world_n;			
 			vec4 tint = unpackUnorm4x8(vColorPk).abgr;

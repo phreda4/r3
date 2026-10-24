@@ -39,10 +39,13 @@
 	pick3 *. dup 'camT ! *. 'camR !
 	over camR /. a!					| proj.m[0] = n / r;
 	over camT /. 5 a] ! 			| proj.m[5] = n / t;
-	2dup + 'camT ! 2dup - 'camR !
-	camT neg camR /. 10 a] ! 		| proj.m[10] = -(n + f) / (n - f);
+	| reverse-Z + plano lejano INFINITO + clip ZERO_TO_ONE (glClipControl)
+	|   ndc.z = near / dist  ->  1 en near, 0 en el infinito
+	|   proj.m[10] = 0 ; proj.m[11] = -1 ; proj.m[14] = near
+	| (con far finito m[10]=n/(f-n) es ~0.0005 y no cabe en 16.16)
+	| proj.m[10] = 0 (ya es 0 por el fill)
 	-1.0 11 a] ! 					| proj.m[11] = -1.0f;
-	*. 2* neg camR /. 14 a] !		| proj.m[14] = -2.0f * n * f / (n - f);
+	drop 14 a] !				| proj.m[14] = n (far se descarta)
 	|................... calc inverse too
 	'mati 0 16 fill | dvc
 	'mati >b 'mat >a
@@ -55,8 +58,8 @@
 	
 ::mortho | r l t b f n --
 	matini 'mat >a
-	2dup - -2.0 over /. 10 a] !	| mat[10] = -2 / (farVal - nearVal);
-	-rot + swap /. neg 14 a] !	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
+	2dup - -1.0 over /. 10 a] !	| mat[10] = -1 / (f - n)   (clip ZERO_TO_ONE)
+	rot drop /. neg 14 a] !	| mat[14] = -n / (f - n)
 	2dup - 2.0 over /. 5 a] !	| mat[5] = 2 / (top - bottom);
 	-rot + swap /. neg 13 a] !	| mat[13] = -((top + bottom) / (top - bottom));
 	2dup - 2.0 over /. a> !		| mat[0] = 2 / (right - left);

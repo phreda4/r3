@@ -29,7 +29,7 @@ out vec2 vScreen;
 void main()
 {
     vScreen = aPos;
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    gl_Position = vec4(aPos, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
 }
 @fragment---------------
 #version 440 core
@@ -63,7 +63,7 @@ uniform vec3 uLineColor;
 float worldToDepth(vec3 wp)
 {
     vec4 cp = ProjView * vec4(wp, 1.0);
-    return (cp.z / cp.w) * 0.5 + 0.5;
+    return cp.z / cp.w;   // reverse-Z, clip ZERO_TO_ONE: depth = ndc.z
 }
 
 void main()
@@ -186,7 +186,6 @@ void main()
     rl_sh_grid "uAxis"       glGetUniformLocation 'rl_u_grid_axis  !
     rl_sh_grid "uLevel"      glGetUniformLocation 'rl_u_grid_level !
     rl_sh_grid "uLineColor"  glGetUniformLocation 'rl_u_grid_color !
-    0 rl_sh_grid "Matrices" rl_bind_ubo
 	9 'rl_grid_scale_x memfloat | solo convierte 1 vez
 	gridp_param
     ;

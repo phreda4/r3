@@ -33,6 +33,7 @@ layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+    mat4 invProjView;
 };
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir; vec4 lightColor; };
 
@@ -47,12 +48,10 @@ const float EPS    = 0.001;
 
 float pow5(float x) { float x2 = x * x; return x2 * x2 * x; }
 
+// una sola multiplicacion: depth ya es ndc.z (clip ZERO_TO_ONE)
 vec3 reconstructWorldPos(vec2 uv, float depth) {
-    float ndcZ = depth * 2.0 - 1.0;
-    vec4 ndc   = vec4(uv * 2.0 - 1.0, ndcZ, 1.0);
-    vec4 vp    = invProj * ndc;
-    vp.xyz    /= vp.w;
-    return (invView * vec4(vp.xyz, 1.0)).xyz;
+    vec4 w = invProjView * vec4(uv * 2.0 - 1.0, depth, 1.0);
+    return w.xyz / w.w;
 }
 
 // a2 = alpha^2, con alpha = roughness^2
@@ -286,7 +285,7 @@ in vec2 uv;
 out float FragAO;
 
 layout(binding = 0) uniform sampler2D gNormal;   // normal en espacio mundo
-layout(binding = 3) uniform sampler2D gDepth;    // reverse-Z, rango clip [-1,1]
+layout(binding = 3) uniform sampler2D gDepth;    // reverse-Z, clip ZERO_TO_ONE, far infinito
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
@@ -302,8 +301,8 @@ const float FADE_END   = 80.0;
 // ruido de gradiente intercalado (por pixel, alineado con gl_FragCoord)
 float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 
-// z de vista a partir de la profundidad (proyeccion estandar: clip.w = -z)
-float viewZ(float d) { return -proj[3][2] / (d * 2.0 - 1.0 + proj[2][2]); }
+// z de vista a partir de la profundidad (ndc.z = depth; clip.w = -z)
+float viewZ(float d) { return -proj[3][2] / (d + proj[2][2]); }
 
 void main() {
     ivec2 px = ivec2(gl_FragCoord.xy);
@@ -379,7 +378,7 @@ layout(std140, binding = 0) uniform Matrices {
 
 uniform vec2 dir;    // (1/w,0) horizontal  -  (0,1/h) vertical
 
-float viewZ(float d) { return -proj[3][2] / (d * 2.0 - 1.0 + proj[2][2]); }
+float viewZ(float d) { return -proj[3][2] / (d + proj[2][2]); }
 
 // blur bilateral separable: pesa por distancia y por diferencia de profundidad
 void main() {
@@ -644,7 +643,7 @@ void main() {
 :rl_init_ubos
     1 'rl_ubo_matrices glGenBuffers
     GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-    GL_UNIFORM_BUFFER 336 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 400 0 GL_DYNAMIC_DRAW glBufferData
     GL_UNIFORM_BUFFER 0 rl_ubo_matrices glBindBufferBase
 
     1 'rl_ubo_dirlight glGenBuffers
@@ -689,6 +688,8 @@ void main() {
 | ================================================================
 ::rl_Init
 	sw 'rl_w ! sh 'rl_h !
+	| clip control: origen abajo-izquierda, profundidad ZERO_TO_ONE (requiere glClipControl, GL 4.5 / ARB_clip_control)
+	$8CA1 $935F glClipControl
 	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer
     rl_init_bloom
@@ -704,11 +705,6 @@ void main() {
     'rl_shader_ao         loadShaderv 'rl_sh_ao         !
     'rl_shader_aoblur     loadShaderv 'rl_sh_aoblur     !
 
-    0 rl_sh_light "Matrices"     rl_bind_ubo
-    1 rl_sh_light "DirectLight"  rl_bind_ubo
-    2 rl_sh_light "PointLights"  rl_bind_ubo
-    0 rl_sh_ao     "Matrices"    rl_bind_ubo
-    0 rl_sh_aoblur "Matrices"    rl_bind_ubo
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
     rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
@@ -746,16 +742,19 @@ void main() {
 
 |----- UBO->GPU
 | RL_UBO_Matrices: view(64) proj(64) invView(64) invProj(64) viewProj(64)
-| viewPos(16) = 336 bytes
+| viewPos(16) + invProjView(64) = 400 bytes
 #ubo_matView * 64
 #ubo_matvProj * 64
 #ubo_matvinvView * 64
 #ubo_matvinvProj * 64
 #ubo_matProjView * 64
 #ubo_matViewPos * 16
+#ubo_matInvProjView * 64
 
 |------------------------------------
 #realproj * 128 | cache proj
+#realinvproj * 128 | cache inv proj
+#realinvview * 128 | cache inv view
 
 :cache_proj
 	camDirty 0? ( drop ; ) drop
@@ -766,6 +765,7 @@ void main() {
 	'ubo_matvProj 'mat cpymatif 
 	'ubo_matvinvProj 'mati cpymatif
 	'realproj 'mat 16 move  | copy for precalc proj*view
+	'realinvproj 'mati 16 move | copy for precalc invView*invProj
 	;
 
 ::rl_camera | 'eye 'to 'up --
@@ -775,8 +775,13 @@ void main() {
 	'ubo_matView 'mat cpymatif
 	matinv
 	'ubo_matvinvView 'mati cpymatif
+	'realinvview 'mati 16 move
 	'realproj mat* | reverse proj*view
 	'ubo_matProjView 'mati cpymatif
+	| invProjView = invView * invProj (reconstruccion de posicion en 1 mat*vec)
+	'mat 'realinvproj 16 move
+	'realinvview mat*
+	'ubo_matInvProjView 'mati cpymatif
 	;
 	
 | ================================================================
@@ -795,7 +800,7 @@ void main() {
 
 	|--- camera --- shadow?
 	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-	GL_UNIFORM_BUFFER 0 336 'ubo_matview glBufferSubData
+	GL_UNIFORM_BUFFER 0 400 'ubo_matview glBufferSubData
 	GL_UNIFORM_BUFFER 0 glBindBuffer
 	;
 

@@ -2,6 +2,7 @@
 | Formas: cubo (geom) | esfera, capsula, cilindro, cono, disco, plano (impostors)
 | PHREDA 2026
 ^./renderlib.r3
+| NOTA: profundidad con glClipControl ZERO_TO_ONE -> gl_FragDepth = clip.z / clip.w
 
 | ============================================================
 | HANDLES DE SHADERS
@@ -100,7 +101,7 @@ void main(){
     vec3  nView   = (hitView - vCenterView) * (1.0 / vRadius);
     vec3  nWorld  = normalize((invView * vec4(nView, 0.0)).xyz);
     vec4  clip    = proj * vec4(hitView, 1.0);
-    gl_FragDepth  = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth  = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -188,7 +189,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec3 nWorld  = normalize((invView * vec4(nBest, 0.0)).xyz);
     vec4 clip    = proj * vec4(hitView, 1.0);
-    gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -276,7 +277,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec3 nWorld  = normalize((invView * vec4(nBest, 0.0)).xyz);
     vec4 clip    = proj * vec4(hitView, 1.0);
-    gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -373,7 +374,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec3 nWorld  = normalize((invView * vec4(nBest, 0.0)).xyz);
     vec4 clip    = proj * vec4(hitView, 1.0);
-    gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -426,7 +427,7 @@ void main(){
     vec3  nv     = (dN < 0.0) ? vNormalV : -vNormalV;
     vec3  nWorld = normalize((invView * vec4(nv, 0.0)).xyz);
     vec4  clip   = proj * vec4(hit, 1.0);
-    gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -484,7 +485,7 @@ void main(){
     vec3  nv     = (dN < 0.0) ? vNormalV : -vNormalV;
     vec3  nWorld = normalize((invView * vec4(nv, 0.0)).xyz);
     vec4  clip   = proj * vec4(hit, 1.0);
-    gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
+    gl_FragDepth = clip.z / clip.w;
     gNormal = nWorld;
     gAlbedo = unpackUnorm4x8(uPackColor).abgr;
 }
@@ -561,7 +562,6 @@ void main(){
     sh_geom "model"        glGetUniformLocation 'u_geom_model  !
     sh_geom "uPackColor"   glGetUniformLocation 'u_geom_color  !
     sh_geom "normalMatrix" glGetUniformLocation 'u_geom_normal !
-    0 sh_geom "Matrices"   rl_bind_ubo
     24 6 * 'verts memfloat
     1 'g_cube_vao glGenVertexArrays
     1 'g_cube_vbo glGenBuffers
@@ -593,12 +593,6 @@ void main(){
     'shader_cone     loadShaderv 'sh_cone     !
     'shader_disc     loadShaderv 'sh_disc     !
     'shader_plane    loadShaderv 'sh_plane    !
-    0 sh_sphere   "Matrices" rl_bind_ubo
-    0 sh_capsule  "Matrices" rl_bind_ubo
-    0 sh_cylinder "Matrices" rl_bind_ubo
-    0 sh_cone     "Matrices" rl_bind_ubo
-    0 sh_disc     "Matrices" rl_bind_ubo
-    0 sh_plane    "Matrices" rl_bind_ubo
     ;
 
 ::endShapes

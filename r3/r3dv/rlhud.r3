@@ -76,7 +76,8 @@ void main() {
 #ws 8 #hs 16
 
 ::fixFontResize | --
-	sw 16 << 0 0 sh 16 << 1.0 0 mortho
+	| ortho ZERO_TO_ONE: z=0 -> ndc.z=0.5 (dentro del volumen de clip)
+	sw 16 << 0 0 sh 16 << 1.0 -1.0 mortho
 	'fwintext 'mat cpymatif
 	;
 

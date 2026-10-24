@@ -76,6 +76,7 @@
 #sys-glObjectLabel
 #sys-glDeleteFramebuffers
 #sys-glGenerateMipmap
+#sys-glClipControl
 
 |------------------------UI
 #id	#idh #ida 	| now hot active
@@ -320,6 +321,7 @@
 ::glObjectLabel sys-glObjectLabel sys4 drop ;
 ::glDeleteFramebuffers sys-glDeleteFramebuffers sys2 drop ;
 ::glGenerateMipmap sys-glGenerateMipmap sys1 drop ;
+::glClipControl sys-glClipControl sys2 drop ;
 | --- API Initialization ---
 
 ::InitGLAPI
@@ -474,6 +476,7 @@
     "glObjectLabel" SDL_GL_GetProcAddress 'sys-glObjectLabel !
     "glDeleteFramebuffers" SDL_GL_GetProcAddress 'sys-glDeleteFramebuffers !
 	"glGenerateMipmap" SDL_GL_GetProcAddress 'sys-glGenerateMipmap !
+	"glClipControl" SDL_GL_GetProcAddress 'sys-glClipControl !
     ;
 
 | --- SDL2 Context and Initialization ---

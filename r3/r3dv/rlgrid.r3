@@ -18,7 +18,7 @@ layout(location=0) in vec2 aPos;
 out vec2 vScreen;
 void main(){
     vScreen = aPos;
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    gl_Position = vec4(aPos, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
 }
 @fragment---------------
 #version 440 core
@@ -49,20 +49,19 @@ uniform float uGridScale;   // world units per cell
 uniform float uFadeNear;    // fade start distance
 uniform float uFadeFar;     // fade end distance
 
-// NDC depth from a view-space point (reverse-Z).
-// hit is already in world space; we only need the projected z/w.
-// Avoids a full mat4*vec4 by using ProjView directly.
+// Depth de un punto del mundo (reverse-Z, clip ZERO_TO_ONE: depth = ndc.z).
 float worldToDepth(vec3 wp) {
     vec4 cp = ProjView * vec4(wp, 1.0);
-    return (cp.z / cp.w) * 0.5 + 0.5;
+    return cp.z / cp.w;
 }
 
 void main() {
     // --- Ray reconstruction ---
     // Unproject NDC -> view-space direction without an explicit getRay() call.
-    // invProj * vec4(ndc, -1, 1) with w=1:  result.xyz / result.w
-    // then rotate to world space via invView (rotation only, w=0).
-    vec4 vDir = invProj * vec4(vScreen, -1.0, 1.0);
+    // invProj * vec4(ndc, 1, 1): punto del plano near (ndc.z=1 en reverse-Z).
+    // OJO: ndc.z=0 es el infinito (far infinito) y da w=0 -> NaN.
+    // Luego se rota a mundo con invView (solo rotacion).
+    vec4 vDir = invProj * vec4(vScreen, 1.0, 1.0);
     vec3 rd   = normalize(mat3(invView) * (vDir.xyz / vDir.w));
     vec3 ro   = viewPos.xyz;
 
@@ -131,7 +130,6 @@ void main() {
     rl_sh_grid "uGridScale" glGetUniformLocation 'rl_u_grid_scale !
     rl_sh_grid "uFadeNear"  glGetUniformLocation 'rl_u_grid_fnear !
     rl_sh_grid "uFadeFar"   glGetUniformLocation 'rl_u_grid_ffar  !
-    0 rl_sh_grid "Matrices" rl_bind_ubo
     ;
 
 ::rl_grid_free
