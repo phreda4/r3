@@ -9,7 +9,6 @@
 ^./ss3d.r3
 ^./glimm.r3
 ^./rlgrid.r3
-|^./rllunar.r3
 
 |---------------------------------
 #objcnt 0
@@ -270,7 +269,6 @@
 	load3d
 	rl_init 
 	1 rl_grid_init
-	|rl_lunar_init
 	'viewresize SDLeventR
 	lightsun
 
@@ -281,7 +279,6 @@
 	jugar
 	
 	rl_grid_free 
-	|rl_lunar_free
 	rl_shutdown
 	SS3Dshutdown
 	GLend

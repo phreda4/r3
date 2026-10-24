@@ -688,7 +688,7 @@ void main() {
 | ================================================================
 ::rl_Init
 	sw 'rl_w ! sh 'rl_h !
-	| clip control: origen abajo-izquierda, profundidad ZERO_TO_ONE (requiere glClipControl, GL 4.5 / ARB_clip_control)
+	| clip control: origen abajo-izquierda, ZERO_TO_ONE (glClipControl, GL 4.5 / ARB_clip_control)
 	$8CA1 $935F glClipControl
 	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer

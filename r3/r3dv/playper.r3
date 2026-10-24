@@ -140,7 +140,7 @@
 #walk ( 16 17 16 18 ) 
 	
 :jugador
-	pxp pzp 0.5 + pyp
+	pxp pzp 0.4 + pyp
 	
 	prot 0.25 + 2/
 	$ffff and 16 << rxyz>q16 

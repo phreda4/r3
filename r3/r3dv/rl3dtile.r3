@@ -124,7 +124,6 @@ void main(){
 	
 	rl_sh_planes glUseProgram
 	rl_sh_planes "uAtlasSize" glGetUniformLocation 'pl_u_atlassize !
-	0 rl_sh_planes "Matrices" rl_bind_ubo
 	pl_u_atlassize 1 'atlasimgsize glUniform2fv 
 	
 	1 'pl_vao glGenVertexArrays

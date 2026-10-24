@@ -542,10 +542,10 @@
 	
 	rlhud
 	load3d
-	|"media\bvh\pajaro.r3a" 
-	"media\bvh\lobo.r3a" 
-	|"media\bvh\persona.r3a" 
-	|"media\bvh\animations.r3a"
+	|"media/bvh/pajaro.r3a" 
+	"media/bvh/lobo.r3a" 
+	|"media/bvh/persona.r3a" 
+	|"media/bvh/animations.r3a"
 	loadr3a
 	|makeskel	
 	1 setanim

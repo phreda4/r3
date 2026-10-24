@@ -100,8 +100,8 @@
 	;
 
 :main
-	"media\bvh\pajaro.r3a" 
-	|"media\bvh\lobo.r3a" 
+	"media/bvh/pajaro.r3a" 
+	|"media/bvh/lobo.r3a" 
 	loadr3a
 	
 	waitkey
