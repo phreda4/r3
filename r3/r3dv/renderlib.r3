@@ -15,23 +15,20 @@ void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 in vec2 uv;
 out vec4 FragColor;
 
-// ─── SSDO CONFIG ─────────────────────────────────────────────────────────────
-//#define USE_SSDO
+// ---- OPCIONES ---------------------------------------------------------------
+// Descomentar si las texturas de albedo estan en sRGB (se pasan a lineal aqui)
+//#define ALBEDO_SRGB
 
-#ifdef USE_SSDO
-const int   SSDO_SAMPLES      = 16;
-const float SSDO_RADIUS       = 0.8;
-const float SSDO_BIAS         = 0.05;
-const float SSDO_INTENSITY    = 2.8;
-const float SSDO_FALLOFF      = 2.0;
-const float SSDO_MAX_DISTANCE = 1.2;
-const float SSDO_BOUNCE_STR   = 0.35;
-const float SSDO_SHARPNESS    = 1.5;
-#endif
-// ─────────────────────────────────────────────────────────────────────────────
+// Ambiente hemisferico: el AO solo se aplica a este termino (no a la luz directa)
+const vec3  UP_AXIS       = vec3(0.0, 1.0, 0.0);      // eje arriba del mundo
+const vec3  AMB_SKY       = vec3(0.20, 0.25, 0.35);
+const vec3  AMB_GROUND    = vec3(0.06, 0.055, 0.05);
+const float MIN_ROUGHNESS = 0.10;                     // evita hot-spots en luces puntuales
+// -----------------------------------------------------------------------------
 
 layout(binding = 0) uniform sampler2D gNormal;
 layout(binding = 1) uniform sampler2D gAlbedo;
+layout(binding = 2) uniform sampler2D gAO;
 layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
@@ -58,13 +55,7 @@ vec3 reconstructWorldPos(vec2 uv, float depth) {
     return (invView * vec4(vp.xyz, 1.0)).xyz;
 }
 
-float reconstructViewZ(vec2 uv, float depth) {
-    float ndcZ = depth * 2.0 - 1.0;
-    vec4 ndc   = vec4(uv * 2.0 - 1.0, ndcZ, 1.0);
-    vec4 vp    = invProj * ndc;
-    return vp.z / vp.w;
-}
-
+// a2 = alpha^2, con alpha = roughness^2
 float DistributionGGX(float NdotH, float a2) {
     float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
     return a2 / (PI * d * d + EPS);
@@ -90,145 +81,75 @@ vec3 BRDF(vec3 N, vec3 V, vec3 L,
     return (kD * albedo * INV_PI + specular) * NdotL;
 }
 
-#ifdef USE_SSDO
-
-float hash21(vec2 p) {
-    p = fract(p * vec2(127.1, 311.7));
-    p += dot(p, p.yx + 19.19);
-    return fract(p.x * p.y);
-}
-
-mat3 buildTBN(vec3 N) {
-    vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-    vec3 T = normalize(cross(up, N));
-    vec3 B = cross(N, T);
-    return mat3(T, B, N);
-}
-
-vec3 cosineSampleHemisphere(float i, float n, float rnd) {
-    float phi   = (i / n + rnd * 0.1) * 2.0 * PI;
-    float r     = sqrt((i + 0.5 + rnd * 0.5) / n);
-    float sinR  = sqrt(max(0.0, 1.0 - r * r));
-    return vec3(cos(phi) * sinR, sin(phi) * sinR, r);
-}
-
-vec4 computeSSDO(vec3 worldPos, vec3 N, vec3 albedo) {
-    mat3  TBN  = buildTBN(N);
-    float rnd  = hash21(uv * 1000.0);
-    float occ    = 0.0;
-    vec3  bounce = vec3(0.0);
-    float weight = 0.0;
-
-    for (int i = 0; i < SSDO_SAMPLES; ++i) {
-
-        vec3 localDir = cosineSampleHemisphere(float(i), float(SSDO_SAMPLES), rnd);
-        vec3 dir      = normalize(TBN * localDir);
-
-        float t    = (float(i) + 0.5) / float(SSDO_SAMPLES);
-        float dist = SSDO_RADIUS * t * t;
-        vec3  sPos = worldPos + dir * dist + N * SSDO_BIAS;
-
-        vec4 clip = ProjView * vec4(sPos, 1.0);
-        if (clip.w <= 0.0) continue;
-        vec3  ndc     = clip.xyz / clip.w;
-        vec2  sUV     = ndc.xy * 0.5 + 0.5;
-        float onscreen = step(0.0, sUV.x) * step(sUV.x, 1.0)
-                       * step(0.0, sUV.y) * step(sUV.y, 1.0);
-        if (onscreen < 0.5) continue;
-
-        float sDepth = texture(gDepth, sUV).r;
-
-        vec4  sClipView  = invProj * vec4(ndc, 1.0);
-        float sampleViewZ = sClipView.z / sClipView.w;
-
-        float bufferViewZ = reconstructViewZ(sUV, sDepth);
-
-        bool occluded = (bufferViewZ > sampleViewZ + EPS);
-
-        if (!occluded) { weight += 1.0; continue; }
-
-        vec3  sWorld  = reconstructWorldPos(sUV, sDepth);
-        float occDist = length(sWorld - worldPos);
-        if (occDist >= SSDO_MAX_DISTANCE) { weight += 1.0; continue; }
-
-        float falloff = pow(1.0 - occDist / SSDO_MAX_DISTANCE, SSDO_FALLOFF);
-
-        vec3  L       = normalize(lightDir.xyz);
-        float dirTerm = max(dot(dir, L), 0.0);
-
-        occ    += falloff;
-        bounce += texture(gAlbedo, sUV).rgb * falloff * dirTerm * SSDO_BOUNCE_STR;
-        weight += 1.0;
-    }
-
-    if (weight > 0.0) {
-        float invW  = 1.0 / weight;
-        occ        *= invW;
-        bounce     *= invW;
-    }
-
-    occ = pow(clamp(occ * SSDO_INTENSITY, 0.0, 1.0), SSDO_SHARPNESS);
-    return vec4(bounce, occ);
-}
-#endif // USE_SSDO
-
 void main() {
+    ivec2 px = ivec2(gl_FragCoord.xy);
 
-// no color in background
-	float depth = texelFetch(gDepth, ivec2(gl_FragCoord.xy), 0).r;
-	if (depth <= 0.0) { FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; } // BLACK
-	vec4 albedoPacked = texelFetch(gAlbedo, ivec2(gl_FragCoord.xy), 0);
-	vec3 albedo       = albedoPacked.rgb;
-	vec3 N            = normalize(texelFetch(gNormal, ivec2(gl_FragCoord.xy), 0).rgb);
+    // fondo: negro (reverse-Z: depth 0 = plano lejano)
+    float depth = texelFetch(gDepth, px, 0).r;
+    if (depth <= 0.0) { FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
+
+    vec4 albedoPacked = texelFetch(gAlbedo, px, 0);
+    vec3 albedo       = albedoPacked.rgb;
+#ifdef ALBEDO_SRGB
+    albedo = pow(albedo, vec3(2.2));
+#endif
+    vec3 N = normalize(texelFetch(gNormal, px, 0).rgb);
 
     int   pack      = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
     float metallic  = float((pack >> 2) & 0x07) * (1.0 / 7.0);
     vec3  emissive  = albedo * float(pack & 0x03);
 
-    float a  = max(roughness, 0.04);
-    float a2 = a * a;
-    float k  = (a + 1.0) * (a + 1.0) * 0.125;
-    vec3  F0 = mix(vec3(0.04), albedo, metallic);
+    roughness = max(roughness, MIN_ROUGHNESS);
+    float a   = roughness * roughness;              // alpha (Disney/Epic)
+    float a2  = a * a;                              // alpha^2
+    float k   = (roughness + 1.0) * (roughness + 1.0) * 0.125;
+    vec3  F0  = mix(vec3(0.04), albedo, metallic);
 
     vec3  worldPos = reconstructWorldPos(uv, depth);
     vec3  V        = normalize(viewPos.xyz - worldPos);
-    float NdotV    = max(dot(N, V), 0.0);
+    float NdotV    = max(dot(N, V), 0.0001);
 
-    float ao     = 1.0;
-    vec3  bounce = vec3(0.0);
-#ifdef USE_SSDO
-    if (depth > 0.0) {
-        vec4 ssdo = computeSSDO(worldPos, N, albedo);
-        ao     = 1.0 - ssdo.a;
-        bounce = ssdo.rgb;
+    // ---- ambiente (difuso + especular) con AO ----
+    float ao      = texelFetch(gAO, px, 0).r;
+    vec3  hemi    = mix(AMB_GROUND, AMB_SKY, dot(N, UP_AXIS) * 0.5 + 0.5);
+    vec3  Rv      = reflect(-V, N);
+    vec3  env     = mix(AMB_GROUND, AMB_SKY, dot(Rv, UP_AXIS) * 0.5 + 0.5);
+    vec3  Fr      = F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow5(1.0 - NdotV);
+    float specOcc = clamp(pow(NdotV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
+
+    vec3 color = hemi * albedo * (1.0 - metallic) * ao
+               + env * Fr * (1.0 - 0.5 * roughness) * specOcc
+               + emissive;
+
+    // ---- luz direccional (sin AO) ----
+    vec3  L     = normalize(lightDir.xyz);
+    float NdotL = dot(N, L);
+    if (NdotL > 0.0) {
+        color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
+               * lightColor.rgb * lightColor.a;
     }
-#endif
 
-    vec3 color = albedo * 0.01 * ao + emissive;
-
-	vec3 L = normalize(lightDir.xyz);
-	float NdotL = dot(N, L);
-	if (NdotL > 0.0) {
-		color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0) * lightColor.rgb * lightColor.a * ao;
-		}	
-
+    // ---- luces puntuales (sin AO): pos.w = radio de influencia ----
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
-	
-		vec3 toLight = pl.lights[i].pos.xyz - worldPos;
-		float dist2 = dot(toLight, toLight);
-		if (dist2 > 1e-8) {
-			float invDist = inversesqrt(dist2);
-			vec3 Lp = toLight * invDist;
-			float NdotLp = dot(N, Lp);
-			if (NdotLp > 0.0) {
-				float dist = dist2 * invDist;
-				float att = 1.0 / (1.0 + dist * (0.09 + 0.032 * dist));
-				color += BRDF(N, V, Lp, NdotV, NdotLp,albedo, metallic, a2, k, F0)
-						* pl.lights[i].color.rgb* (pl.lights[i].color.a * att)* ao;
-				}
-			}
+        vec3  toLight = pl.lights[i].pos.xyz - worldPos;
+        float dist2   = dot(toLight, toLight);
+        float rad     = pl.lights[i].pos.w;
+        float r2      = rad * rad;
+        if (dist2 > 1e-8 && dist2 < r2) {
+            float invDist = inversesqrt(dist2);
+            vec3  Lp      = toLight * invDist;
+            float NdotLp  = dot(N, Lp);
+            if (NdotLp > 0.0) {
+                float dist = dist2 * invDist;
+                float x    = dist2 / r2;
+                float win  = clamp(1.0 - x * x, 0.0, 1.0);      // ventana suave hasta 0 en el radio
+                float att  = win * win / (1.0 + dist * (0.09 + 0.032 * dist));
+                color += BRDF(N, V, Lp, NdotV, NdotLp, albedo, metallic, a2, k, F0)
+                       * pl.lights[i].color.rgb * (pl.lights[i].color.a * att);
+            }
+        }
     }
 
     FragColor = vec4(color, 1.0);
@@ -246,11 +167,34 @@ void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 in vec2 uv; out vec4 FragColor;
 layout(binding=0) uniform sampler2D scene;
 uniform float threshold;
+
+// umbral con rodilla cuadratica + proteccion NaN/Inf + limite anti-fireflies
+vec3 prefilter(vec3 c){
+    if (any(isnan(c))) return vec3(0.0);
+    if (any(isinf(c))) return vec3(0.0);
+    c = min(c, vec3(64.0));
+    float br   = max(c.r, max(c.g, c.b));
+    float knee = max(threshold * 0.5, 0.0001);
+    float soft = clamp(br - threshold + knee, 0.0, 2.0 * knee);
+    soft = soft * soft / (4.0 * knee);
+    float contrib = max(soft, br - threshold) / max(br, 0.0001);
+    return c * contrib;
+}
+float karis(vec3 c){ return 1.0 / (1.0 + dot(c, vec3(0.2126, 0.7152, 0.0722))); }
+
 void main(){
-    vec3 c=texture(scene,uv).rgb;
-    float lum=dot(c,vec3(0.2126,0.7152,0.0722));
-    float soft=clamp((lum-threshold)/max(threshold*0.5,0.0001),0,1);
-    FragColor=vec4(c*soft,1);
+    // 4 taps bilineales = caja 4x4 sin solapes; promedio de Karis contra fireflies
+    vec2 ts = 1.0 / vec2(textureSize(scene, 0));
+    vec3 c0 = prefilter(texture(scene, uv + ts * vec2(-1.0, -1.0)).rgb);
+    vec3 c1 = prefilter(texture(scene, uv + ts * vec2( 1.0, -1.0)).rgb);
+    vec3 c2 = prefilter(texture(scene, uv + ts * vec2(-1.0,  1.0)).rgb);
+    vec3 c3 = prefilter(texture(scene, uv + ts * vec2( 1.0,  1.0)).rgb);
+    float w0 = karis(c0);
+    float w1 = karis(c1);
+    float w2 = karis(c2);
+    float w3 = karis(c3);
+    vec3 col = (c0 * w0 + c1 * w1 + c2 * w2 + c3 * w3) / (w0 + w1 + w2 + w3);
+    FragColor = vec4(col, 1.0);
 }
 @-----------------------"
 
@@ -284,7 +228,8 @@ void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv; out vec4 FragColor;
-layout(binding=0) uniform sampler2D src;
+layout(binding=0) uniform sampler2D src;   // nivel mas grueso (ya acumulado)
+layout(binding=1) uniform sampler2D base;  // mip de bajada del mismo nivel
 uniform vec2 texelSize;
 void main(){
     vec2 h=texelSize*0.5;
@@ -296,7 +241,8 @@ void main(){
          s+=texture(src,uv+vec2( h.x,-h.y))*2;
          s+=texture(src,uv+vec2( 0,  -h.y*2));
          s+=texture(src,uv+vec2(-h.x,-h.y))*2;
-    FragColor=s/12.0;
+    vec3 up = (s/12.0).rgb;
+    FragColor = vec4(mix(texture(base,uv).rgb, up, 0.5), 1.0);
 }
 @-----------------------"
 
@@ -312,17 +258,151 @@ in vec2 uv; out vec4 FragColor;
 layout(binding=0) uniform sampler2D scene;
 layout(binding=1) uniform sampler2D bloom;
 uniform float bloomIntensity;
+uniform float exposure;
 vec3 ACES(vec3 x){
     const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14;
     return clamp((x*(a*x+b))/(x*(c*x+d)+e),0,1);}
 void main(){
-    vec3 col=texture(scene,uv).rgb;
-    col+=texture(bloom,uv).rgb*bloomIntensity;
-    col=ACES(col);
-    col=pow(col,vec3(1.0/2.2));
-    FragColor=vec4(col,1);
+    vec3 col = texture(scene,uv).rgb + texture(bloom,uv).rgb * bloomIntensity;
+    col = ACES(col * exposure);
+    // sRGB exacto
+    col = mix(col * 12.92, 1.055 * pow(col, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), col));
+    // dither (evita banding en degradados a 8 bits)
+    float n = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    col += (n - 0.5) / 255.0;
+    FragColor = vec4(col, 1.0);
 }
-@---" | <======= SHADERS
+@---"
+
+#rl_shader_ao "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv;
+out float FragAO;
+
+layout(binding = 0) uniform sampler2D gNormal;   // normal en espacio mundo
+layout(binding = 3) uniform sampler2D gDepth;    // reverse-Z, rango clip [-1,1]
+
+layout(std140, binding = 0) uniform Matrices {
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+};
+
+// ---- PARAMETROS (unidades de mundo) ----
+const int   NS         = 12;
+const float RADIUS     = 0.6;
+const float POWER      = 1.5;
+const float FADE_START = 40.0;    // el AO se desvanece con la distancia
+const float FADE_END   = 80.0;
+
+// ruido de gradiente intercalado (por pixel, alineado con gl_FragCoord)
+float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+
+// z de vista a partir de la profundidad (proyeccion estandar: clip.w = -z)
+float viewZ(float d) { return -proj[3][2] / (d * 2.0 - 1.0 + proj[2][2]); }
+
+void main() {
+    ivec2 px = ivec2(gl_FragCoord.xy);
+    float d  = texelFetch(gDepth, px, 0).r;
+    if (d <= 0.0) { FragAO = 1.0; return; }
+
+    float zc  = viewZ(d);
+    vec2  ndc = uv * 2.0 - 1.0;
+    vec3  P   = vec3(ndc * (-zc) / vec2(proj[0][0], proj[1][1]), zc);
+    vec3  N   = normalize(mat3(view) * texelFetch(gNormal, px, 0).xyz);
+
+    // base ortonormal rotada un angulo distinto en cada pixel
+    vec3  up  = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3  T0  = normalize(cross(up, N));
+    vec3  B0  = cross(N, T0);
+    float ang = ign(gl_FragCoord.xy) * 6.2831853;
+    vec3  T   = T0 * cos(ang) + B0 * sin(ang);
+    vec3  B   = cross(N, T);
+
+    float jit  = ign(gl_FragCoord.xy + vec2(17.0, 31.0));
+    float bias = 0.03 + 0.001 * (-zc);          // el bias crece con la distancia
+    float occ  = 0.0;
+
+    for (int i = 0; i < NS; ++i) {
+        // secuencia R2 -> hemisferio ponderado por coseno (Malley)
+        float u   = fract(0.5 + float(i) * 0.7548776662);
+        float v   = fract(0.5 + float(i) * 0.5698402910);
+        float phi = v * 6.2831853;
+        float r   = sqrt(u);
+        vec3  h   = vec3(cos(phi) * r, sin(phi) * r, sqrt(1.0 - u));
+
+        float s   = (float(i) + jit) / float(NS);
+        float len = RADIUS * mix(0.1, 1.0, s * s);        // mas muestras cerca del punto
+        vec3  S   = P + (T * h.x + B * h.y + N * h.z) * len;
+
+        vec4 c = proj * vec4(S, 1.0);
+        if (c.w <= 0.0) continue;
+        vec2 suv = c.xy / c.w * 0.5 + 0.5;
+        if (any(lessThan(suv, vec2(0.0)))) continue;
+        if (any(greaterThan(suv, vec2(1.0)))) continue;
+
+        float sd = texture(gDepth, suv).r;
+        if (sd <= 0.0) continue;                           // cielo no ocluye
+        float sceneZ = viewZ(sd);
+
+        // range check: ignora oclusores mucho mas cerca de la camara que el radio
+        float range = smoothstep(0.0, 1.0, RADIUS / max(abs(zc - sceneZ), 0.0001));
+        if (sceneZ >= S.z + bias) occ += range;
+    }
+    // las muestras descartadas cuentan como no ocluidas (siempre se divide por NS)
+    float ao = pow(clamp(1.0 - occ / float(NS), 0.0, 1.0), POWER);
+    FragAO = mix(ao, 1.0, smoothstep(FADE_START, FADE_END, -zc));
+}
+@-"
+
+#rl_shader_aoblur "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv;
+out float FragAO;
+
+layout(binding = 0) uniform sampler2D aoTex;
+layout(binding = 3) uniform sampler2D gDepth;
+
+layout(std140, binding = 0) uniform Matrices {
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+};
+
+uniform vec2 dir;    // (1/w,0) horizontal  -  (0,1/h) vertical
+
+float viewZ(float d) { return -proj[3][2] / (d * 2.0 - 1.0 + proj[2][2]); }
+
+// blur bilateral separable: pesa por distancia y por diferencia de profundidad
+void main() {
+    float dc = texture(gDepth, uv).r;
+    if (dc <= 0.0) { FragAO = 1.0; return; }
+    float zc   = viewZ(dc);
+    float sum  = 0.0;
+    float wsum = 0.0;
+    for (int i = -3; i <= 3; ++i) {
+        vec2  o  = uv + dir * float(i);
+        float dd = texture(gDepth, o).r;
+        float w  = 0.0;
+        if (dd > 0.0) {
+            w = exp(-float(i * i) * 0.25)
+              * exp(-abs(viewZ(dd) - zc) / (0.05 * abs(zc) + 0.001));
+        }
+        sum  += texture(aoTex, o).r * w;
+        wsum += w;
+    }
+    FragAO = sum / max(wsum, 0.0001);
+}
+@-"
+| <======= SHADERS
 
 |-----------------------------------------------------------
 ##rl_w 1024 ##rl_h 768
@@ -336,6 +416,16 @@ void main(){
 | Scene + Bloom
 #rl_scene_fbo   0
 #rl_scene_tex   0
+
+| AO (SSAO en view-space + blur bilateral separable)
+#rl_ao_fbo   0
+#rl_ao_tex   0
+#rl_ao_fbo2  0
+#rl_ao_tex2  0
+##rl_ao_on   1       | 1=AO activo  0=desactivado (AO=1.0)
+#rl_ao_dirh * 8      | vec2 (1/w,0) en float32
+#rl_ao_dirv * 8      | vec2 (0,1/h) en float32
+#rl_ao_white * 16    | vec4 (1,1,1,1) en float32
 
 | Quad
 ##rl_quad_vao 0  #rl_quad_vbo 0
@@ -351,16 +441,22 @@ void main(){
 #rl_sh_bloom_down 0
 #rl_sh_bloom_up   0
 #rl_sh_composite  0
+#rl_sh_ao         0
+#rl_sh_aoblur     0
 
 | Uniform locations
 #rl_u_bright_threshold    -1
 #rl_u_bloom_down_texel    -1
 #rl_u_bloom_up_texel      -1
 #rl_u_composite_intensity -1
+#rl_u_composite_exposure  -1
+#rl_u_aoblur_dir          -1
 
 | Luces puntuales del frame
 | PointLight: pos[4] + color[4] = 8 floats = 32 bytes
 #rl_plight_count 0
+| radio de influencia de las luces puntuales (va en pos.w); cambiarlo antes de rl_point_light
+##rl_plight_radius 8.0
 
 #tid #aux
 
@@ -448,7 +544,7 @@ void main(){
 | ================================================================	
 :rl_init_bloom
     | scene_tex: 
-    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR 0
+    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE
     rl_make_tex2d 'rl_scene_tex !
 	
 	rl_scene_tex 0 rl_make_fbo 'rl_scene_fbo !
@@ -497,13 +593,42 @@ void main(){
 		) drop ;
 
 
+| ================================================================
+| AO: ao_tex (resultado final) + ao_tex2 (ping-pong del blur), formato R8
+:RL_FMT_R8  $8229 ;	| GL_R8
+:RL_FMT_RED $1903 ;	| GL_RED
+
+:rl_init_ao
+	RL_FMT_R8 rl_w rl_h RL_FMT_RED GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
+	rl_make_tex2d 'rl_ao_tex !
+	rl_ao_tex 0 rl_make_fbo 'rl_ao_fbo !
+	RL_FMT_R8 rl_w rl_h RL_FMT_RED GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
+	rl_make_tex2d 'rl_ao_tex2 !
+	rl_ao_tex2 0 rl_make_fbo 'rl_ao_fbo2 !
+	| direcciones del blur como 2 floats32
+	'rl_ao_dirh >a 1.0 rl_w / f2fp da!+ 0 da!+
+	'rl_ao_dirv >a 0 da!+ 1.0 rl_h / f2fp da!+
+	| color de limpieza blanco (AO desactivado)
+	'rl_ao_white >a 1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+
+	;
+
+:rl_destroy_ao
+	rl_ao_fbo  1? ( 1 'rl_ao_fbo  glDeleteFramebuffers ) drop
+	rl_ao_tex  1? ( 1 'rl_ao_tex  glDeleteTextures     ) drop
+	rl_ao_fbo2 1? ( 1 'rl_ao_fbo2 glDeleteFramebuffers ) drop
+	rl_ao_tex2 1? ( 1 'rl_ao_tex2 glDeleteTextures     ) drop
+	0 'rl_ao_fbo ! 0 'rl_ao_tex ! 0 'rl_ao_fbo2 ! 0 'rl_ao_tex2 !
+	;
+
 #_quad_verts [ -1.0 -1.0  1.0 -1.0  -1.0 1.0  1.0 1.0 ]
-#RL_BLOOM_INTENSITY [ 1.2 ]
+| OJO: estas 3 variables van pegadas a _quad_verts (memfloat las convierte a float32)
+#RL_BLOOM_INTENSITY [ 0.8 ]
 #RL_BLOOM_THRESHOLD [ 0.8 ]
+#RL_EXPOSURE        [ 1.0 ]
 
 | ================================================================
 :rl_init_quad
-	10 '_quad_verts memfloat  
+	11 '_quad_verts memfloat  
 	
     1 'rl_quad_vao glGenVertexArrays
     1 'rl_quad_vbo glGenBuffers
@@ -552,12 +677,12 @@ void main(){
 ::rl_resizewin | w h --
     rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
     1 'camDirty !
-	rl_destroy_bloom rl_destroy_gbuffer  
-	rl_init_gbuffer rl_init_bloom
+	rl_destroy_bloom rl_destroy_ao rl_destroy_gbuffer  
+	rl_init_gbuffer rl_init_ao rl_init_bloom
     ;
 
 | ================================================================
-::rl_set_projection | fov_deg_fp near_fp far_fp --
+::rl_set_projection | tan(fov/2)_fp near_fp far_fp -- (0.4142 = fov 45 grados)
     'camFar ! 'camNear ! 'camFov ! 
 	1 'camDirty ! ;
 
@@ -567,6 +692,7 @@ void main(){
 	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer
     rl_init_bloom
+    rl_init_ao
     rl_init_quad
     rl_init_ubos
 
@@ -575,15 +701,21 @@ void main(){
     'rl_shader_bloom_down loadShaderv 'rl_sh_bloom_down !
     'rl_shader_bloom_up   loadShaderv 'rl_sh_bloom_up   !
     'rl_shader_composite  loadShaderv 'rl_sh_composite  !
+    'rl_shader_ao         loadShaderv 'rl_sh_ao         !
+    'rl_shader_aoblur     loadShaderv 'rl_sh_aoblur     !
 
     0 rl_sh_light "Matrices"     rl_bind_ubo
     1 rl_sh_light "DirectLight"  rl_bind_ubo
     2 rl_sh_light "PointLights"  rl_bind_ubo
+    0 rl_sh_ao     "Matrices"    rl_bind_ubo
+    0 rl_sh_aoblur "Matrices"    rl_bind_ubo
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
     rl_sh_bloom_down "texelSize"      glGetUniformLocation 'rl_u_bloom_down_texel    !
     rl_sh_bloom_up   "texelSize"      glGetUniformLocation 'rl_u_bloom_up_texel      !
     rl_sh_composite  "bloomIntensity" glGetUniformLocation 'rl_u_composite_intensity !
+    rl_sh_composite  "exposure"       glGetUniformLocation 'rl_u_composite_exposure  !
+    rl_sh_aoblur     "dir"            glGetUniformLocation 'rl_u_aoblur_dir          !
     
     GL_CULL_FACE glEnable
     GL_BACK glCullFace
@@ -597,9 +729,12 @@ void main(){
     rl_sh_bloom_down glDeleteProgram
     rl_sh_bloom_up   glDeleteProgram
     rl_sh_composite  glDeleteProgram
+    rl_sh_ao         glDeleteProgram
+    rl_sh_aoblur     glDeleteProgram
 
     rl_destroy_gbuffer
     rl_destroy_bloom
+    rl_destroy_ao
 
     1 'rl_quad_vao glDeleteVertexArrays
     1 'rl_quad_vbo glDeleteBuffers
@@ -680,7 +815,7 @@ void main(){
 
 ::rl_point_light | int cr cg cb x y z --
     16 rl_plight_count 5 << + 'rl_ubo_pl_buf + >a 
-	swap rot f2fp da!+ f2fp da!+ f2fp da!+ 8.0 f2fp da!+
+	swap rot f2fp da!+ f2fp da!+ f2fp da!+ rl_plight_radius f2fp da!+
 	swap rot f2fp da!+ f2fp da!+ f2fp da!+ f2fp da!+
     1 'rl_plight_count +!
     ;
@@ -705,6 +840,12 @@ void main(){
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
 	
+:bpassu | id loc ftex fbos wh base --
+	| igual que bpassd pero bindea ademas 'base' (mip de bajada) en la unidad 1
+	GL_TEXTURE1 glActiveTexture
+	GL_TEXTURE_2D swap ]tex glBindTexture
+	bpassd ;
+
 :bloompass
 	rl_sh_bright glUseProgram
 	rl_u_bright_threshold 1 'RL_BLOOM_THRESHOLD glUniform1fv
@@ -721,17 +862,53 @@ void main(){
 	2 rl_u_bloom_down_texel 4 6 3 bpassd | invw id ftex fbos wh --
 	3 rl_u_bloom_down_texel 6 8 4 bpassd | invw id ftex fbos wh --
 	
-	| Upscale chain
+	| Upscale chain: cada paso suma el mip de bajada del mismo nivel (base)
 	rl_sh_bloom_up glUseProgram
-	4 rl_u_bloom_up_texel 8 7 3 bpassd | invw id ftex fbos wh --
-	3 rl_u_bloom_up_texel 7 5 2 bpassd | invw id ftex fbos wh --
-	2 rl_u_bloom_up_texel 5 3 1 bpassd | invw id ftex fbos wh --
-	1 rl_u_bloom_up_texel 3 1 0 bpassd | invw id ftex fbos wh --
+	4 rl_u_bloom_up_texel 8 7 3 6 bpassu | id loc src dst vp base --
+	3 rl_u_bloom_up_texel 7 5 2 4 bpassu | id loc src dst vp base --
+	2 rl_u_bloom_up_texel 5 3 1 2 bpassu | id loc src dst vp base --
+	1 rl_u_bloom_up_texel 3 1 0 0 bpassu | id loc src dst vp base --
+	;
+
+| ================================================================
+| AO: calcula ao_tex (SSAO) y lo filtra con blur bilateral H + V
+:aopass
+	rl_ao_on 0? ( drop
+		| AO desactivado: textura en blanco
+		GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
+		0 0 rl_w rl_h glViewport
+		$1800 0 'rl_ao_white glClearBufferfv
+		; ) drop
+
+	| SSAO -> ao_tex
+	GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
+	0 0 rl_w rl_h glViewport
+	rl_sh_ao glUseProgram
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm  glBindTexture
+	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth glBindTexture
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+
+	| blur horizontal: ao_tex -> ao_tex2
+	rl_sh_aoblur glUseProgram
+	GL_FRAMEBUFFER rl_ao_fbo2 glBindFramebuffer
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_ao_tex glBindTexture
+	rl_u_aoblur_dir 1 'rl_ao_dirh glUniform2fv
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+
+	| blur vertical: ao_tex2 -> ao_tex (resultado final)
+	GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
+	GL_TEXTURE_2D rl_ao_tex2 glBindTexture
+	rl_u_aoblur_dir 1 'rl_ao_dirv glUniform2fv
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;
 
 | ================================================================
 ::rl_frame_end | --
 	rl_quad_vao glBindVertexArray
+	GL_DEPTH_TEST glDisable
+	
+	| --- AO pass (+ blur) → ao_tex ---
+	aopass
 	
 	| --- Lighting pass → scene_tex ---
 	GL_FRAMEBUFFER rl_scene_fbo glBindFramebuffer
@@ -739,10 +916,10 @@ void main(){
 	
 	$1800 0 'vcolorgl glClearBufferfv
 	
-	GL_DEPTH_TEST glDisable
 	rl_sh_light glUseProgram
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm   glBindTexture
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D rl_gbuf_albedo glBindTexture
+	$84C2       glActiveTexture GL_TEXTURE_2D rl_ao_tex      glBindTexture | GL_TEXTURE2
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth  glBindTexture
 
 	| --- Light pass
@@ -761,8 +938,6 @@ void main(){
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_scene_tex glBindTexture
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
 	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
+	rl_u_composite_exposure  1 'RL_EXPOSURE        glUniform1fv
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays	
 	;
-
-
-

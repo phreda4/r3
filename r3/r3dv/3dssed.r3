@@ -175,6 +175,24 @@
 	sx snap32 'sx ! sy snap32 'sy ! sz snap32 'sz !
 	sx sy sz pick3 ss3dscl3 drop ;
 
+|--- snap a grilla (posicion) y a 15 grados (rotacion)
+#snap 0			| 1 = snap activo
+#gstep 0.25		| paso de grilla (multiplo de 1/16)
+
+:snapg+ | v>=0 -- v'
+	gstep 2/ + gstep / gstep * ;
+
+:snapg | v -- v'		; redondea al paso de grilla si snap esta activo
+	snap 0? ( drop ; ) drop
+	-? ( neg snapg+ neg ; )
+	snapg+ ;
+
+:snaprot | v -- v'		; turnos 16.16 al multiplo de 1/24 de vuelta (15 grados)
+	snap 0? ( drop ; ) drop
+	$ffff and 24 * 32768 + 16 >> 65536 * 24 / ;
+
+:chgstep gstep 2048 + 12 >> 1 max 12 << 'gstep ! ;
+
 |--- objetos y seleccion
 #sel -1			| objeto seleccionado (-1 = ninguno: los valores del panel son el "pincel")
 #oldsel
@@ -227,7 +245,7 @@
 	sel 3 << 'obrot + @ cntobjs 3 << 'obrot + !
 	cntobjs dup ss3dobj
 	cntobjs ss3dxyz@
-	rot sx sel ss3dspr@ ss3dLX * 0.01 *. + -rot
+	rot sx sel ss3dspr@ ss3dLX * 0.01 *. + snapg -rot
 	cntobjs ss3dxyz
 	1 'cntobjs +!
 	cntobjs 1- selobj ;
@@ -252,11 +270,12 @@
 	AdvMouse
 	hiteye 0? ( drop ; ) drop
 	cntobjs dup ss3dobj
+	vrx snaprot 'vrx ! vry snaprot 'vry ! vrz snaprot 'vrz !
 	cntobjs objstyle
 	'v3hit >a 
-	a@+ 
+	a@+ snapg
 	a@+ cntobjs ss3difloor +
-	a@+ | x y z
+	a@+ snapg | x y z
 	getrot dup cntobjs 3 << 'obrot + !
 	rxyz>q16
 	cntobjs ss3dxyzq
@@ -266,6 +285,7 @@
 	
 :modobj
 	sel -? ( drop ; )		| sin seleccion solo cambia el pincel
+	vrx snaprot 'vrx ! vry snaprot 'vry ! vrz snaprot 'vrz !
 	dup objrot
 	objstyle ;
 
@@ -343,9 +363,9 @@
 :nudge | dx dy dz --
 	'nz ! 'ny ! 'nx !
 	sel -? ( drop ; ) drop
-	'opos @ nx + 'opos !
-	'opos 8 + @ ny + 'opos 8 + !
-	'opos 16 + @ nz + 'opos 16 + !
+	nx 1? ( 'opos @ nx + snapg 'opos ! ) drop
+	ny 1? ( 'opos 8 + @ ny + snapg 'opos 8 + ! ) drop
+	nz 1? ( 'opos 16 + @ nz + snapg 'opos 16 + ! ) drop
 	movobj ;
 
 #rg #keepg
@@ -377,6 +397,9 @@
 	'dhit @ 'doff @ + 'opos !
 	'dhit 8 + @ 'doff 8 + @ + 'opos 8 + !
 	'dhit 16 + @ 'doff 16 + @ + 'opos 16 + !
+	'opos @ snapg 'opos !
+	'opos 8 + @ snapg 'opos 8 + !
+	'opos 16 + @ snapg 'opos 16 + !
 	keepg 'opos gaxis 3 << + !		| el eje del plano no cambia
 	movobj ;
 
@@ -399,10 +422,14 @@
 	3 =? ( dragmouse movecam )	| active
 	drop ;
 
+:movx 'opos @ snapg 'opos ! movobj ;
+:movy 'opos 8 + @ snapg 'opos 8 + ! movobj ;
+:movz 'opos 16 + @ snapg 'opos 16 + ! movobj ;
+
 :posui
-	"pos x" -30.0 30.0 'opos uiSliderfL uiEx? 1? ( movobj ) drop
-	"pos y" -30.0 30.0 'opos 8 + uiSliderfL uiEx? 1? ( movobj ) drop
-	"pos z" -30.0 30.0 'opos 16 + uiSliderfL uiEx? 1? ( movobj ) drop ;
+	"pos x" -30.0 30.0 'opos uiSliderfL uiEx? 1? ( movx ) drop
+	"pos y" -30.0 30.0 'opos 8 + uiSliderfL uiEx? 1? ( movy ) drop
+	"pos z" -30.0 30.0 'opos 16 + uiSliderfL uiEx? 1? ( movz ) drop ;
 
 :prevobj
 	nrosprite 1- 0 max 'nrosprite ! modobj ;
@@ -453,6 +480,8 @@
 	'scalehalf "/2" uiTBtn
 	'scale1 "1:1" uiTBtn
 	uiLn
+	'snap "snap pos/rot 15" uiFToggle
+	"grilla" 0.0625 2.0 'gstep uiSliderfL uiEx? 1? ( chgstep ) drop
 	sel 0 >=? ( posui ) drop
 	'prevobj "<<" uiTBtn	
 	'nextobj ">>" uiTBtn	
@@ -485,8 +514,8 @@
 	<spc> =? ( addobj )
 	<tab> =? ( selnext )
 	<ins> =? ( dupobj ) <del> =? ( delobj )
-	<le> =? ( -0.25 0 0 nudge ) <ri> =? ( 0.25 0 0 nudge )
-	<home> =? ( 0 0 -0.25 nudge ) <end> =? ( 0 0 0.25 nudge )
+	<le> =? ( gstep neg 0 0 nudge ) <ri> =? ( gstep 0 0 nudge )
+	<home> =? ( 0 0 gstep neg nudge ) <end> =? ( 0 0 gstep nudge )
 	<pgup> =? ( 0.25 scalestep ) <pgdn> =? ( -0.25 scalestep )
 	drop
 	;
