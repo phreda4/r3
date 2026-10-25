@@ -47,7 +47,7 @@
 	|msec 7 << $10000 and $ffff or 
 	2.0
 	21
-	$ffffff01 
+	$ffffff02 | glow nivel 2 (escala nueva de glow: 1 casi nada, 2 poco, 3 mucho)
 	0 ss3dcs
 	
 	zi yi cury dy * + xi curx dx * +

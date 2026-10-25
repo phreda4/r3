@@ -133,7 +133,7 @@ void main()
 	vec3 col = lc //uLineColor ?*** porque no pasa el color??
 		* line * fade;
 	
-    gAlbedo = vec4(col,1.0/255.0);
+    gAlbedo = vec4(col,2.0/255.0);   // glow nivel 2 (con la escala nueva equivale al antiguo nivel 1)
 	//gAlbedo = vec4(0.2,0.2,0.2,1.0 / 255.0);
     gl_FragDepth = worldToDepth(hit);
 }

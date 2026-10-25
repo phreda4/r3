@@ -25,6 +25,7 @@ const vec3  AMB_SKY       = vec3(0.20, 0.25, 0.35);
 const vec3  AMB_GROUND    = vec3(0.06, 0.055, 0.05);
 const float MIN_ROUGHNESS = 0.10;                     // evita hot-spots en luces puntuales
 // -----------------------------------------------------------------------------
+const float GLOW[4] = float[4](0.0, 0.35, 1.2, 5.0);
 
 layout(binding = 0) uniform sampler2D gNormal;
 layout(binding = 1) uniform sampler2D gAlbedo;
@@ -97,7 +98,7 @@ void main() {
     int   pack      = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
     float metallic  = float((pack >> 2) & 0x07) * (1.0 / 7.0);
-    vec3  emissive  = albedo * float(pack & 0x03);
+    vec3  emissive  = albedo * GLOW[pack & 0x03];
 
     roughness = max(roughness, MIN_ROUGHNESS);
     float a   = roughness * roughness;              // alpha (Disney/Epic)
@@ -401,6 +402,152 @@ void main() {
     FragAO = sum / max(wsum, 0.0001);
 }
 @-"
+#rl_shader_fxaa "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 uv;
+void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
+@fragment---------------
+#version 440 core
+in vec2 uv;
+out vec4 FragColor;
+
+layout(binding = 0) uniform sampler2D tex;   // LDR sRGB, filtro LINEAR + CLAMP_TO_EDGE
+
+// ---- PARAMETROS FXAA 3.11 (calidad) ----
+const float EDGE_THRESHOLD_MIN = 0.0312;   // contraste minimo absoluto
+const float EDGE_THRESHOLD_MAX = 0.125;    // contraste minimo relativo al maximo local
+const int   ITERATIONS         = 12;       // pasos maximos de busqueda del borde
+const float SUBPIXEL_QUALITY   = 0.75;     // suavizado de detalle subpixel (0 = off)
+
+float QUALITY(int q) {
+    if (q < 5)   return 1.0;
+    if (q == 5)  return 1.5;
+    if (q < 10)  return 2.0;
+    if (q == 10) return 4.0;
+    return 8.0;
+}
+
+float rgb2luma(vec3 rgb) { return dot(rgb, vec3(0.299, 0.587, 0.114)); }
+
+void main() {
+    vec2 inv = 1.0 / vec2(textureSize(tex, 0));
+
+    vec3  colorCenter = texture(tex, uv).rgb;
+    float lumaCenter  = rgb2luma(colorCenter);
+    float lumaDown    = rgb2luma(textureOffset(tex, uv, ivec2( 0, -1)).rgb);
+    float lumaUp      = rgb2luma(textureOffset(tex, uv, ivec2( 0,  1)).rgb);
+    float lumaLeft    = rgb2luma(textureOffset(tex, uv, ivec2(-1,  0)).rgb);
+    float lumaRight   = rgb2luma(textureOffset(tex, uv, ivec2( 1,  0)).rgb);
+
+    float lumaMin   = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
+    float lumaMax   = max(lumaCenter, max(max(lumaDown, lumaUp), max(lumaLeft, lumaRight)));
+    float lumaRange = lumaMax - lumaMin;
+
+    // sin borde suficiente: no se toca el pixel
+    if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)) {
+        FragColor = vec4(colorCenter, 1.0);
+        return;
+    }
+
+    float lumaDownLeft  = rgb2luma(textureOffset(tex, uv, ivec2(-1, -1)).rgb);
+    float lumaUpRight   = rgb2luma(textureOffset(tex, uv, ivec2( 1,  1)).rgb);
+    float lumaUpLeft    = rgb2luma(textureOffset(tex, uv, ivec2(-1,  1)).rgb);
+    float lumaDownRight = rgb2luma(textureOffset(tex, uv, ivec2( 1, -1)).rgb);
+
+    float lumaDownUp       = lumaDown + lumaUp;
+    float lumaLeftRight    = lumaLeft + lumaRight;
+    float lumaLeftCorners  = lumaDownLeft + lumaUpLeft;
+    float lumaDownCorners  = lumaDownLeft + lumaDownRight;
+    float lumaRightCorners = lumaDownRight + lumaUpRight;
+    float lumaUpCorners    = lumaUpRight + lumaUpLeft;
+
+    // orientacion del borde (horizontal o vertical)
+    float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners)
+                         + abs(-2.0 * lumaCenter + lumaDownUp) * 2.0
+                         + abs(-2.0 * lumaRight + lumaRightCorners);
+    float edgeVertical   = abs(-2.0 * lumaUp + lumaUpCorners)
+                         + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0
+                         + abs(-2.0 * lumaDown + lumaDownCorners);
+    bool isHorizontal = (edgeHorizontal >= edgeVertical);
+
+    // lado del borde con mayor gradiente
+    float luma1 = isHorizontal ? lumaDown : lumaLeft;
+    float luma2 = isHorizontal ? lumaUp   : lumaRight;
+    float gradient1 = luma1 - lumaCenter;
+    float gradient2 = luma2 - lumaCenter;
+    bool  is1Steepest    = abs(gradient1) >= abs(gradient2);
+    float gradientScaled = 0.25 * max(abs(gradient1), abs(gradient2));
+
+    float stepLength = isHorizontal ? inv.y : inv.x;
+    float lumaLocalAverage = 0.0;
+    if (is1Steepest) {
+        stepLength = -stepLength;
+        lumaLocalAverage = 0.5 * (luma1 + lumaCenter);
+    } else {
+        lumaLocalAverage = 0.5 * (luma2 + lumaCenter);
+    }
+
+    // medio pixel hacia el borde y busqueda en ambas direcciones
+    vec2 currentUv = uv;
+    if (isHorizontal) currentUv.y += stepLength * 0.5;
+    else              currentUv.x += stepLength * 0.5;
+
+    vec2 offset = isHorizontal ? vec2(inv.x, 0.0) : vec2(0.0, inv.y);
+    vec2 uv1 = currentUv - offset;
+    vec2 uv2 = currentUv + offset;
+
+    float lumaEnd1 = rgb2luma(texture(tex, uv1).rgb) - lumaLocalAverage;
+    float lumaEnd2 = rgb2luma(texture(tex, uv2).rgb) - lumaLocalAverage;
+
+    bool reached1    = abs(lumaEnd1) >= gradientScaled;
+    bool reached2    = abs(lumaEnd2) >= gradientScaled;
+    bool reachedBoth = reached1 && reached2;
+
+    if (!reached1) uv1 -= offset;
+    if (!reached2) uv2 += offset;
+
+    if (!reachedBoth) {
+        for (int i = 2; i < ITERATIONS; i++) {
+            if (!reached1) lumaEnd1 = rgb2luma(texture(tex, uv1).rgb) - lumaLocalAverage;
+            if (!reached2) lumaEnd2 = rgb2luma(texture(tex, uv2).rgb) - lumaLocalAverage;
+            reached1    = abs(lumaEnd1) >= gradientScaled;
+            reached2    = abs(lumaEnd2) >= gradientScaled;
+            reachedBoth = reached1 && reached2;
+            if (!reached1) uv1 -= offset * QUALITY(i);
+            if (!reached2) uv2 += offset * QUALITY(i);
+            if (reachedBoth) break;
+        }
+    }
+
+    // distancia a cada extremo -> desplazamiento del pixel
+    float distance1 = isHorizontal ? (uv.x - uv1.x) : (uv.y - uv1.y);
+    float distance2 = isHorizontal ? (uv2.x - uv.x) : (uv2.y - uv.y);
+    bool  isDirection1  = distance1 < distance2;
+    float distanceFinal = min(distance1, distance2);
+    float edgeThickness = distance1 + distance2;
+    float pixelOffset   = -distanceFinal / edgeThickness + 0.5;
+
+    bool isLumaCenterSmaller = lumaCenter < lumaLocalAverage;
+    bool correctVariation    = ((isDirection1 ? lumaEnd1 : lumaEnd2) < 0.0) != isLumaCenterSmaller;
+    float finalOffset = correctVariation ? pixelOffset : 0.0;
+
+    // suavizado subpixel
+    float lumaAverage = (1.0 / 12.0) * (2.0 * (lumaDownUp + lumaLeftRight) + lumaLeftCorners + lumaRightCorners);
+    float subPixelOffset1 = clamp(abs(lumaAverage - lumaCenter) / lumaRange, 0.0, 1.0);
+    float subPixelOffset2 = (-2.0 * subPixelOffset1 + 3.0) * subPixelOffset1 * subPixelOffset1;
+    float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * SUBPIXEL_QUALITY;
+    finalOffset = max(finalOffset, subPixelOffsetFinal);
+
+    vec2 finalUv = uv;
+    if (isHorizontal) finalUv.y += finalOffset * stepLength;
+    else              finalUv.x += finalOffset * stepLength;
+
+    FragColor = vec4(texture(tex, finalUv).rgb, 1.0);
+}
+@-"
+
 | <======= SHADERS
 
 |-----------------------------------------------------------
@@ -426,6 +573,11 @@ void main() {
 #rl_ao_dirv * 8      | vec2 (0,1/h) en float32
 #rl_ao_white * 16    | vec4 (1,1,1,1) en float32
 
+| FXAA: composite -> ldr_tex (RGBA8) -> pase FXAA -> pantalla
+#rl_ldr_fbo   0
+#rl_ldr_tex   0
+##rl_aa_on     1     | 1=FXAA activo  0=desactivado (el composite va directo a pantalla)
+
 | Quad
 ##rl_quad_vao 0  #rl_quad_vbo 0
 
@@ -442,6 +594,7 @@ void main() {
 #rl_sh_composite  0
 #rl_sh_ao         0
 #rl_sh_aoblur     0
+#rl_sh_fxaa       0
 
 | Uniform locations
 #rl_u_bright_threshold    -1
@@ -596,6 +749,7 @@ void main() {
 | AO: ao_tex (resultado final) + ao_tex2 (ping-pong del blur), formato R8
 :RL_FMT_R8  $8229 ;	| GL_R8
 :RL_FMT_RED $1903 ;	| GL_RED
+:RL_FMT_RGBA8 $8058 ;	| GL_RGBA8
 
 :rl_init_ao
 	RL_FMT_R8 rl_w rl_h RL_FMT_RED GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
@@ -617,6 +771,20 @@ void main() {
 	rl_ao_fbo2 1? ( 1 'rl_ao_fbo2 glDeleteFramebuffers ) drop
 	rl_ao_tex2 1? ( 1 'rl_ao_tex2 glDeleteTextures     ) drop
 	0 'rl_ao_fbo ! 0 'rl_ao_tex ! 0 'rl_ao_fbo2 ! 0 'rl_ao_tex2 !
+	;
+
+| ================================================================
+| FXAA: imagen LDR intermedia (RGBA8, ya con gamma) que lee el pase FXAA
+:rl_init_ldr
+	RL_FMT_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
+	rl_make_tex2d 'rl_ldr_tex !
+	rl_ldr_tex 0 rl_make_fbo 'rl_ldr_fbo !
+	;
+
+:rl_destroy_ldr
+	rl_ldr_fbo 1? ( 1 'rl_ldr_fbo glDeleteFramebuffers ) drop
+	rl_ldr_tex 1? ( 1 'rl_ldr_tex glDeleteTextures     ) drop
+	0 'rl_ldr_fbo ! 0 'rl_ldr_tex !
 	;
 
 #_quad_verts [ -1.0 -1.0  1.0 -1.0  -1.0 1.0  1.0 1.0 ]
@@ -659,11 +827,6 @@ void main() {
     GL_UNIFORM_BUFFER 0 glBindBuffer
     ;
 
-| ================================================================
-::rl_bind_ubo | binding prog "name" --
-	over swap glGetUniformBlockIndex  | binding prog index |(idx!=GL_INVALID_INDEX)
-	rot glUniformBlockBinding ;
-
 |------------- CAMERA ------------------
 #camDirty  1
 
@@ -673,11 +836,11 @@ void main() {
 ##camFar 200.0
 
 | ================================================================
-::rl_resizewin | w h --
+::rl_resizewin | h w --   (se llama con: sh sw rl_resizewin)
     rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
     1 'camDirty !
-	rl_destroy_bloom rl_destroy_ao rl_destroy_gbuffer  
-	rl_init_gbuffer rl_init_ao rl_init_bloom
+	rl_destroy_bloom rl_destroy_ao rl_destroy_ldr rl_destroy_gbuffer  
+	rl_init_gbuffer rl_init_ao rl_init_ldr rl_init_bloom
     ;
 
 | ================================================================
@@ -688,12 +851,13 @@ void main() {
 | ================================================================
 ::rl_Init
 	sw 'rl_w ! sh 'rl_h !
-	| clip control: origen abajo-izquierda, ZERO_TO_ONE (glClipControl, GL 4.5 / ARB_clip_control)
+	| clip control: origen abajo-izquierda, profundidad ZERO_TO_ONE (requiere glClipControl, GL 4.5 / ARB_clip_control)
 	$8CA1 $935F glClipControl
 	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer
     rl_init_bloom
     rl_init_ao
+    rl_init_ldr
     rl_init_quad
     rl_init_ubos
 
@@ -704,6 +868,7 @@ void main() {
     'rl_shader_composite  loadShaderv 'rl_sh_composite  !
     'rl_shader_ao         loadShaderv 'rl_sh_ao         !
     'rl_shader_aoblur     loadShaderv 'rl_sh_aoblur     !
+    'rl_shader_fxaa       loadShaderv 'rl_sh_fxaa       !
 
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
@@ -727,10 +892,12 @@ void main() {
     rl_sh_composite  glDeleteProgram
     rl_sh_ao         glDeleteProgram
     rl_sh_aoblur     glDeleteProgram
+    rl_sh_fxaa       glDeleteProgram
 
     rl_destroy_gbuffer
     rl_destroy_bloom
     rl_destroy_ao
+    rl_destroy_ldr
 
     1 'rl_quad_vao glDeleteVertexArrays
     1 'rl_quad_vbo glDeleteBuffers
@@ -908,6 +1075,10 @@ void main() {
 	;
 
 | ================================================================
+| FBO de destino del composite: ldr (si hay FXAA) o la pantalla (0)
+:aatarget | -- fbo
+	rl_aa_on 1? ( drop rl_ldr_fbo ; ) drop 0 ;
+
 ::rl_frame_end | --
 	rl_quad_vao glBindVertexArray
 	GL_DEPTH_TEST glDisable
@@ -934,7 +1105,7 @@ void main() {
 	bloompass
 
 	| ---- Composite ----
-	GL_FRAMEBUFFER 0 glBindFramebuffer
+	GL_FRAMEBUFFER aatarget glBindFramebuffer
 	0 0 rl_w rl_h glViewport
 	
 	$1800 0 'vcolorgl glClearBufferfv
@@ -944,5 +1115,12 @@ void main() {
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
 	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
 	rl_u_composite_exposure  1 'RL_EXPOSURE        glUniform1fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays	
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+
+	| ---- FXAA: ldr_tex -> pantalla ----
+	rl_aa_on 0? ( drop ; ) drop
+	GL_FRAMEBUFFER 0 glBindFramebuffer
+	rl_sh_fxaa glUseProgram
+	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_ldr_tex glBindTexture
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
 	;

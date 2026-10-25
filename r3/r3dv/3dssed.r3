@@ -203,7 +203,7 @@
 #obrot * 8192		| rotacion de cada objeto (3 x 16 bits, igual que getrot)
 
 :objcolor | i -- color	; seleccionado: tinte calido + glow
-	sel =? ( drop $ffa04001 ; ) drop $ffffff00 ;
+	sel =? ( drop $ffa04002 ; ) drop $ffffff00 ;
 
 :objstyle | i --	; sprite, color y escala del panel en la instancia i
 	sx nrosprite pick2 objcolor pick3 ss3dcs
