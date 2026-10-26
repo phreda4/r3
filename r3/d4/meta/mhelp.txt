@@ -1,0 +1,2803 @@
+; | -- ; end of the word, return to the caller
+( | -- ; begin a block: the body of a conditional or a loop
+) | -- ; end of the block
+[ | -- a ; begin an anonymous word; ] leaves its address
+] | -- a ; end of the anonymous word, push its address
+ex | a -- ; execute the word whose address is a (0 does nothing)
+0? | a -- a ; run the block if a = 0
+1? | a -- a ; run the block if a <> 0
++? | a -- a ; run the block if a >= 0
+-? | a -- a ; run the block if a < 0
+<? | a b -- a ; run the block if a < b
+>? | a b -- a ; run the block if a > b
+=? | a b -- a ; run the block if a = b
+>=? | a b -- a ; run the block if a >= b
+<=? | a b -- a ; run the block if a <= b
+<>? | a b -- a ; run the block if a <> b
+and? | a b -- a ; run the block if a AND b <> 0
+nand? | a b -- a ; run the block if a AND b = 0
+in? | a b c -- a ; run the block if b <= a <= c
+dup | a -- a a ; duplicate TOS
+drop | a -- ; remove TOS
+over | a b -- a b a ; copy NOS to top
+pick2 | a b c -- a b c a ; copy 3rd element to top
+pick3 | a b c d -- a b c d a ; copy 4th element to top
+pick4 | a b c d e -- a b c d e a ; copy 5th element to top
+swap | a b -- b a ; exchange TOS and NOS
+nip | a b -- b ; remove NOS
+rot | a b c -- b c a ; rotate 3 elements left
+-rot | a b c -- c a b ; rotate 3 elements right
+2dup | a b -- a b a b ; duplicate top two
+2drop | a b -- ; remove top two
+3drop | a b c -- ; remove top three
+4drop | a b c d -- ; remove top four
+2over | a b c d -- a b c d a b ; copy 3rd and 4th to top
+2swap | a b c d -- c d a b ; exchange two pairs
+>r | a -- (r: -- a) ; push to return stack
+r> | -- a (r: a --) ; pop from return stack
+r@ | -- a (r: a -- a) ; copy top of return stack (non-destructive)
+and | a b -- c ; c = a AND b (bitwise)
+or | a b -- c ; c = a OR b
+xor | a b -- c ; c = a XOR b
+nand | a b -- c ; c = NOT (a AND b)
++ | a b -- c ; c = a + b
+- | a b -- c ; c = a - b
+* | a b -- c ; c = a * b
+/ | a b -- c ; c = a / b (integer)
+<< | a b -- c ; c = a << b (left shift)
+>> | a b -- c ; c = a >> b (signed right shift)
+>>> | a b -- c ; c = a >>> b (unsigned right shift)
+mod | a b -- c ; c = a mod b
+/mod | a b -- c d ; c = a/b, d = a mod b
+*/ | a b c -- d ; d = a*b/c (no intermediate overflow)
+*>> | a b c -- d ; d = (a*b)>>c (no overflow)
+<</ | a b c -- d ; d = (a<<c)/b (no overflow)
+not | a -- b ; b = NOT a (all bits flipped)
+neg | a -- b ; b = -a
+abs | a -- b ; b = absolute value of a
+sqrt | a -- b ; b = integer square root of a
+clz | a -- b ; b = count leading zeros of a
+@ | a -- [a] ; fetch qword
+c@ | a -- byte[a] ; fetch byte
+w@ | a -- word[a] ; fetch word
+d@ | a -- dword[a] ; fetch dword
+@+ | a -- b [a] ; fetch qword and increment
+c@+ | a -- b byte[a] ; fetch byte and increment
+w@+ | a -- b word[a] ; fetch word and increment
+d@+ | a -- b dword[a] ; fetch dword and increment
+! | a b -- ; store A at address B
+c! | a b -- ; store byte A at address B
+w! | a b -- ; store word A at address B
+d! | a b -- ; store dword A at address B
+!+ | a b -- c ; store A at B and increment
+c!+ | a b -- c ; store byte A at B and increment
+w!+ | a b -- c ; store word A at B and increment
+d!+ | a b -- c ; store dword A at B and increment
++! | a b -- ; add A to value at address B
+c+! | a b -- ; add A to byte at address B
+w+! | a b -- ; add A to word at address B
+d+! | a b -- ; add A to dword at address B
+>a | a -- ; load register A
+a> | -- a ; push register A
+a+ | a -- ; add to register A
+a@ | -- a ; fetch qword from A
+a! | a -- ; store qword at A
+a@+ | -- a ; fetch qword from A and increment
+a!+ | a -- ; store qword at A and increment
+ca@ | -- a ; fetch byte from A
+ca! | a -- ; store byte at A
+ca@+ | -- a ; fetch byte from A and increment
+ca!+ | a -- ; store byte at A and increment
+da@ | -- a ; fetch dword from A
+da! | a -- ; store dword at A
+da@+ | -- a ; fetch dword from A and increment
+da!+ | a -- ; store dword at A and increment
+>b | a -- ; load register B
+b> | -- a ; push register B
+b+ | a -- ; add to register B
+b@ | -- a ; fetch qword from B
+b! | a -- ; store qword at B
+b@+ | -- a ; fetch qword from B and increment
+b!+ | a -- ; store qword at B and increment
+cb@ | -- a ; fetch byte from B
+cb! | a -- ; store byte at B
+cb@+ | -- a ; fetch byte from B and increment
+cb!+ | a -- ; store byte at B and increment
+db@ | -- a ; fetch dword from B
+db! | a -- ; store dword at B
+db@+ | -- a ; fetch dword from B and increment
+db!+ | a -- ; store dword at B and increment
+ab[ | -- ; save A and B to return stack
+]ba | -- ; restore B and A from return stack
+move | d s c -- ; copy c qwords from s to d
+move> | d s c -- ; copy c qwords, reverse direction
+fill | d v c -- ; fill d with c qwords of value v
+cmove | d s c -- ; copy c bytes from s to d
+cmove> | d s c -- ; copy c bytes, reverse direction
+cfill | d v c -- ; fill d with c bytes of value v
+dmove | d s c -- ; copy c dwords from s to d
+dmove> | d s c -- ; copy c dwords, reverse direction
+dfill | d v c -- ; fill d with c dwords of value v
+mem | -- a ; start of free memory
+loadlib | "name" -- liba ; load dynamic library
+getproc | liba "name" -- aa ; get function address
+sys0 | aa -- r ; call with 0 parameters
+sys1 | a aa -- r ; call with 1 parameter
+sys2 | a b aa -- r ; call with 2 parameters
+sys3 | a b c aa -- r ; call with 3 parameters
+sys4 | a b c d aa -- r ; call with 4 parameters
+sys5 | a b c d e aa -- r ; call with 5 parameters
+sys6 | a b c d e f aa -- r ; call with 6 parameters
+sys7 | a b c d e f g aa -- r ; call with 7 parameters
+sys8 | a b c d e f g h aa -- r ; call with 8 parameters
+sys9 | a b c d e f g h i aa -- r ; call with 9 parameters
+sys10 | a b c d e f g h i j aa -- r ; call with 10 parameters
+xf
+yf
+ox
+oy
+2dmode | --
+3dmode | fov --
+Omode | --
+whmode | w h --
+o3dmode | w h --
+p3d | x y z -- x y
+p3dz | x y z -- x y z
+p3di | x y z -- z y x
+p3ditest | x y z -- z y x
+p3dizb | x y z -- z y x
+p3dcz | z -- 1/z
+p3d1 | x y z -- x y
+p3di1 | x y z -- z y x
+project3d | x y z -- u v
+project3dz | x y z -- z x y
+invproject3d | x y z -- x y
+projectdim | x y z -- u v
+project | x y z -- u v
+projectv | x y z -- u v
+inscreen | -- x y
+proyect2d | x y z -- x y
+aspect | -- a
+mtrans | x y z --
+mtransi | x y z -- ;pre
+mrotxi | x -- ; premultiplica
+mrotyi | y --
+mrotzi | z --
+mat>
+matini
+matinim | 'mat --
+mpush | --
+mpushi | --  ; push new id
+mpop | --
+nmpop | n --
+getfmat | -- fmat ; make float point mat
+gettfmat | -- fmat ; transpose
+midf | fmat -- ; copy id matrix to floating point in fmat
+mcpyf | fmat -- ; copy act matrix to floating point in fmat
+mcpyft | fmat -- ; transpose + copy in floating point
+mperspective | near far contang aspect  --
+mortho | r l t b f n --
+mlookat | eye to up --
+mtran | x y z --
+mtranx | x --
+mtrany | y --
+mtranz | z --
+mrotx | rx --
+mroty
+mrotz
+mscale | x y z -- ; post
+mscalei | x y z --
+muscalei | s --
+transform | x y z -- x y z
+transformr | x y z -- x y z
+ztransform | x y z -- z
+oztransform | -- z
+oxyztransform | -- x y z
+matinv | --
+calcrot | rx ry rz --
+makerot | x y z -- x' y' z'
+matqua | 'quat --
+calcvrot | rx ry rz --
+mrotxyz | x y z --
+mrotxyzi | x y z --
+mcpy | 'mat --
+m* | -- ; mult two prev mat and generate a new one
+mm* | 'mat --
+mmi* | 'mat --
+mview | eye to up --
+mproj | fov asp zn zf --
+mtra | x y z -- ; traslate
+mrot | rx ry rz -- ; rotate
+mpos | x y z --
+mrpos | r16 x y z -- ; r=....xxxxyyyyzzzz rot
+packrota | rx ry rz -- rp
++rota | ra rb -- rr
+pack21 | vx vy vz -- vp
++p21 | va vb -- vr
+base64decode | src dest -- 'dest
+base64encode | len src dest -- 'dest
+copyclipboard | 'mem cnt --
+pasteclipboard | 'mem --
+swapcolor | color -- swapcolor
+colavg | a b -- c
+col50% | c1 c2 -- c
+col25% | c1 c2 -- c
+col33% | c1 c2 -- c
+colmix | c1 c2 a -- c
+colmul | c1 a -- c
+colmix4 | c1 c2 a -- c
+colmul4 | c1 a -- c
+diffrgb2 | a b -- v
+rgb2yuv | rgb -- yuv
+yuv2rgb | yuv -- rgb
+yuv32 | yuv -- col
+hsv2rgb | h s v -- rgb32
+rgb2hsv | argb -- h s v
+rgb2ycocg | r g b -- y co cg
+ycocg2rgb | y co cg -- r g b
+rgb2ycc | RGB -- y co cg
+rgb2yuv2 | g b r -- y u v
+yuv2rgb2 | y u v -- g b r
+RGB>Gbr | R G B -- G b r
+Gbr>RGB | G b r -- R G B
+RGB2YCoCg24 | r g b -- Y co cg
+YCoCg242RGB | Y co cg -- r g b
+shadow4 | color shadow -- color
+light4 | color ligth -- color
+shadow8 | color shadow -- color
+light8 | color ligth -- color
+blend2 | c1 c2 i -- c
+b2color | col -- color
+bgr2rgb | BGR -- RGB
+4bcol | col -- color
+4bicol | col -- color
+[ESC]
+[ENTER]
+[BACK]
+[TAB]
+[DEL]
+[INS]
+[UP]
+[DN]
+[RI]
+[LE]
+[PGUP]
+[PGDN]
+[HOME]
+[END]
+[SHIFT+TAB]
+[SHIFT+DEL]
+[SHIFT+INS]
+[SHIFT+UP]
+[SHIFT+DN]
+[SHIFT+RI]
+[SHIFT+LE]
+[SHIFT+PGUP]
+[SHIFT+PGDN]
+[SHIFT+HOME]
+[SHIFT+END]
+[F1]
+[F2]
+[F3]
+[F4]
+[F5]
+[F6]
+[F7]
+[F8]
+[F9]
+[F10]
+[F11]
+[F12]
+.flush | -- | Write buffer to stdout
+.cl | -- | reset buffer
+.type | str cnt -- | Add to buffer
+.emit | char --
+.uemit | cp -- ; UNICODE emit
+.cr | 10 .emit 13 .emit ;
+.sp
+.write
+.print
+.println
+.^[ | $1b .emit $5b .emit ;
+.[w
+.[p
+.nsp | n --
+.nch | n char -- ; WARNIG not multibyte
+.ndel | n -- | not adv cursor
+.rep | cnt "car" -- ; REPEAT with multibyte
+.fwrite
+.fprint
+.home
+.cls
+.at | x y -- | f
+.col | x -- columna
+.eline | erase line from cursor
+.escreen | erase from cursor to end of screen
+.escreenup | erase from cursor to beginning
+.showc
+.hidec
+.blc
+.unblc
+.savec | save cursor position
+.restorec | restore cursor position
+.ovec | default cursor
+.insc | blinking underscore
+.blockc | steady block
+.underc | steady underscore
+.alsb | alternate screen buffer
+.masb | main screen buffer
+.scrolloff | rows --
+.scrollon
+.Black
+.Red
+.Green
+.Yellow
+.Blue
+.Magenta
+.Cyan
+.White
+.Blackl
+.Redl
+.Greenl
+.Yellowl
+.Bluel
+.Magental
+.Cyanl
+.Whitel
+.fc | 256 color foreground
+.BBlack
+.BRed
+.BGreen
+.BYellow
+.BBlue
+.BMagenta
+.BCyan
+.BWhite
+.BBlackl
+.BRedl
+.BGreenl
+.BYellowl
+.BBluel
+.BMagental
+.BCyanl
+.BWhitel
+.bc | 256 color background
+.fgrgb
+.bgrgb
+.Bold
+.NBold
+.Dim
+.Ital
+.NItal
+.Under
+.NUnder
+.Blink
+.Rev
+.NRev
+.Hidden
+.Strike
+.Reset
+getch | -- key | wait for key
+waitesc | -- | wait for ESC key
+waitkey | -- | wait any key
+pad
+.ukey | key -- key n ; n=bytes
+.input | -- ; ESC cancela (deja pad vacio)
+.printe | "" --
+strcpybuf | 'mem --
+r3run | "" --
+ms | ms --
+msec | -- msec
+load | 'from "filename" -- 'to
+save | 'from cnt "filename" --
+append | 'from cnt "filename" --
+delete | "filename" --
+filexist | "file" -- 0=no
+fileisize | -- size
+fileijul | -- jul ; julian day number of last write date (UTC)
+fileinfo | "file" -- 0=not exist
+filecreatetime
+filelastactime
+filelastwrtime
+filetimeD | 'time_t -- 'timedate
+FNAME | adr -- adrname
+FDIR | adr -- 1/0
+FSIZEF | adr -- sizebytes
+FCREADT | adr -- 'timedate | creation date
+FLASTDT | adr -- 'timedate  | last acces date
+FWRITEDT | adr -- 'timedate | last write date
+findata
+ffirst | "path//*" -- fdd/0
+fnext | -- fdd/0
+date.d
+time.ms
+date.dw
+time.s
+date.m
+time.m
+date.y
+time.h
+time | -- hms
+date | -- ymd
+sysdate
+sinfo
+pinfo
+sys | "" --
+sysnew | "" -- ;
+sysdebug | "" --
+crc32 | a n - u
+crc32n | a n p - u
+adler32 | a n - u
+*.d | a b -- c
+*.df | a b -- c ; full adjust
+/.d | a b -- c
+ceil.d | a -- a
+.d>i
+i>.d
+f>.d
+.d>f
+cos.d | bangle -- r
+sin.d | bangle -- r
+tan.d | v -- f
+tan.dc
+sqrt.d | x -- r
+log2.d | x -- r
+pow2.d | y -- r
+pow.d | x y -- r
+root.d | x n -- r
+ln.d | x -- ln(x)
+exp.d | x -- e^x
+tanh.d
+gamma.d | x -- r
+beta.d | x y -- r
+str>f.d | adr -- 'adr fnro
+f32!
+loadShaderv | "shader" -- idprogram
+loadShader | "shader" -- idprogram
+shadera!i | int shader "name"  --
+shader!i | int shader "name"  --
+shader!v3 | 'v3 shader "name" --
+shader!v4 | 'v4 shader "name" --
+shader!m4 | 'm4 shader "name" --
+shader!f1
+glimgw
+glimgh
+glImgFnt | "" -- t
+glImgTex | "" -- texid
+glColorTex | col -- texid
+initcube
+rendercube
+xr1
+yr1
+xr2
+yr2
+foco | activo teclado
+clkbtn
+idf | id gui foco actual (teclado)
+idl | id foco ultim
+guin? | mouse in rect? and last in touch
+gui
+guiBox | x1 y1 w h --
+guiPrev | -- ; same id
+guiRect | x1 y1 x2 y2 --
+onClick | 'click --
+onClickFoco
+onMoveA | 'move --
+onMove | 'move --
+onDnMove | 'dn 'move --
+onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
+onMap | 'dn 'move 'up --
+onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
+guiI | 'vector --
+guiO | 'vector --
+guiIO | 'vi 'vo --
+nextfoco
+prevfoco
+setfoco | nro --
+clickfoco
+clickfoco1
+refreshfoco
+w/foco | 'in 'start --
+focovoid | --
+esfoco? | -- 0/1
+in/foco | 'in --
+lostfoco | 'acc --
+input | 'var max --
+inputex | 'vector 'var max  --
+inputdump
+inputint | 'var --
+tbtn | 'ev "text" --
+isang
+isalt
+isxo
+isyo
+xyz2iso | x y z -- x y
+2iso | x y z -- x y
+isocam | --
+resetcam
+loadss | w h "file" -- ssprite
+isospr | x y a z 'ss --
+date2jul | d m y -- jul
+jul2date | jul -- d m y
+date2day | d m y -- num
+jul2day | jul -- num
+date2daystr
+jul2daystr
+cell | cell size
+cell+
+ncell+
+ndword+
+nword+
+1+
+1-
+2/
+2*
+*.s | a b -- c ; small numbers
+*. | a b -- c
+*.f | a b -- c ; full adjust
+/. | a b -- c
+2/. | shift and adjust
+ceil | a -- a
+int.
+fix.
+sign | v -- v s
+cos | bangle -- r
+sin | bangle -- r
+tan | v -- f
+sincos | bangle -- sin cos
+xy+polar | x y bangle r -- x y
+xy+polar2 | x y r ang -- x y
+ar>xy | xc yc bangle r -- xc yc x y
+polar | bangle largo -- dx dy
+polar2 | largo bangle  -- dx dy
+dir2vec | dx dy -- vx vy
+sdir2vec | scale dx dy -- vx vy
+atan2 | x y -- bangle
+atan2x | x y -- bangle
+distfast | dx dy -- dis
+average | x y -- v
+min | a b -- m
+max | a b -- m
+clampmax | v max -- v
+clampmin | v min -- v
+clamp0 | v -- v
+clamp0max | v max -- v
+clamps16 | v -- (signed 16bits)v
+between | v min max -- -(out)/+(in)
+msb | x -- n
+ctz | x -- n
+sqrt. | x -- r
+log2. | y -- r
+pow2. | y -- r
+pow. | x y -- r
+root. | x n -- r
+ln.
+exp.
+tanh.
+fastanh.
+gamma. | x -- r
+beta. | x y -- r
+cubicpulse | c w x -- v ; iñigo Quilez
+pow | base exp -- r
+bswap32 | v -- vs ; 32 bits
+bswap64 | v -- vs
+nextpow2 | v -- p2
+6* | n -- n*6
+6/ | n -- n/6
+6mod | n -- n%6
+100000*
+10000*
+1000*
+1000000*
+100*
+10*
+10/
+10/mod | n -- q r
+1000000/
+i2fp | i -- fp
+f2fp | f.p -- fp
+memfloat | cnt adr --
+mem2float | cnt src dst --
+memd2float | cnt src dst --
+fp2f | fp -- fixed point
+fp2i | fp -- fixed point
+fp16f | fp16 -- f
+f2fp24 | f -- fp
+fp2f24 | fp -- fixed point
+byte>float32N | byte -- float
+float32N>byte | f32 -- byte
+here
+,
+,c
+,q
+,w
+,s
+,word
+,line
+,2d
+,d
+,h
+,b
+,f
+,ifp
+,ffp
+,cr | 10 ,c ?
+,eol
+,sp
+,nl
+,nsp
+align32 | mem -- mem
+align16 | mem -- mem
+align8 | mem -- mem
+mark | --
+empty | --
+savemem | "" --
+sizemem | -- size
+memsize | -- mem size
+savememinc | "" --
+cpymem | 'destino --
+appendmem | "" --
+,print | p p .. "" --
+sprint | p p .. "" -- adr
+sprintln | p p .. "" -- adr
+memcpy_rgb3f
+memcpy_bgr3f
+memcpy_rgbf
+memcpy_f32p16
+memcpy_p16f32
+memcpy_avx
+inisharev | 'varshare --
+endSharev | 'varshare --
+socket-ini | Windows: inicializar Winsock2
+socket-end | Windows: limpiar Winsock2
+socket-create | ( family type protocol -- sock )
+socket-set-nonblock | ( sock -- result )
+socket-set-reuseaddr | ( sock -- result )
+socket-bind | ( sock addr port -- result )
+socket-listen | ( sock backlog -- result )
+socket-accept | ( sock addr addrlen -- newsock )
+socket-connect | ( sock addr addrlen -- result )
+socket-send | ( sock data len flags -- bytes_sent )
+socket-recv | ( sock buf len flags -- bytes_recv )
+socket-close | ( sock -- result )
+net-addr-to-int | ( "ip-string" -- addr )
+net-htons | ( port -- network_port )
+net-get-last-error | ( -- error_code )
+server-socket | ( port -- sock )
+client-socket | ( -- sock )
+socket-final | ( sock -- )
+ortSess_CPU | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
+ortSess_MDL | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
+OrtgetVersionString
+OrtCreateStatus
+OrtGetErrorCode
+OrtGetErrorMessage
+OrtCreateEnv
+OrtCreateEnvWithCustomLogger
+OrtEnableTelemetryEvents
+OrtDisableTelemetryEvents
+OrtCreateSession
+OrtCreateSessionFromArray
+OrtRun
+OrtCreateSessionOptions
+OrtSetOptimizedModelFilePath
+OrtCloneSessionOptions
+OrtSetSessionExecutionMode
+OrtEnableProfiling
+OrtDisableProfiling
+OrtEnableMemPattern
+OrtDisableMemPattern
+OrtEnableCpuMemArena
+OrtDisableCpuMemArena
+OrtSetSessionLogId
+OrtSetSessionLogVerbosityLevel
+OrtSetSessionLogSeverityLevel
+OrtSetSessionGraphOptimizationLevel
+OrtSetIntraOpNumThreads
+OrtSetInterOpNumThreads
+OrtCreateCustomOpDomain
+OrtCustomOpDomain_Add
+OrtAddCustomOpDomain
+OrtRegisterCustomOpsLibrary
+OrtSessionGetInputCount
+OrtSessionGetOutputCount
+OrtSessionGetOverridableInitializerCount
+OrtSessionGetInputTypeInfo
+OrtSessionGetOutputTypeInfo
+OrtSessionGetOverridableInitializerTypeInfo
+OrtSessionGetInputName
+OrtSessionGetOutputName
+OrtSessionGetOverridableInitializerName
+OrtCreateRunOptions
+OrtRunOptionsSetRunLogVerbosityLevel
+OrtRunOptionsSetRunLogSeverityLevel
+OrtRunOptionsSetRunTag
+OrtRunOptionsGetRunLogVerbosityLevel
+OrtRunOptionsGetRunLogSeverityLevel
+OrtRunOptionsGetRunTag
+OrtRunOptionsSetTerminate
+OrtRunOptionsUnsetTerminate
+OrtCreateTensorAsOrtValue
+OrtCreateTensorWithDataAsOrtValue
+OrtIsTensor
+OrtGetTensorMutableData
+OrtFillStringTensor
+OrtGetStringTensorDataLength
+OrtGetStringTensorContent
+OrtCastTypeInfoToTensorInfo
+OrtGetOnnxTypeFromTypeInfo
+OrtCreateTensorTypeAndShapeInfo
+OrtSetTensorElementType
+OrtSetDimensions
+OrtGetTensorElementType
+OrtGetDimensionsCount
+OrtGetDimensions
+OrtGetSymbolicDimensions
+OrtGetTensorShapeElementCount
+OrtGetTensorTypeAndShape
+OrtGetTypeInfo
+OrtGetValueType
+OrtCreateMemoryInfo
+OrtCreateCpuMemoryInfo
+OrtCompareMemoryInfo
+OrtMemoryInfoGetName
+OrtMemoryInfoGetId
+OrtMemoryInfoGetMemType
+OrtMemoryInfoGetType
+OrtAllocatorAlloc
+OrtAllocatorFree
+OrtAllocatorGetInfo
+OrtGetAllocatorWithDefaultOptions
+OrtAddFreeDimensionOverride
+OrtGetValue
+OrtGetValueCount
+OrtCreateValue
+OrtCreateOpaqueValue
+OrtGetOpaqueValue
+OrtKernelInfoGetAttribute_float
+OrtKernelInfoGetAttribute_int64
+OrtKernelInfoGetAttribute_string
+OrtKernelContext_GetInputCount
+OrtKernelContext_GetOutputCount
+OrtKernelContext_GetInput
+OrtKernelContext_GetOutput
+OrtReleaseEnv
+OrtReleaseStatus
+OrtReleaseMemoryInfo
+OrtReleaseSession
+OrtReleaseValue
+OrtReleaseRunOptions
+OrtReleaseTypeInfo
+OrtReleaseTensorTypeAndShapeInfo
+OrtReleaseSessionOptions
+OrtReleaseCustomOpDomain
+OrtGetDenotationFromTypeInfo
+OrtCastTypeInfoToMapTypeInfo
+OrtCastTypeInfoToSequenceTypeInfo
+OrtGetMapKeyType
+OrtGetMapValueType
+OrtGetSequenceElementType
+OrtReleaseMapTypeInfo
+OrtReleaseSequenceTypeInfo
+OrtSessionEndProfiling
+OrtSessionGetModelMetadata
+OrtModelMetadataGetProducerName
+OrtModelMetadataGetGraphName
+OrtModelMetadataGetDomain
+OrtModelMetadataGetDescription
+OrtModelMetadataLookupCustomMetadataMap
+OrtModelMetadataGetVersion
+OrtCreateEnvWithGlobalThreadPools
+OrtDisablePerSessionThreads
+OrtCreateThreadingOptions
+OrtSetGlobalIntraOpNumThreads
+OrtSetGlobalInterOpNumThreads
+OrtSetGlobalSpinControl
+OrtModelMetadataGetCustomMetadataMapKeys
+OrtAddFreeDimensionOverrideByName
+OrtGetAvailableProviders
+OrtReleaseAvailableProviders
+OrtGetStringTensorElementLength
+OrtGetStringTensorElement
+OrtFillStringTensorElement
+OrtAddSessionConfigEntry
+OrtCreateAllocator
+OrtRunWithBinding
+OrtCreateIoBinding
+OrtBindInput
+OrtBindOutput
+OrtBindOutputToDevice
+OrtGetBoundOutputNames
+OrtGetBoundOutputValues
+OrtClearBoundInputs
+OrtClearBoundOutputs
+OrtTensorAt
+OrtCreateAndRegisterAllocator
+OrtSetLanguageProjection
+OrtSessionGetProfilingStartTimeNs
+OrtAddInitializer
+OrtCreateEnvWithCustomLoggerAndGlobalThreadPools
+OrtSessionOptionsAppendExecutionProvider_CUDA
+OrtSessionOptionsAppendExecutionProvider_ROCM
+OrtSessionOptionsAppendExecutionProvider_OpenVINO
+OrtSetGlobalDenormalAsZero
+OrtCreateArenaCfg
+OrtModelMetadataGetGraphDescription
+OrtSessionOptionsAppendExecutionProvider_TensorRT
+OrtSetCurrentGpuDeviceId
+OrtGetCurrentGpuDeviceId
+OrtKernelInfoGetAttributeArray_float
+OrtKernelInfoGetAttributeArray_int64
+OrtCreateArenaCfgV2
+OrtAddRunConfigEntry
+OrtCreatePrepackedWeightsContainer
+OrtCreateSessionWithPrepackedWeightsContainer
+OrtCreateSessionFromArrayWithPrepackedWeightsContainer
+OrtSessionOptionsAppendExecutionProvider_TensorRT_V2
+OrtCreateTensorRTProviderOptions
+OrtUpdateTensorRTProviderOptions
+OrtGetTensorRTProviderOptionsAsMap
+OrtReleaseTensorRTProviderOptions
+OrtEnableOrtCustomOps
+OrtRegisterAllocator
+OrtUnregisterAllocator
+OrtIsSparseTensor
+OrtCreateSparseTensorAsOrtValue
+OrtFillSparseTensorCoo
+OrtFillSparseTensorCsr
+OrtFillSparseTensorBlockSparse
+OrtCreateSparseTensorWithValuesAsOrtValue
+OrtUseCooIndices
+OrtUseCsrIndices
+OrtUseBlockSparseIndices
+OrtGetSparseTensorFormat
+OrtGetSparseTensorValuesTypeAndShape
+OrtGetSparseTensorValues
+OrtGetSparseTensorIndicesTypeShape
+OrtGetSparseTensorIndices
+OrtHasValue
+OrtKernelContext_GetGPUComputeStream
+OrtGetTensorMemoryInfo
+OrtGetExecutionProviderApi
+OrtSessionOptionsSetCustomCreateThreadFn
+OrtSessionOptionsSetCustomThreadCreationOptionsFn
+OrtSetGlobalCustomCreateThreadFn
+OrtSetGlobalCustomThreadCreationOptions
+OrtSetGlobalCustomJoinThreadFn
+OrtSynchronizeBoundInputs
+OrtSynchronizeBoundOutputs
+OrtSessionOptionsAppendExecutionProvider_CUDA_V2
+OrtCreateCUDAProviderOptions
+OrtUpdateCUDAProviderOptions
+OrtGetCUDAProviderOptionsAsMap
+OrtReleaseCUDAProviderOptions
+OrtSessionOptionsAppendExecutionProvider_MIGraphX
+OrtAddExternalInitializers
+OrtCreateOpAttr
+OrtCreateOp | sys11 ; |<<<<<<<<<<<<<<<<<<<
+OrtReleaseOpAttr
+OrtReleaseOp
+OrtSessionOptionsAppendExecutionProvider
+OrtCopyKernelInfo
+OrtGetTrainingApi
+OrtSessionOptionsAppendExecutionProvider_Dnnl
+OrtCreateDnnlProviderOptions
+OrtUpdateDnnlProviderOptions
+OrtGetDnnlProviderOptionsAsMap
+OrtReleaseDnnlProviderOptions
+OrtSessionOptionsAppendExecutionProvider_ROCM_V2
+OrtCreateROCMProviderOptions
+OrtUpdateROCMProviderOptions
+OrtGetROCMProviderOptionsAsMap
+OrtReleaseROCMProviderOptions
+OrtCreateLoraAdapter
+OrtCreateLoraAdapterFromArray
+OrtReleaseLoraAdapter
+OrtRunOptionsAddActiveLoraAdapter
+OrtSetEpDynamicOptions
+OrtReleaseValueInfo
+OrtReleaseNode
+OrtReleaseGraph
+OrtReleaseModel
+OrtGetValueInfoName
+OrtGetValueInfoTypeInfo
+OrtGetModelEditorApi
+OrtCreateTensorWithOwnedBufferAsOrtValue
+OrtInvalidAllocator
+OrtDeviceAllocator
+OrtArenaAllocator
+OrtReadOnlyAllocator
+OrtMemTypeCPUInput
+OrtMemTypeCPUOutput
+OrtMemTypeCPU
+OrtMemTypeDefault
+ORT_DISABLE_ALL
+ORT_ENABLE_BASIC
+ORT_ENABLE_EXTENDED
+ORT_ENABLE_ALL
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT | maps to c type float
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8 | maps to c type uint8_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8 | maps to c type int8_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16 | maps to c type uint16_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16 | maps to c type int16_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32 | maps to c type int32_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64 | maps to c type int64_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING | maps to c++ type std::string
+ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16
+ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE | maps to c type double
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32 | maps to c type uint32_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT64 | maps to c type uint64_t
+ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64 | complex with float32 real and imaginary components
+ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128 | complex with float64 real and imaginary components
+ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16 | Non-IEEE floating-point format based on IEEE754 single-precision
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FN | Non-IEEE floating-point format based on IEEE754 single-precision
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FNUZ | Non-IEEE floating-point format based on IEEE754 single-precision
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2 | Non-IEEE floating-point format based on IEEE754 single-precision
+ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2FNUZ | Non-IEEE floating-point format based on IEEE754 single-precision
+ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4 | maps to a pair of packed uint4 values (size == 1 byte)
+ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4 | maps to a pair of packed int4 values (size == 1 byte)
+str$>nro | adr -- adr' nro
+str%>nro | adr -- adr' nro
+str>nro | adr -- adr' nro ;1234 $12f %101 -12
+?sint | adr -- adr' nro
+?numero | str -- str' nro flag ; flag=1 si el numero termina en espacio o fin
+getnro | adr -- adr' nro
+str>fnro | adr -- adr fnro
+str>fix | adr -- adr' fix ; punto fijo 16.16 ( -43.04 ==> $ffffffffffd4f5c3 )
+str>anro | adr -- adr anro
+getfenro | adr -- adr fnro
+isHex | adr -- 3/0
+isBin | adr -- 2/0
+isNro | adr - t/0 ; 1-dec 2-bin 3-hex 4-fix
+scanp | adr "str" -- adr'/0
+scanstr | adr 'str -- adr'
+scannro | adr 'nro -- adr'
+scanc | c adr -- adr'/0
+scann | adr "str" -- adr'
+seed8
+rand8 | -- r8
+seed
+rerand | s1 s2 --
+rand | -- rand
+randmax | max -- rand ; 0..max
+randminmax | min max -- rand ; min..max
+rnd | -- rand
+rndmax | max -- rand ; 0..max
+rndminmax | min max -- rand ; min..max
+rnd128 | -- n
+loopMix128 | -- rand
+SDL_Init
+SDL_GetCurrentDisplayMode
+SDL_Quit
+SDL_GetNumVideoDisplays
+SDL_CreateWindow
+SDL_SetWindowFullscreen
+SDL_RenderSetLogicalSize
+SDL_RaiseWindow
+SDL_GetWindowSize
+SDL_SetWindowSize
+SDL_GetWindowSurface
+SDL_ShowCursor
+SDL_UpdateWindowSurface
+SDL_DestroyWindow
+SDL_CreateRenderer
+SDL_CreateTexture
+SDL_QueryTexture
+SDL_SetTextureColorMod
+SDL_SetTextureAlphaMod
+SDL_DestroyTexture
+SDL_DestroyRenderer
+SDL_UpdateTexture
+SDL_RenderClear
+SDL_RenderCopy
+SDL_RenderCopyEx | sys6f1 drop ;
+SDL_RenderPresent
+SDL_CreateTextureFromSurface
+SDL_CreateRGBSurfaceWithFormatFrom
+SDL_CreateRGBSurfaceWithFormat
+SDL_SetRenderDrawColor
+SDL_GetRenderDrawColor
+SDL_CreateRGBSurface
+SDL_LockSurface
+SDL_UnlockSurface
+SDL_BlitSurface
+SDL_SetSurfaceBlendMode
+SDL_SetSurfaceAlphaMod
+SDL_FillRect
+SDL_FreeSurface
+SDL_LockTexture
+SDL_UnlockTexture
+SDL_SetRenderDrawBlendMode
+SDL_SetTextureBlendMode
+SDL_ConvertSurfaceFormat
+SDL_UpdateYUVTexture
+SDL_RenderDrawPoint
+SDL_RenderDrawPoints
+SDL_RenderDrawLine
+SDL_RenderDrawRect
+SDL_RenderFillRect
+SDL_RenderGeometry
+SDL_RenderReadPixels
+SDL_RenderSetClipRect
+SDL_SetTextureScaleMode
+SDL_SetRenderTarget
+SDL_Delay
+SDL_PollEvent | &evt -- ok
+SDL_GetTicks | -- msec
+SDL_RWFromFile
+SDL_RWclose
+SDL_GL_SetAttribute
+SDL_GL_CreateContext
+SDL_GL_DeleteContext
+SDL_GL_SetSwapInterval
+SDL_GL_SwapWindow
+SDL_GL_LoadLibrary
+SDL_GL_GetProcAddress
+SDL_GL_MakeCurrent
+SDL_SetHint
+SDL_GetError
+SDL_OpenAudioDevice
+SDL_QueueAudio
+SDL_GetQueuedAudioSize
+SDL_PauseAudioDevice
+SDL_CloseAudioDevice
+SDL_GetClipboardText
+SDL_HasClipboardText
+SDL_SetClipboardText
+SDL_free
+SDL_windows
+SDLrenderer
+sw
+sh
+SDLinit | "titulo" w h --
+SDLmini | "titulo" w h --
+SDLinitScr | "titulo" display w h --
+sdlinitR | "titulo" w h -- | resize windows
+SDLdfullsw | display -- sw sh
+SDLfullw | "titulo" display --
+SDLfull | --
+SDLframebuffer | w h -- texture
+SDLblend
+SDLquit
+SDLevent
+SDLkey
+SDLchar
+SDLx
+SDLy
+SDLb
+SDLw
+SDLeventR | 'vec --
+SDLupdate
+SDLClick | 'event --
+.exit
+SDLshow | 'word --
+exit
+SDLredraw | --
+sdlbreak | f12 contiue ESC end
+SDLTexwh | tex -- w h
+%w
+%h
+color | col --
+colorA | col --
+cls | color --
+point | x y --
+getpixel | x y -- v
+line | x y x y --
+lineH | x y x --
+lineV | x y y --
+frect | x y w h --
+rect | x y w h --
+fellipse | rx ry x y --
+ellipse | rx ry x y --
+fround | r x y w h --
+round | r x y w h --
+fcircle | r x y --
+circle | r x y --
+polyop | x y --
+polyline | x y --
+triangle | x y x y x y --
+image | x y img --
+images | x y w h img --
+imageb | box img --
+imagebb | box box img --
+tsload | w h filename -- ts
+tscolor | rrggbb 'ts --
+tsalpha | alpha 'ts --
+tsdraw | n 'ts x y --
+tsdraws | n 'ts x y w h --
+tsbox | 'boxsrc n 'ts --
+tsfree | ts --
+sprite | x y img --
+spriteZ | x y zoom img --
+spriteR | x y ang img --
+spriteRZ | x y ang zoom img --
+ssload | w h "file" -- ssprite
+sscnt | ssprite -- ssprite nframes ; olny work after ssload (when change here not work anymore)
+sstint | color --- ; with alpha!! AARRGGBB
+ssnotint
+sspritewh | adr -- h w
+ssprite | x y n ssprite --
+sspriter | x y ang n ssprite --
+sspritez | x y zoom n ssprite --
+sspriterz | x y ang zoom n ssprite --
+createSurf | w h -- surface
+Surf>pix | surface -- surf pixels
+Surf>wha
+Surf>wh | surface -- surf w h
+Surf>pixpi | surface -- 'pixel pitch
+texIni | w h --
+texEnd | -- texture
+texEndAlpha | -- texture
+Tex2Surface | tex -- tex surface
+Tex2Static | tex -- newtexture
+GL_FALSE
+GL_TRUE
+GL_NONE
+GL_MAJOR_VERSION
+GL_MINOR_VERSION
+GL_DEPTH_BUFFER_BIT
+GL_STENCIL_BUFFER_BIT
+GL_COLOR_BUFFER_BIT
+GL_POINTS
+GL_LINES
+GL_LINE_LOOP
+GL_LINE_STRIP
+GL_TRIANGLES
+GL_TRIANGLE_STRIP
+GL_TRIANGLE_FAN
+GL_CULL_FACE
+GL_DEPTH_TEST
+GL_STENCIL_TEST
+GL_BLEND
+GL_POLYGON_OFFSET_FILL
+GL_NEVER
+GL_LESS
+GL_EQUAL
+GL_LEQUAL
+GL_GREATER
+GL_NOTEQUAL
+GL_GEQUAL
+GL_ALWAYS
+GL_SRC_ALPHA
+GL_ONE_MINUS_SRC_ALPHA
+GL_ONE
+GL_ZERO
+GL_UNSIGNED_BYTE
+GL_UNSIGNED_SHORT
+GL_UNSIGNED_INT
+GL_INT
+GL_FLOAT
+GL_DEPTH_COMPONENT
+GL_DEPTH_COMPONENT24
+GL_RED
+GL_RGB
+GL_RGBA
+GL_BGRA_EXT
+GL_TEXTURE0
+GL_TEXTURE1
+GL_TEXTURE2
+GL_TEXTURE3
+GL_TEXTURE4
+GL_TEXTURE5
+GL_TEXTURE6
+GL_TEXTURE7
+GL_TEXTURE8
+GL_TEXTURE_2D
+GL_TEXTURE_MAG_FILTER
+GL_TEXTURE_MIN_FILTER
+GL_TEXTURE_WRAP_S
+GL_TEXTURE_WRAP_T
+GL_TEXTURE_BORDER_COLOR
+GL_TEXTURE_COMPARE_MODE
+GL_TEXTURE_COMPARE_FUNC
+GL_COMPARE_REF_TO_TEXTURE
+GL_TEXTURE
+GL_TEXTURE_2D_ARRAY
+GL_TEXTURE_3D
+GL_NEAREST
+GL_LINEAR
+GL_CLAMP_TO_EDGE
+GL_CLAMP_TO_BORDER
+GL_REPEAT
+GL_ARRAY_BUFFER
+GL_ELEMENT_ARRAY_BUFFER
+GL_UNIFORM_BUFFER
+GL_UNIFORM_BUFFER_BINDING
+GL_STATIC_DRAW
+GL_DYNAMIC_DRAW
+GL_STREAM_DRAW
+GL_MAP_READ_BIT
+GL_MAP_WRITE_BIT
+GL_MAP_PERSISTENT_BIT
+GL_MAP_COHERENT_BIT
+GL_DYNAMIC_STORAGE_BIT
+GL_MAP_INVALIDATE_RANGE_BIT
+GL_MAP_UNSYNCHRONIZED_BIT
+GL_FRAGMENT_SHADER
+GL_VERTEX_SHADER
+GL_GEOMETRY_SHADER
+GL_COMPILE_STATUS
+GL_LINK_STATUS
+GL_INFO_LOG_LENGTH
+GL_FRAMEBUFFER
+GL_DEPTH_ATTACHMENT
+GL_TIME_ELAPSED
+GL_QUERY_RESULT
+GL_QUERY_RESULT_AVAILABLE
+GL_SYNC_GPU_COMMANDS_COMPLETE
+GL_SYNC_FLUSH_COMMANDS_BIT
+GL_ALREADY_SIGNALED
+GL_CONDITION_SATISFIED
+GL_UNPACK_ALIGNMENT
+GL_PACK_ALIGNMENT
+GL_DYNAMIC_COPY
+GL_DYNAMIC_READ
+GL_READ_ONLY
+GL_WRITE_ONLY
+GL_WRITE_WRITE
+GL_COLOR_ATTACHMENT0
+GL_COLOR_ATTACHMENT1
+GL_COLOR_ATTACHMENT2
+GL_FRAMEBUFFER_COMPLETE
+GL_RGBA32F
+GL_RGBA8
+GL_RGB16F
+GL_R32F
+GL_R8
+GL_DEPTH_COMPONENT32F
+GL_TEXTURE_CUBE_MAP
+GL_TEXTURE_CUBE_MAP_POSITIVE_X
+GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+GL_READ_FRAMEBUFFER
+GL_DRAW_FRAMEBUFFER
+GL_BACK
+GL_FRONT
+GL_CCW
+GL_CW
+GL_NO_ERROR
+GL_TEXTURE_1D
+GL_RGBA16F
+GL_RGB10_A2
+GL_R16UI
+GL_RED_INTEGER
+GL_UNSIGNED_INT_10_10_10_2
+GL_DEBUG_OUTPUT
+GL_DEBUG_OUTPUT_SYNCHRONOUS
+GL_DEBUG_SEVERITY_NOTIFICATION
+GL_DONT_CARE
+GL_VERTEX_ATTRIB_ARRAY_ENABLED
+GL_VERTEX_ATTRIB_ARRAY_SIZE
+GL_VERTEX_ATTRIB_ARRAY_TYPE
+GL_VERTEX_ATTRIB_ARRAY_STRIDE
+GL_VERTEX_ATTRIB_ARRAY_POINTER
+GL_SHADER_STORAGE_BUFFER
+GL_DEPTH24_STENCIL8
+GL_TEXTURE_MAX_ANISOTROPY_EXT
+GL_TEXTURE_MAX_LEVEL
+GL_TEXTURE_MAX_LOD
+GL_TEXTURE_MIN_LOD
+GL_TEXTURE_WRAP_R
+GL_NEAREST_MIPMAP_LINEAR
+GL_NEAREST_MIPMAP_NEAREST
+GL_RENDERBUFFER
+GL_DEPTH_STENCIL_ATTACHMENT
+GL_DEPTH
+GL_LINEAR_MIPMAP_LINEAR
+GL_FALSE
+GL_TRUE
+GL_NONE
+GL_MAJOR_VERSION
+GL_MINOR_VERSION
+GL_DRAW_BUFFER
+GL_READ_BUFFER
+GL_DEPTH_BUFFER_BIT
+GL_STENCIL_BUFFER_BIT
+GL_COLOR_BUFFER_BIT
+GL_POINTS
+GL_LINES
+GL_LINE_LOOP
+GL_LINE_STRIP
+GL_TRIANGLES
+GL_TRIANGLE_STRIP
+GL_TRIANGLE_FAN
+GL_CULL_FACE
+GL_DEPTH_TEST
+GL_STENCIL_TEST
+GL_BLEND
+GL_POLYGON_OFFSET_FILL
+GL_NEVER
+GL_LESS
+GL_EQUAL
+GL_LEQUAL
+GL_GREATER
+GL_NOTEQUAL
+GL_GEQUAL
+GL_ALWAYS
+GL_SRC_ALPHA
+GL_ONE_MINUS_SRC_ALPHA
+GL_ONE
+GL_ZERO
+GL_UNSIGNED_BYTE
+GL_UNSIGNED_SHORT
+GL_UNSIGNED_INT
+GL_INT
+GL_FLOAT
+GL_DEPTH_COMPONENT
+GL_DEPTH_COMPONENT24
+GL_RED
+GL_RGB
+GL_RGBA
+GL_BGRA_EXT
+GL_TEXTURE0
+GL_TEXTURE1
+GL_TEXTURE2
+GL_TEXTURE3
+GL_TEXTURE4
+GL_TEXTURE5
+GL_TEXTURE6
+GL_TEXTURE7
+GL_TEXTURE8
+GL_TEXTURE_2D
+GL_TEXTURE_MAG_FILTER
+GL_TEXTURE_MIN_FILTER
+GL_TEXTURE_WRAP_S
+GL_TEXTURE_WRAP_T
+GL_TEXTURE_BORDER_COLOR
+GL_TEXTURE_COMPARE_MODE
+GL_TEXTURE_COMPARE_FUNC
+GL_COMPARE_REF_TO_TEXTURE
+GL_TEXTURE
+GL_TEXTURE_2D_ARRAY
+GL_TEXTURE_3D
+GL_NEAREST
+GL_LINEAR
+GL_CLAMP_TO_EDGE
+GL_CLAMP_TO_BORDER
+GL_REPEAT
+GL_ARRAY_BUFFER
+GL_ELEMENT_ARRAY_BUFFER
+GL_UNIFORM_BUFFER
+GL_UNIFORM_BUFFER_BINDING
+GL_STATIC_DRAW
+GL_DYNAMIC_DRAW
+GL_STREAM_DRAW
+GL_MAP_READ_BIT
+GL_MAP_WRITE_BIT
+GL_MAP_PERSISTENT_BIT
+GL_MAP_COHERENT_BIT
+GL_DYNAMIC_STORAGE_BIT
+GL_MAP_INVALIDATE_RANGE_BIT
+GL_MAP_UNSYNCHRONIZED_BIT
+GL_FRAGMENT_SHADER
+GL_VERTEX_SHADER
+GL_GEOMETRY_SHADER
+GL_COMPILE_STATUS
+GL_LINK_STATUS
+GL_INFO_LOG_LENGTH
+GL_FRAMEBUFFER
+GL_DEPTH_ATTACHMENT
+GL_TIME_ELAPSED
+GL_QUERY_RESULT
+GL_QUERY_RESULT_AVAILABLE
+GL_SYNC_GPU_COMMANDS_COMPLETE
+GL_SYNC_FLUSH_COMMANDS_BIT
+GL_ALREADY_SIGNALED
+GL_CONDITION_SATISFIED
+GL_UNPACK_ALIGNMENT
+GL_PACK_ALIGNMENT
+GL_DYNAMIC_COPY
+GL_DYNAMIC_READ
+GL_READ_ONLY
+GL_WRITE_ONLY
+GL_WRITE_WRITE
+GL_COLOR_ATTACHMENT0
+GL_COLOR_ATTACHMENT1
+GL_COLOR_ATTACHMENT2
+GL_FRAMEBUFFER_COMPLETE
+GL_RGBA32F
+GL_RGBA8
+GL_RGB16F
+GL_R8
+GL_R32F
+GL_DEPTH_COMPONENT32F
+GL_TEXTURE_CUBE_MAP
+GL_TEXTURE_CUBE_MAP_POSITIVE_X
+GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+GL_READ_FRAMEBUFFER
+GL_DRAW_FRAMEBUFFER
+GL_BACK
+GL_FRONT
+GL_CCW
+GL_CW
+GL_NO_ERROR
+GL_TEXTURE_1D
+GL_RGBA16F
+GL_RGB10_A2
+GL_R16UI
+GL_RED_INTEGER
+GL_UNSIGNED_INT_10_10_10_2
+GL_DEBUG_OUTPUT
+GL_DEBUG_OUTPUT_SYNCHRONOUS
+GL_DEBUG_SEVERITY_NOTIFICATION
+GL_DONT_CARE
+GL_VERTEX_ATTRIB_ARRAY_ENABLED
+GL_VERTEX_ATTRIB_ARRAY_SIZE
+GL_VERTEX_ATTRIB_ARRAY_TYPE
+GL_VERTEX_ATTRIB_ARRAY_STRIDE
+GL_VERTEX_ATTRIB_ARRAY_POINTER
+GL_SHADER_STORAGE_BUFFER
+GL_DEPTH24_STENCIL8
+GL_TEXTURE_MAX_ANISOTROPY_EXT
+GL_TEXTURE_MAX_LEVEL
+GL_TEXTURE_MAX_LOD
+GL_TEXTURE_MIN_LOD
+GL_TEXTURE_WRAP_R
+GL_NEAREST_MIPMAP_LINEAR
+GL_NEAREST_MIPMAP_NEAREST
+GL_RENDERBUFFER
+GL_DEPTH_STENCIL_ATTACHMENT
+GL_DEPTH
+GL_LINEAR_MIPMAP_LINEAR
+uistate
+keymd
+wix
+wiy
+wiw
+wih
+immBox | x y w h --
+immFull | --
+immIni
+immMouse | -- state
+uiRefocus
+uiFocus>> | cambia id y luego wid
+uiFocus<<
+tabfocus
+immZone | -- ; Interaction is cx,cy,cw,th
+uiEx?
+uiEx!
+uiOvr | 'v --
+uiDwn | 'v --
+uiSel | 'v --
+uiUp | 'v --
+uiClk | 'v --
+uiFocusIn
+uiFocus
+glClearBufferfv
+glCreateProgram
+glCreateShader
+glShaderSource
+glCompileShader
+glGetShaderiv
+glAttachShader
+glGetProgramiv
+glGetAttribLocation
+glClearColor
+glGenBuffers
+glBindBuffer
+glBindRenderbuffer
+glBufferData
+glBufferSubData
+glGetTexImage
+glMapBuffer
+glUnmapBuffer
+glGetUniformBlockIndex
+glUniformBlockBinding
+glBindBufferBase
+glClear
+glUseProgram
+glValidateProgram
+glEnableVertexAttribArray
+glVertexAttribPointer
+glVertexAttribIPointer
+glDrawElements
+glDrawElementsInstanced
+glDrawArrays
+glDrawArraysInstanced
+glDisableVertexAttribArray
+glDeleteProgram
+glIsProgram
+glIsShader
+glGenVertexArrays
+glBindVertexArray
+glGetShaderInfoLog
+glGetProgramInfoLog
+glBindFragDataLocation
+glLinkProgram
+glGenTextures
+glActiveTexture
+glBindTexture
+glTexImage2D
+glUniform1i
+glUniform1ui
+glTexParameteri
+glTexSubImage2D
+glEnable
+glDisable
+glBlendFunc
+glDepthFunc
+glDetachShader
+glDeleteShader
+glDeleteTextures
+glDeleteBuffers
+glDeleteVertexArrays
+glGetError
+glGetString
+glViewport
+glScissor
+glVertexPointer
+glBegin
+glEnd
+glColor4ubv
+glVertex3fv
+glTexCoord2fv
+glVertex2fv
+glGetUniformLocation
+glUniform1iv
+glUniform2iv
+glUniform3iv
+glUniform4iv
+glUniform1fv
+glUniform2fv
+glUniform3fv
+glUniform4fv
+glVertexAttribDivisor
+glUniformMatrix4fv
+glUniformMatrix3fv
+glVertexAttrib1fv
+glVertexAttrib2fv
+glVertexAttrib3fv
+glVertexAttrib4fv
+glBindAttribLocation
+glGenFramebuffers
+glTexParameterfv
+glBindFramebuffer
+glFramebufferTexture2D
+glDrawBuffer
+glReadBuffer
+glPixelStorei
+glRenderbufferStorage
+glFramebufferRenderbuffer
+glGenRenderbuffers
+glGenQueries
+glDeleteQueries
+glBeginQuery
+glEndQuery
+glGetQueryObjectuiv
+glFenceSync
+glClientWaitSync
+glDeleteSync
+glBufferStorage
+glMapBufferRange
+glClearNamedFramebufferfv
+glCreateFramebuffers
+glCreateTextures
+glTextureStorage2D
+glTextureParameteri
+glNamedFramebufferTexture
+glCheckNamedFramebufferStatus
+glNamedFramebufferDrawBuffers
+glCreateVertexArrays
+glCreateBuffers
+glNamedBufferStorage
+glVertexArrayVertexBuffer
+glVertexArrayElementBuffer
+glEnableVertexArrayAttrib
+glVertexArrayAttribFormat
+glVertexArrayAttribBinding
+glBindTextures
+glProgramUniform1i
+glBindBufferRange
+glVertexAttribFormat
+glVertexAttribBinding
+glVertexBindingDivisor
+glColorMask
+glDepthMask
+glCullFace
+glFrontFace
+glBlitFramebuffer
+glDrawBuffers
+glCheckFramebufferStatus
+glDeleteRenderbuffers
+glClearDepth
+glDebugMessageCallback
+glDebugMessageControl
+glGetBufferSubData
+glUniform1f
+glUniform2f
+glUniform3f
+glUniform4f
+glTexImage1D
+glObjectLabel
+glDeleteFramebuffers
+glGenerateMipmap
+glClipControl
+InitGLAPI
+SDLinitGL | "title" w h --
+SDLinitSGL | "title" w h --
+SDLGLcls
+SDLGLupdate
+glInfo
+vcolorgl
+vbasegl
+GLpaper | $ffffff --
+GlDepth | deeph --
+GLcls
+GLIni | w h --
+GLIniFull | --
+GLend
+GLUpdate
+IMG_Load
+IMG_Init
+IMG_LoadTexture | rend file -- texture
+IMG_LoadSizedSVG_RW | src w h -- surface
+IMG_LoadAnimation | file -- anim
+IMG_FreeAnimation | anim --
+IMG_SavePNG | (SDL_Surface *surface, const char *file);
+IMG_SavePNG_RW | (SDL_Surface *surface, SDL_RWops *dst, int freedst);
+IMG_SaveJPG | (SDL_Surface *surface, const char *file, int quality);
+IMG_SaveJPG_RW | (SDL_Surface *surface, SDL_RWops *dst, int freedst, int quality);
+loadimg | "" -- texture
+unloadimg | adr --
+loadsvg | w h "" -- tex
+Mix_Init
+Mix_Quit
+Mix_LoadWAV
+Mix_LoadMUS
+Mix_PlayChannelTimed
+Mix_HaltChannel
+Mix_FadeOutChannel
+Mix_PlayMusic
+Mix_HaltMusic
+Mix_FadeOutMusic
+Mix_VolumeMusic
+Mix_PlayingMusic
+Mix_Playing
+Mix_FreeChunk
+Mix_FreeMusic
+Mix_OpenAudio
+Mix_CloseAudio
+Mix_MasterVolume
+SNDInit
+SNDplay | adr --
+SNDplayn | channel adr --
+SNDQuit
+SDLNet_Init
+SDLNet_Quit
+SDLNet_ResolveHost
+SDLNet_ResolveIP
+SDLNet_GetLocalAddresses
+SDLNet_TCP_OpenServer
+SDLNet_TCP_OpenClient
+SDLNet_TCP_Open
+SDLNet_TCP_Accept
+SDLNet_TCP_GetPeerAddress
+SDLNet_TCP_Send
+SDLNet_TCP_Recv
+SDLNet_TCP_Close
+SDLNet_AllocPacket
+SDLNet_ResizePacket
+SDLNet_FreePacket
+SDLNet_AllocPacketV
+SDLNet_FreePacketV
+SDLNet_UDP_Open
+SDLNet_UDP_SetPacketLoss
+SDLNet_UDP_Bind
+SDLNet_UDP_Unbind
+SDLNet_UDP_GetPeerAddress
+SDLNet_UDP_SendV
+SDLNet_UDP_Send
+SDLNet_UDP_RecvV
+SDLNet_UDP_Recv
+SDLNet_UDP_Close
+SDLNet_AllocSocketSet
+SDLNet_AddSocket
+SDLNet_DelSocket
+SDLNet_CheckSockets
+SDLNet_FreeSocketSet
+SDLNet_GetError
+fngon | ang n r x y --
+linegr! | grosor --
+linegr | -- grosor
+gop | x y --
+gline | x y --
+ngon | ang n r x y --
+TTF_Init
+TTF_OpenFont | TTF_Font * ( char *file, int ptsize);
+TTF_SetFontStyle | void ( *font, int style);
+TTF_SetFontOutline | void ( *font, int outline);
+TTF_SetFontLineSkip | (TTF_Font *font, int lineskip);
+TTF_SetFontWrappedAlign | (TTF_Font *font, int align);
+TTF_SetFontSize | int ( *font, int ptsize);
+TTF_SetFontSDF | int ( *font, SDL_bool on_off);
+TTF_SizeText | int  ( *font,  char *, int *w, int *h);
+TTF_SizeUTF8 | int  ( *font,  char *, int *w, int *h);
+TTF_MeasureUTF8 | int (*font, char *,measure_width,*extent,*count);
+TTF_RenderText_Solid | surface ( *font, char *, SDL_Color fg);
+TTF_RenderUTF8_Solid | surface ( *font, char *, SDL_Color fg);
+TTF_RenderText_Shaded | surface (*font,char *, SDL_Color fg, SDL_Color bg)
+TTF_RenderUTF8_Shaded | surface (*font,char *, SDL_Color fg, SDL_Color bg)
+TTF_RenderText_Blended | surface ( *font, char *, SDL_Color fg);
+TTF_RenderUTF8_Blended | surface ( *font, char *, SDL_Color fg);
+TTF_RenderUTF8_Blended_Wrapped | font str color width -- surface
+TTF_RenderUNICODE_Blended
+TTF_CloseFont | void ( *font);
+TTF_Quit | void (void);
+<back>
+>back<
+<tab>
+>tab<
+<ret>
+>ret<
+<esc>
+>esc<
+<spc>
+>spc<
+<del>
+>del<
+<home>
+>home<
+<end>
+>end<
+<pgup>
+>pgup<
+<pgdn>
+>pgdn<
+<ins>
+>ins<
+<ri>
+>ri<
+<le>
+>le<
+<dn>
+>dn<
+<up>
+>up<
+<F1>
+>F1<
+<F2>
+>F2<
+<F3>
+>F3<
+<F4>
+>F4<
+<F5>
+>F5<
+<F6>
+>F6<
+<F7>
+>F7<
+<F8>
+>F8<
+<F9>
+>F9<
+<F10>
+>F10<
+<F11>
+>F11<
+<F12>
+>F12<
+<ctrl>
+>ctrl<
+<ctr2>
+>ctr2<
+<shift>
+>shift<
+<shif2>
+>shif2<
+<alt>
+>alt<
+<alt2>
+>alt2<
+<A>
+<B>
+<C>
+<D>
+<E>
+<F>
+<G>
+<H>
+<I>
+<J>
+<K>
+<L>
+<M>
+<N>
+<O>
+<P>
+<Q>
+<R>
+<S>
+<T>
+<U>
+<V>
+<W>
+<X>
+<Y>
+<Z>
+>A<
+>B<
+>C<
+>D<
+>E<
+>F<
+>G<
+>H<
+>I<
+>J<
+>K<
+>L<
+>M<
+>N<
+>O<
+>P<
+>Q<
+>R<
+>S<
+>T<
+>U<
+>V<
+>W<
+>X<
+>Y<
+>Z<
+<1>
+<2>
+<3>
+<4>
+<5>
+<6>
+<7>
+<8>
+<9>
+<0>
+>1<
+>2<
+>3<
+>4<
+>5<
+>6<
+>7<
+>8<
+>9<
+>0<
+<->
+>-<
+<+>
+>+<
+strcpyl | src des -- ndes
+strcpy | src des --
+strcat | src des --
+strcpylnl | src des -- ndes
+strcpyln
+copynom | sc s1 -- ; copy until space
+copystr | sc s1 -- ; copy until "
+strpath | src dst -- ; copy path only (need /)
+toupp | c -- C
+tolow | C -- c
+count | s1 -- s1 cnt ; version 3 - 8 bytes
+count | s1 -- s1 cnt
+utf8c? | c -- flag ; 0=is cont !
+utf8len | c -- n
+utf8skip | adr -- adr'
+utf8next | adr -- adr'
+utf8lead | adr -- adr'
+utf8prev | adr -- adr'
+utf8@+ | adr -- adr' cp
+utf8!+ | cp adr -- adr'
+utf8count | str -- str count
+utf8ncpy | str 'dst cnt  -- 'dst
+utf8bytes | str cnt  -- str bytes
+= | s1 s2 -- 1/0
+cmpstr | a b -- n
+=s | s1 s2 -- 0/1
+=w | s1 s2 -- 1/0
+=pre | adr "str" -- adr 1/0
+=pos | s1 ".pos" -- s1 1/0
+=lpos | lstr ".pos" -- str 1/0 ; lstr is the last adr in string
+findchar | adr char -- adr'/0
+findstr | adr "texto" -- adr'/0
+findstri | adr "texto" -- adr'/0
+rfindstri | end "texto" adr -- adr'/0 ; reverse
+.d | val -- str
+.b | bin -- str
+.h | hex -- str
+.o | oct -- str
+.f | fix -- str
+.f2 | fix -- str
+.f1 | fix -- str
+.r. | b nro -- b ; right spaces
+.fd | fix -- str
+trim | adr -- adr'
+trimc | car adr -- adr'
+trimcar | adr -- adr' c
+trimstr | adr -- adr'
+>>cr | adr -- adr'
+>>0 | adr -- adr' ; skip 0
+l0count | list -- cnt
+n>>0 | adr n -- adr'
+only10 | adr -- 'adr ; remove 13..reeplace with 10
+only13 | adr -- 'adr ; remove 10..reeplace with 13
+>>sp | adr -- adr' ; next space
+>>str | adr -- adr' ; next single quote
+TfLiteModelCreateFromFile
+TfLiteInterpreterOptionsCreate
+TfLiteInterpreterCreate
+TfLiteInterpreterAllocateTensors
+TfLiteInterpreterGetInputTensor
+TfLiteInterpreterGetOutputTensor
+TfLiteTensorDim
+TfLiteTensorData
+TfLiteInterpreterInvoke
+TfLiteInterpreterDelete
+TfLiteInterpreterOptionsDelete
+TfLiteModelDelete
+TfLiteXNNPackDelegateCreate
+TfLiteInterpreterOptionsAddDelegate
+TfLiteTensorCopyFromBuffer
+TfLiteTensorCopyToBuffer
+TfLiteTensorByteSize
+<<trace | --
+<<traceh | --
+<<memdump | adr cnt --
+<<memdumpc | adr cnt --
+clearlog
+filelog | .. str --
+<<memmap | inimem --
+vset! | 'set --
+vget! | 'get --
+vsize! | w h --
+vop | x y  --
+vline | x y --
+vfill | c x y --
+vrect | x1 y1 x2 y2 --
+vfrect | x1 y1 x2 y2 --
+vellipse | rx ry x y --
+vellipseb | rx ry x y --
+v2= | 'v1 'v2 -- ; v1=v2
+v2+ | 'v1 'v2 -- ; v1=v1+v2
+v2- | 'v1 'v2 -- ; v1=v1-v2
+v2+* | m 'v1 'v2 -- ; v1=v1+v2*s
+v2-* | m 'v1 'v2 -- ; v1=v1-v2*s
+v2* | 'v1 n -- ; v1=v1*n
+v2/ | 'v1 n -- ; v1=v1/n
+v2len | 'v -- m
+v2nor | 'v --
+v2lim | 'v lim --
+v2rot | 'v bang --
+v2dot | 'v1 'v2 -- dot
+v2perp | 'v1 'v2 --  ; v2 = perpendicular v1
+v3len | v1 -- l
+v3nor | v1 --
+v3ddot | v1 v2 -- r ; r=v1.v2
+v3vec | v1 v2 -- ; v1=v1 x v2
+v3- | v1 v2 -- ; v1=v1-v2
+v3+ | v1 v2 -- ; v1=v1+v2
+v3+* | v1 v2 s -- ; v1=v1+v2*s
+v3* | v1 s -- ; v1=v1*s ; cross
+v3= | v1 v2 -- ; v1=v2
+normInt2Fix | x y z -- xf yf zf
+normFix | x y z -- x y z
+v3rotX | 'vec 'src angle --
+v3rotY | 'vec 'src angle --
+v3rotZ | 'vec 'src angle --
+v3rotAxis | 'dst 'src 'axis angle --
+q4= | v1 v2 -- ; v1=v2
+q4W | q dest --
+q4dot | q1 q2 -- dot
+q4inv | q1 q2d --
+q4conj | q1 q2d --
+q4len | q -- len
+q4nor | q --
+q4lenf | q -- 1/len
+q4norf | q --
+q4integrate | q omega dt --
+WEBCAM_FMT_RGB24
+WEBCAM_FMT_RGB32
+WEBCAM_FMT_YUYV
+WEBCAM_FMT_YUV420
+WEBCAM_FMT_MJPEG
+WEBCAM_PARAM_BRIGHTNESS
+WEBCAM_PARAM_CONTRAST
+WEBCAM_PARAM_SATURATION
+WEBCAM_PARAM_EXPOSURE
+WEBCAM_PARAM_FOCUS
+WEBCAM_PARAM_ZOOM
+WEBCAM_PARAM_GAIN
+WEBCAM_PARAM_SHARPNESS
+webcam_list_devices
+webcam_free_list
+webcam_query_capabilities
+webcam_free_capabilities
+webcam_find_best_format
+webcam_open
+webcam_capture
+webcam_release_frame
+webcam_close
+webcam_get_actual_width
+webcam_get_actual_height
+webcam_get_format
+webcam_get_parameter
+webcam_set_parameter
+webcam_set_auto
+webcam_set_conversion_size
+webcam_get_converted_frame
+p.ini | cnt list --
+p.clear | list --
+p.cnt | list -- cnt
+p.adr | nro list -- adr
+p.nro | adr list -- nro
+p!+ | 'act list -- adr
+p! | list -- adr
+p.draw | list --
+p.drawo | list --
+p.del | adr list --
+p.mapv | 'vector list --
+p.mapd | 'vector list --
+p.map2 | 'vec 'list ---
+p.sort | col 'list --
+p.isort | col 'list --
+p8.ini | cnt list --
+p8.clear | list --
+p8.cnt | list -- cnt
+p8.adr | nro list -- adr
+p8.nro | adr list -- nro
+p8!+ | 'act list -- adr
+p8! | list -- adr
+p8.draw | list --
+p8.drawo | list --
+p8.del | adr list --
+p8.last | ;ist -- adr
+p8.cpy | adr 'list --
+p8.mapv | 'vector list --
+p8.mapd | 'vector list --
+p8.map2 | 'vec 'list ---
+p8.sort | col 'list --
+p8.isort | col 'list --
+wp
+hp
+bmfont | w h "" --
+bcolor | rrggbb --
+bfbox | --
+bbox | --
+bbox2 | --
+bfillline | x y w h --
+bsrcsize | x y w h -- x y w h
+bfillemit | "" -- ""
+bfcemit | cnt --
+bemit | ascii --
+bprint
+bemits | "" --
+bprintd
+bemitsd | "" --
+bprint2
+bemits2 | "" --
+bprintz | .. "" size --
+bemitsz | "" size --
+bat | x y --
+ccx
+ccy
+gotoxy | x y --
+gotox | x --
+bcr
+bcr2
+bcrz | size --
+bsp
+bnsp | n --
+bsize | "" -- "" w h
+bpos | -- x y
+brect | "" -- "" x y w h
+bcursor | n --
+bcursori | n --
+bcursor2 | n --
+bcursori2 | n --
+bfont1
+bfont2
+blistdel | 'list 'from --
+blist! | f 'list --
+blist- | f 'list --
+blist@ | 'list -- f/0
+blist? | f 'list -- f/0
+bsprdraw | redefine fro draw sprite in correct order
+inisprite
++sprite | N x y --
+drawmaps | xvp yvp --
+loadmap | filename --
+bmap2xy | x y -- x y
+whbmap | -- w h
+xyinmap@ | x y -- map
+xytrigger | x y -- x y
+,time
+,ti:me
+,date
+,date-
+str_DMA
+str_HMS
+str_HM
+>dianame
+>mesname
+str_fullday | -- 'fullday
+str_hhmmss | -- 'hhmms
+dt2timesql | 'sysdate --
+dt>64 | datetime -- dt64
+,64>dtf | dt64 -- "d/m/y h:m"
+,64>dtd | dt64 -- "d/m/y"
+,64>dtt | dt64 -- "h:m:s"
+64>dtc | dt64 -- "y-m-d h:m:s"
+rowdb
+getnfilename | n "path" -- filename/0
+loadnfile | "" -- filename
+>>line | adr -- adr'/0
+loaddb-i | "filename" --
+prevdb-i | "filename" --
+dbfld | nro -- string
+loaddb | "filename" -- 'db
+getdbrow | id 'db -- 'row
+findbrow | hash 'db -- 'row/0
+cntdbrow | 'db -- cnt
+>>fld | adr -- adr'
+getdbfld | nro 'row -- 'fld ; "|^" limit
+cpydbfld | 'fld 'str --
+cpydbfldn | max 'fld 'str --
+rowdb
+getnfilename | n "path" -- filename/0
+loadnfile | "" -- filename
+>>line | adr -- adr'/0
+loaddb-i | "filename" --
+prevdb-i | "filename" --
+dbfld | nro -- string
+loaddb | "filename" -- 'db
+getdbrow | id 'db -- 'row
+findbrow | hash 'db -- 'row/0
+cntdbrow | 'db -- cnt
+>>fld | adr -- adr'
+getdbfld | nro 'row -- 'fld ; "|^" limit
+cpydbfld | 'fld 'str --
+cpydbfldn | max 'fld 'str --
+colord
+color! | color --
+dlgColor | x y --
+dlgColorIni
+xydlgColor! | x y --
+dlgFileLoad | -- fn/0
+dlgFileSave | -- fn/0
+dlgSetPath | "path" --
+dc.ini | mac 'dc dc.ini
+dc.clear | list --
+dc? | list -- cnt
+dcn@ | n l -- v
+dc@ | list -- val
+dc! | val list --
+dc@- | list -- val
+uiDirs
+uiFiles
+flcpy | 'file 'str --
+flTreePath | n -- str
+FlGetFiles | filename --
+flScanDir | "" --
+flScanFullDir | "" --
+flOpenFullPath | str -- place ; open the folders
+flOpenSearch | "text" -- adr/0 ; busca substring (case-insens) en uiDirs,
+flCloseAll | ; cierra todas las carpetas (limpia $80 en todo uiDirs)
+H2d.ini | maxobj --
+H2d.clear
+H2d.list | -- 'adr cnt
+checkmax | check max in pixels
+h2d+! | nro r x y --
+h2d! | x y zoom nro sizepixel/2 -- x y zoom
+heap! | nodo 'h --
+heap@ | 'h -- nodo
+heapini | max 'h --
+color! | color --
+uiColor | 'var --
+uiColorH | 'var --
+ycursor
+xcursor
+edfilename
+inisel | inicio seleccion
+finsel | fin seleccion
+fuente | fuente editable
+fuente> | cursor
+edlinenum! | 0/1 -- ; muestra u oculta el numero de linea
+edlinenum | -- 0/1
+edcodedraw
+edfill
+edtoolbar
+edfocus
+edfocusro
+clearmark
+addmark
+addsrcmark | src color --
+showmark
+edram
+edwin | x y w h --
+edloadmem | "" --
+edload | "" --
+edsave | --
+immfileload | 'vecload 'file --
+immfilesave | 'vecload 'file --
+fullfilename
+uiFileName | 'var --
+uiDateTime | 'var --
+uiDate | 'var --
+uiTime | 'var --
+cx
+cy
+cw
+ch | cursor
+%cw
+%ch
+uiPading | x y --
+uiBox | x y w h --
+uiFull | --
+uiPush
+uiPop
+uiRest
+uiN | lineas --
+uiS | lineas --
+uiE | cols --
+uiO | cols --
+uiAt | x y --
+uiTo | w h --
+uiGrid | c r -- ; adjust for fit
+uiNext
+uiNextV
+mdrag | drag place <<<
+keymd | key modify <<<
+btnMouse
+uiEx?
+uiOvr | 'v --
+uiDwn | 'v --
+uiSel | 'v -- ; 3 <?
+uiClk | 'v --
+uiUp | 'v --
+uiFocusIn
+uiFocus
+uiStart
+uiExitWidget
+uiSaveLast | x y w h 'vector --
+uiEnd
+uiZone | -- ; Interaction is cx,cy,cw,th
+uiZoneL | nlines -- ; Interaction is cx,cy,cw,th*lines
+uiZoneW | -- ; Interaction is cx,cy,cw,ch
+uiZoneBox | x y w h --
+uiBackBox
+uiPlace | n --
+uiRefocus
+uiFocus>> | cambia id y luego wid
+uiFocus<<
+tabfocus
+uiFill
+uiRect
+uiRFill | round --
+uiRRect | round --
+uiCRect
+uiCFill
+uiTex | texture --
+uiWinBox | -- x y w h
+uiLineGridV
+uiLineGridH
+uiLineGrid
+stDang | danger
+stWarn | warning
+stSucc | success
+stInfo | info
+stLink | link
+stDark | dark
+stLigt | white
+stColor | rgb --
+uilFill
+uilRFill
+uilCFill
+uilTex
+uilRect
+uilRRect | round --
+uilCRect
+uil..
+ui..
+ui--
+ttwrite | "text" --
+ttwritec | "text" --
+ttwriter | "text" --
+uiTlabel
+uiLabel
+uiLabelC
+uiLabelR
+uiText | "" align --
+uiTBtn | 'click "" align --
+uiNBtn | v "" -- ; width from text
+uiBtn | 'click "" --
+uiRBtn | 'click "" --
+uiCBtn | 'click "" --
+uiSliderf | 0.0 1.0 'value --
+uiSlideri | 0 255 'value --
+uiProgressf | 0.0 1.0 'value --
+uiProgressi | 0 255 'value --
+uiVSliderf | 0.0 1.0 'value --
+uiVSlideri | 0 255 'value --
+uiNindx | n -- str
+uiCheck | 'var 'list --
+uiRadio | 'var 'list --
+uiList | 'var cntl 'list --
+uiTree | 'var cntl list --
+uiCombo | 'var 'list --
+uiInputLine | 'buff max --
+verl
+nver | vertices
+facel
+nface | faces (tri or quad)
+norml
+texl
+ntex | texture coord
+paral
+colorl
+ncolor | colores
+]face | nro -- FACE ( p1 p2 p3 color)
+]vert | nro -- vertex
+]norm | nro -- normal
+]uv | nro -- uv
+>>cr | adr -- adr'/0 ; proxima linea/0
+]Ka@
+]Kd@
+]Ks@
+]Ke@
+]Ns@
+]Ni@
+]d@
+]i@
+]Mkd@
+]MNs@
+]Mbp@
+cnt/
+getpath | str -- str
+loadobj | "" -- mem
+xmin
+ymin
+zmin
+xmax
+ymax
+zmax
+objminmax | --
+objmove | x y z --
+objcentra
+objescala | por div --
+objescalax | por div --
+objescalay | por div --
+objescalaz | por div --
+objcube | lado --
+pccolor | rrggbb --
+pcemit | ascii --
+pcfbox | --
+pcbox | --
+pcbox2 | --
+pcfillline | x y w h --
+pcsrcsize | x y w h -- x y w h
+pcfillemit | "" -- ""
+pcprint
+pcemits | "" --
+pcprintd
+pcemitsd | "" --
+pcprint2
+pcemits2 | "" --
+pcprintz | .. "" size --
+pcemitsz | "" size --
+pcat | x y --
+ccx
+ccy
+gotoxy | x y --
+gotox | x --
+pccr
+pcsp
+pcnsp | n --
+pcsize | "" -- "" w h
+pcpos | -- x y
+pcrect | "" -- "" x y w h
+pccursor | n --
+pccursori | n --
+pcfont
+Lineal
+Quad_In
+Quad_Out
+Quad_InOut
+Cub_In
+Cub_Out
+Cub_InOut
+Quar_In
+Quar_Out
+Quar_InOut
+Quin_In
+Quin_Out
+Quin_InOut
+Sin_In
+Sin_Out
+Sin_InOut
+Exp_In
+Exp_Out
+Exp_InOut
+Cir_In | 18
+Cir_Out
+Cir_InOut
+Ela_In
+Ela_Out
+Ela_InOut
+Bac_In
+Bac_Out
+Bac_InOut
+Bou_Out
+Bou_In
+Bou_InOut
+easet
+ease | t nro -- t'
+easem | t nro -- t'
+catmullRom | p0 p1 p2 p3 t -- v
+immlist | cnt --
+filedlgini | --
+immfileload | 'vecload 'file --
+immfilesave | 'vecload 'file --
+fullfilename
+padx
+pady
+curx
+cury
+boxw
+boxh
+immcolorwin | window
+immcolortwin | title window (back)
+immcolortex | text
+immcolorbtn | button
+immgui
+immkey!
+immat
+immat+
+immbox
+immfont!
+immpad!
+immwinxy
+imm>>
+imm<<
+immdn
+immcr
+immln
+plgui
+plxywh
+immcur | x y w h --
+immcur> | -- cur
+imm>cur | cur --
+immlabel | "" --
+immlabelc | "" --
+immlabelr | "" --
+imm. | "" --
+immStrC | "" --
+immListBox | lines --
+immback | color --
+immblabel | "" --
+immicon | nro x y --
+immiconb | nro --
+immwidth | w --
+immbtn | 'click "" --
+immibtn | 'click nro --
+immtbtn | 'click "" --
+immebtn | 'click "" --
+immzone | 'click --
+immSliderf | 0.0 1.0 'value --
+immSlideri | 0 255 'value --
+immCheck | 'val "op1" -- ; v op1  v op2  x op3
+immScrollv | 0 max 'value --
+immRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
+immCombo | 'val "op1|op2|op3" -- ; [op1  v]
+immInputLine | 'buff max --
+immInputInt | 'var --
+immwin! | win --
+immwin$ | win --
+winexit
+immwin | 'win -- 0/1
+immnowin | xini yini w h --
+immwinbottom | ywin --
+immRedraw
+immwins
+immSDL | font --
+shellsort | len lista -- ; lista es valor-dato
+shellsort2 | len lista -- ; lista es dato-valor
+shellsort1 | len lista -- ; lista es dato|valor
+sortstr | len lista -- ; lista es pstr-valor
+radixsort32 | cnt '2array --
+radixsort16 | cnt '2array --
+radixsort64 | cnt '2array --
+radixsort | cnt 'array --
+radixsortm | cnt 'array --
+textbox | str $colb-colo-ofvh-colf w h font -- texture
+[map] | x y -- ad
+drawtile | y x tile -- y x
+tiledraw | w h x y sx sy 'amap --
+tiledrawv | w h x y sx sy 'amap 'vec --
+drawtile | y x tile -- y x
+tiledraws | w h x y sx sy sw sh 'amap --
+tiledrawvs | w h x y sx sy sw sh 'amap 'v --
+scr2view | xs ys -- xv yv
+scr2tile | x y -- adr : only after tilemapdraw (set the vars)
+loadtilemap | "" -- amap
+advx
+advy
+trgb | c --
+tpal | c -- rgb
+tcol | c --
+tfbox | --
+tbox | --
+temit | ascii --
+tprint
+temits | "" --
+tat | x y --
+tatx | x --
+txy | x y --
+tx | x --
+tcx
+tcy
+tcr
+tsp
+tnsp | n --
+tsbox | "" -- "" w h
+tpos | -- x y
+trect | "" -- "" x y w h
+tcursor | n --
+tcursori | n --
+tsize | zoom --
+tsrcsize | x y w h -- x y w h
+tfnt | size w h ""
+tini
+ttx
+tty
+ttcolor | rrggbb --
+ttfont! | font --
+ttat | x y --
++ttat | x y --
+ttwh | "" -- "" w h
+ttsize | size --
+ttstyle | style -- | KUIB %0001
+ttprint | "" --
+ttemits | "" --
+ttemitc | width "" --
+ttemitr | "" --
+ttboxcc | w h "" --
+ttcursor | str strcur -- str
+ttcursori | str strcur -- str
+ttrect | "" -- "" x y w h
+fx
+fy
+fw
+fh
+flin? | x y -- 0/-1
+flin?1 | x y -- 0/-1
+flxvalid? | -- 0= not valid
+flx! | x y w h --
+flx | --
+flxpush
+flxpop
+flxRest
+flxN | lineas --
+flxS | lineas --
+flxE | cols --
+flxO | cols --
+fw%
+fh%
+flpad | x y --
+fhome | -- ; arriba-izquierda del panel
+uikey | tecla
+exit
+tuX? | ask for acion (local)
+tuR! | redraw again, some changes
+tuC! | cursor ON
+.tdebug
+tuiw | -- flag
+tuiw1 | -- flag ; 1 line only zone
+tuRefocus
+tuif | -- flag
+tui
+onTui | 'vector --
+onTuia | 'vector --
+onTuiResize | vec --
+.wfill
+.wborde
+.wborded
+.wbordec
+.wtitle | place "" --
+tuWin | --
+tuWina | --
+tuTBtn | 'ev "" --
+tuBtn
+tuLabel | "" --
+tuLabelC | "" --
+tuLabelR | "" --
+xwrite!
+xwrite.reset
+uiNindx | n -- str
+tuList | 'var list --
+xwriten!
+xwriten.reset
+uiNindxn
+tuListN | 'var listn --
+flVisibleIndex | listadr adr -- idx/-1 ; adr debe ser un item de listadr
+tuTree | 'var list --
+tuText | "" align --
+padi> | inicio
+tuInputLine | 'buff max --
+tuCheck | 'var "label" --
+tuRadio | n 'var "label" --
+tuSlider | 'var min max --
+tuProgress | percent --
+pal.dark
+pal! | 'pal --
+cbg | n --
+cfg | n --
+bg0
+bg1
+bg2
+bg3
+fTx
+fMu
+fDi
+fPr
+fBl
+fPu
+fGr
+fRd
+fYe
+fcr | -- ; baja linea (y reinicia columnas de tabla)
+.lw
+.cw
+.rw
+.nd
+.nh
+.nf
+.nb
+pan | "title" -- ; fondo bg1, padding 1, titulo en acento
+.lines | 'v n --
+tcols | 'def --
+cell | "" -- ; el color es el activo
+row | "a|b|c" -- ; fila completa desde texto separado por |
+hdr | "a|b|c" --
+tbw | -- n ; ancho total de la tabla con recuadro
+tbtop
+tbsep
+tbbot
+tbrowc | "a|b|c" 'color -- ; fila con recuadro, 'color = palabra de color
+tbrow | "a|b|c" -- ; fila con recuadro
+tbhdr | "a|b|c" -- ; cabecera con recuadro
+flxRoot | -- ; fullscr
+flxC | w h -- ; frame w x h cent
+tuDlg | "title" w h --
+tuDlgEnd | --
+filename
+fuente | fuente editable
+fuente> | cursor
+$fuente | fin de texto
+themeold
+themenew
+tuTheme! | 'theme -- ; 'themeold / 'themenew
+tuiecursor! | cursor --
+tuipos! | pos --
+tuiposq! | pos --
+tueKeyMove
+tuEditLN! | n -- ; line number place
+tuEditShowCursor
+tuEditCode
+tuReadCode
+tuReadCodeMono
+tuecursor.
+TuLoadMem | "" --
+TuLoadMemC | "" -- | already sane
+TuLoadCode | "" --
+TuNewCode
+TuSaveCode
+tokenCursor | 'mark --
+txloadwicon | "font" size -- nfont
+txload | "font" size -- nfont
+txfont | font --
+txfont@ | -- font
+txrgb | c --
+txcw | car -- width
+txw | "" -- "" width
+txfit | w "" -- ncar
+txch | car -- height
+txh | -- heigth
+txat | x y --
+tx+at | x y --
+txcr
+txpos | -- x y
+txemit | utf8' --
+txwrite | "" --
+txemitr | "" --
+txemitc | w "" --
+txprint | .. "" --
+txprintr | .. "" --
+txcur | str cur --
+txcuri | str cur --
+lwrite | w "str" --
+cwrite | w "str" --
+rwrite | w "str" --
+txalign | $VH --
+txText | w h x y "" --
+pad.reset | 'var max -- 'var max
+pad.draw | 'buff --
+.xwrite | str --
+.awrite | str --
+.vline | h --
+.hline | w --
+.vlined | h --
+.hlined | w --
+.vline2 | h --
+.vlined2 | h --
+.boxl | x y w h --
+.boxc | x y w h --
+.boxd | x y w h --
+.boxf | x y w h --
+lalign | cnt str --
+calign | cnt str --
+ralign | cnt str --
+lwrite | w "str" --
+cwrite | w "str" --
+rwrite | w "str" --
+xalign | $VH --
+xwrite | w "str" --
+xText | w h x y "" --
+rgb4t | col12 -- col256
+deltatime
+timeline
+timeline<
+timeline>
+exevar
+timer< | reset timer
+timer. | adv timer
+timer+ | add timer
+timer- | sub timer
+vareset
+vaini | max --
+vupdate | --
++vanim | 'var ini fin ease dur. start --
++vanimg | 'var ini fin ease dur. start group --
++vboxanim | 'var fin ini ease dur. start --
++vboxanimg | 'var fin ini ease dur. start group --
++vxyanim | 'var ini fin ease dur. start --
++vxyanimg | 'var ini fin ease dur. start group --
++vcolanim | 'var ini fin ease dur. start --
++vcolanimg | 'var ini fin ease dur. start group --
++vexe | 'vector start --
++vexeg | 'vector start group --
++vvexe | v 'vector start --
++vvexeg | v 'vector start --
++vvvexe | v v 'vector start --
++vvvexeg | v v 'vector start --
+vkillgroup | group --
+vkillvar | 'var --
+64xy | b -- x y
+64wh | b -- w h
+64xywh | b -- x y w h
+xywh64 | x y w h -- b
+64xyrz | b -- x y r z
+xyrz64 | x y r z -- b
+64box | b adr --
+32xy | b -- x y
+xy32 | x y -- b
+vaempty
+aniInit | ini cnt fps -- V
+ani+! | dt 'v --
+aniFrame | V -- f
+aniCnt | V -- c
+ani+timer! | 'V --
+vscreen | w h --
+vscreenf | w h --
+vini | --
+vredraw | --
+vfree
+sdlx
+sdly
+%w
+%h

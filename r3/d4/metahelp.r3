@@ -1,20 +1,20 @@
-| metahelp - help line of each exported word of the libraries, and of the base words
+| metahelp - the help text of the words: r3/d4/meta/mhelp.txt  (the same folder of mlibs.r3)
 | PHREDA 2023
 |
-| mlibs.r3 (metabuild.r3) has the name, the stack and the type of each word;
-| mhelp.r3 has its help line: the comment of its definition, in the same order, as parallel lists
+| mhelp.txt has one line for each word, in this order: the base words (the order of r3base in r3map.r3),
+| then the exported words of the libraries (the folders and the order of metabuild.r3, so the order of mlibs.r3):
 |
-|   ::dup | a -- a a ; duplicate top of stack     <- source code (the comment is the help line)
-|   #h_r3_lib_rand.r3 "-- rand ; random number" "a -- b ; ..." 0     <- one string per exported word ("" = no comment)
-|   ##helplist 'h_r3_lib_3d.r3 ... 0    <- same order as ##liblist of mlibs.r3
-|   ##basehelp "a -- a a ; duplicate TOS" ... 0   <- the base words, same order as r3base (r3map.r3)
+|   dup | a -- a a ; duplicate TOS               <- name | comment of the definition (no comment: only the name)
+|
+| the number of a word is the number of its line: nothing has to be searched (see helptxt.r3, that loads it
+| with a direct index). the first word of a library is the number of base words + the words of the libraries before.
 |
 | the help line of a word is what follows the first | of the line of its definition (after a blank or a tab):
 |   ::word | stack effect ; description
 | a line that defines more than one word (##a 0 ##b 0 | text) has no help line.
 | the base words are described in the table #r3basemov of r3map.r3, one row each:  | NAME effect ; description
 |
-| run it from the main folder:  r3 r3/d4/metahelp.r3     (the same folders of metabuild.r3)
+| run it from the main folder, after metabuild.r3 (it has to use the same libraries):  r3 r3/d4/metahelp.r3
 |
 ^r3/lib/console.r3
 ^r3/d4/r3token.r3
@@ -56,29 +56,32 @@
 :trimlen | adr -- n ; length without the blanks at the end
 	dup count nip ( lastblank? 1? drop 1- ) drop nip ;
 
-:,qtext | adr n -- ; the text as the content of a string (a tab is a space, a quote is written twice)
-	( 1? 1- swap c@+ $ff and 9 =? ( drop 32 ) $22 =? ( dup ,c ) ,c swap ) 2drop ;
+:,txt | adr n -- ; the text (a tab is a space)
+	( 1? 1- swap c@+ $ff and 9 =? ( drop 32 ) ,c swap ) 2drop ;
+
+:,help | adr n -- ; ' | text' if there is text
+	1? ( " | " ,s ,txt ; ) 2drop ;
+
+:,name | p -- ; the name
+	( dup c@ $ff and 32 >? ,c 1+ ) 2drop ;
+
+:low | c -- c ; lowercase (only A to Z: tolow changes [ and ] too)
+	65 <? ( ; ) 90 >? ( ; ) 32 + ;
+
+:,lname | p -- ; the name in lowercase
+	( dup c@ $ff and 32 >? low ,c 1+ ) 2drop ;
 
 |---------------------------
-:ghelp | adr -- ; a string with the help line of the exported word
+:ghelp | adr -- ; the line of an exported word: name | comment
 	dup @ $2 nand? ( 2drop ; ) drop | only export
-	" """ ,s
-	@ dic>name lcpy
-	cpos 1? ( ctext dup trimlen ,qtext 0 ) drop
-	"""" ,s ;
+	@ dic>name dup ,name lcpy
+	cpos 1? ( ctext dup trimlen ,help 0 ) drop
+	,nl ;
 
 :genhelp
 	mark
-	"#h_" ,s 'filenamev ,s
-	dic< ( dic> <? dup ghelp 16 + ) drop " 0" ,s
-	,nl
-	"r3/d4/meta/mhelp.r3" appendmem
-	empty ;
-
-:emptyhelp | the list of a library that could not be read: it keeps the order
-	mark
-	"#h_" ,s 'filenamev ,s " 0" ,s ,nl
-	"r3/d4/meta/mhelp.r3" appendmem
+	dic< ( dic> <? dup ghelp 16 + ) drop
+	"r3/d4/meta/mhelp.txt" appendmem
 	empty ;
 
 :namevirtual | name -- name
@@ -93,12 +96,12 @@
 	dup namevirtual drop		| name
 	dup " | %s " .fprint
 	here swap 2dup load		| mem name end
-	here =? ( 3drop .bred "no source code." .println emptyhelp empty ; )
+	here =? ( 3drop .bred "no source code." .println empty ; )
 	$0d3a0d swap !			| add ":" at end (as metabuild does)
 	over only13 'here !
 	mark
 	r3loadmem
-	error 1? ( .bred "ERROR %s" .println drop emptyhelp empty empty ; ) drop
+	error 1? ( .bred "ERROR %s" .println drop empty empty ; ) drop
 	genhelp
 	empty empty
 	;
@@ -155,16 +158,6 @@
 :folder | "" --
 	'procfile scanfolder ;
 
-|-------------
-:procfilelist | name --
-	'foldern "%s/%s" sprint
-	namevirtual drop
-	" 'h_" ,s 'filenamev ,s
-	;
-
-:folderlist	| "" --
-	'procfilelist scanfolder ;
-
 |------------- the base words: the rows of #r3basemov in r3map.r3
 #maptext 0
 
@@ -174,57 +167,39 @@
 	13 =? ( drop dup c@ $ff and 10 =? ( drop 1+ ; ) drop ; )
 	drop ;
 
-:grow | adr -- ; the help line of a row: | NAME effect ; description (the .lits .lit ... rows have no name)
+:grow | adr -- ; a row: | NAME effect ; description  (the .lits .lit ... rows have no name)
 	lcpy
 	'hl "|" findstr 0? ( drop ; )
 	1+ ( dup c@ $ff and blank? 1? drop 1+ ) drop
 	dup c@ $ff and $2e =? ( 2drop ; ) drop		| .name = not a word
+	dup ,lname
 	( dup c@ $ff and 32 >? drop 1+ ) drop		| the name
 	( dup c@ $ff and blank? 1? drop 1+ ) drop
-	" """ ,s dup dup trimlen ,qtext drop """" ,s ;
+	dup dup trimlen ,help drop
+	,nl ;
 
-:genbase
+:genbase | the first lines of the file
 	mark
-	"##basehelp" ,s
 	here dup "r3/d4/r3map.r3" load 0 swap c! 'maptext !
-	maptext "#r3basemov (" findstr 0? ( drop " 0" ,s ,nl "r3/d4/meta/mhelp.r3" appendmem empty ; )
+	maptext "#r3basemov (" findstr 0? ( drop "r3/d4/meta/mhelp.txt" savemem empty ; )
 	nextl
 	( dup c@ $ff and $29 <>? 1? drop
 		dup grow nextl )
 	2drop
-	" 0" ,s ,nl
-	"r3/d4/meta/mhelp.r3" appendmem
+	"r3/d4/meta/mhelp.txt" savemem
 	empty ;
 
 |-------------
 :main
 	.cls
 	"help generator" .println
-	mark
-	"| mhelp - help line of the words: generated by metahelp.r3 from the source code" ,s ,nl
-	"| ##helplist: same order as ##liblist (mlibs.r3) ; ##basehelp: same order as the base words (r3map.r3)" ,s ,nl
-	"r3/d4/meta/mhelp.r3" savemem 
-	empty
-
+	genbase
 	'folders ( dup c@ 1? drop
 		dup 'foldern strcpy
 		dup ">> %s " .cr .println
 		dup folder
 		>>0 ) 2drop
 	.cr
-
-	mark
-	,nl
-	"##helplist" ,s
-	'folders ( dup c@ 1? drop
-		dup 'foldern strcpy
-		dup folderlist
-		>>0 ) 2drop
-	" 0" ,s ,nl
-	"r3/d4/meta/mhelp.r3" appendmem
-	empty
-
-	genbase
 	"done" .println
 	;
 
