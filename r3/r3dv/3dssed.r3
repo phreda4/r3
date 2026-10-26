@@ -203,7 +203,7 @@
 #obrot * 8192		| rotacion de cada objeto (3 x 16 bits, igual que getrot)
 
 :objcolor | i -- color	; seleccionado: tinte calido + glow
-	sel =? ( drop $ffa04002 ; ) drop $ffffff00 ;
+	sel =? ( drop $ffa04001 ; ) drop $ffffff00 ;
 
 :objstyle | i --	; sprite, color y escala del panel en la instancia i
 	sx nrosprite pick2 objcolor pick3 ss3dcs
@@ -236,6 +236,72 @@
 :selnext
 	cntobjs 0? ( drop ; ) drop
 	sel 1+ cntobjs mod selobj ;
+
+|--- guardar / cargar escena: archivo SSC1 por slot (scene<n>.ssc)
+| cabecera: 4 qwords (magic "SSC1", cantidad, n3dsprites, 0)
+| objeto:   8 qwords (spr sx sy sz x y z rot) = 64 bytes
+#slot 0
+#status 0		| 0 nada, 1 guardado, 2 cargado, 3 sin archivo valido, 4 cargado con otro set de sprites
+#stobjs 0
+#t1 #t2 #t3
+
+:scenefile | -- "filename"
+	slot "scene%d.ssc" sprint ;
+
+:rec3 | a b c --	; escribe 3 qwords en orden
+	't3 ! 't2 ! 't1 ! t1 a!+ t2 a!+ t3 a!+ ;
+
+:savescene
+	here >a
+	$31435353 a!+ cntobjs a!+ n3dsprites a!+ 0 a!+
+	0 ( cntobjs <?
+		dup ss3dspr@ a!+
+		dup ss3dscl@ rec3
+		dup ss3dxyz@ rec3
+		dup 3 << 'obrot + @ a!+
+		1+ ) drop
+	here cntobjs 6 << 32 + scenefile save
+	cntobjs 'stobjs ! 1 'status ! ;
+
+#ldsz #ldn #ls0 #ls1 #ls2 #ls3 #lp1 #lp2 #lp3 #lr
+:loadscene
+	scenefile filexist 0? ( drop 3 'status ! ; ) drop
+	here scenefile load here - 'ldsz !
+	ldsz 32 <? ( drop 3 'status ! ; ) drop
+	here @ $31435353 <>? ( drop 3 'status ! ; ) drop
+	here 8 + @ ss3dmax min ldsz 32 - 6 >> min 'ldn !	| no mas que lo que hay en el archivo
+	-1 'sel !
+	here 32 + >a
+	0 ( ldn <?
+		a@+ n3dsprites 1- min 0 max 'ls0 !
+		a@+ 'ls1 ! a@+ 'ls2 ! a@+ 'ls3 !
+		a@+ 'lp1 ! a@+ 'lp2 ! a@+ 'lp3 !
+		a@+ 'lr !
+		ls1 ls0 $ffffff00 pick3 ss3dcs
+		ls1 ls2 ls3 pick3 ss3dscl3
+		lp1 lp2 lp3 pick3 ss3dxyz
+		lr over 3 << 'obrot + !
+		lr rxyz>q16 over ss3dqua
+		dup dup ss3dobj
+		1+ ) drop
+	ldn 'cntobjs !
+	ldn ss3dlen!
+	ldn 'stobjs !
+	2 'status !
+	here 16 + @ n3dsprites <>? ( 4 'status ! ) drop ;
+
+:slot- slot 1- 0 max 'slot ! ;
+:slot+ slot 1+ 9 min 'slot ! ;
+
+:sceneui
+	slot "escena  slot %d" sprint uiLabelC
+	'slot- "-" uiTBtn 'slot+ "+" uiTBtn 'savescene "save" uiTBtn 'loadscene "load" uiTBtn
+	uiLn
+	status 1 =? ( stobjs slot "guardado slot %d: %d obj" sprint uiLabelC )
+	2 =? ( stobjs slot "cargado slot %d: %d obj" sprint uiLabelC )
+	3 =? ( slot "slot %d: sin archivo valido" sprint uiLabelC )
+	4 =? ( stobjs slot "cargado slot %d: %d obj (otros sprites)" sprint uiLabelC )
+	drop ;
 
 #deli
 :dupobj | duplica el seleccionado, desplazado un ancho en x
@@ -487,6 +553,8 @@
 	'nextobj ">>" uiTBtn	
 	'dupobj "dup" uiTBtn
 	'delobj "del" uiTBtn
+	uiLn
+	sceneui
 	viewmouse
 	|-1.0 1.0 'vrx uiprogressf
 |	'vrl 8 ss3names uiList
@@ -514,6 +582,7 @@
 	<spc> =? ( addobj )
 	<tab> =? ( selnext )
 	<ins> =? ( dupobj ) <del> =? ( delobj )
+	<f5> =? ( savescene ) <f9> =? ( loadscene )
 	<le> =? ( gstep neg 0 0 nudge ) <ri> =? ( gstep 0 0 nudge )
 	<home> =? ( 0 0 gstep neg nudge ) <end> =? ( 0 0 gstep nudge )
 	<pgup> =? ( 0.25 scalestep ) <pgdn> =? ( -0.25 scalestep )

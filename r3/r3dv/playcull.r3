@@ -23,7 +23,7 @@
 |---------------------------------
 :WORLD  120.0 ;		| los estaticos se reparten en +-WORLD (x z)
 :LIM     40.0 ;		| los moviles rebotan en +-LIM (x z)
-:OBJMAX  6000 ;		| objetos en la lista maestra
+:OBJMAX  60000 ;		| objetos en la lista maestra
 
 #objcnt 0
 #objlst 0
@@ -138,19 +138,19 @@
 	'cR v3nor
 	'cU 'cR v3= 'cU 'cF v3vec
 	camFov 'tanV !
-	camFov rl_w 16 << rl_h / *. 'tanH !
+	camFov rl_w rl_h 16 <</ *. 'tanH !
 	1.0 tanV dup *. + sqrt. 'secV !
 	1.0 tanH dup *. + sqrt. 'secH ! ;
 
 :camera
-	pyp pzp pxp 'camTo !+ !+ !
+	pyp pzp 1.5 + pxp 'camTo !+ !+ !
 
 	prot 0.5 + neg camrot - 0.02 *. 'camrot +!
 
 	'camEyeD >a
 	camrot sincos
 	camDist *. pxp + a!+
-	1.0 a!+
+	3.0 a!+
 	camDist *. pyp + a!+
 
 	'camEye >a 'camEyeD >b
@@ -165,7 +165,7 @@
 |---------------------------------
 |--- culling
 #rx #ry #rz			| objeto - camara
-#zz #xx #yy #rr
+#zz #rr
 
 :rel | adr -- adr
 	dup @ camEye - 'rx !
@@ -180,12 +180,12 @@
 	rel
 	dup 56 + @ 'rr !
 	'cF dotc 'zz !
-	'cR dotc abs 'xx !
-	'cU dotc abs 'yy !
 	zz rr + camNear <? ( drop 0 ; ) drop
 	zz rr - drawdist >? ( drop 0 ; ) drop
-	xx zz tanH *. rr secH *. + >? ( drop 0 ; ) drop
-	yy zz tanV *. rr secV *. + >? ( drop 0 ; ) drop
+	'cR dotc abs | xx
+	zz tanH *. rr secH *. + >? ( drop 0 ; ) drop
+	'cU dotc abs | yy
+	zz tanV *. rr secV *. + >? ( drop 0 ; ) drop
 	1 ;
 
 :vis? | adr -- adr flag
@@ -239,7 +239,7 @@
 	pzp vpz +
 	0 <=? ( drop 0 'pzp ! 0 'vpz ! ; )
 	'pzp !
-	-0.01 'vpz +!
+	-0.005 'vpz +!
 	;
 
 |-------------------------------
@@ -282,10 +282,10 @@
 	<f3> =? ( 1 cullon - 'cullon ! )
 	<f4> =? ( nextdd )
 
-	<up> =? ( 0.02 'vd ! ) >up< =? ( 0 'vd ! )
-	<dn> =? ( -0.02 'vd ! ) >dn< =? ( 0 'vd ! )
-	<le> =? ( 0.005 'vr ! ) >le< =? ( 0 'vr ! )
-	<ri> =? ( -0.005 'vr ! ) >ri< =? ( 0 'vr ! )
+	<up> =? ( 0.1 'vd ! ) >up< =? ( 0 'vd ! )
+	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
+	<le> =? ( 0.01 'vr ! ) >le< =? ( 0 'vr ! )
+	<ri> =? ( -0.01 'vr ! ) >ri< =? ( 0 'vr ! )
 	<spc> =? ( vpz 0? ( 0.18 'vpz ! ) drop )
 
 	drop

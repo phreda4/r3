@@ -178,6 +178,7 @@
 | $40 writes memory (! +! A! B! MOVE FILL ...)
 |
 | use deltad deltaR flag2
+| the comment of each row is the help line of the word: | NAME effect ; description   (metahelp.r3 makes meta/mhelp.r3 from it)
 #r3basemov (
 0 1 0 0		| .lits 
 0 1 0 0		| .lit
@@ -187,140 +188,140 @@
 0 1 0 0		| .vadr
 0 1 0 0		| .str		need "%d"!! | mem?
 
-0 0 0 0		| ; | fin de palabra (12)
-0 0 0 0		| (
-0 0 0 0		| )
-0 0 0 0		| [
-0 1 0 0		| ]
-1 -1 0 0	| EX	x/0 --
-1 0 0 0		|0?		a -- a
-1 0 0 0		|1?		a -- a
-1 0 0 0		|+?		a -- a
-1 0 0 0		|-?		a -- a
-2 -1 0 0	|<?		ab -- a
-2 -1 0 0	|>?		ab -- a
-2 -1 0 0	|=?		ab -- a
-2 -1 0 0	|>=?	ab -- a
-2 -1 0 0	|<=?	ab -- a
-2 -1 0 0	|<>?	ab -- a
-2 -1 0 0	|and?	ab -- a
-2 -1 0 0	|nand?	ab -- a
-3 -2 0 0	|BTW?	abc -- a
-1  1 0 0	|DUP	a -- aa
-1 -1 0 0	|DROP	a --
-2 1 0 0		|OVER	ab -- aba
-3 1 0 0		|PICK2	abc -- abca
-4 1 0 0		|PICK3	abcd -- abcda
-5 1 0 0		|PICK4	abcde -- abcdea
-2 0 0 0		|SWAP	ab -- ba
-2 -1 0 0	|NIP	ab -- b
-3 0 0 0		|ROT	abc -- bca
-3 0 0 0		|-ROT	abc -- cab
-2 2 0 0		|2DUP	ab -- abab
-2 -2 0 0	|2DROP	ab --
-3 -3 0 0	|3DROP	abc --
-4 -4 0 0	|4DROP	abcd --
-4 2 0 0		|2OVER	abcd -- abcdab
-4 0 0 0		|2SWAP	abcd -- cdab
-1 -1 1 0	|>R		a -- R: -- a
-0 1 -1 0	|R>		-- a R: a --
-0 1 0 0		|R@		-- a R: a -- a
-2 -1 0 0	|AND	ab -- c
-2 -1 0 0	|OR		ab -- c
-2 -1 0 0	|XOR	ab -- c
-2 -1 0 0	|NAND	ab -- c
-2 -1 0 0	|+		ab -- c
-2 -1 0 0	|-		ab -- c
-2 -1 0 0	|*		ab -- c
-2 -1 0 0	|/		ab -- c
-2 -1 0 0	|<<		ab -- c
-2 -1 0 0	|>>		ab -- c
-2 -1 0 0	|>>>	ab -- c
-2 -1 0 0	|MOD	ab -- c
-2 0 0 0		|/MOD	ab -- cd
-3 -2 0 0	|*/		abc -- d
-3 -2 0 0	|*>>	abc -- d
-3 -2 0 0	|<</	abc -- d
-1 0 0 0		|NOT	a -- b
-1 0 0 0		|NEG	a -- b
-1 0 0 0		|ABS	a -- b
-1 0 0 0		|SQRT	a -- b
-1 0 0 0		|CLZ	a -- b
-1 0 0 1		|@		a -- b
-1 0 0 1		|C@		a -- b
-1 0 0 1		|W@		a -- b
-1 0 0 1		|D@		a -- b
-1 1 0 1		|@+		a -- bc
-1 1 0 1		|C@+	a -- bc
-1 1 0 1		|W@+	a -- bc
-1 1 0 1		|D@+	a -- bc
-2 -2 0 $41	|!		ab --
-2 -2 0 $41	|C!		ab --
-2 -2 0 $41	|W!		ab --
-2 -2 0 $41	|D!		ab --
-2 -1 0 $41	|!+		ab -- c
-2 -1 0 $41	|C!+	ab -- c
-2 -1 0 $41	|W!+	ab -- c
-2 -1 0 $41	|D!+	ab -- c
-2 -2 0 $41	|+!		ab --
-2 -2 0 $41	|C+!	ab --
-2 -2 0 $41	|W+!	ab --
-2 -2 0 $41	|D+!	ab --
-1 -1 0 2	|>A
-0 1 0 4		|A>
-1 -1 0 4	|A+
-0 1 0 5		|A@
-1 -1 0 $45 	|A!
-0 1 0 5		|A@+
-1 -1 0 $45	|A!+
-0 1 0 5		|cA@
-1 -1 0 $45 	|cA!
-0 1 0 5		|cA@+
-1 -1 0 $45	|cA!+
-0 1 0 5		|dA@
-1 -1 0 $45 	|dA!
-0 1 0 5		|dA@+
-1 -1 0 $45	|dA!+
-1 -1 0 8	|>B
-0 1 0 $10	|B>
-1 -1 0 $10	|B+
-0 1 0 $11	|B@
-1 -1 0 $51 	|B!
-0 1 0 $11	|B@+
-1 -1 0 $51	|B!+
-0 1 0 $11	|cB@
-1 -1 0 $51	|cB!
-0 1 0 $11	|cB@+
-1 -1 0 $51	|cB!+
-0 1 0 $11	|dB@
-1 -1 0 $51	|dB!
-0 1 0 $11	|dB@+
-1 -1 0 $51	|dB!+
-0 0 2 0		|AB[		R: -- AB
-0 0 -2 0	|]BA		R: BA --
-3 -3 0 $41	|MOVE  abc --
-3 -3 0 $41	|MOVE> abc --
-3 -3 0 $41	|FILL abc --
-3 -3 0 $41	|CMOVE abc --
-3 -3 0 $41	|CMOVE> abc --
-3 -3 0 $41	|CFILL abc --
-3 -3 0 $41	|DMOVE abc --
-3 -3 0 $41	|DMOVE> abc --
-3 -3 0 $41	|DFILL abc --
-0 1 0 1		|MEM	-- a
-1 0 0 1		|LOADLIB a -- a
-2 -1 0 1	|GETPROC ab -- a
-1 0 0 1		|SYS0 a -- a 
-2 -1 0 1	|SYS1 ab -- a
-3 -2 0 1	|SYS2 abc -- a
-4 -3 0 1	|SYS3 abcd -- a
-5 -4 0 1	|SYS4 abcde -- a
-6 -5 0 1	|SYS5 abcdef -- a
-7 -6 0 1	|SYS6 abcdefg -- a 
-8 -7 0 1	|SYS7 abcdefgh -- a
-9 -8 0 1	|SYS8 abcdefghi -- a
-10 -9 0 1	|SYS9 abcdefghij -- a
-11 -10 0 1	|SYS10 abcdefghijk -- a
+0 0 0 0	| ; -- ; end of the word, return to the caller
+0 0 0 0	| ( -- ; begin a block: the body of a conditional or a loop
+0 0 0 0	| ) -- ; end of the block
+0 0 0 0	| [ -- a ; begin an anonymous word; ] leaves its address
+0 1 0 0	| ] -- a ; end of the anonymous word, push its address
+1 -1 0 0	| EX a -- ; execute the word whose address is a (0 does nothing)
+1 0 0 0	| 0? a -- a ; run the block if a = 0
+1 0 0 0	| 1? a -- a ; run the block if a <> 0
+1 0 0 0	| +? a -- a ; run the block if a >= 0
+1 0 0 0	| -? a -- a ; run the block if a < 0
+2 -1 0 0	| <? a b -- a ; run the block if a < b
+2 -1 0 0	| >? a b -- a ; run the block if a > b
+2 -1 0 0	| =? a b -- a ; run the block if a = b
+2 -1 0 0	| >=? a b -- a ; run the block if a >= b
+2 -1 0 0	| <=? a b -- a ; run the block if a <= b
+2 -1 0 0	| <>? a b -- a ; run the block if a <> b
+2 -1 0 0	| AND? a b -- a ; run the block if a AND b <> 0
+2 -1 0 0	| NAND? a b -- a ; run the block if a AND b = 0
+3 -2 0 0	| IN? a b c -- a ; run the block if b <= a <= c
+1  1 0 0	| DUP a -- a a ; duplicate TOS
+1 -1 0 0	| DROP a -- ; remove TOS
+2 1 0 0	| OVER a b -- a b a ; copy NOS to top
+3 1 0 0	| PICK2 a b c -- a b c a ; copy 3rd element to top
+4 1 0 0	| PICK3 a b c d -- a b c d a ; copy 4th element to top
+5 1 0 0	| PICK4 a b c d e -- a b c d e a ; copy 5th element to top
+2 0 0 0	| SWAP a b -- b a ; exchange TOS and NOS
+2 -1 0 0	| NIP a b -- b ; remove NOS
+3 0 0 0	| ROT a b c -- b c a ; rotate 3 elements left
+3 0 0 0	| -ROT a b c -- c a b ; rotate 3 elements right
+2 2 0 0	| 2DUP a b -- a b a b ; duplicate top two
+2 -2 0 0	| 2DROP a b -- ; remove top two
+3 -3 0 0	| 3DROP a b c -- ; remove top three
+4 -4 0 0	| 4DROP a b c d -- ; remove top four
+4 2 0 0	| 2OVER a b c d -- a b c d a b ; copy 3rd and 4th to top
+4 0 0 0	| 2SWAP a b c d -- c d a b ; exchange two pairs
+1 -1 1 0	| >R a -- (r: -- a) ; push to return stack
+0 1 -1 0	| R> -- a (r: a --) ; pop from return stack
+0 1 0 0	| R@ -- a (r: a -- a) ; copy top of return stack (non-destructive)
+2 -1 0 0	| AND a b -- c ; c = a AND b (bitwise)
+2 -1 0 0	| OR a b -- c ; c = a OR b
+2 -1 0 0	| XOR a b -- c ; c = a XOR b
+2 -1 0 0	| NAND a b -- c ; c = NOT (a AND b)
+2 -1 0 0	| + a b -- c ; c = a + b
+2 -1 0 0	| - a b -- c ; c = a - b
+2 -1 0 0	| * a b -- c ; c = a * b
+2 -1 0 0	| / a b -- c ; c = a / b (integer)
+2 -1 0 0	| << a b -- c ; c = a << b (left shift)
+2 -1 0 0	| >> a b -- c ; c = a >> b (signed right shift)
+2 -1 0 0	| >>> a b -- c ; c = a >>> b (unsigned right shift)
+2 -1 0 0	| MOD a b -- c ; c = a mod b
+2 0 0 0	| /MOD a b -- c d ; c = a/b, d = a mod b
+3 -2 0 0	| */ a b c -- d ; d = a*b/c (no intermediate overflow)
+3 -2 0 0	| *>> a b c -- d ; d = (a*b)>>c (no overflow)
+3 -2 0 0	| <</ a b c -- d ; d = (a<<c)/b (no overflow)
+1 0 0 0	| NOT a -- b ; b = NOT a (all bits flipped)
+1 0 0 0	| NEG a -- b ; b = -a
+1 0 0 0	| ABS a -- b ; b = absolute value of a
+1 0 0 0	| SQRT a -- b ; b = integer square root of a
+1 0 0 0	| CLZ a -- b ; b = count leading zeros of a
+1 0 0 1	| @ a -- [a] ; fetch qword
+1 0 0 1	| C@ a -- byte[a] ; fetch byte
+1 0 0 1	| W@ a -- word[a] ; fetch word
+1 0 0 1	| D@ a -- dword[a] ; fetch dword
+1 1 0 1	| @+ a -- b [a] ; fetch qword and increment
+1 1 0 1	| C@+ a -- b byte[a] ; fetch byte and increment
+1 1 0 1	| W@+ a -- b word[a] ; fetch word and increment
+1 1 0 1	| D@+ a -- b dword[a] ; fetch dword and increment
+2 -2 0 $41	| ! a b -- ; store A at address B
+2 -2 0 $41	| C! a b -- ; store byte A at address B
+2 -2 0 $41	| W! a b -- ; store word A at address B
+2 -2 0 $41	| D! a b -- ; store dword A at address B
+2 -1 0 $41	| !+ a b -- c ; store A at B and increment
+2 -1 0 $41	| C!+ a b -- c ; store byte A at B and increment
+2 -1 0 $41	| W!+ a b -- c ; store word A at B and increment
+2 -1 0 $41	| D!+ a b -- c ; store dword A at B and increment
+2 -2 0 $41	| +! a b -- ; add A to value at address B
+2 -2 0 $41	| C+! a b -- ; add A to byte at address B
+2 -2 0 $41	| W+! a b -- ; add A to word at address B
+2 -2 0 $41	| D+! a b -- ; add A to dword at address B
+1 -1 0 2	| >A a -- ; load register A
+0 1 0 4	| A> -- a ; push register A
+1 -1 0 4	| A+ a -- ; add to register A
+0 1 0 5	| A@ -- a ; fetch qword from A
+1 -1 0 $45	| A! a -- ; store qword at A
+0 1 0 5	| A@+ -- a ; fetch qword from A and increment
+1 -1 0 $45	| A!+ a -- ; store qword at A and increment
+0 1 0 5	| CA@ -- a ; fetch byte from A
+1 -1 0 $45	| CA! a -- ; store byte at A
+0 1 0 5	| CA@+ -- a ; fetch byte from A and increment
+1 -1 0 $45	| CA!+ a -- ; store byte at A and increment
+0 1 0 5	| DA@ -- a ; fetch dword from A
+1 -1 0 $45	| DA! a -- ; store dword at A
+0 1 0 5	| DA@+ -- a ; fetch dword from A and increment
+1 -1 0 $45	| DA!+ a -- ; store dword at A and increment
+1 -1 0 8	| >B a -- ; load register B
+0 1 0 $10	| B> -- a ; push register B
+1 -1 0 $10	| B+ a -- ; add to register B
+0 1 0 $11	| B@ -- a ; fetch qword from B
+1 -1 0 $51	| B! a -- ; store qword at B
+0 1 0 $11	| B@+ -- a ; fetch qword from B and increment
+1 -1 0 $51	| B!+ a -- ; store qword at B and increment
+0 1 0 $11	| CB@ -- a ; fetch byte from B
+1 -1 0 $51	| CB! a -- ; store byte at B
+0 1 0 $11	| CB@+ -- a ; fetch byte from B and increment
+1 -1 0 $51	| CB!+ a -- ; store byte at B and increment
+0 1 0 $11	| DB@ -- a ; fetch dword from B
+1 -1 0 $51	| DB! a -- ; store dword at B
+0 1 0 $11	| DB@+ -- a ; fetch dword from B and increment
+1 -1 0 $51	| DB!+ a -- ; store dword at B and increment
+0 0 2 0	| AB[ -- ; save A and B to return stack
+0 0 -2 0	| ]BA -- ; restore B and A from return stack
+3 -3 0 $41	| MOVE d s c -- ; copy c qwords from s to d
+3 -3 0 $41	| MOVE> d s c -- ; copy c qwords, reverse direction
+3 -3 0 $41	| FILL d v c -- ; fill d with c qwords of value v
+3 -3 0 $41	| CMOVE d s c -- ; copy c bytes from s to d
+3 -3 0 $41	| CMOVE> d s c -- ; copy c bytes, reverse direction
+3 -3 0 $41	| CFILL d v c -- ; fill d with c bytes of value v
+3 -3 0 $41	| DMOVE d s c -- ; copy c dwords from s to d
+3 -3 0 $41	| DMOVE> d s c -- ; copy c dwords, reverse direction
+3 -3 0 $41	| DFILL d v c -- ; fill d with c dwords of value v
+0 1 0 1	| MEM -- a ; start of free memory
+1 0 0 1	| LOADLIB "name" -- liba ; load dynamic library
+2 -1 0 1	| GETPROC liba "name" -- aa ; get function address
+1 0 0 1	| SYS0 aa -- r ; call with 0 parameters
+2 -1 0 1	| SYS1 a aa -- r ; call with 1 parameter
+3 -2 0 1	| SYS2 a b aa -- r ; call with 2 parameters
+4 -3 0 1	| SYS3 a b c aa -- r ; call with 3 parameters
+5 -4 0 1	| SYS4 a b c d aa -- r ; call with 4 parameters
+6 -5 0 1	| SYS5 a b c d e aa -- r ; call with 5 parameters
+7 -6 0 1	| SYS6 a b c d e f aa -- r ; call with 6 parameters
+8 -7 0 1	| SYS7 a b c d e f g aa -- r ; call with 7 parameters
+9 -8 0 1	| SYS8 a b c d e f g h aa -- r ; call with 8 parameters
+10 -9 0 1	| SYS9 a b c d e f g h i aa -- r ; call with 9 parameters
+11 -10 0 1	| SYS10 a b c d e f g h i j aa -- r ; call with 10 parameters
 )
 
 ::r3ainfo | n -- a
