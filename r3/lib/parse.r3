@@ -49,36 +49,9 @@
 	rot 0? ( drop ; ) drop neg ;
 
 |-----
-::?numero | str -- 0 / str' nro 1
-	str>nro over c@ 33 <? ( drop 1 ; )
-	3drop 0 ;
+::?numero | str -- str' nro flag ; flag=1 si el numero termina en espacio o fin
+	str>nro over c@ 33 <? ( drop 1 ; ) drop 0 ;
 
-|----- lee punto fijo ( -43.04 ==> 104 -43 t>fix16  --> $00eedddd
-#parte0
-
-::?fnumero | str -- 0/ str' fix 1		; b
-	10 'basen !
-	signo swap
-	dup c@ 33 <? ( 3drop 0 ; ) drop
-|	dup 1 + c@ que pasa con .0?
-	0 ( over c@ 32 >?				| -1 str 0 dig
-		$2e =? ( drop 'parte0 ! 1 over c@ ) 	| 1.33 .. parte0=1 retorna 133
-	    $30 <? ( 4drop 0 ; )
-	    $39 >? ( 4drop 0 ; )
-	    $30 - swap 10* +
-		swap 1+ swap )
-	drop 1 =? ( parte0 0? ( 4drop 0 ; ) drop ) | casos -. y
-	rot >r
-	parte0
-	16 << $10000 rot
-	1 over ( 1 >? 10/ swap 10* swap ) drop
-	*/ $ffff and or
-	r> 1? ( drop neg 1 ; )
-	drop 1 ;
-
-::str>fix | adr -- adr' fix
-	dup ?fnumero 0? ( ; ) drop
-	rot drop ;
 |------------------ NRO
 #f | fraccion
 #e | exponente
@@ -118,6 +91,9 @@
 	1 over ( 1 >? 10/ swap 10* swap ) drop
 	*/ $ffff and or
 	;
+
+::str>fix | adr -- adr' fix ; punto fijo 16.16 ( -43.04 ==> $ffffffffffd4f5c3 )
+	str>fnro ;
 
 ::str>anro | adr -- adr anro
 	dup str>nro over c@ 
@@ -195,7 +171,7 @@
 	1- nip ;
 
 ::scannro | adr 'nro -- adr'
-	over trim ?numero 0? ( 2drop ; ) drop
+	over trim ?numero 0? ( 4drop ; ) drop
 	rot ! nip ;
 
 ::scanc | c adr -- adr'/0

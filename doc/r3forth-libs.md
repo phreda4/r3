@@ -354,12 +354,11 @@ Parse numbers and tokens from strings.
 ::str%>nro  ( adr -- adr' n )   parse binary number (%..)
 ::str>nro   ( adr -- adr' n )   parse number (decimal, hex $, binary %)
 ::?sint     ( adr -- adr' n )   parse signed integer
-::?numero   ( str -- 0 / str' n 1 )   parse number or fail
-::?fnumero  ( str -- 0 / str' f. 1 )  parse fixed-point or fail
-::str>fix   ( adr -- adr' f. )  parse fixed-point decimal
+::?numero   ( str -- str' n flag )   parse number; flag is 1 if it ends at a space or at the end of the string
+::str>fix   ( adr -- adr' f. )  parse fixed-point (16.16) decimal, fixed stack effect (same as str>fnro)
 ::getnro    ( adr -- adr' n )   get next number from string
 ::str>fnro  ( adr -- adr fnro ) parse float from string
-::str>anro  ( adr -- adr anro ) parse alternate number
+::str>anro  ( adr -- adr' anro ) parse an integer, or a fixed-point number if it is not a clean integer
 ::getfenro  ( adr -- adr fnro ) get float or number
 ::isHex     ( adr -- 3/0 )      is hex number? (returns 3 or 0)
 ::isBin     ( adr -- 2/0 )      is binary number?

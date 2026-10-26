@@ -45,8 +45,7 @@
 
 :tok>cte | tok -- nro
 	40 >>> src +
-	dup ?numero 1? ( drop nip nip ; ) drop
-	str>fnro nip ;
+	str>anro nip ;
 
 :tok>str | tok -- str
 	8 >> $ffffffff and strm + ;

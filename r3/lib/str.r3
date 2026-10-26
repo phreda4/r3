@@ -233,8 +233,8 @@
 	2drop ;
 
 ::rfindstri | end "texto" adr -- adr'/0 ; reverse
-	( 2dup =pi 0? drop
-		1- pick2 <=? ( 3drop 0 ; ) 
+	( dup pick2 =pi 0? drop
+		1- pick2 <? ( 3drop 0 ; ) 
 		) drop nip nip ;
 
 |---- convert to number

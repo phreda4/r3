@@ -79,8 +79,8 @@
 #info ( $2F $2F $1 $2F $10 $10 $3E $5C $10 $10 $4D $5C $9 $10 $2F $2F $2F $2F $10 $10 $10 $10 $10 $2F $2F $2F $2F $2F $2F $2F $2F $2F $3E $2F $2F $2F $3E $3E $3E $4D $4D $4D $10 $2F $2F $2F $2F $2F $2F $10 $10 $6B $7A $2F $2F $3E $2F $5C $2F $2F $10 $2F $3E $2F $2F $3E $3E $2F $2F $2F $2F $5C $3E $3E $2F $2F $2F $2F $3E $2F $2F $10 $3E $4D $2F $4D $5C $5C $3E $3E $4D $2F $2F $3E $5C $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $2F $2F $10 $10 $3E $2F $3E $3E $3E $3E $4D $2F $4D $10 $10 $2F $2F $2F $4D $3E $2F $2F $3E $4D $3E $3E $3E $3E $2F $3E $3E $3E $5C $4D $10 $10 $4D $3E $2F $2F $3E $6B $2F $2F $2F $10 $5C $3E $2F $10 $10 $4D $4D $4D $3E $10 $5C $6B $2F $10 $4D $2F $10 $10 $2F $2F $2F $5C $7A $18 $9 $9 $3E $5C $4D $2F $2F $2F $3E $4D $2F $2F $2F $3E $2F $2F $2F $2F $2F $10 $10 $2F $10 $4D $2F $10 $2F $4D $5C $27 $10 $10 $5C $2F $10 $2F $10 $3E $2F $10 $2F $10 $4D $2F $10 $4D $5C $10 $2F $4D $10 $10 $10 $10 $2F $2F $1 $9 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 )
 #r3_lib_onnx.r3 'name 'words 'info 0
 #name "r3/lib/parse.r3"
-#words  "str$>nro" "str%>nro" "str>nro" "?sint" "?numero" "?fnumero" "str>fix" "getnro" "str>fnro" "str>anro" "getfenro" "isHex" "isBin" "isNro" "scanp" "scanstr" "scannro" "scanc" "scann" 0
-#info ( $11 $11 $11 $11 $10 $12 $11 $11 $11 $11 $11 $10 $10 $10 $1F $2F $4D $2F $2F )
+#words  "str$>nro" "str%>nro" "str>nro" "?sint" "?numero" "getnro" "str>fnro" "str>fix" "str>anro" "getfenro" "isHex" "isBin" "isNro" "scanp" "scanstr" "scannro" "scanc" "scann" 0
+#info ( $11 $11 $11 $11 $12 $11 $11 $11 $11 $11 $10 $10 $10 $1F $2F $2F $2F $2F )
 #r3_lib_parse.r3 'name 'words 'info 0
 #name "r3/lib/rand.r3"
 #words  "seed8" "rand8" "seed" "rerand" "rand" "randmax" "randminmax" "rnd" "rndmax" "rndminmax" "rnd128" "loopMix128" 0
@@ -144,7 +144,7 @@
 #r3_lib_trace.r3 'name 'words 'info 0
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $2E $5E $4C $4C $4D $41 )
+#info ( $1F $1F $2E $2E $2E $3E $4C $4C $4D $11 )
 #r3_lib_vdraw.r3 'name 'words 'info 0
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -160,11 +160,11 @@
 #r3_lib_webcam.r3 'name 'words 'info 0
 #name "r3/util/arr16.r3"
 #words  "p.ini" "p.clear" "p.cnt" "p.adr" "p.nro" "p!+" "p!" "p.draw" "p.drawo" "p.del" "p.mapv" "p.mapd" "p.map2" "p.sort" "p.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $0 $0 $2E $2E $2E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $8 $8 $2E $2E $26 $2E $2F $2F )
 #r3_util_arr16.r3 'name 'words 'info 0
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $8 $8 $2E $10 $2E $2E $26 $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $30 $30 $2E $10 $2E $2E $5E $2E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'info 0
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
@@ -219,8 +219,8 @@
 #info ( $1F $1F $2E )
 #r3_util_imcolor.r3 'name 'words 'info 0
 #name "r3/util/imedit.r3"
-#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edlinenum!" "edlinenum" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
 #r3_util_imedit.r3 'name 'words 'info 0
 #name "r3/util/imfiledlg.r3"
 #words  "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
@@ -244,7 +244,7 @@
 #r3_util_pcfont.r3 'name 'words 'info 0
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $43 $43 $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $1F $1F $5C )
 #r3_util_penner.r3 'name 'words 'info 0
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0

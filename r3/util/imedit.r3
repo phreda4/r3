@@ -60,36 +60,98 @@
 
 #modo 'lins
 
+:sele | vacia la seleccion
+	0 dup 'inisel ! 'finsel ! ;
+
 :clearundo
-	undobuffer 'undobuffer> !
-	undobuffer 'undobuffer< ! ;
+	undobuffer dup 'undobuffer> ! 'undobuffer< ! ;
 
-:undofull | -- ; vacia el buffer si no entra otro registro
-	undobuffer $1ffe + undobuffer> <=? ( drop clearundo ; )
-	drop ;
+:undoroom | n -- flag ; lugar para n registros (si no hay, vacia el historial)
+	3 <<
+	dup undobuffer> + undobuffer $8000 + <=? ( 2drop 1 ; ) drop
+	clearundo
+	$8000 <=? ( drop 1 ; ) drop 0 ;
 
-:pushu | data marca -- ; graba [marca][data] e invalida redo
-	undofull
-	undobuffer> c!+ c!+ 'undobuffer> !
+|---- undo/redo: registros de 8 bytes [pos:32][char:8][tipo:8]
+|  tipo bit7 = unido al registro anterior (se deshace junto)
+|  0 INS  char insertado en pos     undo: borra          redo: inserta
+|  1 DEL  char borrado de pos       undo: inserta        redo: borra
+|  2 BACK char borrado de pos       undo: inserta        redo: borra
+|         (cursor queda tras el char al deshacer)
+|  3 OVR  char reemplazado en pos   undo/redo: intercambian el char
+#unj			| 1 = no unir con el registro anterior (tras undo/redo)
+
+:cpos | -- pos ; offset del cursor
+	fuente> fuente - ;
+
+:rec | char type pos -- r ; empaqueta un registro (sin el bit de union)
+	16 << swap or swap $ff and 8 << or ;
+
+:unrec | r -- type char pos ; desempaqueta (sin el bit de union)
+	dup $7f and swap dup 8 >> $ff and swap 16 >> $ffffffff and ;
+
+:lastrec | -- type pos ; ultimo registro (type=-1 si no hay)
+	undobuffer> undobuffer =? ( drop -1 -1 ; ) drop
+	undobuffer> 8 - @ unrec nip ;
+
+:jstep | type -- d ; pos del registro que se une, relativa al anterior (OVR: nunca)
+	0? ( drop 1 ; ) 1 =? ( drop 0 ; ) 2 =? ( drop -1 ; ) drop $1ffffffff ;
+
+:joinable? | r -- flag ; se une al ultimo registro (racha de palabra)
+	unj 1? ( 2drop 0 ; ) drop
+	unrec lastrec pick4 jstep +			| t c p lt pe
+	pick2 <>? ( 2drop 3drop 0 ; )			| pos no contigua
+	drop pick3 <>? ( 4drop 0 ; )			| otro tipo de registro
+	2drop swap 0? ( drop 32 >? ( drop 1 ; ) drop 0 ; )	| INS: el espacio abre paso nuevo
+	2drop 1 ;
+
+:joinbit | force r -- 0/$80 ; force: 0 auto, 1 unir, -1 paso nuevo
+	swap -? ( 2drop 0 ; )
+	1? ( 2drop $80 ; ) drop
+	joinable? 1? ( drop $80 ; ) ;
+
+:urec | force char type pos -- ; graba un registro e invalida redo
+	1 undoroom 0? ( drop 4drop ; ) drop
+	rec dup >r joinbit r> or
+	undobuffer> !+ 'undobuffer> !
+	0 'unj !
 	undobuffer> 'undobuffer< ! ;
+
+:recsel | -- ; graba el borrado de la seleccion como un solo paso
+	finsel inisel - undoroom 0? ( drop ; ) drop
+	-1 inisel
+	( finsel <?
+		dup c@ rot swap 1 inisel fuente - urec
+		1+ 1 swap )
+	2drop ;
+
+
+:recins | pos n -- ; graba n bytes insertados desde pos como un solo paso
+	dup undoroom 0? ( 3drop ; ) drop
+	over + swap -1 swap				| end force pos
+	( pick2 <?
+		dup fuente + c@ rot swap 0 pick3 urec
+		1+ 1 swap )
+	3drop ;
 
 :delraw | adr -- ; borra el char bajo adr, no mueve cursor
 	dup 1+ $fuente over - 1+ cmove
 	-1 '$fuente +! ;
 
-:redoback | repite un back
+:redoback	| repite un back
 	fuente> fuente <=? ( drop ; )
 	drop -1 'fuente> +!
 	fuente> delraw ;
 
-:back
-	fuente> fuente <=? ( drop ; )
-	1- c@ 0 pushu redoback ;
+:back1 | force -- ; borra el byte anterior al cursor
+	fuente> fuente <=? ( 2drop ; )
+	1- dup c@ swap fuente - 2 swap urec
+	redoback ;
 
-:del | graba [9][char] y borra el char bajo el cursor
-	fuente> $fuente >=? ( drop ; )
-	dup c@ 9 pushu
-	delraw ;
+:del1 | force -- ; borra el byte bajo el cursor
+	fuente> $fuente >=? ( 2drop ; )
+	dup c@ swap fuente - 1 swap urec
+	fuente> delraw ;
 
 :<<13 | a -- a
 	( fuente >=?
@@ -103,11 +165,15 @@
 
 #1sel
 
+
+:rsel | p -- ; seleccion entre 1sel y p
+	1sel over <? ( swap ) 'finsel ! 'inisel ! ;
+
 :selecc	| agrega a la seleccion
 	mshift 0? ( 'inisel ! ; ) drop
 	inisel 0? ( fuente> '1sel ! ) drop
-	fuente> 1sel over <? ( swap )
-	'finsel ! 'inisel ! ;
+	fuente> rsel ;
+
 
 :khome
 	fuente> 1- <<13 1+ 'fuente> ! ;
@@ -170,11 +236,17 @@
 :kpgdn	hcode ( +? txh - kabajo ) drop ;
 
 |----------------------------------
+:cr>lf | adr cnt -- ; CR -> LF (portapapeles)
+	( 1? 1- swap
+		dup c@ 13 =? ( 10 pick2 c! ) drop
+		1+ swap ) 2drop ;
+
 :copysel
 	inisel 0? ( drop ; )
 	here swap finsel over - | here ini cnt
 	0 pick3 pick2 + ! cmove | dsc
-	here SDL_SetClipboardText drop ;	
+|LIN|	here count cr>lf
+	here SDL_SetClipboardText drop ;
 
 :cursordel
 	fuente>
@@ -184,23 +256,22 @@
 
 :remsel
 	inisel 0? ( drop ; )
+	recsel
 	finsel $fuente over - 1+ cmove
 	finsel inisel - neg '$fuente +!
-	cursordel 0 dup 'inisel ! 'finsel !
-	clearundo ;
+	cursordel sele ;
 
 :kdel
-	inisel 0? ( drop del ; )
+	inisel 0? ( drop 0 del1 ; )
 	drop remsel ;
 
 :kback
-	inisel 0? ( drop back ; )
+	inisel 0? ( drop 0 back1 ; )
 	drop remsel ;
 
 |----- insertar / sobreescribir con undo
-:ovwchar | c -- ; graba [2][charviejo] y sobreescribe
-	fuente> c@
-	2 pushu
+:ovwchar | c -- ; graba el char viejo (OVERWRITE) y sobreescribe
+	0 fuente> c@ 3 cpos urec
 	lover ;
 
 :canover | c -- c f ; sobreescribir solo ascii sobre ascii
@@ -210,8 +281,10 @@
 	c@ $ff and $80 >=? ( drop 0 ; )
 	13 =? ( drop 0 ; ) drop -1 ;
 
-:insins | c -- ; inserta siempre, graba [1][c]
-	dup 1 pushu lins ;
+
+:insins | c -- ; inserta SIEMPRE y graba INS
+	dup 0 swap 0 cpos urec
+	lins ;
 
 :insertchar | c -- ; reemplaza la seleccion, inserta o sobreescribe
 	remsel
@@ -223,12 +296,6 @@
 |-------------
 | Edit CtrE
 |-------------
-:posfijo? | adr -- desde/0
-	( c@+ 1?
-		46 =? ( drop ; )
-		drop )
-	nip ;
-
 |-------------
 :controlc | copy
 	copysel ;
@@ -236,85 +303,139 @@
 :controlx | cut
 	controlc remsel ;
 
+:pastefix | adr -- ; caracteres de control (menos tab y CR) -> espacio
+	( dup c@ $ff and 1?
+		32 <? ( 9 <>? ( 13 <>? ( 32 pick2 c! ) ) )
+		drop 1+ ) 2drop ;
+
+:insblock | adr cnt -- ; inserta cnt bytes en el cursor como un solo paso de undo
+	0? ( 2drop ; )
+	fuente> over + fuente>			| adr cnt dst src
+	$fuente over - 1+ cmove>			| hace lugar
+	dup '$fuente +!
+	fuente> pick2 pick2 cmove			| copia el bloque
+	fuente> fuente - over recins
+	'fuente> +! drop ;
+
 :controlv | paste
 	SDL_HasClipboardText 0? ( drop ; ) drop
+	remsel
 	SDL_GetClipboardText
-	count 2dup
-	fuente> dup pick2 + swap | clip cnt 'f+ 'f
-	$fuente over - 1+ cmove>	| clip cnt
-	fuente> -rot | f clip cnt
-	dup '$fuente +! 
-	cmove 'fuente> +!
-	clearundo
+	dup only13 drop dup pastefix
+	dup count insblock
 	SDL_free ;
 
 |-------------
-:redodel | repite un del
-	fuente> $fuente >=? ( drop ; )
-	delraw ;
-
-:swapchar | charnuevo adr -- charviejo
+:swapchar | charnuevo adr -- charviejo ; escribe charnuevo en adr, devuelve lo que habia
 	dup c@ -rot c! ;
 
-| registros [marca][char]: 0 BACK, 1 INS, 9 DEL, 2 OVR
-:controlz | undo
-	undobuffer>
-	undobuffer =? ( drop ; )
-	2 - dup c@
-	9 =? ( drop dup 1+ c@ lins -1 'fuente> +! 'undobuffer> ! ; )
-	1 =? ( drop redoback 'undobuffer> ! ; )
-	2 =? ( drop -1 'fuente> +! dup 1+ c@ fuente> swapchar over 1+ c! 'undobuffer> ! ; )
-	drop dup 1+ c@ lins 'undobuffer> ! ;
+
+:undo1 | adr -- ; deshace un registro
+	dup @ unrec fuente + rot					| adr c ud t
+	0? ( drop nip dup delraw 'fuente> ! drop ; )			| INS: borra
+	1 =? ( drop dup 'fuente> ! swap lins 'fuente> ! drop ; )	| DEL: reinserta, cursor en pos
+	2 =? ( drop 'fuente> ! lins drop ; )				| BACK: reinserta, cursor tras el char
+	drop dup 'fuente> ! swapchar over 1+ c! drop ;			| OVR: restaura, guarda el otro
+
+:redo1 | adr -- ; rehace un registro
+	dup @ unrec fuente + rot					| adr c ud t
+	0? ( drop 'fuente> ! lins drop ; )				| INS: inserta
+	3 <? ( drop nip dup delraw 'fuente> ! drop ; )			| DEL/BACK: borra
+	drop dup 1+ 'fuente> ! swapchar over 1+ c! drop ;		| OVR: reescribe, avanza
+
+:undostep | -- flag ; deshace un registro; flag<>0 si seguia unido al anterior
+	undobuffer> undobuffer =? ( drop 0 ; ) drop
+	undobuffer> 8 - dup 'undobuffer> !
+	dup undo1
+	@ $80 and ;
+
+:redostep | -- flag ; rehace un registro; flag<>0 si el siguiente esta unido
+	undobuffer> undobuffer< =? ( drop 0 ; ) drop
+	undobuffer> dup redo1
+	8 + dup 'undobuffer> !
+	undobuffer< =? ( drop 0 ; )
+	@ $80 and ;
+
+:controlz | undo (un paso = registros unidos)
+	sele 1 'unj !
+	( undostep 1? drop ) drop ;
 
 :controly | redo
-	undobuffer> undobuffer< =? ( drop ; )
-	dup c@
-	9 =? ( redodel )
-	0 =? ( redoback )
-	1 =? ( over 1+ c@ lins )
-	2 =? ( over 1+ dup c@ fuente> swapchar swap c! 1 'fuente> +! )
-	drop 2 + 'undobuffer> ! ;
+	sele 1 'unj !
+	( redostep 1? drop ) drop ;
 
-|-------------
-:=w | w1 w2 -- 1/0
-	( c@+ 32 >?
-		toupp rot c@+ toupp rot - 1? ( 3drop 0 ; ) drop swap ) 3drop 1 ;
 
-:exactw | adr 1c act cc -- adr 1c act 1/0
-	drop dup pick3 =w ;
+|----- busqueda (sin distinguir mayusculas)
+:findnext | -- ; siguiente coincidencia de findpad
+	'findpad c@ 0? ( drop ; ) drop
+	fuente> $fuente >=? ( drop ; ) 1+ 'findpad findstri 0? ( drop ; )
+	'fuente> ! ;
 
-:setcur | adr 1c act 1
-	drop nip nip 'fuente> ! ;
+:findprev | -- ; coincidencia anterior de findpad (ultima que empieza antes del cursor)
+	'findpad c@ 0? ( drop ; ) drop
+	0 fuente						| ultima p
+	( 'findpad findstri 1? fuente> <?		| ultima m
+		nip dup 1+ )				| m m+1
+	drop 0? ( drop ; )
+	'fuente> ! ;
 
-:controla | -- ;find prev
-	'findpad
-	dup c@ $ff and
-	0? ( 2drop ; )
-	toupp
-	fuente> 1- | adr 1c act
-	( fuente >?
-		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1- ) 3drop ;
+|----- definiciones
+#wpad * 64		| palabra bajo el cursor
+#newdef * 96		| texto de la definicion nueva
 
-:controls | -- ;find next
-	'findpad
-	dup c@ $ff and
-	0? ( drop ; )
-	toupp
-	fuente> 1+ | adr 1c act
+:cprev | a -- a c ; char anterior (0 al inicio del texto)
+	fuente <=? ( 0 ; ) dup 1- c@ $ff and ;
+
+:wordpad | -- ini fin ; palabra bajo el cursor (sin la comilla inicial)
+	fuente> ( cprev 32 >? drop 1- ) drop
+	dup c@ $27 =? ( swap 1+ swap ) drop
+	dup ( c@+ $ff and 32 >? drop ) drop 1- ;
+
+:wordcopy | ini fin -- len ; copia la palabra a wpad
+	over - 63 min
+	'wpad pick2 pick2 cmove
+	nip dup 'wpad + 0 swap c! ;
+
+:defname | adr -- name/0 ; salta el prefijo de definicion (: :: # ##) o da 0
+	c@+ $ff and
+	$3a <>? ( $23 <>? ( 2drop 0 ; ) )
+	over c@ =? ( swap 1+ swap ) drop ;
+
+:isword? | name -- flag ; name coincide con wpad y termina ahi
+	'wpad
+	( c@+ 1? $ff and toupp
+		rot c@+ $ff and toupp rot - 1? ( 3drop 0 ; ) drop
+		swap )
+	2drop c@ $ff and 33 <? ( drop 1 ; ) drop 0 ;
+
+:finddef | -- adr/0 ; linea que define la palabra de wpad
+	fuente
 	( $fuente <?
-		dup c@ toupp pick2 =? ( exactw 1? ( setcur ; ) )
-		drop 1+ ) 3drop ;
+		dup defname 1? ( isword? 1? ( drop ; ) ) drop
+		>>13 1+ )
+	drop 0 ;
 
-|-------------
-:controld | buscar definicion
-	;
+:defstart | -- adr ; inicio de la definicion ':' que contiene al cursor
+	fuente> 1- <<13 1+
+	( fuente >?
+		dup c@ $3a =? ( drop ; ) drop
+		1- <<13 1+ ) ;
 
-:controln  | new
-	| si no existe esta definicion
-	| ir justo antes de la definicion
-	| agregar palabra :new  ;
-	;
+:controld | ir a la definicion de la palabra bajo el cursor
+	wordpad wordcopy 0? ( drop ; ) drop
+	finddef 0? ( drop ; )
+	'fuente> ! ;
+
+:controln | palabra nueva: ir a su definicion, o crear ":palabra ;" antes de la actual
+	wordpad wordcopy 0? ( drop ; )			| len
+	finddef 1? ( nip 'fuente> ! ; ) drop
+	sele defstart 'fuente> !
+	$3a 'newdef c!
+	'newdef 1+ 'wpad pick2 cmove
+	'newdef 1+ over +
+	13 swap c!+ 9 swap c!+ $3b swap c!+ 13 swap c!+ 13 swap c!+ drop
+	6 + 'newdef swap insblock
+	-3 'fuente> +! ;
 
 |------ Color line
 | $332A3F txrgb ; | back
@@ -375,13 +496,33 @@
 		$22 =? ( strcol )
 		drop swap ) neg 'xpad ! ;
 
+|----- numero de linea
+#shownum 1		| 1 = muestra el numero de linea
+
+:gutter | -- w ; ancho del margen con los numeros
+	shownum 0? ( ; ) drop "00000" txw nip ;
+
+:edlayout | -- ; posicion del codigo y columnas visibles
+	xcode gutter + 'xcodel !
+	wcode xcodel xcode - - 32 txcw / 'xvis ! ;
+
+::edlinenum! | 0/1 -- ; muestra u oculta el numero de linea
+	1? ( drop 1 ) 'shownum !
+	edlayout ;
+
+::edlinenum | -- 0/1
+	shownum ;
+
+:drawnum | n -- ; numero de linea en el margen (si esta visible)
+	shownum 0? ( 2drop ; ) drop
+	$afafaf txrgb .d 4 .r. txwrite ;
+
 :txsp 32 txemit ;
 :txtab "   " txwrite ;
 
 :drawline | src nline ylin -- src nline ylin
 	pick2 c@ 0? ( drop ; ) drop | linea vacia
-	$afafaf txrgb
-	swap 1+ dup .d 4 .r. txwrite	| src ylin nline 
+	swap 1+ dup drawnum			| src ylin nline
 	xcodel ycode pick3 + txat
 	rot iniline						| ylin nline src 
 	xpad 32 txcw * 0 tx+at
@@ -442,7 +583,7 @@
 	ycode txh +
 	( over <? txh + rot >>13 1+ -rot ) 2drop
 	skipcols
-	swap 0 txcw 2* dup 2* + xpad 32 txcw * + | adr x xa
+	swap 0 txcw 6 * shownum * xpad 32 txcw * + | adr x xa
 	( over <? mmemit ) 2drop
 	'fuente> ! 
 	fixcur ;
@@ -461,37 +602,64 @@
 	cursormouse
 	fuente> '1sel ! ;
 
+
 :mos
-	cursormouse
-	fuente> 1sel over <? ( swap )
-	'finsel ! 'inisel ! ;
+	cursormouse fuente> rsel ;
 
 :ups
 	msec dup tclick - 400 <? ( 2drop dclick ; ) drop 'tclick !
 	cursormouse
-	fuente> 1sel 
-	over =?  ( 2drop 0 'inisel ! ; )
-	over <? ( swap )
-	'finsel ! 'inisel ! ;
-	
+	fuente> 1sel =? ( drop 0 'inisel ! ; )
+	rsel ;
+
+
 :evwmouse 
 	SDLw 0? ( drop ; )
 	-? ( ( 1? 1+ scrolldw scrolldw ) drop ; )
 	( 1? 1- scrollup scrollup ) drop ;	
 
+|---------- busqueda: entrada del texto
+#modefind		| 1 = escribiendo el texto a buscar
+#rdonly			| 1 = editor de solo lectura
+
+:findoff 0 'modefind ! ;
+:findmode 1 'modefind ! 0 'findpad c! ;
+:findgo findoff findnext ;
+
+:findchar | c -- ; agrega un caracter al texto de busqueda
+	$ff and 32 <? ( drop ; )
+	'findpad count 62 >=? ( 3drop ; )
+	+ c!+ 0 swap c! ;
+
+:findback | -- ; borra el ultimo caracter
+	'findpad count 0? ( 2drop ; ) 1- + 0 swap c! ;
+
+:findkey | key -- ; teclas durante la entrada de la busqueda
+	<back> =? ( findback )
+	<ret> =? ( findgo )
+	<esc> =? ( findoff )
+	drop ;
+
 |---------- manejo de teclado
+:controledit | key -- key ; atajos que modifican el texto (no en solo lectura)
+	rdonly 1? ( drop ; ) drop
+	<x> =? ( controlx )
+	<v> =? ( controlv )
+	<z> =? ( controlz )
+	<y> =? ( controly )
+	<n> =? ( controln ) ;
+
 :controlkey
 	SDLkey
 	>ctrl< =? ( controloff )
-|	<f> =? ( mode!find )
-	<x> =? ( controlx )
+	controledit
 	<c> =? ( controlc ) | copy
-	<v> =? ( controlv ) | paste
-	<z> =? ( controlz ) | undo
-	<y> =? ( controly ) | redo
+	<f> =? ( findmode ) | find
+	<d> =? ( controld ) | definition
+	<l> =? ( shownum 1 xor edlinenum! ) | line number
 
-	<up> =? ( controla )
-	<dn> =? ( controls )
+	<up> =? ( findprev )
+	<dn> =? ( findnext )
 
 |	'controle 18 ?key " E-Edit" emits | ctrl-E dit
 ||	'controlh 35 ?key " H-Help" emits  | ctrl-H elp
@@ -546,10 +714,11 @@
 	
 :editmodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-	SDLchar 1? ( insertchar ; ) drop
+	SDLchar 1? ( modefind 1? ( drop findchar ; ) drop insertchar ; ) drop
 	SDLkey 0? ( drop ; )
 	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
 	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
+	modefind 1? ( drop findkey ; ) drop
 	<back> =? ( kback )
 	<del> =? ( kdel )
 	<ret> =? ( 13 insertchar )
@@ -572,6 +741,7 @@
 	": " txwrite
 	xcursor 1+ .d txwrite txsp
 	ycursor 1+ .d txwrite txsp
+	modefind 1? ( drop " find: " txwrite 'findpad txwrite "_" txwrite ; ) drop
 |	inisel 0? ( drop ; ) ( finsel <? c@+ "%k" txprint ) drop
 |	panelcontrol 1? ( drop barrac ; ) drop
 	;
@@ -627,6 +797,7 @@
 	cursorlin fuente> txcuri ;	
 	
 :inedit | write editor
+	0 'rdonly !
 	|$7f color 
 	|xcode ycode wcode hcode rect 
 	'dns uiDwn 'mos uiSel 'ups uiUp
@@ -643,10 +814,11 @@
 |---- Read only
 :romodekey
 	panelcontrol 1? ( drop controlkey ; ) drop
-
+	SDLchar 1? ( modefind 1? ( drop findchar ; ) 2drop ; ) drop
 	SDLkey 0? ( drop ; )
 	<ctrl> =? ( controlon drop ; ) >ctrl< =? ( controloff drop ; )
 	<shift> =? ( 1 'mshift ! drop ; ) >shift< =? ( 0 'mshift ! drop ; )
+	modefind 1? ( drop findkey ; ) drop
 
 	selecc
 	<up> =? ( karriba ) <dn> =? ( kabajo )
@@ -657,6 +829,7 @@
 	selecc ;
 	
 :inro | readonly editor
+	1 'rdonly !
 	'dns uiDwn 'mos uiSel 'ups uiUp
 	evwmouse
 	romodekey
@@ -719,15 +892,14 @@
 	dup 'fuente ! dup 'fuente> ! dup '$fuente ! dup 'scrini> !
 	$ffff +			| 64kb texto
 	dup 'undobuffer ! dup 'undobuffer> ! dup 'undobuffer< !
-	$1fff +			| 8kb
+	$8000 +			| 32kb
 	'here !			| -- FREE
 	0 here !
 	mark ;
 
 ::edwin | x y w h --
 	'hcode ! 'wcode ! 'ycode ! 'xcode ! 
-	"00000" txw nip xcode + 'xcodel !
-	wcode xcodel xcode - - 32 txcw / 'xvis ! ;
+	edlayout ;
 
 |------------------------------------------------
 #hashfile
@@ -740,21 +912,21 @@
 	0 dup 'inisel ! 'finsel !
 	clearundo ;
 
-::edloadmem | "" --
-	fuente strcpy
+
+:txtready | -- ; texto en fuente: solo CR, vista al inicio, hash para detectar cambios
 	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
 	rewind
-	fuente simplehash 'hashfile !
-	;
-	
+	fuente simplehash 'hashfile ! ;
+
+::edloadmem | "" --
+	fuente strcpy txtready ;
+
 ::edload | "" --
 	'edfilename strcpy
 	fuente 'edfilename |getpath
 	load 0 swap c!
-	fuente only13 1- '$fuente ! |-- queda solo cr al fin de linea
-	rewind
-	fuente simplehash 'hashfile !
-	;
+	txtready ;
+
 
 ::edsave | --
 	fuente simplehash hashfile =? ( drop ; ) drop | no cambio
