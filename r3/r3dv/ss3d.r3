@@ -7,7 +7,6 @@
 #3dss_max		| max instances
 ##3dss_array	| instances array
 
-#dirty_min #dirty_max
 #ss3d_inst
 
 #ss3d_shader
@@ -27,9 +26,9 @@
 layout(location=0) in vec3 a_pos;
 
 struct Instance {
-    uint scale3;    // scale x|y<<10|z<<20
-	uint color;
 	uint spr_obj;   // bits 15-0: spr_id uint16 | bits 31-16: obj_id uint16
+	uint color;
+    uint scale3;    // scale x|y<<10|z<<20
     int  qxy;       // int16 qx (lo) | int16 qy (hi)
     int  qzw;       // int16 qz (lo) | int16 qw (hi)
     int  px, py, pz;	
@@ -293,8 +292,6 @@ void main() {
 	here '3dss_array !
 	3dss_max 5 << | 32* 
 	'here +!			| 32 bytes x inst
-	$FFFF 'dirty_min ! 
-	0 'dirty_max !	
 	0 'ss3d_inst !
 	;
 
@@ -336,16 +333,9 @@ void main() {
 
 ::SS3Ddraw
 	ss3d_inst 0? ( drop ; ) drop
-	dirty_min dirty_max <? (
-		GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
-		GL_SHADER_STORAGE_BUFFER
-		dirty_min 5 << | 32*
-		dirty_max dirty_min - 5 << | 32*
-		3dss_array dirty_min 5 << + | 32* +
-		glBufferSubData
-		GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-		$ffff 'dirty_min ! 0 'dirty_max !
-		) drop
+	GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
+	GL_SHADER_STORAGE_BUFFER 0 ss3d_inst 5 << 3dss_array glBufferSubData
+	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex $ffff and glBindTexture
@@ -363,10 +353,8 @@ void main() {
 	0 glBindVertexArray
 	;
 
-:dirtycheck
-	dirty_min <? ( dup 'dirty_min ! )
-	dirty_max >=? ( dup 1+ ss3d_inst >? ( dup 'ss3d_inst ! ) 'dirty_max ! )
-	;
+:growinst | i -- i	; ss3d_inst llega al menos a i+1
+	ss3d_inst >=? ( dup 1+ 'ss3d_inst ! ) ;
 
 #cz #sz #cy #sy #cx #sx
 
@@ -447,65 +435,57 @@ void main() {
 	swap enc10 10 << or
 	swap enc10 or ;
 
-#sbase
-
 ::ss3dset | x y z qxyzw scale spr color i --
-	dirtycheck
+	growinst
 	ab[
-	dup 5 << 3dss_array + 'sbase !
-	$ffff and 16 <<				| obj_id = i
-	rot or						| scale color (obj|spr)
-	sbase 2 2 << + >a da!
-	sbase 1 2 << + >a da!		| color
-	enc3 sbase >a da!			| scale xyz
-	sbase 3 2 << + >a a!+
-	rot da!+ swap da!+ da!		| x y z
-	]ba
-	;
+	dup 5 << 3dss_array + >a			| A = &instancia
+	$ffff and 16 << rot or da!+			| spr_obj: obj_id = i | spr
+	da!+								| color
+	enc3 da!+							| scale xyz
+	a!+									| quaternion
+	rot da!+ swap da!+ da!				| x y z
+	]ba ;
 
 ::ss3dmax | -- n	; cantidad maxima de instancias
 	3dss_max ;
 
 ::ss3dcs | scale spr color i --
-	dirtycheck
+	growinst
 	ab[
-	5 << 3dss_array + 'sbase !
-	sbase 1 2 << + >a da!		| color
-	sbase 2 2 << + w!			| sprite (no toca obj_id)
-	enc3 sbase >a da!			| scale xyz
+	5 << 3dss_array + >a
+	swap a> w!							| sprite (no toca obj_id)
+	4 a+ da!+							| color
+	enc3 da!							| scale xyz
 	]ba ;
 
 ::ss3dscl3 | sx sy sz i --	; escala por eje (16.16)
-	dirtycheck
-	ab[
-	5 << 3dss_array + >a
-	enc3x da!
-	]ba ;
+	growinst
+	>r enc3x r> 5 << 3dss_array + 8 + d! ;
 
 ::ss3dobj | id i --		; obj_id (16 bits)
-	dirtycheck
-	5 << 3dss_array + 10 + w! ;
+	growinst
+	5 << 3dss_array + 2 + w! ;
 
 ::ss3dobj@ | i -- id
-	5 << 3dss_array + 8 + d@ 16 >> $ffff and ;
+	5 << 3dss_array + d@ 16 >> $ffff and ;
 
 ::ss3dxyz | x y z i --
-	dirtycheck
+	growinst
 	ab[
-	5 << 3dss_array + 5 2 << + >a
-	rot da!+ swap da!+ da! 
+	5 << 3dss_array + 20 + >a
+	rot da!+ swap da!+ da!
 	]ba ;
 
 ::ss3dqua | quat i --
-	dirtycheck 
-	5 << 3dss_array + 3 2 << + ! ;
+	growinst
+	5 << 3dss_array + 12 + ! ;
 
 ::ss3dxyzq | x y z quat i --
-	dirtycheck 
+	growinst
 	ab[
-	5 << 3dss_array + 3 2 << + >a
+	5 << 3dss_array + 12 + >a
 	a!+
-	rot da!+ swap da!+ da! 
+	rot da!+ swap da!+ da!
 	]ba ;
 	
 ::ss3dreset  
@@ -525,34 +505,32 @@ void main() {
 
 ::ss3difloor | i -- val
 	5 << 3dss_array +
-	dup d@ 10 >> $3ff and dec10		| adr sy
-	swap 8 + d@ $ffff and			| sy spr
+	dup 8 + d@ 10 >> $3ff and dec10	| adr sy
+	swap d@ $ffff and				| sy spr
 	ss3dfloor ;
 
 |--- lectura de instancias
 ::ss3dxyz@ | i -- x y z
-	5 << 3dss_array + 5 2 << + d@+ swap d@+ swap d@ ;
+	5 << 3dss_array + 20 + d@+ swap d@+ swap d@ ;
 
 ::ss3dqua@ | i -- quat
-	5 << 3dss_array + 3 2 << + @ ;
+	5 << 3dss_array + 12 + @ ;
 
 ::ss3dscl@ | i -- sx sy sz	; escala por eje (16.16)
-	5 << 3dss_array + d@
+	5 << 3dss_array + 8 + d@
 	dup $3ff and dec10 swap
 	dup 10 >> $3ff and dec10 swap
 	20 >> $3ff and dec10 ;
 
 ::ss3dspr@ | i -- spr
-	5 << 3dss_array + 8 + d@ $ffff and ;
+	5 << 3dss_array + d@ $ffff and ;
 
 ::ss3dcol@ | i -- color
 	5 << 3dss_array + 4 + d@ $ffffffff and ;
 
 ::ss3dcol | color i --	; solo el color
-	dirtycheck
-	ab[
-	5 << 3dss_array + 4 + >a da!
-	]ba ;
+	growinst
+	5 << 3dss_array + 4 + d! ;
 
 |--- picking: rayo contra la caja orientada (OBB) de cada instancia
 |    el rayo se pasa al espacio local de la instancia (rotando por el
@@ -633,15 +611,13 @@ void main() {
 	pkbi ;
 
 |--- copiar instancias / cantidad dibujada
-#cps #cpd
 ::ss3dcopy | src dst --	; copia los 32 bytes de la instancia src en dst
-	dirtycheck
-	5 << 3dss_array + 'cpd !
-	5 << 3dss_array + 'cps !
-	cps @ cpd !
-	cps 8 + @ cpd 8 + !
-	cps 16 + @ cpd 16 + !
-	cps 24 + @ cpd 24 + ! ;
+	growinst
+	ab[
+	5 << 3dss_array + >b
+	5 << 3dss_array + >a
+	a@+ b!+ a@+ b!+ a@+ b!+ a@ b!
+	]ba ;
 
 ::ss3dlen! | n --	; cantidad de instancias que se dibujan (0..n-1)
 	'ss3d_inst ! ;
