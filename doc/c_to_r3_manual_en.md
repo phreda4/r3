@@ -624,6 +624,36 @@ The variables that stayed in `colorscene.r3`, and why:
 
 Rule: **keep a variable when it is state, when it saves work in the hot loop, or when removing it would hide the code.** The goal is not zero variables; it is variables that mean something.
 
+### Trailing drops: consume, don't clean up
+
+A word that ends in `drop`, `2drop`, `3drop` or `4drop`, or that digs under its results with `>r >r >r 3drop r> r> r>`, usually left values on the stack that the computation could have consumed. Reorder it:
+
+1. Start from the value on top of the stack, so it is consumed by the operation that uses it last.
+2. As soon as a result is finished, park it with `>r`; take the results back with `r>` at the end (the last one parked comes back first).
+3. Do not copy with `pick` a value you will not need again.
+
+```r3
+| before: c is copied with pick3, then everything is cleaned up at the end
+:vsub | 'v cx cy cz -- x y z        ; v - c
+	pick3 >a
+	a@+ pick3 -
+	a@+ pick3 -
+	a@  pick3 -
+	>r >r >r 4drop r> r> r> ;
+
+| after: each subtraction consumes its own c; results wait on the return stack
+:vsub | cx cy cz 'v -- x y z
+	>a
+	a> 16 + @ swap - >r         | z consumes cz
+	a> 8 + @ swap - >r          | y consumes cy
+	a@ swap -                   | x consumes cx
+	r> r> ;                     | x y z
+```
+
+The same idea works when every result needs all the inputs (a rotation, for example): compute the shared temporaries first, then build the results starting with the component that is on top, so each input is used last by its own result.
+
+A `drop` right after a conditional is not this problem: tests never consume their value, so `>? ( drop ... ; ) drop` is the normal way to clean up (see Step 7). If you cannot reorder because several results need the same input until the end, keep it in a variable or split the word.
+
 ### Frequent mistakes in this transformation
 
 | Mistake | Symptom | Fix |
@@ -633,6 +663,7 @@ Rule: **keep a variable when it is state, when it saves work in the hot loop, or
 | one path leaves one item more or fewer | corrupted values far from the cause | check that every path ends with the declared stack effect |
 | `<?`, `=?`, `0?` assumed to consume the tested value | off-by-one on the stack | binary tests consume only the second operand; unary tests (`0?`, `1?`) consume nothing |
 | `>r` without `r>` in some path | crash on return | pair them inside the same word |
+| a word ends in `drop`/`2drop`/`4drop` to discard inputs | values kept on the stack instead of consumed; harder to read and to `pick` | reorder so each input is consumed where it is last used (see [Trailing drops](#trailing-drops-consume-dont-clean-up)) |
 | a loop with no exit condition of its own | it runs once | the loop test must be a conditional that has no block of its own (`( running 1? drop ... )`) |
 | `c@` returns a signed byte | negative values in indexes | mask it: `c@ $ff and` |
 | the stack effect comment lies | later edits break silently | update the comment with the code |
@@ -655,10 +686,11 @@ To check a single word, call it from a small `:main` with known inputs and put a
 4. Trace the stack in comments, one line at a time.
 5. Count distances again after every push; never go beyond `pick4`.
 6. Make every branch and every loop iteration leave the same stack depth.
-7. Factor out any part that needs more than 3 or 4 inputs.
-8. Compare the checksum after every change.
-9. Measure the time. If the inner loop got slower, put the variable back.
-10. Delete the variable declarations only when no word uses them any more.
+7. Look at the last words of each word: a trailing `drop`/`2drop`/`4drop` means a value could have been consumed (reorder, park results with `>r`).
+8. Factor out any part that needs more than 3 or 4 inputs.
+9. Compare the checksum after every change.
+10. Measure the time. If the inner loop got slower, put the variable back.
+11. Delete the variable declarations only when no word uses them any more.
 
 ---
 

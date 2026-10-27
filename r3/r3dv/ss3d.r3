@@ -555,62 +555,81 @@ void main() {
 	]ba ;
 
 |--- picking: rayo contra la caja orientada (OBB) de cada instancia
-#pkqx #pkqy #pkqz #pkqw
-#pkvx #pkvy #pkvz
-#pktx #pkty #pktz
-#pkcx #pkcy #pkcz
-#pkox #pkoy #pkoz	| origen del rayo en el espacio local de la instancia
-#pkdx #pkdy #pkdz	| direccion
-#pksx #pksy #pksz #pkspr
-#pkso #pksd #pksh
-#pktn #pktf #pkmiss
-#pkp #pkd #pki
-#pkbest #pkbi #pkn
+|    el rayo se pasa al espacio local de la instancia (rotando por el
+|    quaternion conjugado) y se corta con las 3 placas +-h de la caja
 
-:pkrot | vx vy vz -- rx ry rz	; rota por pkq (ya conjugado = inversa)
-	'pkvz ! 'pkvy ! 'pkvx !
-	pkqy pkvz *. pkqz pkvy *. - 2* 'pktx !
-	pkqz pkvx *. pkqx pkvz *. - 2* 'pkty !
-	pkqx pkvy *. pkqy pkvx *. - 2* 'pktz !
-	pkvx pkqw pktx *. + pkqy pktz *. + pkqz pkty *. -
-	pkvy pkqw pkty *. + pkqz pktx *. + pkqx pktz *. -
-	pkvz pkqw pktz *. + pkqx pkty *. + pkqy pktx *. - ;
+#pkqx #pkqy #pkqz #pkqw		| quaternion conjugado (inversa) de la instancia
+#pktx #pkty #pktz			| t = 2 * (q x v), temporal de pkrot
+#pkro #pkrd					| rayo actual: 'origen 'direccion
+#pkl * 72					| espacio local: o(0..2) d(3..5) h(6..8)
+#pkbest #pkbi				| mejor distancia e instancia de ss3dpick
 
-:pkslab | o d h --	; intervalo [tn tf] del rayo dentro de la placa +-h
-	'pksh ! 'pksd ! 'pkso !
-	pksd abs 32 <? ( drop		| paralelo al plano
-		pkso abs pksh >? ( 1 'pkmiss ! ) drop
-		; ) drop
-	pksh neg pkso - pksd /.
-	pksh pkso - pksd /.
-	2dup min -rot max
-	pktf min 'pktf !
-	pktn max 'pktn ! ;
+:pkvec@ | 'v -- x y z		; lee 3 qwords
+	>a a@+ a@+ a@ ;
+
+:pkvec! | x y z 'v --		; escribe 3 qwords
+	>a a> 16 + ! a> 8 + ! a! ;
+
+:pkvsub | cx cy cz 'v -- x y z	; v - c, cada resta consume su c
+	>a
+	a> 16 + @ swap - >r
+	a> 8 + @ swap - >r
+	a@ swap -
+	r> r> ;
+
+:pkrot | x y z -- rx ry rz	; v + w*t + q x t   (q ya conjugado)
+	pkqy over *. pkqz pick3 *. - 2* 'pktx !
+	pkqz pick3 *. pkqx pick2 *. - 2* 'pkty !
+	pkqx pick2 *. pkqy pick4 *. - 2* 'pktz !
+	pkqw pktz *. + pkqx pkty *. + pkqy pktx *. - >r		| rz (consume z)
+	pkqw pkty *. + pkqz pktx *. + pkqx pktz *. - >r		| ry (consume y)
+	pkqw pktx *. + pkqy pktz *. + pkqz pkty *. -		| rx (consume x)
+	r> r> ;
+
+:pkext | sx sy sz spr -- hx hy hz	; semi-extension de la caja
+	>b
+	b> ss3dLZ * 0.005 *.
+	swap b> ss3dLY * 0.005 *. swap
+	rot b> ss3dLX * 0.005 *. -rot ;
+
+:pkslab | o d h -- min max	; intervalo del rayo dentro de la placa +-h
+	over abs 32 <? ( drop nip		| paralelo al plano: o h
+		swap abs swap >? ( drop $7fffffffffff -1 ; )
+		drop 0 $7fffffffffff ; ) drop
+	rot 2dup - -rot + neg			| d (h-o) (-h-o)
+	pick2 /. swap rot /.			| a b
+	2dup min -rot max ;
+
+:pkclip | tn tf min max -- tn tf
+	swap >r min swap r> max swap ;
+
+:pkaxis | tn tf k -- tn tf
+	3 << 'pkl + >a
+	a@ a> 24 + @ a> 48 + @
+	pkslab pkclip ;
+
+:pkloc | i --		; rayo y caja en espacio local -> 'pkl
+	dup ss3dqua@ unpackq neg 'pkqx ! neg 'pkqy ! neg 'pkqz ! 'pkqw !
+	dup ss3dscl@ pick3 ss3dspr@ pkext 'pkl 48 + pkvec!
+	ss3dxyz@ pkro pkvsub pkrot 'pkl pkvec!
+	pkrd pkvec@ pkrot 'pkl 24 + pkvec! ;
+
+:pkhit | i -- t		; usa el rayo pkro pkrd
+	pkloc
+	0 $7fffffffffff
+	0 pkaxis 1 pkaxis 2 pkaxis
+	>? ( drop -1 ; ) ;
 
 ::ss3dhit | 'orig 'dir i -- t	; distancia (16.16) al borde de la caja, -1 si no la toca
-	'pki ! 'pkd ! 'pkp !
-	pki ss3dqua@ unpackq 'pkqx ! 'pkqy ! 'pkqz ! 'pkqw !
-	pkqx neg 'pkqx ! pkqy neg 'pkqy ! pkqz neg 'pkqz !
-	pki ss3dxyz@ 'pkcz ! 'pkcy ! 'pkcx !
-	pkp @ pkcx - pkp 8 + @ pkcy - pkp 16 + @ pkcz - pkrot 'pkoz ! 'pkoy ! 'pkox !
-	pkd @ pkd 8 + @ pkd 16 + @ pkrot 'pkdz ! 'pkdy ! 'pkdx !
-	pki ss3dscl@ 'pksz ! 'pksy ! 'pksx !
-	pki ss3dspr@ 'pkspr !
-	0 'pktn ! $7fffffffffff 'pktf ! 0 'pkmiss !
-	pkox pkdx pksx pkspr ss3dLX * 0.005 *. pkslab
-	pkoy pkdy pksy pkspr ss3dLY * 0.005 *. pkslab
-	pkoz pkdz pksz pkspr ss3dLZ * 0.005 *. pkslab
-	pkmiss 1? ( drop -1 ; ) drop
-	pktn pktf >? ( drop -1 ; ) drop
-	pktn ;
+	-rot 'pkrd ! 'pkro ! pkhit ;
 
 ::ss3dpick | 'orig 'dir n -- i	; instancia mas cercana que toca el rayo (-1 = ninguna)
-	'pkn ! 'pkd ! 'pkp !
+	-rot 'pkrd ! 'pkro !
 	-1 'pkbi ! $7fffffffffff 'pkbest !
-	0 ( pkn <?
-		pkp pkd pick2 ss3dhit
-		0 >=? ( pkbest <? ( dup 'pkbest ! over 'pkbi ! ) ) drop
-		1+ ) drop
+	( 1? 1-							| recorre n-1..0: en empate gana el menor indice
+		dup pkhit
+		0 >=? ( pkbest <=? ( dup 'pkbest ! over 'pkbi ! ) ) drop
+		) drop
 	pkbi ;
 
 |--- copiar instancias / cantidad dibujada

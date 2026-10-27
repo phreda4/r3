@@ -128,7 +128,6 @@
 #cF 0 0 0		| adelante
 #cR 0 0 0		| derecha
 #cU 0 0 0		| arriba
-#tanV #tanH #secV #secH
 
 | base de la camara y pendientes del frustum
 :camvec
@@ -137,10 +136,7 @@
 	'cR 'cF v3= 'cR 'camUp v3vec
 	'cR v3nor
 	'cU 'cR v3= 'cU 'cF v3vec
-	camFov 'tanV !
-	camFov rl_w rl_h 16 <</ *. 'tanH !
-	1.0 tanV dup *. + sqrt. 'secV !
-	1.0 tanH dup *. + sqrt. 'secH ! ;
+	;
 
 :camera
 	pyp pzp 1.5 + pxp 'camTo !+ !+ !
