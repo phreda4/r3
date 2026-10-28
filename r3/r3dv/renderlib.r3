@@ -610,7 +610,7 @@ void main() {
 | radio de influencia de las luces puntuales (va en pos.w); cambiarlo antes de rl_point_light
 ##rl_plight_radius 8.0
 
-#tid #aux
+#tid
 
 |----------------------------------
 :rl_make_tex2d | ifmt w h fmt type minmagf wrap -- texid
@@ -628,19 +628,17 @@ void main() {
 	GL_TEXTURE_2D 0 glBindTexture
 	tid ;
 
-:rl_make_fbo | color_tex depth_tex -- fbo
+:rl_make_fbo | color_tex -- fbo	; fbo con un solo color (draw buffer por defecto = COLOR_ATTACHMENT0)
+	>r
 	1 'tid glGenFramebuffers
 	GL_FRAMEBUFFER tid glBindFramebuffer
-	1? ( 
-		GL_FRAMEBUFFER GL_DEPTH_ATTACHMENT GL_TEXTURE_2D pick3 0 glFramebufferTexture2D 
-		) drop
-	1? ( 
-		GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D pick3 0 glFramebufferTexture2D 
-		GL_COLOR_ATTACHMENT0 'aux !
-		1 'aux glDrawBuffers
-		) drop
+	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D r> 0 glFramebufferTexture2D
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	tid ;
+
+:rl_make_rt | ifmt fmt type -- tex fbo	; textura rl_w x rl_h (lineal) + su fbo
+	>r >r rl_w rl_h r> r> GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d
+	dup rl_make_fbo ;
 
 | GLenum draws[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}
 #_gdb_draws [ $8CE0 $8CE1 ]
@@ -675,8 +673,8 @@ void main() {
 
 #listwh [ 0 0 0 0 0 ]
 #lisafp 0 0 0 0 0 
-#listex [ 0 0 0 0 0 ]
-#lisfbo [ 0 0 0 0 0 ]
+#listex * 40		| 2 ids por mip (dwords)
+#lisfbo * 40
 
 :]wh | n -- w h
 	2 << 'listwh + d@ dup $ffff and swap 16 >>> ;
@@ -689,17 +687,15 @@ void main() {
 	3 << 'lisafp + ! ;
 	
 :]tex | n -- tex
-	2* 'listex + w@ ;
+	2 << 'listex + d@ ;
 :]fbo | n -- fbo
-	2* 'lisfbo + w@ ;
+	2 << 'lisfbo + d@ ;
 
 | ================================================================	
 :rl_init_bloom
-    | scene_tex: 
-    GL_RGBA16F rl_w rl_h GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE
-    rl_make_tex2d 'rl_scene_tex !
+    | scene: RGBA16F
+    GL_RGBA16F GL_RGBA GL_FLOAT rl_make_rt 'rl_scene_fbo ! 'rl_scene_tex !
 	
-	rl_scene_tex 0 rl_make_fbo 'rl_scene_fbo !
 	
     | Bloom mips
 	'listex >a
@@ -711,38 +707,26 @@ void main() {
 		1.0 pick2 / f2fp $ffffffff and 
 		1.0 pick2 / f2fp 32 << or r@ ]afp!
 		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
-		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
+		dup da!+ rl_make_fbo db!+
 		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
-		dup a> w!+ >a 0 rl_make_fbo b> w!+ >b
+		dup da!+ rl_make_fbo db!+
 		r> 1+ ) 3drop ;
 
 | ================================================================
 :rl_destroy_gbuffer
-    rl_gbuf_fbo    1? ( 1 'rl_gbuf_fbo    glDeleteFramebuffers ) drop
-    rl_gbuf_norm   1? ( 1 'rl_gbuf_norm   glDeleteTextures     ) drop
-    rl_gbuf_albedo 1? ( 1 'rl_gbuf_albedo glDeleteTextures     ) drop
-    rl_gbuf_depth  1? ( 1 'rl_gbuf_depth  glDeleteTextures     ) drop
+    1 'rl_gbuf_fbo    glDeleteFramebuffers
+    1 'rl_gbuf_norm   glDeleteTextures
+    1 'rl_gbuf_albedo glDeleteTextures
+    1 'rl_gbuf_depth  glDeleteTextures
     0 'rl_gbuf_fbo ! 0 'rl_gbuf_norm ! 0 'rl_gbuf_albedo ! 0 'rl_gbuf_depth !
     ;
 
-#idcont
-
 :rl_destroy_bloom
-    rl_scene_fbo   1? ( 1 'rl_scene_fbo   glDeleteFramebuffers ) drop
-    rl_scene_tex   1? ( 1 'rl_scene_tex   glDeleteTextures     ) drop
+	1 'rl_scene_fbo glDeleteFramebuffers
+	1 'rl_scene_tex glDeleteTextures
 	0 'rl_scene_fbo ! 0 'rl_scene_tex !
-	'listex >a
-	'lisfbo >b
-	RL_BLOOM_MIPS ( 1? 1-
-		da@+ dup 16 >> 'idcont d!
-		1 'idcont glDeleteTextures
-		$ffff and 'idcont d!
-		1 'idcont  glDeleteTextures
-		db@+ dup 16 >> 'idcont d!
-		1 'idcont glDeleteFramebuffers
-		$ffff and 'idcont d!
-		1 'idcont glDeleteFramebuffers
-		) drop ;
+	RL_BLOOM_MIPS 2* 'listex glDeleteTextures
+	RL_BLOOM_MIPS 2* 'lisfbo glDeleteFramebuffers ;
 
 
 | ================================================================
@@ -752,12 +736,8 @@ void main() {
 :RL_FMT_RGBA8 $8058 ;	| GL_RGBA8
 
 :rl_init_ao
-	RL_FMT_R8 rl_w rl_h RL_FMT_RED GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
-	rl_make_tex2d 'rl_ao_tex !
-	rl_ao_tex 0 rl_make_fbo 'rl_ao_fbo !
-	RL_FMT_R8 rl_w rl_h RL_FMT_RED GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
-	rl_make_tex2d 'rl_ao_tex2 !
-	rl_ao_tex2 0 rl_make_fbo 'rl_ao_fbo2 !
+	RL_FMT_R8 RL_FMT_RED GL_UNSIGNED_BYTE rl_make_rt 'rl_ao_fbo ! 'rl_ao_tex !
+	RL_FMT_R8 RL_FMT_RED GL_UNSIGNED_BYTE rl_make_rt 'rl_ao_fbo2 ! 'rl_ao_tex2 !
 	| direcciones del blur como 2 floats32
 	'rl_ao_dirh >a 1.0 rl_w / f2fp da!+ 0 da!+
 	'rl_ao_dirv >a 0 da!+ 1.0 rl_h / f2fp da!+
@@ -766,24 +746,22 @@ void main() {
 	;
 
 :rl_destroy_ao
-	rl_ao_fbo  1? ( 1 'rl_ao_fbo  glDeleteFramebuffers ) drop
-	rl_ao_tex  1? ( 1 'rl_ao_tex  glDeleteTextures     ) drop
-	rl_ao_fbo2 1? ( 1 'rl_ao_fbo2 glDeleteFramebuffers ) drop
-	rl_ao_tex2 1? ( 1 'rl_ao_tex2 glDeleteTextures     ) drop
+	1 'rl_ao_fbo  glDeleteFramebuffers
+	1 'rl_ao_tex  glDeleteTextures
+	1 'rl_ao_fbo2 glDeleteFramebuffers
+	1 'rl_ao_tex2 glDeleteTextures
 	0 'rl_ao_fbo ! 0 'rl_ao_tex ! 0 'rl_ao_fbo2 ! 0 'rl_ao_tex2 !
 	;
 
 | ================================================================
 | FXAA: imagen LDR intermedia (RGBA8, ya con gamma) que lee el pase FXAA
 :rl_init_ldr
-	RL_FMT_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE
-	rl_make_tex2d 'rl_ldr_tex !
-	rl_ldr_tex 0 rl_make_fbo 'rl_ldr_fbo !
+	RL_FMT_RGBA8 GL_RGBA GL_UNSIGNED_BYTE rl_make_rt 'rl_ldr_fbo ! 'rl_ldr_tex !
 	;
 
 :rl_destroy_ldr
-	rl_ldr_fbo 1? ( 1 'rl_ldr_fbo glDeleteFramebuffers ) drop
-	rl_ldr_tex 1? ( 1 'rl_ldr_tex glDeleteTextures     ) drop
+	1 'rl_ldr_fbo glDeleteFramebuffers
+	1 'rl_ldr_tex glDeleteTextures
 	0 'rl_ldr_fbo ! 0 'rl_ldr_tex !
 	;
 
@@ -834,11 +812,10 @@ void main() {
 ##camFov 0.4142
 ##camNear 0.1	
 ##camFar 200.0
-##tanV ##tanH ##secV ##secH
 
 | ================================================================
 ::rl_resizewin | h w --   (se llama con: sh sw rl_resizewin)
-    rl_h =? ( swap rl_w  =? ( 2drop ; ) ) 'rl_w ! 'rl_h !
+    rl_w =? ( swap rl_h  =? ( 2drop ; ) swap ) 'rl_w ! 'rl_h !
     1 'camDirty !
 	rl_destroy_bloom rl_destroy_ao rl_destroy_ldr rl_destroy_gbuffer  
 	rl_init_gbuffer rl_init_ao rl_init_ldr rl_init_bloom
@@ -927,11 +904,7 @@ void main() {
 :cache_proj
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
-	rl_w rl_h 16 <</ 'camAsp ! 
-	camFov dup 'tanV ! camAsp *. 'tanH !
-	1.0 tanV dup *. + sqrt. 'secV !
-	1.0 tanH dup *. + sqrt. 'secH ! 
-	
+	rl_w 16 << rl_h / 'camAsp ! 
 	camNear camFar camAsp camFov matProjV | near far asp fov --
 	
 	'ubo_matvProj 'mat cpymatif 

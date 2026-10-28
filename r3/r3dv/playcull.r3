@@ -11,6 +11,7 @@
 |
 |  flechas: mover   espacio: saltar
 |  F1: +1 objeto movil   F2: +50   F3: culling si/no   F4: distancia de dibujo
+|  F5: ocultar los objetos que tapan al jugador (entre la camara y el jugador) si/no
 |-----
 ^r3/lib/rand.r3
 
@@ -29,6 +30,7 @@
 #objlst 0
 #nvis 0				| instancias escritas este frame (incluye al jugador)
 #cullon 1			| 1 = culling activo
+#occon 1			| 1 = no dibuja lo que tapa al jugador
 #drawdist 90.0		| distancia maxima de dibujo (en z de camara)
 
 | registro de objeto: 16 celdas de 8 bytes (128 bytes)
@@ -39,45 +41,41 @@
 
 |---------------------------------
 |--- crear objetos
-#nsc #nsp
-
 | radio de la esfera que envuelve la caja del sprite (16.16)
 :objrad | scale spr -- r
-	>r
-	r@ ss3dLX dup *
-	r@ ss3dLY dup * +
-	r> ss3dLZ dup * +
+	>b
+	b> ss3dLX dup *
+	b> ss3dLY dup * +
+	b> ss3dLZ dup * +
 	32 << sqrt		| sqrt(suma)<<16 = raiz en 16.16
 	*. 0.005 *. ;
 
 :+static
 	objcnt OBJMAX >=? ( drop ; ) drop
-	8.0 16.0 randminmax 'nsc !
-	23 32 randminmax 'nsp !
+	8.0 16.0 randminmax 23 32 randminmax	| scale spr
 	objcnt ]obj >a
 	WORLD neg WORLD randminmax a!+			| x
-	nsc nsp ss3dfloor a!+					| y (apoyado en el piso)
+	2dup ss3dfloor a!+						| y (apoyado en el piso)
 	WORLD neg WORLD randminmax a!+			| z
 	$ffff randmax 16 << rxyz>q16 a!+		| q (giro en y)
-	nsc a!+ nsp a!+
+	over a!+ dup a!+						| scale spr
 	$ffffff00 a!+							| color
-	nsc nsp objrad a!+						| radio
+	objrad a!+								| radio
 	0 a!+ 0 a!+ 0 a!+						| vx vy vz
 	0 a!+ 0 a!+								| estatico, angulo
 	1 'objcnt +! ;
 
 :+obj
 	objcnt OBJMAX >=? ( drop ; ) drop
-	1.0 4.0 randminmax 'nsc !
-	n3dsprites randmax 'nsp !
+	1.0 4.0 randminmax n3dsprites randmax	| scale spr
 	objcnt ]obj >a
 	-30.0 30.0 randminmax a!+				| x
 	1.0 8.0 randminmax a!+					| y
 	-30.0 30.0 randminmax a!+				| z
 	0 a!+									| q (se calcula con el angulo)
-	nsc a!+ nsp a!+
+	over a!+ dup a!+						| scale spr
 	$ffffff00 $ff randmax $fc and or a!+	| color (sin glow)
-	nsc nsp objrad a!+						| radio
+	objrad a!+								| radio
 	-0.1 0.1 randminmax a!+					| vx
 	0 a!+									| vy
 	-0.1 0.1 randminmax a!+					| vz
@@ -87,28 +85,28 @@
 
 |---------------------------------
 |--- mover los objetos moviles
-#pp #vv
-
 | avanza en x o z y rebota en +-LIM
 :movax | 'pos 'vel --
-	over @ over @ +
-	dup abs LIM >? ( 2drop dup @ neg swap ! drop ; )
-	drop pick2 ! 2drop ;
+	>b >a
+	a@ b@ +
+	dup abs LIM >? ( 2drop b@ neg b! ; )
+	drop a! ;
 
 | avanza en y con gravedad y rebota en el piso
 :movay | 'pos 'vel --
-	'vv ! 'pp !
-	pp @ vv @ +
-	0.5 <? ( drop vv @ abs vv ! pp @ )
-	pp !
-	-0.001 vv +! ;
+	>b >a
+	a@ b@ +
+	0.5 <? ( drop b@ abs b! a@ )
+	a!
+	-0.001 b@ + b! ;
 
 :upobj | adr -- adr
 	dup 88 + @ 0? ( drop ; ) drop
 	dup dup 64 + movax
 	dup 8 + over 72 + movay
 	dup 16 + over 80 + movax
-	dup 96 + dup @ 300 + $ffff and dup rot !
+	dup 96 + >a
+	a@ 300 + $ffff and dup a!			| angulo += 300
 	16 << rxyz>q16 over 24 + ! ;
 
 |---------------------------------
@@ -128,15 +126,21 @@
 #cF 0 0 0		| adelante
 #cR 0 0 0		| derecha
 #cU 0 0 0		| arriba
+#tanV #tanH #secV #secH
+#tgtd				| distancia camara - jugador (camTo)
 
 | base de la camara y pendientes del frustum
 :camvec
 	'cF 'camTo v3= 'cF 'camEye v3-
+	'cF v3len 'tgtd !
 	'cF v3nor
 	'cR 'cF v3= 'cR 'camUp v3vec
 	'cR v3nor
 	'cU 'cR v3= 'cU 'cF v3vec
-	;
+	camFov 'tanV !
+	camFov rl_w rl_h 16 <</ *. 'tanH !
+	1.0 tanV dup *. + sqrt. 'secV !
+	1.0 tanH dup *. + sqrt. 'secH ! ;
 
 :camera
 	pyp pzp 1.5 + pxp 'camTo !+ !+ !
@@ -160,31 +164,34 @@
 
 |---------------------------------
 |--- culling
-#rx #ry #rz			| objeto - camara
+#rel 0 0 0			| objeto - camara
 #zz #rr
-
-:rel | adr -- adr
-	dup @ camEye - 'rx !
-	dup 8 + @ 'camEye 8 + @ - 'ry !
-	dup 16 + @ 'camEye 16 + @ - 'rz ! ;
-
-:dotc | 'v -- d	; (rx,ry,rz) . v
-	>a a@+ rx *. a@+ ry *. + a@ rz *. + ;
 
 | esfera contra frustum: near, distancia y los 4 planos laterales
 :objvis? | adr -- adr flag
-	rel
-	dup 56 + @ 'rr !
-	'cF dotc 'zz !
 	zz rr + camNear <? ( drop 0 ; ) drop
 	zz rr - drawdist >? ( drop 0 ; ) drop
-	'cR dotc abs | xx
+	'cR 'rel v3ddot abs | xx
 	zz tanH *. rr secH *. + >? ( drop 0 ; ) drop
-	'cU dotc abs | yy
+	'cU 'rel v3ddot abs | yy
 	zz tanV *. rr secV *. + >? ( drop 0 ; ) drop
 	1 ;
 
+| la esfera del objeto corta el segmento camara-jugador (sobre el eje cF)
+:occl? | -- flag
+	zz 0 <=? ( drop 0 ; )			| detras de la camara
+	tgtd >=? ( drop 0 ; )			| mas alla del jugador
+	dup *.							| z^2
+	'rel dup v3ddot swap -			| distancia^2 al eje
+	rr dup *.
+	<? ( drop 1 ; ) drop 0 ;
+
 :vis? | adr -- adr flag
+	cullon occon or 0? ( drop 1 ; ) drop
+	'rel over v3= 'rel 'camEye v3-
+	dup 56 + @ 'rr !
+	'cF 'rel v3ddot 'zz !
+	occon 1? ( drop occl? 1? ( drop 0 ; ) ) drop
 	cullon 0? ( drop 1 ; ) drop
 	objvis? ;
 
@@ -254,6 +261,8 @@
 	objcnt nvis 1 - "visibles:%d  total:%d" sprint ftext
 	16 48 fat
 	cullon drawdist 16 >> "dist:%d  cull:%d" sprint ftext
+	16 80 fat
+	occon "tapan:%d" sprint ftext
 	fend ;
 
 :juego
@@ -277,6 +286,7 @@
 	<f2> =? ( 50 ( 1? 1- +obj ) drop )
 	<f3> =? ( 1 cullon - 'cullon ! )
 	<f4> =? ( nextdd )
+	<f5> =? ( 1 occon - 'occon ! )
 
 	<up> =? ( 0.1 'vd ! ) >up< =? ( 0 'vd ! )
 	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
