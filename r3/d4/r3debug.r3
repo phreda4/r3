@@ -23,6 +23,7 @@
 	"R run   runto C ursor" .cw
 	"S step  N over  O out" .cw
 	"B break point / Watch" .cw
+	"M viewmem" .cw
 	fcr
 	"ctrl+K Help   ctrl+Q Quit   " .cw
 	fcr
@@ -72,7 +73,7 @@
 
 |------------------------ memory panel
 #lmem
-#panelMemSize 7
+#panelMemSize 0
 #panelMemBytes 32
 
 :memdn		panelMemBytes 'lmem +! ;
@@ -81,7 +82,7 @@
 :mempgup	panelMemBytes fh * neg 'lmem +! ;
 
 :altcolor | n -- n ; alternate columns
-	dup 1 and 0? ( drop fTx ; ) drop fMu ;
+	1 nand? ( fTx ; ) fMu ;
 
 :linebytes
 	panelMemBytes ( 1? altcolor 1- swap
@@ -131,8 +132,8 @@
 
 :panelMem
 	bg1 .wfill 
-	fhome fw .hline
-	fx 1+ .col fPr " Memory " .write fTx
+	fhome fw .ndel
+	fPr " Memory " .write fTx
 	fx 10 + .col fBl lmem dup $ffff and swap 16 >> " %h:%h" .print
 	fDi " [" .write 'linesnstr .write "] " .write fcr
 	fw 10 - 3 / 'panelMemBytes !
@@ -234,27 +235,26 @@
 	'.f =? ( drop "fix" ; )
 	drop "bin" ;
 
-|--------------------------
-
+|------------- DATA STACK
 :stk. | val --
-	fmt ex fw .r. .write fcr ;
+	fmt ex .write fcr ;
 
 :dtackcnt | -- cnt
 	vmNOS mdatastack - 3 >> ;
 
-:rstackcnt | -- cnt
-	mretstack vmRTOS - 3 >> 1- ;
-
 :.datastack
-	fTx
-	vmNOS
-	mdatastack >? ( vmTOS stk. ) 
+	dtackcnt 0? ( drop fDi "(empty)" .lw ; ) drop
+	fTx vmTOS stk. 
 	fMu
-	dtackcnt 8 min 1- clamp0 swap | hasta 8 
-	dstackoff +
+	dtackcnt 10 min 1- clamp0 | hasta 8 
+	vmNOS dstackoff +
 	( swap 1? 1- swap
 		8 - dup @ stk. 
 		) 2drop ;
+		
+|------------- RETURN STACK
+:rstackcnt | -- cnt
+	mretstack vmRTOS - 3 >> 1- ;
 
 | ret>ftoken: valor de la pila R -> ftoken del CALL/EX que lo apilo (0 si no es direccion)
 | vmIP es indice de token (1..n); la direccion de retorno apunta al token siguiente al CALL
@@ -277,9 +277,9 @@
 	drop stk. ;
 
 :.retstack
+	rstackcnt 0? ( drop fDi "(empty)" .lw ; ) drop
 	fMu
-	vmRTOS
-	( mretstack 8 - vmRTOS 64 + min <?
+	vmRTOS ( mretstack 8 - vmRTOS 64 + min <?
 		dup rstackoff + 8 - @
 		rstk.
 		8 + ) drop ;
@@ -287,51 +287,54 @@
 :sec | "" -- ; titulo de seccion (sigue en la linea)
 	fPr .Bold .write .NBold ;
 
-:regs
-	"Registers" pan
-	fMu "IP:" .write fTx 8 vmIP .nh fcr
-	fMu " A:" .write fTx 8 vmREGA .nh
-	fMu " B:" .write fTx 8 vmREGB .nh fcr
-	fcr ;
-
 :datasec
-	"Data stack " sec
-	dtackcnt .d .write .sp
+	fPr " A:" .write fTx vmREGA .h .write fcr
+	fPr .sp dtackcnt .d .write ") Data " .write
 	fDi fmtname "[%s]" sprint .write fcr
 	.datastack
-	dtackcnt 0? ( fDi "(empty)" .lw ) drop
 	fcr ;
 
 :retsec
-	"Return stack " sec
-	rstackcnt .d .write fcr
-	.retstack
-	rstackcnt 0? ( fDi "(empty)" .lw ) drop
+	fPr " B:" .write fTx vmREGB .h .write fcr
+	fPr .sp rstackcnt .d .write ")Return " .write fcr
+	.retstack	
 	fcr ;
 
 :bpsec
-	"Breakpoints" sec fcr
+	" Breakpoints" sec fcr
 	fMu bplist ( d@+ 1?
 		"$%h" sprint .lw
 		) 2drop
 	fcr ;
 
 :watchsec
-	"Watch" sec fcr
+	" Watch" sec fcr
 	fDi "(none)" .lw ;
 
 :drawside
-	regs
-	datasec
-	retsec
-	bpsec
-	watchsec 
+	bg0
+	36 flxE
+	flxPush
+	 16 flxN
+	 flxPush
+	  18 flxO
+	   fhome datasec
+	  flxRest
+	   fhome retsec
+	 flxPop
+	flxRest
+	 fhome 
+	 bpsec
+	 watchsec 
+	flxPop
 	;
 
 |------ header / footer
 :drawhead
 	bg3 fhome fw .ndel
-	fTx " r3dbg | " .write 'topline .write ;
+	fTx " r3dbg | " .write 'topline .write 
+	cols 35 - .col fMu "IP:" .write fTx 8 vmIP .nh
+	;
 
 :drawfoot
 	bg3 fhome fw .ndel
@@ -339,19 +342,20 @@
 
 :cls0 .reset bg0 fTx .cls ;
 
-:drawscreen
-	34 flxE
-	drawside
+:memoryPanel
+	panelMemSize 0? ( drop ; ) flxS
+	panelMem ;
 
+:drawscreen
 	1 flxN
 	drawhead
 
 	1 flxS
 	drawfoot
 
-	panelMemSize flxS
-	panelMem
-
+	memoryPanel
+	drawside
+	
 	flxRest
 	tuReadCode 
 	;
@@ -434,6 +438,7 @@
 	$43 =? ( runtocursor )	| C to cursor
 
 	$4C =? ( 'helpdlg onTui ) 
+	$4D =? ( panelMemSize 7 xor 'panelMemSize ! )  | M memory panel
 	$4E =? ( stepout )		| N step over (next)`
 	$4F =? ( *>stepu )		| O step out
 	$51 =? ( exit ) 		| Q uit
