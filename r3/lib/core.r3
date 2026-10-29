@@ -9,8 +9,8 @@
 ::ms | ms --
 |WIN|	Sleep 
 
-|LIN|	1000* libc-usleep drop 
-|MAC|	1000* libc-usleep drop 
+|LIN|	1000 * libc-usleep drop 
+|MAC|	1000 * libc-usleep drop 
 	;
 
 |LIN| #te 0 0 
@@ -20,10 +20,10 @@
 |WIN|	GetTickCount 
 
 |LIN|	4 'te libc-clock_gettime drop |4 constant CLOCK_MONOTONIC_RAW
-|LIN|	'te @+ 1000* swap @ 1000000/ + 
+|LIN|	'te @+ 1000 * swap @ 1000000/ + 
 
 |MAC|	4 'te libc-clock_gettime drop |4 constant CLOCK_MONOTONIC_RAW
-|MAC|	'te @+ 1000* swap @ 1000000/ +
+|MAC|	'te @+ 1000 * swap @ 1000000/ +
 	;
 		
 #aux	

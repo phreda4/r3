@@ -55,8 +55,8 @@
 #info ( $3E $12 $3E $10 $3E $10 )
 #r3_lib_jul.r3 'name 'words 'info 0
 #name "r3/lib/math.r3"
-#words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "dir2vec" "sdir2vec" "atan2" "atan2x" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "100000*" "10000*" "1000*" "1000000*" "100*" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $20 $3F $2F $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $10 $10 $10 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $11 )
+#words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "dir2vec" "sdir2vec" "atan2" "atan2x" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
+#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $20 $3F $2F $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $10 $10 $10 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $11 )
 #r3_lib_math.r3 'name 'words 'info 0
 #name "r3/lib/mem.r3"
 #words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" 0
@@ -144,7 +144,7 @@
 #r3_lib_trace.r3 'name 'words 'info 0
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $2E $3E $4C $4C $4D $11 )
+#info ( $1F $1F $2E $2E $2E $4E $4C $4C $4D $21 )
 #r3_lib_vdraw.r3 'name 'words 'info 0
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -160,11 +160,11 @@
 #r3_lib_webcam.r3 'name 'words 'info 0
 #name "r3/util/arr16.r3"
 #words  "p.ini" "p.clear" "p.cnt" "p.adr" "p.nro" "p!+" "p!" "p.draw" "p.drawo" "p.del" "p.mapv" "p.mapd" "p.map2" "p.sort" "p.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $8 $8 $2E $2E $26 $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $40 $40 $2E $2E $6E $2E $2F $2F )
 #r3_util_arr16.r3 'name 'words 'info 0
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $30 $30 $2E $10 $2E $2E $5E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $0 $0 $2E $10 $2E $2E $2E $2E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'info 0
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
@@ -244,7 +244,7 @@
 #r3_util_pcfont.r3 'name 'words 'info 0
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $1F $1F $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $3F $3F $5C )
 #r3_util_penner.r3 'name 'words 'info 0
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
