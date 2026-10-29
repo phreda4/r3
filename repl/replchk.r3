@@ -75,7 +75,7 @@
 	dup $ff and
 	2 =? ( drop 8 >> $ffffffff and
 		8192 >=? ( drop ; )
-		dup 'ckinfo + c@ 2 and 0? ( 2drop ; ) drop
+		dup 'ckinfo + c@ 2 nand? ( 2drop ; ) drop
 		nro>dic @ dic>name ckadd ; )
 	7 <? ( 2drop ; )
 	dup ckwbase? 0? ( 3drop ; ) drop

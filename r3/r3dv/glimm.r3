@@ -306,14 +306,15 @@
 ::uiLn | --	; salto de fila (despues de botones en linea)
 	fsizeh pady 2* + mary + 'cy +! marx 'cx ! ;
 
-::uiFToggle | 'var "text" --	; boton de ancho completo que alterna 'var 0/1 (verde = activo)
-	over @ 1? ( stSucc ) drop
+::uiFToggle | 'var "text" --
 	zonefline
-	colorFill fillboxb
+	over @
+	1? ( stSucc colorFill fillboxb stInfo ) 
+	0? ( colorFill wix wiy wiw wih rect ) 
+	drop
 	colorText tcwrite
 	[ dup @ 1 xor over ! uiEx! ; ] uiClk
 	drop
-	stInfo
 	fsizeh pady 2* + mary + 'cy +! ;
 	
 :progreshow | 0.0 1.0 'value --

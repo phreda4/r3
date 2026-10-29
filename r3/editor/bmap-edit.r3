@@ -58,7 +58,7 @@
 	;
 
 :BITlayer
-	$1 and 0? ( drop ; ) drop
+	$1 nand? ( drop ; ) drop
 	SDLRenderer 'rdes SDL_RenderFillRect 
 	;
 	

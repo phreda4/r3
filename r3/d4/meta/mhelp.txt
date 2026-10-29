@@ -601,40 +601,40 @@ f2fp24 | f -- fp
 fp2f24 | fp -- fixed point
 byte>float32N | byte -- float
 float32N>byte | f32 -- byte
-here
-,
-,c
-,q
-,w
-,s
-,word
-,line
-,2d
-,d
-,h
-,b
-,f
-,ifp
-,ffp
-,cr | 10 ,c ?
-,eol
-,sp
-,nl
-,nsp
-align32 | mem -- mem
-align16 | mem -- mem
-align8 | mem -- mem
-mark | --
-empty | --
-savemem | "" --
-sizemem | -- size
-memsize | -- mem size
-savememinc | "" --
-cpymem | 'destino --
-appendmem | "" --
-,print | p p .. "" --
-sprint | p p .. "" -- adr
-sprintln | p p .. "" -- adr
+here | address of the next free byte of memory; the , words write here and advance it
+, | d -- ; write a 32-bit value at here, advance here by 4
+,c | c -- ; write a byte at here, advance here by 1
+,q | q -- ; write a 64-bit value at here, advance here by 8
+,w | w -- ; write a 16-bit value at here, advance here by 2
+,s | str -- ; write the string str at here, without its final 0
+,word | str -- ; write the first word of str (up to a char <= 32) at here, no 0
+,line | str -- ; write the first line of str (up to CR or LF, not included) at here, no 0
+,2d | n -- ; write n as decimal text; if n < 10 a 0 is written first (use for 2-digit fields)
+,d | n -- ; write n as decimal text (see .d)
+,h | n -- ; write n as hexadecimal text, uppercase (see .h)
+,b | n -- ; write n as binary text (see .b)
+,f | fix -- ; write the 48.16 fixed point as decimal text with 4 decimals (see .f)
+,ifp | i -- ; write the integer i as a float32 (4 bytes)
+,ffp | fix -- ; write the 48.16 fixed point as a float32 (4 bytes)
+,cr | -- ; write a CR (13)
+,eol | -- ; write a 0 byte (end of string)
+,sp | -- ; write a space
+,nl | -- ; write CR LF
+,nsp | n -- ; write n spaces
+align32 | mem -- mem' ; round mem up to a multiple of 32
+align16 | mem -- mem' ; round mem up to a multiple of 16
+align8 | mem -- mem' ; round mem up to a multiple of 8
+mark | -- ; save here on the memory stack (64 levels at most); undo it with empty
+empty | -- ; restore here to the last mark and drop it (to the start of free memory if none)
+savemem | "file" -- ; save to file the memory written since the last mark
+sizemem | -- size ; bytes written since the last mark
+memsize | -- mem size ; address of the last mark and bytes written since it
+savememinc | "file" -- ; append to file what was written since the previous call (the first time, since the last mark)
+cpymem | 'dst -- ; copy to 'dst the memory written since the last mark
+appendmem | "file" -- ; append to file the memory written since the last mark
+,print | p p .. "" -- ; write formatted text at here (no 0); the first % takes the last value pushed. %d %h %b %o number, %s str, %w word, %l line, %k char, %f %m %a fixed point 4/2/1 decimals, %p 32.32 8 decimals, %i %j fixed int/frac part, %% percent, %. CR
+sprint | p p .. "" -- adr ; like ,print into a shared 4 KB buffer, with a final 0; valid until the next sprint/sprintln
+sprintln | p p .. "" -- adr ; like sprint, ending with CR LF
 memcpy_rgb3f
 memcpy_bgr3f
 memcpy_rgbf
@@ -1869,61 +1869,61 @@ TTF_Quit | void (void);
 >-<
 <+>
 >+<
-strcpyl | src des -- ndes
-strcpy | src des --
-strcat | src des --
-strcpylnl | src des -- ndes
-strcpyln
-copynom | sc s1 -- ; copy until space
-copystr | sc s1 -- ; copy until "
-strpath | src dst -- ; copy path only (need /)
-toupp | c -- C
-tolow | C -- c
-count | s1 -- s1 cnt ; version 3 - 8 bytes
-count | s1 -- s1 cnt
-utf8c? | c -- flag ; 0=is cont !
-utf8len | c -- n
-utf8skip | adr -- adr'
-utf8next | adr -- adr'
-utf8lead | adr -- adr'
-utf8prev | adr -- adr'
-utf8@+ | adr -- adr' cp
-utf8!+ | cp adr -- adr'
-utf8count | str -- str count
-utf8ncpy | str 'dst cnt  -- 'dst
-utf8bytes | str cnt  -- str bytes
-= | s1 s2 -- 1/0
-cmpstr | a b -- n
-=s | s1 s2 -- 0/1
-=w | s1 s2 -- 1/0
-=pre | adr "str" -- adr 1/0
-=pos | s1 ".pos" -- s1 1/0
-=lpos | lstr ".pos" -- str 1/0 ; lstr is the last adr in string
-findchar | adr char -- adr'/0
-findstr | adr "texto" -- adr'/0
-findstri | adr "texto" -- adr'/0
-rfindstri | end "texto" adr -- adr'/0 ; reverse
-.d | val -- str
-.b | bin -- str
-.h | hex -- str
-.o | oct -- str
-.f | fix -- str
-.f2 | fix -- str
-.f1 | fix -- str
-.r. | b nro -- b ; right spaces
-.fd | fix -- str
-trim | adr -- adr'
-trimc | car adr -- adr'
-trimcar | adr -- adr' c
-trimstr | adr -- adr'
->>cr | adr -- adr'
->>0 | adr -- adr' ; skip 0
-l0count | list -- cnt
-n>>0 | adr n -- adr'
-only10 | adr -- 'adr ; remove 13..reeplace with 10
-only13 | adr -- 'adr ; remove 10..reeplace with 13
->>sp | adr -- adr' ; next space
->>str | adr -- adr' ; next single quote
+strcpyl | src des -- ndes ; copy string src (with its 0) to des, ndes = address after the final 0
+strcpy | src des -- ; copy string src (with its 0) to des
+strcat | src des -- ; append string src to the end of string des
+strcpylnl | src des -- ndes ; copy src to des up to CR, LF or 0, add a 0; ndes = address after it
+strcpyln | src des -- ; copy a line of src to des (up to CR, LF or 0), add a 0
+copynom | dst src -- ; copy the first word of src (up to a char <= 32) to dst, add a 0
+copystr | dst src -- ; copy src to dst up to the first " (not included), add a 0
+strpath | src dst -- ; copy the path of src to dst (all before the last /, without it)
+toupp | c -- C ; clear bit 5: a-z to A-Z, no range check (only for letters)
+tolow | C -- c ; set bit 5: A-Z to a-z, no range check (only for letters)
+count | s1 -- s1 cnt ; string length in bytes, reading 8 bytes at a time
+count | s1 -- s1 cnt ; string length in bytes, one byte at a time
+utf8c? | c -- flag ; 0 if c is a UTF-8 continuation byte (10xxxxxx), else not 0
+utf8len | c -- n ; length (1-4) of the UTF-8 sequence that starts with byte c, 0 if invalid
+utf8skip | adr -- adr' ; skip the continuation bytes at adr
+utf8next | adr -- adr' ; address of the next UTF-8 character (stays at the final 0)
+utf8lead | adr -- adr' ; go back to the first byte of the character that contains adr
+utf8prev | adr -- adr' ; address of the previous UTF-8 character
+utf8@+ | adr -- adr' cp ; read the UTF-8 character at adr as a code point; an invalid byte is returned as is
+utf8!+ | cp adr -- adr' ; write code point cp as UTF-8 (1 to 4 bytes) at adr, no 0
+utf8count | str -- str count ; number of UTF-8 characters of str
+utf8ncpy | str 'dst cnt -- 'end ; copy cnt UTF-8 chars of str to 'dst; 'end is after the last byte, no 0 added
+utf8bytes | str cnt -- str bytes ; byte length of the first cnt UTF-8 chars of str (up to the final 0)
+= | s1 s2 -- 1/0 ; 1 if s1 equals s2 ignoring case; s2 may continue after a blank
+cmpstr | a b -- n ; compare strings (case-sensitive): <0 if a<b, 0 if equal, >0 if a>b
+=s | s1 s2 -- 1/0 ; 1 if the first word of s1 equals the first word of s2, ignoring case
+=w | s1 s2 -- 1/0 ; like =s but ASCII only: a byte >= 128 ends the word (use =s for UTF-8)
+=pre | adr "str" -- adr 1/0 ; 1 if the string at adr starts with "str", ignoring case
+=pos | s1 ".pos" -- s1 1/0 ; 1 if s1 ends with ".pos", ignoring case
+=lpos | lstr ".pos" -- lstr 1/0 ; like =pos, lstr = address of the final 0 of the string
+findchar | adr char -- adr'/0 ; address of the first char in the string at adr, 0 if not found
+findstr | adr "text" -- adr'/0 ; address of the first "text" in the string at adr, 0 if not found
+findstri | adr "text" -- adr'/0 ; like findstr ignoring case
+rfindstri | start "text" adr -- adr'/0 ; search "text" backwards from adr down to start, ignoring case; 0 if none
+.d | val -- str ; signed integer to decimal string (shared buffer, valid until the next .d .b .h .o .f call)
+.b | bin -- str ; binary string of val, unsigned (shared buffer)
+.h | hex -- str ; hexadecimal string of val, uppercase, no prefix, unsigned (shared buffer)
+.o | oct -- str ; octal string of val, unsigned (shared buffer)
+.f | fix -- str ; 48.16 fixed point to decimal string with 4 decimals, rounded (shared buffer)
+.f2 | fix -- str ; 48.16 fixed point to decimal string with 2 decimals, rounded (shared buffer)
+.f1 | fix -- str ; 48.16 fixed point to decimal string with 1 decimal, rounded (shared buffer)
+.r. | str width -- str' ; pad on the left with spaces up to width chars; str comes from .d .h .f ...
+.fd | fix -- str ; 32.32 fixed point to decimal string with 8 decimals, rounded (shared buffer)
+trim | adr -- adr' ; skip chars <= 32; adr' is the first one > 32 or the final 0
+trimc | char adr -- adr' ; address of the first char found, or of the final 0 if none
+trimcar | adr -- adr' c ; skip chars <= 32 and read the next char c (0 at the end); adr' is after c
+trimstr | adr -- adr' ; address of the closing " of the string text at adr ("" is an escaped quote)
+>>cr | adr -- adr' ; address of the next CR or LF, or of the final 0
+>>0 | adr -- adr' ; address after the next 0 (the next string of a list of strings)
+l0count | list -- cnt ; number of strings of a list of 0-terminated strings (the list ends with an empty string)
+n>>0 | adr n -- adr' ; skip n strings of a list of 0-terminated strings
+only10 | adr -- 'end ; in place, change CRLF, CR and LFCR to LF; 'end is after the final 0
+only13 | adr -- 'end ; in place, change CRLF, LF and LFCR to CR; 'end is after the final 0
+>>sp | adr -- adr' ; address of the next char <= 32 (blank), or of the final 0
+>>str | adr -- adr' ; address after the closing " of the string text at adr ("" is an escaped quote)
 TfLiteModelCreateFromFile
 TfLiteInterpreterOptionsCreate
 TfLiteInterpreterCreate

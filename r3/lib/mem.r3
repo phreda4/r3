@@ -5,76 +5,95 @@
 ^r3/lib/core.r3
 
 |---- free memory
-##here 0
+##here 0 | address of the next free byte of memory; the , words write here and advance it
 
 |---- conv to mem
-::, here d!+ 'here ! ;
-::,c here c!+ 'here ! ;
-::,q here !+ 'here ! ;
-::,w here w!+ 'here ! ;
-::,s here swap
+::, | d -- ; write a 32-bit value at here, advance here by 4
+	here d!+ 'here ! ;
+::,c | c -- ; write a byte at here, advance here by 1
+	here c!+ 'here ! ;
+::,q | q -- ; write a 64-bit value at here, advance here by 8
+	here !+ 'here ! ;
+::,w | w -- ; write a 16-bit value at here, advance here by 2
+	here w!+ 'here ! ;
+::,s | str -- ; write the string str at here, without its final 0
+	here swap
 	( c@+ 1? rot c!+ swap ) 2drop 'here ! ;
-::,word here swap
+::,word | str -- ; write the first word of str (up to a char <= 32) at here, no 0
+	here swap
 	( c@+ $ff and 32 >? rot c!+ swap ) 2drop 'here ! ;
-::,line here swap
+::,line | str -- ; write the first line of str (up to CR or LF, not included) at here, no 0
+	here swap
 	( c@+ 1?
 		10 =? ( 3 + ) 13 =? ( 2drop 'here ! ; )
 		rot c!+ swap ) 2drop 'here ! ;		
-::,2d 10 <? ( "0" ,s )
-::,d .d ,s ;
-::,h .h ,s ;
-::,b .b ,s ;
-::,f .f ,s ;
-::,ifp i2fp , ;
-::,ffp f2fp , ;
+::,2d | n -- ; write n as decimal text; if n < 10 a 0 is written first (use for 2-digit fields)
+	10 <? ( "0" ,s )
+::,d | n -- ; write n as decimal text (see .d)
+	.d ,s ;
+::,h | n -- ; write n as hexadecimal text, uppercase (see .h)
+	.h ,s ;
+::,b | n -- ; write n as binary text (see .b)
+	.b ,s ;
+::,f | fix -- ; write the 48.16 fixed point as decimal text with 4 decimals (see .f)
+	.f ,s ;
+::,ifp | i -- ; write the integer i as a float32 (4 bytes)
+	i2fp , ;
+::,ffp | fix -- ; write the 48.16 fixed point as a float32 (4 bytes)
+	f2fp , ;
 
-::,cr 13 ,c ; | 10 ,c ?
-::,eol 0 ,c ;
-::,sp 32 ,c ;
-::,nl $0a0d ,w ;
-::,nsp here 32 pick2 cfill 'here +! ;
+::,cr | -- ; write a CR (13)
+	13 ,c ; | 10 ,c ?
+::,eol | -- ; write a 0 byte (end of string)
+	0 ,c ;
+::,sp | -- ; write a space
+	32 ,c ;
+::,nl | -- ; write CR LF
+	$0a0d ,w ;
+::,nsp | n -- ; write n spaces
+	here 32 pick2 cfill 'here +! ;
 
 
-::align32 | mem -- mem
+::align32 | mem -- mem' ; round mem up to a multiple of 32
 	$1f + $1f nand ;
 
-::align16 | mem -- mem
+::align16 | mem -- mem' ; round mem up to a multiple of 16
 	$f + $f nand ;	
 
-::align8 | mem -- mem
+::align8 | mem -- mem' ; round mem up to a multiple of 8
 	$7 + $7 nand ;	
 	
 #memmap * 512
 #memmap> 'memmap
 
-::mark | --
+::mark | -- ; save here on the memory stack (64 levels at most); undo it with empty
 	here memmap> !+ 'memmap> ! ;
 
-::empty | --
+::empty | -- ; restore here to the last mark and drop it (to the start of free memory if none)
 	memmap> 'memmap =? ( drop mem 'here ! ; )
 	8 - dup 'memmap> ! @ 'here ! ;
 
-::savemem | "" --
+::savemem | "file" -- ; save to file the memory written since the last mark
 	memmap> 8 - @ here over - rot save ;
 
-::sizemem | -- size
+::sizemem | -- size ; bytes written since the last mark
 	here memmap> 8 - @ - ;
 	
-::memsize | -- mem size
+::memsize | -- mem size ; address of the last mark and bytes written since it
 	memmap> 8 - @ here over - ;
 
 #inc 0
-::savememinc | "" --
+::savememinc | "file" -- ; append to file what was written since the previous call (the first time, since the last mark)
 	inc 0? ( memmap> 8 - @ nip )
 	here over - rot append
 	here 'inc !
 	;
 
-::cpymem | 'destino --
+::cpymem | 'dst -- ; copy to 'dst the memory written since the last mark
 	memmap> 8 - @ here over -
 	cmove ; | de sr cnt --
 
-::appendmem | "" --
+::appendmem | "file" -- ; append to file the memory written since the last mark
 	memmap> 8 - @ here over - rot append ;
 
 |---- print to mem
@@ -117,16 +136,16 @@
 	$25 <>? ( ,c ; ) drop
 	c@+ $f and 3 << 'control + @ ex ;
 
-::,print | p p .. "" --
+::,print | p p .. "" -- ; write formatted text at here (no 0); the first % takes the last value pushed. %d %h %b %o number, %s str, %w word, %l line, %k char, %f %m %a fixed point 4/2/1 decimals, %p 32.32 8 decimals, %i %j fixed int/frac part, %% percent, %. CR
 	( c@+ 1? ,emit ) 2drop ;
 
 |---- print to buff
 #buff * 4096 | 4k limit
 
-::sprint | p p .. "" -- adr
+::sprint | p p .. "" -- adr ; like ,print into a shared 4 KB buffer, with a final 0; valid until the next sprint/sprintln
 	mark 'buff 'here ! ,print ,eol empty 'buff ;
 	
-::sprintln | p p .. "" -- adr
+::sprintln | p p .. "" -- adr ; like sprint, ending with CR LF
 	mark 'buff 'here ! ,print 13 ,c 10 ,c ,eol empty 'buff ;
 
 |::sprintc | p p .. "" -- adr c

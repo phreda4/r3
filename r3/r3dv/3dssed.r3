@@ -456,7 +456,7 @@
 
 :dragmouse
 	drag 0? ( drop ; ) drop
-	sdlb 1 and 0? ( drop 0 'drag ! ; ) drop
+	sdlb 1 nand? ( drop 0 'drag ! ; ) drop
 	raymouse
 	'opos gaxis 3 << + @ 'keepg !
 	planehit 0? ( drop ; ) drop
@@ -481,7 +481,7 @@
 
 :viewmouse
 	uiFill
-	sdlb 1 and 0? ( 0 'drag ! ) drop	| boton izquierdo soltado
+	sdlb 1 nand? ( 0 'drag ! ) drop	| boton izquierdo soltado
 	immMouse
 	1 =? ( wheelcam )		| over
 	2 =? ( dnmouse )		| in

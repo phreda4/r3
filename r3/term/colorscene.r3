@@ -161,7 +161,7 @@
 #dux #dvx #uu #vv
 
 :shade | c -- c			; cuadros alternados mas oscuros
-	uu 17 >> vv 17 >> xor 1 and 0? ( drop ; ) drop 170 colmul ;
+	uu 17 >> vv 17 >> xor 1 nand? ( drop ; ) drop 170 colmul ;
 
 :roto-init
 	1.0 0.55 0.7 0.85 mkpal ;

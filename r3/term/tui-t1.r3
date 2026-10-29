@@ -63,7 +63,7 @@
 	dup 1 >> over 3 * 10 / + - 255 min 'tdb 4 + c! ;
 
 :zebra | i -- i
-	dup 1 and 0? ( drop bg1 ; ) drop bg2 ;
+	1 nand? ( bg1 ; ) bg2 ;
 
 :tabla
 	"Tabla" pan

@@ -101,7 +101,7 @@
 	over only13 'here !
 	mark
 	r3loadmem
-	error 1? ( .bred "ERROR %s" .println drop empty empty ; ) drop
+	error 1? ( .bred "ERROR %s" .println empty empty ; ) drop
 	genhelp
 	empty empty
 	;
@@ -201,6 +201,7 @@
 		>>0 ) 2drop
 	.cr
 	"done" .println
+	waitesc
 	;
 
 : main ;
