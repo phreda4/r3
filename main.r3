@@ -42,7 +42,7 @@
 	"ctrl+I Imm    ctrl+D Debug" .cw
 	"ctrl+N New    ctrl+O Clon " .cw
 	fcr
-	"ctrl+K Help   ctrl+S Search" .cw
+	"ctrl+H Help   ctrl+S Search" .cw
 	"ctrl+Q Quit   ctrl+X Delete" .cw
 	fcr
 	fcr
@@ -244,7 +244,7 @@
 	fPr " ^E" .write fTx "dit" .write 
 	fPr " ^N" .write fTx "ew" .write 
 	fPr " ^I" .write fTx "mm" .write 
-	fPr " ^K" .write fTx "help" .write 
+	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	
 	38 flxO |___________
@@ -254,30 +254,30 @@
 	paneleditor
 
 	uikey
-	[esc] =? ( exit ) 
 	[f5] =? ( filerun )
 	[f6] =? ( fileedit )
 	[ENTER] =? ( filerun )
-	$20 =? ( fileedit )
-	$2f =? ( filesearch )
-
 | ctrl
-	$3 =? ( exit ) 		| ctrl+c exit
 	$4 =? ( filedebug )	| ctrl+d Debug
 	$5 =? ( fileedit )	| ctrl+e Edit
-	$9 =? ( r3repl )	| ctrl+i Imm
-	$b =? ( 'helpdlg onTui ) | ctrl+k Help	
+	$9 =? ( r3repl )	| ctrl+i Imm | tab
+	$8 =? ( 'helpdlg onTui ) | ctrl+h Help | back
 	$e =? ( filenew )	| ctrl+n New
 	$11 =? ( exit )		| ctrl+q quit
 	$12 =? ( filerun )	| ctrl+r run
 	$13 =? ( filesearch )	| ctrl+s search
 	$18 =? ( filedelete ) | ctrl+x delete
+	$20 =? ( fileedit )		| spc
+	$2f =? ( filesearch )	| /
+	
+	$3 =? ( exit ) 		| ctrl+c exit
+	[esc] =? ( exit ) 
 
 	toUpp
 	$44 =? ( filedebug ) | Debug
 	$45	=? ( fileedit )	| Edit
 	$49	=? ( r3repl )	| Interactive
-	$4b =? ( 'helpdlg onTui ) | k Help	
+	$48 =? ( 'helpdlg onTui ) | H Help	
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
 	$53 =? ( filesearch )	| S search

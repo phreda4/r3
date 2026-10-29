@@ -403,10 +403,10 @@
 	"r3IDE Help" 50 12 tuDlg
 	fcr
 	"ctrl+R Run    ctrl+D Debug" .cw
-	"ctrl+I Imm    ctrl+B Build" .cw
+	"ctrl+H Imm    ctrl+B Build" .cw
 	"" .cw
 	fcr
-	"ctrl+K Help   ctrl+Q Quit   " .cw
+	"ctrl+H Help   ctrl+Q Quit   " .cw
 	fcr
 	fcr
 	
@@ -431,8 +431,8 @@
 	fPr " ^R" .write fTx "un" .write 
 	fPr " ^D" .write fTx "ebug" .write 
 	fPr " ^B" .write fTx "uild" .write 
-	fPr " ^I" .write fTx "mm" .write 
-	fPr " ^K" .write fTx "help" .write 
+	fPr " ^K" .write fTx "Imm" .write 
+	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	flxRest
 	tuEditCode
@@ -449,11 +449,12 @@
 	
 	[f5] =? ( debugcode )
 	$4 =? ( debugcode ) 		| ctrl+d debug
-	
+
 	[f6] =? ( cpyhelpword )
 	[f10] =? ( compile )
 	
-	$b =? ( 'helpdlg onTui ) | ctrl+k Help	
+	$8 =? ( 'helpdlg onTui ) | ctrl+H Help	
+	|$B =? ( ) |K
 	| ctrl
 	$11 =? ( exit )	| ctrl+q quit
 	[esc] =? ( exit ) 
