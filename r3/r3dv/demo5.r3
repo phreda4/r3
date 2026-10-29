@@ -4,6 +4,7 @@
 ^r3/util/varanim.r3
 
 ^./renderlib.r3
+^./rlshapes.r3
 ^./rlhud.r3
 ^./ss3d.r3
 ^./glimm.r3
@@ -282,6 +283,319 @@
 		b@+ unpack21 b@+ pick4 ss3dxyzq | x y z quat i --
 		1+ ) 2drop ;
 
+|----------------------------------
+| DESCRIPCION
+| NODOS (vertices): un sprite ss3d en cada articulacion (esfera de voxeles),
+|   mismo sprite y escala para todos (nspr, nscl)
+| HUESOS: un sprite ss3d por hueso, ubicado en el segmento padre(i) -> i
+|   spr   : nro de sprite ss3d (-1 = oculto)
+|   scale : escala del sprite
+|   t     : posicion sobre el segmento (0=padre, 0.5=centro, 1.0=articulacion i)
+|   rotacion = la del padre; con "alinear" el eje Y del sprite va por el hueso
+#bd_spr * 2048
+#bd_scl * 2048
+#bd_t   * 2048
+#bd_old * 2048	| sprite a restaurar al des-ocultar
+#bd_arc * 2048	| quaternion: lleva el eje Y del sprite a lo largo del hueso
+#bd_eff * 2048	| escala efectiva del sprite de hueso (0 = oculto)
+
+#tspr #tscl #tt
+
+:bdset | bone spr scale t --
+	'tt ! 'tscl ! 'tspr !
+	3 <<
+	tspr over 'bd_spr + !
+	tspr -? ( drop nrosprite ) over 'bd_old + !
+	tscl over 'bd_scl + !
+	tt swap 'bd_t + ! ;
+
+:bdname | bone "sprite" scale t --
+	>r >r ss3idname r> r> bdset ;
+
+:bdall | spr scale t --
+	'tt ! 'tscl ! 'tspr !
+	0 ( cntbones <?
+		dup tspr tscl tt bdset
+		1+ ) drop ;
+
+#nspr #nscl 1.0	| sprite y escala de los nodos
+:nodedef | spr scale --
+	'nscl ! 'nspr ! ;
+
+#shownodes 1	| 1 = se ven los nodos
+#showbones 0	| 1 = se ven los sprites de hueso
+#showcaps 1	| 1 = se ven los huesos como capsulas
+#showcam 0	| 1 = info de camara en el panel
+#alinear 1		| 1 = el eje Y del sprite de hueso va por el hueso
+#ajustar 0		| 1 = el sprite se estira en Y hasta el largo del hueso (escala = grosor)
+#nch0 #locator	| locator=1: el nodo 0 es un ubicador (raiz con un solo hijo)
+
+:calcloc | raiz con un solo hijo = ubicador del objeto (no se dibuja)
+	0 'nch0 ! 0 'locator !
+	1 ( cntbones <?
+		dup skel + c@ 0? ( 1 'nch0 +! ) drop
+		1+ ) drop
+	nch0 1 =? ( 1 'locator ! ) drop ;
+
+:bpar | i -- p ; padre efectivo (-1 = raiz o hijo del ubicador)
+	skel + c@
+	0? ( locator 1? ( 2drop -1 ; ) drop ) ;
+
+#bsel 1		| hueso seleccionado (el 0 nunca se dibuja ni se elige)
+#bdebug 1	| 1 = resalta seleccion (rojo) y raiz (amarillo)
+#bs #bc
+#bi0		| primera instancia de huesos (los nodos son 0..cntbones-1)
+
+:bdbg bdebug showbones and ;
+
+:bcolor | i -- color ; hueso
+	bdbg 0? ( 2drop $ffffff00 ; ) drop
+	bsel =? ( drop $ff202000 ; )
+	drop $ffffff00 ;
+
+:ncolor | i -- color ; nodo
+	bdbg 0? ( 2drop $ffffff00 ; ) drop
+	bsel =? ( drop $ff202000 ; )
+	dup bpar -? ( 2drop $ffff0000 ; ) drop
+	drop $ffffff00 ;
+
+| nodo i = instancia i (el nodo 0 nunca se dibuja)
+:ndone | i --
+	0 'bc !
+	shownodes 1? ( nscl 'bc ! ) drop
+	dup 0? ( 0 'bc ! ) drop
+	bc nspr pick2 ncolor pick3 ss3dcs drop ;
+
+| hueso i = instancia bi0+i (oculto: escala 0, salvo el seleccionado:
+| punto chico para poder verlo; sin segmento: no se dibuja)
+:bdone | i --
+	dup 3 <<
+	dup 'bd_scl + @ 'bc !
+	'bd_spr + @ 'bs !
+	bs -? ( drop 0 'bc ! 0 'bs !
+		dup bsel =? ( 0.4 'bc ! nrosprite 'bs ! ) )
+	drop
+	showbones 0? ( 0 'bc ! ) drop
+	dup bpar -? ( 0 'bc ! ) drop
+	bc over 3 << 'bd_eff + !
+	bc bs pick2 bcolor pick3 bi0 + ss3dcs drop ;
+
+:bdapply
+	0 ( cntbones <?
+		dup ndone
+		dup bdone
+		1+ ) drop ;
+
+:describe
+	nrosprite 1.0 nodedef		| nodos: sprite/escala
+	nrosprite 1.0 0.5 bdall		| huesos: sprite/escala/t por defecto
+	|1 "cylinder" 1.0 0.5 bdname
+	|2 "cuboalambre" 1.0 0.5 bdname
+	;
+
+:listbones | debug: i padre spr
+	0 ( cntbones <?
+		dup 3 << 'bd_spr + @
+		over skel + c@
+		pick2
+		"%d p:%d spr:%d" .println
+		1+ ) drop ;
+
+#boff
+:listdesc | lineas para pegar en :describe (solo lo distinto del defecto)
+	nscl nspr "%d %f nodedef" .println
+	1 ( cntbones <?
+		dup 3 << 'boff !
+		0 'tt !
+		boff 'bd_spr + @ nrosprite <>? ( 1 'tt ! ) drop
+		boff 'bd_scl + @ 1.0 <>? ( 1 'tt ! ) drop
+		boff 'bd_t + @ 0.5 <>? ( 1 'tt ! ) drop
+		tt 1? (
+			boff 'bd_t + @
+			boff 'bd_scl + @
+			boff 'bd_spr + @
+			pick4
+			"%d %d %f %f bdset" .println ) drop
+		1+ ) drop ;
+
+:bnext bsel cntbones 1- mod 1+ 'bsel ! bdapply ;
+:bprev bsel 1- 1 <? ( drop cntbones 1- ) 'bsel ! bdapply ;
+
+:btoggle | oculta / muestra el hueso seleccionado
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ -? (
+		drop boff 'bd_old + @ boff 'bd_spr + !
+		bdapply ; )
+	boff 'bd_old + !
+	-1 boff 'bd_spr + !
+	bdapply ;
+
+| instancias de los sprites de hueso (despues de las de los nodos)
+:makebones
+	cntobjs 'bi0 !
+	cntobjs cntbones + 256 >? ( "faltan instancias para los huesos" .println ) drop
+	0 ( cntbones <?
+		0 0 0  0 0 0 1.0 packq  0 nrosprite $ffffff00 cntobjs ss3dset
+		1 'cntobjs +!
+		1+ ) drop ;
+
+| arco corto del eje Y (0 1 0) a la direccion (x y z), en el marco del padre
+#alx #aly #alz #all
+#aqx #aqy #aqz #aqw
+:arcloc | x y z -- qpack
+	'alz ! 'aly ! 'alx !
+	alx dup *. aly dup *. + alz dup *. + sqrt. 'all !
+	all 0? ( drop 0 0 0 1.0 packq ; ) drop
+	alx all /. 'alx ! aly all /. 'aly ! alz all /. 'alz !
+	aly 1.0 + 0.002 <? ( drop 1.0 0 0 0 packq ; ) drop	| opuesto: 180 sobre X
+	alz 'aqx ! 0 'aqy ! alx neg 'aqz ! aly 1.0 + 'aqw !
+	aqx dup *. aqz dup *. + aqw dup *. + sqrt. 'all !
+	aqx all /. aqy all /. aqz all /. aqw all /. packq ;
+
+| usa la pose base (anim 0, frame 0): offset local de cada hueso
+:makearcs
+	fileanim anims 0 2 << + d@ + 4 + 2 + >a
+	0 ( cntbones <?
+		a@+ unpack21 arcloc
+		over 3 << 'bd_arc + !
+		a@+ drop
+		1+ ) drop ;
+
+#b0x #b0y #b0z
+#b1x #b1y #b1z
+#bq #bt
+#rqx #rqy #rqz #rqw
+
+:blerp | a b t -- a+(b-a)*t
+	>r over - r> *. + ;
+
+| rotacion del sprite de hueso i: la del padre (bq), con arco local si alinear
+:balign | i -- qpack
+	alinear 0? ( 2drop bq ; ) drop
+	3 << 'bd_arc + @ unpackq 'aqx ! 'aqy ! 'aqz ! 'aqw !
+	bq unpackq 'rqx ! 'rqy ! 'rqz ! 'rqw !
+	rqw aqx *. rqx aqw *. + rqy aqz *. + rqz aqy *. -
+	rqw aqy *. rqx aqz *. - rqy aqw *. + rqz aqx *. +
+	rqw aqz *. rqx aqy *. + rqy aqx *. - rqz aqw *. +
+	rqw aqw *. rqx aqx *. - rqy aqy *. - rqz aqz *. -
+	packq ;
+
+:placenode | i --
+	dup 4 << here + >b
+	b@+ unpack21 b@+ pick4 ss3dxyzq drop ;
+
+:bsy | i s -- sy ; escala absoluta en Y: s, o la que hace que el sprite mida lo que el hueso
+	ajustar 0? ( drop nip ; ) drop
+	over 3 << 'bd_spr + @ -? ( drop nip ; )
+	ss3dLY 0? ( drop nip ; )
+	b1x b0x - dup *. b1y b0y - dup *. + b1z b0z - dup *. + sqrt.
+	100 * swap /
+	nip nip ;
+
+#sc1 #sc2
+:bscale | i -- ; escala xyz del sprite de hueso (grosor = escala, largo ajustable)
+	dup 3 << 'bd_eff + @ 0? ( 2drop ; )
+	'sc1 !
+	dup sc1 bsy 'sc2 !
+	sc1 sc2 sc1 pick3 bi0 + ss3dscl3 drop ;
+
+:placebone | i --
+	dup 3 << 'bd_t + @ 'bt !
+	dup bpar -? ( 2drop ; )			| sin segmento
+	dup 4 << here + 8 + @ 'bq !		| rot del padre
+	4 << here + @ unpack21 'b0z ! 'b0y ! 'b0x !
+	dup 4 << here + @ unpack21 'b1z ! 'b1y ! 'b1x !
+	b0x b1x bt blerp
+	b0y b1y bt blerp
+	b0z b1z bt blerp			| i x y z
+	pick3 balign				| i x y z q
+	pick4 bi0 + ss3dxyzq bscale ;
+
+:placebones
+	0 ( cntbones <?
+		dup placenode
+		dup placebone
+		1+ ) drop ;
+
+|----------------------------------
+| EDICION del hueso seleccionado (sprite / escala / t)
+#vsp #vsc #vt
+
+:ed_load
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ 0 max 'vsp !
+	boff 'bd_scl + @ 'vsc !
+	boff 'bd_t + @ 'vt ! ;
+:ed_spr vsp boff 'bd_spr + ! vsp boff 'bd_old + ! bdapply ;
+:ed_scl vsc boff 'bd_scl + ! bdapply ;
+:ed_t   vt boff 'bd_t + ! ;
+
+:bspr+ | d --
+	bsel 3 << 'boff !
+	boff 'bd_spr + @ -? ( drop boff 'bd_old + @ )
+	+ 0 max n3dsprites 1- min
+	dup boff 'bd_spr + ! boff 'bd_old + !
+	bdapply ;
+:bscl+ | d --
+	bsel 3 << 'boff !
+	boff 'bd_scl + @ + 0.1 max
+	boff 'bd_scl + ! bdapply ;
+
+
+|----------------------------------
+| CAPSULAS: hueso = capsula padre -> hijo
+#brad 0.04
+#bcol $ffcc44f0
+#bi
+#dx #dy #dz #dl	| eje Y (padre->hueso)
+#ux #uy #uz		| eje X
+#zx #zy #zz		| eje Z
+
+:bonepos | i -- x y z
+	4 << here + @ unpack21 ;
+
+:makeaxes | -- len ; ejeX = helper x Y
+	dy abs 0.9 <? ( drop
+		dz 'ux ! 0 'uy ! dx neg 'uz !
+		ux dup *. uz dup *. + sqrt.
+		; ) drop
+	0 'ux ! dz neg 'uy ! dy 'uz !
+	uy dup *. uz dup *. + sqrt.
+	;
+
+:segcol | -- color ; el hueso seleccionado se ve rojo
+	bdbg 0? ( drop bcol ; ) drop
+	bi bsel =? ( drop $ff4040f0 ; ) drop
+	bcol ;
+
+:capbone | i --
+	dup 'bi !
+	dup bpar -? ( 2drop ; )
+	bonepos 'b0z ! 'b0y ! 'b0x !
+	bonepos 'b1z ! 'b1y ! 'b1x !
+	b1x b0x - 'dx ! b1y b0y - 'dy ! b1z b0z - 'dz !
+	dx dup *. dy dup *. + dz dup *. + sqrt. 'dl !
+	dl 0? ( drop ; ) drop
+	dx dl /. 'dx ! dy dl /. 'dy ! dz dl /. 'dz !
+	makeaxes | -- len
+	dup ux swap /. 'ux ! dup uy swap /. 'uy ! uz swap /. 'uz !
+	uy dz *. uz dy *. - 'zx !
+	uz dx *. ux dz *. - 'zy !
+	ux dy *. uy dx *. - 'zz !
+	'mat >a
+	ux a!+ uy a!+ uz a!+ 0 a!+
+	dx a!+ dy a!+ dz a!+ 0 a!+
+	zx a!+ zy a!+ zz a!+ 0 a!+
+	b0x b1x + 2/ a!+ b0y b1y + 2/ a!+ b0z b1z + 2/ a!+ 1.0 a!
+	brad dl brad 2* - 0 max segcol draw_capsule
+	;
+
+:drawbones
+	0 ( cntbones <?
+		dup capbone
+		1+ ) drop ;
+
+|----------------------------------
 #baseanim
 #cntframe
 
@@ -300,9 +614,8 @@
 	skel
 	0 ( cntbones <? swap
 		c@+ calcw swap
-		-16 b+
-		b@+ unpack21 b@+ pick4 ss3dxyzq | x y z quat i --
-		1+ ) 2drop ;
+		1+ ) 2drop
+	placebones ;
 	
 |----------------------------------	
 	
@@ -333,6 +646,47 @@
 	a> 10.0 a@+ 21 1.0 0 +vanim | 'var end ini ease dur. start --
 	;
 
+|----------------------------------
+| PANELES (cada uno aparece solo si su vista esta activa)
+:nodeui
+	nspr ssnameid "%s" sprint uiLabelC
+	0 n3dsprites 1- 'nspr uiSlideri uiEx? 1? ( bdapply ) drop
+	"escala" 0.1 4.0 'nscl uiSliderfL uiEx? 1? ( bdapply ) drop ;
+
+:capui
+	"ancho" 0.005 0.2 'brad uiSliderfL ;
+
+:boneui
+	bsel 3 << 'bd_spr + @
+	bsel skel + c@
+	bsel
+	"bone %d padre %d spr %d" sprint uiLabelC
+	'bprev "<" uiTBtn
+	'bnext ">" uiTBtn
+	'btoggle "hide" uiTBtn
+	uiLn
+	ed_load
+	vsp ssnameid "%s" sprint uiLabelC
+	0 n3dsprites 1- 'vsp uiSlideri uiEx? 1? ( ed_spr ) drop
+	"escala" 0.1 4.0 'vsc uiSliderfL uiEx? 1? ( ed_scl ) drop
+	"t" -0.5 1.5 'vt uiSliderfL uiEx? 1? ( ed_t ) drop
+	'alinear "alinear" uiFToggle
+	'ajustar "ajustar largo" uiFToggle
+	'bdebug "resaltar" uiFToggle uiEx? 1? ( bdapply ) drop ;
+
+:camui
+	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
+	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
+	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
+	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
+	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
+	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel ;
+
+:anim0 0 setanim ;
+:anim1 1 setanim ;
+:anim2 2 setanim ;
+:anim3 3 setanim ;
+
 :interface
 	1 'fscale !
 	$ffffffff 'fcolor !
@@ -343,36 +697,28 @@
 	gZoneAll frect
 	$ffffffff 'fcolor !
 	'exit "Exit" uiTBtn
-|	'exit "eventos" uiTBtn
-|	'exit "seleccion" uiTBtn
 	'totop "T" uiTBtn
 	'tofront "F" uiTBtn
 	'toside "S" uiTBtn
+	'anim0 "pose" uiTBtn
+	'anim1 "A1" uiTBtn
+	'anim2 "A2" uiTBtn
+	'anim3 "A3" uiTBtn
 	
 	0.2 %cw uiO
 	$1f00ff00 'fcolor !
 	gZoneAll frect
 	
 	$ffffffff 'fcolor !
-	"EDIT" uiLabelC
-	
-	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
-	'camTo @+ swap @+ swap @ "To: %a,%a,%a" sprint uiLabelC
-	'camUp @+ swap @+ swap @ "Up: %a,%a,%a" sprint uiLabelC
-	'camAdv @+ swap @+ swap @ "Forw: %a,%a,%a" sprint uiLabelC
-	'camLat @+ swap @+ swap @ "Right: %a,%a,%a" sprint uiLabelC
-
-	cam_pit cam_yaw "Y:%a P:%a" sprint uiLabel
-
-	|nrosprite ssnameid "[%l]" sprint uiLabelC
-	
-|	n3dsprites "ant:%h" sprint uiLabelC
-|	cntobjs "objs:%d" sprint uiLabelC
-|	nrosprite "spr:%d" sprint uiLabelC
-
-|	'raydir @+ swap @+ swap @ "%a %a %a" sprint uiLabelC
-|	'addobj "+" uiFTBtn	
-
+	"VISTA" uiLabelC
+	'shownodes "nodos" uiFToggle uiEx? 1? ( bdapply ) drop
+	shownodes 1? ( nodeui ) drop
+	'showcaps "capsulas" uiFToggle
+	showcaps 1? ( capui ) drop
+	'showbones "sprites de hueso" uiFToggle uiEx? 1? ( bdapply ) drop
+	showbones 1? ( boneui ) drop
+	'showcam "camara" uiFToggle
+	showcam 1? ( camui ) drop
 	;
 	
 :hud
@@ -395,6 +741,14 @@
 	<f2> =? ( 2 setanim )
 	<f3> =? ( 3 setanim )	
 	<f4> =? ( 0 setanim )	
+	<f5> =? ( listbones )
+	<f6> =? ( bdebug 1 xor 'bdebug ! bdapply )
+	<f7> =? ( listdesc )
+	<up> =? ( 1 bspr+ ) <dn> =? ( -1 bspr+ )
+	<pgup> =? ( 0.1 bscl+ ) <pgdn> =? ( -0.1 bscl+ )
+	<n> =? ( shownodes 1 xor 'shownodes ! bdapply ) <b> =? ( showbones 1 xor 'showbones ! bdapply )
+	<c> =? ( showcaps 1 xor 'showcaps ! )
+	<le> =? ( bprev ) <ri> =? ( bnext ) <h> =? ( btoggle )
 	
 |	<f3> =? ( 2 calcpose )
 |	<pgup> =? ( nrosprite 1+ n3dsprites min 'nrosprite ! )
@@ -427,6 +781,7 @@
 	
 	rl_frame_begin
 	SS3Ddraw
+	showcaps 1? ( drawbones ) drop
 	draw_grid
 	light
 	rl_frame_end
@@ -464,9 +819,11 @@
 	loadr3a
 	|makeskel	
 	1 setanim
+	makebones makearcs calcloc describe bdapply
 	
 	
 	rl_init 
+	IniShapes
 	0 rl_grid_init
 	
 	'viewresize SDLeventR
@@ -476,6 +833,7 @@
 
 	'main SDLshow
 	
+	endShapes
 	rl_grid_free 
 	rl_shutdown
 	SS3Dshutdown

@@ -127,12 +127,10 @@
 #cR 0 0 0		| derecha
 #cU 0 0 0		| arriba
 #tanV #tanH #secV #secH
-#tgtd				| distancia camara - jugador (camTo)
 
 | base de la camara y pendientes del frustum
 :camvec
 	'cF 'camTo v3= 'cF 'camEye v3-
-	'cF v3len 'tgtd !
 	'cF v3nor
 	'cR 'cF v3= 'cR 'camUp v3vec
 	'cR v3nor
@@ -177,35 +175,60 @@
 	zz tanV *. rr secV *. + >? ( drop 0 ; ) drop
 	1 ;
 
-| la esfera del objeto corta el segmento camara-jugador (sobre el eje cF)
+|--- oclusion: objetos entre la camara y el jugador
+| fase ancha: esfera contra segmento camara -> centro del jugador
+| fase fina:  caja orientada del objeto (ss3dhit), ya escrito en la instancia nvis
+:OCCM 0.6 ;				| margen junto al jugador que no se oculta
+#occd 0 0 0				| jugador - camara
+#ocF 0 0 0				| idem, normalizado
+#occlen					| largo del segmento
+#occt					| parametro (0..1) hasta donde un impacto oculta
+#occc					| 1 = la esfera del objeto actual corta el segmento
+
+:occsetup
+	'occd >a pxp a!+ pzp 0.5 + a!+ pyp a!
+	'occd 'camEye v3-
+	'ocF 'occd v3= 'ocF v3nor
+	'occd v3len 1 max 'occlen !
+	1.0 OCCM occlen /. - 'occt ! ;
+
 :occl? | -- flag
-	zz 0 <=? ( drop 0 ; )			| detras de la camara
-	tgtd >=? ( drop 0 ; )			| mas alla del jugador
+	'ocF 'rel v3ddot				| z sobre el segmento
+	dup rr + 0 <=? ( 2drop 0 ; ) drop		| el objeto queda detras de la camara
+	dup rr - occlen >=? ( 2drop 0 ; ) drop	| pasado el jugador
 	dup *.							| z^2
-	'rel dup v3ddot swap -			| distancia^2 al eje
+	'rel dup v3ddot swap -			| distancia^2 al segmento
 	rr dup *.
 	<? ( drop 1 ; ) drop 0 ;
 
 :vis? | adr -- adr flag
+	0 'occc !
 	cullon occon or 0? ( drop 1 ; ) drop
 	'rel over v3= 'rel 'camEye v3-
 	dup 56 + @ 'rr !
-	'cF 'rel v3ddot 'zz !
-	occon 1? ( drop occl? 1? ( drop 0 ; ) ) drop
+	occon 1? ( occl? 'occc ! ) drop
 	cullon 0? ( drop 1 ; ) drop
+	'cF 'rel v3ddot 'zz !
 	objvis? ;
 
 | escribe el objeto en la siguiente instancia libre
 :drawobj | adr --
 	>b b@+ b@+ b@+ b@+ b@+ b@+ b@+ nvis ss3dset ;
 
+| la caja de la instancia nvis (recien escrita) corta el segmento antes del margen
+:occ? | -- flag
+	occc 0? ( ; ) drop
+	'camEye 'occd nvis ss3dhit
+	0 >=? ( occt <? ( drop 1 ; ) ) drop 0 ;
+
 :addvis | adr --
 	vis? 0? ( 2drop ; ) drop
-	nvis ss3dmax <? ( drop drawobj 1 'nvis +! ; ) 2drop ;
+	nvis ss3dmax <? ( drop drawobj occ? 0? ( 1 'nvis +! ) drop ; ) 2drop ;
 
 | rehace la lista de instancias: jugador (0) + objetos visibles
 :cullobjs
 	1 'nvis !
+	occsetup
 	0 ( objcnt <?
 		dup ]obj upobj addvis
 		1+ ) drop
