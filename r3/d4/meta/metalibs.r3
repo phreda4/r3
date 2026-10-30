@@ -1,8 +1,8 @@
 ^r3/lib/3d.r3
 #name "r3/lib/3d.r3"
-#words  "xf" "yf" "ox" "oy" "2dmode" "3dmode" "Omode" "whmode" "o3dmode" "p3d" "p3dz" "p3di" "p3ditest" "p3dizb" "p3dcz" "p3d1" "p3di1" "project3d" "project3dz" "invproject3d" "projectdim" "project" "projectv" "inscreen" "proyect2d" "aspect" "mtrans" "mtransi" "mrotxi" "mrotyi" "mrotzi" 0
-#calls  'xf 'yf 'ox 'oy '2dmode '3dmode 'Omode 'whmode 'o3dmode 'p3d 'p3dz 'p3di 'p3ditest 'p3dizb 'p3dcz 'p3d1 'p3di1 'project3d 'project3dz 'invproject3d 'projectdim 'project 'projectv 'inscreen 'proyect2d 'aspect 'mtrans 'mtransi 'mrotxi 'mrotyi 'mrotzi
-#info ( $80 $80 $80 $80 $0 $1F $0 $2E $2E $3F $30 $30 $30 $30 $10 $3F $30 $3F $30 $3F $3F $3F $3F $2 $3F $1 $3D $3D $1F $1F $1F )
+#words  "xf" "yf" "ox" "oy" "2dmode" "3dmode" "Omode" "whmode" "o3dmode" "p3d" "p3dz" "p3di" "project3d" "project3dz" "invproject3d" "projectdim" "project" "projectv" "inscreen" "proyect2d" "aspect" "mtrans" "mtransi" "mrotxi" "mrotyi" "mrotzi" 0
+#calls  'xf 'yf 'ox 'oy '2dmode '3dmode 'Omode 'whmode 'o3dmode 'p3d 'p3dz 'p3di 'project3d 'project3dz 'invproject3d 'projectdim 'project 'projectv 'inscreen 'proyect2d 'aspect 'mtrans 'mtransi 'mrotxi 'mrotyi 'mrotzi
+#info ( $80 $80 $80 $80 $0 $1F $0 $2E $2E $3F $30 $30 $3F $30 $3F $3F $3F $3F $2 $3F $1 $3D $3D $1F $1F $1F )
 #r3_lib_3d.r3 'name 'words 'calls 'info
 ^r3/lib/3dgl.r3
 #name "r3/lib/3dgl.r3"

@@ -132,37 +132,32 @@ sys7 | a b c d e f g aa -- r ; call with 7 parameters
 sys8 | a b c d e f g h aa -- r ; call with 8 parameters
 sys9 | a b c d e f g h i aa -- r ; call with 9 parameters
 sys10 | a b c d e f g h i j aa -- r ; call with 10 parameters
-xf
-yf
-ox
-oy
-2dmode | --
-3dmode | fov --
-Omode | --
-whmode | w h --
-o3dmode | w h --
-p3d | x y z -- x y
-p3dz | x y z -- x y z
-p3di | x y z -- z y x
-p3ditest | x y z -- z y x
-p3dizb | x y z -- z y x
-p3dcz | z -- 1/z
-p3d1 | x y z -- x y
-p3di1 | x y z -- z y x
-project3d | x y z -- u v
-project3dz | x y z -- z x y
-invproject3d | x y z -- x y
-projectdim | x y z -- u v
-project | x y z -- u v
-projectv | x y z -- u v
-inscreen | -- x y
-proyect2d | x y z -- x y
-aspect | -- a
-mtrans | x y z --
-mtransi | x y z -- ;pre
-mrotxi | x -- ; premultiplica
-mrotyi | y --
-mrotzi | z --
+xf | horizontal scale (focal length in pixels) used by the projections
+yf | vertical scale (focal length in pixels) used by the projections
+ox | x of the screen origin (center) in pixels, added by the projections
+oy | y of the screen origin (center) in pixels, added by the projections
+2dmode | -- ; 2d mode: put the origin ox oy at the center of the screen
+3dmode | fov -- ; perspective mode: xf = yf = fov * screen height (fixed point), origin at the screen center, matrix reset (matini)
+Omode | -- ; orthogonal mode: 1.0 unit = the smaller side of the screen (xf = yf = min(sw, sh)), origin at the center, matrix reset
+whmode | w h -- ; like Omode for an area of w x h pixels: origin at its center, xf = yf = min(w, h), matrix reset
+o3dmode | w h -- ; same as whmode
+p3d | x y z -- x y ; perspective projection: x*xf/z + ox, y*yf/z + oy (z = 0 crashes)
+p3dz | x y z -- x y z ; like p3d, keeping z
+p3di | x y z -- z y x ; like p3d but returns z y' x' (x' on top)
+project3d | x y z -- u v ; transform the point with the current matrix and project it (the center ox oy if the transformed z is 0)
+project3dz | x y z -- z x y ; like project3d, also returns the transformed z (y' on top)
+invproject3d | x y z -- x y ; screen point x y at depth z back to the 3d plane: (x-ox)*z/xf, (y-oy)*z/yf
+projectdim | x y z -- u v ; project a size (no ox oy): transform with the current matrix, then x*xf/z', y*yf/z'; 0 0 if z' = 0
+project | x y z -- u v ; project an already transformed point (no matrix): x*xf/z + ox, y*yf/z + oy; the center if z = 0
+projectv | x y z -- u v ; like project without the z = 0 check
+inscreen | -- x y ; screen position of the origin of the current matrix (the center if its z is 0)
+proyect2d | x y z -- x y ; no projection: x+ox, y+oy (z is dropped)
+aspect | -- a ; screen aspect ratio sw/sh (fixed point)
+mtrans | x y z -- ; translate the current matrix by x y z along the parent (world) axes: adds to its translation
+mtransi | x y z -- ; translate the current matrix by x y z along its own (local) axes
+mrotxi | x -- ; rotate the current matrix around X by x (1.0 = full turn), translation unchanged; at 0.25 (0,1,0) goes to (0,0,-1)
+mrotyi | y -- ; rotate the current matrix around Y by y (1.0 = full turn), translation unchanged; at 0.25 (1,0,0) goes to (0,0,1)
+mrotzi | z -- ; rotate the current matrix around Z by z (1.0 = full turn), translation unchanged; at 0.25 (1,0,0) goes to (0,-1,0)
 mat>
 matini
 matinim | 'mat --
@@ -1958,44 +1953,44 @@ vrect | x1 y1 x2 y2 --
 vfrect | x1 y1 x2 y2 --
 vellipse | rx ry x y --
 vellipseb | rx ry x y --
-v2= | 'v1 'v2 -- ; v1=v2
-v2+ | 'v1 'v2 -- ; v1=v1+v2
-v2- | 'v1 'v2 -- ; v1=v1-v2
-v2+* | m 'v1 'v2 -- ; v1=v1+v2*s
-v2-* | m 'v1 'v2 -- ; v1=v1-v2*s
-v2* | 'v1 n -- ; v1=v1*n
-v2/ | 'v1 n -- ; v1=v1/n
-v2len | 'v -- m
-v2nor | 'v --
-v2lim | 'v lim --
-v2rot | 'v bang --
-v2dot | 'v1 'v2 -- dot
-v2perp | 'v1 'v2 --  ; v2 = perpendicular v1
-v3len | v1 -- l
-v3nor | v1 --
-v3ddot | v1 v2 -- r ; r=v1.v2
-v3vec | v1 v2 -- ; v1=v1 x v2
-v3- | v1 v2 -- ; v1=v1-v2
-v3+ | v1 v2 -- ; v1=v1+v2
-v3+* | v1 v2 s -- ; v1=v1+v2*s
-v3* | v1 s -- ; v1=v1*s ; cross
-v3= | v1 v2 -- ; v1=v2
-normInt2Fix | x y z -- xf yf zf
-normFix | x y z -- x y z
-v3rotX | 'vec 'src angle --
-v3rotY | 'vec 'src angle --
-v3rotZ | 'vec 'src angle --
-v3rotAxis | 'dst 'src 'axis angle --
-q4= | v1 v2 -- ; v1=v2
-q4W | q dest --
-q4dot | q1 q2 -- dot
-q4inv | q1 q2d --
-q4conj | q1 q2d --
-q4len | q -- len
-q4nor | q --
-q4lenf | q -- 1/len
-q4norf | q --
-q4integrate | q omega dt --
+v2= | 'v1 'v2 -- ; v1 = v2 (copy)
+v2+ | 'v1 'v2 -- ; v1 = v1 + v2
+v2- | 'v1 'v2 -- ; v1 = v1 - v2
+v2+* | m 'v1 'v2 -- ; v1 = v1 + v2 * m (m fixed point)
+v2-* | m 'v1 'v2 -- ; v1 = v1 - v2 * m (m fixed point)
+v2* | 'v1 n -- ; v1 = v1 * n (n fixed point)
+v2/ | 'v1 n -- ; v1 = v1 / n (n fixed point; n = 0 crashes)
+v2len | 'v -- m ; length of the vector (fixed point)
+v2nor | 'v -- ; scale the vector to length 1.0 (a zero vector crashes)
+v2lim | 'v lim -- ; limit the length of the vector to lim (fixed point)
+v2rot | 'v bang -- ; x' = x*sin - y*cos, y' = x*cos + y*sin (BUG: bang 0 turns the vector 90 degrees, 0.25 leaves it as is)
+v2dot | 'v1 'v2 -- dot ; dot product (fixed point)
+v2perp | 'dst 'src -- ; dst = (-src.y, src.x): src turned 90 degrees counter-clockwise (v1 is the destination)
+v3len | 'v -- l ; length of the 3d vector (fixed point)
+v3nor | 'v -- ; scale the vector to length 1.0 (a zero vector stays 0 0 0)
+v3ddot | 'v1 'v2 -- r ; dot product v1.v2 (fixed point)
+v3vec | 'v1 'v2 -- ; v1 = v1 x v2 (cross product)
+v3- | 'v1 'v2 -- ; v1 = v1 - v2
+v3+ | 'v1 'v2 -- ; v1 = v1 + v2
+v3+* | 'v1 'v2 s -- ; v1 = v1 + v2 * s (s fixed point)
+v3* | 'v1 s -- ; v1 = v1 * s (s fixed point)
+v3= | 'v1 'v2 -- ; v1 = v2 (copy)
+normInt2Fix | x y z -- xf yf zf ; normalize the integer vector x y z (values on the stack) to a fixed point unit vector (0 0 0 stays 0 0 0)
+normFix | x y z -- x y z ; normalize the fixed point vector x y z (values on the stack) to length 1.0 (0 0 0 stays 0 0 0)
+v3rotX | 'dst 'src angle -- ; dst = src rotated around the X axis (angle: 1.0 = full turn): y' = y*cos - z*sin, z' = y*sin + z*cos
+v3rotY | 'dst 'src angle -- ; dst = src rotated around the Y axis (angle: 1.0 = full turn): x' = x*cos + z*sin, z' = z*cos - x*sin
+v3rotZ | 'dst 'src angle -- ; dst = src rotated around the Z axis (angle: 1.0 = full turn): x' = x*cos - y*sin, y' = x*sin + y*cos
+v3rotAxis | 'dst 'src 'axis angle -- ; dst = src rotated around the vector axis, which must be a unit vector (angle: 1.0 = full turn)
+q4= | 'q1 'q2 -- ; q1 = q2 (copy of the 4 cells x y z w)
+q4W | 'q 'dest -- ; copy x y z of q to dest and set w = -sqrt(|1 - x*x - y*y - z*z|)
+q4dot | 'q1 'q2 -- dot ; 4d dot product of two quaternions (fixed point)
+q4inv | 'q 'dest -- ; dest = inverse of q (its conjugate divided by dot(q,q))
+q4conj | 'q 'dest -- ; dest = conjugate of q (-x -y -z w)
+q4len | 'q -- len ; length of the quaternion (fixed point)
+q4nor | 'q -- ; normalize the quaternion to length 1.0 (a zero quaternion becomes the identity 0 0 0 1.0)
+q4lenf | 'q -- 1/len ; fast approximation of 1/length, only good for lengths near 1 (0 if the length is 0)
+q4norf | 'q -- ; fast normalization with q4lenf, only for quaternions already near unit length (a zero one becomes the identity)
+q4integrate | 'q 'omega dt -- ; advance quaternion q by the angular velocity vector omega during dt (fixed point), then renormalize with q4norf
 WEBCAM_FMT_RGB24
 WEBCAM_FMT_RGB32
 WEBCAM_FMT_YUYV

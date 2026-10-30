@@ -438,25 +438,21 @@
 	tuEditCode
 	
 	uiKey
-	
-	|$2 =? ( buildcode )
-	
 	[f2] =? ( helpcode )
 	[f3] =? ( fxcode )
-	
 	[f4] =? ( runcode )
-	$12 =? ( runcode )	| ctrl+r run
-	
 	[f5] =? ( debugcode )
-	$4 =? ( debugcode ) 		| ctrl+d debug
-
 	[f6] =? ( cpyhelpword )
 	[f10] =? ( compile )
 	
-	$8 =? ( 'helpdlg onTui ) | ctrl+H Help	
-	|$B =? ( ) |K
 	| ctrl
-	$11 =? ( exit )	| ctrl+q quit
+	|$2 =? ( buildcode ) 	|+b
+	
+	$4 =? ( debugcode ) 		| ctrl+d debug
+	$8 =? ( 'helpdlg onTui )	| ctrl+H Help	
+	|$B =? ( ) |K	
+	$11 =? ( exit )				| ctrl+q quit
+	$12 =? ( runcode )	| ctrl+r run	
 	[esc] =? ( exit ) 
 	drop ;
 

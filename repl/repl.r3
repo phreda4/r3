@@ -20,7 +20,7 @@
 #sw 0
 #px 0 #py 0 #pw 0 #ptw 40		| prompt frame
 #tmp * 256
-#busy 0 #sf 0 #zero 0
+#busy 0 #zero 0
 #bk 0 #bkn 0		| definicion de varias lineas en curso, lineas ingresadas
 #bkb * 4096 #bkb> 0	| texto de la definicion (lineas separadas por 13)
 #bkd 0 #bko 0 #bks 0 #bkt * 4096
@@ -69,7 +69,7 @@
 #lt 0 #i0 0 #i1 0 #vis 0
 
 :bar | -- ; marcador de linea (glifo basico; "|" para ASCII puro)
-	"▌" .write ;
+	.rev .sp .nrev ; |"▌" .write ;
 
 :r.user
 	bg1 fx .col fw .ndel
@@ -131,37 +131,35 @@
 
 :sstack
 	"Stack" sec
-	sn 0? ( fDi "(empty)" .lw ) drop
-	0 ( sn <? 8 <?
+	sn 0? ( fDi "(empty)" .lw )
+	8 min
+	0 ( over <?
 		fMu sn 1- over - 3 << 'sstk + @ dup 'sbf fmt n>>0 sprint
-		.lw 1+ ) drop ;
+		.lw 1+ ) 2drop ;
 
 :sdefs
 	"Definitions" sec
 	m.ready
-	m.count 0? ( fDi "(none)" .lw ) drop
-	0 ( m.count <? 6 <?
-		fMu dup m.name "> %s" sprint .lw
-		1+ ) drop ;
+	m.count 0? ( fDi "(none)" .lw )
+	6 min
+	0 ( over <?
+		fMu dup m.name .sp .lw
+		1+ ) 2drop ;
 
 :slibs
 	"Libraries" sec
-	"base" bul
-	ninc 0? ( fDi "  + added as needed" .lw ) drop
-	0 ( ninc <? 6 <?
+	|"base" bul
+	ninc 0? ( fDi "  + added as needed" .lw )
+	6 min
+	0 ( over <?
 		dup 7 << 'incs + 4 + bul
-		1+ ) drop ;
-
-:sinfo
-	"r3" sec
-	fMu "real execution" .lw
-	fMu "mem/repl.r3  mem/repl.out" .lw ;
+		1+ ) 2drop ;
 
 :drawside
 	bg1 .wfill 2 1 flpad fhome
 	fTx .Bold "r3repl" .lw .NBold
 	fMu 'pname "project %s" sprint .lw
-	sstack sdefs slibs sinfo ;
+	sstack sdefs slibs ;
 
 |---------------- autocompletado
 #pwd * 128
@@ -302,8 +300,8 @@
 	bx.len 0? ( drop 1 =? ( fDi ptw phold lwrite ) drop ; ) drop
 	1- bxy + bx.nl <? ( draw-line ; ) drop ;
 
-:drawprompt | pad -- ; the box (pl rows) with 3 more rows of margin
-	0 flpad fhome
+:drawprompt | -- ; the box (pl rows) with 3 more rows of margin
+	fhome
 	fx 'px ! fy 'py ! fw 'pw !
 	pl ptw bx.scroll bx.color
 	0 ( pl 3 + <?
@@ -333,18 +331,21 @@
 	pn 0? ( drop ; ) drop
 	py 1- pn min 'ph !
 	ph 1 <? ( drop ; ) drop
-	flxpush
 	px 'fx ! py ph - 'fy ! pw 'fw ! ph 'fh !
 	pw 48 - 1 max 255 min 'pdef 2 + c!
 	'pdef tcols fhome
 	'prow ph .lines
-	flxpop ;
+	;
 
-#spin "|" "/" "-" "\" ( 0 )
-
+#spin "|" "/" "-" "\" | 2bytes each
+#sf 0 
+:spindraw
+	1 'sf +!
+	'spin sf $3 and 2* + .write ;
+	
 :drawfoot
 	bg0 .wfill fhome .sp
-	busy 1? ( fPr 'spin sf 4 mod n>>0 .write fMu " running r3..." .write 1 'sf +! )
+	busy 1? ( fPr spindraw fMu " running r3..." .write  )
 	0? ( fDi "~/r3" .write ) drop
 	pn 1? ( nc pn >? ( fMu nc psel 1+ "  %d/%d" sprint .write ) drop ) drop
 	bxrz 0 >=? ( fYe bxrz 1+ "  redefining zone %d" sprint .write ) drop
@@ -375,26 +376,24 @@
 	bw 1 ptw!
 	flxRest bw 15 pl + flxC flxpush
 	9 flxN homehead
-	pl 3 + flxN 1 drawprompt
+	pl 3 + flxN drawprompt
 	2 flxN
 	flxRest homehints
 	drawpopup
 	flxpop ;
 
-:draw-sess
-	1 flxS drawfoot
-	cols 2 ptw!
-	pl 4 + flxS 2 drawprompt
-	sw 1? ( dup 1 1 flPad flxE drawside ) drop
-	2 flxN 2 0 flpad drawhead
-	flxRest 2 0 flpad drawlines
-	drawpopup ;
-
 :drawscr
 	flx layout
 	bg0 fTx .cls
 	ntl 0? ( drop draw-home ; ) drop
-	draw-sess ;
+|:draw-sess	
+	1 flxS drawfoot
+	cols 2 ptw!
+	pl 4 + flxS drawprompt
+	sw 1? ( dup 1 1 flPad flxE drawside ) drop
+	2 flxN 2 0 flpad drawhead
+	flxRest 2 0 flpad drawlines
+	drawpopup ;
 
 :frame | redraw now (during a long operation)
 	.cl .hidec tui drawscr .restorec .showc .flush ;
