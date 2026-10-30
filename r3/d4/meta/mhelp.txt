@@ -218,213 +218,213 @@ base64decode | src dest -- 'dest
 base64encode | len src dest -- 'dest
 copyclipboard | 'mem cnt --
 pasteclipboard | 'mem --
-swapcolor | color -- swapcolor
-colavg | a b -- c
-col50% | c1 c2 -- c
-col25% | c1 c2 -- c
-col33% | c1 c2 -- c
-colmix | c1 c2 a -- c
-colmul | c1 a -- c
-colmix4 | c1 c2 a -- c
-colmul4 | c1 a -- c
-diffrgb2 | a b -- v
-rgb2yuv | rgb -- yuv
-yuv2rgb | yuv -- rgb
-yuv32 | yuv -- col
-hsv2rgb | h s v -- rgb32
-rgb2hsv | argb -- h s v
-rgb2ycocg | r g b -- y co cg
-ycocg2rgb | y co cg -- r g b
-rgb2ycc | RGB -- y co cg
-rgb2yuv2 | g b r -- y u v
-yuv2rgb2 | y u v -- g b r
-RGB>Gbr | R G B -- G b r
-Gbr>RGB | G b r -- R G B
-RGB2YCoCg24 | r g b -- Y co cg
-YCoCg242RGB | Y co cg -- r g b
-shadow4 | color shadow -- color
-light4 | color ligth -- color
-shadow8 | color shadow -- color
-light8 | color ligth -- color
-blend2 | c1 c2 i -- c
-b2color | col -- color
-bgr2rgb | BGR -- RGB
-4bcol | col -- color
-4bicol | col -- color
-[ESC]
-[ENTER]
-[BACK]
-[TAB]
-[DEL]
-[INS]
-[UP]
-[DN]
-[RI]
-[LE]
-[PGUP]
-[PGDN]
-[HOME]
-[END]
-[SHIFT+TAB]
-[SHIFT+DEL]
-[SHIFT+INS]
-[SHIFT+UP]
-[SHIFT+DN]
-[SHIFT+RI]
-[SHIFT+LE]
-[SHIFT+PGUP]
-[SHIFT+PGDN]
-[SHIFT+HOME]
-[SHIFT+END]
-[F1]
-[F2]
-[F3]
-[F4]
-[F5]
-[F6]
-[F7]
-[F8]
-[F9]
-[F10]
-[F11]
-[F12]
-.flush | -- | Write buffer to stdout
-.cl | -- | reset buffer
-.type | str cnt -- | Add to buffer
-.emit | char --
-.uemit | cp -- ; UNICODE emit
-.cr | 10 .emit 13 .emit ;
-.sp
-.write
-.print
-.println
-.^[ | $1b .emit $5b .emit ;
-.[w
-.[p
-.nsp | n --
-.nch | n char -- ; WARNIG not multibyte
-.ndel | n -- | not adv cursor
-.rep | cnt "car" -- ; REPEAT with multibyte
-.fwrite
-.fprint
-.home
-.cls
-.at | x y -- | f
-.col | x -- columna
-.eline | erase line from cursor
-.escreen | erase from cursor to end of screen
-.escreenup | erase from cursor to beginning
-.showc
-.hidec
-.blc
-.unblc
-.savec | save cursor position
-.restorec | restore cursor position
-.ovec | default cursor
-.insc | blinking underscore
-.blockc | steady block
-.underc | steady underscore
-.alsb | alternate screen buffer
-.masb | main screen buffer
-.scrolloff | rows --
-.scrollon
-.Black
-.Red
-.Green
-.Yellow
-.Blue
-.Magenta
-.Cyan
-.White
-.Blackl
-.Redl
-.Greenl
-.Yellowl
-.Bluel
-.Magental
-.Cyanl
-.Whitel
-.fc | 256 color foreground
-.BBlack
-.BRed
-.BGreen
-.BYellow
-.BBlue
-.BMagenta
-.BCyan
-.BWhite
-.BBlackl
-.BRedl
-.BGreenl
-.BYellowl
-.BBluel
-.BMagental
-.BCyanl
-.BWhitel
-.bc | 256 color background
-.fgrgb
-.bgrgb
-.Bold
-.NBold
-.Dim
-.Ital
-.NItal
-.Under
-.NUnder
-.Blink
-.Rev
-.NRev
-.Hidden
-.Strike
-.Reset
-getch | -- key | wait for key
-waitesc | -- | wait for ESC key
-waitkey | -- | wait any key
-pad
-.ukey | key -- key n ; n=bytes
-.input | -- ; ESC cancela (deja pad vacio)
-.printe | "" --
-strcpybuf | 'mem --
-r3run | "" --
-ms | ms --
-msec | -- msec
-load | 'from "filename" -- 'to
-save | 'from cnt "filename" --
-append | 'from cnt "filename" --
-delete | "filename" --
-filexist | "file" -- 0=no
-fileisize | -- size
-fileijul | -- jul ; julian day number of last write date (UTC)
-fileinfo | "file" -- 0=not exist
-filecreatetime
-filelastactime
-filelastwrtime
-filetimeD | 'time_t -- 'timedate
-FNAME | adr -- adrname
-FDIR | adr -- 1/0
-FSIZEF | adr -- sizebytes
-FCREADT | adr -- 'timedate | creation date
-FLASTDT | adr -- 'timedate  | last acces date
-FWRITEDT | adr -- 'timedate | last write date
-findata
-ffirst | "path//*" -- fdd/0
-fnext | -- fdd/0
-date.d
-time.ms
-date.dw
-time.s
-date.m
-time.m
-date.y
-time.h
-time | -- hms
-date | -- ymd
-sysdate
-sinfo
-pinfo
-sys | "" --
-sysnew | "" -- ;
-sysdebug | "" --
+swapcolor | color -- swapcolor ; swap the red and blue channels of a 32-bit color ($AARRGGBB to $AABBGGRR)
+colavg | a b -- c ; per-byte average of two 32-bit colors, rounded up
+col50% | c1 c2 -- c ; 50% mix of two 24-bit colors
+col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors); approximate: with large channel values bits bleed into the next channel
+col33% | c1 c2 -- c ; roughly 67% of c1 plus 33% of c2 (24-bit colors), made with bit masks
+colmix | c1 c2 a -- c ; mix 24-bit colors: c1 + (c2-c1)*a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
+colmul | c1 a -- c ; 24-bit color scaled by a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
+colmix4 | c1 c2 a -- c ; like colmix for 12-bit colors $RGB: a = 0..255 (only its high 4 bits count); the result is in the low 12 bits
+colmul4 | c1 a -- c ; like colmul for 12-bit colors $RGB: a = 0..15; the result is in the low 12 bits
+diffrgb2 | a b -- v ; sum of the absolute differences of the red, green and blue channels of two 24-bit colors
+rgb2yuv | r g b -- y u v ; custom transform: y = (r+g+b)/4, u = 128+(r-b)/4, v = (g-r)/8 (not the inverse of yuv2rgb)
+yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255 (BUG: the green term uses u twice, v is missing)
+yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB (same green bug)
+hsv2rgb | h s v -- rgb ; h s v in fixed point 0..1.0 (h: 1.0 is a full circle) to a packed color $RRGGBB
+rgb2hsv | argb -- h s v ; packed color to h 0..1.0, s 0..1.0 and v = largest channel << 8 (0..$ff00); alpha is ignored
+rgb2ycocg | r g b -- y co cg ; reversible YCoCg-R transform of 0..255 values (co and cg can be negative)
+ycocg2rgb | y co cg -- r g b ; inverse of rgb2ycocg
+rgb2ycc | RGB -- y co cg ; like rgb2ycocg from a packed color $RRGGBB
+rgb2yuv2 | g b r -- y u v ; y = g + (b+r-2g)/4, u = b-g, v = r-g (note the order of the arguments)
+yuv2rgb2 | y u v -- g b r ; inverse of rgb2yuv2
+RGB>Gbr | R G B -- G b r ; G, B-G and R-G (the differences wrap to 0..255)
+Gbr>RGB | G b r -- R G B ; inverse of RGB>Gbr
+RGB2YCoCg24 | r g b -- Y co cg ; YCoCg lifting with values wrapped to 0..255 (experimental: the results differ from rgb2ycocg)
+YCoCg242RGB | Y co cg -- r g b ; BUG: same code as RGB2YCoCg24, so it is not its inverse (relift is not used)
+shadow4 | color shadow -- color ; darken a 24-bit color by shadow/16 (shadow 0..15), using only the high nibble of each channel
+light4 | color light -- color ; lighten a 24-bit color adding light (0..15) to the high nibble of each channel, max 15
+shadow8 | color shadow -- color ; 24-bit color scaled by shadow/256 per channel (shadow 0..255)
+light8 | color light -- color ; add light to each channel of a 24-bit color, saturating at 255
+blend2 | c1 c2 i -- c ; per channel, high nibble only: (c1 >> i) + (c2 >> 1); i = 1 gives the 50% average
+b2color | col -- color ; 12-bit color $RGB to 24-bit $RRGGBB (each nibble repeated)
+bgr2rgb | BGR -- RGB ; swap the red and blue channels of a 24-bit color (the alpha byte is dropped)
+4bcol | col -- color ; 16-bit color $ARGB (4 bits per channel) to 32-bit $AARRGGBB (each nibble repeated)
+4bicol | col -- color ; like 4bcol but the three color nibbles are read in reverse order (red and blue swapped)
+[ESC] | -- key ; key code of Escape (as returned by getch)
+[ENTER] | -- key ; key code of Enter (as returned by getch)
+[BACK] | -- key ; key code of Backspace (as returned by getch)
+[TAB] | -- key ; key code of Tab (as returned by getch)
+[DEL] | -- key ; key code of Delete (as returned by getch)
+[INS] | -- key ; key code of Insert (as returned by getch)
+[UP] | -- key ; key code of Up arrow (as returned by getch)
+[DN] | -- key ; key code of Down arrow (as returned by getch)
+[RI] | -- key ; key code of Right arrow (as returned by getch)
+[LE] | -- key ; key code of Left arrow (as returned by getch)
+[PGUP] | -- key ; key code of Page Up (as returned by getch)
+[PGDN] | -- key ; key code of Page Down (as returned by getch)
+[HOME] | -- key ; key code of Home (as returned by getch)
+[END] | -- key ; key code of End (as returned by getch)
+[SHIFT+TAB] | -- key ; key code of Shift+Tab (as returned by getch)
+[SHIFT+DEL] | -- key ; key code of Shift+Delete (as returned by getch)
+[SHIFT+INS] | -- key ; key code of Shift+Insert (as returned by getch)
+[SHIFT+UP] | -- key ; key code of Shift+Up arrow (as returned by getch)
+[SHIFT+DN] | -- key ; key code of Shift+Down arrow (as returned by getch)
+[SHIFT+RI] | -- key ; key code of Shift+Right arrow (as returned by getch)
+[SHIFT+LE] | -- key ; key code of Shift+Left arrow (as returned by getch)
+[SHIFT+PGUP] | -- key ; key code of Shift+Page Up (as returned by getch)
+[SHIFT+PGDN] | -- key ; key code of Shift+Page Down (as returned by getch)
+[SHIFT+HOME] | -- key ; key code of Shift+Home (as returned by getch)
+[SHIFT+END] | -- key ; key code of Shift+End (as returned by getch)
+[F1] | -- key ; key code of F1 (as returned by getch)
+[F2] | -- key ; key code of F2 (as returned by getch)
+[F3] | -- key ; key code of F3 (as returned by getch)
+[F4] | -- key ; key code of F4 (as returned by getch)
+[F5] | -- key ; key code of F5 (as returned by getch)
+[F6] | -- key ; key code of F6 (as returned by getch)
+[F7] | -- key ; key code of F7 (as returned by getch)
+[F8] | -- key ; key code of F8 (as returned by getch)
+[F9] | -- key ; key code of F9 (as returned by getch)
+[F10] | -- key ; key code of F10 (as returned by getch)
+[F11] | -- key ; key code of F11 (as returned by getch)
+[F12] | -- key ; key code of F12 (as returned by getch)
+.flush | -- ; write the output buffer to the terminal and empty it
+.cl | -- ; empty the output buffer without writing it
+.type | str cnt -- ; add cnt bytes of str to the output buffer (it is flushed first if they do not fit)
+.emit | char -- ; add a byte to the output buffer (flushes when full)
+.uemit | cp -- ; add the Unicode code point cp, encoded as UTF-8, to the output buffer (invalid ones are ignored)
+.cr | -- ; add a new line (emits LF then CR)
+.sp | -- ; add a space
+.write | str -- ; add the string str to the output buffer
+.print | p p .. "" -- ; add formatted text to the output buffer (same format codes as ,print; no flush)
+.println | p p .. "" -- ; like .print, then a new line and a flush
+.^[ | -- ; add ESC [ (start of a terminal control sequence)
+.[w | str -- ; add ESC [ and the string str (control sequence)
+.[p | p p .. "" -- ; add ESC [ and formatted text (control sequence)
+.nsp | n -- ; add n spaces (n >= 2: it uses the repeat sequence)
+.nch | n char -- ; add char repeated n times, with the terminal repeat sequence (n >= 2, one-byte chars only)
+.ndel | n -- ; erase n characters from the cursor, the cursor does not move
+.rep | cnt "car" -- ; add the string car cnt times (multibyte safe)
+.fwrite | str -- ; like .write and flush
+.fprint | p p .. "" -- ; like .print and flush
+.home | -- ; move the cursor to the top left corner
+.cls | -- ; clear the screen and move the cursor to the top left corner
+.at | x y -- ; move the cursor to column x, row y (1 is the first)
+.col | x -- ; move the cursor to column x (1 is the first)
+.eline | -- ; erase from the cursor to the end of the line
+.escreen | -- ; erase from the cursor to the end of the screen
+.escreenup | -- ; erase from the cursor to the beginning of the screen
+.showc | -- ; show the cursor
+.hidec | -- ; hide the cursor
+.blc | -- ; enable cursor blinking
+.unblc | -- ; disable cursor blinking
+.savec | -- ; save the cursor position
+.restorec | -- ; restore the saved cursor position
+.ovec | -- ; default cursor shape (blinking block)
+.insc | -- ; cursor shape: blinking underscore
+.blockc | -- ; cursor shape: steady block
+.underc | -- ; cursor shape: steady underscore
+.alsb | -- ; switch to the alternate screen buffer and flush
+.masb | -- ; go back to the main screen buffer and flush
+.scrolloff | rows -- ; limit the scrolling region to lines 1..rows
+.scrollon | -- ; scrolling region back to the whole screen
+.Black | -- ; set the foreground color to black
+.Red | -- ; set the foreground color to red
+.Green | -- ; set the foreground color to green
+.Yellow | -- ; set the foreground color to yellow
+.Blue | -- ; set the foreground color to blue
+.Magenta | -- ; set the foreground color to magenta
+.Cyan | -- ; set the foreground color to cyan
+.White | -- ; set the foreground color to white
+.Blackl | -- ; set the bright foreground color black
+.Redl | -- ; set the bright foreground color red
+.Greenl | -- ; set the bright foreground color green
+.Yellowl | -- ; set the bright foreground color yellow
+.Bluel | -- ; set the bright foreground color blue
+.Magental | -- ; set the bright foreground color magenta
+.Cyanl | -- ; set the bright foreground color cyan
+.Whitel | -- ; set the bright foreground color white
+.fc | n -- ; set the foreground color n of the 256 color palette
+.BBlack | -- ; set the background color to black
+.BRed | -- ; set the background color to red
+.BGreen | -- ; set the background color to green
+.BYellow | -- ; set the background color to yellow
+.BBlue | -- ; set the background color to blue
+.BMagenta | -- ; set the background color to magenta
+.BCyan | -- ; set the background color to cyan
+.BWhite | -- ; set the background color to white
+.BBlackl | -- ; set the bright background color black
+.BRedl | -- ; set the bright background color red
+.BGreenl | -- ; set the bright background color green
+.BYellowl | -- ; set the bright background color yellow
+.BBluel | -- ; set the bright background color blue
+.BMagental | -- ; set the bright background color magenta
+.BCyanl | -- ; set the bright background color cyan
+.BWhitel | -- ; set the bright background color white
+.bc | n -- ; set the background color n of the 256 color palette
+.fgrgb | r g b -- ; set the foreground true color (each 0..255)
+.bgrgb | r g b -- ; set the background true color (each 0..255)
+.Bold | -- ; text attribute: bold
+.NBold | -- ; text attribute: bold off
+.Dim | -- ; text attribute: dim
+.Ital | -- ; text attribute: italic
+.NItal | -- ; text attribute: italic off
+.Under | -- ; text attribute: underline
+.NUnder | -- ; text attribute: underline off
+.Blink | -- ; text attribute: blink
+.Rev | -- ; text attribute: reverse video
+.NRev | -- ; text attribute: reverse video off
+.Hidden | -- ; text attribute: hidden
+.Strike | -- ; text attribute: strikethrough
+.Reset | -- ; reset all colors and text attributes
+getch | -- key ; flush the output and wait for a key, returns its code (see [ESC], [UP] ...)
+waitesc | -- ; wait until the ESC key is pressed
+waitkey | -- ; wait until any key is pressed
+pad | input buffer (128 bytes) with the text read by .input
+.ukey | key -- key n ; n = bytes (1-4) of the UTF-8 character coded in key, 0 if it is not valid text
+.input | -- ; read a line of text into pad (echo, UTF-8, up to 120 bytes); Enter accepts, ESC cancels leaving pad empty
+.printe | p p .. "" -- ; like .print but each ^ is sent as ESC (to write control sequences)
+strcpybuf | 'mem -- ; copy the output buffer (with a final 0) to 'mem and empty it
+r3run | "" -- ; run the program "" with the r3 executable of the system and wait for it to end
+ms | ms -- ; sleep for ms milliseconds
+msec | -- msec ; milliseconds counter (monotonic clock; Windows: since the system start)
+load | 'from "filename" -- 'to ; read the whole file into memory at 'from; 'to = address after the last byte read ('from if it can't be opened), no 0 added
+save | 'from cnt "filename" -- ; write cnt bytes from 'from to a file (created or truncated)
+append | 'from cnt "filename" -- ; append cnt bytes from 'from to a file (created if missing)
+delete | "filename" -- ; delete the file
+filexist | "file" -- 0=no ; not 0 if the file exists, 0 if it does not
+fileisize | -- size ; size in bytes of the file of the last fileinfo
+fileijul | -- jul ; julian day number of the last write date (UTC) of the file of the last fileinfo
+fileinfo | "file" -- 0=not exist ; load the information of a file (for fileisize, fileijul, file*time); 0 if it does not exist
+filecreatetime | -- 'time ; address of the creation time of the last fileinfo (status change time on Linux); use filetimeD
+filelastactime | -- 'time ; address of the last access time of the last fileinfo; use filetimeD
+filelastwrtime | -- 'time ; address of the last write time of the last fileinfo; use filetimeD
+filetimeD | 'time -- 'timedate ; convert a time address (file*time) to local date and time, read it with date.* and time.* (shared buffer)
+FNAME | adr -- adrname ; address of the name of a directory entry (from ffirst/fnext)
+FDIR | adr -- 1/0 ; 1 if the directory entry is a directory
+FSIZEF | adr -- sizebytes ; size in bytes of a directory entry (Linux/Mac: only of the current entry, until the next fnext)
+FCREADT | adr -- 'timedate ; creation date of a directory entry (Linux: status change date; only the current entry)
+FLASTDT | adr -- 'timedate ; last access date of a directory entry (Linux/Mac: only the current entry)
+FWRITEDT | adr -- 'timedate ; last write date of a directory entry (Linux/Mac: only the current entry)
+findata | -- adr ; address of the data of the directory search
+ffirst | "path" -- entry/0 ; start a directory listing, returns the first entry or 0 if none; Windows needs "path//*", the other systems the plain path
+fnext | -- entry/0 ; next entry of the directory listing, 0 at the end
+date.d | adr -- day ; day of the month (1..31) of a timedate (from filetimeD, sysdate, FWRITEDT ...)
+time.ms | adr -- ms ; milliseconds of a timedate (always 0 on Linux/Mac)
+date.dw | adr -- dw ; day of the week of a timedate (0 = Sunday)
+time.s | adr -- sec ; seconds of a timedate
+date.m | adr -- month ; month (1..12) of a timedate
+time.m | adr -- min ; minutes of a timedate
+date.y | adr -- year ; year (4 digits) of a timedate
+time.h | adr -- hour ; hours of a timedate
+time | -- hms ; current local time as hour<<16 | minute<<8 | second
+date | -- ymd ; current local date as year<<16 | month<<8 | day
+sysdate | -- 'timedate ; current local date and time (read it with date.* and time.*; shared buffer)
+sinfo | Windows STARTUPINFO structure used by sys, sysnew and sysdebug
+pinfo | Windows PROCESS_INFORMATION structure used by sys, sysnew and sysdebug
+sys | "" -- ; run a command line and wait for it to end
+sysnew | "" -- ; run a command line (Windows: in a new console)
+sysdebug | "" -- ; run a program as a debugged process (Windows only)
 crc32 | a n - u
 crc32n | a n p - u
 adler32 | a n - u
@@ -523,84 +523,84 @@ date2day | d m y -- num
 jul2day | jul -- num
 date2daystr
 jul2daystr
-cell | cell size
-cell+
-ncell+
-ndword+
-nword+
-1+
-1-
-2/
-2*
-*.s | a b -- c ; small numbers
-*. | a b -- c
-*.f | a b -- c ; full adjust
-/. | a b -- c
-2/. | shift and adjust
-ceil | a -- a
-int.
-fix.
-sign | v -- v s
-cos | bangle -- r
-sin | bangle -- r
-tan | v -- f
-sincos | bangle -- sin cos
-xy+polar | x y bangle r -- x y
-xy+polar2 | x y r ang -- x y
-ar>xy | xc yc bangle r -- xc yc x y
-polar | bangle largo -- dx dy
-polar2 | largo bangle  -- dx dy
-dir2vec | dx dy -- vx vy
-sdir2vec | scale dx dy -- vx vy
-atan2 | x y -- bangle
-atan2x | x y -- bangle
-distfast | dx dy -- dis
-average | x y -- v
-min | a b -- m
-max | a b -- m
-clampmax | v max -- v
-clampmin | v min -- v
-clamp0 | v -- v
-clamp0max | v max -- v
-clamps16 | v -- (signed 16bits)v
-between | v min max -- -(out)/+(in)
-msb | x -- n
-ctz | x -- n
-sqrt. | x -- r
-log2. | y -- r
-pow2. | y -- r
-pow. | x y -- r
-root. | x n -- r
-ln.
-exp.
-tanh.
-fastanh.
-gamma. | x -- r
-beta. | x y -- r
-cubicpulse | c w x -- v ; iñigo Quilez
-pow | base exp -- r
-bswap32 | v -- vs ; 32 bits
-bswap64 | v -- vs
-nextpow2 | v -- p2
-6* | n -- n*6
-6/ | n -- n/6
-6mod | n -- n%6
-10*
-10/
-10/mod | n -- q r
-1000000/
-i2fp | i -- fp
-f2fp | f.p -- fp
-memfloat | cnt adr --
-mem2float | cnt src dst --
-memd2float | cnt src dst --
-fp2f | fp -- fixed point
-fp2i | fp -- fixed point
-fp16f | fp16 -- f
-f2fp24 | f -- fp
-fp2f24 | fp -- fixed point
-byte>float32N | byte -- float
-float32N>byte | f32 -- byte
+cell | size of a cell in bytes (8)
+cell+ | n -- n' ; add the cell size (8)
+ncell+ | adr n -- adr' ; adr + n * 8 (address of cell n of a table)
+ndword+ | adr n -- adr' ; adr + n * 4 (address of dword n of a table)
+nword+ | adr n -- adr' ; adr + n * 2 (address of word n of a table)
+1+ | n -- n+1 ; increment
+1- | n -- n-1 ; decrement
+2/ | n -- n/2 ; arithmetic shift right by 1 (rounds toward minus infinity)
+2* | n -- n*2 ; shift left by 1
+*.s | a b -- c ; fixed point multiply (a*b >> 16), only for small numbers: the product must fit in 64 bits
+*. | a b -- c ; fixed point multiply (a*b >> 16 with a 128-bit product), rounds toward minus infinity
+*.f | a b -- c ; like *. but rounds toward zero
+/. | a b -- c ; fixed point divide ((a << 16) / b with a 128-bit intermediate)
+2/. | a -- a/2 ; divide by 2 rounding toward zero
+ceil | fix -- int ; round up to an integer
+int. | fix -- int ; integer part (shift right 16, rounds toward minus infinity)
+fix. | int -- fix ; integer to 48.16 fixed point (shift left 16)
+sign | v -- v s ; s = 1 if v >= 0, -1 if v < 0
+cos | bangle -- r ; cosine of a binary angle (1.0 = full turn); r is fixed point -1.0..1.0
+sin | bangle -- r ; sine of a binary angle (1.0 = full turn); r is fixed point -1.0..1.0
+tan | bangle -- r ; tangent of a binary angle (fixed point)
+sincos | bangle -- sin cos ; sine and cosine (cos on top)
+xy+polar | x y bangle r -- x' y' ; move the point by r in the direction bangle: x += sin*r, y += cos*r
+xy+polar2 | x y r bangle -- x' y' ; like xy+polar with r and bangle swapped
+ar>xy | xc yc bangle r -- xc yc x y ; point at distance r and direction bangle from the center xc yc (the center is kept)
+polar | bangle len -- dx dy ; dx = sin*len, dy = cos*len
+polar2 | len bangle -- dx dy ; like polar with len and bangle swapped
+dir2vec | dx dy -- vx vy ; unit vector (length 1.0, fixed point) of the direction dx dy; 0 0 gives 0 0
+sdir2vec | scale dx dy -- vx vy ; like dir2vec multiplied by scale (fixed point)
+atan2 | x y -- bangle ; angle of the vector (x,y) as binary angle: 0 for +x, 0.25 for +y; fast, low precision
+atan2x | x y -- bangle ; like atan2 but more precise
+distfast | dx dy -- dist ; approximate distance: max*31/32 + min*3/8 (rough for small integers)
+average | x y -- v ; (x+y)/2 rounded down, without overflow
+min | a b -- m ; the smaller one
+max | a b -- m ; the larger one
+clampmax | v max -- v ; v limited to at most max
+clampmin | v min -- v ; v limited to at least min
+clamp0 | v -- v ; v limited to at least 0
+clamp0max | v max -- v ; v limited to 0..max
+clamps16 | v -- v ; v limited to -32768..32767
+between | v min max -- n ; n < 0 if v is outside min..max, n >= 0 if inside
+msb | x -- n ; index (0-63) of the most significant bit; undefined for 0
+ctz | x -- n ; number of trailing zero bits (64 if x = 0)
+sqrt. | x -- r ; square root of a fixed point number (0 if x <= 0)
+log2. | y -- r ; base 2 logarithm of a fixed point number (0 if y <= 0)
+pow2. | y -- r ; 2 to the power y (fixed point)
+pow. | x y -- r ; x to the power y (fixed point; 0 if x = 0)
+root. | x n -- r ; nth root of x (fixed point); n is fixed point too: 3.0 for the cube root
+ln. | x -- r ; natural logarithm (fixed point)
+exp. | x -- r ; e to the power x (fixed point)
+tanh. | x -- r ; hyperbolic tangent (fixed point)
+fastanh. | x -- r ; fast approximation of tanh (piecewise polynomial)
+gamma. | x -- r ; gamma function, approximation (fixed point)
+beta. | x y -- r ; beta function, approximation (fixed point; 0 if x or y < 0)
+cubicpulse | c w x -- v ; smooth bump (Inigo Quilez): 1.0 at x = c, 0 when |x-c| >= w (fixed point)
+pow | base exp -- r ; integer power (exp >= 0)
+bswap32 | v -- vs ; swap the 4 low bytes; the upper bits of the result are garbage (mask with $ffffffff)
+bswap64 | v -- vs ; swap the 8 bytes
+nextpow2 | v -- p2 ; smallest power of 2 that is >= v (0 for 0)
+6* | n -- n*6 ; multiply by 6
+6/ | n -- n/6 ; divide by 6 (multiplies by the reciprocal)
+6mod | n -- n%6 ; remainder of n/6
+10* | n -- n*10 ; multiply by 10
+10/ | n -- n/10 ; divide by 10 (multiplies by the reciprocal, rounds toward minus infinity)
+10/mod | n -- q r ; quotient and remainder of n/10
+1000000/ | n -- n/1000000 ; divide by one million (multiplies by the reciprocal)
+i2fp | i -- fp ; integer to float32 bits (in the low 32 bits)
+f2fp | fix -- fp ; 48.16 fixed point to float32 bits (in the low 32 bits)
+memfloat | cnt adr -- ; convert in place cnt 32-bit fixed point values at adr to float32
+mem2float | cnt src dst -- ; convert cnt 64-bit fixed point values at src to float32 (4 bytes each) at dst
+memd2float | cnt src dst -- ; convert cnt 32-bit fixed point values at src to float32 (4 bytes each) at dst
+fp2f | fp -- fix ; float32 bits to 48.16 fixed point; negative values need fp sign-extended to 64 bits (as d@ reads it)
+fp2i | fp -- int ; float32 bits to integer, truncated; negative values need fp sign-extended like in fp2f
+fp16f | fp16 -- fix ; half float (16 bits) to 48.16 fixed point; negative values need the 16 bits sign-extended (as w@ reads it)
+f2fp24 | f -- fp ; 40.24 fixed point to float32 bits
+fp2f24 | fp -- f ; float32 bits to 40.24 fixed point; negative values need fp sign-extended like in fp2f
+byte>float32N | byte -- float ; byte 0..255 to float32 normalized 0..1 (BUG: returns about byte/128, 255 gives 1.996)
+float32N>byte | f32 -- byte ; float32 normalized 0..1 to byte 0..255, rounded (negative gives 0, >= 1.0 gives 255)
 here | address of the next free byte of memory; the , words write here and advance it
 , | d -- ; write a 32-bit value at here, advance here by 4
 ,c | c -- ; write a byte at here, advance here by 1
@@ -933,36 +933,36 @@ ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2 | Non-IEEE floating-point format based 
 ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2FNUZ | Non-IEEE floating-point format based on IEEE754 single-precision
 ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4 | maps to a pair of packed uint4 values (size == 1 byte)
 ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4 | maps to a pair of packed int4 values (size == 1 byte)
-str$>nro | adr -- adr' nro
-str%>nro | adr -- adr' nro
-str>nro | adr -- adr' nro ;1234 $12f %101 -12
-?sint | adr -- adr' nro
-?numero | str -- str' nro flag ; flag=1 si el numero termina en espacio o fin
-getnro | adr -- adr' nro
-str>fnro | adr -- adr fnro
-str>fix | adr -- adr' fix ; punto fijo 16.16 ( -43.04 ==> $ffffffffffd4f5c3 )
-str>anro | adr -- adr anro
-getfenro | adr -- adr fnro
-isHex | adr -- 3/0
-isBin | adr -- 2/0
-isNro | adr - t/0 ; 1-dec 2-bin 3-hex 4-fix
-scanp | adr "str" -- adr'/0
-scanstr | adr 'str -- adr'
-scannro | adr 'nro -- adr'
-scanc | c adr -- adr'/0
-scann | adr "str" -- adr'
-seed8
-rand8 | -- r8
-seed
-rerand | s1 s2 --
-rand | -- rand
-randmax | max -- rand ; 0..max
-randminmax | min max -- rand ; min..max
-rnd | -- rand
-rndmax | max -- rand ; 0..max
-rndminmax | min max -- rand ; min..max
-rnd128 | -- n
-loopMix128 | -- rand
+str$>nro | adr -- adr' nro ; hexadecimal digits at adr (no $ prefix), stops at the first other char; adr' = that char
+str%>nro | adr -- adr' nro ; binary digits at adr (no % prefix; also . counts as 0 and / as 1), stops at the first other char
+str>nro | adr -- adr' nro ; number at adr: 1234 $12f %101 -12 (no leading blanks); adr' = first char after it, nro = 0 if there is none
+?sint | adr -- adr' nro ; signed decimal integer at adr (+ or - optional); adr' = first char after the digits
+?numero | str -- str' nro flag ; like str>nro, flag = 1 if the number ends at a blank or the end of the string, else 0
+getnro | adr -- adr' nro ; skip blanks, then a decimal integer (+ or - optional); no $ or % forms
+str>fnro | adr -- adr' fix ; skip blanks, then a decimal number with optional fraction (-43.04) as 48.16 fixed point
+str>fix | adr -- adr' fix ; same as str>fnro: 48.16 fixed point (-43.04 gives $ffffffffffd4f5c3)
+str>anro | adr -- adr' n ; any number: an integer (decimal, $hex, %bin) if it ends at a blank, else a decimal with fraction as 48.16 fixed point
+getfenro | adr -- adr' fix ; skip blanks, decimal with fraction and optional exponent (1.5e3, the . is required before the e) as 48.16 fixed point
+isHex | adr -- 3/0 ; 3 if the chars at adr (just after the $) are hex digits up to a blank or the end, else 0
+isBin | adr -- 2/0 ; 2 if the chars at adr (just after the %) are binary digits up to a blank or the end, else 0
+isNro | adr -- type/0 ; type of the number at adr (up to a blank or the end): 1 decimal, 2 binary, 3 hexadecimal, 4 fixed point, 0 not a number
+scanp | adr "str" -- adr'/0 ; adr' = address after "str" if the text at adr starts with it, 0 if not
+scanstr | adr 'str -- adr' ; copy the chars at adr to 'str up to a control char (<= 31), no 0 added; adr' = that char; 0 if adr is 0
+scannro | adr 'nro -- adr' ; skip blanks, read a number (see ?numero) and store it at 'nro; adr' = address after it, adr itself if there is no number
+scanc | c adr -- adr'/0 ; address of the first char c found at adr, 0 if not found (or adr is 0)
+scann | adr "str" -- adr'/0 ; address after "str" found at adr; only the first occurrence of the first char of str is tried; 0 if not found
+seed8 | seed of rand8 (8-bit generator)
+rand8 | -- r8 ; fast 8-bit random number 0..255 (shift register on seed8)
+seed | seed of rand, rnd and their max/minmax words (use rerand to change it)
+rerand | s1 s2 -- ; set the seed of rand, rnd and rndmax from two values
+rand | -- rand ; 64-bit random number (multiply-add generator on seed), can be negative
+randmax | max -- rand ; random number 0..max-1 (max itself is never returned)
+randminmax | min max -- rand ; random number min..max-1 (max itself is never returned)
+rnd | -- rand ; 64-bit random number (xorshift on seed, which must not be 0), can be negative; not an alias of rand
+rndmax | max -- rand ; like randmax but using rnd: 0..max-1
+rndminmax | min max -- rand ; like randminmax but using rnd: min..max-1
+rnd128 | -- n ; 64-bit random number (xorshift128+, its own state)
+loopMix128 | -- rand ; 64-bit random number (LoopMix128 generator by Daniel Cota, its own state)
 SDL_Init
 SDL_GetCurrentDisplayMode
 SDL_Quit

@@ -6,7 +6,7 @@
 |WIN| ^r3/lib/win/kernel32.r3
 |MAC| ^r3/lib/mac/posix.r3
 
-::ms | ms --
+::ms | ms -- ; sleep for ms milliseconds
 |WIN|	Sleep 
 
 |LIN|	1000 * libc-usleep drop 
@@ -16,7 +16,7 @@
 |LIN| #te 0 0 
 |MAC| #te 0 0 
 
-::msec | -- msec
+::msec | -- msec ; milliseconds counter (monotonic clock; Windows: since the system start)
 |WIN|	GetTickCount 
 
 |LIN|	4 'te libc-clock_gettime drop |4 constant CLOCK_MONOTONIC_RAW
@@ -31,7 +31,7 @@
 	
 
 	
-::load | 'from "filename" -- 'to
+::load | 'from "filename" -- 'to ; read the whole file into memory at 'from; 'to = address after the last byte read ('from if it can't be opened), no 0 added
 |WIN|	$80000000 1 0 3 $8000000 0 CreateFile
 |WIN|	-1 =? ( drop ; ) swap
 |WIN|	0 'aux ! | uso dword! sure 0, when trash in mem..trouble
@@ -48,7 +48,7 @@
 |MAC|	swap libc-close drop
 	;
 
-::save | 'from cnt "filename" --
+::save | 'from cnt "filename" -- ; write cnt bytes from 'from to a file (created or truncated)
 |WIN|	$40000000 0 0 2 $8000000 0 CreateFile
 |WIN|	-1 =? ( 3drop ; )
 |WIN|	dup >r -rot 'aux 0 WriteFile drop
@@ -66,7 +66,7 @@
 |MAC|	r> libc-close drop 
 	;
 
-::append | 'from cnt "filename" -- 
+::append | 'from cnt "filename" -- ; append cnt bytes from 'from to a file (created if missing)
 |WIN|	$4 1 0 4 $80 0 CreateFile
 |WIN|	-1 =? ( 3drop ; )
 |WIN|	dup >r -rot 'aux 0 WriteFile drop
@@ -85,13 +85,13 @@
 	;
 
 
-::delete | "filename" -- 
+::delete | "filename" -- ; delete the file
 |WIN|	DeleteFile drop 
 |LIN|	libc-unlink drop
 |MAC|	libc-unlink drop
 	;
 
-::filexist | "file" -- 0=no
+::filexist | "file" -- 0=no ; not 0 if the file exists, 0 if it does not
 |WIN|	GetFileAttributes $ffffffff xor 
 |LIN|	0 libc-access $ffffffff xor 
 |MAC|	0 libc-access 32>64 1+ 	| access: 0 ok / -1 error
@@ -108,40 +108,40 @@
 |MAC|#fileatrib * 160
 	
 
-::fileisize | -- size
+::fileisize | -- size ; size in bytes of the file of the last fileinfo
 |WIN|	'fileatrib 28 + @ dup 32 >>> swap 32 << or 
 |LIN|	'fileatrib 48 + @ 
 |MAC|	'fileatrib 96 + @ 
 	;
 
-::fileijul | -- jul ; julian day number of last write date (UTC)
+::fileijul | -- jul ; julian day number of the last write date (UTC) of the file of the last fileinfo
 |WIN|	'fileatrib 20 + @ 864000000000 / 2305814 + 
 |LIN|	'fileatrib 88 + @ 86400 / 2440588 + 
 |MAC|	'fileatrib 48 + @ 86400 / 2440588 +
 	;	| julian day number from 1601-01-01 (JD 2305813.5)	
 		
-::fileinfo | "file" -- 0=not exist
+::fileinfo | "file" -- 0=not exist ; load the information of a file (for fileisize, fileijul, file*time); 0 if it does not exist
 |WIN|	0 'fileatrib GetFileAttributesEx  
 |LIN|	'fileatrib libc-stat 32>64 0? ( drop 1 ; ) drop 0 
 |MAC|	'fileatrib libc-stat 32>64 0? ( drop 1 ; ) drop 0
 	;
 
 
-::filecreatetime 
+::filecreatetime | -- 'time ; address of the creation time of the last fileinfo (status change time on Linux); use filetimeD
 	'fileatrib 
 |WIN|	4 +	
 |LIN|	104 + 
 |MAC|	80 +
 	;
 	
-::filelastactime 
+::filelastactime | -- 'time ; address of the last access time of the last fileinfo; use filetimeD
 	'fileatrib 
 |WIN|	12 +	
 |LIN|	72 + 
 |MAC|	32 +
 	;
 	
-::filelastwrtime 
+::filelastwrtime | -- 'time ; address of the last write time of the last fileinfo; use filetimeD
 	'fileatrib 
 |WIN|	20 +	
 |LIN|	88 + 
@@ -150,7 +150,7 @@
 
 #sit 0 0
 
-::filetimeD | 'time_t -- 'timedate
+::filetimeD | 'time -- 'timedate ; convert a time address (file*time) to local date and time, read it with date.* and time.* (shared buffer)
 |WIN|	'aux FileTimeToSystemTime
 |WIN|	0 'aux 'sit SystemTimeToTzSpecificLocalTime
 |WIN|	'sit
@@ -158,14 +158,14 @@
 |MAC|	libc-localtime 
 	;	
 
-::FNAME | adr -- adrname
+::FNAME | adr -- adrname ; address of the name of a directory entry (from ffirst/fnext)
 |WIN| 44 +
 |LIN| 19 +
 |RPI| 11 +
 |MAC| 21 +               | when _DARWIN_FEATURE_64_BIT_INODE is set !
 	;
 
-::FDIR | adr -- 1/0
+::FDIR | adr -- 1/0 ; 1 if the directory entry is a directory
 |WIN| @ 4 >>
 |LIN| 18 + c@ 2 >>
 |RPI| 10 + c@ 2 >>
@@ -185,37 +185,37 @@
 | struct stat offsets: LIN x86_64 size 48 atime 72 mtime 88 ctime 104
 |                      MAC (64bit inode) atime 32 mtime 48 ctime 64 birth 80 size 96
 	
-::FSIZEF | adr -- sizebytes
+::FSIZEF | adr -- sizebytes ; size in bytes of a directory entry (Linux/Mac: only of the current entry, until the next fnext)
 |WIN|	28 + d@+ 32 << swap d@ or 
 |LIN|	drop 'st 48 + @ 	
 |MAC|	drop 'st 96 + @ 
 	; | bytes
 	
-::FCREADT | adr -- 'timedate | creation date
+::FCREADT | adr -- 'timedate ; creation date of a directory entry (Linux: status change date; only the current entry)
 |WIN|	4 + filetimeD	
 |LIN|	drop 'st 104 + libc-localtime 
 |MAC|	drop 'st 80 + libc-localtime 
 	;
 
-::FLASTDT | adr -- 'timedate  | last acces date
+::FLASTDT | adr -- 'timedate ; last access date of a directory entry (Linux/Mac: only the current entry)
 |WIN|	12 + filetimeD
 |LIN|	drop 'st 72 + libc-localtime 
 |MAC|	drop 'st 72 + libc-localtime
 	;
 
-::FWRITEDT | adr -- 'timedate | last write date
+::FWRITEDT | adr -- 'timedate ; last write date of a directory entry (Linux/Mac: only the current entry)
 |WIN|	20 + filetimeD 
 |LIN|	drop 'st 88 + libc-localtime 
 |MAC|	drop 'st 48 + libc-localtime
 	;
 
-::findata
+::findata | -- adr ; address of the data of the directory search
 |WIN|	'fdd 
 |LIN|	'dirp
 |MAC|	'dirp
 	;
 
-::ffirst | "path//*" -- fdd/0
+::ffirst | "path" -- entry/0 ; start a directory listing, returns the first entry or 0 if none; Windows needs "path//*", the other systems the plain path
 |WIN|	'fdd FindFirstFile
 |WIN|	-1 =? ( drop 0 ; ) 'hfind ! 'fdd 
 |LIN|	libc-opendir dup 'dirp ! 
@@ -228,7 +228,7 @@
 |MAC|	libc-readdir statent 
 	;
 
-::fnext | -- fdd/0
+::fnext | -- entry/0 ; next entry of the directory listing, 0 at the end
 |WIN|	hfind 'fdd FindNextFile
 |WIN|	1? ( drop 'fdd ; ) hfind FindClose 
 |LIN|	dirp 0? ( ; ) 
@@ -241,40 +241,40 @@
 |MAC|	statent 
 	;
 
-::date.d 
+::date.d | adr -- day ; day of the month (1..31) of a timedate (from filetimeD, sysdate, FWRITEDT ...)
 |LIN|	12 + d@ ;
 |MAC|	12 + d@ ;
-::time.ms 
+::time.ms | adr -- ms ; milliseconds of a timedate (always 0 on Linux/Mac)
 |WIN|	48 >> $ffff and 
 |LIN|	drop 0  | not exist!!
 |MAC|	drop 0  | not exist!!
 	;
-::date.dw 
+::date.dw | adr -- dw ; day of the week of a timedate (0 = Sunday)
 |LIN|	24 + d@ ;
 |MAC|	24 + d@ ;
-::time.s 
+::time.s | adr -- sec ; seconds of a timedate
 |WIN|	32 >> $ffff and 
 |LIN|	d@
 |MAC|	d@
 	;
-::date.m 
+::date.m | adr -- month ; month (1..12) of a timedate
 |LIN|	16 + d@ 1+ ; | 1..12
 |MAC|	16 + d@ 1+ ; | 1..12
-::time.m
+::time.m | adr -- min ; minutes of a timedate
 |WIN|	16 >> $ffff and 
 |LIN|	4 + d@ 
 |MAC|	4 + d@ 
 	;
-::date.y 
+::date.y | adr -- year ; year (4 digits) of a timedate
 |LIN|	20 + d@ 1900 + ;
 |MAC|	20 + d@ 1900 + ;
-::time.h
+::time.h | adr -- hour ; hours of a timedate
 |WIN|	$ffff and 
 |LIN|	8 + d@
 |MAC|	8 + d@
 	;
 
-::time | -- hms
+::time | -- hms ; current local time as hour<<16 | minute<<8 | second
 |WIN|	'sit GetLocalTime
 |WIN|	'sit 8 + @
 |WIN|	dup 32 >> $ffff and over 16 >> $ffff and 
@@ -289,7 +289,7 @@
 |MAC|	dup 8 + d@ 16 << over 4 + d@ 8 << or swap d@ or 
 	;
 
-::date | -- ymd
+::date | -- ymd ; current local date as year<<16 | month<<8 | day
 |WIN|	'sit GetLocalTime
 |WIN|	'sit @
 |WIN|	dup 48 >> $ffff and over 16 >> $ffff and
@@ -304,14 +304,14 @@
 
 	;
 
-::sysdate
+::sysdate | -- 'timedate ; current local date and time (read it with date.* and time.*; shared buffer)
 |WIN|	'sit GetLocalTime 'sit
 |LIN|	0 libc-time 'sit ! 'sit libc-localtime 
 |MAC|	0 libc-time 'sit ! 'sit libc-localtime 
 	;
 
-##sinfo * 104
-##pinfo * 24
+##sinfo * 104 | Windows STARTUPINFO structure used by sys, sysnew and sysdebug
+##pinfo * 24 | Windows PROCESS_INFORMATION structure used by sys, sysnew and sysdebug
 
 |WIN|:ininfo
 |WIN|	'sinfo 0 16 fill | 104/8=13+3=16 |	'pinfo 0 3 fill | 24/8=3 ^^ +3
@@ -319,7 +319,7 @@
 		
 		
 	
-::sys | "" --
+::sys | "" -- ; run a command line and wait for it to end
 |WIN|	ininfo
 |WIN|	0 swap 0 0 0 0 0 0 'sinfo 'pinfo CreateProcess drop
 |WIN|	pinfo -1 WaitForSingleObject
@@ -331,7 +331,7 @@
 |WIN----
 |https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags	
 | $10 new console
-::sysnew | "" -- ; 
+::sysnew | "" -- ; run a command line (Windows: in a new console)
 |WIN|	GetConsoleWindow >r
 |WIN|	ininfo	
 |WIN|	1 'sinfo $38 + d! |    si.dwFlags = STARTF_USESHOWWINDOW;
@@ -353,7 +353,7 @@
 |#DEBUG_ONLY_THIS_PROCESS $00000002
 |#DEBUG_PROCESS $00000001
 
-::sysdebug | "" -- 
+::sysdebug | "" -- ; run a program as a debugged process (Windows only)
 |WIN|	ininfo
 |WIN|	0 swap 0 0 0 $2 0 0 'sinfo 'pinfo CreateProcess drop
 	;
