@@ -114,7 +114,7 @@
 	outbuf> utf8!+ endbuf <? ( 'outbuf> ! ; ) 'outbuf> ! .flush ;
 
 ::.cr | -- ; add a new line (emits LF then CR)
-	$d0a .wemit ;
+	$0a0d .wemit ;
 ::.sp | -- ; add a space
 	32 ..emit ;
 
@@ -382,7 +382,8 @@
 |LIN|	"./r3lin "
 |MAC|	"./r3mac "	
 |RPI|	"./r3rpi "	
-	,s swap 34 ,c ,s 34 ,c 0 ,c sys ;
+	,s swap 34 ,c ,s 34 ,c 0 ,c 
+	dup sys 'here ! ;
 	
 	
 : |||||||||||||||||||||||||||||

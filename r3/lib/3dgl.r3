@@ -61,7 +61,7 @@
 	;	
 	
 
-| Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+| Projection matrix : 45 Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 | glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 |--- from kazmath/mat4.c
 
@@ -439,14 +439,12 @@
 	mrow mrow mrow mrow drop
 	128 'mat> +! ;
 
-| Versión que multiplica la Vista por la matriz actual
 ::mview | eye to up -- ; mpush, mlookat and m*: pushes the view matrix and the product previous * view (arguments of mlookat)
     mpush      | Duplica la matriz actual (Modelo) al tope
     mlookat    | Genera la Vista en el tope (borrando la copia)
     m* | Multiplica: Matriz_Anterior * Vista -> Resultado
 ;
 
-| Versión que multiplica la Proyección por la matriz actual
 ::mproj | near far cot aspect -- ; mpush, mperspective and m*: pushes the projection and the product previous * projection (the arguments are the ones of mperspective, not fov asp zn zf)
     mpush      | Duplica la matriz (View*Model) al tope
     mperspective | Genera la Proyección en el tope

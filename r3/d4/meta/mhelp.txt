@@ -39,7 +39,7 @@ r@ | -- a (r: a -- a) ; copy top of return stack (non-destructive)
 and | a b -- c ; c = a AND b (bitwise)
 or | a b -- c ; c = a OR b
 xor | a b -- c ; c = a XOR b
-nand | a b -- c ; c = NOT (a AND b)
+nand | a b -- c ; c = AND (a NOT b)
 + | a b -- c ; c = a + b
 - | a b -- c ; c = a - b
 * | a b -- c ; c = a * b
@@ -216,15 +216,14 @@ pasteclipboard | 'mem --
 swapcolor | color -- swapcolor ; swap the red and blue channels of a 32-bit color ($AARRGGBB to $AABBGGRR)
 colavg | a b -- c ; per-byte average of two 32-bit colors, rounded up
 col50% | c1 c2 -- c ; 50% mix of two 24-bit colors
-col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors); approximate: with large channel values bits bleed into the next channel
+col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors)
 col33% | c1 c2 -- c ; roughly 67% of c1 plus 33% of c2 (24-bit colors), made with bit masks
 colmix | c1 c2 a -- c ; mix 24-bit colors: c1 + (c2-c1)*a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
 colmul | c1 a -- c ; 24-bit color scaled by a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
 colmix4 | c1 c2 a -- c ; like colmix for 12-bit colors $RGB: a = 0..255 (only its high 4 bits count); the result is in the low 12 bits
 colmul4 | c1 a -- c ; like colmul for 12-bit colors $RGB: a = 0..15; the result is in the low 12 bits
 diffrgb2 | a b -- v ; sum of the absolute differences of the red, green and blue channels of two 24-bit colors
-rgb2yuv | r g b -- y u v ; custom transform: y = (r+g+b)/4, u = 128+(r-b)/4, v = (g-r)/8 (not the inverse of yuv2rgb)
-yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255 (BUG: the green term uses u twice, v is missing)
+yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255
 yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB (same green bug)
 hsv2rgb | h s v -- rgb ; h s v in fixed point 0..1.0 (h: 1.0 is a full circle) to a packed color $RRGGBB
 rgb2hsv | argb -- h s v ; packed color to h 0..1.0, s 0..1.0 and v = largest channel << 8 (0..$ff00); alpha is ignored
@@ -235,10 +234,6 @@ rgb2yuv2 | g b r -- y u v ; y = g + (b+r-2g)/4, u = b-g, v = r-g (note the order
 yuv2rgb2 | y u v -- g b r ; inverse of rgb2yuv2
 RGB>Gbr | R G B -- G b r ; G, B-G and R-G (the differences wrap to 0..255)
 Gbr>RGB | G b r -- R G B ; inverse of RGB>Gbr
-RGB2YCoCg24 | r g b -- Y co cg ; YCoCg lifting with values wrapped to 0..255 (experimental: the results differ from rgb2ycocg)
-YCoCg242RGB | Y co cg -- r g b ; BUG: same code as RGB2YCoCg24, so it is not its inverse (relift is not used)
-shadow4 | color shadow -- color ; darken a 24-bit color by shadow/16 (shadow 0..15), using only the high nibble of each channel
-light4 | color light -- color ; lighten a 24-bit color adding light (0..15) to the high nibble of each channel, max 15
 shadow8 | color shadow -- color ; 24-bit color scaled by shadow/256 per channel (shadow 0..255)
 light8 | color light -- color ; add light to each channel of a 24-bit color, saturating at 255
 blend2 | c1 c2 i -- c ; per channel, high nibble only: (c1 >> i) + (c2 >> 1); i = 1 gives the 50% average
@@ -594,7 +589,7 @@ fp2i | fp -- int ; float32 bits to integer, truncated; negative values need fp s
 fp16f | fp16 -- fix ; half float (16 bits) to 48.16 fixed point; negative values need the 16 bits sign-extended (as w@ reads it)
 f2fp24 | f -- fp ; 40.24 fixed point to float32 bits
 fp2f24 | fp -- f ; float32 bits to 40.24 fixed point; negative values need fp sign-extended like in fp2f
-byte>float32N | byte -- float ; byte 0..255 to float32 normalized 0..1 (BUG: returns about byte/128, 255 gives 1.996)
+byte>float32N | byte -- float ; byte 0..255 to float32 normalized 0..1
 float32N>byte | f32 -- byte ; float32 normalized 0..1 to byte 0..255, rounded (negative gives 0, >= 1.0 gives 255)
 here | address of the next free byte of memory; the , words write here and advance it
 , | d -- ; write a 32-bit value at here, advance here by 4
@@ -1963,9 +1958,9 @@ v2/ | 'v1 n -- ; v1 = v1 / n (n fixed point; n = 0 crashes)
 v2len | 'v -- m ; length of the vector (fixed point)
 v2nor | 'v -- ; scale the vector to length 1.0 (a zero vector crashes)
 v2lim | 'v lim -- ; limit the length of the vector to lim (fixed point)
-v2rot | 'v bang -- ; x' = x*sin - y*cos, y' = x*cos + y*sin (BUG: bang 0 turns the vector 90 degrees, 0.25 leaves it as is)
+v2rot | 'v bang -- ; x' = x*sin - y*cos, y' = x*cos + y*sin
 v2dot | 'v1 'v2 -- dot ; dot product (fixed point)
-v2perp | 'dst 'src -- ; dst = (-src.y, src.x): src turned 90 degrees counter-clockwise (v1 is the destination)
+v2perp | 'dst 'src -- ; dst = (-src.y, src.x): src turned 90 degrees counter-clockwise
 v3len | 'v -- l ; length of the 3d vector (fixed point)
 v3nor | 'v -- ; scale the vector to length 1.0 (a zero vector stays 0 0 0)
 v3ddot | 'v1 'v2 -- r ; dot product v1.v2 (fixed point)
@@ -1988,8 +1983,8 @@ q4inv | 'q 'dest -- ; dest = inverse of q (its conjugate divided by dot(q,q))
 q4conj | 'q 'dest -- ; dest = conjugate of q (-x -y -z w)
 q4len | 'q -- len ; length of the quaternion (fixed point)
 q4nor | 'q -- ; normalize the quaternion to length 1.0 (a zero quaternion becomes the identity 0 0 0 1.0)
-q4lenf | 'q -- 1/len ; fast approximation of 1/length, only good for lengths near 1 (0 if the length is 0)
-q4norf | 'q -- ; fast normalization with q4lenf, only for quaternions already near unit length (a zero one becomes the identity)
+q4lenf | 'q -- 1/len ; fast approximation of 1/length, only good for lengths near 1
+q4norf | 'q -- ; fast normalization with q4lenf, only for quaternions already near unit length
 q4integrate | 'q 'omega dt -- ; advance quaternion q by the angular velocity vector omega during dt (fixed point), then renormalize with q4norf
 WEBCAM_FMT_RGB24
 WEBCAM_FMT_RGB32

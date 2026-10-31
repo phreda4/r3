@@ -15,8 +15,8 @@
 #info ( $2F $1F )
 #r3_lib_clipboard.r3 'name 'words 'info 0
 #name "r3/lib/color.r3"
-#words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmul" "colmix4" "colmul4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
-#info ( $10 $2F $2F $2F $2F $3E $2F $3E $2F $2F $30 $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
+#words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmul" "colmix4" "colmul4" "diffrgb2" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
+#info ( $10 $2F $2F $2F $2F $3E $2F $3E $2F $2F $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'info 0
 #name "r3/lib/console.r3"
 #words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".flush" ".cl" ".type" ".emit" ".uemit" ".cr" ".sp" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".nsp" ".nch" ".ndel" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".NBold" ".Dim" ".Ital" ".NItal" ".Under" ".NUnder" ".Blink" ".Rev" ".NRev" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" "pad" ".ukey" ".input" ".printe" "strcpybuf" "r3run" 0
@@ -144,7 +144,7 @@
 #r3_lib_trace.r3 'name 'words 'info 0
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $2E $4E $4C $4C $4D $21 )
+#info ( $1F $1F $2E $2E $2E $2E $4C $4C $4D $71 )
 #r3_lib_vdraw.r3 'name 'words 'info 0
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -164,7 +164,7 @@
 #r3_util_arr16.r3 'name 'words 'info 0
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $0 $0 $2E $10 $2E $2E $2E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $60 $60 $2E $10 $2E $2E $E $2E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'info 0
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
@@ -244,11 +244,11 @@
 #r3_util_pcfont.r3 'name 'words 'info 0
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $6E $6E $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $57 $57 $5C )
 #r3_util_penner.r3 'name 'words 'info 0
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
-#info ( $10 $0 $1F $1F $1 )
+#info ( $30 $0 $1F $1F $1 )
 #r3_util_sdlfiledlg.r3 'name 'words 'info 0
 #name "r3/util/sdlgui.r3"
 #words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immStrC" "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0

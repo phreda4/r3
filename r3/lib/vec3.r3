@@ -136,7 +136,7 @@
 	a@ over *. a!+
 	a@ *. a! ;
 
-::q4lenf | 'q -- 1/len ; fast approximation of 1/length, only good for lengths near 1 (0 if the length is 0)
+::q4lenf | 'q -- 1/len ; fast approximation of 1/length, only good for lengths near 1
 	@+ dup *. swap
 	@+ dup *. swap	
 	@+ dup *. swap
@@ -147,7 +147,7 @@
 	neg 3.0 + 2/ *.
 	;
 
-::q4norf | 'q -- ; fast normalization with q4lenf, only for quaternions already near unit length (a zero one becomes the identity)
+::q4norf | 'q -- ; fast normalization with q4lenf, only for quaternions already near unit length
 	dup q4lenf | q len
 	0? ( drop >a 0 a!+ 0 a!+ 0 a!+ 1.0 a! ; )
 	swap >a

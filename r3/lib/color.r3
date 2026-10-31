@@ -14,8 +14,8 @@
 ::col50% | c1 c2 -- c ; 50% mix of two 24-bit colors
 	$fefefe and swap $fefefe and + 1 >> ;
 
-::col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors); approximate: with large channel values bits bleed into the next channel
-	$fefefe and swap $fefefe and over + 1 >> + 1 >> ;
+::col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors)
+	dup >r col50% r> col50% ;
 
 ::col33% | c1 c2 -- c ; roughly 67% of c1 plus 33% of c2 (24-bit colors), made with bit masks
 	$555555 and swap $aaaaaa and or ;
@@ -50,22 +50,18 @@
 
 | yuv <-> rgb
 |-----------------------------
-::rgb2yuv | r g b -- y u v ; custom transform: y = (r+g+b)/4, u = 128+(r-b)/4, v = (g-r)/8 (not the inverse of yuv2rgb)
-	over 1 << pick3 - pick2 - 3 >>  >r
-	pick2 over - 2 >> 128 + >r
-	+ + 2 >> r> r> ;
 
 :bound | i -- i
 	$ff clamp0max ;
 
-::yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255 (BUG: the green term uses u twice, v is missing)
+::yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255
 	pick2 16 - 76283 * pick2 128 - 132252 * + 16 >> bound >r
-	pick2 16 - 76283 * pick2 128 - 25624 *  - pick2 128 - 53281 * - 16 >> bound >r
+	pick2 16 - 76283 * pick2 128 - 25624 *  - over 128 - 53281 * - 16 >> bound >r
 	nip 128 - 104595 * swap 16 - 76283 * + 16 >> bound r> r> ;
 
 ::yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB (same green bug)
 	pick2 16 - 76283 * pick2 128 - 132252 * + 16 >> bound >r
-	pick2 16 - 76283 * pick2 128 - 25624 * - pick2 128 - 53281 * - 16 >> bound 8 << $ff00 and >r
+	pick2 16 - 76283 * pick2 128 - 25624 * - over 128 - 53281 * - 16 >> bound 8 << $ff00 and >r
 	nip 128 - 104595 * swap 16 - 76283 * + 16 >> bound 16 << $ff0000 and r> or r> or ;
 
 | hsv 1.0 1.0 1.0 --> rgb
@@ -163,36 +159,8 @@
 	pick2 + $ff and swap
 	pick2 + $ff and rot swap ;
 
-|-- YCoCg24
-:fwlift | x y -- dif avg
-	over - $ff and
-	dup 1 >> rot + $ff and  ;
-
-::RGB2YCoCg24 | r g b -- Y co cg ; YCoCg lifting with values wrapped to 0..255 (experimental: the results differ from rgb2ycocg)
-	rot fwlift	| g co t
-	rot swap fwlift	| co cg Y
-	-rot ;
-
-:relift | dif avg  -- x y
-	over 1 >> - $ff and
-	swap over + $ff and ;
-
-::YCoCg242RGB | Y co cg -- r g b ; BUG: same code as RGB2YCoCg24, so it is not its inverse (relift is not used)
-	rot fwlift	| g co t
-	rot swap fwlift	| co cg Y
-	-rot ;
 
 |--- darker lighter color
-
-| 4bits shadow,light color
-::shadow4 | color shadow -- color ; darken a 24-bit color by shadow/16 (shadow 0..15), using only the high nibble of each channel
-	swap 4 >> $f0f0f and * $f0f0f0 and
-	dup 4 >> or ;
-::light4 | color light -- color ; lighten a 24-bit color adding light (0..15) to the high nibble of each channel, max 15
-	dup 8 << or dup 8 << or
-	swap 4 >> $f0f0f and +
-	$f0 and? ( $f or ) $f000 and? ( $f00 or ) $f00000 and? ( $f0000 or )
-	$f0f0f and dup 4 << or ;
 
 | 8bits shadow,light color
 ::shadow8 | color shadow -- color ; 24-bit color scaled by shadow/256 per channel (shadow 0..255)

@@ -24,9 +24,9 @@
 #r3_lib_clipboard.r3 'name 'words 'calls 'info
 ^r3/lib/color.r3
 #name "r3/lib/color.r3"
-#words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmul" "colmix4" "colmul4" "diffrgb2" "rgb2yuv" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "RGB2YCoCg24" "YCoCg242RGB" "shadow4" "light4" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
-#calls  'swapcolor 'colavg 'col50% 'col25% 'col33% 'colmix 'colmul 'colmix4 'colmul4 'diffrgb2 'rgb2yuv 'yuv2rgb 'yuv32 'hsv2rgb 'rgb2hsv 'rgb2ycocg 'ycocg2rgb 'rgb2ycc 'rgb2yuv2 'yuv2rgb2 'RGB>Gbr 'Gbr>RGB 'RGB2YCoCg24 'YCoCg242RGB 'shadow4 'light4 'shadow8 'light8 'blend2 'b2color 'bgr2rgb '4bcol '4bicol
-#info ( $10 $2F $2F $2F $2F $3E $2F $3E $2F $2F $30 $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $30 $30 $2F $2F $2F $2F $3E $10 $10 $10 $10 )
+#words  "swapcolor" "colavg" "col50%" "col25%" "col33%" "colmix" "colmul" "colmix4" "colmul4" "diffrgb2" "yuv2rgb" "yuv32" "hsv2rgb" "rgb2hsv" "rgb2ycocg" "ycocg2rgb" "rgb2ycc" "rgb2yuv2" "yuv2rgb2" "RGB>Gbr" "Gbr>RGB" "shadow8" "light8" "blend2" "b2color" "bgr2rgb" "4bcol" "4bicol" 0
+#calls  'swapcolor 'colavg 'col50% 'col25% 'col33% 'colmix 'colmul 'colmix4 'colmul4 'diffrgb2 'yuv2rgb 'yuv32 'hsv2rgb 'rgb2hsv 'rgb2ycocg 'ycocg2rgb 'rgb2ycc 'rgb2yuv2 'yuv2rgb2 'RGB>Gbr 'Gbr>RGB 'shadow8 'light8 'blend2 'b2color 'bgr2rgb '4bcol '4bicol
+#info ( $10 $2F $2F $2F $2F $3E $2F $3E $2F $2F $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'calls 'info
 ^r3/lib/console.r3
 #name "r3/lib/console.r3"
@@ -218,7 +218,7 @@
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
 #calls  'vset! 'vget! 'vsize! 'vop 'vline 'vfill 'vrect 'vfrect 'vellipse 'vellipseb
-#info ( $1F $1F $2E $2E $2E $4E $4C $4C $4D $21 )
+#info ( $1F $1F $2E $2E $2E $2E $4C $4C $4D $71 )
 #r3_lib_vdraw.r3 'name 'words 'calls 'info
 ^r3/lib/vec2.r3
 #name "r3/lib/vec2.r3"
@@ -248,7 +248,7 @@
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
 #calls  'p8.ini 'p8.clear 'p8.cnt 'p8.adr 'p8.nro 'p8!+ 'p8! 'p8.draw 'p8.drawo 'p8.del 'p8.last 'p8.cpy 'p8.mapv 'p8.mapd 'p8.map2 'p8.sort 'p8.isort
-#info ( $2E $1F $10 $2F $2F $2F $10 $0 $0 $2E $10 $2E $2E $2E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $60 $60 $2E $10 $2E $2E $E $2E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'calls 'info
 ^r3/util/bfont.r3
 #name "r3/util/bfont.r3"
@@ -368,13 +368,13 @@
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
 #calls  'Lineal 'Quad_In 'Quad_Out 'Quad_InOut 'Cub_In 'Cub_Out 'Cub_InOut 'Quar_In 'Quar_Out 'Quar_InOut 'Quin_In 'Quin_Out 'Quin_InOut 'Sin_In 'Sin_Out 'Sin_InOut 'Exp_In 'Exp_Out 'Exp_InOut 'Cir_In 'Cir_Out 'Cir_InOut 'Ela_In 'Ela_Out 'Ela_InOut 'Bac_In 'Bac_Out 'Bac_InOut 'Bou_Out 'Bou_In 'Bou_InOut 'easet 'ease 'easem 'catmullRom
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $6E $6E $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $57 $57 $5C )
 #r3_util_penner.r3 'name 'words 'calls 'info
 ^r3/util/sdlfiledlg.r3
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
 #calls  'immlist 'filedlgini 'immfileload 'immfilesave 'fullfilename
-#info ( $10 $0 $1F $1F $1 )
+#info ( $30 $0 $1F $1F $1 )
 #r3_util_sdlfiledlg.r3 'name 'words 'calls 'info
 ^r3/util/sdlgui.r3
 #name "r3/util/sdlgui.r3"

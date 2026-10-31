@@ -167,33 +167,72 @@
 #psel 0 #poff 0 #ph 0
 #wst 0
 #nc 0
+#ncap 0		| 1 = the list reached ncmax, the rest was not collected
+#ncmax 1000
 #recs 0
-#cp * 4096
+#ppool 0 #ppn 0	| names of the project words (z.name uses a shared buffer)
+#cp * 8000
 #prw * 768
+#pq 0		| 1 = the word starts with ' : the search skips it, accept keeps it
+#pnw 16		| width of the name column
+#wmax 10
+#pv 0 #pold 0	| pv = cp holds all the candidates of pprev
+#ppq 0
+#pprev * 128
+#acc * 160
+#kk 0
+#plib "project"
 
-| candidato = 4 qwords: kind(0 comando: eff = args, 1 palabra: eff = efecto) eff libreria nombre
+| candidato = 4 qwords: kind(0 comando/proyecto: eff = args, 1 palabra: eff = efecto) eff libreria nombre
 :cadd | name lib eff kind --
-	nc 500 >=? ( 4drop ; ) drop
+	nc ncmax >=? ( 1 'ncap ! 4drop drop ; ) drop
 	nc 5 << recs + dup nc 3 << 'cp + !
 	>a a!+ a!+ a!+ a!+
 	1 'nc +! ;
 
+:q | -- 'str ; the text to search (without the ' of an address)
+	'pwd pq + ;
+
 :ctadd | e --
-	'pwd =pre 0? ( 2drop ; ) drop
+	q =pre 0? ( 2drop ; ) drop
 	dup e.lib over e.arg 0 cadd ;
 
+:gcmd | the commands (not after ')
+	pq 1? ( drop ; ) drop
+	'ctab ( dup c@ $ff and 1? drop dup ctadd e.next ) 2drop ;
+
+:pkind | kind -- "str"
+	2 =? ( drop "data" ; ) drop "def" ;
+
+:zadd | i -- ; a definition of the project that starts with the text
+	nc ncmax >=? ( 2drop 1 'ncap ! ; ) drop
+	dup z.kind 3 >=? ( 2drop ; ) drop
+	dup z.name q =pre 0? ( 3drop ; ) drop
+	ppn 6 << ppool + dup >r strcpy
+	1 'ppn +!
+	z.kind pkind
+	r> 'plib rot 0 cadd ;
+
+:gproj | the code and data zones of the project
+	z.build 0 'ppn !
+	0 ( zn <? dup zadd 1+ ) drop ;
+
 :m.pre | -- stop
-	'pwd wpre 0? ( ; ) drop
-	cw cl ce 1 cadd 0 ;
+	q wpre 0? ( ; ) drop
+	cw cl ce 1 cadd ncap ;
 
 :r.name 24 + @ ;
 :r.lib 16 + @ ;
 :r.eff@ | rec -- 'str
 	dup 8 + @ swap @ 1? ( drop effstr ; ) drop ;
 
-:cgt | tmp j -- tmp j 0/1 ; cp[j-1] > tmp ?
+:rcmp | a b -- n ; shorter first (the exact one), then alphabetical
+	over count nip over count nip
+	- 0? ( drop cmpstr ; ) nip nip ;
+
+:cgt | tmp j -- tmp j 0/1 ; cp[j-1] goes after tmp ?
 	dup 0? ( ; ) drop
-	dup 1- 3 << 'cp + @ r.name pick2 r.name cmpstr
+	dup 1- 3 << 'cp + @ r.name pick2 r.name rcmp
 	0? ( drop 0 ; ) +? ( drop 1 ; ) drop 0 ;
 
 :csort
@@ -212,14 +251,14 @@
 	swap r.lib swap 72 + strcpy ;
 
 :gather
-	0 'nc !
-	'ctab ( dup c@ $ff and 1? drop dup ctadd e.next ) 2drop
+	0 'nc ! 0 'ncap !
+	gcmd gproj
 	'm.pre scanwords drop
 	csort ;
 
 :hide? | -- 1/0 ; palabras de 1 letra no abren popup (salvo / y .)
-	'pwd 1+ c@ $ff and 1? ( drop 0 ; ) drop
-	'pwd c@ $ff and $2f =? ( drop 0 ; ) $2e =? ( drop 0 ; ) drop 1 ;
+	q 1+ c@ $ff and 1? ( drop 0 ; ) drop
+	q c@ $ff and $2f =? ( drop 0 ; ) $2e =? ( drop 0 ; ) drop 1 ;
 
 :refill | llena las filas visibles desde poff
 	0 ( pn <? dup poff + fillrow 1+ ) drop ;
@@ -235,7 +274,36 @@
 	bxc 1- 'ba + c@ $ff and
 	1 =? ( drop 1 ; ) 2 =? ( drop 1 ; ) drop 0 ;
 
+:namew | the name column fits the longest name
+	10 'wmax !
+	0 ( nc <? dup 3 << 'cp + @ r.name count nip wmax max 'wmax ! 1+ ) drop
+	wmax 31 min 'pnw ! ;
+
+:keepone | rec -- ; the record stays if its name has the text
+	dup r.name q =pre nip 0? ( 2drop ; ) drop
+	kk 3 << 'cp + ! 1 'kk +! ;
+
+:refilter | the list of the previous text, only the ones that still match
+	0 'kk !
+	0 ( nc <? dup 3 << 'cp + @ keepone 1+ ) drop
+	kk 'nc ! ;
+
+:cached? | -- 0/1 ; the list of the previous text has all the candidates of this one
+	pold 0? ( ; ) drop
+	ncap 1? ( drop 0 ; ) drop
+	ppq pq <>? ( drop 0 ; ) drop
+	q 'pprev =pre nip ;
+
+:getlist
+	cached? 1? ( drop refilter csort ; ) drop
+	gather ;
+
+:setq | pq = 1 if the word starts with '
+	0 'pq !
+	'pwd c@ $ff and $27 =? ( 1 'pq ! ) drop ;
+
 :popup!
+	pv 'pold ! 0 'pv !
 	0 'pn ! 0 'psel ! 0 'poff !
 	bx.color incom? 1? ( drop ; ) drop
 	bx.word 'wst !
@@ -244,14 +312,20 @@
 	wst ( bxc <? dup 'bx + c@ ca!+ 1+ ) drop
 	0 ca!
 	'pwd c@ 0? ( drop ; ) drop
-	'pwd isNro 1? ( drop ; ) drop
+	setq
+	q c@ 0? ( drop ; ) drop
+	q isNro 1? ( drop ; ) drop
 	hide? 1? ( drop ; ) drop
-	gather
-	nc 6 min 'pn ! refill ;
+	getlist
+	q 'pprev strcpy pq 'ppq ! 1 'pv !
+	namew
+	nc 6 min py 1- 1 max min 'pn ! refill ;
 
 :accept
 	pn 0? ( drop ; ) drop
-	psel poff - 7 << 'prw + bx.accept ;
+	psel poff - 7 << 'prw +
+	pq 0? ( drop bx.accept ; ) drop
+	'acc 1+ strcpy $27 'acc c! 'acc bx.accept ;
 
 |---------------- dibujo: prompt, popup, footer
 #lcls -1
@@ -331,11 +405,16 @@
 	pn 0? ( drop ; ) drop
 	py 1- pn min 'ph !
 	ph 1 <? ( drop ; ) drop
+	ph pn <? ( ph 'pn ! selvis ) drop
 	px 'fx ! py ph - 'fy ! pw 'fw ! ph 'fh !
-	pw 48 - 1 max 255 min 'pdef 2 + c!
+	pnw pw 2/ min 6 max dup 'pdef c!
+	pw 32 - swap - 1 max 255 min 'pdef 2 + c!
 	'pdef tcols fhome
 	'prow ph .lines
 	;
+
+:cnfmt | -- "fmt"
+	ncap 1? ( drop "  %d/%d+" ; ) drop "  %d/%d" ;
 
 #spin "|" "/" "-" "\" | 2bytes each
 #sf 0 
@@ -347,7 +426,7 @@
 	bg0 .wfill fhome .sp
 	busy 1? ( fPr spindraw fMu " running r3..." .write  )
 	0? ( fDi "~/r3" .write ) drop
-	pn 1? ( nc pn >? ( fMu nc psel 1+ "  %d/%d" sprint .write ) drop ) drop
+	pn 1? ( nc pn >? ( fMu nc psel 1+ cnfmt sprint .write ) drop ) drop
 	bxrz 0 >=? ( fYe bxrz 1+ "  redefining zone %d" sprint .write ) drop
 	cols 86 >=? ( fDi cols 80 - .col 78 "ctrl+c quit   tab complete   / commands   ctrl+j newline   ^t term   ^l clear" rwrite ) drop ;
 
@@ -1100,10 +1179,11 @@
 :replscr
 	onkey drawscr ;
 
-:initmem | big buffers (>8192) are reserved in the boot: tp recs
+:initmem | big buffers (>8192) are reserved in the boot: tp recs ppool
 	here
 	dup 'tp ! $20000 +
-	dup 'recs ! 16384 +
+	dup 'recs ! 32768 +
+	dup 'ppool ! 65536 +
 	'here !
 	tp 'tp> ! ;
 

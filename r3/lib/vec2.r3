@@ -33,14 +33,15 @@
 	@+ dup *. swap @ dup *. + sqrt. ;
 
 ::v2nor | 'v -- ; scale the vector to length 1.0 (a zero vector crashes)
-	dup v2len v2/ ;
+	dup v2len 0? ( 2drop ; ) v2/ ;
 
 ::v2lim | 'v lim -- ; limit the length of the vector to lim (fixed point)
-	over v2len over <=? ( 3drop ; )
+	over v2len 0? ( 2drop ; ) 
+	over <=? ( 3drop ; )
 	/. v2* ;
 
-::v2rot | 'v bang -- ; x' = x*sin - y*cos, y' = x*cos + y*sin (BUG: bang 0 turns the vector 90 degrees, 0.25 leaves it as is)
-	sincos pick2 @ dup			| v sin cos x x
+::v2rot | 'v bang -- ; x' = x*sin - y*cos, y' = x*cos + y*sin
+	sincos swap pick2 @ dup		| v sin cos x x
 	pick2 *. swap pick3 *.		| v sin cos xc xs
 	rot pick4 8 + @ *. - 		| v sin xc xscy
 	rot pick3 8 + @ *. rot +	| v xscy xcsy
@@ -51,6 +52,6 @@
 	rot @+ swap @ | v2x v2y v1x v1y
 	rot *. -rot *. + ;
 
-::v2perp | 'dst 'src -- ; dst = (-src.y, src.x): src turned 90 degrees counter-clockwise (v1 is the destination)
+::v2perp | 'dst 'src -- ; dst = (-src.y, src.x): src turned 90 degrees counter-clockwise
 	@+ swap @ neg rot !+ ! ;
 	

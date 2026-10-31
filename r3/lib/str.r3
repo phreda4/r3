@@ -163,7 +163,7 @@
 
 
 ::=w | s1 s2 -- 1/0 ; like =s but ASCII only: a byte >= 128 ends the word (use =s for UTF-8)
-	( c@+ 32 >?
+	( c@+ $ff and 32 >?
 		toupp rot c@+ toupp rot -
 		1? ( 3drop 0 ; )
 		drop swap ) 2drop

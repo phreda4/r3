@@ -231,7 +231,7 @@
 2 -1 0 0	| AND a b -- c ; c = a AND b (bitwise)
 2 -1 0 0	| OR a b -- c ; c = a OR b
 2 -1 0 0	| XOR a b -- c ; c = a XOR b
-2 -1 0 0	| NAND a b -- c ; c = NOT (a AND b)
+2 -1 0 0	| NAND a b -- c ; c = AND (a NOT b)
 2 -1 0 0	| + a b -- c ; c = a + b
 2 -1 0 0	| - a b -- c ; c = a - b
 2 -1 0 0	| * a b -- c ; c = a * b

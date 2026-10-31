@@ -437,14 +437,8 @@
 |	$ff and $ff 24 <</ f2fp24 ;
 
 |--- byte 0..255 to normalize 0..1 float32
-::byte>float32N | byte -- float ; byte 0..255 to float32 normalized 0..1 (BUG: returns about byte/128, 255 gives 1.996)
-	$ff and 0? ( ; ) 
-	32 over clzd -			| v msb
-	1 over << 1- rot and 	| msb frac
-	23 pick2 - <<			| msb mant
-	$7fffff and
-	swap 119 + 23 << | 8 - 127 +
-	or ;
+::byte>float32N | byte -- float ; byte 0..255 to float32 normalized 0..1
+	$ff and 255 16 <</ f2fp ;
 	
 |--- float32 to byte 0..255	
 ::float32N>byte | f32 -- byte ; float32 normalized 0..1 to byte 0..255, rounded (negative gives 0, >= 1.0 gives 255)
