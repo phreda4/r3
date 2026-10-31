@@ -9,36 +9,36 @@
 0 0 1.0 0
 0 0 0 1.0
 #mats * 2560 | 20 matrices
-##mat> 'mats
+##mat> 'mats | address of the current matrix (16 cells of 8 bytes) in the matrix stack
 
-::matini
+::matini | -- ; reset the matrix stack: one identity matrix as the current one
 	'mats dup 'mat> ! 'mati 16 move ;
 
-::matinim | 'mat --
+::matinim | 'mat -- ; reset the matrix stack: a copy of 'mat (16 cells) as the only matrix
 	'mats dup 'mat> ! swap 16 move ;
 
-::mpush | --
+::mpush | -- ; push a copy of the current matrix on the matrix stack (20 levels)
 	mat> dup 128 + dup 'mat> ! swap 16 move ;
 	
-::mpushi | --  ; push new id
+::mpushi | -- ; push a new identity matrix on the matrix stack
 	mat> 128 + dup 'mat> ! 'mati 16 move ;
 
-::mpop | --
+::mpop | -- ; pop the current matrix (there is no check for the bottom of the stack)
 	mat> |'mats =? ( drop ; )
 	128 - 'mat> ! ;
 
-::nmpop | n --
+::nmpop | n -- ; pop n matrices (there is no check for the bottom of the stack)
 	7 << mat> swap - |'mats <? ( 'mats nip )
 	'mat> ! ;
 
 |----------- generate floating point matrix
 
-::getfmat | -- fmat ; make float point mat
+::getfmat | -- fmat ; convert the current matrix to 16 float32 values written just after it in the stack; returns their address
 	mat> dup 128 + >b >a
 	16 ( 1? 1- a@+ f2fp db!+ ) drop 
 	mat> 128 + ;
 	
-::gettfmat |  -- fmat ; transpose
+::gettfmat | -- ; like getfmat but transposed; the values are at mat> 128 + (the address is not returned)
 	mat> dup 128 + >b
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
@@ -46,13 +46,13 @@
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @ f2fp db! 
 	;
 
-::midf | fmat -- ; copy id matrix to floating point in fmat
+::midf | fmat -- ; write the identity matrix as 16 float32 values at fmat
 	>b 'mati >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
 
-::mcpyf | fmat --	; copy act matrix to floating point in fmat
+::mcpyf | fmat -- ; write the current matrix as 16 float32 values at fmat
 	>b mat> >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
 
-::mcpyft | fmat -- ; transpose + copy in floating point
+::mcpyft | fmat -- ; like mcpyf but transposed
 	>b mat> 
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
 	@+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 24 + @+ f2fp db!+ 96 -
@@ -69,7 +69,7 @@
 :a]+! 3 << a> + +! ;
 :a]@ 3 << a> + @ ;
 
-::mperspective | near far contang aspect  --
+::mperspective | near far cot aspect -- ; make the current matrix an OpenGL perspective projection: m0 = cot*aspect, m5 = cot (cot = cotangent of half the field of view; aspect acts as height/width)
 	mat> dup >a 'mati 16 move 
 	over *. a!		|mat[0] = cotangent / aspect;
 	5 a]!			|mat[5] = cotangent;
@@ -86,7 +86,7 @@
 |:mperspectivestatic
 |	'preload 'mat 16 move ;	
 	
-::mortho | r l t b f n --
+::mortho | r l t b f n -- ; make the current matrix an OpenGL orthographic projection (right left top bottom far near)
 	mat> dup >a 'mati 16 move 
 	2dup - -2.0 over /. 10 a]!		| 	mat[10] = -2 / (farVal - nearVal);
 	-rot + swap /. neg 14 a]!	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
@@ -107,7 +107,7 @@
 :uz 'ux 16 + @ ;
 
 
-::mlookat | eye to up --
+::mlookat | eye to up -- ; make the current matrix an OpenGL view matrix looking from eye toward to; eye, to and up are addresses of vec3
 	swap
 	'fx dup rot v3= dup pick3 v3- v3Nor | eye up
 	'sx dup 'fx v3= dup rot v3vec v3Nor | eye
@@ -132,35 +132,35 @@
 	;
 	
 |-----------------------------
-::mtran | x y z --
+::mtran | x y z -- ; translate the current OpenGL matrix by x y z along its local axes (changes m12 to m15)
 	mat> >a
 	pick2 0 a]@ *. pick2 4 a]@ *. + over 8 a]@ *. + 12 a]+!
 	pick2 1 a]@ *. pick2 5 a]@ *. + over 9 a]@ *. + 13 a]+!
 	pick2 2 a]@ *. pick2 6 a]@ *. + over 10 a]@ *. + 14 a]+!
 	rot 3 a]@ *. rot 7 a]@ *. + swap 11 a]@ *. + 15 a]+! ;
 
-::mtranx | x --
+::mtranx | x -- ; like mtran along the local x axis only
 	mat> >a
 	dup 0 a]@ *. 12 a]+!
 	dup 1 a]@ *. 13 a]+!
 	dup 2 a]@ *. 14 a]+!
 	3 a]@ *. 15 a]+! ;
 
-::mtrany | y --
+::mtrany | y -- ; like mtran along the local y axis only
 	mat> >a
 	dup 4 a]@ *. 12 a]+!
 	dup 5 a]@ *. 13 a]+!
 	dup 6 a]@ *. 14 a]+!
 	7 a]@ *. 15 a]+! ;
 
-::mtranz | z --
+::mtranz | z -- ; like mtran along the local z axis only
 	mat> >a
 	dup 8 a]@ *. 12 a]+!
 	dup 9 a]@ *. 13 a]+!
 	dup 10 a]@ *. 14 a]+!
 	11 a]@ *. 15 a]+! ;
 
-::mrotx	| rx --
+::mrotx | rx -- ; rotate the current OpenGL matrix around its local X axis (1.0 = full turn)
 	mat> dup >a 128 + >b
 	sincos | sin cos
     4 a]@ over *. 8 a]@ pick3 *. + b!+
@@ -176,7 +176,7 @@
 	mat> 4 3 << + mat> 128 + 8 move
 	;
 	
-::mroty
+::mroty | ry -- ; rotate the current OpenGL matrix around its local Y axis (1.0 = full turn)
 	mat> dup >a 128 + >b
 	sincos swap | cos sin
     0 a]@ over *. 8 a]@ pick3 *. + b!+ 
@@ -193,7 +193,7 @@
 	mat> 8 3 << + mat> 128 + 4 move | 8..11
 	;
 	
-::mrotz	
+::mrotz | rz -- ; rotate the current OpenGL matrix around its local Z axis (1.0 = full turn)
 	mat> dup >a 128 + >b
 	sincos | sin cos
     0 a]@ over *. 4 a]@ pick3 *. + b!+ 
@@ -210,50 +210,50 @@
 	;
 	
 |-----------------------------
-::mscale | x y z -- ; post
+::mscale | x y z -- ; multiply the four values of row 0 by x, of row 1 by y and of row 2 by z (translation included)
 	mat> >a
 	pick2 a@ *. a!+ pick2 a@ *. a!+ pick2 a@ *. a!+ rot a@ *. a!+
 	over a@ *. a!+ over a@ *. a!+ over a@ *. a!+ swap a@ *. a!+
 	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ a@ *. a! ;
 
-::mscalei | x y z --
+::mscalei | x y z -- ; scale the local axes: multiply the columns of the 3x3 part by x y z (translation unchanged)
 	mat> >a
 	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	pick2 a@ *. a!+ over a@ *. a!+ dup a@ *. a!+ 8 a+
 	rot a@ *. a!+ swap a@ *. a!+ a@ *. a! ;
 
-::muscalei | s --
+::muscalei | s -- ; uniform scale of the 3x3 part of the matrix by s (translation unchanged)
 	mat> >a
 	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ 8 a+
 	dup a@ *. a!+ dup a@ *. a!+ dup a@ *. a!+ 8 a+
 	dup a@ *. a!+ dup a@ *. a!+ a@ *. a! ;
 
 |-----------------------------
-::transform | x y z -- x y z
+::transform | x y z -- x y z ; transform a point by the current matrix: x' = x*m0 + y*m1 + z*m2 + m3, y' = x*m4 + y*m5 + z*m6 + m7, z' = x*m8 + y*m9 + z*m10 + m11
 	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@+ +
 	>r pick2 a@+ *. pick2 a@+ *. + over a@+ *. + a@+ +
 	>r rot a@+ *. rot a@+ *. + swap a@+ *. + a@ +
 	r> r> swap rot ;
 
-::transformr | x y z -- x y z
+::transformr | x y z -- x y z ; like transform without the translation (for directions)
 	mat> >a pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 8 a+
 	>r pick2 a@+ *. pick2 a@+ *. + over a@+ *. + 8 a+
 	>r rot a@+ *. rot a@+ *. + swap a@ *. +
 	r> r> swap rot ;
 
-::ztransform | x y z -- z
+::ztransform | x y z -- z ; only the z of transform
 	mat> 64 + >a
 	rot a@+ *. rot a@+ *. + swap a@+ *. + a@ + ;
 
-::oztransform | -- z
+::oztransform | -- z ; z of the transformed origin (m11)
 	mat> 88 + @ ;
 
-::oxyztransform | -- x y z
+::oxyztransform | -- x y z ; the transformed origin (m3 m7 m11)
 	mat> dup 24 + @ over 56 + @ rot 88 + @ ;
 	
 :b]@ 3 << a> + 256 + @ ;
 	
-::matinv | --
+::matinv | -- ; push the inverse of the current 4x4 matrix as a new matrix; nothing is pushed if it has no inverse
 	mat> dup >a 256 + >b | b store aux
     0 a]@ 5 a]@ *. 1 a]@ 4 a]@ *. - b!+
     0 a]@ 6 a]@ *. 2 a]@ 4 a]@ *. - b!+
@@ -303,13 +303,13 @@
 #cox #coy #coz
 #six #siy #siz
 
-::calcrot | rx ry rz --
+::calcrot | rx ry rz -- ; keep the sines and cosines of three angles (1.0 = full turn) for makerot and mrotxyzi
 	sincos 'coz ! 'siz !
 	sincos 'coy ! 'siy !
 	sincos 'cox ! 'six !
 	;
 
-::makerot | x y z -- x' y' z'
+::makerot | x y z -- x' y' z' ; rotate a vector with the angles of calcrot (BUG: calcrot 0 0 0 then makerot of (1,2,3) gives (1,-3,2), it is not a plain rotation)
 	-rot | z x y
 	over cox *. over six *. +	| z x y x'
 	rot six *. rot cox *. - 	| z x' y'
@@ -325,7 +325,7 @@
 #m21 #m22 #m23
 #m31 #m32 #m33
 
-::matqua | 'quat --
+::matqua | 'quat -- ; make the current matrix the rotation of the quaternion at 'quat (x y z w), no translation; the quaternion is normalized in place
 	dup q4nor
 	@+ dup dup + 'cox ! 'six !
 	@+ dup dup + 'coy ! 'siy !
@@ -350,7 +350,7 @@
 	0 a!+ 0 a!+ 0 a!+ 1.0 a!
 	;
 	
-::calcvrot | rx ry rz --
+::calcvrot | rx ry rz -- ; compute the 3x3 rotation of three angles (1.0 = full turn) into internal variables, for mrotxyz
 	sincos 'coz ! 'siz !
 	sincos 'coy ! 'siy !
 	sincos 'cox ! 'six !
@@ -365,7 +365,7 @@
     six siz *. siy *. cox coy *. + 'm33 !
 	;
 
-::mrotxyz | x y z --
+::mrotxyz | x y z -- ; rotate the current matrix by three angles with calcvrot (BUG: it moves the matrix pointer as if cells had 4 bytes, the result is wrong)
 	calcvrot
 	mat> >a
 	a@+ a@+ a@+ -12 a+
@@ -386,7 +386,7 @@
 	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
 	;
 
-::mrotxyzi | x y z --
+::mrotxyzi | x y z -- ; rotate the current matrix by three angles with calcrot (BUG: same 4 byte cell problem, the result is wrong)
  	calcrot
 	mat> >a
 	a@ a> 16 + @ a> 32 + @
@@ -408,7 +408,7 @@
 	;
 
 |-- mat mult	
-::mcpy | 'mat --	
+::mcpy | 'mat -- ; copy the current matrix (16 cells) to 'mat
 	mat> 16 move ;
 
 :mline | -- v
@@ -423,41 +423,41 @@
 	mline swap !+ -88 b+ -32 a+
 	mline swap !+ -96 b+ -24 b+ ;
 	
-::m* | -- ; mult two prev mat and generate a new one
+::m* | -- ; multiply the two top matrices (previous * current) and push the result as a new matrix
 	mat> dup 128 - >a dup >b 128 +
 	mrow mrow mrow mrow drop
 	128 'mat> +!
 	;
 
-::mm* | 'mat --
+::mm* | 'mat -- ; push current * 'mat as a new matrix
 	>b mat> dup >a 128 +
 	mrow mrow mrow mrow drop
 	128 'mat> +! ;
 
-::mmi* | 'mat --
+::mmi* | 'mat -- ; push 'mat * current as a new matrix
 	>a mat> dup >b 128 +
 	mrow mrow mrow mrow drop
 	128 'mat> +! ;
 
 | Versión que multiplica la Vista por la matriz actual
-::mview | eye to up --
+::mview | eye to up -- ; mpush, mlookat and m*: pushes the view matrix and the product previous * view (arguments of mlookat)
     mpush      | Duplica la matriz actual (Modelo) al tope
     mlookat    | Genera la Vista en el tope (borrando la copia)
     m* | Multiplica: Matriz_Anterior * Vista -> Resultado
 ;
 
 | Versión que multiplica la Proyección por la matriz actual
-::mproj | fov asp zn zf --
+::mproj | near far cot aspect -- ; mpush, mperspective and m*: pushes the projection and the product previous * projection (the arguments are the ones of mperspective, not fov asp zn zf)
     mpush      | Duplica la matriz (View*Model) al tope
     mperspective | Genera la Proyección en el tope
     m* | Multiplica: (View*Model) * Proj -> MVP
 ;		
 
-::mtra | x y z -- ; traslate
+::mtra | x y z -- ; set the current matrix to an identity with the translation x y z (m12 m13 m14)
 	mat> dup >a 'mati 16 move 
 	14 a]! 13 a]! 12 a]! ;
 
-::mrot | rx ry rz -- ; rotate
+::mrot | rx ry rz -- ; set the current matrix to the rotation of three angles (1.0 = full turn), no translation
 	mat> dup >a 'mati 16 move 
 	sincos 'coz ! 'siz !
 	sincos 'coy ! 'siy !
@@ -473,10 +473,10 @@
     six siz *. siy *. cox coy *. + 10 a]! |'m33 !
 	;
 
-::mpos | x y z --
+::mpos | x y z -- ; set the translation m12 m13 m14 of the current matrix, the rest is unchanged
 	mat> >a 14 a]! 13 a]! 12 a]! ;
 
-::mrpos | r16 x y z -- ; r=....xxxxyyyyzzzz rot
+::mrpos | r16 x y z -- ; set the current matrix to a rotation and the position x y z; r16 packs the angles as $xxxxyyyyzzzz (16 bits each, $10000 = full turn)
 	mat> >a 
 	1.0 15 a]! 14 a]! 13 a]! 12 a]!  | pos
 	dup $ffff and sincos 'coz ! 'siz !
@@ -497,18 +497,18 @@
 	;
 
 |------ pack 3 rot in 48bits (16x3)	- gain space+vel (paralel add and rotation from here)
-::packrota | rx ry rz -- rp
+::packrota | rx ry rz -- rp ; pack three angles of 16 bits: rx<<32 | ry<<16 | rz (for mrpos)
 	$ffff and swap $ffff and 16 << or swap $ffff and 32 << or ;
 
-::+rota | ra rb -- rr
+::+rota | ra rb -- rr ; add two packed rotations (the lowest bit of each 16 bit field is lost)
 	+ $100010001 nand ;
 
 |------ pack 3 vel in 63bits (21x3)
-::pack21 | vx vy vz -- vp
+::pack21 | vx vy vz -- vp ; pack three 21-bit values: vx<<42 | vy<<21 | vz
 	$1fffff and swap
 	$1fffff and 21 << or swap
 	$1fffff and 42 << or ;
 	
-::+p21 | va vb -- vr
+::+p21 | va vb -- vr ; add two pack21 values (the lowest bit of each 21 bit field is lost)
 	+ $40000200001 nand ;
 

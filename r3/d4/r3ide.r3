@@ -7,7 +7,7 @@
 
 ^r3/d4/r3token.r3
 ^r3/d4/helplib.r3
-^r3/d4/manualview.r3
+|^r3/d4/manualview.r3
 
 #msg * 1024		| last line msg
 
@@ -354,7 +354,7 @@
 	flxRest
 	.reset 
 	tuwina $1 " Manual " .wtitle 1 1 flpad .wfill 
-	viewmanual	
+|	viewmanual	
 	
 	uiKey
 	[esc] =? ( exit ) 
@@ -364,7 +364,7 @@
 	drop ;
 	
 :wordshow
-	dup lwordhelp gomanual
+|	dup lwordhelp gomanual
 	
 	dup lwordlib
 	swap lwordname 
@@ -380,8 +380,8 @@
 	
 :getlabel
 	'helpword lwordfind
-	$10000 and? ( drop "number push to data stack" 'infohelp strcpy 0 gomanual ; ) 
-	$20000 and? ( drop "base word" 'infohelp strcpy 0 gomanual ; )
+|	$10000 and? ( drop "number push to data stack" 'infohelp strcpy 0 gomanual ; ) 
+|	$20000 and? ( drop "base word" 'infohelp strcpy 0 gomanual ; )
 	+? ( wordshow ; ) 
 	drop "Not found" 'infohelp strcpy ;
 	
@@ -438,7 +438,7 @@
 	tuEditCode
 	
 	uiKey
-	[f2] =? ( helpcode )
+|	[f2] =? ( helpcode )
 	[f3] =? ( fxcode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
@@ -463,7 +463,7 @@
 	|"r3/test/testasm.r3" 'filename strcpy
 	
 	makehelpwords	
-	loadmanual	
+	|loadmanual	
 	
 	'filename TuLoadCode
 	|TuNewCode

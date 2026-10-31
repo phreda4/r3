@@ -110,8 +110,10 @@
 
 ::toklend | dic -- tok len ; len for data
 	dup @ 16 >> $ffffff and 		| dic itok
-	dup 3 << tok + swap 			| dic tok itok
-	rot 16 + @ 16 >> $ffffff and 
+	dup 3 << tok + swap 			| tok itok dic
+	rot 16 +						| tok itok dic+16
+	dic> >=? ( drop tok> tok - 3 >> swap - ; )	| last def: end = tokens in use
+	@ 16 >> $ffffff and
 	swap -
 	;
 	
