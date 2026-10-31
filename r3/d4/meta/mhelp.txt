@@ -158,57 +158,57 @@ mtransi | x y z -- ; translate the current matrix by x y z along its own (local)
 mrotxi | x -- ; rotate the current matrix around X by x (1.0 = full turn), translation unchanged; at 0.25 (0,1,0) goes to (0,0,-1)
 mrotyi | y -- ; rotate the current matrix around Y by y (1.0 = full turn), translation unchanged; at 0.25 (1,0,0) goes to (0,0,1)
 mrotzi | z -- ; rotate the current matrix around Z by z (1.0 = full turn), translation unchanged; at 0.25 (1,0,0) goes to (0,-1,0)
-mat>
-matini
-matinim | 'mat --
-mpush | --
-mpushi | --  ; push new id
-mpop | --
-nmpop | n --
-getfmat | -- fmat ; make float point mat
-gettfmat | -- fmat ; transpose
-midf | fmat -- ; copy id matrix to floating point in fmat
-mcpyf | fmat -- ; copy act matrix to floating point in fmat
-mcpyft | fmat -- ; transpose + copy in floating point
-mperspective | near far contang aspect  --
-mortho | r l t b f n --
-mlookat | eye to up --
-mtran | x y z --
-mtranx | x --
-mtrany | y --
-mtranz | z --
-mrotx | rx --
-mroty
-mrotz
-mscale | x y z -- ; post
-mscalei | x y z --
-muscalei | s --
-transform | x y z -- x y z
-transformr | x y z -- x y z
-ztransform | x y z -- z
-oztransform | -- z
-oxyztransform | -- x y z
-matinv | --
-calcrot | rx ry rz --
-makerot | x y z -- x' y' z'
-matqua | 'quat --
-calcvrot | rx ry rz --
-mrotxyz | x y z --
-mrotxyzi | x y z --
-mcpy | 'mat --
-m* | -- ; mult two prev mat and generate a new one
-mm* | 'mat --
-mmi* | 'mat --
-mview | eye to up --
-mproj | fov asp zn zf --
-mtra | x y z -- ; traslate
-mrot | rx ry rz -- ; rotate
-mpos | x y z --
-mrpos | r16 x y z -- ; r=....xxxxyyyyzzzz rot
-packrota | rx ry rz -- rp
-+rota | ra rb -- rr
-pack21 | vx vy vz -- vp
-+p21 | va vb -- vr
+mat> | address of the current matrix (16 cells of 8 bytes) in the matrix stack
+matini | -- ; reset the matrix stack: one identity matrix as the current one
+matinim | 'mat -- ; reset the matrix stack: a copy of 'mat (16 cells) as the only matrix
+mpush | -- ; push a copy of the current matrix on the matrix stack (20 levels)
+mpushi | -- ; push a new identity matrix on the matrix stack
+mpop | -- ; pop the current matrix (there is no check for the bottom of the stack)
+nmpop | n -- ; pop n matrices (there is no check for the bottom of the stack)
+getfmat | -- fmat ; convert the current matrix to 16 float32 values written just after it in the stack; returns their address
+gettfmat | -- ; like getfmat but transposed; the values are at mat> 128 + (the address is not returned)
+midf | fmat -- ; write the identity matrix as 16 float32 values at fmat
+mcpyf | fmat -- ; write the current matrix as 16 float32 values at fmat
+mcpyft | fmat -- ; like mcpyf but transposed
+mperspective | near far cot aspect -- ; make the current matrix an OpenGL perspective projection: m0 = cot*aspect, m5 = cot (cot = cotangent of half the field of view; aspect acts as height/width)
+mortho | r l t b f n -- ; make the current matrix an OpenGL orthographic projection (right left top bottom far near)
+mlookat | eye to up -- ; make the current matrix an OpenGL view matrix looking from eye toward to; eye, to and up are addresses of vec3
+mtran | x y z -- ; translate the current OpenGL matrix by x y z along its local axes (changes m12 to m15)
+mtranx | x -- ; like mtran along the local x axis only
+mtrany | y -- ; like mtran along the local y axis only
+mtranz | z -- ; like mtran along the local z axis only
+mrotx | rx -- ; rotate the current OpenGL matrix around its local X axis (1.0 = full turn)
+mroty | ry -- ; rotate the current OpenGL matrix around its local Y axis (1.0 = full turn)
+mrotz | rz -- ; rotate the current OpenGL matrix around its local Z axis (1.0 = full turn)
+mscale | x y z -- ; multiply the four values of row 0 by x, of row 1 by y and of row 2 by z (translation included)
+mscalei | x y z -- ; scale the local axes: multiply the columns of the 3x3 part by x y z (translation unchanged)
+muscalei | s -- ; uniform scale of the 3x3 part of the matrix by s (translation unchanged)
+transform | x y z -- x y z ; transform a point by the current matrix: x' = x*m0 + y*m1 + z*m2 + m3, y' = x*m4 + y*m5 + z*m6 + m7, z' = x*m8 + y*m9 + z*m10 + m11
+transformr | x y z -- x y z ; like transform without the translation (for directions)
+ztransform | x y z -- z ; only the z of transform
+oztransform | -- z ; z of the transformed origin (m11)
+oxyztransform | -- x y z ; the transformed origin (m3 m7 m11)
+matinv | -- ; push the inverse of the current 4x4 matrix as a new matrix; nothing is pushed if it has no inverse
+calcrot | rx ry rz -- ; keep the sines and cosines of three angles (1.0 = full turn) for makerot and mrotxyzi
+makerot | x y z -- x' y' z' ; rotate a vector with the angles of calcrot (BUG: calcrot 0 0 0 then makerot of (1,2,3) gives (1,-3,2), it is not a plain rotation)
+matqua | 'quat -- ; make the current matrix the rotation of the quaternion at 'quat (x y z w), no translation; the quaternion is normalized in place
+calcvrot | rx ry rz -- ; compute the 3x3 rotation of three angles (1.0 = full turn) into internal variables, for mrotxyz
+mrotxyz | x y z -- ; rotate the current matrix by three angles with calcvrot (BUG: it moves the matrix pointer as if cells had 4 bytes, the result is wrong)
+mrotxyzi | x y z -- ; rotate the current matrix by three angles with calcrot (BUG: same 4 byte cell problem, the result is wrong)
+mcpy | 'mat -- ; copy the current matrix (16 cells) to 'mat
+m* | -- ; multiply the two top matrices (previous * current) and push the result as a new matrix
+mm* | 'mat -- ; push current * 'mat as a new matrix
+mmi* | 'mat -- ; push 'mat * current as a new matrix
+mview | eye to up -- ; mpush, mlookat and m*: pushes the view matrix and the product previous * view (arguments of mlookat)
+mproj | near far cot aspect -- ; mpush, mperspective and m*: pushes the projection and the product previous * projection (the arguments are the ones of mperspective, not fov asp zn zf)
+mtra | x y z -- ; set the current matrix to an identity with the translation x y z (m12 m13 m14)
+mrot | rx ry rz -- ; set the current matrix to the rotation of three angles (1.0 = full turn), no translation
+mpos | x y z -- ; set the translation m12 m13 m14 of the current matrix, the rest is unchanged
+mrpos | r16 x y z -- ; set the current matrix to a rotation and the position x y z; r16 packs the angles as $xxxxyyyyzzzz (16 bits each, $10000 = full turn)
+packrota | rx ry rz -- rp ; pack three angles of 16 bits: rx<<32 | ry<<16 | rz (for mrpos)
++rota | ra rb -- rr ; add two packed rotations (the lowest bit of each 16 bit field is lost)
+pack21 | vx vy vz -- vp ; pack three 21-bit values: vx<<42 | vy<<21 | vz
++p21 | va vb -- vr ; add two pack21 values (the lowest bit of each 21 bit field is lost)
 base64decode | src dest -- 'dest
 base64encode | len src dest -- 'dest
 copyclipboard | 'mem cnt --
@@ -462,41 +462,41 @@ glImgTex | "" -- texid
 glColorTex | col -- texid
 initcube
 rendercube
-xr1
-yr1
-xr2
-yr2
-foco | activo teclado
-clkbtn
-idf | id gui foco actual (teclado)
-idl | id foco ultim
-guin? | mouse in rect? and last in touch
-gui
-guiBox | x1 y1 w h --
-guiPrev | -- ; same id
-guiRect | x1 y1 x2 y2 --
-onClick | 'click --
-onClickFoco
-onMoveA | 'move --
-onMove | 'move --
-onDnMove | 'dn 'move --
-onDnMoveA | 'dn 'move -- | si apreto adentro.. mueve siempre
-onMap | 'dn 'move 'up --
-onMapA | 'dn 'move 'up -- | si apreto adentro.. mueve siempre, con up
-guiI | 'vector --
-guiO | 'vector --
-guiIO | 'vi 'vo --
-nextfoco
-prevfoco
-setfoco | nro --
-clickfoco
-clickfoco1
-refreshfoco
-w/foco | 'in 'start --
-focovoid | --
-esfoco? | -- 0/1
-in/foco | 'in --
-lostfoco | 'acc --
+xr1 | left of the region of the current widget
+yr1 | top of the region of the current widget
+xr2 | right of the region of the current widget
+yr2 | bottom of the region of the current widget
+foco | number of the focusable widget that has the keyboard focus (1 = the first, 0 = none)
+clkbtn | mouse button of the last press over a widget (see onClick)
+idf | id of the last focusable widget registered in this frame (focus counter)
+idl | number of focusable widgets of the previous frame
+guin? | -1 if the mouse is inside the region of the current widget and it is the topmost one, else 0
+gui | -- ; start of a gui frame: call it once per frame before the widgets (resets the widget ids)
+guiBox | x1 y1 w h -- ; start a widget with the rectangle x1 y1 w h: takes the next id and tests the mouse (sets guin?)
+guiPrev | -- ; the next guiBox or guiRect reuses the id of the last widget (several regions with the same id)
+guiRect | x1 y1 x2 y2 -- ; like guiBox but with the two corners of the rectangle
+onClick | 'click -- ; execute 'click when the mouse button is released over the widget that was pressed (clkbtn = the button)
+onClickFoco | 'click -- ; like onClick and also gives the keyboard focus to the widget
+onMoveA | 'move -- ; execute 'move while the button is held after pressing over the widget, even if the mouse leaves it
+onMove | 'move -- ; execute 'move while the button is pressed and the mouse is over the widget
+onDnMove | 'dn 'move -- ; execute 'dn when the button is pressed over the widget and 'move while it is held there
+onDnMoveA | 'dn 'move -- ; like onDnMove but it keeps calling 'move after the mouse leaves the widget
+onMap | 'dn 'move 'up -- ; 'dn when pressed over the widget, 'move while held, 'up when released
+onMapA | 'dn 'move 'up -- ; like onMap but it keeps tracking after the mouse leaves the widget
+guiI | 'vector -- ; execute 'vector if the mouse is inside the widget
+guiO | 'vector -- ; execute 'vector if the mouse is outside the widget
+guiIO | 'vi 'vo -- ; execute 'vi if the mouse is inside the widget, else 'vo
+nextfoco | -- ; move the keyboard focus to the next focusable widget (wraps to the first) and clear sdlkey
+prevfoco | -- ; move the keyboard focus to the previous focusable widget (wraps to the last) and clear sdlkey
+setfoco | nro -- ; give the keyboard focus to the focusable widget number nro (1 = the first)
+clickfoco | -- ; give the keyboard focus to the last registered focusable widget (call it after its w/foco, for example when it is clicked)
+clickfoco1 | -- ; give the keyboard focus to the next focusable widget to be registered
+refreshfoco | -- ; clear the keyboard focus: the first focusable widget takes it in the next frame
+w/foco | 'in 'start -- ; focusable widget: with the keyboard focus it executes 'start the first frame and 'in in the next ones; without focus it only registers itself
+focovoid | -- ; register a focusable widget without code (it takes a place in the focus order)
+esfoco? | -- n ; -1 if the next focusable widget to be registered has the keyboard focus, another nonzero value if not (compare with -1)
+in/foco | 'in -- ; focusable widget that executes 'in while it has the keyboard focus
+lostfoco | 'acc -- ; focusable widget: when it has the focus it executes 'acc and moves the focus to the next widget
 input | 'var max --
 inputex | 'vector 'var max  --
 inputdump
@@ -958,117 +958,117 @@ rndmax | max -- rand ; like randmax but using rnd: 0..max-1
 rndminmax | min max -- rand ; like randminmax but using rnd: min..max-1
 rnd128 | -- n ; 64-bit random number (xorshift128+, its own state)
 loopMix128 | -- rand ; 64-bit random number (LoopMix128 generator by Daniel Cota, its own state)
-SDL_Init
-SDL_GetCurrentDisplayMode
-SDL_Quit
-SDL_GetNumVideoDisplays
-SDL_CreateWindow
-SDL_SetWindowFullscreen
-SDL_RenderSetLogicalSize
-SDL_RaiseWindow
-SDL_GetWindowSize
-SDL_SetWindowSize
-SDL_GetWindowSurface
-SDL_ShowCursor
-SDL_UpdateWindowSurface
-SDL_DestroyWindow
-SDL_CreateRenderer
-SDL_CreateTexture
-SDL_QueryTexture
-SDL_SetTextureColorMod
-SDL_SetTextureAlphaMod
-SDL_DestroyTexture
-SDL_DestroyRenderer
-SDL_UpdateTexture
-SDL_RenderClear
-SDL_RenderCopy
-SDL_RenderCopyEx | sys6f1 drop ;
-SDL_RenderPresent
-SDL_CreateTextureFromSurface
-SDL_CreateRGBSurfaceWithFormatFrom
-SDL_CreateRGBSurfaceWithFormat
-SDL_SetRenderDrawColor
-SDL_GetRenderDrawColor
-SDL_CreateRGBSurface
-SDL_LockSurface
-SDL_UnlockSurface
-SDL_BlitSurface
-SDL_SetSurfaceBlendMode
-SDL_SetSurfaceAlphaMod
-SDL_FillRect
-SDL_FreeSurface
-SDL_LockTexture
-SDL_UnlockTexture
-SDL_SetRenderDrawBlendMode
-SDL_SetTextureBlendMode
-SDL_ConvertSurfaceFormat
-SDL_UpdateYUVTexture
-SDL_RenderDrawPoint
-SDL_RenderDrawPoints
-SDL_RenderDrawLine
-SDL_RenderDrawRect
-SDL_RenderFillRect
-SDL_RenderGeometry
-SDL_RenderReadPixels
-SDL_RenderSetClipRect
-SDL_SetTextureScaleMode
-SDL_SetRenderTarget
-SDL_Delay
-SDL_PollEvent | &evt -- ok
-SDL_GetTicks | -- msec
-SDL_RWFromFile
-SDL_RWclose
-SDL_GL_SetAttribute
-SDL_GL_CreateContext
-SDL_GL_DeleteContext
-SDL_GL_SetSwapInterval
-SDL_GL_SwapWindow
-SDL_GL_LoadLibrary
-SDL_GL_GetProcAddress
-SDL_GL_MakeCurrent
-SDL_SetHint
-SDL_GetError
-SDL_OpenAudioDevice
-SDL_QueueAudio
-SDL_GetQueuedAudioSize
-SDL_PauseAudioDevice
-SDL_CloseAudioDevice
-SDL_GetClipboardText
-SDL_HasClipboardText
-SDL_SetClipboardText
-SDL_free
-SDL_windows
-SDLrenderer
-sw
-sh
-SDLinit | "titulo" w h --
-SDLmini | "titulo" w h --
-SDLinitScr | "titulo" display w h --
-sdlinitR | "titulo" w h -- | resize windows
-SDLdfullsw | display -- sw sh
-SDLfullw | "titulo" display --
-SDLfull | --
-SDLframebuffer | w h -- texture
-SDLblend
-SDLquit
-SDLevent
-SDLkey
-SDLchar
-SDLx
-SDLy
-SDLb
-SDLw
-SDLeventR | 'vec --
-SDLupdate
-SDLClick | 'event --
-.exit
-SDLshow | 'word --
-exit
-SDLredraw | --
-sdlbreak | f12 contiue ESC end
-SDLTexwh | tex -- w h
-%w
-%h
+SDL_Init | flags -- ; initialize the SDL subsystems (SDL_INIT_*)
+SDL_GetCurrentDisplayMode | display 'mode -- ; fill the SDL_DisplayMode at 'mode (format w h refresh_rate driverdata) with the current mode of the display
+SDL_Quit | -- ; shut down SDL
+SDL_GetNumVideoDisplays | -- n ; number of video displays
+SDL_CreateWindow | "title" x y w h flags -- window ; create a window (0 on error)
+SDL_SetWindowFullscreen | window flags -- ; 0 windowed, 1 fullscreen, $1001 fullscreen desktop
+SDL_RenderSetLogicalSize | renderer w h -- ; set a device independent resolution for the rendering
+SDL_RaiseWindow | window -- ; raise the window above the others and give it the input focus
+SDL_GetWindowSize | window 'w 'h -- ; store the size of the window in the integers at 'w and 'h
+SDL_SetWindowSize | window w h -- ; set the size of the window
+SDL_GetWindowSurface | window -- surface ; the surface of the window (for software drawing)
+SDL_ShowCursor | toggle -- ; 1 shows the mouse cursor, 0 hides it
+SDL_UpdateWindowSurface | window -- ; copy the surface of the window to the screen
+SDL_DestroyWindow | window -- ; destroy the window
+SDL_CreateRenderer | window index flags -- renderer ; create a 2d renderer (index -1 = the first driver that supports the flags)
+SDL_CreateTexture | renderer format access w h -- texture ; create a texture (access 0 static, 1 streaming, 2 target)
+SDL_QueryTexture | texture 'format 'access 'w 'h -- ; store the attributes of the texture in the variables (0 to ignore one)
+SDL_SetTextureColorMod | texture r g b -- ; color modulation of the texture (0..255)
+SDL_SetTextureAlphaMod | texture alpha -- ; alpha modulation of the texture (0..255)
+SDL_DestroyTexture | texture -- ; free the texture
+SDL_DestroyRenderer | renderer -- ; free the renderer
+SDL_UpdateTexture | texture 'rect 'pixels pitch -- result ; update an area of the texture (0 = all) with pixels, pitch = bytes per row; 0 if ok
+SDL_RenderClear | renderer -- ; clear the render target with the draw color
+SDL_RenderCopy | renderer texture 'src 'dst -- ; copy the rectangle 'src of the texture to the rectangle 'dst of the target (0 = whole)
+SDL_RenderCopyEx | renderer texture 'src 'dst angle 'center flip -- ; like SDL_RenderCopy with rotation (angle in degrees, a double in C; with sys7 it goes in an integer register: check it), center point (0 = middle) and flip
+SDL_RenderPresent | renderer -- ; show what was drawn
+SDL_CreateTextureFromSurface | renderer surface -- texture ; create a texture from a surface
+SDL_CreateRGBSurfaceWithFormatFrom | 'pixels w h depth pitch format -- surface ; surface that uses existing pixels
+SDL_CreateRGBSurfaceWithFormat | flags w h depth format -- surface ; create a surface with a pixel format
+SDL_SetRenderDrawColor | renderer r g b a -- ; color for the drawing operations (0..255)
+SDL_GetRenderDrawColor | renderer 'r 'g 'b 'a -- ; store the draw color in the variables
+SDL_CreateRGBSurface | flags w h depth rmask gmask bmask amask -- surface ; create a surface
+SDL_LockSurface | surface -- ; lock the surface to access its pixels
+SDL_UnlockSurface | surface -- ; unlock the surface
+SDL_BlitSurface | src 'srcrect dst 'dstrect -- ; copy a surface to another one (0 = whole)
+SDL_SetSurfaceBlendMode | surface mode -- ; blend mode of the surface
+SDL_SetSurfaceAlphaMod | surface alpha -- ; alpha modulation of the surface (0..255)
+SDL_FillRect | surface 'rect color -- ; fill a rectangle of the surface (0 = whole) with the color
+SDL_FreeSurface | surface -- ; free the surface
+SDL_LockTexture | texture 'rect 'pixels 'pitch -- ; lock a streaming texture for writing: 'pixels and 'pitch receive the address and the bytes per row
+SDL_UnlockTexture | texture -- ; unlock the texture
+SDL_SetRenderDrawBlendMode | renderer mode -- ; blend mode of the drawing (0 none, 1 alpha blend, 2 add, 4 mod)
+SDL_SetTextureBlendMode | texture mode -- ; blend mode of the texture (0 none, 1 alpha blend, 2 add, 4 mod)
+SDL_ConvertSurfaceFormat | surface format flags -- surface ; copy of the surface in another pixel format
+SDL_UpdateYUVTexture | texture 'rect 'y ypitch 'u upitch 'v vpitch -- ; update a planar YUV texture
+SDL_RenderDrawPoint | renderer x y -- ; draw a point
+SDL_RenderDrawPoints | renderer 'points count -- ; draw an array of SDL_Point (two int32 each)
+SDL_RenderDrawLine | renderer x1 y1 x2 y2 -- ; draw a line
+SDL_RenderDrawRect | renderer 'rect -- ; draw the outline of a rectangle x y w h (int32 each; 0 = whole target)
+SDL_RenderFillRect | renderer 'rect -- ; fill a rectangle x y w h (int32 each; 0 = whole target)
+SDL_RenderGeometry | renderer texture 'vertices nvertices 'indices nindices -- ; draw triangles
+SDL_RenderReadPixels | renderer 'rect format 'pixels pitch -- ; read pixels back from the target
+SDL_RenderSetClipRect | renderer 'rect -- ; clipping rectangle (0 = no clipping)
+SDL_SetTextureScaleMode | texture mode -- ; scale mode of the texture (0 nearest, 1 linear, 2 best)
+SDL_SetRenderTarget | renderer texture -- ; draw into a target texture (0 = back to the window)
+SDL_Delay | ms -- ; wait ms milliseconds
+SDL_PollEvent | 'event -- ok ; fill the SDL_Event at 'event with the next pending event; 1 if there was one, 0 if not
+SDL_GetTicks | -- msec ; milliseconds since SDL started
+SDL_RWFromFile | "file" "mode" -- rwops ; open a file as an SDL_RWops (0 on error)
+SDL_RWclose | rwops -- ; close and free the rwops
+SDL_GL_SetAttribute | attr value -- ; set an OpenGL attribute (before creating the window)
+SDL_GL_CreateContext | window -- context ; create an OpenGL context for the window
+SDL_GL_DeleteContext | context -- ; delete the OpenGL context
+SDL_GL_SetSwapInterval | n -- ; swap interval (0 immediate, 1 vsync)
+SDL_GL_SwapWindow | window -- ; swap the OpenGL buffers of the window
+SDL_GL_LoadLibrary | "path" -- ; load the OpenGL library (0 = the default one)
+SDL_GL_GetProcAddress | "name" -- address ; address of an OpenGL function
+SDL_GL_MakeCurrent | window context -- ; make the OpenGL context current for the window
+SDL_SetHint | "name" "value" -- ; set an SDL configuration hint
+SDL_GetError | -- "message" ; text of the last SDL error
+SDL_OpenAudioDevice | "device" iscapture 'desired 'obtained changes -- id ; open an audio device (device 0 = the default one)
+SDL_QueueAudio | id 'data len -- ; queue len bytes of audio data
+SDL_GetQueuedAudioSize | id -- bytes ; bytes of audio still queued
+SDL_PauseAudioDevice | id pause -- ; 1 pauses the audio device, 0 plays it
+SDL_CloseAudioDevice | id -- ; close the audio device
+SDL_GetClipboardText | -- "text" ; text of the clipboard (free it with SDL_free)
+SDL_HasClipboardText | -- bool ; 1 if the clipboard has text
+SDL_SetClipboardText | "text" -- result ; put the text in the clipboard (0 if ok)
+SDL_free | mem -- ; free memory allocated by SDL
+SDL_windows | handle of the window created by SDLinit
+SDLrenderer | handle of the renderer created by SDLinit
+sw | width of the window in pixels (updated when it is resized)
+sh | height of the window in pixels (updated when it is resized)
+SDLinit | "title" w h -- ; initialize SDL, create a centered window w x h with its renderer (SDL_windows, SDLrenderer, sw, sh) and raise it
+SDLmini | "title" w h -- ; like SDLinit without raising the window
+SDLinitScr | "title" display w h -- ; like SDLinit on the display number given
+sdlinitR | "title" w h -- ; like SDLinit with a resizable window
+SDLdfullsw | display -- sw sh ; current resolution of the display
+SDLfullw | "title" display -- ; borderless window with the size of the display (sets sw sh)
+SDLfull | -- ; switch the window to fullscreen
+SDLframebuffer | w h -- texture ; streaming texture w x h in ARGB8888 format, to draw pixels
+SDLblend | -- ; enable alpha blending for the renderer drawing
+SDLquit | -- ; destroy the renderer and the window and quit SDL
+SDLevent | buffer (SDL_Event, 56 bytes) where SDLupdate reads the events
+SDLkey | key of the last key event of the SDLupdate: 16 bits (ASCII, or $4000 + scancode for special keys), $1000 added when released, 0 if none
+SDLchar | first byte of the last text input of the SDLupdate (0 if none)
+SDLx | mouse x position (16 bits)
+SDLy | mouse y position
+SDLb | mask of the pressed mouse buttons (1 left, 2 middle, 4 right)
+SDLw | vertical mouse wheel movement of the last SDLupdate
+SDLeventR | 'vec -- ; word to execute when the window is resized (sw and sh are updated first)
+SDLupdate | -- ; wait 10 ms and process the pending events, updating SDLkey, SDLchar, SDLx, SDLy, SDLb and SDLw
+SDLClick | 'event -- ; execute 'event once when the mouse button is released after being pressed (call it every frame)
+.exit | 1 ends the SDLshow loop (set by exit)
+SDLshow | 'word -- ; main loop: SDLupdate and execute 'word every frame until exit is called
+exit | -- ; end the SDLshow loop
+SDLredraw | -- ; show the frame (SDL_RenderPresent of the renderer)
+sdlbreak | -- ; debug stop: redraw and wait until F12 or ESC is pressed
+SDLTexwh | tex -- w h ; width and height of a texture (reads the SDL_Texture structure)
+%w | frac -- px ; fixed point fraction of the screen width (1.0 = sw) in pixels
+%h | frac -- px ; fixed point fraction of the screen height (1.0 = sh) in pixels
 color | col --
 colorA | col --
 cls | color --

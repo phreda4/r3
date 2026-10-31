@@ -36,11 +36,12 @@
 
 |---------------------------
 :helpdlg
-	"Help" 50 12 tuDlg
+	"Help" 50 13 tuDlg
 	fcr
 	"ctrl+R Run    ctrl+E Edit " .cw
 	"ctrl+I Imm    ctrl+D Debug" .cw
-	"ctrl+N New    ctrl+O Clon " .cw
+	"ctrl+P Prof   ctrl+N New  " .cw
+	"ctrl+O Clon " .cw
 	fcr
 	"ctrl+H Help   ctrl+S Search" .cw
 	"ctrl+Q Quit   ctrl+X Delete" .cw
@@ -90,6 +91,15 @@
 	|checkcode error 1? ( drop moderror ; ) drop
 	"r3/d4/r3debug.r3" r3run
 	.reterm .alsb .flush tuR! ;
+
+:fileprof
+	fuente c@ 0? ( drop ; ) drop
+	.masb .flush
+	savem
+	"r3/d4/r3prof.r3" r3run
+	.reterm .alsb .flush
+	runcheck
+	tuR! ;
 
 :r3repl
 	.masb .flush
@@ -244,6 +254,7 @@
 	fPr " ^E" .write fTx "dit" .write 
 	fPr " ^N" .write fTx "ew" .write 
 	fPr " ^I" .write fTx "mm" .write 
+	fPr " ^P" .write fTx "rof" .write 
 	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	
@@ -261,6 +272,7 @@
 	$4 =? ( filedebug )	| ctrl+d Debug
 	$5 =? ( fileedit )	| ctrl+e Edit
 	$9 =? ( r3repl )	| ctrl+i Imm | tab
+	$10 =? ( fileprof )	| ctrl+p Prof
 	$8 =? ( 'helpdlg onTui ) | ctrl+h Help | back
 	$e =? ( filenew )	| ctrl+n New
 	$11 =? ( exit )		| ctrl+q quit
@@ -277,6 +289,7 @@
 	$44 =? ( filedebug ) | Debug
 	$45	=? ( fileedit )	| Edit
 	$49	=? ( r3repl )	| Interactive
+	$50 =? ( fileprof )	| P Profiler
 	$48 =? ( 'helpdlg onTui ) | H Help	
 	$4e =? ( filenew )	| New
 	$52 =? ( filerun )	| Run
