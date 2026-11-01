@@ -27,6 +27,8 @@
 ##tokana * $ffff | 8192 tokens !!!!!!!
 ##tokana>
 
+##inlinelenmax 7	| words with more tokens than this are not inlined (0 = no inline)
+
 |-------------------------------- PRINT
 |  0     1    2     3     4    5     6
 | .lits .lit .word .wadr .var .vadr .str ...
@@ -56,7 +58,7 @@
 #bmacro .lits .lit .word .wadr .var .vadr .str 
 
 :base
-	11 =? ( drop 8 >> $ffffffff and tok - 3 >> "'a%h" sprint ; )
+	11 =? ( drop 8 >> $ffffffff and "'a%h" sprint ; )
 	7 - basename nip ;
 	
 ::tokenstrw | tok -- str
@@ -79,7 +81,7 @@
 
 ::,tokenstrw | tok --
 	dup $ff and 
-	11 =? ( drop 8 >> $ffffffff and tok - 3 >> "'a%h" ,print ; )	
+	11 =? ( drop 8 >> $ffffffff and "'a%h" ,print ; )	
 	6 >? ( 7 - basename ,s drop ; )
 	3 << 'bmacro + @ ex ;
 	
@@ -217,8 +219,8 @@
 | $..............20	1 si es recursiva	
 
 :,inlinecode | ; inline code ?
-	dup dic@ $38 and 1? ( drop ,t ; ) drop	| not inline
-	dup dic@len 7 >? ( drop ,t ; ) drop		| min len inline
+	dup dic@ $78 and 1? ( drop ,t ; ) drop	| not inline (r desbalanceada, varios ;, recursiva, anonimas)
+	dup dic@len inlinelenmax >? ( drop ,t ; ) drop	| max len inline
 	deferinline ex ;
 	
 :,code | tok --
@@ -237,7 +239,7 @@
 :,data | tok --
 	dup dic@ 
 	$14 and? ( drop ,t ; ) 			| real var
-	$2000 and? ( dic>tok @ ,t ; )	| detect cte var (address)
+	$2000 and? ( dic>tok @ ,t drop ; )	| cte var with address: copy its address token (and drop tok)
 	drop	
 	|--- var is cte but is and address (***)
 	|dup dic@ dic>tok @ $ff and		| tipo del token guardado en el cuerpo de la var
@@ -659,8 +661,8 @@
 ::worduse? | nro -- 0/1
 	4 << dic + dup 8 + @  | dicc dicinfo2
 	dup 16 >> $ffff and 0? ( nip nip ; ) drop	| no calls-> NOT need code
-	32 >>> 7 >? ( 2drop 1 ; ) drop				| larger for inline -> need code
-	@ $3c and 1? ( drop 1 ; ) drop				| not inline-> need code
+	32 >>> inlinelenmax >? ( 2drop 1 ; ) drop		| larger for inline -> need code
+	@ $7c and 1? ( drop 1 ; ) drop				| not inline-> need code (misma mascara + 'adr)
 	0 ;
 
 ::datause? | nro -- 0/1

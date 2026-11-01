@@ -19,6 +19,10 @@
 :moderror
 	lerror tuiecursor! ;
 
+|---- colors: the palette of the tui (util/tui.r3); the code ones are the colors of the editor (tcol)
+:fBk 0 cfg ;					| dark text, for the badges of the mode
+:bgBl 8 cbg ;	:bgPu 9 cbg ;	:bgGr 10 cbg ;	:bgRd 11 cbg ;
+
 :printfname
 	'filename .write .sp ;
 
@@ -43,8 +47,8 @@
 
 :wordhead
 	nro>dic @+ 
-	1 and? ( 201 .fc dic>name "#%w" ,print ,eol drop ; ) 
-	196 .fc 
+	1 and? ( 4 tcol .fc dic>name "#%w" ,print ,eol drop ; ) 
+	3 tcol .fc 
 	dup 
 	dic>name ":%w | " ,print 
 	|$5b1b ,w "30;1m" ,s "|" ,s
@@ -116,13 +120,13 @@
 		) drop ;
 		
 :coderror | error --
-	.cl	15 .fc 1 .bc lerror " %w | " .print
+	.cl bgRd fBk lerror " %w | " .print
 	.write cntlines " in line %d" .print 
 	.eline
 	'msg strcpybuf ;
 	
 :codeok
-	.cl	|2 .bc 0 .fc
+	.cl
 	cnttok cntdef cntinc " OK | inc:%d words:%d tokens:%d" .print 
 	.eline
 	'msg strcpybuf ;
@@ -188,8 +192,8 @@
 #modefx
 :fxlist
 	cols 2/ flxE | 1/4 of screen
-	.reset
-	tuwina $1 " Rx " .wtitle 1 1 flpad .wfill 
+	.reset bg1 fPu
+	tuwina $1 " Rx " .wtitle fTx 1 1 flpad .wfill 
 	'xwriten.word xwriten!
 	'vwords lwords tuListn | 'var list --
 	tuX? 1? ( setcursoride ) drop
@@ -198,26 +202,34 @@
 
 :fxword
 	cols 2/ flxE
-	.reset
-	tuwina $1 " Word " .wtitle 1 1 flpad .wfill 
+	.reset bg1 fPu
+	tuwina $1 " Word " .wtitle fTx 1 1 flpad .wfill 
 	'vanaly 'lanaly tuList | 'var list --
 |	tuX? 1? ( setcursoride ) drop
 	;
 
 #modelfx fxlist fxword
 
+
+:rxmode | -- "text" ; the mode of F3: the list of the words or the analysis of one
+	modefx 0? ( drop " F3 RX list " ; ) drop " F3 RX word " ;
+
 :fxwin
-	.reset .home 9 .bc 0 .fc 
+	.reset
 	1 flxN 
-	" r3Rx | " .write printfname 
+	bg3 fTx fhome
+	bgPu fBk rxmode .write bg3 fTx .sp
+	printfname 
 	" | " .write tuecursor. .write .sp
 	'helpword .write
 	.eline
 	
 	1 flxS 
-	fhome 
-	" ^[7mESC^[27m Exit rx ^[7mENTER^[27m Word ^[7mDel^[27m Dicc | " .printe 
-	'helpword .write " | " .write
+	bg3 fhome 
+	fPr " ESC" .write fTx " Exit" .write 
+	fPr " ENTER" .write fTx " Word" .write 
+	fPr " BACK" .write fTx " Dicc" .write 
+	fTx " | " .write 'helpword .write " | " .write
 	'msg .write
 	.eline
 	
@@ -230,7 +242,6 @@
 	[esc] =? ( exit ) 
 	[enter] =? ( setanalysis 1 'modefx ! )
 	[back] =? ( modefx 0? ( exit ) drop 0 'modefx ! )
-|	[del] =? ( 0 'modefx ! )
 	drop ;
 
 :setvwords | nrow --
@@ -357,26 +368,30 @@
 	fh 3 / hwcnt min
 	0 ( over <? dup 3 << 'hwlist + @ helpone 1+ ) 2drop ;
 
+
 :helpc
-	.reset .home 9 .bc 0 .fc 
+	.reset
 	1 flxN 
-	" r3Help | " .write printfname 
+	bg3 fTx fhome
+	bgBl fBk " F2 HELP " .write bg3 fTx .sp
+	printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
-	fhome
-	" ^[7mESC^[27m Exit help | " .printe 
-	'helpword .write " | " .write
+	bg3 fhome
+	fPr " ESC" .write fTx " Exit help" .write 
+	fTx " | " .write 'helpword .write " | " .write
 	'infohelp .write
 	'msg .write
 	.eline
-	rows 2 >> flxs | 1/4 of screen
-	.reset 
-	tuwina $1 " Help " .wtitle 1 1 flpad .wfill 
-	fhome helplist
-	flxRest
+	rows 2 >> flxN | 1/4 of screen
 	tuReadCode
+	flxRest
+	.reset bg1 fBl
+	tuwina $1 " Help " .wtitle fTx 1 1 flpad .wfill 
+	fhome helplist
+	
 	uiKey
 	[esc] =? ( exit ) 
 	drop ;
@@ -387,27 +402,40 @@
 	'helpc onTui ;
 	
 :helpdlg
-	"r3IDE Help" 50 12 tuDlg
+	"r3IDE Help" 52 17 tuDlg
 	fcr
-	"ctrl+R Run    ctrl+D Debug" .cw
-	"ctrl+K Imm    ctrl+B Build" .cw
-	"F2 Word help" .cw
+	"F2 Word help   F3 Rx analysis" .cw
+	"F4/ctrl+R Run   F5/ctrl+D Debug   F10 Build" .cw
 	fcr
-	"ctrl+H Help   ctrl+Q Quit   " .cw
+	"ctrl+F Find   ctrl+N Next   ctrl+P Prev" .cw
+	"ctrl+W Find the word under the cursor" .cw
+	"ctrl+G Go to definition   ctrl+T Back" .cw
+	"(the places are in a stack: back:n in the bar)" .cw
 	fcr
+	"ctrl+X Cut   ctrl+C Copy   ctrl+V Paste" .cw
+	"ctrl+Z Undo   ctrl+Y Redo" .cw
 	fcr
-	
+	"ctrl+H Help   ctrl+Q or ESC Quit" .cw
 	tuDlgEnd
 	uikey
 	[esc] =? ( exit )
 	drop ;
 	
 |-------------------------------
+#barx 0 #bary 0 #barw 0
+
+:stackind | -- ; the state of the return stack (ctrl+T), at the right end of the bottom bar
+	barw 64 <? ( drop ; ) drop
+	barx barw + 9 - bary .at
+	bg3 fDi tuejdepth 1? ( fPr ) drop
+	"back:" .write
+	tuejdepth "%d" sprint .write ;
+
 :main
-	.reset |.home 8 .bc 15 .fc 
+	.reset
 	1 flxN 
 	bg3 fTx fhome
-	" r3IDE | " .write printfname 
+	bgGr fBk " EDIT " .write bg3 fTx " r3IDE | " .write printfname 
 	" | " .write tuecursor. .write 
 	|'helpword .write
 	" | " .write 'msg .write
@@ -415,14 +443,19 @@
 	
 	1 flxS 
 	bg3 fhome
+	fx 'barx ! fy 'bary ! fw 'barw !
 	fPr " ^R" .write fTx "un" .write 
 	fPr " ^D" .write fTx "ebug" .write 
-	fPr " ^B" .write fTx "uild" .write 
-	fPr " ^K" .write fTx "Imm" .write 
+	fPr " F10" .write fTx " build" .write 
+	fPr " ^F" .write fTx "ind" .write 
+	fPr " ^W" .write fTx "ord" .write 
+	fPr " ^G" .write fTx "oto" .write 
+	fPr " ^T" .write fTx "back" .write 
 	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	flxRest
 	tuEditCode
+	stackind
 	
 	uiKey
 	[f2] =? ( helpcode )

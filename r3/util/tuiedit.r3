@@ -30,6 +30,10 @@
 
 #findpad * 64	|----- find text
 
+#jstk * 256		|----- places to come back to: 32 offsets in fuente
+#jn 0			| how many
+#fwhole 0		| 1 = find only whole words (the find text is a word of the code)
+
 :ubackc | adr -- adr' ; primer byte del caracter utf8, sin pasar de fuente
 	utf8lead fuente max ;
 
@@ -43,7 +47,7 @@
 ::tuTheme! | 'theme -- ; 'themeold / 'themenew
 	'th ! ;
 
-:tcol | n -- col256
+::tcol | n -- col256 ; colors of the editor: 0 string 1 include 2 comment 3 definition 4 variable 5 address 6 number 7 word
 	th + c@ $ff and ;
 
 |----- select
@@ -302,6 +306,7 @@
 :rewind | -- ; vista y cursor al inicio
 	0 'xlinea !
 	fuente dup 'scrini> ! 'fuente> !
+	0 'jn !
 	clearundo ;
 
 :loadtxt | -- ; cargar texto
@@ -615,15 +620,61 @@
 	modo 'lins =? ( drop 'lover 'modo ! .ovec ; )
 	drop 'lins 'modo ! .insc ;
 
+|---- places to come back to: go to definition and find save the place, tuejback goes back
+:lstart | adr -- adr' ; start of the line
+	1- <<13 1+ ;
+
+:jsame? | pos -- pos 0/1 ; the last saved place is in the line of pos
+	jn 0? ( ; ) drop
+	jn 1- 3 << 'jstk + @ fuente + lstart over fuente + lstart = ;
+
+:jpushpos | pos -- ; saves a place (not twice in the same line; with 32, the oldest goes away)
+	jsame? 1? ( 2drop ; ) drop
+	jn 32 >=? ( 'jstk dup 8 + 248 cmove -1 'jn +! ) drop
+	jn 3 << 'jstk + ! 1 'jn +! ;
+
+::tuejpush | -- ; saves the place of the cursor
+	cpos jpushpos ;
+
+::tuejdepth | -- n ; how many places are saved (32 at most)
+	jn ;
+
+::tuejback | -- ; back to the last saved place
+	jn 0? ( drop ; )
+	1- dup 'jn ! 3 << 'jstk + @ fuente + $fuente min tuiposq! ;
+
 |-------------
+:pfx? | c -- 0/1 ; the ' : # that go before a word
+	$27 =? ( drop 1 ; ) $3a =? ( drop 1 ; ) $23 =? ( drop 1 ; ) drop 0 ;
+
+:bblank? | p -- 0/1 ; before p there is a blank (or the start of the text)
+	fuente <=? ( drop 1 ; ) 1- c@ $ff and 33 <? ( drop 1 ; ) drop 0 ;
+
+:fok? | adr -- adr 0/1 ; the match is a word (if fwhole): a blank before (maybe after the ' : #) and a blank after
+	fwhole 0? ( drop 1 ; ) drop
+	dup ( dup 1- c@ $ff and pfx? 1? drop 1- ) drop bblank? 0? ( ; ) drop
+	dup 'findpad count nip + c@ $ff and 32 >? ( drop 0 ; ) drop 1 ;
+
+:fnextm | adr -- adr'/0 ; the next match from adr
+	( 'findpad findstri 1?
+		fok? 1? ( drop ; ) drop 1+ )
+	;
+
+:fprevm | from -- adr'/0 ; the previous match from from
+	( fuente 'findpad pick2 rfindstri 1?
+		fok? 1? ( drop nip ; ) drop
+		fuente <=? ( 2drop 0 ; )
+		nip 1- )
+	nip ;
+
 :findnext
 	'findpad c@ 0? ( drop ; ) drop
-	fuente> $fuente >=? ( drop ; ) 1+ 'findpad findstri 0? ( drop ; )
+	fuente> $fuente >=? ( drop ; ) 1+ fnextm 0? ( drop ; )
 	'fuente> ! ;
 
 :findprev
 	'findpad c@ 0? ( drop ; ) drop
-	fuente 'findpad fuente> fuente <=? ( 3drop ; ) 1- rfindstri 0? ( drop ; )
+	fuente> fuente <=? ( drop ; ) 1- fprevm 0? ( drop ; )
 	'fuente> ! ;	
 
 :enterfind | -- ; pide texto a buscar (como filesearch en main.r3) y busca
@@ -631,8 +682,79 @@
 	" find: " .write
 	.input
 	'pad c@ 0? ( drop ; ) drop
-	'pad 'findpad strcpy
-	findnext ;	
+	'pad 'findpad strcpy 0 'fwhole !
+	cpos findnext cpos <>? ( dup jpushpos ) drop ;	
+
+|---- go to definition (same file): the last definition before the cursor of the word under it
+#gword * 256
+#gw 0 #gcs 0 #gbest 0 #gfirst 0
+
+:wstart | -- adr ; start of the word under the cursor, or of the one before it
+	fuente> ( dup 1- c@ $ff and 32 >? drop 1- ) drop fuente max ;
+
+:gskip | 'str -- 'str' ; skips the ' : # of a word
+	dup c@ 
+	$27 =? ( drop 1+ ; ) | '
+	$3a =? ( drop 1+ dup c@ $3a =? ( drop 1+ ; ) drop ; ) 
+	$23 =? ( drop 1+ dup c@ $23 =? ( drop 1+ ; ) drop ; ) 
+	drop
+	;
+
+:gskipsp | adr -- adr' ; skips the blanks
+	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
+
+:gstr | adr -- adr' ; a string (adr is in the first quote)
+	1+ ( dup c@ $ff and 1? $22 <>? drop 1+ )
+	$22 =? ( drop 1+ ; ) drop ;
+
+:gdef | adr -- adr' ; a : or # token: is it a definition of the word?
+	dup gskip gw =s 0? ( drop >>sp ; ) drop
+	dup gcs <? ( dup 'gbest ! ) drop
+	gfirst 0? ( over 'gfirst ! ) drop
+	>>sp ;
+
+:gtok | adr -- adr' ; a token, only the ones that begin with : or # count
+	dup c@ $ff and
+	$3a =? ( drop gdef ; )
+	$23 =? ( drop gdef ; )
+	drop >>sp ;
+
+:gstep | adr -- adr' ; a comment, a string or a token
+	dup c@ $ff and
+	0? ( drop 1+ ; )
+	$7c =? ( drop >>13 ; )
+	$22 =? ( drop gstr ; )
+	drop gtok ;
+
+:gscan | -- ; gbest = the last definition before the cursor, gfirst = the first one
+	0 'gbest ! 0 'gfirst !
+	fuente ( gskipsp $fuente <? gstep ) drop ;
+
+::tuegodef | -- ; goes to the definition of the word under the cursor, saving the place to come back
+	wstart 'gcs !
+	gcs >>sp gcs -
+	0? ( drop ; ) 250 >? ( drop ; )
+	'gword gcs pick2 cmove
+	0 over 'gword + c! drop
+	'gword gskip 'gw !
+	gw c@ $ff and 0? ( drop ; ) drop
+	gscan
+	gbest 0? ( drop gfirst ) 0? ( drop ; )
+	dup gcs =? ( 2drop ; ) drop
+	tuejpush tuipos! ;
+
+::tuefindword | -- ; the next whole word like the one under the cursor (wraps), the place is saved
+	wstart 'gcs !
+	gcs gskip 'gw !
+	gw gcs >>sp over -
+	0? ( 2drop ; ) 60 >? ( 2drop ; )
+	'findpad pick2 pick2 cmove
+	0 over 'findpad + c! 2drop
+	1 'fwhole !
+	gw 1+ $fuente min fnextm 0? ( drop fuente fnextm )
+	0? ( drop ; )
+	gw =? ( drop ; )
+	tuejpush 'fuente> ! ;
 
 ::tueKeyMove
 	[UP] =? ( karriba sele ) 
@@ -706,6 +828,9 @@
 	$6 =? ( enterfind )	| ctrl-f find
 	$e =? ( findnext )	| ctrl-n find next
 	$10 =? ( findprev )	| ctrl-p find prev
+	$17 =? ( tuefindword )	| ctrl-w find the word under the cursor
+	$7 =? ( tuegodef )	| ctrl-g go to the definition of the word
+	$14 =? ( tuejback )	| ctrl-t back to the place before the jump
 
 	drop fixpos ;
 

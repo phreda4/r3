@@ -14,8 +14,6 @@
 
 |----------------------------------------
 :dataw | n -- n
-	dup datause? 0? ( drop ; ) drop | <<< var inline
-	
 	| info in plain--
 	dup 4 << dic + @ dic>name "| #%w " ,print ,cr
 	| info in plain--
@@ -29,22 +27,26 @@
 	
 |----------------------------------------	
 :,anonw | token --
-	dup @ 8 >> $ffffffff and  	| to from
-	dup tok - 3 >> ":a%h" ,print 
+	dup @ 8 >> $ffffffff and 	| to idx
+	dup ":a%h" ,print 
+	3 << tok +				| to from
 	wordanon					| analysis
 	'tokana ( tokana> <? ,sp
 		@+ ,tokenstrw 
 		) drop ,cr ;
 
 #cnta
-#anon * 80 | 10 anon max per word !!!!!!
+#anon * 800 | 100 anon max per word
 
-:withanon | nro --
+:collectanon | nro -- ; address of every ] token of the word in 'anon
 	0 'cnta !
 	4 << dic + toklen 
 	( 1? 1- swap @+ $ff and
 		11 =? ( over 8 - cnta 3 << 'anon + ! 1 'cnta +! ) | ]
-		drop swap ) 2drop 
+		drop swap ) 2drop ;
+
+:withanon | nro --
+	collectanon
 	0 ( cnta <? 
 		'anon over 3 << + @ ,anonw
 		1+ ) drop ;
@@ -52,7 +54,6 @@
 :codew
 |dup 4 << dic + @ dic>name "%w" .println | debug
 
-	dup worduse? 0? ( drop ; ) drop
 	dup withanon
 	
 	| info in plain--
@@ -76,13 +77,62 @@
 		|"r3/d4/gen/plain.r3" savemem
 		) drop ,cr ;
 	
+|---------------------------------------- PASS 2: dead words
+| after optimization (inline, folded constants) mark only the words
+| that are still referenced, starting from the boot word.
+| 'mk 1 byte per definition, 'wq work list
+
+#mk * $10000
+#wq * $40000
+#wq> 'wq
+
+:marked? | nro -- 0/1
+	'mk + c@ ;
+
+:pushw | nro -- ; mark and queue
+	dup 'mk + c@ 1? ( 2drop ; ) drop
+	dup 'mk + 1 swap c!
+	wq> d!+ 'wq> ! ;
+
+:scanana | -- ; mark every word referenced by the tokens in tokana
+	'tokana ( tokana> <? @+ 
+		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw ) 2drop ) drop ;
+
+:markanon | token -- ; analyze the body of one anonymous word
+	dup @ 8 >> $ffffffff and 3 << tok + 
+	wordanon scanana ;
+
+:markcode | nro --
+	dup wordanalysis scanana
+	collectanon
+	0 ( cnta <? 
+		'anon over 3 << + @ markanon
+		1+ ) drop ;
+
+:markdata | nro -- ; words/vars referenced from the init of a variable
+	4 << dic + toklend 
+	( 1? 1- swap @+ 
+		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw ) 2drop 
+		swap ) 2drop ;
+
+:markitem | nro --
+	dup 4 << dic + @ 1 and? ( drop markdata ; ) 
+	drop markcode ;
+
+:markall | --
+	cntdef $ffff >? ( "too many definitions for dead word pass" .println ) drop
+	0 ( cntdef <? dup 'mk + 0 swap c! 1+ ) drop
+	'wq 'wq> !
+	cntdef 1- pushw
+	'wq ( wq> <? d@+ markitem ) drop ;
+
 :,everyword | n -- n
-	dup 4 << dic + 
-	dup 8 + @ $ffff0000 nand? ( 2drop ; ) drop	| no calls
-	@ 1 and? ( drop dataw ; ) 
+	dup marked? 0? ( drop ; ) drop
+	dup 4 << dic + @ 1 and? ( drop dataw ; ) 
 	drop codew ;
 	
 :generate
+	markall
 	0 ( cntdef 1- <?
 		,everyword 
 
@@ -116,6 +166,7 @@
 	switchmem "|MEM %d" ,print ,cr
 	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
+	inlinelenmax "| inlinelenmax %d" ,print ,cr
 	
 	generate
 	"r3/d4/gen/plain.r3" 

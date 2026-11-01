@@ -165,10 +165,10 @@
 	tok> codeini - 3 >> | code_length
 	32 <<
 	dic> 8 - ! | info in wordnow
-	endcnt
-	0? ( $80 'flag +! )
-	1 >? ( $10 'flag +! )
-	drop ;
+	tok> 8 - @ $ff and 7 =? ( drop			| termina con ;
+		endcnt 1 >? ( $10 'flag +! ) drop ; ) drop
+	$80 'flag +!						| termina sin ; (cae en la palabra siguiente)
+	endcnt 1? ( $10 'flag +! ) drop ;
 	
 :endef
 	level 1? ( drop "missing )" error! 0 ; ) drop
@@ -297,7 +297,7 @@
 		) drop
 	sst@ 3 << tok + | tok[
 	tok> over - 8 - 8 << over @ or over !
-	8 + 8 << swap 6 + or ,t >>sp 
+	8 + tok - 3 >> 8 << swap 6 + or ,t >>sp 	| ] = (indice del 1er token dentro de [ ]) << 8
 	sst@ 'flag !	| restore flag
 	flag $40 or 'flag !
 	;
@@ -399,7 +399,7 @@
 		inc> 16 - <? ( dic> 'dic< ! ) | main source code mark
 		8 + ) drop 
 	|callend
-	endef 0? ( ; ) 
+	1 endef 0? ( 2drop ; ) drop	| endef deja 0 solo si hay error; el 1 evita leer basura de la pila
 	| continue word need add lengths
 	dic> 16 - ( dic >? 
 		16 - contword ) drop	
@@ -488,6 +488,12 @@
 	dup 8 >> $ff and 'usoD ! 
 	40 << 56 >> 'deltaD ! ;
 
+:popblk	| end of ( ) block: restore stack delta but KEEP the max stack use seen inside
+	sst@ 
+	dup 56 << 56 >> 'deltaR !
+	dup 8 >> $ff and usoD max 'usoD ! 
+	40 << 56 >> 'deltaD ! ;
+
 :dropvar
 	sst> 'sst =? ( drop ; ) drop
 	sst@ drop ;
@@ -549,7 +555,7 @@
 	pushvar ;
 :.)
 	drop
-	popvar ;
+	popblk ;
 :.[
 	drop
 	pushvar 1 'pano +! 1 'cano +! ;
