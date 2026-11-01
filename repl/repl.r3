@@ -840,8 +840,8 @@
 	flxRest
 	tuDlgEnd
 	uikey
-	[esc] =? ( exit )
-	$d =? ( 1 'rdok ! exit )
+	[esc] =? ( tuiexit )
+	$d =? ( 1 'rdok ! tuiexit )
 	drop ;
 
 :cmd-reset | arg -- ; vacia todo: pila, datos y codigo del proyecto (pide confirmacion)
@@ -1039,7 +1039,7 @@
 	"repl-done" hook-cmd ;
 
 :cmd-exit | arg --
-	drop exit ;
+	drop tuiexit ;
 
 #cmdv 'cmd-stack 'cmd-fmt 'cmd-term 'cmd-src 'cmd-list 'cmd-redef 'cmd-del 'cmd-format 'cmd-trace 'cmd-clear 'cmd-reset 'cmd-save 'cmd-new 'cmd-load 'cmd-proj 'cmd-open 'cmd-find 'cmd-edit 'cmd-run 'cmd-init 'cmd-done 'cmd-help 'cmd-words 'cmd-lib 'cmd-exit
 | the same order as the commands of ctab (replhelp.r3)
@@ -1162,7 +1162,7 @@
 :kesc
 	pn 1? ( drop 0 'pn ! ; ) drop
 	bx.len 1? ( drop bxrz 0 >=? ( drop "redefinition canceled" lnn 0 ) drop bx.clear popup! ; ) drop
-	exit ;
+	tuiexit ;
 
 :clampscroll
 	scroll ntl rows 7 - pl - - 0 max min 0 max 'scroll ! ;
@@ -1186,7 +1186,7 @@
 	[pgup] =? ( drop 5 'scroll +! clampscroll ; )
 	[pgdn] =? ( drop -5 'scroll +! clampscroll ; )
 	32 126 in? ( bx.ins popup! ; )
-	$3 =? ( 1+ ) $4 =? ( exit ) | ctrl+c +d
+	$3 =? ( 1+ ) $4 =? ( tuiexit ) | ctrl+c +d
 	[esc] =? ( drop kesc ; )
 	drop ;
 

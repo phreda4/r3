@@ -33,7 +33,7 @@
 
 ::getpixel | x y -- rgb ; color $RRGGBB of the pixel 
 	swap 'rec d!+ d!+ $100000001 swap !
-	SDLrenderer 'rec $16362004 'vert 1 SDL_RenderReadPixels
+	SDLrenderer 'rec $16362004 'vert 4 SDL_RenderReadPixels
 	vert $ffffff and ;
 
 ::line | x1 y1 x2 y2 -- ; draw a line

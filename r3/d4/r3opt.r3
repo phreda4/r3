@@ -22,12 +22,26 @@
 
 |^r3/lib/trace.r3
 
-##biglit * 320 | 40 bigliteral !!!!!!!
+##biglit * 2048 | 256 big literals (not fit in 56 bits) by word
 ##biglit>
-##tokana * $ffff | 8192 tokens !!!!!!!
+##tokana * $3ffff | 32767 tokens by word (after inline)
 ##tokana>
+##optovf 0	| 1 if tokana or biglit overflow: the output is not valid
 
 ##inlinelenmax 7	| words with more tokens than this are not inlined (0 = no inline)
+
+##curword -1	| word in analysis (an anon that calls it can not be moved before it)
+#anw
+
+| the anon ended by the ] token at 'to' has in its body a call to word nro?
+::anoninline? | nro to -- 0/1
+	swap 'anw !
+	dup @ 8 >> $ffffffff and 3 << tok +		| to from
+	( over <? @+ 
+		dup $ff and 2 3 in? ( 					| .word .wadr
+			over 8 >> $ffffffff and anw =? ( 4drop drop 1 ; ) drop ) 
+		2drop ) 
+	2drop 0 ;
 
 |-------------------------------- PRINT
 |  0     1    2     3     4    5     6
@@ -58,7 +72,7 @@
 #bmacro .lits .lit .word .wadr .var .vadr .str 
 
 :base
-	11 =? ( drop 8 >> $ffffffff and "'a%h" sprint ; )
+	11 =? ( drop 8 >> $ffffffff and 0? ( drop "]" ; ) "'a%h" sprint ; )
 	7 - basename nip ;
 	
 ::tokenstrw | tok -- str
@@ -81,7 +95,7 @@
 
 ::,tokenstrw | tok --
 	dup $ff and 
-	11 =? ( drop 8 >> $ffffffff and "'a%h" ,print ; )	
+	11 =? ( drop 8 >> $ffffffff and 0? ( drop "]" ,s ; ) "'a%h" ,print ; )	
 	6 >? ( 7 - basename ,s drop ; )
 	3 << 'bmacro + @ ex ;
 	
@@ -107,6 +121,7 @@
 	-8 'tokana> +! ;
 	
 :,t	| tok --
+	tokana> 'tokana $3fff8 + >=? ( 2drop 1 'optovf ! ; ) drop
 	tokana> !+ 'tokana> !  ;
 	
 :,tlit | lit --
@@ -114,6 +129,7 @@
 	
 :,nlit | nro --
 	dup 8 << 8 >> =? ( ,tlit ; ) | fit in 56bits
+	biglit> 'biglit $7f8 + >=? ( 2drop 1 'optovf ! ; ) drop
 	biglit> !+ 'biglit> !
 	biglit> 'biglit - 8 - 8 << ,t | big nro  0 in token
 	;
@@ -575,8 +591,14 @@
 	,t ;
 	
 :,[ | adr tok -- adr'
-	24 << 32 >> + ;
-:,]
+	over over 24 << 32 >> +			| adr tok to ( the ] token )
+	dup curword swap anoninline? 
+	1? ( 2drop ,t ; ) drop			| the anon calls this word, keep [ ... ] inline
+	nip nip ;						| skip the body, it is a word apart (:aN)
+
+:,] | adr tok -- adr'
+	over 8 - curword swap anoninline? 
+	1? ( drop drop 11 ,t ; ) drop	| inline anon: ] without index
 	,t ;
 	
 #optw
@@ -645,12 +667,13 @@
 	
 ::wordanalysis | nro --
 	reseta
+	dup 'curword !
 	4 << dic + 
 	dup @ 1 and? ( drop dataw "DATA" .println ; ) drop |******** !!! no analizar
 	codew ;
 	
 ::wordanon | tok> tok --
-	reseta
+	reseta -1 'curword !
 	( over <? @+ ,ana ) 2drop ;
 
 | $..............04	1 es usado con direccion

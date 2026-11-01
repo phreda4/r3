@@ -43,16 +43,16 @@
 ::sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
 	$40000000 + $80000000 nand? ( sinp ; ) sinp neg ;
 
-::tan.d | bangle -- r ; tangent, rough approximation (BUG: the last multiply is *. instead of *.d, so the result is 65536 times too large)
+::tan.d | bangle -- r ; tangent, rough approximation
 	$40000000 +
 	$7fffffff and $40000000 -
 	dup dup *.d
 	dup 8791996850651 *.d
 	334539478585 + *.d
-	26986075409 + *. ;
+	26986075409 + *.d ;
 
-::tan.dc | bangle -- r ; tangent as sin/cos (BUG: it divides with /. instead of /.d, so the result is 48.16 fixed point, not 32.32)
-	dup sin.d swap cos.d 0? ( 1+ ) /. ;
+::tan.dc | bangle -- r ; tangent as sin/cos
+	dup sin.d swap cos.d 0? ( 1+ ) /.d ;
 
 :step | op res one r+o -- op res one
 	pick3 >? ( drop swap 2/ swap ; )
@@ -106,10 +106,10 @@
 	swap 32 >>
 	+? ( << ; ) neg >> ;	
 	
-::pow.d | x y -- r ; x to the power y (0 if x = 0) (BUG: it multiplies with *. instead of *.d, so 2^10 gives 1.0)
+::pow.d | x y -- r ; x to the power y (0 if x = 0) 
 	|0? ( 2drop 1.0 ; ) 
 	swap 0? ( nip ; ) | y x
-	log2.d *. pow2.d ;
+	log2.d *.d pow2.d ;
 	
 ::root.d | x n -- r ; nth root of x (n in 32.32, 3.0 for the cube root); 0 if x <= 0
 	swap 0 <=? ( 2drop 0 ; )

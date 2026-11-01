@@ -182,28 +182,11 @@
 	
 :filebuild
 	fuente c@ 0? ( drop ; ) drop
-|	savem
-	.masb .reset .cls
-	"Building" .println
-|	"Code: " .write 'filename .write .cr .cr
-|	cntinc " includes:%d |" .print
-|	cntdef " words:%d |" .print
-|	cnttok " tokens:%d" .println
-	.cr .cr
-	cols .hline
-	"[f2] Win64exe [f3] Plain " .write .cr
-	cols .hline
-	.reset .cr
-	getch 
-|	[f2] =? ( filecompile )
-|	[f4] =? ( filecompileo )
+	savem
+	.masb .flush
+	"r3/d4/r3build.r3" r3run
+	.reterm .alsb .flush tuR! ;
 	
-|	[f3] =? ( fileplaino ) 
-|	[f5] =? ( fileplain ) | dev
-	
-	drop
-	.alsb
-	;	
 	
 :filesearch
 	|8 .bc 15 .fc 
