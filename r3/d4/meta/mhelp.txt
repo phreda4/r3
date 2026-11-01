@@ -424,12 +424,12 @@ f>.d | fix -- a ; 48.16 fixed point (math.r3) to 32.32
 .d>f | a -- fix ; 32.32 fixed point to 48.16 (math.r3)
 cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
 sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
-tan.d | bangle -- r ; tangent, rough approximation (BUG: the last multiply is *. instead of *.d, so the result is 65536 times too large)
-tan.dc | bangle -- r ; tangent as sin/cos (BUG: it divides with /. instead of /.d, so the result is 48.16 fixed point, not 32.32)
+tan.d | bangle -- r ; tangent, rough approximation
+tan.dc | bangle -- r ; tangent as sin/cos
 sqrt.d | x -- r ; square root in 32.32 with 16 bits of precision (0 if x <= 0)
 log2.d | x -- r ; base 2 logarithm in 32.32 (0 if x <= 0)
 pow2.d | y -- r ; 2 to the power y in 32.32
-pow.d | x y -- r ; x to the power y (0 if x = 0) (BUG: it multiplies with *. instead of *.d, so 2^10 gives 1.0)
+pow.d | x y -- r ; x to the power y (0 if x = 0)
 root.d | x n -- r ; nth root of x (n in 32.32, 3.0 for the cube root); 0 if x <= 0
 ln.d | x -- r ; natural logarithm in 32.32
 exp.d | x -- r ; e to the power x in 32.32
@@ -2367,11 +2367,13 @@ tcol | n -- col256 ; colors of the editor: 0 string 1 include 2 comment 3 defini
 tuiecursor! | cursor --
 tuipos! | pos --
 tuiposq! | pos --
+tuelstart | adr -- adr' ; start of the line of adr
 tuejpush | -- ; saves the place of the cursor
 tuejdepth | -- n ; how many places are saved (32 at most)
 tuejback | -- ; back to the last saved place
 tuegodef | -- ; goes to the definition of the word under the cursor, saving the place to come back
 tuefindword | -- ; the next whole word like the one under the cursor (wraps), the place is saved
+tueinsat | 'str adr --
 tueKeyMove
 tuEditLN! | n -- ; line number place
 tuEditShowCursor

@@ -281,65 +281,22 @@
 	.reterm .alsb .flush 
 	tuR! ;
 
-|------- old
-:fileplain
-	checkcode error 1? ( drop moderror ; ) drop
-	"r3/editor/r3plain.r3" r3run
-	tuR! ;
-|------- old
-
-:fileplaino
-	checkcode error 1? ( drop moderror ; ) drop
-	"r3/d4/r3plain.r3" r3run
-|	.reterm .alsb .flush 
-	"r3/d4/gen/plain.r3" r3run | exec
-	tuR! ;
-
-:filecompile
-	checkcode error 1? ( drop moderror ; ) drop
-	"r3/system/r3compiler.r3" r3run
-	|.reterm .alsb .flush 
-	tuR! ;
-
-:filecompileo
-	checkcode error 1? ( drop moderror ; ) drop
-	|"r3/d4/r3plain.r3" r3run
-	"r3/d4/r3wincomp.r3" r3run
-	|.reterm .alsb .flush 
-	tuR! ;
-
-|-------------------------------
-
-:compile
-	checkcode error 1? ( drop moderror ; ) drop
-	.masb .reset .cls
-	"Building" .println
-	"Code: " .write 'filename .write .cr .cr
-	cntinc " includes:%d |" .print
-	cntdef " words:%d |" .print
-	cnttok " tokens:%d" .println
-	.cr .cr
-	cols .hline
-	"[f2] Win64exe [f3] Plain " .write .cr
-	cols .hline
-	.reset .cr
-	getch 
-	[f2] =? ( filecompile )
-	[f4] =? ( filecompileo )
-	
-	[f3] =? ( fileplaino ) 
-	[f5] =? ( fileplain ) | dev
-	
-	drop
-	.alsb
-	;
-	
-
 |--- F2 help: the help lines of the word under the cursor (helptxt.r3, meta/mhelp.txt)
 #infohelp * 128
 #hwlist * 256		| the lines of the word (the same name can be in more than one library)
-#hwcnt 0
+#hwtmp * 256
+#hwcnt 0 #hwav 0		| how many lines, how many of included libraries (they go first)
+#hwsel 0 #hwoff 0 #hwi 0 #hwr 0	| the selected line, the first one shown
+#hwf 0 #hwk 0
 #hweff * 128
+#incbuf * 128
+#il 0
+
+:incl? | 'path -- 0/1 ; the code includes the file (the table of includes of the last compile)
+	'inc ( inc> <? @+ pick2 =s 1? ( 3drop 1 ; ) drop 8 + ) 2drop 0 ;
+
+:avail? | n -- 0/1 ; the word can be used: a base word, or of an included library
+	hbase <? ( drop 1 ; ) hw.where incl? ;
 
 :hwword | -- "word" ; the word under the cursor, without the ' of an address
 	'helpword c@ $ff and $27 =? ( drop 'helpword 1+ ; ) drop 'helpword ;
@@ -348,26 +305,86 @@
 	hwcnt 32 >=? ( drop ; ) drop
 	dup hwcnt 3 << 'hwlist + ! 1 'hwcnt +! ;
 
+:hwcopy | n -- ; to the temp list if its availability is hwf
+	dup avail? hwf <>? ( 2drop ; ) drop
+	hwk 3 << 'hwtmp + ! 1 'hwk +! ;
+
+:hwpass | f --
+	'hwf ! 0 ( hwcnt <? dup 3 << 'hwlist + @ hwcopy 1+ ) drop ;
+
+:hwsort | -- ; the lines of included libraries first
+	0 'hwk !
+	1 hwpass hwk 'hwav !
+	0 hwpass
+	'hwlist 'hwtmp hwcnt 3 << cmove ;
+
 :hwfind | -- ; the lines of the word
 	0 'hwcnt !
 	hwword hw.find
-	( +? hwadd hwword swap hw.next ) drop ;
+	( +? hwadd hwword swap hw.next ) drop
+	hwsort ;
+
+:hwcol | n -- ; included: normal, not included: muted
+	avail? 0? ( drop fMu ; ) drop fTx ;
+
+:hwfmt | n -- "format"
+	avail? 0? ( drop "%w  %s   < %s  (not included)" ; ) drop "%w  %s   < %s" ;
 
 :hwdesc | n -- n ; the description of the line, if it has one
 	dup hline hw.desc dup c@ $ff and 0? ( 2drop ; ) drop
 	fMu "  %s" sprint .lw ;
 
+:hwgap | -- ; the blank row (it is part of the selected entry)
+	hwi hwsel =? ( drop "" .lw ; ) drop fcr ;
+
 :helpone | n -- ; name  effect  < library, and the description
-	fTx dup hline 'hweff 100 hw.eff
-	dup hw.where 'hweff pick2 hline "%w  %s   < %s" sprint .lw
-	hwdesc fcr drop ;
+	hwi hwsel =? ( bg3 ) drop
+	dup hwcol dup hline 'hweff 100 hw.eff
+	dup hw.where 'hweff pick2 hline pick3 hwfmt sprint .lw
+	hwdesc hwgap drop bg1 ;
 
 :helplist | -- ; the lines of the word, 3 rows each
 	hw.count 0? ( drop fMu "mhelp.txt is not ready (run metabuild.r3 and metahelp.r3)" .lw ; ) drop
 	hwcnt 0? ( drop fMu 'helpword "no help for: %s" sprint .lw ; ) drop
-	fh 3 / hwcnt min
-	0 ( over <? dup 3 << 'hwlist + @ helpone 1+ ) 2drop ;
+	fh 3 / 1 max 'hwr !
+	hwsel hwoff <? ( hwsel 'hwoff ! ) drop
+	hwsel hwoff hwr + >=? ( hwsel hwr - 1+ 'hwoff ! ) drop
+	hwoff hwr + hwcnt min hwoff
+	( over <? dup 'hwi ! dup 3 << 'hwlist + @ helpone 1+ ) 2drop ;
 
+|--- the include of a library: after the last ^ of the header, or before the first line of code
+:skipb | adr -- adr' ; blanks and new lines
+	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
+
+:incstep | adr -- adr' 1/0 ; a line of the header (comment or include): 1 = go on, 0 = the code starts
+	skipb dup c@ $ff and
+	0? ( drop 0 ; )
+	$7c =? ( drop >>cr 1+ $fuente min 1 ; )
+	$5e =? ( drop >>cr 1+ $fuente min dup 'il ! 1 ; )
+	drop 0 ;
+
+:incaddr | -- adr
+	0 'il ! fuente
+	( incstep 1? drop ) drop
+	il 1? ( nip ; ) drop
+	tuelstart fuente max ;
+
+:incline | 'path -- 'str ; "^path" and a CR
+	"^%s" sprint 'incbuf strcpy
+	'incbuf dup count nip + 13 swap c!+ 0 swap c!
+	'incbuf ;
+
+:hwaccept | -- ; ENTER: a word of a library that is not included adds the include
+	hwcnt 0? ( drop ; ) drop
+	hwsel 3 << 'hwlist + @ dup avail? 1? ( 2drop ; ) drop
+	hw.where
+	dup incline incaddr tueinsat
+	"added ^%s  (ctrl+Z undoes it)" sprint 'msg strcpy ;
+
+:hwenter | -- ; what ENTER does with the selected line
+	hwcnt 0? ( drop ; ) drop
+	hwsel 3 << 'hwlist + @ dup avail? 1? ( 2drop fPr " ENTER" .write fTx " Close" .write ; ) drop
+	hw.where fPr " ENTER" .write fYe " add ^" .write .write ;
 
 :helpc
 	.reset
@@ -380,7 +397,9 @@
 	
 	1 flxS 
 	bg3 fhome
-	fPr " ESC" .write fTx " Exit help" .write 
+	fPr " ESC" .write fTx " Exit" .write 
+	fPr " UP/DN" .write fTx " Select" .write 
+	hwenter
 	fTx " | " .write 'helpword .write " | " .write
 	'infohelp .write
 	'msg .write
@@ -394,18 +413,23 @@
 	
 	uiKey
 	[esc] =? ( tuiexit ) 
+	[up] =? ( hwsel 1- 0 max 'hwsel ! )
+	[dn] =? ( hwsel 1+ hwcnt 1- 0 max min 'hwsel ! )
+	[enter] =? ( hwaccept tuiexit )
 	drop ;
 
 :helpcode
-	cpyhelpword hwfind
+	cpyhelpword
+	fuente 'filename r3loadmem
+	hwfind 0 'hwsel ! 0 'hwoff !
 	hwcnt "found: %d" sprint 'infohelp strcpy
 	'helpc onTui ;
 	
 :helpdlg
 	"r3IDE Help" 52 17 tuDlg
 	fcr
-	"F2 Word help   F3 Rx analysis" .cw
-	"F4/ctrl+R Run   F5/ctrl+D Debug   F10 Build" .cw
+	"F2 Word help (ENTER adds its include)   F3 Rx" .cw
+	"F4/ctrl+R Run   F5/ctrl+D Debug" .cw
 	fcr
 	"ctrl+F Find   ctrl+N Next   ctrl+P Prev" .cw
 	"ctrl+W Find the word under the cursor" .cw
@@ -446,7 +470,6 @@
 	fx 'barx ! fy 'bary ! fw 'barw !
 	fPr " ^R" .write fTx "un" .write 
 	fPr " ^D" .write fTx "ebug" .write 
-	fPr " F10" .write fTx " build" .write 
 	fPr " ^F" .write fTx "ind" .write 
 	fPr " ^W" .write fTx "ord" .write 
 	fPr " ^G" .write fTx "oto" .write 
@@ -462,8 +485,6 @@
 	[f3] =? ( fxcode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
-	[f6] =? ( cpyhelpword )
-	[f10] =? ( compile )
 	
 	| ctrl
 	|$2 =? ( buildcode ) 	|+b

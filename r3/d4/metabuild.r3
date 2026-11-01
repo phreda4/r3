@@ -112,7 +112,7 @@
 	mark
 	r3loadmem				| tokenize + static analysis
 	error 1? ( .bred "ERROR %s" .println empty empty ; ) drop
-	genlib
+	|genlib | << no generate metalibs.r3
 	genlibnocall
 	empty empty
 	;
@@ -184,7 +184,7 @@
 	.cls
 	
 	"library generator" .println
-	mark "r3/d4/meta/metalibs.r3" savemem empty 
+|	mark "r3/d4/meta/metalibs.r3" savemem empty 
 	mark "r3/d4/meta/mlibs.r3" savemem empty 
 	'folders ( dup c@ 1? drop 
 		dup 'foldern strcpy
@@ -201,7 +201,7 @@
 		dup folderlist
 		>>0 ) 2drop
 	" 0" ,s ,nl
-	"r3/d4/meta/metalibs.r3" appendmem		
+|	"r3/d4/meta/metalibs.r3" appendmem		
 	"r3/d4/meta/mlibs.r3" appendmem		
 	empty 
 	;

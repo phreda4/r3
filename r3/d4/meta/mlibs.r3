@@ -232,7 +232,7 @@
 #r3_util_pcfont.r3 'name 'words 'info
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $5F $5F $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $4 $4 $5C )
 #r3_util_penner.r3 'name 'words 'info
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
@@ -275,8 +275,8 @@
 #info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $2E $3E $1F $0 $0 $0 $0 $6A $0 $0 $4D $4D $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $20 $2E $2E $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $3E $2F $2F $0 $2E $79 $0 )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
-#words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
-#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $2 $1 $0 $2 $3 $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
+#words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuelstart" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueinsat" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
+#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $11 $2 $1 $0 $2 $3 $2E $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
 #words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txfit" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "pad.reset" "pad.draw" 0

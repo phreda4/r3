@@ -1,4 +1,4 @@
-^r3/sdl3/sdl3.r3
+^r3/libex/sdl3.r3
 
 :scr
 	$00ff00 cls

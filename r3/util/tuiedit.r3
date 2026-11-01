@@ -624,6 +624,9 @@
 :lstart | adr -- adr' ; start of the line
 	1- <<13 1+ ;
 
+::tuelstart | adr -- adr' ; start of the line of adr
+	lstart ;
+
 :jsame? | pos -- pos 0/1 ; the last saved place is in the line of pos
 	jn 0? ( ; ) drop
 	jn 1- 3 << 'jstk + @ fuente + lstart over fuente + lstart = ;
@@ -693,12 +696,11 @@
 	fuente> ( dup 1- c@ $ff and 32 >? drop 1- ) drop fuente max ;
 
 :gskip | 'str -- 'str' ; skips the ' : # of a word
-	dup c@ 
-	$27 =? ( drop 1+ ; ) | '
-	$3a =? ( drop 1+ dup c@ $3a =? ( drop 1+ ; ) drop ; ) 
-	$23 =? ( drop 1+ dup c@ $23 =? ( drop 1+ ; ) drop ; ) 
-	drop
-	;
+	dup c@ $ff and $27 =? ( swap 1+ swap ) drop
+	dup c@ $ff and $3a =? ( swap 1+ swap ) drop
+	dup c@ $ff and $3a =? ( swap 1+ swap ) drop
+	dup c@ $ff and $23 =? ( swap 1+ swap ) drop
+	dup c@ $ff and $23 =? ( swap 1+ swap ) drop ;
 
 :gskipsp | adr -- adr' ; skips the blanks
 	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
@@ -755,6 +757,29 @@
 	0? ( drop ; )
 	gw =? ( drop ; )
 	tuejpush 'fuente> ! ;
+
+|---- insert a text at any place (the include of the IDE): ctrl+z removes it, the cursor and the saved places go with the text
+#ia 0 #in 0 #jo 0 #jm 0
+
+:jshift1 | i --
+	3 << 'jstk + dup @ jo >=? ( jm + dup pick2 ! ) 2drop ;
+
+:jshift | off n -- ; the saved places at or after off go n bytes forward
+	'jm ! 'jo !
+	0 ( jn <? dup jshift1 1+ ) drop ;
+
+::tueinsat | 'str adr --
+	'ia ! dup count nip 'in !
+	in 0? ( 2drop ; ) drop
+	ia in + ia $fuente ia - 1+ cmove>
+	ia swap in cmove
+	in '$fuente +!
+	ia fuente - in recins
+	ia fuente - in jshift
+	fuente> ia >=? ( in 'fuente> +! ) drop
+	scrini> ia >=? ( in 'scrini> +! ) drop
+	inisel ia >=? ( in 'inisel +! ) drop
+	finsel ia >=? ( in 'finsel +! ) drop ;
 
 ::tueKeyMove
 	[UP] =? ( karriba sele ) 
