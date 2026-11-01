@@ -106,6 +106,7 @@
 	0 'wid ! 0 'rflag !
 	;
 
+::exitui
 ::exit	rflag $4 or 'rflag ! ; 
 
 :tucl	rflag $2 nand 'rflag ! ;	| exec action is for every widget

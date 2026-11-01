@@ -24,7 +24,7 @@
 #r3_lib_console.r3 'name 'words 'info
 #name "r3/lib/core.r3"
 #words  "ms" "msec" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "filetimeD" "FNAME" "FDIR" "FSIZEF" "FCREADT" "FLASTDT" "FWRITEDT" "findata" "ffirst" "fnext" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "time" "date" "sysdate" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
-#info ( $1F $1 $2F $3D $3D $1F $10 $1 $1 $10 $1 $1 $1 $10 $10 $10 $10 $10 $10 $10 $1 $10 $1 $10 $10 $10 $10 $10 $10 $10 $10 $1 $1 $1 $80 $80 $1F $1F $1F )
+#info ( $1F $1 $2F $3D $3D $1F $10 $1 $1 $10 $1 $1 $1 $10 $10 $10 $10 $10 $10 $10 $1 $10 $1 $0 $10 $0 $10 $0 $10 $0 $10 $1 $1 $1 $80 $80 $1F $1F $1F )
 #r3_lib_core.r3 'name 'words 'info
 #name "r3/lib/crc32.r3"
 #words  "crc32" "crc32n" "adler32" 0
@@ -40,16 +40,12 @@
 #r3_lib_glutil.r3 'name 'words 'info
 #name "r3/lib/gui.r3"
 #words  "xr1" "yr1" "xr2" "yr2" "foco" "clkbtn" "idf" "idl" "guin?" "gui" "guiBox" "guiPrev" "guiRect" "onClick" "onClickFoco" "onMoveA" "onMove" "onDnMove" "onDnMoveA" "onMap" "onMapA" "guiI" "guiO" "guiIO" "nextfoco" "prevfoco" "setfoco" "clickfoco" "clickfoco1" "refreshfoco" "w/foco" "focovoid" "esfoco?" "in/foco" "lostfoco" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $4C $0 $4C $1F $1F $0 $1F $2E $1F $2E $2E $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $4C $0 $4C $1F $1F $10 $1F $2E $2F $3E $3E $1F $1F $2E $0 $0 $1F $0 $0 $0 $2E $0 $1 $1F $1F )
 #r3_lib_gui.r3 'name 'words 'info
 #name "r3/lib/input.r3"
 #words  "input" "inputex" "inputdump" "inputint" "tbtn" 0
 #info ( $2E $3D $0 $1F $2E )
 #r3_lib_input.r3 'name 'words 'info
-#name "r3/lib/isospr.r3"
-#words  "isang" "isalt" "isxo" "isyo" "xyz2iso" "2iso" "isocam" "resetcam" "loadss" "isospr" 0
-#info ( $80 $80 $80 $80 $3F $3F $0 $0 $30 $5B )
-#r3_lib_isospr.r3 'name 'words 'info
 #name "r3/lib/jul.r3"
 #words  "date2jul" "jul2date" "date2day" "jul2day" "date2daystr" "jul2daystr" 0
 #info ( $3E $12 $3E $10 $3E $10 )
@@ -74,13 +70,9 @@
 #words  "socket-ini" "socket-end" "socket-create" "socket-set-nonblock" "socket-set-reuseaddr" "socket-bind" "socket-listen" "socket-accept" "socket-connect" "socket-send" "socket-recv" "socket-close" "net-addr-to-int" "net-htons" "net-get-last-error" "server-socket" "client-socket" "socket-final" 0
 #info ( $0 $0 $3E $10 $10 $3E $2F $3E $3E $4D $4D $10 $10 $10 $1 $10 $1 $1F )
 #r3_lib_netsock.r3 'name 'words 'info
-#name "r3/lib/onnx.r3"
-#words  "ortSess_CPU" "ortSess_MDL" "OrtgetVersionString" "OrtCreateStatus" "OrtGetErrorCode" "OrtGetErrorMessage" "OrtCreateEnv" "OrtCreateEnvWithCustomLogger" "OrtEnableTelemetryEvents" "OrtDisableTelemetryEvents" "OrtCreateSession" "OrtCreateSessionFromArray" "OrtRun" "OrtCreateSessionOptions" "OrtSetOptimizedModelFilePath" "OrtCloneSessionOptions" "OrtSetSessionExecutionMode" "OrtEnableProfiling" "OrtDisableProfiling" "OrtEnableMemPattern" "OrtDisableMemPattern" "OrtEnableCpuMemArena" "OrtDisableCpuMemArena" "OrtSetSessionLogId" "OrtSetSessionLogVerbosityLevel" "OrtSetSessionLogSeverityLevel" "OrtSetSessionGraphOptimizationLevel" "OrtSetIntraOpNumThreads" "OrtSetInterOpNumThreads" "OrtCreateCustomOpDomain" "OrtCustomOpDomain_Add" "OrtAddCustomOpDomain" "OrtRegisterCustomOpsLibrary" "OrtSessionGetInputCount" "OrtSessionGetOutputCount" "OrtSessionGetOverridableInitializerCount" "OrtSessionGetInputTypeInfo" "OrtSessionGetOutputTypeInfo" "OrtSessionGetOverridableInitializerTypeInfo" "OrtSessionGetInputName" "OrtSessionGetOutputName" "OrtSessionGetOverridableInitializerName" "OrtCreateRunOptions" "OrtRunOptionsSetRunLogVerbosityLevel" "OrtRunOptionsSetRunLogSeverityLevel" "OrtRunOptionsSetRunTag" "OrtRunOptionsGetRunLogVerbosityLevel" "OrtRunOptionsGetRunLogSeverityLevel" "OrtRunOptionsGetRunTag" "OrtRunOptionsSetTerminate" "OrtRunOptionsUnsetTerminate" "OrtCreateTensorAsOrtValue" "OrtCreateTensorWithDataAsOrtValue" "OrtIsTensor" "OrtGetTensorMutableData" "OrtFillStringTensor" "OrtGetStringTensorDataLength" "OrtGetStringTensorContent" "OrtCastTypeInfoToTensorInfo" "OrtGetOnnxTypeFromTypeInfo" "OrtCreateTensorTypeAndShapeInfo" "OrtSetTensorElementType" "OrtSetDimensions" "OrtGetTensorElementType" "OrtGetDimensionsCount" "OrtGetDimensions" "OrtGetSymbolicDimensions" "OrtGetTensorShapeElementCount" "OrtGetTensorTypeAndShape" "OrtGetTypeInfo" "OrtGetValueType" "OrtCreateMemoryInfo" "OrtCreateCpuMemoryInfo" "OrtCompareMemoryInfo" "OrtMemoryInfoGetName" "OrtMemoryInfoGetId" "OrtMemoryInfoGetMemType" "OrtMemoryInfoGetType" "OrtAllocatorAlloc" "OrtAllocatorFree" "OrtAllocatorGetInfo" "OrtGetAllocatorWithDefaultOptions" "OrtAddFreeDimensionOverride" "OrtGetValue" "OrtGetValueCount" "OrtCreateValue" "OrtCreateOpaqueValue" "OrtGetOpaqueValue" "OrtKernelInfoGetAttribute_float" "OrtKernelInfoGetAttribute_int64" "OrtKernelInfoGetAttribute_string" "OrtKernelContext_GetInputCount" "OrtKernelContext_GetOutputCount" "OrtKernelContext_GetInput" "OrtKernelContext_GetOutput" "OrtReleaseEnv" "OrtReleaseStatus" "OrtReleaseMemoryInfo" "OrtReleaseSession" "OrtReleaseValue" "OrtReleaseRunOptions" "OrtReleaseTypeInfo" "OrtReleaseTensorTypeAndShapeInfo" "OrtReleaseSessionOptions" "OrtReleaseCustomOpDomain" "OrtGetDenotationFromTypeInfo" "OrtCastTypeInfoToMapTypeInfo" "OrtCastTypeInfoToSequenceTypeInfo" "OrtGetMapKeyType" "OrtGetMapValueType" "OrtGetSequenceElementType" "OrtReleaseMapTypeInfo" "OrtReleaseSequenceTypeInfo" "OrtSessionEndProfiling" "OrtSessionGetModelMetadata" "OrtModelMetadataGetProducerName" "OrtModelMetadataGetGraphName" "OrtModelMetadataGetDomain" "OrtModelMetadataGetDescription" "OrtModelMetadataLookupCustomMetadataMap" "OrtModelMetadataGetVersion" "OrtCreateEnvWithGlobalThreadPools" "OrtDisablePerSessionThreads" "OrtCreateThreadingOptions" "OrtSetGlobalIntraOpNumThreads" "OrtSetGlobalInterOpNumThreads" "OrtSetGlobalSpinControl" "OrtModelMetadataGetCustomMetadataMapKeys" "OrtAddFreeDimensionOverrideByName" "OrtGetAvailableProviders" "OrtReleaseAvailableProviders" "OrtGetStringTensorElementLength" "OrtGetStringTensorElement" "OrtFillStringTensorElement" "OrtAddSessionConfigEntry" "OrtCreateAllocator" "OrtRunWithBinding" "OrtCreateIoBinding" "OrtBindInput" "OrtBindOutput" "OrtBindOutputToDevice" "OrtGetBoundOutputNames" "OrtGetBoundOutputValues" "OrtClearBoundInputs" "OrtClearBoundOutputs" "OrtTensorAt" "OrtCreateAndRegisterAllocator" "OrtSetLanguageProjection" "OrtSessionGetProfilingStartTimeNs" "OrtAddInitializer" "OrtCreateEnvWithCustomLoggerAndGlobalThreadPools" "OrtSessionOptionsAppendExecutionProvider_CUDA" "OrtSessionOptionsAppendExecutionProvider_ROCM" "OrtSessionOptionsAppendExecutionProvider_OpenVINO" "OrtSetGlobalDenormalAsZero" "OrtCreateArenaCfg" "OrtModelMetadataGetGraphDescription" "OrtSessionOptionsAppendExecutionProvider_TensorRT" "OrtSetCurrentGpuDeviceId" "OrtGetCurrentGpuDeviceId" "OrtKernelInfoGetAttributeArray_float" "OrtKernelInfoGetAttributeArray_int64" "OrtCreateArenaCfgV2" "OrtAddRunConfigEntry" "OrtCreatePrepackedWeightsContainer" "OrtCreateSessionWithPrepackedWeightsContainer" "OrtCreateSessionFromArrayWithPrepackedWeightsContainer" "OrtSessionOptionsAppendExecutionProvider_TensorRT_V2" "OrtCreateTensorRTProviderOptions" "OrtUpdateTensorRTProviderOptions" "OrtGetTensorRTProviderOptionsAsMap" "OrtReleaseTensorRTProviderOptions" "OrtEnableOrtCustomOps" "OrtRegisterAllocator" "OrtUnregisterAllocator" "OrtIsSparseTensor" "OrtCreateSparseTensorAsOrtValue" "OrtFillSparseTensorCoo" "OrtFillSparseTensorCsr" "OrtFillSparseTensorBlockSparse" "OrtCreateSparseTensorWithValuesAsOrtValue" "OrtUseCooIndices" "OrtUseCsrIndices" "OrtUseBlockSparseIndices" "OrtGetSparseTensorFormat" "OrtGetSparseTensorValuesTypeAndShape" "OrtGetSparseTensorValues" "OrtGetSparseTensorIndicesTypeShape" "OrtGetSparseTensorIndices" "OrtHasValue" "OrtKernelContext_GetGPUComputeStream" "OrtGetTensorMemoryInfo" "OrtGetExecutionProviderApi" "OrtSessionOptionsSetCustomCreateThreadFn" "OrtSessionOptionsSetCustomThreadCreationOptionsFn" "OrtSetGlobalCustomCreateThreadFn" "OrtSetGlobalCustomThreadCreationOptions" "OrtSetGlobalCustomJoinThreadFn" "OrtSynchronizeBoundInputs" "OrtSynchronizeBoundOutputs" "OrtSessionOptionsAppendExecutionProvider_CUDA_V2" "OrtCreateCUDAProviderOptions" "OrtUpdateCUDAProviderOptions" "OrtGetCUDAProviderOptionsAsMap" "OrtReleaseCUDAProviderOptions" "OrtSessionOptionsAppendExecutionProvider_MIGraphX" "OrtAddExternalInitializers" "OrtCreateOpAttr" "OrtCreateOp" "OrtReleaseOpAttr" "OrtReleaseOp" "OrtSessionOptionsAppendExecutionProvider" "OrtCopyKernelInfo" "OrtGetTrainingApi" "OrtSessionOptionsAppendExecutionProvider_Dnnl" "OrtCreateDnnlProviderOptions" "OrtUpdateDnnlProviderOptions" "OrtGetDnnlProviderOptionsAsMap" "OrtReleaseDnnlProviderOptions" "OrtSessionOptionsAppendExecutionProvider_ROCM_V2" "OrtCreateROCMProviderOptions" "OrtUpdateROCMProviderOptions" "OrtGetROCMProviderOptionsAsMap" "OrtReleaseROCMProviderOptions" "OrtCreateLoraAdapter" "OrtCreateLoraAdapterFromArray" "OrtReleaseLoraAdapter" "OrtRunOptionsAddActiveLoraAdapter" "OrtSetEpDynamicOptions" "OrtReleaseValueInfo" "OrtReleaseNode" "OrtReleaseGraph" "OrtReleaseModel" "OrtGetValueInfoName" "OrtGetValueInfoTypeInfo" "OrtGetModelEditorApi" "OrtCreateTensorWithOwnedBufferAsOrtValue" "OrtInvalidAllocator" "OrtDeviceAllocator" "OrtArenaAllocator" "OrtReadOnlyAllocator" "OrtMemTypeCPUInput" "OrtMemTypeCPUOutput" "OrtMemTypeCPU" "OrtMemTypeDefault" "ORT_DISABLE_ALL" "ORT_ENABLE_BASIC" "ORT_ENABLE_EXTENDED" "ORT_ENABLE_ALL" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8" "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16" "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16" "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32" "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64" "ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING" "ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16" "ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT64" "ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64" "ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128" "ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FN" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FNUZ" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2" "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2FNUZ" "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4" "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4" 0
-#info ( $2F $2F $1 $2F $10 $10 $3E $5C $10 $10 $4D $5C $9 $10 $2F $2F $2F $2F $10 $10 $10 $10 $10 $2F $2F $2F $2F $2F $2F $2F $2F $2F $3E $2F $2F $2F $3E $3E $3E $4D $4D $4D $10 $2F $2F $2F $2F $2F $2F $10 $10 $6B $7A $2F $2F $3E $2F $5C $2F $2F $10 $2F $3E $2F $2F $3E $3E $2F $2F $2F $2F $5C $3E $3E $2F $2F $2F $2F $3E $2F $2F $10 $3E $4D $2F $4D $5C $5C $3E $3E $4D $2F $2F $3E $5C $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $3E $2F $2F $2F $2F $2F $10 $10 $3E $2F $3E $3E $3E $3E $4D $2F $4D $10 $10 $2F $2F $2F $4D $3E $2F $2F $3E $4D $3E $3E $3E $3E $2F $3E $3E $3E $5C $4D $10 $10 $4D $3E $2F $2F $3E $6B $2F $2F $2F $10 $5C $3E $2F $10 $10 $4D $4D $4D $3E $10 $5C $6B $2F $10 $4D $2F $10 $10 $2F $2F $2F $5C $7A $18 $9 $9 $3E $5C $4D $2F $2F $2F $3E $4D $2F $2F $2F $3E $2F $2F $2F $2F $2F $10 $10 $2F $10 $4D $2F $10 $2F $4D $5C $27 $10 $10 $5C $2F $10 $2F $10 $3E $2F $10 $2F $10 $4D $2F $10 $4D $5C $10 $2F $4D $10 $10 $10 $10 $2F $2F $1 $9 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 )
-#r3_lib_onnx.r3 'name 'words 'info
 #name "r3/lib/parse.r3"
 #words  "str$>nro" "str%>nro" "str>nro" "?sint" "?numero" "getnro" "str>fnro" "str>fix" "str>anro" "getfenro" "isHex" "isBin" "isNro" "scanp" "scanstr" "scannro" "scanc" "scann" 0
-#info ( $11 $11 $11 $11 $12 $11 $11 $11 $11 $11 $10 $10 $10 $1F $2F $2F $2F $2F )
+#info ( $11 $11 $11 $11 $12 $11 $11 $11 $11 $11 $10 $10 $10 $2F $2F $2F $2F $2F )
 #r3_lib_parse.r3 'name 'words 'info
 #name "r3/lib/rand.r3"
 #words  "seed8" "rand8" "seed" "rerand" "rand" "randmax" "randminmax" "rnd" "rndmax" "rndminmax" "rnd128" "loopMix128" 0
@@ -88,7 +80,7 @@
 #r3_lib_rand.r3 'name 'words 'info
 #name "r3/lib/sdl2.r3"
 #words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_SetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderCopyEx" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_CreateRGBSurfaceWithFormat" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_UpdateYUVTexture" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLdfullsw" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLeventR" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
-#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $79 $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $0 $2E $80 $1F $0 $0 $0 $11 $10 $10 )
+#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $79 $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $10 $2E $80 $2F $0 $0 $10 $11 $10 $10 )
 #r3_lib_sdl2.r3 'name 'words 'info
 #name "r3/lib/sdl2gfx.r3"
 #words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "fround" "round" "fcircle" "circle" "polyop" "polyline" "triangle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
@@ -132,19 +124,15 @@
 #r3_lib_sdlkeys.r3 'name 'words 'info
 #name "r3/lib/str.r3"
 #words  "strcpyl" "strcpy" "strcat" "strcpylnl" "strcpyln" "copynom" "copystr" "strpath" "toupp" "tolow" "count" "count" "utf8c?" "utf8len" "utf8skip" "utf8next" "utf8lead" "utf8prev" "utf8@+" "utf8!+" "utf8count" "utf8ncpy" "utf8bytes" "=" "cmpstr" "=s" "=w" "=pre" "=pos" "=lpos" "findchar" "findstr" "findstri" "rfindstri" ".d" ".b" ".h" ".o" ".f" ".f2" ".f1" ".r." ".fd" "trim" "trimc" "trimcar" "trimstr" ">>cr" ">>0" "l0count" "n>>0" "only10" "only13" ">>sp" ">>str" 0
-#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $10 $10 $10 $10 $10 $10 $14 $2F $11 $3E $21 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $3E $10 $10 $10 $10 $10 $10 $10 $2F $10 $10 $2F $11 $10 $10 $10 $10 $1F $10 $10 $10 $10 )
+#info ( $2F $2E $2E $2F $2E $2E $2E $2E $10 $10 $11 $11 $10 $10 $10 $10 $10 $10 $14 $2F $11 $3E $21 $2F $2F $2F $2F $20 $20 $20 $2F $2F $2F $3E $10 $10 $10 $10 $10 $10 $10 $2F $10 $10 $2F $11 $10 $10 $10 $10 $2F $10 $10 $10 $10 )
 #r3_lib_str.r3 'name 'words 'info
-#name "r3/lib/tflite.r3"
-#words  "TfLiteModelCreateFromFile" "TfLiteInterpreterOptionsCreate" "TfLiteInterpreterCreate" "TfLiteInterpreterAllocateTensors" "TfLiteInterpreterGetInputTensor" "TfLiteInterpreterGetOutputTensor" "TfLiteTensorDim" "TfLiteTensorData" "TfLiteInterpreterInvoke" "TfLiteInterpreterDelete" "TfLiteInterpreterOptionsDelete" "TfLiteModelDelete" "TfLiteXNNPackDelegateCreate" "TfLiteInterpreterOptionsAddDelegate" "TfLiteTensorCopyFromBuffer" "TfLiteTensorCopyToBuffer" "TfLiteTensorByteSize" 0
-#info ( $10 $1 $2F $10 $2F $2F $2F $10 $10 $10 $10 $10 $10 $2F $3E $3E $10 )
-#r3_lib_tflite.r3 'name 'words 'info
 #name "r3/lib/trace.r3"
 #words  "<<trace" "<<traceh" "<<memdump" "<<memdumpc" "clearlog" "filelog" "<<memmap" 0
 #info ( $50 $50 $2E $2E $0 $1F $1F )
 #r3_lib_trace.r3 'name 'words 'info
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $2E $2E $4C $4C $4D $71 )
+#info ( $1F $1F $2E $2E $6E $7E $C $6C $6D $31 )
 #r3_lib_vdraw.r3 'name 'words 'info
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -160,15 +148,15 @@
 #r3_lib_webcam.r3 'name 'words 'info
 #name "r3/util/arr16.r3"
 #words  "p.ini" "p.clear" "p.cnt" "p.adr" "p.nro" "p!+" "p!" "p.draw" "p.drawo" "p.del" "p.mapv" "p.mapd" "p.map2" "p.sort" "p.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $40 $40 $2E $2E $6E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $40 $40 $2E $6E $6E $5E $2F $2F )
 #r3_util_arr16.r3 'name 'words 'info
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $60 $60 $2E $10 $2E $2E $E $2E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $60 $60 $2E $10 $2E $E $E $7E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'info
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
-#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $10 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $12 $2 $14 $1F $1F $1F $1F $0 $0 )
+#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $10 $1F $1F $2F $1F $2F $1F $2F $1F $3E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $12 $2 $14 $1F $1F $1F $1F $0 $0 )
 #r3_util_bfont.r3 'name 'words 'info
 #name "r3/util/blist.r3"
 #words  "blistdel" "blist!" "blist-" "blist@" "blist?" 0
@@ -176,7 +164,7 @@
 #r3_util_blist.r3 'name 'words 'info
 #name "r3/util/bmap.r3"
 #words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "bmap2xy" "whbmap" "xyinmap@" "xytrigger" 0
-#info ( $80 $0 $3D $2E $1F $20 $2 $2F $20 )
+#info ( $80 $0 $3D $6E $1F $20 $2 $2F $20 )
 #r3_util_bmap.r3 'name 'words 'info
 #name "r3/util/datetime.r3"
 #words  ",time" ",ti:me" ",date" ",date-" "str_DMA" "str_HMS" "str_HM" ">dianame" ">mesname" "str_fullday" "str_hhmmss" "dt2timesql" "dt>64" ",64>dtf" ",64>dtd" ",64>dtt" "64>dtc" 0
@@ -184,11 +172,11 @@
 #r3_util_datetime.r3 'name 'words 'info
 #name "r3/util/db2.r3"
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
-#info ( $80 $2F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
+#info ( $80 $2F $0 $10 $F $F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
 #r3_util_db2.r3 'name 'words 'info
 #name "r3/util/dbtxt.r3"
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
-#info ( $80 $2F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
+#info ( $80 $2F $0 $10 $F $F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
 #r3_util_dbtxt.r3 'name 'words 'info
 #name "r3/util/dlgcol.r3"
 #words  "colord" "color!" "dlgColor" "dlgColorIni" "xydlgColor!" 0
@@ -204,7 +192,7 @@
 #r3_util_dlist.r3 'name 'words 'info
 #name "r3/util/filedirs.r3"
 #words  "uiDirs" "uiFiles" "flcpy" "flTreePath" "FlGetFiles" "flScanDir" "flScanFullDir" "flOpenFullPath" "flOpenSearch" "flCloseAll" 0
-#info ( $80 $80 $2E $10 $1F $2E $1F $10 $11 $0 )
+#info ( $80 $80 $2E $10 $6F $5E $5F $10 $11 $0 )
 #r3_util_filedirs.r3 'name 'words 'info
 #name "r3/util/hash2d.r3"
 #words  "H2d.ini" "H2d.clear" "H2d.list" "checkmax" "h2d+!" "h2d!" 0
@@ -216,23 +204,23 @@
 #r3_util_heap.r3 'name 'words 'info
 #name "r3/util/imcolor.r3"
 #words  "color!" "uiColor" "uiColorH" 0
-#info ( $1F $1F $2E )
+#info ( $1F $2E $3D )
 #r3_util_imcolor.r3 'name 'words 'info
 #name "r3/util/imedit.r3"
 #words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edlinenum!" "edlinenum" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
+#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $10 $1F $1F $0 $1F $2E $0 $0 $4C $1F $1F $0 )
 #r3_util_imedit.r3 'name 'words 'info
 #name "r3/util/imfiledlg.r3"
 #words  "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
-#info ( $10 $10 $1 $1F )
+#info ( $40 $40 $31 $2E )
 #r3_util_imfiledlg.r3 'name 'words 'info
 #name "r3/util/immdatetime.r3"
 #words  "uiDateTime" "uiDate" "uiTime" 0
-#info ( $1F $1F $1F )
+#info ( $2E $2E $2E )
 #r3_util_immdatetime.r3 'name 'words 'info
 #name "r3/util/immi.r3"
 #words  "cx" "cy" "cw" "ch" "%cw" "%ch" "uiPading" "uiBox" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "mdrag" "keymd" "btnMouse" "uiEx?" "uiOvr" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiStart" "uiExitWidget" "uiSaveLast" "uiEnd" "uiZone" "uiZoneL" "uiZoneW" "uiZoneBox" "uiBackBox" "uiPlace" "uiRefocus" "uiFocus>>" "uiFocus<<" "tabfocus" "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTex" "uiWinBox" "uiLineGridV" "uiLineGridH" "uiLineGrid" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "stColor" "uilFill" "uilRFill" "uilCFill" "uilTex" "uilRect" "uilRRect" "uilCRect" "uil.." "ui.." "ui--" "ttwrite" "ttwritec" "ttwriter" "uiTlabel" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "uiTBtn" "uiNBtn" "uiBtn" "uiRBtn" "uiCBtn" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiVSliderf" "uiVSlideri" "uiNindx" "uiCheck" "uiRadio" "uiList" "uiTree" "uiCombo" "uiInputLine" 0
-#info ( $80 $80 $80 $80 $10 $10 $2E $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $1 $1F $1F $1F $1F $1F $1F $1F $0 $0 $5B $0 $0 $1F $0 $4C $0 $1F $0 $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $4 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $2E $3D $2E $2E $2E $2E $3D $3D $3D $3D $3D $3D $10 $2E $2E $3D $3D $2E $2E )
+#info ( $80 $80 $80 $80 $10 $10 $2E $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $1 $2E $2E $2E $2E $2E $2E $2E $0 $0 $5B $1F $0 $1F $0 $4C $0 $1F $0 $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $4 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $2E $79 $4C $6A $6A $6A $5B $5B $5B $5B $5B $5B $10 $4E $4E $5B $5B $3D $4C )
 #r3_util_immi.r3 'name 'words 'info
 #name "r3/util/loadobj.r3"
 #words  "verl" "nver" "facel" "nface" "norml" "texl" "ntex" "paral" "colorl" "ncolor" "]face" "]vert" "]norm" "]uv" ">>cr" "]Ka@" "]Kd@" "]Ks@" "]Ke@" "]Ns@" "]Ni@" "]d@" "]i@" "]Mkd@" "]MNs@" "]Mbp@" "cnt/" "getpath" "loadobj" "xmin" "ymin" "zmin" "xmax" "ymax" "zmax" "objminmax" "objmove" "objcentra" "objescala" "objescalax" "objescalay" "objescalaz" "objcube" 0
@@ -240,19 +228,19 @@
 #r3_util_loadobj.r3 'name 'words 'info
 #name "r3/util/pcfont.r3"
 #words  "pccolor" "pcemit" "pcfbox" "pcbox" "pcbox2" "pcfillline" "pcsrcsize" "pcfillemit" "pcprint" "pcemits" "pcprintd" "pcemitsd" "pcprint2" "pcemits2" "pcprintz" "pcemitsz" "pcat" "ccx" "ccy" "gotoxy" "gotox" "pccr" "pcsp" "pcnsp" "pcsize" "pcpos" "pcrect" "pccursor" "pccursori" "pcfont" 0
-#info ( $1F $1F $0 $0 $0 $4C $40 $10 $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $12 $2 $14 $1F $1F $0 )
+#info ( $1F $1F $0 $0 $0 $4C $40 $10 $3F $1F $3F $1F $3F $1F $4E $2E $2E $1 $1 $2E $1F $0 $0 $1F $12 $2 $14 $1F $1F $0 )
 #r3_util_pcfont.r3 'name 'words 'info
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $2D $2D $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $74 $74 $5C )
 #r3_util_penner.r3 'name 'words 'info
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
-#info ( $30 $0 $1F $1F $1 )
+#info ( $30 $0 $3F $3F $21 )
 #r3_util_sdlfiledlg.r3 'name 'words 'info
 #name "r3/util/sdlgui.r3"
 #words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immStrC" "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $1F $3D $1F $1F $E $E $E $E $7F $5E $5E $7E $5E $2E $7E $6E $6F $1F $10 $0 $51 $4C $1F $0 $10 $10 )
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $6F $6F $6F $6F $1F $1F $1F $6F $3D $1F $1F $E $E $E $E $7F $6E $6E $7E $6E $5E $7E $6E $6F $1F $10 $0 $61 $4C $1F $0 $50 $10 )
 #r3_util_sdlgui.r3 'name 'words 'info
 #name "r3/util/sort.r3"
 #words  "shellsort" "shellsort2" "shellsort1" "sortstr" 0
@@ -284,27 +272,27 @@
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/tui.r3"
 #words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "fhome" "uikey" "exit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" "onTuiResize" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "xwriten!" "xwriten.reset" "uiNindxn" "tuListN" "flVisibleIndex" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" "pal.dark" "pal!" "cbg" "cfg" "bg0" "bg1" "bg2" "bg3" "fTx" "fMu" "fDi" "fPr" "fBl" "fPu" "fGr" "fRd" "fYe" "fcr" ".lw" ".cw" ".rw" ".nd" ".nh" ".nf" ".nb" "pan" ".lines" "tcols" "cell" "row" "hdr" "tbw" "tbtop" "tbsep" "tbbot" "tbrowc" "tbrow" "tbhdr" "flxRoot" "flxC" "tuDlg" "tuDlgEnd" 0
-#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $2E $2E $1F $0 $0 $0 $0 $6A $0 $0 $4D $4D $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $20 $2E $2E $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $2E $1F $1F $0 $2E $79 $0 )
+#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $2E $3E $1F $0 $0 $0 $0 $6A $0 $0 $4D $4D $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $20 $2E $2E $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $3E $2F $2F $0 $2E $79 $0 )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
-#words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tuiecursor!" "tuipos!" "tuiposq!" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
-#info ( $80 $80 $80 $80 $80 $80 $1F $1F $1F $1F $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
+#words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
+#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $2 $1 $0 $2 $3 $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
 #words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txfit" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "pad.reset" "pad.draw" 0
-#info ( $2F $2F $1F $1 $1F $10 $11 $3E $10 $1 $2E $2E $0 $2 $1F $1F $1F $2E $1F $1F $2E $2E $2E $2E $2E $1F $5B $2F $1F )
+#info ( $2F $2F $1F $1 $1F $20 $11 $3E $20 $1 $2E $2E $0 $2 $2F $1F $1F $2E $1F $1F $3E $3E $2E $2E $2E $1F $5B $2F $1F )
 #r3_util_txfont.r3 'name 'words 'info
 #name "r3/util/utfg.r3"
 #words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".vline2" ".vlined2" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" "rgb4t" 0
-#info ( $1F $1F $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $2F $5B $10 )
+#info ( $5F $5F $1F $1F $1F $1F $1F $1F $C $C $C $7C $2E $2E $2E $2E $2E $2E $1F $2F $7B $10 )
 #r3_util_utfg.r3 'name 'words 'info
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "timer<" "timer." "timer+" "timer-" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
-#info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $0 $6B $7A $6B $7A $6B $7A $6B $7A $2F $3E $3E $4D $4D $5C $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
+#info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $60 $6B $7A $6B $7A $6B $7A $6B $7A $2F $3E $3E $4D $4D $5C $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
 #r3_util_varanim.r3 'name 'words 'info
 #name "r3/util/vscreen.r3"
 #words  "vscreen" "vscreenf" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
 #info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_isospr.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_onnx.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_tflite.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_db2.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immdatetime.r3 'r3_util_immi.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 0

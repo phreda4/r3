@@ -418,30 +418,30 @@ sysdebug | "" -- ; run a program as a debugged process (Windows only)
 crc32 | a n - u
 crc32n | a n p - u
 adler32 | a n - u
-*.d | a b -- c
-*.df | a b -- c ; full adjust
-/.d | a b -- c
-ceil.d | a -- a
-.d>i
-i>.d
-f>.d
-.d>f
-cos.d | bangle -- r
-sin.d | bangle -- r
-tan.d | v -- f
-tan.dc
-sqrt.d | x -- r
-log2.d | x -- r
-pow2.d | y -- r
-pow.d | x y -- r
-root.d | x n -- r
-ln.d | x -- ln(x)
-exp.d | x -- e^x
-tanh.d
-gamma.d | x -- r
-beta.d | x y -- r
-str>f.d | adr -- 'adr fnro
-f32!
+*.d | a b -- c ; 32.32 fixed point multiply (rounds toward minus infinity)
+*.df | a b -- c ; like *.d but rounds toward zero
+/.d | a b -- c ; 32.32 fixed point divide
+ceil.d | a -- int ; round up to an integer (the result is an integer, not 32.32)
+.d>i | a -- int ; integer part (shift right 32, rounds toward minus infinity)
+i>.d | int -- a ; integer to 32.32 fixed point
+f>.d | fix -- a ; 48.16 fixed point (math.r3) to 32.32
+.d>f | a -- fix ; 32.32 fixed point to 48.16 (math.r3)
+cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
+sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
+tan.d | bangle -- r ; tangent, rough approximation (BUG: the last multiply is *. instead of *.d, so the result is 65536 times too large)
+tan.dc | bangle -- r ; tangent as sin/cos (BUG: it divides with /. instead of /.d, so the result is 48.16 fixed point, not 32.32)
+sqrt.d | x -- r ; square root in 32.32 with 16 bits of precision (0 if x <= 0)
+log2.d | x -- r ; base 2 logarithm in 32.32 (0 if x <= 0)
+pow2.d | y -- r ; 2 to the power y in 32.32
+pow.d | x y -- r ; x to the power y (0 if x = 0) (BUG: it multiplies with *. instead of *.d, so 2^10 gives 1.0)
+root.d | x n -- r ; nth root of x (n in 32.32, 3.0 for the cube root); 0 if x <= 0
+ln.d | x -- r ; natural logarithm in 32.32
+exp.d | x -- r ; e to the power x in 32.32
+tanh.d | x -- r ; hyperbolic tangent in 32.32
+gamma.d | x -- r ; gamma function (BUG: the Stirling step adds x instead of subtracting it and the x <= 0 branch lacks exp.d; gamma 5 gives 3.73 instead of 24)
+beta.d | x y -- r ; beta function (BUG: same Stirling problem as gamma.d; beta 2 3 gives 0.0129 instead of 0.0833)
+str>f.d | adr -- adr' fix ; skip blanks and read a decimal number with sign and fraction (-43.04) as 32.32; 0 if there is no number
+f32! | "str" 'var -- ; read the decimal number of the text and store it (32.32) at 'var
 loadShaderv | "shader" -- idprogram
 loadShader | "shader" -- idprogram
 shadera!i | int shader "name"  --
@@ -497,16 +497,6 @@ inputex | 'vector 'var max  --
 inputdump
 inputint | 'var --
 tbtn | 'ev "text" --
-isang
-isalt
-isxo
-isyo
-xyz2iso | x y z -- x y
-2iso | x y z -- x y
-isocam | --
-resetcam
-loadss | w h "file" -- ssprite
-isospr | x y a z 'ss --
 date2jul | d m y -- jul
 jul2date | jul -- d m y
 date2day | d m y -- num
@@ -651,278 +641,6 @@ net-get-last-error | ( -- error_code )
 server-socket | ( port -- sock )
 client-socket | ( -- sock )
 socket-final | ( sock -- )
-ortSess_CPU | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
-ortSess_MDL | OrtStatus* OrtSess..._CPU(OrtSessionOptions*, int)
-OrtgetVersionString
-OrtCreateStatus
-OrtGetErrorCode
-OrtGetErrorMessage
-OrtCreateEnv
-OrtCreateEnvWithCustomLogger
-OrtEnableTelemetryEvents
-OrtDisableTelemetryEvents
-OrtCreateSession
-OrtCreateSessionFromArray
-OrtRun
-OrtCreateSessionOptions
-OrtSetOptimizedModelFilePath
-OrtCloneSessionOptions
-OrtSetSessionExecutionMode
-OrtEnableProfiling
-OrtDisableProfiling
-OrtEnableMemPattern
-OrtDisableMemPattern
-OrtEnableCpuMemArena
-OrtDisableCpuMemArena
-OrtSetSessionLogId
-OrtSetSessionLogVerbosityLevel
-OrtSetSessionLogSeverityLevel
-OrtSetSessionGraphOptimizationLevel
-OrtSetIntraOpNumThreads
-OrtSetInterOpNumThreads
-OrtCreateCustomOpDomain
-OrtCustomOpDomain_Add
-OrtAddCustomOpDomain
-OrtRegisterCustomOpsLibrary
-OrtSessionGetInputCount
-OrtSessionGetOutputCount
-OrtSessionGetOverridableInitializerCount
-OrtSessionGetInputTypeInfo
-OrtSessionGetOutputTypeInfo
-OrtSessionGetOverridableInitializerTypeInfo
-OrtSessionGetInputName
-OrtSessionGetOutputName
-OrtSessionGetOverridableInitializerName
-OrtCreateRunOptions
-OrtRunOptionsSetRunLogVerbosityLevel
-OrtRunOptionsSetRunLogSeverityLevel
-OrtRunOptionsSetRunTag
-OrtRunOptionsGetRunLogVerbosityLevel
-OrtRunOptionsGetRunLogSeverityLevel
-OrtRunOptionsGetRunTag
-OrtRunOptionsSetTerminate
-OrtRunOptionsUnsetTerminate
-OrtCreateTensorAsOrtValue
-OrtCreateTensorWithDataAsOrtValue
-OrtIsTensor
-OrtGetTensorMutableData
-OrtFillStringTensor
-OrtGetStringTensorDataLength
-OrtGetStringTensorContent
-OrtCastTypeInfoToTensorInfo
-OrtGetOnnxTypeFromTypeInfo
-OrtCreateTensorTypeAndShapeInfo
-OrtSetTensorElementType
-OrtSetDimensions
-OrtGetTensorElementType
-OrtGetDimensionsCount
-OrtGetDimensions
-OrtGetSymbolicDimensions
-OrtGetTensorShapeElementCount
-OrtGetTensorTypeAndShape
-OrtGetTypeInfo
-OrtGetValueType
-OrtCreateMemoryInfo
-OrtCreateCpuMemoryInfo
-OrtCompareMemoryInfo
-OrtMemoryInfoGetName
-OrtMemoryInfoGetId
-OrtMemoryInfoGetMemType
-OrtMemoryInfoGetType
-OrtAllocatorAlloc
-OrtAllocatorFree
-OrtAllocatorGetInfo
-OrtGetAllocatorWithDefaultOptions
-OrtAddFreeDimensionOverride
-OrtGetValue
-OrtGetValueCount
-OrtCreateValue
-OrtCreateOpaqueValue
-OrtGetOpaqueValue
-OrtKernelInfoGetAttribute_float
-OrtKernelInfoGetAttribute_int64
-OrtKernelInfoGetAttribute_string
-OrtKernelContext_GetInputCount
-OrtKernelContext_GetOutputCount
-OrtKernelContext_GetInput
-OrtKernelContext_GetOutput
-OrtReleaseEnv
-OrtReleaseStatus
-OrtReleaseMemoryInfo
-OrtReleaseSession
-OrtReleaseValue
-OrtReleaseRunOptions
-OrtReleaseTypeInfo
-OrtReleaseTensorTypeAndShapeInfo
-OrtReleaseSessionOptions
-OrtReleaseCustomOpDomain
-OrtGetDenotationFromTypeInfo
-OrtCastTypeInfoToMapTypeInfo
-OrtCastTypeInfoToSequenceTypeInfo
-OrtGetMapKeyType
-OrtGetMapValueType
-OrtGetSequenceElementType
-OrtReleaseMapTypeInfo
-OrtReleaseSequenceTypeInfo
-OrtSessionEndProfiling
-OrtSessionGetModelMetadata
-OrtModelMetadataGetProducerName
-OrtModelMetadataGetGraphName
-OrtModelMetadataGetDomain
-OrtModelMetadataGetDescription
-OrtModelMetadataLookupCustomMetadataMap
-OrtModelMetadataGetVersion
-OrtCreateEnvWithGlobalThreadPools
-OrtDisablePerSessionThreads
-OrtCreateThreadingOptions
-OrtSetGlobalIntraOpNumThreads
-OrtSetGlobalInterOpNumThreads
-OrtSetGlobalSpinControl
-OrtModelMetadataGetCustomMetadataMapKeys
-OrtAddFreeDimensionOverrideByName
-OrtGetAvailableProviders
-OrtReleaseAvailableProviders
-OrtGetStringTensorElementLength
-OrtGetStringTensorElement
-OrtFillStringTensorElement
-OrtAddSessionConfigEntry
-OrtCreateAllocator
-OrtRunWithBinding
-OrtCreateIoBinding
-OrtBindInput
-OrtBindOutput
-OrtBindOutputToDevice
-OrtGetBoundOutputNames
-OrtGetBoundOutputValues
-OrtClearBoundInputs
-OrtClearBoundOutputs
-OrtTensorAt
-OrtCreateAndRegisterAllocator
-OrtSetLanguageProjection
-OrtSessionGetProfilingStartTimeNs
-OrtAddInitializer
-OrtCreateEnvWithCustomLoggerAndGlobalThreadPools
-OrtSessionOptionsAppendExecutionProvider_CUDA
-OrtSessionOptionsAppendExecutionProvider_ROCM
-OrtSessionOptionsAppendExecutionProvider_OpenVINO
-OrtSetGlobalDenormalAsZero
-OrtCreateArenaCfg
-OrtModelMetadataGetGraphDescription
-OrtSessionOptionsAppendExecutionProvider_TensorRT
-OrtSetCurrentGpuDeviceId
-OrtGetCurrentGpuDeviceId
-OrtKernelInfoGetAttributeArray_float
-OrtKernelInfoGetAttributeArray_int64
-OrtCreateArenaCfgV2
-OrtAddRunConfigEntry
-OrtCreatePrepackedWeightsContainer
-OrtCreateSessionWithPrepackedWeightsContainer
-OrtCreateSessionFromArrayWithPrepackedWeightsContainer
-OrtSessionOptionsAppendExecutionProvider_TensorRT_V2
-OrtCreateTensorRTProviderOptions
-OrtUpdateTensorRTProviderOptions
-OrtGetTensorRTProviderOptionsAsMap
-OrtReleaseTensorRTProviderOptions
-OrtEnableOrtCustomOps
-OrtRegisterAllocator
-OrtUnregisterAllocator
-OrtIsSparseTensor
-OrtCreateSparseTensorAsOrtValue
-OrtFillSparseTensorCoo
-OrtFillSparseTensorCsr
-OrtFillSparseTensorBlockSparse
-OrtCreateSparseTensorWithValuesAsOrtValue
-OrtUseCooIndices
-OrtUseCsrIndices
-OrtUseBlockSparseIndices
-OrtGetSparseTensorFormat
-OrtGetSparseTensorValuesTypeAndShape
-OrtGetSparseTensorValues
-OrtGetSparseTensorIndicesTypeShape
-OrtGetSparseTensorIndices
-OrtHasValue
-OrtKernelContext_GetGPUComputeStream
-OrtGetTensorMemoryInfo
-OrtGetExecutionProviderApi
-OrtSessionOptionsSetCustomCreateThreadFn
-OrtSessionOptionsSetCustomThreadCreationOptionsFn
-OrtSetGlobalCustomCreateThreadFn
-OrtSetGlobalCustomThreadCreationOptions
-OrtSetGlobalCustomJoinThreadFn
-OrtSynchronizeBoundInputs
-OrtSynchronizeBoundOutputs
-OrtSessionOptionsAppendExecutionProvider_CUDA_V2
-OrtCreateCUDAProviderOptions
-OrtUpdateCUDAProviderOptions
-OrtGetCUDAProviderOptionsAsMap
-OrtReleaseCUDAProviderOptions
-OrtSessionOptionsAppendExecutionProvider_MIGraphX
-OrtAddExternalInitializers
-OrtCreateOpAttr
-OrtCreateOp | sys11 ; |<<<<<<<<<<<<<<<<<<<
-OrtReleaseOpAttr
-OrtReleaseOp
-OrtSessionOptionsAppendExecutionProvider
-OrtCopyKernelInfo
-OrtGetTrainingApi
-OrtSessionOptionsAppendExecutionProvider_Dnnl
-OrtCreateDnnlProviderOptions
-OrtUpdateDnnlProviderOptions
-OrtGetDnnlProviderOptionsAsMap
-OrtReleaseDnnlProviderOptions
-OrtSessionOptionsAppendExecutionProvider_ROCM_V2
-OrtCreateROCMProviderOptions
-OrtUpdateROCMProviderOptions
-OrtGetROCMProviderOptionsAsMap
-OrtReleaseROCMProviderOptions
-OrtCreateLoraAdapter
-OrtCreateLoraAdapterFromArray
-OrtReleaseLoraAdapter
-OrtRunOptionsAddActiveLoraAdapter
-OrtSetEpDynamicOptions
-OrtReleaseValueInfo
-OrtReleaseNode
-OrtReleaseGraph
-OrtReleaseModel
-OrtGetValueInfoName
-OrtGetValueInfoTypeInfo
-OrtGetModelEditorApi
-OrtCreateTensorWithOwnedBufferAsOrtValue
-OrtInvalidAllocator
-OrtDeviceAllocator
-OrtArenaAllocator
-OrtReadOnlyAllocator
-OrtMemTypeCPUInput
-OrtMemTypeCPUOutput
-OrtMemTypeCPU
-OrtMemTypeDefault
-ORT_DISABLE_ALL
-ORT_ENABLE_BASIC
-ORT_ENABLE_EXTENDED
-ORT_ENABLE_ALL
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT | maps to c type float
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8 | maps to c type uint8_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8 | maps to c type int8_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16 | maps to c type uint16_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16 | maps to c type int16_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32 | maps to c type int32_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64 | maps to c type int64_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING | maps to c++ type std::string
-ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16
-ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE | maps to c type double
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT32 | maps to c type uint32_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT64 | maps to c type uint64_t
-ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64 | complex with float32 real and imaginary components
-ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128 | complex with float64 real and imaginary components
-ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16 | Non-IEEE floating-point format based on IEEE754 single-precision
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FN | Non-IEEE floating-point format based on IEEE754 single-precision
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FNUZ | Non-IEEE floating-point format based on IEEE754 single-precision
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2 | Non-IEEE floating-point format based on IEEE754 single-precision
-ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E5M2FNUZ | Non-IEEE floating-point format based on IEEE754 single-precision
-ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4 | maps to a pair of packed uint4 values (size == 1 byte)
-ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4 | maps to a pair of packed int4 values (size == 1 byte)
 str$>nro | adr -- adr' nro ; hexadecimal digits at adr (no $ prefix), stops at the first other char; adr' = that char
 str%>nro | adr -- adr' nro ; binary digits at adr (no % prefix; also . counts as 0 and / as 1), stops at the first other char
 str>nro | adr -- adr' nro ; number at adr: 1234 $12f %101 -12 (no leading blanks); adr' = first char after it, nro = 0 if there is none
@@ -1064,59 +782,59 @@ sdlbreak | -- ; debug stop: redraw and wait until F12 or ESC is pressed
 SDLTexwh | tex -- w h ; width and height of a texture (reads the SDL_Texture structure)
 %w | frac -- px ; fixed point fraction of the screen width (1.0 = sw) in pixels
 %h | frac -- px ; fixed point fraction of the screen height (1.0 = sh) in pixels
-color | col --
-colorA | col --
-cls | color --
-point | x y --
-getpixel | x y -- v
-line | x y x y --
-lineH | x y x --
-lineV | x y y --
-frect | x y w h --
-rect | x y w h --
-fellipse | rx ry x y --
-ellipse | rx ry x y --
-fround | r x y w h --
-round | r x y w h --
-fcircle | r x y --
-circle | r x y --
-polyop | x y --
-polyline | x y --
-triangle | x y x y x y --
-image | x y img --
-images | x y w h img --
-imageb | box img --
-imagebb | box box img --
-tsload | w h filename -- ts
-tscolor | rrggbb 'ts --
-tsalpha | alpha 'ts --
-tsdraw | n 'ts x y --
-tsdraws | n 'ts x y w h --
-tsbox | 'boxsrc n 'ts --
-tsfree | ts --
-sprite | x y img --
-spriteZ | x y zoom img --
-spriteR | x y ang img --
-spriteRZ | x y ang zoom img --
-ssload | w h "file" -- ssprite
-sscnt | ssprite -- ssprite nframes ; olny work after ssload (when change here not work anymore)
-sstint | color --- ; with alpha!! AARRGGBB
-ssnotint
-sspritewh | adr -- h w
-ssprite | x y n ssprite --
-sspriter | x y ang n ssprite --
-sspritez | x y zoom n ssprite --
-sspriterz | x y ang zoom n ssprite --
-createSurf | w h -- surface
-Surf>pix | surface -- surf pixels
-Surf>wha
-Surf>wh | surface -- surf w h
-Surf>pixpi | surface -- 'pixel pitch
-texIni | w h --
-texEnd | -- texture
-texEndAlpha | -- texture
-Tex2Surface | tex -- tex surface
-Tex2Static | tex -- newtexture
+color | rgb -- ; set the draw color from $RRGGBB (alpha 255)
+colorA | argb -- ; set the draw color from $AARRGGBB
+cls | rgb -- ; clear the target with the color $RRGGBB
+point | x y -- ; draw a point
+getpixel | x y -- rgb ; color $RRGGBB of the pixel (BUG: it always returns 0, the read rectangle gets w = 65537 and h = 0 because it stores $10001 instead of $100000001)
+line | x1 y1 x2 y2 -- ; draw a line
+lineH | x1 y x2 -- ; horizontal line from x1 to x2 (both included) at y
+lineV | x y1 y2 -- ; vertical line from y1 to y2 (both included) at x
+frect | x y w h -- ; filled rectangle (it covers x..x+w-1, y..y+h-1)
+rect | x y w h -- ; rectangle outline (same area as frect)
+fellipse | rx ry x y -- ; filled ellipse with radii rx ry centered at x y
+ellipse | rx ry x y -- ; ellipse outline with radii rx ry centered at x y (BUG: the center row is missing, so there is a one pixel gap at each end)
+fround | r x y w h -- ; filled rectangle x y w h with rounded corners of radius r
+round | r x y w h -- ; outline of a rectangle x y w h with rounded corners of radius r
+fcircle | r x y -- ; filled circle of radius r centered at x y
+circle | r x y -- ; circle outline of radius r centered at x y
+polyop | x y -- ; start a filled polygon with its first point (uses the current draw color); do not draw rectangles until the last polyline: they share the buffer
+polyline | x y -- ; add a point to the polygon: from the third point on each new point draws a filled triangle with the first point and the previous one
+triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
+image | x y img -- ; draw the texture at x y with its own size
+images | x y w h img -- ; draw the texture scaled to the rectangle x y w h
+imageb | 'dst img -- ; draw the whole texture into the box 'dst (x y w h, four int32)
+imagebb | 'src 'dst img -- ; draw the box 'src of the texture into the box 'dst (x y w h, four int32 each)
+tsload | w h "file" -- ts ; load an image as a tileset of tiles w x h (left to right, top to bottom); the table is kept in memory at here
+tscolor | rgb ts -- ; color modulation $RRGGBB of the tileset texture
+tsalpha | alpha ts -- ; alpha modulation (0..255) of the tileset texture
+tsdraw | n ts x y -- ; draw tile n of the tileset at x y (its own size)
+tsdraws | n ts x y w h -- ; draw tile n scaled to the rectangle x y w h
+tsbox | 'box n ts -- ; fill the 'box (x y w h, four int32) with the source rectangle of tile n
+tsfree | ts -- ; free the texture of the tileset (the table stays in memory)
+sprite | x y img -- ; draw the texture centered at x y
+spriteZ | x y zoom img -- ; draw the texture centered at x y with zoom (fixed point, 1.0 = normal size)
+spriteR | x y ang img -- ; draw the texture centered at x y rotated by ang (1.0 = full turn)
+spriteRZ | x y ang zoom img -- ; draw the texture centered at x y rotated by ang (1.0 = full turn) with zoom (fixed point)
+ssload | w h "file" -- ssprite ; load an image as a spritesheet of frames w x h (left to right, top to bottom) for the ssprite words; the table is kept in memory at here
+sscnt | ssprite -- ssprite n ; number of frames (only right after ssload, while here has not changed)
+sstint | argb -- ; tint color $AARRGGBB (with alpha) used by the ssprite words
+ssnotint | -- ; no tint for the ssprite words ($ffffffff)
+sspritewh | ssprite -- w h ; size of a frame (the original comment said h w, but w is deeper)
+ssprite | x y n ssprite -- ; draw frame n of the spritesheet centered at x y
+sspriter | x y ang n ssprite -- ; draw frame n centered at x y rotated by ang (1.0 = full turn)
+sspritez | x y zoom n ssprite -- ; draw frame n centered at x y with zoom (fixed point, 1.0 = normal size)
+sspriterz | x y ang zoom n ssprite -- ; draw frame n centered at x y rotated by ang (1.0 = full turn) with zoom
+createSurf | w h -- surface ; create a 32-bit ARGB surface
+Surf>pix | surface -- surface pixels ; also leave the address of the pixels
+Surf>wha | surface -- surface 'wh ; also leave the address of w and h (two int32)
+Surf>wh | surface -- surface w h ; also leave the width and the height
+Surf>pixpi | surface -- pixels pitch ; address of the pixels and bytes per row (the surface is consumed)
+texIni | w h -- ; create a target texture w x h and draw into it (instead of the window) until texEnd; only one at a time
+texEnd | -- texture ; stop drawing into the texture, back to the window, and return the texture
+texEndAlpha | -- texture ; like texEnd with alpha blending enabled on the texture
+Tex2Surface | tex -- tex surface ; copy the pixels of a target texture into a new surface
+Tex2Static | tex -- newtex ; convert a target texture into a static one (the original texture is freed)
 GL_FALSE
 GL_TRUE
 GL_NONE
@@ -1634,28 +1352,28 @@ IMG_SaveJPG_RW | (SDL_Surface *surface, SDL_RWops *dst, int freedst, int quality
 loadimg | "" -- texture
 unloadimg | adr --
 loadsvg | w h "" -- tex
-Mix_Init
-Mix_Quit
-Mix_LoadWAV
-Mix_LoadMUS
-Mix_PlayChannelTimed
-Mix_HaltChannel
-Mix_FadeOutChannel
-Mix_PlayMusic
-Mix_HaltMusic
-Mix_FadeOutMusic
-Mix_VolumeMusic
-Mix_PlayingMusic
-Mix_Playing
-Mix_FreeChunk
-Mix_FreeMusic
-Mix_OpenAudio
-Mix_CloseAudio
-Mix_MasterVolume
-SNDInit
-SNDplay | adr --
-SNDplayn | channel adr --
-SNDQuit
+Mix_Init | flags -- result ; initialize the audio format loaders (MIX_INIT_OGG, MIX_INIT_MP3...), returns the flags that were loaded
+Mix_Quit | -- ; unload the loaders started with Mix_Init
+Mix_LoadWAV | "file" -- chunk ; load a sound effect file (WAV, and OGG, MP3... depending on the loaders) as a chunk; 0 on error
+Mix_LoadMUS | "file" -- music ; load a music file; 0 on error
+Mix_PlayChannelTimed | channel chunk loops ticks -- channel ; play the chunk: channel -1 = the first free one, loops 0 = once and -1 = forever, ticks -1 = no time limit; returns the channel used or -1
+Mix_HaltChannel | channel -- ; stop the channel (-1 = all channels)
+Mix_FadeOutChannel | channel ms -- ; fade out the channel in ms milliseconds (-1 = all channels)
+Mix_PlayMusic | music loops -- ; play the music (loops -1 = forever)
+Mix_HaltMusic | -- ; stop the music
+Mix_FadeOutMusic | ms -- ; fade out the music in ms milliseconds
+Mix_VolumeMusic | volume -- ; set the music volume (0..128)
+Mix_PlayingMusic | -- bool ; 1 if the music is playing
+Mix_Playing | channel -- n ; 1 if the channel is playing (channel -1: number of channels playing)
+Mix_FreeChunk | chunk -- ; free a chunk loaded with Mix_LoadWAV
+Mix_FreeMusic | music -- ; free a music loaded with Mix_LoadMUS
+Mix_OpenAudio | freq format channels chunksize -- ; open the audio device (for example 44100 $8010 2 4096)
+Mix_CloseAudio | -- ; close the audio device
+Mix_MasterVolume | volume -- ; set the master volume (0..128; needs SDL_mixer 2.6 or newer)
+SNDInit | -- ; open the audio at 44100 Hz, 16 bit signed, stereo, 4096 samples per buffer (it is called when the library is loaded)
+SNDplay | chunk -- ; play the chunk once in the first free channel
+SNDplayn | channel chunk -- ; play the chunk once in the given channel
+SNDQuit | -- ; close the audio
 SDLNet_Init
 SDLNet_Quit
 SDLNet_ResolveHost
@@ -1914,23 +1632,6 @@ only10 | adr -- 'end ; in place, change CRLF, CR and LFCR to LF; 'end is after t
 only13 | adr -- 'end ; in place, change CRLF, LF and LFCR to CR; 'end is after the final 0
 >>sp | adr -- adr' ; address of the next char <= 32 (blank), or of the final 0
 >>str | adr -- adr' ; address after the closing " of the string text at adr ("" is an escaped quote)
-TfLiteModelCreateFromFile
-TfLiteInterpreterOptionsCreate
-TfLiteInterpreterCreate
-TfLiteInterpreterAllocateTensors
-TfLiteInterpreterGetInputTensor
-TfLiteInterpreterGetOutputTensor
-TfLiteTensorDim
-TfLiteTensorData
-TfLiteInterpreterInvoke
-TfLiteInterpreterDelete
-TfLiteInterpreterOptionsDelete
-TfLiteModelDelete
-TfLiteXNNPackDelegateCreate
-TfLiteInterpreterOptionsAddDelegate
-TfLiteTensorCopyFromBuffer
-TfLiteTensorCopyToBuffer
-TfLiteTensorByteSize
 <<trace | --
 <<traceh | --
 <<memdump | adr cnt --
@@ -2667,9 +2368,15 @@ $fuente | fin de texto
 themeold
 themenew
 tuTheme! | 'theme -- ; 'themeold / 'themenew
+tcol | n -- col256 ; colors of the editor: 0 string 1 include 2 comment 3 definition 4 variable 5 address 6 number 7 word
 tuiecursor! | cursor --
 tuipos! | pos --
 tuiposq! | pos --
+tuejpush | -- ; saves the place of the cursor
+tuejdepth | -- n ; how many places are saved (32 at most)
+tuejback | -- ; back to the last saved place
+tuegodef | -- ; goes to the definition of the word under the cursor, saving the place to come back
+tuefindword | -- ; the next whole word like the one under the cursor (wraps), the place is saved
 tueKeyMove
 tuEditLN! | n -- ; line number place
 tuEditShowCursor

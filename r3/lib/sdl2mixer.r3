@@ -22,38 +22,56 @@
 #sys-Mix_Playing
 #sys-Mix_MasterVolume
 	
-::Mix_Init sys-Mix_Init sys1 ;
-::Mix_Quit sys-MIX_Quit sys0 drop ;
+::Mix_Init | flags -- result ; initialize the audio format loaders (MIX_INIT_OGG, MIX_INIT_MP3...), returns the flags that were loaded
+	sys-Mix_Init sys1 ;
+::Mix_Quit | -- ; unload the loaders started with Mix_Init
+	sys-MIX_Quit sys0 drop ;
 	
-::Mix_LoadWAV "rb" SDL_RWFromFile sys-Mix_LoadWAV_RW sys1 ;
-::Mix_LoadMUS sys-Mix_LoadMUS sys1 ;
-::Mix_PlayChannelTimed sys-Mix_PlayChannelTimed sys4 ;
-::Mix_HaltChannel sys-Mix_HaltChannel sys1 drop ;
-::Mix_FadeOutChannel sys-Mix_FadeOutChannel sys2 drop ;
-::Mix_PlayMusic sys-Mix_PlayMusic sys2 drop ;
-::Mix_HaltMusic sys-Mix_HaltMusic sys0 drop ;
-::Mix_FadeOutMusic sys-Mix_fadeOutMusic sys1 drop ;
-::Mix_VolumeMusic sys-Mix_VolumeMusic sys1 drop ;
-::Mix_PlayingMusic sys-Mix_PlayingMusic	sys0 ;
-::Mix_Playing sys-Mix_Playing sys1 ;
+::Mix_LoadWAV | "file" -- chunk ; load a sound effect file (WAV, and OGG, MP3... depending on the loaders) as a chunk; 0 on error
+	"rb" SDL_RWFromFile sys-Mix_LoadWAV_RW sys1 ;
+::Mix_LoadMUS | "file" -- music ; load a music file; 0 on error
+	sys-Mix_LoadMUS sys1 ;
+::Mix_PlayChannelTimed | channel chunk loops ticks -- channel ; play the chunk: channel -1 = the first free one, loops 0 = once and -1 = forever, ticks -1 = no time limit; returns the channel used or -1
+	sys-Mix_PlayChannelTimed sys4 ;
+::Mix_HaltChannel | channel -- ; stop the channel (-1 = all channels)
+	sys-Mix_HaltChannel sys1 drop ;
+::Mix_FadeOutChannel | channel ms -- ; fade out the channel in ms milliseconds (-1 = all channels)
+	sys-Mix_FadeOutChannel sys2 drop ;
+::Mix_PlayMusic | music loops -- ; play the music (loops -1 = forever)
+	sys-Mix_PlayMusic sys2 drop ;
+::Mix_HaltMusic | -- ; stop the music
+	sys-Mix_HaltMusic sys0 drop ;
+::Mix_FadeOutMusic | ms -- ; fade out the music in ms milliseconds
+	sys-Mix_fadeOutMusic sys1 drop ;
+::Mix_VolumeMusic | volume -- ; set the music volume (0..128)
+	sys-Mix_VolumeMusic sys1 drop ;
+::Mix_PlayingMusic | -- bool ; 1 if the music is playing
+	sys-Mix_PlayingMusic	sys0 ;
+::Mix_Playing | channel -- n ; 1 if the channel is playing (channel -1: number of channels playing)
+	sys-Mix_Playing sys1 ;
 
-::Mix_FreeChunk sys-Mix_FreeChunk sys1 drop ;
-::Mix_FreeMusic sys-Mix_FreeMusic sys1 drop ;
-::Mix_OpenAudio sys-Mix_OpenAudio sys4 drop ;
-::Mix_CloseAudio sys-Mix_CloseAudio sys0 drop ;
-::Mix_MasterVolume sys-Mix_MasterVolume sys1 drop ; 
+::Mix_FreeChunk | chunk -- ; free a chunk loaded with Mix_LoadWAV
+	sys-Mix_FreeChunk sys1 drop ;
+::Mix_FreeMusic | music -- ; free a music loaded with Mix_LoadMUS
+	sys-Mix_FreeMusic sys1 drop ;
+::Mix_OpenAudio | freq format channels chunksize -- ; open the audio device (for example 44100 $8010 2 4096)
+	sys-Mix_OpenAudio sys4 drop ;
+::Mix_CloseAudio | -- ; close the audio device
+	sys-Mix_CloseAudio sys0 drop ;
+::Mix_MasterVolume | volume -- ; set the master volume (0..128; needs SDL_mixer 2.6 or newer)
+	sys-Mix_MasterVolume sys1 drop ;
 
-::SNDInit
+::SNDInit | -- ; open the audio at 44100 Hz, 16 bit signed, stereo, 4096 samples per buffer (it is called when the library is loaded)
 	44100 $8010 2 4096 Mix_OpenAudio ;
 
-::SNDplay | adr --
+::SNDplay | chunk -- ; play the chunk once in the first free channel
 	-1 swap 0 -1 Mix_PlayChannelTimed drop ;
 
-::SNDplayn | channel adr --
+::SNDplayn | channel chunk -- ; play the chunk once in the given channel
 	0 -1 Mix_PlayChannelTimed drop ;
 
 	
-::SNDQuit	
+::SNDQuit | -- ; close the audio
 	Mix_CloseAudio ;
 	
 |------- BOOT
