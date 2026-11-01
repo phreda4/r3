@@ -140,21 +140,21 @@
     3 3 .at .Bold "Red Gradient:" .write .Reset
     5 5 .at
     0 ( 32 <?
-        dup 8 * 0 0 .fgrgb "█" .write
+        dup $80000 .fg32 "█" .write
         1+ ) drop 
 	.Reset
     
     3 7 .at .Bold "Green Gradient:" .write .Reset
     5 9 .at
     0 ( 32 <?
-        0 over 8 * 0 .fgrgb "█" .write
+		dup $800 * .fg32 "█" .write
         1+ ) drop 
 	.Reset
     
     3 11 .at .Bold "Blue Gradient:" .write .Reset
     5 13 .at
     0 ( 32 <?
-        0 0 pick2 8 * .fgrgb "█" .write
+		dup $8 * .fg32 "█" .write
         1+ ) drop 
 	.Reset
     
@@ -180,12 +180,12 @@
 |------- Page 5: Animated Demo -------
 :rainbow-char | n --
     anim-frame + 36 mod
-    6 <? ( drop 255 0 0 ; )
-    12 <? ( drop 255 255 0 ; )
-    18 <? ( drop 0 255 0 ; )
-    24 <? ( drop 0 255 255 ; )
-    30 <? ( drop 0 0 255 ; )
-	drop 255 0 255 ;
+    6 <? ( drop $ff0000 ; )
+    12 <? ( drop $ffff00 ; )
+    18 <? ( drop $ff00 ; )
+    24 <? ( drop $ffff ; )
+    30 <? ( drop $ff ; )
+	drop $ff00ff ;
 
 #cframe  .Red .Yellow .Green .Cyan .Blue .Magenta .Redl .bluel
 
@@ -200,7 +200,7 @@
   
     5 7 .at
     0 ( 60 <?
-        dup rainbow-char .fgrgb "█" .write
+        dup rainbow-char .fg32 "█" .write
         6 + ) drop 
 
 	.Reset

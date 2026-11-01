@@ -286,6 +286,17 @@
 	swap rot "38;2;%d;%d;%dm" .[p ;
 ::.bgrgb | r g b -- ; set the background true color (each 0..255)
 	swap rot "48;2;%d;%d;%dm" .[p ;
+	
+::.fg32 | rgb -- ; set the foreground true color rrggbb
+	"38;2;" .[w
+:rgb.emit
+	dup $ff and .d .write $3b .emit			| ;
+	dup 8 >> $ff and .d .write $3b .emit	| ;
+	16 >> $ff and .d .write $6d .emit ;		| m
+
+::.bg32 | rgb -- ; set the background true color rrggbb
+	"48;2;" .[w 
+	rgb.emit ;	
 
 |------- Text Attributes -------
 ::.Bold | -- ; text attribute: bold

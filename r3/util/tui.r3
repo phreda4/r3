@@ -716,15 +716,12 @@
 	'palp ! ;
 
 :rgb@ | n -- r g b
-	2 << palp + d@
-	dup 16 >> $ff and swap
-	dup 8 >> $ff and swap
-	$ff and ;
+	2 << palp + d@ ;
 
 ::cbg | n --
-	rgb@ .bgrgb ;
+	rgb@ .bg32 ;
 ::cfg | n --
-	rgb@ .fgrgb ;
+	rgb@ .fg32 ;
 
 ::bg0 0 cbg ;	::bg1 1 cbg ;	::bg2 2 cbg ;	::bg3 3 cbg ;
 ::fTx 4 cfg ;	::fMu 5 cfg ;	::fDi 6 cfg ;	::fPr 7 cfg ;

@@ -36,11 +36,7 @@
 	
 |24bits color
 :rgb2ascii | v -- v
-	getrgb
-	dup 16 >> $ff and
-	over 8 >> $ff and
-	rot $ff and
-	.fgrgb	| color
+	getrgb .fg32 
 	lumi2ascii ;
 
 :8>6 | precise
