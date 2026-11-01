@@ -52,7 +52,7 @@
 
 #filenow 0 0
 #filechg -1
-
+#uiDirs 0 0 
 #pad * 1024
 		
 :Fileselect

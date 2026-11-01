@@ -239,9 +239,9 @@
 	tuReadCode
 	
 	uiKey
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	[enter] =? ( setanalysis 1 'modefx ! )
-	[back] =? ( modefx 0? ( exit ) drop 0 'modefx ! )
+	[back] =? ( modefx 0? ( tuiexit ) drop 0 'modefx ! )
 	drop ;
 
 :setvwords | nrow --
@@ -393,7 +393,7 @@
 	fhome helplist
 	
 	uiKey
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	drop ;
 
 :helpcode
@@ -418,7 +418,7 @@
 	"ctrl+H Help   ctrl+Q or ESC Quit" .cw
 	tuDlgEnd
 	uikey
-	[esc] =? ( exit )
+	[esc] =? ( tuiexit )
 	drop ;
 	
 |-------------------------------
@@ -471,9 +471,9 @@
 	$4 =? ( debugcode ) 		| ctrl+d debug
 	$8 =? ( 'helpdlg onTui )	| ctrl+H Help	
 	|$B =? ( ) |K	
-	$11 =? ( exit )				| ctrl+q quit
+	$11 =? ( tuiexit )				| ctrl+q quit
 	$12 =? ( runcode )	| ctrl+r run	
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	drop ;
 
 |-----------------------------------

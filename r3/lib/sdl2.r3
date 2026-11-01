@@ -27,7 +27,6 @@
 #sys-SDL_UpdateTexture 
 #sys-SDL_RenderClear
 #sys-SDL_RenderCopy 
-#sys-SDL_RenderCopyEx
 #sys-SDL_RenderPresent 
 #sys-SDL_SetRenderDrawColor
 #sys-SDL_GetRenderDrawColor
@@ -143,8 +142,6 @@
 	sys-SDL_RenderClear sys1 drop ;
 ::SDL_RenderCopy | renderer texture 'src 'dst -- ; copy the rectangle 'src of the texture to the rectangle 'dst of the target (0 = whole)
 	sys-SDL_RenderCopy sys4 drop ;
-::SDL_RenderCopyEx | renderer texture 'src 'dst angle 'center flip -- ; like SDL_RenderCopy with rotation (angle in degrees, a double in C; with sys7 it goes in an integer register: check it), center point (0 = middle) and flip
-	sys-SDL_RenderCopyEx sys7 drop ;
 ::SDL_RenderPresent | renderer -- ; show what was drawn
 	sys-SDL_RenderPresent sys1 drop ;
 ::SDL_CreateTextureFromSurface | renderer surface -- texture ; create a texture from a surface
@@ -474,7 +471,6 @@
 	dup "SDL_UpdateTexture" getproc 'sys-SDL_UpdateTexture !
 	dup "SDL_RenderClear" getproc 'sys-SDL_RenderClear !
 	dup "SDL_RenderCopy" getproc 'sys-SDL_RenderCopy !
-	dup "SDL_RenderCopyEx" getproc 'sys-SDL_RenderCopyEx !
 	dup "SDL_RenderPresent" getproc 'sys-SDL_RenderPresent !
 	dup "SDL_CreateTextureFromSurface" getproc 'sys-SDL_CreateTextureFromSurface !
 	dup "SDL_CreateRGBSurfaceWithFormatFrom" getproc 'sys-SDL_CreateRGBSurfaceWithFormatFrom !

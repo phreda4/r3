@@ -181,20 +181,21 @@
 |
 | use deltad deltaR flag2
 | the comment of each row is the help line of the word: | NAME effect ; description   (metahelp.r3 makes meta/mhelp.r3 from it)
+| flag2 $01 in .wadr .vadr .str ] : they push an address, the word is not a constant (no compile time folding)
 #r3basemov (
 0 1 0 0		| .lits 
 0 1 0 0		| .lit
 0 0 0 0		| .word
-0 1 0 0		| .wadr		need calc UD
+0 1 0 1		| .wadr		need calc UD
 0 1 0 1		| .var
-0 1 0 0		| .vadr
-0 1 0 0		| .str		need "%d"!! | mem?
+0 1 0 1		| .vadr
+0 1 0 1		| .str		need "%d"!! | mem?
 
 0 0 0 0	| ; -- ; end of the word, return to the caller
 0 0 0 0	| ( -- ; begin a block: the body of a conditional or a loop
 0 0 0 0	| ) -- ; end of the block
 0 0 0 0	| [ -- a ; begin an anonymous word; ] leaves its address
-0 1 0 0	| ] -- a ; end of the anonymous word, push its address
+0 1 0 1	| ] -- a ; end of the anonymous word, push its address
 1 -1 0 0	| EX a -- ; execute the word whose address is a (0 does nothing)
 1 0 0 0	| 0? a -- a ; run the block if a = 0
 1 0 0 0	| 1? a -- a ; run the block if a <> 0

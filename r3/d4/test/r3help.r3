@@ -50,7 +50,7 @@
 	1 1 flpad 
 	
 	uikey
-	[esc] =? ( exit )
+	[esc] =? ( tuiexit )
 	[dn] =? ( 8 'inc> +! )
 	[up] =? ( -8 'inc> +! )
 	drop

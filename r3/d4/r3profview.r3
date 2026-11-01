@@ -632,7 +632,7 @@
 	fcr
 	"any key closes" .cw
 	tuDlgEnd
-	uikey 1? ( exit ) drop ;
+	uikey 1? ( tuiexit ) drop ;
 
 :movsel | d --
 	view 1? ( drop tmov ; ) drop
@@ -652,7 +652,7 @@
 
 :onkey | --
 	uikey 0? ( drop ; )
-	[esc] =? ( exit )
+	[esc] =? ( tuiexit )
 	[tab] =? ( flipview )
 	[up] =? ( -1 movsel ) [dn] =? ( 1 movsel )
 	[pgup] =? ( vh neg movsel ) [pgdn] =? ( vh movsel )
@@ -665,7 +665,7 @@
 	$2b =? ( 1 tall ) $2d =? ( 0 tall )
 	$72 =? ( loadall )
 	$68 =? ( 'help onTui ) $3f =? ( 'help onTui )
-	$71 =? ( exit )
+	$71 =? ( tuiexit )
 	drop ;
 
 :main | --

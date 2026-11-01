@@ -79,7 +79,7 @@
 	drawimg
 	
 	uiKey 
-	[esc] =? ( exitui )
+	[esc] =? ( tuiexit )
 	$74 =? ( theme ) 
 	[f1] =? ( |imgsurf 
 		"media/img/arena-map.png" loadtimg

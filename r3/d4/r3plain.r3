@@ -12,6 +12,8 @@
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt.r3
 
+#osnames "WIN" "LIN" "MAC" "RPI"
+
 |----------------------------------------
 :dataw | n -- n
 	| info in plain--
@@ -167,6 +169,7 @@
 	"| " ,s 'filename ,s ,cr
 	"| r3 optimizer" ,s ,cr
 	inlinelenmax "| inlinelenmax %d" ,print ,cr
+	'osnames osgen $3 and 2 << + "| target %s" ,print ,cr
 	
 	generate
 	"r3/d4/gen/plain.r3" 
@@ -198,6 +201,10 @@
 	.cr
 	.reset 
 	"Make plain.r3" .println
+	|--- generation parameters (external variables, uncomment to change)
+	|1 'osgen !			| target: 0 WIN, 1 LIN, 2 MAC, 3 RPI (default: this system)
+	|7 'inlinelenmax !	| max tokens of a word to inline (default 7, 0 = no inline)
+	'osnames osgen $3 and 2 << + "target: %s" .println
 	mark
 	'filename r3plain
 	cols .hline

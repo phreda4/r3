@@ -3,8 +3,8 @@
 #info ( $80 $80 $80 $80 $0 $1F $0 $2E $2E $3F $30 $30 $3F $30 $3F $3F $3F $3F $2 $3F $1 $3D $3D $1F $1F $1F )
 #r3_lib_3d.r3 'name 'words 'info
 #name "r3/lib/3dgl.r3"
-#words  "mat>" "matini" "matinim" "mpush" "mpushi" "mpop" "nmpop" "getfmat" "gettfmat" "midf" "mcpyf" "mcpyft" "mperspective" "mortho" "mlookat" "mtran" "mtranx" "mtrany" "mtranz" "mrotx" "mroty" "mrotz" "mscale" "mscalei" "muscalei" "transform" "transformr" "ztransform" "oztransform" "oxyztransform" "matinv" "calcrot" "makerot" "matqua" "calcvrot" "mrotxyz" "mrotxyzi" "mcpy" "m*" "mm*" "mmi*" "mview" "mproj" "mtra" "mrot" "mpos" "mrpos" "packrota" "+rota" "pack21" "+p21" 0
-#info ( $80 $0 $1F $0 $0 $0 $1F $1 $0 $1F $1F $1F $4C $6A $3D $3D $1F $1F $1F $1F $1F $1F $3D $3D $1F $30 $30 $3E $1 $3 $0 $3D $30 $1F $3D $3D $3D $1F $0 $1F $1F $3D $4C $3D $3D $3D $4C $3E $2F $3E $2F )
+#words  "mat>" "matini" "matinim" "mpush" "mpushi" "mpop" "nmpop" "getfmat" "gettfmat" "midf" "mcpyf" "mcpyft" "mperspective" "mortho" "mlookat" "mtran" "mtranx" "mtrany" "mtranz" "mrotx" "mroty" "mrotz" "mscale" "mscalei" "muscalei" "transform" "transformr" "ztransform" "oztransform" "oxyztransform" "matinv" "mcpy" "m*" "mm*" "mmi*" "mview" "mproj" "mtra" "mrot" "mpos" "mrpos" "packrota" "+rota" "pack21" "+p21" 0
+#info ( $80 $0 $1F $0 $0 $0 $1F $1 $0 $1F $1F $1F $4C $6A $3D $3D $1F $1F $1F $1F $1F $1F $3D $3D $1F $30 $30 $3E $1 $3 $0 $1F $0 $1F $1F $3D $4C $3D $3D $3D $4C $3E $2F $3E $2F )
 #r3_lib_3dgl.r3 'name 'words 'info
 #name "r3/lib/base64.r3"
 #words  "base64decode" "base64encode" 0
@@ -19,8 +19,8 @@
 #info ( $10 $2F $2F $2F $2F $3E $2F $3E $2F $2F $30 $3E $3E $12 $30 $30 $12 $30 $30 $30 $30 $2F $2F $3E $10 $10 $10 $10 )
 #r3_lib_color.r3 'name 'words 'info
 #name "r3/lib/console.r3"
-#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".flush" ".cl" ".type" ".emit" ".uemit" ".cr" ".sp" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".nsp" ".nch" ".ndel" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".Bold" ".NBold" ".Dim" ".Ital" ".NItal" ".Under" ".NUnder" ".Blink" ".Rev" ".NRev" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" "pad" ".ukey" ".input" ".printe" "strcpybuf" "r3run" 0
-#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $1F $0 $0 $1F $1F $1F $0 $1F $1F $1F $2E $1F $2E $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1 $0 $0 $80 $11 $0 $1F $1F $1F )
+#words  "[ESC]" "[ENTER]" "[BACK]" "[TAB]" "[DEL]" "[INS]" "[UP]" "[DN]" "[RI]" "[LE]" "[PGUP]" "[PGDN]" "[HOME]" "[END]" "[SHIFT+TAB]" "[SHIFT+DEL]" "[SHIFT+INS]" "[SHIFT+UP]" "[SHIFT+DN]" "[SHIFT+RI]" "[SHIFT+LE]" "[SHIFT+PGUP]" "[SHIFT+PGDN]" "[SHIFT+HOME]" "[SHIFT+END]" "[F1]" "[F2]" "[F3]" "[F4]" "[F5]" "[F6]" "[F7]" "[F8]" "[F9]" "[F10]" "[F11]" "[F12]" ".flush" ".cl" ".type" ".emit" ".uemit" ".cr" ".sp" ".write" ".print" ".println" ".^[" ".[w" ".[p" ".nsp" ".nch" ".ndel" ".rep" ".fwrite" ".fprint" ".home" ".cls" ".at" ".col" ".eline" ".escreen" ".escreenup" ".showc" ".hidec" ".blc" ".unblc" ".savec" ".restorec" ".ovec" ".insc" ".blockc" ".underc" ".alsb" ".masb" ".scrolloff" ".scrollon" ".Black" ".Red" ".Green" ".Yellow" ".Blue" ".Magenta" ".Cyan" ".White" ".Blackl" ".Redl" ".Greenl" ".Yellowl" ".Bluel" ".Magental" ".Cyanl" ".Whitel" ".fc" ".BBlack" ".BRed" ".BGreen" ".BYellow" ".BBlue" ".BMagenta" ".BCyan" ".BWhite" ".BBlackl" ".BRedl" ".BGreenl" ".BYellowl" ".BBluel" ".BMagental" ".BCyanl" ".BWhitel" ".bc" ".fgrgb" ".bgrgb" ".fg32" ".bg32" ".Bold" ".NBold" ".Dim" ".Ital" ".NItal" ".Under" ".NUnder" ".Blink" ".Rev" ".NRev" ".Hidden" ".Strike" ".Reset" "getch" "waitesc" "waitkey" "pad" ".ukey" ".input" ".printe" "strcpybuf" "r3run" 0
+#info ( $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $1 $0 $0 $2E $1F $1F $0 $0 $1F $1F $1F $0 $1F $1F $1F $2E $1F $2E $1F $1F $0 $0 $2E $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $3D $3D $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1 $0 $0 $80 $11 $0 $1F $1F $1F )
 #r3_lib_console.r3 'name 'words 'info
 #name "r3/lib/core.r3"
 #words  "ms" "msec" "load" "save" "append" "delete" "filexist" "fileisize" "fileijul" "fileinfo" "filecreatetime" "filelastactime" "filelastwrtime" "filetimeD" "FNAME" "FDIR" "FSIZEF" "FCREADT" "FLASTDT" "FWRITEDT" "findata" "ffirst" "fnext" "date.d" "time.ms" "date.dw" "time.s" "date.m" "time.m" "date.y" "time.h" "time" "date" "sysdate" "sinfo" "pinfo" "sys" "sysnew" "sysdebug" 0
@@ -56,7 +56,7 @@
 #r3_lib_math.r3 'name 'words 'info
 #name "r3/lib/mem.r3"
 #words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" 0
-#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $10 $10 )
+#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $F $0 $0 )
 #r3_lib_mem.r3 'name 'words 'info
 #name "r3/lib/memavx.r3"
 #words  "memcpy_rgb3f" "memcpy_bgr3f" "memcpy_rgbf" "memcpy_f32p16" "memcpy_p16f32" "memcpy_avx" 0
@@ -79,8 +79,8 @@
 #info ( $80 $1 $80 $2E $1 $10 $2F $1 $10 $2F $1 $1 )
 #r3_lib_rand.r3 'name 'words 'info
 #name "r3/lib/sdl2.r3"
-#words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_SetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderCopyEx" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_CreateRGBSurfaceWithFormat" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_UpdateYUVTexture" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLdfullsw" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLeventR" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
-#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $79 $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $10 $2E $80 $2F $0 $0 $10 $11 $10 $10 )
+#words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_SetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_CreateRGBSurfaceWithFormat" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_UpdateYUVTexture" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLdfullsw" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLeventR" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
+#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $10 $2E $80 $2F $0 $0 $10 $11 $10 $10 )
 #r3_lib_sdl2.r3 'name 'words 'info
 #name "r3/lib/sdl2gfx.r3"
 #words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "fround" "round" "fcircle" "circle" "polyop" "polyline" "triangle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
@@ -128,11 +128,11 @@
 #r3_lib_str.r3 'name 'words 'info
 #name "r3/lib/trace.r3"
 #words  "<<trace" "<<traceh" "<<memdump" "<<memdumpc" "clearlog" "filelog" "<<memmap" 0
-#info ( $50 $50 $2E $2E $0 $1F $1F )
+#info ( $70 $70 $1E $1E $0 $F $F )
 #r3_lib_trace.r3 'name 'words 'info
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $6E $7E $C $6C $6D $31 )
+#info ( $1F $1F $2E $2E $1E $1E $2C $1C $1D $71 )
 #r3_lib_vdraw.r3 'name 'words 'info
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -148,11 +148,11 @@
 #r3_lib_webcam.r3 'name 'words 'info
 #name "r3/util/arr16.r3"
 #words  "p.ini" "p.clear" "p.cnt" "p.adr" "p.nro" "p!+" "p!" "p.draw" "p.drawo" "p.del" "p.mapv" "p.mapd" "p.map2" "p.sort" "p.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $40 $40 $2E $6E $6E $5E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $20 $20 $2E $4E $4E $3E $2F $2F )
 #r3_util_arr16.r3 'name 'words 'info
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $60 $60 $2E $10 $2E $E $E $7E $2F $2F )
+#info ( $2E $1F $10 $2F $2F $2F $10 $10 $10 $2E $10 $2E $E $2E $7E $2F $2F )
 #r3_util_arr8.r3 'name 'words 'info
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
@@ -172,11 +172,11 @@
 #r3_util_datetime.r3 'name 'words 'info
 #name "r3/util/db2.r3"
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
-#info ( $80 $2F $0 $10 $F $F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
+#info ( $80 $3F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
 #r3_util_db2.r3 'name 'words 'info
 #name "r3/util/dbtxt.r3"
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
-#info ( $80 $2F $0 $10 $F $F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
+#info ( $80 $3F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3E )
 #r3_util_dbtxt.r3 'name 'words 'info
 #name "r3/util/dlgcol.r3"
 #words  "colord" "color!" "dlgColor" "dlgColorIni" "xydlgColor!" 0
@@ -192,7 +192,7 @@
 #r3_util_dlist.r3 'name 'words 'info
 #name "r3/util/filedirs.r3"
 #words  "uiDirs" "uiFiles" "flcpy" "flTreePath" "FlGetFiles" "flScanDir" "flScanFullDir" "flOpenFullPath" "flOpenSearch" "flCloseAll" 0
-#info ( $80 $80 $2E $10 $6F $5E $5F $10 $11 $0 )
+#info ( $80 $80 $2E $10 $2F $2E $1F $10 $11 $0 )
 #r3_util_filedirs.r3 'name 'words 'info
 #name "r3/util/hash2d.r3"
 #words  "H2d.ini" "H2d.clear" "H2d.list" "checkmax" "h2d+!" "h2d!" 0
@@ -232,7 +232,7 @@
 #r3_util_pcfont.r3 'name 'words 'info
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $74 $74 $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $5F $5F $5C )
 #r3_util_penner.r3 'name 'words 'info
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
@@ -248,7 +248,7 @@
 #r3_util_sort.r3 'name 'words 'info
 #name "r3/util/sortradix.r3"
 #words  "radixsort32" "radixsort16" "radixsort64" 0
-#info ( $2E $2E $2E )
+#info ( $E $E $E )
 #r3_util_sortradix.r3 'name 'words 'info
 #name "r3/util/sortradixm.r3"
 #words  "radixsort" "radixsortm" 0
@@ -271,7 +271,7 @@
 #info ( $80 $80 $1F $1F $2E $2E $12 $1F $1F $1F $1F $2E $1F $3D $2F $2F $14 )
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/tui.r3"
-#words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "fhome" "uikey" "exit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" "onTuiResize" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "xwriten!" "xwriten.reset" "uiNindxn" "tuListN" "flVisibleIndex" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" "pal.dark" "pal!" "cbg" "cfg" "bg0" "bg1" "bg2" "bg3" "fTx" "fMu" "fDi" "fPr" "fBl" "fPu" "fGr" "fRd" "fYe" "fcr" ".lw" ".cw" ".rw" ".nd" ".nh" ".nf" ".nb" "pan" ".lines" "tcols" "cell" "row" "hdr" "tbw" "tbtop" "tbsep" "tbbot" "tbrowc" "tbrow" "tbhdr" "flxRoot" "flxC" "tuDlg" "tuDlgEnd" 0
+#words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "fhome" "uikey" "tuiexit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" "onTuiResize" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "xwriten!" "xwriten.reset" "uiNindxn" "tuListN" "flVisibleIndex" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" "pal.dark" "pal!" "cbg" "cfg" "bg0" "bg1" "bg2" "bg3" "fTx" "fMu" "fDi" "fPr" "fBl" "fPu" "fGr" "fRd" "fYe" "fcr" ".lw" ".cw" ".rw" ".nd" ".nh" ".nf" ".nb" "pan" ".lines" "tcols" "cell" "row" "hdr" "tbw" "tbtop" "tbsep" "tbbot" "tbrowc" "tbrow" "tbhdr" "flxRoot" "flxC" "tuDlg" "tuDlgEnd" 0
 #info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $2E $3E $1F $0 $0 $0 $0 $6A $0 $0 $4D $4D $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $20 $2E $2E $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $3E $2F $2F $0 $2E $79 $0 )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
@@ -288,7 +288,7 @@
 #r3_util_utfg.r3 'name 'words 'info
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "timer<" "timer." "timer+" "timer-" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0
-#info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $60 $6B $7A $6B $7A $6B $7A $6B $7A $2F $3E $3E $4D $4D $5C $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
+#info ( $80 $80 $80 $80 $80 $0 $0 $10 $10 $0 $1F $0 $6B $7A $6B $7A $6B $7A $6B $7A $2F $3E $3E $4D $4D $5C $1F $1F $11 $11 $13 $4D $13 $4D $2E $11 $2F $1 $3E $2E $10 $10 $1F )
 #r3_util_varanim.r3 'name 'words 'info
 #name "r3/util/vscreen.r3"
 #words  "vscreen" "vscreenf" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0

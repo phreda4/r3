@@ -60,8 +60,8 @@
 :botones
 	tuwin $1 " Options " .wtitle
 	1 1 flpad |1 b.hgrid
-	5 'fh ! 'exit "Salir" tuBtn | 'ev "" --
-	1 'fy +! 'exit "Coso" tuBtn | 'ev "" --
+	5 'fh ! 'tuiexit "Salir" tuBtn | 'ev "" --
+	1 'fy +! 'tuiexit "Coso" tuBtn | 'ev "" --
 	;
 	
 :side
@@ -98,7 +98,7 @@
 	1 1 flpad 
 	tuEditCode
 	uiKey
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	[f1] =? ( show256 )
 	drop
 	;

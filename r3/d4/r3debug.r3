@@ -31,7 +31,7 @@
 	
 	tuDlgEnd
 	uikey
-	[esc] =? ( exit )
+	[esc] =? ( tuiexit )
 	drop ;
 
 |-------------------------------------
@@ -419,9 +419,9 @@
 	drop ;
 
 :keyctrl
-	[esc] =? ( exit ) 
-	3 =? ( exit )	| CTRL+C
-	4 =? ( exit )	| CTRL+D
+	[esc] =? ( tuiexit ) 
+	3 =? ( tuiexit )	| CTRL+C
+	4 =? ( tuiexit )	| CTRL+D
 	6 =? ( chgfmt )	| CTRL+F
 	$b =? ( 'helpdlg onTui )	|c+K 
 	$d =? ( changemem ) 		| c+M
@@ -441,7 +441,7 @@
 	$4D =? ( panelMemSize 7 xor 'panelMemSize ! )  | M memory panel
 	$4E =? ( stepout )		| N step over (next)`
 	$4F =? ( *>stepu )		| O step out
-	$51 =? ( exit ) 		| Q uit
+	$51 =? ( tuiexit ) 		| Q uit
 	$52 =? ( playmode )		| R un
 	$53 =? ( *>step )		| S
 	drop

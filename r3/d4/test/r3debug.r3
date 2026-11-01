@@ -293,7 +293,7 @@
 :checkerror
 	vmState 
 	$fe <? ( drop ; ) 
-	|$fe =? ( drop exit ; ) 
+	|$fe =? ( drop tuiexit ; ) 
 	drop
 	runtimerror
 	;
@@ -441,7 +441,7 @@
 	showbreakpoint	
 	
 	uiKey
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	[f3] =? ( breakpoint )
 	[f4] =? ( viewmemhere ) 
 	[f5] =? ( playmode )
@@ -464,7 +464,7 @@
 	
 	$4E =? ( stepout )		| N step over (next)`
 	$4F =? ( *>stepu )		| O step out
-	$51 =? ( exit ) 		| Q uit
+	$51 =? ( tuiexit ) 		| Q uit
 	$52 =? ( runtocursor )	| R un to cursor
 	$53 =? ( *>step )		| S
 

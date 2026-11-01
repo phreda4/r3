@@ -106,8 +106,8 @@
 	0 'wid ! 0 'rflag !
 	;
 
-::exitui
-::exit	rflag $4 or 'rflag ! ; 
+::tuiexit | exit from tui
+rflag $4 or 'rflag ! ; 
 
 :tucl	rflag $2 nand 'rflag ! ;	| exec action is for every widget
 :tuX!	rflag $2 or 'rflag ! ;	| exec action need (click or enter)

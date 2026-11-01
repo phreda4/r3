@@ -156,7 +156,7 @@
 			d@+ fp2f a!+ 
 			swap ) drop 
 		matini
-		'rotat matqua
+		|'rotat matqua
 		'trans @+ swap @+ swap @ mtran		
 |		'scale @+ swap @+ swap @ mscale
 		|matinv
@@ -209,7 +209,7 @@
 		0 ( iqm.pose <? 
 			getpose
 			matini
-			'rotat  matqua 
+			|'rotat  matqua 
 			'trans @+ swap @+ swap @ mtran
 			'scale @+ swap @+ swap @ mscale
 			matparent		

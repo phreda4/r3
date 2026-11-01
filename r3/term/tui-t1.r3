@@ -118,15 +118,15 @@
 	flxRest
 	tuDlgEnd	
 	uikey 
-	[esc] =? ( exit ) 
-	$d =? ( 1 'salio ! exit ) 
+	[esc] =? ( tuiexit ) 
+	$d =? ( 1 'salio ! tuiexit ) 
 	drop
 	;
 	
 :dialogexit
 	0 'salio !
 	'exitdlg onTui
-	salio 1? ( exit ) drop
+	salio 1? ( tuiexit ) drop
 	;
 	
 :demo

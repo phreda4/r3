@@ -90,7 +90,7 @@
 	tuwin $1 " Options " .wtitle
 	1 1 flpad 
 	5 'fh ! 
-	'exit "Salir" tuBtn | 'ev "" --
+	'tuiexit "Salir" tuBtn | 'ev "" --
 	|1 'fy +! 
 	[ 1 'v3 +! ; ] "Coso" tuBtn | 'ev "" --
 	.cr
@@ -122,7 +122,7 @@ para ver como se comporta
 cuando cambia de tamanio"
 	$11 tuText
 	uiKey
-	[esc] =? ( exit ) 
+	[esc] =? ( tuiexit ) 
 	drop
 	;
 	

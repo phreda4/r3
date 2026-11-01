@@ -303,109 +303,6 @@
 #cox #coy #coz
 #six #siy #siz
 
-::calcrot | rx ry rz -- ; keep the sines and cosines of three angles (1.0 = full turn) for makerot and mrotxyzi
-	sincos 'coz ! 'siz !
-	sincos 'coy ! 'siy !
-	sincos 'cox ! 'six !
-	;
-
-::makerot | x y z -- x' y' z' ; rotate a vector with the angles of calcrot (BUG: calcrot 0 0 0 then makerot of (1,2,3) gives (1,-3,2), it is not a plain rotation)
-	-rot | z x y
-	over cox *. over six *. +	| z x y x'
-	rot six *. rot cox *. - 	| z x' y'
-	swap rot 					| y' x' z
-	over coy *. over siy *. +	| y' x' z x''
-	rot siy *. rot coy *. -		| y' x'' z'
-	rot							| x'' y' z'
-	over coz *. over siz *. +	|  x'' y' z' y''
-	rot siz *. rot coz *. -		| x'' y'' z''
-	;
-
-#m11 #m12 #m13
-#m21 #m22 #m23
-#m31 #m32 #m33
-
-::matqua | 'quat -- ; make the current matrix the rotation of the quaternion at 'quat (x y z w), no translation; the quaternion is normalized in place
-	dup q4nor
-	@+ dup dup + 'cox ! 'six !
-	@+ dup dup + 'coy ! 'siy !
-	@+ dup dup + 'coz ! 'siz !
-	@ | w
-	dup cox *. 'm31 ! dup coy *. 'm32 ! coz *. 'm33 !
-	siy coy *. 'm21 ! siy coz *. 'm22 ! siz coz *. 'm23 !
-	six cox *. 'm11 ! six coy *. 'm12 ! six coz *. 'm13 !
-	mat> >a
-	1.0 m21 m23 + - a!+
-	m12 m33 + a!+
-	m13 m32 - a!+
-	0 a!+
-    m12 m33 - a!+
-    1.0 m11 m23 + - a!+
-    m22 m31 + a!+
-    0 a!+
-    m13 m32 + a!+
-    m22 m31 - a!+
-    1.0 m11 m21 + - a!+
-    0 a!+
-	0 a!+ 0 a!+ 0 a!+ 1.0 a!
-	;
-	
-::calcvrot | rx ry rz -- ; compute the 3x3 rotation of three angles (1.0 = full turn) into internal variables, for mrotxyz
-	sincos 'coz ! 'siz !
-	sincos 'coy ! 'siy !
-	sincos 'cox ! 'six !
-    coz coy *. 'm11 !
-    cox siz *. coy *. six siy *. + 'm12 !
-    six siz *. coy *. cox siy *. - 'm13 !
-	siz neg 'm21 !
-    cox coz *. 'm22 !
-    six coz *. 'm23 !
-    coz siy *. 'm31 !
-    cox siz *. siy *. six coy *. - 'm32 !
-    six siz *. siy *. cox coy *. + 'm33 !
-	;
-
-::mrotxyz | x y z -- ; rotate the current matrix by three angles with calcvrot (BUG: it moves the matrix pointer as if cells had 4 bytes, the result is wrong)
-	calcvrot
-	mat> >a
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a!+ 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
-	a@+ a@+ a@+ -12 a+
-	pick2 m11 *. pick2 m21 *. + over m31 *. + a!+
-	pick2 m12 *. pick2 m22 *. + over m32 *. + a!+
-	rot m13 *. rot m23 *. + swap m33 *. + a! 4 a+
-	;
-
-::mrotxyzi | x y z -- ; rotate the current matrix by three angles with calcrot (BUG: same 4 byte cell problem, the result is wrong)
- 	calcrot
-	mat> >a
-	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-   	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a! -28 a+
-   	a@ a> 16 + @ a> 32 + @
-	pick2 m11 *. pick2 m12 *. + over m13 *. + a! 16 a+
-	pick2 m21 *. pick2 m22 *. + over m23 *. + a! 16 a+
-	rot m31 *. rot m32 *. + swap m33 *. + a!
-	;
 
 |-- mat mult	
 ::mcpy | 'mat -- ; copy the current matrix (16 cells) to 'mat
@@ -447,7 +344,7 @@
 
 ::mproj | near far cot aspect -- ; mpush, mperspective and m*: pushes the projection and the product previous * projection (the arguments are the ones of mperspective, not fov asp zn zf)
     mpush      | Duplica la matriz (View*Model) al tope
-    mperspective | Genera la Proyección en el tope
+    mperspective | Genera la Proyeccion en el tope
     m* | Multiplica: (View*Model) * Proj -> MVP
 ;		
 

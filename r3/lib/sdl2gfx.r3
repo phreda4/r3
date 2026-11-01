@@ -31,9 +31,9 @@
 ::point | x y -- ; draw a point
 	SDLRenderer -rot SDL_RenderDrawPoint ;
 
-::getpixel | x y -- rgb ; color $RRGGBB of the pixel (BUG: it always returns 0, the read rectangle gets w = 65537 and h = 0 because it stores $10001 instead of $100000001)
-	swap 'rec d!+ d!+ $10001 swap !
-	SDLrenderer 'rec $16362004 'vert 1 SDL_RenderReadPixels 
+::getpixel | x y -- rgb ; color $RRGGBB of the pixel 
+	swap 'rec d!+ d!+ $100000001 swap !
+	SDLrenderer 'rec $16362004 'vert 1 SDL_RenderReadPixels
 	vert $ffffff and ;
 
 ::line | x1 y1 x2 y2 -- ; draw a line
@@ -162,7 +162,7 @@
 	]ba ;
 	
 |-----------------
-:rect
+:irect
 	xm over - ym pick3 + xm pick3 + lineH
 	xm over - ym pick3 - xm pick3 + lineH
 	xm pick2 + ym pick2 - ym pick3 + lineV
@@ -173,7 +173,7 @@
 	'ym ! 'xm !
 	ab[
 	3 over 2* - >b |'d !
-	0 ( rect over <=? stepd 1+ ) 
+	0 ( irect over <=? stepd 1+ ) 
 	]ba
 	xm over - ym pick3 -
 	2swap 2* swap 2*
@@ -198,7 +198,7 @@
 :polyxy
 	i2fp 32 << swap i2fp $ffffffff and or 'ym ! ;
 
-::polyop | x y -- ; start a filled polygon with its first point (uses the current draw color); do not draw rectangles until the last polyline: they share the buffer
+::polyop | x y -- ; start a filled polygon with its first point 
 	polyxy
 	SDLrenderer 'rec dup 1+ dup 1+ dup 1+ SDL_GetRenderDrawColor
 	'vert >a
@@ -403,7 +403,7 @@
 ::ssnotint | -- ; no tint for the ssprite words ($ffffffff)
 	$ffffffff sstint ;
 
-::sspritewh | ssprite -- w h ; size of a frame (the original comment said h w, but w is deeper)
+::sspritewh | ssprite -- w h ; size of a frame 
 	8 + @ dup $ffffffff and swap 32 >>> ;
 	
 ::ssprite | x y n ssprite -- ; draw frame n of the spritesheet centered at x y

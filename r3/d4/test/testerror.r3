@@ -44,7 +44,7 @@
 	
 	sdlredraw
 	sdlkey
-	>esc< =? ( exit )
+	>esc< =? ( tuiexit )
 	<f1> =? ( +enemy )
 	drop
 	;

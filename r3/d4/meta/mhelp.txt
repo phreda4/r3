@@ -189,12 +189,6 @@ ztransform | x y z -- z ; only the z of transform
 oztransform | -- z ; z of the transformed origin (m11)
 oxyztransform | -- x y z ; the transformed origin (m3 m7 m11)
 matinv | -- ; push the inverse of the current 4x4 matrix as a new matrix; nothing is pushed if it has no inverse
-calcrot | rx ry rz -- ; keep the sines and cosines of three angles (1.0 = full turn) for makerot and mrotxyzi
-makerot | x y z -- x' y' z' ; rotate a vector with the angles of calcrot (BUG: calcrot 0 0 0 then makerot of (1,2,3) gives (1,-3,2), it is not a plain rotation)
-matqua | 'quat -- ; make the current matrix the rotation of the quaternion at 'quat (x y z w), no translation; the quaternion is normalized in place
-calcvrot | rx ry rz -- ; compute the 3x3 rotation of three angles (1.0 = full turn) into internal variables, for mrotxyz
-mrotxyz | x y z -- ; rotate the current matrix by three angles with calcvrot (BUG: it moves the matrix pointer as if cells had 4 bytes, the result is wrong)
-mrotxyzi | x y z -- ; rotate the current matrix by three angles with calcrot (BUG: same 4 byte cell problem, the result is wrong)
 mcpy | 'mat -- ; copy the current matrix (16 cells) to 'mat
 m* | -- ; multiply the two top matrices (previous * current) and push the result as a new matrix
 mm* | 'mat -- ; push current * 'mat as a new matrix
@@ -216,7 +210,7 @@ pasteclipboard | 'mem --
 swapcolor | color -- swapcolor ; swap the red and blue channels of a 32-bit color ($AARRGGBB to $AABBGGRR)
 colavg | a b -- c ; per-byte average of two 32-bit colors, rounded up
 col50% | c1 c2 -- c ; 50% mix of two 24-bit colors
-col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors)
+col25% | c1 c2 -- c ; 75% of c1 plus 25% of c2 (24-bit colors)
 col33% | c1 c2 -- c ; roughly 67% of c1 plus 33% of c2 (24-bit colors), made with bit masks
 colmix | c1 c2 a -- c ; mix 24-bit colors: c1 + (c2-c1)*a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
 colmul | c1 a -- c ; 24-bit color scaled by a/256, a = 0..255; the result is in the low 24 bits (upper bits have garbage)
@@ -224,7 +218,7 @@ colmix4 | c1 c2 a -- c ; like colmix for 12-bit colors $RGB: a = 0..255 (only it
 colmul4 | c1 a -- c ; like colmul for 12-bit colors $RGB: a = 0..15; the result is in the low 12 bits
 diffrgb2 | a b -- v ; sum of the absolute differences of the red, green and blue channels of two 24-bit colors
 yuv2rgb | y u v -- r g b ; video YUV (y 16..235, u v around 128) to RGB 0..255
-yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB (same green bug)
+yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB
 hsv2rgb | h s v -- rgb ; h s v in fixed point 0..1.0 (h: 1.0 is a full circle) to a packed color $RRGGBB
 rgb2hsv | argb -- h s v ; packed color to h 0..1.0, s 0..1.0 and v = largest channel << 8 (0..$ff00); alpha is ignored
 rgb2ycocg | r g b -- y co cg ; reversible YCoCg-R transform of 0..255 values (co and cg can be negative)
@@ -354,6 +348,8 @@ bgr2rgb | BGR -- RGB ; swap the red and blue channels of a 24-bit color (the alp
 .bc | n -- ; set the background color n of the 256 color palette
 .fgrgb | r g b -- ; set the foreground true color (each 0..255)
 .bgrgb | r g b -- ; set the background true color (each 0..255)
+.fg32 | rgb -- ; set the foreground true color rrggbb
+.bg32 | rgb -- ; set the background true color rrggbb
 .Bold | -- ; text attribute: bold
 .NBold | -- ; text attribute: bold off
 .Dim | -- ; text attribute: dim
@@ -695,7 +691,6 @@ SDL_DestroyRenderer | renderer -- ; free the renderer
 SDL_UpdateTexture | texture 'rect 'pixels pitch -- result ; update an area of the texture (0 = all) with pixels, pitch = bytes per row; 0 if ok
 SDL_RenderClear | renderer -- ; clear the render target with the draw color
 SDL_RenderCopy | renderer texture 'src 'dst -- ; copy the rectangle 'src of the texture to the rectangle 'dst of the target (0 = whole)
-SDL_RenderCopyEx | renderer texture 'src 'dst angle 'center flip -- ; like SDL_RenderCopy with rotation (angle in degrees, a double in C; with sys7 it goes in an integer register: check it), center point (0 = middle) and flip
 SDL_RenderPresent | renderer -- ; show what was drawn
 SDL_CreateTextureFromSurface | renderer surface -- texture ; create a texture from a surface
 SDL_CreateRGBSurfaceWithFormatFrom | 'pixels w h depth pitch format -- surface ; surface that uses existing pixels
@@ -786,7 +781,7 @@ color | rgb -- ; set the draw color from $RRGGBB (alpha 255)
 colorA | argb -- ; set the draw color from $AARRGGBB
 cls | rgb -- ; clear the target with the color $RRGGBB
 point | x y -- ; draw a point
-getpixel | x y -- rgb ; color $RRGGBB of the pixel (BUG: it always returns 0, the read rectangle gets w = 65537 and h = 0 because it stores $10001 instead of $100000001)
+getpixel | x y -- rgb ; color $RRGGBB of the pixel
 line | x1 y1 x2 y2 -- ; draw a line
 lineH | x1 y x2 -- ; horizontal line from x1 to x2 (both included) at y
 lineV | x y1 y2 -- ; vertical line from y1 to y2 (both included) at x
@@ -798,7 +793,7 @@ fround | r x y w h -- ; filled rectangle x y w h with rounded corners of radius 
 round | r x y w h -- ; outline of a rectangle x y w h with rounded corners of radius r
 fcircle | r x y -- ; filled circle of radius r centered at x y
 circle | r x y -- ; circle outline of radius r centered at x y
-polyop | x y -- ; start a filled polygon with its first point (uses the current draw color); do not draw rectangles until the last polyline: they share the buffer
+polyop | x y -- ; start a filled polygon with its first point
 polyline | x y -- ; add a point to the polygon: from the third point on each new point draws a filled triangle with the first point and the previous one
 triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
 image | x y img -- ; draw the texture at x y with its own size
@@ -820,7 +815,7 @@ ssload | w h "file" -- ssprite ; load an image as a spritesheet of frames w x h 
 sscnt | ssprite -- ssprite n ; number of frames (only right after ssload, while here has not changed)
 sstint | argb -- ; tint color $AARRGGBB (with alpha) used by the ssprite words
 ssnotint | -- ; no tint for the ssprite words ($ffffffff)
-sspritewh | ssprite -- w h ; size of a frame (the original comment said h w, but w is deeper)
+sspritewh | ssprite -- w h ; size of a frame
 ssprite | x y n ssprite -- ; draw frame n of the spritesheet centered at x y
 sspriter | x y ang n ssprite -- ; draw frame n centered at x y rotated by ang (1.0 = full turn)
 sspritez | x y zoom n ssprite -- ; draw frame n centered at x y with zoom (fixed point, 1.0 = normal size)
@@ -2277,7 +2272,7 @@ fh%
 flpad | x y --
 fhome | -- ; arriba-izquierda del panel
 uikey | tecla
-exit
+tuiexit | exit from tui
 tuX? | ask for acion (local)
 tuR! | redraw again, some changes
 tuC! | cursor ON

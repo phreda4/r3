@@ -14,8 +14,8 @@
 ::col50% | c1 c2 -- c ; 50% mix of two 24-bit colors
 	$fefefe and swap $fefefe and + 1 >> ;
 
-::col25% | c1 c2 -- c ; 25% of c1 plus 75% of c2 (24-bit colors)
-	dup >r col50% r> col50% ;
+::col25% | c1 c2 -- c ; 75% of c1 plus 25% of c2 (24-bit colors)
+	over col50% col50% ;
 
 ::col33% | c1 c2 -- c ; roughly 67% of c1 plus 33% of c2 (24-bit colors), made with bit masks
 	$555555 and swap $aaaaaa and or ;
@@ -59,7 +59,7 @@
 	pick2 16 - 76283 * pick2 128 - 25624 *  - over 128 - 53281 * - 16 >> bound >r
 	nip 128 - 104595 * swap 16 - 76283 * + 16 >> bound r> r> ;
 
-::yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB (same green bug)
+::yuv32 | y u v -- col ; like yuv2rgb but returns the packed color $RRGGBB
 	pick2 16 - 76283 * pick2 128 - 132252 * + 16 >> bound >r
 	pick2 16 - 76283 * pick2 128 - 25624 * - over 128 - 53281 * - 16 >> bound 8 << $ff00 and >r
 	nip 128 - 104595 * swap 16 - 76283 * + 16 >> bound 16 << $ff0000 and r> or r> or ;

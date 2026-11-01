@@ -51,7 +51,7 @@
 	fMu "PHREDA - R3Forth" .cw
 	tuDlgEnd
 	uikey
-	[esc] =? ( exit )
+	[esc] =? ( tuiexit )
 	drop ;
 	
 :banner
@@ -155,7 +155,7 @@
 
 : main ;"
 |===================================
-	
+		
 :filenew
 	8 .bc 15 .fc 
 	0 rows 1- .at 
@@ -178,6 +178,32 @@
 	reloadir
 	loadm
 	tuR! ;
+	
+	
+:filebuild
+	fuente c@ 0? ( drop ; ) drop
+|	savem
+	.masb .reset .cls
+	"Building" .println
+|	"Code: " .write 'filename .write .cr .cr
+|	cntinc " includes:%d |" .print
+|	cntdef " words:%d |" .print
+|	cnttok " tokens:%d" .println
+	.cr .cr
+	cols .hline
+	"[f2] Win64exe [f3] Plain " .write .cr
+	cols .hline
+	.reset .cr
+	getch 
+|	[f2] =? ( filecompile )
+|	[f4] =? ( filecompileo )
+	
+|	[f3] =? ( fileplaino ) 
+|	[f5] =? ( fileplain ) | dev
+	
+	drop
+	.alsb
+	;	
 	
 :filesearch
 	|8 .bc 15 .fc 
@@ -255,10 +281,11 @@
 	bg3 fhome
 	fPr " ^R" .write fTx "un" .write 
 	fPr " ^E" .write fTx "dit" .write 
-	fPr " ^D" .write fTx "ebug" .write 	
-	fPr " ^I" .write fTx "mm" .write 
+	fPr " ^D" .write fTx "ebug " .write 	
 	fPr " ^P" .write fTx "rof" .write 
-	fPr " ^N" .write fTx "ew" .write 
+	fPr " ^B" .write fTx "uild" .write 	
+	fPr " ^N" .write fTx "ew |" .write 
+	fPr " ^I" .write fTx "mm" .write 	
 	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	
@@ -273,21 +300,22 @@
 	[f6] =? ( fileedit )
 	[ENTER] =? ( filerun )
 | ctrl
+	$2 =? ( filebuild )	| ctrl+d Debug
 	$4 =? ( filedebug )	| ctrl+d Debug
 	$5 =? ( fileedit )	| ctrl+e Edit
 	$9 =? ( r3repl )	| ctrl+i Imm | tab
 	$10 =? ( fileprof )	| ctrl+p Prof
 	$8 =? ( 'helpdlg onTui ) | ctrl+h Help | back
 	$e =? ( filenew )	| ctrl+n New
-	$11 =? ( exit )		| ctrl+q quit
+	$11 =? ( tuiexit )		| ctrl+q quit
 	$12 =? ( filerun )	| ctrl+r run
 	$13 =? ( filesearch )	| ctrl+s search
 	$18 =? ( filedelete ) | ctrl+x delete
 	$20 =? ( fileedit )		| spc
 	$2f =? ( filesearch )	| /
 	
-	$3 =? ( exit ) 		| ctrl+c exit
-	[esc] =? ( exit ) 
+	$3 =? ( tuiexit ) 		| ctrl+c exit
+	[esc] =? ( tuiexit ) 
 
 	toUpp
 	$44 =? ( filedebug ) | Debug

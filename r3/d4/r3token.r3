@@ -44,12 +44,21 @@
 
 |-------------------------------------------
 |-------------------------------- includes
+| Target of the generated code: lines |WIN| |LIN| |MAC| |RPI| are active only for the target.
+| osgen 0 WIN, 1 LIN, 2 MAC, 3 RPI. External variable: set it before r3load to compile
+| for another system. The default is the system where this compiler runs.
+##osgen
+|WIN|	0
+|LIN|	1
+|MAC|	2
+|RPI|	3
+
 :iscom
 	1+
-|WIN|	"WIN|" =pre 1? ( drop 4 + ; ) drop | Compila para WINDOWS
-|LIN|	"LIN|" =pre 1? ( drop 4 + ; ) drop | Compila para LINUX
-|MAC|	"MAC|" =pre 1? ( drop 4 + ; ) drop | Compila para MAC
-|RPI|	"RPI|" =pre 1? ( drop 4 + ; ) drop | Compila para RPI
+	"WIN|" =pre 1? ( drop osgen 0 =? ( drop 4 + ; ) ) drop | Compila para WINDOWS
+	"LIN|" =pre 1? ( drop osgen 1 =? ( drop 4 + ; ) ) drop | Compila para LINUX
+	"MAC|" =pre 1? ( drop osgen 2 =? ( drop 4 + ; ) ) drop | Compila para MAC
+	"RPI|" =pre 1? ( drop osgen 3 =? ( drop 4 + ; ) ) drop | Compila para RPI
 	"MEM" =pre 1? ( drop				| MEM 640
 		4 +
 		trim str>nro 'switchmem !
