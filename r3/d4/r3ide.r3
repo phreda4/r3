@@ -6,13 +6,9 @@
 |^r3/lib/trace.r3
 
 ^r3/d4/r3token.r3
-^r3/d4/helplib.r3
-|^r3/d4/manualview.r3
+^r3/d4/helptxt.r3
 
 #msg * 1024		| last line msg
-
-#vlist 
-#msglist
 
 #vwords 0 0
 #vincs 0 0
@@ -36,9 +32,6 @@
 	0 swap w!+ 'here ! ;
 
 |---------- TAGS in code	
-:,ncar | n -- 
-	65 ( swap 1? 1- swap dup ,c 1+ ) 2drop ;
-
 | $..............01 - code/data
 | $..............02 - loc/ext
 | $..............04	1 es usado con direccion
@@ -56,7 +49,7 @@
 	dic>name ":%w | " ,print 
 	|$5b1b ,w "30;1m" ,s "|" ,s
 	swap @ 
-	dup $ff and dup ,ncar " -- " ,s	swap 48 << 56 >> + abs ,ncar 
+	dup $ff and 8 << swap 8 >> $ff and or hw.effab ,s
 	"  " ,s
 	$10 and? ( ";" ,s )	| multiple
 	$20 and? ( "R" ,s )	| recurse
@@ -331,80 +324,74 @@
 	;
 	
 
-|--- F2 help	
-#infow
+|--- F2 help: the help lines of the word under the cursor (helptxt.r3, meta/mhelp.txt)
 #infohelp * 128
+#hwlist * 256		| the lines of the word (the same name can be in more than one library)
+#hwcnt 0
+#hweff * 128
+
+:hwword | -- "word" ; the word under the cursor, without the ' of an address
+	'helpword c@ $ff and $27 =? ( drop 'helpword 1+ ; ) drop 'helpword ;
+
+:hwadd | n -- n
+	hwcnt 32 >=? ( drop ; ) drop
+	dup hwcnt 3 << 'hwlist + ! 1 'hwcnt +! ;
+
+:hwfind | -- ; the lines of the word
+	0 'hwcnt !
+	hwword hw.find
+	( +? hwadd hwword swap hw.next ) drop ;
+
+:hwdesc | n -- n ; the description of the line, if it has one
+	dup hline hw.desc dup c@ $ff and 0? ( 2drop ; ) drop
+	fMu "  %s" sprint .lw ;
+
+:helpone | n -- ; name  effect  < library, and the description
+	fTx dup hline 'hweff 100 hw.eff
+	dup hw.where 'hweff pick2 hline "%w  %s   < %s" sprint .lw
+	hwdesc fcr drop ;
+
+:helplist | -- ; the lines of the word, 3 rows each
+	hw.count 0? ( drop fMu "mhelp.txt is not ready (run metabuild.r3 and metahelp.r3)" .lw ; ) drop
+	hwcnt 0? ( drop fMu 'helpword "no help for: %s" sprint .lw ; ) drop
+	fh 3 / hwcnt min
+	0 ( over <? dup 3 << 'hwlist + @ helpone 1+ ) 2drop ;
 
 :helpc
 	.reset .home 9 .bc 0 .fc 
 	1 flxN 
-	" r3Manual | " .write printfname 
+	" r3Help | " .write printfname 
 	" | " .write tuecursor. .write 
 	.eline
 	
 	1 flxS 
 	fhome
-	" ^[7mESC^[27m Exit manual | " .printe 
+	" ^[7mESC^[27m Exit help | " .printe 
 	'helpword .write " | " .write
 	'infohelp .write
 	'msg .write
 	.eline
-	rows 2 >> flxN | 1/4 of screen
-	tuReadCode
-	flxRest
+	rows 2 >> flxs | 1/4 of screen
 	.reset 
-	tuwina $1 " Manual " .wtitle 1 1 flpad .wfill 
-|	viewmanual	
-	
+	tuwina $1 " Help " .wtitle 1 1 flpad .wfill 
+	fhome helplist
+	flxRest
+	tuReadCode
 	uiKey
 	[esc] =? ( exit ) 
-|	[f3] =? ( anacode )
-| busqueda
-
 	drop ;
-	
-:wordshow
-|	dup lwordhelp gomanual
-	
-	dup lwordlib
-	swap lwordname 
-	"%s << ^%s" sprint
-	'infohelp strcpy 
-	| search in manual or 
-|	mark
-|	4 << namwlist +	
-|	@+ 6>str .write
-|	@ .wordinfo 
-|	empty
-	;
-	
-:getlabel
-	'helpword lwordfind
-|	$10000 and? ( drop "number push to data stack" 'infohelp strcpy 0 gomanual ; ) 
-|	$20000 and? ( drop "base word" 'infohelp strcpy 0 gomanual ; )
-	+? ( wordshow ; ) 
-	drop "Not found" 'infohelp strcpy ;
-	
+
 :helpcode
-	cpyhelpword
-	getlabel
-	
-	|'helpword lwordfind 'infow !
-	
-|	checkcode error 1? ( drop moderror ; ) drop
-|	fuente 'filename r3loadmem
-|	error 1? ( coderror ; ) drop
-|	codeok
-	
-	'helpc onTui 
-	;
+	cpyhelpword hwfind
+	hwcnt "found: %d" sprint 'infohelp strcpy
+	'helpc onTui ;
 	
 :helpdlg
 	"r3IDE Help" 50 12 tuDlg
 	fcr
 	"ctrl+R Run    ctrl+D Debug" .cw
-	"ctrl+H Imm    ctrl+B Build" .cw
-	"" .cw
+	"ctrl+K Imm    ctrl+B Build" .cw
+	"F2 Word help" .cw
 	fcr
 	"ctrl+H Help   ctrl+Q Quit   " .cw
 	fcr
@@ -438,7 +425,7 @@
 	tuEditCode
 	
 	uiKey
-|	[f2] =? ( helpcode )
+	[f2] =? ( helpcode )
 	[f3] =? ( fxcode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
@@ -462,8 +449,7 @@
 	'filename "mem/menu.mem" load drop
 	|"r3/test/testasm.r3" 'filename strcpy
 	
-	makehelpwords	
-	|loadmanual	
+	hw.load drop
 	
 	'filename TuLoadCode
 	|TuNewCode

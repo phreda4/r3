@@ -90,8 +90,6 @@
 	" )" ,s 
 	,nl
 	"#" ,s 'filenamev ,s " 'name 'words 'info" ,s 
-	
-	" 0" ,s				| (reserved: help line in manual, helplib.r3)
 	,nl
 	"r3/d4/meta/mlibs.r3" appendmem
 	empty ;

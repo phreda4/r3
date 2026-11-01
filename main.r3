@@ -81,29 +81,32 @@
 	
 :fileedit	
 	fuente c@ 0? ( drop ; ) drop
-	.masb .flush
 	savem
+	.masb .flush
 	"r3/d4/r3ide.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
 :filedebug
+	fuente c@ 0? ( drop ; ) drop
 	savem
+	.masb .flush
 	|checkcode error 1? ( drop moderror ; ) drop
 	"r3/d4/r3debug.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
 :fileprof
 	fuente c@ 0? ( drop ; ) drop
-	.masb .flush
 	savem
+	.masb .flush
 	"r3/d4/r3prof.r3" r3run
 	.reterm .alsb .flush
 	runcheck
 	tuR! ;
 
 :r3repl
-	.masb .flush
+|	fuente c@ 0? ( drop ; ) drop
 	savem
+	.masb .flush
 	"repl/repl.r3" r3run
 	.reterm .alsb .flush tuR! ;
 
@@ -218,7 +221,7 @@
 :changefiles
 	vfolder flTreePath
 	'basepath 'fullpath strcpyl 1- strcpy
-	'fullpath c@ 0? ( drop tuNewCode ; ) drop |
+	'fullpath c@ 0? ( fuente c! tuNewCode ; ) drop |
 	'fullpath 
 	".r3" =pos 1? ( drop TuLoadCode ; ) 
 	2drop
@@ -252,9 +255,10 @@
 	bg3 fhome
 	fPr " ^R" .write fTx "un" .write 
 	fPr " ^E" .write fTx "dit" .write 
-	fPr " ^N" .write fTx "ew" .write 
+	fPr " ^D" .write fTx "ebug" .write 	
 	fPr " ^I" .write fTx "mm" .write 
 	fPr " ^P" .write fTx "rof" .write 
+	fPr " ^N" .write fTx "ew" .write 
 	fPr " ^H" .write fTx "elp" .write 
 	.eline
 	

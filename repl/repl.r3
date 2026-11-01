@@ -19,11 +19,7 @@
 |---------------- variables
 #sw 0
 #px 0 #py 0 #pw 0 #ptw 40		| prompt frame
-#tmp * 256
 #busy 0 #zero 0
-#bk 0 #bkn 0		| definicion de varias lineas en curso, lineas ingresadas
-#bkb * 4096 #bkb> 0	| texto de la definicion (lineas separadas por 13)
-#bkd 0 #bko 0 #bks 0 #bkt * 4096
 
 |---------------- utilidades de pantalla
 :layout
@@ -170,9 +166,9 @@
 #ncap 0		| 1 = the list reached ncmax, the rest was not collected
 #ncmax 1000
 #recs 0
-#ppool 0 #ppn 0	| names of the project words (z.name uses a shared buffer)
+#ppool 0 #ppn 0 #pslot 0	| names and effects of the project words (z.name uses a shared buffer)
 #cp * 8000
-#prw * 768
+#prw * 1536		| 6 rows of 256: name 0, lib 32, effect 96
 #pq 0		| 1 = the word starts with ' : the search skips it, accept keeps it
 #pnw 16		| width of the name column
 #wmax 10
@@ -182,12 +178,14 @@
 #acc * 160
 #kk 0
 #plib "project"
+#phelp "defined in the project"
+#rrec 0 #rdst 0
 
 | candidato = 4 qwords: kind(0 comando/proyecto: eff = args, 1 palabra: eff = efecto) eff libreria nombre
-:cadd | name lib eff kind --
+:cadd | name lib eff kind -- ; chelp = its help (kind 1: the line of mhelp.txt, kind 0: the description)
 	nc ncmax >=? ( 1 'ncap ! 4drop drop ; ) drop
-	nc 5 << recs + dup nc 3 << 'cp + !
-	>a a!+ a!+ a!+ a!+
+	nc 6 << recs + dup nc 3 << 'cp + !
+	>a a!+ a!+ a!+ a!+ chelp a!+
 	1 'nc +! ;
 
 :q | -- 'str ; the text to search (without the ' of an address)
@@ -195,27 +193,12 @@
 
 :ctadd | e --
 	q =pre 0? ( 2drop ; ) drop
+	dup e.desc 'chelp !
 	dup e.lib over e.arg 0 cadd ;
 
 :gcmd | the commands (not after ')
 	pq 1? ( drop ; ) drop
 	'ctab ( dup c@ $ff and 1? drop dup ctadd e.next ) 2drop ;
-
-:pkind | kind -- "str"
-	2 =? ( drop "data" ; ) drop "def" ;
-
-:zadd | i -- ; a definition of the project that starts with the text
-	nc ncmax >=? ( 2drop 1 'ncap ! ; ) drop
-	dup z.kind 3 >=? ( 2drop ; ) drop
-	dup z.name q =pre 0? ( 3drop ; ) drop
-	ppn 6 << ppool + dup >r strcpy
-	1 'ppn +!
-	z.kind pkind
-	r> 'plib rot 0 cadd ;
-
-:gproj | the code and data zones of the project
-	z.build 0 'ppn !
-	0 ( zn <? dup zadd 1+ ) drop ;
 
 :m.pre | -- stop
 	q wpre 0? ( ; ) drop
@@ -223,8 +206,20 @@
 
 :r.name 24 + @ ;
 :r.lib 16 + @ ;
-:r.eff@ | rec -- 'str
-	dup 8 + @ swap @ 1? ( drop effstr ; ) drop ;
+:r.help 32 + @ ;
+
+|--- text of the help (helptxt.r3: hw.eff hw.desc hw.effab)
+:r.effs | rec dst -- ; the effect column: the one of the help, or the computed one
+	'rdst ! 'rrec !
+	rrec @ 0? ( drop rrec 8 + @ rdst 120 hw.cpy ; ) drop
+	0 rdst c!
+	rrec r.help 1? ( dup rdst 120 hw.eff ) drop
+	rdst c@ $ff and 1? ( drop ; ) drop
+	rrec 8 + @ hw.effab rdst 120 hw.cpy ;
+
+:seldesc | -- 'str ; what the selected word is
+	psel 3 << 'cp + @ dup @ 0? ( drop r.help 0? ( drop "" ) ; ) drop
+	r.help hw.desc ;
 
 :rcmp | a b -- n ; shorter first (the exact one), then alphabetical
 	over count nip over count nip
@@ -245,10 +240,29 @@
 		1+ ) drop ;
 
 :fillrow | k --
-	dup 3 << 'cp + @ swap poff - 7 << 'prw +
-	over r.name over strcpy
-	over r.eff@ over 32 + strcpy
-	swap r.lib swap 72 + strcpy ;
+	dup 3 << 'cp + @ swap poff - 8 << 'prw +
+	over r.name over 31 hw.cpy
+	over r.lib over 32 + 63 hw.cpy
+	96 + r.effs ;
+
+:peff | kind name -- 'str ; the stack effect of a project word
+	swap 2 =? ( 2drop "data" ; ) drop
+	m.find -? ( drop "" ; )
+	m.eff hw.effab ;
+
+:zadd | i -- ; a definition of the project that starts with the text
+	nc ncmax >=? ( 2drop 1 'ncap ! ; ) drop
+	dup z.kind 3 >=? ( 2drop ; ) drop
+	dup z.name q =pre 0? ( 3drop ; ) drop
+	ppn 7 << ppool + 'pslot !
+	pslot strcpy 1 'ppn +!
+	z.kind pslot peff pslot 64 + strcpy
+	'phelp 'chelp !
+	pslot 'plib pslot 64 + 0 cadd ;
+
+:gproj | the code and data zones of the project
+	m.ready z.build 0 'ppn !
+	0 ( zn <? dup zadd 1+ ) drop ;
 
 :gather
 	0 'nc ! 0 'ncap !
@@ -323,7 +337,7 @@
 
 :accept
 	pn 0? ( drop ; ) drop
-	psel poff - 7 << 'prw +
+	psel poff - 8 << 'prw +
 	pq 0? ( drop bx.accept ; ) drop
 	'acc 1+ strcpy $27 'acc c! 'acc bx.accept ;
 
@@ -345,7 +359,8 @@
 	bx.mode 0? ( drop fBl ; ) 1 =? ( drop fBl ; ) 2 =? ( drop fPu ; )
 	3 =? ( drop fGr ; ) 4 =? ( drop fDi ; ) drop fBl ;
 
-:hint | -- "text" ; what enter does in this mode
+:hint | -- "text" ; the help of the selected word, or what enter does in this mode
+	pn 1? ( seldesc dup c@ $ff and 1? ( drop nip ; ) 2drop ) drop
 	bxrz 0 >=? ( drop bxrz 1+ "redefining zone %d  -  enter takes it  -  esc cancels" sprint ; ) drop
 	bx.mode
 	1 =? ( drop "immediate  -  enter runs it  -  it goes to the history, not to the code" ; )
@@ -395,10 +410,10 @@
 :prow | i --
 	dup pbg
 	fw .nsp fx .col .sp .sp
-	dup pc dup 7 << 'prw +
+	dup pc dup 8 << 'prw +
 	dup cell
-	fMu dup 32 + cell
-	fDi 72 + cell
+	fMu dup 96 + cell
+	fDi 32 + cell
 	drop ;
 
 :drawpopup
@@ -1038,17 +1053,17 @@
 
 |---------------- historial (no se guarda con el proyecto)
 #hist * 8192
-#hn 0 #hp 0
+#hcnt 0 #hp 0
 
 :hslot | n -- adr
 	31 and 8 << 'hist + ;
 
 :hist+ | str --
-	hn hslot strcpy 1 'hn +! 0 'hp ! ;
+	hcnt hslot strcpy 1 'hcnt +! 0 'hp ! ;
 
 :hist-save
 	mark
-	hn 32 - 0 max ( hn <? dup hslot ,s ,nl 1+ ) drop
+	hcnt 32 - 0 max ( hcnt <? dup hslot ,s ,nl 1+ ) drop
 	"mem/repl.hist" savemem
 	empty ;
 
@@ -1062,16 +1077,16 @@
 	2drop empty 0 'hp ! ;
 
 :hup | recorre el historial hacia atras
-	hp 1+ dup hn >? ( 2drop ; ) drop
+	hp 1+ dup hcnt >? ( 2drop ; ) drop
 	dup 32 >? ( 2drop ; ) drop
 	dup 'hp !
-	hn swap - hslot bx.set popup! ;
+	hcnt swap - hslot bx.set popup! ;
 
 :hdn
 	hp 0? ( drop ; ) drop
 	hp 1- dup 'hp !
 	0? ( drop bx.clear popup! ; )
-	hn swap - hslot bx.set popup! ;
+	hcnt swap - hslot bx.set popup! ;
 
 :proj-boot | abre el ultimo proyecto (o scratch)
 	'tk mark "mem/repl.last" loadtxt trim copynom empty
@@ -1182,13 +1197,13 @@
 :initmem | big buffers (>8192) are reserved in the boot: tp recs ppool
 	here
 	dup 'tp ! $20000 +
-	dup 'recs ! 32768 +
-	dup 'ppool ! 65536 +
+	dup 'recs ! 65536 +
+	dup 'ppool ! 131072 +
 	'here !
 	tp 'tp> ! ;
 
 :main
-	core-init m.init initmem
+	core-init m.init initmem hw.load drop
 	0 'fparen ! bx.clear
 	data-clear proj-boot
 	.alsb
