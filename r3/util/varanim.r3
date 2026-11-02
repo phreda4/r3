@@ -39,30 +39,36 @@
 |.... time control
 #prevt
 #timenow
-##deltatime
+##deltatime | milliseconds between the last two vupdate or timer. calls
 | time         execute      end
-##timeline  ##timeline<  ##timeline>
+##timeline | start of the event list (8 bytes per event, sorted by start time)
+##timeline< | end of the events already running in the list
+##timeline> | end of the event list
 | ini | fin | ease ms | 'VAR
-##exevar
+##exevar | table with the data of each event (32 bytes: duration and ease, fin, ini, variable or parameters)
 #maxcnt
 
-::timer< msec 'prevt ! 0 'deltatime ! ; 			| reset timer
-::timer. msec dup prevt - 'deltatime ! 'prevt ! ;	| adv timer
-::timer+ deltatime + ; 								| add timer
+::timer< | -- ; reset the timer (deltatime = 0)
+	msec 'prevt ! 0 'deltatime ! ;
+::timer. | -- ; update the timer: deltatime = milliseconds since the previous call
+	msec dup prevt - 'deltatime ! 'prevt ! ;
+::timer+ | n -- n' ; add deltatime to n
+	deltatime + ;
 | $ffffffff7fffffff and  ; 	| for ring counter
-::timer- deltatime - ; 								| sub timer
+::timer- | n -- n' ; subtract deltatime from n
+	deltatime - ;
 
 | -------------------------------------------------------
 | RESET
 | -------------------------------------------------------
-::vareset
+::vareset | -- ; remove all the events and restart the animation clock
     0 'timenow !
     msec 'prevt !
     timeline dup 'timeline< ! 'timeline> !
     exevar -1 maxcnt 2 << fill
     ;
 
-::vaini | max --
+::vaini | max -- ; reserve at here the memory for up to max events at the same time and reset
     dup 'maxcnt !
     3 <<
     here
@@ -132,7 +138,7 @@
     'timeline< !
     ;
 	
-::vupdate | --
+::vupdate | -- ; advance the animations with the time elapsed since the last call (once per frame): starts the events whose time has come, updates the variables and removes the finished ones
     ab[
     msec dup prevt - swap 'prevt ! dup 'deltatime ! 'timenow +!
     tictline
@@ -181,45 +187,45 @@
 | -------------------------------------------------------
 | PUBLIC: ADD EVENT
 | -------------------------------------------------------
-::+vanim | 'var ini fin ease dur. start --
+::+vanim | 'var fin ini ease dur. start -- ; animate the cell 'var from ini to fin (the first value is the destination); ease = easing number (0 linear, 1 Quad_In... see ease in penner.r3), dur. and start in seconds (fixed point); the animation starts at the first vupdate after start
 	0
-::+vanimg | 'var ini fin ease dur. start group --
+::+vanimg | 'var fin ini ease dur. start group -- ; like +vanim in a group (0..15) that vkillgroup can remove
     >r >r addint r> r> +tlineg ;
 
-::+vboxanim | 'var fin ini ease dur. start --
+::+vboxanim | 'var fin ini ease dur. start -- ; animate the four 16-bit values packed in the cell (see xywh64), each one on its own
 	0 
-::+vboxanimg | 'var fin ini ease dur. start group --
+::+vboxanimg | 'var fin ini ease dur. start group -- ; like +vboxanim in a group (0..15)
     >r >r addint $10000 or r> r> +tlineg ;
 
-::+vxyanim | 'var ini fin ease dur. start --
+::+vxyanim | 'var fin ini ease dur. start -- ; animate the two 32-bit values packed in the cell (see xy32), each one on its own
 	0
-::+vxyanimg | 'var ini fin ease dur. start group --
+::+vxyanimg | 'var fin ini ease dur. start group -- ; like +vxyanim in a group (0..15)
     >r >r addint $20000 or r> r> +tlineg ;
 	
-::+vcolanim | 'var ini fin ease dur. start --
+::+vcolanim | 'var fin ini ease dur. start -- ; animate a color $RRGGBB mixing fin and ini with colmix (24 bits: the result has no alpha)
 	0
-::+vcolanimg | 'var ini fin ease dur. start group --
+::+vcolanimg | 'var fin ini ease dur. start group -- ; like +vcolanim in a group (0..15)
     >r >r addint $30000 or r> r> +tlineg ;
 
 | -------------------------------------------------------
 | PUBLIC: EXE EVENTS
 | -------------------------------------------------------
-::+vexe | 'vector start --
+::+vexe | 'exe start -- ; execute 'exe once after start seconds; 'exe receives the address of the stored parameters and must leave it on the stack
 |    swap dup dup 0 +ev swap +tline ;
 	0
-::+vexeg | 'vector start group --
+::+vexeg | 'exe start group -- ; like +vexe in a group (0..15)
     >r swap dup dup 0 +ev swap r> +tlineg ;
 
-::+vvexe | v 'vector start --
+::+vvexe | v 'exe start -- ; like +vexe with a parameter: 'exe receives an address and reads v with dup @
     |swap rot over 0 +ev swap +tline ;
 	0
-::+vvexeg | v 'vector start --	
+::+vvexeg | v 'exe start group -- ; like +vvexe in a group (0..15)
 	>r swap rot over 0 +ev swap r> +tlineg ;
 
-::+vvvexe | v v 'vector start --
+::+vvvexe | v1 v2 'exe start -- ; like +vexe with two parameters: 'exe reads them with dup @+ swap @ (v2 deeper, v1 on top) and leaves the address
     |>r 0 +ev r> +tline ;
 	0
-::+vvvexeg | v v 'vector start --
+::+vvvexeg | v1 v2 'exe start group -- ; like +vvvexe in a group (0..15)
     >r >r 0 +ev r> r> +tlineg ;
 
 | -------------------------------------------------------
@@ -232,7 +238,7 @@
     -8 'timeline> +! 
 	timeline< <? ( -8 'timeline< +! ) ;
 
-::vkillgroup | group --
+::vkillgroup | group -- ; remove all the events of the group (0..15)
 	$f and 28 <<
 	timeline
 	( timeline> <?
@@ -244,7 +250,7 @@
 | PUBLIC: KILL BY VAR ADDRESS
 | -------------------------------------------------------
 
-::vkillvar | 'var --
+::vkillvar | 'var -- ; remove the animations of the variable 'var (BUG: it compares the initial value instead of the variable address, so it removes nothing; its line should use + 24 instead of + 16)
 	timeline
 	( timeline> <?
 		@+ 32 >> $fff and 5 << exevar + 16 + @
@@ -254,35 +260,35 @@
 | -------------------------------------------------------
 | PUBLIC: PACK / UNPACK
 | -------------------------------------------------------
-::64xy | b -- x y
+::64xy | b -- x y ; unpack the first two signed 16-bit values (x in the highest 16 bits)
     dup 48 >> swap 16 << 48 >> ;
 
-::64wh | b -- w h
+::64wh | b -- w h ; unpack the last two signed 16-bit values
     dup 32 << 48 >> swap 48 << 48 >> ;
 
-::64xywh | b -- x y w h
+::64xywh | b -- x y w h ; unpack four signed 16-bit values
     dup 48 >> swap dup 16 << 48 >> swap
     dup 32 << 48 >> swap 48 << 48 >> ;
 
-::xywh64 | x y w h -- b
+::xywh64 | x y w h -- b ; pack four 16-bit values (x in the highest 16 bits)
     $ffff and swap
     $ffff and 16 << or swap
     $ffff and 32 << or swap
     $ffff and 48 << or ;
 
 | --- for sprite
-::64xyrz | b -- x y r z
+::64xyrz | b -- x y r z ; unpack a sprite: x y in 16 bits, r (rotation) with 2 bits less of precision and z (zoom) with 4 bits less
     dup 48 >> swap dup 16 << 48 >> swap
     dup 32 << 48 >> 2 << swap 48 << 48 >> 4 << ;
 
-::xyrz64 | x y r z -- b
+::xyrz64 | x y r z -- b ; pack a sprite (see 64xyrz)
     4 >> $ffff and swap
     2 >> $ffff and 16 << or swap
     $ffff and 32 << or swap
     $ffff and 48 << or ;
 
 | --- for rect
-::64box | b adr --
+::64box | b adr -- ; write the four 16-bit values of b as four dwords x y w h at adr (an SDL_Rect)
     swap
     dup 48 >> rot d!+
     swap dup 16 << 48 >> rot d!+
@@ -290,28 +296,28 @@
     swap 48 << 48 >> swap d! ;
 
 | --- for xy
-::32xy | b -- x y
+::32xy | b -- x y ; unpack two signed 32-bit values (x in the high half)
     dup 32 >> swap 32 << 32 >> ;
 
-::xy32 | x y -- b
+::xy32 | x y -- b ; pack two 32-bit values (x in the high half)
     $ffffffff and swap 32 << or ;
 
 | -------------------------------------------------------
 | PUBLIC: UTILS
 | -------------------------------------------------------
-::vaempty
+::vaempty | -- n ; number of events in the list (waiting or running)
     timeline> timeline - 3 >> ;
 
 |------------ FRAME ANIMATION
 |init(12) cnt-1(8) now(8) ms(12) acc(24)  = 64 bits
 |63..52   51..44   43..36  35..24  23..0
-::aniInit | ini cnt fps -- V
+::aniInit | ini cnt fps -- V ; value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
 	0? ( 2drop 0 1.0 )				| 0fps is still
 	1000.0 swap / $fff and 24 <<	| ms x frame
 	swap $ff and 44 << or	| cnt 0-> not 1-
 	swap $fff and 52 << or ;		| init
 
-::ani+! | dt 'v --
+::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
 	swap over +! 
 	dup @ dup $ffffff and	| 'v val acc
 	over 24 >> $fff and -	| 'v val acc-ms ( acc-ms)
@@ -323,11 +329,11 @@
 	swap $ff000ffffff nand or
 	swap ! ;
 
-::aniFrame | V -- f
+::aniFrame | V -- f ; current frame number (ini + step)
 	dup 36 >> $ff and swap 52 >> $fff and + ;
 
-::aniCnt | V -- c
+::aniCnt | V -- n ; current step 0..cnt-1 of the animation (it is not the number of frames)
 	36 >> $ff and ;
 
-::ani+timer! | 'V --
+::ani+timer! | 'V -- ; advance the frame animation in 'V by deltatime
 	deltatime swap ani+! ;

@@ -236,7 +236,7 @@
 		) drop nip nip ;
 
 |---- convert to number
-#mbuff * 64
+#mbuff * 64 |(shared buffer)
 
 :mbuffi | -- adr
 	'mbuff 63 + 0 over c! 1- ;
@@ -244,24 +244,24 @@
 :sign | adr sign -- adr'
 	-? ( drop $2d over c! ; ) drop 1+ ;
 
-::.d | val -- str ; signed integer to decimal string (shared buffer, valid until the next .d .b .h .o .f call)
+::.d | val -- str ; signed integer to decimal string
 	dup abs
 	-? ( 2drop "-9223372036854775808" ; )
 	mbuffi swap
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 
-::.b | bin -- str ; binary string of val, unsigned (shared buffer)
+::.b | bin -- str ; binary string of val, unsigned 
 	mbuffi swap
 	( dup $1 and $30 + pick2 c! swap 1- swap 1 >>> 1? ) drop
 	1+ ;
 
-::.h | hex -- str ; hexadecimal string of val, uppercase, no prefix, unsigned (shared buffer)
+::.h | hex -- str ; hexadecimal string of val, uppercase, no prefix, unsigned
 	mbuffi swap
 	( dup $f and $30 + $39 >? ( 7 + ) pick2 c! swap 1- swap 4 >>> 1? ) drop
 	1+ ;
 
-::.o | oct -- str ; octal string of val, unsigned (shared buffer)
+::.o | oct -- str ; octal string of val, unsigned
 	mbuffi swap
 	( dup $7 and $30 + pick2 c! swap 1- swap 3 >>> 1? ) drop
 	1+ ;
@@ -273,15 +273,15 @@
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 
-::.f | fix -- str ; 48.16 fixed point to decimal string with 4 decimals, rounded (shared buffer)
+::.f | fix -- str ; 48.16 fixed point to decimal string with 4 decimals, rounded
 	dup abs 3 + mbuffi | 3 = 0.00005
 	over $ffff and 10000 16 *>> 10000 + .f! ; 
 
-::.f2 | fix -- str ; 48.16 fixed point to decimal string with 2 decimals, rounded (shared buffer)
+::.f2 | fix -- str ; 48.16 fixed point to decimal string with 2 decimals, rounded
 	dup abs 328 + mbuffi | 328 = 0.005
 	over $ffff and 100 16 *>> 100 + .f! ;
 
-::.f1 | fix -- str ; 48.16 fixed point to decimal string with 1 decimal, rounded (shared buffer)
+::.f1 | fix -- str ; 48.16 fixed point to decimal string with 1 decimal, rounded
 	dup abs 3277 + mbuffi | 3277 = 0.05
 	over $ffff and 10 16 *>> 10 + .f! ;
 
@@ -298,7 +298,7 @@
 	( 10/mod $30 + pick2 c! swap 1- swap 1? ) drop
 	swap sign ;
 	
-::.fd | fix -- str ; 32.32 fixed point to decimal string with 8 decimals, rounded (shared buffer)
+::.fd | fix -- str ; 32.32 fixed point to decimal string with 8 decimals, rounded
 	dup abs 21 + mbuffi | 0.000000005
 	over $ffffffff and 100000000 32 *>> 100000000 + .f! ;		
 
@@ -312,7 +312,7 @@
 ::trimcar | adr -- adr' c ; skip chars <= 32 and read the next char c (0 at the end); adr' is after c
 	( c@+ $ff and 33 <? 0? ( swap 1- swap ; ) drop ) ;	
 
-::trimstr | adr -- adr' ; address of the closing " of the string text at adr ("" is an escaped quote)
+::trimstr | adr -- adr' ; address of the closing " of the string text at adr ("" is escaped quote)
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 2 - ; ) ) drop ) drop 1- ;
 
 ::>>cr | adr -- adr' ; address of the next CR or LF, or of the final 0
@@ -346,5 +346,5 @@
 ::>>sp | adr -- adr' ; address of the next char <= 32 (blank), or of the final 0
 	( c@+ $ff and 32 >? drop ) drop 1- ;
 
-::>>str | adr -- adr' ; address after the closing " of the string text at adr ("" is an escaped quote)
+::>>str | adr -- adr' ; address after the closing " of the string text at adr ("" is escaped quote)
 	( c@+ 1? 34 =? ( drop c@+ 34 <>? ( drop 1- ; ) ) drop ) drop 1- ;

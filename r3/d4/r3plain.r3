@@ -172,16 +172,26 @@
 	;
 	
 |--------------------- BOOT
+#optbuf * 64
+
+:loadopts | -- ; mem/build.mem: osgen and inlinelenmax (written by r3build)
+	'optbuf "mem/build.mem" load 'optbuf - 16 <>? ( drop ; ) drop
+	'optbuf @ $3 and 'osgen !
+	'optbuf 8 + @ 0 max 99 min 'inlinelenmax ! ;
+
 : 	
 	'filename "mem/menu.mem" load drop
 	
 	.cr
 	.reset 
 	"Make plain.r3" .println
-	|--- generation parameters (external variables, uncomment to change)
+	|--- generation parameters: set by r3build in mem/build.mem
+	|--- (or uncomment to change by hand)
 	|1 'osgen !			| target: 0 WIN, 1 LIN, 2 MAC, 3 RPI (default: this system)
 	|7 'inlinelenmax !	| max tokens of a word to inline (default 7, 0 = no inline)
+	loadopts
 	'osnames osgen $3 and 2 << + "target: %s" .println
+	inlinelenmax "inline: %d" .println
 	mark
 	'filename r3plain
 	cols .hline

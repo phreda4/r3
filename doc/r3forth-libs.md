@@ -100,7 +100,7 @@ Fixed-point (48.16) arithmetic, trigonometry, statistics, and float32 conversion
 #### Integer Helpers
 ```
 ::cell+   ( n -- n+8 )           add one cell
-::ncell+  ( n -- n+(n*8) )       multiply by cell and add
+::ncell+  ( adr n -- adr+(n*8) )       multiply by cell and add
 ::1+      ( n -- n+1 )
 ::1-      ( n -- n-1 )
 ::2/      ( n -- n/2 )           arithmetic shift right
@@ -161,7 +161,7 @@ Binary angle: `0`=0°, `0.25`=90°, `0.5`=180°, `1.0`≈360°. Results are 48.1
 ::log2.       ( y. -- r. )       log base 2 (fixed-point)
 ::pow2.       ( y. -- r. )       2^y (fixed-point)
 ::pow.        ( x. y. -- r. )    x^y (fixed-point)
-::root.       ( x. n -- r. )     nth root
+::root.       ( x. n. -- r. )     nth root
 ::ln.         ( x. -- r. )       natural log
 ::exp.        ( x. -- r. )       e^x
 ::tanh.       ( x. -- r. )       hyperbolic tangent
@@ -181,9 +181,7 @@ Binary angle: `0`=0°, `0.25`=90°, `0.5`=180°, `1.0`≈360°. Results are 48.1
 
 #### Integer Multiply/Divide Shortcuts
 ```
-::6*  ::6/  ::6mod
-::10*   ::100*   ::1000*   ::10000*   ::100000*   ::1000000*
-::10/   ::10/mod ( n -- q r )   ::1000000/
+::6*  ::6/  ::6mod ::10* :10/  ::10/mod 
 ```
 
 #### Float32 Conversions
@@ -256,8 +254,8 @@ String manipulation words. Strings are zero-terminated (C style).
 ::strcat     ( src dst -- )         concatenate src onto dst
 ::strcpylnl  ( src dst -- dst' )    copy, strip newlines
 ::strcpyln   ( src dst -- )         copy, strip newlines
-::copynom    ( src dst -- )         copy until space
-::copystr    ( src dst -- )         copy until quote char
+::copynom    ( dst src -- )         copy until space
+::copystr    ( dst src -- )         copy until quote char
 ::strpath    ( src dst -- )         copy path component only (up to /)
 
 -- Case --
@@ -271,7 +269,7 @@ String manipulation words. Strings are zero-terminated (C style).
 ::utf8bytes  ( str cnt -- str bytes ) byte count for n UTF-8 chars
 
 -- Comparison --
-::=     ( s1 s2 -- 0/1 )         equal? (case-sensitive)
+::=     ( s1 s2 -- 0/1 )         equal? (case-insensitive)
 ::=s    ( s1 s2 -- 0/1 )         equal? (alias)
 ::=w    ( s1 s2 -- 0/1 )         equal? (word compare)
 ::cmpstr ( a b -- n )            compare: negative/0/positive

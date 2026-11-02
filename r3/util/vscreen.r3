@@ -21,7 +21,7 @@
 	vscrh vscrz *. sh over - 2/ da!+
 	swap da!+ da! ;
 	
-::vscreen | w h --
+::vscreen | w h -- ; create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
 	'vscrh ! 'vscrw !
 	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
 	dup 1 SDL_SetTextureScaleMode | 0 no blend
@@ -29,7 +29,7 @@
 	'vresize SDLeventR
 	vresize ;
 
-::vscreenf | w h --
+::vscreenf | w h -- ; like vscreen with nearest neighbor scaling (sharp pixels)
 	'vscrh ! 'vscrw !
 	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
 	dup 0 SDL_SetTextureScaleMode | 0 no blend
@@ -37,24 +37,28 @@
 	'vresize SDLeventR
 	vresize ;
 
-::vini | --
+::vini | -- ; start drawing into the virtual screen (it becomes the render target)
 	SDLrenderer vscrtex SDL_SetRenderTarget	;
 	
-::vredraw | --
+::vredraw | -- ; draw the virtual screen in the window and present it
 	SDLrenderer 0 SDL_SetRenderTarget	
 	SDLrenderer vscrtex 0 'recd SDL_RenderCopy
 	SDLredraw ;	
 	
-::vfree
+::vfree | -- ; free the virtual screen texture
 	vscrtex SDl_destroyTexture ;
 	
 	
 :(sdlx) sdlx vcenx - scl *. vscrw 2/ + ;
-::sdlx (sdlx) ;	
+::sdlx | -- x ; mouse x in virtual screen pixels (it replaces the sdlx of sdl2 for the code that follows)
+	(sdlx) ;
 
 :(sdly) sdly vceny - scl *. vscrh 2/ + ;
-::sdly (sdly) ;	
+::sdly | -- y ; mouse y in virtual screen pixels (it replaces the sdly of sdl2 for the code that follows)
+	(sdly) ;
 
-::%w vscrw 16 *>> ; 
-::%h vscrh 16 *>> ; 	
+::%w | frac -- px ; fixed point fraction of the virtual screen width (1.0 = all) in pixels (it replaces the one of sdl2)
+	vscrw 16 *>> ;
+::%h | frac -- px ; fixed point fraction of the virtual screen height (1.0 = all) in pixels (it replaces the one of sdl2)
+	vscrh 16 *>> ;
 
