@@ -30,9 +30,6 @@
 :Surf>pixpi | surface -- pixels pitch 
 	dup 32 + @ swap 24 + d@ ;
 
-:xypixel | x y -- pixel
-	spitch * swap 2 << + a> + d@ ;
-
 #lfg #lbg
 
 :setfg | c --
@@ -41,8 +38,11 @@
 	lbg =? ( drop ; ) dup 'lbg ! .bg32 ;
 
 :cell | y x -- y x 
-	2dup swap 2dup 1+ 
-	xypixel setbg xypixel setfg "▀" .write ;
+	over spitch *
+	over 2 << + a> +
+	dup d@ setfg 
+	spitch + d@ setbg 
+	"▀" .write ;
 	
 :drawimg
 	imgsurf 0? ( drop ; ) 
@@ -59,7 +59,9 @@
 	
 :loadtimg | "" --
 	imgsurf 1? ( dup SDL_FreeSurface ) drop
-	IMG_Load 'imgsurf ! ;
+	IMG_Load 
+	dup $16562004 0 SDL_ConvertSurfaceFormat 'imgsurf ! 
+	SDL_FreeSurface	;
 	
 |--- pantalla 
 :theme

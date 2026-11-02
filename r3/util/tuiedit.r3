@@ -696,11 +696,11 @@
 	fuente> ( dup 1- c@ $ff and 32 >? drop 1- ) drop fuente max ;
 
 :gskip | 'str -- 'str' ; skips the ' : # of a word
-	dup c@ $ff and $27 =? ( swap 1+ swap ) drop
-	dup c@ $ff and $3a =? ( swap 1+ swap ) drop
-	dup c@ $ff and $3a =? ( swap 1+ swap ) drop
-	dup c@ $ff and $23 =? ( swap 1+ swap ) drop
-	dup c@ $ff and $23 =? ( swap 1+ swap ) drop ;
+	dup c@ 
+	$27 =? ( drop 1+ ; ) | '
+	$3a =? ( drop 1+ dup c@ $3a =? ( drop 1+ ; ) drop ; ) 
+	$23 =? ( drop 1+ dup c@ $23 =? ( drop 1+ ; ) drop ; ) 
+	drop ;
 
 :gskipsp | adr -- adr' ; skips the blanks
 	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
