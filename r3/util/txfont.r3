@@ -86,7 +86,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		) 2drop ;
 	
 	
-::txloadwicon | "font" size -- nfont
+::txloadwicon | "font" size -- nfont ; load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
 	"media/ttf/Font Awesome 7 Free-Solid-900.otf"
 	over 2 - TTF_OpenFont 'ttfonta !
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
@@ -118,7 +118,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTex ;	| reuturn ini font
 
 
-::txload | "font" size -- nfont
+::txload | "font" size -- nfont ; like txloadwicon without the icons
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
@@ -145,25 +145,25 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	$40 and? ( drop c@+ $80 or ; )
 	$40 or ; | 128 >> 192
 	
-::txfont | font --
+::txfont | font -- ; select the atlas font (from txload) used by the tx words
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
-::txfont@ | -- font
+::txfont@ | -- font ; the atlas font selected now
 	newTab 8 - ;
 	
-::txrgb | c --
+::txrgb | c -- ; color $RRGGBB of the font texture (color modulation)
 	newTex swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
-::txcw | car -- width
+::txcw | adr car -- adr' width ; width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it)
 	decode
 	$ff and 3 << newTab + 2 + w@ ; 
 	
-::txw | "" -- "" width
+::txw | "" -- "" width ; width in pixels of the string
 	0 over ( c@+ 1? txcw rot + swap ) 2drop ;
 	
-::txfit | w "" -- ncar
+::txfit | w "" -- ncar ; number of bytes of the string that fit in w pixels
 	0 over
 	( c@+ 1? txcw	| w "" l "" cw
 		rot +		| w "" "" cw+l
@@ -172,26 +172,26 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		) drop nip 
 	swap - nip ;
 	
-::txch | car -- height
+::txch | adr car -- adr' h ; height of a character (same protocol as txcw)
 	decode
 	$ff and 3 << newTab + 6 + w@ ;
 	
-::txh | -- heigth
+::txh | -- h ; height of the font (line height)
 	newTab 6 + w@ ;
 	
-::txat | x y --
+::txat | x y -- ; move the cursor to the pixel position x y
 	'cury ! 'curx ! ;
 
-::tx+at | x y --
+::tx+at | x y -- ; move the cursor by x y pixels
 	'cury +! 'curx +! ;
 
-::txcr
+::txcr | -- ; new line: x = 0 and y down one line height
 	0 'curx ! txh 'cury +! ;
 	
-::txpos | -- x y 
+::txpos | -- x y ; cursor position in pixels
 	curx cury ;
 	
-::txemit | utf8' --
+::txemit | adr car -- adr' ; draw one character at the cursor and advance it (same protocol as txcw)
 	decode
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
@@ -201,21 +201,21 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	SDLrenderer newTex 'recbox 'recdes SDL_RenderCopy	
 	'recdes 8 + d@ 'curx +! ;
 
-::txwrite | "" --
+::txwrite | "" -- ; draw the string at the cursor
 	( c@+ 1? txemit ) 2drop ;
 
-::txemitr | "" --
+::txemitr | "" -- ; draw the string right aligned: it ends at the cursor x
 	txw neg 'curx +!
 	txwrite ;
 
-::txemitc | w "" --
+::txemitc | w "" -- ; draw the string centered in w pixels starting at the cursor x
 	txw rot swap - 2/ 'curx +!
 	txwrite ;
 
-::txprint | .. "" --
+::txprint | .. "" -- ; formatted print (see sprint) at the cursor
 	sprint txwrite ;
 
-::txprintr | .. "" --
+::txprintr | .. "" -- ; formatted print right aligned
 	sprint txemitr ;
 
 :fontbox | utf8' --
@@ -229,11 +229,11 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	swap ( over <? c@+ txcw 'curx +! ) drop 
 	c@ fontbox ;
 	
-::txcur | str cur -- 
+::txcur | str cur -- ; fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character
 	curpos
 	SDLRenderer 'recbox SDL_RenderFillRect ;
 	
-::txcuri | str cur --
+::txcuri | str cur -- ; like txcur but a bar of a quarter of the height at the bottom (insert cursor)
 	curpos
 	'recbox 12 + d@ 
 	dup 2 >> swap over - | h/4
@@ -280,12 +280,12 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	lines - 3 >> 'cntlines !
 	;	
 
-::lwrite | w "str" --
+::lwrite | w "str" -- ; left aligned text for txText (ignores w)
 	nip txwrite ;
-::cwrite | w "str" --
+::cwrite | w "str" -- ; centered text in w pixels for txText
 	txw rot swap - 2/ 0 tx+at
 	txwrite ;
-::rwrite | w "str" --
+::rwrite | w "str" -- ; right aligned text in w pixels for txText
 	txw rot swap - 0 tx+at
 	txwrite ;
 	
@@ -296,7 +296,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 #halign 'cwrite
 #valign 'vcen
 
-::txalign | $VH --
+::txalign | $VH -- ; alignment for txText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom)
 	dup $3 and
 	0 =? ( 'lwrite 'halign !  )
 	1 =? ( 'cwrite 'halign ! )
@@ -308,7 +308,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	2 =? ( 'vbot 'valign ! )
 	drop ;
 
-::txText | w h x y "" --
+::txText | w h x y "" -- ; draw the string wrapped by words in the box x y w h with the txalign alignment; CR, LF and ; start a new line
 	mark ab[ 
 	splitlines 
 	rot 	| w x y h
@@ -351,7 +351,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 
 #modo 'lins
 
-::pad.reset | 'var max -- 'var max
+::pad.reset | 'var max -- 'var max ; prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
 	1- 'cmax !
 	dup dup 'padi> !
 	( c@+ 1? drop ) drop 1-
@@ -369,7 +369,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	modo 'lins =? ( drop txcur ; ) drop
 	txcuri ;
 
-::pad.draw | 'buff --
+::pad.draw | 'buff -- ; draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
 	txpos drawcur
 	txat txwrite
 	

@@ -27,86 +27,89 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 #pfont
 
 #wp #hp
-##advx ##advy
+##advx | width in pixels of a character cell (font width times zoom)
+##advy | height in pixels of a character cell
 
 #op 0 0
 #dp 0 0
 
-::trgb | c --
+::trgb | c -- ; color $RRGGBB of the font texture (color modulation)
 	pfont swap 
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
-::tpal | c -- rgb
+::tpal | c -- rgb ; color of the palette entry c (low 4 bits: 0 black, 1 blue, 2 cyan, 3 green, 4 purple, 5 red, 6 white, 7 yellow, 8..15 the bright ones) of the style in termcolor (style0 Campbell)
 	$f and 2 << termcolor + d@ ;
 	
-::tcol | c --
+::tcol | c -- ; set the text color from the palette entry c
 	tpal trgb ;
 	
-::tfbox | --
+::tfbox | -- ; fill the character cell at the cursor with the draw color
 	SDLRenderer 'dp SDL_RenderFillRect ;
 
-::tbox | --
+::tbox | -- ; outline of the character cell at the cursor
 	SDLRenderer 'dp SDL_RenderDrawRect ;
 
-::temit | ascii --
+::temit | ascii -- ; draw the character at the cursor and move the cursor one character to the right
 	dup $f and wp * swap 4 >> $f and hp * 32 << or 'op !
 	SDLrenderer pfont 'op 'dp SDL_RenderCopy
 	advx 'dp d+! ;
 	
-::tprint
+::tprint | .. "" -- ; formatted print (see sprint) at the cursor
 	sprint
-::temits | "" --
+::temits | "" -- ; print the string at the cursor
 	( c@+ 1? temit ) 2drop ;
 	
-::tat | x y --
+::tat | x y -- ; move the cursor to the pixel position x y
 	swap $ffffffff and swap 32 << or 'dp ! ;	
-::tatx | x --
+::tatx | x -- ; set the cursor x in pixels
 	'dp d! ;
 	
-::txy | x y --
+::txy | x y -- ; move the cursor to the character cell x y
 	advy * swap advx * swap tat ;
-::tx | x --
+::tx | x -- ; move the cursor to the character column x
 	advx * 'dp d! ;
 
-::tcx dp 32 << 32 >> ;
-::tcy dp 32 >> ;
+::tcx | -- x ; cursor x in pixels
+	dp 32 << 32 >> ;
+::tcy | -- y ; cursor y in pixels
+	dp 32 >> ;
 	
-::tcr
+::tcr | -- ; new line: x = 0 and y down one character
 	0 'dp d!
 	advy 'dp 4 + d+! ;
 
-::tsp
+::tsp | -- ; move the cursor one character to the right
 	advx 'dp d+! ;
-::tnsp | n --
+::tnsp | n -- ; move the cursor n characters to the right
 	advx * 'dp d+! ;
 	
-::tsbox | "" -- "" w h
+::tsbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
 	count advx * advy ;
  
-::tpos | -- x y
+::tpos | -- x y ; cursor position in pixels
 	dp dup $ffffff and swap 32 >> ;
 
-::trect |  "" -- "" x y w h
+::trect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
 	tsbox tpos 2swap ;
 	
-::tcursor | n --
+::tcursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
 	advx * tpos swap rot + swap advx advy frect ;
 
-::tcursori | n --
+::tcursori | n -- ; like tcursor but a bar of a quarter of the height at the bottom (insert cursor)
 	advx * tpos swap rot + swap advy dup 2 >> - + advx advy 2 >> frect ;
 
-::tsize | zoom --
+::tsize | zoom -- ; set the character size as the font size times zoom (fixed point, 1.0 = normal)
 	wp over 16 *>> dup 'advx ! 
 	hp rot 16 *>> dup 'advy !
 	32 << or 'dp 8 + ! ;
 	
-::tsrcsize | x y w h -- x y w h
+::tsrcsize | x y w h -- x y w h ; convert the two pairs from character cells to pixels
 	2swap advy * swap advx * swap 
 	2swap advy * swap advx * swap ;	
 
 |---------- INI
-::tfnt | size w h ""
+::tfnt | size w h "file" -- ; load a font image (16x16 grid of characters of w x h pixels) and set its zoom size (fixed point)
 	loadimg 
 |	dup 0 SDL_SetTextureBlendMode 
 |	dup 1 SDL_SetTextureScaleMode
@@ -115,7 +118,7 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 	'hp ! 'wp ! 
 	tsize ;
 	
-::tini
+::tini | -- ; load the default font media/img/VGA8x16.png (8x16) at size 1.0
 	1.0
 	|16 24 "media/img/font16x24.png" 
  	8 16 "media/img/VGA8x16.png" 

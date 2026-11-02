@@ -38,52 +38,53 @@
 
 #ttink	
 #ttfon
-##ttx ##tty
+##ttx | cursor x in pixels
+##tty | cursor y in pixels
 	
-::ttcolor | rrggbb --
+::ttcolor | rrggbb -- ; text color (stored with red and blue swapped, as SDL_Color wants it)
 	dup $ff and 16 <<
 	over 16 >> $ff and or 
 	swap $ff00 and or 'ttink ! ;
 	
-::ttfont! | font --
+::ttfont! | font -- ; set the font (from TTF_OpenFont) used by the tt words
 	'ttfon ! ;
 	
-::ttat | x y --
+::ttat | x y -- ; move the cursor to the pixel position x y
 	'tty ! 'ttx ! ;	
 
-::+ttat | x y --
+::+ttat | x y -- ; move the cursor by x y pixels
 	'tty +! 'ttx +! ;	
 
-::ttwh | "" -- "" w h
+::ttwh | "" -- "" w h ; size in pixels of the string with the current font
 	ttfon over 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@+ swap d@ ;
 
-::ttsize  | size -- 
+::ttsize | size -- ; set the point size of the current font
 	ttfon swap TTF_SetFontSize ;
 	
-::ttstyle | style -- | KUIB %0001
+::ttstyle | style -- ; set the style of the current font: bit 0 bold, 1 italic, 2 underline, 3 strikethrough
 	ttfon swap TTF_SetFontStyle ;
 
-::ttprint | "" --
+::ttprint | .. "" -- ; formatted print (see sprint) at the cursor
 	sprint	
-::ttemits | "" --
+::ttemits | "" -- ; draw the string at the cursor and move the cursor to its end (a texture is created for each call)
 	SDLrenderer ttink ttfon pick3 ttx tty RenderText
 	ttfon swap 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@ 'ttx +! 
 	;
 
-::ttemitc | width "" --
+::ttemitc | width "" -- ; draw the string centered in width pixels starting at the cursor
 	ttwh drop | w "" tw
 	rot swap - 2/
 	'ttx +!
 	ttemits ;
 
-::ttemitr | "" --
+::ttemitr | "" -- ; draw the string right aligned: it ends at the cursor x
 	ttwh drop | "" tw
 	neg 'ttx +!
 	ttemits ;
 	
-::ttboxcc | w h "" --
+::ttboxcc | w h "" -- ; draw the string centered in a box w x h starting at the cursor
 	ttwh | w h "" tw th
 	2swap >r | w tw th h "" 
 	swap - 2/ 'tty +!
@@ -96,7 +97,7 @@
 	ttfon 'backc 'textbox dup 8 + swap 12 + TTF_SizeUTF8 drop
 	'textbox 8 + d@ ;
 	
-::ttcursor | str strcur -- str
+::ttcursor | str strcur -- str ; fill with the draw color the block cursor of the character at strcur (an address inside str); the string is cut there temporarily
 	dup c@ 'backc c! | str strcur
 	0 over c!		| set end
 	swap ttwh  | strcur str w h
@@ -106,7 +107,7 @@
 	backc rot c!
 	;
 
-::ttcursori | str strcur -- str
+::ttcursori | str strcur -- str ; like ttcursor but a bar of 2 pixels at the bottom (insert cursor)
 	dup c@ 'backc c! | str strcur
 	0 over c!		| set end
 	swap ttwh  | strcur str w h
@@ -118,6 +119,6 @@
 	backc rot c!
 	;
 	
-::ttrect |  "" -- "" x y w h
+::ttrect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
 	ttwh ttx tty 2swap ;
 	
