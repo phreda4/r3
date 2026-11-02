@@ -15,21 +15,21 @@
 ^r3/util/tui.r3
 
 |--------------------------------	
-##uiDirs
-##uiFiles
+##uiDirs | list of folders (or full tree) of flScanDir/flScanFullDir: 0-terminated entries, each one a byte $40+level ($20 more, $80 open) and the name; it ends with an empty entry
+##uiFiles | list of the files of a folder made by FlGetFiles: 0-terminated names that end with an empty entry
 
 #basepath * 1024
 
 #stckhdd>
 #l1 0 #l2 0 
 
-::flcpy | 'file 'str --
+::flcpy | 'file 'str -- ; copy a list entry up to | or the final 0 into 'str, with a final 0
 	( swap c@+ 1?
 		$7c =? ( 2drop 0 swap c! ; )
 |	 	$5e =? ( 2drop 0 swap c! ; ) | ^
 		rot c!+ ) nip swap c! ;
 		
-::flTreePath | n -- str
+::flTreePath | n -- str ; path of node n of the tree shown by the tui tree widget (it uses the widget state of tui: only meaningful inside it)
 	ab[
 	here 1024 + dup >b >a
 	mark
@@ -109,7 +109,7 @@
 	drop 
 	0 ,c ;
 	
-::FlGetFiles | filename --
+::FlGetFiles | "path" -- ; fill uiFiles with the names of the files (no folders) of the folder; the memory was reserved by flScanDir
 	mark uiFiles 'here !
 |WIN|	"%s//*" sprint
 	ffirst ( +file fnext 1? ) drop 0 , 
@@ -117,7 +117,7 @@
 	
 |----------------	
 
-::flScanDir | "" --
+::flScanDir | "path" -- ; scan the folders under path recursively into uiDirs and reserve 64 KB for uiFiles; call it only once
 	here 'uiDirs !
 	0 'basepath !
 	here $ffff + 'stckhdd> ! 
@@ -148,7 +148,7 @@
 	backdir ;
 
 
-::flScanFullDir | "" --
+::flScanFullDir | "path" -- ; like flScanDir but uiDirs also has the files (the folders end with /)
 	here 'uiDirs !
 	0 'basepath !
 	here $ffff + 'stckhdd> ! 
@@ -192,7 +192,7 @@
 		$2f =? ( drop 0 swap 1- c!+ ; )
 		drop ) nip ;
 	
-::flOpenFullPath | str -- place ; open the folders
+::flOpenFullPath | "root/a/b" -- place ; open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
 	ab[
 	uiDirs >a 0 >b
 	next/ 0? ( ]ba ; ) 
@@ -206,7 +206,7 @@
 
 #ancestors * 256	| scratch: 32 niveles posibles
 
-::flOpenSearch | "text" -- adr/0 ; busca substring (case-insens) en uiDirs,
+::flOpenSearch | "text" -- adr/0 ; first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
 	uiDirs
 	( dup c@ 1? 
 		$1f and 3 << 'ancestors + over swap !
@@ -220,7 +220,7 @@
 			) drop
 		>>0	) 2drop 0 ;
 
-::flCloseAll |	; cierra todas las carpetas (limpia $80 en todo uiDirs)
+::flCloseAll | -- ; close all the folders of uiDirs
 	uiDirs
 	( dup c@ 1? 
 		$7f and over c!

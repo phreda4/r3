@@ -1788,62 +1788,47 @@ blist! | f 'list --
 blist- | f 'list --
 blist@ | 'list -- f/0
 blist? | f 'list -- f/0
-bsprdraw | redefine fro draw sprite in correct order
-inisprite
-+sprite | N x y --
-drawmaps | xvp yvp --
-loadmap | filename --
-bmap2xy | x y -- x y
-whbmap | -- w h
-xyinmap@ | x y -- map
-xytrigger | x y -- x y
-,time
-,ti:me
-,date
-,date-
-str_DMA
-str_HMS
-str_HM
->dianame
->mesname
-str_fullday | -- 'fullday
-str_hhmmss | -- 'hhmms
-dt2timesql | 'sysdate --
-dt>64 | datetime -- dt64
-,64>dtf | dt64 -- "d/m/y h:m"
-,64>dtd | dt64 -- "d/m/y"
-,64>dtt | dt64 -- "h:m:s"
-64>dtc | dt64 -- "y-m-d h:m:s"
-rowdb
-getnfilename | n "path" -- filename/0
-loadnfile | "" -- filename
->>line | adr -- adr'/0
-loaddb-i | "filename" --
-prevdb-i | "filename" --
-dbfld | nro -- string
-loaddb | "filename" -- 'db
-getdbrow | id 'db -- 'row
-findbrow | hash 'db -- 'row/0
-cntdbrow | 'db -- cnt
->>fld | adr -- adr'
-getdbfld | nro 'row -- 'fld ; "|^" limit
-cpydbfld | 'fld 'str --
-cpydbfldn | max 'fld 'str --
-rowdb
-getnfilename | n "path" -- filename/0
-loadnfile | "" -- filename
->>line | adr -- adr'/0
-loaddb-i | "filename" --
-prevdb-i | "filename" --
-dbfld | nro -- string
-loaddb | "filename" -- 'db
-getdbrow | id 'db -- 'row
-findbrow | hash 'db -- 'row/0
-cntdbrow | 'db -- cnt
->>fld | adr -- adr'
-getdbfld | nro 'row -- 'fld ; "|^" limit
-cpydbfld | 'fld 'str --
-cpydbfldn | max 'fld 'str --
+bsprdraw | word that drawmaps calls for each sprite of the list: x y n --  (the default one does nothing)
+inisprite | -- ; start the list of sprites drawn in order with the map rows (call it every frame before +sprite); the list is in free memory at here
++sprite | N x y -- ; add the sprite N at screen position x y to the sorted list; it is ignored if it is outside the screen
+drawmaps | xvp yvp -- ; draw the map with its sprites from the viewport position xvp yvp in pixels (tiles of 32x32): back layers, then the sprites row by row, then the front layers
+loadmap | "filename" -- ; load a map file (8 bytes header, mapw maph, mapw*maph cells of 64 bits, tilew tileh, tileset image name) and its tileset; the view is 34x23 tiles of 32 pixels
+bmap2xy | x y -- x y ; tile position x y to the pixel position in the tileset size (x*tilew, y*tileh) as fixed point
+whbmap | -- w h ; size of the map in tiles
+xyinmap@ | x y -- cell ; map cell (64 bits) at the position x y given as fixed point pixels (no range check)
+xytrigger | x y -- x y ; mark with the trigger flag (bit 51) the conditional tiles (bit 50) of the cells around x y; drawmaps clears the flag at the end of the frame
+,time | -- ; write the current time as h:mm:ss (hour without leading zero)
+,ti:me | -- ; write the current time as h:mm with a blinking colon (a space on odd seconds)
+,date | -- ; write the current date as d/m/yyyy
+,date- | -- ; write the current date as yyyy-mm-dd
+str_DMA | -- str ; the current date as " d/m/yyyy " in a temporary string (at here, valid until the next write to memory)
+str_HMS | -- str ; the current time as " h:mm:ss " in a temporary string (at here)
+str_HM | -- str ; the current time as " h:mm " (blinking colon) in a temporary string (at here)
+>dianame | n -- str ; Spanish name of the weekday n (0 = domingo .. 6 = sabado), no range check
+>mesname | n -- str ; Spanish name of the month n (0 = enero .. 11 = diciembre), no range check
+str_fullday | -- str ; current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string (BUG: the month name is one too far: date.m is 1..12 and >mesname takes 0..11)
+str_hhmmss | -- str ; current time as hh:mm:ss (2 digits each), zero-terminated, in a temporary string (at here)
+dt2timesql | 'timedate -- ; write a timedate (address from sysdate or filetimeD) as yyyy-mm-dd hh:mm:ss at here (no final 0)
+dt>64 | 'timedate -- dt64 ; pack a timedate in 64 bits: year<<48 | month<<44 | weekday<<40 | day<<32 | hour<<24 | minute<<16 | second<<8 | ms>>2
+,64>dtf | dt64 -- ; write a dt64 as dd/mm/yyyy hh:mm
+,64>dtd | dt64 -- ; write the date of a dt64 as d/m/yyyy followed by a space
+,64>dtt | dt64 -- ; write the time of a dt64 as hh:mm:ss
+64>dtc | dt64 -- ; write a dt64 as date and time (BUG: it writes "yyyy mm-dd-hh:mm:ss"; the separator after the year should be - and the one after the day a space)
+rowdb | number of the record the incremental words (loaddb-i, prevdb-i) will load next
+getnfilename | n "path" -- filename/0 ; name of the nth file of a folder (Windows only: it uses the Windows directory entry layout); 0 if there are fewer
+loadnfile | "path" -- filename ; incremental: each call returns the next file name of the folder, the position is kept in the file "path.now" and wraps to the first (Windows only)
+>>line | adr -- adr' ; address after the next ^ (end of record), or the final 0 if there is none
+loaddb-i | "filename" -- ; incremental: load the record number kept in "filename.now" and split it in fields (read them with dbfld), then advance to the next record (wraps at the end)
+prevdb-i | "filename" -- ; step the position kept in "filename.now" back one record (the next loaddb-i loads the previous one)
+dbfld | nro -- str ; field nro (0 is the first) of the record loaded with loaddb-i; an empty string if there are fewer fields
+loaddb | "filename" -- 'db ; load a text database (records field|field|..^) at here, where it stays, and return its address; 0 if the file is empty or missing
+getdbrow | id 'db -- 'row ; address of record number id (0 is the first) of a database loaded with loaddb
+findbrow | 'key 'db -- 'row/0 ; first record whose first 8 bytes equal the 8 bytes at 'key (the original comment called it hash); 0 if none
+cntdbrow | 'db -- cnt ; number of records (count of ^); 0 if 'db is 0
+>>fld | adr -- adr' ; address after the next | (next field); it stops at a ^ (end of record) without skipping it
+getdbfld | nro 'row -- 'fld ; address of field nro (0 is the first) of a record; the field ends at | or ^, not at a 0
+cpydbfld | 'fld 'str -- ; copy the text of a field (up to | or ^) to 'str with a final 0
+cpydbfldn | max 'fld 'str -- ; like cpydbfld copying at most max characters
 colord
 color! | color --
 dlgColor | x y --
@@ -1859,22 +1844,22 @@ dcn@ | n l -- v
 dc@ | list -- val
 dc! | val list --
 dc@- | list -- val
-uiDirs
-uiFiles
-flcpy | 'file 'str --
-flTreePath | n -- str
-FlGetFiles | filename --
-flScanDir | "" --
-flScanFullDir | "" --
-flOpenFullPath | str -- place ; open the folders
-flOpenSearch | "text" -- adr/0 ; busca substring (case-insens) en uiDirs,
-flCloseAll | ; cierra todas las carpetas (limpia $80 en todo uiDirs)
-H2d.ini | maxobj --
-H2d.clear
-H2d.list | -- 'adr cnt
-checkmax | check max in pixels
-h2d+! | nro r x y --
-h2d! | x y zoom nro sizepixel/2 -- x y zoom
+uiDirs | list of folders (or full tree) of flScanDir/flScanFullDir: 0-terminated entries, each one a byte $40+level ($20 more, $80 open) and the name; it ends with an empty entry
+uiFiles | list of the files of a folder made by FlGetFiles: 0-terminated names that end with an empty entry
+flcpy | 'file 'str -- ; copy a list entry up to | or the final 0 into 'str, with a final 0
+flTreePath | n -- str ; path of node n of the tree shown by the tui tree widget (it uses the widget state of tui: only meaningful inside it)
+FlGetFiles | "path" -- ; fill uiFiles with the names of the files (no folders) of the folder; the memory was reserved by flScanDir
+flScanDir | "path" -- ; scan the folders under path recursively into uiDirs and reserve 64 KB for uiFiles; call it only once
+flScanFullDir | "path" -- ; like flScanDir but uiDirs also has the files (the folders end with /)
+flOpenFullPath | "root/a/b" -- place ; open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
+flOpenSearch | "text" -- adr/0 ; first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
+flCloseAll | -- ; close all the folders of uiDirs
+H2d.ini | maxobj -- ; reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
+H2d.clear | -- ; empty the hash table and the contact list (call it every frame before adding the objects)
+H2d.list | -- 'adr cnt ; list of contacts found: cnt dwords, each (newer object nro << 16) | older object nro
+checkmax | maximum distance in pixels where the neighbours are looked for (the hash cells are 32 pixels)
+h2d+! | nro r x y -- ; add object nro (0..65534) with radius r (0..1023) at x y (pixels, 19 bits) and add to the list its contacts with the objects already added (square test: max(|dx|,|dy|) < r1 + r2)
+h2d! | x y zoom nro size -- x y zoom ; add object nro at x y with the radius size*zoom (zoom fixed point) and leave x y zoom
 heap! | nodo 'h --
 heap@ | 'h -- nodo
 heapini | max 'h --

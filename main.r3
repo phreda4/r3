@@ -250,11 +250,11 @@
 	dup 2 << a> +
 	dup d@ setfg 
 	spitch + d@ setbg 
-	"▀" .write ;
+	lfg lbg =? ( drop .sp ; ) drop "▀" .write ;
 	
 :panelimage
 	imgsurf 0? ( drop ; ) 
-	$1 'fullpath .wtitle 1 1 flpad 	
+	|$1 'fullpath .wtitle 1 1 flpad 	
 	fhome
 	Surf>wh 'hsurf ! 'wsurf  !
 	ab[

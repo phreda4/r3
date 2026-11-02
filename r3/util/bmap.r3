@@ -25,21 +25,21 @@
 :defsprite | x y n --
 	3drop ; | nota draw
 	
-##bsprdraw 'defsprite | redefine fro draw sprite in correct order
+##bsprdraw 'defsprite | word that drawmaps calls for each sprite of the list: x y n --  (the default one does nothing)
 
 |------------ order inscreen render
 #sprinscr 
 #sprinscr> 
 #sprinscr<
 
-::inisprite
+::inisprite | -- ; start the list of sprites drawn in order with the map rows (call it every frame before +sprite); the list is in free memory at here
 	here 1 63 << dup rot !+ !+
 	dup 'sprinscr !
 	dup 'sprinscr> !
 	'sprinscr< !
 	;
 	
-::+sprite | N x y --
+::+sprite | N x y -- ; add the sprite N at screen position x y to the sorted list; it is ignored if it is outside the screen
 	mapth neg <? ( 3drop ; ) sh mapth + >? ( 3drop ; ) 32 << 
 	swap -32 <? ( 3drop ; ) sw 32 + >? ( 3drop ; )
 	$ffffffff and or | compress
@@ -156,7 +156,7 @@
 	;
 	
 |------------------------- 32x32 pixel
-::drawmaps | xvp yvp --
+::drawmaps | xvp yvp -- ; draw the map with its sprites from the viewport position xvp yvp in pixels (tiles of 32x32): back layers, then the sprites row by row, then the front layers
 	dup $1f and neg 'mapy ! 5 >> 'mapsy ! 
 	dup $1f and neg 'mapx ! 5 >> 'mapsx !
 	0 sprinscr> !
@@ -175,9 +175,9 @@
 	cerasemap ;
 
 |------ LOAD MAP
-::loadmap | filename -- 
+::loadmap | "filename" -- ; load a map file (8 bytes header, mapw maph, mapw*maph cells of 64 bits, tilew tileh, tileset image name) and its tileset; the view is 34x23 tiles of 32 pixels
 	here dup rot load | inimem endmem
-	over =? ( 2drop 0 ; ) 'here !
+	over =? ( 2drop ; ) 'here !
 	8 +
 	d@+ 'mapw ! d@+ 'maph !
 	dup 'mapgame !
@@ -192,19 +192,19 @@
 	34 'mapsw ! 23 'mapsh !	| conf?
 	;
 
-::bmap2xy | x y -- x y
+::bmap2xy | x y -- x y ; tile position x y to the pixel position in the tileset size (x*tilew, y*tileh) as fixed point
 	swap tilew * fix. swap tileh * fix. ;
-::whbmap | -- w h
+::whbmap | -- w h ; size of the map in tiles
 	mapw maph ;
 	
-::xyinmap@ | x y -- map
+::xyinmap@ | x y -- cell ; map cell (64 bits) at the position x y given as fixed point pixels (no range check)
 	16 >> mapth / swap 16 >> maptw / swap map> @ ;
 	
 :poketrigger | adr --
 	dup @ $4000000000000 nand? ( 2drop ; ) 
 	$8000000000000 or swap ! ;
 	
-::xytrigger | x y -- x y 
+::xytrigger | x y -- x y ; mark with the trigger flag (bit 51) the conditional tiles (bit 50) of the cells around x y; drawmaps clears the flag at the end of the frame
 	over 32 - maptw / over 32 + mapth / map>
 	dup poketrigger 
 	8 + poketrigger ;

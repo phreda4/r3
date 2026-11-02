@@ -27,7 +27,7 @@
 	689287499 * xor 
 	arraylen and ;
 
-::H2d.ini | maxobj --
+::H2d.ini | maxobj -- ; reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
 	dup 4 << nextpow2 1- 'arraylen !	
 	|..... MEMMAP .....
 	here 
@@ -39,18 +39,18 @@
 	here 'H2dlist ! | open list!
 	;
 				
-::H2d.clear
+::H2d.clear | -- ; empty the hash table and the contact list (call it every frame before adding the objects)
 	matrix -1 arraylen 2 >> 1+ fill	| fill hashtable with -1
 	H2dlist 'H2dlist> ! ;
 	
-::H2d.list	| -- 'adr cnt
+::H2d.list | -- 'adr cnt ; list of contacts found: cnt dwords, each (newer object nro << 16) | older object nro
 	H2dlist H2dlist> over - 2 >> ;
 	
 #point  
 #cpointx
 #cpointy
 #cpointr
-##checkmax 32	| check max in pixels
+##checkmax 32 | maximum distance in pixels where the neighbours are looked for (the hash cells are 32 pixels)
 #x1 #x2 #y1 #y2
 	
 	
@@ -85,7 +85,7 @@
 			1 + ) drop
 		1 + ) drop ;
 
-::h2d+! | nro r x y -- 
+::h2d+! | nro r x y -- ; add object nro (0..65534) with radius r (0..1023) at x y (pixels, 19 bits) and add to the list its contacts with the objects already added (square test: max(|dx|,|dy|) < r1 + r2)
 	$7ffff and dup 16 <<		| nro r x yr yrp
 	rot $7ffff and dup 35 << 	| nro r yr yrp xr xrp
 	rot or -rot swap			| nro r xyrp xr yr
@@ -98,6 +98,6 @@
 	w!
 	;
 
-::h2d! | x y zoom nro sizepixel/2 -- x y zoom 
+::h2d! | x y zoom nro size -- x y zoom ; add object nro at x y with the radius size*zoom (zoom fixed point) and leave x y zoom
 |	400 200 2.0 2 8 
 	pick2 *. pick4 pick4 h2d+! ;
