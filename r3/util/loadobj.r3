@@ -96,7 +96,7 @@
 	uface
 	nv b!+ nt 32 << nn or b!+
 	b> 72 - @+ b!+ @+ b!+		| vert 0
-	16 + @+ b!+ @+ b!+           | vert 2
+	16 + @+ b!+ @+ b!+ drop     | vert 2
 	colornow b!+ ;
 
 :pack nn 20 << nt or 20 << nv or ; | 4 | 20 nn|20 nt | 20 nv
@@ -290,7 +290,7 @@
 ::loadobj | "" -- mem
 	getpath
 	here dup 'textobj !
-	swap load over =? ( 2drop 0 ; ) 
+	swap load textobj =? ( drop 0 ; ) 
 	0 swap c!+ 'here !
 	0 'nver !
 	0 'nface !

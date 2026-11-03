@@ -106,7 +106,7 @@
 	.name immBLabel 
 	immln ;
 	
-::immlist | cnt --
+::immlist | cnt -- ; the list of files of the dialog with cnt lines: a click selects, a second click on the same line enters the folder or accepts the file; it has a scroll bar
 	dup immListBox
 	'clicklist onClick	
 	0 ( over over >?  drop
@@ -158,7 +158,7 @@
 	'winexit "CANCEL" immbtn immcr
 	;
 	
-::filedlgini | --
+::filedlgini | -- ; start the file dialog: 15 lines and memory reserved at here (a table of 1024 entries and 64 KB of names)
 	15 'filelines !
 	here dup 'files !	| 1k files
 	8192 + dup 'filen ! | 64k names
@@ -172,19 +172,19 @@
 	'filename strcpy
 	reload refile ;
 	
-::immfileload | 'vecload 'file --
+::immfileload | 'vecload 'file -- ; open the file dialog in LOAD mode on the folder of 'file with its name selected; 'vecload is executed when LOAD is pressed
 	loadnames
 	'vecexec !
 	"LOAD" 'labelok strcpy
 	'filedlg immwin! | winfix
 	;
 	
-::immfilesave | 'vecload 'file --
+::immfilesave | 'vecsave 'file -- ; like immfileload but in SAVE mode
 	loadnames
 	'vecexec !
 	"SAVE" 'labelok strcpy
 	'filedlg immwin!
 	;
 	
-::fullfilename
+::fullfilename | -- str ; the folder and the file name chosen, joined with sprint in a temporary string (no / between them)
 	'filename 'path "%s%s" sprint ;

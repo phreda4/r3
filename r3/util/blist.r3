@@ -24,7 +24,7 @@
 	
 ::blist? | f 'list -- f/0
 	@+ ( 1? 1 - swap
-		c@+ pick3 =? ( 2drop ; )
+		c@+ pick3 =? ( 3drop ; )
 		drop swap ) 
 	3drop 0 ;
 	

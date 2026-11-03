@@ -218,7 +218,7 @@
 				dup c@ $80 or swap c!
 				) drop nip ; 
 			) drop
-		>>0	) 2drop 0 ;
+		>>0	) 3drop 0 ;
 
 ::flCloseAll | -- ; close all the folders of uiDirs
 	uiDirs

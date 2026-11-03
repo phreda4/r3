@@ -36,7 +36,7 @@
 	dup v2len 0? ( 2drop ; ) v2/ ;
 
 ::v2lim | 'v lim -- ; limit the length of the vector to lim (fixed point)
-	over v2len 0? ( 2drop ; ) 
+	over v2len 0? ( 3drop ; ) 
 	over <=? ( 3drop ; )
 	/. v2* ;
 

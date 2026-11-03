@@ -449,7 +449,7 @@
     $7fffff and $800000 or			| exp mant
     127 rot - >>					| val = mant >> (127 - exp)
     255 * $400000 + 23 >>			| redondeo
-    dup $ff >? ( drop $ff ) ;		| clamp
+    $ff >? ( drop $ff ) ;			| clamp
 
 |--- pack 4 words, get diference 	
 :4dif | v1 v2 -- abs

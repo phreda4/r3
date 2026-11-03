@@ -1829,14 +1829,14 @@ cntdbrow | 'db -- cnt ; number of records (count of ^); 0 if 'db is 0
 getdbfld | nro 'row -- 'fld ; address of field nro (0 is the first) of a record; the field ends at | or ^, not at a 0
 cpydbfld | 'fld 'str -- ; copy the text of a field (up to | or ^) to 'str with a final 0
 cpydbfldn | max 'fld 'str -- ; like cpydbfld copying at most max characters
-colord
-color! | color --
-dlgColor | x y --
-dlgColorIni
-xydlgColor! | x y --
-dlgFileLoad | -- fn/0
-dlgFileSave | -- fn/0
-dlgSetPath | "path" --
+colord | color selected in the dialog $RRGGBB
+color! | color -- ; set the selected color $RRGGBB and move the marks of the picker to it
+dlgColor | -- ; draw the color dialog: the current color box (a click opens or closes the picker with hue bar, saturation and value square and alpha bar) and the palette of 3x20 colors (the old comment x y is not used, see xydlgColor!)
+dlgColorIni | -- ; start the color dialog: build the 128 step hue bar and the palette, color white, alpha 127
+xydlgColor! | x y -- ; position of the color dialog and rebuild its geometry
+dlgFileLoad | -- fn/0 ; modal dialog to choose a file to load (it runs its own SDLshow loop; up, down, enter and esc keys, click on a line); returns the full file name, or 0 if it was cancelled
+dlgFileSave | -- fn/0 ; modal dialog to write the name of a file to save (editable name, 64 characters); returns the full file name, or 0 if it was cancelled
+dlgSetPath | "path" -- ; set the folder where the file dialogs start
 dc.ini | mac 'dc dc.ini
 dc.clear | list --
 dc? | list -- cnt
@@ -2070,107 +2070,107 @@ pcrect | "" -- "" x y w h ; rectangle (position and size in pixels) of the strin
 pccursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
 pccursori | n -- ; like pccursor but a bar of a quarter of the height at the bottom (insert cursor)
 pcfont | -- ; load the font media/img/VGA8x16.png (8x16 characters in a 16x16 grid) and set the cursor size
-Lineal
-Quad_In
-Quad_Out
-Quad_InOut
-Cub_In
-Cub_Out
-Cub_InOut
-Quar_In
-Quar_Out
-Quar_InOut
-Quin_In
-Quin_Out
-Quin_InOut
-Sin_In
-Sin_Out
-Sin_InOut
-Exp_In
-Exp_Out
-Exp_InOut
-Cir_In | 18
-Cir_Out
-Cir_InOut
-Ela_In
-Ela_Out
-Ela_InOut
-Bac_In
-Bac_Out
-Bac_InOut
-Bou_Out
-Bou_In
-Bou_InOut
-easet
-ease | t nro -- t'
-easem | t nro -- t'
-catmullRom | p0 p1 p2 p3 t -- v
-immlist | cnt --
-filedlgini | --
-immfileload | 'vecload 'file --
-immfilesave | 'vecload 'file --
-fullfilename
-padx
-pady
-curx
-cury
-boxw
-boxh
-immcolorwin | window
-immcolortwin | title window (back)
-immcolortex | text
-immcolorbtn | button
-immgui
-immkey!
-immat
-immat+
-immbox
-immfont!
-immpad!
-immwinxy
-imm>>
-imm<<
-immdn
-immcr
-immln
-plgui
-plxywh
-immcur | x y w h --
-immcur> | -- cur
-imm>cur | cur --
-immlabel | "" --
-immlabelc | "" --
-immlabelr | "" --
-imm. | "" --
-immStrC | "" --
-immListBox | lines --
-immback | color --
-immblabel | "" --
-immicon | nro x y --
-immiconb | nro --
-immwidth | w --
-immbtn | 'click "" --
-immibtn | 'click nro --
-immtbtn | 'click "" --
-immebtn | 'click "" --
-immzone | 'click --
-immSliderf | 0.0 1.0 'value --
-immSlideri | 0 255 'value --
-immCheck | 'val "op1" -- ; v op1  v op2  x op3
-immScrollv | 0 max 'value --
-immRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
-immCombo | 'val "op1|op2|op3" -- ; [op1  v]
-immInputLine | 'buff max --
-immInputInt | 'var --
-immwin! | win --
-immwin$ | win --
-winexit
-immwin | 'win -- 0/1
-immnowin | xini yini w h --
-immwinbottom | ywin --
-immRedraw
-immwins
-immSDL | font --
+Lineal | t -- t ; no easing (linear): t unchanged; all the easing words take and return t in fixed point 0..1.0
+Quad_In | t -- t' ; t squared (quadratic) easing, slow at the start (0..1.0 in, 0..1.0 out)
+Quad_Out | t -- t' ; t squared (quadratic) easing, slow at the end
+Quad_InOut | t -- t' ; t squared (quadratic) easing, slow at the start and at the end
+Cub_In | t -- t' ; t cubed easing, slow at the start (0..1.0 in, 0..1.0 out)
+Cub_Out | t -- t' ; t cubed easing, slow at the end
+Cub_InOut | t -- t' ; t cubed easing, slow at the start and at the end
+Quar_In | t -- t' ; t to the 4th easing, slow at the start (0..1.0 in, 0..1.0 out)
+Quar_Out | t -- t' ; t to the 4th easing, slow at the end
+Quar_InOut | t -- t' ; t to the 4th easing, slow at the start and at the end
+Quin_In | t -- t' ; t to the 5th easing, slow at the start (0..1.0 in, 0..1.0 out)
+Quin_Out | t -- t' ; t to the 5th easing, slow at the end
+Quin_InOut | t -- t' ; t to the 5th easing, slow at the start and at the end
+Sin_In | t -- t' ; sine curve easing, slow at the start (0..1.0 in, 0..1.0 out)
+Sin_Out | t -- t' ; sine curve easing, slow at the end
+Sin_InOut | t -- t' ; sine curve easing, slow at the start and at the end
+Exp_In | t -- t' ; exponential curve easing, slow at the start (0..1.0 in, 0..1.0 out)
+Exp_Out | t -- t' ; exponential curve easing, slow at the end
+Exp_InOut | t -- t' ; exponential curve easing, slow at the start and at the end
+Cir_In | t -- t' ; circular curve easing, slow at the start (0..1.0 in, 0..1.0 out)
+Cir_Out | t -- t' ; circular curve easing, slow at the end
+Cir_InOut | t -- t' ; circular curve easing, slow at the start and at the end
+Ela_In | t -- t' ; elastic (the Tween.js version: it overshoots and oscillates) easing, slow at the start (0..1.0 in, 0..1.0 out)
+Ela_Out | t -- t' ; elastic (the Tween.js version: it overshoots and oscillates) easing, slow at the end
+Ela_InOut | t -- t' ; elastic (the Tween.js version: it overshoots and oscillates) easing, slow at the start and at the end
+Bac_In | t -- t' ; back (it overshoots a little before going) easing, slow at the start (0..1.0 in, 0..1.0 out)
+Bac_Out | t -- t' ; back (it overshoots a little before going) easing, slow at the end
+Bac_InOut | t -- t' ; back (it overshoots a little before going) easing, slow at the start and at the end
+Bou_Out | t -- t' ; bounce easing, bounces at the end
+Bou_In | t -- t' ; bounce easing, bounces at the start
+Bou_InOut | t -- t' ; bounce easing, bounces at the start and at the end
+easet | table of the easing words used by ease (entry 0 is not used, so number 1 is Quad_In); it ends with a 0
+ease | t nro -- t' ; apply the easing number nro to t: 0 linear, then In Out InOut of 1-3 Quad, 4-6 Cub, 7-9 Quar, 10-12 Quin, 13-15 Sin, 16-18 Exp, 19-21 Cir, 22-24 Ela, 25-27 Bac, 28-30 Bou (no range check above 30)
+easem | t nro -- t' ; like ease with a short table, only the low 4 bits of nro count: 0 linear, then In Out InOut of 1-3 Sin, 4-6 Exp, 7-9 Bac, 10-12 Ela, 13-15 Bou
+catmullRom | p0 p1 p2 p3 t -- v ; Catmull-Rom spline value between p1 (t = 0) and p2 (t = 1.0) using the neighbours p0 and p3
+immlist | cnt -- ; the list of files of the dialog with cnt lines: a click selects, a second click on the same line enters the folder or accepts the file; it has a scroll bar
+filedlgini | -- ; start the file dialog: 15 lines and memory reserved at here (a table of 1024 entries and 64 KB of names)
+immfileload | 'vecload 'file -- ; open the file dialog in LOAD mode on the folder of 'file with its name selected; 'vecload is executed when LOAD is pressed
+immfilesave | 'vecsave 'file -- ; like immfileload but in SAVE mode
+fullfilename | -- str ; the folder and the file name chosen, joined with sprint in a temporary string (no / between them)
+padx | horizontal padding around the widgets in pixels
+pady | vertical padding around the widgets in pixels
+curx | x of the current widget (cursor) in pixels
+cury | y of the current widget (cursor) in pixels
+boxw | width of the widgets in pixels
+boxh | height of the widgets in pixels
+immcolorwin | window background color $RRGGBB
+immcolortwin | window title bar color $RRGGBB
+immcolortex | text color $RRGGBB
+immcolorbtn | button color $RRGGBB
+immgui | -- ; start of a gui frame, once per frame before the widgets: calls gui and resets the layout (cursor at 0 0, box = screen width by font height + 8)
+immkey! | 'vec -- ; word to execute at the end of immRedraw of this frame (keyboard handler)
+immat | x y -- ; set the cursor (position of the next widget)
+immat+ | x y -- ; move the cursor by x y pixels
+immbox | w h -- ; set the size of the next widgets
+immfont! | font -- ; set the TTF font used by the widgets and measure its height
+immpad! | padx pady -- ; set the padding around the widgets
+immwinxy | x y -- ; set the origin of the window and put the cursor inside it with the padding
+imm>> | -- ; move the cursor one widget to the right (box width plus the padding of both sides)
+imm<< | -- ; move the cursor one widget to the left
+immdn | -- ; move the cursor one widget down (box height plus the padding of both sides)
+immcr | -- ; new line: x back to the left of the window and y down one widget
+immln | -- ; new line: x back to the left of the window and y down only the box height
+plgui | -- ; start a widget at the cursor: guiBox of the current box with the padding
+plxywh | -- x y w h ; rectangle of the widget at the cursor, with the padding
+immcur | x y w h -- ; set the guiBox of the rectangle x y w h (relative to the window), draw a gray outline around it and make it the cursor and the box
+immcur> | -- cur ; pack the cursor and the box in one value: curx | cury<<16 | boxw<<32 | boxh<<48
+imm>cur | cur -- ; restore the cursor and the box packed by immcur>
+immlabel | "" -- ; draw the text (formatted, see ttprint) at the left of the current box, vertically centered
+immlabelc | "" -- ; draw the text centered in the current box
+immlabelr | "" -- ; draw the text right aligned in the current box
+imm. | "" -- ; draw the text (formatted with sprint) at the cursor and move the cursor right by its width plus padding (inline text)
+immStrC | "" -- ; draw the text centered in the current box (no format)
+immListBox | lines -- ; guiBox of a list area of that many box heights
+immback | color -- ; fill the current box with the color (for the lines of a list)
+immblabel | "" -- ; text of a list line at the left of the current box (without the vertical padding)
+immicon | nro x y -- ; draw the icon nro of the icon set at x y
+immiconb | nro -- ; draw the icon nro centered in the current box with the text color
+immwidth | w -- ; set the width of the next widgets
+immbtn | 'click "" -- ; button with centered text: moves 2 pixels while the mouse is over it and executes 'click when clicked
+immibtn | 'click nro -- ; button with the icon nro
+immtbtn | 'click "" -- ; button as wide as its text; the background shows only while the mouse is over it
+immebtn | 'click "" -- ; button with the text only (no background), as wide as its text
+immzone | 'click -- ; invisible clickable area of the current box
+immSliderf | min max 'value -- ; horizontal slider of a fixed point value between min and max (it shows the value with 2 decimals)
+immSlideri | min max 'value -- ; horizontal slider of an integer value between min and max
+immCheck | 'val "text" -- ; check box: a click toggles bit 0 of the variable
+immScrollv | 0 max 'value -- ; vertical scroll bar for the value between 0 and max (the code notes it is incorrect)
+immRadio | 'val "op1|op2|op3" -- ; radio buttons, one line per option: the variable holds the number (0 is the first) of the chosen one
+immCombo | 'val "op1|op2|op3" -- ; shows the chosen option; a click goes to the next one (it is not a drop down list)
+immInputLine | 'buff max -- ; line editor of the text in 'buff (max bytes): insert or overwrite (Ins), left, right, home, end, backspace and delete; tab and enter go to the next widget
+immInputInt | 'var -- ; integer input: the digits typed are appended, backspace or delete divide by 10 (no negative numbers)
+immwin! | 'winword -- ; add a window to the list drawn by immRedraw ('winword draws the window and its widgets); it is not added twice
+immwin$ | 'winword -- ; remove the window from the list
+winexit | -- ; close the window that has the mouse over it (it is the action of the close button)
+immwin | 'win -- 0/flags ; draw the window of the record 'win (flags, x y w h in four dwords, title): flag 1 = open, flag 2 = comes to the front; handles dragging by the title and the close button; returns 0 if it is closed, else puts the cursor and the box inside the window
+immnowin | x y w h -- ; set the region for the widgets without a window frame
+immwinbottom | 'win -- ; set the height of the window record to the cursor y reached (the window fits its content)
+immRedraw | -- ; execute the word of every window of the list, bring the clicked window to the front and execute the key handler set with immkey!
+immwins | 'win -- ; like immwin for a fixed window: no dragging, no close button
+immSDL | font -- ; start the gui with the TTF font and load the icons media/img/icong16.png (tiles of 24x21)
 shellsort | len lista -- ; lista es valor-dato
 shellsort2 | len lista -- ; lista es dato-valor
 shellsort1 | len lista -- ; lista es dato|valor

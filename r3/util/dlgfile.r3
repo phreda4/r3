@@ -197,7 +197,7 @@
 	'path "%s/%s" sprint
 	;
 
-::dlgFileLoad | -- fn/0
+::dlgFileLoad | -- fn/0 ; modal dialog to choose a file to load (it runs its own SDLshow loop; up, down, enter and esc keys, click on a line); returns the full file name, or 0 if it was cancelled
 	dlgFileIni
 	'fileload SDLshow
 	dlgFileEnd
@@ -225,7 +225,7 @@
 	SDLredraw 
 	;
 
-::dlgFileSave | -- fn/0
+::dlgFileSave | -- fn/0 ; modal dialog to write the name of a file to save (editable name, 64 characters); returns the full file name, or 0 if it was cancelled
 	dlgFileIni
 	'filesave SDLShow
 	dlgFileEnd
@@ -233,5 +233,5 @@
 	fullfilename
 	;
 
-::dlgSetPath | "path" --
+::dlgSetPath | "path" -- ; set the folder where the file dialogs start
 	'path strcpy ;

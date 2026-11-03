@@ -52,11 +52,11 @@
 #r3_lib_jul.r3 'name 'words 'info
 #name "r3/lib/math.r3"
 #words  "cell" "cell+" "ncell+" "ndword+" "nword+" "1+" "1-" "2/" "2*" "*.s" "*." "*.f" "/." "2/." "ceil" "int." "fix." "sign" "cos" "sin" "tan" "sincos" "xy+polar" "xy+polar2" "ar>xy" "polar" "polar2" "dir2vec" "sdir2vec" "atan2" "atan2x" "distfast" "average" "min" "max" "clampmax" "clampmin" "clamp0" "clamp0max" "clamps16" "between" "msb" "ctz" "sqrt." "log2." "pow2." "pow." "root." "ln." "exp." "tanh." "fastanh." "gamma." "beta." "cubicpulse" "pow" "bswap32" "bswap64" "nextpow2" "6*" "6/" "6mod" "10*" "10/" "10/mod" "1000000/" "i2fp" "f2fp" "memfloat" "mem2float" "memd2float" "fp2f" "fp2i" "fp16f" "f2fp24" "fp2f24" "byte>float32N" "float32N>byte" 0
-#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $20 $3F $2F $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $10 $10 $10 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $11 )
+#info ( $80 $10 $2F $2F $2F $10 $10 $10 $10 $2F $2F $2F $2F $10 $10 $10 $10 $11 $10 $10 $10 $11 $4E $4E $40 $20 $20 $20 $3F $2F $2F $2F $2F $2F $2F $2F $2F $10 $2F $10 $3E $10 $10 $10 $10 $10 $2F $2F $10 $10 $10 $10 $10 $2F $3E $2F $10 $10 $10 $10 $10 $10 $10 $10 $11 $10 $10 $10 $2E $3D $3D $10 $10 $10 $10 $10 $10 $10 )
 #r3_lib_math.r3 'name 'words 'info
 #name "r3/lib/mem.r3"
 #words  "here" "," ",c" ",q" ",w" ",s" ",word" ",line" ",2d" ",d" ",h" ",b" ",f" ",ifp" ",ffp" ",cr" ",eol" ",sp" ",nl" ",nsp" "align32" "align16" "align8" "mark" "empty" "savemem" "sizemem" "memsize" "savememinc" "cpymem" "appendmem" ",print" "sprint" "sprintln" 0
-#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $F $0 $0 )
+#info ( $80 $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $0 $0 $0 $0 $1F $10 $10 $10 $0 $0 $1F $1 $2 $1F $1F $1F $1F $10 $10 )
 #r3_lib_mem.r3 'name 'words 'info
 #name "r3/lib/memavx.r3"
 #words  "memcpy_rgb3f" "memcpy_bgr3f" "memcpy_rgbf" "memcpy_f32p16" "memcpy_p16f32" "memcpy_avx" 0
@@ -80,7 +80,7 @@
 #r3_lib_rand.r3 'name 'words 'info
 #name "r3/lib/sdl2.r3"
 #words  "SDL_Init" "SDL_GetCurrentDisplayMode" "SDL_Quit" "SDL_GetNumVideoDisplays" "SDL_CreateWindow" "SDL_SetWindowFullscreen" "SDL_RenderSetLogicalSize" "SDL_RaiseWindow" "SDL_GetWindowSize" "SDL_SetWindowSize" "SDL_GetWindowSurface" "SDL_ShowCursor" "SDL_UpdateWindowSurface" "SDL_DestroyWindow" "SDL_CreateRenderer" "SDL_CreateTexture" "SDL_QueryTexture" "SDL_SetTextureColorMod" "SDL_SetTextureAlphaMod" "SDL_DestroyTexture" "SDL_DestroyRenderer" "SDL_UpdateTexture" "SDL_RenderClear" "SDL_RenderCopy" "SDL_RenderPresent" "SDL_CreateTextureFromSurface" "SDL_CreateRGBSurfaceWithFormatFrom" "SDL_CreateRGBSurfaceWithFormat" "SDL_SetRenderDrawColor" "SDL_GetRenderDrawColor" "SDL_CreateRGBSurface" "SDL_LockSurface" "SDL_UnlockSurface" "SDL_BlitSurface" "SDL_SetSurfaceBlendMode" "SDL_SetSurfaceAlphaMod" "SDL_FillRect" "SDL_FreeSurface" "SDL_LockTexture" "SDL_UnlockTexture" "SDL_SetRenderDrawBlendMode" "SDL_SetTextureBlendMode" "SDL_ConvertSurfaceFormat" "SDL_UpdateYUVTexture" "SDL_RenderDrawPoint" "SDL_RenderDrawPoints" "SDL_RenderDrawLine" "SDL_RenderDrawRect" "SDL_RenderFillRect" "SDL_RenderGeometry" "SDL_RenderReadPixels" "SDL_RenderSetClipRect" "SDL_SetTextureScaleMode" "SDL_SetRenderTarget" "SDL_Delay" "SDL_PollEvent" "SDL_GetTicks" "SDL_RWFromFile" "SDL_RWclose" "SDL_GL_SetAttribute" "SDL_GL_CreateContext" "SDL_GL_DeleteContext" "SDL_GL_SetSwapInterval" "SDL_GL_SwapWindow" "SDL_GL_LoadLibrary" "SDL_GL_GetProcAddress" "SDL_GL_MakeCurrent" "SDL_SetHint" "SDL_GetError" "SDL_OpenAudioDevice" "SDL_QueueAudio" "SDL_GetQueuedAudioSize" "SDL_PauseAudioDevice" "SDL_CloseAudioDevice" "SDL_GetClipboardText" "SDL_HasClipboardText" "SDL_SetClipboardText" "SDL_free" "SDL_windows" "SDLrenderer" "sw" "sh" "SDLinit" "SDLmini" "SDLinitScr" "sdlinitR" "SDLdfullsw" "SDLfullw" "SDLfull" "SDLframebuffer" "SDLblend" "SDLquit" "SDLevent" "SDLkey" "SDLchar" "SDLx" "SDLy" "SDLb" "SDLw" "SDLeventR" "SDLupdate" "SDLClick" ".exit" "SDLshow" "exit" "SDLredraw" "sdlbreak" "SDLTexwh" "%w" "%h" 0
-#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $10 $2E $80 $2F $0 $0 $10 $11 $10 $10 )
+#info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $1F $0 $1F $80 $1F $0 $0 $0 $11 $10 $10 )
 #r3_lib_sdl2.r3 'name 'words 'info
 #name "r3/lib/sdl2gfx.r3"
 #words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "fround" "round" "fcircle" "circle" "polyop" "polyline" "triangle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
@@ -128,11 +128,11 @@
 #r3_lib_str.r3 'name 'words 'info
 #name "r3/lib/trace.r3"
 #words  "<<trace" "<<traceh" "<<memdump" "<<memdumpc" "clearlog" "filelog" "<<memmap" 0
-#info ( $70 $70 $1E $1E $0 $F $F )
+#info ( $50 $50 $2E $2E $0 $1F $1F )
 #r3_lib_trace.r3 'name 'words 'info
 #name "r3/lib/vdraw.r3"
 #words  "vset!" "vget!" "vsize!" "vop" "vline" "vfill" "vrect" "vfrect" "vellipse" "vellipseb" 0
-#info ( $1F $1F $2E $2E $1E $1E $2C $1C $1C $70 )
+#info ( $1F $1F $2E $2E $2E $2E $4C $4C $4C $40 )
 #r3_lib_vdraw.r3 'name 'words 'info
 #name "r3/lib/vec2.r3"
 #words  "v2=" "v2+" "v2-" "v2+*" "v2-*" "v2*" "v2/" "v2len" "v2nor" "v2lim" "v2rot" "v2dot" "v2perp" 0
@@ -148,15 +148,15 @@
 #r3_lib_webcam.r3 'name 'words 'info
 #name "r3/util/arr16.r3"
 #words  "p.ini" "p.clear" "p.cnt" "p.adr" "p.nro" "p!+" "p!" "p.draw" "p.drawo" "p.del" "p.mapv" "p.mapd" "p.map2" "p.sort" "p.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $2F $2F $2E $4E $4E $3E $2E $2E )
+#info ( $2E $1F $10 $2F $2F $2F $10 $1F $1F $2E $2E $2E $2E $2E $2E )
 #r3_util_arr16.r3 'name 'words 'info
 #name "r3/util/arr8.r3"
 #words  "p8.ini" "p8.clear" "p8.cnt" "p8.adr" "p8.nro" "p8!+" "p8!" "p8.draw" "p8.drawo" "p8.del" "p8.last" "p8.cpy" "p8.mapv" "p8.mapd" "p8.map2" "p8.sort" "p8.isort" 0
-#info ( $2E $1F $10 $2F $2F $2F $10 $1F $1F $2E $10 $2E $E $2E $7E $2E $2E )
+#info ( $2E $1F $10 $2F $2F $2F $10 $1F $1F $2E $10 $2E $2E $2E $2E $2E $2E )
 #r3_util_arr8.r3 'name 'words 'info
 #name "r3/util/bfont.r3"
 #words  "wp" "hp" "bmfont" "bcolor" "bfbox" "bbox" "bbox2" "bfillline" "bsrcsize" "bfillemit" "bfcemit" "bemit" "bprint" "bemits" "bprintd" "bemitsd" "bprint2" "bemits2" "bprintz" "bemitsz" "bat" "ccx" "ccy" "gotoxy" "gotox" "bcr" "bcr2" "bcrz" "bsp" "bnsp" "bsize" "bpos" "brect" "bcursor" "bcursori" "bcursor2" "bcursori2" "bfont1" "bfont2" 0
-#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $10 $1F $1F $2F $1F $2F $1F $2F $1F $3E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $12 $2 $14 $1F $1F $1F $1F $0 $0 )
+#info ( $80 $80 $3D $1F $0 $0 $0 $4C $40 $10 $1F $1F $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $0 $1F $12 $2 $14 $1F $1F $1F $1F $0 $0 )
 #r3_util_bfont.r3 'name 'words 'info
 #name "r3/util/blist.r3"
 #words  "blistdel" "blist!" "blist-" "blist@" "blist?" 0
@@ -164,7 +164,7 @@
 #r3_util_blist.r3 'name 'words 'info
 #name "r3/util/bmap.r3"
 #words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "bmap2xy" "whbmap" "xyinmap@" "xytrigger" 0
-#info ( $80 $0 $3D $6E $1F $20 $2 $2F $20 )
+#info ( $80 $0 $3D $2E $1F $20 $2 $2F $20 )
 #r3_util_bmap.r3 'name 'words 'info
 #name "r3/util/datetime.r3"
 #words  ",time" ",ti:me" ",date" ",date-" "str_DMA" "str_HMS" "str_HM" ">dianame" ">mesname" "str_fullday" "str_hhmmss" "dt2timesql" "dt>64" ",64>dtf" ",64>dtd" ",64>dtt" "64>dtc" 0
@@ -172,7 +172,7 @@
 #r3_util_datetime.r3 'name 'words 'info
 #name "r3/util/dbtxt.r3"
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
-#info ( $80 $3F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3D )
+#info ( $80 $2F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3D )
 #r3_util_dbtxt.r3 'name 'words 'info
 #name "r3/util/dlgcol.r3"
 #words  "colord" "color!" "dlgColor" "dlgColorIni" "xydlgColor!" 0
@@ -188,7 +188,7 @@
 #r3_util_dlist.r3 'name 'words 'info
 #name "r3/util/filedirs.r3"
 #words  "uiDirs" "uiFiles" "flcpy" "flTreePath" "FlGetFiles" "flScanDir" "flScanFullDir" "flOpenFullPath" "flOpenSearch" "flCloseAll" 0
-#info ( $80 $80 $2E $10 $2F $2E $1F $10 $11 $0 )
+#info ( $80 $80 $2E $10 $1F $2E $1F $10 $10 $0 )
 #r3_util_filedirs.r3 'name 'words 'info
 #name "r3/util/hash2d.r3"
 #words  "H2d.ini" "H2d.clear" "H2d.list" "checkmax" "h2d+!" "h2d!" 0
@@ -200,43 +200,43 @@
 #r3_util_heap.r3 'name 'words 'info
 #name "r3/util/imcolor.r3"
 #words  "color!" "uiColor" "uiColorH" 0
-#info ( $1F $2E $3D )
+#info ( $1F $1F $2E )
 #r3_util_imcolor.r3 'name 'words 'info
 #name "r3/util/imedit.r3"
 #words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edlinenum!" "edlinenum" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $10 $1F $1F $0 $1F $2E $0 $0 $4C $1F $1F $0 )
+#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $10 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
 #r3_util_imedit.r3 'name 'words 'info
 #name "r3/util/imfiledlg.r3"
 #words  "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
-#info ( $4F $4F $31 $2E )
+#info ( $1F $1F $1 $1F )
 #r3_util_imfiledlg.r3 'name 'words 'info
 #name "r3/util/immdatetime.r3"
 #words  "uiDateTime" "uiDate" "uiTime" 0
-#info ( $2E $2E $2E )
+#info ( $1F $1F $1F )
 #r3_util_immdatetime.r3 'name 'words 'info
 #name "r3/util/immi.r3"
 #words  "cx" "cy" "cw" "ch" "%cw" "%ch" "uiPading" "uiBox" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "mdrag" "keymd" "btnMouse" "uiEx?" "uiOvr" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiStart" "uiExitWidget" "uiSaveLast" "uiEnd" "uiZone" "uiZoneL" "uiZoneW" "uiZoneBox" "uiBackBox" "uiPlace" "uiRefocus" "uiFocus>>" "uiFocus<<" "tabfocus" "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTex" "uiWinBox" "uiLineGridV" "uiLineGridH" "uiLineGrid" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "stColor" "uilFill" "uilRFill" "uilCFill" "uilTex" "uilRect" "uilRRect" "uilCRect" "uil.." "ui.." "ui--" "ttwrite" "ttwritec" "ttwriter" "uiTlabel" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "uiTBtn" "uiNBtn" "uiBtn" "uiRBtn" "uiCBtn" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiVSliderf" "uiVSlideri" "uiNindx" "uiCheck" "uiRadio" "uiList" "uiTree" "uiCombo" "uiInputLine" 0
-#info ( $80 $80 $80 $80 $10 $10 $2E $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $1 $2E $2E $2E $2E $2E $2E $2E $0 $0 $5B $1F $0 $1F $0 $4C $0 $1F $0 $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $4 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $2E $79 $4C $6A $6A $6A $5B $5B $5B $5B $5B $5B $10 $4E $4E $5B $5B $3D $4C )
+#info ( $80 $80 $80 $80 $10 $10 $2E $4C $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $1 $1F $1F $1F $1F $1F $1F $1F $0 $0 $5B $0 $0 $1F $0 $4C $0 $1F $0 $0 $0 $0 $0 $0 $1F $1F $0 $0 $1F $4 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $2F $2E $2E $2E $2E $2E $3D $3D $3D $3D $3D $3D $10 $2E $2E $3D $3D $2E $2E )
 #r3_util_immi.r3 'name 'words 'info
 #name "r3/util/loadobj.r3"
 #words  "verl" "nver" "facel" "nface" "norml" "texl" "ntex" "paral" "colorl" "ncolor" "]face" "]vert" "]norm" "]uv" ">>cr" "]Ka@" "]Kd@" "]Ks@" "]Ke@" "]Ns@" "]Ni@" "]d@" "]i@" "]Mkd@" "]MNs@" "]Mbp@" "cnt/" "getpath" "loadobj" "xmin" "ymin" "zmin" "xmax" "ymax" "zmax" "objminmax" "objmove" "objcentra" "objescala" "objescalax" "objescalay" "objescalaz" "objcube" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $20 $80 $80 $80 $80 $80 $80 $0 $3D $0 $2E $2E $2E $2E $1F )
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $80 $80 $80 $80 $80 $0 $3D $0 $2E $2E $2E $2E $1F )
 #r3_util_loadobj.r3 'name 'words 'info
 #name "r3/util/pcfont.r3"
 #words  "pccolor" "pcemit" "pcfbox" "pcbox" "pcbox2" "pcfillline" "pcsrcsize" "pcfillemit" "pcprint" "pcemits" "pcprintd" "pcemitsd" "pcprint2" "pcemits2" "pcprintz" "pcemitsz" "pcat" "ccx" "ccy" "gotoxy" "gotox" "pccr" "pcsp" "pcnsp" "pcsize" "pcpos" "pcrect" "pccursor" "pccursori" "pcfont" 0
-#info ( $1F $1F $0 $0 $0 $4C $40 $10 $3F $1F $3F $1F $3F $1F $4E $2E $2E $1 $1 $2E $1F $0 $0 $1F $12 $2 $14 $1F $1F $0 )
+#info ( $1F $1F $0 $0 $0 $4C $40 $10 $1F $1F $1F $1F $1F $1F $2E $2E $2E $1 $1 $2E $1F $0 $0 $1F $12 $2 $14 $1F $1F $0 )
 #r3_util_pcfont.r3 'name 'words 'info
 #name "r3/util/penner.r3"
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
-#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $6F $6F $5C )
+#info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $2F $2F $5C )
 #r3_util_penner.r3 'name 'words 'info
 #name "r3/util/sdlfiledlg.r3"
 #words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
-#info ( $3F $0 $3E $3E $21 )
+#info ( $1F $0 $2E $2E $1 )
 #r3_util_sdlfiledlg.r3 'name 'words 'info
 #name "r3/util/sdlgui.r3"
 #words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immStrC" "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $6F $6F $6F $6F $1F $1F $1F $6F $3D $1F $1F $E $E $E $E $7F $6D $6D $7E $6D $5E $7E $6E $6F $1F $1F $0 $60 $4C $1F $0 $50 $10 )
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $1F $3D $1F $1F $2E $2E $2E $2E $1F $3D $3D $2E $3D $2E $2E $2E $1F $1F $1F $0 $10 $4C $1F $0 $10 $10 )
 #r3_util_sdlgui.r3 'name 'words 'info
 #name "r3/util/sort.r3"
 #words  "shellsort" "shellsort2" "shellsort1" "sortstr" 0
@@ -244,7 +244,7 @@
 #r3_util_sort.r3 'name 'words 'info
 #name "r3/util/sortradix.r3"
 #words  "radixsort32" "radixsort16" "radixsort64" 0
-#info ( $5E $5E $5E )
+#info ( $2E $2E $2E )
 #r3_util_sortradix.r3 'name 'words 'info
 #name "r3/util/sortradixm.r3"
 #words  "radixsort" "radixsortm" 0
@@ -268,19 +268,19 @@
 #r3_util_ttfont.r3 'name 'words 'info
 #name "r3/util/tui.r3"
 #words  "fx" "fy" "fw" "fh" "flin?" "flin?1" "flxvalid?" "flx!" "flx" "flxpush" "flxpop" "flxRest" "flxN" "flxS" "flxE" "flxO" "fw%" "fh%" "flpad" "fhome" "uikey" "tuiexit" "tuX?" "tuR!" "tuC!" ".tdebug" "tuiw" "tuiw1" "tuRefocus" "tuif" "tui" "onTui" "onTuia" "onTuiResize" ".wfill" ".wborde" ".wborded" ".wbordec" ".wtitle" "tuWin" "tuWina" "tuTBtn" "tuBtn" "tuLabel" "tuLabelC" "tuLabelR" "xwrite!" "xwrite.reset" "uiNindx" "tuList" "xwriten!" "xwriten.reset" "uiNindxn" "tuListN" "flVisibleIndex" "tuTree" "tuText" "padi>" "tuInputLine" "tuCheck" "tuRadio" "tuSlider" "tuProgress" "pal.dark" "pal!" "cbg" "cfg" "bg0" "bg1" "bg2" "bg3" "fTx" "fMu" "fDi" "fPr" "fBl" "fPu" "fGr" "fRd" "fYe" "fcr" ".lw" ".cw" ".rw" ".nd" ".nh" ".nf" ".nb" "pan" ".lines" "tcols" "cell" "row" "hdr" "tbw" "tbtop" "tbsep" "tbbot" "tbrowc" "tbrow" "tbhdr" "flxRoot" "flxC" "tuDlg" "tuDlgEnd" 0
-#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $2E $3E $1F $0 $0 $0 $0 $6A $0 $0 $4D $4D $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $2F $2E $2E $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $3E $2F $2F $0 $2E $79 $0 )
+#info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $0 $1F $1F $1F $0 $0 $0 $0 $2E $0 $0 $1F $2E $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $2F $2E $2F $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $2E $1F $1F $0 $2E $3D $0 )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
 #words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuelstart" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueinsat" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
-#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $10 $0 $1 $0 $0 $0 $2E $10 $1F $0 $10 $10 $10 $1 $1F $1F $1F $0 $0 $1F )
+#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $10 $0 $1 $0 $0 $0 $2E $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
 #words  "txloadwicon" "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txfit" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "pad.reset" "pad.draw" 0
-#info ( $2F $2F $1F $1 $1F $20 $11 $2F $20 $1 $2E $2E $0 $2 $2F $1F $1F $2E $1F $1F $3E $3E $2E $2E $2E $1F $5B $2F $1F )
+#info ( $2F $2F $1F $1 $1F $20 $11 $2F $20 $1 $2E $2E $0 $2 $2F $1F $1F $2E $1F $1F $3E $3E $2E $2E $2E $1F $5C $2F $1F )
 #r3_util_txfont.r3 'name 'words 'info
 #name "r3/util/utfg.r3"
 #words  ".xwrite" ".awrite" ".vline" ".hline" ".vlined" ".hlined" ".vline2" ".vlined2" ".boxl" ".boxc" ".boxd" ".boxf" "lalign" "calign" "ralign" "lwrite" "cwrite" "rwrite" "xalign" "xwrite" "xText" "rgb4t" 0
-#info ( $5F $5F $1F $1F $1F $1F $1F $1F $C $C $C $7C $2E $2E $2E $2E $2E $2E $1F $2F $7B $10 )
+#info ( $1F $1F $1F $1F $1F $1F $1F $1F $4C $4C $4C $4C $2E $2E $2E $2E $2E $2E $1F $0 $5C $10 )
 #r3_util_utfg.r3 'name 'words 'info
 #name "r3/util/varanim.r3"
 #words  "deltatime" "timeline" "timeline<" "timeline>" "exevar" "timer<" "timer." "timer+" "timer-" "vareset" "vaini" "vupdate" "+vanim" "+vanimg" "+vboxanim" "+vboxanimg" "+vxyanim" "+vxyanimg" "+vcolanim" "+vcolanimg" "+vexe" "+vexeg" "+vvexe" "+vvexeg" "+vvvexe" "+vvvexeg" "vkillgroup" "vkillvar" "64xy" "64wh" "64xywh" "xywh64" "64xyrz" "xyrz64" "64box" "32xy" "xy32" "vaempty" "aniInit" "ani+!" "aniFrame" "aniCnt" "ani+timer!" 0

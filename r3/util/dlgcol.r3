@@ -6,7 +6,7 @@
 ^r3/lib/gui.r3
 ^r3/util/bfont.r3
 
-##colord 0
+##colord 0 | color selected in the dialog $RRGGBB
 
 #select 0
 
@@ -23,7 +23,7 @@
 #pal8 * 300
 #npal
 
-::color! | color --
+::color! | color -- ; set the selected color $RRGGBB and move the marks of the picker to it
 	dup 'colord !
 	|select 0? ( 2drop ; ) drop
 	rgb2hsv | h s v
@@ -117,7 +117,7 @@
 	cwx 5 + i2fp da!+ cwy 5 + 128 + i2fp da!+ 0 da!+ 8 a+
 	;
 
-::dlgColor | x y --
+::dlgColor | -- ; draw the color dialog: the current color box (a click opens or closes the picker with hue bar, saturation and value square and alpha bar) and the palette of 3x20 colors (the old comment x y is not used, see xydlgColor!)
 	select 1? ( 60 'cwx +! fillcbox selectColorPick -60 'cwx +! ) drop
 
 	$454545 color
@@ -148,7 +148,7 @@
 			1 + ) drop
 		1 + ) 2drop ;	
 
-::dlgColorIni
+::dlgColorIni | -- ; start the color dialog: build the 128 step hue bar and the palette, color white, alpha 127
 	'col128 >a
 	0 ( 128 <?
 		dup 9 << 1.0 1.0 hsv2rgb da!+
@@ -167,7 +167,7 @@
 	colord color! 
 	;
 
-::xydlgColor! | x y --
+::xydlgColor! | x y -- ; position of the color dialog and rebuild its geometry
 	'cwy ! 'cwx !
 	fillcbox
 	;

@@ -478,12 +478,14 @@
 #cano
 #finlist * 800  | 100 ;
 #lastdircode
+#exunk	| 1 if the word has an ex with unknown stack effect
+#regA #regB	| lastdircode saved by >a >b
 
 ::resetinfo | --
 	0 'flag !
 	'sst 'sst> !		| stack
 	0 'pano ! 0 'cano ! 0 'cntfin !
-	0 'usoD ! 0 'deltaD ! 0 'deltaR ! ;
+	0 'usoD ! 0 'deltaD ! 0 'deltaR ! -1 'lastdircode ! 0 'exunk ! -1 'regA ! -1 'regB ! ;
 
 :pushvar
 	deltaD $ff and 8 << 
@@ -526,9 +528,10 @@
 :.blit 
 :.lit
 :.data 
-:.adata 
 	drop
 	;
+:.adata 
+	8 >> $ffffff and 'lastdircode ! ;	| last address pushed (var or code), used by ex
 	
 :.code 
 	|dup 8 - @
@@ -576,9 +579,35 @@
 	24 << 32 >> over + 8 - 		| go to )
 	@ 8 >> $ffffff and 0? ( drop ; ) drop	| IF -> do nothing
 	dropvar pushvar ; 						| WHILE -> copy stack
+##exstrict 0	| 1: error when the vectors of an ex table have different stack delta
+#vuse #vdel #vcnt #vbad #curdic
+
+:vecinfo | tok --	; stack effect of one vector of the table
+	dup $ff and 3 <>? ( 2drop ; ) drop	| only code addresses
+	8 >> $ffffff and nro>dic
+	dup @ 1 and? ( 2drop ; ) drop
+	8 + @
+	dup $ff and vuse max 'vuse !	| use: the max of all
+	48 << 56 >>						| delta
+	vcnt 0? ( drop 'vdel ! 1 'vcnt ! ; ) drop
+	vdel <>? ( 1 'vbad !
+		exstrict 1? ( curdic @ dic>name "ex: vectors with different stack delta" error! ) drop )
+	drop ;
+
+:exdata | dic --	; 'table @ ex: all vectors of the table must have the same effect
+	0 'vuse ! 0 'vcnt ! 0 'vbad !
+	toklend ( 1? 1- swap @+ vecinfo swap ) 2drop
+	vcnt 0? ( drop 1 'exunk ! ; ) drop	| no vectors (runtime var): unknown
+	vbad 1? ( drop 1 'exunk ! ; ) drop	| vectors differ: unknown
+	vuse deltaD swap - neg clamp0 usoD max 'usoD !
+	vdel 'deltaD +! ;
+
 :.ex
 	drop
-	lastdircode nro>dic 8 + @
+	lastdircode -? ( drop 1 'exunk ! ; ) nro>dic
+	-1 'lastdircode !	| consumed
+	dup @ 1 and? ( drop exdata ; ) drop
+	8 + @
 	dup $ff and deltaD swap - neg clamp0 usoD max 'usoD !
 	48 << 56 >> 'deltaD +!
 	;
@@ -596,6 +625,13 @@
 	6 >? ( dup 7 - basename .print ) drop
 	;
 	
+:regtrack | ntok --	; follow the vector address through the registers
+	85 =? ( lastdircode 'regA ! -1 'lastdircode ! drop ; )	| >A
+	86 =? ( regA 'lastdircode ! drop ; )						| A>
+	100 =? ( lastdircode 'regB ! -1 'lastdircode ! drop ; )	| >B
+	101 =? ( regB 'lastdircode ! drop ; )						| B>
+	drop ;
+
 ::tokeninfo | tok --
 |	debuginfo
 	dup $ff and | tok ntok
@@ -605,16 +641,31 @@
 	c@+ 'deltaR +!
 	c@ $ff and flag or 'flag !
 |	usoD deltaD " d:%d u:%d " .println
-	25 >? ( 2drop ; )
+	25 >? ( nip regtrack ; )
 	3 << 'toklis + @ ex	
 	;
+
+##retstrict 0	| 1: error when the ; of a word have different stack delta
+#finm
+
+:chkfin | --	; every ; of the word must leave the same stack movement
+	cntfin 2 <? ( drop ; ) drop
+	exunk 1? ( drop ; ) drop				| ex with unknown effect: can't compare
+	curdic @ $20 and? ( drop ; ) drop	| recursive: own effect unknown
+	'finlist @ $ff00ff and 'finm !	| deltaD and deltaR (use may differ)
+	'finlist 8 + cntfin 1- ( 1? 1- swap
+		@+ $ff00ff and finm <>? ( 
+			retstrict 1? ( curdic @ dic>name "different stack in ;" error! ) drop ) drop
+		swap ) 2drop ;
 
 :anacode | dic --
 	|dup @ dic>name "%w" .println
 	resetinfo
+	dup 'curdic !
 	dup toklen ( 1? 1- swap
 		@+ tokeninfo 
 		swap ) 2drop
+	chkfin
 |	usoD deltaD " d:%d u:%d " .println .cr
 	| store in dic
 	flag 8 << 'flag !

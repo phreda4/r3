@@ -10,14 +10,17 @@
 #winx 10 #winy 10
 #winw 10 #winh 10
 
-##padx 2 ##pady 2
-##curx 10 ##cury 10
-##boxw 100 ##boxh 20
+##padx 2 | horizontal padding around the widgets in pixels
+##pady 2 | vertical padding around the widgets in pixels
+##curx 10 | x of the current widget (cursor) in pixels
+##cury 10 | y of the current widget (cursor) in pixels
+##boxw 100 | width of the widgets in pixels
+##boxh 20 | height of the widgets in pixels
 
-##immcolorwin $666666	| window 
-##immcolortwin $444444	| title window (back)
-##immcolortex $ffffff	| text
-##immcolorbtn $0000ff	| button
+##immcolorwin $666666 | window background color $RRGGBB
+##immcolortwin $444444 | window title bar color $RRGGBB
+##immcolortex $ffffff | text color $RRGGBB
+##immcolorbtn $0000ff | button color $RRGGBB
 
 #icons
 #immfont
@@ -32,7 +35,7 @@
 #winlist * 64
 #winlist> 'winlist
 
-::immgui 
+::immgui | -- ; start of a gui frame, once per frame before the widgets: calls gui and resets the layout (cursor at 0 0, box = screen width by font height + 8)
 	gui 
 	winhot 'winhotn !
 	0 'winhot !
@@ -46,72 +49,79 @@
 	immfontsh 8 + 'boxh !
 	;
 	
-::immkey! 'keyevent ! ;
+::immkey! | 'vec -- ; word to execute at the end of immRedraw of this frame (keyboard handler)
+	'keyevent ! ;
 |::immwin! 'winevent ! ;
 	
-::immat 'cury ! 'curx ! ;
-::immat+ 'cury +! 'curx +! ;
-::immbox 'boxh ! 'boxw ! ;
-::immfont! dup 'immfont ! ttfont! "A" ttwh 'immfontsh ! drop ;
-::immpad! 'pady ! 'padx ! ;
-::immwinxy 2dup 'winy ! 'winx ! pady + swap padx + swap immat ;
+::immat | x y -- ; set the cursor (position of the next widget)
+	'cury ! 'curx ! ;
+::immat+ | x y -- ; move the cursor by x y pixels
+	'cury +! 'curx +! ;
+::immbox | w h -- ; set the size of the next widgets
+	'boxh ! 'boxw ! ;
+::immfont! | font -- ; set the TTF font used by the widgets and measure its height
+	dup 'immfont ! ttfont! "A" ttwh 'immfontsh ! drop ;
+::immpad! | padx pady -- ; set the padding around the widgets
+	'pady ! 'padx ! ;
+::immwinxy | x y -- ; set the origin of the window and put the cursor inside it with the padding
+	2dup 'winy ! 'winx ! pady + swap padx + swap immat ;
 
 |----------------------	
-::imm>>
+::imm>> | -- ; move the cursor one widget to the right (box width plus the padding of both sides)
 	padx 1 << boxw + 'curx +! ;	
-::imm<<
+::imm<< | -- ; move the cursor one widget to the left
 	padx 1 << boxw + neg 'curx +! ;	
-::immdn
+::immdn | -- ; move the cursor one widget down (box height plus the padding of both sides)
 	pady 1 << boxh + 'cury +! ;
-::immcr
+::immcr | -- ; new line: x back to the left of the window and y down one widget
 	winx padx + 'curx ! 
 	pady 1 << boxh + 'cury +! ;	
 
-::immln
+::immln | -- ; new line: x back to the left of the window and y down only the box height
 	winx padx + 'curx ! boxh 'cury +! ;	
 	
 |--- place
-::plgui
+::plgui | -- ; start a widget at the cursor: guiBox of the current box with the padding
 	curx padx + cury pady + boxw boxh guiBox ;
 
-::plxywh
+::plxywh | -- x y w h ; rectangle of the widget at the cursor, with the padding
 	curx padx + cury pady + boxw boxh ;
 
-::immcur | x y w h --
+::immcur | x y w h -- ; set the guiBox of the rectangle x y w h (relative to the window), draw a gray outline around it and make it the cursor and the box
 	pick3 winx + pick3 winy + pick3 pick3 guiBox
 	$999999 color pick3 pick3 pick3 pick3 rect
 	'boxh ! 'boxw ! 'cury ! 'curx ! 
 	;
 	
-::immcur> | -- cur
+::immcur> | -- cur ; pack the cursor and the box in one value: curx | cury<<16 | boxw<<32 | boxh<<48
 	curx cury 16 << or boxw 32 << or boxh 48 << or ;
 	
-::imm>cur | cur --
+::imm>cur | cur -- ; restore the cursor and the box packed by immcur>
 	dup $ffff and 'curx !
 	16 >> dup $ffff and 'cury !
 	16 >> dup $ffff and 'boxw !
 	16 >> $ffff and 'boxh ! ;
 	
 |--- label
-::immlabel | "" --
+::immlabel | "" -- ; draw the text (formatted, see ttprint) at the left of the current box, vertically centered
 	immcolortex ttColor
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
 	ttat ttprint ;
 	
-::immlabelc | "" --
+::immlabelc | "" -- ; draw the text centered in the current box
 	immcolortex ttColor
 	ttwh boxw rot - 1 >> curx + padx +
 	boxh rot - 1 >> cury + pady + 
 	ttat ttprint ;
 
-::immlabelr | "" --
+::immlabelr | "" -- ; draw the text right aligned in the current box
 	immcolortex ttColor
 	ttwh boxw rot - curx + padx -
 	boxh rot - 1 >> cury + pady +
 	ttat ttprint ;
 
-::imm. | "" --
+::imm. | "" -- ; draw the text (formatted with sprint) at the cursor and move the cursor right by its width plus padding (inline text)
 	immcolortex ttColor
 	curx padx + 
 	boxh immfontsh - 1 >> cury + pady + 
@@ -119,40 +129,40 @@
 	ttwh drop nip padx 1 << + 'curx +!
 	;
 	
-::immStrC | "" --
+::immStrC | "" -- ; draw the text centered in the current box (no format)
 	immcolortex ttColor
 	ttwh boxw rot - 1 >> curx + padx +
 	boxh rot - 1 >> cury + pady + 
 	ttat ttemits ;
 
-::immListBox | lines --
+::immListBox | lines -- ; guiBox of a list area of that many box heights
 	boxh * curx cury rot boxw swap guiBox ;
 
 |--- text in list, no pad
-::immback | color --
+::immback | color -- ; fill the current box with the color (for the lines of a list)
 	color curx padx + cury boxw boxh frect ;
 
-::immblabel | "" --
+::immblabel | "" -- ; text of a list line at the left of the current box (without the vertical padding)
 	immcolortex ttColor
 	curx padx + 
 	boxh immfontsh - 1 >> cury + 
 	ttat ttprint ;
 	
 |--- icon
-::immicon | nro x y --
+::immicon | nro x y -- ; draw the icon nro of the icon set at x y
 	icons -rot tsdraw ;
 	
-::immiconb | nro --
+::immiconb | nro -- ; draw the icon nro centered in the current box with the text color
 	immcolortex icons tscolor 
 	boxw 24 - 1 >> curx + padx +
 	boxh 21 - 1 >> cury + 
 	immicon ;
 	
-::immwidth |w -- 
+::immwidth | w -- ; set the width of the next widgets
 	'boxw ! ;	
 
 |--- widget	
-::immbtn | 'click "" --
+::immbtn | 'click "" -- ; button with centered text: moves 2 pixels while the mouse is over it and executes 'click when clicked
 	plgui
 	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI color
 	plxywh frect
@@ -160,7 +170,7 @@
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
 	
-::immibtn | 'click nro --
+::immibtn | 'click nro -- ; button with the icon nro
 	plgui
 	immcolorbtn [ $808080 xor 2 2 immat+ ; ] guiI color
 	plxywh frect
@@ -168,7 +178,7 @@
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;	
 
-::immtbtn | 'click "" --
+::immtbtn | 'click "" -- ; button as wide as its text; the background shows only while the mouse is over it
 	ttwh drop 'boxw !
 	plgui
 	[ immcolorbtn color plxywh frect 2 2 immat+ ; ] guiI
@@ -176,7 +186,7 @@
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;
 
-::immebtn | 'click "" --
+::immebtn | 'click "" -- ; button with the text only (no background), as wide as its text
 	ttwh drop 'boxw !
 	plgui
 	[ 2 2 immat+ ; ] guiI
@@ -184,7 +194,7 @@
 	[ -2 -2 immat+ ; ] guiI
 	onClick ;
 
-::immzone | 'click --
+::immzone | 'click -- ; invisible clickable area of the current box
 	plgui onClick ;
 
 |---- Horizontal slide
@@ -206,14 +216,14 @@
 	boxh 4 - 
 	frect ;
 	
-::immSliderf | 0.0 1.0 'value --
+::immSliderf | min max 'value -- ; horizontal slider of a fixed point value between min and max (it shows the value with 2 decimals)
 	plgui
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow
 	@ .f2 immLabelC
 	2drop ;
 
-::immSlideri | 0 255 'value --
+::immSlideri | min max 'value -- ; horizontal slider of an integer value between min and max
 	plgui
 	'slideh dup onDnMoveA | 'dn 'move --	
 	slideshow	
@@ -224,7 +234,7 @@
 :checkic | 'var ""
 	over @ 1 nand? ( 60 nip ; ) drop 59 ;
 	
-::immCheck | 'val "op1" -- ; v op1  v op2  x op3
+::immCheck | 'val "text" -- ; check box: a click toggles bit 0 of the variable
 	plgui
 	$ffffff [ $7f7fff nip ; ] guiI icons TSColor
 	checkic curx cury immicon
@@ -254,7 +264,7 @@
 	cury pady + rot + 
 	boxw 4 - wid 1 - frect ;
 	
-::immScrollv | 0 max 'value --
+::immScrollv | 0 max 'value -- ; vertical scroll bar for the value between 0 and max (the code notes it is incorrect)
 	plgui
 	'slidev dup onDnMoveA | 'dn 'move --	
 	boxh pick3 pick3 swap - 1 + / 'wid !
@@ -291,7 +301,7 @@
 	[ over pick3 ! ; ] onClick
 	;
 
-::immRadio | 'val "op1|op2|op3" -- ; ( ) op1  (x) op2 ( ) op3
+::immRadio | 'val "op1|op2|op3" -- ; radio buttons, one line per option: the variable holds the number (0 is the first) of the chosen one
 	mark
 	makelist
 	0 ( cntlist <? swap
@@ -300,7 +310,7 @@
 	empty ;
 
 |----------------------	
-::immCombo | 'val "op1|op2|op3" -- ; [op1  v]
+::immCombo | 'val "op1|op2|op3" -- ; shows the chosen option; a click goes to the next one (it is not a drop down list)
 	mark
 	makelist
 	$7f color
@@ -385,7 +395,7 @@
 
 
 |************************************
-::immInputLine | 'buff max --
+::immInputLine | 'buff max -- ; line editor of the text in 'buff (max bytes): insert or overwrite (Ins), left, right, home, end, backspace and delete; tab and enter go to the next widget
 	plgui
 	$222222 color
 	curx cury boxw padx 1 << + boxh pady 1 << + frect
@@ -427,7 +437,7 @@
 	drop ;
 
 |************************************
-::immInputInt | 'var --
+::immInputInt | 'var -- ; integer input: the digits typed are appended, backspace or delete divide by 10 (no negative numbers)
 	plgui
 	$222222 color
 	curx cury boxw padx 1 << + boxh pady 1 << + frect
@@ -447,7 +457,7 @@
 :winwh!
 	dup 32 << 32 >> 'winw ! 32 >> 'winh ! ;
 	
-::immwin! | win --
+::immwin! | 'winword -- ; add a window to the list drawn by immRedraw ('winword draws the window and its widgets); it is not added twice
 	'winlist ( winlist> <?
 		@+ pick2 =? ( 3drop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
@@ -458,12 +468,12 @@
 		8 + ) 2drop 	
 	-8 'winlist> +! ;
 		
-::immwin$ | win --
+::immwin$ | 'winword -- ; remove the window from the list
 	'winlist ( winlist> <?
 		@+ pick2 =? ( drop windrop ; ) drop ) drop
 	winlist> !+ 'winlist> ! ;
 	
-::winexit
+::winexit | -- ; close the window that has the mouse over it (it is the action of the close button)
 	winhotn 0? ( drop ; ) drop 
 	-8 'winlist> +!
 	0 'winhot ! | need this!!!
@@ -507,7 +517,7 @@
 	[ sdlx 'px ! sdly 'py ! ; ] 'movwin onDnMoveA
 	;
 	
-::immwin | 'win -- 0/1
+::immwin | 'win -- 0/flags ; draw the window of the record 'win (flags, x y w h in four dwords, title): flag 1 = open, flag 2 = comes to the front; handles dragging by the title and the close button; returns 0 if it is closed, else puts the cursor and the box inside the window
 	dup @ 
 	$1 nand? ( 2drop 0 ; )
 	$2 and? ( winnow 'winhot ! ) drop | all in top
@@ -519,12 +529,12 @@
 	winw 1 >> padx 1 << - padx - 'boxw !
 	;	
 
-::immnowin | xini yini w h --
+::immnowin | x y w h -- ; set the region for the widgets without a window frame
 	'boxh ! 'boxw !
 	dup 'winy ! 'cury ! 
 	dup 'winx ! 'curx ! ;
 
-::immwinbottom	| ywin -- 
+::immwinbottom | 'win -- ; set the height of the window record to the cursor y reached (the window fits its content)
 	cury winy - swap 20 + d! ;
 
 :win2front
@@ -533,7 +543,7 @@
 |	winlist> 8 - =? ( drop ; )
 	-rot ! swap ! ;
 	
-::immRedraw
+::immRedraw | -- ; execute the word of every window of the list, bring the clicked window to the front and execute the key handler set with immkey!
 	'winlist ( winlist> <? dup 'winnow !
 		@+ ex
 		) drop 
@@ -558,7 +568,7 @@
 	winx winy immfontsh pady + + winw winh immfontsh pady + - guiBox 
 	;	
 	
-::immwins
+::immwins | 'win -- ; like immwin for a fixed window: no dragging, no close button
 	|dup @ |$2 and? ( winnow 'winhot ! ) drop | all in top
 	|wintit
 	dup 8 + @+ winxy! @+ winwh! wintitles
@@ -569,7 +579,7 @@
 	;
 
 |------ Init
-::immSDL | font --
+::immSDL | font -- ; start the gui with the TTF font and load the icons media/img/icong16.png (tiles of 24x21)
 |	"media/ttf/ProggyClean.ttf" 16 TTF_OpenFont 
 	immfont!
 	24 21 "media/img/icong16.png" tsload 'icons !
