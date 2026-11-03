@@ -205,7 +205,7 @@ rflag $4 or 'rflag ! ;
 :tuiredraw
 	exvector
 	rflag
-	$8 and? ( 0 'uikey ! exvector ) | redraw
+	$8 and? ( 0 'uikey ! exvector exvector ) | redraw x2: wida (panel focus) lags one draw
 	$1 and? ( .restorec )	| with cursor
 	drop
 	.flush ;
@@ -682,6 +682,14 @@ rflag $4 or 'rflag ! ;
 
 |--- slide
 
+:kbSlider | 'var min max -- 'var min max
+	tuif 0? ( drop ; ) drop
+	uikey 0? ( drop ; )
+	[tab] =? ( focus>> ) [shift+tab] =? ( focus<< )
+	[le] =? ( pick3 dup @ 1- pick4 max swap ! tuX! tuR! )
+	[ri] =? ( pick3 dup @ 1+ pick3 min swap ! tuX! tuR! )
+	drop ;
+
 ::tuSlider | 'var min max --
 	tuiw1
 	3 =? ( 3 + )
@@ -690,6 +698,7 @@ rflag $4 or 'rflag ! ;
 		pick4 !
 		tuR! tuX! )
 	drop
+	kbSlider
 	fhome fw "─" .rep
 	rot @ | min max var
 	pick2 - fw 2swap swap - */

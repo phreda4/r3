@@ -186,7 +186,7 @@
 	"target " lbl 'osn target n>>0 .write
 	"   inline <= " lbl inline "%d tokens" .print
 	"   budget x" lbl budget "%d" .print
-	unroll 1? ( drop "   unroll formats" lbl ) drop fcr
+	unroll 1? ( "   unroll formats" lbl ) drop fcr
 	"files " lbl cntinc "%d" .print
 	"   code " lbl ncode "%d" .print
 	"   data " lbl ndata "%d" .print fcr
@@ -200,7 +200,7 @@
 	here .write fcr ;
 
 :panelTarget
-	.wborde $1 " Target " .wtitle
+	.wborde tuWin $1 " Target " .wtitle
 	1 1 flpad
 	0 'target "Windows (WIN)" tuRadio
 	1 'target "Linux   (LIN)" tuRadio
@@ -208,7 +208,7 @@
 	3 'target "RPi     (RPI)" tuRadio ;
 
 :panelInline
-	.wborde $1 " Inline " .wtitle
+	.wborde tuWin $1 " Inline " .wtitle
 	1 1 flpad
 	0 'inline "0   none" tuRadio
 	4 'inline "4   low" tuRadio
@@ -217,7 +217,7 @@
 	20 'inline "20  max" tuRadio ;
 
 :panelBudget
-	.wborde $1 " Inline budget " .wtitle
+	.wborde tuWin $1 " Inline budget " .wtitle
 	1 1 flpad
 	1 'budget "1   tight" tuRadio
 	2 'budget "2   normal" tuRadio
@@ -225,14 +225,14 @@
 	'unroll "unroll formats" tuCheck ;
 
 :panelActions
-	.wborde $1 " Build " .wtitle
+	.wborde tuWin $1 " Build " .wtitle
 	1 1 flpad
 	'docompile "Compile        F2" tuBtn
 	'doplain "Plain          F3" tuBtn
 	;
 	
 :panelIncs
-	.wborde $1 " Files " .wtitle
+	.wborde tuWin $1 " Files " .wtitle
 	1 1 flpad
 	'vincs lincs tuList ;
 
@@ -240,7 +240,7 @@
 	vincs lastinc <>? ( dup 'lastinc ! makewords ) drop ;
 
 :panelWords
-	.wborde $1 " Definitions " .wtitle
+	.wborde tuWin $1 " Definitions " .wtitle
 	1 1 flpad
 	'xword xwriten!
 	'vwords lwords tuListN
@@ -261,6 +261,15 @@
 :small
 	1 1 .at "terminal too small (min 70x27)" .write ;
 
+:keys
+	uikey
+	[f2] =? ( docompile )
+	[f3] =? ( doplain )
+	[esc] =? ( tuiexit )
+	drop
+	target osgen <>? ( 'osgen ! reload tuR! ; ) drop
+	inline lastinl <>? ( calcstats tuR! ) drop ;
+
 :screen
 	.reset bg0 fTx .cls
 	cols 70 <? ( drop small ; ) drop
@@ -278,16 +287,10 @@
 	error 0? ( chkincs ) drop
 	10 flxN srcinfo
 	flxRest
-	error 1? ( drop ; ) drop
+	error 1? ( drop keys ; ) drop
 	fw 2/ 44 min flxO panelIncs
 	flxRest panelWords
-	uikey
-	[f2] =? ( docompile )
-	[f3] =? ( doplain )
-	[esc] =? ( tuiexit )
-	drop
-	target osgen <>? ( 'osgen ! reload tuR! ; ) drop
-	inline lastinl <>? ( calcstats tuR! ) drop ;
+	keys ;
 
 |-----------------------------------
 :
