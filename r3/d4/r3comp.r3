@@ -447,9 +447,7 @@
 	filecode
 	filedata
 	fileset
-	cnttok cntdef "words:%d tokens:%d" .println 
-	"asm\compile.bat" sys
-	;
+	cnttok cntdef "words:%d tokens:%d" .println ;
 
 :
 	.reset
@@ -458,4 +456,7 @@
 	'filename r3load
 	error 1? ( .println drop ; ) drop
 	compiling..
+	
+|WIN|	"asm\compile.bat" sys "r3fasm.exe" sys	
+|LIN|	".\asm\compilelin.sh" sys
 	;

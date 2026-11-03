@@ -657,12 +657,12 @@ scanc | c adr -- adr'/0 ; address of the first char c found at adr, 0 if not fou
 scann | adr "str" -- adr'/0 ; address after "str" found at adr; only the first occurrence of the first char of str is tried; 0 if not found
 seed8 | seed of rand8 (8-bit generator)
 rand8 | -- r8 ; fast 8-bit random number 0..255 (shift register on seed8)
-seed | seed of rand, rnd and their max/minmax words (use rerand to change it)
+seed | seed of rand, rnd and their max/minmax words
 rerand | s1 s2 -- ; set the seed of rand, rnd and rndmax from two values
 rand | -- rand ; 64-bit random number (multiply-add generator on seed), can be negative
 randmax | max -- rand ; random number 0..max-1 (max itself is never returned)
 randminmax | min max -- rand ; random number min..max-1 (max itself is never returned)
-rnd | -- rand ; 64-bit random number (xorshift on seed, which must not be 0), can be negative; not an alias of rand
+rnd | -- rand ; 64-bit random number (from var seed), can be negativo
 rndmax | max -- rand ; like randmax but using rnd: 0..max-1
 rndminmax | min max -- rand ; like randminmax but using rnd: min..max-1
 rnd128 | -- n ; 64-bit random number (xorshift128+, its own state)
@@ -1606,19 +1606,19 @@ findchar | adr char -- adr'/0 ; address of the first char in the string at adr, 
 findstr | adr "text" -- adr'/0 ; address of the first "text" in the string at adr, 0 if not found
 findstri | adr "text" -- adr'/0 ; like findstr ignoring case
 rfindstri | start "text" adr -- adr'/0 ; search "text" backwards from adr down to start, ignoring case; 0 if none
-.d | val -- str ; signed integer to decimal string (shared buffer, valid until the next .d .b .h .o .f call)
-.b | bin -- str ; binary string of val, unsigned (shared buffer)
-.h | hex -- str ; hexadecimal string of val, uppercase, no prefix, unsigned (shared buffer)
-.o | oct -- str ; octal string of val, unsigned (shared buffer)
-.f | fix -- str ; 48.16 fixed point to decimal string with 4 decimals, rounded (shared buffer)
-.f2 | fix -- str ; 48.16 fixed point to decimal string with 2 decimals, rounded (shared buffer)
-.f1 | fix -- str ; 48.16 fixed point to decimal string with 1 decimal, rounded (shared buffer)
+.d | val -- str ; signed integer to decimal string
+.b | bin -- str ; binary string of val, unsigned
+.h | hex -- str ; hexadecimal string of val, uppercase, no prefix, unsigned
+.o | oct -- str ; octal string of val, unsigned
+.f | fix -- str ; 48.16 fixed point to decimal string with 4 decimals, rounded
+.f2 | fix -- str ; 48.16 fixed point to decimal string with 2 decimals, rounded
+.f1 | fix -- str ; 48.16 fixed point to decimal string with 1 decimal, rounded
 .r. | str width -- str' ; pad on the left with spaces up to width chars; str comes from .d .h .f ...
-.fd | fix -- str ; 32.32 fixed point to decimal string with 8 decimals, rounded (shared buffer)
+.fd | fix -- str ; 32.32 fixed point to decimal string with 8 decimals, rounded
 trim | adr -- adr' ; skip chars <= 32; adr' is the first one > 32 or the final 0
 trimc | char adr -- adr' ; address of the first char found, or of the final 0 if none
 trimcar | adr -- adr' c ; skip chars <= 32 and read the next char c (0 at the end); adr' is after c
-trimstr | adr -- adr' ; address of the closing " of the string text at adr ("" is an escaped quote)
+trimstr | adr -- adr' ; address of the closing " of the string text at adr ("" is escaped quote)
 >>cr | adr -- adr' ; address of the next CR or LF, or of the final 0
 >>0 | adr -- adr' ; address after the next 0 (the next string of a list of strings)
 l0count | list -- cnt ; number of strings of a list of 0-terminated strings (the list ends with an empty string)
@@ -1626,7 +1626,7 @@ n>>0 | adr n -- adr' ; skip n strings of a list of 0-terminated strings
 only10 | adr -- 'end ; in place, change CRLF, CR and LFCR to LF; 'end is after the final 0
 only13 | adr -- 'end ; in place, change CRLF, LF and LFCR to CR; 'end is after the final 0
 >>sp | adr -- adr' ; address of the next char <= 32 (blank), or of the final 0
->>str | adr -- adr' ; address after the closing " of the string text at adr ("" is an escaped quote)
+>>str | adr -- adr' ; address after the closing " of the string text at adr ("" is escaped quote)
 <<trace | --
 <<traceh | --
 <<memdump | adr cnt --
@@ -1744,45 +1744,45 @@ p8.mapd | 'vector list --
 p8.map2 | 'vec 'list ---
 p8.sort | col 'list --
 p8.isort | col 'list --
-wp
-hp
-bmfont | w h "" --
-bcolor | rrggbb --
-bfbox | --
-bbox | --
-bbox2 | --
-bfillline | x y w h --
-bsrcsize | x y w h -- x y w h
-bfillemit | "" -- ""
-bfcemit | cnt --
-bemit | ascii --
-bprint
-bemits | "" --
-bprintd
-bemitsd | "" --
-bprint2
-bemits2 | "" --
-bprintz | .. "" size --
-bemitsz | "" size --
-bat | x y --
-ccx
-ccy
-gotoxy | x y --
-gotox | x --
-bcr
-bcr2
-bcrz | size --
-bsp
-bnsp | n --
-bsize | "" -- "" w h
-bpos | -- x y
-brect | "" -- "" x y w h
-bcursor | n --
-bcursori | n --
-bcursor2 | n --
-bcursori2 | n --
-bfont1
-bfont2
+wp | width of a character in pixels
+hp | height of a character in pixels
+bmfont | w h "file" -- ; load the font image (a 16x16 grid of 256 characters of w x h pixels: column = low nibble, row = high nibble of the ASCII code) and set the character size
+bcolor | rgb -- ; color $RRGGBB of the font texture (color modulation)
+bfbox | -- ; fill the character cell at the cursor with the draw color
+bbox | -- ; outline of the character cell at the cursor
+bbox2 | -- ; outline of the lower half of the character cell at the cursor
+bfillline | x y w h -- ; fill with the draw color the rectangle given in character cells (x y w h)
+bsrcsize | x y w h -- x y w h ; convert the two pairs from character cells to pixels (x*wp y*hp w*wp h*hp)
+bfillemit | "" -- "" ; fill with the draw color the area the string would use at the cursor
+bfcemit | cnt -- ; fill with the draw color the area of cnt characters at the cursor
+bemit | ascii -- ; draw the character at the cursor and move the cursor one character to the right
+bprint | .. "" -- ; formatted print (see sprint) at the cursor
+bemits | "" -- ; print the string at the cursor
+bprintd | .. "" -- ; formatted print with double width
+bemitsd | "" -- ; print the string with double width
+bprint2 | .. "" -- ; formatted print with double width and height
+bemits2 | "" -- ; print the string with double width and height
+bprintz | .. "" size -- ; formatted print scaled by size (fixed point, 1.0 = normal)
+bemitsz | "" size -- ; print the string scaled by size (fixed point, 1.0 = normal)
+bat | x y -- ; move the cursor to the pixel position x y
+ccx | -- x ; cursor x in pixels (also defined in pcfont)
+ccy | -- y ; cursor y in pixels (also defined in pcfont)
+gotoxy | x y -- ; move the cursor to the character cell x y (also defined in pcfont)
+gotox | x -- ; move the cursor to the character column x, same y (also defined in pcfont)
+bcr | -- ; new line: x = 0 and y down one character
+bcr2 | -- ; new line for double height text (y down two characters)
+bcrz | size -- ; new line for text scaled by size (fixed point)
+bsp | -- ; move the cursor one character to the right
+bnsp | n -- ; move the cursor n characters to the right
+bsize | "" -- "" w h ; size in pixels of the string (count * wp, hp)
+bpos | -- x y ; cursor position in pixels
+brect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
+bcursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+bcursori | n -- ; like bcursor but a bar of a quarter of the height at the bottom (insert cursor)
+bcursor2 | n -- ; like bcursor for double size characters
+bcursori2 | n -- ; like bcursori for double size characters
+bfont1 | -- ; load the font media/img/VGA8x16.png (8x16 characters)
+bfont2 | -- ; load the font media/img/font16x24.png (16x24 characters)
 blistdel | 'list 'from --
 blist! | f 'list --
 blist- | f 'list --
@@ -2040,36 +2040,36 @@ objescalax | por div --
 objescalay | por div --
 objescalaz | por div --
 objcube | lado --
-pccolor | rrggbb --
-pcemit | ascii --
-pcfbox | --
-pcbox | --
-pcbox2 | --
-pcfillline | x y w h --
-pcsrcsize | x y w h -- x y w h
-pcfillemit | "" -- ""
-pcprint
-pcemits | "" --
-pcprintd
-pcemitsd | "" --
-pcprint2
-pcemits2 | "" --
-pcprintz | .. "" size --
-pcemitsz | "" size --
-pcat | x y --
-ccx
-ccy
-gotoxy | x y --
-gotox | x --
-pccr
-pcsp
-pcnsp | n --
-pcsize | "" -- "" w h
-pcpos | -- x y
-pcrect | "" -- "" x y w h
-pccursor | n --
-pccursori | n --
-pcfont
+pccolor | rgb -- ; color $RRGGBB of the font texture (color modulation)
+pcemit | ascii -- ; draw the character (8x16) at the cursor and move the cursor one character to the right
+pcfbox | -- ; fill the character cell at the cursor with the draw color
+pcbox | -- ; outline of the character cell at the cursor
+pcbox2 | -- ; outline of the lower half of the character cell at the cursor
+pcfillline | x y w h -- ; fill with the draw color the rectangle given in character cells (x y w h)
+pcsrcsize | x y w h -- x y w h ; convert the two pairs from character cells to pixels (x*8 y*16 w*8 h*16)
+pcfillemit | "" -- "" ; fill with the draw color the area the string would use at the cursor
+pcprint | .. "" -- ; formatted print (see sprint) at the cursor
+pcemits | "" -- ; print the string at the cursor
+pcprintd | .. "" -- ; formatted print with double width
+pcemitsd | "" -- ; print the string with double width
+pcprint2 | .. "" -- ; formatted print with double width and height
+pcemits2 | "" -- ; print the string with double width and height
+pcprintz | .. "" size -- ; formatted print scaled by size (fixed point, 1.0 = normal)
+pcemitsz | "" size -- ; print the string scaled by size (fixed point, 1.0 = normal)
+pcat | x y -- ; move the cursor to the pixel position x y
+ccx | -- x ; cursor x in pixels (also defined in bfont)
+ccy | -- y ; cursor y in pixels (also defined in bfont)
+gotoxy | x y -- ; move the cursor to the character cell x y (also defined in bfont)
+gotox | x -- ; move the cursor to the character column x, same y (also defined in bfont)
+pccr | -- ; new line: x = 0 and y down 16 pixels
+pcsp | -- ; move the cursor one character (8 pixels) to the right
+pcnsp | n -- ; move the cursor n characters to the right
+pcsize | "" -- "" w h ; size in pixels of the string (count * 8, 16)
+pcpos | -- x y ; cursor position in pixels
+pcrect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
+pccursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+pccursori | n -- ; like pccursor but a bar of a quarter of the height at the bottom (insert cursor)
+pcfont | -- ; load the font media/img/VGA8x16.png (8x16 characters in a 16x16 grid) and set the cursor size
 Lineal
 Quad_In
 Quad_Out
@@ -2191,51 +2191,51 @@ tiledrawvs | w h x y sx sy sw sh 'amap 'v --
 scr2view | xs ys -- xv yv
 scr2tile | x y -- adr : only after tilemapdraw (set the vars)
 loadtilemap | "" -- amap
-advx
-advy
-trgb | c --
-tpal | c -- rgb
-tcol | c --
-tfbox | --
-tbox | --
-temit | ascii --
-tprint
-temits | "" --
-tat | x y --
-tatx | x --
-txy | x y --
-tx | x --
-tcx
-tcy
-tcr
-tsp
-tnsp | n --
-tsbox | "" -- "" w h
-tpos | -- x y
-trect | "" -- "" x y w h
-tcursor | n --
-tcursori | n --
-tsize | zoom --
-tsrcsize | x y w h -- x y w h
-tfnt | size w h ""
-tini
-ttx
-tty
-ttcolor | rrggbb --
-ttfont! | font --
-ttat | x y --
-+ttat | x y --
-ttwh | "" -- "" w h
-ttsize | size --
-ttstyle | style -- | KUIB %0001
-ttprint | "" --
-ttemits | "" --
-ttemitc | width "" --
-ttemitr | "" --
-ttboxcc | w h "" --
-ttcursor | str strcur -- str
-ttcursori | str strcur -- str
-ttrect | "" -- "" x y w h
+advx | width in pixels of a character cell (font width times zoom)
+advy | height in pixels of a character cell
+trgb | c -- ; color $RRGGBB of the font texture (color modulation)
+tpal | c -- rgb ; color of the palette entry c (low 4 bits: 0 black, 1 blue, 2 cyan, 3 green, 4 purple, 5 red, 6 white, 7 yellow, 8..15 the bright ones) of the style in termcolor (style0 Campbell)
+tcol | c -- ; set the text color from the palette entry c
+tfbox | -- ; fill the character cell at the cursor with the draw color
+tbox | -- ; outline of the character cell at the cursor
+temit | ascii -- ; draw the character at the cursor and move the cursor one character to the right
+tprint | .. "" -- ; formatted print (see sprint) at the cursor
+temits | "" -- ; print the string at the cursor
+tat | x y -- ; move the cursor to the pixel position x y
+tatx | x -- ; set the cursor x in pixels
+txy | x y -- ; move the cursor to the character cell x y
+tx | x -- ; move the cursor to the character column x
+tcx | -- x ; cursor x in pixels
+tcy | -- y ; cursor y in pixels
+tcr | -- ; new line: x = 0 and y down one character
+tsp | -- ; move the cursor one character to the right
+tnsp | n -- ; move the cursor n characters to the right
+tsbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
+tpos | -- x y ; cursor position in pixels
+trect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
+tcursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+tcursori | n -- ; like tcursor but a bar of a quarter of the height at the bottom (insert cursor)
+tsize | zoom -- ; set the character size as the font size times zoom (fixed point, 1.0 = normal)
+tsrcsize | x y w h -- x y w h ; convert the two pairs from character cells to pixels
+tfnt | size w h "file" -- ; load a font image (16x16 grid of characters of w x h pixels) and set its zoom size (fixed point)
+tini | -- ; load the default font media/img/VGA8x16.png (8x16) at size 1.0
+ttx | cursor x in pixels
+tty | cursor y in pixels
+ttcolor | rrggbb -- ; text color (stored with red and blue swapped, as SDL_Color wants it)
+ttfont! | font -- ; set the font (from TTF_OpenFont) used by the tt words
+ttat | x y -- ; move the cursor to the pixel position x y
++ttat | x y -- ; move the cursor by x y pixels
+ttwh | "" -- "" w h ; size in pixels of the string with the current font
+ttsize | size -- ; set the point size of the current font
+ttstyle | style -- ; set the style of the current font: bit 0 bold, 1 italic, 2 underline, 3 strikethrough
+ttprint | .. "" -- ; formatted print (see sprint) at the cursor
+ttemits | "" -- ; draw the string at the cursor and move the cursor to its end (a texture is created for each call)
+ttemitc | width "" -- ; draw the string centered in width pixels starting at the cursor
+ttemitr | "" -- ; draw the string right aligned: it ends at the cursor x
+ttboxcc | w h "" -- ; draw the string centered in a box w x h starting at the cursor
+ttcursor | str strcur -- str ; fill with the draw color the block cursor of the character at strcur (an address inside str); the string is cut there temporarily
+ttcursori | str strcur -- str ; like ttcursor but a bar of 2 pixels at the bottom (insert cursor)
+ttrect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
 fx
 fy
 fw
@@ -2372,35 +2372,35 @@ TuLoadCode | "" --
 TuNewCode
 TuSaveCode
 tokenCursor | 'mark --
-txloadwicon | "font" size -- nfont
-txload | "font" size -- nfont
-txfont | font --
-txfont@ | -- font
-txrgb | c --
-txcw | car -- width
-txw | "" -- "" width
-txfit | w "" -- ncar
-txch | car -- height
-txh | -- heigth
-txat | x y --
-tx+at | x y --
-txcr
-txpos | -- x y
-txemit | utf8' --
-txwrite | "" --
-txemitr | "" --
-txemitc | w "" --
-txprint | .. "" --
-txprintr | .. "" --
-txcur | str cur --
-txcuri | str cur --
-lwrite | w "str" --
-cwrite | w "str" --
-rwrite | w "str" --
-txalign | $VH --
-txText | w h x y "" --
-pad.reset | 'var max -- 'var max
-pad.draw | 'buff --
+txloadwicon | "font" size -- nfont ; load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
+txload | "font" size -- nfont ; like txloadwicon without the icons
+txfont | font -- ; select the atlas font (from txload) used by the tx words
+txfont@ | -- font ; the atlas font selected now
+txrgb | c -- ; color $RRGGBB of the font texture (color modulation)
+txcw | adr car -- adr' width ; width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it)
+txw | "" -- "" width ; width in pixels of the string
+txfit | w "" -- ncar ; number of bytes of the string that fit in w pixels
+txch | adr car -- adr' h ; height of a character (same protocol as txcw)
+txh | -- h ; height of the font (line height)
+txat | x y -- ; move the cursor to the pixel position x y
+tx+at | x y -- ; move the cursor by x y pixels
+txcr | -- ; new line: x = 0 and y down one line height
+txpos | -- x y ; cursor position in pixels
+txemit | adr car -- adr' ; draw one character at the cursor and advance it (same protocol as txcw)
+txwrite | "" -- ; draw the string at the cursor
+txemitr | "" -- ; draw the string right aligned: it ends at the cursor x
+txemitc | w "" -- ; draw the string centered in w pixels starting at the cursor x
+txprint | .. "" -- ; formatted print (see sprint) at the cursor
+txprintr | .. "" -- ; formatted print right aligned
+txcur | str cur -- ; fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character
+txcuri | str cur -- ; like txcur but a bar of a quarter of the height at the bottom (insert cursor)
+lwrite | w "str" -- ; left aligned text for txText (ignores w)
+cwrite | w "str" -- ; centered text in w pixels for txText
+rwrite | w "str" -- ; right aligned text in w pixels for txText
+txalign | $VH -- ; alignment for txText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom)
+txText | w h x y "" -- ; draw the string wrapped by words in the box x y w h with the txalign alignment; CR, LF and ; start a new line
+pad.reset | 'var max -- 'var max ; prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
+pad.draw | 'buff -- ; draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
 .xwrite | str --
 .awrite | str --
 .vline | h --
@@ -2423,55 +2423,55 @@ xalign | $VH --
 xwrite | w "str" --
 xText | w h x y "" --
 rgb4t | col12 -- col256
-deltatime
-timeline
-timeline<
-timeline>
-exevar
-timer< | reset timer
-timer. | adv timer
-timer+ | add timer
-timer- | sub timer
-vareset
-vaini | max --
-vupdate | --
-+vanim | 'var ini fin ease dur. start --
-+vanimg | 'var ini fin ease dur. start group --
-+vboxanim | 'var fin ini ease dur. start --
-+vboxanimg | 'var fin ini ease dur. start group --
-+vxyanim | 'var ini fin ease dur. start --
-+vxyanimg | 'var ini fin ease dur. start group --
-+vcolanim | 'var ini fin ease dur. start --
-+vcolanimg | 'var ini fin ease dur. start group --
-+vexe | 'vector start --
-+vexeg | 'vector start group --
-+vvexe | v 'vector start --
-+vvexeg | v 'vector start --
-+vvvexe | v v 'vector start --
-+vvvexeg | v v 'vector start --
-vkillgroup | group --
-vkillvar | 'var --
-64xy | b -- x y
-64wh | b -- w h
-64xywh | b -- x y w h
-xywh64 | x y w h -- b
-64xyrz | b -- x y r z
-xyrz64 | x y r z -- b
-64box | b adr --
-32xy | b -- x y
-xy32 | x y -- b
-vaempty
-aniInit | ini cnt fps -- V
-ani+! | dt 'v --
-aniFrame | V -- f
-aniCnt | V -- c
-ani+timer! | 'V --
-vscreen | w h --
-vscreenf | w h --
-vini | --
-vredraw | --
-vfree
-sdlx
-sdly
-%w
-%h
+deltatime | milliseconds between the last two vupdate or timer. calls
+timeline | start of the event list (8 bytes per event, sorted by start time)
+timeline< | end of the events already running in the list
+timeline> | end of the event list
+exevar | table with the data of each event (32 bytes: duration and ease, fin, ini, variable or parameters)
+timer< | -- ; reset the timer (deltatime = 0)
+timer. | -- ; update the timer: deltatime = milliseconds since the previous call
+timer+ | n -- n' ; add deltatime to n
+timer- | n -- n' ; subtract deltatime from n
+vareset | -- ; remove all the events and restart the animation clock
+vaini | max -- ; reserve at here the memory for up to max events at the same time and reset
+vupdate | -- ; advance the animations with the time elapsed since the last call (once per frame): starts the events whose time has come, updates the variables and removes the finished ones
++vanim | 'var fin ini ease dur. start -- ; animate the cell 'var from ini to fin (the first value is the destination); ease = easing number (0 linear, 1 Quad_In... see ease in penner.r3), dur. and start in seconds (fixed point); the animation starts at the first vupdate after start
++vanimg | 'var fin ini ease dur. start group -- ; like +vanim in a group (0..15) that vkillgroup can remove
++vboxanim | 'var fin ini ease dur. start -- ; animate the four 16-bit values packed in the cell (see xywh64), each one on its own
++vboxanimg | 'var fin ini ease dur. start group -- ; like +vboxanim in a group (0..15)
++vxyanim | 'var fin ini ease dur. start -- ; animate the two 32-bit values packed in the cell (see xy32), each one on its own
++vxyanimg | 'var fin ini ease dur. start group -- ; like +vxyanim in a group (0..15)
++vcolanim | 'var fin ini ease dur. start -- ; animate a color $RRGGBB mixing fin and ini with colmix (24 bits: the result has no alpha)
++vcolanimg | 'var fin ini ease dur. start group -- ; like +vcolanim in a group (0..15)
++vexe | 'exe start -- ; execute 'exe once after start seconds; 'exe receives the address of the stored parameters and must leave it on the stack
++vexeg | 'exe start group -- ; like +vexe in a group (0..15)
++vvexe | v 'exe start -- ; like +vexe with a parameter: 'exe receives an address and reads v with dup @
++vvexeg | v 'exe start group -- ; like +vvexe in a group (0..15)
++vvvexe | v1 v2 'exe start -- ; like +vexe with two parameters: 'exe reads them with dup @+ swap @ (v2 deeper, v1 on top) and leaves the address
++vvvexeg | v1 v2 'exe start group -- ; like +vvvexe in a group (0..15)
+vkillgroup | group -- ; remove all the events of the group (0..15)
+vkillvar | 'var -- ; remove the animations of the variable 'var (BUG: it compares the initial value instead of the variable address, so it removes nothing; its line should use + 24 instead of + 16)
+64xy | b -- x y ; unpack the first two signed 16-bit values (x in the highest 16 bits)
+64wh | b -- w h ; unpack the last two signed 16-bit values
+64xywh | b -- x y w h ; unpack four signed 16-bit values
+xywh64 | x y w h -- b ; pack four 16-bit values (x in the highest 16 bits)
+64xyrz | b -- x y r z ; unpack a sprite: x y in 16 bits, r (rotation) with 2 bits less of precision and z (zoom) with 4 bits less
+xyrz64 | x y r z -- b ; pack a sprite (see 64xyrz)
+64box | b adr -- ; write the four 16-bit values of b as four dwords x y w h at adr (an SDL_Rect)
+32xy | b -- x y ; unpack two signed 32-bit values (x in the high half)
+xy32 | x y -- b ; pack two 32-bit values (x in the high half)
+vaempty | -- n ; number of events in the list (waiting or running)
+aniInit | ini cnt fps -- V ; value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
+ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
+aniFrame | V -- f ; current frame number (ini + step)
+aniCnt | V -- n ; current step 0..cnt-1 of the animation (it is not the number of frames)
+ani+timer! | 'V -- ; advance the frame animation in 'V by deltatime
+vscreen | w h -- ; create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
+vscreenf | w h -- ; like vscreen with nearest neighbor scaling (sharp pixels)
+vini | -- ; start drawing into the virtual screen (it becomes the render target)
+vredraw | -- ; draw the virtual screen in the window and present it
+vfree | -- ; free the virtual screen texture
+sdlx | -- x ; mouse x in virtual screen pixels (it replaces the sdlx of sdl2 for the code that follows)
+sdly | -- y ; mouse y in virtual screen pixels (it replaces the sdly of sdl2 for the code that follows)
+%w | frac -- px ; fixed point fraction of the virtual screen width (1.0 = all) in pixels (it replaces the one of sdl2)
+%h | frac -- px ; fixed point fraction of the virtual screen height (1.0 = all) in pixels (it replaces the one of sdl2)

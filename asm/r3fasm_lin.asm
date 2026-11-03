@@ -1,12 +1,11 @@
 ; r3 container for compile
-; Linux ELF64 version
+; Linux ELF64 version (fasm object file + ld, see compilelin.sh)
 ;
-format ELF64 
+format ELF64
 
 extrn dlopen
 extrn dlsym
-
-entry start
+public start
 
 ;----- SETINGS -----
 include 'set.asm'
@@ -36,7 +35,7 @@ PROT_WRITE  = 2h
 MAP_PRIVATE = 02h
 MAP_ANON    = 20h
 
-segment readable executable
+section '.text' executable align 16
 
 ;===============================================
 start:
@@ -66,7 +65,7 @@ include 'code.asm'
 ;----- CODE -----
 
 ;-----------------------------------------------
-segment readable writeable
+section '.data' writeable align 16
 
 align 16
   FREE_MEM  rq 2

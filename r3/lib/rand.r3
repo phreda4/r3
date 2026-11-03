@@ -11,7 +11,7 @@
   'seed8 !
   $ff and ;
 
-##seed $a3b195354a39b70d | seed of rand, rnd and their max/minmax words (use rerand to change it)
+##seed $a3b195354a39b70d | seed of rand, rnd and their max/minmax words
 
 ::rerand | s1 s2 -- ; set the seed of rand, rnd and rndmax from two values
   $a3b195354a39b70d * + 'seed ! ;
@@ -27,8 +27,8 @@
 	over - randmax + ;
   
 |---- xorshift
-::rnd | -- rand ; 64-bit random number (xorshift on seed, which must not be 0), can be negative; not an alias of rand
-    seed dup 13 << xor dup 7 >> xor dup 17 << xor dup 'seed ! ;
+::rnd | -- rand ; 64-bit random number (from var seed), can be negativo
+    seed dup 13 << xor dup 7 >> xor dup 17 << xor dup 1 + 'seed ! ;
 
 ::rndmax | max -- rand ; like randmax but using rnd: 0..max-1
 	rnd 1 >>> 63 *>> ;
