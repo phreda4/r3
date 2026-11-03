@@ -172,12 +172,16 @@
 	;
 	
 |--------------------- BOOT
-#optbuf * 64
+#optbuf * 128
 
-:loadopts | -- ; mem/build.mem: osgen and inlinelenmax (written by r3build)
-	'optbuf "mem/build.mem" load 'optbuf - 16 <>? ( drop ; ) drop
+:loadopts | -- ; mem/build.mem: osgen inlinelenmax inlinebudget fmtunroll (written by r3build)
+	'optbuf "mem/build.mem" load 'optbuf -
+	16 <? ( drop ; )
 	'optbuf @ $3 and 'osgen !
-	'optbuf 8 + @ 0 max 99 min 'inlinelenmax ! ;
+	'optbuf 8 + @ 0 max 99 min 'inlinelenmax !
+	32 <? ( drop ; ) drop
+	'optbuf 16 + @ 1 max 16 min 'inlinebudget !
+	'optbuf 24 + @ 1 and 'fmtunroll ! ;
 
 : 	
 	'filename "mem/menu.mem" load drop
@@ -192,6 +196,8 @@
 	loadopts
 	'osnames osgen $3 and 2 << + "target: %s" .println
 	inlinelenmax "inline: %d" .println
+	inlinebudget "inline budget: x%d" .println
+	fmtunroll "unroll formats: %d" .println
 	mark
 	'filename r3plain
 	cols .hline

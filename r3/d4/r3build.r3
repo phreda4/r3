@@ -2,7 +2,7 @@
 | the code is the one selected in main.r3 (mem/menu.mem)
 | PHREDA 2026
 |
-| options are saved in mem/build.mem ( target, inlinelenmax ) for r3plain.r3
+| options are saved in mem/build.mem ( target, inlinelenmax, inlinebudget, fmtunroll ) for r3plain.r3
 
 ^r3/util/tui.r3
 ^r3/d4/r3token.r3
@@ -13,17 +13,23 @@
 |---- options (keep together, saved as 2 qwords in mem/build.mem)
 #target 0			| 0 WIN, 1 LIN, 2 MAC, 3 RPI (osgen)
 #inline 7			| max tokens of a word to inline (0 = no inline)
+#budget 2			| growth allowed when inlining a word with several calls (x inline)
+#unroll 0			| 1 = unroll format strings of ,print / sprint
 
-#optbuf * 64
+#optbuf * 128
 #osn "WIN" "LIN" "MAC" "RPI"
 
 :saveopts
-	'target 16 "mem/build.mem" save ;
+	'target 32 "mem/build.mem" save ;
 
 :loadopts
-	'optbuf "mem/build.mem" load 'optbuf - 16 <>? ( drop ; ) drop
+	'optbuf "mem/build.mem" load 'optbuf -
+	16 <? ( drop ; )
 	'optbuf @ $3 and 'target !
-	'optbuf 8 + @ 0 max 99 min 'inline ! ;
+	'optbuf 8 + @ 0 max 99 min 'inline !
+	32 <? ( drop ; ) drop
+	'optbuf 16 + @ 1 max 16 min 'budget !
+	'optbuf 24 + @ 1 and 'unroll ! ;
 
 |---- info of the loaded code
 #ncode #ndata #nrec #nanon #nshort
@@ -157,17 +163,8 @@
 		.reterm .cr "plain.r3 FAILED - press any key..." .println waitkey
 		"plain.r3 FAILED" 'msg strcpy
 		backtui ; ) drop
-	"r3/d4/r3wincomp.r3" r3run
+	"r3/d4/r3comp.r3" r3run
 	"compile done" 'msg strcpy
-	backtui ;
-
-:docompileo
-	target 1? ( drop "Compile (old): only the WIN target for now" 'msg strcpy ; ) drop
-	error 1? ( drop ; ) drop
-	saveopts
-	.masb .reset .cls .flush
-	"r3/system/r3compiler.r3" r3run
-	"compile (old) done" 'msg strcpy
 	backtui ;
 
 |---- screen
@@ -187,7 +184,9 @@
 	'bfile .write fcr
 	error 1? ( drop errinfo ; ) drop
 	"target " lbl 'osn target n>>0 .write
-	"   inline <= " lbl inline "%d tokens" .print fcr
+	"   inline <= " lbl inline "%d tokens" .print
+	"   budget x" lbl budget "%d" .print
+	unroll 1? ( drop "   unroll formats" lbl ) drop fcr
 	"files " lbl cntinc "%d" .print
 	"   code " lbl ncode "%d" .print
 	"   data " lbl ndata "%d" .print fcr
@@ -215,16 +214,23 @@
 	4 'inline "4   low" tuRadio
 	7 'inline "7   normal" tuRadio
 	12 'inline "12  high" tuRadio
-	20 'inline "20  max" tuRadio
-	fhome fMu "max tokens of an inlined word" .write ;
+	20 'inline "20  max" tuRadio ;
+
+:panelBudget
+	.wborde $1 " Inline budget " .wtitle
+	1 1 flpad
+	1 'budget "1   tight" tuRadio
+	2 'budget "2   normal" tuRadio
+	4 'budget "4   loose" tuRadio
+	'unroll "unroll formats" tuCheck ;
 
 :panelActions
 	.wborde $1 " Build " .wtitle
 	1 1 flpad
-	'doplain "Plain          F3" tuBtn
 	'docompile "Compile        F2" tuBtn
-	'docompileo "Compile (old)  F4" tuBtn ;
-
+	'doplain "Plain          F3" tuBtn
+	;
+	
 :panelIncs
 	.wborde $1 " Files " .wtitle
 	1 1 flpad
@@ -253,18 +259,19 @@
 	fMu 'msg .write .eline ;
 
 :small
-	1 1 .at "terminal too small (min 70x24)" .write ;
+	1 1 .at "terminal too small (min 70x27)" .write ;
 
 :screen
 	.reset bg0 fTx .cls
 	cols 70 <? ( drop small ; ) drop
-	rows 24 <? ( drop small ; ) drop
+	rows 27 <? ( drop small ; ) drop
 	1 flxN head
 	1 flxS foot
 	36 flxO
 	flxpush
 	6 flxN panelTarget
-	8 flxN panelInline
+	7 flxN panelInline
+	6 flxN panelBudget
 	5 flxN panelActions
 	flxpop
 	flxRest
@@ -277,7 +284,6 @@
 	uikey
 	[f2] =? ( docompile )
 	[f3] =? ( doplain )
-	[f4] =? ( docompileo )
 	[esc] =? ( tuiexit )
 	drop
 	target osgen <>? ( 'osgen ! reload tuR! ; ) drop

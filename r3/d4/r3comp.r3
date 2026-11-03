@@ -15,6 +15,7 @@
 |---------------------------------------------------------------
 ^r3/lib/console.r3
 ^r3/d4/r3token.r3
+^r3/d4/r3opt1.r3
 
 #filename "r3/d4/gen/plain.r3"
 #osnames "WIN" "LIN" "MAC" "RPI"
@@ -205,6 +206,8 @@
 | OUTPUT
 |---------------------------------------------------------------
 #jt		| jump label of the current token
+#lbuf * 256	| text of an instruction
+#hsv	| here saved
 #tcur	| address of the current token
 #lbl	| 1 byte for each token, 1 if it is a jump target
 
@@ -213,15 +216,20 @@
 :,wlab "w" ,s ,h ;
 :,lab "l" ,s ,h ;
 
+:ib | -- ; the next text goes to lbuf
+	here 'hsv ! 'lbuf 'here ! ;
+:ie | -- "text" ; end of the text, back to the output
+	0 ,c hsv 'here ! 'lbuf ;
+
 :,asmc | char --
-	$3b =? ( drop 10 ,c 9 ,c ; )		| ;
+	$3b =? ( drop ie opt.ins ib ; )		| ;
 	$7e =? ( drop "l" ,s jt ,h ; )		| ~
 	,c ;
 
-:,asm | "a;b;c" --
-	,tab ( c@+ 1? ,asmc ) 2drop ;
+:,asm | "a;b;c" -- ; each instruction goes to the optimizer
+	ib ( c@+ 1? ,asmc ) 2drop ie opt.ins ;
 
-:,ins ,asm ,lf ;
+:,ins ,asm ;
 
 :,num | n -- ; decimal if it is an int32, else hex
 	dup 32 << 32 >> <>? ( "$" ,s ,h ; ) ,d ;
@@ -254,22 +262,23 @@
 
 |--- push
 :,push "add rbp,8;mov [rbp],rax" ,ins ;
-:,movax ,tab "mov rax," ,s ;
+:,movax ib "mov rax," ,s ;
+:,iend ie opt.ins ;
 :,pushl | n --
-	,push ,movax ,num ,lf ;
+	,push ,movax ,num ,iend ;
 
 :gk0 40 >>> src + str>anro nip ,pushl ;		| big literal
 :gk1 tks ,pushl ;							| literal
-:gk2 ,tab "call " ,s tkv ,wlab ,lf ;		| word
-:gk3 ,push ,movax "w" ,s tkv ,h ,lf ;		| 'word
-:gk4 ,push ,movax "qword[w" ,s tkv ,h "]" ,s ,lf ;	| var
+:gk2 ib "call " ,s tkv ,wlab ,iend ;		| word
+:gk3 ,push ,movax "w" ,s tkv ,h ,iend ;		| 'word
+:gk4 ,push ,movax "qword[w" ,s tkv ,h "]" ,s ,iend ;	| var
 :gk5 gk3 ;									| 'var
-:gk6 ,push ,movax "s" ,s tkv ,h ,lf ;		| "string"
+:gk6 ,push ,movax "s" ,s tkv ,h ,iend ;		| "string"
 
 #gtype 'gk0 'gk1 'gk2 'gk3 'gk4 'gk5 'gk6
 
 :gk11 | tok --  ] push address of the anonymous
-	,push ,movax "l" ,s tkv ,h ,lf ;
+	,push ,movax "l" ,s tkv ,h ,iend ;
 
 :gfrag | n --
 	7 - 3 << 'ftab + @
@@ -294,13 +303,13 @@
 | CODE
 |---------------------------------------------------------------
 :genword | nro --
-	dup cntdef 1- =? ( "INICIO:" ,s ,lf ) drop
-	dup ,wlab ":" ,s ,lf
+	dup cntdef 1- =? ( "INICIO:" opt.label ) drop
+	ib dup ,wlab ":" ,s ie opt.label
 	dup markword
 	dup nro>dic toklen
 	( 1? 1- swap
 		dup 'tcur !
-		tkidx lbl + c@ 1? ( tkidx ,lab ":" ,s ,lf ) drop
+		tkidx lbl + c@ 1? ( ib tkidx ,lab ":" ,s ie opt.label ) drop
 		@+ gentoken
 		swap ) 2drop
 	drop ;
@@ -402,7 +411,9 @@
 :filecode
 	mark
 	"; r3 simple compiler - code" ,s ,lf
+	opt.reset
 	gencode
+	opt.end
 	"asm/code.asm" savefile ;
 
 :filedata
@@ -447,11 +458,14 @@
 	filecode
 	filedata
 	fileset
-	cnttok cntdef "words:%d tokens:%d" .println ;
+	cnttok cntdef "words:%d tokens:%d" .println
+	nout nins "instructions: %d -> %d" .println ;
 
 :
 	.reset
 	"r3 simple compiler" .println
+	|0 'optlevel !		| 0 = no optimization
+	optlevel "optlevel: %d" .println
 	'osnames osgen $3 and 2 << + "target: %s" .println
 	'filename r3load
 	error 1? ( .println drop ; ) drop
