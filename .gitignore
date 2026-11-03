@@ -47,3 +47,6 @@ mem/repl.log
 mem/repl.out
 mem/repl.r3
 mem/build.mem
+mem/profile.def
+mem/profile.mem
+mem/repl.dat

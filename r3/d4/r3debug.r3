@@ -332,7 +332,7 @@
 |------ header / footer
 :drawhead
 	bg3 fhome fw .ndel
-	fTx " r3dbg | " .write 'topline .write 
+	fTx .rev " DEBUG " .write .nrev .sp 'topline .write 
 	cols 35 - .col fMu "IP:" .write fTx 8 vmIP .nh
 	;
 

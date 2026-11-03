@@ -138,6 +138,10 @@
 	error 1? ( coderror ; ) drop 
 	codeok 
 	;
+
+:togglechk | F6: error if the ; of a word leave different stack
+	retstrict 1 xor 'retstrict !
+	checkcode ;
 	
 |--- F3 Fx
 #vanaly 0 0
@@ -426,7 +430,7 @@
 	'helpc onTui ;
 	
 :helpdlg
-	"r3IDE Help" 52 17 tuDlg
+	"r3IDE Help" 58 18 tuDlg
 	fcr
 	"F2 Word help (ENTER adds its include)   F3 Rx" .cw
 	"F4/ctrl+R Run   F5/ctrl+D Debug" .cw
@@ -439,6 +443,7 @@
 	"ctrl+X Cut   ctrl+C Copy   ctrl+V Paste" .cw
 	"ctrl+Z Undo   ctrl+Y Redo" .cw
 	fcr
+	"F6 Check that all the ; of a word leave the same stack" .cw
 	"ctrl+H Help   ctrl+Q or ESC Quit" .cw
 	tuDlgEnd
 	uikey
@@ -455,11 +460,15 @@
 	"back:" .write
 	tuejdepth "%d" sprint .write ;
 
+:retind | -- ; state of the check of ; (F6)
+	retstrict 1? ( drop bgGr fBk " ;chk " .write bg3 fTx ; ) drop
+	fDi " ;chk" .write fTx ;
+
 :main
 	.reset
 	1 flxN 
 	bg3 fTx fhome
-	bgGr fBk " EDIT " .write bg3 fTx " r3IDE | " .write printfname 
+	bgGr fBk " EDIT " .write bg3 fTx .sp printfname 
 	" | " .write tuecursor. .write 
 	|'helpword .write
 	" | " .write 'msg .write
@@ -475,6 +484,7 @@
 	fPr " ^G" .write fTx "oto" .write 
 	fPr " ^T" .write fTx "back" .write 
 	fPr " ^H" .write fTx "elp" .write 
+	fPr " F6" .write retind
 	.eline
 	flxRest
 	tuEditCode
@@ -485,6 +495,7 @@
 	[f3] =? ( fxcode )
 	[f4] =? ( runcode )
 	[f5] =? ( debugcode )
+	[f6] =? ( togglechk )
 	
 	| ctrl
 	|$2 =? ( buildcode ) 	|+b
