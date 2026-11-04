@@ -89,26 +89,19 @@
 	0 'vwords ! 0 'vwords 8 + ! ;
 
 |---- text of a definition
-#wd #wf
-:wlen | -- n
-	wf 1 and? ( drop wd toklend nip ; ) drop wd toklen nip ;
-
-:kind | -- str
-	wf 1 and 1? ( drop "#" ; ) drop ":" ;
-
-:flagtxt
-	wf $10 and? ( " ;" ,s ) $20 and? ( " R" ,s ) $40 and? ( " []" ,s ) $80 and? ( " ." ,s ) drop ;
-
 :wordtxt | nro --
-	nro>dic 'wd !
-	wd @ 'wf !
-	kind ,s
-	here wd @ dic>name ,word here swap -
-	22 swap - clamp0 ,nsp
-	wf 1 and? ( drop wlen "%d tok" ,print ; ) drop
-	wd 8 + @ 16 >> $ffff and wlen "%d tok %d calls" ,print
-	flagtxt ;
-
+	nro>dic @+ | 'wd wf
+	":#" over 1 and + c@ ,c | 'wd wf
+	dup dic>name ,word 2 ,nsp | 'wd wf
+	1 and? ( drop 8 - toklend nip "%d tk" ,print ; ) 
+	over 8 - toklen nip " %d tk" ,print
+	swap @ 16 >> $ffff and " %d cl" ,print
+	$10 and? ( " ;" ,s ) 
+	$20 and? ( " R" ,s ) 
+	$40 and? ( " []" ,s ) 
+	$80 and? ( " ." ,s ) 
+	drop ;
+		
 :xword | w n --
 	1- mark wordtxt ,eol empty here lwrite ;
 
@@ -247,19 +240,15 @@
 	xwriten.reset ;
 
 :head
-	fhome bg3 fPr .Bold " r3build " .write .NBold fTx
-	cols rows "%dx%d" sprint .write .eline ;
+	fhome bg3 fPr .Bold " BUILD " .write .NBold fTx .eline ;
 
 :foot
 	fhome bg3
 	fPr " F2" .write fTx " Compile " .write
 	fPr "F3" .write fTx " Plain " .write
-	fPr "F4" .write fTx " Compile(old) " .write
 	fPr "ESC" .write fTx " Exit " .write
 	fMu 'msg .write .eline ;
 
-:small
-	1 1 .at "terminal too small (min 70x27)" .write ;
 
 :keys
 	uikey
@@ -272,8 +261,6 @@
 
 :screen
 	.reset bg0 fTx .cls
-	cols 70 <? ( drop small ; ) drop
-	rows 27 <? ( drop small ; ) drop
 	1 flxN head
 	1 flxS foot
 	36 flxO
