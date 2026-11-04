@@ -21,7 +21,7 @@
 ^r3/lib/str.r3
 ^r3/lib/parse.r3
 
-##optlevel 1		| 0 = text as it is , 1 = rbp folding + peephole
+##optlevel 2		| 0 = text as it is , 1 = rbp folding + peephole , 2 = virtual stack
 ##nins 0			| instructions received
 ##nout 0			| instructions written
 
@@ -30,6 +30,16 @@
 #held * 256			| instruction on hold ( last one, to look for pairs )
 #ibuf * 256			| rewritten instruction
 #tmp * 256
+#lbuf * 256			| text of the instruction in construction
+#hsv				| here saved
+
+|---------------------------------------------------------------
+| build an instruction with the usual words ( ,s ,d ,h ,c ) :
+|   ib  "mov rax," ,s 5 ,d  ie opt.ins
+::ib | -- ; the next text goes to lbuf
+	here 'hsv ! 'lbuf 'here ! ;
+::ie | -- "text" ; end of the text, back to the output
+	0 ,c hsv 'here ! 'lbuf ;
 
 |---------------------------------------------------------------
 | output

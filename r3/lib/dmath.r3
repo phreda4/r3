@@ -31,16 +31,19 @@
 ::.d>f | a -- fix ; 32.32 fixed point to 48.16 (math.r3)
 	16 >> ;
 
-:sinp
+:sinp | x -- r ; sin(2*pi*x), x in [-0.25,0.25) turns
 	$7fffffff and $40000000 -
-	dup dup *.d
-	dup 319329696830 *.d     | c3 minimax
-	176857405652 - *.d       | c2 minimax
-	26986075409 + *.d ;      | c1 = 2pi * 2^32
+	dup dup * 4 >>			| x x2 (x2 in 4.60: exact, a rounded x2 costs about 8 LSB)
+	-61577052118 over 60 *>> 180388582732 +		| odd polynomial of degree 11, minimax (Remez), error 1.3e-11
+	over 60 *>> -329439744803 +
+	over 60 *>> 350491705690 +
+	over 60 *>> -177561257749 +
+	over 60 *>> 26986075406 +		| c1 = 2pi * 2^32
+	nip 31 *>> 1+ 1 >> ;		| rounded to nearest
 	
-::cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
+::cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); error under 2e-10 (1 LSB)
 	$80000000 + $80000000 nand? ( sinp ; ) sinp neg ;
-::sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
+::sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); error under 2e-10 (1 LSB)
 	$40000000 + $80000000 nand? ( sinp ; ) sinp neg ;
 
 ::tan.d | bangle -- r ; tangent, rough approximation
@@ -54,20 +57,27 @@
 ::tan.dc | bangle -- r ; tangent as sin/cos
 	dup sin.d swap cos.d 0? ( 1+ ) /.d ;
 
-:step | op res one r+o -- op res one
-	pick3 >? ( drop swap 2/ swap ; )
-	rot 2/ pick2 + | op one r+o nres
-	>r neg rot + r> | one nop nres
-	rot ;
+:sqd | root rem pair -- root' rem' ; one digit of the square root (2 bits of x)
+	swap 2 << or
+	over 2 << 1+ >=? ( over 2 << 1+ - swap 2* 1+ swap ; )
+	swap 2* swap ;
 	
-::sqrt.d | x -- r ; square root in 32.32 with 16 bits of precision (0 if x <= 0)
-	0 <=? ( drop 0 ; ) |1.0 =? ( ; )
-	0 
-	1 pick2 msb 1 nand <<
-	( 1? | op res one
-		2dup + | op res one r+o
-		step 2 >> )
-	drop nip 16 << ;
+:sqz | root rem -- root' rem' ; one digit of the fraction (2 bits of zeros)
+	2 << over 2 << 1+ >=? ( over 2 << 1+ - swap 2* 1+ swap ; )
+	swap 2* swap ;
+
+:sqz4 sqz sqz sqz sqz ;
+
+::sqrt.d | x -- r ; square root in 32.32 (all 32 fractional bits, rounded to nearest; 0 if x <= 0)
+	0 <=? ( drop 0 ; )
+	dup msb $3e and >r			| x ; r: shift of the highest pair of bits
+	0 0					| x root rem
+	( r@ -1 >?				| x root rem sh
+		pick3 swap >>> 3 and sqd	| x root' rem'
+		r> 2 - >r )
+	drop r> drop rot drop		| root rem (root = isqrt of x)
+	sqz4 sqz4 sqz4 sqz4		| 16 more bits for the fraction
+	over >? ( drop 1+ ; ) drop ;	| rounded to nearest
 	
 :mc	| y bitpos -- y mant
 	+? ( >> ; ) neg << ;

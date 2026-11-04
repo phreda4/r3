@@ -16,6 +16,7 @@
 ^r3/lib/console.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt1.r3
+^r3/d4/r3vstk.r3
 
 #filename "r3/d4/gen/plain.r3"
 #osnames "WIN" "LIN" "MAC" "RPI"
@@ -205,9 +206,6 @@
 |---------------------------------------------------------------
 | OUTPUT
 |---------------------------------------------------------------
-#jt		| jump label of the current token
-#lbuf * 256	| text of an instruction
-#hsv	| here saved
 #tcur	| address of the current token
 #lbl	| 1 byte for each token, 1 if it is a jump target
 
@@ -215,11 +213,6 @@
 :,tab 9 ,c ;
 :,wlab "w" ,s ,h ;
 :,lab "l" ,s ,h ;
-
-:ib | -- ; the next text goes to lbuf
-	here 'hsv ! 'lbuf 'here ! ;
-:ie | -- "text" ; end of the text, back to the output
-	0 ,c hsv 'here ! 'lbuf ;
 
 :,asmc | char --
 	$3b =? ( drop ie opt.ins ib ; )		| ;
@@ -295,6 +288,9 @@
 	swap drop gfrag ;
 
 :gentoken | tok --
+	dup $ff and 13 25 in? ( over jtarget 'jt ! ) drop
+	dup vs.tok 1? ( 2drop ; ) drop
+	vs.norm
 	dup $ff and
 	6 >? ( gbase ; )
 	3 << 'gtype + @ ex ;
@@ -304,15 +300,16 @@
 |---------------------------------------------------------------
 :genword | nro --
 	dup cntdef 1- =? ( "INICIO:" opt.label ) drop
-	ib dup ,wlab ":" ,s ie opt.label
+	vs.norm ib dup ,wlab ":" ,s ie opt.label
+	vs.reset
 	dup markword
 	dup nro>dic toklen
 	( 1? 1- swap
 		dup 'tcur !
-		tkidx lbl + c@ 1? ( ib tkidx ,lab ":" ,s ie opt.label ) drop
+		tkidx lbl + c@ 1? ( vs.norm ib tkidx ,lab ":" ,s ie opt.label ) drop
 		@+ gentoken
 		swap ) 2drop
-	drop ;
+	vs.norm drop ;
 
 :gencode1 | nro --
 	dup nro>dic @ 1 and? ( 2drop ; ) drop
@@ -411,7 +408,7 @@
 :filecode
 	mark
 	"; r3 simple compiler - code" ,s ,lf
-	opt.reset
+	opt.reset vs.init vs.reset
 	gencode
 	opt.end
 	"asm/code.asm" savefile ;
