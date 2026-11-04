@@ -29,8 +29,10 @@
 | vkillvar   | 'var --		kill for 'var
 | vaempty    | -- n			cnt now
 |
-| vvexe: get param >>	dup @ -> v1
-| vvvexe: get param >>	dup @+ swap @ -> v2 v1
+| the exe words receive the ADDRESS of the stored parameters and must leave it
+| on the stack (it is dropped after the call): 'exe | adr -- adr
+| vvexe: get param >>	dup @ -> adr v1
+| vvvexe: get param >>	dup @+ swap @ -> adr v2 v1
 
 ^r3/lib/mem.r3
 ^r3/lib/color.r3
@@ -44,8 +46,8 @@
 ##timeline | start of the event list (8 bytes per event, sorted by start time)
 ##timeline< | end of the events already running in the list
 ##timeline> | end of the event list
-| ini | fin | ease ms | 'VAR
-##exevar | table with the data of each event (32 bytes: duration and ease, fin, ini, variable or parameters)
+| ease ms | ini | fin | 'VAR
+##exevar | table with the data of each event (32 bytes: +0 ease and duration, +8 ini, +16 fin, +24 variable; the exe events keep 0, 'exe and the parameters)
 #maxcnt
 
 ::timer< | -- ; reset the timer (deltatime = 0)
@@ -99,9 +101,11 @@
     swap 32 << 32 >> swap 32 << 32 >> over - b> *. + $ffffffff and
     or a@ ! ;
 
-:incol | 4 8bits
-    >a a@+ a@+
-    b> 8 >> $ff and colmix a@ ! ;
+:incol | 4 8bits $AARRGGBB, the four channels (alpha included) are mixed
+    >a a@+ a@+ b> 8 >> $ff clamp0max >r
+    2dup r@ colmix $ffffff and       | ini fin rgb
+    -rot 24 >> $ff and swap 24 >> $ff and swap | rgb ia fa
+    r> colmix $ff and 24 << or a@ ! ;
 
 #inlist inval inbox inxy incol
 
@@ -132,9 +136,7 @@
     timeline< timenow
     ( over
         timeline> =? ( 'timeline< ! 2drop ; )
-        @ $fffffff and >=? swap
-        dup @ $fffffff nand timenow or over !
-        8 + swap ) drop
+        @ $fffffff and >=? swap 8 + swap ) drop
     'timeline< !
     ;
 	
@@ -179,7 +181,7 @@
 :+ev | a b c d -- n
     findempty !+ !+ !+ !+ exevar - 5 >> 1- ;
 
-:addint | 'var ini fin ease dur. -- nro
+:addint | 'var fin ini ease dur. -- nro
     1000 *. $fffffff and  | duracion ms
     swap $ff and 32 << or  | ease
     +ev ;
@@ -202,7 +204,7 @@
 ::+vxyanimg | 'var fin ini ease dur. start group -- ; like +vxyanim in a group (0..15)
     >r >r addint $20000 or r> r> +tlineg ;
 	
-::+vcolanim | 'var fin ini ease dur. start -- ; animate a color $RRGGBB mixing fin and ini with colmix (24 bits: the result has no alpha)
+::+vcolanim | 'var fin ini ease dur. start -- ; animate a color $AARRGGBB mixing ini and fin channel by channel (alpha included)
 	0
 ::+vcolanimg | 'var fin ini ease dur. start group -- ; like +vcolanim in a group (0..15)
     >r >r addint $30000 or r> r> +tlineg ;
@@ -250,10 +252,10 @@
 | PUBLIC: KILL BY VAR ADDRESS
 | -------------------------------------------------------
 
-::vkillvar | 'var -- ; remove the animations of the variable 'var (BUG: it compares the initial value instead of the variable address, so it removes nothing; its line should use + 24 instead of + 16)
+::vkillvar | 'var -- ; remove the animations of the variable 'var
 	timeline
 	( timeline> <?
-		@+ 32 >> $fff and 5 << exevar + 16 + @
+		@+ 32 >> $ffff and 5 << exevar + 24 + @
 		pick2 =? ( swap remlist2 swap ) drop
 		) 2drop ;
 
@@ -309,23 +311,23 @@
     timeline> timeline - 3 >> ;
 
 |------------ FRAME ANIMATION
-|init(12) cnt-1(8) now(8) ms(12) acc(24)  = 64 bits
+|init(12) cnt(8) now(8) ms(12) acc(24)  = 64 bits
 |63..52   51..44   43..36  35..24  23..0
 ::aniInit | ini cnt fps -- V ; value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
 	0? ( 2drop 0 1.0 )				| 0fps is still
 	1000.0 swap / $fff and 24 <<	| ms x frame
-	swap $ff and 44 << or	| cnt 0-> not 1-
+	swap $ff and 44 << or	| cnt (0 = still)
 	swap $fff and 52 << or ;		| init
 
-::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
-	swap over +! 
-	dup @ dup $ffffff and	| 'v val acc
-	over 24 >> $fff and -	| 'v val acc-ms ( acc-ms)
-	-? ( 3drop ; ) 
-	over 36 >> $ff and 1+	| 'v val nacc nnow
-	pick2 44 >> $ff and		| 'v val nacc nnow cnt
-	>=? ( 0 nip )			| 'v val nacc now
-	36 << or				| 'v val nn
+::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
+	swap over +!				| 'V ; acc+dt
+	dup @ dup $ffffff and		| 'V val acc
+	over 24 >> $fff and 1 max	| 'V val acc ms
+	/mod swap				| 'V val rem q
+	0? ( 2drop 2drop ; )
+	pick2 36 >> $ff and +		| 'V val rem now+q
+	pick2 44 >> $ff and 1 max mod	| 'V val rem now
+	36 << or				| 'V val nn
 	swap $ff000ffffff nand or
 	swap ! ;
 

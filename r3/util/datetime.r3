@@ -67,13 +67,13 @@
 ::>mesname | n -- str ; Spanish name of the month n (0 = enero .. 11 = diciembre), no range check
 	3 << 'mesname + @ ;
 
-::str_fullday | -- str ; current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string (BUG: the month name is one too far: date.m is 1..12 and >mesname takes 0..11)
+::str_fullday | -- str ; current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string
 	mark
 	sysdate 
 |WIN|	@
 	dup date.dw >dianame ,s ", " ,s
 	dup date.d ,d " " ,s
-	dup date.m >mesname ,s " " ,s
+	dup date.m 1- >mesname ,s " " ,s
 	dup date.y ,d " " ,s
 	0 ,c
 	empty here ;
@@ -137,10 +137,10 @@
 	dup 16 >> $ff and ,2d ":" ,s
 	8 >> $ff and ,2d ;
 
-::64>dtc | dt64 -- ; write a dt64 as date and time (BUG: it writes "yyyy mm-dd-hh:mm:ss"; the separator after the year should be - and the one after the day a space)
+::64>dtc | dt64 -- ; write a dt64 as date and time
 	dup 48 >> $ffff and ,d " " ,s
 	dup 44 >> $f and ,2d "-" ,s	
-	dup 32 >> $ff and ,2d "-" ,s
+	dup 32 >> $ff and ,2d ,sp
 	dup 24 >> $ff and ,2d ":" ,s
 	dup 16 >> $ff and ,2d ":" ,s
 	8 >> $ff and ,2d ;

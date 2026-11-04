@@ -44,8 +44,8 @@
 
 |--------------------------------
 :recalc
-	sw 40 - tilew / 1 + 'scrw !
-	sh 40 - tileh / 1 + 'scrh !
+	sw 40 - tilew 0? ( 1+ ) / 1 + 'scrw !
+	sh 40 - tileh 0? ( 1+ ) / 1 + 'scrh !
 
 	mapw scrw - 1 + 'scrmw	!
 	maph scrh - 1 + 'scrmh	!
@@ -212,8 +212,8 @@
 #ntileh 8
 
 :xy2pal | -- x y 
-	sdlx 40 - tilew / ntilew 1 - clamp0max tilew * 40 +
-	sdly 40 - tileh / ntileh 1 - clamp0max tileh * 40 + ;
+	sdlx 40 - tilew 0? ( 1+ ) / ntilew 1 - clamp0max tilew * 40 +
+	sdly 40 - tileh 0? ( 1+ ) / ntileh 1 - clamp0max tileh * 40 + ;
 	
 :blink
 	msec $80 and 1? ( $ffffff nip ; )
@@ -224,8 +224,8 @@
 	xy2pal tilew tileh rect ;	
 	
 :xy2tile
-	sdlx 40 - tilew / ntilew 1 - clamp0max
-	sdly 40 - tileh / ntileh 1 - clamp0max
+	sdlx 40 - tilew 0? ( 1+ ) / ntilew 1 - clamp0max
+	sdly 40 - tileh 0? ( 1+ ) / ntileh 1 - clamp0max
 	ntilew * +
 	;
 :clpal
@@ -260,8 +260,8 @@
 
 :selectile
 	tilemem @ 0 0 'ntilew 'ntileh SDL_QueryTexture
-	ntilew tilew / 'ntilew !
-	ntileh tileh / 'ntileh !
+	ntilew tilew 0? ( 1+ ) / 'ntilew !
+	ntileh tileh 0? ( 1+ ) / 'ntileh !
 	'stileset SDLshow
 	tilenow palins!
 	;
@@ -349,7 +349,7 @@
 
 :mmove
 	[ sdlx 'ox ! sdly 'oy ! mapx 'mx ! mapy 'my ! ; ] 
-	[ ox sdlx - tilew / mx + mapx! oy sdly - tileh / my + mapy! ; ] 
+	[ ox sdlx - tilew 0? ( 1+ ) / mx + mapx! oy sdly - tileh 0? ( 1+ ) / my + mapy! ; ] 
 	onDnMove ;
 	
 :drawselect | --
@@ -432,8 +432,8 @@
 	44 20 bat 
 	maph mapw mapy mapx "(%d,%d) [%d:%d]" sprint bprint
 	200 20 bat 
-	sdly 40 - tileh / mapy +
-	sdlx 40 - tilew / mapx +
+	sdly 40 - tileh 0? ( 1+ ) / mapy +
+	sdlx 40 - tilew 0? ( 1+ ) / mapx +
 	
 	sdlx sdly scr2tile 1? ( c@ $ff and )
 	tilenow

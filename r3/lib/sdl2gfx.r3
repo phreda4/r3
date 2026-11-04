@@ -96,11 +96,11 @@
 	xm pick2 - ym pick2 - 32 << xm pick4 + borde
 	xm pick2 - ym pick2 + 32 << xm pick4 + borde ;
 
-::ellipse | rx ry x y -- ; ellipse outline with radii rx ry centered at x y (BUG: the center row is missing, so there is a one pixel gap at each end)
+::ellipse | rx ry x y -- ; ellipse outline with radii rx ry centered at x y
 	ab[
     inielipse
 	here >b
-	xm pick2 - ym xm pick4 + borde
+	xm pick2 - ym 32 << xm pick4 + borde
 	( swap 0 >? swap 		| 2aa 2bb x y
 		a> 1 <<
 		dx >=? ( rot 1- rot qfb rot pick3 'dx +! dx a+ )

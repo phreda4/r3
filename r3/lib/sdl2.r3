@@ -274,7 +274,7 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 $6 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
 
@@ -282,7 +282,7 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 $6 SDL_CreateRenderer 'SDLrenderer !
 	;
 
 |int displays=SDL_GetNumVideoDisplays()-1;
@@ -300,7 +300,7 @@
 	$2fff0000 or dup 
 |	$1FFF0000 dup
 	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	dup -1 0 SDL_CreateRenderer 'SDLrenderer !
+	dup -1 $6 SDL_CreateRenderer 'SDLrenderer !
 	SDL_RaiseWindow
 	;
 	
@@ -308,7 +308,7 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $20 SDL_CreateWindow dup 'SDL_windows !
-	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 $6 SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
 
@@ -329,7 +329,7 @@
 	dup SDLdfullsw 'sh ! 'sw !
 	$2fff0000 or dup | display nro
 	sw sh $10 SDL_CreateWindow dup 'SDL_windows !
-	-1 0 SDL_CreateRenderer 'SDLrenderer !
+	-1 $6 SDL_CreateRenderer 'SDLrenderer !
 	;
 
 ::SDLfull | -- ; switch the window to fullscreen
@@ -391,18 +391,17 @@
 	
 ::SDLupdate | -- ; wait 10 ms and process the pending events, updating SDLkey, SDLchar, SDLx, SDLy, SDLb and SDLw
 	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !
-	10 SDL_delay
+	1 SDL_delay | novsync =10 
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
-		$200 =? ( drop changews ; ) | WINDOWEVENT
-		$300 =? ( 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ) |#SDL_KEYDOWN $300 
+		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
 		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
 		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
-		|$400 =? ( drop 'SDLevent 20 + d@+ 'SDLx ! d@ 'SDLy ! ; ) |#SDL_MOUSEMOTION	$400 Mouse moved
 		$400 =? ( 'SDLevent 20 + @ dup $ffff and 'SDLx ! 32 >> 'SDLy ! ) |#SDL_MOUSEMOTION	$400 Mouse moved
 		$401 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
 		$402 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
-		$403 =? ( 'SDLevent 20 + d@ 'SDLw ! ) |#SDL_MOUSEWHEEL $403 Mouse wheel motion
+		$403 =? ( drop 'SDLevent 20 + d@ 'SDLw ! ; ) |#SDL_MOUSEWHEEL $403 Mouse wheel motion
+		$200 =? ( drop changews ; ) | WINDOWEVENT
 		drop
 		) drop ;			
 		

@@ -788,7 +788,7 @@ lineV | x y1 y2 -- ; vertical line from y1 to y2 (both included) at x
 frect | x y w h -- ; filled rectangle (it covers x..x+w-1, y..y+h-1)
 rect | x y w h -- ; rectangle outline (same area as frect)
 fellipse | rx ry x y -- ; filled ellipse with radii rx ry centered at x y
-ellipse | rx ry x y -- ; ellipse outline with radii rx ry centered at x y (BUG: the center row is missing, so there is a one pixel gap at each end)
+ellipse | rx ry x y -- ; ellipse outline with radii rx ry centered at x y
 fround | r x y w h -- ; filled rectangle x y w h with rounded corners of radius r
 round | r x y w h -- ; outline of a rectangle x y w h with rounded corners of radius r
 fcircle | r x y -- ; filled circle of radius r centered at x y
@@ -1806,14 +1806,14 @@ str_HMS | -- str ; the current time as " h:mm:ss " in a temporary string (at her
 str_HM | -- str ; the current time as " h:mm " (blinking colon) in a temporary string (at here)
 >dianame | n -- str ; Spanish name of the weekday n (0 = domingo .. 6 = sabado), no range check
 >mesname | n -- str ; Spanish name of the month n (0 = enero .. 11 = diciembre), no range check
-str_fullday | -- str ; current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string (BUG: the month name is one too far: date.m is 1..12 and >mesname takes 0..11)
+str_fullday | -- str ; current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string
 str_hhmmss | -- str ; current time as hh:mm:ss (2 digits each), zero-terminated, in a temporary string (at here)
 dt2timesql | 'timedate -- ; write a timedate (address from sysdate or filetimeD) as yyyy-mm-dd hh:mm:ss at here (no final 0)
 dt>64 | 'timedate -- dt64 ; pack a timedate in 64 bits: year<<48 | month<<44 | weekday<<40 | day<<32 | hour<<24 | minute<<16 | second<<8 | ms>>2
 ,64>dtf | dt64 -- ; write a dt64 as dd/mm/yyyy hh:mm
 ,64>dtd | dt64 -- ; write the date of a dt64 as d/m/yyyy followed by a space
 ,64>dtt | dt64 -- ; write the time of a dt64 as hh:mm:ss
-64>dtc | dt64 -- ; write a dt64 as date and time (BUG: it writes "yyyy mm-dd-hh:mm:ss"; the separator after the year should be - and the one after the day a space)
+64>dtc | dt64 -- ; write a dt64 as date and time
 rowdb | number of the record the incremental words (loaddb-i, prevdb-i) will load next
 getnfilename | n "path" -- filename/0 ; name of the nth file of a folder (Windows only: it uses the Windows directory entry layout); 0 if there are fewer
 loadnfile | "path" -- filename ; incremental: each call returns the next file name of the folder, the position is kept in the file "path.now" and wraps to the first (Windows only)
@@ -2427,7 +2427,7 @@ deltatime | milliseconds between the last two vupdate or timer. calls
 timeline | start of the event list (8 bytes per event, sorted by start time)
 timeline< | end of the events already running in the list
 timeline> | end of the event list
-exevar | table with the data of each event (32 bytes: duration and ease, fin, ini, variable or parameters)
+exevar | table with the data of each event (32 bytes: +0 ease and duration, +8 ini, +16 fin, +24 variable; the exe events keep 0, 'exe and the parameters)
 timer< | -- ; reset the timer (deltatime = 0)
 timer. | -- ; update the timer: deltatime = milliseconds since the previous call
 timer+ | n -- n' ; add deltatime to n
@@ -2441,7 +2441,7 @@ vupdate | -- ; advance the animations with the time elapsed since the last call 
 +vboxanimg | 'var fin ini ease dur. start group -- ; like +vboxanim in a group (0..15)
 +vxyanim | 'var fin ini ease dur. start -- ; animate the two 32-bit values packed in the cell (see xy32), each one on its own
 +vxyanimg | 'var fin ini ease dur. start group -- ; like +vxyanim in a group (0..15)
-+vcolanim | 'var fin ini ease dur. start -- ; animate a color $RRGGBB mixing fin and ini with colmix (24 bits: the result has no alpha)
++vcolanim | 'var fin ini ease dur. start -- ; animate a color $AARRGGBB mixing ini and fin channel by channel (alpha included)
 +vcolanimg | 'var fin ini ease dur. start group -- ; like +vcolanim in a group (0..15)
 +vexe | 'exe start -- ; execute 'exe once after start seconds; 'exe receives the address of the stored parameters and must leave it on the stack
 +vexeg | 'exe start group -- ; like +vexe in a group (0..15)
@@ -2450,7 +2450,7 @@ vupdate | -- ; advance the animations with the time elapsed since the last call 
 +vvvexe | v1 v2 'exe start -- ; like +vexe with two parameters: 'exe reads them with dup @+ swap @ (v2 deeper, v1 on top) and leaves the address
 +vvvexeg | v1 v2 'exe start group -- ; like +vvvexe in a group (0..15)
 vkillgroup | group -- ; remove all the events of the group (0..15)
-vkillvar | 'var -- ; remove the animations of the variable 'var (BUG: it compares the initial value instead of the variable address, so it removes nothing; its line should use + 24 instead of + 16)
+vkillvar | 'var -- ; remove the animations of the variable 'var
 64xy | b -- x y ; unpack the first two signed 16-bit values (x in the highest 16 bits)
 64wh | b -- w h ; unpack the last two signed 16-bit values
 64xywh | b -- x y w h ; unpack four signed 16-bit values
@@ -2462,7 +2462,7 @@ xyrz64 | x y r z -- b ; pack a sprite (see 64xyrz)
 xy32 | x y -- b ; pack two 32-bit values (x in the high half)
 vaempty | -- n ; number of events in the list (waiting or running)
 aniInit | ini cnt fps -- V ; value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
-ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
+ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
 aniFrame | V -- f ; current frame number (ini + step)
 aniCnt | V -- n ; current step 0..cnt-1 of the animation (it is not the number of frames)
 ani+timer! | 'V -- ; advance the frame animation in 'V by deltatime
