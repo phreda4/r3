@@ -19,7 +19,7 @@
 : .hidec main .showc .free ;
 ```
 
-- `^r3/lib/console.r3` loads the right backend for the platform (`|LIN|`, `|WIN|`,
+- `^r3/lib/console.r3` loads the backend of the platform (`|LIN|`, `|WIN|`, `|MAC|` or `|RPI|`).
 - While the program runs the terminal is in **raw mode**: no echo, no line buffering,
   and Ctrl+C does not stop the program (it arrives as key `$03`). Always give the user
   a way out (usually ESC).
@@ -36,16 +36,16 @@ until the buffer is flushed.
 
 | Word | Stack | Flushes? | Use |
 |---|---|---|---|
-| `.write` | `"str" --` | no | plain text, **no format** |
-| `.print` | `args.. "fmt" --` | no | formatted text |
-| `.println` | `args.. "fmt" --` | yes | formatted text + newline |
+| `.write` | `str --` | no | plain text, **no format** |
+| `.print` | `p p .. "" --` | no | formatted text |
+| `.println` | `p p .. "" --` | yes | formatted text + newline |
 | `.fwrite` / `.fprint` | same as above | yes | write/print + flush |
 | `.type` | `str cnt --` | no | raw bytes, needs the length |
 | `.emit` | `char --` | no | one byte |
-| `.uemit` | `codepoint --` | no | one Unicode character (UTF-8) |
+| `.uemit` | `cp --` | no | one Unicode character (UTF-8) |
 | `.cr` `.sp` | `--` | no | newline, space |
-| `.nch` | `char n --` | no | repeat a byte `n` times (not multibyte) |
-| `.rep` | `n "str" --` | no | repeat a string `n` times |
+| `.nch` | `n char --` | no | repeat a byte `n` times (not multibyte) |
+| `.rep` | `cnt "car" --` | no | repeat a string `n` times |
 | `.flush` | `--` | - | send the buffer to the terminal |
 
 The buffer is flushed by `.println`, `.flush`, `getch` (and so `waitkey`, `.input`),
@@ -62,6 +62,8 @@ and automatically when it fills up. A full-screen frame should be drawn with man
 | `%s` | string |
 | `%k` | one character |
 | `%f` / `%m` / `%a` | fixed point (16.16) with 4 / 2 / 1 decimals |
+| `%p` | fixed point 32.32 with 8 decimals |
+| `%i` / `%j` | integer / fractional part of a fixed point value |
 | `%w` | one word of a string |
 | `%l` | one line of a string |
 | `%%` | a `%` |
@@ -120,7 +122,7 @@ was, so the text written next lands on top of the painted bar:
 ```forth
 :statusbar | "text" --
 	.savec
-	1 rows .at .Rever cols .nsp .write .Reset
+	1 rows .at .Rev cols .nsp .write .Reset
 	.restorec ;
 ```
 
@@ -168,7 +170,7 @@ Word names are not case sensitive (`.Reset` = `.reset`).
 | Background | `.BBlack .BRed ...` and `.BRedl ...` |
 | 256 colors | `n .fc` (foreground), `n .bc` (background) |
 | True color | `r g b .fgrgb`, `r g b .bgrgb` |
-| Attributes | `.Bold .Dim .Ital .Under .Blink .Rever .Hidden .Strike`; `.NBold .NItal .NUnder .NRever` turn off |
+| Attributes | `.Bold .Dim .Ital .Under .Blink .Rev .Hidden .Strike`; `.NBold .NItal .NUnder .NRev` turn off |
 | Reset | `.Reset` |
 
 Colors and attributes **stay active** until changed. Call `.Reset` before leaving a
@@ -366,7 +368,7 @@ Tips taken from the examples in `r3/term`:
 | statusbar: see section 3
 :statusbar | "text" --
 	.savec
-	1 rows .at .Rever cols .nsp .write .Reset
+	1 rows .at .Rev cols .nsp .write .Reset
 	.restorec ;
 
 :progress | pct --			; 0..100, 20 cells

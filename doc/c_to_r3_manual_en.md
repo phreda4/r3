@@ -88,7 +88,7 @@ The `@+`/`!+` variants **advance the address by the size read/written** — `c@+
 #buffer * 100
 'buffer c@+          | new_addr v0
         swap c@+     | v0 new_addr2 v1
-        c@           | v0 v1 v2  
+        swap c@      | v0 v1 v2
 ```
 
 This is exactly why registers exist: `ca@+`/`ca@` do the same increment in A, off the stack, so nothing needs swapping:
@@ -235,7 +235,7 @@ while (condition()) {
 | `>=?` | `a ≥ b` | `a b -- a` |
 | `<>?` | `a ≠ b` | `a b -- a` |
 | `and?` | `(a and b) ≠ 0` | `a b -- a` |
-| `nand?` | `(a nand b) ≠ 0` | `a b -- a` |
+| `nand?` | `(a and b) = 0` | `a b -- a` |
 | `in?` | `b ≤ a ≤ c` | `a b c -- a` |
 
 ```r3
@@ -282,7 +282,7 @@ value 255 100 */                | safe
 |------|--------|
 | `<<` `>>` | shift left / signed shift right |
 | `>>>` | unsigned shift right |
-| `and` `or` `xor` `nand` | bitwise ops, `a b -- c` |
+| `and` `or` `xor` `nand` | bitwise ops, `a b -- c` (`nand` is a and not b) |
 | `not` | bitwise NOT, `a -- b` |
 
 ---
@@ -817,7 +817,7 @@ int safe_div(int a, int b) {
 ```
 ```r3
 :safe_div | a b -- result
-    0? ( nip ; )   | b = 0: keep a, return it
+    0? ( nip ; )   | b = 0: return 0
     / ;
 ```
 

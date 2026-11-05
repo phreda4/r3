@@ -10,11 +10,9 @@ Repository: https://github.com/phreda4/r3
 
 ## What is R3forth?
 
-R3forth is a small, fast, concatenative programming language inspired by ColorForth. It compiles programs to native 64-bit code and is designed for direct OS interaction, real-time applications, and games.
+R3forth is a small concatenative language inspired by ColorForth. It compiles to native 64-bit code and talks directly to the operating system, so it suits real-time programs and games. If you know Forth you will feel at home; if not, the core is small and this tutorial goes step by step.
 
-If you've used Forth before, you'll feel at home quickly. If you haven't — don't worry. R3forth has a very small core that's easy to learn, and this tutorial will guide you step by step.
-
-> **Note for Forth programmers:** Unlike most Forth implementations, R3 compiles the entire program first and then executes it. Phrases like "pushes to stack" in this manual describe runtime behavior, not interactive REPL behavior.
+> **Note for Forth programmers:** R3 compiles the whole program first and then executes it. Phrases like "pushes to the stack" describe runtime behavior.
 
 ---
 
@@ -44,35 +42,15 @@ If you've used Forth before, you'll feel at home quickly. If you haven't — don
 
 ## Programming a Computer
 
-A computer needs a program to function — a precise description of what it should do.
-
-This description is written in a language the machine understands. But the programming process begins earlier.
-
-First comes an idea — for example, drawing a circle. Then we write code so the machine draws a circle with radius 1:
+A program describes what the computer must do. The source code is compiled to machine code and then executed:
 
 ```forth
 :draw 1 circle ;
 ```
 
-The computer first translates this code into machine code, the only language it truly understands. This process is called **compilation**.
+If the code cannot be compiled (for example a misspelled word, `cicle`), the compiler reports the error and nothing runs. If it compiles but does something else than intended, it is a logic error.
 
-Once compiled, the result is executed. If the code cannot be compiled, there is an error:
-
-```forth
-:draw 1 cicle ;   | Error: 'cicle' not found
-```
-
-When we try to compile, the computer reports the error and executes nothing. Another possibility is that the program compiles correctly but doesn't do what we intended — a logic error.
-
-To build a working program we need to:
-
-1. Have a problem or task to solve
-2. Have an idea of how to solve it
-3. Translate the idea into the programming language
-4. Compile without errors
-5. Execute and verify the result matches what we imagined
-
-> **Important:** We can only program what we understand well enough to describe. We cannot program what we don't know how it works.
+To build a program: understand the problem, find a solution, write it, compile it without errors, run it and check the result.
 
 ---
 
@@ -80,25 +58,10 @@ To build a working program we need to:
 
 ### Introduction
 
-Programming means building a recipe that describes behavior. This recipe is called **source code** or **program**.
-
 A program has two kinds of definitions:
 
-- **DATA** — also called memory, state, or variable
-- **CODE** — also called order, routine, function, or action
-
-As data we need to store numbers that represent:
-
-- **Quantities** — for example: 3 lives
-- **Addresses or locations** — for example: position 100 on the screen
-- **States** — for example: jumping = 1, falling = 2
-
-As code we build actions. Any behavior can be expressed with four elements:
-
-- **Sequence** — one instruction follows the next
-- **Condition** — an instruction runs only if a condition is met
-- **Repetition** — an instruction repeats in some defined way
-- **Recursion** — a word defined in terms of itself (least used)
+- **DATA** (memory, state, variables): quantities (3 lives), addresses (position 100) and states (jumping = 1).
+- **CODE** (words, routines): built with **sequence**, **condition**, **repetition** and **recursion**.
 
 ### Core Concepts
 
@@ -112,21 +75,9 @@ Case is not significant — `LIVES` and `lives` are the same word.
 
 ### Essential Terminology
 
-**Stack terms:**
-- **TOS** = Top Of Stack (the most recently pushed value)
-- **NOS** = Next Of Stack (the second-to-last value)
-- **Stack cell** = one storage slot (8 bytes / 64 bits)
-
-**Memory terms:**
-- **byte** = 8 bits — `c@` / `c!` operations
-- **word** = 16 bits — `w@` / `w!` operations
-- **dword** = 32 bits — `d@` / `d!` operations
-- **qword** = 64 bits — `@` / `!` operations (default)
-
-**Code terms:**
-- **Word** = a named function or data definition
-- **Definition** = the code or data associated with a word
-- **Dictionary** = the collection of all defined words
+- **TOS** = Top Of Stack, **NOS** = Next Of Stack; a stack cell is 8 bytes (64 bits).
+- **byte** 8 bits (`c@` `c!`), **word** 16 bits (`w@` `w!`), **dword** 32 bits (`d@` `d!`), **qword** 64 bits (`@` `!`, the default).
+- **Word** = a named code or data definition; the **dictionary** is the collection of all words.
 
 ### Stack-Based Execution
 
@@ -170,7 +121,7 @@ R3 recognizes 8 prefixes. The first character of a word determines how it is int
 
 ## Dictionary System
 
-The language starts with a predefined dictionary of around 200 words that represent basic computer operations (see the Reference document).
+The language starts with a predefined dictionary of about 130 words that represent basic computer operations (see the Reference document).
 
 New words are added using the `:` and `#` prefixes. When the compiler searches for a word, it searches from the **last defined to the first**. You can redefine words — only the most recent definition is used.
 
@@ -406,8 +357,8 @@ The stack is for passing values between words, not for storing data. If you need
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `NEG` | `a -- -a` | Negate |
-| `ABS` | `a -- \|a\|` | Absolute value |
+| `NEG` | `a -- b` | Negate |
+| `ABS` | `a -- b` | Absolute value |
 | `SQRT` | `a -- b` | Integer square root |
 | `*/` | `a b c -- d` | d = a×b/c without intermediate overflow |
 
@@ -423,7 +374,7 @@ The stack is for passing values between words, not for storing data. If you need
 | Word | Stack Effect | Example |
 |------|--------------|---------|
 | `AND` | `a b -- c` | `$ff $55 AND` → $55 |
-| `NAND` | `a b -- c` | `$ff $1 NAND` → $fe |
+| `NAND` | `a b -- c` | a AND NOT b: `$ff $1 NAND` → $fe |
 | `OR` | `a b -- c` | `$2 $1 OR` → 3 |
 | `XOR` | `a b -- c` | `$3 2 XOR` → 1 |
 | `NOT` | `a -- b` | `0 NOT` → -1 (all bits set) |
@@ -548,7 +499,7 @@ There are two families with different stack behavior — understanding this dist
 | `>=?` | `a b -- a` | True if a ≥ b |
 | `<>?` | `a b -- a` | True if a ≠ b |
 | `AND?` | `a b -- a` | True if a AND b ≠ 0 |
-| `NAND?` | `a b -- a` | True if a NAND b ≠ 0 |
+| `NAND?` | `a b -- a` | True if a AND b = 0 |
 | `IN?` | `a b c -- a` | True if b ≤ a ≤ c (consumes b and c) |
 
 ### Building Conditionals
@@ -612,7 +563,7 @@ drop    | clean up once at the end
 
 ```forth
 :min | a b -- min
-    over >? ( drop ; )  | If a > b: drop b, return a
+    over >? ( drop ; )  | If b > a: drop b, return a
     nip ;               | Otherwise: drop a, return b
 ```
 
@@ -674,7 +625,7 @@ For sequential integers, use jump tables:
 For non-sequential values, chain comparisons with early exit:
 
 ```forth
-:classify | value -- string
+:classify | value -- value string
     5 <?  ( "less than 5"   ; )
     6 =?  ( "is 6"          ; )
     7 =?  ( "is 7"          ; )
@@ -832,7 +783,7 @@ Whether to include 0 in the loop depends on where you place your code:
 ```forth
 :find-zero | addr cnt -- addr|0
     ( 1? 1 -
-        over @ 0? ( 2drop 0 ; ) drop
+        over @ 0? ( 2drop ; ) drop     | found: leave addr
         swap 8 + swap
     )
     2drop 0 ;
@@ -891,9 +842,8 @@ Recursion happens naturally: as soon as a word definition begins, the word can c
     + ;                    | fib(n)
 
 :factorial | n -- n!
-    dup 1 <=? ( drop 1 ; ) | Base case: 0! = 1! = 1
-    dup 1 -
-    factorial
+    1 <=? ( drop 1 ; )     | Base case: 0! = 1! = 1
+    dup 1 - factorial
     * ;
 
 5 factorial    | Result: 120
@@ -920,18 +870,17 @@ Use recursion when the problem naturally decomposes into smaller identical sub-p
 
 ```forth
 | Recursion: natural for trees
-:tree-sum | node -- sum
-    dup 0? ( ; )
-    dup @ swap
-    8  + @ tree-sum +
-    swap
-    16 + @ tree-sum + ;
+:tree-sum | node -- sum      | node: value, left, right
+    0? ( ; )                  | null node: the sum is 0
+    dup @ over 8 + @ tree-sum +
+    swap 16 + @ tree-sum + ;
 
 | Iteration: better for arrays
 :array-sum | addr cnt -- sum
-    0 swap ( 1? 1 -
-        swap @+ rot + swap
-    ) 2drop ;
+    swap >a 0 swap
+    ( 1? 1 -
+        swap a@+ + swap
+    ) drop ;
 ```
 
 ### Common Recursion Pitfalls
@@ -945,7 +894,7 @@ Use recursion when the problem naturally decomposes into smaller identical sub-p
 
 | ✓ CORRECT
 :good-countdown | n --
-    dup 0? ( drop ; )
+    0? ( drop ; )
     dup "%d " .print
     1 - good-countdown ;
 ```
@@ -1057,11 +1006,11 @@ var              | Same as 'var @ — pushes the value
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `!` | `value address --` | Store value at address |
-| `@` | `address -- value` | Fetch value from address |
-| `+!` | `val address --` | Add val to value at address |
-| `!+` | `value address -- address+8` | Store and advance address by 8 |
-| `@+` | `address -- address+8 value` | Fetch and advance address by 8 |
+| `!` | `a b --` | Store value at address |
+| `@` | `a -- [a]` | Fetch value from address |
+| `+!` | `a b --` | Add val to value at address |
+| `!+` | `a b -- c` | Store and advance address by 8 |
+| `@+` | `a -- b [a]` | Fetch and advance address by 8 |
 
 > **Memory layout:** Each default cell is 8 bytes (64 bits). Sequential cells are 8 bytes apart.
 
@@ -1184,16 +1133,16 @@ The `.print` word processes a format string with `%` placeholders, consuming val
 |--------|-------------|---------|
 | `%d` | Decimal number | `255 "%d"` → "255" |
 | `%b` | Binary number | `5 "%b"` → "101" |
-| `%h` | Hexadecimal | `255 "%h"` → "ff" |
+| `%h` | Hexadecimal | `255 "%h"` → "FF" |
 | `%s` | String address | `"hello" "%s"` → "hello" |
 | `%%` | Literal % | `"%%"` → "%" |
 
 ```forth
 253 254 255 "%d %b %h" .print
-| prints: 255 11111110 fc
+| prints: 255 11111110 FD
 ```
 
-> **Note:** The format string consumes values from the stack in right-to-left order matching the `%` placeholders. Use `dup` or `over` if you need to keep values on the stack after printing.
+> **Note:** The first `%` takes the top of the stack, the second the next one, and so on. Use `dup` or `over` to keep values on the stack after printing.
 
 ### Common String Operations
 
@@ -1329,9 +1278,9 @@ There is a second stack that handles word calls — storing the return address u
 
 | Word | Stack Effect | Description |
 |------|--------------|-------------|
-| `>R` | `a --` | Push to return stack |
-| `R>` | `-- a` | Pop from return stack |
-| `R@` | `-- a` | Copy top of return stack (non-destructive) |
+| `>R` | `a -- (r: -- a)` | Push to return stack |
+| `R>` | `-- a (r: a --)` | Pop from return stack |
+| `R@` | `-- a (r: a -- a)` | Copy top of return stack (non-destructive) |
 
 > **Use with care:** The return stack is safe to use as temporary storage *within a single word*, as long as every `>R` is matched by an `R>` before any `;` (including conditional exits). Avoid using it across word boundaries — each word must leave the return stack exactly as it found it.
 
@@ -1439,112 +1388,29 @@ The simplest starting point — just include the console library:
 | SDL2_net.dll | `^r3/lib/sdl2net.r3` | Network communication |
 | SDL2_ttf.dll | `^r3/lib/sdl2ttf.r3` | TrueType font rendering |
 
-> **Platform support:** R3 is designed for Windows, Linux, macOS(future), and Raspberry Pi(future), though these ports are in progress.
+> **Platform support:** Windows and Linux; macOS and Raspberry Pi are in progress.
 
 ---
 
 ## Libraries
 
-### Core — `^r3/lib/core.r3`
+The libraries are described in `r3forth-libs.md` and `r3forth-util.md`. The ones used in this tutorial:
 
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::msec` | `-- msec` | Milliseconds since program start |
-| `::time` | `-- hms` | Current time (hours, minutes, seconds packed) |
-| `::date` | `-- ymd` | Current date (year, month, day packed) |
-
-```forth
-:.time | --
-    time
-    dup 16 >> $ff and "%d:" .print    | hour
-    dup  8 >> $ff and "%d:" .print    | minute
-    $ff and "%d" .print               | second
-    ;
-```
-
-### Console — `^r3/lib/console.r3`
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::.cls` | `--` | Clear console |
-| `::.write` | `"text" --` | Write text |
-| `::.print` | `.. "fmt" --` | Formatted output |
-| `::.println` | `"text" --` | Write text + newline |
-| `::.home` | `--` | Move cursor to top-left |
-| `::.at` | `x y --` | Position cursor |
-| `::.fc` | `color --` | Set foreground color |
-| `::.bc` | `color --` | Set background color |
-| `::.input` | `--` | Read line of text from keyboard |
-| `::.inkey` | `-- key` | Return pressed key (0 = none) |
-| `::.cr` | `--` | Newline |
-
-> After `.input`, the entered text is in the `##pad` variable.
-
-### Random Numbers — `^r3/lib/rand.r3`
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::rerand` | `s1 s2 --` | Initialize generator with two seeds |
-| `::rand` | `-- rand` | 64-bit random number |
-| `::randmax` | `max -- value` | Random number in [0, max) |
+| Library | Purpose |
+|---------|---------|
+| `^r3/lib/core.r3` | time, files, directories, processes |
+| `^r3/lib/console.r3` | terminal output and input |
+| `^r3/lib/rand.r3` | random numbers |
+| `^r3/lib/sdl2gfx.r3` | window, drawing, images and sprites (includes `sdl2.r3`) |
 
 ```forth
-time msec rerand       | seed with time
-100 randmax            | random integer 0–99
-5.0 randmax 5.0 -      | random fixed-point -5.0 to 0.0
+^r3/lib/console.r3
+^r3/lib/rand.r3
+
+: time msec rerand		| seed with two values
+	100 randmax "%d" .println	| random integer 0..99
+	5.0 randmax 5.0 - "%f" .println ;	| fixed point -5.0 .. 0.0
 ```
-
-### Graphics — `^r3/lib/sdl2.r3`
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::SDLinit` | `"title" w h --` | Open window |
-| `::SDLfull` | `--` | Set fullscreen |
-| `::SDLquit` | `--` | Close window |
-| `::cls` | `color --` | Clear screen |
-| `::SDLredraw` | `--` | Flip buffers |
-| `::SDLshow` | `'word --` | Run word every frame |
-| `::exit` | `--` | Exit the show loop |
-
-**Input variables:**
-
-| Variable | Description |
-|----------|-------------|
-| `##SDLkey` | Pressed key code (0 = none) |
-| `##SDLchar` | Character code |
-| `##SDLx`, `##SDLy` | Mouse position |
-| `##SDLb` | Mouse button state |
-
-### Drawing — `^r3/lib/sdl2gfx.r3`
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::color` | `col --` | Set color ($RRGGBB) |
-| `::point` | `x y --` | Draw pixel |
-| `::line` | `x1 y1 x2 y2 --` | Draw line |
-| `::frect` | `x y w h --` | Filled rectangle |
-| `::rect` | `x y w h --` | Rectangle outline |
-| `::fcircle` | `r x y --` | Filled circle |
-| `::circle` | `r x y --` | Circle outline |
-| `::triangle` | `x1 y1 x2 y2 x3 y3 --` | Filled triangle |
-
-**Images:**
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::image` | `x y img --` | Draw image |
-| `::images` | `x y w h img --` | Draw image scaled |
-| `::spriteZ` | `x y zoom img --` | Draw with zoom |
-| `::spriteR` | `x y ang img --` | Draw with rotation |
-
-**Sprite sheets:**
-
-| Word | Stack Effect | Description |
-|------|--------------|-------------|
-| `::ssload` | `w h file -- ss` | Load sprite sheet |
-| `::ssprite` | `x y n ss --` | Draw sprite N centered |
-| `::sspriter` | `x y ang n ss --` | Draw with rotation |
-| `::sspritez` | `x y zoom n ss --` | Draw with scale |
 
 ---
 
@@ -1598,13 +1464,18 @@ time msec rerand       | seed with time
 
 ## Debugging Guide
 
-> **Note:** Debugging tools are still under development.
+Compile errors are written to `error.log` and shown with the file, line and character, for example:
 
-### Common Error Messages
+```
+FILE:ex.r3 LINE:3 CHAR:4
+  3|    word2 ;
+        ^- word not found
+```
 
 | Error | Meaning | Solution |
 |-------|---------|----------|
-| `Error: 'word' not found` | Misspelled or undefined | Check spelling; define before use |
+| `word not found` | misspelled, defined later in the file, or its library is not included | check the spelling; define or include before use |
+| `r3/lib/x.r3 not found` | include file does not exist | check the path of the `^` line |
 
 ### Debugging Techniques
 
@@ -1634,7 +1505,7 @@ time msec rerand       | seed with time
 
 :suspicious-word | n --
     "Entering" trace
-    dup 0? ( "Found zero" trace drop ; )
+    0? ( "Found zero" trace drop ; )
     "Processing" trace
     process-value ;
 ```
@@ -1704,10 +1575,7 @@ time msec rerand       | seed with time
 
 ```forth
 :clamp | value min max -- clamped
-    >r                        | value min           (max saved on return stack)
-    over <? ( drop ; ) nip    | clamp to >= min
-    r>                        | bring max back
-    over >? ( drop ; ) nip ;  | clamp to <= max
+    >r max r> min ;           | max with the lower limit, then min with the upper limit
 ```
 
 ### Circular Buffer
@@ -1770,7 +1638,7 @@ time msec rerand       | seed with time
 
 :str-get | -- "result"
     0 str-pos c!
-    str-buffer ;
+    'str-buffer ;
 
 str-reset
 "Hello " str-add

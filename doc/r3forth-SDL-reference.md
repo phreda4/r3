@@ -1,43 +1,21 @@
 # R3 Forth Graphics — Reference
 
-
 ---
 
-## 1. Basic R3 Syntax
+## 1. Basics
+
+Include `^r3/lib/sdl2gfx.r3` (it includes `sdl2.r3`). Stack comments read `in -- out`;
+the top of the stack is the last value. For the syntax see the language manual.
 
 ```forth
-| This is a comment
-^lib/file.r3
-| Import a library: the path starts at r3/ and no comment may follow on that line
-^r3/lib/file.r3
+^r3/lib/sdl2gfx.r3
 
-#name             | Declare a local/file-scope variable
-##name            | Declare a global variable (visible across files, used by the
-                  | library itself for shared state like screen size, key state)
-'name             | Get the address of a variable or word
-!                 | Store value at address
-@                 | Fetch value from address
-+!                | Add value to variable (at address)
-name              | A bare variable name FETCHES its current value
-                  | (e.g. `sw`, `sh`, `SDLkey` are used bare throughout the library)
+:main
+	0 cls  $ff0000 color  10 10 100 100 frect
+	SDLredraw ;
 
-:word_name        | Define a private word (only usable within the same file/module)
-    code here
-    ;
-::word_name       | Define an exported/public word (usable from any file that
-    code here     | imports this one — this is the convention used for every
-    ;             | public API word in the library, e.g. `::color`, `::sprite`)
+: "demo" 800 600 SDLinit  'main SDLshow  SDLquit ;
 ```
-
-### Stack Notation
-
-```forth
-10 20 +    | Pushes 10, then 20, then adds them (result: 30)
-```
-
-Stack comments in this reference use the form `| in1 in2 -- out1`, read left-to-right,
-bottom-of-stack to top-of-stack. Where a word takes a string, the string address is
-always the top item (pushed last).
 
 ---
 
@@ -45,23 +23,23 @@ always the top item (pushed last).
 
 | Word | Stack | Description |
 |---|---|---|
-| `SDLinit` | `"title" w h --` | Create a window + renderer of the given size. |
-| `SDLmini` | `"title" w h --` | Same as `SDLinit` but does not raise/focus the window. |
-| `SDLfullw` | `"title" display --` | Create a fullscreen window on the given display index. |
-| `SDLfull` | `--` | Switch the current window to fullscreen. |
-| `SDLdfullsw` | `display -- w h` | Get the current display mode's width/height. |
-| `SDLquit` | `--` | Destroy renderer/window and shut down SDL. |
-| `SDLshow` | `'word --` | Run `word` every frame (polling events first) until `exit` is called from inside it. |
-| `exit` | `--` | Ends the current `SDLshow` loop after the current frame. |
-| `SDLupdate` | `--` | Poll and process one batch of SDL events, updating `SDLkey`, `SDLchar`, `SDLx/SDLy`, `SDLb`, `SDLw`. Called automatically by `SDLshow`; rarely called directly. |
-| `sdlbreak` | `--` | Convenience: redraw, then block until F12 or ESC is pressed. |
-| `SDLeventR` | `'vec --` | Register a callback vector for raw events. |
-| `SDLClick` | `'event --` | Click-and-hold helper built on the mouse-button state. |
-| `SDLframebuffer` | `w h -- texture` | Create an off-screen render target texture. |
-| `SDLblend` | `--` | Enable alpha blending on the renderer. |
-| `SDLTexwh` | `tex -- w h` | Get a texture's width/height. |
-| `%w` | `-- px` | Convert a screen-relative fixed-point fraction to a pixel width (`sw` scaled). |
-| `%h` | `-- px` | Same as `%w` for screen height (`sh`). |
+| `SDLinit` | `"title" w h --` | initialize SDL, create a centered window w x h with its renderer (SDL_windows, SDLrenderer, sw, sh) and raise it |
+| `SDLmini` | `"title" w h --` | like SDLinit without raising the window |
+| `SDLfullw` | `"title" display --` | borderless window with the size of the display (sets sw sh) |
+| `SDLfull` | `--` | switch the window to fullscreen |
+| `SDLdfullsw` | `display -- sw sh` | current resolution of the display |
+| `SDLquit` | `--` | destroy the renderer and the window and quit SDL |
+| `SDLshow` | `'word --` | main loop: SDLupdate and execute 'word every frame until exit is called |
+| `exit` | `--` | end the SDLshow loop |
+| `SDLupdate` | `--` | wait 10 ms and process the pending events, updating SDLkey, SDLchar, SDLx, SDLy, SDLb and SDLw |
+| `sdlbreak` | `--` | debug stop: redraw and wait until F12 or ESC is pressed |
+| `SDLeventR` | `'vec --` | word to execute when the window is resized (sw and sh are updated first) |
+| `SDLClick` | `'event --` | execute 'event once when the mouse button is released after being pressed (call it every frame) |
+| `SDLframebuffer` | `w h -- texture` | streaming texture w x h in ARGB8888 format, to draw pixels |
+| `SDLblend` | `--` | enable alpha blending for the renderer drawing |
+| `SDLTexwh` | `tex -- w h` | width and height of a texture (reads the SDL_Texture structure) |
+| `%w` | `frac -- px` | fixed point fraction of the screen width (1.0 = sw) in pixels |
+| `%h` | `frac -- px` | fixed point fraction of the screen height (1.0 = sh) in pixels |
 
 ### Variables
 
@@ -74,7 +52,7 @@ always the top item (pushed last).
 | `SDLb` | Mouse button bitmask. |
 | `SDLw` | Mouse wheel delta for this frame. |
 
-`msec` is **not defined** in any of the five files reviewed — it's presumably a thin wrapper over `SDL_GetTicks` living in `console.r3`, which wasn't provided.
+`msec` (milliseconds) is defined in `core.r3`.
 
 ---
 
@@ -84,38 +62,38 @@ always the top item (pushed last).
 
 | Word | Stack | Description |
 |---|---|---|
-| `color` | `col --` | Set the draw color from a `$RRGGBB` value (opaque). |
-| `colorA` | `col --` | Set the draw color from a `$AARRGGBB` value (with alpha). |
-| `cls` | `col --` | Clear the screen to `col` (calls `color` then clears). |
+| `color` | `rgb --` | set the draw color from $RRGGBB (alpha 255) |
+| `colorA` | `argb --` | set the draw color from $AARRGGBB |
+| `cls` | `rgb --` | clear the target with the color $RRGGBB |
 
 ### Points, Lines, Rects
 
 | Word | Stack | Description |
 |---|---|---|
-| `point` | `x y --` | Draw a single pixel. |
-| `getpixel` | `x y -- v` | Read back a pixel's color from the render target. |
-| `line` | `x1 y1 x2 y2 --` | Draw a line between two points. |
-| `lineH` | `x1 y x2 --` | Fast path for a horizontal line. |
-| `lineV` | `x y1 y2 --` | Fast path for a vertical line. |
-| `rect` | `x y w h --` | Draw a rectangle outline. |
-| `frect` | `x y w h --` | Draw a filled rectangle. |
-| `round` | `r x y w h --` | Draw a rounded-rectangle outline with corner radius `r`. |
-| `fround` | `r x y w h --` | Draw a filled rounded rectangle. |
+| `point` | `x y --` | draw a point |
+| `getpixel` | `x y -- rgb` | color $RRGGBB of the pixel |
+| `line` | `x1 y1 x2 y2 --` | draw a line |
+| `lineH` | `x1 y x2 --` | horizontal line from x1 to x2 (both included) at y |
+| `lineV` | `x y1 y2 --` | vertical line from y1 to y2 (both included) at x |
+| `rect` | `x y w h --` | rectangle outline (same area as frect) |
+| `frect` | `x y w h --` | filled rectangle (it covers x..x+w-1, y..y+h-1) |
+| `round` | `r x y w h --` | outline of a rectangle x y w h with rounded corners of radius r |
+| `fround` | `r x y w h --` | filled rectangle x y w h with rounded corners of radius r |
 
 ### Ellipses & Circles
 
 | Word | Stack | Description |
 |---|---|---|
-| `ellipse` | `rx ry cx cy --` | Draw an ellipse outline. **Radii come before the center point.** |
-| `fellipse` | `rx ry cx cy --` | Draw a filled ellipse. |
-| `circle` | `r x y --` | Draw a circle outline. |
-| `fcircle` | `r x y --` | Draw a filled circle. |
+| `ellipse` | `rx ry x y --` | ellipse outline with radii rx ry centered at x y |
+| `fellipse` | `rx ry x y --` | filled ellipse with radii rx ry centered at x y |
+| `circle` | `r x y --` | circle outline of radius r centered at x y |
+| `fcircle` | `r x y --` | filled circle of radius r centered at x y |
 
 ### Triangle
 
 | Word | Stack | Description |
 |---|---|---|
-| `triangle` | `x1 y1 x2 y2 x3 y3 --` | Draw a filled, solid-color triangle. |
+| `triangle` | `x1 y1 x2 y2 x3 y3 --` | filled triangle |
 
 `SDLredraw` (`-- `) presents the frame — call it once per frame after drawing.
 
@@ -125,15 +103,15 @@ always the top item (pushed last).
 
 | Word | Stack | Description |
 |---|---|---|
-| `loadimg` | `"file" -- img` | Load a PNG (etc.) file into a texture handle. **(unverified — from `sdl2image.r3`)** |
-| `image` | `x y img --` | Draw an image at its native size. |
-| `images` | `x y w h img --` | Draw an image scaled into a `w × h` box. |
-| `imageb` | `box img --` | Draw an image into a packed destination rect. |
-| `imagebb` | `srcbox dstbox img --` | Draw a sub-rect of an image into a destination rect. |
-| `sprite` | `x y img --` | Draw an image centered on `(x, y)`. |
-| `spriteZ` | `x y zoom img --` | Centered sprite draw with zoom (16.16 fixed point). |
-| `spriteR` | `x y ang img --` | Centered sprite draw, rotated (fixed-point angle). |
-| `spriteRZ` | `x y ang zoom img --` | Centered sprite draw, rotated and zoomed. |
+| `loadimg` | `"" -- texture` | Load a PNG (etc.) file into a texture handle. |
+| `image` | `x y img --` | draw the texture at x y with its own size |
+| `images` | `x y w h img --` | draw the texture scaled to the rectangle x y w h |
+| `imageb` | `'dst img --` | draw the whole texture into the box 'dst (x y w h, four int32) |
+| `imagebb` | `'src 'dst img --` | draw the box 'src of the texture into the box 'dst (x y w h, four int32 each) |
+| `sprite` | `x y img --` | draw the texture centered at x y |
+| `spriteZ` | `x y zoom img --` | draw the texture centered at x y with zoom (fixed point, 1.0 = normal size) |
+| `spriteR` | `x y ang img --` | draw the texture centered at x y rotated by ang (1.0 = full turn) |
+| `spriteRZ` | `x y ang zoom img --` | draw the texture centered at x y rotated by ang (1.0 = full turn) with zoom (fixed point) |
 
 ---
 
@@ -143,15 +121,15 @@ A sprite sheet is a single image cut into a grid of equal `w × h` frames.
 
 | Word | Stack | Description |
 |---|---|---|
-| `ssload` | `w h "file" -- ssprite` | Load an image and slice it into `w × h` frames. |
-| `sscnt` | `ssprite -- ssprite nframes` | Get the frame count. Only valid immediately after `ssload`, before more memory is allocated. |
-| `sspritewh` | `adr -- h w` | Internal: get a sheet's per-frame height/width. |
-| `sstint` | `color --` | Tint the *current* sprite-sheet quad (with alpha: `$AARRGGBB`). |
-| `ssnotint` | `--` | Reset tint to opaque white (no tint). |
-| `ssprite` | `x y n sheet --` | Draw frame `n`, centered on `(x, y)`. |
-| `sspriter` | `x y ang n sheet --` | Draw frame `n`, rotated. |
-| `sspritez` | `x y zoom n sheet --` | Draw frame `n`, zoomed. |
-| `sspriterz` | `x y ang zoom n sheet --` | Draw frame `n`, rotated and zoomed. |
+| `ssload` | `w h "file" -- ssprite` | load an image as a spritesheet of frames w x h (left to right, top to bottom) for the ssprite words; the table is kept in memory at here |
+| `sscnt` | `ssprite -- ssprite n` | number of frames (only right after ssload, while here has not changed) |
+| `sspritewh` | `ssprite -- w h` | size of a frame |
+| `sstint` | `argb --` | tint color $AARRGGBB (with alpha) used by the ssprite words |
+| `ssnotint` | `--` | no tint for the ssprite words ($ffffffff) |
+| `ssprite` | `x y n ssprite --` | draw frame n of the spritesheet centered at x y |
+| `sspriter` | `x y ang n ssprite --` | draw frame n centered at x y rotated by ang (1.0 = full turn) |
+| `sspritez` | `x y zoom n ssprite --` | draw frame n centered at x y with zoom (fixed point, 1.0 = normal size) |
+| `sspriterz` | `x y ang zoom n ssprite --` | draw frame n centered at x y rotated by ang (1.0 = full turn) with zoom |
 
 ---
 
@@ -163,13 +141,13 @@ sheets, which auto-center).
 
 | Word | Stack | Description |
 |---|---|---|
-| `tsload` | `w h "file" -- ts` | Load a tile image cut into `w × h` tiles. |
-| `tscolor` | `rrggbb 'ts --` | Tint a tileset's texture. |
-| `tsalpha` | `alpha 'ts --` | Set a tileset's overall alpha. |
-| `tsdraw` | `n 'ts x y --` | Draw tile `n` at its native size at `(x, y)` (top-left). |
-| `tsdraws` | `n 'ts x y w h --` | Draw tile `n` scaled into a `w × h` box at `(x, y)`. |
-| `tsbox` | `'boxsrc n 'ts --` | Copy a tile's source-rect metadata into a custom box. |
-| `tsfree` | `ts --` | Destroy a tileset's texture. |
+| `tsload` | `w h "file" -- ts` | load an image as a tileset of tiles w x h (left to right, top to bottom); the table is kept in memory at here |
+| `tscolor` | `rgb ts --` | color modulation $RRGGBB of the tileset texture |
+| `tsalpha` | `alpha ts --` | alpha modulation (0..255) of the tileset texture |
+| `tsdraw` | `n ts x y --` | draw tile n of the tileset at x y (its own size) |
+| `tsdraws` | `n ts x y w h --` | draw tile n scaled to the rectangle x y w h |
+| `tsbox` | `'box n ts --` | fill the 'box (x y w h, four int32) with the source rectangle of tile n |
+| `tsfree` | `ts --` | free the texture of the tileset (the table stays in memory) |
 
 ---
 
@@ -177,16 +155,16 @@ sheets, which auto-center).
 
 | Word | Stack | Description |
 |---|---|---|
-| `createSurf` | `w h -- surface` | Allocate a blank 32-bit ARGB surface. |
-| `Surf>pix` | `surface -- surf pixels` | Get a surface's pixel buffer pointer. |
-| `Surf>wha` | `surface -- addr` | Address of a surface's width/height/pitch header. |
-| `Surf>wh` | `surface -- surf w h` | Get a surface's width/height. |
-| `Surf>pixpi` | `surface -- 'pixel pitch` | Get pixel pointer and row pitch together. |
-| `texIni` | `w h --` | Begin rendering into a new off-screen texture of size `w × h` (redirects the renderer). |
-| `texEnd` | `-- texture` | Stop redirecting the renderer; return the finished texture. |
-| `texEndAlpha` | `-- texture` | Same as `texEnd`, and also enables alpha blend mode on the result. |
-| `Tex2Surface` | `tex -- tex surface` | Copy a texture's pixels into a new CPU-side surface. |
-| `Tex2Static` | `tex -- newtexture` | Convert a (possibly render-target) texture into a static texture; frees the intermediate surface. |
+| `createSurf` | `w h -- surface` | create a 32-bit ARGB surface |
+| `Surf>pix` | `surface -- surface pixels` | also leave the address of the pixels |
+| `Surf>wha` | `surface -- surface 'wh` | also leave the address of w and h (two int32) |
+| `Surf>wh` | `surface -- surface w h` | also leave the width and the height |
+| `Surf>pixpi` | `surface -- pixels pitch` | address of the pixels and bytes per row (the surface is consumed) |
+| `texIni` | `w h --` | create a target texture w x h and draw into it (instead of the window) until texEnd; only one at a time |
+| `texEnd` | `-- texture` | stop drawing into the texture, back to the window, and return the texture |
+| `texEndAlpha` | `-- texture` | like texEnd with alpha blending enabled on the texture |
+| `Tex2Surface` | `tex -- tex surface` | copy the pixels of a target texture into a new surface |
+| `Tex2Static` | `tex -- newtex` | convert a target texture into a static one (the original texture is freed) |
 
 ---
 
@@ -194,21 +172,21 @@ sheets, which auto-center).
 
 | Word | Stack | Description |
 |---|---|---|
-| `timer<` | `--` | Reset the global frame timer. |
-| `timer.` | `--` | Advance the timer; call once per frame (usually first thing in your draw word). |
-| `timer+` | `n -- n'` | Add the last frame's delta time to `n`. |
-| `timer-` | `n -- n'` | Subtract the last frame's delta time from `n`. |
+| `timer<` | `--` | reset the timer (deltatime = 0) |
+| `timer.` | `--` | update the timer: deltatime = milliseconds since the previous call |
+| `timer+` | `n -- n'` | add deltatime to n |
+| `timer-` | `n -- n'` | subtract deltatime from n |
 
 Packed animation values (`V`) encode a start frame, frame count, and playback speed
 into one 64-bit cell:
 
 | Word | Stack | Description |
 |---|---|---|
-| `aniInit` | `ini cnt fps -- V` | Build a packed animation value. `fps = 0` makes a still frame. |
-| `ani+!` | `dt 'v --` | Advance the packed value at address `'v` by `dt` milliseconds, in place. |
-| `ani+timer!` | `'V --` | Convenience: advance the packed value at `'V` by this frame's delta time, in place. Call once per frame. |
-| `aniFrame` | `V -- f` | Get the current frame number from a packed value. |
-| `aniCnt` | `V -- c` | Get the frame count encoded in a packed value. |
+| `aniInit` | `ini cnt fps -- V` | value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still) |
+| `ani+!` | `dt 'V --` | advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first |
+| `ani+timer!` | `'V --` | advance the frame animation in 'V by deltatime |
+| `aniFrame` | `V -- f` | current frame number (ini + step) |
+| `aniCnt` | `V -- n` | current step 0..cnt-1 of the animation (it is not the number of frames) |
 
 ---
 
@@ -218,140 +196,77 @@ into one 64-bit cell:
 
 | Word | Stack | Description |
 |---|---|---|
-| `txload` | `"file" size -- font` | Load a TrueType font at `size` and build a glyph atlas for ASCII 32+ plus the accented/Latin set in `#utf8`. |
-| `txloadwicon` | `"file" size -- font` | Same as `txload`, plus a bundled Font Awesome icon set appended to the atlas. |
-| `txfont` | `font --` | Set the current font (from `txload`/`txloadwicon`). |
-| `txfont@` | `-- font` | Get the current font. |
+| `txload` | `"font" size -- nfont` | like txloadwicon without the icons |
+| `txloadwicon` | `"font" size -- nfont` | load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here) |
+| `txfont` | `font --` | select the atlas font (from txload) used by the tx words |
+| `txfont@` | `-- font` | the atlas font selected now |
 
 ### Color, cursor, metrics
 
 | Word | Stack | Description |
 |---|---|---|
-| `txrgb` | `color --` | Set text color (tints the font atlas texture). |
-| `txat` | `x y --` | Set the text cursor position. |
-| `tx+at` | `dx dy --` | Move the text cursor by a relative offset. |
-| `txpos` | `-- x y` | Get the current cursor position. |
-| `txcr` | `--` | Move cursor to `x=0` and down one line (current font's line height). |
-| `txcw` | `char -- w` | Width of a single character. |
-| `txw` | `"str" -- "str" w` | Total pixel width of a string. |
-| `txch` | `char -- h` | Height of a single character. |
-| `txh` | `-- h` | Current font's line height. |
+| `txrgb` | `c --` | color $RRGGBB of the font texture (color modulation) |
+| `txat` | `x y --` | move the cursor to the pixel position x y |
+| `tx+at` | `x y --` | move the cursor by x y pixels |
+| `txpos` | `-- x y` | cursor position in pixels |
+| `txcr` | `--` | new line: x = 0 and y down one line height |
+| `txcw` | `adr car -- adr' width` | width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it) |
+| `txw` | `"" -- "" width` | width in pixels of the string |
+| `txch` | `adr car -- adr' h` | height of a character (same protocol as txcw) |
+| `txh` | `-- h` | height of the font (line height) |
 
 ### Drawing text
 
 | Word | Stack | Description |
 |---|---|---|
-| `txemit` | `char --` | Draw a single decoded character at the cursor and advance the cursor. |
-| `txwrite` | `"str" --` | Draw a string at the cursor (no wrapping), advancing the cursor. |
-| `txemitr` | `"str" --` | Draw a string ending at the cursor (right-aligned from cursor), i.e. offsets left by the string width first. |
-| `txprint` | `.. "str" --` | Format (`%d`/`%f`-style args before the string, printf-style) and draw at the cursor. |
-| `txprintr` | `.. "str" --` | Same as `txprint`, right-aligned from the cursor. |
-| `lwrite` | `w "str" --` | Internal: left-aligned line writer used by `txText`. |
-| `cwrite` | `w "str" --` | Internal: horizontally-centered line writer used by `txText`. |
-| `rwrite` | `w "str" --` | Internal: right-aligned line writer used by `txText`. |
-| `txalign` | `$VH --` | Set alignment for `txText`. Low 2 bits = horizontal (`0`=left,`1`=center,`2`=right); bits 4–5 = vertical (`0`=top,`1`=center,`2`=bottom). Combine with `or`, e.g. `$11` = centered both ways, `$02` = right-aligned/top, `$20` = left-aligned/bottom. |
-| `txText` | **`w h x y "str" --`** | Render (auto-wrapped, multi-line) text inside a `w × h` box positioned at `(x, y)`, honoring `txalign`. |
+| `txemit` | `adr car -- adr'` | draw one character at the cursor and advance it (same protocol as txcw) |
+| `txwrite` | `"" --` | draw the string at the cursor |
+| `txemitr` | `"" --` | draw the string right aligned: it ends at the cursor x |
+| `txprint` | `.. "" --` | formatted print (see sprint) at the cursor |
+| `txprintr` | `.. "" --` | formatted print right aligned |
+| `lwrite` | `w "str" --` | left aligned text for txText (ignores w) |
+| `cwrite` | `w "str" --` | centered text in w pixels for txText |
+| `rwrite` | `w "str" --` | right aligned text in w pixels for txText |
+| `txalign` | `$VH --` | alignment for txText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom) |
+| `txText` | `w h x y "" --` | draw the string wrapped by words in the box x y w h with the txalign alignment; CR, LF and ; start a new line |
 
 
 ### Text cursor / caret drawing
 
 | Word | Stack | Description |
 |---|---|---|
-| `txcur` | `str cur --` | Draw a solid block caret at character index `cur` in `str` (insert-mode look). |
-| `txcuri` | `str cur --` | Draw a thin underline-style caret (overwrite-mode look). |
+| `txcur` | `str cur --` | fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character |
+| `txcuri` | `str cur --` | like txcur but a bar of a quarter of the height at the bottom (insert cursor) |
 
 ### Single-line text input widget
 
-Not covered anywhere in the original doc — `txfont.r3` includes a small line-editor:
+`txfont.r3` includes a small line editor:
 
 | Word | Stack | Description |
 |---|---|---|
-| `pad.reset` | `'buffer max --` | Initialize an editable text buffer of capacity `max`. |
-| `pad.draw` | `'buffer --` | Draw the buffer at the cursor, blink the caret, and handle character input plus arrow keys/Home/End/Backspace/Delete/Insert (toggles insert vs. overwrite mode) for that frame. Call every frame while the field is focused. |
+| `pad.reset` | `'var max -- 'var max` | prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode |
+| `pad.draw` | `'buff --` | draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode |
 
 ---
 
-## 10. Random Numbers (`rand.r3`)
+## 10. Random numbers and lists
 
-The library ships four independent generators; `rand`/`randmax` (a 64-bit
-multiply-add LCG) is the one used throughout the example programs.
-
-| Word | Stack | Description |
-|---|---|---|
-| `rand` | `-- r` | Next raw random 64-bit value (multiply-add generator). |
-| `randmax` | `max -- r` | Random value in `0 .. max` inclusive-ish (masks off the sign). |
-| `randminmax` | `min max -- r` | Random value in `min .. max`. |
-| `rand8` | `-- r8` | Small 8-bit noise generator, separate seed (`seed8`). |
-| `rerand` | `s1 s2 --` | Re-seed the main `rand` generator from two values. |
-| `rnd` | `-- r` | Alternate xorshift-based generator. |
-| `rndmax` | `max -- r` | `randmax` equivalent using `rnd`. |
-| `rndminmax` | `min max -- r` | `randminmax` equivalent using `rnd`. |
-| `rnd128` | `-- n` | xorshift128+ generator (separate `state0`/`state1` seed). |
-| `loopMix128` | `-- rand` | LoopMix128 generator (see the source comment's linked reference). |
+`rand.r3` (random numbers) and `arr16.r3` (object lists) are described in the library
+reference (`r3forth-libs.md`, `r3forth-util.md`).
 
 ---
 
-## 11. Dynamic Arrays / Object Lists (`arr16.r3`)
+## 11. Key constants (`sdlkeys.r3`)
 
-A "list" here is a fixed-stride (128-byte element) dynamic array with fast
-unordered or order-preserving removal, backed by `mem.r3` (not provided). Declare
-one with `#mylist 0 0`.
-
-| Word | Stack | Description |
-|---|---|---|
-| `p.ini` | `capacity list --` | Allocate storage for `capacity` elements. |
-| `p.clear` | `list --` | Empty the list (keeps allocated storage). |
-| `p.cnt` | `list -- cnt` | Number of elements currently in the list. |
-| `p!` | `list -- adr` | Reserve space for one new element and return its address (caller fills fields manually). |
-| `p!+` | `'act list -- adr` | Same as `p!`, but also stores an update/draw word `'act` into the element's first field. |
-| `p.adr` | `nro list -- adr` | Element index → address. |
-| `p.nro` | `adr list -- nro` | Element address → index. |
-| `p.del` | `adr list --` | Remove the element at `adr` (order-preserving). |
-| `p.draw` | `list --` | Traverse all elements calling each one's stored word; **fast/unordered** removal when it returns `0`. |
-| `p.drawo` | `list --` | Same as `p.draw`, but removal preserves the order of remaining elements. |
-| `p.mapv` | `'vector list --` | Call `'vector` for every element (no removal support). |
-| `p.mapd` | `'vector list --` | Same as `p.mapv`, but removes an element if the call returns `0`. |
-| `p.map2` | `'vector list --` | Call `'vector` for every *pair* of elements (triangular traversal — e.g. pairwise collision checks). |
-| `p.sort` | `col list --` | One bubble-sort pass over column `col` (an `ncell+`-style field index). Call every frame for an animated/converging sort. |
-| `p.isort` | `col list --` | Same as `p.sort`, descending. |
-
-`ncell+` (used by example object-accessor words like `.x`, `.y`, `.ani`) is **not
-defined** in `arr16.r3` — it most likely comes from `mem.r3`, which wasn't provided.
+`SDLkey` holds the last key event. `<key>` is the key-down code and `>key<` the key-up
+code (`$1000` added). Examples: `<esc> >esc<`, `<ret> >ret<`, `<spc> >spc<`,
+`<back>`, `<tab>`, `<del>`, `<home> <end> <pgup> <pgdn>`, `<ins>`, `<up> <dn> <le> <ri>`,
+`<F1>`..`<F12>`, the letters `<a>`..`<z>`, the digits `<0>`..`<9>` and `<ctrl> <shift> <alt>`.
 
 ---
 
-## 12. Generic Forth (not library-specific, listed for completeness)
+## 12. Raw `SDL_*` bindings
 
-```forth
-+ - * /            | Basic arithmetic
-neg                | Negate
-<< >> >>>           | Bit shifts (>>> likely unsigned/logical)
-and or xor         | Bitwise ops
-0? 1? +? -?        | Conditionals on the top value (no comparison words: only these)
-<? >? =? <>? >=? <=? and? nand? in?  | Conditional execution: tests, runs ( ... ) if true
-dup drop swap over 2dup 2drop pick2/pick3/pick4
-int.               | Fixed-point to integer
-```
-
-### Key Constants **(unverified — from `sdlkeys.r3`)**
-
-```forth
->esc<                 | ESC key released
-<w> <a> <s> <d>       | WASD keys pressed
->w< >a< >s< >d<       | WASD keys released
-<spc>                 | Space key pressed
-```
-By convention seen in `SDLupdate`: `<key>` (pressed) reads as the raw scancode;
-`>key<` (released) is the same scancode with `$1000` OR'd in. Exact constant
-values weren't in the files reviewed.
-
----
-
-## 13. Note on the raw `SDL_*` bindings
-
-`sdl2.r3` also defines a direct 1:1 wrapper for most of the SDL2 C API
-(`SDL_CreateWindow`, `SDL_RenderCopy`, `SDL_SetRenderDrawColor`, …). These are what
-the higher-level `SDLxxx` words above are built from; application code normally
-never calls them directly, so they're intentionally left out of the word tables
-above. They're listed here only so you know they exist if you need something the
-higher-level API doesn't expose.
+`sdl2.r3` also wraps most of the SDL2 C API (`SDL_CreateWindow`, `SDL_RenderCopy`,
+`SDL_SetRenderDrawColor`, ...). The words above are built on them; use them directly only
+for something the high-level words do not offer.
