@@ -344,7 +344,7 @@
 |LIN|	|here "x-terminal-emulator -e bash -c '" ,s swap ,s "'" ,s ,eol
 |LIN|	libc-system drop 
 
-|LMAC|	libc-system drop 
+|MAC|	libc-system drop 
 	;
 	
 
