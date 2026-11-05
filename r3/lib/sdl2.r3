@@ -372,6 +372,7 @@
 
 ##SDLkey | key of the last key event of the SDLupdate: 16 bits (ASCII, or $4000 + scancode for special keys), $1000 added when released, 0 if none
 ##SDLchar | first byte of the last text input of the SDLupdate (0 if none)
+##SDLxy
 ##SDLx | mouse x position (16 bits)
 ##SDLy | mouse y position
 ##SDLb | mask of the pressed mouse buttons (1 left, 2 middle, 4 right)
@@ -388,25 +389,34 @@
 	'SDLevent 16 + 
 	d@+ 'sw ! d@ 'sh !
 	eventr 0? ( drop ; ) ex ;
+
+|#SDL_MOUSEMOTION	$400 Mouse moved
+| come los eventos de movimiento de cursor
+:updatemove | $400 -- event
+	'SDLevent 20 + @ 'SDLxy ! 
+	( 'SDLevent SDL_PollEvent 1? drop 
+		'SDLevent d@ $400 =? drop
+		'SDLevent 20 + @ 'SDLxy ! )
+	SDLxy dup $ffff and 'SDLx ! 32 >> 'SDLy ! ;
 	
 ::SDLupdate | -- ; wait 10 ms and process the pending events, updating SDLkey, SDLchar, SDLx, SDLy, SDLb and SDLw
 	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !
 	1 SDL_delay | novsync =10 
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
+		$400 =? ( drop updatemove ) | sale con 0 o con evento nuevo
 		$300 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or 'SDLkey ! ; ) |#SDL_KEYDOWN $300 
 		$301 =? ( drop 'SDLevent 20 + d@ dup $ffff and swap 16 >> or $1000 or 'SDLkey ! ; ) |#SDL_KEYUP $301 
 		$303 =? ( drop 'SDLevent 12 + c@ 'SDLchar ! ; ) |#SDL_TEXTINPUT	$303 |Keyboard text input
-		$400 =? ( 'SDLevent 20 + @ dup $ffff and 'SDLx ! 32 >> 'SDLy ! ) |#SDL_MOUSEMOTION	$400 Mouse moved
 		$401 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << SDLb or 'SDLb ! ; ) |#SDL_MOUSEBUTTONDOWN $401 pressed
 		$402 =? ( drop 'SDLevent 16 + c@ 1 - 1 swap << not SDLb and 'SDLb ! ; ) |#SDL_MOUSEBUTTONUP $402 released
 		$403 =? ( drop 'SDLevent 20 + d@ 'SDLw ! ; ) |#SDL_MOUSEWHEEL $403 Mouse wheel motion
 		$200 =? ( drop changews ; ) | WINDOWEVENT
 		drop
 		) drop ;			
-		
+
 #clickb 0
-		
+
 ::SDLClick | 'event -- ; execute 'event once when the mouse button is released after being pressed (call it every frame)
 	SDLb 1? ( 'clickb ! drop ; ) drop
 	clickb 0? ( 2drop ; ) drop

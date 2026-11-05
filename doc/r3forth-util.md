@@ -6,8 +6,6 @@ newer grid-based `immi.r3`), terminal UI, tile maps, 3D model loading, and simpl
 
 Source: [github.com/phreda4/r3/tree/main/r3/util](https://github.com/phreda4/r3/tree/main/r3/util)
 
-Every word and stack signature below was checked directly against the current source in that repository.
-
 ## Contents
 
 1. [arr8.r3](#arr8r3) — Fixed 8-value object pool
@@ -29,25 +27,23 @@ Every word and stack signature below was checked directly against the current so
 17. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
 18. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
 19. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
-
-21. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
-22. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
-23. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
-24. [immi.r3](#immir3) — Modern grid-based immediate-mode GUI (SDL2, v3)
-25. [imcolor.r3](#imcolorr3) — Color selector widget for immi
-26. [imedit.r3](#imeditr3) — Code editor with syntax highlight for immi
-27. [imfiledlg.r3](#imfiledlgr3) — File dialog for immi
-28. [immdatetime.r3](#immdatetimer3) — Calendar/datetime widget for immi
-29. [tui.r3](#tuir3) — Text UI framework (terminal)
-30. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
-31. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
-32. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
-33. [bmap.r3](#bmapr3) — Multi-layer tile map for games
-34. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
-35. [datetime.r3](#datetimer3) — Date/time formatting
-36. [db2.r3](#db2r3) — Text database v2 (ASCII 29/30/31 separators)
-37. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
-38. [filedirs.r3](#filedirsrr3) — Filesystem scanner for UI trees
+20. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
+21. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
+22. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
+23. [immi.r3](#immir3) — Modern grid-based immediate-mode GUI (SDL2, v3)
+24. [imcolor.r3](#imcolorr3) — Color selector widget for immi
+25. [imedit.r3](#imeditr3) — Code editor with syntax highlight for immi
+26. [imfiledlg.r3](#imfiledlgr3) — File dialog for immi
+27. [immdatetime.r3](#immdatetimer3) — Calendar/datetime widget for immi
+28. [tui.r3](#tuir3) — Text UI framework (terminal)
+29. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
+30. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
+31. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
+32. [bmap.r3](#bmapr3) — Multi-layer tile map for games
+33. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
+34. [datetime.r3](#datetimer3) — Date/time formatting
+35. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
+36. [filedirs.r3](#filedirsr3) — Filesystem scanner for UI trees
 
 ---
 
@@ -58,30 +54,35 @@ Fixed object pool for 8-value (64-byte) objects. Object index 0 is reserved as "
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::p8.ini   ( cantidad list -- )   initialize pool with `cantidad` slots
-::p8.clear ( list -- )            reset pool (keep allocation)
+::p8.ini ( cnt list -- )       initialize pool with `cantidad` slots
+::p8.clear ( list -- )         reset pool (keep allocation)
 
 -- Allocation --
-::p8!+   ( 'act list -- adr )   allocate next; 'act = optional init callback
-::p8!    ( list -- adr )        allocate next (no callback)
+::p8!+ ( 'act list -- adr )    allocate next; 'act = optional init callback
+::p8! ( list -- adr )          allocate next (no callback)
 
 -- Access --
-::p8.nro  ( nro list -- adr )    get object address by index (from start)
-::p8.last ( nro list -- adr )    get from end (reverse index)
-::p8.cnt  ( list -- cnt )        current count of active objects
+::p8.nro ( adr list -- nro )   get object address by index (from start)
+::p8.last ( ;ist -- adr )      get from end (reverse index)
+::p8.cnt ( list -- cnt )       current count of active objects
 
 -- Operations --
-::p8.cpy    ( adr 'list -- )      copy object adr into list
-::p8.del    ( adr list -- )       delete object (swap with last)
-::p8.draw   ( list -- )           call default draw for all
-::p8.drawo  ( list -- )           call default draw (ordered)
-::p8.mapv   ( 'vector list -- )   call vector for each object
-::p8.mapd   ( 'vector list -- )   call vector for each (reverse)
-::p8.mapi   ( 'vector fin ini list -- )  map over range [ini..fin]
-::p8.deli   ( fin ini list -- )   delete range
+::p8.cpy ( adr 'list -- )      copy object adr into list
+::p8.del ( adr list -- )       delete object (swap with last)
+::p8.draw ( list -- )          call default draw for all
+::p8.drawo ( list -- )         call default draw (ordered)
+::p8.mapv ( 'vector list -- )  call vector for each object
+::p8.mapd ( 'vector list -- )  call vector for each (reverse)
 ```
 
 ---
+
+```
+::p8.adr ( nro list -- adr )
+::p8.map2 ( 'vec 'list --- )
+::p8.sort ( col 'list -- )
+::p8.isort ( col 'list -- )
+```
 
 ### arr16.r3
 
@@ -90,29 +91,29 @@ Fixed object pool for 16-value (128-byte) objects. Like arr8 but larger objects 
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::p.ini    ( cantidad list -- )   initialize pool
-::p.clear  ( list -- )            reset pool
+::p.ini ( cnt list -- )       initialize pool
+::p.clear ( list -- )         reset pool
 
 -- Allocation --
-::p!+  ( 'act list -- adr )   allocate with init callback
-::p!   ( list -- adr )        allocate without callback
+::p!+ ( 'act list -- adr )    allocate with init callback
+::p! ( list -- adr )          allocate without callback
 
 -- Access --
-::p.adr  ( nro list -- adr )   get object address by index
-::p.nro  ( adr list -- nro )   get index from address
-::p.cnt  ( list -- cnt )       active object count
+::p.adr ( nro list -- adr )   get object address by index
+::p.nro ( adr list -- nro )   get index from address
+::p.cnt ( list -- cnt )       active object count
 
 -- Operations --
-::p.del    ( adr list -- )      delete object (swap with last)
-::p.draw   ( list -- )          call draw for all objects
-::p.drawo  ( list -- )          call draw (ordered)
-::p.mapv   ( 'vector list -- )  call vector for each
-::p.mapd   ( 'vector list -- )  call vector for each (desc)
-::p.map2   ( 'vec 'list --- )   call 'vec with list
+::p.del ( adr list -- )       delete object (swap with last)
+::p.draw ( list -- )          call draw for all objects
+::p.drawo ( list -- )         call draw (ordered)
+::p.mapv ( 'vector list -- )  call vector for each
+::p.mapd ( 'vector list -- )  call vector for each (desc)
+::p.map2 ( 'vec 'list --- )   call 'vec with list
 
 -- Sorting --
-::p.sort   ( col 'list -- )     sort by column `col` ascending
-::p.isort  ( col 'list -- )     sort by column `col` descending
+::p.sort ( col 'list -- )     sort by column `col` ascending
+::p.isort ( col 'list -- )    sort by column `col` descending
 ```
 
 ---
@@ -124,11 +125,11 @@ Ordered byte list (sorted insertion/lookup).
 **Dependencies:** `^r3/lib/console.r3`
 
 ```
-::blistdel  ( 'list 'from -- )   delete item 'from from list
-::blist!    ( f 'list -- )       insert f into list (sorted)
-::blist-    ( f 'list -- )       remove f from list
-::blist@    ( 'list -- f/0 )     get first item (or 0)
-::blist?    ( f 'list -- f/0 )   find f in list (0 if not found)
+::blistdel ( 'list 'from -- )  delete item 'from from list
+::blist! ( f 'list -- )        insert f into list (sorted)
+::blist- ( f 'list -- )        remove f from list
+::blist@ ( 'list -- f/0 )      get first item (or 0)
+::blist? ( f 'list -- f/0 )    find f in list (0 if not found)
 ```
 
 ---
@@ -140,13 +141,13 @@ Double-ended deque / FIFO queue.
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::dc.ini   ( max 'dc -- )    initialize deque with max capacity
-::dc.clear ( list -- )       clear deque
-::dc?      ( list -- cnt )   current item count
-::dcn@     ( n l -- v )      get item at index n
-::dc@      ( list -- val )   peek front item
-::dc!      ( val list -- )   enqueue (add to back)
-::dc@-     ( list -- val )   dequeue (remove from front)
+::dc.ini ( max 'dc -- )  mac 'dc dc.ini
+::dc.clear ( list -- )   clear deque
+::dc? ( list -- cnt )    current item count
+::dcn@ ( n l -- v )      get item at index n
+::dc@ ( list -- val )    peek front item
+::dc! ( val list -- )    enqueue (add to back)
+::dc@- ( list -- val )   dequeue (remove from front)
 ```
 
 ---
@@ -158,9 +159,9 @@ Min-heap priority queue.
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::heapini  ( max 'h -- )    initialize heap with max capacity
-::heap!    ( nodo 'h -- )   insert node (smaller value = higher priority)
-::heap@    ( 'h -- nodo )   remove and return min-priority node
+::heapini ( max 'h -- )  initialize heap with max capacity
+::heap! ( nodo 'h -- )   insert node (smaller value = higher priority)
+::heap@ ( 'h -- nodo )   remove and return min-priority node
 ```
 
 ---
@@ -174,12 +175,12 @@ Min-heap priority queue.
 ```
 ##checkmax 32   maximum check radius in pixels
 
-::H2d.ini   ( maxobj -- )    initialize for maxobj objects
-::H2d.clear ( -- )           clear all entries
-::H2d.list  ( -- 'adr cnt )  get all active entries
+::H2d.ini ( maxobj -- )                   reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
+::H2d.clear ( -- )                        empty the hash table and the contact list (call it every frame before adding the objects)
+::H2d.list ( -- 'adr cnt )                list of contacts found: cnt dwords, each (newer object nro << 16) | older object nro
 
-::h2d+!  ( nro r x y -- )              insert object nro at (x,y) with radius r
-::h2d!   ( x y zoom nro sizepixel/2 -- x y zoom )   draw + collision update
+::h2d+! ( nro r x y -- )                  add object nro (0..65534) with radius r (0..1023) at x y (pixels, 19 bits) and add to the list its contacts with the objects already added (square test: max(|dx|,|dy|) < r1 + r2)
+::h2d! ( x y zoom nro size -- x y zoom )  add object nro at x y with the radius size*zoom (zoom fixed point) and leave x y zoom
 ```
 
 ---
@@ -191,10 +192,10 @@ ShellSort with optimal gaps. Input arrays are key-value pairs.
 **Dependencies:** `^r3/lib/math.r3`
 
 ```
-::shellsort   ( len lista -- )   sort by key ascending (array: key value key value...)
-::shellsort2  ( len lista -- )   sort by value ascending (array: value key value key...)
-::shellsort1  ( len lista -- )   sort interleaved key|value
-::sortstr     ( len lista -- )   sort by string pointer (pstr-value pairs)
+::shellsort ( len list -- )   list of value-data pairs
+::shellsort2 ( len list -- )  list of data-value pairs
+::shellsort1 ( len list -- )  list of cells packed as data|value
+::sortstr ( len list -- )     list of pstr-value pairs (string pointer, value)
 ```
 
 ---
@@ -206,9 +207,9 @@ O(n) RadixSort for fixed-width integer keys. Sorts key-value pair arrays.
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::radixsort32  ( cnt '2array -- )   sort by 32-bit key
-::radixsort16  ( cnt '2array -- )   sort by 16-bit key
-::radixsort64  ( cnt '2array -- )   sort by 64-bit key
+::radixsort32 ( cnt '2array -- )  sort by 32-bit key
+::radixsort16 ( cnt '2array -- )  sort by 16-bit key
+::radixsort64 ( cnt '2array -- )  sort by 64-bit key
 ```
 
 The `'2array` points to an array of (key, value) pairs, each 2 cells.
@@ -222,8 +223,8 @@ RadixSort variant with offset keys.
 **Dependencies:** `^r3/lib/mem.r3`
 
 ```
-::radixsort   ( cnt 'array -- )    sort with default offset
-::radixsortm  ( cnt 'array -- )    sort with modified offset keys
+::radixsort ( cnt 'array -- )   sort with default offset
+::radixsortm ( cnt 'array -- )  sort with modified offset keys
 ```
 
 ---
@@ -236,7 +237,7 @@ RadixSort variant with offset keys.
 
 ```
 -- Linear --
-::Lineal         ( t. -- t. )
+::Lineal ( t -- t )                  no easing (linear): t unchanged; all the easing words take and return t in fixed point 0..1.0
 
 -- Quadratic --
 ::Quad_In        ::Quad_Out        ::Quad_InOut
@@ -270,11 +271,11 @@ RadixSort variant with offset keys.
 
 -- Dispatch table --
 ##easet 0        pointer to ease function table
-::ease   ( t. nro -- t'. )   apply ease function by index
-::easem  ( t. nro -- t'. )   apply ease (mirror/inverse variant)
+::ease ( t nro -- t' )               apply the easing number nro to t: 0 linear, then In Out InOut of 1-3 Quad, 4-6 Cub, 7-9 Quar, 10-12 Quin, 13-15 Sin, 16-18 Exp, 19-21 Cir, 22-24 Ela, 25-27 Bac, 28-30 Bou (no range check above 30)
+::easem ( t nro -- t' )              like ease with a short table, only the low 4 bits of nro count: 0 linear, then In Out InOut of 1-3 Sin, 4-6 Exp, 7-9 Bac, 10-12 Ela, 13-15 Bou
 
 -- Interpolation --
-::catmullRom  ( p0 p1 p2 p3 t. -- v. )   Catmull-Rom spline interpolation
+::catmullRom ( p0 p1 p2 p3 t -- v )  Catmull-Rom spline value between p1 (t = 0) and p2 (t = 1.0) using the neighbours p0 and p3
 ```
 
 ---
@@ -289,52 +290,60 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 -- Global State --
 ##deltatime     time delta for current frame (ms)
 
-::timer<  ( msec -- )     reset timer to msec value
-::timer.  ( -- )          advance timer (call each frame); updates #deltatime
-::timer+  ( n -- n+dt )   add deltatime to n
-::timer-  ( n -- n-dt )   subtract deltatime from n
+::timer< ( -- )                               reset the timer (deltatime = 0)
+::timer. ( -- )                               update the timer: deltatime = milliseconds since the previous call
+::timer+ ( n -- n' )                          add deltatime to n
+::timer- ( n -- n' )                          subtract deltatime from n
 
 -- Setup --
-::vareset     ( -- )           reset all animations
-::vaini       ( max -- )       initialize with max simultaneous animations
-::vaempty     ( -- )           clear all active animations
-::vkillgroup ( group -- )     clear all group events
-::vkillvar    ( 'var -- )      clear all var events
+::vareset ( -- )                              remove all the events and restart the animation clock
+::vaini ( max -- )                            reserve at here the memory for up to max events at the same time and reset
+::vaempty ( -- n )                            number of events in the list (waiting or running)
+::vkillgroup ( group -- )                     remove all the events of the group (0..15)
+::vkillvar ( 'var -- )                        remove the animations of the variable 'var
 
 -- Update --
-::vupdate   ( -- )           advance all animations (call each frame)
+::vupdate ( -- )                              advance the animations with the time elapsed since the last call (once per frame): starts the events whose time has come, updates the variables and removes the finished ones
 
 -- Add Animations --
-::+vanim    ( 'var ini fin ease dur. start -- )   animate scalar variable
-::+vboxanim ( 'var fin ini ease dur. start -- )   animate scalar (reversed params)
-::+vxyanim  ( 'var ini fin ease dur. start -- )   animate packed XY value
-::+vcolanim ( 'var ini fin ease dur. start -- )   animate packed color
-::+vexe     ( 'vector start -- )                  execute vector at time start
-::+vvexe    ( v 'vector start -- )                execute with value
-::+vvvexe   ( v v 'vector start -- )              execute with two values
+::+vanim ( 'var fin ini ease dur. start -- )  animate the cell 'var from ini to fin (the first value is the destination); ease = easing number (0 linear, 1 Quad_In... see ease in penner.r3), dur. and start in seconds (fixed point); the animation starts at the first vupdate after start
+::+vboxanim ( 'var fin ini ease dur. start -- )  animate the four 16-bit values packed in the cell (see xywh64), each one on its own
+::+vxyanim ( 'var fin ini ease dur. start -- )  animate the two 32-bit values packed in the cell (see xy32), each one on its own
+::+vcolanim ( 'var fin ini ease dur. start -- )  animate a color $AARRGGBB mixing ini and fin channel by channel (alpha included)
+::+vexe ( 'exe start -- )                     execute 'exe once after start seconds; 'exe receives the address of the stored parameters and must leave it on the stack
+::+vvexe ( v 'exe start -- )                  like +vexe with a parameter: 'exe receives an address and reads v with dup @
+::+vvvexe ( v1 v2 'exe start -- )             like +vexe with two parameters: 'exe reads them with dup @+ swap @ (v2 deeper, v1 on top) and leaves the address
 
 -- with group (0..15)
-::+vanimg    ( 'var ini fin ease dur. start gr -- )   animate scalar variable
-::+vboxanimg ( 'var fin ini ease dur. start gr -- )   animate scalar (reversed params)
-::+vxyanimg  ( 'var ini fin ease dur. start gr -- )   animate packed XY value
-::+vcolanimg ( 'var ini fin ease dur. start gr -- )   animate packed color
-::+vexeg     ( 'vector start gr -- )                  execute vector at time start
-::+vvexeg    ( v 'vector start gr -- )                execute with value
-::+vvvexeg   ( v v 'vector start gr -- )              execute with two values
+::+vanimg ( 'var fin ini ease dur. start group -- )  like +vanim in a group (0..15) that vkillgroup can remove
+::+vboxanimg ( 'var fin ini ease dur. start group -- )  like +vboxanim in a group (0..15)
+::+vxyanimg ( 'var fin ini ease dur. start group -- )  like +vxyanim in a group (0..15)
+::+vcolanimg ( 'var fin ini ease dur. start group -- )  like +vcolanim in a group (0..15)
+::+vexeg ( 'exe start group -- )              like +vexe in a group (0..15)
+::+vvexeg ( v 'exe start group -- )           like +vvexe in a group (0..15)
+::+vvvexeg ( v1 v2 'exe start group -- )      like +vvvexe in a group (0..15)
 
 -- Packed Value Helpers --
-::64xy      ( b -- x y )         unpack XY from 64-bit value
-::64wh      ( b -- w h )         unpack WH
-::64xywh    ( b -- x y w h )     unpack X Y W H
-::xywh64    ( x y w h -- b )     pack X Y W H
-::64xyrz    ( b -- x y r z )     unpack X Y Rotation Z
-::xyrz64    ( x y r z -- b )     pack X Y Rotation Z
-::64box     ( b adr -- )         unpack box to address
-::32xy      ( b -- x y )         unpack XY from 32-bit value
-::xy32      ( x y -- b )         pack XY into 32-bit value
+::64xy ( b -- x y )                           unpack the first two signed 16-bit values (x in the highest 16 bits)
+::64wh ( b -- w h )                           unpack the last two signed 16-bit values
+::64xywh ( b -- x y w h )                     unpack four signed 16-bit values
+::xywh64 ( x y w h -- b )                     pack four 16-bit values (x in the highest 16 bits)
+::64xyrz ( b -- x y r z )                     unpack a sprite: x y in 16 bits, r (rotation) with 2 bits less of precision and z (zoom) with 4 bits less
+::xyrz64 ( x y r z -- b )                     pack a sprite (see 64xyrz)
+::64box ( b adr -- )                          write the four 16-bit values of b as four dwords x y w h at adr (an SDL_Rect)
+::32xy ( b -- x y )                           unpack two signed 32-bit values (x in the high half)
+::xy32 ( x y -- b )                           pack two 32-bit values (x in the high half)
 ```
 
 ---
+
+```
+::aniInit ( ini cnt fps -- V )  value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
+::ani+! ( dt 'V -- )            advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
+::aniFrame ( V -- f )           current frame number (ini + step)
+::aniCnt ( V -- n )             current step 0..cnt-1 of the animation (it is not the number of frames)
+::ani+timer! ( 'V -- )          advance the frame animation in 'V by deltatime
+```
 
 ### utfg.r3
 
@@ -344,34 +353,40 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 
 ```
 -- Character Output --
-::.xwrite ( str -- )    write string to terminal using bitmap font
-::.awrite ( str -- )    write string (alternate mode)
+::.xwrite ( str -- )       write string to terminal using bitmap font
+::.awrite ( str -- )       write string (alternate mode)
 
 -- Line Drawing --
-::.vline  ( h -- )      draw vertical line h chars tall
-::.hline  ( w -- )      draw horizontal line w chars wide
-::.vlined ( h -- )      draw double vertical line
-::.hlined ( w -- )      draw double horizontal line
+::.vline ( h -- )          draw vertical line h chars tall
+::.hline ( w -- )          draw horizontal line w chars wide
+::.vlined ( h -- )         draw double vertical line
+::.hlined ( w -- )         draw double horizontal line
 
 -- Box Drawing --
-::.boxl   ( x y w h -- )   draw box (single line)
-::.boxc   ( x y w h -- )   draw box (corner style)
-::.boxd   ( x y w h -- )   draw box (double line)
-::.boxf   ( -- )            fill current box area
+::.boxl ( x y w h -- )     draw box (single line)
+::.boxc ( x y w h -- )     draw box (corner style)
+::.boxd ( x y w h -- )     draw box (double line)
+::.boxf ( x y w h -- )     fill current box area
 
 -- Text Alignment --
-::lalign  ( cnt str -- )   left-align string in cnt columns
-::calign  ( cnt str -- )   center-align
-::ralign  ( cnt str -- )   right-align
-::lwrite  ( w "str" -- )   left-aligned write in width w
-::cwrite  ( w "str" -- )   centered write
-::rwrite  ( w "str" -- )   right-aligned write
-::xalign  ( $VH -- )       set alignment ($V=vertical bits, $H=horizontal bits)
-::xwrite  ( w "str" -- )   write with current alignment
-::xText   ( w h x y "" -- )  draw aligned text in box
+::lalign ( cnt str -- )    left-align string in cnt columns
+::calign ( cnt str -- )    center-align
+::ralign ( cnt str -- )    right-align
+::lwrite ( w "str" -- )    left aligned text for txText (ignores w)
+::cwrite ( w "str" -- )    centered text in w pixels for txText
+::rwrite ( w "str" -- )    right aligned text in w pixels for txText
+::xalign ( $VH -- )        set alignment ($V=vertical bits, $H=horizontal bits)
+::xwrite ( w "str" -- )    write with current alignment
+::xText ( w h x y "" -- )  draw aligned text in box
 ```
 
 ---
+
+```
+::.vline2 ( h -- )
+::.vlined2 ( h -- )
+::rgb4t ( col12 -- col256 )
+```
 
 ### bfont.r3
 
@@ -383,55 +398,59 @@ Fixed-width bitmap font rendered to SDL2 from an image file.
 ##wp ##hp   glyph width, height (pixels)
 
 -- Setup --
-::bmfont  ( w h "filename" -- )   load font image (w×h pixels per glyph)
-::bfont1  ( -- )                   activate font 1
-::bfont2  ( -- )                   activate font 2
+::bmfont ( w h "file" -- )         load the font image (a 16x16 grid of 256 characters of w x h pixels: column = low nibble, row = high nibble of the ASCII code) and set the character size
+::bfont1 ( -- )                    load the font media/img/VGA8x16.png (8x16 characters)
+::bfont2 ( -- )                    load the font media/img/font16x24.png (16x24 characters)
 
 -- Colors --
-::bcolor  ( rrggbb -- )    set font render color
-::bfbox   ( -- )           fill background box
-::bbox    ( -- )           draw background box
-::bbox2   ( -- )           alternate background box
+::bcolor ( rgb -- )                color $RRGGBB of the font texture (color modulation)
+::bfbox ( -- )                     fill the character cell at the cursor with the draw color
+::bbox ( -- )                      outline of the character cell at the cursor
+::bbox2 ( -- )                     outline of the lower half of the character cell at the cursor
 
 -- Cursor Positioning --
-::bat    ( x y -- )        set pixel position
-::ccx    ( -- x )          current cursor x (pixel)
-::ccy    ( -- y )          current cursor y (pixel)
-::gotoxy ( x y -- )        move cursor in character cells
-::gotox  ( x -- )          move cursor to column (char cells)
+::bat ( x y -- )                   move the cursor to the pixel position x y
+::ccx ( -- x )                     cursor x in pixels (also defined in pcfont)
+::ccy ( -- y )                     cursor y in pixels (also defined in pcfont)
+::gotoxy ( x y -- )                move the cursor to the character cell x y (also defined in pcfont)
+::gotox ( x -- )                   move the cursor to the character column x, same y (also defined in pcfont)
 
 -- Rendering --
-::bemit       ( ascii -- )    draw single character
-::bprint      ( -- )          print using format string from stack (like printf)
-::bprintd     ( -- )          print double-size
-::bprint2     ( -- )          alternate print
-::bemits      ( "" -- )       print string
-::bemitsd     ( "" -- )       print string double-size
-::bemits2     ( "" -- )       alternate string print
-::bprintz     ( .. "" size -- ) print at pixel size
-::bemitsz     ( "" size -- )  print string at size
-::bfillemit   ( "" -- "" )    print with fill
-::bfcemit     ( cnt -- )      fill + emit count chars
-::bcr         ( -- )           carriage return
-::bcr2        ( -- )           double carriage return
-::bcrz        ( size -- )      CR for given size
-::bsp         ( -- )           space
-::bnsp        ( n -- )         n spaces
+::bemit ( ascii -- )               draw the character at the cursor and move the cursor one character to the right
+::bprint ( .. "" -- )              formatted print (see sprint) at the cursor
+::bprintd ( .. "" -- )             formatted print with double width
+::bprint2 ( .. "" -- )             formatted print with double width and height
+::bemits ( "" -- )                 print the string at the cursor
+::bemitsd ( "" -- )                print the string with double width
+::bemits2 ( "" -- )                print the string with double width and height
+::bprintz ( .. "" size -- )        formatted print scaled by size (fixed point, 1.0 = normal)
+::bemitsz ( "" size -- )           print the string scaled by size (fixed point, 1.0 = normal)
+::bfillemit ( "" -- "" )           fill with the draw color the area the string would use at the cursor
+::bfcemit ( cnt -- )               fill with the draw color the area of cnt characters at the cursor
+::bcr ( -- )                       new line: x = 0 and y down one character
+::bcr2 ( -- )                      new line for double height text (y down two characters)
+::bcrz ( size -- )                 new line for text scaled by size (fixed point)
+::bsp ( -- )                       move the cursor one character to the right
+::bnsp ( n -- )                    move the cursor n characters to the right
 
 -- Measurement --
-::bsize  ( "" -- "" w h )    get string pixel dimensions
-::bpos   ( -- x y )          get cursor position
-::brect  ( "" -- "" x y w h ) get bounding rect
-::bsrcsize ( x y w h -- x y w h )  source size clamp
+::bsize ( "" -- "" w h )           size in pixels of the string (count * wp, hp)
+::bpos ( -- x y )                  cursor position in pixels
+::brect ( "" -- "" x y w h )       rectangle (position and size in pixels) of the string at the cursor
+::bsrcsize ( x y w h -- x y w h )  convert the two pairs from character cells to pixels (x*wp y*hp w*wp h*hp)
 
 -- Cursor Display --
-::bcursor    ( n -- )    draw cursor of style n
-::bcursori   ( n -- )    draw inverted cursor
-::bcursor2   ( n -- )    draw alternate cursor
-::bcursori2  ( n -- )    draw alternate inverted cursor
+::bcursor ( n -- )                 fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+::bcursori ( n -- )                like bcursor but a bar of a quarter of the height at the bottom (insert cursor)
+::bcursor2 ( n -- )                like bcursor for double size characters
+::bcursori2 ( n -- )               like bcursori for double size characters
 ```
 
 ---
+
+```
+::bfillline ( x y w h -- )  fill with the draw color the rectangle given in character cells (x y w h)
+```
 
 ### pcfont.r3
 
@@ -442,31 +461,40 @@ PC/DOS-style font (16×32 grid per image) for SDL2.
 Similar API to bfont.r3 but for PC-font-style rendering. Key words:
 
 ```
-::pcfont  ( -- )           activate PC font
-::pccolor ( rrggbb -- )    set color
-::pcemit  ( ascii -- )     draw character
-::pcprint ( -- )           print formatted
-::pcemits ( "" -- )        print string
-::pcat    ( x y -- )       set position
-::gotoxy  ( x y -- )       move cursor
-::gotox   ( x -- )         move to column
-::pccr    ( -- )           carriage return
-::pcsp    ( -- )           space
-::pcnsp   ( n -- )         n spaces
-::pcsize  ( "" -- "" w h ) measure string
-::pcrect  ( "" -- "" x y w h )  bounding rect
-::pcpos   ( -- x y )       cursor position
-::pccursor   ( n -- )      draw cursor
-::pccursori  ( n -- )      inverted cursor
-::pcfbox  ( -- )           fill box
-::pcbox   ( -- )           outline box
-::pcbox2  ( -- )           alternate box
-::pcfillline ( x y w h -- ) fill horizontal band
-::pcprintz   ( .. "" size -- )  print at size
-::pcemitsz   ( "" size -- )  print string at size
+::pcfont ( -- )                load the font media/img/VGA8x16.png (8x16 characters in a 16x16 grid) and set the cursor size
+::pccolor ( rgb -- )           color $RRGGBB of the font texture (color modulation)
+::pcemit ( ascii -- )          draw the character (8x16) at the cursor and move the cursor one character to the right
+::pcprint ( .. "" -- )         formatted print (see sprint) at the cursor
+::pcemits ( "" -- )            print the string at the cursor
+::pcat ( x y -- )              move the cursor to the pixel position x y
+::gotoxy ( x y -- )            move the cursor to the character cell x y (also defined in pcfont)
+::gotox ( x -- )               move the cursor to the character column x, same y (also defined in pcfont)
+::pccr ( -- )                  new line: x = 0 and y down 16 pixels
+::pcsp ( -- )                  move the cursor one character (8 pixels) to the right
+::pcnsp ( n -- )               move the cursor n characters to the right
+::pcsize ( "" -- "" w h )      size in pixels of the string (count * 8, 16)
+::pcrect ( "" -- "" x y w h )  rectangle (position and size in pixels) of the string at the cursor
+::pcpos ( -- x y )             cursor position in pixels
+::pccursor ( n -- )            fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+::pccursori ( n -- )           like pccursor but a bar of a quarter of the height at the bottom (insert cursor)
+::pcfbox ( -- )                fill the character cell at the cursor with the draw color
+::pcbox ( -- )                 outline of the character cell at the cursor
+::pcbox2 ( -- )                outline of the lower half of the character cell at the cursor
+::pcfillline ( x y w h -- )    fill with the draw color the rectangle given in character cells (x y w h)
+::pcprintz ( .. "" size -- )   formatted print scaled by size (fixed point, 1.0 = normal)
+::pcemitsz ( "" size -- )      print the string scaled by size (fixed point, 1.0 = normal)
 ```
 
 ---
+
+```
+::pcsrcsize ( x y w h -- x y w h )  convert the two pairs from character cells to pixels (x*8 y*16 w*8 h*16)
+::pcfillemit ( "" -- "" )           fill with the draw color the area the string would use at the cursor
+::pcprintd ( .. "" -- )             formatted print with double width
+::pcemitsd ( "" -- )                print the string with double width
+::pcprint2 ( .. "" -- )             formatted print with double width and height
+::pcemits2 ( "" -- )                print the string with double width and height
+```
 
 ### ttfont.r3
 
@@ -477,19 +505,27 @@ TrueType font rendering for SDL2 using SDL2_ttf.
 ```
 ##ttx ##tty   current text cursor position
 
-::ttcolor    ( rrggbb -- )        set text color
-::ttfont!    ( font -- )          set active TTF font handle
-::ttprint    ( "" -- )            print formatted text at (ttx,tty)
-::ttemits    ( "" -- )            print string
-::ttat       ( x y -- )           set cursor position
-::+ttat      ( dx dy -- )         move cursor by delta
-::ttsize     ( "" -- "" w h )     measure string dimensions
-::ttcursor   ( str strcur -- str ) draw cursor at character position
-::ttcursori  ( str strcur -- str ) draw inverted cursor
-::ttrect     ( "" -- "" x y w h ) get bounding rect
+::ttcolor ( rrggbb -- )            text color (stored with red and blue swapped, as SDL_Color wants it)
+::ttfont! ( font -- )              set the font (from TTF_OpenFont) used by the tt words
+::ttprint ( .. "" -- )             formatted print (see sprint) at the cursor
+::ttemits ( "" -- )                draw the string at the cursor and move the cursor to its end (a texture is created for each call)
+::ttat ( x y -- )                  move the cursor to the pixel position x y
+::+ttat ( x y -- )                 move the cursor by x y pixels
+::ttsize ( size -- )               set the point size of the current font
+::ttcursor ( str strcur -- str )   fill with the draw color the block cursor of the character at strcur (an address inside str); the string is cut there temporarily
+::ttcursori ( str strcur -- str )  like ttcursor but a bar of 2 pixels at the bottom (insert cursor)
+::ttrect ( "" -- "" x y w h )      rectangle (position and size in pixels) of the string at the cursor
 ```
 
 ---
+
+```
+::ttwh ( "" -- "" w h )    size in pixels of the string with the current font
+::ttstyle ( style -- )     set the style of the current font: bit 0 bold, 1 italic, 2 underline, 3 strikethrough
+::ttemitc ( width "" -- )  draw the string centered in width pixels starting at the cursor
+::ttemitr ( "" -- )        draw the string right aligned: it ends at the cursor x
+::ttboxcc ( w h "" -- )    draw the string centered in a box w x h starting at the cursor
+```
 
 ### txfont.r3
 
@@ -499,41 +535,49 @@ TrueType font atlas renderer with pseudo-UTF8 support and glyph caching.
 
 ```
 -- Font Loading --
-::txloadwicon ( "font" size -- nfont )   load font including icon glyphs
-::txload      ( "font" size -- nfont )   load font
-::txfont      ( font -- )                set active font
-::txfont@     ( -- font )                get current font
+::txloadwicon ( "font" size -- nfont )  load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
+::txload ( "font" size -- nfont )       like txloadwicon without the icons
+::txfont ( font -- )                    select the atlas font (from txload) used by the tx words
+::txfont@ ( -- font )                   the atlas font selected now
 
 -- Color --
-::txrgb  ( c -- )    set text color
+::txrgb ( c -- )                        color $RRGGBB of the font texture (color modulation)
 
 -- Measurement --
-::txcw   ( car -- width )    width of single character
-::txw    ( "" -- "" width )  width of string
-::txch   ( car -- height )   height of character
-::txh    ( -- height )       current line height
+::txcw ( adr car -- adr' width )        width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it)
+::txw ( "" -- "" width )                width in pixels of the string
+::txch ( adr car -- adr' h )            height of a character (same protocol as txcw)
+::txh ( -- h )                          height of the font (line height)
 
 -- Positioning --
-::txat   ( x y -- )     set cursor
-::tx+at  ( x y -- )     move cursor by delta
-::txpos  ( -- x y )     get cursor
+::txat ( x y -- )                       move the cursor to the pixel position x y
+::tx+at ( x y -- )                      move the cursor by x y pixels
+::txpos ( -- x y )                      cursor position in pixels
 
 -- Rendering --
-::txemit   ( utf8' -- )       draw single UTF-8 character
-::txwrite  ( "" -- )          draw string
-::txemitr  ( "" -- )          draw string (right-to-left)
-::txprint  ( .. "" -- )       draw formatted string
-::txprintr ( .. "" -- )       draw formatted (right-to-left)
-::txcur    ( str cur -- )     draw cursor at position
-::txcuri   ( str cur -- )     draw inverted cursor
-::lwrite   ( w "str" -- )     left-aligned in width
-::cwrite   ( w "str" -- )     centered in width
-::rwrite   ( w "str" -- )     right-aligned in width
-::txalign  ( $VH -- )         set alignment flags
-::txText   ( w h x y "" -- )  draw aligned text in box
+::txemit ( adr car -- adr' )            draw one character at the cursor and advance it (same protocol as txcw)
+::txwrite ( "" -- )                     draw the string at the cursor
+::txemitr ( "" -- )                     draw the string right aligned: it ends at the cursor x
+::txprint ( .. "" -- )                  formatted print (see sprint) at the cursor
+::txprintr ( .. "" -- )                 formatted print right aligned
+::txcur ( str cur -- )                  fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character
+::txcuri ( str cur -- )                 like txcur but a bar of a quarter of the height at the bottom (insert cursor)
+::lwrite ( w "str" -- )                 left aligned text for txText (ignores w)
+::cwrite ( w "str" -- )                 centered text in w pixels for txText
+::rwrite ( w "str" -- )                 right aligned text in w pixels for txText
+::txalign ( $VH -- )                    alignment for txText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom)
+::txText ( w h x y "" -- )              draw the string wrapped by words in the box x y w h with the txalign alignment; CR, LF and ; start a new line
 ```
 
 ---
+
+```
+::txfit ( w "" -- ncar )              number of bytes of the string that fit in w pixels
+::txcr ( -- )                         new line: x = 0 and y down one line height
+::txemitc ( w "" -- )                 draw the string centered in w pixels starting at the cursor x
+::pad.reset ( 'var max -- 'var max )  prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
+::pad.draw ( 'buff -- )               draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
+```
 
 ### ttext.r3
 
@@ -545,42 +589,42 @@ Tilesheet-based terminal text renderer for SDL2. Uses a sprite sheet for charact
 ##advx ##advy   character advance width/height
 
 -- Font Setup --
-::tfnt  ( size w h "filename" -- )  load tilesheet font
-::tini  ( -- )                       initialize/reset state
-::tsize ( zoom -- )                  set display zoom
+::tfnt ( size w h "file" -- )      load a font image (16x16 grid of characters of w x h pixels) and set its zoom size (fixed point)
+::tini ( -- )                      load the default font media/img/VGA8x16.png (8x16) at size 1.0
+::tsize ( zoom -- )                set the character size as the font size times zoom (fixed point, 1.0 = normal)
 
 -- Colors / Palette --
-::trgb  ( c -- )     set color from 24-bit RGB
-::tpal  ( c -- rgb ) get palette entry c
-::tcol  ( c -- )     set color from palette index
-::tfbox ( -- )       fill background box
-::tbox  ( -- )       draw background box
+::trgb ( c -- )                    color $RRGGBB of the font texture (color modulation)
+::tpal ( c -- rgb )                color of the palette entry c (low 4 bits: 0 black, 1 blue, 2 cyan, 3 green, 4 purple, 5 red, 6 white, 7 yellow, 8..15 the bright ones) of the style in termcolor (style0 Campbell)
+::tcol ( c -- )                    set the text color from the palette entry c
+::tfbox ( -- )                     fill the character cell at the cursor with the draw color
+::tbox ( -- )                      outline of the character cell at the cursor
 
 -- Positioning --
-::tat   ( x y -- )    set cursor (pixel)
-::tatx  ( x -- )      set x only
-::txy   ( x y -- )    set cursor (tile grid)
-::tx    ( x -- )      set x (tile grid)
-::tcx   ( -- x )      cursor x (pixel)
-::tcy   ( -- y )      cursor y (pixel)
-::tpos  ( -- x y )    get cursor position
-::tcr   ( -- )        carriage return
-::tsp   ( -- )        space
-::tnsp  ( n -- )      n spaces
+::tat ( x y -- )                   move the cursor to the pixel position x y
+::tatx ( x -- )                    set the cursor x in pixels
+::txy ( x y -- )                   move the cursor to the character cell x y
+::tx ( x -- )                      move the cursor to the character column x
+::tcx ( -- x )                     cursor x in pixels
+::tcy ( -- y )                     cursor y in pixels
+::tpos ( -- x y )                  cursor position in pixels
+::tcr ( -- )                       new line: x = 0 and y down one character
+::tsp ( -- )                       move the cursor one character to the right
+::tnsp ( n -- )                    move the cursor n characters to the right
 
 -- Rendering --
-::temit  ( ascii -- )    draw single character
-::tprint ( -- )          print formatted (uses stack)
-::temits ( "" -- )       print string
+::temit ( ascii -- )               draw the character at the cursor and move the cursor one character to the right
+::tprint ( .. "" -- )              formatted print (see sprint) at the cursor
+::temits ( "" -- )                 print the string at the cursor
 
 -- Measurement --
-::tsbox  ( "" -- "" w h )       string dimensions
-::trect  ( "" -- "" x y w h )   bounding rect
-::tsrcsize ( x y w h -- x y w h ) source size for tilemap
+::tsbox ( 'box n ts -- )           fill the 'box (x y w h, four int32) with the source rectangle of tile n
+::trect ( "" -- "" x y w h )       rectangle (position and size in pixels) of the string at the cursor
+::tsrcsize ( x y w h -- x y w h )  convert the two pairs from character cells to pixels
 
 -- Cursor Rendering --
-::tcursor   ( n -- )    draw cursor style n
-::tcursori  ( n -- )    inverted cursor
+::tcursor ( n -- )                 fill with the draw color the character cell n characters to the right of the cursor (block cursor)
+::tcursori ( n -- )                like tcursor but a bar of a quarter of the height at the bottom (insert cursor)
 ```
 
 ---
@@ -618,69 +662,73 @@ Immediate-mode GUI framework with TrueType font rendering for SDL2.
 
 #### Setup and Layout
 ```
-::immgui    ( -- )            initialize GUI state each frame
-::immSDL    ( font -- )       initialize with TTF font
-::immat     ( x y -- )        set cursor position
-::immat+    ( dx dy -- )      move cursor by delta
-::immbox    ( w h -- )        set widget size
-::immfont!  ( font -- )       change active font
-::immpad!   ( px py -- )      set padding
-::immwinxy  ( x y -- )        set window origin + update cursor
-::imm>>     ( -- )            indent right by box width
-::imm<<     ( -- )            unindent
-::immdn     ( -- )            move cursor down one row
-::immcr     ( -- )            carriage return (new row)
-::immln     ( -- )            new line
-::plgui     ( -- )            placeholder layout
-::plxywh    ( -- )            placeholder x y w h
+::immgui ( -- )             start of a gui frame, once per frame before the widgets: calls gui and resets the layout (cursor at 0 0, box = screen width by font height + 8)
+::immSDL ( font -- )        start the gui with the TTF font and load the icons media/img/icong16.png (tiles of 24x21)
+::immat ( x y -- )          set the cursor (position of the next widget)
+::immat+ ( x y -- )         move the cursor by x y pixels
+::immbox ( x y w h -- )     set widget size
+::immfont! ( font -- )      set the TTF font used by the widgets and measure its height
+::immpad! ( padx pady -- )  set the padding around the widgets
+::immwinxy ( x y -- )       set the origin of the window and put the cursor inside it with the padding
+::imm>> ( -- )              move the cursor one widget to the right (box width plus the padding of both sides)
+::imm<< ( -- )              move the cursor one widget to the left
+::immdn ( -- )              move the cursor one widget down (box height plus the padding of both sides)
+::immcr ( -- )              new line: x back to the left of the window and y down one widget
+::immln ( -- )              new line: x back to the left of the window and y down only the box height
+::plgui ( -- )              start a widget at the cursor: guiBox of the current box with the padding
+::plxywh ( -- x y w h )     rectangle of the widget at the cursor, with the padding
 
 -- Cursor Save/Restore --
-::immcur    ( x y w h -- )   set cursor state
-::immcur>   ( -- cur )       save cursor
-::imm>cur   ( cur -- )       restore cursor
+::immcur ( x y w h -- )     set the guiBox of the rectangle x y w h (relative to the window), draw a gray outline around it and make it the cursor and the box
+::immcur> ( -- cur )        pack the cursor and the box in one value: curx | cury<<16 | boxw<<32 | boxh<<48
+::imm>cur ( cur -- )        restore the cursor and the box packed by immcur>
 
-::immwidth  ( w -- )          override widget width
+::immwidth ( w -- )         set the width of the next widgets
 ```
 
 #### Widget Words
 ```
-::immlabel   ( "" -- )      display text label
-::immlabelc  ( "" -- )      centered label
-::immlabelr  ( "" -- )      right-aligned label
-::imm.       ( "" -- )      print text inline
-::immStrC    ( "" -- )      centered string
-::immListBox ( lines -- )   scrollable list box
-::immback    ( color -- )   filled color background
-::immblabel  ( "" -- )      bold label
-::immicon    ( nro x y -- ) draw icon by number at offset
-::immiconb   ( nro -- )     draw icon (block style)
-::immbtn     ( 'click "" -- )   button; executes 'click on click
-::immibtn    ( 'click nro -- )  icon button
-::immtbtn    ( 'click "" -- )   toggle button
-::immebtn    ( 'click "" -- )   edit-style button
-::immzone    ( 'click -- )      clickable zone (no visual)
-::immSliderf ( 0.0 1.0 'value -- )  float slider [min..max]
-::immSlideri ( 0 255 'value -- )    integer slider
-::immCheck   ( 'val "opt1|opt2" -- ) checkbox group
-::immScrollv ( 0 max 'value -- )    vertical scroll bar
-::immRadio   ( 'val "opt1|opt2|opt3" -- ) radio button group
-::immCombo   ( 'val "opt1|opt2|opt3" -- ) combo/dropdown
-::immInputLine  ( 'buff max -- )    single-line text input
-::immInputInt   ( 'var -- )         integer input
+::immlabel ( "" -- )                  draw the text (formatted, see ttprint) at the left of the current box, vertically centered
+::immlabelc ( "" -- )                 draw the text centered in the current box
+::immlabelr ( "" -- )                 draw the text right aligned in the current box
+::imm. ( "" -- )                      draw the text (formatted with sprint) at the cursor and move the cursor right by its width plus padding (inline text)
+::immStrC ( "" -- )                   draw the text centered in the current box (no format)
+::immListBox ( lines -- )             guiBox of a list area of that many box heights
+::immback ( color -- )                fill the current box with the color (for the lines of a list)
+::immblabel ( "" -- )                 text of a list line at the left of the current box (without the vertical padding)
+::immicon ( nro x y -- )              draw the icon nro of the icon set at x y
+::immiconb ( nro -- )                 draw the icon nro centered in the current box with the text color
+::immbtn ( 'click "" -- )             button with centered text: moves 2 pixels while the mouse is over it and executes 'click when clicked
+::immibtn ( 'click nro -- )           button with the icon nro
+::immtbtn ( 'click "" -- )            button as wide as its text; the background shows only while the mouse is over it
+::immebtn ( 'click "" -- )            button with the text only (no background), as wide as its text
+::immzone ( -- )                      Interaction is cx,cy,cw,th
+::immSliderf ( min max 'value -- )    horizontal slider of a fixed point value between min and max (it shows the value with 2 decimals)
+::immSlideri ( min max 'value -- )    horizontal slider of an integer value between min and max
+::immCheck ( 'val "text" -- )         check box: a click toggles bit 0 of the variable
+::immScrollv ( 0 max 'value -- )      vertical scroll bar for the value between 0 and max (the code notes it is incorrect)
+::immRadio ( 'val "op1|op2|op3" -- )  radio buttons, one line per option: the variable holds the number (0 is the first) of the chosen one
+::immCombo ( 'val "op1|op2|op3" -- )  shows the chosen option; a click goes to the next one (it is not a drop down list)
+::immInputLine ( 'buff max -- )       line editor of the text in 'buff (max bytes): insert or overwrite (Ins), left, right, home, end, backspace and delete; tab and enter go to the next widget
+::immInputInt ( 'var -- )             integer input: the digits typed are appended, backspace or delete divide by 10 (no negative numbers)
 ```
 
 #### Window Management
 ```
-::immwin!   ( win -- )        set window pointer
-::immwin    ( 'win -- 0/1 )   begin window (returns 1 if visible)
-::immnowin  ( xini yini w h -- )  window without title bar
-::immwinbottom ( ywin -- )    pin window to bottom
-::winexit   ( -- )            close current window
-::immRedraw ( -- )            force redraw
-::immwins   ( -- )            end of window frame
+::immwin! ( 'winword -- )     add a window to the list drawn by immRedraw ('winword draws the window and its widgets); it is not added twice
+::immwin ( 'win -- 0/flags )  draw the window of the record 'win (flags, x y w h in four dwords, title): flag 1 = open, flag 2 = comes to the front; handles dragging by the title and the close button; returns 0 if it is closed, else puts the cursor and the box inside the window
+::immnowin ( x y w h -- )     set the region for the widgets without a window frame
+::immwinbottom ( 'win -- )    set the height of the window record to the cursor y reached (the window fits its content)
+::winexit ( -- )              close the window that has the mouse over it (it is the action of the close button)
+::immRedraw ( -- )            execute the word of every window of the list, bring the clicked window to the front and execute the key handler set with immkey!
+::immwins ( 'win -- )         like immwin for a fixed window: no dragging, no close button
 ```
 
 ---
+
+```
+::immwin$ ( 'winword -- )  remove the window from the list
+```
 
 ### sdlfiledlg.r3
 
@@ -689,11 +737,11 @@ File open/save dialog using sdlgui.r3.
 **Dependencies:** `^r3/util/sdlgui.r3`
 
 ```
-::immlist       ( cnt -- )           render file list (cnt visible lines)
-::filedlgini    ( -- )               initialize file dialog state
-::immfileload   ( 'vecload 'file -- ) show load dialog; calls 'vecload on confirm
-::immfilesave   ( 'vecload 'file -- ) show save dialog; calls 'vecload on confirm
-::fullfilename  ( -- )               push full path to stack
+::immlist ( cnt -- )                 the list of files of the dialog with cnt lines: a click selects, a second click on the same line enters the folder or accepts the file; it has a scroll bar
+::filedlgini ( -- )                  start the file dialog: 15 lines and memory reserved at here (a table of 1024 entries and 64 KB of names)
+::immfileload ( 'vecload 'file -- )  show load dialog; calls 'vecload on confirm
+::immfilesave ( 'vecload 'file -- )  show save dialog; calls 'vecload on confirm
+::fullfilename ( -- )                push full path to stack
 ```
 
 ---
@@ -707,10 +755,10 @@ Interactive color picker dialog for SDL2.
 ```
 ##colord 0        currently selected color
 
-::color!        ( color -- )       set current color
-::dlgColor      ( x y -- )         render color picker at x,y
-::dlgColorIni   ( -- )             initialize picker state
-::xydlgColor!   ( x y -- )         set picker position
+::color! ( color -- )     set the selected color $RRGGBB and move the marks of the picker to it
+::dlgColor ( -- )         draw the color dialog: the current color box (a click opens or closes the picker with hue bar, saturation and value square and alpha bar) and the palette of 3x20 colors (the old comment x y is not used, see xydlgColor!)
+::dlgColorIni ( -- )      start the color dialog: build the 128 step hue bar and the palette, color white, alpha 127
+::xydlgColor! ( x y -- )  position of the color dialog and rebuild its geometry
 ```
 
 ---
@@ -722,9 +770,9 @@ File browser dialog for SDL2 (uses gui.r3 input system).
 **Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/gui.r3`, `^r3/lib/input.r3`
 
 ```
-::dlgFileLoad  ( -- fn/0 )          show file open dialog; returns filename or 0
-::dlgFileSave  ( -- fn/0 )          show file save dialog
-::dlgSetPath   ( "path" -- )        set initial directory
+::dlgFileLoad ( -- fn/0 )   modal dialog to choose a file to load (it runs its own SDLshow loop; up, down, enter and esc keys, click on a line); returns the full file name, or 0 if it was cancelled
+::dlgFileSave ( -- fn/0 )   modal dialog to write the name of a file to save (editable name, 64 characters); returns the full file name, or 0 if it was cancelled
+::dlgSetPath ( "path" -- )  set the folder where the file dialogs start
 ```
 
 ---
@@ -733,132 +781,136 @@ File browser dialog for SDL2 (uses gui.r3 input system).
 
 Modern grid-layout immediate-mode GUI for SDL2 (version 3, 2025). Uses txfont for rendering.
 
-**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/util/txfont.r3`
+**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/color.r3`, `^r3/util/txfont.r3`
 
 #### Layout System
 The layout cursor `(cx, cy, cw, ch)` tracks current widget position. The frame stack allows push/pop for nested layouts.
 
 ```
 ##cx ##cy ##cw ##ch    current widget cursor (position + size)
-::%cw  ( -- w )        percent of frame width
-::%ch  ( -- h )        percent of frame height
+::%cw ( -- w )                                percent of frame width
+::%ch ( -- h )                                percent of frame height
 
 -- Frame Management --
-::uiBox     ( x y w h -- )   set frame
-::uiFull    ( -- )            fill entire window
-::uiPush    ( -- )            push frame state
-::uiPop     ( -- )            pop frame state
-::uiRest    ( -- )            restore frame
-::uiPading  ( x y -- )       set padding
-::uiAt      ( x y -- )       absolute position within frame
-::uiTo      ( w h -- )       set widget size
+::uiBox ( x y w h -- )                        set frame
+::uiFull ( -- )                               fill entire window
+::uiPush ( -- )                               push frame state
+::uiPop ( -- )                                pop frame state
+::uiRest ( -- )                               restore frame
+::uiPading ( x y -- )                         set padding
+::uiAt ( x y -- )                             absolute position within frame
+::uiTo ( w h -- )                             set widget size
 
 -- Splits (divide current frame) --
-::uiN  ( lines -- )    take N lines from top
-::uiS  ( lines -- )    take N lines from bottom
-::uiE  ( cols -- )     take N columns from right
-::uiO  ( cols -- )     take N columns from left
-::uiGrid ( c r -- )    divide into grid (c columns, r rows)
-::uiNext   ( -- )      advance to next grid cell
-::uiNextV  ( -- )      advance vertically
+::uiN ( lineas -- )                           take N lines from top
+::uiS ( lineas -- )                           take N lines from bottom
+::uiE ( cols -- )                             take N columns from right
+::uiO ( cols -- )                             take N columns from left
+::uiGrid ( c r -- )                           adjust for fit
+::uiNext ( -- )                               advance to next grid cell
+::uiNextV ( -- )                              advance vertically
 
 -- Input State Queries --
-::uiEx?    ( -- 0/1 )   mouse over?
-::uiOvr    ( 'v -- )    execute if mouse over
-::uiDwn    ( 'v -- )    execute if mouse down in widget
-::uiSel    ( 'v -- )    execute if selected
-::uiClk    ( 'v -- )    execute if clicked
-::uiUp     ( 'v -- )    execute on mouse release
-::uiFocusIn ( 'v -- )   execute when focus enters
-::uiFocus   ( 'v -- )   execute while focused
+::uiEx? ( -- 0/1 )                            mouse over?
+::uiOvr ( 'v -- )                             execute if mouse over
+::uiDwn ( 'v -- )                             execute if mouse down in widget
+::uiSel ( 'v -- )                             execute if selected
+::uiClk ( 'v -- )                             execute if clicked
+::uiUp ( 'v -- )                              execute on mouse release
+::uiFocusIn ( 'v -- )                         execute when focus enters
+::uiFocus ( 'v -- )                           execute while focused
 
 -- Frame Lifecycle --
-::uiStart      ( -- )    begin UI frame
-::uiEnd        ( -- )    end UI frame
-::uiZone       ( -- )    create interaction zone (cx cy cw th)
-::uiZoneL      ( n -- )  zone spanning n lines
-::uiZoneW      ( -- )    zone filling cw×ch
-::uiZoneBox    ( x y w h -- )  explicit zone rect
-::uiSaveLast   ( x y w h 'v -- ) save last zone dimensions
-::uiBackBox    ( -- )    draw background box
-::uiExitWidget ( -- )    early exit from widget
-::uiPlace      ( n -- )  place widget at grid position n
+::uiStart ( -- )                              begin UI frame
+::uiEnd ( -- )                                end UI frame
+::uiZone ( -- )                               Interaction is cx,cy,cw,th
+::uiZoneL ( nlines -- )                       Interaction is cx,cy,cw,th*lines
+::uiZoneW ( --	; Interaction is cx,cy,cw,ch ) zone filling cw×ch
+::uiZoneBox ( x y w h -- )                    explicit zone rect
+::uiSaveLast ( x y w h 'vector -- )           save last zone dimensions
+::uiBackBox ( -- )                            draw background box
+::uiExitWidget ( -- )                         early exit from widget
+::uiPlace ( n -- )                            place widget at grid position n
 ```
 
 #### Focus
 ```
-::uiRefocus     ( -- )    reset focus
-::uiFocus>>     ( -- )    move to next focusable
-::uiFocus<<     ( -- )    move to previous
-::tabfocus      ( -- )    advance focus on Tab key
+::uiRefocus ( -- )  reset focus
+::uiFocus>> ( -- )  move to next focusable
+::uiFocus<< ( -- )  move to previous
+::tabfocus ( -- )   advance focus on Tab key
 ```
 
 #### Drawing Helpers
 ```
-::uiFill     ( -- )     fill cx cy cw ch
-::uiRect     ( -- )     outline cx cy cw ch
-::uiRFill    ( -- )     rounded filled
-::uiRRect    ( -- )     rounded outline
-::uiCRect    ( -- )     circle outline (uses min of w,h)
-::uiCFill    ( -- )     circle filled
-::uiTex      ( tex -- ) draw texture in widget area
-::uiWinBox   ( -- x y w h )  window bounds
-::uiLineGridV ( -- )    draw vertical grid lines
-::uiLineGridH ( -- )    draw horizontal grid lines
-::uiLineGrid  ( -- )    draw both grid lines
+::uiFill ( -- )            fill cx cy cw ch
+::uiRect ( -- )            outline cx cy cw ch
+::uiRFill ( -- )           rounded filled
+::uiRRect ( -- )           rounded outline
+::uiCRect ( -- )           circle outline (uses min of w,h)
+::uiCFill ( -- )           circle filled
+::uiTex ( tex -- )         draw texture in widget area
+::uiWinBox ( -- x y w h )  window bounds
+::uiLineGridV ( -- )       draw vertical grid lines
+::uiLineGridH ( -- )       draw horizontal grid lines
+::uiLineGrid ( -- )        draw both grid lines
 ```
 
 #### Status Styles
 ```
-::stDang ( -- )   danger style (red)
-::stWarn ( -- )   warning style (amber)
-::stSucc ( -- )   success style (green)
-::stInfo ( -- )   info style (blue)
-::stLink ( -- )   link style
-::stDark ( -- )   dark style
-::stLigt ( -- )   light/white style
+::stDang ( -- )  danger style (red)
+::stWarn ( -- )  warning style (amber)
+::stSucc ( -- )  success style (green)
+::stInfo ( -- )  info style (blue)
+::stLink ( -- )  link style
+::stDark ( -- )  dark style
+::stLigt ( -- )  light/white style
 ```
 
 #### Widgets
 ```
 -- Labels and Text --
-::uiTlabel   ( -- )            text label from stack
-::uiLabel    ( -- )            centered label
-::uiLabelC   ( -- )            explicitly centered
-::uiLabelR   ( -- )            right-aligned
-::uiText     ( "" align -- )   text with alignment
-::ttwrite    ( "text" -- )     write text (left)
-::ttwritec   ( "text" -- )     write centered
-::ttwriter   ( "text" -- )     write right
+::uiTlabel ( -- )                    text label from stack
+::uiLabel ( -- )                     centered label
+::uiLabelC ( -- )                    explicitly centered
+::uiLabelR ( -- )                    right-aligned
+::uiText ( "" align -- )             text with alignment
+::ttwrite ( "text" -- )              write text (left)
+::ttwritec ( "text" -- )             write centered
+::ttwriter ( "text" -- )             write right
 
 -- Buttons --
-::uiBtn   ( 'click "" -- )    standard button
-::uiRBtn  ( 'click "" -- )    rounded button
-::uiCBtn  ( 'click "" -- )    circular button
-::uiTBtn  ( 'click "" align -- )  text button with alignment
-::uiNBtn  ( v "" -- )         button width from text
+::uiBtn ( 'click "" -- )             standard button
+::uiRBtn ( 'click "" -- )            rounded button
+::uiCBtn ( 'click "" -- )            circular button
+::uiTBtn ( 'click "" align -- )      text button with alignment
+::uiNBtn ( v "" -- )                 width from text
 
 -- Input --
-::uiInputLine  ( 'buff max -- )   single-line text input
-::uiCheck      ( 'var 'list -- )  checkbox (list = option strings)
-::uiRadio      ( 'var 'list -- )  radio group
-::uiCombo      ( 'var 'list -- )  combo box / dropdown
-::uiList       ( 'var cntl 'list -- ) scrollable list
-::uiTree       ( 'var cntl list -- ) collapsible tree
-::uiNindx      ( n -- str )        get list item string n
+::uiInputLine ( 'buff max -- )       single-line text input
+::uiCheck ( 'var 'list -- )          checkbox (list = option strings)
+::uiRadio ( 'var 'list -- )          radio group
+::uiCombo ( 'var 'list -- )          combo box / dropdown
+::uiList ( 'var cntl 'list -- )      scrollable list
+::uiTree ( 'var cntl list -- )       collapsible tree
+::uiNindx ( n -- str )               get list item string n
 
 -- Sliders and Progress --
-::uiSliderf    ( 0.0 1.0 'value -- )   horizontal float slider
-::uiSlideri    ( 0 255 'value -- )     horizontal integer slider
-::uiVSliderf   ( 0.0 1.0 'value -- )  vertical float slider
-::uiVSlideri   ( 0 255 'value -- )    vertical integer slider
-::uiProgressf  ( 0.0 1.0 'value -- )  float progress bar
-::uiProgressi  ( 0 255 'value -- )    integer progress bar
+::uiSliderf ( 0.0 1.0 'value -- )    horizontal float slider
+::uiSlideri ( 0 255 'value -- )      horizontal integer slider
+::uiVSliderf ( 0.0 1.0 'value -- )   vertical float slider
+::uiVSlideri ( 0 255 'value -- )     vertical integer slider
+::uiProgressf ( 0.0 1.0 'value -- )  float progress bar
+::uiProgressi ( 0 255 'value -- )    integer progress bar
 ```
 
 > **Note:** `immi.r3` (v3) is single-window/full-screen — it has no `immwin`/`immnowin`-style multi-window API. That API (`immwin`, `immwin!`, `immnowin`, `winexit`, `immRedraw`, `immwins`, `immSDL`, `immblabel`, `immicon`, `immiconb`, `immwidth`, etc.) belongs to `sdlgui.r3`, which is documented in its own section above. An earlier version of this reference mistakenly duplicated that list here.
 
 ---
+
+```
+::stColor ( rgb -- )
+```
 
 ### imcolor.r3
 
@@ -867,9 +919,9 @@ Color selector widget for immi.
 **Dependencies:** `^r3/lib/color.r3`, `^r3/util/immi.r3`
 
 ```
-::color!     ( color -- )    set current color
-::uiColor    ( 'var -- )     full color selector widget (HSV + RGB sliders)
-::uiColorH   ( 'var -- )     compact horizontal color selector
+::color! ( color -- )   set the selected color $RRGGBB and move the marks of the picker to it
+::uiColor ( 'var -- )   full color selector widget (HSV + RGB sliders)
+::uiColorH ( 'var -- )  compact horizontal color selector
 ```
 
 ---
@@ -889,31 +941,36 @@ Code editor widget for immi with syntax highlighting and marks.
 ##fuente>              cursor pointer into buffer
 
 -- Syntax Marks --
-::clearmark   ( -- )               clear all syntax marks
-::addmark     ( -- )               add mark at current position
-::addsrcmark  ( src color -- )     add colored mark
-::showmark    ( -- )               render marks
+::clearmark ( -- )             clear all syntax marks
+::addmark ( -- )               add mark at current position
+::addsrcmark ( src color -- )  add colored mark
+::showmark ( -- )              render marks
 
 -- Editor Display --
-::edcodedraw  ( -- )    draw code with syntax highlighting
-::edfill      ( -- )    fill editor background
-::edtoolbar   ( -- )    render editor toolbar
+::edcodedraw ( -- )            draw code with syntax highlighting
+::edfill ( -- )                fill editor background
+::edtoolbar ( -- )             render editor toolbar
 
 -- Focus --
-::edfocus     ( -- )    interactive code editor (focused)
-::edfocusro   ( -- )    read-only editor
+::edfocus ( -- )               interactive code editor (focused)
+::edfocusro ( -- )             read-only editor
 
 -- Editor RAM Management --
-::edram       ( -- )    allocate editor RAM
+::edram ( -- )                 allocate editor RAM
 
 -- Widget Setup --
-::edwin      ( x y w h -- )  set editor window position/size
-::edloadmem  ( "" -- )       load text from string into editor
-::edload     ( "" -- )       load file into editor
-::edsave     ( -- )          save editor contents to file
+::edwin ( x y w h -- )         set editor window position/size
+::edloadmem ( "" -- )          load text from string into editor
+::edload ( "" -- )             load file into editor
+::edsave ( -- )                save editor contents to file
 ```
 
 ---
+
+```
+::edlinenum! ( 0/1 -- )  show or hide the line number
+::edlinenum ( -- 0/1 )
+```
 
 ### imfiledlg.r3
 
@@ -922,10 +979,10 @@ File open/save dialog for immi.
 **Dependencies:** `^r3/util/immi.r3`
 
 ```
-::immfileload  ( 'vecload 'file -- )  show load dialog
-::immfilesave  ( 'vecload 'file -- )  show save dialog
-::fullfilename ( -- )                 push current full path
-::uiFileName   ( 'var -- )            file name input widget
+::immfileload ( 'vecload 'file -- )  show load dialog
+::immfilesave ( 'vecload 'file -- )  show save dialog
+::fullfilename ( -- )                push current full path
+::uiFileName ( 'var -- )             file name input widget
 ```
 
 ---
@@ -937,9 +994,9 @@ Calendar and time picker widgets for immi.
 **Dependencies:** `^r3/lib/jul.r3`, `^r3/util/immi.r3`, `^r3/util/datetime.r3`
 
 ```
-::uiDateTime  ( 'var -- )   full date+time picker widget
-::uiDate      ( 'var -- )   date-only calendar widget
-::uiTime      ( 'var -- )   time-only picker widget
+::uiDateTime ( 'var -- )  full date+time picker widget
+::uiDate ( 'var -- )      date-only calendar widget
+::uiTime ( 'var -- )      time-only picker widget
 ```
 
 The variable stores packed date/time as a 64-bit value; use `datetime.r3` words to interpret it.
@@ -959,91 +1016,114 @@ A "frame" defines a rectangular region of the terminal. Frames can be split and 
 ##fx ##fy ##fw ##fh   current frame (x y width height)
 
 -- Frame Setup --
-::flx!     ( x y w h -- )   set frame
-::flx      ( -- )            restore frame from stack
-::flxpush  ( -- )            push current frame
-::flxpop   ( -- )            pop frame
-::flxRest  ( -- )            restore last
-::flxvalid? ( -- 0 )         0 = frame is not valid
+::flx! ( x y w h -- )            set frame
+::flx ( -- )                     restore frame from stack
+::flxpush ( -- )                 push current frame
+::flxpop ( -- )                  pop frame
+::flxRest ( -- )                 restore last
+::flxvalid? ( -- 0= not valid )  0 = frame is not valid
 
 -- Frame Splits --
-::flxN  ( lines -- )   take from top
-::flxS  ( lines -- )   take from bottom
-::flxE  ( cols -- )    take from right
-::flxO  ( cols -- )    take from left
-::fw%   ( -- w. )      percent of frame width (48.16)
-::fh%   ( -- h. )      percent of frame height
+::flxN ( lineas -- )             take from top
+::flxS ( lineas -- )             take from bottom
+::flxE ( cols -- )               take from right
+::flxO ( cols -- )               take from left
+::fw% ( -- w. )                  percent of frame width (48.16)
+::fh% ( -- h. )                  percent of frame height
 
 -- Utilities --
-::flpad  ( x y -- )    add padding to frame
-::flcr   ( -- )        carriage return within frame
-::flin?  ( x y -- f )  is x,y inside current frame?
-::flin?1 ( x y -- f )  inside? (alternate)
+::flpad ( x y -- )               add padding to frame
+::flin? ( x y -- 0/-1 )          is x,y inside current frame?
+::flin?1 ( x y -- 0/-1 )         inside? (alternate)
 ```
 
 #### Event Flags
 ```
 ##uikey            current key code
 
-::exit    ( -- )   request application exit
-::tuX?    ( -- f ) check for pending action (local flag)
-::tuR!    ( -- )   request redraw
-::tuC!    ( -- )   enable cursor
+::exit ( -- )    end the SDLshow loop
+::tuX? ( -- f )  check for pending action (local flag)
+::tuR! ( -- )    request redraw
+::tuC! ( -- )    enable cursor
 ```
 
 #### Main Loop
 ```
-::tui         ( -- )           run TUI event loop
-::onTui       ( 'vector -- )   set main TUI handler
-::onTuia      ( 'vector -- )   set TUI handler (alternate, no clear)
-::tuiw        ( -- flag )      is current widget active? (interactive zone)
-::tuiw1       ( -- flag )      single-line interactive zone
-::tuif        ( -- flag )      is focused?
-::tuRefocus   ( -- )           reset focus
+::tui ( -- )             run TUI event loop
+::onTui ( 'vector -- )   set main TUI handler
+::onTuia ( 'vector -- )  set TUI handler (alternate, no clear)
+::tuiw ( -- flag )       is current widget active? (interactive zone)
+::tuiw1 ( -- flag )      1 line only zone
+::tuif ( -- flag )       is focused?
+::tuRefocus ( -- )       reset focus
 ```
 
 #### Window Drawing
 ```
-::.wfill    ( -- )             fill current frame
-::.wborde   ( -- )             single-line border
-::.wborded  ( -- )             double-line border
-::.wbordec  ( -- )             corner-style border
-::.wtitle   ( place "" -- )    draw title in frame
-::tuWin     ( -- )             draw window (border+fill)
-::tuWina    ( -- )             draw window (no fill)
-::.tdebug   ( -- )             show debug info
+::.wfill ( -- )            fill current frame
+::.wborde ( -- )           single-line border
+::.wborded ( -- )          double-line border
+::.wbordec ( -- )          corner-style border
+::.wtitle ( place "" -- )  draw title in frame
+::tuWin ( -- )             draw window (border+fill)
+::tuWina ( -- )            draw window (no fill)
+::.tdebug ( -- )           show debug info
 ```
 
 #### Widgets
 ```
 -- Buttons and Labels --
-::tuTBtn   ( 'ev "" -- )      toggle button
-::tuBtn    ( -- )             standard button
-::tuLabel  ( "" -- )          left-aligned label
-::tuLabelC ( "" -- )          centered label
-::tuLabelR ( "" -- )          right-aligned label
-::tuText   ( "" align -- )    text with alignment
+::tuTBtn ( 'ev "" -- )           toggle button
+::tuBtn ( -- )                   standard button
+::tuLabel ( "" -- )              left-aligned label
+::tuLabelC ( "" -- )             centered label
+::tuLabelR ( "" -- )             right-aligned label
+::tuText ( "" align -- )         text with alignment
 
 -- Lists --
-::tuList      ( 'var list -- )    scrollable list
-::tuTree      ( 'var list -- )    collapsible tree
-::uiNindx     ( n -- str )        get list item n
+::tuList ( 'var list -- )        scrollable list
+::tuTree ( 'var list -- )        collapsible tree
+::uiNindx ( n -- str )           get list item n
 
 -- Input --
 ::tuInputLine ( 'buff max -- )   single-line text input
-::tuCheck     ( 'var "label" -- ) checkbox
-::tuRadio     ( n 'var "label" -- ) radio button (option n)
-::tuSlider    ( 'var min max -- )  slider
-::tuProgress  ( percent -- )      progress bar (0..100)
+::tuCheck ( 'var "label" -- )    checkbox
+::tuRadio ( n 'var "label" -- )  radio button (option n)
+::tuSlider ( 'var min max -- )   slider
+::tuProgress ( percent -- )      progress bar (0..100)
 
 -- Write helpers --
-::xwrite!       ( -- )    reset write state
-::xwrite.reset  ( -- )    reset accumulated write
+::xwrite! ( -- )                 reset write state
+::xwrite.reset ( -- )            reset accumulated write
 ##padi>                   write start offset
 
 ```
 
 ---
+
+```
+::fhome ( -- )                              top-left of the panel
+::tuiexit                                   exit from tui
+::onTuiResize ( vec -- )
+::tuListN ( 'var listn -- )
+::flVisibleIndex ( listadr adr -- idx/-1 )  adr debe ser un item de listadr
+::pal! ( 'pal -- )
+::cbg ( n -- )
+::cfg ( n -- )
+::fcr ( -- )                                next line (and reset the table columns)
+::pan ( "title" -- )                        fondo bg1, padding 1, titulo en acento
+::.lines ( 'v n -- )
+::tcols ( 'def -- )
+::hdr ( "a|b|c" -- )
+::tbw ( -- n )                              total width of the boxed table
+::tbrowc ( "a|b|c" 'color -- )              boxed table row, 'color = color word
+::tbrow ( "a|b|c" -- )                      boxed table row
+::tbhdr ( "a|b|c" -- )                      boxed table header
+::flxRoot ( -- )                            fullscr
+::flxC ( w h -- )                           frame w x h cent
+::tuDlg ( "title" w h -- )
+::tuDlgEnd ( -- )
+```
 
 ### tuiedit.r3
 
@@ -1058,37 +1138,48 @@ Full-featured text editor widget for TUI framework. Supports selection, clipboar
 ##$fuente             end of text pointer
 
 -- Cursor Control --
-::tuiecursor! ( cursor -- )   set cursor to pointer
-::tuipos!     ( pos -- )      set cursor to integer position
+::tuiecursor! ( cursor -- )  set cursor to pointer
+::tuipos! ( pos -- )         set cursor to integer position
 
 -- Hash / Change Detection --
-::editfasthash ( -- fh )      compute fast hash of text (change detection)
 
 -- Key Handlers --
-::tueKeyMove  ( -- )    process cursor movement keys
+::tueKeyMove ( -- )          process cursor movement keys
 
 -- Display --
-::tuEditShowCursor ( -- )   display cursor
-::tuecursor.       ( -- )   render cursor indicator
+::tuEditShowCursor ( -- )    display cursor
+::tuecursor. ( -- )          render cursor indicator
 
 -- Editor Modes --
-::tuEditCode     ( -- )    interactive code editor (normal fonts)
-::tuReadCode     ( -- )    read-only code display
-::tuEditCodeMono ( -- )    interactive code editor (monospace)
-::tuReadCodeMono ( -- )    read-only monospace display
+::tuEditCode ( -- )          interactive code editor (normal fonts)
+::tuReadCode ( -- )          read-only code display
+::tuReadCodeMono ( -- )      read-only monospace display
 
 -- File Operations --
-::TuLoadMem    ( "" -- )    load text from string
-::TuLoadMemC   ( "" -- )    load text (already sanitized)
-::TuLoadCode   ( "" -- )    load from file
-::TuNewCode    ( -- )       new/empty file
-::TuSaveCode   ( -- )       save to current ##filename
+::TuLoadMem ( "" -- )        load text from string
+::TuLoadMemC ( "" -- )       load text (already sanitized)
+::TuLoadCode ( "" -- )       load from file
+::TuNewCode ( -- )           new/empty file
+::TuSaveCode ( -- )          save to current ##filename
 
 -- Marks (Syntax / Search) --
-::tokenCursor  ( 'mark -- )   set cursor to mark
+::tokenCursor ( 'mark -- )   set cursor to mark
 ```
 
 ---
+
+```
+::tuTheme! ( 'theme -- )     'themeold / 'themenew
+::tuiposq! ( pos -- )
+::tuelstart ( adr -- adr' )  start of the line of adr
+::tuejpush ( -- )            saves the place of the cursor
+::tuejdepth ( -- n )         how many places are saved (32 at most)
+::tuejback ( -- )            back to the last saved place
+::tuegodef ( -- )            goes to the definition of the word under the cursor, saving the place to come back
+::tuefindword ( -- )         the next whole word like the one under the cursor (wraps), the place is saved
+::tueinsat ( 'str adr -- )
+::tuEditLN! ( n -- )         line number place
+```
 
 ### vscreen.r3
 
@@ -1097,18 +1188,22 @@ Virtual resolution rendering. Renders to an internal texture at logical size, th
 **Dependencies:** `^r3/lib/sdl2.r3`
 
 ```
-::vscreen ( w h -- )   set virtual resolution (w×h logical pixels)
-::vini    ( -- )       initialize virtual screen (call after SDLinit)
-::vredraw ( -- )       copy virtual texture to window (call at end of frame)
-::vfree   ( -- )       free virtual screen resources
+::vscreen ( w h -- )  create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
+::vini ( -- )         start drawing into the virtual screen (it becomes the render target)
+::vredraw ( -- )      draw the virtual screen in the window and present it
+::vfree ( -- )        free the virtual screen texture
 
-::sdlx    ( -- x )     convert screen x to virtual x
-::sdly    ( -- y )     convert screen y to virtual y
-::%w      ( -- w. )    virtual width as fixed-point fraction
-::%h      ( -- h. )    virtual height as fixed-point fraction
+::sdlx ( -- x )       mouse x position (16 bits)
+::sdly ( -- y )       mouse y position
+::%w ( frac -- px )   fixed point fraction of the screen width (1.0 = sw) in pixels
+::%h ( frac -- px )   fixed point fraction of the screen height (1.0 = sh) in pixels
 ```
 
 ---
+
+```
+::vscreenf ( w h -- )  like vscreen with nearest neighbor scaling (sharp pixels)
+```
 
 ### tilesheet.r3
 
@@ -1117,19 +1212,19 @@ Tile map system with scrolling view.
 **Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/math.r3`, `^r3/lib/sdl2image.r3`, `^r3/lib/sdl2gfx.r3`
 
 ```
-::[map]      ( x y -- adr )         address of tile at x,y in map
-::loadtilemap ( "" -- amap )         load tile map from file
+::[map] ( x y -- ad )                         address of tile at x,y in map
+::loadtilemap ( "" -- amap )                  load tile map from file
 
 -- Rendering --
-::drawtile   ( y x tile -- y x )    draw single tile
-::tiledraw   ( w h x y sx sy 'amap -- )        draw tilemap (sx/sy = scroll offset)
-::tiledrawv  ( w h x y sx sy 'amap 'vec -- )   draw + call 'vec for each tile
-::tiledraws  ( w h x y sx sy sw sh 'amap -- )  draw subregion of map
-::tiledrawvs ( w h x y sx sy sw sh 'amap 'v -- ) draw subregion + callback
+::drawtile ( y x tile -- y x )                draw single tile
+::tiledraw ( w h x y sx sy 'amap -- )         draw tilemap (sx/sy = scroll offset)
+::tiledrawv ( w h x y sx sy 'amap 'vec -- )   draw + call 'vec for each tile
+::tiledraws ( w h x y sx sy sw sh 'amap -- )  draw subregion of map
+::tiledrawvs ( w h x y sx sy sw sh 'amap 'v -- )  draw subregion + callback
 
 -- Coordinate Conversion --
-::scr2view  ( xs ys -- xv yv )    screen to view coordinates
-::scr2tile  ( x y -- adr )        screen to tile address (valid after tiledraw)
+::scr2view ( xs ys -- xv yv )                 screen to view coordinates
+::scr2tile ( x y -- adr : only after tilemapdraw (set the vars) )  screen to tile address (valid after tiledraw)
 ```
 
 ---
@@ -1138,19 +1233,19 @@ Tile map system with scrolling view.
 
 Multi-layer tile map for 2D games with isometric and z-sorted sprite rendering.
 
-**Dependencies:** `^r3/lib/console.r3`, `^r3/lib/sdl2gfx.r3`, `^r3/util/sdlgui.r3`, `^r3/util/arr16.r3`, `^r3/lib/rand.r3`
+**Dependencies:** `^r3/lib/rand.r3`, `^r3/lib/console.r3`, `^r3/lib/sdl2gfx.r3`, `^r3/util/arr16.r3`
 
 ```
 ##bsprdraw  draw sprite function pointer (redefine for custom sprite drawing)
 
-::inisprite ( -- )             initialize sprite system
-::+sprite   ( N x y -- )       add sprite N at position (x,y) to draw list
-::drawmaps  ( xvp yvp -- )     draw all map layers at viewport position
-::loadmap   ( filename -- )    load tile map from file
-::bmap2xy   ( x y -- x' y' )  convert map coords to screen coords
-::whbmap    ( -- w h )         get map dimensions in tiles
-::xyinmap@  ( x y -- map )     read map value at tile (x,y)
-::xytrigger ( x y -- x y )     check trigger at tile position
+::inisprite ( -- )           start the list of sprites drawn in order with the map rows (call it every frame before +sprite); the list is in free memory at here
+::+sprite ( N x y -- )       add the sprite N at screen position x y to the sorted list; it is ignored if it is outside the screen
+::drawmaps ( xvp yvp -- )    draw the map with its sprites from the viewport position xvp yvp in pixels (tiles of 32x32): back layers, then the sprites row by row, then the front layers
+::loadmap ( "filename" -- )  load a map file (8 bytes header, mapw maph, mapw*maph cells of 64 bits, tilew tileh, tileset image name) and its tileset; the view is 34x23 tiles of 32 pixels
+::bmap2xy ( x y -- x y )     tile position x y to the pixel position in the tileset size (x*tilew, y*tileh) as fixed point
+::whbmap ( -- w h )          size of the map in tiles
+::xyinmap@ ( x y -- cell )   map cell (64 bits) at the position x y given as fixed point pixels (no range check)
+::xytrigger ( x y -- x y )   mark with the trigger flag (bit 51) the conditional tiles (bit 50) of the cells around x y; drawmaps clears the flag at the end of the frame
 ```
 
 ---
@@ -1171,10 +1266,10 @@ Wavefront OBJ/MTL 3D model loader.
 ##colorl ##ncolor     color list, count
 
 -- Accessors --
-::]face  ( nro -- adr )   address of face nro (fields: p1 p2 p3 color)
-::]vert  ( nro -- adr )   address of vertex nro
-::]norm  ( nro -- adr )   address of normal nro
-::]uv    ( nro -- adr )   address of UV coord nro
+::]face ( nro -- FACE ( p1 p2 p3 color) )  address of face nro (fields: p1 p2 p3 color)
+::]vert ( nro -- vertex )                  address of vertex nro
+::]norm ( nro -- normal )                  address of normal nro
+::]uv ( nro -- uv )                        address of UV coord nro
 
 -- Material (MTL) Accessors --
 ::]Ka@  ::]Kd@  ::]Ks@  ::]Ke@   ambient/diffuse/specular/emission
@@ -1182,21 +1277,21 @@ Wavefront OBJ/MTL 3D model loader.
 ::]Mkd@ ::]MNs@ ::]Mbp@           texture map filenames
 
 -- Loading --
-::loadobj  ( "" -- mem )    load OBJ file, return memory base
+::loadobj ( "" -- mem )                    load OBJ file, return memory base
 
 -- Geometry Operations --
 ##xmin ##ymin ##zmin ##xmax ##ymax ##zmax   bounding box (after objminmax)
-::objminmax    ( -- )           compute bounding box of all vertices
-::objmove      ( x y z -- )    translate all vertices
-::objcentra    ( -- )           center model at origin
-::objescala    ( por div -- )  scale all vertices by por/div
-::objescalax   ( por div -- )  scale X only
-::objescalay   ( por div -- )  scale Y only
-::objescalaz   ( por div -- )  scale Z only
-::objcube      ( lado -- )     generate a unit cube of side `lado`
-::getpath      ( str -- str )  extract directory path from filepath
-::>>cr         ( adr -- adr'/0 ) advance to next line in text
-::cnt/         ( -- )          count faces
+::objminmax ( -- )                         compute bounding box of all vertices
+::objmove ( x y z -- )                     translate all vertices
+::objcentra ( -- )                         center model at origin
+::objescala ( mul div -- )                 scale all vertices by mul/div
+::objescalax ( mul div -- )                scale X only
+::objescalay ( mul div -- )                scale Y only
+::objescalaz ( mul div -- )                scale Z only
+::objcube ( lado -- )                      generate a unit cube of side `lado`
+::getpath ( str -- str )                   extract directory path from filepath
+::>>cr ( adr -- adr' )                     address of the next CR or LF, or of the final 0
+::cnt/ ( -- )                              count faces
 ```
 
 ---
@@ -1209,38 +1304,38 @@ Date and time formatting in Spanish. Provides string output words.
 
 ```
 -- Append to Heap (,time / ,date style) --
-::,time       ( -- )    append current time HH:MM:SS
-::,ti:me      ( -- )    append time with colon separators
-::,date       ( -- )    append current date DD/MM/YYYY
-::,date-      ( -- )    append date with dash separators
+::,time ( -- )                 write the current time as h:mm:ss (hour without leading zero)
+::,ti:me ( -- )                write the current time as h:mm with a blinking colon (a space on odd seconds)
+::,date ( -- )                 write the current date as d/m/yyyy
+::,date- ( -- )                write the current date as yyyy-mm-dd
 
 -- Raw String Generation --
-::str_DMA     ( -- str )  "D/M/A" formatted date
-::str_HMS     ( -- str )  "H:M:S" formatted time
-::str_HM      ( -- str )  "H:M" time
-::str_fullday ( -- str )  full day name (e.g. "Lunes")
-::str_hhmmss  ( -- str )  "HH:MM:SS"
+::str_DMA ( -- str )           the current date as " d/m/yyyy " in a temporary string (at here, valid until the next write to memory)
+::str_HMS ( -- str )           the current time as " h:mm:ss " in a temporary string (at here)
+::str_HM ( -- str )            the current time as " h:mm " (blinking colon) in a temporary string (at here)
+::str_fullday ( -- str )       current date as "weekday, d month yyyy " in Spanish, zero-terminated, in a temporary string (BUG: the month name is one too far: date.m is 1..12 and >mesname takes 0..11)
+::str_hhmmss ( -- str )        current time as hh:mm:ss (2 digits each), zero-terminated, in a temporary string (at here)
 
 -- Day and Month Names --
-::>dianame    ( n -- str )  day name by number (0=Domingo..6=Sábado)
-::>mesname    ( n -- str )  month name by number (1..12)
+::>dianame ( n -- str )        Spanish name of the weekday n (0 = domingo .. 6 = sabado), no range check
+::>mesname ( n -- str )        Spanish name of the month n (0 = enero .. 11 = diciembre), no range check
 
 -- SQL / Database Formats --
-::dt2timesql  ( 'sysdate -- )   format as SQL datetime string
+::dt2timesql ( 'timedate -- )  write a timedate (address from sysdate or filetimeD) as yyyy-mm-dd hh:mm:ss at here (no final 0)
 
 -- 64-bit Packed DateTime --
-::dt>64     ( datetime -- dt64 )   pack system datetime to 64-bit
-::,64>dtf   ( dt64 -- "d/m/y h:m" )  format packed to display string
-::,64>dtd   ( dt64 -- "d/m/y" )       date only
-::,64>dtt   ( dt64 -- "h:m:s" )       time only
-::64>dtc    ( dt64 -- "y-m-d h:m:s" ) ISO format (for databases)
+::dt>64 ( 'timedate -- dt64 )  pack a timedate in 64 bits: year<<48 | month<<44 | weekday<<40 | day<<32 | hour<<24 | minute<<16 | second<<8 | ms>>2
+::,64>dtf ( dt64 -- )          write a dt64 as dd/mm/yyyy hh:mm
+::,64>dtd ( dt64 -- )          write the date of a dt64 as d/m/yyyy followed by a space
+::,64>dtt ( dt64 -- )          write the time of a dt64 as hh:mm:ss
+::64>dtc ( dt64 -- )           write a dt64 as date and time (BUG: it writes "yyyy mm-dd-hh:mm:ss"; the separator after the year should be - and the one after the day a space)
 ```
 
 ---
 
-### db2.r3
+### dbtxt.r3
 
-Text database version 2. Records separated by ASCII 30 (RS), fields by ASCII 31 (US), rows by ASCII 29 (GS).
+Text database: fields are separated by `|` and records by `^`.
 
 **Dependencies:** `^r3/lib/console.r3`
 
@@ -1248,38 +1343,25 @@ Text database version 2. Records separated by ASCII 30 (RS), fields by ASCII 31 
 ##rowdb    current row pointer after search
 
 -- File Loading --
-::getnfilename ( n "path" -- filename/0 )   get nth file in path
-::loadnfile    ( "" -- filename )            load next file in series
-::loaddb-i     ( "filename" -- )             load DB into global (indexed)
-::prevdb-i     ( "filename" -- )             load previous version
-::loaddb       ( "filename" -- 'db )         load DB, return pointer
+::getnfilename ( n "path" -- filename/0 )  name of the nth file of a folder (Windows only: it uses the Windows directory entry layout); 0 if there are fewer
+::loadnfile ( "path" -- filename )         incremental: each call returns the next file name of the folder, the position is kept in the file "path.now" and wraps to the first (Windows only)
+::loaddb-i ( "filename" -- )               incremental: load the record number kept in "filename.now" and split it in fields (read them with dbfld), then advance to the next record (wraps at the end)
+::prevdb-i ( "filename" -- )               step the position kept in "filename.now" back one record (the next loaddb-i loads the previous one)
+::loaddb ( "filename" -- 'db )             load a text database (records field|field|..^) at here, where it stays, and return its address; 0 if the file is empty or missing
 
 -- Record Iteration --
-::>>line  ( adr -- adr'/0 )   advance to next record (0 = end)
+::>>line ( adr -- adr' )                   address after the next ^ (end of record), or the final 0 if there is none
 
 -- Field Access --
-::dbfld     ( nro -- string )           get field nro from current row
-::getdbrow  ( id 'db -- 'row )          find row by ID
-::findbrow  ( hash 'db -- 'row/0 )      find row by hash key (0=not found)
-::cntdbrow  ( 'db -- cnt )              count records in database
-::>>fld     ( adr -- adr' )             advance to next field
-::getdbfld  ( nro 'row -- 'fld )        get field nro from row
-::cpydbfld  ( 'fld 'str -- )            copy field to string buffer
-::cpydbfldn ( max 'fld 'str -- )        copy field with max length
+::dbfld ( nro -- str )                     field nro (0 is the first) of the record loaded with loaddb-i; an empty string if there are fewer fields
+::getdbrow ( id 'db -- 'row )              address of record number id (0 is the first) of a database loaded with loaddb
+::findbrow ( 'key 'db -- 'row/0 )          first record whose first 8 bytes equal the 8 bytes at 'key (the original comment called it hash); 0 if none
+::cntdbrow ( 'db -- cnt )                  number of records (count of ^); 0 if 'db is 0
+::>>fld ( adr -- adr' )                    address after the next | (next field); it stops at a ^ (end of record) without skipping it
+::getdbfld ( nro 'row -- 'fld )            address of field nro (0 is the first) of a record; the field ends at | or ^, not at a 0
+::cpydbfld ( 'fld 'str -- )                copy the text of a field (up to | or ^) to 'str with a final 0
+::cpydbfldn ( max 'fld 'str -- )           like cpydbfld copying at most max characters
 ```
-
----
-
-### dbtxt.r3
-
-Text database version 1. Records separated by newline, fields by `|`, rows by `^`.
-
-**Dependencies:** `^r3/lib/console.r3`
-
-Same API as db2.r3. Same word names:
-`getnfilename`, `loadnfile`, `>>line`, `loaddb-i`, `prevdb-i`, `dbfld`, `loaddb`, `getdbrow`, `findbrow`, `cntdbrow`, `>>fld`, `getdbfld`, `cpydbfld`, `cpydbfldn`.
-
-Use `dbtxt.r3` for pipe-delimited flat text, `db2.r3` for binary-delimited packed format.
 
 ---
 
@@ -1294,16 +1376,22 @@ Filesystem scanner providing file/directory trees for UI list and tree widgets.
 ##uiFiles    pointer to file list
 
 -- File Path Operations --
-::flcpy       ( 'file 'str -- )        copy file entry to string
-::flTreePath  ( n -- str )             get path of tree item n
+::flcpy ( 'file 'str -- )                 copy a list entry up to | or the final 0 into 'str, with a final 0
+::flTreePath ( n -- str )                 path of node n of the tree shown by the tui tree widget (it uses the widget state of tui: only meaningful inside it)
 
 -- Scanning --
-::FlGetFiles   ( filename -- )         populate file list for given path
-::flScanDir    ( "" -- )               scan directory into uiDirs/uiFiles
-::flScanFullDir ( "" -- )              full recursive scan
-::flOpenFullPath ( str -- place )      open/expand to given path in tree
+::FlGetFiles ( "path" -- )                fill uiFiles with the names of the files (no folders) of the folder; the memory was reserved by flScanDir
+::flScanDir ( "path" -- )                 scan the folders under path recursively into uiDirs and reserve 64 KB for uiFiles; call it only once
+::flScanFullDir ( "path" -- )             like flScanDir but uiDirs also has the files (the folders end with /)
+::flOpenFullPath ( "root/a/b" -- place )  open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
 ```
 
 ---
 
 *End of r3forth `util/` Library Reference*
+
+```
+::flOpenSearch ( "text" -- adr/0 )  first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
+::flCloseAll ( -- )                 close all the folders of uiDirs
+```
+
