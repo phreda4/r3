@@ -514,7 +514,7 @@ A variable written once and read once disappears: leave the value on the stack, 
 
 The rules: every `>r` is matched by an `r>` **inside the same word**, and a loop body must leave the return stack as it found it. While a value is parked it is **not on the data stack**, so do not count it when you work out distances for `pick`. The `mkpal` above parks the red component while it computes the green one.
 
-Do not park more than one or two values. If you need more, you are probably missing a helper word.
+Do not park more than one or two values. If you need more, you are probably missing a helper word. try to avoid this r stack use !
 
 #### Step 6. Factor when you run out of reach
 
@@ -524,7 +524,7 @@ For example, a perspective projection that used four variables becomes one three
 
 ```r3
 :proj | v z half -- p          ; v*PH / (z<<4) + half
-	>r 4 << swap PH * swap / r> + ;
+	-rot 4 << swap PH * swap / + ;
 ```
 
 #### Step 7. Branches and early exits
@@ -590,7 +590,7 @@ Both fill the buffer with the same values. The callback version also lets you re
 
 #### Step 9. Compare, then measure
 
-Run the baseline of Step 1 and check that **every** hash is equal. Then measure time before and after, because the stack version is not always faster.
+Run the baseline of Step 1 and check that **every** hash is equal. Then measure time before and after, because the stack version is not always faster in the current VM.
 
 Measured on `colorscene.r3` (milliseconds per frame, same machine, Linux; compare the columns, not the absolute values):
 
