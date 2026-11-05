@@ -23,6 +23,10 @@ R3 can load and call procedures from any dynamic library (.DLL in windows) or (.
 You don't need to clone the repository; you can download the latest version here.
 [latest release(.zip)](https://github.com/phreda4/r3/archive/refs/heads/main.zip)
 
+### **WINDOWS**
+
+Extract and run `r3.exe`. No installation required.
+
 ### **LINUX Mint / Ubuntu / Debian**
 
 r3 requires **SDL2** development libraries.
@@ -62,9 +66,40 @@ nix-shell fhs.nix
 ./r3lin
 ```
 
-### **WINDOWS**
+### **macOS**
 
-Extract and run `r3.exe`. No installation required.
+r3 requires **SDL2** libraries, which can be easily installed using Homebrew.
+
+1. **Install dependencies:**
+
+```bash
+brew install sdl2 sdl2_ttf sdl2_image sdl2_mixer
+
+```
+
+2a. **Run the precompiled binary:**
+
+```bash
+./r3mac
+
+```
+
+or
+
+2b. **Build and Run:**
+If you want to build the VM from source:
+
+```bash
+# Clone the VM core
+git clone https://github.com/phreda4/r3evm
+cd r3evm && make
+# Move the binary back to the main folder
+mv r3mac ../ && cd ..
+./r3mac
+
+```
+
+*(Note: On newer versions of macOS, you may need to allow the binary to run via **System Settings > Privacy & Security** if macOS blocks it as an unidentified developer app on first launch.)*
 
 ---
 
