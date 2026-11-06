@@ -38,6 +38,10 @@ layout(std140, binding = 0) uniform Matrices {
 };
 layout(std140, binding = 1) uniform DirectLight { vec4 lightDir; vec4 lightColor; };
 
+// sombra del sol (la llena ss3dshadow.r3): sp.x = activa, sp.y = normal offset, sp.z = bias de profundidad
+layout(std140, binding = 3) uniform ShadowU { mat4 lightVP; vec4 ldir; vec4 sp; };
+layout(binding = 4) uniform sampler2DShadow gShadow;
+
 struct PointLight { vec4 pos; vec4 color; };
 layout(std140, binding = 2) uniform PointLights {
     ivec4 header; PointLight lights[16];
@@ -79,6 +83,21 @@ vec3 BRDF(vec3 N, vec3 V, vec3 L,
     vec3 kD   = (1.0 - F) * (1.0 - metallic);
     vec3 specular = (NDF * G * F) / (4.0 * NdotV * NdotL + EPS);
     return (kD * albedo * INV_PI + specular) * NdotL;
+}
+
+// fraccion de luz (1 = iluminado) con PCF 3x3 sobre el mapa de sombras ortografico
+float sunShadow(vec3 worldPos, vec3 N) {
+    if (sp.x < 0.5) return 1.0;
+    vec4  c = lightVP * vec4(worldPos + N * sp.y, 1.0);
+    vec3  s = vec3(c.xy * 0.5 + 0.5, c.z);
+    if (s.x < 0.0 || s.x > 1.0 || s.y < 0.0 || s.y > 1.0 || s.z > 1.0) return 1.0;
+    float ref = s.z - sp.z;
+    vec2  ts  = 1.0 / vec2(textureSize(gShadow, 0));
+    float sum = 0.0;
+    for (int j = -1; j <= 1; ++j)
+        for (int i = -1; i <= 1; ++i)
+            sum += texture(gShadow, vec3(s.xy + vec2(i, j) * ts, ref));
+    return sum * (1.0 / 9.0);
 }
 
 void main() {
@@ -127,7 +146,7 @@ void main() {
     float NdotL = dot(N, L);
     if (NdotL > 0.0) {
         color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-               * lightColor.rgb * lightColor.a;
+               * lightColor.rgb * (lightColor.a * sunShadow(worldPos, N));
     }
 
     // ---- luces puntuales (sin AO): pos.w = radio de influencia ----
@@ -584,6 +603,9 @@ void main() {
 | UBOs
 #rl_ubo_matrices  0
 #rl_ubo_dirlight  0
+##rl_ubo_shadow    0		| ShadowU (binding 3): lightVP(64) ldir(16) sp(16) = 96 bytes
+##rl_shadow_tex    0		| mapa de sombras (depth, compare LEQUAL) -> unidad 4
+##rl_shadow_hook   0		| direccion de una palabra que se ejecuta al inicio de rl_frame_end (pase de sombras)
 #rl_ubo_plights   0
 
 | Shaders
@@ -797,6 +819,11 @@ void main() {
     GL_UNIFORM_BUFFER 32 0 GL_DYNAMIC_DRAW glBufferData
     GL_UNIFORM_BUFFER 1 rl_ubo_dirlight glBindBufferBase
 
+    1 'rl_ubo_shadow glGenBuffers
+    GL_UNIFORM_BUFFER rl_ubo_shadow glBindBuffer
+    GL_UNIFORM_BUFFER 96 0 GL_DYNAMIC_DRAW glBufferData
+    GL_UNIFORM_BUFFER 3 rl_ubo_shadow glBindBufferBase
+
     1 'rl_ubo_plights glGenBuffers
     GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
     GL_UNIFORM_BUFFER 528 0 GL_DYNAMIC_DRAW glBufferData
@@ -882,6 +909,7 @@ void main() {
     1 'rl_ubo_matrices glDeleteBuffers
     1 'rl_ubo_dirlight glDeleteBuffers
     1 'rl_ubo_plights  glDeleteBuffers
+    1 'rl_ubo_shadow   glDeleteBuffers
     ;
 
 
@@ -1058,6 +1086,7 @@ void main() {
 	rl_aa_on 1? ( drop rl_ldr_fbo ; ) drop 0 ;
 
 ::rl_frame_end | --
+	rl_shadow_hook 1? ( dup ex ) drop	| pase de sombras (ss3dshadow)
 	rl_quad_vao glBindVertexArray
 	GL_DEPTH_TEST glDisable
 	
@@ -1075,6 +1104,7 @@ void main() {
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D rl_gbuf_albedo glBindTexture
 	$84C2       glActiveTexture GL_TEXTURE_2D rl_ao_tex      glBindTexture | GL_TEXTURE2
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth  glBindTexture
+	GL_TEXTURE4 glActiveTexture GL_TEXTURE_2D rl_shadow_tex  glBindTexture
 
 	| --- Light pass
 	lightpass
