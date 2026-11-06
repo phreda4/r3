@@ -11,16 +11,21 @@
 #flpadx 0 #flpady 0
 #flcols 1 #flrows 1 #flcur 0
 #flcolm	1 #flrowm 1
-##cx ##cy ##cw ##ch | cursor
+##cx | x of the cursor box (the current widget) in pixels
+##cy | y of the cursor box
+##cw | width of the cursor box
+##ch | height of the cursor box
 
 :f2c
 	flpadx fw over 2* - 'cw ! fx + 'cx !
 	flpady fh over 2* - 'ch ! fy + 'cy ! ;
 
-::%cw fw 16 *>> ;
-::%ch fh 16 *>> ;
+::%cw | frac -- px ; fixed point fraction (1.0 = all) of the width of the current frame in pixels
+	fw 16 *>> ;
+::%ch | frac -- px ; fixed point fraction (1.0 = all) of the height of the current frame in pixels
+	fh 16 *>> ;
 
-::uiPading | x y --
+::uiPading | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
 	'flpady ! 'flpadx ! f2c ;
 
 #flstack * 64 | 8 niveles
@@ -35,13 +40,13 @@
 	swap $ffff and or 16 <<
 	swap $ffff and or ; | hhwwyyxx
 	
-::uiBox | x y w h --
+::uiBox | x y w h -- ; set the current frame (layout area) and push it on the layout stack; the cursor box is the frame minus the padding
 	2over 'fy ! 'fx ! 2dup 'fh ! 'fw ! 
 	xywh>fl 'flstack !+ 'flstack> ! 
 	f2c ;
 	
 	
-::uiFull | --
+::uiFull | -- ; the frame is the whole screen
 	0 0 sw sh uiBox ;
 	
 :flx+! flstack> 8 - dup w@ rot + clamp0 swap w! ;
@@ -49,46 +54,49 @@
 :flw+! flstack> 8 - 4 + dup w@ rot + clamp0 swap w! ;
 :flh+! flstack> 8 - 6 + dup w@ rot + clamp0 swap w! ;
 	
-::uiPush	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
-::uiPop		-8 'flstack> +! flstack> fl>now f2c ;
+::uiPush | -- ; push the current frame on the layout stack (8 levels)
+	fh fw fy fx flstack> w!+ w!+ w!+ w!+ 'flstack> ! ;
+::uiPop | -- ; pop the layout stack and make that frame the current one
+	-8 'flstack> +! flstack> fl>now f2c ;
 
 :uiGet		flstack> 8 - fl>now ;
-::uiRest	uiGet f2c ;
+::uiRest | -- ; make the frame at the top of the layout stack (what uiN uiS uiE uiO leave) the current one
+	uiGet f2c ;
 
 | N=^ S=v E=> O=<
 | - is full minus the number
-::uiN | lineas --
+::uiN | lines -- ; take a strip of that height (pixels) from the top of the current frame and make it current; the rest stays on the stack (a negative value is the whole height minus it)
 	-? ( fh + ) uiGet dup fly+! dup neg flh+!	'fh ! f2c ;
-::uiS | lineas --
+::uiS | lines -- ; like uiN taking the strip from the bottom of the frame
 	-? ( fh + ) uiGet dup neg flh+! fh fy + over - 'fy ! 'fh ! f2c ;
-::uiE | cols --
+::uiE | cols -- ; like uiN taking a strip of that width (pixels) from the right of the frame
 	-? ( fw + ) uiGet dup neg flw+! fw fx + over - 'fx ! 'fw ! f2c ;
-::uiO | cols --
+::uiO | cols -- ; like uiN taking a strip of that width (pixels) from the left of the frame
 	-? ( fw + ) uiGet dup flx+! dup neg flw+! 'fw ! f2c ;
 	
-::uiAt | x y --
+::uiAt | x y -- ; move the cursor box to the grid cell x y
 	flrowm dup flpady 2* - 'ch !
 	* fy + flpady + 'cy !
 	flcolm dup flpadx 2* - 'cw !
 	* fx + flpadx + 'cx ! ;
 	
-::uiTo | w h -- 
+::uiTo | w h -- ; set the size of the cursor box to w x h grid cells
 	flrowm * flpady 2* - 'ch !
 	flcolm * flpadx 2* - 'cw ! ;
 
-::uiGrid | c r -- ; adjust for fit
+::uiGrid | c r -- ; divide the frame in c columns by r rows (adjusted to fit) and put the cursor at the cell 0 0
 	2dup 'flrows ! 'flcols ! 0 'flcur !
 	fh swap /mod dup 2/ 'fy +! neg 'fh +! 'flrowm !
 	fw swap /mod dup 2/ 'fx +! neg 'fw +! 'flcolm !
 	0 0 uiAt ;
 	
-::uiNext	
+::uiNext | -- ; move the cursor to the next grid cell going along the rows (it goes back to the first one at the end)
 	flcur 1+ 
 	flrows flcols * >? ( 0 nip )
 	dup 'flcur !
 	flcols /mod swap uiAt ;
 	
-::uiNextV
+::uiNextV | -- ; move the cursor to the next grid cell going down the columns
 	flcur 1+
 	flrows flcols * >? ( 0 nip )
 	dup 'flcur !
@@ -98,27 +106,35 @@
 #id	#idh #ida 	| now hot active
 #idf #idfh #idfa | focus
 #wid #wida	| panel now active
-##mdrag 	| drag place <<<
+##mdrag | number of the place (uiPlace) under the mouse while dragging, -1 if none
 #mdragh	
 #idfl		| idf last
 
 #uistate
-##keymd		| key modify <<<
-##btnMouse
+##keymd | key modifiers: bit 0 is set while a shift key is down
+##btnMouse | mouse button mask (sdlb) of the last press on a widget
 
 :flagEx!	uistate $100 or 'uistate ! ;
-::uiEx?		uistate $100 and ;
+::uiEx? | -- flag ; not 0 if the last widget was activated (clicked or Enter pressed)
+	uistate $100 and ;
 
-::uiOvr		uiState $f and 1 <>? ( 2drop ; ) drop ex ;  | 'v --
-::uiDwn		uiState $f and 2 <>? ( 2drop ; ) drop ex ; | 'v --
-::uiSel		uiState $f and 3 <>? ( 2drop ; ) drop ex ;  | 'v -- ; 3 <?
-::uiClk		uiState $f and 6 <>? ( 2drop ; ) drop ex ; | 'v --
-::uiUp		uiState $f and 5 <? ( 2drop ; ) drop ex ;  | 'v --
+::uiOvr | 'v -- ; execute 'v while the mouse is over the widget
+	uiState $f and 1 <>? ( 2drop ; ) drop ex ;
+::uiDwn | 'v -- ; execute 'v on the frame the button is pressed on the widget
+	uiState $f and 2 <>? ( 2drop ; ) drop ex ;
+::uiSel | 'v -- ; execute 'v while the widget is active (button held with the mouse over it)
+	uiState $f and 3 <>? ( 2drop ; ) drop ex ;
+::uiClk | 'v -- ; execute 'v when the widget is clicked (released over it)
+	uiState $f and 6 <>? ( 2drop ; ) drop ex ;
+::uiUp | 'v -- ; execute 'v when the mouse button is released or the mouse goes out after being pressed
+	uiState $f and 5 <? ( 2drop ; ) drop ex ;
 
-::uiFocusIn uiState $10 nand? ( 2drop ; ) drop ex ;
-::uiFocus 	uiState $20 nand? ( 2drop ; ) drop ex ;
+::uiFocusIn | 'v -- ; execute 'v on the frame the widget gets the keyboard focus
+	uiState $10 nand? ( 2drop ; ) drop ex ;
+::uiFocus | 'v -- ; execute 'v while the widget keeps the keyboard focus (after the first frame)
+	uiState $20 nand? ( 2drop ; ) drop ex ;
 
-::uiStart
+::uiStart | -- ; start of a gui frame, once per frame before the widgets: frame = whole screen, ids and drag reset, shift key tracked
 	uiFull
 	idfh -? ( id nip ) id >? ( 0 nip ) dup 'idf ! 'idfh !
 	idh 'ida ! -1 'id !
@@ -152,11 +168,11 @@
 |------- LAST WIDGET
 #idfs
 
-::uiExitWidget
+::uiExitWidget | -- ; close the pending last widget (the open combo list)
 	idfs dup 'idfh ! 'idfa !
 	0 'uilastwidget ! ;
 
-::uiSaveLast | x y w h 'vector --
+::uiSaveLast | x y w h 'vector -- ; save a widget (its box and font) to be executed by uiEnd after the others (used for pop-ups)
 	'uiLastWidget !	| save vector
 	isavepos
 	| save style
@@ -173,7 +189,7 @@
 |	'cifil 'uilaststy 3 move 
 	uiLastfont txfont ;
 	
-::uiEnd
+::uiEnd | -- ; end of a gui frame: executes the pending last widget (the open combo list), drawn over the others
 	id 1+ 'idfl !
 	uilastWidget 0? ( drop ; ) 
 	idfa idfl <? ( 2drop uiExitWidget ; ) drop
@@ -223,39 +239,42 @@
 	drop $20 ; | stay
 
 |-- interactive box
-::uiZone | -- ; Interaction is cx,cy,cw,th
+::uiZone | -- ; define the interaction area of the widget (cursor box, one text line high) and compute its mouse and focus state; read it with uiOvr uiClk uiFocus...
 	txh 'chx !
 	stMouse stFocus or 'uistate ! ;
 
-::uiZoneL | nlines -- ; Interaction is cx,cy,cw,th*lines
+::uiZoneL | nlines -- ; like uiZone with an area of nlines text lines
 	txh * 'chx !
 	stMouse stFocus or 'uistate ! ;
 
-::uiZoneW | --	; Interaction is cx,cy,cw,ch
+::uiZoneW | -- ; like uiZone with the whole cursor box height
 	ch 'chx !
 	stMouse stFocus or 'uistate ! ;
 	
 #auxbox
-::uiZoneBox | x y w h --
+::uiZoneBox | x y w h -- ; set the cursor box to x y w h (the old one is kept for uiBackBox) and use it as the interaction area
 	cx cy cw ch 'auxbox w!+ w!+ w!+ w!
 	dup 'ch ! 'chx ! 'cw ! 'cy ! 'cx !
 	stMouse stFocus or 'uistate ! ;
 	
-::uiBackBox
+::uiBackBox | -- ; restore the cursor box saved by uiZoneBox
 	'auxbox w@+ 'ch ! w@+ 'cw ! w@+ 'cy ! w@ 'cx ! ;
 	
 	
 |-- place to go in drag (index n)	
-::uiPlace | n --
+::uiPlace | n -- ; (drag and drop) the cursor box is the place number n: if the mouse is over it mdrag gets n
 	ch 'chx !
 	uIn? 0? ( 2drop ; ) drop 'mdragh ! ;
 
 
-::uiRefocus	-1 'idfa ! ;
-::uiFocus>> 1 'idfh +! ; | cambia id y luego wid
-::uiFocus<< -1 'idfh +! ;
+::uiRefocus | -- ; clear the keyboard focus (the first widget takes it)
+	-1 'idfa ! ;
+::uiFocus>> | -- ; move the keyboard focus to the next widget
+	1 'idfh +! ;
+::uiFocus<< | -- ; move the keyboard focus to the previous widget
+	-1 'idfh +! ;
 
-::tabfocus
+::tabfocus | -- ; action of the Tab key: next widget, or the previous one if shift is down
 	keymd 1 and? ( drop uiFocus<< ; ) drop uiFocus>> ;
 
 :ui+a
@@ -273,30 +292,38 @@
 :cl2recbox
 	chx cw cy cx 'recbox d!+ d!+ d!+ d! ;
 	
-::uiFill	cx cy cw ch frect ;
-::uiRect	cx cy cw ch rect ;
-::uiRFill	cx cy cw ch fround ; | round --
-::uiRRect	cx cy cw ch round ; | round --
-::uiCRect	cw ch min 2/ cx cy cw ch round ;
-::uiCFill	cw ch min 2/ cx cy cw ch fround ;
-::uiTex		c2recbox 'recbox swap imageb ; | texture --
+::uiFill | -- ; fill the cursor box with the draw color
+	cx cy cw ch frect ;
+::uiRect | -- ; outline of the cursor box
+	cx cy cw ch rect ;
+::uiRFill | round -- ; fill the cursor box with rounded corners of that radius
+	cx cy cw ch fround ;
+::uiRRect | round -- ; outline of the cursor box with rounded corners
+	cx cy cw ch round ;
+::uiCRect | -- ; outline of the cursor box as a capsule (radius = half of the smaller side)
+	cw ch min 2/ cx cy cw ch round ;
+::uiCFill | -- ; fill the cursor box as a capsule
+	cw ch min 2/ cx cy cw ch fround ;
+::uiTex | texture -- ; draw the texture in the cursor box
+	c2recbox 'recbox swap imageb ;
 
-::uiWinBox fx fy fw fh ; | -- x y w h 
+::uiWinBox | -- x y w h ; the current frame
+	fx fy fw fh ;
 
 |--- grid lines
-::uiLineGridV
+::uiLineGridV | -- ; draw the vertical lines of the grid
 	fx flcolm +
 	flcols 1- ( 1? 1-
 		over fy fh over + lineV
 		swap flcolm + swap ) 2drop ;
 		
-::uiLineGridH
+::uiLineGridH | -- ; draw the horizontal lines of the grid
 	fy flrowm +
 	flrows 1- ( 1? 1-
 		fx pick2 fw pick2 + lineH
 		swap flrowm + swap ) 2drop ;
 	
-::uiLineGrid
+::uiLineGrid | -- ; draw the lines of the grid
 	uiLineGridH uiLineGridV ;
 
 |---- Style
@@ -308,36 +335,46 @@
 
 #colFoc $ffffff 
 
-::stDang $ffff8099ff85001B 'colfil ! ;	| danger
-::stWarn $ffffBF29fff55D00 'colfil ! ;	| warning
-::stSucc $ff5BCD9Aff1F6546 'colfil ! ;	| success
-::stInfo $ff80D9FFff005D85 'colfil ! ;	| info
-::stLink $ff4258FFff000F85 'colfil ! ;	| link
-::stDark $ff393F4Cff14161A 'colfil ! ;	| dark
-::stLigt $ffaaaaaaff888888 'colfil ! ;	| white
+::stDang | -- ; widget color style: danger (red)
+	$ffff8099ff85001B 'colfil ! ;
+::stWarn | -- ; widget color style: warning (orange)
+	$ffffBF29fff55D00 'colfil ! ;
+::stSucc | -- ; widget color style: success (green)
+	$ff5BCD9Aff1F6546 'colfil ! ;
+::stInfo | -- ; widget color style: info (cyan, the default)
+	$ff80D9FFff005D85 'colfil ! ;
+::stLink | -- ; widget color style: link (blue)
+	$ff4258FFff000F85 'colfil ! ;
+::stDark | -- ; widget color style: dark gray
+	$ff393F4Cff14161A 'colfil ! ;
+::stLigt | -- ; widget color style: light gray
+	$ffaaaaaaff888888 'colfil ! ;
 
-::stColor | rgb --
+::stColor | rgb -- ; widget color style from a color $RRGGBB (the second color is a lighter mix)
 	dup $ffffff $7f colmix  
 	32 << or $ff000000ff000000 or
 	'colfil ! ;
 	
 |--- fill widget
-::uilFill
+::uilFill | -- ; fill the interaction area (one text line high) with the draw color
 |	colBac color 
 	cx cy cw chx frect ;
-::uilRFill	
+::uilRFill | round -- ; like uilFill with rounded corners
 |	colBac color 
 	cx cy cw chx fround ; | round --
-::uilCFill	
+::uilCFill | -- ; like uilFill as a capsule
 |	colBac color 
 	cw chx min 2/ cx cy cw chx fround ;
-::uilTex	
+::uilTex | texture -- ; draw the texture in the interaction area
 	cl2recbox 'recbox swap imageb ; | texture --
 
 |--- focus
-::uilRect	cx 1- cy 1- cw 2 + chx 2 + rect ;
-::uilRRect	cx 1- cy 1- cw 2 + chx 2 + round ; | round --
-::uilCRect	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + round ;
+::uilRect | -- ; outline one pixel bigger than the interaction area (focus rectangle)
+	cx 1- cy 1- cw 2 + chx 2 + rect ;
+::uilRRect | round -- ; like uilRect with rounded corners
+	cx 1- cy 1- cw 2 + chx 2 + round ;
+::uilCRect | -- ; like uilRect as a capsule
+	cw 2 + chx 2 + min 2/ cx 1- cy 1- cw 2 + chx 2 + round ;
 
 :colBack	colBac color ;
 :colFill	colFil color ;
@@ -345,29 +382,29 @@
 :colText	colTxt txrgb ;
 
 |---- text cursor
-::uil..
+::uil.. | -- ; move the cursor down one text line
 	txh 'cy +! ;
-::ui..
+::ui.. | -- ; move the cursor down one text line plus the padding
 	txh flpady + 'cy +! ;
 	
-::ui--
+::ui-- | -- ; draw a horizontal separator line and move the cursor down
 	colFill
 	cx cy 1+ cw 2 rect
 	flpady 7 + 'cy +! ;
 
 |---- helptext
-::ttwrite | "text" --
+::ttwrite | "text" -- ; write the text left aligned at the cursor box
 	cx 
 	|ch txh - 2/ cy +
 	cy txat txwrite ;
 
-::ttwritec | "text" --
+::ttwritec | "text" -- ; write the text centered in the cursor box width
 	txw | "" w   
 	cw swap - 2/ cx +
 	|ch txh  - 2/ cy +
 	cy txat txwrite ;
 
-::ttwriter | "text" --
+::ttwriter | "text" -- ; write the text right aligned in the cursor box
 	txw | "" w 
 	cw cx + swap -
 	|ch txh - 2/ cy +
@@ -379,20 +416,20 @@
 	swap txemit
 	0 swap neg tx+at ;
 	
-::uiTlabel
+::uiTlabel | "text" -- ; label as wide as its text: write it centered and move the cursor right (for rows of widgets)
 	txw 4 + 'cw ! ttwritec cw 'cx +! ;
 	
 |---- widget
-::uiLabel
+::uiLabel | "text" -- ; write the text left aligned and move down one line
 	ttwrite	ui.. ;
 	
-::uiLabelC
+::uiLabelC | "text" -- ; write the text centered and move down one line
 	ttwritec ui.. ;
 	
-::uiLabelR
+::uiLabelR | "text" -- ; write the text right aligned and move down one line
 	ttwriter ui.. ;
 
-::uiText | "" align --
+::uiText | "" align -- ; write the text wrapped in the cursor box with the alignment of txalign ($VH)
 	txalign >r cw ch cx cy r> txText ;	
 
 :kbBtn
@@ -402,7 +439,7 @@
 	drop ;
 
 	
-::uiTBtn | 'click "" align --	
+::uiTBtn | 'click "" align -- ; button with wrapped text of the given alignment and rounded fill; executes 'click when activated
 	uiZoneW 
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
@@ -412,7 +449,7 @@
 	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
-::uiNBtn | v "" -- ; width from text
+::uiNBtn | 'click "" -- ; button as wide as its text; it moves the cursor right; executes 'click when activated
 	txw 4 + 'cw !
 	uiZone
 	'flagex! uiClk
@@ -422,7 +459,7 @@
 	cw 'cx +! 
 	uiEx? 0? ( 2drop ; ) drop ex ;	
 	
-::uiBtn | 'click "" --	
+::uiBtn | 'click "" -- ; button with centered text; executes 'click when activated (click or Enter)
 	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
@@ -432,7 +469,7 @@
 	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
-::uiRBtn | 'click "" --	
+::uiRBtn | 'click "" -- ; button with rounded corners (radius 6)
 	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
@@ -442,7 +479,7 @@
 	[ -2 ui+a ; ] uiSel 
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
-::uiCBtn | 'click "" --	
+::uiCBtn | 'click "" -- ; button with capsule shape
 	uiZone
 	'flagex! uiClk
 	[ 2 ui+a ; ] uiSel 
@@ -478,14 +515,14 @@
 	6 txh 4 - 
 	frect ;
 	
-::uiSliderf | 0.0 1.0 'value --
+::uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (it shows 2 decimals); left and right keys change it
 	uiZone
 	'slideh uiSel |
 	slideshow
 	@ .f2 uiLabelC
 	2drop ;
 
-::uiSlideri | 0 255 'value --
+::uiSlideri | min max 'value -- ; horizontal slider of an integer value
 	uiZone
 	'slideh uiSel | 'dn 'move --	
 	slideshow
@@ -501,14 +538,14 @@
 	cx cy 2swap
 	frect ;
 
-::uiProgressf | 0.0 1.0 'value --
+::uiProgressf | min max 'value -- ; horizontal progress bar of a fixed point value (it can be dragged)
 	uiZone
 	'slideh uiSel | 'dn 'move --	
 	progreshow
 	@ .f2 uiLabelC
 	2drop ;
 
-::uiProgressi | 0 255 'value --
+::uiProgressi | min max 'value -- ; horizontal progress bar of an integer value
 	uiZone
 	'slideh uiSel | 'dn 'move --	
 	progreshow
@@ -533,14 +570,14 @@
 	cw 4 - 6 
 	frect ;
 
-::uiVSliderf | 0.0 1.0 'value --
+::uiVSliderf | min max 'value -- ; vertical slider of a fixed point value
 	uiZone
 	'slidev uiSel
 	slideshowv
 	@ .f2 uiLabelC
 	2drop ;
 
-::uiVSlideri | 0 255 'value --
+::uiVSlideri | min max 'value -- ; vertical slider of an integer value
 	uiZone
 	'slidev uiSel
 	slideshowv	
@@ -562,7 +599,7 @@
 		>>0 swap 1+ swap ) 2drop
 	'cntlist ! ;
 	
-::uiNindx | n -- str
+::uiNindx | n -- str ; string number n of the list being drawn by the list widgets ("" if n is out of range)
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 
@@ -605,7 +642,7 @@
 	ic txicon 32 txemit a@+ txwrite
 	ui.. ;
 		
-::uiCheck | 'var 'list --
+::uiCheck | 'var 'list -- ; one check box per string of the list (0-terminated strings, an empty one ends the list); each bit of the variable is a box
 	mark makeindx
 	indlist >a
 	0 ( cntlist <? icheck 1+ ) 2drop
@@ -630,7 +667,7 @@
 	ir txicon 32 txemit a@+ txwrite
 	ui.. ;
 
-::uiRadio | 'var 'list --
+::uiRadio | 'var 'list -- ; one radio button per string of the list; the variable holds the number of the chosen one
 	mark makeindx
 	indlist >a
 	0 ( cntlist <? iradio 1+ ) 2drop
@@ -689,7 +726,7 @@
 	lx ly txat txwrite txh 'ly +!
 	;
 
-::uiList | 'var cntl 'list --
+::uiList | 'var cntl 'list -- ; list box of cntl lines over the strings of the list; 'var points to two cells: the selected number and the first line shown (it scrolls with the wheel, keys or the bar)
 	over uiZoneL
 	mark makeindx
 	cx 'lx ! cy 'ly !
@@ -723,7 +760,7 @@
 	dup $1f and 4 << lx + ly txat iicon txwrite 
 	txh 'ly +! ;
 
-::uiTree | 'var cntl list --
+::uiTree | 'var cntl 'list -- ; like uiList for a tree: every string starts with a byte (level in $1f, $20 has children, $80 open) and a click toggles a folder
 	over uiZoneL
 	mark maketree
 	cx 'lx ! cy 'ly !
@@ -769,7 +806,7 @@
 	idfs idfh =? ( -1 'idfs ! flagex! ) drop | ex when exit last widget
 	;
 	
-::uiCombo | 'var 'list --
+::uiCombo | 'var 'list -- ; combo box: it shows the chosen string of the list (the variable holds its number); a click opens the list of up to 6 lines, drawn by uiEnd
 	uiZone 
 	colBack uiLFill
 	'kblistc uiFocus
@@ -848,7 +885,7 @@
 	
 	;
 
-::uiInputLine | 'buff max --
+::uiInputLine | 'buff max -- ; text line editor on the buffer (max bytes): insert or overwrite (Ins), left, right, home, end, backspace, delete, Tab and Enter
 	uiZone
 	Colback uiLFill
 	'iniinput uiFocusIn

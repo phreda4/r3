@@ -156,8 +156,9 @@
 	'sh_dbias ! 'sh_nbias ! shupdate ;
 
 ::ss3dshadowauto | 0/1 --	; area y bias automaticos: se recalculan cada frame segun las instancias
-	dup 'sh_autoarea ! 'sh_autobias !
-	1? ( shfit ) shupdate ;
+	dup 'sh_autoarea ! dup 'sh_autobias !
+	1? ( shfit ) drop
+	shupdate ;
 
 ::ss3dshadowfit | --	; ajusta area y bias una vez a las instancias actuales
 	sh_autoarea sh_autobias

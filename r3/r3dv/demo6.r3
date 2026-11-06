@@ -7,6 +7,7 @@
 ^./renderlib.r3
 ^./rlhud.r3
 ^./ss3d.r3
+^./ss3dshadow.r3
 ^./glimm.r3
 ^./rlgrid.r3
 
@@ -191,6 +192,7 @@
 	2 'fscale !
 	$ffffffff 'fcolor !
 	16 16  fat "f1 +obj" ftext
+	16 48  fat ss3dshadow@ "f2 shadows:%d" sprint ftext
 	fend
 
 	;
@@ -213,6 +215,7 @@
 	SDLkey
 	>esc< =? ( exit ) 	
 	<f1> =? ( +obj ) 
+	<f2> =? ( ss3dshadow@ 1 xor ss3dshadow! )
 	
 	<w> =? ( 0.02 'vd ! correr ) >w< =? ( 0 'vd ! parar )
 	<s> =? ( -0.02 'vd ! correr ) >s< =? ( 0 'vd ! parar )
@@ -240,14 +243,9 @@
 	sh sw rl_resizewin 
 	fixFontResize ;
 
-#fsun [ 
--0.5 8.0 -0.5 0
- 1.0 1.0 1.0 2.0
- ]
-
+| sol: direccion HACIA el sol, color, intensidad (da tambien la direccion de las sombras)
 :lightsun
-	8 'fsun memfloat
-	'fsun rl_set_sun
+	-0.5 8.0 -0.5  1.0 1.0 1.0 2.0 ss3dsun
 	;
 
 :load3d
@@ -270,7 +268,11 @@
 	rl_init 
 	1 rl_grid_init
 	'viewresize SDLeventR
+	2048 1 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
+	1 ss3dshadowauto				| bias automatico segun la escala de los sprites
+	0 3.0 0 24.0 ss3dshadowarea	| esfera que cubre la zona de juego (x y z radio)
 	lightsun
+	1 ss3dshadow!
 
 	0 'objcnt !
 	here 'objlst !
@@ -279,6 +281,7 @@
 	jugar
 	
 	rl_grid_free 
+	ss3dshadowend
 	rl_shutdown
 	SS3Dshutdown
 	GLend

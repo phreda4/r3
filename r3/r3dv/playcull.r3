@@ -12,12 +12,14 @@
 |  flechas: mover   espacio: saltar
 |  F1: +1 objeto movil   F2: +50   F3: culling si/no   F4: distancia de dibujo
 |  F5: ocultar los objetos que tapan al jugador (entre la camara y el jugador) si/no
+|  F6: sombras del sol si/no (el sol se define en lightsun; la direccion de la luz es la de las sombras)
 |-----
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
 ^./rlhud.r3
 ^./ss3d.r3
+^./ss3dshadow.r3
 ^./glimm.r3
 ^./rlgrid.r3
 
@@ -286,6 +288,8 @@
 	cullon drawdist 16 >> "dist:%d  cull:%d" sprint ftext
 	16 80 fat
 	occon "tapan:%d" sprint ftext
+	16 112 fat
+	ss3dshadow@ "sombras:%d" sprint ftext
 	fend ;
 
 :juego
@@ -294,6 +298,7 @@
 	draw_grid
 
 	jugador
+	pxp pzp pyp 50.0 ss3dshadowarea	| sombras alrededor del jugador (x y z radio)
 	cullobjs
 	SS3Ddraw
 
@@ -310,6 +315,7 @@
 	<f3> =? ( 1 cullon - 'cullon ! )
 	<f4> =? ( nextdd )
 	<f5> =? ( 1 occon - 'occon ! )
+	<f6> =? ( ss3dshadow@ 1 xor ss3dshadow! )
 
 	<up> =? ( 0.1 'vd ! ) >up< =? ( 0 'vd ! )
 	<dn> =? ( -0.1 'vd ! ) >dn< =? ( 0 'vd ! )
@@ -333,14 +339,9 @@
 	sh sw rl_resizewin
 	fixFontResize ;
 
-#fsun [
--0.5 8.0 -0.5 0
- 1.0 1.0 1.0 2.0
- ]
-
+| sol: direccion HACIA el sol, color, intensidad (da tambien la direccion de las sombras)
 :lightsun
-	8 'fsun memfloat
-	'fsun rl_set_sun
+	-0.5 8.0 -0.5  1.0 1.0 1.0 2.0 ss3dsun
 	;
 
 :load3d
@@ -360,7 +361,10 @@
 	rl_init
 	1 rl_grid_init
 	'viewresize SDLeventR
+	2048 1 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
+	0.25 0.0008 ss3dshadowbias	| bias fijo: escalas mezcladas (1..16), un bias automatico seguiria a la mayor
 	lightsun
+	1 ss3dshadow!
 
 	here 'objlst !
 	OBJMAX 7 << 'here +!
@@ -368,6 +372,7 @@
 	jugar
 
 	rl_grid_free
+	ss3dshadowend
 	rl_shutdown
 	SS3Dshutdown
 	GLend

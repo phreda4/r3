@@ -7,6 +7,7 @@
 ^./renderlib.r3
 ^./rlhud.r3
 ^./ss3d.r3
+^./ss3dshadow.r3
 ^./glimm.r3
 ^./rlgrid.r3
 
@@ -117,15 +118,17 @@
 	vu 1? ( 'camUp camVelMove ) drop
 	;
 	
-#fsun [ 
--0.5 8.0 -0.5 0
- 1.0 1.0 1.0 1.0
- ]
+| sol: azimut y altura en vueltas (1.0 = 360 grados); altura 0 = horizonte, 0.25 = vertical
+#sun_az 0.625
+#sun_el 0.237
+#shadowon 1			| 1 = sombras del sol
 
-:lightsun
-	8 'fsun memfloat
-	'fsun rl_set_sun
-	;
+:setsun
+	sun_el 0.01 max 0.25 min 'sun_el !
+	sun_el cos sun_az cos *.	| dx (direccion HACIA el sol)
+	sun_el sin					| dy
+	sun_el cos sun_az sin *.	| dz
+	1.0 1.0 1.0 1.0 ss3dsun ;
 	   
 :light2
 	2.4 
@@ -555,6 +558,11 @@
 	'delobj "del" uiTBtn
 	uiLn
 	sceneui
+	"SOL" uiLabelC
+	'rl_ao_on "SAO" uiFToggle
+	'shadowon "sombras" uiFToggle uiEx? 1? ( shadowon ss3dshadow! ) drop
+	"azimut" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop
+	"altura" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop
 	viewmouse
 	|-1.0 1.0 'vrx uiprogressf
 |	'vrl 8 ss3names uiList
@@ -632,9 +640,12 @@
 	load3d
 	rl_init 
 	1 rl_grid_init
+	2048 1 ss3dshadowini		| mapa de sombras 2048, grilla de ocupacion a mitad
+	1 ss3dshadowauto			| area y bias segun los objetos de la escena
 	
 	'viewresize SDLeventR
-	lightsun
+	setsun
+	shadowon ss3dshadow!
 	makeCam
 	
 	tofront
@@ -642,6 +653,7 @@
 	'main SDLshow
 	
 	rl_grid_free 
+	ss3dshadowend
 	rl_shutdown
 	SS3Dshutdown
 	GLend
