@@ -15,7 +15,7 @@
 :map> | x y -- a
 	mapw * + mapm + ;
 
-::[map] | x y -- ad
+::[map] | x y -- ad ; address of the map tile x y (x and y are limited to the map)
 	maph 1 - clamp0max swap
 	mapw 1 - clamp0max swap
 	map> ;
@@ -23,13 +23,13 @@
 :[map]@ | x y -- v
 	[map] c@ $ff and ;
 
-::drawtile | y x tile -- y x 
+::drawtile | y x tile -- y x ; draw the tile at the cell x y of the window being drawn (defined twice: the first draws it at its own size, the second, the one that programs get when they import the library, scaled to sw x sh)
 	| 0? ( drop ; ) 
 	mapt
 	pick2 tilew * xm + ym
 	tsdraw ;
 
-::tiledraw | w h x y sx sy 'amap --
+::tiledraw | w h x y sx sy 'amap -- ; draw a window of w x h tiles of the map starting at the tile x y, at the screen position sx sy
 	@+ 'mapt !
 	d@+ 'mapw ! d@+ 'maph !
 	d@+ 'tilew ! d@+ 'tileh !
@@ -49,7 +49,7 @@
 	drop
 	;
 
-::tiledrawv | w h x y sx sy 'amap 'vec --
+::tiledrawv | w h x y sx sy 'amap 'vec -- ; like tiledraw but 'vec transforms every tile number (tile -- tile)
 	>r
 	@+ 'mapt !
 	d@+ 'mapw ! d@+ 'maph !
@@ -71,14 +71,14 @@
 	r> 2drop
 	;
 
-::drawtile | y x tile -- y x 
+::drawtile | y x tile -- y x ; draw the tile at the cell x y of the window being drawn (defined twice: the first draws it at its own size, the second, the one that programs get when they import the library, scaled to sw x sh)
 	|0? ( drop ; ) 
 	mapt
 	pick2 tilew * xm + ym
 	tilew tileh
 	tsdraws ;
 	
-::tiledraws | w h x y sx sy sw sh 'amap --
+::tiledraws | w h x y sx sy sw sh 'amap -- ; like tiledraw with every tile scaled to sw x sh pixels
 	@+ 'mapt !
 	d@+ 'mapw ! d@+ 'maph !
 	8 + 'mapm ! 
@@ -98,7 +98,7 @@
 	drop
 	;
 	
-::tiledrawvs | w h x y sx sy sw sh 'amap 'v --
+::tiledrawvs | w h x y sx sy sw sh 'amap 'v -- ; like tiledraws with 'v transforming every tile number
 	>r
 	@+ 'mapt !
 	d@+ 'mapw ! d@+ 'maph !
@@ -120,7 +120,7 @@
 	r> 2drop
 	;	
 		
-::scr2view | xs ys -- xv yv
+::scr2view | xs ys -- xv yv ; screen position to tile position of the last window drawn
 	ym - tilew / mapy +
 	maph 1 - clamp0max 
 	swap
@@ -128,10 +128,10 @@
 	mapw 1 - clamp0max 
 	swap ;
 		
-::scr2tile | x y -- adr : only after tilemapdraw (set the vars)
+::scr2tile | x y -- adr ; address of the map tile under the screen position x y (only after a tiledraw: it uses its variables)
 	scr2view map> ;
 	
-::loadtilemap | "" -- amap
+::loadtilemap | "file" -- amap ; load a tile map (map width and height, tile width and height, the tiles as bytes and then the name of the tileset image); the tileset is loaded with tsload; returns the address of the map
 	here dup rot load 'here !
 	dup dup
 	8 +

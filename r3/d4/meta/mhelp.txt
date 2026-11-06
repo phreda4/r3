@@ -422,11 +422,11 @@ ceil.d | a -- int ; round up to an integer (the result is an integer, not 32.32)
 i>.d | int -- a ; integer to 32.32 fixed point
 f>.d | fix -- a ; 48.16 fixed point (math.r3) to 32.32
 .d>f | a -- fix ; 32.32 fixed point to 48.16 (math.r3)
-cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
-sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); approximation with an error of about 1e-4
+cos.d | bangle -- r ; cosine of a binary angle in 32.32 (1.0 = full turn); error under 2e-10 (1 LSB)
+sin.d | bangle -- r ; sine of a binary angle in 32.32 (1.0 = full turn); error under 2e-10 (1 LSB)
 tan.d | bangle -- r ; tangent, rough approximation
 tan.dc | bangle -- r ; tangent as sin/cos
-sqrt.d | x -- r ; square root in 32.32 with 16 bits of precision (0 if x <= 0)
+sqrt.d | x -- r ; square root in 32.32 (all 32 fractional bits, rounded to nearest; 0 if x <= 0)
 log2.d | x -- r ; base 2 logarithm in 32.32 (0 if x <= 0)
 pow2.d | y -- r ; 2 to the power y in 32.32
 pow.d | x y -- r ; x to the power y (0 if x = 0)
@@ -762,6 +762,7 @@ SDLquit | -- ; destroy the renderer and the window and quit SDL
 SDLevent | buffer (SDL_Event, 56 bytes) where SDLupdate reads the events
 SDLkey | key of the last key event of the SDLupdate: 16 bits (ASCII, or $4000 + scancode for special keys), $1000 added when released, 0 if none
 SDLchar | first byte of the last text input of the SDLupdate (0 if none)
+SDLxy
 SDLx | mouse x position (16 bits)
 SDLy | mouse y position
 SDLb | mask of the pressed mouse buttons (1 left, 2 middle, 4 right)
@@ -1712,38 +1713,38 @@ webcam_set_parameter
 webcam_set_auto
 webcam_set_conversion_size
 webcam_get_converted_frame
-p.ini | cnt list --
-p.clear | list --
-p.cnt | list -- cnt
-p.adr | nro list -- adr
-p.nro | adr list -- nro
-p!+ | 'act list -- adr
-p! | list -- adr
-p.draw | list --
-p.drawo | list --
-p.del | adr list --
-p.mapv | 'vector list --
-p.mapd | 'vector list --
-p.map2 | 'vec 'list ---
-p.sort | col 'list --
-p.isort | col 'list --
-p8.ini | cnt list --
-p8.clear | list --
-p8.cnt | list -- cnt
-p8.adr | nro list -- adr
-p8.nro | adr list -- nro
-p8!+ | 'act list -- adr
-p8! | list -- adr
-p8.draw | list --
-p8.drawo | list --
-p8.del | adr list --
-p8.last | ;ist -- adr
-p8.cpy | adr 'list --
-p8.mapv | 'vector list --
-p8.mapd | 'vector list --
-p8.map2 | 'vec 'list ---
-p8.sort | col 'list --
-p8.isort | col 'list --
+p.ini | cnt list -- ; initialize the list (two cells: end and start) and reserve at here room for cnt records of 16 cells (128 bytes)
+p.clear | list -- ; empty the list
+p.cnt | list -- cnt ; number of records
+p.adr | nro list -- adr ; address of record nro (0 is the first)
+p.nro | adr list -- nro ; number of the record at adr
+p!+ | 'act list -- adr ; add a record whose first cell is 'act and return the address of its second cell, where the parameters go
+p! | list -- adr ; add a record and return its address (first cell)
+p.draw | list -- ; execute the first cell of every record: the word receives the address of the record and must consume it; if it leaves a 0 the record is deleted (the last record takes its place)
+p.drawo | list -- ; like p.draw but deleting keeps the order (the next records move down)
+p.del | adr list -- ; delete the record at adr (the last record takes its place)
+p.mapv | 'vector list -- ; execute 'vector for every record with its address on the stack; the word must leave it there
+p.mapd | 'vector list -- ; like p.mapv deleting the records for which the vector leaves a 0 (BUG: it calls the deleting code with 'vector instead of the list, so deleting ends in a segmentation fault)
+p.map2 | 'vec 'list -- ; execute 'vec for every pair of records (the first with each one after it) with the two addresses on the stack
+p.sort | col 'list -- ; one pass of a bubble sort, ascending, by the cell col of the records (call it every frame to get the whole order)
+p.isort | col 'list -- ; like p.sort but descending
+p8.ini | cnt list -- ; initialize the list (two cells: end and start) and reserve at here room for cnt records of 8 cells (64 bytes)
+p8.clear | list -- ; empty the list
+p8.cnt | list -- cnt ; number of records
+p8.adr | nro list -- adr ; address of record nro (0 is the first)
+p8.nro | adr list -- nro ; number of the record at adr
+p8!+ | 'act list -- adr ; add a record whose first cell is 'act and return the address of its second cell, where the parameters go
+p8! | list -- adr ; add a record and return its address (first cell)
+p8.draw | list -- ; execute the first cell of every record: the word receives the address of the cell after it and must consume it; if it leaves a 0 the record is deleted (the last record takes its place)
+p8.drawo | list -- ; like p8.draw but deleting keeps the order (the next records move down)
+p8.del | adr list -- ; delete the record at adr (the last record takes its place)
+p8.last | list -- adr ; address of the last record
+p8.cpy | adr 'list -- ; append a copy of the record at adr
+p8.mapv | 'vector list -- ; execute 'vector for every record with its address on the stack; the word must leave it there
+p8.mapd | 'vector list -- ; like p8.mapv deleting the records for which the vector leaves a 0 (BUG: it calls the deleting code with 'vector instead of the list, so deleting ends in a segmentation fault)
+p8.map2 | 'vec 'list -- ; execute 'vec for every pair of records (the first with each one after it) with the two addresses on the stack
+p8.sort | col 'list -- ; one pass of a bubble sort, ascending, by the cell col of the records (call it every frame to get the whole order)
+p8.isort | col 'list -- ; like p8.sort but descending
 wp | width of a character in pixels
 hp | height of a character in pixels
 bmfont | w h "file" -- ; load the font image (a 16x16 grid of 256 characters of w x h pixels: column = low nibble, row = high nibble of the ASCII code) and set the character size
@@ -1783,11 +1784,11 @@ bcursor2 | n -- ; like bcursor for double size characters
 bcursori2 | n -- ; like bcursori for double size characters
 bfont1 | -- ; load the font media/img/VGA8x16.png (8x16 characters)
 bfont2 | -- ; load the font media/img/font16x24.png (16x24 characters)
-blistdel | 'list 'from --
-blist! | f 'list --
-blist- | f 'list --
-blist@ | 'list -- f/0
-blist? | f 'list -- f/0
+blistdel | 'list 'from -- ; remove the byte at address 'from, moving the next bytes down, and decrement the count (the list is a count cell followed by the bytes)
+blist! | f 'list -- ; append the byte f at the end
+blist- | f 'list -- ; remove the first byte equal to f (BUG: it calls blistdel with the arguments swapped and the address after the byte, which corrupts the list; fix: 1 - blistdel instead of swap blistdel)
+blist@ | 'list -- f/0 ; remove and return the first byte (0 if the list is empty)
+blist? | f 'list -- f/0 ; f if the list has that byte, 0 if not (BUG: when found it also leaves the remaining count; fix: 3drop ; instead of 2drop ;)
 bsprdraw | word that drawmaps calls for each sprite of the list: x y n --  (the default one does nothing)
 inisprite | -- ; start the list of sprites drawn in order with the map rows (call it every frame before +sprite); the list is in free memory at here
 +sprite | N x y -- ; add the sprite N at screen position x y to the sorted list; it is ignored if it is outside the screen
@@ -1837,13 +1838,13 @@ xydlgColor! | x y -- ; position of the color dialog and rebuild its geometry
 dlgFileLoad | -- fn/0 ; modal dialog to choose a file to load (it runs its own SDLshow loop; up, down, enter and esc keys, click on a line); returns the full file name, or 0 if it was cancelled
 dlgFileSave | -- fn/0 ; modal dialog to write the name of a file to save (editable name, 64 characters); returns the full file name, or 0 if it was cancelled
 dlgSetPath | "path" -- ; set the folder where the file dialogs start
-dc.ini | mac 'dc dc.ini
-dc.clear | list --
-dc? | list -- cnt
-dcn@ | n l -- v
-dc@ | list -- val
-dc! | val list --
-dc@- | list -- val
+dc.ini | max 'dc -- ; initialize the list (count and start) with room for max values of 8 bytes at here
+dc.clear | list -- ; empty the list
+dc? | list -- cnt ; number of values
+dcn@ | n list -- v ; value number n (0 is the first)
+dc@ | list -- val ; first value (no check for an empty list)
+dc! | val list -- ; append the value at the end
+dc@- | list -- val ; remove and return the first value, the others move down (no check for an empty list)
 uiDirs | list of folders (or full tree) of flScanDir/flScanFullDir: 0-terminated entries, each one a byte $40+level ($20 more, $80 open) and the name; it ends with an empty entry
 uiFiles | list of the files of a folder made by FlGetFiles: 0-terminated names that end with an empty entry
 flcpy | 'file 'str -- ; copy a list entry up to | or the final 0 into 'str, with a final 0
@@ -1860,9 +1861,9 @@ H2d.list | -- 'adr cnt ; list of contacts found: cnt dwords, each (newer object 
 checkmax | maximum distance in pixels where the neighbours are looked for (the hash cells are 32 pixels)
 h2d+! | nro r x y -- ; add object nro (0..65534) with radius r (0..1023) at x y (pixels, 19 bits) and add to the list its contacts with the objects already added (square test: max(|dx|,|dy|) < r1 + r2)
 h2d! | x y zoom nro size -- x y zoom ; add object nro at x y with the radius size*zoom (zoom fixed point) and leave x y zoom
-heap! | nodo 'h --
-heap@ | 'h -- nodo
-heapini | max 'h --
+heap! | nodo 'h -- ; add a node (a 64-bit value; the smallest one is taken first)
+heap@ | 'h -- nodo ; remove and return the smallest node (there is no check for an empty heap: it returns a stale value)
+heapini | max 'h -- ; initialize the heap 'h for up to max nodes (reserved at here)
 color! | color --
 uiColor | 'var --
 uiColorH | 'var --
@@ -2175,22 +2176,22 @@ shellsort | len lista -- ; lista es valor-dato
 shellsort2 | len lista -- ; lista es dato-valor
 shellsort1 | len lista -- ; lista es dato|valor
 sortstr | len lista -- ; lista es pstr-valor
-radixsort32 | cnt '2array --
-radixsort16 | cnt '2array --
-radixsort64 | cnt '2array --
-radixsort | cnt 'array --
-radixsortm | cnt 'array --
-textbox | str $colb-colo-ofvh-colf w h font -- texture
-[map] | x y -- ad
-drawtile | y x tile -- y x
-tiledraw | w h x y sx sy 'amap --
-tiledrawv | w h x y sx sy 'amap 'vec --
-drawtile | y x tile -- y x
-tiledraws | w h x y sx sy sw sh 'amap --
-tiledrawvs | w h x y sx sy sw sh 'amap 'v --
-scr2view | xs ys -- xv yv
-scr2tile | x y -- adr : only after tilemapdraw (set the vars)
-loadtilemap | "" -- amap
+radixsort32 | cnt '2array -- ; sort cnt elements of 8 bytes (a 32-bit key and a 32-bit value) by the key, using here as temporary memory (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
+radixsort16 | cnt '2array -- ; like radixsort32 but only by the low 16 bits of the key (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
+radixsort64 | cnt '2array -- ; like radixsort32 with 8 passes (the key is read as 32 bits, so the four upper passes do nothing) (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
+radixsort | cnt 'array -- ; sort cnt 64-bit values using here as temporary memory (8 passes) (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
+radixsortm | cnt 'array -- ; like radixsort but only by the upper 6 bytes (the lowest 16 bits are ignored) (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
+textbox | str $colb-colo-ofvh-colf w h font -- texture ; render the string wrapped by words in a w x h box into a texture; the packed value holds the background color (bits 48..63 as $ARGB), the outline color (32..47), the padding (24..31), the outline width (20..23), the alignment flags (bits 16..19: 1 vertical center, 2 bottom, 4 horizontal center, 8 right) and the text color (low 16 bits); ';' starts a new line
+[map] | x y -- ad ; address of the map tile x y (x and y are limited to the map)
+drawtile | y x tile -- y x ; draw the tile at the cell x y of the window being drawn (defined twice: the first draws it at its own size, the second, the one that programs get when they import the library, scaled to sw x sh)
+tiledraw | w h x y sx sy 'amap -- ; draw a window of w x h tiles of the map starting at the tile x y, at the screen position sx sy
+tiledrawv | w h x y sx sy 'amap 'vec -- ; like tiledraw but 'vec transforms every tile number (tile -- tile)
+drawtile | y x tile -- y x ; draw the tile at the cell x y of the window being drawn (defined twice: the first draws it at its own size, the second, the one that programs get when they import the library, scaled to sw x sh)
+tiledraws | w h x y sx sy sw sh 'amap -- ; like tiledraw with every tile scaled to sw x sh pixels
+tiledrawvs | w h x y sx sy sw sh 'amap 'v -- ; like tiledraws with 'v transforming every tile number
+scr2view | xs ys -- xv yv ; screen position to tile position of the last window drawn
+scr2tile | x y -- adr ; address of the map tile under the screen position x y (only after a tiledraw: it uses its variables)
+loadtilemap | "file" -- amap ; load a tile map (map width and height, tile width and height, the tiles as bytes and then the name of the tileset image); the tileset is loaded with tsload; returns the address of the map
 advx | width in pixels of a character cell (font width times zoom)
 advy | height in pixels of a character cell
 trgb | c -- ; color $RRGGBB of the font texture (color modulation)
@@ -2401,28 +2402,28 @@ txalign | $VH -- ; alignment for txText: low 2 bits horizontal (0 left, 1 center
 txText | w h x y "" -- ; draw the string wrapped by words in the box x y w h with the txalign alignment; CR, LF and ; start a new line
 pad.reset | 'var max -- 'var max ; prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
 pad.draw | 'buff -- ; draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
-.xwrite | str --
-.awrite | str --
-.vline | h --
-.hline | w --
-.vlined | h --
-.hlined | w --
-.vline2 | h --
-.vlined2 | h --
-.boxl | x y w h --
-.boxc | x y w h --
-.boxd | x y w h --
-.boxf | x y w h --
-lalign | cnt str --
-calign | cnt str --
-ralign | cnt str --
-lwrite | w "str" --
-cwrite | w "str" --
-rwrite | w "str" --
-xalign | $VH --
-xwrite | w "str" --
-xText | w h x y "" --
-rgb4t | col12 -- col256
+.xwrite | str -- ; write the string with a big font (the xz font: every character is 8 columns by 4 rows of shade block characters, 2 bits per cell)
+.awrite | str -- ; like .xwrite with the a font
+.vline | h -- ; vertical line of h rows with a light box character (the cursor goes down)
+.hline | w -- ; horizontal line of w columns with a light box character
+.vlined | h -- ; vertical double line of h rows
+.hlined | w -- ; horizontal double line of w columns
+.vline2 | h -- ; variant of .vline used when the box touches the last screen column
+.vlined2 | h -- ; variant of .vlined used when the box touches the last screen column
+.boxl | x y w h -- ; box of light lines at x y of w by h cells
+.boxc | x y w h -- ; box of light lines with rounded corners
+.boxd | x y w h -- ; box of double lines
+.boxf | x y w h -- ; fill the area x y w h with spaces using the current colors
+lalign | cnt str -- ; the string left aligned in cnt characters (UTF-8 aware: cut if longer, padded with spaces) in a temporary string at here
+calign | cnt str -- ; like lalign centered (the extra space goes to the left)
+ralign | cnt str -- ; like lalign right aligned
+lwrite | w "str" -- ; write the string left aligned in w characters (a word with the same name is in txfont)
+cwrite | w "str" -- ; write the string centered in w characters (a word with the same name is in txfont)
+rwrite | w "str" -- ; write the string right aligned in w characters (a word with the same name is in txfont)
+xalign | $VH -- ; alignment for xwrite and xText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom)
+xwrite | w "str" -- ; write the string in w characters with the horizontal alignment of xalign
+xText | w h x y "" -- ; write the text wrapped by words in the box x y w h of the terminal with the alignment of xalign; ; and line breaks start a new line
+rgb4t | col12 -- col256 ; convert a 12-bit color $RGB (4 bits per channel) to the nearest xterm 256 color number (6x6x6 cube or gray ramp; $000 gives 232)
 deltatime | milliseconds between the last two vupdate or timer. calls
 timeline | start of the event list (8 bytes per event, sorted by start time)
 timeline< | end of the events already running in the list

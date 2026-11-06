@@ -118,7 +118,7 @@
 	
 | back    outline pading align  font-color	
 | colb(4) colo(4) pad(2) flag(2) colf(4)	
-::textbox | str $colb-colo-ofvh-colf w h font -- texture
+::textbox | str $colb-colo-ofvh-colf w h font -- texture ; render the string wrapped by words in a w x h box into a texture; the packed value holds the background color (bits 48..63 as $ARGB), the outline color (32..47), the padding (24..31), the outline width (20..23), the alignment flags (bits 16..19: 1 vertical center, 2 bottom, 4 horizontal center, 8 right) and the text color (low 16 bits); ';' starts a new line
 	'font ! 
 	0 pick2 pick2 32 
 	$ff0000 $ff00 $ff $ff000000 

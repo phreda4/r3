@@ -21,25 +21,25 @@
 
 ^r3/lib/mem.r3
 
-::p8.ini | cnt list --
+::p8.ini | cnt list -- ; initialize the list (two cells: end and start) and reserve at here room for cnt records of 8 cells (64 bytes)
 	here dup rot !+ ! 6 << 'here +! ;
 
-::p8.clear | list --
+::p8.clear | list -- ; empty the list
 	dup 8 + @ swap ! ;
 
-::p8.cnt | list -- cnt
+::p8.cnt | list -- cnt ; number of records
 	@+ swap @ - 6 >> ;
 
-::p8.adr | nro list -- adr
+::p8.adr | nro list -- adr ; address of record nro (0 is the first)
 	8 + @ swap 6 << + ;
 
-::p8.nro | adr list -- nro
+::p8.nro | adr list -- nro ; number of the record at adr
 	8 + @ - 6 >> ;
 
-::p8!+ | 'act list -- adr
+::p8!+ | 'act list -- adr ; add a record whose first cell is 'act and return the address of its second cell, where the parameters go
 	dup >r @ !+ 64 r> +! ;
 
-::p8! | list -- adr
+::p8! | list -- adr ; add a record and return its address (first cell)
 	dup >r @ 64 r> +! ;
 
 |---- borra desordenado (mas rapido)
@@ -49,7 +49,7 @@
 	dup pick3 !
 	swap 64 - ;
 
-::p8.draw | list --
+::p8.draw | list -- ; execute the first cell of every record: the word receives the address of the cell after it and must consume it; if it leaves a 0 the record is deleted (the last record takes its place)
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delp )
@@ -62,34 +62,34 @@
 	swap 64 - dup pick3 !
 	swap 64 - ;
 
-::p8.drawo | list --
+::p8.drawo | list -- ; like p8.draw but deleting keeps the order (the next records move down)
 	dup @+ swap @
 	( over <?
 		dup @+ ex 0? ( drop delpo )
 		64 + ) 3drop ;
 
-::p8.del | adr list --
+::p8.del | adr list -- ; delete the record at adr (the last record takes its place)
 	>a a@ 64 - 8 move a> dup @ 64 - swap ! ;
 
-::p8.last | ;ist -- adr
+::p8.last | list -- adr ; address of the last record
 	@ 64 - ;
 
-::p8.cpy | adr 'list --
+::p8.cpy | adr 'list -- ; append a copy of the record at adr
 	dup @ rot 8 move 64 swap +! ;
 
-::p8.mapv | 'vector list --
+::p8.mapv | 'vector list -- ; execute 'vector for every record with its address on the stack; the word must leave it there
 	@+ swap @
 	( over <?
 		pick2 ex
 		64 + ) 3drop ;
 
-::p8.mapd | 'vector list --
+::p8.mapd | 'vector list -- ; like p8.mapv deleting the records for which the vector leaves a 0 (BUG: it calls the deleting code with 'vector instead of the list, so deleting ends in a segmentation fault)
 	@+ swap @
 	( over <?
 		pick2 ex 0? ( drop dup delp )
 		64 + ) 3drop ;
 
-::p8.map2 | 'vec 'list ---
+::p8.map2 | 'vec 'list -- ; execute 'vec for every pair of records (the first with each one after it) with the two addresses on the stack
 	@+ swap @
 	( over <?
 		dup 64 + ( pick2 <?
@@ -108,7 +108,7 @@
 		swap )
 	2drop ;
 
-::p8.sort | col 'list --
+::p8.sort | col 'list -- ; one pass of a bubble sort, ascending, by the cell col of the records (call it every frame to get the whole order)
 	@+ swap @ swap 64 - | first last
 	( over >?
 		dup 64 -
@@ -117,7 +117,7 @@
 		>? ( drop up dup ) drop
 		64 - ) 3drop ;
 
-::p8.isort | col 'list --
+::p8.isort | col 'list -- ; like p8.sort but descending
 	@+ swap @ swap 64 - | first last
 	( over >?
 		dup 64 -

@@ -96,7 +96,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	bigemit ;
 	
 | big font zx, colors with [BF 
-::.xwrite | str --
+::.xwrite | str -- ; write the string with a big font (the xz font: every character is 8 columns by 4 rows of shade block characters, 2 bits per cell)
 	( c@+ 1? xchar ) 2drop ;
 
 :achar | char
@@ -104,32 +104,32 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	bigemita ;
 
 | big font A, colors with [BF 
-::.awrite | str --
+::.awrite | str -- ; like .xwrite with the a font
 	( c@+ 1? achar ) 2drop ;
 
 |---- Draw lines
 #vl ( $e2 $94 $82 $1b $5b $42 $8 0 )
 #vd	( $e2 $95 $91 $1b $5b $42 $8 0 )  ||v<
 
-::.vline | h --
+::.vline | h -- ; vertical line of h rows with a light box character (the cursor goes down)
 	'vl .rep ;
-::.hline | w --
+::.hline | w -- ; horizontal line of w columns with a light box character
 	"─" .rep ;
 	
-::.vlined | h --
+::.vlined | h -- ; vertical double line of h rows
 	'vd .rep ;
-::.hlined | w --
+::.hlined | w -- ; horizontal double line of w columns
 	"═" .rep ;
 
 #vl2 ( $e2 $94 $82 $1b $5b $42 0 )
 #vd2 ( $e2 $95 $91 $1b $5b $42 0 )  ||v<
 
-::.vline2 | h --
+::.vline2 | h -- ; variant of .vline used when the box touches the last screen column
 	'vl2 .rep ;
-::.vlined2 | h --
+::.vlined2 | h -- ; variant of .vlined used when the box touches the last screen column
 	'vd2 .rep ;
 
-::.boxl | x y w h --
+::.boxl | x y w h -- ; box of light lines at x y of w by h cells
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
@@ -140,7 +140,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	>r rot + 1- cols =? ( r> .at .vline2 ; )
 	r> .at .vline ;
 
-::.boxc | x y w h --
+::.boxc | x y w h -- ; box of light lines with rounded corners
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
@@ -151,7 +151,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	>r rot + 1- cols =? ( r> .at .vline2 ; )
 	r> .at .vline ;
 
-::.boxd | x y w h --
+::.boxd | x y w h -- ; box of double lines
 	3 <? ( 4drop ; ) swap
 	3 <? ( 4drop ; ) swap
 	2over .at
@@ -162,7 +162,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	>r rot + 1- cols =? ( r> .at .vlined2 ; )
 	r> .at .vlined ;
 		
-::.boxf | x y w h --
+::.boxf | x y w h -- ; fill the area x y w h with spaces using the current colors
 	1 <? ( 4drop ; ) swap 
 	1 <? ( 4drop ; ) swap
 	2over .at
@@ -171,7 +171,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	2drop ;
 	
 |--- utf align | result in HERE
-::lalign | cnt str -- 
+::lalign | cnt str -- ; the string left aligned in cnt characters (UTF-8 aware: cut if longer, padded with spaces) in a temporary string at here
 	mark
 	utf8count	| cnt str scount
 	pick2 >? ( drop over ) 
@@ -180,7 +180,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	- ,nsp 
 	,eol empty ;
 	
-::calign | cnt str --
+::calign | cnt str -- ; like lalign centered (the extra space goes to the left)
 	mark
 	utf8count	| cnt str scount
 	pick2 >? ( drop over )	| cnt str scount
@@ -192,7 +192,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	2/ ,nsp 
 	,eol empty ;
 
-::ralign | cnt str --
+::ralign | cnt str -- ; like lalign right aligned
 	mark
 	utf8count	| cnt str scount
 	pick2 >? ( drop over ) 
@@ -203,11 +203,11 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	
 |---- format
 	
-::lwrite | w "str" --
+::lwrite | w "str" -- ; write the string left aligned in w characters (a word with the same name is in txfont)
 	lalign here .write ;
-::cwrite | w "str" --
+::cwrite | w "str" -- ; write the string centered in w characters (a word with the same name is in txfont)
 	calign here .write ;
-::rwrite | w "str" --
+::rwrite | w "str" -- ; write the string right aligned in w characters (a word with the same name is in txfont)
 	ralign here .write ;
 
 |---- Box Text
@@ -257,7 +257,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 #halign 'calign
 #valign 'vcen
 
-::xalign | $VH --
+::xalign | $VH -- ; alignment for xwrite and xText: low 2 bits horizontal (0 left, 1 center, 2 right), bits 4-5 vertical (0 top, 1 center, 2 bottom)
 	dup $3 and
 	0 =? ( 'lalign 'halign !  )
 	1 =? ( 'calign 'halign ! )
@@ -269,10 +269,10 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 	2 =? ( 'vbot 'valign ! )
 	drop ;
 
-::xwrite | w "str" --
+::xwrite | w "str" -- ; write the string in w characters with the horizontal alignment of xalign
 	halign ex here .write ;
 	
-::xText | w h x y "" --
+::xText | w h x y "" -- ; write the text wrapped by words in the box x y w h of the terminal with the alignment of xalign; ; and line breaks start a new line
 	mark ab[ 
 	splitlines 
 	rot 	| w x y h
@@ -288,7 +288,7 @@ $3C003C003C003C0 $143C7C3FE02AA8 $4007C02FC002C0 $10003D003F80380
 #map4to6 ( 0 0 0 1 1 1 1 2 2 2 3 3 4 4 5 5 )
 #gray_lut ( 232 233 235 236 238 239 241 242 244 245 247 248 250 251 253 255 )
 
-::rgb4t | col12 -- col256
+::rgb4t | col12 -- col256 ; convert a 12-bit color $RGB (4 bits per channel) to the nearest xterm 256 color number (6x6x6 cube or gray ramp; $000 gives 232)
 	dup 8 >> $f and 
 	over 4 >> $f and 
 	rot $f and | r g b

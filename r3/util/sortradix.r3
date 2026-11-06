@@ -43,19 +43,19 @@
 :getvalue48	48 >> ;
 :getvalue56	56 >> ;
 
-::radixsort32 | cnt '2array --
+::radixsort32 | cnt '2array -- ; sort cnt elements of 8 bytes (a 32-bit key and a 32-bit value) by the key, using here as temporary memory (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
 	here 'getvalue24 radix8bitd
 	swap 'getvalue16 radix8bitd
 	swap 'getvalue8 radix8bitd
 	swap 'getvalue0 radix8bitd
 	3drop ;
 
-::radixsort16 | cnt '2array --
+::radixsort16 | cnt '2array -- ; like radixsort32 but only by the low 16 bits of the key (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
 	here 'getvalue8 radix8bitd
 	swap 'getvalue0 radix8bitd
 	3drop ;
 
-::radixsort64 | cnt '2array --
+::radixsort64 | cnt '2array -- ; like radixsort32 with 8 passes (the key is read as 32 bits, so the four upper passes do nothing) (BUG: the passes go from the most to the least significant byte and each pass puts equal digits in reverse order, so it is only right for keys below 256)
 	here 'getvalue56 radix8bitd
 	swap 'getvalue48 radix8bitd
 	swap 'getvalue40 radix8bitd

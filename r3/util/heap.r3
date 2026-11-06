@@ -16,7 +16,7 @@
 :]heap | nro -- adr
 	3 << heapv + ;
 
-::heap! | nodo 'h --
+::heap! | nodo 'h -- ; add a node (a 64-bit value; the smallest one is taken first)
 	setheap
 	heapc @ dup 1 + heapc !
 	( 1? dup 1 - 1 >>	| v j i
@@ -45,14 +45,14 @@
 		drop )
 	]heap ! ;
 
-::heap@ | 'h -- nodo
+::heap@ | 'h -- nodo ; remove and return the smallest node (there is no check for an empty heap: it returns a stale value)
 	setheap
 	heapv @ heapc @
 	1 - ]heap @ 0 MoveDown
 	-1 heapc +!
 	;
 
-::heapini | max 'h --
+::heapini | max 'h -- ; initialize the heap 'h for up to max nodes (reserved at here)
 	0 swap !+
 	here swap !
 	3 << 'here +! ;
