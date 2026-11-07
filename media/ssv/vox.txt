@@ -1,0 +1,6 @@
+cube_obj000
+cylinder_obj000
+dude_obj000
+globe_obj000
+mono_obj000
+pyramid_obj000

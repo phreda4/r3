@@ -1,14 +1,11 @@
 | ss3d2 - sprites 3d de voxeles, formato .ssv (columnas de bits + tira de colores)
-| PHREDA 2026 - misma interfaz que ss3d.r3 (sombras, picking y cotas incluidos; sin LOD)
+| PHREDA 2026 
 |
 | "archivo" n ss3dload     carga archivo.ssv (generado por vox2x.r3), n = maximo de instancias
 | "archivo" ss3loadnames   carga archivo.txt (nombres)
-| ... ss3dset / ss3dxyz / ss3dcs ... SS3Ddraw   (igual que ss3d.r3)
 |
-| sombras: usar ss3dshadow2.r3 (igual a ss3dshadow.r3 pero incluye ss3d2.r3); el pase de sombra
-|   usa las mismas columnas del pase principal, no hay textura de ocupacion aparte
+| sombras: usar ss3dshadow.r3
 |
-| usar con |MEM 64 en el programa principal
 | el shader recorre solo X/Z (DDA 2D) y resuelve el rango Y con la mascara de 32 bits
 |   texel de columna (x,z) = columnas[atlasIndex + z*sizeX + x] = (mascara, base)
 |   color del voxel y = tira[base + y]          (y = capa, 0 = arriba)
@@ -174,7 +171,7 @@ void main() {
     bool  down = d.y >= 0.0;
     float tin  = 0.0;
 
-    for (int i = 0; i < 72; i++) {
+    for (int i = 0; i < 64; i++) {
         float tout = min(min(nt.x, nt.y), tend);
         float ya = e.y + d.y*tin, yb = e.y + d.y*tout;
         int lo = clamp(int(floor(min(ya, yb))), 0, iNF-1);
@@ -217,7 +214,6 @@ void main() {
 @-----"
 
 ##defspr		| tabla de sprites (8 bytes: atlasIndex | sizeX sizeY sizeZ 0)
-#ssvend
 #colbase #palbase #ncols #ncolors
 
 #ss3d_shadow_src "
@@ -329,7 +325,7 @@ bool colTrace(vec3 e, vec3 d, float tend, out float th)
     float tin = 0.0;
     bool up = d.y >= 0.0;
     th = 0.0;
-    for (int i = 0; i < 72; i++) {
+    for (int i = 0; i < 64; i++) {
         float tout = min(min(nt.x, nt.y), tend);
         float ya = e.y + d.y*tin, yb = e.y + d.y*tout;
         int lo = clamp(int(floor(min(ya, yb))), 0, g.y-1);
@@ -413,14 +409,15 @@ void main() {
 	'3dss_max !
 	build_bbox
 |====== load .ssv  (header 16: "SSV2" nspr ncol ncolores)
-	here swap "%s.ssv" sprint load 'ssvend !
-	here d@ "SSV2" d@ <>? ( drop "not ssv file" .println ; ) drop
-	here 4 + d@ 'n3dsprites !
-	here 8 + d@ 'ncols !
-	here 12 + d@ 'ncolors !
-	here 16 + 'defspr !
-	defspr n3dsprites 3 << + 'colbase !
-	colbase ncols 3 << + 'palbase !
+	here swap "%s.ssv" sprint load drop
+	here 
+	d@+ "SSV2" d@ <>? ( 2drop "not ssv file" .println ; ) drop
+	d@+ 'n3dsprites !
+	d@+ 'ncols !
+	d@+ 'ncolors !
+	dup 'defspr !
+	n3dsprites 3 << + dup 'colbase !
+	ncols 3 << + 'palbase !
 |====== sprite definitions (binding 2)
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
@@ -478,10 +475,10 @@ void main() {
 ::ssnameid | id -- name
 	ss3names swap ( 1? 1- swap >>0 trim swap ) drop ;
 
-::SS3Dshadowbuild | --	; compila el shader de sombra (llamar luego de ss3dload); S se ignora: sin LOD
+::SS3Dshadowbuild | --	; shadow shader.. after ss3dload
 	'ss3d_shadow_src loadShaderv 'ss3d_shsh ! ;
 
-::SS3Dshadowdraw | --	; dibuja las instancias en el fbo activo (profundidad desde la luz); UBO ShadowU en binding 3
+::SS3Dshadowdraw | --	; draw inst in active fbo UBO ShadowU en binding 3
 	ss3d_inst 0? ( drop ; ) drop
 	ss3d_shsh 0? ( drop ; ) drop
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase

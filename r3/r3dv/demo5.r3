@@ -794,7 +794,7 @@
 |	"media/ss/iti"
 |	"media/ss/vox2" 
 	|"media/ss/sprites"
-	"r3/r3dv/ss3d2/dino"
+	"media/ssv/dino"
 	dup 256 ss3dload
 	ss3loadnames
 	|"point" ss3idname 

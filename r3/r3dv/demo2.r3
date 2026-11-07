@@ -117,7 +117,7 @@
 	ns n3dsprites mod ;
 
 :load3d
-	"r3/r3dv/ss3d2/dino" 512 ss3dload
+	"media/ssv/dino" 512 ss3dload
 	-4.0 ( 4.0 <?
 		-4.0 ( 4.0 <?
 

@@ -1,21 +1,15 @@
-| ss3dshadow2 - sombras del sol para ss3d2 (igual a ss3dshadow.r3, incluye ss3d2.r3)
-| PHREDA 2026
+| ss3dshadow - shadows for ss3d
 |
-| El sol es una luz direccional: mapa de sombras ortografico, el pase recorre las columnas de ss3d2
-| (ver SS3Dshadowbuild en ss3d2.r3). El pase se ejecuta solo, dentro de rl_frame_end
-| (despues de SS3Ddraw), y renderlib lo aplica al termino del sol.
-|
-| uso:
 |   ... rl_init ... ss3dload ...
-|   2048 ss3dshadowini                       | resolucion del mapa
-|   1 ss3dshadowauto                          | area y bias automaticos (se ajustan cada frame a las instancias)
-|   0.5 0.8 0.3  1.0 0.95 0.85 1.3 ss3dsun     | direccion HACIA el sol, color e intensidad
-|   1 ss3dshadow!                              | 1 = con sombras  0 = sin sombras
+|   2048 ss3dshadowini           | res
+|   1 ss3dshadowauto             | area y bias auto 
+|   0.5 0.8 0.3  1.0 0.95 0.85 1.3 ss3dsun     | dir , col , int
+|   1 ss3dshadow!                              | 1 = activate
 |
 | manual:  x y z r ss3dshadowarea   (esfera que debe quedar dentro del mapa)
 |          normal depth ss3dshadowbias  (normal offset en mundo, bias de profundidad 0..1)
 |          ss3dshadowfit             (ajusta area y bias una vez a las instancias actuales)
-
+| PHREDA 2026
 ^./renderlib.r3
 ^./ss3d.r3
 

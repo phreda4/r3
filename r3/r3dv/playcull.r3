@@ -345,7 +345,7 @@
 	;
 
 :load3d
-	"r3/r3dv/ss3d2/iti"
+	"media/ssv/iti"
 |	"media/ss/vox2"
 |	"media/ss/sprites"
 	dup 4096 ss3dload

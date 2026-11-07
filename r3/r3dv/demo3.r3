@@ -169,7 +169,7 @@
 |	"media/ss/voxi"
 |	"media/ss/cars"
 |	"media/ss/test"
-	"r3/r3dv/ss3d2/dino"
+	"media/ssv/mexcla"
 	dup 256 ss3dload
 	ss3loadnames
 	

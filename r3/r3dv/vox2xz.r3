@@ -69,6 +69,6 @@ ncolors  "tiras %d" .println
 	;
 
 : 
-	"r3/r3dv/ss3d2/mexcla" voxcompress
+	"media/ssv/mexcla" voxcompress
 	
 	waitkey ;

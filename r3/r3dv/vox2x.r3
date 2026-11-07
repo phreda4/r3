@@ -530,7 +530,7 @@
 	np ncol nspr "%d sprites, %d columnas, %d colores" .println ;
 
 : 
-	"r3/r3dv/ss3d2/vox" voxdir			| carpeta con los .vox
-	"r3/r3dv/ss3d2/vox" voxconvert	| genera sprites.ssv y sprites.txt
+	"media/ssv/vox" voxdir			| carpeta con los .vox
+	"media/ssv/vox" voxconvert	| genera sprites.ssv y sprites.txt
 	waitkey
 	;

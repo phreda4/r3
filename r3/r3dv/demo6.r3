@@ -251,7 +251,7 @@
 :load3d
 |	"media/ss/vox2" 
 	|"media/ss/sprites"
-	"r3/r3dv/ss3d2/dino"
+	"media/ssv/dino"
 	dup 1024 ss3dload
 	ss3loadnames
 	
