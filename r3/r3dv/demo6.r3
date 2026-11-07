@@ -28,7 +28,7 @@
 :]objs | n
 	6 << objlst + ; | 8 cells
 	
-#randobj ( 95 117 112 111 )
+#randobj ( 1 2 3 4 )
 :+obj
 	objcnt ]objs >a | 8 cells
 	|-15.0 15.0 randminmax 
@@ -136,7 +136,7 @@
 	
 #estado 
 #anima
-#aniref ( 96 97 96 98 110 )
+#aniref ( 36 37 38 39  )
 
 :correr | --
 	1 estado =? ( drop ; ) 'estado !
@@ -167,7 +167,7 @@
 	vr prot + 'prot !
 
 	pxp pzp 0.5 + pyp
-	prot 0.25 + 2/ $ffff and 16 << rxyz>q16 
+	prot 0.5 + 2/ $ffff and 16 << rxyz>q16 
 	4.0	
 	anima aniFrame 'aniref + c@
 	$ffffff00 
@@ -250,7 +250,8 @@
 
 :load3d
 |	"media/ss/vox2" 
-	"media/ss/sprites"
+	|"media/ss/sprites"
+	"r3/r3dv/ss3d2/dino"
 	dup 1024 ss3dload
 	ss3loadnames
 	
@@ -268,7 +269,7 @@
 	rl_init 
 	1 rl_grid_init
 	'viewresize SDLeventR
-	2048 1 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
+	2048 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
 	1 ss3dshadowauto				| bias automatico segun la escala de los sprites
 	0 3.0 0 24.0 ss3dshadowarea	| esfera que cubre la zona de juego (x y z radio)
 	lightsun

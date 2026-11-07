@@ -793,10 +793,12 @@
 :load3d
 |	"media/ss/iti"
 |	"media/ss/vox2" 
-	"media/ss/sprites"
+	|"media/ss/sprites"
+	"r3/r3dv/ss3d2/dino"
 	dup 256 ss3dload
 	ss3loadnames
-	"point" ss3idname 'nrosprite !
+	|"point" ss3idname 
+	0 'nrosprite !
 	;
 	
 

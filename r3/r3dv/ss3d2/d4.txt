@@ -1,3 +1,4 @@
+atascii_000
 atascii_001
 atascii_002
 atascii_003
@@ -29,7 +30,6 @@ atascii_028
 atascii_029
 atascii_030
 atascii_031
-atascii_032
 atascii_033
 atascii_034
 atascii_035
@@ -93,26 +93,55 @@ atascii_092
 atascii_093
 atascii_094
 atascii_095
-ball_obj000
-clon1_000
-clon2_000
-clon3_000
-clon_agachado_disparando_000
-clon_conjetpack1_000
-clon_conjetpack2_000
-clon_conjetpack3_000
-clon_conjetpack4_000
-clon_conjetpack5_000
-clon_conjetpack6_000
-clon_conjetpack8_000
-clon_conjetpack_caminando1_000
-clon_conjetpack_caminando2_000
-clon_disparando_000
-clon_muerte_000
-cuboalambre_obj000
-cylinder_obj000
-dude_obj000
-mono_obj000
-ovni_000
-point_obj000
-pyrami_obj000
+atascii_096
+atascii_097
+atascii_098
+atascii_099
+atascii_100
+atascii_101
+atascii_102
+atascii_103
+atascii_104
+atascii_105
+atascii_106
+atascii_107
+atascii_108
+atascii_109
+atascii_110
+atascii_111
+atascii_112
+atascii_113
+atascii_114
+atascii_115
+atascii_116
+atascii_117
+atascii_118
+atascii_119
+atascii_120
+atascii_121
+atascii_122
+atascii_123
+atascii_124
+atascii_125
+atascii_126
+atascii_127
+base human_obj000_p005
+base human_obj000_p006
+base human_obj000_p009
+base human_obj000_p010
+base human_obj000_p021
+base human_obj000_p022
+base human_obj000_p025
+base human_obj000_p026
+base human_obj000_p036
+base human_obj000_p037
+base human_obj000_p038
+base human_obj000_p039
+base human_obj000_p040
+base human_obj000_p041
+base human_obj000_p042
+base human_obj000_p043
+base human_obj000_p053
+base human_obj000_p054
+base human_obj000_p057
+base human_obj000_p058

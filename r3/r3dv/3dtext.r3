@@ -192,7 +192,7 @@
 	;
 
 :load3d
-	"media/ss/sprites"
+	"r3/r3dv/ss3d2/d4"
 	dup 2048 ss3dload
 	ss3loadnames	
 	0.5 -0.5 0 0 packq rxyz>q16 'charq !

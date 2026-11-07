@@ -220,7 +220,7 @@
 	sh sw rl_resizewin fixFontResize ;
 
 :load3d
-	"media/ss/iti"
+	"r3/r3dv/ss3d2/iti"
 	dup 4096 ss3dload
 	ss3loadnames
 	

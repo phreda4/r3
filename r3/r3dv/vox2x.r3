@@ -5,6 +5,9 @@
 | "salida"  voxconvert    genera salida.ssv y salida.txt (usa lo juntado por voxdir)
 |
 | orientacion como ss3d/vox2ssa: x = vx, z(fila) = sy-1-vy, bit y(capa) = sz-1-vz
+| modelos > 32 en algun eje: se cortan en partes de hasta 32^3, numeradas k = ix + nx*(iy + ny*iz)
+|   (ix iy iz sobre los ejes x y z de MagicaVoxel), nombre base_pNNN; las partes vacias no generan sprite
+| voxels con los 6 vecinos llenos (no visibles) quedan en la mascara pero su color es comodin
 | .ssv (SSV2), todo little endian:
 |   cabecera 16 bytes: "SSV2" nspr ncol ncolores (d)
 |   tabla nspr*8:      atlasIndex (d) | sizeX sizeY sizeZ 0 (c)    sizeY = capas (bits)
@@ -287,25 +290,28 @@
 	nnod 0? ( drop eachnonode ; ) drop
 	0 ( nvis <? dup eachshape 1+ ) drop ;
 
-|---- modelo -> grilla de columnas
-#msx #msy #msz #mnv #mptr
-#vol * 131072		| 32x32 columnas x 32 colores (d)
-#mask * 4096		| mascara por columna (d)
-#vx #vc #vcol #vb
+|---- modelo -> partes de hasta 32 -> grilla de columnas
+#fsx #fsy #fsz #mnv #mptr	| modelo completo (voxels MagicaVoxel)
+#msx #msy #msz			| parte actual: tamano
+#pox #poy #poz			| parte actual: origen en el modelo
+#dense				| indice de color por voxel del modelo (1 byte, 0 = vacio), va despues del archivo
+#DMAX 16777216			| voxels maximos de un modelo (256^3)
+#vol * 131072			| 32x32 columnas x 32 colores (d)
+#mask * 4096			| mascara por columna (d)
+#vx #vy #vz #vc #vcol #vb #pvox
+#nx #ny #nz #hx #hy #hz
 
-:fits? | m -- 1/0
-	>a a> d@ 33 >? ( drop 0 ; ) drop
-	a> 4 + d@ 33 >? ( drop 0 ; ) drop
-	a> 8 + d@ 33 >? ( drop 0 ; ) drop
-	a> 12 + d@ 0? ( ; ) drop 1 ;
+:fits? | m -- 1/0		; tiene voxels y entra en el buffer denso
+	>a a> 12 + d@ 0? ( ; ) drop
+	a> d@ a> 4 + d@ * a> 8 + d@ * DMAX >? ( drop 0 ; ) drop 1 ;
 
 :loadmodel | m --
-	dup d@ 'msx ! dup 4 + d@ 'msy ! dup 8 + d@ 'msz ! dup 12 + d@ 'mnv ! 16 + @ 'mptr ! ;
+	dup d@ 'fsx ! dup 4 + d@ 'fsy ! dup 8 + d@ 'fsz ! dup 12 + d@ 'mnv ! 16 + @ 'mptr ! ;
 
 :skipmsg | m name --
 	over 12 + d@ 0? ( 3drop ; ) drop
 	"  SKIP " .write .write
-	>a a> 8 + d@ a> 4 + d@ a> d@ " %dx%dx%d (>32)" .println ;
+	>a a> 8 + d@ a> 4 + d@ a> d@ " %dx%dx%d (muy grande)" .println ;
 
 :rgbpack | abgr -- $RRGGBB00
 	dup $ff and 24 <<
@@ -313,21 +319,62 @@
 	swap 16 >> $ff and 8 << or
 	SENT =? ( $100 or ) ;
 
+|---- modelo denso: un byte por voxel, para saber los vecinos
+:dadr | x y z -- adr
+	fsy * + fsx * + dense + ;
+
+:densevox | adr -- adr'
+	d@+ dup $ff and 'vx ! dup 8 >> $ff and 'vy ! dup 16 >> $ff and 'vz ! 24 >> $ff and 'vc !
+	vx fsx <? ( vy fsy <? ( vz fsz <? ( vc vx vy vz dadr c! ) drop ) drop ) drop ;
+
+:builddense
+	fe 15 + 4 >> 4 << 'dense !
+	dense 0 fsx fsy * fsz * cfill
+	mptr mnv ( 1? 1- swap densevox swap ) 2drop ;
+
+:occ? | x y z -- 1/0		; voxel ocupado (fuera del modelo = vacio)
+	'nz ! 'ny ! 'nx !
+	nx -? ( drop 0 ; ) drop
+	ny -? ( drop 0 ; ) drop
+	nz -? ( drop 0 ; ) drop
+	nx fsx >=? ( drop 0 ; ) drop
+	ny fsy >=? ( drop 0 ; ) drop
+	nz fsz >=? ( drop 0 ; ) drop
+	nx ny nz dadr c@ $ff and 1? ( drop 1 ; ) drop 0 ;
+
+:hidden? | x y z -- 1/0		; los 6 vecinos llenos: no se ve desde afuera
+	'hz ! 'hy ! 'hx !
+	hx 1- hy hz occ? 0? ( ; ) drop
+	hx 1+ hy hz occ? 0? ( ; ) drop
+	hx hy 1- hz occ? 0? ( ; ) drop
+	hx hy 1+ hz occ? 0? ( ; ) drop
+	hx hy hz 1- occ? 0? ( ; ) drop
+	hx hy hz 1+ occ? 0? ( ; ) drop
+	1 ;
+
+|---- parte -> vol y mask  (x = vx, fila z = sy-1-vy, bit y = sz-1-vz, relativo a la parte)
 :clearvol
 	'vol msy 10 << ( 1? 1- swap SENT swap d!+ swap ) 2drop
 	'mask 0 msy 7 << cfill ;
 
-:putvox | adr -- adr'
-	d@+
-	dup 24 >> $ff and 3 << 'pal + @ rgbpack 'vc !
-	dup 8 >> $ff and msy 1- swap - 31 and 5 <<
-	over $ff and 31 and or 'vcol !
-	16 >> $ff and msz 1- swap - 31 and 'vb !
+:putv | X Y Z --
+	'vz ! 'vy ! 'vx !
+	vx vy vz dadr c@ $ff and 0? ( drop ; ) 3 << 'pal + @ rgbpack
+	vx vy vz hidden? 1? ( nip SENT swap ) drop 'vc !
+	msy 1- vy poy - - 5 << vx pox - or 'vcol !
+	msz 1- vz poz - - 'vb !
 	1 vb << 'mask vcol 2 << + dup d@ rot or swap d!
-	vc 'vol vcol 5 << vb + 2 << + d! ;
+	vc 'vol vcol 5 << vb + 2 << + d!
+	1 'pvox +! ;
 
-:fillvol
-	mptr mnv ( 1? 1- swap putvox swap ) 2drop ;
+:fillpart
+	0 ( msz <?
+		0 ( msy <?
+			0 ( msx <?
+				dup pox + pick2 poy + pick4 poz + putv
+				1+ ) drop
+			1+ ) drop
+		1+ ) drop ;
 
 |---- tira de colores con comodines
 #PMAX 1048576
@@ -428,17 +475,36 @@
 			1+ ) drop
 		1+ ) drop ;
 
+#pnx #pny #pnz #nparts #pnm
+#pbuf * 256
+
+:partname | k -- adr
+	nparts 1 =? ( 2drop pnm ; ) drop
+	pnm 'pbuf strcpy "_p" 'pbuf strcat n3 'pbuf strcat 'pbuf ;
+
+:dopart | k --		; parte k: ix = k mod nx, iy = (k / nx) mod ny, iz = k / (nx*ny)
+	abort 1? ( 2drop ; ) drop
+	dup pnx mod 5 << 'pox !
+	dup pnx / pny mod 5 << 'poy !
+	dup pnx pny * / 5 << 'poz !
+	fsx pox - 32 min 'msx ! fsy poy - 32 min 'msy ! fsz poz - 32 min 'msz !
+	nspr 16384 >=? ( 1 'abort ! 2drop ; ) drop
+	ncol msx msy * + AMAX >? ( 1 'abort ! 2drop ; ) drop
+	clearvol 0 'pvox ! fillpart
+	pvox 0? ( 2drop ; ) drop
+	bakecols
+	'spr nspr 3 << + 'sa !
+	ncol sa d! msx sa 4 + c! msz sa 5 + c! msy sa 6 + c! 0 sa 7 + c!
+	partname count 'outtxt append 'nl 1 'outtxt append
+	msx msy * 'ncol +! 1 'nspr +! ;
+
 :procframe | m name --
 	over fits? 0? ( drop skipmsg ; ) drop
 	abort 1? ( 3drop ; ) drop
-	swap loadmodel
-	nspr 16384 >=? ( 1 'abort ! 2drop ; ) drop
-	ncol msx msy * + AMAX >? ( 1 'abort ! 2drop ; ) drop
-	clearvol fillvol bakecols
-	'spr nspr 3 << + 'sa !
-	ncol sa d! msx sa 4 + c! msz sa 5 + c! msy sa 6 + c! 0 sa 7 + c!
-	count 'outtxt append 'nl 1 'outtxt append
-	msx msy * 'ncol +! 1 'nspr +! ;
+	'pnm ! loadmodel builddense
+	fsx 31 + 5 >> 'pnx ! fsy 31 + 5 >> 'pny ! fsz 31 + 5 >> 'pnz !
+	pnx pny * pnz * 'nparts !
+	0 ( nparts <? dup dopart 1+ ) drop ;
 
 :procfile | i --
 	dup voxname voxopen
@@ -461,11 +527,10 @@
 	atlas ncol 3 << 'outssv append
 	palc np 2 << 'outssv append
 	abort 1? ( "ERROR: limite superado, salida incompleta" .println ) drop
-	np ncol nspr "%d sprites, %d columnas, %d colores" .println 
-	waitkey 
-	;
+	np ncol nspr "%d sprites, %d columnas, %d colores" .println ;
 
 : 
-	"r3/r3dv/ss3d2/mexcla" voxdir			| carpeta con los .vox
-	"r3/r3dv/ss3d2/mexcla" voxconvert	| genera sprites.ssv y sprites.txt
-	.free ;
+	"r3/r3dv/ss3d2/vox" voxdir			| carpeta con los .vox
+	"r3/r3dv/ss3d2/vox" voxconvert	| genera sprites.ssv y sprites.txt
+	waitkey
+	;

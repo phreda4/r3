@@ -112,7 +112,8 @@
 	|"media/ss/iti"
 |	"media/ss/city" 
 |	"media/ss/sprites"
-	"media/ss/dino" 
+	|"media/ss/dino" 
+	"r3/r3dv/ss3d2/dino"
 	dup 1024 ss3dload
 	ss3loadnames
 	

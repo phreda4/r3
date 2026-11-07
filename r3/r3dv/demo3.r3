@@ -162,14 +162,14 @@
 
 
 :load3d
-	"media/ss/sprites" 
+|	"media/ss/sprites" 
 	|"media/ss/iti"
 	|"media/ss/vox2"
 |	"media/ss/mezcla"
 |	"media/ss/voxi"
 |	"media/ss/cars"
 |	"media/ss/test"
-
+	"r3/r3dv/ss3d2/dino"
 	dup 256 ss3dload
 	ss3loadnames
 	

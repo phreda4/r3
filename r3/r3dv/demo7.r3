@@ -88,15 +88,19 @@
 	>esc< =? ( exit )
 	drop ;
 
+:sp | -- n	; sprite a mostrar (cicla por los del archivo)
+	ns n3dsprites mod ;
+	
 :load3d
-	"media/ss/sprites" 512 ss3dload
+	"r3/r3dv/ss3d2/dino" 512 ss3dload
 	-2.0 ( 2.0 <?
 		-2.0 ( 2.0 <?
 			over 0.5 +
 			4.0 ns 100 + ss3dfloor
 			pick2 0.5 +
 			$0 rxyz>q16
-			4.0 ns 100 + $ffffff00
+			|4.0 ns 100 + $ffffff00
+			3.5 sp $ffffff00
 			ns
 			ss3dset
 			1 'ns +!
@@ -113,7 +117,7 @@
 	IniShapes
 	load3d
 	'camEye 'camTo 'camUp rl_camera
-	2048 1 ss3dshadowini
+	2048 ss3dshadowini
 	1 ss3dshadowauto
 	setsun
 	1 ss3dshadow!

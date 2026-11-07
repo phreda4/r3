@@ -345,7 +345,7 @@
 	;
 
 :load3d
-	"media/ss/iti"
+	"r3/r3dv/ss3d2/iti"
 |	"media/ss/vox2"
 |	"media/ss/sprites"
 	dup 4096 ss3dload
@@ -361,7 +361,7 @@
 	rl_init
 	1 rl_grid_init
 	'viewresize SDLeventR
-	2048 1 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
+	2048 ss3dshadowini			| mapa 2048, grilla de ocupacion a mitad de resolucion
 	0.25 0.0008 ss3dshadowbias	| bias fijo: escalas mezcladas (1..16), un bias automatico seguiria a la mayor
 	lightsun
 	1 ss3dshadow!

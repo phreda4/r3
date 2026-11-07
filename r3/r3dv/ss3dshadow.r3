@@ -1,13 +1,13 @@
-| ss3dshadow - sombras del sol para ss3d
+| ss3dshadow2 - sombras del sol para ss3d2 (igual a ss3dshadow.r3, incluye ss3d2.r3)
 | PHREDA 2026
 |
-| El sol es una luz direccional: mapa de sombras ortografico + textura de ocupacion de 1 bit
-| (ver SS3Dshadowbuild en ss3d.r3). El pase se ejecuta solo, dentro de rl_frame_end
+| El sol es una luz direccional: mapa de sombras ortografico, el pase recorre las columnas de ss3d2
+| (ver SS3Dshadowbuild en ss3d2.r3). El pase se ejecuta solo, dentro de rl_frame_end
 | (despues de SS3Ddraw), y renderlib lo aplica al termino del sol.
 |
 | uso:
 |   ... rl_init ... ss3dload ...
-|   2048 1 ss3dshadowini                       | resolucion del mapa, nivel de grilla (0 completa 1 mitad 2 cuarto)
+|   2048 ss3dshadowini                       | resolucion del mapa
 |   1 ss3dshadowauto                          | area y bias automaticos (se ajustan cada frame a las instancias)
 |   0.5 0.8 0.3  1.0 0.95 0.85 1.3 ss3dsun     | direccion HACIA el sol, color e intensidad
 |   1 ss3dshadow!                              | 1 = con sombras  0 = sin sombras
@@ -124,8 +124,8 @@
 	GL_NONE glReadBuffer
 	GL_FRAMEBUFFER 0 glBindFramebuffer ;
 
-::ss3dshadowini | res S --	; despues de rl_init y ss3dload
-	swap 'sh_res !
+::ss3dshadowini | res --	; despues de rl_init y ss3dload
+	'sh_res !
 	SS3Dshadowbuild
 	$3f800000 'sh_one !
 	shmaketex

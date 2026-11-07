@@ -1,7 +1,7 @@
-| demo2 r3dv
+|MEM 64
+| demo2v r3dv - igual que demo2 pero con ss3d2 (formato .ssv)
 | PHREDA 2026
 ^./renderlib.r3
-^./rlhud.r3
 ^./rlshapes.r3
 ^./ss3d.r3
 
@@ -24,12 +24,12 @@
 	msec 4 << sin 3.0 + | scale >
 	
 	dup | < scale
-	97 
+	0 
 	$ffffff00 
 	0 ss3dcs | scale spr color i --
 	
 	-2.5
-	swap 97 ss3dfloor | < scale
+	swap 0 ss3dfloor | < scale
 	-2.5
 	0 ss3dxyz | x y z i
 	
@@ -97,14 +97,6 @@
 :main
 	render
 	
-	fini
-	2 'fscale !
-	$7f000000 'fcolor !
-	8 sh 48 - 400 40 frect
-	$ffffffff 'fcolor !
-	16 sh 40 -  fat
-	"r3forth - DEMO 2q " ftext
-	fend
 		
     GLUpdate
 	
@@ -120,36 +112,34 @@
     drop
 	;
 
-:ss3dh | n -- s
-	;
-	
 #ns 0
+:sp | -- n	; sprite a mostrar (cicla por los del archivo)
+	ns n3dsprites mod ;
+
 :load3d
-	"media/ss/sprites" 512 ss3dload
-	-3.0 ( 3.0 <?
-		-3.0 ( 3.0 <?
-		
+	"r3/r3dv/ss3d2/dino" 512 ss3dload
+	-4.0 ( 4.0 <?
+		-4.0 ( 4.0 <?
+
 		over 0.5 +
-		4.0 ns 80 + ss3dfloor | apoyado en el piso
-		
+		2.5 sp ss3dfloor | apoyado en el piso
 		pick2 0.5 +
 		$0 rxyz>q16
-		4.0 ns 80 + $ffffff00 
-		ns 
+		2.5 sp $ffffff00
+		ns
 		ss3dset | x y z qxyzw scale spr color i --
 		1 'ns +!
-		
+
 			1.0 + ) drop
-		1.0 + ) drop		
+		1.0 + ) drop
 	;
-	
+
 :viewresize 
-	sh sw rl_resizewin fixFontResize ;
+	sh sw rl_resizewin ;
 	
 
 : | <<<<< Boot
 	"demo2q r3dv" 1024 768 GLini GLInfo
-	rlhud
 	rl_init
 	IniShapes
 

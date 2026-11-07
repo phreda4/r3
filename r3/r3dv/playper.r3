@@ -232,7 +232,7 @@
 	;
 
 :load3d
-	"media/ss/iti"
+	"r3/r3dv/ss3d2/iti"
 |	"media/ss/vox2" 
 |	"media/ss/sprites"
 	dup 4096 ss3dload

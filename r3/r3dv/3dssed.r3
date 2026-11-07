@@ -612,10 +612,7 @@
 	;
 
 :load3d
-|	"media/ss/iti"
-	|"media/ss/city" 
-|	"media/ss/sprites"
-	"media/ss/dino" 
+	"r3/r3dv/ss3d2/dino"
 	dup 1024 ss3dload
 	ss3loadnames
 	
@@ -640,7 +637,7 @@
 	load3d
 	rl_init 
 	1 rl_grid_init
-	2048 1 ss3dshadowini		| mapa de sombras 2048, grilla de ocupacion a mitad
+	2048 ss3dshadowini		| mapa de sombras 2048, grilla de ocupacion a mitad
 	1 ss3dshadowauto			| area y bias segun los objetos de la escena
 	
 	'viewresize SDLeventR

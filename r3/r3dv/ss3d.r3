@@ -1,6 +1,17 @@
-| ssprite3d - instancias 32 bytes
-| PHREDA 2026
-^r3/lib/sdl2image.r3
+| ss3d2 - sprites 3d de voxeles, formato .ssv (columnas de bits + tira de colores)
+| PHREDA 2026 - misma interfaz que ss3d.r3 (sombras, picking y cotas incluidos; sin LOD)
+|
+| "archivo" n ss3dload     carga archivo.ssv (generado por vox2x.r3), n = maximo de instancias
+| "archivo" ss3loadnames   carga archivo.txt (nombres)
+| ... ss3dset / ss3dxyz / ss3dcs ... SS3Ddraw   (igual que ss3d.r3)
+|
+| sombras: usar ss3dshadow2.r3 (igual a ss3dshadow.r3 pero incluye ss3d2.r3); el pase de sombra
+|   usa las mismas columnas del pase principal, no hay textura de ocupacion aparte
+|
+| usar con |MEM 64 en el programa principal
+| el shader recorre solo X/Z (DDA 2D) y resuelve el rango Y con la mascara de 32 bits
+|   texel de columna (x,z) = columnas[atlasIndex + z*sizeX + x] = (mascara, base)
+|   color del voxel y = tira[base + y]          (y = capa, 0 = arriba)
 ^r3/lib/str.r3
 
 ##n3dsprites	| cnt sprites
@@ -18,6 +29,7 @@
 | *   bits  7- 5  u  roughness (3 bits)
 | *   bits  4- 2  m  metallic  (3 bits)
 | *   bits  1- 0  a  glow      (2 bits)
+| * instancia: RGB multiplica al color del voxel; uma != 0 reemplaza al del voxel
 
 #ss3d_shader_src "
 @vertex-----------------
@@ -31,12 +43,13 @@ struct Instance {
     uint scale3;    // scale x|y<<10|z<<20
     int  qxy;       // int16 qx (lo) | int16 qy (hi)
     int  qzw;       // int16 qz (lo) | int16 qw (hi)
-    int  px, py, pz;	
+    int  px, py, pz;
 };
 layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
 
 struct SpriteDef {
-    int twh, nfoff;
+    uint org;       // indice de la primera columna
+    uint sz;        // bytes: sizeX | sizeY (capas) << 8 | sizeZ << 16
 };
 layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
 
@@ -50,7 +63,7 @@ flat out ivec3 vSize;
 flat out mat3  vRot;
 flat out vec3  vTrans;
 flat out uint  vColorPk;
-flat out int   vOffset;
+flat out int   vOrg;
 flat out vec3  vScl;
 
 mat3 quatToMat3(vec4 q) {
@@ -72,7 +85,7 @@ void main() {
     vec3  scl3    = vec3(float(sc3 & 1023u), float((sc3 >> 10) & 1023u), float((sc3 >> 20) & 1023u)) * (1.0/32.0);
     SpriteDef spr = sprites[spr_id];
 
-    vSize = ivec3(spr.twh>>16, spr.nfoff>>16, spr.twh&0xffff);
+    vSize = ivec3(int(spr.sz & 255u), int((spr.sz >> 8) & 255u), int((spr.sz >> 16) & 255u));
     vec3 vExt = vec3(vSize) * (0.005 * scl3);
 
     const float kPos  = 1.0/65536.0;
@@ -81,10 +94,10 @@ void main() {
 
     // unpack quat 16+16 bits
     vec4 q = vec4(
-        float(inst.qxy << 16 >> 16),   // qx: sign-extend bits 0-15
-        float(inst.qxy >> 16),          // qy: bits 16-31
-        float(inst.qzw << 16 >> 16),   // qz: sign-extend bits 0-15
-        float(inst.qzw >> 16)           // qw: bits 16-31
+        float(inst.qxy << 16 >> 16),
+        float(inst.qxy >> 16),
+        float(inst.qzw << 16 >> 16),
+        float(inst.qzw >> 16)
     );
 
     mat3 rot = quatToMat3(normalize(q));
@@ -99,14 +112,13 @@ void main() {
     vRot        = rot;
     vTrans      = trans;
     vColorPk    = inst.color;
-    vOffset     = spr.nfoff&0xffff;
+    vOrg        = int(spr.org);
 	vScl=scl3;
 }
 
 @fragment---------------
 #version 440 core
 #extension GL_ARB_conservative_depth : enable
-#define BOXMAX 0000
 
 layout(std140,binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
@@ -118,11 +130,11 @@ flat in ivec3 vSize;
 flat in mat3  vRot;
 flat in vec3  vTrans;
 flat in uint  vColorPk;
-flat in int   vOffset;
+flat in int   vOrg;
 flat in vec3  vScl;
 
-layout(binding=0) uniform sampler2D  uAlb;
-layout(binding=3) uniform usampler1D uIdxBuf;
+layout(std430,binding=6) readonly buffer Columns { uvec2 cols[]; };   // x: mascara  y: base en la tira
+layout(std430,binding=7) readonly buffer Palette { uint pal[]; };     // tira de colores
 layout(location=0) out vec3 gNormal;
 layout(location=1) out vec4 gAlbedo;
 // El bbox esta definido al reves (winding interior) y con CULL_FACE BACK se rasterizan
@@ -133,7 +145,7 @@ layout(depth_greater) out float gl_FragDepth;
 void main() {
     vec3 kScale = 100.0/vScl;
     int itw = vSize.x, iNF = vSize.y, ith = vSize.z;
-	vec3 vExt = vec3(vSize) * (0.005 * vScl); 
+    vec3 vExt = vec3(vSize) * (0.005 * vScl);
 
     vec3 vRd = vLocalPos - vRo;
     vec3 ir  = sign(vRd) / max(abs(vRd), vec3(1e-7));
@@ -143,71 +155,235 @@ void main() {
     float tmax = min(min(max(t0.x,t1.x), max(t0.y,t1.y)), max(t0.z,t1.z));
     if (tmin >= tmax) discard;
 
-    vec3 rd_g   = vec3(vRd.x, -vRd.y, vRd.z) * kScale;
-    vec3 delta_t = 1.0 / max(abs(rd_g), vec3(1e-7));
-    ivec3 step_c = ivec3(sign(rd_g));
-    ivec3 limit  = ivec3(itw, iNF, ith);
-
-    vec3 entry_g = vec3(
+    // rayo en la grilla (x, y = capa desde arriba, z), unidades de voxel por t
+    vec3 d = vec3(vRd.x, -vRd.y, vRd.z) * kScale;
+    vec3 e = vec3(
          (vRo.x + vRd.x*tmin + vExt.x) * kScale.x,
         -(vRo.y + vRd.y*tmin + vExt.y) * kScale.y + float(iNF),
          (vRo.z + vRd.z*tmin + vExt.z) * kScale.z);
+    float tend = tmax - tmin;
 
-    ivec3 cell  = clamp(ivec3(entry_g), ivec3(0), limit - 1);
-    vec3 next_t = vec3(
-        ((step_c.x>0) ? float(cell.x+1)-entry_g.x : entry_g.x-float(cell.x)) * delta_t.x,
-        ((step_c.y>0) ? float(cell.y+1)-entry_g.y : entry_g.y-float(cell.y)) * delta_t.y,
-        ((step_c.z>0) ? float(cell.z+1)-entry_g.z : entry_g.z-float(cell.z)) * delta_t.z);
+    vec3 tmin3 = min(t0, t1);
+    int axis = (tmin3.x>=tmin3.y && tmin3.x>=tmin3.z) ? 0 : (tmin3.y>=tmin3.z ? 1 : 2);   // cara por la que entra a la caja
 
-    vec3 tmin3   = min(t0, t1);
-    int last_axis = (tmin3.x>=tmin3.y && tmin3.x>=tmin3.z) ? 0 : (tmin3.y>=tmin3.z ? 1 : 2);
-    ivec3 exit_cell = ivec3(step_c.x>0?limit.x:-1, step_c.y>0?limit.y:-1, step_c.z>0?limit.z:-1);
+    ivec2 c  = clamp(ivec2(floor(e.x), floor(e.z)), ivec2(0), ivec2(itw, ith) - 1);
+    ivec2 st = ivec2(d.x > 0.0 ? 1 : -1, d.z > 0.0 ? 1 : -1);
+    vec2  dl = 1.0 / max(abs(d.xz), vec2(1e-7));
+    vec2  nt = vec2(st.x > 0 ? float(c.x+1) - e.x : e.x - float(c.x),
+                    st.y > 0 ? float(c.y+1) - e.z : e.z - float(c.y)) * dl;
+    bool  down = d.y >= 0.0;
+    float tin  = 0.0;
 
-    int   last_layer = -1;
-    ivec2 base_texel = ivec2(0);
+    for (int i = 0; i < 72; i++) {
+        float tout = min(min(nt.x, nt.y), tend);
+        float ya = e.y + d.y*tin, yb = e.y + d.y*tout;
+        int lo = clamp(int(floor(min(ya, yb))), 0, iNF-1);
+        int hi = clamp(int(floor(max(ya, yb))), 0, iNF-1);
+        int n  = hi - lo + 1;
+        uint mask = (n >= 32) ? 0xFFFFFFFFu : (((1u << n) - 1u) << lo);
 
-    for (int i=0; i<BOXMAX; i++) {
-        if (any(equal(cell, exit_cell))) break;
-        int cy = cell.y;
-        if (cy != last_layer) {
-            last_layer = cy;
-            uint gi    = texelFetch(uIdxBuf, vOffset+cy, 0).r;
-            base_texel = ivec2(int(gi&0xFFu)*itw, int(gi>>8)*ith);
-        }
-        vec4 tex = texelFetch(uAlb, base_texel + ivec2(cell.x, cell.z), 0);
-        if (tex.a != 0.0) {
-            vec3 signs   = vec3(-float(step_c.x), float(step_c.y), -float(step_c.z));
-            vec3 n_local = signs * vec3(last_axis==0, last_axis==1, last_axis==2);
+        uvec2 col = cols[vOrg + c.y*itw + c.x];       // una lectura: ocupacion + base de colores
+        uint m = col.x & mask;
+        if (m != 0u) {
+            int cy = down ? findLSB(m) : findMSB(m);
+            float ty = down ? (float(cy) - e.y)/d.y : (float(cy+1) - e.y)/d.y;
+            float th = abs(d.y) < 1e-7 ? tin : clamp(ty, tin, tout);
+            int ax = (th > tin) ? 1 : axis;               // golpe dentro de la columna = cara horizontal
+
+            vec3 signs   = vec3(-float(st.x), down ? 1.0 : -1.0, -float(st.y));
+            vec3 n_local = signs * vec3(ax==0, ax==1, ax==2);
             vec3 world_n = vRot * n_local;
-            vec3 b_hit   = vec3((float(cell.x)+0.5)/float(itw),
-                                1.0-(float(cell.y)+0.5)/float(iNF),
-                                (float(cell.z)+0.5)/float(ith));
+            vec3 b_hit   = vec3((float(c.x)+0.5)/float(itw),
+                                1.0-(float(cy)+0.5)/float(iNF),
+                                (float(c.y)+0.5)/float(ith));
             vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vTrans + world_n*0.0005;
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w;   // clip ZERO_TO_ONE
 
-			gNormal = world_n;			
-			vec4 tint = unpackUnorm4x8(vColorPk).abgr;
-			gAlbedo = vec4(tex.rgb*tint.rgb, tint.a);
+            gNormal = world_n;
+            uint  vcol = pal[col.y + uint(cy)];           // base + y (aritmetica uint32)
+            vec4  tint = unpackUnorm4x8(vColorPk).abgr;
+            vec4  vc   = unpackUnorm4x8(vcol).abgr;
+            uint  pk   = ((vColorPk & 0xFFu) != 0u) ? (vColorPk & 0xFFu) : (vcol & 0xFFu);
+            gAlbedo = vec4(vc.rgb*tint.rgb, float(pk) * (1.0/255.0));
             return;
         }
-        bvec3 m   = lessThanEqual(next_t, min(next_t.yzx, next_t.zxy));
-        next_t   += vec3(m) * delta_t;
-        cell     += ivec3(m) * step_c;
-        last_axis = m.x ? 0 : (m.y ? 1 : 2);
+        if (tout >= tend) break;
+        if (nt.x < nt.y) { c.x += st.x; tin = nt.x; nt.x += dl.x; axis = 0; if (uint(c.x) >= uint(itw)) break; }
+        else             { c.y += st.y; tin = nt.y; nt.y += dl.y; axis = 2; if (uint(c.y) >= uint(ith)) break; }
     }
     discard;
 }
 @-----"
 
-##defspr
-|#defind
-#ssaendfile
+##defspr		| tabla de sprites (8 bytes: atlasIndex | sizeX sizeY sizeZ 0)
+#ssvend
+#colbase #palbase #ncols #ncolors
+
+#ss3d_shadow_src "
+@vertex-----------------
+#version 440 core
+
+layout(location=0) in vec3 a_pos;
+
+struct Instance {
+	uint spr_obj;
+	uint color;
+    uint scale3;
+    int  qxy;
+    int  qzw;
+    int  px, py, pz;
+};
+layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
+
+struct SpriteDef {
+    uint org;
+    uint sz;
+};
+layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
+
+layout(std140,binding=3) uniform ShadowU {
+    mat4 lightVP;
+    vec4 ldir;      // xyz: direccion de los rayos de luz (hacia la escena)
+    vec4 sp;
+};
+
+     out vec3  vLocalPos;
+flat out ivec3 vSize;
+flat out mat3  vRot;
+flat out vec3  vTrans;
+flat out vec3  vScl;
+flat out vec3  vLd;
+flat out int   vOrg;
+
+mat3 quatToMat3(vec4 q) {
+    float x=q.x, y=q.y, z=q.z, w=q.w;
+    float x2=x*x, y2=y*y, z2=z*z;
+    float xy=x*y, xz=x*z, yz=y*z;
+    float wx=w*x, wy=w*y, wz=w*z;
+    return mat3(
+        vec3(1.0-2.0*(y2+z2),    2.0*(xy+wz),  2.0*(xz-wy)),
+        vec3(    2.0*(xy-wz),1.0-2.0*(x2+z2),  2.0*(yz+wx)),
+        vec3(    2.0*(xz+wy),    2.0*(yz-wx),  1.0-2.0*(x2+y2))
+    );
+}
+
+void main() {
+    Instance inst = instances[gl_InstanceID];
+    int   spr_id  = int(inst.spr_obj & 0xFFFFu);
+    uint  sc3     = inst.scale3;
+    vec3  scl3    = vec3(float(sc3 & 1023u), float((sc3 >> 10) & 1023u), float((sc3 >> 20) & 1023u)) * (1.0/32.0);
+    SpriteDef spr = sprites[spr_id];
+
+    vSize = ivec3(int(spr.sz & 255u), int((spr.sz >> 8) & 255u), int((spr.sz >> 16) & 255u));
+    vec3 vExt = vec3(vSize) * (0.005 * scl3);
+
+    vec3 trans = vec3(inst.px, inst.py, inst.pz) * (1.0/65536.0);
+    vec4 q = vec4(
+        float(inst.qxy << 16 >> 16),
+        float(inst.qxy >> 16),
+        float(inst.qzw << 16 >> 16),
+        float(inst.qzw >> 16)
+    );
+    mat3 rot = quatToMat3(normalize(q));
+
+    vec3 local_pos = a_pos * vExt;
+    gl_Position = lightVP * vec4(rot*local_pos + trans, 1.0);
+    vLocalPos = local_pos;
+    vRot      = rot;
+    vTrans    = trans;
+    vScl      = scl3;
+    vOrg      = int(spr.org);
+    vLd       = vec3(dot(rot[0],ldir.xyz), dot(rot[1],ldir.xyz), dot(rot[2],ldir.xyz));
+}
+
+@fragment---------------
+#version 440 core
+
+layout(std140,binding=3) uniform ShadowU {
+    mat4 lightVP;
+    vec4 ldir;
+    vec4 sp;
+};
+
+in  vec3  vLocalPos;
+flat in ivec3 vSize;
+flat in mat3  vRot;
+flat in vec3  vTrans;
+flat in vec3  vScl;
+flat in vec3  vLd;
+flat in int   vOrg;
+
+layout(std430,binding=6) readonly buffer Columns { uvec2 cols[]; };   // x: mascara de 32 bits
+
+// e: entrada (grilla, y desde arriba)  d: grilla por unidad de t  tend: largo del tramo
+// recorre solo X/Z (DDA 2D) y resuelve el rango Y con la mascara de la columna
+bool colTrace(vec3 e, vec3 d, float tend, out float th)
+{
+    ivec3 g  = vSize;
+    ivec2 c  = clamp(ivec2(floor(e.x), floor(e.z)), ivec2(0), g.xz - 1);
+    ivec2 st = ivec2(d.x > 0.0 ? 1 : -1, d.z > 0.0 ? 1 : -1);
+    vec2  dl = 1.0 / max(abs(d.xz), vec2(1e-7));
+    vec2  nt = vec2(st.x > 0 ? float(c.x+1) - e.x : e.x - float(c.x),
+                    st.y > 0 ? float(c.y+1) - e.z : e.z - float(c.y)) * dl;
+    float tin = 0.0;
+    bool up = d.y >= 0.0;
+    th = 0.0;
+    for (int i = 0; i < 72; i++) {
+        float tout = min(min(nt.x, nt.y), tend);
+        float ya = e.y + d.y*tin, yb = e.y + d.y*tout;
+        int lo = clamp(int(floor(min(ya, yb))), 0, g.y-1);
+        int hi = clamp(int(floor(max(ya, yb))), 0, g.y-1);
+        int n  = hi - lo + 1;
+        uint mask = (n >= 32) ? 0xFFFFFFFFu : (((1u << n) - 1u) << lo);
+        uint m = cols[vOrg + c.y*g.x + c.x].x & mask;
+        if (m != 0u) {
+            int cy = up ? findLSB(m) : findMSB(m);
+            float t = up ? (float(cy) - e.y)/d.y : (float(cy+1) - e.y)/d.y;
+            th = (abs(d.y) < 1e-7) ? tin : clamp(t, tin, tout);
+            return true;
+        }
+        if (tout >= tend) break;
+        if (nt.x < nt.y) { c.x += st.x; tin = nt.x; nt.x += dl.x; if (uint(c.x) >= uint(g.x)) break; }
+        else             { c.y += st.y; tin = nt.y; nt.y += dl.y; if (uint(c.y) >= uint(g.z)) break; }
+    }
+    return false;
+}
+
+void main() {
+    vec3 vExt = vec3(vSize) * (0.005 * vScl);
+    vec3 rd = normalize(vLd);
+    vec3 ro = vLocalPos - rd * (2.0 * length(vExt));      // origen fuera de la caja, detras
+
+    vec3 ir = sign(rd) / max(abs(rd), vec3(1e-7));
+    vec3 t0 = (-vExt - ro) * ir;
+    vec3 t1 = ( vExt - ro) * ir;
+    float tmin = max(max(max(min(t0.x,t1.x), min(t0.y,t1.y)), min(t0.z,t1.z)), 1e-5);
+    float tmax = min(min(max(t0.x,t1.x), max(t0.y,t1.y)), max(t0.z,t1.z));
+    if (tmin >= tmax) discard;
+
+    vec3 ks = 100.0 / vScl;
+    vec3 p  = ro + rd * tmin;
+    vec3 e  = vec3((p.x + vExt.x) * ks.x,
+                   float(vSize.y) - (p.y + vExt.y) * ks.y,
+                   (p.z + vExt.z) * ks.z);
+    vec3 d  = vec3(rd.x * ks.x, -rd.y * ks.y, rd.z * ks.z);
+
+    float th;
+    if (!colTrace(e, d, tmax - tmin, th)) discard;
+
+    vec4 clip = lightVP * vec4(vRot * (ro + rd * (tmin + th)) + vTrans, 1.0);
+    gl_FragDepth = clip.z / clip.w;
+}
+@-----"
+
+##ss3dshS 0		| sin reduccion de grilla (lo usa ss3dshadow.r3 para el bias)
+#ss3d_shsh
 
 |----GPU
-#atlas_tex
 #ssbo_sprites
-#idx_tex
+#ssbo_cols
+#ssbo_pal
 #ssbo_inst
 
 #vertices [	-1.0 -1.0 -1.0   1.0 -1.0 -1.0   1.0  1.0 -1.0  -1.0  1.0 -1.0 
@@ -233,64 +409,46 @@ void main() {
 	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
 	;
 
-|====== calc max step size
-#maxsize #nowsize
-:cheksize nowsize maxsize >? ( 'maxsize ! ; ) drop ;
-
 ::ss3dload | "file" instances --
 	'3dss_max !
 	build_bbox
-|====== load image
-	dup "%s.png" sprint glLoadImg 'atlas_tex !
-|====== load map
-	here swap "%s.ssa" sprint load 'ssaendfile !
-|====== map for sprites	
-	here
-	d@+ $41005353 <>? ( 2drop "not ssa file" .println ; ) drop
-	w@+ 'n3dsprites !
-	dup 'defspr !
-	0 'maxsize !
-	n3dsprites ( 1? 1- >r
-		d@+
-		dup 16 >>> 'nowsize ! | LX
-		$ffff and 'nowsize +! | LZ
-		d@+
-		16 >> $ffff and 'nowsize +! | LY
-		cheksize
-		r> ) drop
-	'here !
-|====== sprite definition
+|====== load .ssv  (header 16: "SSV2" nspr ncol ncolores)
+	here swap "%s.ssv" sprint load 'ssvend !
+	here d@ "SSV2" d@ <>? ( drop "not ssv file" .println ; ) drop
+	here 4 + d@ 'n3dsprites !
+	here 8 + d@ 'ncols !
+	here 12 + d@ 'ncolors !
+	here 16 + 'defspr !
+	defspr n3dsprites 3 << + 'colbase !
+	colbase ncols 3 << + 'palbase !
+|====== sprite definitions (binding 2)
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER n3dsprites 8 * defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER n3dsprites 3 << defspr 0 glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
-	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-|====== index map
-	1 'idx_tex glGenTextures
-	GL_TEXTURE_1D idx_tex glBindTexture
-	GL_TEXTURE_1D 0 GL_R16UI ssaendfile here - 0 GL_RED_INTEGER GL_UNSIGNED_SHORT here glTexImage1D
-	GL_TEXTURE_1D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_1D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_1D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_1D 0 glBindTexture
+|====== columns (binding 6)
+	1 'ssbo_cols glGenBuffers
+	GL_SHADER_STORAGE_BUFFER ssbo_cols glBindBuffer
+	GL_SHADER_STORAGE_BUFFER ncols 3 << colbase 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER 6 ssbo_cols glBindBufferBase
+|====== color strip (binding 7)
+	1 'ssbo_pal glGenBuffers
+	GL_SHADER_STORAGE_BUFFER ssbo_pal glBindBuffer
+	GL_SHADER_STORAGE_BUFFER ncolors 2 << palbase 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER 7 ssbo_pal glBindBufferBase
 |====== instance mem
 	1 'ssbo_inst glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_inst glBindBuffer
 	GL_SHADER_STORAGE_BUFFER 3dss_max 5 << 0 GL_DYNAMIC_DRAW glBufferData |32*
 	GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-|====== patch shader
-	'ss3d_shader_src "0000" findstr
-	maxsize .d 4 .r. 4 cmove | patch shader
 |====== compile shader
 	'ss3d_shader_src loadShaderv 'ss3d_shader !
-	ss3d_shader glUseProgram
-	ss3d_shader "uAlb"    glGetUniformLocation 0 glUniform1i
-	ss3d_shader "uIdxBuf" glGetUniformLocation 3 glUniform1i
-	0 glUseProgram
+|====== solo queda en memoria la tabla de sprites
+	colbase 'here !
 |====== reserve mem for instance
 	here '3dss_array !
-	3dss_max 5 << | 32* 
+	3dss_max 5 << | 32*
 	'here +!			| 32 bytes x inst
 	0 'ss3d_inst !
 	;
@@ -320,293 +478,15 @@ void main() {
 ::ssnameid | id -- name
 	ss3names swap ( 1? 1- swap >>0 trim swap ) drop ;
 
-|====== SHADOW CASTER ======================================================
-| Textura de ocupacion para sombras: 1 bit por voxel, columnas en Y.
-|   R32UI, un texel = 32 celdas en Y de una columna (x,z) de la grilla reducida 2^S
-|   cada sprite ocupa un rect (gx*nw) x gz ; la palabra j de la columna (x,z) esta en
-|   (ox + j*gx + x , oz + z) ; org[spr] = ox | oz<<16 (ssbo binding 5)
-| El pase de sombra recorre solo X/Z (DDA 2D) y resuelve el rango Y con mascaras de bits.
-
-#ss3d_shadow_src "
-@vertex-----------------
-#version 440 core
-
-layout(location=0) in vec3 a_pos;
-
-struct Instance {
-	uint spr_obj;
-	uint color;
-    uint scale3;
-    int  qxy;
-    int  qzw;
-    int  px, py, pz;
-};
-layout(std430,binding=4) readonly buffer InstanceTable { Instance instances[]; };
-
-struct SpriteDef {
-    int twh, nfoff;
-};
-layout(std430,binding=2) readonly buffer SpriteDefTable { SpriteDef sprites[]; };
-
-layout(std140,binding=3) uniform ShadowU {
-    mat4 lightVP;
-    vec4 ldir;      // xyz: direccion de los rayos de luz (hacia la escena)
-    vec4 sp;
-};
-
-     out vec3  vLocalPos;
-flat out ivec3 vSize;
-flat out mat3  vRot;
-flat out vec3  vTrans;
-flat out vec3  vScl;
-flat out vec3  vLd;
-flat out int   vSpr;
-
-mat3 quatToMat3(vec4 q) {
-    float x=q.x, y=q.y, z=q.z, w=q.w;
-    float x2=x*x, y2=y*y, z2=z*z;
-    float xy=x*y, xz=x*z, yz=y*z;
-    float wx=w*x, wy=w*y, wz=w*z;
-    return mat3(
-        vec3(1.0-2.0*(y2+z2),    2.0*(xy+wz),  2.0*(xz-wy)),
-        vec3(    2.0*(xy-wz),1.0-2.0*(x2+z2),  2.0*(yz+wx)),
-        vec3(    2.0*(xz+wy),    2.0*(yz-wx),  1.0-2.0*(x2+y2))
-    );
-}
-
-void main() {
-    Instance inst = instances[gl_InstanceID];
-    int   spr_id  = int(inst.spr_obj & 0xFFFFu);
-    uint  sc3     = inst.scale3;
-    vec3  scl3    = vec3(float(sc3 & 1023u), float((sc3 >> 10) & 1023u), float((sc3 >> 20) & 1023u)) * (1.0/32.0);
-    SpriteDef spr = sprites[spr_id];
-
-    vSize = ivec3(spr.twh>>16, spr.nfoff>>16, spr.twh&0xffff);
-    vec3 vExt = vec3(vSize) * (0.005 * scl3);
-
-    vec3 trans = vec3(inst.px, inst.py, inst.pz) * (1.0/65536.0);
-    vec4 q = vec4(
-        float(inst.qxy << 16 >> 16),
-        float(inst.qxy >> 16),
-        float(inst.qzw << 16 >> 16),
-        float(inst.qzw >> 16)
-    );
-    mat3 rot = quatToMat3(normalize(q));
-
-    vec3 local_pos = a_pos * vExt;
-    gl_Position = lightVP * vec4(rot*local_pos + trans, 1.0);
-    vLocalPos = local_pos;
-    vRot      = rot;
-    vTrans    = trans;
-    vScl      = scl3;
-    vSpr      = spr_id;
-    vLd       = vec3(dot(rot[0],ldir.xyz), dot(rot[1],ldir.xyz), dot(rot[2],ldir.xyz));
-}
-
-@fragment---------------
-#version 440 core
-
-layout(std140,binding=3) uniform ShadowU {
-    mat4 lightVP;
-    vec4 ldir;
-    vec4 sp;
-};
-
-in  vec3  vLocalPos;
-flat in ivec3 vSize;
-flat in mat3  vRot;
-flat in vec3  vTrans;
-flat in vec3  vScl;
-flat in vec3  vLd;
-flat in int   vSpr;
-
-layout(binding=5) uniform usampler2D uOcc;
-layout(std430,binding=5) readonly buffer OrgTable { uint org[]; };
-uniform int uShift;
-uniform int uMaxCol;
-
-// e: entrada (grilla nivel S, y desde arriba)  d: grilla por unidad de t  tend: largo del tramo
-bool occTrace(ivec2 O, ivec3 g, int nw, vec3 e, vec3 d, float tend, out float th)
-{
-    ivec2 c  = clamp(ivec2(floor(e.x), floor(e.z)), ivec2(0), g.xz - 1);
-    ivec2 st = ivec2(d.x > 0.0 ? 1 : -1, d.z > 0.0 ? 1 : -1);
-    vec2  dl = 1.0 / max(abs(d.xz), vec2(1e-7));
-    vec2  nt = vec2(st.x > 0 ? float(c.x+1) - e.x : e.x - float(c.x),
-                    st.y > 0 ? float(c.y+1) - e.z : e.z - float(c.y)) * dl;
-    float tin = 0.0;
-    bool up = d.y >= 0.0;
-    th = 0.0;
-    for (int i = 0; i < uMaxCol; i++) {
-        float tout = min(min(nt.x, nt.y), tend);
-        float ya = e.y + d.y*tin, yb = e.y + d.y*tout;
-        int lo = clamp(int(floor(min(ya, yb))), 0, g.y-1);
-        int hi = clamp(int(floor(max(ya, yb))), 0, g.y-1);
-        for (int k = 0; k < nw; k++) {
-            int w = up ? k : nw-1-k;
-            int a = max(lo - 32*w, 0), b = min(hi - 32*w, 31);
-            if (a > b) continue;
-            int n = b - a + 1;
-            uint mask = (n == 32) ? 0xFFFFFFFFu : (((1u << n) - 1u) << a);
-            uint m = texelFetch(uOcc, O + ivec2(w*g.x + c.x, c.y), 0).r & mask;
-            if (m != 0u) {
-                int cy = 32*w + (up ? findLSB(m) : findMSB(m));
-                float t = up ? (float(cy) - e.y)/d.y : (float(cy+1) - e.y)/d.y;
-                th = (abs(d.y) < 1e-7) ? tin : clamp(t, tin, tout);
-                return true;
-            }
-        }
-        if (tout >= tend) break;
-        if (nt.x < nt.y) { c.x += st.x; tin = nt.x; nt.x += dl.x; if (uint(c.x) >= uint(g.x)) break; }
-        else             { c.y += st.y; tin = nt.y; nt.y += dl.y; if (uint(c.y) >= uint(g.z)) break; }
-    }
-    return false;
-}
-
-void main() {
-    vec3 vExt = vec3(vSize) * (0.005 * vScl);
-    vec3 rd = normalize(vLd);
-    vec3 ro = vLocalPos - rd * (2.0 * length(vExt));      // origen fuera de la caja, detras
-
-    vec3 ir = sign(rd) / max(abs(rd), vec3(1e-7));
-    vec3 t0 = (-vExt - ro) * ir;
-    vec3 t1 = ( vExt - ro) * ir;
-    float tmin = max(max(max(min(t0.x,t1.x), min(t0.y,t1.y)), min(t0.z,t1.z)), 1e-5);
-    float tmax = min(min(max(t0.x,t1.x), max(t0.y,t1.y)), max(t0.z,t1.z));
-    if (tmin >= tmax) discard;
-
-    float sc = 1.0 / float(1 << uShift);
-    vec3 ks  = (100.0 / vScl) * sc;
-    ivec3 g  = (vSize + ((1 << uShift) - 1)) >> uShift;
-    int  nw  = (g.y + 31) >> 5;
-
-    vec3 p = ro + rd * tmin;
-    vec3 e = vec3((p.x + vExt.x) * ks.x,
-                  float(vSize.y) * sc - (p.y + vExt.y) * ks.y,
-                  (p.z + vExt.z) * ks.z);
-    vec3 d = vec3(rd.x * ks.x, -rd.y * ks.y, rd.z * ks.z);
-
-    uint o = org[vSpr];
-    float th;
-    if (!occTrace(ivec2(int(o & 0xFFFFu), int(o >> 16)), g, nw, e, d, tmax - tmin, th)) discard;
-
-    vec4 clip = lightVP * vec4(vRot * (ro + rd * (tmin + th)) + vTrans, 1.0);
-    gl_FragDepth = clip.z / clip.w;
-}
-@-----"
-
-##ss3dshS 1			| nivel de la grilla de ocupacion: 0=completa 1=mitad 2=cuarto
-
-#occ_tex #ssbo_org #ss3d_shsh
-#occ_h #oc_org #oc_out #oc_atlas #oc_aw #oc_ah #oc_idx #oc_maxcol
-#oc_x #oc_y #oc_rh
-#sLX #sLY #sLZ #sOF
-#gx #gz #gw #ox #oy #fbit #fcol #ftx #fty #frow
-#oW 1024
-
-:ocS | v -- v'		; ceil(v / 2^S)
-	1 ss3dshS << 1 - + ss3dshS >> ;
-
-:ocspr | i --		; carga LX LY LZ y offset del sprite i
-	3 << defspr + d@+
-	dup 16 >>> 'sLX ! $ffff and 'sLZ !
-	d@ dup 16 >>> 'sLY ! $ffff and 'sOF ! ;
-
-:oclayout | --		; reparte los rects (shelf packing) y llena org[]
-	0 'oc_x ! 0 'oc_y ! 0 'oc_rh ! 0 'oc_maxcol !
-	0 ( n3dsprites <?
-		dup ocspr
-		sLX ocS 'gx ! sLZ ocS 'gz !
-		gx sLY ocS 31 + 5 >> * 'gw !
-		oc_x gw + oW >? ( 0 'oc_x ! oc_y oc_rh + 'oc_y ! 0 'oc_rh ! ) drop
-		dup 2 << oc_org + oc_x oc_y 16 << or swap d!
-		gw 'oc_x +!
-		gz oc_rh max 'oc_rh !
-		gx gz + 3 + oc_maxcol max 'oc_maxcol !
-		1+ ) drop
-	oc_y oc_rh + 'occ_h ! ;
-
-:ocrow | z --		; una fila z de la capa actual
-	dup fty + oc_aw * ftx + 2 << oc_atlas + >a
-	ss3dshS >> oy + oW * fcol + 2 << oc_out + 'frow !
-	0 ( sLX <?
-		da@+ $ff000000 and 1? (
-			over ss3dshS >> 2 << frow +
-			dup d@ fbit or swap d! ) drop
-		1+ ) drop ;
-
-:oclayer | y --		; marca en los bits la capa y del sprite actual
-	dup ss3dshS >>
-	dup 31 and 1 swap << 'fbit !
-	5 >> gx * ox + 'fcol !
-	sOF + 1 << oc_idx + w@
-	dup $ff and sLX * 'ftx !
-	8 >> sLZ * 'fty !
-	0 ( sLZ <? dup ocrow 1+ ) drop ;
-
-:ocfill | --
-	0 ( n3dsprites <?
-		dup ocspr
-		dup 2 << oc_org + d@ dup $ffff and 'ox ! 16 >>> 'oy !
-		sLX ocS 'gx !
-		0 ( sLY <? dup oclayer 1+ ) drop
-		1+ ) drop ;
-
-:ocbuild | S atlas aw ah idx org out -- h	; sin GL: llena org[] y out[] (R32UI, oW de ancho) en memoria
-	'oc_out ! 'oc_org ! 'oc_idx ! 'oc_ah ! 'oc_aw ! 'oc_atlas ! 'ss3dshS !
-	oclayout
-	oc_out 0 oW occ_h * 2 << cfill
-	ocfill
-	occ_h ;
-
-::SS3Dshadowbuild | S --	; construye la textura de ocupacion y el shader de sombra (llamar luego de ss3dload)
-	'ss3dshS !
-	here align16 dup 'oc_org !
-	n3dsprites 2 << + align16 'oc_idx !
-	atlas_tex 32 >> $ffff and 'oc_aw !
-	atlas_tex 48 >>> 'oc_ah !
-|--- leer idx de la GPU
-	oc_idx
-	ssaendfile defspr n3dsprites 3 << + - | bytes de idx
-	+ align16 'oc_atlas !
-	GL_TEXTURE_1D idx_tex glBindTexture
-	GL_TEXTURE_1D 0 GL_RED_INTEGER GL_UNSIGNED_SHORT oc_idx glGetTexImage
-	GL_TEXTURE_1D 0 glBindTexture
-|--- leer atlas de la GPU
-	GL_TEXTURE_2D atlas_tex $ffff and glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA GL_UNSIGNED_BYTE oc_atlas glGetTexImage
-	GL_TEXTURE_2D 0 glBindTexture
-|--- layout + fill
-	ss3dshS oc_atlas oc_aw oc_ah oc_idx oc_org
-	oc_atlas oc_aw oc_ah * 2 << + align16
-	ocbuild drop
-|--- textura de ocupacion
-	1 'occ_tex glGenTextures
-	GL_TEXTURE_2D occ_tex glBindTexture
-	GL_TEXTURE_2D 0 $8236 oW occ_h 0 GL_RED_INTEGER GL_UNSIGNED_INT oc_out glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D 0 glBindTexture
-|--- origen de cada sprite
-	1 'ssbo_org glGenBuffers
-	GL_SHADER_STORAGE_BUFFER ssbo_org glBindBuffer
-	GL_SHADER_STORAGE_BUFFER n3dsprites 2 << oc_org GL_STATIC_DRAW glBufferData
-	GL_SHADER_STORAGE_BUFFER 5 ssbo_org glBindBufferBase
-	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-|--- shader
-	'ss3d_shadow_src loadShaderv 'ss3d_shsh !
-	ss3d_shsh glUseProgram
-	ss3d_shsh "uShift"  glGetUniformLocation ss3dshS glUniform1i
-	ss3d_shsh "uMaxCol" glGetUniformLocation oc_maxcol glUniform1i
-	0 glUseProgram
-	;
+::SS3Dshadowbuild | --	; compila el shader de sombra (llamar luego de ss3dload); S se ignora: sin LOD
+	'ss3d_shadow_src loadShaderv 'ss3d_shsh ! ;
 
 ::SS3Dshadowdraw | --	; dibuja las instancias en el fbo activo (profundidad desde la luz); UBO ShadowU en binding 3
 	ss3d_inst 0? ( drop ; ) drop
 	ss3d_shsh 0? ( drop ; ) drop
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
-	GL_TEXTURE5 glActiveTexture GL_TEXTURE_2D occ_tex glBindTexture
+	GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
+	GL_SHADER_STORAGE_BUFFER 6 ssbo_cols glBindBufferBase
 	GL_DEPTH_TEST glEnable
 	GL_CULL_FACE glEnable
 	GL_BACK glCullFace
@@ -616,21 +496,18 @@ void main() {
 	bbox_vao glBindVertexArray
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
 	0 glBindVertexArray
-	GL_TEXTURE0 glActiveTexture
 	;
 
 ::SS3Dshutdown
-	ssbo_inst   1? ( 1 'ssbo_inst   glDeleteBuffers  ) drop
-	idx_tex     1? ( 1 'idx_tex     glDeleteTextures ) drop
-	atlas_tex   1? ( 1 'atlas_tex   glDeleteTextures ) drop
+	ssbo_inst    1? ( 1 'ssbo_inst    glDeleteBuffers ) drop
 	ssbo_sprites 1? ( 1 'ssbo_sprites glDeleteBuffers ) drop
-	ss3d_shader 1? ( ss3d_shader glDeleteProgram     ) drop
-	ss3d_shsh   1? ( ss3d_shsh glDeleteProgram       ) drop
-	occ_tex     1? ( 1 'occ_tex     glDeleteTextures ) drop
-	ssbo_org    1? ( 1 'ssbo_org    glDeleteBuffers  ) drop
-	bbox_vao    1? ( 1 'bbox_vao   glDeleteVertexArrays ) drop
-	bbox_vbo    1? ( 1 'bbox_vbo   glDeleteBuffers   ) drop
-	bbox_ibo    1? ( 1 'bbox_ibo   glDeleteBuffers   ) drop
+	ssbo_cols    1? ( 1 'ssbo_cols    glDeleteBuffers ) drop
+	ssbo_pal     1? ( 1 'ssbo_pal     glDeleteBuffers ) drop
+	ss3d_shader  1? ( ss3d_shader glDeleteProgram     ) drop
+	ss3d_shsh    1? ( ss3d_shsh glDeleteProgram       ) drop
+	bbox_vao     1? ( 1 'bbox_vao   glDeleteVertexArrays ) drop
+	bbox_vbo     1? ( 1 'bbox_vbo   glDeleteBuffers   ) drop
+	bbox_ibo     1? ( 1 'bbox_ibo   glDeleteBuffers   ) drop
 	;
 
 ::SS3Ddraw
@@ -640,8 +517,9 @@ void main() {
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
 
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
-	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D atlas_tex $ffff and glBindTexture
-	GL_TEXTURE3 glActiveTexture GL_TEXTURE_1D idx_tex glBindTexture
+	GL_SHADER_STORAGE_BUFFER 4 ssbo_inst glBindBufferBase
+	GL_SHADER_STORAGE_BUFFER 6 ssbo_cols glBindBufferBase
+	GL_SHADER_STORAGE_BUFFER 7 ssbo_pal glBindBufferBase
 
 	GL_DEPTH_TEST glEnable
 	GL_CULL_FACE glEnable
@@ -654,6 +532,16 @@ void main() {
 	GL_TRIANGLES 36 GL_UNSIGNED_INT 0 ss3d_inst glDrawElementsInstanced
 	0 glBindVertexArray
 	;
+
+|--- tamano de cada sprite (voxels)
+::ss3dinfo | n -- v		; entrada de la tabla (8 bytes: atlasIndex | sizeX sizeY sizeZ 0)
+	3 << defspr + @ ;
+::ss3dLX | n -- v		; ancho (x)
+	3 << defspr + 4 + c@ $ff and ;
+::ss3dLY | n -- v		; alto: capas (y)
+	3 << defspr + 5 + c@ $ff and ;
+::ss3dLZ | n -- v		; fondo (z)
+	3 << defspr + 6 + c@ $ff and ;
 
 :growinst | i -- i	; ss3d_inst llega al menos a i+1
 	ss3d_inst >=? ( dup 1+ 'ss3d_inst ! ) ;
@@ -793,15 +681,6 @@ void main() {
 ::ss3dreset  
 	0 'ss3d_inst ! ;
 	
-::ss3dinfo | n -- v
-	3 << defspr + @ ;
-::ss3dLX | n -- v
-	ss3dinfo 16 >> $ffff and ;
-::ss3dLY | n -- v
-	ss3dinfo 48 >> $ffff and ;
-::ss3dLZ | n -- v
-	ss3dinfo $ffff and ;
-	
 ::ss3dfloor | scale n -- val
 	ss3dLY * 0.005 *. ;
 
@@ -833,6 +712,18 @@ void main() {
 ::ss3dcol | color i --	; solo el color
 	growinst
 	5 << 3dss_array + 4 + d! ;
+
+|--- copiar instancias / cantidad dibujada
+::ss3dcopy | src dst --	; copia los 32 bytes de la instancia src en dst
+	growinst
+	ab[
+	5 << 3dss_array + >b
+	5 << 3dss_array + >a
+	a@+ b!+ a@+ b!+ a@+ b!+ a@ b!
+	]ba ;
+
+::ss3dlen! | n --	; cantidad de instancias que se dibujan (0..n-1)
+	'ss3d_inst ! ;
 
 |--- picking: rayo contra la caja orientada (OBB) de cada instancia
 |    el rayo se pasa al espacio local de la instancia (rotando por el
@@ -911,18 +802,6 @@ void main() {
 		0 >=? ( pkbest <=? ( dup 'pkbest ! over 'pkbi ! ) ) drop
 		) drop
 	pkbi ;
-
-|--- copiar instancias / cantidad dibujada
-::ss3dcopy | src dst --	; copia los 32 bytes de la instancia src en dst
-	growinst
-	ab[
-	5 << 3dss_array + >b
-	5 << 3dss_array + >a
-	a@+ b!+ a@+ b!+ a@+ b!+ a@ b!
-	]ba ;
-
-::ss3dlen! | n --	; cantidad de instancias que se dibujan (0..n-1)
-	'ss3d_inst ! ;
 
 |--- cota de las instancias (para ajustar el mapa de sombras) ----------------
 #bx0 #by0 #bz0 #bx1 #by1 #bz1 #bms

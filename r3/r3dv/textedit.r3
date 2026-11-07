@@ -205,7 +205,7 @@
 	;
 
 :load3d
-	"media/ss/d4"
+	"r3/r3dv/ss3d2/d4"
 	dup 8192 ss3dload
 	ss3loadnames	
 	0.5 -0.5 0 0 packq rxyz>q16 'charq !
