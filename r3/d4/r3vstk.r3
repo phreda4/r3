@@ -211,7 +211,6 @@
 	nreset ;
 
 ::vs.norm | --
-	optlevel 2 <? ( drop ; ) drop
 	vn 0? ( drop ve 0? ( drop ; ) drop norm0 ; ) drop
 	normn ;
 
@@ -853,6 +852,9 @@
 		dup basename pick2 =s 1? ( drop nip 3 << 'vd + ! ; ) drop
 		1+ ) 4drop ;
 
+::vs.handled? | i -- f ; the base word i has handler or descriptor
+	dup 3 << 'vh + @ swap 3 << 'vd + @ or 1? ( drop 1 ; ) drop 0 ;
+
 ::vs.init | --
 	'vh 0 256 fill 'vd 0 256 fill
 	'v.dup "DUP" sethv 'v.drop "DROP" sethv 'v.over "OVER" sethv
@@ -933,7 +935,6 @@
 | ENTRY: the token is made with the virtual stack ( 1 ) or not ( 0 )
 |---------------------------------------------------------------
 ::vs.tok | tok -- f
-	optlevel 2 <? ( 2drop 0 ; ) drop
 	vn 8 >? ( vs.norm ) drop
 	dup $ff and
 	8 =? ( 2drop 1 ; )

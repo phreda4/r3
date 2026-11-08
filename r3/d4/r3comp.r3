@@ -1,14 +1,15 @@
 | r3 simple compiler - plain.r3 to assembler text (fasm)
 | PHREDA 2026
 |---------------------------------------------------------------
-| one fragment of code for each base word, no optimization.
+| the base words are made by r3vstk (virtual stack + descriptors) and r3opt1 (rbp folding)
+| fragments here: only the words of the system (LOADLIB GETPROC SYS0..SYS10)
 | input : r3/d4/gen/plain.r3 (made by r3plain.r3)
 | output: asm/code.asm asm/data.asm asm/set.asm (see asm/r3fasm*.asm)
 |
 | registers
 |   rax = TOS     rbp = data stack pointer, [rbp] = NOS (grows up)
 |   rsp = return stack      r14 = A    r15 = B
-|   rbx rcx rdx rsi rdi r8-r11 = scratch
+|   rbx rcx rdx rsi rdi r8-r13 = scratch
 |
 | fragments: ';' separates instructions, '~' is the jump label
 | labels: wN = word or var N (dic index), lN = token N, sN = string at strm+N
@@ -22,135 +23,8 @@
 #osnames "WIN" "LIN" "MAC" "RPI"
 
 |---------------------------------------------------------------
-| FRAGMENTS (names as in r3base)
+| FRAGMENTS of the system words (names as in r3base)
 |---------------------------------------------------------------
-#fragc
-"EX" "mov rcx,rax;mov rax,[rbp];sub rbp,8;or rcx,rcx;jz @f;call rcx;@@:"
-"0?" "or rax,rax;jnz ~"
-"1?" "or rax,rax;jz ~"
-"+?" "or rax,rax;js ~"
-"-?" "or rax,rax;jns ~"
-"<?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;jge ~"
-">?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;jle ~"
-"=?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;jne ~"
-">=?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;jl ~"
-"<=?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;jg ~"
-"<>?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cmp rax,rbx;je ~"
-"AND?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;test rax,rbx;jz ~"
-"NAND?" "mov rbx,rax;mov rax,[rbp];sub rbp,8;test rax,rbx;jnz ~"
-"IN?" "mov rdx,rax;mov rbx,[rbp];mov rax,[rbp-8];sub rbp,16;mov rcx,rax;sub rdx,rbx;sub rcx,rbx;cmp rcx,rdx;ja ~"
-"DUP" "add rbp,8;mov [rbp],rax"
-"DROP" "mov rax,[rbp];sub rbp,8"
-"OVER" "add rbp,8;mov [rbp],rax;mov rax,[rbp-8]"
-"PICK2" "add rbp,8;mov [rbp],rax;mov rax,[rbp-16]"
-"PICK3" "add rbp,8;mov [rbp],rax;mov rax,[rbp-24]"
-"PICK4" "add rbp,8;mov [rbp],rax;mov rax,[rbp-32]"
-"SWAP" "xchg rax,[rbp]"
-"NIP" "sub rbp,8"
-"ROT" "mov rcx,[rbp];mov [rbp],rax;mov rax,[rbp-8];mov [rbp-8],rcx"
-"-ROT" "mov rcx,[rbp-8];mov [rbp-8],rax;mov rax,[rbp];mov [rbp],rcx"
-"2DUP" "mov rcx,[rbp];mov [rbp+8],rax;mov [rbp+16],rcx;add rbp,16"
-"2DROP" "mov rax,[rbp-8];sub rbp,16"
-"3DROP" "mov rax,[rbp-16];sub rbp,24"
-"4DROP" "mov rax,[rbp-24];sub rbp,32"
-"2OVER" "mov [rbp+8],rax;add rbp,16;mov rbx,[rbp-32];mov [rbp],rbx;mov rax,[rbp-24]"
-"2SWAP" "xchg rax,[rbp-8];mov rcx,[rbp-16];xchg rcx,[rbp];mov [rbp-16],rcx"
-">R" "push rax;mov rax,[rbp];sub rbp,8"
-"R>" "add rbp,8;mov [rbp],rax;pop rax"
-"R@" "add rbp,8;mov [rbp],rax;mov rax,[rsp]"
-"AND" "and rax,[rbp];sub rbp,8"
-"OR" "or rax,[rbp];sub rbp,8"
-"XOR" "xor rax,[rbp];sub rbp,8"
-"+" "add rax,[rbp];sub rbp,8"
-"NAND" "not rax;and rax,[rbp];sub rbp,8"
-"-" "neg rax;add rax,[rbp];sub rbp,8"
-"*" "imul rax,[rbp];sub rbp,8"
-"/" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cqo;idiv rbx"
-"MOD" "mov rbx,rax;mov rax,[rbp];sub rbp,8;cqo;idiv rbx;mov rax,rdx"
-"/MOD" "mov rbx,rax;mov rax,[rbp];cqo;idiv rbx;mov [rbp],rax;xchg rax,rdx"
-"<<" "mov cl,al;mov rax,[rbp];sub rbp,8;shl rax,cl"
-">>" "mov cl,al;mov rax,[rbp];sub rbp,8;sar rax,cl"
-">>>" "mov cl,al;mov rax,[rbp];sub rbp,8;shr rax,cl"
-"*/" "mov rbx,rax;mov rcx,[rbp];mov rax,[rbp-8];sub rbp,16;cqo;imul rcx;idiv rbx"
-"*>>" "mov rcx,rax;mov rax,[rbp];sub rbp,8;cqo;imul qword[rbp];shrd rax,rdx,cl;sar rdx,cl;and rcx,64;cmovne rax,rdx;sub rbp,8"
-"<</" "mov rcx,rax;mov rbx,[rbp];mov rax,[rbp-8];sub rbp,16;cqo;shld rdx,rax,cl;shl rax,cl;idiv rbx"
-"NOT" "not rax"
-"NEG" "neg rax"
-"ABS" "cqo;add rax,rdx;xor rax,rdx"
-"SQRT" "cvtsi2sd xmm0,rax;sqrtsd xmm0,xmm0;cvttsd2si rax,xmm0"
-"CLZ" "bsr rax,rax;xor rax,63"
-"@" "mov rax,qword[rax]"
-"@+" "mov rbx,qword[rax];add rax,8;add rbp,8;mov [rbp],rax;mov rax,rbx"
-"!" "mov rcx,[rbp];mov [rax],rcx;mov rax,[rbp-8];sub rbp,16"
-"!+" "mov rcx,[rbp];mov [rax],rcx;add rax,8;sub rbp,8"
-"+!" "mov rcx,[rbp];add [rax],rcx;mov rax,[rbp-8];sub rbp,16"
-">A" "mov r14,rax;mov rax,[rbp];sub rbp,8"
-"A>" "add rbp,8;mov [rbp],rax;mov rax,r14"
-"A+" "add r14,rax;mov rax,[rbp];sub rbp,8"
-"A@" "add rbp,8;mov [rbp],rax;mov rax,qword[r14]"
-"A!" "mov qword[r14],rax;mov rax,[rbp];sub rbp,8"
-"A@+" "add rbp,8;mov [rbp],rax;mov rax,qword[r14];add r14,8"
-"A!+" "mov qword[r14],rax;add r14,8;mov rax,[rbp];sub rbp,8"
-">B" "mov r15,rax;mov rax,[rbp];sub rbp,8"
-"B>" "add rbp,8;mov [rbp],rax;mov rax,r15"
-"B+" "add r15,rax;mov rax,[rbp];sub rbp,8"
-"B@" "add rbp,8;mov [rbp],rax;mov rax,qword[r15]"
-"B!" "mov qword[r15],rax;mov rax,[rbp];sub rbp,8"
-"B@+" "add rbp,8;mov [rbp],rax;mov rax,qword[r15];add r15,8"
-"B!+" "mov qword[r15],rax;add r15,8;mov rax,[rbp];sub rbp,8"
-"C@" "movsx rax,byte[rax]"
-"C@+" "movsx rbx,byte[rax];add rax,1;add rbp,8;mov [rbp],rax;mov rax,rbx"
-"C!" "mov rcx,[rbp];mov [rax],cl;mov rax,[rbp-8];sub rbp,16"
-"C!+" "mov rcx,[rbp];mov [rax],cl;add rax,1;sub rbp,8"
-"C+!" "mov rcx,[rbp];add [rax],cl;mov rax,[rbp-8];sub rbp,16"
-"CA@" "add rbp,8;mov [rbp],rax;movsx rax,byte[r14]"
-"CA!" "mov byte[r14],al;mov rax,[rbp];sub rbp,8"
-"CA@+" "add rbp,8;mov [rbp],rax;movsx rax,byte[r14];add r14,1"
-"CA!+" "mov byte[r14],al;add r14,1;mov rax,[rbp];sub rbp,8"
-"CB@" "add rbp,8;mov [rbp],rax;movsx rax,byte[r15]"
-"CB!" "mov byte[r15],al;mov rax,[rbp];sub rbp,8"
-"CB@+" "add rbp,8;mov [rbp],rax;movsx rax,byte[r15];add r15,1"
-"CB!+" "mov byte[r15],al;add r15,1;mov rax,[rbp];sub rbp,8"
-"W@" "movsx rax,word[rax]"
-"W@+" "movsx rbx,word[rax];add rax,2;add rbp,8;mov [rbp],rax;mov rax,rbx"
-"W!" "mov rcx,[rbp];mov [rax],cx;mov rax,[rbp-8];sub rbp,16"
-"W!+" "mov rcx,[rbp];mov [rax],cx;add rax,2;sub rbp,8"
-"W+!" "mov rcx,[rbp];add [rax],cx;mov rax,[rbp-8];sub rbp,16"
-"WA@" "add rbp,8;mov [rbp],rax;movsx rax,word[r14]"
-"WA!" "mov word[r14],ax;mov rax,[rbp];sub rbp,8"
-"WA@+" "add rbp,8;mov [rbp],rax;movsx rax,word[r14];add r14,2"
-"WA!+" "mov word[r14],ax;add r14,2;mov rax,[rbp];sub rbp,8"
-"WB@" "add rbp,8;mov [rbp],rax;movsx rax,word[r15]"
-"WB!" "mov word[r15],ax;mov rax,[rbp];sub rbp,8"
-"WB@+" "add rbp,8;mov [rbp],rax;movsx rax,word[r15];add r15,2"
-"WB!+" "mov word[r15],ax;add r15,2;mov rax,[rbp];sub rbp,8"
-"D@" "movsxd rax,dword[rax]"
-"D@+" "movsxd rbx,dword[rax];add rax,4;add rbp,8;mov [rbp],rax;mov rax,rbx"
-"D!" "mov rcx,[rbp];mov [rax],ecx;mov rax,[rbp-8];sub rbp,16"
-"D!+" "mov rcx,[rbp];mov [rax],ecx;add rax,4;sub rbp,8"
-"D+!" "mov rcx,[rbp];add [rax],ecx;mov rax,[rbp-8];sub rbp,16"
-"DA@" "add rbp,8;mov [rbp],rax;movsxd rax,dword[r14]"
-"DA!" "mov dword[r14],eax;mov rax,[rbp];sub rbp,8"
-"DA@+" "add rbp,8;mov [rbp],rax;movsxd rax,dword[r14];add r14,4"
-"DA!+" "mov dword[r14],eax;add r14,4;mov rax,[rbp];sub rbp,8"
-"DB@" "add rbp,8;mov [rbp],rax;movsxd rax,dword[r15]"
-"DB!" "mov dword[r15],eax;mov rax,[rbp];sub rbp,8"
-"DB@+" "add rbp,8;mov [rbp],rax;movsxd rax,dword[r15];add r15,4"
-"DB!+" "mov dword[r15],eax;add r15,4;mov rax,[rbp];sub rbp,8"
-"AB[" "push r14;push r15"
-"]BA" "pop r15;pop r14"
-"MOVE" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];rep movsq;mov rax,[rbp-16];sub rbp,24"
-"MOVE>" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];lea rsi,[rsi+rcx*8-8];lea rdi,[rdi+rcx*8-8];std;rep movsq;cld;mov rax,[rbp-16];sub rbp,24"
-"FILL" "mov rcx,rax;mov rax,qword[rbp];mov rdi,qword[rbp-8];rep stosq;mov rax,[rbp-16];sub rbp,24"
-"CMOVE" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];rep movsb;mov rax,[rbp-16];sub rbp,24"
-"CMOVE>" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];lea rsi,[rsi+rcx-1];lea rdi,[rdi+rcx-1];std;rep movsb;cld;mov rax,[rbp-16];sub rbp,24"
-"CFILL" "mov rcx,rax;mov rax,qword[rbp];mov rdi,qword[rbp-8];rep stosb;mov rax,[rbp-16];sub rbp,24"
-"DMOVE" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];rep movsd;mov rax,[rbp-16];sub rbp,24"
-"DMOVE>" "mov rcx,rax;mov rsi,qword[rbp];mov rdi,qword[rbp-8];lea rsi,[rsi+rcx*4-4];lea rdi,[rdi+rcx*4-4];std;rep movsd;cld;mov rax,[rbp-16];sub rbp,24"
-"DFILL" "mov rcx,rax;mov rax,qword[rbp];mov rdi,qword[rbp-8];rep stosd;mov rax,[rbp-16];sub rbp,24"
-"MEM" "add rbp,8;mov [rbp],rax;mov rax,[FREE_MEM]"
-( 0 )
-
 #fragwin
 "LOADLIB" "cinvoke64 LoadLibraryA,rax"
 "GETPROC" "cinvoke64 GetProcAddress,qword[rbp],rax;sub rbp,8"
@@ -197,7 +71,7 @@
 #bn
 :setfrag | i --
 	dup basename 'bn !
-	bn osfrag findfrag 0? ( drop bn 'fragc findfrag )
+	bn osfrag findfrag
 	swap 3 << 'ftab + ! ;
 
 :buildtab
@@ -257,19 +131,7 @@
 :,push "add rbp,8;mov [rbp],rax" ,ins ;
 :,movax ib "mov rax," ,s ;
 :,iend ie opt.ins ;
-:,pushl | n --
-	,push ,movax ,num ,iend ;
-
-:gk0 40 >>> src + str>anro nip ,pushl ;		| big literal
-:gk1 tks ,pushl ;							| literal
 :gk2 ib "call " ,s tkv ,wlab ,iend ;		| word
-:gk3 ,push ,movax "w" ,s tkv ,h ,iend ;		| 'word
-:gk4 ,push ,movax "qword[w" ,s tkv ,h "]" ,s ,iend ;	| var
-:gk5 gk3 ;									| 'var
-:gk6 ,push ,movax "s" ,s tkv ,h ,iend ;		| "string"
-
-#gtype 'gk0 'gk1 'gk2 'gk3 'gk4 'gk5 'gk6
-
 :gk11 | tok --  ] push address of the anonymous
 	,push ,movax "l" ,s tkv ,h ,iend ;
 
@@ -284,7 +146,6 @@
 	9 =? ( drop dup tkv 0? ( 2drop ; ) drop jtarget 'jt ! "jmp ~" ,ins ; )
 	10 =? ( drop jtarget 'jt ! "jmp ~" ,ins ; )
 	11 =? ( drop gk11 ; )
-	13 25 in? ( swap jtarget 'jt ! gfrag ; )
 	swap drop gfrag ;
 
 :gentoken | tok --
@@ -293,7 +154,7 @@
 	vs.norm
 	dup $ff and
 	6 >? ( gbase ; )
-	3 << 'gtype + @ ex ;
+	drop gk2 ;			| only the call of a word is made here
 
 |---------------------------------------------------------------
 | CODE
@@ -408,7 +269,7 @@
 :filecode
 	mark
 	"; r3 simple compiler - code" ,s ,lf
-	opt.reset vs.init vs.reset
+	opt.reset vs.reset
 	gencode
 	opt.end
 	"asm/code.asm" savefile ;
@@ -443,12 +304,15 @@
 
 :checktab
 	5 ( dup basename c@ 1? drop
-		dup 3 << 'ftab + @ 0? ( over basename "no fragment: %s" .println ) drop
+		dup 3 << 'ftab + @ 0?
+			( over vs.handled? 0? ( pick2 basename "no handler or fragment: %s" .println ) drop )
+		drop
 		1+ ) 2drop ;
 
 :compiling..
 	targetplain
 	selos 'osfrag ! buildtab
+	vs.init
 	checktab
 	here dup 'lbl ! cnttok + 'here !
 	lbl 0 cnttok cfill
@@ -461,8 +325,6 @@
 :
 	.reset
 	"r3 simple compiler" .println
-	|0 'optlevel !		| 0 = no optimization
-	optlevel "optlevel: %d" .println
 	'osnames osgen $3 and 2 << + "target: %s" .println
 	'filename r3load
 	error 1? ( .println drop ; ) drop
