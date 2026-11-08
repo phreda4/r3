@@ -149,6 +149,7 @@
 	backtui ;
 
 :docompile
+	target 1? ( drop "Compile: only the WIN target for now" 'msg strcpy ; ) drop
 	error 1? ( drop ; ) drop
 	genplain
 	plainok? 0? ( drop
@@ -158,6 +159,35 @@
 	"r3/d4/r3comp.r3" r3run
 	"compile done" 'msg strcpy
 	backtui ;
+
+|---- focus by panel: Tab / Shift+Tab change panel, up / down move inside the first four
+|     widgets of each panel, in draw order: Target 0-3, Inline 4-8, Budget 9-12, Build 13-14, Files 15, Definitions 16
+#pstart 0 4 9 13 15 16 17
+
+:pstart@ | n -- id
+	3 << 'pstart + @ ;
+
+:npanels | -- n		; Files and Definitions are not drawn when the code has an error
+	error 1? ( drop 4 ; ) drop 6 ;
+
+:curpanel | -- n
+	0 ( dup 1+ pstart@ tuFocus <=? drop 1+ ) drop ;
+
+:gopanel | n --
+	pstart@ tuFocus! ;
+
+:ptab | dir --
+	curpanel +
+	-? ( drop npanels 1- gopanel ; )
+	npanels >=? ( drop 0 gopanel ; )
+	gopanel ;
+
+:pstep | dir --
+	curpanel 4 >=? ( 2drop ; )
+	dup pstart@ swap 1+ pstart@ rot tuFocus +
+	pick2 <? ( drop 1- nip tuFocus! ; )
+	over >=? ( 2drop tuFocus! ; )
+	nip nip tuFocus! ;
 
 |---- screen
 :lbl | "" --
@@ -243,7 +273,8 @@
 
 :foot
 	fhome bg3
-	fPr " F2" .write fTx " Compile " .write
+	fPr " TAB" .write fTx " Panel " .write
+	fPr "F2" .write fTx " Compile " .write
 	fPr "F3" .write fTx " Plain " .write
 	fPr "ESC" .write fTx " Exit " .write
 	fMu 'msg .write .eline ;
@@ -251,6 +282,8 @@
 
 :keys
 	uikey
+	[tab] =? ( 1 ptab ) [shift+tab] =? ( -1 ptab )
+	[dn] =? ( 1 pstep ) [up] =? ( -1 pstep )
 	[f2] =? ( docompile )
 	[f3] =? ( doplain )
 	[esc] =? ( tuiexit )

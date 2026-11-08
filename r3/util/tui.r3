@@ -164,6 +164,12 @@ rflag $4 or 'rflag ! ;
 
 ::tuRefocus
 	-1 'idfa ! ;
+
+::tuFocus | -- n ; widget that has the focus (index in draw order)
+	idf ;
+
+::tuFocus! | n -- ; give the focus to widget n (index in draw order)
+	'idfh ! tuR! ;
 	
 ::tuif | -- flag
 	id 
@@ -314,6 +320,7 @@ rflag $4 or 'rflag ! ;
 	drop
 	kbBtn
 	fhome
+	tuif 1? ( .rev ) drop
 	fw swap calign here .write 
 	.reset 1 'fy +!
 	tuX? 0? ( 2drop ; ) drop ex ;
@@ -349,6 +356,10 @@ rflag $4 or 'rflag ! ;
 	cntlist >=? ( drop "" ; )
 	3 << indlist + @ ;
 	
+:clampoff | 'var h -- 'var h	; el offset no puede pasar de total-h (cambia al abrir/cerrar ramas)
+	cntlist over - 0 max
+	pick2 8 + dup @ rot min swap ! ;
+
 |---- CLICK
 :clicklist | 'var h e -- 'var h e
 	evtmy fy -
@@ -391,10 +402,6 @@ rflag $4 or 'rflag ! ;
 |----- LIST
 | #vlist 0 0 
 
-:clampoff | 'var h -- 'var h
-	cntlist over - 0 max
-	pick2 8 + dup @ rot min swap ! ;
-	
 :chsel | 'var n key delta -- 'var n key
 	pick3 dup @ rot + cntlist 1- clamp0max swap ! | 'v n k nv
 	pageadj
@@ -429,7 +436,8 @@ rflag $4 or 'rflag ! ;
 ::tuList | 'var list --
 	fhome
 	mark makeindx
-	fh clampoff
+	fh
+	clampoff
 	mouList
 	focList
 	0 ( over <? ilist 1+ ) drop
@@ -471,7 +479,8 @@ rflag $4 or 'rflag ! ;
 ::tuListN | 'var listn --
 	fhome
 	makeindxn
-	fh clampoff
+	fh
+	clampoff
 	mouList
 	focList
 	0 ( over <? ilistn 1+ ) drop
@@ -491,7 +500,7 @@ rflag $4 or 'rflag ! ;
 	( >>0 dup c@ 1? 
 		$1f and lvl >? drop ) ;
 
-:nextv | adr -- adr'
+:nextv | adr -- adr'		; salta (si hace falta) los hijos de una carpeta cerrada; adr' puede ser el final
 	dup c@ 0? ( drop ; )
 	$1f and getval 'lvl ! ;
 
@@ -555,7 +564,8 @@ rflag $4 or 'rflag ! ;
 ::tuTree | 'var list --
 	fhome
 	mark maketree
-	fh clampoff
+	fh
+	clampoff
 	mouTree
 	focTree	| focus
 	0 ( over <? itree 1+ ) drop
@@ -656,6 +666,7 @@ rflag $4 or 'rflag ! ;
 	dup .bc
 	drop
 	fhome
+	tuif 1? ( .rev ) drop
 	over @ checkr .write .write 
 	.reset 1 'fy +!
 	tuif 0? ( 2drop ; ) drop
@@ -674,6 +685,7 @@ rflag $4 or 'rflag ! ;
 	dup .bc
 	drop
 	fhome
+	tuif 1? ( .rev ) drop
 	pick2 pick2 @ checkr .write .write 
 	.reset 1 'fy +!
 	tuif 0? ( 3drop ; ) drop
