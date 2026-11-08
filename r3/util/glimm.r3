@@ -7,7 +7,7 @@
 
 |--- init of the frame: the old engine (immMouse...) and the new one
 ::immIni | --
-	immIniOld uiStart 4 4 uiPad ;
+	immIniOld uiStart 4 4 uiPad txh txh!  ;
 
 |--- old glimm names
 ::uiFTBtn | 'v "" -- ; full width button
@@ -25,4 +25,3 @@
 ::uiFill | -- ; the rest of the frame is the current one and the zone of the old engine (immMouse)
 	uiRest uiWinBox immBox ;
 
-: txh txh! ; | comment to generate

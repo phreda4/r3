@@ -15,6 +15,12 @@
 | calls to the system ( call rax , acall , cinvoke64 ) do not touch rbp
 |
 | 1 line of text for each instruction
+|
+| peephole window ( the lines are written when the next one is known ):
+|   call wN , ret                 ->  jmp wN                  tail call
+|   call rcx , @@: , ret          ->  jmp rcx , @@: , ret     tail EX ( 0 goes to the ret )
+|   jcc A , jmp B , A:            ->  jncc B , A:
+|   after jmp / ret until the next label: dead code, not written
 |---------------------------------------------------------------
 ^r3/lib/mem.r3
 ^r3/lib/str.r3
@@ -100,33 +106,105 @@
 	neg o.tab "lea rbp,[rbp-" ,s ,d "]" ,s o.nl 0 'rbd ! ;
 
 |---------------------------------------------------------------
-| 0 normal  1 canonical rbp  2 canonical rbp (jcc, keep the flags)
-:bound | t -- t k
-	"call w" =pre 1? ( drop 1 ; ) drop
-	"call rcx" =pre 1? ( drop 1 ; ) drop
-	"ret" =pre 1? ( drop 1 ; ) drop
-	"jmp " =pre 1? ( drop 1 ; ) drop
-	":" =pos 1? ( drop 1 ; ) drop
-	dup c@ $6a =? ( drop 2 ; ) drop
-	0 ;
+| PEEPHOLE : pending lines
+|   pk  0 none  1 call wN  2 jcc  3 jcc,jmp  4 call rcx  5 call rcx,@@:
+|   rbp must be canonical ( rbd = 0 ) to join the lines
+|---------------------------------------------------------------
+#pend * 256		| first pending line
+#pend2 * 256	| second pending line
+#pk 0
+#dead 0			| 1 = unreachable code ( after jmp / ret ) until the next label
+#tmpl * 256
 
-:ins2 | t k --
-	1 =? ( drop flushadd emit1 ; )
-	2 =? ( drop flushlea emit1 ; )
-	drop emit1 ;
+:pflush | -- ; the pending lines go to the output as they are
+	pk 0? ( drop ; )
+	'pend emit1
+	3 =? ( 'pend2 emit1 ) 5 =? ( 'pend2 emit1 ) drop
+	0 'pk ! ;
+
+:emitjmp | -- ; the pending call becomes jmp
+	o.tab "jmp " ,s 'pend 5 + ,s o.nl
+	1 'nout +! 0 'pk ! ;
+
+| jcc -> inverse jcc
+#jlist "jz" "jnz" "jnz" "jz" "jge" "jl" "jl" "jge" "jg" "jle" "jle" "jg"
+"je" "jne" "jne" "je" "js" "jns" "jns" "js" "ja" "jbe" ( 0 )
+
+:jinv | "jcc ..." -- "jncc"/0
+	'jlist ( dup c@ 1?
+		drop over over =s 1? ( drop nip >>0 ; ) drop
+		>>0 >>0 )
+	3drop 0 ;
+
+:tgt1 'pend 32 findchar 1+ ;		| target of the pending jcc
+:tgt2 'pend2 4 + ;					| target of the pending jmp
+
+:labmatch | "label:" "target" -- f
+	swap 'tmpl strcpy
+	'tmpl count + 1- 0 swap c!
+	'tmpl swap =s ;
+
+:cclose | "label:" -- ; the label comes after  jcc A , jmp B
+	'pend jinv 0? ( drop pflush flushadd emitl ; )
+	over tgt1 labmatch 0? ( 2drop pflush flushadd emitl ; ) drop
+	o.tab ,s " " ,s tgt2 ,s o.nl
+	1 'nout +! 0 'pk !
+	emitl ;
+
+|--- each kind of instruction
+:i.ret | t --
+	pk 1 =? ( rbd 0? ( 3drop emitjmp 1 'dead ! ; ) drop ) drop
+	pk 5 =? ( rbd 0? ( 2drop emitjmp 'pend2 emit1 emit1 1 'dead ! ; ) drop ) drop
+	pflush flushadd emit1 1 'dead ! ;
+
+:i.call | t --
+	pflush flushadd 'pend strcpy 1 'pk ! ;
+
+:i.callx | t --
+	pflush flushadd 'pend strcpy 4 'pk ! ;
+
+:i.jcc | t -- ; flags must live, lea
+	pflush flushlea 'pend strcpy 2 'pk ! ;
+
+:i.jmpl | t -- ; jmp to a local label
+	pk 2 =? ( rbd 0? ( 2drop 'pend2 strcpy 3 'pk ! 1 'dead ! ; ) drop ) drop
+	pflush flushadd emit1 1 'dead ! ;
+
+:i.jmp | t --
+	pflush flushadd emit1 1 'dead ! ;
+
+:i.lab | t -- ; label of the code ( @@: )
+	pk 4 =? ( drop 'pend2 strcpy 5 'pk ! ; ) drop
+	pflush flushadd emit1 ;
+
+:dispatch | t --
+	"ret" =pre 1? ( drop i.ret ; ) drop
+	"call w" =pre 1? ( drop i.call ; ) drop
+	"call rcx" =pre 1? ( drop i.callx ; ) drop
+	"jmp l" =pre 1? ( drop i.jmpl ; ) drop
+	"jmp " =pre 1? ( drop i.jmp ; ) drop
+	":" =pos 1? ( drop i.lab ; ) drop
+	dup c@ $6a =? ( drop i.jcc ; ) drop
+	pflush emit1 ;
 
 |---------------------------------------------------------------
 ::opt.ins | "instr" --
 	1 'nins +!
+	dead 1? ( 2drop ; ) drop
 	"add rbp," =pre 1? ( drop 8 + parsemul 'rbd +! ; ) drop
 	"sub rbp," =pre 1? ( drop 8 + parsemul neg 'rbd +! ; ) drop
-	rewrite bound ins2 ;
+	rewrite dispatch ;
 
 ::opt.label | "label:" --
-	flushadd emitl ;
+	0 'dead !
+	pk 3 =? ( drop cclose ; ) drop
+	pflush flushadd emitl ;
 
 ::opt.reset | --
-	0 'rbd ! 0 'nins ! 0 'nout ! ;
+	0 'rbd ! 0 'nins ! 0 'nout ! 0 'pk ! 0 'dead ! ;
 
 ::opt.end | --
-	flushadd ;
+	pflush flushadd ;
+
+::opt.flush | -- ; writes the pending lines ( before a comment )
+	pflush flushadd ;

@@ -123,8 +123,13 @@
 :,cte | v --
 	dup 32 << 32 >> <>? ( "$" ,s ,h ; ) ,d ;
 
-:,lbl | v --
-	dup 32 >>> 'lpre nth ,s $ffffffff and ,h ;
+:,lbl | v --			| value = offset<<34 | class<<32 | index
+	dup 32 >>> $3 and 'lpre nth ,s
+	dup $ffffffff and ,h
+	34 >> ,off ;
+
+:lbl+ | v n -- v'		| label + constant, the offset goes in the cell
+	34 << + ;
 
 :,opn | k v --
 	swap 0? ( drop ,reg ; )
@@ -300,11 +305,18 @@
 	bk bv cdec
 	0 ra vpush ;
 
+:lblc? | -- f ; a is a label and b a small constant: w+k, no code
+	ak 3 <>? ( drop 0 ; ) drop
+	bk 2 <>? ( drop 0 ; ) drop
+	bv abs $fffffff >? ( drop 0 ; ) drop 1 ;
+
 :v.add
 	setab cte2? 1? ( drop av bv + vcte 1 ; ) drop
-	comm "add" bin 1 ;
+	comm lblc? 1? ( drop 3 av bv lbl+ vpush 1 ; ) drop
+	"add" bin 1 ;
 :v.sub
 	setab cte2? 1? ( drop av bv - vcte 1 ; ) drop
+	lblc? 1? ( drop 3 av bv neg lbl+ vpush 1 ; ) drop
 	"sub" bin 1 ;
 :v.mul
 	setab cte2? 1? ( drop av bv * vcte 1 ; ) drop

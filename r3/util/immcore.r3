@@ -10,7 +10,7 @@
 ^r3/lib/sdl2.r3
 
 
-#txh 8 
+#txh 16
 
 ::txh! | fh --  ; set heigth font
 	'txh ! ;

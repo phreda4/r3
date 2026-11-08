@@ -10,4 +10,3 @@
 ^r3/util/immcore.r3
 ^r3/util/immwid.r3
 
-|: txh txh! ;

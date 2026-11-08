@@ -159,7 +159,18 @@
 |---------------------------------------------------------------
 | CODE
 |---------------------------------------------------------------
+|--- the comment that plain.r3 has over each word: | :name | stack --
+:backcr | adr -- adr'	| the CR before adr
+	( 1- dup c@ 13 <>? drop ) drop ;
+
+:,rem | name --			| name = the name of the word in plain.r3
+	dup backcr dup backcr 1+		| name end start
+	dup c@ $7c <>? ( 3drop "; " ,s ,word ,lf ; ) drop
+	59 ,c 1+					| ; instead of |
+	( over <? c@+ 92 =? ( drop 47 ) ,c ) 3drop ,lf ;
+
 :genword | nro --
+	opt.flush dup nro>dic @ dic>name ,rem
 	dup cntdef 1- =? ( "INICIO:" opt.label ) drop
 	vs.norm ib dup ,wlab ":" ,s ie opt.label
 	vs.reset
@@ -182,25 +193,55 @@
 |---------------------------------------------------------------
 | DATA
 |---------------------------------------------------------------
-#cc
-:,scch | ch --
-	cc 60 >=? ( 2drop ; ) drop
-	32 <? ( drop $2e ) ,c 1 'cc +! ;
+#strsrc		| strm offset -> the string in the source ( 0 = unknown )
 
-:,scom | str --
-	"; " ,s 0 'cc ! ( c@+ 1? ,scch ) 2drop ;
+:ssrc | tok -- adr			| first char of the string in the source ( after the " )
+	40 >>> src + 1+ ;
 
-:,sbytes | str -- str'
+:cpycadsrc | adr --			| the text as in the source, control chars as numbers
+	( c@+ 1?
+		34 =? ( drop c@+
+			34 <>? ( 2drop ; )
+			"""," ,s dup ,d "," ,s )
+		$ff and 32 <? ( """," ,s ,d "," ,s 34 )
+		,c ) 2drop ;
+
+:,srcstr | adr --			| "text",0
+	34 ,c cpycadsrc 34 ,c ",0" ,s ,lf ;
+
+:,sbytes | str -- str'		| bytes, only if the source of the string is unknown
 	,tab "db " ,s
 	( c@+ 1? ,d "," ,s ) drop
 	"0" ,s ,lf ;
 
+:,sstr | str -- str'		| string of strm, the text of the source if is known
+	dup strm - 3 << strsrc + @
+	1? ( ,tab "db " ,s ,srcstr >>0 ; ) drop
+	,sbytes ;
+
 :genstrings
 	strm ( strm> <?
-		dup ,scom ,lf
 		dup strm - "s%h:" ,print ,lf
-		,sbytes )
+		,sstr )
 	drop ;
+
+|--- the source of each string of the code
+:mapstr1 | tok --
+	dup $ff and 6 <>? ( 2drop ; ) drop
+	dup tkv 3 << strsrc + dup @ 1? ( 3drop ; ) drop
+	swap ssrc swap ! ;
+
+:mapstrw | nro --
+	nro>dic toklen
+	( 1? 1- swap @+ mapstr1 swap ) 2drop ;
+
+:mapstr1w | nro --
+	dup nro>dic @ 1 and? ( 2drop ; ) drop mapstrw ;
+
+:mapstrs
+	here dup 'strsrc ! strm> strm - 3 << + 'here !
+	strsrc 0 strm> strm - fill
+	0 ( cntdef <? dup mapstr1w 1+ ) drop ;
 
 #dsz 8	| size of the item 8 4 1, 0 = reserve
 #dop -1	| directive of the open line
@@ -228,8 +269,8 @@
 :ditemw | idx --
 	dsz 4 =? ( dline ,wlab ; ) drop 8 dline ,wlab ;
 
-:ditems | str --
-	dflush ,sbytes drop ;
+:ditems | adr --
+	dflush ,tab "db " ,s ,srcstr ;
 
 :gdtoken | tok --
 	dup $ff and
@@ -237,7 +278,7 @@
 	1 =? ( drop tks ditemn ; )
 	3 =? ( drop tkv ditemw ; )
 	5 =? ( drop tkv ditemw ; )
-	6 =? ( drop tkv strm + ditems ; )
+	6 =? ( drop ssrc ditems ; )
 	8 =? ( 2drop 1 'dsz ! ; )
 	9 =? ( 2drop 8 'dsz ! ; )
 	10 =? ( 2drop 4 'dsz ! ; )
@@ -246,7 +287,7 @@
 	2drop ;
 
 :gendata | nro --
-	"; " ,s dup nro>dic @ dic>name ,word ,lf
+	dup nro>dic @ dic>name ,rem
 	dup ,wlab ":" ,s ,lf
 	8 'dsz ! dflush
 	dup nro>dic toklend
@@ -316,6 +357,7 @@
 	checktab
 	here dup 'lbl ! cnttok + 'here !
 	lbl 0 cnttok cfill
+	mapstrs
 	filecode
 	filedata
 	fileset
