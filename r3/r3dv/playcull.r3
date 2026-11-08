@@ -17,10 +17,10 @@
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./ss3d.r3
 ^./ss3dshadow.r3
-^./glimm.r3
+^r3/util/glimm.r3
 ^./rlgrid.r3
 
 |---------------------------------
@@ -356,7 +356,7 @@
 : | <<<<<<<< Boot
 	"play cull" 1024 768 GLini GLInfo
 
-	rlhud
+	glgfx
 	load3d
 	rl_init
 	1 rl_grid_init

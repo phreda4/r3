@@ -2,7 +2,7 @@
 | PHREDA 2026
 | flechas: direccion del sol   ESPACIO: sombras on/off   mouse: camara (arrastrar) y rueda
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./ss3d.r3
 ^./ss3dshadow.r3
@@ -112,7 +112,7 @@
 
 : | <<<<< Boot
 	"demo7 r3dv" 1024 768 GLini GLInfo
-	rlhud
+	glgfx
 	rl_init
 	IniShapes
 	load3d

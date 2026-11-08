@@ -4,9 +4,9 @@
 ^./ss3d.r3
 ^./rl3dtile.r3
 ^./rlshapes.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 
-^./glimm.r3
+^r3/util/glimm.r3
 
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
@@ -229,7 +229,7 @@
 
 : | <<<<<< Boot
 	"Chimp Champ" 1024 768 GLini GLInfo
-	rlhud
+	glgfx
 
 	rl_init
 	IniShapes

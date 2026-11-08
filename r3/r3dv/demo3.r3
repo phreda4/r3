@@ -3,7 +3,7 @@
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./ss3d.r3
 ^./rlgrid.r3
 
@@ -162,14 +162,7 @@
 
 
 :load3d
-|	"media/ss/sprites" 
-	|"media/ss/iti"
-	|"media/ss/vox2"
-|	"media/ss/mezcla"
-|	"media/ss/voxi"
-|	"media/ss/cars"
-|	"media/ss/test"
-	"media/ssv/mexcla"
+	"media/ssv/iti"
 	dup 256 ss3dload
 	ss3loadnames
 	
@@ -198,7 +191,7 @@
 
 : | <<<<<<<< Boot
 	"demo3 r3dv" 1024 768 GLini GLInfo
-	rlhud
+	glgfx
 	rl_init
 	
 	load3d

@@ -3,11 +3,11 @@
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
 ^./rlgridp.r3
-^./glimm.r3
+^r3/util/glimm.r3
 
 | Camera controls
 #cam_yaw  0  
@@ -629,7 +629,7 @@
 
 	"3dtile Editor" GLiniFull
 	GLInfo
-	rlhud
+	glgfx
 
 	rl_init
 	IniShapes

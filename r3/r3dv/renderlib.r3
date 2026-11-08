@@ -2,7 +2,7 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gl.r3
-^./gllib.r3
+^r3/util/gllib.r3
 
 #rl_shader_light 
 "@vertex-----------------

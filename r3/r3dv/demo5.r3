@@ -5,9 +5,9 @@
 
 ^./renderlib.r3
 ^./rlshapes.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./ss3d.r3
-^./glimm.r3
+^r3/util/glimm.r3
 ^./rlgrid.r3
 
 #objlist 0 0 
@@ -812,7 +812,7 @@
 
 	$fff vaini
 	
-	rlhud
+	glgfx
 	load3d
 	"media/bvh/pajaro.r3a" 
 	|"media/bvh/lobo.r3a" 

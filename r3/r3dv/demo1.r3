@@ -2,7 +2,7 @@
 | Cubo (geom) + Esfera, Capsula, Cilindro, Cono, Disco, Plano (impostors)
 | PHREDA 2026
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./rlshapes.r3
 
 | ============================================================
@@ -178,7 +178,7 @@
 
 : | <<<<<< Boot
     "demo_shapes r3dv" 1024 768 GLini GLInfo
-    rlhud
+    glgfx
     rl_init
     IniShapes
 

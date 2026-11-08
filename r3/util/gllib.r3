@@ -1,5 +1,6 @@
 | glLIB
 | PHREDA 2026
+^r3/lib/sdl2gl.r3
 ^r3/lib/console.r3
 ^r3/lib/vec3.r3
 ^r3/lib/sdl2image.r3

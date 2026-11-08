@@ -3,7 +3,7 @@
 ^r3/lib/rand.r3
 
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./ss3d.r3
 ^./rlgrid.r3
 
@@ -134,7 +134,7 @@
 
 : | <<<<<<<< Boot
 	"demo4 select" 1024 768 GLini GLInfo
-	rlhud
+	glgfx
 	rl_init
 	
 	load3d

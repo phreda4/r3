@@ -1,7 +1,7 @@
 | demo1 r3dv
 | PHREDA 2026
 ^./renderlib.r3
-^./rlhud.r3
+^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
 
@@ -173,7 +173,7 @@
 
 : | <<<<<< Boot
 	"demo escena" 1024 768 GLini GLInfo
-	rlhud
+	glgfx
 	rl_init
 	IniShapes
 	

@@ -1,8 +1,8 @@
-| Head Up Display
+| glgfx: 2D drawing over OpenGL (rects, bitmap font, images)
 | PHREDA 2026
 
-^./renderlib.r3
-^./gllib.r3
+^r3/lib/sdl2gl.r3
+^r3/util/gllib.r3
 
 #font_shader "
 @vertex--------------------------
@@ -100,7 +100,7 @@ void main() {
 #imgsizes    * 128  | 16 x 8 bytes  (w, h as int32 pairs)
 ##imgcount 0
 
-::rlhud
+::glgfx
 	fixFontResize
 
 	'font_shader loadShaderv
