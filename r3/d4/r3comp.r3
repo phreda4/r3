@@ -469,5 +469,5 @@
 	compiling..
 	
 |WIN|	"asm\compile.bat" sys "r3fasm.exe" sys	
-|LIN|	".\asm\compilelin.sh" sys
+|LIN|	"./asm/compilelin.sh" sys "./r3forth" sys
 	;

@@ -149,7 +149,6 @@
 	backtui ;
 
 :docompile
-	target 1? ( drop "Compile: only the WIN target for now" 'msg strcpy ; ) drop
 	error 1? ( drop ; ) drop
 	genplain
 	plainok? 0? ( drop
