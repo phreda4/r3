@@ -136,7 +136,7 @@
 	uiPush
 	cx cy cw ch uiBox
 	uiZone $222222 color uiFill
-	4 4 uiPading
+	4 4 uiPad
 	
 	txh 16 + uiN
 
@@ -147,7 +147,7 @@
 	[ 2 'modocal ! ; ] anio .d uiNBtn
 	
 	txh 16 + uiS
-	8 8 uiPading
+	8 8 uiPad
 	3 1 uiGrid
 	0 0 uiat
 	StInfo 'setnowdmy "Hoy" uiRBtn
@@ -163,7 +163,7 @@
 |-----------------------------
 :uiHMS
 	uiZone $222222 color uiFill
-	4 4 uiPading
+	4 4 uiPad
 
 	1 11 UIGrid |$444444 color uiRFill
 	0 0 uiAt 

@@ -24,11 +24,8 @@
 ::%ch | frac -- px ; fixed point fraction (1.0 = all) of the height of the current frame in pixels
 	fh 16 *>> ;
 
-::uiPadding | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
+::uiPad | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
 	'flpady ! 'flpadx ! f2c ;
-
-::uiPading | x y -- ; old name of uiPadding
-	uiPadding ;
 
 #flstack * 128 | 16 levels
 #flstack> 'flstack

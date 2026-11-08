@@ -267,7 +267,7 @@
 	'wavelist swap ( 1? 1- swap >>0 swap ) drop ;
 
 :wavebtns
-	2 2 uiPading
+	2 2 uiPad
 	6 3 uiGrid
 	0 ( fxnwaves <?
 		p_wave =? ( stWarn )
@@ -284,7 +284,7 @@
 	$0 cls
 
 	uiStart
-	8 2 uiPading
+	8 2 uiPad
 	font1 txfont
 
 	0.05 %h uiN

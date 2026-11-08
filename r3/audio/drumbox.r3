@@ -120,7 +120,7 @@
 	$0 cls
 	
 	uiStart 
-	2 1 uiPading
+	2 1 uiPad
 	
 	font1 txfont
 	0.05 %h uiN

@@ -72,7 +72,7 @@
 :gui
 	|font1 txfont
 	uiStart
-	4 4 uiPading
+	4 4 uiPad
 	$ffffff color
 	
 	0.05 %h uiN $004800 color uiWinBox frect

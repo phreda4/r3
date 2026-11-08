@@ -141,7 +141,7 @@
 	showbomb?	
 	
 	uiStart
-	8 4 uiPading
+	8 4 uiPad
 	|0.7 %w uiO
 	
 	uiZoneW 'click uiClk 

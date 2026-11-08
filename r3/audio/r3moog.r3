@@ -460,7 +460,7 @@
 	$0 cls
 	font1 txfont
 	uiStart
-	4 8 uiPading
+	4 8 uiPad
 	$ffffff color
 	
 	0.02 %h uiN 

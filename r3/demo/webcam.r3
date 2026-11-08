@@ -112,7 +112,7 @@
 	;
 	
 :guipanel
-	uiStart 8 8 uiPading
+	uiStart 8 8 uiPad
 	0.01 %w uiO
 	0.18 %w uiO
 	"WEBCAM" uiLabelc

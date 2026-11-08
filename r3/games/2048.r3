@@ -107,7 +107,7 @@
 	drawmap
 
 	uiStart
-	8 4 uiPading
+	8 4 uiPad
 	
 	0.2 %w uiE
 	$ffffff txrgb

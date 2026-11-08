@@ -7,7 +7,7 @@
 
 |--- init of the frame: the old engine (immMouse...) and the new one
 ::immIni | --
-	immIniOld uiStart 4 4 uiPadding ;
+	immIniOld uiStart 4 4 uiPad ;
 
 |--- old glimm names
 ::uiFTBtn | 'v "" -- ; full width button

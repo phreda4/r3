@@ -83,7 +83,7 @@
 	drawmap
 	
 	uiStart
-	8 4 uiPading
+	8 4 uiPad
 	
 	
 	0.3 %w uiE

@@ -159,7 +159,7 @@
 
 	cx cy cw ch uiBox
 	uiZone $222222 color uiFill
-	4 4 uiPading
+	4 4 uiPad
 
 	txh 16 + uiN
 	

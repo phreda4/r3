@@ -195,7 +195,7 @@
 	advance-t
 	
 	uiStart
-	8 4 uiPading
+	8 4 uiPad
 	$ffffff txrgb
 	0.05 %h uiN
 	

@@ -306,7 +306,7 @@
 :main
 	$0 cls
 	uiStart
-	8 8 uiPading
+	8 8 uiPad
 	font txfont
 	|__________
 	0.05 %h uiN
