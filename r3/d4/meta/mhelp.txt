@@ -1855,6 +1855,54 @@ flScanFullDir | "path" -- ; like flScanDir but uiDirs also has the files (the fo
 flOpenFullPath | "root/a/b" -- place ; open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
 flOpenSearch | "text" -- adr/0 ; first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
 flCloseAll | -- ; close all the folders of uiDirs
+fcolor
+fscale
+fixFontResize | --
+imgcount
+glgfx
+fimgload | "" -- idx
+fimgtex | tex -- idx
+fimgwh | idx -- w h
+fini
+fend
+fat
+ftext | "" --
+fsizeh | -- cnh
+fsizew | -- cnw
+fsize | "" -- "" sizew sizeh
+fsizecnt | "" cnt -- ""
+frect | x y w h --
+rect | x y w h --
+frectb | x y w h b --
+rectb | x y w h b --
+imgdrawuv | idx dx dy dw dh sx sy sw sh --
+imgdraw | idx dx dy dw dh --
+immIni | --
+uiFTBtn | 'v "" -- ; full width button
+uiTBtn | 'v "" -- ; button as wide as its text, next one at the right (uiLn to end the row)
+uiFToggle | 'var "text" --
+uiWrite | "" -- ; text at the cursor, the next widget goes at the right
+gZoneAll | -- x y w h ; the current frame
+gZoneEle | -- x y w h ; the cursor box
+uiFill | -- ; the rest of the frame is the current one and the zone of the old engine (immMouse)
+mat
+mati | aux inv
+mat>
+matini
+cpymatif | 'dest 'src --
+cpymatif3
+matProjV | near far asp fov --
+mortho | r l t b f n --
+mlookat | 'eye 'at 'up --
+mat* | 'mat --
+matinv | -- | mat --> mati |invert
+matrot | rx ry rz -- ; rotate
+matpos | x y z -- ; traslate
+matscale | x y z -- ; scale
+matprint | mat --
+loadShaderv | "shader" -- idprogram
+glLoadImg | "" -- t
+glColorTex | col -- texid
 H2d.ini | maxobj -- ; reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
 H2d.clear | -- ; empty the hash table and the contact list (call it every frame before adding the objects)
 H2d.list | -- 'adr cnt ; list of contacts found: cnt dwords, each (newer object nro << 16) | older object nro
@@ -1894,19 +1942,29 @@ immfileload | 'vecload 'file --
 immfilesave | 'vecload 'file --
 fullfilename
 uiFileName | 'var --
-uiDateTime | 'var --
-uiDate | 'var --
-uiTime | 'var --
+txh! | fh --  ; set heigth font
+fx
+fy
+fw
+fh | frame (layout area)
+flpadx
+flpady
+flcols
+flrows
+flcolm
+flrowm
 cx | x of the cursor box (the current widget) in pixels
 cy | y of the cursor box
 cw | width of the cursor box
 ch | height of the cursor box
 %cw | frac -- px ; fixed point fraction (1.0 = all) of the width of the current frame in pixels
 %ch | frac -- px ; fixed point fraction (1.0 = all) of the height of the current frame in pixels
-uiPading | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
+uiPad | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
 uiBox | x y w h -- ; set the current frame (layout area) and push it on the layout stack; the cursor box is the frame minus the padding
+uiWinBox | -- x y w h ; the current frame
+uiLn | -- ; end of a row of uiNBtn/uiTlabel: back to the left of the frame and down one line
 uiFull | -- ; the frame is the whole screen
-uiPush | -- ; push the current frame on the layout stack (8 levels)
+uiPush | -- ; push the current frame on the layout stack (16 levels, the last ones are ignored)
 uiPop | -- ; pop the layout stack and make that frame the current one
 uiRest | -- ; make the frame at the top of the layout stack (what uiN uiS uiE uiO leave) the current one
 uiN | lines -- ; take a strip of that height (pixels) from the top of the current frame and make it current; the rest stays on the stack (a negative value is the whole height minus it)
@@ -1918,9 +1976,12 @@ uiTo | w h -- ; set the size of the cursor box to w x h grid cells
 uiGrid | c r -- ; divide the frame in c columns by r rows (adjusted to fit) and put the cursor at the cell 0 0
 uiNext | -- ; move the cursor to the next grid cell going along the rows (it goes back to the first one at the end)
 uiNextV | -- ; move the cursor to the next grid cell going down the columns
+idfh
 mdrag | number of the place (uiPlace) under the mouse while dragging, -1 if none
+uistate
 keymd | key modifiers: bit 0 is set while a shift key is down
 btnMouse | mouse button mask (sdlb) of the last press on a widget
+uiEx! | -- ; mark the last widget as activated (uiEx? is true)
 uiEx? | -- flag ; not 0 if the last widget was activated (clicked or Enter pressed)
 uiOvr | 'v -- ; execute 'v while the mouse is over the widget
 uiDwn | 'v -- ; execute 'v on the frame the button is pressed on the widget
@@ -1930,9 +1991,11 @@ uiUp | 'v -- ; execute 'v when the mouse button is released or the mouse goes ou
 uiFocusIn | 'v -- ; execute 'v on the frame the widget gets the keyboard focus
 uiFocus | 'v -- ; execute 'v while the widget keeps the keyboard focus (after the first frame)
 uiStart | -- ; start of a gui frame, once per frame before the widgets: frame = whole screen, ids and drag reset, shift key tracked
+idfs
 uiExitWidget | -- ; close the pending last widget (the open combo list)
 uiSaveLast | x y w h 'vector -- ; save a widget (its box and font) to be executed by uiEnd after the others (used for pop-ups)
 uiEnd | -- ; end of a gui frame: executes the pending last widget (the open combo list), drawn over the others
+chx
 uiZone | -- ; define the interaction area of the widget (cursor box, one text line high) and compute its mouse and focus state; read it with uiOvr uiClk uiFocus...
 uiZoneL | nlines -- ; like uiZone with an area of nlines text lines
 uiZoneW | -- ; like uiZone with the whole cursor box height
@@ -1943,6 +2006,47 @@ uiRefocus | -- ; clear the keyboard focus (the first widget takes it)
 uiFocus>> | -- ; move the keyboard focus to the next widget
 uiFocus<< | -- ; move the keyboard focus to the previous widget
 tabfocus | -- ; action of the Tab key: next widget, or the previous one if shift is down
+uiDateTime | 'var --
+uiDate | 'var --
+uiTime | 'var --
+immIniOld | -- ; immIni of sdl2gl (old engine), for programs that mix both
+color | rgb -- ; draw color $RRGGBB (alpha 255)
+txrgb | rgb -- ; text color $RRGGBB
+txfont | font -- ;
+txfont@ | -- font ;
+txh | -- h ; line height
+txw | "" -- "" w ; width in pixels
+txat | x y --
+txwrite | "" -- ; draw the string at the cursor, the cursor moves
+txicon | char -- ; draw a one char icon, the cursor moves
+icChkOn
+icChkOff
+icRadOn
+icRadOff
+icTreeC
+icTreeO
+icCombo
+txcur | str cur -- ; block cursor over the char at cur
+txcuri | str cur -- ; insert cursor (bar at the bottom)
+txalign | $VH -- ; low 2 bits horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
+txText | w h x y "" -- ; the string in the box x y w h with the txalign alignment
+fround | r x y w h -- ; plain rect
+round | r x y w h -- ; plain rect outline
+lineH | x1 y x2 --
+lineV | x y1 y2 --
+imageb | 'box img -- ; not done in this backend
+gclip | x y w h -- ; clip the drawing to the rectangle
+gclip0 | --
+txicon | char -- ; draw a one char icon vertically centered in the text line, the cursor moves
+icChkOn
+icChkOff
+icRadOn
+icRadOff
+icTreeC
+icTreeO
+icCombo
+gclip | x y w h -- ; clip the drawing to the rectangle
+gclip0 | -- ; remove the clip
 uiFill | -- ; fill the cursor box with the draw color
 uiRect | -- ; outline of the cursor box
 uiRFill | round -- ; fill the cursor box with rounded corners of that radius
@@ -1972,6 +2076,8 @@ uilCRect | -- ; like uilRect as a capsule
 uil.. | -- ; move the cursor down one text line
 ui.. | -- ; move the cursor down one text line plus the padding
 ui-- | -- ; draw a horizontal separator line and move the cursor down
+uiClip | -- ; clip the drawing to the interaction area
+uiUnclip | -- ; remove the clip
 ttwrite | "text" -- ; write the text left aligned at the cursor box
 ttwritec | "text" -- ; write the text centered in the cursor box width
 ttwriter | "text" -- ; write the text right aligned in the cursor box
@@ -1989,9 +2095,12 @@ uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (it sho
 uiSlideri | min max 'value -- ; horizontal slider of an integer value
 uiProgressf | min max 'value -- ; horizontal progress bar of a fixed point value (it can be dragged)
 uiProgressi | min max 'value -- ; horizontal progress bar of an integer value
+uiSliderfL | "name" min max 'value -- ; like uiSliderf with the name at the left and the value at the right
+uiSlideriL | "name" min max 'value -- ; like uiSlideri with the name at the left and the value at the right
 uiVSliderf | min max 'value -- ; vertical slider of a fixed point value
 uiVSlideri | min max 'value -- ; vertical slider of an integer value
 uiNindx | n -- str ; string number n of the list being drawn by the list widgets ("" if n is out of range)
+uiToggle | 'var "text" -- ; on/off button: the variable is 0 or 1; click or Enter changes it; it is filled while on
 uiCheck | 'var 'list -- ; one check box per string of the list (0-terminated strings, an empty one ends the list); each bit of the variable is a box
 uiRadio | 'var 'list -- ; one radio button per string of the list; the variable holds the number of the chosen one
 uiList | 'var cntl 'list -- ; list box of cntl lines over the strings of the list; 'var points to two cells: the selected number and the first line shown (it scrolls with the wheel, keys or the bar)

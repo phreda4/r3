@@ -529,7 +529,3 @@
 	abort 1? ( "ERROR: limite superado, salida incompleta" .println ) drop
 	np ncol nspr "%d sprites, %d columnas, %d colores" .println ;
 
-: 
-	"media/ssv/vox" voxdir			| carpeta con los .vox
-	"media/ssv/vox" voxconvert	| genera sprites.ssv y sprites.txt
-	waitkey ;

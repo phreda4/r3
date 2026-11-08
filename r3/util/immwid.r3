@@ -4,6 +4,10 @@
 | Needs a backend (immsdl.r3 or immgl.r3) and immcore.r3 included before.
 |
 ^r3/lib/color.r3
+^r3/util/immcore.r3
+
+|uncomment for generate help
+|^r3/util/immsdl.r3
 
 :ui+a
 	dup 'cx +! 'cy +! ;

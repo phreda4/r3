@@ -42,6 +42,7 @@
 	over 2 << + a> +
 	dup d@ setfg 
 	spitch + d@ setbg 
+	lfg lbg =? ( drop .sp ; ) drop
 	"▀" .write ;
 	
 :drawimg

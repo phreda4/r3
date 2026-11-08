@@ -54,10 +54,15 @@
 	3 << 'rc + @ ;
 
 #pool ( 3 4 5 6 7 8 9 10 11 1 2 0 )
+#rbusy 0		| registers that alloc must not use ( bit r )
+
+:regfree? | r -- f
+	dup rcc 1? ( 2drop 0 ; ) drop
+	1 swap << rbusy and 0? ( drop 1 ; ) drop 0 ;
 
 :alloc | -- r
 	0 ( 12 <?
-		dup 'pool + c@ rcc 0? ( drop 'pool + c@ dup rci ; ) drop
+		dup 'pool + c@ regfree? 1? ( drop 'pool + c@ dup rci ; ) drop
 		1+ ) drop
 	"; ERROR: no free register" opt.ins 3 ;
 
@@ -340,17 +345,6 @@
 	st rcd
 	0 bv vpush 1 ;
 
-| shift by a constant
-:v.sh | "mn" -- f
-	0 vtop swap 2 <>? ( 3drop 0 ; ) 2drop
-	setab
-	ak av own 'ra !
-	ib ,s " " ,s ra ,reg "," ,s bv $3f and ,d ie opt.ins
-	0 ra vpush 1 ;
-:v.shl "shl" v.sh ;
-:v.sar "sar" v.sh ;
-:v.shr "shr" v.sh ;
-
 |---------------------------------------------------------------
 | CONDITIONS  ( compare the cells and jump, a stays in the stack )
 |---------------------------------------------------------------
@@ -491,6 +485,343 @@
 :v.sp4 4 vstorep ;
 
 |---------------------------------------------------------------
+| DESCRIPTORS  ( where the data are, how to resolve them )
+|---------------------------------------------------------------
+| "rows" = row ^ row ^ ...          the first row that fits is used
+| row    = inputs | clobbers | outputs | template
+|
+| inputs ( from the deepest to the top, #0 is the top, #1 the next ... )
+|   R  register, exclusive, changed by the code ( can be the output R )
+|   r  register        H  register or memory     G  register, memory or imm32
+|   V  register or imm32                          M  register, label or imm32
+|   N  count: rcx or constant ( $i is  cl  or the number )
+|   K  constant ( K{lo,hi} only if lo<=value<=hi )
+|   A C D S I  the value must be in rax rcx rdx rsi rdi
+| clobbers   a c d s i : registers that the code destroys
+| outputs    A C D : result in that register    R : the register of the R input
+|            n : a new register ( %0 %1 .. )     - : none
+| template   instructions separated by ;  and
+|   #i  operand ( #iB #iW #iD  low byte/word/dword )   $i constant or cl ( $i-64 $i&63 )
+|   %k  register of the output k
+|
+| ~ at the start of the row : commutative ( the constant to the right )
+|---------------------------------------------------------------
+#ik * 64	| input cells ( 0 = top )
+#iv * 64
+#ni 0
+#tcl * 16	| class of each input ( deepest first )
+#tlo * 128
+#thi * 128
+#rp #pc #rclob #rout #rtpl #rcomm
+#cur #tx #ty #ti #tc #tkk #tvv #ci #pii #pi #nw #tp #no #po
+#evx #evy #evi #evm #evc #tx2 #ecnt #tt
+#orr * 64
+#ol * 64
+
+:ik@ 3 << 'ik + @ ;
+:iv@ 3 << 'iv + @ ;
+:iset | k v i --
+	3 << >a a> 'iv + ! a> 'ik + ! ;
+
+:cls | i -- c
+	ni 1- swap - 'tcl + c@ ;
+:clo | i -- v
+	ni 1- swap - 3 << 'tlo + @ ;
+:chi | i -- v
+	ni 1- swap - 3 << 'thi + @ ;
+
+|--- parse a row
+:pbrace | -- ; pc is at {
+	1 'pc +! pc str>nro swap 'pc !
+	dup ni 3 << 'tlo + ! ni 3 << 'thi + !
+	pc c@ $2c <>? ( drop 1 'pc +! ; ) drop
+	1 'pc +!
+	pc c@ $7d =? ( drop 99999999 ni 3 << 'thi + ! 1 'pc +! ; ) drop
+	pc str>nro swap 'pc ! ni 3 << 'thi + !
+	1 'pc +! ;
+
+:pcl1 | -- ; one class
+	pc c@ ni 'tcl + c!
+	-99999999 ni 3 << 'tlo + !
+	99999999 ni 3 << 'thi + !
+	1 'pc +!
+	pc c@ $7b =? ( pbrace ) drop
+	1 'ni +! ;
+
+:skipbar | --
+	( pc c@ 1? $7c =? ( drop 1 'pc +! ; ) drop 1 'pc +! ) drop ;
+
+:parse.row | --
+	rp 'pc ! 0 'rcomm ! 0 'ni !
+	pc c@ $7e =? ( 1 'rcomm ! 1 'pc +! ) drop
+	( pc c@ 1? $7c <>? drop pcl1 ) drop
+	1 'pc +! pc 'rclob ! skipbar
+	pc 'rout ! skipbar
+	pc 'rtpl ! ;
+
+:nextrow | --
+	rtpl ( c@+ 1? $5e =? ( drop 'rp ! ; ) drop ) drop 1- 'rp ! ;
+
+|--- the row fits ?
+:guard? | i -- f
+	dup ik@ 2 <>? ( 2drop 0 ; ) drop
+	dup iv@ 'tvv !
+	dup clo tvv >? ( 2drop 0 ; ) drop
+	chi tvv <? ( drop 0 ; ) drop 1 ;
+
+:rowok? | -- f
+	0 ( ni <?
+		dup cls $4b =? ( over guard? 0? ( 3drop 0 ; ) drop ) drop
+		1+ ) drop 1 ;
+
+|--- classes -> registers
+:ltr | c -- r
+	$df and
+	$41 =? ( drop 0 ; ) $43 =? ( drop 1 ; ) $44 =? ( drop 2 ; )
+	$53 =? ( drop 4 ; ) $49 =? ( drop 5 ; ) drop -1 ;
+
+:maskadd | r --
+	-? ( drop ; ) 1 swap << rbusy or 'rbusy ! ;
+
+:fieldmask | p --
+	( c@+ 1? $7c =? ( 2drop ; ) ltr maskadd ) 2drop ;
+
+:mkmask | --
+	0 'rbusy !
+	0 ( ni <?
+		dup cls ltr maskadd
+		dup cls $4e =? ( over ik@ 2 <>? ( 1 maskadd ) drop ) drop
+		1+ ) drop
+	rclob fieldmask rout fieldmask ;
+
+:inx? | i X -- f
+	'tx ! dup ik@ 0 <>? ( 2drop 0 ; ) drop iv@ tx eq? ;
+
+|--- move holders of a register to another one
+:isr? | k v -- f
+	swap 0 <>? ( 2drop 0 ; ) drop evx eq? ;
+
+:patchV | --
+	0 ( vn <?
+		dup kv@ isr? 1? ( 0 evy pick3 kv! 1 'evc +! ) drop
+		1+ ) drop ;
+
+:okpatch? | i -- f
+	evm 2 =? ( 2drop 1 ; ) 1 =? ( drop evi eq? 0? ( drop 1 ; ) drop 0 ; ) 2drop 0 ;
+
+:patchI | --
+	0 ( ni <? dup 'pii !
+		pii okpatch? 1? ( pii ik@ pii iv@ isr? 1? ( 0 evy pii iset 1 'evc +! ) drop ) drop
+		1+ ) drop ;
+
+:phantom | -- ; the entry cell 0 ( rax ) becomes a cell
+	ve 0? ( nextent insb ) drop ;
+
+:inin | X -- n ; input cells that are in the register X
+	'tx2 ! 0 'ecnt !
+	0 ( ni <? dup 'pii !
+		pii ik@ 0 =? ( pii iv@ tx2 eq? ecnt + 'ecnt ! ) drop
+		1+ ) drop ecnt ;
+
+:evict | X mode exi --
+	'evi ! 'evm ! 'evx !
+	evx rcc 0? ( drop ; ) drop
+	evm 0? ( evx rcc evx inin - 1 <? ( 2drop ; ) drop ) drop
+	evx 0? ( phantom ) drop
+	alloc 'evy !
+	ib "mov " ,s evy ,reg "," ,s evx ,reg ie opt.ins
+	0 'evc !
+	patchV patchI
+	evc evy 3 << 'rc + !
+	evx rcc evc - evx 3 << 'rc + ! ;
+
+:toreg | i X --
+	'tx ! 'ti !
+	ti tx inx? 1? ( drop tx 1 ti evict ; ) drop
+	tx 2 -1 evict
+	ib "mov " ,s tx ,reg "," ,s ti ik@ ti iv@ ,opn ie opt.ins
+	ti ik@ ti iv@ cdec
+	0 tx ti iset tx rci ;
+
+:ownin | i --
+	'ti !
+	ti ik@ ti iv@ own 'tx !
+	0 tx ti iset ;
+
+:awayfrom | i --
+	'ti !
+	ti ik@ 0 <>? ( drop ; ) drop
+	1 ti iv@ << rbusy and 0? ( drop ; ) drop
+	ti iv@ 'tx ! alloc 'ty !
+	ib "mov " ,s ty ,reg "," ,s tx ,reg ie opt.ins
+	tx rcd 0 ty ti iset ;
+
+:okcls? | i c -- f
+	'tc ! dup ik@ 'tkk ! iv@ 'tvv !
+	tkk 2 eq? tvv imm32? and 'ci !
+	tc $72 =? ( drop tkk 0 eq? ; )
+	$48 =? ( drop tkk 0 eq? tkk 1 eq? or ; )
+	$47 =? ( drop tkk 0 eq? tkk 1 eq? or ci or ; )
+	$56 =? ( drop tkk 0 eq? ci or ; )
+	$4d =? ( drop tkk 0 eq? tkk 3 eq? or ci or ; )
+	drop 1 ;
+
+:mkcls | i c --
+	$52 =? ( drop ownin ; )
+	over swap okcls? 0? ( drop ownin ; ) 2drop ;
+
+:isother? | c -- f
+	$52 =? ( drop 1 ; ) $72 =? ( drop 1 ; ) $48 =? ( drop 1 ; ) $47 =? ( drop 1 ; )
+	$56 =? ( drop 1 ; ) $4d =? ( drop 1 ; ) drop 0 ;
+
+:stepspec | --
+	cur cls ltr 'ty !
+	ty 0 >=? ( cur ty toreg ) drop
+	cur cls $4e =? ( cur ik@ 2 <>? ( cur 1 toreg ) drop ) drop ;
+
+:stepother | --
+	cur cls 'tc !
+	tc isother? 1? ( drop cur tc mkcls cur awayfrom ; ) drop ;
+
+:evictfield | p --
+	( c@+ 1? $7c =? ( 2drop ; ) ltr +? ( dup 0 -1 evict ) drop ) 2drop ;
+
+:rreg | -- r
+	0 ( ni <? dup cls $52 =? ( drop iv@ ; ) drop 1+ ) drop 0 ;
+
+:out1 | c --
+	$2d =? ( drop ; )
+	dup no 3 << 'ol + !
+	$6e =? ( drop alloc no 3 << 'orr + ! 1 'no +! ; )
+	$52 =? ( drop rreg no 3 << 'orr + ! 1 'no +! ; )
+	ltr no 3 << 'orr + ! 1 'no +! ;
+
+:mkouts | --
+	0 'no ! rout 'po !
+	( po c@ 1? $7c =? ( drop ; ) out1 1 'po +! ) drop ;
+
+|--- template
+:,narrow | i w --
+	'nw ! 'ti !
+	ti ik@ 0 =? ( drop ti iv@ nw ,regw ; )
+	drop ti iv@ nw immw ,d ;
+
+:ph# | --
+	tp c@ $30 - 'pi ! 1 'tp +!
+	tp c@ $42 =? ( drop 1 'tp +! pi 1 ,narrow ; )
+	$57 =? ( drop 1 'tp +! pi 2 ,narrow ; )
+	$44 =? ( drop 1 'tp +! pi 4 ,narrow ; )
+	drop pi ik@ pi iv@ ,opn ;
+
+:skipn | --
+	tp str>nro drop 'tp ! ;
+:skipsfx | --
+	tp c@ $26 =? ( drop 1 'tp +! skipn ; )
+	$2b =? ( drop skipn ; ) $2d =? ( drop skipn ; ) drop ;
+
+:ph$ | --
+	tp c@ $30 - 'pi ! 1 'tp +!
+	pi ik@ 0 =? ( drop "cl" ,s skipsfx ; ) drop
+	pi iv@
+	tp c@ $2d =? ( drop tp str>nro swap 'tp ! + ,d ; )
+	$2b =? ( drop tp str>nro swap 'tp ! + ,d ; )
+	$26 =? ( drop 1 'tp +! tp str>nro swap 'tp ! and ,d ; )
+	drop ,d ;
+
+:ph% | --
+	tp c@ $30 - 'pi ! 1 'tp +!
+	pi 3 << 'orr + @ ,reg ;
+
+:tpl1 | -- f
+	tp c@ 0? ( ; ) $5e =? ( drop 0 ; )
+	1 'tp +!
+	$3b =? ( drop ie opt.ins ib 1 ; )
+	$23 =? ( drop ph# 1 ; )
+	$24 =? ( drop ph$ 1 ; )
+	$25 =? ( drop ph% 1 ; )
+	,c 1 ;
+
+:tpl | --
+	rtpl c@ 0? ( drop ; ) $5e =? ( drop ; ) drop
+	rtpl 'tp ! ib
+	( tpl1 1? drop ) drop
+	ie opt.ins ;
+
+|--- release the inputs, push the outputs
+:rel1 | i --
+	dup cls $52 =? ( 2drop ; ) drop
+	dup ik@ swap iv@ cdec ;
+
+:pushout | k --
+	dup 3 << 'ol + @ swap 3 << 'orr + @
+	swap $6e =? ( drop 0 swap vpush ; )
+	$52 =? ( drop 0 swap vpush ; )
+	drop dup rci 0 swap vpush ;
+
+:finish | --
+	0 ( ni <? dup rel1 1+ ) drop
+	0 ( no <? dup pushout 1+ ) drop ;
+
+:apply | --
+	mkmask
+	0 ( ni <? dup 'cur ! stepspec 1+ ) drop
+	0 ( ni <? dup 'cur ! stepother 1+ ) drop
+	rclob evictfield rout evictfield
+	mkouts tpl finish
+	0 'rbusy ! ;
+
+:popin | --
+	0 ( ni <? vpop pick2 iset 1+ ) drop ;
+
+:pushback | --
+	ni ( 1? 1- dup ik@ over iv@ vpush ) drop ;
+
+:swapin | -- ; the constant to the top
+	1 ik@ 2 <>? ( drop ; ) drop
+	0 ik@ 2 =? ( drop ; ) drop
+	0 'pii ! pii ik@ 'tkk ! pii iv@ 'tvv !
+	1 'pi !
+	pi ik@ pi iv@ pii iset
+	tkk tvv pi iset ;
+
+::vop | "rows" -- f
+	'rp ! parse.row
+	popin
+	rcomm 1? ( swapin ) drop
+	( rp c@ 1?
+		drop parse.row rowok? 1? ( drop apply 1 ; ) drop
+		nextrow ) drop
+	pushback 0 ;
+
+|---------------------------------------------------------------
+| CALL OF A WORD AT RUNTIME, IN?
+|---------------------------------------------------------------
+:ins1 | "text" --
+	ib ,s ie opt.ins ;
+
+:v.ex | -- f
+	vpop 'bv ! 'bk !
+	bk 3 =? ( drop vs.norm ib "call " ,s bv ,lbl ie opt.ins 1 ; ) drop
+	b2reg
+	bv 0? ( alloc 'st ! st bv mov.rr bv rcd st 'bv ! ) drop
+	vs.norm
+	ib "mov rcx," ,s bv ,reg ie opt.ins
+	"test rcx,rcx" ins1 "jz @f" ins1 "call rcx" ins1 "@@:" ins1 1 ;
+
+:v.in | -- f
+	vpop 'cv ! 'ck ! vpop 'bv ! 'bk !
+	0 vtop 'av ! 'ak !
+	prepb
+	alloc 'tt !
+	ib "mov " ,s tt ,reg "," ,s ak av ,opn ie opt.ins
+	ib "sub " ,s tt ,reg "," ,s bk bv ,opn ie opt.ins
+	ck cv own 'ra !
+	ib "sub " ,s ra ,reg "," ,s bk bv ,opn ie opt.ins
+	ib "cmp " ,s tt ,reg "," ,s ra ,reg ie opt.ins
+	tt rcd ra rcd bk bv cdec
+	"ja" 'lmn ! vjump ;
+
+|---------------------------------------------------------------
 | LITERALS AND ADDRESSES
 |---------------------------------------------------------------
 :vtkv 8 >> $ffffffff and ;
@@ -509,15 +840,21 @@
 |---------------------------------------------------------------
 | TABLE OF THE BASE WORDS
 |---------------------------------------------------------------
-#vh * 2048
+#vh * 2048	| handler ( word ) for each base word
+#vd * 2048	| descriptor ( rows ) for each base word
 
 :sethv | 'word "NAME" --
 	0 ( dup basename c@ 1? drop
 		dup basename pick2 =s 1? ( drop nip 3 << 'vh + ! ; ) drop
 		1+ ) 4drop ;
 
+:sethd | "rows" "NAME" --
+	0 ( dup basename c@ 1? drop
+		dup basename pick2 =s 1? ( drop nip 3 << 'vd + ! ; ) drop
+		1+ ) 4drop ;
+
 ::vs.init | --
-	'vh 0 256 fill
+	'vh 0 256 fill 'vd 0 256 fill
 	'v.dup "DUP" sethv 'v.drop "DROP" sethv 'v.over "OVER" sethv
 	'v.pick2 "PICK2" sethv 'v.pick3 "PICK3" sethv 'v.pick4 "PICK4" sethv
 	'v.swap "SWAP" sethv 'v.nip "NIP" sethv 'v.rot "ROT" sethv 'v.-rot "-ROT" sethv
@@ -526,7 +863,6 @@
 	'v.add "+" sethv 'v.sub "-" sethv 'v.mul "*" sethv
 	'v.and "AND" sethv 'v.or "OR" sethv 'v.xor "XOR" sethv 'v.nand "NAND" sethv
 	'v.not "NOT" sethv 'v.neg "NEG" sethv 'v.abs "ABS" sethv
-	'v.shl "<<" sethv 'v.sar ">>" sethv 'v.shr ">>>" sethv
 	'v.fq "@" sethv 'v.fb "C@" sethv 'v.fw "W@" sethv 'v.fd "D@" sethv
 	'v.st8 "!" sethv 'v.st1 "C!" sethv 'v.st2 "W!" sethv 'v.st4 "D!" sethv
 	'v.ad8 "+!" sethv 'v.ad1 "C+!" sethv 'v.ad2 "W+!" sethv 'v.ad4 "D+!" sethv
@@ -534,7 +870,64 @@
 	'v.lt "<?" sethv 'v.gt ">?" sethv 'v.eq "=?" sethv 'v.ge ">=?" sethv 'v.le "<=?" sethv 'v.ne "<>?" sethv
 	'v.andq "AND?" sethv 'v.nandq "NAND?" sethv
 	'v.z "0?" sethv 'v.nz "1?" sethv 'v.pos "+?" sethv 'v.negq "-?" sethv
-	'v.sp8 "!+" sethv 'v.sp1 "C!+" sethv 'v.sp2 "W!+" sethv 'v.sp4 "D!+" sethv ;
+	'v.sp8 "!+" sethv 'v.sp1 "C!+" sethv 'v.sp2 "W!+" sethv 'v.sp4 "D!+" sethv
+	'v.ex "EX" sethv 'v.in "IN?" sethv
+	"AH|d|A|cqo;idiv #0" "/" sethd
+	"AH|d|D|cqo;idiv #0" "MOD" sethd
+	"AH|d|AD|cqo;idiv #0" "/MOD" sethd
+	"AHH|d|A|imul #1;idiv #0" "*/" sethd
+	"AHK{0}|d|A|imul #1^AHK{1,63}|d|A|imul #1;shrd rax,rdx,$0^AHK{64,}|d|A|imul #1;sar rdx,$0-64;mov rax,rdx^AHN|d|A|imul #1;shrd rax,rdx,$0;sar rdx,$0;and ecx,64;cmovne rax,rdx" "*>>" sethd
+	"AHN|d|A|cqo;shld rdx,rax,$0;shl rax,$0;idiv #1" "<</" sethd
+	"R||R|cvtsi2sd xmm0,#0;sqrtsd xmm0,xmm0;cvttsd2si #0,xmm0" "SQRT" sethd
+	"R||R|bsr #0,#0;xor #0,63" "CLZ" sethd
+	"RK{0}||R|^RK||R|shl #1,$0&63^RN||R|shl #1,$0" "<<" sethd
+	"RK{0}||R|^RK||R|sar #1,$0&63^RN||R|sar #1,$0" ">>" sethd
+	"RK{0}||R|^RK||R|shr #1,$0&63^RN||R|shr #1,$0" ">>>" sethd
+	"G|-|-|push #0" ">R" sethd
+	"|-|n|pop %0" "R>" sethd
+	"|-|n|mov %0,[rsp]" "R@" sethd
+	"|-|n|mov %0,[FREE_MEM]" "MEM" sethd
+	"|-|-|push r14;push r15" "AB[" sethd
+	"|-|-|pop r15;pop r14" "]BA" sethd
+	"ISC|-|-|rep movsq" "MOVE" sethd
+	"ISC|-|-|lea rsi,[rsi+rcx*8-8];lea rdi,[rdi+rcx*8-8];std;rep movsq;cld" "MOVE>" sethd
+	"ISC|-|-|rep movsb" "CMOVE" sethd
+	"ISC|-|-|lea rsi,[rsi+rcx-1];lea rdi,[rdi+rcx-1];std;rep movsb;cld" "CMOVE>" sethd
+	"ISC|-|-|rep movsd" "DMOVE" sethd
+	"ISC|-|-|lea rsi,[rsi+rcx*4-4];lea rdi,[rdi+rcx*4-4];std;rep movsd;cld" "DMOVE>" sethd
+	"IAC|-|-|rep stosq" "FILL" sethd
+	"IAC|-|-|rep stosb" "CFILL" sethd
+	"IAC|-|-|rep stosd" "DFILL" sethd
+	"G|-|-|mov r14,#0" ">A" sethd
+	"|-|n|mov %0,r14" "A>" sethd
+	"G|-|-|add r14,#0" "A+" sethd
+	"|-|n|mov %0,qword[r14]" "A@" sethd
+	"V|-|-|mov qword[r14],#0" "A!" sethd
+	"|-|n|mov %0,qword[r14];add r14,8" "A@+" sethd
+	"V|-|-|mov qword[r14],#0;add r14,8" "A!+" sethd
+	"|-|n|movsx %0,byte[r14]" "CA@" sethd
+	"V|-|-|mov byte[r14],#0B" "CA!" sethd
+	"|-|n|movsx %0,byte[r14];add r14,1" "CA@+" sethd
+	"V|-|-|mov byte[r14],#0B;add r14,1" "CA!+" sethd
+	"|-|n|movsxd %0,dword[r14]" "DA@" sethd
+	"V|-|-|mov dword[r14],#0D" "DA!" sethd
+	"|-|n|movsxd %0,dword[r14];add r14,4" "DA@+" sethd
+	"V|-|-|mov dword[r14],#0D;add r14,4" "DA!+" sethd
+	"G|-|-|mov r15,#0" ">B" sethd
+	"|-|n|mov %0,r15" "B>" sethd
+	"G|-|-|add r15,#0" "B+" sethd
+	"|-|n|mov %0,qword[r15]" "B@" sethd
+	"V|-|-|mov qword[r15],#0" "B!" sethd
+	"|-|n|mov %0,qword[r15];add r15,8" "B@+" sethd
+	"V|-|-|mov qword[r15],#0;add r15,8" "B!+" sethd
+	"|-|n|movsx %0,byte[r15]" "CB@" sethd
+	"V|-|-|mov byte[r15],#0B" "CB!" sethd
+	"|-|n|movsx %0,byte[r15];add r15,1" "CB@+" sethd
+	"V|-|-|mov byte[r15],#0B;add r15,1" "CB!+" sethd
+	"|-|n|movsxd %0,dword[r15]" "DB@" sethd
+	"V|-|-|mov dword[r15],#0D" "DB!" sethd
+	"|-|n|movsxd %0,dword[r15];add r15,4" "DB@+" sethd
+	"V|-|-|mov dword[r15],#0D;add r15,4" "DB!+" sethd ;
 
 |---------------------------------------------------------------
 | ENTRY: the token is made with the virtual stack ( 1 ) or not ( 0 )
@@ -545,5 +938,5 @@
 	dup $ff and
 	8 =? ( 2drop 1 ; )
 	9 =? ( drop vtkv 0? ( drop 1 ; ) drop 0 ; )
-	6 >? ( 7 - 3 << 'vh + @ 0? ( nip ; ) nip ex ; )
+	6 >? ( 7 - dup 3 << 'vh + @ 0? ( drop 3 << 'vd + @ 0? ( nip ; ) nip vop ; ) nip nip ex ; )
 	3 << 'vt + @ 0? ( nip ; ) ex 1 ;

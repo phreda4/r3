@@ -4,7 +4,6 @@
 ^r3/util/tui.r3
 ^r3/util/tuiedit.r3
 ^r3/util/filedirs.r3
-^r3/lib/sdl2image.r3
 
 |^r3/lib/trace.r3
 
@@ -180,7 +179,7 @@
 	loadm
 	tuR! ;
 	
-	
+
 :filebuild
 	fuente c@ 0? ( drop ; ) drop
 	savem
@@ -229,52 +228,7 @@
 	tuReadCode
 	;
 	
-|------------ image
-#imgsurf 0
-#spitch
-#wsurf #hsurf
-
-:Surf>wh | surface -- surface w h ; also leave the width and the height
-	dup 16 + d@+ swap d@ ;
-
-:Surf>pixpi | surface -- pixels pitch 
-	dup 32 + @ swap 24 + d@ ;
-
-#lfg #lbg
-
-:setfg | c --
-	lfg =? ( drop ; ) dup 'lfg ! .fg32 ;
-:setbg | c --
-	lbg =? ( drop ; ) dup 'lbg ! .bg32 ;
-:cell | y x -- y x 
-	dup 2 << a> +
-	dup d@ setfg 
-	spitch + d@ setbg 
-	lfg lbg =? ( drop .sp ; ) drop "▀" .write ;
-	
-:panelimage
-	imgsurf 0? ( drop ; ) 
-	|$1 'fullpath .wtitle 1 1 flpad 	
-	fhome
-	Surf>wh 'hsurf ! 'wsurf  !
-	ab[
-	Surf>pixpi 'spitch ! >a
-	-1 'lfg ! -1 'lbg !
-	0 ( fh 2* <? hsurf <?
-		0 ( fw <? wsurf <?
-			cell
-			1+ ) drop
-		fcr spitch 2* a+
-		2 + ) drop 
-	]ba ;
-	
-:loadtimg | "" --
-	imgsurf 1? ( dup SDL_FreeSurface ) drop
-	IMG_Load 
-	dup $16562004 0 SDL_ConvertSurfaceFormat 'imgsurf ! | conver to RGB32
-	SDL_FreeSurface
-	1 'tpanel ! ;
-
+|------------ text
 :paneltxt
 	fuente c@ 0? ( drop ; ) drop
 	.wbordec
@@ -283,7 +237,7 @@
 	tuReadCodeMono
 	;
 	
-#lpanel 'paneleditor 'panelimage 'paneltxt
+#lpanel 'paneleditor 'paneltxt
 
 |------------
 :changefiles
@@ -293,10 +247,10 @@
 	0 'tpanel !
 	'fullpath 
 	".r3" =pos 1? ( drop TuLoadCode ; ) drop
-	".png" =pos 1? ( drop loadtimg ; ) drop
-	".jpg" =pos 1? ( drop loadtimg ; ) drop
-	".jpeg" =pos 1? ( drop loadtimg ; ) drop	
-	".txt" =pos 1? ( drop TuLoadCode 2 'tpanel ! ; ) drop
+|	".png" =pos 1? ( drop loadtimg ; ) drop
+|	".jpg" =pos 1? ( drop loadtimg ; ) drop
+|	".jpeg" =pos 1? ( drop loadtimg ; ) drop	
+	".txt" =pos 1? ( drop TuLoadCode 1 'tpanel ! ; ) drop
 	drop
 	tuNewCode ;
 	
@@ -389,7 +343,4 @@
 	savem
 	;
 
-: 
-	3 IMG_Init | load image<<
-	.alsb main .masb .free 
-	;
+: .alsb main .masb .free ;

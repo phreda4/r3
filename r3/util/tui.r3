@@ -371,7 +371,6 @@ rflag $4 or 'rflag ! ;
 :cscroll | 'var h --
 	calccs -? ( 2drop ; ) 
 	fx fw + 1-  fy rot + .at
-	1+ 
 	'dnbk .rep ;
 	
 :chwheel | 'v h 
@@ -392,6 +391,10 @@ rflag $4 or 'rflag ! ;
 |----- LIST
 | #vlist 0 0 
 
+:clampoff | 'var h -- 'var h
+	cntlist over - 0 max
+	pick2 8 + dup @ rot min swap ! ;
+	
 :chsel | 'var n key delta -- 'var n key
 	pick3 dup @ rot + cntlist 1- clamp0max swap ! | 'v n k nv
 	pageadj
@@ -426,7 +429,7 @@ rflag $4 or 'rflag ! ;
 ::tuList | 'var list --
 	fhome
 	mark makeindx
-	fh
+	fh clampoff
 	mouList
 	focList
 	0 ( over <? ilist 1+ ) drop
@@ -468,7 +471,7 @@ rflag $4 or 'rflag ! ;
 ::tuListN | 'var listn --
 	fhome
 	makeindxn
-	fh
+	fh clampoff
 	mouList
 	focList
 	0 ( over <? ilistn 1+ ) drop
@@ -488,12 +491,16 @@ rflag $4 or 'rflag ! ;
 	( >>0 dup c@ 1? 
 		$1f and lvl >? drop ) ;
 
+:nextv | adr -- adr'
+	dup c@ 0? ( drop ; )
+	$1f and getval 'lvl ! ;
+
 :maketree |
 	0 'lvl !
 	here dup 'indlist ! >a
-	( dup a!+ >>0
-		dup c@ 1? 
-		$1f and getval 'lvl !
+	( dup c@ 1? drop
+		dup a!+ >>0
+		nextv
 		) 2drop
 	a> dup here - 3 >> 'cntlist !
 	'here ! ;
@@ -506,11 +513,6 @@ rflag $4 or 'rflag ! ;
 		a@+ pick2 =? ( drop nip empty ; )
 		drop 1+ ) 2drop 
 	empty -1 ;
-
-:chsel | 'var n key delta -- 'var n key
-	pick3 dup @ rot + cntlist 2 - clamp0max swap ! | 'v n k nv (2 -) !!
-	pageadj
-	tuX! ;
 
 :kbclick	
 	pick2 @ 3 << indlist + @ 
@@ -553,7 +555,7 @@ rflag $4 or 'rflag ! ;
 ::tuTree | 'var list --
 	fhome
 	mark maketree
-	fh
+	fh clampoff
 	mouTree
 	focTree	| focus
 	0 ( over <? itree 1+ ) drop
