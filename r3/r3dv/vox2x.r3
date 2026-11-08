@@ -94,7 +94,7 @@
 
 :scan | "path" --
 	0 'nlist ! 'names 'names> !
-|WIN|	"%s//*" sprint		
+|WIN|	"%s//*" sprint			
 	ffirst ( 1? addname fnext ) drop ;
 
 :gt? | i -- i 1/0
@@ -462,7 +462,7 @@
 	over 5 << over or 'vcol !
 	over msx * over + ncol + 3 << atlas + 'sa !
 	2drop
-	'mask vcol 2 << + d@
+	'mask vcol 2 << + d@ $ffffffff and		| d@ extiende el signo: sin esto msb da 63 con el bit 31
 	0? ( drop ; )
 	dup sa d!
 	dup ctz swap msb
@@ -532,5 +532,4 @@
 : 
 	"media/ssv/vox" voxdir			| carpeta con los .vox
 	"media/ssv/vox" voxconvert	| genera sprites.ssv y sprites.txt
-	waitkey
-	;
+	waitkey ;
