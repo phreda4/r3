@@ -126,8 +126,9 @@
 	plainok? 0? ( drop "plain.r3 FAILED" 'msg strcpy ; ) drop
 	"plain.r3 generated" 'msg strcpy
 	'msg .println
-	"press any key to continue..." .println
-	waitkey
+|	"press any key to continue..." .println
+|	waitkey
+	"r3/d4/gen/plain.r3" r3run
 	backtui ;
 
 :docompile

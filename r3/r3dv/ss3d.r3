@@ -405,11 +405,10 @@ void main() {
 	GL_ELEMENT_ARRAY_BUFFER 0 glBindBuffer
 	;
 
-::ss3dload | "file" instances --
+::ss3dmem | instances --	; imagen .ssv ya armada en here (mismo formato que el archivo)
 	'3dss_max !
 	build_bbox
-|====== load .ssv  (header 16: "SSV2" nspr ncol ncolores)
-	here swap "%s.ssv" sprint load drop
+|====== .ssv  (header 16: "SSV2" nspr ncol ncolores)
 	here 
 	d@+ "SSV2" d@ <>? ( 2drop "not ssv file" .println ; ) drop
 	d@+ 'n3dsprites !
@@ -426,12 +425,12 @@ void main() {
 |====== columns (binding 6)
 	1 'ssbo_cols glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_cols glBindBuffer
-	GL_SHADER_STORAGE_BUFFER ncols 3 << colbase 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER ncols 3 << colbase GL_DYNAMIC_STORAGE_BIT glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 6 ssbo_cols glBindBufferBase
 |====== color strip (binding 7)
 	1 'ssbo_pal glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_pal glBindBuffer
-	GL_SHADER_STORAGE_BUFFER ncolors 2 << palbase 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER ncolors 2 << palbase GL_DYNAMIC_STORAGE_BIT glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 7 ssbo_pal glBindBufferBase
 |====== instance mem
 	1 'ssbo_inst glGenBuffers
@@ -449,6 +448,24 @@ void main() {
 	'here +!			| 32 bytes x inst
 	0 'ss3d_inst !
 	;
+
+::ss3dload | "file" instances --
+	swap here swap "%s.ssv" sprint load drop
+	ss3dmem ;
+
+|--- sprites dinamicos: columnas (mask|base, 8 bytes) y tira de colores (4 bytes) modificables
+#upo #upb #upm
+:ssbosub | off bytes 'mem buf --
+	GL_SHADER_STORAGE_BUFFER swap glBindBuffer
+	'upm ! 'upb ! 'upo !
+	GL_SHADER_STORAGE_BUFFER upo upb upm glBufferSubData
+	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer ;
+
+::ss3dupcols | off bytes 'mem --	; sube bytes de columnas (off en bytes desde la primera columna)
+	ssbo_cols ssbosub ;
+
+::ss3duppal | off bytes 'mem --	; sube bytes de la tira de colores
+	ssbo_pal ssbosub ;
 
 ##ss3names
 

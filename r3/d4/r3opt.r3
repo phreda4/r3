@@ -457,6 +457,7 @@
 #TK<< 53 #TK>> 54 #TK>>> 55 
 #TK*/ 58 #TK*>> 59 #TK<</ 60
 #TKnot 61 #TKneg 62
+#TKmod 56 #TK/mod 57
 
 :,lAND
 	getTOS 
@@ -585,25 +586,38 @@
 	swap -? ( drop neg 'divm ! r> 'divs ! ; ) drop
 	'divm ! r> 'divs ! ;
 	
-|--- ajuste por signo
+|--- ajuste por signo: the magic quotient rounds toward -inf, add 1 if negative (trunc)
 :,sigadj | --
 	TKdup ,t 63 ,tlit TK>> ,t TK- ,t ;
-	
-|>>>> n / 	log(n) >> dup 63 >> - ; | shift and adjust
-:,/pot | tos --
-	,back
-	msb ,tlit TK>> ,t ,sigadj ;	
-	
-:,lit/ | tok --
-	getTOS
+
+|--- power of 2 (d=2^k): the VM truncates toward 0, so a bias is added before the shift
+| x -- x+bias ; bias = (x<0) ? d-1 : 0
+:,bias+ | d --
+	TKdup ,t 63 ,tlit TK>> ,t 1- ,nlit TKand ,t TK+ ,t ;
+
+|>>>> x / 2^k  -->  dup 63 >> (d-1) and + k >>
+:,divpot | d --
+	dup ,bias+ msb ,tlit TK>> ,t ;
+
+|--- division by a constant d>=3 (not power of 2) : multiply by the magic number
+:,divmagic | d --
+	calcmagic divm ,nlit divs ,tlit TK*>> ,t ,sigadj ;
+
+|--- d>=2 : x -- x/d
+:,divp | d --
+	dup 1- nand? ( ,divpot ; )
+	,divmagic ;
+
+|--- x / literal : 0 error, 1 nothing, -1 neg, d<0 --> -(x/|d|)
+:,lit/ | --
+	getTOS ,back
 	0? ( drop 0 "0 division" error! ; )
-	1 =? ( drop ,back ; ) 
-	-1 =? ( drop ,back tkneg ,t ; )
-	dup 1- nand? ( ,/pot ; )	
-	,back 
-	calcmagic
-	divm ,nlit divs ,tlit TK*>> ,t ,sigadj ;
-	
+	1 =? ( drop ; )
+	-1 =? ( drop TKneg ,t ; )
+	-? ( dup neg -? ( drop ,nlit TK/ ,t ; )		| minint: keep the division
+		nip ,divp TKneg ,t ; )
+	,divp ;
+
 :,/ 
 	2lit? 1? ( 2drop 2litpush ./ ,TOSLIT ; ) drop 
 	1lit? 1? ( 2drop ,lit/ ; ) drop
@@ -623,21 +637,30 @@
 	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop	
 	,t ;
 	
-|----------------------- mod	
-:,modpot | n -- ;  8 mod -> 7 and
-	1- ,nlit TKand ,t ;
-	
+|----------------------- mod
+| the sign of the result follows x (as in the VM)
+
+|>>>> x mod 2^k  -->  dup dup 63 >> (d-1) and + -d and -
+:,modpot | d --
+	TKdup ,t dup ,bias+ neg ,nlit TKand ,t TK- ,t ;
+
+|--- x mod d  d>=3 not pot :  x - (x/d)*d
+:,modmagic | d --
+	dup calcmagic
+	TKdup ,t divm ,nlit divs ,tlit TK*>> ,t ,sigadj
+	,nlit TK* ,t TK- ,t ;
+
+:,modp | d -- ; d>=2
+	dup 1- nand? ( ,modpot ; )
+	,modmagic ;
+
 :,litmod | --
-	getTOS
-	,back 
+	getTOS ,back
 	0? ( drop 0 "0 division" error! ; )
-	1 =? ( drop ,back 0 ,tlit ; ) 
-|	-1 =? ( 2drop ,back tkneg ,t ; )
-	dup 1- nand? ( ,modpot ; )	
-	dup calcmagic 
-	TKdup ,t divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
-	,nlit TK* ,t TK- ,t 
-	;
+	-? ( dup neg -? ( drop ,nlit TKmod ,t ; )	| x mod -d = x mod d
+		nip )
+	1 =? ( drop 0 ,tlit TKand ,t ; ) 
+	,modp ;
 
 :,mod
 	2lit? 1? ( 2drop 2litpush .mod ,TOSLIT ; ) drop 
@@ -645,24 +668,34 @@
 	,t ;
 
 |----------------------------
-:,mod/pot | n -- ;  v 8 mod -> v dup 3 >> swap 7 and 
-	TKdup ,t
-	dup msb ,tlit TK>> ,t
-	TKswap ,t
-	1- ,nlit TKand ,t ;
-	
-:,lit/mod | -- 
-	getTOS
-	,back 
-	0? ( drop 0 "0 division" error! ; )
-	1 =? ( drop 0 ,tlit ; )
-	dup 1- nand? ( ,mod/pot ; ) 
+| x d /mod --> q r   (q=x/d truncated, r has the sign of x)
+
+|>>>> x 2^k /mod  -->  dup dup 63 >> (d-1) and + k >> swap over k << -
+:,divmodpot | d --
+	TKdup ,t dup ,bias+ 			| x y
+	dup msb ,tlit TK>> ,t			| x q
+	TKswap ,t TKover ,t				| q x q
+	msb ,tlit TK<< ,t TK- ,t ;		| q r
+
+:,divmodmagic | d --
 	dup calcmagic
 	TKdup ,t 
-	divm ,nlit	divs ,tlit TK*>> ,t ,sigadj
+	divm ,nlit divs ,tlit TK*>> ,t ,sigadj
 	TKswap ,t TKover ,t
-	,nlit TK* ,t TK- ,t 	
-	;
+	,nlit TK* ,t TK- ,t ;
+
+:,divmodp | d -- ; d>=2
+	dup 1- nand? ( ,divmodpot ; )
+	,divmodmagic ;
+
+:,lit/mod | -- 
+	getTOS ,back
+	0? ( drop 0 "0 division" error! ; )
+	1 =? ( drop 0 ,tlit ; )
+	-1 =? ( drop TKneg ,t 0 ,tlit ; )
+	-? ( dup neg -? ( drop ,nlit TK/mod ,t ; )	| x /mod -d = -q r
+		nip ,divmodp TKswap ,t TKneg ,t TKswap ,t ; )
+	,divmodp ;
 	
 :,/mod
 	2lit? 1? ( 2drop 2litpush ./mod ,2TOSLIT ; ) drop
@@ -670,34 +703,23 @@
 	,t ;
 	
 |----------------------------
-:,lit*/
-	getTOS ,back      | c
-	getTOS ,back      | c l
-	swap 
-	0? ( 2drop 0 "0 division" error! ; )
-	/ ,nlit TK* ,t ; | mmmmm, que pasa cuando pierde precision..convertir a /
-	
+| x b c */ --> x*b/c   (b c literals)
 :gcd | a b -- gcd
-	|0? ( ; )
 	( 1? swap over mod ) drop ;
 	
-|----------------------------
 :,lit*/ | -- ; a(runtime) b c(TOS) literales -- a*b/c
 	getTOS ,back
-	0? ( drop 0 "0 division" error! ; ) 	| c==0
-	getTOS ,back 			| c b		; vv b c */
-	2dup abs swap abs gcd 	| b c gcd	; nunca 0
-	rot over / -rot / 		| b' c'		; reduzco	
-	0? ( 2drop 0 ,nlit TKand ,t ; ) | res=0
-	1 =? ( drop | c=1
-		1 =? ( drop ; )				| b=1
-		-1 =? ( drop TKneg ,t ; )	| b=-1
-		,nlit TK/ ,t ; ) |,/ ; )		!!!
-	swap | 'c 'b
-	|0? ( 2drop 0 ,nlit TKand ,t ; ) | res=0
-	1 =? ( drop | b=1 
-		,nlit TK* ,t ; ) |,* ; )		!!!
-	,nlit ,nlit TK*/ ,t ;	| no exact division
+	0? ( drop 0 "0 division" error! ; ) 			| c==0
+	getTOS ,back 									| c b
+	2dup abs swap abs gcd 							| c b gcd
+	rot over / -rot /								| c' b'		; reduzco
+	swap											| b' c'
+	-? ( neg swap neg swap )						| c'>0
+	over 0? ( 3drop 0 ,tlit TKand ,t ; ) drop		| b'=0 --> 0
+	1 =? ( drop ,nlit ,lit* ; )						| c'=1 --> a*b'
+	over 1 =? ( drop nip ,nlit ,lit/ ; ) drop		| b'=1 --> a/c'
+	over -1 =? ( drop nip ,nlit ,lit/ TKneg ,t ; ) drop	| b'=-1 --> -(a/c')
+	swap ,nlit ,nlit TK*/ ,t ;						| no exact division (b' first, then c')
 
 :,*/
 	3lit? 1? ( 2drop 3litpush .*/ ,TOSLIT ; ) drop
@@ -705,54 +727,63 @@
 	13lit? 1? ( 2drop 12swap ,lit*/ ; ) drop
 	,t ;
 
-|----------------------------	
-:,lit2pot*>> | c b --
-	msb -				| c-pot(b)
-	-? ( neg ,tlit TK<< ,t  ; )	| multiplica
-	,tlit TK>> ,t ,sigadj ;
-	
+|----------------------------
+| x b c *>> --> (x*b)>>c  : arithmetic shift (floor), no sigadj here!
+:,shr | c -- ; x >> c
+	0? ( drop ; )
+	,tlit TK>> ,t ;
+
+:,lit2pot*>> | c b -- ; b=2^k
+	msb -							| c-k
+	-? ( neg ,tlit TK<< ,t ; )		| x << (k-c)
+	,shr ;							| x >> (c-k)
+
 :,lit2pot0*>> | c d cp -- ;  4.0 16 *>> -->  4 * --> 2 << 
 	drop swap >> ,nlit ,lit* ;
-	
+
 :2lit*>>	
 	getTOS ,back      | c
-	getTOS ,back      | c l
-	
-	| var 0 cc *>> !! ojo 3er token puede ser cualquiera
-	| y si tengo 0.0000001 lo va a codificar como 0 !!
-	|0? ( 2drop ,back 0 ,tlit ; ) 		
+	getTOS ,back      | c b
 	0? ( 2drop 0 ,tlit TKand ,t ; )
-	
-	1 =? ( drop ,tlit TK>> ,t ; )            | var cc >> 
-	-1 =? ( drop TKneg ,t ,tlit TK>> ,t ; )  | var neg cc >>
-	dup 1- nand? ( ,lit2pot*>> ; ) | 2pot 2pot *>>
-	dup ctz pick2 >=? ( ,lit2pot0*>> ; ) drop
+	1 =? ( drop ,shr ; )						| x >> c
+	-1 =? ( drop TKneg ,t ,shr ; )				| neg x >> c
+	dup 1- nand? ( ,lit2pot*>> ; )				| b = 2^k
+	dup neg dup 1- nand? ( nip TKneg ,t ,lit2pot*>> ; ) drop	| b = -2^k
+	dup ctz pick2 >=? ( ,lit2pot0*>> ; ) drop	| b = m*2^c --> x*m
 	,nlit ,tlit TK*>> ,t ;
 	
 :,*>> 
 	3lit? 1? ( 2drop 3litpush .*>> ,TOSLIT ; ) drop
 	2lit? 1? ( 2drop 2lit*>> ; ) drop	
-|	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop | lit any * --> any lit * >>opt
+	13lit? 1? ( 2drop 12swap 2lit*>> ; ) drop	| lit any lit --> any lit lit
 	,t ;
 	
 |----------------------------	
-:,lit2pot<</ | c b -- ;lit2 b = pot2
-	msb -				| c-pot(b)
-	-? ( neg ,tlit TK>> ,t ,sigadj ; )	| multiplica
+| x b c <</ --> (x<<c)/b
+:,shl | c -- ; x << c
+	0? ( drop ; )
 	,tlit TK<< ,t ;
-	
+
+:,lit2pot<</ | c b -- ; b=2^k
+	msb -							| c-k
+	-? ( neg 1 swap << ,divpot ; )	| x / 2^(k-c)
+	,shl ;							| x << (c-k)
+
+:,lit2<<p | c d -- ; d>=2
+	dup 1- nand? ( ,lit2pot<</ ; )
+	2dup nip calcmagic
+	divs pick2 <? ( drop ,nlit ,tlit TK<</ ,t ; ) drop	| no room for the shift: keep <</
+	drop divm ,nlit divs swap - ,tlit TK*>> ,t ,sigadj ;
+
 :,lit2<</ | -- 
 	getTOS ,back      | c
 	getTOS ,back      | c b
 	0? ( 2drop 0 "0 division" error! ; )
-	1 =? ( drop ,nlit TK<< ,t ; )              | (a<<c)/1 = a<<c
-	-1 =? ( drop ,nlit TK<< ,t tkneg ,t ; )     | (a<<c)/-1 = -(a<<c)
-	dup 1- nand? ( ,lit2pot<</ ; )	
-	calcmagic
-	divm ,nlit 
-	divs swap - | divs-c 
-	-? ( TK* ,t neg ,tlit TK<< ,t ; )
-	,tlit TK*>> ,t ,sigadj ;
+	1 =? ( drop ,shl ; )						| (a<<c)/1 = a<<c
+	-1 =? ( drop ,shl TKneg ,t ; )				| (a<<c)/-1 = -(a<<c)
+	-? ( dup neg -? ( drop ,nlit ,tlit TK<</ ,t ; )	| (a<<c)/-d = -((a<<c)/d)
+		nip ,lit2<<p TKneg ,t ; )
+	,lit2<<p ;
 	
 :,<</
 	3lit? 1? ( 2drop 3litpush .<</ ,TOSLIT ; ) drop
