@@ -377,7 +377,7 @@
 	dup isprint? 0? ( ; ) drop
 	findstrtos 0? ( ; )
 	8 >> $ffffffff and strm +				| tok str
-	dup haspct? 0? ( drop tks xcode ex 1 ; ) drop
+	dup haspct? 0? ( 2drop tks xcode ex 1 ; ) drop		| no %: ,print -> ,s (drop the flag and the str)
 	0 'fe ! dup fmtwalk 0? ( 2drop 0 ; ) drop
 	fspec 6 >? ( 2drop 0 ; ) drop
 	fsp deltok

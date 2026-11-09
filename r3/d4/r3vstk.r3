@@ -9,6 +9,9 @@
 |   ENT  j        the value is in memory, entry cell j ( [rbp-8*(j-1)] )
 |   CTE  n        constant
 |   LBL  c<<32|i  address of a word/var (w), a string (s) or a local label (l)
+|   VAR  c<<32|i  the value of the variable ( qword[w] ), it is read when it is used:
+|                 it is a memory operand ( cmp, add, call ) and does not use a register.
+|                 Before a store to memory the VAR cells are read ( vs.vars ).
 |
 | entry cells: E0 = rax , E1 = [rbp] , E2 = [rbp-8] ... of the state where
 | the virtual stack was started.   ve = entry cells used , vn = cells in V
@@ -32,6 +35,7 @@
 #vn 0				| cells in V
 #ve 0				| entry cells used
 #rc * 96			| cells that use each register
+#hv 0				| 1 = there may be VAR cells
 
 :eq? | a b -- f
 	- 0? ( drop 1 ; ) drop 0 ;
@@ -135,6 +139,7 @@
 	swap 0? ( drop ,reg ; )
 	1 =? ( drop ,ent ; )
 	2 =? ( drop ,cte ; )
+	4 =? ( drop "qword[" ,s ,lbl "]" ,s ; )
 	drop ,lbl ;
 
 :imm32? | v -- f
@@ -153,7 +158,7 @@
 :nreset | --
 	0 'vn ! 0 've !
 	'rc 0 12 fill
-	1 'rc ! ;
+	1 'rc ! 0 'hv ! ;
 
 :slot | idx -- ; text of the final place in memory
 	"qword[rbp" ,s ne - 2 + 3 << ,off "]" ,s ;
@@ -273,6 +278,16 @@
 :own | k v -- r
 	swap 0? ( drop own.reg ; ) swap own.mem ;
 
+|--- VAR cells : read the variables now
+:var2reg | i --
+	dup kv@ swap 4 =? ( drop 4 swap own.mem 0 swap rot kv! ; ) 3drop ;
+
+:vs.vars | --
+	0 ( vn <? dup var2reg 1+ ) drop 0 'hv ! ;
+
+:vars? | -- ; before the code that writes memory
+	hv 1? ( drop vs.vars ; ) drop ;
+
 |---------------------------------------------------------------
 | ARITHMETIC
 |---------------------------------------------------------------
@@ -365,11 +380,13 @@
 	0 ra vn 1- kv!
 	0 'ak ! ra 'av ! ;
 
+:ismem? | k -- f
+	1 =? ( drop 1 ; ) 4 =? ( drop 1 ; ) drop 0 ;
+
 :cmpset | -- ; a and b ready for  cmp/test a,b
 	prepb
-	ak 1 =? ( drop bk 1 =? ( drop a2reg ; ) drop ; )
-	0 =? ( drop ; )
-	drop a2reg ;
+	ak ismem? 1? ( drop bk ismem? 1? ( drop a2reg ; ) drop ; ) drop
+	ak 0 =? ( drop ; ) drop a2reg ;
 
 :vjump | -- f ; canonical state, then jump when the condition fails
 	vs.norm
@@ -387,8 +404,8 @@
 :vcond1 | "jcc" -- f
 	'lmn !
 	0 vtop 'av ! 'ak !
-	ak 1 =? ( drop ib "cmp " ,s ak av ,opn ",0" ,s ie opt.ins vjump ; )
-	0 <>? ( a2reg ) drop
+	ak ismem? 1? ( drop ib "cmp " ,s ak av ,opn ",0" ,s ie opt.ins vjump ; ) drop
+	ak 0 <>? ( a2reg ) drop
 	ib "test " ,s av ,reg "," ,s av ,reg ie opt.ins
 	vjump ;
 
@@ -429,7 +446,9 @@
 	dr 0? ( ak av cdec ) drop
 	0 dd vpush 1 ;
 
-:v.fq "mov" "qword" vload ;
+:v.fq | -- f
+	0 vtop drop 3 =? ( drop vpop nip 4 swap vpush 1 'hv ! 1 ; ) drop
+	"mov" "qword" vload ;
 :v.fb "movsx" "byte" vload ;
 :v.fw "movsx" "word" vload ;
 :v.fd "movsxd" "dword" vload ;
@@ -449,7 +468,7 @@
 	bk 2 =? ( drop bv sw immw ,d ; ) drop bv sw ,regw ;
 
 :vstore | "mn" w -- f
-	'sw ! 'lmn !
+	vars? 'sw ! 'lmn !
 	vpop 'av ! 'ak ! vpop 'bv ! 'bk !
 	prepaddr prepsrc
 	ib lmn ,s " " ,s sw szn ,s ak av ,addr "," ,s ,srcw ie opt.ins
@@ -481,7 +500,7 @@
 
 | store and increment   v a -- a+n
 :vstorep | w -- f
-	'sw !
+	vars? 'sw !
 	vpop 'av ! 'ak ! vpop 'bv ! 'bk !
 	ak av own 'ra ! 0 'ak ! ra 'av !
 	prepsrc
@@ -671,8 +690,8 @@
 	'tc ! dup ik@ 'tkk ! iv@ 'tvv !
 	tkk 2 eq? tvv imm32? and 'ci !
 	tc $72 =? ( drop tkk 0 eq? ; )
-	$48 =? ( drop tkk 0 eq? tkk 1 eq? or ; )
-	$47 =? ( drop tkk 0 eq? tkk 1 eq? or ci or ; )
+	$48 =? ( drop tkk 0 eq? tkk 1 eq? or tkk 4 eq? or ; )
+	$47 =? ( drop tkk 0 eq? tkk 1 eq? or tkk 4 eq? or ci or ; )
 	$56 =? ( drop tkk 0 eq? ci or ; )
 	$4d =? ( drop tkk 0 eq? tkk 3 eq? or ci or ; )
 	drop 1 ;
@@ -796,7 +815,7 @@
 	tkk tvv pi iset ;
 
 ::vop | "rows" -- f
-	'rp ! parse.row
+	vars? 'rp ! parse.row
 	popin
 	rcomm 1? ( swapin ) drop
 	( rp c@ 1?
@@ -833,6 +852,22 @@
 	"ja" 'lmn ! vjump ;
 
 |---------------------------------------------------------------
+| SYS0..SYS10 : the function is a variable ( w0 SYS1 ) , call qword[w0]
+|---------------------------------------------------------------
+#sysv 0		| 1 = the function of the SYS is the variable sysfn
+#sysfn 0
+
+::,sysfn | -- ; the target of the call in the fragments of the SYS ( ^ )
+	sysv 0? ( drop "rax" ,s ; ) drop
+	"qword[" ,s sysfn ,lbl "]" ,s ;
+
+:v.sys | -- f ; the VAR cell is not moved to rax, the stack is canonical with a dummy top
+	0 'sysv !
+	0 vtop swap 4 <>? ( 2drop 0 ; ) drop
+	'sysfn ! 1 'sysv !
+	vpop 2drop 0 0 vpush 0 ;
+
+|---------------------------------------------------------------
 | LITERALS AND ADDRESSES
 |---------------------------------------------------------------
 :vtkv 8 >> $ffffffff and ;
@@ -841,9 +876,7 @@
 :vt0 40 >>> src + str>anro nip vcte ;
 :vt1 vtks vcte ;
 :vt3 vtkv 3 swap vpush ;
-:vt4 vtkv 'bv ! alloc 'st !
-	ib "mov " ,s st ,reg ",qword[w" ,s bv ,h "]" ,s ie opt.ins
-	0 st vpush ;
+:vt4 vtkv 4 swap vpush 1 'hv ! ;
 :vt6 vtkv $100000000 or 3 swap vpush ;
 
 #vt 'vt0 'vt1 0 'vt3 'vt4 'vt3 'vt6
@@ -886,6 +919,9 @@
 	'v.z "0?" sethv 'v.nz "1?" sethv 'v.pos "+?" sethv 'v.negq "-?" sethv
 	'v.sp8 "!+" sethv 'v.sp1 "C!+" sethv 'v.sp2 "W!+" sethv 'v.sp4 "D!+" sethv
 	'v.ex "EX" sethv 'v.in "IN?" sethv
+	'v.sys "SYS0" sethv 'v.sys "SYS1" sethv 'v.sys "SYS2" sethv 'v.sys "SYS3" sethv
+	'v.sys "SYS4" sethv 'v.sys "SYS5" sethv 'v.sys "SYS6" sethv 'v.sys "SYS7" sethv
+	'v.sys "SYS8" sethv 'v.sys "SYS9" sethv 'v.sys "SYS10" sethv
 	"AH|d|A|cqo;idiv #0" "/" sethd
 	"AH|d|D|cqo;idiv #0" "MOD" sethd
 	"AH|d|AD|cqo;idiv #0" "/MOD" sethd

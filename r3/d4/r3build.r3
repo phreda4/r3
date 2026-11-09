@@ -2,34 +2,16 @@
 | the code is the one selected in main.r3 (mem/menu.mem)
 | PHREDA 2026
 |
-| options are saved in mem/build.mem ( target, inlinelenmax, inlinebudget, fmtunroll ) for r3plain.r3
+| options (buildopt.r3) are saved in mem/build.mem for r3plain.r3
 
 ^r3/util/tui.r3
 ^r3/d4/r3token.r3
+^r3/d4/buildopt.r3
 
 #bfile * 1024		| source file
 #msg * 128			| last message
 
-|---- options (keep together, saved as 2 qwords in mem/build.mem)
-#target 0			| 0 WIN, 1 LIN, 2 MAC, 3 RPI (osgen)
-#inline 7			| max tokens of a word to inline (0 = no inline)
-#budget 2			| growth allowed when inlining a word with several calls (x inline)
-#unroll 0			| 1 = unroll format strings of ,print / sprint
-
-#optbuf * 128
 #osn "WIN" "LIN" "MAC" "RPI"
-
-:saveopts
-	'target 32 "mem/build.mem" save ;
-
-:loadopts
-	'optbuf "mem/build.mem" load 'optbuf -
-	16 <? ( drop ; )
-	'optbuf @ $3 and 'target !
-	'optbuf 8 + @ 0 max 99 min 'inline !
-	32 <? ( drop ; ) drop
-	'optbuf 16 + @ 1 max 16 min 'budget !
-	'optbuf 24 + @ 1 and 'unroll ! ;
 
 |---- info of the loaded code
 #ncode #ndata #nrec #nanon #nshort
@@ -41,13 +23,13 @@
 	$20 and? ( 1 'nrec +! )
 	$40 and? ( 1 'nanon +! )
 	drop
-	inline <=? ( inline 1? ( 1 'nshort +! ) drop )
+	bo.inline <=? ( bo.inline 1? ( 1 'nshort +! ) drop )
 	drop 1 'ncode +! ;
 
 :calcstats
 	0 'ncode ! 0 'ndata ! 0 'nrec ! 0 'nanon ! 0 'nshort !
 	0 ( cntdef <? dup statword 1+ ) drop
-	inline 'lastinl ! ;
+	bo.inline 'lastinl ! ;
 
 |---- includes: inc table = 'name | first definition (32<<) + source offset
 :incfirst | e -- n ; first definition of the file
@@ -129,7 +111,7 @@
 	.reterm .alsb .flush tuR! ;
 
 :genplain
-	saveopts
+	bo.save
 	"r3/d4/gen/plain.r3" delete
 	.masb .reset .cls .flush
 	"r3/d4/r3plain.r3" r3run ;
@@ -149,7 +131,7 @@
 	backtui ;
 
 :docompile
-	target 1? ( drop "Compile: only the WIN target for now" 'msg strcpy ; ) drop
+	bo.target 1? ( drop "Compile: only the WIN target for now" 'msg strcpy ; ) drop
 	error 1? ( drop ; ) drop
 	genplain
 	plainok? 0? ( drop
@@ -205,10 +187,10 @@
 	"Source" pan
 	'bfile .write fcr
 	error 1? ( drop errinfo ; ) drop
-	"target " lbl 'osn target n>>0 .write
-	"   inline <= " lbl inline "%d tokens" .print
-	"   budget x" lbl budget "%d" .print
-	unroll 1? ( "   unroll formats" lbl ) drop fcr
+	"target " lbl 'osn bo.target n>>0 .write
+	"   inline <= " lbl bo.inline "%d tokens" .print
+	"   budget x" lbl bo.budget "%d" .print
+	bo.unroll 1? ( "   unroll formats" lbl ) drop fcr
 	"files " lbl cntinc "%d" .print
 	"   code " lbl ncode "%d" .print
 	"   data " lbl ndata "%d" .print fcr
@@ -224,27 +206,27 @@
 :panelTarget
 	.wborde tuWin $1 " Target " .wtitle
 	1 1 flpad
-	0 'target "Windows (WIN)" tuRadio
-	1 'target "Linux   (LIN)" tuRadio
-	2 'target "Mac     (MAC)" tuRadio
-	3 'target "RPi     (RPI)" tuRadio ;
+	0 'bo.target "Windows (WIN)" tuRadio
+	1 'bo.target "Linux   (LIN)" tuRadio
+	2 'bo.target "Mac     (MAC)" tuRadio
+	3 'bo.target "RPi     (RPI)" tuRadio ;
 
 :panelInline
 	.wborde tuWin $1 " Inline " .wtitle
 	1 1 flpad
-	0 'inline "0   none" tuRadio
-	4 'inline "4   low" tuRadio
-	7 'inline "7   normal" tuRadio
-	12 'inline "12  high" tuRadio
-	20 'inline "20  max" tuRadio ;
+	0 'bo.inline "0   none" tuRadio
+	4 'bo.inline "4   low" tuRadio
+	7 'bo.inline "7   normal" tuRadio
+	12 'bo.inline "12  high" tuRadio
+	20 'bo.inline "20  max" tuRadio ;
 
 :panelBudget
 	.wborde tuWin $1 " Inline budget " .wtitle
 	1 1 flpad
-	1 'budget "1   tight" tuRadio
-	2 'budget "2   normal" tuRadio
-	4 'budget "4   loose" tuRadio
-	'unroll "unroll formats" tuCheck ;
+	1 'bo.budget "1   tight" tuRadio
+	2 'bo.budget "2   normal" tuRadio
+	4 'bo.budget "4   loose" tuRadio
+	'bo.unroll "unroll formats" tuCheck ;
 
 :panelActions
 	.wborde tuWin $1 " Build " .wtitle
@@ -288,8 +270,8 @@
 	[f3] =? ( doplain )
 	[esc] =? ( tuiexit )
 	drop
-	target osgen <>? ( 'osgen ! reload tuR! ; ) drop
-	inline lastinl <>? ( calcstats tuR! ) drop ;
+	bo.target osgen <>? ( 'osgen ! reload tuR! ; ) drop
+	bo.inline lastinl <>? ( calcstats tuR! ) drop ;
 
 :screen
 	.reset bg0 fTx .cls
@@ -314,11 +296,11 @@
 |-----------------------------------
 :
 	'bfile "mem/menu.mem" load drop
-	osgen 'target !
-	loadopts
-	target 'osgen !
+	osgen 'bo.target !
+	bo.load
+	bo.target 'osgen !
 	mark
 	loadinfo
 	.alsb
 	'screen onTui
-	saveopts ;
+	bo.save ;

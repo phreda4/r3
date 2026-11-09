@@ -28,33 +28,33 @@
 #fragwin
 "LOADLIB" "cinvoke64 LoadLibraryA,rax"
 "GETPROC" "cinvoke64 GetProcAddress,qword[rbp],rax;sub rbp,8"
-"SYS0" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;CALL rax;add RSP,$20;mov rsp,[rsp]"
-"SYS1" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov rcx,[rbp];call rax;sub rbp,8;add RSP,$20;mov rsp,[rsp]"
-"SYS2" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov rdx,[rbp];mov rcx,[rbp-1*8];call rax;sub rbp,8*2;add RSP,$20;mov rsp,[rsp]"
-"SYS3" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov r8,[rbp];mov rdx,[rbp-1*8];mov rcx,[rbp-2*8];call rax;sub rbp,8*3;add RSP,$20;mov rsp,[rsp]"
-"SYS4" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov r9,[rbp];mov r8,[rbp-1*8];mov rdx,[rbp-2*8];mov rcx,[rbp-3*8];call rax;sub rbp,8*4;add RSP,$20;mov rsp,[rsp]"
-"SYS5" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$30;mov rcx,[rbp];mov [rsp+$20],rcx;mov r9,[rbp-1*8];mov r8,[rbp-2*8];mov rdx,[rbp-3*8];mov rcx,[rbp-4*8];call rax;sub rbp,8*5;add RSP,$30;mov rsp,[rsp]"
-"SYS6" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$30;mov rdx,[rbp];mov [rsp+$28],rdx;mov rcx,[rbp-1*8];mov [rsp+$20],rcx;mov r9,[rbp-2*8];mov r8,[rbp-3*8];mov rdx,[rbp-4*8];mov rcx,[rbp-5*8];call rax;sub rbp,8*6;add RSP,$30;mov rsp,[rsp]"
-"SYS7" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$40;mov rcx,[rbp];mov [rsp+$30],rcx;mov rcx,[rbp-1*8];mov [rsp+$28],rcx;mov rcx,[rbp-2*8];mov [rsp+$20],rcx;mov r9,[rbp-3*8];mov r8,[rbp-4*8];mov rdx,[rbp-5*8];mov rcx,[rbp-6*8];call rax;sub rbp,8*7;add RSP,$40;mov rsp,[rsp]"
-"SYS8" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$40;mov rcx,[rbp];mov [rsp+$38],rcx;mov rcx,[rbp-1*8];mov [rsp+$30],rcx;mov rcx,[rbp-2*8];mov [rsp+$28],rcx;mov rcx,[rbp-3*8];mov [rsp+$20],rcx;mov r9,[rbp-4*8];mov r8,[rbp-5*8];mov rdx,[rbp-6*8];mov rcx,[rbp-7*8];call rax;sub rbp,8*8;add RSP,$40;mov rsp,[rsp]"
-"SYS9" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$50;mov rcx,[rbp];mov [rsp+$40],rcx;mov rcx,[rbp-1*8];mov [rsp+$38],rcx;mov rcx,[rbp-2*8];mov [rsp+$30],rcx;mov rcx,[rbp-3*8];mov [rsp+$28],rcx;mov rcx,[rbp-4*8];mov [rsp+$20],rcx;mov r9,[rbp-5*8];mov r8,[rbp-6*8];mov rdx,[rbp-7*8];mov rcx,[rbp-8*8];call rax;sub rbp,8*9;add RSP,$50;mov rsp,[rsp]"
-"SYS10" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$50;mov rcx,[rbp];mov [rsp+$48],rcx;mov rcx,[rbp-1*8];mov [rsp+$40],rcx;mov rcx,[rbp-2*8];mov [rsp+$38],rcx;mov rcx,[rbp-3*8];mov [rsp+$30],rcx;mov rcx,[rbp-4*8];mov [rsp+$28],rcx;mov rcx,[rbp-5*8];mov [rsp+$20],rcx;mov r9,[rbp-6*8];mov r8,[rbp-7*8];mov rdx,[rbp-8*8];mov rcx,[rbp-9*8];call rax;sub rbp,8*10;add RSP,$50;mov rsp,[rsp]"
+"SYS0" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;CALL ^;add RSP,$20;mov rsp,[rsp]"
+"SYS1" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov rcx,[rbp];call ^;sub rbp,8;add RSP,$20;mov rsp,[rsp]"
+"SYS2" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov rdx,[rbp];mov rcx,[rbp-1*8];call ^;sub rbp,8*2;add RSP,$20;mov rsp,[rsp]"
+"SYS3" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov r8,[rbp];mov rdx,[rbp-1*8];mov rcx,[rbp-2*8];call ^;sub rbp,8*3;add RSP,$20;mov rsp,[rsp]"
+"SYS4" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$20;mov r9,[rbp];mov r8,[rbp-1*8];mov rdx,[rbp-2*8];mov rcx,[rbp-3*8];call ^;sub rbp,8*4;add RSP,$20;mov rsp,[rsp]"
+"SYS5" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$30;mov rcx,[rbp];mov [rsp+$20],rcx;mov r9,[rbp-1*8];mov r8,[rbp-2*8];mov rdx,[rbp-3*8];mov rcx,[rbp-4*8];call ^;sub rbp,8*5;add RSP,$30;mov rsp,[rsp]"
+"SYS6" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$30;mov rdx,[rbp];mov [rsp+$28],rdx;mov rcx,[rbp-1*8];mov [rsp+$20],rcx;mov r9,[rbp-2*8];mov r8,[rbp-3*8];mov rdx,[rbp-4*8];mov rcx,[rbp-5*8];call ^;sub rbp,8*6;add RSP,$30;mov rsp,[rsp]"
+"SYS7" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$40;mov rcx,[rbp];mov [rsp+$30],rcx;mov rcx,[rbp-1*8];mov [rsp+$28],rcx;mov rcx,[rbp-2*8];mov [rsp+$20],rcx;mov r9,[rbp-3*8];mov r8,[rbp-4*8];mov rdx,[rbp-5*8];mov rcx,[rbp-6*8];call ^;sub rbp,8*7;add RSP,$40;mov rsp,[rsp]"
+"SYS8" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$40;mov rcx,[rbp];mov [rsp+$38],rcx;mov rcx,[rbp-1*8];mov [rsp+$30],rcx;mov rcx,[rbp-2*8];mov [rsp+$28],rcx;mov rcx,[rbp-3*8];mov [rsp+$20],rcx;mov r9,[rbp-4*8];mov r8,[rbp-5*8];mov rdx,[rbp-6*8];mov rcx,[rbp-7*8];call ^;sub rbp,8*8;add RSP,$40;mov rsp,[rsp]"
+"SYS9" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$50;mov rcx,[rbp];mov [rsp+$40],rcx;mov rcx,[rbp-1*8];mov [rsp+$38],rcx;mov rcx,[rbp-2*8];mov [rsp+$30],rcx;mov rcx,[rbp-3*8];mov [rsp+$28],rcx;mov rcx,[rbp-4*8];mov [rsp+$20],rcx;mov r9,[rbp-5*8];mov r8,[rbp-6*8];mov rdx,[rbp-7*8];mov rcx,[rbp-8*8];call ^;sub rbp,8*9;add RSP,$50;mov rsp,[rsp]"
+"SYS10" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub RSP,$50;mov rcx,[rbp];mov [rsp+$48],rcx;mov rcx,[rbp-1*8];mov [rsp+$40],rcx;mov rcx,[rbp-2*8];mov [rsp+$38],rcx;mov rcx,[rbp-3*8];mov [rsp+$30],rcx;mov rcx,[rbp-4*8];mov [rsp+$28],rcx;mov rcx,[rbp-5*8];mov [rsp+$20],rcx;mov r9,[rbp-6*8];mov r8,[rbp-7*8];mov rdx,[rbp-8*8];mov rcx,[rbp-9*8];call ^;sub rbp,8*10;add RSP,$50;mov rsp,[rsp]"
 ( 0 )
 
 #fraglin
 "LOADLIB" "mov  rdi, rax;mov  rsi, 2;acall dlopen"
 "GETPROC" "mov  rdi, [rbp];mov  rsi, rax;sub  rbp, 8;acall dlsym"
-"SYS0" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;call rax;mov rsp,[rsp]"
-"SYS1" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rdi,[rbp];call rax;sub rbp,8;mov rsp,[rsp]"
-"SYS2" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rsi,[rbp];mov rdi,[rbp-1*8];call rax;sub rbp,8*2;mov rsp,[rsp]"
-"SYS3" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rdx,[rbp];mov rsi,[rbp-1*8];mov rdi,[rbp-2*8];call rax;sub rbp,8*3;mov rsp,[rsp]"
-"SYS4" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rcx,[rbp];mov rdx,[rbp-1*8];mov rsi,[rbp-2*8];mov rdi,[rbp-3*8];call rax;sub rbp,8*4;mov rsp,[rsp]"
-"SYS5" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov r8,[rbp];mov rcx,[rbp-1*8];mov rdx,[rbp-2*8];mov rsi,[rbp-3*8];mov rdi,[rbp-4*8];call rax;sub rbp,8*5;mov rsp,[rsp]"
-"SYS6" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov r9,[rbp];mov r8,[rbp-1*8];mov rcx,[rbp-2*8];mov rdx,[rbp-3*8];mov rsi,[rbp-4*8];mov rdi,[rbp-5*8];call rax;sub rbp,8*6;mov rsp,[rsp]"
-"SYS7" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,16;mov r10,[rbp];mov [rsp],r10;mov r9,[rbp-1*8];mov r8,[rbp-2*8];mov rcx,[rbp-3*8];mov rdx,[rbp-4*8];mov rsi,[rbp-5*8];mov rdi,[rbp-6*8];call rax;add rsp,16;sub rbp,8*7;mov rsp,[rsp]"
-"SYS8" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,16;mov r10,[rbp];mov [rsp+8],r10;mov r10,[rbp-1*8];mov [rsp],r10;mov r9,[rbp-2*8];mov r8,[rbp-3*8];mov rcx,[rbp-4*8];mov rdx,[rbp-5*8];mov rsi,[rbp-6*8];mov rdi,[rbp-7*8];call rax;add rsp,16;sub rbp,8*8;mov rsp,[rsp]"
-"SYS9" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,32;mov r10,[rbp];mov [rsp+16],r10;mov r10,[rbp-1*8];mov [rsp+8],r10;mov r10,[rbp-2*8];mov [rsp],r10;mov r9,[rbp-3*8];mov r8,[rbp-4*8];mov rcx,[rbp-5*8];mov rdx,[rbp-6*8];mov rsi,[rbp-7*8];mov rdi,[rbp-8*8];call rax;add rsp,32;sub rbp,8*9;mov rsp,[rsp]"
-"SYS10" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,32;mov r10,[rbp];mov [rsp+24],r10;mov r10,[rbp-1*8];mov [rsp+16],r10;mov r10,[rbp-2*8];mov [rsp+8],r10;mov r10,[rbp-3*8];mov [rsp],r10;mov r9,[rbp-4*8];mov r8,[rbp-5*8];mov rcx,[rbp-6*8];mov rdx,[rbp-7*8];mov rsi,[rbp-8*8];mov rdi,[rbp-9*8];call rax;add rsp,32;sub rbp,8*10;mov rsp,[rsp]"
+"SYS0" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;call ^;mov rsp,[rsp]"
+"SYS1" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rdi,[rbp];call ^;sub rbp,8;mov rsp,[rsp]"
+"SYS2" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rsi,[rbp];mov rdi,[rbp-1*8];call ^;sub rbp,8*2;mov rsp,[rsp]"
+"SYS3" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rdx,[rbp];mov rsi,[rbp-1*8];mov rdi,[rbp-2*8];call ^;sub rbp,8*3;mov rsp,[rsp]"
+"SYS4" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov rcx,[rbp];mov rdx,[rbp-1*8];mov rsi,[rbp-2*8];mov rdi,[rbp-3*8];call ^;sub rbp,8*4;mov rsp,[rsp]"
+"SYS5" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov r8,[rbp];mov rcx,[rbp-1*8];mov rdx,[rbp-2*8];mov rsi,[rbp-3*8];mov rdi,[rbp-4*8];call ^;sub rbp,8*5;mov rsp,[rsp]"
+"SYS6" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;mov r9,[rbp];mov r8,[rbp-1*8];mov rcx,[rbp-2*8];mov rdx,[rbp-3*8];mov rsi,[rbp-4*8];mov rdi,[rbp-5*8];call ^;sub rbp,8*6;mov rsp,[rsp]"
+"SYS7" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,16;mov r10,[rbp];mov [rsp],r10;mov r9,[rbp-1*8];mov r8,[rbp-2*8];mov rcx,[rbp-3*8];mov rdx,[rbp-4*8];mov rsi,[rbp-5*8];mov rdi,[rbp-6*8];call ^;add rsp,16;sub rbp,8*7;mov rsp,[rsp]"
+"SYS8" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,16;mov r10,[rbp];mov [rsp+8],r10;mov r10,[rbp-1*8];mov [rsp],r10;mov r9,[rbp-2*8];mov r8,[rbp-3*8];mov rcx,[rbp-4*8];mov rdx,[rbp-5*8];mov rsi,[rbp-6*8];mov rdi,[rbp-7*8];call ^;add rsp,16;sub rbp,8*8;mov rsp,[rsp]"
+"SYS9" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,32;mov r10,[rbp];mov [rsp+16],r10;mov r10,[rbp-1*8];mov [rsp+8],r10;mov r10,[rbp-2*8];mov [rsp],r10;mov r9,[rbp-3*8];mov r8,[rbp-4*8];mov rcx,[rbp-5*8];mov rdx,[rbp-6*8];mov rsi,[rbp-7*8];mov rdi,[rbp-8*8];call ^;add rsp,32;sub rbp,8*9;mov rsp,[rsp]"
+"SYS10" "mov rdx,rsp;sub rsp,8;and rsp,-16;mov [rsp],rdx;sub rsp,32;mov r10,[rbp];mov [rsp+24],r10;mov r10,[rbp-1*8];mov [rsp+16],r10;mov r10,[rbp-2*8];mov [rsp+8],r10;mov r10,[rbp-3*8];mov [rsp],r10;mov r9,[rbp-4*8];mov r8,[rbp-5*8];mov rcx,[rbp-6*8];mov rdx,[rbp-7*8];mov rsi,[rbp-8*8];mov rdi,[rbp-9*8];call ^;add rsp,32;sub rbp,8*10;mov rsp,[rsp]"
 ( 0 )
 
 
@@ -91,6 +91,7 @@
 :,asmc | char --
 	$3b =? ( drop ie opt.ins ib ; )		| ;
 	$7e =? ( drop "l" ,s jt ,h ; )		| ~
+	$5e =? ( drop ,sysfn ; )			| ^ the function of the SYS
 	,c ;
 
 :,asm | "a;b;c" -- ; each instruction goes to the optimizer
