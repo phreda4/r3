@@ -879,113 +879,106 @@
 :vt4 vtkv 4 swap vpush 1 'hv ! ;
 :vt6 vtkv $100000000 or 3 swap vpush ;
 
-#vt 'vt0 'vt1 0 'vt3 'vt4 'vt3 'vt6
-
 |---------------------------------------------------------------
-| TABLE OF THE BASE WORDS
+| THE TOKENS : a vector for each token ( the type of the token is the index )
+|   0..6 literals and words  7.. the base words, in the order of #r3base ( r3map.r3 )
+|   the handler | -- f   1 = the token is made with the virtual stack , 0 = it is not
+|   the token is in vtk. No initialization: test/checkvtab.py verifies the order
+|   ( the comment of a row has a space after the | : |MEM |WIN| |LIN| ... are directives of the tokenizer )
 |---------------------------------------------------------------
-#vh * 2048	| handler ( word ) for each base word
-#vd * 2048	| descriptor ( rows ) for each base word
+#vtk 0		| the token that is being made
 
-:sethv | 'word "NAME" --
-	0 ( dup basename c@ 1? drop
-		dup basename pick2 =s 1? ( drop nip 3 << 'vh + ! ; ) drop
-		1+ ) 4drop ;
+:v.no 0 ;
+:v.nop 1 ;
+:v.close vtk vtkv 0? ( drop 1 ; ) drop 0 ;		| ) of a block has code only if it jumps
+:v.l0 vtk vt0 1 ;
+:v.l1 vtk vt1 1 ;
+:v.l3 vtk vt3 1 ;
+:v.l4 vtk vt4 1 ;
+:v.l6 vtk vt6 1 ;
 
-:sethd | "rows" "NAME" --
-	0 ( dup basename c@ 1? drop
-		dup basename pick2 =s 1? ( drop nip 3 << 'vd + ! ; ) drop
-		1+ ) 4drop ;
+|--- words with a descriptor ( the first row that fits is used )
+:v.>r "G|-|-|push #0" vop ;
+:v.r> "|-|n|pop %0" vop ;
+:v.r@ "|-|n|mov %0,[rsp]" vop ;
+:v./ "AH|d|A|cqo;idiv #0" vop ;
+:v.<< "RK{0}||R|^RK||R|shl #1,$0&63^RN||R|shl #1,$0" vop ;
+:v.>> "RK{0}||R|^RK||R|sar #1,$0&63^RN||R|sar #1,$0" vop ;
+:v.>>> "RK{0}||R|^RK||R|shr #1,$0&63^RN||R|shr #1,$0" vop ;
+:v.mod "AH|d|D|cqo;idiv #0" vop ;
+:v./mod "AH|d|AD|cqo;idiv #0" vop ;
+:v.*/ "AHH|d|A|imul #1;idiv #0" vop ;
+:v.*>> "AHK{0}|d|A|imul #1^AHK{1,63}|d|A|imul #1;shrd rax,rdx,$0^AHK{64,}|d|A|imul #1;sar rdx,$0-64;mov rax,rdx^AHN|d|A|imul #1;shrd rax,rdx,$0;sar rdx,$0;and ecx,64;cmovne rax,rdx" vop ;
+:v.<</ "AHN|d|A|cqo;shld rdx,rax,$0;shl rax,$0;idiv #1" vop ;
+:v.sqrt "R||R|cvtsi2sd xmm0,#0;sqrtsd xmm0,xmm0;cvttsd2si #0,xmm0" vop ;
+:v.clz "R||R|bsr #0,#0;xor #0,63" vop ;
+:v.>a "G|-|-|mov r14,#0" vop ;
+:v.a> "|-|n|mov %0,r14" vop ;
+:v.a+ "G|-|-|add r14,#0" vop ;
+:v.a@ "|-|n|mov %0,qword[r14]" vop ;
+:v.a! "V|-|-|mov qword[r14],#0" vop ;
+:v.a@+ "|-|n|mov %0,qword[r14];add r14,8" vop ;
+:v.a!+ "V|-|-|mov qword[r14],#0;add r14,8" vop ;
+:v.ca@ "|-|n|movsx %0,byte[r14]" vop ;
+:v.ca! "V|-|-|mov byte[r14],#0B" vop ;
+:v.ca@+ "|-|n|movsx %0,byte[r14];add r14,1" vop ;
+:v.ca!+ "V|-|-|mov byte[r14],#0B;add r14,1" vop ;
+:v.da@ "|-|n|movsxd %0,dword[r14]" vop ;
+:v.da! "V|-|-|mov dword[r14],#0D" vop ;
+:v.da@+ "|-|n|movsxd %0,dword[r14];add r14,4" vop ;
+:v.da!+ "V|-|-|mov dword[r14],#0D;add r14,4" vop ;
+:v.>b "G|-|-|mov r15,#0" vop ;
+:v.b> "|-|n|mov %0,r15" vop ;
+:v.b+ "G|-|-|add r15,#0" vop ;
+:v.b@ "|-|n|mov %0,qword[r15]" vop ;
+:v.b! "V|-|-|mov qword[r15],#0" vop ;
+:v.b@+ "|-|n|mov %0,qword[r15];add r15,8" vop ;
+:v.b!+ "V|-|-|mov qword[r15],#0;add r15,8" vop ;
+:v.cb@ "|-|n|movsx %0,byte[r15]" vop ;
+:v.cb! "V|-|-|mov byte[r15],#0B" vop ;
+:v.cb@+ "|-|n|movsx %0,byte[r15];add r15,1" vop ;
+:v.cb!+ "V|-|-|mov byte[r15],#0B;add r15,1" vop ;
+:v.db@ "|-|n|movsxd %0,dword[r15]" vop ;
+:v.db! "V|-|-|mov dword[r15],#0D" vop ;
+:v.db@+ "|-|n|movsxd %0,dword[r15];add r15,4" vop ;
+:v.db!+ "V|-|-|mov dword[r15],#0D;add r15,4" vop ;
+:v.ab[ "|-|-|push r14;push r15" vop ;
+:v.]ba "|-|-|pop r15;pop r14" vop ;
+:v.move "ISC|-|-|rep movsq" vop ;
+:v.move> "ISC|-|-|lea rsi,[rsi+rcx*8-8];lea rdi,[rdi+rcx*8-8];std;rep movsq;cld" vop ;
+:v.fill "IAC|-|-|rep stosq" vop ;
+:v.cmove "ISC|-|-|rep movsb" vop ;
+:v.cmove> "ISC|-|-|lea rsi,[rsi+rcx-1];lea rdi,[rdi+rcx-1];std;rep movsb;cld" vop ;
+:v.cfill "IAC|-|-|rep stosb" vop ;
+:v.dmove "ISC|-|-|rep movsd" vop ;
+:v.dmove> "ISC|-|-|lea rsi,[rsi+rcx*4-4];lea rdi,[rdi+rcx*4-4];std;rep movsd;cld" vop ;
+:v.dfill "IAC|-|-|rep stosd" vop ;
+:v.mem "|-|n|mov %0,[FREE_MEM]" vop ;
 
-::vs.handled? | i -- f ; the base word i has handler or descriptor
-	dup 3 << 'vh + @ swap 3 << 'vd + @ or 1? ( drop 1 ; ) drop 0 ;
+#vw
+'v.l0 'v.l1 'v.no 'v.l3 'v.l4 'v.l3 'v.l6 		| .lits .lit .word .wadr .var .vadr .str
+'v.no 'v.nop 'v.close 'v.no 'v.no 'v.ex 'v.z 'v.nz 'v.pos 'v.negq 		| ; ( ) [ ] EX 0? 1? +? -?
+'v.lt 'v.gt 'v.eq 'v.ge 'v.le 'v.ne 'v.andq 'v.nandq 'v.in 		| <? >? =? >=? <=? <>? AND? NAND? IN?
+'v.dup 'v.drop 'v.over 'v.pick2 'v.pick3 'v.pick4 'v.swap 'v.nip 		| DUP DROP OVER PICK2 PICK3 PICK4 SWAP NIP
+'v.rot 'v.-rot 'v.2dup 'v.2drop 'v.3drop 'v.4drop 'v.2over 'v.2swap 		| ROT -ROT 2DUP 2DROP 3DROP 4DROP 2OVER 2SWAP
+'v.>r 'v.r> 'v.r@ 'v.and 'v.or 'v.xor 'v.nand 'v.add 'v.sub 'v.mul 'v./ 'v.<< 'v.>> 'v.>>> 		| >R R> R@ AND OR XOR NAND + - * / << >> >>>
+'v.mod 'v./mod 'v.*/ 'v.*>> 'v.<</ 'v.not 'v.neg 'v.abs 'v.sqrt 'v.clz 		| MOD /MOD */ *>> <</ NOT NEG ABS SQRT CLZ
+'v.fq 'v.fb 'v.fw 'v.fd 'v.fp8 'v.fp1 'v.fp2 'v.fp4 		| @ C@ W@ D@ @+ C@+ W@+ D@+
+'v.st8 'v.st1 'v.st2 'v.st4 'v.sp8 'v.sp1 'v.sp2 'v.sp4 		| ! C! W! D! !+ C!+ W!+ D!+
+'v.ad8 'v.ad1 'v.ad2 'v.ad4 		| +! C+! W+! D+!
+'v.>a 'v.a> 'v.a+ 'v.a@ 'v.a! 'v.a@+ 'v.a!+ 'v.ca@ 'v.ca! 'v.ca@+ 'v.ca!+ 'v.da@ 'v.da! 'v.da@+ 'v.da!+ 		| >A A> A+ A@ A! A@+ A!+ CA@ CA! CA@+ CA!+ DA@ DA! DA@+ DA!+
+'v.>b 'v.b> 'v.b+ 'v.b@ 'v.b! 'v.b@+ 'v.b!+ 'v.cb@ 'v.cb! 'v.cb@+ 'v.cb!+ 'v.db@ 'v.db! 'v.db@+ 'v.db!+ 		| >B B> B+ B@ B! B@+ B!+ CB@ CB! CB@+ CB!+ DB@ DB! DB@+ DB!+
+'v.ab[ 'v.]ba 		| AB[ ]BA
+'v.move 'v.move> 'v.fill 'v.cmove 'v.cmove> 'v.cfill 'v.dmove 'v.dmove> 'v.dfill 		| MOVE MOVE> FILL CMOVE CMOVE> CFILL DMOVE DMOVE> DFILL
+'v.mem 'v.no 'v.no 		| MEM LOADLIB GETPROC
+'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 'v.sys 		| SYS0 SYS1 SYS2 SYS3 SYS4 SYS5 SYS6 SYS7 SYS8 SYS9 SYS10
 
-::vs.init | --
-	'vh 0 256 fill 'vd 0 256 fill
-	'v.dup "DUP" sethv 'v.drop "DROP" sethv 'v.over "OVER" sethv
-	'v.pick2 "PICK2" sethv 'v.pick3 "PICK3" sethv 'v.pick4 "PICK4" sethv
-	'v.swap "SWAP" sethv 'v.nip "NIP" sethv 'v.rot "ROT" sethv 'v.-rot "-ROT" sethv
-	'v.2dup "2DUP" sethv 'v.2drop "2DROP" sethv 'v.3drop "3DROP" sethv 'v.4drop "4DROP" sethv
-	'v.2over "2OVER" sethv 'v.2swap "2SWAP" sethv
-	'v.add "+" sethv 'v.sub "-" sethv 'v.mul "*" sethv
-	'v.and "AND" sethv 'v.or "OR" sethv 'v.xor "XOR" sethv 'v.nand "NAND" sethv
-	'v.not "NOT" sethv 'v.neg "NEG" sethv 'v.abs "ABS" sethv
-	'v.fq "@" sethv 'v.fb "C@" sethv 'v.fw "W@" sethv 'v.fd "D@" sethv
-	'v.st8 "!" sethv 'v.st1 "C!" sethv 'v.st2 "W!" sethv 'v.st4 "D!" sethv
-	'v.ad8 "+!" sethv 'v.ad1 "C+!" sethv 'v.ad2 "W+!" sethv 'v.ad4 "D+!" sethv
-	'v.fp8 "@+" sethv 'v.fp1 "C@+" sethv 'v.fp2 "W@+" sethv 'v.fp4 "D@+" sethv
-	'v.lt "<?" sethv 'v.gt ">?" sethv 'v.eq "=?" sethv 'v.ge ">=?" sethv 'v.le "<=?" sethv 'v.ne "<>?" sethv
-	'v.andq "AND?" sethv 'v.nandq "NAND?" sethv
-	'v.z "0?" sethv 'v.nz "1?" sethv 'v.pos "+?" sethv 'v.negq "-?" sethv
-	'v.sp8 "!+" sethv 'v.sp1 "C!+" sethv 'v.sp2 "W!+" sethv 'v.sp4 "D!+" sethv
-	'v.ex "EX" sethv 'v.in "IN?" sethv
-	'v.sys "SYS0" sethv 'v.sys "SYS1" sethv 'v.sys "SYS2" sethv 'v.sys "SYS3" sethv
-	'v.sys "SYS4" sethv 'v.sys "SYS5" sethv 'v.sys "SYS6" sethv 'v.sys "SYS7" sethv
-	'v.sys "SYS8" sethv 'v.sys "SYS9" sethv 'v.sys "SYS10" sethv
-	"AH|d|A|cqo;idiv #0" "/" sethd
-	"AH|d|D|cqo;idiv #0" "MOD" sethd
-	"AH|d|AD|cqo;idiv #0" "/MOD" sethd
-	"AHH|d|A|imul #1;idiv #0" "*/" sethd
-	"AHK{0}|d|A|imul #1^AHK{1,63}|d|A|imul #1;shrd rax,rdx,$0^AHK{64,}|d|A|imul #1;sar rdx,$0-64;mov rax,rdx^AHN|d|A|imul #1;shrd rax,rdx,$0;sar rdx,$0;and ecx,64;cmovne rax,rdx" "*>>" sethd
-	"AHN|d|A|cqo;shld rdx,rax,$0;shl rax,$0;idiv #1" "<</" sethd
-	"R||R|cvtsi2sd xmm0,#0;sqrtsd xmm0,xmm0;cvttsd2si #0,xmm0" "SQRT" sethd
-	"R||R|bsr #0,#0;xor #0,63" "CLZ" sethd
-	"RK{0}||R|^RK||R|shl #1,$0&63^RN||R|shl #1,$0" "<<" sethd
-	"RK{0}||R|^RK||R|sar #1,$0&63^RN||R|sar #1,$0" ">>" sethd
-	"RK{0}||R|^RK||R|shr #1,$0&63^RN||R|shr #1,$0" ">>>" sethd
-	"G|-|-|push #0" ">R" sethd
-	"|-|n|pop %0" "R>" sethd
-	"|-|n|mov %0,[rsp]" "R@" sethd
-	"|-|n|mov %0,[FREE_MEM]" "MEM" sethd
-	"|-|-|push r14;push r15" "AB[" sethd
-	"|-|-|pop r15;pop r14" "]BA" sethd
-	"ISC|-|-|rep movsq" "MOVE" sethd
-	"ISC|-|-|lea rsi,[rsi+rcx*8-8];lea rdi,[rdi+rcx*8-8];std;rep movsq;cld" "MOVE>" sethd
-	"ISC|-|-|rep movsb" "CMOVE" sethd
-	"ISC|-|-|lea rsi,[rsi+rcx-1];lea rdi,[rdi+rcx-1];std;rep movsb;cld" "CMOVE>" sethd
-	"ISC|-|-|rep movsd" "DMOVE" sethd
-	"ISC|-|-|lea rsi,[rsi+rcx*4-4];lea rdi,[rdi+rcx*4-4];std;rep movsd;cld" "DMOVE>" sethd
-	"IAC|-|-|rep stosq" "FILL" sethd
-	"IAC|-|-|rep stosb" "CFILL" sethd
-	"IAC|-|-|rep stosd" "DFILL" sethd
-	"G|-|-|mov r14,#0" ">A" sethd
-	"|-|n|mov %0,r14" "A>" sethd
-	"G|-|-|add r14,#0" "A+" sethd
-	"|-|n|mov %0,qword[r14]" "A@" sethd
-	"V|-|-|mov qword[r14],#0" "A!" sethd
-	"|-|n|mov %0,qword[r14];add r14,8" "A@+" sethd
-	"V|-|-|mov qword[r14],#0;add r14,8" "A!+" sethd
-	"|-|n|movsx %0,byte[r14]" "CA@" sethd
-	"V|-|-|mov byte[r14],#0B" "CA!" sethd
-	"|-|n|movsx %0,byte[r14];add r14,1" "CA@+" sethd
-	"V|-|-|mov byte[r14],#0B;add r14,1" "CA!+" sethd
-	"|-|n|movsxd %0,dword[r14]" "DA@" sethd
-	"V|-|-|mov dword[r14],#0D" "DA!" sethd
-	"|-|n|movsxd %0,dword[r14];add r14,4" "DA@+" sethd
-	"V|-|-|mov dword[r14],#0D;add r14,4" "DA!+" sethd
-	"G|-|-|mov r15,#0" ">B" sethd
-	"|-|n|mov %0,r15" "B>" sethd
-	"G|-|-|add r15,#0" "B+" sethd
-	"|-|n|mov %0,qword[r15]" "B@" sethd
-	"V|-|-|mov qword[r15],#0" "B!" sethd
-	"|-|n|mov %0,qword[r15];add r15,8" "B@+" sethd
-	"V|-|-|mov qword[r15],#0;add r15,8" "B!+" sethd
-	"|-|n|movsx %0,byte[r15]" "CB@" sethd
-	"V|-|-|mov byte[r15],#0B" "CB!" sethd
-	"|-|n|movsx %0,byte[r15];add r15,1" "CB@+" sethd
-	"V|-|-|mov byte[r15],#0B;add r15,1" "CB!+" sethd
-	"|-|n|movsxd %0,dword[r15]" "DB@" sethd
-	"V|-|-|mov dword[r15],#0D" "DB!" sethd
-	"|-|n|movsxd %0,dword[r15];add r15,4" "DB@+" sethd
-	"V|-|-|mov dword[r15],#0D;add r15,4" "DB!+" sethd ;
+::vs.handled? | i -- f ; the base word i has a handler
+	7 + 3 << 'vw + @ 'v.no <>? ( drop 1 ; ) drop 0 ;
 
 |---------------------------------------------------------------
 | ENTRY: the token is made with the virtual stack ( 1 ) or not ( 0 )
 |---------------------------------------------------------------
 ::vs.tok | tok -- f
 	vn 8 >? ( vs.norm ) drop
-	dup $ff and
-	8 =? ( 2drop 1 ; )
-	9 =? ( drop vtkv 0? ( drop 1 ; ) drop 0 ; )
-	6 >? ( 7 - dup 3 << 'vh + @ 0? ( drop 3 << 'vd + @ 0? ( nip ; ) nip vop ; ) nip nip ex ; )
-	3 << 'vt + @ 0? ( nip ; ) ex 1 ;
+	dup 'vtk ! $ff and 3 << 'vw + @ ex ;

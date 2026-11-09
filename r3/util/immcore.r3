@@ -5,6 +5,11 @@
 | before this file: the words it uses are txh txfont txfont@
 | (the font height is always the live one, there is no copy of it here).
 | Widgets are in immwid.r3
+
+||||||||||||||||||||||||||||||| uncoment for metabuild
+| ^r3/util/immsdl.r3
+|||||||||||||||||||||||||||||||
+
 ^r3/lib/math.r3
 ^r3/lib/sdl2.r3
 

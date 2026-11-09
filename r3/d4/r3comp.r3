@@ -354,7 +354,6 @@
 :compiling..
 	targetplain
 	selos 'osfrag ! buildtab
-	vs.init
 	checktab
 	here dup 'lbl ! cnttok + 'here !
 	lbl 0 cnttok cfill
