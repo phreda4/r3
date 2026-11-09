@@ -39,9 +39,6 @@
 ::uiTex | texture -- ; draw the texture in the cursor box
 	c2recbox 'recbox swap imageb ;
 
-::uiWinBox | -- x y w h ; the current frame
-	fx fy fw fh ;
-
 |--- grid lines
 ::uiLineGridV | -- ; draw the vertical lines of the grid
 	fx flcolm +

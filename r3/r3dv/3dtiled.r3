@@ -1,13 +1,13 @@
 | demo1 r3dv
 | PHREDA 2026
 ^r3/lib/rand.r3
+^r3/util/glgfx.r3
+^r3/util/glimm.r3
 
 ^./renderlib.r3
-^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
 ^./rlgridp.r3
-^r3/util/glimm.r3
 
 | Camera controls
 #cam_yaw  0  
@@ -279,7 +279,7 @@
 :cursortile
 	|msec $100 and? ( drop ; ) drop
 	$ffffffff 'fcolor !
-	gzoneall 2drop
+	uiWinBox 2drop
 	tiley 390 imgw */ + 64 + swap | correct aspect
 	tilex 390 imgw */ + 5 + swap 
 	tilesw 390 imgw */
@@ -309,10 +309,10 @@
 :panelinfo
 	180 uiO
 	$7f0f0fff 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	$ffffffff 'fcolor !
 	gsz gsy gsx "%a %a %a" sprint uiLabelC
-	'exit "save" uiFTBtn
+	'exit "save" uiTBtn
 	;
 
 #v3rec1 0 0 0
@@ -397,7 +397,7 @@
 :panelatlas
 	400 uiE
 	$3fffffff 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	$ffffffff 'fcolor !
 
 	0 btncolor 'rotab "1" uiTBtn
@@ -421,7 +421,7 @@
 |	tiley tilex " %dx%d" sprint uiLabelR	
 	
 	imgatlas 
-	gZoneAll 2drop
+	uiWinBox 2drop
 	64 + swap 5 + swap 390 imgatlash | x y w h 
 	2over 2over mousetile | [ ]
 	imgdraw
@@ -496,7 +496,7 @@
 	uiFull
 	32 uiN
 	$7fffffff 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	stDang
 	'exit "Exit" uiTBtn
 	stDark
@@ -508,8 +508,8 @@
 	1 btncolor 'sete "ERASE" uiTBtn
 	2 btncolor 'sets "SELECT" uiTBtn
 
-	gaxis 2 << 'laxist + uiWrite
-	arena> arena - 5 >> " %d " sprint uiWrite
+	gaxis 2 << 'laxist + uiTlabel
+	arena> arena - 5 >> " %d " sprint uiTlabel
 
 	modepanel
 	$1 and? ( panelinfo ) 

@@ -4,6 +4,7 @@
 ^./renderlib.r3
 ^r3/util/glgfx.r3
 ^./rlshapes.r3
+^r3/util/immzone.r3
 
 | ============================================================
 | CAMARA

@@ -2,12 +2,12 @@
 | PHREDA 2026
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
+^r3/util/glgfx.r3
+^r3/util/glimm.r3
 
 ^./renderlib.r3
 ^./rlshapes.r3
-^r3/util/glgfx.r3
 ^./ss3d.r3
-^r3/util/glimm.r3
 ^./rlgrid.r3
 
 #objlist 0 0 
@@ -661,18 +661,18 @@
 	bsel skel + c@
 	bsel
 	"bone %d padre %d spr %d" sprint uiLabelC
-	'bprev "<" uiTBtn
-	'bnext ">" uiTBtn
-	'btoggle "hide" uiTBtn
+	'bprev "<" uiBtn
+	'bnext ">" uiBtn
+	'btoggle "hide" uiBtn
 	uiLn
 	ed_load
 	vsp ssnameid "%s" sprint uiLabelC
 	0 n3dsprites 1- 'vsp uiSlideri uiEx? 1? ( ed_spr ) drop
 	"escala" 0.1 4.0 'vsc uiSliderfL uiEx? 1? ( ed_scl ) drop
 	"t" -0.5 1.5 'vt uiSliderfL uiEx? 1? ( ed_t ) drop
-	'alinear "alinear" uiFToggle
-	'ajustar "ajustar largo" uiFToggle
-	'bdebug "resaltar" uiFToggle uiEx? 1? ( bdapply ) drop ;
+	'alinear "alinear" uiToggle
+	'ajustar "ajustar largo" uiToggle
+	'bdebug "resaltar" uiToggle uiEx? 1? ( bdapply ) drop ;
 
 :camui
 	'camEye @+ swap @+ swap @ "Eye: %a,%a,%a" sprint uiLabelC
@@ -694,30 +694,30 @@
 	uiFull
 	0.05 %ch uiN
 	$1f0000ff 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	$ffffffff 'fcolor !
-	'exit "Exit" uiTBtn
-	'totop "T" uiTBtn
-	'tofront "F" uiTBtn
-	'toside "S" uiTBtn
-	'anim0 "pose" uiTBtn
-	'anim1 "A1" uiTBtn
-	'anim2 "A2" uiTBtn
-	'anim3 "A3" uiTBtn
+	'exit "Exit" uiNBtn
+	'totop "T" uiNBtn
+	'tofront "F" uiNBtn
+	'toside "S" uiNBtn
+	'anim0 "pose" uiNBtn
+	'anim1 "A1" uiNBtn
+	'anim2 "A2" uiNBtn
+	'anim3 "A3" uiNBtn
 	
 	0.2 %cw uiO
 	$1f00ff00 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	
 	$ffffffff 'fcolor !
 	"VISTA" uiLabelC
-	'shownodes "nodos" uiFToggle uiEx? 1? ( bdapply ) drop
+	'shownodes "nodos" uiToggle uiEx? 1? ( bdapply ) drop
 	shownodes 1? ( nodeui ) drop
-	'showcaps "capsulas" uiFToggle
+	'showcaps "capsulas" uiToggle
 	showcaps 1? ( capui ) drop
-	'showbones "sprites de hueso" uiFToggle uiEx? 1? ( bdapply ) drop
+	'showbones "sprites de hueso" uiToggle uiEx? 1? ( bdapply ) drop
 	showbones 1? ( boneui ) drop
-	'showcam "camara" uiFToggle
+	'showcam "camara" uiToggle
 	showcam 1? ( camui ) drop
 	;
 	
@@ -727,7 +727,6 @@
 	rotatemouse
 	interface
 	fend
-	
 	sdlkey
 	>esc< =? ( exit )
 	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )

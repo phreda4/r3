@@ -2,19 +2,15 @@
 | PHREDA 2025
 |
 | No drawing here. A backend (immsdl.r3 or immgl.r3) must be included
-| before this file: it gives 
-|txh txfont txfont@ 
-| need another aproach!!
+| before this file: the words it uses are txh txfont txfont@
+| (the font height is always the live one, there is no copy of it here).
 | Widgets are in immwid.r3
 ^r3/lib/math.r3
 ^r3/lib/sdl2.r3
 
+|uncomment for generate help
+|^r3/util/immsdl.r3
 
-#txh 16
-
-::txh! | fh --  ; set heigth font
-	'txh ! ;
-	
 |--- Layout
 ##fx ##fy ##fw ##fh | frame (layout area)
 ##flpadx 0 ##flpady 0
@@ -189,7 +185,7 @@
 |	'cx dims>64 'uilastpos !
 |	'uilaststy 'cifil 3 move	|dsc style
 
-|	txFont@ 'uiLastfont !		| save font	<<<
+	txfont@ 'uiLastfont !		| save font
 	
 	idfa 'idfs !
 	idfl dup 'idfh ! 'idfa !
@@ -199,15 +195,14 @@
 	iloadpos
 	| pos style font
 |	'cifil 'uilaststy 3 move 
-|	uiLastfont txfont | <<<
+	uiLastfont txfont
 	;
 	
 ::uiEnd | -- ; end of a gui frame: executes the pending last widget (the open combo list), drawn over the others
 	id 1+ 'idfl !
 	uilastWidget 0? ( drop ; ) 
 	idfa idfl <? ( 2drop uiExitWidget ; ) drop
-	uiBacklast
-	ex ;
+	txfont@ >r uiBacklast ex r> txfont ;
 	
 | 0 = normal
 | 1 = over (not all sytems)

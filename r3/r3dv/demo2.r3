@@ -4,6 +4,7 @@
 ^./renderlib.r3
 ^./rlshapes.r3
 ^./ss3d.r3
+^r3/util/immzone.r3
 
 | Camera controls
 #cam_yaw  -0.785398   | -PI/4

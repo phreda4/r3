@@ -39,7 +39,7 @@
 
 |-----------------------------
 :test
-	font1 txfont txh txh! | !!
+	font1 txfont 
 	uiStart
 	4 4 uiPad
 	$ffffff color
@@ -104,7 +104,7 @@ stLink
 	uiPop
 
 	uiRest
-	font2 txfont txh txh! | !!
+	font2 txfont
 	edfocus
 	edcodedraw
 |	"Hola" $11 uiText

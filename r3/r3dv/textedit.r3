@@ -3,6 +3,7 @@
 |-----
 ^./renderlib.r3
 ^./ss3d.r3
+^r3/util/glimm.r3
 
 #xi -4.5 #yi 3.4 #zi 5.0
 #dx 0.25 #dy -0.4

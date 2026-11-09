@@ -4,6 +4,7 @@
 ^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
+^r3/util/glimm.r3
 
 | Camera controls
 #cam_yaw  0  

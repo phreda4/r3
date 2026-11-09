@@ -40,7 +40,6 @@
 	0 cls
 	drawclock
 	SDLredraw
-	
 	SDLKey
 	>esc< =? ( exit )
 	drop

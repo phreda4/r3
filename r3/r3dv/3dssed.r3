@@ -2,13 +2,14 @@
 | PHREDA 2026
 
 ^r3/lib/rand.r3
+
 ^r3/util/varanim.r3
+^r3/util/glgfx.r3
+^r3/util/glimm.r3
 
 ^./renderlib.r3
-^r3/util/glgfx.r3
 ^./ss3d.r3
 ^./ss3dshadow.r3
-^r3/util/glimm.r3
 ^./rlgrid.r3
 
 #objlist 0 0 
@@ -298,7 +299,7 @@
 
 :sceneui
 	slot "escena  slot %d" sprint uiLabelC
-	'slot- "-" uiTBtn 'slot+ "+" uiTBtn 'savescene "save" uiTBtn 'loadscene "load" uiTBtn
+	'slot- "-" uiNBtn 'slot+ "+" uiNBtn 'savescene "save" uiNBtn 'loadscene "load" uiNBtn
 	uiLn
 	status 1 =? ( stobjs slot "guardado slot %d: %d obj" sprint uiLabelC )
 	2 =? ( stobjs slot "cargado slot %d: %d obj" sprint uiLabelC )
@@ -483,7 +484,7 @@
 	pickmouse ;
 
 :viewmouse
-	uiFill
+	
 	sdlb 1 nand? ( 0 'drag ! ) drop	| boton izquierdo soltado
 	immMouse
 	1 =? ( wheelcam )		| over
@@ -512,19 +513,19 @@
 	uiFull
 	0.05 %ch uiN
 	$1f0000ff 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	$ffffffff 'fcolor !
-	'exit "Exit" uiTBtn
-|	'exit "eventos" uiTBtn
-|	'exit "seleccion" uiTBtn
-	'totop "T" uiTBtn
-	'tofront "F" uiTBtn
-	'toside "S" uiTBtn
+	'exit "Exit" uiNBtn
+|	'exit "eventos" uiNBtn
+|	'exit "seleccion" uiNBtn
+	'totop "T" uiNBtn
+	'tofront "F" uiNBtn
+	'toside "S" uiNBtn
 	
 	
 	0.2 %cw uiO
 	$1f00ff00 'fcolor !
-	gZoneAll frect
+	uiWinBox frect
 	
 	$ffffffff 'fcolor !
 	"EDIT" uiLabelC
@@ -544,25 +545,27 @@
 	"X" 0.125 16.0 'sx uiSliderfL uiEx? 1? ( chgx ) drop
 	"Y" 0.125 16.0 'sy uiSliderfL uiEx? 1? ( chgy ) drop
 	"Z" 0.125 16.0 'sz uiSliderfL uiEx? 1? ( chgz ) drop
-	'slock "uniforme" uiFToggle
-	'scalex2 "x2" uiTBtn
-	'scalehalf "/2" uiTBtn
-	'scale1 "1:1" uiTBtn
+	'slock "uniforme" uiToggle
+	'scalex2 "x2" uiNBtn
+	'scalehalf "/2" uiNBtn
+	'scale1 "1:1" uiNBtn
 	uiLn
-	'snap "snap pos/rot 15" uiFToggle
+	'snap "snap pos/rot 15" uiToggle
 	"grilla" 0.0625 2.0 'gstep uiSliderfL uiEx? 1? ( chgstep ) drop
 	sel 0 >=? ( posui ) drop
-	'prevobj "<<" uiTBtn	
-	'nextobj ">>" uiTBtn	
-	'dupobj "dup" uiTBtn
-	'delobj "del" uiTBtn
+	'prevobj "<<" uiNBtn	
+	'nextobj ">>" uiNBtn	
+	'dupobj "dup" uiNBtn
+	'delobj "del" uiNBtn
 	uiLn
 	sceneui
 	"SOL" uiLabelC
-	'rl_ao_on "SAO" uiFToggle
-	'shadowon "sombras" uiFToggle uiEx? 1? ( shadowon ss3dshadow! ) drop
+	'rl_ao_on "SAO" uiToggle
+	'shadowon "sombras" uiToggle uiEx? 1? ( shadowon ss3dshadow! ) drop
 	"azimut" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop
 	"altura" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop
+	
+	uiRest uiWinBox immBox
 	viewmouse
 	|-1.0 1.0 'vrx uiprogressf
 |	'vrl 8 ss3names uiList

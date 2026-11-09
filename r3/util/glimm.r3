@@ -5,23 +5,21 @@
 ^r3/util/immcore.r3
 ^r3/util/immwid.r3
 
-|--- init of the frame: the old engine (immMouse...) and the new one
-::immIni | --
-	immIniOld uiStart 4 4 uiPad txh txh!  ;
+|--- mouse zone (camera and the like), same words as immzone.r3 but over the
+|--- immcore state, so it lives together with the widgets
+##wix ##wiy ##wiw ##wih
 
-|--- old glimm names
-::uiFTBtn | 'v "" -- ; full width button
-	uiBtn ;
-::uiTBtn | 'v "" -- ; button as wide as its text, next one at the right (uiLn to end the row)
-	uiNBtn ;
-::uiFToggle | 'var "text" --
-	uiToggle ;
-::uiWrite | "" -- ; text at the cursor, the next widget goes at the right
-	uiTlabel ;
-::gZoneAll | -- x y w h ; the current frame
-	uiWinBox ;
-::gZoneEle | -- x y w h ; the cursor box
-	cx cy cw ch ;
-::uiFill | -- ; the rest of the frame is the current one and the zone of the old engine (immMouse)
-	uiRest uiWinBox immBox ;
+::immBox | x y w h -- ; zone of immMouse and immZone
+	'wih ! 'wiw ! 'wiy ! 'wix ! ;
 
+::immFull | -- ; the zone is the whole screen
+	0 0 sw sh immBox ;
+
+::immIni | -- ; start of the frame: ids, padding, and the whole screen as zone
+	uiStart 4 4 uiPad immFull ;
+
+::immMouse | -- state ; mouse state (0-6) of the zone, the cursor box is not changed
+	wix wiy wiw wih uiZoneBox uistate $f and uiBackBox ;
+
+::immZone | -- ; the zone as interaction area (read it with uiClk uiFocus...), the cursor box is not changed
+	wix wiy wiw wih uiZoneBox uiBackBox ;
