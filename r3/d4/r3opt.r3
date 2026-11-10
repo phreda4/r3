@@ -32,6 +32,7 @@
 
 ##curword -1	| word in analysis (an anon that calls it can not be moved before it)
 #anw
+##wend			| end of the word in analysis (0 = unknown)
 
 | the anon ended by the ] token at 'to' has in its body a call to word nro?
 ::anoninline? | nro to -- 0/1
@@ -115,7 +116,8 @@
 
 :reseta	
 	'tokana 'tokana> ! 
-	'biglit 'biglit> ! ;
+	'biglit 'biglit> ! 
+	0 'wend ! ;
 	
 :,back | --
 	-8 'tokana> +! ;
@@ -458,14 +460,84 @@
 #TK*/ 58 #TK*>> 59 #TK<</ 60
 #TKnot 61 #TKneg 62
 #TKmod 56 #TK/mod 57
+#TKor 46 #TKxor 47
+
+|--- the result is a constant (x 0 and / x -1 or / x 0 *): the value below the literal is replaced
+| it is only removed when the previous token just pushes a value (not a call or an operation)
+:pushtok? | -- 0/1
+	tokana> 'tokana <=? ( drop 0 ; ) drop
+	tokana> 8 - @ $ff and
+	2 =? ( drop 0 ; ) 6 >? ( drop 0 ; ) drop 1 ;
+
+:,konst | v -- ; the TOS literal is removed, v is 0 or -1
+	,back
+	pushtok? 1? ( drop ,back ,nlit ; ) drop
+	0? ( drop 0 ,tlit TKand ,t ; )
+	drop -1 ,tlit TKor ,t ;
+
+
+|----------------------- chains of literals
+| x a op b op --> x (a op b) op      ( + - * and or xor )
+| x a << b <<  -->  x a+b <<         ( << >> >>> when a+b < 64 )
+
+#ck
+:chain? | tk -- 0/1 ; tokana ends with: LIT tk LIT
+	'ck !
+	tokana> 24 - 'tokana <? ( drop 0 ; )
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop
+	@+ $ff and ck <>? ( 2drop 0 ; ) drop
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+
+:combine | l1 l2 tk -- v
+	TK* =? ( drop * ; )
+	TKand =? ( drop and ; )
+	TKor =? ( drop or ; )
+	drop xor ;
+
+:chainmerge | tk -- ; LIT tk LIT --> LIT
+	tokana> 24 - @ litpush getTOS rot combine
+	-24 'tokana> +! ,nlit ;
+
+:shmerge? | tk -- 0/1 ; LIT sh LIT --> LIT (a+b < 64)
+	dup chain? 0? ( 2drop 0 ; ) drop
+	tokana> 24 - @ litpush getTOS
+	2dup or -? ( 4drop 0 ; ) drop
+	+ 63 >? ( 2drop 0 ; )
+	-24 'tokana> +! ,nlit drop 1 ;
+
+:maskchain? | tk -- 0/1 ; LIT tk LIT with the same literal (1..63)
+	chain? 0? ( ; ) drop
+	tokana> 24 - @ litpush getTOS <>? ( drop 0 ; )
+	1 <? ( drop 0 ; ) 63 >? ( drop 0 ; ) drop 1 ;
+
+|--- + and - are a group: x a + b -  -->  x a-b +
+:addchain? | -- 0/1 ; tokana ends with: LIT (+ or -) LIT
+	tokana> 24 - 'tokana <? ( drop 0 ; )
+	@+ $ff and 1 >? ( 2drop 0 ; ) drop
+	@+ $ff and 49 <? ( 2drop 0 ; ) 50 >? ( 2drop 0 ; ) drop
+	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
+
+:sgnv | op v -- v' ; + v  /  - -v
+	swap TK- =? ( drop neg ; ) drop ;
+
+:addmerge | cur -- ; LIT p LIT --> LIT (+ or -)
+	getTOS sgnv
+	tokana> 24 - @ litpush
+	tokana> 16 - @ $ff and swap sgnv
+	+ -24 'tokana> +!
+	0? ( drop ; )
+	-? ( dup neg -? ( drop ,nlit TK+ ,t ; ) nip ,nlit TK- ,t ; )
+	,nlit TK+ ,t ;
+
 
 :,lAND
 	getTOS 
-	0? ( 2drop ,back ,back 0 ,nlit ; ) 
+	0? ( 2drop 0 ,konst ; ) 
 	-1 =? ( 2drop ,back ; ) 
 	drop ,t ;
 :,AND
 	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
+	TKand chain? 1? ( drop TKand chainmerge ,AND ; ) drop
 	1lit? 1? ( drop ,lAND ; ) drop	
 	01lit? 1? ( drop 01swap ,lAND ; ) drop
 	,t ;
@@ -473,10 +545,11 @@
 :,lOR
 	getTOS
 	0? ( 2drop ,back ; ) 
-	-1 =? ( 2drop ,back ,back -1 ,nlit ; ) 
+	-1 =? ( 2drop -1 ,konst ; ) 
 	drop ,t ;
 :,OR
 	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
+	TKor chain? 1? ( drop TKor chainmerge ,OR ; ) drop
 	1lit? 1? ( drop ,lOR ; ) drop	
 	01lit? 1? ( drop 01swap ,lOR ; ) drop	
 	,t ;
@@ -488,6 +561,7 @@
 	drop ,t ;
 :,XOR
 	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
+	TKxor chain? 1? ( drop TKxor chainmerge ,XOR ; ) drop
 	1lit? 1? ( drop ,lXOR ; ) drop		
 	01lit? 1? ( drop 01swap ,lXOR ; ) drop
 	,t ;
@@ -495,7 +569,7 @@
 :,lNAND
 	getTOS 
 	0? ( 2drop ,back ; )
-	-1 =? ( 2drop ,back ,back 0 ,nlit ; ) 
+	-1 =? ( 2drop 0 ,konst ; ) 
 	drop ,t ;
 :,NAND
 	2lit? 1? ( 2drop 2litpush .NAND ,TOSLIT ; ) drop
@@ -509,6 +583,7 @@
 	drop ,t	;
 :,+
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
+	addchain? 1? ( drop TK+ addmerge drop ; ) drop	| x a + b + --> x (a+b) +
 	1lit? 1? ( drop ,l+ ; ) drop
 	01lit? 1? ( drop 01swap ,l+ ; ) drop | lit nro + --> nro lit +
 	,t ;
@@ -516,6 +591,7 @@
 :,- 
 	2lit? 1? ( 2drop 2litpush .- ,TOSLIT ; ) drop 
 	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
+	addchain? 1? ( drop TK- addmerge drop ; ) drop	| x a + b - --> x (a-b) +
 	,t ;
 	
 |----------------------- *	
@@ -530,13 +606,13 @@
 	msb ,tlit TK<< ,t TK+ ,t ;
 	
 |>>>> 7 * --> dup 3 << swap -
-:,*pot-1 | tos --
+:,*pot-1 | tos --	; tos = 2^k-1 : msb(tos) = k-1
 	,back TKdup ,t
-	msb ,tlit TK<< ,t TKswap ,t TK- ,t ;
+	msb 1+ ,tlit TK<< ,t TKswap ,t TK- ,t ;
 	
 :,lit* 	
 	getTOS
-	0? ( drop ,back ,back 0 ,tlit ; ) 
+	0? ( drop 0 ,konst ; ) 
 	1 =? ( drop ,back ; ) 	| 1 * --> _
 	-1 =? ( drop ,back tkneg ,t ; )
 	dup 1- nand? ( ,*pot ; )
@@ -547,6 +623,7 @@
 
 :,* 
 	2lit? 1? ( 2drop 2litpush .* ,TOSLIT ; ) drop 
+	TK* chain? 1? ( drop TK* chainmerge ,* ; ) drop	| x a * b * --> x (a*b) *
 	1lit? 1? ( 2drop ,lit* ; ) drop
 	01lit? 1? ( 2drop 01swap ,lit* ; ) drop
 	,t ;
@@ -624,17 +701,26 @@
 	,t ;
 	
 |------------------------	
+:maskgo | adr tok mask -- adr ; LIT sh LIT --> mask and
+	-24 'tokana> +! ,nlit drop TKand ,AND ;
+
 :,<< 
 	2lit? 1? ( 2drop 2litpush .<< ,TOSLIT ; ) drop 
 	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
+	TK>> maskchain? 1? ( drop -1 getTOS << maskgo ; ) drop		| x n >> n << --> x -2^n and
+	TK>>> maskchain? 1? ( drop -1 getTOS << maskgo ; ) drop
+	TK<< shmerge? 1? ( drop ,<< ; ) drop						| x a << b << --> x a+b <<
 	,t ;
 :,>> 
 	2lit? 1? ( 2drop 2litpush .>> ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop	
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
+	TK>> shmerge? 1? ( drop ,>> ; ) drop						| x a >> b >> --> x a+b >>
 	,t ;
 :,>>>	
 	2lit? 1? ( 2drop 2litpush .>>> ,TOSLIT ; ) drop 
-	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop	
+	1lit? 1? ( getTOS 0? ( 3drop ,back ; ) drop ) drop
+	TK<< maskchain? 1? ( drop -1 getTOS >>> maskgo ; ) drop		| x n << n >>> --> x (-1 >>> n) and
+	TK>>> shmerge? 1? ( drop ,>>> ; ) drop					| x a >>> b >>> --> x a+b >>>
 	,t ;
 	
 |----------------------- mod
@@ -818,11 +904,97 @@
 	1? ( drop drop 11 ,t ; ) drop	| inline anon: ] without index
 	,t ;
 	
+|----------------------- conditions
+| + condition with literals and a ( ) block: false --> the block is removed
+|                                            true  --> the block is inlined
+| + x 0 =? --> 0?    x 0 <>? --> 1?    x 0 <? --> -?    x 0 >=? --> +?
+| tokens: 0? 1? +? -? <? >? =? >=? <=? <>? AND? NAND? (13..24) ; IN? is not changed
+
+#xana				| ,ana (defined later)
+#ctk #cadr #ctok #cres #cend #csemi
+#bd #bpos #bsemi #tb
+
+:evalc1 | v t -- 0/1
+	13 =? ( drop 0? ( drop 1 ; ) drop 0 ; )
+	14 =? ( drop 1? ( drop 1 ; ) drop 0 ; )
+	15 =? ( drop +? ( drop 1 ; ) drop 0 ; )
+	drop -? ( drop 1 ; ) drop 0 ;
+
+:evalc2 | a b t -- 0/1
+	17 =? ( drop <? ( drop 1 ; ) drop 0 ; )
+	18 =? ( drop >? ( drop 1 ; ) drop 0 ; )
+	19 =? ( drop =? ( drop 1 ; ) drop 0 ; )
+	20 =? ( drop >=? ( drop 1 ; ) drop 0 ; )
+	21 =? ( drop <=? ( drop 1 ; ) drop 0 ; )
+	22 =? ( drop <>? ( drop 1 ; ) drop 0 ; )
+	23 =? ( drop and? ( drop 1 ; ) drop 0 ; )
+	drop nand? ( drop 1 ; ) drop 0 ;
+
+:condval | -- 0/1/-1 ; value of the condition (-1: it is not constant)
+	ctk 16 <=? ( drop 1lit? 0? ( drop -1 ; ) drop getTOS ctk evalc1 ; ) drop
+	ctk 24 <=? ( drop 2lit? 0? ( drop -1 ; ) drop getNOS getTOS ctk evalc2 ; ) drop
+	-1 ;
+
+:hasblock? | -- 0/1 ; the condition is followed by a ( ) block
+	cadr @ $ff and 8 =? ( drop 1 ; ) drop 0 ;
+
+:blockscan | adr -- adr' semi ; adr is a ( : the address after its ) and the first ; at its top level
+	0 'bd ! 0 'bsemi !
+	( dup 'bpos ! @+ $ff and
+		7 =? ( bd 1 =? ( bsemi 0? ( bpos 'bsemi ! ) drop ) drop )
+		8 =? ( 1 'bd +! ) 10 =? ( 1 'bd +! )
+		9 =? ( -1 'bd +! ) 11 =? ( -1 'bd +! )
+		drop bd 1? drop ) drop
+	bsemi ;
+
+:depth0? | -- 0/1 ; there is no open ( or [ in tokana
+	0 'tb !
+	'tokana ( tokana> <? @+ $ff and
+		8 =? ( 1 'tb +! ) 10 =? ( 1 'tb +! )
+		9 =? ( -1 'tb +! ) 11 =? ( -1 'tb +! ) drop ) drop
+	tb 0? ( drop 1 ; ) drop 0 ;
+
+:procrange | end adr -- ; analyse the tokens from adr to end
+	( over <? @+ xana ex ) 2drop ;
+
+:popops | -- ; the compare literal of a two operands condition is not needed
+	ctk 16 >? ( -8 'tokana> +! ) drop ;
+
+:condblk | res -- adr/0 ; condition with literals and a block (0: not changed)
+	'cres !
+	cadr blockscan 'csemi ! 'cend !
+	cres 0? ( drop popops cend ; ) drop						| false: the block is removed
+	csemi 0? ( drop popops cend 8 - cadr 8 + procrange cend ; ) drop	| true: only the block
+	wend 0? ( drop 0 ; ) drop								| true with ; : the rest of the word is dead
+	depth0? 0? ( drop 0 ; ) drop
+	popops csemi cadr 8 + procrange csemi @ ,t wend ;
+
+:cond0tk | t -- t'/0 ; condition with 0 as compare literal
+	19 =? ( drop 13 ; ) 22 =? ( drop 14 ; ) 17 =? ( drop 16 ; ) 20 =? ( drop 15 ; )
+	drop 0 ;
+
+:condred | -- adr/0 ; x 0 =? --> 0?
+	ctk cond0tk 0? ( ; )
+	1lit? 0? ( 2drop 0 ; ) drop
+	getTOS 1? ( 2drop 0 ; ) drop
+	,back ,t cadr ;
+
+:condconst | -- adr/0 ; condition with literals and a block
+	hasblock? 0? ( ; ) drop
+	condval -1 =? ( drop 0 ; )
+	condblk ;
+
+:,cond | adr tok -- adr
+	dup $ff and 'ctk ! 'ctok ! 'cadr !
+	condconst 1? ( ; ) drop
+	condred 1? ( ; ) drop
+	cadr ctok ,t ;
+
 #optw
 ,LIT ,LIT ,CODE ,t ,DATA ,t ,t 	|.lit .lit .code .acode .data .adata .str
 ,t ,t ,t ,[ ,] 				|.; .( .) .[ .] 
-,t ,t ,t ,t ,t 				|.EX .0? .1? .+? .-? 
-,t ,t ,t ,t ,t ,t ,t ,t ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .IN? 
+,t ,cond ,cond ,cond ,cond 	|.EX .0? .1? .+? .-? 
+,cond ,cond ,cond ,cond ,cond ,cond ,cond ,cond ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .IN? 
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
 ,t ,t ,t ,t ,t ,t ,t ,t 	|.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 ,t ,t ,t 					|.>R .R> .R@ 
@@ -869,7 +1041,7 @@
 		) 2drop ;
 	
 :codew | dicc --
-	lenwor ( over <? @+ ,ana 
+	lenwor over 'wend ! ( over <? @+ ,ana 
 		| error?
 		) 2drop ;
 		
@@ -882,6 +1054,7 @@
 ::deferwi
 	'inlineword 'deferinline !
 	',code 'xcode !
+	',ana 'xana !
 	fmtinit ;
 	
 ::wordanalysis | nro --

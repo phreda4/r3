@@ -5,6 +5,7 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
 ^r3/lib/3dgl.r3
+^r3/util/glimm.r3
 
 #shader "
 @vertex-----------------

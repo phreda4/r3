@@ -180,13 +180,14 @@
 	uiEx? 0? ( 2drop ; ) drop ex ;
 
 ::uiNBtn | 'click "" -- ; button as wide as its text; it moves the cursor right; executes 'click when activated
-	txw 4 + 'cw !
+	flpadx 'cx +! 
+	txw 8 + 'cw !
 	uiZone
 	'uiEx! uiClk
 	colFill uilFill 
 	[ kbBtn colFocus uiLRect ; ] uiFocus
 	ttwritec
-	cw 'cx +! 
+	flpadx cw + 'cx +! 
 	uiEx? 0? ( 2drop ; ) drop ex ;	
 	
 ::uiBtn | 'click "" -- ; button with centered text; executes 'click when activated (click or Enter)
@@ -224,7 +225,8 @@
 
 :slstep | min max -- step
 	slstp 1? ( nip nip ; ) drop
-	swap - 100 / 1 max ;
+	swap - 6 >> |100 / 
+	1 max ;
 
 :slmove | min max 'v key dir -- min max 'v key
 	pick4 pick4 slstep *		| min max 'v key delta

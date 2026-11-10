@@ -8,7 +8,7 @@
 
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
-
+^r3/util/glimm.r3
 ^r3/opengl/shaderobj.r3
 
 #flpos [ 1.2 20.0 2.0 ] | light position

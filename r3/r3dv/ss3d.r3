@@ -190,10 +190,7 @@ void main() {
             vec3 signs   = vec3(-float(st.x), down ? 1.0 : -1.0, -float(st.y));
             vec3 n_local = signs * vec3(ax==0, ax==1, ax==2);
             vec3 world_n = vRot * n_local;
-            vec3 b_hit   = vec3((float(c.x)+0.5)/float(itw),
-                                1.0-(float(cy)+0.5)/float(iNF),
-                                (float(c.y)+0.5)/float(ith));
-            vec3 world_hit = vRot*(b_hit*2.0*vExt - vExt) + vTrans + world_n*0.0005;
+            vec3 world_hit = vRot*(vRo + vRd*(tmin + th)) + vTrans + world_n*0.0005;
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w;   // clip ZERO_TO_ONE
 
