@@ -475,6 +475,41 @@
 	0? ( drop 0 ,tlit TKand ,t ; )
 	drop -1 ,tlit TKor ,t ;
 
+|--- stack tokens: the last token of tokana
+:lasttok | -- t ; -1 if tokana is empty
+	tokana> 'tokana <=? ( drop -1 ; ) drop
+	tokana> 8 - @ $ff and ;
+
+:popt | -- ; remove the last token
+	-8 'tokana> +! ;
+
+:pusher? | -- 0/1 ; the last token only pushes one value (it does not use the stack)
+	pushtok? 1? ( ; ) drop
+	lasttok 
+	26 =? ( drop 1 ; ) 28 =? ( drop 1 ; )				| DUP OVER
+	29 =? ( drop 1 ; ) 30 =? ( drop 1 ; ) 31 =? ( drop 1 ; )	| PICK2 PICK3 PICK4
+	drop 0 ;
+
+:ndrop | t -- n ; values dropped by DROP 2DROP 3DROP 4DROP (0 for other tokens)
+	27 =? ( drop 1 ; ) 37 =? ( drop 2 ; ) 38 =? ( drop 3 ; ) 39 =? ( drop 4 ; )
+	drop 0 ;
+
+:dropn | n -- ; emit the token that drops n values
+	1 =? ( drop 27 ,t ; ) 2 =? ( drop 37 ,t ; ) 3 =? ( drop 38 ,t ; ) 4 =? ( drop 39 ,t ; )
+	drop ;
+
+|--- drop n values: DROP DROP --> 2DROP , lit DROP --> _ , DUP DROP --> _
+:dropmerge | n --
+	0? ( drop ; )
+	pusher? 1? ( drop popt 1- dropmerge ; ) drop
+	lasttok ndrop 0? ( drop dropn ; )
+	2dup + 4 >? ( 2drop dropn ; )
+	nip nip popt dropn ;
+
+|--- x y swap op --> x y op  (+ * and or xor)
+:swapop? | -- 0/1
+	lasttok 32 =? ( drop popt 1 ; ) drop 0 ;
+
 
 |----------------------- chains of literals
 | x a op b op --> x (a op b) op      ( + - * and or xor )
@@ -536,6 +571,7 @@
 	-1 =? ( 2drop ,back ; ) 
 	drop ,t ;
 :,AND
+	swapop? 1? ( drop ,AND ; ) drop
 	2lit? 1? ( 2drop 2litpush .AND ,TOSLIT ; ) drop
 	TKand chain? 1? ( drop TKand chainmerge ,AND ; ) drop
 	1lit? 1? ( drop ,lAND ; ) drop	
@@ -548,6 +584,7 @@
 	-1 =? ( 2drop -1 ,konst ; ) 
 	drop ,t ;
 :,OR
+	swapop? 1? ( drop ,OR ; ) drop
 	2lit? 1? ( 2drop 2litpush .OR ,TOSLIT ; ) drop
 	TKor chain? 1? ( drop TKor chainmerge ,OR ; ) drop
 	1lit? 1? ( drop ,lOR ; ) drop	
@@ -560,6 +597,7 @@
 	-1 =? ( 2drop ,back TKnot ,t ; )
 	drop ,t ;
 :,XOR
+	swapop? 1? ( drop ,XOR ; ) drop
 	2lit? 1? ( 2drop 2litpush .XOR ,TOSLIT ; ) drop 
 	TKxor chain? 1? ( drop TKxor chainmerge ,XOR ; ) drop
 	1lit? 1? ( drop ,lXOR ; ) drop		
@@ -582,6 +620,7 @@
 	0? ( 2drop ,back ; ) 
 	drop ,t	;
 :,+
+	swapop? 1? ( drop ,+ ; ) drop
 	2lit? 1? ( 2drop 2litpush .+ ,TOSLIT ; ) drop 
 	addchain? 1? ( drop TK+ addmerge drop ; ) drop	| x a + b + --> x (a+b) +
 	1lit? 1? ( drop ,l+ ; ) drop
@@ -622,6 +661,7 @@
 	TK* ,t ;
 
 :,* 
+	swapop? 1? ( drop ,* ; ) drop
 	2lit? 1? ( 2drop 2litpush .* ,TOSLIT ; ) drop 
 	TK* chain? 1? ( drop TK* chainmerge ,* ; ) drop	| x a * b * --> x (a*b) *
 	1lit? 1? ( 2drop ,lit* ; ) drop
@@ -878,9 +918,11 @@
 
 |----------------------------
 :,NOT 
+	lasttok 61 =? ( 2drop popt ; ) drop	| not not --> _
 	1lit? 1? ( 2drop 1litpush .not ,TOSLIT ; ) drop 
 	,t ;
 :,NEG 
+	lasttok 62 =? ( 2drop popt ; ) drop	| neg neg --> _
 	1lit? 1? ( 2drop 1litpush .neg ,TOSLIT ; ) drop 
 	,t ;
 :,ABS 
@@ -990,13 +1032,37 @@
 	condred 1? ( ; ) drop
 	cadr ctok ,t ;
 
+|----------------------- stack
+:,DROP drop 1 dropmerge ;
+:,2DROP drop 2 dropmerge ;
+:,3DROP drop 3 dropmerge ;
+:,4DROP drop 4 dropmerge ;
+
+:,OVER | over over --> 2dup
+	lasttok 28 =? ( 2drop popt 36 ,t ; ) drop
+	,t ;
+
+:,SWAP | swap swap --> _
+	lasttok 32 =? ( 2drop popt ; ) drop
+	,t ;
+
+:condn | t -- n ; values taken by the condition (-1: it is not a condition)
+	13 <? ( drop -1 ; ) 16 <=? ( drop 0 ; ) 24 <=? ( drop 1 ; ) 25 =? ( drop 2 ; )
+	drop -1 ;
+
+:,) | adr tok -- adr ; cond ( ) --> only the stack effect of the condition (empty block)
+	lasttok 8 <>? ( drop ,t ; ) drop
+	tokana> 'tokana - 16 <? ( drop ,t ; ) drop
+	tokana> 16 - @ $ff and condn -1 =? ( drop ,t ; )
+	popt popt swap drop dropmerge ;
+
 #optw
 ,LIT ,LIT ,CODE ,t ,DATA ,t ,t 	|.lit .lit .code .acode .data .adata .str
-,t ,t ,t ,[ ,] 				|.; .( .) .[ .] 
+,t ,t ,) ,[ ,] 				|.; .( .) .[ .] 
 ,t ,cond ,cond ,cond ,cond 	|.EX .0? .1? .+? .-? 
 ,cond ,cond ,cond ,cond ,cond ,cond ,cond ,cond ,t 	|.<? .>? .=? .>=? .<=? .<>? .A? .N? .IN? 
-,t ,t ,t ,t ,t ,t ,t ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
-,t ,t ,t ,t ,t ,t ,t ,t 	|.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
+,t ,DROP ,OVER ,t ,t ,t ,SWAP ,t 	|.DUP .DROP .OVER .PICK2 .PICK3 .PICK4 .SWAP .NIP 
+,t ,t ,t ,2DROP ,3DROP ,4DROP ,t ,t 	|.ROT .-ROT .2DUP .2DROP .3DROP .4DROP .2OVER .2SWAP 
 ,t ,t ,t 					|.>R .R> .R@ 
 ,AND ,OR ,XOR ,NAND 
 ,+ ,- ,* ,/ ,<< ,>> ,>>>
