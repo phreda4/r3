@@ -135,8 +135,8 @@
 | y crece hacia arriba (capa de la tira = nv-1-y: la capa 0 es la de arriba)
 #nv 8				| voxeles por lado de cada objeto (max 32: mascara de 32 bits)
 :ng nv 2 << ;
-:ncolsn 64 nv * nv * 1+ ;			| columnas (+1: sprite del cursor)
-:npaln  64 nv * nv * nv * 1+ ;		| capacidad de la tira (peor caso sin compresion)
+:ncolsn 64 nv * nv * ;					| columnas
+:npaln  64 nv * nv * nv * ;		| capacidad de la tira (peor caso sin compresion)
 
 #vo #vx #vy #vz			| voxel de trabajo: objeto y coordenadas locales
 #ox #oy #oz				| posicion del objeto en el supercubo (0..3)
@@ -174,10 +174,8 @@
 
 |--- memoria: 64 objetos + cursor en ssmulti, comprimidos de a uno
 :initvoxmem
-	65 ncolsn npaln ssm_ini
-	64 ( 1? 1- nv nv nv ssm_add drop ) drop
-	1 1 1 ssm_add drop				| sprite 64: cursor de 1 voxel
-	1 64 0 0 ssm_vocc! $ffffff00 64 0 0 ssm_vcol! ;
+	64 ncolsn npaln ssm_ini
+	64 ( 1? 1- nv nv nv ssm_add drop ) drop ;
 
 :upvox | comprime el objeto abierto y sube a la GPU lo que cambio
 	'ss3dupcols 'ss3duppal ssm_sync ;
@@ -313,7 +311,6 @@
 #gap 1.05		| separacion entre objetos
 #objsz #vox #pitch #pivy #qpk
 #hilite 1
-#curshow 1
 #selobj #ti
 
 :calcgeo
@@ -340,23 +337,10 @@
 	'ti !
 	ti objpos toworld qpk oscl ti ti objcolor ti ss3dset ;
 
-:vpos | o v -- p	; centro del voxel v del objeto o, en un eje
-	2* 1+ nv - vox * 2/ swap 2* 3 - pitch * 2/ + ;
-
-:curscale | -- s	; parpadeo del cursor
-	curshow 0? ( ; ) drop
-	msec 8 >> 1 and 0? ( ; ) drop
-	oscl 1.2 *. ;
-
-:setcursor
-	ox vx vpos oy vy vpos oz vz vpos toworld
-	qpk curscale 64 $ffff4003 64 ss3dset ;
-
 :placeobjs
 	calcgeo
-	cursorvox vo 'selobj !
-	0 ( 64 <? dup setobj 1+ ) drop
-	setcursor ;
+	cursorvox vo ssm_edit ssm_open 'selobj !		| el objeto del cursor es el activo (descomprimido)
+	0 ( 64 <? dup setobj 1+ ) drop ;
 
 |----------------------------------
 | picking: rayo del mouse contra el supercubo, en su espacio local (sin rotar)
@@ -529,7 +513,7 @@
 	'anim "animar al azar" uiToggle
 	uiLn
 	'b_save "guardar .ssv" uiNBtn
-	'b_load "cargar .ssv" uiNBtn 
+	'b_load "cargar .ssv" uiNBtn
 	uiLn ;
 
 :renderui
@@ -539,11 +523,7 @@
 	'rl_aa_on "FXAA" uiToggle
 	"azimut" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop
 	"altura" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop
-	"escala" 1.0 12.0 'oscl uiSliderfL
-	"alt. objeto" 0.0 6.0 'lift uiSliderfL
-	"separacion" 1.0 2.0 'gap uiSliderfL
-	'hilite "resaltar objeto" uiToggle
-	'curshow "cursor" uiToggle ;
+	'hilite "resaltar objeto activo" uiToggle ;
 
 :interface
 	1 'fscale !
@@ -629,7 +609,7 @@
 	time msec rerand
 	initvoxmem
 	ssm_image
-	128 ss3dmem				| 64 objetos + cursor
+	64 ss3dmem					| 64 objetos
 	initobjs ;
 
 : | <<<<<<<< Boot

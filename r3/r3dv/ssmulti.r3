@@ -24,7 +24,7 @@
 | ssm_sync   | 'upcols 'uppal --              comprime y sube lo modificado ('ss3dupcols 'ss3duppal)
 | ssm_save   | "archivo.ssv" --               compresion completa (tiras compartidas, igual que vox2x)
 | ssm_load   | "archivo.ssv" --               carga .ssv completo y lo deja comprimido de a un sprite
-| ssm_used ssm_cap ssm_n ssm_err ssm_cols ssm_org ssm_rstart ssm_rlen   consultas
+| ssm_used ssm_cap ssm_n ssm_open ssm_err ssm_cols ssm_org ssm_rstart ssm_rlen   consultas
 
 ^r3/lib/mem.r3
 ^r3/lib/math.r3
@@ -58,6 +58,7 @@
 ::ssm_used npal ;
 ::ssm_cap pmax ;
 ::ssm_n nspr ;
+::ssm_open open ;				| sprite abierto (descomprimido) o -1
 ::ssm_err ssmerr ;
 ::ssm_cols | n -- cnt
 	smnc ;

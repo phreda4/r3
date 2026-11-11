@@ -20,6 +20,7 @@
 #sys-SDL_ShowCursor 
 #sys-SDL_UpdateWindowSurface 
 #sys-SDL_DestroyWindow 
+#sys-SDL_GetRendererInfo
 #sys-SDL_CreateRenderer 
 #sys-SDL_CreateTexture 
 #sys-SDL_DestroyTexture 
@@ -122,6 +123,8 @@
 	sys-SDL_UpdateWindowSurface sys1 drop ;
 ::SDL_DestroyWindow | window -- ; destroy the window
 	sys-SDL_DestroyWindow sys1 drop ;
+::SDL_GetRendererInfo | rendered 'renderinfo --
+	sys-SDL_GetRendererInfo sys2 drop ;
 ::SDL_CreateRenderer | window index flags -- renderer ; create a 2d renderer (index -1 = the first driver that supports the flags)
 	sys-SDL_CreateRenderer sys3 ;
 ::SDL_CreateTexture | renderer format access w h -- texture ; create a texture (access 0 static, 1 streaming, 2 target)
@@ -274,7 +277,8 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	-1 $6 SDL_CreateRenderer 'SDLrenderer !
+	-1 $2 |$6 
+	SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
 
@@ -282,7 +286,8 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	-1 $6 SDL_CreateRenderer 'SDLrenderer !
+	-1 $2 |$6 
+	SDL_CreateRenderer 'SDLrenderer !
 	;
 
 |int displays=SDL_GetNumVideoDisplays()-1;
@@ -300,7 +305,8 @@
 	$2fff0000 or dup 
 |	$1FFF0000 dup
 	sw sh $0 SDL_CreateWindow dup 'SDL_windows !
-	dup -1 $6 SDL_CreateRenderer 'SDLrenderer !
+	dup -1 $2 |$6 
+	SDL_CreateRenderer 'SDLrenderer !
 	SDL_RaiseWindow
 	;
 	
@@ -308,7 +314,8 @@
 	'sh ! 'sw !
 	$3231 SDL_init 
 	$1FFF0000 dup sw sh $20 SDL_CreateWindow dup 'SDL_windows !
-	-1 $6 SDL_CreateRenderer 'SDLrenderer !
+	-1 $2 |$6
+	SDL_CreateRenderer 'SDLrenderer !
 	SDL_windows SDL_RaiseWindow
 	;
 
@@ -329,7 +336,8 @@
 	dup SDLdfullsw 'sh ! 'sw !
 	$2fff0000 or dup | display nro
 	sw sh $10 SDL_CreateWindow dup 'SDL_windows !
-	-1 $6 SDL_CreateRenderer 'SDLrenderer !
+	-1 $2 |$6 
+	SDL_CreateRenderer 'SDLrenderer !
 	;
 
 ::SDLfull | -- ; switch the window to fullscreen
@@ -401,7 +409,7 @@
 	
 ::SDLupdate | -- ; wait 10 ms and process the pending events, updating SDLkey, SDLchar, SDLx, SDLy, SDLb and SDLw
 	0 'SDLkey ! 0 'SDLchar ! 0 'SDLw !
-	1 SDL_delay | novsync =10 
+	10 SDL_delay | novsync =10 vsync 
 	( 'SDLevent SDL_PollEvent 1? drop 
 		'SDLevent d@ 
 		$400 =? ( drop updatemove ) | sale con 0 o con evento nuevo
@@ -473,6 +481,7 @@
 	dup "SDL_SetWindowSize" getproc 'sys-SDL_SetWindowSize !
 	dup "SDL_UpdateWindowSurface" getproc 'sys-SDL_UpdateWindowSurface !
 	dup "SDL_DestroyWindow" getproc 'sys-SDL_DestroyWindow !
+	dup "SDL_GetRendererInfo" getproc 'sys-SDL_GetRendererInfo !
 	dup "SDL_CreateRenderer" getproc 'sys-SDL_CreateRenderer !
 	dup "SDL_CreateTexture" getproc 'sys-SDL_CreateTexture !
 	dup "SDL_DestroyTexture" getproc 'sys-SDL_DestroyTexture !

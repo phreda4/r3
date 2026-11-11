@@ -21,9 +21,13 @@
 	vscrh vscrz *. sh over - 2/ da!+
 	swap da!+ da! ;
 	
+:screenformat | rend -- rend tex
+	dup here SDL_GetRendererInfo | rendered 'renderinfo --
+	here 16 + d@ ;
+	
 ::vscreen | w h -- ; create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
 	'vscrh ! 'vscrw !
-	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
+	SDLrenderer screenformat 2 vscrw vscrh SDL_CreateTexture
 	dup 1 SDL_SetTextureScaleMode | 0 no blend
 	'vscrtex ! 
 	'vresize SDLeventR
@@ -31,7 +35,7 @@
 
 ::vscreenf | w h -- ; like vscreen with nearest neighbor scaling (sharp pixels)
 	'vscrh ! 'vscrw !
-	SDLrenderer $16362004 2 vscrw vscrh SDL_CreateTexture
+	SDLrenderer screenformat 2 vscrw vscrh SDL_CreateTexture
 	dup 0 SDL_SetTextureScaleMode | 0 no blend
 	'vscrtex ! 
 	'vresize SDLeventR
