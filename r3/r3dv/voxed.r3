@@ -526,7 +526,8 @@
 #names>
 #list * 8192
 #nlist
-#fpage #fi #fend #fnm
+#fpage #fi 
+#fnm
 
 :isvox? | str -- str 1/0
 	count 4 <? ( drop 0 ; ) over + 4 - ".vox" =s ;
@@ -872,12 +873,12 @@
 
 :filelist
 	nlist 0? ( drop "(sin .vox)" uiLabelC ; ) drop
-	fpage 10 * 10 + nlist min 'fend !
-	fpage 10 * ( fend <? dup 'fi !
+	fpage 10 * 10 + nlist min 
+	fpage 10 * ( over <? dup 'fi !
 		uiZone 'filepick uiClk
 		$ff203050 'fcolor ! uilFill $ffffffff 'fcolor !
 		dup 3 << 'list + @ uiLabel
-		1+ ) drop
+		1+ ) 2drop
 	'fprev "<" uiNBtn
 	fpage 1+ nlist 9 + 10 / "%d / %d" sprint uiTlabel
 	'fnext ">" uiNBtn uiLn ;
