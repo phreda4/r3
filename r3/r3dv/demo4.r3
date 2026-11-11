@@ -110,11 +110,11 @@
 
 :load3d
 	|"media/ss/sprites" 
-	|"media/ss/iti"
+	"media/ssv/iti"
 |	"media/ss/city" 
 |	"media/ss/sprites"
 	|"media/ss/dino" 
-	"media/ssv/dino"
+|	"media/ssv/dino"
 	dup 1024 ss3dload
 	ss3loadnames
 	

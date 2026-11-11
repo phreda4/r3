@@ -9,6 +9,8 @@
 | el shader recorre solo X/Z (DDA 2D) y resuelve el rango Y con la mascara de 32 bits
 |   texel de columna (x,z) = columnas[atlasIndex + z*sizeX + x] = (mascara, base)
 |   color del voxel y = tira[base + y]          (y = capa, 0 = arriba)
+|   tira uniforme: si base>>24 == 1, toda la columna usa tira[base & $ffffff] (un solo color)
+|     (las bases normales tienen el byte alto en 0 o $ff, asi que los .ssv anteriores siguen validos)
 ^r3/lib/str.r3
 
 ##n3dsprites	| cnt sprites
@@ -195,7 +197,8 @@ void main() {
             gl_FragDepth = clip.z/clip.w;   // clip ZERO_TO_ONE
 
             gNormal = world_n;
-            uint  vcol = pal[col.y + uint(cy)];           // base + y (aritmetica uint32)
+            uint  pidx = ((col.y >> 24) == 1u) ? (col.y & 0xFFFFFFu) : (col.y + uint(cy));  // uniforme o base + y (uint32)
+            uint  vcol = pal[pidx];
             vec4  tint = unpackUnorm4x8(vColorPk).abgr;
             vec4  vc   = unpackUnorm4x8(vcol).abgr;
             uint  pk   = ((vColorPk & 0xFFu) != 0u) ? (vColorPk & 0xFFu) : (vcol & 0xFFu);

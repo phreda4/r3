@@ -288,8 +288,7 @@
 	tokenc 1? ( 1- 'tokenc ! >>str ; ) drop
 	curposxy
 		
-	|da@+ drop |.token .print |$ff and "(%h) | " .print
-	4 a+
+	da@+ token>cnt -? ( drop 0 ) 'tokenc ! | fused token ("str" d@ -> avD@) eats next words
 	
 	codesrc> !+ 'codesrc> !
 

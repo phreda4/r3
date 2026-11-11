@@ -13,6 +13,7 @@
 |   tabla nspr*8:      atlasIndex (d) | sizeX sizeY sizeZ 0 (c)    sizeY = capas (bits)
 |   columnas ncol*8:   mascara (d) base (d)      texel de (x,z) = atlasIndex + z*sizeX + x
 |   tira ncolores*4:   color = tira[base + y]    (base puede ser "negativo": aritmetica uint32)
+|   tira uniforme:     base = $01000000 | indice  ->  color = tira[indice] para toda la columna
 | color: $RRGGBBuma (u rough 3b, m metal 3b, a glow 2b), por ahora uma = 0
 | comodin de la tira = $00000001 (negro con glow 1, no tiene sentido); indice 0 reservado
 
@@ -442,9 +443,25 @@
 	wfind 1? ( dup mergeat dup hins ; ) drop
 	np dup mergeat dup hins ;
 
+#uc #uu #ub1
+
+:uniform? | -- 1/0		; todos los colores no comodin de la tira son iguales (uc)
+	SENT 'uc ! 1 'uu !
+	0 ( sn <?
+		dup 2 << ss + d@
+		SENT <>? (
+			uc SENT =? ( over 'uc ! ) drop
+			uc <>? ( 0 'uu ! )
+		) drop
+		1+ ) drop
+	uu ;
+
 :bakestrip | lo hi -- base
 	over - 1+ 'sn !
 	vcol 5 << over + 2 << 'vol + 'ss !
+	uniform? 1? ( drop				| tira de un solo color: 1 slot, flag en el byte alto
+		uc 'ub1 d! 'ub1 'ss ! 1 'sn !
+		findstrip nip $1000000 or ; ) drop
 	findstrip swap - ;
 
 |---- atlas: columnas una detras de otra (sin empaquetado)

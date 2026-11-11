@@ -1,15 +1,17 @@
-| VOXED - editor de voxeles ss3d (un objeto a la vez)
+|MEM 64
+| VOXED - editor de voxeles ss3d (un objeto a la vez, 32 slots)
 | PHREDA 2026
 |
 | mouse: izq = herramienta | der + arrastrar = orbitar | medio + arrastrar = desplazar | rueda = zoom
 | V F G = attach / erase / paint | 1 2 3 = voxel / linea / caja | X cancela el 1er punto
-| U = deshacer | W S = zoom, A D Q E = desplazar | F1 = sombras | F2 = SSAO
+| U = deshacer | W S = zoom, A D Q E = desplazar | F1 sombras | F2 SSAO | F3 paleta | F4 archivos | F5 herramientas
 |
 | modelo: nv x nv x nv voxeles (max 32: la mascara de capas es de 32 bits)
 | vidx = indice de paleta por voxel, dpal = tira de colores completa (ss3d), dcols = mascara|base
 
 ^r3/lib/rand.r3
 ^r3/lib/mem.r3
+^r3/lib/str.r3
 
 ^r3/util/varanim.r3
 ^r3/util/glgfx.r3
@@ -90,9 +92,6 @@
 :vside
 	'cam_yaw 0.25 cam_yaw 21 1.0 0 +vanim
 	'cam_pit 0.0 cam_pit 21 1.0 0 +vanim ;
-:viso
-	'cam_yaw 0.1 cam_yaw 21 1.0 0 +vanim
-	'cam_pit -0.12 cam_pit 21 1.0 0 +vanim ;
 
 |----------------------------------
 | luces: sol con sombra + luz puntual en la camara
@@ -119,8 +118,8 @@
 #nv 32			| voxeles por lado (max 32)
 :nvox nv nv * nv * ;
 :ncol0 nv nv * ;						| columnas del objeto
-:ncolsn ncol0 2 + ;						| + cursor + barra
-:npaln nvox nv + 1+ ;					| + cursor + barra
+:ncolsn ncol0 2* 2 + ;					| objeto + cursor + barra + pared
+:npaln nvox 1+ nv + ncol0 + ;			| tiras: objeto, cursor, barra, pared
 :colsbytes ncolsn 3 << ;
 :palbytes npaln 2 << ;
 
@@ -171,6 +170,19 @@
 	4 =? ( drop h_t h_p h_v rgb3 ; )
 	drop h_v h_p h_q rgb3 ;
 
+#cr #cg #cb #cmx #cmn #cd
+:hueof | -- h
+	cmx cr =? ( drop cg cb - 60 * cd / 360 + 360 mod ; )
+	cg =? ( drop cb cr - 60 * cd / 480 + 360 mod ; )
+	drop cr cg - 60 * cd / 600 + 360 mod ;
+:rgb>hsv | r g b -- h s v
+	'cb ! 'cg ! 'cr !
+	cr cg max cb max 'cmx !
+	cr cg min cb min 'cmn !
+	cmx cmn - 'cd !
+	cd 0? ( drop 0 0 cmx ; ) drop
+	hueof cd 255 * cmx / cmx ;
+
 :pv | 'arr -- v
 	si 3 << + @ ;
 
@@ -180,7 +192,7 @@
 	'prg pv 5 << 'pmt pv 2 << or 'pgl pv or or
 	'prgb si 3 << + ! ;
 
-:pset | h s v --
+:pset | h s v --	; ranura si
 	'pav si 3 << + ! 'pas si 3 << + ! 'pah si 3 << + !
 	0 'prg si 3 << + ! 0 'pmt si 3 << + ! 0 'pgl si 3 << + !
 	si slotcalc ;
@@ -206,31 +218,68 @@
 		over 2 << dpal + d!
 		1+ ) drop ;
 
-|--- memoria e imagen .ssv (sprite 0 = objeto, 1 = cursor de 1 voxel, 2 = barra de nv voxeles)
+|--- slots (32 modelos en memoria): mascaras, indices, paleta
+:slb ncol0 3 << nvox + 14336 + ;
+#slots #sused * 32 #snames * 1024 #slotcur
+#spp #cs #cb2 #cd2
+
+:sadr | n -- adr
+	slb * slots + ;
+:cp>s | 'src bytes --
+	'cb2 ! 'cs ! spp cs cb2 cmove cb2 'spp +! ;
+:cp<s | 'dst bytes --
+	'cb2 ! 'cd2 ! cd2 spp cb2 cmove cb2 'spp +! ;
+
+:slotsave | n --
+	sadr 'spp !
+	dcols ncol0 3 << cp>s
+	vidx nvox cp>s
+	'pah 2048 cp>s 'pas 2048 cp>s 'pav 2048 cp>s 'pmt 2048 cp>s
+	'prg 2048 cp>s 'pgl 2048 cp>s 'prgb 2048 cp>s ;
+
+:slotinit
+	palinit
+	vidx 0 nvox 2 >> dfill
+	0 ( ncol0 <? dup 3 << dcols + 0 swap d! 1+ ) drop
+	refreshstrips 1 'dirty ! ;
+
+|--- memoria e imagen .ssv (0 = objeto, 1 = cursor de 1 voxel, 2 = barra de nv voxeles, 3 = pared nv x 1 x nv)
 :initmem
 	here 'dcols ! colsbytes 'here +!
 	here 'dpal ! palbytes 'here +!
 	here 'vidx ! nvox 'here +!
 	vidx 0 nvox 2 >> dfill
 	here 'ucols ! colsbytes 'here +!
-	here 'uidx ! nvox 'here +! ;
+	here 'uidx ! nvox 'here +!
+	here 'slots ! slb 32 * 'here +! ;
 
 :initcols
 	dcols >a
 	0 ( ncol0 <? 0 da!+ dup nv * da!+ 1+ ) drop
 	1 da!+ nvox da!+
-	1 nv << 1- da!+ nvox 1+ da!+ ;
+	1 nv << 1- da!+ nvox 1+ da!+
+	0 ( ncol0 <? 1 da!+ dup nvox 1+ nv + + da!+ 1+ ) drop ;
+
+#wx #wz
+:wallcol | k -- color
+	nv /mod 'wx ! 'wz !
+	wx 7 and 0? ( drop $8a8a9800 ; ) drop
+	wz 7 and 0? ( drop $8a8a9800 ; ) drop
+	wx wz + 1 and 1? ( drop $44444c00 ; ) drop
+	$3a3a4200 ;
 
 :initpal
 	dpal $ffffff00 npaln dfill
+	0 ( ncol0 <? dup wallcol over nvox 1+ nv + + 2 << dpal + d! 1+ ) drop
 	refreshstrips ;
 
 :buildimg
 	here 'img !
-	"SSV2" d@ , 3 , ncolsn , npaln ,
+	"SSV2" d@ , 4 , ncolsn , npaln ,
 	0 , nv dup 8 << or nv 16 << or ,
 	ncol0 , 1 dup 8 << or 1 16 << or ,
 	ncol0 1+ , 1 nv 8 << or 1 16 << or ,
+	ncol0 2 + , nv 1 8 << or nv 16 << or ,
 	here dcols colsbytes cmove colsbytes 'here +!
 	here dpal palbytes cmove palbytes 'here +!
 	img 'here ! ;
@@ -354,6 +403,153 @@
 	0 'aok ! ;
 
 |----------------------------------
+| slots: cambiar de modelo
+:slotload | n --
+	dup 'sused + c@ 0? ( 2drop slotinit pushundo ; ) drop
+	sadr 'spp !
+	dcols ncol0 3 << cp<s
+	vidx nvox cp<s
+	'pah 2048 cp<s 'pas 2048 cp<s 'pav 2048 cp<s 'pmt 2048 cp<s
+	'prg 2048 cp<s 'pgl 2048 cp<s 'prgb 2048 cp<s
+	refreshstrips 1 'dirty ! 0 'aok ! pushundo ;
+
+:slotswitch | n --
+	dup slotcur =? ( 2drop ; ) drop
+	slotcur slotsave
+	1 'sused slotcur + c!
+	dup 'slotcur !
+	slotload ;
+
+|----------------------------------
+| importar .vox (MagicaVoxel): primer modelo, paleta RGBA o la de MagicaVoxel por defecto
+#defpal
+	$00000000 $ffffffff $ffccffff $ff99ffff $ff66ffff $ff33ffff $ff00ffff $ffffccff
+	$ffccccff $ff99ccff $ff66ccff $ff33ccff $ff00ccff $ffff99ff $ffcc99ff $ff9999ff
+	$ff6699ff $ff3399ff $ff0099ff $ffff66ff $ffcc66ff $ff9966ff $ff6666ff $ff3366ff
+	$ff0066ff $ffff33ff $ffcc33ff $ff9933ff $ff6633ff $ff3333ff $ff0033ff $ffff00ff
+	$ffcc00ff $ff9900ff $ff6600ff $ff3300ff $ff0000ff $ffffffcc $ffccffcc $ff99ffcc
+	$ff66ffcc $ff33ffcc $ff00ffcc $ffffcccc $ffcccccc $ff99cccc $ff66cccc $ff33cccc
+	$ff00cccc $ffff99cc $ffcc99cc $ff9999cc $ff6699cc $ff3399cc $ff0099cc $ffff66cc
+	$ffcc66cc $ff9966cc $ff6666cc $ff3366cc $ff0066cc $ffff33cc $ffcc33cc $ff9933cc
+	$ff6633cc $ff3333cc $ff0033cc $ffff00cc $ffcc00cc $ff9900cc $ff6600cc $ff3300cc
+	$ff0000cc $ffffff99 $ffccff99 $ff99ff99 $ff66ff99 $ff33ff99 $ff00ff99 $ffffcc99
+	$ffcccc99 $ff99cc99 $ff66cc99 $ff33cc99 $ff00cc99 $ffff9999 $ffcc9999 $ff999999
+	$ff669999 $ff339999 $ff009999 $ffff6699 $ffcc6699 $ff996699 $ff666699 $ff336699
+	$ff006699 $ffff3399 $ffcc3399 $ff993399 $ff663399 $ff333399 $ff003399 $ffff0099
+	$ffcc0099 $ff990099 $ff660099 $ff330099 $ff000099 $ffffff66 $ffccff66 $ff99ff66
+	$ff66ff66 $ff33ff66 $ff00ff66 $ffffcc66 $ffcccc66 $ff99cc66 $ff66cc66 $ff33cc66
+	$ff00cc66 $ffff9966 $ffcc9966 $ff999966 $ff669966 $ff339966 $ff009966 $ffff6666
+	$ffcc6666 $ff996666 $ff666666 $ff336666 $ff006666 $ffff3366 $ffcc3366 $ff993366
+	$ff663366 $ff333366 $ff003366 $ffff0066 $ffcc0066 $ff990066 $ff660066 $ff330066
+	$ff000066 $ffffff33 $ffccff33 $ff99ff33 $ff66ff33 $ff33ff33 $ff00ff33 $ffffcc33
+	$ffcccc33 $ff99cc33 $ff66cc33 $ff33cc33 $ff00cc33 $ffff9933 $ffcc9933 $ff999933
+	$ff669933 $ff339933 $ff009933 $ffff6633 $ffcc6633 $ff996633 $ff666633 $ff336633
+	$ff006633 $ffff3333 $ffcc3333 $ff993333 $ff663333 $ff333333 $ff003333 $ffff0033
+	$ffcc0033 $ff990033 $ff660033 $ff330033 $ff000033 $ffffff00 $ffccff00 $ff99ff00
+	$ff66ff00 $ff33ff00 $ff00ff00 $ffffcc00 $ffcccc00 $ff99cc00 $ff66cc00 $ff33cc00
+	$ff00cc00 $ffff9900 $ffcc9900 $ff999900 $ff669900 $ff339900 $ff009900 $ffff6600
+	$ffcc6600 $ff996600 $ff666600 $ff336600 $ff006600 $ffff3300 $ffcc3300 $ff993300
+	$ff663300 $ff333300 $ff003300 $ffff0000 $ffcc0000 $ff990000 $ff660000 $ff330000
+	$ff0000ee $ff0000dd $ff0000bb $ff0000aa $ff000088 $ff000077 $ff000055 $ff000044
+	$ff000022 $ff000011 $ff00ee00 $ff00dd00 $ff00bb00 $ff00aa00 $ff008800 $ff007700
+	$ff005500 $ff004400 $ff002200 $ff001100 $ffee0000 $ffdd0000 $ffbb0000 $ffaa0000
+	$ff880000 $ff770000 $ff550000 $ff440000 $ff220000 $ff110000 $ffeeeeee $ffdddddd
+	$ffbbbbbb $ffaaaaaa $ff888888 $ff777777 $ff555555 $ff444444 $ff222222 $ff111111
+
+#vsx #vsy #vsz #vgot #vend
+#offx #offy #offz
+#mx #my #mz #mi
+
+:importcolor | abgr slot --
+	'si !
+	dup $ff and swap dup 8 >> $ff and swap 16 >> $ff and
+	rgb>hsv pset ;
+
+:vc.size | adr --
+	d@+ 'vsx ! d@+ 'vsy ! d@ 'vsz !
+	nv vsx - 2/ 0 max 'offx !
+	0 'offy !
+	nv vsy - 2/ 0 max 'offz ! ;
+
+:inb | -- 0/1
+	vx vy max vz max nv <? ( drop 1 ; ) drop 0 ;
+
+:putvox
+	mx offx + 'vx ! mz offy + 'vy ! vsy 1- my - offz + 'vz !
+	inb 0? ( drop ; ) drop
+	1 vocc! mi vcolset ;
+
+:vc.xyzi | adr --
+	vgot 1? ( 2drop ; ) drop 1 'vgot !
+	d@+
+	( 1? 1- swap
+		c@+ 'mx ! c@+ 'my ! c@+ 'mz ! c@+ 'mi !
+		putvox
+		swap ) 2drop ;
+
+:vc.rgba | adr --
+	0 ( 255 <?
+		2dup 2 << + d@ over 1+ importcolor
+		1+ ) 2drop ;
+
+:vchunk | q --
+	dup d@
+	"SIZE" d@ =? ( drop 12 + vc.size ; )
+	"XYZI" d@ =? ( drop 12 + vc.xyzi ; )
+	"RGBA" d@ =? ( drop 12 + vc.rgba ; )
+	2drop ;
+
+:parsevox | start end --
+	'vend ! 8 +
+	( vend <?
+		dup vchunk
+		dup 4 + d@ 0 max 12 + + ) drop ;
+
+:defpalvox
+	1 ( 256 <? dup dup 3 << 'defpal + @ swap importcolor 1+ ) drop ;
+
+:importvox | "path" --
+	here swap load
+	dup here - 24 <? ( 2drop ; ) drop
+	here d@ "VOX " d@ <>? ( 2drop ; ) drop
+	pushundo
+	vidx 0 nvox 2 >> dfill
+	'o_clear eachvox
+	0 'vgot ! 0 'offx ! 0 'offy ! 0 'offz !
+	defpalvox
+	here swap parsevox
+	refreshstrips 1 'dirty ! 0 'aok ! ;
+
+|--- lista de archivos .vox
+#vpath "media/ssv/vox"
+#names * 65536
+#names>
+#list * 8192
+#nlist
+#fpage #fi #fend #fnm
+
+:isvox? | str -- str 1/0
+	count 4 <? ( drop 0 ; ) over + 4 - ".vox" =s ;
+
+:addname | ent --
+	nlist 1000 >=? ( 2drop ; ) drop
+	dup FDIR 1? ( 2drop ; ) drop
+	dup FSIZEF 16000000 >? ( 2drop ; ) drop
+	FNAME isvox? 0? ( 2drop ; ) drop
+	names> dup 'list nlist 3 << + ! strcpyl 'names> ! 1 'nlist +! ;
+
+:scanvox
+	0 'nlist ! 0 'fpage ! 'names 'names> !
+	'vpath
+|WIN|	"%s//*" sprint
+	ffirst ( 1? addname fnext ) drop ;
+
+:filepick
+	fi 3 << 'list + @ 'fnm !
+	fnm slotcur 5 << 'snames + strcpy
+	fnm 'vpath "%s/%s" sprint importvox ;
+
+|----------------------------------
 | geometria en el mundo: el objeto esta centrado en x z y apoyado en y=0
 #oscl 3.0		| escala (voxel = 0.01 * escala)
 :vox 0.01 oscl *. ;
@@ -362,16 +558,22 @@
 	2* 1+ nv - vox * 2/ ;
 
 |----------------------------------
-| picking: rayo del mouse contra el objeto (espacio local centrado)
+| picking: rayo del mouse contra el objeto, recorrido exacto por celdas (DDA)
 #camForMouse 0 0 0
 #xdir #ydir
 #ro 0 0 0
 #rd 0 0 0
-#tn #tf #tt #dtt #miss #so #sd
-#hitok #hx #hy #hz		| voxel apuntado
-#pok #px #py #pz		| ultima celda vacia antes del voxel
-#fok #fx #fy #fz		| primera celda valida del rayo
-#bok #bx #bz			| primera celda del piso (y=0) del rayo
+#tn #tf #miss #so #sd
+#hitok #pok #fok #bok
+#hcell 0 0 0		| voxel apuntado
+#pcell 0 0 0		| ultima celda vacia que cruzo el rayo antes del voxel
+#fcell 0 0 0		| primera celda del rayo
+#bcell 0 0 0		| primera celda del piso (y=0) del rayo
+#cc 0 0 0			| celda actual
+#ss 0 0 0			| paso por eje (+1/-1)
+#tm 0 0 0			| t del proximo borde por eje
+#td 0 0 0			| t por celda por eje
+#lax #ai #cop #cdd #cp0 #a3
 
 :AdvMouse
 	sdlx 2* fix. sw / 1.0 -
@@ -401,34 +603,60 @@
 	2dup min tn max 'tn !
 	max tf min 'tf ! ;
 
-:axcell | p -- g/-1
-	half + -? ( drop -1 ; )
-	vox / nv >=? ( drop -1 ; ) ;
+:cp3 | 'dst 'src --
+	swap >a dup @ a!+ dup 8 + @ a!+ 16 + @ a! ;
+:setcc 3 << 'cc + ! ;
+:setss 3 << 'ss + ! ;
+:settm 3 << 'tm + ! ;
+:settd 3 << 'td + ! ;
 
-:cell | x y z -- r	; -1 fuera, 0 vacio, 1 ocupado (voxel en vx vy vz)
-	axcell -? ( drop 2drop -1 ; ) 'vz !
-	axcell -? ( 2drop -1 ; ) 'vy !
-	axcell -? ( drop -1 ; ) 'vx !
+:dinit | i --		; celda de entrada, paso y tiempos del eje i
+	'ai !
+	'ro ai 3 << + @ 'cop ! 'rd ai 3 << + @ 'cdd !
+	cop cdd tn *. + half + 0 max vox / nv 1- min 'cp0 !
+	cp0 ai setcc
+	cdd abs 32 <? ( drop 1 ai setss 1000000.0 ai settm 1000000.0 ai settd ; ) drop
+	cdd 0 >? ( drop 1 ai setss cp0 1+ vox * half - cop - cdd /. ai settm vox cdd /. ai settd ; ) drop
+	-1 ai setss cp0 vox * half - cop - cdd /. ai settm vox cdd neg /. ai settd ;
+
+:ccocc | -- 0/1	; celda cc ocupada
+	'cc @ 'vx ! 'cc 8 + @ 'vy ! 'cc 16 + @ 'vz !
 	vocc? 1? ( drop 1 ; ) drop 0 ;
 
-:notefloor
-	bok 1? ( drop ; ) drop
-	vy 1? ( drop ; ) drop
-	vx 'bx ! vz 'bz ! 1 'bok ! ;
+:minaxis | -- i
+	0 'ai ! 'tm @ 'cop !
+	'tm 8 + @ cop <? ( 1 'ai ! 'tm 8 + @ 'cop ! ) drop
+	'tm 16 + @ cop <? ( 2 'ai ! ) drop
+	ai ;
 
-:marchstep
-	'ro @ 'rd @ tt *. +
-	'ro 8 + @ 'rd 8 + @ tt *. +
-	'ro 16 + @ 'rd 16 + @ tt *. +
-	cell
-	-? ( drop ; )
-	1? ( drop vx 'hx ! vy 'hy ! vz 'hz ! 1 'hitok ! tt 'tf ! ; ) drop
-	fok 0? ( vx 'fx ! vy 'fy ! vz 'fz ! 1 'fok ! ) drop
-	notefloor
-	vx 'px ! vy 'py ! vz 'pz ! 1 'pok ! ;
+:advance | i -- ok	; avanza la celda en el eje i
+	dup 'lax ! 3 << 'a3 !
+	'cc a3 + @ 'ss a3 + @ +
+	-? ( drop 0 ; ) nv >=? ( drop 0 ; )
+	'cc a3 + !
+	'tm a3 + @ 'td a3 + @ + 'tm a3 + !
+	1 ;
+
+:hithere
+	'hcell 'cc cp3 1 'hitok !
+	lax -? ( drop ; ) drop
+	'pcell 'cc cp3
+	'cc lax 3 << + @ 'ss lax 3 << + @ - 'pcell lax 3 << + !
+	1 'pok ! ;
+
+:emptyhere
+	fok 0? ( 'fcell 'cc cp3 1 'fok ! ) drop
+	bok 0? ( 'cc 8 + @ 0? ( 'bcell 'cc cp3 1 'bok ! ) drop ) drop ;
+
+:ddastep | -- cont
+	ccocc 1? ( drop hithere 0 ; ) drop
+	emptyhere
+	minaxis advance ;
+
+:ddaloop 1 ( 1? drop ddastep ) drop ;
 
 :rayhit
-	0 'hitok ! 0 'pok ! 0 'fok ! 0 'bok ! 0 'miss !
+	0 'hitok ! 0 'pok ! 0 'fok ! 0 'bok ! 0 'miss ! -1 'lax !
 	raylocal
 	0 'tn ! 1000.0 'tf !
 	'ro @ 'rd @ slab
@@ -436,21 +664,24 @@
 	'ro 16 + @ 'rd 16 + @ slab
 	miss 1? ( drop ; ) drop
 	tn tf >=? ( drop ; ) drop
-	vox 3 / 1 max 'dtt !
-	tn ( tf <? dup 'tt ! marchstep dtt + ) drop ;
+	0 dinit 1 dinit 2 dinit
+	ddaloop ;
+
+:c>t | 'cell --
+	>a a@+ 'tx ! a@+ 'ty ! a@ 'tz ! ;
 
 :attachtarget | -- 0/1
-	hitok 1? ( drop pok 0? ( ; ) drop px 'tx ! py 'ty ! pz 'tz ! 1 ; ) drop
-	bok 1? ( drop bx 'tx ! 0 'ty ! bz 'tz ! 1 ; ) drop
+	hitok 1? ( drop pok 0? ( ; ) drop 'pcell c>t 1 ; ) drop
+	bok 1? ( drop 'bcell c>t 1 ; ) drop
 	fok 0? ( ; ) drop
-	fx 'tx ! fy 'ty ! fz 'tz ! 1 ;
+	'fcell c>t 1 ;
 
 #curok
 :pickat | -- 0/1	; objetivo de la herramienta en tx ty tz
 	rayhit
 	bmode 0? ( drop attachtarget ; ) drop
 	hitok 0? ( ; ) drop
-	hx 'tx ! hy 'ty ! hz 'tz ! 1 ;
+	'hcell c>t 1 ;
 
 #lkey
 :tkey tx 8 << ty + 8 << tz + ;
@@ -478,47 +709,50 @@
 	drop ;
 
 |----------------------------------
-| instancias: 0 objeto, 1 cursor, 2 ancla, 3..14 caja
-#qid #qzz #qxx
-#ea #eb #ek #ec #ei
+| instancias: 0 objeto, 1 cursor, 2 ancla, 3..5 paredes de referencia (solo las posteriores), 6..8 ejes
+#qid #qzz #qxx #ac0
+#ec #ei
+#showref 1
+
+:rsc | -- escala de las referencias (0 = ocultas)
+	showref 0? ( ; ) drop oscl ;
 
 :curscl | -- s
 	curok 0? ( ; ) drop oscl 1.15 *. ;
 :curcolor | -- c
 	bmode 0? ( drop $40ff4003 ; ) 1 =? ( drop $ff404003 ; ) drop $40a0ff03 ;
-
 :ancscl | -- s
 	aok 0? ( ; ) drop oscl 1.15 *. ;
 
-:hsg | b -- +-half
-	1? ( drop half ; ) drop half neg ;
+:bk | e -- p	; pared opuesta a la camara: +-(half + 1/2 voxel)
+	half vox 2/ + swap -? ( drop ; ) drop neg ;
+:ywall | -- y	; piso si la camara esta arriba, techo si esta abajo
+	'camEye 8 + @ half - -? ( drop half 2* vox 2/ + ; ) drop vox 2/ neg ;
 
-:ecol | k col -- c
-	swap 0? ( drop ; ) drop drop $a0a0a003 ;
+:walls
+	'camEye @ bk half 0 qzz rsc 3 $ffffff00 3 ss3dset
+	0 ywall 0 qid rsc 3 $ffffff00 4 ss3dset
+	0 half 'camEye 16 + @ bk qxx rsc 3 $ffffff00 5 ss3dset ;
 
-:edge | x y z q col i --
+:axbar | x y z q col i --
 	'ei ! 'ec !
-	oscl 2 ec ei ss3dset
-	oscl 0.25 *. oscl oscl 0.25 *. ei ss3dscl3 ;
+	rsc 2 ec ei ss3dset
+	rsc 0.25 *. rsc 0.3 *. rsc 0.25 *. ei ss3dscl3 ;
 
-:edges
-	0 ( 4 <? dup 'ek !
-		ek 1 and hsg 'ea !
-		ek 2 and hsg 'eb !
-		ea half eb qid ek $40ff4003 ecol ek 3 + edge
-		0 half ea + eb qzz ek $ff404003 ecol ek 7 + edge
-		ea half eb + 0 qxx ek $4080ff03 ecol ek 11 + edge
-		1+ ) drop ;
+:axes
+	half neg 'ac0 !
+	ac0 half 0.3 *. + vox ac0 qzz $ff404003 6 axbar
+	ac0 vox half 0.3 *. + ac0 qid $40ff4003 7 axbar
+	ac0 vox ac0 half 0.3 *. + qxx $4080ff03 8 axbar ;
 
 :placeall
 	0 half 0 qid oscl 0 $ffffff00 0 ss3dset
 	tx cellc ty cellc half + tz cellc qid curscl 1 curcolor 1 ss3dset
 	ax cellc ay cellc half + az cellc qid ancscl 1 $ffff4003 2 ss3dset
-	edges ;
+	walls axes ;
 
 |----------------------------------
-| archivos: mem/voxedN.vxd (editor) y mem/voxedN.ssv (exportar a ss3d)
-#slot 1
+| archivos del slot: mem/voxedN.vxd (editor) y mem/voxedN.ssv (exportar a ss3d)
 #sv #lp
 
 :svarr | 'arr --
@@ -534,12 +768,14 @@
 	'pah svarr 'pas svarr 'pav svarr 'pmt svarr 'prg svarr 'pgl svarr
 	here vidx nvox cmove nvox 'here +!
 	0 ( ncol0 <? dup 3 << dcols + d@ , 1+ ) drop
-	sv here over - slot "mem/voxed%d.vxd" sprint save
+	sv here over - slotcur 1+ "mem/voxed%d.vxd" sprint save
 	sv 'here ! ;
 
 :loadvxd
-	here slot "mem/voxed%d.vxd" sprint load drop
+	here slotcur 1+ "mem/voxed%d.vxd" sprint load
+	here - 100 <? ( drop ; ) drop
 	here d@ nv <>? ( drop ; ) drop
+	pushundo
 	here 4 + 'lp !
 	'pah ldarr 'pas ldarr 'pav ldarr 'pmt ldarr 'prg ldarr 'pgl ldarr
 	0 ( 256 <? dup slotcalc 1+ ) drop
@@ -553,32 +789,41 @@
 	0 , nv dup 8 << or nv 16 << or ,
 	here dcols ncol0 3 << cmove ncol0 3 << 'here +!
 	here dpal nvox 2 << cmove nvox 2 << 'here +!
-	sv here over - slot "mem/voxed%d.ssv" sprint save
+	sv here over - slotcur 1+ "mem/voxed%d.ssv" sprint save
 	sv 'here ! ;
 
 :newmodel
 	pushundo
 	'o_clear eachvox ;
 
-:slot- slot 1 - 0 max 'slot ! ;
-:slot+ slot 1 + 9 min 'slot ! ;
-
 |----------------------------------
 | interfaz
-#lmode "attach (V)" "erase (F)" "paint (G)" ""
-#lshape "voxel (1)" "line (2)" "box (3)" ""
-#ci
+#showL 1 #showR 1 #showF 0
+:tgL showL 1 xor 'showL ! ;
+:tgR showR 1 xor 'showR ! ;
+:tgF showF 1 xor 'showF ! ;
 
+#radv #radn #radt
+:radsel radn radv ! ;
+:rad | 'var n "text" --	; radio propio
+	'radt ! 'radn ! 'radv !
+	uiZone 'radsel uiClk
+	radv @ radn =? ( $ff3070c0 'fcolor ! uilFill ) drop
+	$ffffffff 'fcolor ! radt uiLabelC ;
+
+#ci
 :palpick ci 'psel ! ;
 
 :palui
+	1 1 uiPad
 	16 16 uiGrid
 	0 ( 256 <? dup 'ci !
 		uiZoneW 'palpick uiClk
 		'prgb ci 3 << + @ 8 >> $ff000000 or 'fcolor ! uiFill
 		ci psel =? ( $ffffffff 'fcolor ! uiRect ) drop
 		uiNext
-		1+ ) drop ;
+		1+ ) drop
+	4 4 uiPad ;
 
 :slotchg psel slotcalc refreshstrips 1 'dirty ! ;
 
@@ -600,9 +845,13 @@
 
 :rightpanel
 	"MODO" uiLabelC
-	'bmode 'lmode uiRadio
+	'bmode 0 "attach (V)" rad
+	'bmode 1 "erase (F)" rad
+	'bmode 2 "paint (G)" rad
 	"FORMA" uiLabelC
-	'bshape 'lshape uiRadio
+	'bshape 0 "voxel (1)" rad
+	'bshape 1 "line (2)" rad
+	'bshape 2 "box (3)" rad
 	"CONJUNTO" uiLabelC
 	'a_clear "clear" uiNBtn 'a_fill "fill" uiNBtn 'a_rev "reverse" uiNBtn uiLn
 	'a_sphere "sphere" uiNBtn 'a_cyl "cylinder" uiNBtn uiLn
@@ -616,22 +865,59 @@
 	"INVERTIR" uiLabelC
 	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn ;
 
+:slotpick ci slotswitch ;
+
+:fprev fpage 1 - 0 max 'fpage ! ;
+:fnext fpage 1 + nlist 9 + 10 / 1- 0 max min 'fpage ! ;
+
+:filelist
+	nlist 0? ( drop "(sin .vox)" uiLabelC ; ) drop
+	fpage 10 * 10 + nlist min 'fend !
+	fpage 10 * ( fend <? dup 'fi !
+		uiZone 'filepick uiClk
+		$ff203050 'fcolor ! uilFill $ffffffff 'fcolor !
+		dup 3 << 'list + @ uiLabel
+		1+ ) drop
+	'fprev "<" uiNBtn
+	fpage 1+ nlist 9 + 10 / "%d / %d" sprint uiTlabel
+	'fnext ">" uiNBtn uiLn ;
+
+:slottxt | -- str
+	ci 'sused + c@ 1? ( drop ci 1+ "%d*" sprint ; ) drop ci 1+ "%d" sprint ;
+
+:filepanel
+	uiPush
+	0.5 %cw uiN
+	8 4 uiGrid
+	0 ( 32 <? dup 'ci !
+		slottxt 'slotpick swap uiBtn
+		ci slotcur =? ( $ffffffff 'fcolor ! uiRect ) drop
+		uiNext
+		1+ ) drop
+	uiRest
+	$ffffffff 'fcolor !
+	'snames slotcur 5 << + slotcur 1+ "slot %d  %s" sprint uiLabelC
+	'savevxd "guardar" uiNBtn 'loadvxd "cargar" uiNBtn 'exportssv ".ssv" uiNBtn uiLn
+	'newmodel "vaciar" uiNBtn uiLn
+	"VOX" uiLabelC
+	'vpath uiLabelC
+	'scanvox "buscar" uiNBtn uiLn
+	filelist
+	uiPop ;
+
 :topbar
 	'exit "Exit" uiNBtn
-	'newmodel "nuevo" uiNBtn
 	'undo "deshacer" uiNBtn
-	'slot- "<" uiNBtn
-	slot "slot %d" sprint uiTlabel
-	'slot+ ">" uiNBtn
-	'savevxd "guardar" uiNBtn
-	'loadvxd "cargar" uiNBtn
-	'exportssv "exportar .ssv" uiNBtn ;
+	'tgL "paleta" uiNBtn
+	'tgF "archivos" uiNBtn
+	'tgR "herram." uiNBtn ;
 
 :bottombar
-	8 1 uiGrid
+	9 1 uiGrid
 	'shadowon "sombras" uiToggle uiEx? 1? ( shadowon ss3dshadow! ) drop uiNext
 	'rl_ao_on "SSAO" uiToggle uiNext
 	'rl_aa_on "FXAA" uiToggle uiNext
+	'showref "ref" uiToggle uiNext
 	"az" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop uiNext
 	"alt" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop uiNext
 	'vtop "top" uiBtn uiNext
@@ -650,14 +936,21 @@
 	$1f0000ff 'fcolor ! uiWinBox frect
 	$ffffffff 'fcolor !
 	bottombar
-	sw 22 * 100 / uiO
-	$1f00ff00 'fcolor ! uiWinBox frect
-	$ffffffff 'fcolor !
-	leftpanel
-	sw 20 * 100 / uiE
-	$1f00ff00 'fcolor ! uiWinBox frect
-	$ffffffff 'fcolor !
-	rightpanel
+	showF 1? (
+		sw 19 * 100 / uiO
+		$1f00ff00 'fcolor ! uiWinBox frect
+		$ffffffff 'fcolor !
+		filepanel ) drop
+	showL 1? (
+		sw 15 * 100 / uiO
+		$1f00ff00 'fcolor ! uiWinBox frect
+		$ffffffff 'fcolor !
+		leftpanel ) drop
+	showR 1? (
+		sw 18 * 100 / uiE
+		$1f00ff00 'fcolor ! uiWinBox frect
+		$ffffffff 'fcolor !
+		rightpanel ) drop
 	uiRest uiWinBox immBox
 	viewmouse ;
 
@@ -681,6 +974,7 @@
 	<u> =? ( undo )
 	<f1> =? ( shadowon 1 xor 'shadowon ! shadowon ss3dshadow! )
 	<f2> =? ( rl_ao_on 1 xor 'rl_ao_on ! )
+	<f3> =? ( tgL ) <f4> =? ( tgF ) <f5> =? ( tgR )
 	drop
 	keycam ;
 
@@ -711,8 +1005,10 @@
 	initpal
 	nv 2/ 'vx ! 0 'vy ! nv 2/ 'vz !
 	applycell 				| un voxel inicial (attach, ranura psel)
+	1 'sused c!
+	scanvox
 	buildimg
-	32 ss3dmem
+	16 ss3dmem
 	pushundo ;
 
 : | <<<<<<<< Boot
