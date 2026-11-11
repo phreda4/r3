@@ -244,21 +244,20 @@
 	<up> =? ( 1 slmove )
 	drop ;
 
-:slideh | 0.0 1.0 'value --
-	sdlx cx - cw clamp0max 
-	2over swap - | Fw
-	cw */ pick3 +
+:slideh | min max 'v --
+	sdlx cx - cw clamp0max
+	2over swap -
+	* cw 2/ + cw / pick3 +
 	over ! uiEx! ;
 	
 :slideshow | 0.0 1.0 'value --
 	colBack uiLFill
 	[ kbSlide colFocus uiLRect ; ] uiFocus
 	colFill
-	dup @ pick3 - 
-	cw 8 - pick4 pick4 swap - */ cx 1+ +
-	cy 2 + 
-	6 txh 4 - 
-	frect ;
+	dup @ pick3 -
+	cw 6 -
+	pick4 pick4 swap - */
+	cx + cy 2 + 6 txh 4 - frect ;	
 	
 ::uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (it shows 2 decimals); left and right keys change it
 	0 'slstp !
@@ -324,18 +323,16 @@
 :slidev | 0.0 1.0 'value --
 	sdly cy - ch clamp0max 
 	2over swap - | Fw
-	ch */ pick3 +
+	* ch 2/ + ch / pick3 +
 	over ! uiEx! ;
 	
-:slideshowv | 0.0 1.0 'value --
-	ColBack uiFill
-	[ kbBtn colFocus uiLRect ; ] uiFocus	
-	ColFill
-	dup @ pick3 - 
-	ch 8 - pick4 pick4 swap - */ cy 1+ +
-	cx 2 + swap
-	cw 4 - 6 
-	frect ;
+:slideshowv | min max 'v --
+	colBack uiLFill
+	[ kbSlide colFocus uiLRect ; ] uiFocus
+	colFill
+	dup @ pick3 -
+	ch 8 - pick4 pick4 swap - */ cy 1+ + 
+	cx 2 + swap cw 4 - 6 frect ;	
 
 ::uiVSliderf | min max 'value -- ; vertical slider of a fixed point value
 	uiZone

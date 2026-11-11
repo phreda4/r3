@@ -1,9 +1,12 @@
+|MEM 64
 | Supercubo 4x4x4 de sprites ss3d dinamicos (voxeles editables por programa)
 | PHREDA 2026
 |
-| 64 objetos de nv x nv x nv voxeles, cada uno con SU tira de colores completa
-| (sin optimizar): columna (x,z) = mascara de ocupacion (bit = capa) + base en la tira
-| La copia en CPU (dcols/dpal) se modifica con vocc! y vcol!, y se sube con ss3dupcols/ss3duppal
+| 64 objetos de nv x nv x nv voxeles guardados COMPRIMIDOS de a uno (ssmulti.r3): cada objeto
+| tiene su region en la tira de colores (columnas de un solo color = 1 slot).
+| vocc! y vcol! abren el objeto (lo descomprimen a un area de trabajo); al cambiar de objeto
+| o antes de subir a la GPU se vuelve a comprimir y se acomoda la tira (ssm_sync).
+| Los botones guardar/cargar usan la compresion completa (.ssv con tiras compartidas).
 |
 | mouse: arrastrar = rotar, rueda = zoom | W S A D Q E = mover camara
 | flechas / PgUp PgDn = cursor de voxel | ESPACIO = alternar voxel | ENTER = pintar
@@ -18,6 +21,7 @@
 
 ^./renderlib.r3
 ^./ss3d.r3
+^./ssmulti.r3
 ^./ss3dshadow.r3
 ^./rlgrid.r3
 
@@ -132,12 +136,7 @@
 #nv 8				| voxeles por lado de cada objeto (max 32: mascara de 32 bits)
 :ng nv 2 << ;
 :ncolsn 64 nv * nv * 1+ ;			| columnas (+1: sprite del cursor)
-:npaln  64 nv * nv * nv * 1+ ;		| colores (+1: sprite del cursor)
-:colsbytes ncolsn 3 << ;
-:palbytes npaln 2 << ;
-
-#dcols #dpal #img		| copias en CPU
-#dirty 1
+:npaln  64 nv * nv * nv * 1+ ;		| capacidad de la tira (peor caso sin compresion)
 
 #vo #vx #vy #vz			| voxel de trabajo: objeto y coordenadas locales
 #ox #oy #oz				| posicion del objeto en el supercubo (0..3)
@@ -149,23 +148,18 @@
 	gz nv /mod 'vz ! 'oz !
 	oz 4 * oy + 4 * ox + 'vo ! ;
 
-:vcolidx | -- ci		; indice de columna global
-	vo nv * nv * vz nv * + vx + ;
+:vci | -- ci		; columna dentro del objeto (z*nv + x)
+	vz nv * vx + ;
 :vlayer nv 1- vy - ;
-:vbit 1 vlayer << ;
-:vmaskadr vcolidx 3 << dcols + ;
-:vpaladr  vcolidx nv * vlayer + 2 << dpal + ;
 
-:vget | -- 0/bit		; ocupacion del voxel
-	vmaskadr d@ vbit and ;
+:vget | -- 0/bit		; ocupacion del voxel (no abre el objeto)
+	vo vci vlayer ssm_vget ;
 
-:vocc! | 0/1 --			; bit de ocupacion
-	vmaskadr dup d@				| on adr mask
-	rot 1? ( drop vbit or swap d! ; ) drop
-	vbit nand swap d! ;
+:vocc! | 0/1 --			; bit de ocupacion (abre el objeto)
+	vo vci vlayer ssm_vocc! ;
 
-:vcol! | color --		; color $RRGGBBuma del voxel
-	vpaladr d! ;
+:vcol! | color --		; color $RRGGBBuma del voxel (abre el objeto)
+	vo vci vlayer ssm_vcol! ;
 
 |--- paleta
 #pal8 $e0303000 $f0902000 $f0e03000 $30d05000 $30d0d000 $3060f000 $a040e000 $f0f0f000
@@ -178,46 +172,23 @@
 :cname | n -- adr
 	'cnames swap ( 1? 1- swap >>0 trim swap ) drop ;
 
-|--- memoria e imagen .ssv (nv^3 voxeles x 64 objetos + 1 sprite de cursor de 1 voxel)
-:initcols | mask=0, base = columna*nv (tira completa por columna)
-	dcols >a
-	0 ( ncolsn <?
-		0 da!+ dup nv * da!+
-		1+ ) drop
-	1 dcols colsbytes 8 - + d! ;		| cursor: 1 voxel
+|--- memoria: 64 objetos + cursor en ssmulti, comprimidos de a uno
+:initvoxmem
+	65 ncolsn npaln ssm_ini
+	64 ( 1? 1- nv nv nv ssm_add drop ) drop
+	1 1 1 ssm_add drop				| sprite 64: cursor de 1 voxel
+	1 64 0 0 ssm_vocc! $ffffff00 64 0 0 ssm_vcol! ;
 
-:initpal
-	dpal 0 npaln dfill
-	$ffffff00 dpal palbytes 4 - + d! ;	| color del cursor
+:upvox | comprime el objeto abierto y sube a la GPU lo que cambio
+	'ss3dupcols 'ss3duppal ssm_sync ;
 
-:buildimg | arma la imagen en here y la deja ahi (ss3dmem la lee de here)
-	here 'img !
-	"SSV2" d@ ,
-	65 , ncolsn , npaln ,
-	0 ( 64 <?							| tabla de sprites: org | tamano
-		dup nv * nv * ,
-		nv dup 8 << or nv 16 << or ,
-		1+ ) drop
-	64 nv * nv * , 1 dup 8 << or 1 16 << or ,
-	here dcols colsbytes cmove colsbytes 'here +!
-	here dpal palbytes cmove palbytes 'here +!
-	img 'here ! ;
-
-:initmem
-	here dup 'dcols ! colsbytes +
-	dup 'dpal ! palbytes +
-	'here ! ;
-
-:upvox | sube a la GPU si hubo cambios
-	dirty 0? ( drop ; ) drop
-	0 'dirty !
-	0 colsbytes dcols ss3dupcols
-	0 palbytes dpal ss3duppal ;
+:b_save "supercubo.ssv" ssm_save ;		| compresion completa a disco
+:b_load "supercubo.ssv" ssm_load ;		| disco -> compresion individual
 
 |--- operaciones sobre voxeles
 #scope 0		| 0 = objeto del cursor, 1 = supercubo completo
 #kx 14 #ky 14 #kz 14	| cursor (coordenada global)
-#opex
+#opex #o1
 #x0 #x1 #y0 #y1 #z0 #z1
 
 :cursorvox kx 'gx ! ky 'gy ! kz 'gz ! setvox ;
@@ -226,19 +197,23 @@
 	scope 1? ( 2drop 0 ng ; ) drop
 	nv / nv * dup nv + ;
 
-:eachg | 'op --		; ejecuta op en cada voxel del alcance (usa vo vx vy vz gx gy gz)
-	'opex !
-	kz lohi 'z1 ! 'z0 !
-	ky lohi 'y1 ! 'y0 !
-	kx lohi 'x1 ! 'x0 !
-	z0 ( z1 <? dup 'gz !
-		y0 ( y1 <? dup 'gy !
-			x0 ( x1 <? dup 'gx !
-				setvox opex ex
+:eachobj | o --		; opex en cada voxel del objeto o (un solo objeto abierto a la vez)
+	dup 'vo ! dup 3 and 'ox ! dup 2 >> 3 and 'oy ! 4 >> 'oz !
+	0 ( nv <? dup 'vz ! oz nv * over + 'gz !
+		0 ( nv <? dup 'vy ! oy nv * over + 'gy !
+			0 ( nv <? dup 'vx ! ox nv * over + 'gx !
+				opex ex
 				1+ ) drop
 			1+ ) drop
-		1+ ) drop
-	1 'dirty ! ;
+		1+ ) drop ;
+
+:objrange | -- o0 o1
+	scope 1? ( drop 0 64 ; ) drop
+	cursorvox vo dup 1+ ;
+
+:eachg | 'op --		; ejecuta op en cada voxel del alcance (usa vo vx vy vz gx gy gz)
+	'opex !
+	objrange 'o1 ! ( o1 <? dup eachobj 1+ ) drop ;
 
 | coordenadas dentro del alcance (local al objeto o global)
 :ud scope 1? ( drop ng ; ) drop nv ;
@@ -278,18 +253,18 @@
 :a_recol  'o_recol eachg ;
 :a_noise  'o_noise eachg ;
 
-:b_toggle cursorvox o_inv 1 'dirty ! ;
-:b_paint  cursorvox ccol vcol! 1 'dirty ! ;
+:b_toggle cursorvox o_inv ;
+:b_paint  cursorvox ccol vcol! ;
 
 #anim 0
-:rndflip
-	ng randmax 'gx ! ng randmax 'gy ! ng randmax 'gz ! setvox
+:rndflip						| voxel al azar del objeto vo
+	nv randmax 'vx ! nv randmax 'vy ! nv randmax 'vz !
 	vget 0? ( drop 1 vocc! 8 randmax palc vcol! ; ) drop
 	0 vocc! ;
-:animvox
+:animvox						| 12 voxeles de un objeto al azar por cuadro (un solo objeto abierto)
 	anim 0? ( drop ; ) drop
-	12 ( 1? 1- rndflip ) drop
-	1 'dirty ! ;
+	64 randmax 'vo !
+	12 ( 1? 1- rndflip ) drop ;
 
 |----------------------------------
 | objetos en el espacio
@@ -473,13 +448,13 @@
 
 :mplace | poner voxel (ocupado + color actual)
 	rayhit placetarget 0? ( drop ; ) drop
-	setvox 1 vocc! ccol vcol! 1 'dirty !
+	setvox 1 vocc! ccol vcol!
 	gx 'kx ! gy 'ky ! gz 'kz ! ;
 
 :mremove | quitar el voxel apuntado
 	rayhit hitok 0? ( drop ; ) drop
 	hx 'gx ! hy 'gy ! hz 'gz ! setvox
-	0 vocc! 1 'dirty ! ;
+	0 vocc! ;
 
 |----------------------------------
 | mouse: 0 = navegar, 1 = rotar el objeto, 2 = editar voxeles (izq poner, der quitar)
@@ -521,8 +496,7 @@
 				1+ ) drop
 			1+ ) drop
 		1+ ) drop
-	0 'ccolid !
-	1 'dirty ! ;
+	0 'ccolid ! ;
 
 |----------------------------------
 :vui
@@ -530,6 +504,7 @@
 	"VOXELES" uiLabelC
 	ccolid cname "color: %s" sprint uiLabelC
 	0 7 'ccolid uiSlideri
+	ssm_cap ssm_used "tira de colores: %d / %d" sprint uiLabelC
 	kz ky kx "cursor %d %d %d" sprint uiLabelC
 	"x" 0 ng 1- 'kx uiSlideriL
 	"y" 0 ng 1- 'ky uiSlideriL
@@ -551,7 +526,11 @@
 	'a_recol "color" uiNBtn
 	'a_noise "ruido" uiNBtn
 	uiLn
-	'anim "animar al azar" uiToggle ;
+	'anim "animar al azar" uiToggle
+	uiLn
+	'b_save "guardar .ssv" uiNBtn
+	'b_load "cargar .ssv" uiNBtn 
+	uiLn ;
 
 :renderui
 	"RENDER" uiLabelC
@@ -648,9 +627,8 @@
 
 :initvox
 	time msec rerand
-	initmem
-	initcols initpal
-	buildimg
+	initvoxmem
+	ssm_image
 	128 ss3dmem				| 64 objetos + cursor
 	initobjs ;
 
