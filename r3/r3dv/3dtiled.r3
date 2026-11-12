@@ -312,7 +312,7 @@
 	uiWinBox frect
 	$ffffffff 'fcolor !
 	gsz gsy gsx "%a %a %a" sprint uiLabelC
-	'exit "save" uiTBtn
+	'exit "save" uiBtn
 	;
 
 #v3rec1 0 0 0
@@ -400,18 +400,18 @@
 	uiWinBox frect
 	$ffffffff 'fcolor !
 
-	0 btncolor 'rotab "1" uiTBtn
-	1+ btncolor 'rotab "2" uiTBtn
-	1+ btncolor 'rotab "3" uiTBtn
-	1+ btncolor 'rotab "4" uiTBtn
-	1+ btncolor 'rotab "R" uiTBtn
+	0 btncolor 'rotab "1" uiRBtn
+	1+ btncolor 'rotab "2" uiRBtn
+	1+ btncolor 'rotab "3" uiRBtn
+	1+ btncolor 'rotab "4" uiRBtn
+	1+ btncolor 'rotab "R" uiRBtn
 	drop
 	
 	moded
 	2 =? (
 		stInfo
-		'fillsel "Fill" UITBtn
-		'erasesel "Erase" UITBtn
+		'fillsel "Fill" UIBtn
+		'erasesel "Erase" UIBtn
 	
 		|'v3rec1 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
 		|'v3rec2 @+ swap @+ swap @ "%f %f %f" sprint uiLabel
@@ -498,15 +498,15 @@
 	$7fffffff 'fcolor !
 	uiWinBox frect
 	stDang
-	'exit "Exit" uiTBtn
+	'exit "Exit" uiNBtn
 	stDark
-	'changemenu "Menu" uiTBtn
-	'changemode "Tiles" uiTBtn
-	'gridc "G" uiTBtn
+	'changemenu "Menu" uiNBtn
+	'changemode "Tiles" uiNBtn
+	'gridc "G" uiNBtn
 	
-	0 btncolor 'setp "PAINT" uiTBtn
-	1 btncolor 'sete "ERASE" uiTBtn
-	2 btncolor 'sets "SELECT" uiTBtn
+	0 btncolor 'setp "PAINT" uiNBtn
+	1 btncolor 'sete "ERASE" uiNBtn
+	2 btncolor 'sets "SELECT" uiNBtn
 
 	gaxis 2 << 'laxist + uiTlabel
 	arena> arena - 5 >> " %d " sprint uiTlabel
@@ -525,7 +525,8 @@
 		frect ) 
 	drop
 
-	uiFill
+	|uiFill
+	uiRest uiWinBox immBox
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( dnmouse )	| in

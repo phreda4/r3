@@ -25,15 +25,22 @@
 |   ssmo_npos   | x y z i --     ssmo_nrot | qx qy qz qw i --     ssmo_nscale | s i --
 |   ssmo_ncol   | color i --     ssmo_nname | "nombre" i --       ssmo_ssv! | "archivo.ssv" --
 |   ssmo_qaxis  | ax ay az turnos -- qx qy qz qw  (eje unitario)
-|   ssmo_pose   | -- p            nueva pose = copia de los nodos (los nodos ya no se pueden agregar)
+|   ssmo_pose   | -- p            nueva pose = copia de los nodos (nodos nuevos entran en todas las poses)
 |   ssmo_pnode  | p nodo -- adr    ssmo_t! | x y z qx qy qz qw s adr --
 |   ssmo_clip   | "nombre" loop -- c     ssmo_key | pose ms --   (al ultimo clip)
 |   ssmo_save   | "archivo.ssm" --        ssmo_load | "archivo.ssm" -- d (0 si falla; queda actual)
+| EDICION (descripcion actual; ssmo_load deja lugar para agregar nodos/poses/clips)
+|   ssmo_ndel   | i -- 1/0        borra un nodo hoja (los indices mayores bajan 1)
+|   ssmo_npar!  | padre i -- 1/0  cambia el padre (-1 = raiz, sin ciclos) y reordena; ssmo_moved | viejo -- nuevo
+|   ssmo_sort   | -- 1/0          deja todo padre antes que sus hijos (ssmo_moved da el nuevo indice)
+|   ssmo_nspr!  | spr i --        ssmo_nrotate | ax ay az turnos i --  (gira en el eje local, eje unitario)
+|   ssmo_qmul   | a4 b4 -- q4     quaternion a*b normalizado
 | INSTANCIA
 |   ssmo_inst   | d -- m            ssmo_bind | m --        (pose de armado)
 |   ssmo_rpos   | x y z m --  ssmo_rrot | qx qy qz qw m --  ssmo_rscale | s m --   (raiz, en mundo)
 |   ssmo_pose!  | pose m --         ssmo_blend | pa pb t m --    ssmo_play | clip ms m --
 |   ssmo_loc    | nodo m -- adr     (8 d editables: animacion por programa)
+|   ssmo_hilite | nodo color m --   (nodo -1 = ninguno)   ssmo_wpos | nodo m -- x y z  (mundo)
 |   ssmo_update | m --              ssmo_world | nodo m -- adr (8 d: x y z qx qy qz qw s, en voxeles)
 |   ssmo_draw   | 'ss3dset primero m -- siguiente    dibuja con instancias ss3d primero.. (usa 'ss3dset)
 | CONSULTAS
@@ -84,13 +91,13 @@
 ::ssmo_node | spr parent -- i
 	0 dget 'ni !
 	ni 80 dget >=? ( drop 2drop -1 ; ) drop
-	8 dget 1? ( drop 2drop -1 ; ) drop
 	dup ni >=? ( drop 2drop -1 ; ) drop
 	ni ssmo_nadr 'na !
 	na 4 + d! na d!
 	0 na 8 + d! 0 na 12 + d! 0 na 16 + d!
 	0 na 20 + d! 0 na 24 + d! 0 na 28 + d! 1.0 na 32 + d!
 	1.0 na 36 + d! $ffffff00 na 40 + d! 0 na 44 + d!
+	0 ( 8 dget <? dup 80 dget * ni + 5 << 48 dget + na 8 + 32 cmove 1+ ) drop
 	ni 1+ 0 dset
 	ni ;
 
@@ -126,12 +133,12 @@
 ::ssmo_pose | -- p
 	8 dget 88 dget >=? ( drop -1 ; ) drop
 	8 dget 'pi ! 0 dget 'nn !
-	pi nn * 5 << 48 dget + 'pa !
+	pi 80 dget * 5 << 48 dget + 'pa !
 	0 ( nn <? dup 5 << pa + over ssmo_nadr 8 + 32 cmove 1+ ) drop
 	pi 1+ 8 dset pi ;
 
 ::ssmo_pnode | p nodo -- adr
-	swap 0 dget * + 5 << 48 dget + ;
+	swap 80 dget * + 5 << 48 dget + ;
 
 ::ssmo_t! | x y z qx qy qz qw s adr --
 	'na !
@@ -156,6 +163,77 @@
 	24 dget 1+ 24 dset
 	16 dget 1- 4 << 56 dget + 8 + dup d@ 1+ swap d! ;
 
+|---- edicion de la jerarquia
+#sn #sk #si #ti2 #pa2 #di #na3 #sa #ss_ #sc #so
+#sperm * 4096
+#sinv * 4096
+#splc * 1024
+#sbuf * 49152
+#srow * 32768
+
+:sparok? | i -- 1/0		; el padre ya esta ubicado (o es raiz)
+	ssmo_nadr 4 + d@ -? ( drop 1 ; ) 'splc + c@ ;
+
+:sortpass
+	0 ( sn <? dup 'si !
+		si 'splc + c@ 0? ( si sparok? 1? ( si sk 2 << 'sperm + d! 1 si 'splc + c! 1 'sk +! ) drop ) drop
+		1+ ) drop ;
+
+:permnode | k --
+	dup 48 * 'sbuf + 'na3 !
+	dup 2 << 'sperm + d@ ssmo_nadr na3 swap 48 cmove
+	drop
+	na3 4 + d@ -? ( drop ; ) 2 << 'sinv + d@ na3 4 + d! ;
+
+:permpose | p --
+	80 dget * 5 << 48 dget + 'so !
+	0 ( sn <? dup 5 << 'srow + over 2 << 'sperm + d@ 5 << so + 32 cmove 1+ ) drop
+	so 'srow sn 5 << cmove ;
+
+::ssmo_sort | -- 1/0		; todo padre antes que sus hijos (orden estable); 0 si hay ciclo
+	0 dget 'sn ! 'splc 0 1024 cfill 0 'sk !
+	sn 1024 >? ( drop 0 ; ) drop
+	0 ( sn <? sortpass 1+ ) drop
+	sk sn <? ( drop 0 ; ) drop
+	0 ( sn <? dup dup 2 << 'sperm + d@ 2 << 'sinv + d! 1+ ) drop
+	0 ( sn <? dup permnode 1+ ) drop
+	40 dget 'sbuf sn 48 * cmove
+	0 ( 8 dget <? dup permpose 1+ ) drop
+	1 ;
+
+::ssmo_moved | viejo -- nuevo		; indice nuevo de un nodo despues de ssmo_sort
+	2 << 'sinv + d@ ;
+
+:anc? | p i -- 1/0		; i es ancestro de p (o p mismo)
+	'di !
+	( -1 >? dup di =? ( 2drop 1 ; ) drop ssmo_nadr 4 + d@ ) drop 0 ;
+
+::ssmo_npar! | padre i -- 1/0
+	'ti2 ! -1 max 'pa2 !
+	ti2 -? ( drop 0 ; ) drop
+	ti2 0 dget >=? ( drop 0 ; ) drop
+	pa2 0 dget >=? ( drop 0 ; ) drop
+	pa2 ti2 anc? 1? ( drop 0 ; ) drop
+	pa2 ti2 ssmo_nadr 4 + d!
+	ssmo_sort ;
+
+:shiftrecs | adr stride cnt --	; sube cada registro una posicion (adr = destino del primero)
+	'sc ! 'ss_ ! 'sa !
+	0 ( sc <? dup ss_ * sa + dup ss_ + ss_ cmove 1+ ) drop ;
+
+::ssmo_ndel | i -- 1/0		; solo nodos hoja
+	'ti2 !
+	ti2 -? ( drop 0 ; ) drop
+	ti2 0 dget >=? ( drop 0 ; ) drop
+	0 ( 0 dget <? dup ssmo_nadr 4 + d@ ti2 =? ( 2drop 0 ; ) drop 1+ ) drop
+	40 dget ti2 48 * + 48 0 dget ti2 - 1- shiftrecs
+	0 ( 8 dget <? dup 80 dget * 5 << 48 dget + ti2 5 << + 32 0 dget ti2 - 1- shiftrecs 1+ ) drop
+	0 ( 0 dget 1- <? dup ssmo_nadr 4 + 'na3 ! na3 d@ ti2 >? ( 1- na3 d! 0 ) drop 1+ ) drop
+	0 dget 1- 0 dset 1 ;
+
+::ssmo_nspr! | spr i --
+	ssmo_nadr d! ;
+
 |---- archivo
 #sf #hdr * 48
 ::ssmo_save | "archivo.ssm" --
@@ -166,7 +244,7 @@
 	32 dget 'hdr 20 + d! 120 dget 'hdr 24 + d!
 	'hdr 48 sf save
 	40 dget 0 dget 48 * sf append
-	48 dget 8 dget 0 dget * 5 << sf append
+	0 ( 8 dget <? dup 80 dget * 5 << 48 dget + 0 dget 5 << sf append 1+ ) drop
 	56 dget 16 dget 4 << sf append
 	64 dget 24 dget 3 << sf append
 	72 dget 32 dget sf append ;
@@ -175,6 +253,7 @@
 :okpar | -- 1/0		; todo padre es -1 o menor que el nodo
 	0 ( lnn <? dup 48 * 40 dget + 4 + d@ over >=? ( 2drop 0 ; ) drop 1+ ) drop 1 ;
 
+#sn1 #sp1 #sc1 #sk1 #sl1
 ::ssmo_load | "archivo.ssm" -- d
 	here 'ibase ! ibase swap load 'iend !
 	iend ibase - 48 <? ( drop 0 ; ) drop
@@ -184,15 +263,17 @@
 	iend ibase -
 	lnn 48 * 48 + lnp lnn * 5 << + lnc 4 << + lnk 3 << + lnl +
 	<? ( drop 0 ; ) drop
-	iend 'here !				| la imagen del archivo queda reservada (las tablas apuntan a ella)
-	128 alloc 'cur !
+	iend 'here !				| la imagen queda reservada; la descripcion es una copia con lugar para editar
+	lnn 256 + lnp 8 + lnc 8 + lnk 64 + ssmo_new drop
+	lnl 4096 + dup alloc 72 dset 112 dset
+	ibase 48 + 'sn1 ! sn1 lnn 48 * + 'sp1 ! sp1 lnp lnn * 5 << + 'sc1 !
+	sc1 lnc 4 << + 'sk1 ! sk1 lnk 3 << + 'sl1 !
+	40 dget sn1 lnn 48 * cmove
+	0 ( lnp <? dup 80 dget * 5 << 48 dget + over lnn * 5 << sp1 + lnn 5 << cmove 1+ ) drop
+	56 dget sc1 lnc 4 << cmove
+	64 dget sk1 lnk 3 << cmove
+	72 dget sl1 lnl cmove
 	lnn 0 dset lnp 8 dset lnc 16 dset lnk 24 dset lnl 32 dset
-	lnn 80 dset lnp 88 dset lnc 96 dset lnk 104 dset lnl 112 dset
-	ibase 48 + 40 dset
-	40 dget lnn 48 * + 48 dset
-	48 dget lnp lnn * 5 << + 56 dset
-	56 dget lnc 4 << + 64 dset
-	64 dget lnk 3 << + 72 dset
 	ibase 24 + d@ 120 dset
 	okpar 0? ( ; ) drop
 	cur ;
@@ -214,6 +295,16 @@
 	aw_ bw_ *. ax_ bx_ *. - ay_ by_ *. - az_ bz_ *. -
 	qnorm ;
 
+::ssmo_qmul | ax ay az aw bx by bz bw -- qx qy qz qw
+	qmul ;
+
+#dx4 #dy4 #dz4 #dw4
+::ssmo_nrotate | ax ay az turnos i --	; q = q * giro local
+	ssmo_nadr 'na !
+	ssmo_qaxis 'dw4 ! 'dz4 ! 'dy4 ! 'dx4 !
+	na 20 + d@ na 24 + d@ na 28 + d@ na 32 + d@ dx4 dy4 dz4 dw4 qmul
+	na 32 + d! na 28 + d! na 24 + d! na 20 + d! ;
+
 #rvx #rvy #rvz #rqx #rqy #rqz #rqw #rtx #rty #rtz
 :qrot | x y z qx qy qz qw -- x y z	; v + w*t + q x t   (t = 2 q x v)
 	'rqw ! 'rqz ! 'rqy ! 'rqx ! 'rvz ! 'rvy ! 'rvx !
@@ -232,6 +323,7 @@
 
 |---- instancias: 0 desc | 8 loc | 16 wld | 24 x 32 y 40 z | 48 qx 56 qy 64 qz 72 qw | 80 escala
 #im #td
+:mcap td 80 + @ ;
 :setim | m --
 	dup 'im ! @ 'td ! ;
 :mnn td @ ;
@@ -247,9 +339,9 @@
 	0 ( mnn <? dup 5 << mloc + over 48 * mpn + 8 + 32 cmove 1+ ) drop ;
 
 ::ssmo_inst | d -- m
-	96 alloc swap over ! dup setim
-	mnn 5 << dup alloc im 8 + ! alloc im 16 + !
-	1.0 im 72 + ! 1.0 im 80 + !
+	112 alloc swap over ! dup setim
+	td 80 + @ 5 << dup alloc im 8 + ! alloc im 16 + !
+	1.0 im 72 + ! 1.0 im 80 + ! -1 im 88 + !
 	im ssmo_bind im ;
 
 ::ssmo_rpos | x y z m --
@@ -258,6 +350,8 @@
 	setim im 72 + ! im 64 + ! im 56 + ! im 48 + ! ;
 ::ssmo_rscale | s m --
 	setim im 80 + ! ;
+::ssmo_hilite | nodo color m --
+	setim im 96 + ! im 88 + ! ;
 ::ssmo_loc | nodo m -- adr
 	setim 5 << mloc + ;
 ::ssmo_world | nodo m -- adr
@@ -288,6 +382,7 @@
 :drawnode | i --
 	dup 48 * mpn + d@ -? ( 2drop ; ) 'dspr !
 	dup 48 * mpn + 40 + d@ 'dcol !
+	dup im 88 + @ =? ( im 96 + @ 'dcol ! ) drop
 	5 << mwld + 'dw !
 	dw d@ dk *. dw 4 + d@ dk *. dw 8 + d@ dk *.
 	im 48 + @ im 56 + @ im 64 + @ im 72 + @ qrot
@@ -297,6 +392,14 @@
 	dsx dsy dsz dq im 80 + @ dw 28 + d@ *. dspr dcol dnext dxt ex
 	1 'dnext +! ;
 
+::ssmo_wpos | nodo m -- x y z		; posicion del nodo en el mundo (escala de ss3d)
+	setim 5 << mwld + 'dw !
+	im 80 + @ 0.01 *. 'dk !
+	dw d@ dk *. dw 4 + d@ dk *. dw 8 + d@ dk *.
+	im 48 + @ im 56 + @ im 64 + @ im 72 + @ qrot
+	im 40 + @ + 'dsz ! im 32 + @ + 'dsy ! im 24 + @ + 'dsx !
+	dsx dsy dsz ;
+
 ::ssmo_draw | 'set primero m -- siguiente
 	dup ssmo_update setim 'dnext ! 'dxt !
 	im 80 + @ 0.01 *. 'dk !
@@ -305,7 +408,7 @@
 
 |---- animacion: poses
 ::ssmo_pose! | pose m --
-	setim mnn * 5 << mpp + mloc swap mnn 5 << cmove ;
+	setim mcap * 5 << mpp + mloc swap mnn 5 << cmove ;
 
 #fa #fb #ft #fd #fs
 :lerp | a b t -- v
@@ -330,8 +433,8 @@
 
 ::ssmo_blend | pa pb t m --
 	setim 'ft !
-	mnn * 5 << mpp + 'bb !
-	mnn * 5 << mpp + 'ba !
+	mcap * 5 << mpp + 'bb !
+	mcap * 5 << mpp + 'ba !
 	0 ( mnn <? dup blendnode 1+ ) drop ;
 
 |---- animacion: clips

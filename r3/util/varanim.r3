@@ -319,18 +319,30 @@
 	swap $ff and 44 << or	| cnt (0 = still)
 	swap $fff and 52 << or ;		| init
 
-::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
-	swap over +!				| 'V ; acc+dt
-	dup @ dup $ffffff and		| 'V val acc
-	over 24 >> $fff and 1 max	| 'V val acc ms
-	/mod swap				| 'V val rem q
-	0? ( 2drop 2drop ; )
-	pick2 36 >> $ff and +		| 'V val rem now+q
-	pick2 44 >> $ff and 1 max mod	| 'V val rem now
-	36 << or				| 'V val nn
+::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
+	swap over +! 
+	dup @ dup $ffffff and	| 'v val acc
+	over 24 >> $fff and -	| 'v val acc-ms ( acc-ms)
+	-? ( 3drop ; ) 
+	over 36 >> $ff and 1+	| 'v val nacc nnow
+	pick2 44 >> $ff and		| 'v val nacc nnow cnt
+	>=? ( 0 nip )			| 'v val nacc now
+	36 << or				| 'v val nn
 	swap $ff000ffffff nand or
 	swap ! ;
-
+	
+|::ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
+|	swap over +!				| 'V ; acc+dt
+|	dup @ dup $ffffff and		| 'V val acc
+|	over 24 >> $fff and 1 max	| 'V val acc ms
+|	/mod swap				| 'V val rem q
+|	0? ( 2drop 2drop ; )
+|	pick2 36 >> $ff and +		| 'V val rem now+q
+|	pick2 44 >> $ff and 1 max mod	| 'V val rem now
+|	36 << or				| 'V val nn
+|	swap $ff000ffffff nand or
+|	swap ! ;	
+	
 ::aniFrame | V -- f ; current frame number (ini + step)
 	dup 36 >> $ff and swap 52 >> $fff and + ;
 

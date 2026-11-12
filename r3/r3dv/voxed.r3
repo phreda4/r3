@@ -2,9 +2,9 @@
 | VOXED - editor de voxeles ss3d (un objeto a la vez, 32 slots)
 | PHREDA 2026
 |
-| mouse: izq = herramienta | der + arrastrar = orbitar | medio + arrastrar = desplazar | rueda = zoom
-| V F G = attach / erase / paint | 1 2 3 = voxel / linea / caja | X cancela el 1er punto
-| U = deshacer | W S = zoom, A D Q E = desplazar | F1 sombras | F2 SSAO | F3 paleta | F4 archivos | F5 herramientas
+| mouse: left = tool (click) | right drag = orbit | middle drag = pan | wheel = zoom
+| V F G = attach / erase / paint | 1 2 3 = voxel / line / box | X = cancel the first point
+| U = undo | W S = zoom, A D Q E = pan | F1 shadows | F2 SSAO | F3 palette | F4 files | F5 tools
 |
 | modelo: nv x nv x nv voxeles (max 32: la mascara de capas es de 32 bits)
 | vidx = indice de paleta por voxel, dpal = tira de colores completa (ss3d), dcols = mascara|base
@@ -20,7 +20,6 @@
 ^./renderlib.r3
 ^./ss3d.r3
 ^./ss3dshadow.r3
-^./rlgrid.r3
 
 |----------------------------------
 | camara orbital
@@ -118,8 +117,8 @@
 #nv 32			| voxeles por lado (max 32)
 :nvox nv nv * nv * ;
 :ncol0 nv nv * ;						| columnas del objeto
-:ncolsn ncol0 2* 2 + ;					| objeto + cursor + barra + pared
-:npaln nvox 1+ nv + ncol0 + ;			| tiras: objeto, cursor, barra, pared
+:ncolsn ncol0 2 + ;						| objeto + cursor + barra
+:npaln nvox 1+ nv + ;					| tiras: objeto, cursor, barra
 :colsbytes ncolsn 3 << ;
 :palbytes npaln 2 << ;
 
@@ -209,12 +208,12 @@
 	0 ( 256 <? dup palslot 1+ ) drop ;
 
 :vcolset | idx --	; indice de paleta del voxel y su tira de colores
-	dup vk vidx + c!
+	$ff and dup vk vidx + c!
 	3 << 'prgb + @ vk 2 << dpal + d! ;
 
 :refreshstrips | todas las tiras desde la paleta
 	0 ( nvox <?
-		dup vidx + c@ 3 << 'prgb + @
+		dup vidx + c@ $ff and 3 << 'prgb + @
 		over 2 << dpal + d!
 		1+ ) drop ;
 
@@ -257,29 +256,18 @@
 	dcols >a
 	0 ( ncol0 <? 0 da!+ dup nv * da!+ 1+ ) drop
 	1 da!+ nvox da!+
-	1 nv << 1- da!+ nvox 1+ da!+
-	0 ( ncol0 <? 1 da!+ dup nvox 1+ nv + + da!+ 1+ ) drop ;
-
-#wx #wz
-:wallcol | k -- color
-	nv /mod 'wx ! 'wz !
-	wx 7 and 0? ( drop $8a8a9800 ; ) drop
-	wz 7 and 0? ( drop $8a8a9800 ; ) drop
-	wx wz + 1 and 1? ( drop $44444c00 ; ) drop
-	$3a3a4200 ;
+	1 nv << 1- da!+ nvox 1+ da!+ ;
 
 :initpal
 	dpal $ffffff00 npaln dfill
-	0 ( ncol0 <? dup wallcol over nvox 1+ nv + + 2 << dpal + d! 1+ ) drop
 	refreshstrips ;
 
 :buildimg
 	here 'img !
-	"SSV2" d@ , 4 , ncolsn , npaln ,
+	"SSV2" d@ , 3 , ncolsn , npaln ,
 	0 , nv dup 8 << or nv 16 << or ,
 	ncol0 , 1 dup 8 << or 1 16 << or ,
 	ncol0 1+ , 1 nv 8 << or 1 16 << or ,
-	ncol0 2 + , nv 1 8 << or nv 16 << or ,
 	here dcols colsbytes cmove colsbytes 'here +!
 	here dpal palbytes cmove palbytes 'here +!
 	img 'here ! ;
@@ -386,7 +374,7 @@
 	0 ( stp <=? dup 'li !
 		dxl ax li lerp dyl ay li lerp dzl az li lerp cellapply
 		1+ ) drop
-	0 'aok ! ;
+	;
 
 #ex0 #ex1 #ey0 #ey1 #ez0 #ez1
 :dobox
@@ -400,7 +388,7 @@
 				1+ ) drop
 			1+ ) drop
 		1+ ) drop
-	0 'aok ! ;
+	;
 
 |----------------------------------
 | slots: cambiar de modelo
@@ -422,7 +410,7 @@
 
 |----------------------------------
 | importar .vox (MagicaVoxel): primer modelo, paleta RGBA o la de MagicaVoxel por defecto
-#defpal
+#defpal [
 	$00000000 $ffffffff $ffccffff $ff99ffff $ff66ffff $ff33ffff $ff00ffff $ffffccff
 	$ffccccff $ff99ccff $ff66ccff $ff33ccff $ff00ccff $ffff99ff $ffcc99ff $ff9999ff
 	$ff6699ff $ff3399ff $ff0099ff $ffff66ff $ffcc66ff $ff9966ff $ff6666ff $ff3366ff
@@ -455,6 +443,7 @@
 	$ff005500 $ff004400 $ff002200 $ff001100 $ffee0000 $ffdd0000 $ffbb0000 $ffaa0000
 	$ff880000 $ff770000 $ff550000 $ff440000 $ff220000 $ff110000 $ffeeeeee $ffdddddd
 	$ffbbbbbb $ffaaaaaa $ff888888 $ff777777 $ff555555 $ff444444 $ff222222 $ff111111
+	]
 
 #vsx #vsy #vsz #vgot #vend
 #offx #offy #offz
@@ -483,7 +472,7 @@
 	vgot 1? ( 2drop ; ) drop 1 'vgot !
 	d@+
 	( 1? 1- swap
-		c@+ 'mx ! c@+ 'my ! c@+ 'mz ! c@+ 'mi !
+		c@+ $ff and 'mx ! c@+ $ff and 'my ! c@+ $ff and 'mz ! c@+ $ff and 'mi !
 		putvox
 		swap ) 2drop ;
 
@@ -506,7 +495,7 @@
 		dup 4 + d@ 0 max 12 + + ) drop ;
 
 :defpalvox
-	1 ( 256 <? dup dup 3 << 'defpal + @ swap importcolor 1+ ) drop ;
+	1 ( 256 <? dup dup 2 << 'defpal + d@ swap importcolor 1+ ) drop ;
 
 :importvox | "path" --
 	here swap load
@@ -565,11 +554,10 @@
 #ro 0 0 0
 #rd 0 0 0
 #tn #tf #miss #so #sd
-#hitok #pok #fok #bok
+#hitok #pok #lok
 #hcell 0 0 0		| voxel apuntado
-#pcell 0 0 0		| ultima celda vacia que cruzo el rayo antes del voxel
-#fcell 0 0 0		| primera celda del rayo
-#bcell 0 0 0		| primera celda del piso (y=0) del rayo
+#pcell 0 0 0		| ultima celda vacia antes del voxel golpeado
+#lcell 0 0 0		| ultima celda vacia que cruza el rayo (celda de salida si no hay golpe)
 #cc 0 0 0			| celda actual
 #ss 0 0 0			| paso por eje (+1/-1)
 #tm 0 0 0			| t del proximo borde por eje
@@ -646,8 +634,7 @@
 	1 'pok ! ;
 
 :emptyhere
-	fok 0? ( 'fcell 'cc cp3 1 'fok ! ) drop
-	bok 0? ( 'cc 8 + @ 0? ( 'bcell 'cc cp3 1 'bok ! ) drop ) drop ;
+	'lcell 'cc cp3 1 'lok ! ;
 
 :ddastep | -- cont
 	ccocc 1? ( drop hithere 0 ; ) drop
@@ -657,7 +644,7 @@
 :ddaloop 1 ( 1? drop ddastep ) drop ;
 
 :rayhit
-	0 'hitok ! 0 'pok ! 0 'fok ! 0 'bok ! 0 'miss ! -1 'lax !
+	0 'hitok ! 0 'pok ! 0 'lok ! 0 'miss ! -1 'lax !
 	raylocal
 	0 'tn ! 1000.0 'tf !
 	'ro @ 'rd @ slab
@@ -673,9 +660,8 @@
 
 :attachtarget | -- 0/1
 	hitok 1? ( drop pok 0? ( ; ) drop 'pcell c>t 1 ; ) drop
-	bok 1? ( drop 'bcell c>t 1 ; ) drop
-	fok 0? ( ; ) drop
-	'fcell c>t 1 ;
+	lok 0? ( ; ) drop
+	'lcell c>t 1 ;
 
 #curok
 :pickat | -- 0/1	; objetivo de la herramienta en tx ty tz
@@ -684,39 +670,203 @@
 	hitok 0? ( ; ) drop
 	'hcell c>t 1 ;
 
-#lkey
+#lkey #pkey #pbtn
 :tkey tx 8 << ty + 8 << tz + ;
 
-:toolpress
+:cancel | cancela la forma pendiente y vuelve al original
+	aok 0? ( drop ; ) drop
+	undo 0 'aok ! ;
+:undokey aok 1? ( drop cancel ; ) drop undo ;
+
+:drawshape | aplica la forma entre el ancla y el objetivo
+	bshape 1 =? ( drop doline ; ) drop dobox ;
+
+:preview | vista previa: siempre parte del original (copia de deshacer)
+	aok 0? ( drop ; ) drop
+	bshape 0? ( drop cancel ; ) drop
+	tkey pkey =? ( drop ; ) 'pkey !
+	undo drawshape ;
+
+:pickhover
+	pickat dup 'curok ! 1? ( drop preview ; ) drop
+	aok 1? ( undo -1 'pkey ! ) drop ;
+
+:toolpress | boton izquierdo abajo: erase / paint con forma voxel (arrastrando continua)
 	pickat dup 'curok ! 0? ( drop ; ) drop
-	bshape 0? ( drop pushundo tx ty tz cellapply tkey 'lkey ! ; ) drop
-	aok 0? ( drop tx 'ax ! ty 'ay ! tz 'az ! 1 'aok ! ; ) drop
-	pushundo
-	bshape 1 =? ( drop doline ; ) drop
-	dobox ;
+	bshape 0? ( drop bmode 1? ( drop pushundo tx ty tz cellapply tkey 'lkey ! ; ) drop ; ) drop ;
 
 :tooldrag
 	pickat dup 'curok ! 0? ( drop ; ) drop
-	bshape 0? ( drop tkey lkey =? ( drop ; ) 'lkey ! tx ty tz cellapply ; ) drop ;
+	bshape 0? ( drop bmode 1? ( drop tkey lkey =? ( drop ; ) 'lkey ! tx ty tz cellapply ; ) drop ; ) drop
+	preview ;
 
-:pickhover pickat 'curok ! ;
+:toolclick | click (boton soltado dentro): attach voxel, y 1er/2do punto de linea y caja
+	pickat dup 'curok ! 0? ( drop ; ) drop
+	bshape 0? ( drop bmode 0? ( drop pushundo tx ty tz cellapply ; ) drop ; ) drop
+	aok 0? ( drop pushundo tx 'ax ! ty 'ay ! tz 'az ! 1 'aok ! tkey 'pkey ! ; ) drop
+	undo drawshape 0 'aok ! ;
 
 :viewmouse
 	immMouse
 	0 =? ( 0 'curok ! )
-	1 =? ( wheelcam pickhover )								| over
-	2 =? ( dnmouse sdlb 1 =? ( toolpress ) drop )			| in
+	1 =? ( wheelcam pickhover )												| over
+	2 =? ( dnmouse sdlb 'pbtn ! pbtn 1 =? ( toolpress ) drop )				| in
 	3 =? ( sdlb 4 =? ( orbitmouse ) 2 =? ( panmouse ) 1 =? ( tooldrag ) drop )	| active
+	6 =? ( pbtn 1 =? ( toolclick ) drop )									| click
 	drop ;
 
 |----------------------------------
-| instancias: 0 objeto, 1 cursor, 2 ancla, 3..5 paredes de referencia (solo las posteriores), 6..8 ejes
+| grilla: lineas cada 2, 4, 8 y 16 voxeles en las caras posteriores del cubo de edicion y en el piso (sin glow)
+#vg_shader "
+@vertex-----------------
+#version 440 core
+layout(location=0) in vec2 aPos;
+out vec2 vScreen;
+void main(){
+    vScreen = aPos;
+    gl_Position = vec4(aPos, 0.5, 1.0);
+}
+@fragment---------------
+#version 440 core
+in vec2 vScreen;
+
+layout(std140, binding=0) uniform Matrices {
+    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+};
+
+layout(location=0) out vec3 gNormal;
+layout(location=1) out vec4 gAlbedo;
+
+uniform vec3  uWall;    // planos posteriores: x, y, z
+uniform vec2  uBox;     // mitad del cubo, tamano del voxel
+uniform float uFloor;   // 1 = piso infinito en y=0
+uniform float uGrid;    // 1 = caras posteriores del cubo
+
+#define LINE_COLOR   vec3(0.62, 0.72, 0.95)
+#define GBUFFER_PACK 0.87843137   // rough 7, metal 0, glow 0
+
+float worldToDepth(vec3 wp) {
+    vec4 cp = ProjView * vec4(wp, 1.0);
+    return cp.z / cp.w;
+}
+
+float lines(vec2 g, vec2 fw, float s, float w) {
+    vec2  gg   = abs(fract(g * s - 0.5) - 0.5) / (fw * s);
+    float dens = max(fw.x, fw.y) * s;                      // celdas por pixel
+    float vis  = 1.0 - clamp((dens - 0.12) / 0.2, 0.0, 1.0); // se apaga si la celda es muy chica
+    return (1.0 - clamp(min(gg.x, gg.y) - 0.01, 0.0, 1.0)) * w * vis;
+}
+
+float gridMask(vec2 u, vec2 fu) {         // u en voxeles, 1 celda = 2 voxeles
+    vec2 g  = u * 0.5;
+    vec2 fw = max(fu * 0.5, vec2(1e-5));
+    float m = lines(g, fw, 1.0,   0.18);  // cada 2
+    m = max(m, lines(g, fw, 0.5,   0.35)); // cada 4
+    m = max(m, lines(g, fw, 0.25,  0.60)); // cada 8
+    m = max(m, lines(g, fw, 0.125, 1.00)); // cada 16
+    return m;
+}
+
+void main() {
+    vec4 vDir = invProj * vec4(vScreen, 1.0, 1.0);
+    vec3 rd   = normalize(mat3(invView) * (vDir.xyz / vDir.w));
+    vec3 ro   = viewPos.xyz;
+    float H = uBox.x;
+    float V = uBox.y;
+
+    float bestT = 1e20;
+    int   ax = -1;
+    if (uGrid > 0.5) {
+        if (abs(rd.x) > 1e-6) {
+            float t = (uWall.x - ro.x) / rd.x;
+            vec3  p = ro + rd * t;
+            if (t > 0.0 && t < bestT && abs(p.z) <= H && p.y >= 0.0 && p.y <= 2.0 * H) { bestT = t; ax = 0; }
+        }
+        if (abs(rd.y) > 1e-6) {
+            float t = (uWall.y - ro.y) / rd.y;
+            vec3  p = ro + rd * t;
+            if (t > 0.0 && t < bestT && abs(p.x) <= H && abs(p.z) <= H) { bestT = t; ax = 1; }
+        }
+        if (abs(rd.z) > 1e-6) {
+            float t = (uWall.z - ro.z) / rd.z;
+            vec3  p = ro + rd * t;
+            if (t > 0.0 && t < bestT && abs(p.x) <= H && p.y >= 0.0 && p.y <= 2.0 * H) { bestT = t; ax = 2; }
+        }
+    }
+    if (uFloor > 0.5 && rd.y < -1e-6 && ro.y > 0.0) {
+        float t = -ro.y / rd.y;
+        if (t < bestT) { bestT = t; ax = 3; }
+    }
+
+    bool  any_ = (ax >= 0);
+    vec3  hit  = ro + rd * (any_ ? bestT : 1.0);
+    vec3  fh   = fwidth(hit) / V;            // voxeles por pixel en cada eje
+    vec2  u; vec2 fu; vec3 n;
+    if (ax == 0) {
+        u = vec2(hit.z + H, hit.y) / V;  fu = fh.zy;
+        n = vec3(sign(ro.x - uWall.x), 0.0, 0.0);
+    } else if (ax == 2) {
+        u = vec2(hit.x + H, hit.y) / V;  fu = fh.xy;
+        n = vec3(0.0, 0.0, sign(ro.z - uWall.z));
+    } else {
+        u = vec2(hit.x + H, hit.z + H) / V;  fu = fh.xz;
+        n = vec3(0.0, (ax == 1) ? sign(ro.y - uWall.y) : 1.0, 0.0);
+    }
+    float fade = (ax == 3) ? 1.0 - clamp((bestT - 4.0) / 10.0, 0.0, 1.0) : 1.0;
+    float m = gridMask(u, fu) * fade;
+    if (!any_ || m < 0.02) discard;
+
+    gNormal = vec3(0.0, 1.0, 0.0);   // siempre iluminada (referencia, sin glow)
+    gAlbedo = vec4(LINE_COLOR * m, GBUFFER_PACK);
+    gl_FragDepth = worldToDepth(hit);
+}
+@-"
+
+#vg_sh 0 #vg_uwall -1 #vg_ubox -1 #vg_ufloor -1 #vg_ugrid -1
+#vg_wall [ 0.0 0.0 0.0 ]
+#vg_box [ 0.0 0.0 ]
+#vg_floor [ 0.0 ]
+#vg_grid [ 0.0 ]
+#showgrid 1 #showfloor 0
+
+:vg_init
+	'vg_shader loadShaderv 'vg_sh !
+	vg_sh "uWall" glGetUniformLocation 'vg_uwall !
+	vg_sh "uBox" glGetUniformLocation 'vg_ubox !
+	vg_sh "uFloor" glGetUniformLocation 'vg_ufloor !
+	vg_sh "uGrid" glGetUniformLocation 'vg_ugrid ! ;
+
+:vg_free
+	vg_sh 1? ( vg_sh glDeleteProgram 0 'vg_sh ! ) drop ;
+
+:wsgn | e -- p		; plano posterior: opuesto a la camara
+	-? ( drop half ; ) drop half neg ;
+:f1 1? ( drop 1.0 ; ) drop 0 ;
+:ysgn | e -- y		; plano posterior en y: piso (0) o techo (2*half) segun la camara
+	half - -? ( drop half 2* ; ) drop 0 ;
+
+:vgdraw
+	showgrid showfloor or 0? ( drop ; ) drop
+	'camEye @ wsgn 'vg_wall d!
+	'camEye 8 + @ ysgn 'vg_wall 4 + d!
+	'camEye 16 + @ wsgn 'vg_wall 8 + d!
+	3 'vg_wall memfloat
+	half 'vg_box d! vox 'vg_box 4 + d! 2 'vg_box memfloat
+	showfloor f1 'vg_floor d! 1 'vg_floor memfloat
+	showgrid f1 'vg_grid d! 1 'vg_grid memfloat
+	vg_sh glUseProgram
+	vg_uwall 1 'vg_wall glUniform3fv
+	vg_ubox 1 'vg_box glUniform2fv
+	vg_ufloor 1 'vg_floor glUniform1fv
+	vg_ugrid 1 'vg_grid glUniform1fv
+	rl_quad_vao glBindVertexArray
+	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	0 glBindVertexArray ;
+
+|----------------------------------
+| instancias: 0 objeto, 1 cursor, 2 ancla, 3..5 ejes
 #qid #qzz #qxx #ac0
 #ec #ei
-#showref 1
-
-:rsc | -- escala de las referencias (0 = ocultas)
-	showref 0? ( ; ) drop oscl ;
 
 :curscl | -- s
 	curok 0? ( ; ) drop oscl 1.15 *. ;
@@ -725,32 +875,22 @@
 :ancscl | -- s
 	aok 0? ( ; ) drop oscl 1.15 *. ;
 
-:bk | e -- p	; pared opuesta a la camara: +-(half + 1/2 voxel)
-	half vox 2/ + swap -? ( drop ; ) drop neg ;
-:ywall | -- y	; piso si la camara esta arriba, techo si esta abajo
-	'camEye 8 + @ half - -? ( drop half 2* vox 2/ + ; ) drop vox 2/ neg ;
-
-:walls
-	'camEye @ bk half 0 qzz rsc 3 $ffffff00 3 ss3dset
-	0 ywall 0 qid rsc 3 $ffffff00 4 ss3dset
-	0 half 'camEye 16 + @ bk qxx rsc 3 $ffffff00 5 ss3dset ;
-
 :axbar | x y z q col i --
 	'ei ! 'ec !
-	rsc 2 ec ei ss3dset
-	rsc 0.25 *. rsc 0.3 *. rsc 0.25 *. ei ss3dscl3 ;
+	oscl 2 ec ei ss3dset
+	oscl 0.25 *. oscl 0.3 *. oscl 0.25 *. ei ss3dscl3 ;
 
 :axes
 	half neg 'ac0 !
-	ac0 half 0.3 *. + vox ac0 qzz $ff404003 6 axbar
-	ac0 vox half 0.3 *. + ac0 qid $40ff4003 7 axbar
-	ac0 vox ac0 half 0.3 *. + qxx $4080ff03 8 axbar ;
+	ac0 half 0.3 *. + vox ac0 qzz $ff404000 3 axbar
+	ac0 vox half 0.3 *. + ac0 qid $40ff4000 4 axbar
+	ac0 vox ac0 half 0.3 *. + qxx $4080ff00 5 axbar ;
 
 :placeall
 	0 half 0 qid oscl 0 $ffffff00 0 ss3dset
 	tx cellc ty cellc half + tz cellc qid curscl 1 curcolor 1 ss3dset
 	ax cellc ay cellc half + az cellc qid ancscl 1 $ffff4003 2 ss3dset
-	walls axes ;
+	axes ;
 
 |----------------------------------
 | archivos del slot: mem/voxedN.vxd (editor) y mem/voxedN.ssv (exportar a ss3d)
@@ -798,11 +938,13 @@
 	'o_clear eachvox ;
 
 |----------------------------------
-| interfaz
-#showL 1 #showR 1 #showF 0
-:tgL showL 1 xor 'showL ! ;
-:tgR showR 1 xor 'showR ! ;
+| interfaz (tamanos relativos al texto)
+#showT 1 #showP 1 #showF 0 #showV 0
+:tgT showT 1 xor 'showT ! ;
+:tgP showP 1 xor 'showP ! ;
 :tgF showF 1 xor 'showF ! ;
+:tgV showV 1 xor 'showV ! ;
+
 
 #radv #radn #radt
 :radsel radn radv ! ;
@@ -811,6 +953,9 @@
 	uiZone 'radsel uiClk
 	radv @ radn =? ( $ff3070c0 'fcolor ! uilFill ) drop
 	$ffffffff 'fcolor ! radt uiLabelC ;
+
+:bg | color --
+	'fcolor ! uiWinBox frect $ffffffff 'fcolor ! ;
 
 #ci
 :palpick ci 'psel ! ;
@@ -828,7 +973,7 @@
 
 :slotchg psel slotcalc refreshstrips 1 'dirty ! ;
 
-:leftpanel
+:palpanel
 	uiPush
 	1.0 %cw uiN
 	palui
@@ -844,26 +989,26 @@
 	"glow" 0 3 'pgl psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
 	uiPop ;
 
-:rightpanel
-	"MODO" uiLabelC
+:toolpanel
+	"- MODE -" uiLabelC
 	'bmode 0 "attach (V)" rad
 	'bmode 1 "erase (F)" rad
 	'bmode 2 "paint (G)" rad
-	"FORMA" uiLabelC
+	"- SHAPE -" uiLabelC
 	'bshape 0 "voxel (1)" rad
 	'bshape 1 "line (2)" rad
 	'bshape 2 "box (3)" rad
-	"CONJUNTO" uiLabelC
+	"- BUILD -" uiLabelC
 	'a_clear "clear" uiNBtn 'a_fill "fill" uiNBtn 'a_rev "reverse" uiNBtn uiLn
 	'a_sphere "sphere" uiNBtn 'a_cyl "cylinder" uiNBtn uiLn
 	'a_pyr "pyramid" uiNBtn 'a_cone "cone" uiNBtn uiLn
-	"MOVER (con vuelta)" uiLabelC
+	"MOVE (wrap)" uiLabelC
 	"x" nv neg nv 'mvx uiSlideriL
 	"y" nv neg nv 'mvy uiSlideriL
 	"z" nv neg nv 'mvz uiSlideriL
 	'mvreset "0" uiNBtn uiLn
 	movepoll
-	"INVERTIR" uiLabelC
+	"INVERT" uiLabelC
 	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn ;
 
 :slotpick ci slotswitch ;
@@ -872,8 +1017,8 @@
 :fnext fpage 1 + nlist 9 + 10 / 1- 0 max min 'fpage ! ;
 
 :filelist
-	nlist 0? ( drop "(sin .vox)" uiLabelC ; ) drop
-	fpage 10 * 10 + nlist min 
+	nlist 0? ( drop "(no .vox)" uiLabelC ; ) drop
+	fpage 10 * 10 + nlist min
 	fpage 10 * ( over <? dup 'fi !
 		uiZone 'filepick uiClk
 		$ff203050 'fcolor ! uilFill $ffffffff 'fcolor !
@@ -884,6 +1029,7 @@
 	'fnext ">" uiNBtn uiLn ;
 
 :slottxt | -- str
+	ci slotcur =? ( drop ci 1+ "[%d]" sprint ; ) drop
 	ci 'sused + c@ 1? ( drop ci 1+ "%d*" sprint ; ) drop ci 1+ "%d" sprint ;
 
 :filepanel
@@ -892,74 +1038,73 @@
 	8 4 uiGrid
 	0 ( 32 <? dup 'ci !
 		slottxt 'slotpick swap uiBtn
-		ci slotcur =? ( $ffffffff 'fcolor ! uiRect ) drop
 		uiNext
 		1+ ) drop
 	uiRest
 	$ffffffff 'fcolor !
 	'snames slotcur 5 << + slotcur 1+ "slot %d  %s" sprint uiLabelC
-	'savevxd "guardar" uiNBtn 'loadvxd "cargar" uiNBtn 'exportssv ".ssv" uiNBtn uiLn
-	'newmodel "vaciar" uiNBtn uiLn
-	"VOX" uiLabelC
+	'savevxd "Save" uiNBtn 'loadvxd "Load" uiNBtn 'exportssv "Export .ssv" uiNBtn uiLn
+	'newmodel "Clear" uiNBtn uiLn
+	"VOX FILES" uiLabelC
 	'vpath uiLabelC
-	'scanvox "buscar" uiNBtn uiLn
+	'scanvox "Scan" uiNBtn uiLn
 	filelist
 	uiPop ;
 
 :topbar
 	'exit "Exit" uiNBtn
-	'undo "deshacer" uiNBtn
-	'tgL "paleta" uiNBtn
-	'tgF "archivos" uiNBtn
-	'tgR "herram." uiNBtn ;
+	'undokey "Undo" uiNBtn
+	'tgT "Tools" uiNBtn
+	'tgV "View" uiNBtn
+	'tgP "Palette" uiNBtn
+	'tgF "Files" uiNBtn
+	;
 
-:bottombar
-	9 1 uiGrid
-	'shadowon "sombras" uiToggle uiEx? 1? ( shadowon ss3dshadow! ) drop uiNext
-	'rl_ao_on "SSAO" uiToggle uiNext
-	'rl_aa_on "FXAA" uiToggle uiNext
-	'showref "ref" uiToggle uiNext
-	"az" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop uiNext
-	"alt" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop uiNext
-	'vtop "top" uiBtn uiNext
-	'vfront "front" uiBtn uiNext
-	'vside "side" uiBtn ;
+:optshadow
+	shadowon -? ( drop ; ) drop
+	"az" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop 
+	"alt" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop 
+	;
+
+:viewpanel
+	"VIEW" uiLabelC
+	
+	'vtop "Top" uiNBtn
+	'vfront "Front" uiNBtn
+	'vside "Side" uiNBtn 
+	uiLn uiLn 
+	'showgrid "Grid" uiToggle
+	'showfloor "Floor" uiToggle
+
+	'shadowon "Shadows" uiToggle	
+	optshadow
+	'rl_ao_on "SSAO" uiToggle
+	'rl_aa_on "FXAA" uiToggle
+	;
 
 :interface
 	1 'fscale !
 	$ffffffff 'fcolor !
 	uiFull
-	0.05 %ch uiN
-	$1f0000ff 'fcolor ! uiWinBox frect
-	$ffffffff 'fcolor !
-	topbar
-	sh 20 / uiS
-	$1f0000ff 'fcolor ! uiWinBox frect
-	$ffffffff 'fcolor !
-	bottombar
-	showF 1? (
-		sw 19 * 100 / uiO
-		$1f00ff00 'fcolor ! uiWinBox frect
-		$ffffffff 'fcolor !
-		filepanel ) drop
-	showL 1? (
-		sw 15 * 100 / uiO
-		$1f00ff00 'fcolor ! uiWinBox frect
-		$ffffffff 'fcolor !
-		leftpanel ) drop
-	showR 1? (
-		sw 18 * 100 / uiE
-		$1f00ff00 'fcolor ! uiWinBox frect
-		$ffffffff 'fcolor !
-		rightpanel ) drop
+	24 uiN
+	$1f0000ff bg topbar
+	txh 2 << uiS				| 4 textlines
+
+	showT 1? ( 22 3 << uiO $3f1f1f1f bg toolpanel ) drop
+	showV 1? ( 22 3 << uiO $3f1f1f1f bg viewpanel ) drop
+	showF 1? ( 28 3 << uiE $3f1f1f1f bg filepanel ) drop
+	showP 1? ( 27 3 << uiE $3f1f1f1f bg palpanel ) drop	
 	uiRest uiWinBox immBox
 	viewmouse ;
 
+#shadowlast 1
 :hud
 	fini
 	immIni
 	interface
 	fend
+
+	shadowon shadowlast <>? ( shadowon 'shadowlast ! shadowon ss3dshadow! ) drop
 
 	sdlkey
 	>esc< =? ( exit )
@@ -970,12 +1115,12 @@
 	<q> =? ( 0.02 'vu ! ) >q< =? ( 0 'vu ! )
 	<e> =? ( -0.02 'vu ! ) >e< =? ( 0 'vu ! )
 	<v> =? ( 0 'bmode ! ) <f> =? ( 1 'bmode ! ) <g> =? ( 2 'bmode ! )
-	<1> =? ( 0 'bshape ! 0 'aok ! ) <2> =? ( 1 'bshape ! 0 'aok ! ) <3> =? ( 2 'bshape ! 0 'aok ! )
-	<x> =? ( 0 'aok ! )
-	<u> =? ( undo )
-	<f1> =? ( shadowon 1 xor 'shadowon ! shadowon ss3dshadow! )
+	<1> =? ( 0 'bshape ! cancel ) <2> =? ( 1 'bshape ! cancel ) <3> =? ( 2 'bshape ! cancel )
+	<x> =? ( cancel )
+	<u> =? ( undokey )
+	<f1> =? ( shadowon 1 xor 'shadowon ! )
 	<f2> =? ( rl_ao_on 1 xor 'rl_ao_on ! )
-	<f3> =? ( tgL ) <f4> =? ( tgF ) <f5> =? ( tgR )
+	<f3> =? ( tgP ) <f4> =? ( tgF ) <f5> =? ( tgT )
 	drop
 	keycam ;
 
@@ -986,7 +1131,7 @@
 	placeall
 	rl_frame_begin
 	SS3Ddraw
-	draw_grid
+	vgdraw
 	light
 	rl_frame_end
 	hud
@@ -1018,7 +1163,7 @@
 	glgfx
 	initvox
 	rl_init
-	1 rl_grid_init
+	vg_init
 	2048 ss3dshadowini
 	1 ss3dshadowauto
 	'viewresize SDLeventR
@@ -1028,7 +1173,7 @@
 
 	'main SDLshow
 
-	rl_grid_free
+	vg_free
 	ss3dshadowend
 	rl_shutdown
 	SS3Dshutdown

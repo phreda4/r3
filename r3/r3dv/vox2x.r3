@@ -7,6 +7,10 @@
 | orientacion como ss3d/vox2ssa: x = vx, z(fila) = sy-1-vy, bit y(capa) = sz-1-vz
 | modelos > 32 en algun eje: se cortan en partes de hasta 32^3, numeradas k = ix + nx*(iy + ny*iz)
 |   (ix iy iz sobre los ejes x y z de MagicaVoxel), nombre base_pNNN; las partes vacias no generan sprite
+|   cada parte se AJUSTA al volumen ocupado (bounding box de sus voxels) y por cada modelo cortado
+|   se genera salida_NOMBRE.ssm (multi3dsprite, ver ssmodel.r3): un nodo raiz (hueso) y un nodo por parte
+|   con la posicion del centro de la parte relativa al centro del modelo (voxeles, ejes del sprite:
+|   x = vx, arriba = vz, z = -vy)
 | voxels con los 6 vecinos llenos (no visibles) quedan en la mascara pero su color es comodin
 | .ssv (SSV2), todo little endian:
 |   cabecera 16 bytes: "SSV2" nspr ncol ncolores (d)
@@ -499,12 +503,84 @@
 	nparts 1 =? ( 2drop pnm ; ) drop
 	pnm 'pbuf strcpy "_p" 'pbuf strcat n3 'pbuf strcat 'pbuf ;
 
+|---- recorte de la parte al volumen ocupado
+#bx0 #bx1 #by0 #by1 #bz0 #bz1
+:fitvox | X Y Z --
+	'vz ! 'vy ! 'vx !
+	vx vy vz dadr c@ $ff and 0? ( drop ; ) drop
+	vx bx0 min 'bx0 ! vx bx1 max 'bx1 !
+	vy by0 min 'by0 ! vy by1 max 'by1 !
+	vz bz0 min 'bz0 ! vz bz1 max 'bz1 ! ;
+
+:fitpart | -- 1/0		; achica pox..msz al bounding box de los voxels; 0 si la parte esta vacia
+	$7fffffff dup dup 'bx0 ! 'by0 ! 'bz0 ! -1 dup dup 'bx1 ! 'by1 ! 'bz1 !
+	0 ( msz <?
+		0 ( msy <?
+			0 ( msx <?
+				dup pox + pick2 poy + pick4 poz + fitvox
+				1+ ) drop
+			1+ ) drop
+		1+ ) drop
+	bx1 -? ( drop 0 ; ) drop
+	bx0 'pox ! by0 'poy ! bz0 'poz !
+	bx1 bx0 - 1+ 'msx ! by1 by0 - 1+ 'msy ! bz1 bz0 - 1+ 'msz !
+	1 ;
+
+|---- .ssm: nodo raiz + un nodo por parte (formato en ssmodel.r3)
+#ssmn * 49152		| nodos de 48 bytes (max 1024)
+#ssmpool * 65536
+#nssm #poolp #ssvoff
+#outbase * 256
+#ssmfile * 256
+#sh * 48
+#bn #pl #ps2 #na2
+
+:basename | s -- adr
+	dup 'bn !
+	( c@+ 1? $2f =? ( drop dup 'bn ! 0 ) drop ) 2drop bn ;
+
+:addpool | "s" -- off
+	count 1+ 'pl ! 'ps2 !
+	poolp pl + 65536 >? ( drop 0 ; ) drop
+	'ssmpool poolp + ps2 pl cmove
+	poolp dup pl + 'poolp ! ;
+
+:ssminit
+	0 'ssmpool c! 1 'poolp !
+	'ssmn 0 48 cfill
+	-1 'ssmn d! -1 'ssmn 4 + d! 1.0 'ssmn 32 + d! 1.0 'ssmn 36 + d! $ffffff00 'ssmn 40 + d!
+	pnm addpool 'ssmn 44 + d!
+	1 'nssm !
+	'outssv basename addpool 'ssvoff ! ;
+
+:addnode | k --		; nodo de la parte actual (centro relativo al centro del modelo, en voxeles 16.16)
+	nssm 1023 >=? ( 2drop ; ) drop
+	'ssmn nssm 48 * + 'na2 !
+	nspr na2 d! 0 na2 4 + d!
+	pox 2* msx + fsx - 15 << na2 8 + d!
+	poz 2* msz + fsz - 15 << na2 12 + d!
+	fsy poy 2* msy + - 15 << na2 16 + d!
+	0 na2 20 + d! 0 na2 24 + d! 0 na2 28 + d! 1.0 na2 32 + d!
+	1.0 na2 36 + d! $ffffff00 na2 40 + d!
+	partname addpool na2 44 + d!
+	1 'nssm +! ;
+
+:writessm
+	pnm 'outbase "%s_%s.ssm" sprint 'ssmfile strcpy
+	'sh 0 48 cfill
+	"SSM1" d@ 'sh d! nssm 'sh 4 + d! poolp 'sh 20 + d! ssvoff 'sh 24 + d!
+	'sh 48 'ssmfile save
+	'ssmn nssm 48 * 'ssmfile append
+	'ssmpool poolp 'ssmfile append
+	nssm 'ssmfile "  %s: %d nodos" .println ;
+
 :dopart | k --		; parte k: ix = k mod nx, iy = (k / nx) mod ny, iz = k / (nx*ny)
 	abort 1? ( 2drop ; ) drop
 	dup pnx mod 5 << 'pox !
 	dup pnx / pny mod 5 << 'poy !
 	dup pnx pny * / 5 << 'poz !
 	fsx pox - 32 min 'msx ! fsy poy - 32 min 'msy ! fsz poz - 32 min 'msz !
+	nparts 1 >? ( fitpart 0? ( 3drop ; ) drop ) drop
 	nspr 16384 >=? ( 1 'abort ! 2drop ; ) drop
 	ncol msx msy * + AMAX >? ( 1 'abort ! 2drop ; ) drop
 	clearvol 0 'pvox ! fillpart
@@ -513,6 +589,7 @@
 	'spr nspr 3 << + 'sa !
 	ncol sa d! msx sa 4 + c! msz sa 5 + c! msy sa 6 + c! 0 sa 7 + c!
 	partname count 'outtxt append 'nl 1 'outtxt append
+	nparts 1 >? ( over addnode ) drop
 	msx msy * 'ncol +! 1 'nspr +! ;
 
 :procframe | m name --
@@ -521,7 +598,9 @@
 	'pnm ! loadmodel builddense
 	fsx 31 + 5 >> 'pnx ! fsy 31 + 5 >> 'pny ! fsz 31 + 5 >> 'pnz !
 	pnx pny * pnz * 'nparts !
-	0 ( nparts <? dup dopart 1+ ) drop ;
+	nparts 1 >? ( ssminit ) drop
+	0 ( nparts <? dup dopart 1+ ) drop
+	nparts 1 >? ( writessm ) drop ;
 
 :procfile | i --
 	dup voxname voxopen
@@ -529,6 +608,7 @@
 	'procframe voxeach ;
 
 ::voxconvert | "salida" --
+	dup 'outbase strcpy
 	dup "%s.ssv" sprint 'outssv strcpy
 	"%s.txt" sprint 'outtxt strcpy
 	here dup 'atlas ! AMAX 3 << + dup 'palc ! 4194304 + dup 'htab ! 2097152 + 'here !

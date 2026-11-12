@@ -137,12 +137,12 @@
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
 
-#walk ( 16 17 16 18 ) 
+#walk ( 18 19 18 20 ) 
 	
 :jugador
 	pxp pzp 0.4 + pyp
 	
-	prot 0.25 + 2/
+	prot 0.25 - 2/
 	$ffff and 16 << rxyz>q16 
 	
 	5.0	
