@@ -13,7 +13,7 @@
 
 | dicctionary
 | code>(32) str(16) var/word(8) 
-##dicc * 1024 | 128 entradas
+##dicc * 4096 | 512 entradas
 ##dicc>
 
 #state	| imm/compiling
@@ -50,10 +50,10 @@
 
 :i;		drop RTOS @ 8 'RTOS +! ;
 :i(		;
-:i)		:i[		
-	jmpr ;
-:i]		8 'NOS +! TOS NOS ! w@+ + 'TOS ! ;
-:iEX	-8 'RTOS +! RTOS ! TOS code + 8 'NOS +! NOS @ 'TOS ! ;
+:i)		jmpr ;
+:i[		iDUP dup code - 32 << 'TOS ! jmpr ;
+:i]		;
+:iEX	-8 'RTOS +! RTOS ! TOS 32 >> code + iDROP ;
 
 :NOSTOS	NOS @ 32 >> TOS 32 >> ;
 :2NOTOS	NOS 8 - @ 32 >> NOS @ 32 >> TOS 32 >> ;
@@ -72,7 +72,7 @@
 :i<>?	NOSTOS =? ( drop jmpr iDROP ; ) drop iDROP ;
 :iAND?	NOSTOS nand? ( drop jmpr iDROP ; ) drop iDROP ;
 :iNAND?	NOSTOS and? ( drop jmpr iDROP ; ) drop iDROP ;
-:iIN?	2NOTOS in? ( drop jmpr idrop ; ) drop idrop ;
+:iIN?	2NOTOS in? ( drop i2DROP ; ) drop jmpr i2DROP ;
 
 :iAND	NOSTOS and iNIP TOS! ;
 :iOR	NOSTOS or iNIP TOS! ;
@@ -85,7 +85,7 @@
 :i*/	2NOTOS 1? ( */ i2NIP TOS! ; ) 3drop 9 'terror ! ; | div0 error
 :i*>>	2NOTOS *>> i2NIP TOS! ;  | need LSB (TOS is 32bits)
 :i<</	2NOTOS 1? ( <</ i2NIP TOS! ; ) 3drop 9 'terror ! ; | need LSB (TOS is 32bits)
-:i/MOD	NOSTOS 1? ( /mod 'TOS ! NOS ! ; ) 2drop 9 'terror ! ;
+:i/MOD	NOSTOS 1? ( /mod 32 << 'TOS ! 32 << NOS ! ; ) 2drop 9 'terror ! ;
 :iMOD	NOSTOS 1? ( mod iNIP TOS! ; ) 2drop 9 'terror ! ;
 :iABS	TOS 32 >> abs TOS! ;
 :iNEG	TOS 32 >> neg TOS! ;
@@ -96,39 +96,39 @@
 :i>>>	NOSTOS >>> iNIP TOS! ;    | need LSB (TOS is 32bits)
 
 |--- R
-:i>R	8 'RTOS +! TOS RTOS ! iDROP ;
-:iR>	iDUP RTOS dup @ 'TOS ! 8 - 'RTOS ! ;
+:i>R	-8 'RTOS +! TOS RTOS ! iDROP ;
+:iR>	iDUP RTOS @ 'TOS ! 8 'RTOS +! ;
 :iR@	iDUP RTOS @ 'TOS ! ;
 
 |--- REGA
-:i>A	TOS 'REGA ! iDROP ;
-:iA>	'REGA @ PUSHiNRO ;
-:iA+	TOS 'REGA +! iDROP ;
-:iA@	REGA code + @ PUSHiNRO ;
-:iA!	TOS REGA code + ! iDROP ;
-:iA@+	REGA dup 8 + 'REGA ! code + @ PUSHiNRO ;
-:iA!+	TOS REGA dup 8 + 'REGA ! code + ! iDROP ;
+:i>A	TOS 32 >> 'REGA ! iDROP ;
+:iA>	'REGA @ 32 << PUSHiNRO ;
+:iA+	TOS 32 >> 'REGA +! iDROP ;
+:iA@	REGA data + @ PUSHiNRO ;
+:iA!	TOS REGA data + ! iDROP ;
+:iA@+	REGA dup 8 + 'REGA ! data + @ PUSHiNRO ;
+:iA!+	TOS REGA dup 8 + 'REGA ! data + ! iDROP ;
 
 |--- REGB
-:i>B	TOS 'REGB ! iDROP ;
-:iB>	'REGB @ PUSHiNRO ;
-:iB+	TOS 'REGB +! iDROP ;
-:iB@	REGB code + @ PUSHiNRO ;
-:iB!	TOS REGB code + ! iDROP ;
-:iB@+	REGB dup 8 + 'REGB ! code + @ PUSHiNRO ;
-:iB!+	TOS REGB dup 8 + 'REGB ! code + ! iDROP ;
+:i>B	TOS 32 >> 'REGB ! iDROP ;
+:iB>	'REGB @ 32 << PUSHiNRO ;
+:iB+	TOS 32 >> 'REGB +! iDROP ;
+:iB@	REGB data + @ PUSHiNRO ;
+:iB!	TOS REGB data + ! iDROP ;
+:iB@+	REGB dup 8 + 'REGB ! data + @ PUSHiNRO ;
+:iB!+	TOS REGB dup 8 + 'REGB ! data + ! iDROP ;
 
 
 :i@		TOS 32 >> data + @ 'TOS ! ;
-:iC@	TOS 32 >> data + c@ 'TOS ! ;
-:i@+    TOS 32 >> data + @+ 'TOS ! data - 8 'NOS +! NOS ! ;
-:iC@+	TOS 32 >> data + c@+ 'TOS ! data - 8 'NOS +! NOS ! ;
+:iC@	TOS 32 >> data + c@ 32 << 'TOS ! ;
+:i@+	TOS 32 >> data + @+ 'TOS ! data - 32 << 8 'NOS +! NOS ! ;
+:iC@+	TOS 32 >> data + c@+ 32 << 'TOS ! data - 32 << 8 'NOS +! NOS ! ;
 :i!		NOS @ TOS 32 >> data + ! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:iC!	NOS @ TOS 32 >> data + c! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:i!+	NOS @ TOS 32 >> data + !+ data - 'TOS ! -8 'NOS ! ;
-:iC!+	NOS @ TOS 32 >> data + c!+ data - 'TOS ! -8 'NOS ! ;
-:i+!	NOS @ TOS 32 >> data + +! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
-:iC+!	NOS @ TOS 32 >> data + c+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC!	NOS @ 32 >> TOS 32 >> data + c! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:i!+	NOS @ TOS 32 >> data + !+ data - 32 << 'TOS ! -8 'NOS +! ;
+:iC!+	NOS @ 32 >> TOS 32 >> data + c!+ data - 32 << 'TOS ! -8 'NOS +! ;
+:i+!	NOS @ $ffffffff00000000 and TOS 32 >> data + +! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
+:iC+!	NOS @ 32 >> TOS 32 >> data + c+! NOS dup 8 - @ 'TOS ! 16 - 'NOS ! ;
 
 :iMOVE		NOS 8 - @ NOS @ TOS move i3DROP ;
 :iMOVE>		NOS 8 - @ NOS @ TOS move> i3DROP ;
@@ -150,6 +150,21 @@
 :iVAR	8 'NOS +! TOS NOS ! atoken 32 >> data + @ 'TOS ! ;	| 32 bits
 :iAVAR	8 'NOS +! TOS NOS ! atoken 'TOS ! ;	| 32 bits (iLIT)
 
+
+:iCA@	REGA data + c@ 32 << PUSHiNRO ;
+:iCA!	TOS 32 >> REGA data + c! iDROP ;
+:iCA@+	REGA dup 1+ 'REGA ! data + c@ 32 << PUSHiNRO ;
+:iCA!+	TOS 32 >> REGA dup 1+ 'REGA ! data + c! iDROP ;
+:iCB@	REGB data + c@ 32 << PUSHiNRO ;
+:iCB!	TOS 32 >> REGB data + c! iDROP ;
+:iCB@+	REGB dup 1+ 'REGB ! data + c@ 32 << PUSHiNRO ;
+:iCB!+	TOS 32 >> REGB dup 1+ 'REGB ! data + c! iDROP ;
+:iAB[	-16 'RTOS +! REGA RTOS 8 + ! REGB RTOS ! ;
+:i]BA	RTOS @ 'REGB ! RTOS 8 + @ 'REGA ! 16 'RTOS +! ;
+
+:i-ROT	iROT iROT ;
+:iNAND	NOSTOS nand iNIP TOS! ;
+
 #tokenx
 iLITd iLITb iLITh iLITf iLITs 
 iWORD iAWORD iVAR iAVAR |0-8
@@ -166,6 +181,8 @@ iNOT iNEG iABS iSQRT iCLZ						|67-71
 iAND iOR iXOR i+ i- i* i/ iMOD					|72-79
 i<< i>> i>>> i/MOD i*/ i*>> i<</				|80-86
 iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
+i>R iR> iR@ i-ROT iNAND iDMOVE iDMOVE> iDFILL	|93-100
+iCA@ iCA! iCA@+ iCA!+ iCB@ iCB! iCB@+ iCB!+ iAB[ i]BA	|101-110
 
 #toknames 
 ";" "(" ")" "[" "]" "ex" "0?" "1?" "+?" "-?"				|9-18
@@ -179,6 +196,8 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 "and" "or" "xor" "+" "-" "*" "/" "mod"						|72-79
 "<<" ">>" ">>>" "/mod" "*/" "*>>" "<</"						|80-86
 "move" "move>" "fill" "cmove" "cmove>" "cfill"				|87-92
+">r" "r>" "r@" "-rot" "nand" "dmove" "dmove>" "dfill"	|93-100
+"ca@" "ca!" "ca@+" "ca!+" "cb@" "cb!" "cb@+" "cb!+" "ab[" "]ba"	|101-110
 0
 
 #INTWORDS 9
@@ -186,7 +205,7 @@ iMOVE iMOVE> iFILL iCMOVE iCMOVE> iCFILL			|87-92
 |iLITd iLITb iLITh iLITf iLITs iWORD iAWORD iVAR iAVAR |0-8
 #tokmov (
 $10 $10 $10 $10 $10 -1 $10 $10 $10
-0 0 0 0 0 $f1 $1 $1 $1 $1
+0 0 0 $10 0 $f1 $1 $1 $1 $1
 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $e3
 $11 $f1 $12 $13 $14 $15 $02 $f2
 $03 $24 $e2 $d3 $c4 $24 $04
@@ -197,6 +216,8 @@ $01 $01 $01 $01 $01
 $f2 $f2 $f2 $f2 $f2 $f2 $f2 $f2
 $f2 $f2 $f2 $02 $e3 $e3 $e3
 $d3 $d3 $d3 $d3 $d3 $d3
+$f1 $10 $10 $03 $f2 $d3 $d3 $d3
+$10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 0 )
 
 #tokname * 1024
@@ -251,7 +272,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 |------ RUN
 ::stack 
-	data 256 - ;
+	data 512 - ;
 	
 ::vmdeep | -- stack
 	NOS stack - 3 >> ;
@@ -277,6 +298,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	@+
 	dup vmtokmov $f and 
 	vmdeep >? ( 6 'terror ! 2drop ; ) 
+	drop
+	NOS 24 + RTOS >=? ( 15 'terror ! 2drop ; )	| stack overflow (datos y retorno comparten data-512..data-8)
 	drop
 	$80 and? ( $7f and 3 << sysworde + @ ex ; ) 
 	$7f and 3 << 'tokenx + @ ex ;
@@ -329,19 +352,25 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	0 'tlevel !
 	;
 
-:.def | adr -- adr' | :
-	1+ endef
+:dicc+ | v --	; agrega entrada al diccionario (error 16 si esta lleno)
+	dicc> 'dicc 4096 + >=? ( 16 'terror ! 2drop ; ) drop
+	dicc> !+ 'dicc> ! ;
+
+:.def | adr -- adr' | : ::
+	1+ dup c@ $3a =? ( swap 1+ swap ) drop
+	endef
 	code> code - 32 << 
 	over src - 16 << or  
-	dicc> !+ 'dicc> !
+	dicc+
 	>>sp 
 	1 'state ! ;
 
-:.var | adr -- adr' | #
-	1+ endef
+:.var | adr -- adr' | # ##
+	1+ dup c@ $23 =? ( swap 1+ swap ) drop
+	endef
 	data> data - 32 << 
 	over src - 16 << or  
-	$100 or dicc> !+ 'dicc> !
+	$1 or dicc+
 	>>sp 
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop	
 	2 'state ! ;
@@ -475,8 +504,9 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 :core]
 	-1 'tlevel +!
-	popbl code> over -
-	32 << 12 or swap ! ;
+	popbl code> over - 32 <<
+	over 8 - @ $ffffffff and or
+	swap 8 - ! ;
 	
 :.core	| nro --
 	state
@@ -503,18 +533,18 @@ $d3 $d3 $d3 $d3 $d3 $d3
 	state
 	2 =? ( drop @ ,m ; )	| data **
 	drop
-	@ $ffff0000 nand
-	over src - 16 << or
-	$100 and? ( 7 or ,i >>sp ; )  	| var
+	@ dup $ffff00ff nand
+	pick2 src - 16 << or
+	swap $1 and? ( drop 7 or ,i >>sp ; ) drop	| var
 	5 or ,i >>sp ; 					| code
 	
 :.adr
 	state
 	2 =? ( drop @ ,m ; )	| data **
 	drop
-	@ $ffff0000 nand
-	over src - 16 << or
-	$100 and? ( 8 or ,i >>sp ; )	| var
+	@ dup $ffff00ff nand
+	pick2 src - 16 << or
+	swap $1 and? ( drop 8 or ,i >>sp ; ) drop	| var
 	6 or ,i >>sp ;					| code
 	
 :wrd2token | str -- str'
@@ -597,7 +627,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 
 |--- reset cpu
 ::vmreset
-	data 256 - 'NOS ! 0 'TOS !
+	data 512 - 'NOS ! 0 'TOS !
 	data 8 - 0 over ! 'RTOS !  
 
 	code 8 - @ | header
@@ -614,7 +644,7 @@ $d3 $d3 $d3 $d3 $d3 $d3
 ::vmcpu | -- cpu
 	here 
 	dup vm!
-	9 ncell+ 256 + 
+	9 ncell+ 512 + 
 	dup 'data !
 	vmreset
 	dup code 8 - @ 32 >> + 'here !
@@ -643,6 +673,8 @@ $d3 $d3 $d3 $d3 $d3 $d3
 "no boot word"		|12
 "bad string"		|13
 "unfinish boot"		|14
+"stack overflow"		|15
+"dictionary full"		|16
 
 ::vmerror | -- str
 	terror 0? ( ; )
