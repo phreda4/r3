@@ -1,119 +1,140 @@
-|MEM 64
-| demo2v r3dv - igual que demo2 pero con ss3d2 (formato .ssv)
+| demo7 r3dv - sombras del sol (ss3dshadow)
 | PHREDA 2026
+| flechas: direccion del sol   ESPACIO: sombras on/off   mouse: camara (arrastrar) y rueda
+^r3/util/glgfx.r3
+^r3/util/immZone.r3
+
 ^./renderlib.r3
 ^./rlshapes.r3
 ^./ss3d.r3
-^r3/util/immzone.r3
+^./ss3dshadow.r3
 
-| Camera controls
-#cam_yaw  -0.785398   | -PI/4
-#cam_pit   0.45
-#cam_dist  4.5
-#cam_drag  0
+| Camara
+#cam_yaw  1.0
+#cam_pit   0.0
 
-| Mouse state
-#mouse_x   0
-#mouse_y   0
-#mouse_btn 0
-
-
-:drawscene
-	matini 10.0 .1 10.0 matscale 0 -0.1 0 matpos 
-	$5a5a5a20 draw_cube 
-	
-	msec 4 << sin 3.0 + | scale >
-	
-	dup | < scale
-	0 
-	$ffffff00 
-	0 ss3dcs | scale spr color i --
-	
-	-2.5
-	swap 0 ss3dfloor | < scale
-	-2.5
-	0 ss3dxyz | x y z i
-	
-	SS3Ddraw
-	;
+| Sol: azimut y elevacion (1.0 = vuelta completa)
+#sun_az 0.12
+#sun_el 0.16
 
 #camEye -10.0 2.0 0.0
 #camTo  0.0 0.0  0.0
-#camUp  0.0 1.0  0.0	
-	
-#xp #yp 
-:movecam
-	sdlx dup xp - 0.002 * 'cam_yaw +! 'xp !
-	sdly dup yp - neg 0.002 * 
-	cam_pit + 0.2 min -0.2 max 'cam_pit ! 
-	'yp ! |...
-:calcam
-	'camEye >a
-	cam_yaw cos cam_pit cos *. cam_dist *. a!+ | ex
-	cam_pit sin cam_dist *. a!+
-	cam_yaw sin cam_pit cos *. cam_dist *. a!
+#camUp  0.0 1.0  0.0
+
+#camAdv 0 0 0 | forward
+#camLat 0 0 0 | right
+
+:setsun | --
+	sun_el cos sun_az cos *.	| dx
+	sun_el sin					| dy
+	sun_el cos sun_az sin *.	| dz
+	1.0 0.95 0.85 1.4 ss3dsun ;
+
+#cp #sp #cy #sy 
+
+:makecam
+	cam_yaw sincos 'cy ! 'sy !
+	cam_pit -0.24 max 0.24 min 
+	sincos 'cp ! 'sp !
+	'camTo >a 'camEye >b
+	b@+ cy cp *. + a!+
+	b@+ sp + a!+
+	b@+ sy cp *. + a!
+	'camAdv >a
+	cy neg cp *. a!+
+	sp neg a!+
+	sy neg cp *. a!
+	'camAdv v3Nor
+	'camLat >a
+	sy a!+
+	0 a!+
+	cy neg a!+
+	'camLat v3Nor
 	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
 	;
+
+#xp #yp 
+:movecam
+	|sdlb 4 <>? ( drop ; ) drop
+	sdlx dup xp - 0.001 * 
+	'cam_yaw +! 'xp !
+	sdly dup yp - -0.001 * 
+	cam_pit + |0.24 min -0.24 max 
+	'cam_pit ! 'yp !
+	makecam ;
+	
 :wheelcam
-	SDLw 0? ( drop ; ) neg
-	0.6 * 'cam_dist +!
-	calcam
-	;
-	
+	SDLw 0? ( drop ; ) -0.4 *
+	'camEye 'camAdv pick2 v3+*
+	'camTo 'camAdv pick2 v3+*
+	drop
+	makecam ;
 
-#fsun [ 
--0.5 -1.0 -0.5 0
- 1.0 0.9 0.8 1.2
- ]
-	   
-:luz
-	1.4 
-	0.2 0.2 1.0
-	msec 3 << 
-	dup cos -3 * 
-	over sin -3 * 1.0 +
-	|0
-	rot sin 2.5 *.
-	rl_point_light | int cr cg cb x y z --
+:shtxt | -- str
+	ss3dshadow@ 1? ( drop "SPACE: shadows ON   arrows: sun" ; ) drop
+	"SPACE: shadows OFF  arrows: sun" ;
 
-	1.2 
-	1.0 0.2 0.2
-	msec 3 << 
-	dup cos 3 * 
-	over sin 3 * 1.0 +
-	|0
-	rot 0.5 + sin 2.5 *.
-	rl_point_light | int cr cg cb x y z --
-	;
-	
-:render
-	rl_frame_begin |rl_set_camera
+:txt
+	fini
+	2 'fscale !
+	$7f000000 'fcolor !
+	8 sh 48 - 620 40 frect
+	$ffffffff 'fcolor !
+	16 sh 40 - fat
+	shtxt ftext
+	fend ;
 
-	drawscene
-	luz
-	
-	rl_frame_end
-	;
-	
+#va #vl #vu
+
 :main
-	render
-	
-		
-    GLUpdate
-	
+	rl_frame_begin
+	matini 10.0 .1 10.0 matscale 0 -0.1 0 matpos
+	$5a5a5a20 draw_cube
+	SS3Ddraw 
+	rl_frame_end
+	txt
+	GLUpdate
 	immIni
 	immMouse
-	1 =? ( wheelcam )				| over
-	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in
-	3 =? ( movecam )				| active
-	drop	
+	1 =? ( wheelcam )
+	2 =? ( sdlx 'xp ! sdly 'yp ! )
+	3 =? ( movecam )
+	drop
+	sdlkey
+	<w> =? ( -0.05 'va ! ) >w< =? ( 0 'va ! )
+	<s> =? ( 0.05 'va ! ) >s< =? ( 0 'va ! )
+	<a> =? ( 0.04 'vl ! ) >a< =? ( 0 'vl ! )
+	<d> =? ( -0.04 'vl ! ) >d< =? ( 0 'vl ! )
+	<q> =? ( 0.04 'vu ! ) >q< =? ( 0 'vu ! )
+	<e> =? ( -0.04 'vu ! ) >e< =? ( 0 'vu ! )	
 	
-    sdlkey
+	<le> =? ( -0.004 'sun_az +! setsun )
+	<ri> =? ( 0.004 'sun_az +! setsun )
+	<up> =? ( 0.003 'sun_el +! sun_el 0.24 min 0.02 max 'sun_el ! setsun )
+	<dn> =? ( -0.003 'sun_el +! sun_el 0.24 min 0.02 max 'sun_el ! setsun )
+	<spc> =? ( ss3dshadow@ 1 xor ss3dshadow! )
 	>esc< =? ( exit )
-    drop
-	;
+	drop 
+	
+	va 1? ( 
+		'camEye 'camAdv pick2 v3+*
+		'camTo 'camAdv pick2 v3+*
+		makecam
+		) drop
+	vl 1? (
+		'camEye 'camLat pick2 v3+*
+		'camTo 'camLat pick2 v3+*
+		makecam
+		) drop
+	vu 1? (
+		'camEye 'camUp pick2 v3+*
+		'camTo 'camUp pick2 v3+*
+		makecam
+		) drop	
+;
 
-#ns 0
+#ns
+
 :sp | -- n	; sprite a mostrar (cicla por los del archivo)
 	ns n3dsprites mod ;
 
@@ -121,7 +142,7 @@
 	"media/ssv/dino" 512 ss3dload
 	-4.0 ( 4.0 <?
 		-4.0 ( 4.0 <?
-
+		
 		over 0.5 +
 		2.5 sp ss3dfloor | apoyado en el piso
 		pick2 0.5 +
@@ -130,32 +151,29 @@
 		ns
 		ss3dset | x y z qxyzw scale spr color i --
 		1 'ns +!
-
+		
 			1.0 + ) drop
-		1.0 + ) drop
-	;
+		1.0 + ) drop ;
 
-:viewresize 
-	sh sw rl_resizewin ;
-	
+:viewresize
+	sh sw rl_resizewin fixFontResize ;
 
 : | <<<<< Boot
-	"demo2q r3dv" 1024 768 GLini GLInfo
+	"demo7 r3dv" 1024 768 GLini GLInfo
+	glgfx
 	rl_init
 	IniShapes
-
 	load3d
-	
-	'camEye 'camTo 'camUp rl_camera | 'eye 'to 'up --	
-	
-	8 'fsun memfloat
-	'fsun rl_set_sun
+	'camEye 'camTo 'camUp rl_camera
+	2048 ss3dshadowini
+	1 ss3dshadowauto
+	setsun
+	1 ss3dshadow!
 	'viewresize SDLeventR
-	calcam
+	makecam
 	'main SDLshow
-	
+	ss3dshadowend
 	SS3Dshutdown
 	endShapes
 	rl_shutdown
-    GLend
-	;
+	GLend ;
