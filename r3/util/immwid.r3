@@ -256,7 +256,7 @@
 	colFill
 	dup @ pick3 -
 	cw 6 -
-	pick4 pick4 swap - */
+	pick4 pick4 swap - 0? ( 1+ ) */
 	cx + cy 2 + 6 txh 4 - frect ;	
 	
 ::uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (it shows 2 decimals); left and right keys change it
@@ -279,7 +279,7 @@
 	colBack uiLFill
 	[ kbSlide colFocus uiLRect ; ] uiFocus	
 	colFill
-	dup @ pick3 - cw pick4 pick4 swap - */
+	dup @ pick3 - cw pick4 pick4 swap - 0? ( 1+ ) */
 	txh
 	cx cy 2swap
 	frect ;

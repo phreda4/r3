@@ -608,9 +608,12 @@
 	cdd 0 >? ( drop 1 ai setss cp0 1+ vox * half - cop - cdd /. ai settm vox cdd /. ai settd ; ) drop
 	-1 ai setss cp0 vox * half - cop - cdd /. ai settm vox cdd neg /. ai settd ;
 
+:pickcols | -- adr	; el pick no ve la vista previa: con forma pendiente lee el original
+	aok 1? ( drop ucols ; ) drop dcols ;
+
 :ccocc | -- 0/1	; celda cc ocupada
 	'cc @ 'vx ! 'cc 8 + @ 'vy ! 'cc 16 + @ 'vz !
-	vocc? 1? ( drop 1 ; ) drop 0 ;
+	vz nv * vx + 3 << pickcols + d@ vbit and 1? ( drop 1 ; ) drop 0 ;
 
 :minaxis | -- i
 	0 'ai ! 'tm @ 'cop !
@@ -691,18 +694,18 @@
 	pickat dup 'curok ! 1? ( drop preview ; ) drop
 	aok 1? ( undo -1 'pkey ! ) drop ;
 
-:toolpress | boton izquierdo abajo: erase / paint con forma voxel (arrastrando continua)
+:toolpress | boton izquierdo abajo: paint con forma voxel (arrastrando continua)
 	pickat dup 'curok ! 0? ( drop ; ) drop
-	bshape 0? ( drop bmode 1? ( drop pushundo tx ty tz cellapply tkey 'lkey ! ; ) drop ; ) drop ;
+	bshape 0? ( drop bmode 2 =? ( drop pushundo tx ty tz cellapply tkey 'lkey ! ; ) drop ; ) drop ;
 
 :tooldrag
 	pickat dup 'curok ! 0? ( drop ; ) drop
-	bshape 0? ( drop bmode 1? ( drop tkey lkey =? ( drop ; ) 'lkey ! tx ty tz cellapply ; ) drop ; ) drop
+	bshape 0? ( drop bmode 2 =? ( drop tkey lkey =? ( drop ; ) 'lkey ! tx ty tz cellapply ; ) drop ; ) drop
 	preview ;
 
-:toolclick | click (boton soltado dentro): attach voxel, y 1er/2do punto de linea y caja
+:toolclick | click (boton soltado dentro): attach / erase voxel, y 1er/2do punto de linea y caja
 	pickat dup 'curok ! 0? ( drop ; ) drop
-	bshape 0? ( drop bmode 0? ( drop pushundo tx ty tz cellapply ; ) drop ; ) drop
+	bshape 0? ( drop bmode 2 <>? ( drop pushundo tx ty tz cellapply ; ) drop ; ) drop
 	aok 0? ( drop pushundo tx 'ax ! ty 'ay ! tz 'az ! 1 'aok ! tkey 'pkey ! ; ) drop
 	undo drawshape 0 'aok ! ;
 
@@ -716,157 +719,9 @@
 	drop ;
 
 |----------------------------------
-| grilla: lineas cada 2, 4, 8 y 16 voxeles en las caras posteriores del cubo de edicion y en el piso (sin glow)
-#vg_shader "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 vScreen;
-void main(){
-    vScreen = aPos;
-    gl_Position = vec4(aPos, 0.5, 1.0);
-}
-@fragment---------------
-#version 440 core
-in vec2 vScreen;
-
-layout(std140, binding=0) uniform Matrices {
-    mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
-};
-
-layout(location=0) out vec3 gNormal;
-layout(location=1) out vec4 gAlbedo;
-
-uniform vec3  uWall;    // planos posteriores: x, y, z
-uniform vec2  uBox;     // mitad del cubo, tamano del voxel
-uniform float uFloor;   // 1 = piso infinito en y=0
-uniform float uGrid;    // 1 = caras posteriores del cubo
-
-#define LINE_COLOR   vec3(0.62, 0.72, 0.95)
-#define GBUFFER_PACK 0.87843137   // rough 7, metal 0, glow 0
-
-float worldToDepth(vec3 wp) {
-    vec4 cp = ProjView * vec4(wp, 1.0);
-    return cp.z / cp.w;
-}
-
-float lines(vec2 g, vec2 fw, float s, float w) {
-    vec2  gg   = abs(fract(g * s - 0.5) - 0.5) / (fw * s);
-    float dens = max(fw.x, fw.y) * s;                      // celdas por pixel
-    float vis  = 1.0 - clamp((dens - 0.12) / 0.2, 0.0, 1.0); // se apaga si la celda es muy chica
-    return (1.0 - clamp(min(gg.x, gg.y) - 0.01, 0.0, 1.0)) * w * vis;
-}
-
-float gridMask(vec2 u, vec2 fu) {         // u en voxeles, 1 celda = 2 voxeles
-    vec2 g  = u * 0.5;
-    vec2 fw = max(fu * 0.5, vec2(1e-5));
-    float m = lines(g, fw, 1.0,   0.18);  // cada 2
-    m = max(m, lines(g, fw, 0.5,   0.35)); // cada 4
-    m = max(m, lines(g, fw, 0.25,  0.60)); // cada 8
-    m = max(m, lines(g, fw, 0.125, 1.00)); // cada 16
-    return m;
-}
-
-void main() {
-    vec4 vDir = invProj * vec4(vScreen, 1.0, 1.0);
-    vec3 rd   = normalize(mat3(invView) * (vDir.xyz / vDir.w));
-    vec3 ro   = viewPos.xyz;
-    float H = uBox.x;
-    float V = uBox.y;
-
-    float bestT = 1e20;
-    int   ax = -1;
-    if (uGrid > 0.5) {
-        if (abs(rd.x) > 1e-6) {
-            float t = (uWall.x - ro.x) / rd.x;
-            vec3  p = ro + rd * t;
-            if (t > 0.0 && t < bestT && abs(p.z) <= H && p.y >= 0.0 && p.y <= 2.0 * H) { bestT = t; ax = 0; }
-        }
-        if (abs(rd.y) > 1e-6) {
-            float t = (uWall.y - ro.y) / rd.y;
-            vec3  p = ro + rd * t;
-            if (t > 0.0 && t < bestT && abs(p.x) <= H && abs(p.z) <= H) { bestT = t; ax = 1; }
-        }
-        if (abs(rd.z) > 1e-6) {
-            float t = (uWall.z - ro.z) / rd.z;
-            vec3  p = ro + rd * t;
-            if (t > 0.0 && t < bestT && abs(p.x) <= H && p.y >= 0.0 && p.y <= 2.0 * H) { bestT = t; ax = 2; }
-        }
-    }
-    if (uFloor > 0.5 && rd.y < -1e-6 && ro.y > 0.0) {
-        float t = -ro.y / rd.y;
-        if (t < bestT) { bestT = t; ax = 3; }
-    }
-
-    bool  any_ = (ax >= 0);
-    vec3  hit  = ro + rd * (any_ ? bestT : 1.0);
-    vec3  fh   = fwidth(hit) / V;            // voxeles por pixel en cada eje
-    vec2  u; vec2 fu; vec3 n;
-    if (ax == 0) {
-        u = vec2(hit.z + H, hit.y) / V;  fu = fh.zy;
-        n = vec3(sign(ro.x - uWall.x), 0.0, 0.0);
-    } else if (ax == 2) {
-        u = vec2(hit.x + H, hit.y) / V;  fu = fh.xy;
-        n = vec3(0.0, 0.0, sign(ro.z - uWall.z));
-    } else {
-        u = vec2(hit.x + H, hit.z + H) / V;  fu = fh.xz;
-        n = vec3(0.0, (ax == 1) ? sign(ro.y - uWall.y) : 1.0, 0.0);
-    }
-    float fade = (ax == 3) ? 1.0 - clamp((bestT - 4.0) / 10.0, 0.0, 1.0) : 1.0;
-    float m = gridMask(u, fu) * fade;
-    if (!any_ || m < 0.02) discard;
-
-    gNormal = vec3(0.0, 1.0, 0.0);   // siempre iluminada (referencia, sin glow)
-    gAlbedo = vec4(LINE_COLOR * m, GBUFFER_PACK);
-    gl_FragDepth = worldToDepth(hit);
-}
-@-"
-
-#vg_sh 0 #vg_uwall -1 #vg_ubox -1 #vg_ufloor -1 #vg_ugrid -1
-#vg_wall [ 0.0 0.0 0.0 ]
-#vg_box [ 0.0 0.0 ]
-#vg_floor [ 0.0 ]
-#vg_grid [ 0.0 ]
-#showgrid 1 #showfloor 0
-
-:vg_init
-	'vg_shader loadShaderv 'vg_sh !
-	vg_sh "uWall" glGetUniformLocation 'vg_uwall !
-	vg_sh "uBox" glGetUniformLocation 'vg_ubox !
-	vg_sh "uFloor" glGetUniformLocation 'vg_ufloor !
-	vg_sh "uGrid" glGetUniformLocation 'vg_ugrid ! ;
-
-:vg_free
-	vg_sh 1? ( vg_sh glDeleteProgram 0 'vg_sh ! ) drop ;
-
-:wsgn | e -- p		; plano posterior: opuesto a la camara
-	-? ( drop half ; ) drop half neg ;
-:f1 1? ( drop 1.0 ; ) drop 0 ;
-:ysgn | e -- y		; plano posterior en y: piso (0) o techo (2*half) segun la camara
-	half - -? ( drop half 2* ; ) drop 0 ;
-
-:vgdraw
-	showgrid showfloor or 0? ( drop ; ) drop
-	'camEye @ wsgn 'vg_wall d!
-	'camEye 8 + @ ysgn 'vg_wall 4 + d!
-	'camEye 16 + @ wsgn 'vg_wall 8 + d!
-	3 'vg_wall memfloat
-	half 'vg_box d! vox 'vg_box 4 + d! 2 'vg_box memfloat
-	showfloor f1 'vg_floor d! 1 'vg_floor memfloat
-	showgrid f1 'vg_grid d! 1 'vg_grid memfloat
-	vg_sh glUseProgram
-	vg_uwall 1 'vg_wall glUniform3fv
-	vg_ubox 1 'vg_box glUniform2fv
-	vg_ufloor 1 'vg_floor glUniform1fv
-	vg_ugrid 1 'vg_grid glUniform1fv
-	rl_quad_vao glBindVertexArray
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
-	0 glBindVertexArray ;
-
-|----------------------------------
-| instancias: 0 objeto, 1 cursor, 2 ancla, 3..5 ejes
-#qid #qzz #qxx #ac0
-#ec #ei
+| instancias: 0 objeto, 1 cursor, 2 ancla, 3.. barras de limite
+#qid #qzz #qxx
+#ec #bi #e1 #e2 #na #nb #sgx #sgy #sgz
 
 :curscl | -- s
 	curok 0? ( ; ) drop oscl 1.15 *. ;
@@ -875,16 +730,44 @@ void main() {
 :ancscl | -- s
 	aok 0? ( ; ) drop oscl 1.15 *. ;
 
-:axbar | x y z q col i --
-	'ei ! 'ec !
-	oscl 2 ec ei ss3dset
-	oscl 0.25 *. oscl 0.3 *. oscl 0.25 *. ei ss3dscl3 ;
+|--- limites del objeto: 12 aristas del cubo (4 por eje) con la barra de ejes;
+|    se apagan las 3 que miran a la camara (la arista cercana de cada eje)
+:sgn | v -- s
+	0 >? ( drop 1 ; ) drop -1 ;
+
+:camsides
+	'camEye @ sgn 'sgx !
+	'camEye 8 + @ half - sgn 'sgy !
+	'camEye 16 + @ sgn 'sgz ! ;
+
+:near? | s1 s2 c1 c2 -- 0/1
+	'nb ! 'na ! swap na * swap nb * + 2 =? ( drop 1 ; ) drop 0 ;
+
+:axbar | x y z q col --		; barra en toda la arista, instancia bi
+	'ec !
+	oscl 2 ec bi ss3dset
+	oscl 0.25 *. oscl oscl 0.25 *. bi ss3dscl3
+	1 'bi +! ;
+
+:ebx | s1 s2 --		; arista en x: y = s1, z = s2
+	2dup sgy sgz near? 1? ( drop 2drop ; ) drop
+	'e2 ! 'e1 !
+	0 e1 half * half + e2 half * qzz $ff404000 axbar ;
+:eby | s1 s2 --		; arista en y: x = s1, z = s2
+	2dup sgx sgz near? 1? ( drop 2drop ; ) drop
+	'e2 ! 'e1 !
+	e1 half * half e2 half * qid $40ff4000 axbar ;
+:ebz | s1 s2 --		; arista en z: x = s1, y = s2
+	2dup sgx sgy near? 1? ( drop 2drop ; ) drop
+	'e2 ! 'e1 !
+	e1 half * e2 half * half + 0 qxx $4080ff00 axbar ;
 
 :axes
-	half neg 'ac0 !
-	ac0 half 0.3 *. + vox ac0 qzz $ff404000 3 axbar
-	ac0 vox half 0.3 *. + ac0 qid $40ff4000 4 axbar
-	ac0 vox ac0 half 0.3 *. + qxx $4080ff00 5 axbar ;
+	camsides 3 'bi !
+	-1 -1 ebx -1 1 ebx 1 -1 ebx 1 1 ebx
+	-1 -1 eby -1 1 eby 1 -1 eby 1 1 eby
+	-1 -1 ebz -1 1 ebz 1 -1 ebz 1 1 ebz
+	bi ss3dlen! ;
 
 :placeall
 	0 half 0 qid oscl 0 $ffffff00 0 ss3dset
@@ -1073,9 +956,6 @@ void main() {
 	'vfront "Front" uiNBtn
 	'vside "Side" uiNBtn 
 	uiLn uiLn 
-	'showgrid "Grid" uiToggle
-	'showfloor "Floor" uiToggle
-
 	'shadowon "Shadows" uiToggle	
 	optshadow
 	'rl_ao_on "SSAO" uiToggle
@@ -1131,7 +1011,6 @@ void main() {
 	placeall
 	rl_frame_begin
 	SS3Ddraw
-	vgdraw
 	light
 	rl_frame_end
 	hud
@@ -1163,7 +1042,6 @@ void main() {
 	glgfx
 	initvox
 	rl_init
-	vg_init
 	2048 ss3dshadowini
 	1 ss3dshadowauto
 	'viewresize SDLeventR
@@ -1173,7 +1051,6 @@ void main() {
 
 	'main SDLshow
 
-	vg_free
 	ss3dshadowend
 	rl_shutdown
 	SS3Dshutdown
