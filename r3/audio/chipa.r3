@@ -178,7 +178,7 @@
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 :
 	"Chipa" 1024 720 SDLinit
-	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 18 txload 'font1 ! |wicon 'font1 !
 	"media/ttf/RobotoMono-Bold.ttf" 22 txload 'font2 !
 	
 	edram

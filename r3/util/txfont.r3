@@ -14,17 +14,6 @@
 #curx #cury
 #newtex #newtab
 
-#utf8 "áéíóúñÁÉÍÓÚÜüÇç«»¿" 0  
-
-#fonta | 128..
-$f0d9 $f0da $f0d7 $f0d8 | < > v ^
-$f104 $f105 $f107 $f106 | < > v ^
-$f111 $f058
-$f0c8 $f14a
-|fold fo-open user image file camera calendar eye lupa check bars xquis
-$f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d 
-0
-
 :recbox! | h w y x --
 	'recbox d!+ d!+ d!+ d! ;	
 
@@ -77,48 +66,10 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 		fontemit
 		swap fontb!+
 		'recbox 8 + d@ 'curx +!
-		swap 1+ ) 2drop 
-	'utf8 ( w@+ 1?
-		dup 'estr w!+ 0 swap c!
-		fontemit
-		fontw!+
-		'recbox 8 + d@ 'curx +!
-		) 2drop ;
+		swap 1+ ) 2drop ;
 	
-	
-::txloadwicon | "font" size -- nfont ; load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
-	"media/ttf/Font Awesome 7 Free-Solid-900.otf"
-	over 2 - TTF_OpenFont 'ttfonta !
-	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
-	TTF_OpenFont 'ttfont !
-	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
-	newTab 0 256 fill 0 'curx ! 0 'cury !				| CLEAR
-	tsizex tsizey texIni 	| w h --	
-	newTab 32 3 << +		| start in ascii 32
-	regularchar
-	'fonta ( @+ 1?
-		'estr !+ 0 swap c!
-		fontemitu
-		dup 'fonta - 3 >> 191 + | 192.. 128..
-		fontw!+u
-		'recbox 8 + d@ 'curx +!
-		) 2drop		
-	texEndAlpha 
-	tex2static
-	|dup 1 SDL_SetTextureBlendMode 
-	newTex !
-	ttfont TTF_CloseFont
-	ttfonta TTF_CloseFont
-	newTab 32 3 << + @	| width ESP
-	dup newTab !			| 0
-	dup newTab 13 3 << + !	| cr
-	dup newTab 10 3 << + !	| ln
-	dup $ffff0000 and 2 << swap $ffffffff0000ffff and or 
-	newTab 9 3 << + !	| tab
-	newTex ;	| reuturn ini font
 
-
-::txload | "font" size -- nfont ; like txloadwicon without the icons
+::txload | "font" size -- nfont
 	dup 3 << dup 'tsizey ! 2* 'tsizex !		| aprox 2*1 - 15x15 char 
 	TTF_OpenFont 'ttfont !
 	here dup 'newTex ! 8 + dup 'newTab ! 2048 + 'here !	| MEM
@@ -140,11 +91,6 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	newTex ;	| reuturn ini font
 
 |------------------------------
-:decode
-	$80 nand? ( ; )
-	$40 and? ( drop c@+ $80 or ; )
-	$40 or ; | 128 >> 192
-	
 ::txfont | font -- ; select the atlas font (from txload) used by the tx words
 	dup @ 'newTex ! 8 + 'newTab ! ;
 	
@@ -156,8 +102,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	dup 16 >> $ff and over 8 >> $ff and rot $ff and
 	SDL_SetTextureColorMod ;
 	
-::txcw | adr car -- adr' width ; width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it)
-	decode
+::txcw | adr car -- adr' width ; width in pixels of a character
 	$ff and 3 << newTab + 2 + w@ ; 
 	
 ::txw | "" -- "" width ; width in pixels of the string
@@ -173,7 +118,6 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	swap - nip ;
 	
 ::txch | adr car -- adr' h ; height of a character (same protocol as txcw)
-	decode
 	$ff and 3 << newTab + 6 + w@ ;
 	
 ::txh | -- h ; height of the font (line height)
@@ -191,8 +135,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 ::txpos | -- x y ; cursor position in pixels
 	curx cury ;
 	
-::txemit | adr car -- adr' ; draw one character at the cursor and advance it (same protocol as txcw)
-	decode
+::txemit | adr car -- adr' ; draw one character at the cursor and advance it
 	$ff and 3 << newTab + @ 
 	dup 16 >> $ffff0000ffff and 
 	dup rot $ffff0000ffff and 
@@ -218,8 +161,7 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 ::txprintr | .. "" -- ; formatted print right aligned
 	sprint txemitr ;
 
-:fontbox | utf8' --
-	decode
+:fontbox | char --
 	$ff and 3 << newTab + @ 
 	16 >> $ffff0000ffff and | wh
 	cury 32 << curx or 
@@ -229,17 +171,16 @@ $f07b $f07c $f007 $f03e $f15b $f030 $f133 $f06e $f002 $f00c $f0c9 $f00d
 	swap ( over <? c@+ txcw 'curx +! ) drop 
 	c@ fontbox ;
 	
-::txcur | str cur -- ; fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character
+::txcur | str cur -- ; block cursor 
 	curpos
 	SDLRenderer 'recbox SDL_RenderFillRect ;
 	
-::txcuri | str cur -- ; like txcur but a bar of a quarter of the height at the bottom (insert cursor)
+::txcuri | str cur -- ; insert cursor
 	curpos
 	'recbox 12 + d@ 
 	dup 2 >> swap over - | h/4
 	'recbox 4 + d+!	'recbox 12 + d!
 	SDLRenderer 'recbox SDL_RenderFillRect ;	
-	
 	
 |---- Text
 #strsplit

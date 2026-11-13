@@ -176,9 +176,9 @@
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinit
 	"media/ttf/Roboto-bold.ttf" 28 
-	txloadwicon 'font1 !
+	txload 'font1 !
 	"media/ttf/RobotoMono-Bold.ttf" 14 
-	txloadwicon 'font2 !
+	txload 'font2 !
 
 	mark
 	'basepath uiScanDir

@@ -133,7 +133,7 @@ stLink
 	|"R3d4" 0 SDLfullw | full windows | 
 	"R3d4" 1280 720 SDLinitR
 	
-	"media/ttf/Roboto-bold.ttf" 20 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 20 txload 'font1 !
 	"media/ttf/RobotoMono-Bold.ttf" 16 txload 'font2 !
  	
 	edram 

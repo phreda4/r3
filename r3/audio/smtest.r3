@@ -69,7 +69,7 @@
 
 :
 	"supermix" 1024 600 SDLinit
-	"media/ttf/Roboto-bold.ttf" 18 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 18 txload 'font1 ! |wicon 'font1 !
 	font1 txfont	
 	sminit
 	$fff vaini

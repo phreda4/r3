@@ -42,12 +42,15 @@
 |   ssmo_kdel    | k c --          borra el key k del clip c      ssmo_ckeys | c -- n
 |   ssmo_ckey@   | k c -- pose ms  ssmo_cloop! | 0/1 c --   ssmo_cloop@ | c -- 0/1
 |   ssmo_cname@  | c -- adr        ssmo_cname! | "nombre" c --  ssmo_cdel | c --  (con sus keys)
+|   ssmo_ndup    | i -- j          duplica el nodo i (mismo padre, transformacion, color, nombre y filas de pose)
 | INSTANCIA
 |   ssmo_inst   | d -- m            ssmo_bind | m --        (pose de armado)
 |   ssmo_rpos   | x y z m --  ssmo_rrot | qx qy qz qw m --  ssmo_rscale | s m --   (raiz, en mundo)
 |   ssmo_pose!  | pose m --         ssmo_blend | pa pb t m --    ssmo_play | clip ms m --
 |   ssmo_loc    | nodo m -- adr     (8 d editables: animacion por programa)
 |   ssmo_hilite | nodo color m --   (nodo -1 = ninguno)   ssmo_wpos | nodo m -- x y z  (mundo)
+|   ssmo_w2l    | x y z nodo m -- lx ly lz   punto del mundo (escala ss3d) -> voxeles locales del nodo
+|                (necesita ssmo_update; sirve para arrastrar o ubicar un nodo con el mouse)
 |   ssmo_update | m --              ssmo_world | nodo m -- adr (8 d: x y z qx qy qz qw s, en voxeles)
 |   ssmo_draw   | 'ss3dset primero m -- siguiente    dibuja con instancias ss3d primero.. (usa 'ss3dset)
 | CONSULTAS
@@ -241,6 +244,15 @@
 ::ssmo_nspr! | spr i --
 	ssmo_nadr d! ;
 
+#dupi #dupj
+::ssmo_ndup | i -- j
+	'dupi !
+	dupi ssmo_nadr dup d@ swap 4 + d@ ssmo_node 'dupj !
+	dupj -? ( drop -1 ; ) drop
+	dupj ssmo_nadr 8 + dupi ssmo_nadr 8 + 40 cmove
+	0 ( 8 dget <? dup 80 dget * dup dupj + 5 << 48 dget + swap dupi + 5 << 48 dget + 32 cmove 1+ ) drop
+	dupj ;
+
 |---- edicion de clips / keys / poses
 #kc #kp #kt #kf #kn #kj #kca #pd
 :shiftup | adr stride cnt --	; baja cada registro (inserta lugar): copia de atras hacia adelante
@@ -427,7 +439,7 @@
 	112 alloc swap over ! dup setim
 	td 80 + @ 5 << dup alloc im 8 + ! alloc im 16 + !
 	1.0 im 72 + ! 1.0 im 80 + ! -1 im 88 + !
-	im ssmo_bind im ;
+	im ssmo_bind ;
 
 ::ssmo_rpos | x y z m --
 	setim im 40 + ! im 32 + ! im 24 + ! ;
@@ -484,6 +496,31 @@
 	im 48 + @ im 56 + @ im 64 + @ im 72 + @ qrot
 	im 40 + @ + 'dsz ! im 32 + @ + 'dsy ! im 24 + @ + 'dsx !
 	dsx dsy dsz ;
+
+#wpar2 #wpx #wpy #wpz #wsc #wdv #wxx #wyy #wzz #pq1 #pq2 #pq3 #pq4 #wd2
+:parentframe | p --		; posicion (mundo), quaternion (con la raiz) y escala acumulada del padre
+	-? ( drop
+		im 24 + @ 'wpx ! im 32 + @ 'wpy ! im 40 + @ 'wpz !
+		im 48 + @ 'pq1 ! im 56 + @ 'pq2 ! im 64 + @ 'pq3 ! im 72 + @ 'pq4 !
+		1.0 'wsc ! ; )
+	dup im ssmo_wpos 'wpz ! 'wpy ! 'wpx !
+	5 << mwld + 'wd2 !
+	im 48 + @ im 56 + @ im 64 + @ im 72 + @
+	wd2 12 + d@ wd2 16 + d@ wd2 20 + d@ wd2 24 + d@ qmul
+	'pq4 ! 'pq3 ! 'pq2 ! 'pq1 !
+	wd2 28 + d@ 'wsc ! ;
+
+::ssmo_w2l | x y z nodo m -- lx ly lz
+	setim
+	dup 48 * mpn + 4 + d@ 'wpar2 !
+	drop
+	'wzz ! 'wyy ! 'wxx !
+	wpar2 parentframe
+	wxx wpx - wyy wpy - wzz wpz -
+	pq1 neg pq2 neg pq3 neg pq4 qrot
+	im 80 + @ 0.01 *. wsc *. 1 max 'wdv !
+	wdv /. 'wzz ! wdv /. 'wyy ! wdv /. 'wxx !
+	wxx wyy wzz ;
 
 ::ssmo_draw | 'set primero m -- siguiente
 	dup ssmo_update setim 'dnext ! 'dxt !

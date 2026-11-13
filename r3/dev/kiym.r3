@@ -340,7 +340,7 @@
 	
 : 	
 	"r3sdl" 1024 600 SDLinitR
-	"media/ttf/Roboto-Medium.ttf" 20 txloadwicon 'font !
+	"media/ttf/Roboto-Medium.ttf" 20 txload 'font ! |wicon 'font !
 	"media/ttf/Roboto-Medium.ttf" 14 txload 'sfont !
 	|___ MEM
 	here 'lines !

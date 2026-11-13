@@ -580,7 +580,7 @@
 	
 : |--------------------------------
 	"R3Moog" 1024 600 SDLinit
-	"media/ttf/Roboto-bold.ttf" 16 txloadwicon 'font1 !
+	"media/ttf/Roboto-bold.ttf" 16 txload 'font1 ! |wicon 'font1 !
 	iniaudio
 	resetsynte
 	resetvoices
