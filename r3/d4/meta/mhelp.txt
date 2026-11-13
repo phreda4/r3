@@ -681,6 +681,7 @@ SDL_GetWindowSurface | window -- surface ; the surface of the window (for softwa
 SDL_ShowCursor | toggle -- ; 1 shows the mouse cursor, 0 hides it
 SDL_UpdateWindowSurface | window -- ; copy the surface of the window to the screen
 SDL_DestroyWindow | window -- ; destroy the window
+SDL_GetRendererInfo | rendered 'renderinfo --
 SDL_CreateRenderer | window index flags -- renderer ; create a 2d renderer (index -1 = the first driver that supports the flags)
 SDL_CreateTexture | renderer format access w h -- texture ; create a texture (access 0 static, 1 streaming, 2 target)
 SDL_QueryTexture | texture 'format 'access 'w 'h -- ; store the attributes of the texture in the variables (0 to ignore one)
@@ -1147,30 +1148,6 @@ GL_RENDERBUFFER
 GL_DEPTH_STENCIL_ATTACHMENT
 GL_DEPTH
 GL_LINEAR_MIPMAP_LINEAR
-uistate
-keymd
-wix
-wiy
-wiw
-wih
-immBox | x y w h --
-immFull | --
-immIni
-immMouse | -- state
-uiRefocus
-uiFocus>> | cambia id y luego wid
-uiFocus<<
-tabfocus
-immZone | -- ; Interaction is cx,cy,cw,th
-uiEx?
-uiEx!
-uiOvr | 'v --
-uiDwn | 'v --
-uiSel | 'v --
-uiUp | 'v --
-uiClk | 'v --
-uiFocusIn
-uiFocus
 glClearBufferfv
 glCreateProgram
 glCreateShader
@@ -1859,6 +1836,9 @@ fcolor
 fscale
 fixFontResize | --
 imgcount
+fload | "file" cw ch -- font ; load the atlas (max 8 fonts, 0 if full)
+txfont | font -- ; select the font (from fload) for ftext and the tx words
+txfont@ | -- font ; the font selected now
 glgfx
 fimgload | "" -- idx
 fimgtex | tex -- idx
@@ -1866,25 +1846,53 @@ fimgwh | idx -- w h
 fini
 fend
 fat
+ftextn | "" n -- ; draw n chars of the string with fcolor at fat
 ftext | "" --
 fsizeh | -- cnh
 fsizew | -- cnw
 fsize | "" -- "" sizew sizeh
-fsizecnt | "" cnt -- ""
+fsizecnt | "" cnt -- "" sizew sizeh
 frect | x y w h --
 rect | x y w h --
 frectb | x y w h b --
 rectb | x y w h b --
 imgdrawuv | idx dx dy dw dh sx sy sw sh --
 imgdraw | idx dx dy dw dh --
-immIni | --
-uiFTBtn | 'v "" -- ; full width button
-uiTBtn | 'v "" -- ; button as wide as its text, next one at the right (uiLn to end the row)
-uiFToggle | 'var "text" --
-uiWrite | "" -- ; text at the cursor, the next widget goes at the right
-gZoneAll | -- x y w h ; the current frame
-gZoneEle | -- x y w h ; the cursor box
-uiFill | -- ; the rest of the frame is the current one and the zone of the old engine (immMouse)
+color | rgb -- ; draw color $RRGGBB (alpha 255)
+txrgb | rgb -- ; text color $RRGGBB, apart from the draw color
+txh | -- h ; line height
+txw | "" -- "" w ; width of the string in pixels
+txfit | w "" -- ncar ; chars of the string that fit in w pixels
+txat | x y -- ; cursor in pixels
+txpos | -- x y
+tx+at | x y -- ; move the cursor
+txcr | -- ; new line
+txwriten | "" n -- ; n chars at the cursor with the text color, the cursor moves
+txwrite | "" -- ; string at the cursor, the cursor moves
+txemitr | "" -- ; right aligned, ends at the cursor x
+txemitc | w "" -- ; centered in w pixels from the cursor x
+txprint | .. "" -- ; sprint at the cursor
+txprintr | .. "" -- ; sprint right aligned
+txcur | str cur -- ; block cursor on the char cur of str
+txcuri | str cur -- ; insert cursor (bar at the bottom)
+txalign | $VH -- ; bits 0-1 horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
+txText | w h x y "" -- ; text in the box, aligned with txalign
+fround | r x y w h -- ; filled rectangle with cut corners (radius r)
+round | r x y w h -- ; outline of the same
+lineH | x1 y x2 -- ; horizontal line, both ends included
+lineV | x y1 y2 -- ; vertical line, both ends included
+imageb | 'box img -- ; image (index of fimgload) into the box x y w h (four int32)
+gclip | x y w h -- ; clip the drawing to the rectangle
+gclip0 | -- ; no clip
+wix
+wiy
+wiw
+wih
+immBox | x y w h -- ; zone of immMouse and immZone
+immFull | -- ; the zone is the whole screen
+immIni | -- ; start of the frame: ids, padding, and the whole screen as zone
+immMouse | -- state ; mouse state (0-6) of the zone, the cursor box is not changed
+immZone | -- ; the zone as interaction area (read it with uiClk uiFocus...), the cursor box is not changed
 mat
 mati | aux inv
 mat>
@@ -1942,7 +1950,6 @@ immfileload | 'vecload 'file --
 immfilesave | 'vecload 'file --
 fullfilename
 uiFileName | 'var --
-txh! | fh --  ; set heigth font
 fx
 fy
 fw
@@ -2009,15 +2016,6 @@ tabfocus | -- ; action of the Tab key: next widget, or the previous one if shift
 uiDateTime | 'var --
 uiDate | 'var --
 uiTime | 'var --
-immIniOld | -- ; immIni of sdl2gl (old engine), for programs that mix both
-color | rgb -- ; draw color $RRGGBB (alpha 255)
-txrgb | rgb -- ; text color $RRGGBB
-txfont | font -- ;
-txfont@ | -- font ;
-txh | -- h ; line height
-txw | "" -- "" w ; width in pixels
-txat | x y --
-txwrite | "" -- ; draw the string at the cursor, the cursor moves
 txicon | char -- ; draw a one char icon, the cursor moves
 icChkOn
 icChkOff
@@ -2026,17 +2024,6 @@ icRadOff
 icTreeC
 icTreeO
 icCombo
-txcur | str cur -- ; block cursor over the char at cur
-txcuri | str cur -- ; insert cursor (bar at the bottom)
-txalign | $VH -- ; low 2 bits horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
-txText | w h x y "" -- ; the string in the box x y w h with the txalign alignment
-fround | r x y w h -- ; plain rect
-round | r x y w h -- ; plain rect outline
-lineH | x1 y x2 --
-lineV | x y1 y2 --
-imageb | 'box img -- ; not done in this backend
-gclip | x y w h -- ; clip the drawing to the rectangle
-gclip0 | --
 txicon | char -- ; draw a one char icon vertically centered in the text line, the cursor moves
 icChkOn
 icChkOff
@@ -2054,10 +2041,13 @@ uiRRect | round -- ; outline of the cursor box with rounded corners
 uiCRect | -- ; outline of the cursor box as a capsule (radius = half of the smaller side)
 uiCFill | -- ; fill the cursor box as a capsule
 uiTex | texture -- ; draw the texture in the cursor box
-uiWinBox | -- x y w h ; the current frame
 uiLineGridV | -- ; draw the vertical lines of the grid
 uiLineGridH | -- ; draw the horizontal lines of the grid
 uiLineGrid | -- ; draw the lines of the grid
+colBac | background
+colFil | fill
+colTxt | texto
+colFoc
 stDang | -- ; widget color style: danger (red)
 stWarn | -- ; widget color style: warning (orange)
 stSucc | -- ; widget color style: success (green)
@@ -2107,6 +2097,14 @@ uiList | 'var cntl 'list -- ; list box of cntl lines over the strings of the lis
 uiTree | 'var cntl 'list -- ; like uiList for a tree: every string starts with a byte (level in $1f, $20 has children, $80 open) and a click toggles a folder
 uiCombo | 'var 'list -- ; combo box: it shows the chosen string of the list (the variable holds its number); a click opens the list of up to 6 lines, drawn by uiEnd
 uiInputLine | 'buff max -- ; text line editor on the buffer (max bytes): insert or overwrite (Ins), left, right, home, end, backspace, delete, Tab and Enter
+wix
+wiy
+wiw
+wih
+immBox | x y w h -- ; zone of immMouse
+immFull | -- ; the zone is the whole screen
+immIni | -- ; start of the frame, the zone is the whole screen
+immMouse | -- state
 verl
 nver | vertices
 facel
@@ -2375,6 +2373,8 @@ tuC! | cursor ON
 tuiw | -- flag
 tuiw1 | -- flag ; 1 line only zone
 tuRefocus
+tuFocus | -- n ; widget that has the focus (index in draw order)
+tuFocus! | n -- ; give the focus to widget n (index in draw order)
 tuif | -- flag
 tui
 onTui | 'vector --
@@ -2482,12 +2482,11 @@ TuLoadCode | "" --
 TuNewCode
 TuSaveCode
 tokenCursor | 'mark --
-txloadwicon | "font" size -- nfont ; load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
-txload | "font" size -- nfont ; like txloadwicon without the icons
+txload | "font" size -- nfont
 txfont | font -- ; select the atlas font (from txload) used by the tx words
 txfont@ | -- font ; the atlas font selected now
 txrgb | c -- ; color $RRGGBB of the font texture (color modulation)
-txcw | adr car -- adr' width ; width in pixels of a character: car is the byte just read at adr-1; a two byte accented character reads its second byte (adr' is after it)
+txcw | adr car -- adr' width ; width in pixels of a character
 txw | "" -- "" width ; width in pixels of the string
 txfit | w "" -- ncar ; number of bytes of the string that fit in w pixels
 txch | adr car -- adr' h ; height of a character (same protocol as txcw)
@@ -2496,14 +2495,14 @@ txat | x y -- ; move the cursor to the pixel position x y
 tx+at | x y -- ; move the cursor by x y pixels
 txcr | -- ; new line: x = 0 and y down one line height
 txpos | -- x y ; cursor position in pixels
-txemit | adr car -- adr' ; draw one character at the cursor and advance it (same protocol as txcw)
+txemit | adr car -- adr' ; draw one character at the cursor and advance it
 txwrite | "" -- ; draw the string at the cursor
 txemitr | "" -- ; draw the string right aligned: it ends at the cursor x
 txemitc | w "" -- ; draw the string centered in w pixels starting at the cursor x
 txprint | .. "" -- ; formatted print (see sprint) at the cursor
 txprintr | .. "" -- ; formatted print right aligned
-txcur | str cur -- ; fill with the draw color the block cursor of the character at cur (an address inside str); it moves the cursor x to that character
-txcuri | str cur -- ; like txcur but a bar of a quarter of the height at the bottom (insert cursor)
+txcur | str cur -- ; block cursor
+txcuri | str cur -- ; insert cursor
 lwrite | w "str" -- ; left aligned text for txText (ignores w)
 cwrite | w "str" -- ; centered text in w pixels for txText
 rwrite | w "str" -- ; right aligned text in w pixels for txText
@@ -2572,7 +2571,7 @@ xyrz64 | x y r z -- b ; pack a sprite (see 64xyrz)
 xy32 | x y -- b ; pack two 32-bit values (x in the high half)
 vaempty | -- n ; number of events in the list (waiting or running)
 aniInit | ini cnt fps -- V ; value of a frame animation: first frame ini (12 bits), cnt frames (up to 256) and fps in fixed point (10.0 = 10 frames per second, 0 = still)
-ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds: as many frames as dt covers (the time left over is kept); after the last frame it goes back to the first
+ani+! | dt 'V -- ; advance the frame animation in 'V by dt milliseconds (time over one frame is lost); after the last frame it goes back to the first
 aniFrame | V -- f ; current frame number (ini + step)
 aniCnt | V -- n ; current step 0..cnt-1 of the animation (it is not the number of frames)
 ani+timer! | 'V -- ; advance the frame animation in 'V by deltatime

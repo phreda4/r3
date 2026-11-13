@@ -7,7 +7,7 @@
 | Widgets are in immwid.r3
 
 ||||||||||||||||||||||||||||||| uncoment for metabuild
-| ^r3/util/immsdl.r3
+|^r3/util/immsdl.r3
 |||||||||||||||||||||||||||||||
 
 ^r3/lib/math.r3
