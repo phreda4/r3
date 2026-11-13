@@ -173,9 +173,15 @@
 	;
 	
 |--------------------------
-:tanima | btn -- btn
-	$f and? ( 0 2 15.0 aniInit a> .ani  ! ; )
-	0 0 0 aniInit a> .ani  ! ;
+:moving? | btn -- btn 0/1
+	dup $f and 0? ( ; ) drop 1 ;
+
+:tanima | btn -- btn		; animacion propia de cada instancia (a> = tanque)
+	deltatime a> .ani ani+!			| avanza el tiempo de ESTA animacion
+	moving? a> .vx @ =? ( drop ; )		| mismo estado: solo avanza
+	dup a> .vx !				| .vx guarda el estado (0 quieto, 1 mueve)
+	0? ( drop 0 0 0 aniInit a> .ani ! ; )	| reinicia solo al cambiar de estado
+	drop 0 2 15.0 aniInit a> .ani ! ;
 
 |:.x 1 ncell+ ;
 |:.y 2 ncell+ ;
@@ -238,13 +244,14 @@
 	drop
 	;
 
-:+ptank | color sheet ani zoom ang x y --
+:+ptank | sheet ani zoom ang x y --
 	'ptank 'tanks p!+ >a
 	swap a!+ a!+	| x y 
 	32 << or a!+	| ang zoom
 	a!+ a!+			| anim sheet
 	0 a!+ 0 a!+ 	| vx vy
 	0 a!+			| end
+	0 a!+ 0 a!		| io color
 	;
 
 |------------------- NPC tank

@@ -61,7 +61,7 @@
 	ab[
 	'vard >a
 	'dicc ( dicc> <?
-		@+ $100 and? (
+		@+ $1 and? (
 |			dup 32 >> data +
 			dup 16 >> $ffff and fuente + 
 			>>sp 1+ |trim

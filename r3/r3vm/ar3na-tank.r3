@@ -1,253 +1,146 @@
-| ar3na tank 
+| ar3na tank
 | PHREDA 2025
+|
+| varios tanques, cada uno con su cpu, ejecutan el mismo script
+|  F1 play/stop   F2 step (1 tick)   F5 agrega un tanque   ESC salir
 |-------------------------
 ^r3/lib/gui.r3
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
-^./arena-war.r3
+^./arena-tank.r3
 ^./arena-edit.r3
 
 ^./tedit.r3
 ^./rcodevm.r3
 
-#codepath "r3/r3vm/codetank/"
-
-#map * $ffff | 256x256
-#mapcx 128 #mapcy 128
-#maptx 32 #mapty 32
-
-#mapsx	512 #mapsy 300
+#codefile "r3/r3vm/codetank/tank1.r3"
 
 |---------
-:btnt | x y v "" col --
-	pick4 pick4 128 24 guiBox
-	[ dup 2* or ; ] guiI color
-	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 128 24 frect
-	2swap 4 + swap 4 + swap tat
-	$e tcol temits	
-	onClick ;
-
 :btnt2 | x y v "" col --
 	pick4 pick4 256 48 guiBox
 	[ dup 2* or ; ] guiI color
 	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
 	2over 256 48 frect
 	2swap 8 + swap 8 + swap tat
-	$e tcol temits	
+	$e tcol temits
 	onClick ;
-	
-|-------------------
-#xo #yo
 
-:dns
-	sdlx 'xo ! sdly 'yo ! ;
-
-:mos
-	sdlx xo - 'viewpx +! 
-	sdly yo - 'viewpy +! 
-	dns ;
-
-:mouse
-	'dns 'mos onDnMove 
-	SDLw 0? ( drop ; )
-	0.1 * viewpz +
-	0.2 max 6.0 min 'viewpz !
-	;
-	
-
-:fillmap
-	'map >a $ffff ( 1? 1- rand8 4 >> ca!+ ) drop ;
-
-:xymap | x y -- adr
-	$ff and 8 << 
-	swap $ff and or 
-	'map + ;
-	
-	
-|:drawmap | arr -- arr
-|	a@+ viewpz *. int. viewpx + 
-|	a@+ viewpz *. int. viewpy +	| x y
-|	zoomm viewpz *. | zoom	 
-|	a@+ sspritez
-|	;
-	
-:map2pos
-	;
-	
-:viewmap |
-	-6 ( 5 <? 1+
-		-6 ( 5 <? 1+
-			over 32 * mapsx + 
-			over 32 * mapsy + 
-		
-			pick2 mapcx +
-			pick2 mapcy + | rx ry
-			xymap c@
-			
-			imgspr sspriterz
-			) drop
-		) drop			
-	;
-	
-:terreno
-	12343 'seed8 !
-	16 ( sw <?
-		16 ( sh <?
-			
-			2dup 2.0 
-			rand8 4 >> $3 and 21 + imgspr sspritez
-		32 + ) drop
-	32 + ) drop	
-	;
-
-
-#serror
-#code1
-#cpu1
-	
 |-----------------------
-:compilar
-	empty mark 
-	fuente vmcompile | serror terror
-	
-|	vmdicc | ** DEBUG
-|	cdcnt 'cdtok vmcheckjmp
+#paused
 
-	 1 >? ( 'terror !
-		'fuente> ! | serror
+:newtanks | --		; mismo script, distintas posiciones
+	tk.reset
+	0.25 -170.0 -60.0 tk.+tank
+	0.75 150.0 80.0 tk.+tank ;
+
+:compilar
+	0 'tkrun !
+	empty mark
+	fuente vmcompile | serror terror
+	1 >? ( 'terror !
+		'fuente> !
 		3 'state !
 		clearmark
-		fuente> $700ffff addsrcmark 
-		0 'cpu1 !
+		fuente> $700ffff addsrcmark
 		; ) 2drop
-
-	2 'state ! 
-	vmcpu 'cpu1 !
 	0 'terror !
 	buildvars
-	;
+	newtanks
+	2 'state ! ;
+
+:showsel | --		; el editor muestra el cpu del tanque 0
+	0 tk.sel
+	ip 0? ( drop ; ) vm2src 'fuente> ! ;
+
+:tkcheck | --		; error en el script de un tanque?
+	tkrun 3 <>? ( drop ; ) drop
+	3 'state !
+	clearmark
+	tkerr $f00ffff addsrcmark ;
+
+:stop
+	1 'state ! 0 'tkrun ! ;
 
 :play
-	state 2 =? ( drop vareset ; ) drop
+	state 2 =? ( drop stop ; ) drop
 	compilar
-	state 2 <>? ( drop ; ) drop
-	ip vm2src 'fuente> ! 
-|	reset.map
-	'stepvma 0.1 +vexe
-	;	
-	
+	state 2 =? ( 0 'paused ! ) drop ;
+
 :step
-	state 2 =? ( drop stepvmas ; ) drop | stop?
-	compilar	
-	ip vm2src 'fuente> ! 
-|	reset.map
-	;
-	
-:help
-	;
-	
-|--
-:playercontrol
-	| ---- player control	
-	<up> =? ( btnpad %1000 or 'btnpad ! )
-	<dn> =? ( btnpad %100 or 'btnpad ! )
-	<le> =? ( btnpad %10 or 'btnpad ! )
-	<ri> =? ( btnpad %1 or 'btnpad ! )
-	>up< =? ( btnpad %1000 nand 'btnpad ! )
-	>dn< =? ( btnpad %100 nand 'btnpad ! )
-	>le< =? ( btnpad %10 nand 'btnpad ! )
-	>ri< =? ( btnpad %1 nand 'btnpad ! )
-	<spc> =? ( btnpad $10 or 'btnpad ! )
+	state 2 =? ( drop 1 'paused ! tk.tick tkcheck ; ) drop
+	compilar
+	state 2 =? ( 1 'paused ! ) drop ;
 
-	;
-	
+:addtank | --
+	state 2 <>? ( drop ; ) drop
+	1.0 randmax 400.0 randmax 200.0 - 400.0 randmax 200.0 - tk.+tank ;
+
 |-------------------
+:hud
+	8 584 tat 1.0 tsize 6 tcol "F1:Play/Stop  F2:Step  F5:+Tank  ESC:Exit" temits
+	tkrun 2 <>? ( drop ; ) drop
+	4.0 tsize 7 tcol
+	tkpx 140 - tkpy 16 - tat
+	tkwin -? ( drop "DRAW" temits ; )
+	1+ "TANK %d WINS" tprint ;
+
 :runscr
-	vupdate gui	0 cls
-	
-	mouse
-	
-	|terreno
-	|viewmap
-	
-	0 0 tat $5 tcol "Ar3na" temits $3 tcol "Code" temits 
-	|$ffffff bcolor viewpz viewpy viewpx "%d %d %f" bprint2
+	vupdate gui 0 cls
 
-	war.draw
+	0 0 tat 2.0 tsize $5 tcol "Ar3na" temits $3 tcol "Tank" temits
 
-	draw.code	
+	state 2 =? ( paused 0? ( tk.update ) drop tkcheck ) drop
+	tk.draw
+	state 2 =? ( showsel ) drop
+	draw.code
+	hud
 
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-
-	|----
 	<f1> =? ( play )
-	<f2> =? ( step ) 
-	
-	<f5> =? ( war.+rtank )
+	<f2> =? ( step )
+	<f5> =? ( addtank )
 	drop ;
 
 :game
 	mark
-	0 32 440 540 edwin	
-	
-|	"r3/r3vm/levels/level0.txt" loadlevel	
-|	0.4 %w 0.24 %h 0.58 %w 0.74 %h mapwin
-		
-|	reset.map
-	1 'state ! 0 'code1 ! 0 'cpu1 !
-
-	|"-- go --" infoshow
+	0 32 440 540 edwin
+	'codefile edload
+	1 'state !
 	mark
 	'runscr SDLshow
 	empty
-	
 	vareset
-	empty
-	
-	;
-	
+	empty ;
 
 |-------------------------------------
 :menu
 	vupdate gui 0 0 sw sh guiRect 0 cls
-	
-	|$7f3f3f3f colorA	200 200 200 600 frect
-	
+
 	6.0 tsize
 	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits tcr
-	
-	3.0 tsize	
-|	32 100 'tutor1 "Tutorial"  $3f00 btnt2
+
+	3.0 tsize
 	32 200 'game "Game"  $3f00 btnt2
-|	32 300 'freeplay "Free Play"  $3f00 btnt2
-|	32 500 'options "Options" $3f btnt2
 	32 600 'exit "Exit" $3f0000 btnt2
-	
+
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
 	<f1> =? ( game )
-	|<f2> =? ( options ) 
 	drop ;
-	
+
 |-------------------
 : |<<< BOOT <<<
 	"arena tank" 1024 600 SDLinit
 	SDLblend
-	2.0 8 8 "media/img/atascii.png" tfnt 
+	2.0 8 8 "media/img/atascii.png" tfnt
 	64 vaini
 	edram	| editor
-	|"media/ttf/roboto-bold.ttf" 20 TTF_OpenFont immSDL
-	war.ini
-	war.reset
-	fillmap
-	
-	|'menu sdlshow
+	tk.ini
+	730 'tkpx ! 300 'tkpy !
 	game
-		
-	SDLquit 
+	SDLquit
 	;

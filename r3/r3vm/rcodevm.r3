@@ -330,6 +330,7 @@ $10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 |--------- TOKENIZER / COMPILER
 #code> 
 #data>
+#vlast
 
 #blk * 64
 #blk> 'blk
@@ -365,12 +366,18 @@ $10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 	>>sp 
 	1 'state ! ;
 
+:varend | --		; variable sin valores: reserva una celda en 0
+	vlast data> <>? ( drop ; ) drop
+	0 ,m ;
+
 :.var | adr -- adr' | # ##
+	varend
 	1+ dup c@ $23 =? ( swap 1+ swap ) drop
 	endef
 	data> data - 32 << 
 	over src - 16 << or  
 	$1 or dicc+
+	data> 'vlast !
 	>>sp 
 |	swap trim "* " =pre 1? ( rot $2 or -rot ) drop	
 	2 'state ! ;
@@ -575,8 +582,10 @@ $10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 	dup 'data ! 'data> !		| s h 
 	swap dup 'src !				| h s
 	'dicc 'dicc> !
+	-1 'vlast !
 	0 'terror !
 	( terror 0? drop wrd2token ) | h s e
+	varend
 			|... empty hole
 	code> data data> over - cmove | move:d s c
 	data> data - code> + 'data> !
@@ -627,6 +636,7 @@ $10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 
 |--- reset cpu
 ::vmreset
+	0 'REGA ! 0 'REGB !
 	data 512 - 'NOS ! 0 'TOS !
 	data 8 - 0 over ! 'RTOS !  
 
@@ -641,14 +651,11 @@ $10 $f1 $10 $f1 $10 $f1 $10 $f1 $00 $00
 	;
 
 |--- create cpu
-::vmcpu | -- cpu
-	here 
-	dup vm!
-	9 ncell+ 512 + 
-	dup 'data !
+::vmcpu | -- cpu	; nuevo cpu (9 celdas de estado, pila, datos) en here; queda como cpu actual
+	here dup 9 ncell+ 512 + 'data !
 	vmreset
-	dup code 8 - @ 32 >> + 'here !
-	;
+	dup vm!			| guarda el estado en el bloque del cpu
+	data code 8 - @ 32 >> + 'here ! ;
 	
 ::vmboot
 	code 8 - @ | header
