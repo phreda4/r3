@@ -1,135 +1,304 @@
 | ar3na tank
 | PHREDA 2025
 |
-| varios tanques, cada uno con su cpu, ejecutan el mismo script
-|  F1 play/stop   F2 step (1 tick)   F5 agrega un tanque   ESC salir
+| tres pantallas:
+|  1) configuracion: cantidad de tanques y script de cada uno
+|  2) editor de scripts con la ayuda de las palabras del tanque
+|  3) juego: solo se ve la arena
 |-------------------------
 ^r3/lib/gui.r3
+^r3/lib/str.r3
+^r3/lib/mem.r3
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
 ^./arena-tank.r3
 ^./arena-edit.r3
-
 ^./tedit.r3
 ^./rcodevm.r3
 
-#codefile "r3/r3vm/codetank/tank1.r3"
+|------------------- datos
+#scripts * 1024		| nombres de scripts (32 de 32 bytes)
+#scount
+#stmp * 32
+#keepn * 256		| nombres guardados de cada tanque
+#nname * 32
 
-|---------
-:btnt2 | x y v "" col --
-	pick4 pick4 256 48 guiBox
-	[ dup 2* or ; ] guiI color
-	[ 2swap 2 + swap 2 + swap 2swap ; ] guiI
-	2over 256 48 frect
-	2swap 8 + swap 8 + swap tat
-	$e tcol temits
-	onClick ;
+#ntanks 2
+#tcode * 64		| script (indice) de cada tanque
+#cur			| tanque / fila actual
+#etank #eoff		| tanque y posicion del error
+#wantedit #again #paused
+#okt			| momento del ultimo "compile OK"
+#nn
 
-|-----------------------
-#paused
+| posiciones iniciales (x y)
+#spawns
+-170.0 -60.0  150.0 80.0  -60.0 170.0  70.0 -170.0
+-170.0 140.0  170.0 -120.0  170.0 150.0  -150.0 -150.0
 
-:newtanks | --		; mismo script, distintas posiciones
-	tk.reset
-	0.25 -170.0 -60.0 tk.+tank
-	0.75 150.0 80.0 tk.+tank ;
+#template "| nuevo script de tanque
+| ver la ayuda en la pantalla de edicion
 
-:compilar
-	0 'tkrun !
-	empty mark
-	fuente vmcompile | serror terror
-	1 >? ( 'terror !
-		'fuente> !
-		3 'state !
-		clearmark
-		fuente> $700ffff addsrcmark
-		; ) 2drop
-	0 'terror !
-	buildvars
-	newtanks
-	2 'state ! ;
+#radar 0.0	| direccion del radar
+#blanco 0.0	| distancia al enemigo
 
-:showsel | --		; el editor muestra el cpu del tanque 0
-	0 tk.sel
-	ip 0? ( drop ; ) vm2src 'fuente> ! ;
+: 1 ( 1?
+	radar scan 'blanco !
+	blanco 1? ( radar turn blanco fire ) 0? ( 0.03 radar + $ffff and 'radar ! ) drop
+	) drop ;
+"
 
-:tkcheck | --		; error en el script de un tanque?
-	tkrun 3 <>? ( drop ; ) drop
-	3 'state !
-	clearmark
-	tkerr $f00ffff addsrcmark ;
+|------------------- lista de scripts
+:tc@ | i -- idx
+	3 << 'tcode + @ ;
+:tc! | idx i --
+	3 << 'tcode + ! ;
+:sname | n -- adr
+	5 << 'scripts + ;
+:spath | n -- "path"
+	sname "r3/r3vm/codetank/%s" sprint ;
 
-:stop
-	1 'state ! 0 'tkrun ! ;
+:addscript | entry --
+	dup FDIR 1? ( 2drop ; ) drop
+	FNAME ".r3" =pos 0? ( 2drop ; ) drop
+	dup count nip 30 >? ( 2drop ; ) drop
+	scount 32 >=? ( 2drop ; ) drop
+	scount sname strcpy 1 'scount +! ;
 
-:play
-	state 2 =? ( drop stop ; ) drop
-	compilar
-	state 2 =? ( 0 'paused ! ) drop ;
+:sswap | i j --
+	over sname 'stmp strcpy
+	dup sname pick2 sname strcpy
+	'stmp over sname strcpy 2drop ;
 
-:step
-	state 2 =? ( drop 1 'paused ! tk.tick tkcheck ; ) drop
-	compilar
-	state 2 =? ( 1 'paused ! ) drop ;
+:ssort
+	0 ( scount 1- <?
+		dup 1+ ( scount <?
+			over sname over sname cmpstr 0 >? ( drop 2dup sswap 0 ) drop
+			1+ ) drop
+		1+ ) drop ;
 
-:addtank | --
-	state 2 <>? ( drop ; ) drop
-	1.0 randmax 400.0 randmax 200.0 - 400.0 randmax 200.0 - tk.+tank ;
+:scanscripts
+	0 'scount !
+|WIN|	"r3/r3vm/codetank//*" ffirst
+|LIN|	"r3/r3vm/codetank" ffirst
+|MAC|	"r3/r3vm/codetank" ffirst
+	( 1? addscript fnext ) drop
+	ssort ;
 
-|-------------------
-:hud
-	8 584 tat 1.0 tsize 6 tcol "F1:Play/Stop  F2:Step  F5:+Tank  ESC:Exit" temits
-	tkrun 2 <>? ( drop ; ) drop
-	4.0 tsize 7 tcol
-	tkpx 140 - tkpy 16 - tat
-	tkwin -? ( drop "DRAW" temits ; )
-	1+ "TANK %d WINS" tprint ;
+:sfind | "name" -- idx
+	0 ( scount <?
+		dup sname pick2 = 1? ( drop nip ; ) drop
+		1+ ) drop drop 0 ;
 
-:runscr
+:keepnames
+	0 ( 8 <? dup tc@ sname over 5 << 'keepn + strcpy 1+ ) drop ;
+:restore
+	0 ( 8 <? dup 5 << 'keepn + sfind over tc! 1+ ) drop ;
+:rescan
+	keepnames scanscripts restore ;
+
+:initcfg
+	scanscripts
+	2 'ntanks !
+	"tank1.r3" sfind 0 tc!
+	"tank1.r3" sfind 1 tc!
+	"tank2.r3" sfind 2 tc!
+	"tank3.r3" sfind 3 tc!
+	4 ( 8 <? "tank1.r3" sfind over tc! 1+ ) drop ;
+
+|------------------- botones
+#bx #by #bw #bh #bev #btx #bcol
+:btn | x y w h 'ev "txt" col --
+	'bcol ! 'btx ! 'bev ! 'bh ! 'bw ! 'by ! 'bx !
+	bx by bw bh guiBox
+	bcol [ dup 2* or ; ] guiI color
+	bx by bw bh frect
+	2.0 tsize 6 tcol
+	bx 8 + by bh 16 - 1 >> + tat btx temits
+	bev onClick ;
+
+|------------------- editor
+:chkcode | --
+	mark
+	fuente vmcompile
+	1 >? ( 'terror ! 'fuente> ! 3 'state ! clearmark
+		fuente> $700ffff addsrcmark empty ; ) 2drop
+	empty
+	1 'state ! clearmark msec 'okt ! ;
+
+:editscr
 	vupdate gui 0 cls
-
-	0 0 tat 2.0 tsize $5 tcol "Ar3na" temits $3 tcol "Tank" temits
-
-	state 2 =? ( paused 0? ( tk.update ) drop tkcheck ) drop
-	tk.draw
-	state 2 =? ( showsel ) drop
+	2.0 tsize 0 0 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits
+	1.0 tsize 6 tcol 150 4 tat "Editor: " temits 'edfilename temits
+	msec okt - 2000 <? ( 3 tcol 520 4 tat "compile OK" temits ) drop
 	draw.code
-	hud
-
+	632 20 tk.help
+	1.0 tsize 6 tcol 8 590 tat "F1: comprobar   F2: guardar   ESC: volver (guarda)" temits
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( play )
-	<f2> =? ( step )
-	<f5> =? ( addtank )
+	<F1> =? ( chkcode )
+	<F2> =? ( edsave )
 	drop ;
 
-:game
-	mark
-	0 32 440 540 edwin
-	'codefile edload
-	1 'state !
-	mark
-	'runscr SDLshow
-	empty
-	vareset
-	empty ;
+:runedit
+	1.5 'edtsize ! 1.5 tsize
+	0 32 620 540 edwin
+	'editscr SDLshow
+	edsave ;
 
-|-------------------------------------
-:menu
-	vupdate gui 0 0 sw sh guiRect 0 cls
+:editscript | idx --
+	spath edload
+	0 'okt ! 1 'state ! clearmark
+	runedit ;
 
-	6.0 tsize
-	12 4 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits tcr
+:fixerror | --		; abre el script con error y marca la palabra
+	etank tc@ spath edload
+	fuente eoff + 'fuente> !
+	0 'okt ! 3 'state ! clearmark
+	fuente> $700ffff addsrcmark
+	runedit ;
 
-	3.0 tsize
-	32 200 'game "Game"  $3f00 btnt2
-	32 600 'exit "Exit" $3f0000 btnt2
+|------------------- juego
+:loadscript | "path" -- str
+	here dup rot load 0 swap c!
+	dup only13 'here ! ;
 
+:spawn | n -- hdg x y
+	4 << 'spawns + @+ swap @
+	over neg over neg tk.bear -rot ;
+
+:startone | -- err		; compila el script del tanque cur y lo crea
+	cur tc@ spath loadscript
+	dup vmcompile
+	1 >? ( 'terror ! over - 'eoff ! drop cur 'etank ! 1 ; ) 2drop drop
+	0 'terror !
+	cur spawn tk.+tank
+	0 ;
+
+:compileall | -- err
+	tk.reset
+	0 'cur !
+	( cur ntanks <? drop
+		startone 1? ( ; ) drop
+		1 'cur +! ) drop
+	0 ;
+
+:endmsg
+	4.0 tsize 7 tcol
+	tkwin -? ( drop 448 270 tat "DRAW" temits ; )
+	1+ 336 270 tat "TANK %d WINS" tprint ;
+
+:errmsg
+	tkerrcode 'terror !
+	2.0 tsize 5 tcol 340 250 tat tkerrtank 1+ "Tank %d: " tprint vmerror temits
+	1.0 tsize 6 tcol 300 290 tat "E: editar el script    R: reintentar    ESC: volver" temits ;
+
+:playhud
+	tkrun 2 =? ( drop endmsg
+		1.0 tsize 6 tcol 360 560 tat "R: otra partida    ESC: volver" temits ; )
+	3 =? ( drop errmsg ; )
+	drop ;
+
+:playedit | --
+	tkrun 3 <>? ( drop ; ) drop
+	tkerr tkerrbase - 'eoff !
+	tkerrcode 'terror !
+	tkerrtank 'etank !
+	1 'wantedit ! exit ;
+
+:playscr
+	vupdate gui 0 cls
+	paused 0? ( tk.update ) drop
+	tk.draw
+	playhud
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
-	<f1> =? ( game )
+	<R> =? ( 1 'again ! exit )
+	<spc> =? ( paused 1 xor 'paused ! )
+	<E> =? ( playedit )
+	drop ;
+
+:game1 | --
+	mark
+	compileall
+	1? ( drop empty fixerror ; ) drop
+	0 'paused !
+	'playscr SDLshow
+	empty
+	wantedit 1? ( drop 0 'wantedit ! fixerror ; ) drop ;
+
+:playgame
+	scount 0? ( drop ; ) drop
+	1 ( 1? drop 0 'again ! game1 again ) drop ;
+
+|------------------- configuracion
+:prevcode
+	scount 0? ( drop ; ) drop
+	cur tc@ 1- -? ( drop scount 1- ) cur tc! ;
+
+:nextcode
+	scount 0? ( drop ; ) drop
+	cur tc@ 1+ scount >=? ( drop 0 ) cur tc! ;
+
+:editcode
+	scount 0? ( drop ; ) drop
+	cur tc@ editscript ;
+
+:freename | -- n
+	1 ( dup "r3/r3vm/codetank/mytank%d.r3" sprint filexist 1? drop 1+ ) drop ;
+
+:newcode
+	freename 'nn !
+	'template count nn "r3/r3vm/codetank/mytank%d.r3" sprint save
+	nn "mytank%d.r3" sprint 'nname strcpy
+	rescan
+	'nname sfind cur tc!
+	cur tc@ editscript ;
+
+:lesstanks
+	ntanks 1 >? ( 1 - 'ntanks ! ; ) drop ;
+:moretanks
+	ntanks 8 <? ( 1 + 'ntanks ! ; ) drop ;
+
+#ry
+:rowtank | i --
+	dup 'cur !
+	44 * 170 + 'ry !
+	cur tk.rgb color 40 ry 6 + 24 24 frect
+	2.0 tsize 6 tcol 76 ry 10 + tat cur 1+ "Tank %d" tprint
+	186 ry 40 36 'prevcode "<" $404080 btn
+	$202030 color 232 ry 360 36 frect
+	1.5 tsize 6 tcol 242 ry 12 + tat
+	scount 0? ( drop "(sin scripts)" temits ; ) drop
+	cur tc@ sname temits ;
+
+:rowbuttons | i --
+	dup 'cur !
+	44 * 170 + 'ry !
+	598 ry 40 36 'nextcode ">" $404080 btn
+	652 ry 110 36 'editcode "Edit" $305030 btn
+	772 ry 110 36 'newcode "New" $503030 btn ;
+
+:cfgscr
+	vupdate gui 0 cls
+	6.0 tsize 24 4 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits
+	2.0 tsize 6 tcol 40 112 tat "Tanques:" temits
+	190 104 40 36 'lesstanks "-" $404080 btn
+	250 112 tat ntanks "%d" tprint
+	280 104 40 36 'moretanks "+" $404080 btn
+	0 ( ntanks <? dup rowtank dup rowbuttons 1+ ) drop
+	40 540 200 44 'playgame "PLAY" $006000 btn
+	260 540 160 44 'exit "EXIT" $600000 btn
+	1.0 tsize 6 tcol
+	440 548 tat "< > elige el script   Edit lo edita   New crea uno" temits
+	440 560 tat "F1: jugar    ESC: salir" temits
+	sdlredraw
+	sdlkey
+	>esc< =? ( exit )
+	<F1> =? ( playgame )
 	drop ;
 
 |-------------------
@@ -140,7 +309,8 @@
 	64 vaini
 	edram	| editor
 	tk.ini
-	730 'tkpx ! 300 'tkpy !
-	game
+	512 'tkpx ! 300 'tkpy !
+	initcfg
+	'cfgscr SDLshow
 	SDLquit
 	;

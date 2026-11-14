@@ -222,9 +222,10 @@
 #serror
 
 	
+##edtsize 2.0	| tamano del texto del editor
 #statevec 'showread 'showeditor 'showruning 'showerror 
 
 ::draw.code
-	2.0 tsize
+	edtsize tsize
 	state $3 and 3 << 'statevec + @ ex ;
 	

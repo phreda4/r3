@@ -22,6 +22,9 @@
 ##tkerr		| posicion en el fuente del error
 ##tkwin		| tanque ganador (-1 empate)
 ##tkticks	| ticks ejecutados
+##tkerrtank	| tanque que dio error
+##tkerrbase	| inicio del texto del script con error
+##tkerrcode	| codigo de error (como terror)
 ##tktick 33	| ms por tick
 ##tkbudget 48	| ciclos de cpu por tanque por tick
 
@@ -211,6 +214,7 @@
 	terror 1 >? ( 0 'cyc ! 1 'halt ! ) drop ;
 
 :slice | tank -- tank		; turno de cpu de un tanque
+	tkrun 1 <>? ( drop ; ) drop		| ya hubo un error: nadie mas corre
 	dup .cpu @ 0? ( drop ; ) drop
 	dup .wait @ 1? ( drop -1 over .wait +! ; ) drop
 	dup 'ctank !
@@ -218,7 +222,7 @@
 	0 'halt ! 0 'terror !
 	dup .cpu @ vm@
 	( cyc 0 >? drop vmtick1 ) drop
-	terror 1 >? ( drop ip 8 - vm2src 'tkerr ! 3 'tkrun ! ; ) drop
+	terror 1 >? ( 'tkerrcode ! ip 8 - vm2src 'tkerr ! src 'tkerrbase ! ctank tkid 'tkerrtank ! 3 'tkrun ! ; ) drop
 	halt 1? ( 1000000000 pick2 .wait ! ) drop	| fin del programa
 	dup .cpu @ vm! ;
 
@@ -314,11 +318,15 @@ isin icos irand i*. i/. ifix. iint.
 |------------------- dibujo
 #ctk
 #tkcols $ff5080ff $ffff5050 $ff50ff50 $ffffe050
+::tk.col | n -- argb		; color del tanque n
+	3 and 3 << 'tkcols + @ ;
+::tk.rgb | n -- rgb		; el mismo color como $RRGGBB para color
+	tk.col dup $ff and 16 << over $ff00 and or swap 16 >> $ff and or ;
 #bw
 
 :tkcolor | -- argb
 	ctk .cpu @ 0? ( drop $ff404040 ; ) drop
-	ctk tkid 3 and 3 << 'tkcols + @ ;
+	ctk tkid tk.col ;
 
 :tkmode | -- 0 quieto | 1 mueve | 2 muerto
 	ctk .cpu @ 0? ( drop 2 ; ) drop
@@ -395,7 +403,7 @@ isin icos irand i*. i/. ifix. iint.
 
 ::tk.reset
 	'tanks p.clear 'bombs p.clear 'fx p.clear
-	0 'acc ! 0 'tkticks ! -1 'tkwin ! 1 'tkrun ! ;
+	0 'acc ! 0 'tkticks ! -1 'tkwin ! -1 'tkerrtank ! 1 'tkrun ! ;
 
 #tcpu
 ::tk.+tank | hdg x y --		; tanque nuevo con su cpu (codigo ya compilado)
@@ -435,3 +443,43 @@ isin icos irand i*. i/. ifix. iint.
 
 ::tk.cnt | -- n
 	'tanks p.cnt ;
+
+::tk.bear | dx dy -- heading	; rumbo (0.0 arriba, 0.25 derecha) hacia un punto
+	tbear ;
+
+|------------------- ayuda de las palabras del script
+| nombre / efecto de pila / descripcion (ASCII, 47 columnas)
+#whelp
+"fire" "( dist -- )" "bomba a esa distancia (24 a 300), gasta bateria"
+"go" "( v -- )" "velocidad -1.0 a 1.0 (negativa: marcha atras)"
+"turn" "( ang -- )" "gira hacia el rumbo (0.0 arriba, 0.25 derecha)"
+"scan" "( ang -- dist )" "radar: enemigo en ese rumbo, 0 = nadie (7 ciclos)"
+"pos" "( -- x y )" "posicion en la arena, -256.0 a 256.0"
+"dir" "( -- ang )" "rumbo actual del tanque"
+"speed" "( -- v )" "velocidad actual"
+"batt" "( -- b )" "bateria 0.0 a 1.0, cada disparo gasta 0.12"
+"damage" "( -- d )" "dano recibido: 0.0 sano, 1.0 destruido"
+"id" "( -- n )" "numero del tanque (0 es el primero)"
+"wait" "( ticks -- )" "cede el turno n ticks (1 tick = 1/30 s)"
+"bear" "( dx dy -- ang )" "rumbo hacia un punto relativo dx dy"
+"sin cos" "( ang -- v )" "seno y coseno, angulo en vueltas"
+"rand" "( n -- r )" "numero al azar de 0 a n-1"
+"*. /." "( a b -- c )" "multiplica y divide en punto fijo"
+"fix. int." "( n -- m )" "entero a fijo (1 = 1.0) y fijo a entero"
+0
+
+#hx #hy
+::tk.help | x y --		; dibuja la ayuda en x y (ancho 390 px)
+	'hy ! 'hx !
+	1.0 tsize
+	hx hy tat 5 tcol "PALABRAS DEL TANQUE" temits
+	hx hy 12 + tat 6 tcol "numeros fijos: 1.0 = una unidad" temits
+	hx hy 24 + tat "rumbos en vueltas: 0.0 arriba, 0.25 der." temits
+	hx hy 36 + tat tkbudget "ciclos por tick: %d (30 ticks/s)" tprint
+	hy 56 + 'hy !
+	'whelp ( dup c@ 1? drop
+		hx hy tat 7 tcol dup temits >>0
+		2 tcol " " temits dup temits >>0
+		hx hy 10 + tat 6 tcol dup temits >>0
+		22 'hy +! )
+	2drop ;

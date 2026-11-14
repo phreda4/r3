@@ -82,7 +82,7 @@
 	|vmreset vmdicc
 	vmdicc
 	
-	( getch $1B1001 <>?
+	( getch [esc] <>?
 		$1000 nand? (
 			vmstepip vmdicc
 			) 
