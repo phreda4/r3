@@ -12,6 +12,7 @@
 ^r3/rimm/rimmcolor.r3
 ^r3/rimm/rimmfile.r3
 ^r3/rimm/rimmedit.r3
+^r3/rimm/rimmdate.r3
 
 #dbackn 0
 #dfmono -1 #dfmain -1
@@ -153,12 +154,15 @@
 	"Combo" uiLabel 'dlist 'dlistex uiCombo
 	1 uiCols ;
 
+#vdate
+
 :pgSelectores
 	0.3 uiProps
 	"Color" uiLabel 'dcol uiColorH
 	"Color 2" uiLabel 'dcol2 uiColor
 	"Archivo" uiLabel 'dfile 1024 uiFileName
 	"Texto" uiLabel 'dtxt 32 uiInputLine
+	"Date" uiLabel 'vdate uiDate
 	1 uiCols ;
 
 :pgEditor
