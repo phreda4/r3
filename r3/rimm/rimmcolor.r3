@@ -1,12 +1,13 @@
 | RIMM color picker: swatch + popup (saturation/value square, hue bar, hex)
-| Port of imcolor.r3 without SDL calls: the square and the bar are drawn with
-| frectg (a rectangle with a color in each corner), part of the backend
-| contract, so it works in any backend (rimmsdl, rimmgl, a software one).
+| Port of imcolor.r3 without SDL calls: the square is drawn row by row with
+| lineHg (a horizontal line with a color at each end) and the bar with lineH,
+| both part of the backend contract, so it works in any backend (rimmsdl, rimmgl).
 |
 |   uiColor  | 'var --   swatch of the color in the variable ($RRGGBB)
 |   uiColorH | 'var --   same with the hex text over the swatch
 |   color!   | rgb --    set the color of the picker
 |
+^r3/lib/color.r3
 ^r3/rimm/rimmwid.r3
 
 #colorvar
@@ -25,26 +26,31 @@
 	128 16 *>> 'c1x !
 	128 16 *>> 'c1w ! ;
 
-:hcol | -- rgb ; color of the hue now
-	c1w 9 << 1.0 1.0 hsv2rgb $ffffff and ;
+:hue | j -- rgb ; color of the hue j (0..127), the one setcolor gives
+	9 << 1.0 1.0 hsv2rgb $ffffff and ;
 
-:hs | i -- rgb ; stop i (0..6) of the hue bar
-	6 mod 16 << 6 / 1.0 1.0 hsv2rgb $ffffff and ;
+:huebar | -- ; 128 rows of 12 pixels, a color per row
+	0 ( 128 <? dup hue color
+		cx 140 + over cy 5 + + cx 151 + lineH
+		1+ ) drop ;
 
-#sy0 #sh0 #hc1 #hc2
-:seg | i -- ; one of the six segments of the hue bar
-	dup 128 * 6 / cy 5 + + 'sy0 !
-	dup 1+ 128 * 6 / cy 5 + + sy0 - 'sh0 !
-	dup hs 'hc1 ! 1+ hs 'hc2 !
-	cx 140 + sy0 12 sh0 hc1 hc1 hc2 hc2 frectg ;
+#hcv					| hue color of the square (once per frame)
 
-:huebar | --
-	0 ( 6 <? dup seg 1+ ) drop ;
+:svrow | j -- j ; row j of the saturation/value square: white to hue, fading to black
+	cx 5 + over cy 5 + + cx 132 +		| j x1 y x2
+	pick3 255 * 127 /			| j x1 y x2 a
+	$ffffff 0 pick2 colmix $ffffff and	| j x1 y x2 a c1
+	hcv 0 pick3 colmix $ffffff and		| j x1 y x2 a c1 c2
+	rot drop lineHg ;
+
+:square | --
+	c1w hue 'hcv !
+	0 ( 128 <? svrow 1+ ) drop ;
 
 :pickdraw | -- ; the popup: it is drawn by uiEnd over the rest
 	uiZoneW
 	skinField sk
-	cx 5 + cy 5 + 128 128 $ffffff hcol 0 0 frectg
+	square
 	huebar
 	cx 140 + cy 5 + 12 128 uiZoneBox
 	[ sdly cy - 127 clamp0max 'c1w ! setcolor ; ] uiSel

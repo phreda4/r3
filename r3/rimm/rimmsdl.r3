@@ -2,13 +2,12 @@
 | Reuses sdl2gfx + txfont (nothing is copied). Adds only what the gui needs
 | and the stock backend does not have:
 |   gclipPush gclipPop  nested clip (intersection with the previous one)
-|   frectg              rectangle with a color in each corner
 |
 | BACKEND CONTRACT (what rimmcore/rimmwid use; a new backend must give these)
-|   color colorA frect rect fround round lineH lineV line fcircle circle triangle
+|   color colorA frect rect fround round lineH lineV lineHg lineVg line fcircle circle triangle
 |   gclip gclip0 imageb
 |   txfont txfont@ txrgb txat txw txh txwrite txText txalign txcur txcuri
-|   + the two of this file: gclipPush gclipPop frectg
+|   + the two of this file: gclipPush gclipPop
 |
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gfx.r3
@@ -55,23 +54,3 @@
 	a@+ 'pon ! a@+ a@+ a@+ a@
 	pon 0? ( drop 4drop 0 'gcon ! gclip0 ; ) drop
 	gclip ;
-
-|--- rectangle with four colors (bilinear), colors $RRGGBB
-#gvert * 80
-#gidx * 24
-#gx #gy #gw #gh #gc1 #gc2 #gc3 #gc4
-
-:c>v | rgb -- sdlcolor
-	bgr2rgb $ff000000 or ;
-
-::frectg | x y w h tl tr bl br -- ; fills with color in each corner
-	'gc4 ! 'gc3 ! 'gc2 ! 'gc1 !
-	'gh ! 'gw ! 'gy ! 'gx !
-	'gvert >a
-	gx i2fp da!+ gy i2fp da!+ gc1 c>v da!+ 8 a+
-	gx gw + i2fp da!+ gy i2fp da!+ gc2 c>v da!+ 8 a+
-	gx gw + i2fp da!+ gy gh + i2fp da!+ gc4 c>v da!+ 8 a+
-	gx i2fp da!+ gy gh + i2fp da!+ gc3 c>v da!+ 8 a+
-	SDLrenderer 0 'gvert 4 'gidx 6 SDL_RenderGeometry ;
-
-: 'gidx >a 0 da!+ 1 da!+ 3 da!+ 1 da!+ 2 da!+ 3 da!+ ;

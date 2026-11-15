@@ -22,7 +22,7 @@ layout (location = 2) in int aCol;
 uniform mat4 projection;
 uniform ivec2 uAtlas;
 out vec2 uv;
-flat out vec4 vColor;
+out vec4 vColor;
 flat out int vSolid;
 void main() {
     vec2 pos = vec2(float(aPos<<16>>16), float(aPos>>16));
@@ -39,7 +39,7 @@ void main() {
 @fragment-----------------------
 #version 330 core
 in vec2 uv;
-flat in vec4 vColor;
+in vec4 vColor;
 flat in int vSolid;
 uniform sampler2D u_FontTexture;
 out vec4 FragColor;
@@ -87,7 +87,6 @@ void main() {
 #ftex 0			| texture of the current font
 #fatlas 0		| atlas w h (two int32)
 #ftab 0			| entries of the current font
-#nfd
 
 |-------------------------------------
 | batcher: VMAX = 16384 vertices x 12 bytes
@@ -128,6 +127,11 @@ void main() {
 	vp 4 + d! vp d!
 	12 'vp +! ;
 
+:vtc | pos uv col -- ; one vertex with its own color
+	vp 8 + d!
+	vp 4 + d! vp d!
+	12 'vp +! ;
+
 :setex | tex w h -- ; texture of the batch, flush only if the batch has other texture
 	pick2 btex =? ( 4drop 1 'btu ! ; ) drop
 	btu 1? ( gflush ) drop
@@ -136,36 +140,37 @@ void main() {
 
 |-------------------------------------
 | entry of a char: x | w<<16 | y<<32 | h<<48 (pixels of the atlas)
-:fntex | tex -- ; texture and atlas size of the record nfd
-	dup nfd !
-	dup 32 >> $ffff and nfd 24 + d!
-	48 >> $ffff and nfd 28 + d!
+:fntex | tex font -- font ; texture and atlas size of the record
+	2dup !
+	over 32 >> $ffff and over 24 + d!
+	swap 48 >> $ffff and over 28 + d!
 	1 'fontn +! ;
 
-#tcw #tch
 
 :ftabfill | font -- ; 16x16 grid of cells ws x hs
-	dup 8 + @ over 16 + @ 'tch ! 'tcw !
-	ab[ 40 + >a
-	0 ( 256 <?
-		dup $f and tcw * over 4 >> $f and tch * 32 << or
-		tch 48 << or tcw 16 << or a!+
-		1+ ) drop
+	dup 8 + @ over 16 + @ rot 40 +		| cw ch adr
+	ab[ >a
+	0 ( 256 <?				| cw ch i
+		dup $f and pick3 *
+		over 4 >> $f and pick3 * 32 << or
+		pick2 48 << or pick3 16 << or a!+
+		1+ ) 3drop
 	]ba ;
 
 ::fnew | tex -- font ; record for a font with its own table (0 if full): set ws hs at +8 +16 and the 256 entries at +40
 	fontn 8 >=? ( 2drop 0 ; ) drop
-	fontn 2088 * 'fontlist + 'nfd !
-	0 nfd 8 + ! 0 nfd 16 + !
-	fntex nfd ;
+	fontn 2088 * 'fontlist +		| tex font
+	0 over 8 + ! 0 over 16 + !
+	fntex ;
 
 ::fload | "file" cw ch -- font ; load the atlas (max 8 fonts, 0 if full)
 	fontn 8 >=? ( 4drop 0 ; ) drop
-	fontn 2088 * 'fontlist + 'nfd !
-	nfd 16 + ! nfd 8 + !
-	glLoadImg fntex
-	nfd ftabfill
-	nfd ;
+	fontn 2088 * 'fontlist +		| file cw ch font
+	swap over 16 + !			| file cw font
+	swap over 8 + !				| file font
+	swap glLoadImg				| font tex
+	over fntex				| font font
+	ftabfill ;
 
 ::txfont | font -- ; select the font (from fload or txload) for ftext and the tx words
 	0? ( drop ; )
@@ -253,22 +258,26 @@ void main() {
 
 |---------------------------------------
 | quads: positions q0..q3 (int16 pairs), uv u0..u3
-#rx0 #ry0 #rx1 #ry1
 #q0 #q1 #q2 #q3
 #u0 #u1 #u2 #u3
 
-:setrect | x y w h -- ; rx0 ry0 rx1 ry1
-	pick2 + 'ry1 !
-	pick2 + 'rx1 !
-	'ry0 ! 'rx0 ! ;
+:rc | x y w h -- x x1 y y1 ; corners of the rect
+	swap pick3 + -rot over + ;
 
-:setq | -- ; q0..q3 from the rect
-	rx0 ry0 p16 'q0 !  rx1 ry0 p16 'q1 !
-	rx1 ry1 p16 'q2 !  rx0 ry1 p16 'q3 ! ;
+:setq | x y w h -- ; q0..q3 from the rect
+	rc pick3 pick2 p16 'q0 !
+	pick2 pick2 p16 'q1 !
+	pick2 over p16 'q2 !
+	nip nip p16 'q3 ! ;
 
-:qs | -- ; solid quad (uv = -1)
-	q0 -1 vt q1 -1 vt q2 -1 vt
-	q0 -1 vt q2 -1 vt q3 -1 vt ;
+:setuv | x y w h -- ; u0..u3 from the source rect
+	rc pick3 pick2 p16 'u0 !
+	pick2 pick2 p16 'u1 !
+	pick2 over p16 'u2 !
+	nip nip p16 'u3 ! ;
+
+:vs | x y -- ; solid vertex (uv = -1)
+	p16 -1 vt ;
 
 :qt | -- ; textured quad
 	q0 u0 vt q1 u1 vt q2 u2 vt
@@ -276,25 +285,19 @@ void main() {
 
 |---------------------------------------
 | text
-#xt 0 #yt 0 #cwv 0 #chv 0
-
 :tfont | -- ; texture of the current font in the batch
 	ftex $ffff and 'fatlas d@+ swap d@ setex ;
 
 :gchar | char --
 	6 vroom
-	$ff and 3 << ftab + @
-	dup $ffff and 'xt !
-	dup 16 >> $ffff and 'cwv !
-	dup 32 >> $ffff and 'yt !
-	48 >> 'chv !
-	xs 'rx0 ! ys 'ry0 !
-	xs cwv fscale * + 'rx1 ! ys chv fscale * + 'ry1 !
-	setq
-	xt yt p16 'u0 !            xt cwv + yt p16 'u1 !
-	xt cwv + yt chv + p16 'u2 !  xt yt chv + p16 'u3 !
-	qt
-	cwv fscale * 'xs +! ;
+	$ff and 3 << ftab + @				| e
+	xs ys pick2 16 >> $ffff and fscale *		| e xs ys w
+	pick3 48 >> fscale * setq			| e
+	dup 16 >> $ffff and fscale * 'xs +!
+	dup 48 >> >r
+	dup $ffff and swap dup 32 >> $ffff and swap
+	16 >> $ffff and r>				| xt yt cw ch
+	setuv qt ;
 
 :gtext | "" n -- ; n chars at xs ys, xs advances
 	( 1? 1- swap c@+ gchar swap ) 2drop ;
@@ -319,17 +322,18 @@ void main() {
 
 ::frect | x y w h -- ; filled rectangle (covers x..x+w-1, y..y+h-1)
 	6 vroom fcolor 'vcol !
-	setrect setq qs ;
-
-#ox #oy #ow #oh
+	rc					| x x1 y y1
+	pick3 pick2 vs  pick2 pick2 vs  pick2 over vs
+	pick3 pick2 vs  pick2 over vs  nip nip vs ;
 
 ::rect | x y w h -- ; rectangle outline (same area as frect)
-	'oh ! 'ow ! 'oy ! 'ox !
-	ow oh min 3 <? ( drop ox oy ow oh frect ; ) drop
-	ox oy ow 1 frect
-	ox oy oh + 1- ow 1 frect
-	ox oy 1+ 1 oh 2 - frect
-	ox ow + 1- oy 1+ 1 oh 2 - frect ;
+	2dup min 3 <? ( drop frect ; ) drop
+	pick3 pick3 pick3 1 frect			| top
+	pick3 pick3 pick2 + 1- pick3 1 frect		| bottom
+	pick3 pick3 1+ 1 pick3 2 - frect		| left
+	2 - 2swap				| w h-2 x y
+	1+ rot 2swap + 1- -rot			| x+w-1 y+1 h-2
+	1 swap frect ;				| right
 
 ::lineH | x1 y x2 -- ; horizontal line, both ends included
 	pick2 - 1+ 1 frect ;
@@ -337,36 +341,59 @@ void main() {
 ::lineV | x y1 y2 -- ; vertical line, both ends included
 	over - 1+ 1 swap frect ;
 
+:vg | x y rgb -- ; solid vertex with its own color $RRGGBB
+	>r p16 -1 r> $ff000000 or vtc ;
+
+::lineHg | x1 y x2 c1 c2 -- ; horizontal line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
+	6 vroom
+	rot 1+ -rot				| x1 y x2+1 c1 c2
+	pick4 pick4 pick3 vg
+	pick2 pick4 pick2 vg
+	pick2 pick4 1+ pick2 vg
+	pick4 pick4 pick3 vg
+	pick2 pick4 1+ pick2 vg
+	drop nip swap 1+ swap vg ;
+
+::lineVg | x y1 y2 c1 c2 -- ; vertical line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
+	6 vroom
+	rot 1+ -rot				| x y1 y2+1 c1 c2
+	pick4 pick4 pick3 vg
+	pick4 1+ pick4 pick3 vg
+	pick4 1+ pick3 pick2 vg
+	pick4 pick4 pick3 vg
+	pick4 1+ pick3 pick2 vg
+	nip rot drop vg ;
+
 ::point | x y -- ; one pixel
 	1 1 frect ;
 
 ::cls | rgb -- ; clear with the color $RRGGBB
 	color 0 0 sw sh frect ;
 
-#lx1 #ly1 #lx2 #ly2
 
-:lsw | -- ; swap the ends
-	lx1 lx2 'lx1 ! 'lx2 !
-	ly1 ly2 'ly1 ! 'ly2 ! ;
+:xord | x1 y1 x2 y2 -- x1 y1 x2 y2 ; ends ordered by x
+	pick3 pick2 <=? ( drop ; ) drop 2swap ;
 
-:linex | -- ; mostly horizontal, 1 pixel high
-	lx1 lx2 >? ( lsw ) drop
-	6 vroom
-	lx1 ly1 p16 'q0 !      lx2 1+ ly2 p16 'q1 !
-	lx2 1+ ly2 1+ p16 'q2 !  lx1 ly1 1+ p16 'q3 !
-	qs ;
+:yord | x1 y1 x2 y2 -- x1 y1 x2 y2 ; ends ordered by y
+	pick2 over <=? ( drop ; ) drop 2swap ;
 
-:liney | -- ; mostly vertical, 1 pixel wide
-	ly1 ly2 >? ( lsw ) drop
-	6 vroom
-	lx1 ly1 p16 'q0 !      lx2 ly2 1+ p16 'q1 !
-	lx2 1+ ly2 1+ p16 'q2 !  lx1 1+ ly1 p16 'q3 !
-	qs ;
+:linex | x1 y1 x2 y2 -- ; mostly horizontal, 1 pixel high
+	xord 6 vroom
+	swap 1+ swap				| x1 y1 x2+1 y2
+	pick3 pick3 vs  2dup vs  2dup 1+ vs
+	pick3 pick3 vs  2dup 1+ vs
+	2drop 1+ vs ;
+
+:liney | x1 y1 x2 y2 -- ; mostly vertical, 1 pixel wide
+	yord 6 vroom
+	1+					| x1 y1 x2 y2+1
+	pick3 pick3 vs  2dup vs  over 1+ over vs
+	pick3 pick3 vs  over 1+ over vs
+	2drop swap 1+ swap vs ;
 
 ::line | x1 y1 x2 y2 -- ; line, both ends included
-	'ly2 ! 'lx2 ! 'ly1 ! 'lx1 !
 	fcolor 'vcol !
-	lx2 lx1 - abs ly2 ly1 - abs <? ( drop liney ; ) drop
+	pick3 pick2 - abs pick3 pick2 - abs <? ( drop liney ; ) drop
 	linex ;
 
 ::triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
@@ -385,82 +412,86 @@ void main() {
 	pp0 -1 vt pp1 -1 vt dup -1 vt 'pp1 ! ;
 
 |--- ellipses: rows at pixel centers, half width of the row j (j rows from the center)
-#ecx #ecy #erx #ery #eh #ewd
 
-:ellset | rx ry x y --
-	'ecy ! 'ecx ! 'ery ! 'erx ! ;
+:ehw | rx ry j -- hw ; half width of the row j (j rows from the center)
+	2* 1+ dup *				| rx ry n
+	over dup * 2 << swap -			| rx ry d
+	0 <=? ( 3drop 0 ; )
+	16 << sqrt. rot * swap 2* / $8000 + 16 >> ;
 
-:ehw | j -- hw
-	2* 1+ dup * ery dup * 2 << swap -
-	0 <=? ( drop 0 ; )
-	16 << sqrt. erx * ery 2* / $8000 + 16 >> ;
+:hrow | x y hw -- ; row of 2*hw pixels centered at x
+	rot over - -rot 2* 1 frect ;
 
 ::fellipse | rx ry x y -- ; filled ellipse with radii rx ry centered at x y
-	ellset
-	0 ( ery <?
-		dup ehw 'eh !
-		ecx eh - ecy pick2 + eh 2* 1 frect
-		ecx eh - ecy pick2 - 1- eh 2* 1 frect
-		1+ ) drop ;
+	0 ( pick3 <?				| rx ry x y j
+		pick4 pick4 pick2 ehw		| rx ry x y j hw
+		pick3 pick3 pick3 + pick2 hrow
+		pick3 pick3 pick3 - 1- rot hrow
+		1+ ) 4drop drop ;
+
+:ewdt | rx ry j -- eh ewd ; half width of the row j and thickness of its edge
+	pick2 pick2 pick2 ehw >r
+	1+ over =? ( 3drop r> dup ; )		| last row: ewd = eh
+	ehw r@ swap - 1 max r> swap ;
+
+:erow | x y eh ewd -- ; the two segments of the row y
+	pick3 pick2 - pick3 pick2 1 frect
+	pick3 pick2 + over - pick3 pick2 1 frect
+	4drop ;
 
 ::ellipse | rx ry x y -- ; ellipse outline
-	ellset
-	0 ( ery <?
-		dup ehw 'eh !
-		dup 1+ ehw eh swap - 1 max 'ewd !
-		dup ery 1- =? ( eh 'ewd ! ) drop
-		ecx eh - ecy pick2 + ewd 1 frect
-		ecx eh + ewd - ecy pick2 + ewd 1 frect
-		ecx eh - ecy pick2 - 1- ewd 1 frect
-		ecx eh + ewd - ecy pick2 - 1- ewd 1 frect
-		1+ ) drop ;
+	0 ( pick3 <?				| rx ry x y j
+		pick4 pick4 pick2 ewdt		| rx ry x y j eh ewd
+		pick4 pick4 pick4 + pick3 pick3 erow
+		pick4 pick4 pick4 - 1- 2swap erow
+		1+ ) 4drop drop ;
 
 ::fcircle | r x y -- ; filled circle
-	>r >r dup r> r> fellipse ;
+	pick2 -rot fellipse ;
 
 ::circle | r x y -- ; circle outline
-	>r >r dup r> r> ellipse ;
+	pick2 -rot ellipse ;
 
 |--- rounded rectangles
-#rx #ry #rw #rh #rr #rii #ri #rwd
+#rx #ry #rw #rh #rr			| the rect and the radius, shared by the row words
 
 :rins | i -- inset ; inset of the row i (0 = border row)
-	rr 1- swap - ehw rr swap - ;
+	rr 1- swap - rr rr rot ehw rr swap - ;
 
 :rinit | r x y w h --
 	'rh ! 'rw ! 'ry ! 'rx !
-	rw rh min 2/ min 'rr !
-	rr 'erx ! rr 'ery ! ;
+	rw rh min 2/ min 'rr ! ;
 
 ::fround | r x y w h -- ; filled rectangle with rounded corners of radius r
 	rinit
 	rr 0? ( drop rx ry rw rh frect ; ) drop
-	0 'rii !
-	( rii rr <? drop
-		rii rins 'ri !
-		rx ri + ry rii + rw ri 2* - 1 frect
-		rx ri + ry rh + 1- rii - rw ri 2* - 1 frect
-		1 'rii +! )
-	drop
+	0 ( rr <?				| i
+		dup rins			| i ri
+		rx over + ry pick3 + rw pick3 2* - 1 frect
+		rx over + ry rh + 1- pick3 - rw pick3 2* - 1 frect
+		drop 1+ ) drop
 	rx ry rr + rw rh rr 2* - frect ;
 
-:rwdt | i -- wd ; width of the span of the row i
-	0? ( drop rw ri 2* - ; )
-	1- rins ri - 1 max ;
+:rwdt | ri i -- wd ; width of the span of the row i
+	0? ( drop rw swap 2* - ; )
+	1- rins swap - 1 max ;
+
+:rside | i ri wd -- i ; right side of the row i (the first row has none)
+	pick2 0? ( 3drop ; ) drop
+	rx rw + pick2 - over -			| i ri wd x
+	rot drop				| i wd x
+	dup ry pick4 + pick3 1 frect
+	ry rh + 1- pick3 - rot 1 frect ;
 
 ::round | r x y w h -- ; outline of the rounded rectangle
 	rinit
 	rr 0? ( drop rx ry rw rh rect ; ) drop
-	0 'rii !
-	( rii rr <? drop
-		rii rins 'ri !
-		rii rwdt 'rwd !
-		rx ri + ry rii + rwd 1 frect
-		rx ri + ry rh + 1- rii - rwd 1 frect
-		rii 1? ( rx rw + ri - rwd - ry rii + rwd 1 frect
-			rx rw + ri - rwd - ry rh + 1- rii - rwd 1 frect ) drop
-		1 'rii +! )
-	drop
+	0 ( rr <?				| i
+		dup rins 2dup swap rwdt		| i ri wd
+		rx pick2 + ry pick4 + pick2 1 frect
+		rx pick2 + ry rh + 1- pick4 - pick2 1 frect
+		rside
+		1+ ) drop
 	rx ry rr + 1 rh rr 2* - frect
 	rx rw + 1- ry rr + 1 rh rr 2* - frect ;
 
@@ -472,8 +503,7 @@ void main() {
 	idx_img 4 * 'imgtextures + d@
 	idx_img 8 * 'imgsizes + d@+ swap d@ setex
 	6 vroom
-	isx isy p16 'u0 !           isx isw + isy p16 'u1 !
-	isx isw + isy ish + p16 'u2 !  isx isy ish + p16 'u3 !
+	isx isy isw ish setuv
 	icol 'vcol !
 	qt ;
 
@@ -484,41 +514,42 @@ void main() {
 
 ::imgdrawuv | idx dx dy dw dh sx sy sw sh -- ; source region in pixels, dest rect on screen
 	'ish ! 'isw ! 'isy ! 'isx !
-	setrect 'idx_img !
+	setq 'idx_img !
 	imgtint 'icol !
-	setq imgq ;
+	imgq ;
 
 ::imgdraw | idx dx dy dw dh -- ; full image scaled to dest rect
 	pick4 fimgwh 0 0 2swap imgdrawuv ;
 
 ::image | x y img -- ; image at x y with its own size
-	imgsrc isw ish setrect setq imgq ;
+	imgsrc isw ish setq imgq ;
 
 ::images | x y w h img -- ; image scaled to the rectangle x y w h
-	imgsrc setrect setq imgq ;
+	imgsrc setq imgq ;
 
 ::imagebb | 'src 'dst img -- ; box src of the image into the box dst (x y w h, four int32 each)
 	imgsrc
-	d@+ swap d@+ swap d@+ swap d@ setrect
+	d@+ swap d@+ swap d@+ swap d@ setq
 	d@+ swap d@+ swap d@+ swap d@ 'ish ! 'isw ! 'isy ! 'isx !
-	setq imgq ;
+	imgq ;
 
 |---------------------------------------
 | tilesets: w h "file" tsload -- ts ; the table is kept at here
 | ts: img(qword) tw th(int32) tint(int32) then x y (int32) per tile
+:tsrow | w iw y -- ; the tiles x y of the row y
+	0 ( pick2 pick4 - <=?			| w iw y x
+		dup da!+ over da!+
+		pick3 + ) 4drop ;
+
 ::tsload | w h "file" -- ts
-	fimgload 'idx_img !
-	'ish ! 'isw !
+	fimgload				| w h idx
 	ab[
 	here >a
-	idx_img a!+
-	isw da!+ ish da!+ $ffffffff da!+ 0 da!+
-	idx_img fimgwh 'isy ! 'isx !
-	0 ( isy ish - <=?
-		0 ( isx isw - <=?
-			dup da!+ over da!+
-			isw + ) drop
-		ish + ) drop
+	dup a!+ pick2 da!+ over da!+ $ffffffff da!+ 0 da!+
+	fimgwh					| w h iw ih
+	0 ( over pick4 - <=?			| w h iw ih y
+		pick4 pick3 pick2 tsrow
+		pick3 + ) 4drop drop
 	here a> 'here !
 	]ba ;
 
@@ -537,10 +568,10 @@ void main() {
 	16 + dup d@ $ffffff and rot $ff and 24 << or swap d! ;
 
 ::tsdraw | n ts x y -- ; tile n at x y (its own size)
-	>r >r tilesel r> r> isw ish setrect setq imgq ;
+	>r >r tilesel r> r> isw ish setq imgq ;
 
 ::tsdraws | n ts x y w h -- ; tile n scaled to the rectangle x y w h
-	>r >r >r >r tilesel r> r> r> r> setrect setq imgq ;
+	>r >r >r >r tilesel r> r> r> r> setq imgq ;
 
 ::tsbox | 'box n ts -- ; fill the box (x y w h, four int32) with the source rectangle of tile n
 	tilesel
@@ -551,7 +582,7 @@ void main() {
 
 |---------------------------------------
 | sprites: image centered at x y, ang (1.0 = full turn), zoom (fixed point)
-#cx #cy #hw #hh #cs #sn
+#cx #cy #cs #sn
 
 :rpt | rx ry -- pos ; corner rotated and moved to the center
 	over cs * over sn * - 16 >> cx + >r
@@ -560,11 +591,11 @@ void main() {
 :sprgo | x y ang zoom -- ; draw the source rect (idx_img isx..ish) centered
 	>r sincos 'cs ! 'sn !
 	'cy ! 'cx !
-	r> dup isw * 17 >> 'hw ! ish * 17 >> 'hh !
-	hw neg hh neg rpt 'q0 !
-	hw hh neg rpt 'q1 !
-	hw hh rpt 'q2 !
-	hw neg hh rpt 'q3 !
+	r> dup isw * 17 >> swap ish * 17 >>	| hw hh
+	over neg over neg rpt 'q0 !
+	over over neg rpt 'q1 !
+	2dup rpt 'q2 !
+	swap neg swap rpt 'q3 !
 	imgq ;
 
 ::sprite | x y img -- ; centered at x y

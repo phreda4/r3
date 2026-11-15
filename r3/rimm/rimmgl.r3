@@ -3,7 +3,6 @@
 | fcircle, triangle...) and adds what the gui needs and glgfx lacks:
 |   txcw txemit          width of a character / draw one (for the editor, rimmedit)
 |   gclipPush gclipPop  nested clip
-|   frectg              rectangle with a color in each corner (rimmfall, over frect)
 | Same contract as rimmsdl.r3.
 | IMPORTANT: glgfx must be called once after GLini (rimmGLini does both), and every
 | frame the gui goes between fini and fend:  GLcls fini uiStart ... uiEnd fend GLUpdate
@@ -12,7 +11,6 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/util/glgfx.r3
-^r3/rimm/rimmfall.r3
 
 ::rimmGLini | "title" w h -- ; open the GL window and prepare glgfx (shader and font): GLini + glgfx. Without glgfx nothing is drawn
 	GLini glgfx ;

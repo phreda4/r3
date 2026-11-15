@@ -45,6 +45,37 @@
 ::lineV | x y1 y2 -- ; vertical line from y1 to y2 (both included) at x
 	SDLRenderer swap 2swap rot pick2 swap SDL_RenderDrawLine ;
 
+|--- gradient lines: two colors $RRGGBB, SDL_RenderGeometry interpolates them
+#lgbuf * 80
+
+:lgc | rgb -- sdlcolor ; $RRGGBB to the bytes r g b a
+	dup 16 >> $ff and over $ff00 and or swap $ff and 16 << or $ff000000 or ;
+
+:lgv | x y sdlcolor -- ; vertex at A (x y float, color, uv 0), A advances
+	>r swap i2fp da!+ i2fp da!+ r> da!+ 8 a+ ;
+
+::lineHg | x1 y x2 c1 c2 -- ; horizontal line from x1 to x2 (both included) at y, gradient from the color c1 to c2 ($RRGGBB)
+	lgc swap lgc swap
+	rot 1+ -rot				| x1 y x2+1 v1 v2
+	ab[ 'lgbuf >a
+	pick4 pick4 pick3 lgv
+	pick2 pick4 pick2 lgv
+	pick2 pick4 1+ pick2 lgv
+	drop nip swap 1+ swap lgv
+	]ba
+	SDLrenderer 0 'lgbuf 4 'index 6 SDL_RenderGeometry ;
+
+::lineVg | x y1 y2 c1 c2 -- ; vertical line from y1 to y2 (both included) at x, gradient from the color c1 to c2 ($RRGGBB)
+	lgc swap lgc swap
+	rot 1+ -rot				| x y1 y2+1 v1 v2
+	ab[ 'lgbuf >a
+	pick4 pick4 pick3 lgv
+	pick4 1+ pick4 pick3 lgv
+	pick4 1+ pick3 pick2 lgv
+	nip rot drop lgv
+	]ba
+	SDLrenderer 0 'lgbuf 4 'index 6 SDL_RenderGeometry ;
+
 ::frect | x y w h -- ; filled rectangle (it covers x..x+w-1, y..y+h-1)
 	swap 2swap swap 'rec d!+ d!+ d!+ d!
 	SDLRenderer 'rec SDL_RenderFillRect ;
