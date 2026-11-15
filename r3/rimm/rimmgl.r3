@@ -1,8 +1,5 @@
 | RIMM backend: OpenGL (glgfx)
-| Reuses glgfx (nothing is copied; the batched glgfx already has colorA, line, circle,
-| fcircle, triangle...) and adds what the gui needs and glgfx lacks:
-|   txcw txemit          width of a character / draw one (for the editor, rimmedit)
-|   gclipPush gclipPop  nested clip
+
 | Same contract as rimmsdl.r3.
 | IMPORTANT: glgfx must be called once after GLini (rimmGLini does both), and every
 | frame the gui goes between fini and fend:  GLcls fini uiStart ... uiEnd fend GLUpdate

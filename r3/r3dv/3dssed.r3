@@ -6,6 +6,8 @@
 ^r3/util/varanim.r3
 ^r3/util/glgfx.r3
 ^r3/util/glimm.r3
+|^r3/rimm/rimmgl.r3
+|^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./ss3d.r3

@@ -1,13 +1,4 @@
 | RIMM backend: SDL2 render
-| Reuses sdl2gfx + txfont (nothing is copied). Adds only what the gui needs
-| and the stock backend does not have:
-|   gclipPush gclipPop  nested clip (intersection with the previous one)
-|
-| BACKEND CONTRACT (what rimmcore/rimmwid use; a new backend must give these)
-|   color colorA frect rect fround round lineH lineV lineHg lineVg line fcircle circle triangle
-|   gclip gclip0 imageb
-|   txfont txfont@ txrgb txat txw txh txwrite txText txalign txcur txcuri
-|   + the two of this file: gclipPush gclipPop
 |
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gfx.r3

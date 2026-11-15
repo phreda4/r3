@@ -1,7 +1,7 @@
 | RIMM demo over SDL2:   ./r3lin r3/rimm/demo-sdl.r3
-| The demo body is rimmdemo.r3; only the backend and the frame change.
-^r3/rimm/rimm.r3
-^r3/rimm/rimmdemo.r3
+
+^r3/rimm/rimmsdl.r3
+^r3/rimm/demo-rimm.r3
 
 :main
 	$101010 cls
@@ -13,7 +13,7 @@
 
 :
 	"RIMM demo SDL" 1024 700 SDLinitR
-	| after loading several fonts select one with txfont (the last loaded is not usable)
+	| after loading several fonts select one with txfont 
 	"media/ttf/RobotoMono.ttf" 16 txload
 	"media/ttf/Roboto-Medium.ttf" 18 txload dup txfont
 	demoFonts!
