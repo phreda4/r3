@@ -628,7 +628,9 @@
 
 : | <<<<<< Boot
 
-	"3dtile Editor" GLiniFull
+	"3dtile Editor" 
+	|GLiniFull
+	1024 768 GLini
 	GLInfo
 	glgfx
 

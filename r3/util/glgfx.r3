@@ -89,8 +89,7 @@ void main() {
 #ftab 0			| entries of the current font
 
 |-------------------------------------
-| batcher: VMAX = 16384 vertices x 12 bytes
-#vbuf * 196608
+#vbuf 			| start free memory for buffer
 #vp 0			| address of the next vertex
 #vcol $ffffffff		| color of the vertices that are written
 #btex 0			| texture of the batch
@@ -100,10 +99,8 @@ void main() {
 :p16 | lo hi -- int32 ; pack two int16
 	16 << swap $ffff and or ;
 
-:vend 'vbuf 196608 + ;
-
 ::gflush | -- ; send the batch to the GPU (call it before your own GL calls)
-	vp 'vbuf - 0? ( drop ; ) drop
+	vp vbuf <=? ( drop ; ) drop
 	glshader glUseProgram
 	unipro 1 0 'fwintext glUniformMatrix4fv
 	unitex 0 glUniform1i
@@ -113,24 +110,17 @@ void main() {
 	fvt glBindVertexArray
 	GL_ARRAY_BUFFER fbt glBindBuffer
 	GL_ARRAY_BUFFER 196608 0 GL_STREAM_DRAW glBufferData	| orphan
-	GL_ARRAY_BUFFER 0 vp 'vbuf - 'vbuf glBufferSubData
-	GL_TRIANGLES 0 vp 'vbuf - 12 / glDrawArrays
+	GL_ARRAY_BUFFER 0 vp vbuf - vbuf glBufferSubData
+	GL_TRIANGLES 0 vp vbuf - 12 / glDrawArrays
 	0 glBindVertexArray
-	'vbuf 'vp !
+	vbuf 'vp !
 	0 'btu ! ;
 
-:vroom | nverts -- ; flush if they do not fit
-	12 * vp + vend >? ( gflush ) drop ;
-
 :vt | pos uv -- ; one vertex with the color vcol
-	vcol vp 8 + d!
-	vp 4 + d! vp d!
-	12 'vp +! ;
+	swap vp d!+ d!+ vcol swap d!+ 'vp ! ;
 
 :vtc | pos uv col -- ; one vertex with its own color
-	vp 8 + d!
-	vp 4 + d! vp d!
-	12 'vp +! ;
+	swap rot vp d!+ d!+ d!+ 'vp ! ;
 
 :setex | tex w h -- ; texture of the batch, flush only if the batch has other texture
 	pick2 btex =? ( 4drop 1 'btu ! ; ) drop
@@ -206,8 +196,8 @@ void main() {
 	2 glEnableVertexAttribArray
 	2 1 GL_INT 12 8 glVertexAttribIPointer
 	0 glBindVertexArray
-
-	'vbuf 'vp ! 0 'btu ! 0 'btex !
+	vbuf 'vp !
+	0 'btu ! 0 'btex !
 	1 'bsz d! 1 'bsz 4 + d!
 	;
 
@@ -245,7 +235,9 @@ void main() {
 	GL_BLEND glEnable
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	0 0 sw sh glViewport
-	'vbuf 'vp ! 0 'btu !
+	here $ffff + | 64k ahead (can inside gui modify here)
+	dup 'vbuf ! 'vp ! 
+	0 'btu !
 	$ffffffff 'imgtint !
 	;
 
@@ -289,7 +281,7 @@ void main() {
 	ftex $ffff and 'fatlas d@+ swap d@ setex ;
 
 :gchar | char --
-	6 vroom
+|	6 vroom
 	$ff and 3 << ftab + @				| e
 	xs ys pick2 16 >> $ffff and fscale *		| e xs ys w
 	pick3 48 >> fscale * setq			| e
@@ -321,7 +313,8 @@ void main() {
 	'fcolor ! ;
 
 ::frect | x y w h -- ; filled rectangle (covers x..x+w-1, y..y+h-1)
-	6 vroom fcolor 'vcol !
+	|6 vroom 
+	fcolor 'vcol !
 	rc					| x x1 y y1
 	pick3 pick2 vs  pick2 pick2 vs  pick2 over vs
 	pick3 pick2 vs  pick2 over vs  nip nip vs ;
@@ -345,7 +338,7 @@ void main() {
 	>r p16 -1 r> $ff000000 or vtc ;
 
 ::lineHg | x1 y x2 c1 c2 -- ; horizontal line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
-	6 vroom
+	|6 vroom
 	rot 1+ -rot				| x1 y x2+1 c1 c2
 	pick4 pick4 pick3 vg
 	pick2 pick4 pick2 vg
@@ -355,7 +348,7 @@ void main() {
 	drop nip swap 1+ swap vg ;
 
 ::lineVg | x y1 y2 c1 c2 -- ; vertical line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
-	6 vroom
+	|6 vroom
 	rot 1+ -rot				| x y1 y2+1 c1 c2
 	pick4 pick4 pick3 vg
 	pick4 1+ pick4 pick3 vg
@@ -378,14 +371,14 @@ void main() {
 	pick2 over <=? ( drop ; ) drop 2swap ;
 
 :linex | x1 y1 x2 y2 -- ; mostly horizontal, 1 pixel high
-	xord 6 vroom
+	xord |6 vroom
 	swap 1+ swap				| x1 y1 x2+1 y2
 	pick3 pick3 vs  2dup vs  2dup 1+ vs
 	pick3 pick3 vs  2dup 1+ vs
 	2drop 1+ vs ;
 
 :liney | x1 y1 x2 y2 -- ; mostly vertical, 1 pixel wide
-	yord 6 vroom
+	yord |6 vroom
 	1+					| x1 y1 x2 y2+1
 	pick3 pick3 vs  2dup vs  over 1+ over vs
 	pick3 pick3 vs  over 1+ over vs
@@ -397,7 +390,7 @@ void main() {
 	linex ;
 
 ::triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
-	fcolor 'vcol ! 3 vroom
+	fcolor 'vcol ! |3 vroom
 	p16 >r p16 >r p16 -1 vt r> -1 vt r> -1 vt ;
 
 #pp0 #pp1 #ppn
@@ -408,7 +401,7 @@ void main() {
 ::polyline | x y -- ; from the third point each new point draws a triangle with the first and the previous one
 	p16 1 'ppn +!
 	ppn 2 =? ( drop 'pp1 ! ; ) drop
-	fcolor 'vcol ! 3 vroom
+	fcolor 'vcol ! |3 vroom
 	pp0 -1 vt pp1 -1 vt dup -1 vt 'pp1 ! ;
 
 |--- ellipses: rows at pixel centers, half width of the row j (j rows from the center)
@@ -502,7 +495,7 @@ void main() {
 :imgq | -- ; draw q0..q3 with the source rect and the color icol
 	idx_img 4 * 'imgtextures + d@
 	idx_img 8 * 'imgsizes + d@+ swap d@ setex
-	6 vroom
+	|6 vroom
 	isx isy isw ish setuv
 	icol 'vcol !
 	qt ;

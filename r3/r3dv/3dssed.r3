@@ -631,8 +631,9 @@
 : | <<<<<<<< Boot
 
 	"Scene r3dv" 
-	1024 768 GLini GLInfo
+	1024 768 GLini 
 	|GlInifull
+	GLInfo
 	
 	$fff vaini
 	
