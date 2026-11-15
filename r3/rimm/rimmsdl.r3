@@ -20,6 +20,7 @@
 #gcon 0 #gcx #gcy #gcw #gch
 #gcst * 320 | 8 levels: on x y w h (qwords)
 #gcsp 0
+#pon 0
 
 ::gclip | x y w h -- ; clip the drawing to the rectangle
 	1 'gcon !
@@ -42,7 +43,7 @@
 	1 'gcsp +!
 	gcon 0? ( drop gclip ; ) drop
 	| intersection: x y w h with gcx gcy gcw gch
-	pick3 + 'ny2 ! pick2 + 'nx2 ! 'ny ! 'nx !
+	pick2 + 'ny2 ! pick2 + 'nx2 ! 'ny ! 'nx !
 	nx gcx max 'nx ! ny gcy max 'ny !
 	nx2 gcx gcw + min 'nx2 ! ny2 gcy gch + min 'ny2 !
 	nx ny nx2 nx - 0 max ny2 ny - 0 max gclip ;
@@ -50,9 +51,9 @@
 ::gclipPop | -- ; back to the clip before gclipPush
 	gcsp 0? ( drop ; ) drop
 	-1 'gcsp +!
-	gcsp 40 * 'gcst + 
-	@+ swap @+ swap @+ swap @+ swap @+ nip	| on x y w h
-	rot 0? ( drop 4drop gclip0 ; ) drop
+	gcsp 40 * 'gcst + >a
+	a@+ 'pon ! a@+ a@+ a@+ a@
+	pon 0? ( drop 4drop 0 'gcon ! gclip0 ; ) drop
 	gclip ;
 
 |--- rectangle with four colors (bilinear), colors $RRGGBB

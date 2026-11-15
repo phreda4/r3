@@ -11,14 +11,21 @@
 ^r3/rimm/rimmwid.r3
 ^r3/rimm/rimmcolor.r3
 ^r3/rimm/rimmfile.r3
+^r3/rimm/rimmedit.r3
 
 #dbackn 0
+#dfmono -1 #dfmain -1
+
+::demoFonts! | mono main -- ; fonts of the launcher: a monospace one for the editors and the normal one
+	'dfmain ! 'dfmono ! ;
+:fmono dfmono -? ( drop ; ) txfont ;
+:fmain dfmain -? ( drop ; ) txfont ;
 ::demoBack! | "name" -- ;
 	'dbackn ! ;
 
 |--- data of the widgets
 #dpage 0
-#dpages "Layout" "Botones" "Valores" "Listas" "Selectores" "Estilo" 0
+#dpages "Layout" "Botones" "Valores" "Listas" "Selectores" "Editor" "Estilo" 0
 #dthsel 0
 #dthemes "Dark" "Light" "Blender" "Godot" "Magica" 0
 
@@ -52,6 +59,9 @@
 #dcol2 $FF006E
 #dfile * 1024
 #dstripes 0
+#dtxt1 * 1024
+#dcode1 * 4096
+#dedinit 0
 
 |--- custom content and skin
 :ctNum | n --
@@ -151,6 +161,14 @@
 	"Texto" uiLabel 'dtxt 32 uiInputLine
 	1 uiCols ;
 
+:pgEditor
+	"uiTextArea (texto plano, click para editar)" uiLabel
+	fmono
+	'dtxt1 1024 110 uiTextAreaH
+	"uiCodeEdit (colores r3, numeros, Ctrl-F/D/Z/Y)" uiLabel
+	'dcode1 4096 220 uiCodeEditH
+	fmain ;
+
 :pgEstilo
 	"Tema (F1)" uiLabel
 	'dthsel 'dthemes uiTabs
@@ -172,6 +190,7 @@
 	1 uiCols ;
 
 ::demoFrame | -- ; one frame of the gui
+	dedinit 0? ( 1 'dedinit ! "Escribi aca. Es un uiTextArea sobre un buffer propio." 'dtxt1 strcpy ": demo 'x 10 ;  | un comentario" 'dcode1 strcpy ) drop
 	dthsel thNow <>? ( dup uiTheme ) drop
 	uiStart
 	10 10 sw 20 - 560 min sh 20 - uiBox
@@ -185,7 +204,8 @@
 	2 =? ( pgValores )
 	3 =? ( pgListas )
 	4 =? ( pgSelectores )
-	5 =? ( pgEstilo )
+	5 =? ( pgEditor )
+	6 =? ( pgEstilo )
 	drop
 	uiEnd ;
 

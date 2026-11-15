@@ -81,11 +81,12 @@ void main() {
 |-------------------------------------
 | fonts: png atlas of 16x16 chars (code = row*16+col), each cell cw x ch pixels
 | a font is a record of qwords: texture(packed with size) cw ch atlasw atlash
-#fontlist * 320		| 8 fonts
+#fontlist * 16704	| 8 fonts x 2088 bytes: tex ws hs atlas(w h int32) pad, 256 entries at +40
 #fontn 0
 #fcur 0			| current font
 #ftex 0			| texture of the current font
 #fatlas 0		| atlas w h (two int32)
+#ftab 0			| entries of the current font
 #nfd
 
 |-------------------------------------
@@ -134,23 +135,43 @@ void main() {
 	1 'btu ! ;
 
 |-------------------------------------
+| entry of a char: x | w<<16 | y<<32 | h<<48 (pixels of the atlas)
+:fntex | tex -- ; texture and atlas size of the record nfd
+	dup nfd !
+	dup 32 >> $ffff and nfd 24 + d!
+	48 >> $ffff and nfd 28 + d!
+	1 'fontn +! ;
+
+#tcw #tch
+
+:ftabfill | font -- ; 16x16 grid of cells ws x hs
+	dup 8 + @ over 16 + @ 'tch ! 'tcw !
+	ab[ 40 + >a
+	0 ( 256 <?
+		dup $f and tcw * over 4 >> $f and tch * 32 << or
+		tch 48 << or tcw 16 << or a!+
+		1+ ) drop
+	]ba ;
+
+::fnew | tex -- font ; record for a font with its own table (0 if full): set ws hs at +8 +16 and the 256 entries at +40
+	fontn 8 >=? ( 2drop 0 ; ) drop
+	fontn 2088 * 'fontlist + 'nfd !
+	0 nfd 8 + ! 0 nfd 16 + !
+	fntex nfd ;
+
 ::fload | "file" cw ch -- font ; load the atlas (max 8 fonts, 0 if full)
 	fontn 8 >=? ( 4drop 0 ; ) drop
-	fontn 40 * 'fontlist + 'nfd !
+	fontn 2088 * 'fontlist + 'nfd !
 	nfd 16 + ! nfd 8 + !
-	glLoadImg
-	dup nfd !
-	dup 32 >> $ffff and nfd 24 + !
-	48 >> $ffff and nfd 32 + !
-	1 'fontn +!
+	glLoadImg fntex
+	nfd ftabfill
 	nfd ;
 
-::txfont | font -- ; select the font (from fload) for ftext and the tx words
+::txfont | font -- ; select the font (from fload or txload) for ftext and the tx words
 	0? ( drop ; )
 	dup 'fcur !
-	@+ 'ftex ! @+ 'ws ! @+ 'hs !
-	@+ 'fatlas d!
-	@ 'fatlas 4 + d! ;
+	@+ 'ftex ! @+ 'ws ! @+ 'hs ! @ 'fatlas !
+	fcur 40 + 'ftab ! ;
 
 ::txfont@ | -- font ; the font selected now
 	fcur ;
@@ -255,41 +276,38 @@ void main() {
 
 |---------------------------------------
 | text
-#xt 0 #yt 0
+#xt 0 #yt 0 #cwv 0 #chv 0
+
+:tfont | -- ; texture of the current font in the batch
+	ftex $ffff and 'fatlas d@+ swap d@ setex ;
 
 :gchar | char --
 	6 vroom
-	dup $f and ws * 'xt ! 4 >> $f and hs * 'yt !
+	$ff and 3 << ftab + @
+	dup $ffff and 'xt !
+	dup 16 >> $ffff and 'cwv !
+	dup 32 >> $ffff and 'yt !
+	48 >> 'chv !
 	xs 'rx0 ! ys 'ry0 !
-	xs ws fscale * + 'rx1 ! ys hs fscale * + 'ry1 !
+	xs cwv fscale * + 'rx1 ! ys chv fscale * + 'ry1 !
 	setq
-	xt yt p16 'u0 !           xt ws + yt p16 'u1 !
-	xt ws + yt hs + p16 'u2 !  xt yt hs + p16 'u3 !
+	xt yt p16 'u0 !            xt cwv + yt p16 'u1 !
+	xt cwv + yt chv + p16 'u2 !  xt yt chv + p16 'u3 !
 	qt
-	ws fscale * 'xs +! ;
+	cwv fscale * 'xs +! ;
+
+:gtext | "" n -- ; n chars at xs ys, xs advances
+	( 1? 1- swap c@+ gchar swap ) 2drop ;
 
 ::fat
 	'ys ! 'xs ! ;
 
 ::ftextn | "" n -- ; draw n chars of the string with fcolor at fat
-	ftex $ffff and 'fatlas d@+ swap d@ setex
-	fcolor 'vcol !
-	( 1? 1- swap c@+ gchar swap ) 2drop ;
+	tfont fcolor 'vcol !
+	gtext ;
 
 ::ftext | "" --
 	count ftextn ;
-
-::fsizeh | -- cnh
-	fscale hs * ;
-
-::fsizew | -- cnw
-	fscale ws * ;
-
-::fsize | "" -- "" sizew sizeh
-	count fsizew * fsizeh ;
-
-::fsizecnt | "" cnt -- "" sizew sizeh
-	fsizew * fsizeh ;
 
 |---------------------------------------
 | solid shapes
@@ -479,9 +497,6 @@ void main() {
 ::images | x y w h img -- ; image scaled to the rectangle x y w h
 	imgsrc setrect setq imgq ;
 
-::imageb | 'box img -- ; image into the box x y w h (four int32)
-	swap d@+ swap d@+ swap d@+ swap d@ imgdraw ;
-
 ::imagebb | 'src 'dst img -- ; box src of the image into the box dst (x y w h, four int32 each)
 	imgsrc
 	d@+ swap d@+ swap d@+ swap d@ setrect
@@ -598,26 +613,47 @@ void main() {
 	sstile sprgo ;
 
 |---------------------------------------
-| 2D layer: color, text (monospace atlas font), shapes, clip, image box
+| 2D layer: color, text (fonts from fload or txload), clip, image box
 | same words as the SDL side (sdl2gfx + txfont), a gui can sit on any of both
 |---------------------------------------
 #txcol $ffffff
 
-::color | rgb -- ; draw color $RRGGBB (alpha 255)
-	$ff000000 or 'fcolor ! ;
-
 ::txrgb | rgb -- ; text color $RRGGBB, apart from the draw color
 	$ffffff and 'txcol ! ;
 
-|--- metrics (monospace font, with fscale)
-::txh | -- h ; line height
-	fsizeh ;
+::fsizeh | -- cnh
+	fscale hs * ;
 
-::txw | "" -- "" w ; width of the string in pixels
-	count fsizew * ;
+::fsizew | -- cnw
+	fscale ws * ;
 
-::txfit | w "" -- ncar ; chars of the string that fit in w pixels
-	count rot fsizew / min nip ;
+::fsizecnt | "" cnt -- "" sizew sizeh ; size of cnt cells of a monospace font
+	fsizew * fsizeh ;
+
+|--- metrics (with fscale)
+::txcw | adr car -- adr' width ; width in pixels of a character
+	$ff and 3 << ftab + 2 + w@ fscale * ;
+
+::txch | adr car -- adr' h ; height of a character
+	$ff and 3 << ftab + 6 + w@ fscale * ;
+
+::txh | -- h ; height of the font (line height)
+	ftab 262 + w@ fscale * ;
+
+::txw | "" -- "" width ; width of the string in pixels
+	0 over ( c@+ 1? txcw rot + swap ) 2drop ;
+
+::txfit | w "" -- ncar ; number of bytes of the string that fit in w pixels
+	0 over
+	( c@+ 1? txcw
+		rot +
+		pick3 >? ( drop swap - nip ; )
+		swap
+		) drop nip
+	swap - nip ;
+
+::fsize | "" -- "" sizew sizeh
+	txw txh ;
 
 |--- text cursor
 #tcx #tcy
@@ -634,14 +670,16 @@ void main() {
 ::txcr | -- ; new line
 	0 'tcx ! txh 'tcy +! ;
 
+:tcolor | -- ; vertex color of the text
+	txcol $ff000000 or 'vcol ! ;
+
+::txemit | adr car -- adr' ; one char at the cursor with the text color, the cursor moves
+	tfont tcolor
+	tcx tcy fat gchar xs 'tcx ! ;
+
 ::txwriten | "" n -- ; n chars at the cursor with the text color, the cursor moves
-	dup fsizew * >r
-	tcx tcy fat
-	fcolor >r
-	txcol $ff000000 or 'fcolor !
-	ftextn
-	r> 'fcolor !
-	r> 'tcx +! ;
+	tfont tcolor
+	tcx tcy fat gtext xs 'tcx ! ;
 
 ::txwrite | "" -- ; string at the cursor, the cursor moves
 	count txwriten ;
@@ -660,85 +698,98 @@ void main() {
 ::txprintr | .. "" -- ; sprint right aligned
 	sprint txemitr ;
 
+:curw | str cur -- w ; the cursor x goes to the char cur, w is the width of that char
+	swap ( over <? c@+ txcw 'tcx +! ) drop
+	c@ $ff and 3 << ftab + 2 + w@ fscale * ;
+
 ::txcur | str cur -- ; block cursor on the char cur of str
-	swap - fsizew * 'tcx +!
-	tcx tcy fsizew fsizeh frect ;
+	curw tcx tcy rot txh frect ;
 
 ::txcuri | str cur -- ; insert cursor (bar at the bottom)
-	swap - fsizew * 'tcx +!
-	tcx tcy fsizeh + fsizeh 2 >> - fsizew fsizeh 2 >> frect ;
+	curw tcx tcy txh + txh 2 >> - rot txh 2 >> frect ;
 
 |--- text in a box, wrapped by words (CR LF and ; start a new line)
-#txal 0
-#tw #th #tx0 #ty0 #tht #ly
-#lmax 1
-#lnb #lne #lnn #lcnt
+#strsplit
+#strsplit>
+#lines
+#cntlines
+
+:emit0
+	13 =? ( drop dup c@ 10 =? ( swap 1+ swap ) drop 0 ; )
+	10 =? ( drop dup c@ 13 =? ( swap 1+ swap ) drop 0 ; )
+	$3b =? ( 0 nip ) ;
+
+:<<sp | stro str -- str'
+	swap over
+	( over <? ( 2drop ; )
+		dup c@ $ff and 32 >?
+		drop 1- ) drop nip nip ;
+
+:testw | w h x y str -- str
+	pick4 over txfit
+	over count nip >=? ( drop ; )
+	over a!+
+	over + <<sp
+	0 swap c!+
+	testw ;
+
+:splitlines | str --
+	here dup >a 'strsplit !
+	( c@+ 1? emit0 ca!+ ) nip
+	a> 'strsplit> !
+	ca!+
+	a> 'lines !
+	strsplit ( strsplit> <?
+		testw dup a!+ >>0
+		) drop
+	0 a!+
+	a> dup 'here !
+	lines - 3 >> 'cntlines !
+	;
+
+::lwrite | w "str" -- ; left aligned text for txText (ignores w)
+	nip txwrite ;
+::cwrite | w "str" -- ; centered text in w pixels for txText
+	txw rot swap - 2/ 0 tx+at
+	txwrite ;
+::rwrite | w "str" -- ; right aligned text in w pixels for txText
+	txw rot swap - 0 tx+at
+	txwrite ;
+
+:vtop	drop ;
+:vcen	cntlines txh * - 2/ + txh 2/ + ;
+:vbot	cntlines 1- txh * - +  ;
+
+#halign 'cwrite
+#valign 'vcen
 
 ::txalign | $VH -- ; bits 0-1 horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
-	'txal ! ;
-
-:eol | str -- e0 ; end of the text of the line (0 CR LF or ;)
-	( c@+ 1?
-		13 =? ( drop 1- ; )
-		10 =? ( drop 1- ; )
-		59 =? ( drop 1- ; )
-		drop ) drop 1- ;
-
-:lterm | e -- next ; start of the next line after the terminator at e, 0 if the text ends
-	c@+ 0? ( 2drop 0 ; )
-	13 =? ( drop dup c@ 10 =? ( drop 1+ ; ) drop ; )
-	10 =? ( drop dup c@ 13 =? ( drop 1+ ; ) drop ; )
+	dup $3 and
+	0 =? ( 'lwrite 'halign !  )
+	1 =? ( 'cwrite 'halign ! )
+	2 =? ( 'rwrite 'halign ! )
+	drop
+	4 >> $3 and
+	0 =? ( 'vtop 'valign ! )
+	1 =? ( 'vcen 'valign ! )
+	2 =? ( 'vbot 'valign ! )
 	drop ;
 
-:wcut | q -- ; cut the line at the space in q
-	dup 'lne ! 1+ 'lnn ! ;
-
-:lwrap | -- ; line longer than lmax: cut at the last space or hard cut
-	lnb lmax +
-	( lnb >?
-		dup c@ 32 =? ( drop wcut ; ) drop
-		1- )
-	drop
-	lnb lmax + dup 'lne ! 'lnn ! ;
-
-:lline | str -- ; text of the line lnb..lne, next line lnn (0 = last)
-	dup 'lnb !
-	eol dup 'lne !
-	lnb - lmax >? ( drop lwrap ; ) drop
-	lne lterm 'lnn ! ;
-
-:nlines | str -- n
-	0 'lcnt !
-	( lline 1 'lcnt +! lnn 1? ) drop
-	lcnt ;
-
-:valy | -- dy
-	th tht -
-	txal 4 >> $3 and
-	1 =? ( drop 2/ ; )
-	2 =? ( drop ; )
-	2drop 0 ;
-
-:halx | lw -- dx
-	txal $3 and
-	1 =? ( drop tw swap - 2/ ; )
-	2 =? ( drop tw swap - ; )
-	2drop 0 ;
-
-:tdraw | str --
-	( lline
-		lne lnb - dup fsizew * halx tx0 + ly txat
-		lnb swap txwriten
-		fsizeh 'ly +!
-		lnn 1? ) drop ;
-
 ::txText | w h x y "" -- ; text in the box, aligned with txalign
-	>r 'ty0 ! 'tx0 ! 'th ! 'tw ! r>
-	tw fsizew / 1 max 'lmax !
-	dup nlines fsizeh * 'tht !
-	ty0 valy + 'ly !
-	tdraw ;
+	mark ab[
+	splitlines
+	rot
+	valign ex
+	lines >a (
+		2dup txat
+		a@+ 1?
+		pick3 swap halign ex
+		txh + ) drop
+	3drop
+	]ba empty ;
 
+::imageb | 'box img -- ; image (index of fimgload) into the box x y w h (four int32)
+	swap d@+ swap d@+ swap d@+ swap d@ imgdraw ;
 
 |--- clip
 #gcx #gcy #gcw #gch

@@ -13,7 +13,10 @@
 
 :
 	"RIMM demo SDL" 1024 700 SDLinitR
-	"media/ttf/Roboto-Medium.ttf" 18 txload txfont
+	| after loading several fonts select one with txfont (the last loaded is not usable)
+	"media/ttf/RobotoMono.ttf" 16 txload
+	"media/ttf/Roboto-Medium.ttf" 18 txload dup txfont
+	demoFonts!
 	"SDL2" demoBack!
 	'main SDLshow
 	SDLquit ;
