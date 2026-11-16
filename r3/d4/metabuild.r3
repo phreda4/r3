@@ -118,7 +118,7 @@
 	;
 
 |----------------------------
-#folders "r3/lib" "r3/util" 0
+#folders "r3/lib" "r3/util" 0 | "r3/rimm" 
 #foldern * 1024
 
 | sorted list of the files of a folder (the order of readdir is not fixed in linux)

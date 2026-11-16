@@ -2438,3 +2438,10 @@ sdlx | -- x ; mouse x in virtual screen pixels (it replaces the sdlx of sdl2 for
 sdly | -- y ; mouse y in virtual screen pixels (it replaces the sdly of sdl2 for the code that follows)
 %w | frac -- px ; fixed point fraction of the virtual screen width (1.0 = all) in pixels (it replaces the one of sdl2)
 %h | frac -- px ; fixed point fraction of the virtual screen height (1.0 = all) in pixels (it replaces the one of sdl2)
+rimmGLini | "title" w h -- ; open the GL window and prepare glgfx (shader): GLini + glgfx. Without glgfx nothing is drawn
+gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip
+gclipPop | -- ; back to the clip before gclipPush
+gclip | x y w h -- ; clip the drawing to the rectangle
+gclip0 | -- ; remove the clip
+gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip; gclipPop goes back
+gclipPop | -- ; back to the clip before gclipPush

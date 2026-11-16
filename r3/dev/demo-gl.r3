@@ -3,7 +3,7 @@
 | GL needs glgfx after GLini (rimmGLini) and the gui between fini and fend.
 | Fonts: the same TTF files and sizes as demo-sdl.r3 (txload from gltxfont).
 ^r3/rimm/rimmgl.r3
-^r3/rimm/demo-rimm.r3
+^./demo-rimm.r3
 
 :main
 	GLcls

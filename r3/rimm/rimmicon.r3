@@ -32,6 +32,7 @@
 :dMinus
 	3 px 8 py 12 sc 2 sc rect ;
 
+| new, edit, delete, cut, copy, paste, paint, erase, view
 #icons 'dChk 'dX 'dRight 'dDown 'dLeft 'dUp 'dPlus 'dMinus
 
 ::ICCHK 0 ; ::ICX 1 ; ::ICRIGHT 2 ; ::ICDOWN 3 ; 

@@ -1,7 +1,7 @@
 | RIMM demo over SDL2:   ./r3lin r3/rimm/demo-sdl.r3
 
 ^r3/rimm/rimmsdl.r3
-^r3/rimm/demo-rimm.r3
+^./demo-rimm.r3
 
 :main
 	$101010 cls
