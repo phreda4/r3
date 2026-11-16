@@ -29,6 +29,7 @@
 ##tkbudget 48	| ciclos de cpu por tanque por tick
 
 #tanks 0 0
+#deads 0 0	| tanques muertos (se dibujan primero, detras de los vivos)
 #bombs 0 0
 #fx 0 0
 
@@ -170,6 +171,8 @@
 	tank.fire ;
 
 #px #py #pp #pd
+##tkrecoil 6.0	| retroceso extra de cada tanque en un choque (unidades)
+##tkcrash 0.04	| danio de cada tanque por choque (1.0 = destruido)
 
 :tt.pair | a b -- a b		; choque entre dos tanques (simetrico)
 	over .cpu @ 0? ( drop ; ) drop
@@ -179,19 +182,33 @@
 	px int. dup * py int. dup * +
 	784 >=? ( drop ; )
 	sqrt fix. 0.5 max 'pd !
-	28.0 pd - 1 >> 'pp !
+	28.0 pd - 1 >> tkrecoil + 'pp !		| separacion + retroceso
 	px pd /. pp *. 'px !
 	py pd /. pp *. 'py !
 	px over .x +! py over .y +!
+	0 over .spd ! tkcrash over .dmg +!		| frena y recibe danio
 	swap
 	px neg over .x +! py neg over .y +!
+	0 over .spd ! tkcrash over .dmg +!
 	swap ;
+
+:corpse.draw | adr --		; tanque muerto: sprite oscuro fijo
+	8 + >a
+	$ff404040 sstint
+	a@+ scrx a@+ scry a@+ 2.0 a@ aniFrame tkimg sspriterz
+	ssnotint ;
+
+:+corpse | tank -- tank		; pasa el tanque a la lista de muertos
+	'corpse.draw 'deads p!+ >b
+	dup .x @ b!+ dup .y @ b!+ dup .hdg @ b!+
+	2 1 0 aniInit b! ;
 
 :tank.dead | tank -- tank
 	dup .cpu @ 0? ( drop ; ) drop
 	dup .dmg @ 1.0 <? ( drop ; ) drop
 	0 over .cpu !
 	0 over .spd ! 0 over .spdd !
+	+corpse
 	dup .x @ over .y @ +fxexplo ;
 
 #nalive #lastalive
@@ -353,6 +370,7 @@ isin icos irand i*. i/. ifix. iint.
 	2drop ;
 
 :tank.draw | adr --
+	dup .cpu @ 0? ( 2drop ; ) drop		| muerto: se dibuja en la lista deads
 	'ctk !
 	tkanim
 	tkcolor sstint
@@ -388,6 +406,7 @@ isin icos irand i*. i/. ifix. iint.
 
 ::tk.draw
 	floor walls
+	'deads p.draw
 	'bombs p.draw
 	'tanks p.draw
 	'fx p.draw ;
@@ -396,13 +415,14 @@ isin icos irand i*. i/. ifix. iint.
 ::tk.ini
 	16 16 "media/img/tank.png" ssload 'tkimg !
 	16 'tanks p.ini
+	16 'deads p.ini
 	400 'bombs p.ini
 	400 'fx p.ini
 	'wordt 'words vmlistok
 	'wordt 'worde 'wordd vmcpuio ;
 
 ::tk.reset
-	'tanks p.clear 'bombs p.clear 'fx p.clear
+	'tanks p.clear 'deads p.clear 'bombs p.clear 'fx p.clear
 	0 'acc ! 0 'tkticks ! -1 'tkwin ! -1 'tkerrtank ! 1 'tkrun ! ;
 
 #tcpu

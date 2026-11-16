@@ -5,7 +5,8 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
 ^r3/lib/3dgl.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 #shader "
 @vertex-----------------
@@ -269,7 +270,7 @@ void main(){
     draw
     GLUpdate
 	
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( wheelcam ) | over
 	3 =? ( movecam ) | active

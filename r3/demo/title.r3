@@ -3,7 +3,8 @@
 |
 ^r3/lib/console.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 ^r3/util/varanim.r3
 ^r3/util/textb.r3
 ^r3/lib/color.r3

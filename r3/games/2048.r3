@@ -2,7 +2,8 @@
 | PHREDA 2024
 ^r3/lib/rand.r3
 ^r3/lib/sdl2gfx.r3
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 
 #colors $afa192 $eee4da $ede0c8 $f2b179 $ffcea4 $e8c064 $ffab6e $fd9982 $ead79c $76daff $beeaa5 $d7d4f0
 #map * 16 | 4 * 4 

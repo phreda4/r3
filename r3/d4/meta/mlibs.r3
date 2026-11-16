@@ -83,8 +83,8 @@
 #info ( $1F $2E $0 $1 $6B $2E $3D $1F $3D $3D $10 $1F $1F $1F $2E $3E $5C $5B $4C $2E $1F $1F $4D $1F $4C $1F $2F $6B $5C $5B $5B $9 $1F $1F $4C $2E $2E $3D $1F $4C $1F $2E $2E $3E $8 $3D $3D $5B $2E $2E $6A $5B $2E $2E $2E $1F $10 $1 $2F $1F $2E $10 $1F $1F $1F $1F $10 $2E $2E $1 $5C $3D $10 $2E $1F $1 $1 $10 $1F $80 $80 $80 $80 $3D $3D $4C $3D $11 $2E $0 $2F $0 $0 $80 $80 $80 $80 $80 $80 $80 $80 $1F $0 $1F $80 $1F $0 $0 $0 $11 $10 $10 )
 #r3_lib_sdl2.r3 'name 'words 'info
 #name "r3/lib/sdl2gfx.r3"
-#words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "frect" "rect" "fellipse" "ellipse" "fround" "round" "fcircle" "circle" "polyop" "polyline" "triangle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
-#info ( $1F $1F $1F $2E $2F $4C $3D $3D $4C $4C $4C $4C $5B $5B $3D $3D $2E $2E $6A $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 )
+#words  "color" "colorA" "cls" "point" "getpixel" "line" "lineH" "lineV" "lineHg" "lineVg" "frect" "rect" "fellipse" "ellipse" "fround" "round" "fcircle" "circle" "polyop" "polyline" "triangle" "image" "images" "imageb" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "createSurf" "Surf>pix" "Surf>wha" "Surf>wh" "Surf>pixpi" "texIni" "texEnd" "texEndAlpha" "Tex2Surface" "Tex2Static" 0
+#info ( $1F $1F $1F $2E $2F $4C $3D $3D $5B $5B $4C $4C $4C $4C $5B $5B $3D $3D $2E $2E $6A $3D $5B $2E $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $3E $11 $1F $0 $11 $4C $5B $5B $6A $2F $11 $11 $12 $11 $2E $1 $1 $11 $10 )
 #r3_lib_sdl2gfx.r3 'name 'words 'info
 #name "r3/lib/sdl2gl-const.r3"
 #words  "GL_FALSE" "GL_TRUE" "GL_NONE" "GL_MAJOR_VERSION" "GL_MINOR_VERSION" "GL_DEPTH_BUFFER_BIT" "GL_STENCIL_BUFFER_BIT" "GL_COLOR_BUFFER_BIT" "GL_POINTS" "GL_LINES" "GL_LINE_LOOP" "GL_LINE_STRIP" "GL_TRIANGLES" "GL_TRIANGLE_STRIP" "GL_TRIANGLE_FAN" "GL_CULL_FACE" "GL_DEPTH_TEST" "GL_STENCIL_TEST" "GL_BLEND" "GL_POLYGON_OFFSET_FILL" "GL_NEVER" "GL_LESS" "GL_EQUAL" "GL_LEQUAL" "GL_GREATER" "GL_NOTEQUAL" "GL_GEQUAL" "GL_ALWAYS" "GL_SRC_ALPHA" "GL_ONE_MINUS_SRC_ALPHA" "GL_ONE" "GL_ZERO" "GL_UNSIGNED_BYTE" "GL_UNSIGNED_SHORT" "GL_UNSIGNED_INT" "GL_INT" "GL_FLOAT" "GL_DEPTH_COMPONENT" "GL_DEPTH_COMPONENT24" "GL_RED" "GL_RGB" "GL_RGBA" "GL_BGRA_EXT" "GL_TEXTURE0" "GL_TEXTURE1" "GL_TEXTURE2" "GL_TEXTURE3" "GL_TEXTURE4" "GL_TEXTURE5" "GL_TEXTURE6" "GL_TEXTURE7" "GL_TEXTURE8" "GL_TEXTURE_2D" "GL_TEXTURE_MAG_FILTER" "GL_TEXTURE_MIN_FILTER" "GL_TEXTURE_WRAP_S" "GL_TEXTURE_WRAP_T" "GL_TEXTURE_BORDER_COLOR" "GL_TEXTURE_COMPARE_MODE" "GL_TEXTURE_COMPARE_FUNC" "GL_COMPARE_REF_TO_TEXTURE" "GL_TEXTURE" "GL_TEXTURE_2D_ARRAY" "GL_TEXTURE_3D" "GL_NEAREST" "GL_LINEAR" "GL_CLAMP_TO_EDGE" "GL_CLAMP_TO_BORDER" "GL_REPEAT" "GL_ARRAY_BUFFER" "GL_ELEMENT_ARRAY_BUFFER" "GL_UNIFORM_BUFFER" "GL_UNIFORM_BUFFER_BINDING" "GL_STATIC_DRAW" "GL_DYNAMIC_DRAW" "GL_STREAM_DRAW" "GL_MAP_READ_BIT" "GL_MAP_WRITE_BIT" "GL_MAP_PERSISTENT_BIT" "GL_MAP_COHERENT_BIT" "GL_DYNAMIC_STORAGE_BIT" "GL_MAP_INVALIDATE_RANGE_BIT" "GL_MAP_UNSYNCHRONIZED_BIT" "GL_FRAGMENT_SHADER" "GL_VERTEX_SHADER" "GL_GEOMETRY_SHADER" "GL_COMPILE_STATUS" "GL_LINK_STATUS" "GL_INFO_LOG_LENGTH" "GL_FRAMEBUFFER" "GL_DEPTH_ATTACHMENT" "GL_TIME_ELAPSED" "GL_QUERY_RESULT" "GL_QUERY_RESULT_AVAILABLE" "GL_SYNC_GPU_COMMANDS_COMPLETE" "GL_SYNC_FLUSH_COMMANDS_BIT" "GL_ALREADY_SIGNALED" "GL_CONDITION_SATISFIED" "GL_UNPACK_ALIGNMENT" "GL_PACK_ALIGNMENT" "GL_DYNAMIC_COPY" "GL_DYNAMIC_READ" "GL_READ_ONLY" "GL_WRITE_ONLY" "GL_WRITE_WRITE" "GL_COLOR_ATTACHMENT0" "GL_COLOR_ATTACHMENT1" "GL_COLOR_ATTACHMENT2" "GL_FRAMEBUFFER_COMPLETE" "GL_RGBA32F" "GL_RGBA8" "GL_RGB16F" "GL_R32F" "GL_R8" "GL_DEPTH_COMPONENT32F" "GL_TEXTURE_CUBE_MAP" "GL_TEXTURE_CUBE_MAP_POSITIVE_X" "GL_TEXTURE_CUBE_MAP_NEGATIVE_X" "GL_TEXTURE_CUBE_MAP_POSITIVE_Y" "GL_TEXTURE_CUBE_MAP_NEGATIVE_Y" "GL_TEXTURE_CUBE_MAP_POSITIVE_Z" "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z" "GL_READ_FRAMEBUFFER" "GL_DRAW_FRAMEBUFFER" "GL_BACK" "GL_FRONT" "GL_CCW" "GL_CW" "GL_NO_ERROR" "GL_TEXTURE_1D" "GL_RGBA16F" "GL_RGB10_A2" "GL_R16UI" "GL_RED_INTEGER" "GL_UNSIGNED_INT_10_10_10_2" "GL_DEBUG_OUTPUT" "GL_DEBUG_OUTPUT_SYNCHRONOUS" "GL_DEBUG_SEVERITY_NOTIFICATION" "GL_DONT_CARE" "GL_VERTEX_ATTRIB_ARRAY_ENABLED" "GL_VERTEX_ATTRIB_ARRAY_SIZE" "GL_VERTEX_ATTRIB_ARRAY_TYPE" "GL_VERTEX_ATTRIB_ARRAY_STRIDE" "GL_VERTEX_ATTRIB_ARRAY_POINTER" "GL_SHADER_STORAGE_BUFFER" "GL_DEPTH24_STENCIL8" "GL_TEXTURE_MAX_ANISOTROPY_EXT" "GL_TEXTURE_MAX_LEVEL" "GL_TEXTURE_MAX_LOD" "GL_TEXTURE_MIN_LOD" "GL_TEXTURE_WRAP_R" "GL_NEAREST_MIPMAP_LINEAR" "GL_NEAREST_MIPMAP_NEAREST" "GL_RENDERBUFFER" "GL_DEPTH_STENCIL_ATTACHMENT" "GL_DEPTH" "GL_LINEAR_MIPMAP_LINEAR" 0
@@ -191,17 +191,17 @@
 #info ( $80 $80 $2E $10 $1F $2E $1F $10 $10 $0 )
 #r3_util_filedirs.r3 'name 'words 'info
 #name "r3/util/glgfx.r3"
-#words  "fcolor" "fscale" "fixFontResize" "imgcount" "fload" "txfont" "txfont@" "glgfx" "fimgload" "fimgtex" "fimgwh" "fini" "fend" "fat" "ftextn" "ftext" "fsizeh" "fsizew" "fsize" "fsizecnt" "frect" "rect" "frectb" "rectb" "imgdrawuv" "imgdraw" "color" "txrgb" "txh" "txw" "txfit" "txat" "txpos" "tx+at" "txcr" "txwriten" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "txalign" "txText" "fround" "round" "lineH" "lineV" "imageb" "gclip" "gclip0" 0
-#info ( $80 $80 $0 $80 $3E $1F $1 $0 $10 $10 $11 $0 $0 $2E $2E $1F $1 $1 $12 $11 $4C $4C $5B $5B $17 $5B $1F $1F $1 $11 $2F $2E $2 $2E $0 $2E $1F $1F $2E $1F $1F $2E $2E $1F $5B $5B $5B $3D $3D $2E $4C $0 )
+#words  "fcolor" "fscale" "fixFontResize" "imgcount" "gflush" "fnew" "fload" "txfont" "txfont@" "glgfx" "icol" "imgtint" "fimgload" "fimgtex" "fimgwh" "fini" "fend" "fat" "ftextn" "ftext" "color" "colorA" "frect" "rect" "lineH" "lineV" "lineHg" "lineVg" "point" "cls" "line" "triangle" "polyop" "polyline" "fellipse" "ellipse" "fcircle" "circle" "fround" "round" "imgdrawuv" "imgdraw" "image" "images" "imagebb" "tsload" "tscolor" "tsalpha" "tsdraw" "tsdraws" "tsbox" "tsfree" "sprite" "spriteZ" "spriteR" "spriteRZ" "sscol" "ssload" "sscnt" "sstint" "ssnotint" "sspritewh" "ssprite" "sspriter" "sspritez" "sspriterz" "txrgb" "fsizeh" "fsizew" "fsizecnt" "txcw" "txch" "txh" "txw" "txfit" "fsize" "txat" "txpos" "tx+at" "txcr" "txemit" "txwriten" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "imageb" "gclip" "gclip0" 0
+#info ( $80 $80 $0 $80 $0 $10 $3E $1F $1 $0 $80 $80 $10 $10 $11 $0 $0 $2E $2E $1F $1F $1F $4C $4C $3D $3D $5B $5B $2E $1F $4C $6A $2E $2E $4C $4C $3D $3D $5B $5B $17 $5B $3D $5B $3D $3E $2E $2E $4C $6A $3D $1F $3D $4C $4C $5B $80 $3E $11 $1F $0 $11 $4C $5B $5B $6A $1F $1 $1 $11 $10 $10 $1 $11 $2F $12 $2E $2 $2E $0 $1F $2E $1F $1F $2E $1F $1F $2E $2E $2E $2E $2E $1F $5C $2E $4C $0 )
 #r3_util_glgfx.r3 'name 'words 'info
-#name "r3/util/glimm.r3"
-#words  "wix" "wiy" "wiw" "wih" "immBox" "immFull" "immIni" "immMouse" "immZone" 0
-#info ( $80 $80 $80 $80 $4C $0 $0 $1 $0 )
-#r3_util_glimm.r3 'name 'words 'info
 #name "r3/util/gllib.r3"
 #words  "mat" "mati" "mat>" "matini" "cpymatif" "cpymatif3" "matProjV" "mortho" "mlookat" "mat*" "matinv" "matrot" "matpos" "matscale" "matprint" "loadShaderv" "glLoadImg" "glColorTex" 0
 #info ( $80 $80 $80 $0 $2E $2E $4C $6A $3D $1F $0 $3D $3D $3D $1F $10 $10 $10 )
 #r3_util_gllib.r3 'name 'words 'info
+#name "r3/util/gltxfont.r3"
+#words  "txload" 0
+#info ( $2F )
+#r3_util_gltxfont.r3 'name 'words 'info
 #name "r3/util/hash2d.r3"
 #words  "H2d.ini" "H2d.clear" "H2d.list" "checkmax" "h2d+!" "h2d!" 0
 #info ( $1F $0 $2 $80 $4C $5E )
@@ -210,46 +210,6 @@
 #words  "heap!" "heap@" "heapini" 0
 #info ( $2E $10 $2E )
 #r3_util_heap.r3 'name 'words 'info
-#name "r3/util/imcolor.r3"
-#words  "color!" "uiColor" "uiColorH" 0
-#info ( $1F $1F $2E )
-#r3_util_imcolor.r3 'name 'words 'info
-#name "r3/util/imedit.r3"
-#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edlinenum!" "edlinenum" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 )
-#r3_util_imedit.r3 'name 'words 'info
-#name "r3/util/imfiledlg.r3"
-#words  "immfileload" "immfilesave" "fullfilename" "uiFileName" 0
-#info ( $1F $1F $1 $1F )
-#r3_util_imfiledlg.r3 'name 'words 'info
-#name "r3/util/immcore.r3"
-#words  "fx" "fy" "fw" "fh" "flpadx" "flpady" "flcols" "flrows" "flcolm" "flrowm" "cx" "cy" "cw" "ch" "%cw" "%ch" "uiPad" "uiBox" "uiWinBox" "uiLn" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "idfh" "mdrag" "uistate" "keymd" "btnMouse" "uiEx!" "uiEx?" "uiOvr" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiStart" "idfs" "uiExitWidget" "uiSaveLast" "uiEnd" "chx" "uiZone" "uiZoneL" "uiZoneW" "uiZoneBox" "uiBackBox" "uiPlace" "uiRefocus" "uiFocus>>" "uiFocus<<" "tabfocus" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $2E $4C $4 $0 $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $80 $80 $0 $1 $1F $1F $1F $1F $1F $1F $1F $0 $80 $0 $5B $0 $80 $0 $1F $0 $4C $0 $1F $0 $0 $0 $0 )
-#r3_util_immcore.r3 'name 'words 'info
-#name "r3/util/immdatetime.r3"
-#words  "uiDateTime" "uiDate" "uiTime" 0
-#info ( $1F $1F $1F )
-#r3_util_immdatetime.r3 'name 'words 'info
-#name "r3/util/immgl.r3"
-#words  "txicon" "icChkOn" "icChkOff" "icRadOn" "icRadOff" "icTreeC" "icTreeO" "icCombo" 0
-#info ( $1F $1 $1 $1 $1 $1 $1 $1 )
-#r3_util_immgl.r3 'name 'words 'info
-#name "r3/util/immi.r3"
-#words  0
-#info ( )
-#r3_util_immi.r3 'name 'words 'info
-#name "r3/util/immsdl.r3"
-#words  "txicon" "icChkOn" "icChkOff" "icRadOn" "icRadOff" "icTreeC" "icTreeO" "icCombo" "gclip" "gclip0" 0
-#info ( $1F $1 $1 $1 $1 $1 $1 $1 $4C $0 )
-#r3_util_immsdl.r3 'name 'words 'info
-#name "r3/util/immwid.r3"
-#words  "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTex" "uiLineGridV" "uiLineGridH" "uiLineGrid" "colBac" "colFil" "colTxt" "colFoc" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "stColor" "uilFill" "uilRFill" "uilCFill" "uilTex" "uilRect" "uilRRect" "uilCRect" "uil.." "ui.." "ui--" "uiClip" "uiUnclip" "ttwrite" "ttwritec" "ttwriter" "uiTlabel" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "uiTBtn" "uiNBtn" "uiBtn" "uiRBtn" "uiCBtn" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiSliderfL" "uiSlideriL" "uiVSliderf" "uiVSlideri" "uiNindx" "uiToggle" "uiCheck" "uiRadio" "uiList" "uiTree" "uiCombo" "uiInputLine" 0
-#info ( $0 $0 $1F $1F $0 $0 $1F $0 $0 $0 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $2F $2E $2E $2E $2E $2E $3D $3D $3D $3D $4C $4C $3D $3D $10 $2E $2E $2E $3D $3D $2E $2E )
-#r3_util_immwid.r3 'name 'words 'info
-#name "r3/util/immzone.r3"
-#words  "wix" "wiy" "wiw" "wih" "immBox" "immFull" "immIni" "immMouse" 0
-#info ( $80 $80 $80 $80 $4C $0 $0 $1 )
-#r3_util_immzone.r3 'name 'words 'info
 #name "r3/util/loadobj.r3"
 #words  "verl" "nver" "facel" "nface" "norml" "texl" "ntex" "paral" "colorl" "ncolor" "]face" "]vert" "]norm" "]uv" ">>cr" "]Ka@" "]Kd@" "]Ks@" "]Ke@" "]Ns@" "]Ni@" "]d@" "]i@" "]Mkd@" "]MNs@" "]Mbp@" "cnt/" "getpath" "loadobj" "xmin" "ymin" "zmin" "xmax" "ymax" "zmax" "objminmax" "objmove" "objcentra" "objescala" "objescalax" "objescalay" "objescalaz" "objcube" 0
 #info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $80 $80 $80 $80 $80 $0 $3D $0 $2E $2E $2E $2E $1F )
@@ -323,4 +283,4 @@
 #info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_glgfx.r3 'r3_util_glimm.r3 'r3_util_gllib.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_imcolor.r3 'r3_util_imedit.r3 'r3_util_imfiledlg.r3 'r3_util_immcore.r3 'r3_util_immdatetime.r3 'r3_util_immgl.r3 'r3_util_immi.r3 'r3_util_immsdl.r3 'r3_util_immwid.r3 'r3_util_immzone.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_glgfx.r3 'r3_util_gllib.r3 'r3_util_gltxfont.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 0

@@ -78,7 +78,7 @@
 ::ui-- | -- ; separator: a line across the frame, in its own row
 	uiLnEnd uiCol# uiSpan
 	colFillN
-	fx flpadx + cy rh 2/ + fw flpadx 2* - 1 frect
+	fx flpadx + cy rh 2 >> + fw flpadx 2* - 1 frect
 	rh 2/ uiAdvH ;
 
 ::uiClip | -- ; clip the drawing to the interaction area

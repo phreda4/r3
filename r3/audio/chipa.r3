@@ -2,8 +2,9 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gfx.r3
-^r3/util/immi.r3
-^r3/util/imedit.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmedit.r3
 
 ^./gamesfx.r3
 

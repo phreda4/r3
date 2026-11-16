@@ -4,7 +4,8 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/sdl2mixer.r3
 ^r3/util/varanim.r3
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 ^r3/util/arr16.r3
 
 #font1

@@ -8,7 +8,8 @@
 
 ^r3/lib/rand.r3
 ^r3/util/arr16.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 ^r3/opengl/shaderobj.r3
 
 #flpos [ 1.2 20.0 2.0 ] | light position
@@ -118,7 +119,7 @@
 
 |--------------	
 :main
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( sdlw 2.0 * 'pEye 16 + +! eyecam ) | over
 	2 =? ( dnlook )

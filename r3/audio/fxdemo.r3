@@ -1,6 +1,7 @@
 | fxdemo.r3 - demo interactivo de fxsynth.r3 
 | PHREDA 2026 
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 ^./supermix.r3
 ^./fxsynth.r3
 

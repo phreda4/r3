@@ -3,7 +3,8 @@
 ^r3/lib/sdl2gfx.r3
 ^r3/lib/math.r3
 ^r3/lib/color.r3
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 
 #t #m #k #e #d #p #c 
 #s #q #y #xp #yp

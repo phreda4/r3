@@ -5,16 +5,20 @@
 |  1) configuracion: cantidad de tanques y script de cada uno
 |  2) editor de scripts con la ayuda de las palabras del tanque
 |  3) juego: solo se ve la arena
+|
+| gui y editor: RIMM (rimmsdl, rimmwid, rimmedit)
+| ttext queda solo para el titulo, la ayuda y la arena
 |-------------------------
-^r3/lib/gui.r3
 ^r3/lib/str.r3
 ^r3/lib/mem.r3
 ^r3/util/varanim.r3
 ^r3/util/ttext.r3
 
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmedit.r3
+
 ^./arena-tank.r3
-^./arena-edit.r3
-^./tedit.r3
 ^./rcodevm.r3
 
 |------------------- datos
@@ -31,6 +35,8 @@
 #wantedit #again #paused
 #okt			| momento del ultimo "compile OK"
 #nn
+#act #acti		| accion pedida por un boton (se hace al terminar el cuadro)
+#fmono #fmain	| fuentes: monoespaciada (editor) y normal
 
 | posiciones iniciales (x y)
 #spawns
@@ -107,34 +113,26 @@
 	"tank3.r3" sfind 3 tc!
 	4 ( 8 <? "tank1.r3" sfind over tc! 1+ ) drop ;
 
-|------------------- botones
-#bx #by #bw #bh #bev #btx #bcol
-:btn | x y w h 'ev "txt" col --
-	'bcol ! 'btx ! 'bev ! 'bh ! 'bw ! 'by ! 'bx !
-	bx by bw bh guiBox
-	bcol [ dup 2* or ; ] guiI color
-	bx by bw bh frect
-	2.0 tsize 6 tcol
-	bx 8 + by bh 16 - 1 >> + tat btx temits
-	bev onClick ;
-
 |------------------- editor
 :chkcode | --
 	mark
 	fuente vmcompile
-	1 >? ( 'terror ! 'fuente> ! 3 'state ! clearmark
+	1 >? ( 'terror ! 'fuente> ! clearmark
 		fuente> $700ffff addsrcmark empty ; ) 2drop
 	empty
-	1 'state ! clearmark msec 'okt ! ;
+	clearmark msec 'okt ! ;
 
 :editscr
-	vupdate gui 0 cls
+	vupdate $101010 cls
 	2.0 tsize 0 0 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits
 	1.0 tsize 6 tcol 150 4 tat "Editor: " temits 'edfilename temits
 	msec okt - 2000 <? ( 3 tcol 520 4 tat "compile OK" temits ) drop
-	draw.code
 	632 20 tk.help
 	1.0 tsize 6 tcol 8 590 tat "F1: comprobar   F2: guardar   ESC: volver (guarda)" temits
+	uiStart
+	0 32 624 550 uiBox
+	fmono txfont uiEdit showmark fmain txfont
+	uiEnd
 	sdlredraw
 	sdlkey
 	>esc< =? ( exit )
@@ -143,20 +141,19 @@
 	drop ;
 
 :runedit
-	1.5 'edtsize ! 1.5 tsize
-	0 32 620 540 edwin
+	uiRefocus
 	'editscr SDLshow
 	edsave ;
 
 :editscript | idx --
 	spath edload
-	0 'okt ! 1 'state ! clearmark
+	0 'okt ! clearmark
 	runedit ;
 
 :fixerror | --		; abre el script con error y marca la palabra
 	etank tc@ spath edload
 	fuente eoff + 'fuente> !
-	0 'okt ! 3 'state ! clearmark
+	0 'okt ! clearmark
 	fuente> $700ffff addsrcmark
 	runedit ;
 
@@ -209,7 +206,7 @@
 	1 'wantedit ! exit ;
 
 :playscr
-	vupdate gui 0 cls
+	vupdate 0 cls
 	paused 0? ( tk.update ) drop
 	tk.draw
 	playhud
@@ -243,14 +240,16 @@
 	scount 0? ( drop ; ) drop
 	cur tc@ 1+ scount >=? ( drop 0 ) cur tc! ;
 
+:goplay 1 'act ! ;
 :editcode
 	scount 0? ( drop ; ) drop
-	cur tc@ editscript ;
+	2 'act ! cur 'acti ! ;
+:newcode 3 'act ! cur 'acti ! ;
 
 :freename | -- n
 	1 ( dup "r3/r3vm/codetank/mytank%d.r3" sprint filexist 1? drop 1+ ) drop ;
 
-:newcode
+:donew
 	freename 'nn !
 	'template count nn "r3/r3vm/codetank/mytank%d.r3" sprint save
 	nn "mytank%d.r3" sprint 'nname strcpy
@@ -258,44 +257,54 @@
 	'nname sfind cur tc!
 	cur tc@ editscript ;
 
-:lesstanks
-	ntanks 1 >? ( 1 - 'ntanks ! ; ) drop ;
-:moretanks
-	ntanks 8 <? ( 1 + 'ntanks ! ; ) drop ;
+:doact | -- ; acciones de los botones, fuera del cuadro de la gui
+	act 0? ( drop ; )
+	0 'act !
+	1 =? ( drop playgame ; )
+	2 =? ( drop acti tc@ editscript ; )
+	3 =? ( drop acti 'cur ! donew ; )
+	drop ;
 
-#ry
+:sname@ | -- str
+	scount 0? ( drop "(sin scripts)" ; ) drop
+	cur tc@ sname ;
+
+#rw -30 -90 -40 1.0 -40 -90 -90
+#bw -200 -160 1.0
+
 :rowtank | i --
-	dup 'cur !
-	44 * 170 + 'ry !
-	cur tk.rgb color 40 ry 6 + 24 24 frect
-	2.0 tsize 6 tcol 76 ry 10 + tat cur 1+ "Tank %d" tprint
-	186 ry 40 36 'prevcode "<" $404080 btn
-	$202030 color 232 ry 360 36 frect
-	1.5 tsize 6 tcol 242 ry 12 + tat
-	scount 0? ( drop "(sin scripts)" temits ; ) drop
-	cur tc@ sname temits ;
-
-:rowbuttons | i --
-	dup 'cur !
-	44 * 170 + 'ry !
-	598 ry 40 36 'nextcode ">" $404080 btn
-	652 ry 110 36 'editcode "Edit" $305030 btn
-	772 ry 110 36 'newcode "New" $503030 btn ;
+	'cur !
+	'rw 7 uiColsW
+	cur tk.rgb color uiFill ui..
+	cur 1+ "Tank %d" sprint uiLabel
+	'prevcode "<" uiBtn
+	sname@ uiLabelC
+	'nextcode ">" uiBtn
+	stSucc 'editcode "Edit" uiBtn
+	stWarn 'newcode "New" uiBtn
+	stTheme ;
 
 :cfgscr
-	vupdate gui 0 cls
+	vupdate $101010 cls
 	6.0 tsize 24 4 tat $5 tcol "Ar3na" temits $3 tcol "Tank" temits
-	2.0 tsize 6 tcol 40 112 tat "Tanques:" temits
-	190 104 40 36 'lesstanks "-" $404080 btn
-	250 112 tat ntanks "%d" tprint
-	280 104 40 36 'moretanks "+" $404080 btn
-	0 ( ntanks <? dup rowtank dup rowbuttons 1+ ) drop
-	40 540 200 44 'playgame "PLAY" $006000 btn
-	260 540 160 44 'exit "EXIT" $600000 btn
-	1.0 tsize 6 tcol
-	440 548 tat "< > elige el script   Edit lo edita   New crea uno" temits
-	440 560 tat "F1: jugar    ESC: salir" temits
+	uiStart
+	40 96 sw 80 - sh 106 - uiBox
+	8 6 uiPad
+	44 uiS
+		'bw 3 uiColsW
+		stSucc 'goplay "PLAY" uiBtn
+		stDang 'exit "EXIT" uiBtn
+		stTheme "F1: jugar   ESC: salir" uiLabelR
+		1 uiCols
+	uiRest
+	"Tanques" 1 8 'ntanks uiSlideriL
+	ui--
+	0 ( ntanks <? dup rowtank 1+ ) drop
+	1 uiCols ui--
+	"< > elige el script   Edit lo edita   New crea uno" uiLabel
+	uiEnd
 	sdlredraw
+	doact
 	sdlkey
 	>esc< =? ( exit )
 	<F1> =? ( playgame )
@@ -306,6 +315,8 @@
 	"arena tank" 1024 600 SDLinit
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt
+	"media/ttf/RobotoMono.ttf" 16 txload 'fmono !
+	"media/ttf/Roboto-Medium.ttf" 18 txload dup 'fmain ! txfont
 	64 vaini
 	edram	| editor
 	tk.ini

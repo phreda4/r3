@@ -5,7 +5,8 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/glutil.r3
 ^r3/lib/3dgl.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 #strshader "
 @vertex-----------------
@@ -141,7 +142,7 @@ GL_ELEMENT_ARRAY_BUFFER 36 4 * 'idx GL_STATIC_DRAW glBufferData
 	
 	GLUpdate
 	
-	immIni
+	uiStart immFull
 	|100 100 600 400 immBox
 	immMouse
 	1 =? ( wheelcam ) | over

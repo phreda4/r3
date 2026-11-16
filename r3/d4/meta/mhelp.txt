@@ -787,6 +787,8 @@ getpixel | x y -- rgb ; color $RRGGBB of the pixel
 line | x1 y1 x2 y2 -- ; draw a line
 lineH | x1 y x2 -- ; horizontal line from x1 to x2 (both included) at y
 lineV | x y1 y2 -- ; vertical line from y1 to y2 (both included) at x
+lineHg | x1 y x2 c1 c2 -- ; horizontal line from x1 to x2 (both included) at y, gradient from the color c1 to c2 ($RRGGBB)
+lineVg | x y1 y2 c1 c2 -- ; vertical line from y1 to y2 (both included) at x, gradient from the color c1 to c2 ($RRGGBB)
 frect | x y w h -- ; filled rectangle (it covers x..x+w-1, y..y+h-1)
 rect | x y w h -- ; rectangle outline (same area as frect)
 fellipse | rx ry x y -- ; filled ellipse with radii rx ry centered at x y
@@ -1836,10 +1838,14 @@ fcolor
 fscale
 fixFontResize | --
 imgcount
+gflush | -- ; send the batch to the GPU (call it before your own GL calls)
+fnew | tex -- font ; record for a font with its own table (0 if full): set ws hs at +8 +16 and the 256 entries at +40
 fload | "file" cw ch -- font ; load the atlas (max 8 fonts, 0 if full)
-txfont | font -- ; select the font (from fload) for ftext and the tx words
+txfont | font -- ; select the font (from fload or txload) for ftext and the tx words
 txfont@ | -- font ; the font selected now
 glgfx
+icol | color (tint) of the next image quad
+imgtint | tint of image, images, imageb, imagebb ($AARRGGBB)
 fimgload | "" -- idx
 fimgtex | tex -- idx
 fimgwh | idx -- w h
@@ -1848,25 +1854,67 @@ fend
 fat
 ftextn | "" n -- ; draw n chars of the string with fcolor at fat
 ftext | "" --
+color | rgb -- ; draw color $RRGGBB (alpha 255)
+colorA | argb -- ; draw color $AARRGGBB
+frect | x y w h -- ; filled rectangle (covers x..x+w-1, y..y+h-1)
+rect | x y w h -- ; rectangle outline (same area as frect)
+lineH | x1 y x2 -- ; horizontal line, both ends included
+lineV | x y1 y2 -- ; vertical line, both ends included
+lineHg | x1 y x2 c1 c2 -- ; horizontal line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
+lineVg | x y1 y2 c1 c2 -- ; vertical line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
+point | x y -- ; one pixel
+cls | rgb -- ; clear with the color $RRGGBB
+line | x1 y1 x2 y2 -- ; line, both ends included
+triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
+polyop | x y -- ; start a filled polygon with its first point
+polyline | x y -- ; from the third point each new point draws a triangle with the first and the previous one
+fellipse | rx ry x y -- ; filled ellipse with radii rx ry centered at x y
+ellipse | rx ry x y -- ; ellipse outline
+fcircle | r x y -- ; filled circle
+circle | r x y -- ; circle outline
+fround | r x y w h -- ; filled rectangle with rounded corners of radius r
+round | r x y w h -- ; outline of the rounded rectangle
+imgdrawuv | idx dx dy dw dh sx sy sw sh -- ; source region in pixels, dest rect on screen
+imgdraw | idx dx dy dw dh -- ; full image scaled to dest rect
+image | x y img -- ; image at x y with its own size
+images | x y w h img -- ; image scaled to the rectangle x y w h
+imagebb | 'src 'dst img -- ; box src of the image into the box dst (x y w h, four int32 each)
+tsload | w h "file" -- ts
+tscolor | rgb ts -- ; color modulation $RRGGBB of the tileset
+tsalpha | alpha ts -- ; alpha modulation (0..255) of the tileset
+tsdraw | n ts x y -- ; tile n at x y (its own size)
+tsdraws | n ts x y w h -- ; tile n scaled to the rectangle x y w h
+tsbox | 'box n ts -- ; fill the box (x y w h, four int32) with the source rectangle of tile n
+tsfree | ts -- ; (the textures of glgfx are not freed)
+sprite | x y img -- ; centered at x y
+spriteZ | x y zoom img -- ; centered at x y with zoom
+spriteR | x y ang img -- ; centered at x y rotated
+spriteRZ | x y ang zoom img -- ; centered at x y rotated and with zoom
+sscol
+ssload | w h "file" -- ssprite ; frames w x h of the image
+sscnt | ssprite -- ssprite n ; number of frames (only right after ssload)
+sstint | argb -- ; tint color $AARRGGBB of the ssprite words
+ssnotint | --
+sspritewh | ssprite -- w h ; size of a frame
+ssprite | x y n ssprite -- ; frame n centered at x y
+sspriter | x y ang n ssprite -- ; frame n rotated
+sspritez | x y zoom n ssprite -- ; frame n with zoom
+sspriterz | x y ang zoom n ssprite -- ; frame n rotated and with zoom
+txrgb | rgb -- ; text color $RRGGBB, apart from the draw color
 fsizeh | -- cnh
 fsizew | -- cnw
+fsizecnt | "" cnt -- "" sizew sizeh ; size of cnt cells of a monospace font
+txcw | adr car -- adr' width ; width in pixels of a character
+txch | adr car -- adr' h ; height of a character
+txh | -- h ; height of the font (line height)
+txw | "" -- "" width ; width of the string in pixels
+txfit | w "" -- ncar ; number of bytes of the string that fit in w pixels
 fsize | "" -- "" sizew sizeh
-fsizecnt | "" cnt -- "" sizew sizeh
-frect | x y w h --
-rect | x y w h --
-frectb | x y w h b --
-rectb | x y w h b --
-imgdrawuv | idx dx dy dw dh sx sy sw sh --
-imgdraw | idx dx dy dw dh --
-color | rgb -- ; draw color $RRGGBB (alpha 255)
-txrgb | rgb -- ; text color $RRGGBB, apart from the draw color
-txh | -- h ; line height
-txw | "" -- "" w ; width of the string in pixels
-txfit | w "" -- ncar ; chars of the string that fit in w pixels
 txat | x y -- ; cursor in pixels
 txpos | -- x y
 tx+at | x y -- ; move the cursor
 txcr | -- ; new line
+txemit | adr car -- adr' ; one char at the cursor with the text color, the cursor moves
 txwriten | "" n -- ; n chars at the cursor with the text color, the cursor moves
 txwrite | "" -- ; string at the cursor, the cursor moves
 txemitr | "" -- ; right aligned, ends at the cursor x
@@ -1875,24 +1923,14 @@ txprint | .. "" -- ; sprint at the cursor
 txprintr | .. "" -- ; sprint right aligned
 txcur | str cur -- ; block cursor on the char cur of str
 txcuri | str cur -- ; insert cursor (bar at the bottom)
+lwrite | w "str" -- ; left aligned text for txText (ignores w)
+cwrite | w "str" -- ; centered text in w pixels for txText
+rwrite | w "str" -- ; right aligned text in w pixels for txText
 txalign | $VH -- ; bits 0-1 horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
 txText | w h x y "" -- ; text in the box, aligned with txalign
-fround | r x y w h -- ; filled rectangle with cut corners (radius r)
-round | r x y w h -- ; outline of the same
-lineH | x1 y x2 -- ; horizontal line, both ends included
-lineV | x y1 y2 -- ; vertical line, both ends included
 imageb | 'box img -- ; image (index of fimgload) into the box x y w h (four int32)
 gclip | x y w h -- ; clip the drawing to the rectangle
 gclip0 | -- ; no clip
-wix
-wiy
-wiw
-wih
-immBox | x y w h -- ; zone of immMouse and immZone
-immFull | -- ; the zone is the whole screen
-immIni | -- ; start of the frame: ids, padding, and the whole screen as zone
-immMouse | -- state ; mouse state (0-6) of the zone, the cursor box is not changed
-immZone | -- ; the zone as interaction area (read it with uiClk uiFocus...), the cursor box is not changed
 mat
 mati | aux inv
 mat>
@@ -1911,6 +1949,7 @@ matprint | mat --
 loadShaderv | "shader" -- idprogram
 glLoadImg | "" -- t
 glColorTex | col -- texid
+txload | "font" size -- nfont ; load a TTF as atlas texture for glgfx (0 if there is no room), use txfont to select it
 H2d.ini | maxobj -- ; reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
 H2d.clear | -- ; empty the hash table and the contact list (call it every frame before adding the objects)
 H2d.list | -- 'adr cnt ; list of contacts found: cnt dwords, each (newer object nro << 16) | older object nro
@@ -1920,191 +1959,6 @@ h2d! | x y zoom nro size -- x y zoom ; add object nro at x y with the radius siz
 heap! | nodo 'h -- ; add a node (a 64-bit value; the smallest one is taken first)
 heap@ | 'h -- nodo ; remove and return the smallest node (there is no check for an empty heap: it returns a stale value)
 heapini | max 'h -- ; initialize the heap 'h for up to max nodes (reserved at here)
-color! | color --
-uiColor | 'var --
-uiColorH | 'var --
-ycursor
-xcursor
-edfilename
-inisel | inicio seleccion
-finsel | fin seleccion
-fuente | fuente editable
-fuente> | cursor
-edlinenum! | 0/1 -- ; muestra u oculta el numero de linea
-edlinenum | -- 0/1
-edcodedraw
-edfill
-edtoolbar
-edfocus
-edfocusro
-clearmark
-addmark
-addsrcmark | src color --
-showmark
-edram
-edwin | x y w h --
-edloadmem | "" --
-edload | "" --
-edsave | --
-immfileload | 'vecload 'file --
-immfilesave | 'vecload 'file --
-fullfilename
-uiFileName | 'var --
-fx
-fy
-fw
-fh | frame (layout area)
-flpadx
-flpady
-flcols
-flrows
-flcolm
-flrowm
-cx | x of the cursor box (the current widget) in pixels
-cy | y of the cursor box
-cw | width of the cursor box
-ch | height of the cursor box
-%cw | frac -- px ; fixed point fraction (1.0 = all) of the width of the current frame in pixels
-%ch | frac -- px ; fixed point fraction (1.0 = all) of the height of the current frame in pixels
-uiPad | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
-uiBox | x y w h -- ; set the current frame (layout area) and push it on the layout stack; the cursor box is the frame minus the padding
-uiWinBox | -- x y w h ; the current frame
-uiLn | -- ; end of a row of uiNBtn/uiTlabel: back to the left of the frame and down one line
-uiFull | -- ; the frame is the whole screen
-uiPush | -- ; push the current frame on the layout stack (16 levels, the last ones are ignored)
-uiPop | -- ; pop the layout stack and make that frame the current one
-uiRest | -- ; make the frame at the top of the layout stack (what uiN uiS uiE uiO leave) the current one
-uiN | lines -- ; take a strip of that height (pixels) from the top of the current frame and make it current; the rest stays on the stack (a negative value is the whole height minus it)
-uiS | lines -- ; like uiN taking the strip from the bottom of the frame
-uiE | cols -- ; like uiN taking a strip of that width (pixels) from the right of the frame
-uiO | cols -- ; like uiN taking a strip of that width (pixels) from the left of the frame
-uiAt | x y -- ; move the cursor box to the grid cell x y
-uiTo | w h -- ; set the size of the cursor box to w x h grid cells
-uiGrid | c r -- ; divide the frame in c columns by r rows (adjusted to fit) and put the cursor at the cell 0 0
-uiNext | -- ; move the cursor to the next grid cell going along the rows (it goes back to the first one at the end)
-uiNextV | -- ; move the cursor to the next grid cell going down the columns
-idfh
-mdrag | number of the place (uiPlace) under the mouse while dragging, -1 if none
-uistate
-keymd | key modifiers: bit 0 is set while a shift key is down
-btnMouse | mouse button mask (sdlb) of the last press on a widget
-uiEx! | -- ; mark the last widget as activated (uiEx? is true)
-uiEx? | -- flag ; not 0 if the last widget was activated (clicked or Enter pressed)
-uiOvr | 'v -- ; execute 'v while the mouse is over the widget
-uiDwn | 'v -- ; execute 'v on the frame the button is pressed on the widget
-uiSel | 'v -- ; execute 'v while the widget is active (button held with the mouse over it)
-uiClk | 'v -- ; execute 'v when the widget is clicked (released over it)
-uiUp | 'v -- ; execute 'v when the mouse button is released or the mouse goes out after being pressed
-uiFocusIn | 'v -- ; execute 'v on the frame the widget gets the keyboard focus
-uiFocus | 'v -- ; execute 'v while the widget keeps the keyboard focus (after the first frame)
-uiStart | -- ; start of a gui frame, once per frame before the widgets: frame = whole screen, ids and drag reset, shift key tracked
-idfs
-uiExitWidget | -- ; close the pending last widget (the open combo list)
-uiSaveLast | x y w h 'vector -- ; save a widget (its box and font) to be executed by uiEnd after the others (used for pop-ups)
-uiEnd | -- ; end of a gui frame: executes the pending last widget (the open combo list), drawn over the others
-chx
-uiZone | -- ; define the interaction area of the widget (cursor box, one text line high) and compute its mouse and focus state; read it with uiOvr uiClk uiFocus...
-uiZoneL | nlines -- ; like uiZone with an area of nlines text lines
-uiZoneW | -- ; like uiZone with the whole cursor box height
-uiZoneBox | x y w h -- ; set the cursor box to x y w h (the old one is kept for uiBackBox) and use it as the interaction area
-uiBackBox | -- ; restore the cursor box saved by uiZoneBox
-uiPlace | n -- ; (drag and drop) the cursor box is the place number n: if the mouse is over it mdrag gets n
-uiRefocus | -- ; clear the keyboard focus (the first widget takes it)
-uiFocus>> | -- ; move the keyboard focus to the next widget
-uiFocus<< | -- ; move the keyboard focus to the previous widget
-tabfocus | -- ; action of the Tab key: next widget, or the previous one if shift is down
-uiDateTime | 'var --
-uiDate | 'var --
-uiTime | 'var --
-txicon | char -- ; draw a one char icon, the cursor moves
-icChkOn
-icChkOff
-icRadOn
-icRadOff
-icTreeC
-icTreeO
-icCombo
-txicon | char -- ; draw a one char icon vertically centered in the text line, the cursor moves
-icChkOn
-icChkOff
-icRadOn
-icRadOff
-icTreeC
-icTreeO
-icCombo
-gclip | x y w h -- ; clip the drawing to the rectangle
-gclip0 | -- ; remove the clip
-uiFill | -- ; fill the cursor box with the draw color
-uiRect | -- ; outline of the cursor box
-uiRFill | round -- ; fill the cursor box with rounded corners of that radius
-uiRRect | round -- ; outline of the cursor box with rounded corners
-uiCRect | -- ; outline of the cursor box as a capsule (radius = half of the smaller side)
-uiCFill | -- ; fill the cursor box as a capsule
-uiTex | texture -- ; draw the texture in the cursor box
-uiLineGridV | -- ; draw the vertical lines of the grid
-uiLineGridH | -- ; draw the horizontal lines of the grid
-uiLineGrid | -- ; draw the lines of the grid
-colBac | background
-colFil | fill
-colTxt | texto
-colFoc
-stDang | -- ; widget color style: danger (red)
-stWarn | -- ; widget color style: warning (orange)
-stSucc | -- ; widget color style: success (green)
-stInfo | -- ; widget color style: info (cyan, the default)
-stLink | -- ; widget color style: link (blue)
-stDark | -- ; widget color style: dark gray
-stLigt | -- ; widget color style: light gray
-stColor | rgb -- ; widget color style from a color $RRGGBB (the second color is a lighter mix)
-uilFill | -- ; fill the interaction area (one text line high) with the draw color
-uilRFill | round -- ; like uilFill with rounded corners
-uilCFill | -- ; like uilFill as a capsule
-uilTex | texture -- ; draw the texture in the interaction area
-uilRect | -- ; outline one pixel bigger than the interaction area (focus rectangle)
-uilRRect | round -- ; like uilRect with rounded corners
-uilCRect | -- ; like uilRect as a capsule
-uil.. | -- ; move the cursor down one text line
-ui.. | -- ; move the cursor down one text line plus the padding
-ui-- | -- ; draw a horizontal separator line and move the cursor down
-uiClip | -- ; clip the drawing to the interaction area
-uiUnclip | -- ; remove the clip
-ttwrite | "text" -- ; write the text left aligned at the cursor box
-ttwritec | "text" -- ; write the text centered in the cursor box width
-ttwriter | "text" -- ; write the text right aligned in the cursor box
-uiTlabel | "text" -- ; label as wide as its text: write it centered and move the cursor right (for rows of widgets)
-uiLabel | "text" -- ; write the text left aligned and move down one line
-uiLabelC | "text" -- ; write the text centered and move down one line
-uiLabelR | "text" -- ; write the text right aligned and move down one line
-uiText | "" align -- ; write the text wrapped in the cursor box with the alignment of txalign ($VH)
-uiTBtn | 'click "" align -- ; button with wrapped text of the given alignment and rounded fill; executes 'click when activated
-uiNBtn | 'click "" -- ; button as wide as its text; it moves the cursor right; executes 'click when activated
-uiBtn | 'click "" -- ; button with centered text; executes 'click when activated (click or Enter)
-uiRBtn | 'click "" -- ; button with rounded corners (radius 6)
-uiCBtn | 'click "" -- ; button with capsule shape
-uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (it shows 2 decimals); left and right keys change it
-uiSlideri | min max 'value -- ; horizontal slider of an integer value
-uiProgressf | min max 'value -- ; horizontal progress bar of a fixed point value (it can be dragged)
-uiProgressi | min max 'value -- ; horizontal progress bar of an integer value
-uiSliderfL | "name" min max 'value -- ; like uiSliderf with the name at the left and the value at the right
-uiSlideriL | "name" min max 'value -- ; like uiSlideri with the name at the left and the value at the right
-uiVSliderf | min max 'value -- ; vertical slider of a fixed point value
-uiVSlideri | min max 'value -- ; vertical slider of an integer value
-uiNindx | n -- str ; string number n of the list being drawn by the list widgets ("" if n is out of range)
-uiToggle | 'var "text" -- ; on/off button: the variable is 0 or 1; click or Enter changes it; it is filled while on
-uiCheck | 'var 'list -- ; one check box per string of the list (0-terminated strings, an empty one ends the list); each bit of the variable is a box
-uiRadio | 'var 'list -- ; one radio button per string of the list; the variable holds the number of the chosen one
-uiList | 'var cntl 'list -- ; list box of cntl lines over the strings of the list; 'var points to two cells: the selected number and the first line shown (it scrolls with the wheel, keys or the bar)
-uiTree | 'var cntl 'list -- ; like uiList for a tree: every string starts with a byte (level in $1f, $20 has children, $80 open) and a click toggles a folder
-uiCombo | 'var 'list -- ; combo box: it shows the chosen string of the list (the variable holds its number); a click opens the list of up to 6 lines, drawn by uiEnd
-uiInputLine | 'buff max -- ; text line editor on the buffer (max bytes): insert or overwrite (Ins), left, right, home, end, backspace, delete, Tab and Enter
-wix
-wiy
-wiw
-wih
-immBox | x y w h -- ; zone of immMouse
-immFull | -- ; the zone is the whole screen
-immIni | -- ; start of the frame, the zone is the whole screen
-immMouse | -- state
 verl
 nver | vertices
 facel

@@ -1,7 +1,8 @@
 | Solitaire
 | PHREDA 2025
 ^r3/lib/rand.r3
-^r3/util/immi.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
 
 #font
 #sprites

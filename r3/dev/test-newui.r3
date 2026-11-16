@@ -1,10 +1,11 @@
 | test gui3
 | PHREDA 2025
 |
-^r3/util/immi.r3
-^r3/util/imedit.r3
-^r3/util/imcolor.r3
-^r3/util/immdatetime.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmedit.r3
+^r3/rimm/rimmcolor.r3
+^r3/rimm/rimmdate.r3
 
 #font1
 #font2
