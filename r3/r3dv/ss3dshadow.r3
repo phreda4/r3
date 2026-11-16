@@ -31,7 +31,6 @@
 #sh_s * 24
 #sh_u * 24
 #sh_lproj * 128
-#sh_sv * 256
 #sh_ubo * 96
 #sh_sunbuf * 32
 #s_cr #s_cg #s_cb #s_in
@@ -50,13 +49,13 @@
 	dup s_tx /. 0.5 + 16 >> s_tx * swap - ;
 
 :shupdate | --	; matriz de la luz + UBO ShadowU
-	'sh_sv 'mat 16 move  'sh_sv 128 + 'mati 16 move	| guarda las matrices globales
+	mpush										| guarda la matriz actual
 	shup
 	| base (derecha, arriba) de la luz: solo depende de la direccion
 	'sh_eye 'sh_c v3=  'sh_eye 'sh_sun sh_r v3+*
 	'sh_eye 'sh_c 'sh_up mlookat
-	'mat @ 'sh_s !  'mat 32 + @ 'sh_s 8 + !  'mat 64 + @ 'sh_s 16 + !
-	'mat 8 + @ 'sh_u !  'mat 40 + @ 'sh_u 8 + !  'mat 72 + @ 'sh_u 16 + !
+	mat> @ 'sh_s !  mat> 32 + @ 'sh_s 8 + !  mat> 64 + @ 'sh_s 16 + !
+	mat> 8 + @ 'sh_u !  mat> 40 + @ 'sh_u 8 + !  mat> 72 + @ 'sh_u 16 + !
 	| centro corrido al texel mas cercano (evita el centelleo de los bordes)
 	sh_r 2* sh_res / 's_tx !
 	's_tx @ 1? ( 'sh_s 'sh_c v3ddot snap 's_ds !  'sh_u 'sh_c v3ddot snap 's_du ! ) drop
@@ -64,12 +63,12 @@
 	'sh_cs 'sh_s s_ds v3+*
 	'sh_cs 'sh_u s_du v3+*
 	'sh_eye 'sh_cs v3=  'sh_eye 'sh_sun sh_r v3+*
-	sh_r sh_r neg sh_r sh_r neg sh_r 2* 0 mortho	| r l t b f n
-	'sh_lproj 'mat 16 move
+	sh_r sh_r neg sh_r sh_r neg sh_r 2* 0 mortho01	| r l t b f n
+	'sh_lproj mcpy
 	'sh_eye 'sh_cs 'sh_up mlookat
-	'sh_lproj mat*
-	'sh_ubo 'mati cpymatif
-	'mat 'sh_sv 16 move  'mati 'sh_sv 128 + 16 move
+	'sh_lproj mm*
+	'sh_ubo mat> cpymatif
+	mpop mpop									| restaura la matriz actual
 	'sh_ubo 64 + >a
 	sdx neg f2fp da!+ sdy neg f2fp da!+ sdz neg f2fp da!+ 0 da!+
 	sh_on 16 << f2fp da!+ sh_nbias f2fp da!+ sh_dbias f2fp da!+ 0 da!+

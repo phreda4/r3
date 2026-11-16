@@ -44,45 +44,45 @@
 
     | --- PLANO INFINITO (fondo/suelo) ---
     matini
-    0 -0.8 0 matpos
+    0 -0.8 0 mpos
     2.0 $33441100 draw_plane   | 0 = infinito
 
     | --- CUBO - gira sobre si mismo, posicion fija ---
     matini
-    3.5 0 0 matpos
-    msec 2 << 0 msec 3 << matrot
-    0.7 dup dup matscale
+    3.5 0 0 mpos
+    msec 2 << 0 msec 3 << mrot3
+    0.7 dup dup mscale
     $ff6644f0 draw_cube
 
     | --- ESFERA - pulsa y orbita lento ---
     matini
-    msec 2 << cos 3.5 *. 0.2 msec 2 << sin 3.5 *. matpos
-	msec 3 << 0 msec 4 << matrot
-    msec 3 << sin 0.5 *. 0.8 + dup 0.2 matscale
+    msec 2 << cos 3.5 *. 0.2 msec 2 << sin 3.5 *. mpos
+	msec 3 << 0 msec 4 << mrot3
+    msec 3 << sin 0.5 *. 0.8 + dup 0.2 mscale
     0.55 $44ccfff0 draw_sphere
 
     | --- CAPSULA - parada, gira lento en Y ---
     matini
-    -3.5 0 0 matpos
-    0 msec 3 << msec 4 << matrot
+    -3.5 0 0 mpos
+    0 msec 3 << msec 4 << mrot3
     0.3 1.1 $88ff44f0 draw_capsule
 
     | --- CILINDRO - tumbado, rueda ---
     matini
-    0 0 3.5 matpos
-    msec 3 << 0 msec 4 << matrot
+    0 0 3.5 mpos
+    msec 3 << 0 msec 4 << mrot3
     0.35 0.9 $ffcc22f0 draw_cylinder
 
     | --- CONO - orbita vertical, apunta arriba ---
     matini
-    msec 4 << sin 3.0 *. 0 msec 4 << cos 3.0 *. matpos
-	msec 2 << 0 msec 3 << matrot
+    msec 4 << sin 3.0 *. 0 msec 4 << cos 3.0 *. mpos
+	msec 2 << 0 msec 3 << mrot3
     0.4 1.0 $ff44aaf8 draw_cone
 
     | --- DISCO - gira inclinado en el centro ---
     matini
-    0 0.5 0 matpos
-    msec 3 << 0 msec 4 << matrot   | inclinacion animada
+    0 0.5 0 mpos
+    msec 3 << 0 msec 4 << mrot3   | inclinacion animada
     1.1 $ffffff88 draw_disc
     ;
 

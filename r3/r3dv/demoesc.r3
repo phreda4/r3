@@ -66,9 +66,9 @@
 
 :drawscene
 	matini
-	msec 1 << 0 msec 2 << matrot
-	0.8 dup dup matscale
-	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 matpos
+	msec 1 << 0 msec 2 << mrot3
+	0.8 dup dup mscale
+	msec 2 << sin 2 * msec 3 << cos 0.3 + 0 mpos
 	$fffffff0 draw_cube 
 	
 	draw3dtiles

@@ -244,7 +244,7 @@
 	unpack21r	qw tx *. + qy tz *. qz ty *. - + px + | x
 	swap		qw ty *. + qz tx *. qx tz *. - + py + | y 
 	rot 		qw tz *. + qx ty *. qy tx *. - + pz + | z
-	pack21
+	pack21f
 	;
 	
 :calcrot | rot -- nrot
@@ -582,7 +582,7 @@
 	uy dz *. uz dy *. - 'zx !
 	uz dx *. ux dz *. - 'zy !
 	ux dy *. uy dx *. - 'zz !
-	'mat >a
+	mat> >a
 	ux a!+ uy a!+ uz a!+ 0 a!+
 	dx a!+ dy a!+ dz a!+ 0 a!+
 	zx a!+ zy a!+ zz a!+ 0 a!+

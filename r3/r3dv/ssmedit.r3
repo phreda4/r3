@@ -478,7 +478,7 @@
 
 :marker | i --
 	dup 'mk ! mi ssmo_wpos 'mz ! 'my ! 'mx !
-	matini 0.03 dup dup matscale mx my mz matpos
+	matini 0.03 dup dup mscale mx my mz mpos
 	mk mcol draw_cube ;
 
 :drawscene

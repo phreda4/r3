@@ -101,6 +101,22 @@
 	24 =? ( drop GL_RGB ; )
 	drop GL_RED ;
 
+::glLoadImg | "" -- t ; RGBA texture NEAREST/CLAMP, returns h<<48 | w<<32 | id (size in the high bits)
+	IMG_Load
+	dup $16762004 0 SDL_ConvertSurfaceFormat
+	'Surface !
+	SDL_FreeSurface
+	1 't glGenTextures
+	GL_TEXTURE_2D t glBindTexture
+	GL_TEXTURE_2D 0 GL_RGBA Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
+	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
+	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
+	Surface->w Surface->h
+	Surface SDL_FreeSurface
+	16 << or 32 << t or ;
+
 ::glImgFnt | "" -- t
 	1 't glGenTextures
     GL_TEXTURE_2D t glBindTexture IMG_Load 'Surface !

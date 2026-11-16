@@ -579,7 +579,7 @@ void main() {
 	;
 
 |------ pack 3 pos in 63bits (21x3) (13.8) 
-::pack21 | x y z -- vp
+::pack21f | x y z -- vp ; fixed point input (3dgl pack21 takes integers)
 	8 >> $1fffff and swap
 	8 >> $1fffff and 21 << or swap
 	8 >> $1fffff and 42 << or ;

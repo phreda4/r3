@@ -24,7 +24,7 @@
 		>>sp trim | skip nro
 		parseline
 
-		tx ty tz pack21			a!+
+		tx ty tz pack21f			a!+
 		sc rx ry rz packsrot	a!+
 		
 		>>cr trim
@@ -63,7 +63,7 @@
 		trim 1+ >>str trim
 		getnro 'pa ! | parent
 		parseline
-		tx ty tz pack21			a!+
+		tx ty tz pack21f			a!+
 		sc rx ry rz packsrot	a!+
 		$ffffff00 32 << pa $ffff and or	a!+
 		0 a!+

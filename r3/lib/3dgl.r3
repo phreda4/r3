@@ -1,9 +1,14 @@
-| 3dmath for opengl 
+| 3dmath for opengl
 | PHREDA
+|
+| The only matrix library: a stack of matrices (mat>) with classic OpenGL matrices
+| plus the variants for glClipControl ZERO_TO_ONE and reverse-Z used by glgfx and r3dv:
+|   mortho01 mperspectiverz minvrz  (m words)  mrot3 (rotation that keeps the position)
+|   cpymatif cpymatif3 (any 16 cells matrix to float32)
 |-------------------------
 ^r3/lib/vec3.r3
 
-#mati | matrix id
+#matid | matrix id
 1.0 0 0 0		| 1.0 = $10000
 0 1.0 0 0
 0 0 1.0 0
@@ -12,7 +17,7 @@
 ##mat> 'mats | address of the current matrix (16 cells of 8 bytes) in the matrix stack
 
 ::matini | -- ; reset the matrix stack: one identity matrix as the current one
-	'mats dup 'mat> ! 'mati 16 move ;
+	'mats dup 'mat> ! 'matid 16 move ;
 
 ::matinim | 'mat -- ; reset the matrix stack: a copy of 'mat (16 cells) as the only matrix
 	'mats dup 'mat> ! swap 16 move ;
@@ -21,7 +26,7 @@
 	mat> dup 128 + dup 'mat> ! swap 16 move ;
 	
 ::mpushi | -- ; push a new identity matrix on the matrix stack
-	mat> 128 + dup 'mat> ! 'mati 16 move ;
+	mat> 128 + dup 'mat> ! 'matid 16 move ;
 
 ::mpop | -- ; pop the current matrix (there is no check for the bottom of the stack)
 	mat> |'mats =? ( drop ; )
@@ -47,7 +52,7 @@
 	;
 
 ::midf | fmat -- ; write the identity matrix as 16 float32 values at fmat
-	>b 'mati >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
+	>b 'matid >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
 
 ::mcpyf | fmat -- ; write the current matrix as 16 float32 values at fmat
 	>b mat> >a 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
@@ -70,7 +75,7 @@
 :a]@ 3 << a> + @ ;
 
 ::mperspective | near far cot aspect -- ; make the current matrix an OpenGL perspective projection: m0 = cot*aspect, m5 = cot (cot = cotangent of half the field of view; aspect acts as height/width)
-	mat> dup >a 'mati 16 move 
+	mat> dup >a 'matid 16 move 
 	over *. a!		|mat[0] = cotangent / aspect;
 	5 a]!			|mat[5] = cotangent;
 	2dup -			| near far deltaz
@@ -87,7 +92,7 @@
 |	'preload 'mat 16 move ;	
 	
 ::mortho | r l t b f n -- ; make the current matrix an OpenGL orthographic projection (right left top bottom far near)
-	mat> dup >a 'mati 16 move 
+	mat> dup >a 'matid 16 move 
 	2dup - -2.0 over /. 10 a]!		| 	mat[10] = -2 / (farVal - nearVal);
 	-rot + swap /. neg 14 a]!	| mat[14] = -((farVal + nearVal) / (farVal - nearVal));
 	2dup - 2.0 over /. 5 a]!		| mat[5] = 2 / (top - bottom);
@@ -349,11 +354,11 @@
 ;		
 
 ::mtra | x y z -- ; set the current matrix to an identity with the translation x y z (m12 m13 m14)
-	mat> dup >a 'mati 16 move 
+	mat> dup >a 'matid 16 move 
 	14 a]! 13 a]! 12 a]! ;
 
 ::mrot | rx ry rz -- ; set the current matrix to the rotation of three angles (1.0 = full turn), no translation
-	mat> dup >a 'mati 16 move 
+	mat> dup >a 'matid 16 move 
 	sincos 'coz ! 'siz !
 	sincos 'coy ! 'siy !
 	sincos 'cox ! 'six !
@@ -390,6 +395,68 @@
     six siz *. siy *. cox coy *. + a!+ |'m33 !
 	0 a!+
 	;
+
+|----------- ZERO_TO_ONE clip control and reverse-Z (glgfx, r3dv)
+
+:a] 3 << a> + ;
+:n]! | v i -- ; set the cell i of the matrix after the current one (the one that mpush would create)
+	3 << mat> + 128 + ! ;
+#camT #camR
+
+::mortho01 | r l t b f n -- ; like mortho for glClipControl ZERO_TO_ONE: the depth goes from 0 (near) to 1 (far)
+	mat> dup >a 'matid 16 move
+	2dup - -1.0 over /. 10 a] !	| mat[10] = -1 / (f - n)
+	rot drop /. neg 14 a] !		| mat[14] = -n / (f - n)
+	2dup - 2.0 over /. 5 a] !		| mat[5] = 2 / (top - bottom);
+	-rot + swap /. neg 13 a] !	| mat[13] = -((top + bottom) / (top - bottom));
+	2dup - 2.0 over /. a> !		| mat[0] = 2 / (right - left);
+	-rot + swap /. neg 12 a] !	| mat[12] = -((right + left) / (right - left));
+	;
+
+::mperspectiverz | near far asp fov -- ; make the current matrix a reverse-Z projection with an INFINITE far plane for glClipControl ZERO_TO_ONE (far is ignored): ndc.z = near / dist, 1 at near and 0 at infinity
+	mat> 0 16 fill
+	mat> >a
+	pick3 *. dup 'camT ! *. 'camR !
+	over camR /. a!				| m0 = n / r
+	over camT /. 5 a] !			| m5 = n / t
+	-1.0 11 a] !				| m11 = -1 (m10 = 0: the far plane is at infinity)
+	drop 14 a] !				| m14 = n
+	;
+
+::minvrz | -- ; push the inverse of the matrix made by mperspectiverz (exact: it has that fixed form)
+	mat> 128 + 0 16 fill
+	mat> >a
+	1.0 a@ /. 0 n]!
+	1.0 5 a] @ /. 5 n]!
+	1.0 14 a] @ /. 11 n]!
+	-1.0 14 n]!
+	10 a] @ 14 a] @ /. 15 n]!
+	128 'mat> +! ;
+
+::mrot3 | rx ry rz -- ; set the 3x3 rotation of the current matrix (1.0 = full turn) and keep the rest, the position included (mrot resets the matrix)
+	mat> >a
+	sincos 'coz ! 'siz !
+	sincos 'coy ! 'siy !
+	sincos 'cox ! 'six !
+	coz coy *. 0 a] !
+	cox siz *. coy *. six siy *. + 1 a] !
+	six siz *. coy *. cox siy *. - 2 a] !
+	siz neg 4 a] !
+	cox coz *. 5 a] !
+	six coz *. 6 a] !
+	coz siy *. 8 a] !
+	cox siz *. siy *. six coy *. - 9 a] !
+	six siz *. siy *. cox coy *. + 10 a] !
+	;
+
+::cpymatif | 'dest 'src -- ; write 16 cells of any matrix as 16 float32 values
+	>a >b 16 ( 1? 1- a@+ f2fp db!+ ) drop ;
+
+::cpymatif3 | 'dest 'src -- ; write the 3x3 part of a matrix as 9 float32 values
+	>a >b
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ 8 a+
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ 8 a+
+	a@+ f2fp db!+ a@+ f2fp db!+ a@+ f2fp db!+ ;
 
 |------ pack 3 rot in 48bits (16x3)	- gain space+vel (paralel add and rotation from here)
 ::packrota | rx ry rz -- rp ; pack three angles of 16 bits: rx<<32 | ry<<16 | rz (for mrpos)

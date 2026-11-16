@@ -596,7 +596,7 @@ void main(){
 
 | Copiar mat actual y enviar como uniform "model" (location 0)
 :imp_model
-    'fmodel 'mat cpymatif
+    'fmodel mcpyf
     0 1 GL_FALSE 'fmodel glUniformMatrix4fv ;
 
 | ============================================================
@@ -658,9 +658,10 @@ void main(){
 ::draw_cube | rgbmm --
     sh_geom glUseProgram
     6 swap glUniform1ui
-    'fmodel 'mat cpymatif
-    matinv
-    'fnormal 'mati cpymatif3
+    'fmodel mcpyf
+    mat> >r matinv
+    'fnormal mat> cpymatif3
+    r> 'mat> !
     0 1 GL_FALSE 'fmodel  glUniformMatrix4fv
     8 1 GL_FALSE 'fnormal glUniformMatrix3fv
     g_cube_vao glBindVertexArray

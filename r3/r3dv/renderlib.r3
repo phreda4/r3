@@ -2,7 +2,8 @@
 | PHREDA 2026
 
 ^r3/lib/sdl2gl.r3
-^r3/util/gllib.r3
+^r3/lib/3dgl.r3
+^r3/lib/glutil.r3
 
 #rl_shader_light 
 "@vertex-----------------
@@ -933,28 +934,35 @@ void main() {
 	camDirty 0? ( drop ; ) drop
 	0 'camDirty !
 	rl_w 16 << rl_h / 'camAsp ! 
-	camNear camFar camAsp camFov matProjV | near far asp fov --
-	
-	'ubo_matvProj 'mat cpymatif 
-	'ubo_matvinvProj 'mati cpymatif
-	'realproj 'mat 16 move  | copy for precalc proj*view
-	'realinvproj 'mati 16 move | copy for precalc invView*invProj
+	mpush
+	camNear camFar camAsp camFov mperspectiverz | near far asp fov --
+	'ubo_matvProj mcpyf
+	'realproj mcpy  | copy for precalc proj*view
+	minvrz
+	'ubo_matvinvProj mcpyf
+	'realinvproj mcpy | copy for precalc invView*invProj
+	mpop mpop
 	;
 
 ::rl_camera | 'eye 'to 'up --
 	3 pick3 'ubo_matViewPos mem2float | cnt sr ds
 	cache_proj
+	mat> >r
+	mpush
 	mlookat
-	'ubo_matView 'mat cpymatif
+	'ubo_matView mcpyf
 	matinv
-	'ubo_matvinvView 'mati cpymatif
-	'realinvview 'mati 16 move
-	'realproj mat* | reverse proj*view
-	'ubo_matProjView 'mati cpymatif
+	'ubo_matvinvView mcpyf
+	'realinvview mcpy
+	mpop
+	'realproj mm* | reverse proj*view
+	'ubo_matProjView mcpyf
+	mpop
 	| invProjView = invView * invProj (reconstruccion de posicion en 1 mat*vec)
-	'mat 'realinvproj 16 move
-	'realinvview mat*
-	'ubo_matInvProjView 'mati cpymatif
+	mat> 'realinvproj 16 move
+	'realinvview mm*
+	'ubo_matInvProjView mcpyf
+	r> 'mat> !
 	;
 	
 | ================================================================

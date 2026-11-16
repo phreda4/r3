@@ -144,7 +144,7 @@
 	'ss3dset swap mB ssmo_draw drop ;
 
 :drawscene
-	matini 10.0 .1 10.0 matscale 0 -0.1 0 matpos
+	matini 10.0 .1 10.0 mscale 0 -0.1 0 mpos
 	$5a5a5a20 draw_cube
 	updmodels
 	drawmodels

@@ -10,7 +10,8 @@
 
 ^r3/lib/sdl2gl.r3
 ^r3/lib/math.r3
-^r3/util/gllib.r3
+^r3/lib/3dgl.r3
+^r3/lib/glutil.r3
 ^r3/lib/str.r3
 
 #gl_shader "
@@ -61,8 +62,10 @@ void main() {
 
 ::fixFontResize | --
 	| ortho ZERO_TO_ONE: z=0 -> ndc.z=0.5 (dentro del volumen de clip)
-	sw 16 << 0 0 sh 16 << 1.0 -1.0 mortho
-	'fwintext 'mat cpymatif
+	mpush
+	sw 16 << 0 0 sh 16 << 1.0 -1.0 mortho01
+	'fwintext mcpyf
+	mpop
 	;
 
 #fvt #fbt
