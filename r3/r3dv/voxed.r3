@@ -14,8 +14,8 @@
 ^r3/lib/str.r3
 
 ^r3/util/varanim.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./ss3d.r3
@@ -980,8 +980,9 @@
 #shadowlast 1
 :hud
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	interface
+	uiEnd
 	fend
 
 	shadowon shadowlast <>? ( shadowon 'shadowlast ! shadowon ss3dshadow! ) drop
@@ -1040,6 +1041,7 @@
 	"VOXED" 1280 768 GLini GLInfo
 	$fff vaini
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 	initvox
 	rl_init
 	2048 ss3dshadowini

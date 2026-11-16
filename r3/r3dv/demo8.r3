@@ -16,8 +16,8 @@
 ^r3/lib/mem.r3
 
 ^r3/util/varanim.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./ss3d.r3
@@ -556,8 +556,9 @@
 
 :hud
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	interface
+	uiEnd
 	fend
 
 	sdlkey
@@ -616,6 +617,7 @@
 	"Supercubo voxel r3dv" 1024 768 GLini GLInfo
 	$fff vaini
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 	initvox
 	rl_init
 	1 rl_grid_init

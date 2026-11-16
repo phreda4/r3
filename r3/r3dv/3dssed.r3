@@ -4,10 +4,8 @@
 ^r3/lib/rand.r3
 
 ^r3/util/varanim.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
-|^r3/rimm/rimmgl.r3
-|^r3/rimm/rimmwid.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./ss3d.r3
@@ -576,9 +574,10 @@
 	
 :hud
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	keycam
 	interface
+	uiEnd
 	fend
 	
 	sdlkey
@@ -640,6 +639,7 @@
 	$fff vaini
 	
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 	load3d
 	rl_init 
 	1 rl_grid_init

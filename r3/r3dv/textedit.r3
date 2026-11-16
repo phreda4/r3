@@ -3,7 +3,8 @@
 |-----
 ^./renderlib.r3
 ^./ss3d.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmcore.r3
 
 #xi -4.5 #yi 3.4 #zi 5.0
 #dx 0.25 #dy -0.4
@@ -153,7 +154,7 @@
 	'camFor camVelMove drop ;
 
 :mouse
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in

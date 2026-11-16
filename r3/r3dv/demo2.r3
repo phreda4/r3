@@ -2,7 +2,8 @@
 | PHREDA 2026
 | flechas: direccion del sol   ESPACIO: sombras on/off   mouse: camara (arrastrar) y rueda
 ^r3/util/glgfx.r3
-^r3/util/immZone.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmcore.r3
 
 ^./renderlib.r3
 ^./rlshapes.r3
@@ -94,7 +95,7 @@
 	rl_frame_end
 	txt
 	GLUpdate
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( wheelcam )
 	2 =? ( sdlx 'xp ! sdly 'yp ! )

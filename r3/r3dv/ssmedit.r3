@@ -19,8 +19,8 @@
 ^r3/lib/mem.r3
 
 ^r3/util/varanim.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./rlshapes.r3
@@ -620,9 +620,10 @@
 
 :hud
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	keycam
 	interface
+	uiEnd
 	fend
 
 	sdlkey
@@ -665,6 +666,7 @@
 	"ssmedit r3dv" 1024 768 GLini GLInfo
 	$fff vaini
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 	rl_init
 	IniShapes
 	'SSVFILE dup 256 ss3dload ss3loadnames

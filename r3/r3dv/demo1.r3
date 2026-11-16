@@ -4,7 +4,8 @@
 ^./renderlib.r3
 ^r3/util/glgfx.r3
 ^./rlshapes.r3
-^r3/util/immzone.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmcore.r3
 
 | ============================================================
 | CAMARA
@@ -160,7 +161,7 @@
 
     GLUpdate
 
-    immIni
+    uiStart immFull
     immMouse
     1 =? ( wheelcam )
     2 =? ( sdlx 'xp ! sdly 'yp ! )

@@ -4,7 +4,8 @@
 ^r3/util/glgfx.r3
 ^./rlshapes.r3
 ^./rl3dtile.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmcore.r3
 
 | Camera controls
 #cam_yaw  0  
@@ -111,7 +112,7 @@
 	
     GLUpdate
 	
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( wheelcam )				| over
 	2 =? ( sdlx 'xp ! sdly 'yp ! )	| in

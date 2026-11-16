@@ -1,23 +1,20 @@
 | RIMM backend: OpenGL (glgfx)
 
-| Same contract as rimmsdl.r3.
+| Same contract as rimmsdl.r3. Fonts: txload (gltxfont, TTF atlas) + txfont, as txfont.r3 in SDL.
+| Load the fonts after rimmGLini.
 | IMPORTANT: glgfx must be called once after GLini (rimmGLini does both), and every
 | frame the gui goes between fini and fend:  GLcls fini uiStart ... uiEnd fend GLUpdate
-| On a window resize call fixFontResize (glgfx).
+| On a window resize fixFontResize (glgfx) is called by rimmGLini through SDLeventR
+| (if the program sets its own SDLeventR, it must call fixFontResize inside it).
 |
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/util/glgfx.r3
+^r3/util/gltxfont.r3
 
-::rimmGLini | "title" w h -- ; open the GL window and prepare glgfx (shader and font): GLini + glgfx. Without glgfx nothing is drawn
-	GLini glgfx ;
-
-::txcw | adr car -- adr' w ; width of a character (the bitmap font of glgfx is monospace)
-	drop "M" txw nip ;
-
-#txe 0
-::txemit | adr car -- adr' ; draw the character at the cursor and advance it
-	'txe c! 'txe txwrite ;
+::rimmGLini | "title" w h -- ; open the GL window and prepare glgfx (shader): GLini + glgfx. Without glgfx nothing is drawn
+	GLini glgfx
+	'fixFontResize SDLeventR ;
 
 |--- nested clip over gclip/gclip0
 #gcon 0 #gcx2 #gcy2 #gcw2 #gch2

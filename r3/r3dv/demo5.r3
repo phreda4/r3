@@ -2,8 +2,8 @@
 | PHREDA 2026
 ^r3/lib/rand.r3
 ^r3/util/varanim.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./rlshapes.r3
@@ -723,9 +723,10 @@
 	
 :hud
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	rotatemouse
 	interface
+	uiEnd
 	fend
 	sdlkey
 	>esc< =? ( exit )
@@ -812,6 +813,7 @@
 	$fff vaini
 	
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 	load3d
 	"media/bvh/pajaro.r3a" 
 	|"media/bvh/lobo.r3a" 

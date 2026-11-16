@@ -20,7 +20,6 @@
 ^r3/util/glgfx.r3
 ^./ss3d.r3
 ^./ss3dshadow.r3
-^r3/util/glimm.r3
 ^./rlgrid.r3
 
 |---------------------------------

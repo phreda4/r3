@@ -10,7 +10,8 @@
 ^./rlshapes.r3
 ^./ss3d.r3
 ^./ssmodel.r3
-^r3/util/immzone.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmcore.r3
 
 #cam_yaw  -0.785398
 #cam_pit   0.45
@@ -158,7 +159,7 @@
 :main
 	render
 	GLUpdate
-	immIni
+	uiStart immFull
 	immMouse
 	1 =? ( wheelcam )
 	2 =? ( sdlx 'xp ! sdly 'yp ! )

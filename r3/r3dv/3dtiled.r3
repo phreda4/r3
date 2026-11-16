@@ -1,8 +1,8 @@
 | demo1 r3dv
 | PHREDA 2026
 ^r3/lib/rand.r3
-^r3/util/glgfx.r3
-^r3/util/glimm.r3
+^r3/rimm/rimmgl.r3
+^r3/rimm/rimmwid.r3
 
 ^./renderlib.r3
 ^./rlshapes.r3
@@ -489,7 +489,7 @@
 
 :interface
 	fini
-	immIni
+	uiStart 4 4 uiPad immFull
 	1 'fscale !
 	$ffffffff 'fcolor !
 	
@@ -534,6 +534,7 @@
 	6 =? ( clickmouse )				| release
 	drop
 	
+	uiEnd
 	fend
 	;
 	
@@ -633,6 +634,7 @@
 	1024 768 GLini
 	GLInfo
 	glgfx
+	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
 
 	rl_init
 	IniShapes

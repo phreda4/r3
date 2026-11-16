@@ -347,6 +347,21 @@
 	'auxbox w@+ 'ch ! w@+ 'cw ! w@+ 'cy ! w@ 'cx ! ;
 	
 	
+|--- mouse zone (camera and the like): same words as glimm.r3 / immzone.r3
+##wix ##wiy ##wiw ##wih
+
+::immBox | x y w h -- ; zone of immMouse and immZone
+	'wih ! 'wiw ! 'wiy ! 'wix ! ;
+
+::immFull | -- ; the zone is the whole screen
+	0 0 sw sh immBox ;
+
+::immMouse | -- state ; mouse state (0-6) of the zone, the cursor box is not changed
+	wix wiy wiw wih uiZoneBox uistate $f and uiBackBox ;
+
+::immZone | -- ; the zone as interaction area (read it with uiClk uiFocus...), the cursor box is not changed
+	wix wiy wiw wih uiZoneBox uiBackBox ;
+
 |-- place to go in drag (index n)	
 ::uiPlace | n -- ; (drag and drop) the cursor box is the place number n: if the mouse is over it mdrag gets n
 	ch 'chx !
