@@ -47,6 +47,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 #pox 0 #poy 0
 #pinit 0
 #pcmod 0
+#ppopen 0		| a pop-up was open in this frame
 #pdrag 0
 #pnb 0 #ppb 0
 #plmx 0 #plmy 0
@@ -584,7 +585,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 :pkeys | key --
 	<ctrl> =? ( 1 'pcmod ! ) <ctr2> =? ( 1 'pcmod ! )
 	>ctrl< =? ( 0 'pcmod ! ) >ctr2< =? ( 0 'pcmod ! )
-	uiPopup? 1? ( 2drop ; ) drop
+	ppopen 1? ( 2drop ; ) drop
 	>esc< =? ( exit )
 	pcmod 1? ( drop pctrlkey ; ) drop
 	pinarea 1? ( drop ptoolkey ; ) drop
@@ -600,6 +601,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	pright
 	80 uiS uiPanelBg pstrip uiRest
 	pcanvas
+	uiPopup? 'ppopen !
 	uiEnd
 	SDLb 'ppb ! SDLx 'plmx ! SDLy 'plmy !
 	pdopend
@@ -612,6 +614,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	here 'pundomem ! $102000 'here +!
 	here 'pfmem ! $200000 'here +!
 	"pixel.png" 'pfname strcpy
+	"png" uiFileFilter
 	32 'pdoc d! 32 'pdoc 4 + d! pclear
 	'main SDLshow
 	SDLquit ;

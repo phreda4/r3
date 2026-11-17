@@ -199,6 +199,12 @@ mtra | x y z -- ; set the current matrix to an identity with the translation x y
 mrot | rx ry rz -- ; set the current matrix to the rotation of three angles (1.0 = full turn), no translation
 mpos | x y z -- ; set the translation m12 m13 m14 of the current matrix, the rest is unchanged
 mrpos | r16 x y z -- ; set the current matrix to a rotation and the position x y z; r16 packs the angles as $xxxxyyyyzzzz (16 bits each, $10000 = full turn)
+mortho01 | r l t b f n -- ; like mortho for glClipControl ZERO_TO_ONE: the depth goes from 0 (near) to 1 (far)
+mperspectiverz | near far asp fov -- ; make the current matrix a reverse-Z projection with an INFINITE far plane for glClipControl ZERO_TO_ONE (far is ignored): ndc.z = near / dist, 1 at near and 0 at infinity
+minvrz | -- ; push the inverse of the matrix made by mperspectiverz (exact: it has that fixed form)
+mrot3 | rx ry rz -- ; set the 3x3 rotation of the current matrix (1.0 = full turn) and keep the rest, the position included (mrot resets the matrix)
+cpymatif | 'dest 'src -- ; write 16 cells of any matrix as 16 float32 values
+cpymatif3 | 'dest 'src -- ; write the 3x3 part of a matrix as 9 float32 values
 packrota | rx ry rz -- rp ; pack three angles of 16 bits: rx<<32 | ry<<16 | rz (for mrpos)
 +rota | ra rb -- rr ; add two packed rotations (the lowest bit of each 16 bit field is lost)
 pack21 | vx vy vz -- vp ; pack three 21-bit values: vx<<42 | vy<<21 | vz
@@ -448,6 +454,7 @@ shader!m4 | 'm4 shader "name" --
 shader!f1
 glimgw
 glimgh
+glLoadImg | "" -- t ; RGBA texture NEAREST/CLAMP, returns h<<48 | w<<32 | id (size in the high bits)
 glImgFnt | "" -- t
 glImgTex | "" -- texid
 glColorTex | col -- texid
@@ -1777,6 +1784,7 @@ bmap2xy | x y -- x y ; tile position x y to the pixel position in the tileset si
 whbmap | -- w h ; size of the map in tiles
 xyinmap@ | x y -- cell ; map cell (64 bits) at the position x y given as fixed point pixels (no range check)
 xytrigger | x y -- x y ; mark with the trigger flag (bit 51) the conditional tiles (bit 50) of the cells around x y; drawmaps clears the flag at the end of the frame
+filename
 ,time | -- ; write the current time as h:mm:ss (hour without leading zero)
 ,ti:me | -- ; write the current time as h:mm with a blinking colon (a space on odd seconds)
 ,date | -- ; write the current date as d/m/yyyy
@@ -1931,24 +1939,6 @@ txText | w h x y "" -- ; text in the box, aligned with txalign
 imageb | 'box img -- ; image (index of fimgload) into the box x y w h (four int32)
 gclip | x y w h -- ; clip the drawing to the rectangle
 gclip0 | -- ; no clip
-mat
-mati | aux inv
-mat>
-matini
-cpymatif | 'dest 'src --
-cpymatif3
-matProjV | near far asp fov --
-mortho | r l t b f n --
-mlookat | 'eye 'at 'up --
-mat* | 'mat --
-matinv | -- | mat --> mati |invert
-matrot | rx ry rz -- ; rotate
-matpos | x y z -- ; traslate
-matscale | x y z -- ; scale
-matprint | mat --
-loadShaderv | "shader" -- idprogram
-glLoadImg | "" -- t
-glColorTex | col -- texid
 txload | "font" size -- nfont ; load a TTF as atlas texture for glgfx (0 if there is no room), use txfont to select it
 H2d.ini | maxobj -- ; reserve at here the hash table, the object list and the contact list for up to maxobj objects (ids 0..65534)
 H2d.clear | -- ; empty the hash table and the contact list (call it every frame before adding the objects)
@@ -1973,7 +1963,7 @@ ncolor | colores
 ]vert | nro -- vertex
 ]norm | nro -- normal
 ]uv | nro -- uv
->>cr | adr -- adr'/0 ; proxima linea/0
+>>cr0 | adr -- adr'/0 ; proxima linea/0
 ]Ka@
 ]Kd@
 ]Ks@
@@ -2172,7 +2162,7 @@ tcy | -- y ; cursor y in pixels
 tcr | -- ; new line: x = 0 and y down one character
 tsp | -- ; move the cursor one character to the right
 tnsp | n -- ; move the cursor n characters to the right
-tsbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
+tstrbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
 tpos | -- x y ; cursor position in pixels
 trect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
 tcursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
@@ -2291,7 +2281,7 @@ fcr | -- ; baja linea (y reinicia columnas de tabla)
 pan | "title" -- ; fondo bg1, padding 1, titulo en acento
 .lines | 'v n --
 tcols | 'def --
-cell | "" -- ; el color es el activo
+tcell | "" -- ; el color es el activo
 row | "a|b|c" -- ; fila completa desde texto separado por |
 hdr | "a|b|c" --
 tbw | -- n ; ancho total de la tabla con recuadro
@@ -2305,7 +2295,6 @@ flxRoot | -- ; fullscr
 flxC | w h -- ; frame w x h cent
 tuDlg | "title" w h --
 tuDlgEnd | --
-filename
 fuente | fuente editable
 fuente> | cursor
 $fuente | fin de texto
