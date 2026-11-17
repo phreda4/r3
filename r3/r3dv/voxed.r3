@@ -811,8 +811,8 @@
 	here 'sv !
 	"SSV2" d@ , 1 , ncol0 , nvox ,
 	0 , nv dup 8 << or nv 16 << or ,
-	here dcols ncol0 3 << cmove ncol0 3 << 'here +!
-	here dpal nvox 2 << cmove nvox 2 << 'here +!
+	here dcols ncol0 move ncol0 3 << 'here +!
+	here dpal nvox dmove nvox 2 << 'here +!
 	sv here over - slotcur 1+ "mem/voxed%d.ssv" sprint save
 	sv 'here ! ;
 

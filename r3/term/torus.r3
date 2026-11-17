@@ -82,7 +82,7 @@
 
 | ---- helpers ----
 :clrbufs | --
-	'zbuf 0 SW SH * 2 << cfill
+	'zbuf 0 SW SH * dfill
 	'cbuf 32 SW SH * cfill
 	'kbuf 0 SW SH * cfill ;
 

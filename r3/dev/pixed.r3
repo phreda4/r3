@@ -36,11 +36,11 @@
 #ppc 0			| pixel value used to paint (0 = erase)
 #pcol $FF0000
 
-#ppal
+#ppal [
 $000000 $1D2B53 $7E2553 $008751 $AB5236 $5F574F $C2C3C7 $FFF1E8
 $FF004D $FFA300 $FFEC27 $00E436 $29ADFF $83769C $FF77A8 $FFCCAA
 $FFFFFF $DDDDDD $BBBBBB $999999 $777777 $555555 $333333 $111111
-$FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
+$FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 #pzoom 12 #ppanx 0 #ppany 0
 #pcax 0 #pcay 0 #pcaw 0 #pcah 0
@@ -341,7 +341,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 #pps #pqx #pqy
 
 :psetpal | n -- n ; color n of the palette
-	dup 3 << 'ppal + @ ;
+	dup 2 << 'ppal + d@ ;
 
 :pcellat | n -- n
 	dup 7 and pps * cx + 'pqx !
@@ -358,7 +358,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	SDLx pqx <? ( drop ; ) pqx pps + >=? ( drop ; ) drop
 	SDLy pqy <? ( drop ; ) pqy pps + >=? ( drop ; ) drop
 	pnb 1 and? ( drop psetpal psetcol ; ) drop
-	pcol $ffffff and over 3 << 'ppal + ! ;
+	pcol $ffffff and over 2 << 'ppal + d! ;
 
 :ppalette | --
 	cw 8 / 'pps !
@@ -375,10 +375,10 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	pfcur =? ( drop 'pdoc 8 + ; ) pfslot ;
 
 :pfstore | -- ; save the current frame in its slot
-	pfcur pfslot 'pdoc 8 + pimw pimh * 2 << cmove ;
+	pfcur pfslot 'pdoc 8 + pimw pimh * dmove ;
 
 :pfload | n -- ; the frame n becomes the current pixels
-	'pdoc 8 + swap pfslot pimw pimh * 2 << cmove ;
+	'pdoc 8 + swap pfslot pimw pimh * dmove ;
 
 :pfgoto | n --
 	pfstore dup 'pfcur ! pfload
@@ -478,7 +478,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 
 :psave | --
 	pimw pimh createSurf Surf>pix
-	'pdoc 8 + pimw pimh * 2 << cmove
+	'pdoc 8 + pimw pimh * dmove
 	dup 'pfname IMG_SavePNG SDL_FreeSurface ;
 
 :prgba | v -- argb ; RGBA8888 to ARGB, alpha 0 = transparent (0)
@@ -498,7 +498,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	plw 'pdoc d! plh 'pdoc 4 + d!
 	plw plh texIni 0 0 pltex image texEnd
 	Tex2Surface dup 'plsurf ! Surf>pixpi drop
-	'pdoc 8 + swap plw plh * 2 << cmove
+	'pdoc 8 + swap plw plh * dmove
 	SDL_DestroyTexture plsurf SDL_FreeSurface pltex SDL_DestroyTexture
 	pconv pfit ;
 
@@ -514,7 +514,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 		0 ( pimh <?
 			dup pimw pfcnt * * pick2 pimw * + 2 << pshp +
 			pick2 pfslot pick2 pimw * 2 << +
-			pimw 2 << cmove
+			pimw dmove
 			1+ ) drop
 		1+ ) drop
 	pshs psheetname IMG_SavePNG pshs SDL_FreeSurface ;
