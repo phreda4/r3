@@ -13,7 +13,7 @@ R3 can load and call procedures from any dynamic library (.DLL in windows) or (.
 * **High Performance & Native Ambitions:** Despite running on a VM, r3 is architected for speed. It features a self-hosted compiler (currently for Windows) written entirely in **r3forth**, laying the groundwork for future direct-to-metal implementations.
 * **Rich Ecosystem:** On top of this minimal core, r3 provides a powerful suite of libraries for:
 * **Graphics & 2D:** Sprites, tilemaps, fonts, animations, and stack-based sprites.
-* **Advanced Logic:** 3D engine, collision hash, and TUI/Immediate Mode GUI (immgui).
+* **Advanced Logic:** 3D engine, collision hash, and TUI and Immediate Mode GUI (rimm, multi-backend: SDL2 and OpenGL).
 * **Tooling:** Integrated editors and a growing collection of games and demos.
 
 ---
@@ -215,7 +215,9 @@ In the /doc folder.
 * [Tutorial](https://github.com/phreda4/r3/blob/main/doc/r3forth_tutorial.md)
 * [Reference](https://github.com/phreda4/r3/blob/main/doc/r3forth_reference.md)
 * [SDL graphics programing](https://github.com/phreda4/r3/blob/main/doc/r3forth-SDL-examples.md)
-* [Code libraries (Feb-2026)](https://github.com/phreda4/r3/blob/main/doc/r3forth-libs.md)
+* [Code libraries: lib/](https://github.com/phreda4/r3/blob/main/doc/r3forth-libs.md)
+* [Code libraries: util/](https://github.com/phreda4/r3/blob/main/doc/r3forth-util.md)
+* [GUI: rimm (immediate mode, multi-backend)](https://github.com/phreda4/r3/blob/main/doc/r3forth-rimm.md)
 
 ---
 

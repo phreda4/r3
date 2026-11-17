@@ -132,7 +132,6 @@
 	backtui ;
 
 :docompile
-	bo.target 1? ( drop "Compile: only the WIN target for now" 'msg strcpy ; ) drop
 	error 1? ( drop ; ) drop
 	genplain
 	plainok? 0? ( drop
@@ -140,6 +139,17 @@
 		"plain.r3 FAILED" 'msg strcpy
 		backtui ; ) drop
 	"r3/d4/r3comp.r3" r3run
+	"compile done" 'msg strcpy
+	backtui ;
+
+:docompile2
+	error 1? ( drop ; ) drop
+	genplain
+	plainok? 0? ( drop
+		.reterm .cr "plain.r3 FAILED - press any key..." .println waitkey
+		"plain.r3 FAILED" 'msg strcpy
+		backtui ; ) drop
+	"r3/d4/r3comp2.r3" r3run
 	"compile done" 'msg strcpy
 	backtui ;
 
@@ -232,8 +242,9 @@
 :panelActions
 	.wborde tuWin $1 " Build " .wtitle
 	1 1 flpad
-	'docompile "Compile        F2" tuBtn
-	'doplain "Plain          F3" tuBtn
+	'doplain    "Plain          F2" tuBtn
+	'docompile  "Compile        F3" tuBtn
+	'docompile2 "Compile2       F4" tuBtn
 	;
 	
 :panelIncs
@@ -257,8 +268,9 @@
 :foot
 	fhome bg3
 	fPr " TAB" .write fTx " Panel " .write
-	fPr "F2" .write fTx " Compile " .write
-	fPr "F3" .write fTx " Plain " .write
+	fPr "F2" .write fTx " Plain " .write
+	fPr "F3" .write fTx " Compile " .write
+	fPr "F4" .write fTx " Compile2 " .write
 	fPr "ESC" .write fTx " Exit " .write
 	fMu 'msg .write .eline ;
 
@@ -267,8 +279,9 @@
 	uikey
 	[tab] =? ( 1 ptab ) [shift+tab] =? ( -1 ptab )
 	[dn] =? ( 1 pstep ) [up] =? ( -1 pstep )
-	[f2] =? ( docompile )
-	[f3] =? ( doplain )
+	[f2] =? ( doplain )
+	[f3] =? ( docompile )
+	[f4] =? ( docompile2 )
 	[esc] =? ( tuiexit )
 	drop
 	bo.target osgen <>? ( 'osgen ! reload tuR! ; ) drop

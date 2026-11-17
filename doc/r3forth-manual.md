@@ -456,6 +456,9 @@ EMPTY                  | release — no garbage collector needed
 #### Contents
 
 ### lib/ — Core Libraries
+
+**Base**
+
 1. [math.r3](#mathr3) — Fixed-point math, trig, float conversion
 2. [dmath.r3](#dmathr3) — Double-precision (32.32) math
 3. [str.r3](#strr3) — String operations
@@ -467,53 +470,71 @@ EMPTY                  | release — no garbage collector needed
 9. [vec3.r3](#vec3r3) — 3D vector and quaternion operations
 10. [color.r3](#colorr3) — Color space conversions and blending
 11. [jul.r3](#julr3) — Julian date calculations
-12. [console.r3](#consoler3) — Terminal I/O with ANSI colors
-13. [trace.r3](#tracer3) — Debug tracing tools
-14. [crc32.r3](#crc32r3) — Checksums (CRC32, Adler32)
-15. [base64.r3](#base64r3) — Base64 encode/decode
-16. [sdl2.r3](#sdl2r3) — SDL2 window, renderer, events (cross-platform base)
-17. [sdl2gfx.r3](#sdl2gfxr3) — SDL2 drawing primitives and sprites
-18. [sdl2image.r3](#sdl2imager3) — SDL2_image: PNG/JPG/SVG loading
-19. [sdl2ttf.r3](#sdl2ttfr3) — SDL2_ttf: TrueType font rendering
-20. [sdl2mixer.r3](#sdl2mixerr3) — SDL2_mixer: audio playback
-21. [sdl2net.r3](#sdl2netr3) — SDL2_net: TCP/UDP networking
-22. [sdl2poly.r3](#sdl2polyr3) — Polygon and thick-line drawing
-23. [sdl2gl.r3](#sdl2glr3) — OpenGL access via SDL2
+12. [trace.r3](#tracer3) — Debug tracing tools
+13. [crc32.r3](#crc32r3) — Checksums (CRC32, Adler32)
+14. [base64.r3](#base64r3) — Base64 encode/decode
+15. [clipboard.r3](#clipboardr3) — Clipboard (platform-provided)
+
+**Terminal**
+
+16. [console.r3](#consoler3) — Terminal I/O with ANSI colors
+
+**SDL2**
+
+17. [sdl2.r3](#sdl2r3) — SDL2 window, renderer, events (cross-platform base)
+18. [sdl2gfx.r3](#sdl2gfxr3) — SDL2 drawing primitives and sprites
+19. [sdl2image.r3](#sdl2imager3) — SDL2_image: PNG/JPG/SVG loading
+20. [sdl2ttf.r3](#sdl2ttfr3) — SDL2_ttf: TrueType font rendering
+21. [sdl2mixer.r3](#sdl2mixerr3) — SDL2_mixer: audio playback
+22. [sdl2net.r3](#sdl2netr3) — SDL2_net: TCP/UDP networking
+23. [sdl2poly.r3](#sdl2polyr3) — Polygon and thick-line drawing
 24. [sdlkeys.r3](#sdlkeysr3) — SDL2 keyboard constants
-25. [gui.r3](#guir3) — Base immediate-mode GUI (SDL2)
-26. [input.r3](#inputr3) — Text input widget
-27. [3d.r3](#3dr3) — 3D camera and projection
-28. [3dgl.r3](#3dglr3) — 4×4 matrix stack for OpenGL
-29. [isospr.r3](#isosprr3) — Isometric sprite rendering
-30. [vdraw.r3](#vdrawr3) — Virtual (pixel-callback) drawing
-31. [memshare.r3](#memsharer3) — Cross-process shared memory
-32. [memavx.r3](#memavxr3) — AVX-accelerated buffer conversion |WIN|
-33. [netsock.r3](#netsockr3) — High-level socket wrapper
-34. [webcam.r3](#webcamr3) — Webcam capture (cross-platform)
-35. [glutil.r3](#glutilr3) — OpenGL utility helpers
-36. [onnx.r3](#onnxr3) — ONNX runtime bindings |WIN|
-37. [tflite.r3](#tfliter3) — TensorFlow Lite bindings |WIN|
-38. [sdl2gl-const.r3](#sdl2gl-constr3) — OpenGL constants (included by sdl2gl.r3)
-39. [sdl2gl-constv.r3](#sdl2gl-constvr3) — OpenGL constants, extended set
-40. [clipboard.r3](#clipboardr3) — Clipboard (platform-provided)
+25. [vdraw.r3](#vdrawr3) — Virtual (pixel-callback) drawing
+
+**OpenGL and 3D**
+
+26. [sdl2gl.r3](#sdl2glr3) — OpenGL access via SDL2
+27. [sdl2gl-const.r3](#sdl2gl-constr3) — OpenGL constants (included by sdl2gl.r3)
+28. [sdl2gl-constv.r3](#sdl2gl-constvr3) — OpenGL constants, extended set
+29. [glutil.r3](#glutilr3) — OpenGL utility helpers
+30. [3d.r3](#3dr3) — 3D camera and projection
+31. [3dgl.r3](#3dglr3) — 4×4 matrix stack for OpenGL
+
+**Old GUI (see rimm)**
+
+32. [gui.r3](#guir3) — Base immediate-mode GUI (SDL2)
+33. [input.r3](#inputr3) — Text input widget
+
+**System**
+
+34. [memshare.r3](#memsharer3) — Cross-process shared memory
+35. [memavx.r3](#memavxr3) — AVX-accelerated buffer conversion |WIN|
+36. [netsock.r3](#netsockr3) — High-level socket wrapper
+37. [webcam.r3](#webcamr3) — Webcam capture (cross-platform)
 
 ### lib/win/ — Windows System Bindings
-41. [win/kernel32.r3](#winkernel32r3) — Win32 API bindings
-42. [win/clipboard.r3](#winclipboardr3) — Win32 clipboard
-43. [win/win-term.r3](#winwin-termr3) — Windows console terminal
-44. [win/inet.r3](#wininetr3) — WinInet HTTP download
-45. [win/winhttp.r3](#winwinhttpr3) — WinHTTP HTTP client
-46. [win/winsock.r3](#winwinsockr3) — Winsock2 raw bindings
-47. [win/ws2.r3](#winws2r3) — Winsock2 with ws2- prefix
-48. [win/urlmon.r3](#winurlmonr3) — URL download helper
-49. [win/ffmpeg.r3](#winffmpegr3) — FFmpeg video playback |WIN|
-50. [win/debugapi.r3](#windebugapir3) — Windows debug API
+38. [win/kernel32.r3](#winkernel32r3) — Win32 API bindings
+39. [win/clipboard.r3](#winclipboardr3) — Win32 clipboard
+40. [win/win-term.r3](#winwin-termr3) — Windows console terminal
+41. [win/inet.r3](#wininetr3) — WinInet HTTP download
+42. [win/winhttp.r3](#winwinhttpr3) — WinHTTP HTTP client
+43. [win/winsock.r3](#winwinsockr3) — Winsock2 raw bindings
+44. [win/ws2.r3](#winws2r3) — Winsock2 with ws2- prefix
+45. [win/urlmon.r3](#winurlmonr3) — URL download helper
+46. [win/ffmpeg.r3](#winffmpegr3) — FFmpeg video playback |WIN|
+47. [win/debugapi.r3](#windebugapir3) — Windows debug API
 
 ### lib/posix/ — Linux System Bindings
-51. [posix/posix.r3](#posixposixr3) — POSIX syscall bindings
-52. [posix/lin-term.r3](#posixlin-termr3) — Linux terminal
+48. [posix/posix.r3](#posixposixr3) — POSIX syscall bindings
+49. [posix/lin-term.r3](#posixlin-termr3) — Linux terminal
 
-> **util/ libraries** (object pools, sorting, fonts, GUI, tile maps, etc.) are documented in `r3forth-util.md`.
+### lib/mac/ — macOS System Bindings
+50. [mac/posix.r3](#macposixr3) — macOS system calls |MAC|
+51. [mac/mac-term.r3](#macmac-termr3) — macOS terminal |MAC|
+
+### lib/web/ — Web (WASM) Bindings
+52. [web/sdl2-web.r3](#websdl2-webr3) — SDL2 for the browser (Canvas2D) |WEB|
+53. [web/web-term.r3](#webweb-termr3) — Terminal for the browser (xterm.js) |WEB|
 
 ---
 
@@ -648,6 +669,8 @@ Binary angle: `0`=0°, `0.25`=90°, `0.5`=180°, `1.0`≈360°. Results are 48.1
 ::memd2float ( cnt src dst -- )      convert cnt 32-bit fixed point values at src to float32 (4 bytes each) at dst
 ```
 
+---
+
 ### dmath.r3
 
 Double-precision 32.32 fixed-point math. Higher precision version of math.r3.
@@ -694,6 +717,8 @@ All `.d` words operate on 32.32 fixed-point values (integer × 2^32).
 ::str>f.d ( adr -- adr' fix )  skip blanks and read a decimal number with sign and fraction (-43.04) as 32.32; 0 if there is no number
 ::f32! ( "str" 'var -- )       read the decimal number of the text and store it (32.32) at 'var
 ```
+
+---
 
 ### str.r3
 
@@ -774,6 +799,8 @@ String manipulation words. Strings are zero-terminated (C style).
 ::>>str ( adr -- adr' )                     address after the closing " of the string text at adr ("" is escaped quote)
 ```
 
+---
+
 ### mem.r3
 
 Heap memory management and formatted print words. Provides `here` as a bump-pointer allocator with mark/empty for temporary use.
@@ -829,6 +856,8 @@ Heap memory management and formatted print words. Provides `here` as a bump-poin
 ::sprint ( p p .. "" -- adr )    like ,print into a shared 4 KB buffer, with a final 0; valid until the next sprint/sprintln
 ::sprintln ( p p .. "" -- adr )  like sprint, ending with CR LF
 ```
+
+---
 
 ### core.r3
 
@@ -888,6 +917,7 @@ Time, files, directories and processes for all platforms. The platform code is s
 ```
 
 ---
+
 ### parse.r3
 
 Parse numbers and tokens from strings.
@@ -1008,6 +1038,8 @@ Random number generators. Two independent generators: a fast 8-bit one and a ful
 ::q4integrate ( 'q 'omega dt -- )         advance quaternion q by the angular velocity vector omega during dt (fixed point), then renormalize with q4norf
 ```
 
+---
+
 ### color.r3
 
 Color space conversions, blending, and manipulation. Colors are packed 32-bit ARGB.
@@ -1059,6 +1091,8 @@ Color space conversions, blending, and manipulation. Colors are packed 32-bit AR
 ::colmul4 ( c1 a -- c )  like colmul for 12-bit colors $RGB: a = 0..15; the result is in the low 12 bits
 ```
 
+---
+
 ### jul.r3
 
 Julian day number calculations for date arithmetic.
@@ -1073,6 +1107,59 @@ Julian day number calculations for date arithmetic.
 ::date2daystr ( d m y -- )   print day name
 ::jul2daystr ( jul -- )      print day name from Julian
 ```
+
+---
+
+### trace.r3
+
+Debug tracing and memory dump utilities. Outputs to console.
+
+**Dependencies:** `^r3/lib/console.r3`
+
+```
+::<<trace ( -- )             print stack contents
+::<<traceh ( -- )            print stack in hex
+::<<memdump ( adr cnt -- )   hex dump of memory region
+::<<memdumpc ( adr cnt -- )  hex dump with ASCII
+::clearlog ( -- )            clear log
+::filelog ( .. str -- )      write formatted data to log file
+::<<memmap ( inimem -- )     display memory map from base
+```
+
+---
+
+### crc32.r3
+
+Checksum algorithms.
+
+**No dependencies.**
+
+```
+::crc32 ( a n -- u )     a n - u
+::crc32n ( a n p -- u )  a n p - u
+::adler32 ( a n -- u )   a n - u
+```
+
+---
+
+### base64.r3
+
+Base64 encoding and decoding.
+
+**Dependencies:** `^r3/lib/math.r3`
+
+```
+::base64decode ( src dest -- 'dest )      decode base64 string to binary
+::base64encode ( len src dest -- 'dest )  encode binary to base64 string
+```
+
+---
+
+### clipboard.r3
+
+Clipboard access. Platform-specific implementation in `lib/win/` or `lib/posix/`.
+
+**No exported words in base file** — see platform sections below.
 
 ---
 
@@ -1195,49 +1282,6 @@ Standard background: `.BBlack` `.BRed` `.BGreen` `.BYellow` `.BBlue` `.BMagenta`
 ::r3run ( "" -- )         run the program "" with the r3 executable of the system and wait for it to end
 ```
 
-### trace.r3
-
-Debug tracing and memory dump utilities. Outputs to console.
-
-**Dependencies:** `^r3/lib/console.r3`
-
-```
-::<<trace ( -- )             print stack contents
-::<<traceh ( -- )            print stack in hex
-::<<memdump ( adr cnt -- )   hex dump of memory region
-::<<memdumpc ( adr cnt -- )  hex dump with ASCII
-::clearlog ( -- )            clear log
-::filelog ( .. str -- )      write formatted data to log file
-::<<memmap ( inimem -- )     display memory map from base
-```
-
----
-
-### crc32.r3
-
-Checksum algorithms.
-
-**No dependencies.**
-
-```
-::crc32 ( a n -- u )     a n - u
-::crc32n ( a n p -- u )  a n p - u
-::adler32 ( a n -- u )   a n - u
-```
-
----
-
-### base64.r3
-
-Base64 encoding and decoding.
-
-**Dependencies:** `^r3/lib/math.r3`
-
-```
-::base64decode ( src dest -- 'dest )      decode base64 string to binary
-::base64encode ( len src dest -- 'dest )  encode binary to base64 string
-```
-
 ---
 
 ### sdl2.r3
@@ -1299,6 +1343,8 @@ Direct wrappers for: `SDL_Init`, `SDL_Quit`, `SDL_CreateWindow`, `SDL_CreateRend
 ```
 ::SDLdfullsw ( display -- sw sh )  current resolution of the display
 ```
+
+---
 
 ### sdl2gfx.r3
 
@@ -1392,6 +1438,8 @@ Sprite-sheet: all frames packed into one image in a grid. Frames are addressed b
 ::polyop ( x y -- )               start a filled polygon with its first point
 ::sscnt ( ssprite -- ssprite n )  number of frames (only right after ssload, while here has not changed)
 ```
+
+---
 
 ### sdl2image.r3
 
@@ -1493,28 +1541,7 @@ Polygon and thick-line drawing (on top of sdl2gfx).
 ::ngon ( ang n r x y -- )
 ```
 
-### sdl2gl.r3
-
-OpenGL bindings accessed via SDL2's GL context.
-
-**Dependencies:** `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl-constv.r3`
-
-Direct wrappers for: `glCreateProgram`, `glCreateShader`, `glShaderSource`, `glCompileShader`, `glGetShaderiv`, `glAttachShader`, `glGetAttribLocation`, `glGenBuffers`, `glBindBuffer`, `glBufferData`, `glBufferSubData`, `glClearColor`, `glClear`, `glUseProgram`, `glValidateProgram`, `glEnableVertexAttribArray`, `glVertexAttribPointer`, `glDrawElements`, `glDrawArrays`, `glDrawArraysInstanced`, `glMapBuffer`, `glUnmapBuffer`, `glGetUniformBlockIndex`, `glUniformBlockBinding`, `glBindBufferBase`, `glGetTexImage`, and more.
-
 ---
-
-```
-::immBox ( x y w h -- )
-::immFull ( -- )
-::immMouse ( -- state )
-::immZone ( -- )                 Interaction is cx,cy,cw,th
-::SDLinitGL ( "title" w h -- )
-::SDLinitSGL ( "title" w h -- )
-::GLpaper ( $ffffff -- )
-::GlDepth ( deeph -- )
-::GLIni ( w h -- )
-::GLIniFull ( -- )
-```
 
 ### sdlkeys.r3
 
@@ -1526,73 +1553,94 @@ SDL2 keyboard scancode constants.
 
 ---
 
-### gui.r3
+### vdraw.r3
 
-Base immediate-mode GUI framework for SDL2. Handles hot/focused state and input routing.
+Virtual drawing surface with pluggable set/get pixel callbacks. Used for off-screen rendering into arbitrary buffers.
 
-**Dependencies:** `^r3/lib/sdl2.r3`
+**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/math.r3`
 
 ```
-##xr1 ##yr1 ##xr2 ##yr2   current widget rect (set by guiBox/guiRect)
-##foco                     keyboard-focused widget ID
-##clkbtn                   last clicked button
-##idf                      current keyboard focus ID
-##idl                      last focus ID
-##guin?                    mouse-in-rect predicate (for custom checks)
+::vset! ( 'set -- )           set pixel callback: ( x y color -- )
+::vget! ( 'get -- )           get pixel callback: ( x y -- color )
+::vsize! ( w h -- )           set virtual canvas dimensions
 
--- Widget Region Setup --
-::gui ( -- )                   start of a gui frame: call it once per frame before the widgets (resets the widget ids)
-::guiBox ( x1 y1 w h -- )      start a widget with the rectangle x1 y1 w h: takes the next id and tests the mouse (sets guin?)
-::guiRect ( x1 y1 x2 y2 -- )   like guiBox but with the two corners of the rectangle
-::guiPrev ( -- )               the next guiBox or guiRect reuses the id of the last widget (several regions with the same id)
-
--- Event Handlers (call after guiBox/guiRect) --
-::onClick ( 'click -- )        execute 'click when the mouse button is released over the widget that was pressed (clkbtn = the button)
-::onClickFoco ( 'click -- )    like onClick and also gives the keyboard focus to the widget
-::onMove ( 'move -- )          execute 'move while the button is pressed and the mouse is over the widget
-::onMoveA ( 'move -- )         execute 'move while the button is held after pressing over the widget, even if the mouse leaves it
-::onDnMove ( 'dn 'move -- )    execute 'dn when the button is pressed over the widget and 'move while it is held there
-::onDnMoveA ( 'dn 'move -- )   like onDnMove but it keeps calling 'move after the mouse leaves the widget
-::onMap ( 'dn 'move 'up -- )   'dn when pressed over the widget, 'move while held, 'up when released
-::onMapA ( 'dn 'move 'up -- )  like onMap but it keeps tracking after the mouse leaves the widget
-
--- Input/Output Vectors --
-::guiI ( 'vector -- )          execute 'vector if the mouse is inside the widget
-::guiO ( 'vector -- )          execute 'vector if the mouse is outside the widget
-::guiIO ( 'vi 'vo -- )         execute 'vi if the mouse is inside the widget, else 'vo
-
--- Focus Management --
-::nextfoco ( -- )              move the keyboard focus to the next focusable widget (wraps to the first) and clear sdlkey
-::prevfoco ( -- )              move the keyboard focus to the previous focusable widget (wraps to the last) and clear sdlkey
-::setfoco ( nro -- )           give the keyboard focus to the focusable widget number nro (1 = the first)
-::clickfoco ( -- )             give the keyboard focus to the last registered focusable widget (call it after its w/foco, for example when it is clicked)
-::refreshfoco ( -- )           clear the keyboard focus: the first focusable widget takes it in the next frame
-::focovoid ( -- )              register a focusable widget without code (it takes a place in the focus order)
-::esfoco? ( -- n )             -1 if the next focusable widget to be registered has the keyboard focus, another nonzero value if not (compare with -1)
-::w/foco ( 'in 'start -- )     focusable widget: with the keyboard focus it executes 'start the first frame and 'in in the next ones; without focus it only registers itself
-::in/foco ( 'in -- )           focusable widget that executes 'in while it has the keyboard focus
-::lostfoco ( 'acc -- )         focusable widget: when it has the focus it executes 'acc and moves the focus to the next widget
+::vop ( x y  -- )             set current pen position
+::vline ( x y -- )            draw line from pen to x,y
+::vfill ( c x y -- )          fill region with color c from x,y
+::vrect ( x1 y1 x2 y2 -- )    hollow rectangle
+::vfrect ( x1 y1 x2 y2 -- )   filled rectangle
+::vellipse ( rx ry x y -- )   hollow ellipse
+::vellipseb ( rx ry x y -- )  filled ellipse
 ```
 
 ---
 
+### sdl2gl.r3
+
+OpenGL bindings accessed via SDL2's GL context.
+
+**Dependencies:** `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl-constv.r3`
+
+Direct wrappers for: `glCreateProgram`, `glCreateShader`, `glShaderSource`, `glCompileShader`, `glGetShaderiv`, `glAttachShader`, `glGetAttribLocation`, `glGenBuffers`, `glBindBuffer`, `glBufferData`, `glBufferSubData`, `glClearColor`, `glClear`, `glUseProgram`, `glValidateProgram`, `glEnableVertexAttribArray`, `glVertexAttribPointer`, `glDrawElements`, `glDrawArrays`, `glDrawArraysInstanced`, `glMapBuffer`, `glUnmapBuffer`, `glGetUniformBlockIndex`, `glUniformBlockBinding`, `glBindBufferBase`, `glGetTexImage`, and more.
+
+---
+
 ```
-::clickfoco1 ( -- )  give the keyboard focus to the next focusable widget to be registered
+::SDLinitGL ( "title" w h -- )
+::SDLinitSGL ( "title" w h -- )
+::GLpaper ( $ffffff -- )
+::GlDepth ( deeph -- )
+::GLIni ( w h -- )
+::GLIniFull ( -- )
 ```
 
-### input.r3
+---
 
-Text input line editor widget (uses bfont for display).
+### sdl2gl-const.r3
 
-**Dependencies:** `^r3/util/bfont.r3`, `^r3/lib/sdlkeys.r3`, `^r3/lib/gui.r3`
+OpenGL constant definitions, included by `sdl2gl.r3`. Not called directly — just a table of `$`-prefixed GL enum values (booleans, buffer bits, etc.).
+
+---
+
+### sdl2gl-constv.r3
+
+Extended set of OpenGL constants, companion to `sdl2gl-const.r3`.
+
+---
+
+### glutil.r3
+
+OpenGL helper words layered on `sdl2gl.r3`: shader loading/compilation, uniform setters, texture loading from images, and a ready-made textured cube.
+
+**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl.r3`, `^r3/lib/sdl2image.r3`
 
 ```
-::input ( 'var max -- )             single-line text input
-::inputex ( 'vector 'var max  -- )  input with external event handler
-::inputdump ( -- )                  print current input state
-::inputint ( 'var -- )              integer input field
-::tbtn ( 'ev "text" -- )            text button with keyboard activation
+-- Shader Loading --
+::loadShaderv ( "shader" -- idprogram )  compile+link a combined vertex/fragment/geometry
+                                              shader source (marked with @V/@F/@G section tags);
+                                              0 on failure
+::loadShader ( "shader" -- idprogram )   load a shader file by name and call loadShaderv
+
+-- Uniforms --
+::shadera!i ( int shader "name"  -- )    set an attribute location to an int (via glUniform1i)
+::shader!i ( int shader "name"  -- )     set a uniform int
+::shader!v3 ( 'v3 shader "name" -- )     set a uniform vec3
+::shader!v4 ( 'v4 shader "name" -- )     set a uniform vec4
+::shader!m4 ( 'm4 shader "name" -- )     set a uniform mat4
+::shader!f1 ( 'f shader "name" -- )      set a uniform float
+
+-- Textures --
+::glImgFnt ( "" -- t )                   load image → GL texture, GL_NEAREST filtering (for fonts)
+::glImgTex ( "" -- texid )               load image → GL texture, GL_LINEAR filtering;
+                                              also sets ##glimgw/##glimgh to the image size
+::glColorTex ( col -- texid )            make a 1×1 solid-color texture
+
+-- Cube Primitive --
+::initcube ( -- )                        build the VAO/VBO for a unit textured cube (position+normal+UV)
+::rendercube ( -- )                      draw the cube built by initcube
 ```
+
+`##glimgw`/`##glimgh` hold the pixel size of the last texture loaded via `glImgTex`.
 
 ---
 
@@ -1716,49 +1764,81 @@ Text input line editor widget (uses bfont for display).
 ::mproj ( near far cot aspect -- )  mpush, mperspective and m*: pushes the projection and the product previous * projection (the arguments are the ones of mperspective, not fov asp zn zf)
 ```
 
-### isospr.r3
+---
 
-*Location: `libex/`.*
+### gui.r3
 
-Isometric sprite rendering system with z-sort.
+Base immediate-mode GUI framework for SDL2. Handles hot/focused state and input routing.
 
-**Dependencies:** `^r3/lib/sdl2gfx.r3`
+**Dependencies:** `^r3/lib/sdl2.r3`
 
 ```
-##isang 0.22     isometric x-angle
-##isalt 0.28     isometric y-angle (altitude factor)
-##isxo           screen x offset for isometric origin
-##isyo           screen y offset for isometric origin
+##xr1 ##yr1 ##xr2 ##yr2   current widget rect (set by guiBox/guiRect)
+##foco                     keyboard-focused widget ID
+##clkbtn                   last clicked button
+##idf                      current keyboard focus ID
+##idl                      last focus ID
+##guin?                    mouse-in-rect predicate (for custom checks)
 
-::xyz2iso ( x y z -- x y )          3D iso coords → screen coords
-::2iso ( x y z -- x y )             alias
-::isocam ( -- )                     set camera to isometric defaults
-::resetcam ( -- )                   reset camera
-::loadss ( w h "file" -- ssprite )  load sprite sheet
-::isospr ( x y a z 'ss -- )         draw isometric sprite (angle a, z-depth z)
+-- Widget Region Setup --
+::gui ( -- )                   start of a gui frame: call it once per frame before the widgets (resets the widget ids)
+::guiBox ( x1 y1 w h -- )      start a widget with the rectangle x1 y1 w h: takes the next id and tests the mouse (sets guin?)
+::guiRect ( x1 y1 x2 y2 -- )   like guiBox but with the two corners of the rectangle
+::guiPrev ( -- )               the next guiBox or guiRect reuses the id of the last widget (several regions with the same id)
+
+-- Event Handlers (call after guiBox/guiRect) --
+::onClick ( 'click -- )        execute 'click when the mouse button is released over the widget that was pressed (clkbtn = the button)
+::onClickFoco ( 'click -- )    like onClick and also gives the keyboard focus to the widget
+::onMove ( 'move -- )          execute 'move while the button is pressed and the mouse is over the widget
+::onMoveA ( 'move -- )         execute 'move while the button is held after pressing over the widget, even if the mouse leaves it
+::onDnMove ( 'dn 'move -- )    execute 'dn when the button is pressed over the widget and 'move while it is held there
+::onDnMoveA ( 'dn 'move -- )   like onDnMove but it keeps calling 'move after the mouse leaves the widget
+::onMap ( 'dn 'move 'up -- )   'dn when pressed over the widget, 'move while held, 'up when released
+::onMapA ( 'dn 'move 'up -- )  like onMap but it keeps tracking after the mouse leaves the widget
+
+-- Input/Output Vectors --
+::guiI ( 'vector -- )          execute 'vector if the mouse is inside the widget
+::guiO ( 'vector -- )          execute 'vector if the mouse is outside the widget
+::guiIO ( 'vi 'vo -- )         execute 'vi if the mouse is inside the widget, else 'vo
+
+-- Focus Management --
+::nextfoco ( -- )              move the keyboard focus to the next focusable widget (wraps to the first) and clear sdlkey
+::prevfoco ( -- )              move the keyboard focus to the previous focusable widget (wraps to the last) and clear sdlkey
+::setfoco ( nro -- )           give the keyboard focus to the focusable widget number nro (1 = the first)
+::clickfoco ( -- )             give the keyboard focus to the last registered focusable widget (call it after its w/foco, for example when it is clicked)
+::refreshfoco ( -- )           clear the keyboard focus: the first focusable widget takes it in the next frame
+::focovoid ( -- )              register a focusable widget without code (it takes a place in the focus order)
+::esfoco? ( -- n )             -1 if the next focusable widget to be registered has the keyboard focus, another nonzero value if not (compare with -1)
+::w/foco ( 'in 'start -- )     focusable widget: with the keyboard focus it executes 'start the first frame and 'in in the next ones; without focus it only registers itself
+::in/foco ( 'in -- )           focusable widget that executes 'in while it has the keyboard focus
+::lostfoco ( 'acc -- )         focusable widget: when it has the focus it executes 'acc and moves the focus to the next widget
 ```
 
 ---
 
-### vdraw.r3
+```
+::clickfoco1 ( -- )  give the keyboard focus to the next focusable widget to be registered
+```
 
-Virtual drawing surface with pluggable set/get pixel callbacks. Used for off-screen rendering into arbitrary buffers.
+> Old GUI base. For new programs use [rimm](r3forth-rimm.md).
 
-**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/math.r3`
+---
+
+### input.r3
+
+Text input line editor widget (uses bfont for display).
+
+**Dependencies:** `^r3/util/bfont.r3`, `^r3/lib/sdlkeys.r3`, `^r3/lib/gui.r3`
 
 ```
-::vset! ( 'set -- )           set pixel callback: ( x y color -- )
-::vget! ( 'get -- )           get pixel callback: ( x y -- color )
-::vsize! ( w h -- )           set virtual canvas dimensions
-
-::vop ( x y  -- )             set current pen position
-::vline ( x y -- )            draw line from pen to x,y
-::vfill ( c x y -- )          fill region with color c from x,y
-::vrect ( x1 y1 x2 y2 -- )    hollow rectangle
-::vfrect ( x1 y1 x2 y2 -- )   filled rectangle
-::vellipse ( rx ry x y -- )   hollow ellipse
-::vellipseb ( rx ry x y -- )  filled ellipse
+::input ( 'var max -- )             single-line text input
+::inputex ( 'vector 'var max  -- )  input with external event handler
+::inputdump ( -- )                  print current input state
+::inputint ( 'var -- )              integer input field
+::tbtn ( 'ev "text" -- )            text button with keyboard activation
 ```
+
+> Old input widget. For new programs use `uiInputLine` in [rimm](r3forth-rimm.md).
 
 ---
 
@@ -1851,104 +1931,6 @@ Cross-platform webcam capture via `webcam.dll`/`.so`.
 ::webcam_set_conversion_size ( handle w h -- )
 ::webcam_get_converted_frame ( handle 'buf sz -- 'frame )
 ```
-
----
-
-### glutil.r3
-
-OpenGL helper words layered on `sdl2gl.r3`: shader loading/compilation, uniform setters, texture loading from images, and a ready-made textured cube.
-
-**Dependencies:** `^r3/lib/mem.r3`, `^r3/lib/sdl2.r3`, `^r3/lib/sdl2gl.r3`, `^r3/lib/sdl2image.r3`
-
-```
--- Shader Loading --
-::loadShaderv ( "shader" -- idprogram )  compile+link a combined vertex/fragment/geometry
-                                              shader source (marked with @V/@F/@G section tags);
-                                              0 on failure
-::loadShader ( "shader" -- idprogram )   load a shader file by name and call loadShaderv
-
--- Uniforms --
-::shadera!i ( int shader "name"  -- )    set an attribute location to an int (via glUniform1i)
-::shader!i ( int shader "name"  -- )     set a uniform int
-::shader!v3 ( 'v3 shader "name" -- )     set a uniform vec3
-::shader!v4 ( 'v4 shader "name" -- )     set a uniform vec4
-::shader!m4 ( 'm4 shader "name" -- )     set a uniform mat4
-::shader!f1 ( 'f shader "name" -- )      set a uniform float
-
--- Textures --
-::glImgFnt ( "" -- t )                   load image → GL texture, GL_NEAREST filtering (for fonts)
-::glImgTex ( "" -- texid )               load image → GL texture, GL_LINEAR filtering;
-                                              also sets ##glimgw/##glimgh to the image size
-::glColorTex ( col -- texid )            make a 1×1 solid-color texture
-
--- Cube Primitive --
-::initcube ( -- )                        build the VAO/VBO for a unit textured cube (position+normal+UV)
-::rendercube ( -- )                      draw the cube built by initcube
-```
-
-`##glimgw`/`##glimgh` hold the pixel size of the last texture loaded via `glImgTex`.
-
----
-
-### onnx.r3
-
-*Location: `libex/`.*
-
-Direct bindings to the [ONNX Runtime C API](https://onnxruntime.ai/docs/api/c/) (`onnxruntime.dll`), for running neural network models. |WIN|
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-This is a near-complete 1:1 mirror of the official `OrtApi` function table — roughly 190 functions covering environment/session setup, tensors, memory info, sparse tensors, execution providers (CUDA, TensorRT, ROCm, DirectML, Dnnl...), IO binding, and LoRA adapters. Every real ONNX Runtime C API function `OrtApi->Xxx(...)` is exposed here as `::OrtXxx`, in the same argument order, via the standard `sysN` DLL-call mechanism (`N` = argument count). A few conveniences are added on top:
-
-```
-::OrtgetVersionString ( -- 'str )             ONNX Runtime version string
-::ortSess_CPU ( 'options threads -- 'status ) append the CPU execution provider
-::ortSess_MDL ( 'options threads -- 'status ) append the MDL execution provider
-```
-
-Given the size and 1:1 nature of the rest, function-by-function stack docs aren't reproduced here — the [official OrtApi reference](https://onnxruntime.ai/docs/api/c/struct_ort_api.html) applies directly: whatever a given `OrtXxx` takes in C, the r3 word `::OrtXxx` takes on the stack in the same left-to-right order (with the trailing output pointer(s) becoming stack outputs). Typical flow: `OrtCreateEnv` → `OrtCreateSessionOptions` (+ `ortSess_CPU`/`ortSess_MDL` or one of the `SessionOptionsAppendExecutionProvider_*` words) → `OrtCreateSession` → `OrtRun`.
-
----
-
-### tflite.r3
-
-*Location: `libex/`.*
-
-Bindings to the [TensorFlow Lite C API](https://www.tensorflow.org/lite/api_docs/c) (`tensorflowlite_c.dll`), for running `.tflite` models. |WIN|
-
-**Dependencies:** `^r3/lib/win/kernel32.r3`
-
-```
--- Setup --
-
--- Tensors --
-
--- Run --
-
--- Cleanup --
-```
-
-**Typical flow:** `TfLiteModelCreateFromFile` → `TfLiteInterpreterOptionsCreate` (+ `TfLiteXNNPackDelegateCreate`/`TfLiteInterpreterOptionsAddDelegate` if using the XNNPACK delegate) → `TfLiteInterpreterCreate` → `TfLiteInterpreterAllocateTensors` → get input tensor(s), `TfLiteTensorCopyFromBuffer` → `TfLiteInterpreterInvoke` → get output tensor(s), `TfLiteTensorCopyToBuffer`.
-
----
-
-### sdl2gl-const.r3
-
-OpenGL constant definitions, included by `sdl2gl.r3`. Not called directly — just a table of `$`-prefixed GL enum values (booleans, buffer bits, etc.).
-
----
-
-### sdl2gl-constv.r3
-
-Extended set of OpenGL constants, companion to `sdl2gl-const.r3`.
-
----
-
-### clipboard.r3
-
-Clipboard access. Platform-specific implementation in `lib/win/` or `lib/posix/`.
-
-**No exported words in base file** — see platform sections below.
 
 ---
 
@@ -2176,11 +2158,51 @@ Linux terminal event handling.
 
 ---
 
+## lib/mac/ — macOS System Bindings
 
+---
+
+### mac/posix.r3
+
+System calls for macOS (libSystem, arm64 Apple). Used by `mac/mac-term.r3`.
+
+---
+
+### mac/mac-term.r3
+
+Terminal for macOS. `type` writes to the console; the keyboard is read in raw mode (termios).
+
+**Dependencies:** `^r3/lib/mac/posix.r3`, `^r3/lib/mem.r3`, `^r3/lib/parse.r3`
+
+---
+
+## lib/web/ — Web (WASM) Bindings
+
+---
+
+### web/sdl2-web.r3
+
+SDL2 port for the browser (WASM), drawing with Canvas2D. It keeps the names of `sdl2.r3` (`SDLinit`, `SDLmini`, `SDLupdate`, `SDLredraw`, `SDLshow`, `changews`).
+
+Covers the core: 2D render, events and timing. The JavaScript side is `web/sdl2-shim.js`.
+
+**Dependencies:** `^r3/lib/console.r3`, `^r3/lib/sdlkeys.r3`
+
+---
+
+### web/web-term.r3
+
+Terminal for the browser, using xterm.js. Port of `win/win-term.r3`: `console.r3` works with no changes.
+
+Gives `type` (write to the terminal), `inkey` (0 if no key, does not block), `rows` and `cols`. The JavaScript side is `web/term-shim.js`.
+
+---
 
 ## util/ — Utility Libraries
 
 #### Contents
+
+**Data and objects**
 
 1. [arr8.r3](#arr8r3) — Fixed 8-value object pool
 2. [arr16.r3](#arr16r3) — Fixed 16-value object pool with sort/map
@@ -2188,39 +2210,60 @@ Linux terminal event handling.
 4. [dlist.r3](#dlistr3) — FIFO deque
 5. [heap.r3](#heapr3) — Min-heap priority queue
 6. [hash2d.r3](#hash2dr3) — 2D spatial hash for collision
+
+**Sorting**
+
 7. [sort.r3](#sortr3) — ShellSort variants
 8. [sortradix.r3](#sortradixr3) — RadixSort 16/32/64-bit
 9. [sortradixm.r3](#sortradixmr3) — RadixSort with offset keys
+
+**Animation**
+
 10. [penner.r3](#pennerr3) — 30 Penner easing functions
 11. [varanim.r3](#varanimr3) — Timeline-based variable animator
+
+**Fonts and text**
+
 12. [utfg.r3](#utfgr3) — 8×8 bitmap font terminal output
 13. [bfont.r3](#bfontr3) — Fixed-width bitmap font (SDL2)
 14. [pcfont.r3](#pcfontr3) — PC/DOS-style 16×32 font (SDL2)
 15. [ttfont.r3](#ttfontr3) — TrueType font rendering (SDL2_ttf)
 16. [txfont.r3](#txfontr3) — TrueType atlas font with pseudo-UTF8
-17. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
-18. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
-19. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
-20. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
-21. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
-22. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
-23. [immi.r3](#immir3) — Modern grid-based immediate-mode GUI (SDL2, v3)
-24. [imcolor.r3](#imcolorr3) — Color selector widget for immi
-25. [imedit.r3](#imeditr3) — Code editor with syntax highlight for immi
-26. [imfiledlg.r3](#imfiledlgr3) — File dialog for immi
-27. [immdatetime.r3](#immdatetimer3) — Calendar/datetime widget for immi
-28. [tui.r3](#tuir3) — Text UI framework (terminal)
-29. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
-30. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
-31. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
-32. [bmap.r3](#bmapr3) — Multi-layer tile map for games
-33. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
-34. [datetime.r3](#datetimer3) — Date/time formatting
-35. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
-36. [filedirs.r3](#filedirsr3) — Filesystem scanner for UI trees
+17. [gltxfont.r3](#gltxfontr3) — TrueType atlas font for OpenGL
+18. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
+19. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
+
+**Drawing**
+
+20. [glgfx.r3](#glgfxr3) — 2D drawing over OpenGL (batched, as sdl2gfx)
+21. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
+
+**Old GUI (see rimm)**
+
+22. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
+23. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
+24. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
+25. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
+
+**Terminal UI**
+
+26. [tui.r3](#tuir3) — Text UI framework (terminal)
+27. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
+
+**Maps and 3D models**
+
+28. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
+29. [bmap.r3](#bmapr3) — Multi-layer tile map for games
+30. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
+
+**Files and data**
+
+31. [datetime.r3](#datetimer3) — Date/time formatting
+32. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
+33. [filedirs.r3](#filedirsr3) — Filesystem scanner for UI trees
+34. [curfile.r3](#curfiler3) — Current file name (shared buffer)
 
 ---
-
 
 ### arr8.r3
 
@@ -2258,6 +2301,8 @@ Fixed object pool for 8-value (64-byte) objects. Object index 0 is reserved as "
 ::p8.sort ( col 'list -- )
 ::p8.isort ( col 'list -- )
 ```
+
+---
 
 ### arr16.r3
 
@@ -2520,6 +2565,8 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ::ani+timer! ( 'V -- )          advance the frame animation in 'V by deltatime
 ```
 
+---
+
 ### utfg.r3
 
 8×8 bitmap Unicode font for terminal output. Outputs to console buffer via `.write`.
@@ -2562,6 +2609,8 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ::.vlined2 ( h -- )
 ::rgb4t ( col12 -- col256 )
 ```
+
+---
 
 ### bfont.r3
 
@@ -2627,6 +2676,8 @@ Fixed-width bitmap font rendered to SDL2 from an image file.
 ::bfillline ( x y w h -- )  fill with the draw color the rectangle given in character cells (x y w h)
 ```
 
+---
+
 ### pcfont.r3
 
 PC/DOS-style font (16×32 grid per image) for SDL2.
@@ -2671,6 +2722,8 @@ Similar API to bfont.r3 but for PC-font-style rendering. Key words:
 ::pcemits2 ( "" -- )                print the string with double width and height
 ```
 
+---
+
 ### ttfont.r3
 
 TrueType font rendering for SDL2 using SDL2_ttf.
@@ -2701,6 +2754,8 @@ TrueType font rendering for SDL2 using SDL2_ttf.
 ::ttemitr ( "" -- )        draw the string right aligned: it ends at the cursor x
 ::ttboxcc ( w h "" -- )    draw the string centered in a box w x h starting at the cursor
 ```
+
+---
 
 ### txfont.r3
 
@@ -2753,6 +2808,20 @@ TrueType font atlas renderer with pseudo-UTF8 support and glyph caching.
 ::pad.reset ( 'var max -- 'var max )  prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
 ::pad.draw ( 'buff -- )               draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
 ```
+
+---
+
+### gltxfont.r3
+
+TTF atlas font for OpenGL. Same `txload` as `txfont.r3`, but the atlas is a texture for `glgfx.r3`. Select the font with `txfont` and draw with the tx words of glgfx.
+
+**Dependencies:** `^r3/lib/sdl2gl.r3`, `^r3/lib/sdl2ttf.r3`, `^r3/util/glgfx.r3`
+
+```
+::txload ( "font" size -- nfont )   load a TTF as an atlas texture (0 if there is no room)
+```
+
+---
 
 ### ttext.r3
 
@@ -2815,6 +2884,80 @@ Renders text into a box with word wrapping, color, and offset parameters.
 ```
 
 Parameters: `str`=text string, `$colb`=background color, `$colo`=text outline color, `$ofvh`=packed vertical/horizontal offset, `$colf`=foreground color, `w h`=box dimensions, `font`=TTF font handle. Returns SDL texture.
+
+---
+
+### glgfx.r3
+
+2D drawing over OpenGL: shapes, lines, text and images. The words only fill a buffer; it goes to the GPU in one draw call (when full, when the texture changes, at `fend`, `gclip` or `gflush`). Same names as `sdl2gfx.r3`.
+
+**Dependencies:** `^r3/lib/sdl2gl.r3`, `^r3/lib/math.r3`
+
+```
+-- Frame --
+::glgfx ( -- )                      start; call once after GLini
+::fini ( -- )                       start of the frame
+::fend ( -- )                       end of the frame
+::gflush ( -- )                     send the batch to the GPU (call before your own GL calls)
+::fixFontResize ( -- )              call when the window changes size
+
+-- Draw (same as sdl2gfx) --
+::color ( rgb -- )                  draw color $RRGGBB
+::colorA ( argb -- )                draw color $AARRGGBB
+::cls ( rgb -- )                    clear
+::point ( x y -- )
+::line ( x1 y1 x2 y2 -- )
+::lineH ( x1 y x2 -- )              ::lineV ( x y1 y2 -- )
+::lineHg ( x1 y x2 c1 c2 -- )       horizontal line with a gradient (also lineVg)
+::frect ( x y w h -- )              ::rect ( x y w h -- )
+::fround ( r x y w h -- )           ::round ( r x y w h -- )
+::fcircle ( r x y -- )              ::circle ( r x y -- )
+::fellipse ( rx ry x y -- )         ::ellipse ( rx ry x y -- )
+::triangle ( x1 y1 x2 y2 x3 y3 -- )
+::polyop ( x y -- )                 start a filled polygon
+::polyline ( x y -- )               add a point
+
+-- Images --
+::fimgload ( "file" -- idx )        load an image
+::fimgtex ( tex -- idx )            image from a texture
+::fimgwh ( idx -- w h )             image size
+
+Also as in sdl2gfx: `image` `images` `imageb` `imagebb` `ts*` `sprite*` `ss*`.
+
+-- Text --
+::fload ( "file" cw ch -- font )    load a font atlas (max 8)
+::txfont ( font -- )                select the font
+::txfont@ ( -- font )               the font selected now
+::fat ( x y -- )                    text position
+::ftext ( "" -- )                   draw the text at fat
+::ftextn ( "" n -- )                draw n chars
+```
+
+---
+
+### vscreen.r3
+
+Virtual resolution rendering. Renders to an internal texture at logical size, then scales to the actual window.
+
+**Dependencies:** `^r3/lib/sdl2.r3`
+
+```
+::vscreen ( w h -- )  create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
+::vini ( -- )         start drawing into the virtual screen (it becomes the render target)
+::vredraw ( -- )      draw the virtual screen in the window and present it
+::vfree ( -- )        free the virtual screen texture
+
+::sdlx ( -- x )       mouse x position (16 bits)
+::sdly ( -- y )       mouse y position
+::%w ( frac -- px )   fixed point fraction of the screen width (1.0 = sw) in pixels
+::%h ( frac -- px )   fixed point fraction of the screen height (1.0 = sh) in pixels
+```
+
+---
+
+```
+::vscreenf ( w h -- )  like vscreen with nearest neighbor scaling (sharp pixels)
+```
 
 ---
 
@@ -2905,6 +3048,10 @@ Immediate-mode GUI framework with TrueType font rendering for SDL2.
 ::immwin$ ( 'winword -- )  remove the window from the list
 ```
 
+> Old GUI. For new programs use [rimm](r3forth-rimm.md).
+
+---
+
 ### sdlfiledlg.r3
 
 File open/save dialog using sdlgui.r3.
@@ -2918,6 +3065,8 @@ File open/save dialog using sdlgui.r3.
 ::immfilesave ( 'vecload 'file -- )  show save dialog; calls 'vecload on confirm
 ::fullfilename ( -- )                push full path to stack
 ```
+
+> Old dialog. In rimm use `uiFileName` (rimmfile.r3).
 
 ---
 
@@ -2936,6 +3085,8 @@ Interactive color picker dialog for SDL2.
 ::xydlgColor! ( x y -- )  position of the color dialog and rebuild its geometry
 ```
 
+> Old dialog. In rimm use `uiColor` (rimmcolor.r3).
+
 ---
 
 ### dlgfile.r3
@@ -2950,231 +3101,7 @@ File browser dialog for SDL2 (uses gui.r3 input system).
 ::dlgSetPath ( "path" -- )  set the folder where the file dialogs start
 ```
 
----
-
-### immi.r3
-
-Modern grid-layout immediate-mode GUI for SDL2 (version 3, 2025). Uses txfont for rendering.
-
-**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/color.r3`, `^r3/util/txfont.r3`
-
-#### Layout System
-The layout cursor `(cx, cy, cw, ch)` tracks current widget position. The frame stack allows push/pop for nested layouts.
-
-```
-##cx ##cy ##cw ##ch    current widget cursor (position + size)
-::%cw ( -- w )                                percent of frame width
-::%ch ( -- h )                                percent of frame height
-
--- Frame Management --
-::uiBox ( x y w h -- )                        set frame
-::uiFull ( -- )                               fill entire window
-::uiPush ( -- )                               push frame state
-::uiPop ( -- )                                pop frame state
-::uiRest ( -- )                               restore frame
-::uiPading ( x y -- )                         set padding
-::uiAt ( x y -- )                             absolute position within frame
-::uiTo ( w h -- )                             set widget size
-
--- Splits (divide current frame) --
-::uiN ( lineas -- )                           take N lines from top
-::uiS ( lineas -- )                           take N lines from bottom
-::uiE ( cols -- )                             take N columns from right
-::uiO ( cols -- )                             take N columns from left
-::uiGrid ( c r -- )                           adjust for fit
-::uiNext ( -- )                               advance to next grid cell
-::uiNextV ( -- )                              advance vertically
-
--- Input State Queries --
-::uiEx? ( -- 0/1 )                            mouse over?
-::uiOvr ( 'v -- )                             execute if mouse over
-::uiDwn ( 'v -- )                             execute if mouse down in widget
-::uiSel ( 'v -- )                             execute if selected
-::uiClk ( 'v -- )                             execute if clicked
-::uiUp ( 'v -- )                              execute on mouse release
-::uiFocusIn ( 'v -- )                         execute when focus enters
-::uiFocus ( 'v -- )                           execute while focused
-
--- Frame Lifecycle --
-::uiStart ( -- )                              begin UI frame
-::uiEnd ( -- )                                end UI frame
-::uiZone ( -- )                               Interaction is cx,cy,cw,th
-::uiZoneL ( nlines -- )                       Interaction is cx,cy,cw,th*lines
-::uiZoneW ( --	; Interaction is cx,cy,cw,ch ) zone filling cw×ch
-::uiZoneBox ( x y w h -- )                    explicit zone rect
-::uiSaveLast ( x y w h 'vector -- )           save last zone dimensions
-::uiBackBox ( -- )                            draw background box
-::uiExitWidget ( -- )                         early exit from widget
-::uiPlace ( n -- )                            place widget at grid position n
-```
-
-#### Focus
-```
-::uiRefocus ( -- )  reset focus
-::uiFocus>> ( -- )  move to next focusable
-::uiFocus<< ( -- )  move to previous
-::tabfocus ( -- )   advance focus on Tab key
-```
-
-#### Drawing Helpers
-```
-::uiFill ( -- )            fill cx cy cw ch
-::uiRect ( -- )            outline cx cy cw ch
-::uiRFill ( -- )           rounded filled
-::uiRRect ( -- )           rounded outline
-::uiCRect ( -- )           circle outline (uses min of w,h)
-::uiCFill ( -- )           circle filled
-::uiTex ( tex -- )         draw texture in widget area
-::uiWinBox ( -- x y w h )  window bounds
-::uiLineGridV ( -- )       draw vertical grid lines
-::uiLineGridH ( -- )       draw horizontal grid lines
-::uiLineGrid ( -- )        draw both grid lines
-```
-
-#### Status Styles
-```
-::stDang ( -- )  danger style (red)
-::stWarn ( -- )  warning style (amber)
-::stSucc ( -- )  success style (green)
-::stInfo ( -- )  info style (blue)
-::stLink ( -- )  link style
-::stDark ( -- )  dark style
-::stLigt ( -- )  light/white style
-```
-
-#### Widgets
-```
--- Labels and Text --
-::uiTlabel ( -- )                    text label from stack
-::uiLabel ( -- )                     centered label
-::uiLabelC ( -- )                    explicitly centered
-::uiLabelR ( -- )                    right-aligned
-::uiText ( "" align -- )             text with alignment
-::ttwrite ( "text" -- )              write text (left)
-::ttwritec ( "text" -- )             write centered
-::ttwriter ( "text" -- )             write right
-
--- Buttons --
-::uiBtn ( 'click "" -- )             standard button
-::uiRBtn ( 'click "" -- )            rounded button
-::uiCBtn ( 'click "" -- )            circular button
-::uiTBtn ( 'click "" align -- )      text button with alignment
-::uiNBtn ( v "" -- )                 width from text
-
--- Input --
-::uiInputLine ( 'buff max -- )       single-line text input
-::uiCheck ( 'var 'list -- )          checkbox (list = option strings)
-::uiRadio ( 'var 'list -- )          radio group
-::uiCombo ( 'var 'list -- )          combo box / dropdown
-::uiList ( 'var cntl 'list -- )      scrollable list
-::uiTree ( 'var cntl list -- )       collapsible tree
-::uiNindx ( n -- str )               get list item string n
-
--- Sliders and Progress --
-::uiSliderf ( 0.0 1.0 'value -- )    horizontal float slider
-::uiSlideri ( 0 255 'value -- )      horizontal integer slider
-::uiVSliderf ( 0.0 1.0 'value -- )   vertical float slider
-::uiVSlideri ( 0 255 'value -- )     vertical integer slider
-::uiProgressf ( 0.0 1.0 'value -- )  float progress bar
-::uiProgressi ( 0 255 'value -- )    integer progress bar
-```
-
-> **Note:** `immi.r3` (v3) is single-window/full-screen — it has no `immwin`/`immnowin`-style multi-window API. That API (`immwin`, `immwin!`, `immnowin`, `winexit`, `immRedraw`, `immwins`, `immSDL`, `immblabel`, `immicon`, `immiconb`, `immwidth`, etc.) belongs to `sdlgui.r3`, which is documented in its own section above. An earlier version of this reference mistakenly duplicated that list here.
-
----
-
-```
-::stColor ( rgb -- )
-```
-
-### imcolor.r3
-
-Color selector widget for immi.
-
-**Dependencies:** `^r3/lib/color.r3`, `^r3/util/immi.r3`
-
-```
-::color! ( color -- )   set the selected color $RRGGBB and move the marks of the picker to it
-::uiColor ( 'var -- )   full color selector widget (HSV + RGB sliders)
-::uiColorH ( 'var -- )  compact horizontal color selector
-```
-
----
-
-### imedit.r3
-
-Code editor widget for immi with syntax highlighting and marks.
-
-**Dependencies:** `^r3/lib/parse.r3`, `^r3/lib/color.r3`, `^r3/util/immi.r3`
-
-```
-##ycursor ##xcursor    cursor row, column
-##edfilename * 1024    current file path
-##inisel               selection start
-##finsel               selection end
-##fuente               editable text buffer
-##fuente>              cursor pointer into buffer
-
--- Syntax Marks --
-::clearmark ( -- )             clear all syntax marks
-::addmark ( -- )               add mark at current position
-::addsrcmark ( src color -- )  add colored mark
-::showmark ( -- )              render marks
-
--- Editor Display --
-::edcodedraw ( -- )            draw code with syntax highlighting
-::edfill ( -- )                fill editor background
-::edtoolbar ( -- )             render editor toolbar
-
--- Focus --
-::edfocus ( -- )               interactive code editor (focused)
-::edfocusro ( -- )             read-only editor
-
--- Editor RAM Management --
-::edram ( -- )                 allocate editor RAM
-
--- Widget Setup --
-::edwin ( x y w h -- )         set editor window position/size
-::edloadmem ( "" -- )          load text from string into editor
-::edload ( "" -- )             load file into editor
-::edsave ( -- )                save editor contents to file
-```
-
----
-
-```
-::edlinenum! ( 0/1 -- )  show or hide the line number
-::edlinenum ( -- 0/1 )
-```
-
-### imfiledlg.r3
-
-File open/save dialog for immi.
-
-**Dependencies:** `^r3/util/immi.r3`
-
-```
-::immfileload ( 'vecload 'file -- )  show load dialog
-::immfilesave ( 'vecload 'file -- )  show save dialog
-::fullfilename ( -- )                push current full path
-::uiFileName ( 'var -- )             file name input widget
-```
-
----
-
-### immdatetime.r3
-
-Calendar and time picker widgets for immi.
-
-**Dependencies:** `^r3/lib/jul.r3`, `^r3/util/immi.r3`, `^r3/util/datetime.r3`
-
-```
-::uiDateTime ( 'var -- )  full date+time picker widget
-::uiDate ( 'var -- )      date-only calendar widget
-::uiTime ( 'var -- )      time-only picker widget
-```
-
-The variable stores packed date/time as a 64-bit value; use `datetime.r3` words to interpret it.
+> Old dialog. In rimm use `uiFileName` (rimmfile.r3).
 
 ---
 
@@ -3300,6 +3227,8 @@ A "frame" defines a rectangular region of the terminal. Frames can be split and 
 ::tuDlgEnd ( -- )
 ```
 
+---
+
 ### tuiedit.r3
 
 Full-featured text editor widget for TUI framework. Supports selection, clipboard, and undo.
@@ -3356,29 +3285,7 @@ Full-featured text editor widget for TUI framework. Supports selection, clipboar
 ::tuEditLN! ( n -- )         line number place
 ```
 
-### vscreen.r3
-
-Virtual resolution rendering. Renders to an internal texture at logical size, then scales to the actual window.
-
-**Dependencies:** `^r3/lib/sdl2.r3`
-
-```
-::vscreen ( w h -- )  create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
-::vini ( -- )         start drawing into the virtual screen (it becomes the render target)
-::vredraw ( -- )      draw the virtual screen in the window and present it
-::vfree ( -- )        free the virtual screen texture
-
-::sdlx ( -- x )       mouse x position (16 bits)
-::sdly ( -- y )       mouse y position
-::%w ( frac -- px )   fixed point fraction of the screen width (1.0 = sw) in pixels
-::%h ( frac -- px )   fixed point fraction of the screen height (1.0 = sh) in pixels
-```
-
 ---
-
-```
-::vscreenf ( w h -- )  like vscreen with nearest neighbor scaling (sharp pixels)
-```
 
 ### tilesheet.r3
 
@@ -3559,17 +3466,469 @@ Filesystem scanner providing file/directory trees for UI list and tree widgets.
 ::flScanDir ( "path" -- )                 scan the folders under path recursively into uiDirs and reserve 64 KB for uiFiles; call it only once
 ::flScanFullDir ( "path" -- )             like flScanDir but uiDirs also has the files (the folders end with /)
 ::flOpenFullPath ( "root/a/b" -- place )  open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
-```
-
----
-
-*End of r3forth `util/` Library Reference*
-
-```
 ::flOpenSearch ( "text" -- adr/0 )  first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
 ::flCloseAll ( -- )                 close all the folders of uiDirs
 ```
 
+---
+
+### curfile.r3
+
+Name of the current file, in one shared buffer. The editor (`tuiedit.r3`) and the IDE tools work on the same file, so both include this one.
+
+```
+##filename * 1024      path of the current file
+```
+
+---
+
+## rimm/ — Immediate Mode GUI
+
+RIMM is the immediate mode GUI of r3forth, with many backends (SDL2, OpenGL). It replaces the old `imm*` libraries. Same text as [r3forth-rimm.md](r3forth-rimm.md).
+
+#### Contents
+
+1. [Quick start](#quick-start)
+2. [Files](#files)
+3. [Frame loop](#frame-loop)
+4. [Layout](#layout)
+5. [Mouse and keyboard state](#mouse-and-keyboard-state)
+6. [Widgets](#widgets)
+7. [Theme and colors](#theme-and-colors)
+8. [Extra widgets](#extra-widgets) — color, editor, file dialog, date
+9. [Backends](#backends)
+10. [Moving from the old imm libs](#moving-from-the-old-imm-libs)
+
+---
+
+### Quick start
+
+Include the backend **first**, then the widgets you need.
+
+```forth
+^r3/rimm/rimmsdl.r3        | backend (SDL2). For OpenGL use rimmgl.r3
+^r3/rimm/rimmwid.r3        | layout + theme + widgets
+
+#font
+#vol 0.5
+#name * 64
+
+:gui
+	font txfont
+	uiStart                       | begin frame
+	4 4 uiPad
+	22 uiN                        | top strip of 22 pixels
+	"Hello" uiLabel
+	uiRest
+	0 1.0 'vol uiSliderf
+	'name 64 uiInputLine
+	'exit "Exit" uiBtn
+	uiEnd ;                       | end frame
+
+:main
+	0 cls
+	gui
+	SDLredraw
+	sdlkey >esc< =? ( exit ) drop ;
+
+:
+	"RIMM" 800 600 SDLinitR
+	"media/ttf/Roboto-Medium.ttf" 18 txload 'font !
+	'main SDLshow
+	SDLquit ;
+```
+
+---
+
+### Files
+
+| File | What it does |
+|---|---|
+| `rimmsdl.r3` | Backend: SDL2 render (clip) |
+| `rimmgl.r3` | Backend: OpenGL (`glgfx`) |
+| `rimmcore.r3` | Layout, ids, mouse and keyboard state |
+| `rimmtheme.r3` | Colors, shapes, skins, ready-made themes |
+| `rimmicon.r3` | Icons drawn with lines (no font, no image) |
+| `rimmwid.r3` | Widgets (includes core and theme) |
+| `rimmcolor.r3` | Color picker |
+| `rimmedit.r3` | Text area, text view, code editor |
+| `rimmfile.r3` | File dialog |
+| `rimmdate.r3` | Date field with calendar |
+
+---
+
+### Frame loop
+
+Every frame, call `uiStart` before the widgets and `uiEnd` after them.
+`uiEnd` draws the pop-ups (combo list, color picker, file dialog) over the rest.
+
+```
+::uiStart ( -- )              start of the frame: the frame is the whole screen
+::uiEnd ( -- )                end of the frame, draws the open pop-up
+::uiPopup? ( -- flag )        not 0 while a pop-up is open
+```
+
+---
+
+### Layout
+
+The **frame** is the area where widgets go. The **cursor box** `cx cy cw ch` is the place of the next widget.
+
+```
+##fx ##fy ##fw ##fh           frame
+##cx ##cy ##cw ##ch           cursor box (current widget)
+```
+
+#### Frame
+
+```
+::uiBox ( x y w h -- )        set the frame
+::uiFull ( -- )               frame = whole screen
+::uiWinBox ( -- x y w h )     the current frame
+::uiPad ( x y -- )            padding inside the frame
+::%cw ( frac -- px )          fraction of the frame width (1.0 = all)
+::%ch ( frac -- px )          fraction of the frame height
+::uiPush ( -- )               save the frame (16 levels)
+::uiPop ( -- )                restore the frame
+```
+
+#### Split the frame
+
+Take a strip from the frame. The strip becomes the frame; the rest stays on the stack. A negative size means "all minus this".
+
+```
+::uiN ( px -- )               strip from the top
+::uiS ( px -- )               strip from the bottom
+::uiO ( px -- )               strip from the left
+::uiE ( px -- )               strip from the right
+::uiRest ( -- )               go back to the rest of the frame
+```
+
+#### Rows and columns
+
+Widgets go one per row. Use `uiCols` to fill cells line by line.
+
+```
+::uiRowH ( px -- )            row height (0 = follow the font)
+::rh ( -- px )                current row height
+::uiCols ( n -- )             n equal columns (1 = back to one column)
+::uiColsW ( 'wts n -- )       n columns; weight > 0 = proportion, < 0 = pixels
+::uiSpan ( n -- )             next widget takes n cells
+::uiCol# ( -- n )             number of columns now
+::uiLn ( -- )                 end of row
+::uiLnEnd ( -- )              end the line of columns
+::uiAdvH ( h -- )             widget done, go to the next cell or row
+::ui.. ( -- )                 widget done (next cell or next row)
+::uil.. ( -- )                one row down
+::ui-- ( -- )                 separator line
+```
+
+#### Grid
+
+```
+::uiGrid ( c r -- )           divide the frame in c columns by r rows
+::uiAt ( x y -- )             cursor box at the grid cell x y
+::uiTo ( w h -- )             size of the cursor box in cells
+::uiNext ( -- )               next grid cell (along the rows)
+::uiNextV ( -- )              next grid cell (down the columns)
+```
+
+#### Draw words
+
+All use the current draw color.
+
+```
+::uiFill ( -- )               fill the cursor box
+::uiRect ( -- )               outline
+::uiRFill ( r -- )            fill with rounded corners
+::uiRRect ( r -- )            outline with rounded corners
+::uiCFill ( -- )              fill as a capsule
+::uiCRect ( -- )              outline as a capsule
+::uiTex ( texture -- )        draw a texture in the box
+::uiLineGrid ( -- )           grid lines (also uiLineGridV, uiLineGridH)
+::uiClip ( -- )               clip to the interaction area
+::uiUnclip ( -- )             remove the clip
+::uiPanelBg ( -- )            panel background of the frame
+```
+
+The `uil...` versions (`uilFill`, `uilRFill`, `uilCFill`, `uilTex`, `uilRect`, `uilRRect`, `uilCRect`) draw over the interaction area instead of the cursor box.
+
+#### Text
+
+```
+::ttwrite ( "" -- )           text, left
+::ttwritec ( "" -- )          text, centered
+::ttwriter ( "" -- )          text, right
+::ttinl ( "" -- )             left, with theme padding (inside fields)
+::ttinr ( "" -- )             right, with theme padding
+::uiLabel ( "" -- )           left text, then next cell
+::uiLabelC ( "" -- )          centered text, then next cell
+::uiLabelR ( "" -- )          right text, then next cell
+::uiTlabel ( "" -- )          label as wide as its text (rows of widgets)
+::uiText ( "" align -- )      wrapped text, align = $VH
+```
+
+---
+
+### Mouse and keyboard state
+
+`uiZone` defines the interaction area of a widget. After it, ask the state with these words; each runs its vector `'v` only when the condition is true.
+
+```
+::uiZone ( -- )               area = cursor box, one row high
+::uiZoneL ( n -- )            area of n rows
+::uiZoneW ( -- )              area = whole cursor box
+::uiZoneBox ( x y w h -- )    area = this box
+::uiBackBox ( -- )            restore the box saved by uiZoneBox
+
+::uiOvr ( 'v -- )             mouse is over
+::uiDwn ( 'v -- )             button pressed now
+::uiSel ( 'v -- )             widget active (button held)
+::uiClk ( 'v -- )             clicked
+::uiUp ( 'v -- )              button released
+::uiFocusIn ( 'v -- )         widget gets the keyboard focus
+::uiFocus ( 'v -- )           widget keeps the focus
+::uiEx? ( -- flag )           last widget was activated
+::uiEx! ( -- )                mark the last widget as activated
+```
+
+#### Focus and keys
+
+```
+::uiRefocus ( -- )            clear the focus
+::uiFocus>> ( -- )            focus to the next widget
+::uiFocus<< ( -- )            focus to the previous widget
+::tabfocus ( -- )             Tab key action (Shift = backwards)
+```
+
+#### Mouse zone (camera and the like)
+
+```
+::immBox ( x y w h -- )       set the zone
+::immFull ( -- )              zone = whole screen
+::immMouse ( -- state )       mouse state 0..6 of the zone
+::immZone ( -- )              zone as interaction area
+::uiPlace ( n -- )            drag and drop: the box is place n
+```
+
+Mouse state: 0 none, 1 over, 2 in, 3 active, 4 active outside, 5 out, 6 click.
+
+---
+
+### Widgets
+
+`'var` is the address of a variable. `'list` is a list of strings ending in 0.
+
+#### Buttons
+
+```
+::uiBtn ( 'click "" -- )          button with text
+::uiIBtn ( 'click icon -- )       button with icon (ICxxx)
+::uiRBtn ( 'click "" -- )         rounded button
+::uiCBtn ( 'click "" -- )         capsule button
+::uiNBtn ( 'click "" -- )         button as wide as its text
+::uiTBtn ( 'click "" align -- )   button with wrapped text
+::uiTBtnH ( 'click "" align h -- )  same, with height in pixels
+::uiBtnX ( 'click data 'content -- )  button with your own content
+::ctLabel ( "" -- )               content: centered text
+::ctIcon ( n -- )                 content: centered icon
+```
+
+#### Sliders and bars
+
+```
+::uiSliderf ( min max 'var -- )       fixed point slider
+::uiSlideri ( min max 'var -- )       integer slider
+::uiSliderfL ( "name" min max 'var -- )   with name and value
+::uiSlideriL ( "name" min max 'var -- )
+::uiVSliderf ( min max 'var -- )      vertical
+::uiVSlideri ( min max 'var -- )
+::uiProgressf ( min max 'var -- )     progress bar (can be dragged)
+::uiProgressi ( min max 'var -- )
+```
+
+#### Choices
+
+```
+::uiToggle ( 'var "" -- )         on/off button
+::uiCheck ( 'var 'list -- )       one check box per string (one bit each)
+::uiRadio ( 'var 'list -- )       radio buttons, var = chosen number
+::uiTabs ( 'var 'list -- )        tabs in a row
+::uiCombo ( 'var 'list -- )       drop-down list (var has 2 cells)
+```
+
+#### Lists and trees
+
+```
+::uiList ( 'var n 'list -- )      list box of n lines (var: selected, first line)
+::uiTree ( 'var n 'list -- )      tree; each string starts with a byte:
+                                  level in $1f, $20 has children, $80 open
+::uiNindx ( n -- "" )             string n of the list being drawn
+```
+
+#### Layout widgets
+
+```
+::uiSection ( 'var "" -- open )   folding header
+::uiProps ( frac -- )             rows of two columns: name and value
+```
+
+#### Text input
+
+```
+::uiInputLine ( 'buf max -- )     one line editor
+```
+
+---
+
+### Theme and colors
+
+A theme sets colors, corner radius, border, row height and padding.
+
+```
+::thDark ::thLight ::thBlender ::thGodot ::thMagica    ready-made themes
+::uiTheme ( n -- )         theme by number (0 dark, 1 light, 2 blender, 3 godot, 4 magica)
+::thNext ( -- )            next theme
+::thNow ( -- n )           current theme number
+```
+
+#### Color styles
+
+Call one before a widget to color it.
+
+```
+::stInfo   cyan (default)       ::stDang   red
+::stWarn   orange               ::stSucc   green
+::stLink   blue                 ::stDark   dark gray
+::stLigt   light gray           ::stColor ( rgb -- )   your color
+::stTheme  accent of the theme
+::stRad ( r -- )                corner radius (0 square, -1 capsule)
+```
+
+#### Skins
+
+Each kind of widget is drawn by a **skin**. A theme or your program can replace it.
+
+```
+::skin! ( 'vec kind -- )        replace the skin of a kind
+::sk ( .. kind -- )             draw the skin over the interaction area
+::skAt ( .. x y w h kind -- )   draw the skin in a box
+::skFocus ( -- )                focus outline
+```
+
+Kinds: `skinBtn` `skinField` `skinCheck` `skinRadio` `skinSlide` `skinPanel` `skinTab` `skinScroll` `skinSect`.
+
+#### Icons
+
+Icons are drawn with lines, so they work in any backend and size.
+
+```
+::uiIcon ( n x y size -- )      draw icon n
+```
+
+Names: `ICCHK` `ICX` `ICRIGHT` `ICDOWN` `ICLEFT` `ICUP` `ICPLUS` `ICMINUS`.
+
+---
+
+### Extra widgets
+
+Include the file you need after `rimmwid.r3`.
+
+#### rimmcolor.r3 — color picker
+
+```
+::uiColor ( 'var -- )           color swatch; a click opens the picker ($RRGGBB)
+::uiColorH ( 'var -- )          same, with the hex text
+::color! ( rgb -- )             set the picker color
+```
+
+#### rimmedit.r3 — text and code editor
+
+Use a **monospace** font. Click the editor to give it the focus.
+
+```
+::uiTextArea ( 'buf max -- )        multiline text box
+::uiTextView ( 'buf max -- )        read only (select and copy)
+::uiCodeEdit ( 'buf max -- )        code editor: r3 colors, line numbers, status bar
+::uiTextAreaH ( 'buf max h -- )     with height in pixels
+::uiCodeEditH ( 'buf max h -- )
+::uiEdit ( -- )                     the internal document (edram, edload, edsave)
+::edattach ( 'buf max -- )          use this buffer as the document
+::edtolf ( 'buf -- )                CR to LF, to use the text outside the editor
+::edram ( -- )                      new empty document
+::edload ( "file" -- )              load a file
+::edsave ( -- )                     save the file
+::edwin ( x y w h -- )              place of the internal editor
+::edlinenum! ( 0/1 -- )             hide or show line numbers
+```
+
+Keys in the code editor: `Ctrl-F` find, `Ctrl-D` definition, `Ctrl-L` line numbers, `Ctrl-Z` / `Ctrl-Y` undo / redo.
+
+#### rimmfile.r3 — file dialog
+
+```
+::uiFileName ( 'buf max -- )    field with a file name; a click opens the dialog
+::uiFileOpen ( 'buf max -- )    the file must exist
+::uiFileSave ( 'buf max -- )    overwrite needs OK twice
+::uiFileFilter ( "png bmp" -- ) show only these extensions ("" = all)
+::uiFileFull ( -- "path" )      the current choice
+```
+
+`Esc` closes the dialog. The Hidden check shows files that start with a dot.
+
+#### rimmdate.r3 — date field
+
+```
+::uiDate ( 'var -- )            date field; a click opens a calendar
+```
+
+The variable is a `dt64` (see `datetime.r3`). 0 = no value (the calendar starts today).
+
+---
+
+### Backends
+
+A backend gives the drawing words (`color`, `frect`, `rect`, `line`, `lineH`, `lineHg`, `fround`, text with `txfont`...) and the clip.
+
+| | `rimmsdl.r3` | `rimmgl.r3` |
+|---|---|---|
+| Start | `SDLinitR` | `rimmGLini` |
+| Fonts | `txload` (txfont.r3) | `txload` (gltxfont.r3), load after `rimmGLini` |
+| Frame | `0 cls` ... `SDLredraw` | `GLcls fini` ... `fend GLUpdate` |
+
+Both give the same clip words:
+
+```
+::gclip ( x y w h -- )          clip to the rectangle
+::gclip0 ( -- )                 remove the clip
+::gclipPush ( x y w h -- )      clip to the rectangle inside the current clip
+::gclipPop ( -- )               go back (8 levels)
+```
+
+OpenGL frame:
+
+```forth
+GLcls fini
+	uiStart  ...  uiEnd
+fend GLUpdate
+```
+
+`rimmGLini ( "title" w h -- )` opens the window and prepares `glgfx`. If your program sets its own `SDLeventR`, call `fixFontResize` inside it.
+
+---
+
+### Moving from the old imm libs
+
+| Old | New |
+|---|---|
+| `immi.r3` | `rimmcore.r3` + `rimmwid.r3` |
+| `imcolor.r3` | `rimmcolor.r3` |
+| `imedit.r3` | `rimmedit.r3` |
+| `imfiledlg.r3` | `rimmfile.r3` |
+| `immdatetime.r3` | `rimmdate.r3` (date only) |
+
+The widget words keep the same names. New: `uiCols`, `uiSpan`, `uiRowH`, themes and skins, OpenGL backend.
+The font height no longer places the widgets: use `uiRowH`.
 
 ---
 

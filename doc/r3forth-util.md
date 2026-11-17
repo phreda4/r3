@@ -1,12 +1,16 @@
 # r3forth `util/` Library Reference
 
-High-level utility libraries built on top of r3forth's core (`lib/`) libraries — object pools, sorting,
-easing, animation timelines, fonts and text rendering, GUI widgets (both TTF-based `sdlgui.r3` and the
-newer grid-based `immi.r3`), terminal UI, tile maps, 3D model loading, and simple text databases.
+Utility libraries built on the core `lib/`: object pools, sorting, easing, animation, fonts and text, old GUI widgets, terminal UI, tile maps, 3D model loading and simple text databases.
+
+The current GUI is [rimm](r3forth-rimm.md) (in `r3/rimm/`).
 
 Source: [github.com/phreda4/r3/tree/main/r3/util](https://github.com/phreda4/r3/tree/main/r3/util)
 
+Other docs: [lib/ libraries](r3forth-libs.md)
+
 ## Contents
+
+**Data and objects**
 
 1. [arr8.r3](#arr8r3) — Fixed 8-value object pool
 2. [arr16.r3](#arr16r3) — Fixed 16-value object pool with sort/map
@@ -14,36 +18,58 @@ Source: [github.com/phreda4/r3/tree/main/r3/util](https://github.com/phreda4/r3/
 4. [dlist.r3](#dlistr3) — FIFO deque
 5. [heap.r3](#heapr3) — Min-heap priority queue
 6. [hash2d.r3](#hash2dr3) — 2D spatial hash for collision
+
+**Sorting**
+
 7. [sort.r3](#sortr3) — ShellSort variants
 8. [sortradix.r3](#sortradixr3) — RadixSort 16/32/64-bit
 9. [sortradixm.r3](#sortradixmr3) — RadixSort with offset keys
+
+**Animation**
+
 10. [penner.r3](#pennerr3) — 30 Penner easing functions
 11. [varanim.r3](#varanimr3) — Timeline-based variable animator
+
+**Fonts and text**
+
 12. [utfg.r3](#utfgr3) — 8×8 bitmap font terminal output
 13. [bfont.r3](#bfontr3) — Fixed-width bitmap font (SDL2)
 14. [pcfont.r3](#pcfontr3) — PC/DOS-style 16×32 font (SDL2)
 15. [ttfont.r3](#ttfontr3) — TrueType font rendering (SDL2_ttf)
 16. [txfont.r3](#txfontr3) — TrueType atlas font with pseudo-UTF8
-17. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
-18. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
-19. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
-20. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
-21. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
-22. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
-23. [immi.r3](#immir3) — Modern grid-based immediate-mode GUI (SDL2, v3)
-24. [imcolor.r3](#imcolorr3) — Color selector widget for immi
-25. [imedit.r3](#imeditr3) — Code editor with syntax highlight for immi
-26. [imfiledlg.r3](#imfiledlgr3) — File dialog for immi
-27. [immdatetime.r3](#immdatetimer3) — Calendar/datetime widget for immi
-28. [tui.r3](#tuir3) — Text UI framework (terminal)
-29. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
-30. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
-31. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
-32. [bmap.r3](#bmapr3) — Multi-layer tile map for games
-33. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
-34. [datetime.r3](#datetimer3) — Date/time formatting
-35. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
-36. [filedirs.r3](#filedirsr3) — Filesystem scanner for UI trees
+17. [gltxfont.r3](#gltxfontr3) — TrueType atlas font for OpenGL
+18. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
+19. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
+
+**Drawing**
+
+20. [glgfx.r3](#glgfxr3) — 2D drawing over OpenGL (batched, as sdl2gfx)
+21. [vscreen.r3](#vscreenr3) — Virtual resolution with auto-scaling
+
+**Old GUI (see rimm)**
+
+22. [sdlgui.r3](#sdlguir3) — Immediate-mode GUI with TTF (SDL2)
+23. [sdlfiledlg.r3](#sdlfiledlgr3) — File dialog (sdlgui-based)
+24. [dlgcol.r3](#dlgcolr3) — Color picker dialog (SDL2)
+25. [dlgfile.r3](#dlgfiler3) — File browser dialog (SDL2)
+
+**Terminal UI**
+
+26. [tui.r3](#tuir3) — Text UI framework (terminal)
+27. [tuiedit.r3](#tuieditr3) — Full text editor widget (terminal)
+
+**Maps and 3D models**
+
+28. [tilesheet.r3](#tilesheetr3) — Tile map with scrolling
+29. [bmap.r3](#bmapr3) — Multi-layer tile map for games
+30. [loadobj.r3](#loadobjr3) — Wavefront OBJ/MTL 3D model loader
+
+**Files and data**
+
+31. [datetime.r3](#datetimer3) — Date/time formatting
+32. [dbtxt.r3](#dbtxtr3) — Text database v1 (pipe/caret separators)
+33. [filedirs.r3](#filedirsr3) — Filesystem scanner for UI trees
+34. [curfile.r3](#curfiler3) — Current file name (shared buffer)
 
 ---
 
@@ -83,6 +109,8 @@ Fixed object pool for 8-value (64-byte) objects. Object index 0 is reserved as "
 ::p8.sort ( col 'list -- )
 ::p8.isort ( col 'list -- )
 ```
+
+---
 
 ### arr16.r3
 
@@ -345,6 +373,8 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ::ani+timer! ( 'V -- )          advance the frame animation in 'V by deltatime
 ```
 
+---
+
 ### utfg.r3
 
 8×8 bitmap Unicode font for terminal output. Outputs to console buffer via `.write`.
@@ -387,6 +417,8 @@ Timeline-based variable animator. Drives values from `ini` to `fin` over time us
 ::.vlined2 ( h -- )
 ::rgb4t ( col12 -- col256 )
 ```
+
+---
 
 ### bfont.r3
 
@@ -452,6 +484,8 @@ Fixed-width bitmap font rendered to SDL2 from an image file.
 ::bfillline ( x y w h -- )  fill with the draw color the rectangle given in character cells (x y w h)
 ```
 
+---
+
 ### pcfont.r3
 
 PC/DOS-style font (16×32 grid per image) for SDL2.
@@ -496,6 +530,8 @@ Similar API to bfont.r3 but for PC-font-style rendering. Key words:
 ::pcemits2 ( "" -- )                print the string with double width and height
 ```
 
+---
+
 ### ttfont.r3
 
 TrueType font rendering for SDL2 using SDL2_ttf.
@@ -526,6 +562,8 @@ TrueType font rendering for SDL2 using SDL2_ttf.
 ::ttemitr ( "" -- )        draw the string right aligned: it ends at the cursor x
 ::ttboxcc ( w h "" -- )    draw the string centered in a box w x h starting at the cursor
 ```
+
+---
 
 ### txfont.r3
 
@@ -578,6 +616,20 @@ TrueType font atlas renderer with pseudo-UTF8 support and glyph caching.
 ::pad.reset ( 'var max -- 'var max )  prepare the line editor on the buffer 'var of max bytes: cursor at the end, insert mode
 ::pad.draw ( 'buff -- )               draw the edited line at the cursor with a blinking cursor and handle the keys: SDLchar to insert or overwrite, left, right, backspace, delete, home, end and insert to change the mode
 ```
+
+---
+
+### gltxfont.r3
+
+TTF atlas font for OpenGL. Same `txload` as `txfont.r3`, but the atlas is a texture for `glgfx.r3`. Select the font with `txfont` and draw with the tx words of glgfx.
+
+**Dependencies:** `^r3/lib/sdl2gl.r3`, `^r3/lib/sdl2ttf.r3`, `^r3/util/glgfx.r3`
+
+```
+::txload ( "font" size -- nfont )   load a TTF as an atlas texture (0 if there is no room)
+```
+
+---
 
 ### ttext.r3
 
@@ -640,6 +692,80 @@ Renders text into a box with word wrapping, color, and offset parameters.
 ```
 
 Parameters: `str`=text string, `$colb`=background color, `$colo`=text outline color, `$ofvh`=packed vertical/horizontal offset, `$colf`=foreground color, `w h`=box dimensions, `font`=TTF font handle. Returns SDL texture.
+
+---
+
+### glgfx.r3
+
+2D drawing over OpenGL: shapes, lines, text and images. The words only fill a buffer; it goes to the GPU in one draw call (when full, when the texture changes, at `fend`, `gclip` or `gflush`). Same names as `sdl2gfx.r3`.
+
+**Dependencies:** `^r3/lib/sdl2gl.r3`, `^r3/lib/math.r3`
+
+```
+-- Frame --
+::glgfx ( -- )                      start; call once after GLini
+::fini ( -- )                       start of the frame
+::fend ( -- )                       end of the frame
+::gflush ( -- )                     send the batch to the GPU (call before your own GL calls)
+::fixFontResize ( -- )              call when the window changes size
+
+-- Draw (same as sdl2gfx) --
+::color ( rgb -- )                  draw color $RRGGBB
+::colorA ( argb -- )                draw color $AARRGGBB
+::cls ( rgb -- )                    clear
+::point ( x y -- )
+::line ( x1 y1 x2 y2 -- )
+::lineH ( x1 y x2 -- )              ::lineV ( x y1 y2 -- )
+::lineHg ( x1 y x2 c1 c2 -- )       horizontal line with a gradient (also lineVg)
+::frect ( x y w h -- )              ::rect ( x y w h -- )
+::fround ( r x y w h -- )           ::round ( r x y w h -- )
+::fcircle ( r x y -- )              ::circle ( r x y -- )
+::fellipse ( rx ry x y -- )         ::ellipse ( rx ry x y -- )
+::triangle ( x1 y1 x2 y2 x3 y3 -- )
+::polyop ( x y -- )                 start a filled polygon
+::polyline ( x y -- )               add a point
+
+-- Images --
+::fimgload ( "file" -- idx )        load an image
+::fimgtex ( tex -- idx )            image from a texture
+::fimgwh ( idx -- w h )             image size
+
+Also as in sdl2gfx: `image` `images` `imageb` `imagebb` `ts*` `sprite*` `ss*`.
+
+-- Text --
+::fload ( "file" cw ch -- font )    load a font atlas (max 8)
+::txfont ( font -- )                select the font
+::txfont@ ( -- font )               the font selected now
+::fat ( x y -- )                    text position
+::ftext ( "" -- )                   draw the text at fat
+::ftextn ( "" n -- )                draw n chars
+```
+
+---
+
+### vscreen.r3
+
+Virtual resolution rendering. Renders to an internal texture at logical size, then scales to the actual window.
+
+**Dependencies:** `^r3/lib/sdl2.r3`
+
+```
+::vscreen ( w h -- )  create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
+::vini ( -- )         start drawing into the virtual screen (it becomes the render target)
+::vredraw ( -- )      draw the virtual screen in the window and present it
+::vfree ( -- )        free the virtual screen texture
+
+::sdlx ( -- x )       mouse x position (16 bits)
+::sdly ( -- y )       mouse y position
+::%w ( frac -- px )   fixed point fraction of the screen width (1.0 = sw) in pixels
+::%h ( frac -- px )   fixed point fraction of the screen height (1.0 = sh) in pixels
+```
+
+---
+
+```
+::vscreenf ( w h -- )  like vscreen with nearest neighbor scaling (sharp pixels)
+```
 
 ---
 
@@ -730,6 +856,10 @@ Immediate-mode GUI framework with TrueType font rendering for SDL2.
 ::immwin$ ( 'winword -- )  remove the window from the list
 ```
 
+> Old GUI. For new programs use [rimm](r3forth-rimm.md).
+
+---
+
 ### sdlfiledlg.r3
 
 File open/save dialog using sdlgui.r3.
@@ -743,6 +873,8 @@ File open/save dialog using sdlgui.r3.
 ::immfilesave ( 'vecload 'file -- )  show save dialog; calls 'vecload on confirm
 ::fullfilename ( -- )                push full path to stack
 ```
+
+> Old dialog. In rimm use `uiFileName` (rimmfile.r3).
 
 ---
 
@@ -761,6 +893,8 @@ Interactive color picker dialog for SDL2.
 ::xydlgColor! ( x y -- )  position of the color dialog and rebuild its geometry
 ```
 
+> Old dialog. In rimm use `uiColor` (rimmcolor.r3).
+
 ---
 
 ### dlgfile.r3
@@ -775,231 +909,7 @@ File browser dialog for SDL2 (uses gui.r3 input system).
 ::dlgSetPath ( "path" -- )  set the folder where the file dialogs start
 ```
 
----
-
-### immi.r3
-
-Modern grid-layout immediate-mode GUI for SDL2 (version 3, 2025). Uses txfont for rendering.
-
-**Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/color.r3`, `^r3/util/txfont.r3`
-
-#### Layout System
-The layout cursor `(cx, cy, cw, ch)` tracks current widget position. The frame stack allows push/pop for nested layouts.
-
-```
-##cx ##cy ##cw ##ch    current widget cursor (position + size)
-::%cw ( -- w )                                percent of frame width
-::%ch ( -- h )                                percent of frame height
-
--- Frame Management --
-::uiBox ( x y w h -- )                        set frame
-::uiFull ( -- )                               fill entire window
-::uiPush ( -- )                               push frame state
-::uiPop ( -- )                                pop frame state
-::uiRest ( -- )                               restore frame
-::uiPading ( x y -- )                         set padding
-::uiAt ( x y -- )                             absolute position within frame
-::uiTo ( w h -- )                             set widget size
-
--- Splits (divide current frame) --
-::uiN ( lineas -- )                           take N lines from top
-::uiS ( lineas -- )                           take N lines from bottom
-::uiE ( cols -- )                             take N columns from right
-::uiO ( cols -- )                             take N columns from left
-::uiGrid ( c r -- )                           adjust for fit
-::uiNext ( -- )                               advance to next grid cell
-::uiNextV ( -- )                              advance vertically
-
--- Input State Queries --
-::uiEx? ( -- 0/1 )                            mouse over?
-::uiOvr ( 'v -- )                             execute if mouse over
-::uiDwn ( 'v -- )                             execute if mouse down in widget
-::uiSel ( 'v -- )                             execute if selected
-::uiClk ( 'v -- )                             execute if clicked
-::uiUp ( 'v -- )                              execute on mouse release
-::uiFocusIn ( 'v -- )                         execute when focus enters
-::uiFocus ( 'v -- )                           execute while focused
-
--- Frame Lifecycle --
-::uiStart ( -- )                              begin UI frame
-::uiEnd ( -- )                                end UI frame
-::uiZone ( -- )                               Interaction is cx,cy,cw,th
-::uiZoneL ( nlines -- )                       Interaction is cx,cy,cw,th*lines
-::uiZoneW ( --	; Interaction is cx,cy,cw,ch ) zone filling cw×ch
-::uiZoneBox ( x y w h -- )                    explicit zone rect
-::uiSaveLast ( x y w h 'vector -- )           save last zone dimensions
-::uiBackBox ( -- )                            draw background box
-::uiExitWidget ( -- )                         early exit from widget
-::uiPlace ( n -- )                            place widget at grid position n
-```
-
-#### Focus
-```
-::uiRefocus ( -- )  reset focus
-::uiFocus>> ( -- )  move to next focusable
-::uiFocus<< ( -- )  move to previous
-::tabfocus ( -- )   advance focus on Tab key
-```
-
-#### Drawing Helpers
-```
-::uiFill ( -- )            fill cx cy cw ch
-::uiRect ( -- )            outline cx cy cw ch
-::uiRFill ( -- )           rounded filled
-::uiRRect ( -- )           rounded outline
-::uiCRect ( -- )           circle outline (uses min of w,h)
-::uiCFill ( -- )           circle filled
-::uiTex ( tex -- )         draw texture in widget area
-::uiWinBox ( -- x y w h )  window bounds
-::uiLineGridV ( -- )       draw vertical grid lines
-::uiLineGridH ( -- )       draw horizontal grid lines
-::uiLineGrid ( -- )        draw both grid lines
-```
-
-#### Status Styles
-```
-::stDang ( -- )  danger style (red)
-::stWarn ( -- )  warning style (amber)
-::stSucc ( -- )  success style (green)
-::stInfo ( -- )  info style (blue)
-::stLink ( -- )  link style
-::stDark ( -- )  dark style
-::stLigt ( -- )  light/white style
-```
-
-#### Widgets
-```
--- Labels and Text --
-::uiTlabel ( -- )                    text label from stack
-::uiLabel ( -- )                     centered label
-::uiLabelC ( -- )                    explicitly centered
-::uiLabelR ( -- )                    right-aligned
-::uiText ( "" align -- )             text with alignment
-::ttwrite ( "text" -- )              write text (left)
-::ttwritec ( "text" -- )             write centered
-::ttwriter ( "text" -- )             write right
-
--- Buttons --
-::uiBtn ( 'click "" -- )             standard button
-::uiRBtn ( 'click "" -- )            rounded button
-::uiCBtn ( 'click "" -- )            circular button
-::uiTBtn ( 'click "" align -- )      text button with alignment
-::uiNBtn ( v "" -- )                 width from text
-
--- Input --
-::uiInputLine ( 'buff max -- )       single-line text input
-::uiCheck ( 'var 'list -- )          checkbox (list = option strings)
-::uiRadio ( 'var 'list -- )          radio group
-::uiCombo ( 'var 'list -- )          combo box / dropdown
-::uiList ( 'var cntl 'list -- )      scrollable list
-::uiTree ( 'var cntl list -- )       collapsible tree
-::uiNindx ( n -- str )               get list item string n
-
--- Sliders and Progress --
-::uiSliderf ( 0.0 1.0 'value -- )    horizontal float slider
-::uiSlideri ( 0 255 'value -- )      horizontal integer slider
-::uiVSliderf ( 0.0 1.0 'value -- )   vertical float slider
-::uiVSlideri ( 0 255 'value -- )     vertical integer slider
-::uiProgressf ( 0.0 1.0 'value -- )  float progress bar
-::uiProgressi ( 0 255 'value -- )    integer progress bar
-```
-
-> **Note:** `immi.r3` (v3) is single-window/full-screen — it has no `immwin`/`immnowin`-style multi-window API. That API (`immwin`, `immwin!`, `immnowin`, `winexit`, `immRedraw`, `immwins`, `immSDL`, `immblabel`, `immicon`, `immiconb`, `immwidth`, etc.) belongs to `sdlgui.r3`, which is documented in its own section above. An earlier version of this reference mistakenly duplicated that list here.
-
----
-
-```
-::stColor ( rgb -- )
-```
-
-### imcolor.r3
-
-Color selector widget for immi.
-
-**Dependencies:** `^r3/lib/color.r3`, `^r3/util/immi.r3`
-
-```
-::color! ( color -- )   set the selected color $RRGGBB and move the marks of the picker to it
-::uiColor ( 'var -- )   full color selector widget (HSV + RGB sliders)
-::uiColorH ( 'var -- )  compact horizontal color selector
-```
-
----
-
-### imedit.r3
-
-Code editor widget for immi with syntax highlighting and marks.
-
-**Dependencies:** `^r3/lib/parse.r3`, `^r3/lib/color.r3`, `^r3/util/immi.r3`
-
-```
-##ycursor ##xcursor    cursor row, column
-##edfilename * 1024    current file path
-##inisel               selection start
-##finsel               selection end
-##fuente               editable text buffer
-##fuente>              cursor pointer into buffer
-
--- Syntax Marks --
-::clearmark ( -- )             clear all syntax marks
-::addmark ( -- )               add mark at current position
-::addsrcmark ( src color -- )  add colored mark
-::showmark ( -- )              render marks
-
--- Editor Display --
-::edcodedraw ( -- )            draw code with syntax highlighting
-::edfill ( -- )                fill editor background
-::edtoolbar ( -- )             render editor toolbar
-
--- Focus --
-::edfocus ( -- )               interactive code editor (focused)
-::edfocusro ( -- )             read-only editor
-
--- Editor RAM Management --
-::edram ( -- )                 allocate editor RAM
-
--- Widget Setup --
-::edwin ( x y w h -- )         set editor window position/size
-::edloadmem ( "" -- )          load text from string into editor
-::edload ( "" -- )             load file into editor
-::edsave ( -- )                save editor contents to file
-```
-
----
-
-```
-::edlinenum! ( 0/1 -- )  show or hide the line number
-::edlinenum ( -- 0/1 )
-```
-
-### imfiledlg.r3
-
-File open/save dialog for immi.
-
-**Dependencies:** `^r3/util/immi.r3`
-
-```
-::immfileload ( 'vecload 'file -- )  show load dialog
-::immfilesave ( 'vecload 'file -- )  show save dialog
-::fullfilename ( -- )                push current full path
-::uiFileName ( 'var -- )             file name input widget
-```
-
----
-
-### immdatetime.r3
-
-Calendar and time picker widgets for immi.
-
-**Dependencies:** `^r3/lib/jul.r3`, `^r3/util/immi.r3`, `^r3/util/datetime.r3`
-
-```
-::uiDateTime ( 'var -- )  full date+time picker widget
-::uiDate ( 'var -- )      date-only calendar widget
-::uiTime ( 'var -- )      time-only picker widget
-```
-
-The variable stores packed date/time as a 64-bit value; use `datetime.r3` words to interpret it.
+> Old dialog. In rimm use `uiFileName` (rimmfile.r3).
 
 ---
 
@@ -1125,6 +1035,8 @@ A "frame" defines a rectangular region of the terminal. Frames can be split and 
 ::tuDlgEnd ( -- )
 ```
 
+---
+
 ### tuiedit.r3
 
 Full-featured text editor widget for TUI framework. Supports selection, clipboard, and undo.
@@ -1181,29 +1093,7 @@ Full-featured text editor widget for TUI framework. Supports selection, clipboar
 ::tuEditLN! ( n -- )         line number place
 ```
 
-### vscreen.r3
-
-Virtual resolution rendering. Renders to an internal texture at logical size, then scales to the actual window.
-
-**Dependencies:** `^r3/lib/sdl2.r3`
-
-```
-::vscreen ( w h -- )  create a virtual screen of w x h pixels (a render target) shown in the window centered with the aspect ratio kept and linear filtering; it follows the window resizes
-::vini ( -- )         start drawing into the virtual screen (it becomes the render target)
-::vredraw ( -- )      draw the virtual screen in the window and present it
-::vfree ( -- )        free the virtual screen texture
-
-::sdlx ( -- x )       mouse x position (16 bits)
-::sdly ( -- y )       mouse y position
-::%w ( frac -- px )   fixed point fraction of the screen width (1.0 = sw) in pixels
-::%h ( frac -- px )   fixed point fraction of the screen height (1.0 = sh) in pixels
-```
-
 ---
-
-```
-::vscreenf ( w h -- )  like vscreen with nearest neighbor scaling (sharp pixels)
-```
 
 ### tilesheet.r3
 
@@ -1384,14 +1274,16 @@ Filesystem scanner providing file/directory trees for UI list and tree widgets.
 ::flScanDir ( "path" -- )                 scan the folders under path recursively into uiDirs and reserve 64 KB for uiFiles; call it only once
 ::flScanFullDir ( "path" -- )             like flScanDir but uiDirs also has the files (the folders end with /)
 ::flOpenFullPath ( "root/a/b" -- place )  open the folders of a path in the uiDirs list of flScanFullDir (the first component, the root, is skipped; the string is modified); returns the row of the last entry in the visible tree
-```
-
----
-
-*End of r3forth `util/` Library Reference*
-
-```
 ::flOpenSearch ( "text" -- adr/0 )  first entry of uiDirs that contains the text (ignoring case): its folders are opened and its address is returned; 0 if not found
 ::flCloseAll ( -- )                 close all the folders of uiDirs
 ```
 
+---
+
+### curfile.r3
+
+Name of the current file, in one shared buffer. The editor (`tuiedit.r3`) and the IDE tools work on the same file, so both include this one.
+
+```
+##filename * 1024      path of the current file
+```
