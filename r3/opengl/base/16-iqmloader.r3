@@ -418,10 +418,6 @@
 #framebuffer.width
 #framebuffer.height
  
-#GL_COLOR_ATTACHMENT0 $8CE0
-#GL_RENDERBUFFER $8D41
-#GL_DEPTH_STENCIL_ATTACHMENT $821A
-
 :render_resize | 
 	GL_FRAMEBUFFER framebuffer.fbo glBindFramebuffer
 

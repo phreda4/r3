@@ -7,7 +7,6 @@
 ^r3/lib/memshare.r3
 ^./infodebug.r3
 
-#filename * 1024
 
 #topline * 512
 #statusline * 512

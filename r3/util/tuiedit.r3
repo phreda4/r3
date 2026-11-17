@@ -3,10 +3,10 @@
 
 ^r3/util/tui.r3
 ^r3/lib/clipboard.r3
+^r3/util/curfile.r3
 |^r3/lib/trace.r3
 
 #hashfile 
-##filename * 1024
 
 #nlw		| ancho linea 0=hidden
 #xlinea 0

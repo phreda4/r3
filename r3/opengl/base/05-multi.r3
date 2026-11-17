@@ -298,7 +298,7 @@
 :ini	
 	Shader1			| load shader
 	"media/obj/cube.png" 
-	glLoadImg 		| load tex
+	glLoadImgBound 		| load tex
 	
 	"media/obj/suzanne.obj" 
 	|"media/obj/cube.obj" 

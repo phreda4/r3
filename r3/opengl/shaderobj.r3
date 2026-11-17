@@ -5,6 +5,7 @@
 ^r3/lib/sdl2.r3
 ^r3/lib/sdl2gl.r3
 ^r3/lib/sdl2image.r3
+^r3/lib/glutil.r3
 
 #frag
 #vert
@@ -62,73 +63,6 @@
 	;
 	
 	
-::shadera!i | int shader "name"  --
-	glGetAttribLocation swap glUniform1i ;
-	
-::shader!i | int shader "name"  --
-	glGetUniformLocation swap glUniform1i ;
-::shader!v3 | 'v3 shader "name" --
-	glGetUniformLocation 1 rot glUniform3fv ;
-::shader!v4 | 'v4 shader "name" --
-	glGetUniformLocation 1 rot glUniform4fv ;	
-	
-::shader!m4 | 'm4 shader "name" --	
-	glGetUniformLocation 1 rot 0 swap glUniformMatrix4fv ;	
-	
-::shader!f1
-	glGetUniformLocation 1 rot glUniform1fv ;
-
-|--- sdl2 surface
-|struct SDL_Surface
-|	flags           dd ? 0 dd ? 4
-|	?format        	dq ? 8 8
-|	w               dd ? 16 4
-|	h               dd ? 20 4
-|	pitch           dd ? 24 4 dd ? 28 4
-|	pixels          dq ? 32 8
-#surface
-:Surface->w surface 16 + d@ ;
-:Surface->h surface 20 + d@ ;
-:Surface->pixels surface 32 + @ ;
-:Surface->format->bpp surface 8 + @ 16 + c@ ;
-:GLBPP 
-	Surface->format->bpp 
-	32 =? ( drop GL_RGBA ; ) 
-	24 =? ( drop GL_RGB ; )
-	drop GL_RED ;
-	
-:isPowerOf2 | dim -- 0=is^2
-	dup 1 - and ;
-	
-::glImgTex | "" -- texid
-	1 't glGenTextures
-    GL_TEXTURE_2D t glBindTexture
-	IMG_Load 'Surface !
-	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-|	Surface->w isPowerOf2
-|	Surface->h isPowerOf2 or 
-|	0? ( drop  
-|		gl.generateMipmap(gl.TEXTURE_2D);
-|		; ) drop 
-|	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-|	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-|	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	t ;	
-	
-	
-#cc * 256
-#cc> 'cc
-
-::glColorTex | col -- texid
-	cc> d!+ 'cc> ! | store color (here)
-	1 't glGenTextures
-    GL_TEXTURE_2D t glBindTexture
-	GL_TEXTURE_2D 0 GL_RGBA 1 1 0 pick3 GL_UNSIGNED_BYTE cc> 4 - glTexImage2D
-	t ;
-	
-|--------------------- shaders
 #IDpos
 #IDnor
 #IDtex
@@ -151,7 +85,7 @@
 
 #shaderid
 
-::loadshader | --
+::loadshaderobj | --
 	"r3/opengl/shader/mat1.fs" 
 	"r3/opengl/shader/mat1.vs" 	
 	loadShaders | "fragment" "vertex" -- idprogram

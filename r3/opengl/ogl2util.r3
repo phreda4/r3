@@ -8,13 +8,6 @@
 
 
 | print info from GPU
-::glInfo
-	$1f00 glGetString .println | vendor
-	$1f01 glGetString .println | render
-	$1f02 glGetString .println | version
-	$8B8C glGetString .println | shader
-	;
-
 #frag
 #vert
 #err
@@ -82,7 +75,7 @@
 	24 =? ( drop GL_RGB ; )
 	drop GL_RED ;
 	
-::glLoadImg | "" -- 
+::glLoadImgBound | "" -- 
 	IMG_Load 'Surface !
  
 	GL_TEXTURE_2D 0 GLBPP Surface->w Surface->h 0 pick3 GL_UNSIGNED_BYTE Surface->pixels glTexImage2D

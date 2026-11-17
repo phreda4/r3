@@ -779,7 +779,7 @@ rflag $4 or 'rflag ! ;
 |--- tabla: def = ( w just ... 0 ) just 0 izq 1 cen 2 der 
 ::tcols | 'def --
 	dup 'tdef0 ! 'tdef ! ;
-::cell | "" -- ; el color es el activo
+::tcell | "" -- ; el color es el activo
 	tdef c@+ $ff and 0? ( 3drop ; )
 	swap c@+ $ff and swap 'tdef !
 	rot swap
@@ -789,7 +789,7 @@ rflag $4 or 'rflag ! ;
 ::row | "a|b|c" -- ; fila completa desde texto separado por |
 	mark here swap
 	( c@+ 1? $7c =? ( 0 nip ) ,c ) ,c 0 ,c drop
-	( dup c@ 1? drop dup cell >>0 ) 2drop
+	( dup c@ 1? drop dup tcell >>0 ) 2drop
 	fcr empty ;
 ::hdr | "a|b|c" --
 	fMu .Bold row .NBold fTx ;
@@ -821,9 +821,9 @@ rflag $4 or 'rflag ! ;
 	>r mark here swap
 	( c@+ 1? $7c =? ( 0 nip ) ,c ) ,c 0 ,c drop
 	( dup c@ 1? drop
-		r@ tbcol dup cell >>0 ) 2drop
+		r@ tbcol dup tcell >>0 ) 2drop
 	( tdef c@ $ff and 1? drop			| columnas sin dato
-		r@ tbcol "" cell ) drop
+		r@ tbcol "" tcell ) drop
 	fDi "│" .write r> drop fcr empty ;
 
 ::tbrow | "a|b|c" -- ; fila con recuadro

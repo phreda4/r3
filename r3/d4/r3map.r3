@@ -2,8 +2,8 @@
 | PHREDA 2024
 ^r3/lib/parse.r3
 ^r3/lib/str.r3
+^r3/util/curfile.r3
 
-##filename * 1024
 ##r3path * 1024
 
 |--------------------- token format

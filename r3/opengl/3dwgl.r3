@@ -473,7 +473,7 @@
 :
 	glinit
 	
-	loadshader			| load shader
+	loadshaderobj			| load shader
 	0 'cntobj !
 	'o1 >a			| load objs
 	'objs ( dup c@ 1? drop

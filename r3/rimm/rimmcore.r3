@@ -239,6 +239,8 @@
 	drop ;
 
 #uilastwidget 0
+::uiPopup? | -- flag ; not 0 while a pop-up (combo list, color picker, file dialog) is open
+	uilastwidget ;
 #uilastpos 0 
 #uilaststy 0 0 0 0
 #uiLastfont 0

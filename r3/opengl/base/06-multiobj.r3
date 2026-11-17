@@ -75,7 +75,7 @@
     GL_TEXTURE_2D pick2 d@ glBindTexture
 	'fpath "%s/%s" sprint 
 |	dup .write .cr
-	glLoadImg 		| load tex
+	glLoadImgBound 		| load tex
 	4 + | adr
 	1 over glGenVertexArrays
 	dup d@ glBindVertexArray

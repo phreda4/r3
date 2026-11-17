@@ -105,7 +105,7 @@
 	1 'Texture glGenTextures
 	GL_TEXTURE_2D Texture glBindTexture
 	
-	"media/obj/cube.png" glLoadImg 
+	"media/obj/cube.png" glLoadImgBound 
 
 |---------------------------		
 	1 'VertexArrayID glGenVertexArrays

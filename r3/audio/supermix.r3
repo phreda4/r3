@@ -309,7 +309,6 @@
 ::smAUX! | aux n --		| dato auxiliar del instrumento n (detune de isuper, slide de isweep)
 	6 << 'instr + 32 + ! ;
 	
-::fx
 ::control
 	
 |---- PLAY INSTRUMENT

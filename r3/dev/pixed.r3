@@ -10,6 +10,8 @@
 ^r3/util/txfont.r3
 ^r3/rimm/rimmsdl.r3
 ^r3/rimm/rimmwid.r3
+^r3/rimm/rimmcolor.r3
+^r3/rimm/rimmfile.r3
 
 |--- document: [w][h] dwords + ARGB pixels (0 = transparent), max 128x128
 #pdoc * 65800
@@ -18,7 +20,8 @@
 #pucur 0 #pucnt 0 #prcnt 0
 
 #pfont 0
-#pfname * 64
+#pfname * 1024
+#pfsn * 1040
 
 |--- frames: all share the size of the document; the current one lives in pdoc
 #pfmem 0		| 32 slots of 64KB
@@ -31,7 +34,7 @@
 #poptl "Mirror X" "Mirror Y" "Grid" 0
 #pbsz 1
 #ppc 0			| pixel value used to paint (0 = erase)
-#pcr 255 #pcg 0 #pcb 0 #pcol 0
+#pcol $FF0000
 
 #ppal
 $000000 $1D2B53 $7E2553 $008751 $AB5236 $5F574F $C2C3C7 $FFF1E8
@@ -241,12 +244,10 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	0 'ppc !
 	ptool 1 =? ( drop ; ) drop
 	pdrag 1 nand? ( drop ; ) drop
-	pcol $ff000000 or 'ppc ! ;
+	pcol $ffffff and $ff000000 or 'ppc ! ;
 
 :psetcol | rgb --
-	dup 16 >> $ff and 'pcr !
-	dup 8 >> $ff and 'pcg !
-	$ff and 'pcb ! ;
+	$ffffff and 'pcol ! ;
 
 :ppick | --
 	pmx pmy ppxa 0? ( drop ; ) d@ 0? ( drop ; ) $ffffff and psetcol ;
@@ -266,16 +267,19 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 
 :pdostroke | --
 	pdrag 1? ( drop SDLb pdrag and 0? ( drop 0 'pdrag ! ; ) drop pstrokemove ; ) drop
+	uiPopup? 1? ( drop ; ) drop
 	pnb 5 and 0? ( drop ; )
 	pinarea 0? ( 2drop ; ) drop
 	1 and? ( drop 1 pstrokestart ; ) drop 4 pstrokestart ;
 
 :pdopan | --
+	uiPopup? 1? ( drop ; ) drop
 	SDLb 2 and 0? ( drop ; ) drop
 	pinarea 0? ( drop ; ) drop
 	SDLx plmx - 'ppanx +! SDLy plmy - 'ppany +! ;
 
 :pdozoom | --
+	uiPopup? 1? ( drop ; ) drop
 	SDLw 0? ( drop ; ) drop
 	pinarea 0? ( drop ; ) drop
 	SDLw pzoom + 1 max 64 min 'pzoom ! ;
@@ -329,7 +333,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	pcdraw
 	gclip0
 	$ffffff txrgb pcax 8 + pcay pcah + txh - 6 - txat
-	pzoom pmy pmx "%d,%d  %dx" txprint ;
+	pzoom pmy pmx "%d,%d  %dx" txprint
+	pcax 150 + pcay pcah + txh - 6 - txat 'pfname "%s" txprint ;
 
 |--- palette
 #pps #pqx #pqy
@@ -344,14 +349,15 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 :pswatch | n -- n
 	pcellat
 	psetpal dup color pqx pqy pps 1- dup frect
-	pcol =? ( $ffffff color pqx pqy pps 1- dup rect ) drop ;
+	pcol $ffffff and =? ( $ffffff color pqx pqy pps 1- dup rect ) drop ;
 
 :pcellhit | n -- n ; click on the cell: left picks, right stores the current color
+	uiPopup? 1? ( drop ; ) drop
 	pnb 5 and 0? ( drop ; ) drop
 	SDLx pqx <? ( drop ; ) pqx pps + >=? ( drop ; ) drop
 	SDLy pqy <? ( drop ; ) pqy pps + >=? ( drop ; ) drop
 	pnb 1 and? ( drop psetpal psetcol ; ) drop
-	pcol over 3 << 'ppal + ! ;
+	pcol $ffffff and over 3 << 'ppal + ! ;
 
 :ppalette | --
 	cw 8 / 'pps !
@@ -359,11 +365,6 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 		pswatch pcellhit
 		1+ ) drop
 	pps 4 * uiAdvH ;
-
-:pcolorbox | --
-	pcol color cx cy cw 26 frect
-	$ffffff color cx cy cw 26 rect
-	26 uiAdvH ;
 
 |--- frames
 :pfslot | n -- adr
@@ -445,6 +446,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 #pstx #psty #pstw #psth #psvis #psn #psx #psyy #psi
 
 :pshit | -- ; click on the thumbnail psi
+	uiPopup? 1? ( drop ; ) drop
 	pnb 1 and 0? ( drop ; ) drop
 	SDLx psx <? ( drop ; ) psx 42 + >=? ( drop ; ) drop
 	SDLy psyy <? ( drop ; ) psyy 42 + >=? ( drop ; ) drop
@@ -499,6 +501,11 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	SDL_DestroyTexture plsurf SDL_FreeSurface pltex SDL_DestroyTexture
 	pconv pfit ;
 
+:psheetname | -- adr ; file name + -sheet.png
+	'pfname 'pfsn strcpy
+	'pfsn count + 4 - dup ".png" cmpstr 0? ( drop "-sheet.png" swap strcpy 'pfsn ; ) 2drop
+	"-sheet.png" 'pfsn strcat 'pfsn ;
+
 :psheet | -- ; all the frames side by side in one PNG
 	pfstore
 	pimw pfcnt * pimh createSurf dup 'pshs ! Surf>pix 'pshp ! drop
@@ -509,7 +516,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 			pimw 2 << cmove
 			1+ ) drop
 		1+ ) drop
-	pshs 'pfname IMG_SavePNG pshs SDL_FreeSurface ;
+	pshs psheetname IMG_SavePNG pshs SDL_FreeSurface ;
 
 :pdopend | --
 	ppend 1 =? ( psave ) 2 =? ( pload ) 3 =? ( psheet ) drop
@@ -544,12 +551,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 
 :pright | --
 	210 uiE uiPanelBg
-	pcr 16 << pcg 8 << or pcb or 'pcol !
 	"Color" uiLabel
-	pcolorbox
-	"R" 0 255 'pcr uiSlideriL
-	"G" 0 255 'pcg uiSlideriL
-	"B" 0 255 'pcb uiSlideriL
+	'pcol uiColorH
 	ui--
 	"Palette (right: store)" uiLabel
 	ppalette
@@ -561,7 +564,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 	1 uiCols
 	'pplay "Play" uiToggle
 	ui--
-	'pfname 60 uiInputLine
+	'pfname 1024 uiFileName
 	2 uiCols
 	[ 1 'ppend ! ; ] "Save" uiBtn [ 2 'ppend ! ; ] "Load" uiBtn
 	1 uiCols
@@ -581,6 +584,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800
 :pkeys | key --
 	<ctrl> =? ( 1 'pcmod ! ) <ctr2> =? ( 1 'pcmod ! )
 	>ctrl< =? ( 0 'pcmod ! ) >ctr2< =? ( 0 'pcmod ! )
+	uiPopup? 1? ( 2drop ; ) drop
 	>esc< =? ( exit )
 	pcmod 1? ( drop pctrlkey ; ) drop
 	pinarea 1? ( drop ptoolkey ; ) drop

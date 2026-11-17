@@ -46,7 +46,6 @@
 #cpu1 #cpu2 #cpu3 
 	
 #serror
-#terror
 
 :infocode
 	code1

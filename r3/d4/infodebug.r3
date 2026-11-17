@@ -208,13 +208,13 @@
 	9 =? ( 2 'xc +! ; ) 
 	1 'xc +! ;
 	
-::>>cr | adr -- adr'
+::>>crx | adr -- adr'
 	( c@+ 1? 
 		13 =? ( drop 1- ; ) 
 		xycur+
 		drop ) drop 1- ;
 
-::>>sp | adr -- adr'	; next space
+::>>spx | adr -- adr'	; next space
 	( c@+ $ff and 32 >? xycur+
 		drop ) drop 1- ;
 
@@ -245,7 +245,7 @@
 	
 :ctoken! | src -- src
 	tokenc 1? ( 1- 'tokenc ! 
-		>>sp 
+		>>spx 
 		codesrc> 8 - @
 		addCharCnt
 		codesrc> 8 - !
@@ -266,15 +266,15 @@
 		$5b =? ( 0 'tokenc ! ) | [ JMP (1)->(0)
  		|$5d =? ( ; ) |]
 		) drop
-	>>sp 
+	>>spx 
 	;
 
 :,token
-	state 0? ( drop >>sp ; ) drop
+	state 0? ( drop >>spx ; ) drop
 	dup	w@ 
 	$2100 <? ( $ff and
-		$28 =? ( drop >>sp ; ) | (
-		$29 =? ( drop >>sp ; ) | )
+		$28 =? ( drop >>spx ; ) | (
+		$29 =? ( drop >>spx ; ) | )
 		) drop
 |	dup "%w=" .print
 	ctoken! |"[tok]" .write
@@ -328,15 +328,15 @@
 |WIN|	"|WIN|" =pre 1? ( drop 5 + ; ) drop | Compila para WINDOWS
 |LIN|	"|LIN|" =pre 1? ( drop 5 + ; ) drop | Compila para LINUX
 |MAC|	"|MAC|" =pre 1? ( drop 5 + ; ) drop | Compila para MAC
-	>>cr ;
+	>>crx ;
 	
 :wrd2token | str -- str'
 	( dup c@ $ff and 33 <? xycur+
 		0? ( nip ; ) drop 1+ )	| trim0
-	$5e =? ( drop >>cr ; )		| $5e ^  Include
+	$5e =? ( drop >>crx ; )		| $5e ^  Include
 	$7c =? ( coment ; )		| $7c |	 Comentario
-	$3A =? ( drop defwor >>sp ; )	| $3a :  Definicion
-	$23 =? ( drop defvar >>sp ; )	| $23 #  Variable
+	$3A =? ( drop defwor >>spx ; )	| $3a :  Definicion
+	$23 =? ( drop defvar >>spx ; )	| $23 #  Variable
 	$22 =? ( drop ,str ; )		| $22 "	 Cadena
 	|$27 =? ( drop ,token ; )	| $27 ' Direccion
 	drop

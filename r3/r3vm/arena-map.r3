@@ -22,8 +22,10 @@
 #tilesize 16 
 #tmul
 
-::%w sW 16 *>> ; 
-::%h sH 16 *>> ; 
+::%w | frac -- px ; replaces the sdl2 one: fraction of the map width
+	sW 16 *>> ;
+::%h | frac -- px ; replaces the sdl2 one: fraction of the map height
+	sH 16 *>> ;
 
 | MAP
 #marena * $ffff
@@ -184,7 +186,7 @@
 	
 ::+label | live x y "" --
 	'drawlabel 'fxarr p!+ >a 
-	tsbox 4 + -rot 4 + -rot 
+	tstrbox 4 + -rot 4 + -rot 
 	>r | x y w h
 	2swap 48 - swap pick3 2/ - swap 2swap | center
 	xywh64 a!+ 

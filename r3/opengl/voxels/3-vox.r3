@@ -28,10 +28,6 @@
 ]
 
 |--------------------
-#GL_TRIANGLES $4
-#GL_FALSE 0
-
-|-------------------------------------
 #IDprojection
 #fprojection * 64
 

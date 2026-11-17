@@ -205,16 +205,6 @@ void main() {
 
 :vieww 400 ;	:viewh 300 ;
 
-:GL_TEXTURE_MIN_FILTER $2801 ;
-:GL_LINEAR $2601 ;
-:GL_TEXTURE_MAG_FILTER $2800 ;
-:GL_COLOR_ATTACHMENT0 $8CE0 ;
-:GL_RENDERBUFFER $8D41 ;
-:GL_DEPTH24_STENCIL8 $88F0 ;
-:GL_DEPTH_STENCIL_ATTACHMENT $821A ;
-
-:GL_RGBA $1908 ;
-
 :SetupFramebuffer
 	1 'framebuffer glGenFramebuffers
 	GL_FRAMEBUFFER framebuffer glBindFramebuffer

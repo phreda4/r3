@@ -77,7 +77,7 @@
 	dup d@ mobj + 	| adr names
 	1 pick2 glGenTextures	| d@ string
     GL_TEXTURE_2D pick2 d@ glBindTexture
-	'fpath "%s/%s" sprint glLoadImg 		| load tex
+	'fpath "%s/%s" sprint glLoadImgBound 		| load tex
 	4 + | adr
 	1 over glGenVertexArrays
 	dup d@ glBindVertexArray

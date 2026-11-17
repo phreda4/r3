@@ -84,14 +84,14 @@ $915ad3 $ea3c65 $cbcdcd $fedf7b ]
 ::tnsp | n -- ; move the cursor n characters to the right
 	advx * 'dp d+! ;
 	
-::tsbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
+::tstrbox | "" -- "" w h ; size in pixels of the string (count * advx, advy)
 	count advx * advy ;
  
 ::tpos | -- x y ; cursor position in pixels
 	dp dup $ffffff and swap 32 >> ;
 
 ::trect | "" -- "" x y w h ; rectangle (position and size in pixels) of the string at the cursor
-	tsbox tpos 2swap ;
+	tstrbox tpos 2swap ;
 	
 ::tcursor | n -- ; fill with the draw color the character cell n characters to the right of the cursor (block cursor)
 	advx * tpos swap rot + swap advx advy frect ;

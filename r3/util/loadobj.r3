@@ -130,11 +130,11 @@
 	"usemtl" =pre 1? ( drop usmt ; ) drop	| usemtl [material name]
 	;
 
-::>>cr | adr -- adr'/0	; proxima linea/0
+::>>cr0 | adr -- adr'/0	; proxima linea/0
 	( c@+ $ff and 13 >? drop ) 0? ( nip ; ) drop ;
 
 :parseobj | text --
-	( trim parseline >>cr 1? ) drop ;
+	( trim parseline >>cr0 1? ) drop ;
 
 |--------------------
 | nombre text mem solido
@@ -234,7 +234,7 @@
 :parsemtl | text --
 	0? ( drop notmtl ; )
 	-1 'colornow !
-	( trim parselinem >>cr 1? ) drop ;
+	( trim parselinem >>cr0 1? ) drop ;
 
 |--------- contar elementos y cargar mtl
 :mtli	| mtllib [external .mtl file name]
@@ -271,7 +271,7 @@
 	;
 
 :preparse | adr --
-	( trim parsecount >>cr 1? ) drop ;
+	( trim parsecount >>cr0 1? ) drop ;
 	
 |--------------------------------------------------	
 

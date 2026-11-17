@@ -180,15 +180,6 @@ void main() {
 #vs 'vertexShaderSource
 #fs 'fragmentShaderSource
 
-#GL_COMPILE_STATUS $8B81
-#GL_LINK_STATUS $8B82
-#GL_FRAGMENT_SHADER $8B30
-#GL_VERTEX_SHADER $8B31
-
-#GL_DEPTH_TEST $0B71
-#GL_LESS $0201
-#GL_CULL_FACE $0B44
-
 #t
 :shCheckErr | ss --
 	dup GL_COMPILE_STATUS 't glGetShaderiv
