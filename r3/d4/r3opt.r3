@@ -164,7 +164,7 @@
 :13lit?	||||  LIT NRO LIT --
 	tokana> 24 - 'tokana <? ( drop 0 ; ) 
 	@+ $ff and 1 >? ( 2drop 0 ; ) drop 
-	@+ $ff and 2 =? ( drop 0 ; ) | no call
+	@+ $ff and 2 =? ( 2drop 0 ; ) | no call
 	6 >? ( 2drop 0 ; ) drop 
 	@ $ff and 1 >? ( drop 0 ; ) drop 1 ;
 	

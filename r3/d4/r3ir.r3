@@ -546,7 +546,8 @@
 :ra.shr2 | d s -- f
 	'ra.s2 ! 'ra.d2 !
 	ra.d2 'ra.wCP rg 'ra.i2 !
-	ra.s2 ra.ue ra.d2 ra.ue min 'ra.t2 !
+	|ra.s2 ra.ue ra.d2 ra.ue min 'ra.t2 !
+	ra.s2 ra.ue 'ra.t2 !
 	ra.s2 'ra.wLM rg ra.i2 >? ( drop 0 ; ) drop
 	ra.d2 'ra.wFM rg ra.t2 <? ( drop 0 ; ) drop
 	1 ;

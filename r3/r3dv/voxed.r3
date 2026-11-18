@@ -1041,7 +1041,8 @@
 	"VOXED" 1280 768 GLini GLInfo
 	$fff vaini
 	glgfx
-	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
+	|"media/ttf/Roboto-Medium.ttf" 16 txload txfont
+	"media/ttf/VictorMono-Bold.ttf" 16 txload txfont
 	initvox
 	rl_init
 	2048 ss3dshadowini

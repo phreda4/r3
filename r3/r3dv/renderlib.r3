@@ -17,8 +17,9 @@ in vec2 uv;
 out vec4 FragColor;
 
 // ---- OPCIONES ---------------------------------------------------------------
-// Descomentar si las texturas de albedo estan en sRGB (se pasan a lineal aqui)
-//#define ALBEDO_SRGB
+// Activo: el albedo (paleta .vox / colores de shapes) esta en sRGB y se pasa a lineal aqui.
+// Comentar si el albedo ya llega en lineal.
+#define ALBEDO_SRGB
 
 // Ambiente hemisferico: el AO solo se aplica a este termino (no a la luz directa)
 const vec3  UP_AXIS       = vec3(0.0, 1.0, 0.0);      // eje arriba del mundo
