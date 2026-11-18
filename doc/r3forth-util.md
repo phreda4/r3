@@ -36,7 +36,7 @@ Other docs: [lib/ libraries](r3forth-libs.md)
 13. [bfont.r3](#bfontr3) — Fixed-width bitmap font (SDL2)
 14. [pcfont.r3](#pcfontr3) — PC/DOS-style 16×32 font (SDL2)
 15. [ttfont.r3](#ttfontr3) — TrueType font rendering (SDL2_ttf)
-16. [txfont.r3](#txfontr3) — TrueType atlas font with pseudo-UTF8
+16. [txfont.r3](#txfontr3) — TrueType atlas font
 17. [gltxfont.r3](#gltxfontr3) — TrueType atlas font for OpenGL
 18. [ttext.r3](#ttextr3) — Tilesheet-based terminal text (SDL2)
 19. [textb.r3](#textbr3) — Wrapped text box renderer (SDL2+TTF)
@@ -567,13 +567,13 @@ TrueType font rendering for SDL2 using SDL2_ttf.
 
 ### txfont.r3
 
-TrueType font atlas renderer with pseudo-UTF8 support and glyph caching.
+TrueType font atlas renderer with glyph caching.
 
 **Dependencies:** `^r3/lib/sdl2gfx.r3`, `^r3/lib/sdl2ttf.r3`
 
 ```
 -- Font Loading --
-::txloadwicon ( "font" size -- nfont )  load a TTF font at that size into an atlas texture (ASCII 32..127, the accented letters of the utf8 list and the Font Awesome icons of media/ttf/Font Awesome 7 Free-Solid-900.otf from code 192); returns the atlas (texture and table kept at here)
+::txloadwicon ( "font" size -- nfont )  load a TTF font at that size into an atlas texture
 ::txload ( "font" size -- nfont )       like txloadwicon without the icons
 ::txfont ( font -- )                    select the atlas font (from txload) used by the tx words
 ::txfont@ ( -- font )                   the atlas font selected now

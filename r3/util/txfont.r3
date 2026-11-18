@@ -1,5 +1,4 @@
 | font with atlas from TTF
-| pseudo utf-8
 | PHREDA 2025
 
 ^r3/lib/sdl2gfx.r3
