@@ -420,7 +420,7 @@ void main() {
 |====== sprite definitions (binding 2)
 	1 'ssbo_sprites glGenBuffers
 	GL_SHADER_STORAGE_BUFFER ssbo_sprites glBindBuffer
-	GL_SHADER_STORAGE_BUFFER n3dsprites 3 << defspr 0 glBufferStorage
+	GL_SHADER_STORAGE_BUFFER n3dsprites 3 << defspr GL_DYNAMIC_STORAGE_BIT glBufferStorage
 	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
 |====== columns (binding 6)
 	1 'ssbo_cols glGenBuffers
@@ -466,6 +466,10 @@ void main() {
 
 ::ss3duppal | off bytes 'mem --	; sube bytes de la tira de colores
 	ssbo_pal ssbosub ;
+
+::ss3dupspr | off bytes 'mem --	; sube bytes de la tabla de sprites (8 por sprite) y la copia en defspr (ss3dLX/LY/LZ)
+	ssbo_sprites ssbosub
+	defspr upo + upm upb cmove ;
 
 ##ss3names
 

@@ -1,13 +1,15 @@
 |MEM 64
-| VOXED - editor de voxeles ss3d (un objeto a la vez, 32 slots)
+| VOXED - editor de voxeles ss3d (un objeto a la vez, 32 slots, color directo)
 | PHREDA 2026
 |
 | mouse: left = tool (click) | right drag = orbit | middle drag = pan | wheel = zoom
 | V F G = attach / erase / paint | 1 2 3 = voxel / line / box | X = cancel the first point
-| U = undo | W S = zoom, A D Q E = pan | F1 shadows | F2 SSAO | F3 palette | F4 files | F5 tools
+| U = undo | W S = zoom, A D Q E = pan | F1 shadows | F2 SSAO | F3 color | F4 files | F5 tools
 |
 | modelo: nv x nv x nv voxeles (max 32: la mascara de capas es de 32 bits)
-| vidx = indice de paleta por voxel, dpal = tira de colores completa (ss3d), dcols = mascara|base
+| los 32 slots viven en ssmulti.r3 (comprimidos de a uno, color $RRGGBBuma por voxel, sin paleta);
+| el slot actual esta abierto (descomprimido) y se sube a la GPU con ssm_sync
+| sprites: 0 = cursor (1 voxel), 1 = barra de nv voxeles, 2.. = slots
 
 ^r3/lib/rand.r3
 ^r3/lib/mem.r3
@@ -19,6 +21,7 @@
 
 ^./renderlib.r3
 ^./ss3d.r3
+^./ssmulti.r3
 ^./ss3dshadow.r3
 
 |----------------------------------
@@ -113,50 +116,37 @@
 	rl_point_light ;
 
 |----------------------------------
-| MODELO
+| MODELO: 32 slots de nv x nv x nv voxeles con color directo, comprimidos de a uno (ssmulti.r3)
 #nv 32			| voxeles por lado (max 32)
 :nvox nv nv * nv * ;
-:ncol0 nv nv * ;						| columnas del objeto
-:ncolsn ncol0 2 + ;						| objeto + cursor + barra
-:npaln nvox 1+ nv + ;					| tiras: objeto, cursor, barra
-:colsbytes ncolsn 3 << ;
-:palbytes npaln 2 << ;
+:npaln nvox 34 * ;			| tiras: peor caso sin compresion de los 34 sprites
 
-#dcols #dpal #vidx		| datos que se suben a la GPU / indice de paleta
-#ucols #uidx			| copia para deshacer
-#dirty 1
-#img
+#sused * 32 #snames * 1024 #slotcur
+:curspr slotcur 2 + ;		| sprite de ssmulti del slot actual
+#usnap						| copia para deshacer (ssm_snap)
 
-#vx #vy #vz				| voxel de trabajo (y hacia arriba)
-
-:vk | -- k		; posicion en la tira del voxel
-	vz nv * vx + nv * nv 1- vy - + ;
-:vmask | -- adr
-	vz nv * vx + 3 << dcols + ;
-:vbit 1 nv 1- vy - << ;
+#vx #vy #vz					| voxel de trabajo (y hacia arriba)
+:vci | -- ci\t\t; columna del voxel (ssmulti usa 32 de ancho)
+	vx vz ssm_ci ;
+:vlayer | -- capa\t; la capa 0 es la de arriba
+	nv 1- vy - ;
 :vocc? | -- 0/bit
-	vmask d@ vbit and ;
+	curspr vci vlayer ssm_vget ;
 :vocc! | 0/1 --
-	vmask dup d@			| on adr mask
-	rot 1? ( drop vbit or swap d! ; ) drop
-	vbit nand swap d! ;
+	curspr vci vlayer ssm_vocc! ;
+:vcolset | color --
+	curspr vci vlayer ssm_vcol! ;
 
-|--- paleta: 256 ranuras, HSV + material por ranura
-#pah * 2048
-#pas * 2048
-#pav * 2048
-#pmt * 2048
-#prg * 2048
-#pgl * 2048
-#prgb * 2048			| $RRGGBBuma
-#psel 20
-#si
+|--- color actual: HSV + material, $RRGGBBuma (u rough 3b, m metal 3b, a glow 2b)
+#ch 60 #cs 255 #cv 255		| tono 0..359, saturacion y valor 0..255
+#cmt 0 #crg 0 #cgl 0		| metal 0..7, rough 0..7, glow 0..3
+#curc $ffff0000				| color actual calculado una vez por cuadro
 
 :rgb3 | r g b -- rgb
 	swap 8 << or swap 16 << or ;
 
 #h_s #h_v #h_f #h_r #h_p #h_q #h_t
-:hsv>rgb | h s v -- rgb		; h 0..359 s v 0..255
+:hsv>rgb | h s v -- rgb\t\t; h 0..359 s v 0..255
 	'h_v ! 'h_s !
 	60 /mod 255 * 60 / 'h_f ! 'h_r !
 	h_v 255 h_s - * 255 / 'h_p !
@@ -169,123 +159,41 @@
 	4 =? ( drop h_t h_p h_v rgb3 ; )
 	drop h_v h_p h_q rgb3 ;
 
-#cr #cg #cb #cmx #cmn #cd
-:hueof | -- h
-	cmx cr =? ( drop cg cb - 60 * cd / 360 + 360 mod ; )
-	cg =? ( drop cb cr - 60 * cd / 480 + 360 mod ; )
-	drop cr cg - 60 * cd / 600 + 360 mod ;
-:rgb>hsv | r g b -- h s v
-	'cb ! 'cg ! 'cr !
-	cr cg max cb max 'cmx !
-	cr cg min cb min 'cmn !
-	cmx cmn - 'cd !
-	cd 0? ( drop 0 0 cmx ; ) drop
-	hueof cd 255 * cmx / cmx ;
+:ccolor | -- color\t\t; evita el comodin $00000001 de la tira
+	ch cs cv hsv>rgb 8 << crg 5 << cmt 2 << or cgl or or
+	1 =? ( drop 0 ) ;
 
-:pv | 'arr -- v
-	si 3 << + @ ;
+|--- muestras de color (solo referencia para elegir, no se guardan en el modelo)
+#swc * 1024
+#rw #hu #swi
+:swatchhsv | i -- h s v
+	'swi !
+	swi 16 <? ( drop 0 0 swi 17 * ; ) drop
+	swi 16 - 24 /mod swap 'rw ! 15 * 'hu !
+	rw 5 <? ( drop hu 255 255 rw 40 * - ; ) drop
+	hu 255 rw 4 - 40 * - 255 ;
 
-:slotcalc | i --
-	'si !
-	'pah pv 'pas pv 'pav pv hsv>rgb 8 <<
-	'prg pv 5 << 'pmt pv 2 << or 'pgl pv or or
-	'prgb si 3 << + ! ;
+:swinit
+	0 ( 256 <? dup swatchhsv hsv>rgb over 2 << 'swc + d! 1+ ) drop ;
 
-:pset | h s v --	; ranura si
-	'pav si 3 << + ! 'pas si 3 << + ! 'pah si 3 << + !
-	0 'prg si 3 << + ! 0 'pmt si 3 << + ! 0 'pgl si 3 << + !
-	si slotcalc ;
-
-#rw #hu
-:palslot | i --
-	'si !
-	si 16 <? ( drop 0 0 si 17 * pset ; ) drop
-	si 16 - 24 /mod swap 'rw ! 15 * 'hu !
-	rw 5 <? ( drop hu 255 255 rw 40 * - pset ; ) drop
-	hu 255 rw 4 - 40 * - 255 pset ;
-
-:palinit
-	0 ( 256 <? dup palslot 1+ ) drop ;
-
-:vcolset | idx --	; indice de paleta del voxel y su tira de colores
-	$ff and dup vk vidx + c!
-	3 << 'prgb + @ vk 2 << dpal + d! ;
-
-:refreshstrips | todas las tiras desde la paleta
-	0 ( nvox <?
-		dup vidx + c@ $ff and 3 << 'prgb + @
-		over 2 << dpal + d!
-		1+ ) drop ;
-
-|--- slots (32 modelos en memoria): mascaras, indices, paleta
-:slb ncol0 3 << nvox + 14336 + ;
-#slots #sused * 32 #snames * 1024 #slotcur
-#spp #cs #cb2 #cd2
-
-:sadr | n -- adr
-	slb * slots + ;
-:cp>s | 'src bytes --
-	'cb2 ! 'cs ! spp cs cb2 cmove cb2 'spp +! ;
-:cp<s | 'dst bytes --
-	'cb2 ! 'cd2 ! cd2 spp cb2 cmove cb2 'spp +! ;
-
-:slotsave | n --
-	sadr 'spp !
-	dcols ncol0 3 << cp>s
-	vidx nvox cp>s
-	'pah 2048 cp>s 'pas 2048 cp>s 'pav 2048 cp>s 'pmt 2048 cp>s
-	'prg 2048 cp>s 'pgl 2048 cp>s 'prgb 2048 cp>s ;
-
-:slotinit
-	palinit
-	vidx 0 nvox 2 >> dfill
-	0 ( ncol0 <? dup 3 << dcols + 0 swap d! 1+ ) drop
-	refreshstrips 1 'dirty ! ;
-
-|--- memoria e imagen .ssv (0 = objeto, 1 = cursor de 1 voxel, 2 = barra de nv voxeles, 3 = pared nv x 1 x nv)
-:initmem
-	here 'dcols ! colsbytes 'here +!
-	here 'dpal ! palbytes 'here +!
-	here 'vidx ! nvox 'here +!
-	vidx 0 nvox 2 >> dfill
-	here 'ucols ! colsbytes 'here +!
-	here 'uidx ! nvox 'here +!
-	here 'slots ! slb 32 * 'here +! ;
-
-:initcols
-	dcols >a
-	0 ( ncol0 <? 0 da!+ dup nv * da!+ 1+ ) drop
-	1 da!+ nvox da!+
-	1 nv << 1- da!+ nvox 1+ da!+ ;
-
-:initpal
-	dpal $ffffff00 npaln dfill
-	refreshstrips ;
-
-:buildimg
-	here 'img !
-	"SSV2" d@ , 3 , ncolsn , npaln ,
-	0 , nv dup 8 << or nv 16 << or ,
-	ncol0 , 1 dup 8 << or 1 16 << or ,
-	ncol0 1+ , 1 nv 8 << or 1 16 << or ,
-	here dcols colsbytes cmove colsbytes 'here +!
-	here dpal palbytes cmove palbytes 'here +!
-	img 'here ! ;
-
-:upvox | sube a la GPU si hubo cambios
-	dirty 0? ( drop ; ) drop
-	0 'dirty !
-	0 colsbytes dcols ss3dupcols
-	0 palbytes dpal ss3duppal ;
-
-|--- deshacer (un nivel)
+|--- deshacer (un nivel): copia del slot actual
 :pushundo
-	ucols dcols ncol0 3 << cmove
-	uidx vidx nvox cmove ;
+	curspr ssm_edit usnap ssm_snap ;
 :undo
-	dcols ucols ncol0 3 << cmove
-	vidx uidx nvox cmove
-	refreshstrips 1 'dirty ! ;
+	usnap ssm_rest ;
+
+|--- memoria: sprites de ssmulti (0 = cursor, 1 = barra, 2.. = slots)
+:initmem
+	here 'usnap ! ssm_snapsz 'here +!
+	34 npaln ssm_ini
+	1 1 1 ssm_add drop
+	1 nv 1 ssm_add drop
+	32 ( 1? 1- nv nv nv ssm_add drop ) drop
+	0 ssm_edit $ffffff00 0 0 0 0 0 0 ssm_fill
+	1 ssm_edit $ffffff00 0 0 0 0 0 nv 1- ssm_fill ;
+
+:upvox | sube a la GPU lo que cambio
+	'ss3dupcols 'ss3duppal 'ss3dupspr ssm_sync ;
 
 |----------------------------------
 | herramientas
@@ -295,12 +203,12 @@
 #gx #gy #gz
 
 :applycell | -- ; aplica el modo en el voxel vx vy vz
-	bmode 0 =? ( drop 1 vocc! psel vcolset ; )
+	bmode 0 =? ( drop 1 vocc! curc vcolset ; )
 	1 =? ( drop 0 vocc! ; )
-	drop vocc? 1? ( drop psel vcolset ; ) drop ;
+	drop vocc? 1? ( drop curc vcolset ; ) drop ;
 
 :cellapply | x y z --
-	'vz ! 'vy ! 'vx ! applycell 1 'dirty ! ;
+	'vz ! 'vy ! 'vx ! applycell ;
 
 :eachvox | 'op --
 	'opx !
@@ -310,12 +218,11 @@
 				opx ex
 				1+ ) drop
 			1+ ) drop
-		1+ ) drop
-	1 'dirty ! ;
+		1+ ) drop ;
 
 |--- conjunto
 :o_clear 0 vocc! ;
-:o_fill 1 vocc! psel vcolset ;
+:o_fill 1 vocc! curc vcolset ;
 :o_rev vocc? 0? ( drop o_fill ; ) drop 0 vocc! ;
 :ddx vx 2* 1+ nv - ;
 :ddy vy 2* 1+ nv - ;
@@ -338,10 +245,10 @@
 |--- mover (con vuelta) e invertir: leen la copia de deshacer
 #sdx #sdy #sdz
 #sx0 #sy0 #sz0
-:o_copyfrom | copia el voxel (sx0 sy0 sz0) de la copia a vx vy vz
-	ucols sz0 nv * sx0 + 3 << + d@ 1 nv 1- sy0 - << and
+:o_copyfrom | copia el voxel (sx0 sy0 sz0) de la copia (usnap: n, 1024 mascaras, pad) a vx vy vz
+	usnap 4 + sz0 5 << sx0 + 2 << + d@ 1 nv 1- sy0 - << and
 	0? ( drop 0 vocc! ; ) drop 1 vocc!
-	uidx sz0 nv * sx0 + nv * nv 1- sy0 - + + c@ vcolset ;
+	usnap 4100 + sz0 5 << sx0 + 5 << nv 1- sy0 - + 2 << + d@ vcolset ;
 :o_shift
 	vx sdx - nv + nv mod 'sx0 !
 	vy sdy - nv + nv mod 'sy0 !
@@ -391,24 +298,6 @@
 	;
 
 |----------------------------------
-| slots: cambiar de modelo
-:slotload | n --
-	dup 'sused + c@ 0? ( 2drop slotinit pushundo ; ) drop
-	sadr 'spp !
-	dcols ncol0 3 << cp<s
-	vidx nvox cp<s
-	'pah 2048 cp<s 'pas 2048 cp<s 'pav 2048 cp<s 'pmt 2048 cp<s
-	'prg 2048 cp<s 'pgl 2048 cp<s 'prgb 2048 cp<s
-	refreshstrips 1 'dirty ! 0 'aok ! pushundo ;
-
-:slotswitch | n --
-	dup slotcur =? ( 2drop ; ) drop
-	slotcur slotsave
-	1 'sused slotcur + c!
-	dup 'slotcur !
-	slotload ;
-
-|----------------------------------
 | importar .vox (MagicaVoxel): primer modelo, paleta RGBA o la de MagicaVoxel por defecto
 #defpal [
 	$00000000 $ffffffff $ffccffff $ff99ffff $ff66ffff $ff33ffff $ff00ffff $ffffccff
@@ -445,14 +334,16 @@
 	$ffbbbbbb $ffaaaaaa $ff888888 $ff777777 $ff555555 $ff444444 $ff222222 $ff111111
 	]
 
-#vsx #vsy #vsz #vgot #vend
+#vsx #vsy #vsz #vgot #vend #vpass #vfe
 #offx #offy #offz
 #mx #my #mz #mi
 
+#mpal * 1024		| paleta del .vox convertida: $RRGGBB00 por indice
+#isl
 :importcolor | abgr slot --
-	'si !
+	'isl !
 	dup $ff and swap dup 8 >> $ff and swap 16 >> $ff and
-	rgb>hsv pset ;
+	rgb3 8 << 'mpal isl 2 << + d! ;
 
 :vc.size | adr --
 	d@+ 'vsx ! d@+ 'vsy ! d@ 'vsz !
@@ -466,9 +357,10 @@
 :putvox
 	mx offx + 'vx ! mz offy + 'vy ! vsy 1- my - offz + 'vz !
 	inb 0? ( drop ; ) drop
-	1 vocc! mi vcolset ;
+	1 vocc! mi 2 << 'mpal + d@ vcolset ;
 
-:vc.xyzi | adr --
+:vc.xyzi | adr --		; segunda pasada (la paleta RGBA va despues de XYZI en el archivo)
+	vpass 0? ( 2drop ; ) drop
 	vgot 1? ( 2drop ; ) drop 1 'vgot !
 	d@+
 	( 1? 1- swap
@@ -476,7 +368,8 @@
 		putvox
 		swap ) 2drop ;
 
-:vc.rgba | adr --
+:vc.rgba | adr --		; primera pasada
+	vpass 1 =? ( 2drop ; ) drop
 	0 ( 255 <?
 		2dup 2 << + d@ over 1+ importcolor
 		1+ ) 2drop ;
@@ -502,12 +395,13 @@
 	dup here - 24 <? ( 2drop ; ) drop
 	here d@ "VOX " d@ <>? ( 2drop ; ) drop
 	pushundo
-	vidx 0 nvox 2 >> dfill
-	'o_clear eachvox
+	curspr ssm_clear
 	0 'vgot ! 0 'offx ! 0 'offy ! 0 'offz !
 	defpalvox
-	here swap parsevox
-	refreshstrips 1 'dirty ! 0 'aok ! ;
+	'vfe !
+	0 'vpass ! here vfe parsevox
+	1 'vpass ! here vfe parsevox
+	0 'aok ! ;
 
 |--- lista de archivos .vox
 #vpath "media/ssv/vox"
@@ -608,12 +502,10 @@
 	cdd 0 >? ( drop 1 ai setss cp0 1+ vox * half - cop - cdd /. ai settm vox cdd /. ai settd ; ) drop
 	-1 ai setss cp0 vox * half - cop - cdd /. ai settm vox cdd neg /. ai settd ;
 
-:pickcols | -- adr	; el pick no ve la vista previa: con forma pendiente lee el original
-	aok 1? ( drop ucols ; ) drop dcols ;
-
-:ccocc | -- 0/1	; celda cc ocupada
+:ccocc | -- 0/1	; celda cc ocupada (el pick no ve la vista previa: con forma pendiente lee la copia)
 	'cc @ 'vx ! 'cc 8 + @ 'vy ! 'cc 16 + @ 'vz !
-	vz nv * vx + 3 << pickcols + d@ vbit and 1? ( drop 1 ; ) drop 0 ;
+	aok 1? ( drop usnap 4 + vz 5 << vx + 2 << + d@ 1 vlayer << and 1? ( drop 1 ; ) drop 0 ; ) drop
+	vocc? 1? ( drop 1 ; ) drop 0 ;
 
 :minaxis | -- i
 	0 'ai ! 'tm @ 'cop !
@@ -745,7 +637,7 @@
 
 :axbar | x y z q col --		; barra en toda la arista, instancia bi
 	'ec !
-	oscl 2 ec bi ss3dset
+	oscl 1 ec bi ss3dset
 	oscl 0.25 *. oscl oscl 0.25 *. bi ss3dscl3
 	1 'bi +! ;
 
@@ -770,55 +662,36 @@
 	bi ss3dlen! ;
 
 :placeall
-	0 half 0 qid oscl 0 $ffffff00 0 ss3dset
-	tx cellc ty cellc half + tz cellc qid curscl 1 curcolor 1 ss3dset
-	ax cellc ay cellc half + az cellc qid ancscl 1 $ffff4003 2 ss3dset
+	0 half 0 qid oscl curspr $ffffff00 0 ss3dset
+	tx cellc ty cellc half + tz cellc qid curscl 0 curcolor 1 ss3dset
+	ax cellc ay cellc half + az cellc qid ancscl 0 $ffff4003 2 ss3dset
 	axes ;
 
 |----------------------------------
-| archivos del slot: mem/voxedN.vxd (editor) y mem/voxedN.ssv (exportar a ss3d)
-#sv #lp
-
-:svarr | 'arr --
-	0 ( 256 <? over over 3 << + @ , 1+ ) 2drop ;
-:rd@ | -- v
-	lp d@ lp 4 + 'lp ! ;
-:ldarr | 'arr --
-	0 ( 256 <? rd@ pick2 pick2 3 << + ! 1+ ) 2drop ;
+| archivos del slot: mem/voxedN.ssv (guardar, sin perdida) y mem/voxedN_c.ssv (exportar a ss3d, compresion maxima)
+:fslot | -- str
+	slotcur 1+ "mem/voxed%d.ssv" sprint ;
 
 :savevxd
-	here 'sv !
-	nv ,
-	'pah svarr 'pas svarr 'pav svarr 'pmt svarr 'prg svarr 'pgl svarr
-	here vidx nvox cmove nvox 'here +!
-	0 ( ncol0 <? dup 3 << dcols + d@ , 1+ ) drop
-	sv here over - slotcur 1+ "mem/voxed%d.vxd" sprint save
-	sv 'here ! ;
+	fslot curspr ssm_save1 ;
 
 :loadvxd
-	here slotcur 1+ "mem/voxed%d.vxd" sprint load
-	here - 100 <? ( drop ; ) drop
-	here d@ nv <>? ( drop ; ) drop
-	pushundo
-	here 4 + 'lp !
-	'pah ldarr 'pas ldarr 'pav ldarr 'pmt ldarr 'prg ldarr 'pgl ldarr
-	0 ( 256 <? dup slotcalc 1+ ) drop
-	lp vidx nvox cmove nvox lp + 'lp !
-	0 ( ncol0 <? rd@ over 3 << dcols + d! 1+ ) drop
-	refreshstrips 1 'dirty ! ;
+	cancel pushundo
+	fslot curspr ssm_load1 1? ( nv nv nv curspr ssm_size! ) drop ;
 
 :exportssv
-	here 'sv !
-	"SSV2" d@ , 1 , ncol0 , nvox ,
-	0 , nv dup 8 << or nv 16 << or ,
-	here dcols ncol0 move ncol0 3 << 'here +!
-	here dpal nvox dmove nvox 2 << 'here +!
-	sv here over - slotcur 1+ "mem/voxed%d.ssv" sprint save
-	sv 'here ! ;
+	slotcur 1+ "mem/voxed%d_c.ssv" sprint curspr ssm_savec1 ;
 
 :newmodel
-	pushundo
-	'o_clear eachvox ;
+	pushundo curspr ssm_clear ;
+
+:slotswitch | n --
+	dup slotcur =? ( 2drop ; ) drop
+	cancel
+	1 'sused slotcur + c!
+	'slotcur !
+	curspr ssm_edit
+	pushundo ;
 
 |----------------------------------
 | interfaz (tamanos relativos al texto)
@@ -841,35 +714,34 @@
 	'fcolor ! uiWinBox frect $ffffffff 'fcolor ! ;
 
 #ci
-:palpick ci 'psel ! ;
+:palpick				| muestra ci -> color actual
+	ci swatchhsv 'cv ! 'cs ! 'ch ! ;
 
 :palui
 	1 1 uiPad
 	16 16 uiGrid
 	0 ( 256 <? dup 'ci !
 		uiZoneW 'palpick uiClk
-		'prgb ci 3 << + @ 8 >> $ff000000 or 'fcolor ! uiFill
-		ci psel =? ( $ffffffff 'fcolor ! uiRect ) drop
+		'swc ci 2 << + d@ $ff000000 or 'fcolor ! uiFill
 		uiNext
 		1+ ) drop
 	4 4 uiPad ;
-
-:slotchg psel slotcalc refreshstrips 1 'dirty ! ;
 
 :palpanel
 	uiPush
 	1.0 %cw uiN
 	palui
 	uiRest
+	curc 8 >> dup $ff000000 or 'fcolor !
+	"color #%h" sprint uiLabelC
 	$ffffffff 'fcolor !
-	'prgb psel 3 << + @ 8 >> psel "slot %d  #%h" sprint uiLabelC
-	"H" 0 359 'pah psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
-	"S" 0 255 'pas psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
-	"V" 0 255 'pav psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
+	"H" 0 359 'ch uiSlideriL
+	"S" 0 255 'cs uiSlideriL
+	"V" 0 255 'cv uiSlideriL
 	"MATERIAL" uiLabelC
-	"metal" 0 7 'pmt psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
-	"rough" 0 7 'prg psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
-	"glow" 0 3 'pgl psel 3 << + uiSlideriL uiEx? 1? ( slotchg ) drop
+	"metal" 0 7 'cmt uiSlideriL
+	"rough" 0 7 'crg uiSlideriL
+	"glow" 0 3 'cgl uiSlideriL
 	uiPop ;
 
 :toolpanel
@@ -939,7 +811,7 @@
 	'undokey "Undo" uiNBtn
 	'tgT "Tools" uiNBtn
 	'tgV "View" uiNBtn
-	'tgP "Palette" uiNBtn
+	'tgP "Color" uiNBtn
 	'tgF "Files" uiNBtn
 	;
 
@@ -1007,6 +879,7 @@
 
 :main
 	vupdate
+	ccolor 'curc !
 	makecam
 	upvox
 	placeall
@@ -1026,14 +899,13 @@
 	0 0 0.7071 0.7071 packq 'qzz !
 	0.7071 0 0 0.7071 packq 'qxx !
 	initmem
-	palinit
-	initcols
-	initpal
+	ccolor 'curc !
 	nv 2/ 'vx ! 0 'vy ! nv 2/ 'vz !
-	applycell 				| un voxel inicial (attach, ranura psel)
+	curspr ssm_edit
+	applycell 				| un voxel inicial (attach, color actual)
 	1 'sused c!
 	scanvox
-	buildimg
+	ssm_image
 	16 ss3dmem
 	pushundo ;
 

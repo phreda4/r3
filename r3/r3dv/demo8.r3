@@ -135,7 +135,6 @@
 | y crece hacia arriba (capa de la tira = nv-1-y: la capa 0 es la de arriba)
 #nv 8				| voxeles por lado de cada objeto (max 32: mascara de 32 bits)
 :ng nv 2 << ;
-:ncolsn 64 nv * nv * ;					| columnas
 :npaln  64 nv * nv * nv * ;		| capacidad de la tira (peor caso sin compresion)
 
 #vo #vx #vy #vz			| voxel de trabajo: objeto y coordenadas locales
@@ -148,8 +147,8 @@
 	gz nv /mod 'vz ! 'oz !
 	oz 4 * oy + 4 * ox + 'vo ! ;
 
-:vci | -- ci		; columna dentro del objeto (z*nv + x)
-	vz nv * vx + ;
+:vci | -- ci		; columna dentro del objeto (siempre 32 columnas de ancho en ssmulti)
+	vx vz ssm_ci ;
 :vlayer nv 1- vy - ;
 
 :vget | -- 0/bit		; ocupacion del voxel (no abre el objeto)
@@ -174,11 +173,11 @@
 
 |--- memoria: 64 objetos + cursor en ssmulti, comprimidos de a uno
 :initvoxmem
-	64 ncolsn npaln ssm_ini
+	64 npaln ssm_ini
 	64 ( 1? 1- nv nv nv ssm_add drop ) drop ;
 
 :upvox | comprime el objeto abierto y sube a la GPU lo que cambio
-	'ss3dupcols 'ss3duppal ssm_sync ;
+	'ss3dupcols 'ss3duppal 'ss3dupspr ssm_sync ;
 
 :b_save "supercubo.ssv" ssm_save ;		| compresion completa a disco
 :b_load "supercubo.ssv" ssm_load ;		| disco -> compresion individual

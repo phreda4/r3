@@ -1,5 +1,6 @@
-| r3 simple compiler 2 - plain.r3 to assembler text (fasm) with the new register allocation ( in development )
-|   it begins as a copy of r3comp.r3 , that one is not changed ( buildopt: bo.compiler selects )
+| r3 simple compiler 3 - plain.r3 to assembler text (fasm)
+|   tier 0: every word of the base is a canonical fragment ( r3cf.r3 ), no virtual stack.
+|   it begins as a copy of r3comp.r3 , that one is not changed
 | PHREDA 2026
 |---------------------------------------------------------------
 | the base words are made by r3vstk (virtual stack + descriptors) and r3opt1 (rbp folding)
@@ -18,8 +19,8 @@
 ^r3/lib/console.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt1.r3
-^r3/d4/r3ir.r3
-^r3/d4/r3vstk2.r3
+^r3/d4/r3cf.r3
+^r3/d4/r3ssa.r3
 
 #filename "r3/d4/gen/plain.r3"
 #osnames "WIN" "LIN" "MAC" "RPI"
@@ -60,6 +61,8 @@
 ( 0 )
 
 
+:,sysfn "rax" ,s ;		| the function of the SYS is in rax
+
 #osfrag 0	| list of the os (SYS, LOADLIB, GETPROC)
 #ftab * 2048	| base word index -> fragment
 
@@ -73,7 +76,7 @@
 #bn
 :setfrag | i --
 	dup basename 'bn !
-	bn osfrag findfrag
+	bn osfrag findfrag 0? ( drop bn 'fragcf findfrag ) 
 	swap 3 << 'ftab + ! ;
 
 :buildtab
@@ -91,13 +94,13 @@
 :,lab "l" ,s ,h ;
 
 :,asmc | char --
-	$3b =? ( drop ie ir.ins ib ; )		| ;
+	$3b =? ( drop ie opt.ins ib ; )		| ;
 	$7e =? ( drop "l" ,s jt ,h ; )		| ~
 	$5e =? ( drop ,sysfn ; )			| ^ the function of the SYS
 	,c ;
 
 :,asm | "a;b;c" -- ; each instruction goes to the optimizer
-	ib ( c@+ 1? ,asmc ) 2drop ie ir.ins ;
+	ib ( c@+ 1? ,asmc ) 2drop ie opt.ins ;
 
 :,ins ,asm ;
 
@@ -133,7 +136,7 @@
 |--- push
 :,push "add rbp,8;mov [rbp],rax" ,ins ;
 :,movax ib "mov rax," ,s ;
-:,iend ie ir.ins ;
+:,iend ie opt.ins ;
 :gk2 ib "call " ,s tkv ,wlab ,iend ;		| word
 :gk11 | tok --  ] push address of the anonymous
 	,push ,movax "l" ,s tkv ,h ,iend ;
@@ -151,13 +154,34 @@
 	11 =? ( drop gk11 ; )
 	swap drop gfrag ;
 
+:,pushax "add rbp,8;mov [rbp],rax" ,ins ;
+:gl0 | tok -- ; literal as in the source ( 1.5 )
+	,pushax 40 >>> src + str>anro nip ib "mov rax," ,s ,num ,iend ;
+:gl1 | tok --
+	,pushax tks ib "mov rax," ,s ,num ,iend ;
+:gl3 | tok -- ; address of a word or var
+	,pushax ib "mov rax," ,s tkv ,wlab ,iend ;
+:gl4 | tok -- ; value of a var
+	,pushax ib "mov rax,qword[" ,s tkv ,wlab "]" ,s ,iend ;
+:gl6 | tok -- ; address of a string
+	,pushax ib "mov rax,s" ,s tkv ,h ,iend ;
+
+#irlim 1000	| debug: the words >= irlim are made with tier 0
+#irw 1		| the IR is used in the current word
+
 :gentoken | tok --
 	dup $ff and 13 25 in? ( over jtarget 'jt ! ) drop
-	dup vs.tok 1? ( 2drop ; ) drop
-	vs.norm
+	irw 1? ( drop dup ssa.tok 1? ( 2drop ; ) ) drop
+	ssa.flush
 	dup $ff and
-	6 >? ( gbase ; )
-	drop gk2 ;			| only the call of a word is made here
+	0 =? ( drop gl0 ; )
+	1 =? ( drop gl1 ; )
+	2 =? ( drop gk2 ; )
+	3 =? ( drop gl3 ; )
+	4 =? ( drop gl4 ; )
+	5 =? ( drop gl3 ; )
+	6 =? ( drop gl6 ; )
+	gbase ;
 
 |---------------------------------------------------------------
 | CODE
@@ -172,19 +196,22 @@
 	59 ,c 1+					| ; instead of |
 	( over <? c@+ 92 =? ( drop 47 ) ,c ) 3drop ,lf ;
 
+:irok | nro --
+	irlim <? ( drop 1 'irw ! ; ) drop 0 'irw ! ;
+
 :genword | nro --
-	ir.word opt.flush dup nro>dic @ dic>name dup 'ir.name ! ,rem
-	dup cntdef 1- =? ( "INICIO:" ir.label ) drop
-	vs.norm ib dup ,wlab ":" ,s ie ir.label
-	vs.reset
+	dup irok
+	ssa.flush opt.flush dup nro>dic @ dic>name ,rem
+	dup cntdef 1- =? ( "INICIO:" opt.label ) drop
+	ib dup ,wlab ":" ,s ie opt.label
 	dup markword
 	dup nro>dic toklen
 	( 1? 1- swap
 		dup 'tcur !
-		tkidx lbl + c@ 1? ( vs.norm ib tkidx ,lab ":" ,s ie ir.label ) drop
+		tkidx lbl + c@ 1? ( ssa.flush ib tkidx ,lab ":" ,s ie opt.label ) drop
 		@+ gentoken
 		swap ) 2drop
-	vs.norm drop ;
+	ssa.flush drop ;
 
 :gencode1 | nro --
 	dup nro>dic @ 1 and? ( 2drop ; ) drop
@@ -313,10 +340,9 @@
 :filecode
 	mark
 	"; r3 simple compiler - code" ,s ,lf
-	opt.reset vs.reset ir.reset
+	opt.reset ssa.begin
 	gencode
-	ir.word opt.end
-	ir.report
+	opt.end
 	"asm/code.asm" savefile ;
 
 :filedata
@@ -347,20 +373,12 @@
 :selos | -- adr
 	osgen 0? ( drop 'fragwin ; ) drop 'fraglin ;
 
-:checktab
-	5 ( dup basename c@ 1? drop
-		dup 3 << 'ftab + @ 0?
-			( over vs.handled? 0? ( pick2 basename "no handler or fragment: %s" .println ) drop )
-		drop
-		1+ ) 2drop ;
-
 :compiling..
 	targetplain
 	selos 'osfrag ! buildtab
-	checktab
 	here dup 'lbl ! cnttok + 'here !
 	lbl 0 cnttok cfill
-	mapstrs ir.alloc
+	mapstrs
 	filecode
 	filedata
 	fileset
@@ -369,7 +387,7 @@
 
 :
 	.reset
-	"r3 simple compiler" .println
+	"r3 simple compiler 3 ( tier 0 )" .println
 	'osnames osgen $3 and 2 << + "target: %s" .println
 	'filename r3load
 	error 1? ( .println drop ; ) drop
