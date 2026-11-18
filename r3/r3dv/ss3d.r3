@@ -512,6 +512,11 @@ void main() {
 	0 glBindVertexArray
 	;
 
+::SS3Dbinddata | --	; sprites(2), columnas(6) y paleta(7) en sus bindings, para otros pases que lean los sprites (rlforward)
+	GL_SHADER_STORAGE_BUFFER 2 ssbo_sprites glBindBufferBase
+	GL_SHADER_STORAGE_BUFFER 6 ssbo_cols glBindBufferBase
+	GL_SHADER_STORAGE_BUFFER 7 ssbo_pal glBindBufferBase ;
+
 ::SS3Dshutdown
 	ssbo_inst    1? ( 1 'ssbo_inst    glDeleteBuffers ) drop
 	ssbo_sprites 1? ( 1 'ssbo_sprites glDeleteBuffers ) drop

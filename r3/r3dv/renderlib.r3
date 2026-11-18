@@ -603,12 +603,12 @@ void main() {
 ##rl_quad_vao 0  #rl_quad_vbo 0
 
 | UBOs
-#rl_ubo_matrices  0
-#rl_ubo_dirlight  0
+##rl_ubo_matrices  0
+##rl_ubo_dirlight  0
 ##rl_ubo_shadow    0		| ShadowU (binding 3): lightVP(64) ldir(16) sp(16) = 96 bytes
 ##rl_shadow_tex    0		| mapa de sombras (depth, compare LEQUAL) -> unidad 4
 ##rl_shadow_hook   0		| direccion de una palabra que se ejecuta al inicio de rl_frame_end (pase de sombras)
-#rl_ubo_plights   0
+##rl_ubo_plights   0
 
 | Shaders
 #rl_sh_light      0
@@ -843,11 +843,31 @@ void main() {
 ##camFar 200.0
 
 | ================================================================
+| Pasada forward (transparentes, rlforward.r3): dibuja sobre scene_tex (HDR)
+| con el depth del gbuffer, despues del light pass y antes del bloom.
+| rl_forward_hook = direccion de una palabra (0 = nada). Al ejecutarse ya estan
+| puestos el fbo (color = scene_tex, depth = depth del gbuffer) y el viewport.
+##rl_forward_hook 0
+#rl_fwd_fbo 0
+
+:rl_init_fwd
+	1 'rl_fwd_fbo glGenFramebuffers
+	GL_FRAMEBUFFER rl_fwd_fbo glBindFramebuffer
+	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D rl_scene_tex 0 glFramebufferTexture2D
+	GL_FRAMEBUFFER GL_DEPTH_ATTACHMENT  GL_TEXTURE_2D rl_gbuf_depth 0 glFramebufferTexture2D
+	GL_FRAMEBUFFER 0 glBindFramebuffer ;
+
+:rl_destroy_fwd
+	rl_fwd_fbo 1? ( 1 'rl_fwd_fbo glDeleteFramebuffers 0 'rl_fwd_fbo ! ) drop ;
+
+| ================================================================
 ::rl_resizewin | h w --   (se llama con: sh sw rl_resizewin)
     rl_w =? ( swap rl_h  =? ( 2drop ; ) swap ) 'rl_w ! 'rl_h !
     1 'camDirty !
+	rl_destroy_fwd
 	rl_destroy_bloom rl_destroy_ao rl_destroy_ldr rl_destroy_gbuffer  
 	rl_init_gbuffer rl_init_ao rl_init_ldr rl_init_bloom
+	rl_init_fwd
     ;
 
 | ================================================================
@@ -863,6 +883,7 @@ void main() {
 	0.4142 0.1 200.0 rl_set_projection
     rl_init_gbuffer
     rl_init_bloom
+    rl_init_fwd
     rl_init_ao
     rl_init_ldr
     rl_init_quad
@@ -901,6 +922,7 @@ void main() {
     rl_sh_aoblur     glDeleteProgram
     rl_sh_fxaa       glDeleteProgram
 
+    rl_destroy_fwd
     rl_destroy_gbuffer
     rl_destroy_bloom
     rl_destroy_ao
@@ -1117,6 +1139,18 @@ void main() {
 
 	| --- Light pass
 	lightpass
+
+	| --- Pasada forward (transparentes) sobre scene_tex, antes del bloom ---
+	rl_forward_hook 1? (
+		GL_FRAMEBUFFER rl_fwd_fbo glBindFramebuffer
+		0 0 rl_w rl_h glViewport
+		dup ex
+		rl_quad_vao glBindVertexArray
+		GL_DEPTH_TEST glDisable
+		GL_BLEND glDisable
+		GL_TRUE glDepthMask
+		GL_CULL_FACE glEnable
+		GL_TEXTURE0 glActiveTexture ) drop
 	
 	| --- Bloom bright extraction ---
 	bloompass
