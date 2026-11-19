@@ -1,15 +1,21 @@
-|MEM 64
-| VOXED - editor de voxeles ss3d (un objeto a la vez, 32 slots, color directo)
+|MEM 128
+| VOXED - editor de voxeles ss3d (un objeto a la vez, hasta 256 slots, color directo)
 | PHREDA 2026
 |
 | mouse: left = tool (click) | right drag = orbit | middle drag = pan | wheel = zoom
 | V F G = attach / erase / paint | 1 2 3 = voxel / line / box | X = cancel the first point
 | U = undo | W S = zoom, A D Q E = pan | F1 shadows | F2 SSAO | F3 color | F4 files | F5 tools
+| color: selector rimmcolor + paleta rapida (izquierdo elige, derecho guarda el color actual) + material
 |
 | modelo: nv x nv x nv voxeles (max 32: la mascara de capas es de 32 bits)
-| los 32 slots viven en ssmulti.r3 (comprimidos de a uno, color $RRGGBBuma por voxel, sin paleta);
-| el slot actual esta abierto (descomprimido) y se sube a la GPU con ssm_sync
+| los slots (hasta 256, como los frames de pixed.r3) viven en ssmulti.r3 (comprimidos de a uno, color
+| $RRGGBBuma por voxel, sin paleta); el slot actual esta abierto (descomprimido) y se sube con ssm_sync
 | sprites: 0 = cursor (1 voxel), 1 = barra de nv voxeles, 2.. = slots
+|
+| archivos (F4): carpeta de trabajo (media/ssv): los .ssv en la raiz, las subcarpetas son conjuntos de .vox
+|   .ssv = todos los slots, recortados al bounding box al grabar, + .txt con los nombres; Open reemplaza todo
+|   Save graba sobre el nombre actual (el anterior queda en .bak); pregunta antes de descartar cambios
+|   .vox = intercambio con MagicaVoxel, actua sobre el slot actual (Import / Export)
 
 ^r3/lib/rand.r3
 ^r3/lib/mem.r3
@@ -18,6 +24,8 @@
 ^r3/util/varanim.r3
 ^r3/rimm/rimmgl.r3
 ^r3/rimm/rimmwid.r3
+^r3/rimm/rimmcolor.r3
+^r3/rimm/rimmfile.r3
 
 ^./renderlib.r3
 ^./ss3d.r3
@@ -119,16 +127,21 @@
 | MODELO: 32 slots de nv x nv x nv voxeles con color directo, comprimidos de a uno (ssmulti.r3)
 #nv 32			| voxeles por lado (max 32)
 :nvox nv nv * nv * ;
-:npaln nvox 34 * ;			| tiras: peor caso sin compresion de los 34 sprites
+:npaln 4194304 ;				| capacidad de la tira de colores comprimida (256 slots, ~16K colores en promedio)
 
-#sused * 32 #snames * 1024 #slotcur
+#nslots 1					| cantidad de slots (1..256)
+#slotcur					| slot actual
+#snames * 8192				| nombre de cada slot (32 bytes)
+#sfresh * 256				| slot cargado de archivo: se centra al abrirlo por primera vez
+#modif 0					| hay cambios sin grabar
+#inview 0 #ccmod 0 #ppop 0		| mouse en la vista 3D / Ctrl apretado / popup abierto (rimm)
 :curspr slotcur 2 + ;		| sprite de ssmulti del slot actual
 #usnap						| copia para deshacer (ssm_snap)
 
 #vx #vy #vz					| voxel de trabajo (y hacia arriba)
-:vci | -- ci\t\t; columna del voxel (ssmulti usa 32 de ancho)
+:vci | -- ci		; columna del voxel (ssmulti usa 32 de ancho)
 	vx vz ssm_ci ;
-:vlayer | -- capa\t; la capa 0 es la de arriba
+:vlayer | -- capa	; la capa 0 es la de arriba
 	nv 1- vy - ;
 :vocc? | -- 0/bit
 	curspr vci vlayer ssm_vget ;
@@ -137,58 +150,42 @@
 :vcolset | color --
 	curspr vci vlayer ssm_vcol! ;
 
-|--- color actual: HSV + material, $RRGGBBuma (u rough 3b, m metal 3b, a glow 2b)
-#ch 60 #cs 255 #cv 255		| tono 0..359, saturacion y valor 0..255
+|--- color actual: RGB (selector rimmcolor) + material, $RRGGBBuma (u rough 3b, m metal 3b, a glow 2b)
+#ccol $ffff00				| $RRGGBB del selector
 #cmt 0 #crg 0 #cgl 0		| metal 0..7, rough 0..7, glow 0..3
-#curc $ffff0000				| color actual calculado una vez por cuadro
+#curc $ffff0000				| color completo calculado una vez por cuadro
 
 :rgb3 | r g b -- rgb
 	swap 8 << or swap 16 << or ;
 
-#h_s #h_v #h_f #h_r #h_p #h_q #h_t
-:hsv>rgb | h s v -- rgb\t\t; h 0..359 s v 0..255
-	'h_v ! 'h_s !
-	60 /mod 255 * 60 / 'h_f ! 'h_r !
-	h_v 255 h_s - * 255 / 'h_p !
-	h_v 255 h_s h_f * 255 / - * 255 / 'h_q !
-	h_v 255 h_s 255 h_f - * 255 / - * 255 / 'h_t !
-	h_r 0 =? ( drop h_v h_t h_p rgb3 ; )
-	1 =? ( drop h_q h_v h_p rgb3 ; )
-	2 =? ( drop h_p h_v h_t rgb3 ; )
-	3 =? ( drop h_p h_q h_v rgb3 ; )
-	4 =? ( drop h_t h_p h_v rgb3 ; )
-	drop h_v h_p h_q rgb3 ;
-
-:ccolor | -- color\t\t; evita el comodin $00000001 de la tira
-	ch cs cv hsv>rgb 8 << crg 5 << cmt 2 << or cgl or or
+:ccolor | -- color		; evita el comodin $00000001 de la tira
+	ccol $ffffff and 8 << crg 5 << cmt 2 << or cgl or or
 	1 =? ( drop 0 ) ;
 
-|--- muestras de color (solo referencia para elegir, no se guardan en el modelo)
-#swc * 1024
-#rw #hu #swi
-:swatchhsv | i -- h s v
-	'swi !
-	swi 16 <? ( drop 0 0 swi 17 * ; ) drop
-	swi 16 - 24 /mod swap 'rw ! 15 * 'hu !
-	rw 5 <? ( drop hu 255 255 rw 40 * - ; ) drop
-	hu 255 rw 4 - 40 * - 255 ;
-
-:swinit
-	0 ( 256 <? dup swatchhsv hsv>rgb over 2 << 'swc + d! 1+ ) drop ;
+|--- paleta rapida (como dev/pixed.r3): izquierdo elige, derecho guarda el color actual
+#qpal [
+$000000 $1D2B53 $7E2553 $008751 $AB5236 $5F574F $C2C3C7 $FFF1E8
+$FF004D $FFA300 $FFEC27 $00E436 $29ADFF $83769C $FF77A8 $FFCCAA
+$FFFFFF $DDDDDD $BBBBBB $999999 $777777 $555555 $333333 $111111
+$FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
+#pnb #ppb					| botones recien apretados / del cuadro anterior
 
 |--- deshacer (un nivel): copia del slot actual
-:pushundo
+:snap						| copia sin marcar cambios
 	curspr ssm_edit usnap ssm_snap ;
+:pushundo					| antes de modificar
+	snap 1 'modif ! ;
 :undo
-	usnap ssm_rest ;
+	usnap ssm_rest 1 'modif ! ;
 
 |--- memoria: sprites de ssmulti (0 = cursor, 1 = barra, 2.. = slots)
 :initmem
 	here 'usnap ! ssm_snapsz 'here +!
-	34 npaln ssm_ini
+	258 npaln ssm_ini
+	1 ssm_crop!					| al grabar, cada slot se recorta a su bounding box
 	1 1 1 ssm_add drop
 	1 nv 1 ssm_add drop
-	32 ( 1? 1- nv nv nv ssm_add drop ) drop
+	256 ( 1? 1- nv nv nv ssm_add drop ) drop
 	0 ssm_edit $ffffff00 0 0 0 0 0 0 ssm_fill
 	1 ssm_edit $ffffff00 0 0 0 0 0 nv 1- ssm_fill ;
 
@@ -403,36 +400,6 @@
 	1 'vpass ! here vfe parsevox
 	0 'aok ! ;
 
-|--- lista de archivos .vox
-#vpath "media/ssv/vox"
-#names * 65536
-#names>
-#list * 8192
-#nlist
-#fpage #fi 
-#fnm
-
-:isvox? | str -- str 1/0
-	count 4 <? ( drop 0 ; ) over + 4 - ".vox" =s ;
-
-:addname | ent --
-	nlist 1000 >=? ( 2drop ; ) drop
-	dup FDIR 1? ( 2drop ; ) drop
-	dup FSIZEF 16000000 >? ( 2drop ; ) drop
-	FNAME isvox? 0? ( 2drop ; ) drop
-	names> dup 'list nlist 3 << + ! strcpyl 'names> ! 1 'nlist +! ;
-
-:scanvox
-	0 'nlist ! 0 'fpage ! 'names 'names> !
-	'vpath
-|WIN|	"%s//*" sprint
-	ffirst ( 1? addname fnext ) drop ;
-
-:filepick
-	fi 3 << 'list + @ 'fnm !
-	fnm slotcur 5 << 'snames + strcpy
-	fnm 'vpath "%s/%s" sprint importvox ;
-
 |----------------------------------
 | geometria en el mundo: el objeto esta centrado en x z y apoyado en y=0
 #oscl 3.0		| escala (voxel = 0.01 * escala)
@@ -602,7 +569,7 @@
 	undo drawshape 0 'aok ! ;
 
 :viewmouse
-	immMouse
+	immMouse dup 'inview !
 	0 =? ( 0 'curok ! )
 	1 =? ( wheelcam pickhover )												| over
 	2 =? ( dnmouse sdlb 'pbtn ! pbtn 1 =? ( toolpress ) drop )				| in
@@ -668,30 +635,376 @@
 	axes ;
 
 |----------------------------------
-| archivos del slot: mem/voxedN.ssv (guardar, sin perdida) y mem/voxedN_c.ssv (exportar a ss3d, compresion maxima)
-:fslot | -- str
-	slotcur 1+ "mem/voxed%d.ssv" sprint ;
+| documento: .ssv (todos los slots) + .txt (nombres); carpeta de trabajo; slots dinamicos; .vox del slot
+#wpath * 1024			| carpeta de trabajo
+#fname * 256			| nombre del .ssv actual, sin carpeta ni extension ("" = sin nombre)
+#fbuf * 1024			| buffer de los dialogos
+#fp1 * 1024 #fp2 * 1024
+#fpend 0				| que hacer cuando se acepta el dialogo
+#ask 0					| accion que espera confirmacion (hay cambios sin grabar)
+#savecull 0				| grabar compacto: los voxeles ocultos pierden el color
+#umsg 0					| mensaje de estado
+#tbuf * 9000
+#tp #rdd #rdn #rc #le #cfn #cfd #dn #exs
+#spage 0 #gi #gp
 
-:savevxd
-	fslot curspr ssm_save1 ;
+:snameadr | n -- adr
+	5 << 'snames + ;
 
-:loadvxd
-	cancel pushundo
-	fslot curspr ssm_load1 1? ( nv nv nv curspr ssm_size! ) drop ;
+|--- cadenas y rutas
+:lslash | "str" -- adr/0		; ultimo / o \
+	0 'le !
+	( dup c@ 1?
+		$2f =? ( over 'le ! ) $5c =? ( over 'le ! )
+		drop 1+ ) 2drop le ;
 
-:exportssv
-	slotcur 1+ "mem/voxed%d_c.ssv" sprint curspr ssm_savec1 ;
+:basename | "path" -- "name"
+	dup lslash 0? ( drop ; ) nip 1+ ;
 
-:newmodel
-	pushundo curspr ssm_clear ;
+:stripx | adr --			; saca la ultima extension (.xxx)
+	0 'le !
+	( dup c@ 1?
+		$2e =? ( over 'le ! )
+		drop 1+ ) 2drop
+	le 1? ( dup 0 swap c! ) drop ;
+
+:cpyn | src dst max --	; copia acotada, con 0 final
+	'rdn ! 'rdd !
+	count rdn min 'rc !
+	rdd swap rc cmove
+	0 rdd rc + c! ;
+
+:setpath | "folder/name.ext" --	; wpath = carpeta, fname = nombre sin extension
+	dup lslash 0? ( drop "." 'wpath strcpy 'fname 255 cpyn 'fname stripx ; )
+	dup 1+ 'fname 255 cpyn
+	over - 'rc !
+	'wpath swap rc cmove
+	0 'wpath rc + c!
+	'fname stripx ;
+
+:ssvpath | -- str
+	'fname 'wpath "%s/%s.ssv" sprint ;
+:txtpath | -- str
+	'fname 'wpath "%s/%s.txt" sprint ;
+
+:copyfile | "src" "dst" --
+	'cfd !
+	here swap load here - 'cfn !
+	cfn 0? ( drop ; ) drop
+	here cfn cfd save ;
+
+:fsz | "file" -- bytes
+	here swap load here - ;
+
+:backup | "file" --		; el anterior queda en file.bak
+	dup "%s.bak" sprint copyfile ;
+
+|--- nombres de los slots (.txt: uno por linea)
+:tput | c --
+	tp c! 1 'tp +! ;
+:tstr | str --
+	( dup c@ 1? tput 1+ ) 2drop ;
+:tname | i -- str
+	dup snameadr dup c@ 1? ( drop nip ; ) 2drop
+	'fname c@ 0? ( drop "sprite_%d" sprint ; ) drop
+	'fname "%s_%d" sprint ;
+:writenames | "path" --
+	'tbuf 'tp !
+	0 ( nslots <? dup tname tstr 10 tput 1+ ) drop
+	'tbuf tp 'tbuf - rot save ;
+
+:rdline | dst --
+	'rdd ! 0 'rdn !
+	( tp c@ $ff and 'rc ! rc 1? drop
+		rc 10 =? ( drop 1 'tp +! 0 rdd rdn + c! ; ) drop
+		rc 13 <>? ( rdn 31 <? ( rc rdd rdn + c! 1 'rdn +! ) drop ) drop
+		1 'tp +! ) drop
+	0 rdd rdn + c! ;
+:ldnames | "path.txt" --
+	here swap load here - 'cfn !
+	'snames 0 8192 cfill
+	cfn 0? ( drop ; ) drop
+	0 here cfn + c!
+	here 'tp !
+	0 ( nslots <? dup snameadr rdline 1+ ) drop ;
+
+|--- slots: el actual esta abierto en ssmulti; los demas comprimidos
+#cb0 #cb1 #cb2 #cb3 #cb4 #cb5 #cbk
+:centerfresh			| slot cargado de archivo: contenido al centro del cubo y apoyado en el piso
+	slotcur 'sfresh + c@ 0? ( drop ; ) drop
+	0 slotcur 'sfresh + c!
+	curspr ssm_bbox 'cbk ! 'cb5 ! 'cb4 ! 'cb3 ! 'cb2 ! 'cb1 ! 'cb0 !
+	cbk 0? ( drop ; ) drop
+	nv cb3 cb0 - 1+ - 2/ cb0 - 'sdx !
+	cb5 nv - 1+ 'sdy !
+	nv cb4 cb1 - 1+ - 2/ cb1 - 'sdz !
+	sdx sdy or sdz or 0? ( drop ; ) drop
+	snap 'o_shift eachvox ;
+
+:slotopen | n --		; abre el slot n (sin preguntar)
+	'slotcur !
+	slotcur 5 >> 'spage !
+	curspr ssm_edit
+	centerfresh
+	snap ;
 
 :slotswitch | n --
-	dup slotcur =? ( 2drop ; ) drop
+	-? ( drop ; ) nslots >=? ( drop ; ) slotcur =? ( drop ; )
+	cancel slotopen ;
+
+:slotgap | p --		; hueco de slot en p: sprites, nombres y marcas corridos
+	'gp !
 	cancel
-	1 'sused slotcur + c!
-	'slotcur !
-	curspr ssm_edit
-	pushundo ;
+	gp 2 + ssm_ins
+	nslots ( gp >? dup 1- 'sfresh + c@ over 'sfresh + c!
+		dup snameadr over 1- snameadr 32 cmove
+		1- ) drop
+	gp snameadr 0 32 cfill
+	0 gp 'sfresh + c!
+	1 'nslots +!
+	nv nv nv gp 2 + ssm_size!
+	1 'modif ! ;
+
+:slotadd
+	nslots 256 >=? ( drop ; ) drop
+	slotcur 1+ dup slotgap slotopen ;
+
+:slotdup
+	nslots 256 >=? ( drop ; ) drop
+	slotcur 1+ slotgap
+	slotcur 3 + slotcur 2 + ssm_copy
+	slotcur 1+ snameadr slotcur snameadr 32 cmove
+	slotcur 1+ slotopen ;
+
+:slotdel
+	cancel
+	nslots 2 <? ( drop pushundo curspr ssm_clear ; ) drop
+	slotcur 2 + ssm_del
+	slotcur ( nslots 1- <? dup 1+ 'sfresh + c@ over 'sfresh + c!
+		dup snameadr over 1+ snameadr 32 cmove
+		1+ ) drop
+	nslots 1- snameadr 0 32 cfill
+	-1 'nslots +!
+	slotcur nslots 1- min slotopen
+	1 'modif ! ;
+
+:slotprev slotcur 1- slotswitch ;
+:slotnext slotcur 1+ slotswitch ;
+
+|--- documento nuevo / abrir / grabar
+:docclear
+	cancel ssm_close
+	nslots ( 1? 1- dup 2 + ssm_clear ) drop ssm_close
+	nslots ( 1? 1- nv nv nv pick3 2 + ssm_size! ) drop
+	1 'nslots ! 'snames 0 8192 cfill 'sfresh 0 256 cfill
+	0 'fname c!
+	0 slotopen
+	0 'modif ! 0 'ask ! 0 'umsg ! ;
+
+:docopen					| abre el .ssv de fbuf: reemplaza todo
+	cancel ssm_close
+	'fbuf 2 256 ssm_loadr 'dn !
+	dn 0? ( drop curspr ssm_edit "open failed" 'umsg ! ; ) drop
+	'fbuf setpath
+	dn 256 min 'nslots !
+	nslots ( 1? 1- nv nv nv pick3 2 + ssm_size! ) drop
+	'sfresh 0 256 cfill 'sfresh 1 nslots cfill
+	txtpath ldnames
+	0 slotopen
+	0 'modif ! 0 'ask ! "opened" 'umsg ! ;
+
+:savessv
+	savecull 1? ( drop 'fp1 2 nslots ssm_savecr ; ) drop
+	'fp1 2 nslots ssm_saver ;
+
+:suggest | -- str		; nombre propuesto para Save as
+	'fname c@ 0? ( drop 'wpath "%s/new.ssv" sprint ; ) drop
+	ssvpath ;
+
+:openpend | code mode --	; abre el dialogo de rimm; al aceptar se ejecuta fpend
+	swap 'fpend ! 'fbuf 1024 rot uiFileAsk ;
+
+:saveasdlg
+	suggest 'fbuf strcpy
+	"ssv" uiFileFilter
+	1 2 openpend ;
+
+:docsave
+	'fname c@ 0? ( drop saveasdlg ; ) drop
+	cancel ssm_clrerr
+	ssvpath 'fp1 strcpy
+	'fp1 backup
+	savessv
+	txtpath 'fp2 strcpy
+	'fp2 backup
+	'fp2 writenames
+	ssm_err 1? ( drop "ERROR: color strip full" 'umsg ! ; ) drop
+	'fp1 fsz 16 <? ( drop "ERROR: could not write the file" 'umsg ! ; ) drop
+	0 'modif ! "saved" 'umsg ! ;
+
+:opendlg
+	'wpath "%s/" sprint 'fbuf strcpy
+	"ssv" uiFileFilter
+	2 1 openpend ;
+
+:importdlg
+	'wpath "%s/" sprint 'fbuf strcpy
+	"vox" uiFileFilter
+	3 1 openpend ;
+
+:vname | -- str		; nombre propuesto para exportar
+	slotcur snameadr dup c@ 0? ( 2drop 'wpath "%s/sprite.vox" sprint ; ) drop
+	'wpath "%s/%s.vox" sprint ;
+
+:exportdlg
+	vname 'fbuf strcpy
+	"vox" uiFileFilter
+	4 2 openpend ;
+
+:ensext | ".ext" --		; fbuf termina en .ext
+	'exs ! 'fbuf exs =pos nip 1? ( drop ; ) drop
+	exs 'fbuf strcat ;
+
+|--- exportar .vox: el slot actual recortado a su bounding box; con mas de 255 colores se usan los 255
+|    mas frecuentes y el resto va al mas cercano en RGB; se pierde metal/rough/glow
+#xpath #xok #xb0 #xb1 #xb2 #xb3 #xb4 #xb5 #xn #xnd
+#xvx #xdc #xct #xmp #xht #xpal #xw #wp #xp
+#ez #exx #el #eci #xc #xi #xv #xk #xj #xbest #xbd #xr #xg #xbb #xdd
+
+:w1 | b --
+	wp c! 1 'wp +! ;
+:w4 | v --
+	wp d! 4 'wp +! ;
+
+:xfind | rgb -- idx		; indice del color distinto (lo agrega si no esta)
+	'xc !
+	xc 2654435761 * 16 >> $ffff and 'xi !
+	( xht xi 2 << + d@ 'xv ! xv 1? drop
+		xv 1- 2 << xdc + d@ xc =? ( drop xv 1- ; ) drop
+		xi 1+ $ffff and 'xi ! ) drop
+	xc xnd 2 << xdc + d!
+	0 xnd 2 << xct + d!
+	xnd 1+ xht xi 2 << + d!
+	xnd 1 'xnd +! ;
+
+:xcount | idx --
+	2 << xct + dup d@ 1+ swap d! ;
+
+:xvox1
+	ez 5 << exx + 'eci !
+	curspr eci el ssm_vget 0? ( drop ; ) drop
+	curspr eci el ssm_vcol@ $ffffffff and 8 >> $ffffff and xfind
+	dup xcount
+	xn 4 << xvx + 'xp !
+	exx xb0 - xp d!
+	xb4 ez - xp 4 + d!
+	xb5 el - xp 8 + d!
+	xp 12 + d!
+	1 'xn +! ;
+
+:xcollect
+	xht 0 262144 cfill
+	0 'xn ! 0 'xnd !
+	xb1 ( xb4 <=? dup 'ez !
+		xb0 ( xb3 <=? dup 'exx !
+			xb2 ( xb5 <=? dup 'el ! xvox1 1+ ) drop
+			1+ ) drop
+		1+ ) drop ;
+
+:xtop						| los 255 colores mas usados
+	0 ( 255 <? dup 'xk !
+		-1 'xbest ! -1 'xbd !
+		0 ( xnd <? dup 'xj !
+			xj 2 << xct + d@ 'xc !
+			xc xbd >? ( xj 'xbest ! xc 'xbd ! ) drop
+			1+ ) drop
+		xbest xk 2 << xpal + d!
+		xk 1+ xbest 2 << xmp + d!
+		-1 xbest 2 << xct + d!
+		1+ ) drop ;
+
+:xnear1 | j --			; el color j va al mas cercano de los elegidos
+	'xj !
+	xj 2 << xct + d@ -? ( drop ; ) drop
+	xj 2 << xdc + d@ 'xc !
+	xc 16 >> $ff and 'xr ! xc 8 >> $ff and 'xg ! xc $ff and 'xbb !
+	-1 'xbd ! 0 'xbest !
+	0 ( 255 <? dup 'xk !
+		xk 2 << xpal + d@ 2 << xdc + d@ 'xc !
+		xc 16 >> $ff and xr - dup *
+		xc 8 >> $ff and xg - dup * +
+		xc $ff and xbb - dup * + 'xdd !
+		xbd -? ( xdd 'xbd ! xk 'xbest ! ) drop
+		xdd xbd <? ( xdd 'xbd ! xk 'xbest ! ) drop
+		1+ ) drop
+	xbest 1+ xj 2 << xmp + d! ;
+
+:xpalette
+	xnd 255 >? ( drop xtop 0 ( xnd <? dup xnear1 1+ ) drop ; ) drop
+	0 ( xnd <? dup dup 1+ swap 2 << xmp + d! 1+ ) drop ;
+
+:palrgba | k -- v
+	'xk !
+	xk xnd 255 min >=? ( drop $ff000000 ; ) drop
+	xk 'xj !
+	xnd 255 >? ( xk 2 << xpal + d@ 'xj ! ) drop
+	xj 2 << xdc + d@ 'xc !
+	xc 16 >> $ff and
+	xc 8 >> $ff and 8 << or
+	xc $ff and 16 << or
+	$ff000000 or ;
+
+:xwrite
+	xw 'wp !
+	"VOX " d@ w4 150 w4
+	"MAIN" d@ w4 0 w4 xn 2 << 1076 + w4
+	"SIZE" d@ w4 12 w4 0 w4
+	xb3 xb0 - 1+ w4 xb4 xb1 - 1+ w4 xb5 xb2 - 1+ w4
+	"XYZI" d@ w4 xn 2 << 4 + w4 0 w4 xn w4
+	0 ( xn <?
+		dup 4 << xvx + 'xp !
+		xp d@ w1 xp 4 + d@ w1 xp 8 + d@ w1
+		xp 12 + d@ 2 << xmp + d@ w1
+		1+ ) drop
+	"RGBA" d@ w4 1024 w4 0 w4
+	0 ( 256 <? dup palrgba w4 1+ ) drop ;
+
+:expvox | "path" --
+	'xpath !
+	here dup 'xvx ! 524288 + dup 'xdc ! 131072 + dup 'xct ! 131072 +
+	dup 'xmp ! 131072 + dup 'xht ! 262144 + dup 'xpal ! 1024 + 'xw !
+	curspr ssm_bbox 'xok ! 'xb5 ! 'xb4 ! 'xb3 ! 'xb2 ! 'xb1 ! 'xb0 !
+	xok 0? ( drop "empty sprite" 'umsg ! ; ) drop
+	xcollect xpalette xwrite
+	xw wp xw - xpath save
+	"exported" 'umsg ! ;
+
+|--- importar .vox al slot actual (el nombre del slot pasa a ser el del archivo)
+:docimport
+	'fbuf importvox
+	'fbuf basename slotcur snameadr 31 cpyn
+	slotcur snameadr stripx ;
+
+|--- acciones que reemplazan el documento: preguntan si hay cambios sin grabar
+:doact | code --
+	1 =? ( drop docclear ; )
+	2 =? ( drop opendlg ; )
+	3 =? ( drop exit ; )
+	drop ;
+:guard | code --
+	modif 0? ( drop doact ; ) drop 'ask ! ;
+:gnew 1 guard ;
+:gopen 2 guard ;
+:gexit 3 guard ;
+:askyes ask doact 0 'ask ! ;
+:askno 0 'ask ! ;
+
+:dopend | el dialogo se acepto: el camino esta en fbuf
+	fpend 1 =? ( drop ".ssv" ensext 'fbuf setpath docsave 0 'fpend ! ; )
+	2 =? ( drop docopen 0 'fpend ! ; )
+	3 =? ( drop docimport 0 'fpend ! ; )
+	4 =? ( drop ".vox" ensext 'fbuf expvox 0 'fpend ! ; )
+	drop 0 'fpend ! ;
 
 |----------------------------------
 | interfaz (tamanos relativos al texto)
@@ -714,30 +1027,33 @@
 	'fcolor ! uiWinBox frect $ffffffff 'fcolor ! ;
 
 #ci
-:palpick				| muestra ci -> color actual
-	ci swatchhsv 'cv ! 'cs ! 'ch ! ;
+:qhit | n -- n		; click sobre la muestra: izquierdo elige, derecho guarda el color actual
+	uiPopup? 1? ( drop ; ) drop
+	pnb 5 and 0? ( drop ; ) drop
+	sdlx cx <? ( drop ; ) cx cw + >=? ( drop ; ) drop
+	sdly cy <? ( drop ; ) cy chx + >=? ( drop ; ) drop
+	pnb 1 and? ( drop dup 2 << 'qpal + d@ 'ccol ! ; ) drop
+	ccol $ffffff and over 2 << 'qpal + d! ;
 
-:palui
+:qpalui
 	1 1 uiPad
-	16 16 uiGrid
-	0 ( 256 <? dup 'ci !
-		uiZoneW 'palpick uiClk
-		'swc ci 2 << + d@ $ff000000 or 'fcolor ! uiFill
+	8 4 uiGrid
+	0 ( 32 <? dup 'ci !
+		'qpal over 2 << + d@ dup $ff000000 or 'fcolor ! uiFill
+		ccol $ffffff and =? ( $ffffffff 'fcolor ! uiRect ) drop
+		qhit
 		uiNext
 		1+ ) drop
 	4 4 uiPad ;
 
 :palpanel
 	uiPush
-	1.0 %cw uiN
-	palui
+	0.5 %cw uiN
+	qpalui
 	uiRest
-	curc 8 >> dup $ff000000 or 'fcolor !
-	"color #%h" sprint uiLabelC
 	$ffffffff 'fcolor !
-	"H" 0 359 'ch uiSlideriL
-	"S" 0 255 'cs uiSlideriL
-	"V" 0 255 'cv uiSlideriL
+	"left: pick / right: store" uiLabelC
+	'ccol uiColorH
 	"MATERIAL" uiLabelC
 	"metal" 0 7 'cmt uiSlideriL
 	"rough" 0 7 'crg uiSlideriL
@@ -766,48 +1082,51 @@
 	"INVERT" uiLabelC
 	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn ;
 
-:slotpick ci slotswitch ;
-
-:fprev fpage 1 - 0 max 'fpage ! ;
-:fnext fpage 1 + nlist 9 + 10 / 1- 0 max min 'fpage ! ;
-
-:filelist
-	nlist 0? ( drop "(no .vox)" uiLabelC ; ) drop
-	fpage 10 * 10 + nlist min
-	fpage 10 * ( over <? dup 'fi !
-		uiZone 'filepick uiClk
-		$ff203050 'fcolor ! uilFill $ffffffff 'fcolor !
-		dup 3 << 'list + @ uiLabel
-		1+ ) 2drop
-	'fprev "<" uiNBtn
-	fpage 1+ nlist 9 + 10 / "%d / %d" sprint uiTlabel
-	'fnext ">" uiNBtn uiLn ;
+#pgs
+:pgprev spage 1- 0 max 'spage ! ;
+:pgnext spage 1+ nslots 31 + 5 >> 1- min 'spage ! ;
 
 :slottxt | -- str
-	ci slotcur =? ( drop ci 1+ "[%d]" sprint ; ) drop
-	ci 'sused + c@ 1? ( drop ci 1+ "%d*" sprint ; ) drop ci 1+ "%d" sprint ;
+	gi slotcur =? ( drop gi 1+ "[%d]" sprint ; ) drop
+	gi 1+ "%d" sprint ;
+:slotpick gi slotswitch ;
+
+:slotgrid
+	8 4 uiGrid
+	0 ( 32 <? dup spage 5 << + 'gi !
+		gi nslots <? ( slottxt 'slotpick swap uiBtn ) drop
+		uiNext
+		1+ ) drop ;
+
+:docname | -- str
+	'fname c@ 0? ( drop modif 1? ( drop "(untitled) *" ; ) drop "(untitled)" ; ) drop
+	modif 1? ( drop 'fname "%s *" sprint ; ) drop 'fname ;
 
 :filepanel
 	uiPush
 	0.5 %cw uiN
-	8 4 uiGrid
-	0 ( 32 <? dup 'ci !
-		slottxt 'slotpick swap uiBtn
-		uiNext
-		1+ ) drop
+	slotgrid
 	uiRest
 	$ffffffff 'fcolor !
-	'snames slotcur 5 << + slotcur 1+ "slot %d  %s" sprint uiLabelC
-	'savevxd "Save" uiNBtn 'loadvxd "Load" uiNBtn 'exportssv "Export .ssv" uiNBtn uiLn
-	'newmodel "Clear" uiNBtn uiLn
-	"VOX FILES" uiLabelC
-	'vpath uiLabelC
-	'scanvox "Scan" uiNBtn uiLn
-	filelist
+	'pgprev "<" uiNBtn
+	nslots 31 + 5 >> spage 1+ nslots slotcur 1+ "sprite %d/%d  page %d/%d" sprint uiTlabel
+	'pgnext ">" uiNBtn uiLn
+	'slotadd "Add" uiNBtn 'slotdup "Copy" uiNBtn 'slotdel "Del" uiNBtn uiLn
+	slotcur snameadr 31 uiInputLine
+	ask 1? ( "Unsaved changes. Discard?" uiLabelC 'askyes "Yes" uiNBtn 'askno "No" uiNBtn uiLn ) drop
+	"- SSV -" uiLabelC
+	docname uiLabelC
+	'wpath uiLabelC
+	'gnew "New" uiNBtn 'gopen "Open" uiNBtn 'docsave "Save" uiNBtn 'saveasdlg "Save as" uiNBtn uiLn
+	'savecull "compact" uiToggle
+	"- VOX (this sprite) -" uiLabelC
+	'importdlg "Import" uiNBtn 'exportdlg "Export" uiNBtn uiLn
+	umsg 1? ( umsg uiLabelC ) drop
+	ssm_err 1? ( "ERROR: color strip full" uiLabelC ) drop
 	uiPop ;
 
 :topbar
-	'exit "Exit" uiNBtn
+	'gexit "Exit" uiNBtn
 	'undokey "Undo" uiNBtn
 	'tgT "Tools" uiNBtn
 	'tgV "View" uiNBtn
@@ -850,27 +1169,40 @@
 	viewmouse ;
 
 #shadowlast 1
+:kk | -- 1/0		; teclas de letra: solo en la vista 3D, sin popup ni Ctrl
+	ppop 1? ( drop 0 ; ) drop
+	ccmod 1? ( drop 0 ; ) drop
+	inview ;
+
 :hud
 	fini
+	sdlb ppb nand 'pnb !
 	uiStart 4 4 uiPad immFull
 	interface
+	uiPopup? 'ppop !
 	uiEnd
+	sdlb 'ppb !
 	fend
+	uiFileDone? 1? ( dopend ) drop
 
 	shadowon shadowlast <>? ( shadowon 'shadowlast ! shadowon ss3dshadow! ) drop
 
 	sdlkey
-	>esc< =? ( exit )
-	<w> =? ( -0.03 'va ! ) >w< =? ( 0 'va ! )
-	<s> =? ( 0.03 'va ! ) >s< =? ( 0 'va ! )
-	<a> =? ( 0.02 'vl ! ) >a< =? ( 0 'vl ! )
-	<d> =? ( -0.02 'vl ! ) >d< =? ( 0 'vl ! )
-	<q> =? ( 0.02 'vu ! ) >q< =? ( 0 'vu ! )
-	<e> =? ( -0.02 'vu ! ) >e< =? ( 0 'vu ! )
-	<v> =? ( 0 'bmode ! ) <f> =? ( 1 'bmode ! ) <g> =? ( 2 'bmode ! )
-	<1> =? ( 0 'bshape ! cancel ) <2> =? ( 1 'bshape ! cancel ) <3> =? ( 2 'bshape ! cancel )
-	<x> =? ( cancel )
-	<u> =? ( undokey )
+	<ctrl> =? ( 1 'ccmod ! ) <ctr2> =? ( 1 'ccmod ! )
+	>ctrl< =? ( 0 'ccmod ! ) >ctr2< =? ( 0 'ccmod ! )
+	>esc< =? ( ppop 0? ( 3 guard ) drop )
+	<s> =? ( ccmod 1? ( docsave ) drop ) <o> =? ( ccmod 1? ( 2 guard ) drop ) <n> =? ( ccmod 1? ( 1 guard ) drop )
+	<le> =? ( kk 1? ( slotprev ) drop ) <ri> =? ( kk 1? ( slotnext ) drop )
+	<w> =? ( kk 1? ( -0.03 'va ! ) drop ) >w< =? ( 0 'va ! )
+	<s> =? ( kk 1? ( 0.03 'va ! ) drop ) >s< =? ( 0 'va ! )
+	<a> =? ( kk 1? ( 0.02 'vl ! ) drop ) >a< =? ( 0 'vl ! )
+	<d> =? ( kk 1? ( -0.02 'vl ! ) drop ) >d< =? ( 0 'vl ! )
+	<q> =? ( kk 1? ( 0.02 'vu ! ) drop ) >q< =? ( 0 'vu ! )
+	<e> =? ( kk 1? ( -0.02 'vu ! ) drop ) >e< =? ( 0 'vu ! )
+	<v> =? ( kk 1? ( 0 'bmode ! ) drop ) <f> =? ( kk 1? ( 1 'bmode ! ) drop ) <g> =? ( kk 1? ( 2 'bmode ! ) drop )
+	<1> =? ( kk 1? ( 0 'bshape ! cancel ) drop ) <2> =? ( kk 1? ( 1 'bshape ! cancel ) drop ) <3> =? ( kk 1? ( 2 'bshape ! cancel ) drop )
+	<x> =? ( kk 1? ( cancel ) drop )
+	<u> =? ( kk 1? ( undokey ) drop ) <z> =? ( ccmod 1? ( undokey ) drop )
 	<f1> =? ( shadowon 1 xor 'shadowon ! )
 	<f2> =? ( rl_ao_on 1 xor 'rl_ao_on ! )
 	<f3> =? ( tgP ) <f4> =? ( tgF ) <f5> =? ( tgT )
@@ -898,16 +1230,15 @@
 	0 0 0 1.0 packq 'qid !
 	0 0 0.7071 0.7071 packq 'qzz !
 	0.7071 0 0 0.7071 packq 'qxx !
+	"media/ssv" 'wpath strcpy
 	initmem
 	ccolor 'curc !
 	nv 2/ 'vx ! 0 'vy ! nv 2/ 'vz !
 	curspr ssm_edit
 	applycell 				| un voxel inicial (attach, color actual)
-	1 'sused c!
-	scanvox
 	ssm_image
 	16 ss3dmem
-	pushundo ;
+	snap 0 'modif ! ;
 
 : | <<<<<<<< Boot
 	"VOXED" 1280 768 GLini GLInfo

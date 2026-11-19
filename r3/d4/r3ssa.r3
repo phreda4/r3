@@ -26,6 +26,7 @@
 #no 0			| operations
 #nv 0			| virtual registers
 #po 0
+#vej * 8192			| entry cell of the virtual register ( -1 = not an entry cell )
 
 |--- virtual stack
 #vs * 4096
@@ -51,7 +52,7 @@
 	1 'no +! ;
 
 :newv | -- v
-	nv dup 1+ 'nv ! ;
+	nv dup 1+ 'nv ! -1 over 3 << 'vej + ! ;
 
 :cadd | kind val -- o
 	nc 3 << 'cv + ! nc 3 << 'ck + !
@@ -74,7 +75,7 @@
 
 |--- begin
 ::ssa.begin | --
-	0 'no ! 1 'nv ! 0 'vn ! 0 'ek ! 0 'maxvn ! 0 'nc !
+	0 'no ! 1 'nv ! 0 'vn ! 0 'ek ! 0 'maxvn ! 0 'nc ! -1 'vej !
 	1 0 0 0 0 addop ;		| v0 = rax of the entry
 
 |--- virtual stack
@@ -85,7 +86,7 @@
 #tv
 :ent | -- o ; the next entry cell
 	ek 0? ( drop 1 'ek ! 0 ; ) drop
-	newv 'tv ! 3 0 0 tv ek addop
+	newv 'tv ! ek tv 3 << 'vej + ! 3 0 0 tv ek addop
 	1 'ek +! tv ;
 
 :vins | o -- ; at the bottom
@@ -126,9 +127,10 @@
 :,nm | n --
 	dup 32 << 32 >> <>? ( "$" ,s ,h ; ) ,d ;
 
-:,lbl | v -- ; class<<32 | index
+:,lbl | v -- ; offset<<40 | class<<32 | index
 	dup 32 >>> $3 and "wsl" + c@ ,c
-	$ffffffff and ,h ;
+	dup $ffffffff and ,h
+	40 >> 0? ( drop ; ) +? ( $2b ,c ) ,d ;
 
 :,cst | o -- ; the constant
 	dup ckind 0? ( drop cval ,nm ; ) drop
@@ -262,8 +264,44 @@
 	+? ( ib "add rbp," ,s ,d ins ; )
 	neg ib "sub rbp," ,s ,d ins ;
 
+:divreg | op -- r
+	16 =? ( drop 0 ; ) drop 2 ;
+:e.div | i -- ; 16 / , 17 mod
+	'ti !
+	ti gA 0 ldo ti gB 1 ldo
+	"cqo" i1 "idiv rcx" i1
+	ti gO divreg ti gD stv ;
+:e.idm | i --
+	'ti !
+	ti gA 0 ldo ti gB 1 ldo
+	"cqo" i1 "idiv rcx" i1
+	0 ti gD stv 2 ti gX stv ;
+:e.muldiv | i --
+	'ti !
+	ti gA 0 ldo ti gB 1 ldo
+	"imul rcx" i1
+	ti gX 1 ldo "idiv rcx" i1
+	0 ti gD stv ;
+:e.shldiv | i --
+	'ti !
+	ti gX 1 ldo ti gA 0 ldo
+	"cqo" i1 "shld rdx,rax,cl" i1 "shl rax,cl" i1
+	ti gB 1 ldo "idiv rcx" i1
+	0 ti gD stv ;
+:,mulshr | c --
+	0 =? ( drop ; )
+	64 <? ( ib "shrd rax,rdx," ,s ,d ins ; )
+	64 - ib "sar rdx," ,s ,d ins "mov rax,rdx" i1 ;
+:e.mulshr | i --
+	'ti !
+	ti gA 0 ldo ti gB 1 ldo
+	"imul rcx" i1 ti gX ,mulshr
+	0 ti gD stv ;
+
 :emitop | i --
 	dup gO
+	16 =? ( drop e.div ; ) 17 =? ( drop e.div ; ) 18 =? ( drop e.idm ; )
+	19 =? ( drop e.muldiv ; ) 20 =? ( drop e.shldiv ; ) 21 =? ( drop e.mulshr ; )
 	1 =? ( drop e.ent0 ; )
 	2 =? ( drop e.li ; )
 	3 =? ( drop e.entm ; )
@@ -285,13 +323,20 @@
 | END OF THE BLOCK : the canonical stack
 |---------------------------------------------------------------
 #adj
+:selfst? | i -- f ; the cell is the entry cell that is in this place
+	dup 3 << 'vs + @
+	0 <? ( 2drop 0 ; )
+	3 << 'vej + @
+	1 <? ( 2drop 0 ; )
+	over 1+ ek - + 0 =? ( 2drop 1 ; ) 2drop 0 ;
+:stc1 | i -- ; store the cell
+	11 over 3 << 'vs + @ 0 0 pick4 2 + ek - 3 << addop drop ;
+
 :epilogue | -- ; the stack is made canonical
 	0 'adj !
 	vn 0? ( ek 0? ( 2drop 12 0 0 0 0 addop ; ) drop 1 need ) drop
 	ek 0? ( 0 vins 1 'ek ! ) drop
-	0 ( vn 1- <? 
-		11 over 3 << 'vs + @ 0 0 pick4 2 + ek - 3 << addop
-		1+ ) drop
+	0 ( vn 1- <? dup selfst? 0? ( over stc1 ) drop 1+ ) drop
 	12 vn 1- 3 << 'vs + @ 0 0 0 addop
 	vn ek - 3 << 'adj ! ;
 
@@ -451,6 +496,109 @@
 :rB | -- b
 	ti gB ;
 
+|--- fixed registers
+#fixm 0
+#mc 0
+:fixedreg? | r -- f
+	fixm swap >> 1 and ;
+
+:claim | r -- ; the register is used by the operation
+	dup rv@ -1 <>? ( over evict ) drop lock ;
+
+#cd #cf #lc
+:outreg | d F -- ; the result d is made in the fixed register F
+	'cf ! 'cd !
+	cd vl@ 'lc !
+	lc -1 =? ( drop cf claim ; ) drop
+	lc cf =? ( drop -1 cd vl! -1 cf rv! cf lock ; ) drop
+	lc 0 >=? ( lc fixedreg? 1? ( lc evict -2 'lc ! ) drop ) drop
+	cf claim
+	lc 0 >=? ( drop lc cf mvr -1 lc rv! -1 cd vl! ; ) drop
+	cf cd slotof stsl -1 cd vl! ;
+
+#io #iF
+:infix | o F -- ; the operand in the fixed register F at the begin
+	'iF ! 'io !
+	iF claim
+	io isc 1? ( drop iF io pq.ci ; ) drop
+	io vl@
+	-1 =? ( drop io iF bind ; )
+	-2 =? ( drop iF io slotof pq.ld ; )
+	iF swap pq.mv ;
+
+:dead? | v -- f
+	vl@ -1 =? ( drop 1 ; ) drop 0 ;
+
+:divF | op -- r
+	16 =? ( drop 0 ; ) drop 2 ;
+
+:r.div | i -- ; 16 / , 17 mod
+	'ti !
+	ti gD dead? 1? ( drop ; ) drop
+	5 'fixm !
+	ti gD ti gO divF outreg
+	0 claim 2 claim
+	rA 0 infix
+	rB srcreg 'xb !
+	ib "idiv " ,s xb ,reg rins
+	ib "cqo" ,s rins
+	pqflush ;
+
+:r.idm | i -- ; /mod
+	'ti !
+	ti gD dead? 1? ( drop ti gX dead? 1? ( drop ; ) ) drop
+	5 'fixm !
+	ti gD 0 outreg ti gX 2 outreg
+	0 claim 2 claim
+	rA 0 infix
+	rB srcreg 'xb !
+	ib "idiv " ,s xb ,reg rins
+	ib "cqo" ,s rins
+	pqflush ;
+
+:r.muldiv | i -- ; a*b/c
+	'ti !
+	ti gD dead? 1? ( drop ; ) drop
+	5 'fixm !
+	ti gD 0 outreg
+	0 claim 2 claim
+	rA 0 infix
+	rB srcreg 'xb !
+	ti gX srcreg 'xc !
+	ib "idiv " ,s xc ,reg rins
+	ib "imul " ,s xb ,reg rins
+	pqflush ;
+
+:r.shldiv | i -- ; (a<<c)/b
+	'ti !
+	ti gD dead? 1? ( drop ; ) drop
+	7 'fixm !
+	ti gD 0 outreg
+	0 claim 1 claim 2 claim
+	rA 0 infix
+	ti gX 1 infix
+	rB srcreg 'xb !
+	ib "idiv " ,s xb ,reg rins
+	ib "shl rax,cl" ,s rins
+	ib "shld rdx,rax,cl" ,s rins
+	ib "cqo" ,s rins
+	pqflush ;
+
+:r.mulshr | i -- ; (a*b)>>c
+	'ti !
+	ti gD dead? 1? ( drop ; ) drop
+	5 'fixm !
+	ti gX 'mc !
+	ti gD 0 outreg
+	0 claim 2 claim
+	rA 0 infix
+	rB srcreg 'xb !
+	mc 0 >? ( mc 64 <? ( ib "shrd rax,rdx," ,s mc ,d rins ) drop ) drop
+	mc 63 >? ( ib "mov rax,rdx" ,s rins ib "sar rdx," ,s mc 64 - ,d rins ) drop
+	ib "imul " ,s xb ,reg rins
+	pqflush ;
+
+
 :r.ent0 | i --
 	gD 'dd !
 	dd vl@
@@ -485,10 +633,17 @@
 	ib ti gX 'bmn nth ,s " " ,s xd ,reg "," ,s xb ,reg rins
 	rA xd srcA2 pqflush ;
 
-:r.shf | i -- ; the count is a constant
-	'ti ! ti gD dstreg 'xd !
-	xd 0 <? ( drop ; ) drop
-	ib ti gX 'smn nth ,s " " ,s xd ,reg "," ,s rB cval 63 and ,d rins
+:r.shf | i -- ; the count is a constant or a register ( cl )
+	'ti !
+	ti gD dead? 1? ( drop ; ) drop
+	rB cnum? 1? ( drop
+		ti gD dstreg 'xd !
+		ib ti gX 'smn nth ,s " " ,s xd ,reg "," ,s rB cval 63 and ,d rins
+		rA xd srcA2 pqflush ; ) drop
+	1 claim
+	ti gD dstreg 'xd !
+	rB 1 infix
+	ib ti gX 'smn nth ,s " " ,s xd ,reg ",cl" ,s rins
 	rA xd srcA2 pqflush ;
 
 #rt2
@@ -582,6 +737,44 @@
 	+? ( ib "add rbp," ,s ,d rins ; )
 	neg ib "sub rbp," ,s ,d rins ;
 
+:,ar | x --
+	$ff and 14 =? ( drop "r14" ,s ; ) drop "r15" ,s ;
+
+:r.awrite | i --
+	'ti !
+	rA isc 1? ( drop ib "mov " ,s ti gX ,ar "," ,s rA ,cst rins ; ) drop
+	rA usereg 'xb !
+	ib "mov " ,s ti gX ,ar "," ,s xb ,reg rins pqflush ;
+
+:r.aadd | i --
+	'ti !
+	rA imm? 1? ( drop ib "add " ,s ti gX ,ar "," ,s rA ,cst rins ; ) drop
+	rA srcreg 'xb !
+	ib "add " ,s ti gX ,ar "," ,s xb ,reg rins pqflush ;
+
+:r.aread | i --
+	'ti ! ti gD dstreg 'xd !
+	xd 0 <? ( drop ; ) drop
+	ib "mov " ,s xd ,reg "," ,s ti gX ,ar rins ;
+
+#asz #ainc
+:r.ald | i --
+	'ti !
+	ti gX 8 >> $ff and 'asz ! ti gX 16 >> $ff and 'ainc !
+	ainc 1? ( ib "add " ,s ti gX ,ar "," ,s asz ,d rins ) drop
+	ti gD dstreg 'xd !
+	xd 0 <? ( drop ; ) drop
+	ib asz ,ldm " " ,s xd ,reg "," ,s asz ,szn "[" ,s ti gX ,ar "]" ,s rins ;
+
+:r.ast | i --
+	'ti !
+	ti gX 8 >> $ff and 'asz ! ti gX 16 >> $ff and 'ainc !
+	ainc 1? ( ib "add " ,s ti gX ,ar "," ,s asz ,d rins ) drop
+	rA imm? 1? ( drop
+		ib "mov " ,s asz ,szn "[" ,s ti gX ,ar "]," ,s rA asz ,immw rins ; ) drop
+	rA srcreg 'xc !
+	ib "mov " ,s asz ,szn "[" ,s ti gX ,ar "]," ,s xc asz ,regw rins pqflush ;
+
 :ropx | i -- ; one operation
 	dup gO
 	1 =? ( drop r.ent0 ; ) 2 =? ( drop r.li ; ) 3 =? ( drop r.entm ; )
@@ -589,6 +782,10 @@
 	7 =? ( drop r.ld ; ) 8 =? ( drop r.st ; ) 9 =? ( drop r.st ; )
 	10 =? ( drop r.ldv ; ) 11 =? ( drop r.stc ; ) 12 =? ( drop r.movax ; )
 	13 =? ( drop r.cmpj ; ) 14 =? ( drop r.addrbp ; ) 15 =? ( drop r.jcc ; )
+	16 =? ( drop r.div ; ) 17 =? ( drop r.div ; ) 18 =? ( drop r.idm ; )
+	19 =? ( drop r.muldiv ; ) 20 =? ( drop r.shldiv ; ) 21 =? ( drop r.mulshr ; )
+	24 =? ( drop r.awrite ; ) 25 =? ( drop r.aread ; ) 26 =? ( drop r.aadd ; )
+	27 =? ( drop r.ald ; ) 28 =? ( drop r.ast ; )
 	2drop ;
 
 :rop | i --
@@ -672,9 +869,31 @@
 	ao cnum? 0? ( ; ) drop
 	bo cnum? ;
 
+:islbl? | o -- f
+	dup isc 0? ( nip ; ) drop ckind 1 =? ( drop 1 ; ) drop 0 ;
+:fit24? | n -- f
+	dup 40 << 40 >> - 0? ( drop 1 ; ) drop 0 ;
+:calc | a b x -- r
+	0 =? ( drop + ; ) 1 =? ( drop - ; ) 2 =? ( drop and ; ) 3 =? ( drop or ; ) 4 =? ( drop xor ; )
+	drop * ;
+:sh | a c x -- r
+	0 =? ( drop << ; ) 1 =? ( drop >> ; ) drop >>> ;
+:un1 | a x -- r
+	0 =? ( drop not ; ) 1 =? ( drop neg ; ) drop abs ;
+:foldbin | -- f ; the constants are made now
+	ao cnum? bo cnum? and 1? ( drop ao cval bo cval tx calc ncst 1 ; ) drop
+	tx 1 >? ( drop 0 ; ) drop
+	ao islbl? bo cnum? and 1? ( drop
+		bo cval tx 1 =? ( drop neg tx ) drop
+		dup fit24? 1? ( drop 40 << ao cval + lcst 1 ; ) 2drop 0 ; ) drop
+	tx 0 =? ( drop ao cnum? bo islbl? and 1? ( drop
+		ao cval dup fit24? 1? ( drop 40 << bo cval + lcst 1 ; ) 2drop 0 ; ) drop 0 ; ) 
+	drop 0 ;
+
 :bin | x -- f
 	'tx !
 	vpop 'bo ! vpop 'ao !
+	foldbin 1? ( ; ) drop
 	newv 'dv ! 4 ao bo dv tx addop dv vpush 1 ;
 :s.add 0 bin ;
 :s.sub 1 bin ;
@@ -684,9 +903,10 @@
 :s.mul 5 bin ;
 
 :shf | x -- f
-	0 vtop cnum? 0? ( 2drop 0 ; ) drop
 	'tx !
 	vpop 'bo ! vpop 'ao !
+	ao cnum? bo cnum? and 1? ( drop
+		ao cval bo cval 63 and tx sh ncst 1 ; ) drop
 	newv 'dv ! 5 ao bo dv tx addop dv vpush 1 ;
 :s.shl 0 shf ;
 :s.sar 1 shf ;
@@ -695,10 +915,31 @@
 :un | x -- f
 	'tx !
 	vpop 'ao !
+	ao cnum? 1? ( drop ao cval tx un1 ncst 1 ; ) drop
 	newv 'dv ! 6 ao 0 dv tx addop dv vpush 1 ;
 :s.not 0 un ;
 :s.neg 1 un ;
 :s.abs 2 un ;
+
+|--- division and multiplication ( fixed registers : rax rdx rcx )
+:s.div | -- f
+	vpop 'bo ! vpop 'ao ! newv 'dv ! 16 ao bo dv 0 addop dv vpush 1 ;
+:s.mod | -- f
+	vpop 'bo ! vpop 'ao ! newv 'dv ! 17 ao bo dv 0 addop dv vpush 1 ;
+#dq
+:s.divmod | -- f
+	vpop 'bo ! vpop 'ao ! newv 'dq ! newv 'dv !
+	18 ao bo dq dv addop dq vpush dv vpush 1 ;
+:s.muldiv | -- f ; a b c -- a*b/c
+	vpop 'tx ! vpop 'bo ! vpop 'ao ! newv 'dv !
+	19 ao bo dv tx addop dv vpush 1 ;
+:s.shldiv | -- f ; a b c -- (a<<c)/b
+	vpop 'tx ! vpop 'bo ! vpop 'ao ! newv 'dv !
+	20 ao bo dv tx addop dv vpush 1 ;
+:s.mulshr | -- f ; a b c -- (a*b)>>c  , c is a constant
+	0 vtop cnum? 0? ( drop 0 ; ) drop
+	vpop cval 'tx ! vpop 'bo ! vpop 'ao ! newv 'dv !
+	21 ao bo dv tx addop dv vpush 1 ;
 
 |--- memory
 :load | size -- f
@@ -723,6 +964,55 @@
 :s.ad2 9 2 store ;
 :s.ad4 9 4 store ;
 
+|--- @+ !+ : a load or a store and an add of the address
+:ldi | size -- f
+	'tx ! vpop 'ao !
+	newv 'dv ! 7 ao 0 dv tx addop
+	newv 'dq ! 4 ao 0 tx cadd dq 0 addop
+	dq vpush dv vpush 1 ;
+:s.fq+ 8 ldi ;
+:s.fb+ 1 ldi ;
+:s.fw+ 2 ldi ;
+:s.fd+ 4 ldi ;
+
+:sti | size -- f
+	'tx ! vpop 'ao ! vpop 'bo !
+	8 ao bo 0 tx addop
+	newv 'dq ! 4 ao 0 tx cadd dq 0 addop
+	dq vpush 1 ;
+:s.st8+ 8 sti ;
+:s.st1+ 1 sti ;
+:s.st2+ 2 sti ;
+:s.st4+ 4 sti ;
+
+|--- the registers A ( r14 ) and B ( r15 ) : 24 AWRITE 25 AREAD 26 AADD 27 ALD 28 AST
+:abk | -- k ; 0 >A 1 A> 2 A+ 3 A@ 4 A! 5 A@+ 6 A!+ 7 CA@ 8 CA! 9 CA@+ 10 CA!+ 11 DA@ 12 DA! 13 DA@+ 14 DA!+
+	ctk $ff and 86 - 15 >=? ( 15 - ) ;
+:abr | -- r
+	ctk $ff and 101 <? ( drop 14 ; ) drop 15 ;
+:abx | size inc -- x
+	16 << swap 8 << or abr or ;
+
+:s.ab | -- f
+	ssra 0? ( ; ) drop
+	abk
+	0 =? ( drop vpop 'ao ! 24 ao 0 0 abr addop 1 ; )
+	1 =? ( drop newv 'dv ! 25 0 0 dv abr addop dv vpush 1 ; )
+	2 =? ( drop vpop 'ao ! 26 ao 0 0 abr addop 1 ; )
+	3 =? ( drop 8 0 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	5 =? ( drop 8 1 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	7 =? ( drop 1 0 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	9 =? ( drop 1 1 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	11 =? ( drop 4 0 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	13 =? ( drop 4 1 abx 'tx ! newv 'dv ! 27 0 0 dv tx addop dv vpush 1 ; )
+	4 =? ( drop 8 0 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	6 =? ( drop 8 1 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	8 =? ( drop 1 0 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	10 =? ( drop 1 1 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	12 =? ( drop 4 0 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	14 =? ( drop 4 1 abx 'tx ! vpop 'ao ! 28 ao 0 0 tx addop 1 ; )
+	drop 0 ;
+
 |--- conditions : the block ends with the jump
 :cond1 | -- f
 	0 vtop 'ja ! 0 'jb !
@@ -732,23 +1022,21 @@
 	ctk $ff and flushj 1 ;
 
 #sw
-'s.l0 's.l1 's.no 's.l3 's.l4 's.l3 's.l6 		| 0..6
-'s.no 's.no 's.no 's.no 's.no 's.no 		| ; ( ) [ ] EX
-'cond1 'cond1 'cond1 'cond1 					| 0? 1? +? -?
-'cond2 'cond2 'cond2 'cond2 'cond2 'cond2 'cond2 'cond2 's.no | < > = >= <= <> AND? NAND? IN?
-'s.dup 's.drop 's.over 's.pick2 's.pick3 's.pick4 's.swap 's.nip
-'s.rot 's.-rot 's.2dup 's.2drop 's.3drop 's.4drop 's.2over 's.2swap
-'s.no 's.no 's.no 's.and 's.or 's.xor 's.no 's.add 's.sub 's.mul 's.no 's.shl 's.sar 's.shr
-'s.no 's.no 's.no 's.no 's.no 's.not 's.neg 's.abs 's.no 's.no
-'s.fq 's.fb 's.fw 's.fd 's.no 's.no 's.no 's.no
-'s.st8 's.st1 's.st2 's.st4 's.no 's.no 's.no 's.no
-'s.ad8 's.ad1 's.ad2 's.ad4
-'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 
-'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 
-'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 
-'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 
-'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 
-'s.no 's.no 's.no 's.no 's.no
+'s.l0 's.l1 's.no 's.l3 's.l4 's.l3 's.l6 's.no 's.no 's.no
+'s.no 's.no 's.no 'cond1 'cond1 'cond1 'cond1 'cond2 'cond2 'cond2
+'cond2 'cond2 'cond2 'cond2 'cond2 's.no 's.dup 's.drop 's.over 's.pick2
+'s.pick3 's.pick4 's.swap 's.nip 's.rot 's.-rot 's.2dup 's.2drop 's.3drop 's.4drop
+'s.2over 's.2swap 's.no 's.no 's.no 's.and 's.or 's.xor 's.no 's.add
+'s.sub 's.mul 's.div 's.shl 's.sar 's.shr 's.mod 's.divmod 's.muldiv 's.mulshr
+'s.shldiv 's.not 's.neg 's.abs 's.no 's.no 's.fq 's.fb 's.fw 's.fd
+'s.fq+ 's.fb+ 's.fw+ 's.fd+ 's.st8 's.st1 's.st2 's.st4 's.st8+ 's.st1+
+'s.st2+ 's.st4+ 's.ad8 's.ad1 's.ad2 's.ad4 's.ab 's.ab 's.ab 's.ab
+'s.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab
+'s.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.ab
+'s.ab 's.ab 's.ab 's.ab 's.ab 's.ab 's.no 's.no 's.no 's.no
+'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no
+'s.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no 's.no
+'s.no
 
 ::ssa.tok | tok -- f ; 1 = the token is in the block
 	no 800 >? ( ssa.flush ) drop

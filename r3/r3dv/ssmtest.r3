@@ -357,8 +357,115 @@
 	"/tmp/t_g.ssv" fsize "/tmp/t_f.ssv" fsize fname fsize fname
 	"%s orig=%d save=%d savec=%d" sprint .println ;
 
+|---- bbox, recorte al grabar, rangos, insertar y sacar
+#rb0 #rb1 #rb2 #rb3 #rb4 #rb5 #rbn #rbx #rbz #rbl #refT
+#lb0 #lb1 #lb2 #lb3 #lb4 #lb5 #lok #rok #tmp #exv
+:refbb | n -- ok		; bounding box del modelo en rb0..rb5
+	'rbn !
+	32 'rb0 ! 32 'rb1 ! 32 'rb2 ! -1 'rb3 ! -1 'rb4 ! -1 'rb5 !
+	0 ( 32 <? dup 'rbz !
+		0 ( 32 <? dup 'rbx !
+			0 ( 32 <? dup 'rbl !
+				rbn rbz 5 << rbx + rbl rf @ 32 >> 1 and
+				1? ( rbx rb0 min 'rb0 ! rbz rb1 min 'rb1 ! rbl rb2 min 'rb2 !
+					rbx rb3 max 'rb3 ! rbz rb4 max 'rb4 ! rbl rb5 max 'rb5 ! ) drop
+				1+ ) drop
+			1+ ) drop
+		1+ ) drop
+	rb3 -? ( drop 0 ; ) drop 1 ;
+
+:bbeq | n -- 1/0
+	dup refbb 'rok !
+	ssm_bbox 'lok ! 'lb5 ! 'lb4 ! 'lb3 ! 'lb2 ! 'lb1 ! 'lb0 !
+	rok lok <>? ( drop 0 ; ) drop
+	rok 0? ( drop 1 ; ) drop
+	rb0 lb0 <>? ( drop 0 ; ) drop
+	rb1 lb1 <>? ( drop 0 ; ) drop
+	rb2 lb2 <>? ( drop 0 ; ) drop
+	rb3 lb3 <>? ( drop 0 ; ) drop
+	rb4 lb4 <>? ( drop 0 ; ) drop
+	rb5 lb5 <>? ( drop 0 ; ) drop 1 ;
+
+:refcrop1 | n --		; modelo: recorta al bbox y corre al origen
+	dup 'cn2 ! refbb 0? ( drop ; ) drop
+	refT ref cn2 18 << + 262144 cmove
+	cn2 refclear
+	rb1 ( rb4 <=? dup 'cz !
+		rb0 ( rb3 <=? dup 'cx !
+			rb2 ( rb5 <=? dup 'cl !
+				cz 5 << cx + 5 << cl + 3 << refT + @
+				cn2 cz rb1 - 5 << cx rb0 - + cl rb2 - rf !
+				1+ ) drop
+			1+ ) drop
+		1+ ) drop ;
+
+#ps1 #ps2 #ps3
+:pksz | sx ly rw -- v
+	'ps3 ! 'ps2 ! 'ps1 ! ps1 16 << ps2 8 << or ps3 or ;
+:szcheck | -- errores		; tamanios luego de cargar un .ssv recortado
+	0 'tmp !
+	0 ( ssm_n <? dup 'cn2 !
+		$010101 'exv !
+		cn2 refbb 1? ( rb3 1+ 16 << rb5 1+ 8 << or rb4 1+ or 'exv ! ) drop
+		exv cn2 ssm_size pksz <>? ( 1 'tmp +! ) drop
+		1+ ) drop tmp ;
+
+:eq | a b -- 1/0
+	=? ( drop 1 ; ) drop 0 ;
+:okerr | cond -- err
+	0? ( drop 1 ; ) drop 0 ;
+
+:refmove | dst src --
+	18 << ref + swap 18 << ref + swap 262144 cmove ;
+
+:t_new
+	here 'refT ! 262144 'here +!
+	8 ( 1? 1- dup refclear ) drop
+	3 4 rerand
+	8 65536 ssm_ini
+	6 ( 1? 1- 32 32 32 ssm_add drop ) drop
+	0 $aa00bb00 0 5 7 9 12 20 15 tbox
+	1 0 0 7 9 11 10 18 13 tbox
+	0 $11223300 1 0 0 0 3 3 3 tbox
+	0 $44556600 2 31 31 31 31 31 31 tbox
+	0 $77889900 4 10 10 10 20 25 30 tbox
+	1 0 4 13 13 13 17 20 25 tbox
+	0 $ccddee00 5 0 0 0 31 31 31 tbox
+	0 'tmp ! 6 ( 1? 1- dup bbeq 0? ( 1 'tmp +! ) drop ) drop
+	tmp "bbox" stage
+	|-- recorte al grabar
+	1 ssm_crop!
+	"/tmp/t_crop.ssv" ssm_save
+	6 ( 1? 1- dup refcrop1 ) drop
+	"/tmp/t_crop.ssv" ssm_load
+	1 cmplib "crop: contenido" stage
+	szcheck "crop: tamanios" stage
+	|-- insertar / sacar
+	1 ssm_ins
+	5 ( 2 >=? dup dup 1- refmove 1- ) drop
+	1 refclear
+	0 cmplib "ins en 1" stage
+	1 ssm_del
+	1 ( 5 <? dup dup 1+ refmove 1+ ) drop
+	5 refclear
+	0 cmplib "del en 1" stage
+	5 ssm_ins
+	0 cmplib "ins al final" stage
+	0 ssm_del
+	0 ( 5 <? dup dup 1+ refmove 1+ ) drop
+	5 refclear
+	0 cmplib "del en 0" stage
+	|-- rangos
+	"/tmp/t_r.ssv" 1 2 ssm_saver
+	"/tmp/t_r.ssv" 3 3 ssm_loadr 2 eq okerr "loadr: cantidad" stage
+	3 1 refmove 4 2 refmove 5 refclear
+	0 cmplib "saver/loadr" stage
+	"/nonexistent.ssv" 0 3 ssm_loadr 0 eq okerr "loadr: archivo inexistente" stage
+	0 ssm_crop! ;
+
 :
 	t_synth
+	t_new
 	"media/ssv/vox.ssv" tfile
 	"media/ssv/dino.ssv" tfile
 	"media/ssv/iti.ssv" tfile

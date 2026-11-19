@@ -175,6 +175,8 @@
 	0 'fpath fe2 + c! ;
 
 |--- selection and acceptance
+#fdone 0		| the dialog was accepted (uiFileDone?)
+
 :select | n -- ; chosen in the list
 	]fl dup isdir 1? ( 2drop ; ) drop
 	0 'fmsg !
@@ -213,6 +215,7 @@
 :accept | --
 	fok? 0? ( drop ; ) drop
 	uiFileFull fvar fmax cpymax
+	1 'fdone !
 	uiExitWidget ;
 
 :activate | n -- ; second click or Enter on the item
@@ -329,3 +332,10 @@
 
 ::uiFileFilter | "png bmp" -- ; extensions of the files shown (case ignored), "" = all
 	'ffilt strcpy ;
+
+|--- the dialog from a button (instead of the field): ask, then poll uiFileDone? every frame
+::uiFileAsk | 'buf max mode -- ; open the dialog on the buffer; mode 0 any name, 1 must exist, 2 save (overwrite asks twice)
+	'fmodew ! 0 'fdone ! fopen 2drop ;
+
+::uiFileDone? | -- flag ; 1 once after the dialog was accepted (the buffer has "folder/name"), then 0
+	fdone 0 'fdone ! ;

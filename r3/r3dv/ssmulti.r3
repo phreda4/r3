@@ -55,13 +55,24 @@
 |                                          agregar TODOS los sprites antes de ssm_image
 | ssm_sync   | 'upcols 'uppal 'upspr --    comprime y sube lo modificado ('ss3dupcols 'ss3duppal 'ss3dupspr)
 | ssm_save   | "archivo.ssv" --            compresion completa (tiras compartidas, tamanio real)
+| ssm_saver  | "archivo.ssv" first cnt --  idem, solo los sprites first .. first+cnt-1
 | ssm_save1  | "archivo.ssv" n --          idem, solo el sprite n
+| ssm_crop!  | 0/1 --                      al grabar, cada sprite se recorta a su bounding box de voxeles
+|                                          (se corre al origen y su tamanio pasa a ser el del bbox)
+| ssm_bbox   | n -- x0 z0 l0 x1 z1 l1 ok   bounding box de los voxeles de n (ok = 0 si esta vacio)
 | ssm_savec  | "archivo.ssv" --            igual, y ademas los voxeles ocultos (6 vecinos llenos dentro del
 |                                          sprite) pierden el color (comodin): mas chico, pero si se
 |                                          vuelve a editar y se descubren salen sin color
 | ssm_savec1 | "archivo.ssv" n --          idem ssm_savec, solo el sprite n
+| ssm_savecr | "archivo.ssv" first cnt --  idem ssm_savec, solo los sprites first .. first+cnt-1
 | ssm_load   | "archivo.ssv" --            carga .ssv completo y lo deja comprimido de a un sprite
 | ssm_load1  | "archivo.ssv" n -- ok       carga el primer sprite del .ssv en n (toma su tamanio; queda abierto)
+| ssm_loadr  | "archivo.ssv" first cnt -- n  carga el .ssv en los sprites first .. first+cnt-1 y vacia los que
+|                                          sobran; devuelve la cantidad de sprites del archivo (0 = error)
+| ssm_ins    | n --                        inserta un sprite vacio en n: los siguientes bajan un lugar y el
+|                                          ultimo se pierde (se libera su tira); cantidad fija
+| ssm_del    | n --                        saca el sprite n: los siguientes suben un lugar y el ultimo queda vacio
+| ssm_clrerr | --                          borra el error (ssm_err)
 | ssm_used ssm_cap ssm_n ssm_open ssm_err ssm_cols ssm_rstart ssm_rlen   consultas
 
 ^r3/lib/mem.r3
@@ -101,6 +112,7 @@
 ::ssm_n nspr ;
 ::ssm_open open ;				| sprite abierto (descomprimido) o -1
 ::ssm_err ssmerr ;
+::ssm_clrerr 0 'ssmerr ! ;
 ::ssm_cols | n -- cnt
 	smnc ;
 ::ssm_rstart | n -- idx
@@ -111,6 +123,29 @@
 	dup smsx swap dup smly swap smrw ;
 ::ssm_ci | x z -- ci
 	5 << + ;
+
+|---- bounding box de los voxeles de un sprite (solo mascaras: no hace falta abrirlo)
+#kx0 #kz0 #kl0 #kx1 #kz1 #kl1 #bo #bm #bci #bok
+:bboxn | n -- ok
+	smorg 'bo !
+	32 'kx0 ! 32 'kz0 ! 32 'kl0 ! -1 'kx1 ! -1 'kz1 ! -1 'kl1 !
+	0 ( 1024 <? dup 'bci !
+		bci bo + 3 << dcols + d@ $ffffffff and 'bm !
+		bm 1? (
+			bci 31 and dup kx0 min 'kx0 ! kx1 max 'kx1 !
+			bci 5 >> dup kz0 min 'kz0 ! kz1 max 'kz1 !
+			bm ctz kl0 min 'kl0 ! bm msb kl1 max 'kl1 !
+		) drop
+		1+ ) drop
+	kx1 -? ( drop 0 ; ) drop 1 ;
+
+::ssm_bbox | n -- x0 z0 l0 x1 z1 l1 ok
+	bboxn 'bok !
+	kx0 kz0 kl0 kx1 kz1 kl1 bok ;
+
+#scrop
+::ssm_crop! | 0/1 --
+	'scrop ! ;
 
 :pdclr
 	$7fffffff 'pd0 ! -1 'pd1 ! ;
@@ -556,14 +591,14 @@
 		1+ ) drop
 	uu ;
 
-#ocols #osp #svf #svh #svtc #svoc #svn #svo #svsx #svrw #svlm #scull #sv0 #svc
+#ocols #osp #svf #svh #svtc #svoc #svn #svo #svsx #svrw #svlm #scull #sv0 #svc #szt #pq #oq #svox #svoz #svol
 #svz #svx #svm #svb #svhm #svlo #svhi #sva
 #hdr * 16
 
-:nmask | z x -- m		; mascara de la columna (z,x) del sprite que se graba, 0 si esta fuera
+:nmask | z x -- m		; mascara de la columna (z,x) (ya recortada) del sprite que se graba, 0 si esta fuera
 	-? ( 2drop 0 ; ) svsx >=? ( 2drop 0 ; )
 	swap -? ( 2drop 0 ; ) svrw >=? ( 2drop 0 ; )
-	5 << + svo + 3 << dcols + d@ $ffffffff and svlm and ;
+	svoz + 5 << swap svox + + svo + 3 << dcols + d@ $ffffffff and svol >> svlm and ;
 
 :hidmask | -- hm		; capas con los 6 vecinos llenos
 	svz svx 1- nmask
@@ -577,12 +612,12 @@
 :putl | l --
 	svm over >> 1 and 0? ( 2drop ; ) drop
 	svhm over >> 1 and 1? ( 2drop ; ) drop
-	dup svb swap getcolor over svlo - 2 << 'sst + d! drop ;
+	dup svol + svb swap getcolor over svlo - 2 << 'sst + d! drop ;
 
 :savecol0 | z x --
 	'svx ! 'svz !
-	svz 5 << svx + svo + 3 << dcols + 'sva !
-	sva d@ $ffffffff and svlm and 'svm !
+	svz svoz + 5 << svx svox + + svo + 3 << dcols + 'sva !
+	sva d@ $ffffffff and svol >> svlm and 'svm !
 	svm 0? ( drop ; ) drop
 	svm svoc 3 << ocols + d!
 	sva 4 + d@ 'svb !
@@ -598,23 +633,36 @@
 :savecol | z x --
 	savecol0 1 'svoc +! ;
 
+:prepspr | n --		; tamanio de salida y corrimiento (recorte al bounding box si ssm_crop! 1)
+	dup sv0 - 3 << szt + 'pq !
+	scrop 0? ( drop
+		dup smsx pq c! dup smly pq 1+ c! smrw pq 2 + c!
+		0 pq 3 + c! 0 pq 4 + c! 0 pq 5 + c! ; ) drop
+	bboxn 0? ( drop 1 pq c! 1 pq 1+ c! 1 pq 2 + c!
+		0 pq 3 + c! 0 pq 4 + c! 0 pq 5 + c! ; ) drop
+	kx1 kx0 - 1+ pq c! kl1 kl0 - 1+ pq 1+ c! kz1 kz0 - 1+ pq 2 + c!
+	kx0 pq 3 + c! kz0 pq 4 + c! kl0 pq 5 + c! ;
+
 :savespr | n --
 	dup 'svn !
 	dup smorg 'svo !
-	dup smsx 'svsx !
-	dup smrw 'svrw !
-	dup smly 1 swap << 1- $ffffffff and 'svlm !
+	sv0 - 3 << szt + 'pq !
+	pq c@ $ff and 'svsx ! pq 2 + c@ $ff and 'svrw !
+	pq 3 + c@ $ff and 'svox ! pq 4 + c@ $ff and 'svoz ! pq 5 + c@ $ff and 'svol !
+	pq 1+ c@ $ff and 1 swap << 1- $ffffffff and 'svlm !
 	svoc svn sv0 - 3 << osp + d!
-	svn 3 << sprt + 4 + d@ svn sv0 - 3 << osp + 4 + d!
-	drop
+	svn sv0 - 3 << osp + 4 + 'oq !
+	pq c@ oq c! pq 1+ c@ oq 1+ c! pq 2 + c@ oq 2 + c!
 	0 ( svrw <? 0 ( svsx <? 2dup savecol 1+ ) drop 1+ ) drop ;
 
 :totcols | -- cnt
-	0 sv0 ( sv0 svc + <? dup smnc rot + swap 1+ ) drop ;
+	0 0 ( svc <? dup 3 << szt + dup c@ $ff and swap 2 + c@ $ff and * rot + swap 1+ ) drop ;
 
 :savefile | "file" --
 	'svf ! smcommit
 	here 'svh !
+	here 'szt ! svc 3 << 'here +!
+	sv0 ( sv0 svc + <? dup prepspr 1+ ) drop
 	totcols 'svtc !
 	here dup 'osp ! svc 3 << +
 	dup 'ocols ! svtc 3 << +
@@ -635,16 +683,24 @@
 	fabort 1? ( 1 'ssmerr ! ) drop
 	svh 'here ! ;
 
+:svset | first cnt -- ok		; rango de sprites a grabar (recortado a los que existen)
+	over -? ( 3drop 0 ; ) drop
+	nspr pick2 - min 'svc !
+	'sv0 !
+	svc 1 <? ( drop 0 ; ) drop 1 ;
+
+::ssm_saver | "file" first cnt --
+	svset 0? ( 2drop ; ) drop 0 'scull ! savefile ;
+::ssm_savecr | "file" first cnt --
+	svset 0? ( 2drop ; ) drop 1 'scull ! savefile ;
 ::ssm_save | "file" --
-	0 'scull ! 0 'sv0 ! nspr 'svc ! savefile ;
+	0 nspr ssm_saver ;
 ::ssm_savec | "file" --
-	1 'scull ! 0 'sv0 ! nspr 'svc ! savefile ;
+	0 nspr ssm_savecr ;
 ::ssm_save1 | "file" n --
-	-? ( 2drop ; ) nspr >=? ( 2drop ; )
-	'sv0 ! 1 'svc ! 0 'scull ! savefile ;
+	1 ssm_saver ;
 ::ssm_savec1 | "file" n --
-	-? ( 2drop ; ) nspr >=? ( 2drop ; )
-	'sv0 ! 1 'svc ! 1 'scull ! savefile ;
+	1 ssm_savecr ;
 
 |---- carga de .ssv completo -> individual
 #ln #lc #ltab #lcols #lpal #lt #lo #lx #ly #lz #rp #ldn
@@ -688,7 +744,7 @@
 	nw 'npal +! ;
 
 ::ssm_load | "file" --
-	here swap load drop
+	here swap load here - 16 <? ( drop 1 'ssmerr ! ; ) drop
 	here d@ "SSV2" d@ <>? ( drop 1 'ssmerr ! ; ) drop
 	here 4 + d@ 'ln ! here 8 + d@ 'lc !
 	ln smax >? ( drop 1 'ssmerr ! ; ) drop
@@ -720,17 +776,18 @@
 		1? ( over ldb swap getcolor pick2 2 << ldp + d! ) drop
 		1+ ) drop ;
 
-::ssm_load1 | "file" n -- ok
-	'ldn !
-	here swap load drop
+:ldparse | "file" -- ok		; lee el .ssv en here y valida la cabecera y todos los sprites
+	here swap load here - 16 <? ( drop 0 ; ) drop
 	here d@ "SSV2" d@ <>? ( drop 0 ; ) drop
 	here 4 + d@ 'ln ! here 8 + d@ 'lc !
 	ln 1 <? ( drop 0 ; ) drop
 	here 16 + 'ltab ! ltab ln 3 << + 'lcols ! lcols lc 3 << + 'lpal !
-	ldn -? ( drop 0 ; ) nspr >=? ( drop 0 ; ) drop
-	0 ldfld ldone? 0? ( ; ) drop
+	ldok? ;
+
+:ldone | idx n --		; sprite idx del archivo (leido con ldparse) pasa al sprite n (usa el pad)
+	'ldn ! ldfld
 	ldn ssm_clear
-	open ldn <>? ( drop 0 ; ) drop
+	open ldn <>? ( drop ; ) drop
 	lx ly lz ldn setsz ldn 3 sfl
 	ly 1 swap << 1- $ffffffff and 'ldlm !
 	lpal 'xpal !
@@ -738,4 +795,58 @@
 		0 ( lx <? dup 'ldx2 ! ld1col 1+ ) drop
 		1+ ) drop
 	dpal 'xpal !
-	rdone 1 ;
+	rdone ;
+
+::ssm_load1 | "file" n -- ok
+	swap ldparse 0? ( nip ; ) drop
+	0 swap ldone 1 ;
+
+#lfirst #lcnt
+::ssm_loadr | "file" first cnt -- n
+	'lcnt ! 'lfirst !
+	lfirst -? ( drop 0 ; ) nspr >=? ( drop 0 ; ) drop
+	nspr lfirst - lcnt min 'lcnt !
+	ldparse 0? ( ; ) drop
+	lcnt ( 1? 1- dup lfirst + ssm_clear ) drop
+	ssm_close
+	0 ( ln lcnt min <? dup dup lfirst + ldone 1+ ) drop
+	ssm_close
+	ln ;
+
+|---- insertar / sacar un sprite (la cantidad total no cambia)
+#ra #rl
+:smblank | n --		; sprite vacio de 1x1x1
+	dup 13 << dcols + 0 8192 cfill
+	dup 10 << over 3 << sprt + d!
+	1 1 1 pick3 setsz
+	3 sfl ;
+
+::ssm_del | n --
+	-? ( drop ; ) nspr >=? ( drop ; )
+	dup ssm_clear ssm_close
+	'ra !
+	ra ( nspr 1- <?
+		dup 1+ 3 << sprt + @ over 3 << sprt + !
+		dup 1+ 3 << rst + @ over 3 << rst + !
+		dup 13 << dcols + over 1+ 13 << dcols + 8192 cmove
+		dup 10 << over 3 << sprt + d!
+		dup 3 sfl
+		1+ ) drop
+	nspr 1- 'rl !
+	rl smblank
+	npal rl 3 << rst + d! 0 rl 3 << rst + 4 + d! ;
+
+::ssm_ins | n --
+	-? ( drop ; ) nspr >=? ( drop ; )
+	nspr 1- ssm_clear ssm_close
+	'ra !
+	nspr 2 - ( ra >=?
+		dup 3 << sprt + @ over 1+ 3 << sprt + !
+		dup 3 << rst + @ over 1+ 3 << rst + !
+		dup 1+ 13 << dcols + over 13 << dcols + 8192 cmove
+		dup 1+ 10 << over 1+ 3 << sprt + d!
+		dup 1+ 3 sfl
+		1- ) drop
+	ra smblank
+	ra nspr 1- <? ( ra 1+ 3 << rst + d@ ra 3 << rst + d! ) drop
+	0 ra 3 << rst + 4 + d! ;
