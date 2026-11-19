@@ -44,27 +44,27 @@
 #camAdv 0 0 0	| hacia atras
 #camLat 0 0 0	| izquierda
 #camVU 0 0 0	| arriba de la camara
-#cp #sp #cy #sy
+#cp #sp #cyw #syw
 #va #vl #vu
 
 :cpytgt | 'dst --
 	>a 'tgt @ a!+ 'tgt 8 + @ a!+ 'tgt 16 + @ a! ;
 
 :makecam
-	cam_yaw sincos 'cy ! 'sy !
+	cam_yaw sincos 'cyw ! 'syw !
 	cam_pit -0.24 max 0.24 min sincos 'cp ! 'sp !
 	'camAdv >a
-	cy neg cp *. a!+
+	cyw neg cp *. a!+
 	sp neg a!+
-	sy neg cp *. a!
+	syw neg cp *. a!
 	'camLat >a
-	sy a!+
+	syw a!+
 	0 a!+
-	cy neg a!
+	cyw neg a!
 	'camVU >a
-	cy sp *. neg a!+
+	cyw sp *. neg a!+
 	cp a!+
-	sy sp *. neg a!
+	syw sp *. neg a!
 	'camTo cpytgt
 	'camEye cpytgt
 	'camEye 'camAdv cdist v3+*
@@ -134,6 +134,7 @@
 #snames * 8192				| nombre de cada slot (32 bytes)
 #sfresh * 256				| slot cargado de archivo: se centra al abrirlo por primera vez
 #modif 0					| hay cambios sin grabar
+#showF 0					| panel de archivos visible
 #inview 0 #ccmod 0 #ppop 0		| mouse en la vista 3D / Ctrl apretado / popup abierto (rimm)
 :curspr slotcur 2 + ;		| sprite de ssmulti del slot actual
 #usnap						| copia para deshacer (ssm_snap)
@@ -991,13 +992,15 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	2 =? ( drop opendlg ; )
 	3 =? ( drop exit ; )
 	drop ;
-:guard | code --
-	modif 0? ( drop doact ; ) drop 'ask ! ;
+:guard | code --			| con cambios sin grabar pregunta (y abre el panel de archivos, donde se responde)
+	modif 0? ( drop doact ; ) drop 'ask ! 1 'showF ! ;
 :gnew 1 guard ;
 :gopen 2 guard ;
 :gexit 3 guard ;
 :askyes ask doact 0 'ask ! ;
 :askno 0 'ask ! ;
+:escape						| ESC: cancela la pregunta pendiente o sale (preguntando si hay cambios)
+	ask 1? ( drop askno ; ) drop 3 guard ;
 
 :dopend | el dialogo se acepto: el camino esta en fbuf
 	fpend 1 =? ( drop ".ssv" ensext 'fbuf setpath docsave 0 'fpend ! ; )
@@ -1008,7 +1011,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 |----------------------------------
 | interfaz (tamanos relativos al texto)
-#showT 1 #showP 1 #showF 0 #showV 0
+#showT 1 #showP 1 #showV 0
 :tgT showT 1 xor 'showT ! ;
 :tgP showP 1 xor 'showP ! ;
 :tgF showF 1 xor 'showF ! ;
@@ -1031,7 +1034,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	uiPopup? 1? ( drop ; ) drop
 	pnb 5 and 0? ( drop ; ) drop
 	sdlx cx <? ( drop ; ) cx cw + >=? ( drop ; ) drop
-	sdly cy <? ( drop ; ) cy chx + >=? ( drop ; ) drop
+	sdly cy <? ( drop ; ) cy ch + >=? ( drop ; ) drop
 	pnb 1 and? ( drop dup 2 << 'qpal + d@ 'ccol ! ; ) drop
 	ccol $ffffff and over 2 << 'qpal + d! ;
 
@@ -1190,7 +1193,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	sdlkey
 	<ctrl> =? ( 1 'ccmod ! ) <ctr2> =? ( 1 'ccmod ! )
 	>ctrl< =? ( 0 'ccmod ! ) >ctr2< =? ( 0 'ccmod ! )
-	>esc< =? ( ppop 0? ( 3 guard ) drop )
+	>esc< =? ( ppop 0? ( escape ) drop )
 	<s> =? ( ccmod 1? ( docsave ) drop ) <o> =? ( ccmod 1? ( 2 guard ) drop ) <n> =? ( ccmod 1? ( 1 guard ) drop )
 	<le> =? ( kk 1? ( slotprev ) drop ) <ri> =? ( kk 1? ( slotnext ) drop )
 	<w> =? ( kk 1? ( -0.03 'va ! ) drop ) >w< =? ( 0 'va ! )

@@ -26,6 +26,8 @@
 #no 0			| operations
 #nv 0			| virtual registers
 #po 0
+#bcn 0			| cells ( 1.. ) that live in registers at the boundaries of the block
+#rsvm 0			| reserved registers ( bit = register )
 #vej * 8192			| entry cell of the virtual register ( -1 = not an entry cell )
 
 |--- virtual stack
@@ -76,7 +78,9 @@
 |--- begin
 ::ssa.begin | --
 	0 'no ! 1 'nv ! 0 'vn ! 0 'ek ! 0 'maxvn ! 0 'nc ! -1 'vej !
-	1 0 0 0 0 addop ;		| v0 = rax of the entry
+	1 0 0 0 0 addop		| v0 = rax of the entry
+	1 ( bcn <=? 1 0 0 pick3 pick4 3 + addop 1+ ) drop
+	bcn 1+ 'nv ! ;
 
 |--- virtual stack
 :vpushn | o -- ; to the cell vn
@@ -86,6 +90,7 @@
 #tv
 :ent | -- o ; the next entry cell
 	ek 0? ( drop 1 'ek ! 0 ; ) drop
+	ek bcn <=? ( drop ek 1 'ek +! ; ) drop
 	newv 'tv ! ek tv 3 << 'vej + ! 3 0 0 tv ek addop
 	1 'ek +! tv ;
 
@@ -332,11 +337,23 @@
 :stc1 | i -- ; store the cell
 	11 over 3 << 'vs + @ 0 0 pick4 2 + ek - 3 << addop drop ;
 
+:bcreg | j -- r
+	3 + ;
+#ct
+:cellreg | i -- ; the cell goes to the register of its place ( promoted )
+	dup 3 << 'vs + @
+	ct =? ( 2drop ; )
+	12 swap 0 0 ct bcreg addop drop ;
+:cell1 | i -- ; a cell that is not the top
+	vn 1- over - 'ct !
+	ct bcn <=? ( drop cellreg ; ) drop
+	dup selfst? 0? ( over stc1 ) drop drop ;
+
 :epilogue | -- ; the stack is made canonical
 	0 'adj !
 	vn 0? ( ek 0? ( 2drop 12 0 0 0 0 addop ; ) drop 1 need ) drop
 	ek 0? ( 0 vins 1 'ek ! ) drop
-	0 ( vn 1- <? dup selfst? 0? ( over stc1 ) drop 1+ ) drop
+	0 ( vn 1- <? dup cell1 1+ ) drop
 	12 vn 1- 3 << 'vs + @ 0 0 0 addop
 	vn ek - 3 << 'adj ! ;
 
@@ -410,15 +427,19 @@
 	er ev slotof ldsl
 	-2 ev vl! -1 er rv! ;
 
-:freeok? | r -- f
+:freeok0? | r -- f
 	dup rv@ -1 <>? ( 2drop 0 ; ) drop
 	locked? 0? ( drop 1 ; ) drop 0 ;
+:freeok? | r -- f ; free and not reserved
+	rsvm over >> 1 and 1? ( 2drop 0 ; ) drop
+	freeok0? ;
 
 :findfree | -- r
-	pref 0 >=? ( dup freeok? 1? ( drop ; ) drop ) drop
+	pref 0 >=? ( dup freeok0? 1? ( drop ; ) drop ) drop
 	0 ( 12 <? dup freeok? 1? ( drop ; ) drop 1+ ) drop -1 ;
 
 :cand? | r -- f ; not locked and with value
+	rsvm over >> 1 and 1? ( 2drop 0 ; ) drop
 	dup rv@ -1 =? ( 2drop 0 ; ) drop
 	locked? 0? ( drop 1 ; ) drop 0 ;
 
@@ -458,10 +479,12 @@
 	npq ( 1? 1- dup pq1 ) drop 0 'npq ! ;
 
 #uo #ur
+:pbc | v -- r ; the register of an entry value ( -1 = none )
+	bcn >? ( drop -1 ; ) 0? ( ; ) 3 + ;
 :usereg | o -- r ; register with the value of the virtual register
 	'uo !
 	uo vl@ 0 >=? ( dup lock dup touch ; )
-	-1 =? ( drop uo 0 =? ( 0 'pref ! ) drop getfree -1 'pref ! 'ur ! uo ur bind ur ; )
+	-1 =? ( drop uo pbc 'pref ! getfree -1 'pref ! 'ur ! uo ur bind ur ; )
 	drop getfree 'ur ! ur lock
 	ur uo slotof pq.ld ur ;
 
@@ -599,13 +622,14 @@
 	pqflush ;
 
 
-:r.ent0 | i --
-	gD 'dd !
+#xr
+:r.ent0 | i -- ; the entry value is in the register x
+	'ti ! ti gD 'dd ! ti gX 'xr !
 	dd vl@
 	-1 =? ( drop ; )
-	-2 =? ( drop 0 dd slotof stsl -1 dd vl! ; )
+	-2 =? ( drop xr dd slotof stsl -1 dd vl! ; )
 	'xd !
-	xd 0 <>? ( xd 0 mvr ) drop
+	xd xr <>? ( xd xr mvr ) drop
 	-1 xd rv! -1 dd vl! ;
 
 :r.li | i --
@@ -706,19 +730,19 @@
 	rA srcreg 'xc !
 	ib "mov qword[rbp" ,s ti gX ,off "]," ,s xc ,reg rins pqflush ;
 
-#x
-:axocc? | -- f ; rax has other value
-	0 rv@ dup -1 =? ( 2drop 0 ; ) ao2 =? ( 2drop 0 ; ) 2drop 1 ;
 
-:r.movax | i --
-	gA 'ao2 !
-	axocc? 1? ( 0 evict ) drop
-	ao2 isc 1? ( drop ib "mov rax," ,s ao2 ,cst rins ; ) drop
+:axocc? | -- f ; the register has other value
+	xr rv@ dup -1 =? ( 2drop 0 ; ) ao2 =? ( 2drop 0 ; ) 2drop 1 ;
+
+:r.movax | i -- ; the value goes to the register x ( rax = the TOS )
+	'ti ! ti gA 'ao2 ! ti gX 'xr !
+	axocc? 1? ( xr evict ) drop
+	ao2 isc 1? ( drop ib "mov " ,s xr ,reg "," ,s ao2 ,cst rins ; ) drop
 	ao2 vl@
-	-1 =? ( drop ao2 0 bind ; )
-	0 =? ( drop ; )
-	-2 =? ( drop 0 ao2 slotof ldsl ; )
-	0 swap mvr ;
+	-1 =? ( drop ao2 xr bind ; )
+	xr =? ( drop ; )
+	-2 =? ( drop xr ao2 slotof ldsl ; )
+	xr swap mvr ;
 
 :r.cmpj | i --
 	'ti !
@@ -1044,3 +1068,20 @@
 	vn 200 >? ( ssa.flush ) drop
 	dup 'ctk !
 	$ff and 3 << 'sw + @ ex ;
+
+|--- boundaries with cells in registers
+::ssa.promote | k --
+	'bcn !
+	bcn 0? ( drop 0 'rsvm ! ssa.begin ; ) drop
+	1 bcn << 1- 4 << 'rsvm !
+	ssa.begin ;
+
+::ssa.ok? | type -- f ; the token can be inside a loop with cells in registers
+	ssra 0? ( nip ; ) drop
+	8 =? ( drop 1 ; ) 9 =? ( drop 1 ; )
+	3 << 'sw + @ 's.no =? ( drop 0 ; ) drop 1 ;
+
+::ssa.,reg | r --
+	,reg ;
+::ssa.,off | n --
+	,off ;

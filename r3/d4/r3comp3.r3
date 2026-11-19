@@ -19,6 +19,7 @@
 ^r3/lib/console.r3
 ^r3/d4/r3token.r3
 ^r3/d4/r3opt1.r3
+^r3/d4/r3opt1.r3
 ^r3/d4/r3cf.r3
 ^r3/d4/r3ssa.r3
 
@@ -146,10 +147,120 @@
 	0? ( drop "; ERROR: no fragment" ,ins ; )
 	,ins ;
 
+#irlim 1000	| debug: the words >= irlim are made with tier 0
+#irw 1		| the IR is used in the current word
+#looprg 1	| debug: 0 = no cells in registers
+
+|---------------------------------------------------------------
+| LOOPS WITH THE CELLS OF THE STACK IN REGISTERS
+|---------------------------------------------------------------
+| a loop ( ... ) that has only tokens of the IR ( no calls ) and where the stack has the same
+| depth in all the boundaries of the blocks has the cells 1..k in registers ( rsi rdi r8 r9 ),
+| the cell 0 is in rax as always. Before the head the cells are loaded ( the jump back goes to
+| the label p ) and at the exit label they are stored.
+#lpn 0
+#lpL * 512
+#lpE * 512
+#lpK * 512
+#lpX * 512
+#sl0 #wn0 #cl #ce #ci #cty #cdp #cu #cok #cuse #cdel #ctg #ctk2 #ck2 #pk
+
+:tkat | idx -- addr
+	3 << tok + ;
+:rej 0 'cok ! ;
+:jump? | -- f ; the token jumps
+	cty 9 =? ( drop ctk2 tkv 1? ( drop 1 ; ) drop 0 ; )
+	10 =? ( drop 1 ; ) 13 25 in? ( drop 1 ; ) drop 0 ;
+
+:chkone | i --
+	'ci !
+	cok 0? ( drop ; ) drop
+	ci tkat dup 'tcur ! @ 'ctk2 !
+	ctk2 $ff and 'cty !
+	ci lbl + c@ 1? ( cdp 1? ( rej ) drop ) drop
+	cty ssa.ok? 0? ( rej ) drop
+	cty 9 =? ( ctk2 tkv 1? ( ci ce <>? ( rej ) drop ) drop ) drop
+	cty r3ainfo dup c@ 'cuse ! 1+ c@ 'cdel !
+	cuse cdp - dup cu >? ( dup 'cu ! ) 2drop
+	cdel 'cdp +!
+	jump? 1? (
+		ctk2 jtarget 'ctg !
+		ctg cl =? ( cty 9 <>? ( rej ) drop ) drop
+		ctg cl <? ( rej ) drop
+		ctg ce 1+ >? ( rej ) drop
+		cty 9 =? ( ctg cl <>? ( rej ) drop ) drop
+		cty 13 25 in? ( cdp 1? ( rej ) drop ) drop
+		cty 9 =? ( cdp 1? ( rej ) drop ) drop
+		) drop ;
+
+:outside? | -- f
+	ci cl <? ( drop 1 ; ) drop ci ce >? ( drop 1 ; ) drop 0 ;
+:chkout1 | idx --
+	'ci ! outside? 0? ( drop ; ) drop
+	ci tkat dup 'tcur ! @ dup 'ctk2 ! $ff and 'cty !
+	jump? 0? ( drop ; ) drop
+	ctk2 jtarget 'ctg !
+	ctg cl >? ( ctg ce 1+ <=? ( rej ) drop ) drop ;
+
+:chkloop | L E --
+	'ce ! 'cl !
+	0 'cdp ! 0 'cu ! 1 'cok !
+	lpn 60 >=? ( rej ) drop
+	cl ( ce 1+ <? dup chkone 1+ ) drop
+	ce 1+ lbl + c@ 0? ( rej ) drop
+	sl0 ( sl0 wn0 + <? dup chkout1 1+ ) drop
+	cok 0? ( drop ; ) drop
+	cu 1- 4 >? ( drop 4 ) 'ck2 !
+	ck2 1 <? ( drop ; ) drop
+	cl lpn 3 << 'lpL + ! ce lpn 3 << 'lpE + !
+	ck2 lpn 3 << 'lpK + ! ce 1+ lpn 3 << 'lpX + !
+	1 'lpn +! ;
+
+:try1 | tokv --
+	dup $ff and 9 <>? ( 2drop ; ) drop
+	dup tkv 0? ( 2drop ; ) drop
+	jtarget tkidx chkloop ;
+
+:scanloops | ptr n --
+	0 'lpn !
+	looprg 0? ( drop 2drop ; ) drop
+	irw 0? ( drop 2drop ; ) drop
+	'wn0 ! dup tok - 3 >> 'sl0 !
+	drop
+	sl0 ( sl0 wn0 + <? dup tkat dup 'tcur ! @ try1 1+ ) drop ;
+
+:findhead | idx -- n ; -1 if none
+	0 ( lpn <?
+		dup 3 << 'lpL + @ pick2 =? ( drop nip ; ) drop
+		1+ ) 2drop -1 ;
+:findexit | idx -- n
+	0 ( lpn <?
+		dup 3 << 'lpX + @ pick2 =? ( drop nip ; ) drop
+		1+ ) 2drop -1 ;
+
+:ldcell | j -- ; mov R_j,[cell j]
+	ib "mov " ,s dup 3 + ssa.,reg ",qword[rbp" ,s 1- 3 << neg ssa.,off "]" ,s ,iend ;
+:stcell | j -- ; mov [cell j],R_j
+	ib "mov qword[rbp" ,s dup 1- 3 << neg ssa.,off "]," ,s 3 + ssa.,reg ,iend ;
+:promote | n --
+	3 << 'lpK + @ 'pk !
+	1 ( pk <=? dup ldcell 1+ ) drop ;
+:unpromote | n --
+	3 << 'lpK + @ 'pk !
+	1 ( pk <=? dup stcell 1+ ) drop ;
+
+:atlabel | --
+	ssa.flush
+	ib tkidx ,lab ":" ,s ie opt.label
+	tkidx findexit 0 >=? ( dup unpromote 0 ssa.promote ) drop
+	tkidx findhead 0 >=? ( dup promote
+		ib "p" ,s tkidx ,h ":" ,s ie opt.label
+		dup 3 << 'lpK + @ ssa.promote ) drop ;
+
 :gbase | tok n --
 	7 =? ( 2drop "ret" ,ins ; )
 	8 =? ( 2drop ; )
-	9 =? ( drop dup tkv 0? ( 2drop ; ) drop jtarget 'jt ! "jmp ~" ,ins ; )
+	9 =? ( drop dup tkv 0? ( 2drop ; ) drop jtarget 'jt ! jt findhead 0 >=? ( drop ib "jmp p" ,s jt ,h ,iend ; ) drop "jmp ~" ,ins ; )
 	10 =? ( drop jtarget 'jt ! "jmp ~" ,ins ; )
 	11 =? ( drop gk11 ; )
 	swap drop gfrag ;
@@ -165,9 +276,6 @@
 	,pushax ib "mov rax,qword[" ,s tkv ,wlab "]" ,s ,iend ;
 :gl6 | tok -- ; address of a string
 	,pushax ib "mov rax,s" ,s tkv ,h ,iend ;
-
-#irlim 1000	| debug: the words >= irlim are made with tier 0
-#irw 1		| the IR is used in the current word
 
 :gentoken | tok --
 	dup $ff and 13 25 in? ( over jtarget 'jt ! ) drop
@@ -205,10 +313,11 @@
 	dup cntdef 1- =? ( "INICIO:" opt.label ) drop
 	ib dup ,wlab ":" ,s ie opt.label
 	dup markword
+	dup nro>dic toklen scanloops
 	dup nro>dic toklen
 	( 1? 1- swap
 		dup 'tcur !
-		tkidx lbl + c@ 1? ( ssa.flush ib tkidx ,lab ":" ,s ie opt.label ) drop
+		tkidx lbl + c@ 1? ( atlabel ) drop
 		@+ gentoken
 		swap ) 2drop
 	ssa.flush drop ;
