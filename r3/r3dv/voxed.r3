@@ -1138,7 +1138,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	;
 
 :optshadow
-	shadowon -? ( drop ; ) drop
+	shadowon 0? ( drop ; ) drop
 	"az" 0.0 1.0 'sun_az uiSliderfL uiEx? 1? ( setsun ) drop 
 	"alt" 0.0 0.25 'sun_el uiSliderfL uiEx? 1? ( setsun ) drop 
 	;
@@ -1212,6 +1212,11 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	drop
 	keycam ;
 
+|--- sombras: solo proyecta el modelo (instancia 0); cursor, ancla y barras de ejes no
+#oldhook
+:shhook
+	1 ss3dlen!  oldhook ex  bi ss3dlen! ;
+
 :main
 	vupdate
 	ccolor 'curc !
@@ -1253,6 +1258,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	rl_init
 	2048 ss3dshadowini
 	1 ss3dshadowauto
+	rl_shadow_hook 'oldhook !  'shhook 'rl_shadow_hook !
+	0.15 'rl_ao_radius !				| voxel = 0.03 (0.01 * oscl): radio ~5 voxeles
 	'viewresize SDLeventR
 	setsun
 	shadowon ss3dshadow!

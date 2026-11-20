@@ -26,6 +26,14 @@ const vec3  UP_AXIS       = vec3(0.0, 1.0, 0.0);      // eje arriba del mundo
 const vec3  AMB_SKY       = vec3(0.20, 0.25, 0.35);
 const vec3  AMB_GROUND    = vec3(0.06, 0.055, 0.05);
 const float MIN_ROUGHNESS = 0.10;                     // evita hot-spots en luces puntuales
+// En lineal el albedo es ~2.2x mas oscuro => el ambiente (unico termino con AO) pesa menos frente a la
+// luz directa y el SSAO casi no se nota. AMB_GAIN lo compensa; DIRECT_AO aplica una parte del AO a la luz directa.
+#ifdef ALBEDO_SRGB
+const float AMB_GAIN      = 2.5;
+#else
+const float AMB_GAIN      = 1.0;
+#endif
+const float DIRECT_AO     = 0.4;                      // 0 = AO solo en ambiente, 1 = AO total tambien en directa
 // -----------------------------------------------------------------------------
 const float GLOW[4] = float[4](0.0, 0.35, 1.2, 5.0);
 
@@ -139,19 +147,20 @@ void main() {
     vec3  Fr      = F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow5(1.0 - NdotV);
     float specOcc = clamp(pow(NdotV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
 
-    vec3 color = hemi * albedo * (1.0 - metallic) * ao
-               + env * Fr * (1.0 - 0.5 * roughness) * specOcc
+    vec3 color = (hemi * albedo * (1.0 - metallic) * ao
+               + env * Fr * (1.0 - 0.5 * roughness) * specOcc) * AMB_GAIN
                + emissive;
+    float aoDir = mix(1.0, ao, DIRECT_AO);
 
-    // ---- luz direccional (sin AO) ----
+    // ---- luz direccional (AO parcial: DIRECT_AO) ----
     vec3  L     = normalize(lightDir.xyz);
     float NdotL = dot(N, L);
     if (NdotL > 0.0) {
         color += BRDF(N, V, L, NdotV, NdotL, albedo, metallic, a2, k, F0)
-               * lightColor.rgb * (lightColor.a * sunShadow(worldPos, N));
+               * lightColor.rgb * (lightColor.a * sunShadow(worldPos, N) * aoDir);
     }
 
-    // ---- luces puntuales (sin AO): pos.w = radio de influencia ----
+    // ---- luces puntuales (AO parcial: DIRECT_AO): pos.w = radio de influencia ----
     int numLights = min(pl.header.x, 16);
     for (int i = 0; i < numLights; ++i) {
         vec3  toLight = pl.lights[i].pos.xyz - worldPos;
@@ -168,7 +177,7 @@ void main() {
                 float win  = clamp(1.0 - x * x, 0.0, 1.0);      // ventana suave hasta 0 en el radio
                 float att  = win * win / (1.0 + dist * (0.09 + 0.032 * dist));
                 color += BRDF(N, V, Lp, NdotV, NdotLp, albedo, metallic, a2, k, F0)
-                       * pl.lights[i].color.rgb * (pl.lights[i].color.a * att);
+                       * pl.lights[i].color.rgb * (pl.lights[i].color.a * att * aoDir);
             }
         }
     }
@@ -315,7 +324,7 @@ layout(std140, binding = 0) uniform Matrices {
 
 // ---- PARAMETROS (unidades de mundo) ----
 const int   NS         = 12;
-const float RADIUS     = 0.6;
+uniform float RADIUS;                // radio en unidades de mundo (rl_ao_radius)
 const float POWER      = 1.5;
 const float FADE_START = 40.0;    // el AO se desvanece con la distancia
 const float FADE_END   = 80.0;
@@ -345,7 +354,7 @@ void main() {
     vec3  B   = cross(N, T);
 
     float jit  = ign(gl_FragCoord.xy + vec2(17.0, 31.0));
-    float bias = 0.03 + 0.001 * (-zc);          // el bias crece con la distancia
+    float bias = RADIUS * 0.05 + 0.001 * (-zc);  // el bias crece con la distancia y con el radio
     float occ  = 0.0;
 
     for (int i = 0; i < NS; ++i) {
@@ -590,6 +599,9 @@ void main() {
 #rl_ao_fbo2  0
 #rl_ao_tex2  0
 ##rl_ao_on   1       | 1=AO activo  0=desactivado (AO=1.0)
+##rl_ao_radius 0.6   | radio del SSAO en unidades de mundo (ajustar a la escala de la escena)
+#rl_ao_radf   0      | rl_ao_radius en float32 (se sube como uniform en cada aopass)
+#rl_u_ao_radius -1
 #rl_ao_dirh * 8      | vec2 (1/w,0) en float32
 #rl_ao_dirv * 8      | vec2 (0,1/h) en float32
 #rl_ao_white * 16    | vec4 (1,1,1,1) en float32
@@ -905,6 +917,7 @@ void main() {
     rl_sh_composite  "bloomIntensity" glGetUniformLocation 'rl_u_composite_intensity !
     rl_sh_composite  "exposure"       glGetUniformLocation 'rl_u_composite_exposure  !
     rl_sh_aoblur     "dir"            glGetUniformLocation 'rl_u_aoblur_dir          !
+    rl_sh_ao         "RADIUS"         glGetUniformLocation 'rl_u_ao_radius           !
     
     GL_CULL_FACE glEnable
     GL_BACK glCullFace
@@ -1093,6 +1106,8 @@ void main() {
 	GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
 	0 0 rl_w rl_h glViewport
 	rl_sh_ao glUseProgram
+	rl_ao_radius f2fp 'rl_ao_radf d!
+	rl_u_ao_radius 1 'rl_ao_radf glUniform1fv
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm  glBindTexture
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth glBindTexture
 	GL_TRIANGLE_STRIP 0 4 glDrawArrays
