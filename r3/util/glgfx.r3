@@ -185,7 +185,6 @@ void main() {
 	'glshader !
 
 	0 'fontn !
-	"media/img/VGA8x16.png" 8 16 fload txfont
 
 	1 'fvt glGenVertexArrays
 	1 'fbt glGenBuffers

@@ -378,6 +378,7 @@
 	"play fwd" 1024 768 GLini GLInfo
 
 	glgfx
+	"media/img/VGA8x16.png" 8 16 fload txfont
 	load3d
 	rl_init
 	1 rl_grid_init

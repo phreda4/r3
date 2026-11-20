@@ -162,6 +162,8 @@
 : | <<<<< Boot
 	"demo7 r3dv" 1024 768 GLini GLInfo
 	glgfx
+	"media/img/VGA8x16.png" 8 16 fload txfont
+
 	rl_init
 	IniShapes
 	load3d
