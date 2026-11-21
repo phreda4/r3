@@ -1,11 +1,13 @@
-| demo map2 - PHREDA 2023
+| bmap editor - PHREDA 2023
 | map with 64bits per cell
 | info|tile|tile|tile..
+| RIMM version: rimmsdl + rimmwid + rimmfile
 |------------------
 ^r3/lib/console.r3
-^r3/lib/sdl2gfx.r3
-^r3/util/sdlgui.r3
-^r3/util/sdlfiledlg.r3
+^r3/lib/parse.r3
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmfile.r3
 
 #clevel -1
 #cmode 0
@@ -40,6 +42,23 @@
 
 #tilescale 0
 #tilescalen 8
+
+
+#font 0
+#wasp 0				| a pop-up was open in this frame
+#tilesel * 1024		| buffer of the file dialog
+#lsw 0 #lsh 0		| last size of the window
+
+#tpshow 0			| tileset panel open
+#tpw 0 #tph 0		| tileset panel size
+
+#nl 0				| layer list: 0 = all, n = layer n-1
+
+#tilewS * 16 #tilehS * 16	| text of the numeric fields
+#mapwS * 16 #maphS * 16
+
+:uiSelA | 'v -- ; while the button is held, also with the mouse outside
+	uistate $f and 3 <? ( 2drop ; ) 5 >=? ( 2drop ; ) drop ex ;
 
 :tilescalecalc
 	tilescalen tilescale =? ( drop ; ) 
@@ -198,9 +217,7 @@
 		1 + ) 3drop ;
 		
 :modeedit | --
-	|'paint dup onDnMove 
-	'paint onMove 
-	;
+	'paint uiDwn 'paint uiSel ;
 
 |------------- SELECT
 :select1
@@ -215,7 +232,7 @@
 	'tiley2 ! 'tilex2 ! ;
 
 :moderect
-	'select1 'select2 onDnMoveA 
+	'select1 uiDwn 'select2 uiSelA
 	$7f007f00 colorA
 	tilex1 tilex2 2dup min | x1 x2 x
 	mapsx - maptw * mapx + -rot - abs | x w
@@ -273,17 +290,32 @@
 		) drop ;
 		
 :modefill
-	'filltile onClick ;
+	'filltile uiClk ;
 	
 |------------
 #modexe 'modeedit
 
+:overtiles? | -- flag ; the mouse is over the tileset panel
+	tpshow 0? ( ; ) drop
+	ts_spr 0? ( ; ) drop
+	sdlx mapx <? ( drop 0 ; ) mapx tpw + >=? ( drop 0 ; ) drop
+	sdly mapy <? ( drop 0 ; ) mapy tph + >=? ( drop 0 ; ) drop
+	1 ;
+
+:mapxz | -- x ; x of the map zone (out of the screen while a pop-up or the panel is over the map)
+	uiPopup? 1? ( drop -10000 ; ) drop
+	overtiles? 1? ( drop -10000 ; ) drop
+	mapx ;
+
+:mapzone
+	mapxz mapy mapsw maptw * mapsh mapth * uiZoneBox
+	modexe ex
+	uiBackBox ;
+
 :drawmapedit
-	mapx mapy mapsw maptw * mapsh mapth * guiBox
 	ts_spr drawmap
 	drawgrid
-	modexe ex
-	;
+	mapzone ;
 
 :resetmap	
 	mapmem 0 mapw maph * fill ;	
@@ -366,38 +398,44 @@
 	b! ;
 
 |---- tileset
-#wintdlg 0 [ 180 32 512 512 ] "Tiles"
-
 :point2ts | x y -- nts
 	tileh / tilesww * swap tilew / + ;
 	
+
 :chdn
-	sdlx curx - 'tilex1 ! 
-	sdly cury - 'tiley1 !
+	sdlx cx - 'tilex1 !
+	sdly cy - 'tiley1 !
 	;
-	
+
 :chmv
-	sdlx curx - 'tilex2 !
-	sdly cury - 'tiley2 !
-	
+	sdlx cx - 'tilex2 !
+	sdly cy - 'tiley2 !
 	tilex1 tilex2 min dup tilew / 'tx !
 	tiley1 tiley2 min dup tileh / 'ty !
-	point2ts 
+	point2ts
 	'tilenow !
 	tilex1 tilex2 - abs tilew / 1 + 'tw !
 	tiley1 tiley2 - abs tileh / 1 + 'th !
 	;
-	
+
+:chdnmv chdn chmv ;
+
 :wintiles
-	'wintdlg immwin 0? ( drop ; ) drop
-	curx cury ts_spr 0? ( 3drop ; ) @ image
-	'chdn 'chmv dup onMap
-	$7f0000ff colorA	| cursor
-	curx tx tilew * + cury ty tileh * +
-	tw tilew * th tileh * 
+	tpshow 0? ( drop ; ) drop
+	ts_spr 0? ( drop ; ) drop
+	mapx mapy tpw tph uiBox
+	4 4 uiPad
+	uiPanelBg
+	cx cy ts_spr @ image
+	cx cy tileimgw tileimgh uiZoneBox
+	'chdnmv uiDwn 'chmv uiSel
+	uiBackBox
+	$7f0000ff colorA    | cursor
+	cx tx tilew * + cy ty tileh * +
+	tw tilew * th tileh *
 	frect
 	;
-	
+
 #bsrc 0 0
 #bdst 0 0
 
@@ -414,21 +452,34 @@
 	
 	
 |---- config
-#mapwn 
+#mapwn
 #maphn
 #tilewn
 #tilehn
 
-:tileinfo | -- 
-	ts_spr 0? ( drop ; )
-	@ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
-	tileimgw tilew / 'tilesww !
-	tileimgw 4 + 'wintdlg 16 + d!
-	tileimgh 28 + 'wintdlg 20 + d!
+:n>buf | n 'buf --
+	swap "%d" sprint swap strcpy ;
+
+:buf>n | 'buf -- n
+	str>nro nip 1 max 512 min ;
+
+:syncbuf | -- ; numbers to the text of the fields
+	tilewn 'tilewS n>buf
+	tilehn 'tilehS n>buf
+	mapwn 'mapwS n>buf
+	maphn 'maphS n>buf ;
+
+:tileinfo | --
 	mapw 'mapwn !
 	maph 'maphn !
 	tilew 'tilewn !
 	tileh 'tilehn !
+	syncbuf
+	ts_spr 0? ( drop ; )
+	@ 0 0 'tileimgw 'tileimgh SDL_QueryTexture
+	tileimgw tilew / 'tilesww !
+	tileimgw 8 + 'tpw !
+	tileimgh 8 + 'tph !
 	;
 
 |------------
@@ -460,33 +511,43 @@
 	tilewn 'tilew !
 	tilehn 'tileh !
 	mapwn 'mapw !
-	maphn 'maph ! 
+	maphn 'maph !
+	0 'tilescale !    | force the new tile size
 	tileinfo
 	;
 
-:settilefile
-	fullfilename 'tilefile strcpy 
-	recalc
-	;
+:applybuf | -- ; text of the fields to numbers
+	'tilewS buf>n 'tilewn !
+	'tilehS buf>n 'tilehn !
+	'mapwS buf>n 'mapwn !
+	'maphS buf>n 'maphn !
+	recalc ;
+
+:chkscale | -- ; scale of the tiles (also when the window changes size)
+	sw lsw <>? ( 0 'tilescale ! ) drop
+	sh lsh <>? ( 0 'tilescale ! ) drop
+	sw 'lsw ! sh 'lsh !
+	tilescalecalc ;
+
+:loadall
+	loadmap 0 'tilescale ! tileinfo ;
+
+:asktile | -- ; file dialog for the tileset
+	'tilefile 'tilesel strcpy
+	'tilesel c@ 0? ( "r3/" 'tilesel strcpy ) drop
+	'tilesel 1024 1 uiFileAsk ;
+
+:tilefiledone | -- ; the dialog was accepted
+	uiFileDone? 0? ( drop ; ) drop
+	'tilesel 'tilefile strcpy
+	recalc ;
 
 |---- settings
-#winset 1 [ 0 2 180 598 ] "BMAP EDIT"
-
-#nlayer "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Up" "Trigger"
-
-:colbtn 
-	clevel =? ( $3f0000 ; ) $666666  ;
+#nlayer "** ALL **" "Back 1" "Back 2" "Front 1" "Front 2" "Wall" "Up" "Trigger" 0
 
 :layers
-	170 18 immbox
-	-1 colbtn nip 'immcolorbtn ! 
-	[ -1 'clevel ! ; ] "** ALL **" immbtn immln
-	'nlayer
-	0 ( 7 <? 
-		colbtn 'immcolorbtn !
-		[ dup 'clevel ! ; ] pick2 immbtn |imm<<
-		immln
-		swap >>0 swap 1 + ) 2drop immln ;
+	'nl 'nlayer uiRadio
+	nl 1- 'clevel ! ;
 
 #maskc
 
@@ -501,133 +562,119 @@
 		a@ maskc and a!+
 		) drop ;
 		
-:winmain
-	'winset immwins 0? ( drop ; ) drop
-	layers 
+#wcol -46 1.0 1.0
 
-	$7f 'immcolorbtn !
-	
-	172 18 immbox
-	1 16 'tilescalen immSlideri
-	tilescalecalc
-	
-	" Tile Scale" immLabel immcr
+:tilepreview
+	170 uiRowH
+	uiZone
+	[ tpshow 1 xor 'tpshow ! ; ] uiClk
+	cx cy cw rh drawtilecursor
+	ui..
+	0 uiRowH ;
 
-	50 18 immbox
-	'savemap "SAVE" immbtn imm>>
-	'loadmap "LOAD" immbtn immcr
-	
-|	$7f 'immcolorbtn !
-	160 18 immbox
-	[ 'settilefile 'tilefile immfileload ; ] "TILESET" immbtn immcr	
-|	'tilefile immLabel immcr
-	50 18 immbox
-	"Tile:" imm.
-	'tilewn immInputInt imm>> ":" imm. 
-	'tilehn immInputInt immcr
-	"Map:" imm.
-	'mapwn immInputInt imm>> ":" imm. 
-	'maphn immInputInt immcr
-		80 18 immbox
-	[ recalc ; ] "Recalc" immbtn immcr
-	[ clearlayer ; ] "Clear layer" immbtn imm>>
-	[ resetmap ; ] "Reset" immbtn immcr
-	th tw "%d x %d" immlabel immcr
-	170 170 immbox
-	plxywh drawtilecursor
-	[ wintdlg 1 xor 'wintdlg ! ; ] 
-	|[ 'wintdlg immwin$ ; ]
-	immzone 
-	wintiles
+:panelmain
+	0 0 180 sh uiBox
+	4 4 uiPad
+	uiPanelBg
+	"BMAP EDIT" uiLabelC
+	layers
+	"Tile Scale" 1 16 'tilescalen uiSlideriL
+	2 uiCols
+	'savemap "SAVE" uiBtn
+	'loadall "LOAD" uiBtn
+	1 uiCols
+	'asktile "TILESET" uiBtn
+	'wcol 3 uiColsW
+	"Tile" uiLabel 'tilewS 16 uiInputLine 'tilehS 16 uiInputLine
+	"Map" uiLabel 'mapwS 16 uiInputLine 'maphS 16 uiInputLine
+	1 uiCols
+	'applybuf "Recalc" uiBtn
+	2 uiCols
+	'clearlayer "Clear" uiBtn
+	'resetmap "Reset" uiBtn
+	1 uiCols
+	th tw "%d x %d" sprint uiLabel
+	tilepreview
 	;
 
 |----- MAIN
+:inmap? | -- flag ; the mouse is over the map
+	sdlx mapx <? ( drop 0 ; ) mapx mapsw maptw * + >=? ( drop 0 ; ) drop
+	sdly mapy <? ( drop 0 ; ) mapy mapsh mapth * + >=? ( drop 0 ; ) drop
+	1 ;
+
 :keymain
-	SDLkey
+	sdlkey 0? ( drop ; )
+	wasp 1? ( 2drop ; ) drop        | the pop-up has the keys
 	>esc< =? ( exit )
-|	<1> =? ( 0 'clevel ! )
-|	<2> =? ( 1 'clevel ! )
-|	<3> =? ( 2 'clevel ! )
-|	<4> =? ( 3 'clevel ! )
-|	<5> =? ( 4 'clevel ! )
-	
+	inmap? 0? ( 2drop ; ) drop      | the rest only with the mouse over the map
 	<g> =? ( mgrid 1 xor 'mgrid ! )
-	
+
 	<up> =? ( -1 mapy+! )
 	<dn> =? ( 1 mapy+! )
 	<le> =? ( -1 mapx+! )
-	<ri> =? ( 1 mapx+! )	
-	
-	<a>	=? ( map<< )
+	<ri> =? ( 1 mapx+! )
+
+	<a> =? ( map<< )
 	<d> =? ( map>> )
 	<w> =? ( mapup )
-	<s> =? ( mapdn )	
-
+	<s> =? ( mapdn )
 	drop
 	;
-	
-:colorbtn | n -- c
-	=? ( $7f00 ; ) $7f ;
-	
-:btnmode | nro adr --
-	modexe colorbtn 'immcolorbtn !	
-	[ dup 'modexe ! ; ] rot immibtn imm<< 
-	drop ;
-	
-:toolbar	
-	'keymain immkey!
-	$ffffff ttcolor
-	500 0 ttat sdlx sdly scr2view swap maph mapw "w:%d h:%d | x:%d y:%d" ttprint
-	200 0 ttat 'filename "MAP: %s " ttprint 
-	200 16 ttat 'tilefile "TLS: %s " ttprint
 
-	28 28 immbox
-	990 0 immat
+:stmode | 'mode -- ; green the button of the active mode
+	modexe =? ( stSucc ) drop ;
 
-	$7f0000 'immcolorbtn !
-	'exit 185 immibtn  imm<< | winclose
-	imm<<
-	$7f 'immcolorbtn !
+:setedit 'modeedit 'modexe ! ;
+:setrect 'moderect 'modexe ! ;
+:setfill 'modefill 'modexe ! ;
 
-	[ mgrid 1 xor 'mgrid ! ; ] 2 immibtn imm<<
-|	'getconfig 71 immibtn imm<<	
-|	[ 'winmain immwin$ ; ] 157 immibtn imm<<		
-	
-	imm<<	
-	115 'modefill btnmode 
-	15 'moderect btnmode 
-	192 'modeedit btnmode 
-	
-	winmain
-	
+:toolbar
+	$ffffff txrgb
+	500 0 txat sdlx sdly scr2view swap maph mapw "w:%d h:%d | x:%d y:%d" txprint
+	200 0 txat 'filename "MAP: %s " txprint
+	200 16 txat 'tilefile "TLS: %s " txprint
+
+	sw 260 - 2 258 28 uiBox
+	2 2 uiPad
+	5 uiCols
+	'modeedit stmode 'setedit "Pen" uiBtn stInfo
+	'moderect stmode 'setrect "Rect" uiBtn stInfo
+	'modefill stmode 'setfill "Fill" uiBtn stInfo
+	[ mgrid 1 xor 'mgrid ! ; ] "Grid" uiBtn
+	stDang 'exit "X" uiBtn stInfo
+	1 uiCols
 	;
-	
+
 :editor
 	0 cls
-	immgui		| ini IMMGUI
-	drawmapedit	
+	font txfont
+	chkscale
+	uiStart
+	drawmapedit
 	toolbar
-	immRedraw	| IMMGUI windows
+	panelmain
+	wintiles
+	uiPopup? 'wasp !
+	uiEnd
+	tilefiledone
+	keymain
 	SDLredraw
 	;
 
 |------ MAIN
 :main
-	"r3sdl" 1024 600 SDLinit
+	"BMAP EDIT" 1024 600 SDLinitR
 	SDLblend
-	"media/ttf/Roboto-Medium.ttf" 16 TTF_OpenFont immSDL
-	
+	"media/ttf/Roboto-Medium.ttf" 16 txload 'font !
+	"png bmp jpg" uiFileFilter
+
 	'filename "mem/bmapedit.mem" load drop
-|	'filename .println
-|	"mem/bmapedit.mem" 'filename strcpy
-	loadmap tilescalecalc 
-	tileinfo
-	|getconfig
-	"r3/" filedlgini
+	loadmap tileinfo
 	'editor SDLshow
 	savemap
-	
+
 	SDLquit
 	;
-	
+
 : main ;

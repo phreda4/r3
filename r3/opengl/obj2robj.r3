@@ -12,12 +12,18 @@
 ^r3/util/sort.r3
 ^r3/util/loadobj.r3
 ^r3/util/bfont.r3
-^r3/util/dlgfile.r3
+
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmfile.r3
 
 #filename * 1024
 #cutpath ( $2f )
 #fpath * 1024
 #fname 
+#filesel * 1024	| name written by the file dialog
+#fnt			| font of the rimm widgets (file dialog)
+#ppopen 0		| 1 while a rimm pop-up is open
 
 :getpath | 'filename 'path --
 	strcpyl 2 -
@@ -405,10 +411,13 @@
 	;
 	
 |---------------------------------------------------		
-:loadobj | --	
-	dlgFileLoad
-	drop
+:loadobj | --
+	'filename 'filesel strcpy
+	'filesel 1024 1 uiFileAsk	| 1 = the file must exist
 	;
+
+:filedone | --
+	uiFileDone? 1? ( 'filesel useobj ) drop ;
 	
 |---------------------------------------------------	
 :objinfo
@@ -429,8 +438,11 @@
 	
 :main
 	gui
-	'dnlook 'movelook onDnMove
+	uiPopup? 0? ( 'dnlook 'movelook onDnMove ) drop
 	0 cls
+	uiStart
+	8 6 uiPad
+	fnt txfont
 
 	1.0 3dmode
 	rx ry 0 mrot
@@ -441,9 +453,13 @@
 	|objpoint
 	
 	objinfo
+	uiPopup? 'ppopen !
+	uiEnd
+	filedone
 	SDLredraw
 	
 	SDLkey
+	ppopen 1? ( 2drop ; ) drop
 	<up> =? ( 1.0 'zcam +! )
 	<dn> =? ( -1.0 'zcam +! )
 
@@ -462,7 +478,8 @@
 	"r3sdl" 800 600 SDLinit
 	bfont1
 
-	"media/obj/" dlgSetPath
+	"media/ttf/Roboto-Medium.ttf" 16 txload 'fnt !
+	"obj" uiFileFilter
 	mark
 |	"media/obj/food/Brocolli.obj" 	
 |	"media/obj/food/Bellpepper.obj" 

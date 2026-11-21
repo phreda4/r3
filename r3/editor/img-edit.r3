@@ -5,10 +5,24 @@
 ^r3/util/bfont.r3
 ^r3/lib/gui.r3
 ^r3/lib/vdraw.r3
-^r3/util/dlgcol.r3
-^r3/util/dlgfile.r3
+
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmcolor.r3
+^r3/rimm/rimmfile.r3
 
 #nombre * 256
+
+#colord $ffffff	| selected color $RRGGBB
+#filesel * 1024	| name written by the file dialog
+#fnt			| font of the rimm widgets
+#ppopen 0		| 1 while a rimm pop-up is open
+#mblock 0
+
+:mouseblk | -- flag ; 1 while a pop-up is open, and until the button is released after it closes
+	uiPopup? 1? ( drop 1 'mblock ! 1 ; ) drop
+	SDLb 0? ( drop 0 'mblock ! 0 ; ) drop
+	mblock ;
 
 #imagen
 #imagenw 320
@@ -130,9 +144,7 @@
 	$ff00 color
 	modo modo2xy 30 30 rect |box.inv
 
-	xtool ytool 60 180 guiBox
-	'intool guiI
-	'settool onClick
+	mouseblk 0? ( xtool ytool 60 180 guiBox 'intool guiI 'settool onClick ) drop
 	;
 
 :imagen.draw | --
@@ -146,6 +158,7 @@
 
 :teclado
 	SDLkey
+	ppopen 1? ( 2drop ; ) drop
 
 	<up> =? ( 1 zoom << neg 'yi +! )
 	<dn> =? ( 1 zoom << 'yi +! )
@@ -181,11 +194,13 @@
 	imagenh imagenw * 2 << 'here +! 
 	;
 
-:loadfile
-	dlgFileLoad 
-	0? ( drop ; )
-	dup 'nombre strcpy
-	loadImg 0? ( drop ; )	| suface
+:loadfile | --
+	'filesel 1024 1 uiFileAsk	| 1 = the file must exist
+	;
+
+:openimg | --
+	'filesel 'nombre strcpy
+	'filesel loadImg 0? ( drop ; )	| suface
 	dup 0 0 'imagenw 'imagenh SDL_queryTexture
 	
 	imagenw imagenh canvasresize
@@ -203,6 +218,9 @@
 	buffercopy
 	;
 
+:filedone | --
+	uiFileDone? 1? ( openimg ) drop ;
+
 :btnt | exe "text" --
 	bsize bpos 2swap guibox
 		
@@ -218,13 +236,49 @@
 	yr2 yr1 + 1 >> rot 1 >> -
 	bat
 	bprint
+	mouseblk 1? ( 2drop ; ) drop
 	onClick
 	;
+
+|----------- COLOR PANEL
+#pal60 * 240	| 60 colors $RRGGBB
+#palnow -1
+
+:palini | -- ; black, gray, white and 19 hues in 3 shades
+	'pal60 >a
+	$000000 da!+ $888888 da!+ $ffffff da!+
+	0 ( 19 <?
+		dup 1.0 19 */ 1.0 0.5 hsv2rgb $ffffff and da!+
+		dup 1.0 19 */ 1.0 1.0 hsv2rgb $ffffff and da!+
+		dup 1.0 19 */ 0.5 1.0 hsv2rgb $ffffff and da!+
+		1 + ) drop ;
+
+:colorpal | -- ; palette of 3 x 20 colors
+	1 1 uiPad
+	3 20 uiGrid
+	0 ( 60 <?
+		'pal60 over 2 << + d@ color uiFill
+		palnow =? ( $ffffff color uiRect )
+		uiZoneW
+		[ dup 'palnow ! 'pal60 over 2 << + d@ 'colord ! ; ] uiClk
+		uiNext
+		1 + ) drop ;
+
+:colorpanel | --
+	0 200 60 380 uiBox
+	uiPanelBg
+	4 4 uiPad
+	rh 6 + uiN
+	'colord uiColor
+	uiRest
+	colorpal ;
 
 |-----------------------------
 :main
 	gui
 	$0 cls
+	uiStart
+	fnt txfont
     imagen.draw
 
 	$454545 color
@@ -242,14 +296,18 @@
 	[ 3 'zoom ! ; ] "x8" btnt " " bprint
 	'loadfile " load " btnt
 	toolbar
-	dlgColor
+	colorpanel
 
 	xi limx clampmin
 	yi limy clampmin
 	imagenw zoom << xi + sw clampmax
 	imagenh zoom << yi + sh clampmax
 	guiRect
-	modoex 1? ( dup guiI ) drop
+	mouseblk 0? ( modoex 1? ( dup guiI ) drop ) drop
+
+	uiPopup? 'ppopen !
+	uiEnd
+	filedone
 
 	teclado
 	SDLredraw 
@@ -260,17 +318,18 @@
 	'imagenset vset!
 	'imagenget vget!
 	mark
-	dlgColorIni
+	palini
 	"media/img/img-toolbar.png" loadimg 'imgtoolbar !
 	mark
 	here 'imagen !
 	320 240 canvassize
-	"media/img" dlgSetPath
+	"media/img/" 'filesel strcpy
 	;
 
 :   
 	"r3paint" 800 600 SDLinit
 	bfont1
+	"media/ttf/Roboto-Medium.ttf" 16 txload 'fnt !
 	inimem
 |	"mem/img-edit.mem" bmr.load
 	buffercopy

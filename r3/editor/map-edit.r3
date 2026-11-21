@@ -8,11 +8,18 @@
 
 ^r3/util/tilesheet.r3
 ^r3/util/bfont.r3
-^r3/util/dlgfile.r3
+^r3/lib/input.r3
+
+^r3/rimm/rimmsdl.r3
+^r3/rimm/rimmwid.r3
+^r3/rimm/rimmfile.r3
 
 #sprgui
+#fnt			| font of the rimm widgets (file dialog)
+#ppopen 0		| 1 while a rimm pop-up is open
 
 #filemap * 1024
+#filesel * 1024	| name written by the file dialog
 
 #mapx 0 #mapy 0
 #mapw 32 #maph 32
@@ -100,12 +107,14 @@
 	
 	recalc ;
 		
-:loadfile
-	dlgFileLoad 
-	0? ( drop ; )
-	dup 'filemap strcpy
-	drop
+:loadfile | --
+	'filemap 'filesel strcpy
+	'filesel c@ 0? ( "media/map/" 'filesel strcpy ) drop
+	'filesel 1024 1 uiFileAsk	| 1 = the file must exist
 	;
+
+:filedone | --
+	uiFileDone? 1? ( 'filesel 'filemap strcpy ) drop ;
 
 |--------------------------------
 
@@ -266,14 +275,18 @@
 	tilenow palins!
 	;
 
-:paldraw
-	mapamem 0? ( drop ; ) drop
+:palclick | --
 	0 0 40 40 guiBox
 	'selectile onClick
 	
 	0 40 40 sh guiBox
 	[ $403DFF color sdly 40 / 0 swap 40 * 40 40 frect ; ] guiI
 	[ 'paleta sdly 40 / ncell+ @ dup palins! 'tilenow ! ; ] onClick
+	;
+
+:paldraw
+	mapamem 0? ( drop ; ) drop
+	uiPopup? 0? ( palclick ) drop
 
 	0 0 ( 12 <?
 		'paleta over ncell+ @ tilemem 4 pick4 4 + 
@@ -324,9 +337,7 @@
 	$999999 color
 	modo tool2xy 40 40 frect 
 
-	Xinitool 0 sw 40 guiBox
-	'inbtn guiI
-	'clicktool onClick
+	uiPopup? 0? ( Xinitool 0 sw 40 guiBox 'inbtn guiI 'clicktool onClick ) drop
 	
 	Xinitool
 	0 ( 8 <?
@@ -401,12 +412,14 @@
 	
 	mgrid 1? ( grid ) drop
 
+	uiPopup? 1? ( drop ; ) drop
 	40 40 sw sh guiBox
 	modo 3 << 'modelist + @ ex
 	;
 	
 :teclado
 	SDLkey 
+	ppopen 1? ( 2drop ; ) drop
 	>esc< =? ( exit )
 	<f1> =? ( 0 'modo ! )
 	<f2> =? ( 1 'modo ! )
@@ -444,17 +457,24 @@
 :editing
 	gui
 	0 cls
+	uiStart
+	8 6 uiPad
+	fnt txfont
 
 	mapinscreen
 	upbar
 	paldraw
 
+	uiPopup? 'ppopen !
+	uiEnd
+	filedone
+
 	SDLredraw
 	teclado ;
 	
 :main
-	"media/map" dlgSetPath
 	"r3sdl" 800 600 SDLinit
+	"media/ttf/Roboto-Medium.ttf" 16 txload 'fnt !
 	bfont1 
 	| SDLfull	
 	32 32 "r3/editor/mapeditor32.png" tsload 'sprgui !	
