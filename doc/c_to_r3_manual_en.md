@@ -310,7 +310,7 @@ value 255 100 */                | safe
 
 ## Registers A and B
 
-Fast scratch pointers for tight loops. Same operation set for both, prefixed `a`/`b`:
+Two global pointer registers for walking memory without touching the stack. B has the same words as A.
 
 | Word | Effect |
 |------|--------|
@@ -319,35 +319,54 @@ Fast scratch pointers for tight loops. Same operation set for both, prefixed `a`
 | `a@` / `a!` | read/write qword at A |
 | `a@+` / `a!+` | read/write qword at A, then A += 8 |
 
-Size variants: `ca@`/`ca!`/`ca@+`/`ca!+` (byte, ±1), `wa@…` (word, ±2), `da@…` (dword, ±4). Same set exists for B (`>b`, `b@+`, ...).
+Size variants: `ca@ ca!` `ca@+ ca!+` (byte, ±1), `wa@…` (word, ±2), `da@…` (dword, ±4). Same for B: `>b`, `db!+`, ...
 
 ```r3
 'array >a
-100 ( 1? 1-
-    a@+ process    | read from A, A += 8
-    ) drop
+100 ( 1? 1- a@+ process ) drop      | read, A += 8
 ```
 
-**Registers are global and not preserved across word calls.** They're not local loop variables — they're two shared slots the whole program uses. If `process` above also uses `>a`/`a@+` internally (directly, or through *anything it calls*), it silently overwrites your traversal pointer and the loop reads garbage from then on:
+### Rules
+
+1. **Registers are global.** If anything you call (even indirectly) uses A or B, it overwrites yours and the loop reads garbage.
+2. **A word that uses A or B wraps its body in `ab[ ... ]ba`.** `ab[` saves the caller's A and B on the return stack, `]ba` restores them. Then callers never have to protect anything. Put it once at the entry of the word that owns the loop, not inside the loop.
+3. Helpers called only from such a word may use A and B freely. Mark them in the comment: `; uses A, B`.
+4. Never leave between `ab[` and `]ba` with `;`. Restore first: `]ba ;`.
+5. A loop that calls a word you did not write (a callback through `ex`, a library you have not read) must not keep its pointer in A or B across that call. Use a variable, or `ab[ call ]ba`.
 
 ```r3
-| BROKEN if `process` touches A internally
-'array >a
-100 ( 1? 1-
-    a@+ process    | process() clobbers A -> next a@+ is corrupted
-    ) drop
+:setd | v n 'dst --              ; uses A
+	ab[ >a
+	( 1? 1- over da!+ ) 2drop    | write v, n times
+	]ba ;
 ```
 
-Fix by saving/restoring A (and B) around the call that might reuse them — `ab[` pushes both to the return stack, `]ba` pops and restores them:
+### Patterns
+
+| Task | Code |
+|------|------|
+| copy n dwords A to B | `( 1? 1- da@+ db!+ ) drop` |
+| fill n dwords | `( 1? 1- v da!+ ) drop` |
+| skip one dword | `4 a+` |
+| write the second dword of an 8-byte pair | `4 a+ da! 4 a+` |
+| copy backwards (A, B at the last element) | `( 1? 1- da@ -4 a+ db! -4 b+ ) drop` |
+| split a qword into low and high dword | `a@+ dup $ffffffff and swap 32 >>` |
+| row start moves by a fixed step | `over >a ... swap 256 + swap` (pointer on the stack, reload A each row) |
+
+A countdown `( 1? 1- ... )` never ends if the count is negative. When the count is computed (`hi lo - 1+`), guard it with `0 max`.
+
+### Check that a word protects the registers
+
+Set A and B to known values, call the word, compare. Then remove its `ab[ ]ba` and confirm the test fails; otherwise the test proves nothing.
 
 ```r3
-'array >a
-100 ( 1? 1-
-    a@+ ab[ process ]ba   | A is safe across process, even if it uses A/B
-    ) drop
-```
+:rg 12345 >a 67890 >b ;
+:chk | "name" --
+	a> 12345 =? ( drop b> 67890 =? ( 2drop ; ) ) drop
+	"A/B clobbered by " .write .println ;
 
-Or, cheaper when only the *traversal* needs protecting and `process` is the one using registers internally: keep the pointer in a normal variable instead of a register, and only load it into A for the instruction that actually needs it. As a rule: prefer registers for tight, leaf-level loops that call nothing register-using; reach for `ab[ ]ba` as soon as the loop body calls a word you didn't write yourself (or don't know the internals of).
+:main  rg 0 64 'buf setd "setd" chk ;
+```
 
 ---
 
@@ -365,7 +384,7 @@ An unbalanced return stack crashes the word — every `>r` in a word needs a mat
 
 ## Replacing Variables with Stack References
 
-A direct C translation gives every local a `#variable`. Idiomatic R3forth keeps temporaries **on the stack** and reads them back with `over`, `pick2`, `pick3`, `pick4`. The result is shorter, has no global state to clobber, and is often faster. This section is the method, step by step, taken from the real refactoring of `r3/term/colorscene.r3` (about 75 variables down to 27, not counting buffers, with identical output).
+A direct C translation gives every local a `#variable`. Idiomatic R3forth keeps temporaries **on the stack** and reads them back with `over`, `pick2`, `pick3`, `pick4`. The result is shorter, has no global state to clobber, and is often faster. This section is the method, step by step, taken from the real refactoring of `r3/term/colorscene.r3` (about 75 variables down to 27, not counting buffers, with identical output). A second case: `r3/r3dv/ssmulti.r3` (172 variables down to 122, same saved files and same GPU image, about 20% faster in the VM).
 
 It is a mechanical process, not a rewrite: **the program must give exactly the same results before and after.** Verify that at every step (Step 1 and Step 9).
 
@@ -428,6 +447,8 @@ Before touching anything, make the program produce a **checksum** of its output,
 ```
 
 For `colorscene.r3` the test ran each of the 7 scenes for a few frames with `tt` (the time) set by hand, then printed one hash per scene. When a hash changed, the last edit was the culprit, so each edit stayed small. If the output is not a buffer, compare the text it prints, or the bytes it emits.
+
+Also hash the files the program writes (`md5sum`), and run the baseline twice: the two runs must match, or the test is not deterministic and proves nothing. If the program already has a test against a reference model, run it too: it checks meaning, the hash checks that nothing moved.
 
 If a hash changes **on purpose** (a bug fix), do it as a separate step, so the refactoring still compares equal to a known-good baseline.
 
@@ -600,6 +621,26 @@ Measured on `colorscene.r3` (milliseconds per frame, same machine, Linux; compar
 | spectrum, plasma, tunnel, fire, stars, copper | | within 0.1 ms | |
 | rotozoomer | 0.27 ms | 0.44 ms | slower: see below |
 
+### Patterns that avoid variables
+
+**Loop state under the counter.** Keep the values the loop reads below the loop value and reach them with `over`, `pick2`, `pick3`. The loop test also reads them from there (`over <?`).
+
+**Build the stack in the order the loop needs.** Push each value with `dup F swap` so the last step consumes `n`:
+
+```r3
+| stack: lm sx p r          (r is the loop count)
+dup smly 1 swap << 1- $ffffffff and swap     | lm n
+dup smsx swap                                | lm sx n
+dup smorg 3 << dcols + swap                  | lm sx p n
+smrw                                         | lm sx p r
+```
+
+**Pass arguments to a test without losing them.** Copy the group: `pick2 pick2 pick2 test` copies the top three values, `pick3 pick3 pick3 test` copies three values that have a fourth on top of them.
+
+**Cut live values with a helper.** A loop body that needs 6 values becomes a word with 3 inputs plus the loop. Example: `pk1 | lm v -- m b` computes the pair for one column, `packrow` only stores it.
+
+**Walk memory with A and B** instead of recomputing `i 2 << base +` for each element (see [Registers A and B](#registers-a-and-b)). It removes the pointer variable and the address arithmetic at once.
+
 ### Variables worth keeping
 
 The rotozoomer got slower because the original keeps two variables `uu` and `vv` updated **incrementally**: at the start of each row it sets them, and then adds a constant for each pixel:
@@ -621,6 +662,8 @@ The variables that stayed in `colorscene.r3`, and why:
 | `lfg lbg` | cached terminal colors: state that survives between cells |
 | `tt fade dt fps scn ...` | global application state |
 | `CW CH PW PH` | screen dimensions: read in almost every word |
+| `rx0 rz0 rl0 rx1 rz1 rl1 rc` (`ssmulti.r3`) | one range set by a word and read by the next ones in the chain |
+| `cn_co cn_lu cn_lc` (`ssmulti.r3`) | accumulators that live across calls to the same word |
 
 Rule: **keep a variable when it is state, when it saves work in the hot loop, or when removing it would hide the code.** The goal is not zero variables; it is variables that mean something.
 
@@ -666,9 +709,15 @@ A `drop` right after a conditional is not this problem: tests never consume thei
 | a word ends in `drop`/`2drop`/`4drop` to discard inputs | values kept on the stack instead of consumed; harder to read and to `pick` | reorder so each input is consumed where it is last used (see [Trailing drops](#trailing-drops-consume-dont-clean-up)) |
 | a loop with no exit condition of its own | it runs once | the loop test must be a conditional that has no block of its own (`( running 1? drop ... )`) |
 | `c@` returns a signed byte | negative values in indexes | mask it: `c@ $ff and` |
+| `nip` used to drop the top item | the wrong value survives | `nip` removes the **second** item (`a b -- b`); to drop the top use `drop` |
+| a final `drop` after a test on an operand you still need | the operand is gone (`-? ( 4drop ; ) nspr >=? ( 4drop ; ) drop`) | that `drop` is only for a value you pushed for the test; an operand stays |
+| an extra `dup` while building arguments | every `pick` after it lands one item off | recount distances from the real stack, not from the plan |
+| `;` between `ab[` and `]ba` | A and B of the caller are lost | `]ba ;` |
+| `( 1? 1- ... )` with a computed count | endless loop when the count is negative | `0 max` |
+| changing a word's signature and its callers in different steps | nothing works, hard to see why | change them in the same step |
 | the stack effect comment lies | later edits break silently | update the comment with the code |
 
-How to find the first wrong line: compare the hash after each edit; if it differs, undo the last edit and redo it in smaller steps.
+How to find the first wrong line: compare the hash after each edit; if it differs, undo the last edit and redo it in smaller steps. If you changed many words together, apply the edits to the original **one group at a time** and run the test for each group (words whose signature changed go in the same group). The group that fails is the one to review.
 
 To check a single word, call it from a small `:main` with known inputs and put a **sentinel** value under them. If the word honors its stack effect, the sentinel comes back untouched; if it leaks or eats a value, the sentinel is wrong:
 
@@ -691,6 +740,7 @@ To check a single word, call it from a small `:main` with known inputs and put a
 9. Compare the checksum after every change.
 10. Measure the time. If the inner loop got slower, put the variable back.
 11. Delete the variable declarations only when no word uses them any more.
+12. Sequential memory loops: use A and B, with `ab[ ]ba` at the entry of the word. Test that the caller's A and B survive.
 
 ---
 
@@ -951,7 +1001,7 @@ int main() {
 7. Use `*/` (and `*>>`, `<</`) instead of `* /` when the intermediate product can overflow.
 8. Use `'var` for `!`/`@`/`+!` — never the bare value.
 9. `@+`/`!+` advance by the *access size*, not always by 8.
-10. Save registers (`ab[ ... ]ba`) before calling anything that might reuse A/B.
+10. A word that uses A or B wraps its body in `ab[ ... ]ba`; a loop must not keep its pointer in A/B across a call to a word it does not control.
 11. Temporaries and loop counters usually belong on the stack, not in `#variables`; convert them with the method in [Replacing Variables with Stack References](#replacing-variables-with-stack-references).
 
 ### Frequent mistakes

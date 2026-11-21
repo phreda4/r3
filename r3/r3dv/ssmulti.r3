@@ -125,23 +125,25 @@
 	5 << + ;
 
 |---- bounding box de los voxeles de un sprite (solo mascaras: no hace falta abrirlo)
-#kx0 #kz0 #kl0 #kx1 #kz1 #kl1 #bo #bm #bci #bok
+#kx0 #kz0 #kl0 #kx1 #kz1 #kl1
 :bboxn | n -- ok
-	smorg 'bo !
+	ab[
+	smorg 3 << dcols + >a
 	32 'kx0 ! 32 'kz0 ! 32 'kl0 ! -1 'kx1 ! -1 'kz1 ! -1 'kl1 !
-	0 ( 1024 <? dup 'bci !
-		bci bo + 3 << dcols + d@ $ffffffff and 'bm !
-		bm 1? (
-			bci 31 and dup kx0 min 'kx0 ! kx1 max 'kx1 !
-			bci 5 >> dup kz0 min 'kz0 ! kz1 max 'kz1 !
-			bm ctz kl0 min 'kl0 ! bm msb kl1 max 'kl1 !
+	0 ( 1024 <? a@+ $ffffffff and					| i m
+		1? (
+			over 31 and dup kx0 min 'kx0 ! kx1 max 'kx1 !
+			over 5 >> dup kz0 min 'kz0 ! kz1 max 'kz1 !
+			dup ctz kl0 min 'kl0 ! dup msb kl1 max 'kl1 !
 		) drop
 		1+ ) drop
+	]ba
 	kx1 -? ( drop 0 ; ) drop 1 ;
 
 ::ssm_bbox | n -- x0 z0 l0 x1 z1 l1 ok
-	bboxn 'bok !
-	kx0 kz0 kl0 kx1 kz1 kl1 bok ;
+	bboxn drop
+	kx0 kz0 kl0 kx1 kz1 kl1
+	kx1 -? ( drop 0 ; ) drop 1 ;
 
 #scrop
 ::ssm_crop! | 0/1 --
@@ -178,22 +180,22 @@
 	pdclr ;
 
 |---- tamanio
-#ax #al #ar #an #sa
 :dimok | v -- 1/0
 	1 <? ( drop 0 ; ) 32 >? ( drop 0 ; ) drop 1 ;
-:dimsok | -- 1/0
-	ax dimok 0? ( ; ) drop
-	al dimok 0? ( ; ) drop
-	ar dimok ;
+:dim3 | sx ly rw -- 1/0
+	dimok 0? ( nip nip ; ) drop
+	dimok 0? ( nip ; ) drop
+	dimok ;
 :setsz | sx ly rw n --
-	3 << sprt + 4 + 'sa !
-	sa 2 + c! sa 1+ c! sa c! ;
+	3 << sprt + 4 +							| sx ly rw a
+	swap over 2 + c!						| sx ly a
+	swap over 1+ c!							| sx a
+	c! ;
 
 ::ssm_add | sx layers rows -- n
-	'ar ! 'al ! 'ax !
-	dimsok 0? ( drop -1 ; ) drop
-	nspr smax >=? ( drop -1 ; ) drop
-	ax al ar nspr setsz
+	pick2 pick2 pick2 dim3 0? ( 4drop -1 ; ) drop
+	nspr smax >=? ( 4drop -1 ; ) drop
+	nspr setsz
 	nspr 10 << nspr 3 << sprt + d!
 	npal nspr 3 << rst + d!
 	0 nspr 3 << rst + 4 + d!
@@ -201,48 +203,43 @@
 	nspr dup 1+ 'nspr ! ;
 
 ::ssm_size! | sx layers rows n --
-	'an ! 'ar ! 'al ! 'ax !
-	dimsok 0? ( drop ; ) drop
-	an -? ( drop ; ) nspr >=? ( drop ; ) drop
-	ax al ar an setsz
-	an 3 sfl ;
+	pick3 pick3 pick3 dim3 0? ( drop 4drop ; ) drop
+	-? ( 4drop ; ) nspr >=? ( 4drop ; )
+	dup 3 sfl setsz ;
 
 |---- decodificar / expandir
-#gb #gl
 :getcolor | base layer -- color
-	'gl ! 'gb !
-	gb $ffffffff and 24 >> 1 =? ( drop gb $ffffff and 2 << xpal + d@ ; ) drop
-	gb gl + 2 << xpal + d@ ;
+	over $ffffffff and 24 >> 1 =? ( 2drop $ffffff and 2 << xpal + d@ ; ) drop
+	+ 2 << xpal + d@ ;
 
-#ex_o #ex_m #ex_b #ex_w
-:expandcol | ci --
-	dup ex_o + 3 << xcols + d@+ $ffffffff and 'ex_m ! d@ 'ex_b !
-	ex_m 0? ( 2drop ; ) drop
-	7 << wcol + 'ex_w !
-	0 ( 32 <?
-		ex_m over >> 1 and
-		1? ( over ex_b swap getcolor pick2 2 << ex_w + d! ) drop
-		1+ ) drop ;
+:expandcol | o ci --		; usa A
+	dup 7 << wcol + >a
+	+ 3 << xcols + d@+ $ffffffff and swap d@			| m b
+	over 0? ( 3drop ; ) drop
+	0 ( 32 <?							| m b i
+		pick2 over >> 1 and
+		1? ( pick2 pick2 getcolor da! ) drop
+		4 a+ 1+ ) 3drop ;
 
 :smexpand | n --
-	smorg 'ex_o !
-	wcol SENT 32768 dfill
-	0 ( 1024 <? dup expandcol 1+ ) drop ;
+	ab[
+	smorg wcol SENT 32768 dfill
+	0 ( 1024 <? 2dup expandcol 1+ ) 2drop
+	]ba ;
 
 |---- comprimir el pad -> cbuf (tira) y cbo (base relativa a la region)
 #cn_o #cn_co #cn_lu #cn_lc
-#cm #clo #chi #cw #cuc #cuu
+#cuc #cuu
 
-:uniform2? | -- 1/0
+:uniform2? | cw lo hi -- 1/0		; usa A
 	SENT 'cuc ! 1 'cuu !
-	clo ( chi <=?
-		dup 2 << cw + d@
+	over - 1+ swap 2 << rot + >a					| n
+	( 1? 1- da@+
 		SENT <>? (
 			cuc SENT =? ( over 'cuc ! ) drop
 			cuc <>? ( 0 'cuu ! )
 		) drop
-		1+ ) drop
-	cuu ;
+		) drop cuu ;
 
 :uslot | -- slot		; reusa el slot si el color es igual al ultimo uniforme
 	cn_lu 0 >=? ( cuc cn_lc =? ( 2drop cn_lu ; ) drop ) drop
@@ -250,72 +247,80 @@
 	cn_co dup 'cn_lu ! cuc 'cn_lc !
 	1 'cn_co +! ;
 
-:compresscol | ci --
-	dup cn_o + 3 << dcols + d@ $ffffffff and 'cm !
-	cm 0? ( drop 0 swap 2 << cbo + d! ; ) drop
-	cm ctz 'clo ! cm msb 'chi !
-	dup 7 << wcol + 'cw !
-	uniform2? 1? ( drop
+:compresscol | ci --		; usa A y B
+	dup cn_o + 3 << dcols + d@ $ffffffff and			| ci m
+	0? ( drop 0 swap 2 << cbo + d! ; )
+	dup ctz swap msb pick2 7 << wcol + -rot			| ci cw lo hi
+	pick2 pick2 pick2 uniform2? 1? ( drop 3drop
 		uslot $1000000 or swap 2 << cbo + d! ; ) drop
-	cn_co clo - swap 2 << cbo + d!
-	clo ( chi <=?
-		dup 2 << cw + d@ cn_co 2 << cbuf + d!
-		1 'cn_co +!
-		1+ ) drop ;
+	cn_co pick2 - pick4 2 << cbo + d!				| base de la columna
+	over - 1+ swap 2 << rot + >a					| ci n
+	cn_co 2 << cbuf + >b
+	dup ( 1? 1- da@+ db!+ ) drop
+	'cn_co +! drop ;
 
 :compress | n -- largo
+	ab[
 	smorg 'cn_o !
 	0 'cn_co ! -1 'cn_lu !
 	0 ( 1024 <? dup compresscol 1+ ) drop
+	]ba
 	cn_co ;
 
 |---- region: mover la cola, corregir bases, colocar
-#mf #mt #mc
 :movecols | from to count --
-	'mc ! 'mt ! 'mf !
-	mt mf <? ( drop
-		0 ( mc <? dup mf + 2 << dpal + d@ over mt + 2 << dpal + d! 1+ ) drop ; ) drop
-	mc ( 1? 1- dup mf + 2 << dpal + d@ over mt + 2 << dpal + d! ) drop ;
+	ab[
+	over pick3 <? ( drop						| asc: copia hacia abajo
+		rot 2 << dpal + >a swap 2 << dpal + >b
+		( 1? 1- da@+ db!+ ) drop
+		]ba ; ) drop
+	pick2 over + 1- 2 << dpal + >a					| desc: de atras hacia adelante
+	over over + 1- 2 << dpal + >b
+	nip nip ( 1? 1- da@ -4 a+ db! -4 b+ ) drop
+	]ba ;
 
-#sd
-:shiftbases | from_col delta --
-	'sd !
-	( ncols <? dup 3 << 4 + dcols + dup d@ sd + swap d! 1+ ) drop ;
+:shiftbases | from delta --
+	ab[
+	ncols pick2 - 0 max						| from delta n
+	rot 3 << dcols + 4 + >a						| delta n
+	( 1? 1- da@ pick2 + da! 8 a+ ) 2drop
+	]ba ;
 
-#pn #ps #pa
-:putbase | ci --
-	dup pn smorg + 3 << dcols + 'pa !
-	pa d@ $ffffffff and 0? ( drop 0 pa 4 + d! drop ; ) drop
-	2 << cbo + d@ ps + pa 4 + d! ;
+:placebases | ps org --		; usa A y B: A = columnas del sprite, B = cbo
+	3 << dcols + >a cbo >b
+	1024 ( 1? 1-
+		da@ $ffffffff and 1? ( drop db@ pick2 + )
+		4 a+ da! 4 a+ 4 b+ ) 2drop ;
 
-:placeregion | n --		; copia cbuf a la region de n y fija las bases de sus columnas
-	dup 'pn ! smrs 'ps !
-	0 ( pn smrl <? dup 2 << cbuf + d@ over ps + 2 << dpal + d! 1+ ) drop
-	0 ( 1024 <? dup putbase 1+ ) drop ;
+:placeregion | n --		; usa A y B ; copia cbuf a la region de n y fija las bases
+	ab[
+	dup smorg swap dup smrs swap smrl				| org ps len
+	over 2 << dpal + >b cbuf >a
+	( 1? 1- da@+ db!+ ) drop					| org ps
+	swap placebases
+	]ba ;
 
-#nw #ow #dl #tf
-:shiftregions | n --		; cola de la tira corrida dl: inicios y bases de los sprites siguientes
+:shiftregions | ow dl n --	; cola de la tira corrida dl: inicios y bases de los sprites siguientes
 	dup sflafter
-	dup smrs ow + 'tf !
-	tf tf dl + npal tf - movecols
-	dup 1+ ( nspr <? dup 3 << rst + dup d@ dl + swap d! 1+ ) drop
-	1+ nspr <? ( dup smorg dl shiftbases ) drop
-	dl 'npal +! ;
+	dup smrs pick3 +						| ow dl n tf
+	dup pick3 + npal pick2 - movecols
+	dup 1+ ( nspr <? dup 3 << rst + dup d@ pick4 + swap d! 1+ ) drop
+	1+ nspr <? ( dup smorg pick2 shiftbases ) drop
+	nip 'npal +! ;
 
 :smcommit
 	open 0 <? ( drop ; ) drop
 	wdirty 0? ( drop ; ) drop
-	open compress 'nw !
-	open smrl 'ow !
-	nw ow - 'dl !
-	npal dl + pmax >? ( drop 1 'ssmerr ! ; ) drop
-	dl 1? ( open shiftregions ) drop
-	nw open 3 << rst + 4 + d!
+	open compress open smrl					| nw ow
+	over over -							| nw ow dl
+	npal over + pmax >? ( 4drop 1 'ssmerr ! ; ) drop
+	dup 1? ( pick2 pick2 open shiftregions ) drop
+	pick2 open 3 << rst + 4 + d!
 	open placeregion
 	open 1 sfl
-	open smrs dup nw + 1- pdmk
-	dl 1? ( open smrs npal 1- pdmk ) drop
-	0 'wdirty ! ;
+	open smrs dup pick4 + 1- pdmk
+	dup 1? ( open smrs npal 1- pdmk ) drop
+	0 'wdirty ! 3drop ;
 
 |---- API: abrir / editar
 ::ssm_edit | n --
@@ -330,27 +335,27 @@
 :vok | n -- 1/0		; abre n, 1 si quedo abierto
 	dup ssm_edit open =? ( drop 1 ; ) drop 0 ;
 
-#vn #vci #vl #va
 ::ssm_vget | n ci layer -- 0/bit
-	'vl ! swap smorg + 3 << dcols + d@ $ffffffff and 1 vl << and ;
+	rot smorg rot + 3 << dcols + d@ $ffffffff and swap 1 swap << and ;
 
 ::ssm_vocc! | on n ci layer --
-	'vl ! 'vci ! dup 'vn ! vok 0? ( 2drop ; ) drop
-	vn smorg vci + 3 << dcols + 'va !
-	vn 1 sfl 1 'wdirty !
-	1? ( drop va d@ 1 vl << or va d! ; ) drop
-	va d@ 1 vl << nand va d!
-	SENT vci 7 << vl 2 << + wcol + d! ;
+	pick2 vok 0? ( drop 4drop ; ) drop
+	pick2 smorg pick2 + 3 << dcols +				| on n ci l va
+	pick3 1 sfl 1 'wdirty !
+	pick4 1? ( drop dup d@ 1 pick3 << or swap d! 4drop ; ) drop
+	dup d@ 1 pick3 << nand swap d!
+	swap 7 << swap 2 << + wcol + SENT swap d!
+	2drop ;
 
 ::ssm_vcol! | color n ci layer --
-	'vl ! 'vci ! dup 'vn ! vok 0? ( 2drop ; ) drop
-	vci 7 << vl 2 << + wcol + d!
-	vn 1 sfl 1 'wdirty ! ;
+	pick2 vok 0? ( drop 4drop ; ) drop
+	swap 7 << swap 2 << + wcol +					| color n addr
+	rot swap d!
+	1 sfl 1 'wdirty ! ;
 
 ::ssm_vcol@ | n ci layer -- color
-	'vl ! 'vci ! 'vn !
-	vn open =? ( drop vci 7 << vl 2 << + wcol + d@ ; ) drop
-	vn smorg vci + 3 << dcols + 4 + d@ vl getcolor ;
+	pick2 open =? ( drop swap 7 << swap 2 << + wcol + d@ nip ; ) drop
+	rot smorg rot + 3 << dcols + 4 + d@ swap getcolor ;
 
 |---- acceso directo al pad del abierto
 :colma | ci -- adr		; mascara de la columna ci del abierto
@@ -365,7 +370,7 @@
 
 |---- por rango (sobre el abierto)
 #bx0 #bz0 #bl0 #bx1 #bz1 #bl1
-#rx0 #rz0 #rl0 #rx1 #rz1 #rl1 #rlm #rc #rm #rp #rxt
+#rx0 #rz0 #rl0 #rx1 #rz1 #rl1 #rlm #rc
 
 :smsrt | a b -- lo hi
 	2dup <? ( drop ; ) drop swap ;
@@ -380,33 +385,32 @@
 	1 rl1 rl0 - 1+ << 1- rl0 << $ffffffff and 'rlm ! ;
 
 :reach | 'xt --		; xt: ci --
-	'rxt !
+	ab[
 	rz0 ( rz1 <=?
 		rx0 ( rx1 <=?
-			over 5 << over + rxt ex
+			over 5 << over + pick3 ex
 			1+ ) drop
-		1+ ) drop ;
+		1+ ) 2drop
+	]ba ;
 
 :rdone
 	1 'wdirty ! open 1 sfl ;
 
-:fillcol | ci --
+:fillcol | ci --		; usa A
 	dup colma dup d@ rlm or swap d!
-	7 << wcol + 'rp !
-	rl0 ( rl1 <=? rc over 2 << rp + d! 1+ ) drop ;
+	7 << wcol + rl0 2 << + >a
+	rl1 rl0 - 1+ ( 1? 1- rc da!+ ) drop ;
 
-:erasecol | ci --
+:erasecol | ci --		; usa A
 	dup colma dup d@ rlm nand swap d!
-	7 << wcol + 'rp !
-	rl0 ( rl1 <=? SENT over 2 << rp + d! 1+ ) drop ;
+	7 << wcol + rl0 2 << + >a
+	rl1 rl0 - 1+ ( 1? 1- SENT da!+ ) drop ;
 
-:paintcol | ci --
-	dup colma d@ $ffffffff and 'rm !
-	7 << wcol + 'rp !
+:paintcol | ci --		; usa A
+	dup colma d@ $ffffffff and swap 7 << wcol + rl0 2 << + >a	| m
 	rl0 ( rl1 <=?
-		rm over >> 1 and
-		1? ( rc pick2 2 << rp + d! ) drop
-		1+ ) drop ;
+		over over >> 1 and 1? ( rc da! ) drop 4 a+
+		1+ ) 2drop ;
 
 ::ssm_fill | color x0 z0 l0 x1 z1 l1 --
 	rbox 'rc !
@@ -425,24 +429,20 @@
 
 ::ssm_clear | n --
 	vok 0? ( drop ; ) drop
-	0 ( 1024 <? dup open 10 << + 3 << dcols + 0 swap d! 1+ ) drop
+	ab[ open 13 << dcols + >a 1024 ( 1? 1- 0 da! 8 a+ ) drop ]ba
 	wcol SENT 32768 dfill
 	rdone ;
 
-#cs #cd
 ::ssm_copy | dst src --
-	'cs ! 'cd !
-	cd -? ( drop ; ) nspr >=? ( drop ; ) cs =? ( drop ; ) drop
-	cs -? ( drop ; ) nspr >=? ( drop ; ) drop
-	cs vok 0? ( drop ; ) drop
+	over -? ( 3drop ; ) nspr >=? ( 3drop ; ) over =? ( 3drop ; ) drop
+	-? ( 2drop ; ) nspr >=? ( 2drop ; )
+	dup vok 0? ( 3drop ; ) drop
 	smcommit
-	cs smsx cs smly cs smrw cd setsz
-	cd 3 sfl
-	0 ( 1024 <?
-		dup cs 10 << + 3 << dcols + d@
-		over cd 10 << + 3 << dcols + d!
-		1+ ) drop
-	cd 'open !
+	dup smsx over smly pick2 smrw pick4 setsz			| d s
+	over 3 sfl
+	ab[ dup 13 << dcols + >a over 13 << dcols + >b
+	1024 ( 1? 1- da@ db! 8 a+ 8 b+ ) drop ]ba			| d s
+	drop 'open !
 	rdone ;
 
 |---- undo: copia del sprite abierto (n, mascaras, pad)
@@ -452,42 +452,38 @@
 	'sdst !
 	open -? ( drop -1 sdst d! ; ) drop
 	open sdst d!
-	0 ( 1024 <?
-		dup open 10 << + 3 << dcols + d@
-		over 2 << sdst 4 + + d!
-		1+ ) drop
+	ab[ open 13 << dcols + >a sdst 4 + >b
+	1024 ( 1? 1- da@ db!+ 8 a+ ) drop ]ba
 	sdst 4100 + wcol 131072 cmove ;
 
 ::ssm_rest | 'src --
 	'sdst !
 	sdst d@ -? ( drop ; ) nspr >=? ( drop ; ) ssm_edit
 	open -? ( drop ; ) drop
-	0 ( 1024 <?
-		dup 2 << sdst 4 + + d@
-		over open 10 << + 3 << dcols + d!
-		1+ ) drop
+	ab[ sdst 4 + >a open 13 << dcols + >b
+	1024 ( 1? 1- da@+ db! 8 b+ ) drop ]ba
 	wcol sdst 4100 + 131072 cmove
 	rdone ;
 
 |---- GPU: columnas empaquetadas al tamanio real
-#pk_d #pk_sx #pk_rw #pk_lm #pk_s #pk_a #pk_m #pk_b
-:packspr | n dst --		; sx*rw columnas (mascara d, base d) de n en dst
-	'pk_d !
-	dup smsx 'pk_sx !
-	dup smrw 'pk_rw !
-	dup smly 1 swap << 1- $ffffffff and 'pk_lm !
-	smorg 'pk_s !
-	0 ( pk_rw <?
-		0 ( pk_sx <?
-			over 5 << over + pk_s + 3 << dcols + 'pk_a !
-			pk_a d@ $ffffffff and pk_lm and 'pk_m !
-			pk_m pk_d d!
-			0 'pk_b !
-			pk_m 1? ( pk_a 4 + d@ 'pk_b ! ) drop
-			pk_b pk_d 4 + d!
-			8 'pk_d +!
-			1+ ) drop
-		1+ ) drop ;
+:pk1 | lm v -- m b		; una columna: mascara recortada a los layers y su base (0 si vacia)
+	dup $ffffffff and rot and					| v m
+	0? ( nip 0 ; )
+	swap 32 >> ;
+
+:packrow | lm sx --		; usa A y B: sx columnas de A hacia B (ambos avanzan)
+	( 1? 1- over a@+ pk1 swap db!+ db!+ ) 2drop ;
+
+:packspr | n dst --		; usa A y B ; sx*rw columnas (mascara d, base d) de n en dst
+	ab[ >b
+	dup smly 1 swap << 1- $ffffffff and swap			| lm n
+	dup smsx swap							| lm sx n
+	dup smorg 3 << dcols + swap					| lm sx p n
+	smrw								| lm sx p r
+	( 1? 1-
+		over >a pick3 pick3 packrow
+		swap 256 + swap ) 4drop
+	]ba ;
 
 #imgs
 ::ssm_image | --
@@ -703,7 +699,7 @@
 	1 ssm_savecr ;
 
 |---- carga de .ssv completo -> individual
-#ln #lc #ltab #lcols #lpal #lt #lo #lx #ly #lz #rp #ldn
+#ln #lc #ltab #lcols #lpal #lt #lo #lx #ly #lz #ldn
 
 :ldfld | n --		; campos de la entrada n de la tabla del archivo
 	3 << ltab + 'lt !
@@ -728,20 +724,21 @@
 	dup 'ldn ! ldfld
 	lx ly lz ldn setsz
 	ldn 10 << ldn 3 << sprt + d!
+	ab[
 	0 ( lz <?
-		0 ( lx <?
-			over lx * over + lo + 3 << lcols + @
-			pick2 5 << pick2 + ldn 10 << + 3 << dcols + !
-			1+ ) drop
-		1+ ) drop ;
+		dup lx * lo + 3 << lcols + >a
+		dup 5 << ldn 10 << + 3 << dcols + >b
+		lx ( 1? 1- a@+ b!+ ) drop
+		1+ ) drop
+	]ba ;
 
 :smloadspr | n --
-	dup smexpand dup 'pn ! compress 'nw !
-	npal nw + pmax >? ( drop 1 'ssmerr ! ; ) drop
-	pn 3 << rst + 'rp !
-	npal rp d! nw rp 4 + d!
-	pn placeregion
-	nw 'npal +! ;
+	dup smexpand dup compress					| n nw
+	npal over + pmax >? ( 3drop 1 'ssmerr ! ; ) drop
+	over 3 << rst +
+	npal over d! over swap 4 + d!				| n nw
+	over placeregion
+	nip 'npal +! ;
 
 ::ssm_load | "file" --
 	here swap load here - 16 <? ( drop 1 'ssmerr ! ; ) drop
@@ -814,7 +811,6 @@
 	ln ;
 
 |---- insertar / sacar un sprite (la cantidad total no cambia)
-#ra #rl
 :smblank | n --		; sprite vacio de 1x1x1
 	dup 13 << dcols + 0 8192 cfill
 	dup 10 << over 3 << sprt + d!
@@ -824,29 +820,25 @@
 ::ssm_del | n --
 	-? ( drop ; ) nspr >=? ( drop ; )
 	dup ssm_clear ssm_close
-	'ra !
-	ra ( nspr 1- <?
+	( nspr 1- <?
 		dup 1+ 3 << sprt + @ over 3 << sprt + !
 		dup 1+ 3 << rst + @ over 3 << rst + !
 		dup 13 << dcols + over 1+ 13 << dcols + 8192 cmove
 		dup 10 << over 3 << sprt + d!
 		dup 3 sfl
 		1+ ) drop
-	nspr 1- 'rl !
-	rl smblank
-	npal rl 3 << rst + d! 0 rl 3 << rst + 4 + d! ;
+	nspr 1- dup smblank 3 << rst + npal over d! 0 swap 4 + d! ;
 
 ::ssm_ins | n --
 	-? ( drop ; ) nspr >=? ( drop ; )
 	nspr 1- ssm_clear ssm_close
-	'ra !
-	nspr 2 - ( ra >=?
+	nspr 2 - ( over >=?
 		dup 3 << sprt + @ over 1+ 3 << sprt + !
 		dup 3 << rst + @ over 1+ 3 << rst + !
 		dup 1+ 13 << dcols + over 13 << dcols + 8192 cmove
 		dup 1+ 10 << over 1+ 3 << sprt + d!
 		dup 1+ 3 sfl
-		1- ) drop
-	ra smblank
-	ra nspr 1- <? ( ra 1+ 3 << rst + d@ ra 3 << rst + d! ) drop
-	0 ra 3 << rst + 4 + d! ;
+		1- ) drop							| n
+	dup smblank
+	dup nspr 1- <? ( dup 1+ 3 << rst + d@ over 3 << rst + d! ) drop
+	0 swap 3 << rst + 4 + d! ;
