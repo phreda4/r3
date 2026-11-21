@@ -89,24 +89,21 @@
 	dup .life @ -? ( 2drop 0 ; ) drop
 	drawspr drop ;
 
-#fs #fc			| seno y -coseno del rumbo
-#mx #my
-
 :tank.fire | tank -- tank		; crea el disparo pendiente
 	dup .pfire @ 0? ( drop ; ) drop
-	dup .hdg @ sincos neg 'fc ! 'fs !
-	fs 30.0 *. over .x @ + 'mx !
-	fc 30.0 *. over .y @ + 'my !
+	dup .hdg @ sincos neg					| t fs fc
+	over 30.0 *. pick3 .x @ +				| t fs fc mx
+	over 30.0 *. pick4 .y @ +				| t fs fc mx my
 	'bomb.draw 'bombs p!+ >b
-	mx b!+ my b!+
-	dup .hdg @ 32 << 2.0 or b!+	| ang zoom
+	over b!+ dup b!+
+	pick4 .hdg @ 32 << 2.0 or b!+			| ang zoom
 	14 1 0 aniInit b!+
 	tkimg b!+
-	fs 7.0 *. b!+ fc 7.0 *. b!+	| vx vy
-	dup .pfire @ 7.0 /. int. b!+	| ticks de vuelo
-	dup tkid b!			| dueno
-	0 over .pfire !
-	dup .hdg @ mx my +fxflash ;
+	pick3 7.0 *. b!+ pick2 7.0 *. b!+		| vx vy
+	pick4 .pfire @ 7.0 /. int. b!+			| ticks de vuelo
+	pick4 tkid b!							| dueno
+	pick4 .pfire 0 swap !
+	pick4 .hdg @ -rot +fxflash 2drop ;
 
 #bombhit #cbomb #bx #by
 
@@ -154,10 +151,10 @@
 	over .spd @ + over .spd ! ;
 
 :move1 | tank -- tank
-	dup .hdg @ sincos neg 'fc ! 'fs !
-	dup .spd @ 2.5 *.
-	dup fs *. pick2 .x +!
-	fc *. over .y +! ;
+	dup .hdg @ sincos neg					| t fs fc
+	pick2 .spd @ 2.5 *.						| t fs fc v
+	rot over *. pick3 .x +!					| t fc v
+	*. over .y +! ;
 
 :clamp1 | tank -- tank
 	dup .x @ -242.0 max 242.0 min over .x !
@@ -170,27 +167,27 @@
 	turn1 speed1 move1 clamp1
 	tank.fire ;
 
-#px #py #pp #pd
 ##tkrecoil 6.0	| retroceso extra de cada tanque en un choque (unidades)
 ##tkcrash 0.04	| danio de cada tanque por choque (1.0 = destruido)
+
+:tt.bump | x y tank --		; empuja al tanque, lo frena y le da danio
+	rot over .x +! swap over .y +!
+	0 over .spd ! tkcrash swap .dmg +! ;
 
 :tt.pair | a b -- a b		; choque entre dos tanques (simetrico)
 	over .cpu @ 0? ( drop ; ) drop
 	dup .cpu @ 0? ( drop ; ) drop
-	over .x @ over .x @ - 'px !
-	over .y @ over .y @ - 'py !
-	px int. dup * py int. dup * +
-	784 >=? ( drop ; )
-	sqrt fix. 0.5 max 'pd !
-	28.0 pd - 1 >> tkrecoil + 'pp !		| separacion + retroceso
-	px pd /. pp *. 'px !
-	py pd /. pp *. 'py !
-	px over .x +! py over .y +!
-	0 over .spd ! tkcrash over .dmg +!		| frena y recibe danio
-	swap
-	px neg over .x +! py neg over .y +!
-	0 over .spd ! tkcrash over .dmg +!
-	swap ;
+	over .x @ over .x @ -
+	pick2 .y @ pick2 .y @ -					| a b dx dy
+	over int. dup * over int. dup * +
+	784 >=? ( 3drop ; )
+	sqrt fix. 0.5 max						| a b dx dy d
+	28.0 over - 1 >> tkrecoil +				| a b dx dy d pp
+	pick3 pick2 /. over *.					| x'
+	pick3 pick3 /. pick2 *.					| y'
+	2swap 2drop 2swap 2drop					| a b x' y'
+	2dup pick4 tt.bump						| b recibe +
+	swap neg swap neg pick3 tt.bump ;		| a recibe -
 
 :corpse.draw | adr --		; tanque muerto: sprite oscuro fijo
 	8 + >a
@@ -268,14 +265,14 @@
 :tbear | dx dy -- heading
 	atan2 0.25 + $ffff and ;
 
-#sang #sbest #sdx #sdy
+#sang #sbest
 :scan1 | tank -- tank
 	dup ctank =? ( drop ; ) drop
 	dup .cpu @ 0? ( drop ; ) drop
-	dup .x @ ctank .x @ - 'sdx !
-	dup .y @ ctank .y @ - 'sdy !
-	sdx sdy tbear sang adiff 0.015 >? ( drop ; ) drop
-	sdx sdy tdist
+	dup .x @ ctank .x @ -
+	over .y @ ctank .y @ -					| t dx dy
+	2dup tbear sang adiff 0.015 >? ( 3drop ; ) drop
+	tdist
 	dup sbest <? ( 'sbest ! drop ; ) 2drop ;
 
 :iscan | angle -- range
@@ -333,75 +330,69 @@ isin icos irand i*. i/. ifix. iint.
 #wordd ( $f1 $f1 $f1 $01 $10 $10 $10 $10 $20 $10 $f1 $f2 $01 $01 $01 $f2 $f2 $01 $01 )
 
 |------------------- dibujo
-#ctk
 #tkcols $ff5080ff $ffff5050 $ff50ff50 $ffffe050
 ::tk.col | n -- argb		; color del tanque n
 	3 and 3 << 'tkcols + @ ;
 ::tk.rgb | n -- rgb		; el mismo color como $RRGGBB para color
 	tk.col dup $ff and 16 << over $ff00 and or swap 16 >> $ff and or ;
-#bw
+:tkcolor | t -- argb
+	dup .cpu @ 0? ( 2drop $ff404040 ; ) drop
+	tkid tk.col ;
 
-:tkcolor | -- argb
-	ctk .cpu @ 0? ( drop $ff404040 ; ) drop
-	ctk tkid tk.col ;
-
-:tkmode | -- 0 quieto | 1 mueve | 2 muerto
-	ctk .cpu @ 0? ( drop 2 ; ) drop
-	ctk .spd @ abs 0.03 >? ( drop 1 ; ) drop
+:tkmode | t -- 0 quieto | 1 mueve | 2 muerto
+	dup .cpu @ 0? ( 2drop 2 ; ) drop
+	.spd @ abs 0.03 >? ( drop 1 ; ) drop
 	0 ;
 
-:tkanim | --		; cada tanque avanza su propia animacion
-	deltatime ctk .ani ani+!
-	tkmode ctk .mov @ =? ( drop ; )
-	dup ctk .mov !
-	0? ( drop 0 0 0 aniInit ctk .ani ! ; )
-	1 =? ( drop 0 2 12.0 aniInit ctk .ani ! ; )
-	drop 2 1 0 aniInit ctk .ani ! ;
+:tkanim | t --		; cada tanque avanza su propia animacion
+	deltatime over .ani ani+!
+	dup tkmode over .mov @ =? ( 2drop ; )				| t m
+	dup pick2 .mov !
+	0? ( drop 0 0 0 aniInit swap .ani ! ; )
+	1 =? ( drop 0 2 12.0 aniInit swap .ani ! ; )
+	drop 2 1 0 aniInit swap .ani ! ;
 
-:hpbar | --
-	ctk .cpu @ 0? ( drop ; ) drop
-	1.0 ctk .dmg @ - 28 * int. 2 max 'bw !
-	ctk .x @ scrx 14 - ctk .y @ scry 30 -
+:hpbar | t --
+	dup .cpu @ 0? ( 2drop ; ) drop
+	dup .x @ scrx 14 - over .y @ scry 30 -				| t x y
 	$202020 color 2dup 28 5 frect
-	$30e030 color ctk .dmg @ 0.5 >? ( $e03030 color ) drop
-	2dup bw 5 frect
+	$30e030 color pick2 .dmg @ 0.5 >? ( $e03030 color ) drop
+	2dup pick4 .dmg @ 1.0 swap - 28 * int. 2 max 5 frect
 	1.0 tsize 6 tcol
-	over 10 + over 12 - tat ctk tkid 1+ "%d" tprint
-	2drop ;
+	over 10 + over 12 - tat pick2 tkid 1+ "%d" tprint
+	3drop ;
 
 :tank.draw | adr --
 	dup .cpu @ 0? ( 2drop ; ) drop		| muerto: se dibuja en la lista deads
-	'ctk !
-	tkanim
-	tkcolor sstint
-	ctk .x @ scrx ctk .y @ scry
-	ctk .hdg @ 2.0
-	ctk .ani @ aniFrame tkimg sspriterz
+	dup tkanim
+	dup tkcolor sstint
+	dup .x @ scrx over .y @ scry
+	pick2 .hdg @ 2.0
+	pick4 .ani @ aniFrame tkimg sspriterz
 	ssnotint
 	hpbar ;
 
-#ti #tj
-:floor1
-	ti 5 << tkpx + 240 -  tj 5 << tkpy + 240 -  2.0
-	ti tj 3 * xor 3 and 21 +  tkimg sspritez ;
+:floor1 | i j -- i j
+	over 5 << tkpx + 240 -  over 5 << tkpy + 240 -  2.0
+	pick4 pick4 3 * xor 3 and 21 +  tkimg sspritez ;
 
 :floor
-	0 ( 16 <? dup 'ti !
-		0 ( 16 <? dup 'tj ! floor1 1+ ) drop
+	0 ( 16 <?
+		0 ( 16 <? floor1 1+ ) drop
 		1+ ) drop ;
 
-:edge? | -- 0/1
-	ti 0? ( drop 1 ; ) 17 =? ( drop 1 ; ) drop
-	tj 0? ( drop 1 ; ) 17 =? ( drop 1 ; ) drop
+:edge? | i j -- i j 0/1
+	over 0? ( drop 1 ; ) 17 =? ( drop 1 ; ) drop
+	dup 0? ( drop 1 ; ) 17 =? ( drop 1 ; ) drop
 	0 ;
 
-:wall1
-	ti 5 << tkpx + 272 -  tj 5 << tkpy + 272 -  2.0
-	ti tj + 1 and 3 +  tkimg sspritez ;
+:wall1 | i j -- i j
+	over 5 << tkpx + 272 -  over 5 << tkpy + 272 -  2.0
+	pick4 pick4 + 1 and 3 +  tkimg sspritez ;
 
 :walls
-	0 ( 18 <? dup 'ti !
-		0 ( 18 <? dup 'tj ! edge? 1? ( wall1 ) drop 1+ ) drop
+	0 ( 18 <?
+		0 ( 18 <? edge? 1? ( drop wall1 0 ) drop 1+ ) drop
 		1+ ) drop ;
 
 ::tk.draw
@@ -425,18 +416,17 @@ isin icos irand i*. i/. ifix. iint.
 	'tanks p.clear 'deads p.clear 'bombs p.clear 'fx p.clear
 	0 'acc ! 0 'tkticks ! -1 'tkwin ! -1 'tkerrtank ! 1 'tkrun ! ;
 
-#tcpu
 ::tk.+tank | hdg x y --		; tanque nuevo con su cpu (codigo ya compilado)
-	vmcpu 'tcpu !
-	'tank.draw 'tanks p!+ >a
+	ab[ 'tank.draw 'tanks p!+ >a
 	swap a!+ a!+			| x y
 	0 a!+				| mov
 	0 0 0 aniInit a!+		| ani
 	tkimg a!+
 	dup a!+ 0 a!+ a!+ 0 a!+		| hdg spd hdgd spdd
 	0 a!+ 1.0 a!+			| dmg batt
-	tcpu a!+
-	0 a!+ 0 a!+ 0 a! ;		| pfire cool wait
+	vmcpu a!+
+	0 a!+ 0 a!+ 0 a!		| pfire cool wait
+	]ba ;
 
 ::tk.tick
 	tkrun 1 <>? ( drop ; ) drop
@@ -488,18 +478,16 @@ isin icos irand i*. i/. ifix. iint.
 "fix. int." "( n -- m )" "entero a fijo (1 = 1.0) y fijo a entero"
 0
 
-#hx #hy
 ::tk.help | x y --		; dibuja la ayuda en x y (ancho 390 px)
-	'hy ! 'hx !
 	1.0 tsize
-	hx hy tat 5 tcol "PALABRAS DEL TANQUE" temits
-	hx hy 12 + tat 6 tcol "numeros fijos: 1.0 = una unidad" temits
-	hx hy 24 + tat "rumbos en vueltas: 0.0 arriba, 0.25 der." temits
-	hx hy 36 + tat tkbudget "ciclos por tick: %d (30 ticks/s)" tprint
-	hy 56 + 'hy !
+	2dup tat 5 tcol "PALABRAS DEL TANQUE" temits
+	2dup 12 + tat 6 tcol "numeros fijos: 1.0 = una unidad" temits
+	2dup 24 + tat "rumbos en vueltas: 0.0 arriba, 0.25 der." temits
+	2dup 36 + tat tkbudget "ciclos por tick: %d (30 ticks/s)" tprint
+	56 +								| x y
 	'whelp ( dup c@ 1? drop
-		hx hy tat 7 tcol dup temits >>0
+		pick2 pick2 tat 7 tcol dup temits >>0
 		2 tcol " " temits dup temits >>0
-		hx hy 10 + tat 6 tcol dup temits >>0
-		22 'hy +! )
-	2drop ;
+		pick2 pick2 10 + tat 6 tcol dup temits >>0
+		swap 22 + swap )				| y += 22
+	4drop ;

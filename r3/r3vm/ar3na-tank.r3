@@ -43,6 +43,8 @@
 -170.0 -60.0  150.0 80.0  -60.0 170.0  70.0 -170.0
 -170.0 140.0  170.0 -120.0  170.0 150.0  -150.0 -150.0
 
+#order 0 1 2 3 4 5 6 7	| punto de salida de cada tanque (se mezcla en cada partida)
+
 #template "| nuevo script de tanque
 | ver la ayuda en la pantalla de edicion
 
@@ -162,9 +164,23 @@
 	here dup rot load 0 swap c!
 	dup only13 'here ! ;
 
-:spawn | n -- hdg x y
-	4 << 'spawns + @+ swap @
-	over neg over neg tk.bear -rot ;
+:ord@ | i -- v
+	3 << 'order + @ ;
+
+:ord! | v i --
+	3 << 'order + ! ;
+
+:swapo | i j --
+	over ord@ over ord@						| i j vi vj
+	pick3 ord!								| order[i] = vj
+	swap ord! drop ;						| order[j] = vi
+
+:shuffle | --		; orden al azar de los puntos de salida
+	7 ( 1? dup dup 1+ randmax swapo 1- ) drop ;
+
+:spawn | n -- hdg x y		; punto de salida mezclado, rumbo al centro +-0.03 vueltas
+	ord@ 4 << 'spawns + @+ swap @
+	over neg over neg tk.bear 3932 randmax + 1966 - -rot ;
 
 :startone | -- err		; compila el script del tanque cur y lo crea
 	cur tc@ spath loadscript
@@ -176,6 +192,7 @@
 
 :compileall | -- err
 	tk.reset
+	msec 31 rerand shuffle				| cada partida sale distinta
 	0 'cur !
 	( cur ntanks <? drop
 		startone 1? ( ; ) drop
