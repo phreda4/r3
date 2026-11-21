@@ -276,6 +276,25 @@ result = (value * 255) / 100;   // can overflow
 value 255 100 */                | safe
 ```
 
+### Truncation and rounding
+
+`/` and `*/` truncate toward zero; `>>` (arithmetic shift) rounds toward minus infinity. Rounding to the nearest after a truncation does not work, because the information is already gone:
+
+```r3
+| WRONG: v is already truncated, (v+1)>>1 is not a rounding
+-dy size len */ 1 + 2/          | -dy*size/len, then /2
+```
+
+Found in `r3logo`: with `size = 2` and an angle of 120 degrees both offsets of a thick line came out as 0, and the side of the triangle vanished (no error, only a missing line). Scale first, truncate last, round at the end:
+
+```r3
+| round(v * size / len / 2): 16.16 keeps the fraction, $8000 is one half
+:half | v -- o
+	size * 65536 len */ 1 >> $8000 + 16 >> ;
+```
+
+Rule: to round `a*b/c` to the nearest, compute it with 16 extra bits, add the half (`$8000`), and shift back with `>>`. Test the rounding with values on both sides of zero: `>>` floors negatives, `/` truncates them.
+
 ### Bit Operations
 
 | Word | Effect |
@@ -370,6 +389,55 @@ Set A and B to known values, call the word, compare. Then remove its `ab[ ]ba` a
 
 ---
 
+### Audit the library before you keep a value in A or B
+
+Rule 1 says that anything you call may overwrite A or B. Do not guess: search the library you call.
+
+```sh
+grep -n ">a\|>b\|ab\[" r3/lib/sdl2gfx.r3
+```
+
+Result for `sdl2gfx.r3` (the one `r3logo` uses):
+
+| Word | A / B | Consequence |
+|---|---|---|
+| `line`, `point`, `frect`, `color`, `image` | not used | safe |
+| `circle`, `fcircle`, `ellipse`, `fellipse`, `round`, `lineHg`, `lineVg`, `sprite*` | saved with `ab[ ]ba` | safe (but `circle`, `fcircle`, `round` use `here` as scratch: never keep live data at `here`) |
+| `polyop`, `polyline`, `triangle` (`drawtri`) | **use A, do not save it** | A is lost after the call |
+
+Wrap the unsafe word once, and call the wrapper:
+
+```r3
+:pop | x y --  ab[ polyop ]ba ;
+:pln | x y --  ab[ polyline ]ba ;
+```
+
+A and B are then free to hold values for the whole word (`thick` keeps the two offsets of the quad in A and B and reads them with `a>` `b>` while it builds the four corners). Helpers that only read them get the mark `; uses A, B` in the comment.
+
+When the loop body calls a widget or any word you do not control, protect only that call, not the whole loop:
+
+```r3
+:drawlines | adr rows --         ; uses A
+	ab[ swap >a
+	( 1? 1-
+		a> 'line strcpyln
+		ab[ 'line uiLabel ]ba    | the widget may use A and B
+		a> >>cr 1+ >a
+		) drop
+	]ba ;
+```
+
+More patterns taken from `r3logo`:
+
+| Task | Code |
+|---|---|
+| count the lines of a text (no pointer on the stack, no `2drop`) | `ab[ 'text >a 0 ( ca@+ 1? 13 =? ( swap 1+ swap ) drop ) drop ]ba` |
+| append a string at the end of a buffer | `ab[ >b 'buf count + >a ( cb@+ 1? ca!+ ) drop 13 ca!+ 0 ca! ]ba` |
+| write a text file turning CR into CRLF | `fuente >a ( ca@+ 1? 13 =? ( ,c 10 ) ,c ) drop` |
+| hash n dwords | `swap >a 0 swap ( 1? 1- swap 31 * da@+ $ffffffff and + swap ) drop` |
+
+The counting loop returns the count without any cleanup: the last tested value (the 0 byte) is the only thing the final `drop` removes.
+
 ## Return Stack
 
 | Word | Effect |
@@ -384,7 +452,7 @@ An unbalanced return stack crashes the word — every `>r` in a word needs a mat
 
 ## Replacing Variables with Stack References
 
-A direct C translation gives every local a `#variable`. Idiomatic R3forth keeps temporaries **on the stack** and reads them back with `over`, `pick2`, `pick3`, `pick4`. The result is shorter, has no global state to clobber, and is often faster. This section is the method, step by step, taken from the real refactoring of `r3/term/colorscene.r3` (about 75 variables down to 27, not counting buffers, with identical output). A second case: `r3/r3dv/ssmulti.r3` (172 variables down to 122, same saved files and same GPU image, about 20% faster in the VM).
+A direct C translation gives every local a `#variable`. Idiomatic R3forth keeps temporaries **on the stack** and reads them back with `over`, `pick2`, `pick3`, `pick4`. The result is shorter, has no global state to clobber, and is often faster. This section is the method, step by step, taken from the real refactoring of `r3/term/colorscene.r3` (about 75 variables down to 27, not counting buffers, with identical output).
 
 It is a mechanical process, not a rewrite: **the program must give exactly the same results before and after.** Verify that at every step (Step 1 and Step 9).
 
@@ -621,6 +689,34 @@ Measured on `colorscene.r3` (milliseconds per frame, same machine, Linux; compar
 | spectrum, plasma, tunnel, fire, stars, copper | | within 0.1 ms | |
 | rotozoomer | 0.27 ms | 0.44 ms | slower: see below |
 
+A second measurement, `r3logo` (headless run of the programs, 40 compiles + runs each, milliseconds, **minimum of 4 runs**):
+
+| Program | Before | After |
+|---|---|---|
+| tree (recursion, 2 px lines) | 15 | 14 |
+| Koch snowflake | 24 | 25 |
+| spiral (1 px lines) | 102 | 104 |
+| 300 thick lines and circles | 273 | 260 |
+
+The gain is small (about 5% in the heaviest case, none in the others) because the time is spent in SDL drawing and in compiling, not in the words that were changed. A single run had shown 276 → 207 ms (−25%); it was noise. Measure with the minimum of several runs, never with one. The real gains of that refactoring were fewer globals (17 variables removed, 1 added: the cached line count of the help), registers that survive, and the same pixels.
+
+#### If the hash changes and the original is wrong
+
+In `r3logo` the refactored word gave different hashes for 3 of the 9 programs. The method that found the cause in a few minutes:
+
+1. Run the same build twice. The hash was identical both times, so the difference was real, not noise.
+2. Make the smallest program that still differs (here: one thick line, then three). Single segments were equal; three segments were not.
+3. Dump both images and compare pixel by pixel (`IMG_SavePNG` of the texture, then a few lines of Python). Only 8 pixels differed.
+4. Enlarge the area and look at it. The third side of a triangle was **missing in both versions**: the original had a bug that the old baseline had silently recorded.
+
+Then:
+
+1. Fix the bug in the **original** code, in its own step (see [Truncation and rounding](#truncation-and-rounding)).
+2. Take a new baseline from the fixed original (and run it twice).
+3. Continue the refactoring against the new baseline. All hashes were equal.
+
+A baseline proves "nothing moved", not "it is right". Look at the output at least once.
+
 ### Patterns that avoid variables
 
 **Loop state under the counter.** Keep the values the loop reads below the loop value and reach them with `over`, `pick2`, `pick3`. The loop test also reads them from there (`over <?`).
@@ -628,18 +724,44 @@ Measured on `colorscene.r3` (milliseconds per frame, same machine, Linux; compar
 **Build the stack in the order the loop needs.** Push each value with `dup F swap` so the last step consumes `n`:
 
 ```r3
-| stack: lm sx p r          (r is the loop count)
-dup smly 1 swap << 1- $ffffffff and swap     | lm n
-dup smsx swap                                | lm sx n
-dup smorg 3 << dcols + swap                  | lm sx p n
-smrw                                         | lm sx p r
+| from a source value s, build  a b c n   (n on top: the loop count)
+dup fa swap                  | a s
+dup fb swap                  | a b s
+dup fc swap                  | a b c s
+fn                           | a b c n     the last step consumes s
 ```
 
 **Pass arguments to a test without losing them.** Copy the group: `pick2 pick2 pick2 test` copies the top three values, `pick3 pick3 pick3 test` copies three values that have a fourth on top of them.
 
-**Cut live values with a helper.** A loop body that needs 6 values becomes a word with 3 inputs plus the loop. Example: `pk1 | lm v -- m b` computes the pair for one column, `packrow` only stores it.
+**Cut live values with a helper.** A loop body that needs 6 values becomes a word with 3 inputs plus the loop: one word computes the result for one item, the loop word only stores it.
 
 **Walk memory with A and B** instead of recomputing `i 2 << base +` for each element (see [Registers A and B](#registers-a-and-b)). It removes the pointer variable and the address arithmetic at once.
+
+**Recompute instead of carrying the previous value.** A polygon ring drew segment `i` from the previous point to point `i`, so it kept `px py` in variables. Computing the two ends of segment `i` from `i` and `i+1` needs no state; the point function is called twice per side, and the result was the same image:
+
+```r3
+0 ( 48 <?
+	dup cpt pick2 1+ cpt seg      | i  x y  x' y'  ->  seg consumes four
+	1+ ) drop
+```
+
+**Choose the order of the uses so that the last one consumes.** A quad is drawn as a fan: `polyop P0, polyline P1, P2, P3`. The corners are `A+o, A-o, B-o, B+o`. With the stack `x1 y1 x2 y2`, a `2swap` brings the pair `A` on top, and every pair is copied (`2dup`) by all uses except the last one, which consumes it. No `2drop` is left at the end:
+
+```r3
+caps 2swap
+2dup vp pop vm pln              | A+o, A-o   (A consumed)
+2dup vm pln vp pln              | B-o, B+o   (B consumed)
+```
+
+**Pass a position as parameters, not as two variables.** `tp | cx cy ang len -- x y` replaced the variables `ltcx ltcy`. With three points that use the same center, copy the center with `2dup`, build the points in the order that leaves the center on top for the last use, and use `2swap` between them.
+
+**Compute at the point of use.** A value stored in a variable only to be used later can be computed where it is used, if nothing in between reads or changes what it depends on. If the computation has side effects (it allocates, it advances a counter), check that their order does not matter.
+
+**Reorder independent effects.** When the stack version needs the uses in another order, swapping two writes is safe only if they touch different data and neither reads what the other writes. If in doubt, keep the original order and rearrange the stack instead.
+
+**The zero case can already be the answer.** For a vector `dx dy` with length 0, the offsets that the word must return are `0 0`, which is what is on the stack: `0? ( drop ; )` returns without dropping anything else.
+
+**Early exit that consumes all the inputs.** When a value is not needed at all (a hidden turtle), `lgshow 0? ( 3drop ; ) drop` is the normal shape, not a trailing drop: the `3drop` is the whole result of that path.
 
 ### Variables worth keeping
 
@@ -662,8 +784,9 @@ The variables that stayed in `colorscene.r3`, and why:
 | `lfg lbg` | cached terminal colors: state that survives between cells |
 | `tt fade dt fps scn ...` | global application state |
 | `CW CH PW PH` | screen dimensions: read in almost every word |
-| `rx0 rz0 rl0 rx1 rz1 rl1 rc` (`ssmulti.r3`) | one range set by a word and read by the next ones in the chain |
-| `cn_co cn_lu cn_lc` (`ssmulti.r3`) | accumulators that live across calls to the same word |
+| the parameters of an operation (a range, a box, a color) | set once by a word and read by the next words of the same chain |
+| counters and accumulators | they live across calls to the same word |
+| the current object of a callback | a word called by a library loop (`map`, `draw`) or by a script cannot receive extra parameters |
 
 Rule: **keep a variable when it is state, when it saves work in the hot loop, or when removing it would hide the code.** The goal is not zero variables; it is variables that mean something.
 
@@ -710,12 +833,28 @@ A `drop` right after a conditional is not this problem: tests never consume thei
 | a loop with no exit condition of its own | it runs once | the loop test must be a conditional that has no block of its own (`( running 1? drop ... )`) |
 | `c@` returns a signed byte | negative values in indexes | mask it: `c@ $ff and` |
 | `nip` used to drop the top item | the wrong value survives | `nip` removes the **second** item (`a b -- b`); to drop the top use `drop` |
-| a final `drop` after a test on an operand you still need | the operand is gone (`-? ( 4drop ; ) nspr >=? ( 4drop ; ) drop`) | that `drop` is only for a value you pushed for the test; an operand stays |
+| a final `drop` after a unary test (`-?`, `0?`) on an input you still need | the input is gone | that `drop` is only for a value you pushed for the test; an input stays |
 | an extra `dup` while building arguments | every `pick` after it lands one item off | recount distances from the real stack, not from the plan |
 | `;` between `ab[` and `]ba` | A and B of the caller are lost | `]ba ;` |
 | `( 1? 1- ... )` with a computed count | endless loop when the count is negative | `0 max` |
 | changing a word's signature and its callers in different steps | nothing works, hard to see why | change them in the same step |
 | the stack effect comment lies | later edits break silently | update the comment with the code |
+| a loop test without `drop` in the body: `( lgrun 1 =? lg.update )` | the tested value stays on the stack once per iteration; the stack grows and the program crashes later, far from the loop | `( lgrun 1 =? drop lg.update ) drop` |
+| `>>0` followed by `1+` | the next string loses its first character, or the pointer lands in garbage | `>>0` already points to the next string |
+| `.println`/`sprint` arguments pushed in reading order | the values appear swapped | the first `%` takes the last value pushed |
+| trusting the stack comment of a library word | extra `drop`s that eat the caller's values | test it with a sentinel the first time you use it |
+| a constant and a variable with the same name up to case | height 0, crash on first draw, no compiler message | prefixes; names are case-insensitive |
+| `a b c */` and then rounding with `1 + 2/` | zero results for some angles: lines that disappear | scale up first, round at the end (`$8000 + 16 >>`) |
+| a word called once per frame with a stack imbalance (`dup 'v ! dup f` written as `dup 'v ! f`) | the program freezes after some seconds | sentinel test of every word that is in the frame path, before the first run |
+| keeping a pointer in A across a library call that uses A (`polyline`, `triangle`) | garbage after the call | audit the library, wrap the unsafe word with `ab[ ]ba` |
+| code written after a `|` comment on the same line | the word is empty or incomplete; the stack grows; crash far from the cause | a comment runs to the end of the line: put the code on its own line |
+| a block that consumes the tested value, followed by a `drop` after the block | one path is right, the other drops one value too many | choose one shape: pass-through (no drop inside) or early exit (`;` inside) |
+| assuming what an `over` or `pick` of the original refers to | a value is applied to the wrong item; the hash differs only in some situations | trace the original stack to see which item it copies; compare the old and the new word side by side (see Testing a rewrite) |
+| a string built at `here` (`sprint`, `,s`) passed to a word that also writes at `here` (`load`, the compiler) | the string is overwritten: wrong file name, crash | use a constant string, or copy it somewhere else first |
+| a word that replaces another loses its export mark (`::` becomes `:`, `##` becomes `#`) | "word not found" in the files that use it | keep the mark; compare the list of exported names before and after |
+| a hash that includes values that legitimately change (time, a visual random effect) | it never matches, so it hides real differences | fix the source, or leave those values out of the hash |
+| a new word with the same name as a system or library word | strange behavior or a crash in code that never changed | search the name before defining it (see Names are case-insensitive) |
+| the run prints only `compile:` and nothing else | no hint | open `error.log`: it has the line and the word not found |
 
 How to find the first wrong line: compare the hash after each edit; if it differs, undo the last edit and redo it in smaller steps. If you changed many words together, apply the edits to the original **one group at a time** and run the test for each group (words whose signature changed go in the same group). The group that fails is the one to review.
 
@@ -726,6 +865,23 @@ To check a single word, call it from a small `:main` with known inputs and put a
 	99 1 2 4 6 dist2 "dist2 = %d" .println     | 25
 	"sentinel = %d" .println ;                 | 99
 ```
+
+### Testing a rewrite
+
+**A test that cannot fail proves nothing.** Break the thing on purpose once (remove a protection, change a constant) and confirm that the test reports it.
+
+**Compare the old word and the new word side by side.** For a word with arithmetic or pointer logic, keep the old version under another name and call both with the same random inputs on two copies of the data. A hash of the whole program says that something differs; this says which word and with which input.
+
+```r3
+:trial | --                    ; one random input, both versions
+	randomfill 'a 'b copyblock     | two equal copies of the same input
+	'a old.word  'b new.word
+	'a 64 hashmem hh  'b 64 hashmem hh  <>? ( "differs" .println ) drop ;
+```
+
+**Programs that need a window or hardware.** Run a copy of the program where the drawing primitives are renamed to stubs that fold their arguments into the hash. The program runs without a screen, and the hash covers every call it would have drawn, in order. Rename only in code, not in comments, and give each stub exactly the stack effect of the word it replaces.
+
+**Check names and exports.** After replacing words, compare the exported names (`::` and `##`) with the original. A lost mark compiles in the file itself and fails in the files that use it.
 
 ### Checklist
 
@@ -741,6 +897,34 @@ To check a single word, call it from a small `:main` with known inputs and put a
 10. Measure the time. If the inner loop got slower, put the variable back.
 11. Delete the variable declarations only when no word uses them any more.
 12. Sequential memory loops: use A and B, with `ab[ ]ba` at the entry of the word. Test that the caller's A and B survive.
+13. Before relying on A or B across a library call, read the library (`grep ">a\|ab\["`) and wrap the words that do not save them.
+14. Run the baseline twice. If a hash differs only for some inputs, look for a bug in the original: fix it in its own step and take a new baseline.
+15. Compare times with the minimum of several runs; a single run can be 20% off.
+16. Look at the output once with your own eyes; a hash only says that nothing changed.
+17. For words with arithmetic or pointer logic, compare the old and the new word on random inputs, not only the hash of the whole program.
+18. Break the test on purpose once; a test that cannot fail proves nothing.
+19. After replacing words, compare the exported names with the original.
+
+### Case study: `r3logo`
+
+Files: `r3/r3vm/logo-turtle.r3` (engine) and `r3/r3vm/r3logo.r3` (interface). Test: `r3/r3vm/logo-check.r3` (hash of the canvas pixels of 8 programs, hash of the log text, A/B survival of the public words, timing).
+
+| Word | Before | After |
+|---|---|---|
+| `thick` (line with width) | 6 variables (`ax ay bx by ox oy`) and B for the length | stack plus A and B for the two offsets, wrappers for the unsafe library words |
+| `ring` (circle with width) | 3 variables (`cr px py`) | radius in B, each side computed from `i` and `i+1` |
+| `turtle`, `tp`, `lg.draw` | 4 variables (`lx ly ltcx ltcy`) | the position is a parameter |
+| `vmtick1`, `lg.update` | variable `halt` | the end is read from `ip` after the loop |
+| `lg.say` | `count` twice over the 4 KB log | B reads, A writes, one pass |
+| `loglines`, help viewer | pointer variables `lp`, `hp`, stack juggling | A walks the text, `drawlines` protects only the widget call |
+| `savefile` | `c@+ ... 2drop` | `ca@+ ... drop` |
+| unused | `lgbudget` (never read) | removed |
+
+Checks that were run and what they found:
+
+- Canvas hashes of 8 programs and a stress program equal to the baseline (after the rounding bug of the original was fixed in its own step).
+- The test of the registers: `lg.update` and `lg.draw` first failed ("A clobbered"). `lg.draw` was fixed by wrapping `triangle`. Then the protection of `thick` was removed on purpose and `lg.update` failed again, so the test does detect the problem.
+- The log produced the same bytes and the same length (14 and 2208, with the overflow of the buffer) as the original.
 
 ---
 
@@ -855,6 +1039,14 @@ Words must be defined before use — no forward references.
 :main helper ;
 ```
 
+### Names are case-insensitive, and a later definition wins silently
+
+`LGH` and `lgh` are the same word. A constant `::LGH 480 ;` followed by a variable `##lgh 0` makes every later `LGH` read the variable (here the heading, 0): the canvas texture was created with height 0 and the first draw crashed. The compiler says nothing.
+
+- Do not name a constant and a variable the same up to case.
+- A name defined in your file also hides an exported word with the same name for the rest of the file. In a program that includes a GUI library, `fw`, `fh`, `sw`, `sh`, `cx`, `cy`... are already taken: use a prefix (`lgwid`, `lghei`).
+- When a value is `0` or garbage for no reason, search for the name first (`grep -in "name"`).
+
 ---
 
 ## Common Patterns
@@ -905,6 +1097,35 @@ void process_array(int* arr, int count) {
         a@+ process
     ) drop ;
 ```
+
+### Strings: lists and formatted output
+
+**A list of strings** is a run of literals ended by an empty one (`0`). `>>0` moves to the **next** string, past the terminator; do not add `1+`, or you skip the first character of the next string:
+
+```r3
+#names "one" "two" "three" 0
+'names ( dup c@ 1? drop
+	dup show
+	>>0 ) 2drop                  | adr 0 are left at the end
+```
+
+**Argument order of `sprint` and `.println`:** the first `%` takes the **last** value pushed. Push the values in reverse order, or put the text first:
+
+```r3
+12 34 "a=%d b=%d" .println      | a=34 b=12
+```
+
+**Library comments can be wrong.** `pad.reset` is documented as `'var max -- 'var max` but the code leaves only `'var`. A `2drop` after it removed one value of the caller as well. Check every library word you meet for the first time with a sentinel (see [Frequent mistakes in this transformation](#frequent-mistakes-in-this-transformation)).
+
+### Random numbers: the same start gives the same run
+
+A program with a fixed seed, or with no random input at all, gives exactly the same result every run. A test needs that. A game or a simulation usually does not.
+
+- **For variety**, seed once per run from the clock (`msec 1 rerand`) and randomize the initial conditions (positions, order, headings), not only the visual effects.
+- **For tests**, fix the seed (see Step 1) so that the hash is stable.
+- **Check it** by running the program several times: with the clock seed the results must differ, with the fixed seed they must match.
+- **To give distinct slots**, shuffle (Fisher-Yates: for `i` from `n-1` down to `1`, swap item `i` with a random item in `0..i`) instead of drawing until there are no repeats.
+- **One generator shared by logic and effects**: the effects consume numbers, so the logic sees a different sequence depending on how many effects ran. Use a separate generator for the effects, or leave them out of the logic.
 
 ---
 
@@ -1003,6 +1224,8 @@ int main() {
 9. `@+`/`!+` advance by the *access size*, not always by 8.
 10. A word that uses A or B wraps its body in `ab[ ... ]ba`; a loop must not keep its pointer in A/B across a call to a word it does not control.
 11. Temporaries and loop counters usually belong on the stack, not in `#variables`; convert them with the method in [Replacing Variables with Stack References](#replacing-variables-with-stack-references).
+12. Names are case-insensitive: a constant and a variable that differ only in case are the same word; a later definition hides an earlier one (also an exported one).
+13. Round after scaling, not before: truncating first loses the information that the rounding needs.
 
 ### Frequent mistakes
 
