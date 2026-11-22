@@ -149,7 +149,7 @@
 		.reterm .cr "plain.r3 FAILED - press any key..." .println waitkey
 		"plain.r3 FAILED" 'msg strcpy
 		backtui ; ) drop
-	"r3/d4/r3comp3.r3" r3run
+	"r3/d4/r3comp2.r3" r3run
 	"compile done" 'msg strcpy
 	backtui ;
 

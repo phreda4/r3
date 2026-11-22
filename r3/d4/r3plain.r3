@@ -6,6 +6,7 @@
 | + one file, plain lib
 | + remove unused words (after inline and fold of constants)
 | + remove the vars that are only written (with their stores), see rounds and ,ST in r3opt
+| + a lookup of a function (GetProcAddress, dlsym ...) whose result is not used goes away, see pureimp?
 | + translate noname definitions (inline if they call the word that contains them)
 | + target system: ##osgen (r3token), inline limit: ##inlinelenmax (r3opt)
 |-----------------
@@ -76,6 +77,9 @@
 
 #mk * $10000
 #rd * $10000		| 1 byte per definition: var read or with its address used (in this round)
+#esc * $10000		| the address of the var escapes (it is not only stored)
+#stc * $10000		| stores to the var (0, 1, 2 = many)
+#pic * $10000		| the var has a store  "name" GETPROC 'var !  with a name of the list of pureimp?
 #wq * $40000
 #wq> 'wq
 
@@ -97,11 +101,43 @@
 	tokana> >=? ( drop 0 ; )
 	@ $ff and 74 77 in? ( drop 1 ; ) 82 85 in? ( drop 1 ; ) drop 0 ;
 
+:escset | nro -- ; the address of the var escapes
+	'esc + 1 swap c! ;
+
+:stinc | nro -- ; one store more (2 = many)
+	'stc + dup c@ 1+ 2 min swap c! ;
+
+|--- imports that look for a function and have no effects: a call that does not use the result goes away
+:pureimp? | str -- 0/1
+	dup "SDL_GL_GetProcAddress" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "glXGetProcAddress" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "glXGetProcAddressARB" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "wglGetProcAddress" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "eglGetProcAddress" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "GetProcAddress" cmpstr 0? ( 2drop 1 ; ) drop
+	dup "dlsym" cmpstr 0? ( 2drop 1 ; ) drop
+	drop 0 ;
+
+:gpimp? | adr -- 0/1 ; the tokens before  'var !  (adr = token after 'var) are  "name" GETPROC
+	'tokana 24 + <? ( drop 0 ; )
+	dup 16 - @ $ff and 129 <>? ( 2drop 0 ; ) drop
+	dup 24 - @ dup $ff and 6 <>? ( 3drop 0 ; ) drop
+	8 >> $ffffffff and strm + pureimp? nip ;
+
+#sv
+
+:scanvadr | adr tok -- ; the token after the .vadr tok is in adr
+	8 >> $ffffffff and 'sv !
+	dup nextst? 0? ( 2drop sv dup rdset escset ; ) drop
+	sv stinc
+	dup @ $ff and 74 <>? ( 2drop ; ) drop		| only a ! can be the init of the import
+	gpimp? 1? ( 1 sv 'pic + c! ) drop ;
+
 :scanrd | -- ; vars of tokana that are read (.var) or whose address is not only stored (.vadr)
 	'tokana ( tokana> <? @+
 		dup $ff and
 		4 =? ( over 8 >> $ffffffff and rdset )
-		5 =? ( pick2 nextst? 0? ( pick2 8 >> $ffffffff and rdset ) drop )
+		5 =? ( pick2 pick2 scanvadr )
 		2drop ) drop ;
 
 :scanana | -- ; mark every word referenced by the tokens in tokana
@@ -123,7 +159,7 @@
 :markdata | nro -- ; words/vars referenced from the init of a variable
 	4 << dic + toklend 
 	( 1? 1- swap @+ 
-		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw 4 >=? ( over 8 >> $ffffffff and rdset ) ) 2drop 
+		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw 4 >=? ( over 8 >> $ffffffff and dup rdset escset ) ) 2drop 
 		swap ) 2drop ;
 
 :markitem | nro --
@@ -131,7 +167,8 @@
 	drop markcode ;
 
 :markall | --
-	0 ( cntdef <? dup 'mk + 0 swap c! dup 'rd + 0 swap c! 1+ ) drop
+	0 ( cntdef <? dup 'mk + 0 swap c! dup 'rd + 0 swap c!
+		dup 'esc + 0 swap c! dup 'stc + 0 swap c! dup 'pic + 0 swap c! 1+ ) drop
 	'wq 'wq> !
 	cntdef 1- pushw
 	'wq ( wq> <? d@+ markitem ) drop ;
@@ -142,8 +179,18 @@
 
 #dchg #dn
 
-:setd | v -- ; set the state of the var dn
-	dn 'deadv + c! ;
+:setd | v -- ; set the state of the var dn (the bit 8 stays)
+	dn 'deadv + dup c@ 8 and rot or swap c! ;
+
+:purei? | n -- 0/1 ; an import of a function with no effects: one store, the init, and its address does not escape
+	dup 'pic + c@ 0? ( nip ; ) drop
+	dup 'esc + c@ 1? ( 2drop 0 ; ) drop
+	'stc + c@ 1 =? ( drop 1 ; ) drop 0 ;
+
+:chkpure | n -- ; keep the bit 8 of the var as purei? says
+	dup 'dn ! purei?
+	dn 'deadv + c@ 3 >> 1 and =? ( drop ; ) drop
+	dn 'deadv + dup c@ 8 xor swap c! 1 'dchg ! ;
 
 :vardead | n -- ; state of a var after marking
 	dup 'dn !
@@ -155,7 +202,7 @@
 
 :chkvar | n --
 	dup marked? 0? ( 2drop ; ) drop
-	dup 4 << dic + @ 1 and? ( drop vardead ; ) 2drop ;
+	dup 4 << dic + @ 1 and? ( drop dup chkpure vardead ; ) 2drop ;
 
 :cleardead | --
 	0 ( cntdef <? dup 'deadv + 0 swap c! 1+ ) drop ;

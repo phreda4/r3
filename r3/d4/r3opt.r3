@@ -1068,7 +1068,14 @@
 
 ##deadv * $10000
 
-#dkneed #dkcnt #dku #dkq
+#dkneed #dkcnt #dku #dkq #dkadr
+
+|--- 'deadv bit 8: the var holds a function with no effects (GetProcAddress, dlsym ...), set by r3plain
+|--- so a SYSn call that uses it (the var is the token before SYSn) goes away with its unused result
+:dkpureimp? | -- 0/1
+	dkadr 'tokana <=? ( drop 0 ; ) drop
+	dkadr 8 - @ dup $ff and 4 <>? ( 2drop 0 ; ) drop
+	8 >> $ffffffff and 'deadv + c@ 8 and? ( drop 1 ; ) drop 0 ;
 
 :dktok? | tok -- 0/1 ; token without side effects: it can go with the value that it makes
 	$ff and
@@ -1080,6 +1087,7 @@
 	59 69 in? ( drop 1 ; )			| *>> <</ NOT NEG ABS SQRT CLZ @ C@ W@ D@
 	127 =? ( drop 1 ; )				| MEM
 	129 =? ( drop 1 ; )				| GETPROC
+	130 140 in? ( drop dkpureimp? ; )	| SYS0..SYS10 of an import without effects
 	drop 0 ;
 
 :dkcopy? | tok -- 0/1 ; the token copies values that stay in the stack
@@ -1099,7 +1107,7 @@
 	1 'dkneed ! 0 'dkcnt !
 	tokana> 16 -
 	( 'tokana >=?
-		dup @ dkstep 0? ( 2drop 0 ; ) drop
+		dup 'dkadr ! dup @ dkstep 0? ( 2drop 0 ; ) drop
 		dkneed 0? ( 2drop dkcnt ; ) drop
 		8 - )
 	drop 0 ;
