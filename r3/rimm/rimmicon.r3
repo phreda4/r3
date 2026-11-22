@@ -4,6 +4,8 @@
 |
 |   uiIcon | n x y s -- ; icon n (ICxxx) in the square x y of side s, draw color
 |
+| to compile the lib alone (metabuild, metahelp): the line |META| is active only for them
+|META|^r3/rimm/rimmsdl.r3
 
 #ix #iy #is
 

@@ -1784,7 +1784,6 @@ bmap2xy | x y -- x y ; tile position x y to the pixel position in the tileset si
 whbmap | -- w h ; size of the map in tiles
 xyinmap@ | x y -- cell ; map cell (64 bits) at the position x y given as fixed point pixels (no range check)
 xytrigger | x y -- x y ; mark with the trigger flag (bit 51) the conditional tiles (bit 50) of the cells around x y; drawmaps clears the flag at the end of the frame
-filename
 ,time | -- ; write the current time as h:mm:ss (hour without leading zero)
 ,ti:me | -- ; write the current time as h:mm with a blinking colon (a space on odd seconds)
 ,date | -- ; write the current date as d/m/yyyy
@@ -1817,14 +1816,6 @@ cntdbrow | 'db -- cnt ; number of records (count of ^); 0 if 'db is 0
 getdbfld | nro 'row -- 'fld ; address of field nro (0 is the first) of a record; the field ends at | or ^, not at a 0
 cpydbfld | 'fld 'str -- ; copy the text of a field (up to | or ^) to 'str with a final 0
 cpydbfldn | max 'fld 'str -- ; like cpydbfld copying at most max characters
-colord | color selected in the dialog $RRGGBB
-color! | color -- ; set the selected color $RRGGBB and move the marks of the picker to it
-dlgColor | -- ; draw the color dialog: the current color box (a click opens or closes the picker with hue bar, saturation and value square and alpha bar) and the palette of 3x20 colors (the old comment x y is not used, see xydlgColor!)
-dlgColorIni | -- ; start the color dialog: build the 128 step hue bar and the palette, color white, alpha 127
-xydlgColor! | x y -- ; position of the color dialog and rebuild its geometry
-dlgFileLoad | -- fn/0 ; modal dialog to choose a file to load (it runs its own SDLshow loop; up, down, enter and esc keys, click on a line); returns the full file name, or 0 if it was cancelled
-dlgFileSave | -- fn/0 ; modal dialog to write the name of a file to save (editable name, 64 characters); returns the full file name, or 0 if it was cancelled
-dlgSetPath | "path" -- ; set the folder where the file dialogs start
 dc.ini | max 'dc -- ; initialize the list (count and start) with room for max values of 8 bytes at here
 dc.clear | list -- ; empty the list
 dc? | list -- cnt ; number of values
@@ -2057,72 +2048,6 @@ easet | table of the easing words used by ease (entry 0 is not used, so number 1
 ease | t nro -- t' ; apply the easing number nro to t: 0 linear, then In Out InOut of 1-3 Quad, 4-6 Cub, 7-9 Quar, 10-12 Quin, 13-15 Sin, 16-18 Exp, 19-21 Cir, 22-24 Ela, 25-27 Bac, 28-30 Bou (no range check above 30)
 easem | t nro -- t' ; like ease with a short table, only the low 4 bits of nro count: 0 linear, then In Out InOut of 1-3 Sin, 4-6 Exp, 7-9 Bac, 10-12 Ela, 13-15 Bou
 catmullRom | p0 p1 p2 p3 t -- v ; Catmull-Rom spline value between p1 (t = 0) and p2 (t = 1.0) using the neighbours p0 and p3
-immlist | cnt -- ; the list of files of the dialog with cnt lines: a click selects, a second click on the same line enters the folder or accepts the file; it has a scroll bar
-filedlgini | -- ; start the file dialog: 15 lines and memory reserved at here (a table of 1024 entries and 64 KB of names)
-immfileload | 'vecload 'file -- ; open the file dialog in LOAD mode on the folder of 'file with its name selected; 'vecload is executed when LOAD is pressed
-immfilesave | 'vecsave 'file -- ; like immfileload but in SAVE mode
-fullfilename | -- str ; the folder and the file name chosen, joined with sprint in a temporary string (no / between them)
-padx | horizontal padding around the widgets in pixels
-pady | vertical padding around the widgets in pixels
-curx | x of the current widget (cursor) in pixels
-cury | y of the current widget (cursor) in pixels
-boxw | width of the widgets in pixels
-boxh | height of the widgets in pixels
-immcolorwin | window background color $RRGGBB
-immcolortwin | window title bar color $RRGGBB
-immcolortex | text color $RRGGBB
-immcolorbtn | button color $RRGGBB
-immgui | -- ; start of a gui frame, once per frame before the widgets: calls gui and resets the layout (cursor at 0 0, box = screen width by font height + 8)
-immkey! | 'vec -- ; word to execute at the end of immRedraw of this frame (keyboard handler)
-immat | x y -- ; set the cursor (position of the next widget)
-immat+ | x y -- ; move the cursor by x y pixels
-immbox | w h -- ; set the size of the next widgets
-immfont! | font -- ; set the TTF font used by the widgets and measure its height
-immpad! | padx pady -- ; set the padding around the widgets
-immwinxy | x y -- ; set the origin of the window and put the cursor inside it with the padding
-imm>> | -- ; move the cursor one widget to the right (box width plus the padding of both sides)
-imm<< | -- ; move the cursor one widget to the left
-immdn | -- ; move the cursor one widget down (box height plus the padding of both sides)
-immcr | -- ; new line: x back to the left of the window and y down one widget
-immln | -- ; new line: x back to the left of the window and y down only the box height
-plgui | -- ; start a widget at the cursor: guiBox of the current box with the padding
-plxywh | -- x y w h ; rectangle of the widget at the cursor, with the padding
-immcur | x y w h -- ; set the guiBox of the rectangle x y w h (relative to the window), draw a gray outline around it and make it the cursor and the box
-immcur> | -- cur ; pack the cursor and the box in one value: curx | cury<<16 | boxw<<32 | boxh<<48
-imm>cur | cur -- ; restore the cursor and the box packed by immcur>
-immlabel | "" -- ; draw the text (formatted, see ttprint) at the left of the current box, vertically centered
-immlabelc | "" -- ; draw the text centered in the current box
-immlabelr | "" -- ; draw the text right aligned in the current box
-imm. | "" -- ; draw the text (formatted with sprint) at the cursor and move the cursor right by its width plus padding (inline text)
-immStrC | "" -- ; draw the text centered in the current box (no format)
-immListBox | lines -- ; guiBox of a list area of that many box heights
-immback | color -- ; fill the current box with the color (for the lines of a list)
-immblabel | "" -- ; text of a list line at the left of the current box (without the vertical padding)
-immicon | nro x y -- ; draw the icon nro of the icon set at x y
-immiconb | nro -- ; draw the icon nro centered in the current box with the text color
-immwidth | w -- ; set the width of the next widgets
-immbtn | 'click "" -- ; button with centered text: moves 2 pixels while the mouse is over it and executes 'click when clicked
-immibtn | 'click nro -- ; button with the icon nro
-immtbtn | 'click "" -- ; button as wide as its text; the background shows only while the mouse is over it
-immebtn | 'click "" -- ; button with the text only (no background), as wide as its text
-immzone | 'click -- ; invisible clickable area of the current box
-immSliderf | min max 'value -- ; horizontal slider of a fixed point value between min and max (it shows the value with 2 decimals)
-immSlideri | min max 'value -- ; horizontal slider of an integer value between min and max
-immCheck | 'val "text" -- ; check box: a click toggles bit 0 of the variable
-immScrollv | 0 max 'value -- ; vertical scroll bar for the value between 0 and max (the code notes it is incorrect)
-immRadio | 'val "op1|op2|op3" -- ; radio buttons, one line per option: the variable holds the number (0 is the first) of the chosen one
-immCombo | 'val "op1|op2|op3" -- ; shows the chosen option; a click goes to the next one (it is not a drop down list)
-immInputLine | 'buff max -- ; line editor of the text in 'buff (max bytes): insert or overwrite (Ins), left, right, home, end, backspace and delete; tab and enter go to the next widget
-immInputInt | 'var -- ; integer input: the digits typed are appended, backspace or delete divide by 10 (no negative numbers)
-immwin! | 'winword -- ; add a window to the list drawn by immRedraw ('winword draws the window and its widgets); it is not added twice
-immwin$ | 'winword -- ; remove the window from the list
-winexit | -- ; close the window that has the mouse over it (it is the action of the close button)
-immwin | 'win -- 0/flags ; draw the window of the record 'win (flags, x y w h in four dwords, title): flag 1 = open, flag 2 = comes to the front; handles dragging by the title and the close button; returns 0 if it is closed, else puts the cursor and the box inside the window
-immnowin | x y w h -- ; set the region for the widgets without a window frame
-immwinbottom | 'win -- ; set the height of the window record to the cursor y reached (the window fits its content)
-immRedraw | -- ; execute the word of every window of the list, bring the clicked window to the front and execute the key handler set with immkey!
-immwins | 'win -- ; like immwin for a fixed window: no dragging, no close button
-immSDL | font -- ; start the gui with the TTF font and load the icons media/img/icong16.png (tiles of 24x21)
 shellsort | len lista -- ; lista es valor-dato
 shellsort2 | len lista -- ; lista es dato-valor
 shellsort1 | len lista -- ; lista es dato|valor
@@ -2295,6 +2220,7 @@ flxRoot | -- ; fullscr
 flxC | w h -- ; frame w x h cent
 tuDlg | "title" w h --
 tuDlgEnd | --
+filename
 fuente | fuente editable
 fuente> | cursor
 $fuente | fin de texto
@@ -2427,10 +2353,261 @@ sdlx | -- x ; mouse x in virtual screen pixels (it replaces the sdlx of sdl2 for
 sdly | -- y ; mouse y in virtual screen pixels (it replaces the sdly of sdl2 for the code that follows)
 %w | frac -- px ; fixed point fraction of the virtual screen width (1.0 = all) in pixels (it replaces the one of sdl2)
 %h | frac -- px ; fixed point fraction of the virtual screen height (1.0 = all) in pixels (it replaces the one of sdl2)
+color! | rgb -- ; load the color in the picker (alpha too when the mode has it)
+uiColor | 'var -- ; color swatch: a click opens the picker
+uiColorH | 'var -- ; swatch with the hex value over it
+uiColorAlpha | 'var -- ; swatch of an $AARRGGBB color: a click opens the picker with an alpha bar
+uiColorAlphaH | 'var -- ; same with the hex value over the swatch
+fx
+fy
+fw
+fh | frame (layout area)
+flpadx
+flpady
+flcols
+flrows
+flcolm
+flrowm
+cx | x of the cursor box (the current widget) in pixels
+cy | y of the cursor box
+cw | width of the cursor box
+ch | height of the cursor box
+rowh | px, 0 = the height of the font
+rh | -- h ; height of a row (uiRowH, or the font if it is 0)
+uiRowH | h -- ; set the row height in pixels (0 = follow the font)
+uiLnEnd | -- ; end the line of columns if it has something
+uiAdvH | h -- ; the widget is done: next cell (columns) or down h pixels plus the padding
+uiColsW | 'wts n -- ; n columns, a weight each: positive = proportion, negative = pixels
+uiCols | n -- ; n equal columns (1 = back to one column)
+uiSpan | n -- ; the next widget takes n cells
+uiCol# | -- n ; number of columns now
+%cw | frac -- px ; fixed point fraction (1.0 = all) of the width of the current frame in pixels
+%ch | frac -- px ; fixed point fraction (1.0 = all) of the height of the current frame in pixels
+uiPad | x y -- ; set the horizontal and vertical padding inside the frame (pixels) and recompute the cursor box
+uiBox | x y w h -- ; set the current frame (layout area) and push it on the layout stack; the cursor box is the frame minus the padding
+uiWinBox | -- x y w h ; the current frame
+uiLn | -- ; end of a row: back to the left of the frame and down one line
+uiFull | -- ; the frame is the whole screen
+uiPush | -- ; push the current frame on the layout stack (16 levels, the last ones are ignored)
+uiPop | -- ; pop the layout stack and make that frame the current one
+uiRest | -- ; make the frame at the top of the layout stack (what uiN uiS uiE uiO leave) the current one
+uiN | lines -- ; take a strip of that height (pixels) from the top of the current frame and make it current; the rest stays on the stack (a negative value is the whole height minus it)
+uiS | lines -- ; like uiN taking the strip from the bottom of the frame
+uiE | cols -- ; like uiN taking a strip of that width (pixels) from the right of the frame
+uiO | cols -- ; like uiN taking a strip of that width (pixels) from the left of the frame
+uiAt | x y -- ; move the cursor box to the grid cell x y
+uiTo | w h -- ; set the size of the cursor box to w x h grid cells
+uiGrid | c r -- ; divide the frame in c columns by r rows (adjusted to fit) and put the cursor at the cell 0 0
+uiNext | -- ; move the cursor to the next grid cell going along the rows (it goes back to the first one at the end)
+uiNextV | -- ; move the cursor to the next grid cell going down the columns
+idfh
+mdrag | number of the place (uiPlace) under the mouse while dragging, -1 if none
+uistate
+keymd | key modifiers: bit 0 is set while a shift key is down
+btnMouse | mouse button mask (sdlb) of the last press on a widget
+uiEx! | -- ; mark the last widget as activated (uiEx? is true)
+uiEx? | -- flag ; not 0 if the last widget was activated (clicked or Enter pressed)
+uiOvr | 'v -- ; execute 'v while the mouse is over the widget
+uiDwn | 'v -- ; execute 'v on the frame the button is pressed on the widget
+uiSel | 'v -- ; execute 'v while the widget is active (button held with the mouse over it)
+uiClk | 'v -- ; execute 'v when the widget is clicked (released over it)
+uiUp | 'v -- ; execute 'v when the mouse button is released or the mouse goes out after being pressed
+uiFocusIn | 'v -- ; execute 'v on the frame the widget gets the keyboard focus
+uiFocus | 'v -- ; execute 'v while the widget keeps the keyboard focus (after the first frame)
+uiStart | -- ; start of a gui frame, once per frame before the widgets: frame = whole screen, ids and drag reset, shift key tracked
+uiPopup? | -- flag ; not 0 while a pop-up (combo list, color picker, file dialog) is open
+idfs
+uiExitWidget | -- ; close the pending last widget (the open combo list)
+uiSaveLast | x y w h 'vector -- ; save a widget (its box and font) to be executed by uiEnd after the others (used for pop-ups)
+uiEnd | -- ; end of a gui frame: executes the pending last widget (the open combo list), drawn over the others
+chx
+uiZone | -- ; define the interaction area of the widget (cursor box, one text line high) and compute its mouse and focus state; read it with uiOvr uiClk uiFocus...
+uiZoneL | nlines -- ; like uiZone with an area of nlines text lines
+uiZoneW | -- ; like uiZone with the whole cursor box height
+uiZoneBox | x y w h -- ; set the cursor box to x y w h (the old one is kept for uiBackBox) and use it as the interaction area
+uiBackBox | -- ; restore the cursor box saved by uiZoneBox
+wix
+wiy
+wiw
+wih
+immBox | x y w h -- ; zone of immMouse and immZone
+immFull | -- ; the zone is the whole screen
+immMouse | -- state ; mouse state (0-6) of the zone, the cursor box is not changed
+immZone | -- ; the zone as interaction area (read it with uiClk uiFocus...), the cursor box is not changed
+uiPlace | n -- ; (drag and drop) the cursor box is the place number n: if the mouse is over it mdrag gets n
+uiRefocus | -- ; clear the keyboard focus (the first widget takes it)
+uiFocus>> | -- ; move the keyboard focus to the next widget
+uiFocus<< | -- ; move the keyboard focus to the previous widget
+tabfocus | -- ; action of the Tab key: next widget, or the previous one if shift is down
+uiDate | 'var -- ; date field: a click opens the calendar; the variable is a dt64 (0 = none)
+ycursor
+xcursor
+edfilename
+inisel | inicio seleccion
+finsel | fin seleccion
+fuente | fuente editable
+fuente> | cursor
+edlinenum! | 0/1 -- ; muestra u oculta el numero de linea
+edlinenum | -- 0/1
+edcodedraw
+edfill
+edtoolbar
+edfocus
+edfocusro
+clearmark
+addmark
+addsrcmark | src color --
+showmark
+edram
+edwin | x y w h --
+edloadmem | "" --
+edload | "" --
+edsave | --
+edattach | 'buf max -- ; make this buffer the document of the editor
+edtolf | 'buf -- ; CR -> LF in place, to use the text out of the editor
+uiTextArea | 'buf max -- ; multiline text box on the buffer (max = its size in bytes); click to edit, the height is ch (uiTextAreaH)
+uiTextView | 'buf max -- ; like uiTextArea but read only (select and copy with Ctrl-C)
+uiCodeEdit | 'buf max -- ; code editor: r3 colors, line numbers, status bar (Ctrl-F find, Ctrl-D definition, Ctrl-L numbers, Ctrl-Z/Y undo/redo)
+uiTextAreaH | 'buf max h -- ; uiTextArea with a height in pixels (in flow mode the line is that high)
+uiCodeEditH | 'buf max h -- ; uiCodeEdit with a height in pixels
+uiEdit | -- ; the internal document of edram / edload / edsave (as imedit) in the cursor box
+uiFileFull | -- "folder/name"
+uiFileName | 'buf max -- ; field with the name of a file: it opens the dialog
+uiFileOpen | 'buf max -- ; like uiFileName, the file must exist
+uiFileSave | 'buf max -- ; like uiFileName, overwriting a file needs a second OK
+uiFileFilter | "png bmp" -- ; extensions of the files shown (case ignored), "" = all
+uiFileAsk | 'buf max mode -- ; open the dialog on the buffer; mode 0 any name, 1 must exist, 2 save (overwrite asks twice)
+uiFileDone? | -- flag ; 1 once after the dialog was accepted (the buffer has "folder/name"), then 0
 rimmGLini | "title" w h -- ; open the GL window and prepare glgfx (shader): GLini + glgfx. Without glgfx nothing is drawn
 gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip
 gclipPop | -- ; back to the clip before gclipPush
+ICCHK
+ICX
+ICRIGHT
+ICDOWN
+ICLEFT
+ICUP
+ICPLUS
+ICMINUS
+uiIcon | n x y s -- ; draw the icon n in the square x y of side s with the draw color
 gclip | x y w h -- ; clip the drawing to the rectangle
 gclip0 | -- ; remove the clip
 gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip; gclipPop goes back
 gclipPop | -- ; back to the clip before gclipPush
+colBac | field background (normal)
+colFil | fill: normal and light
+colTxt | text
+colFoc | focus outline
+colBrd | border
+colPan | panel
+rrad | corner radius (0 square, -1 capsule)
+rbrd | border width (0 or 1)
+tpad | padding of the text inside a field
+stDang | -- ; widget color style: danger (red)
+stWarn | -- ; widget color style: warning (orange)
+stSucc | -- ; widget color style: success (green)
+stInfo | -- ; widget color style: info (cyan, the default)
+stLink | -- ; widget color style: link (blue)
+stDark | -- ; widget color style: dark gray
+stLigt | -- ; widget color style: light gray
+stColor | rgb -- ; widget color style from a color $RRGGBB (the second color is a lighter mix)
+colFilT | accent of the current theme
+stTheme | -- ; widget color style: the accent of the theme (undo stDang, stWarn...)
+stRad | r -- ; corner radius of the widgets (0 square, -1 capsule)
+colFill | -- ; fill color of the widget for its state (over, pressed...)
+colFillN | -- ; fill color, always the normal one
+colLight | -- ; the light color of the fill (marks, bars)
+colBack | -- ; background of the fields
+colFocus | -- ; focus outline
+colText | -- ; text color
+colBorde | -- ; border
+bx
+by
+bw
+bh
+box! | x y w h -- ; box of the skins
+fshape | -- ; fill the box with the radius of the theme
+oshape | -- ; outline of the box with the radius of the theme
+skFocus | -- ; focus outline around the interaction area
+skinBtn
+skinField
+skinCheck
+skinRadio
+skinSlide
+skinPanel
+skinTab
+skinScroll
+skinSect
+skin! | 'vec kind -- ; replace the skin of a kind of widget
+skAt | .. x y w h kind -- ; draw the skin of that kind in the box x y w h
+sk | .. kind -- ; draw the skin of that kind over the interaction area (cx cy cw chx)
+thDark | -- ; dark, like the original
+thLight | -- ; light, with border
+thBlender | -- ; gray, small, accent blue
+thGodot | -- ; blue gray, rounded, tall rows
+thMagica | -- ; flat, compact, orange
+uiTheme | n -- ; theme by number (it does not move the cursor: it can be changed in the middle of a frame) (0 dark, 1 light, 2 blender, 3 godot, 4 magica)
+thNext | -- ; next theme
+thNow | -- n ; number of the current theme
+uiFill | -- ; fill the cursor box with the draw color
+uiRect | -- ; outline of the cursor box
+uiRFill | round -- ; fill the cursor box with rounded corners of that radius
+uiRRect | round -- ; outline of the cursor box with rounded corners
+uiCRect | -- ; outline of the cursor box as a capsule
+uiCFill | -- ; fill the cursor box as a capsule
+uiTex | texture -- ; draw the texture in the cursor box
+uilFill | -- ; fill the interaction area with the draw color
+uilRFill | round -- ; like uilFill with rounded corners
+uilCFill | -- ; like uilFill as a capsule
+uilTex | texture -- ; draw the texture in the interaction area
+uilRect | -- ; outline one pixel bigger than the interaction area
+uilRRect | round -- ; like uilRect with rounded corners
+uilCRect | -- ; like uilRect as a capsule
+uiLineGridV | -- ; draw the vertical lines of the grid
+uiLineGridH | -- ; draw the horizontal lines of the grid
+uiLineGrid | -- ; draw the lines of the grid
+uil.. | -- ; move the cursor down one row
+ui.. | -- ; the widget is done: next cell (columns) or down one row plus the padding
+ui-- | -- ; separator: a line across the frame, in its own row
+uiClip | -- ; clip the drawing to the interaction area
+uiUnclip | -- ; remove the clip
+ttwrite | "text" -- ; text left aligned in the cursor box
+ttwritec | "text" -- ; text centered in the cursor box width
+ttwriter | "text" -- ; text right aligned in the cursor box
+ttinl | "text" -- ; like ttwrite with the padding of the theme (inside fields)
+ttinr | "text" -- ; like ttwriter with the padding of the theme
+uiTlabel | "text" -- ; label as wide as its text: write it centered and move the cursor right (rows of widgets)
+uiLabel | "text" -- ; text left aligned, then next cell
+uiLabelC | "text" -- ; text centered, then next cell
+uiLabelR | "text" -- ; text right aligned, then next cell
+uiText | "" align -- ; text wrapped in the cursor box with the alignment of txalign ($VH)
+ctLabel | "text" -- ; centered text
+ctIcon | n -- ; centered icon (ICxxx)
+uiBtnX | 'click data 'content -- ; button with any content: 'content gets data and draws it
+uiBtn | 'click "" -- ; button with centered text; executes 'click when activated (click or Enter)
+uiIBtn | 'click icon -- ; button with an icon (ICxxx)
+uiRBtn | 'click "" -- ; button with rounded corners (radius 6)
+uiCBtn | 'click "" -- ; button with capsule shape
+uiNBtn | 'click "" -- ; button as wide as its text, moving the cursor right (free flow: finish the row with uiLn); with columns (uiCols) it takes the cell like uiBtn
+uiTBtn | 'click "" align -- ; button with wrapped text of the given alignment; executes 'click when activated. In flow mode (uiCols) it takes the cell
+uiTBtnH | 'click "" align h -- ; like uiTBtn with a height in pixels (several lines of text); in flow mode (uiCols) it takes the cell and the line is that high
+uiSliderf | min max 'value -- ; horizontal slider of a fixed point value (2 decimals)
+uiSlideri | min max 'value -- ; horizontal slider of an integer value
+uiProgressf | min max 'value -- ; progress bar of a fixed point value (it can be dragged)
+uiProgressi | min max 'value -- ; progress bar of an integer value
+uiSliderfL | "name" min max 'value -- ; slider with the name at the left and the value at the right
+uiSlideriL | "name" min max 'value -- ; like uiSlideri with the name at the left and the value at the right
+uiVSliderf | min max 'value -- ; vertical slider of a fixed point value (ch = height; in flow mode set ch before: it is the height of the line)
+uiVSlideri | min max 'value -- ; vertical slider of an integer value
+uiNindx | n -- str ; string number n of the list being drawn by the list widgets ("" if n is out of range)
+uiToggle | 'var "text" -- ; on/off button: the variable is 0 or 1; click or Enter changes it; it is filled while on
+uiCheck | 'var 'list -- ; one check box per string of the list (0-terminated strings, an empty one ends the list); each bit of the variable is a box
+uiRadio | 'var 'list -- ; one radio button per string of the list; the variable holds the number of the chosen one
+uiTabs | 'var 'list -- ; tabs in a row, equal width, one per string; the variable holds the chosen one
+uiSection | 'var "title" -- open ; folding header over the whole row: the variable is 0 or 1 (click toggles it); returns it
+uiProps | frac -- ; rows of two columns: name (frac of the width) and value (the rest)
+uiPanelBg | -- ; background of the frame with the skin of the panels
+uiList | 'var cntl 'list -- ; list box of cntl lines over the strings of the list; 'var points to two cells: the selected number and the first line shown (it scrolls with the wheel, keys or the bar)
+uiTree | 'var cntl 'list -- ; like uiList for a tree: every string starts with a byte (level in $1f, $20 has children, $80 open) and a click toggles a folder
+uiCombo | 'var 'list -- ; combo box (the variable has TWO cells: chosen, first line shown): it shows the chosen string of the list (the variable holds its number); a click opens the list of up to 6 lines, drawn by uiEnd over the rest
+uiInputLine | 'buff max -- ; text line editor on the buffer (max bytes): insert or overwrite (Ins), left, right, home, end, backspace, delete, Tab and Enter

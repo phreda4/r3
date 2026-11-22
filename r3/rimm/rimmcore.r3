@@ -7,6 +7,8 @@
 | The font height is no longer used to place anything: rh is the row height.
 | A backend (rimmsdl.r3 or rimmgl.r3) must be included before this file.
 |
+| to compile the lib alone (metabuild, metahelp): the line |META| is active only for them
+|META|^r3/rimm/rimmsdl.r3
 ^r3/lib/math.r3
 ^r3/lib/sdl2.r3
 

@@ -7,6 +7,8 @@
 |  uiTheme n   by number (0..4), thNext cycle
 |  skin! 'vec kind   replace the drawing of one kind of widget
 |
+| to compile the lib alone (metabuild, metahelp): the line |META| is active only for them
+|META|^r3/rimm/rimmcore.r3
 ^r3/lib/color.r3
 ^r3/rimm/rimmicon.r3
 

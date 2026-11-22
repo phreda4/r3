@@ -191,6 +191,7 @@
 
 |-------------
 :main
+	1 'metagen !			| the |META| lines are active
 	.cls
 	"help generator" .println
 	genbase

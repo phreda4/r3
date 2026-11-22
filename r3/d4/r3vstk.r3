@@ -908,7 +908,7 @@
 :v.mod "AH|d|D|cqo;idiv #0" vop ;
 :v./mod "AH|d|AD|cqo;idiv #0" vop ;
 :v.*/ "AHH|d|A|imul #1;idiv #0" vop ;
-:v.*>> "AHK{0}|d|A|imul #1^AHK{1,63}|d|A|imul #1;shrd rax,rdx,$0^AHK{64,}|d|A|imul #1;sar rdx,$0-64;mov rax,rdx^AHN|d|A|imul #1;shrd rax,rdx,$0;sar rdx,$0;and ecx,64;cmovne rax,rdx" vop ;
+:v.*>> "AHK{0}|d|A|imul #1^AHK{1,63}|d|A|imul #1;shrd rax,rdx,$0^AHK{64}|d|D|imul #1^AHK{65,}|d|D|imul #1;sar rdx,$0-64^AHN|d|A|imul #1;shrd rax,rdx,$0;sar rdx,$0;and ecx,64;cmovne rax,rdx" vop ;
 :v.<</ "AHN|d|A|cqo;shld rdx,rax,$0;shl rax,$0;idiv #1" vop ;
 :v.sqrt "R||R|cvtsi2sd xmm0,#0;sqrtsd xmm0,xmm0;cvttsd2si #0,xmm0" vop ;
 :v.clz "R||R|bsr #0,#0;xor #0,63" vop ;

@@ -166,10 +166,6 @@
 #words  "bsprdraw" "inisprite" "+sprite" "drawmaps" "loadmap" "bmap2xy" "whbmap" "xyinmap@" "xytrigger" 0
 #info ( $80 $0 $3D $2E $1F $20 $2 $2F $20 )
 #r3_util_bmap.r3 'name 'words 'info
-#name "r3/util/curfile.r3"
-#words  "filename" 0
-#info ( $80 )
-#r3_util_curfile.r3 'name 'words 'info
 #name "r3/util/datetime.r3"
 #words  ",time" ",ti:me" ",date" ",date-" "str_DMA" "str_HMS" "str_HM" ">dianame" ">mesname" "str_fullday" "str_hhmmss" "dt2timesql" "dt>64" ",64>dtf" ",64>dtd" ",64>dtt" "64>dtc" 0
 #info ( $0 $0 $0 $0 $1 $1 $1 $10 $10 $2 $1 $1F $10 $1F $1F $1F $1F )
@@ -178,14 +174,6 @@
 #words  "rowdb" "getnfilename" "loadnfile" ">>line" "loaddb-i" "prevdb-i" "dbfld" "loaddb" "getdbrow" "findbrow" "cntdbrow" ">>fld" "getdbfld" "cpydbfld" "cpydbfldn" 0
 #info ( $80 $2F $10 $10 $1F $1F $10 $10 $2F $2F $10 $10 $2F $2E $3D )
 #r3_util_dbtxt.r3 'name 'words 'info
-#name "r3/util/dlgcol.r3"
-#words  "colord" "color!" "dlgColor" "dlgColorIni" "xydlgColor!" 0
-#info ( $80 $1F $0 $0 $2E )
-#r3_util_dlgcol.r3 'name 'words 'info
-#name "r3/util/dlgfile.r3"
-#words  "dlgFileLoad" "dlgFileSave" "dlgSetPath" 0
-#info ( $1 $1 $1F )
-#r3_util_dlgfile.r3 'name 'words 'info
 #name "r3/util/dlist.r3"
 #words  "dc.ini" "dc.clear" "dc?" "dcn@" "dc@" "dc!" "dc@-" 0
 #info ( $2E $1F $10 $2F $11 $2E $10 )
@@ -222,14 +210,6 @@
 #words  "Lineal" "Quad_In" "Quad_Out" "Quad_InOut" "Cub_In" "Cub_Out" "Cub_InOut" "Quar_In" "Quar_Out" "Quar_InOut" "Quin_In" "Quin_Out" "Quin_InOut" "Sin_In" "Sin_Out" "Sin_InOut" "Exp_In" "Exp_Out" "Exp_InOut" "Cir_In" "Cir_Out" "Cir_InOut" "Ela_In" "Ela_Out" "Ela_InOut" "Bac_In" "Bac_Out" "Bac_InOut" "Bou_Out" "Bou_In" "Bou_InOut" "easet" "ease" "easem" "catmullRom" 0
 #info ( $0 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $10 $80 $2F $2F $5C )
 #r3_util_penner.r3 'name 'words 'info
-#name "r3/util/sdlfiledlg.r3"
-#words  "immlist" "filedlgini" "immfileload" "immfilesave" "fullfilename" 0
-#info ( $1F $0 $2E $2E $1 )
-#r3_util_sdlfiledlg.r3 'name 'words 'info
-#name "r3/util/sdlgui.r3"
-#words  "padx" "pady" "curx" "cury" "boxw" "boxh" "immcolorwin" "immcolortwin" "immcolortex" "immcolorbtn" "immgui" "immkey!" "immat" "immat+" "immbox" "immfont!" "immpad!" "immwinxy" "imm>>" "imm<<" "immdn" "immcr" "immln" "plgui" "plxywh" "immcur" "immcur>" "imm>cur" "immlabel" "immlabelc" "immlabelr" "imm." "immStrC" "immListBox" "immback" "immblabel" "immicon" "immiconb" "immwidth" "immbtn" "immibtn" "immtbtn" "immebtn" "immzone" "immSliderf" "immSlideri" "immCheck" "immScrollv" "immRadio" "immCombo" "immInputLine" "immInputInt" "immwin!" "immwin$" "winexit" "immwin" "immnowin" "immwinbottom" "immRedraw" "immwins" "immSDL" 0
-#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $1F $2E $2E $2E $10 $2E $2E $0 $0 $0 $0 $0 $0 $4 $4C $1 $1F $1F $1F $1F $1F $1F $1F $1F $1F $3D $1F $1F $2E $2E $2E $2E $1F $3D $3D $2E $3D $2E $2E $2E $1F $1F $1F $0 $10 $4C $1F $0 $10 $10 )
-#r3_util_sdlgui.r3 'name 'words 'info
 #name "r3/util/sort.r3"
 #words  "shellsort" "shellsort2" "shellsort1" "sortstr" 0
 #info ( $2E $2E $2E $2E )
@@ -263,8 +243,8 @@
 #info ( $80 $80 $80 $80 $2F $2F $1 $4C $0 $0 $0 $0 $1F $1F $1F $1F $10 $10 $2E $0 $80 $0 $1 $0 $0 $0 $1 $1 $0 $1 $1F $1 $0 $1F $1F $1F $0 $0 $0 $0 $2E $0 $0 $1F $2E $1F $1F $1F $1F $0 $10 $2E $1F $0 $10 $2E $2F $2E $2F $80 $2E $2E $3D $3D $1F $80 $1F $1F $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $2E $2E $2E $2E $1F $2E $1F $1F $1F $1F $1 $0 $0 $0 $2E $1F $1F $0 $2E $3D $0 )
 #r3_util_tui.r3 'name 'words 'info
 #name "r3/util/tuiedit.r3"
-#words  "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuelstart" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueinsat" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
-#info ( $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $10 $0 $1 $0 $0 $0 $2E $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
+#words  "filename" "fuente" "fuente>" "$fuente" "themeold" "themenew" "tuTheme!" "tcol" "tuiecursor!" "tuipos!" "tuiposq!" "tuelstart" "tuejpush" "tuejdepth" "tuejback" "tuegodef" "tuefindword" "tueinsat" "tueKeyMove" "tuEditLN!" "tuEditShowCursor" "tuEditCode" "tuReadCode" "tuReadCodeMono" "tuecursor." "TuLoadMem" "TuLoadMemC" "TuLoadCode" "TuNewCode" "TuSaveCode" "tokenCursor" 0
+#info ( $80 $80 $80 $80 $80 $80 $1F $10 $1F $1F $1F $10 $0 $1 $0 $0 $0 $2E $10 $1F $0 $0 $0 $0 $1 $1F $1F $1F $0 $0 $1F )
 #r3_util_tuiedit.r3 'name 'words 'info
 #name "r3/util/txfont.r3"
 #words  "txload" "txfont" "txfont@" "txrgb" "txcw" "txw" "txfit" "txch" "txh" "txat" "tx+at" "txcr" "txpos" "txemit" "txwrite" "txemitr" "txemitc" "txprint" "txprintr" "txcur" "txcuri" "lwrite" "cwrite" "rwrite" "txalign" "txText" "pad.reset" "pad.draw" 0
@@ -282,5 +262,45 @@
 #words  "vscreen" "vscreenf" "vini" "vredraw" "vfree" "sdlx" "sdly" "%w" "%h" 0
 #info ( $2E $2E $0 $0 $0 $1 $1 $10 $10 )
 #r3_util_vscreen.r3 'name 'words 'info
+#name "r3/rimm/rimmcolor.r3"
+#words  "color!" "uiColor" "uiColorH" "uiColorAlpha" "uiColorAlphaH" 0
+#info ( $1F $1F $1F $1F $1F )
+#r3_rimm_rimmcolor.r3 'name 'words 'info
+#name "r3/rimm/rimmcore.r3"
+#words  "fx" "fy" "fw" "fh" "flpadx" "flpady" "flcols" "flrows" "flcolm" "flrowm" "cx" "cy" "cw" "ch" "rowh" "rh" "uiRowH" "uiLnEnd" "uiAdvH" "uiColsW" "uiCols" "uiSpan" "uiCol#" "%cw" "%ch" "uiPad" "uiBox" "uiWinBox" "uiLn" "uiFull" "uiPush" "uiPop" "uiRest" "uiN" "uiS" "uiE" "uiO" "uiAt" "uiTo" "uiGrid" "uiNext" "uiNextV" "idfh" "mdrag" "uistate" "keymd" "btnMouse" "uiEx!" "uiEx?" "uiOvr" "uiDwn" "uiSel" "uiClk" "uiUp" "uiFocusIn" "uiFocus" "uiStart" "uiPopup?" "idfs" "uiExitWidget" "uiSaveLast" "uiEnd" "chx" "uiZone" "uiZoneL" "uiZoneW" "uiZoneBox" "uiBackBox" "wix" "wiy" "wiw" "wih" "immBox" "immFull" "immMouse" "immZone" "uiPlace" "uiRefocus" "uiFocus>>" "uiFocus<<" "tabfocus" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $1 $1F $0 $1F $2E $1F $1F $1 $10 $10 $2E $4C $4 $0 $0 $0 $0 $0 $1F $1F $1F $1F $2E $2E $2E $0 $0 $80 $80 $80 $80 $80 $0 $1 $1F $1F $1F $1F $1F $1F $1F $0 $1 $80 $0 $5B $0 $80 $0 $1F $0 $4C $0 $80 $80 $80 $80 $4C $0 $1 $0 $1F $0 $0 $0 $0 )
+#r3_rimm_rimmcore.r3 'name 'words 'info
+#name "r3/rimm/rimmdate.r3"
+#words  "uiDate" 0
+#info ( $1F )
+#r3_rimm_rimmdate.r3 'name 'words 'info
+#name "r3/rimm/rimmedit.r3"
+#words  "ycursor" "xcursor" "edfilename" "inisel" "finsel" "fuente" "fuente>" "edlinenum!" "edlinenum" "edcodedraw" "edfill" "edtoolbar" "edfocus" "edfocusro" "clearmark" "addmark" "addsrcmark" "showmark" "edram" "edwin" "edloadmem" "edload" "edsave" "edattach" "edtolf" "uiTextArea" "uiTextView" "uiCodeEdit" "uiTextAreaH" "uiCodeEditH" "uiEdit" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $1F $1 $0 $0 $0 $0 $0 $0 $1F $2E $0 $0 $4C $1F $1F $0 $2E $1F $2E $2E $2E $3D $3D $0 )
+#r3_rimm_rimmedit.r3 'name 'words 'info
+#name "r3/rimm/rimmfile.r3"
+#words  "uiFileFull" "uiFileName" "uiFileOpen" "uiFileSave" "uiFileFilter" "uiFileAsk" "uiFileDone?" 0
+#info ( $1 $2E $2E $2E $1F $3F $1 )
+#r3_rimm_rimmfile.r3 'name 'words 'info
+#name "r3/rimm/rimmgl.r3"
+#words  "rimmGLini" "gclipPush" "gclipPop" 0
+#info ( $3D $4C $0 )
+#r3_rimm_rimmgl.r3 'name 'words 'info
+#name "r3/rimm/rimmicon.r3"
+#words  "ICCHK" "ICX" "ICRIGHT" "ICDOWN" "ICLEFT" "ICUP" "ICPLUS" "ICMINUS" "uiIcon" 0
+#info ( $1 $1 $1 $1 $1 $1 $1 $1 $4C )
+#r3_rimm_rimmicon.r3 'name 'words 'info
+#name "r3/rimm/rimmsdl.r3"
+#words  "gclip" "gclip0" "gclipPush" "gclipPop" 0
+#info ( $4C $0 $4C $0 )
+#r3_rimm_rimmsdl.r3 'name 'words 'info
+#name "r3/rimm/rimmtheme.r3"
+#words  "colBac" "colFil" "colTxt" "colFoc" "colBrd" "colPan" "rrad" "rbrd" "tpad" "stDang" "stWarn" "stSucc" "stInfo" "stLink" "stDark" "stLigt" "stColor" "colFilT" "stTheme" "stRad" "colFill" "colFillN" "colLight" "colBack" "colFocus" "colText" "colBorde" "bx" "by" "bw" "bh" "box!" "fshape" "oshape" "skFocus" "skinBtn" "skinField" "skinCheck" "skinRadio" "skinSlide" "skinPanel" "skinTab" "skinScroll" "skinSect" "skin!" "skAt" "sk" "thDark" "thLight" "thBlender" "thGodot" "thMagica" "uiTheme" "thNext" "thNow" 0
+#info ( $80 $80 $80 $80 $80 $80 $80 $80 $80 $0 $0 $0 $0 $0 $0 $0 $1F $80 $0 $1F $0 $0 $0 $0 $0 $0 $0 $80 $80 $80 $80 $4C $0 $0 $0 $1 $1 $1 $1 $1 $1 $1 $1 $1 $2E $5B $1F $0 $0 $0 $0 $0 $1F $0 $1 )
+#r3_rimm_rimmtheme.r3 'name 'words 'info
+#name "r3/rimm/rimmwid.r3"
+#words  "uiFill" "uiRect" "uiRFill" "uiRRect" "uiCRect" "uiCFill" "uiTex" "uilFill" "uilRFill" "uilCFill" "uilTex" "uilRect" "uilRRect" "uilCRect" "uiLineGridV" "uiLineGridH" "uiLineGrid" "uil.." "ui.." "ui--" "uiClip" "uiUnclip" "ttwrite" "ttwritec" "ttwriter" "ttinl" "ttinr" "uiTlabel" "uiLabel" "uiLabelC" "uiLabelR" "uiText" "ctLabel" "ctIcon" "uiBtnX" "uiBtn" "uiIBtn" "uiRBtn" "uiCBtn" "uiNBtn" "uiTBtn" "uiTBtnH" "uiSliderf" "uiSlideri" "uiProgressf" "uiProgressi" "uiSliderfL" "uiSlideriL" "uiVSliderf" "uiVSlideri" "uiNindx" "uiToggle" "uiCheck" "uiRadio" "uiTabs" "uiSection" "uiProps" "uiPanelBg" "uiList" "uiTree" "uiCombo" "uiInputLine" 0
+#info ( $0 $0 $1F $1F $0 $0 $1F $0 $1F $0 $1F $0 $1F $0 $0 $0 $0 $0 $0 $0 $0 $0 $1F $1F $1F $1F $1F $1F $1F $1F $1F $2F $1F $1F $2E $1F $1F $1F $1F $2E $2E $3D $3E $3E $3E $3E $3D $3D $3D $3D $10 $2F $2E $2E $2E $20 $1F $0 $3D $3D $2E $2E )
+#r3_rimm_rimmwid.r3 'name 'words 'info
 
-##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_curfile.r3 'r3_util_datetime.r3 'r3_util_dbtxt.r3 'r3_util_dlgcol.r3 'r3_util_dlgfile.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_glgfx.r3 'r3_util_gltxfont.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sdlfiledlg.r3 'r3_util_sdlgui.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 0
+##liblist 'r3_lib_3d.r3 'r3_lib_3dgl.r3 'r3_lib_base64.r3 'r3_lib_clipboard.r3 'r3_lib_color.r3 'r3_lib_console.r3 'r3_lib_core.r3 'r3_lib_crc32.r3 'r3_lib_dmath.r3 'r3_lib_glutil.r3 'r3_lib_gui.r3 'r3_lib_input.r3 'r3_lib_jul.r3 'r3_lib_math.r3 'r3_lib_mem.r3 'r3_lib_memavx.r3 'r3_lib_memshare.r3 'r3_lib_netsock.r3 'r3_lib_parse.r3 'r3_lib_rand.r3 'r3_lib_sdl2.r3 'r3_lib_sdl2gfx.r3 'r3_lib_sdl2gl-const.r3 'r3_lib_sdl2gl-constv.r3 'r3_lib_sdl2gl.r3 'r3_lib_sdl2image.r3 'r3_lib_sdl2mixer.r3 'r3_lib_sdl2net.r3 'r3_lib_sdl2poly.r3 'r3_lib_sdl2ttf.r3 'r3_lib_sdlkeys.r3 'r3_lib_str.r3 'r3_lib_trace.r3 'r3_lib_vdraw.r3 'r3_lib_vec2.r3 'r3_lib_vec3.r3 'r3_lib_webcam.r3 'r3_util_arr16.r3 'r3_util_arr8.r3 'r3_util_bfont.r3 'r3_util_blist.r3 'r3_util_bmap.r3 'r3_util_datetime.r3 'r3_util_dbtxt.r3 'r3_util_dlist.r3 'r3_util_filedirs.r3 'r3_util_glgfx.r3 'r3_util_gltxfont.r3 'r3_util_hash2d.r3 'r3_util_heap.r3 'r3_util_loadobj.r3 'r3_util_pcfont.r3 'r3_util_penner.r3 'r3_util_sort.r3 'r3_util_sortradix.r3 'r3_util_sortradixm.r3 'r3_util_textb.r3 'r3_util_tilesheet.r3 'r3_util_ttext.r3 'r3_util_ttfont.r3 'r3_util_tui.r3 'r3_util_tuiedit.r3 'r3_util_txfont.r3 'r3_util_utfg.r3 'r3_util_varanim.r3 'r3_util_vscreen.r3 'r3_rimm_rimmcolor.r3 'r3_rimm_rimmcore.r3 'r3_rimm_rimmdate.r3 'r3_rimm_rimmedit.r3 'r3_rimm_rimmfile.r3 'r3_rimm_rimmgl.r3 'r3_rimm_rimmicon.r3 'r3_rimm_rimmsdl.r3 'r3_rimm_rimmtheme.r3 'r3_rimm_rimmwid.r3 0

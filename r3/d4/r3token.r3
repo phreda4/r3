@@ -53,12 +53,18 @@
 |MAC|	2
 |RPI|	3
 
+| metagen 1: the lines |META| are active (metabuild and metahelp set it). A lib that can't be compiled
+| alone, because it needs words that the program that uses it defines (a rimm backend), has there the
+| include it needs to compile. For the compiler of programs and for any other tool it is a comment.
+##metagen 0
+
 :iscom
 	1+
 	"WIN|" =pre 1? ( drop osgen 0 =? ( drop 4 + ; ) ) drop | Compila para WINDOWS
 	"LIN|" =pre 1? ( drop osgen 1 =? ( drop 4 + ; ) ) drop | Compila para LINUX
 	"MAC|" =pre 1? ( drop osgen 2 =? ( drop 4 + ; ) ) drop | Compila para MAC
 	"RPI|" =pre 1? ( drop osgen 3 =? ( drop 4 + ; ) ) drop | Compila para RPI
+	"META|" =pre 1? ( drop metagen 1 =? ( drop 5 + ; ) ) drop	| Compila las libs (metabuild, metahelp)
 	"MEM" =pre 1? ( drop				| MEM 640
 		4 +
 		trim str>nro 'switchmem !
