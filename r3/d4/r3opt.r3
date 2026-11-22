@@ -457,6 +457,12 @@
 #TKdup 26 #TKover 28 #TKswap 32
 #TKand 45 #TK+ 49 #TK- 50 #TK* 51 #TK/ 52
 #TK<< 53 #TK>> 54 #TK>>> 55 
+#xana								| address of ,ana (defined later)
+
+|--- a shift token emitted after its literal (x 2 * --> x 1 <<) goes through the peepholes of << >> >>>
+|--- so x 1 << 1 << --> x 2 <<   (only the same direction: << n >> is a sign extension)
+:,sh | tk --
+	xana ex ;
 #TK*/ 58 #TK*>> 59 #TK<</ 60
 #TKnot 61 #TKneg 62
 #TKmod 56 #TK/mod 57
@@ -513,7 +519,7 @@
 
 |----------------------- chains of literals
 | x a op b op --> x (a op b) op      ( + - * and or xor )
-| x a << b <<  -->  x a+b <<         ( << >> >>> when a+b < 64 )
+| x a << b <<  -->  x a+b <<         ( << >> >>> when a+b < 64, >> saturates at 63 )
 
 #ck
 :chain? | tk -- 0/1 ; tokana ends with: LIT tk LIT
@@ -537,7 +543,7 @@
 	dup chain? 0? ( 2drop 0 ; ) drop
 	tokana> 24 - @ litpush getTOS
 	2dup or -? ( 4drop 0 ; ) drop
-	+ 63 >? ( 2drop 0 ; )
+	+ 63 >? ( ck 54 <>? ( 3drop 0 ; ) 2drop 63 )		| >> saturates at 63, << and >>> are not merged
 	-24 'tokana> +! ,nlit drop 1 ;
 
 :maskchain? | tk -- 0/1 ; LIT tk LIT with the same literal (1..63)
@@ -637,7 +643,7 @@
 |>>>> 8 * --> 3 <<	
 :,*pot | tos --
 	,back
-	msb ,tlit TK<< ,t ;
+	msb ,tlit TK<< ,sh ;
 	
 |>>>> 9 * --> dup 3 << +
 :,*pot+1 | tos --
@@ -857,11 +863,11 @@
 | x b c *>> --> (x*b)>>c  : arithmetic shift (floor), no sigadj here!
 :,shr | c -- ; x >> c
 	0? ( drop ; )
-	,tlit TK>> ,t ;
+	,tlit TK>> ,sh ;
 
 :,lit2pot*>> | c b -- ; b=2^k
 	msb -							| c-k
-	-? ( neg ,tlit TK<< ,t ; )		| x << (k-c)
+	-? ( neg ,tlit TK<< ,sh ; )		| x << (k-c)
 	,shr ;							| x >> (c-k)
 
 :,lit2pot0*>> | c d cp -- ;  4.0 16 *>> -->  4 * --> 2 << 
@@ -888,7 +894,7 @@
 | x b c <</ --> (x<<c)/b
 :,shl | c -- ; x << c
 	0? ( drop ; )
-	,tlit TK<< ,t ;
+	,tlit TK<< ,sh ;
 
 :,lit2pot<</ | c b -- ; b=2^k
 	msb -							| c-k
@@ -952,7 +958,6 @@
 | + x 0 =? --> 0?    x 0 <>? --> 1?    x 0 <? --> -?    x 0 >=? --> +?
 | tokens: 0? 1? +? -? <? >? =? >=? <=? <>? AND? NAND? (13..24) ; IN? is not changed
 
-#xana				| ,ana (defined later)
 #ctk #cadr #ctok #cres #cend #csemi
 #bd #bpos #bsemi #tb
 
@@ -1056,6 +1061,57 @@
 	tokana> 16 - @ $ff and condn -1 =? ( drop ,t ; )
 	popt popt swap drop dropmerge ;
 
+|--- dead variables: a var that is only written is removed with all its stores
+|--- 'deadv (1 byte by definition, set by r3plain): 1 = dead var, 2 = a store to it could not be
+|--- removed (the var must stay alive), 4 = the var stays alive for good
+|--- the store  value 'var !  goes away with the tokens that make the value, if they have no side effects
+
+##deadv * $10000
+
+#dkneed #dkcnt #dku #dkq
+
+:dktok? | tok -- 0/1 ; token without side effects: it can go with the value that it makes
+	$ff and
+	2 =? ( drop 0 ; )				| word call
+	6 <=? ( drop 1 ; )				| literals, addresses, vars, strings
+	26 41 in? ( drop 1 ; )			| DUP .. 2SWAP
+	45 51 in? ( drop 1 ; )			| AND OR XOR NAND + - *
+	53 55 in? ( drop 1 ; )			| << >> >>>
+	59 69 in? ( drop 1 ; )			| *>> <</ NOT NEG ABS SQRT CLZ @ C@ W@ D@
+	127 =? ( drop 1 ; )				| MEM
+	129 =? ( drop 1 ; )				| GETPROC
+	drop 0 ;
+
+:dkcopy? | tok -- 0/1 ; the token copies values that stay in the stack
+	$ff and
+	26 =? ( drop 1 ; ) 28 31 in? ( drop 1 ; ) 36 =? ( drop 1 ; ) 40 =? ( drop 1 ; )
+	drop 0 ;
+
+:dkstep | tok -- 0/1 ; one token back: how many values we need to remove yet
+	dup dktok? 0? ( nip ; ) drop
+	dup tokuq 'dkq ! 'dku !				| tok
+	dkcopy? 1? ( drop dkq dku - ) 0? ( drop dkq )	| values that it has to make
+	dkneed >? ( drop 0 ; ) drop
+	dkneed dkq - dku + 'dkneed !
+	1 'dkcnt +! 1 ;
+
+:dkwalk | -- n/0 ; tokens before the 'var token that make the value to store
+	1 'dkneed ! 0 'dkcnt !
+	tokana> 16 -
+	( 'tokana >=?
+		dup @ dkstep 0? ( 2drop 0 ; ) drop
+		dkneed 0? ( 2drop dkcnt ; ) drop
+		8 - )
+	drop 0 ;
+
+:,ST | tok -- ; ! C! W! D! +! C+! W+! D+!
+	lasttok 5 <>? ( drop ,t ; ) drop
+	tokana> 8 - @ 8 >> $ffffffff and 'deadv +	| tok flag-address
+	dup c@ 1 nand? ( 2drop ,t ; ) drop		| not a dead var
+	dkwalk 0? ( drop dup c@ 2 or swap c! ,t ; )	| it can not be removed: the var stays
+	1+ 3 << tokana> swap - 'tokana> !		| remove the tokens
+	2drop ;
+
 #optw
 ,LIT ,LIT ,CODE ,t ,DATA ,t ,t 	|.lit .lit .code .acode .data .adata .str
 ,t ,t ,) ,[ ,] 				|.; .( .) .[ .] 
@@ -1070,9 +1126,9 @@
 ,NOT ,NEG ,ABS ,SQRT ,CLZ 
 ,t ,t ,t ,t 		|.@ .C@ .W@ .D@ 
 ,t ,t ,t ,t 		|.@+ .C@+ .W@+ .D@+ 
-,t ,t ,t ,t 		|.! .C! .W! .D! 
+,ST ,ST ,ST ,ST 		|.! .C! .W! .D! 
 ,t ,t ,t ,t 		|.!+ .C!+ .W!+ .D!+ 
-,t ,t ,t ,t 		|.+! .C+! .W+! .D+! 
+,ST ,ST ,ST ,ST 		|.+! .C+! .W+! .D+! 
 ,t ,t ,t ,t ,t ,t ,t |.>A .A> .A+ .A@ .A! .A@+ .A!+ 
 ,t ,t ,t ,t 		|.cA@ .cA! .cA@+ .cA!+ 
 ,t ,t ,t ,t 		|.dA@ .dA! .dA@+ .dA!+ 

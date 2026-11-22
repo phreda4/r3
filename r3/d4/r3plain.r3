@@ -5,6 +5,7 @@
 |
 | + one file, plain lib
 | + remove unused words (after inline and fold of constants)
+| + remove the vars that are only written (with their stores), see rounds and ,ST in r3opt
 | + translate noname definitions (inline if they call the word that contains them)
 | + target system: ##osgen (r3token), inline limit: ##inlinelenmax (r3opt)
 |-----------------
@@ -74,6 +75,7 @@
 | 'mk 1 byte per definition, 'wq work list
 
 #mk * $10000
+#rd * $10000		| 1 byte per definition: var read or with its address used (in this round)
 #wq * $40000
 #wq> 'wq
 
@@ -85,9 +87,27 @@
 	dup 'mk + 1 swap c!
 	wq> d!+ 'wq> ! ;
 
+:rdset | nro -- ; the var is read, or its address is used
+	'rd + 1 swap c! ;
+
+:rd? | nro -- 0/1
+	'rd + c@ ;
+
+:nextst? | adr -- 0/1 ; the token in adr is a store ( ! C! W! D! +! C+! W+! D+! )
+	tokana> >=? ( drop 0 ; )
+	@ $ff and 74 77 in? ( drop 1 ; ) 82 85 in? ( drop 1 ; ) drop 0 ;
+
+:scanrd | -- ; vars of tokana that are read (.var) or whose address is not only stored (.vadr)
+	'tokana ( tokana> <? @+
+		dup $ff and
+		4 =? ( over 8 >> $ffffffff and rdset )
+		5 =? ( pick2 nextst? 0? ( pick2 8 >> $ffffffff and rdset ) drop )
+		2drop ) drop ;
+
 :scanana | -- ; mark every word referenced by the tokens in tokana
 	'tokana ( tokana> <? @+ 
-		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw ) 2drop ) drop ;
+		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw ) 2drop ) drop
+	scanrd ;
 
 :markanon | token -- ; analyze the body of one anonymous word
 	dup @ 8 >> $ffffffff and 3 << tok + 
@@ -103,7 +123,7 @@
 :markdata | nro -- ; words/vars referenced from the init of a variable
 	4 << dic + toklend 
 	( 1? 1- swap @+ 
-		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw ) 2drop 
+		dup $ff and 2 5 in? ( over 8 >> $ffffffff and pushw 4 >=? ( over 8 >> $ffffffff and rdset ) ) 2drop 
 		swap ) 2drop ;
 
 :markitem | nro --
@@ -111,10 +131,49 @@
 	drop markcode ;
 
 :markall | --
-	0 ( cntdef <? dup 'mk + 0 swap c! 1+ ) drop
+	0 ( cntdef <? dup 'mk + 0 swap c! dup 'rd + 0 swap c! 1+ ) drop
 	'wq 'wq> !
 	cntdef 1- pushw
 	'wq ( wq> <? d@+ markitem ) drop ;
+
+|--- dead vars: a var that is only written is removed with its stores (see ,ST in r3opt)
+|--- every round marks with the current set ('deadv); the vars without reads join the set,
+|--- the ones that are used or whose store can not be removed leave it for good. Until nothing changes.
+
+#dchg #dn
+
+:setd | v -- ; set the state of the var dn
+	dn 'deadv + c! ;
+
+:vardead | n -- ; state of a var after marking
+	dup 'dn !
+	'deadv + c@
+	2 and? ( drop 4 setd 1 'dchg ! ; )					| a store can not be removed
+	1 and? ( drop dn rd? 0? ( drop ; ) drop 4 setd 1 'dchg ! ; )	| dead var that is used
+	5 and? ( drop ; )
+	drop dn rd? 1? ( drop ; ) drop 1 setd 1 'dchg ! ;
+
+:chkvar | n --
+	dup marked? 0? ( 2drop ; ) drop
+	dup 4 << dic + @ 1 and? ( drop vardead ; ) 2drop ;
+
+:cleardead | --
+	0 ( cntdef <? dup 'deadv + 0 swap c! 1+ ) drop ;
+
+:rounds | -- ; marks for good (mk) with the final set of dead vars
+	cleardead
+	0 ( 64 <?
+		markall
+		0 'dchg !
+		0 ( cntdef <? dup chkvar 1+ ) drop
+		dchg 0? ( 2drop ; ) drop
+		1+ ) drop
+	cleardead markall ;				| it does not settle: no dead vars
+
+:ndead | -- n ; vars removed
+	0 'dn !
+	0 ( cntdef <? dup 'deadv + c@ 1 and? ( 1 'dn +! ) drop 1+ ) drop
+	dn ;
 
 :,everyword | n -- n
 	dup marked? 0? ( drop ; ) drop
@@ -122,7 +181,7 @@
 	drop codew ;
 	
 :generate
-	markall
+	rounds
 	0 ( cntdef 1- <? ,everyword 1+ )
 	dup withanon 
 	"|-----BOOT-----" ,s ,cr
@@ -155,6 +214,7 @@
 	
 	generate
 	optovf 1? ( drop empty "ERROR: optimizer buffer overflow (word too long or too many big literals), plain.r3 not saved" .println ; ) drop
+	ndead "dead vars: %d" .println
 	"r3/d4/gen/plain.r3" savemem
 	empty			| free buffer
 	;
