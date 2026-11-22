@@ -181,7 +181,7 @@
 	"ret" =pre 1? ( drop i.ret ; ) drop
 	"call w" =pre 1? ( drop i.call ; ) drop
 	"call rcx" =pre 1? ( drop i.callx ; ) drop
-	"jmp l" =pre 1? ( drop i.jmpl ; ) drop
+	"jmp l_" =pre 1? ( drop i.jmpl ; ) drop
 	"jmp " =pre 1? ( drop i.jmp ; ) drop
 	":" =pos 1? ( drop i.lab ; ) drop
 	dup c@ $6a =? ( drop i.jcc ; ) drop

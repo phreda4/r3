@@ -133,7 +133,7 @@
 	here 
 	align16
 	dup 'dic ! dup 'dic> ! dup 'dic< !		| dicctionary
-	cntdef 4 << +				| dicc size
+	cntdef 2 + 4 << +				| dicc size (+2: the last entry is written after the last word)
 	dup 'tok ! dup 'tok> !		| tokens 
 	cnttok 3 << +				| tok size
 	dup 'strm ! dup 'strm> ! 	| strings

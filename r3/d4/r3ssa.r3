@@ -132,8 +132,10 @@
 :,nm | n --
 	dup 32 << 32 >> <>? ( "$" ,s ,h ; ) ,d ;
 
+#slpre "w" "s_" "l_"		| prefix of the labels: word , string , local
+
 :,lbl | v -- ; offset<<40 | class<<32 | index
-	dup 32 >>> $3 and "wsl" + c@ ,c
+	dup 32 >>> $3 and 'slpre nth ,s
 	dup $ffffffff and ,h
 	40 >> 0? ( drop ; ) +? ( $2b ,c ) ,d ;
 
@@ -248,7 +250,7 @@
 
 #jcc "jnz" "jz" "js" "jns" "jge" "jle" "jne" "jl" "jg" "je" "jz" "jnz"
 :ejcc | --
-	ib ti gX 13 - 'jcc nth ,s " l" ,s jt ,h ins ;
+	ib ti gX 13 - 'jcc nth ,s " l_" ,s jt ,h ins ;
 :cmpmn | x -- str
 	23 <? ( drop "cmp" ; ) drop "test" ;
 :e.cmpj | i --
@@ -754,7 +756,7 @@
 	ib ti gX cmpmn ,s " " ,s xc ,reg "," ,s xb ,reg rins pqflush ;
 
 :r.jcc | i --
-	'ti ! ib ti gX 13 - 'jcc nth ,s " l" ,s jt ,h rins ;
+	'ti ! ib ti gX 13 - 'jcc nth ,s " l_" ,s jt ,h rins ;
 
 :r.addrbp | i --
 	gX 0? ( drop ; )

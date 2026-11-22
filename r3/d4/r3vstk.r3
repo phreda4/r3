@@ -103,7 +103,7 @@
 #rd "eax" "ecx" "edx" "ebx" "esi" "edi" "r8d" "r9d" "r10d" "r11d" "r12d" "r13d"
 #rw "ax" "cx" "dx" "bx" "si" "di" "r8w" "r9w" "r10w" "r11w" "r12w" "r13w"
 #rb "al" "cl" "dl" "bl" "sil" "dil" "r8b" "r9b" "r10b" "r11b" "r12b" "r13b"
-#lpre "w" "s" "l"
+#lpre "w" "s_" "l_"
 
 :nth | n 'list -- str
 	swap ( 1? 1- swap >>0 swap ) drop ;
@@ -390,7 +390,7 @@
 
 :vjump | -- f ; canonical state, then jump when the condition fails
 	vs.norm
-	ib lmn ,s " l" ,s jt ,h ie opt.ins 1 ;
+	ib lmn ,s " l_" ,s jt ,h ie opt.ins 1 ;
 
 :vcond2 | "cmp" "jcc" -- f
 	'lmn ! 'lsz !

@@ -92,11 +92,11 @@
 :,lf 10 ,c ;
 :,tab 9 ,c ;
 :,wlab "w" ,s ,h ;
-:,lab "l" ,s ,h ;
+:,lab "l_" ,s ,h ;
 
 :,asmc | char --
 	$3b =? ( drop ie opt.ins ib ; )		| ;
-	$7e =? ( drop "l" ,s jt ,h ; )		| ~
+	$7e =? ( drop "l_" ,s jt ,h ; )		| ~
 	$5e =? ( drop ,sysfn ; )			| ^ the function of the SYS
 	,c ;
 
@@ -140,7 +140,7 @@
 :,iend ie opt.ins ;
 :gk2 ib "call " ,s tkv ,wlab ,iend ;		| word
 :gk11 | tok --  ] push address of the anonymous
-	,push ,movax "l" ,s tkv ,h ,iend ;
+	,push ,movax "l_" ,s tkv ,h ,iend ;
 
 :gfrag | n --
 	7 - 3 << 'ftab + @
@@ -275,7 +275,7 @@
 :gl4 | tok -- ; value of a var
 	,pushax ib "mov rax,qword[" ,s tkv ,wlab "]" ,s ,iend ;
 :gl6 | tok -- ; address of a string
-	,pushax ib "mov rax,s" ,s tkv ,h ,iend ;
+	,pushax ib "mov rax,s_" ,s tkv ,h ,iend ;
 
 :gentoken | tok --
 	dup $ff and 13 25 in? ( over jtarget 'jt ! ) drop
@@ -360,7 +360,7 @@
 
 :genstrings
 	strm ( strm> <?
-		dup strm - "s%h:" ,print ,lf
+		dup strm - "s_%h:" ,print ,lf
 		,sstr )
 	drop ;
 
