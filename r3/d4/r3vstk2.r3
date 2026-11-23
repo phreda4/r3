@@ -10,6 +10,10 @@
 |   ENT  j        the value is in memory, entry cell j ( [rbp-8*(j-1)] )
 |   CTE  n        constant
 |   LBL  c<<32|i  address of a word/var (w), a string (s) or a local label (l)
+|   ADR  v         lazy address  label + base + idx*2^sc + disp  ( no code until a memory word uses it )
+|                 v = base | idx<<4 | sc<<8 | label<<10 | disp<<32  ( 15 = no register,
+|                 label = ((class<<20|index)+1) or 0 , the offset of the label goes in disp ). The registers
+|                 of the cell are counted in rc ( vs.lazy makes it a REG cell )
 |   VAR  c<<32|i  the value of the variable ( qword[w] ), it is read when it is used:
 |                 it is a memory operand ( cmp, add, call ) and does not use a register.
 |                 Before a store to memory the VAR cells are read ( vs.vars ).
@@ -38,6 +42,7 @@
 #ve 0				| entry cells used
 #rc * 96			| cells that use each register
 #hv 0				| 1 = there may be VAR cells
+#hz 0				| 1 = there may be ADR cells
 
 |---------------------------------------------------------------
 | INSTRUMENTATION : the memory traffic made by the normalization, by cause
@@ -94,10 +99,24 @@
 	"; ERROR: no free register" opt.ins 3 ;
 
 |--- cells that use registers
+:a.base $f and ;
+:a.idx 4 >> $f and ;
+:a.sc 8 >> 3 and ;
+:a.lab 10 >> $3fffff and ;
+:a.disp 32 >> ;
+:a.mk | base idx sc lab disp -- v
+	32 << swap 10 << or swap 8 << or swap 4 << or or ;
+#qb #qx #qs #qL #qd #qp
+:a.set | v --
+	dup a.base 'qb ! dup a.idx 'qx ! dup a.sc 'qs ! dup a.lab 'qL ! a.disp 'qd ! ;
+:cinc5 | v --
+	dup a.base 15 <>? ( dup rci ) drop a.idx 15 <>? ( dup rci ) drop ;
+:cdec5 | v --
+	dup a.base 15 <>? ( dup rcd ) drop a.idx 15 <>? ( dup rcd ) drop ;
 :cinc | k v --
-	swap 0? ( drop rci ; ) 2drop ;
+	swap 0? ( drop rci ; ) 5 =? ( drop cinc5 ; ) 2drop ;
 :cdec | k v --
-	swap 0? ( drop rcd ; ) 2drop ;
+	swap 0? ( drop rcd ; ) 5 =? ( drop cdec5 ; ) 2drop ;
 
 |--- entry cells
 :nextent | -- k v
@@ -155,11 +174,19 @@
 	dup $ffffffff and ,h
 	34 >> ,off ;
 
+:,aexp | v -- ; [label+base+idx*s+disp]
+	a.set "[" ,s 0 'qp !
+	qL 1? ( qL 1- dup $fffff and swap 20 >> 32 << or ,lbl 1 'qp ! ) drop
+	qb 15 <>? ( qp 1? ( "+" ,s ) drop qb ,reg 1 'qp ! ) drop
+	qx 15 <>? ( qp 1? ( "+" ,s ) drop qx ,reg qs 1? ( "*" ,s 1 qs << ,d ) drop ) drop
+	qd ,off "]" ,s ;
+
 :lbl+ | v n -- v'		| label + constant, the offset goes in the cell
 	34 << + ;
 
 :,opn | k v --
 	swap 0? ( drop ,reg ; )
+	5 =? ( 2drop "ERRADDR" ,s ; )
 	1 =? ( drop cld+ ,ent ; )
 	2 =? ( drop ,cte ; )
 	4 =? ( drop "qword[" ,s ,lbl "]" ,s ; )
@@ -172,6 +199,76 @@
 	ib "mov " ,s swap ,reg "," ,s ,reg ie opt.ins ;
 
 |---------------------------------------------------------------
+| LAZY ADDRESSES : the cell ADR becomes a register ( vs.lazy ) before any token that
+| is not a shuffle, + - << or a memory word, and before each normalization
+|---------------------------------------------------------------
+#mi #mv #mr #mD
+
+:lz.reg | r -- ; the cell mi is the register r
+	0 swap mi kv! ;
+
+:,addi | reg d -- ; add reg,d  ( sub if d<0 )
+	0? ( 2drop ; )
+	-? ( ib "sub " ,s swap ,reg "," ,s neg ,d ie opt.ins ; )
+	ib "add " ,s swap ,reg "," ,s ,d ie opt.ins ;
+
+:lz.lea | r -- ; lea r,[the address mv]
+	ib "lea " ,s ,reg "," ,s mv ,aexp ie opt.ins ;
+
+:lz.m1 | base + disp
+	qL 1? ( drop qb rcc 1 =? ( drop qb lz.lea qb lz.reg ; ) drop
+		alloc 'mr ! mr lz.lea qb rcd mr lz.reg ; ) drop
+	qb rcc 1 =? ( drop qb qd ,addi qb lz.reg ; ) drop
+	alloc 'mr !
+	qd 0? ( ib "mov " ,s mr ,reg "," ,s qb ,reg ie opt.ins ) 1? ( mr lz.lea ) drop
+	qb rcd mr lz.reg ;
+
+:lz.m2 | idx*s + disp
+	qx rcc 1 =? ( drop
+		qd qL or 0? ( drop ib "shl " ,s qx ,reg "," ,s qs ,d ie opt.ins qx lz.reg ; ) drop
+		qx lz.lea qx lz.reg ; ) drop
+	alloc 'mr ! mr lz.lea qx rcd mr lz.reg ;
+
+:lz.plus? | -- f ; add b,x is enough
+	qs 1? ( drop 0 ; ) drop
+	qL 1? ( drop 0 ; ) drop
+	qd 1? ( drop 0 ; ) drop
+	qb rcc 1 =? ( drop 1 ; ) drop 0 ;
+
+:lz.m3 | base + idx*s + disp
+	lz.plus? 1? ( drop ib "add " ,s qb ,reg "," ,s qx ,reg ie opt.ins qx rcd qb lz.reg ; ) drop
+	qb rcc 1 =? ( drop qb lz.lea qx rcd qb lz.reg ; ) drop
+	qx rcc 1 =? ( drop qx lz.lea qb rcd qx lz.reg ; ) drop
+	alloc 'mr ! mr lz.lea qb rcd qx rcd mr lz.reg ;
+
+:lz.mat | -- ; the cell mi ( value mv ) to a register
+	mv a.set
+	qx 15 =? ( drop lz.m1 ; ) drop
+	qb 15 =? ( drop lz.m2 ; ) drop
+	lz.m3 ;
+
+:lz.dup1 | j -- ; a later cell with the same address waits for the register ( kind 7 )
+	dup kv@ mv <>? ( 3drop ; ) drop
+	5 <>? ( 2drop ; ) drop
+	mv cdec5 7 0 rot kv! ;
+
+:lz.undup | j --
+	dup kv@ drop 7 <>? ( 2drop ; ) drop
+	0 mD rot kv! mD rci ;
+
+:lz.mat1 | i --
+	dup kv@ swap 5 <>? ( 3drop ; ) drop 'mv ! 'mi !
+	mi 1+ ( vn <? dup lz.dup1 1+ ) drop
+	lz.mat
+	mi kv@ nip 'mD !
+	mi 1+ ( vn <? dup lz.undup 1+ ) drop ;
+
+::vs.lazy | --
+	hz 0? ( drop ; ) drop
+	0 ( vn <? dup lz.mat1 1+ ) drop
+	0 'hz ! ;
+
+|---------------------------------------------------------------
 | NORMALIZATION  ( canonical state )
 |---------------------------------------------------------------
 ##jt 0		| label of the jump of the condition ( set by the caller )
@@ -181,7 +278,7 @@
 :nreset | --
 	0 'vn ! 0 've !
 	'rc 0 12 fill
-	1 'rc ! 0 'hv ! ;
+	1 'rc ! 0 'hv ! 0 'hz ! ;
 
 :slot | idx -- ; text of the final place in memory
 	"qword[rbp" ,s ne - 2 + 3 << ,off "]" ,s ;
@@ -245,7 +342,7 @@
 	nreset ;
 
 ::vs.normC | --			| canonical state
-	'cnrm cn+
+	'cnrm cn+ vs.lazy
 	vn 0? ( drop ve 0? ( drop ; ) drop norm0 ; ) drop
 	normn ;
 
@@ -343,7 +440,7 @@
 	gpend? 1+ ;
 
 :normG | --
-	'cnrm cn+
+	'cnrm cn+ vs.lazy
 	0 'gguard !
 	( gmore 1? drop gstep 0? ( gcycle ) drop ) drop ;
 
@@ -429,8 +526,13 @@
 	ib "mov " ,s st ,reg "," ,s ,opn ie opt.ins
 	st ;
 
+:own.lea | v -- r
+	alloc 'st !
+	ib "lea " ,s st ,reg "," ,s dup ,aexp ie opt.ins
+	5 swap cdec st ;
+
 :own | k v -- r
-	swap 0? ( drop own.reg ; ) swap own.mem ;
+	swap 0? ( drop own.reg ; ) 5 =? ( drop own.lea ; ) swap own.mem ;
 
 |--- VAR cells : read the variables now
 :var2reg | i --
@@ -479,13 +581,94 @@
 	bk 2 <>? ( drop 0 ; ) drop
 	bv abs $fffffff >? ( drop 0 ; ) drop 1 ;
 
+:lzmem? | k -- f
+	1 =? ( drop 1 ; ) 4 =? ( drop 1 ; ) drop 0 ;
+:lzk? | k -- f ; register or lazy address
+	0 =? ( drop 1 ; ) 5 =? ( drop 1 ; ) drop 0 ;
+
+#rb #rx #rs #rL #rd #mb #mx #ms #mL #md #f0 #f1
+#tr * 32
+#tf * 32
+#tn 0
+:tr@ 3 << 'tr + @ ;
+:tf@ 3 << 'tf + @ ;
+
+:lbl>ref | v -- ref ; label of a LBL cell for ADR , -1 if it does not fit
+	dup $ffffffff and $ffffe >? ( 2drop -1 ; ) drop
+	dup 32 >>> 3 and 20 << swap $ffffffff and or 1+ ;
+:tm.a | k v -- ; terms of a in qb qx qs qL qd
+	swap 5 =? ( drop a.set ; )
+	3 =? ( drop 15 'qb ! 15 'qx ! 0 'qs ! dup lbl>ref 'qL ! 34 >> 'qd ! ; )
+	drop 15 'qx ! 'qb ! 0 'qs ! 0 'qL ! 0 'qd ! ;
+:tm.b | k v -- ; terms of b in rb rx rs rL rd
+	swap 5 =? ( drop dup a.base 'rb ! dup a.idx 'rx ! dup a.sc 'rs ! dup a.lab 'rL ! a.disp 'rd ! ; )
+	3 =? ( drop 15 'rb ! 15 'rx ! 0 'rs ! dup lbl>ref 'rL ! 34 >> 'rd ! ; )
+	drop 15 'rx ! 'rb ! 0 'rs ! 0 'rL ! 0 'rd ! ;
+:tm.b0 | d -- ; b is only a constant
+	'rd ! 15 'rb ! 15 'rx ! 0 'rs ! 0 'rL ! ;
+:tm.add | reg f --
+	over 15 =? ( 3drop ; ) drop
+	tn 3 << 'tf + ! tn 3 << 'tr + ! 1 'tn +! ;
+:tm.one | -- f
+	0 tf@ 0? ( drop 0 tr@ 'mb ! 15 'mx ! 0 'ms ! 1 ; )
+	'ms ! 15 'mb ! 0 tr@ 'mx ! 1 ;
+:tm.two | -- f
+	0 tf@ 'f0 ! 1 tf@ 'f1 !
+	f0 1? ( f1 1? ( 2drop 0 ; ) drop ) drop
+	f0 1? ( drop 1 tr@ 'mb ! 0 tr@ 'mx ! f0 'ms ! 1 ; ) drop
+	f1 1? ( drop 0 tr@ 'mb ! 1 tr@ 'mx ! f1 'ms ! 1 ; ) drop
+	0 tr@ 'mb ! 1 tr@ 'mx ! 0 'ms ! 1 ; 
+:tm.merge | -- f ; q + r -> m
+	qL -? ( drop 0 ; ) drop rL -? ( drop 0 ; ) drop
+	qL 1? ( rL 1? ( 2drop 0 ; ) drop ) drop
+	qL rL or 'mL !
+	qd rd + 'md !
+	md imm32? 0? ( ; ) drop
+	0 'tn !
+	qb 0 tm.add qx qs tm.add rb 0 tm.add rx rs tm.add
+	tn 1 =? ( drop tm.one ; )
+	2 =? ( drop tm.two ; ) drop 0 ;
+:tm.push | --
+	mb 15 =? ( ms 0? ( mx 'mb ! 15 'mx ! ) drop ) drop
+	mx 15 =? ( md mL or 0? ( drop drop 0 mb vpush ; ) drop ) drop
+	5 mb mx ms mL md a.mk vpush 1 'hz ! ;
+
+:lz.mem2reg | -- ; a is in memory: to a register
+	ak lzmem? 0? ( drop ; ) drop
+	ak av own.mem 0 'ak ! 'av ! ;
+:lz.a+k | d -- f ; a + constant d
+	lz.mem2reg
+	ak lzk? 0? ( nip ; ) drop
+	ak av tm.a tm.b0 tm.merge 0? ( ; ) drop tm.push 1 ;
+:lzk3? | k -- f ; register , lazy address or label
+	0 =? ( drop 1 ; ) 5 =? ( drop 1 ; ) 3 =? ( drop 1 ; ) drop 0 ;
+:lz.a+b | -- f ; a + b , registers , addresses or a label
+	ak lzk3? 0? ( ; ) drop
+	bk lzk3? 0? ( ; ) drop
+	ak av tm.a bk bv tm.b tm.merge 0? ( ; ) drop tm.push 1 ;
+:lz.add? | -- f
+	bk 2 =? ( drop bv imm32? 0? ( ; ) drop bv lz.a+k ; ) drop
+	lz.a+b ;
+:lz.sub? | -- f
+	bk 2 <>? ( drop 0 ; ) drop
+	bv imm32? 0? ( ; ) drop
+	bv neg imm32? 0? ( ; ) drop
+	bv neg lz.a+k ;
+:lz.unlazy | -- ; a or b is a lazy address and it is used as a value: registers
+	ak 5 <>? ( bk 5 <>? ( 2drop ; ) drop ) drop
+	ak av vpush bk bv vpush vs.lazy setab ;
+
 :v.add
 	setab cte2? 1? ( drop av bv + vcte 1 ; ) drop
 	comm lblc? 1? ( drop 3 av bv lbl+ vpush 1 ; ) drop
+	lz.add? 1? ( drop 1 ; ) drop
+	lz.unlazy
 	"add" bin 1 ;
 :v.sub
 	setab cte2? 1? ( drop av bv - vcte 1 ; ) drop
 	lblc? 1? ( drop 3 av bv neg lbl+ vpush 1 ; ) drop
+	lz.sub? 1? ( drop 1 ; ) drop
+	lz.unlazy
 	"sub" bin 1 ;
 :v.mul
 	setab cte2? 1? ( drop av bv * vcte 1 ; ) drop
@@ -592,24 +775,32 @@
 | MEMORY
 |---------------------------------------------------------------
 :addrok | -- f ; a can be an address operand
-	ak 0 =? ( drop 1 ; ) 3 =? ( drop 1 ; ) 2 =? ( drop av imm32? ; ) drop 0 ;
+	ak 0 =? ( drop 1 ; ) 3 =? ( drop 1 ; ) 5 =? ( drop 1 ; ) 2 =? ( drop av imm32? ; ) drop 0 ;
 
 :prepaddr | --
 	addrok 0? ( drop ak av own 0 'ak ! 'av ! ; ) drop ;
 
 :,addr | k v --
+	swap 5 =? ( drop ,aexp ; ) swap
 	"[" ,s ,opn "]" ,s ;
+
+:ldreg | -- ; dd = register of the result ; dr = 1 if it is the register of the address
+	0 'dr !
+	ak 0? ( av rcc 1 =? ( 1 'dr ! av 'dd ! ) drop ) drop
+	ak 5 =? ( av a.set
+		qb 15 <>? ( qb rcc 1 =? ( 1 'dr ! qb 'dd ! ) drop ) drop
+		dr 0? ( qx 15 <>? ( qx rcc 1 =? ( 2 'dr ! qx 'dd ! ) drop ) drop ) drop ) drop
+	dr 0? ( alloc 'dd ! ) drop ;
 
 :vload | "mn" "sz" -- f
 	'lsz ! 'lmn !
 	vpop 'av ! 'ak !
 	prepaddr
-	0 'dr !
-	ak 0? ( av rcc 1 =? ( 1 'dr ! ) drop ) drop
-	dr 0? ( alloc 'dd ! ) drop
-	dr 1? ( av 'dd ! ) drop
+	ldreg
 	ib lmn ,s " " ,s dd ,reg "," ,s lsz ,s ak av ,addr ie opt.ins
 	dr 0? ( ak av cdec ) drop
+	dr 1 =? ( ak 5 =? ( av a.idx 15 <>? ( dup rcd ) drop ) drop ) drop
+	dr 2 =? ( av a.base 15 <>? ( dup rcd ) drop ) drop
 	0 dd vpush 1 ;
 
 :v.fq | -- f
@@ -1069,7 +1260,27 @@
 :v.r> "|-|n|pop %0" vop ;
 :v.r@ "|-|n|mov %0,[rsp]" vop ;
 :v./ "AH|d|A|cqo;idiv #0" vop ;
-:v.<< "RK{0}||R|^RK||R|shl #1,$0&63^RN||R|shl #1,$0" vop ;
+:lz.shl2 | reg f -- ok ; ( reg*2^f ) << bv
+	bv + 3 >? ( 2drop 0 ; ) 'ms !
+	'mx ! 15 'mb ! 0 'mL !
+	qd bv << 'md !
+	md imm32? 0? ( ; ) drop
+	vpop 2drop vpop 2drop tm.push 1 ;
+:lz.shl? | -- f
+	0 vtop 'bv ! 'bk !
+	bk 2 <>? ( drop 0 ; ) drop
+	bv 1 <? ( drop 0 ; ) drop
+	bv 3 >? ( drop 0 ; ) drop
+	1 vtop 'av ! 'ak !
+	ak lzk? 0? ( ; ) drop
+	ak av tm.a
+	qL 1? ( drop 0 ; ) drop
+	qb 15 =? ( drop qx qs lz.shl2 ; ) drop
+	qx 15 =? ( drop qb 0 lz.shl2 ; ) drop 0 ;
+:v.<<
+	lz.shl? 1? ( drop 1 ; ) drop
+	vs.lazy
+	"RK{0}||R|^RK||R|shl #1,$0&63^RN||R|shl #1,$0" vop ;
 :v.>> "RK{0}||R|^RK||R|sar #1,$0&63^RN||R|sar #1,$0" vop ;
 :v.>>> "RK{0}||R|^RK||R|shr #1,$0&63^RN||R|shr #1,$0" vop ;
 :v.mod "AH|d|D|cqo;idiv #0" vop ;
@@ -1151,8 +1362,17 @@
 |---------------------------------------------------------------
 | ENTRY: the token is made with the virtual stack ( 1 ) or not ( 0 )
 |---------------------------------------------------------------
+:lzok? | type -- f ; the token keeps the lazy addresses
+	7 <? ( drop 1 ; )
+	8 =? ( drop 1 ; )
+	26 41 in? ( drop 1 ; )
+	49 =? ( drop 1 ; ) 50 =? ( drop 1 ; ) 53 =? ( drop 1 ; )
+	66 69 in? ( drop 1 ; ) 74 77 in? ( drop 1 ; ) 82 85 in? ( drop 1 ; )
+	drop 0 ;
+
 ::vs.tok | tok -- f
 	vn 8 >? ( 5 'ncause ! vs.norm ) drop
+	dup $ff and lzok? 0? ( vs.lazy ) drop
 	dup 'vtk ! $ff and 3 << 'vw + @ ex ;
 
 |---------------------------------------------------------------
