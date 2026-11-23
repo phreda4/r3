@@ -639,7 +639,7 @@
 	$fff vaini
 	
 	glgfx
-	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
+	"media/ttf/VictorMono-Bold.ttf" 16 txload txfont
 	load3d
 	rl_init 
 	1 rl_grid_init

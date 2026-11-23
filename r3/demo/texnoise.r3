@@ -1,10 +1,11 @@
 | Value noise con FBM generico (N octavas, shift en vez de division, normalizado al final)
+| - escala de grises: byte normalizado replicado en R G B
+| - cada octava tiene su propio offset (x,y) que avanza con su propia velocidad
 ^r3/lib/sdl2gfx.r3
 
 #textbitmap
 #mpixel
 #mpitch
-#frame 0
 
 :hash | v -- byte
 	$27d4eb2f *
@@ -16,29 +17,13 @@
 :frac | v -- f
 	$ffff and ;
 
-:vhash | ly lx -- byte
-	10 << + hash ;
-
 :fade | t -- v
 	3.0 over 2* - over *. *. ;
 
 :lerp | a b t -- v
 	-rot over - rot *. + ;
 
-#vx0 #vy0 
-#vfx #vfy 
-
-| lshift = 16 - log2(cell): cell=32 -> 11, cell=16 -> 12, cell=8 -> 13 ...
-:voctaveOLD | ylat xlat -- byte
-	dup int. 'vx0 ! frac fade 'vfx !
-	dup int. 'vy0 ! frac fade 'vfy !
-	vy0 vx0 vhash
-	vy0 vx0 1+ vhash
-	vfx lerp
-	vy0 1+ vx0 vhash
-	vy0 1+ vx0 1+ vhash
-	vfx lerp
-	vfy lerp ;
+#vfx #vfy
 
 :voctave | ylat xlat -- byte
 	dup frac fade 'vfx !
@@ -52,44 +37,55 @@
 	vfx lerp
 	vfy lerp ;
 
+| ---- offsets por octava (unidades 16.16 del reticulado de cada octava) ----
+| tabla: x0 y0 x1 y1 ... (hasta 8 octavas)
+#offs * 128
+| velocidad por octava (por frame), x y, en punto fijo 16.16 (celdas de esa octava por frame)
+| 0.01 = 1/100 de celda; las frecuencias altas van mas rapido y en otras direcciones
+#vels 0.008 0.005 -0.025 0.016 0.075 -0.05 -0.2 0.15 0.4 -0.3 -0.7 0.6 1.2 0.9 -2.0 1.6
+
 
 | ---- suma de N octavas: escala y amplitud por shift, normaliza al final ----
 #fvlsh0 10
 #foctaves 4
-#facc #famp #ftotalamp 
+#facc #famp #ftotalamp
+
+:moveoffs | --
+	'offs >a 'vels >b
+	foctaves 2* ( 1? 1-
+		b@+ a@ + a!+
+	) drop ;
 
 :fbmvalue | y x octaves -- byte
 	rot fvlsh0 <<
 	rot fvlsh0 <<
 	rot
-	0 'facc ! 
+	0 'facc !
 	256 'famp !
+	'offs >b
 	( 1? 1- >r
-		2dup voctave 
-		famp 
+		2dup
+		b@+ + swap b@+ + swap	| aplica offset de esta octava
+		voctave
+		famp
 		dup 2/ 'famp !
 		* 'facc +!
 		2* swap 2* swap
 		r> ) 3drop
-|	facc ftotalamp / $ff and 
-	facc
-	;
+	facc ftotalamp / ;			| 0..255
 
 :updatevalue
+	moveoffs
 	textbitmap 0 'mpixel 'mpitch SDL_LockTexture
 	mpixel >a
 	480 ( 1? 1-
 		640 ( 1? 1-
-			over frame + 
-			over frame + 
-			foctaves fbmvalue
-			| dup 8 << over 16 << or or 
-			| $ffffff xor
+			2dup foctaves fbmvalue
+			dup 8 << over 16 << or or	| gris: v v v
 			$ff000000 or da!+
 		) drop
 	) drop
-	textbitmap SDL_UnlockTexture
-	1 'frame +! ;
+	textbitmap SDL_UnlockTexture ;
 
 :draw
 	updatevalue
@@ -100,9 +96,9 @@
 :main
 	"r3sdl" 640 480 SDLinit
 	640 480 SDLframebuffer 'textbitmap !
-	
+
 	256 2* dup foctaves >> - 'ftotalamp !
-	
+
 	'draw SDLshow
 	SDLquit ;
 

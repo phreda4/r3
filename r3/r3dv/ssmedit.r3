@@ -666,7 +666,7 @@
 	"ssmedit r3dv" 1024 768 GLini GLInfo
 	$fff vaini
 	glgfx
-	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
+	"media/ttf/VictorMono-Bold.ttf" 16 txload txfont
 	rl_init
 	IniShapes
 	'SSVFILE dup 256 ss3dload ss3loadnames

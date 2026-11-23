@@ -634,7 +634,7 @@
 	1024 768 GLini
 	GLInfo
 	glgfx
-	"media/ttf/Roboto-Medium.ttf" 16 txload txfont
+	"media/ttf/VictorMono-Bold.ttf" 16 txload txfont
 
 	rl_init
 	IniShapes

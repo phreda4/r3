@@ -332,7 +332,7 @@
 	"arena tank" 1024 600 SDLinit
 	SDLblend
 	2.0 8 8 "media/img/atascii.png" tfnt
-	"media/ttf/RobotoMono.ttf" 16 txload 'fmono !
+	"media/ttf/VictorMono-Bold.ttf" 16 txload 'fmono !
 	"media/ttf/Roboto-Medium.ttf" 18 txload dup 'fmain ! txfont
 	64 vaini
 	edram	| editor

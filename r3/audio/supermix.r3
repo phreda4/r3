@@ -14,7 +14,7 @@
 
 |------------------- VOICES
 | unidad de sonido 
-##voice * 65536		| 1024 voces x 64 bytes exactos ('voice> queda justo al final)
+##voice * 1024	|  16 voices ('voices> is the end)
 ##voice> 'voice
 
 :resetvoices
@@ -213,7 +213,7 @@
 
 |------------------- INSTRUMENTS
 
-#instr * $2000		| 128 instrumentos x 64 bytes
+#instr * $3ff		| 32 instrumentos x 64 bytes
 #instr> 'instr
 
 #ins_vector playosc

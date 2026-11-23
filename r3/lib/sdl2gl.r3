@@ -466,7 +466,7 @@
 	4 'vcolorgl memfloat ;
 	
 ::GlDepth | deeph --
-	'vbasegl ! 1 'vbasegl memfloat ;
+	'vbasegl d! 1 'vbasegl memfloat ;
 	
 ::GLcls
 	$1800 0 'vcolorgl glClearBufferfv | GL_COLOR
