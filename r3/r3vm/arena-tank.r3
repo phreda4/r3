@@ -39,8 +39,9 @@
 #halt		| 1: termino el programa o error
 
 |------------------- campos
-| tanque: x y mov ani img hdg spd hdgd spdd dmg batt cpu pfire cool wait
-:.x 8 + ; :.y 16 + ; :.mov 24 + ; :.ani 32 + ; :.img 40 + ;
+| tanque: x y mov ani rec hdg spd hdgd spdd dmg batt cpu pfire cool wait
+| rec: retroceso por choque, vx (32 bits altos) y vy (32 bits bajos), 16.16 cada uno
+:.x 8 + ; :.y 16 + ; :.mov 24 + ; :.ani 32 + ; :.rec 40 + ; :.img 40 + ;
 :.hdg 48 + ; :.spd 56 + ; :.hdgd 64 + ; :.spdd 72 + ;
 :.dmg 80 + ; :.batt 88 + ; :.cpu 96 + ; :.pfire 104 + ; :.cool 112 + ; :.wait 120 + ;
 | bomba y fx: x y ang ani img . vx vy life own
@@ -160,34 +161,60 @@
 	dup .x @ -242.0 max 242.0 min over .x !
 	dup .y @ -242.0 max 242.0 min over .y ! ;
 
+##tkrecoil 16.0	| retroceso total de cada tanque en un choque (unidades)
+##tkcrash 0.04	| danio de cada tanque por choque (1.0 = destruido)
+
+:rec@ | tank -- vx vy
+	.rec @ dup 32 >> swap 32 << 32 >> ;
+
+:rec! | vx vy tank --
+	-rot $ffffffff and swap 32 << or swap .rec ! ;
+
+:rdec | v -- v'		; el retroceso pierde 15% por tick; menos de 0.02 es cero
+	0.85 *. dup abs 0.02 <? ( 2drop 0 ; ) drop ;
+
+:recoil1 | tank -- tank		; mueve al tanque con su retroceso y lo va frenando
+	dup .rec @ 0? ( drop ; ) drop
+	dup rec@								| t vx vy
+	over pick3 .x +! dup pick3 .y +!
+	rdec swap rdec swap pick2 rec! ;
+
 :tank.tick | tank -- tank
 	dup .cpu @ 0? ( drop ; ) drop
 	dup .cool @ 1? ( -1 pick2 .cool +! ) drop
 	dup .batt @ 1.0 <? ( 0.004 pick2 .batt +! ) drop
-	turn1 speed1 move1 clamp1
+	turn1 speed1 move1 recoil1 clamp1
 	tank.fire ;
 
-##tkrecoil 6.0	| retroceso extra de cada tanque en un choque (unidades)
-##tkcrash 0.04	| danio de cada tanque por choque (1.0 = destruido)
+:rv0 | -- v		; velocidad inicial del retroceso (suma tkrecoil con el 15% por tick)
+	tkrecoil 0.15 *. ;
 
-:tt.bump | x y tank --		; empuja al tanque, lo frena y le da danio
-	rot over .x +! swap over .y +!
-	0 over .spd ! tkcrash swap .dmg +! ;
+:tt.bump | ux uy ph tank --		; separa ph, frena, da retroceso y danio
+	>r
+	pick2 over *. r@ .x +!					| ux uy ph
+	over over *. r@ .y +!
+	drop									| ux uy
+	rv0 *. swap rv0 *. swap					| rx ry
+	r@ rec@ rot + -rot + swap				| vx vy
+	r@ rec!
+	0 r@ .spd ! tkcrash r> .dmg +! ;
+
+:norm2 | dx dy d -- nx ny
+	>r r@ /. swap r> /. swap ;
 
 :tt.pair | a b -- a b		; choque entre dos tanques (simetrico)
 	over .cpu @ 0? ( drop ; ) drop
 	dup .cpu @ 0? ( drop ; ) drop
 	over .x @ over .x @ -
-	pick2 .y @ pick2 .y @ -					| a b dx dy
+	pick2 .y @ pick2 .y @ -					| a b dx dy   (de b hacia a)
 	over int. dup * over int. dup * +
 	784 >=? ( 3drop ; )
 	sqrt fix. 0.5 max						| a b dx dy d
-	28.0 over - 1 >> tkrecoil +				| a b dx dy d pp
-	pick3 pick2 /. over *.					| x'
-	pick3 pick3 /. pick2 *.					| y'
-	2swap 2drop 2swap 2drop					| a b x' y'
-	2dup pick4 tt.bump						| b recibe +
-	swap neg swap neg pick3 tt.bump ;		| a recibe -
+	28.0 over - 1 >> >r						| mitad de la penetracion
+	norm2									| a b ux uy
+	2swap									| ux uy a b
+	pick3 pick3 r@ pick4 tt.bump			| a se aleja de b
+	2swap neg swap neg swap r> pick3 tt.bump ;	| b se aleja de a
 
 :corpse.draw | adr --		; tanque muerto: sprite oscuro fijo
 	8 + >a
@@ -421,7 +448,7 @@ isin icos irand i*. i/. ifix. iint.
 	swap a!+ a!+			| x y
 	0 a!+				| mov
 	0 0 0 aniInit a!+		| ani
-	tkimg a!+
+	0 a!+					| rec
 	dup a!+ 0 a!+ a!+ 0 a!+		| hdg spd hdgd spdd
 	0 a!+ 1.0 a!+			| dmg batt
 	vmcpu a!+

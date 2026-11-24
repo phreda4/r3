@@ -97,24 +97,22 @@
 	cur ;
 
 |---- nodos
-#ni #na
 ::ssmo_node | spr parent -- i
-	0 dget 'ni !
-	ni 80 dget >=? ( drop 2drop -1 ; ) drop
-	dup ni >=? ( drop 2drop -1 ; ) drop
-	ni ssmo_nadr 'na !
-	na 4 + d! na d!
-	0 na 8 + d! 0 na 12 + d! 0 na 16 + d!
-	0 na 20 + d! 0 na 24 + d! 0 na 28 + d! 1.0 na 32 + d!
-	1.0 na 36 + d! $ffffff00 na 40 + d! 0 na 44 + d!
-	0 ( 8 dget <? dup 80 dget * ni + 5 << 48 dget + na 8 + 32 cmove 1+ ) drop
-	ni 1+ 0 dset
-	ni ;
+	0 dget 80 dget >=? ( 3drop -1 ; )		| spr parent n
+	over <=? ( 3drop -1 ; )				| el padre debe ser menor
+	ab[ dup ssmo_nadr >a
+	-rot swap da!+ da!+				| spr parent
+	0 da!+ 0 da!+ 0 da!+				| x y z
+	0 da!+ 0 da!+ 0 da!+ 1.0 da!+			| qx qy qz qw
+	1.0 da!+ $ffffff00 da!+ 0 da!+			| escala color nombre
+	]ba
+	0 ( 8 dget <? dup 80 dget * pick2 + 5 << 48 dget + pick2 ssmo_nadr 8 + 32 cmove 1+ ) drop
+	dup 1+ 0 dset ;
 
 ::ssmo_npos | x y z i --
-	ssmo_nadr 'na ! na 16 + d! na 12 + d! na 8 + d! ;
+	ab[ ssmo_nadr 16 + >a da! -4 a+ da! -4 a+ da! ]ba ;
 ::ssmo_nrot | qx qy qz qw i --
-	ssmo_nadr 'na ! na 32 + d! na 28 + d! na 24 + d! na 20 + d! ;
+	ab[ ssmo_nadr 32 + >a da! -4 a+ da! -4 a+ da! -4 a+ da! ]ba ;
 ::ssmo_nscale | s i --
 	ssmo_nadr 36 + d! ;
 ::ssmo_ncol | color i --
@@ -132,44 +130,37 @@
 ::ssmo_ssv! | "archivo.ssv" --
 	addname 120 dset ;
 
-#qs #qc #qa #qb #qz2
 ::ssmo_qaxis | ax ay az turnos -- qx qy qz qw
-	2/ sincos 'qc ! 'qs !
-	qs *. 'qz2 ! qs *. 'qb ! qs *. 'qa !
-	qa qb qz2 qc ;
+	2/ sincos >r >r					| ax ay az   (r: cos sin)
+	rot r@ *. -rot swap r@ *. swap r@ *.		| ax*s ay*s az*s
+	r> drop r> ;
 
 |---- poses
-#pi #pa #nn
 ::ssmo_pose | -- p
 	8 dget 88 dget >=? ( drop -1 ; ) drop
-	8 dget 'pi ! 0 dget 'nn !
-	pi 80 dget * 5 << 48 dget + 'pa !
-	0 ( nn <? dup 5 << pa + over ssmo_nadr 8 + 32 cmove 1+ ) drop
-	pi 1+ 8 dset pi ;
+	8 dget dup 80 dget * 5 << 48 dget +		| p pa
+	0 ( 0 dget <? dup 5 << pick2 + over ssmo_nadr 8 + 32 cmove 1+ ) 2drop
+	dup 1+ 8 dset ;
 
 ::ssmo_pnode | p nodo -- adr
 	swap 80 dget * + 5 << 48 dget + ;
 
 ::ssmo_t! | x y z qx qy qz qw s adr --
-	'na !
-	na 28 + d! na 24 + d! na 20 + d! na 16 + d!
-	na 12 + d! na 8 + d! na 4 + d! na d! ;
+	ab[ 28 + >a da! -4 a+ da! -4 a+ da! -4 a+ da! -4 a+ da! -4 a+ da! -4 a+ da! -4 a+ da! ]ba ;
 
 |---- clips
-#ci #ca #ka
 ::ssmo_clip | "nombre" loop -- c
 	16 dget 96 dget >=? ( drop 2drop -1 ; ) drop
-	16 dget 'ci ! ci 4 << 56 dget + 'ca !
-	ca 12 + d!
-	addname ca d!
-	24 dget ca 4 + d! 0 ca 8 + d!
-	ci 1+ 16 dset ci ;
+	swap addname 16 dget				| loop off c
+	ab[ dup 4 << 56 dget + >a
+	-rot da!+ 24 dget da!+ 0 da!+ da!+		| nombre primerkey 0 loop
+	]ba
+	dup 1+ 16 dset ;
 
 ::ssmo_key | pose ms --
 	16 dget 0? ( 3drop ; ) drop
 	24 dget 104 dget >=? ( 3drop ; ) drop
-	24 dget 3 << 64 dget + 'ka !
-	ka 4 + d! ka d!
+	ab[ 24 dget 3 << 64 dget + >a swap da!+ da!+ ]ba
 	24 dget 1+ 24 dset
 	16 dget 1- 4 << 56 dget + 8 + dup d@ 1+ swap d! ;
 
@@ -244,14 +235,12 @@
 ::ssmo_nspr! | spr i --
 	ssmo_nadr d! ;
 
-#dupi #dupj
 ::ssmo_ndup | i -- j
-	'dupi !
-	dupi ssmo_nadr dup d@ swap 4 + d@ ssmo_node 'dupj !
-	dupj -? ( drop -1 ; ) drop
-	dupj ssmo_nadr 8 + dupi ssmo_nadr 8 + 40 cmove
-	0 ( 8 dget <? dup 80 dget * dup dupj + 5 << 48 dget + swap dupi + 5 << 48 dget + 32 cmove 1+ ) drop
-	dupj ;
+	dup ssmo_nadr dup d@ swap 4 + d@ ssmo_node	| i j
+	-? ( nip ; )
+	dup ssmo_nadr 8 + pick2 ssmo_nadr 8 + 40 cmove
+	0 ( 8 dget <? dup 80 dget * dup pick3 + 5 << 48 dget + swap pick4 + 5 << 48 dget + 32 cmove 1+ ) drop
+	nip ;
 
 |---- edicion de clips / keys / poses
 #kc #kp #kt #kf #kn #kj #kca #pd
@@ -374,12 +363,10 @@
 	cur ;
 
 |---- quaterniones 16.16
-#nqx #nqy #nqz #nqw #nqn
 :qnorm | x y z w -- x y z w
-	'nqw ! 'nqz ! 'nqy ! 'nqx !
-	nqx dup *. nqy dup *. + nqz dup *. + nqw dup *. + sqrt. 'nqn !
-	nqn 0? ( drop 0 0 0 1.0 ; ) drop
-	nqx nqn /. nqy nqn /. nqz nqn /. nqw nqn /. ;
+	pick3 dup *. pick3 dup *. + pick2 dup *. + over dup *. + sqrt.	| x y z w n
+	0? ( drop 4drop 0 0 0 1.0 ; )
+	swap over /. >r swap over /. >r swap over /. >r /. r> r> r> ;
 
 #ax_ #ay_ #az_ #aw_ #bx_ #by_ #bz_ #bw_
 :qmul | ax ay az aw bx by bz bw -- qx qy qz qw	; a * b normalizado
@@ -395,10 +382,9 @@
 
 #dx4 #dy4 #dz4 #dw4
 ::ssmo_trotate | ax ay az turnos adr --	; q = q * giro local (adr = x y z qx qy qz qw s)
-	'na !
-	ssmo_qaxis 'dw4 ! 'dz4 ! 'dy4 ! 'dx4 !
-	na 12 + d@ na 16 + d@ na 20 + d@ na 24 + d@ dx4 dy4 dz4 dw4 qmul
-	na 24 + d! na 20 + d! na 16 + d! na 12 + d! ;
+	ab[ >a ssmo_qaxis 'dw4 ! 'dz4 ! 'dy4 ! 'dx4 !
+	a> 12 + d@ a> 16 + d@ a> 20 + d@ a> 24 + d@ dx4 dy4 dz4 dw4 qmul
+	a> 24 + d! a> 20 + d! a> 16 + d! a> 12 + d! ]ba ;
 ::ssmo_nrotate | ax ay az turnos i --	; q = q * giro local
 	ssmo_nadr 8 + ssmo_trotate ;
 
@@ -455,47 +441,52 @@
 	setim 5 << mwld + ;
 
 |---- mundo
-#wi #wpar #lc #wd #pw
-:upnode | i --
-	dup 'wi ! 48 * mpn + 4 + d@ 'wpar !
-	wi 5 << mloc + 'lc ! wi 5 << mwld + 'wd !
-	wpar -? ( drop wd lc 32 cmove ; ) drop
-	wpar 5 << mwld + 'pw !
-	lc d@ pw 28 + d@ *. lc 4 + d@ pw 28 + d@ *. lc 8 + d@ pw 28 + d@ *.
-	pw 12 + d@ pw 16 + d@ pw 20 + d@ pw 24 + d@ qrot
-	pw 8 + d@ + wd 8 + d!
-	pw 4 + d@ + wd 4 + d!
-	pw d@ + wd d!
-	pw 12 + d@ pw 16 + d@ pw 20 + d@ pw 24 + d@
-	lc 12 + d@ lc 16 + d@ lc 20 + d@ lc 24 + d@ qmul
-	wd 24 + d! wd 20 + d! wd 16 + d! wd 12 + d!
-	pw 28 + d@ lc 28 + d@ *. wd 28 + d! ;
+:upnode | i --				; usa A (local) y B (mundo del padre)
+	dup 48 * mpn + 4 + d@			| i padre
+	-? ( drop dup 5 << mwld + swap 5 << mloc + 32 cmove ; )
+	5 << mwld + >b				| i
+	dup 5 << mloc + >a			| i
+	5 << mwld +				| wd
+	a> d@ b> 28 + d@ *. a> 4 + d@ b> 28 + d@ *. a> 8 + d@ b> 28 + d@ *.
+	b> 12 + d@ b> 16 + d@ b> 20 + d@ b> 24 + d@ qrot	| wd x y z
+	b> 8 + d@ + pick3 8 + d!
+	b> 4 + d@ + pick2 4 + d!
+	b> d@ + over d!
+	b> 12 + d@ b> 16 + d@ b> 20 + d@ b> 24 + d@
+	a> 12 + d@ a> 16 + d@ a> 20 + d@ a> 24 + d@ qmul	| wd qx qy qz qw
+	pick4 24 + d! pick3 20 + d! pick2 16 + d! over 12 + d!
+	b> 28 + d@ a> 28 + d@ *. swap 28 + d! ;
 
 ::ssmo_update | m --
-	setim 0 ( mnn <? dup upnode 1+ ) drop ;
+	setim ab[ 0 ( mnn <? dup upnode 1+ ) drop ]ba ;
 
 |---- dibujo (ss3dset por puntero: la biblioteca no depende de GL)
-#dxt #dnext #dk #dspr #dcol #dw #dsx #dsy #dsz #dq
-:drawnode | i --
-	dup 48 * mpn + d@ -? ( 2drop ; ) 'dspr !
-	dup 48 * mpn + 40 + d@ 'dcol !
-	dup im 88 + @ =? ( im 96 + @ 'dcol ! ) drop
-	5 << mwld + 'dw !
-	dw d@ dk *. dw 4 + d@ dk *. dw 8 + d@ dk *.
+#dxt #dnext #dk			| parametros de ssmo_draw para todos los nodos
+:ncolor | i -- color			; color del nodo (o el de resaltado)
+	dup im 88 + @ =? ( 2drop im 96 + @ ; ) drop
+	48 * mpn + 40 + d@ ;
+
+:nodepos | dk -- x y z			; posicion en el mundo; B = registro mundo del nodo
+	dup b> 8 + d@ *. >r
+	dup b> 4 + d@ *. >r
+	b> d@ *. r> r>
 	im 48 + @ im 56 + @ im 64 + @ im 72 + @ qrot
-	im 40 + @ + 'dsz ! im 32 + @ + 'dsy ! im 24 + @ + 'dsx !
+	rot im 24 + @ + -rot swap im 32 + @ + swap im 40 + @ + ;
+
+:drawnode | i --			; usa A (indice) y B (mundo del nodo)
+	dup 48 * mpn + d@ -? ( 2drop ; ) drop
+	dup >a 5 << mwld + >b
+	dk nodepos
 	im 48 + @ im 56 + @ im 64 + @ im 72 + @
-	dw 12 + d@ dw 16 + d@ dw 20 + d@ dw 24 + d@ qmul qpack 'dq !
-	dsx dsy dsz dq im 80 + @ dw 28 + d@ *. dspr dcol dnext dxt ex
+	b> 12 + d@ b> 16 + d@ b> 20 + d@ b> 24 + d@ qmul qpack
+	im 80 + @ b> 28 + d@ *.
+	a> 48 * mpn + d@ a> ncolor
+	dnext dxt ex
 	1 'dnext +! ;
 
 ::ssmo_wpos | nodo m -- x y z		; posicion del nodo en el mundo (escala de ss3d)
-	setim 5 << mwld + 'dw !
-	im 80 + @ 0.01 *. 'dk !
-	dw d@ dk *. dw 4 + d@ dk *. dw 8 + d@ dk *.
-	im 48 + @ im 56 + @ im 64 + @ im 72 + @ qrot
-	im 40 + @ + 'dsz ! im 32 + @ + 'dsy ! im 24 + @ + 'dsx !
-	dsx dsy dsz ;
+	setim ab[ 5 << mwld + >b
+	im 80 + @ 0.01 *. nodepos ]ba ;
 
 #wpar2 #wpx #wpy #wpz #wsc #wdv #wxx #wyy #wzz #pq1 #pq2 #pq3 #pq4 #wd2
 :parentframe | p --		; posicion (mundo), quaternion (con la raiz) y escala acumulada del padre
@@ -525,42 +516,44 @@
 ::ssmo_draw | 'set primero m -- siguiente
 	dup ssmo_update setim 'dnext ! 'dxt !
 	im 80 + @ 0.01 *. 'dk !
-	0 ( mnn <? dup drawnode 1+ ) drop
+	ab[ 0 ( mnn <? dup drawnode 1+ ) drop ]ba
 	dnext ;
 
 |---- animacion: poses
 ::ssmo_pose! | pose m --
 	setim mcap * 5 << mpp + mloc swap mnn 5 << cmove ;
 
-#fa #fb #ft #fd #fs
+#ft #fs				| t y signo del quaternion, para todos los nodos
 :lerp | a b t -- v
 	>r over - r> *. + ;
-:bl | off --
-	dup fa + d@ over fb + d@ ft lerp swap fd + d! ;
-:bq | off -- v
-	dup fa + d@ 1.0 ft - *. swap fb + d@ fs *. ft *. + ;
-:blend8 | a b dst --
-	'fd ! 'fb ! 'fa !
-	0 bl 4 bl 8 bl 28 bl
+:lst | d off --				; d[off] = lerp(A[off], B[off], t); usa A y B
+	dup a> + d@ over b> + d@ ft lerp
+	-rot + d! ;
+:qd | off -- p				; usa A y B
+	dup a> + d@ swap b> + d@ *. ;
+:bq | off -- v				; usa A y B
+	dup a> + d@ 1.0 ft - *. swap b> + d@ fs *. ft *. + ;
+:blend8 | a b d --			; usa A y B
+	rot >a swap >b
+	dup 0 lst dup 4 lst dup 8 lst dup 28 lst
 	1.0 'fs !
-	fa 12 + d@ fb 12 + d@ *. fa 16 + d@ fb 16 + d@ *. + fa 20 + d@ fb 20 + d@ *. + fa 24 + d@ fb 24 + d@ *. +
-	-? ( 1.0 neg 'fs ! ) drop
+	12 qd 16 qd + 20 qd + 24 qd +
+	-? ( -1.0 'fs ! ) drop
 	12 bq 16 bq 20 bq 24 bq qnorm
-	fd 24 + d! fd 20 + d! fd 16 + d! fd 12 + d! ;
+	pick4 24 + d! pick3 20 + d! pick2 16 + d! swap 12 + d! ;
 
-#ba #bb #bo
+#ba #bb
 :blendnode | i --
-	5 << 'bo !
-	ba bo + bb bo + mloc bo + blend8 ;
+	5 << dup ba + over bb + rot mloc + blend8 ;
 
 ::ssmo_blend | pa pb t m --
 	setim 'ft !
 	mcap * 5 << mpp + 'bb !
 	mcap * 5 << mpp + 'ba !
-	0 ( mnn <? dup blendnode 1+ ) drop ;
+	ab[ 0 ( mnn <? dup blendnode 1+ ) drop ]ba ;
 
 |---- animacion: clips
-#cca #ccf #ccn #ccd #cct #cck #ckk #pka #pkb #tk0 #tk1
+#cca #ccf #ccn #ccd #cct #cck #ckk
 :findk | -- k
 	0 ( ccn 1- <?
 		dup 1+ 3 << cck + 4 + d@ cct >? ( drop ; ) drop
@@ -578,7 +571,7 @@
 	cct ccd >? ( ccd 'cct ! ) drop
 	findk 'ckk !
 	ckk 1+ ccn >=? ( drop cck ckk 3 << + d@ im ssmo_pose! ; ) drop
-	cck ckk 3 << + 'pka ! pka 8 + 'pkb !
-	pka 4 + d@ 'tk0 ! pkb 4 + d@ 'tk1 !
-	cct tk0 - 16 << tk1 tk0 - 1 max /
-	pka d@ pkb d@ rot im ssmo_blend ;
+	cck ckk 3 << + dup d@ over 8 + d@ rot	| pa pb key
+	dup 4 + d@ swap 12 + d@ over -		| pa pb t0 dur
+	1 max swap cct swap - 16 << swap /		| pa pb t
+	im ssmo_blend ;
