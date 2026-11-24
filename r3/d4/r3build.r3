@@ -112,12 +112,12 @@
 
 :genplain
 	bo.save
-	"r3/d4/gen/plain.r3" delete
+	"mem/plain.r3" delete
 	.masb .reset .cls .flush
 	"r3/d4/r3plain.r3" r3run ;
 
 :plainok? | -- 0/1
-	"r3/d4/gen/plain.r3" filexist ;
+	"mem/plain.r3" filexist ;
 
 :doplain
 	error 1? ( drop ; ) drop
@@ -128,7 +128,7 @@
 	'msg .println
 |	"press any key to continue..." .println
 |	waitkey
-	"r3/d4/gen/plain.r3" r3run
+	"mem/plain.r3" r3run
 	backtui ;
 
 :docompile

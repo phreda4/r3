@@ -262,7 +262,7 @@
 	generate
 	optovf 1? ( drop empty "ERROR: optimizer buffer overflow (word too long or too many big literals), plain.r3 not saved" .println ; ) drop
 	ndead "dead vars: %d" .println
-	"r3/d4/gen/plain.r3" savemem
+	"mem/plain.r3" savemem
 	empty			| free buffer
 	;
 

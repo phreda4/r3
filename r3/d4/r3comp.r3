@@ -3,7 +3,7 @@
 |---------------------------------------------------------------
 | the base words are made by r3vstk (virtual stack + descriptors) and r3opt1 (rbp folding)
 | fragments here: only the words of the system (LOADLIB GETPROC SYS0..SYS10)
-| input : r3/d4/gen/plain.r3 (made by r3plain.r3)
+| input : mem/plain.r3 (made by r3plain.r3)
 | output: asm/code.asm asm/data.asm asm/set.asm (see asm/r3fasm*.asm)
 |
 | registers
@@ -19,7 +19,7 @@
 ^r3/d4/r3opt1.r3
 ^r3/d4/r3vstk.r3
 
-#filename "r3/d4/gen/plain.r3"
+#filename "mem/plain.r3"
 #osnames "WIN" "LIN" "MAC" "RPI"
 
 |---------------------------------------------------------------
