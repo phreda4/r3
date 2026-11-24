@@ -165,7 +165,7 @@
 	16 dget 1- 4 << 56 dget + 8 + dup d@ 1+ swap d! ;
 
 |---- edicion de la jerarquia
-#sn #sk #si #ti2 #pa2 #di #na3 #sa #ss_ #sc #so
+#sn #sk
 #sperm * 4096
 #sinv * 4096
 #splc * 1024
@@ -175,21 +175,23 @@
 :sparok? | i -- 1/0		; el padre ya esta ubicado (o es raiz)
 	ssmo_nadr 4 + d@ -? ( drop 1 ; ) 'splc + c@ ;
 
+:place | i --			; ubica el nodo i si su padre ya esta ubicado
+	dup sparok? 0? ( 2drop ; ) drop
+	dup sk 2 << 'sperm + d! 1 swap 'splc + c! 1 'sk +! ;
+
 :sortpass
-	0 ( sn <? dup 'si !
-		si 'splc + c@ 0? ( si sparok? 1? ( si sk 2 << 'sperm + d! 1 si 'splc + c! 1 'sk +! ) drop ) drop
-		1+ ) drop ;
+	0 ( sn <? dup 'splc + c@ 0? ( over place ) drop 1+ ) drop ;
 
 :permnode | k --
-	dup 48 * 'sbuf + 'na3 !
-	dup 2 << 'sperm + d@ ssmo_nadr na3 swap 48 cmove
-	drop
-	na3 4 + d@ -? ( drop ; ) 2 << 'sinv + d@ na3 4 + d! ;
+	dup 48 * 'sbuf +					| k b
+	over 2 << 'sperm + d@ ssmo_nadr over swap 48 cmove
+	nip dup 4 + d@ -? ( 2drop ; )			| b padre
+	2 << 'sinv + d@ swap 4 + d! ;
 
 :permpose | p --
-	80 dget * 5 << 48 dget + 'so !
-	0 ( sn <? dup 5 << 'srow + over 2 << 'sperm + d@ 5 << so + 32 cmove 1+ ) drop
-	so 'srow sn 5 << cmove ;
+	80 dget * 5 << 48 dget +				| so
+	0 ( sn <? dup 5 << 'srow + over 2 << 'sperm + d@ 5 << pick3 + 32 cmove 1+ ) drop
+	'srow sn 5 << cmove ;
 
 ::ssmo_sort | -- 1/0		; todo padre antes que sus hijos (orden estable); 0 si hay ciclo
 	0 dget 'sn ! 'splc 0 1024 cfill 0 'sk !
@@ -206,31 +208,29 @@
 	2 << 'sinv + d@ ;
 
 :anc? | p i -- 1/0		; i es ancestro de p (o p mismo)
-	'di !
-	( -1 >? dup di =? ( 2drop 1 ; ) drop ssmo_nadr 4 + d@ ) drop 0 ;
+	swap ( -1 >? dup pick2 =? ( 3drop 1 ; ) drop ssmo_nadr 4 + d@ ) 2drop 0 ;
 
 ::ssmo_npar! | padre i -- 1/0
-	'ti2 ! -1 max 'pa2 !
-	ti2 -? ( drop 0 ; ) drop
-	ti2 0 dget >=? ( drop 0 ; ) drop
-	pa2 0 dget >=? ( drop 0 ; ) drop
-	pa2 ti2 anc? 1? ( drop 0 ; ) drop
-	pa2 ti2 ssmo_nadr 4 + d!
+	swap -1 max swap				| pa ti
+	-? ( 2drop 0 ; )
+	0 dget >=? ( 2drop 0 ; )
+	over 0 dget >=? ( 3drop 0 ; ) drop
+	2dup anc? 1? ( 3drop 0 ; ) drop
+	ssmo_nadr 4 + d!
 	ssmo_sort ;
 
 :shiftrecs | adr stride cnt --	; sube cada registro una posicion (adr = destino del primero)
-	'sc ! 'ss_ ! 'sa !
-	0 ( sc <? dup ss_ * sa + dup ss_ + ss_ cmove 1+ ) drop ;
+	ab[ rot >a
+	( 1? 1- a> dup pick3 + pick3 cmove over a+ ) 2drop ]ba ;
 
 ::ssmo_ndel | i -- 1/0		; solo nodos hoja
-	'ti2 !
-	ti2 -? ( drop 0 ; ) drop
-	ti2 0 dget >=? ( drop 0 ; ) drop
-	0 ( 0 dget <? dup ssmo_nadr 4 + d@ ti2 =? ( 2drop 0 ; ) drop 1+ ) drop
-	40 dget ti2 48 * + 48 0 dget ti2 - 1- shiftrecs
-	0 ( 8 dget <? dup 80 dget * 5 << 48 dget + ti2 5 << + 32 0 dget ti2 - 1- shiftrecs 1+ ) drop
-	0 ( 0 dget 1- <? dup ssmo_nadr 4 + 'na3 ! na3 d@ ti2 >? ( 1- na3 d! 0 ) drop 1+ ) drop
-	0 dget 1- 0 dset 1 ;
+	-? ( drop 0 ; )
+	0 dget >=? ( drop 0 ; )
+	0 ( 0 dget <? dup ssmo_nadr 4 + d@ pick2 =? ( 3drop 0 ; ) drop 1+ ) drop
+	40 dget over 48 * + 48 0 dget pick3 - 1- shiftrecs
+	0 ( 8 dget <? dup 80 dget * 5 << 48 dget + pick2 5 << + 32 0 dget pick4 - 1- shiftrecs 1+ ) drop
+	0 ( 0 dget 1- <? dup ssmo_nadr 4 + dup d@ pick3 >? ( 1- over d! 0 ) drop drop 1+ ) drop
+	drop 0 dget 1- 0 dset 1 ;
 
 ::ssmo_nspr! | spr i --
 	ssmo_nadr d! ;
@@ -245,8 +245,8 @@
 |---- edicion de clips / keys / poses
 #kc #kp #kt #kf #kn #kj #kca #pd
 :shiftup | adr stride cnt --	; baja cada registro (inserta lugar): copia de atras hacia adelante
-	'sc ! 'ss_ ! 'sa !
-	sc ( 1? 1- dup ss_ * sa + dup ss_ + swap ss_ cmove ) drop ;
+	ab[ dup 1- pick2 * pick3 + >a rot drop
+	( 1? 1- a> dup pick3 + swap pick3 cmove over neg a+ ) 2drop ]ba ;
 
 :findins | -- j		; primer key del clip con tiempo > kt
 	0 ( kn <? dup kf + 3 << 64 dget + 4 + d@ kt >? ( drop ; ) drop 1+ ) ;
@@ -314,7 +314,7 @@
 	pd -? ( drop 0 ; ) drop
 	pd 8 dget >=? ( drop 0 ; ) drop
 	0 ( 16 dget <? dup cleanpose 1+ ) drop
-	0 ( 24 dget <? dup 3 << 64 dget + 'na3 ! na3 d@ pd >? ( 1- na3 d! 0 ) drop 1+ ) drop
+	0 ( 24 dget <? dup 3 << 64 dget + dup d@ pd >? ( 1- over d! 0 ) drop drop 1+ ) drop
 	48 dget pd 80 dget 32 * * + 80 dget 32 * 8 dget pd - 1- shiftrecs
 	8 dget 1- 8 dset 1 ;
 
@@ -337,7 +337,9 @@
 :okpar | -- 1/0		; todo padre es -1 o menor que el nodo
 	0 ( lnn <? dup 48 * 40 dget + 4 + d@ over >=? ( 2drop 0 ; ) drop 1+ ) drop 1 ;
 
-#sn1 #sp1 #sc1 #sk1 #sl1
+:ldcp | dst n --		; copia n bytes desde A (el archivo) y avanza A
+	a> over a+ swap cmove ;
+
 ::ssmo_load | "archivo.ssm" -- d
 	here 'ibase ! ibase swap load 'iend !
 	iend ibase - 48 <? ( drop 0 ; ) drop
@@ -350,13 +352,12 @@
 	iend 'here !				| la imagen queda reservada; la descripcion es una copia con lugar para editar
 	lnn 256 + lnp 8 + lnc 8 + lnk 64 + ssmo_new drop
 	lnl 4096 + dup alloc 72 dset 112 dset
-	ibase 48 + 'sn1 ! sn1 lnn 48 * + 'sp1 ! sp1 lnp lnn * 5 << + 'sc1 !
-	sc1 lnc 4 << + 'sk1 ! sk1 lnk 3 << + 'sl1 !
-	40 dget sn1 lnn 48 * cmove
-	0 ( lnp <? dup 80 dget * 5 << 48 dget + over lnn * 5 << sp1 + lnn 5 << cmove 1+ ) drop
-	56 dget sc1 lnc 4 << cmove
-	64 dget sk1 lnk 3 << cmove
-	72 dget sl1 lnl cmove
+	ab[ ibase 48 + >a
+	40 dget lnn 48 * ldcp
+	0 ( lnp <? dup 80 dget * 5 << 48 dget + lnn 5 << ldcp 1+ ) drop
+	56 dget lnc 4 << ldcp
+	64 dget lnk 3 << ldcp
+	72 dget lnl ldcp ]ba
 	lnn 0 dset lnp 8 dset lnc 16 dset lnk 24 dset lnl 32 dset
 	ibase 24 + d@ 120 dset
 	okpar 0? ( ; ) drop
@@ -379,6 +380,13 @@
 
 ::ssmo_qmul | ax ay az aw bx by bz bw -- qx qy qz qw
 	qmul ;
+
+:qmulba | -- qx qy qz qw	; B * A normalizado (quaternions dword en +12 de cada registro)
+	b> 24 + d@ a> 12 + d@ *. b> 12 + d@ a> 24 + d@ *. + b> 16 + d@ a> 20 + d@ *. + b> 20 + d@ a> 16 + d@ *. -
+	b> 24 + d@ a> 16 + d@ *. b> 12 + d@ a> 20 + d@ *. - b> 16 + d@ a> 24 + d@ *. + b> 20 + d@ a> 12 + d@ *. +
+	b> 24 + d@ a> 20 + d@ *. b> 12 + d@ a> 16 + d@ *. + b> 16 + d@ a> 12 + d@ *. - b> 20 + d@ a> 24 + d@ *. +
+	b> 24 + d@ a> 24 + d@ *. b> 12 + d@ a> 12 + d@ *. - b> 16 + d@ a> 16 + d@ *. - b> 20 + d@ a> 20 + d@ *. -
+	qnorm ;
 
 #dx4 #dy4 #dz4 #dw4
 ::ssmo_trotate | ax ay az turnos adr --	; q = q * giro local (adr = x y z qx qy qz qw s)
@@ -452,8 +460,7 @@
 	b> 8 + d@ + pick3 8 + d!
 	b> 4 + d@ + pick2 4 + d!
 	b> d@ + over d!
-	b> 12 + d@ b> 16 + d@ b> 20 + d@ b> 24 + d@
-	a> 12 + d@ a> 16 + d@ a> 20 + d@ a> 24 + d@ qmul	| wd qx qy qz qw
+	qmulba							| wd qx qy qz qw
 	pick4 24 + d! pick3 20 + d! pick2 16 + d! over 12 + d!
 	b> 28 + d@ a> 28 + d@ *. swap 28 + d! ;
 

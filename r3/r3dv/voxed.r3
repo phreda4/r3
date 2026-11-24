@@ -44,27 +44,26 @@
 #camAdv 0 0 0	| hacia atras
 #camLat 0 0 0	| izquierda
 #camVU 0 0 0	| arriba de la camara
-#cp #sp #cyw #syw
 #va #vl #vu
 
 :cpytgt | 'dst --
 	>a 'tgt @ a!+ 'tgt 8 + @ a!+ 'tgt 16 + @ a! ;
 
 :makecam
-	cam_yaw sincos 'cyw ! 'syw !
-	cam_pit -0.24 max 0.24 min sincos 'cp ! 'sp !
+	cam_yaw sincos cam_pit -0.24 max 0.24 min sincos	| syw cyw sp cp
 	'camAdv >a
-	cyw neg cp *. a!+
-	sp neg a!+
-	syw neg cp *. a!
+	pick2 neg over *. a!+
+	over neg a!+
+	pick3 neg over *. a!
 	'camLat >a
-	syw a!+
+	pick3 a!+
 	0 a!+
-	cyw neg a!
+	pick2 neg a!
 	'camVU >a
-	cyw sp *. neg a!+
-	cp a!+
-	syw sp *. neg a!
+	pick2 pick2 *. neg a!+
+	dup a!+
+	pick3 pick2 *. neg a!
+	4drop
 	'camTo cpytgt
 	'camEye cpytgt
 	'camEye 'camAdv cdist v3+*
@@ -197,8 +196,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 | herramientas
 #bmode 0		| 0 attach 1 erase 2 paint
 #bshape 0		| 0 voxel 1 linea 2 caja
-#opx #shpx
-#gx #gy #gz
+#shpx
 
 :applycell | -- ; aplica el modo en el voxel vx vy vz
 	bmode 0 =? ( drop 1 vocc! curc vcolset ; )
@@ -209,14 +207,13 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	'vz ! 'vy ! 'vx ! applycell ;
 
 :eachvox | 'op --
-	'opx !
 	0 ( nv <? dup 'vz !
 		0 ( nv <? dup 'vy !
 			0 ( nv <? dup 'vx !
-				opx ex
+				pick3 ex
 				1+ ) drop
 			1+ ) drop
-		1+ ) drop ;
+		1+ ) 2drop ;
 
 |--- conjunto
 :o_clear 0 vocc! ;
@@ -270,26 +267,26 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 |--- formas: linea y caja entre el punto ancla (ax ay az) y el objetivo (tx ty tz)
 #aok #ax #ay #az
 #tx #ty #tz
-#dxl #dyl #dzl #stp #li
+#stp
 :lerp | d a i -- v
 	rot 16 << * stp / swap 16 << + $8000 + 16 >> ;
 :doline
-	tx ax - 'dxl ! ty ay - 'dyl ! tz az - 'dzl !
-	dxl abs dyl abs max dzl abs max 1 max 'stp !
-	0 ( stp <=? dup 'li !
-		dxl ax li lerp dyl ay li lerp dzl az li lerp cellapply
-		1+ ) drop
-	;
+	tx ax - ty ay - tz az -				| dx dy dz
+	pick2 abs pick2 abs max over abs max 1 max 'stp !
+	0 ( stp <=?						| dx dy dz i
+		pick3 ax pick2 lerp
+		pick3 ay pick3 lerp
+		pick3 az pick4 lerp
+		cellapply
+		1+ ) 4drop ;
 
-#ex0 #ex1 #ey0 #ey1 #ez0 #ez1
+#ex1 #ey1 #ez1			| limites superiores de la caja
 :dobox
-	ax tx min 'ex0 ! ax tx max 'ex1 !
-	ay ty min 'ey0 ! ay ty max 'ey1 !
-	az tz min 'ez0 ! az tz max 'ez1 !
-	ez0 ( ez1 <=? dup 'gz !
-		ey0 ( ey1 <=? dup 'gy !
-			ex0 ( ex1 <=? dup 'gx !
-				gx gy gz cellapply
+	ax tx max 'ex1 ! ay ty max 'ey1 ! az tz max 'ez1 !
+	az tz min ( ez1 <=?
+		ay ty min ( ey1 <=?
+			ax tx min ( ex1 <=?
+				dup pick2 pick4 cellapply
 				1+ ) drop
 			1+ ) drop
 		1+ ) drop
@@ -332,20 +329,18 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	$ffbbbbbb $ffaaaaaa $ff888888 $ff777777 $ff555555 $ff444444 $ff222222 $ff111111
 	]
 
-#vsx #vsy #vsz #vgot #vend #vpass #vfe
+#vsy #vgot #vpass
 #offx #offy #offz
 #mx #my #mz #mi
 
 #mpal * 1024		| paleta del .vox convertida: $RRGGBB00 por indice
-#isl
 :importcolor | abgr slot --
-	'isl !
-	dup $ff and swap dup 8 >> $ff and swap 16 >> $ff and
-	rgb3 8 << 'mpal isl 2 << + d! ;
+	swap dup $ff and swap dup 8 >> $ff and swap 16 >> $ff and
+	rgb3 8 << swap 2 << 'mpal + d! ;
 
 :vc.size | adr --
-	d@+ 'vsx ! d@+ 'vsy ! d@ 'vsz !
-	nv vsx - 2/ 0 max 'offx !
+	d@+ nv swap - 2/ 0 max 'offx !
+	d@ 'vsy !
 	0 'offy !
 	nv vsy - 2/ 0 max 'offz ! ;
 
@@ -380,10 +375,10 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	2drop ;
 
 :parsevox | start end --
-	'vend ! 8 +
-	( vend <?
+	swap 8 +
+	( over <?
 		dup vchunk
-		dup 4 + d@ 0 max 12 + + ) drop ;
+		dup 4 + d@ 0 max 12 + + ) 2drop ;
 
 :defpalvox
 	1 ( 256 <? dup dup 2 << 'defpal + d@ swap importcolor 1+ ) drop ;
@@ -396,9 +391,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	curspr ssm_clear
 	0 'vgot ! 0 'offx ! 0 'offy ! 0 'offz !
 	defpalvox
-	'vfe !
-	0 'vpass ! here vfe parsevox
-	1 'vpass ! here vfe parsevox
+	0 'vpass ! here over parsevox
+	1 'vpass ! here swap parsevox
 	0 'aok ! ;
 
 |----------------------------------
@@ -412,10 +406,9 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 |----------------------------------
 | picking: rayo del mouse contra el objeto, recorrido exacto por celdas (DDA)
 #camForMouse 0 0 0
-#xdir #ydir
 #ro 0 0 0
 #rd 0 0 0
-#tn #tf #miss #so #sd
+#tn #tf #miss
 #hitok #pok #lok
 #hcell 0 0 0		| voxel apuntado
 #pcell 0 0 0		| ultima celda vacia antes del voxel golpeado
@@ -424,17 +417,16 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 #ss 0 0 0			| paso por eje (+1/-1)
 #tm 0 0 0			| t del proximo borde por eje
 #td 0 0 0			| t por celda por eje
-#lax #ai #cop #cdd #cp0 #a3
+#lax #ai #cop
 
 :AdvMouse
-	sdlx 2* fix. sw / 1.0 -
-	camAsp *. camFov *. 'xdir !
-	sdly 2* fix. sh / 1.0 -
-	camFov *. 'ydir !
+	sdlx 2* fix. sw / 1.0 - camAsp *. camFov *.		| xdir
+	sdly 2* fix. sh / 1.0 - camFov *.				| xdir ydir
 	'camForMouse >a
-	'camAdv @      'camLat @      xdir *. + 'camVU @      ydir *. + a!+
-	'camAdv 8 + @  'camLat 8 + @  xdir *. + 'camVU 8 + @  ydir *. + a!+
-	'camAdv 16 + @ 'camLat 16 + @ xdir *. + 'camVU 16 + @ ydir *. + a!+
+	'camAdv @      'camLat @      pick3 *. + 'camVU @      pick2 *. + a!+
+	'camAdv 8 + @  'camLat 8 + @  pick3 *. + 'camVU 8 + @  pick2 *. + a!+
+	'camAdv 16 + @ 'camLat 16 + @ pick3 *. + 'camVU 16 + @ pick2 *. + a!+
+	2drop
 	'camForMouse v3Nor ;
 
 :raylocal | -> 'ro 'rd relativos al centro del objeto
@@ -447,12 +439,12 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	'camEye 16 + @ 'ro 16 + ! ;
 
 :slab | o d --		; recorta tn tf con la placa +-half
-	'sd ! 'so !
-	sd abs 32 <? ( drop so abs half >? ( 1 'miss ! ) drop ; ) drop
-	half neg so - sd /.
-	half so - sd /.
+	dup abs 32 <? ( 2drop abs half >? ( 1 'miss ! ) drop ; ) drop
+	over half neg swap - over /.
+	pick2 half swap - pick2 /.
 	2dup min tn max 'tn !
-	max tf min 'tf ! ;
+	max tf min 'tf !
+	2drop ;
 
 :cp3 | 'dst 'src --
 	swap >a dup @ a!+ dup 8 + @ a!+ 16 + @ a! ;
@@ -462,13 +454,12 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 :settd 3 << 'td + ! ;
 
 :dinit | i --		; celda de entrada, paso y tiempos del eje i
-	'ai !
-	'ro ai 3 << + @ 'cop ! 'rd ai 3 << + @ 'cdd !
-	cop cdd tn *. + half + 0 max vox / nv 1- min 'cp0 !
-	cp0 ai setcc
-	cdd abs 32 <? ( drop 1 ai setss 1000000.0 ai settm 1000000.0 ai settd ; ) drop
-	cdd 0 >? ( drop 1 ai setss cp0 1+ vox * half - cop - cdd /. ai settm vox cdd /. ai settd ; ) drop
-	-1 ai setss cp0 vox * half - cop - cdd /. ai settm vox cdd neg /. ai settd ;
+	'ro over 3 << + @ 'rd pick2 3 << + @			| i cop cdd
+	over over tn *. + half + 0 max vox / nv 1- min	| i cop cdd cp0
+	dup pick4 setcc
+	over abs 32 <? ( drop 1 pick4 setss 1000000.0 pick4 settm 1000000.0 pick4 settd 4drop ; ) drop
+	over 0 >? ( drop 1 pick4 setss dup 1+ vox * half - pick3 - pick2 /. pick4 settm vox pick2 /. pick4 settd 4drop ; ) drop
+	-1 pick4 setss dup vox * half - pick3 - pick2 /. pick4 settm vox pick2 neg /. pick4 settd 4drop ;
 
 :ccocc | -- 0/1	; celda cc ocupada (el pick no ve la vista previa: con forma pendiente lee la copia)
 	'cc @ 'vx ! 'cc 8 + @ 'vy ! 'cc 16 + @ 'vz !
@@ -482,12 +473,12 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	ai ;
 
 :advance | i -- ok	; avanza la celda en el eje i
-	dup 'lax ! 3 << 'a3 !
-	'cc a3 + @ 'ss a3 + @ +
-	-? ( drop 0 ; ) nv >=? ( drop 0 ; )
-	'cc a3 + !
-	'tm a3 + @ 'td a3 + @ + 'tm a3 + !
-	1 ;
+	dup 'lax ! 3 <<						| a3
+	'cc over + @ 'ss pick2 + @ +				| a3 nc
+	-? ( 2drop 0 ; ) nv >=? ( 2drop 0 ; )
+	'cc pick2 + !
+	'tm over + @ 'td pick2 + @ + 'tm pick2 + !
+	drop 1 ;
 
 :hithere
 	'hcell 'cc cp3 1 'hitok !
@@ -581,7 +572,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 |----------------------------------
 | instancias: 0 objeto, 1 cursor, 2 ancla, 3.. barras de limite
 #qid #qzz #qxx
-#ec #bi #e1 #e2 #na #nb #sgx #sgy #sgz
+#bi #sgx #sgy #sgz
 
 :curscl | -- s
 	curok 0? ( ; ) drop oscl 1.15 *. ;
@@ -601,26 +592,25 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	'camEye 16 + @ sgn 'sgz ! ;
 
 :near? | s1 s2 c1 c2 -- 0/1
-	'nb ! 'na ! swap na * swap nb * + 2 =? ( drop 1 ; ) drop 0 ;
+	rot * -rot * + 2 =? ( drop 1 ; ) drop 0 ;
 
 :axbar | x y z q col --		; barra en toda la arista, instancia bi
-	'ec !
-	oscl 1 ec bi ss3dset
+	oscl swap 1 swap bi ss3dset
 	oscl 0.25 *. oscl oscl 0.25 *. bi ss3dscl3
 	1 'bi +! ;
 
 :ebx | s1 s2 --		; arista en x: y = s1, z = s2
 	2dup sgy sgz near? 1? ( drop 2drop ; ) drop
-	'e2 ! 'e1 !
-	0 e1 half * half + e2 half * qzz $ff404000 axbar ;
+	0 pick2 half * half + pick2 half * qzz $ff404000 axbar
+	2drop ;
 :eby | s1 s2 --		; arista en y: x = s1, z = s2
 	2dup sgx sgz near? 1? ( drop 2drop ; ) drop
-	'e2 ! 'e1 !
-	e1 half * half e2 half * qid $40ff4000 axbar ;
+	over half * half pick2 half * qid $40ff4000 axbar
+	2drop ;
 :ebz | s1 s2 --		; arista en z: x = s1, y = s2
 	2dup sgx sgy near? 1? ( drop 2drop ; ) drop
-	'e2 ! 'e1 !
-	e1 half * e2 half * half + 0 qxx $4080ff00 axbar ;
+	over half * over half * half + 0 qxx $4080ff00 axbar
+	2drop ;
 
 :axes
 	camsides 3 'bi !
@@ -646,8 +636,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 #savecull 0				| grabar compacto: los voxeles ocultos pierden el color
 #umsg 0					| mensaje de estado
 #tbuf * 9000
-#tp #rdd #rdn #rc #le #cfn #cfd #dn #exs
-#spage 0 #gi #gp
+#tp #rdd #rdn #rc #le #cfn
+#spage 0 #gi
 
 :snameadr | n -- adr
 	5 << 'snames + ;
@@ -689,10 +679,9 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	'fname 'wpath "%s/%s.txt" sprint ;
 
 :copyfile | "src" "dst" --
-	'cfd !
-	here swap load here - 'cfn !
-	cfn 0? ( drop ; ) drop
-	here cfn cfd save ;
+	swap here swap load here -				| dst n
+	0? ( 2drop ; )
+	here swap rot save ;
 
 :fsz | "file" -- bytes
 	here swap load here - ;
@@ -730,15 +719,15 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	0 ( nslots <? dup snameadr rdline 1+ ) drop ;
 
 |--- slots: el actual esta abierto en ssmulti; los demas comprimidos
-#cb0 #cb1 #cb2 #cb3 #cb4 #cb5 #cbk
+:cshift | lo hi -- d		; desplazamiento para centrar [lo..hi] en nv
+	over - 1+ nv swap - 2/ swap - ;
 :centerfresh			| slot cargado de archivo: contenido al centro del cubo y apoyado en el piso
 	slotcur 'sfresh + c@ 0? ( drop ; ) drop
 	0 slotcur 'sfresh + c!
-	curspr ssm_bbox 'cbk ! 'cb5 ! 'cb4 ! 'cb3 ! 'cb2 ! 'cb1 ! 'cb0 !
-	cbk 0? ( drop ; ) drop
-	nv cb3 cb0 - 1+ - 2/ cb0 - 'sdx !
-	cb5 nv - 1+ 'sdy !
-	nv cb4 cb1 - 1+ - 2/ cb1 - 'sdz !
+	curspr ssm_bbox 0? ( drop 3drop 3drop ; ) drop	| x0 z0 l0 x1 z1 l1
+	nv - 1+ 'sdy !
+	rot drop rot swap					| x0 x1 z0 z1
+	cshift 'sdz ! cshift 'sdx !
 	sdx sdy or sdz or 0? ( drop ; ) drop
 	snap 'o_shift eachvox ;
 
@@ -754,17 +743,16 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	cancel slotopen ;
 
 :slotgap | p --		; hueco de slot en p: sprites, nombres y marcas corridos
-	'gp !
 	cancel
-	gp 2 + ssm_ins
-	nslots ( gp >? dup 1- 'sfresh + c@ over 'sfresh + c!
+	dup 2 + ssm_ins
+	nslots ( over >? dup 1- 'sfresh + c@ over 'sfresh + c!
 		dup snameadr over 1- snameadr 32 cmove
 		1- ) drop
-	gp snameadr 0 32 cfill
-	0 gp 'sfresh + c!
+	dup snameadr 0 32 cfill
+	0 over 'sfresh + c!
 	1 'nslots +!
-	nv nv nv gp 2 + ssm_size!
-	1 'modif ! ;
+	nv nv nv pick3 2 + ssm_size!
+	drop 1 'modif ! ;
 
 :slotadd
 	nslots 256 >=? ( drop ; ) drop
@@ -804,10 +792,10 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 :docopen					| abre el .ssv de fbuf: reemplaza todo
 	cancel ssm_close
-	'fbuf 2 256 ssm_loadr 'dn !
-	dn 0? ( drop curspr ssm_edit "open failed" 'umsg ! ; ) drop
+	'fbuf 2 256 ssm_loadr
+	0? ( drop curspr ssm_edit "open failed" 'umsg ! ; )
 	'fbuf setpath
-	dn 256 min 'nslots !
+	256 min 'nslots !
 	nslots ( 1? 1- nv nv nv pick3 2 + ssm_size! ) drop
 	'sfresh 0 256 cfill 'sfresh 1 nslots cfill
 	txtpath ldnames
@@ -863,14 +851,14 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	4 2 openpend ;
 
 :ensext | ".ext" --		; fbuf termina en .ext
-	'exs ! 'fbuf exs =pos nip 1? ( drop ; ) drop
-	exs 'fbuf strcat ;
+	'fbuf over =pos nip 1? ( 2drop ; ) drop
+	'fbuf strcat ;
 
 |--- exportar .vox: el slot actual recortado a su bounding box; con mas de 255 colores se usan los 255
 |    mas frecuentes y el resto va al mas cercano en RGB; se pierde metal/rough/glow
-#xpath #xok #xb0 #xb1 #xb2 #xb3 #xb4 #xb5 #xn #xnd
+#xb0 #xb1 #xb2 #xb3 #xb4 #xb5 #xn #xnd
 #xvx #xdc #xct #xmp #xht #xpal #xw #wp #xp
-#ez #exx #el #eci #xc #xi #xv #xk #xj #xbest #xbd #xr #xg #xbb #xdd
+#ez #exx #el #xc #xk #xj #xbest #xbd #xr #xg #xbb
 
 :w1 | b --
 	wp c! 1 'wp +! ;
@@ -879,22 +867,22 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 :xfind | rgb -- idx		; indice del color distinto (lo agrega si no esta)
 	'xc !
-	xc 2654435761 * 16 >> $ffff and 'xi !
-	( xht xi 2 << + d@ 'xv ! xv 1? drop
-		xv 1- 2 << xdc + d@ xc =? ( drop xv 1- ; ) drop
-		xi 1+ $ffff and 'xi ! ) drop
+	xc 2654435761 * 16 >> $ffff and				| xi
+	( xht over 2 << + d@ 1?					| xi xv
+		1- dup 2 << xdc + d@ xc =? ( drop nip ; ) drop drop
+		1+ $ffff and ) drop
 	xc xnd 2 << xdc + d!
 	0 xnd 2 << xct + d!
-	xnd 1+ xht xi 2 << + d!
+	xnd 1+ xht rot 2 << + d!
 	xnd 1 'xnd +! ;
 
 :xcount | idx --
 	2 << xct + dup d@ 1+ swap d! ;
 
 :xvox1
-	ez 5 << exx + 'eci !
-	curspr eci el ssm_vget 0? ( drop ; ) drop
-	curspr eci el ssm_vcol@ $ffffffff and 8 >> $ffffff and xfind
+	ez 5 << exx +
+	dup curspr swap el ssm_vget 0? ( 2drop ; ) drop
+	curspr swap el ssm_vcol@ $ffffffff and 8 >> $ffffff and xfind
 	dup xcount
 	xn 4 << xvx + 'xp !
 	exx xb0 - xp d!
@@ -934,9 +922,9 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 		xk 2 << xpal + d@ 2 << xdc + d@ 'xc !
 		xc 16 >> $ff and xr - dup *
 		xc 8 >> $ff and xg - dup * +
-		xc $ff and xbb - dup * + 'xdd !
-		xbd -? ( xdd 'xbd ! xk 'xbest ! ) drop
-		xdd xbd <? ( xdd 'xbd ! xk 'xbest ! ) drop
+		xc $ff and xbb - dup * +
+		xbd -? ( over 'xbd ! xk 'xbest ! ) drop
+		dup xbd <? ( over 'xbd ! xk 'xbest ! ) 2drop
 		1+ ) drop
 	xbest 1+ xj 2 << xmp + d! ;
 
@@ -971,13 +959,12 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	0 ( 256 <? dup palrgba w4 1+ ) drop ;
 
 :expvox | "path" --
-	'xpath !
 	here dup 'xvx ! 524288 + dup 'xdc ! 131072 + dup 'xct ! 131072 +
 	dup 'xmp ! 131072 + dup 'xht ! 262144 + dup 'xpal ! 1024 + 'xw !
-	curspr ssm_bbox 'xok ! 'xb5 ! 'xb4 ! 'xb3 ! 'xb2 ! 'xb1 ! 'xb0 !
-	xok 0? ( drop "empty sprite" 'umsg ! ; ) drop
+	curspr ssm_bbox 0? ( drop 3drop 3drop drop "empty sprite" 'umsg ! ; ) drop
+	'xb5 ! 'xb4 ! 'xb3 ! 'xb2 ! 'xb1 ! 'xb0 !
 	xcollect xpalette xwrite
-	xw wp xw - xpath save
+	xw wp xw - pick2 save drop
 	"exported" 'umsg ! ;
 
 |--- importar .vox al slot actual (el nombre del slot pasa a ser el del archivo)
@@ -1029,7 +1016,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 :bg | color --
 	'fcolor ! uiWinBox frect $ffffffff 'fcolor ! ;
 
-#ci
+
 :qhit | n -- n		; click sobre la muestra: izquierdo elige, derecho guarda el color actual
 	uiPopup? 1? ( drop ; ) drop
 	pnb 5 and 0? ( drop ; ) drop
@@ -1041,7 +1028,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 :qpalui
 	1 1 uiPad
 	8 4 uiGrid
-	0 ( 32 <? dup 'ci !
+	0 ( 32 <?
 		'qpal over 2 << + d@ dup $ff000000 or 'fcolor ! uiFill
 		ccol $ffffff and =? ( $ffffffff 'fcolor ! uiRect ) drop
 		qhit
