@@ -151,15 +151,14 @@
 	curspr vci vlayer ssm_vcol! ;
 
 |--- color actual: RGB (selector rimmcolor) + material, $RRGGBBuma (u rough 3b, m metal 3b, a glow 2b)
-#ccol $ffff00				| $RRGGBB del selector
-#cmt 0 #crg 0 #cgl 0		| metal 0..7, rough 0..7, glow 0..3
+#ccol $ffff0000				| $RRGGBBuma del selector (rimmcolor): rgb + rough 3b, metal 3b, glow 2b
 #curc $ffff0000				| color completo calculado una vez por cuadro
 
 :rgb3 | r g b -- rgb
 	swap 8 << or swap 16 << or ;
 
 :ccolor | -- color		; evita el comodin $00000001 de la tira
-	ccol $ffffff and 8 << crg 5 << cmt 2 << or cgl or or
+	ccol $ffffffff and
 	1 =? ( drop 0 ) ;
 
 |--- paleta rapida (como dev/pixed.r3): izquierdo elige, derecho guarda el color actual
@@ -1022,15 +1021,15 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	pnb 5 and 0? ( drop ; ) drop
 	sdlx cx <? ( drop ; ) cx cw + >=? ( drop ; ) drop
 	sdly cy <? ( drop ; ) cy ch + >=? ( drop ; ) drop
-	pnb 1 and? ( drop dup 2 << 'qpal + d@ 'ccol ! ; ) drop
-	ccol $ffffff and over 2 << 'qpal + d! ;
+	pnb 1 and? ( drop dup 2 << 'qpal + d@ 8 << ccol $ff and or 'ccol ! ; ) drop
+	ccol 8 >> $ffffff and over 2 << 'qpal + d! ;
 
 :qpalui
 	1 1 uiPad
 	8 4 uiGrid
 	0 ( 32 <?
 		'qpal over 2 << + d@ dup $ff000000 or 'fcolor ! uiFill
-		ccol $ffffff and =? ( $ffffffff 'fcolor ! uiRect ) drop
+		ccol 8 >> $ffffff and =? ( $ffffffff 'fcolor ! uiRect ) drop
 		qhit
 		uiNext
 		1+ ) drop
@@ -1043,11 +1042,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	uiRest
 	$ffffffff 'fcolor !
 	"left: pick / right: store" uiLabelC
-	'ccol uiColorH
-	"MATERIAL" uiLabelC
-	"metal" 0 7 'cmt uiSlideriL
-	"rough" 0 7 'crg uiSlideriL
-	"glow" 0 3 'cgl uiSlideriL
+	'ccol uiColorMatH
 	uiPop ;
 
 :toolpanel
@@ -1228,9 +1223,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	"media/ssv" 'wpath strcpy
 	initmem
 	ccolor 'curc !
-	nv 2/ 'vx ! 0 'vy ! nv 2/ 'vz !
 	curspr ssm_edit
-	applycell 				| un voxel inicial (attach, color actual)
 	ssm_image
 	16 ss3dmem
 	snap 0 'modif ! ;

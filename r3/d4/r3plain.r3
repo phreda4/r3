@@ -13,7 +13,7 @@
 ^r3/lib/console.r3
 ^r3/util/utfg.r3
 ^r3/d4/r3token.r3
-^r3/d4/r3opt.r3
+^r3/d4/r3plainopt.r3
 
 #osnames "WIN" "LIN" "MAC" "RPI"
 

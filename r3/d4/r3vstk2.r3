@@ -87,10 +87,11 @@
 
 #pool ( 3 4 5 6 7 8 9 10 11 1 2 0 )
 #rbusy 0		| registers that alloc must not use ( bit r )
+##pvmask 0		| registers of the variables in loops ( alloc does not use them )
 
 :regfree? | r -- f
 	dup rcc 1? ( 2drop 0 ; ) drop
-	1 swap << rbusy and 0? ( drop 1 ; ) drop 0 ;
+	1 swap << rbusy pvmask or and 0? ( drop 1 ; ) drop 0 ;
 
 :alloc | -- r
 	0 ( 12 <?
@@ -272,13 +273,36 @@
 | NORMALIZATION  ( canonical state )
 |---------------------------------------------------------------
 ##jt 0		| label of the jump of the condition ( set by the caller )
+##jxit 0		| 1 = the jump of the condition goes to the exit of a loop ( set by the caller )
+##rotb 0		| 1 = the jump is the test copied at the end of a rotated loop: jump when the condition is true to t_rotj
+##rotm 0		| mode of that jump: 1 the state goes on , 2 canonical state before the jump
+##rotj 0
+##jmode 0		| how the last jump of a condition was made: 1 the state goes on ( stub ) , 2 canonical state
+##pvn 0			| variables in registers in the loop ( set by the caller before vs.pvbegin / vs.lpbegin ): up to 3
+##pvl * 24		| index of the variable
+##pvr * 24		| its register
+##pvm * 24		| 1 = the loop writes it
+#pvx #pvn2
+#xk * 8192		| stubs of the exits of the loops without registers: the state of the jump ( 32 stubs x 32 cells )
+#xv * 8192
+#xr * 3072		| rc of each stub
+#xm * 1536		| of each stub: vn ve hv hz label target
+#xn 0			| stubs saved
+#xg 0			| number of the label of the next stub
+#xs #xi #xo #xe #xl #xa #xk2 #xv2
+#rsb * 45056		| the state after the test of a rotated loop ( 64 loops x 640 bytes )
+#rsa #xcc
+#ccp "jge" "jl" "jl" "jge" "jle" "jg" "jg" "jle" "jne" "je" "je" "jne" "jz" "jnz" "jnz" "jz" "js" "jns" "jns" "js" "ja" "jbe" ( 0 )
 #nn #ne
 #si #sk #sv #st #tk #tv
+
+:pv.hold | --			| the register of each variable is always busy ( the cells that read it are copies )
+	0 ( pvn <? dup 3 << 'pvr + @ rci 1+ ) drop ;
 
 :nreset | --
 	0 'vn ! 0 've !
 	'rc 0 12 fill
-	1 'rc ! 0 'hv ! 0 'hz ! ;
+	1 'rc ! 0 'hv ! 0 'hz ! pv.hold ;
 
 :slot | idx -- ; text of the final place in memory
 	"qword[rbp" ,s ne - 2 + 3 << ,off "]" ,s ;
@@ -444,6 +468,47 @@
 	0 'gguard !
 	( gmore 1? drop gstep 0? ( gcycle ) drop ) drop ;
 
+|--- variables in registers ( loop mode ): the cell that reads the variable is the register, with a count like a copy
+:pv.load | --			| before the head: the variables to the registers
+	0 ( pvn <?
+		ib "mov " ,s dup 3 << 'pvr + @ ,reg ",qword[w" ,s dup 3 << 'pvl + @ ,h "]" ,s ie opt.ins
+		1+ ) drop ;
+
+:pv.wb | --			| in the exits: the variables that the loop writes to the memory
+	0 ( pvn <? dup 3 << 'pvm + @ 1? (
+			ib "mov qword[w" ,s over 3 << 'pvl + @ ,h "]," ,s over 3 << 'pvr + @ ,reg ie opt.ins ) drop
+		1+ ) drop ;
+
+:pv.mask | --
+	0 'pvmask !
+	0 ( pvn <? dup 3 << 'pvr + @ 1 swap << pvmask or 'pvmask ! 1+ ) drop ;
+
+::vs.pvbegin | --		| head of a loop with variables in registers: canonical state, load them
+	pv.mask vs.normC pv.load ;
+
+::vs.pvend | --			| exit of the loop: the variables that it writes go to the memory
+	pvn 0? ( ; ) drop
+	pv.wb 0 'pvn ! 0 'pvmask ! nreset ;
+
+:pvfind | v -- r		| register of the variable ( v = value of the label ), -1 if it is not in a register
+	-1 'pvx !
+	pvn 0? ( 2drop pvx ; ) drop
+	dup 32 >>> 1? ( 2drop pvx ; ) drop
+	0 ( pvn <? dup 3 << 'pvl + @ pick2 =? ( over 3 << 'pvr + @ 'pvx ! ) drop 1+ ) drop drop pvx ;
+
+:pv.c1 | i --
+	kv@ swap 0 <>? ( 2drop ; ) drop gt =? ( 1 'pvn2 +! ) drop ;
+
+:pv.un | r --			| before a write: the cells that are a copy of the register r get their own register
+	'gt ! 0 'pvn2 !
+	0 ( vn <? dup pv.c1 1+ ) drop
+	pvn2 0? ( drop ; ) drop
+	alloc 'sv !
+	ib "mov " ,s sv ,reg "," ,s gt ,reg ie opt.ins
+	0 ( vn <? dup gren1 1+ ) drop
+	pvn2 sv rcs!
+	gt rcc pvn2 - gt rcs! ;
+
 :lpset | n --			| state: n cells in G_0.. , lpcu entry cells
 	nreset 0 'rc !
 	0 ( over <? dup 'gj ! 0 gj g@ gj kv! gj g@ rci 1+ ) drop
@@ -458,8 +523,10 @@
 
 ::vs.lpbegin | cu x --		| canonical state -> loop mode
 	'lpxit ! 'lpcu !
+	pv.mask
 	vs.normC
 	0 ( lpcu <? dup lpld 1+ ) drop
+	pv.load
 	lpcu lpset
 	0 'stn ! 1 'lpon ! ;
 
@@ -476,7 +543,7 @@
 	lpon 1? ( drop normG ; ) drop vs.normC ;
 
 ::vs.reset | --
-	nreset ;
+	0 'pvn ! 0 'pvmask ! nreset 0 'xn ! ;
 
 |---------------------------------------------------------------
 | SHUFFLES  ( no code )
@@ -736,8 +803,110 @@
 	lpon 0? ( ; )
 	drop jt lpxit eq? ;
 
-:vjump | -- f ; canonical state, then jump when the condition fails
-	1 'ncause ! vs.norm
+:xm! | v k -- ; field k of the stub xs
+	xs 6 * + 3 << 'xm + ! ;
+:xm@ | s k -- v
+	swap 6 * + 3 << 'xm + @ ;
+
+:x.save | -- f ; the state of the jump goes to the stub xn
+	xn 32 >=? ( drop 0 ; ) drop
+	vn 32 >? ( drop 0 ; ) drop
+	xn 'xs !
+	vn 0 xm! ve 1 xm! hv 2 xm! hz 3 xm! xg 4 xm! jt 5 xm!
+	0 ( vn <? dup kv@ 'xv2 ! 'xk2 !
+		dup xs 5 << + 3 << 'xo !
+		xk2 xo 'xk + ! xv2 xo 'xv + !
+		1+ ) drop
+	0 ( 12 <? dup 3 << 'rc + @ over xs 12 * + 3 << 'xr + ! 1+ ) drop
+	1 ;
+
+:x.canon? | -- f ; 1 = vs.normC makes no code ( cells in their final places, rax on the top )
+	hz 1? ( drop 0 ; ) drop
+	vn ve <>? ( drop 0 ; ) drop
+	vn 1- kv@ or 1? ( drop 0 ; ) drop
+	1 'xa !
+	0 ( vn 1- <? dup kv@ swap 1 <>? ( 0 'xa ! ) drop over ve swap - 1- <>? ( 0 'xa ! ) drop 1+ ) drop
+	xa ;
+
+:x.try | -- f ; jump to a stub, the virtual state goes on ( exit of a loop without registers )
+	lpon 1? ( drop 0 ; ) drop
+	jxit 0? ( ; ) drop
+	x.canon? 1? ( drop 0 ; ) drop		| canonical state: vs.normC makes no code, no stub
+	x.save 0? ( ; ) drop
+	ib lmn ,s " y" ,s xg ,h ie opt.ins
+	1 'xg +! 1 'xn +! 1 ;
+
+:x.load | s -- ; the state of the stub s
+	'xs !
+	xs 0 xm@ 'vn ! xs 1 xm@ 've ! xs 2 xm@ 'hv ! xs 3 xm@ 'hz !
+	0 ( 12 <? dup xs 12 * + 3 << 'xr + @ over 3 << 'rc + ! 1+ ) drop
+	0 ( vn <? dup xs 5 << + 3 << 'xo !
+		xo 'xk + @ xo 'xv + @ pick2 kv! 1+ ) drop ;
+
+:x.emit | s --
+	dup 4 xm@ ib "y" ,s ,h ":" ,s ie opt.label
+	x.load 1 'ncause ! vs.normC ;
+
+::vs.sxend | idx -- ; after the jump back of the loop that has the exit idx: the stubs of its exits
+	'xe !
+	xn 0? ( drop ; ) drop
+	-1 'xl !
+	0 ( xn <? dup 5 xm@ xe =? ( over 'xl ! ) drop 1+ ) drop
+	xl -? ( drop ; ) drop
+	0 ( xn <? dup 5 xm@ xe =? ( over dup x.emit
+		xl <>? ( ib "jmp l_" ,s xe ,h ie opt.ins ) drop
+		-1 5 xm! ) drop 1+ ) drop
+	1 'xa !
+	0 ( xn <? dup 5 xm@ -1 <>? ( 0 'xa ! ) drop 1+ ) drop
+	xa 1? ( 0 'xn ! ) drop ;
+
+:invcc | s -- s'		| the jump with the opposite condition
+	'xcc ! 'ccp
+	( dup c@ 1?
+		drop dup xcc swap = 1? ( drop >>0 ; ) drop
+		>>0 >>0 ) 2drop xcc ;
+
+:rotjump | -- f		| the test at the end of a rotated loop: jump to the body when the condition is true
+	rotm 2 =? ( vs.norm ) drop
+	ib lmn invcc ,s " t_" ,s rotj ,h ie opt.ins 1 ;
+
+:rs.addr | id -- addr
+	640 * 'rsb + ;
+
+::vs.rsave | id -- f		| the state is saved in the slot id ( 0 = too many cells )
+	vn 32 >? ( 2drop 0 ; ) drop
+	rs.addr 'rsa !
+	vn rsa ! ve rsa 8 + ! hv rsa 16 + ! hz rsa 24 + !
+	0 ( 12 <? dup 3 << 'rc + @ over 3 << rsa 32 + + ! 1+ ) drop
+	0 ( vn <? dup kv@ 'xv2 ! 'xk2 !
+		xk2 over 3 << rsa + 128 + !
+		xv2 over 3 << rsa + 384 + !
+		1+ ) drop 1 ;
+
+::vs.rcmp | id -- f		| 1 = the state is the one saved in the slot id
+	rs.addr 'rsa !
+	1 'xa !
+	vn rsa @ <>? ( 0 'xa ! ) drop
+	ve rsa 8 + @ <>? ( 0 'xa ! ) drop
+	hv rsa 16 + @ <>? ( 0 'xa ! ) drop
+	hz rsa 24 + @ <>? ( 0 'xa ! ) drop
+	0 ( 12 <? dup 3 << 'rc + @ over 3 << rsa 32 + + @ <>? ( 0 'xa ! ) drop 1+ ) drop
+	xa 0? ( ; ) drop
+	0 ( vn <? dup kv@ 'xv2 ! 'xk2 !
+		xk2 over 3 << rsa + 128 + @ <>? ( 0 'xa ! ) drop
+		xv2 over 3 << rsa + 384 + @ <>? ( 0 'xa ! ) drop
+		1+ ) drop xa ;
+
+::vs.sxany? | idx -- f		| there are stubs for the exit idx
+	'xe ! 0 'xa !
+	0 ( xn <? dup 5 xm@ xe =? ( 1 'xa ! ) drop 1+ ) drop xa ;
+
+:vjump | -- f ; the exit of a loop goes to a stub, else canonical state, then jump when the condition fails
+	1 'ncause !
+	rotb 1? ( drop rotjump ; ) drop
+	x.try 1? ( 1 'jmode ! ; ) drop
+	2 'jmode !
+	vs.norm
 	lpexit? 1? ( drop stubjump ; ) drop
 	ib lmn ,s " l_" ,s jt ,h ie opt.ins 1 ;
 
@@ -804,7 +973,9 @@
 	0 dd vpush 1 ;
 
 :v.fq | -- f
-	0 vtop drop 3 =? ( drop vpop nip 4 swap vpush 1 'hv ! 1 ; ) drop
+	0 vtop drop 3 =? ( drop vpop nip
+		dup pvfind -1 =? ( drop 4 swap vpush 1 'hv ! 1 ; )
+		nip 0 swap dup rci vpush 1 ; ) drop
 	"mov" "qword" vload ;
 :v.fb "movsx" "byte" vload ;
 :v.fw "movsx" "word" vload ;
@@ -824,11 +995,21 @@
 :,srcw | --
 	bk 2 =? ( drop bv sw immw ,d ; ) drop bv sw ,regw ;
 
+:pvstore? | -- f		| the store goes to a variable in a register
+	pvn 0? ( ; ) drop
+	ak 3 <>? ( drop 0 ; ) drop
+	sw 8 <>? ( drop 0 ; ) drop
+	av pvfind -1 =? ( drop 0 ; )
+	vs.lazy
+	dup pv.un
+	ib lmn ,s " " ,s ,reg "," ,s ,srcw ie opt.ins
+	1 ;
+
 :vstore | "mn" w -- f
 	vars? 'sw ! 'lmn !
 	vpop 'av ! 'ak ! vpop 'bv ! 'bk !
 	prepaddr prepsrc
-	ib lmn ,s " " ,s sw szn ,s ak av ,addr "," ,s ,srcw ie opt.ins
+	pvstore? 0? ( ib lmn ,s " " ,s sw szn ,s ak av ,addr "," ,s ,srcw ie opt.ins ) drop
 	ak av cdec bk bv cdec 1 ;
 
 :v.st8 "mov" 8 vstore ;
@@ -1234,7 +1415,9 @@
 :vt0 40 >>> src + str>anro nip vcte ;
 :vt1 vtks vcte ;
 :vt3 vtkv 3 swap vpush ;
-:vt4 vtkv 4 swap vpush 1 'hv ! ;
+:vt4 | --
+	vtkv dup pvfind -1 =? ( drop 4 swap vpush 1 'hv ! ; )
+	nip 0 swap dup rci vpush ;
 :vt6 vtkv $100000000 or 3 swap vpush ;
 
 |---------------------------------------------------------------
@@ -1369,6 +1552,57 @@
 	49 =? ( drop 1 ; ) 50 =? ( drop 1 ; ) 53 =? ( drop 1 ; )
 	66 69 in? ( drop 1 ; ) 74 77 in? ( drop 1 ; ) 82 85 in? ( drop 1 ; )
 	drop 0 ;
+
+|---------------------------------------------------------------
+| CALL BY REGISTERS : the arguments and the results of the words that use it go in registers
+|   the argument k ( 0 = top ) and the result k are in argr[k] ; the rest of the stack is canonical ( rax = its top )
+|   the word begins with the arguments as cells and rax as the entry cell 0, and ends with vs.torc ( results to registers , canonical rest )
+|---------------------------------------------------------------
+#argr ( 0 3 4 5 )
+
+| flat state: the stack that is not an argument is all in memory ( the top at [rbp] ) and rax is free.
+| it is the state with ve = 1 and no cell for the entry cell 0 ( rax )
+:inplaceF? | idx -- f		| the cell is the entry cell in its own place ( the top too )
+	dup kv@ swap 1 <>? ( 3drop 0 ; ) drop
+	swap ne swap - 1 - eq? ;
+
+:loadentsF | --
+	0 ( nn <? dup inplaceF? 0? ( over ent2reg ) drop 1+ ) drop ;
+
+:storecellsF | --
+	spill0
+	0 ( nn <?
+		dup inplaceF? 0? ( over store1 ) drop
+		1+ ) drop ;
+
+:adjrbpF | --
+	nn ne - 1+ 3 << 0? ( drop ; )
+	+? ( ib "add rbp," ,s ,d ie opt.ins ; )
+	neg ib "sub rbp," ,s ,d ie opt.ins ;
+
+:vs.flat | --
+	vn 'nn ! ve 'ne !
+	loadentsF storecellsF adjrbpF
+	nreset 1 've ! 0 'rc ! ;
+
+:pushrc | n --		| n cells in the registers
+	( 1? 1- dup 'argr + c@ 0 over vpush rci ) drop ;
+
+::vs.entryrc | use --	| begin of a word that uses it
+	1 've ! 0 'rc ! pushrc ;
+
+::vs.postrc | out --	| after the call: the stack is flat , the results are cells
+	nreset 1 've ! 0 'rc ! pushrc ;
+
+:pre0 | --			| the entry cell 0 ( rax ) is stored now: rax is for the first argument
+	cst+ ib "mov qword[rbp+8],rax" ,s ie opt.ins
+	1 0 insb 1 've ! 0 0 rcs! ;
+
+::vs.torc | n --		| before the call / the return: the top n cells to the registers , the rest canonical
+	vs.lazy 'ni ! popin
+	ni 1? ( ve 0? ( pre0 ) drop ) drop
+	0 ( ni <? dup dup 'argr + c@ toreg 1+ ) drop
+	vs.flat ;
 
 ::vs.tok | tok -- f
 	vn 8 >? ( 5 'ncause ! vs.norm ) drop
