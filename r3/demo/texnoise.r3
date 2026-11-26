@@ -42,7 +42,7 @@
 #offs * 128
 | velocidad por octava (por frame), x y, en punto fijo 16.16 (celdas de esa octava por frame)
 | 0.01 = 1/100 de celda; las frecuencias altas van mas rapido y en otras direcciones
-#vels 0.008 0.005 -0.025 0.016 0.075 -0.05 -0.2 0.15 0.4 -0.3 -0.7 0.6 1.2 0.9 -2.0 1.6
+#vels 0.008 0.005 0.0025 0.016 0.0075 0.05 0.02 0.015 0.04 0.03 0.07 0.06 0.2 0.9 2.0 1.6
 
 
 | ---- suma de N octavas: escala y amplitud por shift, normaliza al final ----

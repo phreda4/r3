@@ -1001,7 +1001,6 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 :tgT showT 1 xor 'showT ! ;
 :tgP showP 1 xor 'showP ! ;
 :tgF showF 1 xor 'showF ! ;
-:tgV showV 1 xor 'showV ! ;
 
 
 #radv #radn #radt
@@ -1067,56 +1066,68 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	"INVERT" uiLabelC
 	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn ;
 
-#pgs
 :pgprev spage 1- 0 max 'spage ! ;
 :pgnext spage 1+ nslots 31 + 5 >> 1- min 'spage ! ;
 
-:slottxt | -- str
-	gi slotcur =? ( drop gi 1+ "[%d]" sprint ; ) drop
-	gi 1+ "%d" sprint ;
 :slotpick gi slotswitch ;
+:slotcur? | -- 1/0		; el sprite del boton gi es el actual
+	gi slotcur =? ( drop 1 ; ) drop 0 ;
+:slotbtn			| boton numerado: relleno si es el sprite actual
+	uiZone 'slotpick uiClk
+	slotcur? skinTab sk
+	colText gi 1+ "%d" sprint uiLabelC ;
 
-:slotgrid
-	8 4 uiGrid
-	0 ( 32 <? dup spage 5 << + 'gi !
-		gi nslots <? ( slottxt 'slotpick swap uiBtn ) drop
-		uiNext
-		1+ ) drop ;
-
-:docname | -- str
-	'fname c@ 0? ( drop modif 1? ( drop "(untitled) *" ; ) drop "(untitled)" ; ) drop
-	modif 1? ( drop 'fname "%s *" sprint ; ) drop 'fname ;
+:docname | -- str		; el lugar del * queda reservado: los botones de al lado no se mueven
+	'fname c@ 0? ( drop modif 1? ( drop "(untitled) *" ; ) drop "(untitled)  " ; ) drop
+	modif 1? ( drop 'fname "%s *" sprint ; ) drop 'fname "%s  " sprint ;
 
 :filepanel
-	uiPush
-	0.5 %cw uiN
-	slotgrid
-	uiRest
 	$ffffffff 'fcolor !
-	'pgprev "<" uiNBtn
-	nslots 31 + 5 >> spage 1+ nslots slotcur 1+ "sprite %d/%d  page %d/%d" sprint uiTlabel
-	'pgnext ">" uiNBtn uiLn
-	'slotadd "Add" uiNBtn 'slotdup "Copy" uiNBtn 'slotdel "Del" uiNBtn uiLn
+	"- SPRITE NAME -" uiLabelC
 	slotcur snameadr 31 uiInputLine
 	ask 1? ( "Unsaved changes. Discard?" uiLabelC 'askyes "Yes" uiNBtn 'askno "No" uiNBtn uiLn ) drop
 	"- SSV -" uiLabelC
-	docname uiLabelC
 	'wpath uiLabelC
 	'gnew "New" uiNBtn 'gopen "Open" uiNBtn 'docsave "Save" uiNBtn 'saveasdlg "Save as" uiNBtn uiLn
 	'savecull "compact" uiToggle
 	"- VOX (this sprite) -" uiLabelC
 	'importdlg "Import" uiNBtn 'exportdlg "Export" uiNBtn uiLn
 	umsg 1? ( umsg uiLabelC ) drop
-	ssm_err 1? ( "ERROR: color strip full" uiLabelC ) drop
+	ssm_err 1? ( "ERROR: color strip full" uiLabelC ) drop ;
+
+:statusline			| archivo y comandos de la tira
+	$ffffffff 'fcolor !
+	docname uiTlabel
+	"   " uiTlabel
+	'pgprev "<" uiNBtn
+	nslots 31 + 5 >> spage 1+ "page %d/%d" sprint uiTlabel
+	'pgnext ">" uiNBtn
+	"   " uiTlabel
+	'slotadd "Add" uiNBtn 'slotdup "Copy" uiNBtn 'slotdel "Del" uiNBtn
+	nslots slotcur 1+ "   sprite %d/%d" sprint uiTlabel ;
+
+:slotstrip			| los botones numerados de la pagina
+	32 1 uiGrid
+	0 ( 32 <? dup spage 5 << + 'gi !
+		gi nslots <? ( slotbtn ) drop
+		uiNext
+		1+ ) drop ;
+
+:bottompanel
+	uiPush
+	txh 8 + uiN
+	statusline
+	uiRest
+	slotstrip
 	uiPop ;
 
 :topbar
 	'gexit "Exit" uiNBtn
 	'undokey "Undo" uiNBtn
-	'tgT "Tools" uiNBtn
-	'tgV "View" uiNBtn
-	'tgP "Color" uiNBtn
-	'tgF "Files" uiNBtn
+	'showT "Tools" uiNToggle
+	'showV "View" uiNToggle
+	'showP "Color" uiNToggle
+	'showF "Files" uiNToggle
 	;
 
 :optshadow
@@ -1144,7 +1155,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	uiFull
 	24 uiN
 	$1f0000ff bg topbar
-	txh 2 << uiS				| 4 textlines
+	txh 8 + 2* 8 + uiS $3f1f1f1f bg bottompanel
 
 	showT 1? ( 22 3 << uiO $3f1f1f1f bg toolpanel ) drop
 	showV 1? ( 22 3 << uiO $3f1f1f1f bg viewpanel ) drop

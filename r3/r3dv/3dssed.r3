@@ -429,13 +429,12 @@
 	'mvi !
 	'opos @ 'opos 8 + @ 'opos 16 + @ mvi ss3dxyz ;
 
-#nx #ny #nz
+:nd | d 'adr --		; adr = snapg(adr + d) si d <> 0
+	swap 0? ( 2drop ; ) over @ + snapg swap ! ;
+
 :nudge | dx dy dz --
-	'nz ! 'ny ! 'nx !
-	sel -? ( drop ; ) drop
-	nx 1? ( 'opos @ nx + snapg 'opos ! ) drop
-	ny 1? ( 'opos 8 + @ ny + snapg 'opos 8 + ! ) drop
-	nz 1? ( 'opos 16 + @ nz + snapg 'opos 16 + ! ) drop
+	sel -? ( 4drop ; ) drop
+	'opos 16 + nd 'opos 8 + nd 'opos nd
 	movobj ;
 
 #rg #keepg

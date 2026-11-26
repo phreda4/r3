@@ -304,7 +304,6 @@
 #vol * 131072			| 32x32 columnas x 32 colores (d)
 #mask * 4096			| mascara por columna (d)
 #vx #vy #vz #vc #vcol #vb #pvox
-#nx #ny #nz #hx #hy #hz
 
 :fits? | m -- 1/0		; tiene voxels y entra en el buffer denso
 	>a a> 12 + d@ 0? ( ; ) drop
@@ -338,24 +337,19 @@
 	mptr mnv ( 1? 1- swap densevox swap ) 2drop ;
 
 :occ? | x y z -- 1/0		; voxel ocupado (fuera del modelo = vacio)
-	'nz ! 'ny ! 'nx !
-	nx -? ( drop 0 ; ) drop
-	ny -? ( drop 0 ; ) drop
-	nz -? ( drop 0 ; ) drop
-	nx fsx >=? ( drop 0 ; ) drop
-	ny fsy >=? ( drop 0 ; ) drop
-	nz fsz >=? ( drop 0 ; ) drop
-	nx ny nz dadr c@ $ff and 1? ( drop 1 ; ) drop 0 ;
+	-? ( 3drop 0 ; ) fsz >=? ( 3drop 0 ; )
+	swap -? ( 3drop 0 ; ) fsy >=? ( 3drop 0 ; )
+	rot -? ( 3drop 0 ; ) fsx >=? ( 3drop 0 ; )
+	swap rot dadr c@ $ff and 1? ( drop 1 ; ) drop 0 ;
 
 :hidden? | x y z -- 1/0		; los 6 vecinos llenos: no se ve desde afuera
-	'hz ! 'hy ! 'hx !
-	hx 1- hy hz occ? 0? ( ; ) drop
-	hx 1+ hy hz occ? 0? ( ; ) drop
-	hx hy 1- hz occ? 0? ( ; ) drop
-	hx hy 1+ hz occ? 0? ( ; ) drop
-	hx hy hz 1- occ? 0? ( ; ) drop
-	hx hy hz 1+ occ? 0? ( ; ) drop
-	1 ;
+	pick2 1- pick2 pick2 occ? 0? ( nip nip nip ; ) drop
+	pick2 1+ pick2 pick2 occ? 0? ( nip nip nip ; ) drop
+	pick2 pick2 1- pick2 occ? 0? ( nip nip nip ; ) drop
+	pick2 pick2 1+ pick2 occ? 0? ( nip nip nip ; ) drop
+	pick2 pick2 pick2 1- occ? 0? ( nip nip nip ; ) drop
+	pick2 pick2 pick2 1+ occ? 0? ( nip nip nip ; ) drop
+	3drop 1 ;
 
 |---- parte -> vol y mask  (x = vx, fila z = sy-1-vy, bit y = sz-1-vz, relativo a la parte)
 :clearvol
@@ -506,11 +500,10 @@
 |---- recorte de la parte al volumen ocupado
 #bx0 #bx1 #by0 #by1 #bz0 #bz1
 :fitvox | X Y Z --
-	'vz ! 'vy ! 'vx !
-	vx vy vz dadr c@ $ff and 0? ( drop ; ) drop
-	vx bx0 min 'bx0 ! vx bx1 max 'bx1 !
-	vy by0 min 'by0 ! vy by1 max 'by1 !
-	vz bz0 min 'bz0 ! vz bz1 max 'bz1 ! ;
+	pick2 pick2 pick2 dadr c@ $ff and 0? ( 4drop ; ) drop
+	dup bz1 max 'bz1 ! bz0 min 'bz0 !
+	dup by1 max 'by1 ! by0 min 'by0 !
+	dup bx1 max 'bx1 ! bx0 min 'bx0 ! ;
 
 :fitpart | -- 1/0		; achica pox..msz al bounding box de los voxels; 0 si la parte esta vacia
 	$7fffffff dup dup 'bx0 ! 'by0 ! 'bz0 ! -1 dup dup 'bx1 ! 'by1 ! 'bz1 !

@@ -346,6 +346,18 @@
 	[ kbToggle skFocus ; ] uiFocus
 	colText uiLabelC drop ;
 
+::uiNToggle | 'var "text" -- ; on/off button as wide as its text, moving the cursor right (free flow: finish the row with uiLn); filled while on. With columns (uiCols) it takes the cell like uiToggle
+	uiCol# 1 >? ( drop uiToggle ; ) drop
+	flpadx 'cx +!
+	txw 8 + 'cw !
+	uiZone
+	'togglev uiClk
+	over @ skinTab sk
+	[ kbToggle skFocus ; ] uiFocus
+	colText ttwritec
+	flpadx cw + 'cx +!
+	drop ;
+
 |----- CHECK
 :ttlbl | "text" -- ; label at the right of a check or radio box
 	cx rh + 2 + tty txat txwrite ;

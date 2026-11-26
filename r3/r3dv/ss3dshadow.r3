@@ -33,9 +33,6 @@
 #sh_lproj * 128
 #sh_ubo * 96
 #sh_sunbuf * 32
-#s_cr #s_cg #s_cb #s_in
-#s_tx #s_ds #s_du
-#f_cx #f_cy #f_cz #f_r #f_ms
 
 :sdx 'sh_sun @ ;
 :sdy 'sh_sun 8 + @ ;
@@ -45,8 +42,14 @@
 	0 'sh_up ! 1.0 'sh_up 8 + ! 0 'sh_up 16 + !
 	sdy abs 0.98 >? ( 0 'sh_up 8 + ! 1.0 'sh_up 16 + ! ) drop ;
 
-:snap | v -- delta	; cuanto hay que mover v para caer en la grilla de texels
-	dup s_tx /. 0.5 + 16 >> s_tx * swap - ;
+:shtexel | -- tx	; tamano de un texel de la luz
+	sh_r 2* sh_res / ;
+
+:shshift | 'ax tx --	; corre sh_cs sobre el eje 'ax hasta la grilla de texels
+	0? ( 2drop ; )
+	over 'sh_c v3ddot swap		| 'ax d tx
+	2dup /. 0.5 + 16 >> *		| 'ax d m
+	swap - 'sh_cs -rot v3+* ;
 
 :shupdate | --	; matriz de la luz + UBO ShadowU
 	mpush										| guarda la matriz actual
@@ -57,11 +60,9 @@
 	mat> @ 'sh_s !  mat> 32 + @ 'sh_s 8 + !  mat> 64 + @ 'sh_s 16 + !
 	mat> 8 + @ 'sh_u !  mat> 40 + @ 'sh_u 8 + !  mat> 72 + @ 'sh_u 16 + !
 	| centro corrido al texel mas cercano (evita el centelleo de los bordes)
-	sh_r 2* sh_res / 's_tx !
-	's_tx @ 1? ( 'sh_s 'sh_c v3ddot snap 's_ds !  'sh_u 'sh_c v3ddot snap 's_du ! ) drop
 	'sh_cs 'sh_c v3=
-	'sh_cs 'sh_s s_ds v3+*
-	'sh_cs 'sh_u s_du v3+*
+	'sh_s shtexel shshift
+	'sh_u shtexel shshift
 	'sh_eye 'sh_cs v3=  'sh_eye 'sh_sun sh_r v3+*
 	sh_r sh_r neg sh_r sh_r neg sh_r 2* 0 mortho01	| r l t b f n
 	'sh_lproj mcpy
@@ -69,25 +70,32 @@
 	'sh_lproj mm*
 	'sh_ubo mat> cpymatif
 	mpop mpop									| restaura la matriz actual
-	'sh_ubo 64 + >a
+	ab[ 'sh_ubo 64 + >a
 	sdx neg f2fp da!+ sdy neg f2fp da!+ sdz neg f2fp da!+ 0 da!+
 	sh_on 16 << f2fp da!+ sh_nbias f2fp da!+ sh_dbias f2fp da!+ 0 da!+
+	]ba
 	rl_ubo_shadow 0? ( drop ; ) drop
 	GL_UNIFORM_BUFFER rl_ubo_shadow glBindBuffer
 	GL_UNIFORM_BUFFER 0 96 'sh_ubo glBufferSubData
 	GL_UNIFORM_BUFFER 0 glBindBuffer ;
 
-| area (esfera de las instancias, radio redondeado a 0.25) y bias (en celdas de la grilla gruesa)
+:sharea! | x y z r --
+	'sh_r ! 'sh_c 16 + ! 'sh_c 8 + ! 'sh_c ! ;
+
+| area (esfera de las instancias, radio redondeado a 0.25)
+:shfitarea | cx cy cz r --
+	sh_autoarea 0? ( drop 4drop ; ) drop
+	0.25 + 16383 + 14 >> 14 << sharea! ;
+
+| bias (en celdas de la grilla gruesa)
+:shfitbias | ms --
+	sh_autobias 0? ( 2drop ; ) drop
+	0.01 *. ss3dshS <<			| celda gruesa en mundo
+	dup 1.5 *. 'sh_nbias !
+	0.25 *. sh_r 2* /. 'sh_dbias ! ;
+
 :shfit | --
-	SS3Dbounds
-	'f_ms ! 'f_r ! 'f_cz ! 'f_cy ! 'f_cx !
-	sh_autoarea 1? (
-		f_cx 'sh_c !  f_cy 'sh_c 8 + !  f_cz 'sh_c 16 + !
-		f_r 0.25 + 16383 + 14 >> 14 << 'sh_r ! ) drop
-	sh_autobias 1? (
-		f_ms 0.01 *. ss3dshS <<			| celda gruesa en mundo
-		dup 1.5 *. 'sh_nbias !
-		0.25 *. sh_r 2* /. 'sh_dbias ! ) drop ;
+	SS3Dbounds >r shfitarea r> shfitbias ;
 
 :shpass | --	; hook de rl_frame_end
 	sh_on 0? ( drop ; ) drop
@@ -99,16 +107,19 @@
 	$1801 0 'sh_one glClearBufferfv
 	SS3Dshadowdraw ;
 
+:shtp | par v --
+	GL_TEXTURE_2D -rot glTexParameteri ;
+
 :shmaketex | --
 	1 'sh_tex glGenTextures
 	GL_TEXTURE_2D sh_tex glBindTexture
 	GL_TEXTURE_2D 0 GL_DEPTH_COMPONENT32F sh_res sh_res 0 GL_DEPTH_COMPONENT GL_FLOAT 0 glTexImage2D
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_COMPARE_MODE GL_COMPARE_REF_TO_TEXTURE glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_COMPARE_FUNC GL_LEQUAL glTexParameteri
+	GL_TEXTURE_MIN_FILTER GL_LINEAR shtp
+	GL_TEXTURE_MAG_FILTER GL_LINEAR shtp
+	GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE shtp
+	GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE shtp
+	GL_TEXTURE_COMPARE_MODE GL_COMPARE_REF_TO_TEXTURE shtp
+	GL_TEXTURE_COMPARE_FUNC GL_LEQUAL shtp
 	GL_TEXTURE_2D 0 glBindTexture
 	1 'sh_fbo glGenFramebuffers
 	GL_FRAMEBUFFER sh_fbo glBindFramebuffer
@@ -130,8 +141,8 @@
 ::ss3dshadowend | --
 	0 'rl_shadow_hook !
 	0 'rl_shadow_tex !
-	sh_fbo 1? ( 1 'sh_fbo glDeleteFramebuffers ) drop
-	sh_tex 1? ( 1 'sh_tex glDeleteTextures ) drop
+	1 'sh_fbo glDeleteFramebuffers		| glDelete* ignora el nombre 0
+	1 'sh_tex glDeleteTextures
 	0 'sh_fbo ! 0 'sh_tex ! ;
 
 ::ss3dshadow! | 0/1 --	; activa / desactiva las sombras
@@ -142,7 +153,7 @@
 
 ::ss3dshadowarea | x y z r --	; esfera (centro y radio) que cubre el mapa de sombras (desactiva el area automatica)
 	0 'sh_autoarea !
-	'sh_r ! 'sh_c 16 + ! 'sh_c 8 + ! 'sh_c ! shupdate ;
+	sharea! shupdate ;
 
 ::ss3dshadowbias | normal depth --	; normal offset (mundo) y bias de profundidad (0..1) (desactiva el bias automatico)
 	0 'sh_autobias !
@@ -161,11 +172,14 @@
 	shupdate ;
 
 ::ss3dsun | dx dy dz cr cg cb i --	; direccion HACIA el sol (cualquier largo), color e intensidad
-	's_in ! 's_cb ! 's_cg ! 's_cr !
+	f2fp 'sh_sunbuf 28 + d!			| i
+	f2fp 'sh_sunbuf 24 + d!			| cb
+	f2fp 'sh_sunbuf 20 + d!			| cg
+	f2fp 'sh_sunbuf 16 + d!			| cr
 	'sh_sun 16 + ! 'sh_sun 8 + ! 'sh_sun !
 	'sh_sun v3nor
-	'sh_sunbuf >a
+	ab[ 'sh_sunbuf >a
 	sdx f2fp da!+ sdy f2fp da!+ sdz f2fp da!+ 0 da!+
-	s_cr f2fp da!+ s_cg f2fp da!+ s_cb f2fp da!+ s_in f2fp da!+
+	]ba
 	'sh_sunbuf rl_set_sun
 	shupdate ;

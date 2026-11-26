@@ -213,12 +213,11 @@
 	nsel? 0? ( drop ; ) drop
 	sc 0.05 max curentry 28 + d! ;
 
-#nx #ny #nz
+#nx
 :nudge | dx dy dz --		; empuja el nodo (con snap)
-	'nz ! 'ny ! 'nx !
-	nsel? 0? ( drop ; ) drop
+	nsel? 0? ( 4drop ; ) drop
 	syncvars
-	px nx + snapg 'px ! py ny + snapg 'py ! pz nz + snapg 'pz !
+	pz + snapg 'pz ! py + snapg 'py ! px + snapg 'px !
 	applypos ;
 :scalestep | d --
 	nsel? 0? ( drop ; ) drop

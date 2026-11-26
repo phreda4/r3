@@ -82,12 +82,10 @@
 
 |----------------------------------
 | modelo B: brazo articulado (huesos: 0 raiz, 2 hombro, 4 codo, 6 muneca)
-#ta #tp2 #tn2 #tq
 :prot | turnos pose nodo --	; rotacion en Z del hueso dentro de la pose
-	'tn2 ! 'tp2 ! 'ta !
-	0 0 1.0 ta ssmo_qaxis
-	tp2 tn2 ssmo_pnode 'tq !
-	tq 24 + d! tq 20 + d! tq 16 + d! tq 12 + d! ;
+	ab[ ssmo_pnode >a
+	>r 0 0 1.0 r> ssmo_qaxis
+	a> 24 + d! a> 20 + d! a> 16 + d! a> 12 + d! ]ba ;
 
 :mkbrazo
 	8 3 1 4 ssmo_new drop

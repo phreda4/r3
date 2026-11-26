@@ -397,9 +397,12 @@ void main(){
 :rf_enc10 | s -- v
 	1024 + 11 >> $3ff and ;
 
+:rf_rec | i -- adr
+	5 << fwd_array + ;
+
 ::fwd_set | x y z q scale spr color alpha --
 	ab[
-	fwd_n fwd_max 1 - min 5 << fwd_array + >a
+	fwd_n fwd_max 1 - min rf_rec >a
 	$ff and 16 << rot or da!+		| spr | alpha<<16
 	da!+							| color
 	rf_enc10 dup 10 << over 20 << or or da!+	| scale uniforme x|y<<10|z<<20
@@ -408,13 +411,14 @@ void main(){
 	]ba
 	fwd_n fwd_max <? ( 1 'fwd_n +! ) drop ;
 
-#rf_d
 ::fwd_copy | i alpha --
 	fwd_n fwd_max >=? ( 3drop ; ) drop
-	fwd_n 5 << fwd_array + 'rf_d !
-	swap 5 << 3dss_array +
-	rf_d swap 4 move
-	$ff and 16 << rf_d d@ $ffff and or rf_d d!
+	fwd_n rf_rec				| i alpha dst
+	rot 5 << 3dss_array +		| alpha dst src
+	over swap 4 move			| alpha dst
+	dup d@ $ffff and			| alpha dst spr
+	rot $ff and 16 << or		| dst v
+	swap d!
 	1 'fwd_n +! ;
 
 |--- orden de lejos a cerca ** reemplazar por radixsort lib
@@ -428,9 +432,6 @@ void main(){
 	3 << 'rf_key + @ ;
 :rf_key! | k i --
 	3 << 'rf_key + ! ;
-:rf_rec | i -- adr
-	5 << fwd_array + ;
-
 :rf_dist | i -- d2
 	5 << fwd_array + 20 + d@+ rf_ex - dup *.
 	swap d@+ rf_ey - dup *. rot +
@@ -456,6 +457,11 @@ void main(){
 	0 ( rf_cnt <? dup rf_dist over rf_key! 1 + ) drop
 	1 ( rf_cnt <? dup rf_ins 1 + ) drop ;
 
+:rf_setfade | near full --		; uFade del program activo
+	'rf_fade 4 + d! 'rf_fade d!
+	2 'rf_fade memfloat
+	1 1 'rf_fade glUniform2fv ;
+
 |--- pasada de la escena (hook de renderlib: fbo scene_tex + depth del gbuffer ya puestos)
 :rf_scene_pass
 	|fwd_n 0? ( drop ; ) drop
@@ -472,9 +478,7 @@ void main(){
 	GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA glBlendFunc
 	rf_prog glUseProgram
 	0 0 glUniform1i
-	camNear 2* 'rf_fade d!  camNear 6 * 'rf_fade 4 + d!		| corte a 2x near, opaco a 6x near
-	2 'rf_fade memfloat
-	1 1 'rf_fade glUniform2fv
+	camNear 2* camNear 6 * rf_setfade		| corte a 2x near, opaco a 6x near
 	SS3Dbinddata
 	GL_SHADER_STORAGE_BUFFER 4 rf_ssbo glBindBufferBase
 	rf_vao glBindVertexArray
@@ -501,22 +505,18 @@ void main(){
 #rf_eye 0 0 0
 #rf_to 0 0 0
 #rf_up 0 1.0 0
-#rf_ps 0
-#rf_pa 0
 
-| textura 2D (igual que rl_make_tex2d de renderlib)
-:rf_maketex | ifmt w h fmt type minmagf wrap -- texid
-	>r >r >r >r >r >r >r
+| textura 2D rf_psize x rf_psize, clamp (igual que rl_make_tex2d de renderlib)
+:rf_texpar | v par -- v
+	GL_TEXTURE_2D swap pick2 glTexParameteri ;
+
+:rf_maketex | ifmt fmt type filter -- texid
+	>r >r >r >r
 	1 'rf_tid glGenTextures
 	GL_TEXTURE_2D rf_tid glBindTexture
-	GL_TEXTURE_2D 0 r> r> r> 0 r> r> 0 glTexImage2D
-	r>
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER pick2 glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER rot glTexParameteri
-	r> 1? (
-		GL_TEXTURE_2D GL_TEXTURE_WRAP_S pick2 glTexParameteri
-		GL_TEXTURE_2D GL_TEXTURE_WRAP_T pick2 glTexParameteri
-		) drop
+	GL_TEXTURE_2D 0 r> rf_psize dup 0 r> r> 0 glTexImage2D
+	r> GL_TEXTURE_MIN_FILTER rf_texpar GL_TEXTURE_MAG_FILTER rf_texpar drop
+	GL_CLAMP_TO_EDGE GL_TEXTURE_WRAP_S rf_texpar GL_TEXTURE_WRAP_T rf_texpar drop
 	GL_TEXTURE_2D 0 glBindTexture
 	rf_tid ;
 
@@ -538,8 +538,8 @@ void main(){
 	rf_tid ;
 
 :rf_preview_init | --
-	GL_RGBA8 rf_psize dup GL_RGBA GL_UNSIGNED_BYTE GL_LINEAR GL_CLAMP_TO_EDGE rf_maketex 'rf_ptex !
-	GL_DEPTH_COMPONENT32F rf_psize dup GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST GL_CLAMP_TO_EDGE rf_maketex 'rf_pdep !
+	GL_RGBA8 GL_RGBA GL_UNSIGNED_BYTE GL_LINEAR rf_maketex 'rf_ptex !
+	GL_DEPTH_COMPONENT32F GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST rf_maketex 'rf_pdep !
 	rf_ptex rf_pdep rf_makefbo 'rf_pfbo !
 	1 'rf_pssbo glGenBuffers
 	GL_SHADER_STORAGE_BUFFER rf_pssbo glBindBuffer
@@ -591,22 +591,20 @@ void main(){
 	'rf_pcam 256 + mcpyf
 	r> 'mat> ! ;
 
-:rf_pinstfill | --
+:rf_pinstfill | spr ang --
 	ab[
 	'rf_pinst >a
-	rf_ps $ffff and $ff0000 or da!+		| spr | alpha 255
+	swap $ffff and $ff0000 or da!+		| spr | alpha 255
 	$ffffff00 da!+						| color: el del voxel
 	$2008020 da!+						| escala 1.0
-	rf_pa $ffff and 16 << rxyz>q16 a!+	| giro en y
+	$ffff and 16 << rxyz>q16 a!+		| giro en y
 	0 da!+ 0 da!+ 0 da!+
 	]ba ;
 
 ::fwd_preview | spr ang --
 	|rf_prog 0? ( 3drop ; ) drop
-	'rf_pa ! 'rf_ps !
-	rf_pinstfill
 	| camara: encuadra el sprite segun su tamano
-	rf_ps rf_radius 2.9 *.
+	over rf_radius 2.9 *. -rot rf_pinstfill
 	dup 0.50 *. 'rf_eye !
 	dup 0.40 *. 'rf_eye 8 + !
 	0.75 *. 'rf_eye 16 + !
@@ -632,9 +630,7 @@ void main(){
 	GL_TEXTURE0 glActiveTexture
 	rf_prog glUseProgram
 	0 1 glUniform1i
-	0.04 'rf_fade d!  0.12 'rf_fade 4 + d!
-	2 'rf_fade memfloat
-	1 1 'rf_fade glUniform2fv
+	0.04 0.12 rf_setfade
 	SS3Dbinddata
 	GL_SHADER_STORAGE_BUFFER 4 rf_pssbo glBindBufferBase
 	rf_vao glBindVertexArray
@@ -674,20 +670,20 @@ void main(){
 	0 'fwd_n !
 	'rf_scene_pass 'rl_forward_hook ! ;
 
-::fwd_end | --
+::fwd_end | --			; glDelete* ignora el nombre 0
 	0 'rl_forward_hook !
-	rf_prog 1? ( dup glDeleteProgram ) drop
-	rf_blit 1? ( dup glDeleteProgram ) drop
-	rf_ssbo 1? ( 1 'rf_ssbo glDeleteBuffers ) drop
-	rf_pssbo 1? ( 1 'rf_pssbo glDeleteBuffers ) drop
-	rf_ubo_m 1? ( 1 'rf_ubo_m glDeleteBuffers ) drop
-	rf_ubo_s 1? ( 1 'rf_ubo_s glDeleteBuffers ) drop
-	rf_ubo_p 1? ( 1 'rf_ubo_p glDeleteBuffers ) drop
-	rf_ubo_h 1? ( 1 'rf_ubo_h glDeleteBuffers ) drop
-	rf_pfbo 1? ( 1 'rf_pfbo glDeleteFramebuffers ) drop
-	rf_ptex 1? ( 1 'rf_ptex glDeleteTextures ) drop
-	rf_pdep 1? ( 1 'rf_pdep glDeleteTextures ) drop
-	rf_vao 1? ( 1 'rf_vao glDeleteVertexArrays ) drop
-	rf_vbo 1? ( 1 'rf_vbo glDeleteBuffers ) drop
-	rf_ebo 1? ( 1 'rf_ebo glDeleteBuffers ) drop
+	rf_prog glDeleteProgram
+	rf_blit glDeleteProgram
+	1 'rf_ssbo glDeleteBuffers
+	1 'rf_pssbo glDeleteBuffers
+	1 'rf_ubo_m glDeleteBuffers
+	1 'rf_ubo_s glDeleteBuffers
+	1 'rf_ubo_p glDeleteBuffers
+	1 'rf_ubo_h glDeleteBuffers
+	1 'rf_pfbo glDeleteFramebuffers
+	1 'rf_ptex glDeleteTextures
+	1 'rf_pdep glDeleteTextures
+	1 'rf_vao glDeleteVertexArrays
+	1 'rf_vbo glDeleteBuffers
+	1 'rf_ebo glDeleteBuffers
 	0 'rf_prog ! 0 'rf_blit ! 0 'rf_ssbo ! 0 'rf_pssbo ! ;
