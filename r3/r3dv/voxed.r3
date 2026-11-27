@@ -254,6 +254,13 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 :a_ix pushundo 'o_fx eachvox ;
 :a_iy pushundo 'o_fy eachvox ;
 :a_iz pushundo 'o_fz eachvox ;
+|--- girar 90 grados (regla de la mano derecha) alrededor del centro: el origen de cada voxel destino
+:o_rx vx 'sx0 ! vz 'sy0 ! nv 1- vy - 'sz0 ! o_copyfrom ;
+:o_ry nv 1- vz - 'sx0 ! vy 'sy0 ! vx 'sz0 ! o_copyfrom ;
+:o_rz vy 'sx0 ! nv 1- vx - 'sy0 ! vz 'sz0 ! o_copyfrom ;
+:a_rx pushundo 'o_rx eachvox ;
+:a_ry pushundo 'o_ry eachvox ;
+:a_rz pushundo 'o_rz eachvox ;
 
 #mvx #mvy #mvz #mxl #myl #mzl
 :movepoll
@@ -997,9 +1004,9 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 |----------------------------------
 | interfaz (tamanos relativos al texto)
-#showT 1 #showP 1 #showV 0
+#showT 1 #showV 0
 :tgT showT 1 xor 'showT ! ;
-:tgP showP 1 xor 'showP ! ;
+:tgV showV 1 xor 'showV ! ;
 :tgF showF 1 xor 'showF ! ;
 
 
@@ -1034,37 +1041,21 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 		1+ ) drop
 	4 4 uiPad ;
 
-:palpanel
+:toolpanel
 	uiPush
 	0.5 %cw uiN
 	qpalui
 	uiRest
 	$ffffffff 'fcolor !
-	"left: pick / right: store" uiLabelC
+	"L pick / R store" uiLabelC
 	'ccol uiColorMatH
-	uiPop ;
-
-:toolpanel
-	"- MODE -" uiLabelC
 	'bmode 0 "attach (V)" rad
 	'bmode 1 "erase (F)" rad
 	'bmode 2 "paint (G)" rad
-	"- SHAPE -" uiLabelC
 	'bshape 0 "voxel (1)" rad
 	'bshape 1 "line (2)" rad
 	'bshape 2 "box (3)" rad
-	"- BUILD -" uiLabelC
-	'a_clear "clear" uiNBtn 'a_fill "fill" uiNBtn 'a_rev "reverse" uiNBtn uiLn
-	'a_sphere "sphere" uiNBtn 'a_cyl "cylinder" uiNBtn uiLn
-	'a_pyr "pyramid" uiNBtn 'a_cone "cone" uiNBtn uiLn
-	"MOVE (wrap)" uiLabelC
-	"x" nv neg nv 'mvx uiSlideriL
-	"y" nv neg nv 'mvy uiSlideriL
-	"z" nv neg nv 'mvz uiSlideriL
-	'mvreset "0" uiNBtn uiLn
-	movepoll
-	"INVERT" uiLabelC
-	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn ;
+	uiPop ;
 
 :pgprev spage 1- 0 max 'spage ! ;
 :pgnext spage 1+ nslots 31 + 5 >> 1- min 'spage ! ;
@@ -1083,8 +1074,6 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 
 :filepanel
 	$ffffffff 'fcolor !
-	"- SPRITE NAME -" uiLabelC
-	slotcur snameadr 31 uiInputLine
 	ask 1? ( "Unsaved changes. Discard?" uiLabelC 'askyes "Yes" uiNBtn 'askno "No" uiNBtn uiLn ) drop
 	"- SSV -" uiLabelC
 	'wpath uiLabelC
@@ -1095,16 +1084,19 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	umsg 1? ( umsg uiLabelC ) drop
 	ssm_err 1? ( "ERROR: color strip full" uiLabelC ) drop ;
 
-:statusline			| archivo y comandos de la tira
+:statusline			| archivo, nombre del sprite y comandos de la tira
+	uiPush
 	$ffffffff 'fcolor !
-	docname uiTlabel
-	"   " uiTlabel
+	26 3 << uiO docname uiLabel
+	36 3 << uiO slotcur snameadr 31 uiInputLine
+	20 3 << uiO
 	'pgprev "<" uiNBtn
 	nslots 31 + 5 >> spage 1+ "page %d/%d" sprint uiTlabel
 	'pgnext ">" uiNBtn
-	"   " uiTlabel
+	uiRest
 	'slotadd "Add" uiNBtn 'slotdup "Copy" uiNBtn 'slotdel "Del" uiNBtn
-	nslots slotcur 1+ "   sprite %d/%d" sprint uiTlabel ;
+	nslots slotcur 1+ "   sprite %d/%d" sprint uiTlabel
+	uiPop ;
 
 :slotstrip			| los botones numerados de la pagina
 	32 1 uiGrid
@@ -1122,13 +1114,18 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	uiPop ;
 
 :topbar
-	'gexit "Exit" uiNBtn
+	uiPush
+	72 uiE
+	stDang 'gexit "EXIT" uiBtn stTheme
+	uiRest
+	"vox3d  " uiTlabel
+	docname uiTlabel
+	"  " uiTlabel
 	'undokey "Undo" uiNBtn
 	'showT "Tools" uiNToggle
 	'showV "View" uiNToggle
-	'showP "Color" uiNToggle
 	'showF "Files" uiNToggle
-	;
+	uiPop ;
 
 :optshadow
 	shadowon 0? ( drop ; ) drop
@@ -1147,6 +1144,19 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	optshadow
 	'rl_ao_on "SSAO" uiToggle
 	'rl_aa_on "FXAA" uiToggle
+	"- BUILD -" uiLabelC
+	'a_clear "clear" uiNBtn 'a_fill "fill" uiNBtn 'a_rev "reverse" uiNBtn uiLn
+	'a_sphere "sphere" uiNBtn 'a_cyl "cylinder" uiNBtn uiLn
+	'a_pyr "pyramid" uiNBtn 'a_cone "cone" uiNBtn uiLn
+	"MOVE (wrap)" uiLabelC
+	"x" nv neg nv 'mvx uiSlideriL
+	"y" nv neg nv 'mvy uiSlideriL
+	"z" nv neg nv 'mvz uiSlideriL
+	'mvreset "0" uiNBtn "invert" uiTlabel
+	'a_ix "x" uiNBtn 'a_iy "y" uiNBtn 'a_iz "z" uiNBtn uiLn
+	movepoll
+	"rotate" uiTlabel
+	'a_rx "x" uiNBtn 'a_ry "y" uiNBtn 'a_rz "z" uiNBtn uiLn
 	;
 
 :interface
@@ -1158,9 +1168,8 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	txh 8 + 2* 8 + uiS $3f1f1f1f bg bottompanel
 
 	showT 1? ( 22 3 << uiO $3f1f1f1f bg toolpanel ) drop
-	showV 1? ( 22 3 << uiO $3f1f1f1f bg viewpanel ) drop
+	showV 1? ( 24 3 << uiO $3f1f1f1f bg viewpanel ) drop
 	showF 1? ( 28 3 << uiE $3f1f1f1f bg filepanel ) drop
-	showP 1? ( 27 3 << uiE $3f1f1f1f bg palpanel ) drop	
 	uiRest uiWinBox immBox
 	viewmouse ;
 
@@ -1201,7 +1210,7 @@ $FF0000 $00FF00 $0000FF $FFFF00 $00FFFF $FF00FF $885533 $FF8800 ]
 	<u> =? ( kk 1? ( undokey ) drop ) <z> =? ( ccmod 1? ( undokey ) drop )
 	<f1> =? ( shadowon 1 xor 'shadowon ! )
 	<f2> =? ( rl_ao_on 1 xor 'rl_ao_on ! )
-	<f3> =? ( tgP ) <f4> =? ( tgF ) <f5> =? ( tgT )
+	<f3> =? ( tgV ) <f4> =? ( tgF ) <f5> =? ( tgT )
 	drop
 	keycam ;
 

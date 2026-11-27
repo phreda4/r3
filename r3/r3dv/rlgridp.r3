@@ -24,12 +24,12 @@
 #rl_shader_grid "
 @vertex-----------------
 #version 440 core
-layout(location=0) in vec2 aPos;
 out vec2 vScreen;
 void main()
 {
-    vScreen = aPos;
-    gl_Position = vec4(aPos, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
+    vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2) * 2.0 - 1.0;   // triangulo fullscreen
+    vScreen = p;
+    gl_Position = vec4(p, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
 }
 @fragment---------------
 #version 440 core
@@ -44,7 +44,13 @@ layout(std140, binding=0) uniform Matrices
     vec4 viewPos;
 };
 
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 
 uniform int uAxis;
@@ -127,7 +133,7 @@ void main()
 
     vec3 planePoint = planeNormal * uLevel;
     float normalSign = sign(dot(planeNormal,ro - planePoint));
-    gNormal = planeNormal * normalSign;
+    gNormal = octEncode(planeNormal * normalSign);
 
 	vec3 lc=vec3(0.2);
 	vec3 col = lc //uLineColor ?*** porque no pasa el color??
@@ -150,7 +156,7 @@ void main()
 #rl_u_grid_level  -1
 #rl_u_grid_color  -1
 
-| Grid geometry reuses the fullscreen quad (rl_quad_vao) — no extra VAO needed.
+| Fullscreen triangle from gl_VertexID; uses the empty VAO (rl_empty_vao) from renderlib.
 
 #rl_grid_scale_x  [ 1.0  ]   | 1 world unit per cell on X
 #rl_grid_scale_y  [ 1.0  ]   | 1 world unit per cell on Y
@@ -200,8 +206,8 @@ void main()
 | Call INSIDE rl_frame_begin / rl_frame_end, after drawscene.
 ::draw_gridp
     rl_sh_grid glUseProgram
-    rl_quad_vao glBindVertexArray
-    GL_TRIANGLE_STRIP 0 4 glDrawArrays
+    rl_empty_vao glBindVertexArray
+    GL_TRIANGLES 0 3 glDrawArrays
     0 glBindVertexArray ;
 	
 ::gridplevel! | f --

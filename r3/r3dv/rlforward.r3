@@ -339,9 +339,12 @@ void main() {
 #rf_blit_src "
 @vertex-----------------
 #version 440 core
-layout(location=0) in vec2 aPos;
 out vec2 uv;
-void main(){ uv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }
+void main(){
+	vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);   // triangulo fullscreen, uv en [0,1]
+	uv = p;
+	gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}
 @fragment---------------
 #version 440 core
 in vec2 uv;
@@ -612,9 +615,7 @@ void main(){
 	GL_SHADER_STORAGE_BUFFER rf_pssbo glBindBuffer
 	GL_SHADER_STORAGE_BUFFER 0 32 'rf_pinst glBufferSubData
 	GL_SHADER_STORAGE_BUFFER 0 glBindBuffer
-	GL_UNIFORM_BUFFER rf_ubo_m glBindBuffer
-	GL_UNIFORM_BUFFER 0 400 'rf_pcam glBufferSubData
-	GL_UNIFORM_BUFFER 0 glBindBuffer
+	rf_ubo_m 0 400 'rf_pcam glNamedBufferSubData
 	GL_FRAMEBUFFER rf_pfbo glBindFramebuffer
 	0 0 rf_psize dup glViewport
 	GL_TRUE glDepthMask
@@ -648,8 +649,8 @@ void main(){
 	rf_psize dup glViewport
 	rf_blit glUseProgram
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rf_ptex glBindTexture
-	rl_quad_vao glBindVertexArray
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	rl_empty_vao glBindVertexArray
+	GL_TRIANGLES 0 3 glDrawArrays
 	0 glBindVertexArray
 	0 0 rl_w rl_h glViewport ;
 

@@ -48,7 +48,13 @@ flat in float vColorPk;
 layout(binding=2) uniform sampler2D uAtlas;
 uniform vec2 uAtlasSize;
 
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 
 void main(){
@@ -56,7 +62,7 @@ void main(){
 	if(tex.a < 0.9) discard;
 	vec3 dx = dFdx(vWorldPos);
 	vec3 dy = dFdy(vWorldPos);
-	gNormal = normalize(cross(dx, dy));
+	gNormal = octEncode(normalize(cross(dx, dy)));
 	gAlbedo = vec4(tex.rgb,vColorPk);
 }
 @-----------------------"

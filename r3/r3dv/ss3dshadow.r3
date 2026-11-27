@@ -75,9 +75,7 @@
 	sh_on 16 << f2fp da!+ sh_nbias f2fp da!+ sh_dbias f2fp da!+ 0 da!+
 	]ba
 	rl_ubo_shadow 0? ( drop ; ) drop
-	GL_UNIFORM_BUFFER rl_ubo_shadow glBindBuffer
-	GL_UNIFORM_BUFFER 0 96 'sh_ubo glBufferSubData
-	GL_UNIFORM_BUFFER 0 glBindBuffer ;
+	rl_ubo_shadow 0 96 'sh_ubo glNamedBufferSubData ;
 
 :sharea! | x y z r --
 	'sh_r ! 'sh_c 16 + ! 'sh_c 8 + ! 'sh_c ! ;

@@ -4,14 +4,30 @@
 ^r3/lib/sdl2gl.r3
 ^r3/lib/3dgl.r3
 ^r3/lib/glutil.r3
+^r3/lib/str.r3
 
-#rl_shader_light 
+| Vertex shader compartido: triangulo que cubre la pantalla (3 vertices, sin VBO), uv en [0,1]
+| Cada shader de abajo solo tiene la seccion @fragment; rl_loadsh les antepone este.
+#rl_shader_vs
 "@vertex-----------------
 #version 440 core
-layout(location=0) in vec2 aPos;
 out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
-@fragment---------------
+void main(){
+    vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);   // (0,0) (2,0) (0,2)
+    uv = p;
+    gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}
+"
+
+#rl_shbuf * 24576		| armado de vertex compartido + fragment
+
+:rl_loadsh | 'frag -- idprogram
+	'rl_shader_vs 'rl_shbuf strcpy
+	'rl_shbuf strcat
+	'rl_shbuf loadShaderv ;
+
+#rl_shader_light 
+"@fragment---------------
 #version 440 core
 in vec2 uv;
 out vec4 FragColor;
@@ -33,6 +49,7 @@ const float AMB_GAIN      = 2.5;
 #else
 const float AMB_GAIN      = 1.0;
 #endif
+uniform float ambScale;                               // rl_ambient: escala del ambiente (1 = normal, ~0.04 = noche)
 const float DIRECT_AO     = 0.4;                      // 0 = AO solo en ambiente, 1 = AO total tambien en directa
 // -----------------------------------------------------------------------------
 const float GLOW[4] = float[4](0.0, 0.35, 1.2, 5.0);
@@ -62,6 +79,41 @@ const float INV_PI = 0.31830988618;
 const float EPS    = 0.001;
 
 float pow5(float x) { float x2 = x * x; return x2 * x2 * x; }
+
+// normal octaedrica (RG16F) -> vec3 unitario en espacio mundo
+vec3 octDecode(vec2 e) {
+    vec3 n = vec3(e, 1.0 - abs(e.x) - abs(e.y));
+    if (n.z < 0.0) n.xy = (1.0 - abs(n.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return normalize(n);
+}
+
+// sRGB -> lineal exacto (el composite usa la inversa exacta)
+vec3 srgb2lin(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }
+
+// z de vista a partir de la profundidad (ndc.z = depth; clip.w = -z)
+float viewZ(float d) { return -proj[3][2] / (d + proj[2][2]); }
+
+// AO de media resolucion -> resolucion completa: bilineal pesado por similitud de profundidad.
+// La muestra h del AO representa al texel 2h del gbuffer (ver rl_shader_ao).
+float aoUpsample(ivec2 px, float zc) {
+    ivec2 asz = textureSize(gAO, 0);
+    vec2  f   = vec2(px) * 0.5;
+    ivec2 h0  = ivec2(f);
+    vec2  fr  = f - vec2(h0);
+    float tol = 0.05 * abs(zc) + 0.001;
+    float sum = 0.0, wsum = 0.0;
+    for (int j = 0; j < 2; ++j)
+        for (int i = 0; i < 2; ++i) {
+            ivec2 h  = min(h0 + ivec2(i, j), asz - 1);
+            float bw = (i == 0 ? 1.0 - fr.x : fr.x) * (j == 0 ? 1.0 - fr.y : fr.y);
+            float dd = texelFetch(gDepth, h * 2, 0).r;
+            float w  = (dd > 0.0) ? exp(-abs(viewZ(dd) - zc) / tol) : 0.0;
+            w = bw * (w + 1e-5);              // el piso evita 0/0 si ningun vecino coincide
+            sum  += texelFetch(gAO, h, 0).r * w;
+            wsum += w;
+        }
+    return sum / wsum;
+}
 
 // una sola multiplicacion: depth ya es ndc.z (clip ZERO_TO_ONE)
 vec3 reconstructWorldPos(vec2 uv, float depth) {
@@ -120,9 +172,9 @@ void main() {
     vec4 albedoPacked = texelFetch(gAlbedo, px, 0);
     vec3 albedo       = albedoPacked.rgb;
 #ifdef ALBEDO_SRGB
-    albedo = pow(albedo, vec3(2.2));
+    albedo = srgb2lin(albedo);
 #endif
-    vec3 N = normalize(texelFetch(gNormal, px, 0).rgb);
+    vec3 N = octDecode(texelFetch(gNormal, px, 0).rg);
 
     int   pack      = int(albedoPacked.a * 255.0 + 0.5);
     float roughness = float((pack >> 5) & 0x07) * (1.0 / 7.0);
@@ -140,7 +192,7 @@ void main() {
     float NdotV    = max(dot(N, V), 0.0001);
 
     // ---- ambiente (difuso + especular) con AO ----
-    float ao      = texelFetch(gAO, px, 0).r;
+    float ao      = aoUpsample(px, viewZ(depth));
     vec3  hemi    = mix(AMB_GROUND, AMB_SKY, dot(N, UP_AXIS) * 0.5 + 0.5);
     vec3  Rv      = reflect(-V, N);
     vec3  env     = mix(AMB_GROUND, AMB_SKY, dot(Rv, UP_AXIS) * 0.5 + 0.5);
@@ -148,7 +200,7 @@ void main() {
     float specOcc = clamp(pow(NdotV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
 
     vec3 color = (hemi * albedo * (1.0 - metallic) * ao
-               + env * Fr * (1.0 - 0.5 * roughness) * specOcc) * AMB_GAIN
+               + env * Fr * (1.0 - 0.5 * roughness) * specOcc) * (AMB_GAIN * ambScale)
                + emissive;
     float aoDir = mix(1.0, ao, DIRECT_AO);
 
@@ -187,11 +239,6 @@ void main() {
 @-"
 
 #rl_shader_bright "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv; out vec4 FragColor;
@@ -229,11 +276,6 @@ void main(){
 @-----------------------"
 
 #rl_shader_bloom_down "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv; out vec4 FragColor;
@@ -250,11 +292,6 @@ void main(){
 @-----------------------"
 
 #rl_shader_bloom_up "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv; out vec4 FragColor;
@@ -277,11 +314,6 @@ void main(){
 @-----------------------"
 
 #rl_shader_composite "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv; out vec4 FragColor;
@@ -305,45 +337,49 @@ void main(){
 @---"
 
 #rl_shader_ao "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv;
 out float FragAO;
 
-layout(binding = 0) uniform sampler2D gNormal;   // normal en espacio mundo
+layout(binding = 0) uniform sampler2D gNormal;   // normal en espacio mundo (octaedrica, RG16F)
 layout(binding = 3) uniform sampler2D gDepth;    // reverse-Z, clip ZERO_TO_ONE, far infinito
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+    mat4 invProjView;
 };
 
 // ---- PARAMETROS (unidades de mundo) ----
 const int   NS         = 12;
 uniform float RADIUS;                // radio en unidades de mundo (rl_ao_radius)
 const float POWER      = 1.5;
-const float FADE_START = 40.0;    // el AO se desvanece con la distancia
-const float FADE_END   = 80.0;
+const float FADE_START_K = 66.667;   // el AO se desvanece con la distancia: start = RADIUS*K
+const float FADE_END_K   = 133.333;  // (RADIUS=0.6 => 40 y 80 unidades)
 
 // ruido de gradiente intercalado (por pixel, alineado con gl_FragCoord)
 float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+
+// normal octaedrica (RG16F) -> vec3 unitario en espacio mundo
+vec3 octDecode(vec2 e) {
+    vec3 n = vec3(e, 1.0 - abs(e.x) - abs(e.y));
+    if (n.z < 0.0) n.xy = (1.0 - abs(n.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return normalize(n);
+}
 
 // z de vista a partir de la profundidad (ndc.z = depth; clip.w = -z)
 float viewZ(float d) { return -proj[3][2] / (d + proj[2][2]); }
 
 void main() {
-    ivec2 px = ivec2(gl_FragCoord.xy);
-    float d  = texelFetch(gDepth, px, 0).r;
+    // el target es de media resolucion: el pixel h usa el texel 2h del gbuffer
+    ivec2 fp = ivec2(gl_FragCoord.xy) * 2;
+    float d  = texelFetch(gDepth, fp, 0).r;
     if (d <= 0.0) { FragAO = 1.0; return; }
 
     float zc  = viewZ(d);
-    vec2  ndc = uv * 2.0 - 1.0;
+    vec2  ndc = (vec2(fp) + 0.5) / vec2(textureSize(gDepth, 0)) * 2.0 - 1.0;
     vec3  P   = vec3(ndc * (-zc) / vec2(proj[0][0], proj[1][1]), zc);
-    vec3  N   = normalize(mat3(view) * texelFetch(gNormal, px, 0).xyz);
+    vec3  N   = normalize(mat3(view) * octDecode(texelFetch(gNormal, fp, 0).rg));
 
     // base ortonormal rotada un angulo distinto en cada pixel
     vec3  up  = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
@@ -385,16 +421,11 @@ void main() {
     }
     // las muestras descartadas cuentan como no ocluidas (siempre se divide por NS)
     float ao = pow(clamp(1.0 - occ / float(NS), 0.0, 1.0), POWER);
-    FragAO = mix(ao, 1.0, smoothstep(FADE_START, FADE_END, -zc));
+    FragAO = mix(ao, 1.0, smoothstep(RADIUS * FADE_START_K, RADIUS * FADE_END_K, -zc));
 }
 @-"
 
 #rl_shader_aoblur "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv;
@@ -405,39 +436,38 @@ layout(binding = 3) uniform sampler2D gDepth;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
+    mat4 invProjView;
 };
 
-uniform vec2 dir;    // (1/w,0) horizontal  -  (0,1/h) vertical
+uniform ivec2 dir;   // (1,0) horizontal  -  (0,1) vertical, en texels de media resolucion
 
 float viewZ(float d) { return -proj[3][2] / (d + proj[2][2]); }
 
-// blur bilateral separable: pesa por distancia y por diferencia de profundidad
+const float GW[4] = float[4](1.0, 0.7788, 0.3679, 0.1054);   // exp(-i*i*0.25)
+
+// blur bilateral separable (media resolucion): pesa por distancia y por diferencia de profundidad.
+// El pixel h usa la profundidad del texel 2h del gbuffer (igual que rl_shader_ao).
 void main() {
-    float dc = texture(gDepth, uv).r;
+    ivec2 hp  = ivec2(gl_FragCoord.xy);
+    ivec2 asz = textureSize(aoTex, 0);
+    float dc  = texelFetch(gDepth, hp * 2, 0).r;
     if (dc <= 0.0) { FragAO = 1.0; return; }
     float zc   = viewZ(dc);
+    float tol  = 0.05 * abs(zc) + 0.001;
     float sum  = 0.0;
     float wsum = 0.0;
     for (int i = -3; i <= 3; ++i) {
-        vec2  o  = uv + dir * float(i);
-        float dd = texture(gDepth, o).r;
+        ivec2 o  = clamp(hp + dir * i, ivec2(0), asz - 1);
+        float dd = texelFetch(gDepth, o * 2, 0).r;
         float w  = 0.0;
-        if (dd > 0.0) {
-            w = exp(-float(i * i) * 0.25)
-              * exp(-abs(viewZ(dd) - zc) / (0.05 * abs(zc) + 0.001));
-        }
-        sum  += texture(aoTex, o).r * w;
+        if (dd > 0.0) w = GW[abs(i)] * exp(-abs(viewZ(dd) - zc) / tol);
+        sum  += texelFetch(aoTex, o, 0).r * w;
         wsum += w;
     }
     FragAO = sum / max(wsum, 0.0001);
 }
 @-"
 #rl_shader_fxaa "
-@vertex-----------------
-#version 440 core
-layout(location=0) in vec2 aPos;
-out vec2 uv;
-void main(){ uv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }
 @fragment---------------
 #version 440 core
 in vec2 uv;
@@ -593,7 +623,7 @@ void main() {
 #rl_scene_fbo   0
 #rl_scene_tex   0
 
-| AO (SSAO en view-space + blur bilateral separable)
+| AO (SSAO en view-space a media resolucion + blur bilateral separable; el light pass hace el upsample)
 #rl_ao_fbo   0
 #rl_ao_tex   0
 #rl_ao_fbo2  0
@@ -602,8 +632,10 @@ void main() {
 ##rl_ao_radius 0.6   | radio del SSAO en unidades de mundo (ajustar a la escala de la escena)
 #rl_ao_radf   0      | rl_ao_radius en float32 (se sube como uniform en cada aopass)
 #rl_u_ao_radius -1
-#rl_ao_dirh * 8      | vec2 (1/w,0) en float32
-#rl_ao_dirv * 8      | vec2 (0,1/h) en float32
+#rl_ao_dirh * 8      | ivec2 (1,0): paso del blur en texels de media resolucion
+#rl_ao_dirv * 8      | ivec2 (0,1)
+#rl_ao_w 0  #rl_ao_h 0   | tamano del AO: media resolucion (redondeo hacia arriba)
+#rl_ao_clr 0         | 1 = ao_tex ya esta en blanco (AO apagado), no se vuelve a limpiar
 #rl_ao_white * 16    | vec4 (1,1,1,1) en float32
 
 | FXAA: composite -> ldr_tex (RGBA8) -> pase FXAA -> pantalla
@@ -611,8 +643,9 @@ void main() {
 #rl_ldr_tex   0
 ##rl_aa_on     1     | 1=FXAA activo  0=desactivado (el composite va directo a pantalla)
 
-| Quad
-##rl_quad_vao 0  #rl_quad_vbo 0
+| VAO vacio: los pases de pantalla completa dibujan un triangulo con gl_VertexID (sin VBO),
+| pero el core profile exige un VAO enlazado. Lo usan tambien rlforward/rlgrid/rlgridp.
+##rl_empty_vao 0
 
 | UBOs
 ##rl_ubo_matrices  0
@@ -646,35 +679,36 @@ void main() {
 | radio de influencia de las luces puntuales (va en pos.w); cambiarlo antes de rl_point_light
 ##rl_plight_radius 8.0
 
+| Ambiente hemisferico (luz difusa + reflejo del cielo): 1.0 = normal, 0.0 = sin ambiente (solo luces y emisivos)
+##rl_ambient 1.0
+#rl_ambf 0		| rl_ambient en float32 (se sube como uniform en cada lightpass)
+#rl_u_ambient -1
+
 #tid
 
 |----------------------------------
-:rl_make_tex2d | ifmt w h fmt type minmagf wrap -- texid
-	>r >r >r >r >r >r >r
-	1 'tid glGenTextures
-	GL_TEXTURE_2D tid glBindTexture
-	GL_TEXTURE_2D 0 r> r> r> 0 r> r> 0 glTexImage2D
-	r> 
-	GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER pick2 glTexParameteri
-	GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER rot glTexParameteri
-	r> 1? ( 
-		GL_TEXTURE_2D GL_TEXTURE_WRAP_S pick2 glTexParameteri
-		GL_TEXTURE_2D GL_TEXTURE_WRAP_T pick2 glTexParameteri
-		) drop
-	GL_TEXTURE_2D 0 glBindTexture
+:rl_make_tex2d | ifmt w h filter -- texid	; 2D inmutable (1 nivel), CLAMP_TO_EDGE, sin tocar bindings (DSA)
+	>r >r >r >r
+	GL_TEXTURE_2D 1 'tid glCreateTextures
+	tid 1 r> r> r> glTextureStorage2D		| texture levels ifmt w h
+	tid GL_TEXTURE_MIN_FILTER r@ glTextureParameteri
+	tid GL_TEXTURE_MAG_FILTER r> glTextureParameteri
+	tid GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE glTextureParameteri
+	tid GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE glTextureParameteri
 	tid ;
 
 :rl_make_fbo | color_tex -- fbo	; fbo con un solo color (draw buffer por defecto = COLOR_ATTACHMENT0)
 	>r
-	1 'tid glGenFramebuffers
-	GL_FRAMEBUFFER tid glBindFramebuffer
-	GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D r> 0 glFramebufferTexture2D
-	GL_FRAMEBUFFER 0 glBindFramebuffer
+	1 'tid glCreateFramebuffers
+	tid GL_COLOR_ATTACHMENT0 r> 0 glNamedFramebufferTexture
 	tid ;
 
-:rl_make_rt | ifmt fmt type -- tex fbo	; textura rl_w x rl_h (lineal) + su fbo
-	>r >r rl_w rl_h r> r> GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d
+:rl_make_rt | ifmt -- tex fbo	; textura rl_w x rl_h (lineal) + su fbo
+	rl_w rl_h GL_LINEAR rl_make_tex2d
 	dup rl_make_fbo ;
+
+| formatos del gbuffer de normales
+:RL_FMT_RG16F $822F ;	| GL_RG16F
 
 | GLenum draws[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}
 #_gdb_draws [ $8CE0 $8CE1 ]
@@ -683,16 +717,16 @@ void main() {
     1 'rl_gbuf_fbo glGenFramebuffers
     GL_FRAMEBUFFER rl_gbuf_fbo glBindFramebuffer
 	
-    | gNormal: GL_RGB16F 
-    GL_RGB16F rl_w rl_h GL_RGB GL_FLOAT GL_NEAREST 0
+    | gNormal: GL_RG16F (normal octaedrica en espacio mundo, 4 bytes por pixel)
+    RL_FMT_RG16F rl_w rl_h GL_NEAREST
     rl_make_tex2d 'rl_gbuf_norm !
 	
     | gAlbedo: GL_RGBA8
-    GL_RGBA8 rl_w rl_h GL_RGBA GL_UNSIGNED_BYTE GL_NEAREST 0
+    GL_RGBA8 rl_w rl_h GL_NEAREST
     rl_make_tex2d 'rl_gbuf_albedo !
 	
     | gDepth: GL_DEPTH_COMPONENT32F
-    GL_DEPTH_COMPONENT32F rl_w rl_h GL_DEPTH_COMPONENT GL_FLOAT GL_NEAREST 0
+    GL_DEPTH_COMPONENT32F rl_w rl_h GL_NEAREST
     rl_make_tex2d 'rl_gbuf_depth !
 	
     GL_FRAMEBUFFER GL_COLOR_ATTACHMENT0 GL_TEXTURE_2D rl_gbuf_norm   0 glFramebufferTexture2D
@@ -730,7 +764,7 @@ void main() {
 | ================================================================	
 :rl_init_bloom
     | scene: RGBA16F
-    GL_RGBA16F GL_RGBA GL_FLOAT rl_make_rt 'rl_scene_fbo ! 'rl_scene_tex !
+    GL_RGBA16F rl_make_rt 'rl_scene_fbo ! 'rl_scene_tex !
 	
 	
     | Bloom mips
@@ -742,9 +776,9 @@ void main() {
 		2dup 16 << or r@ ]wh!
 		1.0 pick2 / f2fp $ffffffff and 
 		1.0 pick2 / f2fp 32 << or r@ ]afp!
-		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		GL_RGBA16F pick2 pick2 GL_LINEAR rl_make_tex2d 
 		dup da!+ rl_make_fbo db!+
-		GL_RGBA16F pick2 pick2 GL_RGBA GL_FLOAT GL_LINEAR GL_CLAMP_TO_EDGE rl_make_tex2d 
+		GL_RGBA16F pick2 pick2 GL_LINEAR rl_make_tex2d 
 		dup da!+ rl_make_fbo db!+
 		r> 1+ ) 3drop ;
 
@@ -768,15 +802,20 @@ void main() {
 | ================================================================
 | AO: ao_tex (resultado final) + ao_tex2 (ping-pong del blur), formato R8
 :RL_FMT_R8  $8229 ;	| GL_R8
-:RL_FMT_RED $1903 ;	| GL_RED
 :RL_FMT_RGBA8 $8058 ;	| GL_RGBA8
 
+:rl_make_aort | -- tex fbo	; R8 a media resolucion
+	RL_FMT_R8 rl_ao_w rl_ao_h GL_NEAREST rl_make_tex2d
+	dup rl_make_fbo ;
+
 :rl_init_ao
-	RL_FMT_R8 RL_FMT_RED GL_UNSIGNED_BYTE rl_make_rt 'rl_ao_fbo ! 'rl_ao_tex !
-	RL_FMT_R8 RL_FMT_RED GL_UNSIGNED_BYTE rl_make_rt 'rl_ao_fbo2 ! 'rl_ao_tex2 !
-	| direcciones del blur como 2 floats32
-	'rl_ao_dirh >a 1.0 rl_w / f2fp da!+ 0 da!+
-	'rl_ao_dirv >a 0 da!+ 1.0 rl_h / f2fp da!+
+	rl_w 1+ 2/ 'rl_ao_w !  rl_h 1+ 2/ 'rl_ao_h !	| media resolucion (hp*2 siempre cae dentro del gbuffer)
+	rl_make_aort 'rl_ao_fbo ! 'rl_ao_tex !
+	rl_make_aort 'rl_ao_fbo2 ! 'rl_ao_tex2 !
+	0 'rl_ao_clr !
+	| direcciones del blur como 2 int32
+	'rl_ao_dirh >a 1 da!+ 0 da!+
+	'rl_ao_dirv >a 0 da!+ 1 da!+
 	| color de limpieza blanco (AO desactivado)
 	'rl_ao_white >a 1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+ 1.0 f2fp da!+
 	;
@@ -792,7 +831,7 @@ void main() {
 | ================================================================
 | FXAA: imagen LDR intermedia (RGBA8, ya con gamma) que lee el pase FXAA
 :rl_init_ldr
-	RL_FMT_RGBA8 GL_RGBA GL_UNSIGNED_BYTE rl_make_rt 'rl_ldr_fbo ! 'rl_ldr_tex !
+	RL_FMT_RGBA8 rl_make_rt 'rl_ldr_fbo ! 'rl_ldr_tex !
 	;
 
 :rl_destroy_ldr
@@ -801,23 +840,16 @@ void main() {
 	0 'rl_ldr_fbo ! 0 'rl_ldr_tex !
 	;
 
-#_quad_verts [ -1.0 -1.0  1.0 -1.0  -1.0 1.0  1.0 1.0 ]
-| OJO: estas 3 variables van pegadas a _quad_verts (memfloat las convierte a float32)
+| OJO: estas 3 variables van pegadas (rl_init_vao las convierte a float32 con memfloat)
 #RL_BLOOM_INTENSITY [ 0.8 ]
 #RL_BLOOM_THRESHOLD [ 0.8 ]
 #RL_EXPOSURE        [ 1.0 ]
 
 | ================================================================
-:rl_init_quad
-	11 '_quad_verts memfloat  
-	
-    1 'rl_quad_vao glGenVertexArrays
-    1 'rl_quad_vbo glGenBuffers
-    rl_quad_vao glBindVertexArray
-    GL_ARRAY_BUFFER rl_quad_vbo glBindBuffer
-    GL_ARRAY_BUFFER 8 4 * '_quad_verts GL_STATIC_DRAW glBufferData
-    0 glEnableVertexAttribArray
-    0 2 GL_FLOAT GL_FALSE 2 4 * 0 glVertexAttribPointer
+:rl_init_vao
+	3 'RL_BLOOM_INTENSITY memfloat
+    1 'rl_empty_vao glGenVertexArrays
+    rl_empty_vao glBindVertexArray
     0 glBindVertexArray
     ;
 
@@ -898,17 +930,17 @@ void main() {
     rl_init_fwd
     rl_init_ao
     rl_init_ldr
-    rl_init_quad
+    rl_init_vao
     rl_init_ubos
 
-    'rl_shader_light      loadShaderv 'rl_sh_light      !
-    'rl_shader_bright     loadShaderv 'rl_sh_bright     !
-    'rl_shader_bloom_down loadShaderv 'rl_sh_bloom_down !
-    'rl_shader_bloom_up   loadShaderv 'rl_sh_bloom_up   !
-    'rl_shader_composite  loadShaderv 'rl_sh_composite  !
-    'rl_shader_ao         loadShaderv 'rl_sh_ao         !
-    'rl_shader_aoblur     loadShaderv 'rl_sh_aoblur     !
-    'rl_shader_fxaa       loadShaderv 'rl_sh_fxaa       !
+    'rl_shader_light      rl_loadsh 'rl_sh_light      !
+    'rl_shader_bright     rl_loadsh 'rl_sh_bright     !
+    'rl_shader_bloom_down rl_loadsh 'rl_sh_bloom_down !
+    'rl_shader_bloom_up   rl_loadsh 'rl_sh_bloom_up   !
+    'rl_shader_composite  rl_loadsh 'rl_sh_composite  !
+    'rl_shader_ao         rl_loadsh 'rl_sh_ao         !
+    'rl_shader_aoblur     rl_loadsh 'rl_sh_aoblur     !
+    'rl_shader_fxaa       rl_loadsh 'rl_sh_fxaa       !
 
 
     rl_sh_bright     "threshold"      glGetUniformLocation 'rl_u_bright_threshold    !
@@ -918,6 +950,7 @@ void main() {
     rl_sh_composite  "exposure"       glGetUniformLocation 'rl_u_composite_exposure  !
     rl_sh_aoblur     "dir"            glGetUniformLocation 'rl_u_aoblur_dir          !
     rl_sh_ao         "RADIUS"         glGetUniformLocation 'rl_u_ao_radius           !
+    rl_sh_light      "ambScale"       glGetUniformLocation 'rl_u_ambient             !
     
     GL_CULL_FACE glEnable
     GL_BACK glCullFace
@@ -941,8 +974,7 @@ void main() {
     rl_destroy_ao
     rl_destroy_ldr
 
-    1 'rl_quad_vao glDeleteVertexArrays
-    1 'rl_quad_vbo glDeleteBuffers
+    1 'rl_empty_vao glDeleteVertexArrays
     1 'rl_ubo_matrices glDeleteBuffers
     1 'rl_ubo_dirlight glDeleteBuffers
     1 'rl_ubo_plights  glDeleteBuffers
@@ -1016,26 +1048,21 @@ void main() {
 	$1801 0 'vbasegl glClearBufferfv     | Profundidad 
 
 	|--- camera --- shadow?
-	GL_UNIFORM_BUFFER rl_ubo_matrices glBindBuffer
-	GL_UNIFORM_BUFFER 0 400 'ubo_matview glBufferSubData
-	GL_UNIFORM_BUFFER 0 glBindBuffer
+	rl_ubo_matrices 0 400 'ubo_matview glNamedBufferSubData
 	;
 
 
 | ================================================================
 | RL_UBO_DirectLight: lightDir(16) lightColor(16)
 ::rl_set_sun | 'sun --
-	>r
-    GL_UNIFORM_BUFFER rl_ubo_dirlight glBindBuffer
-    GL_UNIFORM_BUFFER 0 32 r> glBufferSubData
-    GL_UNIFORM_BUFFER 0 glBindBuffer
-    ;
+	>r rl_ubo_dirlight 0 32 r> glNamedBufferSubData ;
 
 | ================================================================
 | Cada PointLight = 32 bytes: pos[4](16) + color[4](16)
 #rl_ubo_pl_buf * 528
 
 ::rl_point_light | int cr cg cb x y z --
+	rl_plight_count 16 >=? ( drop 4drop 3drop ; ) drop	| maximo 16 luces (el buffer es de 528 bytes)
     16 rl_plight_count 5 << + 'rl_ubo_pl_buf + >a 
 	swap rot f2fp da!+ f2fp da!+ f2fp da!+ rl_plight_radius f2fp da!+
 	swap rot f2fp da!+ f2fp da!+ f2fp da!+ f2fp da!+
@@ -1045,21 +1072,21 @@ void main() {
 | ================================================================
 | RL_UBO_PointLights: count[4](16) + 16×(pos[4]+color[4])(32) = 16 + 512 = 528 bytes
 :lightpass
+	rl_ambient f2fp 'rl_ambf d!
+	rl_u_ambient 1 'rl_ambf glUniform1fv
 	rl_plight_count 'rl_ubo_pl_buf d!
 	
-	GL_UNIFORM_BUFFER rl_ubo_plights glBindBuffer
-	GL_UNIFORM_BUFFER 0 16 rl_plight_count 5 << + 'rl_ubo_pl_buf glBufferSubData
-	GL_UNIFORM_BUFFER 0 glBindBuffer
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	rl_ubo_plights 0 16 rl_plight_count 5 << + 'rl_ubo_pl_buf glNamedBufferSubData
+	GL_TRIANGLES 0 3 glDrawArrays
 	;
 	
-:bpassd | invw id ftex fbos wh --
+:bpassd | id loc ftex fbos wh --
 	0 0 rot ]wh glViewport
 	GL_FRAMEBUFFER swap ]fbo glBindFramebuffer
 	GL_TEXTURE0 glActiveTexture
 	GL_TEXTURE_2D swap ]tex glBindTexture
 	1 rot ]afp glUniform2fv 
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	GL_TRIANGLES 0 3 glDrawArrays
 	;
 	
 :bpassu | id loc ftex fbos wh base --
@@ -1075,7 +1102,7 @@ void main() {
 	GL_FRAMEBUFFER 0 ]fbo glBindFramebuffer |bos tex
 	GL_TEXTURE0 glActiveTexture 
 	GL_TEXTURE_2D rl_scene_tex glBindTexture
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	GL_TRIANGLES 0 3 glDrawArrays
 
 	| Downscale chain
 	rl_sh_bloom_down glUseProgram
@@ -1093,37 +1120,40 @@ void main() {
 	;
 
 | ================================================================
-| AO: calcula ao_tex (SSAO) y lo filtra con blur bilateral H + V
+| AO: calcula ao_tex (SSAO, media resolucion) y lo filtra con blur bilateral H + V
 :aopass
 	rl_ao_on 0? ( drop
-		| AO desactivado: textura en blanco
-		GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
-		0 0 rl_w rl_h glViewport
-		$1800 0 'rl_ao_white glClearBufferfv
+		| AO desactivado: se limpia a blanco una sola vez, despues la textura sigue blanca
+		rl_ao_clr 0? ( drop
+			GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
+			0 0 rl_ao_w rl_ao_h glViewport
+			$1800 0 'rl_ao_white glClearBufferfv
+			1 'rl_ao_clr ! ; ) drop
 		; ) drop
+	0 'rl_ao_clr !
 
 	| SSAO -> ao_tex
 	GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
-	0 0 rl_w rl_h glViewport
+	0 0 rl_ao_w rl_ao_h glViewport
 	rl_sh_ao glUseProgram
 	rl_ao_radius f2fp 'rl_ao_radf d!
 	rl_u_ao_radius 1 'rl_ao_radf glUniform1fv
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_gbuf_norm  glBindTexture
 	GL_TEXTURE3 glActiveTexture GL_TEXTURE_2D rl_gbuf_depth glBindTexture
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	GL_TRIANGLES 0 3 glDrawArrays
 
 	| blur horizontal: ao_tex -> ao_tex2
 	rl_sh_aoblur glUseProgram
 	GL_FRAMEBUFFER rl_ao_fbo2 glBindFramebuffer
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_ao_tex glBindTexture
-	rl_u_aoblur_dir 1 'rl_ao_dirh glUniform2fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	rl_u_aoblur_dir 1 'rl_ao_dirh glUniform2iv
+	GL_TRIANGLES 0 3 glDrawArrays
 
 	| blur vertical: ao_tex2 -> ao_tex (resultado final)
 	GL_FRAMEBUFFER rl_ao_fbo glBindFramebuffer
 	GL_TEXTURE_2D rl_ao_tex2 glBindTexture
-	rl_u_aoblur_dir 1 'rl_ao_dirv glUniform2fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	rl_u_aoblur_dir 1 'rl_ao_dirv glUniform2iv
+	GL_TRIANGLES 0 3 glDrawArrays
 	;
 
 | ================================================================
@@ -1133,7 +1163,7 @@ void main() {
 
 ::rl_frame_end | --
 	rl_shadow_hook 1? ( dup ex ) drop	| pase de sombras (ss3dshadow)
-	rl_quad_vao glBindVertexArray
+	rl_empty_vao glBindVertexArray
 	GL_DEPTH_TEST glDisable
 	
 	| --- AO pass (+ blur) → ao_tex ---
@@ -1160,7 +1190,7 @@ void main() {
 		GL_FRAMEBUFFER rl_fwd_fbo glBindFramebuffer
 		0 0 rl_w rl_h glViewport
 		dup ex
-		rl_quad_vao glBindVertexArray
+		rl_empty_vao glBindVertexArray
 		GL_DEPTH_TEST glDisable
 		GL_BLEND glDisable
 		GL_TRUE glDepthMask
@@ -1181,12 +1211,12 @@ void main() {
 	GL_TEXTURE1 glActiveTexture GL_TEXTURE_2D 1 ]tex glBindTexture | bloom_texs[1]
 	rl_u_composite_intensity 1 'RL_BLOOM_INTENSITY glUniform1fv
 	rl_u_composite_exposure  1 'RL_EXPOSURE        glUniform1fv
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	GL_TRIANGLES 0 3 glDrawArrays
 
 	| ---- FXAA: ldr_tex -> pantalla ----
 	rl_aa_on 0? ( drop ; ) drop
 	GL_FRAMEBUFFER 0 glBindFramebuffer
 	rl_sh_fxaa glUseProgram
 	GL_TEXTURE0 glActiveTexture GL_TEXTURE_2D rl_ldr_tex glBindTexture
-	GL_TRIANGLE_STRIP 0 4 glDrawArrays
+	GL_TRIANGLES 0 3 glDrawArrays
 	;

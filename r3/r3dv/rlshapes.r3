@@ -51,10 +51,16 @@ void main(){
 #version 440 core
 in vec3 vNormal;
 flat in vec4 vColor;
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 void main(){
-    gNormal = normalize(vNormal);
+    gNormal = octEncode(normalize(vNormal));
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -103,7 +109,13 @@ flat in float vC;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 void main(){
     vec3  rd   = normalize(vRayDir);
@@ -113,7 +125,7 @@ void main(){
     vec3  hitView = rd * (b - sqrt(disc));
     vec4  clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth  = clip.z / clip.w;
-    gNormal = mat3(invView) * ((hitView - vCenterView) * vInvR);   // ya es unitaria
+    gNormal = octEncode(mat3(invView) * ((hitView - vCenterView) * vInvR));   // ya es unitaria
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -175,7 +187,13 @@ flat in float vC;     flat in float vCA;   flat in float vCB;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 float hitSphere(vec3 rd, vec3 ce, float c){
     float b = dot(ce, rd);
@@ -209,7 +227,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w;
-    gNormal = mat3(invView) * nBest;
+    gNormal = octEncode(mat3(invView) * nBest);
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -269,7 +287,13 @@ flat in float vPA;    flat in float vPB;  flat in float vC;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 void main(){
     vec3  rd  = normalize(vRayDir);
@@ -306,7 +330,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w;
-    gNormal = mat3(invView) * nBest;
+    gNormal = octEncode(mat3(invView) * nBest);
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -371,7 +395,13 @@ flat in float vCH;   flat in float vCR;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 // impacto lateral valido en t: devuelve true y la normal (unitaria) si cae dentro del cono
 bool side(vec3 rd, float rdd, float t, out vec3 nv){
@@ -409,7 +439,7 @@ void main(){
     vec3 hitView = rd * tBest;
     vec4 clip    = proj * vec4(hitView, 1.0);
     gl_FragDepth = clip.z / clip.w;
-    gNormal = mat3(invView) * nBest;
+    gNormal = octEncode(mat3(invView) * nBest);
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -456,7 +486,13 @@ flat in float vDist;   flat in float vR2;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 void main(){
     // el rayo no hace falta normalizarlo: t escala con el, y hit = rd*t es el mismo punto
@@ -469,7 +505,7 @@ void main(){
     if(dot(dif, dif) > vR2) discard;
     vec4  clip   = proj * vec4(hit, 1.0);
     gl_FragDepth = clip.z / clip.w;
-    gNormal = mat3(invView) * ((dN < 0.0) ? vNormalV : -vNormalV);
+    gNormal = octEncode(mat3(invView) * ((dN < 0.0) ? vNormalV : -vNormalV));
     gAlbedo = vColor;
 }
 @-----------------------"
@@ -516,7 +552,13 @@ flat in float vDist;   flat in float vHalfSize;
 flat in vec4  vColor;
 layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos; };
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 void main(){
     float dN = dot(vRayDir, vNormalV);            // rayo sin normalizar (ver disco)
@@ -531,7 +573,7 @@ void main(){
     }
     vec4  clip   = proj * vec4(hit, 1.0);
     gl_FragDepth = clip.z / clip.w;
-    gNormal = mat3(invView) * ((dN < 0.0) ? vNormalV : -vNormalV);
+    gNormal = octEncode(mat3(invView) * ((dN < 0.0) ? vNormalV : -vNormalV));
     gAlbedo = vColor;
 }
 @-----------------------"

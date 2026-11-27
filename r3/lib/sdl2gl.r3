@@ -45,6 +45,7 @@
 #sys-glCreateVertexArrays
 #sys-glCreateBuffers
 #sys-glNamedBufferStorage
+#sys-glNamedBufferSubData
 #sys-glVertexArrayVertexBuffer
 #sys-glVertexArrayElementBuffer
 #sys-glEnableVertexArrayAttrib
@@ -199,13 +200,14 @@
 ::glCreateFramebuffers sys-glCreateFramebuffers sys2 drop ;
 ::glCreateTextures sys-glCreateTextures sys3 drop ;
 ::glTextureStorage2D sys-glTextureStorage2D sys5 drop ;
-::glTextureParameteri sys-glTextureParameteri sys4 drop ;
+::glTextureParameteri sys-glTextureParameteri sys3 drop ;	| texture pname param --
 ::glNamedFramebufferTexture sys-glNamedFramebufferTexture sys4 drop ;
 ::glCheckNamedFramebufferStatus sys-glCheckNamedFramebufferStatus sys2 ;
 ::glNamedFramebufferDrawBuffers sys-glNamedFramebufferDrawBuffers sys3 drop ;
 ::glCreateVertexArrays sys-glCreateVertexArrays sys2 drop ;
 ::glCreateBuffers sys-glCreateBuffers sys2 drop ;
 ::glNamedBufferStorage sys-glNamedBufferStorage sys5 drop ;
+::glNamedBufferSubData sys-glNamedBufferSubData sys4 drop ;	| buffer offset size data --
 ::glVertexArrayVertexBuffer sys-glVertexArrayVertexBuffer sys5 drop ;
 ::glVertexArrayElementBuffer sys-glVertexArrayElementBuffer sys2 drop ;
 ::glEnableVertexArrayAttrib sys-glEnableVertexArrayAttrib sys2 drop ;
@@ -361,6 +363,7 @@
     "glCreateVertexArrays" SDL_GL_GetProcAddress 'sys-glCreateVertexArrays !
     "glCreateBuffers" SDL_GL_GetProcAddress 'sys-glCreateBuffers !
     "glNamedBufferStorage" SDL_GL_GetProcAddress 'sys-glNamedBufferStorage !
+    "glNamedBufferSubData" SDL_GL_GetProcAddress 'sys-glNamedBufferSubData !
     "glVertexArrayVertexBuffer" SDL_GL_GetProcAddress 'sys-glVertexArrayVertexBuffer !
     "glVertexArrayElementBuffer" SDL_GL_GetProcAddress 'sys-glVertexArrayElementBuffer !
     "glEnableVertexArrayAttrib" SDL_GL_GetProcAddress 'sys-glEnableVertexArrayAttrib !

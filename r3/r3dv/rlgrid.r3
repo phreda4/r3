@@ -14,11 +14,11 @@
 #rl_shader_grid "
 @vertex-----------------
 #version 440 core
-layout(location=0) in vec2 aPos;
 out vec2 vScreen;
 void main(){
-    vScreen = aPos;
-    gl_Position = vec4(aPos, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
+    vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2) * 2.0 - 1.0;   // triangulo fullscreen
+    vScreen = p;
+    gl_Position = vec4(p, 0.5, 1.0);   // z=0.5: dentro del clip ZERO_TO_ONE
 }
 @fragment---------------
 #version 440 core
@@ -42,7 +42,13 @@ layout(std140, binding=0) uniform Matrices {
     mat4 view; mat4 proj; mat4 invView; mat4 invProj; mat4 ProjView; vec4 viewPos;
 };
 
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 
 uniform float uGridScale;   // world units per cell
@@ -90,7 +96,7 @@ void main() {
     float lineMask = max(line * 0.35, line5 * 0.8);
 
     // --- GBuffer write ---
-    gNormal = vec3(0.0, 1.0, 0.0);
+    gNormal = octEncode(vec3(0.0, 1.0, 0.0));
 
 #ifdef FLOOR_FILL
     vec3 col = mix(FLOOR_COLOR_BASE, FLOOR_COLOR_LINE, lineMask) * fade;
@@ -111,8 +117,8 @@ void main() {
 #rl_u_grid_fnear -1
 #rl_u_grid_ffar  -1
 
-| Grid geometry reuses the fullscreen quad (rl_quad_vao)
-| from renderlib — no extra VAO needed.
+| Fullscreen triangle from gl_VertexID; uses the empty VAO (rl_empty_vao)
+| from renderlib.
 
 #rl_grid_scale  [ 1.0  ]   | 1 world unit per cell
 #rl_grid_fnear  [ 10.0 ]   | fade starts at 10 units
@@ -142,7 +148,7 @@ void main() {
     rl_u_grid_scale 1 'rl_grid_scale glUniform1fv
     rl_u_grid_fnear 1 'rl_grid_fnear glUniform1fv
     rl_u_grid_ffar  1 'rl_grid_ffar  glUniform1fv
-    rl_quad_vao glBindVertexArray
-    GL_TRIANGLE_STRIP 0 4 glDrawArrays
+    rl_empty_vao glBindVertexArray
+    GL_TRIANGLES 0 3 glDrawArrays
     0 glBindVertexArray
     ;

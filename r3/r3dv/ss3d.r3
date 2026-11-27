@@ -134,7 +134,13 @@ flat in vec3  vScl;
 
 layout(std430,binding=6) readonly buffer Columns { uvec2 cols[]; };   // x: mascara  y: base en la tira
 layout(std430,binding=7) readonly buffer Palette { uint pal[]; };     // tira de colores
-layout(location=0) out vec3 gNormal;
+vec2 octEncode(vec3 n){   // normal unitaria -> octaedro [-1,1]^2 (RG16F)
+    n /= (abs(n.x) + abs(n.y) + abs(n.z));
+    vec2 e = n.xy;
+    if (n.z < 0.0) e = (1.0 - abs(e.yx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    return e;
+}
+layout(location=0) out vec2 gNormal;   // octaedrica
 layout(location=1) out vec4 gAlbedo;
 // El bbox esta definido al reves (winding interior) y con CULL_FACE BACK se rasterizan
 // las caras LEJANAS. El hit queda mas cerca => reverse-Z => profundidad mayor => depth_greater.
@@ -196,7 +202,7 @@ void main() {
             vec4 clip    = ProjView * vec4(world_hit, 1.0);
             gl_FragDepth = clip.z/clip.w;   // clip ZERO_TO_ONE
 
-            gNormal = world_n;
+            gNormal = octEncode(world_n);
             uint  pidx = ((col.y >> 24) == 1u) ? (col.y & 0xFFFFFFu) : (col.y + uint(cy));  // uniforme o base + y (uint32)
             uint  vcol = pal[pidx];
             vec4  tint = unpackUnorm4x8(vColorPk).abgr;
