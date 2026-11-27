@@ -888,22 +888,19 @@
 	$010000 or	| h
 	or addmark ;
 
-#mx #my #mw #mh
+:markclip | x w -- x' w'	; recorte a las columnas visibles (izquierdo y derecho)
+	over 0 max -rot + over -
+	over xvis swap - min ;
 
 :linemark | mark --
-	dup $ff and ylinea -
-	-? ( 2drop ; ) hcode >=? ( 2drop ; )	| fuera de pantalla
-	txh * ycode + 'my !
-	dup >a
-	dup 8 >> $ff and xlinea - 'mx !
-	dup 24 >> $ff and 'mw !
-	16 >> $ff and txh * 'mh !
-	mx -? ( dup mw + 'mw ! 0 'mx ! ) drop	| recorte izquierdo
-	mx mw + xvis -
-	0 >? ( dup neg 'mw +! ) drop			| recorte derecho
-	mw 1 <? ( drop ; ) drop
-	mx 32 txcw * xcode + 5 32 txcw * +	| x real
-	my mw 32 txcw * mh
+	dup >a $ff and ylinea -
+	-? ( drop ; ) hcode >=? ( drop ; )	| fuera de pantalla
+	txh * ycode +					| y
+	a> 8 >> $ff and xlinea -
+	a> 24 >> $ff and
+	markclip 1 <? ( 3drop ; )
+	32 txcw * swap 32 txcw * xcode + 5 32 txcw * + rot rot	| x real
+	a> 16 >> $ff and txh *
 	pick3 1- pick3 1- pick3 2 + pick3 2 +
 	a> 32 >> 4bcol color rect
 	a> 48 >> 4bcol color frect

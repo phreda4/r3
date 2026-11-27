@@ -208,16 +208,6 @@ void main() {
 ##icol $ffffffff	| color (tint) of the next image quad
 ##imgtint $ffffffff	| tint of image, images, imageb, imagebb ($AARRGGBB)
 
-::fimgload | "" -- idx
-	glLoadImg
-	dup $ffff and 'imgtextures imgcount 4 * + d!
-	32 >>
-	dup 16 >> swap $ffff and
-	'imgsizes imgcount 8 * + d!+ d!
-	imgcount
-	1 'imgcount +!
-	;
-
 ::fimgtex | tex -- idx
 	dup $ffff and 'imgtextures imgcount 4 * + d!
 	32 >>
@@ -226,6 +216,9 @@ void main() {
 	imgcount
 	1 'imgcount +!
 	;
+
+::fimgload | "" -- idx
+	glLoadImg fimgtex ;
 
 ::fimgwh | idx -- w h
 	8 * 'imgsizes + d@+ swap d@ ;
@@ -258,17 +251,18 @@ void main() {
 :rc | x y w h -- x x1 y y1 ; corners of the rect
 	swap pick3 + -rot over + ;
 
+:rcq | x y w h adr -- ; the four corners packed in 4 consecutive qwords
+	ab[ >a rc
+	pick3 pick2 p16 a!+
+	pick2 pick2 p16 a!+
+	pick2 over p16 a!+
+	nip nip p16 a! ]ba ;
+
 :setq | x y w h -- ; q0..q3 from the rect
-	rc pick3 pick2 p16 'q0 !
-	pick2 pick2 p16 'q1 !
-	pick2 over p16 'q2 !
-	nip nip p16 'q3 ! ;
+	'q0 rcq ;
 
 :setuv | x y w h -- ; u0..u3 from the source rect
-	rc pick3 pick2 p16 'u0 !
-	pick2 pick2 p16 'u1 !
-	pick2 over p16 'u2 !
-	nip nip p16 'u3 ! ;
+	'u0 rcq ;
 
 :vs | x y -- ; solid vertex (uv = -1)
 	p16 -1 vt ;
@@ -288,9 +282,8 @@ void main() {
 	xs ys pick2 16 >> $ffff and fscale *		| e xs ys w
 	pick3 48 >> fscale * setq			| e
 	dup 16 >> $ffff and fscale * 'xs +!
-	dup 48 >> >r
 	dup $ffff and swap dup 32 >> $ffff and swap
-	16 >> $ffff and r>				| xt yt cw ch
+	dup 16 >> $ffff and swap 48 >>			| xt yt cw ch
 	setuv qt ;
 
 :gtext | "" n -- ; n chars at xs ys, xs advances
@@ -337,7 +330,7 @@ void main() {
 	over - 1+ 1 swap frect ;
 
 :vg | x y rgb -- ; solid vertex with its own color $RRGGBB
-	>r p16 -1 r> $ff000000 or vtc ;
+	$ff000000 or -rot p16 -1 rot vtc ;
 
 ::lineHg | x1 y x2 c1 c2 -- ; horizontal line, both ends included, gradient from the color c1 to c2 ($RRGGBB)
 	|6 vroom
@@ -393,7 +386,7 @@ void main() {
 
 ::triangle | x1 y1 x2 y2 x3 y3 -- ; filled triangle
 	fcolor 'vcol ! |3 vroom
-	p16 >r p16 >r p16 -1 vt r> -1 vt r> -1 vt ;
+	p16 -1 vt p16 -1 vt p16 -1 vt ;
 
 #pp0 #pp1 #ppn
 
@@ -502,6 +495,9 @@ void main() {
 	icol 'vcol !
 	qt ;
 
+:box@ | 'box -- x y w h ; four int32
+	d@+ swap d@+ swap d@+ swap d@ ;
+
 :imgsrc | idx -- ; the whole image as source
 	dup 'idx_img ! fimgwh 'ish ! 'isw !
 	0 'isx ! 0 'isy !
@@ -524,8 +520,8 @@ void main() {
 
 ::imagebb | 'src 'dst img -- ; box src of the image into the box dst (x y w h, four int32 each)
 	imgsrc
-	d@+ swap d@+ swap d@+ swap d@ setq
-	d@+ swap d@+ swap d@+ swap d@ 'ish ! 'isw ! 'isy ! 'isx !
+	box@ setq
+	box@ 'ish ! 'isw ! 'isy ! 'isx !
 	imgq ;
 
 |---------------------------------------
@@ -563,7 +559,7 @@ void main() {
 	16 + dup d@ $ffffff and rot $ff and 24 << or swap d! ;
 
 ::tsdraw | n ts x y -- ; tile n at x y (its own size)
-	>r >r tilesel r> r> isw ish setq imgq ;
+	2swap tilesel isw ish setq imgq ;
 
 ::tsdraws | n ts x y w h -- ; tile n scaled to the rectangle x y w h
 	>r >r >r >r tilesel r> r> r> r> setq imgq ;
@@ -580,13 +576,12 @@ void main() {
 #cx #cy #cs #sn
 
 :rpt | rx ry -- pos ; corner rotated and moved to the center
-	over cs * over sn * - 16 >> cx + >r
-	swap sn * swap cs * + 16 >> cy + r> swap p16 ;
+	over sn * over cs * + 16 >> cy + -rot
+	sn * swap cs * swap - 16 >> cx + swap p16 ;
 
 :sprgo | x y ang zoom -- ; draw the source rect (idx_img isx..ish) centered
-	>r sincos 'cs ! 'sn !
-	'cy ! 'cx !
-	r> dup isw * 17 >> swap ish * 17 >>	| hw hh
+	swap sincos 'cs ! 'sn ! -rot 'cy ! 'cx !
+	dup isw * 17 >> swap ish * 17 >>	| hw hh
 	over neg over neg rpt 'q0 !
 	over over neg rpt 'q1 !
 	2dup rpt 'q2 !
@@ -726,7 +721,7 @@ void main() {
 
 :curw | str cur -- w ; the cursor x goes to the char cur, w is the width of that char
 	swap ( over <? c@+ txcw 'tcx +! ) drop
-	c@ $ff and 3 << ftab + 2 + w@ fscale * ;
+	dup c@ txcw nip ;
 
 ::txcur | str cur -- ; block cursor on the char cur of str
 	curw tcx tcy rot txh frect ;
@@ -789,17 +784,12 @@ void main() {
 #halign 'cwrite
 #valign 'vcen
 
+#halt 'lwrite 'cwrite 'rwrite 'cwrite
+#valt 'vtop 'vcen 'vbot 'vcen
+
 ::txalign | $VH -- ; bits 0-1 horizontal (0 left 1 center 2 right), bits 4-5 vertical (0 top 1 center 2 bottom)
-	dup $3 and
-	0 =? ( 'lwrite 'halign !  )
-	1 =? ( 'cwrite 'halign ! )
-	2 =? ( 'rwrite 'halign ! )
-	drop
-	4 >> $3 and
-	0 =? ( 'vtop 'valign ! )
-	1 =? ( 'vcen 'valign ! )
-	2 =? ( 'vbot 'valign ! )
-	drop ;
+	dup $3 and 3 << 'halt + @ 'halign ! 
+	4 >> $3 and 3 << 'valt + @ 'valign ! ;
 
 ::txText | w h x y "" -- ; text in the box, aligned with txalign
 	mark ab[
@@ -815,7 +805,7 @@ void main() {
 	]ba empty ;
 
 ::imageb | 'box img -- ; image (index of fimgload) into the box x y w h (four int32)
-	swap d@+ swap d@+ swap d@+ swap d@ imgdraw ;
+	swap box@ imgdraw ;
 
 |--- clip
 #gcx #gcy #gcw #gch

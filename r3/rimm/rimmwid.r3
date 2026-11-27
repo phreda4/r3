@@ -118,11 +118,12 @@
 ::ctLabel | "text" -- ; centered text
 	ttwritec ;
 
-#isz
 ::ctIcon | n -- ; centered icon (ICxxx)
-	rh 6 - 'isz !
 	colTxt $ffffff and color
-	cx cw isz - 2/ + cy rh isz - 2/ + isz uiIcon ;
+	rh 6 -
+	cx cw pick2 - 2/ +
+	cy rh pick3 - 2/ +
+	rot uiIcon ;
 
 |---- Buttons: sense + skin + content + action
 :kbBtn

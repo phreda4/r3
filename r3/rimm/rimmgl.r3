@@ -20,12 +20,17 @@
 #gcon 0 #gcx2 #gcy2 #gcw2 #gch2
 #gcst * 320 | 8 levels: on x y w h
 #gcsp 0
-#pon 0
-#nx #ny #nx2 #ny2
 
 :gset | x y w h --
 	1 'gcon ! 'gch2 ! 'gcw2 ! 'gcy2 ! 'gcx2 !
 	gcx2 gcy2 gcw2 gch2 gclip ;
+
+:gcisect | p l cp cl -- p' l'	; interseccion 1D: inicio y largo
+	over +
+	pick3 pick3 + min
+	rot drop
+	-rot max
+	swap over - 0 max ;
 
 ::gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip
 	gcsp 8 >=? ( drop 4drop ; ) drop
@@ -33,15 +38,12 @@
 	gcon a!+ gcx2 a!+ gcy2 a!+ gcw2 a!+ gch2 a!+
 	1 'gcsp +!
 	gcon 0? ( drop gset ; ) drop
-	pick2 + 'ny2 ! pick2 + 'nx2 ! 'ny ! 'nx !
-	nx gcx2 max 'nx ! ny gcy2 max 'ny !
-	nx2 gcx2 gcw2 + min 'nx2 ! ny2 gcy2 gch2 + min 'ny2 !
-	nx ny nx2 nx - 0 max ny2 ny - 0 max gset ;
+	rot swap gcy2 gch2 gcisect 2swap gcx2 gcw2 gcisect 2swap rot swap gset ;
 
 ::gclipPop | -- ; back to the clip before gclipPush
 	gcsp 0? ( drop ; ) drop
 	-1 'gcsp +!
 	gcsp 40 * 'gcst + >a
-	a@+ 'pon ! a@+ a@+ a@+ a@
-	pon 0? ( drop 4drop 0 'gcon ! gclip0 ; ) drop
+	a@+ 0? ( drop 0 'gcon ! gclip0 ; ) drop
+	a@+ a@+ a@+ a@
 	gset ;

@@ -10,7 +10,6 @@
 #gcon 0 #gcx #gcy #gcw #gch
 #gcst * 320 | 8 levels: on x y w h (qwords)
 #gcsp 0
-#pon 0
 
 ::gclip | x y w h -- ; clip the drawing to the rectangle
 	1 'gcon !
@@ -24,7 +23,12 @@
 	0 'gcon !
 	SDLrenderer 0 SDL_RenderSetClipRect ;
 
-#nx #ny #nx2 #ny2
+:gcisect | p l cp cl -- p' l'	; interseccion 1D: inicio y largo
+	over +
+	pick3 pick3 + min
+	rot drop
+	-rot max
+	swap over - 0 max ;
 
 ::gclipPush | x y w h -- ; clip to the rectangle intersected with the current clip; gclipPop goes back
 	gcsp 8 >=? ( drop 4drop ; ) drop
@@ -33,15 +37,12 @@
 	1 'gcsp +!
 	gcon 0? ( drop gclip ; ) drop
 	| intersection: x y w h with gcx gcy gcw gch
-	pick2 + 'ny2 ! pick2 + 'nx2 ! 'ny ! 'nx !
-	nx gcx max 'nx ! ny gcy max 'ny !
-	nx2 gcx gcw + min 'nx2 ! ny2 gcy gch + min 'ny2 !
-	nx ny nx2 nx - 0 max ny2 ny - 0 max gclip ;
+	rot swap gcy gch gcisect 2swap gcx gcw gcisect 2swap rot swap gclip ;
 
 ::gclipPop | -- ; back to the clip before gclipPush
 	gcsp 0? ( drop ; ) drop
 	-1 'gcsp +!
 	gcsp 40 * 'gcst + >a
-	a@+ 'pon ! a@+ a@+ a@+ a@
-	pon 0? ( drop 4drop 0 'gcon ! gclip0 ; ) drop
+	a@+ 0? ( drop 0 'gcon ! gclip0 ; ) drop
+	a@+ a@+ a@+ a@
 	gclip ;
