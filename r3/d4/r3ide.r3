@@ -97,10 +97,10 @@
 :cpydefword 
 	fuente> <<: cpyhword ;
 	
-:searchword | -- nro
+:searchword | -- nro+1/0 ; the definition of helpword, 0 = not found
 	cntdef ( 1? 1-
 		dup nro>dic @ dic>name
-		'helpword =w 1? ( drop ; )
+		'helpword =w 1? ( drop 1+ ; )
 		drop ) ;
 	
 |---- screen
@@ -183,7 +183,6 @@
 #rxpool * $ffff		| the labels
 #rxpool> 0
 #rxqm ( 8 63 0 )		| ? unknown
-#rxtl 0 0
 
 |---- a label in the pool, 20 chars at most
 :rxlbl | 'str col -- lbl
@@ -202,7 +201,7 @@
 	drop -1 'rxn +! rxn 3 << 'rxsk + @ ;
 
 :rxinlbl | i -- lbl ; a b c ...
-	97 + 'rxtl c! 0 'rxtl 1+ c! 'rxtl 2 rxlbl ;
+	" " swap 97 + over c! 2 rxlbl ;
 
 :rxinit | need --
 	dup 'rxneed !
@@ -229,8 +228,7 @@
 	'rxtxt "%s'%d" sprint rxcol rxlbl rxpush 1 'rxnnew +! ;
 
 :efnext | adr -- adr' tok/0 ; next word of the effect (0 at the end or at the "(r:" part)
-	( dup c@ $ff and 1? 33 <? drop 1+ ) drop
-	dup c@ $ff and 0? ( drop 0 ; ) $28 =? ( drop 0 ; ) drop
+	trim dup c@ $ff and 0? ( drop 0 ; ) $28 =? ( drop 0 ; ) drop
 	dup >>sp swap ;
 
 :lnadd | tok --
@@ -416,7 +414,7 @@
 
 |---- writes a row with colors: the bytes 1..9 of the text are colors, 12 starts the stack
 :vis? | c -- 0/1 ; the byte takes a column
-	32 <? ( drop 0 ; ) $c0 and $80 =? ( drop 0 ; ) drop 1 ;
+	32 <? ( drop 0 ; ) utf8c? 1? ( drop 1 ; ) ;
 
 :lvis | str -- n ; columns of the text
 	0 swap ( c@+ $ff and 1? vis? rot + swap ) 2drop ;
@@ -432,12 +430,12 @@
 :wbyte | w c -- w' ; a mark, or a char if there is room
 	32 <? ( wcol ; )
 	over 1 <? ( 3drop 0 ; ) drop
-	dup $c0 and $80 =? ( drop .emit ; ) drop
+	dup utf8c? 0? ( drop .emit ; ) drop
 	.emit 1- ;
 
 :skipitem | -- n ; B is at a color mark: skips that value, returns its columns
 	cb@+ drop
-	0 ( cb@ $ff and 31 >? drop cb@+ drop 1+ ) drop ;
+	0 ( cb@ $ff and 31 >? drop cb@+ utf8c? 1? ( swap 1+ swap ) drop ) drop ;
 
 :wpic | w -- w' ; if the stack does not fit, the bottom values are cut: the top is what matters
 	2 <? ( ; )
@@ -516,18 +514,19 @@
 	[back] =? ( modefx 0? ( tuiexit ) drop 0 'modefx ! )
 	drop ;
 
-:setvwords | nrow --
+:setvwords | nro+1 -- ; the row of the list that has the value nro+1
 	lwords ( w@+ 1?
-		pick2 =? ( drop nip lwords - 1 >> 'vwords ! ; ) 
+		pick2 =? ( drop nip lwords - 1 >> 1- 'vwords ! ; ) 
 		drop ) 2drop 
 	0 'vwords ! ;
 	
 :fxcode
 	codeerr? 1? ( drop ; ) drop
 	cpydefword
-	'helpword c@ 0? ( drop "DEFINITION NOT FOUND" 'helpword strcpy ; ) drop
+	searchword 0? ( drop "DEFINITION NOT FOUND" 'helpword strcpy ; )
+	dup 1- 'nowword !
 	makelistwords
-	searchword dup 'nowword ! setvwords
+	setvwords
 	setanalysis
 	0 'modefx !
 	'fxwin onTui
@@ -729,24 +728,15 @@
 		1+ ) drop ;
 
 |---- search: the names that start with hwq, or have it inside
-:lc | c -- c' ; lower case
-	$41 $5a in? ( $20 + ) ;
-
-:pre? | name q -- 0/1 ; the name starts with q
-	( dup c@ $ff and 1?				| name q c
-		lc pick2 c@ $ff and lc <>? ( 3drop 0 ; ) drop
-		swap 1+ swap 1+ )
-	3drop 1 ;
-
 :has? | name q -- 0/1 ; q is in the name
 	( over c@ $ff and 32 >? drop
-		2dup pre? 1? ( 3drop 1 ; ) drop
+		2dup =pre nip 1? ( 3drop 1 ; ) drop
 		swap 1+ swap )
 	3drop 0 ;
 
 :hwm? | 'name mode -- 0/1 ; mode 0: starts with hwq, 1: has it inside (not at the start)
-	0? ( drop 'hwq pre? ; ) drop
-	dup 'hwq pre? 1? ( 2drop 0 ; ) drop
+	0? ( drop 'hwq =pre nip ; ) drop
+	dup 'hwq =pre nip 1? ( 2drop 0 ; ) drop
 	'hwq has? ;
 
 :hwscan | mode -- ; help lines
@@ -937,11 +927,8 @@
 	3drop ;
 
 |--- the include of a library: after the last ^ of the header, or before the first line of code
-:skipb | adr -- adr' ; blanks and new lines
-	( dup c@ $ff and 1? 33 <? drop 1+ ) drop ;
-
 :incstep | il adr -- il' adr' 1/0 ; a line of the header (comment or include): 1 = go on, 0 = the code starts
-	skipb dup c@ $ff and
+	trim dup c@ $ff and
 	0? ( drop 0 ; )
 	$7c =? ( drop >>cr 1+ $fuente min 1 ; )
 	$5e =? ( drop >>cr 1+ $fuente min nip dup 1 ; )
@@ -1062,14 +1049,6 @@
 	hwrefresh
 	'helpc onTui ;
 	
-:hint | -- ; the effect of the word under the cursor, in the top bar
-	cpyhelpword
-	hw.count 0? ( drop ; ) drop
-	hwword hw.find -? ( drop ; )
-	hline 'hweff 100 hw.eff
-	'hweff c@ $ff and 0? ( drop ; ) drop
-	fTx " | " .write fYe hwword .write fMu "  " .write 'hweff .write fTx ;
-
 :hint | -- ; the effect of the word under the cursor, in the top bar
 	cpyhelpword
 	hw.count 0? ( drop ; ) drop
