@@ -9,7 +9,7 @@
 	
 	"f1 - music1" .println
 	"f2 - music2" .println
-	"f3 - fx kind 3 (fxsynth)" .println
+	"f3 - fx laser" .println
 	.flush
 	;
 	
@@ -49,12 +49,11 @@
 :handle
 	[f1] =? ( music ) 
 	[f2] =? ( music2 ) 
-	[f3] =? ( 'sfx_fxzap sfxplay ) 
+	[f3] =? ( 'sfx_laser sfxplay ) 
 	;
 	
 :main
 	sfxinit mkins
-	'sfx_fxzap sfxprepare
 	.alsb .hidec .cls
 	( inkey [ESC] <>?
 		handle drop

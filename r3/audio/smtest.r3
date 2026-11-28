@@ -52,16 +52,18 @@
 	SDLredraw
 	SDLkey
 	>esc< =? ( exit )
-	<a> =? ( 0 keydn )
-	>a< =? ( 0 keyup )
+	<a> =? ( 60 keydn ) <s> =? ( 62 keydn ) <d> =? ( 64 keydn ) <f> =? ( 65 keydn )
+	<g> =? ( 67 keydn ) <h> =? ( 69 keydn ) <j> =? ( 71 keydn )
+	>a< =? ( 60 keyup ) >s< =? ( 62 keyup ) >d< =? ( 64 keyup ) >f< =? ( 65 keyup )
+	>g< =? ( 67 keyup ) >h< =? ( 69 keyup ) >j< =? ( 71 keyup )
 	<f1> =? ( 30 0.25 smplayd )
 	<f2> =? ( i0 smI! 31 0.25 smplayd )
 	<f3> =? ( i1 smI! 31 0.25 smplayd )
 	<f4> =? ( 34 0.5 smplayd 36 0.5 smplayd 39 0.5 smplayd )
-	<z> =? ( i3 smi! 0 1.0 smplayd )
-	<x> =? ( i3 smi! 1 1.0 smplayd )
-	<c> =? ( i3 smi! 2 1.0 smplayd )
-	<v> =? ( i2 smI! 2 1.0 smplayd )
+	<z> =? ( i3 smi! 69 1.0 smplayd )
+	<x> =? ( i3 smi! 73 1.0 smplayd )
+	<c> =? ( i3 smi! 76 1.0 smplayd )
+	<v> =? ( i2 smI! 60 1.0 smplayd )
 	drop 
 	smupdate
 	;

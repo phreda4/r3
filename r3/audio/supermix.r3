@@ -20,6 +20,10 @@
 :resetvoices
 	'voice 'voice> ! ;
 
+|------------------- INSTRUMENTS (tabla)
+#instr * 4096		| 64 instrumentos x 64 bytes
+#instr> 'instr
+
 :c.state	a> ;		| state
 :c.id		a> 1 + ;	| id
 :c.crv		a> 2 + ;	| curva de envolvente: env^(n+1): 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exponencial)
@@ -47,9 +51,6 @@
 	voice> 'voice> >=? ( drop 0 ; )
 	64 'voice> +! ;
 	
-:delvoice | nv --
-	-64 'voice> +! voice> 8 move ;
-
 :delvoicea | --
 	-64 'voice> +! a> voice> 8 move -64 a+ ;
 
@@ -156,6 +157,7 @@
 #auspec * 32
 
 ::sminit | -- ..
+	'instr 'instr> !					| tabla de instrumentos vacia
 	aurate $8010 2 1024 Mix_OpenAudio | minimal buffer for low latency
 
 	aurate	'auspec 0 + d! |freq
@@ -203,18 +205,18 @@
 ::smmaster! | v --		| volumen general 0..1.0
 	'master_volume ! ;
 
-::smupdate | Queue audio
-	audevice SDL_GetQueuedAudioSize 8192 >=? ( drop ; ) drop | Buffer full
-	runtick
-	genAudio
-	audevice 'outbuffer 8192 SDL_QueueAudio 
-	;
+##smqueue 8192			| bytes en cola por debajo de los cuales smupdate genera otro bloque (latencia maxima = smqueue + 8192)
+
+::smupdate | Queue audio: hasta 4 bloques por llamada
+	4 ( 1? 1-
+		audevice SDL_GetQueuedAudioSize smqueue >=? ( 2drop ; ) drop
+		runtick
+		genAudio
+		audevice 'outbuffer 8192 SDL_QueueAudio
+		) drop ;
 	
 
 |------------------- INSTRUMENTS
-
-#instr * $3ff		| 32 instrumentos x 64 bytes
-#instr> 'instr
 
 #ins_vector playosc
 #ins_wave oscSin |oscTri |'oscSin
@@ -237,6 +239,9 @@
 
 |--- MAKE INSTRUMENT
 
+:ifull? | -- 0/1			| ya no quedan slots
+	instr> 'instr 4096 + >=? ( drop 1 ; ) drop 0 ;
+
 :ninstr
 	instr> 'instr - 6 >> 1- ;	| slot: vec wave ADSR1 ADSR2 aux (64 bytes)
 	
@@ -248,30 +253,41 @@
 :iend | aux -- n			| aux y salta al proximo slot
 	a!+ 24 a+ a> 'instr> ! ninstr ;
 
-::iosc | v1 v2 osc -- n
+::iosc | v1 v2 osc -- n		| -1 si la tabla esta llena
+	ifull? 1? ( drop 3drop -1 ; ) drop
 	instr> >a
 	'playosc a!+
 	a!+ iadsr 0 iend ;
 
 ::isweep | v1 v2 osc -- n		| oscilador con pitch slide (ver smslide!)
+	ifull? 1? ( drop 3drop -1 ; ) drop
 	instr> >a
 	'playsweep a!+
 	a!+ iadsr 0 iend ;
 
 ::isuper | v1 v2 osc detune -- n	| supersaw: detune = fraccion de freq (0.01 = 1%) del osc extremo
+	ifull? 1? ( drop 4drop -1 ; ) drop
 	instr> >a
 	'playsuper a!+
 	swap a!+ >r iadsr r> iend ;
 
+:downmix | chunk --			| L=R=(L+R)/2 en el chunk (playsam lee solo L)
+	dup 8 + @ >a  16 + d@ 2 >>	| frames
+	( 1? 1-
+		a> w@ 48 << 48 >>  a> 2 + w@ 48 << 48 >> + 2/	| frames m
+		dup a> w!  a> 2 + w!  4 a+ ) drop ;
+
 ::isample | v1 v2 "" -- n
+	ifull? 1? ( drop 3drop -1 ; ) drop
+	mix_loadWAV 0? ( drop 'nochunk ) dup downmix
 	instr> >a
 	'playsam a!+
-	mix_loadWAV 0? ( drop 'nochunk )
 	dup 8 + @ a!+ 		| sample
 	-rot iadsr
 	16 + d@ 2 >> iend ;	| len sample
 
 ::isamplemem | v1 v2 adr frames -- n	| sample en memoria: 16 bits estereo intercalado (L R), 'frames' frames, a 44100 Hz
+	ifull? 1? ( drop 4drop -1 ; ) drop
 	>r >r instr> >a
 	'playsam a!+
 	r> a!+							| adr
@@ -279,6 +295,7 @@
 
 |---- SET INSTRUMENT
 ::smi! | n --
+	-? ( drop ; )					| -1: sin instrumento, no cambia
 	6 << 'instr +
 	@+ 'ins_vector !
 	@+ 'ins_wave !
@@ -297,29 +314,23 @@
 ::smcurve! | n --		| curva de envolvente 0 lineal .. 3 cuartica (~exp); despues de smi!
 	'ins_crv ! ;
 
-::smdetune! | v --		| detune (16.16) de las proximas voces supersaw; despues de smi!
-	'ins_aux ! ;
-
 ::smOSC! | osc n --
+	-? ( 2drop ; )
 	6 << 'instr + 8 + ! ;
 	
 ::smASDR! | v1 v2 n --
+	-? ( 3drop ; )
 	6 << 'instr + 16 + rot over ! 8 + ! ;
 
 ::smAUX! | aux n --		| dato auxiliar del instrumento n (detune de isuper, slide de isweep)
+	-? ( 2drop ; )
 	6 << 'instr + 32 + ! ;
-	
-::control
-	
 |---- PLAY INSTRUMENT
 |inc_sample=(fr_deseada<<32)/fr_base
 |inc_osc=(fr_desada<<32>/aurate
 
-:midi_to_freq | note -- freq
+::smnote>hz | note -- hz		| midi -> Hz (16.16), 69 = 440 Hz
 	69 - fix. 12 / pow2. 440.0 *. ;
-
-|inc_sample=(fr_deseada<<32)/fr_base
-|inc_osc=(fr_desada<<32>/aurate
 
 ::smplayhz | hz time --		| frecuencia en Hz (16.16), duracion en segundos (16.16)
 	newvoice 0? ( 3drop ; ) | No free voices|
@@ -346,7 +357,7 @@
 	;
 
 ::smplayd | note time --
-	swap midi_to_freq swap smplayhz ;
+	swap smnote>hz swap smplayhz ;
 
 #sdelay
 ::smplayhzat | hz time delay --	| como smplayhz pero empieza 'delay' muestras despues
@@ -355,9 +366,6 @@
 	smplayhz
 	voice> r> =? ( drop ; ) drop
 	sdelay neg voice> 64 - 24 + d! ;
-
-::smplayat | note time delay --	| como smplayd pero empieza 'delay' muestras despues
-	>r swap midi_to_freq swap r> smplayhzat ;
 
 #nnote 1
 

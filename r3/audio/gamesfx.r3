@@ -4,7 +4,7 @@
 | Un SONIDO es un solo bloque de datos, escrito con la sintaxis de datos de 32 bits:
 |   ##nombre [ ... ]    (cada valor ocupa un dword; no hay terminador ni capas)
 | Es un tono con barrido de frecuencia (o una rafaga de ruido: ondas 9 10 11): 10 valores. Los efectos
-| compuestos (arpegios, repeticiones, filtros, vibrato) se hacen con kind 3.
+| compuestos (arpegios, repeticiones) se hacen con melodias (sfxtune).
 |
 |   $kwc  f0    f1    dur   vol   delay  A     D    S   R
 |   $103  200.0 70.0  0.09  0.14  0.0    0.001 0.09 0.0 0.005   <- tono
@@ -12,7 +12,7 @@
 |
 |   $kwc  primer valor, tres nibbles en hexa:  k = kind   w = wave   c = crv
 |         ej: kind=1 wave=10 crv=2 -> $1A2.  Un sonido con kind 0 no suena
-|   kind  1 tono / ruido, 3 sonido de fxsynth (ver KIND 3)
+|   kind  1 tono / ruido
 |   wave  forma de onda 0..11, ver sfxwavename (0 cuadrada 1 sierra 2 seno 3 triangulo ... 9 10 11 ruido
 |         blanco rosa marron: ignoran f0 y f1)
 |   crv   curva de la envolvente: 0 lineal, 1 cuadratica, 2 cubica, 3 cuartica (~exp(-6t))
@@ -24,14 +24,6 @@
 |   A D S R  envolvente: ataque(s) decaimiento(s) nivel de sostenido(0..1) release(s)
 |   (16.16 en 32 bits con signo: las frecuencias llegan a 32767 Hz)
 |
-| KIND 3: sonido de fxsynth.r3 (filtros, vibrato, arpegio, duty, punch...). El sonido mide 32 valores:
-|   los 10 de siempre ($300; solo valen vol y delay, el resto se ignora) y despues los 22 parametros
-|   de fxsynth en el orden p_wave p_attack ... p_vol (16.16; p_wave es un entero, como lo imprime fxdemo)
-|   $300 0.0 0.0 0.0 1.0 0.0 0 0 0 0   0 0.0 0.15 0.0 0.2 0.8 0.5 -0.25 0.0 ...(22 valores)
-|   Se renderiza una sola vez (la primera vez que suena, o antes con sfxprepare) y queda en un
-|   cache de 32 sonidos / 2 MB; suena como un sample con vol, delay y transposicion (sfxplayp).
-|   Usa los p_* de fxsynth como registro de trabajo.
-|
 | Todo arranca con precision de muestra (supermix: smtick + smplayhzat), asi que el delay
 | y las notas de las melodias no dependen de los cuadros por segundo.
 |
@@ -40,7 +32,6 @@
 |   sfxupdate                llamar una vez por cuadro (genera/encola el audio)
 |   'sonido sfxplay          dispara un sonido
 |   'sonido n sfxplayp       igual, transpuesto n semitonos (variacion)
-|   'sonido sfxprepare       renderiza antes un sonido kind 3 (el primer disparo no se traba)
 |   "patron" bpm ins loop sfxtune -- id       melodia (mini-notacion Strudel, abajo); ins = instrumento de
 |                                            supermix (iosc isweep isample...), fijo para toda la melodia
 |   id vol crv sfxtunemix -- id   volumen (16.16) y curva de la melodia (por defecto 1.0 y 0)
@@ -85,7 +76,6 @@
 ^r3/lib/rand.r3
 ^./supermix.r3
 ^./eval.r3
-^./fxsynth.r3
 
 |--------------------------------------------------------------- tablas
 ##sfxwaves 'oscSqr 'oscSaw 'oscSin 'oscTri 'oscPul2 'oscPul1 'oscSinF 'oscHSin 'oscSin3 'oscWhite 'oscPink 'oscBrown
@@ -130,61 +120,9 @@
 	l.vol smvel!  l.c smcurve!
 	l.dur l.delay aurate *. smplayhzat ;
 
-|--------------------------------------------------------------- sonido kind 3: sonido de fxsynth
-| ver KIND 3 en la cabecera. El render (176400 muestras) es costoso: se hace una sola vez por sonido
-| y queda en un cache (clave = direccion del sonido).
-#sxfxpool * $200000		| 2 MB: samples renderizados, frames estereo de 16 bits
-#sxfxused 0			| bytes usados del pool
-#sxfxc * 1024			| cache de 32 entradas x 32 bytes: 0 sonido  8 instrumento  16 frames
-#sxfxn 0			| entradas usadas
-#sxfxe 0			| entrada en construccion
-
-:sxfxload | 'params --		| 22 dwords 16.16 -> p_wave .. p_vol (qwords contiguos)
-	>a 'p_wave >b
-	22 ( 1? 1- da@+ 32 << 32 >> b!+ ) drop ;
-
-:sxfxtrim | len -- frames		| quita el silencio del final del render
-	( 1? 1- dup 2 << 'fxbuf + w@ 48 << 48 >> abs 64 >=?
-		( drop 1+ 256 + fxmaxsamples min ; ) drop )
-	256 + ;
-
-:sxfxfind | 'sonido -- ent/0
-	0 ( sxfxn <?				| snd i
-		dup 5 << 'sxfxc + dup @		| snd i ent key
-		pick3 =? ( drop nip nip ; )
-		2drop 1+ ) 2drop 0 ;
-
-:sxfxnew | 'sonido -- ent/0
-	sxfxn 32 >=? ( 2drop 0 ; ) drop
-	dup 40 + sxfxload
-	fxRender sxfxtrim			| snd frames
-	sxfxused over 2 << + $200000 >? ( 3drop 0 ; ) drop
-	sxfxn 5 << 'sxfxc + 'sxfxe !
-	swap sxfxe !				| frames   (clave = sonido)
-	dup sxfxe 16 + !			| frames   (largo)
-	'sxfxpool sxfxused + 'fxbuf pick2 2 << cmove
-	0.0 0.0 1.0 0.01 packADSR 'sxfxpool sxfxused + pick3 isamplemem sxfxe 8 + !
-	2 << 'sxfxused +!
-	1 'sxfxn +!
-	sxfxe ;
-
-:sxfxget | 'sonido -- ent/0
-	dup sxfxfind 1? ( nip ; ) drop sxfxnew ;
-
-:sxplayfx | ratio --			| sonido kind 3 (B = sonido): sample del cache
-	b> ab[ sxfxget ]ba			| ratio ent/0
-	0? ( 2drop ; )
-	dup 8 + @ smi!
-	l.vol smvel!  0 smcurve!
-	16 + @ 16 << aurate /			| ratio seg
-	swap 440.0 *. swap			| hz seg   (440 Hz = velocidad original)
-	l.delay aurate *. smplayhzat ;
-
 :sxplaysound | 'sonido ratio --		| B = sonido
 	swap >b
-	l.k 0? ( 2drop ; )
-	3 =? ( drop sxplayfx ; )
-	1 <>? ( 2drop ; ) drop
+	l.k 1 <>? ( 2drop ; ) drop				| kind 0 no suena
 	l.w 0 max 11 min 3 << 'sfxwaves + @ sxinsT sxsetins
 	l.f0 l.f1 l.dur sxslideof smslide!
 	l.f0 *. sxplaynote ;
@@ -215,8 +153,9 @@
 :t.evs | -- adr		| buffer de eventos de la melodia B
 	b> 'sxtunes - 6 >> 11 << 'sxevs + ;
 
-:sxmidi>hz | midi -- hz
-	69 - fix. 12 / pow2. 440.0 *. ;
+| un ciclo = 4 pulsos a 'bpm': duracion en muestras
+:sxclen | bpm -- muestras
+	aurate 240 * swap 1 max / ;
 
 :sxgen | --			| evalua el ciclo actual de la melodia B y guarda sus eventos
 	'stack 'stack> !
@@ -233,7 +172,7 @@
 	swap										| delay ev
 	t.ins @ smi!
 	dup sxevvel smvel!  t.crv d@ smcurve!
-	dup 32 >> $ff and sxmidi>hz					| delay ev hz
+	dup 32 >> $ff and smnote>hz					| delay ev hz
 	swap $ffff and t.clen @ * 16 >> 16 << aurate / 0.9 *.	| delay hz seg
 	rot smplayhzat ;
 
@@ -302,7 +241,6 @@
 	sminit
 	0 'sxclock !
 	sxtunesclear sxtkreset
-	0 'sxfxn ! 0 'sxfxused !
 	0.001 0.05 0.8 0.1 packADSR 'oscSqr isweep 'sxinsT !
 	sxvolume smmaster!
 	'sxtick 'smtick ! ;
@@ -326,10 +264,6 @@
 ::sfxplayp | 'sonido semitonos --
 	fix. 12 / pow2. ab[ sxplaysound ]ba ;
 
-::sfxprepare | 'sonido --		| renderiza antes un sonido kind 3 (el primer disparo no se traba)
-	dup d@ 8 >> $f and 3 <>? ( 2drop ; ) drop
-	ab[ sxfxget drop ]ba ;
-
 :sxtunefree | -- id/-1
 	0 ( 8 <?
 		dup sxtune@ @ 0? ( drop ; ) drop
@@ -339,7 +273,7 @@
 	sxtunefree -? ( >r 4drop r> ; )		| txt bpm ins loop id
 	dup sxtune@ >b  >r
 	t.loop !  t.ins !					| txt bpm
-	aurate 240 * swap 1 max / t.clen !	| txt: un ciclo = 4 pulsos
+	sxclen t.clen !						| txt
 	r@ 14 << 'sxtoks + dup t.tree !		| txt buf
 	processat drop
 	sxclock t.cstart !  0 t.cyc !  -1 t.nev !
@@ -373,7 +307,7 @@
 :sxtunebpm | id bpm --
 	swap -? ( 2drop ; )
 	sxtune@ >b
-	aurate 240 * swap 1 max / t.clen ! ;
+	sxclen t.clen ! ;
 
 ::sfxtunebpm | id bpm --
 	ab[ sxtunebpm ]ba ;

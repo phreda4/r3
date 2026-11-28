@@ -11,7 +11,6 @@
 |  Esc      salir (imprime el sonido editado como datos listos para pegar)
 |
 | Cada sonido es un solo bloque (ver gamesfx.r3): los tonos y ruidos (kind 1) se editan aca;
-| los kind 3 (fxsynth) se oyen igual pero se editan en fxdemo.r3 (boton Copy).
 
 ^r3/lib/console.r3
 ^r3/lib/rand.r3
@@ -33,7 +32,7 @@
 |--------------------------------------------------------------- buffer de edicion
 | tono / ruido: 10 dwords (40 bytes): $kwc f0 f1 dur vol delay A D S R  (ver gamesfx.r3)
 | la tabla muestra 12 columnas logicas; kind/wave/crv viven empaquetados en el 1er dword
-#edit * 128		| copia del sonido en edicion (un kind 3 mide 128 bytes)
+#edit * 40		| copia del sonido en edicion (10 dwords)
 #cur 0			| sonido en edicion
 #col 1			| columna seleccionada (la 0 es el kind, no se edita)
 #vol 2.0
@@ -60,19 +59,13 @@
 	col gv ;
 :cur! | v --
 	col sv ;
-:kind@ | -- kind
-	0 gv ;
-
 :loadedit | n --			| copia el sonido n al buffer de edicion
 	'cur !
-	'edit 0 128 cfill
-	'edit cur saddr 128 cmove ;
+	'edit 0 40 cfill
+	'edit cur saddr 40 cmove ;
 
-:is3 | -- 0/1			| el sonido en edicion es kind 3 (fxsynth): no se edita aca
-	kind@ 3 =? ( drop 1 ; ) drop 0 ;
-
-:playedit | --			| un kind 3 suena desde el original (su cache se indexa por direccion)
-	is3 1? ( drop cur saddr sfxplay ; ) drop 'edit sfxplay ;
+:playedit | --
+	'edit sfxplay ;
 
 :clampcell | --
 	col 1 max 11 min 'col ! ;
@@ -102,7 +95,6 @@
 	adjd + 0 max 3 min ;
 
 :adjust | --
-	is3 1? ( drop ; ) drop
 	cur@ col
 	1 =? ( drop ahz cur! ; )
 	2 =? ( drop ahz cur! ; )
@@ -123,7 +115,6 @@
 	randminmax a> rot + dup d@ rot *. swap d! ;
 
 :mutate | --
-	is3 1? ( drop ; ) drop
 	'edit >a
 	4 0.85 1.2 mulcell
 	8 0.85 1.2 mulcell
@@ -248,7 +239,6 @@
 :drawtable | --
 	.Reset 8 .fc
 	1 7 .at .eline
-	is3 1? ( drop 3 7 .at "kind 3 (fxsynth): se edita en fxdemo.r3" .write .Reset 1 8 .at .eline ; ) drop
 	9 7 .at "f0Hz" .write  15 7 .at "f1Hz" .write  21 7 .at "dur" .write
 	26 7 .at "wave" .write  37 7 .at "vol%" .write  42 7 .at "dly" .write  47 7 .at "A" .write
 	52 7 .at "D" .write  57 7 .at "S%" .write  62 7 .at "R" .write  67 7 .at "crv" .write
@@ -267,7 +257,6 @@
 
 |--------------------------------------------------------------- salida
 :dump | --			| el sonido editado como datos para pegar en un .r3
-	is3 1? ( drop "| " .write cur sname .write " es kind 3 (fxsynth): se edita en fxdemo.r3" .println ; ) drop
 	"##mysound [   | editado desde: " .write cur sname .write .cr
 	'edit >a
 	a> 36 + d@ a> 32 + d@ a> 28 + d@ a> 24 + d@ a> 20 + d@ a> 16 + d@ a> 12 + d@ a> 8 + d@ a> 4 + d@
@@ -278,7 +267,6 @@
 :main
 	sfxinit mkins
 	msec $1234567 rerand
-	0 ( NSND <? dup saddr sfxprepare 1+ ) drop		| renderiza los kind 3 antes de tocar
 	0 loadedit
 	.alsb .hidec .cls
 	( inkey [ESC] <>?

@@ -22,15 +22,6 @@
 	fxRender fxins smAUX!			| largo en frames
 	fxins smi!  69 smplay drop ;	| nota 69 = 440 Hz = velocidad original
 
-|---- exportr
-#fxtxt * 1024
-:fxExport | -- adr
-	mark 'fxtxt 'here !
-	"##sfx_fx [" ,s ,nl
-	9 ,c "$300 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0" ,s ,nl
-	9 ,c ab[ 'p_wave >a a@+ ,d 21 ( 1? 1- ,sp a@+ ,f ) drop ]ba ,nl
-	9 ,c "0 ]" ,s ,eol empty 'fxtxt ;
-
 #fxbuff * 44 | 22*2
 
 #fxlistcnt
@@ -300,7 +291,6 @@
 	txh 2 + 5 * uiN		| Play .. "* Wave *": 11 filas; abajo la grilla de ondas
 	stSucc [ fxPlay ; ]             "Play"    uiCBtn
 	stDang [ fxRandom fxPlay ; ]    "Random"        uiCbtn
-	stInfo [ fxExport SDL_SetClipboardText drop ; ] "Copy" uiCBtn
 	stLink 
 	"* Type *" uiLabelC
 	[ fxPickup fxPlay ; ]    "Pickup / Coin" uiRbtn
